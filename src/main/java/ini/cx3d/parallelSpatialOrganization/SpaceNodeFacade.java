@@ -191,6 +191,12 @@ public class SpaceNodeFacade<T> implements ini.cx3d.spatialOrganization.SpatialO
 		// TODO Auto-generated method stub
 		
 	}
-	
 
+
+	@Override
+	public StringBuilder simStateToJson(StringBuilder sb) {
+		//FIXME implement
+		sb.append("");
+		return sb;
+	}
 }

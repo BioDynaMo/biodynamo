@@ -20,6 +20,9 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 package ini.cx3d.spatialOrganization;
+
+import ini.cx3d.SimStateSerializable;
+
 /**
  * Interface to define the basic properties of a node in the triangulation.
  * 
@@ -27,7 +30,7 @@ package ini.cx3d.spatialOrganization;
  *
  * @param <T> The type of user objects associated with each node in the triangulation.
  */
-public interface SpatialOrganizationNode<T> {
+public interface SpatialOrganizationNode<T> extends SimStateSerializable {
 	
 	public void addSpatialOrganizationNodeMovementListener(SpatialOrganizationNodeMovementListener<T> listener);
 	

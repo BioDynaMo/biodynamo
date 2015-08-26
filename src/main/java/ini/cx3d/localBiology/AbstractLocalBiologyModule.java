@@ -22,6 +22,9 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 package ini.cx3d.localBiology;
 
 
+import static ini.cx3d.SimStateSerializationUtil.keyValue;
+import static ini.cx3d.SimStateSerializationUtil.removeLastChar;
+
 /**
  * Abstract class implementing the <code>LocalBiologyModule</code> interface. This class can be extended
  * to design new local modules. By default, each copy method returns <code>false</code>.
@@ -31,7 +34,17 @@ package ini.cx3d.localBiology;
 public abstract class AbstractLocalBiologyModule implements LocalBiologyModule{
 
 	protected CellElement cellElement; // "protected" so subclasses can access it
-	
+
+	@Override
+	public StringBuilder simStateToJson(StringBuilder sb) {
+		sb.append("{");
+
+		//cellElement is circular reference
+//		keyValue(sb, "cellElement", cellElement);
+
+		return sb;
+	}
+
 	public CellElement getCellElement() {return cellElement;}
 
 	public void setCellElement(CellElement cellElement) {

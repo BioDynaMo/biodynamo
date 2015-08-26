@@ -21,6 +21,7 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 
 package ini.cx3d.physics;
 
+import static ini.cx3d.SimStateSerializationUtil.*;
 import static ini.cx3d.utilities.Matrix.add;
 import static ini.cx3d.utilities.Matrix.crossProduct;
 import static ini.cx3d.utilities.Matrix.dot;
@@ -75,8 +76,24 @@ public class PhysicalSphere extends PhysicalObject{
 	private double interObjectForceCoefficient = 0.15;
 	
 	/* Force applied by the biology. Is taken into account during runPhysics(), and the set to 0.*/
-	protected double[] tractorForce = {0,0,0}; 
+	protected double[] tractorForce = {0,0,0};
 
+	@Override
+	public StringBuilder simStateToJson(StringBuilder sb) {
+		super.simStateToJson(sb);
+
+		// somaElement is circular reference;
+		unorderedCollection(sb, "daughters", daughters);
+		mapOfDoubleArray(sb, "daughtersCoord", daughtersCoord);
+		keyValue(sb, "rotationInertia", rotationalInertia);
+		keyValue(sb, "interObjectForceCoefficient", interObjectForceCoefficient);
+		keyValue(sb, "tractorForce", tractorForce);
+
+
+		removeLastChar(sb);
+		sb.append("}");
+		return sb;
+	}
 
 	public PhysicalSphere() {
 		super();

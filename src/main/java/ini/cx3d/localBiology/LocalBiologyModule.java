@@ -21,6 +21,8 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 
 package ini.cx3d.localBiology;
 
+import ini.cx3d.SimStateSerializable;
+
 /**
  * 
  * Classes implementing this interface can be added in the CellElements, and be run.
@@ -32,7 +34,7 @@ package ini.cx3d.localBiology;
  * @author fredericzubler, haurian 
  *
  */
-public interface LocalBiologyModule {
+public interface LocalBiologyModule extends SimStateSerializable {
 	
 	/** Perform your specific action*/
 	abstract public void run();

@@ -23,6 +23,10 @@ package ini.cx3d.cells;
 
 import ini.cx3d.physics.PhysicalSphere;
 
+import static ini.cx3d.SimStateSerializationUtil.keyValue;
+import static ini.cx3d.SimStateSerializationUtil.removeLastChar;
+import static ini.cx3d.SimStateSerializationUtil.unorderedCollection;
+
 public class SimpleCellCycle implements CellModule{
 
 	/* the cell it belongs to.*/
@@ -34,7 +38,20 @@ public class SimpleCellCycle implements CellModule{
 	private double dVdt = 150.0;
 	/* the minimum size to obtain before being allowed to divide.*/
 	private double minimumDiameter = 20.0;
-	
+
+	@Override
+	public StringBuilder simStateToJson(StringBuilder sb) {
+		sb.append("{");
+
+		keyValue(sb, "cell", cell);
+		keyValue(sb, "enable", enable);
+		keyValue(sb, "dVdt", dVdt);
+		keyValue(sb, "minimumDiameter", minimumDiameter);
+
+		removeLastChar(sb);
+		sb.append("}");
+		return sb;
+	}
 	
 	public Cell getCell() {
 		return cell;

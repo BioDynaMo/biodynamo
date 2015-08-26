@@ -21,6 +21,8 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 
 package ini.cx3d.synapses;
 
+import static ini.cx3d.SimStateSerializationUtil.keyValue;
+import static ini.cx3d.SimStateSerializationUtil.removeLastChar;
 import static ini.cx3d.utilities.Matrix.*;
 import java.util.*;
 
@@ -34,6 +36,17 @@ import ini.cx3d.physics.PhysicalSphere;
 public class PhysicalBouton extends Excrescence {
 
 	BiologicalBouton biologicalBouton;
+
+	@Override
+	public StringBuilder simStateToJson(StringBuilder sb) {
+		super.simStateToJson(sb);
+
+		keyValue(sb, "biologicalBouton", biologicalBouton);
+
+		removeLastChar(sb);
+		sb.append("}");
+		return sb;
+	}
 
 	public PhysicalBouton() {
 		super();

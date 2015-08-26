@@ -23,6 +23,9 @@ package ini.cx3d.simulations;
 
 import static ini.cx3d.utilities.Matrix.add;
 import static ini.cx3d.utilities.Matrix.randomNoise;
+
+import ini.cx3d.SimStateSerializable;
+import ini.cx3d.SimStateSerializationUtil;
 import ini.cx3d.cells.Cell;
 import ini.cx3d.graphics.ECM_GUI_Creator;
 import ini.cx3d.graphics.View;
@@ -60,7 +63,7 @@ import javax.swing.JFrame;
  * @author fredericzubler
  *
  */
-public class ECM {
+public class ECM implements SimStateSerializable {
 
 	// List of all the CX3DRunbable objects in the simulation ............................
 
@@ -158,6 +161,45 @@ public class ECM {
 	 * the chemical that can be given as argument in the methods to know the concentration/grad.. */
 	public Hashtable<String, Substance> allArtificialSubstances = new Hashtable<String, Substance>();
 
+
+	public StringBuilder simStateToJson(StringBuilder sb) {
+		sb.append("{");
+
+		SimStateSerializationUtil.unorderedCollection(sb, "physicalNodeList", physicalNodeList);
+		SimStateSerializationUtil.unorderedCollection(sb, "physicalSphereList", physicalSphereList);
+		SimStateSerializationUtil.unorderedCollection(sb, "physicalCylinderList", physicalCylinderList);
+		SimStateSerializationUtil.unorderedCollection(sb, "somaElementList", somaElementList);
+		SimStateSerializationUtil.unorderedCollection(sb, "neuriteElementList", neuriteElementList);
+		SimStateSerializationUtil.unorderedCollection(sb, "cellList", cellList);
+		SimStateSerializationUtil.unorderedCollection(sb, "ecmChemicalReactionList", ecmChemicalReactionList);
+
+		SimStateSerializationUtil.keyValue(sb, "initialNode", initialNode);
+		SimStateSerializationUtil.map(sb, "substancesLibrary", substancesLibrary);
+		SimStateSerializationUtil.map(sb, "intracellularSubstancesLibrary", intracellularSubstancesLibrary);
+		//FIXME color library
+
+		SimStateSerializationUtil.keyValue(sb, "artificialWallsForSpheres", artificialWallsForSpheres);
+		SimStateSerializationUtil.keyValue(sb, "artificialWallsForCylinders", artificialWallsForCylinders);
+
+		SimStateSerializationUtil.keyValue(sb, "Xmin", Xmin);
+		SimStateSerializationUtil.keyValue(sb, "Xmax", Xmax);
+		SimStateSerializationUtil.keyValue(sb, "Xmin", Ymin);
+		SimStateSerializationUtil.keyValue(sb, "Xmax", Ymax);
+		SimStateSerializationUtil.keyValue(sb, "Zmin", Zmin);
+		SimStateSerializationUtil.keyValue(sb, "Zmax", Zmax);
+
+		SimStateSerializationUtil.keyValue(sb, "anyArtificialGradientDefined", anyArtificialGradientDefined);
+
+		SimStateSerializationUtil.mapOfDoubleArray(sb, "gaussianArtificialConcentrationZ", gaussianArtificialConcentrationZ);
+		SimStateSerializationUtil.mapOfDoubleArray(sb, "linearArtificialConcentrationZ", linearArtificialConcentrationZ);
+		SimStateSerializationUtil.mapOfDoubleArray(sb, "gaussianArtificialConcentrationX", gaussianArtificialConcentrationX);
+		SimStateSerializationUtil.mapOfDoubleArray(sb, "linearArtificialConcentrationX", linearArtificialConcentrationX);
+		SimStateSerializationUtil.map(sb, "allArtificialSubstances", allArtificialSubstances);
+
+		SimStateSerializationUtil.removeLastChar(sb);
+		sb.append("}");
+		return sb;
+	}
 
 
 	// **************************************************************************

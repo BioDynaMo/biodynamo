@@ -21,6 +21,8 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 
 package ini.cx3d.physics;
 
+import static ini.cx3d.SimStateSerializationUtil.*;
+import static ini.cx3d.SimStateSerializationUtil.keyValue;
 import static ini.cx3d.utilities.Matrix.dot;
 import ini.cx3d.Param;
 import ini.cx3d.localBiology.CellElement;
@@ -107,6 +109,32 @@ public abstract class PhysicalObject extends PhysicalNode {
 	/* List of the Physical bonds that this object can do (for cell adhesion, to restore proper configuration)*/
 	protected Vector<Excrescence> excrescences = new Vector<Excrescence>();
 
+	@Override
+	public StringBuilder simStateToJson(StringBuilder sb) {
+		super.simStateToJson(sb);
+		removeLastChar(sb);
+		sb.append(",");
+
+		keyValue(sb, "interObjectForce", interObjectForce);
+		keyValue(sb, "stillExisting", stillExisting);
+		keyValue(sb, "onTheSchedulerListForPhysicalObjects", onTheSchedulerListForPhysicalObjects);
+		keyValue(sb, "massLocation", massLocation);
+		keyValue(sb, "xAxis", xAxis);
+		keyValue(sb, "yAxis", yAxis);
+		keyValue(sb, "zAxis", zAxis);
+		keyValue(sb, "adherence", adherence);
+		keyValue(sb, "mass", mass);
+		keyValue(sb, "diameter", diameter);
+		keyValue(sb, "volume", volume);
+		keyValue(sb, "color", colorToHex(color), true);
+		keyValue(sb, "totalForceLastTimeStep", totalForceLastTimeStep);
+		map(sb, "intracellularSubstances", intracellularSubstances);
+		unorderedCollection(sb, "physicalBonds", physicalBonds);
+		unorderedCollection(sb, "excrescences", excrescences);
+
+		return sb;
+	}
+
 	/** Poor simple constructor.*/
 	public PhysicalObject() {
 		super();
@@ -117,6 +145,7 @@ public abstract class PhysicalObject extends PhysicalNode {
 		// This function overwrites the one in PhysicalObject. 
 		return true;
 	}
+
 
 
 	// *************************************************************************************

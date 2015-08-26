@@ -21,6 +21,8 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 
 package ini.cx3d.synapses;
 
+import static ini.cx3d.SimStateSerializationUtil.keyValue;
+import static ini.cx3d.SimStateSerializationUtil.removeLastChar;
 import static ini.cx3d.utilities.Matrix.distance;
 import ini.cx3d.localBiology.NeuriteElement;
 import ini.cx3d.physics.PhysicalBond;
@@ -29,7 +31,18 @@ import ini.cx3d.physics.PhysicalObject;
 public class PhysicalSomaticSpine extends Excrescence {
 
 	BiologicalSomaticSpine biologicalSomaticSpine;
-	
+
+	@Override
+	public StringBuilder simStateToJson(StringBuilder sb) {
+		sb.append("{");
+
+		keyValue(sb, "biologicalSomaticSpine", biologicalSomaticSpine);
+
+		removeLastChar(sb);
+		sb.append("}");
+		return sb;
+	}
+
 	public PhysicalSomaticSpine() {
 		super();
 		super.type = SOMATICSPINE;

@@ -21,6 +21,8 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 
 package ini.cx3d.localBiology;
 
+import static ini.cx3d.SimStateSerializationUtil.keyValue;
+import static ini.cx3d.SimStateSerializationUtil.removeLastChar;
 import static ini.cx3d.utilities.Matrix.add;
 import static ini.cx3d.utilities.Matrix.dot;
 import static ini.cx3d.utilities.Matrix.norm;
@@ -60,6 +62,17 @@ public class NeuriteElement extends CellElement {
 	/* true if part of an axon, false if dendrite.*/
 	private boolean isAnAxon = false;
 
+	@Override
+	public StringBuilder simStateToJson(StringBuilder sb) {
+		super.simStateToJson(sb);
+
+		keyValue(sb, "physicalCylinder", physicalCylinder);
+		keyValue(sb, "isAnAxon", Boolean.toString(isAnAxon));
+
+		removeLastChar(sb);
+		sb.append("}");
+		return sb;
+	}
 
 	// *************************************************************************************
 	//   Constructor & stuff

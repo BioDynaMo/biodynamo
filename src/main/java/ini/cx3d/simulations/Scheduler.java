@@ -54,7 +54,7 @@ public class Scheduler {
 	public static boolean runPhyics = true;
 	public static boolean runDiffusion = true;
 	
-	protected static boolean printCurrentECMTime = true;
+	protected static boolean printCurrentECMTime = false;
 	protected static boolean printCurrentStep = false;
 
 	/** Runs all the CX3D elements for one time step, and pauses for a few ms.

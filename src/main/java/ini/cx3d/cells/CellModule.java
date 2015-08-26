@@ -21,6 +21,8 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 
 package ini.cx3d.cells;
 
+import ini.cx3d.SimStateSerializable;
+
 /**
  * 
  * Classes implementing this interface can be added to a <code>Cell</code>, and be run.
@@ -29,7 +31,7 @@ package ini.cx3d.cells;
  * @author fredericzubler
  *
  */
-public interface CellModule {
+public interface CellModule extends SimStateSerializable {
 	
 	/** Run the simulation*/
 	public void run();

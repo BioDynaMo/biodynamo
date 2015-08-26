@@ -21,14 +21,16 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 
 package ini.cx3d.physics;
 
-/** Classes implementing this interface represents chemical reactions in the 
+import ini.cx3d.SimStateSerializable;
+
+/** Classes implementing this interface represents chemical reactions in the
  * extracellular space. They are run by the scheduler on each Physical Node.
  * 
  * @author fredericzubler
  *
  */
 
-public interface ECMChemicalReaction {
+public interface ECMChemicalReaction extends SimStateSerializable {
 
 	public void run(PhysicalNode pn);
 	

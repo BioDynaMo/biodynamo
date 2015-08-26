@@ -23,6 +23,9 @@ package ini.cx3d.spatialOrganization;
 
 import java.util.Iterator;
 import java.util.LinkedList;
+
+import static ini.cx3d.SimStateSerializationUtil.keyValue;
+import static ini.cx3d.SimStateSerializationUtil.removeLastChar;
 import static ini.cx3d.utilities.Matrix.*;
 
 /**
@@ -113,6 +116,20 @@ public class SpaceNode<T> implements SpatialOrganizationNode<T> {
 	 * The volume associated with this SpaceNode.
 	 */
 	private double volume = 0;
+
+	@Override
+	public StringBuilder simStateToJson(StringBuilder sb) {
+		sb.append("{");
+
+		keyValue(sb, "id", id);
+		keyValue(sb, "position", position);
+		keyValue(sb, "volume", volume);
+		//FIXME edges, tetrahydra, listener, content
+
+		removeLastChar(sb);
+		sb.append("}");
+		return sb;
+	}
 
 	/**
 	 * Clears the list of all nodes and sets the static node counter to zero.

@@ -21,7 +21,12 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 
 package ini.cx3d.cells;
 
+import static ini.cx3d.SimStateSerializationUtil.keyValue;
+import static ini.cx3d.SimStateSerializationUtil.removeLastChar;
+import static ini.cx3d.SimStateSerializationUtil.unorderedCollection;
 import static ini.cx3d.utilities.Matrix.add;
+
+import ini.cx3d.SimStateSerializable;
 import ini.cx3d.localBiology.NeuriteElement;
 import ini.cx3d.localBiology.SomaElement;
 import ini.cx3d.physics.PhysicalSphere;
@@ -41,7 +46,7 @@ import java.util.Vector;
  * @author sabina & RJD & fredericzubler
  *
  */
-public class Cell {
+public class Cell implements SimStateSerializable {
 
 	/* Unique identification for this Cell instance. */
 	private int ID = 0;
@@ -73,6 +78,22 @@ public class Cell {
 	/* Some convenient way to store properties of  for cells. 
 	 * Should not be confused with neuroMLType. */
 	private String type = "";
+
+	public StringBuilder simStateToJson(StringBuilder sb) {
+		sb.append("{");
+
+		keyValue(sb, "id", ID);
+		keyValue(sb, "idCounter", idCounter);
+		unorderedCollection(sb, "cellModules", cellModules);
+		keyValue(sb, "somaElement", somaElement);
+		unorderedCollection(sb, "neuriteRootList", neuriteRootList);
+		keyValue(sb, "neuroMlType", neuroMLType, true);
+		keyValue(sb, "type", type, true);
+
+		removeLastChar(sb);
+		sb.append("}");
+		return sb;
+	}
 	
 	/**
 	 * Generate <code>Cell</code>. and registers the <code>Cell</code> to <code>ECM<</code>. 

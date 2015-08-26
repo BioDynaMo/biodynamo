@@ -21,10 +21,25 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 
 package ini.cx3d.synapses;
 
+import ini.cx3d.SimStateSerializable;
 import ini.cx3d.physics.*;
 
-public class BiologicalBouton {
+import static ini.cx3d.SimStateSerializationUtil.keyValue;
+import static ini.cx3d.SimStateSerializationUtil.removeLastChar;
+
+public class BiologicalBouton implements SimStateSerializable{
 	PhysicalBouton physicalBouton;
+
+	@Override
+	public StringBuilder simStateToJson(StringBuilder sb) {
+		sb.append("{");
+
+//		keyValue(sb, "physicalBouton", physicalBouton);
+
+//		removeLastChar(sb);
+		sb.append("}");
+		return sb;
+	}
 
 	public PhysicalBouton getPhysicalBouton() {
 		return physicalBouton;

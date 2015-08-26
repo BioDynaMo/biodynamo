@@ -23,7 +23,10 @@ package ini.cx3d.physics;
 
 import ini.cx3d.Param;
 
+import ini.cx3d.SimStateSerializationUtil;
 import org.w3c.dom.Node;
+
+import static ini.cx3d.SimStateSerializationUtil.removeLastChar;
 
 /** 
  * Instances of this class represent the intracellular and surface (membrane bound) 
@@ -47,7 +50,22 @@ public class IntracellularSubstance extends Substance{
 	/* Degree of asymmetric distribution during cell division. 
 	 * 0 represents complete symmetrical division, 1 represents complete asymmetric division. */
 	protected double asymmetryConstant = 0;
-	
+
+	@Override
+	public StringBuilder simStateToJson(StringBuilder sb) {
+		super.simStateToJson(sb);
+		removeLastChar(sb);
+		sb.append(",");
+
+		SimStateSerializationUtil.keyValue(sb, "visibleFromOutside", visibleFromOutside);
+		SimStateSerializationUtil.keyValue(sb, "volumeDependant", volumeDependant);
+		SimStateSerializationUtil.keyValue(sb, "asymmetryConstant", asymmetryConstant);
+
+		removeLastChar(sb);
+		sb.append("}");
+		return sb;
+	}
+
 	public IntracellularSubstance(){
 	}
 	

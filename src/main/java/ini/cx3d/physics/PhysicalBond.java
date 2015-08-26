@@ -30,6 +30,8 @@ import static ini.cx3d.utilities.Matrix.subtract;
 import java.util.concurrent.locks.ReadWriteLock;
 
 import ini.cx3d.Param;
+import ini.cx3d.SimStateSerializable;
+import ini.cx3d.SimStateSerializationUtil;
 
 
 /**
@@ -48,7 +50,7 @@ import ini.cx3d.Param;
  *
  */
 
-public class PhysicalBond {
+public class PhysicalBond implements SimStateSerializable {
 	
 	private PhysicalObject a;
 	private PhysicalObject b;
@@ -68,7 +70,28 @@ public class PhysicalBond {
 	private boolean hasEffectOnA = true;
 	/** If false, there is no force transmitted on the second PhysicalObject (b).*/
 	private boolean hasEffectOnB = true;
-	
+
+	@Override
+	public StringBuilder simStateToJson(StringBuilder sb) {
+		sb.append("{");
+
+		//a, b circular reference
+		SimStateSerializationUtil.keyValue(sb, "originOnA", originOnA);
+		SimStateSerializationUtil.keyValue(sb, "originOnB", originOnB);
+		SimStateSerializationUtil.keyValue(sb, "restingLength", restingLength);
+		SimStateSerializationUtil.keyValue(sb, "springConstant", springConstant);
+		SimStateSerializationUtil.keyValue(sb, "maxTension", maxTension);
+		SimStateSerializationUtil.keyValue(sb, "dumpingConstant", dumpingConstant);
+		SimStateSerializationUtil.keyValue(sb, "pastLenght", pastLenght);
+		SimStateSerializationUtil.keyValue(sb, "slidingAllowed", slidingAllowed);
+		SimStateSerializationUtil.keyValue(sb, "hasEffectOnA", hasEffectOnA);
+		SimStateSerializationUtil.keyValue(sb, "hasEffectOnB", hasEffectOnB);
+
+		SimStateSerializationUtil.removeLastChar(sb);
+		sb.append("}");
+		return sb;
+	}
+
 	public PhysicalBond(){
 	}
 	

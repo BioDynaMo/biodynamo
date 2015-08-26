@@ -27,6 +27,8 @@ import static ini.cx3d.utilities.Matrix.dot;
 import static ini.cx3d.utilities.Matrix.solve;
 import static ini.cx3d.utilities.Matrix.subtract;
 import ini.cx3d.Param;
+import ini.cx3d.SimStateSerializable;
+import ini.cx3d.SimStateSerializationUtil;
 import ini.cx3d.simulations.ECM;
 import ini.cx3d.spatialOrganization.SpatialOrganizationEdge;
 import ini.cx3d.spatialOrganization.SpatialOrganizationNode;
@@ -59,7 +61,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * @author fredericzubler
  *
  */
-public class PhysicalNode implements Serializable{
+public class PhysicalNode implements Serializable, SimStateSerializable{
 	// NOTE : all the "protected" fields are not "private" because they have to be accessible by subclasses
 
 	/* Unique identification for this CellElement instance. Used for marshalling/demarshalling*/
@@ -87,7 +89,24 @@ public class PhysicalNode implements Serializable{
 
 	/* used for synchronisation for multithreading. introduced by Haurian*/
 	private ReadWriteLock rwLock = new ReentrantReadWriteLock();
-	
+
+	@Override
+	public StringBuilder simStateToJson(StringBuilder sb) {
+		sb.append("{");
+
+		SimStateSerializationUtil.keyValue(sb, "ID", ID);
+		SimStateSerializationUtil.keyValue(sb, "idCounter", idCounter.get());
+		SimStateSerializationUtil.keyValue(sb, "onTheSchedulerListForPhysicalNodes", onTheSchedulerListForPhysicalNodes);
+		SimStateSerializationUtil.keyValue(sb, "lastECMTimeDegradateWasRun", lastECMTimeDegradateWasRun);
+		SimStateSerializationUtil.keyValue(sb, "movementConcentratioUpdateProcedure", movementConcentratioUpdateProcedure);
+		SimStateSerializationUtil.map(sb, "extracellularSubstances", extracellularSubstances);
+		SimStateSerializationUtil.keyValue(sb, "soNode", soNode);
+
+		SimStateSerializationUtil.removeLastChar(sb);
+		sb.append("}");
+		return sb;
+	}
+
 	public PhysicalNode(){
 		getRwLock().writeLock().lock(); 
 		this.ID = idCounter.incrementAndGet();

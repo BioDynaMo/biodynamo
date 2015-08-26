@@ -21,7 +21,10 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 
 package ini.cx3d.synapses;
 
+import static ini.cx3d.SimStateSerializationUtil.keyValue;
 import static ini.cx3d.utilities.Matrix.*;
+
+import ini.cx3d.SimStateSerializable;
 import ini.cx3d.localBiology.NeuriteElement;
 import ini.cx3d.physics.PhysicalObject;
 import ini.cx3d.physics.PhysicalSphere;
@@ -31,7 +34,7 @@ import ini.cx3d.physics.PhysicalSphere;
  * @author fredericzubler
  *
  */
-public abstract class Excrescence {
+public abstract class Excrescence implements SimStateSerializable{
 	/** the physical object it is attached to.*/
 	PhysicalObject po;
 	/** the other structure with which it forms a synapse.*/ 
@@ -46,7 +49,20 @@ public abstract class Excrescence {
 	public static final int BOUTON = 1;
 	public static final int SOMATICSPINE = 2;
 	public static final int SHAFT = 3;
-	
+
+	@Override
+	public StringBuilder simStateToJson(StringBuilder sb) {
+		sb.append("{");
+
+		//po is circular reference
+		keyValue(sb, "ex", ex);
+		keyValue(sb, "positionOnPO", positionOnPO);
+		keyValue(sb, "length", length);
+		keyValue(sb, "type", type);
+
+		return sb;
+	}
+
 	/**
 	 * Method to create a spine-bouton synapse.
 	 * @param otherExcressence the other spine/bouton

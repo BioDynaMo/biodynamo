@@ -316,6 +316,10 @@ public class DefaultForce implements InterObjectForce{
 		}
 	}
 
-	
 
+	@Override
+	public StringBuilder simStateToJson(StringBuilder sb) {
+		sb.append("{}");
+		return sb;
+	}
 }

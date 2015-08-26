@@ -21,6 +21,8 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 
 package ini.cx3d.physics;
 
+import ini.cx3d.SimStateSerializable;
+import ini.cx3d.SimStateSerializationUtil;
 import ini.cx3d.graphics.View;
 import ini.cx3d.xml.XMLSerializable;
 
@@ -31,6 +33,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.w3c.dom.Node;
 
+import static ini.cx3d.SimStateSerializationUtil.removeLastChar;
+
 /**
  * Represents a diffusible or non-diffusible chemical, whether it is extra-cellular, membrane-bounded
  * or intra-cellular.
@@ -39,7 +43,7 @@ import org.w3c.dom.Node;
  */
 
 
-public class Substance  implements XMLSerializable, Serializable{
+public class Substance  implements XMLSerializable, Serializable, SimStateSerializable{
 	
 	/* Name of the Substance.               */
 	//asdfasf
@@ -58,7 +62,22 @@ public class Substance  implements XMLSerializable, Serializable{
 	
 	/* used for synchronisation for multithreading. introduced by Haurian*/
 	private ReadWriteLock rwLock = new ReentrantReadWriteLock();
-	
+
+	public StringBuilder simStateToJson(StringBuilder sb) {
+		sb.append("{");
+
+		SimStateSerializationUtil.keyValue(sb, "id", id, true);
+		SimStateSerializationUtil.keyValue(sb, "diffusionConstant", diffusionConstant);
+		SimStateSerializationUtil.keyValue(sb, "degradationConstant", degradationConstant);
+		SimStateSerializationUtil.keyValue(sb, "color", SimStateSerializationUtil.colorToHex(color), true);
+		SimStateSerializationUtil.keyValue(sb, "quantity", quantity);
+		SimStateSerializationUtil.keyValue(sb, "concentration", concentration);
+
+		removeLastChar(sb);
+		sb.append("}");
+		return sb;
+	}
+
 	public Substance(){}
 	
 	/**

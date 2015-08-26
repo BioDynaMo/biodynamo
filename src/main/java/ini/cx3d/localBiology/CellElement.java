@@ -23,6 +23,7 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 
 package ini.cx3d.localBiology;
 
+import ini.cx3d.SimStateSerializable;
 import ini.cx3d.cells.Cell;
 import ini.cx3d.physics.PhysicalObject;
 import ini.cx3d.simulations.ECM;
@@ -30,13 +31,17 @@ import ini.cx3d.simulations.ECM;
 import java.util.Vector;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static ini.cx3d.SimStateSerializationUtil.keyValue;
+import static ini.cx3d.SimStateSerializationUtil.mapOfObjects;
+import static ini.cx3d.SimStateSerializationUtil.unorderedCollection;
+
 /**
  * Super class for the local biological discrete elements (SomaElement & NeuriteElement).
  * Contains a <code>Vector</code> of <code>LocalBiologyModule</code>.
  * @author fredericzubler
  *
  */
-public abstract class CellElement {
+public abstract class CellElement implements SimStateSerializable {
 
 	/* Unique identification for this CellElement instance.*/
 	int ID = 0;
@@ -51,6 +56,15 @@ public abstract class CellElement {
 	/* List of all the SubElements : small objects performing some biological operations.*/
 	protected Vector<LocalBiologyModule> localBiologyModulesList = new Vector<LocalBiologyModule>();
 
+	public StringBuilder simStateToJson(StringBuilder sb) {
+		sb.append("{");
+
+		keyValue(sb, "ID", ID);
+		keyValue(sb, "idCounter", idCounter.get());
+		unorderedCollection(sb, "localBiologyModules", localBiologyModulesList);
+
+		return sb;
+	}
 
 	/** Simple constructor.*/
 	public CellElement() {

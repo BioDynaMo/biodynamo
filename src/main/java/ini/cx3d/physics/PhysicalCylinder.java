@@ -23,6 +23,9 @@ package ini.cx3d.physics;
 
 
 
+import static ini.cx3d.SimStateSerializationUtil.keyValue;
+import static ini.cx3d.SimStateSerializationUtil.mapOfDoubleArray;
+import static ini.cx3d.SimStateSerializationUtil.removeLastChar;
 import static ini.cx3d.utilities.Matrix.*;
 
 import javax.swing.text.html.InlineView;
@@ -87,6 +90,28 @@ public class PhysicalCylinder extends PhysicalObject{
 	// DEBUGG
 	private double oldActualLength=0;
 
+
+	public StringBuilder simStateToJson(StringBuilder sb) {
+		super.simStateToJson(sb);
+
+		//motherNode, neuriteElementm daughterLeft, daughterRight are circular references
+		keyValue(sb, "branchOrder", branchOrder);
+		keyValue(sb, "forceToTransmitToProximalMass", forceToTransmitToProximalMass);
+		keyValue(sb, "springAxis", springAxis);
+		keyValue(sb, "actualLength", actualLength);
+		keyValue(sb, "tension", tension);
+		keyValue(sb, "springConstant", springConstant);
+		keyValue(sb, "restingLength", restingLength);
+
+		removeLastChar(sb);
+		sb.append("}");
+		return sb;
+	}
+
+	@Override
+	public String toString() {
+		return "ini.cx3d.physics.PhyicalCylinder" + ID;
+	}
 
 	/** No argument constructor, initializing fields of <code>PhysicalObject</code> 
 	 * with <code>Param</code> values.*/ 

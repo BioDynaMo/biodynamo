@@ -21,6 +21,8 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 
 package ini.cx3d.localBiology;
 
+import static ini.cx3d.SimStateSerializationUtil.keyValue;
+import static ini.cx3d.SimStateSerializationUtil.removeLastChar;
 import static ini.cx3d.utilities.Matrix.add;
 import static ini.cx3d.utilities.Matrix.dot;
 import static ini.cx3d.utilities.Matrix.norm;
@@ -52,6 +54,17 @@ public class SomaElement extends CellElement{
 
 	/* The PhysicalSphere associated with this SomaElement.*/
 	private PhysicalSphere physical = null ;
+
+	@Override
+	public StringBuilder simStateToJson(StringBuilder sb) {
+		super.simStateToJson(sb);
+
+		keyValue(sb, "physical", physical);
+		//cell is a circular reference
+		removeLastChar(sb);
+		sb.append("}");
+		return sb;
+	}
 
 	
 	// *************************************************************************************

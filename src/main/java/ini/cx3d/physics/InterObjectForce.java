@@ -21,12 +21,14 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 
 package ini.cx3d.physics;
 
+import ini.cx3d.SimStateSerializable;
+
 /**
  * Defines the 3D physical interactions between physical objects (cylinders and spheres).
  * @author fredericzubler
  *
  */
-public interface InterObjectForce {
+public interface InterObjectForce extends SimStateSerializable {
 	
 	/**
 	 * Force felt by a sphere (sphere1) due to the presence of another sphere (sphere2)
