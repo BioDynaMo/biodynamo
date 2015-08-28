@@ -1,0 +1,2 @@
+Contains scripts that ensure code quality
+code style checker (cpplint), source code formatter, git pre-commit scripts
