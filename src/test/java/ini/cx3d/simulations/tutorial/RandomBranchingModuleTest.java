@@ -45,7 +45,7 @@ public class RandomBranchingModuleTest extends BaseSimulationTest {
 	}
 
 	@Override
-	public void simulation() {
+	public void simulate() {
 		ECM.setRandomSeed(1L);
 		ECM ecm = ECM.getInstance();
 		for (int i = 0; i < 18; i++) {

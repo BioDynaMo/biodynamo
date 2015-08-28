@@ -41,7 +41,7 @@ public class SmallNetworkTest extends BaseSimulationTest {
 	}
 
 	@Override
-	public void simulation() throws Exception{
+	public void simulate() throws Exception{
 		ECM.setRandomSeed(1L);
 		ECM ecm = ECM.getInstance();
 		Substance L1 = new Substance("L1",Color.red);

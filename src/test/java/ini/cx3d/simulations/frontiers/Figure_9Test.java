@@ -52,7 +52,7 @@ public class Figure_9Test extends BaseSimulationTest {
 	}
 
 	@Override
-	public void simulation() throws Exception {
+	public void simulate() throws Exception {
 		ECM.setRandomSeed(1L);
 
 		Param.NEURITE_MAX_LENGTH = 20;

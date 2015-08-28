@@ -39,7 +39,7 @@ public class DividingModuleTest extends BaseSimulationTest {
 	}
 
 	@Override
-	public void simulation() {
+	public void simulate() {
 		ECM.setRandomSeed(2L);
 		Cell c = CellFactory.getCellInstance(new double[] {0.0,0.0,0.0});
 		c.addCellModule(new DividingModule());

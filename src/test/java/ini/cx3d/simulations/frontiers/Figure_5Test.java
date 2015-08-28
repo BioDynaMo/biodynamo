@@ -50,7 +50,7 @@ public class Figure_5Test extends BaseSimulationTest {
 	}
 
 	@Override
-	public void simulation() throws Exception {
+	public void simulate() throws Exception {
 		// 1) Prepare the environment :
 		// 		a reference to ECM, the extra-cellular-matrix
 		ECM ecm = ECM.getInstance();

@@ -43,7 +43,7 @@ public class SimpleSynapseTest extends BaseSimulationTest {
 	}
 
 	@Override
-	public void simulation() throws Exception {
+	public void simulate() throws Exception {
 		ECM.setRandomSeed(1L);
 		ECM ecm = ECM.getInstance();
 		int nbOfAdditionalNodes = 10;

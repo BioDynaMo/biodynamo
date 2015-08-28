@@ -38,7 +38,7 @@ public class SomaRandomWalkModuleTest extends BaseSimulationTest {
 	}
 
 	@Override
-	public void simulation() throws Exception {
+	public void simulate() throws Exception {
 		ECM.setRandomSeed(1L);
 		for(int i = 0; i<5; i++){
 			Cell c = CellFactory.getCellInstance(randomNoise(40, 3));

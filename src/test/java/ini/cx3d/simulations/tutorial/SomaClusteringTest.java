@@ -44,7 +44,7 @@ public class SomaClusteringTest extends BaseSimulationTest {
     }
 
     @Override
-    public void simulation() throws Exception {
+    public void simulate() throws Exception {
         ini.cx3d.utilities.SystemUtilities.tic();
         ECM ecm = ECM.getInstance();
         ECM.setRandomSeed(1L);

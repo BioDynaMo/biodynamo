@@ -49,7 +49,7 @@ public class IntracellularDiffusionTest extends BaseSimulationTest{
 	}
 
 	@Override
-	public void simulation() {
+	public void simulate() {
 
 		ECM.setRandomSeed(1L);
 		ECM ecm = ECM.getInstance();

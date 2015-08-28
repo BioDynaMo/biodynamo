@@ -46,7 +46,7 @@ public class NeuriteChemoAttractionTest extends BaseSimulationTest {
 	}
 
 	@Override
-	public void simulation() {
+	public void simulate() {
 		ECM ecm = ECM.getInstance();
 		ECM.setRandomSeed(1L);
 		Substance attractant = new Substance("A",Color.red);

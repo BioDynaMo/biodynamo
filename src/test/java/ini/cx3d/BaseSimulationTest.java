@@ -23,10 +23,10 @@ import java.util.logging.Logger;
 import static org.junit.Assert.*;
 
 /**
- * This is Base class to for a simulation test. Only the simulation code has to be written in the subclass
- * <code>BaseSimulationTest</code> takes care of persisting the simulation state and comparing it to the expected value
- * If the code for the simulation state changes or if new tests are added one wants to update the reference files for
- * all simulation. This can easily be done by setting the maven property <code>updateSimStateReferenceFiles</code>
+ * This is Base class to for a simulate test. Only the simulate code has to be written in the subclass
+ * <code>BaseSimulationTest</code> takes care of persisting the simulate state and comparing it to the expected value
+ * If the code for the simulate state changes or if new tests are added one wants to update the reference files for
+ * all simulate. This can easily be done by setting the maven property <code>updateSimStateReferenceFiles</code>
  * to <code>true</code>
  * pom.xml: project -> properties -> updateSimStateReferenceFiles
  * In this case no assertions are made
@@ -36,7 +36,7 @@ import static org.junit.Assert.*;
  * same load profile. Performance tests can be deactivated using the static variable <code>assertPerformance</code>
  *
  * Each SimulationTest has two associated files in the test resource folder
- *  Classname.json      contains the reference simulation state in json format
+ *  Classname.json      contains the reference simulate state in json format
  *  Classname.csv       contains the runtimes for each git commit in the follwing format: git_commit_ic;runtime_in_ms
  *
  */
@@ -127,13 +127,13 @@ public abstract class BaseSimulationTest {
         }
     }
 
-    public abstract void simulation() throws Exception;
+    public abstract void simulate() throws Exception;
 
     @Test
     public void runTest() {
         try {
             configure();
-            simulation();
+            simulate();
             assertSimulationState();
         } catch (Exception e) {
             e.printStackTrace();
