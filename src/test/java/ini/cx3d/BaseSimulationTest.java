@@ -153,7 +153,6 @@ public abstract class BaseSimulationTest {
 
     private void assertSimulationState() throws IOException {
         String jsonString = ECM.getInstance().simStateToJson(new StringBuilder()).toString();
-//        System.out.println(jsonString.length());
         JsonElement jsonTree = new JsonParser().parse(jsonString);
 
         String refFileName = getClass().getSimpleName() + ".json";
@@ -162,13 +161,11 @@ public abstract class BaseSimulationTest {
             String refFilePath = getClass().getResource("/" + refFileName).getFile();
             JsonReader reader = new JsonReader(new BufferedReader(new FileReader(refFilePath)));
             JsonElement reference = new JsonParser().parse(reader);
-//            System.out.println(reference.toString().length());
 
             //pretty print json
-//        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-//        System.out.println(gson.toJson(jsonTree));
-//        System.out.println(gson.toJson(reference));
-//            assertEquals(reference, jsonTree);
+//            Gson gson = new GsonBuilder().setPrettyPrinting().create();
+//            System.out.println(gson.toJson(jsonTree));
+//            System.out.println(gson.toJson(reference));
 
 //            assertEquals(reference.toString(),jsonString);
             assertTrue(jsonTree.equals(reference));

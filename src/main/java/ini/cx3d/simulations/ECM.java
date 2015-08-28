@@ -185,8 +185,8 @@ public class ECM implements SimStateSerializable {
 
 		SimStateSerializationUtil.keyValue(sb, "Xmin", Xmin);
 		SimStateSerializationUtil.keyValue(sb, "Xmax", Xmax);
-		SimStateSerializationUtil.keyValue(sb, "Xmin", Ymin);
-		SimStateSerializationUtil.keyValue(sb, "Xmax", Ymax);
+		SimStateSerializationUtil.keyValue(sb, "Ymin", Ymin);
+		SimStateSerializationUtil.keyValue(sb, "Ymax", Ymax);
 		SimStateSerializationUtil.keyValue(sb, "Zmin", Zmin);
 		SimStateSerializationUtil.keyValue(sb, "Zmax", Zmax);
 

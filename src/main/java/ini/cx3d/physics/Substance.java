@@ -418,5 +418,10 @@ public class Substance  implements XMLSerializable, Serializable, SimStateSerial
 	public Substance getCopy() {
 		// TODO Auto-generated method stub
 		return new Substance(this);
-	} 
+	}
+
+	@Override
+	public String toString() {
+		return "SubstanceID" + id;
+	}
 }
