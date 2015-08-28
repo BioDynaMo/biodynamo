@@ -84,4 +84,8 @@ public class TestUtil {
             return null;
         }
     }
+
+    public static boolean isRunningOnTravis() {
+        return System.getenv("TRAVIS") != null;
+    }
 }

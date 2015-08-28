@@ -28,6 +28,7 @@ import ini.cx3d.SimStateSerializable;
 import ini.cx3d.SimStateSerializationUtil;
 import ini.cx3d.cells.Cell;
 import ini.cx3d.graphics.ECM_GUI_Creator;
+import ini.cx3d.graphics.HeadlessViewMock;
 import ini.cx3d.graphics.View;
 import ini.cx3d.localBiology.NeuriteElement;
 import ini.cx3d.localBiology.SomaElement;
@@ -105,6 +106,7 @@ public class ECM implements SimStateSerializable {
 
 	// GUI ..................................................................................
 
+	public static boolean headlessGui = false;
 	public View view;
 	public ECM_GUI_Creator  myGuiCreator;
 	volatile private boolean simulationOnPause = true;
@@ -1000,34 +1002,43 @@ public class ECM implements SimStateSerializable {
 	// **************************************************************************
 	// GUI & pause
 	// **************************************************************************
-	public View createGUI(){
-		myGuiCreator= new ECM_GUI_Creator();
-		view = myGuiCreator.createPrincipalGUIWindow();
-		for (Substance s : allArtificialSubstances.values()) {
-			myGuiCreator.addNewChemical(s);
+	public View createGUI() {
+		if (!headlessGui) {
+
+			myGuiCreator = new ECM_GUI_Creator();
+			view = myGuiCreator.createPrincipalGUIWindow();
+			for (Substance s : allArtificialSubstances.values()) {
+				myGuiCreator.addNewChemical(s);
+			}
+			for (Substance s : this.intracellularSubstancesLibrary.values()) {
+				myGuiCreator.addNewChemical(s);
+			}
+			for (Substance s : this.substancesLibrary.values()) {
+				myGuiCreator.addNewChemical(s);
+			}
+			return view;
+		} else {
+			return new HeadlessViewMock();
 		}
-		for (Substance s : this.intracellularSubstancesLibrary.values()) {
-			myGuiCreator.addNewChemical(s);
-		}
-		for (Substance s : this.substancesLibrary.values()) {
-			myGuiCreator.addNewChemical(s);
-		}
-		return view;
 	}
 
-	public View createGUI(int x, int y, int width, int height){
-		myGuiCreator= new ECM_GUI_Creator();
-		view = myGuiCreator.createPrincipalGUIWindow(x,y,width,height);
-		for (Substance s : allArtificialSubstances.values()) {
-			myGuiCreator.addNewChemical(s);
+	public View createGUI(int x, int y, int width, int height) {
+		if (!headlessGui) {
+			myGuiCreator = new ECM_GUI_Creator();
+			view = myGuiCreator.createPrincipalGUIWindow(x, y, width, height);
+			for (Substance s : allArtificialSubstances.values()) {
+				myGuiCreator.addNewChemical(s);
+			}
+			for (Substance s : this.intracellularSubstancesLibrary.values()) {
+				myGuiCreator.addNewChemical(s);
+			}
+			for (Substance s : this.substancesLibrary.values()) {
+				myGuiCreator.addNewChemical(s);
+			}
+			return view;
+		} else {
+			return new HeadlessViewMock();
 		}
-		for (Substance s : this.intracellularSubstancesLibrary.values()) {
-			myGuiCreator.addNewChemical(s);
-		}
-		for (Substance s : this.substancesLibrary.values()) {
-			myGuiCreator.addNewChemical(s);
-		}
-		return view;
 	}
 
 	public static void pause(int time){

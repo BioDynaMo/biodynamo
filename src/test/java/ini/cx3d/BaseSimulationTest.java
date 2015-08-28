@@ -4,7 +4,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonReader;
 import ini.cx3d.simulations.ECM;
-import ini.cx3d.simulations.Scheduler;
 import org.junit.AssumptionViolatedException;
 import org.junit.Rule;
 import org.junit.Test;
@@ -54,7 +53,7 @@ public abstract class BaseSimulationTest {
      * do not run performance tests on travis-ci - simple time measuring will not work
      * cannot ensure that tests are run on same machine under same load
      */
-    private static boolean assertPerformance = System.getenv("TRAVIS") == null;
+    private static boolean assertPerformance = !TestUtil.isRunningOnTravis();
 
     private String execTimesFileName;
     private LinkedList<Map.Entry<String, Double>> executionTimes;
@@ -133,8 +132,7 @@ public abstract class BaseSimulationTest {
     @Test
     public void runTest() {
         try {
-            ECM.getInstance().canRun.release();
-            ECM.setRandomSeed(1L);
+            configure();
             simulation();
             assertSimulationState();
         } catch (Exception e) {
@@ -144,6 +142,13 @@ public abstract class BaseSimulationTest {
         if (assertPerformance) {
             assertTrue(stopwatch.runtime(TimeUnit.MILLISECONDS) < maxAllowedRuntime);
         }
+    }
+
+    private void configure() {
+        ECM.headlessGui = TestUtil.isRunningOnTravis();
+        // run simulation (don't start in pause mode)
+        ECM.getInstance().canRun.release();
+        ECM.setRandomSeed(1L);
     }
 
     private void assertSimulationState() throws IOException {
