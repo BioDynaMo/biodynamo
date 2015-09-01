@@ -24,7 +24,7 @@ package ini.cx3d.synapses;
 import static ini.cx3d.SimStateSerializationUtil.keyValue;
 import static ini.cx3d.SimStateSerializationUtil.removeLastChar;
 import static ini.cx3d.utilities.Matrix.distance;
-import ini.cx3d.*;
+
 import ini.cx3d.localBiology.*;
 import ini.cx3d.physics.PhysicalBond;
 import ini.cx3d.physics.PhysicalObject;
@@ -34,7 +34,7 @@ public class PhysicalSpine extends Excrescence{
 	BiologicalSpine biologicalSpine;
 
 	@Override
-	public StringBuilder simStateToJson(StringBuilder sb) {
+	public ini.cx3d.swig.StringBuilder simStateToJson(ini.cx3d.swig.StringBuilder sb) {
 		sb.append("{");
 
 		keyValue(sb, "biologicalSpine", biologicalSpine);

@@ -35,10 +35,10 @@ import ini.cx3d.localBiology.CellElement;
 import ini.cx3d.localBiology.NeuriteElement;
 import ini.cx3d.localBiology.SomaElement;
 import ini.cx3d.physics.IntracellularSubstance;
-import ini.cx3d.physics.PhysicalCylinder;
 import ini.cx3d.physics.PhysicalObject;
 import ini.cx3d.simulations.ECM;
 import ini.cx3d.simulations.Scheduler;
+import ini.cx3d.swig.StringBuilder;
 import ini.cx3d.utilities.Matrix;
 
 
@@ -152,7 +152,7 @@ public class IntracellularDiffusionTest extends BaseSimulationTest{
 		}
 
 		@Override
-		public StringBuilder simStateToJson(StringBuilder sb) {
+		public ini.cx3d.swig.StringBuilder simStateToJson(ini.cx3d.swig.StringBuilder sb) {
 			super.simStateToJson(sb);
 
 			keyValue(sb, "speedFactor", speedFactor);

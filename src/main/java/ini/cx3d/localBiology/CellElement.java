@@ -32,7 +32,6 @@ import java.util.Vector;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static ini.cx3d.SimStateSerializationUtil.keyValue;
-import static ini.cx3d.SimStateSerializationUtil.mapOfObjects;
 import static ini.cx3d.SimStateSerializationUtil.unorderedCollection;
 
 /**
@@ -56,7 +55,7 @@ public abstract class CellElement implements SimStateSerializable {
 	/* List of all the SubElements : small objects performing some biological operations.*/
 	protected Vector<LocalBiologyModule> localBiologyModulesList = new Vector<LocalBiologyModule>();
 
-	public StringBuilder simStateToJson(StringBuilder sb) {
+	public ini.cx3d.swig.StringBuilder simStateToJson(ini.cx3d.swig.StringBuilder sb) {
 		sb.append("{");
 
 		keyValue(sb, "ID", ID);

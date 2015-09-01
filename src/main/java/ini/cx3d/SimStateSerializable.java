@@ -1,5 +1,8 @@
 package ini.cx3d;
 
+//import ini.cx3d.swig.StringBuilder;
+
+
 /**
  * Classes that implement that interface serialize their simulation state to json with as little implementation details
  * as possible (e.g. state of locks or which collection implementation has been used)
@@ -11,6 +14,6 @@ package ini.cx3d;
  *
  */
 public interface SimStateSerializable {
-    StringBuilder simStateToJson(StringBuilder sb);
+    ini.cx3d.swig.StringBuilder simStateToJson(ini.cx3d.swig.StringBuilder sb);
 }
 

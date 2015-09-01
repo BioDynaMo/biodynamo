@@ -21,8 +21,6 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 
 package ini.cx3d.simulations.tutorial;
 
-import java.awt.Color;
-
 import ini.cx3d.BaseSimulationTest;
 import ini.cx3d.Param;
 import ini.cx3d.cells.Cell;
@@ -135,7 +133,7 @@ class RandomBranchingModule implements LocalBiologyModule {
 	}
 
 	@Override
-	public StringBuilder simStateToJson(StringBuilder sb) {
+	public ini.cx3d.swig.StringBuilder simStateToJson(ini.cx3d.swig.StringBuilder sb) {
 		sb.append("{");
 
 //		keyValue(sb, "neuriteElement", neuriteElement);

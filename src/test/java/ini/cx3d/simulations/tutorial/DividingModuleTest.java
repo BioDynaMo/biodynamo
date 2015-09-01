@@ -30,7 +30,6 @@ import ini.cx3d.simulations.ECM;
 import ini.cx3d.simulations.Scheduler;
 
 import static ini.cx3d.SimStateSerializationUtil.keyValue;
-import static ini.cx3d.SimStateSerializationUtil.removeLastChar;
 
 public class DividingModuleTest extends BaseSimulationTest {
 
@@ -86,7 +85,7 @@ class DividingModule implements CellModule {
 	}
 
 	@Override
-	public StringBuilder simStateToJson(StringBuilder sb) {
+	public ini.cx3d.swig.StringBuilder simStateToJson(ini.cx3d.swig.StringBuilder sb) {
 		sb.append("{}");
 		return sb;
 	}

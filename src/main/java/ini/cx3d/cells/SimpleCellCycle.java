@@ -25,7 +25,6 @@ import ini.cx3d.physics.PhysicalSphere;
 
 import static ini.cx3d.SimStateSerializationUtil.keyValue;
 import static ini.cx3d.SimStateSerializationUtil.removeLastChar;
-import static ini.cx3d.SimStateSerializationUtil.unorderedCollection;
 
 public class SimpleCellCycle implements CellModule{
 
@@ -40,7 +39,7 @@ public class SimpleCellCycle implements CellModule{
 	private double minimumDiameter = 20.0;
 
 	@Override
-	public StringBuilder simStateToJson(StringBuilder sb) {
+	public ini.cx3d.swig.StringBuilder simStateToJson(ini.cx3d.swig.StringBuilder sb) {
 		sb.append("{");
 
 		keyValue(sb, "cell", cell);

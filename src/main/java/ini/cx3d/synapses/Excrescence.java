@@ -27,7 +27,7 @@ import static ini.cx3d.utilities.Matrix.*;
 import ini.cx3d.SimStateSerializable;
 import ini.cx3d.localBiology.NeuriteElement;
 import ini.cx3d.physics.PhysicalObject;
-import ini.cx3d.physics.PhysicalSphere;
+
 /**
  * General class for dendritic spines and axonal boutons
  * This class doesn't derive from PhysicalObject. It has thus no SpaceNode.
@@ -51,7 +51,7 @@ public abstract class Excrescence implements SimStateSerializable{
 	public static final int SHAFT = 3;
 
 	@Override
-	public StringBuilder simStateToJson(StringBuilder sb) {
+	public ini.cx3d.swig.StringBuilder simStateToJson(ini.cx3d.swig.StringBuilder sb) {
 		sb.append("{");
 
 		//po is circular reference

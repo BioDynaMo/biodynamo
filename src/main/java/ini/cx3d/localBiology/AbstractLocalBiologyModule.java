@@ -23,7 +23,6 @@ package ini.cx3d.localBiology;
 
 
 import static ini.cx3d.SimStateSerializationUtil.keyValue;
-import static ini.cx3d.SimStateSerializationUtil.removeLastChar;
 
 /**
  * Abstract class implementing the <code>LocalBiologyModule</code> interface. This class can be extended
@@ -36,7 +35,7 @@ public abstract class AbstractLocalBiologyModule implements LocalBiologyModule{
 	protected CellElement cellElement; // "protected" so subclasses can access it
 
 	@Override
-	public StringBuilder simStateToJson(StringBuilder sb) {
+	public ini.cx3d.swig.StringBuilder simStateToJson(ini.cx3d.swig.StringBuilder sb) {
 		sb.append("{");
 
 		//cellElement is circular reference

@@ -79,7 +79,7 @@ public class PhysicalSphere extends PhysicalObject{
 	protected double[] tractorForce = {0,0,0};
 
 	@Override
-	public StringBuilder simStateToJson(StringBuilder sb) {
+	public ini.cx3d.swig.StringBuilder simStateToJson(ini.cx3d.swig.StringBuilder sb) {
 		super.simStateToJson(sb);
 
 		// somaElement is circular reference;

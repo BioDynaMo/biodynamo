@@ -22,6 +22,8 @@ import java.util.logging.Logger;
 
 import static org.junit.Assert.*;
 
+import ini.cx3d.swig.StringBuilder;
+
 /**
  * This is Base class to for a simulate test. Only the simulate code has to be written in the subclass
  * <code>BaseSimulationTest</code> takes care of persisting the simulate state and comparing it to the expected value
@@ -152,7 +154,7 @@ public abstract class BaseSimulationTest {
     }
 
     private void assertSimulationState() throws IOException {
-        String jsonString = ECM.getInstance().simStateToJson(new StringBuilder()).toString();
+        String jsonString = ECM.getInstance().simStateToJson(new StringBuilder()).str();
         JsonElement jsonTree = new JsonParser().parse(jsonString);
 
         String refFileName = getClass().getSimpleName() + ".json";

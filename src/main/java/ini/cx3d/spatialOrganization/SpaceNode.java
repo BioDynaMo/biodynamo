@@ -118,7 +118,7 @@ public class SpaceNode<T> implements SpatialOrganizationNode<T> {
 	private double volume = 0;
 
 	@Override
-	public StringBuilder simStateToJson(StringBuilder sb) {
+	public ini.cx3d.swig.StringBuilder simStateToJson(ini.cx3d.swig.StringBuilder sb) {
 		sb.append("{");
 
 		keyValue(sb, "id", id);
@@ -372,7 +372,7 @@ public class SpaceNode<T> implements SpatialOrganizationNode<T> {
 		LinkedList<T> ret = new LinkedList<T>();
 		for (SpatialOrganizationEdge<T> e : this.adjacentEdges) {
 			SpatialOrganizationNode<T> opp = e.getOpposite(this);
-			if (opp != null) ret.add(opp.getUserObject());
+				if (opp != null) ret.add(opp.getUserObject());
 		}
 		return ret;
 	}

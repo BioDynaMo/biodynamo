@@ -23,7 +23,6 @@ package ini.cx3d.simulations.frontiers;
 
 import static ini.cx3d.utilities.Matrix.*;
 import ini.cx3d.physics.*;
-import ini.cx3d.simulations.ECM;
 
 /**
  * Slightly modified from the default force, this class serves a InterObjectForce
@@ -399,7 +398,7 @@ public class X_Adhesive_Force implements InterObjectForce{
 
 
 	@Override
-	public StringBuilder simStateToJson(StringBuilder sb) {
+	public ini.cx3d.swig.StringBuilder simStateToJson(ini.cx3d.swig.StringBuilder sb) {
 		sb.append("{}");
 		return sb;
 	}

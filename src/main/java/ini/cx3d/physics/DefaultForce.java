@@ -318,7 +318,7 @@ public class DefaultForce implements InterObjectForce{
 
 
 	@Override
-	public StringBuilder simStateToJson(StringBuilder sb) {
+	public ini.cx3d.swig.StringBuilder simStateToJson(ini.cx3d.swig.StringBuilder sb) {
 		sb.append("{}");
 		return sb;
 	}

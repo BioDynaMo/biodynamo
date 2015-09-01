@@ -26,8 +26,6 @@ import static ini.cx3d.SimStateSerializationUtil.removeLastChar;
 import static ini.cx3d.utilities.Matrix.normalize;
 import static ini.cx3d.utilities.Matrix.randomNoise;
 
-import java.awt.Rectangle;
-
 import ini.cx3d.BaseSimulationTest;
 import ini.cx3d.Param;
 import ini.cx3d.cells.Cell;
@@ -112,7 +110,7 @@ class SomaClustering extends AbstractLocalBiologyModule {
     }
 
     @Override
-    public StringBuilder simStateToJson(StringBuilder sb) {
+    public ini.cx3d.swig.StringBuilder simStateToJson(ini.cx3d.swig.StringBuilder sb) {
         super.simStateToJson(sb);
 
         keyValue(sb, "substanceID", substanceID);

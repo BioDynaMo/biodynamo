@@ -63,7 +63,7 @@ public class NeuriteElement extends CellElement {
 	private boolean isAnAxon = false;
 
 	@Override
-	public StringBuilder simStateToJson(StringBuilder sb) {
+	public ini.cx3d.swig.StringBuilder simStateToJson(ini.cx3d.swig.StringBuilder sb) {
 		super.simStateToJson(sb);
 
 		keyValue(sb, "physicalCylinder", physicalCylinder);

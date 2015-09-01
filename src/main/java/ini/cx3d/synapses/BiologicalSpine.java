@@ -22,16 +22,14 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 package ini.cx3d.synapses;
 
 import ini.cx3d.SimStateSerializable;
-import ini.cx3d.physics.*;
 
 import static ini.cx3d.SimStateSerializationUtil.keyValue;
-import static ini.cx3d.SimStateSerializationUtil.removeLastChar;
 
 public class BiologicalSpine implements SimStateSerializable{
 	PhysicalSpine physicalSpine;
 
 	@Override
-	public StringBuilder simStateToJson(StringBuilder sb) {
+	public ini.cx3d.swig.StringBuilder simStateToJson(ini.cx3d.swig.StringBuilder sb) {
 		sb.append("{");
 
 		//physical spine is circular reference

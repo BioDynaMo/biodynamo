@@ -3,6 +3,7 @@ package ini.cx3d;
 import java.awt.*;
 import java.util.Collection;
 import java.util.Map;
+import ini.cx3d.swig.StringBuilder;
 
 /**
  * This class contains helper methods to serialize the simulation state to json
@@ -161,7 +162,7 @@ public class SimStateSerializationUtil{
     }
 
     public static StringBuilder removeLastChar(StringBuilder sb) {
-        sb.setLength(Math.max(sb.length() - 1, 0));
+        sb.overwriteLastCharOnNextAppend();
         return sb;
     }
 

@@ -57,3 +57,16 @@ hs_err_pid*
 *.exe
 *.out
 *.app
+
+#------------------- CMake --------------------
+CMakeCache.txt
+CMakeFiles
+CMakeScripts
+Makefile
+cmake_install.cmake
+install_manifest.txt
+
+#------------------- SWIG generated files -----
+src/main/cpp/swig/*wrap.cxx
+src/main/cpp/swig/*wrap.h
+src/main/java/ini/cx3d/swig/*

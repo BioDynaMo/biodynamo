@@ -110,7 +110,7 @@ public abstract class PhysicalObject extends PhysicalNode {
 	protected Vector<Excrescence> excrescences = new Vector<Excrescence>();
 
 	@Override
-	public StringBuilder simStateToJson(StringBuilder sb) {
+	public ini.cx3d.swig.StringBuilder simStateToJson(ini.cx3d.swig.StringBuilder sb) {
 		super.simStateToJson(sb);
 		removeLastChar(sb);
 		sb.append(",");

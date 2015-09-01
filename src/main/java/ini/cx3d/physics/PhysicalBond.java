@@ -72,7 +72,7 @@ public class PhysicalBond implements SimStateSerializable {
 	private boolean hasEffectOnB = true;
 
 	@Override
-	public StringBuilder simStateToJson(StringBuilder sb) {
+	public ini.cx3d.swig.StringBuilder simStateToJson(ini.cx3d.swig.StringBuilder sb) {
 		sb.append("{");
 
 		//a, b circular reference

@@ -24,21 +24,15 @@ package ini.cx3d.localBiology;
 import static ini.cx3d.SimStateSerializationUtil.keyValue;
 import static ini.cx3d.SimStateSerializationUtil.removeLastChar;
 import static ini.cx3d.utilities.Matrix.add;
-import static ini.cx3d.utilities.Matrix.dot;
-import static ini.cx3d.utilities.Matrix.norm;
 import static ini.cx3d.utilities.Matrix.scalarMult;
 import static ini.cx3d.utilities.Matrix.subtract;
 import ini.cx3d.Param;
 import ini.cx3d.physics.PhysicalCylinder;
-import ini.cx3d.physics.PhysicalNode;
 import ini.cx3d.physics.PhysicalObject;
 import ini.cx3d.physics.PhysicalSphere;
 import ini.cx3d.simulations.ECM;
 import ini.cx3d.synapses.BiologicalSomaticSpine;
-import ini.cx3d.synapses.BiologicalSpine;
-import ini.cx3d.synapses.Excrescence;
 import ini.cx3d.synapses.PhysicalSomaticSpine;
-import ini.cx3d.synapses.PhysicalSpine;
 
 import java.util.Iterator;
 import java.util.Vector;
@@ -56,7 +50,7 @@ public class SomaElement extends CellElement{
 	private PhysicalSphere physical = null ;
 
 	@Override
-	public StringBuilder simStateToJson(StringBuilder sb) {
+	public ini.cx3d.swig.StringBuilder simStateToJson(ini.cx3d.swig.StringBuilder sb) {
 		super.simStateToJson(sb);
 
 		keyValue(sb, "physical", physical);

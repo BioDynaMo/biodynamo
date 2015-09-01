@@ -24,11 +24,8 @@ package ini.cx3d.physics;
 
 
 import static ini.cx3d.SimStateSerializationUtil.keyValue;
-import static ini.cx3d.SimStateSerializationUtil.mapOfDoubleArray;
 import static ini.cx3d.SimStateSerializationUtil.removeLastChar;
 import static ini.cx3d.utilities.Matrix.*;
-
-import javax.swing.text.html.InlineView;
 
 import ini.cx3d.Param;
 import ini.cx3d.localBiology.CellElement;
@@ -91,7 +88,7 @@ public class PhysicalCylinder extends PhysicalObject{
 	private double oldActualLength=0;
 
 
-	public StringBuilder simStateToJson(StringBuilder sb) {
+	public ini.cx3d.swig.StringBuilder simStateToJson(ini.cx3d.swig.StringBuilder sb) {
 		super.simStateToJson(sb);
 
 		//motherNode, neuriteElementm daughterLeft, daughterRight are circular references

@@ -24,21 +24,18 @@ package ini.cx3d.synapses;
 import static ini.cx3d.SimStateSerializationUtil.keyValue;
 import static ini.cx3d.SimStateSerializationUtil.removeLastChar;
 import static ini.cx3d.utilities.Matrix.*;
-import java.util.*;
 
-import ini.cx3d.Param;
 import ini.cx3d.localBiology.*;
 import ini.cx3d.physics.PhysicalBond;
 import ini.cx3d.physics.PhysicalCylinder;
 import ini.cx3d.physics.PhysicalObject;
-import ini.cx3d.physics.PhysicalSphere;
 
 public class PhysicalBouton extends Excrescence {
 
 	BiologicalBouton biologicalBouton;
 
 	@Override
-	public StringBuilder simStateToJson(StringBuilder sb) {
+	public ini.cx3d.swig.StringBuilder simStateToJson(ini.cx3d.swig.StringBuilder sb) {
 		super.simStateToJson(sb);
 
 		keyValue(sb, "biologicalBouton", biologicalBouton);

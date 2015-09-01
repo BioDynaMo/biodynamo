@@ -24,13 +24,12 @@ package ini.cx3d.synapses;
 import ini.cx3d.SimStateSerializable;
 
 import static ini.cx3d.SimStateSerializationUtil.keyValue;
-import static ini.cx3d.SimStateSerializationUtil.removeLastChar;
 
 public class BiologicalSomaticSpine implements SimStateSerializable{
 	PhysicalSomaticSpine physicalSomaticSpine;
 
 	@Override
-	public StringBuilder simStateToJson(StringBuilder sb) {
+	public ini.cx3d.swig.StringBuilder simStateToJson(ini.cx3d.swig.StringBuilder sb) {
 		sb.append("{");
 
 //		keyValue(sb, "physicalSomaticSpine", physicalSomaticSpine);
