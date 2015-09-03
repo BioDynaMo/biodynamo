@@ -79,7 +79,7 @@ public class Cell implements SimStateSerializable {
 	 * Should not be confused with neuroMLType. */
 	private String type = "";
 
-	public ini.cx3d.swig.StringBuilder simStateToJson(ini.cx3d.swig.StringBuilder sb) {
+	public ini.cx3d.swig.NativeStringBuilder simStateToJson(ini.cx3d.swig.NativeStringBuilder sb) {
 		sb.append("{");
 
 		keyValue(sb, "id", ID);

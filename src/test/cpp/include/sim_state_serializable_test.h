@@ -19,31 +19,36 @@
  along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-%module(directors="1") cx3d
+#ifndef SIM_STATE_SERIALIZABLE_TEST_H_
+#define SIM_STATE_SERIALIZABLE_TEST_H_
 
-%{
-#include "string_builder.h"
 #include "sim_state_serializable.h"
-using namespace cx3d;
-%}
+#include "string_builder.h"
 
-// transparently load native library - convenient for user
-%include "load_library.i"
-JAVA_LOAD_NATIVE_LIBRARY(cx3d);
+namespace cx3d {
 
-// typemap definitions, code modifications / additions
-%include "std_string.i"
-%include "generate_java_interface.i"
+using cx3d::SimStateSerializable;
+using cx3d::StringBuilder;
 
-%rename(NativeStringBuilder) StringBuilder;
+class SimulationObject : public SimStateSerializable {
+ public:
+   virtual StringBuilder& simStateToJson(StringBuilder& sb) override {
+     sb.append("Hello World from CPP defined SimulationObject!");
+   }
+};
 
-GENERATE_JAVA_INTERFACE(cx3d, SimStateSerializable, cx3d::,
-  ini.cx3d.SimStateSerializable,
-  public NativeStringBuilder simStateToJson(NativeStringBuilder sb){
-    return delegate.simStateToJson(sb);
-  });
+class SimStateSerializerConsumer{
+ public:
+    SimStateSerializerConsumer() : string_builder_() {}
+    virtual ~SimStateSerializerConsumer() {}
 
+    StringBuilder& persistSimState(SimStateSerializable& serializable){
+      return serializable.simStateToJson(string_builder_);
+    }
+ private:
+   StringBuilder string_builder_;
+};
 
-// add the original header files here
-%include "string_builder.h"
-%include "sim_state_serializable.h"
+}  // namespace cx3d
+
+#endif  // SIM_STATE_SERIALIZABLE_TEST_H_

@@ -36,7 +36,10 @@ using std::stringstream;
  */
 class StringBuilder {
  public:
-  StringBuilder(){}
+  StringBuilder() : string_stream_() {}
+  StringBuilder(const StringBuilder &src) : string_stream_() {
+    string_stream_ << src.str();
+  }
   virtual ~StringBuilder() {}
 
   virtual StringBuilder& append(const string &str){
@@ -50,7 +53,7 @@ class StringBuilder {
     string_stream_.seekp(-1,string_stream_.cur);
   }
 
-  virtual string str(){
+  virtual string str() const{
     return string_stream_.str();
   }
 

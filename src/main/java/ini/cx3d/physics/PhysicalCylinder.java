@@ -88,7 +88,7 @@ public class PhysicalCylinder extends PhysicalObject{
 	private double oldActualLength=0;
 
 
-	public ini.cx3d.swig.StringBuilder simStateToJson(ini.cx3d.swig.StringBuilder sb) {
+	public ini.cx3d.swig.NativeStringBuilder simStateToJson(ini.cx3d.swig.NativeStringBuilder sb) {
 		super.simStateToJson(sb);
 
 		//motherNode, neuriteElementm daughterLeft, daughterRight are circular references

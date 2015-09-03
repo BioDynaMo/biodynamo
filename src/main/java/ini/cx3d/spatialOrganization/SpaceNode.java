@@ -118,7 +118,7 @@ public class SpaceNode<T> implements SpatialOrganizationNode<T> {
 	private double volume = 0;
 
 	@Override
-	public ini.cx3d.swig.StringBuilder simStateToJson(ini.cx3d.swig.StringBuilder sb) {
+	public ini.cx3d.swig.NativeStringBuilder simStateToJson(ini.cx3d.swig.NativeStringBuilder sb) {
 		sb.append("{");
 
 		keyValue(sb, "id", id);

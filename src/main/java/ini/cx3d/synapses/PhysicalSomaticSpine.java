@@ -33,7 +33,7 @@ public class PhysicalSomaticSpine extends Excrescence {
 	BiologicalSomaticSpine biologicalSomaticSpine;
 
 	@Override
-	public ini.cx3d.swig.StringBuilder simStateToJson(ini.cx3d.swig.StringBuilder sb) {
+	public ini.cx3d.swig.NativeStringBuilder simStateToJson(ini.cx3d.swig.NativeStringBuilder sb) {
 		sb.append("{");
 
 		keyValue(sb, "biologicalSomaticSpine", biologicalSomaticSpine);

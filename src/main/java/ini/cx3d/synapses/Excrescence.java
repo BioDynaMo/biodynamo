@@ -51,7 +51,7 @@ public abstract class Excrescence implements SimStateSerializable{
 	public static final int SHAFT = 3;
 
 	@Override
-	public ini.cx3d.swig.StringBuilder simStateToJson(ini.cx3d.swig.StringBuilder sb) {
+	public ini.cx3d.swig.NativeStringBuilder simStateToJson(ini.cx3d.swig.NativeStringBuilder sb) {
 		sb.append("{");
 
 		//po is circular reference

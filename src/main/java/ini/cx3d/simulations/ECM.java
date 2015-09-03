@@ -164,7 +164,7 @@ public class ECM implements SimStateSerializable {
 	public Hashtable<String, Substance> allArtificialSubstances = new Hashtable<String, Substance>();
 
 
-	public ini.cx3d.swig.StringBuilder simStateToJson(ini.cx3d.swig.StringBuilder sb) {
+	public ini.cx3d.swig.NativeStringBuilder simStateToJson(ini.cx3d.swig.NativeStringBuilder sb) {
 		sb.append("{");
 
 		SimStateSerializationUtil.unorderedCollection(sb, "physicalNodeList", physicalNodeList);

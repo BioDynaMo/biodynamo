@@ -40,6 +40,15 @@
                             </includes>
                             <followSymlinks>false</followSymlinks>
                         </fileset>
+                        <fileset>
+                            <directory>${testResourcePath}</directory>
+                            <includes>
+                                <include>**/*.so</include>
+                                <include>**/*.jnilib</include>
+                                <include>**/*.dll</include>
+                            </includes>
+                            <followSymlinks>false</followSymlinks>
+                        </fileset>
                         <!-- remove generated java proxy classes -->
                         <fileset>
                             <directory>${project.basedir}/src/main/java/ini/cx3d/swig/</directory>
@@ -48,9 +57,24 @@
                             </includes>
                             <followSymlinks>false</followSymlinks>
                         </fileset>
+                        <fileset>
+                            <directory>${project.basedir}/src/test/java/ini/cx3d/swig/</directory>
+                            <includes>
+                                <include>**/*</include>
+                            </includes>
+                            <followSymlinks>false</followSymlinks>
+                        </fileset>
                         <!-- remove generated cxx wrappers -->
                         <fileset>
                             <directory>${project.basedir}/src/main/cpp/swig/</directory>
+                            <includes>
+                                <include>*_wrap.cxx</include>
+                                <include>*_wrap.h</include>
+                            </includes>
+                            <followSymlinks>false</followSymlinks>
+                        </fileset>
+                        <fileset>
+                            <directory>${project.basedir}/src/test/cpp/swig/</directory>
                             <includes>
                                 <include>*_wrap.cxx</include>
                                 <include>*_wrap.h</include>
@@ -110,7 +134,7 @@
                 <version>2.16</version>
                 <configuration>
                     <!-- set java.library.path to be able to load native libraries -->
-                    <argLine>-Djava.library.path=${basedir}/src/main/resources/</argLine>
+                    <argLine>-Djava.library.path=${basedir}/src/main/resources/:${basedir}/src/test/resources/</argLine>
                     <!-- execute tests sequentially and in separate jvm -->
                     <forkCount>1</forkCount>
                     <reuseForks>false</reuseForks>

@@ -194,7 +194,7 @@ public class SpaceNodeFacade<T> implements ini.cx3d.spatialOrganization.SpatialO
 
 
 	@Override
-	public ini.cx3d.swig.StringBuilder simStateToJson(ini.cx3d.swig.StringBuilder sb) {
+	public ini.cx3d.swig.NativeStringBuilder simStateToJson(ini.cx3d.swig.NativeStringBuilder sb) {
 		//FIXME implement
 		sb.append("");
 		return sb;

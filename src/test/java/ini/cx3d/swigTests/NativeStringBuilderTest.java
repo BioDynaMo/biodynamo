@@ -19,22 +19,22 @@
  along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/**
- * This macro can be used to transparently load a native library.
- * The user of this library doesn't have to do anything before using the
- * native implementation
- *
- * @param LIBNAME library name as defined in %module LIBNAME
- */
-%define JAVA_LOAD_NATIVE_LIBRARY(LIBNAME)
-%pragma(java) jniclasscode=%{
-  static {
-    try {
-        System.loadLibrary("LIBNAME");
-    } catch (UnsatisfiedLinkError e) {
-      System.err.println("Native code library failed to load. \n" + e);
-      System.exit(1);
+package ini.cx3d.swigTests;
+
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+
+public class NativeStringBuilderTest {
+
+    @Test
+    public void testStringBuilder() {
+        ini.cx3d.swig.NativeStringBuilder sb = new ini.cx3d.swig.NativeStringBuilder();
+        sb.append("Hello ").append("World?");
+        assertEquals("Hello World?", sb.str());
+        sb.overwriteLastCharOnNextAppend();
+        assertEquals("Hello World?", sb.str());
+        sb.append("!");
+        assertEquals("Hello World!", sb.str());
     }
-  }
-%}
-%enddef
+}

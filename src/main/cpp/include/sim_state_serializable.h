@@ -19,22 +19,25 @@
  along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifndef SIM_STATE_SERIALIZABLE_H_
+#define SIM_STATE_SERIALIZABLE_H_
+
+#include "string_builder.h"
+
+namespace cx3d {
+
+using cx3d::StringBuilder;
+
 /**
- * This macro can be used to transparently load a native library.
- * The user of this library doesn't have to do anything before using the
- * native implementation
- *
- * @param LIBNAME library name as defined in %module LIBNAME
+ * Classes that implement that interface serialize their simulation state to
+ * json with as little implementation details as possible (e.g. state of locks
+ * or which collection implementation has been used)
  */
-%define JAVA_LOAD_NATIVE_LIBRARY(LIBNAME)
-%pragma(java) jniclasscode=%{
-  static {
-    try {
-        System.loadLibrary("LIBNAME");
-    } catch (UnsatisfiedLinkError e) {
-      System.err.println("Native code library failed to load. \n" + e);
-      System.exit(1);
-    }
-  }
-%}
-%enddef
+class SimStateSerializable {
+ public:
+   virtual StringBuilder& simStateToJson(StringBuilder& sb) = 0;
+};
+
+}  // namespace cx3d
+
+#endif  // SIM_STATE_SERIALIZABLE_H_

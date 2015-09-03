@@ -43,6 +43,7 @@ hs_err_pid*
 *.so
 *.dylib
 *.dll
+*.jnilib
 
 # Fortran module files
 *.mod
@@ -70,3 +71,7 @@ install_manifest.txt
 src/main/cpp/swig/*wrap.cxx
 src/main/cpp/swig/*wrap.h
 src/main/java/ini/cx3d/swig/*
+
+src/test/cpp/swig/*wrap.cxx
+src/test/cpp/swig/*wrap.h
+src/test/java/ini/cx3d/swig/*

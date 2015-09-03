@@ -19,22 +19,19 @@
  along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/**
- * This macro can be used to transparently load a native library.
- * The user of this library doesn't have to do anything before using the
- * native implementation
- *
- * @param LIBNAME library name as defined in %module LIBNAME
- */
-%define JAVA_LOAD_NATIVE_LIBRARY(LIBNAME)
-%pragma(java) jniclasscode=%{
-  static {
-    try {
-        System.loadLibrary("LIBNAME");
-    } catch (UnsatisfiedLinkError e) {
-      System.err.println("Native code library failed to load. \n" + e);
-      System.exit(1);
-    }
-  }
+%module cx3d_test
+
+%{
+#include "sim_state_serializable_test.h"
+using namespace cx3d;
 %}
-%enddef
+
+// import depending modules
+%import "cx3d.i"
+
+// transpartently load native library - convenient for user
+%include "load_library.i"
+JAVA_LOAD_NATIVE_LIBRARY(cx3d_test);
+
+// add the original header files here
+%include "sim_state_serializable_test.h"

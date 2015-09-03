@@ -55,7 +55,7 @@ public abstract class CellElement implements SimStateSerializable {
 	/* List of all the SubElements : small objects performing some biological operations.*/
 	protected Vector<LocalBiologyModule> localBiologyModulesList = new Vector<LocalBiologyModule>();
 
-	public ini.cx3d.swig.StringBuilder simStateToJson(ini.cx3d.swig.StringBuilder sb) {
+	public ini.cx3d.swig.NativeStringBuilder simStateToJson(ini.cx3d.swig.NativeStringBuilder sb) {
 		sb.append("{");
 
 		keyValue(sb, "ID", ID);

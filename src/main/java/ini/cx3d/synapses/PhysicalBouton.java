@@ -35,7 +35,7 @@ public class PhysicalBouton extends Excrescence {
 	BiologicalBouton biologicalBouton;
 
 	@Override
-	public ini.cx3d.swig.StringBuilder simStateToJson(ini.cx3d.swig.StringBuilder sb) {
+	public ini.cx3d.swig.NativeStringBuilder simStateToJson(ini.cx3d.swig.NativeStringBuilder sb) {
 		super.simStateToJson(sb);
 
 		keyValue(sb, "biologicalBouton", biologicalBouton);

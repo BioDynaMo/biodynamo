@@ -38,7 +38,7 @@ import ini.cx3d.physics.IntracellularSubstance;
 import ini.cx3d.physics.PhysicalObject;
 import ini.cx3d.simulations.ECM;
 import ini.cx3d.simulations.Scheduler;
-import ini.cx3d.swig.StringBuilder;
+import ini.cx3d.swig.NativeStringBuilder;
 import ini.cx3d.utilities.Matrix;
 
 
@@ -101,7 +101,7 @@ public class IntracellularDiffusionTest extends BaseSimulationTest{
 		}
 
 		@Override
-		public StringBuilder simStateToJson(StringBuilder sb) {
+		public NativeStringBuilder simStateToJson(NativeStringBuilder sb) {
 			sb.append("{");
 
 			keyValue(sb, "secretionRate", secretionRate);
@@ -152,7 +152,7 @@ public class IntracellularDiffusionTest extends BaseSimulationTest{
 		}
 
 		@Override
-		public ini.cx3d.swig.StringBuilder simStateToJson(ini.cx3d.swig.StringBuilder sb) {
+		public ini.cx3d.swig.NativeStringBuilder simStateToJson(ini.cx3d.swig.NativeStringBuilder sb) {
 			super.simStateToJson(sb);
 
 			keyValue(sb, "speedFactor", speedFactor);

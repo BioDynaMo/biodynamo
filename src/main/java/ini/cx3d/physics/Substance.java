@@ -63,7 +63,7 @@ public class Substance  implements XMLSerializable, Serializable, SimStateSerial
 	/* used for synchronisation for multithreading. introduced by Haurian*/
 	private ReadWriteLock rwLock = new ReentrantReadWriteLock();
 
-	public ini.cx3d.swig.StringBuilder simStateToJson(ini.cx3d.swig.StringBuilder sb) {
+	public ini.cx3d.swig.NativeStringBuilder simStateToJson(ini.cx3d.swig.NativeStringBuilder sb) {
 		sb.append("{");
 
 		SimStateSerializationUtil.keyValue(sb, "id", id, true);
@@ -403,7 +403,7 @@ public class Substance  implements XMLSerializable, Serializable, SimStateSerial
 	}
 
 	public StringBuilder toXML(String ident) {
-		
+
 		StringBuilder temp = new StringBuilder();
 		temp.append(ident).append("<substance ").append(createXMLAttrubutes());
 		temp.append("\" />\n");

@@ -91,7 +91,7 @@ public class PhysicalNode implements Serializable, SimStateSerializable{
 	private ReadWriteLock rwLock = new ReentrantReadWriteLock();
 
 	@Override
-	public ini.cx3d.swig.StringBuilder simStateToJson(ini.cx3d.swig.StringBuilder sb) {
+	public ini.cx3d.swig.NativeStringBuilder simStateToJson(ini.cx3d.swig.NativeStringBuilder sb) {
 		sb.append("{");
 
 		SimStateSerializationUtil.keyValue(sb, "ID", ID);
