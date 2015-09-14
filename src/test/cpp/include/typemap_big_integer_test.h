@@ -17,25 +17,35 @@
 
  You should have received a copy of the GNU General virtual License
  along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
-%module cx3d_test
+#ifndef TYPEMAP_BIG_INTEGER_TEST_H_
+#define TYPEMAP_BIG_INTEGER_TEST_H_
 
-%{
-#include "sim_state_serializable_test.h"
-#include "typemap_big_integer_test.h"
-using namespace cx3d;
-%}
+#include <string>
+#include <iostream>
+#include "gmpxx.h"
 
-// import depending modules
-%import "cx3d.i"
+namespace cx3d {
 
-// transpartently load native library - convenient for user
-%include "load_library.i"
-JAVA_LOAD_NATIVE_LIBRARY(cx3d_test);
+using BigInteger = mpz_class;
 
-%include "big_integer_typemap.i"
+class BigIntegerConsumer {
+ public:
+  static BigInteger createBigInt(std::string string) {
+    BigInteger big_int;
+    big_int.set_str(string.c_str(), 10);
+    return big_int;
+  }
 
-// add the original header files here
-%include "sim_state_serializable_test.h"
-%include "typemap_big_integer_test.h"
+  static std::string getString(const BigInteger& big_int) {
+    char* c_str = mpz_get_str(NULL, 10, big_int.get_mpz_t());
+    std::string string(c_str);
+    delete c_str;
+    return string;
+  }
+};
+
+}  // namespace cx3d
+
+#endif  // TYPEMAP_BIG_INTEGER_TEST_H_

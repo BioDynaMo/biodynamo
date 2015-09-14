@@ -19,23 +19,31 @@
  along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-%module cx3d_test
+%module(directors="1") spatialOrganization
 
 %{
-#include "sim_state_serializable_test.h"
-#include "typemap_big_integer_test.h"
-using namespace cx3d;
+#include <stdint.h>
+#include "spatial_organization/rational.h"
+using namespace cx3d::spatial_organization;
 %}
 
 // import depending modules
 %import "cx3d.i"
 
-// transpartently load native library - convenient for user
+// transparently load native library - convenient for user
 %include "load_library.i"
-JAVA_LOAD_NATIVE_LIBRARY(cx3d_test);
+JAVA_LOAD_NATIVE_LIBRARY(cx3d_spatialOrganization);
 
+// typemap definitions, code modifications / additions
+%include "typemaps.i"
+%include "cx3d_shared_ptr.i"
 %include "big_integer_typemap.i"
 
+// modifications for class Rational
+%apply long long { int64_t };
+%typemap(javainterfaces) cx3d::spatial_organization::Rational "ini.cx3d.spatialOrganization.interfaces.Rational"
+%typemap(jstype) cx3d::spatial_organization::Rational "ini.cx3d.spatialOrganization.interfaces.Rational"
+%shared_ptr(cx3d::spatial_organization::Rational);
+
 // add the original header files here
-%include "sim_state_serializable_test.h"
-%include "typemap_big_integer_test.h"
+%include "spatial_organization/rational.h"

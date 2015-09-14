@@ -21,6 +21,9 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 
 package ini.cx3d.spatialOrganization;
 
+import ini.cx3d.spatialOrganization.interfaces.Rational;
+import ini.cx3d.spatialOrganization.factory.RationalFactory;
+
 import static ini.cx3d.utilities.Matrix.add;
 import static ini.cx3d.utilities.Matrix.crossProduct;
 import static ini.cx3d.utilities.Matrix.dot;
@@ -28,7 +31,6 @@ import static ini.cx3d.utilities.Matrix.normalize;
 import static ini.cx3d.utilities.Matrix.scalarMult;
 import static ini.cx3d.utilities.Matrix.subtract;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -766,15 +768,15 @@ public class OpenTriangleOrganizer<T> {
 				avToThirdPointX };
 		Rational[] offsetsX = new Rational[] {
 				normalsX[0].dotProduct(avX.add(bvX))
-						.multiply(new Rational(1, 2)),
+						.multiply(new RationalFactory().create(1, 2)),
 				normalsX[1].dotProduct(avX),
 				normalsX[2].dotProduct(avX.add(thirdPointX))
-						.multiply(new Rational(1, 2)) };
+						.multiply(new RationalFactory().create(1, 2)) };
 		ExactVector circumCenter = Triangle3D
 				.calculate3PlaneXPoint(normalsX, offsetsX,
 						ExactVector.det(normalsX));
 		return circumCenter.subtract(
-				avX.add(bvX).multiply(new Rational(1, 2)))
+				avX.add(bvX).multiply(new RationalFactory().create(1, 2)))
 				.squaredLength();
 	}
 

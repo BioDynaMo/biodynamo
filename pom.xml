@@ -90,6 +90,7 @@
                             <excludes>
                                 <exclude>CMakeLists.txt</exclude>
                                 <exclude>build.sh</exclude>
+                                <exclude>modules/*</exclude>
                             </excludes>
                             <followSymlinks>false</followSymlinks>
                         </fileset>

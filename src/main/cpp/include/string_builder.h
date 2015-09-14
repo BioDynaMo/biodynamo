@@ -58,7 +58,7 @@ class StringBuilder {
 
   /**
    * Sets the pointer to the second last character.
-   * A consective call of append will overwrite the last char
+   * A consecutive call of append will overwrite the last char
    */
   virtual void overwriteLastCharOnNextAppend() {
     string_stream_.seekp(-1, string_stream_.cur);

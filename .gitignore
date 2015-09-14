@@ -80,3 +80,14 @@ src/main/java/ini/cx3d/swig/*
 src/test/cpp/swig/*wrap.cxx
 src/test/cpp/swig/*wrap.h
 src/test/java/ini/cx3d/swig/*
+
+#------- simulations that have not been adapted to the testing framework yet -----
+src/test/java/ini/cx3d/simulations/frontiers/Figure_10.java
+src/test/java/ini/cx3d/simulations/frontiers/Figure_3_AF.java
+src/test/java/ini/cx3d/simulations/frontiers/Figure_3_G.java
+src/test/java/ini/cx3d/simulations/frontiers/Figure_8.java
+src/test/java/ini/cx3d/simulations/frontiers/Simplified_Figure_11.java
+src/test/java/ini/cx3d/simulations/frontiers/X_Secretion_Module.java
+src/test/java/ini/cx3d/simulations/frontiers/X_Side_Branch_Module.java
+
+cmake_standalone/

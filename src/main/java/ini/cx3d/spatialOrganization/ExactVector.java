@@ -21,10 +21,13 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 
 package ini.cx3d.spatialOrganization;
 
+import ini.cx3d.spatialOrganization.interfaces.Rational;
+import ini.cx3d.spatialOrganization.factory.RationalFactory;
+
 /**
  * This class is used to store vectors in 3D-space. It also provides basic 
  * linear algebra functions. All functions are performed using precise arithmetics by
- * using instances of {@link Rational} to store the entries and to perform the calculations.
+ * using instances of {@link RationalJava} to store the entries and to perform the calculations.
  * 
  * This class is exclusively designed to store 3 elements per vector.
  * 
@@ -50,7 +53,7 @@ public class ExactVector {
 	}
 	
 	/**
-	 * Creates a new vector from an array of double values. The constructor {@link Rational#Rational(double)} is used
+	 * Creates a new vector from an array of double values. The constructor {@link RationalJava#RationalJava(double)} is used
 	 * to transform the given double values into rational values.
 	 * @param values The entries for this vector. The length of this array is expected to be 3.
 	 */
@@ -58,7 +61,7 @@ public class ExactVector {
 		if ((values == null) || (values.length != 3)){
 			throw new IllegalArgumentException("This class only permits vectors with 3 entries!");
 		}
-		this.elements = new Rational[] { new Rational(values[0]), new Rational(values[1]), new Rational(values[2])};
+		this.elements = new Rational[] { new RationalFactory().create(values[0]), new RationalFactory().create(values[1]), new RationalFactory().create(values[2])};
 	}
 
 	/**
@@ -66,7 +69,7 @@ public class ExactVector {
 	 * @return The square of the Euclidean length of this vector.
 	 */
 	public Rational squaredLength() {
-		Rational ret = new Rational(0,1);
+		Rational ret = new RationalFactory().create(0,1);
 		for (int i = 0; i < 3; i++) {
 			ret.add(this.elements[i].multiply(this.elements[i]));
 		}
@@ -182,12 +185,12 @@ public class ExactVector {
 	}
 	
 	/**
-	 * Computes the dot product of this vector with another one. The result is stored in a new instance of <code>Rational</code>.
+	 * Computes the dot product of this vector with another one. The result is stored in a new instance of <code>RationalJava</code>.
 	 * @param other The other argument of this dot product.
-	 * @return A new instance of <code>Rational</code> containing the computed dot product.
+	 * @return A new instance of <code>RationalJava</code> containing the computed dot product.
 	 */
 	public Rational dotProduct(ExactVector other) {
-		Rational ret = new Rational(0,1);
+		Rational ret = new RationalFactory().create(0, 1);
 		for (int i = 0; i < elements.length; i++) {
 			ret = ret.add(other.elements[i].multiply(this.elements[i]));
 		}
@@ -240,7 +243,7 @@ public class ExactVector {
 	/**
 	 * Computes the determinant of a 3x3 matrix. 
 	 * @param c An array of size 3 which contains the column vectors of the matrix. 
-	 * @return A new instance of <code>Rational</code> containing the determinant of the specified matrix.
+	 * @return A new instance of <code>RationalJava</code> containing the determinant of the specified matrix.
 	 */
 	public static Rational det(ExactVector[] c) {
 		if ((c == null) || (c.length != 3))

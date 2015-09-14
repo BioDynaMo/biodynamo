@@ -21,6 +21,9 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 
 package ini.cx3d.spatialOrganization;
 
+import ini.cx3d.spatialOrganization.interfaces.Rational;
+import ini.cx3d.spatialOrganization.factory.RationalFactory;
+
 import static ini.cx3d.utilities.Matrix.*;
 
 /**
@@ -218,10 +221,10 @@ public class Triangle3D<T> extends Plane3D<T> {
 				if (dot.isZero())
 					denominator = 0.0;
 				else {
-					denominator = ((Rational) dot).doubleValue();
+					denominator = dot.doubleValue();
 					dot = normalVector.dotProduct(new ExactVector(
 							this.normalVector));
-					if (dot.compareTo(new Rational(0, 1)) < 0)
+					if (dot.compareTo(new RationalFactory().create(0, 1)) < 0)
 						denominator = 0 - denominator;
 				}
 			}
@@ -318,8 +321,8 @@ public class Triangle3D<T> extends Plane3D<T> {
 			points[3] = new ExactVector(fourthPoint);
 			ExactVector normalVector = calculateExactNormalVector(points);
 			if (normalVector.dotProduct(new ExactVector(this.normalVector))
-					.compareTo(new Rational(0, 1)) < 0)
-				// Rational zero = new Rational(0, 1);
+					.compareTo(new RationalFactory().create(0, 1)) < 0)
+				// RationalJava zero = new RationalJava(0, 1);
 				// int result = (int) Math
 				// .signum(normalVector
 				// .multiply(
@@ -338,7 +341,7 @@ public class Triangle3D<T> extends Plane3D<T> {
 					normalVector).negate();
 			// return calculateSDDistanceExact(points,normalVector);
 		} else
-			return new Rational(Long.MAX_VALUE, 1);
+			return new RationalFactory().create(Long.MAX_VALUE, 1);
 	}
 
 	/**
@@ -376,12 +379,12 @@ public class Triangle3D<T> extends Plane3D<T> {
 			if (!denominator.isZero()) {
 				ExactVector circumCenter = calculateCircumCenterExact(points,
 						normalVector);
-				return points[0].add(points[3]).divideBy(new Rational(2, 1))
+				return points[0].add(points[3]).divideBy(new RationalFactory().create(2, 1))
 						.decreaseBy(circumCenter).dotProduct(ad).divideBy(
 								denominator);
 			}
 		}
-		return new Rational(Long.MAX_VALUE);
+		return new RationalFactory().create(Long.MAX_VALUE);
 	}
 
 	/**
@@ -474,9 +477,9 @@ public class Triangle3D<T> extends Plane3D<T> {
 							normalDet);
 		else
 			return new ExactVector(new Rational[] {
-					new Rational(Long.MAX_VALUE, 1),
-					new Rational(Long.MAX_VALUE, 1),
-					new Rational(Long.MAX_VALUE, 1) });
+					new RationalFactory().create(Long.MAX_VALUE, 1),
+					new RationalFactory().create(Long.MAX_VALUE, 1),
+					new RationalFactory().create(Long.MAX_VALUE, 1) });
 	}
 
 	/**
@@ -574,8 +577,8 @@ public class Triangle3D<T> extends Plane3D<T> {
 		ExactVector[] n = new ExactVector[] { points[1].subtract(a),
 				points[2].subtract(a), normalVector };
 		return calculate3PlaneXPoint(n, new Rational[] {
-				points[1].add(a).dotProduct(n[0]).divideBy(new Rational(2, 1)),
-				points[2].add(a).dotProduct(n[1]).divideBy(new Rational(2, 1)),
+				points[1].add(a).dotProduct(n[0]).divideBy(new RationalFactory().create(2, 1)),
+				points[2].add(a).dotProduct(n[1]).divideBy(new RationalFactory().create(2, 1)),
 				a.dotProduct(n[2]) }, ExactVector.det(n));
 
 	}

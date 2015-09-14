@@ -21,6 +21,9 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 
 package ini.cx3d.spatialOrganization;
 
+import ini.cx3d.spatialOrganization.interfaces.Rational;
+import ini.cx3d.spatialOrganization.factory.RationalFactory;
+
 import static ini.cx3d.utilities.Matrix.*;
 
 /**
@@ -129,7 +132,7 @@ public class Plane3D<T> {
 	 * Creates a plane from a set of nodes. The normal vector of the resulting plane will be 
 	 * normalized if {@link #NORMALIZE} is set to <code>true</code>.
 	 * @param nodes An array of nodes which is expected to be of length 4. Three nodes from these 4 are used to 
-	 * create the plane. <code>nonUsedNode</code> defines, which node will not be used.
+	 * create the plane. <code>nonUsedNode</code> defines, which node will not be upublicsed.
 	 * @param nonUsedNode The node in <code>nodes</code> which will not become part of the newly created plane.
 	 */
 	public Plane3D(SpaceNode<T>[] nodes, SpaceNode<T> nonUsedNode) {
@@ -209,7 +212,7 @@ public class Plane3D<T> {
 	 */
 	protected int orientationExact(double[] point1, double[] point2) {
 		ExactVector normalVector = new ExactVector(this.normalVector);
-		Rational offset = new Rational(this.offset);
+		Rational offset = new RationalFactory().create(this.offset);
 		return normalVector.dotProduct(new ExactVector(point1)).compareTo(offset) * 
 		       normalVector.dotProduct(new ExactVector(point2)).compareTo(offset);
 	}

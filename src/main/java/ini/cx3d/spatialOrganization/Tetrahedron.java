@@ -21,6 +21,9 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 
 package ini.cx3d.spatialOrganization;
 
+import ini.cx3d.spatialOrganization.interfaces.Rational;
+import ini.cx3d.spatialOrganization.factory.RationalFactory;
+
 import java.lang.reflect.Array;
 import java.util.Arrays;
 import static ini.cx3d.utilities.Matrix.*;
@@ -610,10 +613,10 @@ public class Tetrahedron<T> {
 	// return null;
 	// }
 
-	// private void outFieldElement(Rational a) {
-	// double doubleValue = ((Rational)a).doubleValue();
-	// double difference = ((Rational)a.subtract(new
-	// Rational(doubleValue))).doubleValue();
+	// private void outFieldElement(RationalJava a) {
+	// double doubleValue = ((RationalJava)a).doubleValue();
+	// double difference = ((RationalJava)a.subtract(new
+	// RationalJava(doubleValue))).doubleValue();
 	// NewDelaunayTest.out(doubleValue+" + "+difference);
 	// }
 
@@ -647,7 +650,7 @@ public class Tetrahedron<T> {
 
 			Rational det = ExactVector.det(normals);
 
-			Rational half = new Rational(1, 2);
+			Rational half = new RationalFactory().create(1, 2);
 			Rational[] offsets = new Rational[] {
 					points[0].add(points[1]).dotProduct(normals[0]).multiplyBy(
 							half),
@@ -655,7 +658,7 @@ public class Tetrahedron<T> {
 							half),
 					points[0].add(points[3]).dotProduct(normals[2]).multiplyBy(
 							half) };
-
+//			if(!(offsets[0] instanceof RationalFactory)) throw new RuntimeException("");
 			ExactVector circumCenter = Triangle3D.calculate3PlaneXPoint(
 					normals, offsets, det);
 			ExactVector dummy = circumCenter.subtract(points[0]);
@@ -1470,7 +1473,7 @@ public class Tetrahedron<T> {
 			// };
 			// Vector orthogonalX = connectionsToCenterX[i].cross(normalX);
 			// FieldElement angleTestX = orthogonalX.multiply(connectionX);
-			// Rational reference = new Rational(angleReferenceSign);
+			// RationalJava reference = new RationalJava(angleReferenceSign);
 			// }
 			// else return ((int)(Math.signum(angleTest)))*angleReferenceSign;
 			// }
