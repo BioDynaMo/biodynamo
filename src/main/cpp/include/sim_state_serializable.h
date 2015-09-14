@@ -44,7 +44,7 @@ class SimStateSerializable {
    * @param sb Append Json to this StringBuilder
    * @return The received StringBuilder to enable function concatenation
    */
-  virtual StringBuilder& simStateToJson(StringBuilder& sb) const = 0;
+  virtual StringBuilder& simStateToJson(StringBuilder& sb) const = 0;  // NOLINT(runtime/references)
 };
 
 }  // namespace cx3d

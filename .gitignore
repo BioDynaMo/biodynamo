@@ -13,6 +13,11 @@ buildNumber.properties
 .idea
 cx3d-cpp.iml
 
+#----------------- eclipse ------------------
+.project
+.cproject
+.settings/
+
 #------------------- Java -------------------
 *.class
 
