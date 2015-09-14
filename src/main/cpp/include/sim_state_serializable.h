@@ -17,7 +17,7 @@
 
  You should have received a copy of the GNU General virtual License
  along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 #ifndef SIM_STATE_SERIALIZABLE_H_
 #define SIM_STATE_SERIALIZABLE_H_
@@ -35,7 +35,16 @@ using cx3d::StringBuilder;
  */
 class SimStateSerializable {
  public:
-   virtual StringBuilder& simStateToJson(StringBuilder& sb) = 0;
+  virtual ~SimStateSerializable() {
+  }
+
+  /**
+   * This function is called after the simulation has finished to serialize the
+   * simulation outcome to Json.
+   * @param sb Append Json to this StringBuilder
+   * @return The received StringBuilder to enable function concatenation
+   */
+  virtual StringBuilder& simStateToJson(StringBuilder& sb) const = 0;
 };
 
 }  // namespace cx3d

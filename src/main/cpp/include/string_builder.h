@@ -36,32 +36,45 @@ using std::stringstream;
  */
 class StringBuilder {
  public:
-  StringBuilder() : string_stream_() {}
-  StringBuilder(const StringBuilder &src) : string_stream_() {
+  StringBuilder()
+      : string_stream_() {
+  }
+  StringBuilder(const StringBuilder &src)
+      : string_stream_() {
     string_stream_ << src.str();
   }
-  virtual ~StringBuilder() {}
+  virtual ~StringBuilder() {
+  }
 
-  virtual StringBuilder& append(const string &str){
+  /**
+   * Appends the given string to the current string builder
+   * @param str string to append
+   * @return returns itself
+   */
+  virtual StringBuilder& append(const string &str) {
     string_stream_ << str;
     return *this;
   }
 
-  //sets the pointer to the second last character
-  //a consective call of append will overwrite the last char
-  virtual void overwriteLastCharOnNextAppend(){
-    string_stream_.seekp(-1,string_stream_.cur);
+  /**
+   * Sets the pointer to the second last character.
+   * A consective call of append will overwrite the last char
+   */
+  virtual void overwriteLastCharOnNextAppend() {
+    string_stream_.seekp(-1, string_stream_.cur);
   }
 
-  virtual string str() const{
+  /**
+   *  Returns a string object with a copy of the current contents of the stream.
+   */
+  virtual string str() const {
     return string_stream_.str();
   }
 
-private:
+ private:
   stringstream string_stream_;
 
-  StringBuilder &operator=(const StringBuilder &){}
-
+  StringBuilder &operator=(const StringBuilder &) = delete;
 };
 
 }  // namespace cx3d

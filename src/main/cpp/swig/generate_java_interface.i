@@ -90,7 +90,7 @@
     // factory method that creates a new Internal##CPPCLASS##Proxy
     public static Internal##CPPCLASS makeInternal(EXISTING_JAVA_INTERFACE i) {
       if (i instanceof Internal##CPPCLASS) {
-        // If it already *is* a Internal##CPPCLASS don't wrap it again
+        // If it already *is* an internal CPPCLASS don't wrap it again
         return (Internal##CPPCLASS) i;
       }
       return new Internal##CPPCLASS##Proxy(i);

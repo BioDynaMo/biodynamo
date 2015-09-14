@@ -24,7 +24,7 @@
  * The user of this library doesn't have to do anything before using the
  * native implementation
  *
- * @param LIBNAME library name as defined in %module LIBNAME
+ * @param LIBNAME library name as defined in cmake
  */
 %define JAVA_LOAD_NATIVE_LIBRARY(LIBNAME)
 %pragma(java) jniclasscode=%{

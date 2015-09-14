@@ -17,7 +17,7 @@
 
  You should have received a copy of the GNU General virtual License
  along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 #ifndef SIM_STATE_SERIALIZABLE_TEST_H_
 #define SIM_STATE_SERIALIZABLE_TEST_H_
@@ -32,21 +32,25 @@ using cx3d::StringBuilder;
 
 class SimulationObject : public SimStateSerializable {
  public:
-   virtual StringBuilder& simStateToJson(StringBuilder& sb) override {
-     sb.append("Hello World from CPP defined SimulationObject!");
-   }
+  StringBuilder& simStateToJson(StringBuilder& sb) const override {
+    sb.append("Hello World from CPP defined SimulationObject!");
+    return sb;
+  }
 };
 
-class SimStateSerializerConsumer{
+class SimStateSerializerConsumer {
  public:
-    SimStateSerializerConsumer() : string_builder_() {}
-    virtual ~SimStateSerializerConsumer() {}
+  SimStateSerializerConsumer()
+      : string_builder_() {
+  }
+  virtual ~SimStateSerializerConsumer() {
+  }
 
-    StringBuilder& persistSimState(SimStateSerializable& serializable){
-      return serializable.simStateToJson(string_builder_);
-    }
+  StringBuilder& persistSimState(const SimStateSerializable& serializable) {
+    return serializable.simStateToJson(string_builder_);
+  }
  private:
-   StringBuilder string_builder_;
+  StringBuilder string_builder_;
 };
 
 }  // namespace cx3d
