@@ -18,6 +18,7 @@ installed on your computer - the tested version number is in parenthesis.
 * CMake     (2.8.11)
 * SWIG      (3.0.7)
 * libGMP    (6.0.0-11)
+* Doxygen   (1.8.5-3) only if you want to build the documentation
 
 The C++ build process is fully integrated into the maven build lifecycle. Before the Java classes are compiled, the 
 native library is compiled and SWIG generates the needed wrapper code.
@@ -28,4 +29,12 @@ In order to obtain the code, build and run the tests just execute the following 
 git clone https://github.com/breitwieser/cx3d-cpp.git
 cd cx3d-cpp
 mvn clean test
+```
+
+###Build C++ Documentation
+
+To build the Doxygen documentation for the native C++ classes, execute the following command. After completion open doc/html/index.html in your browser.
+
+```bash
+cd cmake && ./build.sh && make doc
 ```

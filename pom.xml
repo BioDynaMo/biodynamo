@@ -94,6 +94,18 @@
                             </excludes>
                             <followSymlinks>false</followSymlinks>
                         </fileset>
+                        <!-- remove generated C++ documentation -->
+                        <fileset>
+                            <directory>${project.basedir}/doc/</directory>
+                            <includes>
+                                <include>**/*</include>
+                            </includes>
+                            <excludes>
+                                <exclude>CMakeLists.txt</exclude>
+                                <exclude>Doxyfile.in</exclude>
+                            </excludes>
+                            <followSymlinks>false</followSymlinks>
+                        </fileset>
                     </filesets>
                 </configuration>
             </plugin>

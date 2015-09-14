@@ -81,6 +81,11 @@ src/test/cpp/swig/*wrap.cxx
 src/test/cpp/swig/*wrap.h
 src/test/java/ini/cx3d/swig/*
 
+#------------------- Doxygen files --------------------
+Doxyfile
+doc/html
+doc/latex
+
 #------- simulations that have not been adapted to the testing framework yet -----
 src/test/java/ini/cx3d/simulations/frontiers/Figure_10.java
 src/test/java/ini/cx3d/simulations/frontiers/Figure_3_AF.java
