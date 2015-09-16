@@ -25,7 +25,9 @@ import ini.cx3d.spatialOrganization.interfaces.Rational;
 import ini.cx3d.spatialOrganization.factory.RationalFactory;
 
 /**
- * This class is used to store vectors in 3D-space. It also provides basic 
+ * NOTE: This class has been replaced by a native implementation! It is merely used for debugging purposes!
+ *
+ * This class is used to store vectors in 3D-space. It also provides basic
  * linear algebra functions. All functions are performed using precise arithmetics by
  * using instances of {@link RationalJava} to store the entries and to perform the calculations.
  * 
@@ -34,7 +36,7 @@ import ini.cx3d.spatialOrganization.factory.RationalFactory;
  * @author Dennis Goehlsdorf
  *
  */
-public class ExactVector {
+public class ExactVector implements ini.cx3d.spatialOrganization.interfaces.ExactVector {
 
 	/**
 	 *  Stores the elements of this vector.
@@ -68,12 +70,45 @@ public class ExactVector {
 	 * Computes the square of the length of this vector. 
 	 * @return The square of the Euclidean length of this vector.
 	 */
+	@Override
 	public Rational squaredLength() {
 		Rational ret = new RationalFactory().create(0,1);
 		for (int i = 0; i < 3; i++) {
 			ret.add(this.elements[i].multiply(this.elements[i]));
 		}
 		return ret;
+	}
+
+	@Override
+	public ini.cx3d.spatialOrganization.interfaces.ExactVector add(ini.cx3d.spatialOrganization.interfaces.ExactVector other) {
+		if (!(other instanceof ExactVector)) {
+			throw new RuntimeException("otherValue must be of type ini.cx3d.spatialOrganization.ExactVector");
+		}
+		return	add((ExactVector) other);
+	}
+
+	@Override
+	public ini.cx3d.spatialOrganization.interfaces.ExactVector increaseBy(ini.cx3d.spatialOrganization.interfaces.ExactVector other) {
+		if (!(other instanceof ExactVector)) {
+			throw new RuntimeException("otherValue must be of type ini.cx3d.spatialOrganization.ExactVector");
+		}
+		return	increaseBy((ExactVector) other);
+	}
+
+	@Override
+	public ini.cx3d.spatialOrganization.interfaces.ExactVector subtract(ini.cx3d.spatialOrganization.interfaces.ExactVector other) {
+		if (!(other instanceof ExactVector)) {
+			throw new RuntimeException("otherValue must be of type ini.cx3d.spatialOrganization.ExactVector");
+		}
+		return	subtract((ExactVector) other);
+	}
+
+	@Override
+	public ini.cx3d.spatialOrganization.interfaces.ExactVector decreaseBy(ini.cx3d.spatialOrganization.interfaces.ExactVector other) {
+		if (!(other instanceof ExactVector)) {
+			throw new RuntimeException("otherValue must be of type ini.cx3d.spatialOrganization.ExactVector");
+		}
+		return	decreaseBy((ExactVector) other);
 	}
 
 	/**
@@ -140,6 +175,7 @@ public class ExactVector {
 	 * @param factor The constant by which all entries of this vector should be multiplied.
 	 * @return A new instance of <code>ExactVector</code>.
 	 */
+	@Override
 	public ExactVector multiply(Rational factor) {
 		return new ExactVector(new Rational[] {
 				elements[0].multiply(factor),
@@ -152,6 +188,7 @@ public class ExactVector {
 	 * @param factor The constant by which all entries of this vector should be multiplied.
 	 * @return A reference to <code>this</code>, which has been modified. 
 	 */
+	@Override
 	public ExactVector multiplyBy(Rational factor) {
 		for (int i = 0; i < elements.length; i++) {
 			elements[i].multiplyBy(factor);
@@ -165,6 +202,7 @@ public class ExactVector {
 	 * @param factor The constant by which all entries of this vector should be divided.
 	 * @return A new instance of <code>ExactVector</code>.
 	 */
+	@Override
 	public ExactVector divide(Rational factor) {
 		return new ExactVector(new Rational[] {
 				elements[0].divide(factor),
@@ -177,13 +215,22 @@ public class ExactVector {
 	 * @param factor The constant by which all entries of this vector should be divided.
 	 * @return A reference to <code>this</code>, which has been modified. 
 	 */
+	@Override
 	public ExactVector divideBy(Rational factor) {
 		for (int i = 0; i < elements.length; i++) {
 			elements[i].divideBy(factor);
 		}
 		return this;
 	}
-	
+
+	@Override
+	public Rational dotProduct(ini.cx3d.spatialOrganization.interfaces.ExactVector other) {
+		if (!(other instanceof ExactVector)) {
+			throw new RuntimeException("otherValue must be of type ini.cx3d.spatialOrganization.ExactVector");
+		}
+		return	dotProduct((ExactVector) other);
+	}
+
 	/**
 	 * Computes the dot product of this vector with another one. The result is stored in a new instance of <code>RationalJava</code>.
 	 * @param other The other argument of this dot product.
@@ -201,13 +248,22 @@ public class ExactVector {
 	 * Multiplies this vector by -1. This vector itself is modified during that process.
 	 * @return A reference to this vector itself. 
 	 */
+	@Override
 	public ExactVector negate() {
 		for (int i = 0; i < elements.length; i++) {
 			elements[i].negate();
 		}
 		return this;
 	}
-	
+
+	@Override
+	public ini.cx3d.spatialOrganization.interfaces.ExactVector crossProduct(ini.cx3d.spatialOrganization.interfaces.ExactVector other) {
+		if (!(other instanceof ExactVector)) {
+			throw new RuntimeException("otherValue must be of type ini.cx3d.spatialOrganization.ExactVector");
+		}
+		return	crossProduct((ExactVector) other);
+	}
+
 	/**
 	 * Returns a string representation of this vector.
 	 * @return A <code>String</code> of the format "(element1, element2, element3)". 
@@ -242,12 +298,21 @@ public class ExactVector {
 	
 	/**
 	 * Computes the determinant of a 3x3 matrix. 
-	 * @param c An array of size 3 which contains the column vectors of the matrix. 
+	 * @param vector An array of size 3 which contains the column vectors of the matrix.
 	 * @return A new instance of <code>RationalJava</code> containing the determinant of the specified matrix.
 	 */
-	public static Rational det(ExactVector[] c) {
-		if ((c == null) || (c.length != 3))
-				throw new IllegalArgumentException("This function can only calculate the determinant of 3 vectors of size 3!");
+	public static Rational det(ini.cx3d.spatialOrganization.interfaces.ExactVector[] vector) {
+		if ((vector == null) || (vector.length != 3))
+			throw new IllegalArgumentException("This function can only calculate the determinant of 3 vectors of size 3!");
+
+		ExactVector[] c = new ExactVector[3];
+		for (int i = 0; i < 3; i++) {
+			if (!(vector[i] instanceof ExactVector)) {
+				throw new RuntimeException("vector must be of type ini.cx3d.spatialOrganization.ExactVector");
+			}
+			c[i] = (ExactVector) vector[i];
+		}
+
 		return 	c[0].elements[0].multiply(c[1].elements[1]).multiply(c[2].elements[2]).add(
 				c[0].elements[1].multiply(c[1].elements[2]).multiply(c[2].elements[0])).add(
 				c[0].elements[2].multiply(c[1].elements[0]).multiply(c[2].elements[1])).subtract(

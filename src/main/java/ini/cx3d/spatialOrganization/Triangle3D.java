@@ -21,6 +21,8 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 
 package ini.cx3d.spatialOrganization;
 
+import ini.cx3d.spatialOrganization.factory.ExactVectorFactory;
+import ini.cx3d.spatialOrganization.interfaces.ExactVector;
 import ini.cx3d.spatialOrganization.interfaces.Rational;
 import ini.cx3d.spatialOrganization.factory.RationalFactory;
 
@@ -210,19 +212,19 @@ public class Triangle3D<T> extends Plane3D<T> {
 			// if ((denominator != 0.0) && (Math.abs(denominator) < tolerance))
 			// {
 			if ((denominator != 0.0) && (Math.abs(denominator) < tolerance)) {
-				ExactVector n0Vector = new ExactVector(nodes[0].getPosition());
-				ExactVector v1 = n0Vector.subtract(new ExactVector(nodes[1]
+				ExactVector n0Vector = new ExactVectorFactory().create(nodes[0].getPosition());
+				ExactVector v1 = n0Vector.subtract(new ExactVectorFactory().create(nodes[1]
 						.getPosition()));
-				ExactVector v2 = n0Vector.subtract(new ExactVector(nodes[2]
+				ExactVector v2 = n0Vector.subtract(new ExactVectorFactory().create(nodes[2]
 						.getPosition()));
 				ExactVector normalVector = v1.crossProduct(v2);
 				Rational dot = normalVector.dotProduct(n0Vector
-						.subtract(new ExactVector(fourthPoint)));
+						.subtract(new ExactVectorFactory().create(fourthPoint)));
 				if (dot.isZero())
 					denominator = 0.0;
 				else {
 					denominator = dot.doubleValue();
-					dot = normalVector.dotProduct(new ExactVector(
+					dot = normalVector.dotProduct(new ExactVectorFactory().create(
 							this.normalVector));
 					if (dot.compareTo(new RationalFactory().create(0, 1)) < 0)
 						denominator = 0 - denominator;
@@ -317,10 +319,10 @@ public class Triangle3D<T> extends Plane3D<T> {
 		if (!isInfinite() && onUpperSide(fourthPoint)) {
 			ExactVector[] points = new ExactVector[4];
 			for (int i = 0; i < 3; i++)
-				points[i] = new ExactVector(nodes[i].getPosition());
-			points[3] = new ExactVector(fourthPoint);
+				points[i] = new ExactVectorFactory().create(nodes[i].getPosition());
+			points[3] = new ExactVectorFactory().create(fourthPoint);
 			ExactVector normalVector = calculateExactNormalVector(points);
-			if (normalVector.dotProduct(new ExactVector(this.normalVector))
+			if (normalVector.dotProduct(new ExactVectorFactory().create(this.normalVector))
 					.compareTo(new RationalFactory().create(0, 1)) < 0)
 				// RationalJava zero = new RationalJava(0, 1);
 				// int result = (int) Math
@@ -476,7 +478,7 @@ public class Triangle3D<T> extends Plane3D<T> {
 											.multiplyBy(offsets[2]))).divideBy(
 							normalDet);
 		else
-			return new ExactVector(new Rational[] {
+			return new ExactVectorFactory().create(new Rational[] {
 					new RationalFactory().create(Long.MAX_VALUE, 1),
 					new RationalFactory().create(Long.MAX_VALUE, 1),
 					new RationalFactory().create(Long.MAX_VALUE, 1) });
@@ -579,7 +581,7 @@ public class Triangle3D<T> extends Plane3D<T> {
 		return calculate3PlaneXPoint(n, new Rational[] {
 				points[1].add(a).dotProduct(n[0]).divideBy(new RationalFactory().create(2, 1)),
 				points[2].add(a).dotProduct(n[1]).divideBy(new RationalFactory().create(2, 1)),
-				a.dotProduct(n[2]) }, ExactVector.det(n));
+				a.dotProduct(n[2]) }, ExactVectorFactory.det(n));
 
 	}
 
@@ -616,9 +618,9 @@ public class Triangle3D<T> extends Plane3D<T> {
 	 * coordinates of this triangle's endpoints as rational numbers.
 	 */
 	private ExactVector[] getExactPositionVectors() {
-		return new ExactVector[] { new ExactVector(nodes[0].getPosition()),
-				new ExactVector(nodes[1].getPosition()),
-				new ExactVector(nodes[2].getPosition()) };
+		return new ExactVector[] { new ExactVectorFactory().create(nodes[0].getPosition()),
+				new ExactVectorFactory().create(nodes[1].getPosition()),
+				new ExactVectorFactory().create(nodes[2].getPosition()) };
 	}
 
 	/**
@@ -629,9 +631,9 @@ public class Triangle3D<T> extends Plane3D<T> {
 		ExactVector normalVector = points[1].subtract(points[0]).crossProduct(
 				points[2].subtract(points[0]));
 		Rational offset = normalVector.dotProduct(points[0]);
-		return normalVector.dotProduct(new ExactVector(point1)).compareTo(
+		return normalVector.dotProduct(new ExactVectorFactory().create(point1)).compareTo(
 				offset)
-				* normalVector.dotProduct(new ExactVector(point2)).compareTo(
+				* normalVector.dotProduct(new ExactVectorFactory().create(point2)).compareTo(
 						offset);
 	}
 
@@ -658,7 +660,7 @@ public class Triangle3D<T> extends Plane3D<T> {
 				ExactVector circumCenter = calculateCircumCenterExact(points,
 						calculateExactNormalVector(points));
 				Rational pointDistance = circumCenter.subtract(
-						new ExactVector(point)).squaredLength();
+						new ExactVectorFactory().create(point)).squaredLength();
 				Rational squaredRadiusX = circumCenter.subtract(points[0])
 						.squaredLength();
 				return squaredRadiusX.compareTo(pointDistance);
@@ -835,7 +837,7 @@ public class Triangle3D<T> extends Plane3D<T> {
 				ExactVector[] points = getExactPositionVectors();
 				ExactVector normalVector = calculateExactNormalVector(points);
 				Rational dot1 = normalVector.dotProduct(points[0]);
-				Rational dot2 = normalVector.dotProduct(new ExactVector(
+				Rational dot2 = normalVector.dotProduct(new ExactVectorFactory().create(
 						position));
 				int comparison = dot1.compareTo(dot2);
 				if (comparison == 0)
@@ -895,7 +897,7 @@ public class Triangle3D<T> extends Plane3D<T> {
 			ExactVector[] points = getExactPositionVectors();
 			ExactVector normalVector = calculateExactNormalVector(points);
 			Rational dot1 = normalVector.dotProduct(points[0]);
-			Rational dot2 = normalVector.dotProduct(new ExactVector(point));
+			Rational dot2 = normalVector.dotProduct(new ExactVectorFactory().create(point));
 			if (dot1.equals(dot2))
 				return 0;
 			else {

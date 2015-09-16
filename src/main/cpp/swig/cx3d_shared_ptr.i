@@ -1,5 +1,6 @@
 /**
- * Custom modification based on SWIG 3.0.7, that solves the issue of inheriting from a Java Interface.
+ * Custom modifications for std::shared_ptr typemaps based on SWIG 3.0.7.
+ * It solves the issue of inheriting from a Java Interface.
  * The original swig boost_shared_ptr could not deal with the scenario in which
  * the generated class implements an interface with function arguments of itself.
  * e.g.:
@@ -28,8 +29,8 @@
  * which perform the required actions. The rest remained unchanged.
  * Result with this shared_ptr implementation (Rational.java)
  * public RationalInterface add(RationalInterface other) {
- *     long cPtr = spatialOrganizationJNI.Rational_add(swigCPtr, this, getCPtr(other));
- *     return (cPtr == 0) ? null : swigCreate(cPtr, true);
+ *     long cPtr = spatialOrganizationJNI.Rational_add(swigCPtr, this, Rational.getCPtr(other));
+ *     return (cPtr == 0) ? null : Rational.swigCreate(cPtr, true);
  * }
  */
 
@@ -37,14 +38,25 @@
 
  // Users can provide their own SWIG_SHARED_PTR_TYPEMAPS macro before including this file to change the
  // visibility of the constructor and getCPtr method if desired to public if using multiple modules.
- #ifndef SWIG_SHARED_PTR_TYPEMAPS
- #define SWIG_SHARED_PTR_TYPEMAPS(CONST, TYPE...) SWIG_SHARED_PTR_TYPEMAPS_IMPLEMENTATION(protected, protected, CONST, TYPE)
+ #ifndef CX3D_SHARED_PTR_TYPEMAPS
+ #define CX3D_SHARED_PTR_TYPEMAPS(CONST, JCLASS, TYPE...) CX3D_SHARED_PTR_TYPEMAPS_IMPLEMENTATION(protected, protected, CONST, JCLASS, TYPE)
  #endif
 
  %include <shared_ptr.i>
 
- // Language specific macro implementing all the customisations for handling the smart pointer
- %define SWIG_SHARED_PTR_TYPEMAPS_IMPLEMENTATION(PTRCTOR_VISIBILITY, CPTR_VISIBILITY, CONST, TYPE...)
+// Create separate macro, because cx3d modifications for std::shared_ptr take
+// one more argument.
+// Workaround empty first macro argument bug
+#define SWIGEMPTYHACK
+// Main user macro for defining cx3d_shared_ptr typemaps for both const and non-const pointer types
+%define %cx3d_shared_ptr(JCLASS, TYPE...)
+  %feature("smartptr", noblock=1) TYPE { CX3D_SHARED_PTR_QNAMESPACE::shared_ptr< TYPE > }
+  CX3D_SHARED_PTR_TYPEMAPS(SWIGEMPTYHACK, JCLASS, TYPE)
+  CX3D_SHARED_PTR_TYPEMAPS(const, JCLASS, TYPE)
+%enddef
+
+// Language specific macro implementing all the customisations for handling the smart pointer
+%define CX3D_SHARED_PTR_TYPEMAPS_IMPLEMENTATION(PTRCTOR_VISIBILITY, CPTR_VISIBILITY, CONST, JCLASS, TYPE...)
 
  // %naturalvar is as documented for member variables
  %naturalvar TYPE;
@@ -145,24 +157,24 @@
  %typemap(javain) SWIG_SHARED_PTR_QNAMESPACE::shared_ptr< CONST TYPE >,
                   SWIG_SHARED_PTR_QNAMESPACE::shared_ptr< CONST TYPE > &,
                   SWIG_SHARED_PTR_QNAMESPACE::shared_ptr< CONST TYPE > *,
-                  SWIG_SHARED_PTR_QNAMESPACE::shared_ptr< CONST TYPE > *& "getCPtr($javainput)"
+                  SWIG_SHARED_PTR_QNAMESPACE::shared_ptr< CONST TYPE > *& "JCLASS.getCPtr($javainput)"
                   // SWIG_SHARED_PTR_QNAMESPACE::shared_ptr< CONST TYPE > *& "$typemap(jstype, TYPE).getCPtr($javainput)"
 
  %typemap(javaout) SWIG_SHARED_PTR_QNAMESPACE::shared_ptr< CONST TYPE > {
      long cPtr = $jnicall;
-     return (cPtr == 0) ? null : swigCreate(cPtr, true);
+     return (cPtr == 0) ? null : JCLASS.swigCreate(cPtr, true);
    }
  %typemap(javaout) SWIG_SHARED_PTR_QNAMESPACE::shared_ptr< CONST TYPE > & {
      long cPtr = $jnicall;
-     return (cPtr == 0) ? null : swigCreate(jstype, TYPE)(cPtr, true);
+     return (cPtr == 0) ? null : JCLASS.swigCreate(cPtr, true);
    }
  %typemap(javaout) SWIG_SHARED_PTR_QNAMESPACE::shared_ptr< CONST TYPE > * {
      long cPtr = $jnicall;
-     return (cPtr == 0) ? null : swigCreate(jstype, TYPE)(cPtr, true);
+     return (cPtr == 0) ? null : JCLASS.swigCreate(cPtr, true);
    }
  %typemap(javaout) SWIG_SHARED_PTR_QNAMESPACE::shared_ptr< CONST TYPE > *& {
      long cPtr = $jnicall;
-     return (cPtr == 0) ? null : swigCreate(jstype, TYPE)(cPtr, true);
+     return (cPtr == 0) ? null : JCLASS.swigCreate(cPtr, true);
    }
 
 

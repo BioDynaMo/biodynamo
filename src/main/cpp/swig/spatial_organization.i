@@ -22,8 +22,10 @@
 %module(directors="1") spatialOrganization
 
 %{
+#include <memory>
 #include <stdint.h>
 #include "spatial_organization/rational.h"
+#include "spatial_organization/exact_vector.h"
 using namespace cx3d::spatial_organization;
 %}
 
@@ -36,6 +38,7 @@ JAVA_LOAD_NATIVE_LIBRARY(cx3d_spatialOrganization);
 
 // typemap definitions, code modifications / additions
 %include "typemaps.i"
+%include "std_array_typemap.i"
 %include "cx3d_shared_ptr.i"
 %include "big_integer_typemap.i"
 
@@ -43,7 +46,22 @@ JAVA_LOAD_NATIVE_LIBRARY(cx3d_spatialOrganization);
 %apply long long { int64_t };
 %typemap(javainterfaces) cx3d::spatial_organization::Rational "ini.cx3d.spatialOrganization.interfaces.Rational"
 %typemap(jstype) cx3d::spatial_organization::Rational "ini.cx3d.spatialOrganization.interfaces.Rational"
-%shared_ptr(cx3d::spatial_organization::Rational);
+%cx3d_shared_ptr(Rational, cx3d::spatial_organization::Rational);
+
+// modifications for class ExactVector
+%typemap(javainterfaces) cx3d::spatial_organization::ExactVector "ini.cx3d.spatialOrganization.interfaces.ExactVector"
+%typemap(jstype) cx3d::spatial_organization::ExactVector "ini.cx3d.spatialOrganization.interfaces.ExactVector"
+%cx3d_shared_ptr(ExactVector, cx3d::spatial_organization::ExactVector);
+%stdarray_primitive_array_marshalling(double, Double_3, Double, double, 3);
+%stdarray_array_marshalling(std::shared_ptr<cx3d::spatial_organization::Rational>,
+                            shared_ptr_Rational_3,
+                            ini.cx3d.spatialOrganization.interfaces.Rational,
+                            3);
+%stdarray_array_marshalling(std::shared_ptr<cx3d::spatial_organization::ExactVector>,
+                            shared_ptr_ExactVector_3,
+                            ini.cx3d.spatialOrganization.interfaces.ExactVector,
+                            3);
 
 // add the original header files here
 %include "spatial_organization/rational.h"
+%include "spatial_organization/exact_vector.h"

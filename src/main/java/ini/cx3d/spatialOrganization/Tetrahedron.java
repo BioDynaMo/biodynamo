@@ -21,6 +21,8 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 
 package ini.cx3d.spatialOrganization;
 
+import ini.cx3d.spatialOrganization.factory.ExactVectorFactory;
+import ini.cx3d.spatialOrganization.interfaces.ExactVector;
 import ini.cx3d.spatialOrganization.interfaces.Rational;
 import ini.cx3d.spatialOrganization.factory.RationalFactory;
 
@@ -638,7 +640,7 @@ public class Tetrahedron<T> {
 			ExactVector[] points = new ExactVector[4];
 			// NewDelaunayTest.out("Points:");
 			for (int i = 0; i < points.length; i++) {
-				points[i] = new ExactVector(this.adjacentNodes[i].getPosition());
+				points[i] = new ExactVectorFactory().create(this.adjacentNodes[i].getPosition());
 				// for (int j = 1; j < 4; j++) {
 				// outFieldElement(points[i].getEntry(j));
 				// }
@@ -648,7 +650,7 @@ public class Tetrahedron<T> {
 					points[2].subtract(points[0]),
 					points[3].subtract(points[0]) };
 
-			Rational det = ExactVector.det(normals);
+			Rational det = ExactVectorFactory.det(normals);
 
 			Rational half = new RationalFactory().create(1, 2);
 			Rational[] offsets = new Rational[] {
@@ -663,7 +665,7 @@ public class Tetrahedron<T> {
 					normals, offsets, det);
 			ExactVector dummy = circumCenter.subtract(points[0]);
 			Rational squaredRadius = dummy.dotProduct(dummy);
-			dummy = circumCenter.subtract(new ExactVector(position));
+			dummy = circumCenter.subtract(new ExactVectorFactory().create(position));
 			Rational distance = dummy.dotProduct(dummy);
 			return (int) Math.signum(squaredRadius.compareTo(distance));
 		}

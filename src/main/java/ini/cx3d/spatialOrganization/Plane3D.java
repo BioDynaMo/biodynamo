@@ -21,6 +21,8 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 
 package ini.cx3d.spatialOrganization;
 
+import ini.cx3d.spatialOrganization.factory.ExactVectorFactory;
+import ini.cx3d.spatialOrganization.interfaces.ExactVector;
 import ini.cx3d.spatialOrganization.interfaces.Rational;
 import ini.cx3d.spatialOrganization.factory.RationalFactory;
 
@@ -211,10 +213,10 @@ public class Plane3D<T> {
 	 * on the plane.
 	 */
 	protected int orientationExact(double[] point1, double[] point2) {
-		ExactVector normalVector = new ExactVector(this.normalVector);
+		ExactVector normalVector = new ExactVectorFactory().create(this.normalVector);
 		Rational offset = new RationalFactory().create(this.offset);
-		return normalVector.dotProduct(new ExactVector(point1)).compareTo(offset) * 
-		       normalVector.dotProduct(new ExactVector(point2)).compareTo(offset);
+		return normalVector.dotProduct(new ExactVectorFactory().create(point1)).compareTo(offset) *
+		       normalVector.dotProduct(new ExactVectorFactory().create(point2)).compareTo(offset);
 	}
 	
 	/**

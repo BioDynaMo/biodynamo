@@ -21,6 +21,8 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 
 package ini.cx3d.spatialOrganization;
 
+import ini.cx3d.spatialOrganization.factory.ExactVectorFactory;
+import ini.cx3d.spatialOrganization.interfaces.ExactVector;
 import ini.cx3d.spatialOrganization.interfaces.Rational;
 import ini.cx3d.spatialOrganization.factory.RationalFactory;
 
@@ -759,7 +761,7 @@ public class OpenTriangleOrganizer<T> {
 	 */
 	private Rational calc2DSDDistanceExact(double[] av,
 			double[] bv, double[] thirdPoint) {
-		ExactVector avX = new ExactVector(av), bvX = new ExactVector(bv), thirdPointX = new ExactVector(
+		ExactVector avX = new ExactVectorFactory().create(av), bvX = new ExactVectorFactory().create(bv), thirdPointX = new ExactVectorFactory().create(
 				thirdPoint), avToThirdPointX = thirdPointX
 				.subtract(avX);
 		ExactVector[] normalsX = new ExactVector[] {
@@ -774,7 +776,7 @@ public class OpenTriangleOrganizer<T> {
 						.multiply(new RationalFactory().create(1, 2)) };
 		ExactVector circumCenter = Triangle3D
 				.calculate3PlaneXPoint(normalsX, offsetsX,
-						ExactVector.det(normalsX));
+						ExactVectorFactory.det(normalsX));
 		return circumCenter.subtract(
 				avX.add(bvX).multiply(new RationalFactory().create(1, 2)))
 				.squaredLength();
@@ -804,15 +806,15 @@ public class OpenTriangleOrganizer<T> {
 			double distance = dot(vector, vector);
 			if (distance < shortestDistance + tolerance) {
 				if (distance > shortestDistance - tolerance) {
-					Rational distNew = (new ExactVector(a
+					Rational distNew = (new ExactVectorFactory().create(a
 							.getPosition()))
 							.subtract(
-									new ExactVector(dummy
+									new ExactVectorFactory().create(dummy
 											.getPosition()))
 							.squaredLength();
-					Rational distLast = (new ExactVector(a
+					Rational distLast = (new ExactVectorFactory().create(a
 							.getPosition())).subtract(
-							new ExactVector(b.getPosition()))
+							new ExactVectorFactory().create(b.getPosition()))
 							.squaredLength();
 					if (distLast.compareTo(distNew) > 0) {
 						b = dummy;

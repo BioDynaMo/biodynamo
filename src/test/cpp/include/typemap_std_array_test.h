@@ -17,30 +17,46 @@
 
  You should have received a copy of the GNU General virtual License
  along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
-%module cx3d_test
+#ifndef TYPEMAP_STD_ARRAY_TEST_H_
+#define TYPEMAP_STD_ARRAY_TEST_H_
 
-%{
-#include "sim_state_serializable_test.h"
-#include "typemap_big_integer_test.h"
-#include "typemap_std_array_test.h"
-using namespace cx3d;
-%}
+#include <array>
+#include <cmath>
 
-// import depending modules
-%import "cx3d.i"
+namespace cx3d {
 
-// transpartently load native library - convenient for user
-%include "load_library.i"
-JAVA_LOAD_NATIVE_LIBRARY(cx3d_test);
+using std::abs;
 
-%include "big_integer_typemap.i"
-%include "std_array_typemap.i"
+class ArrayUtil {
+ private:
+  std::array<double, 3> content_;
 
-%stdarray_primitive_array_marshalling(double, Double_3, Double, double, 3);
+ public:
+  ArrayUtil()
+      : content_ { 98, 97, 96 } {
+  }
 
-// add the original header files here
-%include "sim_state_serializable_test.h"
-%include "typemap_big_integer_test.h"
-%include "typemap_std_array_test.h"
+  std::array<double, 3> const getContent() {
+    return content_;
+  }
+
+  double l1Norm(const std::array<double, 3>& array) {
+    double ret = 0;
+    for (double el : array) {
+      ret += abs(el);
+    }
+    return ret;
+  }
+
+  void scalarAddition(std::array<double, 3>& array, double scalar) {
+    for (size_t i = 0; i < array.size(); i++) {
+      array[i] += scalar;
+    }
+  }
+};
+
+}  // namespace cx3d
+
+#endif  // TYPEMAP_STD_ARRAY_TEST_H_

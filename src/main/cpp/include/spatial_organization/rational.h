@@ -44,7 +44,7 @@ class Rational : public std::enable_shared_from_this<Rational> {
   /**
    * If functions return a std::shared_ptr of <code>*this</code> using
    * <code>return shared_from_this();</code>, the following precondition must be met:
-   * There must be at least one std::std::shared_ptr p that owns *this!
+   * There must be at least one std::shared_ptr p that owns *this!
    * Calling <code>shared_from_this</code> on a non-shared object results in undefined behaviour.
    * http://mortoray.com/2013/08/02/safely-using-enable_shared_from_this/
    *
