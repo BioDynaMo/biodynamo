@@ -32,10 +32,12 @@ using std::abs;
 class ArrayUtil {
  private:
   std::array<double, 3> content_;
+  std::array<std::array<double, 3>, 2> two_dim_content_;
 
  public:
   ArrayUtil()
-      : content_ { 98, 97, 96 } {
+      : content_ { 98, 97, 96 },
+        two_dim_content_ { { { 95, 94, 93 }, { 92, 91, 90 } } } {
   }
 
   std::array<double, 3> const getContent() {
@@ -53,6 +55,28 @@ class ArrayUtil {
   void scalarAddition(std::array<double, 3>& array, double scalar) {
     for (size_t i = 0; i < array.size(); i++) {
       array[i] += scalar;
+    }
+  }
+
+  std::array<std::array<double, 3>, 2> const getTwoDimContent() {
+    return two_dim_content_;
+  }
+
+  double l1Norm(const std::array<std::array<double, 3>, 2>& array) {
+    double ret = 0;
+    for (auto arr : array) {
+      for (double el : arr) {
+        ret += abs(el);
+      }
+    }
+    return ret;
+  }
+
+  void scalarAddition(std::array<std::array<double, 3>, 2>& array, double scalar) {
+    for (size_t i = 0; i < array.size(); i++) {
+      for (size_t j = 0; j < array[i].size(); j++) {
+        array[i][j] += scalar;
+      }
     }
   }
 };

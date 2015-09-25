@@ -39,6 +39,7 @@ JAVA_LOAD_NATIVE_LIBRARY(cx3d_test);
 %include "std_array_typemap.i"
 
 %stdarray_primitive_array_marshalling(double, Double_3, Double, double, 3);
+%stdarray_2dim_array_marshalling(double, 3, ArrayT_Double_3_2, double, 2);
 
 // add the original header files here
 %include "sim_state_serializable_test.h"

@@ -50,4 +50,29 @@ public class TypemapStdArrayTest {
         Double[] expectedResult = new Double[]{98.0, 97.0};
         assertArrayEquals(new double[]{98.0, 97.0, 96.0}, array, 0.0001);
     }
+
+    @Test
+    public void test2dimArrayInputArgumentConst() {
+        double l1Norm = new ArrayUtil().l1Norm(new double[][]{{-1.0, 4.1, -5.5}, {-8.2, 7.3, 2.9}});
+        assertEquals(29, l1Norm, 0.0001);
+    }
+
+    @Test
+    public void test2dimArrayInputArgumentNonConst() {
+        double[][] array = {{-1.0, 4.1, -5.5}, {-8.2, 7.3, 2.9}};
+        new ArrayUtil().scalarAddition(array, 2.3);
+        double[][] expected = new double[][]{{1.3, 6.4, -3.2}, {-5.9, 9.6, 5.2}};
+        for(int i = 0; i < expected.length; i++){
+            assertArrayEquals(expected[i], array[i], 0.0001);
+        }
+    }
+
+    @Test
+    public void test2dimArrayReturnValue() {
+        double[][] array = new ArrayUtil().getTwoDimContent();
+        double[][] expected = new double[][]{{95.0, 94.0, 93.0},{92.0, 91.0, 90.0}};
+        for(int i = 0; i < expected.length; i++){
+            assertArrayEquals(expected[i], array[i], 0.0001);
+        }
+    }
 }
