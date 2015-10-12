@@ -94,6 +94,28 @@
                             </excludes>
                             <followSymlinks>false</followSymlinks>
                         </fileset>
+                        <fileset>
+                            <directory>${project.basedir}/cmake_wo_swig/</directory>
+                            <includes>
+                                <include>**/*</include>
+                            </includes>
+                            <excludes>
+                                <exclude>CMakeLists.txt</exclude>
+                                <exclude>build.sh</exclude>
+                            </excludes>
+                            <followSymlinks>false</followSymlinks>
+                        </fileset>
+                        <fileset>
+                            <directory>${project.basedir}/cmake_standalone/</directory>
+                            <includes>
+                                <include>**/*</include>
+                            </includes>
+                            <excludes>
+                                <exclude>CMakeLists.txt</exclude>
+                                <exclude>build.sh</exclude>
+                            </excludes>
+                            <followSymlinks>false</followSymlinks>
+                        </fileset>
                         <!-- remove generated C++ documentation -->
                         <fileset>
                             <directory>${project.basedir}/doc/</directory>
