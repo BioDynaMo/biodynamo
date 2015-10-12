@@ -1,24 +1,3 @@
-/*
- Copyright (C) 2009 Frédéric Zubler, Rodney J. Douglas,
- Dennis Göhlsdorf, Toby Weston, Andreas Hauri, Roman Bauer,
- Sabina Pfister, Adrian M. Whatley & Lukas Breitwieser.
-
- This file is part of CX3D.
-
- CX3D is free software: you can redistribute it and/or modify
- it under the terms of the GNU General virtual License as published by
- the Free Software Foundation, either version 3 of the License, or
- (at your option) any later version.
-
- CX3D is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General virtual License for more details.
-
- You should have received a copy of the GNU General virtual License
- along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
-*/
-
 /**
  * macro definition to generate a Java interface from a CPP class that has
  * only virtual abstract methods (e.g. virtual void action() = 0;).
@@ -72,7 +51,7 @@
   // preprocessor note: "Hello""World!" is equal to "Hello World!"
   %typemap(javain,pgcppname="n",
     pre= "    Internal"#CPPCLASS" n = "#SWIG_MODULE".makeInternal($javainput);")
-    CPPNS##CPPCLASS&  "Internal"#CPPCLASS".getCPtr(n)"
+    CPPNS##CPPCLASS, CPPNS##CPPCLASS&  "Internal"#CPPCLASS".getCPtr(n)"
 
   // declare proxy class that is used to "make a Java object Internal";
   %pragma(java) modulecode=%{
@@ -89,11 +68,61 @@
 
     // factory method that creates a new Internal##CPPCLASS##Proxy
     public static Internal##CPPCLASS makeInternal(EXISTING_JAVA_INTERFACE i) {
-      if (i instanceof Internal##CPPCLASS) {
+      if (i == null){
+        return null;
+      } else if (i instanceof Internal##CPPCLASS) {
         // If it already *is* an internal CPPCLASS don't wrap it again
         return (Internal##CPPCLASS) i;
       }
       return new Internal##CPPCLASS##Proxy(i);
+    }
+  %}
+%enddef
+
+
+%define %generate_java_interface_templated(SWIG_MODULE, TEMPLATE_NAME, CPPCLASS, CPP_TEMPLATE, CPPNS,
+  EXISTING_JAVA_INTERFACE, JAVA_METHOD_DELEGATES)
+
+  // enable cross language polymorphism for this cpp class
+  %feature("director") CPPCLASS##CPP_TEMPLATE;
+
+  // prepend "Internal" prefix for generated Java class
+  %rename(Internal##TEMPLATE_NAME) CPPCLASS##CPP_TEMPLATE;
+
+  // let generated Java class implement EXISTING_JAVA_INTERFACE
+  %typemap(javainterfaces) CPPNS##CPPCLASS##CPP_TEMPLATE "EXISTING_JAVA_INTERFACE"
+
+  // define type conversion from cpp to java
+  %typemap(jstype) CPPNS##CPPCLASS##CPP_TEMPLATE& "EXISTING_JAVA_INTERFACE";
+
+  // define wrapper function for Java objects that are passed to cpp code
+  // preprocessor note: "Hello""World!" is equal to "Hello World!"
+  %typemap(javain,pgcppname="n",
+    pre= "    Internal"#TEMPLATE_NAME" n = "#SWIG_MODULE".makeInternal($javainput);")
+    CPPNS##CPPCLASS, CPPNS##CPPCLASS&  "Internal"#TEMPLATE_NAME".getCPtr(n)"
+
+  // declare proxy class that is used to "make a Java object Internal";
+  %pragma(java) modulecode=%{
+
+    // proxy class definition
+    private static class Internal##TEMPLATE_NAME##Proxy extends Internal##TEMPLATE_NAME {
+      private EXISTING_JAVA_INTERFACE delegate;
+      public Internal##TEMPLATE_NAME##Proxy(EXISTING_JAVA_INTERFACE i) {
+        delegate = i;
+      }
+
+      JAVA_METHOD_DELEGATES
+    }
+
+    // factory method that creates a new Internal##CPPCLASS##Proxy
+    public static Internal##TEMPLATE_NAME makeInternal(EXISTING_JAVA_INTERFACE i) {
+      if (i == null){
+        return null;
+      } else if (i instanceof Internal##TEMPLATE_NAME) {
+        // If it already *is* an internal CPPCLASS don't wrap it again
+        return (Internal##TEMPLATE_NAME) i;
+      }
+      return new Internal##TEMPLATE_NAME##Proxy(i);
     }
   %}
 %enddef

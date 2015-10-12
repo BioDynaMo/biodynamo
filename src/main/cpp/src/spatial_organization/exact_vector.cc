@@ -148,5 +148,17 @@ shared_ptr<ExactVector> ExactVector::crossProduct(const shared_ptr<ExactVector>&
   return ExactVector::create(vector);
 }
 
+std::string ExactVector::toString() {
+  std::stringstream ret;
+  ret << "(";
+  for (size_t i = 0; i < elements_.size(); i++) {
+    if (i != 0)
+      ret << ", ";
+    ret << elements_[i]->toString();
+  }
+  ret << ")";
+  return ret.str();
+}
+
 }  // namespace spatial_organization
 }  // namespace cx3d

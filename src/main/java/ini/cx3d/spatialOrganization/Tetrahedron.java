@@ -22,13 +22,19 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 package ini.cx3d.spatialOrganization;
 
 import ini.cx3d.spatialOrganization.factory.ExactVectorFactory;
+import ini.cx3d.spatialOrganization.factory.Triangle3DFactory;
 import ini.cx3d.spatialOrganization.interfaces.ExactVector;
 import ini.cx3d.spatialOrganization.interfaces.Rational;
 import ini.cx3d.spatialOrganization.factory.RationalFactory;
 
+import ini.cx3d.spatialOrganization.interfaces.Triangle3D;
+import ini.cx3d.swig.spatialOrganization.TetrahedronT_PhysicalNodeCppType;
+
 import java.lang.reflect.Array;
 import java.util.Arrays;
+
 import static ini.cx3d.utilities.Matrix.*;
+import static ini.cx3d.utilities.StringUtilities.toStr;
 
 import java.util.Collections;
 import java.util.LinkedList;
@@ -39,18 +45,18 @@ import java.util.List;
  * to 4 incident nodes and 4 incident triangles. Additionally,
  * <code>Tetrahedron</code> stores information about the volume and the
  * circumsphere of the tetrahedron defined by the incident nodes.
- * 
+ *
  * Tetrahedra can either be finite or infinite. In the latter case, the first
  * node incident to this tetrahedron is set to <code>null</code>, indicating
  * that the other three endpoints of this tetrahedron are part of the convex
  * hull of all points in the current triangulation.
- * 
+ *
  * @author Dennis Goehlsdorf
- * 
+ *
  * @param <T> The type of the user objects stored in endpoints of a tetrahedron.
  */
 @SuppressWarnings("unchecked")
-public class Tetrahedron<T> {
+public class Tetrahedron<T> extends TetrahedronT_PhysicalNodeCppType {//extends InternalTetrahedronT_PhysicalNode{// implements ini.cx3d.spatialOrganization.interfaces.Tetrahedron<T> {
 	public static final double TOLERANCE_SETTING = 0.001;
 	// public static LinkedList<Tetrahedron> allTetrahedra = new
 	// LinkedList<Tetrahedron>();
@@ -203,7 +209,7 @@ public class Tetrahedron<T> {
 	 * Generates an initial tetrahedron for a new triangulation. A tetrahedron
 	 * is generated which has the four given nodes as endpoints and is adjacent
 	 * to four infinite tetrahedra.
-	 * 
+	 *
 	 * @param <T>
 	 *            The type of the user object stored in the incident nodes.
 	 * @param a
@@ -220,10 +226,10 @@ public class Tetrahedron<T> {
 	 */
 	public static <T> Tetrahedron<T> createInitialTetrahedron(SpaceNode<T> a,
 			SpaceNode<T> b, SpaceNode<T> c, SpaceNode<T> d) {
-		Triangle3D<T> triangleA = new Triangle3D<T>(b, c, d, null, null);
-		Triangle3D<T> triangleB = new Triangle3D<T>(a, c, d, null, null);
-		Triangle3D<T> triangleC = new Triangle3D<T>(a, b, d, null, null);
-		Triangle3D<T> triangleD = new Triangle3D<T>(a, b, c, null, null);
+		Triangle3D<T> triangleA = new Triangle3DFactory().create(b, c, d, null, null);
+		Triangle3D<T> triangleB = new Triangle3DFactory().create(a, c, d, null, null);
+		Triangle3D<T> triangleC = new Triangle3DFactory().create(a, b, d, null, null);
+		Triangle3D<T> triangleD = new Triangle3DFactory().create(a, b, c, null, null);
 		Tetrahedron<T> ret = new Tetrahedron<T>(triangleA, triangleB,
 				triangleC, triangleD, a, b, c, d);
 		OpenTriangleOrganizer oto = OpenTriangleOrganizer
@@ -238,7 +244,7 @@ public class Tetrahedron<T> {
 	/**
 	 * Constructs a new tetrahedron from a given triangle and a fourth point.
 	 * Missing triangles are created.
-	 * 
+	 *
 	 * @param oneTriangle
 	 *            The triangle delivering 3 of the new tetrahedron's endpoints.
 	 * @param fourthPoint
@@ -306,7 +312,7 @@ public class Tetrahedron<T> {
 
 	/**
 	 * Creates a new tetrahedron from four triangles and four points.
-	 * 
+	 *
 	 * @param triangleA
 	 *            The first triangle.
 	 * @param triangleB
@@ -358,7 +364,7 @@ public class Tetrahedron<T> {
 	/**
 	 * Extracts the user objects associated with the four endpoints of this
 	 * tetrahedron.
-	 * 
+	 *
 	 * @return An array of objects of type <code>T</code>.
 	 */
 	protected Object[] getVerticeContents() {
@@ -381,11 +387,11 @@ public class Tetrahedron<T> {
 
 	/**
 	 * Returns whether this tetrahedron is infinite.
-	 * 
+	 *
 	 * @return <code>true</code>, if the tetrahedron is infinite (first
 	 *         endpoint is null).
 	 */
-	protected boolean isInfinite() {
+	public boolean isInfinite() {
 		return adjacentNodes[0] == null;
 	}
 
@@ -393,7 +399,7 @@ public class Tetrahedron<T> {
 	 * Returns whether this tetrahedron is a flat tetrahedron. Used to simplify
 	 * distinction between the two types <code>Tetrahedron</code> and
 	 * <code>FlatTetrahedron</code>.
-	 * 
+	 *
 	 * @return <code>false</code> for all instances of
 	 *         <code>Tetrahedron</code>.
 	 */
@@ -404,7 +410,7 @@ public class Tetrahedron<T> {
 	/**
 	 * Changes the cross section area associated with one incident edge. Informs
 	 * incident edges if there is a change in their cross section area.
-	 * 
+	 *
 	 * @param number
 	 *            The index of the edge which cross section area should be
 	 *            changed.
@@ -560,7 +566,7 @@ public class Tetrahedron<T> {
 	/**
 	 * Changes the volume associated with this tetrahedron to a new value. The
 	 * incident nodes are informed about the volume change.
-	 * 
+	 *
 	 * @param newVolume
 	 *            The new volume.
 	 */
@@ -585,7 +591,7 @@ public class Tetrahedron<T> {
 	/**
 	 * Calculates the vectors connecting the first endpoint of this tetrahedron
 	 * with the other three points.
-	 * 
+	 *
 	 * @return A two-dimensional array of length 3x3 and type double, containing
 	 *         three vectors.
 	 */
@@ -626,7 +632,7 @@ public class Tetrahedron<T> {
 	 * Determines wether a given point lies inside or outside the circumsphere
 	 * of this tetrahedron or lies on the surface of this sphere. This function
 	 * uses precise arithmetics to calculate a reliable answer.
-	 * 
+	 *
 	 * @param position
 	 *            The position for which the orientation should be determined.
 	 * @return -1, if the point lies outside this tetrahedron's circumsphere, 1
@@ -661,7 +667,7 @@ public class Tetrahedron<T> {
 					points[0].add(points[3]).dotProduct(normals[2]).multiplyBy(
 							half) };
 //			if(!(offsets[0] instanceof RationalFactory)) throw new RuntimeException("");
-			ExactVector circumCenter = Triangle3D.calculate3PlaneXPoint(
+			ExactVector circumCenter = Triangle3DFactory.calculate3PlaneXPoint(
 					normals, offsets, det);
 			ExactVector dummy = circumCenter.subtract(points[0]);
 			Rational squaredRadius = dummy.dotProduct(dummy);
@@ -674,7 +680,7 @@ public class Tetrahedron<T> {
 	/**
 	 * Finds the maximal absolute value in a two-dimensional array. Used for
 	 * tolerance interval calculations.
-	 * 
+	 *
 	 * @param values
 	 *            The array which should be searched.
 	 * @return The entry in <code>values</code> with the highest absolute
@@ -692,7 +698,7 @@ public class Tetrahedron<T> {
 	/**
 	 * Finds the maximal absolute value in four arrays. Used for tolerance
 	 * interval calculations.
-	 * 
+	 *
 	 * @param values1
 	 *            The first array to be searched.
 	 * @param values2
@@ -790,7 +796,7 @@ public class Tetrahedron<T> {
 	 * Calculates the center of the circumsphere of this tetrahedron and the
 	 * volume. (The latter is simply convenient because the determinant needed
 	 * to calculate the volume is used anyways.)
-	 * 
+	 *
 	 * Along with the circumsphere calculation, an upper bound of the
 	 * uncertainity of this value is calculated.
 	 */
@@ -883,7 +889,7 @@ public class Tetrahedron<T> {
 		// double[] centerError = new double[3];
 		double[] add = add(scalarMult(offsets[0], cross12), scalarMult(
 				offsets[1], cross20), scalarMult(offsets[2], cross01));
-		circumCenter = Triangle3D.calculate3PlaneXPoint(normals, offsets, det);
+		circumCenter = Triangle3DFactory.calculate3PlaneXPoint(normals, offsets, det);
 		// if (det != 0) {
 		// tolerance = 0.0;
 		// for (int j = 0; j < centerError.length; j++)
@@ -940,11 +946,11 @@ public class Tetrahedron<T> {
 	 * an endpoint has been moved. Originally used to increase the speed of
 	 * circumsphere calculations, but now uses the same functions as
 	 * {@link #calculateCircumSphere()} because the old method increased the
-	 * uncertainity of the circumcenter. 
-	 * 
+	 * uncertainity of the circumcenter.
+	 *
 	 * In addition to calcualting the circumsphere, all incident triangles that are
 	 * incident to the moved node are informed about the movement.
-	 * 
+	 *
 	 * @param movedNode
 	 *            The node that was moved.
 	 */
@@ -970,7 +976,7 @@ public class Tetrahedron<T> {
 	/**
 	 * Determines wether a given point lies inside or outside the circumsphere
 	 * of this tetrahedron or lies on the surface of this sphere.
-	 * 
+	 *
 	 * @param point
 	 *            The point for which the orientation should be determined.
 	 * @return -1, if the point lies outside this tetrahedron's circumsphere, 1
@@ -1025,7 +1031,7 @@ public class Tetrahedron<T> {
 	/**
 	 * Determines wether a given point lies truly inside the circumsphere of
 	 * this tetrahedron
-	 * 
+	 *
 	 * @param point
 	 *            The point for which the orientation should be determined.
 	 * @return <code>true</code> if the distance of the point to the center of
@@ -1039,7 +1045,7 @@ public class Tetrahedron<T> {
 	/**
 	 * Determines wether a given point lies truly inside the circumsphere of
 	 * this tetrahedron
-	 * 
+	 *
 	 * @param point
 	 *            The point for which the orientation should be determined.
 	 * @return <code>true</code> if the distance of the point to the center of
@@ -1053,19 +1059,21 @@ public class Tetrahedron<T> {
 	/**
 	 * Returns a String representation of this tetrahedron, consisting of the
 	 * identification numbers of the endpoints.
-	 * 
+	 *
 	 * @return A string in the format "(x1, x2, x3, x4)", where the xi denote
 	 *         the ID's of the endpoints of this tetrahedron.
 	 */
 	public String toString() {
 		return "(" + adjacentNodes[0] + "," + adjacentNodes[1] + ","
-				+ adjacentNodes[2] + "," + adjacentNodes[3] + ")";
+				+ adjacentNodes[2] + "," + adjacentNodes[3] + ", "+ toStr(circumCenter) +
+				", "+ toStr(squaredRadius)+
+				", "+ toStr(tolerance)+")";
 	}
 
 	/**
 	 * Removes this tetrahedron from the triangulation. All the incident nodes,
 	 * edges and triangles are informed that this tetrahedron is being removed.
-	 * 
+	 *
 	 * !IMPORTANT!: No triangle organizer is informed about the removement of
 	 * this tetrahedron. A caller of this function must keep track of the new
 	 * open triangles itself!
@@ -1101,13 +1109,13 @@ public class Tetrahedron<T> {
 	/**
 	 * Replaces one of the incident triangles of this tetrahedron. Automatically
 	 * exchanges the affected edges, too.
-	 * 
+	 *
 	 * @param oldTriangle
 	 *            The triangle that should be replaced.
 	 * @param newTriangle
 	 *            The new trianlge.
 	 */
-	protected void replaceTriangle(Triangle3D<T> oldTriangle,
+	protected void replaceTriangle(ini.cx3d.spatialOrganization.interfaces.Triangle3D<T> oldTriangle,
 			Triangle3D<T> newTriangle) {
 		newTriangle.addTetrahedron(this);
 		Tetrahedron otherTetrahedron = newTriangle.getOppositeTetrahedron(this);
@@ -1139,7 +1147,7 @@ public class Tetrahedron<T> {
 	/**
 	 * Determines which index a given node has in this tetrahedron's list of
 	 * endpoints.
-	 * 
+	 *
 	 * @param node
 	 *            The node of interest.
 	 * @return An index between 0 and 3.
@@ -1156,12 +1164,12 @@ public class Tetrahedron<T> {
 	/**
 	 * Determines which index a given triangle has in this tetrahedron's list of
 	 * incident triangles.
-	 * 
+	 *
 	 * @param triangle
 	 *            The triangle of interest.
 	 * @return An index between 0 and 3.
 	 */
-	protected int getTriangleNumber(Triangle3D triangle) {
+	protected int getTriangleNumber(ini.cx3d.spatialOrganization.interfaces.Triangle3D triangle) {
 		for (int i = 0; i < 4; i++) {
 			if (adjacentTriangles[i] == triangle)
 				return i;
@@ -1173,7 +1181,7 @@ public class Tetrahedron<T> {
 	/**
 	 * Determines the index of the edge connecting two given endpoints of the
 	 * tetrahedron in this tetrahedron's list of incident edges.
-	 * 
+	 *
 	 * @param nodeNumber1
 	 *            The index of the first endpoint of the edge.
 	 * @param nodeNumber2
@@ -1188,7 +1196,7 @@ public class Tetrahedron<T> {
 
 	/**
 	 * Determines the edge that connects two endpoints of this tetrahedron.
-	 * 
+	 *
 	 * @param nodeNumber1
 	 *            The index of the first endpoint of the edge.
 	 * @param nodeNumber2
@@ -1201,7 +1209,7 @@ public class Tetrahedron<T> {
 
 	/**
 	 * Determines the edge that connects two endpoints of this tetrahedron.
-	 * 
+	 *
 	 * @param a
 	 *            The first endpoint of the edge.
 	 * @param b
@@ -1215,7 +1223,7 @@ public class Tetrahedron<T> {
 
 	/**
 	 * Determines the edge that connects two endpoints of this tetrahedron.
-	 * 
+	 *
 	 * @param a
 	 *            The first endpoint of the edge.
 	 * @param b
@@ -1229,7 +1237,7 @@ public class Tetrahedron<T> {
 	/**
 	 * Returns the incident triangle opposite to a given endpoint of this
 	 * tetrahedron.
-	 * 
+	 *
 	 * @param node
 	 *            An endpoint of this tetrahedron.
 	 * @return A reference to the triangle that lies opposite to
@@ -1247,16 +1255,17 @@ public class Tetrahedron<T> {
 	/**
 	 * Returns the incident node opposite to a given triangle which is incident
 	 * to this tetrahedron.
-	 * 
+	 *
 	 * @param triangle
 	 *            An incident triangle of this tetrahedron.
 	 * @return The endpoint of this triangle that lies opposite to
 	 *         <code>triangle</code>.
 	 */
-	protected SpaceNode<T> getOppositeNode(Triangle3D triangle) {
+	public SpaceNode<T> getOppositeNode(ini.cx3d.spatialOrganization.interfaces.Triangle3D triangle) {
 		for (int i = 0; i < 4; i++) {
-			if (adjacentTriangles[i] == triangle)
+			if (adjacentTriangles[i].equals(triangle)) {
 				return adjacentNodes[i];
+			}
 		}
 		throw new RuntimeException("The Triangle " + triangle
 				+ " is not adjacent to the Tetrahedron " + this);
@@ -1265,13 +1274,13 @@ public class Tetrahedron<T> {
 	/**
 	 * Returns a reference to the triangle connecting this tetrahedron with
 	 * another one.
-	 * 
+	 *
 	 * @param tetrahedron
 	 *            An adjacent tetrahedron.
 	 * @return The triangle which is incident to this tetrahedron and
 	 *         <code>tetrahedron</code>.
 	 */
-	protected Triangle3D<T> getConnectingTriangle(Tetrahedron tetrahedron) {
+	protected ini.cx3d.spatialOrganization.interfaces.Triangle3D<T> getConnectingTriangle(Tetrahedron tetrahedron) {
 		for (int i = 0; i < 4; i++) {
 			if (adjacentTriangles[i].isAdjacentTo(tetrahedron))
 				return adjacentTriangles[i];
@@ -1283,7 +1292,7 @@ public class Tetrahedron<T> {
 	/**
 	 * Returns this index of the triangle connecting this tetrahedron with
 	 * another one.
-	 * 
+	 *
 	 * @param tetrahedron
 	 *            An adjacent tetrahedron.
 	 * @return An index between 0 and 3 which is the position of the triangle
@@ -1302,7 +1311,7 @@ public class Tetrahedron<T> {
 	/**
 	 * Returns the three incident triangles that are adjacent to a given
 	 * triangle.
-	 * 
+	 *
 	 * @param base
 	 *            A triangle which is incident to this tetrahedron.
 	 * @return An array of three triangles.
@@ -1319,7 +1328,7 @@ public class Tetrahedron<T> {
 	 * Given two nodes incident to this tetrahedron, this function returns
 	 * another endpoint. The returned endpoint is different from the result of
 	 * {@link #getSecondOtherNode(SpaceNode, SpaceNode)}.
-	 * 
+	 *
 	 * @param nodeA
 	 *            A first incident node.
 	 * @param nodeB
@@ -1338,7 +1347,7 @@ public class Tetrahedron<T> {
 	 * Given two nodes incident to this tetrahedron, this function returns
 	 * another endpoint. The returned endpoint is different from the result of
 	 * {@link #getFirstOtherNode(SpaceNode, SpaceNode)}.
-	 * 
+	 *
 	 * @param nodeA
 	 *            A first incident node.
 	 * @param nodeB
@@ -1359,7 +1368,7 @@ public class Tetrahedron<T> {
 	 * <code>connectingTriangleNumver</code> is truly cut by a line connecting
 	 * the given coordinate and the endpoint of this tetrahedron that lies
 	 * opposite to the same triangle.
-	 * 
+	 *
 	 * @param point
 	 *            The coordinate that should be tested.
 	 * @param connectingTriangleNumber
@@ -1407,7 +1416,7 @@ public class Tetrahedron<T> {
 	 * <code>connectingTriangleNumver</code> is cut by a line connecting the
 	 * given coordinate and the endpoint of this tetrahedron that lies opposite
 	 * to the same triangle.
-	 * 
+	 *
 	 * @param point
 	 *            The coordinate that should be tested.
 	 * @param connectingTriangleNumber
@@ -1481,7 +1490,7 @@ public class Tetrahedron<T> {
 			// }
 			// if (NewDelaunayTest.createOutput())
 			// NewDelaunayTest.out("isPointInConvexPosition");
-			//				
+			//
 			// }
 			return -1;
 		}
@@ -1489,7 +1498,7 @@ public class Tetrahedron<T> {
 
 	/**
 	 * Removes two flat tetrahedra that have two common triangles.
-	 * 
+	 *
 	 * @param <T>
 	 *            The type of the user objects stored in the given tetrahedra.
 	 * @param tetrahedronA
@@ -1566,7 +1575,7 @@ public class Tetrahedron<T> {
 	 * @param <T> The type of the user objects stored in the endpoints of the two tetrahedra.
 	 * @param tetrahedronA The first tetrahedron to flip.
 	 * @param tetrahedronB The second tetrahedron to flip.
-	 * @return An array of tetrahedra which were created during the process of flipping.  
+	 * @return An array of tetrahedra which were created during the process of flipping.
 	 */
 	protected static <T> Tetrahedron<T>[] flip2to3(Tetrahedron<T> tetrahedronA,
 			Tetrahedron<T> tetrahedronB) {
@@ -1593,7 +1602,7 @@ public class Tetrahedron<T> {
 			Triangle3D<T>[] newTriangles = new Triangle3D[3];
 			SpaceNode[] connectingTriangleNodes = connectingTriangle.getNodes();
 			for (int i = 0; i < 3; i++)
-				newTriangles[i] = new Triangle3D<T>(upperNode, lowerNode,
+				newTriangles[i] = new Triangle3DFactory().create(upperNode, lowerNode,
 						connectingTriangleNodes[i], null, null);
 			tetrahedronA.remove();
 			tetrahedronB.remove();
@@ -1635,7 +1644,7 @@ public class Tetrahedron<T> {
 	 * @param tetrahedronA The first tetrahedron to flip.
 	 * @param tetrahedronB The second tetrahedron to flip.
 	 * @param tetrahedronC The third tetrahedron to flip.
-	 * @return An array of tetrahedra which were created during the process of flipping.  
+	 * @return An array of tetrahedra which were created during the process of flipping.
 	 */
 	protected static <T> Tetrahedron<T>[] flip3to2(Tetrahedron<T> tetrahedronA,
 			Tetrahedron<T> tetrahedronB, Tetrahedron<T> tetrahedronC) {
@@ -1653,7 +1662,7 @@ public class Tetrahedron<T> {
 		SpaceNode<T> lowerNode = tetrahedronA.getSecondOtherNode(
 				newTriangleNodes[0], newTriangleNodes[1]);
 
-		Triangle3D<T> newTriangle = new Triangle3D<T>(newTriangleNodes[0],
+		Triangle3D<T> newTriangle = new Triangle3DFactory().create(newTriangleNodes[0],
 				newTriangleNodes[1], newTriangleNodes[2], null, null);
 
 		Tetrahedron[] ret = new Tetrahedron[2];
@@ -1712,14 +1721,14 @@ public class Tetrahedron<T> {
 	/**
 	 * @return An array containing the nodes incident to this tetrahedron.
 	 */
-	protected SpaceNode<T>[] getAdjacentNodes() {
+	public SpaceNode<T>[] getAdjacentNodes() {
 		return adjacentNodes;
 	}
 
 	/**
-	 * Returns the second tetrahedron that is incident to the incident triangle with index <code>number</code>. 
-	 * @param number An index specifying a position in the list of triangles of this tetrahedron. The 
-	 * corresponding triangle will be chosen to determine the adjacent tetrahedron. 
+	 * Returns the second tetrahedron that is incident to the incident triangle with index <code>number</code>.
+	 * @param number An index specifying a position in the list of triangles of this tetrahedron. The
+	 * corresponding triangle will be chosen to determine the adjacent tetrahedron.
 	 * @return An adjacent tetrahedron.
 	 */
 	protected Tetrahedron<T> getAdjacentTetrahedron(int number) {
@@ -1750,7 +1759,7 @@ public class Tetrahedron<T> {
 	 * Walks toward a specified point. If the point lies inside this
 	 * tetrahedron, this tetrahedron is returned. Otherwise, an adjacent
 	 * tetrahedron is returned that lies closer to the point.
-	 * 
+	 *
 	 * @param coordinate
 	 *            The coordinate that should be approximated.
 	 * @return An adjacent tetrahedron that lies closer to the specified point
@@ -1805,10 +1814,10 @@ public class Tetrahedron<T> {
 	}
 
 	/**
-	 * When this tetrahedron is removed, there might still be references to 
+	 * When this tetrahedron is removed, there might still be references to
 	 * this tetrahedron.  Therefore, a flag is set to save that this tetrahedron was removed and
 	 * this can be read using this function.
-	 *  
+	 *
 	 * @return <code>true</code>, iff this tetrahedron is still part of the triangulation.
 	 */
 	protected boolean isValid() {
@@ -1818,7 +1827,7 @@ public class Tetrahedron<T> {
 	/**
 	 * Returns whether a given tetrahedron is adjacent to this tetrahedron.
 	 * @param otherTetrahedron The potential neighbor of this tetrahedron.
-	 * @return <code>true</code>, iff this tetrahedron is adjacent to <code>otherTetrahedron</code>.  
+	 * @return <code>true</code>, iff this tetrahedron is adjacent to <code>otherTetrahedron</code>.
 	 */
 	public boolean isNeighbor(Tetrahedron otherTetrahedron) {
 		return (adjacentTriangles[0].isAdjacentTo(otherTetrahedron))

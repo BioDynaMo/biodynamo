@@ -22,13 +22,17 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 package ini.cx3d.spatialOrganization;
 
 import ini.cx3d.spatialOrganization.factory.ExactVectorFactory;
+import ini.cx3d.spatialOrganization.factory.Triangle3DFactory;
 import ini.cx3d.spatialOrganization.interfaces.ExactVector;
 import ini.cx3d.spatialOrganization.interfaces.Rational;
 import ini.cx3d.spatialOrganization.factory.RationalFactory;
 
 import static ini.cx3d.utilities.Matrix.*;
+import static ini.cx3d.utilities.StringUtilities.toStr;
 
 /**
+ * NOTE: This class has been replaced by a native implementation! It is merely used for debugging purposes!
+ *
  * Represents a triangle in three-dimensional space. A triangle is defined by its three endpoints, and two incident tetrahedra.
  * Each triangle stores information about the corresponding plane equation as well as its circumcircle. 
  * 
@@ -41,7 +45,7 @@ import static ini.cx3d.utilities.Matrix.*;
  * 
  * @param <T>
  */
-public class Triangle3D<T> extends Plane3D<T> {
+public class Triangle3D<T> extends Plane3D<T> implements ini.cx3d.spatialOrganization.interfaces.Triangle3D<T> {
 
 	/**
 	 * The two tetrahedra that are incident to this triangle.
@@ -85,7 +89,7 @@ public class Triangle3D<T> extends Plane3D<T> {
 
 	/**
 	 * Creates a new triangle from three nodes and two tetrahedra.
-	 * 
+	 *
 	 * @param sn1
 	 *            The first incident node.
 	 * @param sn2
@@ -116,13 +120,14 @@ public class Triangle3D<T> extends Plane3D<T> {
 
 	/**
 	 * Compares this triangle to another triangle.
-	 * 
+	 *
 	 * @param otherTriangle
 	 *            The other triangle.
 	 * @return <code>true</code>, if both triangles are incident to the same
 	 *         nodes.
 	 */
-	public boolean isSimilarTo(Triangle3D<T> otherTriangle) {
+	@Override
+	public boolean isSimilarTo(ini.cx3d.spatialOrganization.interfaces.Triangle3D<T> otherTriangle) {
 		SpaceNode<T>[] otherNodes = otherTriangle.getNodes();
 		return isAdjacentTo(otherNodes[0]) && isAdjacentTo(otherNodes[1])
 				&& isAdjacentTo(otherNodes[2]);
@@ -131,10 +136,10 @@ public class Triangle3D<T> extends Plane3D<T> {
 	/**
 	 * Tests whether this triangle has infinite size, meaning that it is
 	 * incident to <code>null</code>.
-	 * 
+	 *
 	 * @return <code>true</code>, if this tetrahedron is incident to a '<code>null</code>'-node.
 	 */
-	protected boolean isInfinite() {
+	public boolean isInfinite() {
 		return nodes[0] == null;
 	}
 
@@ -157,12 +162,16 @@ public class Triangle3D<T> extends Plane3D<T> {
 
 	/**
 	 * Creates a string representation of this triangle.
-	 * 
+	 *
 	 * @return A string in the format "(ID1, ID2, ID3)", where IDx denote the
 	 *         ID's of the incident nodes.
 	 */
 	public String toString() {
-		return "(" + nodes[0] + "," + nodes[1] + "," + nodes[2] + ")";
+		return "{(" + nodes[0] + "," + nodes[1] + "," + nodes[2] + "), " +
+				"(" + adjacentTetrahedra[0] + "," + adjacentTetrahedra[1]+ "), " +
+				toStr(circumCenter)+", " +planeUpdated+ ", " +circumCenterUpdated +
+				", " +upperSidePositive+ ", " +connectionChecked+
+		", " +toStr(normalVector)+ ", " +toStr(offset)+ ", " +toStr(tolerance)+ ", " +normalVectorUpdated+"}";
 	}
 
 	/**
@@ -173,14 +182,15 @@ public class Triangle3D<T> extends Plane3D<T> {
 	 * the upper side of the plane defined by this triangle.
 	 * <p>
 	 * This distance is not necessarily normalized!
-	 * 
+	 *
 	 * @param fourthPoint
 	 *            The 4th point defining the circumsphere.
 	 * @return The signed Delaunay distance or {@link Double#MAX_VALUE} if it
 	 *         cannot be calculated.
-	 * 
+	 *
 	 * @see #calculateSDDistance(double[])
 	 */
+	@Override
 	public double getSDDistance(double[] fourthPoint) {
 		if (!isInfinite() && onUpperSide(fourthPoint)) {
 			double sdDistance = calculateSDDistance(fourthPoint);
@@ -198,7 +208,7 @@ public class Triangle3D<T> extends Plane3D<T> {
 	 * circumcenter touching all three points of the triangle.
 	 * <p>
 	 * This distance is not necessarily normalized!
-	 * 
+	 *
 	 * @param fourthPoint
 	 *            The 4th point defining the circumsphere.
 	 * @return The signed delaunay distance or -1 if it cannot be calculated.
@@ -278,7 +288,7 @@ public class Triangle3D<T> extends Plane3D<T> {
 	 * Computes the normal vector for the plane equation of this triangle. The
 	 * normal vector is calculated using precise arithmetics and therefore, the
 	 * result is given as an instance of <code>ExactVector</code>.
-	 * 
+	 *
 	 * @return The normal vector for this triangle.
 	 */
 	protected ExactVector getExactNormalVector() {
@@ -289,7 +299,7 @@ public class Triangle3D<T> extends Plane3D<T> {
 	 * Computes the normal vector for a plane equation given by three position
 	 * vectors. The normal vector is calculated using precise arithmetics and
 	 * therefore, the result is given as an instance of <code>ExactVector</code>.
-	 * 
+	 *
 	 * @param points
 	 *            The endpoints of the triangle for which the normal vector
 	 *            should be calculated, given in exact representation.
@@ -307,12 +317,13 @@ public class Triangle3D<T> extends Plane3D<T> {
 	 * points of this triangle and the given 4th point and the center of the
 	 * circumcenter touching all three points of the triangle. This distance is
 	 * NOT normalized since the vector orthogonal is not normalized!
-	 * 
+	 *
 	 * @param fourthPoint
 	 *            The 4th point defining the circumsphere.
 	 * @return The signed delaunay distance or -1 if it cannot be calculated.
-	 * 
+	 *
 	 */
+	@Override
 	public Rational getSDDistanceExact(double[] fourthPoint) {// , double[]
 																// occupiedSide)
 																// {
@@ -359,7 +370,7 @@ public class Triangle3D<T> extends Plane3D<T> {
 	 * The calculated distance is not normalized! It can therefore only be used
 	 * to compare this signed delaunay distance with the delaunay distance of
 	 * the same triangle to another coordinate.
-	 * 
+	 *
 	 * @param points
 	 *            An array of three vectors. The first three points are expected
 	 *            to be the three endpoints of the triangle and the fourth is
@@ -393,11 +404,12 @@ public class Triangle3D<T> extends Plane3D<T> {
 	 * Calculates the center of the circumsphere around the three endpoints of this triangle and a
 	 * given fourth point.
 	 * <p>
-	 * <b>Currently, there is no function implemented that estimates the error of this function's 
+	 * <b>Currently, there is no function implemented that estimates the error of this function's
 	 * result. Therefore, the function {@link Tetrahedron#calculateCircumSphere()} should be preferred.</b>
 	 * @param fourthPoint The fourth point defining the sphere.
 	 * @return The coordinate of the center of the circumsphere if it can be computed and <code>null</code> else.
 	 */
+	@Override
 	public double[] calculateCircumSphereCenter(double[] fourthPoint) {
 		if (!isInfinite()) {
 			double sd = calculateSDDistance(fourthPoint);
@@ -410,12 +422,13 @@ public class Triangle3D<T> extends Plane3D<T> {
 	 * Calculates the center of the circumsphere around the three endpoints of this triangle and a
 	 * given fourth point if the circumcenter of this triangle is updated.
 	 * <p>
-	 * <b>Currently, there is no function implemented that estimates the error of this function's 
+	 * <b>Currently, there is no function implemented that estimates the error of this function's
 	 * result. Therefore, the function {@link Tetrahedron#calculateCircumSphere()} should be preferred.</b>
 	 * @param fourthPoint The fourth point defining the sphere.
-	 * @return The coordinate of the center of the circumsphere if the circumcenter of 
+	 * @return The coordinate of the center of the circumsphere if the circumcenter of
 	 * 	this triangle was updated and <code>null</code> else.
 	 */
+	@Override
 	public double[] calculateCircumSphereCenterIfEasy(double[] fourthPoint) {
 		if (circumCenterUpdated) {
 			// checkIfUpdated();
@@ -427,7 +440,7 @@ public class Triangle3D<T> extends Plane3D<T> {
 
 	/**
 	 * Calculates the crossing point of three planes given in normal form.
-	 * 
+	 *
 	 * @param normals
 	 *            The normals of the three planes. <code>normals[i]</code>
 	 *            denotes the normal vector of the <code>i</code>th plane.
@@ -453,9 +466,9 @@ public class Triangle3D<T> extends Plane3D<T> {
 	}
 
 	/**
-	 * Calculates the crossing point of three planes given in normal form using 
-	 * precise arithmetics. 
-	 * 
+	 * Calculates the crossing point of three planes given in normal form using
+	 * precise arithmetics.
+	 *
 	 * @param normals
 	 *            The normals of the three planes. <code>normals[i]</code>
 	 *            denotes the normal vector of the <code>i</code>th plane.
@@ -486,7 +499,7 @@ public class Triangle3D<T> extends Plane3D<T> {
 
 	/**
 	 * Calculates the crossing point of three planes given in normal form.
-	 * 
+	 *
 	 * @param normals
 	 *            The normals of the three planes. <code>normals[i]</code>
 	 *            denotes the normal vector of the <code>i</code>th plane.
@@ -498,13 +511,14 @@ public class Triangle3D<T> extends Plane3D<T> {
 	 */
 	public static double[] calculate3PlaneXPoint(double[][] normals,
 			double[] offsets) {
-		return calculate3PlaneXPoint(normals, offsets, det(normals));
+		return Triangle3DFactory.calculate3PlaneXPoint(normals, offsets, det(normals));
 	}
 
 	/**
-	 * This function informs the triangle that one of its incident nodes moved. 
+	 * This function informs the triangle that one of its incident nodes moved.
 	 * Therefore, the plane equation and the circumcircle will have to be recalculated.
 	 */
+	@Override
 	public void informAboutNodeMovement() {
 		this.circumCenterUpdated = false;
 		this.planeUpdated = false;
@@ -566,7 +580,7 @@ public class Triangle3D<T> extends Plane3D<T> {
 	}
 
 	/**
-	 * Calculates the exact circumcenter for a triangle defined by three 
+	 * Calculates the exact circumcenter for a triangle defined by three
 	 * position vectors and one normal vector.
 	 * @param points The coordinates of the points of the triangle.
 	 * @param normalVector A normal vector of the triangle.
@@ -589,6 +603,7 @@ public class Triangle3D<T> extends Plane3D<T> {
 	 * Updates the plane equation for this triangle if and incident node has moved since the last 
 	 * update.
 	 */
+	@Override
 	public void updatePlaneEquationIfNecessary() {
 		if (!planeUpdated && !isInfinite()) {
 			if ((this.nodes[0].getId() == 6) && (this.nodes[1].getId() == 8)
@@ -608,6 +623,7 @@ public class Triangle3D<T> extends Plane3D<T> {
 	/**
 	 * Updates all parameters of this triangle.
 	 */
+	@Override
 	public void update() {
 		updateCircumCenterIfNecessary();
 		updatePlaneEquationIfNecessary();
@@ -626,6 +642,7 @@ public class Triangle3D<T> extends Plane3D<T> {
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override
 	public int orientationExact(double[] point1, double[] point2) {
 		ExactVector[] points = getExactPositionVectors();
 		ExactVector normalVector = points[1].subtract(points[0]).crossProduct(
@@ -646,6 +663,7 @@ public class Triangle3D<T> extends Plane3D<T> {
 	 * @return 1, if the distance of <code>point</code> is smaller than the radius of the circumcircle, 0, if it is equal and 1, if
 	 * it is bigger. 
 	 */
+	@Override
 	public int circleOrientation(double[] point) {
 		updateCircumCenterIfNecessary();
 		double[] dummy = subtract(point, this.circumCenter);
@@ -670,6 +688,7 @@ public class Triangle3D<T> extends Plane3D<T> {
 			return -1;
 	}
 
+
 	/**
 	 * Given a tetrahedron which is incident to this triangle, this function returns the second tetrahedron incident to 
 	 * this triangle.
@@ -678,11 +697,11 @@ public class Triangle3D<T> extends Plane3D<T> {
 	 * @throws RuntimeException if <code>incidentTetrahedron</code> is not incident to this triangle.
 	 */
 	public Tetrahedron<T> getOppositeTetrahedron(Tetrahedron<T> incidentTetrahedron) {
-		if (adjacentTetrahedra[0] == incidentTetrahedron)
+		if (adjacentTetrahedra[0] == incidentTetrahedron) {
 			return adjacentTetrahedra[1];
-		else if (adjacentTetrahedra[1] == incidentTetrahedron)
+		} else if (adjacentTetrahedra[1] == incidentTetrahedron){
 			return adjacentTetrahedra[0];
-		else
+		}else
 			throw new RuntimeException("Tetrahedron not known!");
 	}
 
@@ -701,15 +720,16 @@ public class Triangle3D<T> extends Plane3D<T> {
 	 * @return A reference to the array storing the three endpoints of this
 	 * tetrahedron.
 	 */
-	protected SpaceNode<T>[] getNodes() {
+	public SpaceNode<T>[] getNodes() {
 		return nodes;
 	}
+
 
 	/**
 	 * Adds an incident tetrahedron to this triangle. 
 	 * @param tetrahedron A new tetrahedron which is incident to this triangle. 
 	 */
-	protected void addTetrahedron(Tetrahedron<T> tetrahedron/*
+	public void addTetrahedron(Tetrahedron<T> tetrahedron/*
 															 * , int
 															 * positionInTetrahedron
 															 */) {
@@ -732,7 +752,7 @@ public class Triangle3D<T> extends Plane3D<T> {
 	 * @return <code>true</code>, iff this triangle has already been tested for the 
 	 * Delaunay property. 
 	 */
-	protected boolean wasCheckedAlready(int checkingIndex) {
+	public boolean wasCheckedAlready(int checkingIndex) {
 		if (checkingIndex == connectionChecked)
 			return true;
 		else {
@@ -746,7 +766,7 @@ public class Triangle3D<T> extends Plane3D<T> {
 	 * @param tetrahedron a tetrahedron that might be incident to this triangle.
 	 * @return <code>true</code>, iff the tetrahedron is incident to this triangle.
 	 */
-	protected boolean isAdjacentTo(Tetrahedron<T> tetrahedron) {
+	public boolean isAdjacentTo(Tetrahedron<T> tetrahedron) {
 		return (this.adjacentTetrahedra[0] == tetrahedron)
 				|| (this.adjacentTetrahedra[1] == tetrahedron);
 	}
@@ -757,7 +777,7 @@ public class Triangle3D<T> extends Plane3D<T> {
 	 * @param node A node that might be incident to this triangle.
 	 * @return <code>true</code>, iff the node is incident to this triangle.
 	 */
-	protected boolean isAdjacentTo(SpaceNode<T> node) {
+	public boolean isAdjacentTo(SpaceNode<T> node) {
 		return (this.nodes[0] == node) || (this.nodes[1] == node)
 				|| (this.nodes[2] == node);
 	}
@@ -766,7 +786,7 @@ public class Triangle3D<T> extends Plane3D<T> {
 	 * Tests if this triangle is not incident to any tetrahedron.
 	 * @return <code>true</code>, iff this triangle has no incident tetrahedra.
 	 */
-	protected boolean isCompletelyOpen() {
+	public boolean isCompletelyOpen() {
 		return (adjacentTetrahedra[0] == null)
 				&& (adjacentTetrahedra[1] == null);
 	}
@@ -775,7 +795,7 @@ public class Triangle3D<T> extends Plane3D<T> {
 	 * Tests if this triangle is incident to two tetrahedra.
 	 * @return <code>true</code>, iff this triangle has two incident tetrahedra.
 	 */
-	protected boolean isClosed() {
+	public boolean isClosed() {
 		return (adjacentTetrahedra[0] != null)
 				&& (adjacentTetrahedra[1] != null);
 	}
@@ -787,6 +807,7 @@ public class Triangle3D<T> extends Plane3D<T> {
 	 * @return <code>true</code>, if this triangle has an open side and
 	 * if the given coordinate lies on the open side.
 	 */
+	@Override
 	public boolean isOpenToSide(double[] point) {
 		if (adjacentTetrahedra[0] == null) {
 			if (adjacentTetrahedra[1] == null)
@@ -825,6 +846,7 @@ public class Triangle3D<T> extends Plane3D<T> {
 	 * 			A runtime exception is thrown if the given point lies in the plane
 	 * 			defined by this triangle.
 	 */
+	@Override
 	public void orientToSide(double[] position) {
 		if (!isInfinite()) {
 			this.updatePlaneEquationIfNecessary();
@@ -855,6 +877,7 @@ public class Triangle3D<T> extends Plane3D<T> {
 	 * is defined to be on the lower side of the triangle, thereby defining the open side as the upper side.
 	 * If this triangle has either two open sides or no open sides, this function throws a RuntimeException.
 	 */
+	@Override
 	public void orientToOpenSide() {
 		if (!isInfinite()) {
 			if (adjacentTetrahedra[0] == null) {
@@ -887,6 +910,7 @@ public class Triangle3D<T> extends Plane3D<T> {
 	 * @return -1, if the coordinate lies on the lower side of the triangle, +1 if it lies on the upper
 	 * 			side of the triangle an 0 if it lies in the plane.
 	 */
+	@Override
 	public int orientationToUpperSide(double[] point) {
 		double dot = dot(point, this.normalVector);
 		if (dot > offset + tolerance)
@@ -916,6 +940,7 @@ public class Triangle3D<T> extends Plane3D<T> {
 	 * @see #orientToSide(double[])
 	 * @see #orientToOpenSide()
 	 */
+	@Override
 	public boolean onUpperSide(double[] point) {
 		return orientationToUpperSide(point) >= 0;
 	}
@@ -927,6 +952,7 @@ public class Triangle3D<T> extends Plane3D<T> {
 	 * @see #orientToSide(double[])
 	 * @see #orientToOpenSide()
 	 */
+	@Override
 	public boolean trulyOnUpperSide(double[] point) {
 		return orientationToUpperSide(point) > 0;
 	}
@@ -938,6 +964,7 @@ public class Triangle3D<T> extends Plane3D<T> {
 	 * @return An unreliable double value.
 	 * 
 	 */
+	@Override
 	public double getTypicalSDDistance() {
 		if (isInfinite())
 			return Double.MAX_VALUE;

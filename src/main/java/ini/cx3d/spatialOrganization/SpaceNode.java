@@ -24,9 +24,13 @@ package ini.cx3d.spatialOrganization;
 import java.util.Iterator;
 import java.util.LinkedList;
 
+import ini.cx3d.spatialOrganization.interfaces.Triangle3D;
+import ini.cx3d.swig.spatialOrganization.SpaceNodeT_PhysicalNodeCppType;
+
 import static ini.cx3d.SimStateSerializationUtil.keyValue;
 import static ini.cx3d.SimStateSerializationUtil.removeLastChar;
 import static ini.cx3d.utilities.Matrix.*;
+import static ini.cx3d.utilities.StringUtilities.toStr;
 
 /**
  * This class is used to represent a node of a triangulation. Each node is
@@ -41,7 +45,7 @@ import static ini.cx3d.utilities.Matrix.*;
  * 
  * @param <T>
  */
-public class SpaceNode<T> implements SpatialOrganizationNode<T> {
+public class SpaceNode<T> extends SpaceNodeT_PhysicalNodeCppType implements /*ini.cx3d.spatialOrganization.interfaces.SpaceNode<T>,*/ SpatialOrganizationNode<T> {
 	/**
 	 * A static list of all nodes that are part of the current triangulation. DO
 	 * NOT USE! Exclusively used for debugging purposes. Needs to be removed.
@@ -194,7 +198,7 @@ public class SpaceNode<T> implements SpatialOrganizationNode<T> {
 	 * @return A string containing the ID number of this SpaceNode.
 	 */
 	public String toString() {
-		return "" + (this.id % 1000);
+		return "(" + (this.id % 1000)+", "+ toStr(position)+")";
 	}
 
 	/**
@@ -641,7 +645,7 @@ public class SpaceNode<T> implements SpatialOrganizationNode<T> {
 	 * @param oto The open triangle organizer that keeps track of all open triangles.
 	 */
 	private void processTetrahedron(Tetrahedron<T> tetrahedron,
-			LinkedList<Triangle3D<T>> queue, OpenTriangleOrganizer<T> oto) {
+			LinkedList<ini.cx3d.spatialOrganization.interfaces.Triangle3D<T>> queue, OpenTriangleOrganizer<T> oto) {
 		tetrahedron.remove();
 		for (int i = 0; i < 4; i++) {
 			Triangle3D<T> currentTriangle =
@@ -708,9 +712,9 @@ public class SpaceNode<T> implements SpatialOrganizationNode<T> {
 
 		OpenTriangleOrganizer<T> oto =
 				OpenTriangleOrganizer.createSimpleOpenTriangleOrganizer();
-		LinkedList<Triangle3D<T>> queue = new LinkedList<Triangle3D<T>>();
-		LinkedList<Triangle3D<T>> outerTriangles =
-				new LinkedList<Triangle3D<T>>();
+		LinkedList<ini.cx3d.spatialOrganization.interfaces.Triangle3D<T>> queue = new LinkedList<ini.cx3d.spatialOrganization.interfaces.Triangle3D<T>>();
+		LinkedList<ini.cx3d.spatialOrganization.interfaces.Triangle3D<T>> outerTriangles =
+				new LinkedList<ini.cx3d.spatialOrganization.interfaces.Triangle3D<T>>();
 
 		processTetrahedron(insertionStart, queue, oto);
 		// if (insertionStart.isInfinite() &&
@@ -720,7 +724,7 @@ public class SpaceNode<T> implements SpatialOrganizationNode<T> {
 		// else
 		// {
 		while (!queue.isEmpty()) {
-			Triangle3D<T> currentTriangle = queue.poll();
+			ini.cx3d.spatialOrganization.interfaces.Triangle3D<T> currentTriangle = queue.poll();
 			Tetrahedron<T> oppositeTetrahedron =
 					currentTriangle.getOppositeTetrahedron(null);
 			if ((oppositeTetrahedron != null)) {
@@ -731,7 +735,7 @@ public class SpaceNode<T> implements SpatialOrganizationNode<T> {
 		}
 		Tetrahedron<T> ret = null;
 		// create a star-shaped triangulation:
-		for (Triangle3D<T> currentTriangle : outerTriangles) {
+		for (ini.cx3d.spatialOrganization.interfaces.Triangle3D<T> currentTriangle : outerTriangles) {
 			if (!currentTriangle.isCompletelyOpen())
 				ret = new Tetrahedron<T>(currentTriangle, this, oto);
 		}
@@ -769,7 +773,7 @@ public class SpaceNode<T> implements SpatialOrganizationNode<T> {
 			}
 			else {
 				// check for each adjacent triangle if this node would remain on the same side:
-				Triangle3D<T> triangle = tetrahedron.getOppositeTriangle(this);
+				ini.cx3d.spatialOrganization.interfaces.Triangle3D<T> triangle = tetrahedron.getOppositeTriangle(this);
 				// if (! triangle.isInfinite()) {
 				triangle.updatePlaneEquationIfNecessary();
 				if (!triangle.trulyOnSameSide(this.getPosition(), newPosition)) {

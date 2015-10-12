@@ -25,6 +25,8 @@
 #include <array>
 #include <vector>
 #include <memory>
+#include <string>
+#include <sstream>
 
 namespace cx3d {
 namespace spatial_organization {
@@ -173,6 +175,10 @@ class ExactVector : public std::enable_shared_from_this<ExactVector> {
    */
   virtual std::shared_ptr<ExactVector> crossProduct(const std::shared_ptr<ExactVector>& other);
 
+  /**
+   * Returns a string representation of this object.
+   */
+  virtual std::string toString();
  private:
   /**
    *  Stores the elements of this vector.

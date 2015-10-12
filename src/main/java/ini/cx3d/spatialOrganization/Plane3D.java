@@ -29,6 +29,8 @@ import ini.cx3d.spatialOrganization.factory.RationalFactory;
 import static ini.cx3d.utilities.Matrix.*;
 
 /**
+ * NOTE: This class has been replaced by a native implementation! It is merely used for debugging purposes!
+ *
  * Used to represent a plane in three dimensional space. Here, a plane is fully defined by 
  * a normal vector and an offset value.
  * 
@@ -36,7 +38,7 @@ import static ini.cx3d.utilities.Matrix.*;
  *
  * @param <T> The type of user objects associated with nodes in the current triangulation.
  */
-public class Plane3D<T> {
+public class Plane3D<T> implements ini.cx3d.spatialOrganization.interfaces.Plane3D<T> {
 	
 	/**
 	 * Used to define whether or not normal vectors should be normalized to unit length. 
@@ -182,6 +184,7 @@ public class Plane3D<T> {
 	 * Reverts the orientation of this plane by switching the sign of all entries 
 	 * in the normal vector and the offset value.
 	 */
+	@Override
 	public void changeUpperSide() {
 		offset = -offset;
 		normalVector[0] = -normalVector[0];
@@ -194,6 +197,7 @@ public class Plane3D<T> {
 	 * to which the normal vector points to.
 	 * @param point A coordinate on the upper side of the plane.
 	 */
+	@Override
 	public void defineUpperSide(double[] point) {
 		if (dot(point,this.normalVector)+tolerance < offset) 
 			changeUpperSide();
@@ -227,7 +231,8 @@ public class Plane3D<T> {
 	 * lie on opposite sides of the plane and 0, if either one of the points lies
 	 * on the plane.
 	 */
-	public int orientation(double[]point1, double[] point2) {
+	@Override
+	public int orientation(double[] point1, double[] point2) {
 		double dot1 = dot(point1,this.normalVector);
 		double dot2 = dot(point2,this.normalVector);
 		if (dot1 > offset+tolerance) {
@@ -255,6 +260,7 @@ public class Plane3D<T> {
 	 *         plane and <code>false</code>, if they don't or if one of them
 	 *         lies in the plane.
 	 */
+	@Override
 	public boolean trulyOnSameSide(double[] point1, double[] point2) {
 		return orientation(point1, point2) > 0;
 	}
@@ -268,6 +274,7 @@ public class Plane3D<T> {
 	 *         plane and <code>false</code>, if they don't or if one of them
 	 *         lies in the plane.
 	 */
+	@Override
 	public boolean trulyOnDifferentSides(double[] point1, double[] point2) {
 		return orientation(point1, point2) < 0;
 	}
@@ -282,6 +289,7 @@ public class Plane3D<T> {
 	 *         and <code>false</code>, if they don't or if one of them
 	 *         lies in the plane.
 	 */
+	@Override
 	public boolean onSameSide(double[] point1, double[] point2) {
 		return orientation(point1, point2) >= 0;
 	}
@@ -289,6 +297,7 @@ public class Plane3D<T> {
 	/**
 	 * @return The normal vector of this plane.
 	 */
+	@Override
 	public double[] getNormalVector() {
 		return normalVector;
 	}

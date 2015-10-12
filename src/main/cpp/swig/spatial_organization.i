@@ -1,32 +1,19 @@
-/*
- Copyright (C) 2009 Frédéric Zubler, Rodney J. Douglas,
- Dennis Göhlsdorf, Toby Weston, Andreas Hauri, Roman Bauer,
- Sabina Pfister, Adrian M. Whatley & Lukas Breitwieser.
-
- This file is part of CX3D.
-
- CX3D is free software: you can redistribute it and/or modify
- it under the terms of the GNU General virtual License as published by
- the Free Software Foundation, either version 3 of the License, or
- (at your option) any later version.
-
- CX3D is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General virtual License for more details.
-
- You should have received a copy of the GNU General virtual License
- along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
-*/
-
 %module(directors="1") spatialOrganization
 
 %{
 #include <memory>
 #include <stdint.h>
+
 #include "spatial_organization/rational.h"
 #include "spatial_organization/exact_vector.h"
+#include "physical_node.h"
+#include "spatial_organization/spatial_organization_node.h"
+#include "spatial_organization/space_node.h"
+#include "spatial_organization/tetrahedron.h"
+#include "spatial_organization/plane_3d.h"
+#include "spatial_organization/triangle_3d.h"
 using namespace cx3d::spatial_organization;
+#include "spatial_organizationJAVA_wrap.h"
 %}
 
 // import depending modules
@@ -37,31 +24,71 @@ using namespace cx3d::spatial_organization;
 JAVA_LOAD_NATIVE_LIBRARY(cx3d_spatialOrganization);
 
 // typemap definitions, code modifications / additions
-%include "typemaps.i"
-%include "std_array_typemap.i"
-%include "cx3d_shared_ptr.i"
 %include "big_integer_typemap.i"
+%include "partial_macro_application/double.i"
 
 // modifications for class Rational
 %apply long long { int64_t };
-%typemap(javainterfaces) cx3d::spatial_organization::Rational "ini.cx3d.spatialOrganization.interfaces.Rational"
-%typemap(jstype) cx3d::spatial_organization::Rational "ini.cx3d.spatialOrganization.interfaces.Rational"
-%cx3d_shared_ptr(Rational, cx3d::spatial_organization::Rational);
+%include "partial_macro_application/rational.i";
+%Rational_ported_type_modification();
+%Rational_cx3d_shared_ptr();
 
 // modifications for class ExactVector
-%typemap(javainterfaces) cx3d::spatial_organization::ExactVector "ini.cx3d.spatialOrganization.interfaces.ExactVector"
-%typemap(jstype) cx3d::spatial_organization::ExactVector "ini.cx3d.spatialOrganization.interfaces.ExactVector"
-%cx3d_shared_ptr(ExactVector, cx3d::spatial_organization::ExactVector);
-%stdarray_primitive_array_marshalling(double, Double_3, Double, double, 3);
-%stdarray_array_marshalling(std::shared_ptr<cx3d::spatial_organization::Rational>,
-                            shared_ptr_Rational_3,
-                            ini.cx3d.spatialOrganization.interfaces.Rational,
-                            3);
-%stdarray_array_marshalling(std::shared_ptr<cx3d::spatial_organization::ExactVector>,
-                            shared_ptr_ExactVector_3,
-                            ini.cx3d.spatialOrganization.interfaces.ExactVector,
-                            3);
+%include "partial_macro_application/exact_vector.i";
+%ExactVector_ported_type_modification();
+%ExactVector_cx3d_shared_ptr();
+%double_stdarray_array_marshalling(spatialOrganization, 3);
+%Rational_stdarray_array_marshalling(spatialOrganization, 3);
+%ExactVector_stdarray_array_marshalling(spatialOrganization, 3);
+
+// modifications for class SpaceNode
+%include "partial_macro_application/space_node.i";
+%SpaceNode_cx3d_shared_ptr();
+%SpaceNode_jdc_enable();
+%SpaceNode_jdc_array_extension(3);
+%SpaceNode_stdarray_array_marshalling(spatialOrganization, 3);
+%SpaceNode_jdc_get_array(3, getNodes);
+%SpaceNode_jdc_array_extension(4);
+%SpaceNode_stdarray_array_marshalling(spatialOrganization, 4);
+%SpaceNode_jdc_get_array(4, getAdjacentNodes);
+%SpaceNode_jdc_type_modification();
+
+// modifications for class Tetrahedron
+%include "partial_macro_application/tetrahedron.i";
+%Tetrahedron_cx3d_shared_ptr();
+%Tetrahedron_jdc_enable();
+%Tetrahedron_jdc_get(getOppositeTetrahedron);
+%Tetrahedron_jdc_remove_method_bodies();
+%Tetrahedron_jdc_type_modification();
+
+// modifications for Plane3D
+%include "partial_macro_application/plane_3d.i";
+%Plane3D_ported_type_modification();
+%Plane3D_cx3d_shared_ptr();
+
+// modifications for class Triangle3D
+%include "partial_macro_application/triangle_3d.i";
+%Triangle3D_ported_type_modification();
+%Triangle3D_ported_add_equals();
+%Triangle3D_cx3d_shared_ptr();
+%double_stdarray_2dim_array_marshalling(spatialOrganization, 3, 3);
 
 // add the original header files here
 %include "spatial_organization/rational.h"
 %include "spatial_organization/exact_vector.h"
+%include "physical_node.h"
+%include "spatial_organization/spatial_organization_node.h"
+%include "spatial_organization/space_node.h"
+%include "spatial_organization/tetrahedron.h"
+%include "spatial_organization/plane_3d.h"
+%include "spatial_organization/triangle_3d.h"
+
+// generate templates
+namespace cx3d{
+namespace spatial_organization{
+  %template(SpaceNodeT_PhysicalNode) SpaceNode<cx3d::PhysicalNode>;
+  %template(TetrahedronT_PhysicalNode) Tetrahedron<cx3d::PhysicalNode>;
+  %template(Plane3DT_PhysicalNode) Plane3D<cx3d::PhysicalNode>;
+  %template(Triangle3DT_PhysicalNode) Triangle3D<cx3d::PhysicalNode>;
+}
+}

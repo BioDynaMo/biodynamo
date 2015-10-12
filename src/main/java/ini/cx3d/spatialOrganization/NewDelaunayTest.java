@@ -21,6 +21,8 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 
 package ini.cx3d.spatialOrganization;
 
+import ini.cx3d.spatialOrganization.interfaces.Triangle3D;
+
 import static ini.cx3d.utilities.Matrix.*;
 import ini.cx3d.parallelSpatialOrganization.SimpleAssignmentPolicy;
 import ini.cx3d.parallelSpatialOrganization.SpatialOrganizationManager;

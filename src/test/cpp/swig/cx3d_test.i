@@ -1,31 +1,13 @@
-/*
- Copyright (C) 2009 Frédéric Zubler, Rodney J. Douglas,
- Dennis Göhlsdorf, Toby Weston, Andreas Hauri, Roman Bauer,
- Sabina Pfister, Adrian M. Whatley & Lukas Breitwieser.
-
- This file is part of CX3D.
-
- CX3D is free software: you can redistribute it and/or modify
- it under the terms of the GNU General virtual License as published by
- the Free Software Foundation, either version 3 of the License, or
- (at your option) any later version.
-
- CX3D is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General virtual License for more details.
-
- You should have received a copy of the GNU General virtual License
- along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
-*/
-
-%module cx3d_test
+%module(directors="1") cx3d_test
 
 %{
+#include <memory>
 #include "sim_state_serializable_test.h"
 #include "typemap_big_integer_test.h"
 #include "typemap_std_array_test.h"
+#include "java_defined_class_test.h"
 using namespace cx3d;
+#include "cx3d_testJAVA_wrap.h"
 %}
 
 // import depending modules
@@ -36,12 +18,33 @@ using namespace cx3d;
 JAVA_LOAD_NATIVE_LIBRARY(cx3d_test);
 
 %include "big_integer_typemap.i"
-%include "std_array_typemap.i"
 
-%stdarray_primitive_array_marshalling(double, Double_3, Double, double, 3);
-%stdarray_2dim_array_marshalling(double, 3, ArrayT_Double_3_2, double, 2);
+%include "partial_macro_application/double.i"
+%double_stdarray_array_marshalling(cx3d_test, 3);
+%double_stdarray_2dim_array_marshalling(cx3d_test, 3, 2);
+
+%include "partial_macro_application/java_defined_class_test.i"
+%NotPorted_cx3d_shared_ptr();
+%NotPorted_jdc_enable();
+%NotPorted_jdc_get(getNotPorted);
+%NotPorted_jdc_array_extension(2);
+%NotPorted_stdarray_array_marshalling(cx3d_test, 2);
+%NotPorted_jdc_get_array(2, getNotPortedArray);
+
+%NotPortedTemplated_cx3d_shared_ptr();
+%NotPortedTemplated_jdc_enable();
+%NotPortedTemplated_jdc_get(getNotPortedTemplated);
+%NotPortedTemplated_jdc_array_extension(2);
+%NotPortedTemplated_stdarray_array_marshalling(cx3d_test, 2);
+%NotPortedTemplated_jdc_get_array(2, getNotPortedTemplatedArray);
 
 // add the original header files here
 %include "sim_state_serializable_test.h"
 %include "typemap_big_integer_test.h"
 %include "typemap_std_array_test.h"
+%include "java_defined_class_test.h"
+
+namespace cx3d {
+  %template(NotPortedTemplatedT_int) NotPortedTemplated<int>;
+  %template(PortedTemplatedT_int) PortedTemplated<int>;
+}

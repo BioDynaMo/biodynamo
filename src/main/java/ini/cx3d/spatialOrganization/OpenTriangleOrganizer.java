@@ -22,9 +22,12 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 package ini.cx3d.spatialOrganization;
 
 import ini.cx3d.spatialOrganization.factory.ExactVectorFactory;
+import ini.cx3d.spatialOrganization.factory.Triangle3DFactory;
 import ini.cx3d.spatialOrganization.interfaces.ExactVector;
 import ini.cx3d.spatialOrganization.interfaces.Rational;
 import ini.cx3d.spatialOrganization.factory.RationalFactory;
+
+import ini.cx3d.spatialOrganization.interfaces.Triangle3D;
 
 import static ini.cx3d.utilities.Matrix.add;
 import static ini.cx3d.utilities.Matrix.crossProduct;
@@ -100,7 +103,7 @@ public class OpenTriangleOrganizer<T> {
 	 * A hashmap to store open triangles that are created during any operation on the triangulation.
 	 * Used to keep track of which triangles are not open any more.
 	 */
-	private HashMap<TriangleHashKey<T>, Triangle3D<T>> map;
+	private HashMap<TriangleHashKey<T>, ini.cx3d.spatialOrganization.interfaces.Triangle3D<T>> map;
 	
 	/**
 	 * Stores all tetrahedra that are created by this instance. No tetrahedra will
@@ -120,7 +123,7 @@ public class OpenTriangleOrganizer<T> {
 	 * In addition to <code>map</code>, all open triangles are also stored in this stack.
 	 * Thereby, a fast extraction of any open triangle is guaranteed.
 	 */
-	Stack<Triangle3D<T>> openTriangles = new Stack<Triangle3D<T>>();
+	Stack<ini.cx3d.spatialOrganization.interfaces.Triangle3D<T>> openTriangles = new Stack<ini.cx3d.spatialOrganization.interfaces.Triangle3D<T>>();
 
 	/**
 	 * Stores the shortest signed delaunay distance that was found for a given open
@@ -229,7 +232,7 @@ public class OpenTriangleOrganizer<T> {
 		TriangleHashKey<T> key = new TriangleHashKey<T>(a, b, c);
 		Triangle3D<T> ret = map.get(key);
 		if (ret == null) {
-			ret = new Triangle3D<T>(a, b, c, null, null);
+			ret = new Triangle3DFactory().create(a, b, c, null, null);
 			map.put(key, ret);
 			openTriangles.push(ret);
 		} else if (ret.isCompletelyOpen()) {
@@ -257,7 +260,7 @@ public class OpenTriangleOrganizer<T> {
 		TriangleHashKey<T> key = new TriangleHashKey<T>(a, b, c);
 		Triangle3D<T> ret = map.get(key);
 		if (ret == null) {
-			ret = new Triangle3D<T>(a, b, c, null, null);
+			ret = new Triangle3DFactory().create(a, b, c, null, null);
 			openTriangles.push(ret);
 			map.put(key, ret);
 		}
@@ -337,7 +340,7 @@ public class OpenTriangleOrganizer<T> {
 
 	/**
 	 * Stores an edge onto a hashmap for edges. This function implements the
-	 * same functinoality as {@link #putTriangle(Triangle3D)} but for edges. 
+	 * same functinoality as {@link #putTriangle(ini.cx3d.spatialOrganization.interfaces.Triangle3D)} but for edges.
 	 * @param a The first endpoint of the edge that should be placed on the hashmap.
 	 * @param a The second endpoint of the edge that should be placed on the hashmap.
 	 * @param oppositeNode A node lying on the non-open side of this edge.
@@ -393,7 +396,7 @@ public class OpenTriangleOrganizer<T> {
 			LinkedList<SpaceNode<T>> sortedNodes,
 			SpaceNode<T> centerNode,
 			HashMap<EdgeHashKey<T>, EdgeHashKey<T>> map,
-			LinkedList<Triangle3D<T>> triangleList) {
+			LinkedList<ini.cx3d.spatialOrganization.interfaces.Triangle3D<T>> triangleList) {
 		Iterator<SpaceNode<T>> it = sortedNodes.iterator();
 		SpaceNode<T> last = it.next();
 		SpaceNode<T> current = it.next();
@@ -613,7 +616,7 @@ public class OpenTriangleOrganizer<T> {
 	 * @param similarDistanceNodes A list of nodes that have a similar 2D-signed delaunay distance to the  <code>startingEdge</code>. 
 	 * @param startingEdge An initial edge which is part of the circle.
 	 * @param map A hashmap for instances of type <code>EdgeHashKey</code> which is used to keep track of open edges in 
-	 * {@link #triangulatePointsOnSphere(LinkedList, LinkedList, Triangle3D)}.
+	 * {@link #triangulatePointsOnSphere(LinkedList, LinkedList, ini.cx3d.spatialOrganization.interfaces.Triangle3D)}.
 	 * @param triangleList A list of triangles, which is used to store all triangles created in this function and
 	 * pass them to the calling function.
 	 * @return An open edge on the convex hull of the triangulated circle.
@@ -622,7 +625,7 @@ public class OpenTriangleOrganizer<T> {
 			LinkedList<SpaceNode<T>> similarDistanceNodes,
 			EdgeHashKey<T> startingEdge,
 			HashMap<EdgeHashKey<T>, EdgeHashKey<T>> map,
-			LinkedList<Triangle3D<T>> triangleList) {
+			LinkedList<ini.cx3d.spatialOrganization.interfaces.Triangle3D<T>> triangleList) {
 		if (startingEdge != null) {
 			similarDistanceNodes.addFirst(startingEdge.a);
 			similarDistanceNodes.addFirst(startingEdge.b);
@@ -652,10 +655,11 @@ public class OpenTriangleOrganizer<T> {
 			LinkedList<SpaceNode<T>> nodes,
 			LinkedList<SpaceNode<T>> onCircleNodes,
 			Triangle3D<T> startingTriangle) {
-		LinkedList<Triangle3D<T>> surfaceTriangles = new LinkedList<Triangle3D<T>>();
-		nodes.add(startingTriangle.getNodes()[0]);
-		nodes.add(startingTriangle.getNodes()[1]);
-		nodes.add(startingTriangle.getNodes()[2]);
+		LinkedList<ini.cx3d.spatialOrganization.interfaces.Triangle3D<T>> surfaceTriangles = new LinkedList<ini.cx3d.spatialOrganization.interfaces.Triangle3D<T>>();
+		SpaceNode[] startingTriangleNodes = startingTriangle.getNodes();
+		nodes.add(startingTriangleNodes[0]);
+		nodes.add(startingTriangleNodes[1]);
+		nodes.add(startingTriangleNodes[2]);
 		nodes.addAll(onCircleNodes);
 		if (NewDelaunayTest.createOutput()) NewDelaunayTest.out("triangulating points on sphere: "
 						+ nodes);
@@ -664,23 +668,24 @@ public class OpenTriangleOrganizer<T> {
 		EdgeHashKey anOpenEdge = null;
 		if (onCircleNodes.isEmpty()) {
 			surfaceTriangles.add(startingTriangle);
-			for (int i = 0; i < 3; i++)
+			for (int i = 0; i < 3; i++) {
 				anOpenEdge = putEdgeOnMap(
-						startingTriangle.getNodes()[i],
-						startingTriangle.getNodes()[(i + 1) % 3],
-						startingTriangle.getNodes()[(i + 2) % 3],
+						startingTriangleNodes[i],
+						startingTriangleNodes[(i + 1) % 3],
+						startingTriangleNodes[(i + 2) % 3],
 						anOpenEdge, map);
+			}
 		} else {
 			if (NewDelaunayTest.createOutput()) NewDelaunayTest.out("Special case: starting triangle "
 							+ startingTriangle
 							+ " lies on same circle as "
 							+ onCircleNodes.toString());
 			onCircleNodes
-					.add(startingTriangle.getNodes()[0]);
+					.add(startingTriangleNodes[0]);
 			onCircleNodes
-					.add(startingTriangle.getNodes()[1]);
+					.add(startingTriangleNodes[1]);
 			onCircleNodes
-					.add(startingTriangle.getNodes()[2]);
+					.add(startingTriangleNodes[2]);
 			anOpenEdge = triangulatePointsOnCircle(
 					onCircleNodes, null, map,
 					surfaceTriangles);
@@ -719,7 +724,7 @@ public class OpenTriangleOrganizer<T> {
 				}
 			}
 			if (similarDistanceNodes.isEmpty()) {
-				Triangle3D<T> newTriangle = getTriangleWithoutRemoving(
+				ini.cx3d.spatialOrganization.interfaces.Triangle3D<T> newTriangle = getTriangleWithoutRemoving(
 						a, b, pickedNode);
 				surfaceTriangles.add(newTriangle);
 				// add the new edges to the hashmap:
@@ -774,7 +779,7 @@ public class OpenTriangleOrganizer<T> {
 				normalsX[1].dotProduct(avX),
 				normalsX[2].dotProduct(avX.add(thirdPointX))
 						.multiply(new RationalFactory().create(1, 2)) };
-		ExactVector circumCenter = Triangle3D
+		ExactVector circumCenter = Triangle3DFactory
 				.calculate3PlaneXPoint(normalsX, offsetsX,
 						ExactVectorFactory.det(normalsX));
 		return circumCenter.subtract(
@@ -856,7 +861,7 @@ public class OpenTriangleOrganizer<T> {
 			// the plane defined by a, b and dummy and
 			// the plane describing all points with equal distance to a and
 			// dummy
-			double[] circumCenter = Triangle3D
+			double[] circumCenter = Triangle3DFactory
 					.calculate3PlaneXPoint(normals, offsets);
 			if (circumCenter != null) {
 				double[] vector = subtract(circumCenter,
@@ -889,7 +894,7 @@ public class OpenTriangleOrganizer<T> {
 				}
 			}
 		}
-		putTriangle(new Triangle3D<T>(a, b, c, null, null));
+		putTriangle(new Triangle3DFactory().create(a, b, c, null, null));
 	}
 
 	/**

@@ -21,6 +21,8 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 
 package ini.cx3d.spatialOrganization;
 
+import ini.cx3d.spatialOrganization.interfaces.Triangle3D;
+
 /**
  * During the flip algorithm, it can happen that tetrahedra with no volume are created. 
  * Since these have no volume and no circumsphere, they cannot simply be stored as normal

@@ -23,6 +23,8 @@
 
 #include <stdexcept>
 
+#include "string_util.h"
+
 using std::shared_ptr;
 
 namespace cx3d {
@@ -192,6 +194,10 @@ shared_ptr<Rational> Rational::divideBy(const shared_ptr<Rational>& other) {
 
 double Rational::doubleValue() const {
   return numerator_.get_d() / denominator_.get_d();
+}
+
+std::string Rational::toString() {
+  return StringUtil::toStr(doubleValue());
 }
 
 void Rational::cancel() {

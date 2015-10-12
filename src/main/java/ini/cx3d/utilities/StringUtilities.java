@@ -31,6 +31,69 @@ import static ini.cx3d.utilities.SystemUtilities.*;
  */
 public abstract class StringUtilities {
 
+	/**
+	 * helps to write toString methods that all behave in a uniform way
+	 * @param arr
+	 * @return
+	 */
+	public static String toStr(Object[] arr){
+		StringBuilder sb = new StringBuilder();
+		sb.append("{");
+		for (Object o: arr){
+			if(o != null) {
+				sb.append(o.toString());
+			} else {
+				sb.append("null");
+			}
+			sb.append(", ");
+		}
+		sb.append("}");
+		return sb.toString();
+	}
+
+	/**
+	 * helps to write toString methods that all behave in a uniform way
+	 * @param d
+	 * @return
+	 */
+	public static String toStr(double d){
+		return String.format("%.5f", d);
+	}
+
+	/**
+	 * helps to write toString methods that all behave in a uniform way
+	 * @param arr
+	 * @return
+	 */
+	public static String toStr(double[] arr){
+		if(arr == null){
+			return toStr(new double[]{0.0, 0.0, 0.0});
+		}
+		StringBuilder sb = new StringBuilder();
+		sb.append("{");
+		for (double d: arr){
+			sb.append(String.format("%.5f", d)).append(", ");
+		}
+		sb.append("}");
+		return sb.toString();
+	}
+
+	/**
+	 * helps to write toString methods that all behave in a uniform way
+	 * @param arr
+	 * @return
+	 */
+	public static String toStr(double[][] arr){
+		StringBuilder sb = new StringBuilder();
+		sb.append("{");
+		for (double[] o: arr){
+			if(o != null) {
+				sb.append(toStr(o)).append(", ");
+			}
+		}
+		sb.append("}");
+		return sb.toString();
+	}
 
 	//--------------------------------------------------
 	// some small utilities

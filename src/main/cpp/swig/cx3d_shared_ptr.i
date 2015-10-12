@@ -50,13 +50,19 @@
 #define SWIGEMPTYHACK
 // Main user macro for defining cx3d_shared_ptr typemaps for both const and non-const pointer types
 %define %cx3d_shared_ptr(JCLASS, TYPE...)
-  %feature("smartptr", noblock=1) TYPE { CX3D_SHARED_PTR_QNAMESPACE::shared_ptr< TYPE > }
-  CX3D_SHARED_PTR_TYPEMAPS(SWIGEMPTYHACK, JCLASS, TYPE)
-  CX3D_SHARED_PTR_TYPEMAPS(const, JCLASS, TYPE)
+  %feature("smartptr", noblock=1) TYPE { SWIG_SHARED_PTR_QNAMESPACE::shared_ptr< TYPE > }
+  CX3D_SHARED_PTR_TYPEMAPS(SWIGEMPTYHACK, JCLASS, "$typemap(jstype, TYPE)", TYPE)
+  CX3D_SHARED_PTR_TYPEMAPS(const, JCLASS, "$typemap(jstype, TYPE)", TYPE)
+%enddef
+
+%define %cx3d_shared_ptr_generics(JCLASS, JSTYPE_WO_GENERICS, TYPE...)
+  %feature("smartptr", noblock=1) TYPE { SWIG_SHARED_PTR_QNAMESPACE::shared_ptr< TYPE > }
+  CX3D_SHARED_PTR_TYPEMAPS(SWIGEMPTYHACK, JCLASS, "JSTYPE_WO_GENERICS", TYPE)
+  CX3D_SHARED_PTR_TYPEMAPS(const, JCLASS, "JSTYPE_WO_GENERICS", TYPE)
 %enddef
 
 // Language specific macro implementing all the customisations for handling the smart pointer
-%define CX3D_SHARED_PTR_TYPEMAPS_IMPLEMENTATION(PTRCTOR_VISIBILITY, CPTR_VISIBILITY, CONST, JCLASS, TYPE...)
+%define CX3D_SHARED_PTR_TYPEMAPS_IMPLEMENTATION(PTRCTOR_VISIBILITY, CPTR_VISIBILITY, CONST, JCLASS, JSTYPE_WO_GENERICS, TYPE...)
 
  // %naturalvar is as documented for member variables
  %naturalvar TYPE;
@@ -160,6 +166,37 @@
                   SWIG_SHARED_PTR_QNAMESPACE::shared_ptr< CONST TYPE > *& "JCLASS.getCPtr($javainput)"
                   // SWIG_SHARED_PTR_QNAMESPACE::shared_ptr< CONST TYPE > *& "$typemap(jstype, TYPE).getCPtr($javainput)"
 
+  %typemap(javadirectorout) SWIG_SHARED_PTR_QNAMESPACE::shared_ptr< CONST TYPE >,
+                   SWIG_SHARED_PTR_QNAMESPACE::shared_ptr< CONST TYPE > &,
+                   SWIG_SHARED_PTR_QNAMESPACE::shared_ptr< CONST TYPE > *,
+                   SWIG_SHARED_PTR_QNAMESPACE::shared_ptr< CONST TYPE > *& "JCLASS.getCPtr($javacall)"
+
+  %typemap(javadirectorin) SWIG_SHARED_PTR_QNAMESPACE::shared_ptr< CONST TYPE >,
+                          SWIG_SHARED_PTR_QNAMESPACE::shared_ptr< CONST TYPE > &,
+                          SWIG_SHARED_PTR_QNAMESPACE::shared_ptr< CONST TYPE > *,
+                          SWIG_SHARED_PTR_QNAMESPACE::shared_ptr< CONST TYPE > *& "($jniinput == 0) ? null : JCLASS.swigCreate($jniinput, false)"
+
+  %typemap(directorin, descriptor="L"JSTYPE_WO_GENERICS";") SWIG_SHARED_PTR_QNAMESPACE::shared_ptr< CONST TYPE >,
+                          SWIG_SHARED_PTR_QNAMESPACE::shared_ptr< CONST TYPE > &,
+                          SWIG_SHARED_PTR_QNAMESPACE::shared_ptr< CONST TYPE > *,
+                          SWIG_SHARED_PTR_QNAMESPACE::shared_ptr< CONST TYPE > *& %{
+                           *(std::shared_ptr< cx3d::spatial_organization::Triangle3D< cx3d::PhysicalNode > > **)&jtriangle = (std::shared_ptr< cx3d::spatial_organization::Triangle3D< cx3d::PhysicalNode > > *) &triangle;
+                          %}
+                          // "*("#SWIG_SHARED_PTR_QNAMESPACE"::shared_ptr<"#CONST" "#TYPE " > **)&jtriangle = ("#SWIG_SHARED_PTR_QNAMESPACE"::shared_ptr<"#CONST" "#TYPE " > *) &triangle;";
+
+  %typemap(directorout, descriptor="L"JSTYPE_WO_GENERICS";") SWIG_SHARED_PTR_QNAMESPACE::shared_ptr< CONST TYPE >,
+                          SWIG_SHARED_PTR_QNAMESPACE::shared_ptr< CONST TYPE > &,
+                          SWIG_SHARED_PTR_QNAMESPACE::shared_ptr< CONST TYPE > *,
+                          SWIG_SHARED_PTR_QNAMESPACE::shared_ptr< CONST TYPE > *& %{
+                          SWIG_SHARED_PTR_QNAMESPACE::shared_ptr< CONST TYPE  > *argp;
+                          argp = *( SWIG_SHARED_PTR_QNAMESPACE::shared_ptr< CONST TYPE > **)&jresult;
+                          if (!argp) {
+                            c_result = SWIG_SHARED_PTR_QNAMESPACE::shared_ptr< CONST TYPE >(nullptr);
+                          } else {
+                            c_result = *argp;
+                          }
+                        %}
+
  %typemap(javaout) SWIG_SHARED_PTR_QNAMESPACE::shared_ptr< CONST TYPE > {
      long cPtr = $jnicall;
      return (cPtr == 0) ? null : JCLASS.swigCreate(cPtr, true);
@@ -176,7 +213,6 @@
      long cPtr = $jnicall;
      return (cPtr == 0) ? null : JCLASS.swigCreate(cPtr, true);
    }
-
 
  %typemap(javaout) CONST TYPE {
      return new $typemap(jstype, TYPE)($jnicall, true);
@@ -204,7 +240,9 @@
    }
 
    CPTR_VISIBILITY static long getCPtr(Object o) {
-     if(!(o instanceof $javaclassname)){
+     if(o == null){
+       return 0;
+     } else if(!(o instanceof $javaclassname)){
        throw new RuntimeException("Object " + o + " must be of type $javaclassname. Use Proxy to wrap this object");
      }
      $javaclassname obj = ($javaclassname) o;

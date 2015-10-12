@@ -23,6 +23,8 @@ package ini.cx3d.spatialOrganization;
 
 import java.util.Iterator;
 
+import ini.cx3d.spatialOrganization.interfaces.Triangle3D;
+
 /**
  * Instances of child classes of this class are used to keep track of 
  * nodes in an incomplete triangulation which might possibly become neighbors of open triangles.  

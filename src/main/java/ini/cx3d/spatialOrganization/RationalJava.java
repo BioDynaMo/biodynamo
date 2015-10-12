@@ -135,7 +135,7 @@ public class RationalJava implements Rational {
 	 */
 	@Override
 	public String toString() {
-		return numerator + (this.denominator.equals(BigInteger.ONE)?"":" / " + denominator);
+		return String.format("%.5f", doubleValue());
 	}
 
 	/**

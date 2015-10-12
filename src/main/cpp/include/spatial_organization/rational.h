@@ -24,6 +24,7 @@
 
 #include <stdint.h>
 #include <memory>
+#include <string>
 #include "gmpxx.h"
 
 namespace cx3d {
@@ -66,7 +67,8 @@ class Rational : public std::enable_shared_from_this<Rational> {
   /**
    * @see static std::shared_ptr<Rational> create(long numerator, long denominator)
    */
-  static std::shared_ptr<Rational> create(const BigInteger& numerator, const BigInteger& denominator) {
+  static std::shared_ptr<Rational> create(const BigInteger& numerator,
+                                          const BigInteger& denominator) {
     return std::shared_ptr<Rational>(new Rational(numerator, denominator));
   }
 
@@ -163,6 +165,11 @@ class Rational : public std::enable_shared_from_this<Rational> {
    * than the specified object.
    */
   virtual int compareTo(const std::shared_ptr<Rational>& other) const;
+
+  /**
+   * Returns a string representation of this object.
+   */
+  virtual std::string toString();
 
  protected:
   /**
