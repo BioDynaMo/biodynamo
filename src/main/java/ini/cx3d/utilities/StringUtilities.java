@@ -21,6 +21,8 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 
 package ini.cx3d.utilities;
 
+import java.util.AbstractSequentialList;
+
 import static ini.cx3d.utilities.SystemUtilities.*;
 ;
 /**
@@ -90,6 +92,24 @@ public abstract class StringUtilities {
 			if(o != null) {
 				sb.append(toStr(o)).append(", ");
 			}
+		}
+		sb.append("}");
+		return sb.toString();
+	}
+
+	/**
+	 * helps to write toString methods that all behave in a uniform way
+	 * @param list
+	 * @return
+	 */
+	public static <T> String toStr(AbstractSequentialList<T> list){
+		if(list == null){
+			return "null";
+		}
+		StringBuilder sb = new StringBuilder();
+		sb.append("{");
+		for (Object o: list){
+			sb.append(o).append(", ");
 		}
 		sb.append("}");
 		return sb.toString();
