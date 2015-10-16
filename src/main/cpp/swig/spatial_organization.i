@@ -14,6 +14,7 @@
 #include "spatial_organization/triangle_3d.h"
 #include "spatial_organization/spatial_organization_edge.h"
 #include "spatial_organization/edge.h"
+#include "spatial_organization/edge_hash_key.h"
 using namespace cx3d::spatial_organization;
 #include "spatial_organizationJAVA_wrap.h"
 %}
@@ -97,6 +98,15 @@ JAVA_LOAD_NATIVE_LIBRARY(cx3d_spatialOrganization);
 %PhysicalNode_jdc_remove_method_bodies();
 %PhysicalNode_jdc_type_modification();
 
+// modifications for class EdgeHashKey
+%include "partial_macro_application/edge_hash_key.i";
+%EdgeHashKey_cx3d_shared_ptr();
+%EdgeHashKey_ported_add_equals();
+%EdgeHashKey_ported_type_modification();
+%SpaceNode_jdc_get(oppositeNode);
+%SpaceNode_jdc_get(getEndpointA);
+%SpaceNode_jdc_get(getEndpointB);
+
 // add the original header files here
 %include "spatial_organization/rational.h"
 %include "spatial_organization/exact_vector.h"
@@ -108,6 +118,7 @@ JAVA_LOAD_NATIVE_LIBRARY(cx3d_spatialOrganization);
 %include "spatial_organization/triangle_3d.h"
 %include "spatial_organization/spatial_organization_edge.h"
 %include "spatial_organization/edge.h"
+%include "spatial_organization/edge_hash_key.h"
 
 // generate templates
 namespace cx3d{
@@ -117,5 +128,6 @@ namespace spatial_organization{
   %template(Plane3DT_PhysicalNode) Plane3D<cx3d::PhysicalNode>;
   %template(Triangle3DT_PhysicalNode) Triangle3D<cx3d::PhysicalNode>;
   %template(EdgeT_PhysicalNode) Edge<cx3d::PhysicalNode>;
+  %template(EdgeHashKeyT_PhysicalNode) EdgeHashKey<cx3d::PhysicalNode>;
 }
 }

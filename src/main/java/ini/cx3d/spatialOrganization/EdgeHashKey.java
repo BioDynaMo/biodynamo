@@ -41,7 +41,7 @@ import static ini.cx3d.utilities.Matrix.subtract;
  *
  * @param <T> The type of user objects associated with nodes in this triangulation.
  */
-class EdgeHashKey<T> {
+public class EdgeHashKey<T> implements ini.cx3d.spatialOrganization.interfaces.EdgeHashKey<T> {
 	/**
 	 * The endpoints of the edge for which a hash value should be calculated.
 	 */
@@ -71,7 +71,7 @@ class EdgeHashKey<T> {
 	 * @param b The second enpoint of the represented edge.
 	 * @param oppositeNode A node on the non-open side of this edge.
 	 */
-	EdgeHashKey(SpaceNode<T> a, SpaceNode<T> b,
+	public EdgeHashKey(SpaceNode<T> a, SpaceNode<T> b,
 			SpaceNode<T> oppositeNode) {
 		this.a = a;
 		this.b = b;
@@ -117,6 +117,16 @@ class EdgeHashKey<T> {
 			return false;
 	}
 
+	@Override
+	public SpaceNode<T> getEndpointA() {
+		return a;
+	}
+
+	@Override
+	public SpaceNode<T> getEndpointB() {
+		return b;
+	}
+
 	/**
 	 * computes the cosine between this edge to another point measured at the 
 	 * first endpoint of this edge.
@@ -124,7 +134,8 @@ class EdgeHashKey<T> {
 	 * @return The cosine between this edge and an edge between the first
 	 * endpoint of this edge and <code>fourthPoint</code>.
 	 */
-	double getCosine(double[] fourthPoint) {
+	@Override
+	public double getCosine(double[] fourthPoint) {
 		double[] normal = normalize(crossProduct(ab,
 				subtract(fourthPoint, a.getPosition())));
 		// double sine = norm(crossProduct(normal,lastNormalVector));
@@ -154,7 +165,8 @@ class EdgeHashKey<T> {
 	 * @param node The given node.
 	 * @return The incident node opposite to <code>node</code>.
 	 */
-	SpaceNode<T> oppositeNode(SpaceNode<T> node) {
+	@Override
+	public SpaceNode<T> oppositeNode(SpaceNode<T> node) {
 		if (Objects.equals(a, node))
 			return b;
 		else

@@ -21,11 +21,13 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 
 package ini.cx3d.spatialOrganization;
 
-import ini.cx3d.spatialOrganization.factory.ExactVectorFactory;
-import ini.cx3d.spatialOrganization.factory.Triangle3DFactory;
 import ini.cx3d.spatialOrganization.interfaces.ExactVector;
 import ini.cx3d.spatialOrganization.interfaces.Rational;
+import ini.cx3d.spatialOrganization.interfaces.EdgeHashKey;
 import ini.cx3d.spatialOrganization.factory.RationalFactory;
+import ini.cx3d.spatialOrganization.factory.ExactVectorFactory;
+import ini.cx3d.spatialOrganization.factory.Triangle3DFactory;
+import ini.cx3d.spatialOrganization.factory.EdgeHashKeyFactory;
 
 import ini.cx3d.spatialOrganization.interfaces.Triangle3D;
 
@@ -354,7 +356,7 @@ public class OpenTriangleOrganizer<T> {
 			SpaceNode<T> b, SpaceNode<T> oppositeNode,
 			EdgeHashKey<T> oldOpenEdge,
 			HashMap<EdgeHashKey<T>, EdgeHashKey<T>> map) {
-		EdgeHashKey<T> hk1 = new EdgeHashKey<T>(a, b,
+		EdgeHashKey<T> hk1 = new EdgeHashKeyFactory<T>().create(a, b,
 				oppositeNode);
 		if (map.containsKey(hk1)) {
 			map.remove(hk1);
@@ -534,8 +536,8 @@ public class OpenTriangleOrganizer<T> {
 			removedNode1 = lastSearchNode;
 			removedNode2 = searchNode;
 		} else {
-			searchNode = startingEdge.b;
-			lastSearchNode = startingEdge.a;
+			searchNode = startingEdge.getEndpointB();
+			lastSearchNode = startingEdge.getEndpointA();
 		}
 		while (!nodes.isEmpty()) {
 			if (searchNode == null
@@ -564,8 +566,8 @@ public class OpenTriangleOrganizer<T> {
 			nodes.remove(pickedNode);
 		}
 		if (startingEdge != null) {
-			sortedNodes.addFirst(startingEdge.b);
-			sortedNodes.addFirst(startingEdge.a);
+			sortedNodes.addFirst(startingEdge.getEndpointB());
+			sortedNodes.addFirst(startingEdge.getEndpointA());
 		} else {
 			sortedNodes.addFirst(removedNode2);
 			sortedNodes.addFirst(removedNode1);
@@ -628,8 +630,8 @@ public class OpenTriangleOrganizer<T> {
 			HashMap<EdgeHashKey<T>, EdgeHashKey<T>> map,
 			LinkedList<ini.cx3d.spatialOrganization.interfaces.Triangle3D<T>> triangleList) {
 		if (startingEdge != null) {
-			similarDistanceNodes.addFirst(startingEdge.a);
-			similarDistanceNodes.addFirst(startingEdge.b);
+			similarDistanceNodes.addFirst(startingEdge.getEndpointA());
+			similarDistanceNodes.addFirst(startingEdge.getEndpointB());
 		}
 		if (NewDelaunayTest.createOutput()) NewDelaunayTest.out("triangulating points on Circle: "
 						+ similarDistanceNodes);
@@ -694,15 +696,15 @@ public class OpenTriangleOrganizer<T> {
 		LinkedList<SpaceNode<T>> similarDistanceNodes = new LinkedList<SpaceNode<T>>();
 		double upperBound, lowerBound;
 		while (!map.isEmpty()) {
-			SpaceNode<T> a = anOpenEdge.a, b = anOpenEdge.b;
+			SpaceNode<T> a = anOpenEdge.getEndpointA(), b = anOpenEdge.getEndpointB();
 			double smallestCosinus = Double.MAX_VALUE;
 			upperBound = smallestCosinus;
 			lowerBound = smallestCosinus;
 			SpaceNode<T> pickedNode = null;
 			double tolerance = 0.000000001;
 			for (SpaceNode<T> currentNode : nodes) {
-				if (!Objects.equals(currentNode, anOpenEdge.a)
-						&& !Objects.equals(currentNode, anOpenEdge.b)) {
+				if (!Objects.equals(currentNode, anOpenEdge.getEndpointA())
+						&& !Objects.equals(currentNode, anOpenEdge.getEndpointB())) {
 					if (currentNode == null)
 						if (NewDelaunayTest.createOutput()) NewDelaunayTest.out("");
 					double cosinus = anOpenEdge
