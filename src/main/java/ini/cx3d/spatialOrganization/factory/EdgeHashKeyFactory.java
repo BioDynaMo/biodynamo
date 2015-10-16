@@ -20,7 +20,7 @@ public class EdgeHashKeyFactory<T> {
             edgeHashKey = new ini.cx3d.spatialOrganization.EdgeHashKey(a, b, opposite_node);
         }
         if(DEBUG) {
-            System.out.println("DBG edge created " + edgeHashKey);
+            System.out.println("DBG EdgeHashKey created " + edgeHashKey);
             edgeHashKey =  DebugUtil.createDebugLoggingProxy(edgeHashKey, new Class[]{EdgeHashKey.class});
         }
         return  edgeHashKey;

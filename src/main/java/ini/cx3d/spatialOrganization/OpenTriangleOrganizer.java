@@ -21,15 +21,18 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 
 package ini.cx3d.spatialOrganization;
 
-import ini.cx3d.spatialOrganization.interfaces.ExactVector;
 import ini.cx3d.spatialOrganization.interfaces.Rational;
+import ini.cx3d.spatialOrganization.interfaces.ExactVector;
+import ini.cx3d.spatialOrganization.interfaces.Triangle3D;
 import ini.cx3d.spatialOrganization.interfaces.EdgeHashKey;
+import ini.cx3d.spatialOrganization.interfaces.TriangleHashKey;
 import ini.cx3d.spatialOrganization.factory.RationalFactory;
 import ini.cx3d.spatialOrganization.factory.ExactVectorFactory;
 import ini.cx3d.spatialOrganization.factory.Triangle3DFactory;
 import ini.cx3d.spatialOrganization.factory.EdgeHashKeyFactory;
+import ini.cx3d.spatialOrganization.factory.TriangleHashKeyFactory;
 
-import ini.cx3d.spatialOrganization.interfaces.Triangle3D;
+
 
 import static ini.cx3d.utilities.Matrix.add;
 import static ini.cx3d.utilities.Matrix.crossProduct;
@@ -85,6 +88,8 @@ public class OpenTriangleOrganizer<T> {
 	 * Used for debugging purposes only! DO NOT USE. Needs to be removed. 
 	 */
 	public static int toleranceValuePointer = 0;
+
+	private final TriangleHashKeyFactory<T> triangleHashKeyFactory = new TriangleHashKeyFactory<T>();
 
 	/**
 	 * Adds a new value to the array <code>toleranceValues</code>.
@@ -198,7 +203,7 @@ public class OpenTriangleOrganizer<T> {
 	 * @param triangle The new open triangle.
 	 */
 	public void putTriangle(Triangle3D<T> triangle) {
-		TriangleHashKey<T> key = new TriangleHashKey<T>(triangle.getNodes()[0],
+		TriangleHashKey<T> key = triangleHashKeyFactory.create(triangle.getNodes()[0],
 				triangle.getNodes()[1],
 				triangle.getNodes()[2]);
 		map.put(key, triangle);
@@ -213,7 +218,7 @@ public class OpenTriangleOrganizer<T> {
 	 * @param triangle The triangle that should be removed.
 	 */
 	public void removeTriangle(Triangle3D<T> triangle) {
-		TriangleHashKey<T> key = new TriangleHashKey<T>(triangle.getNodes()[0],
+		TriangleHashKey<T> key = triangleHashKeyFactory.create(triangle.getNodes()[0],
 				triangle.getNodes()[1],
 				triangle.getNodes()[2]);
 		map.remove(key);
@@ -232,7 +237,7 @@ public class OpenTriangleOrganizer<T> {
 	 */
 	public Triangle3D<T> getTriangle(SpaceNode<T> a, SpaceNode<T> b,
 			SpaceNode<T> c) {
-		TriangleHashKey<T> key = new TriangleHashKey<T>(a, b, c);
+		TriangleHashKey<T> key = triangleHashKeyFactory.create(a, b, c);
 		Triangle3D<T> ret = map.get(key);
 		if (ret == null) {
 			ret = new Triangle3DFactory().create(a, b, c, null, null);
@@ -260,7 +265,7 @@ public class OpenTriangleOrganizer<T> {
 	 */
 	public Triangle3D<T> getTriangleWithoutRemoving(
 			SpaceNode<T> a, SpaceNode<T> b, SpaceNode<T> c) {
-		TriangleHashKey<T> key = new TriangleHashKey<T>(a, b, c);
+		TriangleHashKey<T> key = triangleHashKeyFactory.create(a, b, c);
 		Triangle3D<T> ret = map.get(key);
 		if (ret == null) {
 			ret = new Triangle3DFactory().create(a, b, c, null, null);
@@ -281,7 +286,7 @@ public class OpenTriangleOrganizer<T> {
 	 */
 	protected boolean contains(SpaceNode<T> a, SpaceNode<T> b,
 			SpaceNode<T> c) {
-		TriangleHashKey<T> key = new TriangleHashKey<T>(a, b, c);
+		TriangleHashKey<T> key = triangleHashKeyFactory.create(a, b, c);
 		return map.containsKey(key);
 	}
 

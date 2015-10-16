@@ -32,8 +32,8 @@ import java.util.Objects;
  *
  * @param <T> The type of user objects associated with nodes in the triangulation.
  */
-class TriangleHashKey<T> {
-	SpaceNode<T> a, b, c;
+public class TriangleHashKey<T> implements ini.cx3d.spatialOrganization.interfaces.TriangleHashKey<T> {
+	private SpaceNode<T> a, b, c;
 	int hashCode;
 
 	/**
@@ -42,7 +42,7 @@ class TriangleHashKey<T> {
 	 * @param b The second node.
 	 * @param c The third node.
 	 */
-	TriangleHashKey(SpaceNode<T> a, SpaceNode<T> b, SpaceNode<T> c) {
+	public TriangleHashKey(SpaceNode<T> a, SpaceNode<T> b, SpaceNode<T> c) {
 		this.a = a;
 		this.b = b;
 		this.c = c;
