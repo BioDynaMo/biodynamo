@@ -76,8 +76,8 @@
 %enddef
 
 /**
- * This macro makes it possible to define methods that should return the Java
- * object instead of the C++ representation
+ * This macro makes it possible that a call to APortedClass.getJdcObject
+ * returns the jdc object instead of the C++ representation.
  *
  * @param FULL_CPP_TYPE namespace::CppClassName<full template type>
  * @param METHOD_NAME only name of the method - e.g. getId
@@ -106,7 +106,6 @@
     jresult = SWIG_DIRECTOR_RETURN_JAVA_OBJ_PREFIX##swigDirectorReturnJavaObject(result.get(), jenv);
   }
 %enddef
-
 
 /**
  * Extends the functionality of std::arrays to return the Java object instead of

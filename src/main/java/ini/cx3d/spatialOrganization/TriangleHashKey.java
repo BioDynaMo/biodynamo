@@ -21,6 +21,8 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 
 package ini.cx3d.spatialOrganization;
 
+import java.util.Objects;
+
 /**
  * Class to provide hash values for triangles.
  * A simple algorithm is used to calculate a hash value for a triplet of nodes.
@@ -79,9 +81,9 @@ class TriangleHashKey<T> {
 	public boolean equals(Object obj) {
 		if (obj instanceof TriangleHashKey) {
 			TriangleHashKey<T> other = (TriangleHashKey<T>) obj;
-			return ((a == other.a) && (((b == other.b) && (c == other.c)) || ((b == other.c) && (c == other.b))))
-					|| ((a == other.b) && (((b == other.a) && (c == other.c)) || ((b == other.c) && (c == other.a))))
-					|| ((a == other.c) && (((b == other.a) && (c == other.b)) || ((b == other.b) && (c == other.a))));
+			return (Objects.equals(a, other.a) && ((Objects.equals(b, other.b) && Objects.equals(c, other.c)) || (Objects.equals(b, other.c) && Objects.equals(c, other.b))))
+					|| (Objects.equals(a, other.b) && ((Objects.equals(b, other.a) && Objects.equals(c, other.c)) || (Objects.equals(b, other.c) && Objects.equals(c, other.a))))
+					|| (Objects.equals(a, other.c) && ((Objects.equals(b, other.a) && Objects.equals(c, other.b)) || (Objects.equals(b, other.b) && Objects.equals(c, other.a))));
 		} else
 			return false;
 	}

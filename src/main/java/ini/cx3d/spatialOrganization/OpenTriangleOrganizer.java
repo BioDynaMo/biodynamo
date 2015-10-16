@@ -40,6 +40,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Stack;
+import java.util.Objects;
 
 /**
  * Whenever an incomplete delaunay triangulation is created for some reason (removement of 
@@ -570,7 +571,7 @@ public class OpenTriangleOrganizer<T> {
 			sortedNodes.addFirst(removedNode1);
 		}
 		while (!sortedNodes.isEmpty()
-				&& (sortedNodes.getFirst() != centerNode))
+				&& !Objects.equals(sortedNodes.getFirst(), centerNode))
 			nodes.addLast(sortedNodes.removeFirst());
 		sortedNodes.addAll(nodes);
 		return sortedNodes;
@@ -700,8 +701,8 @@ public class OpenTriangleOrganizer<T> {
 			SpaceNode<T> pickedNode = null;
 			double tolerance = 0.000000001;
 			for (SpaceNode<T> currentNode : nodes) {
-				if ((currentNode != anOpenEdge.a)
-						&& (currentNode != anOpenEdge.b)) {
+				if (!Objects.equals(currentNode, anOpenEdge.a)
+						&& !Objects.equals(currentNode, anOpenEdge.b)) {
 					if (currentNode == null)
 						if (NewDelaunayTest.createOutput()) NewDelaunayTest.out("");
 					double cosinus = anOpenEdge

@@ -21,6 +21,8 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 
 package ini.cx3d.spatialOrganization;
 
+import java.util.Objects;
+
 import static ini.cx3d.utilities.Matrix.crossProduct;
 import static ini.cx3d.utilities.Matrix.dot;
 import static ini.cx3d.utilities.Matrix.normalize;
@@ -109,8 +111,8 @@ class EdgeHashKey<T> {
 	public boolean equals(Object obj) {
 		if (obj instanceof EdgeHashKey) {
 			EdgeHashKey other = (EdgeHashKey) obj;
-			return ((a == other.a) && (b == other.b))
-					|| ((a == other.b) && (b == other.a));
+			return (Objects.equals(a, other.a) && Objects.equals(b, other.b))
+					|| (Objects.equals(a, other.b) && Objects.equals(b, other.a));
 		} else
 			return false;
 	}
@@ -153,7 +155,7 @@ class EdgeHashKey<T> {
 	 * @return The incident node opposite to <code>node</code>.
 	 */
 	SpaceNode<T> oppositeNode(SpaceNode<T> node) {
-		if (a == node)
+		if (Objects.equals(a, node))
 			return b;
 		else
 			return a;

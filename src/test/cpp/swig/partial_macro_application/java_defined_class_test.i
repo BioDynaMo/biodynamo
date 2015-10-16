@@ -22,7 +22,9 @@
 %include "cx3d_shared_ptr.i"
 
 %define %NotPorted_cx3d_shared_ptr()
-  %cx3d_shared_ptr(NotPortedCppType, cx3d::NotPorted);
+  %cx3d_shared_ptr(NotPortedCppType,
+                   ini/cx3d/swig/NotPortedT_intCppType,
+                   cx3d::NotPorted);
 %enddef
 
 %define %NotPorted_jdc_enable()
@@ -57,9 +59,9 @@
 %enddef
 
 %define %NotPortedTemplated_cx3d_shared_ptr()
-  %cx3d_shared_ptr_generics(NotPortedTemplatedT_intCppType,
-                            ini/cx3d/swig/NotPortedTemplatedT_intCppType,
-                            cx3d::NotPortedTemplated<int>);
+  %cx3d_shared_ptr(NotPortedTemplatedT_intCppType,
+                   ini/cx3d/swig/NotPortedTemplatedT_intCppType,
+                   cx3d::NotPortedTemplated<int>);
 %enddef
 
 %define %NotPortedTemplated_jdc_enable()

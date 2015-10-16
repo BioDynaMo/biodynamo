@@ -49,13 +49,7 @@
 // Workaround empty first macro argument bug
 #define SWIGEMPTYHACK
 // Main user macro for defining cx3d_shared_ptr typemaps for both const and non-const pointer types
-%define %cx3d_shared_ptr(JCLASS, TYPE...)
-  %feature("smartptr", noblock=1) TYPE { SWIG_SHARED_PTR_QNAMESPACE::shared_ptr< TYPE > }
-  CX3D_SHARED_PTR_TYPEMAPS(SWIGEMPTYHACK, JCLASS, "$typemap(jstype, TYPE)", TYPE)
-  CX3D_SHARED_PTR_TYPEMAPS(const, JCLASS, "$typemap(jstype, TYPE)", TYPE)
-%enddef
-
-%define %cx3d_shared_ptr_generics(JCLASS, JSTYPE_WO_GENERICS, TYPE...)
+%define %cx3d_shared_ptr(JCLASS, JSTYPE_WO_GENERICS, TYPE...)
   %feature("smartptr", noblock=1) TYPE { SWIG_SHARED_PTR_QNAMESPACE::shared_ptr< TYPE > }
   CX3D_SHARED_PTR_TYPEMAPS(SWIGEMPTYHACK, JCLASS, "JSTYPE_WO_GENERICS", TYPE)
   CX3D_SHARED_PTR_TYPEMAPS(const, JCLASS, "JSTYPE_WO_GENERICS", TYPE)
@@ -180,9 +174,8 @@
                           SWIG_SHARED_PTR_QNAMESPACE::shared_ptr< CONST TYPE > &,
                           SWIG_SHARED_PTR_QNAMESPACE::shared_ptr< CONST TYPE > *,
                           SWIG_SHARED_PTR_QNAMESPACE::shared_ptr< CONST TYPE > *& %{
-                           *(std::shared_ptr< cx3d::spatial_organization::Triangle3D< cx3d::PhysicalNode > > **)&jtriangle = (std::shared_ptr< cx3d::spatial_organization::Triangle3D< cx3d::PhysicalNode > > *) &triangle;
+                          *(SWIG_SHARED_PTR_QNAMESPACE::shared_ptr< CONST TYPE > **)&j$1 = $1 ? new std::shared_ptr< CONST TYPE >($1) : 0;
                           %}
-                          // "*("#SWIG_SHARED_PTR_QNAMESPACE"::shared_ptr<"#CONST" "#TYPE " > **)&jtriangle = ("#SWIG_SHARED_PTR_QNAMESPACE"::shared_ptr<"#CONST" "#TYPE " > *) &triangle;";
 
   %typemap(directorout, descriptor="L"JSTYPE_WO_GENERICS";") SWIG_SHARED_PTR_QNAMESPACE::shared_ptr< CONST TYPE >,
                           SWIG_SHARED_PTR_QNAMESPACE::shared_ptr< CONST TYPE > &,

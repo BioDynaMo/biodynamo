@@ -18,13 +18,14 @@
  */
 
 %include "std_array_typemap.i"
+%include "std_list_typemap.i"
 %include "java_defined_class.i"
 %include "cx3d_shared_ptr.i"
 
 %define %Tetrahedron_cx3d_shared_ptr()
-  %cx3d_shared_ptr_generics(TetrahedronT_PhysicalNodeCppType,
-                            ini/cx3d/swig/spatialOrganization/TetrahedronT_PhysicalNodeCppType,
-                            cx3d::spatial_organization::Tetrahedron<cx3d::PhysicalNode>);
+  %cx3d_shared_ptr(TetrahedronT_PhysicalNodeCppType,
+                   ini/cx3d/swig/spatialOrganization/TetrahedronT_PhysicalNodeCppType,
+                   cx3d::spatial_organization::Tetrahedron<cx3d::PhysicalNode>);
 %enddef
 
 %define %Tetrahedron_jdc_enable()
@@ -43,5 +44,11 @@
 %enddef
 
 %define %Tetrahedron_jdc_type_modification()
-  %jdc_type_modification(cx3d::spatial_organization::Tetrahedron<cx3d::PhysicalNode>, ini.cx3d.spatialOrganization.Tetrahedron);
+  %jdc_type_modification(cx3d::spatial_organization::Tetrahedron<cx3d::PhysicalNode>,
+                         ini.cx3d.spatialOrganization.Tetrahedron);
+%enddef
+
+%define %Tetrahedron_stdlist()
+  %stdlist_typemap(std::shared_ptr<cx3d::spatial_organization::Tetrahedron<cx3d::PhysicalNode>>,
+                   Tetrahedron, ini.cx3d.spatialOrganization.Tetrahedron);
 %enddef

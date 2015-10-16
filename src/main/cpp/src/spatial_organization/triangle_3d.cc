@@ -5,7 +5,7 @@
 #include <cmath>
 #include <array>
 #include <limits>
-
+#include <memory>
 
 #include "matrix.h"
 #include "string_util.h"

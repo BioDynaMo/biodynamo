@@ -28,6 +28,7 @@
 
 %define %ExactVector_cx3d_shared_ptr()
   %cx3d_shared_ptr(ExactVector,
+                   ini/cx3d/spatialOrganization/interfaces/ExactVector,
                    cx3d::spatial_organization::ExactVector);
 %enddef
 

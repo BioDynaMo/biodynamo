@@ -12,6 +12,8 @@
 #include "spatial_organization/tetrahedron.h"
 #include "spatial_organization/plane_3d.h"
 #include "spatial_organization/triangle_3d.h"
+#include "spatial_organization/spatial_organization_edge.h"
+#include "spatial_organization/edge.h"
 using namespace cx3d::spatial_organization;
 #include "spatial_organizationJAVA_wrap.h"
 %}
@@ -41,6 +43,12 @@ JAVA_LOAD_NATIVE_LIBRARY(cx3d_spatialOrganization);
 %Rational_stdarray_array_marshalling(spatialOrganization, 3);
 %ExactVector_stdarray_array_marshalling(spatialOrganization, 3);
 
+// modifications for class Edge
+%include "partial_macro_application/edge.i";
+%Edge_cx3d_shared_ptr();
+%Edge_ported_type_modification();
+%Edge_ported_add_equals();
+
 // modifications for class SpaceNode
 %include "partial_macro_application/space_node.i";
 %SpaceNode_cx3d_shared_ptr();
@@ -51,7 +59,10 @@ JAVA_LOAD_NATIVE_LIBRARY(cx3d_spatialOrganization);
 %SpaceNode_jdc_array_extension(4);
 %SpaceNode_stdarray_array_marshalling(spatialOrganization, 4);
 %SpaceNode_jdc_get_array(4, getAdjacentNodes);
+%SpaceNode_jdc_remove_method_bodies();
+%SpaceNode_jdc_get(getOpposite);
 %SpaceNode_jdc_type_modification();
+%rename(getUserObjectSwig) cx3d::spatial_organization::SpaceNode<cx3d::PhysicalNode>::getUserObject;
 
 // modifications for class Tetrahedron
 %include "partial_macro_application/tetrahedron.i";
@@ -60,6 +71,9 @@ JAVA_LOAD_NATIVE_LIBRARY(cx3d_spatialOrganization);
 %Tetrahedron_jdc_get(getOppositeTetrahedron);
 %Tetrahedron_jdc_remove_method_bodies();
 %Tetrahedron_jdc_type_modification();
+%Tetrahedron_jdc_get(next);
+%Tetrahedron_jdc_get(previous);
+%Tetrahedron_stdlist();
 
 // modifications for Plane3D
 %include "partial_macro_application/plane_3d.i";
@@ -73,6 +87,16 @@ JAVA_LOAD_NATIVE_LIBRARY(cx3d_spatialOrganization);
 %Triangle3D_cx3d_shared_ptr();
 %double_stdarray_2dim_array_marshalling(spatialOrganization, 3, 3);
 
+// modifications for class PhysicalNode
+%include "partial_macro_application/physical_node.i"
+%PhysicalNode_cx3d_shared_ptr();
+%PhysicalNode_jdc_enable();
+%PhysicalNode_jdc_get(getFirstElement);
+%PhysicalNode_jdc_get(getSecondElement);
+%PhysicalNode_jdc_get(getOppositeElement);
+%PhysicalNode_jdc_remove_method_bodies();
+%PhysicalNode_jdc_type_modification();
+
 // add the original header files here
 %include "spatial_organization/rational.h"
 %include "spatial_organization/exact_vector.h"
@@ -82,6 +106,8 @@ JAVA_LOAD_NATIVE_LIBRARY(cx3d_spatialOrganization);
 %include "spatial_organization/tetrahedron.h"
 %include "spatial_organization/plane_3d.h"
 %include "spatial_organization/triangle_3d.h"
+%include "spatial_organization/spatial_organization_edge.h"
+%include "spatial_organization/edge.h"
 
 // generate templates
 namespace cx3d{
@@ -90,5 +116,6 @@ namespace spatial_organization{
   %template(TetrahedronT_PhysicalNode) Tetrahedron<cx3d::PhysicalNode>;
   %template(Plane3DT_PhysicalNode) Plane3D<cx3d::PhysicalNode>;
   %template(Triangle3DT_PhysicalNode) Triangle3D<cx3d::PhysicalNode>;
+  %template(EdgeT_PhysicalNode) Edge<cx3d::PhysicalNode>;
 }
 }

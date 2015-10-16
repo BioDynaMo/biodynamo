@@ -21,24 +21,28 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 
 package ini.cx3d.spatialOrganization;
 
+import ini.cx3d.utilities.StringUtilities;
+
+import java.util.AbstractSequentialList;
 import java.util.LinkedList;
+import java.util.Objects;
 
 /**
- * This class is used to represent an edge in a triangulation. Each edge has two endpoint and 
+ * This class is used to represent an edge in a triangulation. Each edge has two endpoint and
  * additionally stores links to all tetrahedra adjacent to it.
- * 
+ *
  * @author Dennis Goehlsdorf
  *
  * @param <T> The type of the user objects stored in the endpoints of an edge.
  */
-public class Edge<T> implements SpatialOrganizationEdge<T> {
+public class Edge<T> implements ini.cx3d.spatialOrganization.interfaces.Edge<T> {
 //	/**
 //	 * Used to assign a unique identification number to each initialized edge.
 //	 */
 //	private static int IDCOUNTER = 0;
-//	
+//
 //	/**
-//	 * The identification number of an edge. 
+//	 * The identification number of an edge.
 //	 */
 //	private int id = IDCOUNTER++;
 
@@ -46,17 +50,17 @@ public class Edge<T> implements SpatialOrganizationEdge<T> {
 	 * The two endpoints of this edge.
 	 */
 	private SpaceNode<T> a, b;
-	
+
 	/**
-	 * A list of all tetrahedra that are adjacent to this edge. 
+	 * A list of all tetrahedra that are adjacent to this edge.
 	 */
-	private LinkedList<Tetrahedron<T>> adjacentTetrahedra = new LinkedList<Tetrahedron<T>>();
+	private LinkedList<Tetrahedron> adjacentTetrahedra = new LinkedList<Tetrahedron>();
 
 	/**
 	 * Stores the cross section area associated with this edge.
 	 */
 	private double crossSectionArea = 0.0;
-	
+
 	/**
 	 * Initializes a new edge with two specified endpoints.
 	 * @param a The first endpoint of the new edge.
@@ -67,19 +71,21 @@ public class Edge<T> implements SpatialOrganizationEdge<T> {
 		this.b = b;
 		if (a != null) a.addEdge(this);
 		if (b != null) b.addEdge(this);
+
 //		this.posA = (a!=null)?a.addEdge(this):null;
 //		this.posB = (b!=null)?b.addEdge(this):null;
 	}
 
-	/** 
+	/**
 	 * {@inheritDoc}
 	 */
-	public SpatialOrganizationNode<T> getOpposite(SpatialOrganizationNode<T> comingFrom) {
-		if (comingFrom == a) return b;
-		else if (comingFrom == b) return a;
+	@Override
+	public SpatialOrganizationNode<T> getOpposite(SpaceNode<T> comingFrom) {
+		if (Objects.equals(comingFrom, a)) return b;
+		else if (Objects.equals(comingFrom, b)) return a;
 		else throw new RuntimeException("The edge "+this+" is not adjacent to the node "+comingFrom);
 	}
-	
+
 //	public T getOppositeElement_(T element) {
 //		if (a != null) {
 //			if (a.getUserObject() == element) {
@@ -87,7 +93,7 @@ public class Edge<T> implements SpatialOrganizationEdge<T> {
 //					return b.getUserObject();
 //			}
 //			else if (b != null) {
-//				if (b.getUserObject() == element) 
+//				if (b.getUserObject() == element)
 //						return a.getUserObject();
 //			}
 //		}
@@ -99,14 +105,15 @@ public class Edge<T> implements SpatialOrganizationEdge<T> {
 //		}
 //		return null;
 //	}
-	
+
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override
 	public T getOppositeElement(T element) {
 		if (a!=null  && b!=null) {
 			T aT = a.getUserObject();
-			if(element == aT){
+			if(Objects.equals(element, aT)){
 				return b.getUserObject();
 			}else{
 				return a.getUserObject();
@@ -114,24 +121,27 @@ public class Edge<T> implements SpatialOrganizationEdge<T> {
 		}
 		return null;
 	}
-	
+
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override
 	public T getFirstElement() {
 		return a.getUserObject();
 	}
-	
+
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override
 	public T getSecondElement() {
 		return b.getUserObject();
 	}
-	
+
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override
 	public double getCrossSection() {
 		return this.crossSectionArea;
 	}
@@ -139,41 +149,50 @@ public class Edge<T> implements SpatialOrganizationEdge<T> {
 	/**
 	 *	@return A string representation of this edge. The format of this string is
 	 *     "(ID1 - ID2)", where ID1 and ID2 denote the identification numbers of the
-	 *     endpoints of this edge. 
+	 *     endpoints of this edge.
 	 */
+	@Override
 	public String toString() {
-		return "(" + a + " - " + b + ")";
+		return "(" + StringUtilities.toStr(crossSectionArea) + " - " + a + " - " + b + " - "+ StringUtilities.toStr(adjacentTetrahedra) +")";
 	}
-	
+
 	/**
 	 * Tests whether this edge is connecting a pair of points.
 	 * @param a The first node.
 	 * @param b The second node.
 	 * @return <code>true</code>, if this edge connects <code>a</code> and <code>b</code>.
 	 */
-	protected boolean equals(SpaceNode<T> a, SpaceNode<T> b) {
-		return ((this.a == a) && (this.b == b)) || ((this.b == a) && (this.a == b));
+	public boolean equals(SpaceNode<T> a, SpaceNode<T> b) {
+		return (Objects.equals(this.a, a) && Objects.equals(this.b, b)) || (Objects.equals(this.b, a) && Objects.equals(this.a, b));
 	}
-	
+
 	/**
 	 * Removes a tetrahedron from this edge's list of tetrahedra. If this edge is not incident to
 	 * any tetrahedra after the removal of the specified tetrahedron, the edge removes itself from
 	 * the triangulation by calling {@link #remove()}.
 	 * @param tetrahedron A tetrahedron incident to this edge which should be removed.
 	 */
-	protected void removeTetrahedron(Tetrahedron<T> tetrahedron) {
+	public void removeTetrahedron(Tetrahedron<T> tetrahedron) {
 		adjacentTetrahedra.remove(tetrahedron);
 //		element.remove();
 		if (adjacentTetrahedra.isEmpty())
 			remove();
 	}
-	
+
+	/**
+	 * Adds a tetrahedron to this edge's list of tetrahedra.
+	 * @param tetrahedron A tetrahedron incident to this edge which should be added.
+	 */
+	public void addTetrahedron(Tetrahedron<T> tetrahedron) {
+		adjacentTetrahedra.add(tetrahedron);
+	}
+
 	/**
 	 * Removes this edge from the triangulation. To do so, the two endpoints are informed
-	 * that the edge was removed. 
-	 *  
+	 * that the edge was removed.
+	 *
 	 */
-	protected void remove() {
+	public void remove() {
 		if (a != null)
 			a.removeEdge(this);
 		if (b != null)
@@ -183,23 +202,23 @@ public class Edge<T> implements SpatialOrganizationEdge<T> {
 //		if (posB != null)
 //			posB.remove();
 	}
-	
+
 	/**
 	 * Returns the list of incident tetrahedra.
 	 * @return The list of incident tetrahedra.
 	 */
-	protected LinkedList<Tetrahedron<T>> getAdjacentTetrahedra() {
+	public AbstractSequentialList<Tetrahedron> getAdjacentTetrahedra() {
 		return adjacentTetrahedra;
 	}
-	
+
 	/**
 	 * Changes the cross section area of this edge.
 	 * @param change The value by which the cross section area of this edge has changed.
 	 * At initialization, this area is set to zero and all tetrahedra that are registered as
 	 * incident tetrahedra increase the cross section area.
 	 */
-	protected void changeCrossSectionArea(double change) {
+	public void changeCrossSectionArea(double change) {
 		this.crossSectionArea += change;
 	}
-	
+
 }

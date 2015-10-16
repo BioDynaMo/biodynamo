@@ -45,7 +45,7 @@ namespace std {
 }
 
 /**
- * Macro definition to create a Java class for the given template types
+ * Macro definition to create a Java class for the given std::array<CPP_TYPE, SIZE>
  * The generated class extends from java.util.AbstractList and implements
  * java.util.RandomAccess.
  *
@@ -55,7 +55,7 @@ namespace std {
  *        Naming recommendation: e.g. JAVA_TYPE=Double, SIZE=3 -> Double_3_
  *        Manual name specification is necessary due to naming conflicts:
  *        e.g. std::array<Rational, 3> and std::array<std::shared_ptr<Rational, 3>
- *        would map to the same name (ArrayT_Double_3) using built-in name generation.
+ *        would map to the same name (ArrayT_Rational_3) using built-in name generation.
  * @param JAVA_TYPE Java equivalent of CPP_TYPE, must be a non primitive type
  *        For usage with primitive types use their Object equivalent: double -> Double
  * @param SIZE is the size type for std::array. Every different size is a different type

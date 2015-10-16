@@ -25,6 +25,7 @@ import ini.cx3d.spatialOrganization.factory.ExactVectorFactory;
 import ini.cx3d.spatialOrganization.factory.Triangle3DFactory;
 import ini.cx3d.spatialOrganization.interfaces.ExactVector;
 import ini.cx3d.spatialOrganization.interfaces.Rational;
+import ini.cx3d.spatialOrganization.interfaces.Edge;
 import ini.cx3d.spatialOrganization.factory.RationalFactory;
 
 import ini.cx3d.spatialOrganization.interfaces.Triangle3D;
@@ -39,6 +40,7 @@ import static ini.cx3d.utilities.StringUtilities.toStr;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * This class is used to represent a tetrahedron. Each instance saves references
@@ -556,7 +558,7 @@ public class Tetrahedron<T> extends TetrahedronT_PhysicalNodeCppType {//extends 
 			// position where you are inserted:
 			for (int i = 0; i < 6; i++)
 				if (adjacentEdges[i] != null)
-					adjacentEdges[i].getAdjacentTetrahedra().add(this);
+					adjacentEdges[i].addTetrahedron(this);
 			// if (adjacentEdges[i] != null) positionsInEdgeLists[i] =
 			// adjacentEdges[i].adjacentTetrahedra.add(this);
 		}
@@ -1127,11 +1129,11 @@ public class Tetrahedron<T> extends TetrahedronT_PhysicalNodeCppType {//extends 
 			int edgeNumber = getEdgeNumber(lastPosition, position);
 			Edge otherEdge = otherTetrahedron.getEdge(
 					adjacentNodes[lastPosition], adjacentNodes[position]);
-			if (otherEdge != adjacentEdges[edgeNumber]) {
+			if (!Objects.equals(otherEdge, adjacentEdges[edgeNumber])) {
 				adjacentEdges[edgeNumber].removeTetrahedron(this);
 				// positionsInEdgeLists[edgeNumber] =
 				// otherEdge.getAdjacentTetrahedra().add(this);
-				otherEdge.getAdjacentTetrahedra().add(this);
+				otherEdge.addTetrahedron(this);
 				adjacentEdges[edgeNumber] = otherEdge;
 			}
 
@@ -1154,7 +1156,7 @@ public class Tetrahedron<T> extends TetrahedronT_PhysicalNodeCppType {//extends 
 	 */
 	protected int getNodeNumber(SpaceNode<T> node) {
 		for (int i = 0; i < 4; i++) {
-			if (adjacentNodes[i] == node)
+			if (Objects.equals(adjacentNodes[i], node))
 				return i;
 		}
 		throw new RuntimeException("The node " + node + " is not adjacent to "
@@ -1171,7 +1173,7 @@ public class Tetrahedron<T> extends TetrahedronT_PhysicalNodeCppType {//extends 
 	 */
 	protected int getTriangleNumber(ini.cx3d.spatialOrganization.interfaces.Triangle3D triangle) {
 		for (int i = 0; i < 4; i++) {
-			if (adjacentTriangles[i] == triangle)
+			if (adjacentTriangles[i].equals(triangle))
 				return i;
 		}
 		throw new RuntimeException("The triangle " + triangle
@@ -1245,7 +1247,7 @@ public class Tetrahedron<T> extends TetrahedronT_PhysicalNodeCppType {//extends 
 	 */
 	protected Triangle3D<T> getOppositeTriangle(SpaceNode node) {
 		for (int i = 0; i < 4; i++) {
-			if (adjacentNodes[i] == node)
+			if (Objects.equals(adjacentNodes[i], node))
 				return adjacentTriangles[i];
 		}
 		throw new RuntimeException("The SpaceNode " + node
@@ -1337,7 +1339,7 @@ public class Tetrahedron<T> extends TetrahedronT_PhysicalNodeCppType {//extends 
 	 */
 	private SpaceNode<T> getFirstOtherNode(SpaceNode nodeA, SpaceNode nodeB) {
 		for (int i = 0; i < 4; i++) {
-			if ((adjacentNodes[i] != nodeA) && (adjacentNodes[i] != nodeB))
+			if (!Objects.equals(adjacentNodes[i], nodeA) && !Objects.equals(adjacentNodes[i], nodeB))
 				return adjacentNodes[i];
 		}
 		return null;
@@ -1356,7 +1358,7 @@ public class Tetrahedron<T> extends TetrahedronT_PhysicalNodeCppType {//extends 
 	 */
 	private SpaceNode<T> getSecondOtherNode(SpaceNode nodeA, SpaceNode nodeB) {
 		for (int i = 3; i >= 0; i--) {
-			if ((adjacentNodes[i] != nodeA) && (adjacentNodes[i] != nodeB))
+			if (!Objects.equals(adjacentNodes[i], nodeA) && !Objects.equals(adjacentNodes[i], nodeB))
 				return adjacentNodes[i];
 		}
 		return null;
@@ -1527,7 +1529,7 @@ public class Tetrahedron<T> extends TetrahedronT_PhysicalNodeCppType {//extends 
 		for (int i = 0; (i < 4); i++) {
 			boolean possible = true;
 			for (int j = 0; (j < 4) && (possible); j++)
-				possible = triangleListA[i] != triangleListB[j];
+				possible = !Objects.equals(triangleListA[i], triangleListB[j]);
 			if (possible) {
 				outerTrianglesA[outerTriangleCount] = i;
 				for (int j = 0; j < 4; j++) {
@@ -1751,8 +1753,8 @@ public class Tetrahedron<T> extends TetrahedronT_PhysicalNodeCppType {//extends 
 	 * @return <code>true</code>, if the node is an endpoint.
 	 */
 	public boolean isAdjacentTo(SpaceNode node) {
-		return (adjacentNodes[0] == node) || (adjacentNodes[1] == node)
-				|| (adjacentNodes[2] == node) || (adjacentNodes[3] == node);
+		return (adjacentNodes[0].equals(node)) || (adjacentNodes[1].equals(node))
+				|| (adjacentNodes[2].equals(node)) || (adjacentNodes[3].equals(node));
 	}
 
 	/**

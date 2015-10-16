@@ -3,6 +3,8 @@
 
 #include <string>
 #include <sstream>
+#include <array>
+#include <list>
 #include <memory>
 #include <cstdio>
 
@@ -38,8 +40,7 @@ class StringUtil {
 
   static std::string toStr(double d) {
     char buffer[buffer_size_];
-    int n;
-    n = snprintf(buffer, buffer_size_, "%.5f", d);
+    snprintf(buffer, buffer_size_, "%.5f", d);
     return std::string(buffer);
   }
 
@@ -59,6 +60,17 @@ class StringUtil {
     std::stringstream str;
     str << "{";
     for (auto el : arr) {
+      str << toStr(el) << ", ";
+    }
+    str << "}";
+    return str.str();
+  }
+
+  template<class T>
+  static std::string toStr(const std::list<std::shared_ptr<T>>& list) {
+    std::stringstream str;
+    str << "{";
+    for (auto el : list) {
       str << toStr(el) << ", ";
     }
     str << "}";

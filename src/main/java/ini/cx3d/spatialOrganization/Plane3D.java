@@ -26,6 +26,8 @@ import ini.cx3d.spatialOrganization.interfaces.ExactVector;
 import ini.cx3d.spatialOrganization.interfaces.Rational;
 import ini.cx3d.spatialOrganization.factory.RationalFactory;
 
+import java.util.Objects;
+
 import static ini.cx3d.utilities.Matrix.*;
 
 /**
@@ -115,17 +117,17 @@ public class Plane3D<T> implements ini.cx3d.spatialOrganization.interfaces.Plane
 	 * @param normalize Defines whether or not the normal vector of this plane should be normalized or not.
 	 */
 	public Plane3D(SpaceNode<T>[] nodes, SpaceNode<T> nonUsedNode, boolean normalize) {
-		int first = (nodes[0] == nonUsedNode)?1:0;
+		int first = (Objects.equals(nodes[0], nonUsedNode))?1:0;
 		initPlane(
 				subtract(
 						nodes[first].getPosition(),
-						(first == 0) ? ((nodes[1] != nonUsedNode) ? (nodes[1]
+						(first == 0) ? (!Objects.equals(nodes[1], nonUsedNode) ? (nodes[1]
 								.getPosition())
 								: nodes[2].getPosition())
 								: nodes[2].getPosition()),
 				subtract(
 						nodes[first].getPosition(),
-						(nodes[3] == nonUsedNode) ? nodes[2]
+						Objects.equals(nodes[3], nonUsedNode) ? nodes[2]
 								.getPosition()
 								: nodes[3].getPosition()),
 				nodes[first].getPosition(), normalize);

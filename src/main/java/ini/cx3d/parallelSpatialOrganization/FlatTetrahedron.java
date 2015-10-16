@@ -21,6 +21,8 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 
 package ini.cx3d.parallelSpatialOrganization;
 
+import java.util.Objects;
+
 /**
  * During the flip algorithm, it can happen that tetrahedra with no volume are created. 
  * Since these have no volume and no circumsphere, they cannot simply be stored as normal
@@ -92,7 +94,7 @@ public class FlatTetrahedron<T> extends Tetrahedron<T> {
 	 */
 	public void updateCirumSphereAfterNodeMovement(SpaceNode<T> movedNode) throws NodeLockedException, ManagedObjectDoesNotExistException {
 		for (int i = 0; i < 4; i++) {
-			if (getAdjacentNode(i) != movedNode) 
+			if (!Objects.equals(getAdjacentNode(i), movedNode))
 				getAdjacentTriangle(i).informAboutNodeMovement();
 		}
 	}

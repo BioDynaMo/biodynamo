@@ -9,7 +9,6 @@ namespace spatial_organization {
 #include <memory>
 #include <stdexcept>
 
-// forward declarations
 template<class T> class Triangle3D;
 template<class T> class SpaceNode;
 

@@ -22,9 +22,9 @@
 %include "cx3d_shared_ptr.i"
 
 %define %SpaceNode_cx3d_shared_ptr()
-  %cx3d_shared_ptr_generics(SpaceNodeT_PhysicalNodeCppType,
-                            ini/cx3d/spatialOrganization/SpaceNode,
-                            cx3d::spatial_organization::SpaceNode<cx3d::PhysicalNode>);
+  %cx3d_shared_ptr(SpaceNodeT_PhysicalNodeCppType,
+                   ini/cx3d/spatialOrganization/SpaceNode,
+                   cx3d::spatial_organization::SpaceNode<cx3d::PhysicalNode>);
 %enddef
 
 %define %SpaceNode_jdc_enable()
@@ -61,4 +61,8 @@
 %define %SpaceNode_jdc_type_modification()
   %jdc_type_modification(cx3d::spatial_organization::SpaceNode<cx3d::PhysicalNode>,
                          ini.cx3d.spatialOrganization.SpaceNode);
+%enddef
+
+%define %SpaceNode_jdc_remove_method_bodies()
+  %jdc_remove_method_body(std::shared_ptr<cx3d::PhysicalNode> cx3d::spatial_organization::SpaceNode<cx3d::PhysicalNode>::getUserObject);
 %enddef

@@ -18,6 +18,8 @@ class SpatialOrganizationNode {
   }
 
   virtual std::array<double, 3> getPosition() const = 0;
+
+  virtual std::shared_ptr<T> getUserObject() const = 0;
 };
 
 }  // namespace spatial_organization

@@ -28,6 +28,7 @@
 
 %define %Rational_cx3d_shared_ptr()
   %cx3d_shared_ptr(Rational,
+                   ini/cx3d/spatialOrganization/interfaces/Rational,
                    cx3d::spatial_organization::Rational);
 %enddef
 

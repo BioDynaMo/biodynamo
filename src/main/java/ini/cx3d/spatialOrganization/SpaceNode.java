@@ -23,9 +23,14 @@ package ini.cx3d.spatialOrganization;
 
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.Objects;
 
+import ini.cx3d.physics.PhysicalNode;
+import ini.cx3d.spatialOrganization.factory.EdgeFactory;
 import ini.cx3d.spatialOrganization.interfaces.Triangle3D;
+import ini.cx3d.spatialOrganization.interfaces.Edge;
 import ini.cx3d.swig.spatialOrganization.SpaceNodeT_PhysicalNodeCppType;
+import ini.cx3d.utilities.DebugUtil;
 
 import static ini.cx3d.SimStateSerializationUtil.keyValue;
 import static ini.cx3d.SimStateSerializationUtil.removeLastChar;
@@ -34,15 +39,15 @@ import static ini.cx3d.utilities.StringUtilities.toStr;
 
 /**
  * This class is used to represent a node of a triangulation. Each node is
- * stores information about incident tetrahedra and edges (arbitrary amounts).  
- * 
+ * stores information about incident tetrahedra and edges (arbitrary amounts).
+ *
  * @author Dennis Goehlsdorf
- * 
+ *
  * @param <T> The type of the user objects associated with each node.
  */
 /**
  * @author Dennis
- * 
+ *
  * @param <T>
  */
 public class SpaceNode<T> extends SpaceNodeT_PhysicalNodeCppType implements /*ini.cx3d.spatialOrganization.interfaces.SpaceNode<T>,*/ SpatialOrganizationNode<T> {
@@ -148,7 +153,7 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNodeCppType implements /*in
 	/**
 	 * Creates a new SpaceNode with at a given coordinate and associates it with
 	 * a user object.
-	 * 
+	 *
 	 * @param position
 	 *            The position for this SpaceNode.
 	 * @param content
@@ -157,14 +162,14 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNodeCppType implements /*in
 	public SpaceNode(double[] position, T content) {
 		this.position = position;
 		this.content = content;
-		if (allNodes != null) 
+		if (allNodes != null)
 			allNodes.add(this);
 	}
 
 	/**
 	 * Creates a new SpaceNode with at a given coordinate and associates it with
 	 * a user object.
-	 * 
+	 *
 	 * @param x
 	 *            The x-coordinate for this SpaceNode.
 	 * @param y
@@ -179,13 +184,13 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNodeCppType implements /*in
 		this.position[1] = y;
 		this.position[2] = z;
 		this.content = content;
-		if (allNodes != null) 
+		if (allNodes != null)
 			allNodes.add(this);
 	}
 
 	/**
 	 * Returns a hash code for this SpaceNode, which is equal to its ID number.
-	 * 
+	 *
 	 * @return The ID number of this node.
 	 */
 	public int hashCode() {
@@ -194,7 +199,7 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNodeCppType implements /*in
 
 	/**
 	 * Returns a string representation of this node.
-	 * 
+	 *
 	 * @return A string containing the ID number of this SpaceNode.
 	 */
 	public String toString() {
@@ -203,18 +208,24 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNodeCppType implements /*in
 
 	/**
 	 * Adds a new edge to the list of incident edges.
-	 * 
+	 *
 	 * @param newEdge
 	 *            The edge to be added.
 	 */
-	public void addEdge(Edge<T> newEdge) {
-		this.adjacentEdges.addFirst(newEdge);
+	public void addEdge(ini.cx3d.spatialOrganization.interfaces.Edge newEdge) {
+		Edge edge = DebugUtil.createDebugLoggingProxy(newEdge, new Class[]{Edge.class, SpatialOrganizationEdge.class});
+		if(EdgeFactory.DEBUG){
+    		System.out.println("DBG SN.addEdge " + newEdge);
+			this.adjacentEdges.addFirst(edge);
+		} else {
+			this.adjacentEdges.addFirst(newEdge);
+		}
 	}
 
 	/**
 	 * Searches for an edge which connects this SpaceNode with another
 	 * SpaceNode.
-	 * 
+	 *
 	 * @param oppositeNode
 	 *            The other node to which the required edge should be connected
 	 *            to.
@@ -224,24 +235,31 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNodeCppType implements /*in
 	 */
 	protected SpatialOrganizationEdge<T> searchEdge(SpaceNode<T> oppositeNode) {
 		for (SpatialOrganizationEdge<T> e : this.adjacentEdges) {
-			if (e.getOpposite(this) == oppositeNode) return e;
+			if (Objects.equals(e.getOpposite(this), oppositeNode))
+				return e;
 		}
-		return new Edge<T>(this, oppositeNode);
+		return new EdgeFactory<T>().create(this, oppositeNode);
 	}
 
 	/**
 	 * Removes a given edge from the list of incident edges.
-	 * 
+	 *
 	 * @param edge
 	 *            The edge to be removed.
 	 */
-	protected void removeEdge(Edge<T> edge) {
-		adjacentEdges.remove(edge);
+	public void removeEdge(ini.cx3d.spatialOrganization.interfaces.Edge e) {
+		Edge edge = DebugUtil.createDebugLoggingProxy(e, new Class[]{Edge.class, SpatialOrganizationEdge.class});
+		if(EdgeFactory.DEBUG){
+			System.out.println("DBG SN.removeEdge " + e);
+			adjacentEdges.remove(edge);
+		} else {
+			adjacentEdges.remove(e);
+		}
 	}
 
 	/**
 	 * Removes a given tetrahedron from the list of incident tetrahedra.
-	 * 
+	 *
 	 * @param tetrahedron
 	 *            The tetrahedron to be remobed.
 	 */
@@ -286,10 +304,17 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNodeCppType implements /*in
 		// throw new UnsupportedOperationException("This Iterator cannot be used
 		// to delete elements!");
 		// }
-		//					
+		//
 		// };
 		// }
 		// };
+	}
+
+	public PhysicalNode getUserObjectSwig() {
+		if (content instanceof PhysicalNode) {
+			return (PhysicalNode) content;
+		}
+		return null;
 	}
 
 	public T getUserObject() {
@@ -322,7 +347,7 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNodeCppType implements /*in
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see ini.cx3d.spatialOrganization.SpatialOrganizationNode#getNeighbors()
 	 */
 	public Iterable<T> getNeighbors() {
@@ -359,7 +384,7 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNodeCppType implements /*in
 		// throw new UnsupportedOperationException("This Iterator cannot be used
 		// to delete elements!");
 		// }
-		//					
+		//
 		// };
 		// }
 		// };
@@ -367,7 +392,7 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNodeCppType implements /*in
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see ini.cx3d.spatialOrganization.SpatialOrganizationNode#getPermanentListOfNeighbors()
 	 */
 	public Iterable<T> getPermanentListOfNeighbors() {
@@ -383,7 +408,7 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNodeCppType implements /*in
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see ini.cx3d.spatialOrganization.SpatialOrganizationNode#getVerticesOfTheTetrahedronContaining(double[])
 	 */
 	public Object[] getVerticesOfTheTetrahedronContaining(double[] position) {
@@ -398,7 +423,7 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNodeCppType implements /*in
 					insertionTetrahedron.getOppositeTriangle(null)
 							.getOppositeTetrahedron(insertionTetrahedron);
 		Tetrahedron<T> last = null;
-		while ((insertionTetrahedron != last)
+		while (!Objects.equals(insertionTetrahedron, last)
 			&& (!insertionTetrahedron.isInfinite())) {
 			last = insertionTetrahedron;
 			try {
@@ -419,7 +444,7 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNodeCppType implements /*in
 
 	/**
 	 * Modifies the volume associated with this SpaceNode by a given value.
-	 * 
+	 *
 	 * @param change
 	 *            The change value that will be added to the volume.
 	 */
@@ -429,7 +454,7 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNodeCppType implements /*in
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see ini.cx3d.spatialOrganization.SpatialOrganizationNode#getVolume()
 	 */
 	public double getVolume() {
@@ -438,7 +463,7 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNodeCppType implements /*in
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see ini.cx3d.spatialOrganization.SpatialOrganizationNode#getNewInstance(double[],
 	 *      java.lang.Object)
 	 */
@@ -470,9 +495,9 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNodeCppType implements /*in
 				Tetrahedron.createInitialTetrahedron(this, insertPoint, a, b);
 			}
 			else {
-				new Edge<T>(this, insertPoint);
+				new EdgeFactory<T>().create(this, insertPoint);
 				if (adjacentEdges.size() == 2)
-					new Edge<T>((SpaceNode<T>) adjacentEdges.getLast()
+					new EdgeFactory<T>().create((SpaceNode<T>) adjacentEdges.getLast()
 							.getOpposite(this), insertPoint);
 			}
 
@@ -486,7 +511,7 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNodeCppType implements /*in
 	/**
 	 * Sets the list of movement listeners attached to this node to a specified
 	 * list.
-	 * 
+	 *
 	 * @param listeners
 	 *            The movement listeners that are listening to this node's
 	 *            movements.
@@ -498,7 +523,7 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNodeCppType implements /*in
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see ini.cx3d.spatialOrganization.SpatialOrganizationNode#addSpatialOrganizationNodeMovementListener(ini.cx3d.spatialOrganization.SpatialOrganizationNodeMovementListener)
 	 */
 	public void addSpatialOrganizationNodeMovementListener(
@@ -518,7 +543,7 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNodeCppType implements /*in
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see ini.cx3d.spatialOrganization.SpatialOrganizationNode#getPosition()
 	 */
 	public double[] getPosition() {
@@ -534,7 +559,7 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNodeCppType implements /*in
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see ini.cx3d.spatialOrganization.SpatialOrganizationNode#remove()
 	 */
 	public void remove() {
@@ -544,7 +569,7 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNodeCppType implements /*in
 	/**
 	 * Removes this SpaceNode from the triangulation and restores the gap in the
 	 * triangulation by filling it with new triangles.
-	 * 
+	 *
 	 * @return A new tetrahedron that was created while filling the created gap.
 	 * @see OpenTriangleOrganizer#triangulate()
 	 */
@@ -583,7 +608,7 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNodeCppType implements /*in
 			}
 		}
 		oto.triangulate();
-		if (allNodes != null) 
+		if (allNodes != null)
 			allNodes.remove(this);
 		if (listeners != null) {
 			for (SpatialOrganizationNodeMovementListener<T> listener : listeners)
@@ -595,7 +620,7 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNodeCppType implements /*in
 	/**
 	 * Starting at a given tetrahedron, this function searches the triangulation
 	 * for a tetrahedron which contains this node's coordinate.
-	 * 
+	 *
 	 * @param start
 	 *            The starting tetrahedron.
 	 * @return A tetrahedron which contains the position of this node.
@@ -609,7 +634,7 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNodeCppType implements /*in
 	/**
 	 * Starting at a given tetrahedron, this function searches the triangulation
 	 * for a tetrahedron which contains a given coordinate.
-	 * 
+	 *
 	 * @param <T>
 	 *            The type of user objects that are associated to nodes in the
 	 *            current triangulation.
@@ -637,7 +662,7 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNodeCppType implements /*in
 	}
 
 	/**
-	 * A private function used inside {@link #insert(Tetrahedron)} to remove a given tetrahedron, 
+	 * A private function used inside {@link #insert(Tetrahedron)} to remove a given tetrahedron,
 	 * inform an open triangle organizer about a set of new open triangles and add all tetrahedrons
 	 * adjacent to the removed tetrahedron to a queue.
 	 * @param tetrahedron The tetrahedron that should be removed.
@@ -662,7 +687,7 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNodeCppType implements /*in
 	// private Tetrahedron insertInOuterSpace(Tetrahedron start,
 	// OpenTriangleOrganizer oto, LinkedList<Triangle3D>
 	// convexHullTriangleQueue, LinkedList<Triangle3D> outerTriangles) {
-	//		
+	//
 	// LinkedList<Triangle3D> queue = new LinkedList<Triangle3D>();
 	// if (start.isTrulyInsideSphere(this.position))
 	// processTetrahedron(start, queue, oto);
@@ -682,19 +707,19 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNodeCppType implements /*in
 	// }
 	// }
 	// }
-	//		
+	//
 	// Tetrahedron ret = null;
 	// return ret;
 	// }
 
 	/**
-	 * Inserts this node into a triangulation. Given any tetrahedron which is part of the triangulation, 
+	 * Inserts this node into a triangulation. Given any tetrahedron which is part of the triangulation,
 	 * a stochastic visibility walk is performed in order to find a tetrahedron which contains the position of this node.
-	 * Starting from this tetrahedron, all tetrahedra that would contain this point in their 
-	 * circumsphere are removed from the triangulation. Finally, the gap inside the triangulation which was created 
+	 * Starting from this tetrahedron, all tetrahedra that would contain this point in their
+	 * circumsphere are removed from the triangulation. Finally, the gap inside the triangulation which was created
 	 * is filled by creating a star-shaped triangulation.
-	 * @param start Any tetrahedron of the triangulation which will be used as a starting point for the 
-	 * stochastic visibility walk. 
+	 * @param start Any tetrahedron of the triangulation which will be used as a starting point for the
+	 * stochastic visibility walk.
 	 * @return A tetrahedron which was created while inserting this node.
 	 * @throws PositionNotAllowedException
 	 */
@@ -719,7 +744,7 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNodeCppType implements /*in
 		processTetrahedron(insertionStart, queue, oto);
 		// if (insertionStart.isInfinite() &&
 		// insertionStart.getAdjacentTetrahedron(0).isInfinite()) {
-		//			
+		//
 		// }
 		// else
 		// {
@@ -750,11 +775,11 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNodeCppType implements /*in
 	}
 
 	/**
-	 * Determines if the current triangulation would still be valid when this node would be moved to a 
-	 * given coordinate. (This function does not check whether the Delaunay criterion would still be 
+	 * Determines if the current triangulation would still be valid when this node would be moved to a
+	 * given coordinate. (This function does not check whether the Delaunay criterion would still be
 	 * fullfilled.)
 	 * @param newPosition The new coordinate to which this point should be moved to.
-	 * @return <code>true</code>, if the triangulation would not be corrupted by moving this node to 
+	 * @return <code>true</code>, if the triangulation would not be corrupted by moving this node to
 	 * the specified position and <code>false</code>, if not.
 	 * @throws PositionNotAllowedException
 	 */
@@ -787,9 +812,9 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNodeCppType implements /*in
 
 	/**
 	 * Creates an unique identifier that is used while restoring the Delaunay property.
-	 * While running the flip algorithm, each triangle has to be tested whether it is still 
-	 * locally Delaunay. In order to make sure that no triangle is tested more than once, 
-	 * tested triangles are tagged with a checking index. 
+	 * While running the flip algorithm, each triangle has to be tested whether it is still
+	 * locally Delaunay. In order to make sure that no triangle is tested more than once,
+	 * tested triangles are tagged with a checking index.
 	 * @return A unique index.
 	 */
 	private static int createNewCheckingIndex() {
@@ -836,10 +861,10 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNodeCppType implements /*in
 	 * Whenever open triangles are created, an open triangle organizer is informed.
 	 * @param tetrahedronToRemove The tetrahedron that should be removed.
 	 * @param list The list of candidate tetrahedra which might have to be deleted.
-	 * @param nodeList A list of nodes that keeps track of all nodes which were incident to 
+	 * @param nodeList A list of nodes that keeps track of all nodes which were incident to
 	 * removed tetrahedra during a run of {@link #cleanUp(LinkedList)}.
 	 * @param oto An open triangle organizer which is used to keep track of open triangles.
-	 * @return <code>true</code>, if any of the two lists <code>list</code> of <code>nodeList</code> 
+	 * @return <code>true</code>, if any of the two lists <code>list</code> of <code>nodeList</code>
 	 * were modified during this function call.
 	 */
 	private boolean removeTetrahedronDuringCleanUp(
@@ -884,13 +909,13 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNodeCppType implements /*in
 	}
 
 	/**
-	 * Restores the Delaunay criterion for  a section of the triangulation which 
+	 * Restores the Delaunay criterion for  a section of the triangulation which
 	 * cannot be restored using a flip algorithm.
 	 * Whenever the flip algorithm fails to restore the Delaunay criterion, this function is called.
 	 * First, all tetrahedra that cause a problem are removed along with all adjacent tetrahedra that
 	 * have the same circumsphere. Then, the resulting hole in the triangulation is filled using
 	 * {@link OpenTriangleOrganizer#triangulate()}.
-	 * @param messedUpTetrahedra A set of tetrahedra that are not Delaunay and cannot be replaced using a 
+	 * @param messedUpTetrahedra A set of tetrahedra that are not Delaunay and cannot be replaced using a
 	 * flip algorithm.
 	 */
 	private void cleanUp(LinkedList<Tetrahedron<T>> messedUpTetrahedra) {
@@ -1019,7 +1044,7 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNodeCppType implements /*in
 												// other tetrahedra's points
 												if ((tetrahedron.isFlat()
 													&& tetrahedronI.isFlat()
-													&& tetrahedronJ.isFlat() && tetrahedronI != tetrahedronJ)
+													&& tetrahedronJ.isFlat() && !Objects.equals(tetrahedronI, tetrahedronJ))
 													|| (tetrahedronJ
 															.isTrulyInsideSphere(oppJ
 																	.getPosition()) && tetrahedronI
@@ -1033,7 +1058,7 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNodeCppType implements /*in
 																			tetrahedronJ);
 													break;
 												}
-												//											
+												//
 												// if (tetrahedron.is)
 												// if (tetrahedron.isFlat() ||
 												// tetrahedronI.isFlat() ||
@@ -1197,17 +1222,17 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNodeCppType implements /*in
 			// tetrahedron2.getAdjacentNodes()[connectionNumber],
 			// checkingIndex);
 			// }
-			//								
+			//
 			// }
 			// problemTetrahedra.add(triangle.getOppositeTetrahedron(flatTetrahedron));
 			// }
 			// if (NewDelaunayTest.createOutput())
 			// NewDelaunayTest.out("restoreDelaunay: flat tetrahedron left
 			// over!");
-			//					
+			//
 			// }
 			// }
-			//			
+			//
 			// for (Tetrahedron tetrahedron : problemTetrahedra) {
 			// if (tetrahedron.isValid() && !tetrahedron.isFlat()) {
 			// checkingIndex = createNewCheckingIndex();
@@ -1229,11 +1254,11 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNodeCppType implements /*in
 			// }
 			// }
 			//
-			//			
+			//
 			// OpenTriangleOrganizer oto = null;
 			// for (Tetrahedron messedUpTetrahedron : messedUpTetrahedra) {
 			// if (messedUpTetrahedron.isValid()) {
-			//					
+			//
 			// if (oto == null)
 			// oto = OpenTriangleOrganizer.createSimpleOpenTriangleOrganizer();
 			// messedUpTetrahedron.remove();
@@ -1320,7 +1345,7 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNodeCppType implements /*in
 				insert(insertPosition);
 				throw e;
 			}
-			if (allNodes != null) 
+			if (allNodes != null)
 				allNodes.add(this);
 		}
 	}
@@ -1350,7 +1375,7 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNodeCppType implements /*in
 				maxDistance = Double.MAX_VALUE;
 				Tetrahedron<T> someAdjacentTetrahedron =
 						(Tetrahedron<T>) ((Edge) edge).getAdjacentTetrahedra()
-								.getFirst();
+								.get(0);
 				if (someAdjacentTetrahedron == null) {
 					if (NewDelaunayTest.createOutput())
 						NewDelaunayTest.out("proposeNewPosition");

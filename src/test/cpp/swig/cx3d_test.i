@@ -18,6 +18,7 @@ using namespace cx3d;
 JAVA_LOAD_NATIVE_LIBRARY(cx3d_test);
 
 %include "big_integer_typemap.i"
+%include "std_list_typemap.i"
 
 %include "partial_macro_application/double.i"
 %double_stdarray_array_marshalling(cx3d_test, 3);
@@ -37,6 +38,8 @@ JAVA_LOAD_NATIVE_LIBRARY(cx3d_test);
 %NotPortedTemplated_jdc_array_extension(2);
 %NotPortedTemplated_stdarray_array_marshalling(cx3d_test, 2);
 %NotPortedTemplated_jdc_get_array(2, getNotPortedTemplatedArray);
+
+%stdlist_typemap(int, Integer, Integer);
 
 // add the original header files here
 %include "sim_state_serializable_test.h"

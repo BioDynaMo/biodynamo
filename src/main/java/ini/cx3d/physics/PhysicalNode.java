@@ -32,6 +32,7 @@ import ini.cx3d.SimStateSerializationUtil;
 import ini.cx3d.simulations.ECM;
 import ini.cx3d.spatialOrganization.SpatialOrganizationEdge;
 import ini.cx3d.spatialOrganization.SpatialOrganizationNode;
+import ini.cx3d.swig.spatialOrganization.PhysicalNodeCppType;
 
 import java.io.Serializable;
 import java.util.Enumeration;
@@ -44,24 +45,24 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 
 /**
- * PhysicalNode represents a piece of the simulation space, whether it contains a physical object of not. 
- * As such, it contains a list of all the chemicals (<code>Substance</code>) that are present at this place, 
+ * PhysicalNode represents a piece of the simulation space, whether it contains a physical object of not.
+ * As such, it contains a list of all the chemicals (<code>Substance</code>) that are present at this place,
  * as well as the methods for the diffusion. In order to be able to diffuse chemicals, it contains a node
- * that is part of the neighboring system (eg triangulation). A <code>PhysicalNode</code> can only diffuse 
+ * that is part of the neighboring system (eg triangulation). A <code>PhysicalNode</code> can only diffuse
  * to and receive from the neighbouring <code>PhysicalNode</code>s.
  * <p>
  * The <code>PhysiacalObject</code> sub-classes (<code>PhysicalSphere</code>, <code>PhysicalCylinder</code>)
- * inherit from this class. This emphasize the fact that they take part in the definition of space and 
+ * inherit from this class. This emphasize the fact that they take part in the definition of space and
  * that diffusion of chemical occurs across them.
  * <p>
- * As all the CX3D runnable objects, the PhysicalNode updates its state (i.e. diffuses and degradates) only 
+ * As all the CX3D runnable objects, the PhysicalNode updates its state (i.e. diffuses and degradates) only
  * if needed. The private field <code>onTheSchedulerListForPhysicalNodes</code> is set to <code>true</code>
  * in this case. (For degradation, there is an update mechanism, catching up from the last time it was performed).
- * 
+ *
  * @author fredericzubler
  *
  */
-public class PhysicalNode implements Serializable, SimStateSerializable{
+public class PhysicalNode extends PhysicalNodeCppType implements Serializable, SimStateSerializable{
 	// NOTE : all the "protected" fields are not "private" because they have to be accessible by subclasses
 
 	/* Unique identification for this CellElement instance. Used for marshalling/demarshalling*/
@@ -108,9 +109,9 @@ public class PhysicalNode implements Serializable, SimStateSerializable{
 	}
 
 	public PhysicalNode(){
-		getRwLock().writeLock().lock(); 
+		getRwLock().writeLock().lock();
 		this.ID = idCounter.incrementAndGet();
-		getRwLock().writeLock().unlock(); 
+		getRwLock().writeLock().unlock();
 	}
 
 	// *************************************************************************************
@@ -118,21 +119,21 @@ public class PhysicalNode implements Serializable, SimStateSerializable{
 	// *************************************************************************************
 
 
-	/** Returns true if this PhysicalNode is a PhysicalObject.*/ 
+	/** Returns true if this PhysicalNode is a PhysicalObject.*/
 	public boolean isAPhysicalObject(){
-		//The function is overwritten in PhysicalObject. 
+		//The function is overwritten in PhysicalObject.
 		return false;
 	}
 
-	/** Returns true if this PhysicalNode is a PhysicalCylinder.*/ 
+	/** Returns true if this PhysicalNode is a PhysicalCylinder.*/
 	public boolean isAPhysicalCylinder(){
-		// The function is overwritten in PhysicalSphere. 
+		// The function is overwritten in PhysicalSphere.
 		return false;
 	}
 
 	/** Returns true if this PhysicalNode is a PhysicalSphere.*/
 	public boolean isAPhysicalSphere(){
-		// The function is overwritten in PhysicalSphere 
+		// The function is overwritten in PhysicalSphere
 		return false;
 	}
 
@@ -162,16 +163,16 @@ public class PhysicalNode implements Serializable, SimStateSerializable{
 				degradate(ecm.getECMtime()); // make sure you are up-to-date weight/ degradation
 				getRwLock().readLock().lock();
 				return c + s.getConcentration();
-				
+
 			}
-		
+
 		}
 		finally{
 			getRwLock().readLock().unlock();
 		}
-		
+
 	}
-	
+
 	/**
 	 * Returns the average concentration of for a PhysicalNode and all its neighbors,
 	 * weighted by physical nodes volumes. Diminishes local fluctuations due to irregular
@@ -182,7 +183,7 @@ public class PhysicalNode implements Serializable, SimStateSerializable{
 	public double getConvolvedConcentration(String id) {
 		getRwLock().readLock().lock();
 		try{
-		
+
 			double volSum=0;
 			double exC = 0;
 			double currVol = this.getSoNode().getVolume();
@@ -195,14 +196,14 @@ public class PhysicalNode implements Serializable, SimStateSerializable{
 				exC = exC + currVol*currC;
 				volSum = volSum + currVol;
 			}
-			
+
 			return exC/volSum;
 		}
 		finally{
 			getRwLock().readLock().unlock();
 		}
 	}
-	
+
 
 	/**
 	 * Returns the concentration of an extra-cellular Substance outside this PhysicalNode.
@@ -217,7 +218,7 @@ public class PhysicalNode implements Serializable, SimStateSerializable{
 			if(ecm.thereAreArtificialGradients()){
 				c += ecm.getValueArtificialConcentration(id, location);
 			}
-	
+
 			Object[] vertices = soNode.getVerticesOfTheTetrahedronContaining(location);
 			double concentrationAtLocation = 0;
 			if(vertices != null){
@@ -237,7 +238,7 @@ public class PhysicalNode implements Serializable, SimStateSerializable{
 
 	/**
 	 * Returns the gradient at the space node location for a given substance.
-	 * The way this method is implemented was suggested by Andreas Steimer. 
+	 * The way this method is implemented was suggested by Andreas Steimer.
 	 * @param id the name of the Substance we have to compute the gradient of.
 	 * @return [dc/dx, dc/dy, dc/dz]
 	 */
@@ -251,8 +252,8 @@ public class PhysicalNode implements Serializable, SimStateSerializable{
 			if(s==null){
 				grad = new double[] {0.0, 0.0, 0.0};
 			} else {
-				// distance to three neighbors 
-				double[][] vectorsToNeighbors = new double[3][]; 
+				// distance to three neighbors
+				double[][] vectorsToNeighbors = new double[3][];
 				double[] differencesBetweenTheNeighborsAndThis = new double[3];
 				int indexOfTheEquationWeGet=0;
 				// loop through the neighbors until we have selected three of them (indexOfTheEquationWeGet)
@@ -279,9 +280,9 @@ public class PhysicalNode implements Serializable, SimStateSerializable{
 		}
 	}
 
-	/** Modifies the quantity (increases or decreases) of an extra-cellular Substance. 
+	/** Modifies the quantity (increases or decreases) of an extra-cellular Substance.
 	 * If this <code>PhysicalNode</code> already has an <code>Substance</code> instance
-	 * corresponding to the type given as argument (with the same id), the fields 
+	 * corresponding to the type given as argument (with the same id), the fields
 	 * quantity and concentration in it will be modified, based on a computation depending
 	 * on the simulation time step and the space volume. If there is no such Substance
 	 * instance already, a new instance is requested from ECM.
@@ -292,7 +293,7 @@ public class PhysicalNode implements Serializable, SimStateSerializable{
 	 */
 	public void modifyExtracellularQuantity(String id, double quantityPerTime){
 		getRwLock().writeLock().lock();
-		
+
 		Substance ss = extracellularSubstances.get(id);
 		if(ss==null){
 			ss = ecm.substanceInstance(id);
@@ -306,7 +307,7 @@ public class PhysicalNode implements Serializable, SimStateSerializable{
 		ss.updateConcentrationBasedOnQuantity(volume);
 		// we will diffuse next time step
 		onTheSchedulerListForPhysicalNodes = true;
-		
+
 		getRwLock().writeLock().unlock();
 	}
 
@@ -332,19 +333,19 @@ public class PhysicalNode implements Serializable, SimStateSerializable{
 		}
 	}
 
-	/** 
-	 * Runs the degradation of all Substances (only if it is not up-to-date). This method 
-	 * is called before each operation on Substances ( 
-	 * @param currentEcmTime the current time of the caller 
-	 * (so that it doesn't require a call to ECM). 
+	/**
+	 * Runs the degradation of all Substances (only if it is not up-to-date). This method
+	 * is called before each operation on Substances (
+	 * @param currentEcmTime the current time of the caller
+	 * (so that it doesn't require a call to ECM).
 	 */
 	protected void degradate(double currentEcmTime){ //changed to proteceted
-		
+
 		// if we are up-to-date : we stop here.
 		if(lastECMTimeDegradateWasRun > currentEcmTime){
 			return;
 		}
-		
+
 		//getRwLock().writeLock().lock();
 		// Otherwise, degradation according to the degradation constant for each chemical
 		double deltaT = currentEcmTime-lastECMTimeDegradateWasRun;
@@ -362,15 +363,15 @@ public class PhysicalNode implements Serializable, SimStateSerializable{
 	 * dQA/dt = diffCst*(Area/distance)*(QB/VB-QA/VA)
 	 */
 	private void diffuseEdgeAnalytically(SpatialOrganizationEdge<PhysicalNode> e, double currentEcmTime) {
-		
-		
-		
+
+
+
 		// the two PhysicalNodes
 		PhysicalNode nA = this;
 		PhysicalNode nB = e.getOppositeElement(this);
-		
+
 		//always lock highest first! to avoid deadlock!
-		ReadWriteLock r1; 
+		ReadWriteLock r1;
 		ReadWriteLock r2;
 		if(nA.ID>nB.ID)
 		{
@@ -384,7 +385,7 @@ public class PhysicalNode implements Serializable, SimStateSerializable{
 		}
 		r1.writeLock().lock();
 		r2.writeLock().lock();
-		
+
 		// make sure the other one is up-to-date with degradation
 		nB.degradate(currentEcmTime);
 		// some values about space node distances, contact area and volume
@@ -411,16 +412,16 @@ public class PhysicalNode implements Serializable, SimStateSerializable{
 			double sBConcentration = sB.getConcentration();
 			// saving time : no diffusion if almost no difference;
 			double absDiff = Math.abs(sAConcentration-sBConcentration);
-			if( (absDiff<Param.MINIMAL_DIFFERENCE_CONCENTRATION_FOR_EXTRACELLULAR_DIFFUSION) || 
+			if( (absDiff<Param.MINIMAL_DIFFERENCE_CONCENTRATION_FOR_EXTRACELLULAR_DIFFUSION) ||
 					(absDiff/sAConcentration<Param.MINIMAL_DC_OVER_C_FOR_EXTRACELLULAR_DIFFUSION)){
-				continue; 
+				continue;
 			}
 			// If we reach this point, it means that it is worth performing the diffusion.
 			// we thus put ourselves on the list for performing it again next time step.
 			nB.setOnTheSchedulerListForPhysicalNodes(true);
 			this.onTheSchedulerListForPhysicalNodes = true;
 
-			// Analytical computation of the diffusion between these two nodes 
+			// Analytical computation of the diffusion between these two nodes
 			// (cf document "Diffusion" by F.Zubler for explanation).
 
 			double qA = sA.getQuantity();
@@ -439,7 +440,7 @@ public class PhysicalNode implements Serializable, SimStateSerializable{
 			sA.setQuantity(qA);
 			sB.setQuantity(qB);
 			// and update their concentration again
-			sA.updateConcentrationBasedOnQuantity(vA); 
+			sA.updateConcentrationBasedOnQuantity(vA);
 			sB.updateConcentrationBasedOnQuantity(vB);
 		}
 		r1.writeLock().unlock();
@@ -447,8 +448,8 @@ public class PhysicalNode implements Serializable, SimStateSerializable{
 	}
 
 
-	/** Returns the INSTANCE of Substance stored in this node, with the same id 
-	 * than the Substance given as argument. If there is no such Instance, a new one 
+	/** Returns the INSTANCE of Substance stored in this node, with the same id
+	 * than the Substance given as argument. If there is no such Instance, a new one
 	 * is created, inserted into the list extracellularSubstances and returned.
 	 * Used for diffusion and for ECMChemicalReaction.*/
 	public Substance getSubstanceInstance(Substance templateS){
@@ -472,7 +473,7 @@ public class PhysicalNode implements Serializable, SimStateSerializable{
 		}
 	}
 
-	
+
 	// *************************************************************************************
 	// *      METHODS FOR INTERPOLATION (used only by PhysicalNodeMovementListener)        *
 	// *************************************************************************************
@@ -488,7 +489,7 @@ public class PhysicalNode implements Serializable, SimStateSerializable{
 	 * @return array with the coordinate of point Q with respect Pi
 	 */
 	static double[] getBarycentricCoordinates(double[] Q, double[] P1, double[] P2, double[] P3, double[] P4){
-		
+
 		// three linearly independent vectors
 		double[] B1 = subtract(P2,P1);
 		double[] B2 = subtract(P3,P1);
@@ -530,11 +531,11 @@ public class PhysicalNode implements Serializable, SimStateSerializable{
 		try
 		{
 			getRwLock().readLock().lock();
-		
-			// if the point that interests us is inside a tetrahedron, we interpolate the 
+
+			// if the point that interests us is inside a tetrahedron, we interpolate the
 			// value based on the tetrahedron
-	
-			// otherwise we compute the gradient, and multiply it with the displacement -> get value; 
+
+			// otherwise we compute the gradient, and multiply it with the displacement -> get value;
 			double[] gradient = getExtracellularGradient(s.getId());
 			double newConcentration = s.getConcentration() + dot(gradient,dX);
 			if(newConcentration < 0)
@@ -551,17 +552,17 @@ public class PhysicalNode implements Serializable, SimStateSerializable{
 	// *      GETTERS & SETTERS                                                            *
 	// *************************************************************************************
 
-	
-	/** Returns the position of the <code>SpatialOrganizationNode</code>. 
+
+	/** Returns the position of the <code>SpatialOrganizationNode</code>.
 	 * Equivalent to getSoNode().getPosition(). */
-	// not a real getter... 
+	// not a real getter...
 	public double[] soNodePosition(){
 		try
 		{
 			getRwLock().readLock().lock();
-		
+
 			return soNode.getPosition();
-		
+
 		}
 		finally
 		{
@@ -588,10 +589,10 @@ public class PhysicalNode implements Serializable, SimStateSerializable{
 			getRwLock().readLock().unlock();
 		}
 
-		
+
 	}
-	
-	
+
+
 	/** Sets the SpatialOrganizationNode (vertex in the triangulation neighboring system).*/
 	public SpatialOrganizationNode<PhysicalNode> getSoNode(){
 		try
@@ -606,7 +607,7 @@ public class PhysicalNode implements Serializable, SimStateSerializable{
 	}
 	/** Returns the SpatialOrganizationNode (vertex in the triangulation neighboring system).*/
 	public void setSoNode(SpatialOrganizationNode<PhysicalNode> son){
-		
+
 			getRwLock().writeLock().lock();
 			this.soNode = son;
 			getRwLock().writeLock().unlock();
@@ -628,11 +629,11 @@ public class PhysicalNode implements Serializable, SimStateSerializable{
 	/** if <code>true</code>, the PhysicalNode will be run by the Scheduler.**/
 	public void setOnTheSchedulerListForPhysicalNodes(
 			boolean onTheSchedulerListForPhysicalNodes) {
-		
+
 			getRwLock().writeLock().lock();
 			this.onTheSchedulerListForPhysicalNodes = onTheSchedulerListForPhysicalNodes;
 			getRwLock().writeLock().unlock();
-		
+
 	}
 
 	/** Solely used by the PhysicalNodeMovementListener to update substance concentrations.**/
@@ -660,8 +661,8 @@ public class PhysicalNode implements Serializable, SimStateSerializable{
 			getRwLock().readLock().unlock();
 		}
 	}
-	
-	/** Add an extracellular or membrane-bound chemicals 
+
+	/** Add an extracellular or membrane-bound chemicals
 	 *  in this PhysicalNode. */
 	public void addExtracellularSubstance(Substance is) {
 		try
@@ -674,7 +675,7 @@ public class PhysicalNode implements Serializable, SimStateSerializable{
 			getRwLock().readLock().unlock();
 		}
 	}
-	
+
 	/** Remove an extracellular or membrane-bound chemicals that are present
 	 *  in this PhysicalNode. */
 	public void removeExtracellularSubstance(Substance is) {
@@ -714,11 +715,11 @@ public class PhysicalNode implements Serializable, SimStateSerializable{
 	public int getID() {
 		return ID;
 	}
-	
+
 
 	public ReadWriteLock getRwLock() {
 		return rwLock;
 	}
 
-	
+
 }

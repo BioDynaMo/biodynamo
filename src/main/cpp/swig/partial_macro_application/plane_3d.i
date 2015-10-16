@@ -27,5 +27,6 @@
 
 %define %Plane3D_cx3d_shared_ptr()
   %cx3d_shared_ptr(Plane3DT_PhysicalNode,
+                   ini/cx3d/spatialOrganization/interfaces/Plane3D,
                    cx3d::spatial_organization::Plane3D<cx3d::PhysicalNode>);
 %enddef
