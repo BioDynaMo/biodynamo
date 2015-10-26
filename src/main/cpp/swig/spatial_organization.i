@@ -2,9 +2,9 @@
 
 %include "util.i"
 // administration area
-
+%native(RATIONAL);
+%native(EXACTVECTOR);
 %native(TETRAHEDRON);
-// %debug(TETRAHEDRON);
 
 // end administration area
 
@@ -43,16 +43,9 @@ JAVA_LOAD_NATIVE_LIBRARY(cx3d_spatialOrganization);
 // modifications for class Rational
 %apply long long { int64_t };
 %include "class_customization/rational.i";
-%Rational_ported_type_modification();
-%Rational_cx3d_shared_ptr();
 
 // modifications for class ExactVector
 %include "class_customization/exact_vector.i";
-%ExactVector_ported_type_modification();
-%ExactVector_cx3d_shared_ptr();
-%double_stdarray_array_marshalling(spatialOrganization, 3);
-%Rational_stdarray_array_marshalling(spatialOrganization, 3);
-%ExactVector_stdarray_array_marshalling(spatialOrganization, 3);
 
 // modifications for class Edge
 %include "class_customization/edge.i";
@@ -87,17 +80,6 @@ JAVA_LOAD_NATIVE_LIBRARY(cx3d_spatialOrganization);
 
 // modifications for class PhysicalNode
 %include "class_customization/physical_node.i"
-// %PhysicalNode_cx3d_shared_ptr();
-// %PhysicalNode_jdc_enable();
-// %PhysicalNode_jdc_get(getFirstElement);
-// %PhysicalNode_jdc_get(getSecondElement);
-// %PhysicalNode_jdc_get(getOppositeElement);
-// %PhysicalNode_jdc_remove_method_bodies();
-// // for Tetrahedron:
-// %PhysicalNode_jdc_array_extension(4);
-// %PhysicalNode_jdc_stdarray_array_marshalling(spatialOrganization, 4);
-// %PhysicalNode_jdc_get_array(4, getVerticeContents);
-// %PhysicalNode_jdc_type_modification();
 
 // modifications for class EdgeHashKey
 %include "class_customization/edge_hash_key.i";

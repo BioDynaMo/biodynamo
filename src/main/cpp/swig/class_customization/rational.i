@@ -1,23 +1,18 @@
 /**
- * This file contains partial macro applications for a specific type. It means, that it
- * defines a new macro and fixes the value of a number of arguments.
- * As a result it reduces the arity of the underlying macro.
- * Therefore, this macros are easier to use and result in a better readable
- * module file.
+ * This file contains code generation customizations for class Rational.
+ * At the top of this file it defines partial macro applications by fixing the
+ * value of a number of arguments. Therefore, this macros are easier to use.
  * https://en.wikipedia.org/wiki/Partial_application
- *
- * e.g. given complex_macro(arg1, arg2, arg3, arg4, arg5);
- * set arg1=1, arg2=2, arg4=4, arg5=5:
- * -> partial macro:
- * %define %simplified(arg3)
- *    complex_macro(1, 2, arg3, 4, 5)
- * %enddef
- *
+ * At the bottom it executes the customizations, based on preprocessor
+ * variable: RATIONAL_NATIVE
  * Documentation of macros and their arguments can be found in the included
  * files!
+ *
+ * SWIG modules that use the class simply include it using:
+ * %include "class_customization/tetrahedron.i"
  */
 
-%include "ported.i"
+%include "util.i"
 %include "cx3d_shared_ptr.i"
 %include "std_array_typemap.i"
 
@@ -32,6 +27,28 @@
                    cx3d::spatial_organization::Rational);
 %enddef
 
+%define %Rational_java()
+  %java_defined_class(cx3d::spatial_organization::Rational,
+                      Rational,
+                      Rational,
+                      ini.cx3d.spatialOrganization.interfaces.Rational,
+                      ini/cx3d/spatialOrganization/interfaces/Rational);
+  %typemap(javainterfaces) cx3d::spatial_organization::Rational "ini.cx3d.spatialOrganization.interfaces.Rational"
+%enddef
+
+%define %Rational_native()
+  %native_defined_class(cx3d::spatial_organization::Rational,
+                        Rational,
+                        ini.cx3d.spatialOrganization.interfaces.Rational,
+                        Rational,
+                        public Rational(){});
+%enddef
+
+%define %Rational_typemaps()
+ // for class ExactVector
+ %Rational_stdarray_array_marshalling(spatialOrganization, 3);
+%enddef
+
 %define %Rational_stdarray_array_marshalling(SWIG_MODULE, SIZE)
   %stdarray_array_marshalling(SWIG_MODULE,
                               std::shared_ptr<cx3d::spatial_organization::Rational>,
@@ -40,3 +57,14 @@
                               Lini/cx3d/spatialOrganization/interfaces/Rational;,
                               SIZE);
 %enddef
+
+/**
+ * apply customizations
+ */
+%Rational_cx3d_shared_ptr();
+#ifdef RATIONAL_NATIVE
+  %Rational_native();
+#else
+  %Rational_java();
+#endif
+%Rational_typemaps();

@@ -2,6 +2,7 @@ package ini.cx3d.spatialOrganization.factory;
 
 import ini.cx3d.spatialOrganization.RationalJava;
 import ini.cx3d.spatialOrganization.interfaces.Rational;
+import ini.cx3d.swig.spatialOrganization.spatialOrganization;
 
 import java.math.BigInteger;
 
@@ -10,7 +11,7 @@ import java.math.BigInteger;
  */
 public class RationalFactory {
 
-    private static boolean NATIVE = true;
+    private static boolean NATIVE = spatialOrganization.useNativeRational;
 
     public Rational create(long numerator, long denominator) {
         if (NATIVE) {

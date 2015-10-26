@@ -1,35 +1,47 @@
 /**
- * This file contains partial macro applications for a specific type. It means, that it
- * defines a new macro and fixes the value of a number of arguments.
- * As a result it reduces the arity of the underlying macro.
- * Therefore, this macros are easier to use and result in a better readable
- * module file.
+ * This file contains code generation customizations for class ExactVector.
+ * At the top of this file it defines partial macro applications by fixing the
+ * value of a number of arguments. Therefore, this macros are easier to use.
  * https://en.wikipedia.org/wiki/Partial_application
- *
- * e.g. given complex_macro(arg1, arg2, arg3, arg4, arg5);
- * set arg1=1, arg2=2, arg4=4, arg5=5:
- * -> partial macro:
- * %define %simplified(arg3)
- *    complex_macro(1, 2, arg3, 4, 5)
- * %enddef
- *
+ * At the bottom it executes the customizations, based on preprocessor
+ * variable: EXACTVECTOR_NATIVE
  * Documentation of macros and their arguments can be found in the included
  * files!
+ *
+ * SWIG modules that use the class simply include it using:
+ * %include "class_customization/tetrahedron.i"
  */
 
-%include "ported.i"
+%include "util.i"
 %include "cx3d_shared_ptr.i"
 %include "std_array_typemap.i"
-
-%define %ExactVector_ported_type_modification()
-  %ported_type_modification(cx3d::spatial_organization::ExactVector,
-                            ini.cx3d.spatialOrganization.interfaces.ExactVector);
-%enddef
 
 %define %ExactVector_cx3d_shared_ptr()
   %cx3d_shared_ptr(ExactVector,
                    ini/cx3d/spatialOrganization/interfaces/ExactVector,
                    cx3d::spatial_organization::ExactVector);
+%enddef
+
+%define %ExactVector_java()
+  %java_defined_class(cx3d::spatial_organization::ExactVector,
+                      ExactVector,
+                      ExactVector,
+                      ini.cx3d.spatialOrganization.interfaces.ExactVector,
+                      ini/cx3d/spatialOrganization/interfaces/ExactVector);
+  %typemap(javainterfaces) cx3d::spatial_organization::ExactVector "ini.cx3d.spatialOrganization.interfaces.ExactVector"
+%enddef
+
+%define %ExactVector_native()
+  %native_defined_class(cx3d::spatial_organization::ExactVector,
+                        ExactVector,
+                        ini.cx3d.spatialOrganization.interfaces.ExactVector,
+                        ExactVector,
+                        public ExactVector(){});
+%enddef
+
+%define %ExactVector_typemaps()
+  %double_stdarray_array_marshalling(spatialOrganization, 3);
+  %ExactVector_stdarray_array_marshalling(spatialOrganization, 3);
 %enddef
 
 %define %ExactVector_stdarray_array_marshalling(SWIG_MODULE, SIZE)
@@ -40,3 +52,14 @@
                               Lini/cx3d/spatialOrganization/interfaces/ExactVector;,
                               SIZE);
 %enddef
+
+/**
+ * apply customizations
+ */
+%ExactVector_cx3d_shared_ptr();
+#ifdef EXACTVECTOR_NATIVE
+  %ExactVector_native();
+#else
+  %ExactVector_java();
+#endif
+%ExactVector_typemaps();

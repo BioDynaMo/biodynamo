@@ -1,24 +1,3 @@
-/*
- Copyright (C) 2009 Frédéric Zubler, Rodney J. Douglas,
- Dennis Göhlsdorf, Toby Weston, Andreas Hauri, Roman Bauer,
- Sabina Pfister, Adrian M. Whatley & Lukas Breitwieser.
-
- This file is part of CX3D.
-
- CX3D is free software: you can redistribute it and/or modify
- it under the terms of the GNU General virtual License as published by
- the Free Software Foundation, either version 3 of the License, or
- (at your option) any later version.
-
- CX3D is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General virtual License for more details.
-
- You should have received a copy of the GNU General virtual License
- along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
- */
-
 #include "spatial_organization/rational.h"
 
 #include <stdexcept>
@@ -30,7 +9,12 @@ using std::shared_ptr;
 namespace cx3d {
 namespace spatial_organization {
 
-using cx3d::spatial_organization::Rational;
+#ifndef RATIONAL_NATIVE
+Rational::Rational()
+    : numerator_(0),
+      denominator_(1) {
+}
+#endif
 
 Rational::Rational(int64_t numerator, int64_t denominator)
     : numerator_(0),
@@ -231,6 +215,10 @@ void Rational::setBigIntTo(BigInteger& big_int, int64_t value) {
   mpz_set_si(representation, static_cast<int>(value >> 32));
   mpz_mul_2exp(representation, representation, 32);
   mpz_add_ui(representation, representation, static_cast<unsigned int>(value));
+}
+
+bool Rational::equalTo(const std::shared_ptr<Rational>& other) {
+  return compareTo(other) == 0;
 }
 
 }  // namespace spatial_organization

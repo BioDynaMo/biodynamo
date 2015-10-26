@@ -38,7 +38,7 @@ import java.math.BigInteger;
  * @author Dennis Goehlsdorf
  *
  */
-public class RationalJava implements Rational {
+public class RationalJava extends ini.cx3d.swig.spatialOrganization.Rational implements Rational {
 
 	/**
 	 * The numerator of this rational number.
@@ -58,6 +58,7 @@ public class RationalJava implements Rational {
 	 */
 	public RationalJava(long numerator, long denominator) {
 		this(BigInteger.valueOf(numerator), BigInteger.valueOf(denominator));
+		registerJavaObject(this);
 //		detMaxValue(this);
 	}
 
@@ -67,6 +68,7 @@ public class RationalJava implements Rational {
 	 * @param denominator The denominator of the new rational.
 	 */
 	public RationalJava(BigInteger numerator, BigInteger denominator) {
+		registerJavaObject(this);
 		this.numerator = numerator;
 		this.denominator = denominator;
 		if (denominator.signum() == -1) {

@@ -2,13 +2,14 @@ package ini.cx3d.spatialOrganization.factory;
 
 import ini.cx3d.spatialOrganization.interfaces.ExactVector;
 import ini.cx3d.spatialOrganization.interfaces.Rational;
+import ini.cx3d.swig.spatialOrganization.spatialOrganization;
 
 /**
  * Factory that generates ExactVector objects and enables quick switching between Java and native CPP implementation
  */
 public class ExactVectorFactory {
 
-    private static boolean NATIVE = true;
+    private static boolean NATIVE = spatialOrganization.useNativeExactVector;
 
     public ExactVector create(Rational[] values) {
         if (NATIVE) {

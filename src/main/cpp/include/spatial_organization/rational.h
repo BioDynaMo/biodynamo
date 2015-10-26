@@ -1,24 +1,3 @@
-/*
- Copyright (C) 2009 Frédéric Zubler, Rodney J. Douglas,
- Dennis Göhlsdorf, Toby Weston, Andreas Hauri, Roman Bauer,
- Sabina Pfister, Adrian M. Whatley & Lukas Breitwieser.
-
- This file is part of CX3D.
-
- CX3D is free software: you can redistribute it and/or modify
- it under the terms of the GNU General virtual License as published by
- the Free Software Foundation, either version 3 of the License, or
- (at your option) any later version.
-
- CX3D is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General virtual License for more details.
-
- You should have received a copy of the GNU General virtual License
- along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
- */
-
 #ifndef SPATIAL_ORGANIZATION_RATIONAL_H_
 #define SPATIAL_ORGANIZATION_RATIONAL_H_
 
@@ -42,6 +21,10 @@ using BigInteger = mpz_class;
  */
 class Rational : public std::enable_shared_from_this<Rational> {
  public:
+#ifndef RATIONAL_NATIVE
+  Rational();
+#endif
+
   /**
    * If functions return a std::shared_ptr of <code>*this</code> using
    * <code>return shared_from_this();</code>, the following precondition must be met:
@@ -171,6 +154,11 @@ class Rational : public std::enable_shared_from_this<Rational> {
    */
   virtual std::string toString();
 
+  /**
+   * Determines if two instances of this object are equal
+   */
+  virtual bool equalTo(const std::shared_ptr<Rational>& other);
+
  protected:
   /**
    * Divides numerator and denominator of this rational number by their greatest common divisor.
@@ -188,7 +176,9 @@ class Rational : public std::enable_shared_from_this<Rational> {
    */
   BigInteger denominator_;
 
+#ifdef RATIONAL_NATIVE
   Rational() = delete;
+#endif
   Rational(const Rational&) = delete;
   Rational& operator=(const Rational& other) = delete;
 

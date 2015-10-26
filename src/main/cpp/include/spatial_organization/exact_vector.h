@@ -1,24 +1,3 @@
-/*
- Copyright (C) 2009 Frédéric Zubler, Rodney J. Douglas,
- Dennis Göhlsdorf, Toby Weston, Andreas Hauri, Roman Bauer,
- Sabina Pfister, Adrian M. Whatley & Lukas Breitwieser.
-
- This file is part of CX3D.
-
- CX3D is free software: you can redistribute it and/or modify
- it under the terms of the GNU General virtual License as published by
- the Free Software Foundation, either version 3 of the License, or
- (at your option) any later version.
-
- CX3D is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General virtual License for more details.
-
- You should have received a copy of the GNU General virtual License
- along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
- */
-
 #ifndef SPATIAL_ORGANIZATION_EXACT_VECTOR_H_
 #define SPATIAL_ORGANIZATION_EXACT_VECTOR_H_
 
@@ -44,6 +23,10 @@ class Rational;
  */
 class ExactVector : public std::enable_shared_from_this<ExactVector> {
  public:
+#ifndef EXACTVECTOR_NATIVE
+  ExactVector();
+#endif
+
   /**
    * Creates a new ExactVector object and returns it within a <code>std::shared_ptr</code>
    * @see ExactVector(const std::array<std::shared_ptr<Rational>, 3>& values)
@@ -179,14 +162,21 @@ class ExactVector : public std::enable_shared_from_this<ExactVector> {
    * Returns a string representation of this object.
    */
   virtual std::string toString();
+
+  /**
+   * Determines if two instances of this object are equal
+   */
+  virtual bool equalTo(const std::shared_ptr<ExactVector>& other);
+
  private:
   /**
    *  Stores the elements of this vector.
    */
   std::array<std::shared_ptr<Rational>, 3> elements_;
-  std::array<double, 3> test;
 
+#ifdef EXACTVECTOR_NATIVE
   ExactVector() = delete;
+#endif
   ExactVector(const ExactVector&) = delete;
   ExactVector& operator=(const ExactVector&) = delete;
 

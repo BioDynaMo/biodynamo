@@ -36,7 +36,7 @@ import ini.cx3d.spatialOrganization.factory.RationalFactory;
  * @author Dennis Goehlsdorf
  *
  */
-public class ExactVector implements ini.cx3d.spatialOrganization.interfaces.ExactVector {
+public class ExactVector extends ini.cx3d.swig.spatialOrganization.ExactVector implements ini.cx3d.spatialOrganization.interfaces.ExactVector {
 
 	/**
 	 *  Stores the elements of this vector.
@@ -48,6 +48,7 @@ public class ExactVector implements ini.cx3d.spatialOrganization.interfaces.Exac
 	 * @param values The entries for this vector. The length of this array is expected to be 3.
 	 */
 	public ExactVector(Rational[] values) {
+		registerJavaObject(this);
 		if ((values == null) || (values.length != 3)){
 			throw new IllegalArgumentException("This class only permits vectors with 3 entries!");
 		}
@@ -60,6 +61,7 @@ public class ExactVector implements ini.cx3d.spatialOrganization.interfaces.Exac
 	 * @param values The entries for this vector. The length of this array is expected to be 3.
 	 */
 	public ExactVector(double[] values) {
+		registerJavaObject(this);
 		if ((values == null) || (values.length != 3)){
 			throw new IllegalArgumentException("This class only permits vectors with 3 entries!");
 		}
