@@ -11,9 +11,9 @@ import ini.cx3d.utilities.DebugUtil;
 public class TetrahedronDebug<T> extends Tetrahedron<T>{
     @Override
     public boolean equals(Object other) {
-//fixme        DebugUtil.logMethodCall("equals", this, new Object[]{ other });
+        DebugUtil.logMethodCall("equals", this, new Object[]{ other });
         boolean ret = super.equals(other);
-//fixme        DebugUtil.logMethodReturn("equals", this, ret);
+        DebugUtil.logMethodReturn("equals", this, ret);
         return ret;
 
     }
@@ -34,7 +34,7 @@ public class TetrahedronDebug<T> extends Tetrahedron<T>{
     public T[] getVerticeContents() {
         DebugUtil.logMethodCall("getVerticeContents", this, new Object[]{ });
         T[] ret = super.getVerticeContents();
-//fixme        DebugUtil.logMethodReturn("getVerticeContents", this, ret);
+        DebugUtil.logMethodReturn("getVerticeContents", this, ret);
         return ret;
 
     }

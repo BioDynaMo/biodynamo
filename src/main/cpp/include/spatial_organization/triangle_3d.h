@@ -18,6 +18,19 @@ template<class T> class SpaceNode;
 template<class T>
 class Triangle3D : public Plane3D<T>, public std::enable_shared_from_this<Triangle3D<T>> {
  public:
+#ifndef TRIANGLE3D_NATIVE
+  Triangle3D()
+      : Plane3D<T>(),
+        adjacent_tetrahedra_(),
+        nodes_(),
+        circum_center_ { 0.0, 0.0, 0.0 },
+        plane_updated_(false),
+        circum_center_updated_(false),
+        upper_side_positive_(true),
+        connection_checked_(-1) {
+  }
+#endif
+
   /**
    * Creates a new Triangle3D object and returns it within a <code>std::shared_ptr</code>
    * @see Triangle3D(...)
@@ -44,10 +57,7 @@ class Triangle3D : public Plane3D<T>, public std::enable_shared_from_this<Triang
       const std::shared_ptr<SpaceNode<T>>& sn_1, const std::shared_ptr<SpaceNode<T>>& sn_2,
       const std::shared_ptr<SpaceNode<T>>& sn_3,
       const std::shared_ptr<Tetrahedron<T>>& tetrahedron_1,
-      const std::shared_ptr<Tetrahedron<T>>& tetrahedron_2) {
-    return std::shared_ptr<Triangle3D<T>>(
-        new Triangle3D<T>(sn_1, sn_2, sn_3, tetrahedron_1, tetrahedron_2));
-  }
+      const std::shared_ptr<Tetrahedron<T>>& tetrahedron_2);
 
   /**
    * Calculates the crossing point of three planes given in normal form.
@@ -360,6 +370,25 @@ class Triangle3D : public Plane3D<T>, public std::enable_shared_from_this<Triang
 
  protected:
   /**
+   * Creates a new triangle from three nodes and two tetrahedra.
+   *
+   * @param sn_1
+   *            The first incident node.
+   * @param sn_2
+   *            The second incident node.
+   * @param sn_3
+   *            The third incident node.
+   * @param tetrahedron_1
+   *            The first incident tetrahedron.
+   * @param tetrahedron_2
+   *            The second incident tetrahedron.
+   */
+  Triangle3D(const std::shared_ptr<SpaceNode<T>>& sn_1, const std::shared_ptr<SpaceNode<T>>& sn_2,
+             const std::shared_ptr<SpaceNode<T>>& sn_3,
+             const std::shared_ptr<Tetrahedron<T>>& tetrahedron_1,
+             const std::shared_ptr<Tetrahedron<T>>& tetrahedron_2);
+
+  /**
    * Computes the normal vector for the plane equation of this triangle. The
    * normal vector is calculated using precise arithmetics and therefore, the
    * result is given as an instance of <code>ExactVector</code>.
@@ -376,6 +405,12 @@ class Triangle3D : public Plane3D<T>, public std::enable_shared_from_this<Triang
   virtual void updateNormalVector(const std::array<double, 3>& new_normal_vector);
 
  private:
+#ifdef TRIANGLE3D_NATIVE
+  Triangle3D() = delete;
+#endif
+  Triangle3D(const Triangle3D&) = delete;
+  Triangle3D& operator=(const Triangle3D&) = delete;
+
   /**
    * The two tetrahedra that are incident to this triangle.
    */
@@ -426,25 +461,6 @@ class Triangle3D : public Plane3D<T>, public std::enable_shared_from_this<Triang
   static std::shared_ptr<ExactVector> calculateCircumCenterExact(
       const std::array<std::shared_ptr<ExactVector>, 3>& points,
       const std::shared_ptr<ExactVector>& normal_vector);
-
-  /**
-   * Creates a new triangle from three nodes and two tetrahedra.
-   *
-   * @param sn_1
-   *            The first incident node.
-   * @param sn_2
-   *            The second incident node.
-   * @param sn_3
-   *            The third incident node.
-   * @param tetrahedron_1
-   *            The first incident tetrahedron.
-   * @param tetrahedron_2
-   *            The second incident tetrahedron.
-   */
-  Triangle3D(const std::shared_ptr<SpaceNode<T>>& sn_1, const std::shared_ptr<SpaceNode<T>>& sn_2,
-             const std::shared_ptr<SpaceNode<T>>& sn_3,
-             const std::shared_ptr<Tetrahedron<T>>& tetrahedron_1,
-             const std::shared_ptr<Tetrahedron<T>>& tetrahedron_2);
 
   /**
    * Calculates the distance of the center of a circumsphere touching all

@@ -28,6 +28,7 @@ import ini.cx3d.spatialOrganization.interfaces.Tetrahedron;
 import ini.cx3d.spatialOrganization.factory.RationalFactory;
 import ini.cx3d.spatialOrganization.factory.ExactVectorFactory;
 import ini.cx3d.spatialOrganization.factory.Triangle3DFactory;
+import ini.cx3d.swig.spatialOrganization.Triangle3DT_PhysicalNode;
 
 
 import java.util.Objects;
@@ -50,7 +51,7 @@ import static ini.cx3d.utilities.StringUtilities.toStr;
  * 
  * @param <T>
  */
-public class Triangle3D<T> extends Plane3D<T> implements ini.cx3d.spatialOrganization.interfaces.Triangle3D<T> {
+public class Triangle3D<T> extends Plane3D implements ini.cx3d.spatialOrganization.interfaces.Triangle3D {
 
 	/**
 	 * The two tetrahedra that are incident to this triangle.
@@ -108,6 +109,7 @@ public class Triangle3D<T> extends Plane3D<T> implements ini.cx3d.spatialOrganiz
 	 */
 	public Triangle3D(SpaceNode<T> sn1, SpaceNode<T> sn2, SpaceNode<T> sn3,
 			Tetrahedron<T> tetrahedron1, Tetrahedron<T> tetrahedron2) {
+		registerJavaObject(this);
 		nodes[0] = sn1;
 		nodes[1] = sn2;
 		if (sn2 == null) {
@@ -132,7 +134,7 @@ public class Triangle3D<T> extends Plane3D<T> implements ini.cx3d.spatialOrganiz
 	 *         nodes.
 	 */
 	@Override
-	public boolean isSimilarTo(ini.cx3d.spatialOrganization.interfaces.Triangle3D<T> otherTriangle) {
+	public boolean isSimilarTo(ini.cx3d.spatialOrganization.interfaces.Triangle3D otherTriangle) {
 		SpaceNode<T>[] otherNodes = otherTriangle.getNodes();
 		return isAdjacentTo(otherNodes[0]) && isAdjacentTo(otherNodes[1])
 				&& isAdjacentTo(otherNodes[2]);
@@ -701,7 +703,7 @@ public class Triangle3D<T> extends Plane3D<T> implements ini.cx3d.spatialOrganiz
 	 * @return The tetrahedron opposite to <code>incidentTetrahedron</code> at this triangle.
 	 * @throws RuntimeException if <code>incidentTetrahedron</code> is not incident to this triangle.
 	 */
-	public Tetrahedron<T> getOppositeTetrahedron(Tetrahedron<T> incidentTetrahedron) {
+	public Tetrahedron<T> getOppositeTetrahedron(Tetrahedron incidentTetrahedron) {
 		if (Objects.equals(adjacentTetrahedra[0], incidentTetrahedron)) {
 			return adjacentTetrahedra[1];
 		} else if (Objects.equals(adjacentTetrahedra[1], incidentTetrahedron)){
@@ -714,7 +716,7 @@ public class Triangle3D<T> extends Plane3D<T> implements ini.cx3d.spatialOrganiz
 	 * Removes a given tetrahedron from the list of incident tetrahedra.
 	 * @param tetrahedron A tetrahedron incident to this triangle.
 	 */
-	public void removeTetrahedron(Tetrahedron<T> tetrahedron) {
+	public void removeTetrahedron(Tetrahedron tetrahedron) {
 		if (Objects.equals(adjacentTetrahedra[0], tetrahedron))
 			adjacentTetrahedra[0] = null;
 		else
@@ -734,7 +736,7 @@ public class Triangle3D<T> extends Plane3D<T> implements ini.cx3d.spatialOrganiz
 	 * Adds an incident tetrahedron to this triangle. 
 	 * @param tetrahedron A new tetrahedron which is incident to this triangle. 
 	 */
-	public void addTetrahedron(Tetrahedron<T> tetrahedron/*
+	public void addTetrahedron(Tetrahedron tetrahedron/*
 															 * , int
 															 * positionInTetrahedron
 															 */) {
@@ -771,7 +773,7 @@ public class Triangle3D<T> extends Plane3D<T> implements ini.cx3d.spatialOrganiz
 	 * @param tetrahedron a tetrahedron that might be incident to this triangle.
 	 * @return <code>true</code>, iff the tetrahedron is incident to this triangle.
 	 */
-	public boolean isAdjacentTo(Tetrahedron<T> tetrahedron) {
+	public boolean isAdjacentTo(Tetrahedron tetrahedron) {
 		return (Objects.equals(this.adjacentTetrahedra[0], tetrahedron)
 				|| Objects.equals(this.adjacentTetrahedra[1], tetrahedron));
 	}
@@ -782,7 +784,7 @@ public class Triangle3D<T> extends Plane3D<T> implements ini.cx3d.spatialOrganiz
 	 * @param node A node that might be incident to this triangle.
 	 * @return <code>true</code>, iff the node is incident to this triangle.
 	 */
-	public boolean isAdjacentTo(SpaceNode<T> node) {
+	public boolean isAdjacentTo(SpaceNode node) {
 		return (Objects.equals(this.nodes[0], node) || Objects.equals(this.nodes[1], node)
 				|| Objects.equals(this.nodes[2] , node));
 	}

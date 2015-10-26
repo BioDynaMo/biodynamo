@@ -2,8 +2,10 @@
 
 %include "util.i"
 // administration area
+
 %native(RATIONAL);
 %native(EXACTVECTOR);
+%native(TRIANGLE3D);
 %native(TETRAHEDRON);
 
 // end administration area
@@ -64,19 +66,9 @@ JAVA_LOAD_NATIVE_LIBRARY(cx3d_spatialOrganization);
 
 // modifications for Plane3D
 %include "class_customization/plane_3d.i";
-%Plane3D_ported_type_modification();
-%Plane3D_cx3d_shared_ptr();
 
 // modifications for class Triangle3D
 %include "class_customization/triangle_3d.i";
-%Triangle3D_ported_type_modification();
-%Triangle3D_ported_add_equals();
-%Triangle3D_cx3d_shared_ptr();
-%double_stdarray_2dim_array_marshalling(spatialOrganization, 3, 3);
-// inside Tetrahedron
-%Triangle3D_stdarray_array_marshalling(spatialOrganization, 2);
-%Triangle3D_stdarray_array_marshalling(spatialOrganization, 3);
-%Triangle3D_stdarray_array_marshalling(spatialOrganization, 4);
 
 // modifications for class PhysicalNode
 %include "class_customization/physical_node.i"

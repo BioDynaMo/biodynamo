@@ -25,6 +25,7 @@ import ini.cx3d.spatialOrganization.factory.ExactVectorFactory;
 import ini.cx3d.spatialOrganization.interfaces.ExactVector;
 import ini.cx3d.spatialOrganization.interfaces.Rational;
 import ini.cx3d.spatialOrganization.factory.RationalFactory;
+import ini.cx3d.swig.spatialOrganization.Triangle3DT_PhysicalNode;
 
 import java.util.Objects;
 
@@ -40,7 +41,7 @@ import static ini.cx3d.utilities.Matrix.*;
  *
  * @param <T> The type of user objects associated with nodes in the current triangulation.
  */
-public class Plane3D<T> implements ini.cx3d.spatialOrganization.interfaces.Plane3D<T> {
+public class Plane3D<T> extends Triangle3DT_PhysicalNode implements ini.cx3d.spatialOrganization.interfaces.Plane3D {
 	
 	/**
 	 * Used to define whether or not normal vectors should be normalized to unit length. 
@@ -50,28 +51,28 @@ public class Plane3D<T> implements ini.cx3d.spatialOrganization.interfaces.Plane
 	/**
 	 * The normal vector of this plane.
 	 */
-	double[] normalVector;
+	protected double[] normalVector;
 	
 	/**
 	 * The offset of this plane which is equal to the dot product of <code>normalVector</code>
 	 * with any coordinate on the plane. 
 	 */
-	double offset = 0.0;
+	protected double offset = 0.0;
 	
 	/**
 	 * Defines a tolerance intervall in which precise arithmetics are used.
 	 */
-	double tolerance = 0.0;
+	protected double tolerance = 0.0;
 
 	/**
 	 * A boolean to store whether or not the normal vector has changed. 
 	 */
-	boolean normalVectorUpdated = false;
+	protected boolean normalVectorUpdated = false;
 	
 	/**
 	 * The default constructor. Only used to avoid errors in child classes. 
 	 */
-	Plane3D() {
+	public Plane3D() {
 	}
 	
 	/**
@@ -164,7 +165,7 @@ public class Plane3D<T> implements ini.cx3d.spatialOrganization.interfaces.Plane
 	 * @param positionVector The coordinate of a point on the plane.
 	 * @param normalize Defines whether or not the normal vector of this plane should be normalized or not.
 	 */
-	void initPlane(double[] directionVector1, double[] directionVector2, double[] positionVector, boolean normalize) {
+	public void initPlane(double[] directionVector1, double[] directionVector2, double[] positionVector, boolean normalize) {
 		if (!normalVectorUpdated) {
 			normalVectorUpdated = true;
 			this.normalVector = crossProduct(directionVector1, directionVector2);
@@ -218,7 +219,7 @@ public class Plane3D<T> implements ini.cx3d.spatialOrganization.interfaces.Plane
 	 * lie on opposite sides of the plane and 0, if either one of the points lies
 	 * on the plane.
 	 */
-	protected int orientationExact(double[] point1, double[] point2) {
+	public int orientationExact(double[] point1, double[] point2) {
 		ExactVector normalVector = new ExactVectorFactory().create(this.normalVector);
 		Rational offset = new RationalFactory().create(this.offset);
 		return normalVector.dotProduct(new ExactVectorFactory().create(point1)).compareTo(offset) *

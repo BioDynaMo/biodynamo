@@ -6,6 +6,9 @@
 /**
  * Macro that turns on native implementation for the specified class.
  * Must be called at the top after %module and before %{ #includes ..%}
+ * Current limitation: if objects of class X are created on the C++ side and
+ * the java version of class X should be used (by omitting: %native(X)) all
+ * classes that construct class X must also be declared non native.
  *
  * @param CLASS_NAME_CAPS capitalized class name
  *

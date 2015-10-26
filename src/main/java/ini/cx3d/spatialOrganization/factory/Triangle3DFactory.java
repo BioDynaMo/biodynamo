@@ -5,6 +5,7 @@ import ini.cx3d.spatialOrganization.interfaces.ExactVector;
 import ini.cx3d.spatialOrganization.interfaces.Rational;
 import ini.cx3d.spatialOrganization.interfaces.Triangle3D;
 import ini.cx3d.spatialOrganization.interfaces.Tetrahedron;
+import ini.cx3d.swig.spatialOrganization.spatialOrganization;
 import ini.cx3d.utilities.DebugUtil;
 
 /**
@@ -12,27 +13,24 @@ import ini.cx3d.utilities.DebugUtil;
  */
 public class Triangle3DFactory<T> {
 
-    private static boolean NATIVE = true;
-    public static final boolean DEBUG = false;
+    private static boolean NATIVE = spatialOrganization.useNativeTriangle3D;
+    public static final boolean DEBUG = spatialOrganization.debugTriangle3D;
 
     public Triangle3D<T> create(SpaceNode<T> sn1, SpaceNode<T> sn2, SpaceNode<T> sn3,
                                 Tetrahedron tetrahedron1, Tetrahedron tetrahedron2) {
         Triangle3D triangle = null;
         if (NATIVE) {
-            triangle =  (Triangle3D<T>) ini.cx3d.swig.spatialOrganization.Triangle3DT_PhysicalNode.create( sn1, sn2, sn3,
+            return  (Triangle3D<T>) ini.cx3d.swig.spatialOrganization.Triangle3DT_PhysicalNode.create( sn1, sn2, sn3,
                     tetrahedron1, tetrahedron2);
-        } else {
-            triangle =  new ini.cx3d.spatialOrganization.Triangle3D<T>((ini.cx3d.spatialOrganization.SpaceNode) sn1,
+        } else if (!DEBUG) {
+            return  new ini.cx3d.spatialOrganization.Triangle3D<T>((ini.cx3d.spatialOrganization.SpaceNode) sn1,
                     (ini.cx3d.spatialOrganization.SpaceNode) sn2,
                     (ini.cx3d.spatialOrganization.SpaceNode) sn3,
                     (ini.cx3d.spatialOrganization.Tetrahedron) tetrahedron1,
                     (ini.cx3d.spatialOrganization.Tetrahedron) tetrahedron2);
+        } else {
+            throw new UnsupportedOperationException("Triangle3DDebug has not been implemented yet");
         }
-        if(DEBUG) {
-            System.out.println("DBG edge created " + triangle);
-            triangle =  DebugUtil.createDebugLoggingProxy(triangle, new Class[]{Triangle3D.class});
-        }
-        return  triangle;
     }
 
     public static double[] calculate3PlaneXPoint(double[][] normals,
