@@ -21,6 +21,7 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 
 package ini.cx3d.spatialOrganization;
 
+import ini.cx3d.spatialOrganization.interfaces.Tetrahedron;
 import ini.cx3d.utilities.StringUtilities;
 
 import java.util.AbstractSequentialList;

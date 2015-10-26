@@ -3,7 +3,6 @@ package ini.cx3d.spatialOrganization.interfaces;
 import ini.cx3d.spatialOrganization.SpaceNode;
 import ini.cx3d.spatialOrganization.SpatialOrganizationEdge;
 import ini.cx3d.spatialOrganization.SpatialOrganizationNode;
-import ini.cx3d.spatialOrganization.Tetrahedron;
 
 import java.util.AbstractSequentialList;
 

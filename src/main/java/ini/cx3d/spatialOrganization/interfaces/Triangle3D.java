@@ -1,7 +1,7 @@
 package ini.cx3d.spatialOrganization.interfaces;
 
 import ini.cx3d.spatialOrganization.SpaceNode;
-import ini.cx3d.spatialOrganization.Tetrahedron;
+
 /**
  * Common interface for Triangle3D implementations
  */

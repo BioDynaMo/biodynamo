@@ -20,18 +20,13 @@
 %include "ported.i"
 %include "cx3d_shared_ptr.i"
 
-%define %Triangle3D_ported_type_modification()
-  %ported_type_modification(cx3d::spatial_organization::Triangle3D<cx3d::PhysicalNode>,
-                            ini.cx3d.spatialOrganization.interfaces.Triangle3D<ini.cx3d.physics.PhysicalNode>);
+%define %Plane3D_ported_type_modification()
+  %ported_type_modification(cx3d::spatial_organization::Plane3D<cx3d::PhysicalNode>,
+                            ini.cx3d.spatialOrganization.interfaces.Plane3D);
 %enddef
 
-%define %Triangle3D_ported_add_equals()
-  %ported_add_equals(cx3d::spatial_organization::Triangle3D<cx3d::PhysicalNode>,
-                     Triangle3DT_PhysicalNode);
-%enddef
-
-%define %Triangle3D_cx3d_shared_ptr()
-  %cx3d_shared_ptr(Triangle3DT_PhysicalNode,
-                   ini/cx3d/spatialOrganization/interfaces/Triangle3D,
-                   cx3d::spatial_organization::Triangle3D<cx3d::PhysicalNode>);
+%define %Plane3D_cx3d_shared_ptr()
+  %cx3d_shared_ptr(Plane3DT_PhysicalNode,
+                   ini/cx3d/spatialOrganization/interfaces/Plane3D,
+                   cx3d::spatial_organization::Plane3D<cx3d::PhysicalNode>);
 %enddef

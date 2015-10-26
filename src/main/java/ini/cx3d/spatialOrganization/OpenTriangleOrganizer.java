@@ -21,17 +21,14 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 
 package ini.cx3d.spatialOrganization;
 
+import ini.cx3d.spatialOrganization.factory.*;
 import ini.cx3d.spatialOrganization.interfaces.Rational;
 import ini.cx3d.spatialOrganization.interfaces.ExactVector;
 import ini.cx3d.spatialOrganization.interfaces.Triangle3D;
 import ini.cx3d.spatialOrganization.interfaces.EdgeHashKey;
 import ini.cx3d.spatialOrganization.interfaces.TriangleHashKey;
-import ini.cx3d.spatialOrganization.factory.RationalFactory;
-import ini.cx3d.spatialOrganization.factory.ExactVectorFactory;
-import ini.cx3d.spatialOrganization.factory.Triangle3DFactory;
-import ini.cx3d.spatialOrganization.factory.EdgeHashKeyFactory;
-import ini.cx3d.spatialOrganization.factory.TriangleHashKeyFactory;
-
+import ini.cx3d.spatialOrganization.interfaces.Tetrahedron;
+import ini.cx3d.swig.spatialOrganization.OpenTriangleOrganizerT_PhysicalNode;
 
 
 import static ini.cx3d.utilities.Matrix.add;
@@ -62,7 +59,7 @@ import java.util.Objects;
  *
  * @param <T> The type of user objects with the nodes in a given triangulation.
  */
-public class OpenTriangleOrganizer<T> {
+public class OpenTriangleOrganizer<T> extends OpenTriangleOrganizerT_PhysicalNode {
 	
 	/**
 	 * Counts the number of times exact arithmetics have been used in any instance of this class.
@@ -154,11 +151,17 @@ public class OpenTriangleOrganizer<T> {
 	 */
 	public OpenTriangleOrganizer(int preferredCapacity,
 			AbstractTriangulationNodeOrganizer<T> tno) {
+		registerJavaObject(this);
 		map = new HashMap<TriangleHashKey<T>, Triangle3D<T>>(
 				preferredCapacity * 2);
 		this.tno = tno;
 	}
-	
+
+	public String toString(){
+		return "OTO";
+	}
+
+
 	/**
 	 * Starts the recording of newly created tetrahedra.
 	 */
@@ -217,7 +220,7 @@ public class OpenTriangleOrganizer<T> {
 	 * triangle is removed from the hashmap. 
 	 * @param triangle The triangle that should be removed.
 	 */
-	public void removeTriangle(Triangle3D<T> triangle) {
+	public void removeTriangle(Triangle3D triangle) {
 		TriangleHashKey<T> key = triangleHashKeyFactory.create(triangle.getNodes()[0],
 				triangle.getNodes()[1],
 				triangle.getNodes()[2]);
@@ -235,8 +238,8 @@ public class OpenTriangleOrganizer<T> {
 	 * @param c The third node incident to the requested triangle.
 	 * @return A triangle with the requested three endpoints.
 	 */
-	public Triangle3D<T> getTriangle(SpaceNode<T> a, SpaceNode<T> b,
-			SpaceNode<T> c) {
+	public Triangle3D<T> getTriangle(SpaceNode a, SpaceNode b,
+			SpaceNode c) {
 		TriangleHashKey<T> key = triangleHashKeyFactory.create(a, b, c);
 		Triangle3D<T> ret = map.get(key);
 		if (ret == null) {
@@ -264,7 +267,7 @@ public class OpenTriangleOrganizer<T> {
 	 * @return A triangle with the requested three endpoints.
 	 */
 	public Triangle3D<T> getTriangleWithoutRemoving(
-			SpaceNode<T> a, SpaceNode<T> b, SpaceNode<T> c) {
+			SpaceNode a, SpaceNode b, SpaceNode c) {
 		TriangleHashKey<T> key = triangleHashKeyFactory.create(a, b, c);
 		Triangle3D<T> ret = map.get(key);
 		if (ret == null) {
@@ -914,7 +917,7 @@ public class OpenTriangleOrganizer<T> {
 	 */
 	private void createNewTetrahedron(
 			Triangle3D<T> openTriangle, SpaceNode<T> oppositeNode) {
-		aNewTetrahedron = new Tetrahedron<T>(openTriangle,
+		aNewTetrahedron = new TetrahedronFactory<T>().create(openTriangle,
 				oppositeNode, this);
 		if (NewDelaunayTest.createOutput()) {
 			if (NewDelaunayTest.checkTetrahedronForDelaunayViolation(aNewTetrahedron)) {

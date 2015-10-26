@@ -85,6 +85,24 @@ public abstract class StringUtilities {
 	 * @param arr
 	 * @return
 	 */
+	public static String toStr(int[] arr){
+		if(arr == null){
+			return toStr(new int[]{0, 0, 0});
+		}
+		StringBuilder sb = new StringBuilder();
+		sb.append("{");
+		for (int i: arr){
+			sb.append(i).append(", ");
+		}
+		sb.append("}");
+		return sb.toString();
+	}
+
+	/**
+	 * helps to write toString methods that all behave in a uniform way
+	 * @param arr
+	 * @return
+	 */
 	public static String toStr(double[][] arr){
 		StringBuilder sb = new StringBuilder();
 		sb.append("{");

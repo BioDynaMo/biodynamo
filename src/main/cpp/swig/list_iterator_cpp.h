@@ -15,9 +15,9 @@ class ListIteratorCpp {
  public:
   typedef const T& const_reference;
 
-  explicit ListIteratorCpp(std::list<T>& l)
-      : iterator_(l.begin()),
-        list_ptr_(&l),
+  explicit ListIteratorCpp(std::list<T>* l)
+      : iterator_(l->begin()),
+        list_ptr_(l),
         index_(0) {
   }
 
@@ -39,7 +39,7 @@ class ListIteratorCpp {
   }
 
   T previous() {
-    T elem = *iterator_;
+    auto elem = *iterator_;
     decrementIterator();
     return elem;
   }
@@ -65,14 +65,10 @@ class ListIteratorCpp {
   }
 
   void add(const_reference value) {
-    index_++;
     list_ptr_->push_back(value);
+    iterator_ = list_ptr_->begin();
+    index_ = 0;
   }
-
- private:
-  typename std::list<T>::iterator iterator_;
-  std::list<T>* list_ptr_;
-  int index_;
 
   void incrementIterator() {
     ++index_;
@@ -83,6 +79,11 @@ class ListIteratorCpp {
     --index_;
     --iterator_;
   }
+
+ private:
+  typename std::list<T>::iterator iterator_;
+  std::list<T>* list_ptr_;
+  int index_;
 };
 
 }  // namespace cx3d

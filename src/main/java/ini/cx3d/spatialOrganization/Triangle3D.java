@@ -21,11 +21,16 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 
 package ini.cx3d.spatialOrganization;
 
-import ini.cx3d.spatialOrganization.factory.ExactVectorFactory;
-import ini.cx3d.spatialOrganization.factory.Triangle3DFactory;
 import ini.cx3d.spatialOrganization.interfaces.ExactVector;
 import ini.cx3d.spatialOrganization.interfaces.Rational;
+import ini.cx3d.spatialOrganization.interfaces.Tetrahedron;
+
 import ini.cx3d.spatialOrganization.factory.RationalFactory;
+import ini.cx3d.spatialOrganization.factory.ExactVectorFactory;
+import ini.cx3d.spatialOrganization.factory.Triangle3DFactory;
+
+
+import java.util.Objects;
 
 import static ini.cx3d.utilities.Matrix.*;
 import static ini.cx3d.utilities.StringUtilities.toStr;
@@ -697,9 +702,9 @@ public class Triangle3D<T> extends Plane3D<T> implements ini.cx3d.spatialOrganiz
 	 * @throws RuntimeException if <code>incidentTetrahedron</code> is not incident to this triangle.
 	 */
 	public Tetrahedron<T> getOppositeTetrahedron(Tetrahedron<T> incidentTetrahedron) {
-		if (adjacentTetrahedra[0] == incidentTetrahedron) {
+		if (Objects.equals(adjacentTetrahedra[0], incidentTetrahedron)) {
 			return adjacentTetrahedra[1];
-		} else if (adjacentTetrahedra[1] == incidentTetrahedron){
+		} else if (Objects.equals(adjacentTetrahedra[1], incidentTetrahedron)){
 			return adjacentTetrahedra[0];
 		}else
 			throw new RuntimeException("Tetrahedron not known!");
@@ -710,7 +715,7 @@ public class Triangle3D<T> extends Plane3D<T> implements ini.cx3d.spatialOrganiz
 	 * @param tetrahedron A tetrahedron incident to this triangle.
 	 */
 	public void removeTetrahedron(Tetrahedron<T> tetrahedron) {
-		if (adjacentTetrahedra[0] == tetrahedron)
+		if (Objects.equals(adjacentTetrahedra[0], tetrahedron))
 			adjacentTetrahedra[0] = null;
 		else
 			adjacentTetrahedra[1] = null;
@@ -767,8 +772,8 @@ public class Triangle3D<T> extends Plane3D<T> implements ini.cx3d.spatialOrganiz
 	 * @return <code>true</code>, iff the tetrahedron is incident to this triangle.
 	 */
 	public boolean isAdjacentTo(Tetrahedron<T> tetrahedron) {
-		return (this.adjacentTetrahedra[0] == tetrahedron)
-				|| (this.adjacentTetrahedra[1] == tetrahedron);
+		return (Objects.equals(this.adjacentTetrahedra[0], tetrahedron)
+				|| Objects.equals(this.adjacentTetrahedra[1], tetrahedron));
 	}
 
 	/**
@@ -778,8 +783,8 @@ public class Triangle3D<T> extends Plane3D<T> implements ini.cx3d.spatialOrganiz
 	 * @return <code>true</code>, iff the node is incident to this triangle.
 	 */
 	public boolean isAdjacentTo(SpaceNode<T> node) {
-		return (this.nodes[0] == node) || (this.nodes[1] == node)
-				|| (this.nodes[2] == node);
+		return (Objects.equals(this.nodes[0], node) || Objects.equals(this.nodes[1], node)
+				|| Objects.equals(this.nodes[2] , node));
 	}
 
 	/**

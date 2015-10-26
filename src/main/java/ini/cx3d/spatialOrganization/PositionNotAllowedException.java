@@ -27,7 +27,7 @@ package ini.cx3d.spatialOrganization;
  * @author Dennis Goehlsdorf
  *
  */
-public class PositionNotAllowedException extends Exception {
+public class PositionNotAllowedException extends RuntimeException {
 	
 	/**
 	 * An alternative position where the concerned node could be moved to.

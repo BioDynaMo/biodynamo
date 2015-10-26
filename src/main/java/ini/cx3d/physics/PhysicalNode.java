@@ -32,7 +32,6 @@ import ini.cx3d.SimStateSerializationUtil;
 import ini.cx3d.simulations.ECM;
 import ini.cx3d.spatialOrganization.SpatialOrganizationEdge;
 import ini.cx3d.spatialOrganization.SpatialOrganizationNode;
-import ini.cx3d.swig.spatialOrganization.PhysicalNodeCppType;
 
 import java.io.Serializable;
 import java.util.Enumeration;
@@ -62,7 +61,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * @author fredericzubler
  *
  */
-public class PhysicalNode extends PhysicalNodeCppType implements Serializable, SimStateSerializable{
+public class PhysicalNode extends ini.cx3d.swig.spatialOrganization.PhysicalNode implements Serializable, SimStateSerializable{
 	// NOTE : all the "protected" fields are not "private" because they have to be accessible by subclasses
 
 	/* Unique identification for this CellElement instance. Used for marshalling/demarshalling*/
@@ -108,7 +107,12 @@ public class PhysicalNode extends PhysicalNodeCppType implements Serializable, S
 		return sb;
 	}
 
+	public String toString() {
+		return "PhysicalNode id"+ID;
+	}
+
 	public PhysicalNode(){
+		registerJavaObject(this);
 		getRwLock().writeLock().lock();
 		this.ID = idCounter.incrementAndGet();
 		getRwLock().writeLock().unlock();

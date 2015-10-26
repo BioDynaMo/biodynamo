@@ -1,6 +1,6 @@
 /**
  * This file enables transparent type conversions between std::list<T> (C++)
- * and java.util.AbstractSequetialList<T> (Java).
+ * and java.util.AbstractSequentialList<T> (Java).
  * For each distinct template type one Java class is generated that
  * extends from java.util.AbstractList
  */
@@ -65,7 +65,7 @@ template<class T> class list {
       return (int) size_impl();
     }
 
-    private java.util.ListIterator<JAVA_TYPE> iterator = null;
+    private ListIterator iterator = null;
 
     @Override
     public java.util.ListIterator<JAVA_TYPE> listIterator(int i) {
@@ -77,55 +77,7 @@ template<class T> class list {
     }
 
     private void createIterator() {
-      final ListT_##TEMPLATE_SUFFIX list = this;
-      iterator = new java.util.ListIterator<JAVA_TYPE>() {
-        private ListIteratorCppT_##TEMPLATE_SUFFIX delegate = new ListIteratorCppT_##TEMPLATE_SUFFIX(list);
-
-        @Override
-        public boolean hasNext() {
-          return delegate.hasNext();
-        }
-
-        @Override
-        public JAVA_TYPE next() {
-          return delegate.next();
-        }
-
-        @Override
-        public boolean hasPrevious() {
-          return delegate.hasPrevious();
-        }
-
-        @Override
-        public JAVA_TYPE previous() {
-          return delegate.previous();
-        }
-
-        @Override
-        public int nextIndex() {
-          return delegate.nextIndex();
-        }
-
-        @Override
-        public int previousIndex() {
-          return delegate.previousIndex();
-        }
-
-        @Override
-        public void remove() {
-          delegate.remove();
-        }
-
-        @Override
-        public void set(JAVA_TYPE value) {
-          delegate.set(value);
-        }
-
-        @Override
-        public void add(JAVA_TYPE value) {
-          delegate.add(value);
-        }
-      };
+      iterator = new ListIterator(this);
     }
 
     /**
@@ -144,17 +96,108 @@ template<class T> class list {
         int steps = Math.abs(itPos - targetPosition);
         while(steps-- != 0){
           if (itPos < targetPosition){
-            iterator.next();
+            iterator.incrementIterator();
           } else {
-            iterator.previous();
+            iterator.decrementIterator();
           }
         }
       }
     }
+
+    static class ListIterator implements java.util.ListIterator<JAVA_TYPE> {
+      private ListIteratorCppT_##TEMPLATE_SUFFIX delegate = null;
+
+      public ListIterator(final ListT_##TEMPLATE_SUFFIX list) {
+        delegate = new ListIteratorCppT_##TEMPLATE_SUFFIX(list);
+      }
+
+      @Override
+      public boolean hasNext() {
+        return delegate.hasNext();
+      }
+
+      @Override
+      public JAVA_TYPE next() {
+        return delegate.next();
+      }
+
+      @Override
+      public boolean hasPrevious() {
+        return delegate.hasPrevious();
+      }
+
+      @Override
+      public JAVA_TYPE previous() {
+        return delegate.previous();
+      }
+
+      @Override
+      public int nextIndex() {
+        return delegate.nextIndex();
+      }
+
+      @Override
+      public int previousIndex() {
+        return delegate.previousIndex();
+      }
+
+      @Override
+      public void remove() {
+        delegate.remove();
+      }
+
+      @Override
+      public void set(JAVA_TYPE value) {
+        delegate.set(value);
+      }
+
+      @Override
+      public void add(JAVA_TYPE value) {
+        delegate.add(value);
+      }
+
+      public void incrementIterator() {
+        delegate.incrementIterator();
+      }
+
+      public void decrementIterator() {
+        delegate.decrementIterator();
+      }
+    }
   %}
+
+  %pragma(java) modulecode=%{
+    static ListT_##TEMPLATE_SUFFIX convertToNativeListT_##TEMPLATE_SUFFIX(java.util.AbstractSequentialList<JAVA_TYPE> list) {
+        if (list instanceof ListT_##TEMPLATE_SUFFIX) {
+            return (ListT_##TEMPLATE_SUFFIX) list;
+        }
+        ListT_##TEMPLATE_SUFFIX nativeList = new ListT_##TEMPLATE_SUFFIX();
+        for (JAVA_TYPE el : list) {
+            nativeList.add(el);
+        }
+        return nativeList;
+    }
+  %}
+
+  %typemap(jstype)  std::list<CPP_TYPE>,
+                    const std::list<CPP_TYPE>& "java.util.AbstractSequentialList<"#JAVA_TYPE">";
+
+  %typemap(javain,
+    pre = "    ListT_"#TEMPLATE_SUFFIX" temp$javainput = $module.convertToNativeListT_"#TEMPLATE_SUFFIX"($javainput);",
+    pgcppname="temp$javainput") const std::list<CPP_TYPE>& "$javaclassname.getCPtr(temp$javainput)"
+
+  %typemap(jstype)  CPP_TYPE cx3d::ListIteratorCpp<CPP_TYPE>::next,
+                    CPP_TYPE cx3d::ListIteratorCpp<CPP_TYPE>::previous  "JAVA_TYPE";
+  %typemap(jstype)  const CPP_TYPE & "JAVA_TYPE";
+
+  %typemap(javadirectorout) std::list<CPP_TYPE> "ListT_"#TEMPLATE_SUFFIX".getCPtr((ListT_"#TEMPLATE_SUFFIX") $javacall)";
+
+  %typemap(directorin, descriptor="Ljava/util/AbstractSequentialList;") std::list<CPP_TYPE>, const std::list<CPP_TYPE> ""
 
   %template(ListT_ ##TEMPLATE_SUFFIX) std::list<CPP_TYPE>;
   %template(ListIteratorCppT_ ##TEMPLATE_SUFFIX) cx3d::ListIteratorCpp<CPP_TYPE>;
 
-  %typemap(jstype) std::list<CPP_TYPE> "java.util.AbstractSequentialList<"#JAVA_TYPE">";
+  // delete typemap to avoid ripple effects
+  %typemap(jstype)  const CPP_TYPE &;
+
 %enddef

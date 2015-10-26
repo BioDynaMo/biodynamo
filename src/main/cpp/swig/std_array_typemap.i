@@ -36,10 +36,6 @@ namespace std {
           void set_impl(int i, const value_type& val) throw (std::out_of_range) {
               self->at(i) = val;
           }
-
-          value_type getJava_impl(int i) throw (std::out_of_range) {
-              return self->at(i);
-          }
       }
   };
 }
@@ -71,20 +67,12 @@ namespace std {
   %typemap(javainterfaces) std::array<CPP_TYPE, SIZE>, std::array<CPP_TYPE, SIZE>& "java.util.RandomAccess";
   %typemap(javacode) std::array<CPP_TYPE, SIZE>, std::array<CPP_TYPE, SIZE>& %{
 
-    private boolean returnJavaObj = false;
-    public void setReturnJavaObj(boolean returnJavaObj){
-      this.returnJavaObj = returnJavaObj;
-    }
     public JAVA_TYPE get(int idx) {
-      if(returnJavaObj){
-        return getJava_impl(idx);
-      } else {
-        return get_impl(idx);
-      }
+      return get_impl(idx);
     }
 
     public int size() {
-      return (int)size_impl();
+      return (int) size_impl();
     }
 
     public JAVA_TYPE set(int idx, JAVA_TYPE d) {
@@ -133,7 +121,14 @@ namespace std {
                                              JAVA_TYPE, JAVA_ARR_TYPE,
                                              JAVA_ARR_TYPE_DESCRIPTOR, SIZE,
                                              JAVA_NEW_ARR_CREATION_CODE)
+  //typemap for std::array get_impl must be defined before template(Array..) is called
+  %typemap(jstype) const CPP_TYPE& get_impl "JAVA_ARR_TYPE";
+  %typemap(jstype)  const CPP_TYPE & "JAVA_TYPE";
+
   %stdarray_typemap(CPP_TYPE, TEMPLATE_SUFFIX, JAVA_TYPE, SIZE);
+
+  // delete typemap to avoid ripple effects
+  %typemap(jstype)  const CPP_TYPE &;
 
   %pragma(java) modulecode=%{
     static ArrayT_##TEMPLATE_SUFFIX wrapArrayInArrayT_##TEMPLATE_SUFFIX(JAVA_ARR_TYPE[] arg){
@@ -160,8 +155,11 @@ namespace std {
   %typemap(jstype) std::array<CPP_TYPE, SIZE>,
                    std::array<CPP_TYPE, SIZE>*,
                    std::array<CPP_TYPE, SIZE>&,
-                   std::array<CPP_TYPE, SIZE>*& #JAVA_ARR_TYPE"[]"
+                   std::array<CPP_TYPE, SIZE>*& #JAVA_ARR_TYPE"[]";
+
   %typemap(javaout) std::array<CPP_TYPE, SIZE>, std::array<CPP_TYPE, SIZE>& "{ return $module.unwrapArrayInArrayT_"#TEMPLATE_SUFFIX"($jnicall, $owner);}"
+
+  %typemap(javadirectorin) std::array<CPP_TYPE, SIZE>, std::array<CPP_TYPE, SIZE>& "$module.unwrapArrayInArrayT_"#TEMPLATE_SUFFIX"($jniinput, false)"
 
   %typemap(javadirectorout) std::array<CPP_TYPE, SIZE>, std::array<CPP_TYPE, SIZE>& "ArrayT_"#TEMPLATE_SUFFIX".getCPtr( "#SWIG_MODULE".wrapArrayInArrayT_"#TEMPLATE_SUFFIX"($javacall))"
 

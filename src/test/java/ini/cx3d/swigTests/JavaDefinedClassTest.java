@@ -21,11 +21,11 @@
 
 package ini.cx3d.swigTests;
 
-import ini.cx3d.swig.NotPortedCppType;
-import ini.cx3d.swig.NotPortedTemplatedT_intCppType;
-import ini.cx3d.swig.Ported;
-import ini.cx3d.swig.PortedTemplatedT_int;
+import ini.cx3d.swig.*;
 import org.junit.Test;
+
+import java.util.AbstractSequentialList;
+import java.util.LinkedList;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -35,7 +35,12 @@ import static org.junit.Assert.assertTrue;
  * They are used for classes that are needed on the C++ side, but still implemented in Java
  */
 public class JavaDefinedClassTest {
-    public static class NotPortedJavaImpl extends NotPortedCppType{
+    public static class NotPortedJavaImpl extends NotPorted{
+
+        public NotPortedJavaImpl() {
+            registerJavaObject(this);
+        }
+
         public int multBy2(int value){
             return  value << 1;
         }
@@ -48,7 +53,7 @@ public class JavaDefinedClassTest {
     }
 
     @Test
-    public void testReturnValue() {
+    public void testExecutionOfJavaImplementation() {
         NotPortedJavaImpl notPorted = new NotPortedJavaImpl();
         Ported ported = new Ported(notPorted);
         assertEquals(512, ported.multBy4(128));
@@ -65,14 +70,53 @@ public class JavaDefinedClassTest {
     }
 
     @Test
-    public void testExecutionOfJavaImplementation(){
+    public void testReturnValue(){
         NotPortedJavaImpl notPorted = new NotPortedJavaImpl();
         Ported ported = new Ported(notPorted);
         assertTrue(notPorted == ported.getNotPorted());
     }
 
+    @Test
+    public void testReturnList(){
+        NotPortedJavaImpl notPorted1 = new NotPortedJavaImpl();
+        NotPortedJavaImpl notPorted2 = new NotPortedJavaImpl();
+        AbstractSequentialList<NotPortedJavaImpl> list = new LinkedList<>();
+        list.add(notPorted1);
+        list.add(notPorted2);
+        AbstractSequentialList<NotPortedJavaImpl> result = new Ported(notPorted1).getNotPortedList(list);
+        assertTrue(list.get(0) == result.get(0));
+        assertTrue(list.get(1) == result.get(1));
+    }
 
-    public static class NotPortedTemplatedJavaImpl<T> extends NotPortedTemplatedT_intCppType{
+    @Test
+    public void testPerformance(){
+
+        int numOfCalls = 10000000;
+
+        NotPortedJavaImpl notPorted = new NotPortedJavaImpl();
+        Ported ported = new Ported(notPorted);
+
+        long begin = System.currentTimeMillis();
+        for (int i = 0; i< numOfCalls; i++) {
+            ported.multBy2Cpp(i);
+        }
+        long end = System.currentTimeMillis();
+        System.out.println(numOfCalls + " calls of an C++ function from Java took " + (end - begin) + " ms");
+
+        begin = System.currentTimeMillis();
+        ported.callJdcMultby2(numOfCalls);
+        end = System.currentTimeMillis();
+
+        System.out.println(numOfCalls + " calls of an Java function from C++ took " + (end - begin)  + " ms");
+    }
+
+
+    public static class NotPortedTemplatedJavaImpl<T> extends NotPortedTemplatedT_int{
+
+        public NotPortedTemplatedJavaImpl() {
+            registerJavaObject(this);
+        }
+
         public int multBy2(int value){
             return  value << 1;
         }
@@ -85,14 +129,14 @@ public class JavaDefinedClassTest {
     }
 
     @Test
-    public void testReturnValueTemplated() {
+    public void testExecutionOfJavaImplementationTemplate() {
         NotPortedTemplatedJavaImpl notPorted = new NotPortedTemplatedJavaImpl();
         PortedTemplatedT_int ported = new PortedTemplatedT_int(notPorted);
         assertEquals(512, ported.multBy4(128));
     }
 
     @Test
-    public void testExecutionOfJavaImplementationTemplate(){
+    public void testReturnValueTemplated(){
         NotPortedTemplatedJavaImpl notPorted = new NotPortedTemplatedJavaImpl();
         PortedTemplatedT_int ported = new PortedTemplatedT_int(notPorted);
         assertTrue(notPorted == ported.getNotPortedTemplated());
@@ -106,5 +150,17 @@ public class JavaDefinedClassTest {
         NotPortedTemplatedJavaImpl[] result = new PortedTemplatedT_int(notPorted1).getNotPortedTemplatedArray(notPortedArr);
         assertTrue(notPortedArr[0] == result[0]);
         assertTrue(notPortedArr[1] == result[1]);
+    }
+
+    @Test
+    public void testReturnListTemplated(){
+        NotPortedTemplatedJavaImpl notPorted1 = new NotPortedTemplatedJavaImpl();
+        NotPortedTemplatedJavaImpl notPorted2 = new NotPortedTemplatedJavaImpl();
+        AbstractSequentialList<NotPortedTemplatedJavaImpl> list = new LinkedList<>();
+        list.add(notPorted1);
+        list.add(notPorted2);
+        AbstractSequentialList<NotPortedTemplatedJavaImpl> result = new PortedTemplatedT_int(notPorted1).getNotPortedemplatedList(list);
+        assertTrue(list.get(0) == result.get(0));
+        assertTrue(list.get(1) == result.get(1));
     }
 }

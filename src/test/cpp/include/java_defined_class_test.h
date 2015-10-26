@@ -1,6 +1,8 @@
 #ifndef JAVA_DEFINED_CLASS_TEST_H_
 #define JAVA_DEFINED_CLASS_TEST_H_
 
+#include <array>
+#include <list>
 #include <stdexcept>
 #include <memory>
 
@@ -16,7 +18,8 @@ class NotPorted {
   }
 
   virtual int multBy2(int i) {
-    throw std::runtime_error("must never be called - Java must provide implementation");
+    throw std::runtime_error(
+        "must never be called - Java must provide implementation");
     return 0;
   }
 };
@@ -42,6 +45,16 @@ class Ported {
     return not_ported_->multBy2(by_2);
   }
 
+  virtual int multBy2Cpp(int i) {
+    return i << 1;
+  }
+
+  virtual void callJdcMultby2(int num_calls) {
+    for (int i = 0; i < num_calls; i++) {
+      not_ported_->multBy2(i);
+    }
+  }
+
   virtual std::array<std::shared_ptr<NotPorted>, 2> getNotPortedArray(
       const std::array<std::shared_ptr<NotPorted>, 2>& arr) {
     return arr;
@@ -51,8 +64,14 @@ class Ported {
     return std::shared_ptr<NotPorted>(not_ported_);
   }
 
-  virtual std::shared_ptr<NotPorted> getNotPorted1(const std::shared_ptr<NotPorted>& arg) {
+  virtual std::shared_ptr<NotPorted> getNotPorted1(
+      const std::shared_ptr<NotPorted>& arg) {
     return std::shared_ptr<NotPorted>(not_ported_);
+  }
+
+  virtual std::list<std::shared_ptr<NotPorted>> getNotPortedList(
+      const std::list<std::shared_ptr<NotPorted>>& list) {
+    return list;
   }
 };
 
@@ -71,7 +90,8 @@ class NotPortedTemplated {
   }
 
   virtual int multBy2(int i) {
-    throw std::runtime_error("must never be called - Java must provide implementation");
+    throw std::runtime_error(
+        "must never be called - Java must provide implementation");
     return 0;
   }
 };
@@ -105,6 +125,11 @@ class PortedTemplated {
   virtual std::array<std::shared_ptr<NotPortedTemplated<T>>, 2> getNotPortedTemplatedArray(
       const std::array<std::shared_ptr<NotPortedTemplated<T>>, 2>& arr) {
     return arr;
+  }
+
+  virtual std::list<std::shared_ptr<NotPortedTemplated<T>> > getNotPortedemplatedList(
+      const std::list<std::shared_ptr<NotPortedTemplated<T>> >& list) {
+    return list;
   }
 };
 

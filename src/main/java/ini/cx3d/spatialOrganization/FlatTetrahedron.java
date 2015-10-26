@@ -86,7 +86,7 @@ public class FlatTetrahedron<T> extends Tetrahedron<T> {
 	 * informed about the movement of <code>movedNode</code>. 
 	 * @param movedNode The node that was moved.
 	 */
-	public void updateCirumSphereAfterNodeMovement(SpaceNode<T> movedNode) {
+	public void updateCirumSphereAfterNodeMovement(SpaceNode movedNode) {
 		for (int i = 0; i < 4; i++) {
 			if (adjacentNodes[i] != movedNode) 
 				adjacentTriangles[i].informAboutNodeMovement();
@@ -97,14 +97,14 @@ public class FlatTetrahedron<T> extends Tetrahedron<T> {
 	 * Calculates the volume of this flat tetrahedron. Since the volume of a flat tetrahedron is
 	 * 0, the volume is simpley set to that value.
 	 */
-	protected void calculateVolume() {
+	public void calculateVolume() {
 		this.volume = 0.0;
 	}
 
 	/**
 	 * Sets all the cross section areas associated with the incident edges to 0.
 	 */
-	protected void updateCrossSectionAreas() {
+	public void updateCrossSectionAreas() {
 		for (int i = 0; i < 6; i++) 
 			changeCrossSection(i, 0.0);
 	}
@@ -132,7 +132,7 @@ public class FlatTetrahedron<T> extends Tetrahedron<T> {
 	 * Returns whether this tetrahedron is flat or not.
 	 * @return <code>true</code> in any case, because all instances of this class are flat tetrahedra.
 	 */
-	protected boolean isFlat() {
+	public boolean isFlat() {
 		return true;
 	}
 	
@@ -187,7 +187,7 @@ public class FlatTetrahedron<T> extends Tetrahedron<T> {
 	/**
 	 * {@inheritDoc}
 	 */
-	protected boolean isPointInConvexPosition(double[] point, int connectingTriangleNumber) {
+	public boolean isPointInConvexPosition(double[] point, int connectingTriangleNumber) {
 		adjacentTriangles[0].updatePlaneEquationIfNecessary();
 		return adjacentTriangles[0].orientation(point, point) == 0;
 	}

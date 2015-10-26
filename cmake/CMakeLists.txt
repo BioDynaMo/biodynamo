@@ -68,7 +68,6 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${JAVA_MAIN_RESOURCE_PATH
 #--------------------- add source files to project -------------
 #add the headers into the project
 include_directories(${CPP_MAIN_SRC_PATH}/include)
-include_directories(${CPP_MAIN_SRC_PATH}/include/spatialOrganization)
 include_directories(${CPP_MAIN_SRC_PATH}/swig)
 
 #--------------------- build module cx3d  ----------------

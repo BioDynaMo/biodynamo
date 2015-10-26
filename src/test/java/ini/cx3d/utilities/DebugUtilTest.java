@@ -4,6 +4,7 @@ import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.lang.reflect.Proxy;
 import java.util.AbstractSequentialList;
 
 import java.util.LinkedList;
@@ -30,6 +31,15 @@ public class DebugUtilTest {
     }
 
     static class TestImpl implements TestInterface{
+
+        public boolean equals(Object other) {
+            if (other instanceof Proxy) {
+                return other.equals(this);
+            } else if (!(other instanceof TestImpl)) {
+                return false;
+            }
+            return other == this;
+        }
 
         @Override
         public String toString() {
@@ -120,26 +130,26 @@ public class DebugUtilTest {
         test.callTest1Inside();
 
         final String result = myOut.toString();
-        String expected = "DBG L#1 test1 args: {Hello World, } innerState: toString of TestImpl\n" +
-                "DBG L#2 test1 return Hello World innerState: toString of TestImpl\n" +
-                "DBG L#3 test2 args: {42, } innerState: toString of TestImpl\n" +
-                "DBG L#4 test2 return 42 innerState: toString of TestImpl\n" +
-                "DBG L#5 test3 args: {L, } innerState: toString of TestImpl\n" +
-                "DBG L#6 test3 return L innerState: toString of TestImpl\n" +
-                "DBG L#7 test4 args: {true, } innerState: toString of TestImpl\n" +
-                "DBG L#8 test4 return true innerState: toString of TestImpl\n" +
-                "DBG L#9 test5 args: {6.90000, } innerState: toString of TestImpl\n" +
-                "DBG L#10 test5 return 6.90000 innerState: toString of TestImpl\n" +
-                "DBG L#11 test6 args: {{1.20000, 8.60000, }, } innerState: toString of TestImpl\n" +
-                "DBG L#12 test6 return {1.20000, 8.60000, } innerState: toString of TestImpl\n" +
-                "DBG L#13 test7 args: {{{1.20000, 8.60000, }, {5.70000, 11.30000, }, }, } innerState: toString of TestImpl\n" +
-                "DBG L#14 test7 return {{1.20000, 8.60000, }, {5.70000, 11.30000, }, } innerState: toString of TestImpl\n" +
-                "DBG L#15 test8 args: {{SomeOtherClass8, SomeOtherClass4, }, } innerState: toString of TestImpl\n" +
-                "DBG L#16 test8 return {SomeOtherClass8, SomeOtherClass4, } innerState: toString of TestImpl\n" +
-                "DBG L#17 test9 args: {{SomeOtherClass2, SomeOtherClass5, }, } innerState: toString of TestImpl\n" +
-                "DBG L#18 test9 return {SomeOtherClass2, SomeOtherClass5, } innerState: toString of TestImpl\n" +
-                "DBG L#19 callTest1Inside args:  innerState: toString of TestImpl\n" +
-                "DBG L#20 callTest1Inside return  innerState: toString of TestImpl\n";
+        String expected = "DBG test1 args: {Hello World, } innerState: toString of TestImpl\n" +
+                "DBG test1 return Hello World innerState: toString of TestImpl\n" +
+                "DBG test2 args: {42, } innerState: toString of TestImpl\n" +
+                "DBG test2 return 42 innerState: toString of TestImpl\n" +
+                "DBG test3 args: {L, } innerState: toString of TestImpl\n" +
+                "DBG test3 return L innerState: toString of TestImpl\n" +
+                "DBG test4 args: {true, } innerState: toString of TestImpl\n" +
+                "DBG test4 return true innerState: toString of TestImpl\n" +
+                "DBG test5 args: {6.90000, } innerState: toString of TestImpl\n" +
+                "DBG test5 return 6.90000 innerState: toString of TestImpl\n" +
+                "DBG test6 args: {{1.20000, 8.60000, }, } innerState: toString of TestImpl\n" +
+                "DBG test6 return {1.20000, 8.60000, } innerState: toString of TestImpl\n" +
+                "DBG test7 args: {{{1.20000, 8.60000, }, {5.70000, 11.30000, }, }, } innerState: toString of TestImpl\n" +
+                "DBG test7 return {{1.20000, 8.60000, }, {5.70000, 11.30000, }, } innerState: toString of TestImpl\n" +
+                "DBG test8 args: {{SomeOtherClass8, SomeOtherClass4, }, } innerState: toString of TestImpl\n" +
+                "DBG test8 return {SomeOtherClass8, SomeOtherClass4, } innerState: toString of TestImpl\n" +
+                "DBG test9 args: {{SomeOtherClass2, SomeOtherClass5, }, } innerState: toString of TestImpl\n" +
+                "DBG test9 return {SomeOtherClass2, SomeOtherClass5, } innerState: toString of TestImpl\n" +
+                "DBG callTest1Inside args:  innerState: toString of TestImpl\n" +
+                "DBG callTest1Inside return null innerState: toString of TestImpl\n";
         assertEquals(expected, result);
     }
 
@@ -149,5 +159,7 @@ public class DebugUtilTest {
         TestInterface o1 = DebugUtil.createDebugLoggingProxy(test, new Class[]{TestInterface.class});
         TestInterface o2 = DebugUtil.createDebugLoggingProxy(test, new Class[]{TestInterface.class});
         assertTrue(o1.equals(o2));
+        assertTrue(o1.equals(test));
+        assertTrue(test.equals(o1));
     }
 }

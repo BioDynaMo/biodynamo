@@ -68,3 +68,24 @@ file(GLOB SOURCES "${CPP_MAIN_SRC_PATH}/src/spatial_organization/*.cc")
 
 add_library(cx3d_spatialOrganization SHARED ${SOURCES} "${CPP_MAIN_SRC_PATH}/swig/spatial_organizationJAVA_wrap.cxx")
 target_link_libraries(cx3d_spatialOrganization ${GMP_LIBRARY})
+
+
+#---------------------------------------------------------------
+#--------------------- build test project ----------------------
+#---------------------------------------------------------------
+
+#--------------------- set output directory  -------------------
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${JAVA_TEST_RESOURCE_PATH})
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${JAVA_TEST_RESOURCE_PATH})
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${JAVA_TEST_RESOURCE_PATH})
+
+#--------------------- add source files to project -------------
+#add the headers into the project
+include_directories(${CPP_TEST_SRC_PATH}/include)
+include_directories(${CPP_TEST_SRC_PATH}/swig)
+
+#--------------------- build module cx3d_test  ----------------------
+file(GLOB SOURCES "${CPP_TEST_SRC_PATH}/src/*.cc")
+
+add_library(cx3d_test SHARED ${SOURCES} "${CPP_TEST_SRC_PATH}/swig/cx3d_testJAVA_wrap.cxx")
+target_link_libraries(cx3d_test ${GMP_LIBRARY})

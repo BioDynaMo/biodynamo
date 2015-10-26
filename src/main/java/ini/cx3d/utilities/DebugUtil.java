@@ -36,6 +36,65 @@ public class DebugUtil {
         return ret;
     }
 
+    public static void logMethodCall(String methodName, Object self, Object[] objects) {
+        int line = printedLines.incrementAndGet();
+        String methodCallLogMsg = "DBG " + methodName + " args: " + processArguments(objects) + " innerState: " + self;
+        System.out.println(methodCallLogMsg);
+    }
+
+    public static void logMethodReturn(String methodName, Object self, Object result) {
+        StringBuilder sb = new StringBuilder();
+        processArgument(sb, result);
+        int line = printedLines.incrementAndGet();
+        String methodReturnLogMsg = "DBG "+methodName+" return " + sb.toString() + " innerState: " + self;
+        System.out.println(methodReturnLogMsg);
+    }
+
+    public static void logMethodReturnVoid(String methodName, Object self) {
+        StringBuilder sb = new StringBuilder();
+        int line = printedLines.incrementAndGet();
+        String methodReturnLogMsg = "DBG "+methodName+" return  innerState: " + self;
+        System.out.println(methodReturnLogMsg);
+    }
+
+    private static String processArguments(Object[] args) {
+        if (args == null) {
+            return "";
+        }
+        StringBuilder sb = new StringBuilder();
+        sb.append("{");
+        for (Object arg : args) {
+            if (arg != null) {
+                processArgument(sb, arg);
+            } else {
+                sb.append("null");
+            }
+            sb.append(", ");
+        }
+        sb.append("}");
+        return sb.toString();
+    }
+
+    private static void processArgument(StringBuilder sb, Object arg) {
+        if (arg == null) {
+            sb.append("null");
+        } else if (arg instanceof Double) {
+            sb.append(StringUtilities.toStr((double) arg));
+        } else if (arg instanceof double[]) {
+            sb.append(StringUtilities.toStr((double[]) arg));
+        } else if (arg instanceof int[]) {
+            sb.append(StringUtilities.toStr((int[]) arg));
+        } else if (arg instanceof double[][]) {
+            sb.append(StringUtilities.toStr((double[][]) arg));
+        } else if (arg instanceof Object[]) {
+            sb.append(StringUtilities.toStr((Object[]) arg));
+        } else if (arg instanceof AbstractSequentialList) {
+            sb.append(StringUtilities.toStr((AbstractSequentialList) arg));
+        } else {
+            sb.append(arg);
+        }
+    }
+
     /**
      * Handler that is called instead of the proxied methods
      * It logs method calls, their arguments, the objects inner state as well as the return type
@@ -56,7 +115,7 @@ public class DebugUtil {
         @Override
         public Object invoke(Object o, Method method, Object[] objects) throws Throwable {
             if(DebugUtil.print && !method.getName().equals("toString")){
-                logMethodCall(method, objects);
+                logMethodCall(method.getName(), proxy, objects);
             }
 
             Object result = null;
@@ -74,7 +133,7 @@ public class DebugUtil {
             }
 
             if(DebugUtil.print && !method.getName().equals("toString")){
-                logMethodReturn(method, result);
+                logMethodReturn(method.getName(), proxy, result);
             }
             return result;
         }
@@ -83,54 +142,6 @@ public class DebugUtil {
             this.proxy = proxy;
         }
 
-        private void logMethodCall(Method method, Object[] objects) {
-            int line = printedLines.incrementAndGet();
-            String methodCallLogMsg = "DBG L#" +line+ " " + method.getName() + " args: " + processArguments(objects) + " innerState: " + proxy;
-            System.out.println(methodCallLogMsg);
-        }
 
-        private void logMethodReturn(Method method, Object result) {
-            StringBuilder sb = new StringBuilder();
-            processArgument(sb, result);
-            int line = printedLines.incrementAndGet();
-            String methodReturnLogMsg = "DBG L#"+line+" "+method.getName()+" return " + sb.toString() + " innerState: " + proxy;
-            System.out.println(methodReturnLogMsg);
-        }
-
-        private String processArguments(Object[] args) {
-            if (args == null) {
-                return "";
-            }
-            StringBuilder sb = new StringBuilder();
-            sb.append("{");
-            for (Object arg : args) {
-                if (arg != null) {
-                    processArgument(sb, arg);
-                } else {
-                    sb.append("null");
-                }
-                sb.append(", ");
-            }
-            sb.append("}");
-            return sb.toString();
-        }
-
-        private void processArgument(StringBuilder sb, Object arg) {
-            if (arg == null) {
-                return;
-            } else if (arg instanceof Double) {
-                sb.append(StringUtilities.toStr((double) arg));
-            } else if (arg instanceof double[]) {
-                sb.append(StringUtilities.toStr((double[]) arg));
-            } else if (arg instanceof double[][]) {
-                sb.append(StringUtilities.toStr((double[][]) arg));
-            } else if (arg instanceof Object[]) {
-                sb.append(StringUtilities.toStr((Object[]) arg));
-            } else if (arg instanceof AbstractSequentialList) {
-                sb.append(StringUtilities.toStr((AbstractSequentialList) arg));
-            } else {
-                sb.append(arg);
-            }
-        }
     }
 }

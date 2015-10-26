@@ -29,3 +29,17 @@
                                    ArrayT_Double_##SIZE_1##_##SIZE_2,
                                    double, D, SIZE_2);
 %enddef
+
+//------------------------------------------------------------------------------
+// int
+
+%define %int_stdarray_array_marshalling(SWIG_MODULE, SIZE)
+  %stdarray_primitive_array_marshalling(SWIG_MODULE, int, Integer##SIZE, Integer,
+                                        int, I, SIZE);
+%enddef
+
+%define %int_stdarray_2dim_array_marshalling(SWIG_MODULE, SIZE_1, SIZE_2)
+  %stdarray_2dim_array_marshalling(SWIG_MODULE, int, SIZE_1,
+                                   ArrayT_Integer_##SIZE_1##_##SIZE_2,
+                                   int, I, SIZE_2);
+%enddef

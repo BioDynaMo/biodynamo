@@ -21,6 +21,7 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 
 package ini.cx3d.spatialOrganization;
 
+import ini.cx3d.spatialOrganization.factory.TetrahedronFactory;
 import ini.cx3d.spatialOrganization.interfaces.Triangle3D;
 
 import static ini.cx3d.utilities.Matrix.*;
@@ -160,7 +161,7 @@ public class NewDelaunayTest {
 		}
 	}
 	
-	public static boolean checkTetrahedronForDelaunayViolation(Tetrahedron tetrahedron) {
+	public static boolean checkTetrahedronForDelaunayViolation(ini.cx3d.spatialOrganization.interfaces.Tetrahedron tetrahedron) {
 		boolean problems = false;
 		if (SpaceNode.allNodes != null) 
 		for (SpaceNode<PhysicalNode> node : SpaceNode.allNodes) {
@@ -172,7 +173,6 @@ public class NewDelaunayTest {
 				if (tetrahedron.orientationExact(node.getPosition()) <= 0)
 					System.out.print(" (but not truly!)");
 				System.out.println("");
-				double[] distVector = subtract(tetrahedron.circumCenter,node.getPosition());
 				problems = true;
 				tetrahedron.isTrulyInsideSphere(node.getPosition());
 			}
@@ -476,11 +476,11 @@ public class NewDelaunayTest {
 			createOutPut = false;
 			SpaceNode.clear();
 			Tetrahedron.clear();
-			Tetrahedron<PhysicalNode> startTetrahedron = Tetrahedron.createInitialTetrahedron(new SpaceNode<PhysicalNode>(
+			OpenTriangleOrganizer oto = OpenTriangleOrganizer.createSimpleOpenTriangleOrganizer();
+			ini.cx3d.spatialOrganization.interfaces.Tetrahedron<PhysicalNode> startTetrahedron = TetrahedronFactory.createInitialTetrahedron(new SpaceNode<PhysicalNode>(
 					0.0, 0.0, 0.0, null), new SpaceNode<PhysicalNode>(1.0,
 					0.0, 0.0, null), new SpaceNode<PhysicalNode>(0.0, 1.0,
-					0.0, null), new SpaceNode<PhysicalNode>(0.0, 0.0, 1.0, null));
-			OpenTriangleOrganizer oto = OpenTriangleOrganizer.createSimpleOpenTriangleOrganizer();
+					0.0, null), new SpaceNode<PhysicalNode>(0.0, 0.0, 1.0, null), oto);
 			SpaceNode<PhysicalNode>[] innerNodes = new SpaceNode[initialNodeCount+insertNodeCount];
 	//		// lets create some random nodes in a cubic volume, all nodes sitting at integer positions:
 	//		for (int i = 0; i < initialNodeCount; i++) {
@@ -550,7 +550,7 @@ public class NewDelaunayTest {
 						
 				}
 				if (closest != null) {
-					startTetrahedron = closest.getAdjacentTetrahedra().getFirst();
+					startTetrahedron = closest.getAdjacentTetrahedra().get(0);
 				}
 				try {
 					startTetrahedron = innerNodes[i].insert(startTetrahedron);
