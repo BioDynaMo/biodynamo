@@ -6,6 +6,7 @@
 %native(RATIONAL);
 %native(EXACTVECTOR);
 %native(TRIANGLE3D);
+%native(EDGE);
 %native(TETRAHEDRON);
 
 // end administration area
@@ -51,9 +52,6 @@ JAVA_LOAD_NATIVE_LIBRARY(cx3d_spatialOrganization);
 
 // modifications for class Edge
 %include "class_customization/edge.i";
-%Edge_cx3d_shared_ptr();
-%Edge_ported_type_modification();
-%Edge_ported_add_equals();
 
 // modifications for class SpaceNode
 %include "class_customization/space_node.i";

@@ -21,7 +21,9 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 
 package ini.cx3d.spatialOrganization;
 
+import ini.cx3d.physics.PhysicalNode;
 import ini.cx3d.spatialOrganization.interfaces.Tetrahedron;
+import ini.cx3d.swig.spatialOrganization.EdgeT_PhysicalNode;
 import ini.cx3d.utilities.StringUtilities;
 
 import java.util.AbstractSequentialList;
@@ -36,7 +38,7 @@ import java.util.Objects;
  *
  * @param <T> The type of the user objects stored in the endpoints of an edge.
  */
-public class Edge<T> implements ini.cx3d.spatialOrganization.interfaces.Edge<T> {
+public class Edge<T> extends EdgeT_PhysicalNode implements ini.cx3d.spatialOrganization.interfaces.Edge<PhysicalNode> {
 //	/**
 //	 * Used to assign a unique identification number to each initialized edge.
 //	 */
@@ -67,7 +69,8 @@ public class Edge<T> implements ini.cx3d.spatialOrganization.interfaces.Edge<T> 
 	 * @param a The first endpoint of the new edge.
 	 * @param b The second endpoint of the new edge.
 	 */
-	public Edge(SpaceNode<T> a, SpaceNode<T> b) {
+	public Edge(SpaceNode a, SpaceNode b) {
+		registerJavaObject(this);
 		this.a = a;
 		this.b = b;
 		if (a != null) a.addEdge(this);
@@ -81,7 +84,7 @@ public class Edge<T> implements ini.cx3d.spatialOrganization.interfaces.Edge<T> 
 	 * {@inheritDoc}
 	 */
 	@Override
-	public SpatialOrganizationNode<T> getOpposite(SpaceNode<T> comingFrom) {
+	public SpaceNode getOpposite(SpaceNode comingFrom) {
 		if (Objects.equals(comingFrom, a)) return b;
 		else if (Objects.equals(comingFrom, b)) return a;
 		else throw new RuntimeException("The edge "+this+" is not adjacent to the node "+comingFrom);
@@ -111,13 +114,13 @@ public class Edge<T> implements ini.cx3d.spatialOrganization.interfaces.Edge<T> 
 	 * {@inheritDoc}
 	 */
 	@Override
-	public T getOppositeElement(T element) {
+	public PhysicalNode getOppositeElement(PhysicalNode element) {
 		if (a!=null  && b!=null) {
 			T aT = a.getUserObject();
 			if(Objects.equals(element, aT)){
-				return b.getUserObject();
+				return (PhysicalNode) b.getUserObject();
 			}else{
-				return a.getUserObject();
+				return (PhysicalNode) a.getUserObject();
 			}
 		}
 		return null;
@@ -127,16 +130,16 @@ public class Edge<T> implements ini.cx3d.spatialOrganization.interfaces.Edge<T> 
 	 * {@inheritDoc}
 	 */
 	@Override
-	public T getFirstElement() {
-		return a.getUserObject();
+	public PhysicalNode getFirstElement() {
+		return (PhysicalNode) a.getUserObject();
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public T getSecondElement() {
-		return b.getUserObject();
+	public PhysicalNode getSecondElement() {
+		return (PhysicalNode) b.getUserObject();
 	}
 
 	/**
@@ -163,7 +166,7 @@ public class Edge<T> implements ini.cx3d.spatialOrganization.interfaces.Edge<T> 
 	 * @param b The second node.
 	 * @return <code>true</code>, if this edge connects <code>a</code> and <code>b</code>.
 	 */
-	public boolean equals(SpaceNode<T> a, SpaceNode<T> b) {
+	public boolean equals(SpaceNode a, SpaceNode b) {
 		return (Objects.equals(this.a, a) && Objects.equals(this.b, b)) || (Objects.equals(this.b, a) && Objects.equals(this.a, b));
 	}
 
@@ -173,7 +176,7 @@ public class Edge<T> implements ini.cx3d.spatialOrganization.interfaces.Edge<T> 
 	 * the triangulation by calling {@link #remove()}.
 	 * @param tetrahedron A tetrahedron incident to this edge which should be removed.
 	 */
-	public void removeTetrahedron(Tetrahedron<T> tetrahedron) {
+	public void removeTetrahedron(Tetrahedron tetrahedron) {
 		adjacentTetrahedra.remove(tetrahedron);
 //		element.remove();
 		if (adjacentTetrahedra.isEmpty())
@@ -184,7 +187,7 @@ public class Edge<T> implements ini.cx3d.spatialOrganization.interfaces.Edge<T> 
 	 * Adds a tetrahedron to this edge's list of tetrahedra.
 	 * @param tetrahedron A tetrahedron incident to this edge which should be added.
 	 */
-	public void addTetrahedron(Tetrahedron<T> tetrahedron) {
+	public void addTetrahedron(Tetrahedron tetrahedron) {
 		adjacentTetrahedra.add(tetrahedron);
 	}
 

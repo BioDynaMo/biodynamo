@@ -3,6 +3,7 @@ package ini.cx3d.spatialOrganization.factory;
 import ini.cx3d.spatialOrganization.SpaceNode;
 import ini.cx3d.spatialOrganization.SpatialOrganizationEdge;
 import ini.cx3d.spatialOrganization.interfaces.Edge;
+import ini.cx3d.swig.spatialOrganization.spatialOrganization;
 import ini.cx3d.utilities.DebugUtil;
 
 /**
@@ -10,20 +11,16 @@ import ini.cx3d.utilities.DebugUtil;
  */
 public class EdgeFactory<T> {
 
-    private static final boolean NATIVE = true;
-    public static final boolean DEBUG = false;
+    private static final boolean NATIVE = spatialOrganization.useNativeEdge;
+    public static final boolean DEBUG = spatialOrganization.debugEdge;
 
     public Edge create(SpaceNode<T> a, SpaceNode<T> b) {
-        Edge edge = null;
         if (NATIVE) {
-            edge =  ini.cx3d.swig.spatialOrganization.EdgeT_PhysicalNode.create(a, b);
+            return  ini.cx3d.swig.spatialOrganization.EdgeT_PhysicalNode.create(a, b);
+        } else if(!DEBUG) {
+            return new ini.cx3d.spatialOrganization.Edge(a, b);
         } else {
-            edge = new ini.cx3d.spatialOrganization.Edge(a, b);
+            throw new UnsupportedOperationException("EdgeDebug has not been implemented yet");
         }
-        if(DEBUG) {
-            System.out.println("DBG edge created " + edge);
-            edge =  DebugUtil.createDebugLoggingProxy(edge, new Class[]{Edge.class, SpatialOrganizationEdge.class});
-        }
-        return  edge;
     }
 }

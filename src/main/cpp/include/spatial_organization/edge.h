@@ -7,6 +7,11 @@
 
 #include "spatial_organization/spatial_organization_edge.h"
 
+#ifdef EDGE_DEBUG
+#include "spatial_organization/debug/edge_debug.h"
+#endif
+
+
 namespace cx3d {
 namespace spatial_organization {
 
@@ -22,6 +27,14 @@ template<class T> class Tetrahedron;
 template<class T>
 class Edge : public SpatialOrganizationEdge<T>, public std::enable_shared_from_this<Edge<T>> {
  public:
+#ifndef EDGE_NATIVE
+  Edge()
+      : a_(),
+        b_(),
+        cross_section_area_(0.0),
+        adjacent_tetrahedra_() {
+  }
+#endif
   /**
    * Creates a new Edge object and returns it within a <code>std::shared_ptr</code>
    * @see Edge(...)
@@ -46,10 +59,15 @@ class Edge : public SpatialOrganizationEdge<T>, public std::enable_shared_from_t
    */
   static std::shared_ptr<Edge<T>> create(const std::shared_ptr<SpaceNode<T>>& a,
                                          const std::shared_ptr<SpaceNode<T>>& b) {
+#ifdef EDGE_DEBUG
+    std::shared_ptr<Edge<T>> edge(new EdgeDebug<T>(a, b));
+#else
     std::shared_ptr<Edge<T>> edge(new Edge(a, b));
+#endif
     edge->initializationHelper();
     return edge;
   }
+
 
   virtual ~Edge() {
   }
@@ -110,7 +128,7 @@ class Edge : public SpatialOrganizationEdge<T>, public std::enable_shared_from_t
    * Adds a tetrahedron to this edge's list of tetrahedra.
    * @param tetrahedron A tetrahedron incident to this edge which should be added.
    */
-  void addTetrahedron(const std::shared_ptr<Tetrahedron<T>>& tetrahedron);
+  virtual void addTetrahedron(const std::shared_ptr<Tetrahedron<T>>& tetrahedron);
 
   /**
    * Removes this edge from the triangulation. To do so, the two endpoints are informed
@@ -132,17 +150,20 @@ class Edge : public SpatialOrganizationEdge<T>, public std::enable_shared_from_t
    */
   virtual void changeCrossSectionArea(double change);
 
- private:
-  Edge() = delete;
-  Edge(const Edge&) = delete;
-  Edge& operator=(const Edge&) = delete;
-
+ protected:
   /**
    * Initializes a new edge with two specified endpoints.
    * @param a The first endpoint of the new edge.
    * @param b The second endpoint of the new edge.
    */
   Edge(const std::shared_ptr<SpaceNode<T>>& a, const std::shared_ptr<SpaceNode<T>>& b);
+
+ private:
+#ifdef EDGE_NATIVE
+  Edge() = delete;
+#endif
+  Edge(const Edge&) = delete;
+  Edge& operator=(const Edge&) = delete;
 
   /**
    * The two endpoints of this edge.

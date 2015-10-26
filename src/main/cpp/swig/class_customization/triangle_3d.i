@@ -9,7 +9,7 @@
  * files!
  *
  * SWIG modules that use the class simply include it using:
- * %include "class_customization/tetrahedron.i"
+ * %include "class_customization/triangle_3d.i"
  */
 
 %include "util.i"

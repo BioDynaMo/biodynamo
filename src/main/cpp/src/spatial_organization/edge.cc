@@ -11,11 +11,6 @@
 namespace cx3d {
 namespace spatial_organization {
 
-using cx3d::StringUtil;
-
-using cx3d::spatial_organization::SpatialOrganizationEdge;
-using cx3d::spatial_organization::Edge;
-
 template<class T>
 Edge<T>::Edge(const std::shared_ptr<SpaceNode<T>>& a, const std::shared_ptr<SpaceNode<T>>& b)
     : a_(a),
@@ -114,7 +109,7 @@ void Edge<T>::remove() {
 }
 
 template<class T>
-std::list<std::shared_ptr<Tetrahedron<T>> >Edge<T>::getAdjacentTetrahedra() const {
+std::list<std::shared_ptr<Tetrahedron<T>> > Edge<T>::getAdjacentTetrahedra() const {
   return adjacent_tetrahedra_;
 }
 
@@ -136,4 +131,3 @@ template class Edge<cx3d::PhysicalNode>;
 
 }  // namespace spatial_organization
 }  // namespace cx3d
-

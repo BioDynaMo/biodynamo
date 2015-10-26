@@ -8,16 +8,10 @@
  * files!
  *
  * SWIG modules that use the class simply include it using:
- * %include "class_customization/tetrahedron.i"
+ * %include "class_customization/plane3d.i"
  */
 
-// %include "util.i"
 %include "cx3d_shared_ptr.i"
-
-// %define %Plane3D_ported_type_modification()
-//   %ported_type_modification(cx3d::spatial_organization::Plane3D<cx3d::PhysicalNode>,
-//                             ini.cx3d.spatialOrganization.interfaces.Plane3D);
-// %enddef
 
 %define %Plane3D_cx3d_shared_ptr()
   %cx3d_shared_ptr(Plane3DT_PhysicalNode,
