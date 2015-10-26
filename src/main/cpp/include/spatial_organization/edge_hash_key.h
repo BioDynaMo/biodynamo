@@ -25,6 +25,16 @@ template<class T> class Tetrahedron;
 template<class T>
 class EdgeHashKey {
  public:
+#ifndef EDGEHASHKEY_NATIVE
+  EdgeHashKey()
+      : a_(),
+        b_(),
+        hash_code_(0),
+        ab_ { 0.0, 0.0, 0.0 },
+        last_normal_vector_ { 0.0, 0.0, 0.0 } {
+  }
+#endif
+
   /**
    * Creates a new instance of <code>EdgeHashKey</code> with the two endpoints
    * <code>a</code> and <code>b</code>. A third node is expected as additional
@@ -42,12 +52,12 @@ class EdgeHashKey {
   /**
    * Creates a string representation of this object.
    */
-  std::string toString() const;
+  virtual std::string toString() const;
 
   /**
    * Creates a integer representation of this object.
    */
-  int hashCode() const;
+  virtual int hashCode() const;
 
   /**
    * Compares the represented edge with another object.
@@ -55,7 +65,7 @@ class EdgeHashKey {
    * @return <code>true</code>, if other has the same endpoints as this edge.
    * <code>false</code> is returned in all other cases.
    */
-  bool equalTo(const std::shared_ptr<EdgeHashKey<T>>& other) const;
+  virtual bool equalTo(const std::shared_ptr<EdgeHashKey<T>>& other) const;
 
   /**
    * computes the cosine between this edge to another point measured at the
@@ -64,27 +74,29 @@ class EdgeHashKey {
    * @return The cosine between this edge and an edge between the first
    * endpoint of this edge and <code>fourthPoint</code>.
    */
-  double getCosine(const std::array<double, 3>& fourth_point) const;
+  virtual double getCosine(const std::array<double, 3>& fourth_point) const;
 
   /**
    * @return endpoint A of this edge
    */
-  std::shared_ptr<SpaceNode<T>> getEndpointA() const;
+  virtual std::shared_ptr<SpaceNode<T>> getEndpointA() const;
 
   /**
    * @return endpoint B of this edge
    */
-  std::shared_ptr<SpaceNode<T>> getEndpointB() const;
+  virtual std::shared_ptr<SpaceNode<T>> getEndpointB() const;
 
   /**
    * Returns the opposite node of a given node if the latter is incident to this edge.
    * @param node The given node.
    * @return The incident node opposite to <code>node</code>.
    */
-  std::shared_ptr<SpaceNode<T>> oppositeNode(const std::shared_ptr<SpaceNode<T>>& node) const;
+  virtual std::shared_ptr<SpaceNode<T>> oppositeNode(const std::shared_ptr<SpaceNode<T>>& node) const;
 
  private:
+#ifdef EDGEHASHKEY_NATIVE
   EdgeHashKey() = delete;
+#endif
   EdgeHashKey(const EdgeHashKey&) = delete;
   EdgeHashKey& operator=(const EdgeHashKey&) = delete;
 

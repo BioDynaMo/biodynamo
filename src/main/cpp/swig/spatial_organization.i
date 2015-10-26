@@ -7,6 +7,8 @@
 %native(EXACTVECTOR);
 %native(TRIANGLE3D);
 %native(EDGE);
+%native(EDGEHASHKEY);
+%native(TRIANGLEHASHKEY);
 %native(TETRAHEDRON);
 
 // end administration area
@@ -44,7 +46,6 @@ JAVA_LOAD_NATIVE_LIBRARY(cx3d_spatialOrganization);
 %include "primitives.i"
 
 // modifications for class Rational
-%apply long long { int64_t };
 %include "class_customization/rational.i";
 
 // modifications for class ExactVector
@@ -73,16 +74,9 @@ JAVA_LOAD_NATIVE_LIBRARY(cx3d_spatialOrganization);
 
 // modifications for class EdgeHashKey
 %include "class_customization/edge_hash_key.i";
-%EdgeHashKey_cx3d_shared_ptr();
-%EdgeHashKey_ported_add_equals();
-%EdgeHashKey_ported_type_modification();
 
 // modifications for class TriangleHashKey
 %include "class_customization/triangle_hash_key.i";
-%TriangleHashKey_cx3d_shared_ptr();
-%TriangleHashKey_ported_add_equals();
-%TriangleHashKey_ported_type_modification();
-
 
 // add the original header files here
 %include "spatial_organization/rational.h"

@@ -21,6 +21,8 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 
 package ini.cx3d.spatialOrganization;
 
+import ini.cx3d.swig.spatialOrganization.TriangleHashKeyT_PhysicalNode;
+
 import java.util.Objects;
 
 /**
@@ -32,7 +34,7 @@ import java.util.Objects;
  *
  * @param <T> The type of user objects associated with nodes in the triangulation.
  */
-public class TriangleHashKey<T> implements ini.cx3d.spatialOrganization.interfaces.TriangleHashKey<T> {
+public class TriangleHashKey<T> extends TriangleHashKeyT_PhysicalNode implements ini.cx3d.spatialOrganization.interfaces.TriangleHashKey {
 	private SpaceNode<T> a, b, c;
 	int hashCode;
 
@@ -43,6 +45,7 @@ public class TriangleHashKey<T> implements ini.cx3d.spatialOrganization.interfac
 	 * @param c The third node.
 	 */
 	public TriangleHashKey(SpaceNode<T> a, SpaceNode<T> b, SpaceNode<T> c) {
+		registerJavaObject(this);
 		this.a = a;
 		this.b = b;
 		this.c = c;

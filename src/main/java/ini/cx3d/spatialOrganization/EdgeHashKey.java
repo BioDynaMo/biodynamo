@@ -21,6 +21,8 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 
 package ini.cx3d.spatialOrganization;
 
+import ini.cx3d.swig.spatialOrganization.EdgeHashKeyT_PhysicalNode;
+
 import java.util.Objects;
 
 import static ini.cx3d.utilities.Matrix.crossProduct;
@@ -41,7 +43,7 @@ import static ini.cx3d.utilities.Matrix.subtract;
  *
  * @param <T> The type of user objects associated with nodes in this triangulation.
  */
-public class EdgeHashKey<T> implements ini.cx3d.spatialOrganization.interfaces.EdgeHashKey<T> {
+public class EdgeHashKey<T> extends EdgeHashKeyT_PhysicalNode implements ini.cx3d.spatialOrganization.interfaces.EdgeHashKey {
 	/**
 	 * The endpoints of the edge for which a hash value should be calculated.
 	 */
@@ -73,6 +75,7 @@ public class EdgeHashKey<T> implements ini.cx3d.spatialOrganization.interfaces.E
 	 */
 	public EdgeHashKey(SpaceNode<T> a, SpaceNode<T> b,
 			SpaceNode<T> oppositeNode) {
+		registerJavaObject(this);
 		this.a = a;
 		this.b = b;
 		// this.c = oppositeNode;
@@ -166,7 +169,7 @@ public class EdgeHashKey<T> implements ini.cx3d.spatialOrganization.interfaces.E
 	 * @return The incident node opposite to <code>node</code>.
 	 */
 	@Override
-	public SpaceNode<T> oppositeNode(SpaceNode<T> node) {
+	public SpaceNode<T> oppositeNode(SpaceNode node) {
 		if (Objects.equals(a, node))
 			return b;
 		else

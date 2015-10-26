@@ -3,6 +3,7 @@ package ini.cx3d.spatialOrganization.factory;
 import ini.cx3d.spatialOrganization.SpaceNode;
 import ini.cx3d.spatialOrganization.interfaces.EdgeHashKey;
 import ini.cx3d.spatialOrganization.interfaces.TriangleHashKey;
+import ini.cx3d.swig.spatialOrganization.spatialOrganization;
 import ini.cx3d.utilities.DebugUtil;
 
 /**
@@ -10,20 +11,16 @@ import ini.cx3d.utilities.DebugUtil;
  */
 public class TriangleHashKeyFactory<T> {
 
-    private static final boolean NATIVE = true;
+    private static final boolean NATIVE = spatialOrganization.useNativeTriangleHashKey;
     public static final boolean DEBUG = false;
 
     public TriangleHashKey create(SpaceNode<T> a, SpaceNode<T> b, SpaceNode<T> c) {
-        TriangleHashKey triangleHashKey = null;
         if (NATIVE) {
-            triangleHashKey = new ini.cx3d.swig.spatialOrganization.TriangleHashKeyT_PhysicalNode(a, b, c);
+            return new ini.cx3d.swig.spatialOrganization.TriangleHashKeyT_PhysicalNode(a, b, c);
+        } else if (!DEBUG){
+            return new ini.cx3d.spatialOrganization.TriangleHashKey(a, b, c);
         } else {
-            triangleHashKey = new ini.cx3d.spatialOrganization.TriangleHashKey(a, b, c);
+            throw new UnsupportedOperationException("TriangleHashKeyDebug has not been implemented yet");
         }
-        if(DEBUG) {
-            System.out.println("DBG TriangleHashKey created " + triangleHashKey);
-            triangleHashKey =  DebugUtil.createDebugLoggingProxy(triangleHashKey, new Class[]{EdgeHashKey.class});
-        }
-        return  triangleHashKey;
     }
 }

@@ -44,6 +44,7 @@ public class Edge<T> extends EdgeT_PhysicalNode implements ini.cx3d.spatialOrgan
 //	 */
 //	private static int IDCOUNTER = 0;
 //
+
 //	/**
 //	 * The identification number of an edge.
 //	 */

@@ -45,6 +45,7 @@
 %enddef
 
 %define %Rational_typemaps()
+ %apply long long { int64_t };
  // for class ExactVector
  %Rational_stdarray_array_marshalling(spatialOrganization, 3);
 %enddef

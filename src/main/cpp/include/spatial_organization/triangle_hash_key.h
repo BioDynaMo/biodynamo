@@ -22,6 +22,15 @@ template<class T> class Tetrahedron;
 template<class T>
 class TriangleHashKey {
  public:
+#ifndef TRIANGLEHASHKEY_NATIVE
+  TriangleHashKey()
+      : a_(),
+        b_(),
+        c_(),
+        hash_code_(0) {
+  }
+#endif
+
   /**
    * Creates a hash value for a triplet of nodes.
    * @param a The first node.
@@ -48,7 +57,9 @@ class TriangleHashKey {
   bool equalTo(const std::shared_ptr<TriangleHashKey<T>>& other) const;
 
  private:
+#ifdef TRIANGLEHASHKEY_NATIVE
   TriangleHashKey() = delete;
+#endif
   TriangleHashKey(const TriangleHashKey&) = delete;
   TriangleHashKey& operator=(const TriangleHashKey&) = delete;
 

@@ -2,6 +2,7 @@ package ini.cx3d.spatialOrganization.factory;
 
 import ini.cx3d.spatialOrganization.SpaceNode;
 import ini.cx3d.spatialOrganization.interfaces.EdgeHashKey;
+import ini.cx3d.swig.spatialOrganization.spatialOrganization;
 import ini.cx3d.utilities.DebugUtil;
 
 /**
@@ -9,20 +10,16 @@ import ini.cx3d.utilities.DebugUtil;
  */
 public class EdgeHashKeyFactory<T> {
 
-    private static final boolean NATIVE = true;
+    private static final boolean NATIVE = spatialOrganization.useNativeEdgeHashKey;
     public static final boolean DEBUG = false;
 
     public EdgeHashKey create(SpaceNode<T> a, SpaceNode<T> b, SpaceNode<T> opposite_node) {
-        EdgeHashKey edgeHashKey = null;
         if (NATIVE) {
-            edgeHashKey = new ini.cx3d.swig.spatialOrganization.EdgeHashKeyT_PhysicalNode(a, b, opposite_node);
+            return new ini.cx3d.swig.spatialOrganization.EdgeHashKeyT_PhysicalNode(a, b, opposite_node);
+        } else if(!DEBUG){
+            return new ini.cx3d.spatialOrganization.EdgeHashKey(a, b, opposite_node);
         } else {
-            edgeHashKey = new ini.cx3d.spatialOrganization.EdgeHashKey(a, b, opposite_node);
+            throw new UnsupportedOperationException("EdgeHashKeyDebug has not been implemented yet");
         }
-        if(DEBUG) {
-            System.out.println("DBG EdgeHashKey created " + edgeHashKey);
-            edgeHashKey =  DebugUtil.createDebugLoggingProxy(edgeHashKey, new Class[]{EdgeHashKey.class});
-        }
-        return  edgeHashKey;
     }
 }
