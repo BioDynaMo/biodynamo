@@ -1,7 +1,5 @@
 package ini.cx3d.spatialOrganization.interfaces;
 
-import ini.cx3d.spatialOrganization.SpaceNode;
-
 /**
  * Common interface for Triangle3D implementations
  */
@@ -217,7 +215,7 @@ public interface Triangle3D<T> extends Plane3D<T> {
 	 * @param node A node that might be incident to this triangle.
 	 * @return <code>true</code>, iff the node is incident to this triangle.
 	 */
-	boolean isAdjacentTo(SpaceNode<T> node);
+	boolean isAdjacentTo(ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> node);
 
 	/**
 	 * Returns whether this triangle is incident to a given tetrahedron.

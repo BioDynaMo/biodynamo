@@ -28,8 +28,6 @@ import static ini.cx3d.utilities.Matrix.*;
 import ini.cx3d.parallelSpatialOrganization.SimpleAssignmentPolicy;
 import ini.cx3d.parallelSpatialOrganization.SpatialOrganizationManager;
 import ini.cx3d.physics.PhysicalNode;
-import ini.cx3d.physics.PhysicalNodeMovementListener;
-import ini.cx3d.simulations.ECM;
 
 import java.io.PrintStream;
 import java.util.LinkedList;
@@ -147,9 +145,9 @@ public class NewDelaunayTest {
 				Triangle3D<PhysicalNode> convexhullTriangle = tet.getAdjacentTriangles()[0];
 				convexhullTriangle.updatePlaneEquationIfNecessary();
 				if (convexhullTriangle.getOppositeTetrahedron(tet) != null) {
-					SpaceNode<PhysicalNode> innerNode = convexhullTriangle.getOppositeTetrahedron(tet).getOppositeNode(convexhullTriangle);
+					ini.cx3d.spatialOrganization.interfaces.SpaceNode<PhysicalNode> innerNode = convexhullTriangle.getOppositeTetrahedron(tet).getOppositeNode(convexhullTriangle);
 					if (SpaceNode.allNodes != null) 
-					for (SpaceNode<PhysicalNode> node : SpaceNode.allNodes) {
+					for (ini.cx3d.spatialOrganization.interfaces.SpaceNode<PhysicalNode> node : SpaceNode.allNodes) {
 						if (!tet.isAdjacentTo(node)) {
 							if (!convexhullTriangle.onSameSide(innerNode.getPosition(), node.getPosition())) {
 								System.out.println("The node "+node+" doesn't lie on the inner side of "+convexhullTriangle+"!");
@@ -164,7 +162,7 @@ public class NewDelaunayTest {
 	public static boolean checkTetrahedronForDelaunayViolation(ini.cx3d.spatialOrganization.interfaces.Tetrahedron tetrahedron) {
 		boolean problems = false;
 		if (SpaceNode.allNodes != null) 
-		for (SpaceNode<PhysicalNode> node : SpaceNode.allNodes) {
+		for (ini.cx3d.spatialOrganization.interfaces.SpaceNode<PhysicalNode> node : SpaceNode.allNodes) {
 			if (tetrahedron.isFlat())
 				throw new RuntimeException("There is a flat tetrahedron left over!");
 			if (!tetrahedron.isAdjacentTo(node) && !tetrahedron.isFlat())
@@ -282,7 +280,7 @@ public class NewDelaunayTest {
 				if (repair) {
 					System.out.println("repairing by flipping...");
 					if (SpaceNode.allNodes != null) 
-					for (SpaceNode<PhysicalNode> node : SpaceNode.allNodes)
+					for (ini.cx3d.spatialOrganization.interfaces.SpaceNode<PhysicalNode> node : SpaceNode.allNodes)
 						node.restoreDelaunay();
 				}
 				throw new RuntimeException("Delaunay criterion is not fullfilled!");
@@ -342,7 +340,7 @@ public class NewDelaunayTest {
 						for (Tetrahedron<PhysicalNode> tetrahedron : Tetrahedron.allTetrahedra) {
 							tetrahedron.calculateCircumSphere();
 //							SpaceNode node = anyNode;
-							for (SpaceNode<PhysicalNode> node : SpaceNode.allNodes) {
+							for (ini.cx3d.spatialOrganization.interfaces.SpaceNode<PhysicalNode> node : SpaceNode.allNodes) {
 								if (tetrahedron.isFlat())
 									throw new RuntimeException("There is a flat tetrahedron left over!");
 								if (!tetrahedron.isAdjacentTo(node) && !tetrahedron.isFlat())
@@ -362,7 +360,7 @@ public class NewDelaunayTest {
 							System.out.println("Run number: "+runNumber);
 							if (repair) {
 								System.out.println("repairing by flipping...");
-								for (SpaceNode<PhysicalNode> node : SpaceNode.allNodes)
+								for (ini.cx3d.spatialOrganization.interfaces.SpaceNode<PhysicalNode> node : SpaceNode.allNodes)
 									node.restoreDelaunay();
 							}
 							throw new RuntimeException("Delaunay criterion is not fullfilled!");
@@ -519,7 +517,7 @@ public class NewDelaunayTest {
 			
 			// insert extra nodes:
 			System.out.println("insert nodes...");
-			SpaceNode<PhysicalNode>[] last100 = new SpaceNode[100];
+			ini.cx3d.spatialOrganization.interfaces.SpaceNode<PhysicalNode>[] last100 = new ini.cx3d.spatialOrganization.interfaces.SpaceNode[100];
 			for (int i = initialNodeCount; i < innerNodes.length; i++) {
 				if (i % 100 == 0)
 					System.out.print(".");
@@ -537,7 +535,7 @@ public class NewDelaunayTest {
 //					System.out.println("Now!");
 //				}
 //				Tetrahedron someTetrahedron = Tetrahedron.allTetrahedra.get(rand(1,Tetrahedron.allTetrahedra.size()));
-				SpaceNode<PhysicalNode> closest = null;
+				ini.cx3d.spatialOrganization.interfaces.SpaceNode<PhysicalNode> closest = null;
 				double minDistance = Double.MAX_VALUE;
 				for (int j = i-100; j < i; j++) {
 					if (j >= 0) {
@@ -570,7 +568,7 @@ public class NewDelaunayTest {
 			try {
 			boolean done = false;
 			while (!done) {
-				SpaceNode<PhysicalNode> anyNode = innerNodes[rand(0,innerNodes.length)];
+				ini.cx3d.spatialOrganization.interfaces.SpaceNode<PhysicalNode> anyNode = innerNodes[rand(0,innerNodes.length)];
 	//			System.out.println("\nmoving point "+anyNode+" a little bit...");
 				double[] delta = new double[3];
 				delta[rand(0,3)] = rand(-1,2);
@@ -620,7 +618,7 @@ public class NewDelaunayTest {
 								tetrahedron.calculateCircumSphere();
 	//							SpaceNode node = anyNode;
 								if (SpaceNode.allNodes != null) 
-								for (SpaceNode<PhysicalNode> node : SpaceNode.allNodes) {
+								for (ini.cx3d.spatialOrganization.interfaces.SpaceNode<PhysicalNode> node : SpaceNode.allNodes) {
 									if (tetrahedron.isFlat())
 										throw new RuntimeException("There is a flat tetrahedron left over!");
 									if (!tetrahedron.isAdjacentTo(node) && !tetrahedron.isFlat())
@@ -638,7 +636,7 @@ public class NewDelaunayTest {
 							if (problems) {
 								done = true;
 								System.out.println("Run number: "+runNumber);
-								for (SpaceNode<PhysicalNode> node : SpaceNode.allNodes)
+								for (ini.cx3d.spatialOrganization.interfaces.SpaceNode<PhysicalNode> node : SpaceNode.allNodes)
 									node.restoreDelaunay();
 								throw new RuntimeException("Delaunay criterion is not fullfilled!");
 							}

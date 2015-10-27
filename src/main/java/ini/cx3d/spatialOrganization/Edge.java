@@ -53,7 +53,7 @@ public class Edge<T> extends EdgeT_PhysicalNode implements ini.cx3d.spatialOrgan
 	/**
 	 * The two endpoints of this edge.
 	 */
-	private SpaceNode<T> a, b;
+	private ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> a, b;
 
 	/**
 	 * A list of all tetrahedra that are adjacent to this edge.
@@ -70,7 +70,7 @@ public class Edge<T> extends EdgeT_PhysicalNode implements ini.cx3d.spatialOrgan
 	 * @param a The first endpoint of the new edge.
 	 * @param b The second endpoint of the new edge.
 	 */
-	public Edge(SpaceNode a, SpaceNode b) {
+	public Edge(ini.cx3d.spatialOrganization.interfaces.SpaceNode a, ini.cx3d.spatialOrganization.interfaces.SpaceNode b) {
 		registerJavaObject(this);
 		this.a = a;
 		this.b = b;
@@ -85,7 +85,7 @@ public class Edge<T> extends EdgeT_PhysicalNode implements ini.cx3d.spatialOrgan
 	 * {@inheritDoc}
 	 */
 	@Override
-	public SpaceNode getOpposite(SpaceNode comingFrom) {
+	public ini.cx3d.spatialOrganization.interfaces.SpaceNode getOpposite(ini.cx3d.spatialOrganization.interfaces.SpaceNode comingFrom) {
 		if (Objects.equals(comingFrom, a)) return b;
 		else if (Objects.equals(comingFrom, b)) return a;
 		else throw new RuntimeException("The edge "+this+" is not adjacent to the node "+comingFrom);
@@ -167,7 +167,7 @@ public class Edge<T> extends EdgeT_PhysicalNode implements ini.cx3d.spatialOrgan
 	 * @param b The second node.
 	 * @return <code>true</code>, if this edge connects <code>a</code> and <code>b</code>.
 	 */
-	public boolean equals(SpaceNode a, SpaceNode b) {
+	public boolean equals(ini.cx3d.spatialOrganization.interfaces.SpaceNode a, ini.cx3d.spatialOrganization.interfaces.SpaceNode b) {
 		return (Objects.equals(this.a, a) && Objects.equals(this.b, b)) || (Objects.equals(this.b, a) && Objects.equals(this.a, b));
 	}
 

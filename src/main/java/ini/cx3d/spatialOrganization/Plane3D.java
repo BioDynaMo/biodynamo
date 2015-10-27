@@ -22,9 +22,9 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 package ini.cx3d.spatialOrganization;
 
 import ini.cx3d.spatialOrganization.factory.ExactVectorFactory;
-import ini.cx3d.spatialOrganization.interfaces.ExactVector;
-import ini.cx3d.spatialOrganization.interfaces.Rational;
+import ini.cx3d.spatialOrganization.interfaces.*;
 import ini.cx3d.spatialOrganization.factory.RationalFactory;
+import ini.cx3d.spatialOrganization.interfaces.ExactVector;
 import ini.cx3d.swig.spatialOrganization.Triangle3DT_PhysicalNode;
 
 import java.util.Objects;
@@ -117,7 +117,7 @@ public class Plane3D<T> extends Triangle3DT_PhysicalNode implements ini.cx3d.spa
 	 * @param nonUsedNode The node in <code>nodes</code> which will not become part of the newly created plane.
 	 * @param normalize Defines whether or not the normal vector of this plane should be normalized or not.
 	 */
-	public Plane3D(SpaceNode<T>[] nodes, SpaceNode<T> nonUsedNode, boolean normalize) {
+	public Plane3D(ini.cx3d.spatialOrganization.interfaces.SpaceNode<T>[] nodes, ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> nonUsedNode, boolean normalize) {
 		int first = (Objects.equals(nodes[0], nonUsedNode))?1:0;
 		initPlane(
 				subtract(
@@ -142,7 +142,7 @@ public class Plane3D<T> extends Triangle3DT_PhysicalNode implements ini.cx3d.spa
 	 * create the plane. <code>nonUsedNode</code> defines, which node will not be upublicsed.
 	 * @param nonUsedNode The node in <code>nodes</code> which will not become part of the newly created plane.
 	 */
-	public Plane3D(SpaceNode<T>[] nodes, SpaceNode<T> nonUsedNode) {
+	public Plane3D(ini.cx3d.spatialOrganization.interfaces.SpaceNode<T>[] nodes, ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> nonUsedNode) {
 		this(nodes,nonUsedNode,NORMALIZE);
 	}
 
@@ -153,7 +153,7 @@ public class Plane3D<T> extends Triangle3DT_PhysicalNode implements ini.cx3d.spa
 	 * <code>tetra</code> will be used for the new plane/ 
 	 * @param nonUsedNode The node in <code>nodes</code> which will not become part of the newly created plane.
 	 */
-	public Plane3D(Tetrahedron<T> tetra, SpaceNode<T> nonUsedNode) {
+	public Plane3D(Tetrahedron<T> tetra, ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> nonUsedNode) {
 		this(tetra.getAdjacentNodes(),nonUsedNode);
 	}
 	

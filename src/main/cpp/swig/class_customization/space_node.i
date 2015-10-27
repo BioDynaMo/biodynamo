@@ -17,7 +17,7 @@
 
 %define %SpaceNode_cx3d_shared_ptr()
   %cx3d_shared_ptr(SpaceNodeT_PhysicalNode,
-                   ini/cx3d/spatialOrganization/SpaceNode,
+                   ini/cx3d/spatialOrganization/interfaces/SpaceNode,
                    cx3d::spatial_organization::SpaceNode<cx3d::PhysicalNode>);
 %enddef
 
@@ -25,16 +25,16 @@
   %java_defined_class(cx3d::spatial_organization::SpaceNode<cx3d::PhysicalNode>,
                       SpaceNodeT_PhysicalNode,
                       SpaceNode,
-                      ini.cx3d.spatialOrganization.SpaceNode,
-                      ini/cx3d/spatialOrganization/SpaceNode);
+                      ini.cx3d.spatialOrganization.interfaces.SpaceNode,
+                      ini/cx3d/spatialOrganization/interfaces/SpaceNode);
 %enddef
 
 %define %SpaceNode_stdarray_array_marshalling(SWIG_MODULE, SIZE)
   %stdarray_array_marshalling(SWIG_MODULE,
                               std::shared_ptr<cx3d::spatial_organization::SpaceNode<cx3d::PhysicalNode> >,
                               shared_ptr_SpaceNodeT_PhysicalNode_##SIZE,
-                              ini.cx3d.spatialOrganization.SpaceNode,
-                              Lini/cx3d/spatialOrganization/SpaceNode;, SIZE);
+                              ini.cx3d.spatialOrganization.interfaces.SpaceNode,
+                              Lini/cx3d/spatialOrganization/interfaces/SpaceNode;, SIZE);
 %enddef
 
 /**

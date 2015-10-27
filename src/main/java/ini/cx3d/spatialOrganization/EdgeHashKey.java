@@ -47,7 +47,7 @@ public class EdgeHashKey<T> extends EdgeHashKeyT_PhysicalNode implements ini.cx3
 	/**
 	 * The endpoints of the edge for which a hash value should be calculated.
 	 */
-	SpaceNode<T> a, b;
+	ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> a, b;
 	
 	/**
 	 * The vector connecting the positions of <code>a</code> and <code>b</code>.
@@ -73,8 +73,8 @@ public class EdgeHashKey<T> extends EdgeHashKeyT_PhysicalNode implements ini.cx3
 	 * @param b The second enpoint of the represented edge.
 	 * @param oppositeNode A node on the non-open side of this edge.
 	 */
-	public EdgeHashKey(SpaceNode<T> a, SpaceNode<T> b,
-			SpaceNode<T> oppositeNode) {
+	public EdgeHashKey(ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> a, ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> b,
+			ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> oppositeNode) {
 		registerJavaObject(this);
 		this.a = a;
 		this.b = b;
@@ -121,12 +121,12 @@ public class EdgeHashKey<T> extends EdgeHashKeyT_PhysicalNode implements ini.cx3
 	}
 
 	@Override
-	public SpaceNode<T> getEndpointA() {
+	public ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> getEndpointA() {
 		return a;
 	}
 
 	@Override
-	public SpaceNode<T> getEndpointB() {
+	public ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> getEndpointB() {
 		return b;
 	}
 
@@ -169,7 +169,7 @@ public class EdgeHashKey<T> extends EdgeHashKeyT_PhysicalNode implements ini.cx3
 	 * @return The incident node opposite to <code>node</code>.
 	 */
 	@Override
-	public SpaceNode<T> oppositeNode(SpaceNode node) {
+	public ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> oppositeNode(ini.cx3d.spatialOrganization.interfaces.SpaceNode node) {
 		if (Objects.equals(a, node))
 			return b;
 		else

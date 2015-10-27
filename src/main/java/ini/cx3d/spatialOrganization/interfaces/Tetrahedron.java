@@ -1,7 +1,6 @@
 package ini.cx3d.spatialOrganization.interfaces;
 
 import ini.cx3d.spatialOrganization.PositionNotAllowedException;
-import ini.cx3d.spatialOrganization.SpaceNode;
 
 /**
  * Common interface for Tetrahedron implementations
@@ -143,7 +142,7 @@ public interface Tetrahedron<T> {
 	 *            The node of interest.
 	 * @return An index between 0 and 3.
 	 */
-	int getNodeNumber(SpaceNode<T> node);
+	int getNodeNumber(ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> node);
 
 	/**
 	 * Determines which index a given triangle has in this tetrahedron's list of
@@ -176,7 +175,7 @@ public interface Tetrahedron<T> {
 	 * @return A number between 0 and 5, giving the index of the edge of
 	 *         interest.
 	 */
-	int getEdgeNumber(SpaceNode a, SpaceNode b);
+	int getEdgeNumber(ini.cx3d.spatialOrganization.interfaces.SpaceNode a, ini.cx3d.spatialOrganization.interfaces.SpaceNode b);
 
 	/**
 	 * Determines the edge that connects two endpoints of this tetrahedron.
@@ -187,7 +186,7 @@ public interface Tetrahedron<T> {
 	 *            The second endpoint of the edge.
 	 * @return The edge connecting the two given endpoints.
 	 */
-	Edge getEdge(SpaceNode a, SpaceNode b);
+	Edge getEdge(ini.cx3d.spatialOrganization.interfaces.SpaceNode a, ini.cx3d.spatialOrganization.interfaces.SpaceNode b);
 
 	/**
 	 * Returns the incident triangle opposite to a given endpoint of this
@@ -198,7 +197,7 @@ public interface Tetrahedron<T> {
 	 * @return A reference to the triangle that lies opposite to
 	 *         <code>node</code>.
 	 */
-	Triangle3D<T> getOppositeTriangle(SpaceNode node);
+	Triangle3D<T> getOppositeTriangle(ini.cx3d.spatialOrganization.interfaces.SpaceNode node);
 
 	/**
 	 * Returns the incident node opposite to a given triangle which is incident
@@ -305,7 +304,7 @@ public interface Tetrahedron<T> {
 	 * @param node The node of interest.
 	 * @return <code>true</code>, if the node is an endpoint.
 	 */
-	boolean isAdjacentTo(SpaceNode node);
+	boolean isAdjacentTo(ini.cx3d.spatialOrganization.interfaces.SpaceNode node);
 
 	/**
 	 * Walks toward a specified point. If the point lies inside this
@@ -350,7 +349,7 @@ public interface Tetrahedron<T> {
 	/**
 	 * Given two nodes incident to this tetrahedron, this function returns
 	 * another endpoint. The returned endpoint is different from the result of
-	 * {@link #getSecondOtherNode(SpaceNode, SpaceNode)}.
+	 * {@link #getSecondOtherNode(ini.cx3d.spatialOrganization.interfaces.SpaceNode, ini.cx3d.spatialOrganization.interfaces.SpaceNode)}.
 	 *
 	 * @param nodeA
 	 *            A first incident node.
@@ -358,12 +357,12 @@ public interface Tetrahedron<T> {
 	 *            A second incident node.
 	 * @return A third incident node.
 	 */
-	SpaceNode<T> getFirstOtherNode(SpaceNode nodeA, SpaceNode nodeB);
+	SpaceNode<T> getFirstOtherNode(ini.cx3d.spatialOrganization.interfaces.SpaceNode nodeA, ini.cx3d.spatialOrganization.interfaces.SpaceNode nodeB);
 
 	/**
 	 * Given two nodes incident to this tetrahedron, this function returns
 	 * another endpoint. The returned endpoint is different from the result of
-	 * {@link #getFirstOtherNode(SpaceNode, SpaceNode)}.
+	 * {@link #getFirstOtherNode(ini.cx3d.spatialOrganization.interfaces.SpaceNode, ini.cx3d.spatialOrganization.interfaces.SpaceNode)}.
 	 *
 	 * @param nodeA
 	 *            A first incident node.
@@ -371,7 +370,7 @@ public interface Tetrahedron<T> {
 	 *            A second incident node.
 	 * @return A third incident node.
 	 */
-	SpaceNode<T> getSecondOtherNode(SpaceNode nodeA, SpaceNode nodeB);
+	SpaceNode<T> getSecondOtherNode(ini.cx3d.spatialOrganization.interfaces.SpaceNode nodeA, ini.cx3d.spatialOrganization.interfaces.SpaceNode nodeB);
 
 	/**
 	 * Used to calculate the properties of this tetrahedron's circumsphere after
@@ -386,5 +385,5 @@ public interface Tetrahedron<T> {
 	 * @param movedNode
 	 *            The node that was moved.
 	 */
-	void updateCirumSphereAfterNodeMovement(SpaceNode<T> movedNode);
+	void updateCirumSphereAfterNodeMovement(ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> movedNode);
 }

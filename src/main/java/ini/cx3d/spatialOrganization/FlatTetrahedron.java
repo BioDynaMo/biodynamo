@@ -22,6 +22,7 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 package ini.cx3d.spatialOrganization;
 
 import ini.cx3d.spatialOrganization.interfaces.Triangle3D;
+import ini.cx3d.spatialOrganization.interfaces.SpaceNode;
 
 /**
  * During the flip algorithm, it can happen that tetrahedra with no volume are created. 
@@ -86,7 +87,7 @@ public class FlatTetrahedron<T> extends Tetrahedron<T> {
 	 * informed about the movement of <code>movedNode</code>. 
 	 * @param movedNode The node that was moved.
 	 */
-	public void updateCirumSphereAfterNodeMovement(SpaceNode movedNode) {
+	public void updateCirumSphereAfterNodeMovement(ini.cx3d.spatialOrganization.interfaces.SpaceNode movedNode) {
 		for (int i = 0; i < 4; i++) {
 			if (adjacentNodes[i] != movedNode) 
 				adjacentTriangles[i].informAboutNodeMovement();

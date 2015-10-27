@@ -22,7 +22,6 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 package ini.cx3d.spatialOrganization;
 
 import java.util.Iterator;
-import java.util.Stack;
 
 /**
  * This class is a very simple implementation of {@link AbstractTriangulationNodeOrganizer}.
@@ -43,19 +42,19 @@ public class SimpleTriangulationNodeOrganizer<T> extends
 	public String toString() {
 		return "[" + treeHead + "]";
 	}
-	public void addNode(SpaceNode<T> node) {
+	public void addNode(ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> node) {
 		treeHead.insert(node);
 	}
 	       
-	public Iterator<SpaceNode<T>> getNodeIterator(
-			SpaceNode<T> referencePoint, DistanceReporter rep) {
+	public Iterator<ini.cx3d.spatialOrganization.interfaces.SpaceNode<T>> getNodeIterator(
+			ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> referencePoint, DistanceReporter rep) {
 		return treeHead.iterator();
 	}
 
-	public void removeNode(SpaceNode<T> node) {
+	public void removeNode(ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> node) {
 		treeHead.remove(node, null);
 	}
-	public SpaceNode<T> getFirstNode() {
+	public ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> getFirstNode() {
 		return treeHead.bigger.content;
 	}
 

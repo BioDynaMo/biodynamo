@@ -37,20 +37,20 @@ public abstract class AbstractTriangulationNodeOrganizer<T> {
 	public interface DistanceReporter {
 		public double getCurrentMinimalDistance();
 	}
-	public abstract Iterator<SpaceNode<T>> getNodeIterator(SpaceNode<T> referencePoint, DistanceReporter rep);
-	public Iterable<SpaceNode<T>> getNodes(final SpaceNode<T> referencePoint, final DistanceReporter rep) {
-		return new Iterable<SpaceNode<T>>() {
-			public Iterator<SpaceNode<T>> iterator() {
+	public abstract Iterator<ini.cx3d.spatialOrganization.interfaces.SpaceNode<T>> getNodeIterator(ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> referencePoint, DistanceReporter rep);
+	public Iterable<ini.cx3d.spatialOrganization.interfaces.SpaceNode<T>> getNodes(final ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> referencePoint, final DistanceReporter rep) {
+		return new Iterable<ini.cx3d.spatialOrganization.interfaces.SpaceNode<T>>() {
+			public Iterator<ini.cx3d.spatialOrganization.interfaces.SpaceNode<T>> iterator() {
 				return getNodeIterator(referencePoint, rep);
 			}
 		};
 	}
-	public abstract void removeNode(SpaceNode<T> node);
-	public abstract void addNode(SpaceNode<T> node);
+	public abstract void removeNode(ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> node);
+	public abstract void addNode(ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> node);
 	public void addTriangleNodes(Triangle3D<T> triangle) {
 		addNode(triangle.getNodes()[1]);
 		addNode(triangle.getNodes()[2]);
 		addNode(triangle.getNodes()[0]);
 	}
-	public abstract SpaceNode<T> getFirstNode();
+	public abstract ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> getFirstNode();
 }

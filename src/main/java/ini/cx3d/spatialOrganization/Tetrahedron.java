@@ -24,10 +24,11 @@ package ini.cx3d.spatialOrganization;
 import ini.cx3d.spatialOrganization.factory.ExactVectorFactory;
 import ini.cx3d.spatialOrganization.factory.TetrahedronFactory;
 import ini.cx3d.spatialOrganization.factory.Triangle3DFactory;
+import ini.cx3d.spatialOrganization.factory.RationalFactory;
 import ini.cx3d.spatialOrganization.interfaces.ExactVector;
 import ini.cx3d.spatialOrganization.interfaces.Rational;
 import ini.cx3d.spatialOrganization.interfaces.Edge;
-import ini.cx3d.spatialOrganization.factory.RationalFactory;
+import ini.cx3d.spatialOrganization.interfaces.SpaceNode;
 
 import ini.cx3d.spatialOrganization.interfaces.Triangle3D;
 import ini.cx3d.swig.spatialOrganization.TetrahedronT_PhysicalNode;
@@ -268,7 +269,7 @@ public class Tetrahedron<T> extends TetrahedronT_PhysicalNode implements ini.cx3
 					   OpenTriangleOrganizer org) {
 		registerJavaObject(this);
 		if (oneTriangle.isInfinite()) {
-			SpaceNode[] triangleNodes = oneTriangle.getNodes();
+			ini.cx3d.spatialOrganization.interfaces.SpaceNode[] triangleNodes = oneTriangle.getNodes();
 			oneTriangle = org.getTriangleWithoutRemoving(
 					(triangleNodes[0] == null) ? triangleNodes[1]
 							: triangleNodes[0],
@@ -589,7 +590,7 @@ public class Tetrahedron<T> extends TetrahedronT_PhysicalNode implements ini.cx3
 	private void changeVolume(double newVolume) {
 		double changePerNode = (newVolume - this.volume) / 4.0;
 		if (changePerNode != 0.0) {
-			for (SpaceNode<T> node : getAdjacentNodes())
+			for (ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> node : getAdjacentNodes())
 				node.changeVolume(changePerNode);
 		}
 		this.volume = newVolume;
@@ -974,7 +975,7 @@ public class Tetrahedron<T> extends TetrahedronT_PhysicalNode implements ini.cx3
 	 * @param movedNode
 	 *            The node that was moved.
 	 */
-	public void updateCirumSphereAfterNodeMovement(SpaceNode movedNode) {
+	public void updateCirumSphereAfterNodeMovement(ini.cx3d.spatialOrganization.interfaces.SpaceNode movedNode) {
 		int nodeNumber = getNodeNumber(movedNode);
 		if (!isInfinite()) {
 			// circumCenter =
@@ -1178,7 +1179,7 @@ public class Tetrahedron<T> extends TetrahedronT_PhysicalNode implements ini.cx3
 	 * @return An index between 0 and 3.
 	 */
 	@Override
-	public int getNodeNumber(SpaceNode node) {
+	public int getNodeNumber(ini.cx3d.spatialOrganization.interfaces.SpaceNode node) {
 		for (int i = 0; i < 4; i++) {
 			if (Objects.equals(adjacentNodes[i], node))
 				return i;
@@ -1246,7 +1247,7 @@ public class Tetrahedron<T> extends TetrahedronT_PhysicalNode implements ini.cx3
 	 *         interest.
 	 */
 	@Override
-	public int getEdgeNumber(SpaceNode a, SpaceNode b) {
+	public int getEdgeNumber(ini.cx3d.spatialOrganization.interfaces.SpaceNode a, ini.cx3d.spatialOrganization.interfaces.SpaceNode b) {
 		return getEdgeNumber(getNodeNumber(a), getNodeNumber(b));
 	}
 
@@ -1260,7 +1261,7 @@ public class Tetrahedron<T> extends TetrahedronT_PhysicalNode implements ini.cx3
 	 * @return The edge connecting the two given endpoints.
 	 */
 	@Override
-	public Edge getEdge(SpaceNode a, SpaceNode b) {
+	public Edge getEdge(ini.cx3d.spatialOrganization.interfaces.SpaceNode a, ini.cx3d.spatialOrganization.interfaces.SpaceNode b) {
 		return adjacentEdges[getEdgeNumber(a, b)];
 	}
 
@@ -1274,7 +1275,7 @@ public class Tetrahedron<T> extends TetrahedronT_PhysicalNode implements ini.cx3
 	 *         <code>node</code>.
 	 */
 	@Override
-	public Triangle3D<T> getOppositeTriangle(SpaceNode node) {
+	public Triangle3D<T> getOppositeTriangle(ini.cx3d.spatialOrganization.interfaces.SpaceNode node) {
 		for (int i = 0; i < 4; i++) {
 			if (Objects.equals(adjacentNodes[i], node))
 				return adjacentTriangles[i];
@@ -1353,7 +1354,7 @@ public class Tetrahedron<T> extends TetrahedronT_PhysicalNode implements ini.cx3
 	@Override
 	public Triangle3D<T>[] getTouchingTriangles(Triangle3D base) {
 		Triangle3D<T>[] ret = new Triangle3D[3];
-		SpaceNode[] triangleNodes = base.getNodes();
+		ini.cx3d.spatialOrganization.interfaces.SpaceNode[] triangleNodes = base.getNodes();
 		for (int i = 0; i < 3; i++)
 			ret[i] = getOppositeTriangle(triangleNodes[i]);
 		return ret;
@@ -1362,7 +1363,7 @@ public class Tetrahedron<T> extends TetrahedronT_PhysicalNode implements ini.cx3
 	/**
 	 * Given two nodes incident to this tetrahedron, this function returns
 	 * another endpoint. The returned endpoint is different from the result of
-	 * {@link #getSecondOtherNode(SpaceNode, SpaceNode)}.
+	 * {@link #getSecondOtherNode(ini.cx3d.spatialOrganization.interfaces.SpaceNode, ini.cx3d.spatialOrganization.interfaces.SpaceNode)}.
 	 *
 	 * @param nodeA
 	 *            A first incident node.
@@ -1370,7 +1371,7 @@ public class Tetrahedron<T> extends TetrahedronT_PhysicalNode implements ini.cx3
 	 *            A second incident node.
 	 * @return A third incident node.
 	 */
-	public SpaceNode<T> getFirstOtherNode(SpaceNode nodeA, SpaceNode nodeB) {
+	public SpaceNode<T> getFirstOtherNode(ini.cx3d.spatialOrganization.interfaces.SpaceNode nodeA, ini.cx3d.spatialOrganization.interfaces.SpaceNode nodeB) {
 		for (int i = 0; i < 4; i++) {
 			if (!Objects.equals(adjacentNodes[i], nodeA) && !Objects.equals(adjacentNodes[i], nodeB))
 				return adjacentNodes[i];
@@ -1381,7 +1382,7 @@ public class Tetrahedron<T> extends TetrahedronT_PhysicalNode implements ini.cx3
 	/**
 	 * Given two nodes incident to this tetrahedron, this function returns
 	 * another endpoint. The returned endpoint is different from the result of
-	 * {@link #getFirstOtherNode(SpaceNode, SpaceNode)}.
+	 * {@link #getFirstOtherNode(ini.cx3d.spatialOrganization.interfaces.SpaceNode, ini.cx3d.spatialOrganization.interfaces.SpaceNode)}.
 	 *
 	 * @param nodeA
 	 *            A first incident node.
@@ -1389,7 +1390,7 @@ public class Tetrahedron<T> extends TetrahedronT_PhysicalNode implements ini.cx3
 	 *            A second incident node.
 	 * @return A third incident node.
 	 */
-	public SpaceNode<T> getSecondOtherNode(SpaceNode nodeA, SpaceNode nodeB) {
+	public SpaceNode<T> getSecondOtherNode(ini.cx3d.spatialOrganization.interfaces.SpaceNode nodeA, ini.cx3d.spatialOrganization.interfaces.SpaceNode nodeB) {
 		for (int i = 3; i >= 0; i--) {
 			if (!Objects.equals(adjacentNodes[i], nodeA) && !Objects.equals(adjacentNodes[i], nodeB))
 				return adjacentNodes[i];
@@ -1791,7 +1792,7 @@ public class Tetrahedron<T> extends TetrahedronT_PhysicalNode implements ini.cx3
 	 * @return <code>true</code>, if the node is an endpoint.
 	 */
 	@Override
-	public boolean isAdjacentTo(SpaceNode node) {
+	public boolean isAdjacentTo(ini.cx3d.spatialOrganization.interfaces.SpaceNode node) {
 		return (adjacentNodes[0].equals(node)) || (adjacentNodes[1].equals(node))
 				|| (adjacentNodes[2].equals(node)) || (adjacentNodes[3].equals(node));
 	}
@@ -1844,7 +1845,7 @@ public class Tetrahedron<T> extends TetrahedronT_PhysicalNode implements ini.cx3
 	@Override
 	public void testPosition(double[] position)
 			throws PositionNotAllowedException {
-		for (SpaceNode<T> node : adjacentNodes) {
+		for (ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> node : adjacentNodes) {
 			if (node != null) {
 				double[] diff = subtract(position, node.getPosition());
 				if ((Math.abs(diff[0]) == 0) && (Math.abs(diff[1]) == 0)

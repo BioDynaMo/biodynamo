@@ -28,6 +28,7 @@ import ini.cx3d.spatialOrganization.interfaces.Triangle3D;
 import ini.cx3d.spatialOrganization.interfaces.EdgeHashKey;
 import ini.cx3d.spatialOrganization.interfaces.TriangleHashKey;
 import ini.cx3d.spatialOrganization.interfaces.Tetrahedron;
+import ini.cx3d.spatialOrganization.interfaces.SpaceNode;
 import ini.cx3d.swig.spatialOrganization.OpenTriangleOrganizerT_PhysicalNode;
 
 
@@ -238,8 +239,8 @@ public class OpenTriangleOrganizer<T> extends OpenTriangleOrganizerT_PhysicalNod
 	 * @param c The third node incident to the requested triangle.
 	 * @return A triangle with the requested three endpoints.
 	 */
-	public Triangle3D<T> getTriangle(SpaceNode a, SpaceNode b,
-			SpaceNode c) {
+	public Triangle3D<T> getTriangle(ini.cx3d.spatialOrganization.interfaces.SpaceNode a, ini.cx3d.spatialOrganization.interfaces.SpaceNode b,
+			ini.cx3d.spatialOrganization.interfaces.SpaceNode c) {
 		TriangleHashKey<T> key = triangleHashKeyFactory.create(a, b, c);
 		Triangle3D<T> ret = map.get(key);
 		if (ret == null) {
@@ -258,7 +259,7 @@ public class OpenTriangleOrganizer<T> extends OpenTriangleOrganizerT_PhysicalNod
 	/**
 	 * Searches for a triangle which is incident to three specified nodes.
 	 * If this triangle does not exist yet, it is created and added to the 
-	 * hashmap. In contrary to {@link #getTriangle(SpaceNode, SpaceNode, SpaceNode)},
+	 * hashmap. In contrary to {@link #getTriangle(ini.cx3d.spatialOrganization.interfaces.SpaceNode, ini.cx3d.spatialOrganization.interfaces.SpaceNode, ini.cx3d.spatialOrganization.interfaces.SpaceNode)},
 	 * the triangle is not removed from the hashmap if it was already part of the 
 	 * hashmap.
 	 * @param a The first node incident to the requested triangle.
@@ -267,7 +268,7 @@ public class OpenTriangleOrganizer<T> extends OpenTriangleOrganizerT_PhysicalNod
 	 * @return A triangle with the requested three endpoints.
 	 */
 	public Triangle3D<T> getTriangleWithoutRemoving(
-			SpaceNode a, SpaceNode b, SpaceNode c) {
+			ini.cx3d.spatialOrganization.interfaces.SpaceNode a, ini.cx3d.spatialOrganization.interfaces.SpaceNode b, ini.cx3d.spatialOrganization.interfaces.SpaceNode c) {
 		TriangleHashKey<T> key = triangleHashKeyFactory.create(a, b, c);
 		Triangle3D<T> ret = map.get(key);
 		if (ret == null) {
@@ -287,8 +288,8 @@ public class OpenTriangleOrganizer<T> extends OpenTriangleOrganizerT_PhysicalNod
 	 * @return <code>true</code>, if an open triangle with the desired endpoints
 	 * is already stored in this triangle organizer.
 	 */
-	protected boolean contains(SpaceNode<T> a, SpaceNode<T> b,
-			SpaceNode<T> c) {
+	protected boolean contains(ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> a, ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> b,
+			ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> c) {
 		TriangleHashKey<T> key = triangleHashKeyFactory.create(a, b, c);
 		return map.containsKey(key);
 	}
@@ -360,8 +361,8 @@ public class OpenTriangleOrganizer<T> extends OpenTriangleOrganizerT_PhysicalNod
 	 * @return An instance of <code>EdgeHashKey</code> which points to the specified
 	 * two endpoints.
 	 */
-	private EdgeHashKey<T> putEdgeOnMap(SpaceNode<T> a,
-			SpaceNode<T> b, SpaceNode<T> oppositeNode,
+	private EdgeHashKey<T> putEdgeOnMap(ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> a,
+			ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> b, ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> oppositeNode,
 			EdgeHashKey<T> oldOpenEdge,
 			HashMap<EdgeHashKey<T>, EdgeHashKey<T>> map) {
 		EdgeHashKey<T> hk1 = new EdgeHashKeyFactory<T>().create(a, b,
@@ -381,7 +382,7 @@ public class OpenTriangleOrganizer<T> extends OpenTriangleOrganizerT_PhysicalNod
 	 * @return The node with lowest id.
 	 */
 	private SpaceNode<T> findCenterNode(
-			LinkedList<SpaceNode<T>> nodes) {
+			LinkedList<ini.cx3d.spatialOrganization.interfaces.SpaceNode<T>> nodes) {
 		SpaceNode<T> centerNode = null;
 		int minID = Integer.MAX_VALUE;
 		for (SpaceNode<T> node : nodes) {
@@ -404,13 +405,13 @@ public class OpenTriangleOrganizer<T> extends OpenTriangleOrganizerT_PhysicalNod
 	 * @return An open edge on the convex hull of the triangulated circle.
 	 */
 	private EdgeHashKey<T> triangulateSortedCirclePoints(
-			LinkedList<SpaceNode<T>> sortedNodes,
-			SpaceNode<T> centerNode,
+			LinkedList<ini.cx3d.spatialOrganization.interfaces.SpaceNode<T>> sortedNodes,
+			ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> centerNode,
 			HashMap<EdgeHashKey<T>, EdgeHashKey<T>> map,
 			LinkedList<ini.cx3d.spatialOrganization.interfaces.Triangle3D<T>> triangleList) {
-		Iterator<SpaceNode<T>> it = sortedNodes.iterator();
-		SpaceNode<T> last = it.next();
-		SpaceNode<T> current = it.next();
+		Iterator<ini.cx3d.spatialOrganization.interfaces.SpaceNode<T>> it = sortedNodes.iterator();
+		ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> last = it.next();
+		ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> current = it.next();
 		// EdgeHashKey currentEdge = putEdgeOnMap(last, b, oppositeNode,
 		// oldOpenEdge, map)
 		EdgeHashKey<T> ret = null;
@@ -472,10 +473,10 @@ public class OpenTriangleOrganizer<T> extends OpenTriangleOrganizerT_PhysicalNod
 	 * @param sortedNodes A list of nodes that lie on one circle. This list is expected to be sorted in terms of angular 
 	 * neighborhoodship of nodes.
 	 */
-	private void removeForbiddenTriangles(LinkedList<SpaceNode<T>> sortedNodes) {
+	private void removeForbiddenTriangles(LinkedList<ini.cx3d.spatialOrganization.interfaces.SpaceNode<T>> sortedNodes) {
 		// Special treatment for situation with 4 nodes only:
 		if (sortedNodes.size() == 4) {
-			SpaceNode<T> center = sortedNodes.get(0), a = sortedNodes.get(1), b = sortedNodes.get(2), c = sortedNodes.get(3);
+			ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> center = sortedNodes.get(0), a = sortedNodes.get(1), b = sortedNodes.get(2), c = sortedNodes.get(3);
 			// in case there is only one valid triangle, remove the others:
 			if (contains(center, a, b)) {
 				if (!contains(center, b, c))
@@ -521,17 +522,17 @@ public class OpenTriangleOrganizer<T> extends OpenTriangleOrganizerT_PhysicalNod
 	 * @return A sorted list of nodes. The first node in this list will be the node with lowest ID, successive nodes are sorted
 	 * according to their occurrence on the circle.
 	 */
-	private LinkedList<SpaceNode<T>> sortCircleNodes(
-			LinkedList<SpaceNode<T>> nodes,
-			EdgeHashKey<T> startingEdge, SpaceNode<T> centerNode) {
-		LinkedList<SpaceNode<T>> sortedNodes = new LinkedList<SpaceNode<T>>();
-		SpaceNode<T> searchNode = null;
-		SpaceNode<T> lastSearchNode;
-		SpaceNode<T> removedNode1 = null, removedNode2 = null;
+	private LinkedList<ini.cx3d.spatialOrganization.interfaces.SpaceNode<T>> sortCircleNodes(
+			LinkedList<ini.cx3d.spatialOrganization.interfaces.SpaceNode<T>> nodes,
+			EdgeHashKey<T> startingEdge, ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> centerNode) {
+		LinkedList<ini.cx3d.spatialOrganization.interfaces.SpaceNode<T>> sortedNodes = new LinkedList<ini.cx3d.spatialOrganization.interfaces.SpaceNode<T>>();
+		ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> searchNode = null;
+		ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> lastSearchNode;
+		ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> removedNode1 = null, removedNode2 = null;
 		if (startingEdge == null) {
 			lastSearchNode = nodes.removeFirst();
 			double minDistance = Double.MAX_VALUE;
-			for (SpaceNode<T> node : nodes) {
+			for (ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> node : nodes) {
 				double[] dummy = subtract(lastSearchNode
 						.getPosition(), node.getPosition());
 				double dot = dot(dummy, dummy);
@@ -556,8 +557,8 @@ public class OpenTriangleOrganizer<T> extends OpenTriangleOrganizerT_PhysicalNod
 					searchNode.getPosition(),
 					lastSearchNode.getPosition()));
 			double biggestCosinus = -2.0;
-			SpaceNode<T> pickedNode = null;
-			for (SpaceNode<T> node : nodes) {
+			ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> pickedNode = null;
+			for (ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> node : nodes) {
 				double[] dummy = normalize(subtract(node
 						.getPosition(), searchNode
 						.getPosition()));
@@ -633,7 +634,7 @@ public class OpenTriangleOrganizer<T> extends OpenTriangleOrganizerT_PhysicalNod
 	 * @return An open edge on the convex hull of the triangulated circle.
 	 */
 	private EdgeHashKey<T> triangulatePointsOnCircle(
-			LinkedList<SpaceNode<T>> similarDistanceNodes,
+			LinkedList<ini.cx3d.spatialOrganization.interfaces.SpaceNode<T>> similarDistanceNodes,
 			EdgeHashKey<T> startingEdge,
 			HashMap<EdgeHashKey<T>, EdgeHashKey<T>> map,
 			LinkedList<ini.cx3d.spatialOrganization.interfaces.Triangle3D<T>> triangleList) {
@@ -643,12 +644,12 @@ public class OpenTriangleOrganizer<T> extends OpenTriangleOrganizerT_PhysicalNod
 		}
 		if (NewDelaunayTest.createOutput()) NewDelaunayTest.out("triangulating points on Circle: "
 						+ similarDistanceNodes);
-		SpaceNode<T> centerNode = findCenterNode(similarDistanceNodes);
+		ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> centerNode = findCenterNode(similarDistanceNodes);
 		if (startingEdge != null) {
 			similarDistanceNodes.removeFirst();
 			similarDistanceNodes.removeFirst();
 		}
-		LinkedList<SpaceNode<T>> sortedNodes = sortCircleNodes(
+		LinkedList<ini.cx3d.spatialOrganization.interfaces.SpaceNode<T>> sortedNodes = sortCircleNodes(
 				similarDistanceNodes, startingEdge,
 				centerNode);
 		removeForbiddenTriangles(sortedNodes);
@@ -663,11 +664,11 @@ public class OpenTriangleOrganizer<T> extends OpenTriangleOrganizerT_PhysicalNod
 	 * @param startingTriangle An initial triangle which will be part of the triangulation.
 	 */
 	private void triangulatePointsOnSphere(
-			LinkedList<SpaceNode<T>> nodes,
-			LinkedList<SpaceNode<T>> onCircleNodes,
+			LinkedList<ini.cx3d.spatialOrganization.interfaces.SpaceNode<T>> nodes,
+			LinkedList<ini.cx3d.spatialOrganization.interfaces.SpaceNode<T>> onCircleNodes,
 			Triangle3D<T> startingTriangle) {
 		LinkedList<ini.cx3d.spatialOrganization.interfaces.Triangle3D<T>> surfaceTriangles = new LinkedList<ini.cx3d.spatialOrganization.interfaces.Triangle3D<T>>();
-		SpaceNode[] startingTriangleNodes = startingTriangle.getNodes();
+		ini.cx3d.spatialOrganization.interfaces.SpaceNode[] startingTriangleNodes = startingTriangle.getNodes();
 		nodes.add(startingTriangleNodes[0]);
 		nodes.add(startingTriangleNodes[1]);
 		nodes.add(startingTriangleNodes[2]);
@@ -701,16 +702,16 @@ public class OpenTriangleOrganizer<T> extends OpenTriangleOrganizerT_PhysicalNod
 					onCircleNodes, null, map,
 					surfaceTriangles);
 		}
-		LinkedList<SpaceNode<T>> similarDistanceNodes = new LinkedList<SpaceNode<T>>();
+		LinkedList<ini.cx3d.spatialOrganization.interfaces.SpaceNode<T>> similarDistanceNodes = new LinkedList<ini.cx3d.spatialOrganization.interfaces.SpaceNode<T>>();
 		double upperBound, lowerBound;
 		while (!map.isEmpty()) {
-			SpaceNode<T> a = anOpenEdge.getEndpointA(), b = anOpenEdge.getEndpointB();
+			ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> a = anOpenEdge.getEndpointA(), b = anOpenEdge.getEndpointB();
 			double smallestCosinus = Double.MAX_VALUE;
 			upperBound = smallestCosinus;
 			lowerBound = smallestCosinus;
-			SpaceNode<T> pickedNode = null;
+			ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> pickedNode = null;
 			double tolerance = 0.000000001;
-			for (SpaceNode<T> currentNode : nodes) {
+			for (ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> currentNode : nodes) {
 				if (!Objects.equals(currentNode, anOpenEdge.getEndpointA())
 						&& !Objects.equals(currentNode, anOpenEdge.getEndpointB())) {
 					if (currentNode == null)
@@ -810,13 +811,13 @@ public class OpenTriangleOrganizer<T> extends OpenTriangleOrganizerT_PhysicalNod
 	private void createInitialTriangle(
 			AbstractTriangulationNodeOrganizer.DistanceReporter rep) {
 		// find a starting node:
-		SpaceNode<T> a = tno.getFirstNode();
+		ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> a = tno.getFirstNode();
 
 		double tolerance = 0.000000001;
 		// find the second node by minimizing the distance to the first node:
 		shortestDistance = Double.MAX_VALUE;
-		SpaceNode<T> b = null;
-		for (SpaceNode<T> dummy : tno.getNodes(a, rep)) {
+		ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> b = null;
+		for (ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> dummy : tno.getNodes(a, rep)) {
 			double[] vector = subtract(dummy.getPosition(),
 					a.getPosition());
 			double distance = dot(vector, vector);
@@ -855,10 +856,10 @@ public class OpenTriangleOrganizer<T> extends OpenTriangleOrganizerT_PhysicalNod
 		normals[0] = subtract(bv, av);
 		double[] offsets = new double[3];
 		offsets[0] = 0.5 * dot(normals[0], add(av, bv));
-		SpaceNode<T> c = null;
+		ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> c = null;
 		tolerance = dot(normals[0], normals[0]) * 0.000000001;
 
-		for (SpaceNode<T> dummy : tno.getNodes(a, rep)) {
+		for (ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> dummy : tno.getNodes(a, rep)) {
 			double[] dummyPos = dummy.getPosition();
 			double[] avToDummyPos = subtract(dummyPos, av);
 			normals[1] = crossProduct(normals[0],
@@ -950,8 +951,8 @@ public class OpenTriangleOrganizer<T> extends OpenTriangleOrganizerT_PhysicalNod
 		if (openTriangles.isEmpty())
 			createInitialTriangle(rep);
 		double upperBound = 0, lowerBound = 0;
-		LinkedList<SpaceNode<T>> similarDistanceNodes = new LinkedList<SpaceNode<T>>();
-		LinkedList<SpaceNode<T>> onCircleNodes = new LinkedList<SpaceNode<T>>();
+		LinkedList<ini.cx3d.spatialOrganization.interfaces.SpaceNode<T>> similarDistanceNodes = new LinkedList<ini.cx3d.spatialOrganization.interfaces.SpaceNode<T>>();
+		LinkedList<ini.cx3d.spatialOrganization.interfaces.SpaceNode<T>> onCircleNodes = new LinkedList<ini.cx3d.spatialOrganization.interfaces.SpaceNode<T>>();
 		Triangle3D<T> openTriangle = getAnOpenTriangle();
 		int securityCounter = 0;
 		while (openTriangle != null) {

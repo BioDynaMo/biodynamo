@@ -2,7 +2,7 @@ package ini.cx3d.spatialOrganization.debug;
 
 import ini.cx3d.spatialOrganization.OpenTriangleOrganizer;
 import ini.cx3d.spatialOrganization.PositionNotAllowedException;
-import ini.cx3d.spatialOrganization.SpaceNode;
+import ini.cx3d.spatialOrganization.interfaces.SpaceNode;
 import ini.cx3d.spatialOrganization.Tetrahedron;
 import ini.cx3d.spatialOrganization.interfaces.Edge;
 import ini.cx3d.spatialOrganization.interfaces.Triangle3D;
@@ -99,7 +99,7 @@ public class TetrahedronDebug<T> extends Tetrahedron<T>{
     }
 
     @Override
-    public void updateCirumSphereAfterNodeMovement(SpaceNode movedNode) {
+    public void updateCirumSphereAfterNodeMovement(ini.cx3d.spatialOrganization.interfaces.SpaceNode movedNode) {
         DebugUtil.logMethodCall("updateCirumSphereAfterNodeMovement", this, new Object[]{movedNode});
         super.updateCirumSphereAfterNodeMovement(movedNode);
         DebugUtil.logMethodReturnVoid("updateCirumSphereAfterNodeMovement", this);
@@ -150,7 +150,7 @@ public class TetrahedronDebug<T> extends Tetrahedron<T>{
     }
 
     @Override
-    public int getNodeNumber(SpaceNode node) {
+    public int getNodeNumber(ini.cx3d.spatialOrganization.interfaces.SpaceNode node) {
         DebugUtil.logMethodCall("getNodeNumber", this, new Object[]{node});
         int ret = super.getNodeNumber(node);
         DebugUtil.logMethodReturn("getNodeNumber", this, ret);
@@ -177,7 +177,7 @@ public class TetrahedronDebug<T> extends Tetrahedron<T>{
     }
 
     @Override
-    public int getEdgeNumber(SpaceNode a, SpaceNode b) {
+    public int getEdgeNumber(ini.cx3d.spatialOrganization.interfaces.SpaceNode a, ini.cx3d.spatialOrganization.interfaces.SpaceNode b) {
         DebugUtil.logMethodCall("getEdgeNumber", this, new Object[]{ a, b});
         int ret = super.getEdgeNumber(a, b);
         DebugUtil.logMethodReturn("getEdgeNumber", this, ret);
@@ -186,7 +186,7 @@ public class TetrahedronDebug<T> extends Tetrahedron<T>{
     }
 
     @Override
-    public Edge getEdge(SpaceNode a, SpaceNode b) {
+    public Edge getEdge(ini.cx3d.spatialOrganization.interfaces.SpaceNode a, ini.cx3d.spatialOrganization.interfaces.SpaceNode b) {
         DebugUtil.logMethodCall("getEdge", this, new Object[]{ a, b});
         Edge ret = super.getEdge(a, b);
         DebugUtil.logMethodReturn("getEdge", this, ret);
@@ -195,7 +195,7 @@ public class TetrahedronDebug<T> extends Tetrahedron<T>{
     }
 
     @Override
-    public Triangle3D getOppositeTriangle(SpaceNode node) {
+    public Triangle3D getOppositeTriangle(ini.cx3d.spatialOrganization.interfaces.SpaceNode node) {
         DebugUtil.logMethodCall("getOppositeTriangle", this, new Object[]{ node });
         Triangle3D ret = super.getOppositeTriangle(node);
         DebugUtil.logMethodReturn("getOppositeTriangle", this, ret);
@@ -241,7 +241,7 @@ public class TetrahedronDebug<T> extends Tetrahedron<T>{
     }
 
     @Override
-    public SpaceNode getFirstOtherNode(SpaceNode nodeA, SpaceNode nodeB) {
+    public SpaceNode getFirstOtherNode(ini.cx3d.spatialOrganization.interfaces.SpaceNode nodeA, ini.cx3d.spatialOrganization.interfaces.SpaceNode nodeB) {
         DebugUtil.logMethodCall("getFirstOtherNode", this, new Object[]{ nodeA, nodeB });
         SpaceNode ret = super.getFirstOtherNode(nodeA, nodeB);
         DebugUtil.logMethodReturn("getFirstOtherNode", this, ret);
@@ -250,7 +250,7 @@ public class TetrahedronDebug<T> extends Tetrahedron<T>{
     }
 
     @Override
-    public SpaceNode getSecondOtherNode(SpaceNode nodeA, SpaceNode nodeB) {
+    public SpaceNode getSecondOtherNode(ini.cx3d.spatialOrganization.interfaces.SpaceNode nodeA, ini.cx3d.spatialOrganization.interfaces.SpaceNode nodeB) {
         DebugUtil.logMethodCall("getSecondOtherNode", this, new Object[]{ nodeA, nodeB});
         SpaceNode ret = super.getSecondOtherNode(nodeA, nodeB);
         DebugUtil.logMethodReturn("getSecondOtherNode", this, ret);
@@ -304,7 +304,7 @@ public class TetrahedronDebug<T> extends Tetrahedron<T>{
     }
 
     @Override
-    public boolean isAdjacentTo(SpaceNode node) {
+    public boolean isAdjacentTo(ini.cx3d.spatialOrganization.interfaces.SpaceNode node) {
         DebugUtil.logMethodCall("isAdjacentTo", this, new Object[]{ node});
         boolean ret = super.isAdjacentTo(node);
         DebugUtil.logMethodReturn("isAdjacentTo", this, ret);

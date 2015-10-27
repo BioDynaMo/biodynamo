@@ -25,11 +25,11 @@ package ini.cx3d.spatialOrganization;
 import java.util.Iterator;
 import java.util.Stack;
 
-public class BinaryTreeElement<T> implements Iterable<SpaceNode<T>> {
-	SpaceNode<T> content;
+public class BinaryTreeElement<T> implements Iterable<ini.cx3d.spatialOrganization.interfaces.SpaceNode<T>> {
+	ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> content;
 	BinaryTreeElement<T> smaller, bigger;
 	int contentID;
-	public BinaryTreeElement(SpaceNode<T> content) {
+	public BinaryTreeElement(ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> content) {
 		this.content = content;
 		if (content != null)
 			contentID = getHash(content); 
@@ -53,10 +53,10 @@ public class BinaryTreeElement<T> implements Iterable<SpaceNode<T>> {
 		}
 		return ret;
 	}
-	private int getHash(SpaceNode<T> content) {
+	private int getHash(ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> content) {
 		return (int)(((long)content.getId()*(long)7481)%74317);
 	}
-	private boolean contains(int id, SpaceNode<T> node) {
+	private boolean contains(int id, ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> node) {
 		if (this.content.equals(node)) return true;
 		else {
 			if ((contentID >= id) && (smaller != null))
@@ -67,7 +67,7 @@ public class BinaryTreeElement<T> implements Iterable<SpaceNode<T>> {
 				return false;
 		}
 	}
-	public boolean contains(SpaceNode<T> content) {
+	public boolean contains(ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> content) {
 		return contains(getHash(content), content);
 	}
 	
@@ -82,7 +82,7 @@ public class BinaryTreeElement<T> implements Iterable<SpaceNode<T>> {
 //				return false;
 //		}
 //	}
-	public void insert(SpaceNode<T> content) {
+	public void insert(ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> content) {
 		if (content != null) {
 			insert(new BinaryTreeElement<T>(content));
 		}
@@ -127,7 +127,7 @@ public class BinaryTreeElement<T> implements Iterable<SpaceNode<T>> {
 		else if (bigger == oldEl)
 			bigger = newEl;
 	}
-	private void remove(int id, SpaceNode<T> node, BinaryTreeElement<T> dad) {
+	private void remove(int id, ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> node, BinaryTreeElement<T> dad) {
 		if ((this.contentID == id) && (this.content.equals(node))) {
 			if ((smaller == null) && (bigger == null))
 				dad.changeLink(this, null);
@@ -149,7 +149,7 @@ public class BinaryTreeElement<T> implements Iterable<SpaceNode<T>> {
 				bigger.remove(id, node, this);
 		}
 	}
-	public void remove(SpaceNode<T> content, BinaryTreeElement<T> dad) {
+	public void remove(ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> content, BinaryTreeElement<T> dad) {
 		remove(getHash(content), content ,dad);
 	}
 
@@ -175,7 +175,7 @@ public class BinaryTreeElement<T> implements Iterable<SpaceNode<T>> {
 //				bigger.remove(content,this);
 //		}
 //	}
-	public Iterator<SpaceNode<T>> iterator() {
+	public Iterator<ini.cx3d.spatialOrganization.interfaces.SpaceNode<T>> iterator() {
 		final Stack<BinaryTreeElement<T>> elementStack = new Stack<BinaryTreeElement<T>>();
 		BinaryTreeElement<T> dummy = this;
 		while (dummy != null) {
@@ -183,11 +183,11 @@ public class BinaryTreeElement<T> implements Iterable<SpaceNode<T>> {
 			dummy = dummy.smaller;
 		}
 		
-		return new Iterator<SpaceNode<T>>() {
+		return new Iterator<ini.cx3d.spatialOrganization.interfaces.SpaceNode<T>>() {
 			public boolean hasNext() {
 				return !elementStack.isEmpty();
 			}
-			public SpaceNode<T> next() {
+			public ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> next() {
 				BinaryTreeElement<T> dummy = elementStack.pop();
 				BinaryTreeElement<T> it = dummy.bigger;
 				while (it != null) {
@@ -204,20 +204,20 @@ public class BinaryTreeElement<T> implements Iterable<SpaceNode<T>> {
 	}
 	public static<T> BinaryTreeElement<T> generateTreeHead() {
 		return new BinaryTreeElement<T>(null) {
-			public boolean contains(SpaceNode<T> content) {
+			public boolean contains(ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> content) {
 				if (bigger != null)	return bigger.contains(content); else return false;
 			}
-			public void insert(SpaceNode<T> content) {
+			public void insert(ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> content) {
 				if (bigger != null) bigger.insert(content); else bigger = new BinaryTreeElement<T>(content);
 			}
-			public void remove(SpaceNode<T> content, BinaryTreeElement<T> dad) {
+			public void remove(ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> content, BinaryTreeElement<T> dad) {
 				if (bigger != null) bigger.remove(content, this);
 			}
-			public Iterator<SpaceNode<T>> iterator() {
+			public Iterator<ini.cx3d.spatialOrganization.interfaces.SpaceNode<T>> iterator() {
 				if (bigger != null) return bigger.iterator();
-				else return new Iterator<SpaceNode<T>>() {
+				else return new Iterator<ini.cx3d.spatialOrganization.interfaces.SpaceNode<T>>() {
 					public boolean hasNext() {	return false;	}
-					public SpaceNode<T> next() { return null;  }
+					public ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> next() { return null;  }
 					public void remove() {}
 				};
 			}

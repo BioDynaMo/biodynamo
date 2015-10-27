@@ -1,7 +1,5 @@
 package ini.cx3d.spatialOrganization.interfaces;
 
-import ini.cx3d.spatialOrganization.SpaceNode;
-
 /**
  * Common interface for EdgeHashKey implementations
  */
@@ -10,12 +8,12 @@ public interface EdgeHashKey<T> {
 	/**
 	 * @return endpoint A of this edge
 	 */
-	SpaceNode<T> getEndpointA();
+	ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> getEndpointA();
 
 	/**
 	 * @return endpoint A of this edge
 	 */
-	SpaceNode<T> getEndpointB();
+	ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> getEndpointB();
 
 	/**
 	 * computes the cosine between this edge to another point measured at the
@@ -31,5 +29,5 @@ public interface EdgeHashKey<T> {
 	 * @param node The given node.
 	 * @return The incident node opposite to <code>node</code>.
 	 */
-	SpaceNode<T> oppositeNode(SpaceNode<T> node);
+	ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> oppositeNode(ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> node);
 }

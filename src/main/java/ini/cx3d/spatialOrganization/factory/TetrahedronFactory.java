@@ -2,7 +2,7 @@ package ini.cx3d.spatialOrganization.factory;
 
 
 import ini.cx3d.spatialOrganization.OpenTriangleOrganizer;
-import ini.cx3d.spatialOrganization.SpaceNode;
+import ini.cx3d.spatialOrganization.interfaces.SpaceNode;
 import ini.cx3d.spatialOrganization.interfaces.Tetrahedron;
 import ini.cx3d.spatialOrganization.interfaces.Triangle3D;
 import ini.cx3d.swig.spatialOrganization.spatialOrganization;

@@ -28,7 +28,6 @@ import ini.cx3d.spatialOrganization.interfaces.Tetrahedron;
 import ini.cx3d.spatialOrganization.factory.RationalFactory;
 import ini.cx3d.spatialOrganization.factory.ExactVectorFactory;
 import ini.cx3d.spatialOrganization.factory.Triangle3DFactory;
-import ini.cx3d.swig.spatialOrganization.Triangle3DT_PhysicalNode;
 
 
 import java.util.Objects;
@@ -135,7 +134,7 @@ public class Triangle3D<T> extends Plane3D implements ini.cx3d.spatialOrganizati
 	 */
 	@Override
 	public boolean isSimilarTo(ini.cx3d.spatialOrganization.interfaces.Triangle3D otherTriangle) {
-		SpaceNode<T>[] otherNodes = otherTriangle.getNodes();
+		ini.cx3d.spatialOrganization.interfaces.SpaceNode<T>[] otherNodes = otherTriangle.getNodes();
 		return isAdjacentTo(otherNodes[0]) && isAdjacentTo(otherNodes[1])
 				&& isAdjacentTo(otherNodes[2]);
 	}
@@ -784,7 +783,7 @@ public class Triangle3D<T> extends Plane3D implements ini.cx3d.spatialOrganizati
 	 * @param node A node that might be incident to this triangle.
 	 * @return <code>true</code>, iff the node is incident to this triangle.
 	 */
-	public boolean isAdjacentTo(SpaceNode node) {
+	public boolean isAdjacentTo(ini.cx3d.spatialOrganization.interfaces.SpaceNode node) {
 		return (Objects.equals(this.nodes[0], node) || Objects.equals(this.nodes[1], node)
 				|| Objects.equals(this.nodes[2] , node));
 	}

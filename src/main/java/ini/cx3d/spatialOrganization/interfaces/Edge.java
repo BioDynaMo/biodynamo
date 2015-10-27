@@ -1,6 +1,5 @@
 package ini.cx3d.spatialOrganization.interfaces;
 
-import ini.cx3d.spatialOrganization.SpaceNode;
 import ini.cx3d.spatialOrganization.SpatialOrganizationEdge;
 import ini.cx3d.spatialOrganization.SpatialOrganizationNode;
 
@@ -13,7 +12,7 @@ public interface Edge<T> extends SpatialOrganizationEdge<T> {
 	/**
 	 * {@inheritDoc}
 	 */
-	SpatialOrganizationNode<T> getOpposite(SpaceNode<T> comingFrom);
+	SpatialOrganizationNode<T> getOpposite(ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> comingFrom);
 
 	/**
 	 * {@inheritDoc}
@@ -40,7 +39,7 @@ public interface Edge<T> extends SpatialOrganizationEdge<T> {
 	 */
 	String toString();
 
-	boolean equals(SpaceNode<T> a, SpaceNode<T> b);
+	boolean equals(ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> a, ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> b);
 
 	/**
 	 * Removes a tetrahedron from this edge's list of tetrahedra. If this edge is not incident to
