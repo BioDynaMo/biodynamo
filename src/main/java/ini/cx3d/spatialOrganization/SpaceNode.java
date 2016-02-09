@@ -106,7 +106,7 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNode implements /*ini.cx3d.
 	 * A list of listener objects that are called whenever this node is beeing
 	 * moved.
 	 */
-	private LinkedList<SpatialOrganizationNodeMovementListener<T>> listeners = null;
+	private AbstractSequentialList<SpatialOrganizationNodeMovementListener<T>> listeners = null;
 
 	/**
 	 * The coordinate of this SpaceNode.
@@ -275,7 +275,7 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNode implements /*ini.cx3d.
 	 * incident to this node.
 	 */
 	@Override
-	public Iterable<SpatialOrganizationEdge<T>> getEdges() {
+	public AbstractSequentialList<SpatialOrganizationEdge<T>> getEdges() {
 		return adjacentEdges;
 		// return new Iterable<SpatialOrganizationEdge<T>>() {
 		// public Iterator<SpatialOrganizationEdge<T>> iterator() {
@@ -357,8 +357,15 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNode implements /*ini.cx3d.
 	 * @see ini.cx3d.spatialOrganization.SpatialOrganizationNode#getNeighbors()
 	 */
 	@Override
-	public Iterable<T> getNeighbors() {
-		return wrapEdgeListIntoNeighborNodeIterator(adjacentEdges);
+	public AbstractSequentialList<T> getNeighbors() {
+//		return wrapEdgeListIntoNeighborNodeIterator(adjacentEdges);
+		// quick solution for type incompatibilities
+		AbstractSequentialList<T> result = new LinkedList<>();
+		for(T t : wrapEdgeListIntoNeighborNodeIterator(adjacentEdges)){
+			result.add(t);
+		}
+		return result;
+
 		// return new Iterable<T>() {
 		// public Iterator<T> iterator() {
 		// final ExtendedLinkedListElement<Edge<T>> last =
@@ -403,7 +410,7 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNode implements /*ini.cx3d.
 	 * @see ini.cx3d.spatialOrganization.SpatialOrganizationNode#getPermanentListOfNeighbors()
 	 */
 	@Override
-	public Iterable<T> getPermanentListOfNeighbors() {
+	public AbstractSequentialList<T> getPermanentListOfNeighbors() {
 		// return
 		// wrapEdgeListIntoNeighborNodeIterator(((LinkedList<SpatialOrganizationEdge<T>>)adjacentEdges.clone()));
 		LinkedList<T> ret = new LinkedList<T>();
@@ -543,7 +550,7 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNode implements /*ini.cx3d.
 	 */
 	@Override
 	public void setListenerList(
-			LinkedList<SpatialOrganizationNodeMovementListener<T>> listeners) {
+			AbstractSequentialList<SpatialOrganizationNodeMovementListener<T>> listeners) {
 		this.listeners = listeners;
 	}
 
@@ -558,7 +565,8 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNode implements /*ini.cx3d.
 		if (listeners == null)
 			listeners =
 					new LinkedList<SpatialOrganizationNodeMovementListener<T>>();
-		listeners.addLast(listener);
+//		listeners.addLast(listener);
+		listeners.add(listeners.size(), listener);
 	}
 
 	/**
@@ -1464,7 +1472,7 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNode implements /*ini.cx3d.
 	 * @return A list of edges.
 	 */
 	@Override
-	public LinkedList<SpatialOrganizationEdge<T>> getAdjacentEdges() {
+	public AbstractSequentialList<SpatialOrganizationEdge<T>> getAdjacentEdges() {
 		return adjacentEdges;
 	}
 
