@@ -39,6 +39,7 @@ import ini.cx3d.physics.PhysicalObject;
 import ini.cx3d.simulations.ECM;
 import ini.cx3d.simulations.Scheduler;
 import ini.cx3d.swig.NativeStringBuilder;
+import ini.cx3d.swig.spatialOrganization.spatialOrganizationJNI;
 import ini.cx3d.utilities.Matrix;
 
 
@@ -80,7 +81,6 @@ public class IntracellularDiffusionTest extends BaseSimulationTest{
 			Scheduler.simulateOneStep();
 		}
 		ini.cx3d.utilities.SystemUtilities.tac();
-		
 		
 	}
 

@@ -25,6 +25,8 @@ import static ini.cx3d.utilities.Matrix.add;
 import ini.cx3d.simulations.ECM;
 import ini.cx3d.spatialOrganization.SpatialOrganizationNode;
 import ini.cx3d.spatialOrganization.SpatialOrganizationNodeMovementListener;
+import ini.cx3d.spatialOrganization.interfaces.SpaceNode;
+import ini.cx3d.swig.spatialOrganization.SpatialOrganizationNodeMovementListenerT_PhysicalNode;
 
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -39,7 +41,7 @@ import java.util.Vector;
  * 
  * @author fredericzubler
  */
-public class PhysicalNodeMovementListener implements SpatialOrganizationNodeMovementListener<PhysicalNode> {
+public class PhysicalNodeMovementListener extends SpatialOrganizationNodeMovementListenerT_PhysicalNode {//implements SpatialOrganizationNodeMovementListener<PhysicalNode>  {
 
 	// flag we put into each neighboring PhysicalNode before the move
 	// so we recognize a new neighbor after the movement has occurred.
@@ -61,9 +63,12 @@ public class PhysicalNodeMovementListener implements SpatialOrganizationNodeMove
 	// (Implementation note : the neighbors after the movement are only known after
 	// the move, i.e. when the second method is called).
 	//----------------------------------------------------------------------
+	public PhysicalNodeMovementListener(){
+		registerJavaObject(this);
+	}
 
-	public void nodeAboutToMove(SpatialOrganizationNode<PhysicalNode> n, double[] planedMovement) {
-		PhysicalNode pn = n.getUserObject();
+	public void nodeAboutToMove(SpaceNode n, double[] planedMovement) {
+		PhysicalNode pn = (PhysicalNode) n.getUserObject();
 		neighborsBefore = n.getPermanentListOfNeighbors();
 		Hashtable<String, Substance> extracellularSubstancesInPn = pn.getExtracellularSubstances();
 		substancesInN = new Substance[extracellularSubstancesInPn.size()];
@@ -114,8 +119,8 @@ public class PhysicalNodeMovementListener implements SpatialOrganizationNodeMove
 
 	}
 
-	public void nodeMoved(SpatialOrganizationNode<PhysicalNode> n) {
-		PhysicalNode pn = n.getUserObject();
+	public void nodeMoved(SpaceNode n) {
+		PhysicalNode pn = (PhysicalNode) n.getUserObject();
 		Iterable<PhysicalNode> neighborsAfter = n.getNeighbors();
 		Vector<PhysicalNode> newNeighbors = new Vector<PhysicalNode>();
 
@@ -205,33 +210,37 @@ public class PhysicalNodeMovementListener implements SpatialOrganizationNodeMove
 	// by the ratio of the two sums.
 	//----------------------------------------------------------------------
 
-	public void nodeAboutToBeAdded(SpatialOrganizationNode<PhysicalNode> n, double[] planedPosition, Object[] vertices) {
+	public void nodeAboutToBeAdded(SpaceNode n, double[] planedPosition, Object[] vertices) {
 		// (Reminder : vertices is an array of the userObject in the tetrahedron inside which the new point lies. If
 		// no tetrahedron is found around the location, vertices is null).
 		// 1) Computing the concentration for new inserted point
-		PhysicalNode pn = n.getUserObject();
-		if(vertices != null){
-			PhysicalNode pnn = (PhysicalNode)vertices[0]; // a future neighbor of the PhysicalNode about to be inserted
-			// (we have to rely on it to know the chemicals present )
-			double[] barycentricCoord = PhysicalNode.getBarycentricCoordinates(planedPosition, vertices);
+		try {
+			PhysicalNode pn = (PhysicalNode) n.getUserObject();
+			if (vertices != null && vertices[0] != null) { // fixme hack:  && vertices[0] != null
+				PhysicalNode pnn = (PhysicalNode) vertices[0]; // a future neighbor of the PhysicalNode about to be inserted
+				// (we have to rely on it to know the chemicals present )
+				double[] barycentricCoord = PhysicalNode.getBarycentricCoordinates(planedPosition, vertices);
 
-			for (Substance s : pnn.getExtracellularSubstances().values() ) {
-				String name = s.getId();
-				double newConcentration = 0;
-				for (int j = 0; j < 4; j++) {
-					newConcentration += ((PhysicalNode)vertices[j]).getExtracellularConcentration(name)*barycentricCoord[j];
+				for (Substance s : pnn.getExtracellularSubstances().values()) {
+					String name = s.getId();
+					double newConcentration = 0;
+					for (int j = 0; j < 4; j++) {
+						newConcentration += ((PhysicalNode) vertices[j]).getExtracellularConcentration(name) * barycentricCoord[j];
+					}
+					Substance newSubstance = new Substance(s);
+					newSubstance.setConcentration(newConcentration);
+					pn.getExtracellularSubstances().put(name, newSubstance);
 				}
-				Substance newSubstance = new Substance(s);
-				newSubstance.setConcentration(newConcentration);
-				pn.getExtracellularSubstances().put(name, newSubstance);
 			}
+		}catch(Exception e){
+			e.printStackTrace();
 		}
 	}
 
 
-	public void nodeAdded(SpatialOrganizationNode<PhysicalNode> n) {
+	public void nodeAdded(SpaceNode n) {
 		// 2) sum the quantity before update 
-		PhysicalNode pn = n.getUserObject(); 
+		PhysicalNode pn = (PhysicalNode) n.getUserObject();
 		// since there might be no substances yet in the point 
 		// pn, we take a neighbor as furnishing the templates
 		Iterable<PhysicalNode> neighbors = n.getPermanentListOfNeighbors();
@@ -264,10 +273,11 @@ public class PhysicalNodeMovementListener implements SpatialOrganizationNodeMove
 			}
 
 			// 3.b) in the  neighbors
-			for (PhysicalNode nn : n.getNeighbors()) {
-				ss = nn.getExtracellularSubstances().get(s.getId());
+			for (Object nn : n.getNeighbors()) {
+				PhysicalNode pn1 = (PhysicalNode) nn;
+				ss = pn1.getExtracellularSubstances().get(s.getId());
 				if(ss!=null){
-					ss.updateQuantityBasedOnConcentration(nn.getSoNode().getVolume());  
+					ss.updateQuantityBasedOnConcentration(pn1.getSoNode().getVolume());
 					quantityAfter += ss.getQuantity();
 				}
 			}
@@ -289,8 +299,8 @@ public class PhysicalNodeMovementListener implements SpatialOrganizationNodeMove
 				ss.multiplyQuantityAndConcentrationBy(q[i]);
 			}
 			// 5.b) in the neighbors
-			for (PhysicalNode nn : n.getNeighbors()) {
-				ss = nn.getExtracellularSubstances().get(s.getId());
+			for (Object nn : n.getNeighbors()) {
+				ss = ((PhysicalNode) nn).getExtracellularSubstances().get(s.getId());
 				if(ss!=null){
 					ss.multiplyQuantityAndConcentrationBy(q[i]);
 				}
@@ -308,29 +318,33 @@ public class PhysicalNodeMovementListener implements SpatialOrganizationNodeMove
 	// by the ratio of the two sums.
 	//----------------------------------------------------------------------
 
-	public void nodeAboutToBeRemoved(SpatialOrganizationNode<PhysicalNode> n) {
-		PhysicalNode pn = n.getUserObject();
-		neighborsBefore = n.getPermanentListOfNeighbors();
-		substancesInN = new Substance[pn.getExtracellularSubstances().size()];
-		q = new double[substancesInN.length];
-		// 1) Quantities summation in pn & pn's neighbors (before pn is removed):
-		// (for all extracellularSubstances in the moving node)
-		int i = 0;
-		for (Substance s : pn.getExtracellularSubstances().values() ) {
-			q[i] = s.getQuantity();
-			substancesInN[i] = s;
-			for (PhysicalNode nn : neighborsBefore) {
-				Substance ss = nn.getExtracellularSubstances().get(s.getId());
-				if(ss!=null){
-					q[i] += ss.getQuantity();
+	public void nodeAboutToBeRemoved(SpaceNode n) {
+		try {
+			PhysicalNode pn = (PhysicalNode) n.getUserObject();
+			neighborsBefore = n.getPermanentListOfNeighbors();
+			substancesInN = new Substance[pn.getExtracellularSubstances().size()];
+			q = new double[substancesInN.length];
+			// 1) Quantities summation in pn & pn's neighbors (before pn is removed):
+			// (for all extracellularSubstances in the moving node)
+			int i = 0;
+			for (Substance s : pn.getExtracellularSubstances().values()) {
+				q[i] = s.getQuantity();
+				substancesInN[i] = s;
+				for (PhysicalNode nn : neighborsBefore) {
+					Substance ss = nn.getExtracellularSubstances().get(s.getId());
+					if (ss != null) {
+						q[i] += ss.getQuantity();
+					}
 				}
+				i++;
 			}
-			i++;
+		} catch(Exception e){
+			e.printStackTrace();
 		}
 		// (Note : since the point is removed, we don't have to interpolate anything...)
 	}
 
-	public void nodeRemoved(SpatialOrganizationNode<PhysicalNode> n) {
+	public void nodeRemoved(SpaceNode n) {
 		// For all extracellularSubstances:		
 		for (int i = 0; i < substancesInN.length; i++) {	
 
@@ -363,6 +377,8 @@ public class PhysicalNodeMovementListener implements SpatialOrganizationNodeMove
 		}
 	}
 
-
+	public String toString(){
+		return "PhyscicalNodeMovementListener";
+	}
 
 }

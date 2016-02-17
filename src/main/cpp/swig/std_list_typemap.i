@@ -192,7 +192,9 @@ template<class T> class list {
 
   %typemap(javadirectorout) std::list<CPP_TYPE> "ListT_"#TEMPLATE_SUFFIX".getCPtr((ListT_"#TEMPLATE_SUFFIX") $javacall)";
 
-  %typemap(directorin, descriptor="Ljava/util/AbstractSequentialList;") std::list<CPP_TYPE>, const std::list<CPP_TYPE> ""
+  %typemap(directorin, descriptor="Ljava/util/AbstractSequentialList;") std::list<CPP_TYPE>, std::list<CPP_TYPE>&, const std::list<CPP_TYPE>& %{
+      *(std::list<CPP_TYPE> **)&j$1 = (std::list<CPP_TYPE>*) &$1;
+%}
 
   %template(ListT_ ##TEMPLATE_SUFFIX) std::list<CPP_TYPE>;
   %template(ListIteratorCppT_ ##TEMPLATE_SUFFIX) cx3d::ListIteratorCpp<CPP_TYPE>;

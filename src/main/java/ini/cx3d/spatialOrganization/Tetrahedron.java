@@ -245,7 +245,7 @@ public class Tetrahedron<T> extends TetrahedronT_PhysicalNode implements ini.cx3
 		ini.cx3d.spatialOrganization.interfaces.Tetrahedron<T> ret = tetrahedronFactory.create(triangleA, triangleB,
 				triangleC, triangleD, a, b, c, d);
 		OpenTriangleOrganizer oto = OpenTriangleOrganizer
-				.createSimpleOpenTriangleOrganizer();
+				.createSimpleOpenTriangleOrganizer_java();
 		tetrahedronFactory.create(triangleA, null, oto);
 		tetrahedronFactory.create(triangleB, null, oto);
 		tetrahedronFactory.create(triangleC, null, oto);

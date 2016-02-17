@@ -170,7 +170,9 @@ namespace std {
   %typemap(directorin, descriptor="["#JAVA_ARR_TYPE_DESCRIPTOR) std::array<CPP_TYPE, SIZE>,
                    std::array<CPP_TYPE, SIZE>*,
                    std::array<CPP_TYPE, SIZE>&,
-                   std::array<CPP_TYPE, SIZE>*& "";
+                   std::array<CPP_TYPE, SIZE>*& %{
+    *(std::array<CPP_TYPE, SIZE> **)&j$1 = (std::array<CPP_TYPE, SIZE>*) &$1;
+  %}
 
   %typemap(directorout, descriptor="["#JAVA_ARR_TYPE_DESCRIPTOR) std::array<CPP_TYPE, SIZE>,
                                                                  std::array<CPP_TYPE, SIZE>& %{

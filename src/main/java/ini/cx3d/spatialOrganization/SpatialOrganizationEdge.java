@@ -42,7 +42,7 @@ public interface SpatialOrganizationEdge<T> {
 	 * @return The other endpoint of this edge. Throws a RuntimeException if the node <code>first</code>
 	 * is not incident to this edge. 
 	 */
-	public SpatialOrganizationNode<T> getOpposite(ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> first);
+	public SpatialOrganizationNode<T> getOpposite(ini.cx3d.spatialOrganization.interfaces.SpaceNode first);
 	
 	/**
 	 * @return One of the two user objects associated to the endpoints of this edge. 

@@ -64,6 +64,15 @@ public abstract class StringUtilities {
 
 	/**
 	 * helps to write toString methods that all behave in a uniform way
+	 * @param i
+	 * @return
+	 */
+	public static String toStr(int i){
+		return Integer.toString(i);
+	}
+
+	/**
+	 * helps to write toString methods that all behave in a uniform way
 	 * @param arr
 	 * @return
 	 */
@@ -122,7 +131,7 @@ public abstract class StringUtilities {
 	 */
 	public static <T> String toStr(AbstractSequentialList<T> list){
 		if(list == null){
-			return "null";
+			return "{}";
 		}
 		StringBuilder sb = new StringBuilder();
 		sb.append("{");

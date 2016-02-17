@@ -13,6 +13,7 @@
  */
 
 %include "util.i"
+%include "std_list_typemap.i"
 %include "cx3d_shared_ptr.i"
 
 %define %Edge_cx3d_shared_ptr()
@@ -39,6 +40,17 @@
   %typemap(javainterfaces) cx3d::spatial_organization::Edge<cx3d::PhysicalNode> "ini.cx3d.spatialOrganization.interfaces.Edge<ini.cx3d.physics.PhysicalNode>"
 %enddef
 
+%define %Edge_typemaps()
+  // for SpaceNode
+  %Edge_stdlist();
+%enddef
+
+%define %Edge_stdlist()
+  %stdlist_typemap(std::shared_ptr<cx3d::spatial_organization::Edge<cx3d::PhysicalNode>>,
+                   Edge,
+                   ini.cx3d.spatialOrganization.interfaces.Edge);
+%enddef
+
 /**
  * apply customizations
  */
@@ -53,3 +65,4 @@
 #else
   %setJavaDebugSwitch(Edge, false);
 #endif
+%Edge_typemaps();

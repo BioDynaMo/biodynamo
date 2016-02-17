@@ -40,8 +40,10 @@ import ini.cx3d.physics.PhysicalNodeMovementListener;
 import ini.cx3d.physics.PhysicalSphere;
 import ini.cx3d.physics.Substance;
 import ini.cx3d.spatialOrganization.PositionNotAllowedException;
-import ini.cx3d.spatialOrganization.SpaceNode;
+import ini.cx3d.spatialOrganization.SpatialOrganizationNodeMovementListener;
+import ini.cx3d.spatialOrganization.interfaces.SpaceNode;
 import ini.cx3d.spatialOrganization.SpatialOrganizationNode;
+import ini.cx3d.spatialOrganization.factory.SpaceNodeFactory;
 import ini.cx3d.utilities.Matrix;
 
 import java.awt.Color;
@@ -365,10 +367,10 @@ public class ECM implements SimStateSerializable {
 	 */
 	public SpatialOrganizationNode<PhysicalNode> getSpatialOrganizationNodeInstance(double[] position, PhysicalNode userObject){
 		if(initialNode == null){
-			SpaceNode<PhysicalNode> sn1 = new SpaceNode<PhysicalNode>(position,userObject);
+			SpaceNode<PhysicalNode> sn1 = new SpaceNodeFactory<PhysicalNode>().create(position,userObject);
 			PhysicalNodeMovementListener listener = new PhysicalNodeMovementListener();
 //			XX_oldMoveListener listener = new XX_oldMoveListener();
-			sn1.addSpatialOrganizationNodeMovementListener(listener);
+			sn1.addSpatialOrganizationNodeMovementListener((SpatialOrganizationNodeMovementListener<PhysicalNode>) listener);
 			initialNode = sn1;
 			return sn1;
 		}
@@ -394,10 +396,10 @@ public class ECM implements SimStateSerializable {
 	public SpatialOrganizationNode<PhysicalNode> getSpatialOrganizationNodeInstance(
 			SpatialOrganizationNode<PhysicalNode> n, double[] position, PhysicalNode userObject){
 		if(initialNode == null){
-			SpaceNode<PhysicalNode> sn1 = new SpaceNode<PhysicalNode>(position,userObject);
+			SpaceNode<PhysicalNode> sn1 = new SpaceNodeFactory<PhysicalNode>().create(position, userObject);
 			PhysicalNodeMovementListener listener = new PhysicalNodeMovementListener();
 //			XX_oldMoveListener listener = new XX_oldMoveListener();
-			sn1.addSpatialOrganizationNodeMovementListener(listener);
+			sn1.addSpatialOrganizationNodeMovementListener((SpatialOrganizationNodeMovementListener<PhysicalNode>) listener);
 			initialNode = sn1;
 			return sn1;
 

@@ -12,7 +12,7 @@ public interface Edge<T> extends SpatialOrganizationEdge<T> {
 	/**
 	 * {@inheritDoc}
 	 */
-	SpatialOrganizationNode<T> getOpposite(ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> comingFrom);
+	SpatialOrganizationNode<T> getOpposite(ini.cx3d.spatialOrganization.interfaces.SpaceNode comingFrom);
 
 	/**
 	 * {@inheritDoc}

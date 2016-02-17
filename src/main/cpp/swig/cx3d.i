@@ -23,7 +23,7 @@
 
 %{
 #include "string_builder.h"
-#include "sim_state_serializable.h"
+// #include "sim_state_serializable.h"
 using namespace cx3d;
 %}
 
@@ -37,13 +37,24 @@ JAVA_LOAD_NATIVE_LIBRARY(cx3d);
 
 %rename(NativeStringBuilder) StringBuilder;
 
-GENERATE_JAVA_INTERFACE(cx3d, SimStateSerializable, cx3d::,
-  ini.cx3d.SimStateSerializable,
-  public NativeStringBuilder simStateToJson(NativeStringBuilder sb){
-    return delegate.simStateToJson(sb);
-  });
+%typemap(javabody) cx3d::StringBuilder %{
+  private long swigCPtr;
+  protected boolean swigCMemOwn;
 
+  public $javaclassname(long cPtr, boolean cMemoryOwn) {
+    swigCMemOwn = cMemoryOwn;
+    swigCPtr = cPtr;
+  }
+
+  public static long getCPtr($javaclassname obj) {
+    return (obj == null) ? 0 : obj.swigCPtr;
+  }
+%}
+
+%typemap(directorin, descriptor="Lini/cx3d/swig/NativeStringBuilder;") cx3d::StringBuilder& %{
+  *(cx3d::StringBuilder **)&j$1 = (cx3d::StringBuilder *) &$1;
+%}
 
 // add the original header files here
 %include "string_builder.h"
-%include "sim_state_serializable.h"
+// %include "sim_state_serializable.h"

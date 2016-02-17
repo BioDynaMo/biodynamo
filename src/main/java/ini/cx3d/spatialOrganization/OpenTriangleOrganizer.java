@@ -195,7 +195,7 @@ public class OpenTriangleOrganizer<T> extends OpenTriangleOrganizerT_PhysicalNod
 	 * @param <T> The type of user objects associated with nodes in the triangulation.
 	 * @return A new instance of <code>OpenTriangleOrganizer</code>.
 	 */
-	public static <T> OpenTriangleOrganizer<T> createSimpleOpenTriangleOrganizer() {
+	public static <T> OpenTriangleOrganizer<T> createSimpleOpenTriangleOrganizer_java() {
 		return new OpenTriangleOrganizer<T>(30,
 				new SimpleTriangulationNodeOrganizer<T>());
 	}
@@ -206,7 +206,7 @@ public class OpenTriangleOrganizer<T> extends OpenTriangleOrganizerT_PhysicalNod
 	 * triangle is added to the hashmap. 
 	 * @param triangle The new open triangle.
 	 */
-	public void putTriangle(Triangle3D<T> triangle) {
+	public void putTriangle(Triangle3D triangle) {
 		TriangleHashKey<T> key = triangleHashKeyFactory.create(triangle.getNodes()[0],
 				triangle.getNodes()[1],
 				triangle.getNodes()[2]);
@@ -346,7 +346,7 @@ public class OpenTriangleOrganizer<T> extends OpenTriangleOrganizerT_PhysicalNod
 	 * triangulation.
 	 * @return A tetrahedron which was created during triangulation.
 	 */
-	protected Tetrahedron<T> getANewTetrahedron() {
+	public Tetrahedron<T> getANewTetrahedron() {
 		return aNewTetrahedron;
 	}
 
@@ -593,8 +593,8 @@ public class OpenTriangleOrganizer<T> extends OpenTriangleOrganizerT_PhysicalNod
 	 * first tetrahedron.
 	 * @param startingTetrahedron The first tetrahedron to remove.
 	 */
-	protected void removeAllTetrahedraInSphere(
-			Tetrahedron<T> startingTetrahedron) {
+	public void removeAllTetrahedraInSphere(
+			Tetrahedron startingTetrahedron) {
 		if (startingTetrahedron.isValid()) {
 			Tetrahedron<T>[] tetrahedronsToRemove = new Tetrahedron[4];
 			for (int i = 0; i < 4; i++) {

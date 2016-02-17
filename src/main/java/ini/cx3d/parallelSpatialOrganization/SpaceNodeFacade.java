@@ -22,11 +22,11 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 package ini.cx3d.parallelSpatialOrganization;
 
 import java.io.Serializable;
+import java.util.AbstractSequentialList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import ini.cx3d.spatialOrganization.PositionNotAllowedException;
-import ini.cx3d.spatialOrganization.SpatialOrganizationEdge;
 import ini.cx3d.spatialOrganization.SpatialOrganizationNode;
 import ini.cx3d.spatialOrganization.SpatialOrganizationNodeMovementListener;
 
@@ -105,7 +105,7 @@ public class SpaceNodeFacade<T> implements ini.cx3d.spatialOrganization.SpatialO
 	 * @return
 	 * @see ini.cx3d.spatialOrganization.SpatialOrganizationNode#getEdges()
 	 */
-	public Iterable<SpatialOrganizationEdge<T>> getEdges() {
+	public AbstractSequentialList<ini.cx3d.spatialOrganization.interfaces.Edge> getEdges() {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -114,7 +114,7 @@ public class SpaceNodeFacade<T> implements ini.cx3d.spatialOrganization.SpatialO
 	 * @return
 	 * @see ini.cx3d.spatialOrganization.SpatialOrganizationNode#getNeighbors()
 	 */
-	public Iterable<T> getNeighbors() {
+	public AbstractSequentialList<T> getNeighbors() {
 		// TODO Auto-generated method stub
 		return null;
 	}

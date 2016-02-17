@@ -11,7 +11,7 @@ public class EdgeFactory<T> {
     private static final boolean NATIVE = spatialOrganization.useNativeEdge;
     public static final boolean DEBUG = spatialOrganization.debugEdge;
 
-    public Edge create(ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> a, ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> b) {
+    public Edge create(ini.cx3d.spatialOrganization.interfaces.SpaceNode a, ini.cx3d.spatialOrganization.interfaces.SpaceNode b) {
         if (NATIVE) {
             return  ini.cx3d.swig.spatialOrganization.EdgeT_PhysicalNode.create(a, b);
         } else if(!DEBUG) {

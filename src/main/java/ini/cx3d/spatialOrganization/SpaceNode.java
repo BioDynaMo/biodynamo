@@ -21,16 +21,12 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 
 package ini.cx3d.spatialOrganization;
 
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.Objects;
-import java.util.List;
-import java.util.Collections;
-import java.util.Arrays;
-import java.util.AbstractSequentialList;
+import java.util.*;
 
+import ini.cx3d.JavaUtil;
 import ini.cx3d.physics.PhysicalNode;
 import ini.cx3d.spatialOrganization.factory.EdgeFactory;
+import ini.cx3d.spatialOrganization.factory.SpaceNodeFactory;
 import ini.cx3d.spatialOrganization.factory.TetrahedronFactory;
 import ini.cx3d.spatialOrganization.interfaces.Triangle3D;
 import ini.cx3d.spatialOrganization.interfaces.Edge;
@@ -55,7 +51,7 @@ import static ini.cx3d.utilities.StringUtilities.toStr;
  *
  * @param <T>
  */
-public class SpaceNode<T> extends SpaceNodeT_PhysicalNode implements /*ini.cx3d.spatialOrganization.interfaces.SpaceNode<T>,*/ ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> {
+public class SpaceNode<T> extends SpaceNodeT_PhysicalNode implements /*ini.cx3d.spatialOrganization.interfaces.SpaceNode<T>,*/ ini.cx3d.spatialOrganization.interfaces.SpaceNode<ini.cx3d.physics.PhysicalNode> {
 	/**
 	 * A static list of all nodes that are part of the current triangulation. DO
 	 * NOT USE! Exclusively used for debugging purposes. Needs to be removed.
@@ -106,7 +102,7 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNode implements /*ini.cx3d.
 	 * A list of listener objects that are called whenever this node is beeing
 	 * moved.
 	 */
-	private AbstractSequentialList<SpatialOrganizationNodeMovementListener<T>> listeners = null;
+	private AbstractSequentialList<SpatialOrganizationNodeMovementListener> listeners = null;
 
 	/**
 	 * The coordinate of this SpaceNode.
@@ -121,7 +117,7 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNode implements /*ini.cx3d.
 	/**
 	 * A list of all edges incident to this node.
 	 */
-	private LinkedList<SpatialOrganizationEdge<T>> adjacentEdges = new LinkedList<SpatialOrganizationEdge<T>>();
+	private LinkedList<Edge> adjacentEdges = new LinkedList<>();
 
 	/**
 	 * A list of all tetrahedra incident to this node.
@@ -214,7 +210,23 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNode implements /*ini.cx3d.
 	 */
 	@Override
 	public String toString() {
-		return "(" + (this.id % 1000)+", "+ toStr(position)+")";
+		StringBuilder sb = new StringBuilder();
+		sb.append("(");
+		sb.append(toStr(id));
+		sb.append(", ");
+		sb.append(toStr(volume));
+		sb.append(", ");
+		sb.append(content);
+		sb.append(", ");
+		sb.append(toStr(position));
+		sb.append(", ");
+		sb.append(toStr(adjacentTetrahedra));
+		sb.append(", ");
+		sb.append(toStr(adjacentEdges));
+		sb.append(", ");
+		sb.append(toStr(listeners));
+		sb.append(")");
+		return sb.toString();
 	}
 
 	/**
@@ -241,7 +253,7 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNode implements /*ini.cx3d.
 	 */
 	@Override
 	public Edge searchEdge(ini.cx3d.spatialOrganization.interfaces.SpaceNode oppositeNode) {
-		for (SpatialOrganizationEdge<T> e : this.adjacentEdges) {
+		for (SpatialOrganizationEdge<PhysicalNode> e : this.adjacentEdges) {
 			if (Objects.equals(e.getOpposite(this), oppositeNode))
 				return (Edge<T>) e;
 		}
@@ -275,7 +287,7 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNode implements /*ini.cx3d.
 	 * incident to this node.
 	 */
 	@Override
-	public AbstractSequentialList<SpatialOrganizationEdge<T>> getEdges() {
+	public AbstractSequentialList<Edge> getEdges() {
 		return adjacentEdges;
 		// return new Iterable<SpatialOrganizationEdge<T>>() {
 		// public Iterator<SpatialOrganizationEdge<T>> iterator() {
@@ -314,39 +326,99 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNode implements /*ini.cx3d.
 		// };
 	}
 
-	@Override
-	public PhysicalNode getUserObjectSwig() {
-		if (content instanceof PhysicalNode) {
-			return (PhysicalNode) content;
-		}
-		return null;
-	}
+//	@Override
+//	public PhysicalNode getUserObjectSwig() {
+//		if (content instanceof PhysicalNode) {
+//			return (PhysicalNode) content;
+//		}
+//		return null;
+//	}
 
 	@Override
-	public T getUserObject() {
-		return content;
+	public PhysicalNode getUserObject() {
+		return (PhysicalNode) content;
 	}
 
-	private Iterable<T> wrapEdgeListIntoNeighborNodeIterator(
-			final LinkedList<SpatialOrganizationEdge<T>> list) {
-		return new Iterable<T>() {
-			public Iterator<T> iterator() {
-				final Iterator<SpatialOrganizationEdge<T>> listIt =
-						list.iterator();
-				return new Iterator<T>() {
+	private AbstractSequentialList<PhysicalNode> wrapEdgeListIntoNeighborNodeIterator(
+			final LinkedList<Edge> list) {
+//		return new Iterable<T>() {
+//			public Iterator<T> iterator() {
+//				final Iterator<Edge> listIt =
+//						list.iterator();
+//				return new Iterator<T>() {
+//					public boolean hasNext() {
+//						return listIt.hasNext();
+//					}
+//
+//					public T next() {
+//						return listIt.next().getOpposite(SpaceNode.this)
+//								.getUserObject();
+//					}
+//
+//					public void remove() {
+//						listIt.remove();
+//					}
+//				};
+//			}
+//		};
+
+		return new AbstractSequentialList<PhysicalNode>() {
+			final Iterator<Edge> listIt =
+					list.iterator();
+			@Override
+			public ListIterator<PhysicalNode> listIterator(int i) {
+				return new ListIterator<PhysicalNode>() {
+					@Override
 					public boolean hasNext() {
 						return listIt.hasNext();
 					}
 
-					public T next() {
-						return listIt.next().getOpposite(SpaceNode.this)
+					@Override
+					public PhysicalNode next() {
+						return (PhysicalNode) listIt.next().getOpposite(SpaceNode.this)
 								.getUserObject();
 					}
 
+					@Override
+					public boolean hasPrevious() {
+						return false;
+					}
+
+					@Override
+					public PhysicalNode previous() {
+						return null;
+					}
+
+					@Override
+					public int nextIndex() {
+						return 0;
+					}
+
+					@Override
+					public int previousIndex() {
+						return 0;
+					}
+
+					@Override
 					public void remove() {
 						listIt.remove();
 					}
+
+					@Override
+					public void set(PhysicalNode physicalNode) {
+
+					}
+
+					@Override
+					public void add(PhysicalNode physicalNode) {
+
+					}
 				};
+			}
+
+			@Override
+			public int size() {
+				return list.size();
 			}
 		};
 	}
@@ -357,11 +429,11 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNode implements /*ini.cx3d.
 	 * @see ini.cx3d.spatialOrganization.SpatialOrganizationNode#getNeighbors()
 	 */
 	@Override
-	public AbstractSequentialList<T> getNeighbors() {
+	public AbstractSequentialList<PhysicalNode> getNeighbors() {
 //		return wrapEdgeListIntoNeighborNodeIterator(adjacentEdges);
 		// quick solution for type incompatibilities
-		AbstractSequentialList<T> result = new LinkedList<>();
-		for(T t : wrapEdgeListIntoNeighborNodeIterator(adjacentEdges)){
+		AbstractSequentialList<PhysicalNode> result = new LinkedList<>();
+		for(PhysicalNode t : wrapEdgeListIntoNeighborNodeIterator(adjacentEdges)){
 			result.add(t);
 		}
 		return result;
@@ -410,13 +482,13 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNode implements /*ini.cx3d.
 	 * @see ini.cx3d.spatialOrganization.SpatialOrganizationNode#getPermanentListOfNeighbors()
 	 */
 	@Override
-	public AbstractSequentialList<T> getPermanentListOfNeighbors() {
+	public AbstractSequentialList<PhysicalNode> getPermanentListOfNeighbors() {
 		// return
 		// wrapEdgeListIntoNeighborNodeIterator(((LinkedList<SpatialOrganizationEdge<T>>)adjacentEdges.clone()));
-		LinkedList<T> ret = new LinkedList<T>();
-		for (SpatialOrganizationEdge<T> e : this.adjacentEdges) {
-			SpatialOrganizationNode<T> opp = e.getOpposite(this);
-				if (opp != null) ret.add(opp.getUserObject());
+		LinkedList<PhysicalNode> ret = new LinkedList<>();
+		for (SpatialOrganizationEdge<PhysicalNode> e : this.adjacentEdges) {
+			SpatialOrganizationNode opp = e.getOpposite(this);
+				if (opp != null) ret.add((PhysicalNode) opp.getUserObject());
 		}
 		return ret;
 	}
@@ -443,7 +515,7 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNode implements /*ini.cx3d.
 			&& (!insertionTetrahedron.isInfinite())) {
 			last = insertionTetrahedron;
 			try {
-				int[] triangleOrder = generateTriangleOrder();
+				int[] triangleOrder = new JavaUtil().generateTriangleOrder();
 				insertionTetrahedron =
 						insertionTetrahedron.walkToPoint(position, triangleOrder);
 			} catch (PositionNotAllowedException e) {
@@ -455,17 +527,6 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNode implements /*ini.cx3d.
 		ini.cx3d.spatialOrganization.interfaces.SpaceNode<T>[] nodes = insertionTetrahedron.getAdjacentNodes();
 		for (int i = 0; i < nodes.length; i++) {
 			if (nodes[i] != null) ret[i] = nodes[i].getUserObject();
-		}
-		return ret;
-	}
-
-	static List<Integer> list = Arrays.asList(new Integer[]{
-			0, 1, 2, 3});
-	private static int[] generateTriangleOrder(){
-		Collections.shuffle(list, NewDelaunayTest.rand);
-		int[] ret = new int[4];
-		for (int i = 0; i< list.size(); i++) {
-			ret[i] = list.get(i);
 		}
 		return ret;
 	}
@@ -498,11 +559,11 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNode implements /*ini.cx3d.
 	 *      java.lang.Object)
 	 */
 	@Override
-	public SpatialOrganizationNode<T> getNewInstance(double[] position,
-													 T userObject) throws PositionNotAllowedException {
+	public SpaceNode<T> getNewInstance(double[] position,
+													 PhysicalNode userObject){// throws PositionNotAllowedException {
 
 		// create a new SpaceNode:
-		SpaceNode<T> insertPoint = new SpaceNode<T>(position, userObject);
+		SpaceNode<T> insertPoint = (SpaceNode<T>) new SpaceNodeFactory<T>().create(position, (T) userObject);
 
 		// the new instance should have the same listeners!
 		insertPoint.setListenerList(this.listeners);
@@ -512,18 +573,17 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNode implements /*ini.cx3d.
 			// enough nodes collected:
 			if (adjacentEdges.size() == 2) {
 				// collect the nodes:
-				ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> a =
-						(SpaceNode<T>) adjacentEdges.getFirst().getOpposite(
-								this), b =
+				ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> a = (ini.cx3d.spatialOrganization.interfaces.SpaceNode<T>) adjacentEdges.get(0).getOpposite(this);
+				ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> b =
 						(ini.cx3d.spatialOrganization.interfaces.SpaceNode<T>) adjacentEdges.getLast()
 								.getOpposite(this);
 				// clear the edge lists:
 				adjacentEdges.clear();
 
-				a.getAdjacentEdges().clear();
-				b.getAdjacentEdges().clear();
+				((SpaceNode<T>)a).adjacentEdges.clear(); //a.getAdjacentEdges().clear();
+				((SpaceNode<T>)b).adjacentEdges.clear(); //b.getAdjacentEdges().clear();
 				// now create the first tetrahedron:
-				OpenTriangleOrganizer oto = OpenTriangleOrganizer.createSimpleOpenTriangleOrganizer();
+				OpenTriangleOrganizer oto = OpenTriangleOrganizer.createSimpleOpenTriangleOrganizer_java();
 				tetrahedronFactory.createInitialTetrahedron(this, insertPoint, a, b, oto);
 			}
 			else {
@@ -550,7 +610,7 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNode implements /*ini.cx3d.
 	 */
 	@Override
 	public void setListenerList(
-			AbstractSequentialList<SpatialOrganizationNodeMovementListener<T>> listeners) {
+			AbstractSequentialList<SpatialOrganizationNodeMovementListener> listeners) {
 		this.listeners = listeners;
 	}
 
@@ -561,10 +621,10 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNode implements /*ini.cx3d.
 	 */
 	@Override
 	public void addSpatialOrganizationNodeMovementListener(
-			SpatialOrganizationNodeMovementListener<T> listener) {
+			SpatialOrganizationNodeMovementListener listener) {
 		if (listeners == null)
 			listeners =
-					new LinkedList<SpatialOrganizationNodeMovementListener<T>>();
+					new LinkedList<SpatialOrganizationNodeMovementListener>();
 //		listeners.addLast(listener);
 		listeners.add(listeners.size(), listener);
 	}
@@ -623,7 +683,7 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNode implements /*ini.cx3d.
 				listener.nodeAboutToBeRemoved(this);
 		}
 		OpenTriangleOrganizer<T> oto =
-				OpenTriangleOrganizer.createSimpleOpenTriangleOrganizer();
+				OpenTriangleOrganizer.createSimpleOpenTriangleOrganizer_java();
 		LinkedList<Tetrahedron<T>> messedUpTetrahedra = null;
 		// Collect the triangles that are opened by removing the point and
 		// remove the corresponding tetrahedrons:
@@ -671,9 +731,9 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNode implements /*ini.cx3d.
 	 * @throws PositionNotAllowedException
 	 */
 	@Override
-	public Tetrahedron<T> searchInitialInsertionTetrahedron(Tetrahedron<T> start)
+	public Tetrahedron<T> searchInitialInsertionTetrahedron(Tetrahedron start)
 			throws PositionNotAllowedException {
-		return searchInitialInsertionTetrahedron(start, this.getPosition());
+		return searchInitialInsertionTetrahedron_java(start, position);
 	}
 
 	/**
@@ -690,8 +750,8 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNode implements /*ini.cx3d.
 	 * @return A tetrahedron which contains the position of this node.
 	 * @throws PositionNotAllowedException
 	 */
-	public static <T> Tetrahedron<T> searchInitialInsertionTetrahedron(
-			Tetrahedron<T> start, double[] coordinate)
+	public static <T> Tetrahedron<T> searchInitialInsertionTetrahedron_java(
+			Tetrahedron start, double[] coordinate)
 			throws PositionNotAllowedException {
 		Tetrahedron<T> current = start;
 		if (current.isInfinite())
@@ -701,7 +761,7 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNode implements /*ini.cx3d.
 		Tetrahedron<T> last = null;
 		while (!Objects.equals(current, last) && (!current.isInfinite())) {
 			last = current;
-			current = current.walkToPoint(coordinate, generateTriangleOrder());
+			current = current.walkToPoint(coordinate, new JavaUtil().generateTriangleOrder());
 		}
 		return current;
 	}
@@ -769,7 +829,7 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNode implements /*ini.cx3d.
 	 * @throws PositionNotAllowedException
 	 */
 	@Override
-	public Tetrahedron<T> insert(Tetrahedron<T> start)
+	public Tetrahedron<T> insert(Tetrahedron start)
 			throws PositionNotAllowedException {
 		Tetrahedron<T> insertionStart =
 				searchInitialInsertionTetrahedron(start);
@@ -785,7 +845,7 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNode implements /*ini.cx3d.
 		}
 
 		OpenTriangleOrganizer<T> oto =
-				OpenTriangleOrganizer.createSimpleOpenTriangleOrganizer();
+				OpenTriangleOrganizer.createSimpleOpenTriangleOrganizer_java();
 		LinkedList<ini.cx3d.spatialOrganization.interfaces.Triangle3D<T>> queue = new LinkedList<ini.cx3d.spatialOrganization.interfaces.Triangle3D<T>>();
 		LinkedList<ini.cx3d.spatialOrganization.interfaces.Triangle3D<T>> outerTriangles =
 				new LinkedList<ini.cx3d.spatialOrganization.interfaces.Triangle3D<T>>();
@@ -972,7 +1032,7 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNode implements /*ini.cx3d.
 				new LinkedList<Tetrahedron<T>>();
 		LinkedList<ini.cx3d.spatialOrganization.interfaces.SpaceNode<T>> problemNodes = new LinkedList<ini.cx3d.spatialOrganization.interfaces.SpaceNode<T>>();
 		OpenTriangleOrganizer<T> oto =
-				OpenTriangleOrganizer.createSimpleOpenTriangleOrganizer();
+				OpenTriangleOrganizer.createSimpleOpenTriangleOrganizer_java();
 		if (NewDelaunayTest.createOutput())
 			NewDelaunayTest.out("Cleaning up messed up tetrahedra: "
 				+ messedUpTetrahedra.toString());
@@ -1138,14 +1198,14 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNode implements /*ini.cx3d.
 								// flip, if possible (convex!)
 								if (newTetrahedra == null) {
 									if (tetrahedron.isFlat()
-										&& tetrahedronI.isFlat()
-										&& tetrahedron.isAdjacentTo(nodeI))
+											&& tetrahedronI.isFlat()
+											&& tetrahedron.isAdjacentTo(nodeI)){
 										newTetrahedra =
 												tetrahedronFactory
 														.remove2FlatTetrahedra(
 																tetrahedron,
 																tetrahedronI);
-									else if (!(tetrahedron.isFlat() || tetrahedronI
+									}else if (!(tetrahedron.isFlat() || tetrahedronI
 											.isFlat())){
 										newTetrahedra =
 												tetrahedronFactory.flip2to3(
@@ -1323,7 +1383,7 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNode implements /*ini.cx3d.
 			// if (messedUpTetrahedron.isValid()) {
 			//
 			// if (oto == null)
-			// oto = OpenTriangleOrganizer.createSimpleOpenTriangleOrganizer();
+			// oto = OpenTriangleOrganizer.createSimpleOpenTriangleOrganizer_java();
 			// messedUpTetrahedron.remove();
 			// for (int i = 0; i < 4; i++) {
 			// Triangle3D currentTriangle =
@@ -1396,7 +1456,7 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNode implements /*ini.cx3d.
 				NewDelaunayTest.out("Node must be deleted and reinserted!");
 			deleteAndInsertMovements++;
 			Tetrahedron<T> insertPosition =
-					searchInitialInsertionTetrahedron(adjacentTetrahedra
+					searchInitialInsertionTetrahedron_java(adjacentTetrahedra
 							.getFirst(), newPosition);
 			Tetrahedron<T> aNewTetrahedron =
 					removeAndReturnCreatedTetrahedron();
@@ -1472,7 +1532,7 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNode implements /*ini.cx3d.
 	 * @return A list of edges.
 	 */
 	@Override
-	public AbstractSequentialList<SpatialOrganizationEdge<T>> getAdjacentEdges() {
+	public AbstractSequentialList<Edge> getAdjacentEdges() {
 		return adjacentEdges;
 	}
 

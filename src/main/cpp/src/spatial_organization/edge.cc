@@ -21,7 +21,7 @@ Edge<T>::Edge(const std::shared_ptr<SpaceNode<T>>& a, const std::shared_ptr<Spac
 
 template<class T>
 std::shared_ptr<SpaceNode<T>> Edge<T>::getOpposite(
-    const std::shared_ptr<SpaceNode<T>>& node) const {
+    const std::shared_ptr<const SpaceNode<T>>& node) const {
   if (node == a_) {
     return b_;
   } else if (node == b_) {
@@ -63,13 +63,14 @@ template<class T>
 const std::string Edge<T>::toString() const {
   std::ostringstream str_stream;
   str_stream << "(";
+  str_stream << "Edge";
   str_stream << StringUtil::toStr(cross_section_area_);
-  str_stream << " - ";
-  str_stream << a_->toString();
-  str_stream << " - ";
-  str_stream << b_->toString();
-  str_stream << " - ";
-  str_stream << StringUtil::toStr(adjacent_tetrahedra_);
+//  str_stream << " - ";
+//  str_stream << StringUtil::toStr(a_);
+//  str_stream << " - ";
+//  str_stream << StringUtil::toStr(b_);
+//  str_stream << " - ";
+//  str_stream << StringUtil::toStr(adjacent_tetrahedra_);
   str_stream << ")";
   return str_stream.str();
 }

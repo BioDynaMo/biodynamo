@@ -13,6 +13,7 @@
 
 %include "util.i"
 %include "cx3d_shared_ptr.i"
+%include "std_list_typemap.i"
 %include "std_array_typemap.i"
 
 %define %PhysicalNode_cx3d_shared_ptr()
@@ -29,30 +30,6 @@
                       ini/cx3d/physics/PhysicalNode);
 %enddef
 
-// %define %PhysicalNode_jdc_get(METHOD_NAME)
-//   %jdc_get(cx3d::PhysicalNode, METHOD_NAME,
-//            ini.cx3d.physics.PhysicalNode,
-//            cx3d_PhysicalNode_);
-// %enddef
-//
-// %define %PhysicalNode_jdc_type_modification()
-//   %jdc_type_modification(cx3d::PhysicalNode,
-//                          ini.cx3d.physics.PhysicalNode);
-// %enddef
-//
-// %define %PhysicalNode_jdc_get(METHOD_NAME)
-//   %jdc_get(cx3d::PhysicalNode, METHOD_NAME,
-//            ini.cx3d.physics.PhysicalNode,
-//            cx3d_PhysicalNode_);
-// %enddef
-//
-// %define %PhysicalNode_jdc_array_extension(SIZE)
-//   %jdc_array_extension(cx3d::PhysicalNode, getJava_impl,
-//                        ini.cx3d.physics.PhysicalNode,
-//                        shared_ptr_PhysicalNode_##SIZE,
-//                        cx3d_PhysicalNode_);
-// %enddef
-
 %define %PhysicalNode_stdarray_array_marshalling(SWIG_MODULE, SIZE)
   %stdarray_array_marshalling(SWIG_MODULE,
                               std::shared_ptr<cx3d::PhysicalNode>,
@@ -61,11 +38,11 @@
                               Ljava/lang/Object;, SIZE);
 %enddef
 
-// %define %PhysicalNode_jdc_get_array(SIZE, METHOD_NAME)
-//   %jdc_get_array(std::shared_ptr<cx3d::PhysicalNode>, SIZE, METHOD_NAME,
-//                  ini.cx3d.physics.PhysicalNode,
-//                  shared_ptr_PhysicalNode_##SIZE);
-// %enddef
+%define %PhysicalNode_stdlist()
+  %stdlist_typemap(std::shared_ptr<cx3d::PhysicalNode>,
+                   PhysicalNode,
+                   ini.cx3d.physics.PhysicalNode);
+%enddef
 
 /**
  * apply customizations
@@ -74,3 +51,5 @@
 %PhysicalNode_java();
 // for Tetrahedron:
 %PhysicalNode_stdarray_array_marshalling(spatialOrganization, 4);
+// for SpaceNode
+%PhysicalNode_stdlist();

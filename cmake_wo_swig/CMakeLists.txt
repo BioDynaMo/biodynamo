@@ -66,7 +66,7 @@ include_directories(${CPP_MAIN_SRC_PATH}/swig)
 #--------------------- build module spatialOrganization  ----------------
 file(GLOB SOURCES "${CPP_MAIN_SRC_PATH}/src/spatial_organization/*.cc")
 
-add_library(cx3d_spatialOrganization SHARED ${SOURCES} "${CPP_MAIN_SRC_PATH}/swig/spatial_organizationJAVA_wrap.cxx")
+add_library(cx3d_spatialOrganization SHARED ${SOURCES} "${JAVA_MAIN_SWIG_PATH}/spatialOrganization/spatial_organizationJAVA_wrap.cxx")
 target_link_libraries(cx3d_spatialOrganization ${GMP_LIBRARY})
 
 
@@ -87,5 +87,5 @@ include_directories(${CPP_TEST_SRC_PATH}/swig)
 #--------------------- build module cx3d_test  ----------------------
 file(GLOB SOURCES "${CPP_TEST_SRC_PATH}/src/*.cc")
 
-add_library(cx3d_test SHARED ${SOURCES} "${CPP_TEST_SRC_PATH}/swig/cx3d_testJAVA_wrap.cxx")
-target_link_libraries(cx3d_test ${GMP_LIBRARY})
+#add_library(cx3d_test SHARED ${SOURCES} "${CPP_TEST_SRC_PATH}/swig/cx3d_testJAVA_wrap.cxx")
+#target_link_libraries(cx3d_test ${GMP_LIBRARY})

@@ -10,6 +10,7 @@ namespace spatial_organization {
 
 template<class T> class Triangle3D;
 template<class T> class SpaceNode;
+template<class T> class Tetrahedron;
 
 /**
  * Whenever an incomplete delaunay triangulation is created for some reason (removement of
@@ -32,14 +33,38 @@ class OpenTriangleOrganizer {
   }
 
   /**
+   * Returns a simple instance of <code>OpenTriangleOrganizer</code>. As a node
+   * organizer, an instance of {@link SimpleTriangulationNodeOrganizer} is used
+   * and the number of open triangles that will approximately be used is set
+   * to 30.
+   * @param <T> The type of user objects associated with nodes in the triangulation.
+   * @return A new instance of <code>OpenTriangleOrganizer</code>.
+   */
+  static std::shared_ptr<OpenTriangleOrganizer<T>> createSimpleOpenTriangleOrganizer() {
+    throw std::logic_error(
+        "OpenTriangleOrganizer::createSimpleOpenTriangleOrganizer must never be called - Java must provide implementation at this point");
+  }
+
+  /**
+   * Informs this open triangle organizer that a new
+   * open triangle is available. In order to do so, the new open
+   * triangle is added to the hashmap.
+   * @param triangle The new open triangle.
+   */
+  virtual void putTriangle(const std::shared_ptr<Triangle3D<T>>& triangle) {
+    throw std::logic_error(
+        "OpenTriangleOrganizer::removeTriangle must never be called - Java must provide implementation at this point");
+  }
+
+  /**
    * Informs this open triangle organizer that an open triangle
    * is no longer available. In order to do so, the new open
    * triangle is removed from the hashmap.
    * @param triangle The triangle that should be removed.
    */
-  virtual void removeTriangle(const std::shared_ptr<Triangle3D<T> >& triangle){
+  virtual void removeTriangle(const std::shared_ptr<Triangle3D<T> >& triangle) {
     throw std::logic_error(
-            "SpaceNode::removeTriangle must never be called - Java must provide implementation at this point");
+        "OpenTriangleOrganizer::removeTriangle must never be called - Java must provide implementation at this point");
   }
 
   /**
@@ -53,11 +78,12 @@ class OpenTriangleOrganizer {
    * @param c The third node incident to the requested triangle.
    * @return A triangle with the requested three endpoints.
    */
-  virtual std::shared_ptr<Triangle3D<T>> getTriangle(const std::shared_ptr<SpaceNode<T>>& a,
-                                                     const std::shared_ptr<SpaceNode<T>>& b,
-                                                     const std::shared_ptr<SpaceNode<T>>& c) const {
+  virtual std::shared_ptr<Triangle3D<T>> getTriangle(
+      const std::shared_ptr<SpaceNode<T>>& a,
+      const std::shared_ptr<SpaceNode<T>>& b,
+      const std::shared_ptr<SpaceNode<T>>& c) const {
     throw std::logic_error(
-        "SpaceNode::getTriangle must never be called - Java must provide implementation at this point");
+        "OpenTriangleOrganizer::getTriangle must never be called - Java must provide implementation at this point");
   }
 
   /**
@@ -72,15 +98,57 @@ class OpenTriangleOrganizer {
    * @return A triangle with the requested three endpoints.
    */
   virtual std::shared_ptr<Triangle3D<T>> getTriangleWithoutRemoving(
-      const std::shared_ptr<SpaceNode<T>>& a, const std::shared_ptr<SpaceNode<T>>& b,
+      const std::shared_ptr<SpaceNode<T>>& a,
+      const std::shared_ptr<SpaceNode<T>>& b,
       const std::shared_ptr<SpaceNode<T>>& c) const {
     throw std::logic_error(
-        "SpaceNode::getTriangleWithoutRemoving must never be called - Java must provide implementation at this point");
+        "OpenTriangleOrganizer::getTriangleWithoutRemoving must never be called - Java must provide implementation at this point");
   }
 
+  /**
+   * Finishes an incomplete triangulation. Before calling this function the open triangle organizer
+   * must be informed about all open triangles delimiting the non-triangulated volume in the
+   * tetrahedralization.
+   * <p>
+   * This function will successively pick an open triangle and find the corresponding point for this
+   * triangle. The triangle node organizer (given as argument to {@link #OpenTriangleOrganizer(int, AbstractTriangulationNodeOrganizer)})
+   * will provide the order in which the candidate nodes are tested.
+   * <p>
+   * All tetrahedra created by this function will be reported in
+   *
+   */
+  virtual void triangulate() {
+    throw std::logic_error(
+        "OpenTriangleOrganizer::triangulate must never be called - Java must provide implementation at this point");
+  }
+
+  /**
+   * Returns a String representation of this OpenTriangleOrganizer
+   */
   virtual std::string toString() const {
     throw std::logic_error(
-            "SpaceNode::toString must never be called - Java must provide implementation at this point");
+        "OpenTriangleOrganizer::toString must never be called - Java must provide implementation at this point");
+  }
+
+  /**
+   * Returns an arbitrary tetrahedron which was created during the process of
+   * triangulation.
+   * @return A tetrahedron which was created during triangulation.
+   */
+  virtual std::shared_ptr<Tetrahedron<T>> getANewTetrahedron() {
+    throw std::logic_error(
+        "OpenTriangleOrganizer::getANewTetrahedron must never be called - Java must provide implementation at this point");
+  }
+
+  /**
+   * Removes one tetrahedron from the triangulation and possibly all adjacent tetrahedra that have the same circumsphere as the
+   * first tetrahedron.
+   * @param startingTetrahedron The first tetrahedron to remove.
+   */
+  virtual void removeAllTetrahedraInSphere(
+      const std::shared_ptr<Tetrahedron<T>>& starting_tetrahedron) {
+    throw std::logic_error(
+        "OpenTriangleOrganizer::removeAllTetrahedraInSphere must never be called - Java must provide implementation at this point");
   }
 };
 

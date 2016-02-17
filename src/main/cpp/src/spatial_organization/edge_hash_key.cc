@@ -87,4 +87,3 @@ template class EdgeHashKey<cx3d::PhysicalNode>;
 
 }  // namespace spatial_organization
 }  // namespace cx3d
-

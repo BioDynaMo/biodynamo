@@ -385,5 +385,5 @@ public interface Tetrahedron<T> {
 	 * @param movedNode
 	 *            The node that was moved.
 	 */
-	void updateCirumSphereAfterNodeMovement(ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> movedNode);
+	void updateCirumSphereAfterNodeMovement(ini.cx3d.spatialOrganization.interfaces.SpaceNode movedNode);
 }

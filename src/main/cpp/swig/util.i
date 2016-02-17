@@ -58,16 +58,18 @@
  *        interface if it has already been introduced.
  * @param JNI_TYPE JNI specifier for the type specified in JAVA_TYPE
  *        @see: http://journals.ecs.soton.ac.uk/java/tutorial/native1.1/implementing/method.html
- *
+ * @param ADDITIONAL_CODE additional code that should be inserted into the
+ *        generated Java class
  * usage example:
- * %java_defined_class(cx3d::spatial_organization::Tetrahedron<cx3d::PhysicalNode>,
- *             TetrahedronT_PhysicalNode,
- *             Tetrahedron,
- *             ini.cx3d.spatialOrganization.interfaces.Tetrahedron,
- *             ini/cx3d/spatialOrganization/interfaces/Tetrahedron);
+ * %java_defined_class_add(cx3d::spatial_organization::Tetrahedron<cx3d::PhysicalNode>,
+ *                         TetrahedronT_PhysicalNode,
+ *                         Tetrahedron,
+ *                         ini.cx3d.spatialOrganization.interfaces.Tetrahedron,
+ *                         ini/cx3d/spatialOrganization/interfaces/Tetrahedron,
+ *                         public void foo(){});
  */
-%define %java_defined_class(FULL_CPP_TYPE, JAVA_PROXY_CLASS_NAME, CLASS_NAME,
-                            JAVA_TYPE, JNI_TYPE)
+%define %java_defined_class_add(FULL_CPP_TYPE, JAVA_PROXY_CLASS_NAME, CLASS_NAME,
+                            JAVA_TYPE, JNI_TYPE, ADDITIONAL_CODE)
   // enable cross language polymorphism for this C++ type
   %feature("director", assumeoverride=1) FULL_CPP_TYPE;
 
@@ -104,6 +106,8 @@
        return javaObjectMap.get(objPtr);
      }
    }
+
+   ADDITIONAL_CODE
   %}
 
   %typemap(javaout) std::shared_ptr< FULL_CPP_TYPE >,
@@ -128,7 +132,7 @@
                          std::shared_ptr< FULL_CPP_TYPE > *& #JAVA_PROXY_CLASS_NAME".getJavaObject($jniinput)"
 
   %typemap(directorin, descriptor="L"#JNI_TYPE";") std::shared_ptr< FULL_CPP_TYPE >,
-                                                            const std::shared_ptr< FULL_CPP_TYPE >& %{
+                                                   const std::shared_ptr< FULL_CPP_TYPE >& %{
     *(FULL_CPP_TYPE **)&j$1 = $1.get();
   %}
 
@@ -147,6 +151,20 @@
   %}
 
   %typemap(jstype) FULL_CPP_TYPE "JAVA_TYPE"
+%enddef
+
+/**
+ * see documentation of %java_defined_class_add
+ * This macro does not have the ADDITIONAL_CODE parameter
+ */
+%define %java_defined_class(FULL_CPP_TYPE, JAVA_PROXY_CLASS_NAME, CLASS_NAME,
+                            JAVA_TYPE, JNI_TYPE)
+  %java_defined_class_add(FULL_CPP_TYPE,
+                          JAVA_PROXY_CLASS_NAME,
+                          CLASS_NAME,
+                          JAVA_TYPE,
+                          JNI_TYPE,
+                          ;);
 %enddef
 
 /**
@@ -169,24 +187,28 @@
  * @param DEFAULT_CONSTRUCOR if C++ class does not specify a public default
  *        constructor: public JAVA_PROXY_CLASS_NAME(){}
  *        empty otherwise
+ * @param ADDITIONAL_CODE additional code that should be inserted into the
+ *        generated Java class
  *
  * usage example
  * if Tetrahedron specifies a public default constructor:
- * %native_defined_class(cx3d::spatial_organization::Tetrahedron<cx3d::PhysicalNode>,
- *                       TetrahedronT_PhysicalNode,
- *                       ini.cx3d.spatialOrganization.interfaces.Tetrahedron,
- *                       Tetrahedron, );
+ * %native_defined_class_add(cx3d::spatial_organization::Tetrahedron<cx3d::PhysicalNode>,
+ *                           TetrahedronT_PhysicalNode,
+ *                           ini.cx3d.spatialOrganization.interfaces.Tetrahedron,
+ *                           Tetrahedron, ;,
+ *                           public void foo(){});
  *
  * if it does not:
- * %native_defined_class(cx3d::spatial_organization::Tetrahedron<cx3d::PhysicalNode>,
- *                       TetrahedronT_PhysicalNode,
- *                       ini.cx3d.spatialOrganization.interfaces.Tetrahedron,
- *                       Tetrahedron,
- *                       public TetrahedronT_PhysicalNode(){});
+ * %native_defined_class_add(cx3d::spatial_organization::Tetrahedron<cx3d::PhysicalNode>,
+ *                           TetrahedronT_PhysicalNode,
+ *                           ini.cx3d.spatialOrganization.interfaces.Tetrahedron,
+ *                           Tetrahedron,
+ *                           public TetrahedronT_PhysicalNode(){},
+ *                           public void foo(){});
  */
-%define %native_defined_class(FULL_CPP_TYPE, JAVA_PROXY_CLASS_NAME,
-                              FULL_JAVA_INTERFACE_NAME, CLASS_NAME,
-                              DEFAULT_CONSTRUCOR)
+%define %native_defined_class_add(FULL_CPP_TYPE, JAVA_PROXY_CLASS_NAME,
+                                  FULL_JAVA_INTERFACE_NAME, CLASS_NAME,
+                                  DEFAULT_CONSTRUCOR, ADDITIONAL_CODE)
 
   %typemap(javainterfaces) FULL_CPP_TYPE "FULL_JAVA_INTERFACE_NAME"
   %typemap(jstype) FULL_CPP_TYPE "FULL_JAVA_INTERFACE_NAME"
@@ -204,11 +226,26 @@
       }
       return false;
     }
+
+    ADDITIONAL_CODE
   %}
 
   %pragma(java) modulecode=%{
       public static boolean useNative##CLASS_NAME = true;
   %}
+%enddef
+
+/**
+ * see documentation of %native_defined_class_add
+ * This macro does not have the ADDITIONAL_CODE parameter
+ */
+%define %native_defined_class(FULL_CPP_TYPE, JAVA_PROXY_CLASS_NAME,
+                              FULL_JAVA_INTERFACE_NAME, CLASS_NAME,
+                              DEFAULT_CONSTRUCOR)
+  %native_defined_class_add(FULL_CPP_TYPE, JAVA_PROXY_CLASS_NAME,
+                            FULL_JAVA_INTERFACE_NAME, CLASS_NAME,
+                            DEFAULT_CONSTRUCOR,
+                            ;)
 %enddef
 
 /**

@@ -34,32 +34,32 @@ import static org.junit.Assert.assertEquals;
 public class SimStateSerializableTest {
 
 
-    @Test
-    public void testJavaCallsCppDefinedFunction() {
-        //create native SimulationObject which implements SimStateSerializable
-        SimulationObject simulationObject = new SimulationObject();
-        //create native NativeStringBuilder
-        NativeStringBuilder sb = new NativeStringBuilder();
-        simulationObject.simStateToJson(sb);
-        assertEquals("Hello World from CPP defined SimulationObject!", sb.str());
-    }
-
-    @Test
-    public void testCppCallsJavaDefinedFunction() {
-        //native object
-        SimStateSerializerConsumer consumer = new SimStateSerializerConsumer();
-        //consumer.persistSimState expects an object instance that implements SimStateSerializable
-        //this time we pass a new Java object to this cpp function
-        SimStateSerializable serializable = new JavaSimulationObject();
-        NativeStringBuilder sb = consumer.persistSimState(serializable);
-        assertEquals("Hello World from Java defined JavaSimulationObject!", sb.str());
-    }
-
-    static class JavaSimulationObject implements SimStateSerializable{
-
-        @Override
-        public NativeStringBuilder simStateToJson(NativeStringBuilder sb) {
-            return sb.append("Hello World from Java defined JavaSimulationObject!");
-        }
-    }
+//    @Test
+//    public void testJavaCallsCppDefinedFunction() {
+//        //create native SimulationObject which implements SimStateSerializable
+//        SimulationObject simulationObject = new SimulationObject();
+//        //create native NativeStringBuilder
+//        NativeStringBuilder sb = new NativeStringBuilder();
+//        simulationObject.simStateToJson(sb);
+//        assertEquals("Hello World from CPP defined SimulationObject!", sb.str());
+//    }
+//
+//    @Test
+//    public void testCppCallsJavaDefinedFunction() {
+//        //native object
+//        SimStateSerializerConsumer consumer = new SimStateSerializerConsumer();
+//        //consumer.persistSimState expects an object instance that implements SimStateSerializable
+//        //this time we pass a new Java object to this cpp function
+//        SimStateSerializable serializable = new JavaSimulationObject();
+//        NativeStringBuilder sb = consumer.persistSimState(serializable);
+//        assertEquals("Hello World from Java defined JavaSimulationObject!", sb.str());
+//    }
+//
+//    static class JavaSimulationObject implements SimStateSerializable{
+//
+//        @Override
+//        public NativeStringBuilder simStateToJson(NativeStringBuilder sb) {
+//            return sb.append("Hello World from Java defined JavaSimulationObject!");
+//        }
+//    }
 }

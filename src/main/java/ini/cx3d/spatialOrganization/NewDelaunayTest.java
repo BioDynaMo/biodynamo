@@ -21,6 +21,7 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 
 package ini.cx3d.spatialOrganization;
 
+import ini.cx3d.spatialOrganization.factory.SpaceNodeFactory;
 import ini.cx3d.spatialOrganization.factory.TetrahedronFactory;
 import ini.cx3d.spatialOrganization.interfaces.Triangle3D;
 
@@ -251,7 +252,7 @@ public class NewDelaunayTest {
 //					}
 //					else {
 					if (!useParallelSpatialOrganization)
-						innerNodes[i] = new SpaceNode<PhysicalNode>(position,dummyNode);
+						innerNodes[i] = new SpaceNodeFactory<PhysicalNode>().create(position, dummyNode);
 					else 
 						innerNodes[i] = initializeSOMs().createInitialNode(position, dummyNode);
 //					}
@@ -474,11 +475,12 @@ public class NewDelaunayTest {
 			createOutPut = false;
 			SpaceNode.clear();
 			Tetrahedron.clear();
-			OpenTriangleOrganizer oto = OpenTriangleOrganizer.createSimpleOpenTriangleOrganizer();
-			ini.cx3d.spatialOrganization.interfaces.Tetrahedron<PhysicalNode> startTetrahedron = TetrahedronFactory.createInitialTetrahedron(new SpaceNode<PhysicalNode>(
-					0.0, 0.0, 0.0, null), new SpaceNode<PhysicalNode>(1.0,
-					0.0, 0.0, null), new SpaceNode<PhysicalNode>(0.0, 1.0,
-					0.0, null), new SpaceNode<PhysicalNode>(0.0, 0.0, 1.0, null), oto);
+			OpenTriangleOrganizer oto = OpenTriangleOrganizer.createSimpleOpenTriangleOrganizer_java();
+			SpaceNodeFactory<PhysicalNode> snf = new SpaceNodeFactory<>();
+			ini.cx3d.spatialOrganization.interfaces.Tetrahedron<PhysicalNode> startTetrahedron = TetrahedronFactory.createInitialTetrahedron(snf.create(
+					0.0, 0.0, 0.0, null), snf.create(1.0,
+					0.0, 0.0, null), snf.create(0.0, 1.0,
+					0.0, null), snf.create(0.0, 0.0, 1.0, null), oto);
 			SpaceNode<PhysicalNode>[] innerNodes = new SpaceNode[initialNodeCount+insertNodeCount];
 	//		// lets create some random nodes in a cubic volume, all nodes sitting at integer positions:
 	//		for (int i = 0; i < initialNodeCount; i++) {
@@ -524,7 +526,7 @@ public class NewDelaunayTest {
 				if (i % 10000 == 0)
 					System.out.println("");
 	//			checkConvexHull();
-				innerNodes[i] = new SpaceNode<PhysicalNode>(
+				innerNodes[i] = new SpaceNode(
 						rand.nextDouble()*2*volumeConstant - volumeConstant,
 						rand.nextDouble()*2*volumeConstant - volumeConstant,
 						rand.nextDouble()*2*volumeConstant - volumeConstant, null	);

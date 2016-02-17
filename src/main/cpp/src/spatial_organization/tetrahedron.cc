@@ -119,9 +119,11 @@ template<class T>
 std::string Tetrahedron<T>::toString() const {
   std::ostringstream str_stream;
   str_stream << "(";
-  for (size_t i = 0; i < adjacent_nodes_.size(); i++) {
-    str_stream << StringUtil::toStr(adjacent_nodes_[i]) << ", ";
-  }
+//  for (size_t i = 0; i < adjacent_nodes_.size(); i++) {
+//    str_stream << StringUtil::toStr(adjacent_nodes_[i]) << ", ";
+//  }
+//  str_stream << StringUtil::toStr(adjacent_nodes_);
+//  str_stream << ", ";
   str_stream << StringUtil::toStr(circum_center_);
   str_stream << ", ";
   str_stream << StringUtil::toStr(squared_radius_);
@@ -351,7 +353,7 @@ std::array<std::shared_ptr<T>, 4> Tetrahedron<T>::getVerticeContents() const {
       ret[i] = adjacent_nodes_[i]->getUserObject();
     } else {
       std::shared_ptr<T> null_T(nullptr);
-      ret[i] = null_T;
+      ret[i] = null_T; // todo - should be return null!
     }
   }
   return ret;

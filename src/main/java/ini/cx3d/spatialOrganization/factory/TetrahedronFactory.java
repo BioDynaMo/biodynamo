@@ -43,8 +43,8 @@ public class TetrahedronFactory<T> {
         }
     }
 
-    public static <T> Tetrahedron createInitialTetrahedron(SpaceNode<T> a,
-                                                           SpaceNode<T> b, SpaceNode<T> c, SpaceNode<T> d, OpenTriangleOrganizer<T> oto) {
+    public static <T> Tetrahedron createInitialTetrahedron(SpaceNode a,
+                                                           SpaceNode b, SpaceNode c, SpaceNode d, OpenTriangleOrganizer<T> oto) {
         Tetrahedron result = null;
         if (NATIVE) {
             result = ini.cx3d.swig.spatialOrganization.TetrahedronT_PhysicalNode.createInitialTetrahedron(a, b, c, d, oto);

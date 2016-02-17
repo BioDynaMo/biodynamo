@@ -1,5 +1,7 @@
 package ini.cx3d;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonReader;
@@ -157,7 +159,6 @@ public abstract class BaseSimulationTest {
     private void assertSimulationState() throws IOException {
         String jsonString = ECM.getInstance().simStateToJson(new NativeStringBuilder()).str();
         JsonElement jsonTree = new JsonParser().parse(jsonString);
-
         String refFileName = getClass().getSimpleName() + ".json";
         if (!"true".equals(System.getProperty("updateSimStateReferenceFiles"))) {
             //parse reference
@@ -169,9 +170,10 @@ public abstract class BaseSimulationTest {
 //            Gson gson = new GsonBuilder().setPrettyPrinting().create();
 //            System.out.println(gson.toJson(jsonTree));
 //            System.out.println(gson.toJson(reference));
+//            assertEquals(gson.toJson(jsonTree), gson.toJson(reference));
 
 //            assertEquals(reference.toString(),jsonString);
-            assertTrue(jsonTree.equals(reference));
+            assertEquals(reference, jsonTree);
         } else {
             TestUtil.persistJson(TestUtil.getResourcePath()+refFileName, jsonString);
         }

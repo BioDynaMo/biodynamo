@@ -46,7 +46,7 @@ class StringUtil {
   template<typename ... Args>
   static void logMethodCall(const std::string& method_name, const std::string& internal_state,
                             Args ... args) {
-    //unsigned line = getLineNumber();
+    // unsigned line = getLineNumber();
     std::ostringstream oss;
     oss << "DBG " << (method_name != "equalTo" ? method_name : "equals") << " args: {";
     StringUtil::processParameters(oss, args...);
@@ -55,7 +55,7 @@ class StringUtil {
   }
 
   static void logMethodCall(const std::string& method_name, const std::string& internal_state) {
-    //unsigned line = getLineNumber();
+    // unsigned line = getLineNumber();
     std::ostringstream oss;
     oss << "DBG " << (method_name != "equalTo" ? method_name : "equals") << " args: {";
     oss << "} innerState: " + internal_state;
@@ -65,7 +65,7 @@ class StringUtil {
   template<class T>
   static void logMethodReturn(const std::string& method_name, const std::string& internal_state,
                               T t) {
-    //unsigned line = getLineNumber();
+    // unsigned line = getLineNumber();
     std::ostringstream oss;
     oss << "DBG " << (method_name != "equalTo" ? method_name : "equals") << " return " << toStr(t)
         << " innerState: " + internal_state;
@@ -73,7 +73,7 @@ class StringUtil {
   }
 
   static void logMethodReturn(const std::string& method_name, const std::string& internal_state) {
-    //unsigned line = getLineNumber();
+    // unsigned line = getLineNumber();
     std::ostringstream oss;
     oss << "DBG " << (method_name != "equalTo" ? method_name : "equals") << " return  innerState: "
         << internal_state;
@@ -82,7 +82,7 @@ class StringUtil {
 
   template<class T>
   static void logMethodReturnStatic(const std::string& method_name, T t) {
-    //unsigned line = getLineNumber();
+    // unsigned line = getLineNumber();
     std::ostringstream oss;
     oss << "DBG " << (method_name != "equalTo" ? method_name : "equals") << " return " << toStr(t);
     std::cout << oss.str() << std::endl;
@@ -133,6 +133,11 @@ class StringUtil {
   }
 
   static std::string toStr(double d) {
+    static bool set_locale = false;
+    if(!set_locale) {
+      std::locale::global(std::locale::classic());
+      set_locale = true;
+    }
     char buffer[buffer_size_];
     snprintf(buffer, buffer_size_, "%.5f", d);
     return std::string(buffer);

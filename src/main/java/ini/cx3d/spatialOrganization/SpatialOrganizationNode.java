@@ -22,6 +22,9 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 package ini.cx3d.spatialOrganization;
 
 import ini.cx3d.SimStateSerializable;
+import ini.cx3d.spatialOrganization.interfaces.*;
+
+import java.util.AbstractSequentialList;
 
 /**
  * Interface to define the basic properties of a node in the triangulation.
@@ -34,9 +37,9 @@ public interface SpatialOrganizationNode<T> extends SimStateSerializable {
 	
 	public void addSpatialOrganizationNodeMovementListener(SpatialOrganizationNodeMovementListener<T> listener);
 	
-	public Iterable<SpatialOrganizationEdge<T>> getEdges();
+	public AbstractSequentialList<ini.cx3d.spatialOrganization.interfaces.Edge> getEdges();
 	
-	public Iterable<T> getNeighbors();
+	public AbstractSequentialList<T> getNeighbors();
 	
 	public SpatialOrganizationNode<T> getNewInstance(double[] position, T userObject) 
 		throws PositionNotAllowedException;

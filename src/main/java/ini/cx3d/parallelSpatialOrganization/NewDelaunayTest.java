@@ -495,7 +495,7 @@ public class NewDelaunayTest {
 //				startTetrahedron = null;
 //				e1.printStackTrace();
 //			}
-//			OpenTriangleOrganizer oto = OpenTriangleOrganizer.createSimpleOpenTriangleOrganizer();
+//			OpenTriangleOrganizer oto = OpenTriangleOrganizer.createSimpleOpenTriangleOrganizer_java();
 			SpaceNode<PhysicalNode>[] innerNodes = new SpaceNode[initialNodeCount+insertNodeCount];
 	//		// lets create some random nodes in a cubic volume, all nodes sitting at integer positions:
 	//		for (int i = 0; i < initialNodeCount; i++) {

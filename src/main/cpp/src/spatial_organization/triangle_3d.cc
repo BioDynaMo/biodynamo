@@ -1,7 +1,6 @@
 #include "spatial_organization/triangle_3d.h"
 
 #include <stdint.h>
-
 #include <cmath>
 #include <array>
 #include <limits>
@@ -376,14 +375,15 @@ double Triangle3D<T>::getTypicalSDDistance() const {
 
 template<class T>
 std::string Triangle3D<T>::toString() const {
-  return "{(" + StringUtil::toStr(nodes_[0]) + "," + StringUtil::toStr(nodes_[1]) + ","
-      + StringUtil::toStr(nodes_[2]) + "), " + "(" + StringUtil::toStr(adjacent_tetrahedra_[0])
-      + "," + StringUtil::toStr(adjacent_tetrahedra_[1]) + "), " + StringUtil::toStr(circum_center_)
-      + ", " + StringUtil::toStr(plane_updated_) + ", " + StringUtil::toStr(circum_center_updated_)
-      + ", " + StringUtil::toStr(upper_side_positive_) + ", "
-      + StringUtil::toStr(connection_checked_) + ", " + StringUtil::toStr(this->normal_vector_)
-      + ", " + StringUtil::toStr(this->offset_) + ", " + StringUtil::toStr(this->tolerance_) + ", "
-      + StringUtil::toStr(this->normal_vector_updated_) + "}";
+  return "T3D";
+//  return "{(" + StringUtil::toStr(nodes_[0]) + "," + StringUtil::toStr(nodes_[1]) + ","
+//      + StringUtil::toStr(nodes_[2]) + "), " + "(" + StringUtil::toStr(adjacent_tetrahedra_[0])
+//      + "," + StringUtil::toStr(adjacent_tetrahedra_[1]) + "), " + StringUtil::toStr(circum_center_)
+//      + ", " + StringUtil::toStr(plane_updated_) + ", " + StringUtil::toStr(circum_center_updated_)
+//      + ", " + StringUtil::toStr(upper_side_positive_) + ", "
+//      + StringUtil::toStr(connection_checked_) + ", " + StringUtil::toStr(this->normal_vector_)
+//      + ", " + StringUtil::toStr(this->offset_) + ", " + StringUtil::toStr(this->tolerance_) + ", "
+//      + StringUtil::toStr(this->normal_vector_updated_) + "}";
 }
 
 template<class T>

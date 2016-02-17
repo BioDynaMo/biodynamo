@@ -1416,7 +1416,7 @@ public class SpaceNode<T> extends ManagedObject<T> {
 			// if (messedUpTetrahedron.isValid()) {
 			//					
 			// if (oto == null)
-			// oto = OpenTriangleOrganizer.createSimpleOpenTriangleOrganizer();
+			// oto = OpenTriangleOrganizer.createSimpleOpenTriangleOrganizer_java();
 			// messedUpTetrahedron.remove();
 			// for (int i = 0; i < 4; i++) {
 			// Triangle3D currentTriangle =

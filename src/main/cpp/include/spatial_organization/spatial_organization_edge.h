@@ -25,7 +25,8 @@ class SpatialOrganizationEdge {
    * @param element A user object associated with one of the two endpoints of this edge.
    * @return The second user object associated to an endpoint of this edge.
    */
-  virtual std::shared_ptr<T> getOppositeElement(const std::shared_ptr<T>& element) const = 0;
+  virtual std::shared_ptr<T> getOppositeElement(
+      const std::shared_ptr<T>& element) const = 0;
 
   /**
    * Given one endpoint of this edge, this function returns the other endpoint.
@@ -34,7 +35,7 @@ class SpatialOrganizationEdge {
    * is not incident to this edge.
    */
   virtual std::shared_ptr<SpaceNode<T>> getOpposite(
-      const std::shared_ptr<SpaceNode<T>>& node) const = 0;
+      const std::shared_ptr<const SpaceNode<T>>& node) const = 0;
 
   /**
    * @return One of the two user objects associated to the endpoints of this edge.

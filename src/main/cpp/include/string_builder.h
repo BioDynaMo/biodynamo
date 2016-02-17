@@ -38,6 +38,8 @@ class StringBuilder {
  public:
   StringBuilder()
       : string_stream_() {
+    // fixes issue with decimal separator in floating points - sets it to "."
+    std::locale::global(std::locale::classic());
   }
   StringBuilder(const StringBuilder &src)
       : string_stream_() {

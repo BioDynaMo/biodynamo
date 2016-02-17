@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8.9)
 project(cx3d-cpp)
-#set(CMAKE_BUILD_TYPE Release)
+set(CMAKE_BUILD_TYPE Debug)
 
 # include custom cmake files
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "modules/")
@@ -16,7 +16,7 @@ set(JAVA_TEST_RESOURCE_PATH ../src/test/resources)
 set(JAVA_TEST_SWIG_PATH ../src/test/java/ini/cx3d/swig)
 
 #--------------------- set compiler flags -------------
-set(GCC_COMPILE_FLAGS "-Wall -Wextra")
+set(GCC_COMPILE_FLAGS "-Wall -Wextra -O3")
 set(GCC_LINK_FLAGS    "")
 # append
 set( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${GCC_COMPILE_FLAGS}" )

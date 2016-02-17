@@ -21,6 +21,8 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 
 package ini.cx3d.spatialOrganization;
 
+import ini.cx3d.spatialOrganization.interfaces.*;
+
 /**
  * 
  * @author Dennis Gohlsdorf & Frederic Zubler
@@ -28,10 +30,10 @@ package ini.cx3d.spatialOrganization;
  * @param <T>
  */
 public interface SpatialOrganizationNodeMovementListener<T> {
-	public void nodeAboutToMove(SpatialOrganizationNode<T> n, double[] planedMovement);
-	public void nodeMoved(SpatialOrganizationNode<T> n);
-	public void nodeAboutToBeRemoved(SpatialOrganizationNode<T> n);
-	public void nodeRemoved(SpatialOrganizationNode<T> n);
-	public void nodeAboutToBeAdded(SpatialOrganizationNode<T> n, double[] planedPosition, Object[] verticesOfTheTetrahedronContainingThePosition);
-	public void nodeAdded(SpatialOrganizationNode<T> n);
+	public void nodeAboutToMove(ini.cx3d.spatialOrganization.interfaces.SpaceNode n, double[] planedMovement);
+	public void nodeMoved(ini.cx3d.spatialOrganization.interfaces.SpaceNode n);
+	public void nodeAboutToBeRemoved(ini.cx3d.spatialOrganization.interfaces.SpaceNode n);
+	public void nodeRemoved(ini.cx3d.spatialOrganization.interfaces.SpaceNode n);
+	public void nodeAboutToBeAdded(ini.cx3d.spatialOrganization.interfaces.SpaceNode n, double[] planedPosition, Object[] verticesOfTheTetrahedronContainingThePosition);
+	public void nodeAdded(ini.cx3d.spatialOrganization.interfaces.SpaceNode n);
 }

@@ -55,12 +55,12 @@ class TetrahedronDebug : public Tetrahedron<T> {
     return ret;
   }
 
-  bool equalTo(const std::shared_ptr<Tetrahedron<T>>& other) override {
-    logCall(other);
-    auto ret = Tetrahedron<T>::equalTo(other);
-    logReturn(ret);
-    return ret;
-  }
+//  bool equalTo(const std::shared_ptr<Tetrahedron<T>>& other) override {
+//    logCall(other);
+//    auto ret = Tetrahedron<T>::equalTo(other);
+//    logReturn(ret);
+//    return ret;
+//  }
 
   std::array<std::shared_ptr<Triangle3D<T>>, 4> getAdjacentTriangles() const override {
     logCallParameterless();

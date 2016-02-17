@@ -68,7 +68,7 @@ public interface SpaceNode<T> extends SpatialOrganizationNode<T> {
 	 * Returns an {@link Iterable} that allows to iterate over all edges
 	 * incident to this node.
 	 */
-	AbstractSequentialList<SpatialOrganizationEdge<T>> getEdges();
+	AbstractSequentialList<ini.cx3d.spatialOrganization.interfaces.Edge> getEdges();
 
 	T getUserObject();
 
@@ -126,7 +126,7 @@ public interface SpaceNode<T> extends SpatialOrganizationNode<T> {
 	 *            movements.
 	 */
 	void setListenerList(
-			AbstractSequentialList<SpatialOrganizationNodeMovementListener<T>> listeners);
+			AbstractSequentialList<SpatialOrganizationNodeMovementListener> listeners);
 
 	/*
          * (non-Javadoc)
@@ -220,5 +220,5 @@ public interface SpaceNode<T> extends SpatialOrganizationNode<T> {
 	 * Returns a list of all edges that are incident to this node.
 	 * @return A list of edges.
 	 */
-	AbstractSequentialList<SpatialOrganizationEdge<T>> getAdjacentEdges();
+	AbstractSequentialList<Edge> getAdjacentEdges();
 }
