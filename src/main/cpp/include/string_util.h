@@ -105,6 +105,11 @@ class StringUtil {
   }
 
   template<class T>
+  static std::string toStr(const T* ptr) {
+    return ptr != nullptr ? ptr->toString() : "null";
+  }
+
+  template<class T>
   static std::string toStr(const std::shared_ptr<T>& s_ptr) {
     return s_ptr.get() != nullptr ? s_ptr->toString() : "null";
   }

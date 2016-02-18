@@ -22,14 +22,17 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 package ini.cx3d.spatialOrganization;
 
 import ini.cx3d.spatialOrganization.factory.*;
-import ini.cx3d.spatialOrganization.interfaces.Rational;
-import ini.cx3d.spatialOrganization.interfaces.ExactVector;
-import ini.cx3d.spatialOrganization.interfaces.Triangle3D;
+import ini.cx3d.spatialOrganization.interfaces.*;
 import ini.cx3d.spatialOrganization.interfaces.EdgeHashKey;
-import ini.cx3d.spatialOrganization.interfaces.TriangleHashKey;
-import ini.cx3d.spatialOrganization.interfaces.Tetrahedron;
+import ini.cx3d.spatialOrganization.interfaces.ExactVector;
 import ini.cx3d.spatialOrganization.interfaces.SpaceNode;
+import ini.cx3d.spatialOrganization.interfaces.Tetrahedron;
+import ini.cx3d.spatialOrganization.interfaces.Triangle3D;
+import ini.cx3d.spatialOrganization.interfaces.TriangleHashKey;
 import ini.cx3d.swig.spatialOrganization.OpenTriangleOrganizerT_PhysicalNode;
+import ini.cx3d.swig.spatialOrganization.SimpleTriangulationNodeOrganizerT_PhysicalNode;
+import ini.cx3d.swig.spatialOrganization.spatialOrganization;
+import ini.cx3d.swig.spatialOrganization.spatialOrganizationJNI;
 
 
 import static ini.cx3d.utilities.Matrix.add;
@@ -123,7 +126,7 @@ public class OpenTriangleOrganizer<T> extends OpenTriangleOrganizerT_PhysicalNod
 	 * any 'hole' in the triangulation. 
 	 * These nodes are potential candidates for combination with open triangles. 
 	 */
-	private AbstractTriangulationNodeOrganizer<T> tno;
+	private TriangulationNodeOrganizer<T> tno;
 	 
 	/**
 	 * In addition to <code>map</code>, all open triangles are also stored in this stack.
@@ -151,7 +154,7 @@ public class OpenTriangleOrganizer<T> extends OpenTriangleOrganizerT_PhysicalNod
 	 * @param tno The node organizer used to keep track of "open" nodes.
 	 */
 	public OpenTriangleOrganizer(int preferredCapacity,
-			AbstractTriangulationNodeOrganizer<T> tno) {
+			TriangulationNodeOrganizer<T> tno) {
 		registerJavaObject(this);
 		map = new HashMap<TriangleHashKey<T>, Triangle3D<T>>(
 				preferredCapacity * 2);
@@ -196,8 +199,15 @@ public class OpenTriangleOrganizer<T> extends OpenTriangleOrganizerT_PhysicalNod
 	 * @return A new instance of <code>OpenTriangleOrganizer</code>.
 	 */
 	public static <T> OpenTriangleOrganizer<T> createSimpleOpenTriangleOrganizer_java() {
-		return new OpenTriangleOrganizer<T>(30,
-				new SimpleTriangulationNodeOrganizer<T>());
+		TriangulationNodeOrganizer<T> tno;
+		if (spatialOrganization.useNativeSimpleTriangulationNodeOrganizer) {
+			tno = SimpleTriangulationNodeOrganizerT_PhysicalNode.create();
+		} else if(!spatialOrganization.debugSimpleTriangulationNodeOrganizer) {
+			tno = new SimpleTriangulationNodeOrganizer<T>();
+		} else {
+			throw new UnsupportedOperationException("debugging object not yet supported");
+		}
+		return new OpenTriangleOrganizer<T>(30, tno);
 	}
 
 	/**
@@ -808,8 +818,7 @@ public class OpenTriangleOrganizer<T> extends OpenTriangleOrganizerT_PhysicalNod
 	 * @param rep A reporter object that serves to provide distance information to a 
 	 * node organizer. 
 	 */
-	private void createInitialTriangle(
-			AbstractTriangulationNodeOrganizer.DistanceReporter rep) {
+	private void createInitialTriangle(DistanceReporter rep) {
 		// find a starting node:
 		ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> a = tno.getFirstNode();
 
@@ -817,7 +826,7 @@ public class OpenTriangleOrganizer<T> extends OpenTriangleOrganizerT_PhysicalNod
 		// find the second node by minimizing the distance to the first node:
 		shortestDistance = Double.MAX_VALUE;
 		ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> b = null;
-		for (ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> dummy : tno.getNodes(a, rep)) {
+		for (ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> dummy : tno.getNodes(a)) {
 			double[] vector = subtract(dummy.getPosition(),
 					a.getPosition());
 			double distance = dot(vector, vector);
@@ -859,7 +868,7 @@ public class OpenTriangleOrganizer<T> extends OpenTriangleOrganizerT_PhysicalNod
 		ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> c = null;
 		tolerance = dot(normals[0], normals[0]) * 0.000000001;
 
-		for (ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> dummy : tno.getNodes(a, rep)) {
+		for (ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> dummy : tno.getNodes(a)) {
 			double[] dummyPos = dummy.getPosition();
 			double[] avToDummyPos = subtract(dummyPos, av);
 			normals[1] = crossProduct(normals[0],
@@ -943,153 +952,154 @@ public class OpenTriangleOrganizer<T> extends OpenTriangleOrganizerT_PhysicalNod
 	 *    
 	 */
 	public void triangulate() {
-		AbstractTriangulationNodeOrganizer.DistanceReporter rep = new AbstractTriangulationNodeOrganizer.DistanceReporter() {
-			public double getCurrentMinimalDistance() {
-				return shortestDistance;
-			}
-		};
-		if (openTriangles.isEmpty())
-			createInitialTriangle(rep);
-		double upperBound = 0, lowerBound = 0;
-		LinkedList<ini.cx3d.spatialOrganization.interfaces.SpaceNode<T>> similarDistanceNodes = new LinkedList<ini.cx3d.spatialOrganization.interfaces.SpaceNode<T>>();
-		LinkedList<ini.cx3d.spatialOrganization.interfaces.SpaceNode<T>> onCircleNodes = new LinkedList<ini.cx3d.spatialOrganization.interfaces.SpaceNode<T>>();
-		Triangle3D<T> openTriangle = getAnOpenTriangle();
-		int securityCounter = 0;
-		while (openTriangle != null) {
-			openTriangle.update();
-			SpaceNode<T> pickedNode = null;
+		try {
+			DistanceReporter rep = new DistanceReporter() {
+				public double getCurrentMinimalDistance() {
+					return shortestDistance;
+				}
+			};
+			if (openTriangles.isEmpty())
+				createInitialTriangle(rep);
+			double upperBound = 0, lowerBound = 0;
+			LinkedList<ini.cx3d.spatialOrganization.interfaces.SpaceNode<T>> similarDistanceNodes = new LinkedList<ini.cx3d.spatialOrganization.interfaces.SpaceNode<T>>();
+			LinkedList<ini.cx3d.spatialOrganization.interfaces.SpaceNode<T>> onCircleNodes = new LinkedList<ini.cx3d.spatialOrganization.interfaces.SpaceNode<T>>();
+			Triangle3D<T> openTriangle = getAnOpenTriangle();
+			int securityCounter = 0;
+			while (openTriangle != null) {
+				openTriangle.update();
+				SpaceNode<T> pickedNode = null;
 //			if (openTriangle.getOppositeTetrahedron(null).isInfinite()) {
 //				createNewTetrahedron(openTriangle, null);
 //				openTriangle = getAnOpenTriangle();
 //				continue;
 //			}
-			openTriangle.orientToOpenSide();
-			Tetrahedron<T> lastTetrahedron = openTriangle
-					.getOppositeTetrahedron(null);
-			shortestDistance = Double.MAX_VALUE;
-			upperBound = shortestDistance;
-			lowerBound = shortestDistance;
-			double tolerance = openTriangle
-					.getTypicalSDDistance() * 0.0000001;
+				openTriangle.orientToOpenSide();
+				Tetrahedron<T> lastTetrahedron = openTriangle
+						.getOppositeTetrahedron(null);
+				shortestDistance = Double.MAX_VALUE;
+				upperBound = shortestDistance;
+				lowerBound = shortestDistance;
+				double tolerance = openTriangle
+						.getTypicalSDDistance() * 0.0000001;
 //			double tolerance = 0.00002;
-			if (Math.random() < 0.001)
-				addToleranceValue(tolerance);
-			for (SpaceNode<T> node : tno.getNodes(openTriangle
-					.getNodes()[0], rep)) {
-				if (!openTriangle.isAdjacentTo(node)) {
-					double currentDistance = openTriangle
-							.getSDDistance(node
-									.getPosition());
-					normalCalculations++;
-					// boolean dummy =false;
-					// if (dummy) {
-					// FieldElement lastSDDistance = openTriangle
-					// .getSDDistanceExact((pickedNode !=
-					// null)?pickedNode.getPosition():node.getPosition(),
-					// lastTetrahedron.getOppositeNode(openTriangle).getPosition());
-					// FieldElement newSDDistance = openTriangle
-					// .getSDDistanceExact(node.getPosition(),
-					// lastTetrahedron.getOppositeNode(openTriangle).getPosition());
-					// if (NewDelaunayTest.createOutput()) NewDelaunayTest.out(lastSDDistance);
-					// if (NewDelaunayTest.createOutput()) NewDelaunayTest.out(newSDDistance);
-					//						
-					// }
-					if ((currentDistance < upperBound)) { // &&
-															// (currentDistance
-															// >= 0)) {
-						boolean smaller = false;
-						if (currentDistance > lowerBound) {
+				if (Math.random() < 0.001)
+					addToleranceValue(tolerance);
+				for (SpaceNode<T> node : tno.getNodes(openTriangle.getNodes()[0])) {
+					if (!openTriangle.isAdjacentTo(node)) {
+						double currentDistance = openTriangle.getSDDistance(node.getPosition());
+						normalCalculations++;
+						// boolean dummy =false;
+						// if (dummy) {
+						// FieldElement lastSDDistance = openTriangle
+						// .getSDDistanceExact((pickedNode !=
+						// null)?pickedNode.getPosition():node.getPosition(),
+						// lastTetrahedron.getOppositeNode(openTriangle).getPosition());
+						// FieldElement newSDDistance = openTriangle
+						// .getSDDistanceExact(node.getPosition(),
+						// lastTetrahedron.getOppositeNode(openTriangle).getPosition());
+						// if (NewDelaunayTest.createOutput()) NewDelaunayTest.out(lastSDDistance);
+						// if (NewDelaunayTest.createOutput()) NewDelaunayTest.out(newSDDistance);
+						//
+						// }
+						if ((currentDistance < upperBound)) { // &&
+							// (currentDistance
+							// >= 0)) {
+							boolean smaller = false;
+							if (currentDistance > lowerBound) {
 //							System.out.print(".");
-							exactCalculations++;
-							
-							Rational lastSDDistance = openTriangle
-									.getSDDistanceExact(
-											pickedNode
-													.getPosition());
-//											lastTetrahedron
-//													.getOppositeNode(
-//															openTriangle)
-//													.getPosition());
-							Rational newSDDistance = openTriangle
-									.getSDDistanceExact(
-											node
-													.getPosition());
-//											lastTetrahedron
-//													.getOppositeNode(
-//															openTriangle)
-//													.getPosition());
-							int comparison = lastSDDistance
-									.compareTo(newSDDistance);
-							if ((comparison != 0) && ((comparison > 0) ^ (currentDistance < shortestDistance))) {
-								double difference = Math.abs(currentDistance - shortestDistance);
-								if (difference > maxToleranceNeeded)
-									maxToleranceNeeded = difference;
-							}
-							if (comparison == 0)
-								similarDistanceNodes
-										.add(node);
-							else if (comparison > 0) 
-								smaller = true;
-						} else
-							smaller = true;
-						if (smaller) {
-							similarDistanceNodes.clear();
-							shortestDistance = currentDistance;
-							// bounds to determine if another node causes the
-							// 'same' signed delaunay distance:
-							upperBound = shortestDistance
-									+ tolerance;
-							lowerBound = shortestDistance
-									- tolerance;
-							pickedNode = node;
-						}
-					} else if (openTriangle.orientationToUpperSide(node
-							.getPosition()) == 0
-							&& openTriangle.circleOrientation(node.getPosition())==0)
-						onCircleNodes.add(node);
-				}
+								exactCalculations++;
 
-			}
-			if (pickedNode == null
-					|| (similarDistanceNodes.isEmpty() && onCircleNodes
-							.isEmpty())) {
-				// if (pickedNode == null)
-				// throw new RuntimeException("No opposing node was found for
-				// the triangle "+openTriangle+" (adjacent tetrahedron:
-				// "+lastTetrahedron+")");
-				if (pickedNode != null && pickedNode.getId() == 12)
-					if (NewDelaunayTest.createOutput()) NewDelaunayTest.out("triangulate");
-				createNewTetrahedron(openTriangle,
-						pickedNode);
-			} else {
-				// Tetrahedron oppositeTenodetrahedron =
-				// openTriangle.getOppositeTetrahedron(null);
-				similarDistanceNodes.add(pickedNode);
-				// // find all nodes that lie on the same circle as the current
-				// open triangle:
-				// for (SpaceNode node :
-				// tno.getNodes(openTriangle.getNodes()[0], rep)) {
-				// if (!openTriangle.isAdjacentTo(node) &&
-				// !similarDistanceNodes.contains(node) &&
-				// openTriangle.inThePlane(node.getPosition()) &&
-				// (oppositeTetrahedron.isInsideSphere(node.getPosition()))) {
-				// similarDistanceNodes.add(node);
-				// }
-				// }
-				triangulatePointsOnSphere(
-						similarDistanceNodes,
-						onCircleNodes, openTriangle);
-			}
-			similarDistanceNodes.clear();
-			onCircleNodes.clear();
-			openTriangle = getAnOpenTriangle();
-			securityCounter++;
-			if (securityCounter > 2000)
-				throw new RuntimeException("Am I in an infinite loop?");
+								Rational lastSDDistance = openTriangle
+										.getSDDistanceExact(
+												pickedNode
+														.getPosition());
+//											lastTetrahedron
+//													.getOppositeNode(
+//															openTriangle)
+//													.getPosition());
+								Rational newSDDistance = openTriangle
+										.getSDDistanceExact(
+												node
+														.getPosition());
+//											lastTetrahedron
+//													.getOppositeNode(
+//															openTriangle)
+//													.getPosition());
+								int comparison = lastSDDistance
+										.compareTo(newSDDistance);
+								if ((comparison != 0) && ((comparison > 0) ^ (currentDistance < shortestDistance))) {
+									double difference = Math.abs(currentDistance - shortestDistance);
+									if (difference > maxToleranceNeeded)
+										maxToleranceNeeded = difference;
+								}
+								if (comparison == 0)
+									similarDistanceNodes
+											.add(node);
+								else if (comparison > 0)
+									smaller = true;
+							} else
+								smaller = true;
+							if (smaller) {
+								similarDistanceNodes.clear();
+								shortestDistance = currentDistance;
+								// bounds to determine if another node causes the
+								// 'same' signed delaunay distance:
+								upperBound = shortestDistance
+										+ tolerance;
+								lowerBound = shortestDistance
+										- tolerance;
+								pickedNode = node;
+							}
+						} else if (openTriangle.orientationToUpperSide(node
+								.getPosition()) == 0
+								&& openTriangle.circleOrientation(node.getPosition()) == 0)
+							onCircleNodes.add(node);
+					}
+
+				}
+				if (pickedNode == null
+						|| (similarDistanceNodes.isEmpty() && onCircleNodes
+						.isEmpty())) {
+					// if (pickedNode == null)
+					// throw new RuntimeException("No opposing node was found for
+					// the triangle "+openTriangle+" (adjacent tetrahedron:
+					// "+lastTetrahedron+")");
+					if (pickedNode != null && pickedNode.getId() == 12)
+						if (NewDelaunayTest.createOutput()) NewDelaunayTest.out("triangulate");
+					createNewTetrahedron(openTriangle,
+							pickedNode);
+				} else {
+					// Tetrahedron oppositeTenodetrahedron =
+					// openTriangle.getOppositeTetrahedron(null);
+					similarDistanceNodes.add(pickedNode);
+					// // find all nodes that lie on the same circle as the current
+					// open triangle:
+					// for (SpaceNode node :
+					// tno.getNodes(openTriangle.getNodes()[0], rep)) {
+					// if (!openTriangle.isAdjacentTo(node) &&
+					// !similarDistanceNodes.contains(node) &&
+					// openTriangle.inThePlane(node.getPosition()) &&
+					// (oppositeTetrahedron.isInsideSphere(node.getPosition()))) {
+					// similarDistanceNodes.add(node);
+					// }
+					// }
+					triangulatePointsOnSphere(
+							similarDistanceNodes,
+							onCircleNodes, openTriangle);
+				}
+				similarDistanceNodes.clear();
+				onCircleNodes.clear();
+				openTriangle = getAnOpenTriangle();
+				securityCounter++;
+				if (securityCounter > 2000)
+					throw new RuntimeException("Am I in an infinite loop?");
 //				securityCounter = 0;
-		}
-		if (!map.isEmpty()) {
-			if (NewDelaunayTest.createOutput()) NewDelaunayTest.out("Aarrgh");
+			}
+			if (!map.isEmpty()) {
+				if (NewDelaunayTest.createOutput()) NewDelaunayTest.out("Aarrgh");
+			}
+		}catch(Exception e) {
+			e.printStackTrace();
 		}
 	}
 

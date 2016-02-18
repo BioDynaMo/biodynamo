@@ -21,7 +21,13 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 
 package ini.cx3d.spatialOrganization;
 
+import ini.cx3d.spatialOrganization.interfaces.*;
+import ini.cx3d.spatialOrganization.interfaces.SpaceNode;
+import ini.cx3d.swig.spatialOrganization.SimpleTriangulationNodeOrganizerT_PhysicalNode;
+
+import java.util.AbstractSequentialList;
 import java.util.Iterator;
+import java.util.LinkedList;
 
 /**
  * This class is a very simple implementation of {@link AbstractTriangulationNodeOrganizer}.
@@ -31,29 +37,50 @@ import java.util.Iterator;
  *
  * @param <T> The type of user objects associated with the nodes in the current triangulation.
  */
-public class SimpleTriangulationNodeOrganizer<T> extends
-		AbstractTriangulationNodeOrganizer<T> {
+public class SimpleTriangulationNodeOrganizer<T>  extends SimpleTriangulationNodeOrganizerT_PhysicalNode {
+//		AbstractTriangulationNodeOrganizer<T> {
 
 	BinaryTreeElement<T> treeHead = BinaryTreeElement.generateTreeHead();
 	
 	public SimpleTriangulationNodeOrganizer() {
+//		registerJavaObject(this);
 	}
 
+	public void addTriangleNodes(ini.cx3d.spatialOrganization.interfaces.Triangle3D triangle) {
+		addNode(triangle.getNodes()[1]);
+		addNode(triangle.getNodes()[2]);
+		addNode(triangle.getNodes()[0]);
+	}
+
+	public AbstractSequentialList<ini.cx3d.spatialOrganization.interfaces.SpaceNode> getNodes(final ini.cx3d.spatialOrganization.interfaces.SpaceNode referencePoint) {
+		AbstractSequentialList<ini.cx3d.spatialOrganization.interfaces.SpaceNode> list = new LinkedList<>();
+		Iterator<SpaceNode> it = getNodeIterator(referencePoint);
+		while (it.hasNext()) {
+			list.add(it.next());
+		}
+		return list;
+	}
+
+	@Override
 	public String toString() {
 		return "[" + treeHead + "]";
 	}
-	public void addNode(ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> node) {
+	@Override
+	public void addNode(ini.cx3d.spatialOrganization.interfaces.SpaceNode node) {
 		treeHead.insert(node);
 	}
 	       
-	public Iterator<ini.cx3d.spatialOrganization.interfaces.SpaceNode<T>> getNodeIterator(
-			ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> referencePoint, DistanceReporter rep) {
+	@Override
+	public Iterator<ini.cx3d.spatialOrganization.interfaces.SpaceNode> getNodeIterator(
+			ini.cx3d.spatialOrganization.interfaces.SpaceNode referencePoint) {
 		return treeHead.iterator();
 	}
 
-	public void removeNode(ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> node) {
+	@Override
+	public void removeNode(ini.cx3d.spatialOrganization.interfaces.SpaceNode node) {
 		treeHead.remove(node, null);
 	}
+	@Override
 	public ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> getFirstNode() {
 		return treeHead.bigger.content;
 	}

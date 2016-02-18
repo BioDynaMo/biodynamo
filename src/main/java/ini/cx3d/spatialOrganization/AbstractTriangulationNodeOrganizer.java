@@ -21,8 +21,10 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 
 package ini.cx3d.spatialOrganization;
 
-import java.util.Iterator;
+import java.util.*;
 
+import ini.cx3d.spatialOrganization.interfaces.*;
+import ini.cx3d.spatialOrganization.interfaces.SpaceNode;
 import ini.cx3d.spatialOrganization.interfaces.Triangle3D;
 
 /**
@@ -33,24 +35,29 @@ import ini.cx3d.spatialOrganization.interfaces.Triangle3D;
  *
  * @param <T> The type of user objects associated with nodes in the current triangulation.
  */
-public abstract class AbstractTriangulationNodeOrganizer<T> {
-	public interface DistanceReporter {
-		public double getCurrentMinimalDistance();
-	}
-	public abstract Iterator<ini.cx3d.spatialOrganization.interfaces.SpaceNode<T>> getNodeIterator(ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> referencePoint, DistanceReporter rep);
-	public Iterable<ini.cx3d.spatialOrganization.interfaces.SpaceNode<T>> getNodes(final ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> referencePoint, final DistanceReporter rep) {
-		return new Iterable<ini.cx3d.spatialOrganization.interfaces.SpaceNode<T>>() {
-			public Iterator<ini.cx3d.spatialOrganization.interfaces.SpaceNode<T>> iterator() {
-				return getNodeIterator(referencePoint, rep);
+public abstract class AbstractTriangulationNodeOrganizer<T> implements TriangulationNodeOrganizer<T> {
+
+	protected abstract Iterator<SpaceNode<T>> getNodeIterator(SpaceNode<T> referencePoint);
+
+	private Iterable<SpaceNode<T>> getNodes1(final SpaceNode<T> referencePoint) {
+		return new Iterable<SpaceNode<T>>() {
+			public Iterator<SpaceNode<T>> iterator() {
+				return getNodeIterator(referencePoint);
 			}
 		};
 	}
-	public abstract void removeNode(ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> node);
-	public abstract void addNode(ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> node);
-	public void addTriangleNodes(Triangle3D<T> triangle) {
-		addNode(triangle.getNodes()[1]);
-		addNode(triangle.getNodes()[2]);
-		addNode(triangle.getNodes()[0]);
+
+	public AbstractSequentialList<SpaceNode> getNodes(final SpaceNode<T> referencePoint) {
+		AbstractSequentialList<SpaceNode> list = new LinkedList<>();
+		Iterator<SpaceNode<T>> it = getNodeIterator(referencePoint);
+		while (it.hasNext()) {
+			list.add(it.next());
+		}
+		return list;
 	}
-	public abstract ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> getFirstNode();
+
+	public abstract void removeNode(SpaceNode<T> node);
+	public abstract void addNode(SpaceNode<T> node);
+	public abstract void addTriangleNodes(Triangle3D<T> triangle);
+	public abstract SpaceNode<T> getFirstNode();
 }

@@ -25,7 +25,7 @@ package ini.cx3d.spatialOrganization;
 import java.util.Iterator;
 import java.util.Stack;
 
-public class BinaryTreeElement<T> implements Iterable<ini.cx3d.spatialOrganization.interfaces.SpaceNode<T>> {
+public class BinaryTreeElement<T> implements Iterable<ini.cx3d.spatialOrganization.interfaces.SpaceNode> {
 	ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> content;
 	BinaryTreeElement<T> smaller, bigger;
 	int contentID;
@@ -175,7 +175,7 @@ public class BinaryTreeElement<T> implements Iterable<ini.cx3d.spatialOrganizati
 //				bigger.remove(content,this);
 //		}
 //	}
-	public Iterator<ini.cx3d.spatialOrganization.interfaces.SpaceNode<T>> iterator() {
+	public Iterator<ini.cx3d.spatialOrganization.interfaces.SpaceNode> iterator() {
 		final Stack<BinaryTreeElement<T>> elementStack = new Stack<BinaryTreeElement<T>>();
 		BinaryTreeElement<T> dummy = this;
 		while (dummy != null) {
@@ -183,7 +183,7 @@ public class BinaryTreeElement<T> implements Iterable<ini.cx3d.spatialOrganizati
 			dummy = dummy.smaller;
 		}
 		
-		return new Iterator<ini.cx3d.spatialOrganization.interfaces.SpaceNode<T>>() {
+		return new Iterator<ini.cx3d.spatialOrganization.interfaces.SpaceNode>() {
 			public boolean hasNext() {
 				return !elementStack.isEmpty();
 			}
@@ -213,9 +213,9 @@ public class BinaryTreeElement<T> implements Iterable<ini.cx3d.spatialOrganizati
 			public void remove(ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> content, BinaryTreeElement<T> dad) {
 				if (bigger != null) bigger.remove(content, this);
 			}
-			public Iterator<ini.cx3d.spatialOrganization.interfaces.SpaceNode<T>> iterator() {
+			public Iterator<ini.cx3d.spatialOrganization.interfaces.SpaceNode> iterator() {
 				if (bigger != null) return bigger.iterator();
-				else return new Iterator<ini.cx3d.spatialOrganization.interfaces.SpaceNode<T>>() {
+				else return new Iterator<ini.cx3d.spatialOrganization.interfaces.SpaceNode>() {
 					public boolean hasNext() {	return false;	}
 					public ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> next() { return null;  }
 					public void remove() {}
