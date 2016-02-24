@@ -10,6 +10,8 @@ namespace spatial_organization {
 
 template<class T> class SpaceNode;
 template<class T> class Tetrahedron;
+template<class T> struct TriangleHashKeyHash;
+template<class T> struct TriangleHashKeyEqual;
 
 /**
  * Class to provide hash values for triangles.
@@ -22,6 +24,8 @@ template<class T> class Tetrahedron;
 template<class T>
 class TriangleHashKey {
  public:
+  friend struct TriangleHashKeyHash<T>;
+  friend struct TriangleHashKeyEqual<T>;
 #ifndef TRIANGLEHASHKEY_NATIVE
   TriangleHashKey()
       : a_(),
@@ -39,6 +43,8 @@ class TriangleHashKey {
    */
   TriangleHashKey(const std::shared_ptr<SpaceNode<T>>& a, const std::shared_ptr<SpaceNode<T>>& b,
                   const std::shared_ptr<SpaceNode<T>>& c);
+
+  TriangleHashKey(const TriangleHashKey& other);
 
   virtual ~TriangleHashKey() {
   }
@@ -60,7 +66,6 @@ class TriangleHashKey {
 #ifdef TRIANGLEHASHKEY_NATIVE
   TriangleHashKey() = delete;
 #endif
-  TriangleHashKey(const TriangleHashKey&) = delete;
   TriangleHashKey& operator=(const TriangleHashKey&) = delete;
 
   /**
@@ -81,6 +86,17 @@ class TriangleHashKey {
    */
   void createHashCode(int a_id, int b_id, int c_id);
 };
+
+template<class T>
+struct TriangleHashKeyHash {
+  std::size_t operator()(const TriangleHashKey<T>& key) const;
+};
+
+template<class T>
+struct TriangleHashKeyEqual {
+  bool operator()(const TriangleHashKey<T>& lhs, const TriangleHashKey<T>& rhs) const;
+};
+
 
 }  // namespace spatial_organization
 }  // namespace cx3d

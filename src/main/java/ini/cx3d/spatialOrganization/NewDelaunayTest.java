@@ -475,7 +475,7 @@ public class NewDelaunayTest {
 			createOutPut = false;
 			SpaceNode.clear();
 			Tetrahedron.clear();
-			OpenTriangleOrganizer oto = OpenTriangleOrganizer.createSimpleOpenTriangleOrganizer_java();
+			ini.cx3d.spatialOrganization.interfaces.OpenTriangleOrganizer oto = OpenTriangleOrganizer.createSimpleOpenTriangleOrganizer_java();
 			SpaceNodeFactory<PhysicalNode> snf = new SpaceNodeFactory<>();
 			ini.cx3d.spatialOrganization.interfaces.Tetrahedron<PhysicalNode> startTetrahedron = TetrahedronFactory.createInitialTetrahedron(snf.create(
 					0.0, 0.0, 0.0, null), snf.create(1.0,

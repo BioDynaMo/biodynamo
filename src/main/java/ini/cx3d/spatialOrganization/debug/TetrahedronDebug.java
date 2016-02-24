@@ -1,6 +1,5 @@
 package ini.cx3d.spatialOrganization.debug;
 
-import ini.cx3d.spatialOrganization.OpenTriangleOrganizer;
 import ini.cx3d.spatialOrganization.PositionNotAllowedException;
 import ini.cx3d.spatialOrganization.interfaces.SpaceNode;
 import ini.cx3d.spatialOrganization.Tetrahedron;
@@ -18,7 +17,7 @@ public class TetrahedronDebug<T> extends Tetrahedron<T>{
 
     }
 
-    public TetrahedronDebug(Triangle3D oneTriangle, SpaceNode fourthPoint, OpenTriangleOrganizer org) {
+    public TetrahedronDebug(Triangle3D oneTriangle, SpaceNode fourthPoint, ini.cx3d.spatialOrganization.interfaces.OpenTriangleOrganizer org) {
         super(oneTriangle, fourthPoint, org);
         DebugUtil.logMethodCall("Tetrahedron created", this, new Object[]{oneTriangle, fourthPoint, org});
 

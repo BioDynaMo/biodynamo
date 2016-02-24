@@ -28,6 +28,7 @@ import static ini.cx3d.SimStateSerializationUtil.removeLastChar;
 import static ini.cx3d.utilities.Matrix.*;
 
 import ini.cx3d.Param;
+import ini.cx3d.cells.AbstractCellModule;
 import ini.cx3d.localBiology.CellElement;
 import ini.cx3d.localBiology.LocalBiologyModule;
 import ini.cx3d.localBiology.NeuriteElement;
@@ -35,7 +36,9 @@ import ini.cx3d.simulations.ECM;
 import ini.cx3d.spatialOrganization.PositionNotAllowedException;
 import ini.cx3d.spatialOrganization.SpatialOrganizationNode;
 import ini.cx3d.synapses.Excrescence;
+import ini.cx3d.utilities.StringUtilities;
 
+import java.util.AbstractSequentialList;
 
 
 /**
@@ -929,7 +932,14 @@ public class PhysicalCylinder extends PhysicalObject{
 		
 		// 3) Object avoidance force -----------------------------------------------------------
 		//	(We check for every neighbor object if they touch us, i.e. push us away)
-		for (PhysicalNode neighbor : soNode.getNeighbors()) {
+		AbstractSequentialList<PhysicalNode> neighbors = soNode.getNeighbors();
+		for (int i = 0; i < neighbors.size(); i++) {
+			PhysicalNode neighbor = neighbors.get(i);
+			if(neighbor == null) {
+				System.out.println("neighbor is null - idx " + i);
+				System.out.println("#neighbors: "+ neighbors.size());
+				System.out.println("elements: "+ StringUtilities.toStr(neighbors));
+			}
 			// of course, only if it is an instance of PhysicalObject
 			if(neighbor.isAPhysicalObject()){
 				PhysicalObject n = (PhysicalObject)neighbor;

@@ -10,6 +10,8 @@ namespace spatial_organization {
 
 template<class T> class SpaceNode;
 template<class T> class Tetrahedron;
+template<class T> struct EdgeHashKeyHash;
+template<class T> struct EdgeHashKeyEqual;
 
 /**
  * Class to provide hash values for edges between two nodes.
@@ -25,6 +27,8 @@ template<class T> class Tetrahedron;
 template<class T>
 class EdgeHashKey {
  public:
+  friend struct EdgeHashKeyHash<T>;
+  friend struct EdgeHashKeyEqual<T>;
 #ifndef EDGEHASHKEY_NATIVE
   EdgeHashKey()
       : a_(),
@@ -43,8 +47,13 @@ class EdgeHashKey {
    * @param b The second enpoint of the represented edge.
    * @param opposite_node A node on the non-open side of this edge.
    */
-  EdgeHashKey(const std::shared_ptr<SpaceNode<T>>& a, const std::shared_ptr<SpaceNode<T>>& b,
+  EdgeHashKey(const std::shared_ptr<SpaceNode<T>>& a,
+              const std::shared_ptr<SpaceNode<T>>& b,
               const std::shared_ptr<SpaceNode<T>>& opposite_node);
+
+  EdgeHashKey(const EdgeHashKey& other);
+
+  EdgeHashKey<T>& operator=(const EdgeHashKey<T>& rhs);
 
   virtual ~EdgeHashKey() {
   }
@@ -91,14 +100,14 @@ class EdgeHashKey {
    * @param node The given node.
    * @return The incident node opposite to <code>node</code>.
    */
-  virtual std::shared_ptr<SpaceNode<T>> oppositeNode(const std::shared_ptr<SpaceNode<T>>& node) const;
+  virtual std::shared_ptr<SpaceNode<T>> oppositeNode(
+      const std::shared_ptr<SpaceNode<T>>& node) const;
 
  private:
 #ifdef EDGEHASHKEY_NATIVE
   EdgeHashKey() = delete;
 #endif
-  EdgeHashKey(const EdgeHashKey&) = delete;
-  EdgeHashKey& operator=(const EdgeHashKey&) = delete;
+//  EdgeHashKey& operator=(const EdgeHashKey&) = delete;
 
   /**
    * The endpoints of the edge for which a hash value should be calculated.
@@ -120,6 +129,16 @@ class EdgeHashKey {
    * The hash value associated with this edge.
    */
   int hash_code_;
+};
+
+template<class T>
+struct EdgeHashKeyHash {
+  std::size_t operator()(const EdgeHashKey<T>& element) const;
+};
+
+template<class T>
+struct EdgeHashKeyEqual {
+  bool operator()(const EdgeHashKey<T>& lhs, const EdgeHashKey<T>& rhs) const;
 };
 
 }  // namespace spatial_organization

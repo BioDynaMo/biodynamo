@@ -27,6 +27,24 @@ EdgeHashKey<T>::EdgeHashKey(const std::shared_ptr<SpaceNode<T>>& a,
 }
 
 template<class T>
+EdgeHashKey<T>::EdgeHashKey(const EdgeHashKey<T>& other){
+  hash_code_ = other.hash_code_;
+}
+
+template<class T>
+EdgeHashKey<T>& EdgeHashKey<T>::operator=(const EdgeHashKey<T>& rhs) {
+  if(this == &rhs){
+    return *this;
+  }
+  a_ = rhs.a_;
+  b_ = rhs.b_;
+  hash_code_ = rhs.hash_code_;
+  ab_ = rhs.ab_;
+  last_normal_vector_ = rhs.last_normal_vector_;
+  return *this;
+}
+
+template<class T>
 std::string EdgeHashKey<T>::toString() const {
   std::ostringstream str_stream;
   str_stream << "(";
@@ -83,7 +101,20 @@ std::shared_ptr<SpaceNode<T>> EdgeHashKey<T>::oppositeNode(
   }
 }
 
+template<class T>
+std::size_t EdgeHashKeyHash<T>::operator()( const EdgeHashKey<T>& element) const {
+  return element.hash_code_;
+}
+
+template<class T>
+bool EdgeHashKeyEqual<T>::operator()(const EdgeHashKey<T>& lhs, const EdgeHashKey<T>& rhs) const {
+  return lhs.hash_code_ == rhs.hash_code_;
+}
+
+
 template class EdgeHashKey<cx3d::PhysicalNode>;
+template struct EdgeHashKeyHash<cx3d::PhysicalNode>;
+template struct EdgeHashKeyEqual<cx3d::PhysicalNode>;
 
 }  // namespace spatial_organization
 }  // namespace cx3d

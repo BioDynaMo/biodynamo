@@ -7,6 +7,8 @@
 namespace cx3d {
 namespace spatial_organization {
 
+template<class T> class Triangle3D;
+
 /**
  * This class is used to generate debug output for the methods that are visible from
  * outside

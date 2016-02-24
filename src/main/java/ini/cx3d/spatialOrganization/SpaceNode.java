@@ -26,6 +26,7 @@ import java.util.*;
 import ini.cx3d.JavaUtil;
 import ini.cx3d.physics.PhysicalNode;
 import ini.cx3d.spatialOrganization.factory.EdgeFactory;
+import ini.cx3d.spatialOrganization.factory.OpenTriangleOrganizerFactory;
 import ini.cx3d.spatialOrganization.factory.SpaceNodeFactory;
 import ini.cx3d.spatialOrganization.factory.TetrahedronFactory;
 import ini.cx3d.spatialOrganization.interfaces.Triangle3D;
@@ -583,7 +584,7 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNode implements /*ini.cx3d.
 				((SpaceNode<T>)a).adjacentEdges.clear(); //a.getAdjacentEdges().clear();
 				((SpaceNode<T>)b).adjacentEdges.clear(); //b.getAdjacentEdges().clear();
 				// now create the first tetrahedron:
-				OpenTriangleOrganizer oto = OpenTriangleOrganizer.createSimpleOpenTriangleOrganizer_java();
+				ini.cx3d.spatialOrganization.interfaces.OpenTriangleOrganizer oto = OpenTriangleOrganizerFactory.createSimpleOpenTriangleOrganizer();
 				tetrahedronFactory.createInitialTetrahedron(this, insertPoint, a, b, oto);
 			}
 			else {
@@ -682,8 +683,8 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNode implements /*ini.cx3d.
 			for (SpatialOrganizationNodeMovementListener<T> listener : listeners)
 				listener.nodeAboutToBeRemoved(this);
 		}
-		OpenTriangleOrganizer<T> oto =
-				OpenTriangleOrganizer.createSimpleOpenTriangleOrganizer_java();
+		ini.cx3d.spatialOrganization.interfaces.OpenTriangleOrganizer<T> oto =
+				OpenTriangleOrganizerFactory.createSimpleOpenTriangleOrganizer();
 		LinkedList<Tetrahedron<T>> messedUpTetrahedra = null;
 		// Collect the triangles that are opened by removing the point and
 		// remove the corresponding tetrahedrons:
@@ -775,7 +776,7 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNode implements /*ini.cx3d.
 	 * @param oto The open triangle organizer that keeps track of all open triangles.
 	 */
 	private void processTetrahedron(Tetrahedron<T> tetrahedron,
-			LinkedList<ini.cx3d.spatialOrganization.interfaces.Triangle3D<T>> queue, OpenTriangleOrganizer<T> oto) {
+			LinkedList<ini.cx3d.spatialOrganization.interfaces.Triangle3D<T>> queue, ini.cx3d.spatialOrganization.interfaces.OpenTriangleOrganizer<T> oto) {
 		tetrahedron.remove();
 		for (int i = 0; i < 4; i++) {
 			Triangle3D<T> currentTriangle =
@@ -844,8 +845,8 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNode implements /*ini.cx3d.
 				listener.nodeAboutToBeAdded(this, position, verticeContents);
 		}
 
-		OpenTriangleOrganizer<T> oto =
-				OpenTriangleOrganizer.createSimpleOpenTriangleOrganizer_java();
+		ini.cx3d.spatialOrganization.interfaces.OpenTriangleOrganizer<T> oto =
+				OpenTriangleOrganizerFactory.createSimpleOpenTriangleOrganizer();
 		LinkedList<ini.cx3d.spatialOrganization.interfaces.Triangle3D<T>> queue = new LinkedList<ini.cx3d.spatialOrganization.interfaces.Triangle3D<T>>();
 		LinkedList<ini.cx3d.spatialOrganization.interfaces.Triangle3D<T>> outerTriangles =
 				new LinkedList<ini.cx3d.spatialOrganization.interfaces.Triangle3D<T>>();
@@ -979,7 +980,7 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNode implements /*ini.cx3d.
 	private boolean removeTetrahedronDuringCleanUp(
 			Tetrahedron<T> tetrahedronToRemove,
 			LinkedList<Tetrahedron<T>> list, LinkedList<ini.cx3d.spatialOrganization.interfaces.SpaceNode<T>> nodeList,
-			OpenTriangleOrganizer<T> oto) {
+			ini.cx3d.spatialOrganization.interfaces.OpenTriangleOrganizer<T> oto) {
 		boolean ret = false;
 		for (ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> node : tetrahedronToRemove.getAdjacentNodes()) {
 			if ((node != null) && (!nodeList.contains(node))) {
@@ -1031,8 +1032,8 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNode implements /*ini.cx3d.
 		LinkedList<Tetrahedron<T>> outerTetrahedra =
 				new LinkedList<Tetrahedron<T>>();
 		LinkedList<ini.cx3d.spatialOrganization.interfaces.SpaceNode<T>> problemNodes = new LinkedList<ini.cx3d.spatialOrganization.interfaces.SpaceNode<T>>();
-		OpenTriangleOrganizer<T> oto =
-				OpenTriangleOrganizer.createSimpleOpenTriangleOrganizer_java();
+		ini.cx3d.spatialOrganization.interfaces.OpenTriangleOrganizer<T> oto =
+				OpenTriangleOrganizerFactory.createSimpleOpenTriangleOrganizer();
 		if (NewDelaunayTest.createOutput())
 			NewDelaunayTest.out("Cleaning up messed up tetrahedra: "
 				+ messedUpTetrahedra.toString());

@@ -1,12 +1,10 @@
 package ini.cx3d.spatialOrganization.factory;
 
 
-import ini.cx3d.spatialOrganization.OpenTriangleOrganizer;
 import ini.cx3d.spatialOrganization.interfaces.SpaceNode;
 import ini.cx3d.spatialOrganization.interfaces.Tetrahedron;
 import ini.cx3d.spatialOrganization.interfaces.Triangle3D;
 import ini.cx3d.swig.spatialOrganization.spatialOrganization;
-import ini.cx3d.utilities.DebugUtil;
 
 import java.util.AbstractSequentialList;
 
@@ -20,7 +18,7 @@ public class TetrahedronFactory<T> {
     public static final boolean DEBUG = spatialOrganization.debugTetrahedron;
 
     public Tetrahedron create(Triangle3D<T> oneTriangle, SpaceNode<T> fourthPoint,
-                              OpenTriangleOrganizer oto) {
+                              ini.cx3d.spatialOrganization.interfaces.OpenTriangleOrganizer oto) {
         if (NATIVE) {
             return  ini.cx3d.swig.spatialOrganization.TetrahedronT_PhysicalNode.create(oneTriangle, fourthPoint, oto);
         } else if (!DEBUG){
@@ -44,7 +42,7 @@ public class TetrahedronFactory<T> {
     }
 
     public static <T> Tetrahedron createInitialTetrahedron(SpaceNode a,
-                                                           SpaceNode b, SpaceNode c, SpaceNode d, OpenTriangleOrganizer<T> oto) {
+                                                           SpaceNode b, SpaceNode c, SpaceNode d, ini.cx3d.spatialOrganization.interfaces.OpenTriangleOrganizer<T> oto) {
         Tetrahedron result = null;
         if (NATIVE) {
             result = ini.cx3d.swig.spatialOrganization.TetrahedronT_PhysicalNode.createInitialTetrahedron(a, b, c, d, oto);

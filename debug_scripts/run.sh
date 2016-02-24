@@ -9,7 +9,7 @@
 # PARAMS:
 #   CLASS_NAME capitalized class name
 # usage example:
-# ./debug_scripts/run.sh SPACE_NODE
+# ./debug_scripts/run.sh SPACENODE
 
 MODULE_FILE=src/main/cpp/swig/spatial_organization.i
 cat $MODULE_FILE | sed "s/\/\/%native(${1})/%native(${1})/g" >/tmp/tmp123
@@ -20,4 +20,4 @@ cat $MODULE_FILE | sed "s/%native(${1})/\/\/%native(${1})/g" >/tmp/tmp123
 cat /tmp/tmp123 >$MODULE_FILE
 mvn -Dtest=IntracellularDiffusionTest test | grep DBG >java
 
-cd debug_scripts/ ; ./find_first_diff.sh ../java ../cpp 0 20000 ; cd ..
+cd debug_scripts/ ; ./find_first_diff.sh ../java ../cpp 0 5000 ; cd ..

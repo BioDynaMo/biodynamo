@@ -21,8 +21,8 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 
 package ini.cx3d.spatialOrganization;
 
-import ini.cx3d.spatialOrganization.interfaces.Triangle3D;
 import ini.cx3d.spatialOrganization.interfaces.SpaceNode;
+import ini.cx3d.spatialOrganization.interfaces.Triangle3D;
 
 /**
  * During the flip algorithm, it can happen that tetrahedra with no volume are created. 
@@ -48,7 +48,7 @@ public class FlatTetrahedron<T> extends Tetrahedron<T> {
 	 *            newly created triangles.
 	 */
 	public FlatTetrahedron(Triangle3D<T> oneTriangle,
-			SpaceNode<T> fourthPoint, OpenTriangleOrganizer<T> org) {
+			SpaceNode<T> fourthPoint, ini.cx3d.spatialOrganization.interfaces.OpenTriangleOrganizer<T> org) {
 		super(oneTriangle, fourthPoint, org);
 	}
 

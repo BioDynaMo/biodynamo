@@ -9,6 +9,10 @@
 #include "spatial_organization/exact_vector.h"
 #include "spatial_organization/rational.h"
 
+#ifdef TRIANGLE3D_DEBUG
+#include "spatial_organization/debug/triangle_3d_debug.h"
+#endif
+
 namespace cx3d {
 namespace spatial_organization {
 
@@ -54,10 +58,19 @@ class Triangle3D : public Plane3D<T>, public std::enable_shared_from_this<Triang
    * </code>
    */
   static std::shared_ptr<Triangle3D<T>> create(
-      const std::shared_ptr<SpaceNode<T>>& sn_1, const std::shared_ptr<SpaceNode<T>>& sn_2,
+      const std::shared_ptr<SpaceNode<T>>& sn_1,
+      const std::shared_ptr<SpaceNode<T>>& sn_2,
       const std::shared_ptr<SpaceNode<T>>& sn_3,
       const std::shared_ptr<Tetrahedron<T>>& tetrahedron_1,
-      const std::shared_ptr<Tetrahedron<T>>& tetrahedron_2);
+      const std::shared_ptr<Tetrahedron<T>>& tetrahedron_2) {
+#ifdef TRIANGLE3D_DEBUG
+    std::shared_ptr<Triangle3D<T>> triangle(new Triangle3DDebug<T>(sn_1, sn_2, sn_3, tetrahedron_1, tetrahedron_2));
+#else
+    std::shared_ptr<Triangle3D<T>> triangle(
+        new Triangle3D(sn_1, sn_2, sn_3, tetrahedron_1, tetrahedron_2));
+#endif
+    return triangle;
+  }
 
   /**
    * Calculates the crossing point of three planes given in normal form.

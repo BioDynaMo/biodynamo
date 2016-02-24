@@ -4,7 +4,7 @@
  * value of a number of arguments. Therefore, this macros are easier to use.
  * https://en.wikipedia.org/wiki/Partial_application
  * At the bottom it executes the customizations, based on two preprocessor
- * variables. (OPENTRIANGLEORGNIZER_NATIVE and OPENTRIANGLEORGNIZER_DEBUG)
+ * variables. (OPENTRIANGLEORGANIZER_NATIVE and OPENTRIANGLEORGANIZER_DEBUG)
  * Documentation of macros and their arguments can be found in the included
  * files!
  *
@@ -13,12 +13,11 @@
  */
 
 %include "util.i"
-%include "std_array_typemap.i"
 %include "cx3d_shared_ptr.i"
 
 %define %OpenTriangleOrganizer_cx3d_shared_ptr()
   %cx3d_shared_ptr(OpenTriangleOrganizerT_PhysicalNode,
-                   ini/cx3d/spatialOrganization/OpenTriangleOrganizer,
+                   ini/cx3d/spatialOrganization/interfaces/OpenTriangleOrganizer,
                    cx3d::spatial_organization::OpenTriangleOrganizer<cx3d::PhysicalNode>);
 %enddef
 
@@ -26,12 +25,34 @@
   %java_defined_class(cx3d::spatial_organization::OpenTriangleOrganizer<cx3d::PhysicalNode>,
                       OpenTriangleOrganizerT_PhysicalNode,
                       OpenTriangleOrganizer,
-                      ini.cx3d.spatialOrganization.OpenTriangleOrganizer,
-                      ini/cx3d/spatialOrganization/OpenTriangleOrganizer);
+                      ini.cx3d.spatialOrganization.interfaces.OpenTriangleOrganizer,
+                      ini/cx3d/spatialOrganization/interfaces/OpenTriangleOrganizer);
 %enddef
 
-/**
- * apply customizations
- */
-%OpenTriangleOrganizer_cx3d_shared_ptr();
-%OpenTriangleOrganizer_java();
+%define %OpenTriangleOrganizer_native()
+  %native_defined_class(cx3d::spatial_organization::OpenTriangleOrganizer<cx3d::PhysicalNode>,
+                            OpenTriangleOrganizerT_PhysicalNode,
+                            ini.cx3d.spatialOrganization.interfaces.OpenTriangleOrganizer,
+                            OpenTriangleOrganizer,
+                            public OpenTriangleOrganizerT_PhysicalNode(){});
+%enddef
+
+%define %OpenTriangleOrganizer_typemaps()
+  %typemap(javainterfaces) cx3d::spatial_organization::OpenTriangleOrganizer<cx3d::PhysicalNode> "ini.cx3d.spatialOrganization.interfaces.OpenTriangleOrganizer"
+%enddef
+
+ /**
+  * apply customizations
+  */
+ %OpenTriangleOrganizer_cx3d_shared_ptr();
+ #ifdef OPENTRIANGLEORGANIZER_NATIVE
+   %OpenTriangleOrganizer_native();
+ #else
+   %OpenTriangleOrganizer_java();
+ #endif
+ #ifdef OPENTRIANGLEORGANIZER_DEBUG
+   %setJavaDebugSwitch(OpenTriangleOrganizer, true);
+ #else
+   %setJavaDebugSwitch(OpenTriangleOrganizer, false);
+ #endif
+ %OpenTriangleOrganizer_typemaps();

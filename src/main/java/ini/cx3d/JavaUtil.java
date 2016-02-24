@@ -1,8 +1,10 @@
 package ini.cx3d;
 
 import ini.cx3d.spatialOrganization.NewDelaunayTest;
-import ini.cx3d.spatialOrganization.OpenTriangleOrganizer;
+import ini.cx3d.spatialOrganization.interfaces.OpenTriangleOrganizer;
+import ini.cx3d.spatialOrganization.factory.OpenTriangleOrganizerFactory;
 import ini.cx3d.swig.spatialOrganization.JavaUtilT_PhysicalNode;
+import ini.cx3d.swig.spatialOrganization.spatialOrganization;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -16,7 +18,7 @@ public class JavaUtil extends JavaUtilT_PhysicalNode {
 
     @Override
     public OpenTriangleOrganizer oto_createSimpleOpenTriangleOrganizer() {
-        return OpenTriangleOrganizer.createSimpleOpenTriangleOrganizer_java();
+        return OpenTriangleOrganizerFactory.createSimpleOpenTriangleOrganizer();
     }
 
     static List<Integer> list = Arrays.asList(new Integer[]{

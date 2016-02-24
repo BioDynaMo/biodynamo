@@ -16,11 +16,19 @@ TriangleHashKey<T>::TriangleHashKey(const std::shared_ptr<SpaceNode<T>>& a,
       b_(b),
       c_(c),
       hash_code_(0) {
-  int a_id = a_ != nullptr ? a_->getId() : -1;
-  int b_id = b_ != nullptr ? b_->getId() : -1;
-  int c_id = c_ != nullptr ? c_->getId() : -1;
+  int a_id = a_.get() != nullptr ? a_->getId() : -1;
+  int b_id = b_.get() != nullptr ? b_->getId() : -1;
+  int c_id = c_.get() != nullptr ? c_->getId() : -1;
   createHashCode(a_id, b_id, c_id);
 }
+
+template<class T>
+TriangleHashKey<T>::TriangleHashKey(const TriangleHashKey& other) {
+    hash_code_ = other.hash_code_;
+    a_ = other.a_;
+    b_ = other.b_;
+    c_ = other.c_;
+  }
 
 template<class T>
 int TriangleHashKey<T>::hashCode() const {
@@ -44,7 +52,28 @@ void TriangleHashKey<T>::createHashCode(int a_id, int b_id, int c_id) {
   hash_code_ = (min * 31 + max * 11 + a_id + b_id + c_id) % 2000000001;
 }
 
+template<class T>
+std::size_t TriangleHashKeyHash<T>::operator()(const TriangleHashKey<T>& key) const {
+  return key.hash_code_;
+}
+
+template<class T>
+bool TriangleHashKeyEqual<T>::operator()(const TriangleHashKey<T>& lhs,
+                                         const TriangleHashKey<T>& rhs) const {
+  return (lhs.a_ == rhs.a_
+      && ((lhs.b_ == rhs.b_ && lhs.c_ == rhs.c_)
+          || (lhs.b_ == rhs.c_ && lhs.c_ == rhs.b_)))
+      || (lhs.a_ == rhs.b_
+          && ((lhs.b_ == rhs.a_ && lhs.c_ == rhs.c_)
+              || (lhs.b_ == rhs.c_ && lhs.c_ == rhs.a_)))
+      || (lhs.a_ == rhs.c_
+          && ((lhs.b_ == rhs.a_ && lhs.c_ == rhs.b_)
+              || (lhs.b_ == rhs.b_ && lhs.c_ == rhs.a_)));
+}
+
 template class TriangleHashKey<cx3d::PhysicalNode>;
+template class TriangleHashKeyHash<cx3d::PhysicalNode>;
+template class TriangleHashKeyEqual<cx3d::PhysicalNode>;
 
 }  // namespace spatial_organization
 }  // namespace cx3d

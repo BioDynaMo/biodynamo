@@ -16,7 +16,7 @@ set(JAVA_TEST_RESOURCE_PATH ../src/test/resources)
 set(JAVA_TEST_SWIG_PATH ../src/test/java/ini/cx3d/swig)
 
 #--------------------- set compiler flags -------------
-set(GCC_COMPILE_FLAGS "-Wall -Wextra -O3")
+set(GCC_COMPILE_FLAGS "-Wall -Wextra -O2")
 set(GCC_LINK_FLAGS    "")
 # append
 set( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${GCC_COMPILE_FLAGS}" )

@@ -38,8 +38,7 @@ class SimpleTriangulationNodeOrganizer :
 
   // TODO should be implemented in AbstractTriangulationNodeOrganizer, but SWIG does not generate
   // this function on the java side
-  virtual void addTriangleNodes(const std::shared_ptr<Triangle3D<T>>& triangle)
-      override;
+  virtual void addTriangleNodes(const std::shared_ptr<Triangle3D<T>>& triangle) override;
 
   std::list<std::shared_ptr<SpaceNode<T>>>getNodes(const std::shared_ptr<SpaceNode<T>>& reference_point) override;
 

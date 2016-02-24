@@ -32,7 +32,6 @@ import ini.cx3d.spatialOrganization.interfaces.TriangleHashKey;
 import ini.cx3d.swig.spatialOrganization.OpenTriangleOrganizerT_PhysicalNode;
 import ini.cx3d.swig.spatialOrganization.SimpleTriangulationNodeOrganizerT_PhysicalNode;
 import ini.cx3d.swig.spatialOrganization.spatialOrganization;
-import ini.cx3d.swig.spatialOrganization.spatialOrganizationJNI;
 
 
 import static ini.cx3d.utilities.Matrix.add;
@@ -41,12 +40,9 @@ import static ini.cx3d.utilities.Matrix.dot;
 import static ini.cx3d.utilities.Matrix.normalize;
 import static ini.cx3d.utilities.Matrix.scalarMult;
 import static ini.cx3d.utilities.Matrix.subtract;
+import static ini.cx3d.utilities.StringUtilities.toStr;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.Stack;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * Whenever an incomplete delaunay triangulation is created for some reason (removement of 
@@ -63,7 +59,7 @@ import java.util.Objects;
  *
  * @param <T> The type of user objects with the nodes in a given triangulation.
  */
-public class OpenTriangleOrganizer<T> extends OpenTriangleOrganizerT_PhysicalNode {
+public class OpenTriangleOrganizer<T> extends OpenTriangleOrganizerT_PhysicalNode implements ini.cx3d.spatialOrganization.interfaces.OpenTriangleOrganizer {
 	
 	/**
 	 * Counts the number of times exact arithmetics have been used in any instance of this class.
@@ -95,7 +91,7 @@ public class OpenTriangleOrganizer<T> extends OpenTriangleOrganizerT_PhysicalNod
 	/**
 	 * Adds a new value to the array <code>toleranceValues</code>.
 	 * @param tolerance The new value.
-	 * Used for debugging purposes only! DO NOT USE. Needs to be removed. 
+	 * Used for debugging purposes only! DO NOT USE. Needs to be removed.
 	 */
 	public static void addToleranceValue(double tolerance) {
 		toleranceValues[toleranceValuePointer] = tolerance;
@@ -119,7 +115,7 @@ public class OpenTriangleOrganizer<T> extends OpenTriangleOrganizerT_PhysicalNod
 	 * be recorded if this reference is <code>null</code>, which is the default.
 	 * Use {@link #recoredNewTetrahedra()} to start recording. 
 	 */
-	private LinkedList<Tetrahedron<T>> newTetrahedra = null;
+	private AbstractSequentialList<Tetrahedron> newTetrahedra = null;
 	
 	/**
 	 * A node organizer used to keep track of all nodes that are adjacent to 
@@ -162,16 +158,33 @@ public class OpenTriangleOrganizer<T> extends OpenTriangleOrganizerT_PhysicalNod
 	}
 
 	public String toString(){
-		return "OTO";
+			StringBuilder sb = new StringBuilder();
+			sb.append("(");
+//			for(TriangleHashKey<T> hk : map.keySet())
+//				sb.append(toStr(hk.hashCode())).append(", ");
+			sb.append(toStr(map.size()));
+			sb.append(", ");
+			sb.append(toStr(newTetrahedra));
+			sb.append(", ");
+			sb.append(tno);
+			sb.append(", ");
+			sb.append(toStr(openTriangles.size()));
+//			sb.append(", ");
+//			sb.append(toStr(shortestDistance));
+			sb.append(", ");
+			sb.append(aNewTetrahedron);
+			sb.append(")");
+			return sb.toString();
 	}
 
 
 	/**
 	 * Starts the recording of newly created tetrahedra.
 	 */
+	@Override
 	public void recoredNewTetrahedra() {
 		if (newTetrahedra == null)
-			newTetrahedra = new LinkedList<Tetrahedron<T>>();
+			newTetrahedra = new LinkedList<Tetrahedron>();
 	}
 	
 	/**
@@ -179,7 +192,8 @@ public class OpenTriangleOrganizer<T> extends OpenTriangleOrganizerT_PhysicalNod
 	 * @return The list of newly created tetrahedra, if recording was turned on before
 	 * (Use {@link #recoredNewTetrahedra()}) or <code>null</code> else.
 	 */
-	public LinkedList<Tetrahedron<T>> getNewTetrahedra() {
+	@Override
+	public AbstractSequentialList<Tetrahedron> getNewTetrahedra() {
 		return newTetrahedra;
 	}
 	
@@ -198,7 +212,7 @@ public class OpenTriangleOrganizer<T> extends OpenTriangleOrganizerT_PhysicalNod
 	 * @param <T> The type of user objects associated with nodes in the triangulation.
 	 * @return A new instance of <code>OpenTriangleOrganizer</code>.
 	 */
-	public static <T> OpenTriangleOrganizer<T> createSimpleOpenTriangleOrganizer_java() {
+	public static <T> ini.cx3d.spatialOrganization.interfaces.OpenTriangleOrganizer<T> createSimpleOpenTriangleOrganizer_java() {
 		TriangulationNodeOrganizer<T> tno;
 		if (spatialOrganization.useNativeSimpleTriangulationNodeOrganizer) {
 			tno = SimpleTriangulationNodeOrganizerT_PhysicalNode.create();
@@ -207,7 +221,7 @@ public class OpenTriangleOrganizer<T> extends OpenTriangleOrganizerT_PhysicalNod
 		} else {
 			throw new UnsupportedOperationException("debugging object not yet supported");
 		}
-		return new OpenTriangleOrganizer<T>(30, tno);
+		return OpenTriangleOrganizerFactory.create(30, tno);
 	}
 
 	/**
@@ -216,25 +230,29 @@ public class OpenTriangleOrganizer<T> extends OpenTriangleOrganizerT_PhysicalNod
 	 * triangle is added to the hashmap. 
 	 * @param triangle The new open triangle.
 	 */
+	@Override
 	public void putTriangle(Triangle3D triangle) {
-		TriangleHashKey<T> key = triangleHashKeyFactory.create(triangle.getNodes()[0],
-				triangle.getNodes()[1],
-				triangle.getNodes()[2]);
+		SpaceNode[] nodes = triangle.getNodes();
+		TriangleHashKey<T> key = triangleHashKeyFactory.create(nodes[0],
+				nodes[1],
+				nodes[2]);
 		map.put(key, triangle);
 		tno.addTriangleNodes(triangle);
 		openTriangles.push(triangle);
 	}
-
+	
 	/**
 	 * Informs this open triangle organizer that an open triangle 
 	 * is no longer available. In order to do so, the new open 
 	 * triangle is removed from the hashmap. 
 	 * @param triangle The triangle that should be removed.
 	 */
+	@Override
 	public void removeTriangle(Triangle3D triangle) {
-		TriangleHashKey<T> key = triangleHashKeyFactory.create(triangle.getNodes()[0],
-				triangle.getNodes()[1],
-				triangle.getNodes()[2]);
+		SpaceNode[] nodes = triangle.getNodes();
+		TriangleHashKey<T> key = triangleHashKeyFactory.create(nodes[0],
+				nodes[1],
+				nodes[2]);
 		map.remove(key);
 	}
 
@@ -249,8 +267,9 @@ public class OpenTriangleOrganizer<T> extends OpenTriangleOrganizerT_PhysicalNod
 	 * @param c The third node incident to the requested triangle.
 	 * @return A triangle with the requested three endpoints.
 	 */
+	@Override
 	public Triangle3D<T> getTriangle(ini.cx3d.spatialOrganization.interfaces.SpaceNode a, ini.cx3d.spatialOrganization.interfaces.SpaceNode b,
-			ini.cx3d.spatialOrganization.interfaces.SpaceNode c) {
+									 ini.cx3d.spatialOrganization.interfaces.SpaceNode c) {
 		TriangleHashKey<T> key = triangleHashKeyFactory.create(a, b, c);
 		Triangle3D<T> ret = map.get(key);
 		if (ret == null) {
@@ -277,6 +296,7 @@ public class OpenTriangleOrganizer<T> extends OpenTriangleOrganizerT_PhysicalNod
 	 * @param c The third node incident to the requested triangle.
 	 * @return A triangle with the requested three endpoints.
 	 */
+	@Override
 	public Triangle3D<T> getTriangleWithoutRemoving(
 			ini.cx3d.spatialOrganization.interfaces.SpaceNode a, ini.cx3d.spatialOrganization.interfaces.SpaceNode b, ini.cx3d.spatialOrganization.interfaces.SpaceNode c) {
 		TriangleHashKey<T> key = triangleHashKeyFactory.create(a, b, c);
@@ -298,8 +318,8 @@ public class OpenTriangleOrganizer<T> extends OpenTriangleOrganizerT_PhysicalNod
 	 * @return <code>true</code>, if an open triangle with the desired endpoints
 	 * is already stored in this triangle organizer.
 	 */
-	protected boolean contains(ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> a, ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> b,
-			ini.cx3d.spatialOrganization.interfaces.SpaceNode<T> c) {
+	protected boolean contains(ini.cx3d.spatialOrganization.interfaces.SpaceNode a, ini.cx3d.spatialOrganization.interfaces.SpaceNode b,
+			ini.cx3d.spatialOrganization.interfaces.SpaceNode c) {
 		TriangleHashKey<T> key = triangleHashKeyFactory.create(a, b, c);
 		return map.containsKey(key);
 	}
@@ -356,6 +376,7 @@ public class OpenTriangleOrganizer<T> extends OpenTriangleOrganizerT_PhysicalNod
 	 * triangulation.
 	 * @return A tetrahedron which was created during triangulation.
 	 */
+	@Override
 	public Tetrahedron<T> getANewTetrahedron() {
 		return aNewTetrahedron;
 	}
@@ -603,6 +624,7 @@ public class OpenTriangleOrganizer<T> extends OpenTriangleOrganizerT_PhysicalNod
 	 * first tetrahedron.
 	 * @param startingTetrahedron The first tetrahedron to remove.
 	 */
+	@Override
 	public void removeAllTetrahedraInSphere(
 			Tetrahedron startingTetrahedron) {
 		if (startingTetrahedron.isValid()) {
@@ -951,6 +973,7 @@ public class OpenTriangleOrganizer<T> extends OpenTriangleOrganizerT_PhysicalNod
 	 * All tetrahedra created by this function will be reported in
 	 *    
 	 */
+	@Override
 	public void triangulate() {
 		try {
 			DistanceReporter rep = new DistanceReporter() {

@@ -1,5 +1,5 @@
 #include "spatial_organization/triangle_3d.h"
-
+#include <iostream> //fixme remove
 #include <stdint.h>
 #include <cmath>
 #include <array>
@@ -12,30 +12,10 @@
 #include "spatial_organization/tetrahedron.h"
 #include "spatial_organization/space_node.h"
 
-
-#ifdef TRIANGLE3D_DEBUG
-#include "spatial_organization/debug/triangle_3d_debug.h"
-#endif
-
 namespace cx3d {
 namespace spatial_organization {
 
 using std::shared_ptr;
-
-template<class T>
-std::shared_ptr<Triangle3D<T>> Triangle3D<T>::create(
-      const std::shared_ptr<SpaceNode<T>>& sn_1, const std::shared_ptr<SpaceNode<T>>& sn_2,
-      const std::shared_ptr<SpaceNode<T>>& sn_3,
-      const std::shared_ptr<Tetrahedron<T>>& tetrahedron_1,
-      const std::shared_ptr<Tetrahedron<T>>& tetrahedron_2) {
-
-#ifdef TRIANGLE3D_DEBUG
-  std::shared_ptr<Triangle3D<T>> triangle(new Triangle3DDebug<T>(sn_1, sn_2, sn_3, tetrahedron_1, tetrahedron_2));
-#else
-  std::shared_ptr<Triangle3D<T>> triangle(new Triangle3D(sn_1, sn_2, sn_3, tetrahedron_1, tetrahedron_2));
-#endif
-  return triangle;
-  }
 
 template<class T>
 std::array<double, 3> Triangle3D<T>::calculate3PlaneXPoint(
@@ -247,7 +227,7 @@ std::shared_ptr<Tetrahedron<T>> Triangle3D<T>::getOppositeTetrahedron(
   } else if (adjacent_tetrahedra_[1] == incident_tetrahedron) {
     return adjacent_tetrahedra_[0];
   } else {
-    throw new std::invalid_argument("Tetrahedron not known!");
+    std::cout << __FUNCTION__ << std::endl; throw std::invalid_argument("Tetrahedron not known!");
   }
 }
 

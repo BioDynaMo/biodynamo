@@ -40,7 +40,9 @@ import ini.cx3d.localBiology.SomaElement;
 import ini.cx3d.simulations.ECM;
 import ini.cx3d.spatialOrganization.PositionNotAllowedException;
 import ini.cx3d.spatialOrganization.SpatialOrganizationNode;
+import ini.cx3d.utilities.StringUtilities;
 
+import java.util.AbstractSequentialList;
 import java.util.Hashtable;
 import java.util.Vector;
 
@@ -776,7 +778,14 @@ public class PhysicalSphere extends PhysicalObject{
 	//**LOCK R
 		getRwLock().readLock().lock();
 		//	(We check for every neighbor object if they touch us, i.e. push us away)
-		for (PhysicalNode neighbor : soNode.getNeighbors()) {
+		AbstractSequentialList<PhysicalNode> neighbors = soNode.getNeighbors();
+		for (int i = 0; i < neighbors.size(); i++) {
+			PhysicalNode neighbor = neighbors.get(i);
+			if(neighbor == null) {
+				System.out.println("neighbor is null - idx " + i);
+				System.out.println("#neighbors: "+ neighbors.size());
+				System.out.println("elements: "+ StringUtilities.toStr(neighbors));
+			}
 			// of course, only if it is an instance of PhysicalObject
 			if(neighbor.isAPhysicalObject()){
 				PhysicalObject n = (PhysicalObject)neighbor;

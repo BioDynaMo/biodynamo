@@ -12,10 +12,12 @@
 %native(TETRAHEDRON);
 %native(SPACENODE);
 %native(SIMPLETRIANGULATIONNODEORGANIZER);
+%native(OPENTRIANGLEORGANIZER);
 
 // end administration area
 
 %{
+  #include <iostream> //fixme remove
 #include <memory>
 #include <stdint.h>
 
@@ -30,12 +32,12 @@
 #include "spatial_organization/tetrahedron.h"
 #include "spatial_organization/spatial_organization_node.h"
 #include "spatial_organization/space_node.h"
-#include "spatial_organization/open_triangle_organizer.h"
 #include "physical_node.h"
 #include "spatial_organization/spatial_organization_node_movement_listener.h"
 #include "spatial_organization/spatial_organization_edge.h"
 #include "java_util.h"
 #include "spatial_organization/simple_triangulation_node_organizer.h"
+#include "spatial_organization/open_triangle_organizer.h"
 using namespace cx3d::spatial_organization;
 #include "spatial_organizationJAVA_wrap.h"
 %}

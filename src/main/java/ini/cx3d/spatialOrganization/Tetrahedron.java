@@ -21,10 +21,7 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 
 package ini.cx3d.spatialOrganization;
 
-import ini.cx3d.spatialOrganization.factory.ExactVectorFactory;
-import ini.cx3d.spatialOrganization.factory.TetrahedronFactory;
-import ini.cx3d.spatialOrganization.factory.Triangle3DFactory;
-import ini.cx3d.spatialOrganization.factory.RationalFactory;
+import ini.cx3d.spatialOrganization.factory.*;
 import ini.cx3d.spatialOrganization.interfaces.ExactVector;
 import ini.cx3d.spatialOrganization.interfaces.Rational;
 import ini.cx3d.spatialOrganization.interfaces.Edge;
@@ -244,8 +241,8 @@ public class Tetrahedron<T> extends TetrahedronT_PhysicalNode implements ini.cx3
 		Triangle3D<T> triangleD = new Triangle3DFactory().create(a, b, c, null, null);
 		ini.cx3d.spatialOrganization.interfaces.Tetrahedron<T> ret = tetrahedronFactory.create(triangleA, triangleB,
 				triangleC, triangleD, a, b, c, d);
-		OpenTriangleOrganizer oto = OpenTriangleOrganizer
-				.createSimpleOpenTriangleOrganizer_java();
+		ini.cx3d.spatialOrganization.interfaces.OpenTriangleOrganizer oto = OpenTriangleOrganizerFactory
+				.createSimpleOpenTriangleOrganizer();
 		tetrahedronFactory.create(triangleA, null, oto);
 		tetrahedronFactory.create(triangleB, null, oto);
 		tetrahedronFactory.create(triangleC, null, oto);
@@ -266,7 +263,7 @@ public class Tetrahedron<T> extends TetrahedronT_PhysicalNode implements ini.cx3
 	 *            newly created triangles.
 	 */
 	public Tetrahedron(Triangle3D<T> oneTriangle, SpaceNode<T> fourthPoint,
-					   OpenTriangleOrganizer org) {
+					   ini.cx3d.spatialOrganization.interfaces.OpenTriangleOrganizer org) {
 		registerJavaObject(this);
 		if (oneTriangle.isInfinite()) {
 			ini.cx3d.spatialOrganization.interfaces.SpaceNode[] triangleNodes = oneTriangle.getNodes();
