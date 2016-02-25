@@ -29,6 +29,7 @@ import ini.cx3d.cells.Cell;
 import ini.cx3d.cells.CellFactory;
 import ini.cx3d.localBiology.NeuriteElement;
 import ini.cx3d.physics.Substance;
+import ini.cx3d.physics.factory.SubstanceFactory;
 import ini.cx3d.simulations.ECM;
 import ini.cx3d.simulations.Scheduler;
 import ini.cx3d.synapses.ConnectionsMaker;
@@ -44,7 +45,7 @@ public class SmallNetworkTest extends BaseSimulationTest {
 	public void simulate() throws Exception{
 		ECM.setRandomSeed(1L);
 		ECM ecm = ECM.getInstance();
-		Substance L1 = new Substance("L1",Color.red);
+		ini.cx3d.physics.interfaces.Substance L1 = SubstanceFactory.create("L1", Color.red);
 		ecm.addArtificialGaussianConcentrationZ(L1, 1.0, 400.0, 60.0);
 
 		int nbOfAdditionalNodes = 10;

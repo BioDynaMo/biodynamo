@@ -33,6 +33,7 @@ import ini.cx3d.localBiology.LocalBiologyModule;
 import ini.cx3d.localBiology.NeuriteElement;
 import ini.cx3d.physics.PhysicalCylinder;
 import ini.cx3d.physics.Substance;
+import ini.cx3d.physics.factory.SubstanceFactory;
 import ini.cx3d.simulations.ECM;
 import ini.cx3d.simulations.Scheduler;
 
@@ -265,14 +266,14 @@ public class X_Movement_Module implements LocalBiologyModule{
 
 		// 2) Create some artificial chemical gradients
 		// 		horizontal gaussian (peak concentration, peak coordinate, variance)
-		ecm.addArtificialGaussianConcentrationZ(new Substance("A", Color.red), 1, 300, 100); 
-		ecm.addArtificialGaussianConcentrationZ(new Substance("B", Color.blue), 1, 00, 100);
-		ecm.addArtificialGaussianConcentrationZ(new Substance("C", Color.green), 1, -300, 100);
+		ecm.addArtificialGaussianConcentrationZ(SubstanceFactory.create("A", Color.red), 1, 300, 100);
+		ecm.addArtificialGaussianConcentrationZ(SubstanceFactory.create("B", Color.blue), 1, 00, 100);
+		ecm.addArtificialGaussianConcentrationZ(SubstanceFactory.create("C", Color.green), 1, -300, 100);
 		//		horizontal linerar gradient
-		ecm.addArtificialLinearConcentrationZ(new Substance("D", Color.cyan), 1, 300, -300);
+		ecm.addArtificialLinearConcentrationZ(SubstanceFactory.create("D", Color.cyan), 1, 300, -300);
 		//		vertical gaussian
-		ecm.addArtificialGaussianConcentrationX(new Substance("E", Color.red), 1, 0, 100);
-		ecm.addArtificialGaussianConcentrationX(new Substance("F", Color.green), 1, 300, 100);
+		ecm.addArtificialGaussianConcentrationX(SubstanceFactory.create("E", Color.red), 1, 0, 100);
+		ecm.addArtificialGaussianConcentrationX(SubstanceFactory.create("F", Color.green), 1, 300, 100);
 
 		// 3) Create a 4-uple Cell-SomaElement-PhysicalSphere-SpaceNode at the desired location
 		double[] cellLocation = new double[] {0,0,0};

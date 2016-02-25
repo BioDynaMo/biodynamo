@@ -38,7 +38,8 @@ import ini.cx3d.physics.PhysicalCylinder;
 import ini.cx3d.physics.PhysicalNode;
 import ini.cx3d.physics.PhysicalNodeMovementListener;
 import ini.cx3d.physics.PhysicalSphere;
-import ini.cx3d.physics.Substance;
+import ini.cx3d.physics.factory.SubstanceFactory;
+import ini.cx3d.physics.interfaces.Substance;
 import ini.cx3d.spatialOrganization.PositionNotAllowedException;
 import ini.cx3d.spatialOrganization.SpatialOrganizationNodeMovementListener;
 import ini.cx3d.spatialOrganization.interfaces.SpaceNode;
@@ -97,7 +98,7 @@ public class ECM implements SimStateSerializable {
 
 	/* In here we keep a template for each (extra-cellular) Substance in the simulation that have
 	 * non-standard value for diffusion and degradation constant.*/
-	private Hashtable<String, Substance> substancesLibrary = new Hashtable<String, Substance>();
+	private Hashtable<String, ini.cx3d.physics.interfaces.Substance> substancesLibrary = new Hashtable<String, ini.cx3d.physics.interfaces.Substance>();
 	
 	/* In here we keep a template for each (intra-cellular) Substance in the simulation that have
 	 * non-standard value for diffusion and degradation constant.*/
@@ -147,23 +148,23 @@ public class ECM implements SimStateSerializable {
 	// (in the next: all hash tables are public for View.paint)
 	/* List of all the chemicals with a gaussian distribution along the Z-axis
 	 * max value, mean (z-coord of the max value), sigma2 (thickness). */
-	public Hashtable<Substance,double[]> gaussianArtificialConcentrationZ = new Hashtable<Substance,double[]>();
+	public Hashtable<ini.cx3d.physics.interfaces.Substance,double[]> gaussianArtificialConcentrationZ = new Hashtable<ini.cx3d.physics.interfaces.Substance,double[]>();
 
 	/* List of all the chemicals with a linear distribution along the Z-axis
 	 * max value, TOP (z-coord of the max value), DOWN (z-coord of the 0 value). */ 
-	public Hashtable<Substance,double[]> linearArtificialConcentrationZ = new Hashtable<Substance,double[]>();
+	public Hashtable<ini.cx3d.physics.interfaces.Substance,double[]> linearArtificialConcentrationZ = new Hashtable<ini.cx3d.physics.interfaces.Substance,double[]>();
 
 	/* List of all the chemicals with a gaussian distribution along the X-axis
 	 * max value, mean (x-coord of the max value), sigma2 (thickness). */ 
-	public Hashtable<Substance,double[]> gaussianArtificialConcentrationX = new Hashtable<Substance,double[]>();
+	public Hashtable<ini.cx3d.physics.interfaces.Substance,double[]> gaussianArtificialConcentrationX = new Hashtable<ini.cx3d.physics.interfaces.Substance,double[]>();
 
 	/* List of all the chemicals with a linear distribution along the X-axis
 	 * max value, TOP (x-coord of the max value), DOWN (x-coord of the 0 value). */  
-	public Hashtable<Substance,double[]> linearArtificialConcentrationX = new Hashtable<Substance,double[]>();
+	public Hashtable<ini.cx3d.physics.interfaces.Substance,double[]> linearArtificialConcentrationX = new Hashtable<ini.cx3d.physics.interfaces.Substance,double[]>();
 
 	/* to link the one instance of Substance we have used in the definition of the gradient, with the name of
 	 * the chemical that can be given as argument in the methods to know the concentration/grad.. */
-	public Hashtable<String, Substance> allArtificialSubstances = new Hashtable<String, Substance>();
+	public Hashtable<String, ini.cx3d.physics.interfaces.Substance> allArtificialSubstances = new Hashtable<String, ini.cx3d.physics.interfaces.Substance>();
 
 
 	public ini.cx3d.swig.NativeStringBuilder simStateToJson(ini.cx3d.swig.NativeStringBuilder sb) {
@@ -587,7 +588,7 @@ public class ECM implements SimStateSerializable {
 	
 	/** Define a template for each (extra-cellular) <code>Substance</code> in the simulation that has
 	 * non-standard values for diffusion and degradation constant.*/
-	public void addNewSubstanceTemplate(Substance s){
+	public void addNewSubstanceTemplate(ini.cx3d.physics.interfaces.Substance s){
 		substancesLibrary.put(s.getId(), s);
 		if(myGuiCreator!=null) myGuiCreator.addNewChemical(s);
 		
@@ -608,15 +609,15 @@ public class ECM implements SimStateSerializable {
 	 * @param id
 	 * @return new Substance instance
 	 */
-	public Substance substanceInstance(String id){
+	public ini.cx3d.physics.interfaces.Substance substanceInstance(String id){
 		Substance s = substancesLibrary.get(id);
 		if(s==null){
-			s = new Substance();
+			s = SubstanceFactory.create();
 			s.setId(id);
 			// s will have the default color blue, diff const 1000 and degrad const 0.01
 			substancesLibrary.put(id, s);
 		}
-		return new Substance(s);
+		return SubstanceFactory.create(s);
 	}
 
 	/** Returns an instance of <code>IntracellularSubstance</code>. If a similar 
@@ -672,8 +673,8 @@ public class ECM implements SimStateSerializable {
 	}
 
 	/* If as Substance is not already registered, we register it for you. No charges! Order now!*/
-	private Substance getRegisteredArtificialSubstance(Substance substance){
-		Substance registeredSubstance = allArtificialSubstances.get(substance.getId());
+	private ini.cx3d.physics.interfaces.Substance getRegisteredArtificialSubstance(ini.cx3d.physics.interfaces.Substance substance){
+		ini.cx3d.physics.interfaces.Substance registeredSubstance = allArtificialSubstances.get(substance.getId());
 		if(registeredSubstance!=null){
 			return registeredSubstance;
 		}else{
@@ -685,12 +686,12 @@ public class ECM implements SimStateSerializable {
 		}
 	}
 	/* If as Substance is not already registered, we register it for you. No charges! Order now!*/
-	private Substance getRegisteredArtificialSubstance(String substanceId){
-		Substance registeredSubstance = allArtificialSubstances.get(substanceId);
+	private ini.cx3d.physics.interfaces.Substance getRegisteredArtificialSubstance(String substanceId){
+		ini.cx3d.physics.interfaces.Substance registeredSubstance = allArtificialSubstances.get(substanceId);
 		if(registeredSubstance!=null){
 			return registeredSubstance;
 		}else{
-			registeredSubstance = new Substance(substanceId,Color.blue);;
+			registeredSubstance = SubstanceFactory.create(substanceId, Color.blue);;
 			allArtificialSubstances.put(substanceId, registeredSubstance);
 			anyArtificialGradientDefined = true;
 			if(myGuiCreator!=null) myGuiCreator.addNewChemical(registeredSubstance);
@@ -708,7 +709,7 @@ public class ECM implements SimStateSerializable {
 	 * @param zCoord the location of the peak
 	 * @param sigma the thickness of the layer (= the variance)
 	 */
-	public void addArtificialGaussianConcentrationZ(Substance substance, double maxConcentration, double zCoord, double sigma){
+	public void addArtificialGaussianConcentrationZ(ini.cx3d.physics.interfaces.Substance substance, double maxConcentration, double zCoord, double sigma){
 		substance = getRegisteredArtificialSubstance(substance);
 		// define distribution values for the chemical, and store them together
 		double[] value = new double[] {maxConcentration, zCoord, sigma}; 
@@ -725,7 +726,7 @@ public class ECM implements SimStateSerializable {
 	 * @param sigma the thickness of the layer (= the variance)
 	 */
 	public void addArtificialGaussianConcentrationZ(String substanceName, double maxConcentration, double zCoord, double sigma){
-		Substance substance = getRegisteredArtificialSubstance(substanceName);
+		ini.cx3d.physics.interfaces.Substance substance = getRegisteredArtificialSubstance(substanceName);
 		// define distribution values for the chemical, and store them together
 		double[] value = new double[] {maxConcentration, zCoord, sigma}; 
 		gaussianArtificialConcentrationZ.put(substance, value);
@@ -743,7 +744,7 @@ public class ECM implements SimStateSerializable {
 	 * @param zCoordMax the location of the peak 
 	 * @param zCoordMin the location where the concentration reaches the value 0
 	 */
-	public void addArtificialLinearConcentrationZ(Substance substance, double maxConcentration, double zCoordMax, double zCoordMin){
+	public void addArtificialLinearConcentrationZ(ini.cx3d.physics.interfaces.Substance substance, double maxConcentration, double zCoordMax, double zCoordMin){
 		substance = getRegisteredArtificialSubstance(substance);
 		// define distribution values for the chemical, and store them together
 		double[] value = new double[] {maxConcentration, zCoordMax, zCoordMin}; 
@@ -763,7 +764,7 @@ public class ECM implements SimStateSerializable {
 	 * @param zCoordMin the location where the concentration reaches the value 0
 	 */
 	public void addArtificialLinearConcentrationZ(String substanceName, double maxConcentration, double zCoordMax, double zCoordMin){
-		Substance substance = getRegisteredArtificialSubstance(substanceName);
+		ini.cx3d.physics.interfaces.Substance substance = getRegisteredArtificialSubstance(substanceName);
 		// define distribution values for the chemical, and store them together
 		double[] value = new double[] {maxConcentration, zCoordMax, zCoordMin}; 
 		linearArtificialConcentrationZ.put(substance, value);
@@ -778,7 +779,7 @@ public class ECM implements SimStateSerializable {
 	 * @param xCoord the location of the peak
 	 * @param sigma the thickness of the layer (= the variance)
 	 */
-	public void addArtificialGaussianConcentrationX(Substance substance, double maxConcentration, double xCoord, double sigma){
+	public void addArtificialGaussianConcentrationX(ini.cx3d.physics.interfaces.Substance substance, double maxConcentration, double xCoord, double sigma){
 		// look if we already have a substance with the same id
 		substance = getRegisteredArtificialSubstance(substance);
 		// define distribution values for the chemical, and store them together
@@ -797,7 +798,7 @@ public class ECM implements SimStateSerializable {
 	 */
 	public void addArtificialGaussianConcentrationX(String substanceName, double maxConcentration, double xCoord, double sigma){
 		// look if we already have a substance with the same id
-		Substance substance = getRegisteredArtificialSubstance(substanceName);
+		ini.cx3d.physics.interfaces.Substance substance = getRegisteredArtificialSubstance(substanceName);
 		// define distribution values for the chemical, and store them together
 		double[] value = new double[] {maxConcentration, xCoord, sigma}; 
 		gaussianArtificialConcentrationX.put(substance, value);
@@ -815,7 +816,7 @@ public class ECM implements SimStateSerializable {
 	 * @param xCoordMax the location of the peak 
 	 * @param xCoordMin the location where the concentration reaches the value 0
 	 */
-	public void addArtificialLinearConcentrationX(Substance substance, double maxConcentration, double xCoordMax, double xCoordMin){
+	public void addArtificialLinearConcentrationX(ini.cx3d.physics.interfaces.Substance substance, double maxConcentration, double xCoordMax, double xCoordMin){
 		// look if we already have a substance with the same id
 		substance = getRegisteredArtificialSubstance(substance);
 		// define distribution values for the chemical, and store them together
@@ -837,7 +838,7 @@ public class ECM implements SimStateSerializable {
 	 */
 	public void addArtificialLinearConcentrationX(String substanceId, double maxConcentration, double xCoordMax, double xCoordMin){
 		// look if we already have a substance with the same id
-		Substance substance = getRegisteredArtificialSubstance(substanceId);
+		ini.cx3d.physics.interfaces.Substance substance = getRegisteredArtificialSubstance(substanceId);
 		// define distribution values for the chemical, and store them together
 		double[] value = new double[] {maxConcentration, xCoordMax, xCoordMin}; 
 		linearArtificialConcentrationX.put(substance, value);
@@ -853,7 +854,7 @@ public class ECM implements SimStateSerializable {
 		double x = position[0];
 		double z = position[2];
 		// does the substance exist at all ?
-		Substance sub = null;
+		ini.cx3d.physics.interfaces.Substance sub = null;
 		if(allArtificialSubstances.containsKey(nameOfTheChemical)){
 			sub = allArtificialSubstances.get(nameOfTheChemical);
 		}else{
@@ -906,7 +907,7 @@ public class ECM implements SimStateSerializable {
 	 * @param position the location [x,y,z]
 	 * @return
 	 */
-	public double getValueArtificialConcentration(Substance substance, double[] position){
+	public double getValueArtificialConcentration(ini.cx3d.physics.interfaces.Substance substance, double[] position){
 		return getValueArtificialConcentration(substance.getId(), position);
 	}
 	///////// GRADIENT
@@ -918,7 +919,7 @@ public class ECM implements SimStateSerializable {
 	 */
 	public double[] getGradientArtificialConcentration(String nameOfTheChemical, double[] position){
 		// Do we have the substance in stock?
-		Substance sub = null;
+		ini.cx3d.physics.interfaces.Substance sub = null;
 		if(allArtificialSubstances.containsKey(nameOfTheChemical)){
 			sub = allArtificialSubstances.get(nameOfTheChemical);
 		}else{
@@ -974,7 +975,7 @@ public class ECM implements SimStateSerializable {
 	}
 
 
-	public double getGradientArtificialConcentration(Substance s, double[] position){
+	public double getGradientArtificialConcentration(ini.cx3d.physics.interfaces.Substance s, double[] position){
 		return getValueArtificialConcentration(s.getId(), position);
 	}
 
@@ -1009,13 +1010,13 @@ public class ECM implements SimStateSerializable {
 
 			myGuiCreator = new ECM_GUI_Creator();
 			view = myGuiCreator.createPrincipalGUIWindow();
-			for (Substance s : allArtificialSubstances.values()) {
+			for (ini.cx3d.physics.interfaces.Substance s : allArtificialSubstances.values()) {
 				myGuiCreator.addNewChemical(s);
 			}
-			for (Substance s : this.intracellularSubstancesLibrary.values()) {
+			for (ini.cx3d.physics.interfaces.Substance s : this.intracellularSubstancesLibrary.values()) {
 				myGuiCreator.addNewChemical(s);
 			}
-			for (Substance s : this.substancesLibrary.values()) {
+			for (ini.cx3d.physics.interfaces.Substance s : this.substancesLibrary.values()) {
 				myGuiCreator.addNewChemical(s);
 			}
 			return view;
@@ -1028,13 +1029,13 @@ public class ECM implements SimStateSerializable {
 		if (!headlessGui) {
 			myGuiCreator = new ECM_GUI_Creator();
 			view = myGuiCreator.createPrincipalGUIWindow(x, y, width, height);
-			for (Substance s : allArtificialSubstances.values()) {
+			for (ini.cx3d.physics.interfaces.Substance s : allArtificialSubstances.values()) {
 				myGuiCreator.addNewChemical(s);
 			}
-			for (Substance s : this.intracellularSubstancesLibrary.values()) {
+			for (ini.cx3d.physics.interfaces.Substance s : this.intracellularSubstancesLibrary.values()) {
 				myGuiCreator.addNewChemical(s);
 			}
-			for (Substance s : this.substancesLibrary.values()) {
+			for (ini.cx3d.physics.interfaces.Substance s : this.substancesLibrary.values()) {
 				myGuiCreator.addNewChemical(s);
 			}
 			return view;
@@ -1163,19 +1164,19 @@ public class ECM implements SimStateSerializable {
 		return anyArtificialGradientDefined;
 	}
 
-	public Hashtable<Substance, double[]> getGaussianArtificialConcentrationZ() {
+	public Hashtable<ini.cx3d.physics.interfaces.Substance, double[]> getGaussianArtificialConcentrationZ() {
 		return gaussianArtificialConcentrationZ;
 	}
 
-	public Hashtable<Substance, double[]> getLinearArtificialConcentrationZ() {
+	public Hashtable<ini.cx3d.physics.interfaces.Substance, double[]> getLinearArtificialConcentrationZ() {
 		return linearArtificialConcentrationZ;
 	}
 
-	public Hashtable<Substance, double[]> getGaussianArtificialConcentrationX() {
+	public Hashtable<ini.cx3d.physics.interfaces.Substance, double[]> getGaussianArtificialConcentrationX() {
 		return gaussianArtificialConcentrationX;
 	}
 
-	public Hashtable<Substance, double[]> getLinearArtificialConcentrationX() {
+	public Hashtable<ini.cx3d.physics.interfaces.Substance, double[]> getLinearArtificialConcentrationX() {
 		return linearArtificialConcentrationX;
 	}
 
@@ -1216,7 +1217,7 @@ public class ECM implements SimStateSerializable {
 		return this.intracellularSubstancesLibrary;
 	}
 	
-	public Hashtable<String, Substance> getSubstanceTemplates() {
+	public Hashtable<String, ini.cx3d.physics.interfaces.Substance> getSubstanceTemplates() {
 		// TODO Auto-generated method stub
 		return this.substancesLibrary;
 	}

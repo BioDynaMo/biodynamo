@@ -505,7 +505,7 @@ public abstract class PhysicalObject extends PhysicalNode {
 		try
 		{
 			getRwLock().readLock().lock();
-			Substance s = intracellularSubstances.get(substanceId);
+			ini.cx3d.physics.interfaces.Substance s = intracellularSubstances.get(substanceId);
 			if(s == null){
 				return 0;
 			}else{

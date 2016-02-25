@@ -279,7 +279,7 @@ public class IntracellularSubstance extends Substance{
 		
 	} 
 
-	public Substance getCopy() { 
+	public ini.cx3d.physics.interfaces.Substance getCopy() {
 		// TODO Auto-generated method stub
 		return new IntracellularSubstance(this);
 	}

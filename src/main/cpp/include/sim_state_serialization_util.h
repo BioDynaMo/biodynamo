@@ -4,6 +4,7 @@
 #include <array>
 #include <string>
 #include <sstream>
+#include <iomanip>
 
 #include "string_builder.h"
 #include "sim_state_serializable.h"
@@ -91,6 +92,15 @@ class SimStateSerializationUtil {
   static StringBuilder& removeLastChar(StringBuilder& sb) {
     sb.overwriteLastCharOnNextAppend();
     return sb;
+  }
+
+  static std::string colorToHexString(uint32_t value){
+    // alpha value was not considered on Java side -> remove here
+    uint32_t rgb = value & 0x00ffffff;
+    stringstream stream;
+    stream << "#";
+    stream << std::setw(6) << std::hex << std::setfill('0') << rgb;
+    return stream.str();
   }
 };
 

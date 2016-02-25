@@ -29,9 +29,12 @@ import static ini.cx3d.utilities.Matrix.subtract;
 import ini.cx3d.Param;
 import ini.cx3d.SimStateSerializable;
 import ini.cx3d.SimStateSerializationUtil;
+import ini.cx3d.physics.factory.SubstanceFactory;
 import ini.cx3d.simulations.ECM;
 import ini.cx3d.spatialOrganization.SpatialOrganizationEdge;
 import ini.cx3d.spatialOrganization.SpatialOrganizationNode;
+
+import ini.cx3d.physics.interfaces.Substance;
 
 import java.io.Serializable;
 import java.util.Enumeration;
@@ -82,7 +85,7 @@ public class PhysicalNode extends ini.cx3d.swig.spatialOrganization.PhysicalNode
 	private int movementConcentratioUpdateProcedure = -999;
 
 	/* All the (diffusible) chemicals that are present in the space defined by this physicalNode. */
-	private Hashtable<String, Substance> extracellularSubstances = new Hashtable<String, Substance>();
+	private Hashtable<String, ini.cx3d.physics.interfaces.Substance> extracellularSubstances = new Hashtable<String, ini.cx3d.physics.interfaces.Substance>();
 
 	/* My anchor point in the neighboring system */
 	protected SpatialOrganizationNode<PhysicalNode> soNode;
@@ -159,7 +162,7 @@ public class PhysicalNode extends ini.cx3d.swig.spatialOrganization.PhysicalNode
 			if(ecm.thereAreArtificialGradients()){
 				c += ecm.getValueArtificialConcentration(id, getSoNode().getPosition());
 			}
-			Substance s = extracellularSubstances.get(id);
+			ini.cx3d.physics.interfaces.Substance s = extracellularSubstances.get(id);
 			if(s==null){
 				return c;
 			}else{
@@ -252,7 +255,7 @@ public class PhysicalNode extends ini.cx3d.swig.spatialOrganization.PhysicalNode
 			// the gradient can be composed of diffusible Substances and artificial substances in ecm
 			double[] grad;
 			// 1. diffusible substance component
-			Substance s = extracellularSubstances.get(id);
+			ini.cx3d.physics.interfaces.Substance s = extracellularSubstances.get(id);
 			if(s==null){
 				grad = new double[] {0.0, 0.0, 0.0};
 			} else {
@@ -298,7 +301,7 @@ public class PhysicalNode extends ini.cx3d.swig.spatialOrganization.PhysicalNode
 	public void modifyExtracellularQuantity(String id, double quantityPerTime){
 		getRwLock().writeLock().lock();
 
-		Substance ss = extracellularSubstances.get(id);
+		ini.cx3d.physics.interfaces.Substance ss = extracellularSubstances.get(id);
 		if(ss==null){
 			ss = ecm.substanceInstance(id);
 			extracellularSubstances.put(id, ss);
@@ -353,7 +356,7 @@ public class PhysicalNode extends ini.cx3d.swig.spatialOrganization.PhysicalNode
 		//getRwLock().writeLock().lock();
 		// Otherwise, degradation according to the degradation constant for each chemical
 		double deltaT = currentEcmTime-lastECMTimeDegradateWasRun;
-		for (Substance s : extracellularSubstances.values()) {
+		for (ini.cx3d.physics.interfaces.Substance s : extracellularSubstances.values()) {
 			double decay = Math.exp(-s.getDegradationConstant()*deltaT);
 			s.multiplyQuantityAndConcentrationBy(decay);
 		}
@@ -402,7 +405,7 @@ public class PhysicalNode extends ini.cx3d.swig.spatialOrganization.PhysicalNode
 		double pre_m = (e.getCrossSection()/distance) * (1.0/vA + 1.0/vB);
 
 		// diffusion of all the extracellularSubstances in A :
-		for (Enumeration<Substance> substancesEnumeration = nA.extracellularSubstances.elements(); substancesEnumeration.hasMoreElements();) {
+		for (Enumeration<ini.cx3d.physics.interfaces.Substance> substancesEnumeration = nA.extracellularSubstances.elements(); substancesEnumeration.hasMoreElements();) {
 			// for a given substance
 			Substance sA = substancesEnumeration.nextElement();
 			double sAConcentration = sA.getConcentration();
@@ -412,7 +415,7 @@ public class PhysicalNode extends ini.cx3d.swig.spatialOrganization.PhysicalNode
 				continue; // to avoid a division by zero in the n/m if the diff const = 0;
 			}
 			// find the counterpart in B
-			Substance sB = nB.getSubstanceInstance(sA);
+			ini.cx3d.physics.interfaces.Substance sB = nB.getSubstanceInstance(sA);
 			double sBConcentration = sB.getConcentration();
 			// saving time : no diffusion if almost no difference;
 			double absDiff = Math.abs(sAConcentration-sBConcentration);
@@ -456,15 +459,15 @@ public class PhysicalNode extends ini.cx3d.swig.spatialOrganization.PhysicalNode
 	 * than the Substance given as argument. If there is no such Instance, a new one
 	 * is created, inserted into the list extracellularSubstances and returned.
 	 * Used for diffusion and for ECMChemicalReaction.*/
-	public Substance getSubstanceInstance(Substance templateS){
+	public ini.cx3d.physics.interfaces.Substance getSubstanceInstance(Substance templateS){
 		try
 		{
 			//write lock because of possible changement of substances!
 			getRwLock().writeLock().lock();
-			Substance s = extracellularSubstances.get(templateS.getId());
+			ini.cx3d.physics.interfaces.Substance s = extracellularSubstances.get(templateS.getId());
 			if(s == null){
 				// if it doesn't exist, you create it (with concentration 0)
-				s = new Substance(templateS);
+				s = SubstanceFactory.create(templateS);
 				s.setConcentration(0);
 				s.setQuantity(0);
 				extracellularSubstances.put(s.getId(), s);
@@ -531,7 +534,7 @@ public class PhysicalNode extends ini.cx3d.swig.spatialOrganization.PhysicalNode
 	 * @param dX the distance from this nodes's location
 	 * @return
 	 */
-	double computeConcentrationAtDistanceBasedOnGradient(Substance s, double[] dX){
+	double computeConcentrationAtDistanceBasedOnGradient(ini.cx3d.physics.interfaces.Substance s, double[] dX){
 		try
 		{
 			getRwLock().readLock().lock();
@@ -668,7 +671,7 @@ public class PhysicalNode extends ini.cx3d.swig.spatialOrganization.PhysicalNode
 
 	/** Add an extracellular or membrane-bound chemicals
 	 *  in this PhysicalNode. */
-	public void addExtracellularSubstance(Substance is) {
+	public void addExtracellularSubstance(ini.cx3d.physics.interfaces.Substance is) {
 		try
 		{
 			getRwLock().readLock().lock();
@@ -682,7 +685,7 @@ public class PhysicalNode extends ini.cx3d.swig.spatialOrganization.PhysicalNode
 
 	/** Remove an extracellular or membrane-bound chemicals that are present
 	 *  in this PhysicalNode. */
-	public void removeExtracellularSubstance(Substance is) {
+	public void removeExtracellularSubstance(ini.cx3d.physics.interfaces.Substance is) {
 		try
 		{
 			getRwLock().readLock().lock();
@@ -695,11 +698,11 @@ public class PhysicalNode extends ini.cx3d.swig.spatialOrganization.PhysicalNode
 	}
 
 	/** All the (diffusible) chemicals that are present in the space defined by this physicalNode. */
-	public Hashtable<String, Substance> getExtracellularSubstances() {
+	public Hashtable<String, ini.cx3d.physics.interfaces.Substance> getExtracellularSubstances() {
 		try
 		{
 			getRwLock().readLock().lock();
-			return (Hashtable<String, Substance>) extracellularSubstances.clone();
+			return (Hashtable<String, ini.cx3d.physics.interfaces.Substance>) extracellularSubstances.clone();
 		}
 		finally
 		{
@@ -709,9 +712,9 @@ public class PhysicalNode extends ini.cx3d.swig.spatialOrganization.PhysicalNode
 
 	/** All the (diffusible) chemicals that are present in the space defined by this physicalNode. */
 	public void setExtracellularSubstances(
-			Hashtable<String, Substance> extracellularSubstances) {
+			Hashtable<String, ini.cx3d.physics.interfaces.Substance> extracellularSubstances) {
 		getRwLock().writeLock().lock();
-		this.extracellularSubstances = (Hashtable<String, Substance>) extracellularSubstances.clone();
+		this.extracellularSubstances = (Hashtable<String, ini.cx3d.physics.interfaces.Substance>) extracellularSubstances.clone();
 		getRwLock().writeLock().unlock();
 	}
 

@@ -33,6 +33,7 @@ import ini.cx3d.cells.CellFactory;
 import ini.cx3d.localBiology.AbstractLocalBiologyModule;
 import ini.cx3d.physics.PhysicalObject;
 import ini.cx3d.physics.Substance;
+import ini.cx3d.physics.factory.SubstanceFactory;
 import ini.cx3d.simulations.ECM;
 import ini.cx3d.simulations.Scheduler;
 
@@ -57,8 +58,8 @@ public class SomaClusteringTest extends BaseSimulationTest {
 
 //		Scheduler.simulateOneStep();
 //		ecm.view.smallWindowRectangle = smallWindowRectangle;
-        Substance yellowSubstance = new Substance("Yellow", 1000, 0.01);
-        Substance violetSubstance = new Substance("Violet", 1000, 0.01);
+        ini.cx3d.physics.interfaces.Substance yellowSubstance = SubstanceFactory.create("Yellow", 1000, 0.01);
+        ini.cx3d.physics.interfaces.Substance violetSubstance = SubstanceFactory.create("Violet", 1000, 0.01);
         ecm.addNewSubstanceTemplate(yellowSubstance);
         ecm.addNewSubstanceTemplate(violetSubstance);
         for (int i = 0; i < 400; i++) {

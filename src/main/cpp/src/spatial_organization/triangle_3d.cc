@@ -1,5 +1,5 @@
 #include "spatial_organization/triangle_3d.h"
-#include <iostream> //fixme remove
+
 #include <stdint.h>
 #include <cmath>
 #include <array>

@@ -28,7 +28,6 @@ import static ini.cx3d.SimStateSerializationUtil.removeLastChar;
 import static ini.cx3d.utilities.Matrix.*;
 
 import ini.cx3d.Param;
-import ini.cx3d.cells.AbstractCellModule;
 import ini.cx3d.localBiology.CellElement;
 import ini.cx3d.localBiology.LocalBiologyModule;
 import ini.cx3d.localBiology.NeuriteElement;
@@ -1380,7 +1379,7 @@ public class PhysicalCylinder extends PhysicalObject{
 		// 1) Degradation according to the degradation constant for each chemical
 		
 		getRwLock().readLock().lock();
-		for (Substance s : intracellularSubstances.values()) {
+		for (ini.cx3d.physics.interfaces.Substance s : intracellularSubstances.values()) {
 			double decay = Math.exp(-s.getDegradationConstant()*Param.SIMULATION_TIME_STEP);
 			s.multiplyQuantityAndConcentrationBy(decay);
 		}

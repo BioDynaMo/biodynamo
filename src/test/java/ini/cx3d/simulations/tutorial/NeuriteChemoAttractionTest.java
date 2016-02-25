@@ -35,6 +35,7 @@ import ini.cx3d.localBiology.CellElement;
 import ini.cx3d.localBiology.NeuriteElement;
 import ini.cx3d.physics.PhysicalObject;
 import ini.cx3d.physics.Substance;
+import ini.cx3d.physics.factory.SubstanceFactory;
 import ini.cx3d.simulations.ECM;
 import ini.cx3d.simulations.Scheduler;
 
@@ -49,7 +50,7 @@ public class NeuriteChemoAttractionTest extends BaseSimulationTest {
 	public void simulate() {
 		ECM ecm = ECM.getInstance();
 		ECM.setRandomSeed(1L);
-		Substance attractant = new Substance("A",Color.red);
+		ini.cx3d.physics.interfaces.Substance attractant = SubstanceFactory.create("A", Color.red);
 		ecm.addArtificialGaussianConcentrationZ(attractant, 1.0, 400.0, 160.0);
 
 		int nbOfAdditionalNodes = 10;

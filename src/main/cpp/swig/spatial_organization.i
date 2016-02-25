@@ -17,7 +17,6 @@
 // end administration area
 
 %{
-  #include <iostream> //fixme remove
 #include <memory>
 #include <stdint.h>
 

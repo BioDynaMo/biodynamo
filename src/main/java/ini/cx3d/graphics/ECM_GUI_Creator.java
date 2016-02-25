@@ -21,7 +21,6 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 
 package ini.cx3d.graphics;
 
-import ini.cx3d.physics.Substance;
 import ini.cx3d.simulations.ECM;
 import ini.cx3d.utilities.export.Exporter;
 
@@ -749,7 +748,7 @@ public class ECM_GUI_Creator implements ActionListener{
 	}
 
 	private HashMap<String,JMenuItem> dynamicchemicals = new HashMap<String,JMenuItem>();
-	public void addNewChemical(final Substance s) {
+	public void addNewChemical(final ini.cx3d.physics.interfaces.Substance s) {
 		
 		JMenuItem chemical = new JMenuItem(s.getId());
 		dynamicchemicals.put(s.getId()+"_saver", chemical);

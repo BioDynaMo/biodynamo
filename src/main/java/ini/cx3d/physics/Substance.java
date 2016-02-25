@@ -21,13 +21,11 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 
 package ini.cx3d.physics;
 
-import ini.cx3d.SimStateSerializable;
 import ini.cx3d.SimStateSerializationUtil;
 import ini.cx3d.graphics.View;
 import ini.cx3d.xml.XMLSerializable;
 
 import java.awt.Color;
-import java.io.Serializable;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -43,10 +41,9 @@ import static ini.cx3d.SimStateSerializationUtil.removeLastChar;
  */
 
 
-public class Substance  implements XMLSerializable, Serializable, SimStateSerializable{
+public class Substance extends ini.cx3d.swig.physics.Substance implements ini.cx3d.physics.interfaces.Substance {
 	
 	/* Name of the Substance.               */
-	//asdfasf
 	protected String id;
 	/* How fast it is diffused by the methods in the PhysicalNode. */
 	protected double diffusionConstant = 1000;
@@ -63,6 +60,7 @@ public class Substance  implements XMLSerializable, Serializable, SimStateSerial
 	/* used for synchronisation for multithreading. introduced by Haurian*/
 	private ReadWriteLock rwLock = new ReentrantReadWriteLock();
 
+	@Override
 	public ini.cx3d.swig.NativeStringBuilder simStateToJson(ini.cx3d.swig.NativeStringBuilder sb) {
 		sb.append("{");
 
@@ -78,14 +76,17 @@ public class Substance  implements XMLSerializable, Serializable, SimStateSerial
 		return sb;
 	}
 
-	public Substance(){}
-	
+	public Substance(){
+		registerJavaObject(this);
+	}
+
 	/**
 	 * Copies the physical properties of the substance given as argument (id, diffusionConstant,
 	 * degradationConstant and color), but : QUANTITY AND CONCENTRATION ARE NOT COPIED !!
 	 * @param templateSubstance
 	 */
 	public Substance(Substance templateSubstance){
+		registerJavaObject(this);
 		getRwLock().writeLock().lock();
 		this.id = templateSubstance.id;
 		this.diffusionConstant = templateSubstance.diffusionConstant;
@@ -95,8 +96,9 @@ public class Substance  implements XMLSerializable, Serializable, SimStateSerial
 		this.quantity = 0;
 		getRwLock().writeLock().unlock();
 	}
-	
+
 	public Substance(String id, double diffusionConstant, double degradationConstant){
+		registerJavaObject(this);
 		getRwLock().writeLock().lock();
 		this.id = id;
 		this.diffusionConstant = diffusionConstant;
@@ -105,13 +107,14 @@ public class Substance  implements XMLSerializable, Serializable, SimStateSerial
 		this.concentration = 0;
 		getRwLock().writeLock().unlock();
 	}
-	
+
 	/**
 	 * Especially used for the "artificial gradient" formation, in ECM.
 	 * @param id
 	 * @param color
 	 */
 	public Substance(String id, Color color){
+		registerJavaObject(this);
 		getRwLock().writeLock().lock();
 		this.id = id;
 		this.color = color;
@@ -122,6 +125,7 @@ public class Substance  implements XMLSerializable, Serializable, SimStateSerial
 	 * Increases or decreases the quantity. Makes sure the quantity is never negative.
 	 * @param deltaQ
 	 */
+	@Override
 	public void changeQuantityFrom(double deltaQ){
 		getRwLock().writeLock().lock();
 		quantity += deltaQ;
@@ -133,6 +137,7 @@ public class Substance  implements XMLSerializable, Serializable, SimStateSerial
 	
 	/** Well, as the name says, it multiplies the quantity and the concentration
 	 * by a certain value. This method is mainly used for degradation .*/
+	@Override
 	public void multiplyQuantityAndConcentrationBy(double factor){
 		getRwLock().writeLock().lock();
 		quantity *= factor;
@@ -145,6 +150,7 @@ public class Substance  implements XMLSerializable, Serializable, SimStateSerial
 	 * but the volume changes. Important when PhysicalNodes are moved.
 	 * @param volume
 	 */
+	@Override
 	public void updateQuantityBasedOnConcentration(double volume){
 		getRwLock().writeLock().lock();
 		quantity = concentration*volume;
@@ -157,6 +163,7 @@ public class Substance  implements XMLSerializable, Serializable, SimStateSerial
 	 *  Important when PhysicalNodes are moved.
 	 * @param volume
 	 */
+	@Override
 	public void updateConcentrationBasedOnQuantity(double volume){
 		getRwLock().writeLock().lock();
 		setConcentration(quantity/volume);
@@ -170,6 +177,7 @@ public class Substance  implements XMLSerializable, Serializable, SimStateSerial
 	 * degradationConstant and diffusionConstant. The
 	 * quantity and concentration are note taken into account.
 	 */
+	@Override
 	public boolean equals(Object o){
 		
 		if (o instanceof Substance) {
@@ -199,6 +207,7 @@ public class Substance  implements XMLSerializable, Serializable, SimStateSerial
 	 * based on their Substance concentrations.
 	 * @return scaled Color
 	 */
+	@Override
 	public Color getConcentrationDependentColor(){
 		try{
 			getRwLock().readLock().lock();
@@ -222,10 +231,12 @@ public class Substance  implements XMLSerializable, Serializable, SimStateSerial
 	// --------- GETTERS & SETTERS--------------------------------------------------------
 	
 
+	@Override
 	public String getId() {
 		return id;
 	}
 
+	@Override
 	public void setId(String id) {
 		try{
 			getRwLock().readLock().lock();
@@ -238,6 +249,7 @@ public class Substance  implements XMLSerializable, Serializable, SimStateSerial
 		
 	}
 
+	@Override
 	public double getDiffusionConstant() {
 		try{
 			getRwLock().readLock().lock();
@@ -250,6 +262,7 @@ public class Substance  implements XMLSerializable, Serializable, SimStateSerial
 		
 	}
 
+	@Override
 	public void setDiffusionConstant(double diffusionConstant) {
 		
 		getRwLock().writeLock().lock();
@@ -258,6 +271,7 @@ public class Substance  implements XMLSerializable, Serializable, SimStateSerial
 		
 	}
 
+	@Override
 	public double getDegradationConstant() {
 		try{
 			getRwLock().readLock().lock();
@@ -269,12 +283,14 @@ public class Substance  implements XMLSerializable, Serializable, SimStateSerial
 		}	
 	}
 
+	@Override
 	public void setDegradationConstant(double degradationConstant) {
 		getRwLock().writeLock().lock();
 		this.degradationConstant = degradationConstant;
 		getRwLock().writeLock().unlock();
 	}
 
+	@Override
 	public Color getColor() {
 		try{
 			getRwLock().readLock().lock();
@@ -286,12 +302,14 @@ public class Substance  implements XMLSerializable, Serializable, SimStateSerial
 		}	
 	}
 
+	@Override
 	public void setColor(Color color) {
 		getRwLock().writeLock().lock();
 		this.color = color;
 		getRwLock().writeLock().unlock();
 	}
 
+	@Override
 	public double getConcentration() {
 		try{
 			getRwLock().readLock().lock();
@@ -304,6 +322,7 @@ public class Substance  implements XMLSerializable, Serializable, SimStateSerial
 		
 	}
 
+	@Override
 	public void setConcentration(double concentration) {
 		getRwLock().writeLock().lock();
 		if(concentration<0.0){
@@ -315,6 +334,7 @@ public class Substance  implements XMLSerializable, Serializable, SimStateSerial
 		getRwLock().writeLock().unlock();
 	}
 
+	@Override
 	public double getQuantity() {
 		try{
 			getRwLock().readLock().lock();
@@ -327,6 +347,7 @@ public class Substance  implements XMLSerializable, Serializable, SimStateSerial
 			
 	}
 
+	@Override
 	public void setQuantity(double quantity) {
 		getRwLock().writeLock().lock();
 		this.quantity = quantity;
@@ -392,30 +413,34 @@ public class Substance  implements XMLSerializable, Serializable, SimStateSerial
 		}	
 	}
 	
-	public XMLSerializable fromXML(Node xml) {
-		
-		for(int i=0;i<xml.getAttributes().getLength();i++)
-		{
-			Node attr =  xml.getAttributes().item(i);
-			readOutAttributes(attr);
-		}
-		return this;
-	}
+//	@Override
+//	public XMLSerializable fromXML(Node xml) {
+//
+//		for(int i=0;i<xml.getAttributes().getLength();i++)
+//		{
+//			Node attr =  xml.getAttributes().item(i);
+//			readOutAttributes(attr);
+//		}
+//		return this;
+//	}
+//
+//	@Override
+//	public StringBuilder toXML(String ident) {
+//
+//		StringBuilder temp = new StringBuilder();
+//		temp.append(ident).append("<substance ").append(createXMLAttrubutes());
+//		temp.append("\" />\n");
+//		return temp;
+//	}
 
-	public StringBuilder toXML(String ident) {
 
-		StringBuilder temp = new StringBuilder();
-		temp.append(ident).append("<substance ").append(createXMLAttrubutes());
-		temp.append("\" />\n");
-		return temp;
-	}
-
-
+//	@Override
 	public ReadWriteLock getRwLock() {
 		return rwLock;
-	}	
+	}
 	
-	public Substance getCopy() {
+	@Override
+	public ini.cx3d.physics.interfaces.Substance getCopy() {
 		// TODO Auto-generated method stub
 		return new Substance(this);
 	}

@@ -32,7 +32,6 @@ import ini.cx3d.physics.PhysicalBond;
 import ini.cx3d.physics.PhysicalCylinder;
 import ini.cx3d.physics.PhysicalNode;
 import ini.cx3d.physics.PhysicalSphere;
-import ini.cx3d.physics.Substance;
 import ini.cx3d.simulations.ECM;
 import ini.cx3d.spatialOrganization.SpatialOrganizationNode;
 import ini.cx3d.synapses.Excrescence;
@@ -52,7 +51,6 @@ import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
 import java.util.Collections;
-import java.util.Hashtable;
 import java.util.Vector;
 
 import javax.swing.JComponent;
@@ -142,7 +140,7 @@ public class View extends JComponent {
 	private double minXdrawn = Double.MAX_VALUE;
 	private double minZdrawn = Double.MAX_VALUE;
 
-	private Vector<Substance> tobeDrawn = new Vector<Substance>();
+	private Vector<ini.cx3d.physics.interfaces.Substance> tobeDrawn = new Vector<ini.cx3d.physics.interfaces.Substance>();
 
 	// Check if object dispay have to be sorted for a more realistic 3D view
 	private boolean sortDraw = false;
@@ -195,7 +193,7 @@ public class View extends JComponent {
 		g.fillRect(0, 0, getWidth(), getHeight());
 
 		// draw the artificial chemical
-		for (Substance s : tobeDrawn) {
+		for (ini.cx3d.physics.interfaces.Substance s : tobeDrawn) {
 			drawSubstance(g2D, s);
 		}
 
@@ -276,7 +274,7 @@ public class View extends JComponent {
 			// if it has been selected to be drawn otherwise use the standard of
 			// the object
 			Color drawcolor = aCylinder.getColor();
-			for (Substance sub : tobeDrawn) {
+			for (ini.cx3d.physics.interfaces.Substance sub : tobeDrawn) {
 				if (sub instanceof IntracellularSubstance) {
 					if (aCylinder.getIntracellularSubstances().containsKey(
 							sub.getId())) {
@@ -522,7 +520,7 @@ public class View extends JComponent {
 			// if it has been selected to be drawn otherwise use the standard of
 			// the object
 			Color sphereColor = aSphere.getColor();
-			for (Substance sub : tobeDrawn) {
+			for (ini.cx3d.physics.interfaces.Substance sub : tobeDrawn) {
 				if (sub instanceof IntracellularSubstance) {
 					if (aSphere.getIntracellularSubstances().containsKey(
 							sub.getId())) {
@@ -732,9 +730,9 @@ public class View extends JComponent {
 
 			nodeCoord = getDisplayCoord(nodeCoord);
 
-			for (Substance s : tobeDrawn) {
+			for (ini.cx3d.physics.interfaces.Substance s : tobeDrawn) {
 
-				Substance realS = n.getExtracellularSubstances().get(s.getId());
+				ini.cx3d.physics.interfaces.Substance realS = n.getExtracellularSubstances().get(s.getId());
 				if (realS != null) {
 
 					paintrealSubstanceJustColor(g2D, realS, nodeCoord);
@@ -745,7 +743,7 @@ public class View extends JComponent {
 		}
 	}
 
-	private void paintrealSubstance(Graphics2D g2D, Substance s, double[] coord) {
+	private void paintrealSubstance(Graphics2D g2D, ini.cx3d.physics.interfaces.Substance s, double[] coord) {
 		Color temp = g2D.getColor();
 		g2D.setColor(new Color(0, 0, 0, temp.getAlpha()));
 		g2D.setFont(new Font("sansserif", Font.BOLD, 10));
@@ -756,14 +754,14 @@ public class View extends JComponent {
 	}
 
 	private void paintrealSubstanceShowNumberDependant(Graphics2D g2D,
-			Substance s, double[] coord) {
+			ini.cx3d.physics.interfaces.Substance s, double[] coord) {
 		if (!Shownumbers)
 			return;
 		paintrealSubstance(g2D, s, coord);
 
 	}
 
-	private void paintrealSubstanceJustColor(Graphics2D g2D, Substance s,
+	private void paintrealSubstanceJustColor(Graphics2D g2D, ini.cx3d.physics.interfaces.Substance s,
 			double[] coord) {
 		int intensity = (int) (chemicalDrawFactor * s.getConcentration());
 		if (intensity > 255) {
@@ -793,7 +791,7 @@ public class View extends JComponent {
 	// Artificial Gradient
 	// **************************************************************************
 
-	private void drawSubstance(Graphics2D g2D, Substance sub) {
+	private void drawSubstance(Graphics2D g2D, ini.cx3d.physics.interfaces.Substance sub) {
 		if (ecm.gaussianArtificialConcentrationX.containsKey(sub)) {
 			double[] v = ecm.gaussianArtificialConcentrationX.get(sub);
 			drawGaussianGradientX(g2D, v, sub);
@@ -847,7 +845,7 @@ public class View extends JComponent {
 		// strip
 	}
 
-	private void drawLinearGradientX(Graphics2D g2d, double[] v, Substance s) {
+	private void drawLinearGradientX(Graphics2D g2d, double[] v, ini.cx3d.physics.interfaces.Substance s) {
 		// double[] v = {8,114,177}; // the values in the hashtable :
 		// MaxValue-MaxPt-MinPt
 		int maxIntensity = (int) v[0] * chemicalDrawFactor;
@@ -870,7 +868,7 @@ public class View extends JComponent {
 		drawGradientRectangleX(g2d, cMax, maxColor, cMin, minColor);
 	}
 
-	private void drawLinearGradientZ(Graphics2D g2d, double[] v, Substance s) {
+	private void drawLinearGradientZ(Graphics2D g2d, double[] v, ini.cx3d.physics.interfaces.Substance s) {
 		// double[] v = {8,114,177}; // the values in the hashtable :
 		// MaxValue-MaxPt-MinPt
 		int maxIntensity = (int) v[0] * chemicalDrawFactor;
@@ -893,7 +891,7 @@ public class View extends JComponent {
 		drawGradientRectangleZ(g2d, cMax, maxColor, cMin, minColor);
 	}
 
-	private void drawGaussianGradientZ(Graphics2D g2d, double[] v, Substance s) {
+	private void drawGaussianGradientZ(Graphics2D g2d, double[] v, ini.cx3d.physics.interfaces.Substance s) {
 
 		Color substancecolor = s.getColor();
 		int R = substancecolor.getRed();
@@ -974,7 +972,7 @@ public class View extends JComponent {
 		drawGradientRectangleZ(g2d, cS2Minus, sigma2Color, cS3Minus, zeroColor);
 	}
 
-	private void drawGaussianGradientX(Graphics2D g2d, double[] v, Substance s) {
+	private void drawGaussianGradientX(Graphics2D g2d, double[] v, ini.cx3d.physics.interfaces.Substance s) {
 		Color substancecolor = s.getColor();
 		int R = substancecolor.getRed();
 		int G = substancecolor.getGreen();
@@ -1302,15 +1300,15 @@ public class View extends JComponent {
 			g2D.setStroke(fiftyStroke);
 	}
 
-	public void addTobeDrawn(Substance tobeDrawn) {
+	public void addTobeDrawn(ini.cx3d.physics.interfaces.Substance tobeDrawn) {
 		this.tobeDrawn.add(tobeDrawn);
 	}
 
-	public void removeTobeDrawn(Substance s) {
+	public void removeTobeDrawn(ini.cx3d.physics.interfaces.Substance s) {
 		tobeDrawn.remove(s);
 	}
 
-	public boolean containsTobeDrawn(Substance s) {
+	public boolean containsTobeDrawn(ini.cx3d.physics.interfaces.Substance s) {
 		return tobeDrawn.contains(s);
 	}
 

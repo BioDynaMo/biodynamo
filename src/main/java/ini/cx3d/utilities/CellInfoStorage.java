@@ -21,11 +21,9 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 
 package ini.cx3d.utilities;
 
-import ini.cx3d.Param;
 import ini.cx3d.cells.Cell;
 import ini.cx3d.cells.CellFactory;
 import ini.cx3d.localBiology.SomaElement;
-import ini.cx3d.physics.Substance;
 import ini.cx3d.simulations.ECM;
 
 import java.awt.Color;
@@ -51,7 +49,7 @@ public class CellInfoStorage implements Serializable
 	double adherence = 10;
 	Color c;
 	transient Cell cell; 
-	HashMap<String, Substance> quantity = new HashMap<String, Substance>();
+	HashMap<String, ini.cx3d.physics.interfaces.Substance> quantity = new HashMap<String, ini.cx3d.physics.interfaces.Substance>();
 	
 	
 	public static void saveallcells(String name)
@@ -67,7 +65,7 @@ public class CellInfoStorage implements Serializable
 		    	  cont.adherence = c.getSomaElement().getPhysical().getAdherence();
 		    	  cont.ioforce = c.getSomaElement().getPhysical().getInterObjectForceCoefficient();
 		    	  cont.mass = c.getSomaElement().getPhysical().getMass();
-		    	  Hashtable<String, Substance> substances = c.getSomaElement().getPhysical().getExtracellularSubstances();
+		    	  Hashtable<String, ini.cx3d.physics.interfaces.Substance> substances = c.getSomaElement().getPhysical().getExtracellularSubstances();
 		    	  for (String s: substances.keySet()) {
 					cont.quantity.put(s,substances.get(s));
 		    	  }
@@ -110,7 +108,7 @@ public class CellInfoStorage implements Serializable
 		 for (CellInfoStorage container : containers) {
 			 SomaElement soma = container.cell.getSomaElement();
 			 for (String s : container.quantity.keySet()) {
-				 	Substance sub = container.quantity.get(s);
+				 	ini.cx3d.physics.interfaces.Substance sub = container.quantity.get(s);
 //				 	sub.setQuantity(9999999910000000000.0);
 //				 	sub.setConcentration(1);
 //					soma.getPhysical().modifyExtracellularQuantity(s, container.quantity.get(s).doubleValue()/Param.SIMULATION_TIME_STEP);
