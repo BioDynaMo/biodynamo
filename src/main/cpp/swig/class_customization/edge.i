@@ -19,34 +19,37 @@
 %define %Edge_cx3d_shared_ptr()
   %cx3d_shared_ptr(EdgeT_PhysicalNode,
                    ini/cx3d/spatialOrganization/interfaces/Edge,
-                   cx3d::spatial_organization::Edge<cx3d::PhysicalNode>);
+                   cx3d::spatial_organization::Edge<cx3d::physics::PhysicalNode>);
 %enddef
 
 %define %Edge_java()
-  %java_defined_class(cx3d::spatial_organization::Edge<cx3d::PhysicalNode>,
+  %java_defined_class(cx3d::spatial_organization::Edge<cx3d::physics::PhysicalNode>,
                       EdgeT_PhysicalNode,
                       Edge,
                       ini.cx3d.spatialOrganization.interfaces.Edge,
                       ini/cx3d/spatialOrganization/interfaces/Edge);
-  %typemap(javainterfaces) cx3d::spatial_organization::Edge<cx3d::PhysicalNode> "ini.cx3d.spatialOrganization.interfaces.Edge<ini.cx3d.physics.PhysicalNode>"
+  %typemap(javainterfaces) cx3d::spatial_organization::Edge<cx3d::physics::PhysicalNode> "ini.cx3d.spatialOrganization.interfaces.Edge<ini.cx3d.physics.interfaces.PhysicalNode>"
 %enddef
 
 %define %Edge_native()
-  %native_defined_class(cx3d::spatial_organization::Edge<cx3d::PhysicalNode>,
+  %native_defined_class(cx3d::spatial_organization::Edge<cx3d::physics::PhysicalNode>,
                         EdgeT_PhysicalNode,
                         ini.cx3d.spatialOrganization.interfaces.Edge,
                         Edge,
                         public EdgeT_PhysicalNode(){});
-  %typemap(javainterfaces) cx3d::spatial_organization::Edge<cx3d::PhysicalNode> "ini.cx3d.spatialOrganization.interfaces.Edge<ini.cx3d.physics.PhysicalNode>"
+  %typemap(javainterfaces) cx3d::spatial_organization::Edge<cx3d::physics::PhysicalNode> "ini.cx3d.spatialOrganization.interfaces.Edge<ini.cx3d.physics.interfaces.PhysicalNode>"
 %enddef
 
 %define %Edge_typemaps()
   // for SpaceNode
   %Edge_stdlist();
+  %typemap(javaimports) cx3d::spatial_organization::Edge<cx3d::physics::PhysicalNode> %{
+    import ini.cx3d.swig.physics.PhysicalNode;
+  %}
 %enddef
 
 %define %Edge_stdlist()
-  %stdlist_typemap(std::shared_ptr<cx3d::spatial_organization::Edge<cx3d::PhysicalNode>>,
+  %stdlist_typemap(std::shared_ptr<cx3d::spatial_organization::Edge<cx3d::physics::PhysicalNode>>,
                    Edge,
                    ini.cx3d.spatialOrganization.interfaces.Edge);
 %enddef

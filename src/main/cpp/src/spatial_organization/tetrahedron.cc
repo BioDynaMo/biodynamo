@@ -7,7 +7,7 @@
 
 #include "matrix.h"
 #include "string_util.h"
-#include "physical_node.h"
+#include "physics/physical_node.h"
 #include "spatial_organization/exact_vector.h"
 #include "spatial_organization/rational.h"
 #include "spatial_organization/edge.h"
@@ -1022,7 +1022,7 @@ void Tetrahedron<T>::initializationHelper(const std::shared_ptr<Triangle3D<T>>& 
   calculateCircumSphere();
 }
 
-template class Tetrahedron<cx3d::PhysicalNode>;
+template class Tetrahedron<cx3d::physics::PhysicalNode>;
 
 }  // namespace spatial_organization
 }  // namespace cx3d

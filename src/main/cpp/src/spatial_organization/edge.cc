@@ -3,7 +3,7 @@
 #include <sstream>
 #include <stdexcept>
 
-#include "physical_node.h"
+#include "physics/physical_node.h"
 #include "string_util.h"
 #include "spatial_organization/space_node.h"
 #include "spatial_organization/tetrahedron.h"
@@ -128,7 +128,7 @@ void Edge<T>::initializationHelper() {
   }
 }
 
-template class Edge<cx3d::PhysicalNode>;
+template class Edge<cx3d::physics::PhysicalNode>;
 
 }  // namespace spatial_organization
 }  // namespace cx3d

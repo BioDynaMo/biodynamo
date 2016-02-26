@@ -61,7 +61,7 @@
  * @param ADDITIONAL_CODE additional code that should be inserted into the
  *        generated Java class
  * usage example:
- * %java_defined_class_add(cx3d::spatial_organization::Tetrahedron<cx3d::PhysicalNode>,
+ * %java_defined_class_add(cx3d::spatial_organization::Tetrahedron<cx3d::physics::PhysicalNode>,
  *                         TetrahedronT_PhysicalNode,
  *                         Tetrahedron,
  *                         ini.cx3d.spatialOrganization.interfaces.Tetrahedron,
@@ -192,14 +192,14 @@
  *
  * usage example
  * if Tetrahedron specifies a public default constructor:
- * %native_defined_class_add(cx3d::spatial_organization::Tetrahedron<cx3d::PhysicalNode>,
+ * %native_defined_class_add(cx3d::spatial_organization::Tetrahedron<cx3d::physics::PhysicalNode>,
  *                           TetrahedronT_PhysicalNode,
  *                           ini.cx3d.spatialOrganization.interfaces.Tetrahedron,
  *                           Tetrahedron, ;,
  *                           public void foo(){});
  *
  * if it does not:
- * %native_defined_class_add(cx3d::spatial_organization::Tetrahedron<cx3d::PhysicalNode>,
+ * %native_defined_class_add(cx3d::spatial_organization::Tetrahedron<cx3d::physics::PhysicalNode>,
  *                           TetrahedronT_PhysicalNode,
  *                           ini.cx3d.spatialOrganization.interfaces.Tetrahedron,
  *                           Tetrahedron,
@@ -280,7 +280,7 @@
  *        package name and generic modifier)
  *
  * usage example:
- * %ported_add_equals(cx3d::spatial_organization::Triangle3D<cx3d::PhysicalNode>,
+ * %ported_add_equals(cx3d::spatial_organization::Triangle3D<cx3d::physics::PhysicalNode>,
  *                    Triangle3DT_PhysicalNode);
  */
 %define %add_equals(FULL_CPP_TYPE, JAVA_CLASS_NAME)

@@ -18,11 +18,11 @@
 %define %OpenTriangleOrganizer_cx3d_shared_ptr()
   %cx3d_shared_ptr(OpenTriangleOrganizerT_PhysicalNode,
                    ini/cx3d/spatialOrganization/interfaces/OpenTriangleOrganizer,
-                   cx3d::spatial_organization::OpenTriangleOrganizer<cx3d::PhysicalNode>);
+                   cx3d::spatial_organization::OpenTriangleOrganizer<cx3d::physics::PhysicalNode>);
 %enddef
 
 %define %OpenTriangleOrganizer_java()
-  %java_defined_class(cx3d::spatial_organization::OpenTriangleOrganizer<cx3d::PhysicalNode>,
+  %java_defined_class(cx3d::spatial_organization::OpenTriangleOrganizer<cx3d::physics::PhysicalNode>,
                       OpenTriangleOrganizerT_PhysicalNode,
                       OpenTriangleOrganizer,
                       ini.cx3d.spatialOrganization.interfaces.OpenTriangleOrganizer,
@@ -30,7 +30,7 @@
 %enddef
 
 %define %OpenTriangleOrganizer_native()
-  %native_defined_class(cx3d::spatial_organization::OpenTriangleOrganizer<cx3d::PhysicalNode>,
+  %native_defined_class(cx3d::spatial_organization::OpenTriangleOrganizer<cx3d::physics::PhysicalNode>,
                             OpenTriangleOrganizerT_PhysicalNode,
                             ini.cx3d.spatialOrganization.interfaces.OpenTriangleOrganizer,
                             OpenTriangleOrganizer,
@@ -38,7 +38,7 @@
 %enddef
 
 %define %OpenTriangleOrganizer_typemaps()
-  %typemap(javainterfaces) cx3d::spatial_organization::OpenTriangleOrganizer<cx3d::PhysicalNode> "ini.cx3d.spatialOrganization.interfaces.OpenTriangleOrganizer"
+  %typemap(javainterfaces) cx3d::spatial_organization::OpenTriangleOrganizer<cx3d::physics::PhysicalNode> "ini.cx3d.spatialOrganization.interfaces.OpenTriangleOrganizer"
 %enddef
 
  /**

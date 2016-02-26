@@ -18,20 +18,20 @@
 %define %EdgeHashKey_cx3d_shared_ptr()
   %cx3d_shared_ptr(EdgeHashKeyT_PhysicalNode,
                    ini/cx3d/spatialOrganization/interfaces/EdgeHashKey,
-                   cx3d::spatial_organization::EdgeHashKey<cx3d::PhysicalNode>);
+                   cx3d::spatial_organization::EdgeHashKey<cx3d::physics::PhysicalNode>);
 %enddef
 
 %define %EdgeHashKey_java()
-  %java_defined_class(cx3d::spatial_organization::EdgeHashKey<cx3d::PhysicalNode>,
+  %java_defined_class(cx3d::spatial_organization::EdgeHashKey<cx3d::physics::PhysicalNode>,
                       EdgeHashKeyT_PhysicalNode,
                       EdgeHashKey,
                       ini.cx3d.spatialOrganization.interfaces.EdgeHashKey,
                       ini/cx3d/spatialOrganization/interfaces/EdgeHashKey);
-  %typemap(javainterfaces) cx3d::spatial_organization::EdgeHashKey<cx3d::PhysicalNode> "ini.cx3d.spatialOrganization.interfaces.EdgeHashKey"
+  %typemap(javainterfaces) cx3d::spatial_organization::EdgeHashKey<cx3d::physics::PhysicalNode> "ini.cx3d.spatialOrganization.interfaces.EdgeHashKey"
 %enddef
 
 %define %EdgeHashKey_native()
-  %native_defined_class(cx3d::spatial_organization::EdgeHashKey<cx3d::PhysicalNode>,
+  %native_defined_class(cx3d::spatial_organization::EdgeHashKey<cx3d::physics::PhysicalNode>,
                         EdgeHashKeyT_PhysicalNode,
                         ini.cx3d.spatialOrganization.interfaces.EdgeHashKey,
                         EdgeHashKey,

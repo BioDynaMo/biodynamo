@@ -28,7 +28,6 @@ import ini.cx3d.Param;
 import ini.cx3d.graphics.View;
 import ini.cx3d.physics.ECMChemicalReaction;
 import ini.cx3d.physics.PhysicalCylinder;
-import ini.cx3d.physics.PhysicalNode;
 import ini.cx3d.physics.PhysicalSphere;
 
 /**
@@ -107,7 +106,7 @@ public class Scheduler {
 				int runPhyisicalNodes = 0;
 				if(runDiffusion){
 					for (int i = 0; i < ecm.physicalNodeList.size(); i++) {
-						PhysicalNode pn = ecm.physicalNodeList.get(i);
+						ini.cx3d.physics.interfaces.PhysicalNode pn = ecm.physicalNodeList.get(i);
 						if(pn.isOnTheSchedulerListForPhysicalNodes()){
 							pn.runExtracellularDiffusion(); 
 							runPhyisicalNodes +=1;
@@ -117,7 +116,7 @@ public class Scheduler {
 				
 				if(!ecm.ecmChemicalReactionList.isEmpty()){
 					for (int i = 0; i < ecm.physicalNodeList.size(); i++) {
-						PhysicalNode pn = ecm.physicalNodeList.get(i);
+						ini.cx3d.physics.interfaces.PhysicalNode pn = ecm.physicalNodeList.get(i);
 						for (ECMChemicalReaction chemicalReaction : ecm.ecmChemicalReactionList) {
 							chemicalReaction.run(pn);
 						}

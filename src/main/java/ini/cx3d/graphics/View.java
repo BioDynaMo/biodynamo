@@ -29,7 +29,6 @@ import static ini.cx3d.utilities.Matrix.subtract;
 import ini.cx3d.Param;
 import ini.cx3d.physics.PhysicalBond;
 import ini.cx3d.physics.PhysicalCylinder;
-import ini.cx3d.physics.PhysicalNode;
 import ini.cx3d.physics.PhysicalSphere;
 import ini.cx3d.simulations.ECM;
 import ini.cx3d.spatialOrganization.SpatialOrganizationNode;
@@ -467,14 +466,14 @@ public class View extends JComponent {
 	}
 
 	private void paintDelaunayNeighbors(Graphics2D g2D, Color col,
-			SpatialOrganizationNode<PhysicalNode> son) {
+			SpatialOrganizationNode<ini.cx3d.physics.interfaces.PhysicalNode> son) {
 		double[] nCoord = son.getPosition();
 		nCoord = mult(V, nCoord); // rotation
 		newCoord = getDisplayCoord(nCoord);
 		double x0 = newCoord[0];
 		double y0 = newCoord[1];
 		g2D.setPaint(Param.X_SOLID_GRAY); // the links are in this color
-		for (PhysicalNode n : son.getPermanentListOfNeighbors()) {
+		for (ini.cx3d.physics.interfaces.PhysicalNode n : son.getPermanentListOfNeighbors()) {
 			double[] mCoord = n.getSoNode().getPosition();
 			mCoord = mult(V, mCoord); // rotation
 			newCoord = getDisplayCoord(mCoord);
@@ -708,7 +707,7 @@ public class View extends JComponent {
 
 	private void paintPhysicalNodes(Graphics2D g2D) {
 		for (int i = 0; i < ecm.physicalNodeList.size(); i++) {
-			PhysicalNode n = ecm.physicalNodeList.get(i);
+			ini.cx3d.physics.interfaces.PhysicalNode n = ecm.physicalNodeList.get(i);
 
 			double[] nodeCoord = n.getSoNode().getPosition();
 			nodeCoord = mult(V, nodeCoord); // rotation

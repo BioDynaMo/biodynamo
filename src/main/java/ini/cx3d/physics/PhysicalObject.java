@@ -315,9 +315,9 @@ public abstract class PhysicalObject extends PhysicalNode {
 		{
 			getRwLock().readLock().lock();
 			Vector<PhysicalObject> po = new Vector<PhysicalObject>();
-			AbstractSequentialList<PhysicalNode> neighbors = soNode.getNeighbors();
+			AbstractSequentialList<ini.cx3d.physics.interfaces.PhysicalNode> neighbors = soNode.getNeighbors();
 			for (int i = 0; i < neighbors.size(); i++) {
-				PhysicalNode n = neighbors.get(i);
+				ini.cx3d.physics.interfaces.PhysicalNode n = neighbors.get(i);
 				if(n == null) {
 					System.out.println("neighbor is null - idx " + i);
 					System.out.println("#neighbors: "+ neighbors.size());

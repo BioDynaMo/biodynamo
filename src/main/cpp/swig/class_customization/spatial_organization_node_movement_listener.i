@@ -19,20 +19,20 @@
 %define %SpatialOrganizationNodeMovementListener_cx3d_shared_ptr()
   %cx3d_shared_ptr(SpatialOrganizationNodeMovementListenerT_PhysicalNode,
                    ini/cx3d/spatialOrganization/SpatialOrganizationNodeMovementListener,
-                   cx3d::spatial_organization::SpatialOrganizationNodeMovementListener<cx3d::PhysicalNode>);
+                   cx3d::spatial_organization::SpatialOrganizationNodeMovementListener<cx3d::physics::PhysicalNode>);
 %enddef
 
 %define %SpatialOrganizationNodeMovementListener_java()
-  %java_defined_class(cx3d::spatial_organization::SpatialOrganizationNodeMovementListener<cx3d::PhysicalNode>,
+  %java_defined_class(cx3d::spatial_organization::SpatialOrganizationNodeMovementListener<cx3d::physics::PhysicalNode>,
                       SpatialOrganizationNodeMovementListenerT_PhysicalNode,
                       SpatialOrganizationNodeMovementListener,
                       ini.cx3d.spatialOrganization.SpatialOrganizationNodeMovementListener,
                       ini/cx3d/spatialOrganization/SpatialOrganizationNodeMovementListener);
-  %typemap(javainterfaces) cx3d::spatial_organization::SpatialOrganizationNodeMovementListener<cx3d::PhysicalNode> "ini.cx3d.spatialOrganization.SpatialOrganizationNodeMovementListener"
+  %typemap(javainterfaces) cx3d::spatial_organization::SpatialOrganizationNodeMovementListener<cx3d::physics::PhysicalNode> "ini.cx3d.spatialOrganization.SpatialOrganizationNodeMovementListener"
 %enddef
 
 %define %SpatialOrganizationNodeMovementListener_stdlist()
-  %stdlist_typemap(std::shared_ptr<cx3d::spatial_organization::SpatialOrganizationNodeMovementListener<cx3d::PhysicalNode>>,
+  %stdlist_typemap(std::shared_ptr<cx3d::spatial_organization::SpatialOrganizationNodeMovementListener<cx3d::physics::PhysicalNode>>,
                    SpatialOrganizationNodeMovementListener,
                    ini.cx3d.spatialOrganization.SpatialOrganizationNodeMovementListener);
 %enddef

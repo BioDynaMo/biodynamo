@@ -34,9 +34,10 @@ import ini.cx3d.localBiology.NeuriteElement;
 import ini.cx3d.localBiology.SomaElement;
 import ini.cx3d.physics.ECMChemicalReaction;
 import ini.cx3d.physics.factory.IntracellularSubstanceFactory;
+import ini.cx3d.physics.factory.PhysicalNodeFactory;
 import ini.cx3d.physics.interfaces.IntracellularSubstance;
 import ini.cx3d.physics.PhysicalCylinder;
-import ini.cx3d.physics.PhysicalNode;
+import ini.cx3d.physics.interfaces.PhysicalNode;
 import ini.cx3d.physics.PhysicalNodeMovementListener;
 import ini.cx3d.physics.PhysicalSphere;
 import ini.cx3d.physics.factory.SubstanceFactory;
@@ -73,7 +74,7 @@ public class ECM implements SimStateSerializable {
 	// List of all the CX3DRunbable objects in the simulation ............................
 
 	/** List of all the PhysicalNode instances. */
-	public Vector<PhysicalNode> physicalNodeList = new Vector<PhysicalNode>();
+	public Vector<ini.cx3d.physics.interfaces.PhysicalNode> physicalNodeList = new Vector<ini.cx3d.physics.interfaces.PhysicalNode>();
 	/** List of all the PhysicalSphere instances. */
 	public Vector<PhysicalSphere> physicalSphereList = new Vector<PhysicalSphere>();
 	/** List of all the PhysicalCylinder instances. */
@@ -95,7 +96,7 @@ public class ECM implements SimStateSerializable {
 	private double ECMtime = 0; 
 
 	/* An SON used to get new SON instances from*/
-	private SpatialOrganizationNode<PhysicalNode> initialNode;
+	private SpatialOrganizationNode<ini.cx3d.physics.interfaces.PhysicalNode> initialNode;
 
 	/* In here we keep a template for each (extra-cellular) Substance in the simulation that have
 	 * non-standard value for diffusion and degradation constant.*/
@@ -367,12 +368,12 @@ public class ECM implements SimStateSerializable {
 	 * @param userObject
 	 * @return
 	 */
-	public SpatialOrganizationNode<PhysicalNode> getSpatialOrganizationNodeInstance(double[] position, PhysicalNode userObject){
+	public SpatialOrganizationNode<ini.cx3d.physics.interfaces.PhysicalNode> getSpatialOrganizationNodeInstance(double[] position, ini.cx3d.physics.interfaces.PhysicalNode userObject){
 		if(initialNode == null){
-			SpaceNode<PhysicalNode> sn1 = new SpaceNodeFactory<PhysicalNode>().create(position,userObject);
+			SpaceNode<ini.cx3d.physics.interfaces.PhysicalNode> sn1 = new SpaceNodeFactory<ini.cx3d.physics.interfaces.PhysicalNode>().create(position,userObject);
 			PhysicalNodeMovementListener listener = new PhysicalNodeMovementListener();
 //			XX_oldMoveListener listener = new XX_oldMoveListener();
-			sn1.addSpatialOrganizationNodeMovementListener((SpatialOrganizationNodeMovementListener<PhysicalNode>) listener);
+			sn1.addSpatialOrganizationNodeMovementListener((SpatialOrganizationNodeMovementListener<ini.cx3d.physics.interfaces.PhysicalNode>) listener);
 			initialNode = sn1;
 			return sn1;
 		}
@@ -395,13 +396,13 @@ public class ECM implements SimStateSerializable {
 	 * @param userObject
 	 * @return
 	 */
-	public SpatialOrganizationNode<PhysicalNode> getSpatialOrganizationNodeInstance(
-			SpatialOrganizationNode<PhysicalNode> n, double[] position, PhysicalNode userObject){
+	public SpatialOrganizationNode<ini.cx3d.physics.interfaces.PhysicalNode> getSpatialOrganizationNodeInstance(
+			SpatialOrganizationNode<ini.cx3d.physics.interfaces.PhysicalNode> n, double[] position, ini.cx3d.physics.interfaces.PhysicalNode userObject){
 		if(initialNode == null){
-			SpaceNode<PhysicalNode> sn1 = new SpaceNodeFactory<PhysicalNode>().create(position, userObject);
+			SpaceNode<ini.cx3d.physics.interfaces.PhysicalNode> sn1 = new SpaceNodeFactory<ini.cx3d.physics.interfaces.PhysicalNode>().create(position, userObject);
 			PhysicalNodeMovementListener listener = new PhysicalNodeMovementListener();
 //			XX_oldMoveListener listener = new XX_oldMoveListener();
-			sn1.addSpatialOrganizationNodeMovementListener((SpatialOrganizationNodeMovementListener<PhysicalNode>) listener);
+			sn1.addSpatialOrganizationNodeMovementListener((SpatialOrganizationNodeMovementListener<ini.cx3d.physics.interfaces.PhysicalNode>) listener);
 			initialNode = sn1;
 			return sn1;
 
@@ -435,7 +436,7 @@ public class ECM implements SimStateSerializable {
 		int zLim = (int)((z2-z1 + 2*borderLength) / d); 
 
 		// the neighbor Node (close to which we will create the new one
-		SpatialOrganizationNode<PhysicalNode> oldSon = null;
+		SpatialOrganizationNode<ini.cx3d.physics.interfaces.PhysicalNode> oldSon = null;
 		// loop to put the nodes in 3D space
 		for (int kx = 0; kx < xLim+1; kx++) {
 			for (int ky = 0; ky < yLim+1; ky++) {
@@ -447,9 +448,9 @@ public class ECM implements SimStateSerializable {
 					// add small jitter
 					coord = add(coord, randomNoise(d*0.01, 3));
 					// create the node
-					PhysicalNode pn = new PhysicalNode();
+					ini.cx3d.physics.interfaces.PhysicalNode pn = PhysicalNodeFactory.create();
 					// request a delaunay vertex
-					SpatialOrganizationNode<PhysicalNode> newSon; 
+					SpatialOrganizationNode<ini.cx3d.physics.interfaces.PhysicalNode> newSon;
 					if(oldSon!=null){
 						newSon = getSpatialOrganizationNodeInstance(oldSon, coord, pn);
 					}else{
@@ -467,9 +468,9 @@ public class ECM implements SimStateSerializable {
 	}
 
 	/** Adds a "simple" PhysicalNode (with its SON) at a desired location.*/ 
-	public PhysicalNode getPhysicalNodeInstance(double[] nodeLocation){
-		PhysicalNode pn = new PhysicalNode();
-		SpatialOrganizationNode<PhysicalNode> son = getSpatialOrganizationNodeInstance(nodeLocation, pn);
+	public ini.cx3d.physics.interfaces.PhysicalNode getPhysicalNodeInstance(double[] nodeLocation){
+		ini.cx3d.physics.interfaces.PhysicalNode pn = PhysicalNodeFactory.create();
+		SpatialOrganizationNode<ini.cx3d.physics.interfaces.PhysicalNode> son = getSpatialOrganizationNodeInstance(nodeLocation, pn);
 		pn.setSoNode(son);
 		addPhysicalNode(pn);
 		return pn;
@@ -502,11 +503,11 @@ public class ECM implements SimStateSerializable {
 		removePhysicalNode(oldSphere);
 	}
 
-	public void addPhysicalNode(PhysicalNode newPhysicalNode) {
+	public void addPhysicalNode(ini.cx3d.physics.interfaces.PhysicalNode newPhysicalNode) {
 		physicalNodeList.add(newPhysicalNode);
 	}
 
-	public void removePhysicalNode(PhysicalNode oldPhysicalNode) {
+	public void removePhysicalNode(ini.cx3d.physics.interfaces.PhysicalNode oldPhysicalNode) {
 		physicalNodeList.remove(oldPhysicalNode);
 		oldPhysicalNode.getSoNode().remove();
 	}
@@ -1093,7 +1094,7 @@ public class ECM implements SimStateSerializable {
 	/**
 	 * @return the physicalNodeList
 	 */
-	public Vector<PhysicalNode> getPhysicalNodeList() {
+	public Vector<ini.cx3d.physics.interfaces.PhysicalNode> getPhysicalNodeList() {
 		return physicalNodeList;
 	}
 

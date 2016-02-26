@@ -27,7 +27,6 @@ import java.io.PrintStream;
 import java.util.LinkedList;
 import java.util.Random;
 
-import ini.cx3d.physics.PhysicalNode;
 import ini.cx3d.spatialOrganization.PositionNotAllowedException;
 import ini.cx3d.spatialOrganization.SpatialOrganizationNode;
 
@@ -53,7 +52,7 @@ public class TestPSO {
 	public final int[] checks = new int[] {};
 	public final boolean repair = false;
 	public static Random rand = new Random(1312);
-	Tetrahedron<PhysicalNode> outerTetrahedron;
+	Tetrahedron<ini.cx3d.physics.interfaces.PhysicalNode> outerTetrahedron;
 	int totalCounter = 0;
 	private boolean runElaborateTests = false;
 	public static PrintStream out;

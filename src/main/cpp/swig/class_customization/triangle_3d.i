@@ -16,32 +16,32 @@
 %include "cx3d_shared_ptr.i"
 
 // %define %Triangle3D_ported_type_modification()
-//   %ported_type_modification(cx3d::spatial_organization::Triangle3D<cx3d::PhysicalNode>,
+//   %ported_type_modification(cx3d::spatial_organization::Triangle3D<cx3d::physics::PhysicalNode>,
 //                             ini.cx3d.spatialOrganization.interfaces.Triangle3D);
 // %enddef
 //
 // %define %Triangle3D_ported_add_equals()
-//   %ported_add_equals(cx3d::spatial_organization::Triangle3D<cx3d::PhysicalNode>,
+//   %ported_add_equals(cx3d::spatial_organization::Triangle3D<cx3d::physics::PhysicalNode>,
 //                      Triangle3DT_PhysicalNode);
 // %enddef
 
 %define %Triangle3D_cx3d_shared_ptr()
   %cx3d_shared_ptr(Triangle3DT_PhysicalNode,
                    ini/cx3d/spatialOrganization/interfaces/Triangle3D,
-                   cx3d::spatial_organization::Triangle3D<cx3d::PhysicalNode>);
+                   cx3d::spatial_organization::Triangle3D<cx3d::physics::PhysicalNode>);
 %enddef
 
 %define %Triangle3D_java()
-  %java_defined_class(cx3d::spatial_organization::Triangle3D<cx3d::PhysicalNode>,
+  %java_defined_class(cx3d::spatial_organization::Triangle3D<cx3d::physics::PhysicalNode>,
                       Triangle3DT_PhysicalNode,
                       Triangle3D,
                       ini.cx3d.spatialOrganization.interfaces.Triangle3D,
                       ini/cx3d/spatialOrganization/interfaces/Triangle3D);
-  %typemap(javainterfaces) cx3d::spatial_organization::Triangle3D<cx3d::PhysicalNode> "ini.cx3d.spatialOrganization.interfaces.Triangle3D"
+  %typemap(javainterfaces) cx3d::spatial_organization::Triangle3D<cx3d::physics::PhysicalNode> "ini.cx3d.spatialOrganization.interfaces.Triangle3D"
 %enddef
 
 %define %Triangle3D_native()
-  %native_defined_class(cx3d::spatial_organization::Triangle3D<cx3d::PhysicalNode>,
+  %native_defined_class(cx3d::spatial_organization::Triangle3D<cx3d::physics::PhysicalNode>,
                         Triangle3DT_PhysicalNode,
                         ini.cx3d.spatialOrganization.interfaces.Triangle3D,
                         Triangle3D,
@@ -58,7 +58,7 @@
 
 %define %Triangle3D_stdarray_array_marshalling(SWIG_MODULE, SIZE)
   %stdarray_array_marshalling(SWIG_MODULE,
-                              std::shared_ptr<cx3d::spatial_organization::Triangle3D<cx3d::PhysicalNode> >,
+                              std::shared_ptr<cx3d::spatial_organization::Triangle3D<cx3d::physics::PhysicalNode> >,
                               shared_ptr_Triangle3DT_PhysicalNode_##SIZE,
                               ini.cx3d.spatialOrganization.interfaces.Triangle3D,
                               Lini/cx3d/spatialOrganization/interfaces/Triangle3D;, SIZE);

@@ -1,10 +1,8 @@
 package ini.cx3d.spatialOrganization.factory;
 
 import ini.cx3d.JavaUtil;
-import ini.cx3d.physics.PhysicalNode;
 import ini.cx3d.spatialOrganization.PositionNotAllowedException;
 import ini.cx3d.spatialOrganization.debug.SpaceNodeDebug;
-import ini.cx3d.spatialOrganization.interfaces.Edge;
 import ini.cx3d.spatialOrganization.interfaces.SpaceNode;
 import ini.cx3d.spatialOrganization.interfaces.Tetrahedron;
 import ini.cx3d.swig.spatialOrganization.SpaceNodeT_PhysicalNode;
@@ -27,7 +25,7 @@ public class SpaceNodeFactory<T> {
 
     public SpaceNode create(double[] position, T content) {
         if (NATIVE) {
-           return  SpaceNodeT_PhysicalNode.create(position, (PhysicalNode) content);
+           return  SpaceNodeT_PhysicalNode.create(position, (ini.cx3d.physics.interfaces.PhysicalNode) content);
         } else if(!DEBUG) {
             return new ini.cx3d.spatialOrganization.SpaceNode(position, content);
         } else {
@@ -37,7 +35,7 @@ public class SpaceNodeFactory<T> {
 
     public SpaceNode create(double x, double y, double z, T content) {
         if (NATIVE) {
-            return SpaceNodeT_PhysicalNode.create(x, y, z, (PhysicalNode) content);
+            return SpaceNodeT_PhysicalNode.create(x, y, z, (ini.cx3d.physics.interfaces.PhysicalNode) content);
         } else if(!DEBUG) {
             return new ini.cx3d.spatialOrganization.SpaceNode(x, y, z, content);
         } else {

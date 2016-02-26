@@ -8,7 +8,7 @@
 #include "stl_util.h"
 #include "string_util.h"
 #include "java_util.h"
-#include "physical_node.h"
+#include "physics/physical_node.h"
 #include "sim_state_serialization_util.h"
 #include "spatial_organization/edge.h"
 #include "spatial_organization/triangle_3d.h"
@@ -762,7 +762,7 @@ void SpaceNode<T>::cleanUp(
   oto->triangulate();
 }
 
-template class SpaceNode<cx3d::PhysicalNode>;
+template class SpaceNode<cx3d::physics::PhysicalNode>;
 
 }  // namespace spatial_organization
 }  // namespace cx3d

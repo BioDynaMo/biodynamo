@@ -19,11 +19,11 @@
 %define %SpaceNode_cx3d_shared_ptr()
   %cx3d_shared_ptr(SpaceNodeT_PhysicalNode,
                    ini/cx3d/spatialOrganization/interfaces/SpaceNode,
-                   cx3d::spatial_organization::SpaceNode<cx3d::PhysicalNode>);
+                   cx3d::spatial_organization::SpaceNode<cx3d::physics::PhysicalNode>);
 %enddef
 
 %define %SpaceNode_java()
-  %java_defined_class_add(cx3d::spatial_organization::SpaceNode<cx3d::PhysicalNode>,
+  %java_defined_class_add(cx3d::spatial_organization::SpaceNode<cx3d::physics::PhysicalNode>,
                       SpaceNodeT_PhysicalNode,
                       SpaceNode,
                       ini.cx3d.spatialOrganization.interfaces.SpaceNode,
@@ -37,11 +37,11 @@
                         }
                         return retVal;
                       });
-  %typemap(javainterfaces) cx3d::spatial_organization::SpaceNode<cx3d::PhysicalNode> "ini.cx3d.spatialOrganization.interfaces.SpaceNode"
+  %typemap(javainterfaces) cx3d::spatial_organization::SpaceNode<cx3d::physics::PhysicalNode> "ini.cx3d.spatialOrganization.interfaces.SpaceNode"
 %enddef
 
 %define %SpaceNode_native()
-  %native_defined_class_add(cx3d::spatial_organization::SpaceNode<cx3d::PhysicalNode>,
+  %native_defined_class_add(cx3d::spatial_organization::SpaceNode<cx3d::physics::PhysicalNode>,
                             SpaceNodeT_PhysicalNode,
                             ini.cx3d.spatialOrganization.interfaces.SpaceNode,
                             SpaceNode,
@@ -69,7 +69,7 @@
 
 %define %SpaceNode_stdarray_array_marshalling(SWIG_MODULE, SIZE)
   %stdarray_array_marshalling(SWIG_MODULE,
-                              std::shared_ptr<cx3d::spatial_organization::SpaceNode<cx3d::PhysicalNode> >,
+                              std::shared_ptr<cx3d::spatial_organization::SpaceNode<cx3d::physics::PhysicalNode> >,
                               shared_ptr_SpaceNode##SIZE,
                               ini.cx3d.spatialOrganization.interfaces.SpaceNode,
                               Lini/cx3d/spatialOrganization/interfaces/SpaceNode;,
@@ -77,15 +77,18 @@
 %enddef
 
 %define %SpaceNode_stdlist()
-  %stdlist_typemap(std::shared_ptr<cx3d::spatial_organization::SpaceNode<cx3d::PhysicalNode>>,
+  %stdlist_typemap(std::shared_ptr<cx3d::spatial_organization::SpaceNode<cx3d::physics::PhysicalNode>>,
                    SpaceNode,
                    ini.cx3d.spatialOrganization.interfaces.SpaceNode);
 %enddef
 
 %define %SpaceNode_type_modification()
-  %typemap(javainterfaces) cx3d::spatial_organization::SpaceNode<cx3d::PhysicalNode> "ini.cx3d.spatialOrganization.interfaces.SpaceNode<ini.cx3d.physics.PhysicalNode>,
+  %typemap(javainterfaces) cx3d::spatial_organization::SpaceNode<cx3d::physics::PhysicalNode> "ini.cx3d.spatialOrganization.interfaces.SpaceNode<ini.cx3d.physics.interfaces.PhysicalNode>,
     ini.cx3d.SimStateSerializable"
-  %typemap(javaimports) cx3d::spatial_organization::SpaceNode<cx3d::PhysicalNode> "import ini.cx3d.swig.NativeStringBuilder;"
+  %typemap(javaimports) cx3d::spatial_organization::SpaceNode<cx3d::physics::PhysicalNode> %{
+    import ini.cx3d.swig.NativeStringBuilder;
+    import ini.cx3d.swig.physics.PhysicalNode;
+  %}
   %pragma(java) jniclassimports="import ini.cx3d.swig.NativeStringBuilder;"
 %enddef
 

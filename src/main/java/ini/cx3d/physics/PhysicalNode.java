@@ -27,7 +27,6 @@ import static ini.cx3d.utilities.Matrix.dot;
 import static ini.cx3d.utilities.Matrix.solve;
 import static ini.cx3d.utilities.Matrix.subtract;
 import ini.cx3d.Param;
-import ini.cx3d.SimStateSerializable;
 import ini.cx3d.SimStateSerializationUtil;
 import ini.cx3d.physics.factory.SubstanceFactory;
 import ini.cx3d.simulations.ECM;
@@ -36,7 +35,6 @@ import ini.cx3d.spatialOrganization.SpatialOrganizationNode;
 
 import ini.cx3d.physics.interfaces.Substance;
 
-import java.io.Serializable;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
@@ -64,7 +62,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * @author fredericzubler
  *
  */
-public class PhysicalNode extends ini.cx3d.swig.spatialOrganization.PhysicalNode implements Serializable, SimStateSerializable{
+public class PhysicalNode extends ini.cx3d.swig.physics.PhysicalNode implements ini.cx3d.physics.interfaces.PhysicalNode {
 	// NOTE : all the "protected" fields are not "private" because they have to be accessible by subclasses
 
 	/* Unique identification for this CellElement instance. Used for marshalling/demarshalling*/
@@ -88,7 +86,7 @@ public class PhysicalNode extends ini.cx3d.swig.spatialOrganization.PhysicalNode
 	private Hashtable<String, ini.cx3d.physics.interfaces.Substance> extracellularSubstances = new Hashtable<String, ini.cx3d.physics.interfaces.Substance>();
 
 	/* My anchor point in the neighboring system */
-	protected SpatialOrganizationNode<PhysicalNode> soNode;
+	protected SpatialOrganizationNode<ini.cx3d.physics.interfaces.PhysicalNode> soNode;
 
 	/* used for synchronisation for multithreading. introduced by Haurian*/
 	private ReadWriteLock rwLock = new ReentrantReadWriteLock();
@@ -127,18 +125,21 @@ public class PhysicalNode extends ini.cx3d.swig.spatialOrganization.PhysicalNode
 
 
 	/** Returns true if this PhysicalNode is a PhysicalObject.*/
+	@Override
 	public boolean isAPhysicalObject(){
 		//The function is overwritten in PhysicalObject.
 		return false;
 	}
 
 	/** Returns true if this PhysicalNode is a PhysicalCylinder.*/
+	@Override
 	public boolean isAPhysicalCylinder(){
 		// The function is overwritten in PhysicalSphere.
 		return false;
 	}
 
 	/** Returns true if this PhysicalNode is a PhysicalSphere.*/
+	@Override
 	public boolean isAPhysicalSphere(){
 		// The function is overwritten in PhysicalSphere
 		return false;
@@ -155,6 +156,7 @@ public class PhysicalNode extends ini.cx3d.swig.spatialOrganization.PhysicalNode
 	 * @param id the name of the substance
 	 * @return the concentration
 	 */
+	@Override
 	public double getExtracellularConcentration(String id){
 		getRwLock().readLock().lock();
 		try{
@@ -187,6 +189,7 @@ public class PhysicalNode extends ini.cx3d.swig.spatialOrganization.PhysicalNode
 	 * @param id the name of the substance
 	 * @return the concentration
 	 */
+	@Override
 	public double getConvolvedConcentration(String id) {
 		getRwLock().readLock().lock();
 		try{
@@ -197,7 +200,7 @@ public class PhysicalNode extends ini.cx3d.swig.spatialOrganization.PhysicalNode
 			double currC = this.getExtracellularConcentration(id);
 			volSum = volSum + currVol;
 			exC = exC + currVol*currC;
-			for (PhysicalNode pn : this.getSoNode().getNeighbors()) {
+			for (ini.cx3d.physics.interfaces.PhysicalNode pn : this.getSoNode().getNeighbors()) {
 				currVol = pn.getSoNode().getVolume();
 				currC = pn.getExtracellularConcentration(id);
 				exC = exC + currVol*currC;
@@ -218,6 +221,7 @@ public class PhysicalNode extends ini.cx3d.swig.spatialOrganization.PhysicalNode
 	 * @param location the place where concentration is probed
 	 * @return the concentration
 	 */
+	@Override
 	public double getExtracellularConcentration(String id, double[] location){
 		getRwLock().readLock().lock();
 		try{
@@ -231,7 +235,7 @@ public class PhysicalNode extends ini.cx3d.swig.spatialOrganization.PhysicalNode
 			if(vertices != null){
 				double[] barycentricCoord = getBarycentricCoordinates(location, vertices);
 				for (int j = 0; j < 4; j++) {
-					concentrationAtLocation += ((PhysicalNode)vertices[j]).getExtracellularConcentration(id)*barycentricCoord[j];
+					concentrationAtLocation += ((ini.cx3d.physics.interfaces.PhysicalNode)vertices[j]).getExtracellularConcentration(id)*barycentricCoord[j];
 				}
 			}
 			return c + concentrationAtLocation;
@@ -249,6 +253,7 @@ public class PhysicalNode extends ini.cx3d.swig.spatialOrganization.PhysicalNode
 	 * @param id the name of the Substance we have to compute the gradient of.
 	 * @return [dc/dx, dc/dy, dc/dz]
 	 */
+	@Override
 	public double[] getExtracellularGradient(String id){
 		getRwLock().readLock().lock();
 		try{
@@ -264,7 +269,7 @@ public class PhysicalNode extends ini.cx3d.swig.spatialOrganization.PhysicalNode
 				double[] differencesBetweenTheNeighborsAndThis = new double[3];
 				int indexOfTheEquationWeGet=0;
 				// loop through the neighbors until we have selected three of them (indexOfTheEquationWeGet)
-				for (PhysicalNode n : soNode.getNeighbors()) {
+				for (ini.cx3d.physics.interfaces.PhysicalNode n : soNode.getNeighbors()) {
 					double substanceConcentrationInNeighbor = n.getExtracellularConcentration(id);
 					// prepare the linear system to be solved
 					vectorsToNeighbors[indexOfTheEquationWeGet] = subtract(n.soNodePosition(), this.soNode.getPosition());
@@ -298,6 +303,7 @@ public class PhysicalNode extends ini.cx3d.swig.spatialOrganization.PhysicalNode
 	 * @param id the name of the Substance to change.
 	 * @param quantityPerTime the rate of quantity production
 	 */
+	@Override
 	public void modifyExtracellularQuantity(String id, double quantityPerTime){
 		getRwLock().writeLock().lock();
 
@@ -327,6 +333,7 @@ public class PhysicalNode extends ini.cx3d.swig.spatialOrganization.PhysicalNode
 	 * Degradate (according to degrad. constant) and diffuse 8according to diff. constant)
 	 * all the <code>Substance</code> stored in this <code>PhysicalNode</code>.
 	 */
+	@Override
 	public void runExtracellularDiffusion(){
 		// 1) now that we are about to diffuse, a new diffusion should only be performed
 		// if there is a good reason for that.
@@ -335,7 +342,7 @@ public class PhysicalNode extends ini.cx3d.swig.spatialOrganization.PhysicalNode
 		// 2) Degradation according to the degradation constant for each chemical
 		degradate(currentEcmTime);
 		// 3) Diffusion (along every edge)
-		for (SpatialOrganizationEdge<PhysicalNode> e : soNode.getEdges()) {
+		for (SpatialOrganizationEdge<ini.cx3d.physics.interfaces.PhysicalNode> e : soNode.getEdges()) {
 			diffuseEdgeAnalytically(e, currentEcmTime);
 		}
 	}
@@ -369,13 +376,13 @@ public class PhysicalNode extends ini.cx3d.swig.spatialOrganization.PhysicalNode
 	/* Analytic solution of the diffusion process along the edge between two PhysicalNodes.
 	 * dQA/dt = diffCst*(Area/distance)*(QB/VB-QA/VA)
 	 */
-	private void diffuseEdgeAnalytically(SpatialOrganizationEdge<PhysicalNode> e, double currentEcmTime) {
+	private void diffuseEdgeAnalytically(SpatialOrganizationEdge<ini.cx3d.physics.interfaces.PhysicalNode> e, double currentEcmTime) {
 
 
 
 		// the two PhysicalNodes
 		PhysicalNode nA = this;
-		PhysicalNode nB = e.getOppositeElement(this);
+		PhysicalNode nB = (PhysicalNode) e.getOppositeElement(this);
 
 		//always lock highest first! to avoid deadlock!
 		ReadWriteLock r1;
@@ -396,8 +403,8 @@ public class PhysicalNode extends ini.cx3d.swig.spatialOrganization.PhysicalNode
 		// make sure the other one is up-to-date with degradation
 		nB.degradate(currentEcmTime);
 		// some values about space node distances, contact area and volume
-		SpatialOrganizationNode<PhysicalNode> sonA = getSoNode();
-		SpatialOrganizationNode<PhysicalNode> sonB = nB.getSoNode();
+		SpatialOrganizationNode<ini.cx3d.physics.interfaces.PhysicalNode> sonA = getSoNode();
+		SpatialOrganizationNode<ini.cx3d.physics.interfaces.PhysicalNode> sonB = nB.getSoNode();
 		double distance = distance(sonA.getPosition(), sonB.getPosition());
 		double vA = sonA.getVolume();
 		double vB = sonB.getVolume();
@@ -459,6 +466,7 @@ public class PhysicalNode extends ini.cx3d.swig.spatialOrganization.PhysicalNode
 	 * than the Substance given as argument. If there is no such Instance, a new one
 	 * is created, inserted into the list extracellularSubstances and returned.
 	 * Used for diffusion and for ECMChemicalReaction.*/
+	@Override
 	public ini.cx3d.physics.interfaces.Substance getSubstanceInstance(Substance templateS){
 		try
 		{
@@ -495,7 +503,7 @@ public class PhysicalNode extends ini.cx3d.swig.spatialOrganization.PhysicalNode
 	 * @param P4
 	 * @return array with the coordinate of point Q with respect Pi
 	 */
-	static double[] getBarycentricCoordinates(double[] Q, double[] P1, double[] P2, double[] P3, double[] P4){
+	public static double[] getBarycentricCoordinates(double[] Q, double[] P1, double[] P2, double[] P3, double[] P4){
 
 		// three linearly independent vectors
 		double[] B1 = subtract(P2,P1);
@@ -518,11 +526,11 @@ public class PhysicalNode extends ini.cx3d.swig.spatialOrganization.PhysicalNode
 	 * @param vertices
 	 * @return
 	 */
-	static double[] getBarycentricCoordinates(double[] Q, Object[] vertices){
-		double[] a = ((PhysicalNode)vertices[0]).getSoNode().getPosition();
-		double[] b = ((PhysicalNode)vertices[1]).getSoNode().getPosition();
-		double[] c = ((PhysicalNode)vertices[2]).getSoNode().getPosition();
-		double[] d = ((PhysicalNode)vertices[3]).getSoNode().getPosition();
+	public static double[] getBarycentricCoordinates(double[] Q, Object[] vertices){
+		double[] a = ((ini.cx3d.physics.interfaces.PhysicalNode)vertices[0]).getSoNode().getPosition();
+		double[] b = ((ini.cx3d.physics.interfaces.PhysicalNode)vertices[1]).getSoNode().getPosition();
+		double[] c = ((ini.cx3d.physics.interfaces.PhysicalNode)vertices[2]).getSoNode().getPosition();
+		double[] d = ((ini.cx3d.physics.interfaces.PhysicalNode)vertices[3]).getSoNode().getPosition();
 		return getBarycentricCoordinates(Q,a,b,c,d);
 	}
 
@@ -534,7 +542,8 @@ public class PhysicalNode extends ini.cx3d.swig.spatialOrganization.PhysicalNode
 	 * @param dX the distance from this nodes's location
 	 * @return
 	 */
-	double computeConcentrationAtDistanceBasedOnGradient(ini.cx3d.physics.interfaces.Substance s, double[] dX){
+	@Override
+	public double computeConcentrationAtDistanceBasedOnGradient(ini.cx3d.physics.interfaces.Substance s, double[] dX){
 		try
 		{
 			getRwLock().readLock().lock();
@@ -563,6 +572,7 @@ public class PhysicalNode extends ini.cx3d.swig.spatialOrganization.PhysicalNode
 	/** Returns the position of the <code>SpatialOrganizationNode</code>.
 	 * Equivalent to getSoNode().getPosition(). */
 	// not a real getter...
+	@Override
 	public double[] soNodePosition(){
 		try
 		{
@@ -580,12 +590,13 @@ public class PhysicalNode extends ini.cx3d.swig.spatialOrganization.PhysicalNode
 	/**
 	 * returns all <code>PhysicalNodes</code> considered as neighbors.
 	 */
-	public Iterable<PhysicalNode> getNeighboringPhysicalNodes(){
+	@Override
+	public Iterable<ini.cx3d.physics.interfaces.PhysicalNode> getNeighboringPhysicalNodes(){
 		try
 		{
 			getRwLock().readLock().lock();
-			Vector<PhysicalNode> temp = new Vector<PhysicalNode>();
-			for(PhysicalNode o:soNode.getNeighbors())
+			Vector<ini.cx3d.physics.interfaces.PhysicalNode> temp = new Vector<ini.cx3d.physics.interfaces.PhysicalNode>();
+			for(ini.cx3d.physics.interfaces.PhysicalNode o:soNode.getNeighbors())
 			{
 				temp.add(o);
 			}
@@ -601,7 +612,8 @@ public class PhysicalNode extends ini.cx3d.swig.spatialOrganization.PhysicalNode
 
 
 	/** Sets the SpatialOrganizationNode (vertex in the triangulation neighboring system).*/
-	public SpatialOrganizationNode<PhysicalNode> getSoNode(){
+	@Override
+	public SpatialOrganizationNode<ini.cx3d.physics.interfaces.PhysicalNode> getSoNode(){
 		try
 		{
 			getRwLock().readLock().lock();
@@ -613,7 +625,8 @@ public class PhysicalNode extends ini.cx3d.swig.spatialOrganization.PhysicalNode
 		}
 	}
 	/** Returns the SpatialOrganizationNode (vertex in the triangulation neighboring system).*/
-	public void setSoNode(SpatialOrganizationNode<PhysicalNode> son){
+	@Override
+	public void setSoNode(SpatialOrganizationNode<ini.cx3d.physics.interfaces.PhysicalNode> son){
 
 			getRwLock().writeLock().lock();
 			this.soNode = son;
@@ -622,6 +635,7 @@ public class PhysicalNode extends ini.cx3d.swig.spatialOrganization.PhysicalNode
 
 
 	/** if <code>true</code>, the PhysicalNode will be run by the Scheduler.**/
+	@Override
 	public boolean isOnTheSchedulerListForPhysicalNodes() {
 		try
 		{
@@ -634,6 +648,7 @@ public class PhysicalNode extends ini.cx3d.swig.spatialOrganization.PhysicalNode
 		}
 	}
 	/** if <code>true</code>, the PhysicalNode will be run by the Scheduler.**/
+	@Override
 	public void setOnTheSchedulerListForPhysicalNodes(
 			boolean onTheSchedulerListForPhysicalNodes) {
 
@@ -644,7 +659,7 @@ public class PhysicalNode extends ini.cx3d.swig.spatialOrganization.PhysicalNode
 	}
 
 	/** Solely used by the PhysicalNodeMovementListener to update substance concentrations.**/
-	int getMovementConcentratioUpdateProcedure() {
+	public int getMovementConcentratioUpdateProcedure() {
 		try
 		{
 			getRwLock().readLock().lock();
@@ -656,7 +671,8 @@ public class PhysicalNode extends ini.cx3d.swig.spatialOrganization.PhysicalNode
 		}
 	}
 	/** Solely used by the PhysicalNodeMovementListener to update substance concentrations.**/
-	void setMovementConcentratioUpdateProcedure(
+	@Override
+	public void setMovementConcentratioUpdateProcedure(
 			int movementConcentratioUpdateProcedure) {
 		try
 		{
@@ -671,6 +687,7 @@ public class PhysicalNode extends ini.cx3d.swig.spatialOrganization.PhysicalNode
 
 	/** Add an extracellular or membrane-bound chemicals
 	 *  in this PhysicalNode. */
+	@Override
 	public void addExtracellularSubstance(ini.cx3d.physics.interfaces.Substance is) {
 		try
 		{
@@ -685,6 +702,7 @@ public class PhysicalNode extends ini.cx3d.swig.spatialOrganization.PhysicalNode
 
 	/** Remove an extracellular or membrane-bound chemicals that are present
 	 *  in this PhysicalNode. */
+	@Override
 	public void removeExtracellularSubstance(ini.cx3d.physics.interfaces.Substance is) {
 		try
 		{
@@ -698,6 +716,7 @@ public class PhysicalNode extends ini.cx3d.swig.spatialOrganization.PhysicalNode
 	}
 
 	/** All the (diffusible) chemicals that are present in the space defined by this physicalNode. */
+	@Override
 	public Hashtable<String, ini.cx3d.physics.interfaces.Substance> getExtracellularSubstances() {
 		try
 		{
@@ -711,6 +730,7 @@ public class PhysicalNode extends ini.cx3d.swig.spatialOrganization.PhysicalNode
 	}
 
 	/** All the (diffusible) chemicals that are present in the space defined by this physicalNode. */
+	@Override
 	public void setExtracellularSubstances(
 			Hashtable<String, ini.cx3d.physics.interfaces.Substance> extracellularSubstances) {
 		getRwLock().writeLock().lock();
@@ -719,6 +739,7 @@ public class PhysicalNode extends ini.cx3d.swig.spatialOrganization.PhysicalNode
 	}
 
 	/** Returns a unique ID for this PhysicalNode.*/
+	@Override
 	public int getID() {
 		return ID;
 	}

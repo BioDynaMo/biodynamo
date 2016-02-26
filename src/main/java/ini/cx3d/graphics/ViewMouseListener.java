@@ -24,7 +24,7 @@ package ini.cx3d.graphics;
 import static ini.cx3d.utilities.Matrix.matRotAroundX;
 import static ini.cx3d.utilities.Matrix.matRotAroundZ;
 import static ini.cx3d.utilities.Matrix.mult;
-import ini.cx3d.physics.PhysicalNode;
+
 import ini.cx3d.physics.PhysicalSphere;
 import ini.cx3d.simulations.ECM;
 
@@ -41,7 +41,7 @@ import java.awt.event.MouseWheelListener;
 public class ViewMouseListener implements MouseListener, MouseMotionListener, MouseWheelListener {
 
 	ECM ecm = ECM.getInstance();
-	PhysicalNode physicalSpace;
+	ini.cx3d.physics.interfaces.PhysicalNode physicalSpace;
 	View view;
 	boolean aNodeIsSelected;
 	int lastX = 0, lastY = 0;
@@ -69,7 +69,7 @@ public class ViewMouseListener implements MouseListener, MouseMotionListener, Mo
 		double[] realCoord = findActualCoordinates(x0,y0);
 		// A) if we want to select a node
 		if(mouseOperation == SELECT_A_PHYSICAL_NODE){
-			PhysicalNode node = findPhysicalNode(realCoord);
+			ini.cx3d.physics.interfaces.PhysicalNode node = findPhysicalNode(realCoord);
 			if(node!= null){
 				//Roman			
 				System.out.println("concentration (A): " + node.getExtracellularConcentration("A") + " volume (A): " + node.getSoNode().getVolume());
@@ -249,12 +249,12 @@ public class ViewMouseListener implements MouseListener, MouseMotionListener, Mo
 	 * @param actualCoord
 	 * @return
 	 */
-	private PhysicalNode findPhysicalNode(double[] actualCoord){
+	private ini.cx3d.physics.interfaces.PhysicalNode findPhysicalNode(double[] actualCoord){
 		double x = actualCoord[0];
 		double z = actualCoord[2];
 		double distance = 20;
-		PhysicalNode node = null;
-		for (PhysicalNode pn : ecm.physicalNodeList) {
+		ini.cx3d.physics.interfaces.PhysicalNode node = null;
+		for (ini.cx3d.physics.interfaces.PhysicalNode pn : ecm.physicalNodeList) {
 			double[] coordOfPn = pn.getSoNode().getPosition();
 			double xpn = coordOfPn[0];
 			double ypn = coordOfPn[1];

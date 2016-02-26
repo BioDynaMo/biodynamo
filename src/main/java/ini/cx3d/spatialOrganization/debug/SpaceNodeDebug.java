@@ -1,6 +1,5 @@
 package ini.cx3d.spatialOrganization.debug;
 
-import ini.cx3d.physics.PhysicalNode;
 import ini.cx3d.spatialOrganization.PositionNotAllowedException;
 import ini.cx3d.spatialOrganization.SpaceNode;
 import ini.cx3d.spatialOrganization.SpatialOrganizationNodeMovementListener;
@@ -65,27 +64,27 @@ public class SpaceNodeDebug extends SpaceNode{
     }
 
     @Override
-    public PhysicalNode getUserObject() {
+    public ini.cx3d.physics.interfaces.PhysicalNode getUserObject() {
         DebugUtil.logMethodCall("getUserObject", this, new Object[]{});
-        PhysicalNode ret = super.getUserObject();
+        ini.cx3d.physics.interfaces.PhysicalNode ret = super.getUserObject();
         DebugUtil.logMethodReturn("getUserObject", this, ret);
         return ret;
 
     }
 
     @Override
-    public AbstractSequentialList<PhysicalNode> getNeighbors() {
+    public AbstractSequentialList<ini.cx3d.physics.interfaces.PhysicalNode> getNeighbors() {
         DebugUtil.logMethodCall("getNeighbors", this, new Object[]{});
-        AbstractSequentialList<PhysicalNode> ret = super.getNeighbors();
+        AbstractSequentialList<ini.cx3d.physics.interfaces.PhysicalNode> ret = super.getNeighbors();
         DebugUtil.logMethodReturn("getNeighbors", this, ret);
         return ret;
 
     }
 
     @Override
-    public AbstractSequentialList<PhysicalNode> getPermanentListOfNeighbors() {
+    public AbstractSequentialList<ini.cx3d.physics.interfaces.PhysicalNode> getPermanentListOfNeighbors() {
         DebugUtil.logMethodCall("getPermanentListOfNeighbors", this, new Object[]{});
-        AbstractSequentialList<PhysicalNode> ret = super.getPermanentListOfNeighbors();
+        AbstractSequentialList<ini.cx3d.physics.interfaces.PhysicalNode> ret = super.getPermanentListOfNeighbors();
         DebugUtil.logMethodReturn("getPermanentListOfNeighbors", this, ret);
         return ret;
 
@@ -118,7 +117,7 @@ public class SpaceNodeDebug extends SpaceNode{
     }
 
     @Override
-    public SpaceNode getNewInstance(double[] position, PhysicalNode userObject) {
+    public SpaceNode getNewInstance(double[] position, ini.cx3d.physics.interfaces.PhysicalNode userObject) {
         DebugUtil.logMethodCall("getNewInstance", this, new Object[]{position, userObject});
         SpaceNode ret = super.getNewInstance(position, userObject);
         DebugUtil.logMethodReturn("getNewInstance", this, ret);

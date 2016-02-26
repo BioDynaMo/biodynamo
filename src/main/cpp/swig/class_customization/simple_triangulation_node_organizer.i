@@ -19,11 +19,11 @@
 %define %SimpleTriangulationNodeOrganizer_cx3d_shared_ptr()
   %cx3d_shared_ptr(SimpleTriangulationNodeOrganizerT_PhysicalNode,
                    ini/cx3d/spatialOrganization/interfaces/TriangulationNodeOrganizer,
-                   cx3d::spatial_organization::SimpleTriangulationNodeOrganizer<cx3d::PhysicalNode>);
+                   cx3d::spatial_organization::SimpleTriangulationNodeOrganizer<cx3d::physics::PhysicalNode>);
 %enddef
 
 %define %SimpleTriangulationNodeOrganizer_java()
-  %java_defined_class_add(cx3d::spatial_organization::SimpleTriangulationNodeOrganizer<cx3d::PhysicalNode>,
+  %java_defined_class_add(cx3d::spatial_organization::SimpleTriangulationNodeOrganizer<cx3d::physics::PhysicalNode>,
                           SimpleTriangulationNodeOrganizerT_PhysicalNode,
                           SimpleTriangulationNodeOrganizer,
                           ini.cx3d.spatialOrganization.interfaces.TriangulationNodeOrganizer,
@@ -32,11 +32,11 @@
                           protected java.util.Iterator<ini.cx3d.spatialOrganization.interfaces.SpaceNode> getNodeIterator(ini.cx3d.spatialOrganization.interfaces.SpaceNode referencePoint) {
                               return null;
                           });
-  %typemap(javabase) cx3d::spatial_organization::SimpleTriangulationNodeOrganizer<cx3d::PhysicalNode> "ini.cx3d.spatialOrganization.AbstractTriangulationNodeOrganizer"
+  %typemap(javabase) cx3d::spatial_organization::SimpleTriangulationNodeOrganizer<cx3d::physics::PhysicalNode> "ini.cx3d.spatialOrganization.AbstractTriangulationNodeOrganizer"
 %enddef
 
 %define %SimpleTriangulationNodeOrganizer_native()
-  %native_defined_class_add(cx3d::spatial_organization::SimpleTriangulationNodeOrganizer<cx3d::PhysicalNode>,
+  %native_defined_class_add(cx3d::spatial_organization::SimpleTriangulationNodeOrganizer<cx3d::physics::PhysicalNode>,
                             SimpleTriangulationNodeOrganizerT_PhysicalNode,
                             ini.cx3d.spatialOrganization.interfaces.TriangulationNodeOrganizer,
                             SimpleTriangulationNodeOrganizer,
@@ -45,7 +45,7 @@
                             protected java.util.Iterator<ini.cx3d.spatialOrganization.interfaces.SpaceNode> getNodeIterator(ini.cx3d.spatialOrganization.interfaces.SpaceNode referencePoint) {
                                 return null;
                             });
-  %typemap(javabase) cx3d::spatial_organization::SimpleTriangulationNodeOrganizer<cx3d::PhysicalNode> "ini.cx3d.spatialOrganization.AbstractTriangulationNodeOrganizer"
+  %typemap(javabase) cx3d::spatial_organization::SimpleTriangulationNodeOrganizer<cx3d::physics::PhysicalNode> "ini.cx3d.spatialOrganization.AbstractTriangulationNodeOrganizer"
 %enddef
 
  /**

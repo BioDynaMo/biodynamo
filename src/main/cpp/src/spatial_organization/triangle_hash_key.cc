@@ -2,7 +2,7 @@
 
 #include <cmath>
 
-#include "physical_node.h"
+#include "physics/physical_node.h"
 #include "spatial_organization/space_node.h"
 
 namespace cx3d {
@@ -71,9 +71,9 @@ bool TriangleHashKeyEqual<T>::operator()(const TriangleHashKey<T>& lhs,
               || (lhs.b_ == rhs.b_ && lhs.c_ == rhs.a_)));
 }
 
-template class TriangleHashKey<cx3d::PhysicalNode>;
-template class TriangleHashKeyHash<cx3d::PhysicalNode>;
-template class TriangleHashKeyEqual<cx3d::PhysicalNode>;
+template class TriangleHashKey<cx3d::physics::PhysicalNode>;
+template class TriangleHashKeyHash<cx3d::physics::PhysicalNode>;
+template class TriangleHashKeyEqual<cx3d::physics::PhysicalNode>;
 
 }  // namespace spatial_organization
 }  // namespace cx3d

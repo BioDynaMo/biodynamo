@@ -294,7 +294,7 @@ namespace std {
  * usage example for Java ini.cx3d.spatialOrganization.interfaces.Rational[] <->
  *    C++ std::array<std::shared_ptr<cx3d::spatial_organization::Rational>, 3> conversion:
  * %stdarray_array_marshalling(cx3d,
- *                             std::shared_ptr<cx3d::spatial_organization::Triangle3D<cx3d::PhysicalNode>,
+ *                             std::shared_ptr<cx3d::spatial_organization::Triangle3D<cx3d::physics::PhysicalNode>,
  *                             shared_ptr_Triangle3D_3,
  *                             ini.cx3d.spatialOrganization.interfaces.Triangle3D,
  *                             ini.cx3d.physical.PhysicalNode,

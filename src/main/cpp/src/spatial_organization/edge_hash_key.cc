@@ -4,7 +4,7 @@
 #include <sstream>
 #include <stdexcept>
 
-#include "physical_node.h"
+#include "physics/physical_node.h"
 #include "matrix.h"
 #include "spatial_organization/space_node.h"
 
@@ -112,9 +112,9 @@ bool EdgeHashKeyEqual<T>::operator()(const EdgeHashKey<T>& lhs, const EdgeHashKe
 }
 
 
-template class EdgeHashKey<cx3d::PhysicalNode>;
-template struct EdgeHashKeyHash<cx3d::PhysicalNode>;
-template struct EdgeHashKeyEqual<cx3d::PhysicalNode>;
+template class EdgeHashKey<cx3d::physics::PhysicalNode>;
+template struct EdgeHashKeyHash<cx3d::physics::PhysicalNode>;
+template struct EdgeHashKeyEqual<cx3d::physics::PhysicalNode>;
 
 }  // namespace spatial_organization
 }  // namespace cx3d

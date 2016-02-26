@@ -21,7 +21,6 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 
 package ini.cx3d.spatialOrganization;
 
-import ini.cx3d.physics.PhysicalNode;
 import ini.cx3d.spatialOrganization.interfaces.Tetrahedron;
 import ini.cx3d.swig.spatialOrganization.EdgeT_PhysicalNode;
 import ini.cx3d.utilities.StringUtilities;
@@ -38,7 +37,7 @@ import java.util.Objects;
  *
  * @param <T> The type of the user objects stored in the endpoints of an edge.
  */
-public class Edge<T> extends EdgeT_PhysicalNode implements ini.cx3d.spatialOrganization.interfaces.Edge<PhysicalNode> {
+public class Edge<T> extends EdgeT_PhysicalNode implements ini.cx3d.spatialOrganization.interfaces.Edge<ini.cx3d.physics.interfaces.PhysicalNode> {
 //	/**
 //	 * Used to assign a unique identification number to each initialized edge.
 //	 */
@@ -115,13 +114,13 @@ public class Edge<T> extends EdgeT_PhysicalNode implements ini.cx3d.spatialOrgan
 	 * {@inheritDoc}
 	 */
 	@Override
-	public PhysicalNode getOppositeElement(PhysicalNode element) {
+	public ini.cx3d.physics.interfaces.PhysicalNode getOppositeElement(ini.cx3d.physics.interfaces.PhysicalNode element) {
 		if (a!=null  && b!=null) {
 			T aT = a.getUserObject();
 			if(Objects.equals(element, aT)){
-				return (PhysicalNode) b.getUserObject();
+				return (ini.cx3d.physics.interfaces.PhysicalNode) b.getUserObject();
 			}else{
-				return (PhysicalNode) a.getUserObject();
+				return (ini.cx3d.physics.interfaces.PhysicalNode) a.getUserObject();
 			}
 		}
 		return null;
@@ -131,16 +130,16 @@ public class Edge<T> extends EdgeT_PhysicalNode implements ini.cx3d.spatialOrgan
 	 * {@inheritDoc}
 	 */
 	@Override
-	public PhysicalNode getFirstElement() {
-		return (PhysicalNode) a.getUserObject();
+	public ini.cx3d.physics.interfaces.PhysicalNode getFirstElement() {
+		return (ini.cx3d.physics.interfaces.PhysicalNode) a.getUserObject();
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public PhysicalNode getSecondElement() {
-		return (PhysicalNode) b.getUserObject();
+	public ini.cx3d.physics.interfaces.PhysicalNode getSecondElement() {
+		return (ini.cx3d.physics.interfaces.PhysicalNode) b.getUserObject();
 	}
 
 	/**

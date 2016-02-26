@@ -32,6 +32,6 @@ import ini.cx3d.SimStateSerializable;
 
 public interface ECMChemicalReaction extends SimStateSerializable {
 
-	public void run(PhysicalNode pn);
+	public void run(ini.cx3d.physics.interfaces.PhysicalNode pn);
 	
 }

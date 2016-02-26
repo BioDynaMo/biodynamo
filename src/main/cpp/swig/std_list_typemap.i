@@ -53,7 +53,7 @@ template<class T> class list {
  * @param JAVA_TYPE Java equivalent of CPP_TYPE. Can also be of primitive type
  *
  * usage example:
- * %stdlist_typemap(std::shared_ptr<cx3d::spatial_organization::Tetrahedron<cx3d::PhysicalNode>>,
+ * %stdlist_typemap(std::shared_ptr<cx3d::spatial_organization::Tetrahedron<cx3d::physics::PhysicalNode>>,
  *                  Tetrahedron,
  *                  ini.cx3d.spatialOrganization.Tetrahedron);
  */

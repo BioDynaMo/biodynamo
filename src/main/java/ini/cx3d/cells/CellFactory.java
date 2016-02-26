@@ -22,7 +22,6 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 package ini.cx3d.cells;
 
 import ini.cx3d.localBiology.SomaElement;
-import ini.cx3d.physics.PhysicalNode;
 import ini.cx3d.physics.PhysicalSphere;
 import ini.cx3d.simulations.ECM;
 import ini.cx3d.spatialOrganization.SpatialOrganizationNode;
@@ -63,7 +62,7 @@ public class CellFactory {
         cell.setSomaElement(soma);        
         PhysicalSphere ps = new PhysicalSphere(); 
         soma.setPhysical(ps);
-        SpatialOrganizationNode<PhysicalNode> son = ecm.getSpatialOrganizationNodeInstance(cellOrigin.clone(), ps);
+        SpatialOrganizationNode<ini.cx3d.physics.interfaces.PhysicalNode> son = ecm.getSpatialOrganizationNodeInstance(cellOrigin.clone(), ps);
         ps.setSoNode(son);
         
         // Add cell to ECM instance

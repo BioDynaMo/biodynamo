@@ -440,7 +440,7 @@ public class PhysicalSphere extends PhysicalObject{
 		daughtersCoord.put(cyl, new double[] {xCoord, yCoord, zCoord});
 		
 		// SpaceNode
-		SpatialOrganizationNode<PhysicalNode> newSON = null;
+		SpatialOrganizationNode<ini.cx3d.physics.interfaces.PhysicalNode> newSON = null;
 		try {
 			newSON = soNode.getNewInstance(newCylinderCentralNodeLocation, cyl);
 		} catch (PositionNotAllowedException e) {
@@ -520,7 +520,7 @@ public class PhysicalSphere extends PhysicalObject{
 		
 		// C) Request a SpaceNode
 		double[] newSphereSpaceNodeLocation = newSphereMassLocation.clone();
-		SpatialOrganizationNode<PhysicalNode> newSON = null;
+		SpatialOrganizationNode<ini.cx3d.physics.interfaces.PhysicalNode> newSON = null;
 		try {
 			newSON = soNode.getNewInstance(newSphereSpaceNodeLocation, newSphere);
 		} catch (PositionNotAllowedException e) {
@@ -778,9 +778,9 @@ public class PhysicalSphere extends PhysicalObject{
 	//**LOCK R
 		getRwLock().readLock().lock();
 		//	(We check for every neighbor object if they touch us, i.e. push us away)
-		AbstractSequentialList<PhysicalNode> neighbors = soNode.getNeighbors();
+		AbstractSequentialList<ini.cx3d.physics.interfaces.PhysicalNode> neighbors = soNode.getNeighbors();
 		for (int i = 0; i < neighbors.size(); i++) {
-			PhysicalNode neighbor = neighbors.get(i);
+			ini.cx3d.physics.interfaces.PhysicalNode neighbor = neighbors.get(i);
 			if(neighbor == null) {
 				System.out.println("neighbor is null - idx " + i);
 				System.out.println("#neighbors: "+ neighbors.size());
@@ -901,7 +901,7 @@ public class PhysicalSphere extends PhysicalObject{
 			}
 			// neighbors :
 			getRwLock().readLock().lock();
-			for (PhysicalNode neighbor : soNode.getNeighbors()) {
+			for (ini.cx3d.physics.interfaces.PhysicalNode neighbor : soNode.getNeighbors()) {
 				if(neighbor.isAPhysicalObject()){
 					((PhysicalObject)neighbor).setOnTheSchedulerListForPhysicalObjects(true);
 				}
@@ -933,7 +933,7 @@ public class PhysicalSphere extends PhysicalObject{
 		}
 		// neighbors :
 		getRwLock().readLock().lock();
-		for (PhysicalNode neighbor : soNode.getNeighbors()) {
+		for (ini.cx3d.physics.interfaces.PhysicalNode neighbor : soNode.getNeighbors()) {
 			if(neighbor.isAPhysicalObject()){
 				((PhysicalObject)neighbor).setOnTheSchedulerListForPhysicalObjects(true);
 			}

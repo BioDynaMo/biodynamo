@@ -39,7 +39,7 @@
  // Users can provide their own SWIG_SHARED_PTR_TYPEMAPS macro before including this file to change the
  // visibility of the constructor and getCPtr method if desired to public if using multiple modules.
  #ifndef CX3D_SHARED_PTR_TYPEMAPS
- #define CX3D_SHARED_PTR_TYPEMAPS(CONST, JCLASS, TYPE...) CX3D_SHARED_PTR_TYPEMAPS_IMPLEMENTATION(protected, protected, CONST, JCLASS, TYPE)
+ #define CX3D_SHARED_PTR_TYPEMAPS(CONST, JCLASS, TYPE...) CX3D_SHARED_PTR_TYPEMAPS_IMPLEMENTATION(protected, public, CONST, JCLASS, TYPE)
  #endif
 
  %include <shared_ptr.i>

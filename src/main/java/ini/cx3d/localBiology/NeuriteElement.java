@@ -37,7 +37,6 @@ import java.util.Vector;
 
 import ini.cx3d.Param;
 import ini.cx3d.physics.PhysicalCylinder;
-import ini.cx3d.physics.PhysicalNode;
 import ini.cx3d.physics.PhysicalObject;
 import ini.cx3d.simulations.ECM;
 import ini.cx3d.synapses.BiologicalBouton;
@@ -459,7 +458,7 @@ public class NeuriteElement extends CellElement {
 	public int synapseBetweenExistingBS(double probabilityToSynapse){
 		int synapseMade = 0;
 
-		for (PhysicalNode pn : physicalCylinder.getSoNode().getNeighbors()) {
+		for (ini.cx3d.physics.interfaces.PhysicalNode pn : physicalCylinder.getSoNode().getNeighbors()) {
 			// For all PhysicalObjects around
 			if(!pn.isAPhysicalObject()){
 				continue;

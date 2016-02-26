@@ -3,7 +3,7 @@
 #include <sstream>
 
 #include "string_util.h"
-#include "physical_node.h"
+#include "physics/physical_node.h"
 #include "spatial_organization/space_node.h"
 #include "spatial_organization/triangle_3d.h"
 #include "spatial_organization/binary_tree_element.h"
@@ -68,7 +68,7 @@ bool SimpleTriangulationNodeOrganizer<T>::equalTo(
   return this == other.get();
 }
 
-template class SimpleTriangulationNodeOrganizer<cx3d::PhysicalNode> ;
+template class SimpleTriangulationNodeOrganizer<cx3d::physics::PhysicalNode> ;
 
 }  // namespace spatial_organization
 }  // namespace cx3d

@@ -17,11 +17,11 @@
 %define %JavaUtil_cx3d_shared_ptr()
   %cx3d_shared_ptr(JavaUtilT_PhysicalNode,
                    ini/cx3d/JavaUtil,
-                   cx3d::JavaUtil<cx3d::PhysicalNode>);
+                   cx3d::JavaUtil<cx3d::physics::PhysicalNode>);
 %enddef
 
 %define %JavaUtil_java()
-  %java_defined_class(cx3d::JavaUtil<cx3d::PhysicalNode>,
+  %java_defined_class(cx3d::JavaUtil<cx3d::physics::PhysicalNode>,
                       JavaUtilT_PhysicalNode,
                       JavaUtil,
                       ini.cx3d.JavaUtil,

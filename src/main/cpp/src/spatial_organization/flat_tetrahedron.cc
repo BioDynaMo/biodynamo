@@ -1,6 +1,6 @@
 #include "spatial_organization/flat_tetrahedron.h"
 
-#include "physical_node.h"
+#include "physics/physical_node.h"
 #include "spatial_organization/edge.h"
 #include "spatial_organization/triangle_3d.h"
 #include "spatial_organization/space_node.h"
@@ -96,7 +96,7 @@ FlatTetrahedron<T>::FlatTetrahedron()
     : Tetrahedron<T>() {
 }
 
-template class FlatTetrahedron<cx3d::PhysicalNode>;
+template class FlatTetrahedron<cx3d::physics::PhysicalNode>;
 
 }  // namespace spatial_organization
 }  // namespace cx3d

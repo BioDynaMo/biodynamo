@@ -32,13 +32,12 @@ import ini.cx3d.localBiology.CellElement;
 import ini.cx3d.localBiology.LocalBiologyModule;
 import ini.cx3d.localBiology.NeuriteElement;
 import ini.cx3d.physics.factory.IntracellularSubstanceFactory;
+import ini.cx3d.physics.interfaces.IntracellularSubstance;
 import ini.cx3d.simulations.ECM;
 import ini.cx3d.spatialOrganization.PositionNotAllowedException;
 import ini.cx3d.spatialOrganization.SpatialOrganizationNode;
 import ini.cx3d.synapses.Excrescence;
 import ini.cx3d.utilities.StringUtilities;
-
-import ini.cx3d.physics.interfaces.IntracellularSubstance;
 
 import java.util.AbstractSequentialList;
 
@@ -368,7 +367,7 @@ public class PhysicalCylinder extends PhysicalObject{
 		this.setMother(newProximalCylinder);
 		newProximalCylinder.setDaughterLeft(this);
 		// SOM relation 
-		SpatialOrganizationNode<PhysicalNode> newSON = null;
+		SpatialOrganizationNode<ini.cx3d.physics.interfaces.PhysicalNode> newSON = null;
 		try {
 			newSON = soNode.getNewInstance(newProximalCylinderSpatialNodeLocation, newProximalCylinder);
 		} catch (PositionNotAllowedException e) {
@@ -730,7 +729,7 @@ public class PhysicalCylinder extends PhysicalObject{
 
 		// spatial organization node
 		double[] newBranchCenterLocation = add(this.massLocation, scalarMult(0.5,newBranchL.springAxis));
-		SpatialOrganizationNode<PhysicalNode> newSON = null;
+		SpatialOrganizationNode<ini.cx3d.physics.interfaces.PhysicalNode> newSON = null;
 		try {
 			newSON = this.soNode.getNewInstance(newBranchCenterLocation, newBranchL);
 		} catch (PositionNotAllowedException e) {
@@ -814,7 +813,7 @@ public class PhysicalCylinder extends PhysicalObject{
 		getRwLock().writeLock().unlock();
 		// new CentralNode
 		double[] newBranchCenterLocation = add(this.massLocation, scalarMult(0.5,newBranchSpringAxis));
-		SpatialOrganizationNode<PhysicalNode> newSON = null;
+		SpatialOrganizationNode<ini.cx3d.physics.interfaces.PhysicalNode> newSON = null;
 		try {
 			newSON = soNode.getNewInstance(newBranchCenterLocation, newBranch);
 		} catch (PositionNotAllowedException e) {
@@ -934,9 +933,9 @@ public class PhysicalCylinder extends PhysicalObject{
 		
 		// 3) Object avoidance force -----------------------------------------------------------
 		//	(We check for every neighbor object if they touch us, i.e. push us away)
-		AbstractSequentialList<PhysicalNode> neighbors = soNode.getNeighbors();
+		AbstractSequentialList<ini.cx3d.physics.interfaces.PhysicalNode> neighbors = soNode.getNeighbors();
 		for (int i = 0; i < neighbors.size(); i++) {
-			PhysicalNode neighbor = neighbors.get(i);
+			ini.cx3d.physics.interfaces.PhysicalNode neighbor = neighbors.get(i);
 			if(neighbor == null) {
 				System.out.println("neighbor is null - idx " + i);
 				System.out.println("#neighbors: "+ neighbors.size());
@@ -1167,7 +1166,7 @@ public class PhysicalCylinder extends PhysicalObject{
 		}
 		// neighbors in the triangulation :
 	
-		for (PhysicalNode neighbor : soNode.getNeighbors()) {
+		for (ini.cx3d.physics.interfaces.PhysicalNode neighbor : soNode.getNeighbors()) {
 			if(neighbor.isAPhysicalObject()){
 				((PhysicalObject)neighbor).setOnTheSchedulerListForPhysicalObjects(true);
 			}

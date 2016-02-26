@@ -19,20 +19,20 @@
 %define %Tetrahedron_cx3d_shared_ptr()
   %cx3d_shared_ptr(TetrahedronT_PhysicalNode,
                    ini/cx3d/spatialOrganization/interfaces/Tetrahedron,
-                   cx3d::spatial_organization::Tetrahedron<cx3d::PhysicalNode>);
+                   cx3d::spatial_organization::Tetrahedron<cx3d::physics::PhysicalNode>);
 %enddef
 
 %define %Tetrahedron_java()
-  %java_defined_class(cx3d::spatial_organization::Tetrahedron<cx3d::PhysicalNode>,
+  %java_defined_class(cx3d::spatial_organization::Tetrahedron<cx3d::physics::PhysicalNode>,
                       TetrahedronT_PhysicalNode,
                       Tetrahedron,
                       ini.cx3d.spatialOrganization.interfaces.Tetrahedron,
                       ini/cx3d/spatialOrganization/interfaces/Tetrahedron);
-  %typemap(javainterfaces) cx3d::spatial_organization::Tetrahedron<cx3d::PhysicalNode> "ini.cx3d.spatialOrganization.interfaces.Tetrahedron"
+  %typemap(javainterfaces) cx3d::spatial_organization::Tetrahedron<cx3d::physics::PhysicalNode> "ini.cx3d.spatialOrganization.interfaces.Tetrahedron"
 %enddef
 
 %define %Tetrahedron_native()
-  %native_defined_class(cx3d::spatial_organization::Tetrahedron<cx3d::PhysicalNode>,
+  %native_defined_class(cx3d::spatial_organization::Tetrahedron<cx3d::physics::PhysicalNode>,
                         TetrahedronT_PhysicalNode,
                         ini.cx3d.spatialOrganization.interfaces.Tetrahedron,
                         Tetrahedron,
@@ -49,7 +49,7 @@
 
 %define %Tetrahedron_stdarray_array_marshalling(SWIG_MODULE, SIZE)
   %stdarray_array_marshalling(SWIG_MODULE,
-                              std::shared_ptr<cx3d::spatial_organization::Tetrahedron<cx3d::PhysicalNode> >,
+                              std::shared_ptr<cx3d::spatial_organization::Tetrahedron<cx3d::physics::PhysicalNode> >,
                               shared_ptr_Tetrahedron##SIZE,
                               ini.cx3d.spatialOrganization.interfaces.Tetrahedron,
                               Lini/cx3d/spatialOrganization/interfaces/Tetrahedron;,
@@ -57,7 +57,7 @@
 %enddef
 
 %define %Tetrahedron_stdlist()
-  %stdlist_typemap(std::shared_ptr<cx3d::spatial_organization::Tetrahedron<cx3d::PhysicalNode>>,
+  %stdlist_typemap(std::shared_ptr<cx3d::spatial_organization::Tetrahedron<cx3d::physics::PhysicalNode>>,
                    Tetrahedron,
                    ini.cx3d.spatialOrganization.interfaces.Tetrahedron);
 %enddef

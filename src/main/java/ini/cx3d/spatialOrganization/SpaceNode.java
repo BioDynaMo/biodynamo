@@ -24,7 +24,6 @@ package ini.cx3d.spatialOrganization;
 import java.util.*;
 
 import ini.cx3d.JavaUtil;
-import ini.cx3d.physics.PhysicalNode;
 import ini.cx3d.spatialOrganization.factory.EdgeFactory;
 import ini.cx3d.spatialOrganization.factory.OpenTriangleOrganizerFactory;
 import ini.cx3d.spatialOrganization.factory.SpaceNodeFactory;
@@ -52,7 +51,7 @@ import static ini.cx3d.utilities.StringUtilities.toStr;
  *
  * @param <T>
  */
-public class SpaceNode<T> extends SpaceNodeT_PhysicalNode implements /*ini.cx3d.spatialOrganization.interfaces.SpaceNode<T>,*/ ini.cx3d.spatialOrganization.interfaces.SpaceNode<ini.cx3d.physics.PhysicalNode> {
+public class SpaceNode<T> extends SpaceNodeT_PhysicalNode implements /*ini.cx3d.spatialOrganization.interfaces.SpaceNode<T>,*/ ini.cx3d.spatialOrganization.interfaces.SpaceNode<ini.cx3d.physics.interfaces.PhysicalNode> {
 	/**
 	 * A static list of all nodes that are part of the current triangulation. DO
 	 * NOT USE! Exclusively used for debugging purposes. Needs to be removed.
@@ -254,7 +253,7 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNode implements /*ini.cx3d.
 	 */
 	@Override
 	public Edge searchEdge(ini.cx3d.spatialOrganization.interfaces.SpaceNode oppositeNode) {
-		for (SpatialOrganizationEdge<PhysicalNode> e : this.adjacentEdges) {
+		for (SpatialOrganizationEdge<ini.cx3d.physics.interfaces.PhysicalNode> e : this.adjacentEdges) {
 			if (Objects.equals(e.getOpposite(this), oppositeNode))
 				return (Edge<T>) e;
 		}
@@ -336,11 +335,11 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNode implements /*ini.cx3d.
 //	}
 
 	@Override
-	public PhysicalNode getUserObject() {
-		return (PhysicalNode) content;
+	public ini.cx3d.physics.interfaces.PhysicalNode getUserObject() {
+		return (ini.cx3d.physics.interfaces.PhysicalNode) content;
 	}
 
-	private AbstractSequentialList<PhysicalNode> wrapEdgeListIntoNeighborNodeIterator(
+	private AbstractSequentialList<ini.cx3d.physics.interfaces.PhysicalNode> wrapEdgeListIntoNeighborNodeIterator(
 			final LinkedList<Edge> list) {
 //		return new Iterable<T>() {
 //			public Iterator<T> iterator() {
@@ -363,20 +362,20 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNode implements /*ini.cx3d.
 //			}
 //		};
 
-		return new AbstractSequentialList<PhysicalNode>() {
+		return new AbstractSequentialList<ini.cx3d.physics.interfaces.PhysicalNode>() {
 			final Iterator<Edge> listIt =
 					list.iterator();
 			@Override
-			public ListIterator<PhysicalNode> listIterator(int i) {
-				return new ListIterator<PhysicalNode>() {
+			public ListIterator<ini.cx3d.physics.interfaces.PhysicalNode> listIterator(int i) {
+				return new ListIterator<ini.cx3d.physics.interfaces.PhysicalNode>() {
 					@Override
 					public boolean hasNext() {
 						return listIt.hasNext();
 					}
 
 					@Override
-					public PhysicalNode next() {
-						return (PhysicalNode) listIt.next().getOpposite(SpaceNode.this)
+					public ini.cx3d.physics.interfaces.PhysicalNode next() {
+						return (ini.cx3d.physics.interfaces.PhysicalNode) listIt.next().getOpposite(SpaceNode.this)
 								.getUserObject();
 					}
 
@@ -386,7 +385,7 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNode implements /*ini.cx3d.
 					}
 
 					@Override
-					public PhysicalNode previous() {
+					public ini.cx3d.physics.interfaces.PhysicalNode previous() {
 						return null;
 					}
 
@@ -406,12 +405,12 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNode implements /*ini.cx3d.
 					}
 
 					@Override
-					public void set(PhysicalNode physicalNode) {
+					public void set(ini.cx3d.physics.interfaces.PhysicalNode physicalNode) {
 
 					}
 
 					@Override
-					public void add(PhysicalNode physicalNode) {
+					public void add(ini.cx3d.physics.interfaces.PhysicalNode physicalNode) {
 
 					}
 				};
@@ -430,11 +429,11 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNode implements /*ini.cx3d.
 	 * @see ini.cx3d.spatialOrganization.SpatialOrganizationNode#getNeighbors()
 	 */
 	@Override
-	public AbstractSequentialList<PhysicalNode> getNeighbors() {
+	public AbstractSequentialList<ini.cx3d.physics.interfaces.PhysicalNode> getNeighbors() {
 //		return wrapEdgeListIntoNeighborNodeIterator(adjacentEdges);
 		// quick solution for type incompatibilities
-		AbstractSequentialList<PhysicalNode> result = new LinkedList<>();
-		for(PhysicalNode t : wrapEdgeListIntoNeighborNodeIterator(adjacentEdges)){
+		AbstractSequentialList<ini.cx3d.physics.interfaces.PhysicalNode> result = new LinkedList<>();
+		for(ini.cx3d.physics.interfaces.PhysicalNode t : wrapEdgeListIntoNeighborNodeIterator(adjacentEdges)){
 			result.add(t);
 		}
 		return result;
@@ -483,13 +482,13 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNode implements /*ini.cx3d.
 	 * @see ini.cx3d.spatialOrganization.SpatialOrganizationNode#getPermanentListOfNeighbors()
 	 */
 	@Override
-	public AbstractSequentialList<PhysicalNode> getPermanentListOfNeighbors() {
+	public AbstractSequentialList<ini.cx3d.physics.interfaces.PhysicalNode> getPermanentListOfNeighbors() {
 		// return
 		// wrapEdgeListIntoNeighborNodeIterator(((LinkedList<SpatialOrganizationEdge<T>>)adjacentEdges.clone()));
-		LinkedList<PhysicalNode> ret = new LinkedList<>();
-		for (SpatialOrganizationEdge<PhysicalNode> e : this.adjacentEdges) {
+		LinkedList<ini.cx3d.physics.interfaces.PhysicalNode> ret = new LinkedList<>();
+		for (SpatialOrganizationEdge<ini.cx3d.physics.interfaces.PhysicalNode> e : this.adjacentEdges) {
 			SpatialOrganizationNode opp = e.getOpposite(this);
-				if (opp != null) ret.add((PhysicalNode) opp.getUserObject());
+				if (opp != null) ret.add((ini.cx3d.physics.interfaces.PhysicalNode) opp.getUserObject());
 		}
 		return ret;
 	}
@@ -561,7 +560,7 @@ public class SpaceNode<T> extends SpaceNodeT_PhysicalNode implements /*ini.cx3d.
 	 */
 	@Override
 	public SpaceNode<T> getNewInstance(double[] position,
-													 PhysicalNode userObject){// throws PositionNotAllowedException {
+													 ini.cx3d.physics.interfaces.PhysicalNode userObject){// throws PositionNotAllowedException {
 
 		// create a new SpaceNode:
 		SpaceNode<T> insertPoint = (SpaceNode<T>) new SpaceNodeFactory<T>().create(position, (T) userObject);

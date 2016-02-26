@@ -14,6 +14,8 @@
 
 #include "physics/substance.h"
 #include "physics/intracellular_substance.h"
+#include "physics/physical_node.h"
+
 // using namespace cx3d::physics;
 // #include "physicsJAVA_wrap.h"
 %}
@@ -32,7 +34,9 @@ JAVA_LOAD_NATIVE_LIBRARY(cx3d_physics);
 // class modifications
 %include "class_customization/physics/substance.i"
 %include "class_customization/physics/intracellular_substance.i"
+%include "class_customization/physics/physical_node.i"
 
 // add the original header files here
 %include "physics/substance.h"
 %include "physics/intracellular_substance.h"
+%include "physics/physical_node.h"

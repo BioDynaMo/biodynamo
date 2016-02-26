@@ -16,7 +16,7 @@
 %define %Plane3D_cx3d_shared_ptr()
   %cx3d_shared_ptr(Plane3DT_PhysicalNode,
                    ini/cx3d/spatialOrganization/interfaces/Plane3D,
-                   cx3d::spatial_organization::Plane3D<cx3d::PhysicalNode>);
+                   cx3d::spatial_organization::Plane3D<cx3d::physics::PhysicalNode>);
 %enddef
 
 /**
@@ -24,6 +24,6 @@
  */
 #ifdef TRIANGLE3D_NATIVE
   %Plane3D_cx3d_shared_ptr();
-  %typemap(javainterfaces) cx3d::spatial_organization::Plane3D<cx3d::PhysicalNode> "ini.cx3d.spatialOrganization.interfaces.Plane3D"
-  %typemap(jstype) cx3d::spatial_organization::Plane3D<cx3d::PhysicalNode> "ini.cx3d.spatialOrganization.interfaces.Plane3D"
+  %typemap(javainterfaces) cx3d::spatial_organization::Plane3D<cx3d::physics::PhysicalNode> "ini.cx3d.spatialOrganization.interfaces.Plane3D"
+  %typemap(jstype) cx3d::spatial_organization::Plane3D<cx3d::physics::PhysicalNode> "ini.cx3d.spatialOrganization.interfaces.Plane3D"
 #endif

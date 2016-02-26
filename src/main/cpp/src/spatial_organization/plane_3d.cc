@@ -5,7 +5,7 @@
 #include "spatial_organization/tetrahedron.h"
 #include "spatial_organization/exact_vector.h"
 #include "spatial_organization/rational.h"
-#include "physical_node.h"
+#include "physics/physical_node.h"
 
 namespace cx3d {
 namespace spatial_organization {
@@ -182,7 +182,7 @@ int Plane3D<T>::orientationExact(const std::array<double, 3>& point_1,
 }
 
 // define templates that should be compiled
-template class Plane3D<cx3d::PhysicalNode>;
+template class Plane3D<cx3d::physics::PhysicalNode>;
 
 }  // namespace spatial_organization
 }  // namespace cx3d

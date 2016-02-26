@@ -7,7 +7,7 @@
 
 #include "matrix.h"
 #include "string_util.h"
-#include "physical_node.h"
+#include "physics/physical_node.h"
 #include "spatial_organization/rational.h"
 #include "spatial_organization/exact_vector.h"
 #include "spatial_organization/space_node.h"
@@ -660,7 +660,7 @@ void OpenTriangleOrganizer<T>::createNewTetrahedron(
   new_tetrahedra_.push_back(a_new_tetrahedron_);
 }
 
-template class OpenTriangleOrganizer<cx3d::PhysicalNode> ;
+template class OpenTriangleOrganizer<cx3d::physics::PhysicalNode> ;
 
 }  // namespace cx3d
 }  // namespace spatial_organization

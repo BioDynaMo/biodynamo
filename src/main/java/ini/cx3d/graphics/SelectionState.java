@@ -22,20 +22,14 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 package ini.cx3d.graphics;
 
 import static ini.cx3d.utilities.Matrix.mult;
-import ini.cx3d.Param;
-import ini.cx3d.cells.Cell;
-import ini.cx3d.cells.CellFactory;
-import ini.cx3d.localBiology.SomaElement;
-import ini.cx3d.physics.PhysicalNode;
+
 import ini.cx3d.physics.PhysicalObject;
-import ini.cx3d.physics.PhysicalSphere;
 import ini.cx3d.simulations.ECM;
 import ini.cx3d.utilities.Matrix;
 
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseWheelEvent;
 
 
 public class SelectionState extends MouseActionState{
@@ -46,7 +40,7 @@ public class SelectionState extends MouseActionState{
 			view.setCursor(new Cursor(Cursor.HAND_CURSOR));
 		}
 		private PhysicalObject p;
-		public PhysicalNode getSelectedPhysicalObject()
+		public ini.cx3d.physics.interfaces.PhysicalNode getSelectedPhysicalObject()
 		{
 			return p;
 		}
@@ -84,7 +78,7 @@ public class SelectionState extends MouseActionState{
 		
 			PhysicalObject node= null;
 			double distance = Double.MAX_VALUE;
-			for (PhysicalNode pn : ECM.getInstance().physicalNodeList) {
+			for (ini.cx3d.physics.interfaces.PhysicalNode pn : ECM.getInstance().physicalNodeList) {
 				if(!pn.isAPhysicalObject()) continue;
 				double[] coordOfPn = pn.getSoNode().getPosition();
 				double ypn = coordOfPn[1];

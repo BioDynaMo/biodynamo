@@ -18,20 +18,20 @@
 %define %TriangleHashKey_cx3d_shared_ptr()
   %cx3d_shared_ptr(TriangleHashKeyT_PhysicalNode,
                    ini/cx3d/spatialOrganization/interfaces/TriangleHashKey,
-                   cx3d::spatial_organization::TriangleHashKey<cx3d::PhysicalNode>);
+                   cx3d::spatial_organization::TriangleHashKey<cx3d::physics::PhysicalNode>);
 %enddef
 
 %define %TriangleHashKey_java()
-  %java_defined_class(cx3d::spatial_organization::TriangleHashKey<cx3d::PhysicalNode>,
+  %java_defined_class(cx3d::spatial_organization::TriangleHashKey<cx3d::physics::PhysicalNode>,
                       TriangleHashKeyT_PhysicalNode,
                       TriangleHashKey,
                       ini.cx3d.spatialOrganization.interfaces.TriangleHashKey,
                       ini/cx3d/spatialOrganization/interfaces/TriangleHashKey);
-  %typemap(javainterfaces) cx3d::spatial_organization::TriangleHashKey<cx3d::PhysicalNode> "ini.cx3d.spatialOrganization.interfaces.TriangleHashKey"
+  %typemap(javainterfaces) cx3d::spatial_organization::TriangleHashKey<cx3d::physics::PhysicalNode> "ini.cx3d.spatialOrganization.interfaces.TriangleHashKey"
 %enddef
 
 %define %TriangleHashKey_native()
-  %native_defined_class(cx3d::spatial_organization::TriangleHashKey<cx3d::PhysicalNode>,
+  %native_defined_class(cx3d::spatial_organization::TriangleHashKey<cx3d::physics::PhysicalNode>,
                         TriangleHashKeyT_PhysicalNode,
                         ini.cx3d.spatialOrganization.interfaces.TriangleHashKey,
                         TriangleHashKey,

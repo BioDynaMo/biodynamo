@@ -18,30 +18,39 @@
 
 %define %PhysicalNode_cx3d_shared_ptr()
   %cx3d_shared_ptr(PhysicalNode,
-                   ini/cx3d/physics/PhysicalNode,
-                   cx3d::PhysicalNode);
+                   ini/cx3d/physics/interfaces/PhysicalNode,
+                   cx3d::physics::PhysicalNode);
 %enddef
 
 %define %PhysicalNode_java()
-  %java_defined_class(cx3d::PhysicalNode,
+  %java_defined_class(cx3d::physics::PhysicalNode,
                       PhysicalNode,
                       PhysicalNode,
-                      ini.cx3d.physics.PhysicalNode,
-                      ini/cx3d/physics/PhysicalNode);
+                      ini.cx3d.physics.interfaces.PhysicalNode,
+                      ini/cx3d/physics/interfaces/PhysicalNode);
 %enddef
 
 %define %PhysicalNode_stdarray_array_marshalling(SWIG_MODULE, SIZE)
+  %typemap(javaimports) std::array<std::shared_ptr<cx3d::physics::PhysicalNode>, SIZE> %{
+    import ini.cx3d.swig.physics.PhysicalNode;
+  %}
   %stdarray_array_marshalling(SWIG_MODULE,
-                              std::shared_ptr<cx3d::PhysicalNode>,
+                              std::shared_ptr<cx3d::physics::PhysicalNode>,
                               shared_ptr_PhysicalNode_##SIZE,
                               Object,
                               Ljava/lang/Object;, SIZE);
 %enddef
 
 %define %PhysicalNode_stdlist()
-  %stdlist_typemap(std::shared_ptr<cx3d::PhysicalNode>,
+  %typemap(javaimports) cx3d::ListIteratorCpp<std::shared_ptr<cx3d::physics::PhysicalNode>> %{
+    import ini.cx3d.swig.physics.PhysicalNode;
+  %}
+  %typemap(javaimports) std::list<std::shared_ptr<cx3d::physics::PhysicalNode>> %{
+    import ini.cx3d.swig.physics.PhysicalNode;
+  %}
+  %stdlist_typemap(std::shared_ptr<cx3d::physics::PhysicalNode>,
                    PhysicalNode,
-                   ini.cx3d.physics.PhysicalNode);
+                   ini.cx3d.physics.interfaces.PhysicalNode);
 %enddef
 
 /**

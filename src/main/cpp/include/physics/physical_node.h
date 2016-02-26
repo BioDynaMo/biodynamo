@@ -1,10 +1,11 @@
-#ifndef PHYSICAL_NODE_H_
-#define PHYSICAL_NODE_H_
+#ifndef PHYSICS_PHYSICAL_NODE_H_
+#define PHYSICS_PHYSICAL_NODE_H_
 
 #include <string>
 #include <stdexcept>
 
 namespace cx3d {
+namespace physics {
 
 class PhysicalNode {
  public:
@@ -17,6 +18,7 @@ class PhysicalNode {
   }
 };
 
+}  // namespace physics
 }  // namespace cx3d
 
-#endif  // PHYSICAL_NODE_H_
+#endif  // PHYSICS_PHYSICAL_NODE_H_

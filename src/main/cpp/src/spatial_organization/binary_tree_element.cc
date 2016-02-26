@@ -6,7 +6,7 @@
 #include <sstream>
 
 #include "string_util.h"
-#include "physical_node.h"
+#include "physics/physical_node.h"
 #include "spatial_organization/space_node.h"
 
 namespace cx3d {
@@ -202,7 +202,7 @@ std::list<std::shared_ptr<SpaceNode<T>>>TreeHead<T>::inOrderTraversal() const {
   return std::list<std::shared_ptr<SpaceNode<T>>>();
 }
 
-template class BinaryTreeElement<cx3d::PhysicalNode>;
+template class BinaryTreeElement<cx3d::physics::PhysicalNode>;
 
 }  // namespace spatial_organization
 }  // namespace cx3d
