@@ -36,10 +36,10 @@ import ini.cx3d.localBiology.NeuriteElement;
 import ini.cx3d.localBiology.SomaElement;
 import ini.cx3d.physics.IntracellularSubstance;
 import ini.cx3d.physics.PhysicalObject;
+import ini.cx3d.physics.factory.IntracellularSubstanceFactory;
 import ini.cx3d.simulations.ECM;
 import ini.cx3d.simulations.Scheduler;
 import ini.cx3d.swig.NativeStringBuilder;
-import ini.cx3d.swig.spatialOrganization.spatialOrganizationJNI;
 import ini.cx3d.utilities.Matrix;
 
 
@@ -61,7 +61,7 @@ public class IntracellularDiffusionTest extends BaseSimulationTest{
 		// defining the templates for the intracellular substance
 		double D = 1000; // diffusion cst
 		double d = 0.01;	// degradation cst
-		IntracellularSubstance tubulin = new IntracellularSubstance("tubulin",D,d);
+		ini.cx3d.physics.interfaces.IntracellularSubstance tubulin = IntracellularSubstanceFactory.create("tubulin", D, d);
 		tubulin.setVolumeDependant(false);
 		ecm.addNewIntracellularSubstanceTemplate(tubulin);
 		// getting a cell

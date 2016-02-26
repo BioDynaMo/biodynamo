@@ -76,6 +76,13 @@ public class Substance extends ini.cx3d.swig.physics.Substance implements ini.cx
 		return sb;
 	}
 
+	/**
+	 * only needed for SWIG - forwards call to SWIG Base class
+	 */
+	protected Substance(long cPtr, boolean cMemoryOwn) {
+		super(cPtr, cMemoryOwn);
+	}
+
 	public Substance(){
 		registerJavaObject(this);
 	}

@@ -135,6 +135,7 @@ class Substance : public SimStateSerializable {
   virtual std::string toString() const;
 
  protected:
+  Substance(const Substance& other);
   Substance(const std::string& id, double diffusion_constant, double degradation_constant);
   Substance(const std::string& id, Color color);
 
@@ -169,7 +170,6 @@ class Substance : public SimStateSerializable {
   double concentration_;
 
  private:
-  Substance(const Substance& other);
   Substance& operator=(const Substance&) = delete;
 };
 

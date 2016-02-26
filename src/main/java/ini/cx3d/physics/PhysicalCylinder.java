@@ -31,11 +31,14 @@ import ini.cx3d.Param;
 import ini.cx3d.localBiology.CellElement;
 import ini.cx3d.localBiology.LocalBiologyModule;
 import ini.cx3d.localBiology.NeuriteElement;
+import ini.cx3d.physics.factory.IntracellularSubstanceFactory;
 import ini.cx3d.simulations.ECM;
 import ini.cx3d.spatialOrganization.PositionNotAllowedException;
 import ini.cx3d.spatialOrganization.SpatialOrganizationNode;
 import ini.cx3d.synapses.Excrescence;
 import ini.cx3d.utilities.StringUtilities;
+
+import ini.cx3d.physics.interfaces.IntracellularSubstance;
 
 import java.util.AbstractSequentialList;
 
@@ -387,7 +390,7 @@ public class PhysicalCylinder extends PhysicalObject{
 			}
 			// create similar IntracellularSubstance and insert it into the new cylinder
 			double quantityBeforeDistribution = s.getQuantity(); 
-			IntracellularSubstance s2 = new IntracellularSubstance(s);
+			ini.cx3d.physics.interfaces.IntracellularSubstance s2 = IntracellularSubstanceFactory.create(s);
 			s2.setQuantity(quantityBeforeDistribution*(1-distalPortion));
 			newProximalCylinder.addNewIntracellularSubstance(s2);
 			// decrease value of IntracellularSubstance in this cylinder
@@ -450,7 +453,7 @@ public class PhysicalCylinder extends PhysicalObject{
 	
 	
 			// collecting (the quantities of) the intracellular substances of the removed cylinder.
-			for (IntracellularSubstance s : proximalCylinder.getIntracellularSubstances().values() ) {
+			for (ini.cx3d.physics.interfaces.IntracellularSubstance s : proximalCylinder.getIntracellularSubstances().values() ) {
 				this.modifyIntracellularQuantity(s.getId(), s.getQuantity()/Param.SIMULATION_TIME_STEP);
 				// divided by time step, because in the method the parameter is multiplied by time step...
 				// and we want to change the quantity.
@@ -655,7 +658,7 @@ public class PhysicalCylinder extends PhysicalObject{
 				neuriteElement.removeYourself();
 				// intracellularSubstances quantities 
 				// (concentrations are solved in updateDependentPhysicalVariables():
-				for (IntracellularSubstance s : intracellularSubstances.values() ) {
+				for (ini.cx3d.physics.interfaces.IntracellularSubstance s : intracellularSubstances.values() ) {
 					mother.modifyIntracellularQuantity(s.getId(), s.getQuantity()/Param.SIMULATION_TIME_STEP);
 					// (divide by time step because it is multiplied by it in the method)
 				}
@@ -1518,7 +1521,7 @@ public class PhysicalCylinder extends PhysicalObject{
 	 */
 	protected void updateIntracellularConcentrations(){
 		getRwLock().readLock().lock();
-		for (IntracellularSubstance s : intracellularSubstances.values() ) {
+		for (ini.cx3d.physics.interfaces.IntracellularSubstance s : intracellularSubstances.values() ) {
 			if(s.isVolumeDependant()){
 				s.updateConcentrationBasedOnQuantity(volume);
 			}

@@ -36,7 +36,7 @@ import static ini.cx3d.SimStateSerializationUtil.removeLastChar;
  * @author fredericzubler
  *
  */
-public class IntracellularSubstance extends Substance{
+public class IntracellularSubstance extends ini.cx3d.swig.physics.IntracellularSubstance implements ini.cx3d.physics.interfaces.IntracellularSubstance {
 	
 	/* If true, the Substance can be detected from outside of the PhysicalObject
 	 * (equivalent to an membrane bound substance).*/
@@ -53,7 +53,7 @@ public class IntracellularSubstance extends Substance{
 
 	@Override
 	public ini.cx3d.swig.NativeStringBuilder simStateToJson(ini.cx3d.swig.NativeStringBuilder sb) {
-		super.simStateToJson(sb);
+		superSuperSimStateToJson(sb);
 		removeLastChar(sb);
 		sb.append(",");
 
@@ -70,15 +70,16 @@ public class IntracellularSubstance extends Substance{
 	}
 	
 	public IntracellularSubstance(String id, double diffusionConstant, double degradationConstant){
-		super(id, diffusionConstant, degradationConstant);
+		super(id, diffusionConstant, degradationConstant, false);
 	}
-	
-	public IntracellularSubstance(String id, double diffusionConstant, double degradationConstant, double asymmetryConstant){
-		super(id, diffusionConstant, degradationConstant);
-		getRwLock().writeLock().lock();
-		this.asymmetryConstant = asymmetryConstant;
-		getRwLock().writeLock().unlock();
-	}
+
+//	is not used at all
+//	public IntracellularSubstance(String id, double diffusionConstant, double degradationConstant, double asymmetryConstant){
+//		super(id, diffusionConstant, degradationConstant);
+//		getRwLock().writeLock().lock();
+//		this.asymmetryConstant = asymmetryConstant;
+//		getRwLock().writeLock().unlock();
+//	}
 	
 	
 	/**
@@ -101,7 +102,8 @@ public class IntracellularSubstance extends Substance{
 	 * Distribute IntracellularSubstance concentration at division and update quantity.
 	 * @param newIS
 	 */
-	public void distributeConcentrationOnDivision(IntracellularSubstance newIS){
+	@Override
+	public void distributeConcentrationOnDivision(ini.cx3d.physics.interfaces.IntracellularSubstance newIS){
 		
 		
 		getRwLock().writeLock().lock();
@@ -123,6 +125,7 @@ public class IntracellularSubstance extends Substance{
 	 * Degradation of the <code>IntracellularSubstance</code>.
 	 * @param newIS
 	 */
+	@Override
 	public void degrade(){
 		getRwLock().writeLock().lock();
 		this.concentration = this.concentration * (1 - this.degradationConstant*Param.SIMULATION_TIME_STEP);
@@ -132,6 +135,7 @@ public class IntracellularSubstance extends Substance{
 	
 	/** Returns the degree of asymmetric distribution during cell division. 
 	 * 0 represents complete symmetrical division, 1 represents complete asymmetric division. */
+	@Override
 	public double getAsymmetryConstant(){
 		try
 		{
@@ -148,6 +152,7 @@ public class IntracellularSubstance extends Substance{
 	 * 0 represents complete symmetrical division, 1 represents complete asymmetric division.
 	 * The sign + or - is used to distinguish between one daughter (mother cell) and the other
 	 * (new cell). */
+	@Override
 	public void setAsymmetryConstant(double asymmetryConstant){
 		try
 		{
@@ -185,6 +190,7 @@ public class IntracellularSubstance extends Substance{
 	
 	/** If true, the Substance can be detected from outside of the PhysicalObject
 	 * (equivalent to an membrane bound substance).*/
+	@Override
 	public boolean isVisibleFromOutside() {
 		try
 		{
@@ -199,6 +205,7 @@ public class IntracellularSubstance extends Substance{
 	
 	/** If true, the Substance can be detected from outside of the PhysicalObject
 	 * (equivalent to an membrane bound substance).*/
+	@Override
 	public void setVisibleFromOutside(boolean visibleFromOutside) {
 		try
 		{
@@ -213,6 +220,7 @@ public class IntracellularSubstance extends Substance{
 	/** If true, the volume is taken into account for computing the concentration,
 	 * otherwise a virtual volume corresponding to the length of the physical object
 	 * (with virtual radius 1) is used.*/
+	@Override
 	public boolean isVolumeDependant() {
 		try
 		{
@@ -227,6 +235,7 @@ public class IntracellularSubstance extends Substance{
 	/** If true, the volume is taken into account for computing the concentration,
 	 * otherwise a virtual volume corresponding to the length of the physical object
 	 * (with virtual radius 1) is used.*/
+	@Override
 	public void setVolumeDependant(boolean volumeDependant) {
 		try
 		{
@@ -239,45 +248,45 @@ public class IntracellularSubstance extends Substance{
 		}
 	}
 
-	public StringBuilder createXMLAttrubutes()
-	{
-		StringBuilder temp  = super.createXMLAttrubutes();
-		try{
-			getRwLock().readLock().lock();
-			temp.append("visibleFromOutside=\"").append(this.isVisibleFromOutside()).append("\" ");
-			temp.append("volumeDependent=\"").append(this.isVolumeDependant()).append("\" ");
-			temp.append("asymmetryconstant=\"").append(this.asymmetryConstant).append("\" ");
-			return temp;
-		}
-		finally
-		{
-			getRwLock().readLock().unlock();
-		}	
-	}
-	
-	public void readOutAttributes(Node attr)
-	{
-		super.readOutAttributes(attr);
-		if(attr.getNodeName().equals("visibleFromOutside"))
-		{
-			getRwLock().writeLock().lock();
-			this.visibleFromOutside = Boolean.parseBoolean(attr.getNodeValue());
-			getRwLock().writeLock().unlock();
-		}
-		if(attr.getNodeName().equals("volumeDependent"))
-		{
-			getRwLock().writeLock().lock();
-			this.volumeDependant = Boolean.parseBoolean(attr.getNodeValue());
-			getRwLock().writeLock().unlock();
-		}
-		if(attr.getNodeName().equals("asymmetryconstant"))
-		{
-			getRwLock().writeLock().lock();
-			this.asymmetryConstant = Double.parseDouble(attr.getNodeValue());
-			getRwLock().writeLock().unlock();
-		}
-		
-	} 
+//	public StringBuilder createXMLAttrubutes()
+//	{
+//		StringBuilder temp  = super.createXMLAttrubutes();
+//		try{
+//			getRwLock().readLock().lock();
+//			temp.append("visibleFromOutside=\"").append(this.isVisibleFromOutside()).append("\" ");
+//			temp.append("volumeDependent=\"").append(this.isVolumeDependant()).append("\" ");
+//			temp.append("asymmetryconstant=\"").append(this.asymmetryConstant).append("\" ");
+//			return temp;
+//		}
+//		finally
+//		{
+//			getRwLock().readLock().unlock();
+//		}
+//	}
+//
+//	public void readOutAttributes(Node attr)
+//	{
+//		super.readOutAttributes(attr);
+//		if(attr.getNodeName().equals("visibleFromOutside"))
+//		{
+//			getRwLock().writeLock().lock();
+//			this.visibleFromOutside = Boolean.parseBoolean(attr.getNodeValue());
+//			getRwLock().writeLock().unlock();
+//		}
+//		if(attr.getNodeName().equals("volumeDependent"))
+//		{
+//			getRwLock().writeLock().lock();
+//			this.volumeDependant = Boolean.parseBoolean(attr.getNodeValue());
+//			getRwLock().writeLock().unlock();
+//		}
+//		if(attr.getNodeName().equals("asymmetryconstant"))
+//		{
+//			getRwLock().writeLock().lock();
+//			this.asymmetryConstant = Double.parseDouble(attr.getNodeValue());
+//			getRwLock().writeLock().unlock();
+//		}
+//
+//	}
 
 	public ini.cx3d.physics.interfaces.Substance getCopy() {
 		// TODO Auto-generated method stub

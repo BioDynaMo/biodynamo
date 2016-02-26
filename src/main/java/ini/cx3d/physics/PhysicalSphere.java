@@ -363,7 +363,7 @@ public class PhysicalSphere extends PhysicalObject{
 	protected void updateIntracellularConcentrations(){
 	
 		getRwLock().readLock().lock();
-		for (IntracellularSubstance s : intracellularSubstances.values() ) {
+		for (ini.cx3d.physics.interfaces.IntracellularSubstance s : intracellularSubstances.values() ) {
 			if(s.isVolumeDependant()){
 				s.updateConcentrationBasedOnQuantity(volume);
 			}else{
@@ -551,8 +551,8 @@ public class PhysicalSphere extends PhysicalObject{
 	
 		
 		// G) Copy the intracellular and membrane bound Substances
-		for (IntracellularSubstance sub : intracellularSubstances.values()) {
-				IntracellularSubstance subCopy = (IntracellularSubstance)sub.getCopy(); 	//copy substance
+		for (ini.cx3d.physics.interfaces.IntracellularSubstance sub : intracellularSubstances.values()) {
+				ini.cx3d.physics.interfaces.IntracellularSubstance subCopy = (ini.cx3d.physics.interfaces.IntracellularSubstance)sub.getCopy(); 	//copy substance
 				sub.distributeConcentrationOnDivision(subCopy);
 				sub.updateQuantityBasedOnConcentration(this.volume);
 				subCopy.updateQuantityBasedOnConcentration(newSphere.volume);
@@ -980,7 +980,7 @@ public class PhysicalSphere extends PhysicalObject{
 		getRwLock().readLock().lock();
 
 		// 1) Degradation according to the degradation constant for each chemical
-		for (IntracellularSubstance is: intracellularSubstances.values())
+		for (ini.cx3d.physics.interfaces.IntracellularSubstance is: intracellularSubstances.values())
 		{
 //			if (is.getId().equals("GeneStart_1")){
 				is.degrade();

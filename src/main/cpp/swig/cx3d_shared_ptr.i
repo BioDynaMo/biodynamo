@@ -225,7 +225,7 @@
  // Base proxy classes
  %typemap(javabody) TYPE %{
    private long swigCPtr;
-   private boolean swigCMemOwn;
+   protected boolean swigCMemOwn;
 
    PTRCTOR_VISIBILITY $javaclassname(long cPtr, boolean cMemoryOwn) {
      swigCMemOwn = cMemoryOwn;

@@ -33,7 +33,8 @@ import ini.cx3d.graphics.View;
 import ini.cx3d.localBiology.NeuriteElement;
 import ini.cx3d.localBiology.SomaElement;
 import ini.cx3d.physics.ECMChemicalReaction;
-import ini.cx3d.physics.IntracellularSubstance;
+import ini.cx3d.physics.factory.IntracellularSubstanceFactory;
+import ini.cx3d.physics.interfaces.IntracellularSubstance;
 import ini.cx3d.physics.PhysicalCylinder;
 import ini.cx3d.physics.PhysicalNode;
 import ini.cx3d.physics.PhysicalNodeMovementListener;
@@ -102,7 +103,7 @@ public class ECM implements SimStateSerializable {
 	
 	/* In here we keep a template for each (intra-cellular) Substance in the simulation that have
 	 * non-standard value for diffusion and degradation constant.*/
-	private Hashtable<String, IntracellularSubstance> intracellularSubstancesLibrary = new Hashtable<String, IntracellularSubstance>();
+	private Hashtable<String, ini.cx3d.physics.interfaces.IntracellularSubstance> intracellularSubstancesLibrary = new Hashtable<String, ini.cx3d.physics.interfaces.IntracellularSubstance>();
 
 	/* In here we store a color attributed to specific cell types.*/
 	private Hashtable<String, Color> cellTypeColorLibrary = new Hashtable<String, Color>();
@@ -596,7 +597,7 @@ public class ECM implements SimStateSerializable {
 	
 	/** Define a template for each <code>IntracellularSubstance</code> in the simulation that has
 	 * non-standard values for diffusion and degradation constant, and outside visibility and volume dependency.*/
-	public void addNewIntracellularSubstanceTemplate(IntracellularSubstance s){
+	public void addNewIntracellularSubstanceTemplate(ini.cx3d.physics.interfaces.IntracellularSubstance s){
 		intracellularSubstancesLibrary.put(s.getId(), s);
 		if(myGuiCreator!=null)myGuiCreator.addNewChemical(s);
 	}
@@ -630,17 +631,17 @@ public class ECM implements SimStateSerializable {
 	 * @param id
 	 * @return new IntracellularSubstance instance
 	 */
-	public IntracellularSubstance intracellularSubstanceInstance(String id){
+	public ini.cx3d.physics.interfaces.IntracellularSubstance intracellularSubstanceInstance(String id){
 		IntracellularSubstance s = intracellularSubstancesLibrary.get(id);
 		if(s==null){
-			s = new IntracellularSubstance();
+			s = IntracellularSubstanceFactory.create();
 			s.setId(id);
 			// s will have the default color blue, diff const 1000, degrad const 0.01,
 			// visibleFromOuside false and volumeDep false.
 			this.addNewIntracellularSubstanceTemplate(s);
 			intracellularSubstancesLibrary.put(id, s);
 		}
-		return new IntracellularSubstance(s);
+		return IntracellularSubstanceFactory.create(s);
 	}
 	// *********************************************************************
 	// *** Pre-defined cellType colors
@@ -1212,7 +1213,7 @@ public class ECM implements SimStateSerializable {
 		}
 	}
 
-	public Hashtable<String, IntracellularSubstance> getIntracelularSubstanceTemplates() {
+	public Hashtable<String, ini.cx3d.physics.interfaces.IntracellularSubstance> getIntracelularSubstanceTemplates() {
 		// TODO Auto-generated method stub
 		return this.intracellularSubstancesLibrary;
 	}

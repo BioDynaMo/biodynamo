@@ -27,7 +27,6 @@ import static ini.cx3d.utilities.Matrix.printlnLine;
 import static ini.cx3d.utilities.Matrix.scalarMult;
 import static ini.cx3d.utilities.Matrix.subtract;
 import ini.cx3d.Param;
-import ini.cx3d.physics.IntracellularSubstance;
 import ini.cx3d.physics.PhysicalBond;
 import ini.cx3d.physics.PhysicalCylinder;
 import ini.cx3d.physics.PhysicalNode;
@@ -275,7 +274,7 @@ public class View extends JComponent {
 			// the object
 			Color drawcolor = aCylinder.getColor();
 			for (ini.cx3d.physics.interfaces.Substance sub : tobeDrawn) {
-				if (sub instanceof IntracellularSubstance) {
+				if (sub instanceof ini.cx3d.physics.interfaces.IntracellularSubstance) {
 					if (aCylinder.getIntracellularSubstances().containsKey(
 							sub.getId())) {
 						drawcolor = aCylinder.getIntracellularSubstances().get(
@@ -521,7 +520,7 @@ public class View extends JComponent {
 			// the object
 			Color sphereColor = aSphere.getColor();
 			for (ini.cx3d.physics.interfaces.Substance sub : tobeDrawn) {
-				if (sub instanceof IntracellularSubstance) {
+				if (sub instanceof ini.cx3d.physics.interfaces.IntracellularSubstance) {
 					if (aSphere.getIntracellularSubstances().containsKey(
 							sub.getId())) {
 						sphereColor = aSphere.getIntracellularSubstances().get(

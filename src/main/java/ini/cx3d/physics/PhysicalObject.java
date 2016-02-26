@@ -26,13 +26,17 @@ import static ini.cx3d.SimStateSerializationUtil.keyValue;
 import static ini.cx3d.utilities.Matrix.dot;
 import ini.cx3d.Param;
 import ini.cx3d.localBiology.CellElement;
+import ini.cx3d.physics.factory.IntracellularSubstanceFactory;
 import ini.cx3d.synapses.Excrescence;
 
+import ini.cx3d.physics.interfaces.IntracellularSubstance;
+import ini.cx3d.utilities.StringUtilities;
+
 import java.awt.Color;
+import java.util.AbstractSequentialList;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
-
 
 /**
  * Superclass of all the physical objects of the simulation (<code>PhysicalSphere</code> and 
@@ -100,7 +104,7 @@ public abstract class PhysicalObject extends PhysicalNode {
 
 	/* All the internal and membrane-bound (diffusible and non-diffusible)
 	 *  chemicals that are present inside the PhysicalObject.*/
-	protected Hashtable<String, IntracellularSubstance> intracellularSubstances = new Hashtable<String, IntracellularSubstance>();
+	protected Hashtable<String, ini.cx3d.physics.interfaces.IntracellularSubstance> intracellularSubstances = new Hashtable<String, ini.cx3d.physics.interfaces.IntracellularSubstance>();
 
 	/* List of the Physical bonds that this object can do (for cell adhesion where synapse formation occurs)*/
 	protected Vector<PhysicalBond> physicalBonds = new Vector<PhysicalBond>();
@@ -310,8 +314,15 @@ public abstract class PhysicalObject extends PhysicalNode {
 		try
 		{
 			getRwLock().readLock().lock();
-			Vector<PhysicalObject> po = new Vector<PhysicalObject>(); 
-			for (PhysicalNode n : super.soNode.getNeighbors()) {
+			Vector<PhysicalObject> po = new Vector<PhysicalObject>();
+			AbstractSequentialList<PhysicalNode> neighbors = soNode.getNeighbors();
+			for (int i = 0; i < neighbors.size(); i++) {
+				PhysicalNode n = neighbors.get(i);
+				if(n == null) {
+					System.out.println("neighbor is null - idx " + i);
+					System.out.println("#neighbors: "+ neighbors.size());
+					System.out.println("elements: "+ StringUtilities.toStr(neighbors));
+				}
 				if(n.isAPhysicalObject() && isInContact(((PhysicalObject) n)))
 					po.add((PhysicalObject) n);
 			}
@@ -535,7 +546,7 @@ public abstract class PhysicalObject extends PhysicalNode {
 	public void modifyIntracellularQuantity(String id, double quantityPerTime){
 		getRwLock().writeLock().lock(); 
 		
-		IntracellularSubstance s = intracellularSubstances.get(id);
+		ini.cx3d.physics.interfaces.IntracellularSubstance s = intracellularSubstances.get(id);
 		if(s==null){
 			s = ecm.intracellularSubstanceInstance(id);
 			intracellularSubstances.put(id, s);
@@ -556,7 +567,7 @@ public abstract class PhysicalObject extends PhysicalNode {
 	 * and therefore is not a public method. Instead , this method is used for filling up a new 
 	 * PhysicalObject in case of extension).
 	 */
-	protected void addNewIntracellularSubstance(IntracellularSubstance s){
+	protected void addNewIntracellularSubstance(ini.cx3d.physics.interfaces.IntracellularSubstance s){
 		getRwLock().writeLock().lock(); 
 		intracellularSubstances.put(s.getId(), s);
 		getRwLock().writeLock().unlock();
@@ -578,7 +589,7 @@ public abstract class PhysicalObject extends PhysicalNode {
 				return 1.0;
 			}
 			// otherwise : do we have it on board ?
-			IntracellularSubstance s = intracellularSubstances.get(id);
+			ini.cx3d.physics.interfaces.IntracellularSubstance s = intracellularSubstances.get(id);
 			if(s == null){
 				return 0.0;
 			}else{
@@ -613,13 +624,13 @@ public abstract class PhysicalObject extends PhysicalNode {
 	 * vector and then returned. Only used between subclasses of physicalObject for intracellular
 	 * diffusion. C.f. very similar method : PhysicalNode.giveYourSubstanceInstance.
 	 */ 
-	IntracellularSubstance giveYouIntracellularSubstanceInstance(IntracellularSubstance templateS){
+	ini.cx3d.physics.interfaces.IntracellularSubstance giveYouIntracellularSubstanceInstance(IntracellularSubstance templateS){
 		try
 		{
 			getRwLock().writeLock().lock(); //possible change ahead!
-			IntracellularSubstance s = intracellularSubstances.get(templateS.getId());
+			ini.cx3d.physics.interfaces.IntracellularSubstance s = intracellularSubstances.get(templateS.getId());
 			if(s == null){
-				s = new IntracellularSubstance(templateS);
+				s = IntracellularSubstanceFactory.create(templateS);
 				intracellularSubstances.put(s.getId(), s);
 			}
 			return s;
@@ -672,7 +683,7 @@ public abstract class PhysicalObject extends PhysicalNode {
 		double pre_a;
 		double pre_m;
 
-		for (Enumeration<IntracellularSubstance> substancesEnumeration = intracellularSubstances.elements(); substancesEnumeration.hasMoreElements();) {
+		for (Enumeration<ini.cx3d.physics.interfaces.IntracellularSubstance> substancesEnumeration = intracellularSubstances.elements(); substancesEnumeration.hasMoreElements();) {
 			// for a given substance
 			IntracellularSubstance sA = substancesEnumeration.nextElement();
 
@@ -698,7 +709,7 @@ public abstract class PhysicalObject extends PhysicalNode {
 			}
 
 			// find the counterpart in po
-			IntracellularSubstance sB = po.giveYouIntracellularSubstanceInstance(sA);
+			ini.cx3d.physics.interfaces.IntracellularSubstance sB = po.giveYouIntracellularSubstanceInstance(sA);
 			double sBConcentration = sB.getConcentration();
 
 			// saving time : no diffusion if almost no difference;
@@ -1085,7 +1096,7 @@ public abstract class PhysicalObject extends PhysicalNode {
 	
 	/** Get an intracellular and membrane-bound chemicals that are present
 	 *  in this PhysicalNode. */
-	public IntracellularSubstance getIntracellularSubstance(String id) {
+	public ini.cx3d.physics.interfaces.IntracellularSubstance getIntracellularSubstance(String id) {
 		try
 		{
 			getRwLock().readLock().lock();
@@ -1099,7 +1110,7 @@ public abstract class PhysicalObject extends PhysicalNode {
 	
 	/** Add an intracellular or membrane-bound chemicals 
 	 *  in this PhysicalNode. */
-	public void addIntracellularSubstance(IntracellularSubstance is) {
+	public void addIntracellularSubstance(ini.cx3d.physics.interfaces.IntracellularSubstance is) {
 		try
 		{
 			getRwLock().readLock().lock();
@@ -1113,7 +1124,7 @@ public abstract class PhysicalObject extends PhysicalNode {
 	
 	/** Remove an intracellular or membrane-bound chemicals that are present
 	 *  in this PhysicalNode. */
-	public void removeIntracellularSubstance(IntracellularSubstance is) {
+	public void removeIntracellularSubstance(ini.cx3d.physics.interfaces.IntracellularSubstance is) {
 		try
 		{
 			getRwLock().readLock().lock();
@@ -1127,7 +1138,7 @@ public abstract class PhysicalObject extends PhysicalNode {
 	
 	/** All the intracellular and membrane-bound chemicals that are present
 	 *  in this PhysicalNode. */
-	public Hashtable<String, IntracellularSubstance> getIntracellularSubstances() {
+	public Hashtable<String, ini.cx3d.physics.interfaces.IntracellularSubstance> getIntracellularSubstances() {
 		try
 		{
 			getRwLock().readLock().lock();
@@ -1143,9 +1154,9 @@ public abstract class PhysicalObject extends PhysicalNode {
 	/** All the intracellular and membrane-bound chemicals that are present
 	 *  in this PhysicalNode. */
 	public void setIntracellularSubstances(
-			Hashtable<String, IntracellularSubstance> intracellularSubstances) {
+			Hashtable<String, ini.cx3d.physics.interfaces.IntracellularSubstance> intracellularSubstances) {
 		getRwLock().writeLock().lock();
-		this.intracellularSubstances = (Hashtable<String, IntracellularSubstance>) intracellularSubstances.clone();
+		this.intracellularSubstances = (Hashtable<String, ini.cx3d.physics.interfaces.IntracellularSubstance>) intracellularSubstances.clone();
 		getRwLock().writeLock().unlock();
 	}
 

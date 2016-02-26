@@ -52,8 +52,7 @@ class SimStateSerializationUtil {
   }
 
   static StringBuilder& keyValue(StringBuilder& sb, string key, bool value) {
-    return SimStateSerializationUtil::keyValue(sb, key, std::to_string(value),
-                                               false);
+    return SimStateSerializationUtil::keyValue(sb, key, value ? "true" : "false", false);
   }
 
   static StringBuilder& keyValue(StringBuilder& sb, string key, string value,
