@@ -458,7 +458,8 @@ public class NeuriteElement extends CellElement {
 	public int synapseBetweenExistingBS(double probabilityToSynapse){
 		int synapseMade = 0;
 
-		for (ini.cx3d.physics.interfaces.PhysicalNode pn : physicalCylinder.getSoNode().getNeighbors()) {
+		for (Object o : physicalCylinder.getSoNode().getNeighbors()) {
+			ini.cx3d.physics.interfaces.PhysicalNode pn = (ini.cx3d.physics.interfaces.PhysicalNode) o;
 			// For all PhysicalObjects around
 			if(!pn.isAPhysicalObject()){
 				continue;

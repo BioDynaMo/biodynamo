@@ -2,6 +2,7 @@ package ini.cx3d;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
+import ini.cx3d.utilities.StringUtilities;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

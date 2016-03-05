@@ -27,6 +27,7 @@ import static ini.cx3d.utilities.Matrix.printlnLine;
 import static ini.cx3d.utilities.Matrix.scalarMult;
 import static ini.cx3d.utilities.Matrix.subtract;
 
+import java.util.Objects;
 import java.util.concurrent.locks.ReadWriteLock;
 
 import ini.cx3d.Param;
@@ -40,18 +41,18 @@ import ini.cx3d.SimStateSerializationUtil;
  * in this case is permanent, or (2) to force two cylinders that crossed
  * each other to come back on the right side, and in this case it vanishes
  * when the right conformation is re-established.
- * 
+ *
  * It works as a spring, with
  * a resting length and a spring constant, used to compute a force along the vector
  * joining the two ends, depending on the actual length. (Note that it is considered as a
  * real unique spring and not a linear spring constant as in PhysicalCylinder)
- *  
+ *
  * @author fredericzubler
  *
  */
 
 public class PhysicalBond implements SimStateSerializable {
-	
+
 	private PhysicalObject a;
 	private PhysicalObject b;
 	private double[] originOnA;
@@ -60,9 +61,9 @@ public class PhysicalBond implements SimStateSerializable {
 	private double springConstant = 10;
 	private double maxTension = 50;
 	private double dumpingConstant = 0;
-	
+
 	private double pastLenght;
-	
+
 	/** If true, allows the physical bond to "slide" if b is a chain of PhysicalCylinders
 	 * It can be seen as the migration of a along b. */
 	private boolean slidingAllowed = false;
@@ -94,7 +95,7 @@ public class PhysicalBond implements SimStateSerializable {
 
 	public PhysicalBond(){
 	}
-	
+
 	/** Creates a PhysicalBond between the point masses of the two PhysicalObjects
 	 * given as argument, with resting length their actual distance from oneanother.
 	 * @param a
@@ -112,28 +113,28 @@ public class PhysicalBond implements SimStateSerializable {
 	}
 
 	private void dolocking(PhysicalObject a, PhysicalObject b) {
-		ReadWriteLock rwl1;
-		ReadWriteLock rwl2;
-		if(a.getID()>b.getID())
-		{
-			rwl1 = a.getRwLock();
-			rwl2 = b.getRwLock();
-		}
-		else
-		{
-			rwl1 =  a.getRwLock();
-			rwl2 =  b.getRwLock();
-		}
-		rwl1.writeLock().lock();
-		rwl2.writeLock().lock();
+//		ReadWriteLock rwl1;
+//		ReadWriteLock rwl2;
+//		if(a.getID()>b.getID())
+//		{
+//			rwl1 = a.getRwLock();
+//			rwl2 = b.getRwLock();
+//		}
+//		else
+//		{
+//			rwl1 =  a.getRwLock();
+//			rwl2 =  b.getRwLock();
+//		}
+//		rwl1.writeLock().lock();
+//		rwl2.writeLock().lock();
 		this.a = a;
 		this.b = b;
 		a.addPhysicalBond(this);
 		b.addPhysicalBond(this);
-		rwl1.writeLock().unlock();
-		rwl2.writeLock().unlock();
+//		rwl1.writeLock().unlock();
+//		rwl2.writeLock().unlock();
 	}
-	
+
 	public PhysicalBond(PhysicalObject a, double[] positionOnA, PhysicalObject b , double[] positionOnB, double restingLength, double springConstant) {
 		dolocking(a, b);
 		this.originOnA = positionOnA;
@@ -143,23 +144,23 @@ public class PhysicalBond implements SimStateSerializable {
 		this.slidingAllowed = false;
 		this.pastLenght = restingLength;
 	}
-	
+
 	public synchronized PhysicalObject getFirstPhysicalObject() {
 		return a;
 	}
-	
+
 	public synchronized PhysicalObject getSecondPhysicalObject() {
 		return b;
 	}
-	
+
 	public synchronized void setFirstPhysicalObject(PhysicalObject a) {
 		this.a = a;
 	}
-	
+
 	public synchronized void setSecondPhysicalObject(PhysicalObject b) {
 		this.b = b;
 	}
-	
+
 	/** If false, the first PhysicalObject doesn't feel the influence of this PhysicalBond.*/
 	public synchronized boolean isHasEffectOnA() {
 		return hasEffectOnA;
@@ -181,7 +182,7 @@ public class PhysicalBond implements SimStateSerializable {
 	public synchronized boolean isSlidingAllowed() {
 		return slidingAllowed;
 	}
-	/** 
+	/**
 	 * If true, allows the physical bond to "slide" from b to b's mother or daughter left,
 	 * if b is a chain of PhysicalCylinders. It can be seen as the migration of a along b.
 	 * @param slidingAllowed
@@ -189,91 +190,91 @@ public class PhysicalBond implements SimStateSerializable {
 	public synchronized void setSlidingAllowed(boolean slidingAllowed) {
 		this.slidingAllowed = slidingAllowed;
 	}
-	
+
 	public void exchangePhysicalObject(PhysicalObject oldPo, PhysicalObject newPo){
-		ReadWriteLock rwl1;
-		ReadWriteLock rwl2;
-		if(a.getID()>b.getID())
-		{
-			rwl1 = a.getRwLock();
-			rwl2 = b.getRwLock();
-		}
-		else
-		{
-			rwl1 =  a.getRwLock();
-			rwl2 =  b.getRwLock();
-		}
-		
-		if(oldPo == a){
+//		ReadWriteLock rwl1;
+//		ReadWriteLock rwl2;
+//		if(a.getID()>b.getID())
+//		{
+//			rwl1 = a.getRwLock();
+//			rwl2 = b.getRwLock();
+//		}
+//		else
+//		{
+//			rwl1 =  a.getRwLock();
+//			rwl2 =  b.getRwLock();
+//		}
+
+		if(Objects.equals(oldPo, a)){
 			a = newPo;
 		}else{
 			b = newPo;
 		}
 		oldPo.removePhysicalBond(this);
 		newPo.addPhysicalBond(this);
-		
-		rwl1.writeLock().unlock();
-		rwl2.writeLock().unlock();
+
+//		rwl1.writeLock().unlock();
+//		rwl2.writeLock().unlock();
 	}
-	
+
 	public void vanish(){
-		ReadWriteLock rwl1;
-		ReadWriteLock rwl2;
-		if(a.getID()>b.getID())
-		{
-			rwl1 = a.getRwLock();
-			rwl2 = b.getRwLock();
-		}
-		else
-		{
-			rwl1 =  a.getRwLock();
-			rwl2 =  b.getRwLock();
-		}
-		rwl1.writeLock().lock();
-		rwl2.writeLock().lock();
+//		ReadWriteLock rwl1;
+//		ReadWriteLock rwl2;
+//		if(a.getID()>b.getID())
+//		{
+//			rwl1 = a.getRwLock();
+//			rwl2 = b.getRwLock();
+//		}
+//		else
+//		{
+//			rwl1 =  a.getRwLock();
+//			rwl2 =  b.getRwLock();
+//		}
+//		rwl1.writeLock().lock();
+//		rwl2.writeLock().lock();
 		a.removePhysicalBond(this);
 		b.removePhysicalBond(this);
-		rwl1.writeLock().unlock();
-		rwl2.writeLock().unlock();
+//		rwl1.writeLock().unlock();
+//		rwl2.writeLock().unlock();
 	}
-	
+
 	public synchronized PhysicalObject getOppositePhysicalObject(PhysicalObject po) {
-		if(po == a){
+		if(Objects.equals(po, a)){
 			return b;
 		}else{
 			return a;
 		}
 	}
-	
+
 	public synchronized  void setPositionOnObjectInLocalCoord(PhysicalObject po, double[] positionInLocalCoordinates){
-		if(po == a){
+		if(Objects.equals(po, a)){
 			originOnA = positionInLocalCoordinates;
 		}else{
 			originOnB = positionInLocalCoordinates;
 		}
 	}
-	
+
 	public synchronized double[] getPositionOnObjectInLocalCoord(PhysicalObject po){
-		if(po == a){
+		if(Objects.equals(po, a)){
 			return originOnA;
 		}else{
 			return originOnB;
 		}
 	}
-	
+
 	/**
 	 * Returns the force that this PhysicalBond is applying to a PhsicalObject.
-	 * The function also returns the proportion of the mass that is applied to the 
+	 * The function also returns the proportion of the mass that is applied to the
 	 * proximal end (mother's point mass) in case of PhysicalCylinder.
 	 * (For PhysicalSpheres, the value p is meaningless).
-	 * 
+	 *
 	 * @param po the PhysicalObject to which the force is being applied.
 	 * @return [Fx,Fy,Fz,p] an array with the 3 force components and the proportion
 	 * applied to the proximal end - in case of a PhysicalCylinder.
 	 */
 	public double[] getForceOn(PhysicalObject po){
 		// 0. Find if this physicalBound has an effect at all on the object
-		if( (po==a && hasEffectOnA==false) || (po==b && hasEffectOnB==false) )
+		if( (Objects.equals(po, a) && hasEffectOnA==false) || (Objects.equals(po, b) && hasEffectOnB==false) )
 			return new double[] {0,0,0};
 		// 1. Find the other object
 		PhysicalObject otherPo = getOppositePhysicalObject(po);
@@ -282,9 +283,9 @@ public class PhysicalBond implements SimStateSerializable {
 		double[] pointOnPo = po.transformCoordinatesPolarToGlobal( getPositionOnObjectInLocalCoord(po) );
 		// 3. Compute the force
 		double[] forceDirection = subtract(pointOnOtherPo, pointOnPo);
-		// 3'. If sliding along the other object is possible, 
+		// 3'. If sliding along the other object is possible,
 		// only the component perpendicular to the xAxis of the other object is taken into account
-		if(po ==a & slidingAllowed && otherPo instanceof PhysicalCylinder){
+		if(Objects.equals(po, a) & slidingAllowed && otherPo instanceof PhysicalCylinder){
 			PhysicalCylinder pc = (PhysicalCylinder) otherPo;
 			double projNorm = dot(forceDirection,otherPo.getXAxis());
 			double[] parallelComponent = scalarMult(projNorm, otherPo.getXAxis());
@@ -295,7 +296,7 @@ public class PhysicalBond implements SimStateSerializable {
 				PhysicalCylinder dL = pc.getDaughterLeft();
 				if(dL != null){
 					exchangePhysicalObject(pc, dL);
-					newPositionOnOtherPo[0] = newPositionOnOtherPo[0]-pc.getActualLength(); 
+					newPositionOnOtherPo[0] = newPositionOnOtherPo[0]-pc.getActualLength();
 				}else{
 					newPositionOnOtherPo[0] += projNorm;
 				}
@@ -304,8 +305,8 @@ public class PhysicalBond implements SimStateSerializable {
 				if(mo instanceof PhysicalCylinder){
 					PhysicalCylinder m = (PhysicalCylinder)mo;
 					exchangePhysicalObject(pc, m);
-//					newPositionOnOtherPo[0] = m.actualLength - (pc.actualLength-newPositionOnOtherPo[0]); 
-					newPositionOnOtherPo[0] = m.getActualLength() + newPositionOnOtherPo[0]; 
+//					newPositionOnOtherPo[0] = m.actualLength - (pc.actualLength-newPositionOnOtherPo[0]);
+					newPositionOnOtherPo[0] = m.getActualLength() + newPositionOnOtherPo[0];
 				}else{
 					newPositionOnOtherPo[0] += projNorm;
 				}
@@ -318,7 +319,7 @@ public class PhysicalBond implements SimStateSerializable {
 
 		double springSpeed = (actualLength-this.pastLenght)/Param.SIMULATION_TIME_STEP;
 		this.pastLenght = actualLength;
-		
+
 		double tension = springConstant*(actualLength-restingLength) + dumpingConstant*springSpeed;  // (Note: different than in PhysicalCylinder)
 		double[] force = scalarMult(tension/actualLength, forceDirection);
 
@@ -338,7 +339,7 @@ public class PhysicalBond implements SimStateSerializable {
 		}
 		return new double[] {force[0], force[1], force[2], 0};
 	}
-	
+
 	/**
 	 * Gets the location in absolute cartesian coord of the first insertion point (on a).
 	 * (Only for graphical display).Raises a NullPointerException if a == null.
@@ -347,7 +348,7 @@ public class PhysicalBond implements SimStateSerializable {
 	public double[] getFirstEndLocation(){
 		return a.transformCoordinatesPolarToGlobal( getPositionOnObjectInLocalCoord(a) );
 	}
-	
+
 	/**
 	 * Gets the location in absolute cartesian coord of the first insertion point (on a).
 	 * (Only for graphical display). Raises a NullPointerException if b == null.
@@ -356,7 +357,7 @@ public class PhysicalBond implements SimStateSerializable {
 	public double[] getSecondEndLocation(){
 		return b.transformCoordinatesPolarToGlobal( getPositionOnObjectInLocalCoord(b) );
 	}
-	
+
 	public static void main(String[] args){
 		// creation of 2 cylinders of length 5
 		PhysicalCylinder pc1 = new PhysicalCylinder();
@@ -372,7 +373,7 @@ public class PhysicalBond implements SimStateSerializable {
 		double[] force = pb.getForceOn(pc1);
 		printlnLine("force",force);
 	}
-	
+
 	public String toString(){
 		return "My name is Bond, PhysicalBond ("+hashCode()+")";
 	}
@@ -432,6 +433,6 @@ public class PhysicalBond implements SimStateSerializable {
 	public synchronized void setDumpingConstant(double dumpingConstant) {
 		this.dumpingConstant = dumpingConstant;
 	}
-	
-	
+
+
 }

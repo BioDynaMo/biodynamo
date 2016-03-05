@@ -108,7 +108,7 @@ public class DebugApproachTest {
 
         final String result = myOut.toString();
         String expected = "inside constructor with param 1.0\n" +
-                "DBG TestDebug args: {1.00000, } innerState: toString of TestClass\n" +
+                "DBG TestDebug args: {3ff0000000000000, } innerState: toString of TestClass\n" +
                 "DBG voidMethod args: {Hello World, } innerState: toString of TestClass\n" +
                 "inside voidMethod with param Hello World\n" +
                 "DBG voidMethod return null innerState: toString of TestClass\n" +
@@ -142,7 +142,7 @@ public class DebugApproachTest {
 
         final String result = myOut.toString();
         String expected = "inside constructor with param 0\n" +
-                "DBG ClassToBeDebugged created args: {1.00000, } innerState: toString of TestClass\n" +
+                "DBG ClassToBeDebugged created args: {3ff0000000000000, } innerState: toString of TestClass\n" +
                 "DBG voidMethod args: {Hello World, 5, } innerState: toString of TestClass\n" +
                 "inside voidMethod with param Hello World\n" +
                 "DBG voidMethod return  innerState: toString of TestClass\n" +

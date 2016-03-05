@@ -13,6 +13,7 @@
  */
 
 %include "util.i"
+%include "std_list_typemap.i"
 %include "cx3d_shared_ptr.i"
 
 %define %Substance_cx3d_shared_ptr()
@@ -37,10 +38,16 @@
                             ;);
 %enddef
 
+%define %Substance_stdlist()
+  %stdlist_typemap(std::shared_ptr<cx3d::physics::Substance>,
+                   Substance,
+                   ini.cx3d.physics.interfaces.Substance);
+%enddef
+
 %define %Substance_typemaps()
+  %Substance_stdlist();
   %typemap(javainterfaces) cx3d::physics::Substance "ini.cx3d.physics.interfaces.Substance"
   %typemap(javaimports) cx3d::physics::Substance "import ini.cx3d.swig.NativeStringBuilder;"
-  %pragma(java) jniclassimports="import ini.cx3d.swig.NativeStringBuilder;"
 %enddef
 
  /**

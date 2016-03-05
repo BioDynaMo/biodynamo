@@ -26,6 +26,8 @@ import static ini.cx3d.utilities.Matrix.distance;
 import static ini.cx3d.utilities.Matrix.dot;
 import static ini.cx3d.utilities.Matrix.solve;
 import static ini.cx3d.utilities.Matrix.subtract;
+import static ini.cx3d.utilities.StringUtilities.toStr;
+
 import ini.cx3d.Param;
 import ini.cx3d.SimStateSerializationUtil;
 import ini.cx3d.physics.factory.SubstanceFactory;
@@ -34,10 +36,11 @@ import ini.cx3d.spatialOrganization.SpatialOrganizationEdge;
 import ini.cx3d.spatialOrganization.SpatialOrganizationNode;
 
 import ini.cx3d.physics.interfaces.Substance;
+import ini.cx3d.spatialOrganization.interfaces.Edge;
+import ini.cx3d.spatialOrganization.interfaces.SpaceNode;
+import ini.cx3d.utilities.StringUtilities;
 
-import java.util.Enumeration;
-import java.util.Hashtable;
-import java.util.Vector;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -108,8 +111,25 @@ public class PhysicalNode extends ini.cx3d.swig.physics.PhysicalNode implements 
 		return sb;
 	}
 
+	@Override
 	public String toString() {
-		return "PhysicalNode id"+ID;
+		StringBuilder sb = new StringBuilder();
+		sb.append("(");
+		sb.append(toStr(ID));
+		sb.append(", ");
+		sb.append(toStr(idCounter.get()));
+		sb.append(", ");
+		sb.append(onTheSchedulerListForPhysicalNodes);
+		sb.append(", ");
+		sb.append(toStr(lastECMTimeDegradateWasRun));
+		sb.append(", ");
+		sb.append(toStr(movementConcentratioUpdateProcedure));
+		sb.append(", ");
+		sb.append(toStr(extracellularSubstances));
+		sb.append(", ");
+		sb.append(soNode);
+		sb.append(")");
+		return sb.toString();
 	}
 
 	public PhysicalNode(){
@@ -233,7 +253,7 @@ public class PhysicalNode extends ini.cx3d.swig.physics.PhysicalNode implements 
 			Object[] vertices = soNode.getVerticesOfTheTetrahedronContaining(location);
 			double concentrationAtLocation = 0;
 			if(vertices != null){
-				double[] barycentricCoord = getBarycentricCoordinates(location, vertices);
+				double[] barycentricCoord = getBarycentricCoordinates_java(location, vertices);
 				for (int j = 0; j < 4; j++) {
 					concentrationAtLocation += ((ini.cx3d.physics.interfaces.PhysicalNode)vertices[j]).getExtracellularConcentration(id)*barycentricCoord[j];
 				}
@@ -279,7 +299,10 @@ public class PhysicalNode extends ini.cx3d.swig.physics.PhysicalNode implements 
 					if(indexOfTheEquationWeGet>2)
 						break;
 				}
+				String param1 = StringUtilities.toStr(vectorsToNeighbors);
+				String param2 = StringUtilities.toStr(differencesBetweenTheNeighborsAndThis);
 				grad = solve(vectorsToNeighbors, differencesBetweenTheNeighborsAndThis);
+				String ret = StringUtilities.toStr(grad);
 			}
 			// 2. ECM's artificial gradient component
 			if(ecm.thereAreArtificialGradients()){
@@ -342,8 +365,9 @@ public class PhysicalNode extends ini.cx3d.swig.physics.PhysicalNode implements 
 		// 2) Degradation according to the degradation constant for each chemical
 		degradate(currentEcmTime);
 		// 3) Diffusion (along every edge)
-		for (SpatialOrganizationEdge<ini.cx3d.physics.interfaces.PhysicalNode> e : soNode.getEdges()) {
-			diffuseEdgeAnalytically(e, currentEcmTime);
+		AbstractSequentialList<Edge> edges = soNode.getEdges();
+		for (int i = 0; i < edges.size(); i++) {
+			diffuseEdgeAnalytically(edges.get(i), currentEcmTime);
 		}
 	}
 
@@ -353,7 +377,7 @@ public class PhysicalNode extends ini.cx3d.swig.physics.PhysicalNode implements 
 	 * @param currentEcmTime the current time of the caller
 	 * (so that it doesn't require a call to ECM).
 	 */
-	protected void degradate(double currentEcmTime){ //changed to proteceted
+	public void degradate(double currentEcmTime){ //changed to proteceted
 
 		// if we are up-to-date : we stop here.
 		if(lastECMTimeDegradateWasRun > currentEcmTime){
@@ -363,7 +387,7 @@ public class PhysicalNode extends ini.cx3d.swig.physics.PhysicalNode implements 
 		//getRwLock().writeLock().lock();
 		// Otherwise, degradation according to the degradation constant for each chemical
 		double deltaT = currentEcmTime-lastECMTimeDegradateWasRun;
-		for (ini.cx3d.physics.interfaces.Substance s : extracellularSubstances.values()) {
+		for (ini.cx3d.physics.interfaces.Substance s : getExtracellularSubstances()) {
 			double decay = Math.exp(-s.getDegradationConstant()*deltaT);
 			s.multiplyQuantityAndConcentrationBy(decay);
 		}
@@ -377,88 +401,92 @@ public class PhysicalNode extends ini.cx3d.swig.physics.PhysicalNode implements 
 	 * dQA/dt = diffCst*(Area/distance)*(QB/VB-QA/VA)
 	 */
 	private void diffuseEdgeAnalytically(SpatialOrganizationEdge<ini.cx3d.physics.interfaces.PhysicalNode> e, double currentEcmTime) {
+		try {
 
-
-
-		// the two PhysicalNodes
-		PhysicalNode nA = this;
-		PhysicalNode nB = (PhysicalNode) e.getOppositeElement(this);
-
-		//always lock highest first! to avoid deadlock!
-		ReadWriteLock r1;
-		ReadWriteLock r2;
-		if(nA.ID>nB.ID)
-		{
-			r1=nA.getRwLock();
-			r2=nB.getRwLock();
-		}
-		else
-		{
-			r1=nB.getRwLock();
-			r2=nA.getRwLock();
-		}
-		r1.writeLock().lock();
-		r2.writeLock().lock();
-
-		// make sure the other one is up-to-date with degradation
-		nB.degradate(currentEcmTime);
-		// some values about space node distances, contact area and volume
-		SpatialOrganizationNode<ini.cx3d.physics.interfaces.PhysicalNode> sonA = getSoNode();
-		SpatialOrganizationNode<ini.cx3d.physics.interfaces.PhysicalNode> sonB = nB.getSoNode();
-		double distance = distance(sonA.getPosition(), sonB.getPosition());
-		double vA = sonA.getVolume();
-		double vB = sonB.getVolume();
-		double pre_a = (e.getCrossSection()/distance);
-		double pre_m = (e.getCrossSection()/distance) * (1.0/vA + 1.0/vB);
-
-		// diffusion of all the extracellularSubstances in A :
-		for (Enumeration<ini.cx3d.physics.interfaces.Substance> substancesEnumeration = nA.extracellularSubstances.elements(); substancesEnumeration.hasMoreElements();) {
-			// for a given substance
-			Substance sA = substancesEnumeration.nextElement();
-			double sAConcentration = sA.getConcentration();
-			// stop here if 1) non diffusible substance or 2) concentration very low:
-			double diffusionConstant = sA.getDiffusionConstant();
-			if(diffusionConstant<10E-14 || sAConcentration<Param.MINIMAL_CONCENTRATION_FOR_EXTRACELLULAR_DIFFUSION){
-				continue; // to avoid a division by zero in the n/m if the diff const = 0;
+			// the two PhysicalNodes
+			PhysicalNode nA = this;
+			ini.cx3d.physics.interfaces.PhysicalNode tmp = e.getOppositeElement(this);
+			if(e == null || tmp == null || !(tmp instanceof PhysicalNode)){
+				throw new RuntimeException();
 			}
-			// find the counterpart in B
-			ini.cx3d.physics.interfaces.Substance sB = nB.getSubstanceInstance(sA);
-			double sBConcentration = sB.getConcentration();
-			// saving time : no diffusion if almost no difference;
-			double absDiff = Math.abs(sAConcentration-sBConcentration);
-			if( (absDiff<Param.MINIMAL_DIFFERENCE_CONCENTRATION_FOR_EXTRACELLULAR_DIFFUSION) ||
-					(absDiff/sAConcentration<Param.MINIMAL_DC_OVER_C_FOR_EXTRACELLULAR_DIFFUSION)){
-				continue;
+			PhysicalNode nB = (PhysicalNode) e.getOppositeElement(this);
+
+			//always lock highest first! to avoid deadlock!
+			ReadWriteLock r1;
+			ReadWriteLock r2;
+			if (nA.ID > nB.ID) {
+				r1 = nA.getRwLock();
+				r2 = nB.getRwLock();
+			} else {
+				r1 = nB.getRwLock();
+				r2 = nA.getRwLock();
 			}
-			// If we reach this point, it means that it is worth performing the diffusion.
-			// we thus put ourselves on the list for performing it again next time step.
-			nB.setOnTheSchedulerListForPhysicalNodes(true);
-			this.onTheSchedulerListForPhysicalNodes = true;
+			r1.writeLock().lock();
+			r2.writeLock().lock();
 
-			// Analytical computation of the diffusion between these two nodes
-			// (cf document "Diffusion" by F.Zubler for explanation).
+			// make sure the other one is up-to-date with degradation
+			nB.degradate(currentEcmTime);
+			// some values about space node distances, contact area and volume
+			SpatialOrganizationNode<ini.cx3d.physics.interfaces.PhysicalNode> sonA = getSoNode();
+			SpatialOrganizationNode<ini.cx3d.physics.interfaces.PhysicalNode> sonB = nB.getSoNode();
+			double distance = distance(sonA.getPosition(), sonB.getPosition());
+			double vA = sonA.getVolume();
+			double vB = sonB.getVolume();
+			double pre_a = (e.getCrossSection() / distance);
+			double pre_m = (e.getCrossSection() / distance) * (1.0 / vA + 1.0 / vB);
 
-			double qA = sA.getQuantity();
-			double qB = sB.getQuantity();
-			double Tot = qA + qB;
-			double a = pre_a*diffusionConstant;
-			double m = pre_m*diffusionConstant;
+			// diffusion of all the extracellularSubstances in A :
+			for (Substance sA : getExtracellularSubstances() ) {
+				// for a given substance
+//				Substance sA = substancesEnumeration.nextElement();
+				double sAConcentration = sA.getConcentration();
+				// stop here if 1) non diffusible substance or 2) concentration very low:
+				double diffusionConstant = sA.getDiffusionConstant();
+				if (diffusionConstant < 10E-14 || sAConcentration < Param.MINIMAL_CONCENTRATION_FOR_EXTRACELLULAR_DIFFUSION) {
+					continue; // to avoid a division by zero in the n/m if the diff const = 0;
+				}
+				// find the counterpart in B
+				ini.cx3d.physics.interfaces.Substance sB = nB.getSubstanceInstance(sA);
+				double sBConcentration = sB.getConcentration();
+				// saving time : no diffusion if almost no difference;
+				double absDiff = Math.abs(sAConcentration - sBConcentration);
+				if ((absDiff < Param.MINIMAL_DIFFERENCE_CONCENTRATION_FOR_EXTRACELLULAR_DIFFUSION) ||
+						(absDiff / sAConcentration < Param.MINIMAL_DC_OVER_C_FOR_EXTRACELLULAR_DIFFUSION)) {
+					continue;
+				}
+				// If we reach this point, it means that it is worth performing the diffusion.
+				// we thus put ourselves on the list for performing it again next time step.
+				nB.setOnTheSchedulerListForPhysicalNodes(true);
+				this.onTheSchedulerListForPhysicalNodes = true;
 
-			double n = a*Tot/vB;
-			double nOverM = n/m;
-			double K = qA -nOverM;
+				// Analytical computation of the diffusion between these two nodes
+				// (cf document "Diffusion" by F.Zubler for explanation).
 
-			qA = K*Math.exp(-m*Param.SIMULATION_TIME_STEP) + nOverM;
-			qB = Tot - qA;
+				double qA = sA.getQuantity();
+				double qB = sB.getQuantity();
+				double Tot = qA + qB;
+				double a = pre_a * diffusionConstant;
+				double m = pre_m * diffusionConstant;
 
-			sA.setQuantity(qA);
-			sB.setQuantity(qB);
-			// and update their concentration again
-			sA.updateConcentrationBasedOnQuantity(vA);
-			sB.updateConcentrationBasedOnQuantity(vB);
+				double n = a * Tot / vB;
+				double nOverM = n / m;
+				double K = qA - nOverM;
+
+				qA = K * Math.exp(-m * Param.SIMULATION_TIME_STEP) + nOverM;
+				qB = Tot - qA;
+
+				sA.setQuantity(qA);
+				sB.setQuantity(qB);
+				// and update their concentration again
+				sA.updateConcentrationBasedOnQuantity(vA);
+				sB.updateConcentrationBasedOnQuantity(vB);
+			}
+
+			r1.writeLock().unlock();
+			r2.writeLock().unlock();
+		} catch(Exception ex) {
+			ex.printStackTrace();
 		}
-		r1.writeLock().unlock();
-		r2.writeLock().unlock();
 	}
 
 
@@ -503,7 +531,7 @@ public class PhysicalNode extends ini.cx3d.swig.physics.PhysicalNode implements 
 	 * @param P4
 	 * @return array with the coordinate of point Q with respect Pi
 	 */
-	public static double[] getBarycentricCoordinates(double[] Q, double[] P1, double[] P2, double[] P3, double[] P4){
+	public static double[] getBarycentricCoordinates_java(double[] Q, double[] P1, double[] P2, double[] P3, double[] P4){
 
 		// three linearly independent vectors
 		double[] B1 = subtract(P2,P1);
@@ -526,12 +554,12 @@ public class PhysicalNode extends ini.cx3d.swig.physics.PhysicalNode implements 
 	 * @param vertices
 	 * @return
 	 */
-	public static double[] getBarycentricCoordinates(double[] Q, Object[] vertices){
+	public static double[] getBarycentricCoordinates_java(double[] Q, Object[] vertices){
 		double[] a = ((ini.cx3d.physics.interfaces.PhysicalNode)vertices[0]).getSoNode().getPosition();
 		double[] b = ((ini.cx3d.physics.interfaces.PhysicalNode)vertices[1]).getSoNode().getPosition();
 		double[] c = ((ini.cx3d.physics.interfaces.PhysicalNode)vertices[2]).getSoNode().getPosition();
 		double[] d = ((ini.cx3d.physics.interfaces.PhysicalNode)vertices[3]).getSoNode().getPosition();
-		return getBarycentricCoordinates(Q,a,b,c,d);
+		return getBarycentricCoordinates_java(Q,a,b,c,d);
 	}
 
 
@@ -590,34 +618,34 @@ public class PhysicalNode extends ini.cx3d.swig.physics.PhysicalNode implements 
 	/**
 	 * returns all <code>PhysicalNodes</code> considered as neighbors.
 	 */
-	@Override
-	public Iterable<ini.cx3d.physics.interfaces.PhysicalNode> getNeighboringPhysicalNodes(){
-		try
-		{
-			getRwLock().readLock().lock();
-			Vector<ini.cx3d.physics.interfaces.PhysicalNode> temp = new Vector<ini.cx3d.physics.interfaces.PhysicalNode>();
-			for(ini.cx3d.physics.interfaces.PhysicalNode o:soNode.getNeighbors())
-			{
-				temp.add(o);
-			}
-			return temp;
-		}
-		finally
-		{
-			getRwLock().readLock().unlock();
-		}
-
-
-	}
+//	@Override
+//	public Iterable<ini.cx3d.physics.interfaces.PhysicalNode> getNeighboringPhysicalNodes(){
+//		try
+//		{
+//			getRwLock().readLock().lock();
+//			Vector<ini.cx3d.physics.interfaces.PhysicalNode> temp = new Vector<ini.cx3d.physics.interfaces.PhysicalNode>();
+//			for(ini.cx3d.physics.interfaces.PhysicalNode o:soNode.getNeighbors())
+//			{
+//				temp.add(o);
+//			}
+//			return temp;
+//		}
+//		finally
+//		{
+//			getRwLock().readLock().unlock();
+//		}
+//
+//
+//	}
 
 
 	/** Sets the SpatialOrganizationNode (vertex in the triangulation neighboring system).*/
 	@Override
-	public SpatialOrganizationNode<ini.cx3d.physics.interfaces.PhysicalNode> getSoNode(){
+	public SpaceNode<ini.cx3d.physics.interfaces.PhysicalNode> getSoNode(){
 		try
 		{
 			getRwLock().readLock().lock();
-			return soNode;
+			return (SpaceNode<ini.cx3d.physics.interfaces.PhysicalNode>) soNode;
 		}
 		finally
 		{
@@ -626,7 +654,7 @@ public class PhysicalNode extends ini.cx3d.swig.physics.PhysicalNode implements 
 	}
 	/** Returns the SpatialOrganizationNode (vertex in the triangulation neighboring system).*/
 	@Override
-	public void setSoNode(SpatialOrganizationNode<ini.cx3d.physics.interfaces.PhysicalNode> son){
+	public void setSoNode(SpaceNode son){
 
 			getRwLock().writeLock().lock();
 			this.soNode = son;
@@ -716,21 +744,33 @@ public class PhysicalNode extends ini.cx3d.swig.physics.PhysicalNode implements 
 	}
 
 	/** All the (diffusible) chemicals that are present in the space defined by this physicalNode. */
+//	@Override
+//	public Hashtable<String, ini.cx3d.physics.interfaces.Substance> getExtracellularSubstances() {
+//		try
+//		{
+//			getRwLock().readLock().lock();
+//			return (Hashtable<String, ini.cx3d.physics.interfaces.Substance>) extracellularSubstances.clone();
+//		}
+//		finally
+//		{
+//			getRwLock().readLock().unlock();
+//		}
+//	}
 	@Override
-	public Hashtable<String, ini.cx3d.physics.interfaces.Substance> getExtracellularSubstances() {
-		try
-		{
-			getRwLock().readLock().lock();
-			return (Hashtable<String, ini.cx3d.physics.interfaces.Substance>) extracellularSubstances.clone();
+	public AbstractSequentialList<ini.cx3d.physics.interfaces.Substance> getExtracellularSubstances() {
+		AbstractSequentialList<ini.cx3d.physics.interfaces.Substance> list = new LinkedList<>();
+		for(Substance s : extracellularSubstances.values()) {
+			list.add(s);
 		}
-		finally
-		{
-			getRwLock().readLock().unlock();
-		}
+		return sort(list);
+	}
+
+	@Override
+	public ini.cx3d.physics.interfaces.Substance getExtracellularSubstance(String key) {
+		return extracellularSubstances.get(key);
 	}
 
 	/** All the (diffusible) chemicals that are present in the space defined by this physicalNode. */
-	@Override
 	public void setExtracellularSubstances(
 			Hashtable<String, ini.cx3d.physics.interfaces.Substance> extracellularSubstances) {
 		getRwLock().writeLock().lock();
@@ -749,5 +789,8 @@ public class PhysicalNode extends ini.cx3d.swig.physics.PhysicalNode implements 
 		return rwLock;
 	}
 
-
+	private AbstractSequentialList<Substance> sort(AbstractSequentialList<Substance> list) {
+		Collections.sort(list, (substance, t1) -> substance.toString().compareTo(t1.toString()));
+		return list;
+	}
 }

@@ -24,6 +24,7 @@ package ini.cx3d.utilities;
 import ini.cx3d.cells.Cell;
 import ini.cx3d.cells.CellFactory;
 import ini.cx3d.localBiology.SomaElement;
+import ini.cx3d.physics.interfaces.Substance;
 import ini.cx3d.simulations.ECM;
 
 import java.awt.Color;
@@ -32,6 +33,7 @@ import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.util.AbstractSequentialList;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Vector;
@@ -65,9 +67,9 @@ public class CellInfoStorage implements Serializable
 		    	  cont.adherence = c.getSomaElement().getPhysical().getAdherence();
 		    	  cont.ioforce = c.getSomaElement().getPhysical().getInterObjectForceCoefficient();
 		    	  cont.mass = c.getSomaElement().getPhysical().getMass();
-		    	  Hashtable<String, ini.cx3d.physics.interfaces.Substance> substances = c.getSomaElement().getPhysical().getExtracellularSubstances();
-		    	  for (String s: substances.keySet()) {
-					cont.quantity.put(s,substances.get(s));
+		    	  AbstractSequentialList<Substance> substances = c.getSomaElement().getPhysical().getExtracellularSubstances();
+		    	  for (Substance s: substances) {
+					cont.quantity.put(s.getId(),s);
 		    	  }
 		    	  oos.writeObject(cont);
 		      }
@@ -112,7 +114,7 @@ public class CellInfoStorage implements Serializable
 //				 	sub.setQuantity(9999999910000000000.0);
 //				 	sub.setConcentration(1);
 //					soma.getPhysical().modifyExtracellularQuantity(s, container.quantity.get(s).doubleValue()/Param.SIMULATION_TIME_STEP);
-					soma.getPhysical().getExtracellularSubstances().put(s, sub);
+//					soma.getPhysical().getExtracellularSubstances().put(s, sub); //fixme looks like a bug - hashmap clined
 //					System.out.println(soma.getPhysical().getExtracellularConcentration(s));
 //					System.out.println(sub +" / "+sub.getQuantity());
 			 }

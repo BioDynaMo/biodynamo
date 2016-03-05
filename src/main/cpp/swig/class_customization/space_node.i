@@ -24,19 +24,19 @@
 
 %define %SpaceNode_java()
   %java_defined_class_add(cx3d::spatial_organization::SpaceNode<cx3d::physics::PhysicalNode>,
-                      SpaceNodeT_PhysicalNode,
-                      SpaceNode,
-                      ini.cx3d.spatialOrganization.interfaces.SpaceNode,
-                      ini/cx3d/spatialOrganization/interfaces/SpaceNode,
-                      @Override
-                      public Object[] getVerticesOfTheTetrahedronContaining(double[] position) {
-                        int[] retNull = new int[1];
-                        Object[] retVal = getVerticesOfTheTetrahedronContaining(position, retNull);
-                        if(retNull[0] == 1){
-                          return null;
-                        }
-                        return retVal;
-                      });
+                          SpaceNodeT_PhysicalNode,
+                          SpaceNode,
+                          ini.cx3d.spatialOrganization.interfaces.SpaceNode,
+                          ini/cx3d/spatialOrganization/interfaces/SpaceNode,
+                          @Override
+                          public Object[] getVerticesOfTheTetrahedronContaining(double[] position) {
+                            int[] retNull = new int[1];
+                            Object[] retVal = getVerticesOfTheTetrahedronContaining(position, retNull);
+                            if(retNull[0] == 1){
+                              return null;
+                            }
+                            return retVal;
+                          });
   %typemap(javainterfaces) cx3d::spatial_organization::SpaceNode<cx3d::physics::PhysicalNode> "ini.cx3d.spatialOrganization.interfaces.SpaceNode"
 %enddef
 
@@ -68,6 +68,9 @@
 %enddef
 
 %define %SpaceNode_stdarray_array_marshalling(SWIG_MODULE, SIZE)
+  %typemap(javaimports) std::array<std::shared_ptr<cx3d::spatial_organization::SpaceNode<cx3d::physics::PhysicalNode>>, SIZE> %{
+    import ini.cx3d.swig.spatialOrganization.SpaceNodeT_PhysicalNode;
+  %}
   %stdarray_array_marshalling(SWIG_MODULE,
                               std::shared_ptr<cx3d::spatial_organization::SpaceNode<cx3d::physics::PhysicalNode> >,
                               shared_ptr_SpaceNode##SIZE,
@@ -77,6 +80,12 @@
 %enddef
 
 %define %SpaceNode_stdlist()
+  %typemap(javaimports) cx3d::ListIteratorCpp<std::shared_ptr<cx3d::spatial_organization::SpaceNode<cx3d::physics::PhysicalNode>>> %{
+    import ini.cx3d.swig.spatialOrganization.SpaceNodeT_PhysicalNode;
+  %}
+  %typemap(javaimports) std::list<std::shared_ptr<cx3d::spatial_organization::SpaceNode<cx3d::physics::PhysicalNode>>> %{
+    import ini.cx3d.swig.spatialOrganization.SpaceNodeT_PhysicalNode;
+  %}
   %stdlist_typemap(std::shared_ptr<cx3d::spatial_organization::SpaceNode<cx3d::physics::PhysicalNode>>,
                    SpaceNode,
                    ini.cx3d.spatialOrganization.interfaces.SpaceNode);
@@ -89,7 +98,6 @@
     import ini.cx3d.swig.NativeStringBuilder;
     import ini.cx3d.swig.physics.PhysicalNode;
   %}
-  %pragma(java) jniclassimports="import ini.cx3d.swig.NativeStringBuilder;"
 %enddef
 
  /**

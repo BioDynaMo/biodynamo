@@ -69,6 +69,12 @@ file(GLOB SOURCES "${CPP_MAIN_SRC_PATH}/src/spatial_organization/*.cc")
 add_library(cx3d_spatialOrganization SHARED ${SOURCES} "${JAVA_MAIN_SWIG_PATH}/spatialOrganization/spatial_organizationJAVA_wrap.cxx")
 target_link_libraries(cx3d_spatialOrganization ${GMP_LIBRARY})
 
+#--------------------- build module physics  ----------------
+file(GLOB SOURCES "${CPP_MAIN_SRC_PATH}/src/physics/*.cc")
+
+add_library(cx3d_physics SHARED ${SOURCES} "${JAVA_MAIN_SWIG_PATH}/physics/physicsJAVA_wrap.cxx")
+target_link_libraries(cx3d_physics ${GMP_LIBRARY})
+
 
 #---------------------------------------------------------------
 #--------------------- build test project ----------------------

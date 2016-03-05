@@ -41,22 +41,22 @@ public class DefaultForce implements InterObjectForce{
 	 */
 	public double[] forceOnASphereFromASphere(PhysicalSphere sphere1, PhysicalSphere sphere2) {
 		// defining center and radius of spheres
-		ReadWriteLock rwl1;
-		ReadWriteLock rwl2;
-		if(sphere1.getID()>sphere2.getID())
-		{
-			rwl1 =  sphere1.getRwLock();
-			rwl2 = sphere2.getRwLock();
-		}
-		else
-		{
-			rwl1 =  sphere2.getRwLock();
-			rwl2 =  sphere1.getRwLock();
-		}
+//		ReadWriteLock rwl1;
+//		ReadWriteLock rwl2;
+//		if(sphere1.getID()>sphere2.getID())
+//		{
+//			rwl1 =  sphere1.getRwLock();
+//			rwl2 = sphere2.getRwLock();
+//		}
+//		else
+//		{
+//			rwl1 =  sphere2.getRwLock();
+//			rwl2 =  sphere1.getRwLock();
+//		}
 		try
 		{
-			rwl1.readLock().lock();
-			rwl2.readLock().lock();
+//			rwl1.readLock().lock();
+//			rwl2.readLock().lock();
 			double[] c1 = sphere1.getMassLocation();
 			double r1 = 0.5*sphere1.getDiameter();
 			double[] c2 = sphere2.getMassLocation();
@@ -94,8 +94,8 @@ public class DefaultForce implements InterObjectForce{
 		}
 		finally
 		{
-			rwl1.readLock().unlock();
-			rwl2.readLock().unlock();
+//			rwl1.readLock().unlock();
+//			rwl2.readLock().unlock();
 		}
 	}
 	
@@ -128,22 +128,22 @@ public class DefaultForce implements InterObjectForce{
 	
 	
 	public double[] forceOnACylinderFromASphere(PhysicalCylinder cylinder,PhysicalSphere sphere) {
-		ReadWriteLock rwl1;
-		ReadWriteLock rwl2;
-		if(sphere.getID()>cylinder.getID())
-		{
-			rwl1 =  sphere.getRwLock();
-			rwl2 = cylinder.getRwLock();
-		}
-		else
-		{
-			rwl1 =  cylinder.getRwLock();
-			rwl2 =  sphere.getRwLock();
-		}
+//		ReadWriteLock rwl1;
+//		ReadWriteLock rwl2;
+//		if(sphere.getID()>cylinder.getID())
+//		{
+//			rwl1 =  sphere.getRwLock();
+//			rwl2 = cylinder.getRwLock();
+//		}
+//		else
+//		{
+//			rwl1 =  cylinder.getRwLock();
+//			rwl2 =  sphere.getRwLock();
+//		}
 		try
 		{
-			rwl1.readLock().lock();
-			rwl2.readLock().lock();
+//			rwl1.readLock().lock();
+//			rwl2.readLock().lock();
 			// define some geometrical values
 			double[] pP = cylinder.proximalEnd(); 
 			double[] pD = cylinder.distalEnd();
@@ -207,8 +207,8 @@ public class DefaultForce implements InterObjectForce{
 		}
 		finally
 		{
-			rwl1.readLock().unlock();
-			rwl2.readLock().unlock();
+//			rwl1.readLock().unlock();
+//			rwl2.readLock().unlock();
 		}
 	}
 
@@ -224,22 +224,22 @@ public class DefaultForce implements InterObjectForce{
 	
 
 	public double[] forceOnACylinderFromACylinder(PhysicalCylinder cylinder1, PhysicalCylinder cylinder2) {
-		ReadWriteLock rwl1;
-		ReadWriteLock rwl2;
-		if(cylinder1.getID()>cylinder2.getID())
-		{
-			rwl1 =  cylinder1.getRwLock();
-			rwl2 = cylinder2.getRwLock();
-		}
-		else
-		{
-			rwl1 =  cylinder2.getRwLock();
-			rwl2 =  cylinder1.getRwLock();
-		}
+//		ReadWriteLock rwl1;
+//		ReadWriteLock rwl2;
+//		if(cylinder1.getID()>cylinder2.getID())
+//		{
+//			rwl1 =  cylinder1.getRwLock();
+//			rwl2 = cylinder2.getRwLock();
+//		}
+//		else
+//		{
+//			rwl1 =  cylinder2.getRwLock();
+//			rwl2 =  cylinder1.getRwLock();
+//		}
 		try
 		{	
-			rwl1.readLock().lock();
-			rwl2.readLock().lock();
+//			rwl1.readLock().lock();
+//			rwl2.readLock().lock();
 		
 			// define some geometrical values
 			double[] A = cylinder1.proximalEnd();
@@ -311,8 +311,8 @@ public class DefaultForce implements InterObjectForce{
 		}
 		finally
 		{
-			rwl1.readLock().unlock();
-			rwl2.readLock().unlock();
+//			rwl1.readLock().unlock();
+//			rwl2.readLock().unlock();
 		}
 	}
 

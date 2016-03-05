@@ -52,11 +52,13 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${JAVA_MAIN_RESOURCE_PATH
 #add the headers into the project
 include_directories(${CPP_MAIN_SRC_PATH}/include)
 include_directories(${CPP_MAIN_SRC_PATH}/include/spatialOrganization)
+include_directories(${CPP_MAIN_SRC_PATH}/include/physics)
 include_directories(${CPP_MAIN_SRC_PATH}/swig)
 
 #add the sources into the project
 file(GLOB SOURCES "${CPP_MAIN_SRC_PATH}/src/*.cc")
 file(GLOB SOURCES "${CPP_MAIN_SRC_PATH}/src/spatial_organization/*.cc")
+file(GLOB SOURCES "${CPP_MAIN_SRC_PATH}/src/physics/*.cc")
 
 #--------------------- build cx3d-cpp  ----------------
 #add_library(cx3d-cpp SHARED ${SOURCES})

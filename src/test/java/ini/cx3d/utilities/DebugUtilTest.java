@@ -138,12 +138,12 @@ public class DebugUtilTest {
                 "DBG test3 return L innerState: toString of TestImpl\n" +
                 "DBG test4 args: {true, } innerState: toString of TestImpl\n" +
                 "DBG test4 return true innerState: toString of TestImpl\n" +
-                "DBG test5 args: {6.90000, } innerState: toString of TestImpl\n" +
-                "DBG test5 return 6.90000 innerState: toString of TestImpl\n" +
-                "DBG test6 args: {{1.20000, 8.60000, }, } innerState: toString of TestImpl\n" +
-                "DBG test6 return {1.20000, 8.60000, } innerState: toString of TestImpl\n" +
-                "DBG test7 args: {{{1.20000, 8.60000, }, {5.70000, 11.30000, }, }, } innerState: toString of TestImpl\n" +
-                "DBG test7 return {{1.20000, 8.60000, }, {5.70000, 11.30000, }, } innerState: toString of TestImpl\n" +
+                "DBG test5 args: {401b99999999999a, } innerState: toString of TestImpl\n" +
+                "DBG test5 return 401b99999999999a innerState: toString of TestImpl\n" +
+                "DBG test6 args: {{3ff3333333333333, 4021333333333333, }, } innerState: toString of TestImpl\n" +
+                "DBG test6 return {3ff3333333333333, 4021333333333333, } innerState: toString of TestImpl\n" +
+                "DBG test7 args: {{{3ff3333333333333, 4021333333333333, }, {4016cccccccccccd, 402699999999999a, }, }, } innerState: toString of TestImpl\n" +
+                "DBG test7 return {{3ff3333333333333, 4021333333333333, }, {4016cccccccccccd, 402699999999999a, }, } innerState: toString of TestImpl\n" +
                 "DBG test8 args: {{SomeOtherClass8, SomeOtherClass4, }, } innerState: toString of TestImpl\n" +
                 "DBG test8 return {SomeOtherClass8, SomeOtherClass4, } innerState: toString of TestImpl\n" +
                 "DBG test9 args: {{SomeOtherClass2, SomeOtherClass5, }, } innerState: toString of TestImpl\n" +

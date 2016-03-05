@@ -22,6 +22,9 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 package ini.cx3d.utilities;
 
 import java.util.AbstractSequentialList;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Map;
 
 import static ini.cx3d.utilities.SystemUtilities.*;
 ;
@@ -59,7 +62,11 @@ public abstract class StringUtilities {
 	 * @return
 	 */
 	public static String toStr(double d){
-		return String.format("%.5f", d);
+//		String s  = String.format("%.5f", d);
+//		return s.substring(0, s.length() - 2);
+		long binary = Double.doubleToLongBits(d);
+		String unpadded = Long.toHexString(binary);
+		return  "0000000000000000".substring(unpadded.length()) + unpadded;
 	}
 
 	/**
@@ -83,7 +90,7 @@ public abstract class StringUtilities {
 		StringBuilder sb = new StringBuilder();
 		sb.append("{");
 		for (double d: arr){
-			sb.append(String.format("%.5f", d)).append(", ");
+			sb.append(toStr(d)).append(", ");
 		}
 		sb.append("}");
 		return sb.toString();
@@ -142,6 +149,28 @@ public abstract class StringUtilities {
 		return sb.toString();
 	}
 
+	/**
+	 * helps to write toString methods that all behave in a uniform way
+	 * @param list
+	 * @return
+	 */
+	public static <T> String toStr(Map<? extends Object, ? extends Object> map) {
+
+		StringBuilder sbEntry = new StringBuilder();
+		ArrayList<String> tmp = new ArrayList<>();
+		for (Map.Entry<? extends Object, ? extends Object> entry : map.entrySet()) {
+			tmp.add(sbEntry.append("(").append(entry.getKey()).append(" -> ").append(entry.getValue()).append("), ").toString());
+			sbEntry = new StringBuilder();
+		}
+		Collections.sort(tmp);
+		StringBuilder sb = new StringBuilder();
+		sb.append("{");
+		for(String entry : tmp){
+			sb.append(entry);
+		}
+		sb.append("}");
+		return sb.toString();
+	}
 	//--------------------------------------------------
 	// some small utilities
 	//---------------------------------------------------

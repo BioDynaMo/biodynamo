@@ -1,6 +1,7 @@
 #ifndef SPATIAL_ORGANIZATION_SPATIAL_ORGANIZATION_NODE_H_
 #define SPATIAL_ORGANIZATION_SPATIAL_ORGANIZATION_NODE_H_
 
+#include <string>
 #include <list>
 #include <array>
 #include <memory>
@@ -56,6 +57,8 @@ class SpatialOrganizationNode {
   virtual void moveFrom(const std::array<double, 3>& delta) = 0;
 
   virtual void remove() = 0;
+
+  virtual std::string toString() const =0;
 };
 
 }  // namespace spatial_organization

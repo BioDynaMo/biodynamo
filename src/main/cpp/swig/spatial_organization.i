@@ -1,20 +1,7 @@
 %module(directors="1") spatialOrganization
 
 %include "util.i"
-// administration area
-
-%native(RATIONAL);
-%native(EXACTVECTOR);
-%native(TRIANGLE3D);
-%native(EDGE);
-%native(EDGEHASHKEY);
-%native(TRIANGLEHASHKEY);
-%native(TETRAHEDRON);
-%native(SPACENODE);
-%native(SIMPLETRIANGULATIONNODEORGANIZER);
-%native(OPENTRIANGLEORGANIZER);
-
-// end administration area
+%include "config.i"
 
 %{
 #include <memory>
@@ -52,6 +39,7 @@ JAVA_LOAD_NATIVE_LIBRARY(cx3d_spatialOrganization);
 // typemap definitions, code modifications / additions
 %include "big_integer_typemap.i"
 %include "primitives.i"
+%pragma(java) jniclassimports="import ini.cx3d.swig.NativeStringBuilder;"
 
 // class modifications
 %include "class_customization/rational.i";

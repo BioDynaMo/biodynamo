@@ -8,6 +8,8 @@
 #include <memory>
 #include <cstdio>
 #include <iostream>
+#include <iomanip>
+#include <unordered_map>
 #include <initializer_list>
 
 /**
@@ -44,8 +46,7 @@ class StringUtil {
   static constexpr size_t buffer_size_ = 512;
 
   template<typename ... Args>
-  static void logMethodCall(const std::string& method_name, const std::string& internal_state,
-                            Args ... args) {
+  static void logMethodCall(const std::string& method_name, const std::string& internal_state, Args ... args) {
     // unsigned line = getLineNumber();
     std::ostringstream oss;
     oss << "DBG " << (method_name != "equalTo" ? method_name : "equals") << " args: {";
@@ -63,8 +64,7 @@ class StringUtil {
   }
 
   template<class T>
-  static void logMethodReturn(const std::string& method_name, const std::string& internal_state,
-                              T t) {
+  static void logMethodReturn(const std::string& method_name, const std::string& internal_state, T t) {
     // unsigned line = getLineNumber();
     std::ostringstream oss;
     oss << "DBG " << (method_name != "equalTo" ? method_name : "equals") << " return " << toStr(t)
@@ -75,8 +75,7 @@ class StringUtil {
   static void logMethodReturn(const std::string& method_name, const std::string& internal_state) {
     // unsigned line = getLineNumber();
     std::ostringstream oss;
-    oss << "DBG " << (method_name != "equalTo" ? method_name : "equals") << " return  innerState: "
-        << internal_state;
+    oss << "DBG " << (method_name != "equalTo" ? method_name : "equals") << " return  innerState: " << internal_state;
     std::cout << oss.str() << std::endl;
   }
 
@@ -133,19 +132,29 @@ class StringUtil {
     return std::to_string(i);
   }
 
+  static std::string toStr(std::size_t i) {
+    return std::to_string(i);
+  }
+
   static std::string toStr(bool b) {
     return b ? "true" : "false";
   }
 
   static std::string toStr(double d) {
     static bool set_locale = false;
-    if(!set_locale) {
+    if (!set_locale) {
       std::locale::global(std::locale::classic());
       set_locale = true;
     }
-    char buffer[buffer_size_];
-    snprintf(buffer, buffer_size_, "%.5f", d);
-    return std::string(buffer);
+    union {
+      long long i;
+      double d;
+    } value;
+
+    value.d = d;
+    std::stringstream stream;
+    stream << std::setw(16) << std::hex << std::setfill('0') << value.i;
+    return stream.str();
   }
 
   template<size_t N>
@@ -187,6 +196,24 @@ class StringUtil {
     str << "{";
     for (auto el : list) {
       str << toStr(el) << ", ";
+    }
+    str << "}";
+    return str.str();
+  }
+
+  template<class K, class V>
+  static std::string toStr(const std::unordered_map<K, V>& map) {
+    std::list<std::string> list;
+    for (auto i : map) {
+      std::stringstream strEntry;
+      strEntry << "(" << toStr(i.first) << " -> " << toStr(i.second) << "), ";
+      list.push_back(strEntry.str());
+    }
+    list.sort();
+    std::stringstream str;
+    str << "{";
+    for(auto entry : list){
+      str << entry;
     }
     str << "}";
     return str.str();

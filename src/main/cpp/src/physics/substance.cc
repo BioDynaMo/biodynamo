@@ -1,7 +1,9 @@
 #include "physics/substance.h"
 
+#include <sstream>
 #include <cmath>
 
+#include "string_util.h"
 #include "sim_state_serialization_util.h"
 
 namespace cx3d {
@@ -157,6 +159,15 @@ std::shared_ptr<Substance> Substance::getCopy() const {
 
 std::string Substance::toString() const {
   return "SubstanceID" + id_;
+//  std::ostringstream str_stream;
+//  str_stream << "(";
+//  str_stream << StringUtil::toStr(id_);
+//  str_stream << ", ";
+//  str_stream << StringUtil::toStr(quantity_);
+//  str_stream << ", ";
+//  str_stream << StringUtil::toStr(concentration_);
+//  str_stream << ")";
+//  return str_stream.str();
 }
 
 }  // namespace physics

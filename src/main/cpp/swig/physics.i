@@ -1,12 +1,7 @@
 %module(directors="1") physics
 
 %include "util.i"
-// administration area
-
-%native(SUBSTANCE);
-%native(INTRACELLULARSUBSTANCE);
-
-// end administration area
+%include "config.i"
 
 %{
 #include <memory>
@@ -14,10 +9,10 @@
 
 #include "physics/substance.h"
 #include "physics/intracellular_substance.h"
+#include "physics/ecm.h"
 #include "physics/physical_node.h"
 
-// using namespace cx3d::physics;
-// #include "physicsJAVA_wrap.h"
+using namespace cx3d::physics;
 %}
 
 // import depending modules
@@ -30,13 +25,19 @@ JAVA_LOAD_NATIVE_LIBRARY(cx3d_physics);
 // typemap definitions, code modifications / additions
 %include "primitives.i"
 %include "color_typemap.i"
+%double_stdarray_array_marshalling(physics, 3);
+%double_stdarray_array_marshalling(physics, 4);
+%pragma(java) jniclassimports="import ini.cx3d.swig.NativeStringBuilder; import ini.cx3d.swig.spatialOrganization.SpaceNodeT_PhysicalNode;"
 
 // class modifications
 %include "class_customization/physics/substance.i"
 %include "class_customization/physics/intracellular_substance.i"
+%include "class_customization/space_node.i"
+%include "class_customization/physics/ecm.i"
 %include "class_customization/physics/physical_node.i"
 
 // add the original header files here
 %include "physics/substance.h"
 %include "physics/intracellular_substance.h"
+%include "physics/ecm.h"
 %include "physics/physical_node.h"

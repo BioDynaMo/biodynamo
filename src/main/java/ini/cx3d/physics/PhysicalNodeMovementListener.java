@@ -31,9 +31,7 @@ import ini.cx3d.swig.spatialOrganization.SpatialOrganizationNodeMovementListener
 import ini.cx3d.physics.interfaces.Substance;
 import ini.cx3d.physics.interfaces.PhysicalNode;
 
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.Vector;
+import java.util.*;
 
 /**
  * The role of this class is a) to determinate the concentration of different chemicals 
@@ -71,22 +69,23 @@ public class PhysicalNodeMovementListener extends SpatialOrganizationNodeMovemen
 	}
 
 	public void nodeAboutToMove(SpaceNode n, double[] planedMovement) {
+		try{
 		PhysicalNode pn = (PhysicalNode) n.getUserObject();
 		neighborsBefore = n.getPermanentListOfNeighbors();
-		Hashtable<String, ini.cx3d.physics.interfaces.Substance> extracellularSubstancesInPn = pn.getExtracellularSubstances();
+		AbstractSequentialList<Substance> extracellularSubstancesInPn = pn.getExtracellularSubstances();
 		substancesInN = new Substance[extracellularSubstancesInPn.size()];
 		q = new double[substancesInN.length];
 		movementOperationId = (movementOperationId+1)%1000000;
 		// 1) Quantities summation in pn & pn's neighbors before the move:
 		// (for all extracellularSubstances in the moving node)
 		int i = 0;
-		for (Substance s : extracellularSubstancesInPn.values() ) {
+		for (Substance s : extracellularSubstancesInPn ) {
 			q[i] = s.getQuantity();
 			substancesInN[i] = s;
 			String sId = s.getId();
 			for (PhysicalNode nn : neighborsBefore) {
 				nn.setMovementConcentratioUpdateProcedure(movementOperationId);
-				ini.cx3d.physics.interfaces.Substance ss = nn.getExtracellularSubstances().get(sId);
+				ini.cx3d.physics.interfaces.Substance ss = nn.getExtracellularSubstance(sId);
 				if(ss!=null){
 					q[i] += ss.getQuantity();
 				}
@@ -118,11 +117,14 @@ public class PhysicalNodeMovementListener extends SpatialOrganizationNodeMovemen
 			}
 		}
 
-
+		}catch(Exception e){
+			e.printStackTrace();
+		}
 
 	}
 
 	public void nodeMoved(SpaceNode n) {
+		try {
 		ini.cx3d.physics.interfaces.PhysicalNode pn = (ini.cx3d.physics.interfaces.PhysicalNode) n.getUserObject();
 		Iterable<ini.cx3d.physics.interfaces.PhysicalNode> neighborsAfter = n.getNeighbors();
 		Vector<ini.cx3d.physics.interfaces.PhysicalNode> newNeighbors = new Vector<ini.cx3d.physics.interfaces.PhysicalNode>();
@@ -138,7 +140,7 @@ public class PhysicalNodeMovementListener extends SpatialOrganizationNodeMovemen
 		// 4) adding all the new neighbors contribution to the total quantity before the move:
 		for (int i = 0; i < substancesInN.length; i++) {
 			for (ini.cx3d.physics.interfaces.PhysicalNode nn : newNeighbors) {
-				ini.cx3d.physics.interfaces.Substance ss = nn.getExtracellularSubstances().get(substancesInN[i].getId());
+				ini.cx3d.physics.interfaces.Substance ss = nn.getExtracellularSubstance(substancesInN[i].getId());
 				if(ss!=null){
 					q[i] += ss.getQuantity();
 				}
@@ -155,7 +157,7 @@ public class PhysicalNodeMovementListener extends SpatialOrganizationNodeMovemen
 			double quantityAfter = s.getQuantity();
 			// 5.b) in the old neighbors
 			for (ini.cx3d.physics.interfaces.PhysicalNode nn : neighborsBefore) {
-				ini.cx3d.physics.interfaces.Substance ss = nn.getExtracellularSubstances().get(s.getId());
+				ini.cx3d.physics.interfaces.Substance ss = nn.getExtracellularSubstance(s.getId());
 				if(ss!=null){
 					ss.updateQuantityBasedOnConcentration(nn.getSoNode().getVolume());  
 					quantityAfter += ss.getQuantity();
@@ -164,7 +166,7 @@ public class PhysicalNodeMovementListener extends SpatialOrganizationNodeMovemen
 			// 5.c) in the NEW neighbors
 			for (Iterator<ini.cx3d.physics.interfaces.PhysicalNode> iter = newNeighbors.iterator(); iter.hasNext();) {
 				ini.cx3d.physics.interfaces.PhysicalNode nn = iter.next();
-				ini.cx3d.physics.interfaces.Substance ss = nn.getExtracellularSubstances().get(s.getId());
+				ini.cx3d.physics.interfaces.Substance ss = nn.getExtracellularSubstance(s.getId());
 				if(ss!=null){
 					ss.updateQuantityBasedOnConcentration(nn.getSoNode().getVolume());  
 					quantityAfter += ss.getQuantity();
@@ -184,7 +186,7 @@ public class PhysicalNodeMovementListener extends SpatialOrganizationNodeMovemen
 			s.multiplyQuantityAndConcentrationBy(q[i]);
 			// 7.b) in the old neighbors
 			for (ini.cx3d.physics.interfaces.PhysicalNode nn : neighborsBefore) {
-				ini.cx3d.physics.interfaces.Substance ss = nn.getExtracellularSubstances().get(s.getId());
+				ini.cx3d.physics.interfaces.Substance ss = nn.getExtracellularSubstance(s.getId());
 				// Note : should not use PhysicalNode.giveYourSubstanceInstance(), because never returns null
 				if(ss!=null){
 					ss.multiplyQuantityAndConcentrationBy(q[i]);
@@ -193,13 +195,15 @@ public class PhysicalNodeMovementListener extends SpatialOrganizationNodeMovemen
 			// 7.c) in the NEW neighbors
 			for (Iterator<ini.cx3d.physics.interfaces.PhysicalNode> iter = newNeighbors.iterator(); iter.hasNext();) {
 				ini.cx3d.physics.interfaces.PhysicalNode nn = iter.next();
-				ini.cx3d.physics.interfaces.Substance ss = nn.getExtracellularSubstances().get(s.getId());
+				ini.cx3d.physics.interfaces.Substance ss = nn.getExtracellularSubstance(s.getId());
 				if(ss!=null){
 					ss.multiplyQuantityAndConcentrationBy(q[i]);
 				}
 			}
 		}
-
+		}catch(Exception e){
+			e.printStackTrace();
+		}
 	}
 
 	//----------------------------------------------------------------------
@@ -224,7 +228,7 @@ public class PhysicalNodeMovementListener extends SpatialOrganizationNodeMovemen
 				// (we have to rely on it to know the chemicals present )
 				double[] barycentricCoord = PhysicalNodeFactory.getBarycentricCoordinates(planedPosition, vertices);
 
-				for (Substance s : pnn.getExtracellularSubstances().values()) {
+				for (Substance s : pnn.getExtracellularSubstances()) {
 					String name = s.getId();
 					double newConcentration = 0;
 					for (int j = 0; j < 4; j++) {
@@ -232,7 +236,7 @@ public class PhysicalNodeMovementListener extends SpatialOrganizationNodeMovemen
 					}
 					ini.cx3d.physics.interfaces.Substance newSubstance = SubstanceFactory.create(s);
 					newSubstance.setConcentration(newConcentration);
-					pn.getExtracellularSubstances().put(name, newSubstance);
+					//pn.getExtracellularSubstances().put(name, newSubstance); //fixme this looks like a bug - hashmap is cloned -> inserting a value won't have an effect
 				}
 			}
 		}catch(Exception e){
@@ -242,6 +246,7 @@ public class PhysicalNodeMovementListener extends SpatialOrganizationNodeMovemen
 
 
 	public void nodeAdded(SpaceNode n) {
+		try{
 		// 2) sum the quantity before update 
 		ini.cx3d.physics.interfaces.PhysicalNode pn = (ini.cx3d.physics.interfaces.PhysicalNode) n.getUserObject();
 		// since there might be no substances yet in the point 
@@ -251,11 +256,11 @@ public class PhysicalNodeMovementListener extends SpatialOrganizationNodeMovemen
 		substancesInN = new Substance[pnn.getExtracellularSubstances().size()];
 		q = new double[substancesInN.length];
 		int i = 0;
-		for (Substance s : pnn.getExtracellularSubstances().values() ) {
+		for (Substance s : pnn.getExtracellularSubstances() ) {
 			q[i] = 0;
 			substancesInN[i] = s;
 			for (ini.cx3d.physics.interfaces.PhysicalNode nn : neighbors) {
-				ini.cx3d.physics.interfaces.Substance ss = nn.getExtracellularSubstances().get(s.getId());
+				ini.cx3d.physics.interfaces.Substance ss = nn.getExtracellularSubstance(s.getId());
 				if(ss!=null){
 					q[i] += ss.getQuantity();
 				}
@@ -269,7 +274,7 @@ public class PhysicalNodeMovementListener extends SpatialOrganizationNodeMovemen
 			double quantityAfter = 0;
 			// 3.a) in pn itself
 			ini.cx3d.physics.interfaces.Substance s = substancesInN[i];
-			ini.cx3d.physics.interfaces.Substance ss = pn.getExtracellularSubstances().get(s.getId());
+			ini.cx3d.physics.interfaces.Substance ss = pn.getExtracellularSubstance(s.getId());
 			if(ss!=null){
 				ss.updateQuantityBasedOnConcentration(n.getVolume());  
 				quantityAfter += ss.getQuantity();
@@ -278,7 +283,7 @@ public class PhysicalNodeMovementListener extends SpatialOrganizationNodeMovemen
 			// 3.b) in the  neighbors
 			for (Object nn : n.getNeighbors()) {
 				ini.cx3d.physics.interfaces.PhysicalNode pn1 = (ini.cx3d.physics.interfaces.PhysicalNode) nn;
-				ss = pn1.getExtracellularSubstances().get(s.getId());
+				ss = pn1.getExtracellularSubstance(s.getId());
 				if(ss!=null){
 					ss.updateQuantityBasedOnConcentration(pn1.getSoNode().getVolume());
 					quantityAfter += ss.getQuantity();
@@ -297,17 +302,20 @@ public class PhysicalNodeMovementListener extends SpatialOrganizationNodeMovemen
 
 			// 5) changing the concentration of the i-th substance by its ratio
 			// 5.a) in pn
-			ss = pn.getExtracellularSubstances().get(s.getId());
+			ss = pn.getExtracellularSubstance(s.getId());
 			if(ss!=null){
 				ss.multiplyQuantityAndConcentrationBy(q[i]);
 			}
 			// 5.b) in the neighbors
 			for (Object nn : n.getNeighbors()) {
-				ss = ((ini.cx3d.physics.interfaces.PhysicalNode) nn).getExtracellularSubstances().get(s.getId());
+				ss = ((ini.cx3d.physics.interfaces.PhysicalNode) nn).getExtracellularSubstance(s.getId());
 				if(ss!=null){
 					ss.multiplyQuantityAndConcentrationBy(q[i]);
 				}
 			}
+		}
+		}catch(Exception e){
+			e.printStackTrace();
 		}
 	}
 
@@ -330,11 +338,11 @@ public class PhysicalNodeMovementListener extends SpatialOrganizationNodeMovemen
 			// 1) Quantities summation in pn & pn's neighbors (before pn is removed):
 			// (for all extracellularSubstances in the moving node)
 			int i = 0;
-			for (Substance s : pn.getExtracellularSubstances().values()) {
+			for (Substance s : pn.getExtracellularSubstances()) {
 				q[i] = s.getQuantity();
 				substancesInN[i] = s;
 				for (ini.cx3d.physics.interfaces.PhysicalNode nn : neighborsBefore) {
-					ini.cx3d.physics.interfaces.Substance ss = nn.getExtracellularSubstances().get(s.getId());
+					ini.cx3d.physics.interfaces.Substance ss = nn.getExtracellularSubstance(s.getId());
 					if (ss != null) {
 						q[i] += ss.getQuantity();
 					}
@@ -348,40 +356,47 @@ public class PhysicalNodeMovementListener extends SpatialOrganizationNodeMovemen
 	}
 
 	public void nodeRemoved(SpaceNode n) {
-		// For all extracellularSubstances:		
-		for (int i = 0; i < substancesInN.length; i++) {	
+		try {
+			// For all extracellularSubstances:
+			for (int i = 0; i < substancesInN.length; i++) {
 
-			// 2) Update the quantities in the old neighbors, and sum it
-			ini.cx3d.physics.interfaces.Substance s = substancesInN[i];
-			double quantityAfter = 0;
-			for (ini.cx3d.physics.interfaces.PhysicalNode nn : neighborsBefore) {
-				ini.cx3d.physics.interfaces.Substance ss = nn.getExtracellularSubstances().get(s.getId());
-				if(ss!=null){
-					ss.updateQuantityBasedOnConcentration(nn.getSoNode().getVolume());  
-					quantityAfter += ss.getQuantity();
+				// 2) Update the quantities in the old neighbors, and sum it
+				ini.cx3d.physics.interfaces.Substance s = substancesInN[i];
+				double quantityAfter = 0;
+				for (ini.cx3d.physics.interfaces.PhysicalNode nn : neighborsBefore) {
+					ini.cx3d.physics.interfaces.Substance ss = nn.getExtracellularSubstance(s.getId());
+					if (ss != null) {
+						ss.updateQuantityBasedOnConcentration(nn.getSoNode().getVolume());
+						quantityAfter += ss.getQuantity();
+					}
 				}
-			}
 
-			// 3) defining a ratio of quantity change (quantity before / quantity after) for the i-th substance
-			if(quantityAfter<1.0E-14){
-				q[i] = 0; //(avoid division by 0)
-			}else{
-				q[i] /= quantityAfter;  
+				// 3) defining a ratio of quantity change (quantity before / quantity after) for the i-th substance
+				if (quantityAfter < 1.0E-14) {
+					q[i] = 0; //(avoid division by 0)
+				} else {
+					q[i] /= quantityAfter;
 //				q[i] = 1;     // De-comment this for DEACTIVATION !!!!!!!!!!!!!!!!!!!!!
-			}
+				}
 
-			// 4) changing the concentration of the i-th substance by its ratio, in the old neighbors
-			for (ini.cx3d.physics.interfaces.PhysicalNode nn : neighborsBefore) {
-				ini.cx3d.physics.interfaces.Substance ss = nn.getExtracellularSubstances().get(s.getId());
-				if(ss!=null){
-					ss.multiplyQuantityAndConcentrationBy(q[i]);
+				// 4) changing the concentration of the i-th substance by its ratio, in the old neighbors
+				for (ini.cx3d.physics.interfaces.PhysicalNode nn : neighborsBefore) {
+					ini.cx3d.physics.interfaces.Substance ss = nn.getExtracellularSubstance(s.getId());
+					if (ss != null) {
+						ss.multiplyQuantityAndConcentrationBy(q[i]);
+					}
 				}
 			}
+		}catch(Exception e){
+			e.printStackTrace();
 		}
+
 	}
 
 	public String toString(){
 		return "PhyscicalNodeMovementListener";
 	}
+
+
 
 }

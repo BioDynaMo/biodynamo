@@ -25,6 +25,7 @@ import ini.cx3d.localBiology.SomaElement;
 import ini.cx3d.physics.PhysicalSphere;
 import ini.cx3d.simulations.ECM;
 import ini.cx3d.spatialOrganization.SpatialOrganizationNode;
+import ini.cx3d.spatialOrganization.interfaces.SpaceNode;
 import ini.cx3d.utilities.Matrix;
 
 import java.util.Vector;
@@ -63,7 +64,7 @@ public class CellFactory {
         PhysicalSphere ps = new PhysicalSphere(); 
         soma.setPhysical(ps);
         SpatialOrganizationNode<ini.cx3d.physics.interfaces.PhysicalNode> son = ecm.getSpatialOrganizationNodeInstance(cellOrigin.clone(), ps);
-        ps.setSoNode(son);
+        ps.setSoNode((SpaceNode) son);
         
         // Add cell to ECM instance
         ecm.addPhysicalSphere(soma.getPhysicalSphere());

@@ -3,6 +3,7 @@
 
 #include <list>
 #include <array>
+#include <unordered_map>
 #include <algorithm>
 
 class STLUtil {
@@ -26,6 +27,27 @@ class STLUtil {
       list.push_back(el);
     }
   }
+
+  /**
+   * returns whether an element with Key key is stored in this map
+   * @param map
+   * @param key
+   */
+  template<typename K, typename V>
+  static bool mapContains(const std::unordered_map<K, V>& map, const K& key) {
+    return map.find(key) != map.end();
+  }
+
+  /**
+   * returns -1 if val < 0
+   *          0 if val == 0
+   *          1 if val > 0
+   */
+  template <typename T>
+  static int sgn(T val) {
+      return (T(0) < val) - (val < T(0));
+  }
+
  private:
   STLUtil() = delete;
 };

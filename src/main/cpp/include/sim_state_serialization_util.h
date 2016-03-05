@@ -5,6 +5,7 @@
 #include <string>
 #include <sstream>
 #include <iomanip>
+#include <unordered_map>
 
 #include "string_builder.h"
 #include "sim_state_serializable.h"
@@ -51,6 +52,10 @@ class SimStateSerializationUtil {
                                                false);
   }
 
+  static StringBuilder& keyValue(StringBuilder& sb, string key, std::size_t value) {
+      return SimStateSerializationUtil::keyValue(sb, key, std::to_string(value), false);
+    }
+
   static StringBuilder& keyValue(StringBuilder& sb, string key, bool value) {
     return SimStateSerializationUtil::keyValue(sb, key, value ? "true" : "false", false);
   }
@@ -70,9 +75,13 @@ class SimStateSerializationUtil {
   }
 
   static StringBuilder& keyValue(StringBuilder& sb, string key,
-                                 const SimStateSerializable& value) {
+                                 const std::shared_ptr<SimStateSerializable>& value) {
     SimStateSerializationUtil::key(sb, key);
-    value.simStateToJson(sb);
+    if(value.get() != nullptr) {
+      value->simStateToJson(sb);
+    } else {
+      sb.append("null");
+    }
     sb.append(",");
     return sb;
   }
@@ -85,6 +94,20 @@ class SimStateSerializationUtil {
     }
     SimStateSerializationUtil::removeLastChar(sb);
     sb.append("],");
+    return sb;
+  }
+
+  template<class K, class V>
+  static StringBuilder& map(StringBuilder& sb, string key, const std::unordered_map<K, V>& map) {
+    SimStateSerializationUtil::key(sb, key).append("{");
+    for (auto i : map) {
+      SimStateSerializationUtil::key(sb, i.first);
+      i.second->simStateToJson(sb).append(",");
+    }
+    if (!map.empty()) {
+      SimStateSerializationUtil::removeLastChar(sb);
+    }
+    sb.append("},");
     return sb;
   }
 

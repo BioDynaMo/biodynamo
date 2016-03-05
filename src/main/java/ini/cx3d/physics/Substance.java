@@ -333,7 +333,7 @@ public class Substance extends ini.cx3d.swig.physics.Substance implements ini.cx
 	public void setConcentration(double concentration) {
 		getRwLock().writeLock().lock();
 		if(concentration<0.0){
-			concentration = 0.0;
+			this.concentration = 0.0; //fixme bug - was concentration = 0.0;
 		}
 		else{
 			this.concentration = concentration;

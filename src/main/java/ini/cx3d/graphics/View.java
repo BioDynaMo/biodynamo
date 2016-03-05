@@ -730,7 +730,7 @@ public class View extends JComponent {
 
 			for (ini.cx3d.physics.interfaces.Substance s : tobeDrawn) {
 
-				ini.cx3d.physics.interfaces.Substance realS = n.getExtracellularSubstances().get(s.getId());
+				ini.cx3d.physics.interfaces.Substance realS = n.getExtracellularSubstance(s.getId());
 				if (realS != null) {
 
 					paintrealSubstanceJustColor(g2D, realS, nodeCoord);

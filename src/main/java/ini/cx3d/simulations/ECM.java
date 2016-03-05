@@ -69,8 +69,11 @@ import javax.swing.JFrame;
  * @author fredericzubler
  *
  */
-public class ECM implements SimStateSerializable {
-
+public class ECM extends ini.cx3d.swig.physics.ECM implements SimStateSerializable {
+	public double[] solve(double[][] A, double[] b){
+		return Matrix.solve(A, b);
+	}
+	public double exp(double d) { return Math.exp(d); }
 	// List of all the CX3DRunbable objects in the simulation ............................
 
 	/** List of all the PhysicalNode instances. */
@@ -216,6 +219,7 @@ public class ECM implements SimStateSerializable {
 	private static ECM instance = null;
 
 	private ECM() {
+		registerJavaObject(this);
 	}
 
 	/** 
@@ -457,7 +461,7 @@ public class ECM implements SimStateSerializable {
 						newSon = getSpatialOrganizationNodeInstance(coord, pn);
 					}
 					// setting call-back
-					pn.setSoNode(newSon);
+					pn.setSoNode((SpaceNode<PhysicalNode>) newSon);
 					// register this node as in ECM
 					addPhysicalNode(pn);
 					// becomes the neighbor of the next node
@@ -471,7 +475,7 @@ public class ECM implements SimStateSerializable {
 	public ini.cx3d.physics.interfaces.PhysicalNode getPhysicalNodeInstance(double[] nodeLocation){
 		ini.cx3d.physics.interfaces.PhysicalNode pn = PhysicalNodeFactory.create();
 		SpatialOrganizationNode<ini.cx3d.physics.interfaces.PhysicalNode> son = getSpatialOrganizationNodeInstance(nodeLocation, pn);
-		pn.setSoNode(son);
+		pn.setSoNode((SpaceNode<PhysicalNode>) son);
 		addPhysicalNode(pn);
 		return pn;
 	}
@@ -1183,6 +1187,7 @@ public class ECM implements SimStateSerializable {
 	}
 
 	public double getECMtime() {
+//		System.out.println("DBG1 ECM.getECMTime "+ECMtime);
 		return ECMtime;
 	}
 

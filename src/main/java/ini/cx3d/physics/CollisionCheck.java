@@ -212,29 +212,29 @@ public class CollisionCheck {
 		// (and in this case, we remove the PhysicalBond between theses objects).
 
 		boolean alreadyAPhysicalBond = false;
-		ReadWriteLock rwl1;
-		ReadWriteLock rwl2;
-		if(moving.getID()>still.getID())
-		{
-			rwl1 = moving.getRwLock();
-			rwl2 = still.getRwLock();
-		}
-		else
-		{
-			rwl1 =  still.getRwLock();
-			rwl2 =  moving.getRwLock();
-		}
+//		ReadWriteLock rwl1;
+//		ReadWriteLock rwl2;
+//		if(moving.getID()>still.getID())
+//		{
+//			rwl1 = moving.getRwLock();
+//			rwl2 = still.getRwLock();
+//		}
+//		else
+//		{
+//			rwl1 =  still.getRwLock();
+//			rwl2 =  moving.getRwLock();
+//		}
 		for (int i = 0; i < still.getPhysicalBonds().size(); i++) {
 			PhysicalBond pbOnStill = still.getPhysicalBonds().get(i);
-			    rwl1.readLock().lock();
-			    rwl2.readLock().lock();
+//			    rwl1.readLock().lock();
+//			    rwl2.readLock().lock();
 				if(pbOnStill.getOppositePhysicalObject(still)==moving){
 					alreadyAPhysicalBond = true;
 					pbOnStill.vanish();
 					System.out.println("VANISH : CollisionCheck.addPhysicalBondIfCrossing() ***********************************");
 				}
-				rwl1.readLock().unlock();
-				rwl2.readLock().unlock();
+//				rwl1.readLock().unlock();
+//				rwl2.readLock().unlock();
 		}
 
 		if(alreadyAPhysicalBond == false){

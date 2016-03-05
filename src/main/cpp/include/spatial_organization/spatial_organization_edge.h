@@ -54,6 +54,8 @@ class SpatialOrganizationEdge {
    * @return A double value representing the cross section area between the two endpoints of this edge.
    */
   virtual double getCrossSection() const = 0;
+
+  virtual const std::string toString() const = 0;
 };
 
 }  // namespace spatial_organization

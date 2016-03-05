@@ -30,6 +30,8 @@ import ini.cx3d.physics.PhysicalBond;
 import ini.cx3d.physics.PhysicalCylinder;
 import ini.cx3d.physics.PhysicalObject;
 
+import java.util.Objects;
+
 public class PhysicalBouton extends Excrescence {
 
 	BiologicalBouton biologicalBouton;
@@ -77,7 +79,7 @@ public class PhysicalBouton extends Excrescence {
 		}
 		// no autapses
 		if (super.po.getCellElement()!=null && otherExcressence.po.getCellElement()!=null) {
-			if (super.po.getCellElement().getCell() == otherExcressence.po.getCellElement().getCell()) {
+			if (Objects.equals(super.po.getCellElement().getCell(), otherExcressence.po.getCellElement().getCell())) {
 				return false;
 			}
 		}

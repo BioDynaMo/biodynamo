@@ -1114,9 +1114,13 @@ public abstract class Matrix {
     		double j = b[0];	double k = b[1];	double l = b[2];
     		
     		double eihf = (e*i-h*f);
+//			System.out.println("DBG1 eihf " + StringUtilities.toStr(eihf));
     		double bich = (bb*i-c*h);
+//			System.out.println("DBG1 bich " + StringUtilities.toStr(bich));
     		double bfce = (bb*f-c*e);
+//			System.out.println("DBG1 bfce " + StringUtilities.toStr(bfce));
     		double det_1 = 1/(a*eihf - d*bich + g*bfce);
+//			System.out.println("DBG1 det_1 " + StringUtilities.toStr(det_1));
     		double x = det_1*(j*eihf - k*bich + l*bfce);
     		double y = det_1*( a*(k*i-l*f) - d*(j*i-c*l) + g*(j*f-c*k)  );
     		double z = det_1*( a*(e*l-h*k) - d*(bb*l-h*j) + g*(k*bb-j*e)  );

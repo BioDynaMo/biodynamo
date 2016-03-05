@@ -2,8 +2,10 @@ package ini.cx3d.physics.interfaces;
 
 import ini.cx3d.SimStateSerializable;
 import ini.cx3d.spatialOrganization.SpatialOrganizationNode;
+import ini.cx3d.spatialOrganization.interfaces.SpaceNode;
 
 import java.io.Serializable;
+import java.util.AbstractSequentialList;
 import java.util.Hashtable;
 
 /**
@@ -87,13 +89,13 @@ public interface PhysicalNode extends Serializable, SimStateSerializable {
 	/**
 	 * returns all <code>PhysicalNodes</code> considered as neighbors.
 	 */
-	Iterable<PhysicalNode> getNeighboringPhysicalNodes();
+//	AbstractSequentialList<PhysicalNode> getNeighboringPhysicalNodes();
 
 	/** Sets the SpatialOrganizationNode (vertex in the triangulation neighboring system).*/
-	SpatialOrganizationNode<PhysicalNode> getSoNode();
+	SpaceNode<PhysicalNode> getSoNode();
 
 	/** Returns the SpatialOrganizationNode (vertex in the triangulation neighboring system).*/
-	void setSoNode(SpatialOrganizationNode<PhysicalNode> son);
+	void setSoNode(SpaceNode<PhysicalNode> son);
 
 	/** if <code>true</code>, the PhysicalNode will be run by the Scheduler.**/
 	boolean isOnTheSchedulerListForPhysicalNodes();
@@ -111,11 +113,13 @@ public interface PhysicalNode extends Serializable, SimStateSerializable {
 	void removeExtracellularSubstance(Substance is);
 
 	/** All the (diffusible) chemicals that are present in the space defined by this physicalNode. */
-	Hashtable<String, Substance> getExtracellularSubstances();
+	AbstractSequentialList<Substance> getExtracellularSubstances();
+
+	Substance getExtracellularSubstance(String key);
 
 	/** All the (diffusible) chemicals that are present in the space defined by this physicalNode. */
-	void setExtracellularSubstances(
-			Hashtable<String, Substance> extracellularSubstances);
+//	void setExtracellularSubstances(
+//			Hashtable<String, Substance> extracellularSubstances);
 
 	/** Solely used by the PhysicalNodeMovementListener to update substance concentrations.**/
 	void setMovementConcentratioUpdateProcedure(

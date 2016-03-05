@@ -28,7 +28,7 @@ class AbstractTriangulationNodeOrganizer {
 
   virtual std::list<std::shared_ptr<SpaceNode<T>> > getNodes(const std::shared_ptr<SpaceNode<T>>& reference_point) = 0;
 
-  virtual void addTriangleNodes(const std::shared_ptr<Triangle3D<T>>& triangle);
+  virtual void addTriangleNodes(const std::shared_ptr<Triangle3D<T>>& triangle) = 0;
 
   virtual void removeNode(const std::shared_ptr<SpaceNode<T>>& node) = 0;
 

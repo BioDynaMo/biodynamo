@@ -63,7 +63,6 @@
 
 %define %IntracellularSubstance_typemaps()
   %typemap(javainterfaces) cx3d::physics::IntracellularSubstance "ini.cx3d.physics.interfaces.IntracellularSubstance"
-  %pragma(java) jniclassimports="import ini.cx3d.swig.NativeStringBuilder;"
 %enddef
 
  /**

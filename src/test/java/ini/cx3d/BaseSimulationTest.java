@@ -173,7 +173,8 @@ public abstract class BaseSimulationTest {
 //            assertEquals(gson.toJson(jsonTree), gson.toJson(reference));
 
 //            assertEquals(reference.toString(),jsonString);
-            assertEquals(reference, jsonTree);
+            assertTrue(reference.equals(jsonTree));
+//            assertEquals(reference, jsonTree);
         } else {
             TestUtil.persistJson(TestUtil.getResourcePath()+refFileName, jsonString);
         }
