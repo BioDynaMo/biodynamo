@@ -170,7 +170,7 @@ class PhysicalNode : public SimStateSerializable, public std::enable_shared_from
    * @return
    */
   virtual double computeConcentrationAtDistanceBasedOnGradient(const std::shared_ptr<Substance>& s,
-                                                               std::array<double, 3>& dX);
+                                                               const std::array<double, 3>& dX);
 
   // *************************************************************************************
   // *      GETTERS & SETTERS                                                            *

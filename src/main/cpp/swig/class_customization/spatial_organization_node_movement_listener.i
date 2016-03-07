@@ -31,6 +31,15 @@
   %typemap(javainterfaces) cx3d::spatial_organization::SpatialOrganizationNodeMovementListener<cx3d::physics::PhysicalNode> "ini.cx3d.spatialOrganization.SpatialOrganizationNodeMovementListener"
 %enddef
 
+%define %SpatialOrganizationNodeMovementListener_native()
+  %native_defined_class(cx3d::spatial_organization::SpatialOrganizationNodeMovementListener<cx3d::physics::PhysicalNode>,
+                      SpatialOrganizationNodeMovementListenerT_PhysicalNode,
+                      ini.cx3d.spatialOrganization.SpatialOrganizationNodeMovementListener,
+                      SpatialOrganizationNodeMovementListener,
+                        ;);
+  %typemap(javainterfaces) cx3d::spatial_organization::SpatialOrganizationNodeMovementListener<cx3d::physics::PhysicalNode> "ini.cx3d.spatialOrganization.SpatialOrganizationNodeMovementListener"
+%enddef
+
 %define %SpatialOrganizationNodeMovementListener_stdlist()
   %stdlist_typemap(std::shared_ptr<cx3d::spatial_organization::SpatialOrganizationNodeMovementListener<cx3d::physics::PhysicalNode>>,
                    SpatialOrganizationNodeMovementListener,
@@ -41,5 +50,9 @@
  * apply customizations
  */
 %SpatialOrganizationNodeMovementListener_cx3d_shared_ptr();
-%SpatialOrganizationNodeMovementListener_java();
+#ifdef SPATIALORGANIZATIONNODEMOVEMENTLISTENER_NATIVE
+  %SpatialOrganizationNodeMovementListener_native();
+#else
+  %SpatialOrganizationNodeMovementListener_java();
+#endif
 %SpatialOrganizationNodeMovementListener_stdlist();

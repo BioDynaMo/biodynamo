@@ -15,30 +15,35 @@ template<class T> class SpaceNode;
 template<class T>
 class SpatialOrganizationNodeMovementListener {
  public:
+  SpatialOrganizationNodeMovementListener(){
+
+  }
   virtual ~SpatialOrganizationNodeMovementListener() {
   }
 
-  virtual void nodeAboutToMove(
-      std::shared_ptr<SpaceNode<T>> node,
-      const std::array<double, 3>& planned_movement) = 0;
+  virtual void nodeAboutToMove(const std::shared_ptr<SpaceNode<T>>& node,
+                               const std::array<double, 3>& planned_movement) = 0;
 
-  virtual void nodeMoved(std::shared_ptr<SpaceNode<T> > node) = 0;
+  virtual void nodeMoved(const std::shared_ptr<SpaceNode<T> >& node) = 0;
 
-  virtual void nodeAboutToBeRemoved(std::shared_ptr<SpaceNode<T> > node) = 0;
+  virtual void nodeAboutToBeRemoved(const std::shared_ptr<SpaceNode<T> >& node) = 0;
 
-  virtual void nodeRemoved(std::shared_ptr<SpaceNode<T> > node) = 0;
+  virtual void nodeRemoved(const std::shared_ptr<SpaceNode<T> >& node) = 0;
 
   virtual void nodeAboutToBeAdded(
-      std::shared_ptr<SpaceNode<T>> node,
-      const std::array<double, 3>& planned_position,
+      const std::shared_ptr<SpaceNode<T>>& node, const std::array<double, 3>& planned_position,
       const std::array<std::shared_ptr<T>, 4>& vertices_of_the_tetrahedron_containing_the_position) = 0;
 
-  virtual void nodeAdded(std::shared_ptr<SpaceNode<T> > node) = 0;
+  virtual void nodeAdded(const std::shared_ptr<SpaceNode<T> >& node) = 0;
 
   /**
    * Returns a String representation of this SpatialOrganizationNodeMovementListener
    */
   virtual std::string toString() const = 0;
+
+  virtual bool equalTo(const std::shared_ptr<SpatialOrganizationNodeMovementListener>& other) const {
+    return this == other.get();
+  }
 };
 
 }  // namespace spatial_organization

@@ -27,7 +27,6 @@ import ini.cx3d.physics.factory.PhysicalNodeFactory;
 import ini.cx3d.physics.factory.SubstanceFactory;
 import ini.cx3d.simulations.ECM;
 import ini.cx3d.spatialOrganization.interfaces.SpaceNode;
-import ini.cx3d.swig.spatialOrganization.SpatialOrganizationNodeMovementListenerT_PhysicalNode;
 import ini.cx3d.physics.interfaces.Substance;
 import ini.cx3d.physics.interfaces.PhysicalNode;
 
@@ -42,17 +41,21 @@ import java.util.*;
  * 
  * @author fredericzubler
  */
-public class PhysicalNodeMovementListener extends SpatialOrganizationNodeMovementListenerT_PhysicalNode {//implements SpatialOrganizationNodeMovementListener<PhysicalNode>  {
+public class PhysicalNodeMovementListener extends ini.cx3d.swig.physics.PhysicalNodeMovementListener {//implements SpatialOrganizationNodeMovementListener<PhysicalNode>  {
 
 	// flag we put into each neighboring PhysicalNode before the move
 	// so we recognize a new neighbor after the movement has occurred.
-	private  static int movementOperationId = (int)(10000*ECM.getRandomDouble());
+	private  static int movementOperationId;
 	// all extracellularSubstances present in this PhysicalNode. 
 	private Substance[] substancesInN;
 	// respective quantity of the extracellularSubstances before the move. 
 	private double[] q;
 	// all the neighbors of the PhysicalNode.
 	private Iterable<ini.cx3d.physics.interfaces.PhysicalNode> neighborsBefore;
+
+	public static void setMovementOperationId(int i){
+		movementOperationId = i;
+	}
 
 	//----------------------------------------------------------------------
 	// MASS CONSERVATION WHEN A POINT IS MOVED :

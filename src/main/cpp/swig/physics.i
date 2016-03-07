@@ -11,6 +11,8 @@
 #include "physics/intracellular_substance.h"
 #include "physics/ecm.h"
 #include "physics/physical_node.h"
+// #include "spatial_organization/spatial_organization_node_movement_listener.h"
+#include "physics/physical_node_movement_listener.h"
 
 using namespace cx3d::physics;
 %}
@@ -35,9 +37,12 @@ JAVA_LOAD_NATIVE_LIBRARY(cx3d_physics);
 %include "class_customization/space_node.i"
 %include "class_customization/physics/ecm.i"
 %include "class_customization/physics/physical_node.i"
+// %include "spatial_organization/spatial_organization_node_movement_listener.h"
+%include "class_customization/physics/physical_node_movement_listener.i"
 
 // add the original header files here
 %include "physics/substance.h"
 %include "physics/intracellular_substance.h"
 %include "physics/ecm.h"
 %include "physics/physical_node.h"
+%include "physics/physical_node_movement_listener.h"

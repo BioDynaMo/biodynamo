@@ -248,7 +248,7 @@ std::shared_ptr<Substance> PhysicalNode::getSubstanceInstance(const std::shared_
 }
 
 double PhysicalNode::computeConcentrationAtDistanceBasedOnGradient(const std::shared_ptr<Substance>& s,
-                                                                   std::array<double, 3>& dX) {
+                                                                   const std::array<double, 3>& dX) {
   // if the point that interests us is inside a tetrahedron, we interpolate the
   // value based on the tetrahedron
 

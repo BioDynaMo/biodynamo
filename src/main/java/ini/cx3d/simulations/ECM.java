@@ -35,6 +35,7 @@ import ini.cx3d.localBiology.SomaElement;
 import ini.cx3d.physics.ECMChemicalReaction;
 import ini.cx3d.physics.factory.IntracellularSubstanceFactory;
 import ini.cx3d.physics.factory.PhysicalNodeFactory;
+import ini.cx3d.physics.factory.PhysicalNodeMovementListenerFactory;
 import ini.cx3d.physics.interfaces.IntracellularSubstance;
 import ini.cx3d.physics.PhysicalCylinder;
 import ini.cx3d.physics.interfaces.PhysicalNode;
@@ -375,9 +376,9 @@ public class ECM extends ini.cx3d.swig.physics.ECM implements SimStateSerializab
 	public SpatialOrganizationNode<ini.cx3d.physics.interfaces.PhysicalNode> getSpatialOrganizationNodeInstance(double[] position, ini.cx3d.physics.interfaces.PhysicalNode userObject){
 		if(initialNode == null){
 			SpaceNode<ini.cx3d.physics.interfaces.PhysicalNode> sn1 = new SpaceNodeFactory<ini.cx3d.physics.interfaces.PhysicalNode>().create(position,userObject);
-			PhysicalNodeMovementListener listener = new PhysicalNodeMovementListener();
+//			PhysicalNodeMovementListener listener = new PhysicalNodeMovementListener();
 //			XX_oldMoveListener listener = new XX_oldMoveListener();
-			sn1.addSpatialOrganizationNodeMovementListener((SpatialOrganizationNodeMovementListener<ini.cx3d.physics.interfaces.PhysicalNode>) listener);
+			sn1.addSpatialOrganizationNodeMovementListener(PhysicalNodeMovementListenerFactory.create());
 			initialNode = sn1;
 			return sn1;
 		}
@@ -404,9 +405,8 @@ public class ECM extends ini.cx3d.swig.physics.ECM implements SimStateSerializab
 			SpatialOrganizationNode<ini.cx3d.physics.interfaces.PhysicalNode> n, double[] position, ini.cx3d.physics.interfaces.PhysicalNode userObject){
 		if(initialNode == null){
 			SpaceNode<ini.cx3d.physics.interfaces.PhysicalNode> sn1 = new SpaceNodeFactory<ini.cx3d.physics.interfaces.PhysicalNode>().create(position, userObject);
-			PhysicalNodeMovementListener listener = new PhysicalNodeMovementListener();
 //			XX_oldMoveListener listener = new XX_oldMoveListener();
-			sn1.addSpatialOrganizationNodeMovementListener((SpatialOrganizationNodeMovementListener<ini.cx3d.physics.interfaces.PhysicalNode>) listener);
+			sn1.addSpatialOrganizationNodeMovementListener(PhysicalNodeMovementListenerFactory.create());
 			initialNode = sn1;
 			return sn1;
 
