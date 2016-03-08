@@ -27,7 +27,6 @@ import static ini.cx3d.utilities.Matrix.printlnLine;
 import static ini.cx3d.utilities.Matrix.scalarMult;
 import static ini.cx3d.utilities.Matrix.subtract;
 import ini.cx3d.Param;
-import ini.cx3d.physics.PhysicalBond;
 import ini.cx3d.physics.PhysicalCylinder;
 import ini.cx3d.physics.PhysicalSphere;
 import ini.cx3d.simulations.ECM;
@@ -394,7 +393,7 @@ public class View extends JComponent {
 			}
 			// if PhysicalBonds, we also draw them .............................
 			if (drawPhysicalBonds) {
-				for (PhysicalBond pb : aCylinder.getPhysicalBonds()) {
+				for (ini.cx3d.physics.interfaces.PhysicalBond pb : aCylinder.getPhysicalBonds()) {
 					double[] firstEnd = mult(V, pb.getFirstEndLocation()); // rotation
 					double[] secondEnd = mult(V, pb.getSecondEndLocation());
 					if (representationType != PROJECTION_TYPE) {
@@ -635,7 +634,7 @@ public class View extends JComponent {
 
 			// if PhysicalBonds, we also draw them .............................
 			if (drawPhysicalBonds) {
-				for (PhysicalBond pb : aSphere.getPhysicalBonds()) {
+				for (ini.cx3d.physics.interfaces.PhysicalBond pb : aSphere.getPhysicalBonds()) {
 					double[] firstEnd = mult(V, pb.getFirstEndLocation()); // rotation
 					double[] secondEnd = mult(V, pb.getSecondEndLocation());
 					if (false && representationType != PROJECTION_TYPE) {

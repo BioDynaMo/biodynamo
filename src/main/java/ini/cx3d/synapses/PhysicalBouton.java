@@ -29,6 +29,7 @@ import ini.cx3d.localBiology.*;
 import ini.cx3d.physics.PhysicalBond;
 import ini.cx3d.physics.PhysicalCylinder;
 import ini.cx3d.physics.PhysicalObject;
+import ini.cx3d.physics.factory.PhysicalBondFactory;
 
 import java.util.Objects;
 
@@ -88,13 +89,13 @@ public class PhysicalBouton extends Excrescence {
 		ex.setEx(this);
 		// if needed, formation of the PhysicalBound
 		if (createPhysicalBond) {
-			PhysicalBond pb = new PhysicalBond(super.po, super.positionOnPO, ex
-					.getPo(), ex.getPositionOnPO(), distance(
-					super.getPo().transformCoordinatesPolarToGlobal(
-							super.getPositionOnPO()), ex.getPo()
-							.transformCoordinatesPolarToGlobal(
-									ex.getPositionOnPO())),
-			// 15,
+			ini.cx3d.physics.interfaces.PhysicalBond pb = PhysicalBondFactory.create(super.po, super.positionOnPO, ex
+							.getPo(), ex.getPositionOnPO(), distance(
+							super.getPo().transformCoordinatesPolarToGlobal(
+									super.getPositionOnPO()), ex.getPo()
+									.transformCoordinatesPolarToGlobal(
+											ex.getPositionOnPO())),
+					// 15,
 					1);
 			// that we insert into the two PhysicalObjects
 			// super.po.addPhysicalBond(pb);
@@ -123,7 +124,7 @@ public class PhysicalBouton extends Excrescence {
 		ex.setEx(this);
 		// if needed, formation of the PhysicalBound
 		if (createPhysicalBond) {
-			PhysicalBond pb = new PhysicalBond(super.po, super.positionOnPO, ex
+			ini.cx3d.physics.interfaces.PhysicalBond pb = PhysicalBondFactory.create(super.po, super.positionOnPO, ex
 					.getPo(), ex.getPositionOnPO(), distance(
 					super.getPo().transformCoordinatesPolarToGlobal(
 							super.getPositionOnPO()), ex.getPo()
@@ -189,7 +190,7 @@ public class PhysicalBouton extends Excrescence {
 			// otherNe.getPhysicalCylinder(), currVec ,
 			// distance(super.getPo().transformCoordinatesPolarToGlobal(super.getPositionOnPO()),
 			// currPos),1);
-			PhysicalBond pb = new PhysicalBond(super.po, super.positionOnPO,
+			ini.cx3d.physics.interfaces.PhysicalBond pb = PhysicalBondFactory.create(super.po, super.positionOnPO,
 					otherNe.getPhysicalCylinder(), otherNe
 							.getPhysicalCylinder()
 							.transformCoordinatesLocalToPolar(currVec),

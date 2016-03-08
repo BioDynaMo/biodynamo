@@ -22,6 +22,8 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 package ini.cx3d.physics;
 
 
+import ini.cx3d.physics.factory.PhysicalBondFactory;
+
 import static ini.cx3d.utilities.Matrix.add;
 import static ini.cx3d.utilities.Matrix.crossProduct;
 import static ini.cx3d.utilities.Matrix.dot;
@@ -31,8 +33,6 @@ import static ini.cx3d.utilities.Matrix.scalarMult;
 import static ini.cx3d.utilities.Matrix.subtract;
 import static ini.cx3d.utilities.Matrix.distance;
 import static ini.cx3d.utilities.SystemUtilities.*;
-
-import java.util.concurrent.locks.ReadWriteLock;
 
 
 public class CollisionCheck {
@@ -225,7 +225,7 @@ public class CollisionCheck {
 //			rwl2 =  moving.getRwLock();
 //		}
 		for (int i = 0; i < still.getPhysicalBonds().size(); i++) {
-			PhysicalBond pbOnStill = still.getPhysicalBonds().get(i);
+			ini.cx3d.physics.interfaces.PhysicalBond pbOnStill = still.getPhysicalBonds().get(i);
 //			    rwl1.readLock().lock();
 //			    rwl2.readLock().lock();
 				if(pbOnStill.getOppositePhysicalObject(still)==moving){
@@ -238,7 +238,7 @@ public class CollisionCheck {
 		}
 
 		if(alreadyAPhysicalBond == false){
-			PhysicalBond p = new PhysicalBond(still, new double[] {lambda*distance(E,D), 0}, moving, new double[] {0,0}, -10,10);
+			ini.cx3d.physics.interfaces.PhysicalBond p = PhysicalBondFactory.create(still, new double[]{lambda * distance(E, D), 0}, moving, new double[]{0, 0}, -10, 10);
 			p.setSlidingAllowed(true);
 			System.out.println("ADD : CollisionCheck.addPhysicalBondIfCrossing() ***********************************");
 		}

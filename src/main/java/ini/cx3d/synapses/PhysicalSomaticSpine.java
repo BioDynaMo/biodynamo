@@ -27,6 +27,7 @@ import static ini.cx3d.utilities.Matrix.distance;
 import ini.cx3d.localBiology.NeuriteElement;
 import ini.cx3d.physics.PhysicalBond;
 import ini.cx3d.physics.PhysicalObject;
+import ini.cx3d.physics.factory.PhysicalBondFactory;
 
 public class PhysicalSomaticSpine extends Excrescence {
 
@@ -76,9 +77,9 @@ public class PhysicalSomaticSpine extends Excrescence {
 		ex.setEx(this);
 		// if needed, formation of the PhysicalBound
 		if(createPhysicalBond){
-			PhysicalBond pb = new PhysicalBond(
+			ini.cx3d.physics.interfaces.PhysicalBond pb = PhysicalBondFactory.create(
 					super.po, super.positionOnPO,
-					ex.getPo(),  ex.getPositionOnPO(), 
+					ex.getPo(), ex.getPositionOnPO(),
 					distance(super.getPo().transformCoordinatesPolarToGlobal(super.getPositionOnPO()),
 							ex.getPo().transformCoordinatesPolarToGlobal(ex.getPositionOnPO())),
 					1);

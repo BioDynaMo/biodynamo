@@ -26,8 +26,8 @@ import static ini.cx3d.SimStateSerializationUtil.keyValue;
 import static ini.cx3d.utilities.Matrix.dot;
 import ini.cx3d.Param;
 import ini.cx3d.localBiology.CellElement;
-import ini.cx3d.physics.debug.PhysicalNodeDebug;
 import ini.cx3d.physics.factory.IntracellularSubstanceFactory;
+import ini.cx3d.physics.factory.PhysicalBondFactory;
 import ini.cx3d.simulations.ECM;
 import ini.cx3d.swig.physics.physics;
 import ini.cx3d.synapses.Excrescence;
@@ -107,7 +107,7 @@ public abstract class PhysicalObject extends physics.PhysicalObjectBase{
 	protected Hashtable<String, ini.cx3d.physics.interfaces.IntracellularSubstance> intracellularSubstances = new Hashtable<String, ini.cx3d.physics.interfaces.IntracellularSubstance>();
 
 	/* List of the Physical bonds that this object can do (for cell adhesion where synapse formation occurs)*/
-	protected Vector<PhysicalBond> physicalBonds = new Vector<PhysicalBond>();
+	protected Vector<ini.cx3d.physics.interfaces.PhysicalBond> physicalBonds = new Vector<ini.cx3d.physics.interfaces.PhysicalBond>();
 
 
 	/* List of the Physical bonds that this object can do (for cell adhesion, to restore proper configuration)*/
@@ -421,7 +421,7 @@ public abstract class PhysicalObject extends physics.PhysicalObjectBase{
 
 	/** Simply adds the argument to the vector containing all the PhysicalBonds of this
 	 * PhysicalObject.*/
-	public void addPhysicalBond(PhysicalBond pb){
+	public void addPhysicalBond(ini.cx3d.physics.interfaces.PhysicalBond pb){
 		//getRwLock().writeLock().lock();
 		physicalBonds.add(pb);
 		//getRwLock().writeLock().unlock();
@@ -429,7 +429,7 @@ public abstract class PhysicalObject extends physics.PhysicalObjectBase{
 
 	/** Simply removes the argument from the vector containing all the PhysicalBonds of this
 	 * PhysicalObject. */
-	public void removePhysicalBond(PhysicalBond pb){
+	public void removePhysicalBond(ini.cx3d.physics.interfaces.PhysicalBond pb){
 		//getRwLock().writeLock().lock();
 		physicalBonds.remove(pb);
 		//getRwLock().writeLock().unlock();
@@ -437,7 +437,7 @@ public abstract class PhysicalObject extends physics.PhysicalObjectBase{
 
 	/** Returns true if there is a PhysicalBond that fixes me to this other PhysicalObject.*/
 	public boolean getHasAPhysicalBondWith(PhysicalObject po){
-		for (PhysicalBond pb : physicalBonds) {
+		for (ini.cx3d.physics.interfaces.PhysicalBond pb : physicalBonds) {
 			if(Objects.equals(po, pb.getOppositePhysicalObject(this)))
 				return true;
 		}
@@ -450,11 +450,11 @@ public abstract class PhysicalObject extends physics.PhysicalObjectBase{
 	 * @param po
 	 * @return
 	 */
-	public PhysicalBond makePhysicalBondWith(PhysicalObject po){
+	public ini.cx3d.physics.interfaces.PhysicalBond makePhysicalBondWith(PhysicalObject po){
 		try
 		{
 			//getRwLock().readLock().lock();
-			PhysicalBond pb = new PhysicalBond(this,po);
+			ini.cx3d.physics.interfaces.PhysicalBond pb = PhysicalBondFactory.create(this, po);
 //			this.physicalBonds.add(pb);
 //			po.addPhysicalBond(pb);
 			return pb;
@@ -478,7 +478,7 @@ public abstract class PhysicalObject extends physics.PhysicalObjectBase{
 			//getRwLock().writeLock().lock();
 			boolean thereWasABond = false;
 			for (int i = 0; i < physicalBonds.size(); i++) {
-				PhysicalBond pb = physicalBonds.get(i);
+				ini.cx3d.physics.interfaces.PhysicalBond pb = physicalBonds.get(i);
 				if(Objects.equals(po, pb.getOppositePhysicalObject(this))){
 					physicalBonds.remove(i);
 					po.physicalBonds.remove(pb);
@@ -924,11 +924,11 @@ public abstract class PhysicalObject extends physics.PhysicalObjectBase{
 	}
 
 	/** Returns the vector containing all the PhysicalBonds of this PhysicalObject.*/
-	public Vector<PhysicalBond> getPhysicalBonds() {
+	public Vector<ini.cx3d.physics.interfaces.PhysicalBond> getPhysicalBonds() {
 		try
 		{
 			//getRwLock().readLock().lock();
-			return (Vector<PhysicalBond>) physicalBonds.clone();
+			return (Vector<ini.cx3d.physics.interfaces.PhysicalBond>) physicalBonds.clone();
 		}
 		finally
 		{
@@ -938,9 +938,9 @@ public abstract class PhysicalObject extends physics.PhysicalObjectBase{
 
 	/** Sets the vector containing all the PhysicalBonds of this PhysicalObject.
 	 * This methof should not be used during the simulation. */
-	public void setPhysicalBonds(Vector<PhysicalBond> physicalBonds) {
+	public void setPhysicalBonds(Vector<ini.cx3d.physics.interfaces.PhysicalBond> physicalBonds) {
 		//getRwLock().writeLock().lock();
-		this.physicalBonds = (Vector<PhysicalBond>) physicalBonds.clone();
+		this.physicalBonds = (Vector<ini.cx3d.physics.interfaces.PhysicalBond>) physicalBonds.clone();
 		//getRwLock().writeLock().unlock();
 	}
 

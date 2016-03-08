@@ -28,11 +28,10 @@ import static ini.cx3d.utilities.Matrix.scalarMult;
 import static ini.cx3d.utilities.Matrix.subtract;
 
 import java.util.Objects;
-import java.util.concurrent.locks.ReadWriteLock;
 
 import ini.cx3d.Param;
-import ini.cx3d.SimStateSerializable;
 import ini.cx3d.SimStateSerializationUtil;
+import ini.cx3d.physics.factory.PhysicalBondFactory;
 
 
 /**
@@ -51,7 +50,7 @@ import ini.cx3d.SimStateSerializationUtil;
  *
  */
 
-public class PhysicalBond implements SimStateSerializable {
+public class PhysicalBond implements ini.cx3d.physics.interfaces.PhysicalBond {
 
 	private PhysicalObject a;
 	private PhysicalObject b;
@@ -145,23 +144,28 @@ public class PhysicalBond implements SimStateSerializable {
 		this.pastLenght = restingLength;
 	}
 
+	@Override
 	public synchronized PhysicalObject getFirstPhysicalObject() {
 		return a;
 	}
 
+	@Override
 	public synchronized PhysicalObject getSecondPhysicalObject() {
 		return b;
 	}
 
+	@Override
 	public synchronized void setFirstPhysicalObject(PhysicalObject a) {
 		this.a = a;
 	}
 
+	@Override
 	public synchronized void setSecondPhysicalObject(PhysicalObject b) {
 		this.b = b;
 	}
 
 	/** If false, the first PhysicalObject doesn't feel the influence of this PhysicalBond.*/
+	@Override
 	public synchronized boolean isHasEffectOnA() {
 		return hasEffectOnA;
 	}
@@ -170,15 +174,18 @@ public class PhysicalBond implements SimStateSerializable {
 		this.hasEffectOnA = hasEffectOnA;
 	}
 	/** If false, the second PhysicalObject doesn't feel the influence of this PhysicalBond.*/
+	@Override
 	public synchronized  boolean isHasEffectOnB() {
 		return hasEffectOnB;
 	}
 	/** If false, the second PhysicalObject doesn't feel the influence of this PhysicalBond.*/
+	@Override
 	public synchronized void setHasEffectOnB(boolean hasEffectOnB) {
 		this.hasEffectOnB = hasEffectOnB;
 	}
 	/** If true, allows the physical bond to "slide" from b to b's mother or daughter left,
 	 * if b is a chain of PhysicalCylinders. It can be seen as the migration of a along b.*/
+	@Override
 	public synchronized boolean isSlidingAllowed() {
 		return slidingAllowed;
 	}
@@ -187,10 +194,12 @@ public class PhysicalBond implements SimStateSerializable {
 	 * if b is a chain of PhysicalCylinders. It can be seen as the migration of a along b.
 	 * @param slidingAllowed
 	 */
+	@Override
 	public synchronized void setSlidingAllowed(boolean slidingAllowed) {
 		this.slidingAllowed = slidingAllowed;
 	}
 
+	@Override
 	public void exchangePhysicalObject(PhysicalObject oldPo, PhysicalObject newPo){
 //		ReadWriteLock rwl1;
 //		ReadWriteLock rwl2;
@@ -217,6 +226,7 @@ public class PhysicalBond implements SimStateSerializable {
 //		rwl2.writeLock().unlock();
 	}
 
+	@Override
 	public void vanish(){
 //		ReadWriteLock rwl1;
 //		ReadWriteLock rwl2;
@@ -238,6 +248,7 @@ public class PhysicalBond implements SimStateSerializable {
 //		rwl2.writeLock().unlock();
 	}
 
+	@Override
 	public synchronized PhysicalObject getOppositePhysicalObject(PhysicalObject po) {
 		if(Objects.equals(po, a)){
 			return b;
@@ -246,6 +257,7 @@ public class PhysicalBond implements SimStateSerializable {
 		}
 	}
 
+	@Override
 	public synchronized  void setPositionOnObjectInLocalCoord(PhysicalObject po, double[] positionInLocalCoordinates){
 		if(Objects.equals(po, a)){
 			originOnA = positionInLocalCoordinates;
@@ -254,6 +266,7 @@ public class PhysicalBond implements SimStateSerializable {
 		}
 	}
 
+	@Override
 	public synchronized double[] getPositionOnObjectInLocalCoord(PhysicalObject po){
 		if(Objects.equals(po, a)){
 			return originOnA;
@@ -272,6 +285,7 @@ public class PhysicalBond implements SimStateSerializable {
 	 * @return [Fx,Fy,Fz,p] an array with the 3 force components and the proportion
 	 * applied to the proximal end - in case of a PhysicalCylinder.
 	 */
+	@Override
 	public double[] getForceOn(PhysicalObject po){
 		// 0. Find if this physicalBound has an effect at all on the object
 		if( (Objects.equals(po, a) && hasEffectOnA==false) || (Objects.equals(po, b) && hasEffectOnB==false) )
@@ -345,6 +359,7 @@ public class PhysicalBond implements SimStateSerializable {
 	 * (Only for graphical display).Raises a NullPointerException if a == null.
 	 * @return x,y,z coord of the insertion point of one end
 	 */
+	@Override
 	public double[] getFirstEndLocation(){
 		return a.transformCoordinatesPolarToGlobal( getPositionOnObjectInLocalCoord(a) );
 	}
@@ -354,6 +369,7 @@ public class PhysicalBond implements SimStateSerializable {
 	 * (Only for graphical display). Raises a NullPointerException if b == null.
 	 * @return x,y,z coord of the insertion point of one end
 	 */
+	@Override
 	public double[] getSecondEndLocation(){
 		return b.transformCoordinatesPolarToGlobal( getPositionOnObjectInLocalCoord(b) );
 	}
@@ -369,7 +385,7 @@ public class PhysicalBond implements SimStateSerializable {
 		pc2.setSpringAxis(new double[] {0,0,5});
 		pc2.setActualLength(5);
 		// creation of a PhysicalBond
-		PhysicalBond pb = new PhysicalBond(pc1, new double[] {2,3}, pc2, new double[] {4,3}, 0, 5);
+		ini.cx3d.physics.interfaces.PhysicalBond pb = PhysicalBondFactory.create(pc1, new double[]{2, 3}, pc2, new double[]{4, 3}, 0, 5);
 		double[] force = pb.getForceOn(pc1);
 		printlnLine("force",force);
 	}
@@ -381,6 +397,7 @@ public class PhysicalBond implements SimStateSerializable {
 	/**
 	 * @return the restingLength
 	 */
+	@Override
 	public synchronized double getRestingLength() {
 		return restingLength;
 	}
@@ -388,6 +405,7 @@ public class PhysicalBond implements SimStateSerializable {
 	/**
 	 * @param restingLength the restingLength to set
 	 */
+	@Override
 	public synchronized void setRestingLength(double restingLength) {
 		this.restingLength = restingLength;
 	}
@@ -395,6 +413,7 @@ public class PhysicalBond implements SimStateSerializable {
 	/**
 	 * @return the springConstant
 	 */
+	@Override
 	public synchronized double getSpringConstant() {
 		return springConstant;
 	}
@@ -402,6 +421,7 @@ public class PhysicalBond implements SimStateSerializable {
 	/**
 	 * @param springConstant the springConstant to set
 	 */
+	@Override
 	public synchronized void setSpringConstant(double springConstant) {
 		this.springConstant = springConstant;
 	}
@@ -409,6 +429,7 @@ public class PhysicalBond implements SimStateSerializable {
 	/**
 	 * @return the maxTension
 	 */
+	@Override
 	public synchronized double getMaxTension() {
 		return maxTension;
 	}
@@ -416,6 +437,7 @@ public class PhysicalBond implements SimStateSerializable {
 	/**
 	 * @param maxTension the maxTension to set
 	 */
+	@Override
 	public synchronized void setMaxTension(double maxTension) {
 		this.maxTension = maxTension;
 	}
@@ -423,6 +445,7 @@ public class PhysicalBond implements SimStateSerializable {
 	/**
 	 * @return the dumpingConstant
 	 */
+	@Override
 	public synchronized double getDumpingConstant() {
 		return dumpingConstant;
 	}
@@ -430,6 +453,7 @@ public class PhysicalBond implements SimStateSerializable {
 	/**
 	 * @param dumpingConstant the dumpingConstant to set
 	 */
+	@Override
 	public synchronized void setDumpingConstant(double dumpingConstant) {
 		this.dumpingConstant = dumpingConstant;
 	}

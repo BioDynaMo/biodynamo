@@ -798,7 +798,7 @@ public class PhysicalSphere extends PhysicalObject{
 				}
 				// if we have a PhysicalBond with him, we also don't take it into account
 				if(super.physicalBonds != null){
-					for (PhysicalBond pb : physicalBonds) {
+					for (ini.cx3d.physics.interfaces.PhysicalBond pb : physicalBonds) {
 						if(Objects.equals(pb.getOppositePhysicalObject(this), neighbor)){
 							continue;
 						}
@@ -812,7 +812,7 @@ public class PhysicalSphere extends PhysicalObject{
 		}
 
 		// 4) PhysicalBonds--------------------------------------------------------------------
-		for (PhysicalBond pb : physicalBonds) {
+		for (ini.cx3d.physics.interfaces.PhysicalBond pb : physicalBonds) {
 			double[] forceFromThisPhysicalBond = pb.getForceOn(this);
 			// for mass translation only (no rotation)
 			translationForceOnPointMass[0]+= forceFromThisPhysicalBond[0];
@@ -912,7 +912,7 @@ public class PhysicalSphere extends PhysicalObject{
 			//getRwLock().readLock().unlock();
 			// physical objects at the other side of a PhysicalBond:
 			//getRwLock().readLock().lock();
-			for (PhysicalBond pb : physicalBonds) {
+			for (ini.cx3d.physics.interfaces.PhysicalBond pb : physicalBonds) {
 				pb.getOppositePhysicalObject(this).setOnTheSchedulerListForPhysicalObjects(true);
 			}
 			//getRwLock().readLock().unlock();
@@ -944,7 +944,7 @@ public class PhysicalSphere extends PhysicalObject{
 		//getRwLock().readLock().unlock();
 		// physical objects at the other side of a PhysicalBond:
 		//getRwLock().readLock().lock();
-		for (PhysicalBond pb : physicalBonds) {
+		for (ini.cx3d.physics.interfaces.PhysicalBond pb : physicalBonds) {
 			pb.getOppositePhysicalObject(this).setOnTheSchedulerListForPhysicalObjects(true);
 		}
 		//getRwLock().readLock().unlock();

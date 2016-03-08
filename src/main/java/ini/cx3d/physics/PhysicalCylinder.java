@@ -959,7 +959,7 @@ public class PhysicalCylinder extends PhysicalObject{
 				}
 				// if we have a PhysicalBond with him, we also don't take it into account
 				if(super.physicalBonds != null){
-					for (PhysicalBond pb : physicalBonds) {
+					for (ini.cx3d.physics.interfaces.PhysicalBond pb : physicalBonds) {
 						if(Objects.equals(pb.getOppositePhysicalObject(this), neighbor)){
 							continue;
 						}
@@ -1022,7 +1022,7 @@ public class PhysicalCylinder extends PhysicalObject{
 		}
 		// 4) PhysicalBond -----------------------------------------------------------
 		for (int i=0; i< physicalBonds.size(); i++) {
-			PhysicalBond pb = physicalBonds.get(i);
+			ini.cx3d.physics.interfaces.PhysicalBond pb = physicalBonds.get(i);
 			double[] forceFromThisPhysicalBond = pb.getForceOn(this);
 
 			if(forceFromThisPhysicalBond.length == 3){
