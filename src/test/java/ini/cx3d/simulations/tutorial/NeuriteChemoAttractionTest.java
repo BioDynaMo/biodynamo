@@ -33,8 +33,6 @@ import ini.cx3d.cells.CellFactory;
 import ini.cx3d.localBiology.AbstractLocalBiologyModule;
 import ini.cx3d.localBiology.CellElement;
 import ini.cx3d.localBiology.NeuriteElement;
-import ini.cx3d.physics.PhysicalObject;
-import ini.cx3d.physics.Substance;
 import ini.cx3d.physics.factory.SubstanceFactory;
 import ini.cx3d.simulations.ECM;
 import ini.cx3d.simulations.Scheduler;
@@ -114,7 +112,7 @@ class NeuriteChemoAttraction extends AbstractLocalBiologyModule {
 	}
 
 	public void run() {		
-		PhysicalObject physical = super.cellElement.getPhysical();
+		ini.cx3d.physics.interfaces.PhysicalObject physical = super.cellElement.getPhysical();
 		double concentration = physical.getExtracellularConcentration(substanceID);
 		double[] grad = physical.getExtracellularGradient(substanceID);
 		

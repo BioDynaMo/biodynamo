@@ -203,7 +203,7 @@ public class PhysicalSphere extends PhysicalObject {
 	 * @param daughterWhoAsks .
 	 *
 	 */
-	public double[] originOf(PhysicalObject daughterWhoAsks) {
+	public double[] originOf(ini.cx3d.physics.interfaces.PhysicalObject daughterWhoAsks) {
 		try
 		{
 			//getRwLock().readLock().lock();
@@ -226,18 +226,18 @@ public class PhysicalSphere extends PhysicalObject {
 	/**
 	 * A PhysicalSphere has no mother that could call, so this method is not used.
 	 */
-	protected double[] forceTransmittedFromDaugtherToMother(PhysicalObject motherWhoAsks) {
+	protected double[] forceTransmittedFromDaugtherToMother(ini.cx3d.physics.interfaces.PhysicalObject motherWhoAsks) {
 		return null;
 	}
 
-	protected void removeDaugther(PhysicalObject daughterToRemove) {
+	protected void removeDaugther(ini.cx3d.physics.interfaces.PhysicalObject daughterToRemove) {
 		//getRwLock().writeLock().lock();
 		daughters.remove(daughterToRemove);
 		daughtersCoord.remove(daughterToRemove);
 		//getRwLock().writeLock().unlock();
 	}
 
-	protected void updateRelative(PhysicalObject oldRelative, PhysicalObject newRelative) {
+	protected void updateRelative(ini.cx3d.physics.interfaces.PhysicalObject oldRelative, PhysicalObject newRelative) {
 		//getRwLock().writeLock().lock();
 		double[] coordOfTheNeuriteThatChanges = daughtersCoord.get(oldRelative);
 		daughters.remove(oldRelative);
@@ -792,7 +792,7 @@ public class PhysicalSphere extends PhysicalObject {
 			}
 			// of course, only if it is an instance of PhysicalObject
 			if(neighbor.isAPhysicalObject()){
-				PhysicalObject n = (PhysicalObject)neighbor;
+				ini.cx3d.physics.interfaces.PhysicalObject n = (ini.cx3d.physics.interfaces.PhysicalObject)neighbor;
 				// if it is a direct relative, we don't take it into account
 				if(daughters.contains(n)){  // no physical effect of a member of the family...
 					continue;
@@ -907,7 +907,7 @@ public class PhysicalSphere extends PhysicalObject {
 			//getRwLock().readLock().lock();
 			for (Object neighbor : getSoNode().getNeighbors()) {
 				if( ((ini.cx3d.physics.interfaces.PhysicalNode) neighbor).isAPhysicalObject()){
-					((PhysicalObject)neighbor).setOnTheSchedulerListForPhysicalObjects(true);
+					((ini.cx3d.physics.interfaces.PhysicalObject)neighbor).setOnTheSchedulerListForPhysicalObjects(true);
 				}
 			}
 			//getRwLock().readLock().unlock();
@@ -939,7 +939,7 @@ public class PhysicalSphere extends PhysicalObject {
 		//getRwLock().readLock().lock();
 		for (Object neighbor : getSoNode().getNeighbors()) {
 			if(((ini.cx3d.physics.interfaces.PhysicalNode) neighbor).isAPhysicalObject()){
-				((PhysicalObject)neighbor).setOnTheSchedulerListForPhysicalObjects(true);
+				((ini.cx3d.physics.interfaces.PhysicalObject)neighbor).setOnTheSchedulerListForPhysicalObjects(true);
 			}
 		}
 		//getRwLock().readLock().unlock();
@@ -1311,7 +1311,7 @@ public class PhysicalSphere extends PhysicalObject {
 
 
 	@Override
-	public boolean isRelative(PhysicalObject po) {
+	public boolean isRelative(ini.cx3d.physics.interfaces.PhysicalObject po) {
 			if(daughters.contains(po))
 				return true;
 			return false;

@@ -26,7 +26,6 @@ import static ini.cx3d.utilities.Matrix.*;
 
 import ini.cx3d.SimStateSerializable;
 import ini.cx3d.localBiology.NeuriteElement;
-import ini.cx3d.physics.PhysicalObject;
 
 /**
  * General class for dendritic spines and axonal boutons
@@ -36,7 +35,7 @@ import ini.cx3d.physics.PhysicalObject;
  */
 public abstract class Excrescence implements SimStateSerializable{
 	/** the physical object it is attached to.*/
-	PhysicalObject po;
+	ini.cx3d.physics.interfaces.PhysicalObject po;
 	/** the other structure with which it forms a synapse.*/ 
 	Excrescence ex = null; 
 	/** The position on the Physical Object where it's origin is.*/
@@ -93,10 +92,10 @@ public abstract class Excrescence implements SimStateSerializable{
 	public void setLength(double length) {
 		this.length = length;
 	}
-	public PhysicalObject getPo() {
+	public ini.cx3d.physics.interfaces.PhysicalObject getPo() {
 		return po;
 	}
-	public void setPo(PhysicalObject po) {
+	public void setPo(ini.cx3d.physics.interfaces.PhysicalObject po) {
 		this.po = po;
 	}
 	public double[] getPositionOnPO() {

@@ -23,7 +23,6 @@ package ini.cx3d.graphics;
 
 import static ini.cx3d.utilities.Matrix.mult;
 
-import ini.cx3d.physics.PhysicalObject;
 import ini.cx3d.simulations.ECM;
 import ini.cx3d.utilities.Matrix;
 
@@ -39,7 +38,7 @@ public class SelectionState extends MouseActionState{
 		{
 			view.setCursor(new Cursor(Cursor.HAND_CURSOR));
 		}
-		private PhysicalObject p;
+		private ini.cx3d.physics.interfaces.PhysicalObject p;
 		public ini.cx3d.physics.interfaces.PhysicalNode getSelectedPhysicalObject()
 		{
 			return p;
@@ -59,7 +58,7 @@ public class SelectionState extends MouseActionState{
 		
 		public void leftPressed(MouseEvent arg0){
 			
-			PhysicalObject newnode = findPhysicalNode(new double []{arg0.getX(),arg0.getY()});
+			ini.cx3d.physics.interfaces.PhysicalObject newnode = findPhysicalNode(new double []{arg0.getX(),arg0.getY()});
 			System.out.println(newnode);
 			if(newnode == p) return;
 			if(isAphysicalObjectSelected())
@@ -73,10 +72,10 @@ public class SelectionState extends MouseActionState{
 			view.repaint();
 		}
 	
-		private PhysicalObject findPhysicalNode(double[] actualCoord){
+		private ini.cx3d.physics.interfaces.PhysicalObject findPhysicalNode(double[] actualCoord){
 			
 		
-			PhysicalObject node= null;
+			ini.cx3d.physics.interfaces.PhysicalObject node= null;
 			double distance = Double.MAX_VALUE;
 			for (ini.cx3d.physics.interfaces.PhysicalNode pn : ECM.getInstance().physicalNodeList) {
 				if(!pn.isAPhysicalObject()) continue;
@@ -98,7 +97,7 @@ public class SelectionState extends MouseActionState{
 				double distancepn = Matrix.distance(newCoord, actualCoord);
 				if(distancepn < distance){
 					distance = distancepn;
-					node = (PhysicalObject)pn;
+					node = (ini.cx3d.physics.interfaces.PhysicalObject)pn;
 				}
 			}
 			return node;

@@ -1,7 +1,5 @@
 package ini.cx3d.physics.factory;
 
-import ini.cx3d.physics.PhysicalObject;
-import ini.cx3d.simulations.ECM;
 import ini.cx3d.physics.interfaces.PhysicalBond;
 import ini.cx3d.swig.physics.physics;
 
@@ -23,7 +21,7 @@ public class PhysicalBondFactory {
         }
     }
 
-    public static PhysicalBond create(PhysicalObject a, PhysicalObject b) {
+    public static PhysicalBond create(ini.cx3d.physics.interfaces.PhysicalObject a, ini.cx3d.physics.interfaces.PhysicalObject b) {
         if (NATIVE) {
             return ini.cx3d.swig.physics.PhysicalBond.create(a, b);
         } else if(!DEBUG) {
@@ -33,7 +31,7 @@ public class PhysicalBondFactory {
         }
     }
 
-    public static PhysicalBond create(PhysicalObject a, double[] positionOnA, PhysicalObject b , double[] positionOnB, double restingLength, double springConstant) {
+    public static PhysicalBond create(ini.cx3d.physics.interfaces.PhysicalObject a, double[] positionOnA, ini.cx3d.physics.interfaces.PhysicalObject b , double[] positionOnB, double restingLength, double springConstant) {
         if (NATIVE) {
             return ini.cx3d.swig.physics.PhysicalBond.create(a, positionOnA, b, positionOnB, restingLength, springConstant);
         } else if(!DEBUG) {

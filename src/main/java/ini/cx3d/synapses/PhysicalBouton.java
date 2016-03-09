@@ -26,9 +26,7 @@ import static ini.cx3d.SimStateSerializationUtil.removeLastChar;
 import static ini.cx3d.utilities.Matrix.*;
 
 import ini.cx3d.localBiology.*;
-import ini.cx3d.physics.PhysicalBond;
 import ini.cx3d.physics.PhysicalCylinder;
-import ini.cx3d.physics.PhysicalObject;
 import ini.cx3d.physics.factory.PhysicalBondFactory;
 
 import java.util.Objects;
@@ -53,7 +51,7 @@ public class PhysicalBouton extends Excrescence {
 		super.type = BOUTON;
 	}
 
-	public PhysicalBouton(PhysicalObject po, double[] origin, double length) {
+	public PhysicalBouton(ini.cx3d.physics.interfaces.PhysicalObject po, double[] origin, double length) {
 		super();
 		super.type = BOUTON;
 		super.po = po;

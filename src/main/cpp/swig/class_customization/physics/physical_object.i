@@ -100,7 +100,7 @@
 
 %define %PhysicalObject_cx3d_shared_ptr()
   %cx3d_shared_ptr(PhysicalObject,
-                   ini/cx3d/physics/PhysicalObject,
+                   ini/cx3d/physics/interfaces/PhysicalObject,
                    cx3d::physics::PhysicalObject);
 %enddef
 
@@ -108,8 +108,8 @@
   %custom_jdc(cx3d::physics::PhysicalObject,
               PhysicalObject,
               PhysicalObject,
-              ini.cx3d.physics.PhysicalObject,
-              ini/cx3d/physics/PhysicalObject);
+              ini.cx3d.physics.interfaces.PhysicalObject,
+              ini/cx3d/physics/interfaces/PhysicalObject);
 %enddef
 
 /**

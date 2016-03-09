@@ -28,8 +28,6 @@ import ini.cx3d.Param;
 import ini.cx3d.cells.Cell;
 import ini.cx3d.cells.CellFactory;
 import ini.cx3d.localBiology.AbstractLocalBiologyModule;
-import ini.cx3d.physics.IntracellularSubstance;
-import ini.cx3d.physics.PhysicalObject;
 import ini.cx3d.physics.factory.IntracellularSubstanceFactory;
 import ini.cx3d.simulations.ECM;
 import ini.cx3d.simulations.Scheduler;
@@ -78,8 +76,8 @@ class MembraneContact extends AbstractLocalBiologyModule {
 	}
 
 	public void run() {		
-		PhysicalObject physical = super.cellElement.getPhysical();
-		for (PhysicalObject o: physical.getPhysicalObjectsInContact()) {
+		ini.cx3d.physics.interfaces.PhysicalObject physical = super.cellElement.getPhysical();
+		for (ini.cx3d.physics.interfaces.PhysicalObject o: physical.getPhysicalObjectsInContact()) {
 			if(o.getMembraneConcentration("A")>1){
 				physical.setColor(Param.YELLOW);
 				super.cellElement.cleanAllLocalBiologyModules();

@@ -22,17 +22,8 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 package ini.cx3d.graphics;
 
 
-import ini.cx3d.physics.PhysicalCylinder;
-import ini.cx3d.physics.PhysicalObject;
-import ini.cx3d.physics.PhysicalSphere;
-
 import java.awt.BorderLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.HashMap;
 
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JFrame;
 import javax.swing.JTextArea;
@@ -91,10 +82,10 @@ public class ShowInfo extends JFrame {
 		}
 		return Properties;
 	}
-	private PhysicalObject physo;
+	private ini.cx3d.physics.interfaces.PhysicalObject physo;
 	private JMenuBar jJMenuBar = null; 
 	private int depth;
-	public void gatherInfo(PhysicalObject o,int  depth)
+	public void gatherInfo(ini.cx3d.physics.interfaces.PhysicalObject o,int  depth)
 	{
 		InfoVisiter info = new InfoVisiter();
 		String s = info.VisitALL(o).toString(depth, "");

@@ -1,19 +1,18 @@
 package ini.cx3d.physics.interfaces;
 
 import ini.cx3d.SimStateSerializable;
-import ini.cx3d.physics.PhysicalObject;
 
 /**
  * Created by lukas on 08.03.16.
  */
 public interface PhysicalBond extends SimStateSerializable {
-	PhysicalObject getFirstPhysicalObject();
+	ini.cx3d.physics.interfaces.PhysicalObject getFirstPhysicalObject();
 
-	PhysicalObject getSecondPhysicalObject();
+	ini.cx3d.physics.interfaces.PhysicalObject getSecondPhysicalObject();
 
-	void setFirstPhysicalObject(PhysicalObject a);
+	void setFirstPhysicalObject(ini.cx3d.physics.interfaces.PhysicalObject a);
 
-	void setSecondPhysicalObject(PhysicalObject b);
+	void setSecondPhysicalObject(ini.cx3d.physics.interfaces.PhysicalObject b);
 
 	/** If false, the first PhysicalObject doesn't feel the influence of this PhysicalBond.*/
 	boolean isHasEffectOnA();
@@ -35,15 +34,15 @@ public interface PhysicalBond extends SimStateSerializable {
 	 */
 	void setSlidingAllowed(boolean slidingAllowed);
 
-	void exchangePhysicalObject(PhysicalObject oldPo, PhysicalObject newPo);
+	void exchangePhysicalObject(ini.cx3d.physics.interfaces.PhysicalObject oldPo, ini.cx3d.physics.interfaces.PhysicalObject newPo);
 
 	void vanish();
 
-	PhysicalObject getOppositePhysicalObject(PhysicalObject po);
+	ini.cx3d.physics.interfaces.PhysicalObject getOppositePhysicalObject(ini.cx3d.physics.interfaces.PhysicalObject po);
 
-	void setPositionOnObjectInLocalCoord(PhysicalObject po, double[] positionInLocalCoordinates);
+	void setPositionOnObjectInLocalCoord(ini.cx3d.physics.interfaces.PhysicalObject po, double[] positionInLocalCoordinates);
 
-	double[] getPositionOnObjectInLocalCoord(PhysicalObject po);
+	double[] getPositionOnObjectInLocalCoord(ini.cx3d.physics.interfaces.PhysicalObject po);
 
 	/**
 	 * Returns the force that this PhysicalBond is applying to a PhsicalObject.
@@ -55,7 +54,7 @@ public interface PhysicalBond extends SimStateSerializable {
 	 * @return [Fx,Fy,Fz,p] an array with the 3 force components and the proportion
 	 * applied to the proximal end - in case of a PhysicalCylinder.
 	 */
-	double[] getForceOn(PhysicalObject po);
+	double[] getForceOn(ini.cx3d.physics.interfaces.PhysicalObject po);
 
 	/**
 	 * Gets the location in absolute cartesian coord of the first insertion point (on a).

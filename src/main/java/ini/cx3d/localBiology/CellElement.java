@@ -25,7 +25,6 @@ package ini.cx3d.localBiology;
 
 import ini.cx3d.SimStateSerializable;
 import ini.cx3d.cells.Cell;
-import ini.cx3d.physics.PhysicalObject;
 import ini.cx3d.simulations.ECM;
 
 import java.util.Vector;
@@ -153,10 +152,10 @@ public abstract class CellElement implements SimStateSerializable {
 	}
 
 	/** The <code>PhysicalSphere or <code>PhysicalCylinder</code> linked with this <code>CellElement</code>.*/
-	public abstract PhysicalObject getPhysical();
+	public abstract ini.cx3d.physics.interfaces.PhysicalObject getPhysical();
 
 	/** The <code>PhysicalSphere or <code>PhysicalCylinder</code> linked with this <code>CellElement</code>.*/
-	public abstract void setPhysical(PhysicalObject p);
+	public abstract void setPhysical(ini.cx3d.physics.interfaces.PhysicalObject p);
 
 	/**
 	 * Displaces the point mass of the <code>PhysicalObject</code> associated with

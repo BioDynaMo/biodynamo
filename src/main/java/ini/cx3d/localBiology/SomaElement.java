@@ -28,7 +28,6 @@ import static ini.cx3d.utilities.Matrix.scalarMult;
 import static ini.cx3d.utilities.Matrix.subtract;
 import ini.cx3d.Param;
 import ini.cx3d.physics.PhysicalCylinder;
-import ini.cx3d.physics.PhysicalObject;
 import ini.cx3d.physics.PhysicalSphere;
 import ini.cx3d.simulations.ECM;
 import ini.cx3d.synapses.BiologicalSomaticSpine;
@@ -212,11 +211,11 @@ public class SomaElement extends CellElement{
 	//   Getters & Setters
 	// *************************************************************************************
 
-	public PhysicalObject getPhysical() {
+	public ini.cx3d.physics.interfaces.PhysicalObject getPhysical() {
 		return this.physical;
 	}
 
-	public void setPhysical(PhysicalObject physical) {
+	public void setPhysical(ini.cx3d.physics.interfaces.PhysicalObject physical) {
 		this.physical = (PhysicalSphere) physical;
 		this.physical.setSomaElement(this); // callback
 	}

@@ -25,8 +25,6 @@ import static ini.cx3d.SimStateSerializationUtil.keyValue;
 import static ini.cx3d.SimStateSerializationUtil.removeLastChar;
 import static ini.cx3d.utilities.Matrix.distance;
 import ini.cx3d.localBiology.NeuriteElement;
-import ini.cx3d.physics.PhysicalBond;
-import ini.cx3d.physics.PhysicalObject;
 import ini.cx3d.physics.factory.PhysicalBondFactory;
 
 public class PhysicalSomaticSpine extends Excrescence {
@@ -49,7 +47,7 @@ public class PhysicalSomaticSpine extends Excrescence {
 		super.type = SOMATICSPINE;
 	}
 	
-	public PhysicalSomaticSpine(PhysicalObject po, double[] origin, double length) {
+	public PhysicalSomaticSpine(ini.cx3d.physics.interfaces.PhysicalObject po, double[] origin, double length) {
 		super();
 		super.type = SOMATICSPINE;
 		super.po = po;

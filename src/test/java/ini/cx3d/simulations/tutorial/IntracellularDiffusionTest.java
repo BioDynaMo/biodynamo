@@ -34,8 +34,6 @@ import ini.cx3d.localBiology.AbstractLocalBiologyModule;
 import ini.cx3d.localBiology.CellElement;
 import ini.cx3d.localBiology.NeuriteElement;
 import ini.cx3d.localBiology.SomaElement;
-import ini.cx3d.physics.IntracellularSubstance;
-import ini.cx3d.physics.PhysicalObject;
 import ini.cx3d.physics.factory.IntracellularSubstanceFactory;
 import ini.cx3d.simulations.ECM;
 import ini.cx3d.simulations.Scheduler;
@@ -136,7 +134,7 @@ public class IntracellularDiffusionTest extends BaseSimulationTest{
 		// growth cone model
 		public void run() {
 			// getting the concentration and defining the speed
-			PhysicalObject cyl = super.cellElement.getPhysical();
+			ini.cx3d.physics.interfaces.PhysicalObject cyl = super.cellElement.getPhysical();
 			double concentration = cyl.getIntracellularConcentration("tubulin");
 			double speed = concentration*speedFactor;
 			if(speed>100)  // can't be faster than 100

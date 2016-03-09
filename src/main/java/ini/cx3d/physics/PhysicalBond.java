@@ -52,8 +52,8 @@ import ini.cx3d.physics.factory.PhysicalBondFactory;
 
 public class PhysicalBond extends ini.cx3d.swig.physics.PhysicalBond implements ini.cx3d.physics.interfaces.PhysicalBond {
 
-	private PhysicalObject a;
-	private PhysicalObject b;
+	private ini.cx3d.physics.interfaces.PhysicalObject a;
+	private ini.cx3d.physics.interfaces.PhysicalObject b;
 	private double[] originOnA;
 	private double[] originOnB;
 	private double restingLength;
@@ -101,7 +101,7 @@ public class PhysicalBond extends ini.cx3d.swig.physics.PhysicalBond implements 
 	 * @param a
 	 * @param b
 	 */
-	public PhysicalBond(PhysicalObject a, PhysicalObject b){
+	public PhysicalBond(ini.cx3d.physics.interfaces.PhysicalObject a, ini.cx3d.physics.interfaces.PhysicalObject b){
 		registerJavaObject(this);
 		dolocking(a, b);
 		this.originOnA = a.transformCoordinatesGlobalToPolar(a.getMassLocation());
@@ -113,7 +113,7 @@ public class PhysicalBond extends ini.cx3d.swig.physics.PhysicalBond implements 
 		this.pastLenght = restingLength;
 	}
 
-	private void dolocking(PhysicalObject a, PhysicalObject b) {
+	private void dolocking(ini.cx3d.physics.interfaces.PhysicalObject a, ini.cx3d.physics.interfaces.PhysicalObject b) {
 //		ReadWriteLock rwl1;
 //		ReadWriteLock rwl2;
 //		if(a.getID()>b.getID())
@@ -136,7 +136,7 @@ public class PhysicalBond extends ini.cx3d.swig.physics.PhysicalBond implements 
 //		rwl2.writeLock().unlock();
 	}
 
-	public PhysicalBond(PhysicalObject a, double[] positionOnA, PhysicalObject b , double[] positionOnB, double restingLength, double springConstant) {
+	public PhysicalBond(ini.cx3d.physics.interfaces.PhysicalObject a, double[] positionOnA, ini.cx3d.physics.interfaces.PhysicalObject b , double[] positionOnB, double restingLength, double springConstant) {
 		registerJavaObject(this);
 		dolocking(a, b);
 		this.originOnA = positionOnA;
@@ -148,22 +148,22 @@ public class PhysicalBond extends ini.cx3d.swig.physics.PhysicalBond implements 
 	}
 
 	@Override
-	public synchronized PhysicalObject getFirstPhysicalObject() {
+	public synchronized ini.cx3d.physics.interfaces.PhysicalObject getFirstPhysicalObject() {
 		return a;
 	}
 
 	@Override
-	public synchronized PhysicalObject getSecondPhysicalObject() {
+	public synchronized ini.cx3d.physics.interfaces.PhysicalObject getSecondPhysicalObject() {
 		return b;
 	}
 
 	@Override
-	public synchronized void setFirstPhysicalObject(PhysicalObject a) {
+	public synchronized void setFirstPhysicalObject(ini.cx3d.physics.interfaces.PhysicalObject a) {
 		this.a = a;
 	}
 
 	@Override
-	public synchronized void setSecondPhysicalObject(PhysicalObject b) {
+	public synchronized void setSecondPhysicalObject(ini.cx3d.physics.interfaces.PhysicalObject b) {
 		this.b = b;
 	}
 
@@ -203,7 +203,7 @@ public class PhysicalBond extends ini.cx3d.swig.physics.PhysicalBond implements 
 	}
 
 	@Override
-	public void exchangePhysicalObject(PhysicalObject oldPo, PhysicalObject newPo){
+	public void exchangePhysicalObject(ini.cx3d.physics.interfaces.PhysicalObject oldPo, ini.cx3d.physics.interfaces.PhysicalObject newPo){
 //		ReadWriteLock rwl1;
 //		ReadWriteLock rwl2;
 //		if(a.getID()>b.getID())
@@ -252,7 +252,7 @@ public class PhysicalBond extends ini.cx3d.swig.physics.PhysicalBond implements 
 	}
 
 	@Override
-	public synchronized PhysicalObject getOppositePhysicalObject(PhysicalObject po) {
+	public synchronized ini.cx3d.physics.interfaces.PhysicalObject getOppositePhysicalObject(ini.cx3d.physics.interfaces.PhysicalObject po) {
 		if(Objects.equals(po, a)){
 			return b;
 		}else{
@@ -261,7 +261,7 @@ public class PhysicalBond extends ini.cx3d.swig.physics.PhysicalBond implements 
 	}
 
 	@Override
-	public synchronized  void setPositionOnObjectInLocalCoord(PhysicalObject po, double[] positionInLocalCoordinates){
+	public synchronized  void setPositionOnObjectInLocalCoord(ini.cx3d.physics.interfaces.PhysicalObject po, double[] positionInLocalCoordinates){
 		if(Objects.equals(po, a)){
 			originOnA = positionInLocalCoordinates;
 		}else{
@@ -270,7 +270,7 @@ public class PhysicalBond extends ini.cx3d.swig.physics.PhysicalBond implements 
 	}
 
 	@Override
-	public synchronized double[] getPositionOnObjectInLocalCoord(PhysicalObject po){
+	public synchronized double[] getPositionOnObjectInLocalCoord(ini.cx3d.physics.interfaces.PhysicalObject po){
 		if(Objects.equals(po, a)){
 			return originOnA;
 		}else{
@@ -289,12 +289,12 @@ public class PhysicalBond extends ini.cx3d.swig.physics.PhysicalBond implements 
 	 * applied to the proximal end - in case of a PhysicalCylinder.
 	 */
 	@Override
-	public double[] getForceOn(PhysicalObject po){
+	public double[] getForceOn(ini.cx3d.physics.interfaces.PhysicalObject po){
 		// 0. Find if this physicalBound has an effect at all on the object
 		if( (Objects.equals(po, a) && hasEffectOnA==false) || (Objects.equals(po, b) && hasEffectOnB==false) )
 			return new double[] {0,0,0};
 		// 1. Find the other object
-		PhysicalObject otherPo = getOppositePhysicalObject(po);
+		ini.cx3d.physics.interfaces.PhysicalObject otherPo = getOppositePhysicalObject(po);
 		// 2. Find the two insertion points of the bond
 		double[] pointOnOtherPo = otherPo.transformCoordinatesPolarToGlobal( getPositionOnObjectInLocalCoord(otherPo) );
 		double[] pointOnPo = po.transformCoordinatesPolarToGlobal( getPositionOnObjectInLocalCoord(po) );
@@ -318,7 +318,7 @@ public class PhysicalBond extends ini.cx3d.swig.physics.PhysicalBond implements 
 					newPositionOnOtherPo[0] += projNorm;
 				}
 			}else if(newPositionOnOtherPo[0] < -1){
-				PhysicalObject mo = pc.getMother();
+				ini.cx3d.physics.interfaces.PhysicalObject mo = pc.getMother();
 				if(mo instanceof PhysicalCylinder){
 					PhysicalCylinder m = (PhysicalCylinder)mo;
 					exchangePhysicalObject(pc, m);

@@ -37,7 +37,6 @@ import ini.cx3d.simulations.ECM;
 import ini.cx3d.spatialOrganization.PositionNotAllowedException;
 import ini.cx3d.spatialOrganization.SpatialOrganizationNode;
 import ini.cx3d.spatialOrganization.interfaces.SpaceNode;
-import ini.cx3d.swig.physics.*;
 import ini.cx3d.synapses.Excrescence;
 import ini.cx3d.utilities.StringUtilities;
 
@@ -172,7 +171,7 @@ public class PhysicalCylinder extends PhysicalObject {
 	 * Returns true if the <code>PhysicalObject</code> given as argument is a mother, daughter
 	 * or sister branch.*/
 	@Override
-	public boolean isRelative(PhysicalObject po) {
+	public boolean isRelative(ini.cx3d.physics.interfaces.PhysicalObject po) {
 		try
 		{
 			//getRwLock().readLock().lock();
@@ -201,7 +200,7 @@ public class PhysicalCylinder extends PhysicalObject {
 	 *
 	 */
 	@Override
-	public double[] originOf(PhysicalObject daughterWhoAsks) {
+	public double[] originOf(ini.cx3d.physics.interfaces.PhysicalObject daughterWhoAsks) {
 		// TODO : consider remove the check
 		try
 		{
@@ -221,7 +220,7 @@ public class PhysicalCylinder extends PhysicalObject {
 
 
 	@Override
-	protected void removeDaugther(PhysicalObject daughterToRemove) {
+	protected void removeDaugther(ini.cx3d.physics.interfaces.PhysicalObject daughterToRemove) {
 		// If there is another daughter than the one we want to remove,
 		// we have to be sure that it will be the daughterLeft.
 
@@ -245,7 +244,7 @@ public class PhysicalCylinder extends PhysicalObject {
 	}
 
 	@Override
-	protected void updateRelative(PhysicalObject oldRelative, PhysicalObject newRelative) {
+	protected void updateRelative(ini.cx3d.physics.interfaces.PhysicalObject oldRelative, PhysicalObject newRelative) {
 		if(Objects.equals(oldRelative, mother)){
 			setMother(newRelative);
 			return;
@@ -267,7 +266,7 @@ public class PhysicalCylinder extends PhysicalObject {
 	 * It is the sum of the spring force an the part of the inter-object force computed earlier in
 	 * <code>runPhysics()</code>.
 	 */
-	protected double[] forceTransmittedFromDaugtherToMother(PhysicalObject motherWhoAsks) {
+	protected double[] forceTransmittedFromDaugtherToMother(ini.cx3d.physics.interfaces.PhysicalObject motherWhoAsks) {
 		try
 		{
 			//getRwLock().readLock().lock();
@@ -1175,7 +1174,7 @@ public class PhysicalCylinder extends PhysicalObject {
 		for (int i = 0; i < neighbors.size(); i++) {
 			ini.cx3d.physics.interfaces.PhysicalNode neighbor = neighbors.get(i);
 			if(neighbor.isAPhysicalObject()){
-				((PhysicalObject)neighbor).setOnTheSchedulerListForPhysicalObjects(true);
+				((ini.cx3d.physics.interfaces.PhysicalObject)neighbor).setOnTheSchedulerListForPhysicalObjects(true);
 			}
 		}
 		for (int i=0; i< physicalBonds.size(); i++) {

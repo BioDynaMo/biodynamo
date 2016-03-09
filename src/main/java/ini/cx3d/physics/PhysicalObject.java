@@ -25,13 +25,10 @@ import static ini.cx3d.SimStateSerializationUtil.*;
 import static ini.cx3d.SimStateSerializationUtil.keyValue;
 import static ini.cx3d.utilities.Matrix.dot;
 import ini.cx3d.Param;
-import ini.cx3d.localBiology.CellElement;
 import ini.cx3d.physics.factory.IntracellularSubstanceFactory;
 import ini.cx3d.physics.factory.PhysicalBondFactory;
-import ini.cx3d.physics.interfaces.*;
 import ini.cx3d.physics.interfaces.IntracellularSubstance;
 import ini.cx3d.simulations.ECM;
-import ini.cx3d.swig.physics.physics;
 import ini.cx3d.synapses.Excrescence;
 
 import ini.cx3d.utilities.StringUtilities;
@@ -55,7 +52,7 @@ import java.util.*;
  * (cartesian) system, and for transform from global to local..
  *
  */
-public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylinder{//extends ini.cx3d.swig.physics.PhysicalObject{
+public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylinder implements ini.cx3d.physics.interfaces.PhysicalObject {//extends ini.cx3d.swig.physics.PhysicalObject{
 
 	public PhysicalObject(long cPtr, boolean cMemoryOwn){
 		super(cPtr, cMemoryOwn);
@@ -148,6 +145,7 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 	}
 
 	/** Returns true because this object is a PhysicalObject.*/
+	@Override
 	public boolean isAPhysicalObject(){
 		// This function overwrites the one in PhysicalObject.
 		return true;
@@ -161,13 +159,6 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 
 
 	/**
-	 * Returns true if this <code>PhysicalObject</code> and the <code>PhysicalObject</code> given as
-	 * argument have a mother-daughter or sister-sister (e.g. two daughters of a same mother) relation.
-	 */
-	public abstract boolean isRelative(PhysicalObject po);
-
-
-	/**
 	 * Returns the absolute coordinates of the location where a <code>PhysicalObject</code> is attached
 	 * to this <code>PhysicalObject</code>. Does not necessarily contain a check of the identity of the
 	 *  element that makes the request.
@@ -175,13 +166,13 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 	 * @param daughterWhoAsks the PhysicalObject attached to us.
 	 * @return the coord
 	 */
-	protected abstract double[] originOf(PhysicalObject daughterWhoAsks);
+	protected abstract double[] originOf(ini.cx3d.physics.interfaces.PhysicalObject daughterWhoAsks);
 
 
 	/**
 	 * Removal of a <code>PhysicalObject</code> from the list of our daughters.
 	 * (Mainly in case of complete retraction of the daughter.*/
-	protected abstract void removeDaugther(PhysicalObject daughterToRemove);
+	protected abstract void removeDaugther(ini.cx3d.physics.interfaces.PhysicalObject daughterToRemove);
 
 
 	/**
@@ -190,7 +181,7 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 	 * retraction for intercalation/removal of elements.
 	 * of elements.
 	 */
-	protected abstract void updateRelative(PhysicalObject oldRelative, PhysicalObject newRelative);
+	protected abstract void updateRelative(ini.cx3d.physics.interfaces.PhysicalObject oldRelative, PhysicalObject newRelative);
 
 
 	// *************************************************************************************
@@ -198,12 +189,9 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 	// *************************************************************************************
 
 
-	/** Returns the <code>CellElement</code>linked to this <code>PhysicalObject</code>.*/
-	public abstract CellElement getCellElement();
-
-
 	/** Adds an <code>Excrescence</code> instance to the Excrescence list of this
 	 * <code>PhysicalObject</code>.*/
+	@Override
 	public void addExcrescence(Excrescence ex){
 		//getRwLock().writeLock().lock();
 		excrescences.add(ex);
@@ -213,27 +201,17 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 
 	/** Removes an <code>Excrescence</code> instance to the Excrescence list of this
 	 * <code>PhysicalObject</code>.*/
+	@Override
 	public void removeExcrescence(Excrescence ex){
 		//getRwLock().writeLock().lock();
 		excrescences.remove(ex);
 		//getRwLock().writeLock().unlock();
 	}
 
-	/** Active displacement of the point mass of this <code>PhysicalObject</code>. ("active" means
-	 * "triggered by a biological process" like in growth or migration). This method MUST NOT be used
-	 * for displacement by purely passive (physical) force.
-	 * @param speed in microns/hour
-	 * @param direction a vector indicating the direction of movement
-	 */
-	abstract public void movePointMass(double speed, double[] direction);
-
 
 	// *************************************************************************************
 	// *      METHODS FOR PHYSICS (MECHANICS) COMPUTATION                                              *
 	// *************************************************************************************
-
-	/** Compute physical forces, and move accordingly to one simulation time step.*/
-	public abstract void runPhysics();
 
 	/**
 	 * Returns the force that a daughter branch transmits to a mother's point
@@ -246,7 +224,7 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 	 * @param motherWhoAsks the PhysicalObject attached to the mass.
 	 * @return the force in a double[]
 	 */
-	protected abstract double[] forceTransmittedFromDaugtherToMother(PhysicalObject motherWhoAsks);
+	protected abstract double[] forceTransmittedFromDaugtherToMother(ini.cx3d.physics.interfaces.PhysicalObject motherWhoAsks);
 
 	/**
 	 * Resets some computational and physical properties (like the tension, volume) after
@@ -254,14 +232,6 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 	 */
 	abstract protected void updateDependentPhysicalVariables();
 
-
-	/**
-	 * Returns the inter-object force that the <code>PhysicalObject</code> in which the method is called applies
-	 * onto the <code>PhysicalSphere</code> given as argument.
-	 * @param s
-	 * @return
-	 */
-	abstract public double[] getForceOn(PhysicalSphere s);
 
 	/**
 	 * Returns the inter-object force that the <code>PhysicalObject</code> in which the method is called applies
@@ -293,7 +263,8 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 	 * @param o
 	 * @return
 	 */
-	public boolean isInContact(PhysicalObject o){
+	@Override
+	public boolean isInContact(ini.cx3d.physics.interfaces.PhysicalObject o){
 		try
 		{
 			//getRwLock().readLock().lock();
@@ -313,11 +284,12 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 	 * Returns all the neighboring objects considered as being in contact with this PhysicalObject.
 	 * @return
 	 */
-	public Vector<PhysicalObject> getPhysicalObjectsInContact(){
+	@Override
+	public Vector<ini.cx3d.physics.interfaces.PhysicalObject> getPhysicalObjectsInContact(){
 		try
 		{
 			//getRwLock().readLock().lock();
-			Vector<PhysicalObject> po = new Vector<PhysicalObject>();
+			Vector<ini.cx3d.physics.interfaces.PhysicalObject> po = new Vector<ini.cx3d.physics.interfaces.PhysicalObject>();
 			AbstractSequentialList<ini.cx3d.physics.interfaces.PhysicalNode> neighbors = getSoNode().getNeighbors();
 			for (int i = 0; i < neighbors.size(); i++) {
 				ini.cx3d.physics.interfaces.PhysicalNode n = neighbors.get(i);
@@ -326,8 +298,8 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 					System.out.println("#neighbors: "+ neighbors.size());
 					System.out.println("elements: "+ StringUtilities.toStr(neighbors));
 				}
-				if(n.isAPhysicalObject() && isInContact(((PhysicalObject) n)))
-					po.add((PhysicalObject) n);
+				if(n.isAPhysicalObject() && isInContact(((ini.cx3d.physics.interfaces.PhysicalObject) n)))
+					po.add((ini.cx3d.physics.interfaces.PhysicalObject) n);
 			}
 			return po;
 		}
@@ -340,10 +312,6 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 	// Some geometry with local and global coordinates..................................
 
 
-	abstract public void changeDiameter(double speed);
-
-	abstract public void changeVolume(double speed);
-
 	/* Recompute volume after diameter has changed.*/
 	abstract protected void updateVolume();
 
@@ -351,29 +319,13 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 	abstract protected void updateDiameter();
 
 
-
-	/**
-	 * Returns the position in the global coordinate system (cartesian coordinates)
-	 * of a point expressed in polar coordinates (cylindrical or spherical).
-	 * @param positionInPolarCoordinates a point defined in polar coordinate system of a PhysicalObject
-	 * @return [x,y,z] the absolute value in space
-	 */
-	abstract public double[] transformCoordinatesPolarToGlobal(double[] positionInPolarCoordinates);
-
-	/**
-	 * Returns the position in the polar coordinate system (cylindrical or spherical)
-	 * of a point expressed in global cartesian coordinates ([1,0,0],[0,1,0],[0,0,1]).
-	 * @param positionInAbsoluteCoordinates the [x,y,z] cartesian values
-	 * @return the position in local coord.
-	 */
-	abstract public double[] transformCoordinatesGlobalToPolar(double[] positionInAbsoluteCoordinates);
-
 	/**
 	 * Returns the position in the local coordinate system (xAxis, yXis, zAxis)
 	 * of a point expressed in global cartesian coordinates ([1,0,0],[0,1,0],[0,0,1]).
 	 * @param positionInGlobalCoord
 	 * @return
 	 */
+	@Override
 	public double[] transformCoordinatesGlobalToLocal(double[] positionInGlobalCoord){
 		try{
 			//getRwLock().readLock().lock();
@@ -395,6 +347,7 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 	 * @param positionInLocalCoord
 	 * @return
 	 */
+	@Override
 	public double[] transformCoordinatesLocalToGlobal(double[] positionInLocalCoord){
 		try{
 			//getRwLock().readLock().lock();
@@ -411,19 +364,11 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 	}
 
 
-	/**
-	 * Returns a unit vector, pointing out of the PhysicalObject if origin at location
-	 * specified in argument.
-	 * @param positionInLocalCoordinates the origin of the normal vector (local cartesian coord)
-	 * @return a vector pointing "out", of unitary norm (absolute cartesian coord)
-	 */
-	abstract public double[] getUnitNormalVector(double[] positionInPolarCoordinates);
-
-
 	// Physical Bonds ...................................................................
 
 	/** Simply adds the argument to the vector containing all the PhysicalBonds of this
 	 * PhysicalObject.*/
+	@Override
 	public void addPhysicalBond(ini.cx3d.physics.interfaces.PhysicalBond pb){
 		//getRwLock().writeLock().lock();
 		physicalBonds.add(pb);
@@ -432,6 +377,7 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 
 	/** Simply removes the argument from the vector containing all the PhysicalBonds of this
 	 * PhysicalObject. */
+	@Override
 	public void removePhysicalBond(ini.cx3d.physics.interfaces.PhysicalBond pb){
 		//getRwLock().writeLock().lock();
 		physicalBonds.remove(pb);
@@ -439,7 +385,8 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 	}
 
 	/** Returns true if there is a PhysicalBond that fixes me to this other PhysicalObject.*/
-	public boolean getHasAPhysicalBondWith(PhysicalObject po){
+	@Override
+	public boolean getHasAPhysicalBondWith(ini.cx3d.physics.interfaces.PhysicalObject po){
 		for (ini.cx3d.physics.interfaces.PhysicalBond pb : physicalBonds) {
 			if(Objects.equals(po, pb.getOppositePhysicalObject(this)))
 				return true;
@@ -453,7 +400,8 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 	 * @param po
 	 * @return
 	 */
-	public ini.cx3d.physics.interfaces.PhysicalBond makePhysicalBondWith(PhysicalObject po){
+	@Override
+	public ini.cx3d.physics.interfaces.PhysicalBond makePhysicalBondWith(ini.cx3d.physics.interfaces.PhysicalObject po){
 		try
 		{
 			//getRwLock().readLock().lock();
@@ -475,6 +423,7 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 	 * @param removeThemAll if true, makes multiple removals (if multiple bonds)
 	 * @return true if at least one PhysicalBond was removed
 	 */
+	@Override
 	public boolean removePhysicalBondWith(PhysicalObject po, boolean removeThemAll){
 		try
 		{
@@ -505,16 +454,13 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 	// *      METHODS FOR DIFFUSION (INTRA-CELLULAR & MEMBRANE-BOUNDED SUBSTANCES)         *
 	// *************************************************************************************
 
-	/** Compute diffusion of <code>IntracellularSubstances</code> with relatives in the neuron
-	 * tree structure, and perform diffusion processes according to one simulation time step.*/
-	public abstract void runIntracellularDiffusion();
-
 	/**
 	 * Returns the concentration of an <code>IntracellularSubstance</code> in this
 	 * PhysicalObject. If not present at all, zhe value 0 is returned.
 	 * @param substanceId
 	 * @return
 	 */
+	@Override
 	public double getIntracellularConcentration(String substanceId){
 		try
 		{
@@ -546,6 +492,7 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 	 * @param id the name of the Substance to change.
 	 * @param quantityPerTime the rate of quantity production
 	 */
+	@Override
 	public void modifyIntracellularQuantity(String id, double quantityPerTime){
 		//getRwLock().writeLock().lock();
 
@@ -583,6 +530,7 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 	 * @param id
 	 * @return
 	 */
+	@Override
 	public double getMembraneConcentration(String id){
 		try
 		{
@@ -616,6 +564,7 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 	 * @param quantityPerTime the rate of quantity production
 	 */
 
+	@Override
 	public void modifyMembraneQuantity(String id, double quantityPerTime){
 		// for now, the intracellular and membrane bound Substances are the same.
 		modifyIntracellularQuantity(id, quantityPerTime);
@@ -761,6 +710,7 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 	// *************************************************************************************
 
 	/** Returns the <code>java.awt.Color</code> used to draw this PhysicalObject in the GUI. */
+	@Override
 	public Color getColor() {
 		try
 		{
@@ -773,6 +723,7 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 		}
 	}
 	/** Sets the <code>java.awt.Color</code> used to draw this PhysicalObject in the GUI. */
+	@Override
 	public void setColor(Color color) {
 		//getRwLock().writeLock().lock();
 		this.color = color;
@@ -780,6 +731,7 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 	}
 
 	/** Returns a copy of the masslocation.*/
+	@Override
 	public double[] getMassLocation() {
 		try
 		{
@@ -801,17 +753,16 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 	 *  - I said NEVER !
 	 * @param massLocation the massLocation to set
 	 */
+	@Override
 	public void setMassLocation(double[] massLocation) {
 		//getRwLock().writeLock().lock();
 		this.massLocation = massLocation.clone();
 		//getRwLock().writeLock().unlock();
 	}
 
-	/** Returns the "Up" direction for a Sphere, and the axis direction for a Cylinder*/
-	public abstract double[] getAxis();
-
 
 	/** Returns the first axis of the local coordinate system.*/
+	@Override
 	public double[] getXAxis() {
 		try
 		{
@@ -824,12 +775,14 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 		}
 	}
 	/** Sets the first axis of the local coordinate system. Should have a norm of 1.*/
+	@Override
 	public void setXAxis(double[] axis) {
 		//getRwLock().writeLock().lock();
 		xAxis = axis.clone();
 		//getRwLock().writeLock().unlock();
 	}
 	/** Returns the second axis of the local coordinate system.*/
+	@Override
 	public double[] getYAxis() {
 		try
 		{
@@ -842,6 +795,7 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 		}
 	}
 	/** Sets the second axis of the local coordinate system. Should have a norm of 1*/
+	@Override
 	public void setYAxis(double[] axis) {
 		//getRwLock().writeLock().lock();
 		yAxis = axis.clone();
@@ -849,6 +803,7 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 	}
 
 	/** Returns the third axis of the local coordinate system.*/
+	@Override
 	public double[] getZAxis() {
 		try
 		{
@@ -861,6 +816,7 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 		}
 	}
 	/** Sets the third axis of the local coordinate system. Should have a norm of 1*/
+	@Override
 	public void setZAxis(double[] axis) {
 		//getRwLock().writeLock().lock();
 		zAxis = axis.clone();
@@ -870,6 +826,7 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 
 	/** Only for GUI display. Total force on this objects point mass, last time it was computed.
 	 * 3 first components give the x,y,z coord, and last one if movement was applied (<0 means no).*/
+	@Override
 	public double[] getTotalForceLastTimeStep(){
 		try
 		{
@@ -885,6 +842,7 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 	/** Returns true if this object still plays a role in the simulation.
 	 * For instance a PhysicalObject associated with a neurite that just retracted
 	 * is not exxisting. */
+	@Override
 	public boolean isStillExisting() {
 		try
 		{
@@ -899,6 +857,7 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 
 	/** The role of the method is to indicate that an object is about to
 	 * be garbage Collected. Caution: don't use this method! */
+	@Override
 	public void setStillExisting(boolean stillExists) {
 		//getRwLock().writeLock().lock();
 		this.stillExisting = stillExists;
@@ -906,6 +865,7 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 	}
 
 	/** If true, this PhysicalObject will be run by the Scheduler on the next occasion.*/
+	@Override
 	public boolean isOnTheSchedulerListForPhysicalObjects() {
 		try
 		{
@@ -919,6 +879,7 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 	}
 
 	/** If true, this PhysicalObject will be run by the Scheduler on the next occasion.*/
+	@Override
 	public void setOnTheSchedulerListForPhysicalObjects(
 			boolean onTheSchedulerListForPhysicalObjects) {
 		//getRwLock().writeLock().lock();
@@ -927,6 +888,7 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 	}
 
 	/** Returns the vector containing all the PhysicalBonds of this PhysicalObject.*/
+	@Override
 	public AbstractSequentialList<ini.cx3d.physics.interfaces.PhysicalBond> getPhysicalBonds() {
 		try
 		{
@@ -946,6 +908,7 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 
 	/** Sets the vector containing all the PhysicalBonds of this PhysicalObject.
 	 * This methof should not be used during the simulation. */
+	@Override
 	public void setPhysicalBonds(Vector<ini.cx3d.physics.interfaces.PhysicalBond> physicalBonds) {
 		//getRwLock().writeLock().lock();
 		this.physicalBonds = (Vector<ini.cx3d.physics.interfaces.PhysicalBond>) physicalBonds.clone();
@@ -953,6 +916,7 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 	}
 
 	/** Returns the vector containing all the Excrescences (PhysicalSpine, PhysicalBouton).*/
+	@Override
 	public Vector<Excrescence> getExcrescences(){
 		try
 		{
@@ -968,6 +932,7 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 
 	/** Sets the vector containing all the Excrescences (PhysicalSpine, PhysicalBouton).
 	 * This method should not be used during a simulation. */
+	@Override
 	public void setExcrescences(Vector<Excrescence> excrescences) {
 		//getRwLock().writeLock().lock();
 		this.excrescences = (Vector<Excrescence>) excrescences.clone();
@@ -976,6 +941,7 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 
 	/** Returns the adherence to the extracellular matrix, i.e. the static friction
 	 * (the minimum force amplitude needed for triggering a movement). */
+	@Override
 	public double getAdherence() {
 		try
 		{
@@ -991,6 +957,7 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 
 	/** Sets the adherence to the extracellular matrix, i.e. the static friction
 	 * (the minimum force amplitude needed for triggering a movement). */
+	@Override
 	public void setAdherence(double adherence) {
 		//getRwLock().writeLock().lock();
 		this.adherence = adherence;
@@ -1000,6 +967,7 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 
 	/** Returns the mass, i.e. the kinetic friction
 	 * (scales the movement amplitude, therefore is considered as the mass).*/
+	@Override
 	public double getMass() {
 		try
 		{
@@ -1015,12 +983,14 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 
 	/** Sets the mass, i.e. the kinetic friction
 	 * (scales the movement amplitude, therefore is considered as the mass).*/
+	@Override
 	public void setMass(double mass) {
 		//getRwLock().writeLock().lock();
 		this.mass = mass;
 		//getRwLock().writeLock().unlock();
 	}
 
+	@Override
 	public double getDiameter() {
 		try
 		{
@@ -1038,6 +1008,7 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 	 * is equivalent to setDiamater(diameter, true)
 	 * @param diameter
 	 */
+	@Override
 	public void setDiameter(double diameter){
 
 		setDiameter(diameter,true);
@@ -1050,6 +1021,7 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 	 * @param diameter the new diameter
 	 * @param updateVolume if true, the volume is set to match the new diameter.
 	 */
+	@Override
 	public void setDiameter(double diameter, boolean updateVolume) {
 		//getRwLock().writeLock().lock();
 		this.diameter = diameter;
@@ -1060,6 +1032,7 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 	}
 
 	/** Returns the volume of this PhysicalObject.*/
+	@Override
 	public double getVolume(){
 		try
 		{
@@ -1079,6 +1052,7 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 	 * @param volume the new volume
 	 * @param updateDiameter if true, the diameter will be updated.
 	 */
+	@Override
 	public void setVolume(double volume, boolean updateDiameter){
 		//getRwLock().writeLock().lock();
 		this.volume = volume;
@@ -1095,15 +1069,14 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 	 * DEFINE DIMENSIONS, AND THE VOLUME WILL BE COMPUTED.
 	 * @param volume the new volume
 	 */
+	@Override
 	public void setVolume(double volume){
 		setVolume(volume,true);
 	}
 
-	/** Returns the length of a cylinder, or the diameter of a sphere.*/
-	public abstract double getLength();
-
 	/** Get an intracellular and membrane-bound chemicals that are present
 	 *  in this PhysicalNode. */
+	@Override
 	public ini.cx3d.physics.interfaces.IntracellularSubstance getIntracellularSubstance(String id) {
 		try
 		{
@@ -1118,6 +1091,7 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 
 	/** Add an intracellular or membrane-bound chemicals
 	 *  in this PhysicalNode. */
+	@Override
 	public void addIntracellularSubstance(ini.cx3d.physics.interfaces.IntracellularSubstance is) {
 		try
 		{
@@ -1132,6 +1106,7 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 
 	/** Remove an intracellular or membrane-bound chemicals that are present
 	 *  in this PhysicalNode. */
+	@Override
 	public void removeIntracellularSubstance(ini.cx3d.physics.interfaces.IntracellularSubstance is) {
 		try
 		{
@@ -1146,6 +1121,7 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 
 	/** All the intracellular and membrane-bound chemicals that are present
 	 *  in this PhysicalNode. */
+	@Override
 	public Hashtable<String, ini.cx3d.physics.interfaces.IntracellularSubstance> getIntracellularSubstances() {
 		try
 		{
@@ -1161,6 +1137,7 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 
 	/** All the intracellular and membrane-bound chemicals that are present
 	 *  in this PhysicalNode. */
+	@Override
 	public void setIntracellularSubstances(
 			Hashtable<String, ini.cx3d.physics.interfaces.IntracellularSubstance> intracellularSubstances) {
 		//getRwLock().writeLock().lock();
@@ -1177,10 +1154,6 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 	public static void setInterObjectForce(InterObjectForce interObjectForce) {
 		PhysicalObject.interObjectForce = interObjectForce;
 	}
-
-	public abstract double getInterObjectForceCoefficient();
-
-	public abstract void setInterObjectForceCoefficient(double interObjectForceCoefficient);
 
 
 }

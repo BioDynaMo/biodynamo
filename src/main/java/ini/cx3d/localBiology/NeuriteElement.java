@@ -37,7 +37,6 @@ import java.util.Vector;
 
 import ini.cx3d.Param;
 import ini.cx3d.physics.PhysicalCylinder;
-import ini.cx3d.physics.PhysicalObject;
 import ini.cx3d.simulations.ECM;
 import ini.cx3d.synapses.BiologicalBouton;
 import ini.cx3d.synapses.BiologicalSpine;
@@ -470,7 +469,7 @@ public class NeuriteElement extends CellElement {
 			}
 
 
-			PhysicalObject po = (PhysicalObject)pn;
+			ini.cx3d.physics.interfaces.PhysicalObject po = (ini.cx3d.physics.interfaces.PhysicalObject)pn;
 			// for all Excrescence pair :
 			ext:	for (Excrescence e1 : physicalCylinder.getExcrescences()) {
 				// only if this one is a free bouton:
@@ -519,11 +518,11 @@ public class NeuriteElement extends CellElement {
 	// *************************************************************************************
 
 
-	public PhysicalObject getPhysical() {
+	public ini.cx3d.physics.interfaces.PhysicalObject getPhysical() {
 		return physicalCylinder;
 	}
 
-	public void setPhysical(PhysicalObject physical) {
+	public void setPhysical(ini.cx3d.physics.interfaces.PhysicalObject physical) {
 		this.physicalCylinder = (PhysicalCylinder) physical;
 		this.physicalCylinder.setNeuriteElement(this); // callback
 	}

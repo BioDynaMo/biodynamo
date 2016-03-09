@@ -31,8 +31,6 @@ import ini.cx3d.Param;
 import ini.cx3d.cells.Cell;
 import ini.cx3d.cells.CellFactory;
 import ini.cx3d.localBiology.AbstractLocalBiologyModule;
-import ini.cx3d.physics.PhysicalObject;
-import ini.cx3d.physics.Substance;
 import ini.cx3d.physics.factory.SubstanceFactory;
 import ini.cx3d.simulations.ECM;
 import ini.cx3d.simulations.Scheduler;
@@ -101,7 +99,7 @@ class SomaClustering extends AbstractLocalBiologyModule {
     }
 
     public void run() {
-        PhysicalObject physical = super.cellElement.getPhysical();
+        ini.cx3d.physics.interfaces.PhysicalObject physical = super.cellElement.getPhysical();
         // move
         double speed = 100;
         double[] grad = physical.getExtracellularGradient(substanceID);
