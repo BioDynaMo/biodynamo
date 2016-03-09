@@ -1,6 +1,7 @@
 #ifndef PHYSICS_PHYSICAL_OBJECT_H_
 #define PHYSICS_PHYSICAL_OBJECT_H_
 
+#include <list>
 #include <array>
 #include <exception>
 
@@ -13,7 +14,7 @@ class PhysicalBond;
 
 class PhysicalObject : public PhysicalNode {
  public:
-  virtual ~PhysicalObject(){
+  virtual ~PhysicalObject() {
 
   }
 
@@ -45,6 +46,12 @@ class PhysicalObject : public PhysicalNode {
   virtual std::array<double, 3> getXAxis() {
     throw std::logic_error(
         "PhysicalObject::getXAxis - must never be called - Java should provide implementation at this point");
+  }
+
+  // todo change to vector if porting has been finished
+  virtual std::list<std::shared_ptr<PhysicalBond>> getPhysicalBonds() {
+    throw std::logic_error(
+        "PhysicalCylinder::getPhysicalBonds - must never be called - Java should provide implementation at this point");
   }
 };
 

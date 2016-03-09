@@ -1,6 +1,7 @@
 #ifndef PHYSICS_PHYSICAL_CYLINDER_H_
 #define PHYSICS_PHYSICAL_CYLINDER_H_
 
+#include <array>
 #include <exception>
 
 #include "physics/physical_object.h"
@@ -23,6 +24,11 @@ class PhysicalCylinder : public PhysicalObject {
   virtual std::shared_ptr<PhysicalObject> getMother() {
     throw std::logic_error(
         "PhysicalCylinder::getMother - must never be called - Java should provide implementation at this point");
+  }
+
+  virtual std::array<double, 3> proximalEnd() {
+    throw std::logic_error(
+        "PhysicalCylinder::proximalEnd - must never be called - Java should provide implementation at this point");
   }
 };
 

@@ -15,6 +15,7 @@
 #include "physics/physical_object.h"
 #include "physics/physical_cylinder.h"
 #include "physics/physical_bond.h"
+#include "physics/collision_check.h"
 using namespace cx3d::physics;
 %}
 
@@ -53,3 +54,4 @@ JAVA_LOAD_NATIVE_LIBRARY(cx3d_physics);
 %include "physics/physical_object.h"
 %include "physics/physical_cylinder.h"
 %include "physics/physical_bond.h"
+%include "physics/collision_check.h"

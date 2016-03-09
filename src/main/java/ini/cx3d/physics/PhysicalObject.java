@@ -28,11 +28,12 @@ import ini.cx3d.Param;
 import ini.cx3d.localBiology.CellElement;
 import ini.cx3d.physics.factory.IntracellularSubstanceFactory;
 import ini.cx3d.physics.factory.PhysicalBondFactory;
+import ini.cx3d.physics.interfaces.*;
+import ini.cx3d.physics.interfaces.IntracellularSubstance;
 import ini.cx3d.simulations.ECM;
 import ini.cx3d.swig.physics.physics;
 import ini.cx3d.synapses.Excrescence;
 
-import ini.cx3d.physics.interfaces.IntracellularSubstance;
 import ini.cx3d.utilities.StringUtilities;
 
 import java.awt.Color;
@@ -926,11 +927,16 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 	}
 
 	/** Returns the vector containing all the PhysicalBonds of this PhysicalObject.*/
-	public Vector<ini.cx3d.physics.interfaces.PhysicalBond> getPhysicalBonds() {
+	public AbstractSequentialList<ini.cx3d.physics.interfaces.PhysicalBond> getPhysicalBonds() {
 		try
 		{
 			//getRwLock().readLock().lock();
-			return (Vector<ini.cx3d.physics.interfaces.PhysicalBond>) physicalBonds.clone();
+//			return (Vector<ini.cx3d.physics.interfaces.PhysicalBond>) physicalBonds.clone();
+			AbstractSequentialList<ini.cx3d.physics.interfaces.PhysicalBond> list = new LinkedList<>();
+			for(ini.cx3d.physics.interfaces.PhysicalBond pb : physicalBonds) {
+				list.add(pb);
+			}
+			return list;
 		}
 		finally
 		{

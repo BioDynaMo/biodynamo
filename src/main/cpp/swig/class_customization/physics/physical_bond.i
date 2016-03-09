@@ -52,3 +52,6 @@
 #endif
 %typemap(javaimports) cx3d::physics::PhysicalBond "import ini.cx3d.swig.NativeStringBuilder;"
 %typemap(javainterfaces) cx3d::physics::PhysicalBond "ini.cx3d.physics.interfaces.PhysicalBond"
+%stdlist_typemap(std::shared_ptr<cx3d::physics::PhysicalBond>,
+                 PhysicalBond,
+                 ini.cx3d.physics.interfaces.PhysicalBond);
