@@ -71,7 +71,7 @@
 %define %java_defined_class_add(FULL_CPP_TYPE, JAVA_PROXY_CLASS_NAME, CLASS_NAME,
                             JAVA_TYPE, JNI_TYPE, ADDITIONAL_CODE)
   // enable cross language polymorphism for this C++ type
-  %feature("director", assumeoverride=1) FULL_CPP_TYPE;
+  %feature("director") FULL_CPP_TYPE;
 
   %extend FULL_CPP_TYPE {
    virtual jlong getObjectPtr(const std::shared_ptr<FULL_CPP_TYPE >& shared_ptr){

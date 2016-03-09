@@ -62,7 +62,7 @@ import java.util.Vector;
  *
  */
 
-public class PhysicalSphere extends PhysicalObject{
+public class PhysicalSphere extends PhysicalObject {
 
 
 	/* Local biology object associated with this PhysicalSphere.*/
@@ -102,7 +102,8 @@ public class PhysicalSphere extends PhysicalObject{
 	public PhysicalSphere() {
 		super();
 		//getRwLock().writeLock().lock();
-		registerJavaObject(this);
+		ini.cx3d.swig.physics.PhysicalNode.registerJavaObject(this);
+		ini.cx3d.swig.physics.PhysicalObject.registerJavaObject(this);
 		mass = 1;
 		adherence = Param.SPHERE_DEFAULT_ADHERENCE;
 		super.diameter = Param.SPHERE_DEFAULT_DIAMETER;

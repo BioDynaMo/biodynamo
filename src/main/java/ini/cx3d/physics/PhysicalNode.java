@@ -65,7 +65,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * @author fredericzubler
  *
  */
-public class PhysicalNode extends ini.cx3d.swig.physics.PhysicalNode implements ini.cx3d.physics.interfaces.PhysicalNode {
+public class PhysicalNode implements ini.cx3d.physics.interfaces.PhysicalNode {
 	// NOTE : all the "protected" fields are not "private" because they have to be accessible by subclasses
 
 	/* Unique identification for this CellElement instance. Used for marshalling/demarshalling*/
@@ -133,7 +133,7 @@ public class PhysicalNode extends ini.cx3d.swig.physics.PhysicalNode implements 
 	}
 
 	public PhysicalNode(){
-		registerJavaObject(this);
+//		registerJavaObject(this);
 		getRwLock().writeLock().lock();
 		this.ID = idCounter.incrementAndGet();
 		getRwLock().writeLock().unlock();

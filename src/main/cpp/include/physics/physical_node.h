@@ -217,10 +217,6 @@ class PhysicalNode : public SimStateSerializable, public std::enable_shared_from
   /** Returns a unique ID for this PhysicalNode.*/
   virtual int getID() const;
 
- protected:
-  /* Reference to the ECM. */
-  static std::shared_ptr<ECM> ecm_;
-
   /**
    * Runs the degradation of all Substances (only if it is not up-to-date). This method
    * is called before each operation on Substances (
@@ -228,6 +224,10 @@ class PhysicalNode : public SimStateSerializable, public std::enable_shared_from
    * (so that it doesn't require a call to ECM).
    */
   virtual void degradate(double currentEcmTime);
+
+ protected:
+  /* Reference to the ECM. */
+  static std::shared_ptr<ECM> ecm_;
 
  private:
   static std::size_t id_counter_;

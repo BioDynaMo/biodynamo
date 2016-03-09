@@ -54,12 +54,14 @@ import java.util.*;
  * (cartesian) system, and for transform from global to local..
  *
  */
-public abstract class PhysicalObject extends physics.PhysicalObjectBase{
+public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylinder{//extends ini.cx3d.swig.physics.PhysicalObject{
 
-
+	public PhysicalObject(long cPtr, boolean cMemoryOwn){
+		super(cPtr, cMemoryOwn);
+	}
 
 	// * The simulation of Force in this simulation.*/
-	static InterObjectForce interObjectForce = new DefaultForce();
+	protected static InterObjectForce interObjectForce = new DefaultForce();
 
 	/*
 	 * Tells if a PhysicalObject is still part of the simulation.
@@ -77,30 +79,30 @@ public abstract class PhysicalObject extends physics.PhysicalObjectBase{
 
 
 	/* The unique point mass of the object*/
-	double[] massLocation = {0.0, 0.0, 0.0};
+	protected double[] massLocation = {0.0, 0.0, 0.0};
 
 	/* First axis of the local coordinate system.*/
-	double[] xAxis = {1.0, 0.0, 0.0};
+	protected double[] xAxis = {1.0, 0.0, 0.0};
 	/* Second axis of the local coordinate system.*/
-	double[] yAxis = {0.0, 1.0, 0.0};
+	protected double[] yAxis = {0.0, 1.0, 0.0};
 	/* Third axis of the local coordinate system.*/
-	double[] zAxis = {0.0, 0.0, 1.0};
+	protected double[] zAxis = {0.0, 0.0, 1.0};
 
 	/* static friction (the minimum force amplitude for triggering a movement). */
-	double adherence = 0.1;
+	protected double adherence = 0.1;
 	/* kinetic friction (scales the movement amplitude, therefore is called "mass")*/
-	double mass = 1;
+	protected double mass = 1;
 	/* diameter of the object (wheter if sphere or cylinder).*/
-	double diameter = 1;
+	protected double diameter = 1;
 	/* volume of this PhysicalObject; updated in updatePhysicalProperties() */
-	double volume = 1;
+	protected double volume = 1;
 
 	/* Color used when displaying the object*/
-	Color color = Param.VIOLET;
+	protected Color color = Param.VIOLET;
 
 	/* Only for display. Total force on this objects point mass, last time it was computed.
 	 * 3 first components give the x,y,z coord, and last one if movement was applied (<0 means no)*/
-	double[] totalForceLastTimeStep = {0.0, 0.0, 0.0, -1.0};
+	protected double[] totalForceLastTimeStep = {0.0, 0.0, 0.0, -1.0};
 
 	/* All the internal and membrane-bound (diffusible and non-diffusible)
 	 *  chemicals that are present inside the PhysicalObject.*/
@@ -243,7 +245,7 @@ public abstract class PhysicalObject extends physics.PhysicalObjectBase{
 	 * @param motherWhoAsks the PhysicalObject attached to the mass.
 	 * @return the force in a double[]
 	 */
-	abstract double[] forceTransmittedFromDaugtherToMother(PhysicalObject motherWhoAsks);
+	protected abstract double[] forceTransmittedFromDaugtherToMother(PhysicalObject motherWhoAsks);
 
 	/**
 	 * Resets some computational and physical properties (like the tension, volume) after

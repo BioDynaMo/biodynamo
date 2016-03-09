@@ -86,8 +86,9 @@ class SimStateSerializationUtil {
     return sb;
   }
 
+  template<std::size_t N>
   static StringBuilder& keyValue(StringBuilder& sb, string key,
-                                 const array<double, 3>& vector) {
+                                 const array<double, N>& vector) {
     SimStateSerializationUtil::key(sb, key).append("[");
     for (double value : vector) {
       sb.append(SimStateSerializationUtil::doubleToString(value)).append(",");

@@ -37,6 +37,7 @@ import ini.cx3d.simulations.ECM;
 import ini.cx3d.spatialOrganization.PositionNotAllowedException;
 import ini.cx3d.spatialOrganization.SpatialOrganizationNode;
 import ini.cx3d.spatialOrganization.interfaces.SpaceNode;
+import ini.cx3d.swig.physics.*;
 import ini.cx3d.synapses.Excrescence;
 import ini.cx3d.utilities.StringUtilities;
 
@@ -60,7 +61,7 @@ import java.util.Objects;
  * @author fredericzubler
  *
  */
-public class PhysicalCylinder extends PhysicalObject{
+public class PhysicalCylinder extends PhysicalObject {
 
 	/* Local biology object associated with this PhysicalCylinder.*/
 	private NeuriteElement neuriteElement = null;
@@ -125,7 +126,9 @@ public class PhysicalCylinder extends PhysicalObject{
 		super.mass = 		Param.NEURITE_DEFAULT_MASS;
 		super.diameter = 	Param.NEURITE_DEFAULT_DIAMETER;
 		updateVolume();
-		registerJavaObject(this);
+		ini.cx3d.swig.physics.PhysicalNode.registerJavaObject(this);
+		ini.cx3d.swig.physics.PhysicalObject.registerJavaObject(this);
+		ini.cx3d.swig.physics.PhysicalCylinder.registerJavaObject(this);
 		//getRwLock().writeLock().unlock();
 	}
 
@@ -264,7 +267,7 @@ public class PhysicalCylinder extends PhysicalObject{
 	 * It is the sum of the spring force an the part of the inter-object force computed earlier in
 	 * <code>runPhysics()</code>.
 	 */
-	double[] forceTransmittedFromDaugtherToMother(PhysicalObject motherWhoAsks) {
+	protected double[] forceTransmittedFromDaugtherToMother(PhysicalObject motherWhoAsks) {
 		try
 		{
 			//getRwLock().readLock().lock();
@@ -682,8 +685,7 @@ public class PhysicalCylinder extends PhysicalObject{
 	 * daughter left and daughter right
 	 * @param length the length of the new branches
 	 * @param direction_1 of the first branch (if
-	 * @param newBranchL
-	 * @param newBranchR
+	 * @param direction_2
 	 */
 
 	public PhysicalCylinder[] bifurcateCylinder(double length, double[] direction_1, double[] direction_2) {

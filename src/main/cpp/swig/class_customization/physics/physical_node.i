@@ -8,7 +8,7 @@
  * files!
  *
  * SWIG modules that use the class simply include it:
- * %include "class_customization/physical_node.i"
+ * %include "class_customization/physics/physical_node.i"
  */
 
 %include "util.i"
@@ -101,6 +101,10 @@
     *(std::shared_ptr< FULL_CPP_TYPE > **)&$result = $1 ? new std::shared_ptr< FULL_CPP_TYPE >($1) : 0;
   %}
 
+  %typemap(directorout) std::shared_ptr< FULL_CPP_TYPE > create %{
+    *(std::shared_ptr< FULL_CPP_TYPE > **)&$result = $1 ? new std::shared_ptr< FULL_CPP_TYPE >($1) : 0;
+  %}
+
   %pragma(java) modulecode=%{
       public static boolean useNative##CLASS_NAME = USE_NATIVE;
   %}
@@ -159,33 +163,6 @@
   %setJavaDebugSwitch(PhysicalNode, true);
 #else
   %setJavaDebugSwitch(PhysicalNode, false);
-#endif
-
-// class hierarchy modifications
-#ifdef PHYSICALNODE_NATIVE
-#  ifdef PHYSICALNODE_DEBUG
-    %pragma(java) modulecode=%{
-      static public class PhysicalObjectBase extends ini.cx3d.physics.debug.PhysicalNodeDebug {}
-      static public class PhysicalNodeDebugBase extends ini.cx3d.swig.physics.PhysicalNode {}
-    %}
-#  else
-    %pragma(java) modulecode=%{
-      static public class PhysicalObjectBase extends ini.cx3d.swig.physics.PhysicalNode {}
-      static public class PhysicalNodeDebugBase extends ini.cx3d.swig.physics.PhysicalNode {}
-    %}
-#  endif
-#else
-#  ifdef PHYSICALNODE_DEBUG
-    %pragma(java) modulecode=%{
-      static public class PhysicalObjectBase extends ini.cx3d.physics.debug.PhysicalNodeDebug {}
-      static public class PhysicalNodeDebugBase extends ini.cx3d.physics.PhysicalNode {}
-    %}
-#  else
-    %pragma(java) modulecode=%{
-      static public class PhysicalObjectBase extends ini.cx3d.physics.PhysicalNode {}
-      static public class PhysicalNodeDebugBase extends ini.cx3d.swig.physics.PhysicalNode {}
-    %}
-#  endif
 #endif
 
 // set static variable ecm on startup

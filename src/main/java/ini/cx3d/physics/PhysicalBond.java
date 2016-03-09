@@ -50,7 +50,7 @@ import ini.cx3d.physics.factory.PhysicalBondFactory;
  *
  */
 
-public class PhysicalBond implements ini.cx3d.physics.interfaces.PhysicalBond {
+public class PhysicalBond extends ini.cx3d.swig.physics.PhysicalBond implements ini.cx3d.physics.interfaces.PhysicalBond {
 
 	private PhysicalObject a;
 	private PhysicalObject b;
@@ -93,6 +93,7 @@ public class PhysicalBond implements ini.cx3d.physics.interfaces.PhysicalBond {
 	}
 
 	public PhysicalBond(){
+		registerJavaObject(this);
 	}
 
 	/** Creates a PhysicalBond between the point masses of the two PhysicalObjects
@@ -101,6 +102,7 @@ public class PhysicalBond implements ini.cx3d.physics.interfaces.PhysicalBond {
 	 * @param b
 	 */
 	public PhysicalBond(PhysicalObject a, PhysicalObject b){
+		registerJavaObject(this);
 		dolocking(a, b);
 		this.originOnA = a.transformCoordinatesGlobalToPolar(a.getMassLocation());
 		this.originOnB = b.transformCoordinatesGlobalToPolar(b.getMassLocation());
@@ -135,6 +137,7 @@ public class PhysicalBond implements ini.cx3d.physics.interfaces.PhysicalBond {
 	}
 
 	public PhysicalBond(PhysicalObject a, double[] positionOnA, PhysicalObject b , double[] positionOnB, double restingLength, double springConstant) {
+		registerJavaObject(this);
 		dolocking(a, b);
 		this.originOnA = positionOnA;
 		this.originOnB = positionOnB;

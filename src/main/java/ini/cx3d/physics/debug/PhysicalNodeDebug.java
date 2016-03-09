@@ -11,7 +11,7 @@ import java.util.AbstractSequentialList;
 import java.util.Hashtable;
 import java.util.concurrent.locks.ReadWriteLock;
 
-public class PhysicalNodeDebug extends physics.PhysicalNodeDebugBase{
+public class PhysicalNodeDebug extends PhysicalNode{
     public PhysicalNodeDebug() {
         super();
 //        DebugUtil.logMethodCall("PhysicalNode created", this, new Object[]{});
