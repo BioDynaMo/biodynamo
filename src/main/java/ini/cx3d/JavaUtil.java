@@ -5,6 +5,7 @@ import ini.cx3d.spatialOrganization.interfaces.OpenTriangleOrganizer;
 import ini.cx3d.spatialOrganization.factory.OpenTriangleOrganizerFactory;
 import ini.cx3d.swig.spatialOrganization.JavaUtilT_PhysicalNode;
 import ini.cx3d.swig.spatialOrganization.spatialOrganization;
+import ini.cx3d.utilities.Matrix;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -32,5 +33,9 @@ public class JavaUtil extends JavaUtilT_PhysicalNode {
             ret[i] = list.get(i);
         }
         return ret;
+    }
+
+    public double[] matrixRandomNoise3(double k){
+        return Matrix.randomNoise(k, 3);
     }
 }

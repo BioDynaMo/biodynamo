@@ -43,6 +43,8 @@ import ini.cx3d.utilities.StringUtilities;
 import java.util.AbstractSequentialList;
 import java.util.Objects;
 
+import ini.cx3d.physics.interfaces.PhysicalObject;
+
 
 /**
  * A cylinder can be seen as a normal cylinder, with two end points and a diameter. It is oriented;
@@ -60,14 +62,14 @@ import java.util.Objects;
  * @author fredericzubler
  *
  */
-public class PhysicalCylinder extends PhysicalObject {
+public class PhysicalCylinder extends ini.cx3d.physics.PhysicalObject {
 
 	/* Local biology object associated with this PhysicalCylinder.*/
 	private NeuriteElement neuriteElement = null;
 
 
 	/* Parent node in the neuron tree structure (can be PhysicalSphere or PhysicalCylinder)*/
-	private PhysicalObject mother = null;
+	private ini.cx3d.physics.interfaces.PhysicalObject mother = null;
 	/* First child node in the neuron tree structure (can only be PhysicalCylinder)*/
 	private PhysicalCylinder daughterLeft = null;
 	/* Second child node in the neuron tree structure. (only PhysicalCylinder) */
@@ -220,7 +222,7 @@ public class PhysicalCylinder extends PhysicalObject {
 
 
 	@Override
-	protected void removeDaugther(ini.cx3d.physics.interfaces.PhysicalObject daughterToRemove) {
+	public void removeDaugther(ini.cx3d.physics.interfaces.PhysicalObject daughterToRemove) {
 		// If there is another daughter than the one we want to remove,
 		// we have to be sure that it will be the daughterLeft.
 
@@ -244,7 +246,7 @@ public class PhysicalCylinder extends PhysicalObject {
 	}
 
 	@Override
-	protected void updateRelative(ini.cx3d.physics.interfaces.PhysicalObject oldRelative, PhysicalObject newRelative) {
+	public void updateRelative(ini.cx3d.physics.interfaces.PhysicalObject oldRelative, ini.cx3d.physics.interfaces.PhysicalObject newRelative) {
 		if(Objects.equals(oldRelative, mother)){
 			setMother(newRelative);
 			return;
@@ -977,7 +979,7 @@ public class PhysicalCylinder extends PhysicalObject {
 					forceOnMyPointMass[2] += forceFromArtificialWall[2];
 				}
 
-				if(forceFromThisNeighbor.length == 3){
+				if(forceFromThisNeighbor.length == 3 || (forceFromThisNeighbor.length == 4 && Math.abs(forceFromThisNeighbor[3]) < 1e-10)){
 					// (if all the force is transmitted to the (distal end) point mass : )
 					forceOnMyPointMass[0]+= forceFromThisNeighbor[0];
 					forceOnMyPointMass[1]+= forceFromThisNeighbor[1];
@@ -1236,7 +1238,7 @@ public class PhysicalCylinder extends PhysicalObject {
 	@Override
 	public boolean isInContactWithSphere(PhysicalSphere s) {
 		//getRwLock().readLock().lock();
-		double[] force = PhysicalObject.interObjectForce.forceOnACylinderFromASphere(this,s);
+		double[] force = interObjectForce.forceOnACylinderFromASphere(this,s);
 		//getRwLock().readLock().unlock();
 		if(norm(force)>1E-15){
 			return true;
@@ -1276,7 +1278,7 @@ public class PhysicalCylinder extends PhysicalObject {
 	public boolean isInContactWithCylinder(PhysicalCylinder c) {
 
 		//getRwLock().readLock().lock();
-		double[] force = PhysicalObject.interObjectForce.forceOnACylinderFromACylinder(this,c);
+		double[] force = interObjectForce.forceOnACylinderFromACylinder(this,c);
 		//getRwLock().readLock().unlock();
 		if(norm(force)>1E-15){
 			return true;
@@ -1485,7 +1487,7 @@ public class PhysicalCylinder extends PhysicalObject {
 	 * This method also automatically calls the <code>resetComputationCenterPosition()</code>
 	 * method at the end.
 	 */
-	protected  void updateDependentPhysicalVariables() {
+	public  void updateDependentPhysicalVariables() {
 		//getRwLock().writeLock().lock();
 		double[] relativeML = mother.originOf(this); 	// massLocation of the mother
 		springAxis[0] = massLocation[0] - relativeML[0];
@@ -1774,7 +1776,7 @@ public class PhysicalCylinder extends PhysicalObject {
 	/**
 	 * @return the mother
 	 */
-	public PhysicalObject getMother() {
+	public ini.cx3d.physics.interfaces.PhysicalObject getMother() {
 		try{
 			//getRwLock().readLock().lock();
 			return mother;
@@ -1788,7 +1790,7 @@ public class PhysicalCylinder extends PhysicalObject {
 	/**
 	 * @param mother the mother to set
 	 */
-	public void setMother(PhysicalObject mother) {
+	public void setMother(ini.cx3d.physics.interfaces.PhysicalObject mother) {
 		//getRwLock().writeLock().lock();
 		this.mother = mother;
 		//getRwLock().writeLock().unlock();

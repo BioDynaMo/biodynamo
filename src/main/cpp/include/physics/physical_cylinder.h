@@ -11,6 +11,9 @@ namespace physics {
 
 class PhysicalCylinder : public PhysicalObject {
  public:
+  virtual ~PhysicalCylinder(){
+  }
+
   virtual double getActualLength() {
     throw std::logic_error(
         "PhysicalCylinder::getActualLength - must never be called - Java should provide implementation at this point");
@@ -29,6 +32,21 @@ class PhysicalCylinder : public PhysicalObject {
   virtual std::array<double, 3> proximalEnd() {
     throw std::logic_error(
         "PhysicalCylinder::proximalEnd - must never be called - Java should provide implementation at this point");
+  }
+
+  virtual std::array<double, 3> distalEnd() {
+    throw std::logic_error(
+        "PhysicalCylinder::distalEnd - must never be called - Java should provide implementation at this point");
+  }
+
+  virtual std::array<double, 3> getSpringAxis() {
+    throw std::logic_error(
+        "PhysicalCylinder::getSpringAxis - must never be called - Java should provide implementation at this point");
+  }
+
+  virtual double getDiameter() {
+    throw std::logic_error(
+        "PhysicalCylinder::getSpringAxis - must never be called - Java should provide implementation at this point");
   }
 };
 

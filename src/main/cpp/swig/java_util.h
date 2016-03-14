@@ -34,6 +34,20 @@ class JavaUtil {
   }
 };
 
+/**
+ *  java provided functions without templating
+ */
+class JavaUtil2 {
+ public:
+  virtual ~JavaUtil2(){
+  }
+
+  virtual std::array<double, 3> matrixRandomNoise3(double k) {
+    throw std::logic_error(
+        "JavaUtil::matrixRandomNoise must never be called - Java must provide implementation at this point");
+  }
+};
+
 }  // namespace cx3d
 
 #endif  // JAVA_UTIL_H_

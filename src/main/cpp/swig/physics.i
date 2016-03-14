@@ -16,7 +16,11 @@
 #include "physics/physical_cylinder.h"
 #include "physics/physical_bond.h"
 #include "physics/collision_check.h"
+#include "physics/physical_sphere.h"
+#include "java_util.h"
+#include "physics/default_force.h"
 using namespace cx3d::physics;
+using cx3d::JavaUtil2;
 %}
 
 // import depending modules
@@ -44,6 +48,9 @@ JAVA_LOAD_NATIVE_LIBRARY(cx3d_physics);
 %include "class_customization/physics/physical_object.i"
 %include "class_customization/physics/physical_cylinder.i"
 %include "class_customization/physics/physical_bond.i"
+%include "class_customization/physics/physical_sphere.i"
+%include "class_customization/java_util_2.i"
+%include "class_customization/physics/default_force.i"
 
 // add the original header files here
 %include "physics/substance.h"
@@ -55,3 +62,6 @@ JAVA_LOAD_NATIVE_LIBRARY(cx3d_physics);
 %include "physics/physical_cylinder.h"
 %include "physics/physical_bond.h"
 %include "physics/collision_check.h"
+%include "physics/physical_sphere.h"
+%include "java_util.h"
+%include "physics/default_force.h"

@@ -48,6 +48,8 @@ import java.util.Hashtable;
 import java.util.Objects;
 import java.util.Vector;
 
+import ini.cx3d.physics.interfaces.PhysicalObject;
+
 
 /**
  * The embodiment of SomaElement. Contains
@@ -62,7 +64,7 @@ import java.util.Vector;
  *
  */
 
-public class PhysicalSphere extends PhysicalObject {
+public class PhysicalSphere extends ini.cx3d.physics.PhysicalObject2 {
 
 
 	/* Local biology object associated with this PhysicalSphere.*/
@@ -230,14 +232,14 @@ public class PhysicalSphere extends PhysicalObject {
 		return null;
 	}
 
-	protected void removeDaugther(ini.cx3d.physics.interfaces.PhysicalObject daughterToRemove) {
+	public void removeDaugther(ini.cx3d.physics.interfaces.PhysicalObject daughterToRemove) {
 		//getRwLock().writeLock().lock();
 		daughters.remove(daughterToRemove);
 		daughtersCoord.remove(daughterToRemove);
 		//getRwLock().writeLock().unlock();
 	}
 
-	protected void updateRelative(ini.cx3d.physics.interfaces.PhysicalObject oldRelative, PhysicalObject newRelative) {
+	public void updateRelative(ini.cx3d.physics.interfaces.PhysicalObject oldRelative, ini.cx3d.physics.interfaces.PhysicalObject newRelative) {
 		//getRwLock().writeLock().lock();
 		double[] coordOfTheNeuriteThatChanges = daughtersCoord.get(oldRelative);
 		daughters.remove(oldRelative);
@@ -354,8 +356,7 @@ public class PhysicalSphere extends PhysicalObject {
 
 
 	@Override
-	protected
-	void updateDependentPhysicalVariables() {
+	public void updateDependentPhysicalVariables() {
 		updateVolume();
 	}
 
@@ -591,7 +592,7 @@ public class PhysicalSphere extends PhysicalObject {
 	public boolean isInContactWithSphere(PhysicalSphere s){
 		try{
 			//getRwLock().readLock().lock();
-			double[] force = PhysicalObject.interObjectForce.forceOnASphereFromASphere(this,s);
+			double[] force = ini.cx3d.physics.PhysicalObject.interObjectForce.forceOnASphereFromASphere(this,s);
 			if(norm(force)>1E-15){
 				return true;
 			}else{
@@ -623,7 +624,7 @@ public class PhysicalSphere extends PhysicalObject {
 
 		//getRwLock().readLock().lock();
 
-		double[] force = PhysicalObject.interObjectForce.forceOnACylinderFromASphere(c,this);
+		double[] force = ini.cx3d.physics.PhysicalObject.interObjectForce.forceOnACylinderFromASphere(c,this);
 		//getRwLock().readLock().unlock();
 		if(norm(force)>1E-15){
 			return true;
@@ -674,7 +675,7 @@ public class PhysicalSphere extends PhysicalObject {
 //				this.getDiameter()*0.5 );
 		try{
 			//getRwLock().readLock().lock();
-			return interObjectForce.forceOnACylinderFromASphere(c, this);
+			return ini.cx3d.physics.PhysicalObject.interObjectForce.forceOnACylinderFromASphere(c, this);
 		}
 		finally
 		{
@@ -697,7 +698,7 @@ public class PhysicalSphere extends PhysicalObject {
 //		return f;
 		try{
 			//getRwLock().readLock().lock();
-			return interObjectForce.forceOnASphereFromASphere(s, this);
+			return ini.cx3d.physics.PhysicalObject.interObjectForce.forceOnASphereFromASphere(s, this);
 		}
 		finally
 		{

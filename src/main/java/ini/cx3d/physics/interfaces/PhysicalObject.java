@@ -1,6 +1,7 @@
 package ini.cx3d.physics.interfaces;
 
 import ini.cx3d.localBiology.CellElement;
+import ini.cx3d.physics.PhysicalCylinder;
 import ini.cx3d.physics.PhysicalSphere;
 import ini.cx3d.synapses.Excrescence;
 
@@ -339,4 +340,53 @@ public interface PhysicalObject extends PhysicalNode {
 	double getInterObjectForceCoefficient();
 
 	void setInterObjectForceCoefficient(double interObjectForceCoefficient);
+
+	/**
+	 * Convenient way to change family links in the neuron tree structure
+	 * (mother, daughter branch). This method is useful during elongation and
+	 * retraction for intercalation/removal of elements.
+	 * of elements.
+	 */
+	void updateRelative(ini.cx3d.physics.interfaces.PhysicalObject oldRelative, ini.cx3d.physics.interfaces.PhysicalObject newRelative);
+
+	/**
+	 * Returns the absolute coordinates of the location where a <code>PhysicalObject</code> is attached
+	 * to this <code>PhysicalObject</code>. Does not necessarily contain a check of the identity of the
+	 *  element that makes the request.
+	 *
+	 * @param daughterWhoAsks the PhysicalObject attached to us.
+	 * @return the coord
+	 */
+	double[] originOf(ini.cx3d.physics.interfaces.PhysicalObject daughterWhoAsks);
+
+	/**
+	 * Removal of a <code>PhysicalObject</code> from the list of our daughters.
+	 * (Mainly in case of complete retraction of the daughter.*/
+	void removeDaugther(ini.cx3d.physics.interfaces.PhysicalObject daughterToRemove);
+
+	/**
+	 * Resets some computational and physical properties (like the tension, volume) after
+	 * a displacement
+	 */
+	void updateDependentPhysicalVariables();
+
+	/* Diffusion of diffusible IntracellularSubstances between two PhysicalObjects.
+	 */
+	void diffuseWithThisPhysicalObjects(PhysicalObject po, double distance);
+
+	/* Returns the INSTANCE of IntracellularSubstance in this PhysicalObject with the same id
+	 * than the IntracellularSubstance given as argument. If there is no such instance, a
+	 * new one with similar properties is created, inserted into the intracellularSubstances
+	 * vector and then returned. Only used between subclasses of physicalObject for intracellular
+	 * diffusion. C.f. very similar method : PhysicalNode.giveYourSubstanceInstance.
+	 */
+	IntracellularSubstance giveYouIntracellularSubstanceInstance(IntracellularSubstance templateS);
+
+	/**
+	 * Returns the inter-object force that the <code>PhysicalObject</code> in which the method is called applies
+	 * onto the <code>PhysicalCylinder</code> given as argument.
+	 * @param c
+	 * @return
+	 */
+	double[] getForceOn(PhysicalCylinder c);
 }

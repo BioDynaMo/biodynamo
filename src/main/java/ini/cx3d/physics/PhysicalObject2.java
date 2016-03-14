@@ -53,14 +53,14 @@ import java.util.*;
  * (cartesian) system, and for transform from global to local..
  *
  */
-public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylinder implements ini.cx3d.physics.interfaces.PhysicalObject {//extends ini.cx3d.swig.physics.PhysicalObject{
+public abstract class PhysicalObject2 extends ini.cx3d.swig.physics.PhysicalSphere implements ini.cx3d.physics.interfaces.PhysicalObject {//extends ini.cx3d.swig.physics.PhysicalObject{
 
-	public PhysicalObject(long cPtr, boolean cMemoryOwn){
+	public PhysicalObject2(long cPtr, boolean cMemoryOwn){
 		super(cPtr, cMemoryOwn);
 	}
 
 	// * The simulation of Force in this simulation.*/
-	protected static InterObjectForce interObjectForce = DefaultForceFactory.create();
+//	protected static InterObjectForce interObjectForce = new DefaultForce();// DefaultForceFactory.create();
 
 	/*
 	 * Tells if a PhysicalObject is still part of the simulation.
@@ -120,7 +120,7 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 		removeLastChar(sb);
 		sb.append(",");
 
-		keyValue(sb, "interObjectForce", interObjectForce);
+		keyValue(sb, "interObjectForce", PhysicalObject.interObjectForce);
 		keyValue(sb, "stillExisting", stillExisting);
 		keyValue(sb, "onTheSchedulerListForPhysicalObjects", onTheSchedulerListForPhysicalObjects);
 		keyValue(sb, "massLocation", massLocation);
@@ -141,7 +141,7 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 	}
 
 	/** Poor simple constructor.*/
-	public PhysicalObject() {
+	public PhysicalObject2() {
 		super();
 	}
 
@@ -334,7 +334,7 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 					dot(positionInGlobalCoord,xAxis),
 					dot(positionInGlobalCoord,yAxis),
 					dot(positionInGlobalCoord,zAxis)
-					};
+			};
 		}
 		finally
 		{
@@ -356,7 +356,7 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 					positionInLocalCoord[0]*xAxis[0] + positionInLocalCoord[1]*yAxis[0] + positionInLocalCoord[2]*zAxis[0],
 					positionInLocalCoord[0]*xAxis[1] + positionInLocalCoord[1]*yAxis[1] + positionInLocalCoord[2]*zAxis[1],
 					positionInLocalCoord[0]*xAxis[2] + positionInLocalCoord[1]*yAxis[2] + positionInLocalCoord[2]*zAxis[2]
-					};
+			};
 		}
 		finally
 		{
@@ -1146,15 +1146,15 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 		//getRwLock().writeLock().unlock();
 	}
 
-	/** The class computing the inter object force.*/
-	public static InterObjectForce getInterObjectForce() {
-		return interObjectForce;
-	}
-
-	/** The class computing the inter object force.*/
-	public static void setInterObjectForce(InterObjectForce interObjectForce) {
-		PhysicalObject.interObjectForce = interObjectForce;
-	}
+//	/** The class computing the inter object force.*/
+//	public static InterObjectForce getInterObjectForce() {
+//		return interObjectForce;
+//	}
+//
+//	/** The class computing the inter object force.*/
+//	public static void setInterObjectForce(InterObjectForce interObjectForce) {
+//		PhysicalObject2.interObjectForce = interObjectForce;
+//	}
 
 
 }
