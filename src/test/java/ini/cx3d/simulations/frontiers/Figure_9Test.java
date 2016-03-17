@@ -31,6 +31,7 @@ import ini.cx3d.Param;
 import ini.cx3d.cells.*;
 import ini.cx3d.localBiology.*;
 import ini.cx3d.physics.*;
+import ini.cx3d.physics.factory.PhysicalObjectFactory;
 import ini.cx3d.simulations.*;
 import ini.cx3d.synapses.TestSynapses;
 
@@ -76,7 +77,7 @@ public class Figure_9Test extends BaseSimulationTest {
 		nogo.setAttractionRange(3);
 		nogo.setAttractionStrength(5);
 		
-		PhysicalObject.setInterObjectForce(nogo);
+		PhysicalObjectFactory.setInterObjectForce(nogo);
 		
 		// generate cells
 		int nbOfCells = 20;   

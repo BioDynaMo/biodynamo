@@ -14,10 +14,10 @@
 %include "util.i"
 %include "cx3d_shared_ptr.i"
 
-%define %custom_jdc(FULL_CPP_TYPE, JAVA_PROXY_CLASS_NAME, CLASS_NAME,
-                            JAVA_TYPE, JNI_TYPE)
+%define %PO_hybrid(FULL_CPP_TYPE, JAVA_PROXY_CLASS_NAME, CLASS_NAME,
+                              JAVA_TYPE, JNI_TYPE, ADDITIONAL_CODE, USE_NATIVE)
   // enable cross language polymorphism for this C++ type
-  // %feature("director") FULL_CPP_TYPE;
+  %feature("director") FULL_CPP_TYPE;
 
   %extend FULL_CPP_TYPE {
    virtual jlong getObjectPtr(const std::shared_ptr<FULL_CPP_TYPE >& shared_ptr){
@@ -51,6 +51,16 @@
      else {
        return javaObjectMap.get(objPtr);
      }
+   }
+
+   ADDITIONAL_CODE
+
+   public java.util.Hashtable<String, ini.cx3d.physics.interfaces.IntracellularSubstance> getIntracellularSubstances(){
+       java.util.Hashtable<String, ini.cx3d.physics.interfaces.IntracellularSubstance> table = new java.util.Hashtable<>();
+       for(ini.cx3d.physics.interfaces.IntracellularSubstance s : getIntracellularSubstances1()){
+         table.put(s.getId(), s);
+       }
+       return table;
    }
 
   %}
@@ -92,7 +102,7 @@
   %}
 
   %pragma(java) modulecode=%{
-      public static boolean useNative##CLASS_NAME = false;
+      public static boolean useNative##CLASS_NAME = USE_NATIVE;
   %}
 
   %typemap(jstype) FULL_CPP_TYPE "JAVA_TYPE"
@@ -104,16 +114,52 @@
                    cx3d::physics::PhysicalObject);
 %enddef
 
-%define %PhysicalObject_java()
-  %custom_jdc(cx3d::physics::PhysicalObject,
+%define %PhysicalObject_hybrid(USE_NATIVE)
+  %PO_hybrid(cx3d::physics::PhysicalObject,
               PhysicalObject,
               PhysicalObject,
               ini.cx3d.physics.interfaces.PhysicalObject,
-              ini/cx3d/physics/interfaces/PhysicalObject);
+              ini/cx3d/physics/interfaces/PhysicalObject,
+              public NativeStringBuilder superSimStateToJson(NativeStringBuilder sb){
+                return super.simStateToJson(sb);
+              }
+              public boolean equals(Object o) {
+                  if (o != null && o instanceof PhysicalObject) {
+                    return equalTo((PhysicalObject) o);
+                  }
+                  return false;
+              },
+              USE_NATIVE);
+%enddef
+
+%define %PhysicalObject_stdlist()
+  %stdlist_typemap(std::shared_ptr<cx3d::physics::PhysicalObject>,
+                   PhysicalObject,
+                   ini.cx3d.physics.interfaces.PhysicalObject);
 %enddef
 
 /**
  * apply customizations
  */
 %PhysicalObject_cx3d_shared_ptr();
-%PhysicalObject_java();
+#ifdef PHYSICALOBJECT_NATIVE
+  %PhysicalObject_hybrid(true);
+#else
+  %PhysicalObject_hybrid(false);
+#endif
+%PhysicalObject_stdlist();
+%typemap(javainterfaces) cx3d::physics::PhysicalObject "ini.cx3d.physics.interfaces.PhysicalObject"
+%typemap(javaimports) cx3d::physics::PhysicalObject "import ini.cx3d.swig.NativeStringBuilder;"
+
+// class hierarchy modifications
+#ifdef PHYSICALOBJECT_NATIVE
+    %pragma(java) modulecode=%{
+      static public abstract class PhysicalSphereBase extends ini.cx3d.swig.physics.PhysicalSphere {}
+      static public abstract class PhysicalCylinderBase extends ini.cx3d.swig.physics.PhysicalCylinder {}
+    %}
+#else
+    %pragma(java) modulecode=%{
+      static public abstract class PhysicalSphereBase extends ini.cx3d.physics.PhysicalObject2 {}
+      static public abstract class PhysicalCylinderBase extends ini.cx3d.physics.PhysicalObject {}
+    %}
+#endif

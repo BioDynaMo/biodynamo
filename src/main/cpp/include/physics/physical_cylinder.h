@@ -43,11 +43,6 @@ class PhysicalCylinder : public PhysicalObject {
     throw std::logic_error(
         "PhysicalCylinder::getSpringAxis - must never be called - Java should provide implementation at this point");
   }
-
-  virtual double getDiameter() {
-    throw std::logic_error(
-        "PhysicalCylinder::getSpringAxis - must never be called - Java should provide implementation at this point");
-  }
 };
 
 }  //namespace physics

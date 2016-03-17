@@ -7,6 +7,7 @@
 #include <memory>
 #include <stdint.h>
 
+#include "color.h"
 #include "physics/substance.h"
 #include "physics/intracellular_substance.h"
 #include "physics/ecm.h"
@@ -19,8 +20,13 @@
 #include "physics/physical_sphere.h"
 #include "java_util.h"
 #include "physics/default_force.h"
+#include "synapse/excrescence.h"
+#include "local_biology/cell_element.h"
 using namespace cx3d::physics;
 using cx3d::JavaUtil2;
+using cx3d::Color;
+using cx3d::synapse::Excrescence;
+using cx3d::local_biology::CellElement;
 %}
 
 // import depending modules
@@ -50,9 +56,13 @@ JAVA_LOAD_NATIVE_LIBRARY(cx3d_physics);
 %include "class_customization/physics/physical_bond.i"
 %include "class_customization/physics/physical_sphere.i"
 %include "class_customization/java_util_2.i"
+%include "class_customization/physics/inter_object_force.i"
 %include "class_customization/physics/default_force.i"
+%include "class_customization/synapse/excrescence.i"
+%include "class_customization/local_biology/cell_element.i"
 
 // add the original header files here
+%include "color.h"
 %include "physics/substance.h"
 %include "physics/intracellular_substance.h"
 %include "physics/ecm.h"
@@ -64,4 +74,7 @@ JAVA_LOAD_NATIVE_LIBRARY(cx3d_physics);
 %include "physics/collision_check.h"
 %include "physics/physical_sphere.h"
 %include "java_util.h"
+%include "physics/inter_object_force.h"
 %include "physics/default_force.h"
+%include "synapse/excrescence.h"
+%include "local_biology/cell_element.h"

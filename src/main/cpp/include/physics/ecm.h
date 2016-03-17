@@ -10,6 +10,7 @@ namespace cx3d {
 namespace physics {
 
 class Substance;
+class IntracellularSubstance;
 
 class ECM {
  public:
@@ -59,9 +60,24 @@ class ECM {
    * @param id
    * @return new Substance instance
    */
-  virtual std::shared_ptr<Substance> substanceInstance(const std::string id) {
+  virtual std::shared_ptr<Substance> substanceInstance(const std::string& id) {
     throw std::logic_error(
         "ECM::substanceInstance must never be called - Java must provide implementation at this point");
+  }
+
+  /** Returns an instance of <code>IntracellularSubstance</code>. If a similar
+   * IntracellularSubstance (with the same id) has already been declared as a template
+   * IntracellularSubstance, a copy of it is made (with same id, degradation constant,
+   * diffusion constant, outside visibility and volume dependency, but concentration
+   * and quantity 0).
+   * If it is the first time that this id is requested, a new template IntracellularSubstance
+   *  is made (with by-default values) and stored, and a copy will be returned.
+   * @param id
+   * @return new IntracellularSubstance instance
+   */
+  virtual std::shared_ptr<IntracellularSubstance> intracellularSubstanceInstance(const std::string& id) {
+    throw std::logic_error(
+        "ECM::intracellularSubstanceInstance must never be called - Java must provide implementation at this point");
   }
 
   virtual double exp(double d) {

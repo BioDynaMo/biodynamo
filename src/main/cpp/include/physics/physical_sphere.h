@@ -13,21 +13,6 @@ class PhysicalSphere : public PhysicalObject {
  public:
   virtual ~PhysicalSphere() {
   }
-
-  virtual std::array<double, 3> getMassLocation() {
-    throw std::logic_error(
-        "PhysicalSphere::getMassLocation must not be called - Java must provide implementation at this point");
-  }
-
-  virtual double getDiameter() {
-    throw std::logic_error(
-        "PhysicalSphere::getDiameter must not be called - Java must provide implementation at this point");
-  }
-
-  virtual double getInterObjectForceCoefficient() {
-    throw std::logic_error(
-        "PhysicalSphere::getInterObjectForceCoefficient must not be called - Java must provide implementation at this point");
-  }
 };
 
 }  //namespace physics

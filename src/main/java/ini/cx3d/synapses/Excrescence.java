@@ -33,7 +33,7 @@ import ini.cx3d.localBiology.NeuriteElement;
  * @author fredericzubler
  *
  */
-public abstract class Excrescence implements SimStateSerializable{
+public abstract class Excrescence extends ini.cx3d.swig.physics.Excrescence implements SimStateSerializable{
 	/** the physical object it is attached to.*/
 	ini.cx3d.physics.interfaces.PhysicalObject po;
 	/** the other structure with which it forms a synapse.*/ 
@@ -48,6 +48,10 @@ public abstract class Excrescence implements SimStateSerializable{
 	public static final int BOUTON = 1;
 	public static final int SOMATICSPINE = 2;
 	public static final int SHAFT = 3;
+
+	public Excrescence() {
+		registerJavaObject(this);
+	}
 
 	@Override
 	public ini.cx3d.swig.NativeStringBuilder simStateToJson(ini.cx3d.swig.NativeStringBuilder sb) {

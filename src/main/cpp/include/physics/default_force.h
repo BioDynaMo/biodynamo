@@ -13,7 +13,7 @@ namespace physics {
 /**
  * Defines the 3D physical interactions between physical objects (cylinders and spheres).
  */
-class DefaultForce : public InterObjectForce, public SimStateSerializable {
+class DefaultForce : public InterObjectForce {
  public:
   static void setJavaUtil(std::shared_ptr<JavaUtil2> java) {
     java_ = java;

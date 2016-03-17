@@ -14,6 +14,7 @@
 
 %include "util.i"
 %include "cx3d_shared_ptr.i"
+%include "std_list_typemap.i"
 
 %define %IntracellularSubstance_cx3d_shared_ptr()
   %cx3d_shared_ptr(IntracellularSubstance,
@@ -63,6 +64,9 @@
 
 %define %IntracellularSubstance_typemaps()
   %typemap(javainterfaces) cx3d::physics::IntracellularSubstance "ini.cx3d.physics.interfaces.IntracellularSubstance"
+  %stdlist_typemap(std::shared_ptr<cx3d::physics::IntracellularSubstance>,
+                   IntracellularSubstance,
+                   ini.cx3d.physics.interfaces.IntracellularSubstance);
 %enddef
 
  /**

@@ -60,7 +60,7 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 	}
 
 	// * The simulation of Force in this simulation.*/
-	protected static InterObjectForce interObjectForce = DefaultForceFactory.create();
+	protected static InterObjectForce interObjectForce = null;//DefaultForceFactory.create();
 
 	/*
 	 * Tells if a PhysicalObject is still part of the simulation.
@@ -112,11 +112,16 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 
 
 	/* List of the Physical bonds that this object can do (for cell adhesion, to restore proper configuration)*/
-	protected Vector<Excrescence> excrescences = new Vector<Excrescence>();
+	protected AbstractSequentialList<Excrescence> excrescences = new LinkedList<Excrescence>();
+
+	@Override
+	public void setTotalForceLastTimeStep(double[] totalForceLastTimeStep){
+		this.totalForceLastTimeStep = totalForceLastTimeStep;
+	}
 
 	@Override
 	public ini.cx3d.swig.NativeStringBuilder simStateToJson(ini.cx3d.swig.NativeStringBuilder sb) {
-		super.simStateToJson(sb);
+		superSimStateToJson(sb);
 		removeLastChar(sb);
 		sb.append(",");
 
@@ -225,7 +230,7 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 	 * @param motherWhoAsks the PhysicalObject attached to the mass.
 	 * @return the force in a double[]
 	 */
-	protected abstract double[] forceTransmittedFromDaugtherToMother(ini.cx3d.physics.interfaces.PhysicalObject motherWhoAsks);
+	public abstract double[] forceTransmittedFromDaugtherToMother(ini.cx3d.physics.interfaces.PhysicalObject motherWhoAsks);
 
 	/**
 	 * Resets some computational and physical properties (like the tension, volume) after
@@ -248,7 +253,7 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 	 * @param s
 	 * @return
 	 */
-	abstract protected boolean isInContactWithSphere(PhysicalSphere s);
+	abstract public boolean isInContactWithSphere(PhysicalSphere s);
 
 	/**
 	 * Returns true if this <code>PhysicalObject</code> and the <code>PhysicalSphere</code> given as
@@ -256,7 +261,7 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 	 * @param c
 	 * @return
 	 */
-	abstract protected boolean isInContactWithCylinder(PhysicalCylinder c);
+	abstract public boolean isInContactWithCylinder(PhysicalCylinder c);
 
 	/**
 	 * Returns true if this <code>PhysicalObject</code> is in contact, i.e. if it is
@@ -286,11 +291,11 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 	 * @return
 	 */
 	@Override
-	public Vector<ini.cx3d.physics.interfaces.PhysicalObject> getPhysicalObjectsInContact(){
+	public AbstractSequentialList<ini.cx3d.physics.interfaces.PhysicalObject> getPhysicalObjectsInContact(){
 		try
 		{
 			//getRwLock().readLock().lock();
-			Vector<ini.cx3d.physics.interfaces.PhysicalObject> po = new Vector<ini.cx3d.physics.interfaces.PhysicalObject>();
+			AbstractSequentialList<ini.cx3d.physics.interfaces.PhysicalObject> po = new LinkedList<ini.cx3d.physics.interfaces.PhysicalObject>();
 			AbstractSequentialList<ini.cx3d.physics.interfaces.PhysicalNode> neighbors = getSoNode().getNeighbors();
 			for (int i = 0; i < neighbors.size(); i++) {
 				ini.cx3d.physics.interfaces.PhysicalNode n = neighbors.get(i);
@@ -314,10 +319,10 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 
 
 	/* Recompute volume after diameter has changed.*/
-	abstract protected void updateVolume();
+	abstract public void updateVolume();
 
 	/* Recompute diameter, after volume has been change.*/
-	abstract protected void updateDiameter();
+	abstract public void updateDiameter();
 
 
 	/**
@@ -425,7 +430,7 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 	 * @return true if at least one PhysicalBond was removed
 	 */
 	@Override
-	public boolean removePhysicalBondWith(PhysicalObject po, boolean removeThemAll){
+	public boolean removePhysicalBondWith(ini.cx3d.physics.interfaces.PhysicalObject po, boolean removeThemAll){
 		try
 		{
 			//getRwLock().writeLock().lock();
@@ -434,7 +439,7 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 				ini.cx3d.physics.interfaces.PhysicalBond pb = physicalBonds.get(i);
 				if(Objects.equals(po, pb.getOppositePhysicalObject(this))){
 					physicalBonds.remove(i);
-					po.physicalBonds.remove(pb);
+					((PhysicalObject) po).physicalBonds.remove(pb);
 					if(!removeThemAll){
 						return true;
 					}else{
@@ -518,7 +523,7 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 	 * and therefore is not a public method. Instead , this method is used for filling up a new
 	 * PhysicalObject in case of extension).
 	 */
-	protected void addNewIntracellularSubstance(ini.cx3d.physics.interfaces.IntracellularSubstance s){
+	public void addNewIntracellularSubstance(ini.cx3d.physics.interfaces.IntracellularSubstance s){
 		//getRwLock().writeLock().lock();
 		intracellularSubstances.put(s.getId(), s);
 		//getRwLock().writeLock().unlock();
@@ -703,7 +708,7 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 	 * Updates the concentration of substances, based on the volume of the object.
 	 * Is usually called after change of the volume (and therefore we don't modify it here)
 	 */
-	protected abstract void updateIntracellularConcentrations();
+	public abstract void updateIntracellularConcentrations();
 
 
 	// *************************************************************************************
@@ -909,7 +914,7 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 
 	/** Sets the vector containing all the PhysicalBonds of this PhysicalObject.
 	 * This methof should not be used during the simulation. */
-	@Override
+//	@Override
 	public void setPhysicalBonds(Vector<ini.cx3d.physics.interfaces.PhysicalBond> physicalBonds) {
 		//getRwLock().writeLock().lock();
 		this.physicalBonds = (Vector<ini.cx3d.physics.interfaces.PhysicalBond>) physicalBonds.clone();
@@ -918,7 +923,7 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 
 	/** Returns the vector containing all the Excrescences (PhysicalSpine, PhysicalBouton).*/
 	@Override
-	public Vector<Excrescence> getExcrescences(){
+	public AbstractSequentialList<Excrescence> getExcrescences(){
 		try
 		{
 			//getRwLock().readLock().lock();
@@ -933,10 +938,10 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 
 	/** Sets the vector containing all the Excrescences (PhysicalSpine, PhysicalBouton).
 	 * This method should not be used during a simulation. */
-	@Override
-	public void setExcrescences(Vector<Excrescence> excrescences) {
+//	@Override
+	public void setExcrescences(AbstractSequentialList<Excrescence> excrescences) {
 		//getRwLock().writeLock().lock();
-		this.excrescences = (Vector<Excrescence>) excrescences.clone();
+		this.excrescences = excrescences;
 		//getRwLock().writeLock().unlock();
 	}
 
@@ -1075,6 +1080,10 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 		setVolume(volume,true);
 	}
 
+	public void setVolumeOnly(double v){
+		volume = v;
+	}
+
 	/** Get an intracellular and membrane-bound chemicals that are present
 	 *  in this PhysicalNode. */
 	@Override
@@ -1138,7 +1147,7 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 
 	/** All the intracellular and membrane-bound chemicals that are present
 	 *  in this PhysicalNode. */
-	@Override
+//	@Override
 	public void setIntracellularSubstances(
 			Hashtable<String, ini.cx3d.physics.interfaces.IntracellularSubstance> intracellularSubstances) {
 		//getRwLock().writeLock().lock();
@@ -1147,12 +1156,12 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 	}
 
 	/** The class computing the inter object force.*/
-	public static InterObjectForce getInterObjectForce() {
+	public static InterObjectForce getInterObjectForce_java() {
 		return interObjectForce;
 	}
 
 	/** The class computing the inter object force.*/
-	public static void setInterObjectForce(InterObjectForce interObjectForce) {
+	public static void setInterObjectForce_java(InterObjectForce interObjectForce) {
 		PhysicalObject.interObjectForce = interObjectForce;
 	}
 

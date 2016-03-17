@@ -23,6 +23,10 @@ package ini.cx3d.simulations.frontiers;
 
 import static ini.cx3d.utilities.Matrix.*;
 import ini.cx3d.physics.*;
+import ini.cx3d.physics.InterObjectForce;
+import ini.cx3d.physics.PhysicalCylinder;
+import ini.cx3d.physics.PhysicalSphere;
+import ini.cx3d.swig.physics.*;
 
 /**
  * Slightly modified from the default force, this class serves a InterObjectForce
@@ -30,12 +34,16 @@ import ini.cx3d.physics.*;
  * @author fredericzubler
  *
  */
-public class X_Adhesive_Force implements InterObjectForce{
+public class X_Adhesive_Force extends ini.cx3d.swig.physics.InterObjectForce{
 	
 	
 	
 	double attractionRange = 4;
 	double attractionStrength = 1;
+
+	public X_Adhesive_Force() {
+		registerJavaObject(this);
+	}
 	
 	// =============================================================================================
 

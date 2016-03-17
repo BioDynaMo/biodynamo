@@ -32,11 +32,13 @@ import ini.cx3d.localBiology.CellElement;
 import ini.cx3d.localBiology.LocalBiologyModule;
 import ini.cx3d.localBiology.NeuriteElement;
 import ini.cx3d.physics.factory.IntracellularSubstanceFactory;
+import ini.cx3d.physics.factory.PhysicalObjectFactory;
 import ini.cx3d.physics.interfaces.IntracellularSubstance;
 import ini.cx3d.simulations.ECM;
 import ini.cx3d.spatialOrganization.PositionNotAllowedException;
 import ini.cx3d.spatialOrganization.SpatialOrganizationNode;
 import ini.cx3d.spatialOrganization.interfaces.SpaceNode;
+import ini.cx3d.swig.physics.physics;
 import ini.cx3d.synapses.Excrescence;
 import ini.cx3d.utilities.StringUtilities;
 
@@ -62,7 +64,7 @@ import ini.cx3d.physics.interfaces.PhysicalObject;
  * @author fredericzubler
  *
  */
-public class PhysicalCylinder extends ini.cx3d.physics.PhysicalObject {
+public class PhysicalCylinder extends physics.PhysicalCylinderBase {//ini.cx3d.swig.physics.PhysicalCylinder{//ini.cx3d.physics.PhysicalObject {
 
 	/* Local biology object associated with this PhysicalCylinder.*/
 	private NeuriteElement neuriteElement = null;
@@ -123,9 +125,9 @@ public class PhysicalCylinder extends ini.cx3d.physics.PhysicalObject {
 	public PhysicalCylinder() {
 		super();
 		//getRwLock().writeLock().lock();
-		super.adherence = 	Param.NEURITE_DEFAULT_ADHERENCE;
-		super.mass = 		Param.NEURITE_DEFAULT_MASS;
-		super.diameter = 	Param.NEURITE_DEFAULT_DIAMETER;
+		setAdherence(Param.NEURITE_DEFAULT_ADHERENCE);
+		setMass(Param.NEURITE_DEFAULT_MASS);
+		setDiameter(Param.NEURITE_DEFAULT_DIAMETER, false);
 		updateVolume();
 		ini.cx3d.swig.physics.PhysicalNode.registerJavaObject(this);
 		ini.cx3d.swig.physics.PhysicalObject.registerJavaObject(this);
@@ -144,15 +146,16 @@ public class PhysicalCylinder extends ini.cx3d.physics.PhysicalObject {
 
 		// PhysicalObject variables
 		//getRwLock().readLock().lock();
-		newCylinder.setAdherence(super.adherence);
-		newCylinder.setMass(super.mass);
-		newCylinder.setDiameter(super.diameter, true);  // re - computes also volumes
-		newCylinder.setColor(super.color);
+		newCylinder.setAdherence(getAdherence());
+		newCylinder.setMass(getMass());
+		newCylinder.setDiameter(getDiameter(), true);  // re - computes also volumes
+		newCylinder.setColor(getColor());
 		newCylinder.setStillExisting(super.isStillExisting());
 
-		newCylinder.xAxis = super.xAxis.clone();
-		newCylinder.yAxis = super.yAxis.clone();
-		newCylinder.zAxis = super.zAxis.clone();
+		newCylinder.setXAxis(getXAxis().clone());
+		newCylinder.setYAxis(getYAxis().clone());
+		newCylinder.setZAxis(getZAxis().clone());
+
 		// this class variable
 		newCylinder.springAxis = this.springAxis.clone();
 		newCylinder.setBranchOrder(this.branchOrder);
@@ -208,7 +211,7 @@ public class PhysicalCylinder extends ini.cx3d.physics.PhysicalObject {
 		{
 			//getRwLock().readLock().lock();
 			if(Objects.equals(daughterWhoAsks, daughterLeft) || Objects.equals(daughterWhoAsks, daughterRight)){
-				return massLocation;
+				return getMassLocation();
 			}
 		}finally
 		{
@@ -268,7 +271,7 @@ public class PhysicalCylinder extends ini.cx3d.physics.PhysicalObject {
 	 * It is the sum of the spring force an the part of the inter-object force computed earlier in
 	 * <code>runPhysics()</code>.
 	 */
-	protected double[] forceTransmittedFromDaugtherToMother(ini.cx3d.physics.interfaces.PhysicalObject motherWhoAsks) {
+	public double[] forceTransmittedFromDaugtherToMother(ini.cx3d.physics.interfaces.PhysicalObject motherWhoAsks) {
 		try
 		{
 			//getRwLock().readLock().lock();
@@ -356,13 +359,13 @@ public class PhysicalCylinder extends ini.cx3d.physics.PhysicalObject {
 		//getRwLock().writeLock().lock();
 		this.oldActualLength = 0;
 		// location
-		double[] newProximalCylinderMassLocation = new double[] {	massLocation[0] - distalPortion*springAxis[0],
-				massLocation[1] - distalPortion*springAxis[1],
-				massLocation[2] - distalPortion*springAxis[2]  };
+		double[] newProximalCylinderMassLocation = new double[] {	getMassLocation()[0] - distalPortion*springAxis[0],
+				getMassLocation()[1] - distalPortion*springAxis[1],
+				getMassLocation()[2] - distalPortion*springAxis[2]  };
 		double temp = distalPortion+(1-distalPortion)/2.0;
-		double[] newProximalCylinderSpatialNodeLocation = new double[] {	massLocation[0] - temp*springAxis[0],
-				massLocation[1] - temp*springAxis[1],
-				massLocation[2] - temp*springAxis[2]  };
+		double[] newProximalCylinderSpatialNodeLocation = new double[] {	getMassLocation()[0] - temp*springAxis[0],
+				getMassLocation()[1] - temp*springAxis[1],
+				getMassLocation()[2] - temp*springAxis[2]  };
 		// creating a new PhysicalCylinder & a new NeuriteElement, linking them together
 		PhysicalCylinder newProximalCylinder = getCopy();
 		NeuriteElement ne = neuriteElement.getCopy();
@@ -389,7 +392,7 @@ public class PhysicalCylinder extends ini.cx3d.physics.PhysicalObject {
 
 		// intracellularSubstances quantities .....................................
 		// (concentrations are solved in updateDependentPhysicalVariables():
-		for (IntracellularSubstance s : intracellularSubstances.values() ) {
+		for (IntracellularSubstance s : getIntracellularSubstances().values() ) {
 			// if doesn't diffuse at all : all the substance stays in the distal part !
 			if(s.getDiffusionConstant()<0.000000000001){
 				continue;
@@ -414,13 +417,13 @@ public class PhysicalCylinder extends ini.cx3d.physics.PhysicalObject {
 		}
 
 		// deal with the excressences:
-		for (int i = 0; i<excrescences.size() ; i++){
-			Excrescence ex = excrescences.get(i);
+		for (int i = 0; i<getExcrescences().size() ; i++){
+			Excrescence ex = getExcrescences().get(i);
 			double[] pos = ex.getPositionOnPO();
 			// transmitt them to proxymal cyl
 			if(pos[0]<newProximalCylinder.actualLength){
-				this.excrescences.remove(ex);
-				newProximalCylinder.excrescences.add(ex);
+				removeExcrescence(ex);
+				newProximalCylinder.addExcrescence(ex);
 				ex.setPo(newProximalCylinder);
 				i--;
 			}else{
@@ -471,7 +474,7 @@ public class PhysicalCylinder extends ini.cx3d.physics.PhysicalObject {
 			// (we don't use updateDependentPhysicalVariables(), because we have tension and want to
 			// compute restingLength, and not the opposite...)
 			// T = k*(A-R)/R --> R = k*A/(T+K)
-			this.springAxis = subtract(massLocation,mother.originOf(this));
+			this.springAxis = subtract(getMassLocation(),mother.originOf(this));
 			this.actualLength = norm(springAxis);
 			this.restingLength = springConstant*actualLength/(tension+springConstant);
 			// .... and volume
@@ -483,16 +486,16 @@ public class PhysicalCylinder extends ini.cx3d.physics.PhysicalObject {
 
 			// dealing with excressences:
 			// mine are shifted up :
-			for (int i = 0; i<excrescences.size() ; i++){
+			for (int i = 0; i<getExcrescences().size() ; i++){
 				double shift = this.actualLength-proximalCylinder.actualLength;
-				Excrescence ex = excrescences.get(i);
+				Excrescence ex = getExcrescences().get(i);
 				double[] pos = ex.getPositionOnPO();
 				pos[0] += shift;
 			}
 			// I incorporate the ones of the previous cyl:
-			for (int i = 0; i<proximalCylinder.excrescences.size() ; i++){
-				Excrescence ex = excrescences.get(i);
-				this.excrescences.add(ex);
+			for (int i = 0; i<proximalCylinder.getExcrescences().size() ; i++){
+				Excrescence ex = getExcrescences().get(i);
+				addExcrescence(ex);
 				ex.setPo(this);
 			}
 			// TODO: take care of Physical Bonds
@@ -518,10 +521,10 @@ public class PhysicalCylinder extends ini.cx3d.physics.PhysicalObject {
 
 		double[] currentSpatialNodePosition = getSoNode().getPosition();
 
-		double displacementOfTheCenter[] = new double[] {	massLocation[0] - 0.5*springAxis[0] - currentSpatialNodePosition[0],
-				massLocation[1] - 0.5*springAxis[1] - currentSpatialNodePosition[1],
-				massLocation[2] - 0.5*springAxis[2] - currentSpatialNodePosition[2]  };
-		double diameter = this.diameter;
+		double displacementOfTheCenter[] = new double[] {	getMassLocation()[0] - 0.5*springAxis[0] - currentSpatialNodePosition[0],
+				getMassLocation()[1] - 0.5*springAxis[1] - currentSpatialNodePosition[1],
+				getMassLocation()[2] - 0.5*springAxis[2] - currentSpatialNodePosition[2]  };
+		double diameter = getDiameter();
 		//getRwLock().readLock().unlock();
 		// to save time in SOM operation, if the displacement is very small, we don't do it
 		if(norm(displacementOfTheCenter)<diameter/4.0)
@@ -530,7 +533,7 @@ public class PhysicalCylinder extends ini.cx3d.physics.PhysicalObject {
 		// TODO remove next line when we have Dennis'stable Delaunay
 		displacementOfTheCenter = add(displacementOfTheCenter,randomNoise(diameter/4.0, 3));
 
-			// Tell the node to moves
+		// Tell the node to moves
 		try{
 			getSoNode().moveFrom(displacementOfTheCenter);
 
@@ -582,12 +585,12 @@ public class PhysicalCylinder extends ini.cx3d.physics.PhysicalObject {
 					length*direction[0],
 					length*direction[1],
 					length*direction[2] };
-			massLocation = add(displacement, massLocation);
+			setMassLocation(add(displacement, getMassLocation()));
 			// here I have to define the actual length ..........
 			double[] relativeML = mother.originOf(this); 	// massLocation of the mother
-			springAxis[0] = massLocation[0] - relativeML[0];
-			springAxis[1] = massLocation[1] - relativeML[1];
-			springAxis[2] = massLocation[2] - relativeML[2];
+			springAxis[0] = getMassLocation()[0] - relativeML[0];
+			springAxis[1] = getMassLocation()[1] - relativeML[1];
+			springAxis[2] = getMassLocation()[2] - relativeML[2];
 			actualLength = Math.sqrt(springAxis[0]*springAxis[0] + springAxis[1]*springAxis[1] + springAxis[2]*springAxis[2]);
 			oldActualLength = actualLength;
 		}
@@ -643,7 +646,7 @@ public class PhysicalCylinder extends ini.cx3d.physics.PhysicalObject {
 				actualLength = newActualLength;
 				restingLength = springConstant*actualLength/(tension +springConstant); //cf removeproximalCylinder()
 				springAxis = new double[] { factor*springAxis[0], factor*springAxis[1], factor*springAxis[2] };
-				massLocation = add(mother.originOf(this), springAxis);
+				setMassLocation(add(mother.originOf(this), springAxis));
 				updateVolume(); // and update concentration of internal stuff.
 				updateSpatialOrganizationNodePosition();
 				// be sure i'll run my physics :
@@ -664,7 +667,7 @@ public class PhysicalCylinder extends ini.cx3d.physics.PhysicalObject {
 				neuriteElement.removeYourself();
 				// intracellularSubstances quantities
 				// (concentrations are solved in updateDependentPhysicalVariables():
-				for (ini.cx3d.physics.interfaces.IntracellularSubstance s : intracellularSubstances.values() ) {
+				for (ini.cx3d.physics.interfaces.IntracellularSubstance s : getIntracellularSubstances().values() ) {
 					mother.modifyIntracellularQuantity(s.getId(), s.getQuantity()/Param.SIMULATION_TIME_STEP);
 					// (divide by time step because it is multiplied by it in the method)
 				}
@@ -720,11 +723,11 @@ public class PhysicalCylinder extends ini.cx3d.physics.PhysicalObject {
 
 		// mass location and spring axis
 		newBranchL.springAxis = scalarMult(length,normalize(direction_1));
-		newBranchL.setMassLocation( add(this.massLocation, newBranchL.springAxis) );
+		newBranchL.setMassLocation( add(getMassLocation(), newBranchL.springAxis) );
 		newBranchL.updateLocalCoordinateAxis();  // (important so that xAxis is correct)
 
 		newBranchR.springAxis = scalarMult(length,normalize(direction_2));
-		newBranchR.setMassLocation( add(this.massLocation, newBranchR.springAxis) );
+		newBranchR.setMassLocation( add(getMassLocation(), newBranchR.springAxis) );
 		newBranchR.updateLocalCoordinateAxis();
 
 		// physics of tension :
@@ -734,7 +737,7 @@ public class PhysicalCylinder extends ini.cx3d.physics.PhysicalObject {
 		newBranchL.setRestingLengthForDesiredTension(Param.NEURITE_DEFAULT_TENSION);
 
 		// spatial organization node
-		double[] newBranchCenterLocation = add(this.massLocation, scalarMult(0.5,newBranchL.springAxis));
+		double[] newBranchCenterLocation = add(getMassLocation(), scalarMult(0.5,newBranchL.springAxis));
 		SpatialOrganizationNode<ini.cx3d.physics.interfaces.PhysicalNode> newSON = null;
 		try {
 			newSON = this.getSoNode().getNewInstance(newBranchCenterLocation, newBranchL);
@@ -743,7 +746,7 @@ public class PhysicalCylinder extends ini.cx3d.physics.PhysicalObject {
 		}
 		newBranchL.setSoNode((SpaceNode) newSON);
 
-		newBranchCenterLocation = add(this.massLocation, scalarMult(0.5,newBranchR.springAxis));
+		newBranchCenterLocation = add(getMassLocation(), scalarMult(0.5,newBranchR.springAxis));
 		try {
 			newSON = this.getSoNode().getNewInstance(newBranchCenterLocation, newBranchR);
 		} catch (PositionNotAllowedException e) {
@@ -804,8 +807,8 @@ public class PhysicalCylinder extends ini.cx3d.physics.PhysicalObject {
 		}
 		// location of mass and computation center
 		double[] newBranchSpringAxis = scalarMult(length, normalize(direction));
-		double[] newBranchMassLocation = add(this.massLocation, newBranchSpringAxis);
-		newBranch.massLocation = newBranchMassLocation;
+		double[] newBranchMassLocation = add(getMassLocation(), newBranchSpringAxis);
+		newBranch.setMassLocation(newBranchMassLocation);
 		newBranch.springAxis = newBranchSpringAxis;
 		// physics
 		newBranch.actualLength = length;
@@ -818,7 +821,7 @@ public class PhysicalCylinder extends ini.cx3d.physics.PhysicalObject {
 		this.daughterRight = newBranch;
 		//getRwLock().writeLock().unlock();
 		// new CentralNode
-		double[] newBranchCenterLocation = add(this.massLocation, scalarMult(0.5,newBranchSpringAxis));
+		double[] newBranchCenterLocation = add(getMassLocation(), scalarMult(0.5,newBranchSpringAxis));
 		SpatialOrganizationNode<ini.cx3d.physics.interfaces.PhysicalNode> newSON = null;
 		try {
 			newSON = getSoNode().getNewInstance(newBranchCenterLocation, newBranch);
@@ -856,11 +859,11 @@ public class PhysicalCylinder extends ini.cx3d.physics.PhysicalObject {
 		//scaling for integration step
 		//getRwLock().writeLock().lock();
 		double dV = speed*(Param.SIMULATION_TIME_STEP);
-		super.volume += dV;
+		setVolumeOnly(getVolume() + dV);
 
-		if(volume < 5.2359877E-7 ){	// minimum volume, corresponds to minimal diameter
-			System.err.println("PhysicalSphere.changeVolume() : volume is "+volume);
-			volume = 5.2359877E-7;
+		if(getVolume() < 5.2359877E-7 ){	// minimum volume, corresponds to minimal diameter
+			System.err.println("PhysicalSphere.changeVolume() : volume is "+getVolume());
+			setVolumeOnly(5.2359877E-7);
 		}
 		//getRwLock().writeLock().unlock();
 		updateDiameter();
@@ -876,9 +879,9 @@ public class PhysicalCylinder extends ini.cx3d.physics.PhysicalObject {
 		//scaling for integration step
 		//getRwLock().writeLock().lock();
 		double dD = speed*(Param.SIMULATION_TIME_STEP);
-		super.diameter += dD;
-		if(diameter < 0.01 ){
-			System.err.println("PhysicalCylinder.changeDiameter() : diameter is "+diameter);
+		setDiameter(getDiameter() + dD, false);
+		if(getDiameter() < 0.01 ){
+			System.err.println("PhysicalCylinder.changeDiameter() : diameter is "+getDiameter());
 		}
 		//getRwLock().writeLock().unlock();
 		updateVolume();
@@ -961,8 +964,8 @@ public class PhysicalCylinder extends ini.cx3d.physics.PhysicalObject {
 					}
 				}
 				// if we have a PhysicalBond with him, we also don't take it into account
-				if(super.physicalBonds != null){
-					for (ini.cx3d.physics.interfaces.PhysicalBond pb : physicalBonds) {
+				if(getPhysicalBonds() != null && getPhysicalBonds().size() != 0){
+					for (ini.cx3d.physics.interfaces.PhysicalBond pb : getPhysicalBonds()) {
 						if(Objects.equals(pb.getOppositePhysicalObject(this), neighbor)){
 							continue;
 						}
@@ -973,7 +976,7 @@ public class PhysicalCylinder extends ini.cx3d.physics.PhysicalObject {
 
 				// 1) "artificial force" to maintain the sphere in the ECM.getInstance() simulation boundaries--------
 				if(ECM.getInstance().getArtificialWallForCylinders()){
-					double[] forceFromArtificialWall = ECM.getInstance().forceFromArtificialWall(massLocation, diameter * 0.5);
+					double[] forceFromArtificialWall = ECM.getInstance().forceFromArtificialWall(getMassLocation(), getDiameter() * 0.5);
 					forceOnMyPointMass[0] += forceFromArtificialWall[0];
 					forceOnMyPointMass[1] += forceFromArtificialWall[1];
 					forceOnMyPointMass[2] += forceFromArtificialWall[2];
@@ -1000,32 +1003,32 @@ public class PhysicalCylinder extends ini.cx3d.physics.PhysicalObject {
 		boolean antiKink = false;
 		// TEST : anti-kink
 		if(antiKink){
-		double KK = 5;
-		if(daughterLeft != null && daughterRight == null){
-			if(daughterLeft.daughterLeft!=null){
-				PhysicalCylinder downstream = daughterLeft.daughterLeft;
-				double rresting = daughterLeft.getRestingLength()+downstream.getRestingLength();
+			double KK = 5;
+			if(daughterLeft != null && daughterRight == null){
+				if(daughterLeft.daughterLeft!=null){
+					PhysicalCylinder downstream = daughterLeft.daughterLeft;
+					double rresting = daughterLeft.getRestingLength()+downstream.getRestingLength();
 //				double rresting = daughterLeft.getActualLength()+downstream.getActualLength();
-				double[] downToMe = subtract(massLocation,downstream.massLocation);
+					double[] downToMe = subtract(getMassLocation(),downstream.getMassLocation());
+					double aactual = norm(downToMe);
+
+					forceOnMyPointMass = add(forceOnMyPointMass, scalarMult(KK*(rresting-aactual),normalize(downToMe)));
+				}
+			}
+
+			if (daughterLeft!= null && mother instanceof PhysicalCylinder) {
+				PhysicalCylinder motherCyl = (PhysicalCylinder) mother;
+				double rresting = this.getRestingLength()+motherCyl.getRestingLength();
+//			double rresting = this.getActualLength()+motherCyl.getActualLength();
+				double[] downToMe = subtract(getMassLocation(),motherCyl.proximalEnd());
 				double aactual = norm(downToMe);
 
 				forceOnMyPointMass = add(forceOnMyPointMass, scalarMult(KK*(rresting-aactual),normalize(downToMe)));
 			}
 		}
-
-		if (daughterLeft!= null && mother instanceof PhysicalCylinder) {
-			PhysicalCylinder motherCyl = (PhysicalCylinder) mother;
-			double rresting = this.getRestingLength()+motherCyl.getRestingLength();
-//			double rresting = this.getActualLength()+motherCyl.getActualLength();
-			double[] downToMe = subtract(massLocation,motherCyl.proximalEnd());
-			double aactual = norm(downToMe);
-
-			forceOnMyPointMass = add(forceOnMyPointMass, scalarMult(KK*(rresting-aactual),normalize(downToMe)));
-		}
-		}
 		// 4) PhysicalBond -----------------------------------------------------------
-		for (int i=0; i< physicalBonds.size(); i++) {
-			ini.cx3d.physics.interfaces.PhysicalBond pb = physicalBonds.get(i);
+		for (int i=0; i< getPhysicalBonds().size(); i++) {
+			ini.cx3d.physics.interfaces.PhysicalBond pb = getPhysicalBonds().get(i);
 			double[] forceFromThisPhysicalBond = pb.getForceOn(this);
 
 			if(forceFromThisPhysicalBond.length == 3){
@@ -1044,7 +1047,7 @@ public class PhysicalCylinder extends ini.cx3d.physics.PhysicalObject {
 				forceOnMyMothersPointMass[2]+= forceFromThisPhysicalBond[2]*forceFromThisPhysicalBond[3];
 			}
 		}
-    	//getRwLock().readLock().unlock();
+		//getRwLock().readLock().unlock();
 
 		// 5) define the force that will be transmitted to the mother
 		//getRwLock().writeLock().lock();
@@ -1053,18 +1056,22 @@ public class PhysicalCylinder extends ini.cx3d.physics.PhysicalObject {
 		// 6) Compute the movement of this neurite elicited by the resultant force----------------
 		// 	6.0) In case we display the force
 		//getRwLock().writeLock().lock();
-		super.totalForceLastTimeStep[0] = forceOnMyPointMass[0];
-		super.totalForceLastTimeStep[1] = forceOnMyPointMass[1];
-		super.totalForceLastTimeStep[2] = forceOnMyPointMass[2];
-		super.totalForceLastTimeStep[3] = 1;
+		double[] tmp = {0, 0, 0, 1};
+		tmp[0] = forceOnMyPointMass[0];
+		tmp[1] = forceOnMyPointMass[1];
+		tmp[2] = forceOnMyPointMass[2];
+		tmp[3] = 1;
+		setTotalForceLastTimeStep(tmp);
 		//getRwLock().writeLock().unlock();
 		//	6.1) Define movement scale
-		double hOverM = h/mass;
+		double hOverM = h/getMass();
 		double normOfTheForce = norm(forceOnMyPointMass);
 		// 	6.2) If is F not strong enough -> no movements
-		if(normOfTheForce<adherence) {
+		if(normOfTheForce<getAdherence()) {
 			//getRwLock().writeLock().lock();
-			super.totalForceLastTimeStep[3] = -1;
+			double[] tmp1 = getTotalForceLastTimeStep();
+			tmp1[3] = -1;
+			setTotalForceLastTimeStep(tmp1);
 			//getRwLock().writeLock().unlock();
 			return;
 		}
@@ -1131,9 +1138,11 @@ public class PhysicalCylinder extends ini.cx3d.physics.PhysicalObject {
 		// 8) Eventually, we do perform the move--------------------------------------------------
 		// 8.1) The move of our mass
 		//getRwLock().writeLock().lock();
-		massLocation[0] += actualDisplacement[0];
-		massLocation[1] += actualDisplacement[1];
-		massLocation[2] += actualDisplacement[2];
+		double[] tmp2 = getMassLocation();
+		tmp2[0] += actualDisplacement[0];
+		tmp2[1] += actualDisplacement[1];
+		tmp2[2] += actualDisplacement[2];
+		setMassLocation(tmp2);
 		//getRwLock().writeLock().unlock();
 		// 8.2) Recompute length, tension and re-center the computation node, and redefine axis
 		updateDependentPhysicalVariables();
@@ -1179,8 +1188,8 @@ public class PhysicalCylinder extends ini.cx3d.physics.PhysicalObject {
 				((ini.cx3d.physics.interfaces.PhysicalObject)neighbor).setOnTheSchedulerListForPhysicalObjects(true);
 			}
 		}
-		for (int i=0; i< physicalBonds.size(); i++) {
-			physicalBonds.get(i).getOppositePhysicalObject(this).setOnTheSchedulerListForPhysicalObjects(true);
+		for (int i=0; i< getPhysicalBonds().size(); i++) {
+			getPhysicalBonds().get(i).getOppositePhysicalObject(this).setOnTheSchedulerListForPhysicalObjects(true);
 		}
 		//getRwLock().readLock().unlock();
 	}
@@ -1193,16 +1202,16 @@ public class PhysicalCylinder extends ini.cx3d.physics.PhysicalObject {
 		{
 			//getRwLock().readLock().lock();
 			// force from cylinder on sphere
-	//		double[] f = Force.forceOnASphereFromACylinder(
-	//				s.getMassLocation(),
-	//				s.getDiameter()*0.5,
-	//				subtract(this.massLocation,this.springAxis),
-	//				this.massLocation,
-	//				this.springAxis,
-	//				this.actualLength,
-	//				this.getDiameter() );
-	//		return f;
-			return interObjectForce.forceOnASphereFromACylinder(s, this);
+			//		double[] f = Force.forceOnASphereFromACylinder(
+			//				s.getMassLocation(),
+			//				s.getDiameter()*0.5,
+			//				subtract(this.massLocation,this.springAxis),
+			//				this.massLocation,
+			//				this.springAxis,
+			//				this.actualLength,
+			//				this.getDiameter() );
+			//		return f;
+			return PhysicalObjectFactory.getInterObjectForce().forceOnASphereFromACylinder(s, this);
 		}
 		finally
 		{
@@ -1219,14 +1228,14 @@ public class PhysicalCylinder extends ini.cx3d.physics.PhysicalObject {
 				// interact physically.
 				return new double[] {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
 			}
-	//		//		double[] f = Force.forceOnACylinderFromACylinder2(
-	//		//		subtract(c.massLocation,c.springAxis), c.massLocation, c.diameter,
-	//		//		subtract(this.massLocation,this.springAxis), this.massLocation, this.diameter);
-	//		double[] f = Force.forceOnACylinderFromACylinder2(
-	//				c.proximalEnd(), c.getMassLocation(), c.diameter,
-	//				this.proximalEnd(), this.massLocation, this.diameter);
-	//		return f;
-			return interObjectForce.forceOnACylinderFromACylinder(c, this);
+			//		//		double[] f = Force.forceOnACylinderFromACylinder2(
+			//		//		subtract(c.massLocation,c.springAxis), c.massLocation, c.diameter,
+			//		//		subtract(this.massLocation,this.springAxis), this.massLocation, this.diameter);
+			//		double[] f = Force.forceOnACylinderFromACylinder2(
+			//				c.proximalEnd(), c.getMassLocation(), c.diameter,
+			//				this.proximalEnd(), this.massLocation, this.diameter);
+			//		return f;
+			return PhysicalObjectFactory.getInterObjectForce().forceOnACylinderFromACylinder(c, this);
 
 		}
 		finally
@@ -1238,7 +1247,7 @@ public class PhysicalCylinder extends ini.cx3d.physics.PhysicalObject {
 	@Override
 	public boolean isInContactWithSphere(PhysicalSphere s) {
 		//getRwLock().readLock().lock();
-		double[] force = interObjectForce.forceOnACylinderFromASphere(this,s);
+		double[] force = PhysicalObjectFactory.getInterObjectForce().forceOnACylinderFromASphere(this, s);
 		//getRwLock().readLock().unlock();
 		if(norm(force)>1E-15){
 			return true;
@@ -1278,7 +1287,7 @@ public class PhysicalCylinder extends ini.cx3d.physics.PhysicalObject {
 	public boolean isInContactWithCylinder(PhysicalCylinder c) {
 
 		//getRwLock().readLock().lock();
-		double[] force = interObjectForce.forceOnACylinderFromACylinder(this,c);
+		double[] force = PhysicalObjectFactory.getInterObjectForce().forceOnACylinderFromACylinder(this,c);
 		//getRwLock().readLock().unlock();
 		if(norm(force)>1E-15){
 			return true;
@@ -1352,7 +1361,7 @@ public class PhysicalCylinder extends ini.cx3d.physics.PhysicalObject {
 	public double[] closestPointTo(double[] p){
 		try{
 			//getRwLock().readLock().lock();
-			double[] massToP = subtract(p, massLocation);
+			double[] massToP = subtract(p, getMassLocation());
 
 			printlnLine("massToP",massToP);
 
@@ -1365,9 +1374,9 @@ public class PhysicalCylinder extends ini.cx3d.physics.PhysicalObject {
 
 			double[] cc; // the closest point
 			if(K<=1.0 && K>=0.0){
-				cc  = new double[] {massLocation[0]-K*springAxis[0], massLocation[1]-K*springAxis[1], massLocation[2]-K*springAxis[2]};
+				cc  = new double[] {getMassLocation()[0]-K*springAxis[0], getMassLocation()[1]-K*springAxis[1], getMassLocation()[2]-K*springAxis[2]};
 			}else if(K<0){
-				cc = massLocation;
+				cc = getMassLocation();
 			}else {
 				cc = proximalEnd();
 			}
@@ -1389,7 +1398,7 @@ public class PhysicalCylinder extends ini.cx3d.physics.PhysicalObject {
 		// 1) Degradation according to the degradation constant for each chemical
 
 		//getRwLock().readLock().lock();
-		for (ini.cx3d.physics.interfaces.Substance s : intracellularSubstances.values()) {
+		for (ini.cx3d.physics.interfaces.Substance s : getIntracellularSubstances().values()) {
 			double decay = Math.exp(-s.getDegradationConstant()*Param.SIMULATION_TIME_STEP);
 			s.multiplyQuantityAndConcentrationBy(decay);
 		}
@@ -1433,8 +1442,8 @@ public class PhysicalCylinder extends ini.cx3d.physics.PhysicalObject {
 	public double[] getUnitNormalVector(double[] positionInPolarCoordinates) {
 		try{
 			//getRwLock().readLock().lock();
-			return add(	scalarMult(Math.cos(positionInPolarCoordinates[1]), yAxis),
-					scalarMult(Math.sin(positionInPolarCoordinates[1]) ,zAxis)
+			return add(	scalarMult(Math.cos(positionInPolarCoordinates[1]), getYAxis()),
+					scalarMult(Math.sin(positionInPolarCoordinates[1]) ,getZAxis())
 			);
 		}
 		finally
@@ -1460,18 +1469,18 @@ public class PhysicalCylinder extends ini.cx3d.physics.PhysicalObject {
 		//		if(false)
 		//		return;
 		//getRwLock().writeLock().lock();
-		xAxis = normalize(this.springAxis);
-		zAxis = crossProduct(xAxis, yAxis);
-		double normOfZ = norm(zAxis);
+		setXAxis(normalize(this.springAxis));
+		setZAxis(crossProduct(getXAxis(), getYAxis()));
+		double normOfZ = norm(getZAxis());
 		if(normOfZ<1E-10){
 			// If new xAxis and old yAxis are aligned, we cannot use this scheme;
 			// we start by re-defining new perp vectors. Ok, we loose the previous info, but
 			// this should almost never happen....
-			zAxis = perp3(xAxis);
+			setZAxis(perp3(getXAxis()));
 		}else{
-			zAxis = scalarMult((1/normOfZ),zAxis);
+			setZAxis(scalarMult((1 / normOfZ), getZAxis()));
 		}
-		yAxis = crossProduct(zAxis, xAxis);
+		setYAxis(crossProduct(getZAxis(), getXAxis()));
 		//getRwLock().writeLock().unlock();
 	}
 
@@ -1490,9 +1499,9 @@ public class PhysicalCylinder extends ini.cx3d.physics.PhysicalObject {
 	public  void updateDependentPhysicalVariables() {
 		//getRwLock().writeLock().lock();
 		double[] relativeML = mother.originOf(this); 	// massLocation of the mother
-		springAxis[0] = massLocation[0] - relativeML[0];
-		springAxis[1] = massLocation[1] - relativeML[1];
-		springAxis[2] = massLocation[2] - relativeML[2];
+		springAxis[0] = getMassLocation()[0] - relativeML[0];
+		springAxis[1] = getMassLocation()[1] - relativeML[1];
+		springAxis[2] = getMassLocation()[2] - relativeML[2];
 		actualLength = Math.sqrt(springAxis[0]*springAxis[0] + springAxis[1]*springAxis[1] + springAxis[2]*springAxis[2]);
 		tension = springConstant * ( actualLength - restingLength ) / restingLength;
 		//getRwLock().writeLock().unlock();
@@ -1503,9 +1512,9 @@ public class PhysicalCylinder extends ini.cx3d.physics.PhysicalObject {
 
 	/* Recomputes diameter after volume has changed.*/
 	@Override
-	protected void updateDiameter() {
+	public void updateDiameter() {
 		//getRwLock().writeLock().lock();
-		diameter = Math.sqrt(volume * 1.27323954 / actualLength);  	// 1.27323 = 4/pi
+		setDiameter(Math.sqrt(getVolume() * 1.27323954 / actualLength), false);  	// 1.27323 = 4/pi
 		//getRwLock().writeLock().unlock();
 	}
 
@@ -1513,9 +1522,9 @@ public class PhysicalCylinder extends ini.cx3d.physics.PhysicalObject {
 	/* Recomputes volume, after diameter has been change. And makes a call for
 	 * recomputing then concentration of IntracellularSubstances.*/
 	@Override
-	protected void updateVolume() {						// 0.78539 = pi/4
+	public void updateVolume() {						// 0.78539 = pi/4
 		//getRwLock().writeLock().lock();
-		volume = 0.785398163 * diameter * diameter * actualLength;
+		setVolumeOnly(0.785398163 * getDiameter() * getDiameter() * actualLength);
 		updateIntracellularConcentrations();
 		//getRwLock().writeLock().unlock();
 	}
@@ -1526,11 +1535,11 @@ public class PhysicalCylinder extends ini.cx3d.physics.PhysicalObject {
 	 * Updates the concentration of substances, based on the volume of the object.
 	 * Is usually called after change of the volume (and therefore we don't modify it here)
 	 */
-	protected void updateIntracellularConcentrations(){
+	public void updateIntracellularConcentrations(){
 		//getRwLock().readLock().lock();
-		for (ini.cx3d.physics.interfaces.IntracellularSubstance s : intracellularSubstances.values() ) {
+		for (ini.cx3d.physics.interfaces.IntracellularSubstance s : getIntracellularSubstances().values() ) {
 			if(s.isVolumeDependant()){
-				s.updateConcentrationBasedOnQuantity(volume);
+				s.updateConcentrationBasedOnQuantity(getVolume());
 			}
 			else{
 				s.updateConcentrationBasedOnQuantity(actualLength);
@@ -1582,10 +1591,10 @@ public class PhysicalCylinder extends ini.cx3d.physics.PhysicalObject {
 			//getRwLock().readLock().lock();
 			positionInGlobalCoord = subtract(positionInGlobalCoord, proximalEnd());
 			return new double[] {
-					dot(positionInGlobalCoord,xAxis),
-					dot(positionInGlobalCoord,yAxis),
-					dot(positionInGlobalCoord,zAxis)
-					};
+					dot(positionInGlobalCoord,getXAxis()),
+					dot(positionInGlobalCoord,getYAxis()),
+					dot(positionInGlobalCoord,getZAxis())
+			};
 		}
 		finally
 		{
@@ -1604,10 +1613,10 @@ public class PhysicalCylinder extends ini.cx3d.physics.PhysicalObject {
 
 			//getRwLock().readLock().lock();
 			double[] glob = new double[] {
-					positionInLocalCoord[0]*xAxis[0] + positionInLocalCoord[1]*yAxis[0] + positionInLocalCoord[2]*zAxis[0],
-					positionInLocalCoord[0]*xAxis[1] + positionInLocalCoord[1]*yAxis[1] + positionInLocalCoord[2]*zAxis[1],
-					positionInLocalCoord[0]*xAxis[2] + positionInLocalCoord[1]*yAxis[2] + positionInLocalCoord[2]*zAxis[2]
-					};
+					positionInLocalCoord[0]*getXAxis()[0] + positionInLocalCoord[1]*getYAxis()[0] + positionInLocalCoord[2]*getZAxis()[0],
+					positionInLocalCoord[0]*getXAxis()[1] + positionInLocalCoord[1]*getYAxis()[1] + positionInLocalCoord[2]*getZAxis()[1],
+					positionInLocalCoord[0]*getXAxis()[2] + positionInLocalCoord[1]*getYAxis()[2] + positionInLocalCoord[2]*getZAxis()[2]
+			};
 			return add(glob,proximalEnd());
 		}
 		finally
@@ -1619,7 +1628,7 @@ public class PhysicalCylinder extends ini.cx3d.physics.PhysicalObject {
 	/**
 	 * Returns the position in cylindrical coordinates (h,theta,r)
 	 * of a point expressed in the local coordinate system (xAxis, yXis, zAxis).
-	 * @param positionInLocalCoord
+	 * @param positionInLocalCoordinates
 	 * @return
 	 */
 	public double[] transformCoordinatesLocalToPolar(double[] positionInLocalCoordinates){
@@ -1640,7 +1649,7 @@ public class PhysicalCylinder extends ini.cx3d.physics.PhysicalObject {
 	/**
 	 * Returns the position in the local coordinate system (xAxis, yXis, zAxis)
 	 * of a point expressed in cylindrical coordinates (h,theta,r).
-	 * @param positionInLocalCoord
+	 * @param positionInPolarCoordinates
 	 * @return
 	 */
 	public double[] transformCoordinatesPolarToLocal(double[] positionInPolarCoordinates){
@@ -1666,7 +1675,7 @@ public class PhysicalCylinder extends ini.cx3d.physics.PhysicalObject {
 				// the positionInLocalCoordinate is in cylindrical coord (h,theta,r)
 				// with r being implicit (half the diameter)
 				// We thus have h (along xAxis) and theta (the angle from the yAxis).
-				double r = 0.5*diameter;
+				double r = 0.5*getDiameter();
 				positionInPolarCoordinates = new double[] {
 						positionInPolarCoordinates[0],
 						positionInPolarCoordinates[1],
@@ -2006,7 +2015,7 @@ public class PhysicalCylinder extends ini.cx3d.physics.PhysicalObject {
 	public double[] proximalEnd(){
 		try{
 			//getRwLock().readLock().lock();
-			return subtract(massLocation, springAxis);
+			return subtract(getMassLocation(), springAxis);
 		}
 		finally
 		{
@@ -2024,7 +2033,7 @@ public class PhysicalCylinder extends ini.cx3d.physics.PhysicalObject {
 	public double[] distalEnd(){
 		try{
 			//getRwLock().readLock().lock();
-			return new double[] {massLocation[0], massLocation[1], massLocation[2]};
+			return new double[] {getMassLocation()[0], getMassLocation()[1], getMassLocation()[2]};
 		}
 		finally
 		{
@@ -2090,7 +2099,7 @@ public class PhysicalCylinder extends ini.cx3d.physics.PhysicalObject {
 	public double[] getAxis() {
 		try{
 			//getRwLock().readLock().lock();
-			return xAxis.clone();
+			return getXAxis().clone();
 		}
 		finally
 		{

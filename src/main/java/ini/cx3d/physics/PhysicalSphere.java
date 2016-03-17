@@ -37,10 +37,12 @@ import ini.cx3d.cells.Cell;
 import ini.cx3d.cells.CellFactory;
 import ini.cx3d.localBiology.CellElement;
 import ini.cx3d.localBiology.SomaElement;
+import ini.cx3d.physics.factory.PhysicalObjectFactory;
 import ini.cx3d.simulations.ECM;
 import ini.cx3d.spatialOrganization.PositionNotAllowedException;
 import ini.cx3d.spatialOrganization.SpatialOrganizationNode;
 import ini.cx3d.spatialOrganization.interfaces.SpaceNode;
+import ini.cx3d.swig.physics.physics;
 import ini.cx3d.utilities.StringUtilities;
 
 import java.util.AbstractSequentialList;
@@ -64,7 +66,7 @@ import ini.cx3d.physics.interfaces.PhysicalObject;
  *
  */
 
-public class PhysicalSphere extends ini.cx3d.physics.PhysicalObject2 {
+public class PhysicalSphere extends physics.PhysicalSphereBase {//ini.cx3d.swig.physics.PhysicalSphere{//ini.cx3d.physics.PhysicalObject2 {
 
 
 	/* Local biology object associated with this PhysicalSphere.*/
@@ -106,9 +108,10 @@ public class PhysicalSphere extends ini.cx3d.physics.PhysicalObject2 {
 		//getRwLock().writeLock().lock();
 		ini.cx3d.swig.physics.PhysicalNode.registerJavaObject(this);
 		ini.cx3d.swig.physics.PhysicalObject.registerJavaObject(this);
-		mass = 1;
-		adherence = Param.SPHERE_DEFAULT_ADHERENCE;
-		super.diameter = Param.SPHERE_DEFAULT_DIAMETER;
+		ini.cx3d.swig.physics.PhysicalSphere.registerJavaObject(this);
+		setMass(1);
+		setAdherence(Param.SPHERE_DEFAULT_ADHERENCE);
+		setDiameter(Param.SPHERE_DEFAULT_DIAMETER, false);
 		updateVolume();
 		//getRwLock().writeLock().unlock();
 	}
@@ -212,11 +215,15 @@ public class PhysicalSphere extends ini.cx3d.physics.PhysicalObject2 {
 
 			double[] xyz = daughtersCoord.get(daughterWhoAsks);
 
-			double radius = diameter*.5;
+			double radius = getDiameter()*.5;
 			xyz = scalarMult(radius, xyz);
-			double[] origin =  new double[] {	massLocation[0] + xyz[0]*xAxis[0] + xyz[1]*yAxis[0] + xyz[2]*zAxis[0] ,
-					massLocation[1] + xyz[0]*xAxis[1] + xyz[1]*yAxis[1] + xyz[2]*zAxis[1] ,
-					massLocation[2] + xyz[0]*xAxis[2] + xyz[1]*yAxis[2] + xyz[2]*zAxis[2] };
+			double[] ml = getMassLocation();
+			double[] xa = getXAxis();
+			double[] ya = getYAxis();
+			double[] za = getZAxis();
+			double[] origin =  new double[] {	ml[0] + xyz[0]*xa[0] + xyz[1]*ya[0] + xyz[2]*za[0] ,
+					ml[1] + xyz[0]*xa[1] + xyz[1]*ya[1] + xyz[2]*za[1] ,
+					ml[2] + xyz[0]*xa[2] + xyz[1]*ya[2] + xyz[2]*za[2] };
 			return origin;
 			}
 		finally
@@ -228,7 +235,7 @@ public class PhysicalSphere extends ini.cx3d.physics.PhysicalObject2 {
 	/**
 	 * A PhysicalSphere has no mother that could call, so this method is not used.
 	 */
-	protected double[] forceTransmittedFromDaugtherToMother(ini.cx3d.physics.interfaces.PhysicalObject motherWhoAsks) {
+	public double[] forceTransmittedFromDaugtherToMother(ini.cx3d.physics.interfaces.PhysicalObject motherWhoAsks) {
 		return null;
 	}
 
@@ -258,14 +265,15 @@ public class PhysicalSphere extends ini.cx3d.physics.PhysicalObject2 {
 	private void updateSpatialOrganizationNodePosition() {
 		//getRwLock().writeLock().lock();
 		double[] currentCenterPosition = getSoNode().getPosition();
-		double displacementOfTheCenter[] = new double[] {	massLocation[0] - currentCenterPosition[0],
-				massLocation[1] - currentCenterPosition[1],
-				massLocation[2] - currentCenterPosition[2]  };
+		double[] ml = getMassLocation();
+		double displacementOfTheCenter[] = new double[] {	ml[0] - currentCenterPosition[0],
+				ml[1] - currentCenterPosition[1],
+				ml[2] - currentCenterPosition[2]  };
 		double offset = norm(displacementOfTheCenter);
-		if(offset>diameter*0.25 || offset > 5){
+		if(offset>getDiameter()*0.25 || offset > 5){
 
 			// TODO : do we need this ?
-			displacementOfTheCenter = add(displacementOfTheCenter,randomNoise(diameter*0.025, 3));
+			displacementOfTheCenter = add(displacementOfTheCenter,randomNoise(getDiameter()*0.025, 3));
 			try {
 				getSoNode().moveFrom(displacementOfTheCenter);
 			} catch (PositionNotAllowedException e) {
@@ -320,10 +328,10 @@ public class PhysicalSphere extends ini.cx3d.physics.PhysicalObject2 {
 		//getRwLock().writeLock().lock();
 		//scaling for integration step
 		double dV = speed*(Param.SIMULATION_TIME_STEP);
-		super.volume += dV;
-		if(volume < 5.2359877E-7 ){	// minimum volume, corresponds to minimal diameter
-			System.err.println("PhysicalSphere.changeVolume() : volume is "+volume);
-			volume = 5.2359877E-7;
+		setVolumeOnly(getVolume() + dV);
+		if(getVolume() < 5.2359877E-7 ){	// minimum volume, corresponds to minimal diameter
+			System.err.println("PhysicalSphere.changeVolume() : volume is " + getVolume());
+			setVolumeOnly(5.2359877E-7);
 		}
 		//getRwLock().writeLock().unlock();
 
@@ -341,10 +349,10 @@ public class PhysicalSphere extends ini.cx3d.physics.PhysicalObject2 {
 		//scaling for integration step
 		//getRwLock().writeLock().lock();
 		double dD = speed*(Param.SIMULATION_TIME_STEP);
-		super.diameter += dD;
-		if(diameter < 0.01 ){
-			System.err.println("PhysicalSphere.changeDiameter() : diameter is "+diameter);
-			diameter = 0.01; // minimum diameter
+		setDiameter(getDiameter() + dD, false);
+		if(getDiameter() < 0.01 ){
+			System.err.println("PhysicalSphere.changeDiameter() : diameter is " + getDiameter());
+			setDiameter(0.01, false); // minimum diameter
 		}
 		//getRwLock().writeLock().unlock();
 
@@ -365,14 +373,14 @@ public class PhysicalSphere extends ini.cx3d.physics.PhysicalObject2 {
 	 * Updates the concentration of substances, based on the volume of the object.
 	 * Is usually called after change of the volume (and therefore we don't modify it here)
 	 */
-	protected void updateIntracellularConcentrations(){
+	public void updateIntracellularConcentrations(){
 
 		//getRwLock().readLock().lock();
-		for (ini.cx3d.physics.interfaces.IntracellularSubstance s : intracellularSubstances.values() ) {
+		for (ini.cx3d.physics.interfaces.IntracellularSubstance s : getIntracellularSubstances().values() ) {
 			if(s.isVolumeDependant()){
-				s.updateConcentrationBasedOnQuantity(volume);
+				s.updateConcentrationBasedOnQuantity(getVolume());
 			}else{
-				s.updateConcentrationBasedOnQuantity(diameter);
+				s.updateConcentrationBasedOnQuantity(getDiameter());
 //				s.updateConcentrationBasedOnQuantity(1.0);
 			}
 		}
@@ -382,19 +390,20 @@ public class PhysicalSphere extends ini.cx3d.physics.PhysicalObject2 {
 	/**
 	 * Recompute volume after diameter has changed.
 	 */
-	protected void updateVolume(){
+	public void updateVolume(){
 		//getRwLock().writeLock().lock();
-		volume = 0.523598776 * diameter*diameter*diameter; 	// 0,523598776 = (4/3)*pi*(1/(2^3))
+		double d = getDiameter();
+		setVolumeOnly(0.523598776 * d * d * d); 	// 0,523598776 = (4/3)*pi*(1/(2^3))
 		//getRwLock().writeLock().unlock();
 		updateIntracellularConcentrations();
 	}
 
 	/* Recompute diameter, after volume has been changed and recompute then concentration of
 	 * IntracellularSubstances.*/
-	protected void updateDiameter(){
+	public void updateDiameter(){
 		// V = (4/3)*pi*r^3 = (pi/6)*diameter^3
 		//getRwLock().writeLock().lock();
-		diameter = Math.cbrt(volume * 1.90985932);   		// 1.90985932 = 6/pi
+		setDiameter(Math.cbrt(getVolume() * 1.90985932), false);   		// 1.90985932 = 6/pi
 		//getRwLock().writeLock().unlock();
 	}
 
@@ -406,23 +415,25 @@ public class PhysicalSphere extends ini.cx3d.physics.PhysicalObject2 {
 	 * a SomaElement) that calls this method. Indeed, unlike PhysicalCylinder.insertProximalCylinder() for instance,
 	 * this method is called for biological reasons, and not for discretization purposes.
 	 *
-	 * @param cyl the PhysicalCylinder instance (or a class derived from it) that will be extended.
 	 * @param phi the angle from the zAxis
 	 * @param theta the angle from the xAxis around the zAxis
 	 */
 	public PhysicalCylinder addNewPhysicalCylinder(double newLength, double phi, double theta){
-		double radius = 0.5*this.diameter;
+		double radius = 0.5*getDiameter();
 		// position in cx3d.cells coord
 		double xCoord = Math.cos(theta)*Math.sin(phi);
 		double yCoord = Math.sin(theta)*Math.sin(phi);
 		double zCoord = Math.cos(phi);
+		double[] xa = getXAxis();
+		double[] ya = getYAxis();
+		double[] za = getZAxis();
 		double[] axisDirection = {
-				xCoord*xAxis[0] + yCoord*yAxis[0] + zCoord*zAxis[0] ,
-				xCoord*xAxis[1] + yCoord*yAxis[1] + zCoord*zAxis[1] ,
-				xCoord*xAxis[2] + yCoord*yAxis[2] + zCoord*zAxis[2] };
+				xCoord*xa[0] + yCoord*ya[0] + zCoord*za[0] ,
+				xCoord*xa[1] + yCoord*ya[1] + zCoord*za[1] ,
+				xCoord*xa[2] + yCoord*ya[2] + zCoord*za[2] };
 
 		// positions & axis in cartesian coord
-		double[] newCylinderBeginingLocation = add(massLocation, scalarMult(radius,axisDirection));
+		double[] newCylinderBeginingLocation = add(getMassLocation(), scalarMult(radius,axisDirection));
 		double[] newCylinderSpringAxis = scalarMult(newLength,axisDirection);
 
 		double[] newCylinderMassLocation = add(newCylinderBeginingLocation, newCylinderSpringAxis);
@@ -436,7 +447,7 @@ public class PhysicalSphere extends ini.cx3d.physics.PhysicalObject2 {
 		cyl.updateLocalCoordinateAxis();
 		cyl.setDiameter(Param.NEURITE_DEFAULT_DIAMETER, true);
 		// Color
-		cyl.setColor(this.color);
+		cyl.setColor(getColor());
 		// familly relations
 
 		//getRwLock().writeLock().lock();
@@ -467,7 +478,6 @@ public class PhysicalSphere extends ini.cx3d.physics.PhysicalObject2 {
 	 * as CellElement). One can specify the relative size of the daughters (2nd/1st).
 	 * In asymmetrical division the cx3d.cells that divides stays the progenitor, so the ratio is
 	 * smaller than 1.
-	 * @param somaElement the PhysicalSphere for daughter 2
 	 * @param vr ratio of the two volumes (vr = v2/v1)
 	 * @param phi the angle from the zAxis (for the division axis)
 	 * @param theta the angle from the xAxis around the zAxis (for the division axis)
@@ -475,9 +485,9 @@ public class PhysicalSphere extends ini.cx3d.physics.PhysicalObject2 {
 	 */
 	public PhysicalSphere divide(double vr, double phi, double theta){
 		// A) Defining some values ..................................................................
-		double oldVolume = volume;
+		double oldVolume = getVolume();
 		// defining the two radii s.t total volume is conserved ( R^3 = r1^3 + r2^3 ; vr = r2^3 / r1^3 )
-		double radius = diameter*0.5;
+		double radius = getDiameter()*0.5;
 		double r1 = radius / Math.pow(1.0+vr, 1.0/3.0);
 		double r2 = radius / Math.pow(1.0+1/vr, 1.0/3.0);
 		// define an axis for division (along which the nuclei will move) in cx3d.cells Coord
@@ -486,10 +496,13 @@ public class PhysicalSphere extends ini.cx3d.physics.PhysicalObject2 {
 		double zCoord = Math.cos(phi);
 		double TOTAL_LENGTH_OF_DISPLACEMENT = radius/4.0;
 //		TOTAL_LENGTH_OF_DISPLACEMENT = 5;
+		double[] xa = getXAxis();
+		double[] ya = getYAxis();
+		double[] za = getZAxis();
 		double[] axisOfDivision = {
-				TOTAL_LENGTH_OF_DISPLACEMENT*(xCoord*xAxis[0] + yCoord*yAxis[0] + zCoord*zAxis[0]) ,
-				TOTAL_LENGTH_OF_DISPLACEMENT*(xCoord*xAxis[1] + yCoord*yAxis[1] + zCoord*zAxis[1]) ,
-				TOTAL_LENGTH_OF_DISPLACEMENT*(xCoord*xAxis[2] + yCoord*yAxis[2] + zCoord*zAxis[2]) };
+				TOTAL_LENGTH_OF_DISPLACEMENT*(xCoord*xa[0] + yCoord*ya[0] + zCoord*za[0]) ,
+				TOTAL_LENGTH_OF_DISPLACEMENT*(xCoord*xa[1] + yCoord*ya[1] + zCoord*za[1]) ,
+				TOTAL_LENGTH_OF_DISPLACEMENT*(xCoord*xa[2] + yCoord*ya[2] + zCoord*za[2]) };
 		// two equations for the center displacement :
 		//  1) d2/d1= v2/v1 = vr (each sphere is shifted inver. proportionally to its volume)
 		// 	2) d1 + d2 = TOTAL_LENGTH_OF_DISPLACEMENT
@@ -501,26 +514,28 @@ public class PhysicalSphere extends ini.cx3d.physics.PhysicalObject2 {
 		PhysicalSphere newSphere = new PhysicalSphere();
 
 		// super class variables (except masLocation, filled below)
-		newSphere.setXAxis(xAxis.clone());
-		newSphere.setYAxis(yAxis.clone());
-		newSphere.setZAxis(zAxis.clone());
-		newSphere.setColor(color);
-		newSphere.setAdherence(adherence);
-		newSphere.setMass(mass);
+		newSphere.setXAxis(getXAxis());
+		newSphere.setYAxis(getYAxis());
+		newSphere.setZAxis(getZAxis());
+		newSphere.setColor(getColor());
+		newSphere.setAdherence(getAdherence());
+		newSphere.setMass(getMass());
 		newSphere.setStillExisting(this.isStillExisting());
 
 		// this class variables (except radius/diameter)
 		newSphere.rotationalInertia = rotationalInertia;
-		newSphere.adherence = this.adherence;
+		newSphere.setAdherence(getAdherence());
 		newSphere.setInterObjectForceCoefficient(this.interObjectForceCoefficient);
-		newSphere.diameter = r2*2;
-		newSphere.volume = 0.523598776 * newSphere.diameter*newSphere.diameter*newSphere.diameter; 	// 0,523598776 = (4/3)*pi*(1/(2^3))
+		newSphere.setDiameter(r2 * 2, false);
+		double d = newSphere.getDiameter();
+		newSphere.setVolumeOnly(0.523598776 * d*d*d); 	// 0,523598776 = (4/3)*pi*(1/(2^3))
 
 		// Mass Location
+		double[] ml = getMassLocation();
 		double[] newSphereMassLocation = new double[] {
-				massLocation[0] + d2*axisOfDivision[0],
-				massLocation[1] + d2*axisOfDivision[1],
-				massLocation[2] + d2*axisOfDivision[2]  };
+				ml[0] + d2*axisOfDivision[0],
+				ml[1] + d2*axisOfDivision[1],
+				ml[2] + d2*axisOfDivision[2]  };
 		newSphere.setMassLocation(newSphereMassLocation);
 
 		// C) Request a SpaceNode
@@ -546,22 +561,25 @@ public class PhysicalSphere extends ini.cx3d.physics.PhysicalObject2 {
 		} catch (PositionNotAllowedException e) {
 			e.printStackTrace();
 		}
-		massLocation[0] -= d1*axisOfDivision[0];
-		massLocation[1] -= d1*axisOfDivision[1];
-		massLocation[2] -= d1*axisOfDivision[2];
+		ml = getMassLocation();
+		ml[0] -= d1*axisOfDivision[0];
+		ml[1] -= d1*axisOfDivision[1];
+		ml[2] -= d1*axisOfDivision[2];
+		setMassLocation(ml);
 
 		// F) change properties of this cell
-		this.diameter = r1*2;
-		this.volume = 0.523598776 * this.diameter*this.diameter*this.diameter; 	// 0,523598776 = (4/3)*pi*(1/(2^3))
+		setDiameter(r1*2, false);
+		d = getDiameter();
+		setVolumeOnly(.523598776 * d*d*d); 	// 0,523598776 = (4/3)*pi*(1/(2^3))
 
 
 		// G) Copy the intracellular and membrane bound Substances
-		for (ini.cx3d.physics.interfaces.IntracellularSubstance sub : intracellularSubstances.values()) {
+		for (ini.cx3d.physics.interfaces.IntracellularSubstance sub : getIntracellularSubstances().values()) {
 				ini.cx3d.physics.interfaces.IntracellularSubstance subCopy = (ini.cx3d.physics.interfaces.IntracellularSubstance)sub.getCopy(); 	//copy substance
 				sub.distributeConcentrationOnDivision(subCopy);
-				sub.updateQuantityBasedOnConcentration(this.volume);
-				subCopy.updateQuantityBasedOnConcentration(newSphere.volume);
-				newSphere.intracellularSubstances.put(subCopy.getId(), subCopy);
+				sub.updateQuantityBasedOnConcentration(getVolume());
+				subCopy.updateQuantityBasedOnConcentration(newSphere.getVolume());
+				newSphere.addIntracellularSubstance(subCopy);
 
 		}
 
@@ -592,7 +610,7 @@ public class PhysicalSphere extends ini.cx3d.physics.PhysicalObject2 {
 	public boolean isInContactWithSphere(PhysicalSphere s){
 		try{
 			//getRwLock().readLock().lock();
-			double[] force = ini.cx3d.physics.PhysicalObject.interObjectForce.forceOnASphereFromASphere(this,s);
+			double[] force = PhysicalObjectFactory.getInterObjectForce().forceOnASphereFromASphere(this, s);
 			if(norm(force)>1E-15){
 				return true;
 			}else{
@@ -624,7 +642,7 @@ public class PhysicalSphere extends ini.cx3d.physics.PhysicalObject2 {
 
 		//getRwLock().readLock().lock();
 
-		double[] force = ini.cx3d.physics.PhysicalObject.interObjectForce.forceOnACylinderFromASphere(c,this);
+		double[] force = PhysicalObjectFactory.getInterObjectForce().forceOnACylinderFromASphere(c,this);
 		//getRwLock().readLock().unlock();
 		if(norm(force)>1E-15){
 			return true;
@@ -675,7 +693,7 @@ public class PhysicalSphere extends ini.cx3d.physics.PhysicalObject2 {
 //				this.getDiameter()*0.5 );
 		try{
 			//getRwLock().readLock().lock();
-			return ini.cx3d.physics.PhysicalObject.interObjectForce.forceOnACylinderFromASphere(c, this);
+			return PhysicalObjectFactory.getInterObjectForce().forceOnACylinderFromASphere(c, this);
 		}
 		finally
 		{
@@ -698,7 +716,7 @@ public class PhysicalSphere extends ini.cx3d.physics.PhysicalObject2 {
 //		return f;
 		try{
 			//getRwLock().readLock().lock();
-			return ini.cx3d.physics.PhysicalObject.interObjectForce.forceOnASphereFromASphere(s, this);
+			return PhysicalObjectFactory.getInterObjectForce().forceOnASphereFromASphere(s, this);
 		}
 		finally
 		{
@@ -755,7 +773,7 @@ public class PhysicalSphere extends ini.cx3d.physics.PhysicalObject2 {
 		// 1) "artificial force" to maintain the sphere in the ECM.getInstance() simulation boundaries--------
 
 		if(ECM.getInstance().getArtificialWallForSpheres()){
-			double[] forceFromArtificialWall = ECM.getInstance().forceFromArtificialWall(massLocation, diameter * 0.5);
+			double[] forceFromArtificialWall = ECM.getInstance().forceFromArtificialWall(getMassLocation(), getDiameter() * 0.5);
 			translationForceOnPointMass[0] += forceFromArtificialWall[0];
 			translationForceOnPointMass[1] += forceFromArtificialWall[1];
 			translationForceOnPointMass[2] += forceFromArtificialWall[2];
@@ -799,8 +817,8 @@ public class PhysicalSphere extends ini.cx3d.physics.PhysicalObject2 {
 					continue;
 				}
 				// if we have a PhysicalBond with him, we also don't take it into account
-				if(super.physicalBonds != null){
-					for (ini.cx3d.physics.interfaces.PhysicalBond pb : physicalBonds) {
+				if(getPhysicalBonds() != null && getPhysicalBonds().size() != 0){
+					for (ini.cx3d.physics.interfaces.PhysicalBond pb : getPhysicalBonds()) {
 						if(Objects.equals(pb.getOppositePhysicalObject(this), neighbor)){
 							continue;
 						}
@@ -814,7 +832,7 @@ public class PhysicalSphere extends ini.cx3d.physics.PhysicalObject2 {
 		}
 
 		// 4) PhysicalBonds--------------------------------------------------------------------
-		for (ini.cx3d.physics.interfaces.PhysicalBond pb : physicalBonds) {
+		for (ini.cx3d.physics.interfaces.PhysicalBond pb : getPhysicalBonds()) {
 			double[] forceFromThisPhysicalBond = pb.getForceOn(this);
 			// for mass translation only (no rotation)
 			translationForceOnPointMass[0]+= forceFromThisPhysicalBond[0];
@@ -826,10 +844,12 @@ public class PhysicalSphere extends ini.cx3d.physics.PhysicalObject2 {
 		// How the physics influences the next displacement--------------------------------------------------------
 	//**LOCK W
 		//getRwLock().writeLock().lock();
-		super.totalForceLastTimeStep[0]=translationForceOnPointMass[0]; // for Force display in View
-		super.totalForceLastTimeStep[1]=translationForceOnPointMass[1];
-		super.totalForceLastTimeStep[2]=translationForceOnPointMass[2];
-		super.totalForceLastTimeStep[3]= -1;   // we don't know yet if it will result in a movement
+		double[] tflts = getTotalForceLastTimeStep();
+		tflts[0]=translationForceOnPointMass[0]; // for Force display in View
+		tflts[1]=translationForceOnPointMass[1];
+		tflts[2]=translationForceOnPointMass[2];
+		tflts[3]= -1;   // we don't know yet if it will result in a movement
+		setTotalForceLastTimeStep(tflts);
 		//getRwLock().writeLock().unlock();
 	//**UNLOCK W
 		double normOfTheForce = Math.sqrt(	translationForceOnPointMass[0]*translationForceOnPointMass[0]+
@@ -843,7 +863,7 @@ public class PhysicalSphere extends ini.cx3d.physics.PhysicalObject2 {
 			biologicalTranslation = true;
 		}
 		//  - break adherence and make us translate ?
-		if(normOfTheForce>adherence) {
+		if(normOfTheForce>getAdherence()) {
 			physicalTranslation = true;
 		}
 		//  - make us rotate ?
@@ -852,7 +872,7 @@ public class PhysicalSphere extends ini.cx3d.physics.PhysicalObject2 {
 			physicalRotation = true;
 		}
 
-		double mh = h/mass;
+		double mh = h/getMass();
 		// adding the physics translation (scale by weight) if important enough
 		if(physicalTranslation){
 
@@ -865,9 +885,9 @@ public class PhysicalSphere extends ini.cx3d.physics.PhysicalObject2 {
 		//getRwLock().writeLock().lock();
 		// Performing the translation itself :
 		if(physicalTranslation || biologicalTranslation){
-
-			super.totalForceLastTimeStep[3]=1; // it does become a movement
-
+			tflts = getTotalForceLastTimeStep();
+			tflts[3]=1; // it does become a movement
+			setTotalForceLastTimeStep(tflts);
 
 			// but we want to avoid huge jumps in the simulation, so there are maximum distances possible
 			if(normOfTheForce*mh > Param.SIMULATION_MAXIMAL_DISPLACEMENT){
@@ -875,18 +895,19 @@ public class PhysicalSphere extends ini.cx3d.physics.PhysicalObject2 {
 			}
 
 			// The translational movement itself
-			massLocation[0] += movementAtNextStep[0];
-			massLocation[1] += movementAtNextStep[1];
-			massLocation[2] += movementAtNextStep[2];
-
+			double[] ml = getMassLocation();
+			ml[0] += movementAtNextStep[0];
+			ml[1] += movementAtNextStep[1];
+			ml[2] += movementAtNextStep[2];
+			setMassLocation(ml);
 
 		}
 		// Performing the rotation
 		if(physicalRotation){
 			double rotationAngle = 3.14*Param.SIMULATION_TIME_STEP;
-			this.xAxis = rotAroundAxis(xAxis, rotationAngle, rotationForce);
-			this.yAxis = rotAroundAxis(yAxis, rotationAngle, rotationForce);
-			this.zAxis = rotAroundAxis(zAxis, rotationAngle, rotationForce);
+			setXAxis(rotAroundAxis(xAxis, rotationAngle, rotationForce));
+			setYAxis(rotAroundAxis(yAxis, rotationAngle, rotationForce));
+			setZAxis(rotAroundAxis(zAxis, rotationAngle, rotationForce));
 		}
 		//getRwLock().writeLock().unlock();
 		// updating some values :
@@ -914,7 +935,7 @@ public class PhysicalSphere extends ini.cx3d.physics.PhysicalObject2 {
 			//getRwLock().readLock().unlock();
 			// physical objects at the other side of a PhysicalBond:
 			//getRwLock().readLock().lock();
-			for (ini.cx3d.physics.interfaces.PhysicalBond pb : physicalBonds) {
+			for (ini.cx3d.physics.interfaces.PhysicalBond pb : getPhysicalBonds()) {
 				pb.getOppositePhysicalObject(this).setOnTheSchedulerListForPhysicalObjects(true);
 			}
 			//getRwLock().readLock().unlock();
@@ -946,7 +967,7 @@ public class PhysicalSphere extends ini.cx3d.physics.PhysicalObject2 {
 		//getRwLock().readLock().unlock();
 		// physical objects at the other side of a PhysicalBond:
 		//getRwLock().readLock().lock();
-		for (ini.cx3d.physics.interfaces.PhysicalBond pb : physicalBonds) {
+		for (ini.cx3d.physics.interfaces.PhysicalBond pb : getPhysicalBonds()) {
 			pb.getOppositePhysicalObject(this).setOnTheSchedulerListForPhysicalObjects(true);
 		}
 		//getRwLock().readLock().unlock();
@@ -956,7 +977,7 @@ public class PhysicalSphere extends ini.cx3d.physics.PhysicalObject2 {
 		try
 		{
 			//getRwLock().readLock().lock();
-			return zAxis.clone();
+			return getZAxis().clone();
 		}
 		finally
 		{
@@ -985,7 +1006,7 @@ public class PhysicalSphere extends ini.cx3d.physics.PhysicalObject2 {
 		//getRwLock().readLock().lock();
 
 		// 1) Degradation according to the degradation constant for each chemical
-		for (ini.cx3d.physics.interfaces.IntracellularSubstance is: intracellularSubstances.values())
+		for (ini.cx3d.physics.interfaces.IntracellularSubstance is: getIntracellularSubstances().values())
 		{
 //			if (is.getId().equals("GeneStart_1")){
 				is.degrade();
@@ -1168,11 +1189,11 @@ public class PhysicalSphere extends ini.cx3d.physics.PhysicalObject2 {
 		try
 		{
 			//getRwLock().readLock().lock();
-			positionInGlobalCoord = subtract(positionInGlobalCoord, massLocation);
+			positionInGlobalCoord = subtract(positionInGlobalCoord, getMassLocation());
 			return new double[] {
-					dot(positionInGlobalCoord,xAxis),
-					dot(positionInGlobalCoord,yAxis),
-					dot(positionInGlobalCoord,zAxis)
+					dot(positionInGlobalCoord,getXAxis()),
+					dot(positionInGlobalCoord,getYAxis()),
+					dot(positionInGlobalCoord,getZAxis())
 					};
 		}
 		finally{
@@ -1190,12 +1211,15 @@ public class PhysicalSphere extends ini.cx3d.physics.PhysicalObject2 {
 		try
 		{
 			//getRwLock().readLock().lock();
+			double [] xa = getXAxis();
+			double [] ya = getYAxis();
+			double [] za = getZAxis();
 			double[] glob = new double[] {
-					positionInLocalCoord[0]*xAxis[0] + positionInLocalCoord[1]*yAxis[0] + positionInLocalCoord[2]*zAxis[0],
-					positionInLocalCoord[0]*xAxis[1] + positionInLocalCoord[1]*yAxis[1] + positionInLocalCoord[2]*zAxis[1],
-					positionInLocalCoord[0]*xAxis[2] + positionInLocalCoord[1]*yAxis[2] + positionInLocalCoord[2]*zAxis[2]
+					positionInLocalCoord[0]*xa[0] + positionInLocalCoord[1]*ya[0] + positionInLocalCoord[2]*za[0],
+					positionInLocalCoord[0]*xa[1] + positionInLocalCoord[1]*ya[1] + positionInLocalCoord[2]*za[1],
+					positionInLocalCoord[0]*xa[2] + positionInLocalCoord[1]*ya[2] + positionInLocalCoord[2]*za[2]
 					};
-			return add(glob, massLocation);
+			return add(glob, getMassLocation());
 		}
 		finally{
 			//getRwLock().readLock().unlock();
@@ -1206,7 +1230,7 @@ public class PhysicalSphere extends ini.cx3d.physics.PhysicalObject2 {
 	/**
 	 * Returns the position in spherical coordinates (r,phi,theta)
 	 * of a point expressed in the local coordinate system (xAxis, yXis, zAxis).
-	 * @param positionInLocalCoord
+	 * @param positionInLocalCoordinates
 	 * @return
 	 */
 	public double[] transformCoordinatesLocalToPolar(double[] positionInLocalCoordinates){
@@ -1227,7 +1251,7 @@ public class PhysicalSphere extends ini.cx3d.physics.PhysicalObject2 {
 	/**
 	 * Returns the position in the local coordinate system (xAxis, yXis, zAxis)
 	 * of a point expressed in spherical coordinates (r,phi,theta).
-	 * @param positionInLocalCoord
+	 * @param positionInPolarCoordinates
 	 * @return
 	 */
 	public double[] transformCoordinatesPolarToLocal(double[] positionInPolarCoordinates){
@@ -1255,10 +1279,14 @@ public class PhysicalSphere extends ini.cx3d.physics.PhysicalObject2 {
 		try
 		{
 			//getRwLock().readLock().lock();
+			double[] xa = getXAxis();
+			double[] ya = getYAxis();
+			double[] za = getZAxis();
+			double[] ml = getMassLocation();
 			return new double[] {
-					massLocation[0] + localX*xAxis[0] + localY*yAxis[0] + localZ*zAxis[0] ,
-					massLocation[1] + localX*xAxis[1] + localY*yAxis[1] + localZ*zAxis[1] ,
-					massLocation[2] + localX*xAxis[2] + localY*yAxis[2] + localZ*zAxis[2] };
+					ml[0] + localX*xa[0] + localY*ya[0] + localZ*za[0] ,
+					ml[1] + localX*xa[1] + localY*ya[1] + localZ*za[1] ,
+					ml[2] + localX*xa[2] + localY*ya[2] + localZ*za[2] };
 		}
 		finally{
 			//getRwLock().readLock().unlock();
@@ -1271,11 +1299,11 @@ public class PhysicalSphere extends ini.cx3d.physics.PhysicalObject2 {
 		try
 		{
 			//getRwLock().readLock().lock();
-			double[] vectorToPoint = subtract(positionInGlobalCoordinates,massLocation);
+			double[] vectorToPoint = subtract(positionInGlobalCoordinates,getMassLocation());
 			double[] localCartesian = {
-					dot(xAxis,vectorToPoint),
-					dot(yAxis,vectorToPoint),
-					dot(zAxis,vectorToPoint) };
+					dot(getXAxis(),vectorToPoint),
+					dot(getYAxis(),vectorToPoint),
+					dot(getZAxis(),vectorToPoint) };
 			return new double[] {
 					Math.sqrt(localCartesian[0]*localCartesian[0] + localCartesian[1]*localCartesian[1] + localCartesian[2]*localCartesian[2]),
 					Math.atan2(Math.sqrt(localCartesian[0]*localCartesian[0] + localCartesian[1]*localCartesian[1]) , localCartesian[2]),
@@ -1294,10 +1322,13 @@ public class PhysicalSphere extends ini.cx3d.physics.PhysicalObject2 {
 		{
 			//getRwLock().readLock().lock();
 			double[] positionInLocalCoordinates = transformCoordinatesPolarToLocal(positionInPolarCoordinates);
+			double[] xa = getXAxis();
+			double[] ya = getYAxis();
+			double[] za = getZAxis();
 			return new double[] {
-					positionInLocalCoordinates[0]*xAxis[0] + positionInLocalCoordinates[1]*yAxis[0] + positionInLocalCoordinates[2]*zAxis[0] ,
-					positionInLocalCoordinates[0]*xAxis[1] + positionInLocalCoordinates[1]*yAxis[1] + positionInLocalCoordinates[2]*zAxis[1] ,
-					positionInLocalCoordinates[0]*xAxis[2] + positionInLocalCoordinates[1]*yAxis[2] + positionInLocalCoordinates[2]*zAxis[2] };
+					positionInLocalCoordinates[0]*xa[0] + positionInLocalCoordinates[1]*ya[0] + positionInLocalCoordinates[2]*za[0] ,
+					positionInLocalCoordinates[0]*xa[1] + positionInLocalCoordinates[1]*ya[1] + positionInLocalCoordinates[2]*za[1] ,
+					positionInLocalCoordinates[0]*xa[2] + positionInLocalCoordinates[1]*ya[2] + positionInLocalCoordinates[2]*za[2] };
 		}
 		finally{
 			//getRwLock().readLock().unlock();
@@ -1323,7 +1354,7 @@ public class PhysicalSphere extends ini.cx3d.physics.PhysicalObject2 {
 	public double getLength() {
 		try{
 			//getRwLock().readLock().lock();
-			return diameter;
+			return getDiameter();
 		}
 		finally{
 			//getRwLock().readLock().unlock();

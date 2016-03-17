@@ -39,7 +39,7 @@ import static ini.cx3d.SimStateSerializationUtil.unorderedCollection;
  * @author fredericzubler
  *
  */
-public abstract class CellElement implements SimStateSerializable {
+public abstract class CellElement extends ini.cx3d.swig.physics.CellElement implements SimStateSerializable {
 
 	/* Unique identification for this CellElement instance.*/
 	int ID = 0;

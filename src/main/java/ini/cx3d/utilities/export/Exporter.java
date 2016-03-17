@@ -31,6 +31,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.AbstractSequentialList;
 import java.util.HashMap;
 import java.util.Vector;
 
@@ -85,7 +86,7 @@ public class Exporter {
 	 */
 	public static Vector<ConnectionHolder> dispatchSynapsesOfThisNeuriteElement(Vector<ConnectionHolder> chs, NeuriteElement ne){
 		// all excresc.
-		Vector<Excrescence> exs = ne.getPhysicalCylinder().getExcrescences();
+		AbstractSequentialList<Excrescence> exs = ne.getPhysicalCylinder().getExcrescences();
 		for (int i = 0; i < exs.size(); i++) {
 			Excrescence ex = exs.get(i);
 			// Are they connected to something? Are they pre-synaptic?

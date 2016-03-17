@@ -19,7 +19,9 @@ public class DefaultForceFactory {
 
     public static InterObjectForce create() {
         if(NATIVE){
-            return ini.cx3d.swig.physics.DefaultForce.create();
+            InterObjectForce force = ini.cx3d.swig.physics.DefaultForce.create();
+            ini.cx3d.swig.physics.InterObjectForce.registerJavaObject(force);
+            return force;
         } else if(!DEBUG){
             return new DefaultForce();
         } else {

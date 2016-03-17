@@ -1,6 +1,7 @@
 #ifndef SIM_STATE_SERIALIZATION_UTIL_H_
 #define SIM_STATE_SERIALIZATION_UTIL_H_
 
+#include <list>
 #include <array>
 #include <string>
 #include <sstream>
@@ -124,6 +125,32 @@ class SimStateSerializationUtil {
     stream << "#";
     stream << std::setw(6) << std::hex << std::setfill('0') << rgb;
     return stream.str();
+  }
+
+  template<class T>
+  static StringBuilder& unorderedCollection(StringBuilder& sb, const string& key,
+                                            const std::list<std::shared_ptr<T> >& elements) {
+    //simple implementation of unorderedCollection did not work
+    //for now forward call to ordered collection (position of an element matters in equality comparisons)
+    //if true position invariance in a collection is needed implement a more sophisticated solution
+    //e.g. use object instead of array with key = hash(value) -> json string has to be traversed a second time after
+    //build
+    return orderedCollection(sb, key, elements);
+  }
+
+  template<class T>
+  static StringBuilder& orderedCollection(StringBuilder& sb, const string& key,
+                                          const std::list<std::shared_ptr<T> >& elements) {
+    SimStateSerializationUtil::key(sb, key).append("[");
+    for (auto el : elements) {
+      el->simStateToJson(sb);
+      sb.append(",");
+    }
+    if (!elements.empty()) {
+      removeLastChar(sb);
+    }
+    sb.append("],");
+    return sb;
   }
 };
 

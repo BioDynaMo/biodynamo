@@ -68,7 +68,7 @@ public interface PhysicalObject extends PhysicalNode {
 	 * Returns all the neighboring objects considered as being in contact with this PhysicalObject.
 	 * @return
 	 */
-	Vector<PhysicalObject> getPhysicalObjectsInContact();
+	AbstractSequentialList<PhysicalObject> getPhysicalObjectsInContact();
 
 	void changeDiameter(double speed);
 
@@ -109,7 +109,7 @@ public interface PhysicalObject extends PhysicalNode {
 	/**
 	 * Returns a unit vector, pointing out of the PhysicalObject if origin at location
 	 * specified in argument.
-	 * @param positionInLocalCoordinates the origin of the normal vector (local cartesian coord)
+	 * @param positionInPolarCoordinates the origin of the normal vector (local cartesian coord)
 	 * @return a vector pointing "out", of unitary norm (absolute cartesian coord)
 	 */
 	double[] getUnitNormalVector(double[] positionInPolarCoordinates);
@@ -140,7 +140,7 @@ public interface PhysicalObject extends PhysicalNode {
 	 * @param removeThemAll if true, makes multiple removals (if multiple bonds)
 	 * @return true if at least one PhysicalBond was removed
 	 */
-	boolean removePhysicalBondWith(ini.cx3d.physics.PhysicalObject po, boolean removeThemAll);
+	boolean removePhysicalBondWith(PhysicalObject po, boolean removeThemAll);
 
 	/** Compute diffusion of <code>IntracellularSubstances</code> with relatives in the neuron
 	 * tree structure, and perform diffusion processes according to one simulation time step.*/
@@ -251,14 +251,14 @@ public interface PhysicalObject extends PhysicalNode {
 
 	/** Sets the vector containing all the PhysicalBonds of this PhysicalObject.
 	 * This methof should not be used during the simulation. */
-	void setPhysicalBonds(Vector<PhysicalBond> physicalBonds);
+//	void setPhysicalBonds(Vector<PhysicalBond> physicalBonds);
 
 	/** Returns the vector containing all the Excrescences (PhysicalSpine, PhysicalBouton).*/
-	Vector<Excrescence> getExcrescences();
+	AbstractSequentialList<Excrescence> getExcrescences();
 
 	/** Sets the vector containing all the Excrescences (PhysicalSpine, PhysicalBouton).
 	 * This method should not be used during a simulation. */
-	void setExcrescences(Vector<Excrescence> excrescences);
+//	void setExcrescences(Vector<Excrescence> excrescences);
 
 	/** Returns the adherence to the extracellular matrix, i.e. the static friction
 	 * (the minimum force amplitude needed for triggering a movement). */
@@ -306,6 +306,12 @@ public interface PhysicalObject extends PhysicalNode {
 	void setVolume(double volume, boolean updateDiameter);
 
 	/**
+	 * helper function that only sets the volume attribute to the specified value
+	 * @param volume
+	 */
+	void setVolumeOnly(double volume);
+
+	/**
 	 * Sets the volume, and recomputes an new diameter.
 	 * THIS METHOD SHOULD NOT BE USED TO INITIALIZE A PHYSICAL_OBJECT.
 	 * DEFINE DIMENSIONS, AND THE VOLUME WILL BE COMPUTED.
@@ -334,8 +340,8 @@ public interface PhysicalObject extends PhysicalNode {
 
 	/** All the intracellular and membrane-bound chemicals that are present
 	 *  in this PhysicalNode. */
-	void setIntracellularSubstances(
-			Hashtable<String, IntracellularSubstance> intracellularSubstances);
+//	void setIntracellularSubstances(
+//			Hashtable<String, IntracellularSubstance> intracellularSubstances);
 
 	double getInterObjectForceCoefficient();
 
@@ -389,4 +395,8 @@ public interface PhysicalObject extends PhysicalNode {
 	 * @return
 	 */
 	double[] getForceOn(PhysicalCylinder c);
+
+
+	void setTotalForceLastTimeStep(double[] totalForceLastTimeStep);
+
 }

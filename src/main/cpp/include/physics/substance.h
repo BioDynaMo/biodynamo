@@ -4,35 +4,11 @@
 #include <string>
 #include <memory>
 
+#include "color.h"
 #include "sim_state_serializable.h"
 
 namespace cx3d {
 namespace physics {
-
-/**
- * C++ representation of java.awt.Color
- * alpha component in bits 24-31
- * red component in bits   16-23
- * green component in bits  8-15
- * blue component in bits   0- 7
- */
-class Color {
- public:
-  Color(unsigned value) {
-    value_ = value;
-  }
-
-  bool operator==(const Color& other) const {
-    return value_ == other.value_;
-  }
-
-  unsigned getValue() const {
-    return value_;
-  }
-
- private:
-  unsigned value_;
-};
 
 class Substance : public SimStateSerializable {
  public:

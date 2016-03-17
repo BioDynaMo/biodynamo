@@ -3,6 +3,7 @@
 
 #include <array>
 #include <memory>
+#include <exception>
 
 namespace cx3d {
 namespace physics {
@@ -13,8 +14,11 @@ class PhysicalCylinder;
 /**
  * Defines the 3D physical interactions between physical objects (cylinders and spheres).
  */
-class InterObjectForce {
+class InterObjectForce : public SimStateSerializable {
  public:
+  InterObjectForce() {
+  }
+
   virtual ~InterObjectForce() {
   }
 
@@ -25,7 +29,9 @@ class InterObjectForce {
    * @return
    */
   virtual std::array<double, 3> forceOnASphereFromASphere(const std::shared_ptr<PhysicalSphere>& sphere_1,
-                                                          const std::shared_ptr<PhysicalSphere>& sphere_2) const = 0;
+                                                          const std::shared_ptr<PhysicalSphere>& sphere_2) const{ //todo change =0 after porting has been finished
+    throw std::logic_error("InterObjectForce::forceOnASphereFromASphere");
+  }
 
   /**
    * Force felt by a cylinder due to the presence of a sphere
@@ -37,7 +43,9 @@ class InterObjectForce {
    *
    */
   virtual std::array<double, 4> forceOnACylinderFromASphere(const std::shared_ptr<PhysicalCylinder>& cylinder,
-                                                            const std::shared_ptr<PhysicalSphere>& sphere) const = 0;
+                                                            const std::shared_ptr<PhysicalSphere>& sphere) const{ //todo change =0 after porting has been finished
+    throw std::logic_error("InterObjectForce::forceOnACylinderFromASphere must no be called - Java must provide implementation");
+  }
 
   /**
    * Force felt by sphere due to the presence of a cylinder
@@ -46,7 +54,9 @@ class InterObjectForce {
    * @return
    */
   virtual std::array<double, 3> forceOnASphereFromACylinder(
-      const std::shared_ptr<PhysicalSphere>& sphere, const std::shared_ptr<PhysicalCylinder>& cylinder) const = 0;
+      const std::shared_ptr<PhysicalSphere>& sphere, const std::shared_ptr<PhysicalCylinder>& cylinder) const { //todo change =0 after porting has been finished
+    throw std::logic_error("InterObjectForce::forceOnASphereFromACylinder must no be called - Java must provide implementation");
+  }
 
   /**
    * Force felt by a cylinder (cylinder1) due to the presence of another cylinder (cylinder2)
@@ -57,7 +67,17 @@ class InterObjectForce {
    * of cylinder1 (= the point mass of the mother).
    */
   virtual std::array<double, 4> forceOnACylinderFromACylinder(
-      const std::shared_ptr<PhysicalCylinder>& cylinder1, const std::shared_ptr<PhysicalCylinder>& cylinder2) const = 0;
+      const std::shared_ptr<PhysicalCylinder>& cylinder1, const std::shared_ptr<PhysicalCylinder>& cylinder2) const { //todo change =0 after porting has been finished
+    throw std::logic_error("InterObjectForce::forceOnACylinderFromACylinder must no be called - Java must provide implementation");
+  }
+
+  virtual StringBuilder& simStateToJson(StringBuilder& sb) const override { //todo change =0 after porting has been finished
+    throw std::logic_error("InterObjectForce::simStateToJson must no be called - Java must provide implementation");
+  }
+
+  virtual bool equalTo(const std::shared_ptr<InterObjectForce>& other){
+    return this == other.get();
+  }
 };
 
 }  //namespace physics
