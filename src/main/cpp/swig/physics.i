@@ -22,6 +22,7 @@
 #include "physics/default_force.h"
 #include "synapse/excrescence.h"
 #include "local_biology/cell_element.h"
+#include "local_biology/soma_element.h"
 using namespace cx3d::physics;
 using cx3d::JavaUtil2;
 using cx3d::Color;
@@ -60,6 +61,7 @@ JAVA_LOAD_NATIVE_LIBRARY(cx3d_physics);
 %include "class_customization/physics/default_force.i"
 %include "class_customization/synapse/excrescence.i"
 %include "class_customization/local_biology/cell_element.i"
+%include "class_customization/local_biology/soma_element.i"
 
 // add the original header files here
 %include "color.h"
@@ -78,3 +80,4 @@ JAVA_LOAD_NATIVE_LIBRARY(cx3d_physics);
 %include "physics/default_force.h"
 %include "synapse/excrescence.h"
 %include "local_biology/cell_element.h"
+%include "local_biology/soma_element.h"

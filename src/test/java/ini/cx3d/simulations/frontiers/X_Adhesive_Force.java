@@ -22,11 +22,8 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 package ini.cx3d.simulations.frontiers;
 
 import static ini.cx3d.utilities.Matrix.*;
-import ini.cx3d.physics.*;
-import ini.cx3d.physics.InterObjectForce;
+
 import ini.cx3d.physics.PhysicalCylinder;
-import ini.cx3d.physics.PhysicalSphere;
-import ini.cx3d.swig.physics.*;
 
 /**
  * Slightly modified from the default force, this class serves a InterObjectForce
@@ -50,7 +47,7 @@ public class X_Adhesive_Force extends ini.cx3d.swig.physics.InterObjectForce{
 	/** Interaction (repulsive or attractive) between two spheres, based on their distance and radius. 
 	 * Even if the two spheres don't interpenetrate, there might be a force. 
 	 */
-	public double[] forceOnASphereFromASphere(PhysicalSphere sphere1, PhysicalSphere sphere2) {
+	public double[] forceOnASphereFromASphere(ini.cx3d.physics.interfaces.PhysicalSphere sphere1, ini.cx3d.physics.interfaces.PhysicalSphere sphere2) {
 		// defining center and radius of spheres
 		double[] c1 = sphere1.getMassLocation();
 		double r1 = 0.5*sphere1.getDiameter();
@@ -128,7 +125,7 @@ public class X_Adhesive_Force extends ini.cx3d.swig.physics.InterObjectForce{
 	// =============================================================================================
 	
 	
-	public double[] forceOnACylinderFromASphere(PhysicalCylinder cylinder,PhysicalSphere sphere) {
+	public double[] forceOnACylinderFromASphere(PhysicalCylinder cylinder, ini.cx3d.physics.interfaces.PhysicalSphere sphere) {
 		// define some geometrical values
 		double[] pP = cylinder.proximalEnd(); 
 		double[] pD = cylinder.distalEnd();
@@ -142,7 +139,8 @@ public class X_Adhesive_Force extends ini.cx3d.swig.physics.InterObjectForce{
 		// we only consider the interaction between the sphere and the point mass 
 		// (i.e. distal point) of the cylinder - that we treat as a sphere.
 		if (actualLength < r && true){
-			return computeForceOfASphereOnASphere(pD, d*0.5, c, r); 
+			double[] tmp = computeForceOfASphereOnASphere(pD, d*0.5, c, r);
+			return new double[]{tmp[0], tmp[1], tmp[2], 0.0};
 		}
 
 		// II. If the cylinder is of the same scale or bigger than the sphere,
@@ -185,7 +183,7 @@ public class X_Adhesive_Force extends ini.cx3d.swig.physics.InterObjectForce{
 		//		is larger than the radius of the two objects , there is no interaction:
 		double penetration = d/2 + r -distance(c,cc);		 
 		if(penetration<=0) {
-			return new double[] {0.0, 0.0, 0.0};
+			return new double[] {0.0, 0.0, 0.0, 0.0};
 		}
 		double[] force = computeForceOfASphereOnASphere(cc, d*0.5, c, r);
 		return new double[] {force[0], force[1], force[2], proportionTransmitedToProximalEnd};
@@ -193,7 +191,7 @@ public class X_Adhesive_Force extends ini.cx3d.swig.physics.InterObjectForce{
 
 	// =============================================================================================
 	
-	public double[] forceOnASphereFromACylinder(PhysicalSphere sphere, PhysicalCylinder cylinder) {
+	public double[] forceOnASphereFromACylinder(ini.cx3d.physics.interfaces.PhysicalSphere sphere, PhysicalCylinder cylinder) {
 		// it is the opposite of force on a cylinder from sphere:
 		double[] temp = forceOnACylinderFromASphere(cylinder, sphere);
 		return new double[] {-temp[0], -temp[1], -temp[2]};

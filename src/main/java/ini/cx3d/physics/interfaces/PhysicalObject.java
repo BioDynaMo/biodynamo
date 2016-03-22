@@ -2,13 +2,11 @@ package ini.cx3d.physics.interfaces;
 
 import ini.cx3d.localBiology.CellElement;
 import ini.cx3d.physics.PhysicalCylinder;
-import ini.cx3d.physics.PhysicalSphere;
 import ini.cx3d.synapses.Excrescence;
 
 import java.awt.*;
 import java.util.AbstractSequentialList;
 import java.util.Hashtable;
-import java.util.Vector;
 
 /**
  * Created by lukas on 09.03.16.
@@ -54,7 +52,7 @@ public interface PhysicalObject extends PhysicalNode {
 	 * @param s
 	 * @return
 	 */
-	double[] getForceOn(PhysicalSphere s);
+	double[] getForceOn(ini.cx3d.physics.interfaces.PhysicalSphere s);
 
 	/**
 	 * Returns true if this <code>PhysicalObject</code> is in contact, i.e. if it is

@@ -67,7 +67,7 @@ void PhysicalObject::removeExcrescence(const std::shared_ptr<synapse::Excrescenc
   excrescences_.remove(ex);
 }
 
-bool PhysicalObject::isInContact(const std::shared_ptr<PhysicalObject>& o) const{
+bool PhysicalObject::isInContact(const std::shared_ptr<PhysicalObject>& o){
   if (o->isAPhysicalSphere()) {
     return isInContactWithSphere(std::static_pointer_cast<PhysicalSphere>(o));
   } else {
@@ -75,7 +75,7 @@ bool PhysicalObject::isInContact(const std::shared_ptr<PhysicalObject>& o) const
   }
 }
 
-std::list<std::shared_ptr<PhysicalObject>> PhysicalObject::getPhysicalObjectsInContact() const{
+std::list<std::shared_ptr<PhysicalObject>> PhysicalObject::getPhysicalObjectsInContact(){
   std::list<std::shared_ptr<PhysicalObject> > po;
   for (auto n : getSoNode()->getNeighbors()) {
     if (n->isAPhysicalObject() && isInContact(std::static_pointer_cast<PhysicalObject>(n))) {
@@ -222,7 +222,7 @@ void PhysicalObject::diffuseWithThisPhysicalObjects(const std::shared_ptr<Physic
   double pre_a;
   double pre_m;
 
-  for (auto element : intracellular_substances_) {  //fixme very critical (order)
+  for (auto element : intracellular_substances_) {
     // for a given substance
     auto s_a = element.second;
 

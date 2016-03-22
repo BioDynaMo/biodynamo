@@ -201,8 +201,8 @@ class StringUtil {
     return str.str();
   }
 
-  template<class K, class V>
-  static std::string toStr(const std::unordered_map<K, V>& map) {
+  template<class K, class V, class E, class H>
+  static std::string toStr(const std::unordered_map<K, V, E, H>& map) {
     std::list<std::string> list;
     for (auto i : map) {
       std::stringstream strEntry;

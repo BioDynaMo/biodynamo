@@ -30,7 +30,6 @@ import ini.cx3d.BaseSimulationTest;
 import ini.cx3d.Param;
 import ini.cx3d.cells.*;
 import ini.cx3d.localBiology.*;
-import ini.cx3d.physics.*;
 import ini.cx3d.physics.factory.PhysicalObjectFactory;
 import ini.cx3d.simulations.*;
 import ini.cx3d.synapses.TestSynapses;
@@ -98,7 +97,7 @@ public class Figure_9Test extends BaseSimulationTest {
 			
 			Cell cell = CellFactory.getCellInstance( cellLocation );
 			SomaElement soma = cell.getSomaElement();
-			PhysicalSphere sphere = soma.getPhysicalSphere();
+			ini.cx3d.physics.interfaces.PhysicalSphere sphere = soma.getPhysicalSphere();
 			if(i==0){
 			cell.setNeuroMLType(Cell.InhibitoryCell);
 			}else{

@@ -159,7 +159,11 @@ public abstract class StringUtilities {
 		StringBuilder sbEntry = new StringBuilder();
 		ArrayList<String> tmp = new ArrayList<>();
 		for (Map.Entry<? extends Object, ? extends Object> entry : map.entrySet()) {
-			tmp.add(sbEntry.append("(").append(entry.getKey()).append(" -> ").append(entry.getValue()).append("), ").toString());
+			if(entry.getValue() instanceof double[]) {
+				tmp.add(sbEntry.append("(").append(entry.getKey()).append(" -> ").append(toStr((double[]) entry.getValue())).append("), ").toString());
+			} else {
+				tmp.add(sbEntry.append("(").append(entry.getKey()).append(" -> ").append(entry.getValue()).append("), ").toString());
+			}
 			sbEntry = new StringBuilder();
 		}
 		Collections.sort(tmp);

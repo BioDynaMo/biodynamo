@@ -33,18 +33,13 @@ import ini.cx3d.graphics.View;
 import ini.cx3d.localBiology.NeuriteElement;
 import ini.cx3d.localBiology.SomaElement;
 import ini.cx3d.physics.ECMChemicalReaction;
-import ini.cx3d.physics.factory.IntracellularSubstanceFactory;
-import ini.cx3d.physics.factory.PhysicalNodeFactory;
-import ini.cx3d.physics.factory.PhysicalNodeMovementListenerFactory;
+import ini.cx3d.physics.factory.*;
 import ini.cx3d.physics.interfaces.IntracellularSubstance;
 import ini.cx3d.physics.PhysicalCylinder;
 import ini.cx3d.physics.interfaces.PhysicalNode;
-import ini.cx3d.physics.PhysicalNodeMovementListener;
 import ini.cx3d.physics.PhysicalSphere;
-import ini.cx3d.physics.factory.SubstanceFactory;
 import ini.cx3d.physics.interfaces.Substance;
 import ini.cx3d.spatialOrganization.PositionNotAllowedException;
-import ini.cx3d.spatialOrganization.SpatialOrganizationNodeMovementListener;
 import ini.cx3d.spatialOrganization.interfaces.SpaceNode;
 import ini.cx3d.spatialOrganization.SpatialOrganizationNode;
 import ini.cx3d.spatialOrganization.factory.SpaceNodeFactory;
@@ -71,16 +66,22 @@ import javax.swing.JFrame;
  *
  */
 public class ECM extends ini.cx3d.swig.physics.ECM implements SimStateSerializable {
-	public double[] solve(double[][] A, double[] b){
-		return Matrix.solve(A, b);
-	}
 	public double exp(double d) { return Math.exp(d); }
+	public double cbrt(double d) { return Math.cbrt(d); }
+	public PhysicalCylinder newPhysicalCylinder() {return new PhysicalCylinder();}
+	public double[] matrixRandomNoise3(double k){
+		return Matrix.randomNoise(k, 3);
+	}
+	public double getRandomDouble1(){
+		return random.nextDouble();
+	}
+	public ini.cx3d.physics.interfaces.PhysicalSphere newPhysicalSphere() {return PhysicalSphereFactory.create();}
 	// List of all the CX3DRunbable objects in the simulation ............................
 
 	/** List of all the PhysicalNode instances. */
 	public Vector<ini.cx3d.physics.interfaces.PhysicalNode> physicalNodeList = new Vector<ini.cx3d.physics.interfaces.PhysicalNode>();
 	/** List of all the PhysicalSphere instances. */
-	public Vector<PhysicalSphere> physicalSphereList = new Vector<PhysicalSphere>();
+	public Vector<ini.cx3d.physics.interfaces.PhysicalSphere> physicalSphereList = new Vector<ini.cx3d.physics.interfaces.PhysicalSphere>();
 	/** List of all the PhysicalCylinder instances. */
 	public Vector<PhysicalCylinder> physicalCylinderList = new Vector<PhysicalCylinder>();
 	/** List of all the SomaElement instances. */
@@ -497,12 +498,12 @@ public class ECM extends ini.cx3d.swig.physics.ECM implements SimStateSerializab
 		removePhysicalNode(oldCylinder);
 	}
 
-	public void addPhysicalSphere(PhysicalSphere newSphere) {
+	public void addPhysicalSphere(ini.cx3d.physics.interfaces.PhysicalSphere newSphere) {
 		physicalSphereList.add(newSphere);
 		addPhysicalNode(newSphere);
 	}
 
-	public void removePhysicalSphere(PhysicalSphere oldSphere) {
+	public void removePhysicalSphere(ini.cx3d.physics.interfaces.PhysicalSphere oldSphere) {
 		physicalSphereList.remove(oldSphere);
 		removePhysicalNode(oldSphere);
 	}
@@ -569,7 +570,7 @@ public class ECM extends ini.cx3d.swig.physics.ECM implements SimStateSerializab
 		
 		// Layer 3 : physics 
 		physicalNodeList = new Vector<PhysicalNode>();
-		physicalSphereList = new Vector<PhysicalSphere>();
+		physicalSphereList = new Vector<>();
 		physicalCylinderList = new Vector<PhysicalCylinder>();
 		allArtificialSubstances.clear();
 		gaussianArtificialConcentrationX.clear();
@@ -1154,7 +1155,7 @@ public class ECM extends ini.cx3d.swig.physics.ECM implements SimStateSerializab
 		this.takingSnapshotEach100TimeSteps = takingSnapshotEach100TimeSteps;
 	}
 
-	public Vector<PhysicalSphere> getPhysicalSphereList() {
+	public Vector<ini.cx3d.physics.interfaces.PhysicalSphere> getPhysicalSphereList() {
 		return physicalSphereList;
 	}
 

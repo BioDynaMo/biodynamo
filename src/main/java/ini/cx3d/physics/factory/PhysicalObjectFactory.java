@@ -14,8 +14,15 @@ public class PhysicalObjectFactory {
     private static final boolean NATIVE = physics.useNativePhysicalObject;
     public static final boolean DEBUG = false;//physics.debugPhysicalObject;
 
+    static boolean initializedInterObjectForce = false;
+    static void initializeInterObjectForce() {
+        if(!initializedInterObjectForce) {
+            setInterObjectForce(DefaultForceFactory.create());
+            initializedInterObjectForce = true;
+        }
+    }
     static {
-        setInterObjectForce(DefaultForceFactory.create());
+        initializeInterObjectForce();
     }
 
     public static InterObjectForce getInterObjectForce() {

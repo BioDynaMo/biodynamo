@@ -25,7 +25,6 @@ import ini.cx3d.BaseSimulationTest;
 import ini.cx3d.cells.Cell;
 import ini.cx3d.cells.CellFactory;
 import ini.cx3d.cells.CellModule;
-import ini.cx3d.physics.PhysicalSphere;
 import ini.cx3d.simulations.ECM;
 import ini.cx3d.simulations.Scheduler;
 
@@ -67,7 +66,7 @@ class DividingModule implements CellModule {
 	
 	public void run() {
 
-		PhysicalSphere sphere = cell.getSomaElement().getPhysicalSphere();		
+		ini.cx3d.physics.interfaces.PhysicalSphere sphere = cell.getSomaElement().getPhysicalSphere();
 		if(sphere.getDiameter()>20){
 			cell.divide();
 		}else{

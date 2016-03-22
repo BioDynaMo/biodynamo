@@ -29,7 +29,6 @@ import static ini.cx3d.utilities.Matrix.add;
 import ini.cx3d.SimStateSerializable;
 import ini.cx3d.localBiology.NeuriteElement;
 import ini.cx3d.localBiology.SomaElement;
-import ini.cx3d.physics.PhysicalSphere;
 import ini.cx3d.simulations.ECM;
 
 import java.awt.Color;
@@ -150,7 +149,7 @@ public class Cell implements SimStateSerializable {
 	}
 	
 	public Cell divide(double[] axisOfDivision) {
-		PhysicalSphere sphere = somaElement.getPhysicalSphere();
+		ini.cx3d.physics.interfaces.PhysicalSphere sphere = somaElement.getPhysicalSphere();
 		double[] polarcoord = sphere.transformCoordinatesGlobalToPolar(
 				add(axisOfDivision, sphere.getMassLocation()));
 		return divide(0.9 + 0.2*ECM.getRandomDouble(), polarcoord[1], polarcoord[2]);
@@ -163,7 +162,7 @@ public class Cell implements SimStateSerializable {
 	 * @return the second daughter cell
 	 */
 	public Cell divide(double volumeRatio, double[] axisOfDivision) {
-		PhysicalSphere sphere = somaElement.getPhysicalSphere();
+		ini.cx3d.physics.interfaces.PhysicalSphere sphere = somaElement.getPhysicalSphere();
 		double[] polarcoord = sphere.transformCoordinatesGlobalToPolar(
 				add(axisOfDivision, sphere.getMassLocation()));
 		return divide(volumeRatio, polarcoord[1], polarcoord[2]);

@@ -116,7 +116,7 @@ class PhysicalObject : public PhysicalNode {
    * @param c
    * @return
    */
-  virtual std::array<double, 3> getForceOn(const std::shared_ptr<PhysicalCylinder>& c) const = 0;
+  virtual std::array<double, 4> getForceOn(const std::shared_ptr<PhysicalCylinder>& c) = 0;
 
   /**
    * Returns the inter-object force that the <code>PhysicalObject</code> in which the method is called applies
@@ -124,7 +124,7 @@ class PhysicalObject : public PhysicalNode {
    * @param s
    * @return
    */
-  virtual std::array<double, 3> getForceOn(const std::shared_ptr<PhysicalSphere>& s) const = 0;
+  virtual std::array<double, 3> getForceOn(const std::shared_ptr<PhysicalSphere>& s) = 0;
 
   /**
    * Returns true if this <code>PhysicalObject</code> is in contact, i.e. if it is
@@ -132,13 +132,13 @@ class PhysicalObject : public PhysicalNode {
    * @param o
    * @return
    */
-  virtual bool isInContact(const std::shared_ptr<PhysicalObject>& o) const;
+  virtual bool isInContact(const std::shared_ptr<PhysicalObject>& o);
 
   /**
    * Returns all the neighboring objects considered as being in contact with this PhysicalObject.
    * @return
    */
-  virtual std::list<std::shared_ptr<PhysicalObject>> getPhysicalObjectsInContact() const;  //todo change to vector
+  virtual std::list<std::shared_ptr<PhysicalObject>> getPhysicalObjectsInContact();  //todo change to vector
 
   /**
    * Returns the position in the local coordinate system (xAxis, yXis, zAxis)
@@ -172,7 +172,7 @@ class PhysicalObject : public PhysicalNode {
    * @param positionInAbsoluteCoordinates the [x,y,z] cartesian values
    * @return the position in local coord.
    */
-  virtual std::array<double, 2> transformCoordinatesGlobalToPolar(const std::array<double, 3>& coord) const = 0;
+  virtual std::array<double, 3> transformCoordinatesGlobalToPolar(const std::array<double, 3>& coord) const = 0;
 
   /** Simply adds the argument to the vector containing all the PhysicalBonds of this
    * PhysicalObject.*/
@@ -334,7 +334,7 @@ class PhysicalObject : public PhysicalNode {
    * @param positionInPolarCoordinates the origin of the normal vector (local cartesian coord)
    * @return a vector pointing "out", of unitary norm (absolute cartesian coord)
    */
-  virtual std::array<double, 3> getUnitNormalVector(const std::array<double, 2>& positionInPolarCoordinates) const = 0;
+  virtual std::array<double, 3> getUnitNormalVector(const std::array<double, 3>& positionInPolarCoordinates) const = 0;
 
   /** Returns the vector containing all the PhysicalBonds of this PhysicalObject.*/
   // todo change to vector if porting has been finished
@@ -465,7 +465,7 @@ class PhysicalObject : public PhysicalNode {
    * @param s
    * @return
    */
-  virtual bool isInContactWithSphere(const std::shared_ptr<PhysicalSphere>& s) const = 0;
+  virtual bool isInContactWithSphere(const std::shared_ptr<PhysicalSphere>& s) = 0;
 
   /**
    * Returns true if this <code>PhysicalObject</code> and the <code>PhysicalSphere</code> given as
@@ -473,7 +473,7 @@ class PhysicalObject : public PhysicalNode {
    * @param c
    * @return
    */
-  virtual bool isInContactWithCylinder(const std::shared_ptr<PhysicalCylinder>& c) const = 0;
+  virtual bool isInContactWithCylinder(const std::shared_ptr<PhysicalCylinder>& c) = 0;
 
   /** Recompute volume after diameter has changed.*/
   virtual void updateVolume() = 0;

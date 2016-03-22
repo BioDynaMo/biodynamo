@@ -254,6 +254,38 @@ class Matrix {
   }
 
   /**
+   * Performs a rotation of a 3D vector a around a given axis b, in the positive mathematical sens.
+   * As usual : there is no dimension check (only works with vectors of length 3), the arrays
+   * given as argument are left unchanged.
+   * <p>
+   * <B>Example: </B>
+   * <p>
+   * <code>
+   * double[] axis = {1.0,1.0,0.0};<br>
+   * double[] vectToRotate = {4,5,6};<br>
+   * double[] resultOfTheRotation = rotAroundAxis(vectToRotate, Math.PI, axis);<br>
+   * </code>
+   * @param a the vector we want to rotate
+   * @param theta the amplitude of rotation (in radian)
+   * @param b the axis (also a vector)
+   * @return the vector after rotation
+   */
+  static std::array<double, 3> rotAroundAxis(const std::array<double, 3>& a, double theta,
+                                             const std::array<double, 3>& b) {
+    auto axis = normalize(b);
+
+    auto temp_1 = scalarMult(dot(a, axis), axis);
+    auto temp_2 = scalarMult(std::cos(-theta), subtract(a, temp_1));
+    auto temp_3 = scalarMult(std::sin(-theta), crossProduct(a, axis));
+
+    return {
+      temp_1[0] + temp_2[0] + temp_3[0],
+      temp_1[1] + temp_2[1] + temp_3[1],
+      temp_1[2] + temp_2[2] + temp_3[2],
+    };
+  }
+
+  /**
    * Solves a linear system of equation A*x = b of n equations with m unknowns. If n = m
    * an exact solution is given. If m is bigger than n, we look for a vector x of length n
    * s.t. ||A*x - b|| is minimal. (This method only works for coefficient matrices A with maximal rank;
@@ -335,7 +367,8 @@ class Matrix {
    * @return x
    */
   template<std::size_t N, std::size_t M>
-  static std::array<double, N> solveGauss(const std::array<std::array<double, N>, M>& A, const std::array<double, N>& b) {
+  static std::array<double, N> solveGauss(const std::array<std::array<double, N>, M>& A,
+                                          const std::array<double, N>& b) {
     // based on the chapter IV of the course "Analyse numerique" taught by Pr Ernst Hairer at the University of Geneva
 
     auto length = A.size();

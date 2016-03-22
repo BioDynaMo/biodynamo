@@ -38,8 +38,9 @@ PhysicalBond::PhysicalBond() {
 
 void PhysicalBond::init(const std::shared_ptr<PhysicalObject>& a, const std::shared_ptr<PhysicalObject>& b) {
   dolocking(a, b);
-  origin_on_a_ = a_->transformCoordinatesGlobalToPolar(a_->getMassLocation());
-  origin_on_b_ = b_->transformCoordinatesGlobalToPolar(b_->getMassLocation());
+  //fixme critical
+//  origin_on_a_ = a_->transformCoordinatesGlobalToPolar(a_->getMassLocation());
+//  origin_on_b_ = b_->transformCoordinatesGlobalToPolar(b_->getMassLocation());
   resting_length_ = Matrix::norm(Matrix::subtract(a_->getMassLocation(), b_->getMassLocation()));
   spring_constant_ = 10;
   dumping_constant_ = 0;

@@ -25,7 +25,6 @@ import static ini.cx3d.utilities.Matrix.matRotAroundX;
 import static ini.cx3d.utilities.Matrix.matRotAroundZ;
 import static ini.cx3d.utilities.Matrix.mult;
 
-import ini.cx3d.physics.PhysicalSphere;
 import ini.cx3d.simulations.ECM;
 
 import java.awt.Rectangle;
@@ -82,7 +81,7 @@ public class ViewMouseListener implements MouseListener, MouseMotionListener, Mo
 		}
 		// B) if we want to select a PhysicalSphere
 		if(mouseOperation == SELECT_A_PHYSICAL_SPHERE){
-			PhysicalSphere physicalSphere = findPhysicalSphere(realCoord);
+			ini.cx3d.physics.interfaces.PhysicalSphere physicalSphere = findPhysicalSphere(realCoord);
 			if(physicalSphere!= null){
 				//Roman			
 				System.out.println("concentration (A): " + physicalSphere.getExtracellularConcentration("A") + " volume (A): " + physicalSphere.getSoNode().getVolume());
@@ -283,12 +282,12 @@ public class ViewMouseListener implements MouseListener, MouseMotionListener, Mo
 	 * @param actualCoord
 	 * @return
 	 */
-	private PhysicalSphere findPhysicalSphere(double[] actualCoord){
+	private ini.cx3d.physics.interfaces.PhysicalSphere findPhysicalSphere(double[] actualCoord){
 		double x = actualCoord[0];
 		double z = actualCoord[2];
 		double distance = 20;
-		PhysicalSphere sphere = null;
-		for (PhysicalSphere ps : ecm.physicalSphereList) {
+		ini.cx3d.physics.interfaces.PhysicalSphere sphere = null;
+		for (ini.cx3d.physics.interfaces.PhysicalSphere ps : ecm.physicalSphereList) {
 			double[] coordOfPs = ps.getMassLocation();
 			double xps = coordOfPs[0];
 			double yps = coordOfPs[1];

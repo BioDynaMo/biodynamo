@@ -36,3 +36,6 @@
 %PhysicalCylinder_java();
 %typemap(javaimports) cx3d::physics::PhysicalCylinder "import ini.cx3d.localBiology.CellElement;
 import ini.cx3d.physics.PhysicalSphere;"
+%stdlist_typemap(std::shared_ptr<cx3d::physics::PhysicalCylinder>,
+                 PhysicalCylinder,
+                 ini.cx3d.physics.PhysicalCylinder);

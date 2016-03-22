@@ -16,7 +16,7 @@
 
 %define %PhysicalSphere_cx3d_shared_ptr()
   %cx3d_shared_ptr(PhysicalSphere,
-                   ini/cx3d/physics/PhysicalSphere,
+                   ini/cx3d/physics/interfaces/PhysicalSphere,
                    cx3d::physics::PhysicalSphere);
 %enddef
 
@@ -24,13 +24,38 @@
   %java_defined_class_add(cx3d::physics::PhysicalSphere,
                       PhysicalSphere,
                       PhysicalSphere,
-                      ini.cx3d.physics.PhysicalSphere,
-                      ini/cx3d/physics/PhysicalSphere,
-                      ;);
+                      ini.cx3d.physics.interfaces.PhysicalSphere,
+                      ini/cx3d/physics/interfaces/PhysicalSphere,
+                      public NativeStringBuilder superSuperSimStateToJson(NativeStringBuilder sb) {
+                        return super.simStateToJson(sb);
+                      });
+%enddef
+
+%define %PhysicalSphere_native()
+  %native_defined_class(cx3d::physics::PhysicalSphere,
+                      PhysicalSphere,
+                      ini.cx3d.physics.interfaces.PhysicalSphere,
+                      PhysicalSphere,
+                      public NativeStringBuilder superSuperSimStateToJson(NativeStringBuilder sb) {
+                        return super.simStateToJson(sb);
+                      });
 %enddef
 
 /**
  * apply customizations
  */
 %PhysicalSphere_cx3d_shared_ptr();
-%PhysicalSphere_java();
+#ifdef PHYSICALSPHERE_NATIVE
+  %PhysicalSphere_native();
+#else
+  %PhysicalSphere_java();
+#endif
+
+#ifdef PHYSICALSPHERE_DEBUG
+  %setJavaDebugSwitch(PhysicalSphere, true);
+#else
+  %setJavaDebugSwitch(PhysicalSphere, false);
+#endif
+
+%typemap(javaimports) cx3d::physics::PhysicalSphere "import ini.cx3d.swig.NativeStringBuilder;"
+%typemap(javainterfaces) cx3d::physics::PhysicalSphere "ini.cx3d.physics.interfaces.PhysicalSphere"

@@ -26,7 +26,6 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 
 import ini.cx3d.physics.PhysicalCylinder;
-import ini.cx3d.physics.PhysicalSphere;
 import ini.cx3d.simulations.ECM;
 
 public class ExportToVisualizer {
@@ -38,7 +37,7 @@ public class ExportToVisualizer {
 		FileWriter fstream = new FileWriter(filename);
 		BufferedWriter out = new BufferedWriter(fstream);
 		out.write("<Vexport>\n");
-		for (PhysicalSphere s : ECM.getInstance().getPhysicalSphereList()) {
+		for (ini.cx3d.physics.interfaces.PhysicalSphere s : ECM.getInstance().getPhysicalSphereList()) {
 			out.write(toXML(s,"   ").toString());
 		}
 		out.write("</Vexport>");
@@ -52,7 +51,7 @@ public class ExportToVisualizer {
 		
 	}
 
-	public static StringBuilder toXML(PhysicalSphere s,String ident) {
+	public static StringBuilder toXML(ini.cx3d.physics.interfaces.PhysicalSphere s,String ident) {
 		
 		StringBuilder temp = new StringBuilder();
 		temp.append(ident).append("<sphere id=\"").append(s.getID()).append("\" ");

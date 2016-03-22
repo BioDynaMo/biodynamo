@@ -34,6 +34,7 @@ import ini.cx3d.localBiology.NeuriteElement;
 import ini.cx3d.physics.factory.IntracellularSubstanceFactory;
 import ini.cx3d.physics.factory.PhysicalObjectFactory;
 import ini.cx3d.physics.interfaces.IntracellularSubstance;
+import ini.cx3d.physics.interfaces.PhysicalObject;
 import ini.cx3d.simulations.ECM;
 import ini.cx3d.spatialOrganization.PositionNotAllowedException;
 import ini.cx3d.spatialOrganization.SpatialOrganizationNode;
@@ -44,8 +45,6 @@ import ini.cx3d.utilities.StringUtilities;
 
 import java.util.AbstractSequentialList;
 import java.util.Objects;
-
-import ini.cx3d.physics.interfaces.PhysicalObject;
 
 
 /**
@@ -1197,7 +1196,7 @@ public class PhysicalCylinder extends physics.PhysicalCylinderBase {//ini.cx3d.s
 
 
 	@Override
-	public double[] getForceOn(PhysicalSphere s) {
+	public double[] getForceOn(ini.cx3d.physics.interfaces.PhysicalSphere s) {
 		try
 		{
 			//getRwLock().readLock().lock();
@@ -1245,7 +1244,7 @@ public class PhysicalCylinder extends physics.PhysicalCylinderBase {//ini.cx3d.s
 	}
 
 	@Override
-	public boolean isInContactWithSphere(PhysicalSphere s) {
+	public boolean isInContactWithSphere(ini.cx3d.physics.interfaces.PhysicalSphere s) {
 		//getRwLock().readLock().lock();
 		double[] force = PhysicalObjectFactory.getInterObjectForce().forceOnACylinderFromASphere(this, s);
 		//getRwLock().readLock().unlock();

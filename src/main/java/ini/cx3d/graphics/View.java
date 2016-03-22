@@ -28,7 +28,6 @@ import static ini.cx3d.utilities.Matrix.scalarMult;
 import static ini.cx3d.utilities.Matrix.subtract;
 import ini.cx3d.Param;
 import ini.cx3d.physics.PhysicalCylinder;
-import ini.cx3d.physics.PhysicalSphere;
 import ini.cx3d.simulations.ECM;
 import ini.cx3d.spatialOrganization.SpatialOrganizationNode;
 import ini.cx3d.synapses.Excrescence;
@@ -493,7 +492,7 @@ public class View extends JComponent {
 		}
 
 		for (int i = 0; i < ecm.physicalSphereList.size(); i++) {
-			PhysicalSphere aSphere = ecm.physicalSphereList.get(i);
+			ini.cx3d.physics.interfaces.PhysicalSphere aSphere = ecm.physicalSphereList.get(i);
 
 			double sphereRadius = 0.5 * aSphere.getDiameter();
 			double[] mySomaMassLocation = aSphere.getMassLocation();

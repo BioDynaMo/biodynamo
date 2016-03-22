@@ -11,6 +11,8 @@ namespace physics {
 
 class Substance;
 class IntracellularSubstance;
+class PhysicalSphere;
+class PhysicalCylinder;
 
 class ECM {
  public:
@@ -80,8 +82,52 @@ class ECM {
         "ECM::intracellularSubstanceInstance must never be called - Java must provide implementation at this point");
   }
 
+  virtual void addPhysicalCylinder(const std::shared_ptr<PhysicalCylinder>& cyl) {
+    throw std::logic_error(
+        "ECM::addPhysicalCylinder must never be called - Java must provide implementation at this point");
+  }
+
+  virtual void addPhysicalSphere(const std::shared_ptr<PhysicalSphere>& cyl) {
+    throw std::logic_error(
+        "ECM::addPhysicalSphere must never be called - Java must provide implementation at this point");
+  }
+
+  virtual bool getArtificialWallForSpheres() {
+    throw std::logic_error(
+        "ECM::getArtificialWallForSpheres must never be called - Java must provide implementation at this point");
+  }
+
+  virtual std::array<double, 3> forceFromArtificialWall(const std::array<double, 3>& location, double radius) {
+    throw std::logic_error(
+        "ECM::forceFromArtificialWall must never be called - Java must provide implementation at this point");
+  }
+
+  virtual double getRandomDouble1() {
+    throw std::logic_error(
+        "ECM::getRandomDouble must never be called - Java must provide implementation at this point");
+  }
+
   virtual double exp(double d) {
     throw std::logic_error("ECM::exp must never be called - Java must provide implementation at this point");
+  }
+
+  virtual double cbrt(double d) {
+    throw std::logic_error("ECM::cbrt must never be called - Java must provide implementation at this point");
+  }
+
+  virtual std::shared_ptr<PhysicalCylinder> newPhysicalCylinder() const {
+    throw std::logic_error(
+        "ECM::newPhysicalCylinder must never be called - Java must provide implementation at this point");
+  }
+
+  virtual std::array<double, 3> matrixRandomNoise3(double k) {
+    throw std::logic_error(
+        "ECM::matrixRandomNoise must never be called - Java must provide implementation at this point");
+  }
+
+  virtual std::shared_ptr<PhysicalSphere> newPhysicalSphere() {
+    throw std::logic_error(
+        "ECM::newPhysicalSphere must never be called - Java must provide implementation at this point");
   }
 };
 

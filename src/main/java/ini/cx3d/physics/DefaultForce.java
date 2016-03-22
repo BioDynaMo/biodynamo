@@ -23,8 +23,6 @@ package ini.cx3d.physics;
 
 import static ini.cx3d.utilities.Matrix.*;
 
-import java.util.concurrent.locks.ReadWriteLock;
-
 
 public class DefaultForce implements InterObjectForce{
 	
@@ -39,7 +37,7 @@ public class DefaultForce implements InterObjectForce{
 	 * I modified the method by using virtual spheres with larger radii, to allow distant interactions,
 	 * and get a desired density.
 	 */
-	public double[] forceOnASphereFromASphere(PhysicalSphere sphere1, PhysicalSphere sphere2) {
+	public double[] forceOnASphereFromASphere(ini.cx3d.physics.interfaces.PhysicalSphere sphere1, ini.cx3d.physics.interfaces.PhysicalSphere sphere2) {
 		// defining center and radius of spheres
 //		ReadWriteLock rwl1;
 //		ReadWriteLock rwl2;
@@ -127,7 +125,7 @@ public class DefaultForce implements InterObjectForce{
 	// =============================================================================================
 	
 	
-	public double[] forceOnACylinderFromASphere(PhysicalCylinder cylinder,PhysicalSphere sphere) {
+	public double[] forceOnACylinderFromASphere(PhysicalCylinder cylinder, ini.cx3d.physics.interfaces.PhysicalSphere sphere) {
 //		ReadWriteLock rwl1;
 //		ReadWriteLock rwl2;
 //		if(sphere.getID()>cylinder.getID())
@@ -214,7 +212,7 @@ public class DefaultForce implements InterObjectForce{
 
 	// =============================================================================================
 	
-	public double[] forceOnASphereFromACylinder(PhysicalSphere sphere, PhysicalCylinder cylinder) {
+	public double[] forceOnASphereFromACylinder(ini.cx3d.physics.interfaces.PhysicalSphere sphere, PhysicalCylinder cylinder) {
 		// it is the opposite of force on a cylinder from sphere:
 		double[] temp = forceOnACylinderFromASphere(cylinder, sphere);
 		return new double[] {-temp[0], -temp[1], -temp[2]};

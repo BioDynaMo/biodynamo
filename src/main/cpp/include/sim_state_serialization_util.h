@@ -126,6 +126,21 @@ class SimStateSerializationUtil {
     stream << std::setw(6) << std::hex << std::setfill('0') << rgb;
     return stream.str();
   }
+  template<class T, class U, class V>
+  static StringBuilder& mapOfDoubleArray(
+      StringBuilder& sb, const string& key,
+      const std::unordered_map<std::shared_ptr<T>, std::array<double, 3>, U, V>& map) {
+    SimStateSerializationUtil::key(sb, key).append("{");
+    for (auto el : map) {
+      SimStateSerializationUtil::keyValue(sb, el.first->toString(), el.second);
+    }
+    if (!map.empty()) {
+      removeLastChar(sb);
+    }
+    sb.append("},");
+    return sb;
+  }
+
 
   template<class T>
   static StringBuilder& unorderedCollection(StringBuilder& sb, const string& key,

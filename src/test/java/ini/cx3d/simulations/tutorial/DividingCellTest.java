@@ -21,14 +21,11 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 
 package ini.cx3d.simulations.tutorial;
 
-import java.awt.Color;
-
 import ini.cx3d.BaseSimulationTest;
 import ini.cx3d.Param;
 import ini.cx3d.cells.Cell;
 import ini.cx3d.cells.CellFactory;
 import ini.cx3d.localBiology.SomaElement;
-import ini.cx3d.physics.PhysicalSphere;
 import ini.cx3d.simulations.ECM;
 import ini.cx3d.simulations.Scheduler;
 
@@ -46,7 +43,7 @@ public class DividingCellTest extends BaseSimulationTest {
 		Cell cell = CellFactory.getCellInstance(cellOrigin);		
 		cell.setColorForAllPhysicalObjects(Param.RED);
 		SomaElement soma = cell.getSomaElement();
-		PhysicalSphere sphere = soma.getPhysicalSphere();
+		ini.cx3d.physics.interfaces.PhysicalSphere sphere = soma.getPhysicalSphere();
 
 
 

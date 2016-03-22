@@ -23,6 +23,7 @@ package ini.cx3d.utilities;
 
 import java.util.Random;
 
+import static ini.cx3d.utilities.StringUtilities.toStr;
 
 
 /**
@@ -1066,7 +1067,7 @@ public abstract class Matrix {
 		double[] temp1 = scalarMult(dot(a,axis) , axis);
 		double[] temp2 = scalarMult(Math.cos(-theta), subtract(a, temp1));
 		double[] temp3 = scalarMult(Math.sin(-theta), crossProduct(a,axis));
-	   	
+
 	    return add(temp1,temp2,temp3);
 	}
 

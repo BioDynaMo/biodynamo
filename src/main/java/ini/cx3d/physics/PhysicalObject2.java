@@ -25,7 +25,6 @@ import static ini.cx3d.SimStateSerializationUtil.*;
 import static ini.cx3d.SimStateSerializationUtil.keyValue;
 import static ini.cx3d.utilities.Matrix.dot;
 import ini.cx3d.Param;
-import ini.cx3d.physics.factory.DefaultForceFactory;
 import ini.cx3d.physics.factory.IntracellularSubstanceFactory;
 import ini.cx3d.physics.factory.PhysicalBondFactory;
 import ini.cx3d.physics.factory.PhysicalObjectFactory;
@@ -249,7 +248,7 @@ public abstract class PhysicalObject2 extends ini.cx3d.swig.physics.PhysicalSphe
 	 * @param s
 	 * @return
 	 */
-	abstract public boolean isInContactWithSphere(PhysicalSphere s);
+	abstract public boolean isInContactWithSphere(ini.cx3d.physics.interfaces.PhysicalSphere s);
 
 	/**
 	 * Returns true if this <code>PhysicalObject</code> and the <code>PhysicalSphere</code> given as
@@ -270,8 +269,8 @@ public abstract class PhysicalObject2 extends ini.cx3d.swig.physics.PhysicalSphe
 		try
 		{
 			//getRwLock().readLock().lock();
-			if(o instanceof PhysicalSphere){
-				return this.isInContactWithSphere((PhysicalSphere) o);
+			if(o instanceof ini.cx3d.physics.interfaces.PhysicalSphere){
+				return this.isInContactWithSphere((ini.cx3d.physics.interfaces.PhysicalSphere) o);
 			}else{
 				return this.isInContactWithCylinder((PhysicalCylinder) o);
 			}

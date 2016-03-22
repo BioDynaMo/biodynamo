@@ -21,8 +21,6 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 
 package ini.cx3d.cells;
 
-import ini.cx3d.physics.PhysicalSphere;
-
 import static ini.cx3d.SimStateSerializationUtil.keyValue;
 import static ini.cx3d.SimStateSerializationUtil.removeLastChar;
 
@@ -64,7 +62,7 @@ public class SimpleCellCycle implements CellModule{
 	public void run() {
 		if(!enable)
 			return;
-		PhysicalSphere ps = cell.getSomaElement().getPhysicalSphere(); 
+		ini.cx3d.physics.interfaces.PhysicalSphere ps = cell.getSomaElement().getPhysicalSphere();
 		// is diameter smaller than min
 		if(ps.getDiameter() < minimumDiameter){
 			ps.changeVolume(dVdt);

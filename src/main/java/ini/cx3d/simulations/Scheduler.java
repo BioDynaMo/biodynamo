@@ -28,7 +28,6 @@ import ini.cx3d.Param;
 import ini.cx3d.graphics.View;
 import ini.cx3d.physics.ECMChemicalReaction;
 import ini.cx3d.physics.PhysicalCylinder;
-import ini.cx3d.physics.PhysicalSphere;
 
 /**
  * This class contains static methods to loop through all the "runnable" CX3D objects
@@ -147,7 +146,7 @@ public class Scheduler {
 				int totalNbOfPhysicalSpheres =  ecm.physicalSphereList.size();
 				int runPhyisicalSpheres = 0;
 				for (int i = 0; i < ecm.physicalSphereList.size(); i++) {
-					PhysicalSphere ps = ecm.physicalSphereList.get(i);
+					ini.cx3d.physics.interfaces.PhysicalSphere ps = ecm.physicalSphereList.get(i);
 					if(ps.isOnTheSchedulerListForPhysicalObjects()){
 						ps.runPhysics();
 						runPhyisicalSpheres ++;

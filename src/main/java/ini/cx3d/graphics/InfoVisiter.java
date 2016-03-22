@@ -22,19 +22,17 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 package ini.cx3d.graphics;
 
 
-import ini.cx3d.localBiology.LocalBiologyModule;
 import ini.cx3d.localBiology.NeuriteElement;
 import ini.cx3d.localBiology.SomaElement;
 import ini.cx3d.physics.PhysicalCylinder;
-import ini.cx3d.physics.PhysicalSphere;
 
 public class InfoVisiter {
 
 	public ComplexDisplayNode VisitALL(Object o)
 	{
-		if(o instanceof PhysicalSphere)
+		if(o instanceof ini.cx3d.physics.interfaces.PhysicalSphere)
 		{
-			return visit((PhysicalSphere)o);
+			return visit((ini.cx3d.physics.interfaces.PhysicalSphere)o);
 		}
 		else if(o instanceof PhysicalCylinder)
 		{
@@ -51,7 +49,7 @@ public class InfoVisiter {
 		return new ComplexDisplayNode();
 	}
 	
-	private ComplexDisplayNode visit(PhysicalSphere o)
+	private ComplexDisplayNode visit(ini.cx3d.physics.interfaces.PhysicalSphere o)
 	{
 		ComplexDisplayNode n = new ComplexDisplayNode();
 		n.addSimpleDisplayNode("Adherence", o.getAdherence()+"");

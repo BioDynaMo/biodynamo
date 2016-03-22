@@ -22,7 +22,6 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 package ini.cx3d.graphics;
 
 import ini.cx3d.physics.PhysicalCylinder;
-import ini.cx3d.physics.PhysicalSphere;
 import ini.cx3d.simulations.ECM;
 
 import java.util.Comparator;
@@ -48,10 +47,10 @@ public class SortPhysicalObjects implements Comparator{
 
 		int result = 0;
 		
-		if (comparator1 instanceof PhysicalSphere & comparator2 instanceof PhysicalSphere){
+		if (comparator1 instanceof ini.cx3d.physics.interfaces.PhysicalSphere & comparator2 instanceof ini.cx3d.physics.interfaces.PhysicalSphere){
 
-			PhysicalSphere ps1 = (PhysicalSphere)comparator1;
-			PhysicalSphere ps2 = (PhysicalSphere)comparator2;
+			ini.cx3d.physics.interfaces.PhysicalSphere ps1 = (ini.cx3d.physics.interfaces.PhysicalSphere)comparator1;
+			ini.cx3d.physics.interfaces.PhysicalSphere ps2 = (ini.cx3d.physics.interfaces.PhysicalSphere)comparator2;
 
 			// Compare sphere depths
 			if (ecm.getView().getDepth(ps1.getMassLocation())<ecm.getView().getDepth(ps2.getMassLocation())){

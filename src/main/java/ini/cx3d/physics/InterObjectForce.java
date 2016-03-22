@@ -36,7 +36,7 @@ public interface InterObjectForce extends SimStateSerializable {
 	 * @param sphere2
 	 * @return
 	 */
-	public double[] forceOnASphereFromASphere(PhysicalSphere sphere1, PhysicalSphere sphere2);
+	public double[] forceOnASphereFromASphere(ini.cx3d.physics.interfaces.PhysicalSphere sphere1, ini.cx3d.physics.interfaces.PhysicalSphere sphere2);
 	
 	/**
 	 * Force felt by a cylinder due to the presence of a sphere
@@ -47,7 +47,7 @@ public interface InterObjectForce extends SimStateSerializable {
 	 * (= the point mass of the mother).
 	 * 
 	 */
-	public double[] forceOnACylinderFromASphere(PhysicalCylinder cylinder, PhysicalSphere sphere);
+	public double[] forceOnACylinderFromASphere(PhysicalCylinder cylinder, ini.cx3d.physics.interfaces.PhysicalSphere sphere);
 	
 	/**
 	 * Force felt by sphere due to the presence of a cylinder
@@ -55,7 +55,7 @@ public interface InterObjectForce extends SimStateSerializable {
 	 * @param cylinder
 	 * @return
 	 */
-	public double[] forceOnASphereFromACylinder(PhysicalSphere sphere, PhysicalCylinder cylinder);
+	public double[] forceOnASphereFromACylinder(ini.cx3d.physics.interfaces.PhysicalSphere sphere, PhysicalCylinder cylinder);
 	
 	/**
 	 * Force felt by a cylinder (cylinder1) due to the presence of another cylinder (cylinder2)

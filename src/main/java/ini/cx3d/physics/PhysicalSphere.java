@@ -32,12 +32,15 @@ import static ini.cx3d.utilities.Matrix.randomNoise;
 import static ini.cx3d.utilities.Matrix.rotAroundAxis;
 import static ini.cx3d.utilities.Matrix.scalarMult;
 import static ini.cx3d.utilities.Matrix.subtract;
+import static ini.cx3d.utilities.StringUtilities.toStr;
+
 import ini.cx3d.Param;
 import ini.cx3d.cells.Cell;
 import ini.cx3d.cells.CellFactory;
 import ini.cx3d.localBiology.CellElement;
 import ini.cx3d.localBiology.SomaElement;
 import ini.cx3d.physics.factory.PhysicalObjectFactory;
+import ini.cx3d.physics.factory.PhysicalSphereFactory;
 import ini.cx3d.simulations.ECM;
 import ini.cx3d.spatialOrganization.PositionNotAllowedException;
 import ini.cx3d.spatialOrganization.SpatialOrganizationNode;
@@ -45,10 +48,7 @@ import ini.cx3d.spatialOrganization.interfaces.SpaceNode;
 import ini.cx3d.swig.physics.physics;
 import ini.cx3d.utilities.StringUtilities;
 
-import java.util.AbstractSequentialList;
-import java.util.Hashtable;
-import java.util.Objects;
-import java.util.Vector;
+import java.util.*;
 
 import ini.cx3d.physics.interfaces.PhysicalObject;
 
@@ -66,14 +66,14 @@ import ini.cx3d.physics.interfaces.PhysicalObject;
  *
  */
 
-public class PhysicalSphere extends physics.PhysicalSphereBase {//ini.cx3d.swig.physics.PhysicalSphere{//ini.cx3d.physics.PhysicalObject2 {
+public class PhysicalSphere extends physics.PhysicalSphereBase implements ini.cx3d.physics.interfaces.PhysicalSphere {//ini.cx3d.swig.physics.PhysicalSphere{//ini.cx3d.physics.PhysicalObject2 {
 
 
 	/* Local biology object associated with this PhysicalSphere.*/
 	private SomaElement somaElement = null;
 
 	/* The PhysicalCylinders attached to this sphere*/
-	Vector<PhysicalCylinder> daughters = new Vector<PhysicalCylinder>();
+	AbstractSequentialList<PhysicalCylinder> daughters = new LinkedList<>();
 	/* Position in local coordinates (PhysicalObject's xAxis,yAxis,zAxis) of
 	 * the attachment point of my daughters.*/
 	Hashtable<PhysicalCylinder, double[]> daughtersCoord = new Hashtable<PhysicalCylinder, double[]>();
@@ -88,7 +88,7 @@ public class PhysicalSphere extends physics.PhysicalSphereBase {//ini.cx3d.swig.
 
 	@Override
 	public ini.cx3d.swig.NativeStringBuilder simStateToJson(ini.cx3d.swig.NativeStringBuilder sb) {
-		super.simStateToJson(sb);
+		superSuperSimStateToJson(sb);
 
 		// somaElement is circular reference;
 		unorderedCollection(sb, "daughters", daughters);
@@ -101,6 +101,47 @@ public class PhysicalSphere extends physics.PhysicalSphereBase {//ini.cx3d.swig.
 		removeLastChar(sb);
 		sb.append("}");
 		return sb;
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("(");
+		sb.append(toStr(getMass()));
+		sb.append(", ");
+		sb.append(toStr(getVolume()));
+		sb.append(", ");
+		sb.append(toStr(getAdherence()));
+		sb.append(", ");
+		sb.append(toStr(getTotalForceLastTimeStep()));
+		sb.append(", ");
+		sb.append(toStr(getPhysicalBonds()));
+//		sb.append(", ");
+//		sb.append(toStr(getExcrescences()));
+		sb.append(", ");
+		sb.append(toStr(getXAxis()));
+		sb.append(", ");
+		sb.append(toStr(getYAxis()));
+		sb.append(", ");
+		sb.append(toStr(getZAxis()));
+		sb.append(", ");
+		sb.append(toStr(getDiameter()));
+		sb.append(", ");
+		sb.append(toStr(getMassLocation()));
+		sb.append(", ");
+		sb.append(toStr(daughters));
+		sb.append(", ");
+		sb.append(toStr(daughtersCoord));
+		sb.append(", ");
+		sb.append(toStr(rotationalInertia));
+		sb.append(", ");
+		sb.append(toStr(interObjectForceCoefficient));
+		sb.append(", ");
+		sb.append(toStr(tractorForce));
+		sb.append(", ");
+		sb.append(somaElement);
+		sb.append(")");
+		return sb.toString();
 	}
 
 	public PhysicalSphere() {
@@ -117,6 +158,7 @@ public class PhysicalSphere extends physics.PhysicalSphereBase {//ini.cx3d.swig.
 	}
 
 
+	@Override
 	public double getInterObjectForceCoefficient() {
 
 		try{
@@ -129,6 +171,7 @@ public class PhysicalSphere extends physics.PhysicalSphereBase {//ini.cx3d.swig.
 		}
 	}
 
+	@Override
 	public void setInterObjectForceCoefficient(double interObjectForceCoefficient) {
 
 
@@ -144,6 +187,7 @@ public class PhysicalSphere extends physics.PhysicalSphereBase {//ini.cx3d.swig.
 	}
 
 
+	@Override
 	public double getRotationalInertia() {
 		//getRwLock().readLock().lock();
 		try{
@@ -155,6 +199,7 @@ public class PhysicalSphere extends physics.PhysicalSphereBase {//ini.cx3d.swig.
 		}
 	}
 
+	@Override
 	public void setRotationalInertia(double rotationalInertia) {
 		//getRwLock().writeLock().lock();
 		this.rotationalInertia = rotationalInertia;
@@ -163,6 +208,7 @@ public class PhysicalSphere extends physics.PhysicalSphereBase {//ini.cx3d.swig.
 	}
 
 	/** returns true because this object is a PhysicalSphere */
+	@Override
 	public boolean isAPhysicalSphere(){
 		return true;
 	}
@@ -175,6 +221,7 @@ public class PhysicalSphere extends physics.PhysicalSphereBase {//ini.cx3d.swig.
 
 
 
+	@Override
 	public void movePointMass(double speed, double[] direction){
 			// NOTE :
 			// a) division by norm(direction), so we get a pure direction
@@ -208,6 +255,7 @@ public class PhysicalSphere extends physics.PhysicalSphereBase {//ini.cx3d.swig.
 	 * @param daughterWhoAsks .
 	 *
 	 */
+	@Override
 	public double[] originOf(ini.cx3d.physics.interfaces.PhysicalObject daughterWhoAsks) {
 		try
 		{
@@ -235,10 +283,12 @@ public class PhysicalSphere extends physics.PhysicalSphereBase {//ini.cx3d.swig.
 	/**
 	 * A PhysicalSphere has no mother that could call, so this method is not used.
 	 */
+	@Override
 	public double[] forceTransmittedFromDaugtherToMother(ini.cx3d.physics.interfaces.PhysicalObject motherWhoAsks) {
 		return null;
 	}
 
+	@Override
 	public void removeDaugther(ini.cx3d.physics.interfaces.PhysicalObject daughterToRemove) {
 		//getRwLock().writeLock().lock();
 		daughters.remove(daughterToRemove);
@@ -246,6 +296,7 @@ public class PhysicalSphere extends physics.PhysicalSphereBase {//ini.cx3d.swig.
 		//getRwLock().writeLock().unlock();
 	}
 
+	@Override
 	public void updateRelative(ini.cx3d.physics.interfaces.PhysicalObject oldRelative, ini.cx3d.physics.interfaces.PhysicalObject newRelative) {
 		//getRwLock().writeLock().lock();
 		double[] coordOfTheNeuriteThatChanges = daughtersCoord.get(oldRelative);
@@ -293,6 +344,7 @@ public class PhysicalSphere extends physics.PhysicalSphereBase {//ini.cx3d.swig.
 	/**
 	 * @return the somaElement
 	 */
+	@Override
 	public SomaElement getSomaElement() {
 
 		try{
@@ -308,6 +360,7 @@ public class PhysicalSphere extends physics.PhysicalSphereBase {//ini.cx3d.swig.
 	/**
 	 * @param somaElement the somaElement to set
 	 */
+	@Override
 	public void setSomaElement(SomaElement somaElement) {
 
 		if (somaElement != null) {
@@ -324,6 +377,7 @@ public class PhysicalSphere extends physics.PhysicalSphereBase {//ini.cx3d.swig.
 	 * Progressive modification of the volume. Updates the diameter, the intracellular concentration
 	 * @param speed cubic micron/ h
 	 */
+	@Override
 	public void changeVolume(double speed) {
 		//getRwLock().writeLock().lock();
 		//scaling for integration step
@@ -345,6 +399,7 @@ public class PhysicalSphere extends physics.PhysicalSphereBase {//ini.cx3d.swig.
 	 * Progressive modification of the diameter. Updates the volume, the intracellular concentration
 	 * @param speed micron/ h
 	 */
+	@Override
 	public void changeDiameter(double speed) {
 		//scaling for integration step
 		//getRwLock().writeLock().lock();
@@ -373,6 +428,7 @@ public class PhysicalSphere extends physics.PhysicalSphereBase {//ini.cx3d.swig.
 	 * Updates the concentration of substances, based on the volume of the object.
 	 * Is usually called after change of the volume (and therefore we don't modify it here)
 	 */
+	@Override
 	public void updateIntracellularConcentrations(){
 
 		//getRwLock().readLock().lock();
@@ -390,6 +446,7 @@ public class PhysicalSphere extends physics.PhysicalSphereBase {//ini.cx3d.swig.
 	/**
 	 * Recompute volume after diameter has changed.
 	 */
+	@Override
 	public void updateVolume(){
 		//getRwLock().writeLock().lock();
 		double d = getDiameter();
@@ -400,6 +457,7 @@ public class PhysicalSphere extends physics.PhysicalSphereBase {//ini.cx3d.swig.
 
 	/* Recompute diameter, after volume has been changed and recompute then concentration of
 	 * IntracellularSubstances.*/
+	@Override
 	public void updateDiameter(){
 		// V = (4/3)*pi*r^3 = (pi/6)*diameter^3
 		//getRwLock().writeLock().lock();
@@ -418,6 +476,7 @@ public class PhysicalSphere extends physics.PhysicalSphereBase {//ini.cx3d.swig.
 	 * @param phi the angle from the zAxis
 	 * @param theta the angle from the xAxis around the zAxis
 	 */
+	@Override
 	public PhysicalCylinder addNewPhysicalCylinder(double newLength, double phi, double theta){
 		double radius = 0.5*getDiameter();
 		// position in cx3d.cells coord
@@ -483,7 +542,8 @@ public class PhysicalSphere extends physics.PhysicalSphereBase {//ini.cx3d.swig.
 	 * @param theta the angle from the xAxis around the zAxis (for the division axis)
 	 * @return the other daughter (new sphere)
 	 */
-	public PhysicalSphere divide(double vr, double phi, double theta){
+	@Override
+	public ini.cx3d.physics.interfaces.PhysicalSphere divide(double vr, double phi, double theta){
 		// A) Defining some values ..................................................................
 		double oldVolume = getVolume();
 		// defining the two radii s.t total volume is conserved ( R^3 = r1^3 + r2^3 ; vr = r2^3 / r1^3 )
@@ -511,7 +571,7 @@ public class PhysicalSphere extends physics.PhysicalSphereBase {//ini.cx3d.swig.
 
 		// B) Instantiating a new sphere = 2nd daughter................................................
 		// getting a new sphere
-		PhysicalSphere newSphere = new PhysicalSphere();
+		PhysicalSphere newSphere = (PhysicalSphere) PhysicalSphereFactory.create();
 
 		// super class variables (except masLocation, filled below)
 		newSphere.setXAxis(getXAxis());
@@ -607,7 +667,8 @@ public class PhysicalSphere extends physics.PhysicalSphereBase {//ini.cx3d.swig.
 	/**
 	 * Tells if a sphere is in the detection range of an other sphere.
 	 */
-	public boolean isInContactWithSphere(PhysicalSphere s){
+	@Override
+	public boolean isInContactWithSphere(ini.cx3d.physics.interfaces.PhysicalSphere s){
 		try{
 			//getRwLock().readLock().lock();
 			double[] force = PhysicalObjectFactory.getInterObjectForce().forceOnASphereFromASphere(this, s);
@@ -704,7 +765,7 @@ public class PhysicalSphere extends physics.PhysicalSphereBase {//ini.cx3d.swig.
 
 
 	@Override
-	public double[] getForceOn(PhysicalSphere s) {
+	public double[] getForceOn(ini.cx3d.physics.interfaces.PhysicalSphere s) {
 //		double[] f;
 //		if(this.forceFieldType == Param.TISSUE_CELL_FORCE_FIELD && s.getForceFieldType() == Param.TISSUE_CELL_FORCE_FIELD){
 //			f = Force.tissueInteractionForceOnASphereFromASphere(
@@ -727,6 +788,7 @@ public class PhysicalSphere extends physics.PhysicalSphereBase {//ini.cx3d.swig.
 
 
 
+	@Override
 	public void runPhysics() {
 		// Basically, the idea is to make the sum of all the forces acting
 		// on the Point mass. It is stored in translationForceOnPointMass.
@@ -756,11 +818,14 @@ public class PhysicalSphere extends physics.PhysicalSphereBase {//ini.cx3d.swig.
 		double h = Param.SIMULATION_TIME_STEP;
 		double[] movementAtNextStep = new double[3];
 
+
+
 		// BIOLOGY :
 		// 0) Start with tractor force : What the biology defined as active movement------------
 		movementAtNextStep[0]+= h*tractorForce[0]  ;
 		movementAtNextStep[1]+= h*tractorForce[1];
 		movementAtNextStep[2]+= h*tractorForce[2];
+
 
 		// PHYSICS
 		// the physics force to move the point mass
@@ -807,7 +872,7 @@ public class PhysicalSphere extends physics.PhysicalSphereBase {//ini.cx3d.swig.
 			if(neighbor == null) {
 				System.out.println("neighbor is null - idx " + i);
 				System.out.println("#neighbors: "+ neighbors.size());
-				System.out.println("elements: "+ StringUtilities.toStr(neighbors));
+				System.out.println("elements: "+ toStr(neighbors));
 			}
 			// of course, only if it is an instance of PhysicalObject
 			if(neighbor.isAPhysicalObject()){
@@ -973,6 +1038,7 @@ public class PhysicalSphere extends physics.PhysicalSphereBase {//ini.cx3d.swig.
 		//getRwLock().readLock().unlock();
 	}
 
+	@Override
 	public double[] getAxis() {
 		try
 		{
@@ -988,11 +1054,12 @@ public class PhysicalSphere extends physics.PhysicalSphereBase {//ini.cx3d.swig.
 	/**
 	 * @return the daughters
 	 */
-	public Vector<PhysicalCylinder> getDaughters() {
+	@Override
+	public AbstractSequentialList<PhysicalCylinder> getDaughters() {
 		try
 		{
 			//getRwLock().readLock().lock();
-			return (Vector<PhysicalCylinder>) daughters.clone();
+			return daughters;
 		}
 		finally
 		{
@@ -1031,7 +1098,7 @@ public class PhysicalSphere extends physics.PhysicalSphereBase {//ini.cx3d.swig.
 	//getRwLock().readLock().unlock();
 	//	2) Diffusion in Physical cylinders
 	// TODO : scramble daughters so that we don't always go in same order.
-	Vector<PhysicalCylinder> daugters = (Vector<PhysicalCylinder>) daughters.clone();
+//	AbstractSequentialList<PhysicalCylinder> daugters = (AbstractSequentialList<PhysicalCylinder>) daughters.clone();
 	for (PhysicalCylinder cyl : daughters) {
 		// To be sure that we diffuse all the chemicals,
 		// the direction (i.e.who calls diffuseWithThisPhysicalObject() )
@@ -1087,7 +1154,7 @@ public class PhysicalSphere extends physics.PhysicalSphereBase {//ini.cx3d.swig.
 
 		Cell c = CellFactory.getCellInstance(new double[] {10,-0.14,30});
 		SomaElement soma = c.getSomaElement();
-		PhysicalSphere sphere = soma.getPhysicalSphere();
+		ini.cx3d.physics.interfaces.PhysicalSphere sphere = soma.getPhysicalSphere();
 //		NeuriteElement ne = c.getSomaElement().extendNewNeurite(2, phi, theta);
 //		PhysicalCylinder pc = ne.getPhysicalCylinder();
 
@@ -1103,7 +1170,7 @@ public class PhysicalSphere extends physics.PhysicalSphereBase {//ini.cx3d.swig.
 //		printlnLine("gloAgain",gloAgain);
 //		Scheduler.simulate();
 
-		PhysicalSphere cyl = sphere;
+		ini.cx3d.physics.interfaces.PhysicalSphere cyl = sphere;
 		double[] P = {10,p*(0.1), -p*1.5};
 
 		System.out.println("=== 1) Test P->L L->P  =====================");
@@ -1185,6 +1252,7 @@ public class PhysicalSphere extends physics.PhysicalSphereBase {//ini.cx3d.swig.
 	 * @param positionInGlobalCoord
 	 * @return
 	 */
+	@Override
 	public double[] transformCoordinatesGlobalToLocal(double[] positionInGlobalCoord){
 		try
 		{
@@ -1207,6 +1275,7 @@ public class PhysicalSphere extends physics.PhysicalSphereBase {//ini.cx3d.swig.
 	 * @param positionInLocalCoord
 	 * @return
 	 */
+	@Override
 	public double[] transformCoordinatesLocalToGlobal(double[] positionInLocalCoord){
 		try
 		{
@@ -1233,6 +1302,7 @@ public class PhysicalSphere extends physics.PhysicalSphereBase {//ini.cx3d.swig.
 	 * @param positionInLocalCoordinates
 	 * @return
 	 */
+	@Override
 	public double[] transformCoordinatesLocalToPolar(double[] positionInLocalCoordinates){
 		try
 		{
@@ -1254,6 +1324,7 @@ public class PhysicalSphere extends physics.PhysicalSphereBase {//ini.cx3d.swig.
 	 * @param positionInPolarCoordinates
 	 * @return
 	 */
+	@Override
 	public double[] transformCoordinatesPolarToLocal(double[] positionInPolarCoordinates){
 		try
 		{

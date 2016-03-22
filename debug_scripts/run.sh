@@ -7,8 +7,8 @@
 #
 # ./debug_scripts/run.sh
 
-CLASS=PHYSICALNODE
-TEST=SomaClusteringTest
+CLASS=PHYSICALSPHERE
+TEST=SmallNetworkTest
 
 replace() {
   #$1 file

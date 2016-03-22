@@ -39,7 +39,7 @@ import static ini.cx3d.SimStateSerializationUtil.unorderedCollection;
  * @author fredericzubler
  *
  */
-public abstract class CellElement extends ini.cx3d.swig.physics.CellElement implements SimStateSerializable {
+public abstract class CellElement extends ini.cx3d.swig.physics.SomaElement implements SimStateSerializable {
 
 	/* Unique identification for this CellElement instance.*/
 	int ID = 0;
@@ -66,7 +66,13 @@ public abstract class CellElement extends ini.cx3d.swig.physics.CellElement impl
 
 	/** Simple constructor.*/
 	public CellElement() {
+		ini.cx3d.swig.physics.CellElement.registerJavaObject(this);
 		this.ID =  idCounter.incrementAndGet();
+	}
+
+	@Override
+	public String toString() {
+		return "CE";
 	}
 
 	// *************************************************************************************

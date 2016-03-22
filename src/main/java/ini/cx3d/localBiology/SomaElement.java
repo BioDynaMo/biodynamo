@@ -28,11 +28,11 @@ import static ini.cx3d.utilities.Matrix.scalarMult;
 import static ini.cx3d.utilities.Matrix.subtract;
 import ini.cx3d.Param;
 import ini.cx3d.physics.PhysicalCylinder;
-import ini.cx3d.physics.PhysicalSphere;
 import ini.cx3d.simulations.ECM;
 import ini.cx3d.synapses.BiologicalSomaticSpine;
 import ini.cx3d.synapses.PhysicalSomaticSpine;
 
+import java.util.AbstractSequentialList;
 import java.util.Iterator;
 import java.util.Vector;
 
@@ -43,10 +43,10 @@ import java.util.Vector;
  * @author fredericzubler
  *
  */
-public class SomaElement extends CellElement{
+public class SomaElement extends CellElement {//ini.cx3d.swig.physics.SomaElement {
 
 	/* The PhysicalSphere associated with this SomaElement.*/
-	private PhysicalSphere physical = null ;
+	private ini.cx3d.physics.interfaces.PhysicalSphere physical = null ;
 
 	@Override
 	public ini.cx3d.swig.NativeStringBuilder simStateToJson(ini.cx3d.swig.NativeStringBuilder sb) {
@@ -65,12 +65,13 @@ public class SomaElement extends CellElement{
 	// *************************************************************************************
 	public SomaElement(){
 		super();
+		ini.cx3d.swig.physics.SomaElement.registerJavaObject(this);
 		ecm.addSomaElement(this);
 	}
 
 	public SomaElement divide(double volumeRatio, double phi, double theta){
 		SomaElement newSoma = new SomaElement();
-		PhysicalSphere pc = physical.divide(volumeRatio, phi, theta); 
+		ini.cx3d.physics.interfaces.PhysicalSphere pc = physical.divide(volumeRatio, phi, theta);
 		newSoma.setPhysical(pc);   // this method also sets the callback
 
 		// Copy of the local biological modules:
@@ -216,22 +217,22 @@ public class SomaElement extends CellElement{
 	}
 
 	public void setPhysical(ini.cx3d.physics.interfaces.PhysicalObject physical) {
-		this.physical = (PhysicalSphere) physical;
+		this.physical = (ini.cx3d.physics.interfaces.PhysicalSphere) physical;
 		this.physical.setSomaElement(this); // callback
 	}
 
-	public PhysicalSphere getPhysicalSphere(){
+	public ini.cx3d.physics.interfaces.PhysicalSphere getPhysicalSphere(){
 		return physical;
 	}
 
-	public void setPhysicalSphere(PhysicalSphere physicalsphere){
+	public void setPhysicalSphere(ini.cx3d.physics.interfaces.PhysicalSphere physicalsphere){
 		physical = physicalsphere;
 		physical.setSomaElement(this);
 	}
 
 	public Vector<NeuriteElement>  getNeuriteList() {
 		Vector<NeuriteElement> neuriteList = new Vector<NeuriteElement>();        
-		Vector<PhysicalCylinder> pcList = physical.getDaughters();        
+		AbstractSequentialList<PhysicalCylinder> pcList = physical.getDaughters();
 		for (Iterator<PhysicalCylinder> element = pcList.iterator(); element.hasNext();) {
 			PhysicalCylinder pc = (PhysicalCylinder)element.next();
 			neuriteList.add(pc.getNeuriteElement());

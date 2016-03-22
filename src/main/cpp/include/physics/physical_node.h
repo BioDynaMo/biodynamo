@@ -229,6 +229,11 @@ class PhysicalNode : public SimStateSerializable, public std::enable_shared_from
   /* Reference to the ECM. */
   static std::shared_ptr<ECM> ecm_;
 
+  /**
+   *  My anchor point in the neighboring system
+   */
+  std::shared_ptr<spatial_organization::SpaceNode<PhysicalNode>> so_node_;  //todo use interface type
+
  private:
   static std::size_t id_counter_;
 
@@ -256,11 +261,6 @@ class PhysicalNode : public SimStateSerializable, public std::enable_shared_from
    * All the (diffusible) chemicals that are present in the space defined by this physicalNode.
    */
   std::unordered_map<std::string, std::shared_ptr<Substance>> extracellular_substances_;
-
-  /**
-   *  My anchor point in the neighboring system
-   */
-  std::shared_ptr<spatial_organization::SpaceNode<PhysicalNode>> so_node_;  //todo use interface type
 
   /* Analytic solution of the diffusion process along the edge between two PhysicalNodes.
    * dQA/dt = diffCst*(Area/distance)*(QB/VB-QA/VA)

@@ -27,10 +27,8 @@ import ini.cx3d.cells.Cell;
 import ini.cx3d.cells.CellFactory;
 import ini.cx3d.localBiology.NeuriteElement;
 import ini.cx3d.physics.PhysicalCylinder;
-import ini.cx3d.physics.PhysicalSphere;
 import ini.cx3d.simulations.ECM;
 import ini.cx3d.simulations.Scheduler;
-import org.junit.Test;
 
 /**
  *	This class was used to produce Figure 5 of the paper
@@ -80,19 +78,19 @@ public class Figure_5Test extends BaseSimulationTest {
 		
 		// 3) creating three additional spheres:
 		Cell cellB = CellFactory.getCellInstance(new double[] {10,0,0});
-		PhysicalSphere psB = cellB.getSomaElement().getPhysicalSphere();
+		ini.cx3d.physics.interfaces.PhysicalSphere psB = cellB.getSomaElement().getPhysicalSphere();
 
 		psB.setMass(3);
 		psB.setColor(Param.X_SOLID_YELLOW);
 		psB.setColor(Param.YELLOW);
 		Cell cellC = CellFactory.getCellInstance(new double[] {-10,0,100});
-		PhysicalSphere psC = cellC.getSomaElement().getPhysicalSphere();
+		ini.cx3d.physics.interfaces.PhysicalSphere psC = cellC.getSomaElement().getPhysicalSphere();
 
 		psC.setMass(3);
 		psC.setColor(Param.X_SOLID_YELLOW);
 		psC.setColor(Param.YELLOW);
 		Cell cellD = CellFactory.getCellInstance(new double[] {10,0,160});
-		PhysicalSphere psD = cellD.getSomaElement().getPhysicalSphere();
+		ini.cx3d.physics.interfaces.PhysicalSphere psD = cellD.getSomaElement().getPhysicalSphere();
 
 		psD.setColor(Param.X_SOLID_YELLOW);
 		psD.setColor(Param.YELLOW);

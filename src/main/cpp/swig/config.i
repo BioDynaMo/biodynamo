@@ -17,3 +17,4 @@
 %native(PHYSICALBOND);
 %native(DEFAULTFORCE);
 %native(PHYSICALOBJECT);
+%native(PHYSICALSPHERE);
