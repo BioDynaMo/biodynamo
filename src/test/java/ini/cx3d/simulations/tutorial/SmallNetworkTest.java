@@ -63,7 +63,7 @@ public class SmallNetworkTest extends BaseSimulationTest {
 			}else{
 				c= CellFactory.getCellInstance(new double[] {-20+40*ECM.getRandomDouble(),-20+40*ECM.getRandomDouble(),200.0});
 				c.setNeuroMLType(Cell.InhibitoryCell);
-				c.setColorForAllPhysicalObjects(Param.VIOLET.darker());	
+				c.setColorForAllPhysicalObjects(Param.VIOLET.darker());
 			}
 			NeuriteElement axon = c.getSomaElement().extendNewNeurite();
 			axon.setIsAnAxon(true);
@@ -82,15 +82,15 @@ public class SmallNetworkTest extends BaseSimulationTest {
 			dendrite.getPhysicalCylinder().setDiameter(1.5);
 			dendrite.addLocalBiologyModule(new NeuriteChemoAttraction("L1",0.02));
 		}
-		while (ecm.getECMtime() < 1) {
+		while (ecm.getECMtime() < 6) {
 			Scheduler.simulateOneStep();
-		}	
+		}
 		ConnectionsMaker.extendExcressencesAndSynapseOnEveryNeuriteElement();
 
 //		Thread.sleep(Integer.MAX_VALUE);
 	}
 
-	
+
 
 
 }

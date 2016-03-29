@@ -115,6 +115,22 @@ class ECM {
     throw std::logic_error("ECM::cbrt must never be called - Java must provide implementation at this point");
   }
 
+  virtual double sqrt(double d) {
+    throw std::logic_error("ECM::sqrt must never be called - Java must provide implementation at this point");
+  }
+
+  virtual double cos(double d) {
+    throw std::logic_error("ECM::cos must never be called - Java must provide implementation at this point");
+  }
+
+  virtual double sin(double d) {
+    throw std::logic_error("ECM::sin must never be called - Java must provide implementation at this point");
+  }
+
+  virtual double atan2(double d, double d1) {
+    throw std::logic_error("ECM::atan2 must never be called - Java must provide implementation at this point");
+  }
+
   virtual std::shared_ptr<PhysicalCylinder> newPhysicalCylinder() const {
     throw std::logic_error(
         "ECM::newPhysicalCylinder must never be called - Java must provide implementation at this point");

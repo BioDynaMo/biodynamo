@@ -67,6 +67,10 @@ import javax.swing.JFrame;
  */
 public class ECM extends ini.cx3d.swig.physics.ECM implements SimStateSerializable {
 	public double exp(double d) { return Math.exp(d); }
+	public double sqrt(double d) { return Math.sqrt(d); }
+	public double cos(double d) { return Math.cos(d); }
+	public double sin(double d) { return Math.sin(d); }
+	public double atan2(double d, double d1) { return Math.atan2(d, d1); }
 	public double cbrt(double d) { return Math.cbrt(d); }
 	public PhysicalCylinder newPhysicalCylinder() {return new PhysicalCylinder();}
 	public double[] matrixRandomNoise3(double k){

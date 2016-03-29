@@ -189,9 +189,9 @@ void PhysicalSphere::changeDiameter(double speed) {
 std::shared_ptr<PhysicalCylinder> PhysicalSphere::addNewPhysicalCylinder(double new_length, double phi, double theta) {
   double radius = 0.5 * diameter_;
   // position in cx3d.cells coord
-  double x_coord = std::cos(theta) * std::sin(phi);
-  double y_coord = std::sin(theta) * std::sin(phi);
-  double z_coord = std::cos(phi);
+  double x_coord = ecm_->cos(theta) * ecm_->sin(phi);
+  double y_coord = ecm_->sin(theta) * ecm_->sin(phi);
+  double z_coord = ecm_->cos(phi);
   std::array<double, 3> axis_direction { x_coord * x_axis_[0] + y_coord * y_axis_[0] + z_coord * z_axis_[0], x_coord
       * x_axis_[1] + y_coord * y_axis_[1] + z_coord * z_axis_[1], x_coord * x_axis_[2] + y_coord * y_axis_[2]
       + z_coord * z_axis_[2] };
@@ -233,9 +233,9 @@ std::shared_ptr<PhysicalSphere> PhysicalSphere::divide(double vr, double phi, do
   double r1 = radius / std::pow(1.0 + vr, 1.0 / 3.0);
   double r2 = radius / std::pow(1.0 + 1 / vr, 1.0 / 3.0);
   // define an axis for division (along which the nuclei will move) in cx3d.cells Coord
-  double x_coord = std::cos(theta) * std::sin(phi);
-  double y_coord = std::sin(theta) * std::sin(phi);
-  double z_coord = std::cos(phi);
+  double x_coord = ecm_->cos(theta) * ecm_->sin(phi);
+  double y_coord = ecm_->sin(theta) * ecm_->sin(phi);
+  double z_coord = ecm_->cos(phi);
   double total_length_of_displacement = radius / 4.0;
   std::array<double, 3> axis_of_division { total_length_of_displacement
       * (x_coord * x_axis_[0] + y_coord * y_axis_[0] + z_coord * z_axis_[0]), total_length_of_displacement
@@ -426,7 +426,7 @@ void PhysicalSphere::runPhysics() {
   total_force_last_time_step_[2] = translation_force_on_point_mass[2];
   total_force_last_time_step_[3] = -1;   // we don't know yet if it will result in a movement
   //**UNLOCK W
-  double norm_of_force = std::sqrt(
+  double norm_of_force = ecm_->sqrt(
       translation_force_on_point_mass[0] * translation_force_on_point_mass[0]
           + translation_force_on_point_mass[1] * translation_force_on_point_mass[1]
           + translation_force_on_point_mass[2] * translation_force_on_point_mass[2]);
@@ -572,25 +572,25 @@ std::array<double, 3> PhysicalSphere::transformCoordinatesLocalToGlobal(const st
 
 std::array<double, 3> PhysicalSphere::transformCoordinatesLocalToPolar(const std::array<double, 3>& pos) const {
   return {
-    std::sqrt( pos[0] * pos[0] + pos[1] * pos[1] + pos[2] * pos[2]),
-    std::atan2( std::sqrt( pos[0] * pos[0] + pos[1] * pos[1]), pos[2]),
-    std::atan2(pos[1], pos[0])
+    ecm_->sqrt( pos[0] * pos[0] + pos[1] * pos[1] + pos[2] * pos[2]),
+    ecm_->atan2( ecm_->sqrt( pos[0] * pos[0] + pos[1] * pos[1]), pos[2]),
+    ecm_->atan2(pos[1], pos[0])
   };
 }
 
 std::array<double, 3> PhysicalSphere::transformCoordinatesPolarToLocal(const std::array<double, 3>& pos) const {
   return {
-    pos[0] * std::cos(pos[2])* std::sin(pos[1]),
-    pos[0] * std::sin(pos[2])* std::sin(pos[1]),
-    pos[0] * std::cos(pos[1])
+    pos[0] * ecm_->cos(pos[2])* ecm_->sin(pos[1]),
+    pos[0] * ecm_->sin(pos[2])* ecm_->sin(pos[1]),
+    pos[0] * ecm_->cos(pos[1])
   };
 }
 
 std::array<double, 3> PhysicalSphere::transformCoordinatesPolarToGlobal(const std::array<double, 2>& pos) const {
 
-  double localX = pos[0] * std::cos(pos[2]) * std::sin(pos[1]);
-  double localY = pos[0] * std::sin(pos[2]) * std::sin(pos[1]);
-  double localZ = pos[0] * std::cos(pos[1]);
+  double localX = pos[0] * ecm_->cos(pos[2]) * ecm_->sin(pos[1]);
+  double localY = pos[0] * ecm_->sin(pos[2]) * ecm_->sin(pos[1]);
+  double localZ = pos[0] * ecm_->cos(pos[1]);
   return {
     mass_location_[0] + localX * x_axis_[0] + localY * y_axis_[0] + localZ * z_axis_[0],
     mass_location_[1] + localX * x_axis_[1] + localY * y_axis_[1] + localZ * z_axis_[1],
@@ -603,9 +603,9 @@ std::array<double, 3> PhysicalSphere::transformCoordinatesGlobalToPolar(const st
   std::array<double, 3> local_cartesian { Matrix::dot(x_axis_, vector_to_point), Matrix::dot(y_axis_, vector_to_point),
       Matrix::dot(z_axis_, vector_to_point) };
   return {
-    std::sqrt(local_cartesian[0] * local_cartesian[0] + local_cartesian[1] * local_cartesian[1] + local_cartesian[2] * local_cartesian[2]),
-    std::atan2( std::sqrt(local_cartesian[0] * local_cartesian[0] + local_cartesian[1] * local_cartesian[1]), local_cartesian[2]),
-    std::atan2(local_cartesian[1], local_cartesian[0])
+    ecm_->sqrt(local_cartesian[0] * local_cartesian[0] + local_cartesian[1] * local_cartesian[1] + local_cartesian[2] * local_cartesian[2]),
+    ecm_->atan2( ecm_->sqrt(local_cartesian[0] * local_cartesian[0] + local_cartesian[1] * local_cartesian[1]), local_cartesian[2]),
+    ecm_->atan2(local_cartesian[1], local_cartesian[0])
   };
 }
 
