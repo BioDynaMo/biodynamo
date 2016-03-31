@@ -21,7 +21,7 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 
 package ini.cx3d.graphics;
 
-import ini.cx3d.physics.PhysicalCylinder;
+import ini.cx3d.physics.interfaces.PhysicalCylinder;
 import ini.cx3d.simulations.ECM;
 
 import java.util.Comparator;
@@ -60,7 +60,7 @@ public class SortPhysicalObjects implements Comparator{
 				result = 1;
 			}
 		}
-		else if (comparator1 instanceof PhysicalCylinder & comparator2 instanceof PhysicalCylinder){
+		else if (comparator1 instanceof ini.cx3d.physics.interfaces.PhysicalCylinder & comparator2 instanceof ini.cx3d.physics.interfaces.PhysicalCylinder){
 
 			PhysicalCylinder pc1 = (PhysicalCylinder)comparator1;
 			PhysicalCylinder pc2 = (PhysicalCylinder)comparator2;

@@ -35,9 +35,8 @@ import ini.cx3d.localBiology.SomaElement;
 import ini.cx3d.physics.ECMChemicalReaction;
 import ini.cx3d.physics.factory.*;
 import ini.cx3d.physics.interfaces.IntracellularSubstance;
-import ini.cx3d.physics.PhysicalCylinder;
+import ini.cx3d.physics.interfaces.PhysicalCylinder;
 import ini.cx3d.physics.interfaces.PhysicalNode;
-import ini.cx3d.physics.PhysicalSphere;
 import ini.cx3d.physics.interfaces.Substance;
 import ini.cx3d.spatialOrganization.PositionNotAllowedException;
 import ini.cx3d.spatialOrganization.interfaces.SpaceNode;
@@ -72,12 +71,15 @@ public class ECM extends ini.cx3d.swig.physics.ECM implements SimStateSerializab
 	public double sin(double d) { return Math.sin(d); }
 	public double atan2(double d, double d1) { return Math.atan2(d, d1); }
 	public double cbrt(double d) { return Math.cbrt(d); }
-	public PhysicalCylinder newPhysicalCylinder() {return new PhysicalCylinder();}
+	public ini.cx3d.physics.interfaces.PhysicalCylinder newPhysicalCylinder() {return PhysicalCylinderFactory.create();}
 	public double[] matrixRandomNoise3(double k){
 		return Matrix.randomNoise(k, 3);
 	}
 	public double getRandomDouble1(){
 		return random.nextDouble();
+	}
+	public double matrixNextRandomDouble(){
+		return Matrix.getRandomDouble();
 	}
 	public ini.cx3d.physics.interfaces.PhysicalSphere newPhysicalSphere() {return PhysicalSphereFactory.create();}
 	// List of all the CX3DRunbable objects in the simulation ............................
@@ -87,7 +89,7 @@ public class ECM extends ini.cx3d.swig.physics.ECM implements SimStateSerializab
 	/** List of all the PhysicalSphere instances. */
 	public Vector<ini.cx3d.physics.interfaces.PhysicalSphere> physicalSphereList = new Vector<ini.cx3d.physics.interfaces.PhysicalSphere>();
 	/** List of all the PhysicalCylinder instances. */
-	public Vector<PhysicalCylinder> physicalCylinderList = new Vector<PhysicalCylinder>();
+	public Vector<ini.cx3d.physics.interfaces.PhysicalCylinder> physicalCylinderList = new Vector<ini.cx3d.physics.interfaces.PhysicalCylinder>();
 	/** List of all the SomaElement instances. */
 	public Vector<SomaElement> somaElementList  = new Vector<SomaElement>();
 	/** List of all the NeuriteElement instances. */
@@ -303,7 +305,7 @@ public class ECM extends ini.cx3d.swig.physics.ECM implements SimStateSerializab
 	}
 	/** If set to true, the PhysicalSpheres tend to stay inside a box, 
 	 * who's boundaries are set with setBoundaries().
-	 * @param artificialWalls
+	 * @param artificialWallsForSpheres
 	 */
 	public void setArtificialWallsForSpheres(boolean artificialWallsForSpheres){
 		this.artificialWallsForSpheres = artificialWallsForSpheres;
@@ -311,14 +313,13 @@ public class ECM extends ini.cx3d.swig.physics.ECM implements SimStateSerializab
 
 	/** If true, the PhysicalSpheres tend to stay inside a box, who's boundaries are set with
 	 * setBoundaries().
-	 * @param artificialWalls
 	 */
 	public boolean getArtificialWallForSpheres(){
 		return artificialWallsForSpheres;
 	}
 	/** If set to true, the PhysicalCyliners tend to stay inside a box, 
 	 * who's boundaries are set with setBoundaries().
-	 * @param artificialWalls
+	 * @param artificialWallsForCylinders
 	 */
 	public void setArtificialWallsForCylinders(boolean artificialWallsForCylinders){
 		this.artificialWallsForCylinders = artificialWallsForCylinders;
@@ -326,7 +327,6 @@ public class ECM extends ini.cx3d.swig.physics.ECM implements SimStateSerializab
 
 	/** If true, the PhysicalCyliners tend to stay inside a box, who's boundaries are set with
 	 * setBoundaries().
-	 * @param artificialWalls
 	 */
 	public boolean getArtificialWallForCylinders(){
 		return artificialWallsForCylinders;
@@ -575,7 +575,7 @@ public class ECM extends ini.cx3d.swig.physics.ECM implements SimStateSerializab
 		// Layer 3 : physics 
 		physicalNodeList = new Vector<PhysicalNode>();
 		physicalSphereList = new Vector<>();
-		physicalCylinderList = new Vector<PhysicalCylinder>();
+		physicalCylinderList = new Vector<>();
 		allArtificialSubstances.clear();
 		gaussianArtificialConcentrationX.clear();
 		gaussianArtificialConcentrationZ.clear();
@@ -750,7 +750,7 @@ public class ECM extends ini.cx3d.swig.physics.ECM implements SimStateSerializab
 	 * 
 	 * It is a continuous value, and not instances of the class Substance!
 	 * 
-	 * @param Substance
+	 * @param substance
 	 * @param maxConcentration the value of the concentration at its peak
 	 * @param zCoordMax the location of the peak 
 	 * @param zCoordMin the location where the concentration reaches the value 0
@@ -769,7 +769,7 @@ public class ECM extends ini.cx3d.swig.physics.ECM implements SimStateSerializab
 	 * 
 	 * It is a continuous value, and not instances of the class Substance!
 	 * 
-	 * @param nameOfTheChemical
+	 * @param substanceName
 	 * @param maxConcentration the value of the concentration at its peak
 	 * @param zCoordMax the location of the peak 
 	 * @param zCoordMin the location where the concentration reaches the value 0
@@ -785,7 +785,7 @@ public class ECM extends ini.cx3d.swig.physics.ECM implements SimStateSerializab
 	 * Defines a bell-shaped artificial concentration in ECM, along the X axis (ie uniform along Y,Z axis). 
 	 * It is a continuous value, and not instances of the class Substance!.
 	 *   
-	 * @param nameOfTheChemical 
+	 * @param substance
 	 * @param maxConcentration the value of the concentration at its peak
 	 * @param xCoord the location of the peak
 	 * @param sigma the thickness of the layer (= the variance)
@@ -802,7 +802,7 @@ public class ECM extends ini.cx3d.swig.physics.ECM implements SimStateSerializab
 	 * Defines a bell-shaped artificial concentration in ECM, along the X axis (ie uniform along Y,Z axis). 
 	 * It is a continuous value, and not instances of the class Substance!.
 	 *   
-	 * @param nameOfTheChemical 
+	 * @param substanceName
 	 * @param maxConcentration the value of the concentration at its peak
 	 * @param xCoord the location of the peak
 	 * @param sigma the thickness of the layer (= the variance)
@@ -822,7 +822,7 @@ public class ECM extends ini.cx3d.swig.physics.ECM implements SimStateSerializab
 	 * 
 	 * It is a continuous value, and not instances of the class Substance!
 	 * 
-	 * @param nameOfTheChemical
+	 * @param substance
 	 * @param maxConcentration the value of the concentration at its peak
 	 * @param xCoordMax the location of the peak 
 	 * @param xCoordMin the location where the concentration reaches the value 0
@@ -842,7 +842,7 @@ public class ECM extends ini.cx3d.swig.physics.ECM implements SimStateSerializab
 	 * 
 	 * It is a continuous value, and not instances of the class Substance!
 	 * 
-	 * @param nameOfTheChemical
+	 * @param substanceId
 	 * @param maxConcentration the value of the concentration at its peak
 	 * @param xCoordMax the location of the peak 
 	 * @param xCoordMin the location where the concentration reaches the value 0
@@ -1163,7 +1163,7 @@ public class ECM extends ini.cx3d.swig.physics.ECM implements SimStateSerializab
 		return physicalSphereList;
 	}
 
-	public Vector<PhysicalCylinder> getPhysicalCylinderList() {
+	public Vector<ini.cx3d.physics.interfaces.PhysicalCylinder> getPhysicalCylinderList() {
 		return physicalCylinderList;
 	}
 

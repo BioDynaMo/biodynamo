@@ -7,10 +7,18 @@ namespace cx3d {
 
 class Param {
  public:
+  /** value of pi */
+  static constexpr double kPi = 3.141592653589793238462643383279502884;
+
   /** Time between two simulation step, in hours. */
   static constexpr double kSimulationTimeStep = 0.01;
   /** Maximum jump that a point mass can do in one time step. Useful to stabilize the simulation*/
   static constexpr double kSimulationMaximalDisplacement = 3.0;
+
+  /** Maximum length of a discrete segment before it is cut into two parts.*/
+  static double kNeuriteMaxLength;  // usual value : 20
+  /** Minimum length of a discrete segment before. If smaller it will try to fuse with the proximal one*/
+  static constexpr double kNeuriteMinLength = 2.0;  // usual value : 10
 
   // Diffusion (saving time by not running diffusion for too small differences)
 
@@ -45,11 +53,11 @@ class Param {
   static constexpr double kNeuriteDefaultTension = 0.0;
 
   // Somata
-      /** CAUTION: not the radius but the diameter*/
+  /** CAUTION: not the radius but the diameter*/
   static constexpr double kSphereDefaultDiameter = 20;
-    /** Threshold the force acting on a somaElement has to reach before a move is made ( = static friction).*/
+  /** Threshold the force acting on a somaElement has to reach before a move is made ( = static friction).*/
   static constexpr double kSphereDefaultAdherence = 0.4;
-    /** Restistance to the movement ( = kinetic friction).*/
+  /** Restistance to the movement ( = kinetic friction).*/
   static constexpr double kSphereDefaultMass = 1;
 
   // some colors, that we define, because we find them.. well beautiful.

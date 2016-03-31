@@ -526,17 +526,13 @@ class PhysicalObject : public PhysicalNode {
    *  chemicals that are present inside the PhysicalObject.*/
   std::unordered_map<std::string, std::shared_ptr<IntracellularSubstance> > intracellular_substances_;
 
-  /* List of the Physical bonds that this object can do (for cell adhesion where synapse formation occurs)*/
+  /** List of the Physical bonds that this object can do (for cell adhesion where synapse formation occurs)*/
   std::list<std::shared_ptr<PhysicalBond> > physical_bonds_;  //todo change to vector once porting has been finished
 
-  /* List of the Physical bonds that this object can do (for cell adhesion, to restore proper configuration)*/
+  /** List of the Physical bonds that this object can do (for cell adhesion, to restore proper configuration)*/
   std::list<std::shared_ptr<synapse::Excrescence> > excrescences_;  //todo change to vector once porting has been finished
 
- private:
-  PhysicalObject(const PhysicalObject& other) = delete;
-  PhysicalObject& operator=(const PhysicalObject& other) = delete;
-
-  /*
+  /**
    * Tells if a PhysicalObject is still part of the simulation.
    * If an object is deleted (either by fusion of two segments, or after retraction),
    * the value becomes false. Needed because of the copy vector (in a
@@ -545,7 +541,11 @@ class PhysicalObject : public PhysicalNode {
    */
   bool still_existing_ = true;
 
-  /* If true, the PhysicalObject will be run by the Scheduler.
+ private:
+  PhysicalObject(const PhysicalObject& other) = delete;
+  PhysicalObject& operator=(const PhysicalObject& other) = delete;
+
+  /** If true, the PhysicalObject will be run by the Scheduler.
    * Caution : not the same than onTheSchedulerListForPhysicalNodes.*/
   bool on_scheduler_list_for_physical_objects_ = true;
 };

@@ -56,6 +56,7 @@ public class Figure_9Test extends BaseSimulationTest {
 		ECM.setRandomSeed(1L);
 
 		Param.NEURITE_MAX_LENGTH = 20;
+		ini.cx3d.swig.physics.Param.setKNeuriteMaxLength(20);
 		double pi = Math.PI;
 		// get a 2.5D ECM
 		ECM ecm = ECM.getInstance();

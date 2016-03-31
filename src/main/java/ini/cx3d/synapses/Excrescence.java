@@ -126,7 +126,7 @@ public abstract class Excrescence extends ini.cx3d.swig.physics.Excrescence impl
 		// if no synapse, defined by the length
 		// if a synapse is made, this is the middle of the distance between the two attachment points
 		if(ex==null){
-			double[] axis = po.getUnitNormalVector(positionOnPO);
+			double[] axis = po.getUnitNormalVector(new double[]{positionOnPO[0], positionOnPO[1], 0.0});
 			return add(prox, scalarMult(length,axis));
 		}else{
 			// if a synapse is made, this is the middle of the distance between the two attachment points	

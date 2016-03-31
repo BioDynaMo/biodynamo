@@ -27,7 +27,7 @@ import static ini.cx3d.utilities.StringUtilities.doubleToString;
 import ini.cx3d.Param;
 import ini.cx3d.graphics.View;
 import ini.cx3d.physics.ECMChemicalReaction;
-import ini.cx3d.physics.PhysicalCylinder;
+import ini.cx3d.physics.interfaces.PhysicalCylinder;
 
 /**
  * This class contains static methods to loop through all the "runnable" CX3D objects

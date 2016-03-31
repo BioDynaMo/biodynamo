@@ -1,11 +1,9 @@
 package ini.cx3d.physics.interfaces;
 
-import ini.cx3d.localBiology.CellElement;
+import ini.cx3d.localBiology.interfaces.CellElement;
 import ini.cx3d.localBiology.SomaElement;
-import ini.cx3d.physics.PhysicalCylinder;
 
 import java.util.AbstractSequentialList;
-import java.util.Vector;
 
 /**
  * Created by lukas on 17.03.16.
@@ -130,7 +128,7 @@ public interface PhysicalSphere extends PhysicalNode, PhysicalObject {
 	/**
 	 * @return the daughters
 	 */
-	AbstractSequentialList<PhysicalCylinder> getDaughters();
+	AbstractSequentialList<ini.cx3d.physics.interfaces.PhysicalCylinder> getDaughters();
 
 	@Override
 	void runIntracellularDiffusion();

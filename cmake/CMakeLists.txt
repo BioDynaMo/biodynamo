@@ -88,7 +88,7 @@ swig_add_module(cx3d_spatialOrganization java ${CPP_MAIN_SRC_PATH}/swig/spatial_
 target_link_libraries(cx3d_spatialOrganization ${GMP_LIBRARY})
 
 #--------------------- build module physics  ----------------
-file(GLOB SOURCES "${CPP_MAIN_SRC_PATH}/src/physics/*.cc")
+file(GLOB SOURCES "${CPP_MAIN_SRC_PATH}/src/physics/*.cc" "${CPP_MAIN_SRC_PATH}/src/param.cc")
 set(CMAKE_SWIG_FLAGS -Wall -package ini.cx3d.swig.physics -c++)
 set(CMAKE_SWIG_OUTDIR ${JAVA_MAIN_SWIG_PATH}/physics)
 

@@ -39,6 +39,7 @@ import ini.cx3d.cells.Cell;
 import ini.cx3d.cells.CellFactory;
 import ini.cx3d.localBiology.CellElement;
 import ini.cx3d.localBiology.SomaElement;
+import ini.cx3d.physics.factory.PhysicalCylinderFactory;
 import ini.cx3d.physics.factory.PhysicalObjectFactory;
 import ini.cx3d.physics.factory.PhysicalSphereFactory;
 import ini.cx3d.simulations.ECM;
@@ -46,7 +47,7 @@ import ini.cx3d.spatialOrganization.PositionNotAllowedException;
 import ini.cx3d.spatialOrganization.SpatialOrganizationNode;
 import ini.cx3d.spatialOrganization.interfaces.SpaceNode;
 import ini.cx3d.swig.physics.physics;
-import ini.cx3d.utilities.StringUtilities;
+import ini.cx3d.physics.interfaces.PhysicalCylinder;
 
 import java.util.*;
 
@@ -73,10 +74,10 @@ public class PhysicalSphere extends physics.PhysicalSphereBase implements ini.cx
 	private SomaElement somaElement = null;
 
 	/* The PhysicalCylinders attached to this sphere*/
-	AbstractSequentialList<PhysicalCylinder> daughters = new LinkedList<>();
+	AbstractSequentialList<ini.cx3d.physics.interfaces.PhysicalCylinder> daughters = new LinkedList<>();
 	/* Position in local coordinates (PhysicalObject's xAxis,yAxis,zAxis) of
 	 * the attachment point of my daughters.*/
-	Hashtable<PhysicalCylinder, double[]> daughtersCoord = new Hashtable<PhysicalCylinder, double[]>();
+	Hashtable<ini.cx3d.physics.interfaces.PhysicalCylinder, double[]> daughtersCoord = new Hashtable<ini.cx3d.physics.interfaces.PhysicalCylinder, double[]>();
 
 	/* Plays the same role than mass and adherence, for rotation around center of mass. */
 	private double rotationalInertia = 0.5; // 5.0
@@ -301,8 +302,8 @@ public class PhysicalSphere extends physics.PhysicalSphereBase implements ini.cx
 		//getRwLock().writeLock().lock();
 		double[] coordOfTheNeuriteThatChanges = daughtersCoord.get(oldRelative);
 		daughters.remove(oldRelative);
-		daughters.add((PhysicalCylinder) newRelative);
-		daughtersCoord.put((PhysicalCylinder) newRelative, coordOfTheNeuriteThatChanges);
+		daughters.add((ini.cx3d.physics.interfaces.PhysicalCylinder) newRelative);
+		daughtersCoord.put((ini.cx3d.physics.interfaces.PhysicalCylinder) newRelative, coordOfTheNeuriteThatChanges);
 		//getRwLock().writeLock().unlock();
 	}
 
@@ -498,7 +499,7 @@ public class PhysicalSphere extends physics.PhysicalSphereBase implements ini.cx
 		double[] newCylinderMassLocation = add(newCylinderBeginingLocation, newCylinderSpringAxis);
 		double[] newCylinderCentralNodeLocation = add(newCylinderBeginingLocation, scalarMult(0.5,newCylinderSpringAxis));
 		// new PhysicalCylinder
-		PhysicalCylinder cyl = new PhysicalCylinder();
+		ini.cx3d.physics.interfaces.PhysicalCylinder cyl = PhysicalCylinderFactory.create();
 		cyl.setSpringAxis(newCylinderSpringAxis);
 		cyl.setMassLocation(newCylinderMassLocation);
 		cyl.setActualLength(newLength);
@@ -849,7 +850,7 @@ public class PhysicalSphere extends physics.PhysicalSphereBase implements ini.cx
 
 		// 2) Spring force from my neurites (translation and rotation)--------------------------
 		for (int i = 0; i < daughters.size(); i++) {
-			PhysicalCylinder c = daughters.get(i);
+			ini.cx3d.physics.interfaces.PhysicalCylinder c = daughters.get(i);
 			double[] forceFromDaughter = c.forceTransmittedFromDaugtherToMother(this);
 			// for mass translation
 			translationForceOnPointMass[0]+= forceFromDaughter[0];
@@ -1055,7 +1056,7 @@ public class PhysicalSphere extends physics.PhysicalSphereBase implements ini.cx
 	 * @return the daughters
 	 */
 	@Override
-	public AbstractSequentialList<PhysicalCylinder> getDaughters() {
+	public AbstractSequentialList<ini.cx3d.physics.interfaces.PhysicalCylinder> getDaughters() {
 		try
 		{
 			//getRwLock().readLock().lock();

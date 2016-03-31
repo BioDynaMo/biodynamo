@@ -26,12 +26,14 @@ package ini.cx3d.physics;
 import static ini.cx3d.SimStateSerializationUtil.keyValue;
 import static ini.cx3d.SimStateSerializationUtil.removeLastChar;
 import static ini.cx3d.utilities.Matrix.*;
+import static ini.cx3d.utilities.StringUtilities.toStr;
 
 import ini.cx3d.Param;
-import ini.cx3d.localBiology.CellElement;
+import ini.cx3d.localBiology.interfaces.CellElement;
 import ini.cx3d.localBiology.LocalBiologyModule;
 import ini.cx3d.localBiology.NeuriteElement;
 import ini.cx3d.physics.factory.IntracellularSubstanceFactory;
+import ini.cx3d.physics.factory.PhysicalCylinderFactory;
 import ini.cx3d.physics.factory.PhysicalObjectFactory;
 import ini.cx3d.physics.interfaces.IntracellularSubstance;
 import ini.cx3d.physics.interfaces.PhysicalObject;
@@ -63,7 +65,7 @@ import java.util.Objects;
  * @author fredericzubler
  *
  */
-public class PhysicalCylinder extends physics.PhysicalCylinderBase {//ini.cx3d.swig.physics.PhysicalCylinder{//ini.cx3d.physics.PhysicalObject {
+public class PhysicalCylinder extends physics.PhysicalCylinderBase implements ini.cx3d.physics.interfaces.PhysicalCylinder {//ini.cx3d.swig.physics.PhysicalCylinder{//ini.cx3d.physics.PhysicalObject {
 
 	/* Local biology object associated with this PhysicalCylinder.*/
 	private NeuriteElement neuriteElement = null;
@@ -97,8 +99,9 @@ public class PhysicalCylinder extends physics.PhysicalCylinderBase {//ini.cx3d.s
 	private double oldActualLength=0;
 
 
+	@Override
 	public ini.cx3d.swig.NativeStringBuilder simStateToJson(ini.cx3d.swig.NativeStringBuilder sb) {
-		super.simStateToJson(sb);
+		superSuperSimStateToJson(sb);
 
 		//motherNode, neuriteElementm daughterLeft, daughterRight are circular references
 		keyValue(sb, "branchOrder", branchOrder);
@@ -117,6 +120,35 @@ public class PhysicalCylinder extends physics.PhysicalCylinderBase {//ini.cx3d.s
 	@Override
 	public String toString() {
 		return "ini.cx3d.physics.PhyicalCylinder" + getID();
+//		StringBuilder sb = new StringBuilder();
+//		sb.append("(");
+//		sb.append(toStr(getPhysicalBonds()));
+//		sb.append(", ");
+//		sb.append(toStr(getExcrescences().size()));
+//		sb.append(", ");
+//		sb.append(neuriteElement);
+//		sb.append(", ");
+//		sb.append(mother != null ? toStr(mother.getID()) : "null");
+//		sb.append(", ");
+//		sb.append(daughterLeft != null ? toStr(daughterLeft.getID()) : "null");
+//		sb.append(", ");
+//		sb.append(daughterRight != null ? toStr(daughterRight.getID()) : "null");
+//		sb.append(", ");
+//		sb.append(toStr(branchOrder));
+//		sb.append(", ");
+//		sb.append(toStr(forceToTransmitToProximalMass));
+//		sb.append(", ");
+//		sb.append(toStr(springAxis));
+//		sb.append(", ");
+//		sb.append(toStr(actualLength));
+//		sb.append(", ");
+//		sb.append(toStr(tension));
+//		sb.append(", ");
+//		sb.append(toStr(springConstant));
+//		sb.append(", ");
+//		sb.append(toStr(restingLength));
+//		sb.append(")");
+//		return sb.toString();
 	}
 
 	/** No argument constructor, initializing fields of <code>PhysicalObject</code>
@@ -139,9 +171,10 @@ public class PhysicalCylinder extends physics.PhysicalCylinderBase {//ini.cx3d.s
 	 * tension, the volume, the
 	 * <code>CellElement</code>, as well as<code>Excrescences</code> and the
 	 * <code>IntracellularSubstances</code> are not copied. */
+	@Override
 	public PhysicalCylinder getCopy(){
 
-		PhysicalCylinder newCylinder = new PhysicalCylinder();
+		PhysicalCylinder newCylinder = (PhysicalCylinder) PhysicalCylinderFactory.create();
 
 		// PhysicalObject variables
 		//getRwLock().readLock().lock();
@@ -184,7 +217,7 @@ public class PhysicalCylinder extends physics.PhysicalCylinderBase {//ini.cx3d.s
 				return true;
 			// sister-sister
 			if(po.isAPhysicalCylinder()){
-				if(Objects.equals(((PhysicalCylinder)po).getMother(), this.mother))
+				if(Objects.equals(((ini.cx3d.physics.interfaces.PhysicalCylinder)po).getMother(), this.mother))
 					return true;
 			}
 			return false;
@@ -270,6 +303,7 @@ public class PhysicalCylinder extends physics.PhysicalCylinderBase {//ini.cx3d.s
 	 * It is the sum of the spring force an the part of the inter-object force computed earlier in
 	 * <code>runPhysics()</code>.
 	 */
+	@Override
 	public double[] forceTransmittedFromDaugtherToMother(ini.cx3d.physics.interfaces.PhysicalObject motherWhoAsks) {
 		try
 		{
@@ -306,6 +340,7 @@ public class PhysicalCylinder extends physics.PhysicalCylinderBase {//ini.cx3d.s
 	 * another <code>PhysicalCylinder</code>), or too short (and in this second case fuse it with the
 	 * proximal element or even delete it).
 	 * */
+	@Override
 	public boolean runDiscretization() {
 
 		if(actualLength>Param.NEURITE_MAX_LENGTH){
@@ -447,7 +482,7 @@ public class PhysicalCylinder extends physics.PhysicalCylinderBase {//ini.cx3d.s
 		try
 		{
 			// The mother is removed if (a) it is a PhysicalCylinder and (b) it has no other daughter than this.
-			if( !(mother.isAPhysicalCylinder()) || (((PhysicalCylinder)mother).getDaughterRight() != null)  ){
+			if( !(mother.isAPhysicalCylinder()) || (((ini.cx3d.physics.interfaces.PhysicalCylinder)mother).getDaughterRight() != null)  ){
 				(new Throwable("removeProximalCylinder")).printStackTrace();
 				return;
 			}
@@ -513,7 +548,7 @@ public class PhysicalCylinder extends physics.PhysicalCylinderBase {//ini.cx3d.s
 	 * Repositioning of the SpatialNode location (usually a Delaunay vertex) at the barycenter of the cylinder.
 	 * If it is already closer than a quarter of the diameter of the cylinder, it is not displaced.
 	 */
-	void updateSpatialOrganizationNodePosition() {
+	public void updateSpatialOrganizationNodePosition() {
 
 
 		//getRwLock().readLock().lock();
@@ -553,6 +588,7 @@ public class PhysicalCylinder extends physics.PhysicalCylinderBase {//ini.cx3d.s
 	 * @param speed of the growth rate (microns/hours).
 	 * @direction the 3D direction of movement.
 	 */
+	@Override
 	public void extendCylinder(double speed, double[] direction){
 		//getRwLock().readLock().lock();
 		double temp = dot(direction, springAxis);
@@ -568,6 +604,7 @@ public class PhysicalCylinder extends physics.PhysicalCylinderBase {//ini.cx3d.s
 	 * @param speed of the growth rate (microns/hours).
 	 * @direction the 3D direction of movement.
 	 */
+	@Override
 	public void movePointMass(double speed, double[] direction){
 		// check if is a terminal branch
 		try{
@@ -625,6 +662,7 @@ public class PhysicalCylinder extends physics.PhysicalCylinderBase {//ini.cx3d.s
 	 * @param speed of the retraction (microns/hours).
 	 * @return false if the neurite doesn't exist anymore (complete retraction)
 	 */
+	@Override
 	public boolean retractCylinder(double speed) {
 		try{
 			//getRwLock().writeLock().lock();
@@ -652,7 +690,7 @@ public class PhysicalCylinder extends physics.PhysicalCylinderBase {//ini.cx3d.s
 				super.setOnTheSchedulerListForPhysicalObjects(true);
 				return true;
 				// if al < length and mother is a PhysicalCylinder with no other daughter : merge with mother
-			} else if(mother.isAPhysicalCylinder() && ((PhysicalCylinder)mother).getDaughterRight() == null  ){
+			} else if(mother.isAPhysicalCylinder() && ((ini.cx3d.physics.interfaces.PhysicalCylinder)mother).getDaughterRight() == null  ){
 				removeProximalCylinder(); // also updates volume...
 				// be sure i'll run my physics :
 				super.setOnTheSchedulerListForPhysicalObjects(true);
@@ -691,6 +729,7 @@ public class PhysicalCylinder extends physics.PhysicalCylinderBase {//ini.cx3d.s
 	 * @param direction_2
 	 */
 
+	@Override
 	public PhysicalCylinder[] bifurcateCylinder(double length, double[] direction_1, double[] direction_2) {
 		// check it is a terminal branch
 		if (daughterLeft != null){
@@ -782,11 +821,12 @@ public class PhysicalCylinder extends physics.PhysicalCylinderBase {//ini.cx3d.s
 	 * not al least 45 degrees from the cylinder's axis).
 	 * @return the newly added <code>NeuriteSegment</code>
 	 */
+	@Override
 	public PhysicalCylinder branchCylinder(double length, double[] direction) {
 		// we first split this cylinder into two pieces
 		NeuriteElement ne = insertProximalCylinder();
 		// then append a "daughter right" between the two
-		return ne.getPhysicalCylinder().extendSideCylinder(length, direction);
+		return ((PhysicalCylinder) ne.getPhysicalCylinder()).extendSideCylinder(length, direction);
 	}
 
 
@@ -841,6 +881,7 @@ public class PhysicalCylinder extends physics.PhysicalCylinderBase {//ini.cx3d.s
 	}
 
 
+	@Override
 	public void setRestingLengthForDesiredTension(double tensionWeWant){
 		//getRwLock().writeLock().lock();
 		this.tension = tensionWeWant;
@@ -854,6 +895,7 @@ public class PhysicalCylinder extends physics.PhysicalCylinderBase {//ini.cx3d.s
 	 * Progressive modification of the volume. Updates the diameter, the intracellular concentration
 	 * @param speed cubic micron/ h
 	 */
+	@Override
 	public void changeVolume(double speed) {
 		//scaling for integration step
 		//getRwLock().writeLock().lock();
@@ -874,6 +916,7 @@ public class PhysicalCylinder extends physics.PhysicalCylinderBase {//ini.cx3d.s
 	 * Progressive modification of the diameter. Updates the volume, the intracellular concentration
 	 * @param speed micron/ h
 	 */
+	@Override
 	public void changeDiameter(double speed) {
 		//scaling for integration step
 		//getRwLock().writeLock().lock();
@@ -900,6 +943,7 @@ public class PhysicalCylinder extends physics.PhysicalCylinderBase {//ini.cx3d.s
 	/**
 	 *
 	 */
+	@Override
 	public void runPhysics() {
 		// decide first if we have to split or fuse this cylinder. Usually only
 		// terminal branches (growth cone) do this.
@@ -956,8 +1000,8 @@ public class PhysicalCylinder extends physics.PhysicalCylinderBase {//ini.cx3d.s
 				if(Objects.equals(neighbor, mother) || Objects.equals(neighbor, daughterLeft) || Objects.equals(neighbor, daughterRight))
 					continue;
 				// if sister branch, we also don't take into account
-				if (neighbor instanceof PhysicalCylinder) {
-					PhysicalCylinder nCyl = (PhysicalCylinder) neighbor;
+				if (neighbor instanceof ini.cx3d.physics.interfaces.PhysicalCylinder) {
+					ini.cx3d.physics.interfaces.PhysicalCylinder nCyl = (ini.cx3d.physics.interfaces.PhysicalCylinder) neighbor;
 					if(Objects.equals(nCyl.getMother(), this.mother)){
 						continue;
 					}
@@ -1015,8 +1059,8 @@ public class PhysicalCylinder extends physics.PhysicalCylinderBase {//ini.cx3d.s
 				}
 			}
 
-			if (daughterLeft!= null && mother instanceof PhysicalCylinder) {
-				PhysicalCylinder motherCyl = (PhysicalCylinder) mother;
+			if (daughterLeft!= null && mother instanceof ini.cx3d.physics.interfaces.PhysicalCylinder) {
+				ini.cx3d.physics.interfaces.PhysicalCylinder motherCyl = (ini.cx3d.physics.interfaces.PhysicalCylinder) mother;
 				double rresting = this.getRestingLength()+motherCyl.getRestingLength();
 //			double rresting = this.getActualLength()+motherCyl.getActualLength();
 				double[] downToMe = subtract(getMassLocation(),motherCyl.proximalEnd());
@@ -1219,7 +1263,7 @@ public class PhysicalCylinder extends physics.PhysicalCylinderBase {//ini.cx3d.s
 	}
 
 	@Override
-	public double[] getForceOn(PhysicalCylinder c) {
+	public double[] getForceOn(ini.cx3d.physics.interfaces.PhysicalCylinder c) {
 		try{
 			//getRwLock().readLock().lock();
 			if(Objects.equals(c.getMother(), this.mother)){
@@ -1283,7 +1327,7 @@ public class PhysicalCylinder extends physics.PhysicalCylinderBase {//ini.cx3d.s
 	}
 
 	@Override
-	public boolean isInContactWithCylinder(PhysicalCylinder c) {
+	public boolean isInContactWithCylinder(ini.cx3d.physics.interfaces.PhysicalCylinder c) {
 
 		//getRwLock().readLock().lock();
 		double[] force = PhysicalObjectFactory.getInterObjectForce().forceOnACylinderFromACylinder(this,c);
@@ -1357,6 +1401,7 @@ public class PhysicalCylinder extends physics.PhysicalCylinderBase {//ini.cx3d.s
 	}
 
 	/** Returns the point on this cylinder's spring axis that is the closest to the point p.*/
+	@Override
 	public double[] closestPointTo(double[] p){
 		try{
 			//getRwLock().readLock().lock();
@@ -1417,7 +1462,7 @@ public class PhysicalCylinder extends physics.PhysicalCylinderBase {//ini.cx3d.s
 				po1 = daughterRight;
 				po2 = this;
 			}
-			po1.diffuseWithThisPhysicalObjects(po2, ((PhysicalCylinder)daughterRight).getActualLength());
+			po1.diffuseWithThisPhysicalObjects(po2, daughterRight.getActualLength());
 		}
 
 		if(daughterLeft != null) {
@@ -1427,7 +1472,7 @@ public class PhysicalCylinder extends physics.PhysicalCylinderBase {//ini.cx3d.s
 				po1 = daughterLeft;
 				po2 = this;
 			}
-			po1.diffuseWithThisPhysicalObjects(po2, ((PhysicalCylinder)daughterLeft).getActualLength());
+			po1.diffuseWithThisPhysicalObjects(po2, daughterLeft.getActualLength());
 		}
 
 	}
@@ -1460,6 +1505,7 @@ public class PhysicalCylinder extends physics.PhysicalCylinderBase {//ini.cx3d.s
 	 * Matt Coock. - Although not perfectly exact, it is accurate enough for us to use.
 	 *
 	 */
+	@Override
 	public void updateLocalCoordinateAxis(){
 		// x (new) = something new
 		// z (new) = x (new) cross y(old)
@@ -1495,6 +1541,7 @@ public class PhysicalCylinder extends physics.PhysicalCylinderBase {//ini.cx3d.s
 	 * This method also automatically calls the <code>resetComputationCenterPosition()</code>
 	 * method at the end.
 	 */
+	@Override
 	public  void updateDependentPhysicalVariables() {
 		//getRwLock().writeLock().lock();
 		double[] relativeML = mother.originOf(this); 	// massLocation of the mother
@@ -1534,6 +1581,7 @@ public class PhysicalCylinder extends physics.PhysicalCylinderBase {//ini.cx3d.s
 	 * Updates the concentration of substances, based on the volume of the object.
 	 * Is usually called after change of the volume (and therefore we don't modify it here)
 	 */
+	@Override
 	public void updateIntracellularConcentrations(){
 		//getRwLock().readLock().lock();
 		for (ini.cx3d.physics.interfaces.IntracellularSubstance s : getIntracellularSubstances().values() ) {
@@ -1585,6 +1633,7 @@ public class PhysicalCylinder extends physics.PhysicalCylinderBase {//ini.cx3d.s
 	 * @param positionInGlobalCoord
 	 * @return
 	 */
+	@Override
 	public double[] transformCoordinatesGlobalToLocal(double[] positionInGlobalCoord){
 		try{
 			//getRwLock().readLock().lock();
@@ -1607,6 +1656,7 @@ public class PhysicalCylinder extends physics.PhysicalCylinderBase {//ini.cx3d.s
 	 * @param positionInLocalCoord
 	 * @return
 	 */
+	@Override
 	public double[] transformCoordinatesLocalToGlobal(double[] positionInLocalCoord){
 		try{
 
@@ -1630,6 +1680,7 @@ public class PhysicalCylinder extends physics.PhysicalCylinderBase {//ini.cx3d.s
 	 * @param positionInLocalCoordinates
 	 * @return
 	 */
+	@Override
 	public double[] transformCoordinatesLocalToPolar(double[] positionInLocalCoordinates){
 		try{
 			//getRwLock().readLock().lock();
@@ -1651,6 +1702,7 @@ public class PhysicalCylinder extends physics.PhysicalCylinderBase {//ini.cx3d.s
 	 * @param positionInPolarCoordinates
 	 * @return
 	 */
+	@Override
 	public double[] transformCoordinatesPolarToLocal(double[] positionInPolarCoordinates){
 		try{
 			//getRwLock().readLock().lock();
@@ -1726,6 +1778,7 @@ public class PhysicalCylinder extends physics.PhysicalCylinderBase {//ini.cx3d.s
 	/**
 	 * @return the neuriteElement
 	 */
+	@Override
 	public NeuriteElement getNeuriteElement() {
 		try{
 			//getRwLock().readLock().lock();
@@ -1741,6 +1794,7 @@ public class PhysicalCylinder extends physics.PhysicalCylinderBase {//ini.cx3d.s
 	/**
 	 * @param neuriteElement the neuriteElement to set
 	 */
+	@Override
 	public void setNeuriteElement(NeuriteElement neuriteElement) {
 
 		if (neuriteElement != null) {
@@ -1756,6 +1810,7 @@ public class PhysicalCylinder extends physics.PhysicalCylinderBase {//ini.cx3d.s
 	/**
 	 * @return the daughterLeft
 	 */
+	@Override
 	public PhysicalCylinder getDaughterLeft() {
 		try{
 			//getRwLock().readLock().lock();
@@ -1770,6 +1825,7 @@ public class PhysicalCylinder extends physics.PhysicalCylinderBase {//ini.cx3d.s
 	/**
 	 * @return the daughterRight
 	 */
+	@Override
 	public PhysicalCylinder getDaughterRight() {
 		try{
 			//getRwLock().readLock().lock();
@@ -1784,6 +1840,7 @@ public class PhysicalCylinder extends physics.PhysicalCylinderBase {//ini.cx3d.s
 	/**
 	 * @return the mother
 	 */
+	@Override
 	public ini.cx3d.physics.interfaces.PhysicalObject getMother() {
 		try{
 			//getRwLock().readLock().lock();
@@ -1798,6 +1855,7 @@ public class PhysicalCylinder extends physics.PhysicalCylinderBase {//ini.cx3d.s
 	/**
 	 * @param mother the mother to set
 	 */
+	@Override
 	public void setMother(ini.cx3d.physics.interfaces.PhysicalObject mother) {
 		//getRwLock().writeLock().lock();
 		this.mother = mother;
@@ -1807,18 +1865,20 @@ public class PhysicalCylinder extends physics.PhysicalCylinderBase {//ini.cx3d.s
 	/**
 	 * @param daughterLeft the daughterLeft to set
 	 */
-	public void setDaughterLeft(PhysicalCylinder daughterLeft) {
+	@Override
+	public void setDaughterLeft(ini.cx3d.physics.interfaces.PhysicalCylinder daughterLeft) {
 		//getRwLock().writeLock().lock();
-		this.daughterLeft = daughterLeft;
+		this.daughterLeft = (PhysicalCylinder) daughterLeft;
 		//getRwLock().writeLock().unlock();
 	}
 
 	/**
 	 * @param daughterRight the daughterRight to set
 	 */
-	public void setDaughterRight(PhysicalCylinder daughterRight) {
+	@Override
+	public void setDaughterRight(ini.cx3d.physics.interfaces.PhysicalCylinder daughterRight) {
 		//getRwLock().writeLock().lock();
-		this.daughterRight = daughterRight;
+		this.daughterRight = (PhysicalCylinder) daughterRight;
 		//getRwLock().writeLock().unlock();
 	}
 
@@ -1826,6 +1886,7 @@ public class PhysicalCylinder extends physics.PhysicalCylinderBase {//ini.cx3d.s
 	/**
 	 * @param branchOrder the branchOrder to set
 	 */
+	@Override
 	public void setBranchOrder(int branchOrder) {
 		//getRwLock().writeLock().lock();
 		this.branchOrder = branchOrder;
@@ -1835,6 +1896,7 @@ public class PhysicalCylinder extends physics.PhysicalCylinderBase {//ini.cx3d.s
 	/**
 	 * @return the branchOrder
 	 */
+	@Override
 	public int getBranchOrder() {
 		try{
 			//getRwLock().readLock().lock();
@@ -1846,6 +1908,7 @@ public class PhysicalCylinder extends physics.PhysicalCylinderBase {//ini.cx3d.s
 		}
 	}
 
+	@Override
 	public double getActualLength() {
 		try{
 			//getRwLock().readLock().lock();
@@ -1861,12 +1924,14 @@ public class PhysicalCylinder extends physics.PhysicalCylinderBase {//ini.cx3d.s
 	 * Should not be used, since the actual length depends on the geometry.
 	 * @param actualLength
 	 */
+	@Override
 	public void setActualLength(double actualLength) {
 		//getRwLock().writeLock().lock();
 		this.actualLength = actualLength;
 		//getRwLock().writeLock().unlock();
 	}
 
+	@Override
 	public double getRestingLength() {
 		try{
 			//getRwLock().readLock().lock();
@@ -1878,12 +1943,14 @@ public class PhysicalCylinder extends physics.PhysicalCylinderBase {//ini.cx3d.s
 		}
 	}
 
+	@Override
 	public void setRestingLength(double restingLength) {
 		//getRwLock().writeLock().lock();
 		this.restingLength = restingLength;
 		//getRwLock().writeLock().unlock();
 	}
 
+	@Override
 	public double[] getSpringAxis() {
 		try{
 			//getRwLock().readLock().lock();
@@ -1896,12 +1963,14 @@ public class PhysicalCylinder extends physics.PhysicalCylinderBase {//ini.cx3d.s
 	}
 
 
+	@Override
 	public void setSpringAxis(double[] springAxis) {
 		//getRwLock().writeLock().lock();
 		this.springAxis = springAxis.clone();
 		//getRwLock().writeLock().unlock();
 	}
 
+	@Override
 	public double getSpringConstant() {
 		try{
 			//getRwLock().readLock().lock();
@@ -1913,6 +1982,7 @@ public class PhysicalCylinder extends physics.PhysicalCylinderBase {//ini.cx3d.s
 		}
 	}
 
+	@Override
 	public void setSpringConstant(double springConstant) {
 
 		//getRwLock().writeLock().lock();
@@ -1920,6 +1990,7 @@ public class PhysicalCylinder extends physics.PhysicalCylinderBase {//ini.cx3d.s
 		//getRwLock().writeLock().unlock();
 	}
 
+	@Override
 	public double getTension() {
 		try{
 			//getRwLock().readLock().lock();
@@ -1941,6 +2012,7 @@ public class PhysicalCylinder extends physics.PhysicalCylinderBase {//ini.cx3d.s
 	 * @return a normalized springAxis
 	 */
 	// NOT A "REAL" GETTER
+	@Override
 	public double[] getUnitaryAxisDirectionVector() {
 		try{
 			//getRwLock().readLock().lock();
@@ -1956,6 +2028,7 @@ public class PhysicalCylinder extends physics.PhysicalCylinderBase {//ini.cx3d.s
 	/** Should return yes if the PhysicalCylinder is considered a terminal branch.
 	 * @return is it a terminal branch
 	 */
+	@Override
 	public boolean isTerminal(){
 		try{
 			//getRwLock().readLock().lock();
@@ -1972,6 +2045,7 @@ public class PhysicalCylinder extends physics.PhysicalCylinderBase {//ini.cx3d.s
 	 * has no daughter and the actual length is bigger than the minimum required.
 	 * @return
 	 */
+	@Override
 	public boolean bifurcationPermitted(){
 		try{
 			//getRwLock().readLock().lock();
@@ -1991,6 +2065,7 @@ public class PhysicalCylinder extends physics.PhysicalCylinderBase {//ini.cx3d.s
 	 * branch and if there is not already a second daughter.
 	 * @return
 	 */
+	@Override
 	public boolean branchPermitted(){
 		try{
 			//getRwLock().readLock().lock();
@@ -2011,6 +2086,7 @@ public class PhysicalCylinder extends physics.PhysicalCylinderBase {//ini.cx3d.s
 	 * Is mainly used for paint
 	 * @return
 	 */
+	@Override
 	public double[] proximalEnd(){
 		try{
 			//getRwLock().readLock().lock();
@@ -2029,6 +2105,7 @@ public class PhysicalCylinder extends physics.PhysicalCylinderBase {//ini.cx3d.s
 	 * Is mainly used for paint
 	 * @return
 	 */
+	@Override
 	public double[] distalEnd(){
 		try{
 			//getRwLock().readLock().lock();
@@ -2046,12 +2123,13 @@ public class PhysicalCylinder extends physics.PhysicalCylinderBase {//ini.cx3d.s
 	 * independently of the discretization.
 	 * @return
 	 */
+	@Override
 	public double lengthToProximalBranchingPoint(){
 		try{
 			//getRwLock().readLock().lock();
 			double length = actualLength;
 			if (mother.isAPhysicalCylinder()) {
-				PhysicalCylinder previousCylinder = (PhysicalCylinder) mother;
+				ini.cx3d.physics.interfaces.PhysicalCylinder previousCylinder = (ini.cx3d.physics.interfaces.PhysicalCylinder) mother;
 				if(previousCylinder.getDaughterRight() == null){
 					length += previousCylinder.lengthToProximalBranchingPoint();
 				}
@@ -2065,6 +2143,7 @@ public class PhysicalCylinder extends physics.PhysicalCylinderBase {//ini.cx3d.s
 	}
 
 	/** returns true because this object is a PhysicalCylinder */
+	@Override
 	public boolean isAPhysicalCylinder(){
 		return true;
 	}

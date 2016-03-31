@@ -16,7 +16,7 @@
 
 %define %PhysicalCylinder_cx3d_shared_ptr()
   %cx3d_shared_ptr(PhysicalCylinder,
-                   ini/cx3d/physics/PhysicalCylinder,
+                   ini/cx3d/physics/interfaces/PhysicalCylinder,
                    cx3d::physics::PhysicalCylinder);
 %enddef
 
@@ -24,18 +24,51 @@
   %java_defined_class_add(cx3d::physics::PhysicalCylinder,
                       PhysicalCylinder,
                       PhysicalCylinder,
-                      ini.cx3d.physics.PhysicalCylinder,
-                      ini/cx3d/physics/PhysicalCylinder,
-                      ;);
+                      ini.cx3d.physics.interfaces.PhysicalCylinder,
+                      ini/cx3d/physics/interfaces/PhysicalCylinder,
+                      public NativeStringBuilder superSuperSimStateToJson(NativeStringBuilder sb) {
+                        return super.simStateToJson(sb);
+                      });
+%enddef
+
+%define %PhysicalCylinder_native()
+  %native_defined_class(cx3d::physics::PhysicalCylinder,
+                      PhysicalCylinder,
+                      ini.cx3d.physics.interfaces.PhysicalCylinder,
+                      PhysicalCylinder,
+                      public NativeStringBuilder superSuperSimStateToJson(NativeStringBuilder sb) {
+                        return super.simStateToJson(sb);
+                      });
+%enddef
+
+%define %PhysicalCylinder_stdarray_array_marshalling(SWIG_MODULE, SIZE)
+  %stdarray_array_marshalling(SWIG_MODULE,
+                              std::shared_ptr<cx3d::physics::PhysicalCylinder>,
+                              shared_ptr_PhysicalCylinder_##SIZE,
+                              ini.cx3d.physics.interfaces.PhysicalCylinder,
+                              Lini/cx3d/physics/interfaces/PhysicalCylinder;,
+                              SIZE);
 %enddef
 
 /**
  * apply customizations
  */
 %PhysicalCylinder_cx3d_shared_ptr();
-%PhysicalCylinder_java();
-%typemap(javaimports) cx3d::physics::PhysicalCylinder "import ini.cx3d.localBiology.CellElement;
-import ini.cx3d.physics.PhysicalSphere;"
+#ifdef PHYSICALCYLINDER_NATIVE
+  %PhysicalCylinder_native();
+#else
+  %PhysicalCylinder_java();
+#endif
+
+#ifdef PHYSICALCYLINDER_DEBUG
+  %setJavaDebugSwitch(PhysicalCylinder, true);
+#else
+  %setJavaDebugSwitch(PhysicalCylinder, false);
+#endif
+
+%typemap(javaimports) cx3d::physics::PhysicalCylinder "import ini.cx3d.swig.NativeStringBuilder;"
+%typemap(javainterfaces) cx3d::physics::PhysicalCylinder "ini.cx3d.physics.interfaces.PhysicalCylinder"
 %stdlist_typemap(std::shared_ptr<cx3d::physics::PhysicalCylinder>,
                  PhysicalCylinder,
-                 ini.cx3d.physics.PhysicalCylinder);
+                 ini.cx3d.physics.interfaces.PhysicalCylinder);
+%PhysicalCylinder_stdarray_array_marshalling(physics, 2);

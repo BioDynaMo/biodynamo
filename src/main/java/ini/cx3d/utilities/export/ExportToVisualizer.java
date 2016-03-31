@@ -25,7 +25,7 @@ package ini.cx3d.utilities.export;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 
-import ini.cx3d.physics.PhysicalCylinder;
+import ini.cx3d.physics.interfaces.PhysicalCylinder;
 import ini.cx3d.simulations.ECM;
 
 public class ExportToVisualizer {

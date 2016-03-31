@@ -23,6 +23,9 @@
 #include "synapse/excrescence.h"
 #include "local_biology/cell_element.h"
 #include "local_biology/soma_element.h"
+#include "local_biology/neurite_element.h"
+#include "local_biology/local_biology_module.h"
+#include "param.h"
 using namespace cx3d::physics;
 using cx3d::JavaUtil2;
 using cx3d::Color;
@@ -62,6 +65,9 @@ JAVA_LOAD_NATIVE_LIBRARY(cx3d_physics);
 %include "class_customization/synapse/excrescence.i"
 %include "class_customization/local_biology/cell_element.i"
 %include "class_customization/local_biology/soma_element.i"
+%include "class_customization/local_biology/neurite_element.i"
+%include "class_customization/local_biology/local_biology_module.i"
+%ignore cx3d::Param::kViolet;
 
 // add the original header files here
 %include "color.h"
@@ -81,3 +87,6 @@ JAVA_LOAD_NATIVE_LIBRARY(cx3d_physics);
 %include "synapse/excrescence.h"
 %include "local_biology/cell_element.h"
 %include "local_biology/soma_element.h"
+%include "local_biology/neurite_element.h"
+%include "local_biology/local_biology_module.h"
+%include "param.h"

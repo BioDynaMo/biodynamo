@@ -27,11 +27,11 @@ import static ini.cx3d.utilities.Matrix.printlnLine;
 import static ini.cx3d.utilities.Matrix.scalarMult;
 import static ini.cx3d.utilities.Matrix.subtract;
 import ini.cx3d.Param;
-import ini.cx3d.physics.PhysicalCylinder;
 import ini.cx3d.simulations.ECM;
 import ini.cx3d.spatialOrganization.SpatialOrganizationNode;
 import ini.cx3d.synapses.Excrescence;
 import ini.cx3d.utilities.StringUtilities;
+import ini.cx3d.physics.interfaces.PhysicalCylinder;
 
 import java.awt.BasicStroke;
 import java.awt.Color;

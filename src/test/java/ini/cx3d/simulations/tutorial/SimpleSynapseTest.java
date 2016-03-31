@@ -28,7 +28,7 @@ import ini.cx3d.Param;
 import ini.cx3d.cells.Cell;
 import ini.cx3d.cells.CellFactory;
 import ini.cx3d.localBiology.NeuriteElement;
-import ini.cx3d.physics.PhysicalCylinder;
+import ini.cx3d.physics.interfaces.PhysicalCylinder;
 import ini.cx3d.simulations.ECM;
 import ini.cx3d.simulations.Scheduler;
 import ini.cx3d.synapses.BiologicalBouton;

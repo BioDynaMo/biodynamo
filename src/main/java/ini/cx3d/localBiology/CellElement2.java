@@ -42,11 +42,11 @@ import static ini.cx3d.SimStateSerializationUtil.unorderedCollection;
  * @author fredericzubler
  *
  */
-public abstract class CellElement extends ini.cx3d.swig.physics.SomaElement implements SimStateSerializable, ini.cx3d.localBiology.interfaces.CellElement {
+public abstract class CellElement2 extends ini.cx3d.swig.physics.NeuriteElement implements SimStateSerializable, ini.cx3d.localBiology.interfaces.CellElement {
 
 	/* Unique identification for this CellElement instance.*/
 	int ID = 0;
-	static AtomicInteger idCounter = new AtomicInteger(0);
+//	static AtomicInteger CellElement.idCounter = new AtomicInteger(0);
 
 	/* Reference to the ECM. */
 	protected static ECM ecm = ECM.getInstance();
@@ -61,16 +61,16 @@ public abstract class CellElement extends ini.cx3d.swig.physics.SomaElement impl
 		sb.append("{");
 
 		keyValue(sb, "ID", ID);
-		keyValue(sb, "idCounter", idCounter.get());
+		keyValue(sb, "idCounter", CellElement.idCounter.get());
 		unorderedCollection(sb, "localBiologyModules", localBiologyModulesList);
 
 		return sb;
 	}
 
 	/** Simple constructor.*/
-	public CellElement() {
+	public CellElement2() {
 		ini.cx3d.swig.physics.CellElement.registerJavaObject(this);
-		this.ID =  idCounter.incrementAndGet();
+		this.ID =  CellElement.idCounter.incrementAndGet();
 	}
 
 	@Override
@@ -94,32 +94,27 @@ public abstract class CellElement extends ini.cx3d.swig.physics.SomaElement impl
 
 	/** Adds the argument to the <code>LocalBiologyModule</code> list, and registers this as it's 
 	 * <code>CellElements</code>.*/
-	@Override
 	public void addLocalBiologyModule(LocalBiologyModule m){
 		localBiologyModulesList.add(m);
 		m.setCellElement(this); // set the callback
 	}
 
 	/** Removes the argument from the <code>LocalBiologyModule</code> list.*/
-	@Override
 	public void removeLocalBiologyModule(LocalBiologyModule m){
 		localBiologyModulesList.remove(m);
 	}
     
     /** Removes all the <code>LocalBiologyModule</code> in this <code>CellElements</code>.*/
-	@Override
 	public void cleanAllLocalBiologyModules() {
 		localBiologyModulesList.clear();
 	}
 
 	/** Returns the localBiologyModule List (not a copy).*/
-	@Override
 	public AbstractSequentialList<LocalBiologyModule> getLocalBiologyModulesList() {
 		return localBiologyModulesList;
 	}
 	
 	/** Sets the localBiologyModule List.*/
-	@Override
 	public void setLocalBiologyModulesList(AbstractSequentialList<LocalBiologyModule> localBiologyModulesList) {
 		this.localBiologyModulesList = localBiologyModulesList;
 	}
@@ -133,7 +128,6 @@ public abstract class CellElement extends ini.cx3d.swig.physics.SomaElement impl
 	 * Sets the <code>Cell</code> this <code>CellElement</code> is part of. 
 	 * @param cell
 	 */
-	@Override
 	public void setCell(Cell cell) {
 		this.cell = cell;
 	}
@@ -142,7 +136,6 @@ public abstract class CellElement extends ini.cx3d.swig.physics.SomaElement impl
 	 * 
 	 * @return the <code>Cell</code> this <code>CellElement</code> is part of.
 	 */
-	@Override
 	public Cell getCell() {
 		return cell;
 	}
@@ -150,6 +143,11 @@ public abstract class CellElement extends ini.cx3d.swig.physics.SomaElement impl
 	// *************************************************************************************
 	// *      METHODS FOR DEFINING TYPE (neurite element vs soma element)                                                  *
 	// *************************************************************************************
+
+	/** Returns <code>true</code> if is a <code>NeuriteElement</code>.*/
+	public abstract boolean isANeuriteElement();
+	/** Returns <code>true</code> if is a <code>SomaElement</code>.*/
+	public abstract boolean isASomaElement();
 
 	// *************************************************************************************
 	// *      METHODS FOR CALLS TO PHYSICS (POSITION, ETC)                                 *

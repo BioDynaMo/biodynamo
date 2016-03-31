@@ -25,10 +25,10 @@ import static ini.cx3d.utilities.Matrix.randomNoise;
 import ini.cx3d.Param;
 import ini.cx3d.cells.Cell;
 import ini.cx3d.cells.CellFactory;
-import ini.cx3d.localBiology.CellElement;
+import ini.cx3d.localBiology.interfaces.CellElement;
 import ini.cx3d.localBiology.LocalBiologyModule;
 import ini.cx3d.localBiology.NeuriteElement;
-import ini.cx3d.physics.PhysicalCylinder;
+import ini.cx3d.physics.interfaces.PhysicalCylinder;
 import ini.cx3d.physics.Substance;
 import ini.cx3d.physics.factory.SubstanceFactory;
 import ini.cx3d.simulations.ECM;
@@ -43,7 +43,7 @@ import java.util.Vector;
  * @author fredericzubler
  *
  */
-public class X_Bifurcation_Module implements LocalBiologyModule{
+public class X_Bifurcation_Module extends ini.cx3d.swig.physics.LocalBiologyModule {
 	
 	public static int nbrOfGC = 0;
 	
@@ -75,15 +75,19 @@ public class X_Bifurcation_Module implements LocalBiologyModule{
 	double freeInterval = 5+ 1*ECM.getRandomDouble();
 	
 	public X_Bifurcation_Module() {
+		super();
 		nbrOfGC ++;
 		slope = 0.03;
 		shift = -0.01;
+		registerJavaObject(this);
 	}
 	
 	public X_Bifurcation_Module(double a,double b) {
+		super();
 		nbrOfGC++;
 		this.slope = a;
 		this.shift = b;
+		registerJavaObject(this);
 	}
 	
 	// --- LocalBiologyModule interface ----------------------------

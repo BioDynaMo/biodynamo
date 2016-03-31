@@ -26,7 +26,6 @@ import ini.cx3d.Param;
 import ini.cx3d.cells.Cell;
 import ini.cx3d.cells.CellFactory;
 import ini.cx3d.localBiology.NeuriteElement;
-import ini.cx3d.physics.PhysicalCylinder;
 import ini.cx3d.simulations.ECM;
 import ini.cx3d.simulations.Scheduler;
 
@@ -69,7 +68,7 @@ public class Figure_5Test extends BaseSimulationTest {
 //		ne.setHasCytoskeletonMotor(false);
 		// 		elongating the neurite :
 		double[] directionUp = {0,0,1};
-		PhysicalCylinder pc = ne.getPhysicalCylinder();
+		ini.cx3d.physics.interfaces.PhysicalCylinder pc = ne.getPhysicalCylinder();
 		for (int i = 0; i < 103; i++) {
 			pc.movePointMass(300, directionUp);
 			Scheduler.simulateOneStep();

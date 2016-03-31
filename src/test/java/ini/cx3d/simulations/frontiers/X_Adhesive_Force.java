@@ -23,7 +23,7 @@ package ini.cx3d.simulations.frontiers;
 
 import static ini.cx3d.utilities.Matrix.*;
 
-import ini.cx3d.physics.PhysicalCylinder;
+import ini.cx3d.physics.interfaces.PhysicalCylinder;
 
 /**
  * Slightly modified from the default force, this class serves a InterObjectForce

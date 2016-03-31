@@ -24,7 +24,7 @@ package ini.cx3d.graphics;
 
 import ini.cx3d.localBiology.NeuriteElement;
 import ini.cx3d.localBiology.SomaElement;
-import ini.cx3d.physics.PhysicalCylinder;
+import ini.cx3d.physics.interfaces.PhysicalCylinder;
 
 public class InfoVisiter {
 
@@ -34,7 +34,7 @@ public class InfoVisiter {
 		{
 			return visit((ini.cx3d.physics.interfaces.PhysicalSphere)o);
 		}
-		else if(o instanceof PhysicalCylinder)
+		else if(o instanceof ini.cx3d.physics.interfaces.PhysicalCylinder)
 		{
 			return visit((PhysicalCylinder)o);
 		}

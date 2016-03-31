@@ -28,10 +28,10 @@ import static ini.cx3d.utilities.Matrix.scalarMult;
 import ini.cx3d.Param;
 import ini.cx3d.cells.Cell;
 import ini.cx3d.cells.CellFactory;
-import ini.cx3d.localBiology.CellElement;
+import ini.cx3d.localBiology.interfaces.CellElement;
 import ini.cx3d.localBiology.LocalBiologyModule;
 import ini.cx3d.localBiology.NeuriteElement;
-import ini.cx3d.physics.PhysicalCylinder;
+import ini.cx3d.physics.interfaces.PhysicalCylinder;
 import ini.cx3d.physics.Substance;
 import ini.cx3d.physics.factory.SubstanceFactory;
 import ini.cx3d.simulations.ECM;
@@ -46,7 +46,7 @@ import java.util.Vector;
  * @author fredericzubler
  *
  */
-public class X_Movement_Module implements LocalBiologyModule{
+public class X_Movement_Module extends ini.cx3d.swig.physics.LocalBiologyModule{
 
 	/* The CellElement this module lives in.*/
 	CellElement cellElement;
@@ -75,7 +75,9 @@ public class X_Movement_Module implements LocalBiologyModule{
 	double speed = 100;
 
 	// getters and setters
-
+	public X_Movement_Module() {
+		registerJavaObject(this);
+	}
 
 	public double getMaxConcentration() {
 		return maxConcentration;

@@ -87,6 +87,11 @@ class ECM {
         "ECM::addPhysicalCylinder must never be called - Java must provide implementation at this point");
   }
 
+  virtual void removePhysicalCylinder(const std::shared_ptr<PhysicalCylinder>& cyl) {
+    throw std::logic_error(
+        "ECM::removePhysicalCylinder must never be called - Java must provide implementation at this point");
+  }
+
   virtual void addPhysicalSphere(const std::shared_ptr<PhysicalSphere>& cyl) {
     throw std::logic_error(
         "ECM::addPhysicalSphere must never be called - Java must provide implementation at this point");
@@ -97,6 +102,11 @@ class ECM {
         "ECM::getArtificialWallForSpheres must never be called - Java must provide implementation at this point");
   }
 
+  virtual bool getArtificialWallForCylinders() {
+    throw std::logic_error(
+        "ECM::getArtificialWallForCylinders must never be called - Java must provide implementation at this point");
+  }
+
   virtual std::array<double, 3> forceFromArtificialWall(const std::array<double, 3>& location, double radius) {
     throw std::logic_error(
         "ECM::forceFromArtificialWall must never be called - Java must provide implementation at this point");
@@ -105,6 +115,11 @@ class ECM {
   virtual double getRandomDouble1() {
     throw std::logic_error(
         "ECM::getRandomDouble must never be called - Java must provide implementation at this point");
+  }
+
+  virtual double matrixNextRandomDouble(){
+    throw std::logic_error(
+            "ECM::matrixNextRandomDouble must never be called - Java must provide implementation at this point");
   }
 
   virtual double exp(double d) {

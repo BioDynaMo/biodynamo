@@ -1,7 +1,6 @@
 package ini.cx3d.physics.interfaces;
 
-import ini.cx3d.localBiology.CellElement;
-import ini.cx3d.physics.PhysicalCylinder;
+import ini.cx3d.localBiology.interfaces.CellElement;
 import ini.cx3d.synapses.Excrescence;
 
 import java.awt.*;

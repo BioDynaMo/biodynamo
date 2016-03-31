@@ -25,7 +25,7 @@ import ini.cx3d.BaseSimulationTest;
 import ini.cx3d.Param;
 import ini.cx3d.cells.Cell;
 import ini.cx3d.cells.CellFactory;
-import ini.cx3d.localBiology.CellElement;
+import ini.cx3d.localBiology.interfaces.CellElement;
 import ini.cx3d.localBiology.LocalBiologyModule;
 import ini.cx3d.localBiology.NeuriteElement;
 import ini.cx3d.simulations.ECM;
@@ -64,11 +64,15 @@ public class RandomBranchingModuleTest extends BaseSimulationTest {
 	}
 }
 
-class RandomBranchingModule implements LocalBiologyModule {
+class RandomBranchingModule extends ini.cx3d.swig.physics.LocalBiologyModule {
 
 	NeuriteElement neuriteElement;
 	
 	private double[] direction;
+
+	public RandomBranchingModule() {
+		registerJavaObject(this);
+	}
 	
 	public CellElement getCellElement() {
 		return neuriteElement;

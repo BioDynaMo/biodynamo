@@ -22,7 +22,7 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 package ini.cx3d.localBiology;
 
 import ini.cx3d.SimStateSerializable;
-
+import ini.cx3d.localBiology.interfaces.CellElement;
 /**
  * 
  * Classes implementing this interface can be added in the CellElements, and be run.

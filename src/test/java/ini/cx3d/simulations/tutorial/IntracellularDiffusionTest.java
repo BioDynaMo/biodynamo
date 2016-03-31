@@ -31,7 +31,7 @@ import ini.cx3d.Param;
 import ini.cx3d.cells.Cell;
 import ini.cx3d.cells.CellFactory;
 import ini.cx3d.localBiology.AbstractLocalBiologyModule;
-import ini.cx3d.localBiology.CellElement;
+import ini.cx3d.localBiology.interfaces.CellElement;
 import ini.cx3d.localBiology.NeuriteElement;
 import ini.cx3d.localBiology.SomaElement;
 import ini.cx3d.physics.factory.IntracellularSubstanceFactory;
@@ -75,7 +75,7 @@ public class IntracellularDiffusionTest extends BaseSimulationTest{
 		
 		// run, Forrest, run..
 		ini.cx3d.utilities.SystemUtilities.tic();
-		for (int i = 0; i < 2001; i++) {
+		for (int i = 0; i < 2001; i++) { //2001
 			Scheduler.simulateOneStep();
 		}
 		ini.cx3d.utilities.SystemUtilities.tac();

@@ -420,6 +420,51 @@ class Matrix {
 
     return x;
   }
+
+  /**
+   * Returns the angle (in radian) between two vectors.
+   *
+   * @param a the first vector
+   * @param b the second vector
+   * @return the angle between them.
+   */
+  static double angleRadian(const std::array<double, 3>& a, const std::array<double, 3>& b) {
+    double angle = std::acos(dot(a, b) / (norm(a) * norm(b)));
+    return angle;
+  }
+
+  /**
+   * Returns the projection of the first vector onto the second one.
+   * @param a
+   * @param b
+   * @return the projection of a onto b
+   */
+  static std::array<double, 3> projectionOnto(const std::array<double, 3>& a, const std::array<double, 3>& b) {
+    double k = dot(a, b) / dot(b, b);
+    return scalarMult(k, b);
+  }
+
+  /**
+   * Returns a vector of norm 1 perpendicular to a 3D vector. As usual there is not length check.
+   * @param a
+   * @return a vector perpendicular
+   */
+  static std::array<double, 3> perp3(const std::array<double, 3>& a, double rand) {
+    std::array<double, 3> vect_perp;
+    if (a[0] == 0.0) {
+      vect_perp[0] = 1.0;
+      vect_perp[1] = 0.0;
+      vect_perp[2] = 0.0;
+      vect_perp = rotAroundAxis(vect_perp, 6.35 * rand, a);
+    } else {
+      vect_perp[0] = a[1];
+      vect_perp[1] = -a[0];
+      vect_perp[2] = 0.0;
+      vect_perp = normalize(vect_perp);
+      vect_perp = rotAroundAxis(vect_perp, 6.35 * rand, a);
+    }
+    return vect_perp;
+  }
 };
 
 }  // namespace cx3d

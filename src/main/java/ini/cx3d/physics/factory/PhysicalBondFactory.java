@@ -3,6 +3,8 @@ package ini.cx3d.physics.factory;
 import ini.cx3d.physics.interfaces.PhysicalBond;
 import ini.cx3d.swig.physics.physics;
 
+import static ini.cx3d.utilities.StringUtilities.toStr;
+
 /**
  * Factory that generates PhysicalBond objects
  */

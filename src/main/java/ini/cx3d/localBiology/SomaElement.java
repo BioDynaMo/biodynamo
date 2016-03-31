@@ -27,7 +27,7 @@ import static ini.cx3d.utilities.Matrix.add;
 import static ini.cx3d.utilities.Matrix.scalarMult;
 import static ini.cx3d.utilities.Matrix.subtract;
 import ini.cx3d.Param;
-import ini.cx3d.physics.PhysicalCylinder;
+import ini.cx3d.physics.interfaces.PhysicalCylinder;
 import ini.cx3d.simulations.ECM;
 import ini.cx3d.synapses.BiologicalSomaticSpine;
 import ini.cx3d.synapses.PhysicalSomaticSpine;
@@ -232,9 +232,9 @@ public class SomaElement extends CellElement {//ini.cx3d.swig.physics.SomaElemen
 
 	public Vector<NeuriteElement>  getNeuriteList() {
 		Vector<NeuriteElement> neuriteList = new Vector<NeuriteElement>();        
-		AbstractSequentialList<PhysicalCylinder> pcList = physical.getDaughters();
-		for (Iterator<PhysicalCylinder> element = pcList.iterator(); element.hasNext();) {
-			PhysicalCylinder pc = (PhysicalCylinder)element.next();
+		AbstractSequentialList<ini.cx3d.physics.interfaces.PhysicalCylinder> pcList = physical.getDaughters();
+		for (Iterator<ini.cx3d.physics.interfaces.PhysicalCylinder> element = pcList.iterator(); element.hasNext();) {
+			ini.cx3d.physics.interfaces.PhysicalCylinder pc = element.next();
 			neuriteList.add(pc.getNeuriteElement());
 		}        
 		return neuriteList ;

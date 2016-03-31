@@ -3,7 +3,7 @@ package ini.cx3d.physics.debug;
 
 import ini.cx3d.localBiology.CellElement;
 import ini.cx3d.localBiology.SomaElement;
-import ini.cx3d.physics.PhysicalCylinder;
+import ini.cx3d.physics.interfaces.PhysicalCylinder;
 import ini.cx3d.physics.interfaces.PhysicalSphere;
 import ini.cx3d.physics.interfaces.PhysicalObject;
 import ini.cx3d.swig.NativeStringBuilder;
@@ -269,9 +269,9 @@ public class PhysicalSphereDebug extends ini.cx3d.physics.PhysicalSphere {
     }
 
     @Override
-    public AbstractSequentialList<PhysicalCylinder> getDaughters() {
+    public AbstractSequentialList<ini.cx3d.physics.interfaces.PhysicalCylinder> getDaughters() {
         DebugUtil.logMethodCall("getDaughters", this, new Object[]{});
-        AbstractSequentialList<PhysicalCylinder> ret = super.getDaughters();
+        AbstractSequentialList<ini.cx3d.physics.interfaces.PhysicalCylinder> ret = super.getDaughters();
         DebugUtil.logMethodReturn("getDaughters", this, ret);
         return ret;
 

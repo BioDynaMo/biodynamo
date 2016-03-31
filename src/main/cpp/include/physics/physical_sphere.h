@@ -18,6 +18,15 @@ class CellElement;
 
 namespace physics {
 
+/**
+ * The embodiment of SomaElement. Contains
+ *
+ * The spherical coordinates (r, phi, theta) are defined as:
+ * r >= 0 is the distance from the origin to a given point P.
+ * 0 <= phi <= pi is the angle between the positive z-axis and the line formed between the origin and P.
+ * 0 <= theta < 2pi is the angle between the positive x-axis and the line from the origin
+ * to the P projected onto the xy-plane.
+ */
 class PhysicalSphere : public PhysicalObject {
  public:
   static std::shared_ptr<PhysicalSphere> create();

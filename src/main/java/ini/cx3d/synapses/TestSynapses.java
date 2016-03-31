@@ -27,7 +27,6 @@ import ini.cx3d.Param;
 import ini.cx3d.cells.Cell;
 import ini.cx3d.cells.CellFactory;
 import ini.cx3d.localBiology.NeuriteElement;
-import ini.cx3d.physics.PhysicalCylinder;
 import ini.cx3d.simulations.ECM;
 import ini.cx3d.simulations.Scheduler;
 
@@ -65,11 +64,11 @@ public class TestSynapses {
 		neurite_1.getPhysical().setDiameter(1.0);
 		neurite_1.getPhysicalCylinder().setDiameter(4.0);
 		neurite_1.setIsAnAxon(true);
-		PhysicalCylinder pc_1 = neurite_1.getPhysicalCylinder();
+		ini.cx3d.physics.interfaces.PhysicalCylinder pc_1 = neurite_1.getPhysicalCylinder();
 		NeuriteElement neurite_2 = cell_2.getSomaElement().extendNewNeurite(new double[] {0,0,11});
 		neurite_2.getPhysical().setDiameter(1.0);
 		neurite_2.getPhysicalCylinder().setDiameter(4.0);
-		PhysicalCylinder pc_2 = neurite_2.getPhysicalCylinder();
+		ini.cx3d.physics.interfaces.PhysicalCylinder pc_2 = neurite_2.getPhysicalCylinder();
 
 		// elongate 3 neurites
 		for (int i = 0; i < 45; i++) {

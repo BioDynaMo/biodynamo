@@ -33,10 +33,12 @@ import static ini.cx3d.utilities.Matrix.scalarMult;
 import static ini.cx3d.utilities.Matrix.subtract;
 import static ini.cx3d.utilities.Matrix.printlnLine;
 
+import java.util.AbstractSequentialList;
 import java.util.Vector;
 
 import ini.cx3d.Param;
-import ini.cx3d.physics.PhysicalCylinder;
+import ini.cx3d.physics.interfaces.PhysicalCylinder;
+import ini.cx3d.physics.interfaces.PhysicalNode;
 import ini.cx3d.simulations.ECM;
 import ini.cx3d.synapses.BiologicalBouton;
 import ini.cx3d.synapses.BiologicalSpine;
@@ -52,7 +54,7 @@ import ini.cx3d.utilities.Matrix;
  *
  */
 
-public class NeuriteElement extends CellElement {
+public class NeuriteElement extends CellElement2 {
 
 	/* The PhysicalObject this NeuriteElement is associated with.*/
 	private PhysicalCylinder physicalCylinder = null;
@@ -78,6 +80,7 @@ public class NeuriteElement extends CellElement {
 
 	public NeuriteElement() {
 		super();
+		ini.cx3d.swig.physics.NeuriteElement.registerJavaObject(this);
 		ecm.addNeuriteElement(this);
 	}
 
@@ -457,8 +460,9 @@ public class NeuriteElement extends CellElement {
 	public int synapseBetweenExistingBS(double probabilityToSynapse){
 		int synapseMade = 0;
 
-		for (Object o : physicalCylinder.getSoNode().getNeighbors()) {
-			ini.cx3d.physics.interfaces.PhysicalNode pn = (ini.cx3d.physics.interfaces.PhysicalNode) o;
+		AbstractSequentialList<PhysicalNode> neighbors = physicalCylinder.getSoNode().getNeighbors();
+		for (int i = 0; i < neighbors.size(); i++) {
+			ini.cx3d.physics.interfaces.PhysicalNode pn = neighbors.get(i);
 			// For all PhysicalObjects around
 			if(!pn.isAPhysicalObject()){
 				continue;
@@ -494,14 +498,14 @@ public class NeuriteElement extends CellElement {
 						continue inner;
 					// synapse only possible if these two excresscences are pointing toward each other
 					oo = scalarMult(1/distoo, oo); // normalize oo
-					if(	dot(oo,physicalCylinder.getUnitNormalVector( e1.getPositionOnPO())) > 0 &&
-							dot(oo,po.getUnitNormalVector( e2.getPositionOnPO())) < 0 )	
+					double[] e1Pos = e1.getPositionOnPO();
+					double[] e2Pos = e2.getPositionOnPO();
+					if(	dot(oo,physicalCylinder.getUnitNormalVector( new double[]{e1Pos[0], e1Pos[1], 0.0})) > 0 &&
+							dot(oo,po.getUnitNormalVector( new double[]{e2Pos[0], e2Pos[1], 0.0})) < 0 )
 					{
-
 						e1.synapseWith(e2, true);
 						synapseMade++;
 						continue ext; // if we made it, now we test the next one
-
 					}
 
 				}

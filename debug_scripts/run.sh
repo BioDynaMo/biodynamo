@@ -7,8 +7,8 @@
 #
 # ./debug_scripts/run.sh
 
-CLASS=PHYSICALSPHERE
-TEST=SmallNetworkTest
+CLASS=PHYSICALCYLINDER
+TEST=Figure_9Test
 
 replace() {
   #$1 file

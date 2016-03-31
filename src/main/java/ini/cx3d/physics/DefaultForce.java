@@ -22,7 +22,7 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 package ini.cx3d.physics;
 
 import static ini.cx3d.utilities.Matrix.*;
-
+import ini.cx3d.physics.interfaces.PhysicalCylinder;
 
 public class DefaultForce implements InterObjectForce{
 	

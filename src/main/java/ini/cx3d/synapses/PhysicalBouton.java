@@ -26,7 +26,7 @@ import static ini.cx3d.SimStateSerializationUtil.removeLastChar;
 import static ini.cx3d.utilities.Matrix.*;
 
 import ini.cx3d.localBiology.*;
-import ini.cx3d.physics.PhysicalCylinder;
+import ini.cx3d.physics.interfaces.PhysicalCylinder;
 import ini.cx3d.physics.factory.PhysicalBondFactory;
 
 import java.util.Objects;
@@ -99,6 +99,7 @@ public class PhysicalBouton extends Excrescence {
 			// super.po.addPhysicalBond(pb);
 			// ex.getPo().addPhysicalBond(pb);
 		}
+
 		// debugg :
 		System.out.println("PhysicalBouton: We made a synapse between "
 				+ this.type + " of "

@@ -302,7 +302,7 @@ public class PhysicalBond extends ini.cx3d.swig.physics.PhysicalBond implements 
 		double[] forceDirection = subtract(pointOnOtherPo, pointOnPo);
 		// 3'. If sliding along the other object is possible,
 		// only the component perpendicular to the xAxis of the other object is taken into account
-		if(Objects.equals(po, a) & slidingAllowed && otherPo instanceof PhysicalCylinder){
+		if(Objects.equals(po, a) & slidingAllowed && otherPo instanceof ini.cx3d.physics.interfaces.PhysicalCylinder){
 			PhysicalCylinder pc = (PhysicalCylinder) otherPo;
 			double projNorm = dot(forceDirection,otherPo.getXAxis());
 			double[] parallelComponent = scalarMult(projNorm, otherPo.getXAxis());
@@ -319,7 +319,7 @@ public class PhysicalBond extends ini.cx3d.swig.physics.PhysicalBond implements 
 				}
 			}else if(newPositionOnOtherPo[0] < -1){
 				ini.cx3d.physics.interfaces.PhysicalObject mo = pc.getMother();
-				if(mo instanceof PhysicalCylinder){
+				if(mo instanceof ini.cx3d.physics.interfaces.PhysicalCylinder){
 					PhysicalCylinder m = (PhysicalCylinder)mo;
 					exchangePhysicalObject(pc, m);
 //					newPositionOnOtherPo[0] = m.actualLength - (pc.actualLength-newPositionOnOtherPo[0]);
@@ -342,8 +342,8 @@ public class PhysicalBond extends ini.cx3d.swig.physics.PhysicalBond implements 
 
 		// 4. Return it
 		// TODO : cleaner way to to this....
-		if (po instanceof PhysicalCylinder) {
-			PhysicalCylinder pc = (PhysicalCylinder) po;
+		if (po instanceof ini.cx3d.physics.interfaces.PhysicalCylinder) {
+			ini.cx3d.physics.interfaces.PhysicalCylinder pc = (ini.cx3d.physics.interfaces.PhysicalCylinder) po;
 //			return new double[] {force[0], force[1], force[2], 1-(getPositionOnObjectInLocalCoord(po)[0]/pc.getActualLength()) };
 			double p = 1-(getPositionOnObjectInLocalCoord(po)[0]/pc.getActualLength());
 			if(p>0.8)

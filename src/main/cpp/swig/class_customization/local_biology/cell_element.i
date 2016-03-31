@@ -18,7 +18,7 @@
 
 %define %CellElement_cx3d_shared_ptr()
   %cx3d_shared_ptr(CellElement,
-                   ini/cx3d/localBiology/CellElement,
+                   ini/cx3d/localBiology/interfaces/CellElement,
                    cx3d::local_biology::CellElement);
 %enddef
 
@@ -26,14 +26,14 @@
   %java_defined_class(cx3d::local_biology::CellElement,
                       CellElement,
                       CellElement,
-                      ini.cx3d.localBiology.CellElement,
-                      ini/cx3d/localBiology/CellElement);
+                      ini.cx3d.localBiology.interfaces.CellElement,
+                      ini/cx3d/localBiology/interfaces/CellElement);
 %enddef
 
 %define %CellElement_stdlist()
   %stdlist_typemap(std::shared_ptr<cx3d::local_biology::CellElement>,
                    CellElement,
-                   ini.cx3d.localBiology.CellElement);
+                   ini.cx3d.localBiology.interfaces.CellElement);
 %enddef
 
 /**
