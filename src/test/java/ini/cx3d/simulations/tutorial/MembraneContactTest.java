@@ -28,6 +28,7 @@ import ini.cx3d.Param;
 import ini.cx3d.cells.Cell;
 import ini.cx3d.cells.CellFactory;
 import ini.cx3d.localBiology.AbstractLocalBiologyModule;
+import ini.cx3d.localBiology.LocalBiologyModule;
 import ini.cx3d.physics.factory.IntracellularSubstanceFactory;
 import ini.cx3d.simulations.ECM;
 import ini.cx3d.simulations.Scheduler;
@@ -69,18 +70,24 @@ public class MembraneContactTest extends BaseSimulationTest {
 	}
 }
 
-class MembraneContact extends AbstractLocalBiologyModule {
+class MembraneContact extends ini.cx3d.swig.biology.biology.AbstractLocalBiologyModuleBase {
 
-	public AbstractLocalBiologyModule getCopy() {
+	public MembraneContact(){
+		super();
+		ini.cx3d.swig.biology.AbstractLocalBiologyModule.registerJavaObject(this);
+		ini.cx3d.swig.biology.LocalBiologyModule.registerJavaObject(this);
+	}
+
+	public LocalBiologyModule getCopy() {
 		return new MembraneContact();
 	}
 
 	public void run() {		
-		ini.cx3d.physics.interfaces.PhysicalObject physical = super.cellElement.getPhysical();
+		ini.cx3d.physics.interfaces.PhysicalObject physical = getCellElement().getPhysical();
 		for (ini.cx3d.physics.interfaces.PhysicalObject o: physical.getPhysicalObjectsInContact()) {
 			if(o.getMembraneConcentration("A")>1){
 				physical.setColor(Param.YELLOW);
-				super.cellElement.cleanAllLocalBiologyModules();
+				getCellElement().cleanAllLocalBiologyModules();
 			}
 		}
 	}

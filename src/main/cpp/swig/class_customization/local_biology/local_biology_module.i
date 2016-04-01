@@ -28,36 +28,14 @@
                           LocalBiologyModule,
                           ini.cx3d.localBiology.LocalBiologyModule,
                           ini/cx3d/localBiology/LocalBiologyModule,
-                          public void run() {
-
-                          }
-                          public ini.cx3d.localBiology.interfaces.CellElement getCellElement() {
-                              return null;
-                          }
-                          public void setCellElement(ini.cx3d.localBiology.interfaces.CellElement cellElement) {
-
-                          }
-                          public boolean isCopiedWhenNeuriteBranches() {
-                            return false;
-                          }
-                          public boolean isCopiedWhenSomaDivides() {
-                              return false;
-                          }
-                          public boolean isCopiedWhenNeuriteExtendsFromSoma() {
-                              return false;
-                          }
-                          public boolean isDeletedAfterNeuriteHasBifurcated() {
-                              return false;
-                          }
-                          public NativeStringBuilder simStateToJson(NativeStringBuilder sb) {
-                              return null;
-                          });
+                          ;);
 %enddef
 
 %define %LocalBiologyModule_stdlist()
-  %stdlist_typemap(std::shared_ptr<cx3d::local_biology::LocalBiologyModule>,
-                   LocalBiologyModule,
-                   ini.cx3d.localBiology.LocalBiologyModule);
+  %stdlist_typemap_cross_module(std::shared_ptr<cx3d::local_biology::LocalBiologyModule>,
+                                LocalBiologyModule,
+                                ini.cx3d.localBiology.LocalBiologyModule,
+                                ini.cx3d.swig.biology.LocalBiologyModule);
 %enddef
 
 /**
@@ -66,5 +44,5 @@
 %LocalBiologyModule_cx3d_shared_ptr();
 %LocalBiologyModule_java();
 %LocalBiologyModule_stdlist();
-%typemap(javaimports) cx3d::local_biology::LocalBiologyModule "import ini.cx3d.swig.NativeStringBuilder;"
+%typemap(javaimports) cx3d::local_biology::LocalBiologyModule "import ini.cx3d.swig.NativeStringBuilder; import ini.cx3d.swig.physics.CellElement;"
 %typemap(javainterfaces) cx3d::local_biology::LocalBiologyModule "ini.cx3d.localBiology.LocalBiologyModule"

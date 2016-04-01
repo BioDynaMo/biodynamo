@@ -43,7 +43,7 @@ import java.util.Vector;
  * @author fredericzubler
  *
  */
-public class X_Bifurcation_Module extends ini.cx3d.swig.physics.LocalBiologyModule {
+public class X_Bifurcation_Module extends ini.cx3d.swig.biology.LocalBiologyModule {
 	
 	public static int nbrOfGC = 0;
 	

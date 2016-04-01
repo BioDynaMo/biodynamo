@@ -31,6 +31,7 @@ import ini.cx3d.Param;
 import ini.cx3d.cells.Cell;
 import ini.cx3d.cells.CellFactory;
 import ini.cx3d.localBiology.AbstractLocalBiologyModule;
+import ini.cx3d.localBiology.LocalBiologyModule;
 import ini.cx3d.localBiology.interfaces.CellElement;
 import ini.cx3d.localBiology.NeuriteElement;
 import ini.cx3d.localBiology.SomaElement;
@@ -82,19 +83,24 @@ public class IntracellularDiffusionTest extends BaseSimulationTest{
 		
 	}
 
-	private static class InternalSecretor extends AbstractLocalBiologyModule {
+	private static class InternalSecretor extends ini.cx3d.swig.biology.biology.AbstractLocalBiologyModuleBase {
 
+		public InternalSecretor(){
+			super();
+			ini.cx3d.swig.biology.AbstractLocalBiologyModule.registerJavaObject(this);
+			ini.cx3d.swig.biology.LocalBiologyModule.registerJavaObject(this);
+		}
 		// secretion rate (quantity/time)
 		private double secretionRate = 60;  
 		
 		// needed for copy in the cell in case of division
-		public AbstractLocalBiologyModule getCopy() {
+		public LocalBiologyModule getCopy() {
 			return new InternalSecretor();
 		}
 		
 		// method called at each time step: secretes tubulin in the extracellular space 
 		public void run() {
-			super.cellElement.getPhysical().modifyIntracellularQuantity(
+			getCellElement().getPhysical().modifyIntracellularQuantity(
 					"tubulin", secretionRate);
 		}
 
@@ -110,7 +116,7 @@ public class IntracellularDiffusionTest extends BaseSimulationTest{
 		}
 	}
 	
-	public static class GrowthCone extends AbstractLocalBiologyModule{
+	public static class GrowthCone extends ini.cx3d.swig.biology.biology.AbstractLocalBiologyModuleBase{
 		
 		// some parameters 
 		private static double speedFactor = 5000;	
@@ -118,14 +124,21 @@ public class IntracellularDiffusionTest extends BaseSimulationTest{
 		private static double bifurcationProba = 0.003;
 		// direction at previous time step:
 		private double[] previousDir;
+
+		public GrowthCone() {
+			super();
+			ini.cx3d.swig.biology.AbstractLocalBiologyModule.registerJavaObject(this);
+			ini.cx3d.swig.biology.LocalBiologyModule.registerJavaObject(this);
+		}
+
 		// initial direction is parallel to the cylinder axis
 		// therefore we overwrite this method from the superclass:
 		public void setCellElement(CellElement cellElement){
-			super.cellElement = cellElement;
+			super.setCellElement(cellElement);
 			this.previousDir = cellElement.getPhysical().getAxis();
 		}
 		// to ensure distribution in all terminal segments:
-		public AbstractLocalBiologyModule getCopy() {return new GrowthCone();}
+		public LocalBiologyModule getCopy() {return new GrowthCone();}
 
 		public boolean isCopiedWhenNeuriteBranches() {return true;}
 		
@@ -134,7 +147,7 @@ public class IntracellularDiffusionTest extends BaseSimulationTest{
 		// growth cone model
 		public void run() {
 			// getting the concentration and defining the speed
-			ini.cx3d.physics.interfaces.PhysicalObject cyl = super.cellElement.getPhysical();
+			ini.cx3d.physics.interfaces.PhysicalObject cyl = getCellElement().getPhysical();
 			double concentration = cyl.getIntracellularConcentration("tubulin");
 			double speed = concentration*speedFactor;
 			if(speed>100)  // can't be faster than 100
@@ -146,7 +159,7 @@ public class IntracellularDiffusionTest extends BaseSimulationTest{
 			cyl.modifyIntracellularQuantity("tubulin", -concentration*consumptionFactor);
 			// test for bifurcation
 			if(ECM.getRandomDouble()<bifurcationProba)
-				((NeuriteElement)(super.cellElement)).bifurcate();
+				((NeuriteElement)(getCellElement())).bifurcate();
 		}
 
 		@Override

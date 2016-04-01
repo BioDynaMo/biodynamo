@@ -194,7 +194,7 @@ template<class T> class list {
 
   %typemap(directorin, descriptor="Ljava/util/AbstractSequentialList;") std::list<CPP_TYPE>, std::list<CPP_TYPE>&, const std::list<CPP_TYPE>& %{
       *(std::list<CPP_TYPE> **)&j$1 = (std::list<CPP_TYPE>*) &$1;
-%}
+  %}
 
   %template(ListT_ ##TEMPLATE_SUFFIX) std::list<CPP_TYPE>;
   %template(ListIteratorCppT_ ##TEMPLATE_SUFFIX) cx3d::ListIteratorCpp<CPP_TYPE>;
@@ -202,4 +202,19 @@ template<class T> class list {
   // delete typemap to avoid ripple effects
   %typemap(jstype)  const CPP_TYPE &;
 
+%enddef
+
+/**
+ * Used for classes that are used across modules
+ * @see %define %stdlist_typemap
+ * usage example:
+ * %stdlist_typemap(std::shared_ptr<cx3d::spatial_organization::Tetrahedron<cx3d::physics::PhysicalNode>>,
+ *                  Tetrahedron,
+ *                  ini.cx3d.spatialOrganization.Tetrahedron
+ *                  ini.cx3d.swig.spatialOrganization.TetrahedronT_PhysicalNode);
+ */
+%define %stdlist_typemap_cross_module(CPP_TYPE, TEMPLATE_SUFFIX, JAVA_TYPE, SWIG_JAVA_TYPE)
+  %typemap(javaimports) std::list<CPP_TYPE>, std::list<CPP_TYPE>& "import "#SWIG_JAVA_TYPE";"
+  %typemap(javaimports) cx3d::ListIteratorCpp<CPP_TYPE> "import "#SWIG_JAVA_TYPE";"
+  %stdlist_typemap(CPP_TYPE, TEMPLATE_SUFFIX, JAVA_TYPE);
 %enddef

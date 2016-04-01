@@ -31,13 +31,13 @@ import ini.cx3d.localBiology.interfaces.CellElement;
  * @author fredericzubler
  *
  */
-public abstract class AbstractLocalBiologyModule extends ini.cx3d.swig.physics.LocalBiologyModule implements LocalBiologyModule{
+public abstract class AbstractLocalBiologyModule extends ini.cx3d.swig.biology.LocalBiologyModule implements LocalBiologyModule{
 
 	protected CellElement cellElement; // "protected" so subclasses can access it
 
 	public AbstractLocalBiologyModule(){
 		super();
-		ini.cx3d.swig.physics.LocalBiologyModule.registerJavaObject(this);
+		ini.cx3d.swig.biology.LocalBiologyModule.registerJavaObject(this);
 	}
 
 	@Override
@@ -66,7 +66,7 @@ public abstract class AbstractLocalBiologyModule extends ini.cx3d.swig.physics.L
 	
 	public boolean isDeletedAfterNeuriteHasBifurcated() {return false;}
 	
-	public abstract AbstractLocalBiologyModule getCopy();
+	public abstract LocalBiologyModule getCopy();
 	
 	public abstract void run();
 }

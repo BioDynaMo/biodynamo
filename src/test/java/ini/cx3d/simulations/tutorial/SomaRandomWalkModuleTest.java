@@ -29,6 +29,7 @@ import ini.cx3d.BaseSimulationTest;
 import ini.cx3d.cells.Cell;
 import ini.cx3d.cells.CellFactory;
 import ini.cx3d.localBiology.AbstractLocalBiologyModule;
+import ini.cx3d.localBiology.LocalBiologyModule;
 import ini.cx3d.simulations.ECM;
 import ini.cx3d.simulations.Scheduler;
 
@@ -51,11 +52,17 @@ public class SomaRandomWalkModuleTest extends BaseSimulationTest {
 	}
 }
 
-class SomaRandomWalkModule extends AbstractLocalBiologyModule {
+class SomaRandomWalkModule extends ini.cx3d.swig.biology.biology.AbstractLocalBiologyModuleBase {
 
 	double direction[] = randomNoise(1.0, 3); // initial direction
 
-	public AbstractLocalBiologyModule getCopy() {
+	public SomaRandomWalkModule() {
+		super();
+		ini.cx3d.swig.biology.AbstractLocalBiologyModule.registerJavaObject(this);
+		ini.cx3d.swig.biology.LocalBiologyModule.registerJavaObject(this);
+	}
+
+	public LocalBiologyModule getCopy() {
 		return new SomaRandomWalkModule();
 	}
 
@@ -64,7 +71,7 @@ class SomaRandomWalkModule extends AbstractLocalBiologyModule {
 		double[] deltaDirection = randomNoise(0.1, 3);
 		direction = add(direction, deltaDirection);
 		direction = normalize(direction);
-		super.cellElement.move(speed, direction);
+		getCellElement().move(speed, direction);
 	}
 	
 	public boolean isCopiedWhenSomaDivides() {

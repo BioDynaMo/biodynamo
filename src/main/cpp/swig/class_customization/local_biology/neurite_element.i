@@ -42,4 +42,4 @@
 %NeuriteElement_cx3d_shared_ptr();
 %NeuriteElement_java();
 %NeuriteElement_stdlist();
-%typemap(javaimports) cx3d::local_biology::NeuriteElement "import ini.cx3d.swig.NativeStringBuilder;"
+%typemap(javaimports) cx3d::local_biology::NeuriteElement "import ini.cx3d.swig.NativeStringBuilder; import ini.cx3d.swig.biology.LocalBiologyModule;"

@@ -31,9 +31,10 @@
 %enddef
 
 %define %CellElement_stdlist()
-  %stdlist_typemap(std::shared_ptr<cx3d::local_biology::CellElement>,
-                   CellElement,
-                   ini.cx3d.localBiology.interfaces.CellElement);
+  %stdlist_typemap_cross_module(std::shared_ptr<cx3d::local_biology::CellElement>,
+                                CellElement,
+                                ini.cx3d.localBiology.interfaces.CellElement,
+                                ini.cx3d.swig.physics.CellElement);
 %enddef
 
 /**

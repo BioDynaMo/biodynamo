@@ -31,6 +31,7 @@ import ini.cx3d.Param;
 import ini.cx3d.cells.Cell;
 import ini.cx3d.cells.CellFactory;
 import ini.cx3d.localBiology.AbstractLocalBiologyModule;
+import ini.cx3d.localBiology.LocalBiologyModule;
 import ini.cx3d.physics.factory.SubstanceFactory;
 import ini.cx3d.simulations.ECM;
 import ini.cx3d.simulations.Scheduler;
@@ -86,20 +87,23 @@ public class SomaClusteringTest extends BaseSimulationTest {
     }
 }
 
-class SomaClustering extends AbstractLocalBiologyModule {
+class SomaClustering extends ini.cx3d.swig.biology.biology.AbstractLocalBiologyModuleBase {
 
     private String substanceID;
 
     public SomaClustering(String substanceID) {
+        super();
+        ini.cx3d.swig.biology.AbstractLocalBiologyModule.registerJavaObject(this);
+        ini.cx3d.swig.biology.LocalBiologyModule.registerJavaObject(this);
         this.substanceID = substanceID;
     }
 
-    public AbstractLocalBiologyModule getCopy() {
+    public LocalBiologyModule getCopy() {
         return new SomaClustering(substanceID);
     }
 
     public void run() {
-        ini.cx3d.physics.interfaces.PhysicalObject physical = super.cellElement.getPhysical();
+        ini.cx3d.physics.interfaces.PhysicalObject physical = getCellElement().getPhysical();
         // move
         double speed = 100;
         double[] grad = physical.getExtracellularGradient(substanceID);

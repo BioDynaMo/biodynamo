@@ -31,6 +31,7 @@ import ini.cx3d.Param;
 import ini.cx3d.cells.Cell;
 import ini.cx3d.cells.CellFactory;
 import ini.cx3d.localBiology.AbstractLocalBiologyModule;
+import ini.cx3d.localBiology.LocalBiologyModule;
 import ini.cx3d.localBiology.interfaces.CellElement;
 import ini.cx3d.localBiology.NeuriteElement;
 import ini.cx3d.physics.factory.SubstanceFactory;
@@ -69,7 +70,7 @@ public class NeuriteChemoAttractionTest extends BaseSimulationTest {
 	}
 }
 
-class NeuriteChemoAttraction extends AbstractLocalBiologyModule {
+class NeuriteChemoAttraction extends ini.cx3d.swig.biology.biology.AbstractLocalBiologyModuleBase {
 
 
 	static ECM ecm = ECM.getInstance();
@@ -81,10 +82,16 @@ class NeuriteChemoAttraction extends AbstractLocalBiologyModule {
 	private double branchingFactor = 0.005;
 	
 	public NeuriteChemoAttraction(String substanceID) {
+		super();
+		ini.cx3d.swig.biology.AbstractLocalBiologyModule.registerJavaObject(this);
+		ini.cx3d.swig.biology.LocalBiologyModule.registerJavaObject(this);
 		this.substanceID = substanceID;
 	}
 	
 	public NeuriteChemoAttraction(String substanceID, double branchingFactor) {
+		super();
+		ini.cx3d.swig.biology.AbstractLocalBiologyModule.registerJavaObject(this);
+		ini.cx3d.swig.biology.LocalBiologyModule.registerJavaObject(this);
 		this.substanceID = substanceID;
 		this.branchingFactor = branchingFactor;
 	}
@@ -107,12 +114,12 @@ class NeuriteChemoAttraction extends AbstractLocalBiologyModule {
 		return true;
 	}
 	
-	public AbstractLocalBiologyModule getCopy() {
+	public LocalBiologyModule getCopy() {
 		return new NeuriteChemoAttraction(substanceID);
 	}
 
 	public void run() {		
-		ini.cx3d.physics.interfaces.PhysicalObject physical = super.cellElement.getPhysical();
+		ini.cx3d.physics.interfaces.PhysicalObject physical = getCellElement().getPhysical();
 		double concentration = physical.getExtracellularConcentration(substanceID);
 		double[] grad = physical.getExtracellularGradient(substanceID);
 		
@@ -135,7 +142,7 @@ class NeuriteChemoAttraction extends AbstractLocalBiologyModule {
 
 		// 2) branching based on concentration:
 		if(ecm.getRandomDouble()<concentration*branchingFactor){
-			((NeuriteElement)cellElement).bifurcate();
+			((NeuriteElement)getCellElement()).bifurcate();
 		}
 	}
 
