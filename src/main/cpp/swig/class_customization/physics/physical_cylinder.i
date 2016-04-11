@@ -13,6 +13,7 @@
 
 %include "util.i"
 %include "cx3d_shared_ptr.i"
+%include "std_list_typemap.i"
 
 %define %PhysicalCylinder_cx3d_shared_ptr()
   %cx3d_shared_ptr(PhysicalCylinder,
@@ -42,12 +43,13 @@
 %enddef
 
 %define %PhysicalCylinder_stdarray_array_marshalling(SWIG_MODULE, SIZE)
-  %stdarray_array_marshalling(SWIG_MODULE,
-                              std::shared_ptr<cx3d::physics::PhysicalCylinder>,
-                              shared_ptr_PhysicalCylinder_##SIZE,
-                              ini.cx3d.physics.interfaces.PhysicalCylinder,
-                              Lini/cx3d/physics/interfaces/PhysicalCylinder;,
-                              SIZE);
+  %stdarray_array_marshalling_cross_module(SWIG_MODULE,
+                                           std::shared_ptr<cx3d::physics::PhysicalCylinder>,
+                                           shared_ptr_PhysicalCylinder_##SIZE,
+                                           ini.cx3d.physics.interfaces.PhysicalCylinder,
+                                           Lini/cx3d/physics/interfaces/PhysicalCylinder;,
+                                           SIZE,
+                                           ini.cx3d.swig.physics.PhysicalCylinder);
 %enddef
 
 /**
@@ -66,9 +68,14 @@
   %setJavaDebugSwitch(PhysicalCylinder, false);
 #endif
 
-%typemap(javaimports) cx3d::physics::PhysicalCylinder "import ini.cx3d.swig.NativeStringBuilder;"
+%typemap(javaimports) cx3d::physics::PhysicalCylinder %{
+  import ini.cx3d.swig.NativeStringBuilder;
+  import ini.cx3d.swig.biology.CellElement;
+  import ini.cx3d.swig.biology.NeuriteElement;
+%}
 %typemap(javainterfaces) cx3d::physics::PhysicalCylinder "ini.cx3d.physics.interfaces.PhysicalCylinder"
-%stdlist_typemap(std::shared_ptr<cx3d::physics::PhysicalCylinder>,
-                 PhysicalCylinder,
-                 ini.cx3d.physics.interfaces.PhysicalCylinder);
+%stdlist_typemap_cross_module(std::shared_ptr<cx3d::physics::PhysicalCylinder>,
+                              PhysicalCylinder,
+                              ini.cx3d.physics.interfaces.PhysicalCylinder,
+                              ini.cx3d.swig.physics.PhysicalCylinder);
 %PhysicalCylinder_stdarray_array_marshalling(physics, 2);

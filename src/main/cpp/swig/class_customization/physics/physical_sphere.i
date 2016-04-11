@@ -57,5 +57,9 @@
   %setJavaDebugSwitch(PhysicalSphere, false);
 #endif
 
-%typemap(javaimports) cx3d::physics::PhysicalSphere "import ini.cx3d.swig.NativeStringBuilder;"
+%typemap(javaimports) cx3d::physics::PhysicalSphere %{
+  import ini.cx3d.swig.NativeStringBuilder;
+  import ini.cx3d.swig.biology.CellElement;
+  import ini.cx3d.swig.biology.SomaElement;
+%}
 %typemap(javainterfaces) cx3d::physics::PhysicalSphere "ini.cx3d.physics.interfaces.PhysicalSphere"

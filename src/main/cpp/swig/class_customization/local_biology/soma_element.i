@@ -31,9 +31,10 @@
 %enddef
 
 %define %SomaElement_stdlist()
-  %stdlist_typemap(std::shared_ptr<cx3d::local_biology::SomaElement>,
-                   SomaElement,
-                   ini.cx3d.localBiology.SomaElement);
+  %stdlist_typemap_cross_module(std::shared_ptr<cx3d::local_biology::SomaElement>,
+                                SomaElement,
+                                ini.cx3d.localBiology.SomaElement,
+                                ini.cx3d.swig.biology.SomaElement);
 %enddef
 
 /**

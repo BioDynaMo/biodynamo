@@ -45,7 +45,8 @@ JAVA_LOAD_NATIVE_LIBRARY(cx3d_physics);
 %double_stdarray_array_marshalling(physics, 2);
 %double_stdarray_array_marshalling(physics, 3);
 %double_stdarray_array_marshalling(physics, 4);
-%pragma(java) jniclassimports="import ini.cx3d.swig.NativeStringBuilder; import ini.cx3d.swig.spatialOrganization.SpaceNodeT_PhysicalNode; import ini.cx3d.swig.biology.LocalBiologyModule;"
+%pragma(java) jniclassimports="import ini.cx3d.swig.NativeStringBuilder; import ini.cx3d.swig.spatialOrganization.SpaceNodeT_PhysicalNode; import ini.cx3d.swig.biology.LocalBiologyModule;
+import ini.cx3d.swig.biology.CellElement;"
 
 // class modifications
 %include "class_customization/physics/substance.i"
@@ -84,7 +85,7 @@ JAVA_LOAD_NATIVE_LIBRARY(cx3d_physics);
 %include "physics/inter_object_force.h"
 %include "physics/default_force.h"
 %include "synapse/excrescence.h"
-%include "local_biology/cell_element.h"
-%include "local_biology/soma_element.h"
-%include "local_biology/neurite_element.h"
+// %include "local_biology/cell_element.h"
+// %include "local_biology/soma_element.h"
+// %include "local_biology/neurite_element.h"
 %include "param.h"

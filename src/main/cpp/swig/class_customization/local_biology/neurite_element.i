@@ -31,9 +31,10 @@
 %enddef
 
 %define %NeuriteElement_stdlist()
-  %stdlist_typemap(std::shared_ptr<cx3d::local_biology::NeuriteElement>,
-                   NeuriteElement,
-                   ini.cx3d.localBiology.NeuriteElement);
+  %stdlist_typemap_cross_module(std::shared_ptr<cx3d::local_biology::NeuriteElement>,
+                                NeuriteElement,
+                                ini.cx3d.localBiology.NeuriteElement,
+                                ini.cx3d.swig.biology.NeuriteElement);
 %enddef
 
 /**
@@ -42,4 +43,9 @@
 %NeuriteElement_cx3d_shared_ptr();
 %NeuriteElement_java();
 %NeuriteElement_stdlist();
-%typemap(javaimports) cx3d::local_biology::NeuriteElement "import ini.cx3d.swig.NativeStringBuilder; import ini.cx3d.swig.biology.LocalBiologyModule;"
+%typemap(javaimports) cx3d::local_biology::NeuriteElement %{
+  import ini.cx3d.swig.NativeStringBuilder;
+  import ini.cx3d.swig.biology.LocalBiologyModule;
+  import ini.cx3d.swig.physics.PhysicalObject;
+  import ini.cx3d.swig.physics.PhysicalCylinder;
+%}

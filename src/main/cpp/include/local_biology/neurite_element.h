@@ -38,20 +38,20 @@ class NeuriteElement : public CellElement {
         "NeuriteElement::getPhysicalCylinder must never be called - Java must provide implementation at this point");
   }
 
-  virtual void setPhysical(const std::shared_ptr<physics::PhysicalObject>& pc) {
+  virtual void setPhysical(const std::shared_ptr<physics::PhysicalObject>& pc) override {
     throw std::logic_error(
         "NeuriteElement::setPhysicalCylinder must never be called - Java must provide implementation at this point");
   }
 
-  virtual std::list<std::shared_ptr<LocalBiologyModule> > getLocalBiologyModulesList() {
-    throw std::logic_error(
-        "NeuriteElement::getLocalBiologyModulesList must never be called - Java must provide implementation at this point");
-  }
-
-  virtual void addLocalBiologyModule(const std::shared_ptr<LocalBiologyModule>& module) {
-    throw std::logic_error(
-        "NeuriteElement::addLocalBiologyModule must never be called - Java must provide implementation at this point");
-  }
+//  virtual std::list<std::shared_ptr<LocalBiologyModule> > getLocalBiologyModulesList() override {
+//    throw std::logic_error(
+//        "NeuriteElement::getLocalBiologyModulesList must never be called - Java must provide implementation at this point");
+//  }
+//
+//  virtual void addLocalBiologyModule(const std::shared_ptr<LocalBiologyModule>& module) override {
+//    throw std::logic_error(
+//        "NeuriteElement::addLocalBiologyModule must never be called - Java must provide implementation at this point");
+//  }
 };
 
 }  // namespace local_biology

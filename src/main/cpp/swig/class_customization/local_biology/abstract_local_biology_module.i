@@ -16,7 +16,7 @@
 %include "std_list_typemap.i"
 %include "cx3d_shared_ptr.i"
 
-%define %PO_hybrid(FULL_CPP_TYPE, JAVA_PROXY_CLASS_NAME, CLASS_NAME,
+%define %ALB_hybrid(FULL_CPP_TYPE, JAVA_PROXY_CLASS_NAME, CLASS_NAME,
                               JAVA_TYPE, JNI_TYPE, ADDITIONAL_CODE, USE_NATIVE)
   // enable cross language polymorphism for this C++ type
   %feature("director") FULL_CPP_TYPE;
@@ -109,7 +109,7 @@
 %enddef
 
 %define %AbstractLocalBiologyModule_hybrid(USE_NATIVE)
-  %PO_hybrid(cx3d::local_biology::AbstractLocalBiologyModule,
+  %ALB_hybrid(cx3d::local_biology::AbstractLocalBiologyModule,
              AbstractLocalBiologyModule,
              AbstractLocalBiologyModule,
              ini.cx3d.localBiology.LocalBiologyModule,
@@ -128,7 +128,7 @@
   %typemap(javaimports) cx3d::local_biology::AbstractLocalBiologyModule %{
     import ini.cx3d.swig.NativeStringBuilder;
     import ini.cx3d.swig.biology.LocalBiologyModule;
-    import ini.cx3d.swig.physics.CellElement;
+    import ini.cx3d.swig.biology.CellElement;
   %}
 %enddef
 

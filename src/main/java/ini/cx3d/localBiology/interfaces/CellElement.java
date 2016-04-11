@@ -1,5 +1,6 @@
 package ini.cx3d.localBiology.interfaces;
 
+import ini.cx3d.SimStateSerializable;
 import ini.cx3d.cells.Cell;
 import ini.cx3d.localBiology.LocalBiologyModule;
 
@@ -9,7 +10,7 @@ import java.util.Vector;
 /**
  * Created by lukas on 23.03.16.
  */
-public interface CellElement {
+public interface CellElement extends SimStateSerializable {
 	/** Adds the argument to the <code>LocalBiologyModule</code> list, and registers this as it's
 	 * <code>CellElements</code>.*/
 	void addLocalBiologyModule(LocalBiologyModule m);

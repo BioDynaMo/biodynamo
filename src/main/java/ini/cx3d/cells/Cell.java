@@ -45,7 +45,7 @@ import java.util.Vector;
  * @author sabina & RJD & fredericzubler
  *
  */
-public class Cell implements SimStateSerializable {
+public class Cell extends ini.cx3d.swig.biology.Cell implements SimStateSerializable {
 
 	/* Unique identification for this Cell instance. */
 	private int ID = 0;
@@ -99,9 +99,14 @@ public class Cell implements SimStateSerializable {
 	 * Every cell is identified by a unique cellID number.
 	 */
 	public Cell() {
+		registerJavaObject(this);
 		idCounter++;
 		ID = idCounter;
 		ecm.addCell(this);
+	}
+
+	public String toString(){
+		return "Cell";
 	}
 
 	/**

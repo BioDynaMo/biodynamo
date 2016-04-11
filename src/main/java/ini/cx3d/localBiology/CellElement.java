@@ -26,7 +26,7 @@ package ini.cx3d.localBiology;
 import ini.cx3d.SimStateSerializable;
 import ini.cx3d.cells.Cell;
 import ini.cx3d.simulations.ECM;
-import ini.cx3d.swig.physics.ListT_LocalBiologyModule;
+import ini.cx3d.swig.biology.ListT_LocalBiologyModule;
 
 import java.util.AbstractSequentialList;
 import java.util.LinkedList;
@@ -42,7 +42,7 @@ import static ini.cx3d.SimStateSerializationUtil.unorderedCollection;
  * @author fredericzubler
  *
  */
-public abstract class CellElement extends ini.cx3d.swig.physics.SomaElement implements SimStateSerializable, ini.cx3d.localBiology.interfaces.CellElement {
+public abstract class CellElement extends ini.cx3d.swig.biology.SomaElement implements SimStateSerializable, ini.cx3d.localBiology.interfaces.CellElement {
 
 	/* Unique identification for this CellElement instance.*/
 	int ID = 0;
@@ -69,7 +69,7 @@ public abstract class CellElement extends ini.cx3d.swig.physics.SomaElement impl
 
 	/** Simple constructor.*/
 	public CellElement() {
-		ini.cx3d.swig.physics.CellElement.registerJavaObject(this);
+		ini.cx3d.swig.biology.CellElement.registerJavaObject(this);
 		this.ID =  idCounter.incrementAndGet();
 	}
 
@@ -84,7 +84,7 @@ public abstract class CellElement extends ini.cx3d.swig.physics.SomaElement impl
 
 	/* Calls the run() method in all the <code>SubElements</code>. 
 	 * Is done automatically during the simulation, and thus doesn't have to be called by the user*/ 
-	protected void runLocalBiologyModules(){
+	public void runLocalBiologyModules(){
 		//This type of loop because the removal of a SubElements from the subElementsList
 		// could cause a ConcurrentModificationException.
 		for (int i = 0; i < localBiologyModulesList.size(); i++) {

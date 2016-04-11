@@ -43,7 +43,11 @@ import java.util.Vector;
  * @author fredericzubler
  *
  */
-public class SomaElement extends CellElement {//ini.cx3d.swig.physics.SomaElement {
+public class SomaElement extends ini.cx3d.swig.biology.biology.SomaElementBase {
+
+	static {
+		ini.cx3d.swig.biology.CellElement.setECM(ECM.getInstance());
+	}
 
 	/* The PhysicalSphere associated with this SomaElement.*/
 	private ini.cx3d.physics.interfaces.PhysicalSphere physical = null ;
@@ -65,8 +69,9 @@ public class SomaElement extends CellElement {//ini.cx3d.swig.physics.SomaElemen
 	// *************************************************************************************
 	public SomaElement(){
 		super();
-		ini.cx3d.swig.physics.SomaElement.registerJavaObject(this);
-		ecm.addSomaElement(this);
+		ini.cx3d.swig.biology.CellElement.registerJavaObject(this);
+		ini.cx3d.swig.biology.SomaElement.registerJavaObject(this);
+		ECM.getInstance().addSomaElement(this);
 	}
 
 	public SomaElement divide(double volumeRatio, double phi, double theta){
@@ -75,7 +80,7 @@ public class SomaElement extends CellElement {//ini.cx3d.swig.physics.SomaElemen
 		newSoma.setPhysical(pc);   // this method also sets the callback
 
 		// Copy of the local biological modules:
-		for (LocalBiologyModule m : super.localBiologyModulesList) {
+		for (LocalBiologyModule m : getLocalBiologyModulesList()) {
 			if(m.isCopiedWhenSomaDivides()){
 				LocalBiologyModule m2 = m.getCopy();
 				newSoma.addLocalBiologyModule(m2);
@@ -157,9 +162,9 @@ public class SomaElement extends CellElement {//ini.cx3d.swig.physics.SomaElemen
 		// setting diameter for new branch
 		pc.setDiameter(diameter, true);
 		// setting ref for Cell
-		ne.setCell(this.cell);
+		ne.setCell(getCell());
 		// copy of the biological modules
-		for (LocalBiologyModule module : localBiologyModulesList) {
+		for (LocalBiologyModule module : getLocalBiologyModulesList()) {
 			if(module.isCopiedWhenNeuriteExtendsFromSoma())
 				ne.addLocalBiologyModule(module.getCopy());
 		}

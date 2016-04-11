@@ -54,7 +54,11 @@ import ini.cx3d.utilities.Matrix;
  *
  */
 
-public class NeuriteElement extends CellElement2 {
+public class NeuriteElement extends ini.cx3d.swig.biology.biology.NeuriteElementBase {
+
+	static {
+		ini.cx3d.swig.biology.CellElement.setECM(ECM.getInstance());
+	}
 
 	/* The PhysicalObject this NeuriteElement is associated with.*/
 	private PhysicalCylinder physicalCylinder = null;
@@ -80,8 +84,9 @@ public class NeuriteElement extends CellElement2 {
 
 	public NeuriteElement() {
 		super();
-		ini.cx3d.swig.physics.NeuriteElement.registerJavaObject(this);
-		ecm.addNeuriteElement(this);
+		ini.cx3d.swig.biology.CellElement.registerJavaObject(this);
+		ini.cx3d.swig.biology.NeuriteElement.registerJavaObject(this);
+		ECM.getInstance().addNeuriteElement(this);
 	}
 
 	/** Note : doesn't copy the <code>LocalBiologyModule</code> list 
@@ -89,7 +94,7 @@ public class NeuriteElement extends CellElement2 {
 	public NeuriteElement getCopy() {
 		NeuriteElement ne = new NeuriteElement();
 		ne.isAnAxon = isAnAxon;
-		ne.cell = this.cell;
+		ne.setCell(getCell());
 		return ne;
 	}
 
@@ -98,7 +103,7 @@ public class NeuriteElement extends CellElement2 {
 	 * It is called by the physicalObject associated with this neuriteElement, when it is deleted.*/
 	public void removeYourself(){
 		// remove from the NeuriteElementList in ECM
-		ecm.removeNeuriteElement(this);
+		ECM.getInstance().removeNeuriteElement(this);
 		// Yet the SomaElement doesn't contain a list of the NeuriteElements
 		// but if it does in the future, we'll have to remove this NeuriteElement from there also.
 	}
@@ -166,7 +171,7 @@ public class NeuriteElement extends CellElement2 {
 		// TODO : Caution : doesn't change the value distally on the main branch
 
 		// Copy of the local biological modules:
-		for (LocalBiologyModule m : super.localBiologyModulesList) {
+		for (LocalBiologyModule m : getLocalBiologyModulesList()) {
 			if(m.isCopiedWhenNeuriteBranches()){
 				LocalBiologyModule m2 = m.getCopy();
 				ne.addLocalBiologyModule(m2);
@@ -200,7 +205,6 @@ public class NeuriteElement extends CellElement2 {
 
 	/**
 	 * Makes a side branch, i.e. splits this cylinder into two and puts a daughter right at the proximal half.
-	 * @param diameter of the side branch
 	 * @return
 	 */
 	public NeuriteElement branch() {
@@ -275,8 +279,8 @@ public class NeuriteElement extends CellElement2 {
 		pc2.setBranchOrder(physicalCylinder.getBranchOrder() + 1);
 
 		// 4) the local biological modules :
-		for (int i = 0; i<super.localBiologyModulesList.size(); i++) {
-			LocalBiologyModule m = super.localBiologyModulesList.get(i);
+		for (int i = 0; i<getLocalBiologyModulesList().size(); i++) {
+			LocalBiologyModule m = getLocalBiologyModulesList().get(i);
 			// copy...
 			if(m.isCopiedWhenNeuriteBranches()){
 				// ...for the first neurite
@@ -288,7 +292,7 @@ public class NeuriteElement extends CellElement2 {
 			}
 			// and remove
 			if(m.isDeletedAfterNeuriteHasBifurcated()){
-				super.localBiologyModulesList.remove(m);
+				removeLocalBiologyModule(m);
 			}
 		}
 		return new NeuriteElement[] {ne1, ne2};

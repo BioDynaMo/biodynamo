@@ -3,6 +3,7 @@
 
 #include <list>
 #include <array>
+#include <vector>
 #include <string>
 #include <sstream>
 #include <iomanip>
@@ -44,25 +45,22 @@ class SimStateSerializationUtil {
   }
 
   static StringBuilder& keyValue(StringBuilder& sb, string key, double value) {
-    return SimStateSerializationUtil::keyValue(
-        sb, key, SimStateSerializationUtil::doubleToString(value), false);
+    return SimStateSerializationUtil::keyValue(sb, key, SimStateSerializationUtil::doubleToString(value), false);
   }
 
   static StringBuilder& keyValue(StringBuilder& sb, string key, int value) {
-    return SimStateSerializationUtil::keyValue(sb, key, std::to_string(value),
-                                               false);
+    return SimStateSerializationUtil::keyValue(sb, key, std::to_string(value), false);
   }
 
   static StringBuilder& keyValue(StringBuilder& sb, string key, std::size_t value) {
-      return SimStateSerializationUtil::keyValue(sb, key, std::to_string(value), false);
-    }
+    return SimStateSerializationUtil::keyValue(sb, key, std::to_string(value), false);
+  }
 
   static StringBuilder& keyValue(StringBuilder& sb, string key, bool value) {
     return SimStateSerializationUtil::keyValue(sb, key, value ? "true" : "false", false);
   }
 
-  static StringBuilder& keyValue(StringBuilder& sb, string key, string value,
-                                 bool wrap_with_quotes) {
+  static StringBuilder& keyValue(StringBuilder& sb, string key, string value, bool wrap_with_quotes) {
     SimStateSerializationUtil::key(sb, key);
     if (wrap_with_quotes) {
       sb.append("\"");
@@ -75,10 +73,9 @@ class SimStateSerializationUtil {
     return sb;
   }
 
-  static StringBuilder& keyValue(StringBuilder& sb, string key,
-                                 const std::shared_ptr<SimStateSerializable>& value) {
+  static StringBuilder& keyValue(StringBuilder& sb, string key, const std::shared_ptr<SimStateSerializable>& value) {
     SimStateSerializationUtil::key(sb, key);
-    if(value.get() != nullptr) {
+    if (value.get() != nullptr) {
       value->simStateToJson(sb);
     } else {
       sb.append("null");
@@ -88,8 +85,7 @@ class SimStateSerializationUtil {
   }
 
   template<std::size_t N>
-  static StringBuilder& keyValue(StringBuilder& sb, string key,
-                                 const array<double, N>& vector) {
+  static StringBuilder& keyValue(StringBuilder& sb, string key, const array<double, N>& vector) {
     SimStateSerializationUtil::key(sb, key).append("[");
     for (double value : vector) {
       sb.append(SimStateSerializationUtil::doubleToString(value)).append(",");
@@ -118,7 +114,7 @@ class SimStateSerializationUtil {
     return sb;
   }
 
-  static std::string colorToHexString(uint32_t value){
+  static std::string colorToHexString(uint32_t value) {
     // alpha value was not considered on Java side -> remove here
     uint32_t rgb = value & 0x00ffffff;
     stringstream stream;
@@ -141,7 +137,6 @@ class SimStateSerializationUtil {
     return sb;
   }
 
-
   template<class T>
   static StringBuilder& unorderedCollection(StringBuilder& sb, const string& key,
                                             const std::list<std::shared_ptr<T> >& elements) {
@@ -156,6 +151,32 @@ class SimStateSerializationUtil {
   template<class T>
   static StringBuilder& orderedCollection(StringBuilder& sb, const string& key,
                                           const std::list<std::shared_ptr<T> >& elements) {
+    SimStateSerializationUtil::key(sb, key).append("[");
+    for (auto el : elements) {
+      el->simStateToJson(sb);
+      sb.append(",");
+    }
+    if (!elements.empty()) {
+      removeLastChar(sb);
+    }
+    sb.append("],");
+    return sb;
+  }
+
+  template<class T>
+  static StringBuilder& unorderedCollection(StringBuilder& sb, const string& key,
+                                            const std::vector<std::shared_ptr<T> >& elements) {
+    //simple implementation of unorderedCollection did not work
+    //for now forward call to ordered collection (position of an element matters in equality comparisons)
+    //if true position invariance in a collection is needed implement a more sophisticated solution
+    //e.g. use object instead of array with key = hash(value) -> json string has to be traversed a second time after
+    //build
+    return orderedCollection(sb, key, elements);
+  }
+
+  template<class T>
+  static StringBuilder& orderedCollection(StringBuilder& sb, const string& key,
+                                          const std::vector<std::shared_ptr<T> >& elements) {
     SimStateSerializationUtil::key(sb, key).append("[");
     for (auto el : elements) {
       el->simStateToJson(sb);

@@ -26,7 +26,8 @@ package ini.cx3d.localBiology;
 import ini.cx3d.SimStateSerializable;
 import ini.cx3d.cells.Cell;
 import ini.cx3d.simulations.ECM;
-import ini.cx3d.swig.physics.ListT_LocalBiologyModule;
+import ini.cx3d.swig.biology.ListT_LocalBiologyModule;
+import ini.cx3d.swig.biology.biology;
 
 import java.util.AbstractSequentialList;
 import java.util.LinkedList;
@@ -42,7 +43,7 @@ import static ini.cx3d.SimStateSerializationUtil.unorderedCollection;
  * @author fredericzubler
  *
  */
-public abstract class CellElement2 extends ini.cx3d.swig.physics.NeuriteElement implements SimStateSerializable, ini.cx3d.localBiology.interfaces.CellElement {
+public abstract class CellElement2 extends ini.cx3d.swig.biology.NeuriteElement implements SimStateSerializable, ini.cx3d.localBiology.interfaces.CellElement {
 
 	/* Unique identification for this CellElement instance.*/
 	int ID = 0;
@@ -69,7 +70,7 @@ public abstract class CellElement2 extends ini.cx3d.swig.physics.NeuriteElement 
 
 	/** Simple constructor.*/
 	public CellElement2() {
-		ini.cx3d.swig.physics.CellElement.registerJavaObject(this);
+		ini.cx3d.swig.biology.CellElement.registerJavaObject(this);
 		this.ID =  CellElement.idCounter.incrementAndGet();
 	}
 
@@ -84,7 +85,7 @@ public abstract class CellElement2 extends ini.cx3d.swig.physics.NeuriteElement 
 
 	/* Calls the run() method in all the <code>SubElements</code>. 
 	 * Is done automatically during the simulation, and thus doesn't have to be called by the user*/ 
-	protected void runLocalBiologyModules(){
+	public void runLocalBiologyModules(){
 		//This type of loop because the removal of a SubElements from the subElementsList
 		// could cause a ConcurrentModificationException.
 		for (int i = 0; i < localBiologyModulesList.size(); i++) {
@@ -109,7 +110,7 @@ public abstract class CellElement2 extends ini.cx3d.swig.physics.NeuriteElement 
 		localBiologyModulesList.clear();
 	}
 
-	/** Returns the localBiologyModule List (not a copy).*/
+	/** Returns the localBiologyModule Listto (not a copy).*/
 	public AbstractSequentialList<LocalBiologyModule> getLocalBiologyModulesList() {
 		return localBiologyModulesList;
 	}
