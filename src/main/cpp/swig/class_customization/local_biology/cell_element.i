@@ -45,12 +45,10 @@
 
 #ifdef CELLELEMENT_NATIVE
     %pragma(java) modulecode=%{
-      static public abstract class SomaElementBase extends ini.cx3d.swig.biology.SomaElement {}
       static public abstract class NeuriteElementBase extends ini.cx3d.swig.biology.NeuriteElement {}
     %}
 #else
     %pragma(java) modulecode=%{
-      static public abstract class SomaElementBase extends ini.cx3d.localBiology.CellElement {}
       static public abstract class NeuriteElementBase extends ini.cx3d.localBiology.CellElement2 {}
     %}
 #endif

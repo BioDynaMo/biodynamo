@@ -38,7 +38,6 @@ import ini.cx3d.Param;
 import ini.cx3d.cells.Cell;
 import ini.cx3d.cells.CellFactory;
 import ini.cx3d.localBiology.interfaces.CellElement;
-import ini.cx3d.localBiology.SomaElement;
 import ini.cx3d.physics.factory.PhysicalCylinderFactory;
 import ini.cx3d.physics.factory.PhysicalObjectFactory;
 import ini.cx3d.physics.factory.PhysicalSphereFactory;
@@ -71,7 +70,7 @@ public class PhysicalSphere extends physics.PhysicalSphereBase implements ini.cx
 
 
 	/* Local biology object associated with this PhysicalSphere.*/
-	private SomaElement somaElement = null;
+	private ini.cx3d.localBiology.interfaces.SomaElement somaElement = null;
 
 	/* The PhysicalCylinders attached to this sphere*/
 	AbstractSequentialList<ini.cx3d.physics.interfaces.PhysicalCylinder> daughters = new LinkedList<>();
@@ -346,7 +345,7 @@ public class PhysicalSphere extends physics.PhysicalSphereBase implements ini.cx
 	 * @return the somaElement
 	 */
 	@Override
-	public SomaElement getSomaElement() {
+	public ini.cx3d.localBiology.interfaces.SomaElement getSomaElement() {
 
 		try{
 			//getRwLock().readLock().lock();
@@ -362,7 +361,7 @@ public class PhysicalSphere extends physics.PhysicalSphereBase implements ini.cx
 	 * @param somaElement the somaElement to set
 	 */
 	@Override
-	public void setSomaElement(SomaElement somaElement) {
+	public void setSomaElement(ini.cx3d.localBiology.interfaces.SomaElement somaElement) {
 
 		if (somaElement != null) {
 			//getRwLock().writeLock().lock();
@@ -1154,7 +1153,7 @@ public class PhysicalSphere extends physics.PhysicalSphereBase implements ini.cx
 		double theta = p*17;
 
 		Cell c = CellFactory.getCellInstance(new double[] {10,-0.14,30});
-		SomaElement soma = c.getSomaElement();
+		ini.cx3d.localBiology.interfaces.SomaElement soma = c.getSomaElement();
 		ini.cx3d.physics.interfaces.PhysicalSphere sphere = soma.getPhysicalSphere();
 //		NeuriteElement ne = c.getSomaElement().extendNewNeurite(2, phi, theta);
 //		PhysicalCylinder pc = ne.getPhysicalCylinder();

@@ -34,6 +34,7 @@ import ini.cx3d.synapses.PhysicalSomaticSpine;
 
 import java.util.AbstractSequentialList;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.Vector;
 
 /**
@@ -43,7 +44,7 @@ import java.util.Vector;
  * @author fredericzubler
  *
  */
-public class SomaElement extends ini.cx3d.swig.biology.biology.SomaElementBase {
+public class SomaElement extends ini.cx3d.swig.biology.SomaElement implements ini.cx3d.localBiology.interfaces.SomaElement {
 
 	static {
 		ini.cx3d.swig.biology.CellElement.setECM(ECM.getInstance());
@@ -54,7 +55,7 @@ public class SomaElement extends ini.cx3d.swig.biology.biology.SomaElementBase {
 
 	@Override
 	public ini.cx3d.swig.NativeStringBuilder simStateToJson(ini.cx3d.swig.NativeStringBuilder sb) {
-		super.simStateToJson(sb);
+		superSuperSimStateToJson(sb);
 
 		keyValue(sb, "physical", physical);
 		//cell is a circular reference
@@ -74,6 +75,7 @@ public class SomaElement extends ini.cx3d.swig.biology.biology.SomaElementBase {
 		ECM.getInstance().addSomaElement(this);
 	}
 
+	@Override
 	public SomaElement divide(double volumeRatio, double phi, double theta){
 		SomaElement newSoma = new SomaElement();
 		ini.cx3d.physics.interfaces.PhysicalSphere pc = physical.divide(volumeRatio, phi, theta);
@@ -94,7 +96,8 @@ public class SomaElement extends ini.cx3d.swig.biology.biology.SomaElementBase {
 	//   Run
 	// *************************************************************************************
 
-	public void run(){	 
+	@Override
+	public void run(){
 		runLocalBiologyModules();
 	}
 	
@@ -104,6 +107,7 @@ public class SomaElement extends ini.cx3d.swig.biology.biology.SomaElementBase {
 	// *************************************************************************************
 
 	
+	@Override
 	public NeuriteElement extendNewNeurite(){
 		return extendNewNeurite(Param.NEURITE_DEFAULT_DIAMETER);
 	}
@@ -111,10 +115,9 @@ public class SomaElement extends ini.cx3d.swig.biology.biology.SomaElementBase {
 	/**
 	 * Extends a new neurite at a random place on the sphere
 	 * @param diameter the diameter of the new neurite
-	 * @param phi the angle from the zAxis
-	 * @param theta the angle from the xAxis around the zAxis
 	 * @return
 	 */
+	@Override
 	public NeuriteElement extendNewNeurite(double diameter) {
 		// find random point on sphere (based on : http://www.cs.cmu.edu/~mws/rpos.html)
 //		
@@ -132,6 +135,7 @@ public class SomaElement extends ini.cx3d.swig.biology.biology.SomaElementBase {
 		return extendNewNeurite(diameter ,phi, theta);
 	}
 
+	@Override
 	public NeuriteElement extendNewNeurite(double[] directionInGlobalCoordinates){
 		// we do this cause transform is for 2 points in space and not for a direction:
 		double[] dir = add(directionInGlobalCoordinates, physical.getMassLocation());
@@ -139,6 +143,7 @@ public class SomaElement extends ini.cx3d.swig.biology.biology.SomaElementBase {
 		return extendNewNeurite(Param.NEURITE_DEFAULT_DIAMETER, angles[1], angles[2]);
 	}
 	
+	@Override
 	public NeuriteElement extendNewNeurite(double diameter, double[] directionInGlobalCoordinates){
 		// we do this cause transform is for 2 points in space and not for a direction:
 		double[] dir = add(directionInGlobalCoordinates, physical.getMassLocation());
@@ -153,6 +158,7 @@ public class SomaElement extends ini.cx3d.swig.biology.biology.SomaElementBase {
 	 * @param theta the angle from the xAxis around the zAxis
 	 * @return
 	 */
+	@Override
 	public NeuriteElement extendNewNeurite(double diameter, double phi, double theta) {
 		// creating the new NeuriteElement and PhysicalCylinder, linking them
 		double lengthOfNewCylinder = Param.NEURITE_DEFAULT_ACTUAL_LENGTH;
@@ -182,7 +188,6 @@ public class SomaElement extends ini.cx3d.swig.biology.biology.SomaElementBase {
 	
 	/**
 	 * Makes somatic spines (the physical and the biological part) dependent on some parameter (e.g. substance concentration) on this NeuriteElement.
-	 * @param probability to make a spine and maximal nr of spines allowed on soma.
 	 */
 	public void MakeSomaticSpines(double p, double maxNr){
 		
@@ -217,26 +222,31 @@ public class SomaElement extends ini.cx3d.swig.biology.biology.SomaElementBase {
 	//   Getters & Setters
 	// *************************************************************************************
 
+	@Override
 	public ini.cx3d.physics.interfaces.PhysicalObject getPhysical() {
 		return this.physical;
 	}
 
+	@Override
 	public void setPhysical(ini.cx3d.physics.interfaces.PhysicalObject physical) {
 		this.physical = (ini.cx3d.physics.interfaces.PhysicalSphere) physical;
 		this.physical.setSomaElement(this); // callback
 	}
 
+	@Override
 	public ini.cx3d.physics.interfaces.PhysicalSphere getPhysicalSphere(){
 		return physical;
 	}
 
+	@Override
 	public void setPhysicalSphere(ini.cx3d.physics.interfaces.PhysicalSphere physicalsphere){
 		physical = physicalsphere;
 		physical.setSomaElement(this);
 	}
 
-	public Vector<NeuriteElement>  getNeuriteList() {
-		Vector<NeuriteElement> neuriteList = new Vector<NeuriteElement>();        
+	@Override
+	public AbstractSequentialList<NeuriteElement>  getNeuriteList() {
+		AbstractSequentialList<NeuriteElement> neuriteList = new LinkedList<NeuriteElement>();
 		AbstractSequentialList<ini.cx3d.physics.interfaces.PhysicalCylinder> pcList = physical.getDaughters();
 		for (Iterator<ini.cx3d.physics.interfaces.PhysicalCylinder> element = pcList.iterator(); element.hasNext();) {
 			ini.cx3d.physics.interfaces.PhysicalCylinder pc = element.next();
@@ -245,11 +255,13 @@ public class SomaElement extends ini.cx3d.swig.biology.biology.SomaElementBase {
 		return neuriteList ;
 	}
 
+	@Override
 	public boolean isANeuriteElement() {
 		return false;
 	}
 	
 	/** Returns true, because this <code>CellElement</code> is a <code>SomaElement</code>.*/ 
+	@Override
 	public boolean isASomaElement(){
 		return true;
 	}

@@ -50,4 +50,6 @@ public interface CellElement extends SimStateSerializable {
 	void setPhysical(ini.cx3d.physics.interfaces.PhysicalObject po);
 
 	void move(double speed, double[] direction);
+
+	double[] getLocation();
 }

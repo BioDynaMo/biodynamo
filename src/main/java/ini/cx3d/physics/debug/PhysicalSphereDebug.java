@@ -2,7 +2,6 @@ package ini.cx3d.physics.debug;
 
 
 import ini.cx3d.localBiology.interfaces.CellElement;
-import ini.cx3d.localBiology.SomaElement;
 import ini.cx3d.physics.interfaces.PhysicalCylinder;
 import ini.cx3d.physics.interfaces.PhysicalSphere;
 import ini.cx3d.physics.interfaces.PhysicalObject;
@@ -133,16 +132,16 @@ public class PhysicalSphereDebug extends ini.cx3d.physics.PhysicalSphere {
     }
 
     @Override
-    public SomaElement getSomaElement() {
+    public ini.cx3d.localBiology.interfaces.SomaElement getSomaElement() {
         DebugUtil.logMethodCall("getSomaElement", this, new Object[]{});
-        SomaElement ret = super.getSomaElement();
+        ini.cx3d.localBiology.interfaces.SomaElement ret = super.getSomaElement();
         DebugUtil.logMethodReturn("getSomaElement", this, ret);
         return ret;
 
     }
 
     @Override
-    public void setSomaElement(SomaElement somaElement) {
+    public void setSomaElement(ini.cx3d.localBiology.interfaces.SomaElement somaElement) {
         DebugUtil.logMethodCall("setSomaElement", this, new Object[]{somaElement});
         super.setSomaElement(somaElement);
         DebugUtil.logMethodReturnVoid("setSomaElement", this);

@@ -97,7 +97,7 @@ public class Figure_9Test extends BaseSimulationTest {
 			}
 			
 			Cell cell = CellFactory.getCellInstance( cellLocation );
-			SomaElement soma = cell.getSomaElement();
+			ini.cx3d.localBiology.interfaces.SomaElement soma = cell.getSomaElement();
 			ini.cx3d.physics.interfaces.PhysicalSphere sphere = soma.getPhysicalSphere();
 			if(i==0){
 			cell.setNeuroMLType(Cell.InhibitoryCell);

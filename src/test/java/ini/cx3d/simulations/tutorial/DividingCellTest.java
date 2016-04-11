@@ -25,7 +25,6 @@ import ini.cx3d.BaseSimulationTest;
 import ini.cx3d.Param;
 import ini.cx3d.cells.Cell;
 import ini.cx3d.cells.CellFactory;
-import ini.cx3d.localBiology.SomaElement;
 import ini.cx3d.simulations.ECM;
 import ini.cx3d.simulations.Scheduler;
 
@@ -42,7 +41,7 @@ public class DividingCellTest extends BaseSimulationTest {
 		double[] cellOrigin = {0.0, 3.0, 5.0};			
 		Cell cell = CellFactory.getCellInstance(cellOrigin);		
 		cell.setColorForAllPhysicalObjects(Param.RED);
-		SomaElement soma = cell.getSomaElement();
+		ini.cx3d.localBiology.interfaces.SomaElement soma = cell.getSomaElement();
 		ini.cx3d.physics.interfaces.PhysicalSphere sphere = soma.getPhysicalSphere();
 
 

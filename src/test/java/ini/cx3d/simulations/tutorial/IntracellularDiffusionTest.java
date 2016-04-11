@@ -30,11 +30,9 @@ import ini.cx3d.BaseSimulationTest;
 import ini.cx3d.Param;
 import ini.cx3d.cells.Cell;
 import ini.cx3d.cells.CellFactory;
-import ini.cx3d.localBiology.AbstractLocalBiologyModule;
 import ini.cx3d.localBiology.LocalBiologyModule;
 import ini.cx3d.localBiology.interfaces.CellElement;
 import ini.cx3d.localBiology.NeuriteElement;
-import ini.cx3d.localBiology.SomaElement;
 import ini.cx3d.physics.factory.IntracellularSubstanceFactory;
 import ini.cx3d.simulations.ECM;
 import ini.cx3d.simulations.Scheduler;
@@ -67,7 +65,7 @@ public class IntracellularDiffusionTest extends BaseSimulationTest{
 		Cell c = CellFactory.getCellInstance(new double[] {0,0,0});
 		c.setColorForAllPhysicalObjects(Param.RED);
 		// insert production module
-		SomaElement soma = c.getSomaElement();
+		ini.cx3d.localBiology.interfaces.SomaElement soma = c.getSomaElement();
 		soma.addLocalBiologyModule(new InternalSecretor());
 		//insert growth cone module
 		NeuriteElement ne = c.getSomaElement().extendNewNeurite(new double[] {0,0,1});

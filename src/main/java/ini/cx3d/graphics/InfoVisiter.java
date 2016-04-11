@@ -23,7 +23,6 @@ package ini.cx3d.graphics;
 
 
 import ini.cx3d.localBiology.NeuriteElement;
-import ini.cx3d.localBiology.SomaElement;
 import ini.cx3d.physics.interfaces.PhysicalCylinder;
 
 public class InfoVisiter {
@@ -38,9 +37,9 @@ public class InfoVisiter {
 		{
 			return visit((PhysicalCylinder)o);
 		}
-		else if (o instanceof SomaElement)
+		else if (o instanceof ini.cx3d.localBiology.interfaces.SomaElement)
 		{
-			return visit((SomaElement)o);
+			return visit((ini.cx3d.localBiology.interfaces.SomaElement)o);
 		}
 		else if(o instanceof NeuriteElement)
 		{
@@ -75,7 +74,7 @@ public class InfoVisiter {
 		return n;
 		
 	}
-	private ComplexDisplayNode visit(SomaElement o)
+	private ComplexDisplayNode visit(ini.cx3d.localBiology.interfaces.SomaElement o)
 	{
 //		ComplexDisplayNode n = new ComplexDisplayNode();
 //		n.addSimpleDisplayNode("ref", o.hashCode()+"");

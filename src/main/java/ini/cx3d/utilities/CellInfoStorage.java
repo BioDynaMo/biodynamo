@@ -23,7 +23,6 @@ package ini.cx3d.utilities;
 
 import ini.cx3d.cells.Cell;
 import ini.cx3d.cells.CellFactory;
-import ini.cx3d.localBiology.SomaElement;
 import ini.cx3d.physics.interfaces.Substance;
 import ini.cx3d.simulations.ECM;
 
@@ -35,7 +34,6 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.AbstractSequentialList;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Vector;
 
 public class CellInfoStorage implements Serializable
@@ -98,7 +96,7 @@ public class CellInfoStorage implements Serializable
 			 for (CellInfoStorage container : containers) {
 			 Cell cell = CellFactory.getCellInstance(container.cellpos);
 			 container.cell =cell;
-			 SomaElement soma = cell.getSomaElement();
+			 ini.cx3d.localBiology.interfaces.SomaElement soma = cell.getSomaElement();
 			 cell.getSomaElement().getPhysical().setColor(container.c);
 			 soma.getPhysicalSphere().setMass(container.mass);
 			 soma.getPhysicalSphere().setDiameter(container.diameter);
@@ -108,7 +106,7 @@ public class CellInfoStorage implements Serializable
 		 }
 
 		 for (CellInfoStorage container : containers) {
-			 SomaElement soma = container.cell.getSomaElement();
+			 ini.cx3d.localBiology.interfaces.SomaElement soma = container.cell.getSomaElement();
 			 for (String s : container.quantity.keySet()) {
 				 	ini.cx3d.physics.interfaces.Substance sub = container.quantity.get(s);
 //				 	sub.setQuantity(9999999910000000000.0);

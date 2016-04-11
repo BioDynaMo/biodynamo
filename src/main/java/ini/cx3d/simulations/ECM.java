@@ -69,6 +69,7 @@ public class ECM extends ini.cx3d.swig.physics.ECM implements SimStateSerializab
 	public double sqrt(double d) { return Math.sqrt(d); }
 	public double cos(double d) { return Math.cos(d); }
 	public double sin(double d) { return Math.sin(d); }
+	public double asin(double d) { return Math.asin(d); }
 	public double atan2(double d, double d1) { return Math.atan2(d, d1); }
 	public double cbrt(double d) { return Math.cbrt(d); }
 	public ini.cx3d.physics.interfaces.PhysicalCylinder newPhysicalCylinder() {return PhysicalCylinderFactory.create();}
@@ -82,6 +83,7 @@ public class ECM extends ini.cx3d.swig.physics.ECM implements SimStateSerializab
 		return Matrix.getRandomDouble();
 	}
 	public ini.cx3d.physics.interfaces.PhysicalSphere newPhysicalSphere() {return PhysicalSphereFactory.create();}
+	public ini.cx3d.localBiology.NeuriteElement newNeuriteElement() {return new NeuriteElement();}
 	// List of all the CX3DRunbable objects in the simulation ............................
 
 	/** List of all the PhysicalNode instances. */
@@ -91,7 +93,7 @@ public class ECM extends ini.cx3d.swig.physics.ECM implements SimStateSerializab
 	/** List of all the PhysicalCylinder instances. */
 	public Vector<ini.cx3d.physics.interfaces.PhysicalCylinder> physicalCylinderList = new Vector<ini.cx3d.physics.interfaces.PhysicalCylinder>();
 	/** List of all the SomaElement instances. */
-	public Vector<SomaElement> somaElementList  = new Vector<SomaElement>();
+	public Vector<ini.cx3d.localBiology.interfaces.SomaElement> somaElementList  = new Vector<ini.cx3d.localBiology.interfaces.SomaElement>();
 	/** List of all the NeuriteElement instances. */
 	public Vector<NeuriteElement> neuriteElementList = new Vector<NeuriteElement>();
 	/** List of all the Cell instances. */
@@ -541,11 +543,11 @@ public class ECM extends ini.cx3d.swig.physics.ECM implements SimStateSerializab
 	}
 	
 	// Cell Elements--------------------------------------------------
-	public void addSomaElement(SomaElement newSoma) {
+	public void addSomaElement(ini.cx3d.localBiology.interfaces.SomaElement newSoma) {
 		somaElementList.add(newSoma);
 	}
 
-	public void removeSomaElement(SomaElement oldSoma) {
+	public void removeSomaElement(ini.cx3d.localBiology.interfaces.SomaElement oldSoma) {
 		somaElementList.remove(oldSoma);
 	}
 
@@ -569,7 +571,7 @@ public class ECM extends ini.cx3d.swig.physics.ECM implements SimStateSerializab
 		// Layer 1 : Cells
 		cellList  = new Vector<Cell>();
 		// Layer 2 : local biology
-		somaElementList  = new Vector<SomaElement>();
+		somaElementList  = new Vector<>();
 		neuriteElementList = new Vector<NeuriteElement>();
 		
 		// Layer 3 : physics 

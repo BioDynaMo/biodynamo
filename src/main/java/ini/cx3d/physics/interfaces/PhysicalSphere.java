@@ -1,7 +1,6 @@
 package ini.cx3d.physics.interfaces;
 
 import ini.cx3d.localBiology.interfaces.CellElement;
-import ini.cx3d.localBiology.SomaElement;
 
 import java.util.AbstractSequentialList;
 
@@ -45,12 +44,12 @@ public interface PhysicalSphere extends PhysicalNode, PhysicalObject {
 	/**
 	 * @return the somaElement
 	 */
-	SomaElement getSomaElement();
+	ini.cx3d.localBiology.interfaces.SomaElement getSomaElement();
 
 	/**
 	 * @param somaElement the somaElement to set
 	 */
-	void setSomaElement(SomaElement somaElement);
+	void setSomaElement(ini.cx3d.localBiology.interfaces.SomaElement somaElement);
 
 	/**
 	 * Progressive modification of the volume. Updates the diameter, the intracellular concentration

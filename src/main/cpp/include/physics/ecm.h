@@ -7,6 +7,12 @@
 #include <exception>
 
 namespace cx3d {
+
+namespace local_biology {
+class SomaElement;
+class NeuriteElement;
+}  // namespace local_biology
+
 namespace physics {
 
 class Substance;
@@ -112,14 +118,19 @@ class ECM {
         "ECM::forceFromArtificialWall must never be called - Java must provide implementation at this point");
   }
 
+  virtual void addSomaElement(const std::shared_ptr<local_biology::SomaElement>& cyl) {
+    throw std::logic_error(
+        "ECM::addPhysicalSphere must never be called - Java must provide implementation at this point");
+  }
+
   virtual double getRandomDouble1() {
     throw std::logic_error(
         "ECM::getRandomDouble must never be called - Java must provide implementation at this point");
   }
 
-  virtual double matrixNextRandomDouble(){
+  virtual double matrixNextRandomDouble() {
     throw std::logic_error(
-            "ECM::matrixNextRandomDouble must never be called - Java must provide implementation at this point");
+        "ECM::matrixNextRandomDouble must never be called - Java must provide implementation at this point");
   }
 
   virtual double exp(double d) {
@@ -142,6 +153,10 @@ class ECM {
     throw std::logic_error("ECM::sin must never be called - Java must provide implementation at this point");
   }
 
+  virtual double asin(double d) {
+    throw std::logic_error("ECM::asin must never be called - Java must provide implementation at this point");
+  }
+
   virtual double atan2(double d, double d1) {
     throw std::logic_error("ECM::atan2 must never be called - Java must provide implementation at this point");
   }
@@ -159,6 +174,11 @@ class ECM {
   virtual std::shared_ptr<PhysicalSphere> newPhysicalSphere() {
     throw std::logic_error(
         "ECM::newPhysicalSphere must never be called - Java must provide implementation at this point");
+  }
+
+  virtual std::shared_ptr<local_biology::NeuriteElement> newNeuriteElement() {
+    throw std::logic_error(
+        "ECM::newNeuriteElement must never be called - Java must provide implementation at this point");
   }
 };
 

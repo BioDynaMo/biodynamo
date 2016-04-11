@@ -21,7 +21,8 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 
 package ini.cx3d.cells;
 
-import ini.cx3d.localBiology.SomaElement;
+import ini.cx3d.localBiology.interfaces.SomaElement;
+import ini.cx3d.localBiology.factory.SomaElementFactory;
 import ini.cx3d.physics.interfaces.PhysicalSphere;
 import ini.cx3d.physics.factory.PhysicalSphereFactory;
 import ini.cx3d.simulations.ECM;
@@ -60,7 +61,7 @@ public class CellFactory {
     	
     	// Create new cell
         Cell cell = new Cell();
-        SomaElement soma = new SomaElement();
+        SomaElement soma = SomaElementFactory.create();
         cell.setSomaElement(soma);        
         PhysicalSphere ps = PhysicalSphereFactory.create();
         soma.setPhysical(ps);

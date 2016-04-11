@@ -28,7 +28,7 @@ import static ini.cx3d.utilities.Matrix.add;
 
 import ini.cx3d.SimStateSerializable;
 import ini.cx3d.localBiology.NeuriteElement;
-import ini.cx3d.localBiology.SomaElement;
+import ini.cx3d.localBiology.interfaces.SomaElement;
 import ini.cx3d.simulations.ECM;
 
 import java.awt.Color;

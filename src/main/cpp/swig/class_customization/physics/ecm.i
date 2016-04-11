@@ -34,3 +34,7 @@
  */
 %ECM_cx3d_shared_ptr();
 %ECM_java();
+%typemap(javaimports) cx3d::physics::ECM %{
+  import ini.cx3d.swig.biology.NeuriteElement;
+  import ini.cx3d.swig.biology.SomaElement;
+%}
