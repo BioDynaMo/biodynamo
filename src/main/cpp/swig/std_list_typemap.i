@@ -184,7 +184,7 @@ template<class T> class list {
 
   %typemap(javain,
     pre = "    ListT_"#TEMPLATE_SUFFIX" temp$javainput = $module.convertToNativeListT_"#TEMPLATE_SUFFIX"($javainput);",
-    pgcppname="temp$javainput") const std::list<CPP_TYPE>& "$javaclassname.getCPtr(temp$javainput)"
+    pgcppname="temp$javainput") const std::list<CPP_TYPE>&, std::list<CPP_TYPE>& "$javaclassname.getCPtr(temp$javainput)"
 
   %typemap(jstype)  CPP_TYPE cx3d::ListIteratorCpp<CPP_TYPE>::next,
                     CPP_TYPE cx3d::ListIteratorCpp<CPP_TYPE>::previous  "JAVA_TYPE";

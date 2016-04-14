@@ -25,7 +25,6 @@ import ini.cx3d.BaseSimulationTest;
 import ini.cx3d.Param;
 import ini.cx3d.cells.Cell;
 import ini.cx3d.cells.CellFactory;
-import ini.cx3d.localBiology.NeuriteElement;
 import ini.cx3d.simulations.ECM;
 import ini.cx3d.simulations.Scheduler;
 
@@ -64,7 +63,7 @@ public class Figure_5Test extends BaseSimulationTest {
 		Cell cellA = CellFactory.getCellInstance(new double[] {0,0,-100});
 		cellA.setColorForAllPhysicalObjects(Param.X_SOLID_RED);
 		//		cretaing a single neurite
-		NeuriteElement ne = cellA.getSomaElement().extendNewNeurite(2.0,0,0);
+		ini.cx3d.localBiology.interfaces.NeuriteElement ne = cellA.getSomaElement().extendNewNeurite(2.0,0,0);
 //		ne.setHasCytoskeletonMotor(false);
 		// 		elongating the neurite :
 		double[] directionUp = {0,0,1};

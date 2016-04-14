@@ -29,7 +29,6 @@ import static ini.cx3d.utilities.Matrix.subtract;
 import ini.cx3d.Param;
 import ini.cx3d.simulations.ECM;
 import ini.cx3d.spatialOrganization.SpatialOrganizationNode;
-import ini.cx3d.synapses.Excrescence;
 import ini.cx3d.utilities.StringUtilities;
 import ini.cx3d.physics.interfaces.PhysicalCylinder;
 
@@ -361,7 +360,7 @@ public class View extends JComponent {
 
 			// if excrescences, we also draw them .............................
 			if (drawSpines) {
-				for (Excrescence ex : aCylinder.getExcrescences()) {
+				for (ini.cx3d.synapses.interfaces.Excrescence ex : aCylinder.getExcrescences()) {
 					double[] proximalExEnd = mult(V, ex.getProximalEnd()); // rotation
 					double[] distalExEnd = mult(V, ex.getDistalEnd());
 					if (representationType != PROJECTION_TYPE) {
@@ -601,7 +600,7 @@ public class View extends JComponent {
 			// .............................
 			if (drawSpines) {
 
-				for (Excrescence ex : aSphere.getExcrescences()) {
+				for (ini.cx3d.synapses.interfaces.Excrescence ex : aSphere.getExcrescences()) {
 					double[] proximalExEnd = mult(V, ex.getProximalEnd()); 
 					double[] distalExEnd = mult(V, ex.getDistalEnd());
 					if (representationType != PROJECTION_TYPE) {

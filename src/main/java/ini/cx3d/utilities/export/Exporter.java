@@ -22,7 +22,6 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 package ini.cx3d.utilities.export;
 
 import ini.cx3d.cells.Cell;
-import ini.cx3d.localBiology.NeuriteElement;
 import ini.cx3d.simulations.ECM;
 import ini.cx3d.synapses.Excrescence;
 
@@ -84,11 +83,11 @@ public class Exporter {
 	 * @param ne
 	 * @return
 	 */
-	public static Vector<ConnectionHolder> dispatchSynapsesOfThisNeuriteElement(Vector<ConnectionHolder> chs, NeuriteElement ne){
+	public static Vector<ConnectionHolder> dispatchSynapsesOfThisNeuriteElement(Vector<ConnectionHolder> chs, ini.cx3d.localBiology.interfaces.NeuriteElement ne){
 		// all excresc.
-		AbstractSequentialList<Excrescence> exs = ne.getPhysicalCylinder().getExcrescences();
+		AbstractSequentialList<ini.cx3d.synapses.interfaces.Excrescence> exs = ne.getPhysicalCylinder().getExcrescences();
 		for (int i = 0; i < exs.size(); i++) {
-			Excrescence ex = exs.get(i);
+			ini.cx3d.synapses.interfaces.Excrescence ex = exs.get(i);
 			// Are they connected to something? Are they pre-synaptic?
 			if(ex.getEx() != null && ex.getType() == Excrescence.BOUTON){  
 				// the two cells involved
@@ -158,9 +157,9 @@ public class Exporter {
 		// Get all their Synapses (connections)
 		for (Cell c : ecm.cellList) {
 			// Find all neurites of the cell :
-			Vector<NeuriteElement> nes = c.getNeuriteElements();
+			Vector<ini.cx3d.localBiology.interfaces.NeuriteElement> nes = c.getNeuriteElements();
 			Vector<ConnectionHolder> chs = new Vector<ConnectionHolder>(); // not really used, necessary for next method
-			for (NeuriteElement neuriteElement : nes) {
+			for (ini.cx3d.localBiology.interfaces.NeuriteElement neuriteElement : nes) {
 				dispatchSynapsesOfThisNeuriteElement(chs, neuriteElement);
 			}
 

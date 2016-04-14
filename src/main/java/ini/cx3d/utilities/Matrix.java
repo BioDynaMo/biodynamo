@@ -797,18 +797,19 @@ public abstract class Matrix {
 	 */
 	public static double[] perp3(double[] a) {
 			double[] vectPerp = new double[3];
-		if (a[0]==0.0) {					
+		double rand = random.nextDouble();
+		if (a[0]==0.0) {
 			vectPerp[0] = 1.0;
 			vectPerp[1] = 0.0;
 			vectPerp[2] = 0.0;
-			vectPerp = rotAroundAxis(vectPerp,6.35*random.nextDouble(),a);
+			vectPerp = rotAroundAxis(vectPerp,6.35*rand,a);
 		}
 		else {
 			vectPerp[0] = a[1];
 			vectPerp[1] = -a[0];
 			vectPerp[2] = 0.0;
 			vectPerp = normalize(vectPerp);
-			vectPerp = rotAroundAxis(vectPerp,6.35*random.nextDouble(),a);
+			vectPerp = rotAroundAxis(vectPerp,6.35*rand,a);
 		}
 		return vectPerp;
 	}

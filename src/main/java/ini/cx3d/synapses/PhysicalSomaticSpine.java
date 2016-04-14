@@ -24,7 +24,7 @@ package ini.cx3d.synapses;
 import static ini.cx3d.SimStateSerializationUtil.keyValue;
 import static ini.cx3d.SimStateSerializationUtil.removeLastChar;
 import static ini.cx3d.utilities.Matrix.distance;
-import ini.cx3d.localBiology.NeuriteElement;
+
 import ini.cx3d.physics.factory.PhysicalBondFactory;
 
 public class PhysicalSomaticSpine extends Excrescence {
@@ -64,7 +64,7 @@ public class PhysicalSomaticSpine extends Excrescence {
 	}
 
 	@Override
-	public boolean synapseWith(Excrescence otherExcressence, boolean createPhysicalBond) {
+	public boolean synapseWith(ini.cx3d.synapses.interfaces.Excrescence otherExcressence, boolean createPhysicalBond) {
 		// only if the other Excrescence is a bouton
 		if(otherExcressence.getType() != BOUTON){
 			(new Throwable(this+" is a SomaticSpine, and thus can't synapse with "+otherExcressence)).printStackTrace();
@@ -94,14 +94,14 @@ public class PhysicalSomaticSpine extends Excrescence {
 		return true;
 	}
 
-	public boolean synapseWithSoma(Excrescence otherExcrescence,
+	public boolean synapseWithSoma(ini.cx3d.synapses.interfaces.Excrescence otherExcrescence,
 			boolean creatPhysicalBond) {
 
 		return false;
 	}
 
 
-	public boolean synapseWithShaft(NeuriteElement otherNe, double maxDis, int nrSegments,
+	public boolean synapseWithShaft(ini.cx3d.localBiology.interfaces.NeuriteElement otherNe, double maxDis, int nrSegments,
 			boolean createPhysicalBond) {
 		return false;
 	}

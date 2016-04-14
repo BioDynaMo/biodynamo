@@ -26,10 +26,7 @@ import ini.cx3d.Param;
 import ini.cx3d.cells.Cell;
 import ini.cx3d.cells.CellFactory;
 import ini.cx3d.localBiology.interfaces.CellElement;
-import ini.cx3d.localBiology.LocalBiologyModule;
-import ini.cx3d.localBiology.NeuriteElement;
 import ini.cx3d.physics.interfaces.PhysicalCylinder;
-import ini.cx3d.physics.Substance;
 import ini.cx3d.physics.factory.SubstanceFactory;
 import ini.cx3d.simulations.ECM;
 import ini.cx3d.simulations.Scheduler;
@@ -173,7 +170,7 @@ public class X_Bifurcation_Module extends ini.cx3d.swig.biology.LocalBiologyModu
 		if(y>maxProba)
 			y=maxProba;
 		if(ECM.getRandomDouble()<y){
-			NeuriteElement[] daughters =  ((NeuriteElement)cellElement).bifurcate();
+			ini.cx3d.localBiology.interfaces.NeuriteElement[] daughters =  ((ini.cx3d.localBiology.interfaces.NeuriteElement)cellElement).bifurcate();
 			PhysicalCylinder cyl0 = daughters[0].getPhysicalCylinder();
 			PhysicalCylinder cyl1 = daughters[1].getPhysicalCylinder();
 			cyl0.setDiameter(cyl.getDiameter()*diameterOfDaughter);
@@ -219,7 +216,7 @@ public class X_Bifurcation_Module extends ini.cx3d.swig.biology.LocalBiologyModu
 		cell.setColorForAllPhysicalObjects(Param.RED);
 		
 		// 4) Extend an axon from the cell
-		NeuriteElement neurite = cell.getSomaElement().extendNewNeurite(new double[] {0,0,1});
+		ini.cx3d.localBiology.interfaces.NeuriteElement neurite = cell.getSomaElement().extendNewNeurite(new double[] {0,0,1});
 		neurite.getPhysical().setDiameter(1.0);
 		// 5) Put a movementReceptor
 		X_Movement_Module mr = new X_Movement_Module();

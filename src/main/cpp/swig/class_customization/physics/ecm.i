@@ -37,4 +37,6 @@
 %typemap(javaimports) cx3d::physics::ECM %{
   import ini.cx3d.swig.biology.NeuriteElement;
   import ini.cx3d.swig.biology.SomaElement;
+  import ini.cx3d.swig.biology.PhysicalSpine;
+  import ini.cx3d.swig.biology.PhysicalBouton;
 %}

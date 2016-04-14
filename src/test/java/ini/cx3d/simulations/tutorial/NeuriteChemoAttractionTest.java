@@ -30,10 +30,8 @@ import ini.cx3d.BaseSimulationTest;
 import ini.cx3d.Param;
 import ini.cx3d.cells.Cell;
 import ini.cx3d.cells.CellFactory;
-import ini.cx3d.localBiology.AbstractLocalBiologyModule;
 import ini.cx3d.localBiology.LocalBiologyModule;
 import ini.cx3d.localBiology.interfaces.CellElement;
-import ini.cx3d.localBiology.NeuriteElement;
 import ini.cx3d.physics.factory.SubstanceFactory;
 import ini.cx3d.simulations.ECM;
 import ini.cx3d.simulations.Scheduler;
@@ -60,7 +58,7 @@ public class NeuriteChemoAttractionTest extends BaseSimulationTest {
 
 		Cell c = CellFactory.getCellInstance(new double[]{0.0, 0.0, 0.0});
 		c.setColorForAllPhysicalObjects(Param.VIOLET);
-		NeuriteElement neurite = c.getSomaElement().extendNewNeurite();
+		ini.cx3d.localBiology.interfaces.NeuriteElement neurite = c.getSomaElement().extendNewNeurite();
 		neurite.getPhysicalCylinder().setDiameter(2.0);
 		neurite.addLocalBiologyModule(new NeuriteChemoAttraction("A"));
 
@@ -142,7 +140,7 @@ class NeuriteChemoAttraction extends ini.cx3d.swig.biology.biology.AbstractLocal
 
 		// 2) branching based on concentration:
 		if(ecm.getRandomDouble()<concentration*branchingFactor){
-			((NeuriteElement)getCellElement()).bifurcate();
+			((ini.cx3d.localBiology.interfaces.NeuriteElement)getCellElement()).bifurcate();
 		}
 	}
 

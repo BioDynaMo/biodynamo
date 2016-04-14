@@ -151,7 +151,11 @@
 #endif
 %PhysicalObject_stdlist();
 %typemap(javainterfaces) cx3d::physics::PhysicalObject "ini.cx3d.physics.interfaces.PhysicalObject"
-%typemap(javaimports) cx3d::physics::PhysicalObject "import ini.cx3d.swig.NativeStringBuilder; import ini.cx3d.swig.biology.CellElement;"
+%typemap(javaimports) cx3d::physics::PhysicalObject %{
+  import ini.cx3d.swig.NativeStringBuilder;
+  import ini.cx3d.swig.biology.CellElement;
+  import ini.cx3d.swig.biology.Excrescence;
+%}
 
 // class hierarchy modifications
 #ifdef PHYSICALOBJECT_NATIVE

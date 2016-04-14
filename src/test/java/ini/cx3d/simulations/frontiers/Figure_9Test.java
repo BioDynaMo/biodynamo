@@ -29,7 +29,6 @@ import java.awt.Color;
 import ini.cx3d.BaseSimulationTest;
 import ini.cx3d.Param;
 import ini.cx3d.cells.*;
-import ini.cx3d.localBiology.*;
 import ini.cx3d.physics.factory.PhysicalObjectFactory;
 import ini.cx3d.simulations.*;
 import ini.cx3d.synapses.TestSynapses;
@@ -114,20 +113,20 @@ public class Figure_9Test extends BaseSimulationTest {
 				double growthSpeed = 75;
 				double probaToBranch = 0.003;
 				double linearDiameterDecrease = 0.001;
-				NeuriteElement ne;
+				ini.cx3d.localBiology.interfaces.NeuriteElement ne;
 				if(j==0){
 					ne = cell.getSomaElement().extendNewNeurite(3.0, Math.PI*0.5, angleOfAxon);
-					ne.setIsAnAxon(true);
+					ne.setAxon(true);
 					growthSpeed = 150;
 					probaToBranch = 0.009;
 					linearDiameterDecrease = 0;
 					ne.getPhysicalCylinder().setDiameter(1.5);
 				}else if (j==1){
 					ne = cell.getSomaElement().extendNewNeurite(3.0, Math.PI*0.5, angleOfAxon + Math.PI -0.5+ECM.getRandomDouble());
-					ne.setIsAnAxon(false);
+					ne.setAxon(false);
 				}else{
 					ne = cell.getSomaElement().extendNewNeurite(3.0, Math.PI*0.5, Math.PI*2*ECM.getRandomDouble());
-					ne.setIsAnAxon(false);
+					ne.setAxon(false);
 				}
 				
 				X_Bifurcation_Module br = new X_Bifurcation_Module();

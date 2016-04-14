@@ -27,14 +27,15 @@ import ini.cx3d.BaseSimulationTest;
 import ini.cx3d.Param;
 import ini.cx3d.cells.Cell;
 import ini.cx3d.cells.CellFactory;
-import ini.cx3d.localBiology.NeuriteElement;
 import ini.cx3d.physics.interfaces.PhysicalCylinder;
 import ini.cx3d.simulations.ECM;
 import ini.cx3d.simulations.Scheduler;
-import ini.cx3d.synapses.BiologicalBouton;
-import ini.cx3d.synapses.BiologicalSpine;
+import ini.cx3d.synapses.factory.BiologicalBoutonFactory;
+import ini.cx3d.synapses.interfaces.BiologicalBouton;
+import ini.cx3d.synapses.interfaces.BiologicalSpine;
 import ini.cx3d.synapses.PhysicalBouton;
 import ini.cx3d.synapses.PhysicalSpine;
+import ini.cx3d.synapses.factory.BiologicalSpineFactory;
 
 public class SimpleSynapseTest extends BaseSimulationTest {
 
@@ -61,11 +62,11 @@ public class SimpleSynapseTest extends BaseSimulationTest {
 		inhib.setNeuroMLType(Cell.InhibitoryCell);
 		inhib.setColorForAllPhysicalObjects(Param.RED);
 		// 2) excitatory cell makes an axon, inhibitory cell makes a dendrite
-		NeuriteElement axon = excit.getSomaElement().extendNewNeurite(up);
-		axon.setIsAnAxon(true);
+		ini.cx3d.localBiology.interfaces.NeuriteElement axon = excit.getSomaElement().extendNewNeurite(up);
+		axon.setAxon(true);
 		PhysicalCylinder axonCyl = axon.getPhysicalCylinder();
-		NeuriteElement dendrite = inhib.getSomaElement().extendNewNeurite(down);
-		dendrite.setIsAnAxon(false);
+		ini.cx3d.localBiology.interfaces.NeuriteElement dendrite = inhib.getSomaElement().extendNewNeurite(down);
+		dendrite.setAxon(false);
 		PhysicalCylinder dendriteCyl = dendrite.getPhysicalCylinder();
 		//		elongate them
 		while (axon.getLocation()[2]<dendrite.getLocation()[2]) {
@@ -82,7 +83,7 @@ public class SimpleSynapseTest extends BaseSimulationTest {
 		PhysicalBouton pBouton = new PhysicalBouton(axonCyl,polarAxonCoord,3);
 		axonCyl.addExcrescence(pBouton);
 		// 		create the biological part and set call backs
-		BiologicalBouton bBouton = new BiologicalBouton();
+		ini.cx3d.synapses.interfaces.BiologicalBouton bBouton = BiologicalBoutonFactory.create();
 		pBouton.setBiologicalBouton(bBouton);
 		bBouton.setPhysicalBouton(pBouton);
 
@@ -94,7 +95,7 @@ public class SimpleSynapseTest extends BaseSimulationTest {
 		PhysicalSpine pSpine = new PhysicalSpine(dendriteCyl,polarDendriteCoord,3);
 		dendriteCyl.addExcrescence(pSpine);
 		// 		create the biological part and set call backs
-		BiologicalSpine bSpine = new BiologicalSpine();
+		BiologicalSpine bSpine = BiologicalSpineFactory.create();
 		pSpine.setBiologicalSpine(bSpine);
 		bSpine.setPhysicalSpine(pSpine);
 

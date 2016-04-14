@@ -18,7 +18,7 @@
 
 %define %Excrescence_cx3d_shared_ptr()
   %cx3d_shared_ptr(Excrescence,
-                   ini/cx3d/synapses/Excrescence,
+                   ini/cx3d/synapses/interfaces/Excrescence,
                    cx3d::synapse::Excrescence);
 %enddef
 
@@ -26,14 +26,15 @@
   %java_defined_class(cx3d::synapse::Excrescence,
                       Excrescence,
                       Excrescence,
-                      ini.cx3d.synapses.Excrescence,
-                      ini/cx3d/synapses/Excrescence);
+                      ini.cx3d.synapses.interfaces.Excrescence,
+                      ini/cx3d/synapses/interfaces/Excrescence);
 %enddef
 
 %define %Excrescence_stdlist()
-  %stdlist_typemap(std::shared_ptr<cx3d::synapse::Excrescence>,
-                   Excrescence,
-                   ini.cx3d.synapses.Excrescence);
+  %stdlist_typemap_cross_module(std::shared_ptr<cx3d::synapse::Excrescence>,
+                                Excrescence,
+                                ini.cx3d.synapses.interfaces.Excrescence,
+                                ini.cx3d.swig.biology.Excrescence);
 %enddef
 
 /**
@@ -42,4 +43,7 @@
 %Excrescence_cx3d_shared_ptr();
 %Excrescence_java();
 %Excrescence_stdlist();
-%typemap(javaimports) cx3d::synapse::Excrescence "import ini.cx3d.swig.NativeStringBuilder;"
+%typemap(javaimports) cx3d::synapse::Excrescence %{
+  import ini.cx3d.swig.NativeStringBuilder;
+  import ini.cx3d.swig.physics.PhysicalObject;
+%}

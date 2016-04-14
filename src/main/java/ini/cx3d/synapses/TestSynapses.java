@@ -26,7 +26,6 @@ import static ini.cx3d.utilities.Matrix.randomNoise;
 import ini.cx3d.Param;
 import ini.cx3d.cells.Cell;
 import ini.cx3d.cells.CellFactory;
-import ini.cx3d.localBiology.NeuriteElement;
 import ini.cx3d.simulations.ECM;
 import ini.cx3d.simulations.Scheduler;
 
@@ -60,12 +59,12 @@ public class TestSynapses {
 
 
 		// 4) Extend an neuron from each cell
-		NeuriteElement neurite_1 = cell_1.getSomaElement().extendNewNeurite(new double[] {0,0,-1});
+		ini.cx3d.localBiology.interfaces.NeuriteElement neurite_1 = cell_1.getSomaElement().extendNewNeurite(new double[] {0,0,-1});
 		neurite_1.getPhysical().setDiameter(1.0);
 		neurite_1.getPhysicalCylinder().setDiameter(4.0);
-		neurite_1.setIsAnAxon(true);
+		neurite_1.setAxon(true);
 		ini.cx3d.physics.interfaces.PhysicalCylinder pc_1 = neurite_1.getPhysicalCylinder();
-		NeuriteElement neurite_2 = cell_2.getSomaElement().extendNewNeurite(new double[] {0,0,11});
+		ini.cx3d.localBiology.interfaces.NeuriteElement neurite_2 = cell_2.getSomaElement().extendNewNeurite(new double[] {0,0,11});
 		neurite_2.getPhysical().setDiameter(1.0);
 		neurite_2.getPhysicalCylinder().setDiameter(4.0);
 		ini.cx3d.physics.interfaces.PhysicalCylinder pc_2 = neurite_2.getPhysicalCylinder();
@@ -96,16 +95,16 @@ public class TestSynapses {
 	public static void extendExcressencesAndSynapseOnEveryNeuriteElement(double probaBilityToSynapse){
 		ECM ecm = ECM.getInstance();
 		for (int i = 0; i < ecm.neuriteElementList.size(); i++) {
-			NeuriteElement ne = ecm.neuriteElementList.get(i);
-			if(ne.isAnAxon()==true){
+			ini.cx3d.localBiology.interfaces.NeuriteElement ne = ecm.neuriteElementList.get(i);
+			if(ne.isAxon()==true){
 				ne.makeBoutons(2);
 			}else{
 				ne.makeSpines(5);
 			}
 		}
 		for (int i = 0; i < ecm.neuriteElementList.size(); i++) {
-			NeuriteElement ne = ecm.neuriteElementList.get(i);
-			if(ne.isAnAxon()==true){
+			ini.cx3d.localBiology.interfaces.NeuriteElement ne = ecm.neuriteElementList.get(i);
+			if(ne.isAxon() ==true){
 				ne.synapseBetweenExistingBS(probaBilityToSynapse);
 			}
 		}

@@ -27,11 +27,13 @@ import static ini.cx3d.SimStateSerializationUtil.unorderedCollection;
 import static ini.cx3d.utilities.Matrix.add;
 
 import ini.cx3d.SimStateSerializable;
-import ini.cx3d.localBiology.NeuriteElement;
+import ini.cx3d.localBiology.interfaces.NeuriteElement;
 import ini.cx3d.localBiology.interfaces.SomaElement;
 import ini.cx3d.simulations.ECM;
+import ini.cx3d.swig.biology.ListT_NeuriteElement;
 
 import java.awt.Color;
+import java.util.AbstractSequentialList;
 import java.util.Vector;
 
 /**
@@ -63,7 +65,7 @@ public class Cell extends ini.cx3d.swig.biology.Cell implements SimStateSerializ
 	SomaElement somaElement = null;
 
 	/* List of the first Neurite of all Nurites belonging to the cell */
-	Vector<NeuriteElement> neuriteRootList = new Vector<NeuriteElement>(); // TODO: not working yet
+	Vector<ini.cx3d.localBiology.interfaces.NeuriteElement> neuriteRootList = new Vector<ini.cx3d.localBiology.interfaces.NeuriteElement>(); // TODO: not working yet
 
 	/** Represents inhibitory type of cell in the NeuroML export*/
 	public static final String InhibitoryCell = "Inhibitory_cells";
@@ -284,7 +286,7 @@ public class Cell extends ini.cx3d.swig.biology.Cell implements SimStateSerializ
 	 */
 	public void setColorForAllPhysicalObjects(Color color) {
 			somaElement.getPhysical().setColor(color);
-			for (NeuriteElement ne : getNeuriteElements()) {
+			for (ini.cx3d.localBiology.interfaces.NeuriteElement ne : getNeuriteElements()) {
 				ne.getPhysical().setColor(color);
 			}
 	}
@@ -297,12 +299,16 @@ public class Cell extends ini.cx3d.swig.biology.Cell implements SimStateSerializ
 	/**
 	 * @return a <code>Vector</code> containing all the <code>NeuriteElement</code>s of this cell.
 	 */
-	public Vector<NeuriteElement> getNeuriteElements() {
-		Vector<NeuriteElement> allTheNeuriteElements = new Vector<NeuriteElement>();
-		for (NeuriteElement ne : somaElement.getNeuriteList()) {
-			ne.AddYourselfAndDistalNeuriteElements(allTheNeuriteElements);
+	public Vector<ini.cx3d.localBiology.interfaces.NeuriteElement> getNeuriteElements() {
+		AbstractSequentialList<NeuriteElement> allTheNeuriteElements = new ListT_NeuriteElement();
+		for (ini.cx3d.localBiology.interfaces.NeuriteElement ne : somaElement.getNeuriteList()) {
+			ne.addYourselfAndDistalNeuriteElements(allTheNeuriteElements);
 		}
-		return allTheNeuriteElements;
+		Vector<ini.cx3d.localBiology.interfaces.NeuriteElement> ret = new Vector<>();
+		for(ini.cx3d.localBiology.interfaces.NeuriteElement ne : allTheNeuriteElements) {
+			ret.add(ne);
+		}
+		return ret;
 	}
 
 }

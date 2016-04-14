@@ -1,6 +1,7 @@
 #ifndef PHYSICS_ECM_H_
 #define PHYSICS_ECM_H_
 
+#include <iostream>
 #include <array>
 #include <string>
 #include <memory>
@@ -13,12 +14,18 @@ class SomaElement;
 class NeuriteElement;
 }  // namespace local_biology
 
+namespace synapse {
+class PhysicalSpine;
+class PhysicalBouton;
+}  // namespace synapse
+
 namespace physics {
 
 class Substance;
 class IntracellularSubstance;
 class PhysicalSphere;
 class PhysicalCylinder;
+class PhysicalObject;
 
 class ECM {
  public:
@@ -103,6 +110,16 @@ class ECM {
         "ECM::addPhysicalSphere must never be called - Java must provide implementation at this point");
   }
 
+  virtual void addNeuriteElement(const std::shared_ptr<local_biology::NeuriteElement>& neurite) {
+    throw std::logic_error(
+        "ECM::addNeuriteElement must never be called - Java must provide implementation at this point");
+  }
+
+  virtual void removeNeuriteElement(const std::shared_ptr<local_biology::NeuriteElement>& neurite) {
+    throw std::logic_error(
+        "ECM::removeNeuriteElement must never be called - Java must provide implementation at this point");
+  }
+
   virtual bool getArtificialWallForSpheres() {
     throw std::logic_error(
         "ECM::getArtificialWallForSpheres must never be called - Java must provide implementation at this point");
@@ -179,6 +196,18 @@ class ECM {
   virtual std::shared_ptr<local_biology::NeuriteElement> newNeuriteElement() {
     throw std::logic_error(
         "ECM::newNeuriteElement must never be called - Java must provide implementation at this point");
+  }
+
+  virtual std::shared_ptr<cx3d::synapse::PhysicalSpine> newPhysicalSpine(const std::shared_ptr<physics::PhysicalObject>& po,
+                                                                   const std::array<double, 2>& origin, double length) {
+    throw std::logic_error(
+        "ECM::newPhysicalSpine must never be called - Java must provide implementation at this point");
+  }
+
+  virtual std::shared_ptr<synapse::PhysicalBouton> newPhysicalBouton(const std::shared_ptr<physics::PhysicalObject>& po,
+                                                                     const std::array<double, 2>& origin, double length) {
+    throw std::logic_error(
+        "ECM::newPhysicalBouton must never be called - Java must provide implementation at this point");
   }
 };
 

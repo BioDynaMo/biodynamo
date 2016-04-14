@@ -4,7 +4,7 @@
 #include <exception>
 #include <string>
 
-#include "cell_element.h"
+#include "local_biology/cell_element.h"
 
 namespace cx3d {
 

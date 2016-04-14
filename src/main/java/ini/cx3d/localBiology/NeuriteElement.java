@@ -32,6 +32,7 @@ import static ini.cx3d.utilities.Matrix.rotAroundAxis;
 import static ini.cx3d.utilities.Matrix.scalarMult;
 import static ini.cx3d.utilities.Matrix.subtract;
 import static ini.cx3d.utilities.Matrix.printlnLine;
+import static ini.cx3d.utilities.StringUtilities.toStr;
 
 import java.util.AbstractSequentialList;
 import java.util.Vector;
@@ -40,9 +41,11 @@ import ini.cx3d.Param;
 import ini.cx3d.physics.interfaces.PhysicalCylinder;
 import ini.cx3d.physics.interfaces.PhysicalNode;
 import ini.cx3d.simulations.ECM;
-import ini.cx3d.synapses.BiologicalBouton;
-import ini.cx3d.synapses.BiologicalSpine;
-import ini.cx3d.synapses.Excrescence;
+import ini.cx3d.synapses.interfaces.BiologicalBouton;
+import ini.cx3d.synapses.interfaces.BiologicalSpine;
+import ini.cx3d.synapses.factory.BiologicalBoutonFactory;
+import ini.cx3d.synapses.factory.BiologicalSpineFactory;
+import ini.cx3d.synapses.interfaces.Excrescence;
 import ini.cx3d.synapses.PhysicalBouton;
 import ini.cx3d.synapses.PhysicalSpine;
 import ini.cx3d.utilities.Matrix;
@@ -54,7 +57,7 @@ import ini.cx3d.utilities.Matrix;
  *
  */
 
-public class NeuriteElement extends ini.cx3d.swig.biology.biology.NeuriteElementBase {
+public class NeuriteElement extends ini.cx3d.swig.biology.biology.NeuriteElementBase implements ini.cx3d.localBiology.interfaces.NeuriteElement {
 
 	static {
 		ini.cx3d.swig.biology.CellElement.setECM(ECM.getInstance());
@@ -68,7 +71,7 @@ public class NeuriteElement extends ini.cx3d.swig.biology.biology.NeuriteElement
 
 	@Override
 	public ini.cx3d.swig.NativeStringBuilder simStateToJson(ini.cx3d.swig.NativeStringBuilder sb) {
-		super.simStateToJson(sb);
+		superSuperSimStateToJson(sb);
 
 		keyValue(sb, "physicalCylinder", physicalCylinder);
 		keyValue(sb, "isAnAxon", Boolean.toString(isAnAxon));
@@ -91,7 +94,7 @@ public class NeuriteElement extends ini.cx3d.swig.biology.biology.NeuriteElement
 
 	/** Note : doesn't copy the <code>LocalBiologyModule</code> list 
 	 * (this is done in <code>branch()</code> etc.).*/
-	public NeuriteElement getCopy() {
+	public ini.cx3d.localBiology.interfaces.NeuriteElement getCopy() {
 		NeuriteElement ne = new NeuriteElement();
 		ne.isAnAxon = isAnAxon;
 		ne.setCell(getCell());
@@ -114,6 +117,7 @@ public class NeuriteElement extends ini.cx3d.swig.biology.biology.NeuriteElement
 	// *************************************************************************************
 
 
+	@Override
 	public void run() {
 		// run local biological modules...
 		runLocalBiologyModules();
@@ -127,6 +131,7 @@ public class NeuriteElement extends ini.cx3d.swig.biology.biology.NeuriteElement
 	/** Retracts the Cylinder associated with this NeuriteElement, if it is a terminal one.
 	 * @param speed the retraction speed in micron/h
 	 */
+	@Override
 	public void retractTerminalEnd(double speed) {
 		physicalCylinder.retractCylinder(speed);
 	}
@@ -137,6 +142,7 @@ public class NeuriteElement extends ini.cx3d.swig.biology.biology.NeuriteElement
 	 * @param speed
 	 * @param direction
 	 */
+	@Override
 	public void elongateTerminalEnd(double speed, double[] direction){
 		physicalCylinder.extendCylinder(speed, direction);
 	}
@@ -152,13 +158,14 @@ public class NeuriteElement extends ini.cx3d.swig.biology.biology.NeuriteElement
 	 * @param growthDirection (But will be automatically corrected if not at least 45 degrees from the cylinder's axis).
 	 * @return
 	 */
-	public NeuriteElement branch(double newBranchDiameter, double[] growthDirection) {
+	@Override
+	public ini.cx3d.localBiology.interfaces.NeuriteElement branch(double newBranchDiameter, double[] growthDirection) {
 		// create a new NeuriteElement for side branch
-		NeuriteElement ne = getCopy();
+		ini.cx3d.localBiology.interfaces.NeuriteElement ne = getCopy();
 		// define direction if not defined
 		if(growthDirection==null){
 			growthDirection = perp3(add(physicalCylinder.getUnitaryAxisDirectionVector(), randomNoise(0.1, 3)));
-
+			throw new RuntimeException("foo");
 		}
 		// making the branching at physicalObject level
 		PhysicalCylinder pc1 = physicalCylinder.branchCylinder(1.0, growthDirection);
@@ -185,7 +192,8 @@ public class NeuriteElement extends ini.cx3d.swig.biology.biology.NeuriteElement
 	 * @param growthDirection (But will be automatically corrected if not at least 45 degrees from the cylinder's axis).
 	 * @return
 	 */
-	public NeuriteElement branch(double[] growthDirection) {
+	@Override
+	public ini.cx3d.localBiology.interfaces.NeuriteElement branch(double[] growthDirection) {
 		return branch(physicalCylinder.getDiameter(),growthDirection);
 	}
 
@@ -194,7 +202,8 @@ public class NeuriteElement extends ini.cx3d.swig.biology.biology.NeuriteElement
 	 * @param diameter of the side branch
 	 * @return
 	 */
-	public NeuriteElement branch(double diameter) {
+	@Override
+	public ini.cx3d.localBiology.interfaces.NeuriteElement branch(double diameter) {
 		double[] growthDirection = perp3(add(physicalCylinder.getUnitaryAxisDirectionVector(), randomNoise(0.1, 3)));
 		growthDirection = Matrix.normalize(growthDirection);
 		//		growthDirection = add(
@@ -207,9 +216,11 @@ public class NeuriteElement extends ini.cx3d.swig.biology.biology.NeuriteElement
 	 * Makes a side branch, i.e. splits this cylinder into two and puts a daughter right at the proximal half.
 	 * @return
 	 */
-	public NeuriteElement branch() {
+	@Override
+	public ini.cx3d.localBiology.interfaces.NeuriteElement branch() {
 		double newBranchDiameter = physicalCylinder.getDiameter();
-		double[] growthDirection = perp3(add(physicalCylinder.getUnitaryAxisDirectionVector(), randomNoise(0.1, 3)));
+		double[] rand_noise = randomNoise(0.1, 3);
+		double[] growthDirection = perp3(add(physicalCylinder.getUnitaryAxisDirectionVector(), rand_noise));
 		return branch(newBranchDiameter,growthDirection);
 	}
 
@@ -217,6 +228,7 @@ public class NeuriteElement extends ini.cx3d.swig.biology.biology.NeuriteElement
 	Returns <code>true</code> if it is a terminal cylinder with length of at least 1micron.
 	 * @return
 	 */
+	@Override
 	public boolean bifurcationPermitted(){
 		return physicalCylinder.bifurcationPermitted();
 	}
@@ -230,8 +242,9 @@ public class NeuriteElement extends ini.cx3d.swig.biology.biology.NeuriteElement
 	 * @param direction_2
 	 * @return
 	 */
-	public NeuriteElement[] bifurcate(
-			double diameter_1, 
+	@Override
+	public ini.cx3d.localBiology.interfaces.NeuriteElement[] bifurcate(
+			double diameter_1,
 			double diameter_2,
 			double[] direction_1,
 			double[] direction_2) {
@@ -249,30 +262,31 @@ public class NeuriteElement extends ini.cx3d.swig.biology.biology.NeuriteElement
 	 * @param direction_2
 	 * @return
 	 */
-	public NeuriteElement[] bifurcate(
-			double length, 
-			double diameter_1, 
+	@Override
+	public ini.cx3d.localBiology.interfaces.NeuriteElement[] bifurcate(
+			double length,
+			double diameter_1,
 			double diameter_2,
 			double[] direction_1,
 			double[] direction_2) {
-
 		// 1) physical bifurcation
 		PhysicalCylinder[] pc = physicalCylinder.bifurcateCylinder(length, direction_1, direction_2);
 		// if bifurcation is not allowed...
 		if(pc == null){
-			(new RuntimeException("Bifurcation not allowed!")).printStackTrace();
-			return null;
+			throw new RuntimeException();
+//			(new RuntimeException("Bifurcation not allowed!")).printStackTrace();
+//			return null;
 		}
 
 		// 2) creating the first daughter branch
-		NeuriteElement ne1 = getCopy();
+		ini.cx3d.localBiology.interfaces.NeuriteElement ne1 = getCopy();
 		PhysicalCylinder pc1 = pc[0];
 		ne1.setPhysical(pc1);
 		pc1.setDiameter(diameter_1);
 		pc1.setBranchOrder(physicalCylinder.getBranchOrder() + 1);
 
 		// 3) the second one
-		NeuriteElement ne2 = getCopy();
+		ini.cx3d.localBiology.interfaces.NeuriteElement ne2 = getCopy();
 		PhysicalCylinder pc2 = pc[1];
 		ne2.setPhysical(pc2);
 		pc2.setDiameter(diameter_2);
@@ -295,7 +309,7 @@ public class NeuriteElement extends ini.cx3d.swig.biology.biology.NeuriteElement
 				removeLocalBiologyModule(m);
 			}
 		}
-		return new NeuriteElement[] {ne1, ne2};
+		return new ini.cx3d.localBiology.interfaces.NeuriteElement[] {ne1, ne2};
 	}
 
 	/**
@@ -304,7 +318,8 @@ public class NeuriteElement extends ini.cx3d.swig.biology.biology.NeuriteElement
 	 * @param direction_2
 	 * @return
 	 */
-	public NeuriteElement[] bifurcate(double [] direction_1, double [] direction_2) {
+	@Override
+	public ini.cx3d.localBiology.interfaces.NeuriteElement[] bifurcate(double[] direction_1, double[] direction_2) {
 		// initial default length :
 		double l = Param.NEURITE_DEFAULT_ACTUAL_LENGTH;
 		// diameters :
@@ -317,7 +332,8 @@ public class NeuriteElement extends ini.cx3d.swig.biology.biology.NeuriteElement
 	 * 
 	 * @return
 	 */
-	public NeuriteElement[] bifurcate() {
+	@Override
+	public ini.cx3d.localBiology.interfaces.NeuriteElement[] bifurcate() {
 		// initial default length :
 		double l = Param.NEURITE_DEFAULT_ACTUAL_LENGTH;
 		// diameters :
@@ -342,19 +358,20 @@ public class NeuriteElement extends ini.cx3d.swig.biology.biology.NeuriteElement
 	 * Makes spines (the physical and the biological part) on this NeuriteElement.
 	 * @param interval the average interval between the boutons.
 	 */
+	@Override
 	public void makeSpines(double interval){
 		// how many spines for this NeuriteElement ?
 		double length = physicalCylinder.getActualLength();
 		double spineOnThisSegment = length/interval;
 		int nb = (int)Math.round(spineOnThisSegment);
-		// TODO : better way to define number (ex : if interval >> length -> no spine at all) 
+		// TODO : better way to define number (ex : if interval >> length -> no spine at all)
 		for (int i = 0; i < nb; i++) {
 			// create the physical part
 			double[] coord = {length*ECM.getRandomDouble(), 6.28*ECM.getRandomDouble()};
 			PhysicalSpine pSpine = new PhysicalSpine(physicalCylinder,coord,3);
 			physicalCylinder.addExcrescence(pSpine);
 			// create the biological part and set call backs
-			BiologicalSpine bSpine = new BiologicalSpine();
+			BiologicalSpine bSpine = BiologicalSpineFactory.create();
 			pSpine.setBiologicalSpine(bSpine);
 			bSpine.setPhysicalSpine(pSpine);
 		}
@@ -363,6 +380,7 @@ public class NeuriteElement extends ini.cx3d.swig.biology.biology.NeuriteElement
 	/**
 	 * Makes a single spine (the physical and the biological part) randomly on this NeuriteElement.
 	 */
+	@Override
 	public void makeSingleSpine(){
 		double length = physicalCylinder.getActualLength();
 		// create the physical part
@@ -370,7 +388,7 @@ public class NeuriteElement extends ini.cx3d.swig.biology.biology.NeuriteElement
 		PhysicalSpine pSpine = new PhysicalSpine(physicalCylinder,coord,3);
 		physicalCylinder.addExcrescence(pSpine);
 		// create the biological part and set call backs
-		BiologicalSpine bSpine = new BiologicalSpine();
+		BiologicalSpine bSpine = BiologicalSpineFactory.create();
 		pSpine.setBiologicalSpine(bSpine);
 		bSpine.setPhysicalSpine(pSpine);
 	}
@@ -378,6 +396,7 @@ public class NeuriteElement extends ini.cx3d.swig.biology.biology.NeuriteElement
 	/**
 	 * Makes a single spine (the physical and the biological part) randomly on this NeuriteElement.
 	 */
+	@Override
 	public void makeSingleSpine(double distFromProximalEnd){
 		double length = physicalCylinder.getActualLength();
 		if(distFromProximalEnd>length){
@@ -390,7 +409,7 @@ public class NeuriteElement extends ini.cx3d.swig.biology.biology.NeuriteElement
 		PhysicalSpine pSpine = new PhysicalSpine(physicalCylinder,coord,3);
 		physicalCylinder.addExcrescence(pSpine);
 		// create the biological part and set call backs
-		BiologicalSpine bSpine = new BiologicalSpine();
+		BiologicalSpine bSpine = BiologicalSpineFactory.create();
 		pSpine.setBiologicalSpine(bSpine);
 		bSpine.setPhysicalSpine(pSpine);
 	}
@@ -399,11 +418,12 @@ public class NeuriteElement extends ini.cx3d.swig.biology.biology.NeuriteElement
 	 * Make boutons (the physical and the biological part) on this NeuriteElement.
 	 * @param interval the average interval between the boutons.
 	 */
+	@Override
 	public void makeBoutons(double interval){
 		// how many boutons for this NeuriteElement ?
 		double length = physicalCylinder.getActualLength();
 		double boutonsOnThisSegment = length/interval;
-		int nb = (int)Math.round(boutonsOnThisSegment);		
+		int nb = (int)Math.round(boutonsOnThisSegment);
 
 		// TODO : better way to define number (ex : if interval >> length -> no spine at all) 
 		for (int i = 0; i < nb; i++) {
@@ -412,7 +432,7 @@ public class NeuriteElement extends ini.cx3d.swig.biology.biology.NeuriteElement
 			PhysicalBouton pBouton = new PhysicalBouton(physicalCylinder,coord,2);
 			physicalCylinder.addExcrescence(pBouton);
 			// create the biological part and set call backs
-			BiologicalBouton bBouton = new BiologicalBouton();
+			ini.cx3d.synapses.interfaces.BiologicalBouton bBouton = BiologicalBoutonFactory.create();
 			pBouton.setBiologicalBouton(bBouton);
 			bBouton.setPhysicalBouton(pBouton);
 		}
@@ -421,6 +441,7 @@ public class NeuriteElement extends ini.cx3d.swig.biology.biology.NeuriteElement
 	/**
 	 * Adds one bouton (the physical and the biological part) randomly on this NeuriteElement.
 	 */
+	@Override
 	public void makeSingleBouton(double distFromProximalEnd){
 		double length = physicalCylinder.getActualLength();
 		if(distFromProximalEnd>length){
@@ -433,7 +454,7 @@ public class NeuriteElement extends ini.cx3d.swig.biology.biology.NeuriteElement
 		PhysicalBouton pBouton = new PhysicalBouton(physicalCylinder,coord,2);
 		physicalCylinder.addExcrescence(pBouton);
 		// create the biological part and set call backs
-		BiologicalBouton bBouton = new BiologicalBouton();
+		ini.cx3d.synapses.interfaces.BiologicalBouton bBouton = BiologicalBoutonFactory.create();
 		pBouton.setBiologicalBouton(bBouton);
 		bBouton.setPhysicalBouton(pBouton);
 	}
@@ -441,6 +462,7 @@ public class NeuriteElement extends ini.cx3d.swig.biology.biology.NeuriteElement
 	/**
 	 * Adds one bouton (the physical and the biological part) randomly on this NeuriteElement.
 	 */
+	@Override
 	public void makeSingleBouton(){
 		// how many boutons for this NeuriteElement ?
 		double length = physicalCylinder.getActualLength();
@@ -449,7 +471,7 @@ public class NeuriteElement extends ini.cx3d.swig.biology.biology.NeuriteElement
 		PhysicalBouton pBouton = new PhysicalBouton(physicalCylinder,coord,2);
 		physicalCylinder.addExcrescence(pBouton);
 		// create the biological part and set call backs
-		BiologicalBouton bBouton = new BiologicalBouton();
+		ini.cx3d.synapses.interfaces.BiologicalBouton bBouton = BiologicalBoutonFactory.create();
 		pBouton.setBiologicalBouton(bBouton);
 		bBouton.setPhysicalBouton(pBouton);
 	}
@@ -461,6 +483,7 @@ public class NeuriteElement extends ini.cx3d.swig.biology.biology.NeuriteElement
 	 * @param probabilityToSynapse probability to make the link.
 	 * @return
 	 */
+	@Override
 	public int synapseBetweenExistingBS(double probabilityToSynapse){
 		int synapseMade = 0;
 
@@ -479,7 +502,7 @@ public class NeuriteElement extends ini.cx3d.swig.biology.biology.NeuriteElement
 
 			ini.cx3d.physics.interfaces.PhysicalObject po = (ini.cx3d.physics.interfaces.PhysicalObject)pn;
 			// for all Excrescence pair :
-			ext:	for (Excrescence e1 : physicalCylinder.getExcrescences()) {
+			ext:	for (ini.cx3d.synapses.interfaces.Excrescence e1 : physicalCylinder.getExcrescences()) {
 				// only if this one is a free bouton:
 				if(e1.getEx()!=null || e1.getType()!=Excrescence.BOUTON){
 					continue ext;
@@ -526,31 +549,37 @@ public class NeuriteElement extends ini.cx3d.swig.biology.biology.NeuriteElement
 	// *************************************************************************************
 
 
+	@Override
 	public ini.cx3d.physics.interfaces.PhysicalObject getPhysical() {
 		return physicalCylinder;
 	}
 
+	@Override
 	public void setPhysical(ini.cx3d.physics.interfaces.PhysicalObject physical) {
 		this.physicalCylinder = (PhysicalCylinder) physical;
 		this.physicalCylinder.setNeuriteElement(this); // callback
 	}
 
+	@Override
 	public PhysicalCylinder getPhysicalCylinder(){
 		return (PhysicalCylinder)physicalCylinder;
 	} 
 
+	@Override
 	public void setPhysicalCylinder(PhysicalCylinder physicalcylinder){
 		physicalCylinder = physicalcylinder;
 		physicalCylinder.setNeuriteElement(this);
 	}
 
 	/** Returns true if this NeuriteElement is an axon. Hence false if it is a dendrite*/
-	public boolean isAnAxon(){
+	@Override
+	public boolean isAxon(){
 		return isAnAxon;
 	}
 
 	/** True means that this NeuriteElement is an axon. Hence false means it is a dendrite*/
-	public void setIsAnAxon(boolean isAnAxon){
+	@Override
+	public void setAxon(boolean isAnAxon){
 		this.isAnAxon = isAnAxon;
 	}
 
@@ -567,7 +596,8 @@ public class NeuriteElement extends ini.cx3d.swig.biology.biology.NeuriteElement
 	 * @return the (first) distal <code>NeuriteElement</code>, if it exists,
 	 * i.e. if this is not the terminal segment (otherwise returns <code>null</code>).  
 	 */
-	public NeuriteElement getDaughterLeft() {
+	@Override
+	public ini.cx3d.localBiology.interfaces.NeuriteElement getDaughterLeft() {
 		if (physicalCylinder.getDaughterLeft() == null) { 
 			return null;
 		} else {
@@ -579,10 +609,11 @@ public class NeuriteElement extends ini.cx3d.swig.biology.biology.NeuriteElement
 	 * @return the second distal <code>NeuriteElement</code>, if it exists 
 	 * i.e. if there is a branching point just after this element (otherwise returns <code>null</code>).  
 	 */
-	public NeuriteElement getDaughterRight() {
+	@Override
+	public ini.cx3d.localBiology.interfaces.NeuriteElement getDaughterRight() {
 		if (physicalCylinder.getDaughterRight() == null) { return null;
 		} else {
-			NeuriteElement ne = physicalCylinder.getDaughterRight().getNeuriteElement();
+			ini.cx3d.localBiology.interfaces.NeuriteElement ne = physicalCylinder.getDaughterRight().getNeuriteElement();
 			return ne; 
 		}
 	}
@@ -596,14 +627,15 @@ public class NeuriteElement extends ini.cx3d.swig.biology.biology.NeuriteElement
 	 * @param elements the vector where it should be added.
 	 * @return
 	 */
-	public Vector<NeuriteElement> AddYourselfAndDistalNeuriteElements(Vector<NeuriteElement> elements){
+	@Override
+	public AbstractSequentialList<ini.cx3d.localBiology.interfaces.NeuriteElement> addYourselfAndDistalNeuriteElements(AbstractSequentialList<ini.cx3d.localBiology.interfaces.NeuriteElement> elements){
 		elements.add(this);
-		NeuriteElement dL = getDaughterLeft();
+		ini.cx3d.localBiology.interfaces.NeuriteElement dL = getDaughterLeft();
 		if(dL!=null){
-			dL.AddYourselfAndDistalNeuriteElements(elements);
-			NeuriteElement dR = getDaughterRight();
+			dL.addYourselfAndDistalNeuriteElements(elements);
+			ini.cx3d.localBiology.interfaces.NeuriteElement dR = getDaughterRight();
 			if(dR!=null){
-				dR.AddYourselfAndDistalNeuriteElements(elements);
+				dR.addYourselfAndDistalNeuriteElements(elements);
 			}
 		}
 		return elements;

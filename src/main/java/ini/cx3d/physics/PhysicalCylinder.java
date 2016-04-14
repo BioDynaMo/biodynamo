@@ -31,7 +31,7 @@ import static ini.cx3d.utilities.StringUtilities.toStr;
 import ini.cx3d.Param;
 import ini.cx3d.localBiology.interfaces.CellElement;
 import ini.cx3d.localBiology.LocalBiologyModule;
-import ini.cx3d.localBiology.NeuriteElement;
+import ini.cx3d.localBiology.interfaces.NeuriteElement;
 import ini.cx3d.physics.factory.IntracellularSubstanceFactory;
 import ini.cx3d.physics.factory.PhysicalCylinderFactory;
 import ini.cx3d.physics.factory.PhysicalObjectFactory;
@@ -42,7 +42,6 @@ import ini.cx3d.spatialOrganization.PositionNotAllowedException;
 import ini.cx3d.spatialOrganization.SpatialOrganizationNode;
 import ini.cx3d.spatialOrganization.interfaces.SpaceNode;
 import ini.cx3d.swig.physics.physics;
-import ini.cx3d.synapses.Excrescence;
 import ini.cx3d.utilities.StringUtilities;
 
 import java.util.AbstractSequentialList;
@@ -377,7 +376,7 @@ public class PhysicalCylinder extends physics.PhysicalCylinderBase implements in
 	 * A new PhysicalCylinder is instantiated and becomes the proximal part. All characteristics are transmitted.
 	 * A new Neurite element is also instantiated, and assigned to the new proximal PhysicalCylinder
 	 */
-	private NeuriteElement insertProximalCylinder(){
+	private ini.cx3d.localBiology.interfaces.NeuriteElement insertProximalCylinder(){
 		return insertProximalCylinder(0.5);
 	}
 
@@ -388,7 +387,7 @@ public class PhysicalCylinder extends physics.PhysicalCylinderBase implements in
 	 *
 	 *@param distalPortion the fraction of the total old length devoted to the distal half (should be between 0 and 1).
 	 */
-	private NeuriteElement insertProximalCylinder(double distalPortion){
+	private ini.cx3d.localBiology.interfaces.NeuriteElement insertProximalCylinder(double distalPortion){
 		// debugg :
 		//getRwLock().writeLock().lock();
 		this.oldActualLength = 0;
@@ -402,7 +401,7 @@ public class PhysicalCylinder extends physics.PhysicalCylinderBase implements in
 				getMassLocation()[2] - temp*springAxis[2]  };
 		// creating a new PhysicalCylinder & a new NeuriteElement, linking them together
 		PhysicalCylinder newProximalCylinder = getCopy();
-		NeuriteElement ne = neuriteElement.getCopy();
+		ini.cx3d.localBiology.interfaces.NeuriteElement ne = neuriteElement.getCopy();
 		ne.setPhysical(newProximalCylinder);
 		newProximalCylinder.setMassLocation(newProximalCylinderMassLocation);
 		// familly relations
@@ -452,7 +451,7 @@ public class PhysicalCylinder extends physics.PhysicalCylinderBase implements in
 
 		// deal with the excressences:
 		for (int i = 0; i<getExcrescences().size() ; i++){
-			Excrescence ex = getExcrescences().get(i);
+			ini.cx3d.synapses.interfaces.Excrescence ex = getExcrescences().get(i);
 			double[] pos = ex.getPositionOnPO();
 			// transmitt them to proxymal cyl
 			if(pos[0]<newProximalCylinder.actualLength){
@@ -522,13 +521,13 @@ public class PhysicalCylinder extends physics.PhysicalCylinderBase implements in
 			// mine are shifted up :
 			for (int i = 0; i<getExcrescences().size() ; i++){
 				double shift = this.actualLength-proximalCylinder.actualLength;
-				Excrescence ex = getExcrescences().get(i);
+				ini.cx3d.synapses.interfaces.Excrescence ex = getExcrescences().get(i);
 				double[] pos = ex.getPositionOnPO();
 				pos[0] += shift;
 			}
 			// I incorporate the ones of the previous cyl:
 			for (int i = 0; i<proximalCylinder.getExcrescences().size() ; i++){
-				Excrescence ex = getExcrescences().get(i);
+				ini.cx3d.synapses.interfaces.Excrescence ex = getExcrescences().get(i);
 				addExcrescence(ex);
 				ex.setPo(this);
 			}
@@ -824,7 +823,7 @@ public class PhysicalCylinder extends physics.PhysicalCylinderBase implements in
 	@Override
 	public PhysicalCylinder branchCylinder(double length, double[] direction) {
 		// we first split this cylinder into two pieces
-		NeuriteElement ne = insertProximalCylinder();
+		ini.cx3d.localBiology.interfaces.NeuriteElement ne = insertProximalCylinder();
 		// then append a "daughter right" between the two
 		return ((PhysicalCylinder) ne.getPhysicalCylinder()).extendSideCylinder(length, direction);
 	}

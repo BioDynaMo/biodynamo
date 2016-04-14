@@ -25,7 +25,7 @@ import ini.cx3d.SimStateSerializable;
 
 import static ini.cx3d.SimStateSerializationUtil.keyValue;
 
-public class BiologicalSpine implements SimStateSerializable{
+public class BiologicalSpine implements ini.cx3d.synapses.interfaces.BiologicalSpine {
 	PhysicalSpine physicalSpine;
 
 	@Override
@@ -40,10 +40,12 @@ public class BiologicalSpine implements SimStateSerializable{
 		return sb;
 	}
 
+	@Override
 	public PhysicalSpine getPhysicalSpine() {
 		return physicalSpine;
 	}
 
+	@Override
 	public void setPhysicalSpine(PhysicalSpine physicalSpine) {
 		this.physicalSpine = physicalSpine;
 	}

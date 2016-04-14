@@ -48,7 +48,10 @@ JAVA_LOAD_NATIVE_LIBRARY(cx3d_physics);
 %pragma(java) jniclassimports="import ini.cx3d.swig.NativeStringBuilder; import ini.cx3d.swig.spatialOrganization.SpaceNodeT_PhysicalNode; import ini.cx3d.swig.biology.LocalBiologyModule;
 import ini.cx3d.swig.biology.CellElement;
 import ini.cx3d.swig.biology.SomaElement;
-import ini.cx3d.swig.biology.NeuriteElement;"
+import ini.cx3d.swig.biology.NeuriteElement;
+import ini.cx3d.swig.biology.Excrescence;
+import ini.cx3d.swig.biology.PhysicalSpine;
+import ini.cx3d.swig.biology.PhysicalBouton;"
 
 // class modifications
 %include "class_customization/physics/substance.i"
@@ -69,6 +72,8 @@ import ini.cx3d.swig.biology.NeuriteElement;"
 %include "class_customization/local_biology/soma_element.i"
 %include "class_customization/local_biology/neurite_element.i"
 %include "class_customization/local_biology/local_biology_module.i"
+%include "class_customization/synapse/physical_spine.i"
+%include "class_customization/synapse/physical_bouton.i"
 %ignore cx3d::Param::kViolet;
 
 // add the original header files here
@@ -86,5 +91,4 @@ import ini.cx3d.swig.biology.NeuriteElement;"
 %include "java_util.h"
 %include "physics/inter_object_force.h"
 %include "physics/default_force.h"
-%include "synapse/excrescence.h"
 %include "param.h"

@@ -29,7 +29,6 @@ import ini.cx3d.physics.factory.IntracellularSubstanceFactory;
 import ini.cx3d.physics.factory.PhysicalBondFactory;
 import ini.cx3d.physics.interfaces.IntracellularSubstance;
 import ini.cx3d.simulations.ECM;
-import ini.cx3d.synapses.Excrescence;
 
 import ini.cx3d.utilities.StringUtilities;
 
@@ -111,7 +110,7 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 
 
 	/* List of the Physical bonds that this object can do (for cell adhesion, to restore proper configuration)*/
-	protected AbstractSequentialList<Excrescence> excrescences = new LinkedList<Excrescence>();
+	protected AbstractSequentialList<ini.cx3d.synapses.interfaces.Excrescence> excrescences = new LinkedList<ini.cx3d.synapses.interfaces.Excrescence>();
 
 	@Override
 	public void setTotalForceLastTimeStep(double[] totalForceLastTimeStep){
@@ -197,7 +196,7 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 	/** Adds an <code>Excrescence</code> instance to the Excrescence list of this
 	 * <code>PhysicalObject</code>.*/
 	@Override
-	public void addExcrescence(Excrescence ex){
+	public void addExcrescence(ini.cx3d.synapses.interfaces.Excrescence ex){
 		//getRwLock().writeLock().lock();
 		excrescences.add(ex);
 		//getRwLock().writeLock().unlock();
@@ -207,7 +206,7 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 	/** Removes an <code>Excrescence</code> instance to the Excrescence list of this
 	 * <code>PhysicalObject</code>.*/
 	@Override
-	public void removeExcrescence(Excrescence ex){
+	public void removeExcrescence(ini.cx3d.synapses.interfaces.Excrescence ex){
 		//getRwLock().writeLock().lock();
 		excrescences.remove(ex);
 		//getRwLock().writeLock().unlock();
@@ -922,7 +921,7 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 
 	/** Returns the vector containing all the Excrescences (PhysicalSpine, PhysicalBouton).*/
 	@Override
-	public AbstractSequentialList<Excrescence> getExcrescences(){
+	public AbstractSequentialList<ini.cx3d.synapses.interfaces.Excrescence> getExcrescences(){
 		try
 		{
 			//getRwLock().readLock().lock();
@@ -938,7 +937,7 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 	/** Sets the vector containing all the Excrescences (PhysicalSpine, PhysicalBouton).
 	 * This method should not be used during a simulation. */
 //	@Override
-	public void setExcrescences(AbstractSequentialList<Excrescence> excrescences) {
+	public void setExcrescences(AbstractSequentialList<ini.cx3d.synapses.interfaces.Excrescence> excrescences) {
 		//getRwLock().writeLock().lock();
 		this.excrescences = excrescences;
 		//getRwLock().writeLock().unlock();

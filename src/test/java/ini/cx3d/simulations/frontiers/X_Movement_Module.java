@@ -29,10 +29,7 @@ import ini.cx3d.Param;
 import ini.cx3d.cells.Cell;
 import ini.cx3d.cells.CellFactory;
 import ini.cx3d.localBiology.interfaces.CellElement;
-import ini.cx3d.localBiology.LocalBiologyModule;
-import ini.cx3d.localBiology.NeuriteElement;
 import ini.cx3d.physics.interfaces.PhysicalCylinder;
-import ini.cx3d.physics.Substance;
 import ini.cx3d.physics.factory.SubstanceFactory;
 import ini.cx3d.simulations.ECM;
 import ini.cx3d.simulations.Scheduler;
@@ -283,7 +280,7 @@ public class X_Movement_Module extends ini.cx3d.swig.biology.LocalBiologyModule{
 		cell.setColorForAllPhysicalObjects(Param.RED);
 
 		// 4) Extend an axon from the cell
-		NeuriteElement neurite = cell.getSomaElement().extendNewNeurite(new double[] {0,0,1});
+		ini.cx3d.localBiology.interfaces.NeuriteElement neurite = cell.getSomaElement().extendNewNeurite(new double[] {0,0,1});
 		neurite.getPhysical().setDiameter(1.0);
 		neurite.getPhysicalCylinder().setDiameter(3);
 		// 5) Put a movementReceptor

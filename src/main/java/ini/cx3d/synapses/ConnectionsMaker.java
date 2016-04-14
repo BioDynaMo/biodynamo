@@ -21,7 +21,6 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 
 package ini.cx3d.synapses;
 
-import ini.cx3d.localBiology.NeuriteElement;
 import ini.cx3d.simulations.ECM;
 
 public class ConnectionsMaker {
@@ -32,16 +31,16 @@ public class ConnectionsMaker {
 	public static void extendExcressencesAndSynapseOnEveryNeuriteElement(double probaBilityToSynapse){
 		ECM ecm = ECM.getInstance();
 		for (int i = 0; i < ecm.neuriteElementList.size(); i++) {
-			NeuriteElement ne = ecm.neuriteElementList.get(i);
-			if(ne.isAnAxon()==true){
+			ini.cx3d.localBiology.interfaces.NeuriteElement ne = ecm.neuriteElementList.get(i);
+			if(ne.isAxon()==true){
 				ne.makeBoutons(2);
 			}else{
 				ne.makeSpines(5);
 			}
 		}
 		for (int i = 0; i < ecm.neuriteElementList.size(); i++) {
-			NeuriteElement ne = ecm.neuriteElementList.get(i);
-			if(ne.isAnAxon()==true){
+			ini.cx3d.localBiology.interfaces.NeuriteElement ne = ecm.neuriteElementList.get(i);
+			if(ne.isAxon()==true){
 				if(ECM.getRandomDouble()<probaBilityToSynapse){
 					ne.synapseBetweenExistingBS(probaBilityToSynapse);
 				}

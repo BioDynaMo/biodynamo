@@ -25,7 +25,7 @@ import ini.cx3d.SimStateSerializable;
 
 import static ini.cx3d.SimStateSerializationUtil.keyValue;
 
-public class BiologicalBouton implements SimStateSerializable{
+public class BiologicalBouton implements ini.cx3d.synapses.interfaces.BiologicalBouton {
 	PhysicalBouton physicalBouton;
 
 	@Override
@@ -39,10 +39,12 @@ public class BiologicalBouton implements SimStateSerializable{
 		return sb;
 	}
 
+	@Override
 	public PhysicalBouton getPhysicalBouton() {
 		return physicalBouton;
 	}
 
+	@Override
 	public void setPhysicalBouton(PhysicalBouton physicalBouton) {
 		this.physicalBouton = physicalBouton;
 	}

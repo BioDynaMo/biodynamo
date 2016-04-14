@@ -1,7 +1,6 @@
 package ini.cx3d.physics.interfaces;
 
 import ini.cx3d.localBiology.interfaces.CellElement;
-import ini.cx3d.synapses.Excrescence;
 
 import java.awt.*;
 import java.util.AbstractSequentialList;
@@ -28,11 +27,11 @@ public interface PhysicalObject extends PhysicalNode {
 
 	/** Adds an <code>Excrescence</code> instance to the Excrescence list of this
 	 * <code>PhysicalObject</code>.*/
-	void addExcrescence(Excrescence ex);
+	void addExcrescence(ini.cx3d.synapses.interfaces.Excrescence ex);
 
 	/** Removes an <code>Excrescence</code> instance to the Excrescence list of this
 	 * <code>PhysicalObject</code>.*/
-	void removeExcrescence(Excrescence ex);
+	void removeExcrescence(ini.cx3d.synapses.interfaces.Excrescence ex);
 
 	/** Active displacement of the point mass of this <code>PhysicalObject</code>. ("active" means
 	 * "triggered by a biological process" like in growth or migration). This method MUST NOT be used
@@ -251,7 +250,7 @@ public interface PhysicalObject extends PhysicalNode {
 //	void setPhysicalBonds(Vector<PhysicalBond> physicalBonds);
 
 	/** Returns the vector containing all the Excrescences (PhysicalSpine, PhysicalBouton).*/
-	AbstractSequentialList<Excrescence> getExcrescences();
+	AbstractSequentialList<ini.cx3d.synapses.interfaces.Excrescence> getExcrescences();
 
 	/** Sets the vector containing all the Excrescences (PhysicalSpine, PhysicalBouton).
 	 * This method should not be used during a simulation. */

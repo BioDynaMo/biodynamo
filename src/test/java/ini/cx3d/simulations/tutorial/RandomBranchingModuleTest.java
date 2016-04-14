@@ -27,7 +27,6 @@ import ini.cx3d.cells.Cell;
 import ini.cx3d.cells.CellFactory;
 import ini.cx3d.localBiology.interfaces.CellElement;
 import ini.cx3d.localBiology.LocalBiologyModule;
-import ini.cx3d.localBiology.NeuriteElement;
 import ini.cx3d.simulations.ECM;
 import ini.cx3d.simulations.Scheduler;
 
@@ -53,7 +52,7 @@ public class RandomBranchingModuleTest extends BaseSimulationTest {
 		for(int i = 0; i<1; i++){
 			Cell c = CellFactory.getCellInstance(randomNoise(40, 3));
 			c.setColorForAllPhysicalObjects(Param.GRAY);
-			NeuriteElement neurite = c.getSomaElement().extendNewNeurite(new double[] {0,0,1});
+			ini.cx3d.localBiology.interfaces.NeuriteElement neurite = c.getSomaElement().extendNewNeurite(new double[] {0,0,1});
 			neurite.getPhysicalCylinder().setDiameter(2);
 			neurite.addLocalBiologyModule(new RandomBranchingModule());
 		}
@@ -66,7 +65,7 @@ public class RandomBranchingModuleTest extends BaseSimulationTest {
 
 class RandomBranchingModule extends ini.cx3d.swig.biology.LocalBiologyModule {
 
-	NeuriteElement neuriteElement;
+	ini.cx3d.localBiology.interfaces.NeuriteElement neuriteElement;
 	
 	private double[] direction;
 
@@ -80,7 +79,7 @@ class RandomBranchingModule extends ini.cx3d.swig.biology.LocalBiologyModule {
 
 	public void setCellElement(CellElement cellElement) {
 		if(cellElement.isANeuriteElement()){
-			neuriteElement = (NeuriteElement)cellElement;
+			neuriteElement = (ini.cx3d.localBiology.interfaces.NeuriteElement)cellElement;
 			direction = neuriteElement.getPhysicalCylinder().getAxis();
 		}else{
 			cellElement.removeLocalBiologyModule(this);
@@ -123,13 +122,13 @@ class RandomBranchingModule extends ini.cx3d.swig.biology.LocalBiologyModule {
 		neuriteElement.getPhysical().movePointMass(speed, direction);
 		
 		if(ECM.getRandomDouble()<probabilityToBifurcate){
-			NeuriteElement[] nn = neuriteElement.bifurcate();
+			ini.cx3d.localBiology.interfaces.NeuriteElement[] nn = neuriteElement.bifurcate();
 			nn[0].getPhysical().setColor(Param.RED);
 			nn[1].getPhysical().setColor(Param.BLUE);
 			return;
 		}
 		if(ECM.getRandomDouble()<probabilityToBranch){
-			NeuriteElement n = neuriteElement.branch();
+			ini.cx3d.localBiology.interfaces.NeuriteElement n = neuriteElement.branch();
 			n.getPhysical().setColor(Param.VIOLET);
 			return;
 		}

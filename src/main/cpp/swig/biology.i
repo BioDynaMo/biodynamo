@@ -12,6 +12,11 @@
 #include "physics/physical_object.h"
 #include "physics/physical_sphere.h"
 #include "cells/cell.h"
+#include "synapse/excrescence.h"
+#include "synapse/physical_spine.h"
+#include "synapse/physical_bouton.h"
+#include "synapse/biological_spine.h"
+#include "synapse/biological_bouton.h"
 using namespace cx3d::local_biology;
 using cx3d::physics::PhysicalObject;
 using cx3d::physics::PhysicalSphere;
@@ -27,6 +32,7 @@ JAVA_LOAD_NATIVE_LIBRARY(cx3d_biology);
 
 // typemap definitions, code modifications / additions
 %include "primitives.i"
+%double_stdarray_array_marshalling(biology, 2);
 %double_stdarray_array_marshalling(biology, 3);
 %pragma(java) jniclassimports="import ini.cx3d.swig.NativeStringBuilder;
 import ini.cx3d.swig.biology.CellElement;
@@ -46,6 +52,11 @@ import ini.cx3d.swig.physics.PhysicalCylinder;"
 %include "class_customization/local_biology/neurite_element.i"
 %include "class_customization/cells/cell.i"
 %include "class_customization/physics/ecm.i"
+%include "class_customization/synapse/excrescence.i"
+%include "class_customization/synapse/physical_spine.i"
+%include "class_customization/synapse/physical_bouton.i"
+%include "class_customization/synapse/biological_spine.i"
+%include "class_customization/synapse/biological_bouton.i"
 
 // add the original header files here
 %include "local_biology/local_biology_module.h"
@@ -54,3 +65,8 @@ import ini.cx3d.swig.physics.PhysicalCylinder;"
 %include "local_biology/soma_element.h"
 %include "local_biology/neurite_element.h"
 %include "cells/cell.h"
+%include "synapse/excrescence.h"
+%include "synapse/physical_spine.h"
+%include "synapse/physical_bouton.h"
+%include "synapse/biological_spine.h"
+%include "synapse/biological_bouton.h"

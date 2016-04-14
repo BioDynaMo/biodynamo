@@ -1,6 +1,6 @@
 package ini.cx3d.physics.debug;
 
-import ini.cx3d.localBiology.NeuriteElement;
+import ini.cx3d.localBiology.interfaces.NeuriteElement;
 import ini.cx3d.localBiology.interfaces.CellElement;
 import ini.cx3d.physics.PhysicalCylinder;
 import ini.cx3d.physics.interfaces.PhysicalObject;

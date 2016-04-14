@@ -32,7 +32,6 @@ import ini.cx3d.cells.Cell;
 import ini.cx3d.cells.CellFactory;
 import ini.cx3d.localBiology.LocalBiologyModule;
 import ini.cx3d.localBiology.interfaces.CellElement;
-import ini.cx3d.localBiology.NeuriteElement;
 import ini.cx3d.physics.factory.IntracellularSubstanceFactory;
 import ini.cx3d.simulations.ECM;
 import ini.cx3d.simulations.Scheduler;
@@ -68,7 +67,7 @@ public class IntracellularDiffusionTest extends BaseSimulationTest{
 		ini.cx3d.localBiology.interfaces.SomaElement soma = c.getSomaElement();
 		soma.addLocalBiologyModule(new InternalSecretor());
 		//insert growth cone module
-		NeuriteElement ne = c.getSomaElement().extendNewNeurite(new double[] {0,0,1});
+		ini.cx3d.localBiology.interfaces.NeuriteElement ne = c.getSomaElement().extendNewNeurite(new double[] {0,0,1});
 		ne.getPhysical().setDiameter(1.0);
 		ne.addLocalBiologyModule(new GrowthCone());
 		
@@ -157,7 +156,7 @@ public class IntracellularDiffusionTest extends BaseSimulationTest{
 			cyl.modifyIntracellularQuantity("tubulin", -concentration*consumptionFactor);
 			// test for bifurcation
 			if(ECM.getRandomDouble()<bifurcationProba)
-				((NeuriteElement)(getCellElement())).bifurcate();
+				((ini.cx3d.localBiology.interfaces.NeuriteElement)(getCellElement())).bifurcate();
 		}
 
 		@Override

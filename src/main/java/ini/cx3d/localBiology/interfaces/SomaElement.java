@@ -1,9 +1,6 @@
 package ini.cx3d.localBiology.interfaces;
 
-import ini.cx3d.localBiology.NeuriteElement;
-
 import java.util.AbstractSequentialList;
-import java.util.Vector;
 
 /**
  * Created by lukas on 11.04.16.
@@ -13,7 +10,7 @@ public interface SomaElement extends CellElement {
 
 	void run();
 
-	NeuriteElement extendNewNeurite();
+	ini.cx3d.localBiology.interfaces.NeuriteElement extendNewNeurite();
 
 	/**
 	 * Extends a new neurite at a random place on the sphere
@@ -22,11 +19,11 @@ public interface SomaElement extends CellElement {
 	 * @param theta the angle from the xAxis around the zAxis
 	 * @return
 	 */
-	NeuriteElement extendNewNeurite(double diameter);
+	ini.cx3d.localBiology.interfaces.NeuriteElement extendNewNeurite(double diameter);
 
-	NeuriteElement extendNewNeurite(double[] directionInGlobalCoordinates);
+	ini.cx3d.localBiology.interfaces.NeuriteElement extendNewNeurite(double[] directionInGlobalCoordinates);
 
-	NeuriteElement extendNewNeurite(double diameter, double[] directionInGlobalCoordinates);
+	ini.cx3d.localBiology.interfaces.NeuriteElement extendNewNeurite(double diameter, double[] directionInGlobalCoordinates);
 
 	/**
 	 * Extends a new neurites
@@ -35,7 +32,7 @@ public interface SomaElement extends CellElement {
 	 * @param theta the angle from the xAxis around the zAxis
 	 * @return
 	 */
-	NeuriteElement extendNewNeurite(double diameter, double phi, double theta);
+	ini.cx3d.localBiology.interfaces.NeuriteElement extendNewNeurite(double diameter, double phi, double theta);
 
 	ini.cx3d.physics.interfaces.PhysicalObject getPhysical();
 
@@ -45,7 +42,7 @@ public interface SomaElement extends CellElement {
 
 	void setPhysicalSphere(ini.cx3d.physics.interfaces.PhysicalSphere physicalsphere);
 
-	AbstractSequentialList<NeuriteElement> getNeuriteList();
+	AbstractSequentialList<ini.cx3d.localBiology.interfaces.NeuriteElement> getNeuriteList();
 
 	boolean isANeuriteElement();
 

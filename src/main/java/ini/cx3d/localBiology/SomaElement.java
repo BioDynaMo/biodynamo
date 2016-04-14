@@ -27,6 +27,8 @@ import static ini.cx3d.utilities.Matrix.add;
 import static ini.cx3d.utilities.Matrix.scalarMult;
 import static ini.cx3d.utilities.Matrix.subtract;
 import ini.cx3d.Param;
+import ini.cx3d.localBiology.factory.NeuriteElementFactory;
+import ini.cx3d.localBiology.interfaces.NeuriteElement;
 import ini.cx3d.physics.interfaces.PhysicalCylinder;
 import ini.cx3d.simulations.ECM;
 import ini.cx3d.synapses.BiologicalSomaticSpine;
@@ -35,7 +37,6 @@ import ini.cx3d.synapses.PhysicalSomaticSpine;
 import java.util.AbstractSequentialList;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.Vector;
 
 /**
  * This class contains the description of the biological properties of a soma (if it contains
@@ -108,7 +109,7 @@ public class SomaElement extends ini.cx3d.swig.biology.SomaElement implements in
 
 	
 	@Override
-	public NeuriteElement extendNewNeurite(){
+	public ini.cx3d.localBiology.interfaces.NeuriteElement extendNewNeurite(){
 		return extendNewNeurite(Param.NEURITE_DEFAULT_DIAMETER);
 	}
 	
@@ -118,7 +119,7 @@ public class SomaElement extends ini.cx3d.swig.biology.SomaElement implements in
 	 * @return
 	 */
 	@Override
-	public NeuriteElement extendNewNeurite(double diameter) {
+	public ini.cx3d.localBiology.interfaces.NeuriteElement extendNewNeurite(double diameter) {
 		// find random point on sphere (based on : http://www.cs.cmu.edu/~mws/rpos.html)
 //		
 		
@@ -136,7 +137,7 @@ public class SomaElement extends ini.cx3d.swig.biology.SomaElement implements in
 	}
 
 	@Override
-	public NeuriteElement extendNewNeurite(double[] directionInGlobalCoordinates){
+	public ini.cx3d.localBiology.interfaces.NeuriteElement extendNewNeurite(double[] directionInGlobalCoordinates){
 		// we do this cause transform is for 2 points in space and not for a direction:
 		double[] dir = add(directionInGlobalCoordinates, physical.getMassLocation());
 		double[] angles = physical.transformCoordinatesGlobalToPolar(dir);
@@ -144,7 +145,7 @@ public class SomaElement extends ini.cx3d.swig.biology.SomaElement implements in
 	}
 	
 	@Override
-	public NeuriteElement extendNewNeurite(double diameter, double[] directionInGlobalCoordinates){
+	public ini.cx3d.localBiology.interfaces.NeuriteElement extendNewNeurite(double diameter, double[] directionInGlobalCoordinates){
 		// we do this cause transform is for 2 points in space and not for a direction:
 		double[] dir = add(directionInGlobalCoordinates, physical.getMassLocation());
 		double[] angles = physical.transformCoordinatesGlobalToPolar(dir);
@@ -159,10 +160,10 @@ public class SomaElement extends ini.cx3d.swig.biology.SomaElement implements in
 	 * @return
 	 */
 	@Override
-	public NeuriteElement extendNewNeurite(double diameter, double phi, double theta) {
+	public ini.cx3d.localBiology.interfaces.NeuriteElement extendNewNeurite(double diameter, double phi, double theta) {
 		// creating the new NeuriteElement and PhysicalCylinder, linking them
 		double lengthOfNewCylinder = Param.NEURITE_DEFAULT_ACTUAL_LENGTH;
-		NeuriteElement ne = new NeuriteElement();
+		ini.cx3d.localBiology.interfaces.NeuriteElement ne = NeuriteElementFactory.create();
 		PhysicalCylinder pc = physical.addNewPhysicalCylinder(lengthOfNewCylinder, phi, theta);
 		ne.setPhysical(pc);
 		// setting diameter for new branch
@@ -245,8 +246,8 @@ public class SomaElement extends ini.cx3d.swig.biology.SomaElement implements in
 	}
 
 	@Override
-	public AbstractSequentialList<NeuriteElement>  getNeuriteList() {
-		AbstractSequentialList<NeuriteElement> neuriteList = new LinkedList<NeuriteElement>();
+	public AbstractSequentialList<ini.cx3d.localBiology.interfaces.NeuriteElement>  getNeuriteList() {
+		AbstractSequentialList<ini.cx3d.localBiology.interfaces.NeuriteElement> neuriteList = new LinkedList<ini.cx3d.localBiology.interfaces.NeuriteElement>();
 		AbstractSequentialList<ini.cx3d.physics.interfaces.PhysicalCylinder> pcList = physical.getDaughters();
 		for (Iterator<ini.cx3d.physics.interfaces.PhysicalCylinder> element = pcList.iterator(); element.hasNext();) {
 			ini.cx3d.physics.interfaces.PhysicalCylinder pc = element.next();

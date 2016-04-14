@@ -27,8 +27,6 @@ import ini.cx3d.BaseSimulationTest;
 import ini.cx3d.Param;
 import ini.cx3d.cells.Cell;
 import ini.cx3d.cells.CellFactory;
-import ini.cx3d.localBiology.NeuriteElement;
-import ini.cx3d.physics.Substance;
 import ini.cx3d.physics.factory.SubstanceFactory;
 import ini.cx3d.simulations.ECM;
 import ini.cx3d.simulations.Scheduler;
@@ -65,8 +63,8 @@ public class SmallNetworkTest extends BaseSimulationTest {
 				c.setNeuroMLType(Cell.InhibitoryCell);
 				c.setColorForAllPhysicalObjects(Param.VIOLET.darker());
 			}
-			NeuriteElement axon = c.getSomaElement().extendNewNeurite();
-			axon.setIsAnAxon(true);
+			ini.cx3d.localBiology.interfaces.NeuriteElement axon = c.getSomaElement().extendNewNeurite();
+			axon.setAxon(true);
 			axon.getPhysicalCylinder().setDiameter(0.5);
 			axon.addLocalBiologyModule(new NeuriteChemoAttraction("L1",0.02));
 
@@ -77,8 +75,8 @@ public class SmallNetworkTest extends BaseSimulationTest {
 			}
 
 
-			NeuriteElement dendrite = c.getSomaElement().extendNewNeurite();
-			dendrite.setIsAnAxon(false);
+			ini.cx3d.localBiology.interfaces.NeuriteElement dendrite = c.getSomaElement().extendNewNeurite();
+			dendrite.setAxon(false);
 			dendrite.getPhysicalCylinder().setDiameter(1.5);
 			dendrite.addLocalBiologyModule(new NeuriteChemoAttraction("L1",0.02));
 		}
