@@ -31,7 +31,8 @@ import ini.cx3d.physics.interfaces.PhysicalCylinder;
 import ini.cx3d.simulations.ECM;
 import ini.cx3d.simulations.Scheduler;
 import ini.cx3d.synapses.factory.BiologicalBoutonFactory;
-import ini.cx3d.synapses.interfaces.BiologicalBouton;
+import ini.cx3d.synapses.factory.PhysicalBoutonFactory;
+import ini.cx3d.synapses.factory.PhysicalSpineFactory;
 import ini.cx3d.synapses.interfaces.BiologicalSpine;
 import ini.cx3d.synapses.PhysicalBouton;
 import ini.cx3d.synapses.PhysicalSpine;
@@ -80,7 +81,7 @@ public class SimpleSynapseTest extends BaseSimulationTest {
 		double[] polarAxonCoord = axonCyl.transformCoordinatesGlobalToPolar(globalCoord);
 		polarAxonCoord = new double[] {polarAxonCoord[0], polarAxonCoord[1]}; // so r is implicit
 
-		PhysicalBouton pBouton = new PhysicalBouton(axonCyl,polarAxonCoord,3);
+		ini.cx3d.synapses.interfaces.PhysicalBouton pBouton = PhysicalBoutonFactory.create(axonCyl, polarAxonCoord, 3);
 		axonCyl.addExcrescence(pBouton);
 		// 		create the biological part and set call backs
 		ini.cx3d.synapses.interfaces.BiologicalBouton bBouton = BiologicalBoutonFactory.create();
@@ -92,7 +93,7 @@ public class SimpleSynapseTest extends BaseSimulationTest {
 		double[] polarDendriteCoord = dendriteCyl.transformCoordinatesGlobalToPolar(globalCoord);
 		polarDendriteCoord = new double[] {polarDendriteCoord[0], polarDendriteCoord[1]}; // so r is implicit
 
-		PhysicalSpine pSpine = new PhysicalSpine(dendriteCyl,polarDendriteCoord,3);
+		ini.cx3d.synapses.interfaces.PhysicalSpine pSpine = PhysicalSpineFactory.create(dendriteCyl, polarDendriteCoord, 3);
 		dendriteCyl.addExcrescence(pSpine);
 		// 		create the biological part and set call backs
 		BiologicalSpine bSpine = BiologicalSpineFactory.create();

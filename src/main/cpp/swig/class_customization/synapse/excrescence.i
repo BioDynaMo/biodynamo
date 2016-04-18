@@ -30,6 +30,13 @@
                       ini/cx3d/synapses/interfaces/Excrescence);
 %enddef
 
+%define %Excrescence_native()
+  %native_defined_class(cx3d::synapse::Excrescence,
+                    Excrescence,
+                    ini.cx3d.synapses.interfaces.Excrescence,
+                    Excrescence,;);
+%enddef
+
 %define %Excrescence_stdlist()
   %stdlist_typemap_cross_module(std::shared_ptr<cx3d::synapse::Excrescence>,
                                 Excrescence,
@@ -41,9 +48,15 @@
  * apply customizations
  */
 %Excrescence_cx3d_shared_ptr();
-%Excrescence_java();
+#ifdef EXCRESENCE_NATIVE
+  %Excrescence_native();
+#else
+  %Excrescence_java();
+#endif
 %Excrescence_stdlist();
+%typemap(javainterfaces) cx3d::synapse::Excrescence "ini.cx3d.synapses.interfaces.Excrescence"
 %typemap(javaimports) cx3d::synapse::Excrescence %{
   import ini.cx3d.swig.NativeStringBuilder;
   import ini.cx3d.swig.physics.PhysicalObject;
+  import ini.cx3d.swig.physics.ECM;
 %}

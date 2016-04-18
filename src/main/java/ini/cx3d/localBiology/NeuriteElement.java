@@ -35,13 +35,13 @@ import static ini.cx3d.utilities.Matrix.printlnLine;
 import static ini.cx3d.utilities.StringUtilities.toStr;
 
 import java.util.AbstractSequentialList;
-import java.util.Vector;
 
 import ini.cx3d.Param;
 import ini.cx3d.physics.interfaces.PhysicalCylinder;
 import ini.cx3d.physics.interfaces.PhysicalNode;
 import ini.cx3d.simulations.ECM;
-import ini.cx3d.synapses.interfaces.BiologicalBouton;
+import ini.cx3d.synapses.factory.PhysicalBoutonFactory;
+import ini.cx3d.synapses.factory.PhysicalSpineFactory;
 import ini.cx3d.synapses.interfaces.BiologicalSpine;
 import ini.cx3d.synapses.factory.BiologicalBoutonFactory;
 import ini.cx3d.synapses.factory.BiologicalSpineFactory;
@@ -368,7 +368,7 @@ public class NeuriteElement extends ini.cx3d.swig.biology.biology.NeuriteElement
 		for (int i = 0; i < nb; i++) {
 			// create the physical part
 			double[] coord = {length*ECM.getRandomDouble(), 6.28*ECM.getRandomDouble()};
-			PhysicalSpine pSpine = new PhysicalSpine(physicalCylinder,coord,3);
+			ini.cx3d.synapses.interfaces.PhysicalSpine pSpine = PhysicalSpineFactory.create(physicalCylinder,coord,3);
 			physicalCylinder.addExcrescence(pSpine);
 			// create the biological part and set call backs
 			BiologicalSpine bSpine = BiologicalSpineFactory.create();
@@ -385,7 +385,7 @@ public class NeuriteElement extends ini.cx3d.swig.biology.biology.NeuriteElement
 		double length = physicalCylinder.getActualLength();
 		// create the physical part
 		double[] coord = {length*ECM.getRandomDouble(), 6.28*ECM.getRandomDouble()};
-		PhysicalSpine pSpine = new PhysicalSpine(physicalCylinder,coord,3);
+		ini.cx3d.synapses.interfaces.PhysicalSpine pSpine = PhysicalSpineFactory.create(physicalCylinder, coord, 3);
 		physicalCylinder.addExcrescence(pSpine);
 		// create the biological part and set call backs
 		BiologicalSpine bSpine = BiologicalSpineFactory.create();
@@ -406,7 +406,7 @@ public class NeuriteElement extends ini.cx3d.swig.biology.biology.NeuriteElement
 		}
 		// create the physical part
 		double[] coord = {distFromProximalEnd, 6.28*ECM.getRandomDouble()};
-		PhysicalSpine pSpine = new PhysicalSpine(physicalCylinder,coord,3);
+		ini.cx3d.synapses.interfaces.PhysicalSpine pSpine = PhysicalSpineFactory.create(physicalCylinder,coord,3);
 		physicalCylinder.addExcrescence(pSpine);
 		// create the biological part and set call backs
 		BiologicalSpine bSpine = BiologicalSpineFactory.create();
@@ -429,7 +429,7 @@ public class NeuriteElement extends ini.cx3d.swig.biology.biology.NeuriteElement
 		for (int i = 0; i < nb; i++) {
 			// create the physical part
 			double[] coord = {length*ECM.getRandomDouble(), -3.14 + 6.28*ECM.getRandomDouble()};
-			PhysicalBouton pBouton = new PhysicalBouton(physicalCylinder,coord,2);
+			ini.cx3d.synapses.interfaces.PhysicalBouton pBouton = PhysicalBoutonFactory.create(physicalCylinder, coord, 2);
 			physicalCylinder.addExcrescence(pBouton);
 			// create the biological part and set call backs
 			ini.cx3d.synapses.interfaces.BiologicalBouton bBouton = BiologicalBoutonFactory.create();
@@ -451,7 +451,7 @@ public class NeuriteElement extends ini.cx3d.swig.biology.biology.NeuriteElement
 		}
 		// create the physical part
 		double[] coord = {distFromProximalEnd, 6.28*ECM.getRandomDouble()};
-		PhysicalBouton pBouton = new PhysicalBouton(physicalCylinder,coord,2);
+		ini.cx3d.synapses.interfaces.PhysicalBouton pBouton = PhysicalBoutonFactory.create(physicalCylinder,coord,2);
 		physicalCylinder.addExcrescence(pBouton);
 		// create the biological part and set call backs
 		ini.cx3d.synapses.interfaces.BiologicalBouton bBouton = BiologicalBoutonFactory.create();
@@ -468,7 +468,7 @@ public class NeuriteElement extends ini.cx3d.swig.biology.biology.NeuriteElement
 		double length = physicalCylinder.getActualLength();
 		// create the physical part
 		double[] coord = {length*ECM.getRandomDouble(), -3.14 + 6.28*ECM.getRandomDouble()};
-		PhysicalBouton pBouton = new PhysicalBouton(physicalCylinder,coord,2);
+		ini.cx3d.synapses.interfaces.PhysicalBouton pBouton = PhysicalBoutonFactory.create(physicalCylinder,coord,2);
 		physicalCylinder.addExcrescence(pBouton);
 		// create the biological part and set call backs
 		ini.cx3d.synapses.interfaces.BiologicalBouton bBouton = BiologicalBoutonFactory.create();

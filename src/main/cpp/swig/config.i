@@ -24,3 +24,6 @@
 %native(CELLELEMENT);
 %native(SOMAELEMENT);
 %native(NEURITEELEMENT);
+%native(EXCRESENCE);
+%native(PHYSICALBOUTON);
+%native(PHYSICALSPINE);

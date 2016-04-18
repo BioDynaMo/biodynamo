@@ -18,7 +18,7 @@
 
 %define %PhysicalBouton_cx3d_shared_ptr()
   %cx3d_shared_ptr(PhysicalBouton,
-                   ini/cx3d/synapses/PhysicalBouton,
+                   ini/cx3d/synapses/interfaces/PhysicalBouton,
                    cx3d::synapse::PhysicalBouton);
 %enddef
 
@@ -26,13 +26,28 @@
   %java_defined_class(cx3d::synapse::PhysicalBouton,
                       PhysicalBouton,
                       PhysicalBouton,
-                      ini.cx3d.synapses.PhysicalBouton,
-                      ini/cx3d/synapses/PhysicalBouton);
+                      ini.cx3d.synapses.interfaces.PhysicalBouton,
+                      ini/cx3d/synapses/interfaces/PhysicalBouton);
+%enddef
+
+%define %PhysicalBouton_native()
+  %native_defined_class(cx3d::synapse::PhysicalBouton,
+                    PhysicalBouton,
+                    ini.cx3d.synapses.interfaces.PhysicalBouton,
+                    PhysicalBouton,;);
 %enddef
 
 /**
  * apply customizations
  */
 %PhysicalBouton_cx3d_shared_ptr();
-%PhysicalBouton_java();
-%typemap(javaimports) cx3d::synapse::PhysicalBouton "import ini.cx3d.swig.NativeStringBuilder;"
+#ifdef PHYSICALBOUTON_NATIVE
+  %PhysicalBouton_native();
+#else
+  %PhysicalBouton_java();
+#endif
+%typemap(javainterfaces) cx3d::synapse::PhysicalBouton "ini.cx3d.synapses.interfaces.PhysicalBouton"
+%typemap(javaimports) cx3d::synapse::PhysicalBouton %{
+  import ini.cx3d.swig.NativeStringBuilder;
+  import ini.cx3d.swig.physics.PhysicalObject;
+%}

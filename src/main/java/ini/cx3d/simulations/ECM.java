@@ -30,9 +30,9 @@ import ini.cx3d.cells.Cell;
 import ini.cx3d.graphics.ECM_GUI_Creator;
 import ini.cx3d.graphics.HeadlessViewMock;
 import ini.cx3d.graphics.View;
-import ini.cx3d.localBiology.NeuriteElement;
 import ini.cx3d.localBiology.factory.NeuriteElementFactory;
 import ini.cx3d.physics.ECMChemicalReaction;
+import ini.cx3d.physics.interfaces.PhysicalBond;
 import ini.cx3d.physics.factory.*;
 import ini.cx3d.physics.interfaces.IntracellularSubstance;
 import ini.cx3d.physics.interfaces.PhysicalCylinder;
@@ -44,6 +44,8 @@ import ini.cx3d.spatialOrganization.SpatialOrganizationNode;
 import ini.cx3d.spatialOrganization.factory.SpaceNodeFactory;
 import ini.cx3d.synapses.PhysicalBouton;
 import ini.cx3d.synapses.PhysicalSpine;
+import ini.cx3d.synapses.factory.PhysicalBoutonFactory;
+import ini.cx3d.synapses.factory.PhysicalSpineFactory;
 import ini.cx3d.utilities.Matrix;
 
 import java.awt.Color;
@@ -86,11 +88,14 @@ public class ECM extends ini.cx3d.swig.physics.ECM implements SimStateSerializab
 	}
 	public ini.cx3d.physics.interfaces.PhysicalSphere newPhysicalSphere() {return PhysicalSphereFactory.create();}
 	public ini.cx3d.localBiology.interfaces.NeuriteElement newNeuriteElement() {return NeuriteElementFactory.create();}
-	public PhysicalSpine newPhysicalSpine(ini.cx3d.physics.interfaces.PhysicalObject po, double[] origin, double length) {
-		return new PhysicalSpine(po, origin, length);
+	public ini.cx3d.synapses.interfaces.PhysicalSpine newPhysicalSpine(ini.cx3d.physics.interfaces.PhysicalObject po, double[] origin, double length) {
+		return PhysicalSpineFactory.create(po, origin, length);
 	}
-	public PhysicalBouton newPhysicalBouton(ini.cx3d.physics.interfaces.PhysicalObject po, double[] origin, double length) {
-		return new PhysicalBouton(po, origin, length);
+	public ini.cx3d.synapses.interfaces.PhysicalBouton newPhysicalBouton(ini.cx3d.physics.interfaces.PhysicalObject po, double[] origin, double length) {
+		return PhysicalBoutonFactory.create(po, origin, length);
+	}
+	public PhysicalBond newPhysicalBond(ini.cx3d.physics.interfaces.PhysicalObject a, double[] positionOnA, ini.cx3d.physics.interfaces.PhysicalObject b , double[] positionOnB, double restingLength, double springConstant) {
+		return PhysicalBondFactory.create(a, positionOnA, b, positionOnB, restingLength, springConstant);
 	}
 
 	// List of all the CX3DRunbable objects in the simulation ............................

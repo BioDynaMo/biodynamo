@@ -30,13 +30,13 @@ import ini.cx3d.physics.factory.PhysicalBondFactory;
 import ini.cx3d.synapses.interfaces.Excrescence;
 import ini.cx3d.synapses.interfaces.BiologicalSpine;
 
-public class PhysicalSpine extends Excrescence2{
+public class PhysicalSpine extends Excrescence2 implements ini.cx3d.synapses.interfaces.PhysicalSpine {
 
 	BiologicalSpine biologicalSpine;
 
 	@Override
 	public ini.cx3d.swig.NativeStringBuilder simStateToJson(ini.cx3d.swig.NativeStringBuilder sb) {
-		sb.append("{");
+		sb.append("{"); //fixme bug: should call super.simStateToJson
 
 		keyValue(sb, "biologicalSpine", biologicalSpine);
 
@@ -59,10 +59,12 @@ public class PhysicalSpine extends Excrescence2{
 		super.length = length;
 	}
 	
+	@Override
 	public BiologicalSpine getBiologicalSpine() {
 		return biologicalSpine;
 	}
 
+	@Override
 	public void setBiologicalSpine(BiologicalSpine biologicalSpine) {
 		this.biologicalSpine = biologicalSpine;
 	}
@@ -98,14 +100,16 @@ public class PhysicalSpine extends Excrescence2{
 		return true;
 	}
 
+	@Override
 	public boolean synapseWithSoma(ini.cx3d.synapses.interfaces.Excrescence otherExcrescence,
-			boolean creatPhysicalBond) {
+								   boolean creatPhysicalBond) {
 		return false;
 	}
 	
 
+	@Override
 	public boolean synapseWithShaft(ini.cx3d.localBiology.interfaces.NeuriteElement otherNe, double maxDis, int nrSegments,
-			boolean createPhysicalBond) {
+									boolean createPhysicalBond) {
 		return false;
 	}
 

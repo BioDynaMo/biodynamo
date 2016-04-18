@@ -4,7 +4,7 @@
  * value of a number of arguments. Therefore, this macros are easier to use.
  * https://en.wikipedia.org/wiki/Partial_application
  * At the bottom it executes the customizations, based on two preprocessor
- * variables. (PHYSICALBOUTON_NATIVE and PHYSICALBOUTON_DEBUG)
+ * variables. (PHYSICALSPINE_NATIVE and PHYSICALSPINE_DEBUG)
  * Documentation of macros and their arguments can be found in the included
  * files!
  *
@@ -18,7 +18,7 @@
 
 %define %PhysicalSpine_cx3d_shared_ptr()
   %cx3d_shared_ptr(PhysicalSpine,
-                   ini/cx3d/synapses/PhysicalSpine,
+                   ini/cx3d/synapses/interfaces/PhysicalSpine,
                    cx3d::synapse::PhysicalSpine);
 %enddef
 
@@ -26,13 +26,28 @@
   %java_defined_class(cx3d::synapse::PhysicalSpine,
                       PhysicalSpine,
                       PhysicalSpine,
-                      ini.cx3d.synapses.PhysicalSpine,
-                      ini/cx3d/synapses/PhysicalSpine);
+                      ini.cx3d.synapses.interfaces.PhysicalSpine,
+                      ini/cx3d/synapses/interfaces/PhysicalSpine);
+%enddef
+
+%define %PhysicalSpine_native()
+  %native_defined_class(cx3d::synapse::PhysicalSpine,
+                    PhysicalSpine,
+                    ini.cx3d.synapses.interfaces.PhysicalSpine,
+                    PhysicalSpine,;);
 %enddef
 
 /**
  * apply customizations
  */
 %PhysicalSpine_cx3d_shared_ptr();
-%PhysicalSpine_java();
-%typemap(javaimports) cx3d::synapse::PhysicalSpine "import ini.cx3d.swig.NativeStringBuilder;"
+#ifdef PHYSICALSPINE_NATIVE
+  %PhysicalSpine_native();
+#else
+  %PhysicalSpine_java();
+#endif
+%typemap(javainterfaces) cx3d::synapse::PhysicalSpine "ini.cx3d.synapses.interfaces.PhysicalSpine"
+%typemap(javaimports) cx3d::synapse::PhysicalSpine %{
+  import ini.cx3d.swig.NativeStringBuilder;
+  import ini.cx3d.swig.physics.PhysicalObject;
+%}

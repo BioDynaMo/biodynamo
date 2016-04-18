@@ -30,7 +30,7 @@ import ini.cx3d.physics.factory.PhysicalBondFactory;
 
 import java.util.Objects;
 
-public class PhysicalBouton extends Excrescence {
+public class PhysicalBouton extends Excrescence implements ini.cx3d.synapses.interfaces.PhysicalBouton {
 
 	ini.cx3d.synapses.interfaces.BiologicalBouton biologicalBouton;
 
@@ -59,17 +59,19 @@ public class PhysicalBouton extends Excrescence {
 		super.length = length;
 	}
 
+	@Override
 	public ini.cx3d.synapses.interfaces.BiologicalBouton getBiologicalBouton() {
 		return biologicalBouton;
 	}
 
+	@Override
 	public void setBiologicalBouton(ini.cx3d.synapses.interfaces.BiologicalBouton biologicalBouton) {
 		this.biologicalBouton = biologicalBouton;
 	}
 
 	@Override
 	public boolean synapseWith(ini.cx3d.synapses.interfaces.Excrescence otherExcressence,
-			boolean createPhysicalBond) {
+							   boolean createPhysicalBond) {
 		// only if the other Excrescence is a bouton
 		if (otherExcressence.getType() != SPINE) {
 			(new Throwable(this + " is a bouton, and thus can't synapse with "
@@ -110,8 +112,9 @@ public class PhysicalBouton extends Excrescence {
 	}
 
 	// Roman: Method for making synapses directly on the soma
+	@Override
 	public boolean synapseWithSoma(ini.cx3d.synapses.interfaces.Excrescence otherExcrescence,
-			boolean createPhysicalBond) {
+								   boolean createPhysicalBond) {
 		// only if the other Excrescence is a bouton
 		if (otherExcrescence.getType() == BOUTON) {
 			(new Throwable(this + " is a bouton, and thus can't synapse with "
@@ -144,8 +147,9 @@ public class PhysicalBouton extends Excrescence {
 		return true;
 	}
 
+	@Override
 	public boolean synapseWithShaft(ini.cx3d.localBiology.interfaces.NeuriteElement otherNe, double maxDis,
-			int nrSegments, boolean createPhysicalBond) {
+									int nrSegments, boolean createPhysicalBond) {
 		PhysicalCylinder pc = otherNe.getPhysicalCylinder();
 		double neLength = pc.getActualLength();
 		double dx = neLength / nrSegments;

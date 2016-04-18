@@ -26,6 +26,7 @@ class IntracellularSubstance;
 class PhysicalSphere;
 class PhysicalCylinder;
 class PhysicalObject;
+class PhysicalBond;
 
 class ECM {
  public:
@@ -198,16 +199,26 @@ class ECM {
         "ECM::newNeuriteElement must never be called - Java must provide implementation at this point");
   }
 
-  virtual std::shared_ptr<cx3d::synapse::PhysicalSpine> newPhysicalSpine(const std::shared_ptr<physics::PhysicalObject>& po,
-                                                                   const std::array<double, 2>& origin, double length) {
+  virtual std::shared_ptr<cx3d::synapse::PhysicalSpine> newPhysicalSpine(
+      const std::shared_ptr<physics::PhysicalObject>& po, const std::array<double, 2>& origin, double length) {
     throw std::logic_error(
         "ECM::newPhysicalSpine must never be called - Java must provide implementation at this point");
   }
 
   virtual std::shared_ptr<synapse::PhysicalBouton> newPhysicalBouton(const std::shared_ptr<physics::PhysicalObject>& po,
-                                                                     const std::array<double, 2>& origin, double length) {
+                                                                     const std::array<double, 2>& origin,
+                                                                     double length) {
     throw std::logic_error(
         "ECM::newPhysicalBouton must never be called - Java must provide implementation at this point");
+  }
+
+  virtual std::shared_ptr<physics::PhysicalBond> newPhysicalBond(const std::shared_ptr<PhysicalObject>& a,
+                                                                 const std::array<double, 2>& position_on_a,
+                                                                 const std::shared_ptr<PhysicalObject>& b,
+                                                                 const std::array<double, 2>& position_on_b,
+                                                                 double resting_length, double spring_constant) {
+    throw std::logic_error(
+        "ECM::newPhysicalBond must never be called - Java must provide implementation at this point");
   }
 };
 
