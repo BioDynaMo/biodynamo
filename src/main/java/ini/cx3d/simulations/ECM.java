@@ -31,6 +31,7 @@ import ini.cx3d.graphics.ECM_GUI_Creator;
 import ini.cx3d.graphics.HeadlessViewMock;
 import ini.cx3d.graphics.View;
 import ini.cx3d.localBiology.factory.NeuriteElementFactory;
+import ini.cx3d.localBiology.interfaces.NeuriteElement;
 import ini.cx3d.physics.ECMChemicalReaction;
 import ini.cx3d.physics.interfaces.PhysicalBond;
 import ini.cx3d.physics.factory.*;
@@ -42,6 +43,7 @@ import ini.cx3d.spatialOrganization.PositionNotAllowedException;
 import ini.cx3d.spatialOrganization.interfaces.SpaceNode;
 import ini.cx3d.spatialOrganization.SpatialOrganizationNode;
 import ini.cx3d.spatialOrganization.factory.SpaceNodeFactory;
+import ini.cx3d.swig.physics.ListT_NeuriteElement;
 import ini.cx3d.synapses.PhysicalBouton;
 import ini.cx3d.synapses.PhysicalSpine;
 import ini.cx3d.synapses.factory.PhysicalBoutonFactory;
@@ -52,6 +54,7 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.util.AbstractSequentialList;
 import java.util.Hashtable;
 import java.util.Random;
 import java.util.Vector;
@@ -109,7 +112,7 @@ public class ECM extends ini.cx3d.swig.physics.ECM implements SimStateSerializab
 	/** List of all the SomaElement instances. */
 	public Vector<ini.cx3d.localBiology.interfaces.SomaElement> somaElementList  = new Vector<ini.cx3d.localBiology.interfaces.SomaElement>();
 	/** List of all the NeuriteElement instances. */
-	public Vector<ini.cx3d.localBiology.interfaces.NeuriteElement> neuriteElementList = new Vector<ini.cx3d.localBiology.interfaces.NeuriteElement>();
+	public AbstractSequentialList<NeuriteElement> neuriteElementList = new ListT_NeuriteElement();
 	/** List of all the Cell instances. */
 	public Vector<Cell> cellList  = new Vector<Cell>();
 	/** List of all the Chemical reactions instances. */
@@ -586,7 +589,7 @@ public class ECM extends ini.cx3d.swig.physics.ECM implements SimStateSerializab
 		cellList  = new Vector<Cell>();
 		// Layer 2 : local biology
 		somaElementList  = new Vector<>();
-		neuriteElementList = new Vector<>();
+		neuriteElementList = new ListT_NeuriteElement();
 		
 		// Layer 3 : physics 
 		physicalNodeList = new Vector<PhysicalNode>();
@@ -1183,7 +1186,7 @@ public class ECM extends ini.cx3d.swig.physics.ECM implements SimStateSerializab
 		return physicalCylinderList;
 	}
 
-	public Vector<ini.cx3d.localBiology.interfaces.NeuriteElement> getNeuriteElementList() {
+	public AbstractSequentialList<NeuriteElement> getNeuriteElementList() {
 		return neuriteElementList;
 	}
 

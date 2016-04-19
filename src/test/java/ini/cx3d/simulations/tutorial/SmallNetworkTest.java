@@ -30,6 +30,7 @@ import ini.cx3d.cells.CellFactory;
 import ini.cx3d.physics.factory.SubstanceFactory;
 import ini.cx3d.simulations.ECM;
 import ini.cx3d.simulations.Scheduler;
+import ini.cx3d.swig.biology.ConnectionMaker;
 import ini.cx3d.synapses.ConnectionsMaker;
 import static ini.cx3d.utilities.Matrix.*;
 
@@ -83,7 +84,7 @@ public class SmallNetworkTest extends BaseSimulationTest {
 		while (ecm.getECMtime() < 6) {
 			Scheduler.simulateOneStep();
 		}
-		ConnectionsMaker.extendExcressencesAndSynapseOnEveryNeuriteElement();
+		ConnectionMaker.extendExcressencesAndSynapseOnEveryNeuriteElement(ECM.getInstance());
 
 //		Thread.sleep(Integer.MAX_VALUE);
 	}

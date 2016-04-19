@@ -19,6 +19,7 @@
 #include "synapse/biological_spine.h"
 #include "synapse/biological_bouton.h"
 #include "synapse/biological_somatic_spine.h"
+#include "synapse/connection_maker.h"
 using namespace cx3d::local_biology;
 using cx3d::physics::PhysicalObject;
 using cx3d::physics::PhysicalSphere;
@@ -61,6 +62,7 @@ import ini.cx3d.swig.physics.PhysicalCylinder;"
 %include "class_customization/synapse/biological_spine.i"
 %include "class_customization/synapse/biological_bouton.i"
 %include "class_customization/synapse/biological_somatic_spine.i"
+%include "class_customization/synapse/connection_maker.i"
 
 // add the original header files here
 %include "local_biology/local_biology_module.h"
@@ -76,3 +78,4 @@ import ini.cx3d.swig.physics.PhysicalCylinder;"
 %include "synapse/biological_spine.h"
 %include "synapse/biological_bouton.h"
 %include "synapse/biological_somatic_spine.h"
+%include "synapse/connection_maker.h"

@@ -6,6 +6,7 @@
 #include <string>
 #include <memory>
 #include <exception>
+#include <list>
 
 namespace cx3d {
 
@@ -134,6 +135,11 @@ class ECM {
   virtual std::array<double, 3> forceFromArtificialWall(const std::array<double, 3>& location, double radius) {
     throw std::logic_error(
         "ECM::forceFromArtificialWall must never be called - Java must provide implementation at this point");
+  }
+
+  virtual std::list<std::shared_ptr<local_biology::NeuriteElement> > getNeuriteElementList() {
+    throw std::logic_error(
+        "ECM::getNeuriteElementList must never be called - Java must provide implementation at this point");
   }
 
   virtual void addSomaElement(const std::shared_ptr<local_biology::SomaElement>& cyl) {
