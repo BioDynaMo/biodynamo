@@ -1,5 +1,5 @@
-#ifndef SYNAPSE_CONNECTION_MAKER_H_
-#define SYNAPSE_CONNECTION_MAKER_H_
+#ifndef SYNAPSE_TEST_SYNAPSES_H_
+#define SYNAPSE_TEST_SYNAPSES_H_
 
 #include <memory>
 
@@ -8,7 +8,7 @@
 namespace cx3d {
 namespace synapse {
 
-class ConnectionMaker {
+class TestSynapses {
  public:
   static void extendExcressencesAndSynapseOnEveryNeuriteElement(const std::shared_ptr<physics::ECM>& ecm);
 
@@ -19,4 +19,4 @@ class ConnectionMaker {
 }  // namespace synapse
 }  // namespace cx3d
 
-#endif  // SYNAPSE_CONNECTION_MAKER_H_
+#endif  // SYNAPSE_TEST_SYNAPSES_H_

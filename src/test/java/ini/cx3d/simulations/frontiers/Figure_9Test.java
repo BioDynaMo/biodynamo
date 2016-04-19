@@ -145,7 +145,7 @@ public class Figure_9Test extends BaseSimulationTest {
 			Scheduler.simulateOneStep();
 		}
 		
-		TestSynapses.extendExcressencesAndSynapseOnEveryNeuriteElement(0.4);
+		ini.cx3d.swig.biology.TestSynapses.extendExcressencesAndSynapseOnEveryNeuriteElement(ECM.getInstance(), 0.4);
 //		Exporter.saveExport();
 	}
 }

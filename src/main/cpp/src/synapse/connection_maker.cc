@@ -1,5 +1,7 @@
 #include "synapse/connection_maker.h"
 
+#include "local_biology/neurite_element.h"
+
 namespace cx3d {
 namespace synapse {
 
