@@ -28,11 +28,12 @@ import static ini.cx3d.utilities.Matrix.scalarMult;
 import static ini.cx3d.utilities.Matrix.subtract;
 import ini.cx3d.Param;
 import ini.cx3d.localBiology.factory.NeuriteElementFactory;
-import ini.cx3d.localBiology.interfaces.NeuriteElement;
 import ini.cx3d.physics.interfaces.PhysicalCylinder;
 import ini.cx3d.simulations.ECM;
-import ini.cx3d.synapses.BiologicalSomaticSpine;
+import ini.cx3d.synapses.factory.PhysicalSomaticSpineFactory;
+import ini.cx3d.synapses.interfaces.BiologicalSomaticSpine;
 import ini.cx3d.synapses.PhysicalSomaticSpine;
+import ini.cx3d.synapses.factory.BiologicalSomaticSpineFactory;
 
 import java.util.AbstractSequentialList;
 import java.util.Iterator;
@@ -190,7 +191,7 @@ public class SomaElement extends ini.cx3d.swig.biology.SomaElement implements in
 	/**
 	 * Makes somatic spines (the physical and the biological part) dependent on some parameter (e.g. substance concentration) on this NeuriteElement.
 	 */
-	public void MakeSomaticSpines(double p, double maxNr){
+	public void makeSomaticSpines(double p, double maxNr){
 		
 		// how many spines for this NeuriteElement ?
 		double radius = physical.getDiameter()/2;
@@ -206,11 +207,11 @@ public class SomaElement extends ini.cx3d.swig.biology.SomaElement implements in
 			if (Math.random()<p) {
 				// create the physical part
 				double[] coord = {radius, Math.PI*ECM.getRandomDouble(), 2*Math.PI*ECM.getRandomDouble()};
-				PhysicalSomaticSpine pSomSpine = new PhysicalSomaticSpine(physical,coord,0.1);
+				ini.cx3d.synapses.interfaces.PhysicalSomaticSpine pSomSpine = PhysicalSomaticSpineFactory.create(physical, coord, 0.1);
 				physical.addExcrescence(pSomSpine);
 				System.out.println(physical.getID());
 				// create the biological part and set call backs
-				BiologicalSomaticSpine bSomSpine = new BiologicalSomaticSpine();
+				BiologicalSomaticSpine bSomSpine = BiologicalSomaticSpineFactory.create();
 				pSomSpine.setBiologicalSomaticSpine(bSomSpine);
 				bSomSpine.setPhysicalSomaticSpine(pSomSpine);
 			}

@@ -53,6 +53,8 @@ class SomaElement : public CellElement {
    */
   virtual std::shared_ptr<NeuriteElement> extendNewNeurite(double diameter, double phi, double theta);
 
+  //todo implement makeSomaticSpines
+
   virtual std::shared_ptr<physics::PhysicalObject> getPhysical() const override;
 
   virtual void setPhysical(const std::shared_ptr<physics::PhysicalObject>& po) override;

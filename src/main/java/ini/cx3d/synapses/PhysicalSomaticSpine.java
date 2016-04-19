@@ -26,8 +26,9 @@ import static ini.cx3d.SimStateSerializationUtil.removeLastChar;
 import static ini.cx3d.utilities.Matrix.distance;
 
 import ini.cx3d.physics.factory.PhysicalBondFactory;
+import ini.cx3d.synapses.interfaces.BiologicalSomaticSpine;
 
-public class PhysicalSomaticSpine extends Excrescence {
+public class PhysicalSomaticSpine extends Excrescence implements ini.cx3d.synapses.interfaces.PhysicalSomaticSpine {
 
 	BiologicalSomaticSpine biologicalSomaticSpine;
 
@@ -55,10 +56,12 @@ public class PhysicalSomaticSpine extends Excrescence {
 		super.length = length;
 	}
 	
+	@Override
 	public BiologicalSomaticSpine getBiologicalSomaticSpine() {
 		return biologicalSomaticSpine;
 	}
 
+	@Override
 	public void setBiologicalSomaticSpine(BiologicalSomaticSpine biologicalSomaticSpine) {
 		this.biologicalSomaticSpine = biologicalSomaticSpine;
 	}
@@ -94,15 +97,17 @@ public class PhysicalSomaticSpine extends Excrescence {
 		return true;
 	}
 
+	@Override
 	public boolean synapseWithSoma(ini.cx3d.synapses.interfaces.Excrescence otherExcrescence,
-			boolean creatPhysicalBond) {
+								   boolean creatPhysicalBond) {
 
 		return false;
 	}
 
 
+	@Override
 	public boolean synapseWithShaft(ini.cx3d.localBiology.interfaces.NeuriteElement otherNe, double maxDis, int nrSegments,
-			boolean createPhysicalBond) {
+									boolean createPhysicalBond) {
 		return false;
 	}
 }
