@@ -1,9 +1,10 @@
-#ifndef CELLS_CELL_MODULE_H_
-#define CELLS_CELL_MODULE_H_
+#ifndef CELLS_ABSTRACT_CELL_MODULE_H_
+#define CELLS_ABSTRACT_CELL_MODULE_H_
 
 #include <memory>
 
 #include "sim_state_serializable.h"
+#include "cells/cell_module.h"
 #include "cells/cell.h"
 
 namespace cx3d {
@@ -14,6 +15,8 @@ class AbstractCellModule : public CellModule {
   AbstractCellModule();
 
   virtual ~AbstractCellModule();
+
+  virtual StringBuilder& simStateToJson(StringBuilder& sb) const override;
 
   /** @return the <code>Cell</code> this module leaves in*/
   virtual std::shared_ptr<Cell> getCell() const override;
@@ -35,4 +38,4 @@ class AbstractCellModule : public CellModule {
 }  // namespace cells
 }  // namespace cx3d
 
-#endif  // CELLS_CELL_MODULE_H_
+#endif  // CELLS_ABSTRACT_CELL_MODULE_H_
