@@ -4,10 +4,11 @@
 #include <memory>
 
 #include "sim_state_serializable.h"
-#include "cells/cell.h"
 
 namespace cx3d {
 namespace cells {
+
+class Cell;
 
 //fixme change to pure virtual function after porting has been finished
 /**

@@ -20,6 +20,10 @@ class PhysicalSpine;
 class PhysicalBouton;
 }  // namespace synapse
 
+namespace cells {
+class Cell;
+}  // namespace cells
+
 namespace physics {
 
 class Substance;
@@ -147,6 +151,10 @@ class ECM {
         "ECM::addPhysicalSphere must never be called - Java must provide implementation at this point");
   }
 
+  virtual void addCell(const std::shared_ptr<cells::Cell>& cell) {
+    throw std::logic_error("ECM::addCell must never be called - Java must provide implementation at this point");
+  }
+
   virtual double getRandomDouble1() {
     throw std::logic_error(
         "ECM::getRandomDouble must never be called - Java must provide implementation at this point");
@@ -179,6 +187,10 @@ class ECM {
 
   virtual double asin(double d) {
     throw std::logic_error("ECM::asin must never be called - Java must provide implementation at this point");
+  }
+
+  virtual double acos(double d) {
+    throw std::logic_error("ECM::acos must never be called - Java must provide implementation at this point");
   }
 
   virtual double atan2(double d, double d1) {

@@ -9,7 +9,7 @@
  * files!
  *
  * SWIG modules that use the class simply include it:
- * %include "class_customization/cells/soma_element.i"
+ * %include "class_customization/cells/cell.i"
  */
 
 %include "util.i"
@@ -18,7 +18,7 @@
 
 %define %Cell_cx3d_shared_ptr()
   %cx3d_shared_ptr(Cell,
-                   ini/cx3d/cells/Cell,
+                   ini/cx3d/cells/interfaces/Cell,
                    cx3d::cells::Cell);
 %enddef
 
@@ -26,20 +26,36 @@
   %java_defined_class(cx3d::cells::Cell,
                       Cell,
                       Cell,
-                      ini.cx3d.cells.Cell,
-                      ini/cx3d/cells/Cell);
+                      ini.cx3d.cells.interfaces.Cell,
+                      ini/cx3d/cells/interfaces/Cell);
 %enddef
 
 %define %Cell_stdlist()
   %stdlist_typemap_cross_module(std::shared_ptr<cx3d::cells::Cell>,
                                 Cell,
-                                ini.cx3d.cells.Cell,
+                                ini.cx3d.cells.interfaces.Cell,
                                 ini.cx3d.swig.biology.Cell);
+%enddef
+
+%define %Cell_native()
+  %native_defined_class(cx3d::cells::Cell,
+                      Cell,
+                      ini.cx3d.cells.interfaces.Cell,
+                      Cell,
+                      ;);
 %enddef
 
 /**
  * apply customizations
  */
 %Cell_cx3d_shared_ptr();
-%Cell_java();
-%typemap(javaimports) cx3d::cells::Cell "import ini.cx3d.swig.NativeStringBuilder;"
+#ifdef CELL_NATIVE
+  %Cell_native();
+#else
+  %Cell_java();
+#endif
+%typemap(javainterfaces) cx3d::cells::Cell "ini.cx3d.cells.interfaces.Cell"
+%typemap(javaimports) cx3d::cells::Cell %{
+  import ini.cx3d.swig.NativeStringBuilder;
+  import ini.cx3d.swig.physics.ECM;
+%}

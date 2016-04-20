@@ -23,7 +23,6 @@ package ini.cx3d.simulations.frontiers;
 
 import ini.cx3d.BaseSimulationTest;
 import ini.cx3d.Param;
-import ini.cx3d.cells.Cell;
 import ini.cx3d.cells.CellFactory;
 import ini.cx3d.simulations.ECM;
 import ini.cx3d.simulations.Scheduler;
@@ -60,7 +59,7 @@ public class Figure_5Test extends BaseSimulationTest {
 		
 		// 2) creating a first cell, with a neurite going straight up.
 		// 		creating a 4-uple Cell-SomaElement-PhysicalSphere-SpatialOrganizerNode
-		Cell cellA = CellFactory.getCellInstance(new double[] {0,0,-100});
+		ini.cx3d.cells.interfaces.Cell cellA = CellFactory.getCellInstance(new double[] {0,0,-100});
 		cellA.setColorForAllPhysicalObjects(Param.X_SOLID_RED);
 		//		cretaing a single neurite
 		ini.cx3d.localBiology.interfaces.NeuriteElement ne = cellA.getSomaElement().extendNewNeurite(2.0,0,0);
@@ -75,19 +74,19 @@ public class Figure_5Test extends BaseSimulationTest {
 //		ecm.pause(3000);
 		
 		// 3) creating three additional spheres:
-		Cell cellB = CellFactory.getCellInstance(new double[] {10,0,0});
+		ini.cx3d.cells.interfaces.Cell cellB = CellFactory.getCellInstance(new double[] {10,0,0});
 		ini.cx3d.physics.interfaces.PhysicalSphere psB = cellB.getSomaElement().getPhysicalSphere();
 
 		psB.setMass(3);
 		psB.setColor(Param.X_SOLID_YELLOW);
 		psB.setColor(Param.YELLOW);
-		Cell cellC = CellFactory.getCellInstance(new double[] {-10,0,100});
+		ini.cx3d.cells.interfaces.Cell cellC = CellFactory.getCellInstance(new double[] {-10,0,100});
 		ini.cx3d.physics.interfaces.PhysicalSphere psC = cellC.getSomaElement().getPhysicalSphere();
 
 		psC.setMass(3);
 		psC.setColor(Param.X_SOLID_YELLOW);
 		psC.setColor(Param.YELLOW);
-		Cell cellD = CellFactory.getCellInstance(new double[] {10,0,160});
+		ini.cx3d.cells.interfaces.Cell cellD = CellFactory.getCellInstance(new double[] {10,0,160});
 		ini.cx3d.physics.interfaces.PhysicalSphere psD = cellD.getSomaElement().getPhysicalSphere();
 
 		psD.setColor(Param.X_SOLID_YELLOW);

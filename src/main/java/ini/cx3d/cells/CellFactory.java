@@ -57,10 +57,10 @@ public class CellFactory {
      * @param cellOrigin
      * @return
      */
-    public static Cell getCellInstance(double[] cellOrigin) {
+    public static ini.cx3d.cells.interfaces.Cell getCellInstance(double[] cellOrigin) {
     	
     	// Create new cell
-        Cell cell = new Cell();
+        ini.cx3d.cells.interfaces.Cell cell = new Cell();
         SomaElement soma = SomaElementFactory.create();
         cell.setSomaElement(soma);        
         PhysicalSphere ps = PhysicalSphereFactory.create();
@@ -90,11 +90,11 @@ public class CellFactory {
     * @param noiseStd: Gaussian noise standard deviation
     * @return cellList
     */
-   public static Vector<Cell> get2DCellGrid(double xmin, double xmax, double ymin,
+   public static Vector<ini.cx3d.cells.interfaces.Cell> get2DCellGrid(double xmin, double xmax, double ymin,
 		   double ymax, double zpos, int nx, int ny, double noiseStd) {
 	   
 	   // Insert all generated cells in a vector
-       Vector<Cell> cellList = new Vector<Cell>();
+       Vector<ini.cx3d.cells.interfaces.Cell> cellList = new Vector<ini.cx3d.cells.interfaces.Cell>();
        double dx = (xmax-xmin)/(1+nx);
        double dy = (ymax-ymin)/(1+ny);
        
@@ -106,7 +106,7 @@ public class CellFactory {
        				ymin+j*dy+ecm.getGaussianDouble(0, noiseStd), 
        				zpos + ecm.getGaussianDouble(0, noiseStd)};
        		Matrix.print(newLocation);
-       		Cell cell = getCellInstance(newLocation);
+       		ini.cx3d.cells.interfaces.Cell cell = getCellInstance(newLocation);
        		cellList.add(cell);
        	}
        }
@@ -129,11 +129,11 @@ public class CellFactory {
     * @param noiseStd: Gaussian noise standard deviation
     * @return cellList
     */
-   public static Vector<Cell> get3DCellGrid(double xmin, double xmax, double ymin,
+   public static Vector<ini.cx3d.cells.interfaces.Cell> get3DCellGrid(double xmin, double xmax, double ymin,
 		   double ymax, double zmin, double zmax, int nx, int ny, int nz, double noiseXYStd, double noiseZStd) {
 	   
 	   // Insert all generated cells in a vector
-       Vector<Cell> cellList = new Vector<Cell>();
+       Vector<ini.cx3d.cells.interfaces.Cell> cellList = new Vector<ini.cx3d.cells.interfaces.Cell>();
        double dx = (xmax-xmin)/(1+nx);
        double dy = (ymax-ymin)/(1+ny);
        double dz = (zmax-zmin)/(1+nz);
@@ -146,7 +146,7 @@ public class CellFactory {
        					xmin+i*dx+ecm.getGaussianDouble(0, noiseXYStd), 
        					ymin+j*dy+ecm.getGaussianDouble(0, noiseXYStd), 
        					zmin+k*dz+ecm.getGaussianDouble(0, noiseZStd)};
-       			Cell cell = getCellInstance(newLocation);
+       			ini.cx3d.cells.interfaces.Cell cell = getCellInstance(newLocation);
        			cellList.add(cell);
        		}
        	}

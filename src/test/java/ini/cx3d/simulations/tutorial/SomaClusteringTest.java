@@ -28,9 +28,7 @@ import static ini.cx3d.utilities.Matrix.randomNoise;
 
 import ini.cx3d.BaseSimulationTest;
 import ini.cx3d.Param;
-import ini.cx3d.cells.Cell;
 import ini.cx3d.cells.CellFactory;
-import ini.cx3d.localBiology.AbstractLocalBiologyModule;
 import ini.cx3d.localBiology.LocalBiologyModule;
 import ini.cx3d.physics.factory.SubstanceFactory;
 import ini.cx3d.simulations.ECM;
@@ -65,12 +63,12 @@ public class SomaClusteringTest extends BaseSimulationTest {
             ecm.getPhysicalNodeInstance(randomNoise(700, 3));
         }
         for (int i = 0; i < 60; i++) {
-            Cell c = CellFactory.getCellInstance(randomNoise(50, 3));
+            ini.cx3d.cells.interfaces.Cell c = CellFactory.getCellInstance(randomNoise(50, 3));
             c.getSomaElement().addLocalBiologyModule(new SomaClustering("Yellow"));
             c.setColorForAllPhysicalObjects(Param.X_SOLID_YELLOW);
         }
         for (int i = 0; i < 60; i++) {
-            Cell c = CellFactory.getCellInstance(randomNoise(50, 3));
+            ini.cx3d.cells.interfaces.Cell c = CellFactory.getCellInstance(randomNoise(50, 3));
             c.getSomaElement().addLocalBiologyModule(new SomaClustering("Violet"));
             c.setColorForAllPhysicalObjects(Param.X_SOLID_VIOLET);
         }

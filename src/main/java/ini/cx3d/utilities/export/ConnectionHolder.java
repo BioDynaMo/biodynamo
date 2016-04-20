@@ -28,8 +28,6 @@ package ini.cx3d.utilities.export;
  * @author Toby Weston & fredericzubler
  */
 
-import ini.cx3d.cells.Cell;
-
 public class ConnectionHolder{
 
 		private static long nextSynapseID = 0;
@@ -44,8 +42,8 @@ public class ConnectionHolder{
 			 this.synapseID = nextSynapseID++;
 			 this.preSynapticID = preSynapticID;
 			 this.postSynapticID = postSynapticID;
-			 this.preSynapticType = Cell.ExcitatoryCell;  // by default, it's excitatory
-			 this.postSynapticType = Cell.ExcitatoryCell;
+			 this.preSynapticType = ini.cx3d.cells.interfaces.Cell.ExcitatoryCell;  // by default, it's excitatory
+			 this.postSynapticType = ini.cx3d.cells.interfaces.Cell.ExcitatoryCell;
 		 }
 
 		 public  ConnectionHolder( int preSynapticID, int postSynapticID, String preSynapticType, String postSynapticType ){

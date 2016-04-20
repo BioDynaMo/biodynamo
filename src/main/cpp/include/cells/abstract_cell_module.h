@@ -5,7 +5,6 @@
 
 #include "sim_state_serializable.h"
 #include "cells/cell_module.h"
-#include "cells/cell.h"
 
 namespace cx3d {
 namespace cells {

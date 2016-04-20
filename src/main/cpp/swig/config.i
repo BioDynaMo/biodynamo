@@ -28,3 +28,4 @@
 %native(PHYSICALBOUTON);
 %native(PHYSICALSPINE);
 %native(PHYSICALSOMATICSPINE);
+%native(CELL);

@@ -25,9 +25,7 @@ import static ini.cx3d.utilities.Matrix.randomNoise;
 
 import ini.cx3d.BaseSimulationTest;
 import ini.cx3d.Param;
-import ini.cx3d.cells.Cell;
 import ini.cx3d.cells.CellFactory;
-import ini.cx3d.localBiology.AbstractLocalBiologyModule;
 import ini.cx3d.localBiology.LocalBiologyModule;
 import ini.cx3d.physics.factory.IntracellularSubstanceFactory;
 import ini.cx3d.simulations.ECM;
@@ -52,12 +50,12 @@ public class MembraneContactTest extends BaseSimulationTest {
 		ecm.setBoundaries(-150, 150, -150, 150, -100, 100);
 
 		for(int i = 0; i<10; i++){
-			Cell c = CellFactory.getCellInstance(randomNoise(100, 3));
+			ini.cx3d.cells.interfaces.Cell c = CellFactory.getCellInstance(randomNoise(100, 3));
 			c.setColorForAllPhysicalObjects(Param.RED);
 			c.getSomaElement().getPhysical().modifyMembraneQuantity("A", 100000);
 		}
 		for(int i = 0; i<10; i++){
-			Cell c = CellFactory.getCellInstance(randomNoise(50, 3));
+			ini.cx3d.cells.interfaces.Cell c = CellFactory.getCellInstance(randomNoise(50, 3));
 			c.getSomaElement().addLocalBiologyModule(new MembraneContact());
 			c.getSomaElement().addLocalBiologyModule(new SomaRandomWalkModule());
 			c.setColorForAllPhysicalObjects(Param.VIOLET);

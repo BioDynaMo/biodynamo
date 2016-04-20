@@ -24,15 +24,10 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 package ini.cx3d.localBiology;
 
 import ini.cx3d.SimStateSerializable;
-import ini.cx3d.cells.Cell;
 import ini.cx3d.simulations.ECM;
 import ini.cx3d.swig.biology.ListT_LocalBiologyModule;
-import ini.cx3d.swig.biology.biology;
 
 import java.util.AbstractSequentialList;
-import java.util.LinkedList;
-import java.util.Vector;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static ini.cx3d.SimStateSerializationUtil.keyValue;
 import static ini.cx3d.SimStateSerializationUtil.unorderedCollection;
@@ -53,7 +48,7 @@ public abstract class CellElement2 extends ini.cx3d.swig.biology.NeuriteElement 
 	protected static ECM ecm = ECM.getInstance();
 
 	/* The cells.Cell this CellElement belongs to.*/
-	protected Cell cell;
+	protected ini.cx3d.cells.interfaces.Cell cell;
 
 	/* List of all the SubElements : small objects performing some biological operations.*/
 	protected AbstractSequentialList<LocalBiologyModule> localBiologyModulesList = new ListT_LocalBiologyModule();
@@ -129,7 +124,7 @@ public abstract class CellElement2 extends ini.cx3d.swig.biology.NeuriteElement 
 	 * Sets the <code>Cell</code> this <code>CellElement</code> is part of. 
 	 * @param cell
 	 */
-	public void setCell(Cell cell) {
+	public void setCell(ini.cx3d.cells.interfaces.Cell cell) {
 		this.cell = cell;
 	}
 	
@@ -137,7 +132,7 @@ public abstract class CellElement2 extends ini.cx3d.swig.biology.NeuriteElement 
 	 * 
 	 * @return the <code>Cell</code> this <code>CellElement</code> is part of.
 	 */
-	public Cell getCell() {
+	public ini.cx3d.cells.interfaces.Cell getCell() {
 		return cell;
 	}
 	

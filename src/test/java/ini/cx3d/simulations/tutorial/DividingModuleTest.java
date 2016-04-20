@@ -22,9 +22,7 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 package ini.cx3d.simulations.tutorial;
 
 import ini.cx3d.BaseSimulationTest;
-import ini.cx3d.cells.Cell;
 import ini.cx3d.cells.CellFactory;
-import ini.cx3d.cells.CellModule;
 import ini.cx3d.simulations.ECM;
 import ini.cx3d.simulations.Scheduler;
 
@@ -39,7 +37,7 @@ public class DividingModuleTest extends BaseSimulationTest {
 	@Override
 	public void simulate() {
 		ECM.setRandomSeed(2L);
-		Cell c = CellFactory.getCellInstance(new double[] {0.0,0.0,0.0});
+		ini.cx3d.cells.interfaces.Cell c = CellFactory.getCellInstance(new double[] {0.0,0.0,0.0});
 		c.addCellModule(new DividingModule());
 
 		Scheduler.simulateOneStep();
@@ -54,13 +52,17 @@ public class DividingModuleTest extends BaseSimulationTest {
 
 class DividingModule extends ini.cx3d.swig.biology.CellModule {
 
-	Cell cell; 
+	ini.cx3d.cells.interfaces.Cell cell;
+
+	public DividingModule() {
+		registerJavaObject(this);
+	}
 	
-	public Cell getCell() {
+	public ini.cx3d.cells.interfaces.Cell getCell() {
 		return cell;
 	}
 
-	public void setCell(Cell cell) {
+	public void setCell(ini.cx3d.cells.interfaces.Cell cell) {
 		this.cell = cell;
 	}
 	

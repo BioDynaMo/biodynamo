@@ -28,7 +28,6 @@ import static ini.cx3d.utilities.Matrix.scalarMult;
 
 import ini.cx3d.BaseSimulationTest;
 import ini.cx3d.Param;
-import ini.cx3d.cells.Cell;
 import ini.cx3d.cells.CellFactory;
 import ini.cx3d.localBiology.LocalBiologyModule;
 import ini.cx3d.localBiology.interfaces.CellElement;
@@ -56,7 +55,7 @@ public class NeuriteChemoAttractionTest extends BaseSimulationTest {
 			ecm.getPhysicalNodeInstance(coord);
 		}
 
-		Cell c = CellFactory.getCellInstance(new double[]{0.0, 0.0, 0.0});
+		ini.cx3d.cells.interfaces.Cell c = CellFactory.getCellInstance(new double[]{0.0, 0.0, 0.0});
 		c.setColorForAllPhysicalObjects(Param.VIOLET);
 		ini.cx3d.localBiology.interfaces.NeuriteElement neurite = c.getSomaElement().extendNewNeurite();
 		neurite.getPhysicalCylinder().setDiameter(2.0);

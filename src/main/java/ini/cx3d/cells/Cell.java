@@ -26,10 +26,10 @@ import static ini.cx3d.SimStateSerializationUtil.removeLastChar;
 import static ini.cx3d.SimStateSerializationUtil.unorderedCollection;
 import static ini.cx3d.utilities.Matrix.add;
 
-import ini.cx3d.SimStateSerializable;
 import ini.cx3d.localBiology.interfaces.NeuriteElement;
 import ini.cx3d.localBiology.interfaces.SomaElement;
 import ini.cx3d.simulations.ECM;
+import ini.cx3d.swig.biology.ListT_CellModule;
 import ini.cx3d.swig.biology.ListT_NeuriteElement;
 
 import java.awt.Color;
@@ -47,7 +47,7 @@ import java.util.Vector;
  * @author sabina & RJD & fredericzubler
  *
  */
-public class Cell extends ini.cx3d.swig.biology.Cell implements SimStateSerializable {
+public class Cell extends ini.cx3d.swig.biology.Cell implements ini.cx3d.cells.interfaces.Cell {
 
 	/* Unique identification for this Cell instance. */
 	private int ID = 0;
@@ -59,27 +59,22 @@ public class Cell extends ini.cx3d.swig.biology.Cell implements SimStateSerializ
 	private static ECM ecm = ECM.getInstance();
 			
 	/* List of all cell modules that are run at each time step*/
-	public Vector<CellModule> cellModules = new Vector<CellModule>();
+	private AbstractSequentialList<CellModule> cellModules = new ListT_CellModule();
 
 	/* List of the SomaElements belonging to the cell */
-	SomaElement somaElement = null;
+	private SomaElement somaElement = null;
 
 	/* List of the first Neurite of all Nurites belonging to the cell */
-	Vector<ini.cx3d.localBiology.interfaces.NeuriteElement> neuriteRootList = new Vector<ini.cx3d.localBiology.interfaces.NeuriteElement>(); // TODO: not working yet
+	private Vector<ini.cx3d.localBiology.interfaces.NeuriteElement> neuriteRootList = new Vector<ini.cx3d.localBiology.interfaces.NeuriteElement>(); // TODO: not working yet
 
-	/** Represents inhibitory type of cell in the NeuroML export*/
-	public static final String InhibitoryCell = "Inhibitory_cells";
-	
-	/** Represents excitatory type of cell in the NeuroML export*/
-	public static final String ExcitatoryCell = "Excitatory_cells";
-	
 	/* The electrophsiology type of this cell */
-	private String neuroMLType = ExcitatoryCell;
+	private ini.cx3d.swig.biology.Cell.NeuroMLType neuroMLType = NeuroMLType.kExcitatatory;
 	
 	/* Some convenient way to store properties of  for cells. 
 	 * Should not be confused with neuroMLType. */
 	private String type = "";
 
+	@Override
 	public ini.cx3d.swig.NativeStringBuilder simStateToJson(ini.cx3d.swig.NativeStringBuilder sb) {
 		sb.append("{");
 
@@ -88,7 +83,10 @@ public class Cell extends ini.cx3d.swig.biology.Cell implements SimStateSerializ
 		unorderedCollection(sb, "cellModules", cellModules);
 		keyValue(sb, "somaElement", somaElement);
 		unorderedCollection(sb, "neuriteRootList", neuriteRootList);
-		keyValue(sb, "neuroMlType", neuroMLType, true);
+		String neuro_type = "";
+		if (neuroMLType == NeuroMLType.kExcitatatory) neuro_type = "Excitatory_cells";
+		else if (neuroMLType == NeuroMLType.kInhibitory) neuro_type = "Inhibitory_cells";
+		keyValue(sb, "neuroMlType", neuro_type, true);
 		keyValue(sb, "type", type, true);
 
 		removeLastChar(sb);
@@ -116,6 +114,7 @@ public class Cell extends ini.cx3d.swig.biology.Cell implements SimStateSerializ
 	 * We move one step further in the simulation by running the <code>Gene</code>, <code>GeneSubstances</code>,
 	 * the <code>LyonCellCycle</code>, EnergyProduction and than we test conditions with ConditionTester. 
 	 */
+	@Override
 	public void run() {
 		
 		// Run all the CellModules
@@ -137,7 +136,8 @@ public class Cell extends ini.cx3d.swig.biology.Cell implements SimStateSerializ
 	 * the axis of division is random.
 	 * @return the other daughter cell.
 	 */
-	public Cell divide() { 
+	@Override
+	public ini.cx3d.cells.interfaces.Cell divide() {
 		// find a volume ration close to 1;
 		return divide(0.9 + 0.2*ECM.getRandomDouble());
 	}
@@ -148,14 +148,16 @@ public class Cell extends ini.cx3d.swig.biology.Cell implements SimStateSerializ
 	 * @param volumeRatio the ratio (Volume daughter 1)/(Volume daughter 2). 1.0 gives equal cells.
 	 * @return the second daughter cell.
 	 */
-	public Cell divide(double volumeRatio){
+	@Override
+	public ini.cx3d.cells.interfaces.Cell divide(double volumeRatio){
 			// find random point on sphere (based on : http://mathworld.wolfram.com/SpherePointPicking.html)
 			double theta = 6.28318531*ECM.getRandomDouble();
 			double phi = Math.acos(2*ECM.getRandomDouble()-1);
 			return divide(volumeRatio, phi, theta);
 	}
 	
-	public Cell divide(double[] axisOfDivision) {
+	@Override
+	public ini.cx3d.cells.interfaces.Cell divide(double[] axisOfDivision) {
 		ini.cx3d.physics.interfaces.PhysicalSphere sphere = somaElement.getPhysicalSphere();
 		double[] polarcoord = sphere.transformCoordinatesGlobalToPolar(
 				add(axisOfDivision, sphere.getMassLocation()));
@@ -168,7 +170,8 @@ public class Cell extends ini.cx3d.swig.biology.Cell implements SimStateSerializ
 	 * @param axisOfDivision direction of 
 	 * @return the second daughter cell
 	 */
-	public Cell divide(double volumeRatio, double[] axisOfDivision) {
+	@Override
+	public ini.cx3d.cells.interfaces.Cell divide(double volumeRatio, double[] axisOfDivision) {
 		ini.cx3d.physics.interfaces.PhysicalSphere sphere = somaElement.getPhysicalSphere();
 		double[] polarcoord = sphere.transformCoordinatesGlobalToPolar(
 				add(axisOfDivision, sphere.getMassLocation()));
@@ -188,10 +191,11 @@ public class Cell extends ini.cx3d.swig.biology.Cell implements SimStateSerializ
 	 *    
 	 * @return the second daughter cell 
 	 */
-	public Cell divide(double volumeRatio, double phi, double theta) { 
+	@Override
+	public ini.cx3d.cells.interfaces.Cell divide(double volumeRatio, double phi, double theta) {
 		
 		// 1) Create a new daughter cell. The mother cell and the 1st daughter cell are the same java object instance!
-		Cell newCell = new Cell();	
+		ini.cx3d.cells.interfaces.Cell newCell = new Cell();
 		idCounter = idCounter + 1;
 		this.ID = idCounter;
 		
@@ -217,6 +221,7 @@ public class Cell extends ini.cx3d.swig.biology.Cell implements SimStateSerializ
 	 * Adds a <code>CellModule</code> that will be run at each time step.
 	 * @param m
 	 */
+	@Override
 	public void addCellModule(CellModule m){
 		cellModules.add(m);
 		m.setCell(this);
@@ -226,11 +231,13 @@ public class Cell extends ini.cx3d.swig.biology.Cell implements SimStateSerializ
 	 * It will therefore not be run anymore.
 	 * @param m
 	 */
+	@Override
 	public void removeCellModule(CellModule m){
 		cellModules.remove(m);
 	}
 
 	  /** Removes all the <code>CellModule</code> in this <code>Cell</code>.*/
+	@Override
 	public void cleanAllCellModules() {
 		cellModules.clear();
 	}
@@ -241,18 +248,21 @@ public class Cell extends ini.cx3d.swig.biology.Cell implements SimStateSerializ
 	// *************************************************************************************
 
 	/** Currently, there are two types of cells : Inhibitory_cells and Excitatory_cells.*/
-	public void setNeuroMLType(String neuroMLType) {
+	@Override
+	public void setNeuroMLType(ini.cx3d.swig.biology.Cell.NeuroMLType neuroMLType) {
 		this.neuroMLType = neuroMLType;
 	}
 	
 	/** Currently, there are two types of cells :  <code>Inhibitory_cells</code> and  <code>Excitatory_cells</code>.*/
-	public String getNeuroMLType() {
+	@Override
+	public ini.cx3d.swig.biology.Cell.NeuroMLType getNeuroMLType() {
 		return neuroMLType;
 	}
 	
 	/** Returns the cell type. This is just a convenient way to store some property for the cell. 
 	 * Should not be confused with NeuroMLType. 
 	 */
+	@Override
 	public String getType() {
 		return type;
 	}
@@ -260,20 +270,24 @@ public class Cell extends ini.cx3d.swig.biology.Cell implements SimStateSerializ
 	/** Sets the cell type. This is just a convenient way to store some property for the cell. 
 	 * Should not be confused with NeuroMLType. 
 	 */
+	@Override
 	public void setType(String type) {
 		this.type = type;
 	}
 
 	
+	@Override
 	public SomaElement getSomaElement() {
 		return somaElement;
 	}
 
+	@Override
 	public void setSomaElement(SomaElement somaElement) {
 		this.somaElement = somaElement;
 		somaElement.setCell(this);
 	}
 
+	@Override
 	public int getID(){
 		return this.ID;
 	}
@@ -284,6 +298,7 @@ public class Cell extends ini.cx3d.swig.biology.Cell implements SimStateSerializ
 	 * <code>CellElements</code> of this Cell..
 	 * @param color
 	 */
+	@Override
 	public void setColorForAllPhysicalObjects(Color color) {
 			somaElement.getPhysical().setColor(color);
 			for (ini.cx3d.localBiology.interfaces.NeuriteElement ne : getNeuriteElements()) {
@@ -292,23 +307,21 @@ public class Cell extends ini.cx3d.swig.biology.Cell implements SimStateSerializ
 	}
 
 	/** Returns the list of all the CellModules.*/
-	public Vector<CellModule> getCellModules() {
-		return cellModules;
-	}
+//	@Override
+//	public AbstractSequentialList<CellModule> getCellModules() {
+//		return cellModules;
+//	}
 
 	/**
 	 * @return a <code>Vector</code> containing all the <code>NeuriteElement</code>s of this cell.
 	 */
-	public Vector<ini.cx3d.localBiology.interfaces.NeuriteElement> getNeuriteElements() {
+	@Override
+	public AbstractSequentialList<ini.cx3d.localBiology.interfaces.NeuriteElement> getNeuriteElements() {
 		AbstractSequentialList<NeuriteElement> allTheNeuriteElements = new ListT_NeuriteElement();
 		for (ini.cx3d.localBiology.interfaces.NeuriteElement ne : somaElement.getNeuriteList()) {
 			ne.addYourselfAndDistalNeuriteElements(allTheNeuriteElements);
 		}
-		Vector<ini.cx3d.localBiology.interfaces.NeuriteElement> ret = new Vector<>();
-		for(ini.cx3d.localBiology.interfaces.NeuriteElement ne : allTheNeuriteElements) {
-			ret.add(ne);
-		}
-		return ret;
+		return allTheNeuriteElements;
 	}
 
 }

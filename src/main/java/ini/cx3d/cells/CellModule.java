@@ -37,10 +37,10 @@ public interface CellModule extends SimStateSerializable {
 	public void run();
 
 	/** @return the <code>Cell</code> this module leaves in*/
-	public Cell getCell();
+	public ini.cx3d.cells.interfaces.Cell getCell();
 
 	/**@param cell the <code>Cell</code> this module lives in*/
-	public void setCell(Cell cell);
+	public void setCell(ini.cx3d.cells.interfaces.Cell cell);
 	
 	/** Get a copy */
 	public CellModule getCopy();

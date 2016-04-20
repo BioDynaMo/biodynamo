@@ -23,7 +23,6 @@ package ini.cx3d.simulations.tutorial;
 
 import ini.cx3d.BaseSimulationTest;
 import ini.cx3d.Param;
-import ini.cx3d.cells.Cell;
 import ini.cx3d.cells.CellFactory;
 import ini.cx3d.simulations.ECM;
 import ini.cx3d.simulations.Scheduler;
@@ -39,7 +38,7 @@ public class DividingCellTest extends BaseSimulationTest {
 		ECM.setRandomSeed(1L);
 
 		double[] cellOrigin = {0.0, 3.0, 5.0};			
-		Cell cell = CellFactory.getCellInstance(cellOrigin);		
+		ini.cx3d.cells.interfaces.Cell cell = CellFactory.getCellInstance(cellOrigin);
 		cell.setColorForAllPhysicalObjects(Param.RED);
 		ini.cx3d.localBiology.interfaces.SomaElement soma = cell.getSomaElement();
 		ini.cx3d.physics.interfaces.PhysicalSphere sphere = soma.getPhysicalSphere();
@@ -51,7 +50,7 @@ public class DividingCellTest extends BaseSimulationTest {
 			if(sphere.getDiameter()<20){		// if small..
 				sphere.changeVolume(350);		// .. increase volume
 			}else{
-				Cell c2 = cell.divide();		// otherwise divide
+				ini.cx3d.cells.interfaces.Cell c2 = cell.divide();		// otherwise divide
 				c2.setColorForAllPhysicalObjects(Param.BLUE);
 			}
 		}

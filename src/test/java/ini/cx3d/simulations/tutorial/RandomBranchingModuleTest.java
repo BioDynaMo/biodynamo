@@ -23,7 +23,6 @@ package ini.cx3d.simulations.tutorial;
 
 import ini.cx3d.BaseSimulationTest;
 import ini.cx3d.Param;
-import ini.cx3d.cells.Cell;
 import ini.cx3d.cells.CellFactory;
 import ini.cx3d.localBiology.interfaces.CellElement;
 import ini.cx3d.localBiology.LocalBiologyModule;
@@ -50,7 +49,7 @@ public class RandomBranchingModuleTest extends BaseSimulationTest {
 		}
 		ECM.setRandomSeed(7L);
 		for(int i = 0; i<1; i++){
-			Cell c = CellFactory.getCellInstance(randomNoise(40, 3));
+			ini.cx3d.cells.interfaces.Cell c = CellFactory.getCellInstance(randomNoise(40, 3));
 			c.setColorForAllPhysicalObjects(Param.GRAY);
 			ini.cx3d.localBiology.interfaces.NeuriteElement neurite = c.getSomaElement().extendNewNeurite(new double[] {0,0,1});
 			neurite.getPhysicalCylinder().setDiameter(2);

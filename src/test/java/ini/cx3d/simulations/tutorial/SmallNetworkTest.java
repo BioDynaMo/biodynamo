@@ -31,7 +31,7 @@ import ini.cx3d.physics.factory.SubstanceFactory;
 import ini.cx3d.simulations.ECM;
 import ini.cx3d.simulations.Scheduler;
 import ini.cx3d.swig.biology.ConnectionMaker;
-import ini.cx3d.synapses.ConnectionsMaker;
+
 import static ini.cx3d.utilities.Matrix.*;
 
 public class SmallNetworkTest extends BaseSimulationTest {
@@ -54,14 +54,14 @@ public class SmallNetworkTest extends BaseSimulationTest {
 		}
 
 		for (int i = 0; i < 8; i++) {
-			Cell c;
+			ini.cx3d.cells.interfaces.Cell c;
 			if(i<4){
 				c= CellFactory.getCellInstance(new double[] {-20+40*ECM.getRandomDouble(),-20+40*ECM.getRandomDouble(),0.0});
-				c.setNeuroMLType(Cell.ExcitatoryCell);
+				c.setNeuroMLType(Cell.NeuroMLType.kExcitatatory);
 				c.setColorForAllPhysicalObjects(Param.VIOLET);
 			}else{
 				c= CellFactory.getCellInstance(new double[] {-20+40*ECM.getRandomDouble(),-20+40*ECM.getRandomDouble(),200.0});
-				c.setNeuroMLType(Cell.InhibitoryCell);
+				c.setNeuroMLType(Cell.NeuroMLType.kInhibitory);
 				c.setColorForAllPhysicalObjects(Param.VIOLET.darker());
 			}
 			ini.cx3d.localBiology.interfaces.NeuriteElement axon = c.getSomaElement().extendNewNeurite();

@@ -34,8 +34,6 @@ import ini.cx3d.synapses.factory.BiologicalBoutonFactory;
 import ini.cx3d.synapses.factory.PhysicalBoutonFactory;
 import ini.cx3d.synapses.factory.PhysicalSpineFactory;
 import ini.cx3d.synapses.interfaces.BiologicalSpine;
-import ini.cx3d.synapses.PhysicalBouton;
-import ini.cx3d.synapses.PhysicalSpine;
 import ini.cx3d.synapses.factory.BiologicalSpineFactory;
 
 public class SimpleSynapseTest extends BaseSimulationTest {
@@ -56,11 +54,11 @@ public class SimpleSynapseTest extends BaseSimulationTest {
 
 		double[] up = {0.0,0.0,1.0}, down = {0.0,0.0,-1.0};
 		// 1) two cells : and excitatory (down) and an inhibitory one (up)
-		Cell excit = CellFactory.getCellInstance(new double[] {-2.5,0,-30});
-		excit.setNeuroMLType(Cell.ExcitatoryCell);
+		ini.cx3d.cells.interfaces.Cell excit = CellFactory.getCellInstance(new double[] {-2.5,0,-30});
+		excit.setNeuroMLType(Cell.NeuroMLType.kExcitatatory);
 		excit.setColorForAllPhysicalObjects(Param.GREEN);
-		Cell inhib = CellFactory.getCellInstance(new double[] {2.5,0,30});
-		inhib.setNeuroMLType(Cell.InhibitoryCell);
+		ini.cx3d.cells.interfaces.Cell inhib = CellFactory.getCellInstance(new double[] {2.5,0,30});
+		inhib.setNeuroMLType(Cell.NeuroMLType.kInhibitory);
 		inhib.setColorForAllPhysicalObjects(Param.RED);
 		// 2) excitatory cell makes an axon, inhibitory cell makes a dendrite
 		ini.cx3d.localBiology.interfaces.NeuriteElement axon = excit.getSomaElement().extendNewNeurite(up);

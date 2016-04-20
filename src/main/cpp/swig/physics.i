@@ -41,10 +41,11 @@ JAVA_LOAD_NATIVE_LIBRARY(cx3d_physics);
 
 // typemap definitions, code modifications / additions
 %include "primitives.i"
-%include "color_typemap.i"
 %double_stdarray_array_marshalling(physics, 2);
 %double_stdarray_array_marshalling(physics, 3);
 %double_stdarray_array_marshalling(physics, 4);
+%include "color_typemap.i"
+%color(physics);
 %pragma(java) jniclassimports="import ini.cx3d.swig.NativeStringBuilder; import ini.cx3d.swig.spatialOrganization.SpaceNodeT_PhysicalNode; import ini.cx3d.swig.biology.LocalBiologyModule;
 import ini.cx3d.swig.biology.CellElement;
 import ini.cx3d.swig.biology.SomaElement;

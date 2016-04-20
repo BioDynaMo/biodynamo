@@ -29,9 +29,10 @@ import java.awt.Color;
 import ini.cx3d.BaseSimulationTest;
 import ini.cx3d.Param;
 import ini.cx3d.cells.*;
+import ini.cx3d.cells.Cell;
 import ini.cx3d.physics.factory.PhysicalObjectFactory;
 import ini.cx3d.simulations.*;
-import ini.cx3d.synapses.TestSynapses;
+import ini.cx3d.swig.biology.*;
 
 /**
  * This class was used to produce Figure 9 of the paper
@@ -95,13 +96,13 @@ public class Figure_9Test extends BaseSimulationTest {
 				
 			}
 			
-			Cell cell = CellFactory.getCellInstance( cellLocation );
+			ini.cx3d.cells.interfaces.Cell cell = CellFactory.getCellInstance( cellLocation );
 			ini.cx3d.localBiology.interfaces.SomaElement soma = cell.getSomaElement();
 			ini.cx3d.physics.interfaces.PhysicalSphere sphere = soma.getPhysicalSphere();
 			if(i==0){
-			cell.setNeuroMLType(Cell.InhibitoryCell);
+			cell.setNeuroMLType(Cell.NeuroMLType.kInhibitory);
 			}else{
-				cell.setNeuroMLType(Cell.ExcitatoryCell);
+				cell.setNeuroMLType(Cell.NeuroMLType.kExcitatatory);
 			}
 			sphere.setColor(c);
 			sphere.setAdherence(100);

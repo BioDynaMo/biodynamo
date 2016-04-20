@@ -26,9 +26,7 @@ import static ini.cx3d.utilities.Matrix.normalize;
 import static ini.cx3d.utilities.Matrix.randomNoise;
 
 import ini.cx3d.BaseSimulationTest;
-import ini.cx3d.cells.Cell;
 import ini.cx3d.cells.CellFactory;
-import ini.cx3d.localBiology.AbstractLocalBiologyModule;
 import ini.cx3d.localBiology.LocalBiologyModule;
 import ini.cx3d.simulations.ECM;
 import ini.cx3d.simulations.Scheduler;
@@ -42,7 +40,7 @@ public class SomaRandomWalkModuleTest extends BaseSimulationTest {
 	public void simulate() throws Exception {
 		ECM.setRandomSeed(1L);
 		for(int i = 0; i<5; i++){
-			Cell c = CellFactory.getCellInstance(randomNoise(40, 3));
+			ini.cx3d.cells.interfaces.Cell c = CellFactory.getCellInstance(randomNoise(40, 3));
 			c.getSomaElement().addLocalBiologyModule(new SomaRandomWalkModule());
 //			c.addCellModule(new DividingModule());  // un-comment to have the cells divide
 		}

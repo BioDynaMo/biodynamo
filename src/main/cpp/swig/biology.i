@@ -5,6 +5,7 @@
 
 %{
 #include <memory>
+#include "color.h"
 #include "local_biology/abstract_local_biology_module.h"
 #include "local_biology/cell_element.h"
 #include "local_biology/soma_element.h"
@@ -23,9 +24,11 @@
 #include "synapse/test_synapses.h"
 #include "cells/cell_module.h"
 using namespace cx3d::local_biology;
+using namespace cx3d::cells;
 using cx3d::physics::PhysicalObject;
 using cx3d::physics::PhysicalSphere;
 using cx3d::physics::PhysicalCylinder;
+using cx3d::Color;
 %}
 
 // import depending modules
@@ -39,6 +42,8 @@ JAVA_LOAD_NATIVE_LIBRARY(cx3d_biology);
 %include "primitives.i"
 %double_stdarray_array_marshalling(biology, 2);
 %double_stdarray_array_marshalling(biology, 3);
+%include "color_typemap.i"
+%color(biology);
 %pragma(java) jniclassimports="import ini.cx3d.swig.NativeStringBuilder;
 import ini.cx3d.swig.biology.CellElement;
 import ini.cx3d.swig.biology.LocalBiologyModule;
@@ -85,3 +90,4 @@ import ini.cx3d.swig.physics.PhysicalCylinder;"
 %include "synapse/connection_maker.h"
 %include "synapse/test_synapses.h"
 %include "cells/cell_module.h"
+%include "color.h"

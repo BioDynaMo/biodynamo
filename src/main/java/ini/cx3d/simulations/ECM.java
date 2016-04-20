@@ -44,8 +44,6 @@ import ini.cx3d.spatialOrganization.interfaces.SpaceNode;
 import ini.cx3d.spatialOrganization.SpatialOrganizationNode;
 import ini.cx3d.spatialOrganization.factory.SpaceNodeFactory;
 import ini.cx3d.swig.physics.ListT_NeuriteElement;
-import ini.cx3d.synapses.PhysicalBouton;
-import ini.cx3d.synapses.PhysicalSpine;
 import ini.cx3d.synapses.factory.PhysicalBoutonFactory;
 import ini.cx3d.synapses.factory.PhysicalSpineFactory;
 import ini.cx3d.utilities.Matrix;
@@ -77,6 +75,7 @@ public class ECM extends ini.cx3d.swig.physics.ECM implements SimStateSerializab
 	public double cos(double d) { return Math.cos(d); }
 	public double sin(double d) { return Math.sin(d); }
 	public double asin(double d) { return Math.asin(d); }
+	public double acos(double d) { return Math.acos(d); }
 	public double atan2(double d, double d1) { return Math.atan2(d, d1); }
 	public double cbrt(double d) { return Math.cbrt(d); }
 	public ini.cx3d.physics.interfaces.PhysicalCylinder newPhysicalCylinder() {return PhysicalCylinderFactory.create();}
@@ -114,7 +113,7 @@ public class ECM extends ini.cx3d.swig.physics.ECM implements SimStateSerializab
 	/** List of all the NeuriteElement instances. */
 	public AbstractSequentialList<NeuriteElement> neuriteElementList = new ListT_NeuriteElement();
 	/** List of all the Cell instances. */
-	public Vector<Cell> cellList  = new Vector<Cell>();
+	public Vector<ini.cx3d.cells.interfaces.Cell> cellList  = new Vector<ini.cx3d.cells.interfaces.Cell>();
 	/** List of all the Chemical reactions instances. */
 	public Vector<ECMChemicalReaction> ecmChemicalReactionList = new Vector<ECMChemicalReaction>(); 
 	
@@ -550,11 +549,11 @@ public class ECM extends ini.cx3d.swig.physics.ECM implements SimStateSerializab
 	
 //	Cells
 
-	public void addCell(Cell newCell) {
+	public void addCell(ini.cx3d.cells.interfaces.Cell newCell) {
 		cellList.add(newCell);
 	}
 
-	public void removeCell(Cell oldCell) {
+	public void removeCell(ini.cx3d.cells.interfaces.Cell oldCell) {
 		cellList.remove(oldCell);
 		
 	}
@@ -586,7 +585,7 @@ public class ECM extends ini.cx3d.swig.physics.ECM implements SimStateSerializab
 	 */
 	public void clearAll(){
 		// Layer 1 : Cells
-		cellList  = new Vector<Cell>();
+		cellList  = new Vector<>();
 		// Layer 2 : local biology
 		somaElementList  = new Vector<>();
 		neuriteElementList = new ListT_NeuriteElement();
@@ -1130,7 +1129,7 @@ public class ECM extends ini.cx3d.swig.physics.ECM implements SimStateSerializab
 	/**
 	 * @return the cellList
 	 */
-	public Vector<Cell> getCellList(){
+	public Vector<ini.cx3d.cells.interfaces.Cell> getCellList(){
 		return cellList;
 	}
 
@@ -1223,7 +1222,7 @@ public class ECM extends ini.cx3d.swig.physics.ECM implements SimStateSerializab
 		ECMtime += deltaT;
 	}
 
-	public void setCellList(Vector<Cell> cellList) {
+	public void setCellList(Vector<ini.cx3d.cells.interfaces.Cell> cellList) {
 		this.cellList = cellList;
 	}
 

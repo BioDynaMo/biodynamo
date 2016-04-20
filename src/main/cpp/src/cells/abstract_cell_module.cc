@@ -1,5 +1,6 @@
 #include "cells/abstract_cell_module.h"
 
+#include "cells/cell.h"
 #include "sim_state_serialization_util.h"
 
 namespace cx3d {

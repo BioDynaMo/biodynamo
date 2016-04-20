@@ -24,7 +24,6 @@ package ini.cx3d.synapses;
 import static ini.cx3d.utilities.Matrix.add;
 import static ini.cx3d.utilities.Matrix.randomNoise;
 import ini.cx3d.Param;
-import ini.cx3d.cells.Cell;
 import ini.cx3d.cells.CellFactory;
 import ini.cx3d.simulations.ECM;
 import ini.cx3d.simulations.Scheduler;
@@ -50,11 +49,11 @@ public class TestSynapses {
 
 		// 3) two cells
 		double[] cellLocation = new double[] {2,0,60};
-		Cell cell_1 = CellFactory.getCellInstance(cellLocation);
+		ini.cx3d.cells.interfaces.Cell cell_1 = CellFactory.getCellInstance(cellLocation);
 		cell_1.setColorForAllPhysicalObjects(Color.RED);
 
 		cellLocation = new double[] {0,0,-60};
-		Cell cell_2 = CellFactory.getCellInstance(cellLocation);
+		ini.cx3d.cells.interfaces.Cell cell_2 = CellFactory.getCellInstance(cellLocation);
 		cell_2.setColorForAllPhysicalObjects(Param.VIOLET);
 
 

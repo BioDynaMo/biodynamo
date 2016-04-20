@@ -26,7 +26,6 @@ import static ini.cx3d.utilities.Matrix.normalize;
 import static ini.cx3d.utilities.Matrix.randomNoise;
 import static ini.cx3d.utilities.Matrix.scalarMult;
 import ini.cx3d.Param;
-import ini.cx3d.cells.Cell;
 import ini.cx3d.cells.CellFactory;
 import ini.cx3d.localBiology.interfaces.CellElement;
 import ini.cx3d.physics.interfaces.PhysicalCylinder;
@@ -276,7 +275,7 @@ public class X_Movement_Module extends ini.cx3d.swig.biology.LocalBiologyModule{
 
 		// 3) Create a 4-uple Cell-SomaElement-PhysicalSphere-SpaceNode at the desired location
 		double[] cellLocation = new double[] {0,0,0};
-		Cell cell = CellFactory.getCellInstance(cellLocation);
+		ini.cx3d.cells.interfaces.Cell cell = CellFactory.getCellInstance(cellLocation);
 		cell.setColorForAllPhysicalObjects(Param.RED);
 
 		// 4) Extend an axon from the cell

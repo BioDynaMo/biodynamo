@@ -28,7 +28,6 @@ import static ini.cx3d.utilities.Matrix.add;
 
 import ini.cx3d.BaseSimulationTest;
 import ini.cx3d.Param;
-import ini.cx3d.cells.Cell;
 import ini.cx3d.cells.CellFactory;
 import ini.cx3d.localBiology.LocalBiologyModule;
 import ini.cx3d.localBiology.interfaces.CellElement;
@@ -61,7 +60,7 @@ public class IntracellularDiffusionTest extends BaseSimulationTest{
 		tubulin.setVolumeDependant(false);
 		ecm.addNewIntracellularSubstanceTemplate(tubulin);
 		// getting a cell
-		Cell c = CellFactory.getCellInstance(new double[] {0,0,0});
+		ini.cx3d.cells.interfaces.Cell c = CellFactory.getCellInstance(new double[] {0,0,0});
 		c.setColorForAllPhysicalObjects(Param.RED);
 		// insert production module
 		ini.cx3d.localBiology.interfaces.SomaElement soma = c.getSomaElement();

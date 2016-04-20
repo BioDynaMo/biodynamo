@@ -35,7 +35,6 @@ import static ini.cx3d.utilities.Matrix.subtract;
 import static ini.cx3d.utilities.StringUtilities.toStr;
 
 import ini.cx3d.Param;
-import ini.cx3d.cells.Cell;
 import ini.cx3d.cells.CellFactory;
 import ini.cx3d.localBiology.interfaces.CellElement;
 import ini.cx3d.physics.factory.PhysicalCylinderFactory;
@@ -1152,7 +1151,7 @@ public class PhysicalSphere extends physics.PhysicalSphereBase implements ini.cx
 		double phi = p/4;
 		double theta = p*17;
 
-		Cell c = CellFactory.getCellInstance(new double[] {10,-0.14,30});
+		ini.cx3d.cells.interfaces.Cell c = CellFactory.getCellInstance(new double[] {10,-0.14,30});
 		ini.cx3d.localBiology.interfaces.SomaElement soma = c.getSomaElement();
 		ini.cx3d.physics.interfaces.PhysicalSphere sphere = soma.getPhysicalSphere();
 //		NeuriteElement ne = c.getSomaElement().extendNewNeurite(2, phi, theta);

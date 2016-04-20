@@ -1,5 +1,6 @@
 #include "cells/simple_cell_cycle.h"
 
+#include "cells/cell.h"
 #include "sim_state_serialization_util.h"
 #include "local_biology/soma_element.h"
 #include "physics/physical_sphere.h"
