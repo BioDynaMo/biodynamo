@@ -8,6 +8,8 @@
 #include <exception>
 #include <list>
 
+#include "color.h"
+
 namespace cx3d {
 
 namespace local_biology {
@@ -24,6 +26,10 @@ namespace cells {
 class Cell;
 }  // namespace cells
 
+namespace spatial_organization {
+template<class T> class SpaceNode;
+}  // namespace spatial_organization
+
 namespace physics {
 
 class Substance;
@@ -32,6 +38,7 @@ class PhysicalSphere;
 class PhysicalCylinder;
 class PhysicalObject;
 class PhysicalBond;
+class PhysicalNode;
 
 class ECM {
  public:
@@ -155,6 +162,21 @@ class ECM {
     throw std::logic_error("ECM::addCell must never be called - Java must provide implementation at this point");
   }
 
+  virtual std::shared_ptr<spatial_organization::SpaceNode<physics::PhysicalNode> > getSpatialOrganizationNodeInstance(
+      const std::array<double, 3>& position, const std::shared_ptr<physics::PhysicalNode>& ps) {
+    throw std::logic_error(
+        "ECM::getSpatialOrganizationNodeInstance must never be called - Java must provide implementation at this point");
+  }
+
+  virtual double getGaussianDouble(double mean, double standard_deviation) {
+    throw std::logic_error(
+        "ECM::getGaussianDouble must never be called - Java must provide implementation at this point");
+  }
+
+  virtual Color cellTypeColor(const std::string& type) {
+    throw std::logic_error("ECM::cellTypeColor must never be called - Java must provide implementation at this point");
+  }
+
   virtual double getRandomDouble1() {
     throw std::logic_error(
         "ECM::getRandomDouble must never be called - Java must provide implementation at this point");
@@ -215,6 +237,10 @@ class ECM {
   virtual std::shared_ptr<local_biology::NeuriteElement> newNeuriteElement() {
     throw std::logic_error(
         "ECM::newNeuriteElement must never be called - Java must provide implementation at this point");
+  }
+
+  virtual std::shared_ptr<local_biology::SomaElement> newSomaElement() {
+    throw std::logic_error("ECM::newSomaElement must never be called - Java must provide implementation at this point");
   }
 
   virtual std::shared_ptr<cx3d::synapse::PhysicalSpine> newPhysicalSpine(

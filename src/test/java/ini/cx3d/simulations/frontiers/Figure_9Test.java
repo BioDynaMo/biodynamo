@@ -30,6 +30,7 @@ import ini.cx3d.BaseSimulationTest;
 import ini.cx3d.Param;
 import ini.cx3d.cells.*;
 import ini.cx3d.cells.Cell;
+import ini.cx3d.cells.CellFactory;
 import ini.cx3d.physics.factory.PhysicalObjectFactory;
 import ini.cx3d.simulations.*;
 import ini.cx3d.swig.biology.*;
@@ -96,7 +97,7 @@ public class Figure_9Test extends BaseSimulationTest {
 				
 			}
 			
-			ini.cx3d.cells.interfaces.Cell cell = CellFactory.getCellInstance( cellLocation );
+			ini.cx3d.cells.interfaces.Cell cell = CellFactory.getCellInstance(cellLocation);
 			ini.cx3d.localBiology.interfaces.SomaElement soma = cell.getSomaElement();
 			ini.cx3d.physics.interfaces.PhysicalSphere sphere = soma.getPhysicalSphere();
 			if(i==0){

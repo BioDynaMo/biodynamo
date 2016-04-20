@@ -23,6 +23,7 @@
 #include "synapse/connection_maker.h"
 #include "synapse/test_synapses.h"
 #include "cells/cell_module.h"
+#include "cells/cell_factory.h"
 using namespace cx3d::local_biology;
 using namespace cx3d::cells;
 using cx3d::physics::PhysicalObject;
@@ -72,6 +73,7 @@ import ini.cx3d.swig.physics.PhysicalCylinder;"
 %include "class_customization/synapse/connection_maker.i"
 %include "class_customization/synapse/test_synapses.i"
 %include "class_customization/cells/cell_module.i"
+%include "class_customization/cells/cell_factory.i"
 
 // add the original header files here
 %include "local_biology/local_biology_module.h"
@@ -91,3 +93,4 @@ import ini.cx3d.swig.physics.PhysicalCylinder;"
 %include "synapse/test_synapses.h"
 %include "cells/cell_module.h"
 %include "color.h"
+%include "cells/cell_factory.h"

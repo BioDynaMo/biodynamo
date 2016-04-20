@@ -39,4 +39,6 @@
   import ini.cx3d.swig.biology.SomaElement;
   import ini.cx3d.swig.biology.PhysicalSpine;
   import ini.cx3d.swig.biology.PhysicalBouton;
+  import ini.cx3d.swig.spatialOrganization.SpaceNodeT_PhysicalNode;
+  import ini.cx3d.swig.biology.Cell;
 %}

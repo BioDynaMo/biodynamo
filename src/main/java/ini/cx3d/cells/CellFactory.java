@@ -28,6 +28,7 @@ import ini.cx3d.physics.factory.PhysicalSphereFactory;
 import ini.cx3d.simulations.ECM;
 import ini.cx3d.spatialOrganization.SpatialOrganizationNode;
 import ini.cx3d.spatialOrganization.interfaces.SpaceNode;
+import ini.cx3d.swig.biology.biology;
 import ini.cx3d.utilities.Matrix;
 
 import java.util.Vector;
@@ -51,6 +52,10 @@ public class CellFactory {
 	 */
     public CellFactory() { 
     }
+
+    static {
+        ini.cx3d.swig.biology.Cell.setECM(ECM.getInstance());
+    }
     
     /**
      * Generates a single cell at the specified position.
@@ -58,7 +63,9 @@ public class CellFactory {
      * @return
      */
     public static ini.cx3d.cells.interfaces.Cell getCellInstance(double[] cellOrigin) {
-    	
+    	if(biology.useNativeCellFactory) {
+            return ini.cx3d.swig.biology.CellFactory.getCellInstance(cellOrigin, ECM.getInstance());
+        }
     	// Create new cell
         ini.cx3d.cells.interfaces.Cell cell = new Cell();
         SomaElement soma = SomaElementFactory.create();

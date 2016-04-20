@@ -31,6 +31,7 @@ import ini.cx3d.graphics.ECM_GUI_Creator;
 import ini.cx3d.graphics.HeadlessViewMock;
 import ini.cx3d.graphics.View;
 import ini.cx3d.localBiology.factory.NeuriteElementFactory;
+import ini.cx3d.localBiology.factory.SomaElementFactory;
 import ini.cx3d.localBiology.interfaces.NeuriteElement;
 import ini.cx3d.physics.ECMChemicalReaction;
 import ini.cx3d.physics.interfaces.PhysicalBond;
@@ -43,6 +44,7 @@ import ini.cx3d.spatialOrganization.PositionNotAllowedException;
 import ini.cx3d.spatialOrganization.interfaces.SpaceNode;
 import ini.cx3d.spatialOrganization.SpatialOrganizationNode;
 import ini.cx3d.spatialOrganization.factory.SpaceNodeFactory;
+import ini.cx3d.swig.biology.biology;
 import ini.cx3d.swig.physics.ListT_NeuriteElement;
 import ini.cx3d.synapses.factory.PhysicalBoutonFactory;
 import ini.cx3d.synapses.factory.PhysicalSpineFactory;
@@ -89,6 +91,7 @@ public class ECM extends ini.cx3d.swig.physics.ECM implements SimStateSerializab
 		return Matrix.getRandomDouble();
 	}
 	public ini.cx3d.physics.interfaces.PhysicalSphere newPhysicalSphere() {return PhysicalSphereFactory.create();}
+	public ini.cx3d.localBiology.interfaces.SomaElement newSomaElement() {return SomaElementFactory.create();}
 	public ini.cx3d.localBiology.interfaces.NeuriteElement newNeuriteElement() {return NeuriteElementFactory.create();}
 	public ini.cx3d.synapses.interfaces.PhysicalSpine newPhysicalSpine(ini.cx3d.physics.interfaces.PhysicalObject po, double[] origin, double length) {
 		return PhysicalSpineFactory.create(po, origin, length);
@@ -284,7 +287,7 @@ public class ECM extends ini.cx3d.swig.physics.ECM implements SimStateSerializab
 	 * @param standardDeviation
 	 * @return
 	 */
-	public static double getGaussianDouble(double mean, double standardDeviation){
+	public double getGaussianDouble(double mean, double standardDeviation){
 		return mean + standardDeviation*random.nextGaussian();
 	}
 	
@@ -396,7 +399,7 @@ public class ECM extends ini.cx3d.swig.physics.ECM implements SimStateSerializab
 	 * @param userObject
 	 * @return
 	 */
-	public SpatialOrganizationNode<ini.cx3d.physics.interfaces.PhysicalNode> getSpatialOrganizationNodeInstance(double[] position, ini.cx3d.physics.interfaces.PhysicalNode userObject){
+	public SpaceNode<ini.cx3d.physics.interfaces.PhysicalNode> getSpatialOrganizationNodeInstance(double[] position, ini.cx3d.physics.interfaces.PhysicalNode userObject){
 		if(initialNode == null){
 			SpaceNode<ini.cx3d.physics.interfaces.PhysicalNode> sn1 = new SpaceNodeFactory<ini.cx3d.physics.interfaces.PhysicalNode>().create(position,userObject);
 //			PhysicalNodeMovementListener listener = new PhysicalNodeMovementListener();
@@ -406,7 +409,7 @@ public class ECM extends ini.cx3d.swig.physics.ECM implements SimStateSerializab
 			return sn1;
 		}
 		try {
-			return initialNode.getNewInstance(position, userObject);
+			return (SpaceNode<PhysicalNode>) initialNode.getNewInstance(position, userObject);
 		} catch (PositionNotAllowedException e) {
 			e.printStackTrace();
 			return null;

@@ -29,3 +29,4 @@
 %native(PHYSICALSPINE);
 %native(PHYSICALSOMATICSPINE);
 %native(CELL);
+%native(CELLFACTORY);

@@ -25,6 +25,7 @@
 #include "local_biology/soma_element.h"
 #include "local_biology/neurite_element.h"
 #include "param.h"
+#include "cells/cell.h"
 using namespace cx3d::physics;
 using cx3d::JavaUtil2;
 using cx3d::Color;
@@ -52,7 +53,8 @@ import ini.cx3d.swig.biology.SomaElement;
 import ini.cx3d.swig.biology.NeuriteElement;
 import ini.cx3d.swig.biology.Excrescence;
 import ini.cx3d.swig.biology.PhysicalSpine;
-import ini.cx3d.swig.biology.PhysicalBouton;"
+import ini.cx3d.swig.biology.PhysicalBouton;
+import ini.cx3d.swig.biology.Cell;"
 
 // class modifications
 %include "class_customization/physics/substance.i"
@@ -75,6 +77,7 @@ import ini.cx3d.swig.biology.PhysicalBouton;"
 %include "class_customization/local_biology/local_biology_module.i"
 %include "class_customization/synapse/physical_spine.i"
 %include "class_customization/synapse/physical_bouton.i"
+%include "class_customization/cells/cell.i"
 %ignore cx3d::Param::kViolet;
 
 // add the original header files here
