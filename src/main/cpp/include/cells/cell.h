@@ -11,10 +11,14 @@
 #include "sim_state_serializable.h"
 #include "local_biology/soma_element.h"
 #include "local_biology/neurite_element.h"
-#include "physics/ecm.h"
 #include "cells/cell_module.h"
 
 namespace cx3d {
+
+namespace simulation {
+class ECM;  // todo replace with include once porting has been finished and remove include in cc file
+}  // namespace simulation
+
 namespace cells {
 
 /**
@@ -33,7 +37,7 @@ class Cell : public SimStateSerializable, public std::enable_shared_from_this<Ce
     kExcitatatory
   };
 
-  static void setECM(const std::shared_ptr<physics::ECM>& ecm) {
+  static void setECM(const std::shared_ptr<simulation::ECM>& ecm) {
     ecm_ = ecm;
   }
 
@@ -184,7 +188,7 @@ class Cell : public SimStateSerializable, public std::enable_shared_from_this<Ce
   static int id_counter_;
 
   /* Reference to the ECM. */
-  static std::shared_ptr<physics::ECM> ecm_;
+  static std::shared_ptr<simulation::ECM> ecm_;
 
   /* List of all cell modules that are run at each time step*/
   std::vector<std::shared_ptr<CellModule>> cell_modules_;  //todo change to vector once porting has been finished

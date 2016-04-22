@@ -58,5 +58,5 @@
 %typemap(javaimports) cx3d::synapse::Excrescence %{
   import ini.cx3d.swig.NativeStringBuilder;
   import ini.cx3d.swig.physics.PhysicalObject;
-  import ini.cx3d.swig.physics.ECM;
+  import ini.cx3d.swig.biology.ECM;
 %}

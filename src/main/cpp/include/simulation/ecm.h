@@ -1,5 +1,5 @@
-#ifndef PHYSICS_ECM_H_
-#define PHYSICS_ECM_H_
+#ifndef SIMULATION_ECM_H_
+#define SIMULATION_ECM_H_
 
 #include <iostream>
 #include <array>
@@ -40,10 +40,13 @@ class PhysicalObject;
 class PhysicalBond;
 class PhysicalNode;
 
+}  // namespace physics
+
+namespace simulation {
+
 class ECM {
  public:
   virtual ~ECM() {
-
   }
 
   /** Returns true if some artificial gradient (of any sorts) have been defined.*/
@@ -88,7 +91,7 @@ class ECM {
    * @param id
    * @return new Substance instance
    */
-  virtual std::shared_ptr<Substance> substanceInstance(const std::string& id) {
+  virtual std::shared_ptr<physics::Substance> substanceInstance(const std::string& id) {
     throw std::logic_error(
         "ECM::substanceInstance must never be called - Java must provide implementation at this point");
   }
@@ -103,22 +106,22 @@ class ECM {
    * @param id
    * @return new IntracellularSubstance instance
    */
-  virtual std::shared_ptr<IntracellularSubstance> intracellularSubstanceInstance(const std::string& id) {
+  virtual std::shared_ptr<physics::IntracellularSubstance> intracellularSubstanceInstance(const std::string& id) {
     throw std::logic_error(
         "ECM::intracellularSubstanceInstance must never be called - Java must provide implementation at this point");
   }
 
-  virtual void addPhysicalCylinder(const std::shared_ptr<PhysicalCylinder>& cyl) {
+  virtual void addPhysicalCylinder(const std::shared_ptr<physics::PhysicalCylinder>& cyl) {
     throw std::logic_error(
         "ECM::addPhysicalCylinder must never be called - Java must provide implementation at this point");
   }
 
-  virtual void removePhysicalCylinder(const std::shared_ptr<PhysicalCylinder>& cyl) {
+  virtual void removePhysicalCylinder(const std::shared_ptr<physics::PhysicalCylinder>& cyl) {
     throw std::logic_error(
         "ECM::removePhysicalCylinder must never be called - Java must provide implementation at this point");
   }
 
-  virtual void addPhysicalSphere(const std::shared_ptr<PhysicalSphere>& cyl) {
+  virtual void addPhysicalSphere(const std::shared_ptr<physics::PhysicalSphere>& cyl) {
     throw std::logic_error(
         "ECM::addPhysicalSphere must never be called - Java must provide implementation at this point");
   }
@@ -177,6 +180,43 @@ class ECM {
     throw std::logic_error("ECM::cellTypeColor must never be called - Java must provide implementation at this point");
   }
 
+  virtual std::list<std::shared_ptr<physics::PhysicalNode>> getPhysicalNodeList() {
+    throw std::logic_error(
+        "ECM::getPhysicalNodeList must never be called - Java must provide implementation at this point");
+  }
+
+  virtual std::list<std::shared_ptr<physics::PhysicalCylinder>> getPhysicalCylinderList() {
+    throw std::logic_error(
+        "ECM::getPhysicalCylinderList must never be called - Java must provide implementation at this point");
+  }
+
+  virtual std::list<std::shared_ptr<physics::PhysicalSphere>> getPhysicalSphereList() {
+    throw std::logic_error(
+        "ECM::getPhysicalSphereList must never be called - Java must provide implementation at this point");
+  }
+
+  virtual std::list<std::shared_ptr<local_biology::SomaElement>> getSomaElementList() {
+    throw std::logic_error(
+        "ECM::getSomaElementList must never be called - Java must provide implementation at this point");
+  }
+
+  virtual std::list<std::shared_ptr<cells::Cell>> getCellList() {
+    throw std::logic_error("ECM::getCellList must never be called - Java must provide implementation at this point");
+  }
+
+  virtual void increaseECMtime(double dt) {
+    throw std::logic_error(
+        "ECM::increaseECMTime must never be called - Java must provide implementation at this point");
+  }
+
+  virtual void viewRepaint() {
+    throw std::logic_error("ECM::viewRepaint must never be called - Java must provide implementation at this point");
+  }
+
+  virtual void createGUI() {
+    throw std::logic_error("ECM::createView must never be called - Java must provide implementation at this point");
+  }
+
   virtual double getRandomDouble1() {
     throw std::logic_error(
         "ECM::getRandomDouble must never be called - Java must provide implementation at this point");
@@ -219,7 +259,7 @@ class ECM {
     throw std::logic_error("ECM::atan2 must never be called - Java must provide implementation at this point");
   }
 
-  virtual std::shared_ptr<PhysicalCylinder> newPhysicalCylinder() const {
+  virtual std::shared_ptr<physics::PhysicalCylinder> newPhysicalCylinder() const {
     throw std::logic_error(
         "ECM::newPhysicalCylinder must never be called - Java must provide implementation at this point");
   }
@@ -229,7 +269,7 @@ class ECM {
         "ECM::matrixRandomNoise must never be called - Java must provide implementation at this point");
   }
 
-  virtual std::shared_ptr<PhysicalSphere> newPhysicalSphere() {
+  virtual std::shared_ptr<physics::PhysicalSphere> newPhysicalSphere() {
     throw std::logic_error(
         "ECM::newPhysicalSphere must never be called - Java must provide implementation at this point");
   }
@@ -256,17 +296,41 @@ class ECM {
         "ECM::newPhysicalBouton must never be called - Java must provide implementation at this point");
   }
 
-  virtual std::shared_ptr<physics::PhysicalBond> newPhysicalBond(const std::shared_ptr<PhysicalObject>& a,
+  virtual std::shared_ptr<physics::PhysicalBond> newPhysicalBond(const std::shared_ptr<physics::PhysicalObject>& a,
                                                                  const std::array<double, 2>& position_on_a,
-                                                                 const std::shared_ptr<PhysicalObject>& b,
+                                                                 const std::shared_ptr<physics::PhysicalObject>& b,
                                                                  const std::array<double, 2>& position_on_b,
                                                                  double resting_length, double spring_constant) {
     throw std::logic_error(
         "ECM::newPhysicalBond must never be called - Java must provide implementation at this point");
   }
+
+  virtual std::shared_ptr<physics::PhysicalCylinder> getPhysicalCylinder(int i) {
+    throw std::logic_error(
+        "ECM::getPhysicalCylinder must never be called - Java must provide implementation at this point");
+  }
+
+  virtual std::shared_ptr<local_biology::NeuriteElement> getNeuriteElememt(int i) {
+    throw std::logic_error(
+        "ECM::getNeuriteElememt must never be called - Java must provide implementation at this point");
+  }
+
+  virtual std::shared_ptr<physics::PhysicalNode> getPhysicalNode(int i) {
+    throw std::logic_error(
+        "ECM::getPhysicalNode must never be called - Java must provide implementation at this point");
+  }
+
+  virtual std::shared_ptr<physics::PhysicalSphere> getPhysicalSphere(int i) {
+    throw std::logic_error(
+        "ECM::getPhysicalSphere must never be called - Java must provide implementation at this point");
+  }
+
+  virtual std::shared_ptr<local_biology::SomaElement> getSomaElememt(int i) {
+    throw std::logic_error("ECM::getSomaElememt must never be called - Java must provide implementation at this point");
+  }
 };
 
-}  // namespace physics
+}  // namespace simulation
 }  // namespace cx3d
 
-#endif  // PHYSICS_ECM_H_
+#endif  // SIMULATION_ECM_H_

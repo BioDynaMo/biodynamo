@@ -5,11 +5,11 @@
 namespace cx3d {
 namespace synapse {
 
-void TestSynapses::extendExcressencesAndSynapseOnEveryNeuriteElement(const std::shared_ptr<physics::ECM>& ecm) {
+void TestSynapses::extendExcressencesAndSynapseOnEveryNeuriteElement(const std::shared_ptr<simulation::ECM>& ecm) {
   extendExcressencesAndSynapseOnEveryNeuriteElement(ecm, 1.0);
 }
 
-void TestSynapses::extendExcressencesAndSynapseOnEveryNeuriteElement(const std::shared_ptr<physics::ECM>& ecm,
+void TestSynapses::extendExcressencesAndSynapseOnEveryNeuriteElement(const std::shared_ptr<simulation::ECM>& ecm,
                                                                      double probability_to_synapse) {
   for (auto ne : ecm->getNeuriteElementList()) {
     if (ne->isAxon()) {

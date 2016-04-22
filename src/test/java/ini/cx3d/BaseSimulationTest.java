@@ -150,7 +150,7 @@ public abstract class BaseSimulationTest {
     }
 
     private void configure() {
-        ECM.headlessGui = TestUtil.isRunningOnTravis();
+        ECM.headlessGui = true;
         // run simulation (don't start in pause mode)
         ECM.getInstance().canRun.release();
         ECM.setRandomSeed(1L);

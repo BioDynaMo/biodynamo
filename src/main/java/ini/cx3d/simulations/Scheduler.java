@@ -28,6 +28,7 @@ import ini.cx3d.Param;
 import ini.cx3d.graphics.View;
 import ini.cx3d.physics.ECMChemicalReaction;
 import ini.cx3d.physics.interfaces.PhysicalCylinder;
+import ini.cx3d.swig.biology.biology;
 
 /**
  * This class contains static methods to loop through all the "runnable" CX3D objects
@@ -40,20 +41,22 @@ import ini.cx3d.physics.interfaces.PhysicalCylinder;
  */
 public class Scheduler {
 	/* Reference to the ECM.*/
-	protected static ECM ecm = ECM.getInstance();
+	private static ECM ecm = ECM.getInstance();
 	/* Reference to the ECM display window */
-	protected static View view = ecm.createGUI();
+	static {
+		ecm.createGUI();
+	}
 	/* static counter, needed in case where we want to make regular snapshots.*/
-	protected static int cycle_counter = 0; 	
-	protected static int inter_snapshot_time_steps = 30; 	
+	private static int cycle_counter = 0;
+	private static int inter_snapshot_time_steps = 30;
 
 
 	/* if false, the physics is not computed......*/
-	public static boolean runPhyics = true;
-	public static boolean runDiffusion = true;
-	
-	protected static boolean printCurrentECMTime = false;
-	protected static boolean printCurrentStep = false;
+	private static boolean runPhyics = true;
+	private static boolean runDiffusion = true;
+
+	private static boolean printCurrentECMTime = false;
+	private static boolean printCurrentStep = false;
 
 	/** Runs all the CX3D elements for one time step, and pauses for a few ms.
 	 * @param pauseTime the pause time in milliseconds.
@@ -63,11 +66,16 @@ public class Scheduler {
 		simulateOneStep();
 	}
 
-	protected static long physics_time;
-	protected static long module_time;
-	protected static long total_time;
+	private static long physics_time;
+	private static long module_time;
+	private static long total_time;
 	/** Runs all the CX3D runnable objects for one time step.*/
 	public static void simulateOneStep(){
+		if(biology.useNativeScheduler) {
+			ini.cx3d.swig.biology.Scheduler.getInstance(ECM.getInstance()).simulateOneStep();
+			return;
+		}
+
 		long start_time = System.currentTimeMillis(); 
 		
 		
@@ -209,7 +217,7 @@ public class Scheduler {
 				ecm.dumpImage();
 			}
 			// updating the picture on the GUI
-			view.repaint();
+			ecm.viewRepaint();
 			// ticking ECM's time
 			cycle_counter += 1;
 			ecm.increaseECMtime(Param.SIMULATION_TIME_STEP);
@@ -230,6 +238,11 @@ public class Scheduler {
 
 	/** Runs the simulation, i.e. runs each active CX3D runnable objects endlessly.*/
 	public static void simulate(){
+		if(biology.useNativeScheduler) {
+			ini.cx3d.swig.biology.Scheduler.getInstance(ECM.getInstance()).simulate();
+			return;
+		}
+
 		while(true)
 			simulateOneStep();
 	}
@@ -239,12 +252,20 @@ public class Scheduler {
 	 * @param steps nb of steps that the simulation is run.
 	 */
 	public static void simulateThatManyTimeSteps(int steps){
+		if(biology.useNativeScheduler) {
+			ini.cx3d.swig.biology.Scheduler.getInstance(ECM.getInstance()).simulateThatManyTimeSteps(steps);
+			return;
+		}
 		for (int i = 0; i < steps; i++) {
 			simulateOneStep();
 		}
 	}
 
 	public static void setPrintCurrentECMTime(boolean printCurrentECMTime) {
+		if(biology.useNativeScheduler) {
+			ini.cx3d.swig.biology.Scheduler.getInstance(ECM.getInstance()).setPrintCurrentECMTime(printCurrentECMTime);
+			return;
+		}
 		Scheduler.printCurrentECMTime = printCurrentECMTime;
 	}
 

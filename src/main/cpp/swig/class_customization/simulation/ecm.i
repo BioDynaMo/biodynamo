@@ -9,7 +9,7 @@
  * files!
  *
  * SWIG modules that use the class simply include it:
- * %include "class_customization/physics/ecm.i"
+ * %include "class_customization/simulation/ecm.i"
  */
 
 %include "util.i"
@@ -18,11 +18,11 @@
 %define %ECM_cx3d_shared_ptr()
   %cx3d_shared_ptr(ECM,
                    ini/cx3d/simulations/ECM,
-                   cx3d::physics::ECM);
+                   cx3d::simulation::ECM);
 %enddef
 
 %define %ECM_java()
-  %java_defined_class(cx3d::physics::ECM,
+  %java_defined_class(cx3d::simulation::ECM,
                       ECM,
                       ECM,
                       ini.cx3d.simulations.ECM,
@@ -34,11 +34,7 @@
  */
 %ECM_cx3d_shared_ptr();
 %ECM_java();
-%typemap(javaimports) cx3d::physics::ECM %{
-  import ini.cx3d.swig.biology.NeuriteElement;
-  import ini.cx3d.swig.biology.SomaElement;
-  import ini.cx3d.swig.biology.PhysicalSpine;
-  import ini.cx3d.swig.biology.PhysicalBouton;
+%typemap(javaimports) cx3d::simulation::ECM %{
   import ini.cx3d.swig.spatialOrganization.SpaceNodeT_PhysicalNode;
-  import ini.cx3d.swig.biology.Cell;
+  import ini.cx3d.swig.physics.*;
 %}

@@ -5,6 +5,7 @@
 #include <memory>
 
 #include "sim_state_serializable.h"
+#include "simulation/ecm.h"
 
 namespace cx3d {
 
@@ -14,7 +15,6 @@ class NeuriteElement;
 
 namespace physics {
 class PhysicalObject;
-class ECM;
 }  // namespace physics
 
 namespace synapse {
@@ -28,7 +28,7 @@ class Excrescence : public SimStateSerializable, public std::enable_shared_from_
     kShaft = 3
   };
 
-  static void setECM(const std::shared_ptr<physics::ECM>& ecm) {
+  static void setECM(const std::shared_ptr<simulation::ECM>& ecm) {
     ecm_ = ecm;
   }
 
@@ -80,7 +80,7 @@ class Excrescence : public SimStateSerializable, public std::enable_shared_from_
   virtual void setType(int type);
 
  protected:
-  static std::shared_ptr<physics::ECM> ecm_;
+  static std::shared_ptr<simulation::ECM> ecm_;
 
   /** the physical object it is attached to.*/
   std::shared_ptr<physics::PhysicalObject> po_;

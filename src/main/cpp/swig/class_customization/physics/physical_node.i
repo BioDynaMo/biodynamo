@@ -177,4 +177,8 @@
 // for SpaceNode
 %PhysicalNode_stdlist();
 %typemap(javainterfaces) cx3d::physics::PhysicalNode "ini.cx3d.physics.interfaces.PhysicalNode"
-%typemap(javaimports) cx3d::physics::PhysicalNode "import ini.cx3d.swig.NativeStringBuilder; import ini.cx3d.swig.spatialOrganization.SpaceNodeT_PhysicalNode;"
+%typemap(javaimports) cx3d::physics::PhysicalNode %{
+  import ini.cx3d.swig.NativeStringBuilder;
+  import ini.cx3d.swig.spatialOrganization.SpaceNodeT_PhysicalNode;
+  import ini.cx3d.swig.biology.ECM;
+%}

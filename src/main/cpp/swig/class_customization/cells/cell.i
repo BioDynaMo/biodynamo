@@ -54,8 +54,11 @@
 #else
   %Cell_java();
 #endif
+
+%Cell_stdlist();
+
 %typemap(javainterfaces) cx3d::cells::Cell "ini.cx3d.cells.interfaces.Cell"
 %typemap(javaimports) cx3d::cells::Cell %{
   import ini.cx3d.swig.NativeStringBuilder;
-  import ini.cx3d.swig.physics.ECM;
+  import ini.cx3d.swig.biology.ECM;
 %}

@@ -6,7 +6,7 @@
 #include "local_biology/neurite_element.h"
 #include "local_biology/local_biology_module.h"
 
-#include "physics/ecm.h"
+#include "simulation/ecm.h"
 #include "physics/physical_object.h"
 #include "physics/physical_sphere.h"
 

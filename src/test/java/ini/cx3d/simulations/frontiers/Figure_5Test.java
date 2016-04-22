@@ -100,7 +100,7 @@ public class Figure_5Test extends BaseSimulationTest {
 				psB.changeDiameter(400);
 				psC.changeDiameter(300);
 				psD.changeDiameter(200);
-				Scheduler.runEveryBodyOnce(0);
+				Scheduler.simulateOneStep();
 			}
 		}else{
 			psB.setDiameter(140);
@@ -113,7 +113,7 @@ public class Figure_5Test extends BaseSimulationTest {
 
 		// 5) running the simulation slowly 
 		for (int i = 0; i < 1000; i++) {
-			Scheduler.runEveryBodyOnce(0);
+			Scheduler.simulateOneStep();
 		}
 		
 	}

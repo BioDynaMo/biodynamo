@@ -2,7 +2,6 @@
 
 #include <algorithm>
 
-#include "physics/ecm.h"
 #include "sim_state_serialization_util.h"
 #include "physics/physical_object.h"
 #include "cells/cell.h"
@@ -11,11 +10,11 @@
 namespace cx3d {
 namespace local_biology {
 
-std::shared_ptr<physics::ECM> CellElement::ecm_ { nullptr };
+std::shared_ptr<simulation::ECM> CellElement::ecm_ { nullptr };
 
 std::size_t CellElement::id_counter_ = 0;
 
-void CellElement::setECM(const std::shared_ptr<physics::ECM>& ecm) {
+void CellElement::setECM(const std::shared_ptr<cx3d::simulation::ECM>& ecm) {
   ecm_ = ecm;
 }
 

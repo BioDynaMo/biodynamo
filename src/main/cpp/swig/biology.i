@@ -24,12 +24,16 @@
 #include "synapse/test_synapses.h"
 #include "cells/cell_module.h"
 #include "cells/cell_factory.h"
+#include "simulation/scheduler.h"
+#include "simulation/ecm.h"
 using namespace cx3d::local_biology;
 using namespace cx3d::cells;
+using namespace cx3d::simulation;
 using cx3d::physics::PhysicalObject;
 using cx3d::physics::PhysicalSphere;
 using cx3d::physics::PhysicalCylinder;
 using cx3d::Color;
+using cx3d::simulation::ECM;
 %}
 
 // import depending modules
@@ -48,9 +52,8 @@ JAVA_LOAD_NATIVE_LIBRARY(cx3d_biology);
 %pragma(java) jniclassimports="import ini.cx3d.swig.NativeStringBuilder;
 import ini.cx3d.swig.biology.CellElement;
 import ini.cx3d.swig.biology.LocalBiologyModule;
-import ini.cx3d.swig.physics.PhysicalObject;
-import ini.cx3d.swig.physics.PhysicalSphere;
-import ini.cx3d.swig.physics.PhysicalCylinder;"
+import ini.cx3d.swig.physics.*;
+import ini.cx3d.swig.spatialOrganization.SpaceNodeT_PhysicalNode;"
 
 // class modifications
 %include "class_customization/local_biology/cell_element.i"
@@ -62,7 +65,7 @@ import ini.cx3d.swig.physics.PhysicalCylinder;"
 %include "class_customization/local_biology/soma_element.i"
 %include "class_customization/local_biology/neurite_element.i"
 %include "class_customization/cells/cell.i"
-%include "class_customization/physics/ecm.i"
+%include "class_customization/simulation/ecm.i"
 %include "class_customization/synapse/excrescence.i"
 %include "class_customization/synapse/physical_spine.i"
 %include "class_customization/synapse/physical_somatic_spine.i"
@@ -74,6 +77,12 @@ import ini.cx3d.swig.physics.PhysicalCylinder;"
 %include "class_customization/synapse/test_synapses.i"
 %include "class_customization/cells/cell_module.i"
 %include "class_customization/cells/cell_factory.i"
+%include "class_customization/simulation/scheduler.i"
+%include "class_customization/physics/physical_bond.i"
+%include "class_customization/physics/substance.i"
+%include "class_customization/physics/intracellular_substance.i"
+%include "class_customization/physics/physical_node.i"
+%include "class_customization/space_node.i"
 
 // add the original header files here
 %include "local_biology/local_biology_module.h"
@@ -94,3 +103,5 @@ import ini.cx3d.swig.physics.PhysicalCylinder;"
 %include "cells/cell_module.h"
 %include "color.h"
 %include "cells/cell_factory.h"
+%include "simulation/scheduler.h"
+%include "simulation/ecm.h"

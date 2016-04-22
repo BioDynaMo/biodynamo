@@ -3,16 +3,16 @@
 
 #include <memory>
 
-#include "physics/ecm.h"
+#include "simulation/ecm.h"
 
 namespace cx3d {
 namespace synapse {
 
 class ConnectionMaker {
  public:
-  static void extendExcressencesAndSynapseOnEveryNeuriteElement(const std::shared_ptr<physics::ECM>& ecm);
+  static void extendExcressencesAndSynapseOnEveryNeuriteElement(const std::shared_ptr<simulation::ECM>& ecm);
 
-  static void extendExcressencesAndSynapseOnEveryNeuriteElement(const std::shared_ptr<physics::ECM>& ecm,
+  static void extendExcressencesAndSynapseOnEveryNeuriteElement(const std::shared_ptr<simulation::ECM>& ecm,
                                                                 double probability_to_synapse);
 };
 

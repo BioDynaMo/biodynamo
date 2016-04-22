@@ -11,7 +11,7 @@ namespace cells {
 using std::vector;
 
 std::shared_ptr<Cell> CellFactory::getCellInstance(const std::array<double, 3>& cell_origin,
-                                                   const std::shared_ptr<physics::ECM>& ecm) {
+                                                   const std::shared_ptr<simulation::ECM>& ecm) {
   // Create new cell
   auto cell = Cell::create();
   auto soma = ecm->newSomaElement();
@@ -32,7 +32,7 @@ std::shared_ptr<Cell> CellFactory::getCellInstance(const std::array<double, 3>& 
 
 vector<std::shared_ptr<Cell>> CellFactory::get2DCellGrid(double x_min, double x_max, double y_min, double y_max,
                                                          double z_pos, int n_x, int n_y, double noise_std,
-                                                         const std::shared_ptr<physics::ECM>& ecm) {
+                                                         const std::shared_ptr<simulation::ECM>& ecm) {
 
   // Insert all generated cells in a vector
   vector<std::shared_ptr<Cell> > cellList;
@@ -54,7 +54,7 @@ vector<std::shared_ptr<Cell>> CellFactory::get2DCellGrid(double x_min, double x_
 vector<std::shared_ptr<Cell>> CellFactory::get3DCellGrid(double x_min, double x_max, double y_min, double y_max,
                                                          double z_min, double z_max, int n_x, int n_y, int n_z,
                                                          double noise_xy_std, double noise_z_std,
-                                                         const std::shared_ptr<physics::ECM>& ecm) {
+                                                         const std::shared_ptr<simulation::ECM>& ecm) {
 
   // Insert all generated cells in a vector
   vector<std::shared_ptr<Cell> > cellList;

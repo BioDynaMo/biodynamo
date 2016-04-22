@@ -9,7 +9,6 @@
 #include <unordered_map>
 
 #include "sim_state_serializable.h"
-#include "physics/ecm.h"
 
 namespace cx3d {
 
@@ -17,6 +16,10 @@ namespace spatial_organization {
 template<class T> class SpaceNode;
 template<class T> class SpatialOrganizationEdge;
 }  // namespace spatial_organization
+
+namespace simulation {
+class ECM;  // todo replace with include once porting has been finished and remove include in cc file
+}  // namespace simulation
 
 namespace physics {
 
@@ -44,7 +47,7 @@ class PhysicalNode : public SimStateSerializable, public std::enable_shared_from
   // *************************************************************************************
 
   //todo remove after porting has been finished
-  static void setECM(std::shared_ptr<ECM> e) {
+  static void setECM(std::shared_ptr<simulation::ECM> e) {
     ecm_ = e;
   }
 
@@ -227,7 +230,7 @@ class PhysicalNode : public SimStateSerializable, public std::enable_shared_from
 
  protected:
   /* Reference to the ECM. */
-  static std::shared_ptr<ECM> ecm_;
+  static std::shared_ptr<simulation::ECM> ecm_;
 
   /**
    *  My anchor point in the neighboring system

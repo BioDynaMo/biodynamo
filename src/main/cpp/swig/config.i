@@ -30,3 +30,4 @@
 %native(PHYSICALSOMATICSPINE);
 %native(CELL);
 %native(CELLFACTORY);
+%native(SCHEDULER);

@@ -28,7 +28,7 @@ class CellFactory {
    */
   //todo remove ecm parameter once porting has been finished
   static std::shared_ptr<Cell> getCellInstance(const std::array<double, 3>& cell_origin,
-                                               const std::shared_ptr<physics::ECM>& ecm);
+                                               const std::shared_ptr<simulation::ECM>& ecm);
 
   /**
    * Generates a 2D grid of cells according according to the desired number of cells along
@@ -46,7 +46,7 @@ class CellFactory {
   //todo remove ecm parameter once porting has been finished
   static vector<std::shared_ptr<Cell>> get2DCellGrid(double x_min, double x_max, double y_min, double y_max,
                                                      double z_pos, int n_x, int n_y, double noise_std,
-                                                     const std::shared_ptr<physics::ECM>& ecm);
+                                                     const std::shared_ptr<simulation::ECM>& ecm);
 
   /**
    * Generates a 3D grid of cells according to the desired number of cells along
@@ -69,7 +69,7 @@ class CellFactory {
   static vector<std::shared_ptr<Cell>> get3DCellGrid(double x_min, double x_max, double y_min, double y_max,
                                                      double z_min, double z_max, int n_x, int n_y, int n_z,
                                                      double noise_xy_std, double noise_z_std,
-                                                     const std::shared_ptr<physics::ECM>& ecm);
+                                                     const std::shared_ptr<simulation::ECM>& ecm);
  private:
   CellFactory() = delete;
   CellFactory(const CellFactory&) = delete;

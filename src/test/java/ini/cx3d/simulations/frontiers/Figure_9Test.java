@@ -33,6 +33,8 @@ import ini.cx3d.cells.Cell;
 import ini.cx3d.cells.CellFactory;
 import ini.cx3d.physics.factory.PhysicalObjectFactory;
 import ini.cx3d.simulations.*;
+import ini.cx3d.simulations.ECM;
+import ini.cx3d.simulations.Scheduler;
 import ini.cx3d.swig.biology.*;
 
 /**

@@ -1,0 +1,122 @@
+#include "simulation/scheduler.h"
+
+#include <iostream>
+
+#include "param.h"
+#include "physics/physical_node.h"
+#include "physics/physical_sphere.h"
+#include "physics/physical_cylinder.h"
+
+#include "local_biology/soma_element.h"
+#include "local_biology/neurite_element.h"
+
+#include "cells/cell.h"
+
+namespace cx3d {
+namespace simulation {
+
+std::shared_ptr<Scheduler> Scheduler::getInstance(const std::shared_ptr<simulation::ECM>& ecm) {  //todo remove ecm parameter once porting has been finished
+  static std::shared_ptr<Scheduler> instance { new Scheduler(ecm) };
+  return instance;
+}
+
+Scheduler::~Scheduler() {
+}
+
+void Scheduler::simulateOneStep() {
+
+  if (print_current_ecm_time_) {
+    std::cout << "time = " << ecm_->getECMtime() << std::endl;
+  }
+
+  if (print_current_step_) {
+    std::cout << "step = " << cycle_counter_ << std::endl;
+  }
+
+  if (run_physics_) {
+    // PhysicalNode (diffusion & degradation of Substances)
+    if (run_diffusion_) {
+      for (int i = 0; i < ecm_->getPhysicalNodeList().size(); i++) {
+        auto pn = ecm_->getPhysicalNode(i);
+        if (pn->isOnTheSchedulerListForPhysicalNodes()) {
+          pn->runExtracellularDiffusion();
+        }
+      }
+    }
+
+    //fixme implement - not used atm
+//    if (!ecm_.ecm_ChemicalReactionList.isEmpty()) {
+//      for (int i = 0; i < ecm_.physicalNodeList.size(); i++) {
+//        ini.cx3d.physics.interfaces.PhysicalNode
+//        pn = ecm_.physicalNodeList.get(i);
+//        for (ecm_ChemicalReaction chemicalReaction : ecm_.ecm_ChemicalReactionList) {
+//          chemicalReaction.run(pn);
+//        }
+//      }
+//    }
+
+    // Physical objects : PhysicalCylinders
+    for (int i = 0; i < ecm_->getPhysicalCylinderList().size(); i++) {
+      auto pc = ecm_->getPhysicalCylinder(i);
+      if (pc->isOnTheSchedulerListForPhysicalObjects()) {
+        pc->runPhysics();
+      }
+      pc->runIntracellularDiffusion();
+    }
+
+    // Physical objects : PhysicalSpheres
+    for (int i = 0; i < ecm_->getPhysicalSphereList().size(); i++) {
+      auto ps = ecm_->getPhysicalSphere(i);
+      if (ps->isOnTheSchedulerListForPhysicalObjects()) {
+        ps->runPhysics();
+      }
+      ps->runIntracellularDiffusion();
+    }
+  }
+  // cellList
+
+  // Modified by Sabina: the new cells should not be run in the same time step as they are created!!!
+  for (auto cell : ecm_->getCellList()) {
+    cell->run();
+  }
+
+  // somata
+  for (auto i = 0; i < ecm_->getSomaElementList().size(); i++) {
+    ecm_->getSomaElememt(i)->run();
+  }
+  // neurites
+  for (auto i = 0; i < ecm_->getNeuriteElementList().size(); i++) {
+    ecm_->getNeuriteElememt(i)->run();
+  }
+
+  // updating the picture on the GUI
+  ecm_->viewRepaint();
+  // ticking ECM's time
+  cycle_counter_++;
+  ecm_->increaseECMtime(Param::kSimulationTimeStep);
+}
+
+void Scheduler::simulate() {
+  while (true) {
+    simulateOneStep();
+  }
+}
+
+void Scheduler::simulateThatManyTimeSteps(int steps) {
+  for (int i = 0; i < steps; i++) {
+    simulateOneStep();
+  }
+}
+
+void Scheduler::setPrintCurrentECMTime(bool print_time) {
+  print_current_ecm_time_ = print_time;
+}
+
+Scheduler::Scheduler(const std::shared_ptr<simulation::ECM>& ecm)
+    : ecm_ { ecm } {
+  ecm_->createGUI();
+}
+
+}  // namespace simulation
+}  // namespace cx3d
+

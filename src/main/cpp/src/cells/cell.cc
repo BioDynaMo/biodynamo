@@ -3,12 +3,13 @@
 #include "matrix.h"
 #include "sim_state_serialization_util.h"
 #include "physics/physical_sphere.h"
+#include "simulation/ecm.h"
 
 namespace cx3d {
 namespace cells {
 
 int Cell::id_counter_ = 0;
-std::shared_ptr<physics::ECM> Cell::ecm_ { nullptr };
+std::shared_ptr<simulation::ECM> Cell::ecm_ { nullptr };
 
 Cell::Cell()
     : id_ { ++id_counter_ } {

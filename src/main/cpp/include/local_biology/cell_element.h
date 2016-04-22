@@ -8,11 +8,11 @@
 #include <exception>
 
 #include "sim_state_serializable.h"
+#include "simulation/ecm.h"
 
 namespace cx3d {
 
 namespace physics {
-class ECM;
 class PhysicalObject;
 }  // namespace physics
 
@@ -26,7 +26,7 @@ class LocalBiologyModule;
 
 class CellElement : public SimStateSerializable, public std::enable_shared_from_this<CellElement> {
  public:
-  static void setECM(const std::shared_ptr<physics::ECM>& ecm);
+  static void setECM(const std::shared_ptr<cx3d::simulation::ECM>& ecm);
 
   CellElement();
 
@@ -110,7 +110,7 @@ class CellElement : public SimStateSerializable, public std::enable_shared_from_
   void runLocalBiologyModules();  //fixme make protected after porting has been finished
 
  protected:
-  static std::shared_ptr<physics::ECM> ecm_;
+  static std::shared_ptr<simulation::ECM> ecm_;
 
   std::shared_ptr<cells::Cell> cell_ { nullptr };
 

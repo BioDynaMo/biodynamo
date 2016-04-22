@@ -9,7 +9,7 @@
 namespace cx3d {
 namespace synapse {
 
-std::shared_ptr<physics::ECM> Excrescence::ecm_ { nullptr };
+std::shared_ptr<simulation::ECM> Excrescence::ecm_ { nullptr };
 
 Excrescence::Excrescence() {
 }
