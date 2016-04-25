@@ -98,6 +98,34 @@ public class ECM extends ini.cx3d.swig.biology.ECM implements SimStateSerializab
 //		return PhysicalBondFactory.create(a, positionOnA, b, positionOnB, restingLength, springConstant);
 //	}
 
+	public int getPhysicalNodeListSize() {
+		return physicalNodeList.size();
+	}
+
+	public int getPhysicalCylinderListSize() {
+		return physicalCylinderList.size();
+	}
+
+	public int getPhysicalSphereListSize() {
+		return physicalSphereList.size();
+	}
+
+	public int getSomaElementListSize() {
+		return somaElementList.size();
+	}
+
+	public int getNeuriteElementListSize() {
+		return neuriteElementList.size();
+	}
+
+	public int getCellListSize() {
+		return cellList.size();
+	}
+
+	public ini.cx3d.cells.interfaces.Cell getCell(int i) {
+		return cellList.get(i);
+	}
+
 	public void viewRepaint() {
 		view.repaint();
 	}

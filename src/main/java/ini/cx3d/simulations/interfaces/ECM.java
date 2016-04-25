@@ -20,6 +20,20 @@ import java.util.Hashtable;
  */
 public interface ECM extends SimStateSerializable {
 
+	int getPhysicalNodeListSize();
+
+	int getPhysicalCylinderListSize();
+
+	int getPhysicalSphereListSize();
+
+	int getSomaElementListSize();
+
+	int getNeuriteElementListSize();
+
+	int getCellListSize();
+
+	 ini.cx3d.cells.interfaces.Cell getCell(int i);
+
 	double getRandomDouble1();
 
 	void viewRepaint();

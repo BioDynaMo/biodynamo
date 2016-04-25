@@ -346,6 +346,32 @@
       public void addNewCellTypeColor(String cellType, java.awt.Color color) {
           throw new UnsupportedOperationException();
       }
+      @Override
+      public AbstractSequentialList<ini.cx3d.localBiology.interfaces.SomaElement> getSomaElementList() {
+          throw new UnsupportedOperationException();
+      }
+      @Override
+      public AbstractSequentialList<ini.cx3d.physics.interfaces.PhysicalNode> getPhysicalNodeList() {
+          throw new UnsupportedOperationException();
+      }
+
+      @Override
+      public AbstractSequentialList<ini.cx3d.cells.interfaces.Cell> getCellList() {
+          throw new UnsupportedOperationException();
+      }
+      // @Override
+      // public AbstractSequentialList<ini.cx3d.localBiology.interfaces.NeuriteElement> getNeuriteElementList() {
+      //     throw new UnsupportedOperationException();
+      // }
+      @Override
+      public AbstractSequentialList<ini.cx3d.physics.interfaces.PhysicalSphere> getPhysicalSphereList() {
+          throw new UnsupportedOperationException();
+      }
+
+      @Override
+      public AbstractSequentialList<ini.cx3d.physics.interfaces.PhysicalCylinder> getPhysicalCylinderList() {
+          throw new UnsupportedOperationException();
+      }
   %}
 %enddef
 
@@ -400,9 +426,9 @@
 %ignore cx3d::simulation::ECM::getIntracelularSubstanceTemplates;
 %ignore cx3d::simulation::ECM::getSubstanceTemplates;
 
-// %ignore cx3d::simulation::ECM::getCellList;
-// %ignore cx3d::simulation::ECM::getPhysicalNodeList;
-// %ignore cx3d::simulation::ECM::getPhysicalSphereList;
-// %ignore cx3d::simulation::ECM::getPhysicalCylinderList;
+%ignore cx3d::simulation::ECM::getCellList;
+%ignore cx3d::simulation::ECM::getPhysicalNodeList;
+%ignore cx3d::simulation::ECM::getPhysicalSphereList;
+%ignore cx3d::simulation::ECM::getPhysicalCylinderList;
 // %ignore cx3d::simulation::ECM::getNeuriteElementList;
-// %ignore cx3d::simulation::ECM::getSomaElementList;
+%ignore cx3d::simulation::ECM::getSomaElementList;

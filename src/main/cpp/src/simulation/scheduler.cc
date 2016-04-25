@@ -36,7 +36,7 @@ void Scheduler::simulateOneStep() {
   if (run_physics_) {
     // PhysicalNode (diffusion & degradation of Substances)
     if (run_diffusion_) {
-      for (int i = 0; i < ecm_->getPhysicalNodeList().size(); i++) {
+      for (int i = 0; i < ecm_->getPhysicalNodeListSize(); i++) {
         auto pn = ecm_->getPhysicalNode(i);
         if (pn->isOnTheSchedulerListForPhysicalNodes()) {
           pn->runExtracellularDiffusion();
@@ -56,7 +56,7 @@ void Scheduler::simulateOneStep() {
 //    }
 
     // Physical objects : PhysicalCylinders
-    for (int i = 0; i < ecm_->getPhysicalCylinderList().size(); i++) {
+    for (int i = 0; i < ecm_->getPhysicalCylinderListSize(); i++) {
       auto pc = ecm_->getPhysicalCylinder(i);
       if (pc->isOnTheSchedulerListForPhysicalObjects()) {
         pc->runPhysics();
@@ -65,7 +65,7 @@ void Scheduler::simulateOneStep() {
     }
 
     // Physical objects : PhysicalSpheres
-    for (int i = 0; i < ecm_->getPhysicalSphereList().size(); i++) {
+    for (int i = 0; i < ecm_->getPhysicalSphereListSize(); i++) {
       auto ps = ecm_->getPhysicalSphere(i);
       if (ps->isOnTheSchedulerListForPhysicalObjects()) {
         ps->runPhysics();
@@ -76,16 +76,17 @@ void Scheduler::simulateOneStep() {
   // cellList
 
   // Modified by Sabina: the new cells should not be run in the same time step as they are created!!!
-  for (auto cell : ecm_->getCellList()) {
-    cell->run();
+  int size = ecm_->getCellListSize();
+  for (auto i = 0; i < size; i++) {
+    ecm_->getCell(i)->run();
   }
 
   // somata
-  for (auto i = 0; i < ecm_->getSomaElementList().size(); i++) {
+  for (auto i = 0; i < ecm_->getSomaElementListSize(); i++) {
     ecm_->getSomaElememt(i)->run();
   }
   // neurites
-  for (auto i = 0; i < ecm_->getNeuriteElementList().size(); i++) {
+  for (auto i = 0; i < ecm_->getNeuriteElementListSize(); i++) {
     ecm_->getNeuriteElememt(i)->run();
   }
 

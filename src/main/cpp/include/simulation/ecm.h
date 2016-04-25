@@ -241,6 +241,40 @@ class ECM {
     throw std::logic_error("ECM::getSomaElememt must never be called - Java must provide implementation at this point");
   }
 
+  virtual std::shared_ptr<cells::Cell> getCell(int i) {
+    throw std::logic_error("ECM::getCell must never be called - Java must provide implementation at this point");
+  }
+
+  virtual int getCellListSize() {
+      throw std::logic_error(
+          "ECM::getCellListSize must never be called - Java must provide implementation at this point");
+    }
+
+  virtual int getPhysicalNodeListSize() {
+    throw std::logic_error(
+        "ECM::getPhysicalNodeListSize must never be called - Java must provide implementation at this point");
+  }
+
+  virtual int getPhysicalCylinderListSize() {
+    throw std::logic_error(
+        "ECM::getPhysicalCylinderListSize must never be called - Java must provide implementation at this point");
+  }
+
+  virtual int getPhysicalSphereListSize() {
+    throw std::logic_error(
+        "ECM::getPhysicalSphereListSize must never be called - Java must provide implementation at this point");
+  }
+
+  virtual int getSomaElementListSize() {
+    throw std::logic_error(
+        "ECM::getSomaElementListSize must never be called - Java must provide implementation at this point");
+  }
+
+  virtual int getNeuriteElementListSize() {
+    throw std::logic_error(
+        "ECM::getNeuriteElementListSize must never be called - Java must provide implementation at this point");
+  }
+
   //
   //
   //
