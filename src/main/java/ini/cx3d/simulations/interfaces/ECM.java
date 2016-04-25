@@ -19,6 +19,7 @@ import java.util.Hashtable;
  * Created by lukas on 25.04.16.
  */
 public interface ECM extends SimStateSerializable {
+
 	double getRandomDouble1();
 
 	void viewRepaint();
@@ -27,7 +28,7 @@ public interface ECM extends SimStateSerializable {
 
 //	double getRandomDouble();
 
-	double getGaussianDouble(double mean, double standardDeviation);
+//	double getGaussianDouble(double mean, double standardDeviation);
 
 	void setBoundaries(double Xmin, double Xmax, double Ymin, double Ymax, double Zmin, double Zmax);
 

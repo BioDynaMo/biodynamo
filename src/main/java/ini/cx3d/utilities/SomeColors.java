@@ -21,6 +21,7 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 
 package ini.cx3d.utilities;
 
+import ini.cx3d.JavaUtil2;
 import ini.cx3d.simulations.ECMFacade;
 import ini.cx3d.simulations.interfaces.ECM;
 
@@ -48,7 +49,7 @@ public class SomeColors {
 	
 	
 	public static Color getRandomColor(){
-		return new Color((float) ECMFacade.getRandomDouble(),(float)ECMFacade.getRandomDouble(),(float) ECMFacade.getRandomDouble(),0.1f);
+		return new Color((float) JavaUtil2.getRandomDouble(),(float)JavaUtil2.getRandomDouble(),(float) JavaUtil2.getRandomDouble(),0.1f);
 	}
 	
 	

@@ -36,7 +36,7 @@ import ini.cx3d.simulations.*;
 import ini.cx3d.simulations.interfaces.ECM;
 import ini.cx3d.simulations.Scheduler;
 import ini.cx3d.swig.biology.*;
-
+import ini.cx3d.JavaUtil2;
 /**
  * This class was used to produce Figure 9 of the paper
  * "A framework for modeling the growth and development of neurons and networks", Zubler & Douglas 2009.
@@ -56,14 +56,14 @@ public class Figure_9Test extends BaseSimulationTest {
 
 	@Override
 	public void simulate() throws Exception {
-		ini.cx3d.simulations.ECM.setRandomSeed(1L);
+		JavaUtil2.setRandomSeed(1L);
 
 		Param.NEURITE_MAX_LENGTH = 20;
 		ini.cx3d.swig.physics.Param.setKNeuriteMaxLength(20);
 		double pi = Math.PI;
 		// get a 2.5D ECM
 		ECM ecm = ECMFacade.getInstance();
-		ini.cx3d.simulations.ECM.setRandomSeed(5L);
+		JavaUtil2.setRandomSeed(5L);
 		ecm.setArtificialWallsForCylinders(true);
 		ecm.setArtificialWallsForSpheres(true);
 		ecm.setBoundaries(-10000, 10000, -10000, 10000, -5, 5);

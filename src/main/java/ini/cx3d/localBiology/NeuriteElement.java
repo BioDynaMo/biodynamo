@@ -36,6 +36,7 @@ import static ini.cx3d.utilities.StringUtilities.toStr;
 
 import java.util.AbstractSequentialList;
 
+import ini.cx3d.JavaUtil2;
 import ini.cx3d.Param;
 import ini.cx3d.physics.interfaces.PhysicalCylinder;
 import ini.cx3d.physics.interfaces.PhysicalNode;
@@ -368,7 +369,7 @@ public class NeuriteElement extends ini.cx3d.swig.biology.biology.NeuriteElement
 		// TODO : better way to define number (ex : if interval >> length -> no spine at all)
 		for (int i = 0; i < nb; i++) {
 			// create the physical part
-			double[] coord = {length* ECMFacade.getRandomDouble(), 6.28*ECMFacade.getRandomDouble()};
+			double[] coord = {length* JavaUtil2.getRandomDouble(), 6.28*JavaUtil2.getRandomDouble()};
 			ini.cx3d.synapses.interfaces.PhysicalSpine pSpine = PhysicalSpineFactory.create(physicalCylinder,coord,3);
 			physicalCylinder.addExcrescence(pSpine);
 			// create the biological part and set call backs
@@ -385,7 +386,7 @@ public class NeuriteElement extends ini.cx3d.swig.biology.biology.NeuriteElement
 	public void makeSingleSpine(){
 		double length = physicalCylinder.getActualLength();
 		// create the physical part
-		double[] coord = {length*ECMFacade.getRandomDouble(), 6.28*ECMFacade.getRandomDouble()};
+		double[] coord = {length*JavaUtil2.getRandomDouble(), 6.28*JavaUtil2.getRandomDouble()};
 		ini.cx3d.synapses.interfaces.PhysicalSpine pSpine = PhysicalSpineFactory.create(physicalCylinder, coord, 3);
 		physicalCylinder.addExcrescence(pSpine);
 		// create the biological part and set call backs
@@ -406,7 +407,7 @@ public class NeuriteElement extends ini.cx3d.swig.biology.biology.NeuriteElement
 			return;
 		}
 		// create the physical part
-		double[] coord = {distFromProximalEnd, 6.28*ECMFacade.getRandomDouble()};
+		double[] coord = {distFromProximalEnd, 6.28*JavaUtil2.getRandomDouble()};
 		ini.cx3d.synapses.interfaces.PhysicalSpine pSpine = PhysicalSpineFactory.create(physicalCylinder,coord,3);
 		physicalCylinder.addExcrescence(pSpine);
 		// create the biological part and set call backs
@@ -429,7 +430,7 @@ public class NeuriteElement extends ini.cx3d.swig.biology.biology.NeuriteElement
 		// TODO : better way to define number (ex : if interval >> length -> no spine at all) 
 		for (int i = 0; i < nb; i++) {
 			// create the physical part
-			double[] coord = {length*ECMFacade.getRandomDouble(), -3.14 + 6.28*ECMFacade.getRandomDouble()};
+			double[] coord = {length*JavaUtil2.getRandomDouble(), -3.14 + 6.28*JavaUtil2.getRandomDouble()};
 			ini.cx3d.synapses.interfaces.PhysicalBouton pBouton = PhysicalBoutonFactory.create(physicalCylinder, coord, 2);
 			physicalCylinder.addExcrescence(pBouton);
 			// create the biological part and set call backs
@@ -451,7 +452,7 @@ public class NeuriteElement extends ini.cx3d.swig.biology.biology.NeuriteElement
 			return;
 		}
 		// create the physical part
-		double[] coord = {distFromProximalEnd, 6.28*ECMFacade.getRandomDouble()};
+		double[] coord = {distFromProximalEnd, 6.28*JavaUtil2.getRandomDouble()};
 		ini.cx3d.synapses.interfaces.PhysicalBouton pBouton = PhysicalBoutonFactory.create(physicalCylinder,coord,2);
 		physicalCylinder.addExcrescence(pBouton);
 		// create the biological part and set call backs
@@ -468,7 +469,7 @@ public class NeuriteElement extends ini.cx3d.swig.biology.biology.NeuriteElement
 		// how many boutons for this NeuriteElement ?
 		double length = physicalCylinder.getActualLength();
 		// create the physical part
-		double[] coord = {length*ECMFacade.getRandomDouble(), -3.14 + 6.28*ECMFacade.getRandomDouble()};
+		double[] coord = {length*JavaUtil2.getRandomDouble(), -3.14 + 6.28*JavaUtil2.getRandomDouble()};
 		ini.cx3d.synapses.interfaces.PhysicalBouton pBouton = PhysicalBoutonFactory.create(physicalCylinder,coord,2);
 		physicalCylinder.addExcrescence(pBouton);
 		// create the biological part and set call backs
@@ -496,7 +497,7 @@ public class NeuriteElement extends ini.cx3d.swig.biology.biology.NeuriteElement
 				continue;
 			}
 			// with a certain probability
-			if(ECMFacade.getRandomDouble()>probabilityToSynapse){
+			if(JavaUtil2.getRandomDouble()>probabilityToSynapse){
 				continue;
 			}
 

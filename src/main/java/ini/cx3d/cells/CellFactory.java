@@ -21,6 +21,7 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 
 package ini.cx3d.cells;
 
+import ini.cx3d.JavaUtil2;
 import ini.cx3d.localBiology.interfaces.SomaElement;
 import ini.cx3d.localBiology.factory.SomaElementFactory;
 import ini.cx3d.physics.interfaces.PhysicalSphere;
@@ -107,12 +108,13 @@ public class CellFactory {
        double dy = (ymax-ymin)/(1+ny);
        
        // Generate cells
+       JavaUtil2 javaUtil = new JavaUtil2();
        for (int i=1; i < nx+1; i++) {
        	for (int j=1; j < ny+1; j++) {
        		double[] newLocation = {
-       				xmin+i*dx+ecm.getGaussianDouble(0, noiseStd), 
-       				ymin+j*dy+ecm.getGaussianDouble(0, noiseStd), 
-       				zpos + ecm.getGaussianDouble(0, noiseStd)};
+       				xmin+i*dx+javaUtil.getGaussianDouble(0, noiseStd),
+       				ymin+j*dy+javaUtil.getGaussianDouble(0, noiseStd),
+       				zpos + javaUtil.getGaussianDouble(0, noiseStd)};
        		Matrix.print(newLocation);
        		ini.cx3d.cells.interfaces.Cell cell = getCellInstance(newLocation);
        		cellList.add(cell);
@@ -146,13 +148,14 @@ public class CellFactory {
        double dz = (zmax-zmin)/(1+nz);
        
        // Generate cells
+       JavaUtil2 javaUtil = new JavaUtil2();
        for (int i=1; i < nx+1; i++) {
        	for (int j=1; j < ny+1; j++) {
        		for (int k=1; k < nz+1; k++) {
        			double[] newLocation = {
-       					xmin+i*dx+ecm.getGaussianDouble(0, noiseXYStd), 
-       					ymin+j*dy+ecm.getGaussianDouble(0, noiseXYStd), 
-       					zmin+k*dz+ecm.getGaussianDouble(0, noiseZStd)};
+       					xmin+i*dx+javaUtil.getGaussianDouble(0, noiseXYStd),
+       					ymin+j*dy+javaUtil.getGaussianDouble(0, noiseXYStd),
+       					zmin+k*dz+javaUtil.getGaussianDouble(0, noiseZStd)};
        			ini.cx3d.cells.interfaces.Cell cell = getCellInstance(newLocation);
        			cellList.add(cell);
        		}

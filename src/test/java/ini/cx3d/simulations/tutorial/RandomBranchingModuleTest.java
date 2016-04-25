@@ -22,6 +22,7 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 package ini.cx3d.simulations.tutorial;
 
 import ini.cx3d.BaseSimulationTest;
+import ini.cx3d.JavaUtil2;
 import ini.cx3d.Param;
 import ini.cx3d.cells.CellFactory;
 import ini.cx3d.localBiology.interfaces.CellElement;
@@ -43,12 +44,12 @@ public class RandomBranchingModuleTest extends BaseSimulationTest {
 
 	@Override
 	public void simulate() {
-		ini.cx3d.simulations.ECM.setRandomSeed(1L);
+		JavaUtil2.setRandomSeed(1L);
 		ECM ecm = ECMFacade.getInstance();
 		for (int i = 0; i < 18; i++) {
 			ecm.getPhysicalNodeInstance(randomNoise(1000,3));
 		}
-		ini.cx3d.simulations.ECM.setRandomSeed(7L);
+		JavaUtil2.setRandomSeed(7L);
 		for(int i = 0; i<1; i++){
 			ini.cx3d.cells.interfaces.Cell c = CellFactory.getCellInstance(randomNoise(40, 3));
 			c.setColorForAllPhysicalObjects(Param.GRAY);

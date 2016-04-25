@@ -22,6 +22,7 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 package ini.cx3d.simulations.tutorial;
 
 import ini.cx3d.BaseSimulationTest;
+import ini.cx3d.JavaUtil2;
 import ini.cx3d.cells.CellFactory;
 import ini.cx3d.simulations.interfaces.ECM;
 import ini.cx3d.simulations.Scheduler;
@@ -36,7 +37,7 @@ public class DividingModuleTest extends BaseSimulationTest {
 
 	@Override
 	public void simulate() {
-		ini.cx3d.simulations.ECM.setRandomSeed(2L);
+		JavaUtil2.setRandomSeed(2L);
 		ini.cx3d.cells.interfaces.Cell c = CellFactory.getCellInstance(new double[] {0.0,0.0,0.0});
 		c.addCellModule(new DividingModule());
 

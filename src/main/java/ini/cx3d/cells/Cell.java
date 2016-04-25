@@ -26,6 +26,7 @@ import static ini.cx3d.SimStateSerializationUtil.removeLastChar;
 import static ini.cx3d.SimStateSerializationUtil.unorderedCollection;
 import static ini.cx3d.utilities.Matrix.add;
 
+import ini.cx3d.JavaUtil2;
 import ini.cx3d.localBiology.interfaces.NeuriteElement;
 import ini.cx3d.localBiology.interfaces.SomaElement;
 import ini.cx3d.simulations.ECMFacade;
@@ -140,7 +141,7 @@ public class Cell extends ini.cx3d.swig.biology.Cell implements ini.cx3d.cells.i
 	@Override
 	public ini.cx3d.cells.interfaces.Cell divide() {
 		// find a volume ration close to 1;
-		return divide(0.9 + 0.2*ECMFacade.getRandomDouble());
+		return divide(0.9 + 0.2*JavaUtil2.getRandomDouble());
 	}
 	
 	/**
@@ -152,8 +153,8 @@ public class Cell extends ini.cx3d.swig.biology.Cell implements ini.cx3d.cells.i
 	@Override
 	public ini.cx3d.cells.interfaces.Cell divide(double volumeRatio){
 			// find random point on sphere (based on : http://mathworld.wolfram.com/SpherePointPicking.html)
-			double theta = 6.28318531* ECMFacade.getRandomDouble();
-			double phi = Math.acos(2*ECMFacade.getRandomDouble()-1);
+			double theta = 6.28318531* JavaUtil2.getRandomDouble();
+			double phi = Math.acos(2*JavaUtil2.getRandomDouble()-1);
 			return divide(volumeRatio, phi, theta);
 	}
 	
@@ -162,7 +163,7 @@ public class Cell extends ini.cx3d.swig.biology.Cell implements ini.cx3d.cells.i
 		ini.cx3d.physics.interfaces.PhysicalSphere sphere = somaElement.getPhysicalSphere();
 		double[] polarcoord = sphere.transformCoordinatesGlobalToPolar(
 				add(axisOfDivision, sphere.getMassLocation()));
-		return divide(0.9 + 0.2*ECMFacade.getRandomDouble(), polarcoord[1], polarcoord[2]);
+		return divide(0.9 + 0.2*JavaUtil2.getRandomDouble(), polarcoord[1], polarcoord[2]);
 	}
 	/**
 	 * Divide the cell. Of the two daughter cells, one is this one (but smaller, with half GeneSubstances etc.),

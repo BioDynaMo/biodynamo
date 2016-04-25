@@ -24,6 +24,7 @@ package ini.cx3d.simulations.tutorial;
 import static ini.cx3d.utilities.Matrix.randomNoise;
 
 import ini.cx3d.BaseSimulationTest;
+import ini.cx3d.JavaUtil2;
 import ini.cx3d.Param;
 import ini.cx3d.cells.CellFactory;
 import ini.cx3d.localBiology.LocalBiologyModule;
@@ -39,7 +40,7 @@ public class MembraneContactTest extends BaseSimulationTest {
 
 	@Override
 	public void simulate() throws Exception{
-		ini.cx3d.simulations.ECM.setRandomSeed(1L);
+		JavaUtil2.setRandomSeed(1L);
 		ECM ecm = ECMFacade.getInstance();
 
 		ini.cx3d.physics.interfaces.IntracellularSubstance adherence = IntracellularSubstanceFactory.create("A", 0, 0);

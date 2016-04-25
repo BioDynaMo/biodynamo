@@ -94,7 +94,8 @@ set(CMAKE_SWIG_OUTDIR ${JAVA_MAIN_SWIG_PATH}/physics)
 
 set_source_files_properties(${CPP_MAIN_SRC_PATH}/swig/physics.i PROPERTIES CPLUSPLUS ON)
 swig_add_module(cx3d_physics java ${CPP_MAIN_SRC_PATH}/swig/physics.i ${SOURCES})
-target_link_libraries(cx3d_physics ${GMP_LIBRARY})
+SWIG_LINK_LIBRARIES(cx3d_physics cx3d_biology)
+#target_link_libraries(cx3d_physics ${GMP_LIBRARY})
 
 #--------------------- build module biology  ----------------
 file(GLOB SOURCES "${CPP_MAIN_SRC_PATH}/src/local_biology/*.cc" "${CPP_MAIN_SRC_PATH}/src/synapse/*.cc" "${CPP_MAIN_SRC_PATH}/src/cells/*.cc" "${CPP_MAIN_SRC_PATH}/src/simulation/*.cc")

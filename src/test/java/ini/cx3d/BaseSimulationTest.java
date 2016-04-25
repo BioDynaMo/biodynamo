@@ -158,7 +158,7 @@ public abstract class BaseSimulationTest {
 //        ECM.headlessGui = true;
         // run simulation (don't start in pause mode)
 //        ECMFacade.getInstance().canRun.release();
-        ini.cx3d.simulations.ECM.setRandomSeed(1L);
+        JavaUtil2.setRandomSeed(1L);
 //        ini.cx3d.swig.biology.ECM.setJavaUtil(java);
 
         CellElement.setECM(ECMFacade.getInstance());

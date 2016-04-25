@@ -35,8 +35,8 @@
 %JavaUtil2_java();
 
 %typemap(javaimports) cx3d::JavaUtil2 %{
-  import ini.cx3d.swig.biology.NeuriteElement;
-  import ini.cx3d.swig.biology.PhysicalBouton;
-  import ini.cx3d.swig.biology.PhysicalSpine;
-  import ini.cx3d.swig.biology.SomaElement;
+  import ini.cx3d.swig.physics.PhysicalBond;
+  import ini.cx3d.swig.physics.PhysicalCylinder;
+  import ini.cx3d.swig.physics.PhysicalObject;
+  import ini.cx3d.swig.physics.PhysicalSphere;
 %}

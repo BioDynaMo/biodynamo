@@ -67,36 +67,36 @@ import javax.swing.JFrame;
  *
  */
 public class ECM extends ini.cx3d.swig.biology.ECM implements SimStateSerializable {
-	public double exp(double d) { return Math.exp(d); }
-	public double sqrt(double d) { return Math.sqrt(d); }
-	public double cos(double d) { return Math.cos(d); }
-	public double sin(double d) { return Math.sin(d); }
-	public double asin(double d) { return Math.asin(d); }
-	public double acos(double d) { return Math.acos(d); }
-	public double atan2(double d, double d1) { return Math.atan2(d, d1); }
-	public double cbrt(double d) { return Math.cbrt(d); }
-	public ini.cx3d.physics.interfaces.PhysicalCylinder newPhysicalCylinder() {return PhysicalCylinderFactory.create();}
-	public double[] matrixRandomNoise3(double k){
-		return Matrix.randomNoise(k, 3);
-	}
-	public double getRandomDouble1(){
-		return random.nextDouble();
-	}
-	public double matrixNextRandomDouble(){
-		return Matrix.getRandomDouble();
-	}
-	public ini.cx3d.physics.interfaces.PhysicalSphere newPhysicalSphere() {return PhysicalSphereFactory.create();}
-	public ini.cx3d.localBiology.interfaces.SomaElement newSomaElement() {return SomaElementFactory.create();}
-	public ini.cx3d.localBiology.interfaces.NeuriteElement newNeuriteElement() {return NeuriteElementFactory.create();}
-	public ini.cx3d.synapses.interfaces.PhysicalSpine newPhysicalSpine(ini.cx3d.physics.interfaces.PhysicalObject po, double[] origin, double length) {
-		return PhysicalSpineFactory.create(po, origin, length);
-	}
-	public ini.cx3d.synapses.interfaces.PhysicalBouton newPhysicalBouton(ini.cx3d.physics.interfaces.PhysicalObject po, double[] origin, double length) {
-		return PhysicalBoutonFactory.create(po, origin, length);
-	}
-	public PhysicalBond newPhysicalBond(ini.cx3d.physics.interfaces.PhysicalObject a, double[] positionOnA, ini.cx3d.physics.interfaces.PhysicalObject b , double[] positionOnB, double restingLength, double springConstant) {
-		return PhysicalBondFactory.create(a, positionOnA, b, positionOnB, restingLength, springConstant);
-	}
+//	public double exp(double d) { return Math.exp(d); }
+//	public double sqrt(double d) { return Math.sqrt(d); }
+//	public double cos(double d) { return Math.cos(d); }
+//	public double sin(double d) { return Math.sin(d); }
+//	public double asin(double d) { return Math.asin(d); }
+//	public double acos(double d) { return Math.acos(d); }
+//	public double atan2(double d, double d1) { return Math.atan2(d, d1); }
+//	public double cbrt(double d) { return Math.cbrt(d); }
+//	public ini.cx3d.physics.interfaces.PhysicalCylinder newPhysicalCylinder() {return PhysicalCylinderFactory.create();}
+//	public double[] matrixRandomNoise3(double k){
+//		return Matrix.randomNoise(k, 3);
+//	}
+//	public double getRandomDouble1(){
+//		return random.nextDouble();
+//	}
+//	public double matrixNextRandomDouble(){
+//		return Matrix.getRandomDouble();
+//	}
+//	public ini.cx3d.physics.interfaces.PhysicalSphere newPhysicalSphere() {return PhysicalSphereFactory.create();}
+//	public ini.cx3d.localBiology.interfaces.SomaElement newSomaElement() {return SomaElementFactory.create();}
+//	public ini.cx3d.localBiology.interfaces.NeuriteElement newNeuriteElement() {return NeuriteElementFactory.create();}
+//	public ini.cx3d.synapses.interfaces.PhysicalSpine newPhysicalSpine(ini.cx3d.physics.interfaces.PhysicalObject po, double[] origin, double length) {
+//		return PhysicalSpineFactory.create(po, origin, length);
+//	}
+//	public ini.cx3d.synapses.interfaces.PhysicalBouton newPhysicalBouton(ini.cx3d.physics.interfaces.PhysicalObject po, double[] origin, double length) {
+//		return PhysicalBoutonFactory.create(po, origin, length);
+//	}
+//	public PhysicalBond newPhysicalBond(ini.cx3d.physics.interfaces.PhysicalObject a, double[] positionOnA, ini.cx3d.physics.interfaces.PhysicalObject b , double[] positionOnB, double restingLength, double springConstant) {
+//		return PhysicalBondFactory.create(a, positionOnA, b, positionOnB, restingLength, springConstant);
+//	}
 
 	public void viewRepaint() {
 		view.repaint();
@@ -271,35 +271,35 @@ public class ECM extends ini.cx3d.swig.biology.ECM implements SimStateSerializab
 	// **************************************************************************
 	// Random Number
 	// **************************************************************************
-	static Random random = new Random();
-	
-	/**
-	 * @return a random number between, from uniform probability 0 and 1;
-	 */
-	public static double getRandomDouble(){
-		return random.nextDouble();
-	}
-	
-	/**
-	 * returns a random number from gaussian distribution
-	 * @param mean
-	 * @param standardDeviation
-	 * @return
-	 */
-	public double getGaussianDouble(double mean, double standardDeviation){
-		return mean + standardDeviation*random.nextGaussian();
-	}
-	
-	
-	
-	/**
-	 * Initialises the random number generator. 
-	 * @param seed
-	 */
-	public static void setRandomSeed(long seed){
-		random = new Random(seed);
-		Matrix.setRandomSeedTo(seed);
-	}
+//	static Random random = new Random();
+//
+//	/**
+//	 * @return a random number between, from uniform probability 0 and 1;
+//	 */
+//	public static double getRandomDouble(){
+//		return random.nextDouble();
+//	}
+//
+//	/**
+//	 * returns a random number from gaussian distribution
+//	 * @param mean
+//	 * @param standardDeviation
+//	 * @return
+//	 */
+//	public double getGaussianDouble(double mean, double standardDeviation){
+//		return mean + standardDeviation*random.nextGaussian();
+//	}
+//
+//
+//
+//	/**
+//	 * Initialises the random number generator.
+//	 * @param seed
+//	 */
+//	public static void setRandomSeed(long seed){
+//		random = new Random(seed);
+//		Matrix.setRandomSeedTo(seed);
+//	}
 	
 	// **************************************************************************
 	// Artificial Wall
@@ -688,7 +688,7 @@ public class ECM extends ini.cx3d.swig.biology.ECM implements SimStateSerializab
 		}
 		c = cellTypeColorLibrary.get(cellType);
 		if(c==null){
-			c = new Color((float) ECM.getRandomDouble(),(float) ECM.getRandomDouble(),(float) ECM.getRandomDouble(),0.7f);
+			c = new Color((float) ini.cx3d.JavaUtil2.getRandomDouble(),(float) ini.cx3d.JavaUtil2.getRandomDouble(),(float) ini.cx3d.JavaUtil2.getRandomDouble(),0.7f);
 			cellTypeColorLibrary.put(cellType, c);
 		}
 		return c;

@@ -9,6 +9,7 @@
 #include <list>
 
 #include "color.h"
+#include "java_util.h"
 
 namespace cx3d {
 
@@ -46,6 +47,10 @@ namespace simulation {
 
 class ECM {
  public:
+  static void setJava(const std::shared_ptr<cx3d::JavaUtil2>& java) {
+    java_ = java;
+  }
+
   virtual ~ECM() {
   }
 
@@ -171,11 +176,6 @@ class ECM {
         "ECM::getSpatialOrganizationNodeInstance must never be called - Java must provide implementation at this point");
   }
 
-  virtual double getGaussianDouble(double mean, double standard_deviation) {
-    throw std::logic_error(
-        "ECM::getGaussianDouble must never be called - Java must provide implementation at this point");
-  }
-
   virtual Color cellTypeColor(const std::string& type) {
     throw std::logic_error("ECM::cellTypeColor must never be called - Java must provide implementation at this point");
   }
@@ -217,94 +217,6 @@ class ECM {
     throw std::logic_error("ECM::createView must never be called - Java must provide implementation at this point");
   }
 
-  virtual double getRandomDouble1() {
-    throw std::logic_error(
-        "ECM::getRandomDouble must never be called - Java must provide implementation at this point");
-  }
-
-  virtual double matrixNextRandomDouble() {
-    throw std::logic_error(
-        "ECM::matrixNextRandomDouble must never be called - Java must provide implementation at this point");
-  }
-
-  virtual double exp(double d) {
-    throw std::logic_error("ECM::exp must never be called - Java must provide implementation at this point");
-  }
-
-  virtual double cbrt(double d) {
-    throw std::logic_error("ECM::cbrt must never be called - Java must provide implementation at this point");
-  }
-
-  virtual double sqrt(double d) {
-    throw std::logic_error("ECM::sqrt must never be called - Java must provide implementation at this point");
-  }
-
-  virtual double cos(double d) {
-    throw std::logic_error("ECM::cos must never be called - Java must provide implementation at this point");
-  }
-
-  virtual double sin(double d) {
-    throw std::logic_error("ECM::sin must never be called - Java must provide implementation at this point");
-  }
-
-  virtual double asin(double d) {
-    throw std::logic_error("ECM::asin must never be called - Java must provide implementation at this point");
-  }
-
-  virtual double acos(double d) {
-    throw std::logic_error("ECM::acos must never be called - Java must provide implementation at this point");
-  }
-
-  virtual double atan2(double d, double d1) {
-    throw std::logic_error("ECM::atan2 must never be called - Java must provide implementation at this point");
-  }
-
-  virtual std::shared_ptr<physics::PhysicalCylinder> newPhysicalCylinder() const {
-    throw std::logic_error(
-        "ECM::newPhysicalCylinder must never be called - Java must provide implementation at this point");
-  }
-
-  virtual std::array<double, 3> matrixRandomNoise3(double k) {
-    throw std::logic_error(
-        "ECM::matrixRandomNoise must never be called - Java must provide implementation at this point");
-  }
-
-  virtual std::shared_ptr<physics::PhysicalSphere> newPhysicalSphere() {
-    throw std::logic_error(
-        "ECM::newPhysicalSphere must never be called - Java must provide implementation at this point");
-  }
-
-  virtual std::shared_ptr<local_biology::NeuriteElement> newNeuriteElement() {
-    throw std::logic_error(
-        "ECM::newNeuriteElement must never be called - Java must provide implementation at this point");
-  }
-
-  virtual std::shared_ptr<local_biology::SomaElement> newSomaElement() {
-    throw std::logic_error("ECM::newSomaElement must never be called - Java must provide implementation at this point");
-  }
-
-  virtual std::shared_ptr<cx3d::synapse::PhysicalSpine> newPhysicalSpine(
-      const std::shared_ptr<physics::PhysicalObject>& po, const std::array<double, 2>& origin, double length) {
-    throw std::logic_error(
-        "ECM::newPhysicalSpine must never be called - Java must provide implementation at this point");
-  }
-
-  virtual std::shared_ptr<synapse::PhysicalBouton> newPhysicalBouton(const std::shared_ptr<physics::PhysicalObject>& po,
-                                                                     const std::array<double, 2>& origin,
-                                                                     double length) {
-    throw std::logic_error(
-        "ECM::newPhysicalBouton must never be called - Java must provide implementation at this point");
-  }
-
-  virtual std::shared_ptr<physics::PhysicalBond> newPhysicalBond(const std::shared_ptr<physics::PhysicalObject>& a,
-                                                                 const std::array<double, 2>& position_on_a,
-                                                                 const std::shared_ptr<physics::PhysicalObject>& b,
-                                                                 const std::array<double, 2>& position_on_b,
-                                                                 double resting_length, double spring_constant) {
-    throw std::logic_error(
-        "ECM::newPhysicalBond must never be called - Java must provide implementation at this point");
-  }
-
   virtual std::shared_ptr<physics::PhysicalCylinder> getPhysicalCylinder(int i) {
     throw std::logic_error(
         "ECM::getPhysicalCylinder must never be called - Java must provide implementation at this point");
@@ -328,6 +240,96 @@ class ECM {
   virtual std::shared_ptr<local_biology::SomaElement> getSomaElememt(int i) {
     throw std::logic_error("ECM::getSomaElememt must never be called - Java must provide implementation at this point");
   }
+
+  //
+  //
+  //
+
+  virtual double getRandomDouble1() {
+    return java_->getRandomDouble1();
+  }
+
+  virtual double matrixNextRandomDouble() {
+    return java_->matrixNextRandomDouble();
+  }
+
+  virtual double exp(double d) {
+    return java_->exp(d);
+  }
+
+  virtual double cbrt(double d) {
+    return java_->cbrt(d);
+  }
+
+  virtual double sqrt(double d) {
+    return java_->sqrt(d);
+  }
+
+  virtual double cos(double d) {
+    return java_->cos(d);
+  }
+
+  virtual double sin(double d) {
+    return java_->sin(d);
+  }
+
+  virtual double asin(double d) {
+    return java_->asin(d);
+  }
+
+  virtual double acos(double d) {
+    return java_->acos(d);
+  }
+
+  virtual double atan2(double d, double d1) {
+    return java_->atan2(d, d1);
+  }
+
+  virtual std::shared_ptr<physics::PhysicalCylinder> newPhysicalCylinder() const {
+    return java_->newPhysicalCylinder();
+  }
+
+  virtual std::array<double, 3> matrixRandomNoise3(double k) {
+    return java_->matrixRandomNoise3(k);
+  }
+
+  virtual std::shared_ptr<physics::PhysicalSphere> newPhysicalSphere() {
+    return java_->newPhysicalSphere();
+  }
+
+  virtual std::shared_ptr<local_biology::NeuriteElement> newNeuriteElement() {
+    return java_->newNeuriteElement();
+  }
+
+  virtual std::shared_ptr<local_biology::SomaElement> newSomaElement() {
+    return java_->newSomaElement();
+  }
+
+  virtual std::shared_ptr<cx3d::synapse::PhysicalSpine> newPhysicalSpine(
+      const std::shared_ptr<physics::PhysicalObject>& po, const std::array<double, 2>& origin, double length) {
+    return java_->newPhysicalSpine(po, origin, length);
+  }
+
+  virtual std::shared_ptr<synapse::PhysicalBouton> newPhysicalBouton(const std::shared_ptr<physics::PhysicalObject>& po,
+                                                                     const std::array<double, 2>& origin,
+                                                                     double length) {
+    return java_->newPhysicalBouton(po, origin, length);
+  }
+
+  virtual std::shared_ptr<physics::PhysicalBond> newPhysicalBond(const std::shared_ptr<physics::PhysicalObject>& a,
+                                                                 const std::array<double, 2>& position_on_a,
+                                                                 const std::shared_ptr<physics::PhysicalObject>& b,
+                                                                 const std::array<double, 2>& position_on_b,
+                                                                 double resting_length, double spring_constant) {
+    return java_->newPhysicalBond(a, position_on_a, b, position_on_b, resting_length, spring_constant);
+  }
+
+  virtual double getGaussianDouble(double mean, double standard_deviation) {
+    return java_->getGaussianDouble(mean, standard_deviation);
+  }
+
+ private:
+  static std::shared_ptr<JavaUtil2> java_;
 };
 
 }  // namespace simulation

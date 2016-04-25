@@ -28,6 +28,7 @@ import static ini.cx3d.SimStateSerializationUtil.removeLastChar;
 import static ini.cx3d.utilities.Matrix.*;
 import static ini.cx3d.utilities.StringUtilities.toStr;
 
+import ini.cx3d.JavaUtil2;
 import ini.cx3d.Param;
 import ini.cx3d.localBiology.interfaces.CellElement;
 import ini.cx3d.localBiology.LocalBiologyModule;
@@ -1458,7 +1459,7 @@ public class PhysicalCylinder extends physics.PhysicalCylinderBase implements in
 		if(daughterRight != null){
 			PhysicalObject po1 = this;
 			PhysicalObject po2 = daughterRight;
-			if(ECMFacade.getRandomDouble()<0.5){
+			if(JavaUtil2.getRandomDouble()<0.5){
 				po1 = daughterRight;
 				po2 = this;
 			}
@@ -1468,7 +1469,7 @@ public class PhysicalCylinder extends physics.PhysicalCylinderBase implements in
 		if(daughterLeft != null) {
 			PhysicalObject po1 = this;
 			PhysicalObject po2 = daughterLeft;
-			if(ECMFacade.getRandomDouble()<0.5){
+			if(JavaUtil2.getRandomDouble()<0.5){
 				po1 = daughterLeft;
 				po2 = this;
 			}

@@ -24,6 +24,7 @@ package ini.cx3d.simulations.tutorial;
 import static ini.cx3d.utilities.Matrix.randomNoise;
 
 import ini.cx3d.BaseSimulationTest;
+import ini.cx3d.JavaUtil2;
 import ini.cx3d.Param;
 import ini.cx3d.cells.Cell;
 import ini.cx3d.cells.CellFactory;
@@ -45,7 +46,7 @@ public class SimpleSynapseTest extends BaseSimulationTest {
 
 	@Override
 	public void simulate() throws Exception {
-		ini.cx3d.simulations.ECM.setRandomSeed(1L);
+		JavaUtil2.setRandomSeed(1L);
 		ECM ecm = ECMFacade.getInstance();
 		int nbOfAdditionalNodes = 10;
 		for (int i = 0; i < nbOfAdditionalNodes; i++) {

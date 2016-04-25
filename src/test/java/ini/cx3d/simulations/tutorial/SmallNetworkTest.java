@@ -24,6 +24,7 @@ package ini.cx3d.simulations.tutorial;
 import java.awt.Color;
 
 import ini.cx3d.BaseSimulationTest;
+import ini.cx3d.JavaUtil2;
 import ini.cx3d.Param;
 import ini.cx3d.cells.Cell;
 import ini.cx3d.cells.CellFactory;
@@ -43,7 +44,7 @@ public class SmallNetworkTest extends BaseSimulationTest {
 
 	@Override
 	public void simulate() throws Exception{
-		ini.cx3d.simulations.ECM.setRandomSeed(1L);
+		JavaUtil2.setRandomSeed(1L);
 		ECM ecm = ECMFacade.getInstance();
 		ini.cx3d.physics.interfaces.Substance L1 = SubstanceFactory.create("L1", Color.red);
 		ecm.addArtificialGaussianConcentrationZ(L1, 1.0, 400.0, 60.0);

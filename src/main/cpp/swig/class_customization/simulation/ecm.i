@@ -111,17 +111,10 @@
       public String nicelyWrittenECMtime() {
           throw new UnsupportedOperationException();
       }
-
-      @Override
-      public void addNewCellTypeColor(String cellType, Color color) {
-          throw new UnsupportedOperationException();
-      }
-
       @Override
       public void removePhysicalSphere(ini.cx3d.physics.interfaces.PhysicalSphere oldSphere) {
           throw new UnsupportedOperationException();
       }
-
       @Override
       public void addPhysicalNode(ini.cx3d.physics.interfaces.PhysicalNode newPhysicalNode) {
           throw new UnsupportedOperationException();

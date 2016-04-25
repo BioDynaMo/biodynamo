@@ -15,7 +15,7 @@ namespace physics {
  */
 class DefaultForce : public InterObjectForce {
  public:
-  static void setJavaUtil(std::shared_ptr<JavaUtil2> java) {
+  static void setJavaUtil(std::shared_ptr<cx3d::JavaUtil2> java) {
     java_ = java;
   }
 

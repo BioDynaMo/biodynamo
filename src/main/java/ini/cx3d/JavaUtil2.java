@@ -19,12 +19,13 @@ import java.awt.*;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 
 /**
  * provides functionality that has not been implemented yet in C++
  * especially static methods as they can't be handled by SWIG directors
  */
-public class JavaUtil2 extends ini.cx3d.swig.physics.JavaUtil2 {
+public class JavaUtil2 extends ini.cx3d.swig.biology.JavaUtil2 {
 
    public double[] matrixRandomNoise3(double k){
         return Matrix.randomNoise(k, 3);
@@ -40,7 +41,7 @@ public class JavaUtil2 extends ini.cx3d.swig.physics.JavaUtil2 {
     public double cbrt(double d) { return Math.cbrt(d); }
     public ini.cx3d.physics.interfaces.PhysicalCylinder newPhysicalCylinder() {return PhysicalCylinderFactory.create();}
     public double getRandomDouble1(){
-        return ini.cx3d.simulations.ECM.getInstance().getRandomDouble();
+        return getRandomDouble();
     }
     public double matrixNextRandomDouble(){
         return Matrix.getRandomDouble();
@@ -57,11 +58,45 @@ public class JavaUtil2 extends ini.cx3d.swig.physics.JavaUtil2 {
     public PhysicalBond newPhysicalBond(ini.cx3d.physics.interfaces.PhysicalObject a, double[] positionOnA, ini.cx3d.physics.interfaces.PhysicalObject b , double[] positionOnB, double restingLength, double springConstant) {
         return PhysicalBondFactory.create(a, positionOnA, b, positionOnB, restingLength, springConstant);
     }
-    public double getGaussianDouble(double mean, double standardDeviation) {
-        return ECM.getInstance().getGaussianDouble(mean, standardDeviation);
-    }
+//    public double getGaussianDouble(double mean, double standardDeviation) {
+//        return ECM.getInstance().getGaussianDouble(mean, standardDeviation);
+//    }
 
     public Color getRandomColor(){
-        return new Color((float) ECM.getInstance().getRandomDouble(),(float) ECM.getInstance().getRandomDouble(),(float) ECM.getInstance().getRandomDouble(),0.7f);
+        return new Color((float) getRandomDouble(),(float) getRandomDouble(),(float) getRandomDouble(),0.7f);
+    }
+
+
+    // **************************************************************************
+    // Random Number
+    // **************************************************************************
+    static Random random = new Random();
+
+    /**
+     * @return a random number between, from uniform probability 0 and 1;
+     */
+    public static double getRandomDouble(){
+        return random.nextDouble();
+    }
+
+    /**
+     * returns a random number from gaussian distribution
+     * @param mean
+     * @param standardDeviation
+     * @return
+     */
+    public double getGaussianDouble(double mean, double standardDeviation){
+        return mean + standardDeviation*random.nextGaussian();
+    }
+
+
+
+    /**
+     * Initialises the random number generator.
+     * @param seed
+     */
+    public static void setRandomSeed(long seed){
+        random = new Random(seed);
+        Matrix.setRandomSeedTo(seed);
     }
 }

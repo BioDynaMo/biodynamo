@@ -21,6 +21,7 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 
 package ini.cx3d.synapses;
 
+import ini.cx3d.JavaUtil2;
 import ini.cx3d.simulations.ECMFacade;
 import ini.cx3d.simulations.interfaces.ECM;
 
@@ -42,7 +43,7 @@ public class ConnectionsMaker {
 		for (int i = 0; i < ecm.getNeuriteElementList().size(); i++) {
 			ini.cx3d.localBiology.interfaces.NeuriteElement ne = ecm.getNeuriteElementList().get(i);
 			if(ne.isAxon()==true){
-				if(ECMFacade.getRandomDouble()<probaBilityToSynapse){
+				if(JavaUtil2.getRandomDouble()<probaBilityToSynapse){
 					ne.synapseBetweenExistingBS(probaBilityToSynapse);
 				}
 			}

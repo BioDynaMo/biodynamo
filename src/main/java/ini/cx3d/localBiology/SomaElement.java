@@ -26,6 +26,8 @@ import static ini.cx3d.SimStateSerializationUtil.removeLastChar;
 import static ini.cx3d.utilities.Matrix.add;
 import static ini.cx3d.utilities.Matrix.scalarMult;
 import static ini.cx3d.utilities.Matrix.subtract;
+
+import ini.cx3d.JavaUtil2;
 import ini.cx3d.Param;
 import ini.cx3d.localBiology.factory.NeuriteElementFactory;
 import ini.cx3d.physics.interfaces.PhysicalCylinder;
@@ -132,8 +134,8 @@ public class SomaElement extends ini.cx3d.swig.biology.SomaElement implements in
 //		double theta = 6.28318531*ecm.getRandomDouble();
 		
 		//andreas thinks this gives a better distribution based on some friends of mine.
-		double phi =(ECMFacade.getRandomDouble()-0.5f)*2*Math.PI;
-		double theta =Math.asin(ECMFacade.getRandomDouble()*2-1) + Math.PI/2;
+		double phi =(JavaUtil2.getRandomDouble()-0.5f)*2*Math.PI;
+		double theta =Math.asin(JavaUtil2.getRandomDouble()*2-1) + Math.PI/2;
 
 		return extendNewNeurite(diameter ,phi, theta);
 	}
@@ -207,7 +209,7 @@ public class SomaElement extends ini.cx3d.swig.biology.SomaElement implements in
 			
 			if (Math.random()<p) {
 				// create the physical part
-				double[] coord = {radius, Math.PI*ECMFacade.getRandomDouble(), 2*Math.PI*ECMFacade.getRandomDouble()};
+				double[] coord = {radius, Math.PI*JavaUtil2.getRandomDouble(), 2*Math.PI*JavaUtil2.getRandomDouble()};
 				ini.cx3d.synapses.interfaces.PhysicalSomaticSpine pSomSpine = PhysicalSomaticSpineFactory.create(physical, coord, 0.1);
 				physical.addExcrescence(pSomSpine);
 				System.out.println(physical.getID());

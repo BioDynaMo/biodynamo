@@ -27,6 +27,7 @@ import static ini.cx3d.utilities.Matrix.randomNoise;
 import static ini.cx3d.utilities.Matrix.scalarMult;
 
 import ini.cx3d.BaseSimulationTest;
+import ini.cx3d.JavaUtil2;
 import ini.cx3d.Param;
 import ini.cx3d.cells.CellFactory;
 import ini.cx3d.localBiology.LocalBiologyModule;
@@ -46,7 +47,7 @@ public class NeuriteChemoAttractionTest extends BaseSimulationTest {
 	@Override
 	public void simulate() {
 		ECM ecm = ECMFacade.getInstance();
-		ini.cx3d.simulations.ECM.setRandomSeed(1L);
+		JavaUtil2.setRandomSeed(1L);
 		ini.cx3d.physics.interfaces.Substance attractant = SubstanceFactory.create("A", Color.red);
 		ecm.addArtificialGaussianConcentrationZ(attractant, 1.0, 400.0, 160.0);
 

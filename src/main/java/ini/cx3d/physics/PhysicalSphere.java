@@ -34,6 +34,7 @@ import static ini.cx3d.utilities.Matrix.scalarMult;
 import static ini.cx3d.utilities.Matrix.subtract;
 import static ini.cx3d.utilities.StringUtilities.toStr;
 
+import ini.cx3d.JavaUtil2;
 import ini.cx3d.Param;
 import ini.cx3d.cells.CellFactory;
 import ini.cx3d.localBiology.interfaces.CellElement;
@@ -1105,7 +1106,7 @@ public class PhysicalSphere extends physics.PhysicalSphereBase implements ini.cx
 		// is chosen randomly.
 		PhysicalObject po1 = this;
 		PhysicalObject po2 = cyl;
-		if(ECMFacade.getRandomDouble()<0.5){
+		if(JavaUtil2.getRandomDouble()<0.5){
 			po1 = cyl;
 			po2 = this;
 		}
