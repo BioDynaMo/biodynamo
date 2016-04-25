@@ -28,7 +28,8 @@ import ini.cx3d.Param;
 import ini.cx3d.cells.Cell;
 import ini.cx3d.cells.CellFactory;
 import ini.cx3d.physics.interfaces.PhysicalCylinder;
-import ini.cx3d.simulations.ECM;
+import ini.cx3d.simulations.ECMFacade;
+import ini.cx3d.simulations.interfaces.ECM;
 import ini.cx3d.simulations.Scheduler;
 import ini.cx3d.synapses.factory.BiologicalBoutonFactory;
 import ini.cx3d.synapses.factory.PhysicalBoutonFactory;
@@ -44,8 +45,8 @@ public class SimpleSynapseTest extends BaseSimulationTest {
 
 	@Override
 	public void simulate() throws Exception {
-		ECM.setRandomSeed(1L);
-		ECM ecm = ECM.getInstance();
+		ini.cx3d.simulations.ECM.setRandomSeed(1L);
+		ECM ecm = ECMFacade.getInstance();
 		int nbOfAdditionalNodes = 10;
 		for (int i = 0; i < nbOfAdditionalNodes; i++) {
 			double[] coord = randomNoise(500, 3);

@@ -22,7 +22,8 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 package ini.cx3d.utilities.export;
 
 import ini.cx3d.localBiology.interfaces.NeuriteElement;
-import ini.cx3d.simulations.ECM;
+import ini.cx3d.simulations.ECMFacade;
+import ini.cx3d.simulations.interfaces.ECM;
 import ini.cx3d.swig.biology.Cell;
 import ini.cx3d.synapses.Excrescence;
 
@@ -134,7 +135,7 @@ public class Exporter {
 	}
 
 	public static StringBuilder neuroML_level3_export(){
-		ECM ecm = ECM.getInstance();
+		ECM ecm = ECMFacade.getInstance();
 		// Dispatch all cells in Excitatory or Inhibitory category
 		int excitCounter = 0;
 		int inhibCounter = 0;
@@ -156,7 +157,7 @@ public class Exporter {
 		}
 
 		// Get all their Synapses (connections)
-		for (ini.cx3d.cells.interfaces.Cell c : ecm.cellList) {
+		for (ini.cx3d.cells.interfaces.Cell c : ecm.getCellList()) {
 			// Find all neurites of the cell :
 			AbstractSequentialList<NeuriteElement> nes = c.getNeuriteElements();
 			Vector<ConnectionHolder> chs = new Vector<ConnectionHolder>(); // not really used, necessary for next method

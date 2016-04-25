@@ -30,7 +30,8 @@ import ini.cx3d.cells.CellFactory;
 import ini.cx3d.localBiology.interfaces.CellElement;
 import ini.cx3d.physics.interfaces.PhysicalCylinder;
 import ini.cx3d.physics.factory.SubstanceFactory;
-import ini.cx3d.simulations.ECM;
+import ini.cx3d.simulations.ECMFacade;
+import ini.cx3d.simulations.interfaces.ECM;
 import ini.cx3d.simulations.Scheduler;
 
 import java.awt.Color;
@@ -200,7 +201,7 @@ public class X_Movement_Module extends ini.cx3d.swig.biology.LocalBiologyModule{
 		double lengthBefore = cyl.getLength();
 		// not to thin?
 		if(cyl.getDiameter()<minimalBranchDiameter){
-			if(cyl.lengthToProximalBranchingPoint()>7+10*ECM.getRandomDouble()){ // so we don't end with short segments
+			if(cyl.lengthToProximalBranchingPoint()>7+10* ECMFacade.getInstance().getRandomDouble1()){ // so we don't end with short segments
 				return;
 			}
 		}
@@ -254,7 +255,7 @@ public class X_Movement_Module extends ini.cx3d.swig.biology.LocalBiologyModule{
 	public static void main(String[] args) {
 		// 1) Prepare the environment :
 		// 		get a reference to the extracelular matrix (ECM)
-		ECM ecm = ECM.getInstance();
+		ECM ecm = ECMFacade.getInstance();
 		// 		add additional PhysicalNodes (for diffusion)
 		int nbOfAdditionalNodes = 100;
 		for (int i = 0; i < nbOfAdditionalNodes; i++) {

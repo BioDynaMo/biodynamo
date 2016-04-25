@@ -32,7 +32,8 @@ import ini.cx3d.cells.CellFactory;
 import ini.cx3d.localBiology.LocalBiologyModule;
 import ini.cx3d.localBiology.interfaces.CellElement;
 import ini.cx3d.physics.factory.SubstanceFactory;
-import ini.cx3d.simulations.ECM;
+import ini.cx3d.simulations.ECMFacade;
+import ini.cx3d.simulations.interfaces.ECM;
 import ini.cx3d.simulations.Scheduler;
 
 import java.awt.Color;
@@ -44,8 +45,8 @@ public class NeuriteChemoAttractionTest extends BaseSimulationTest {
 
 	@Override
 	public void simulate() {
-		ECM ecm = ECM.getInstance();
-		ECM.setRandomSeed(1L);
+		ECM ecm = ECMFacade.getInstance();
+		ini.cx3d.simulations.ECM.setRandomSeed(1L);
 		ini.cx3d.physics.interfaces.Substance attractant = SubstanceFactory.create("A", Color.red);
 		ecm.addArtificialGaussianConcentrationZ(attractant, 1.0, 400.0, 160.0);
 
@@ -70,7 +71,7 @@ public class NeuriteChemoAttractionTest extends BaseSimulationTest {
 class NeuriteChemoAttraction extends ini.cx3d.swig.biology.biology.AbstractLocalBiologyModuleBase {
 
 
-	static ECM ecm = ECM.getInstance();
+	static ECM ecm = ECMFacade.getInstance();
 	
 	private double[] direction;
 
@@ -138,7 +139,7 @@ class NeuriteChemoAttraction extends ini.cx3d.swig.biology.biology.AbstractLocal
 		direction = normalize(add(scalarMult(5,direction),newStepDirection));
 
 		// 2) branching based on concentration:
-		if(ecm.getRandomDouble()<concentration*branchingFactor){
+		if(ecm.getRandomDouble1()<concentration*branchingFactor){
 			((ini.cx3d.localBiology.interfaces.NeuriteElement)getCellElement()).bifurcate();
 		}
 	}

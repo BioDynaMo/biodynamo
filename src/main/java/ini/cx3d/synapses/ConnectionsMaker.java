@@ -21,7 +21,8 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 
 package ini.cx3d.synapses;
 
-import ini.cx3d.simulations.ECM;
+import ini.cx3d.simulations.ECMFacade;
+import ini.cx3d.simulations.interfaces.ECM;
 
 public class ConnectionsMaker {
 	public static void extendExcressencesAndSynapseOnEveryNeuriteElement(){
@@ -29,19 +30,19 @@ public class ConnectionsMaker {
 	}
 
 	public static void extendExcressencesAndSynapseOnEveryNeuriteElement(double probaBilityToSynapse){
-		ECM ecm = ECM.getInstance();
-		for (int i = 0; i < ecm.neuriteElementList.size(); i++) {
-			ini.cx3d.localBiology.interfaces.NeuriteElement ne = ecm.neuriteElementList.get(i);
+		ECM ecm = ECMFacade.getInstance();
+		for (int i = 0; i < ecm.getNeuriteElementList().size(); i++) {
+			ini.cx3d.localBiology.interfaces.NeuriteElement ne = ecm.getNeuriteElementList().get(i);
 			if(ne.isAxon()==true){
 				ne.makeBoutons(2);
 			}else{
 				ne.makeSpines(5);
 			}
 		}
-		for (int i = 0; i < ecm.neuriteElementList.size(); i++) {
-			ini.cx3d.localBiology.interfaces.NeuriteElement ne = ecm.neuriteElementList.get(i);
+		for (int i = 0; i < ecm.getNeuriteElementList().size(); i++) {
+			ini.cx3d.localBiology.interfaces.NeuriteElement ne = ecm.getNeuriteElementList().get(i);
 			if(ne.isAxon()==true){
-				if(ECM.getRandomDouble()<probaBilityToSynapse){
+				if(ECMFacade.getRandomDouble()<probaBilityToSynapse){
 					ne.synapseBetweenExistingBS(probaBilityToSynapse);
 				}
 			}

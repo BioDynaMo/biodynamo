@@ -27,7 +27,8 @@ import static ini.cx3d.utilities.Matrix.printlnLine;
 import static ini.cx3d.utilities.Matrix.scalarMult;
 import static ini.cx3d.utilities.Matrix.subtract;
 import ini.cx3d.Param;
-import ini.cx3d.simulations.ECM;
+import ini.cx3d.simulations.ECMFacade;
+import ini.cx3d.simulations.interfaces.ECM;
 import ini.cx3d.spatialOrganization.SpatialOrganizationNode;
 import ini.cx3d.utilities.StringUtilities;
 import ini.cx3d.physics.interfaces.PhysicalCylinder;
@@ -55,7 +56,7 @@ public class View extends JComponent {
 	// **************************************************************************
 	// Defining some parameters
 	// **************************************************************************
-	ECM ecm = ECM.getInstance();
+	ECM ecm = ECMFacade.getInstance();
 
 	// 1. some temporary variables
 	Color colorOfThePhysicalSpaces = new Color(100, 100, 100, 100);
@@ -242,12 +243,12 @@ public class View extends JComponent {
 		// modified by sabina: uncheck this code to sort the physicalSpheres
 		// according to the viewer position.
 		if (this.sortDraw) {
-			Collections.sort(ecm.physicalCylinderList,
+			Collections.sort(ecm.getPhysicalCylinderList(),
 					new SortPhysicalObjects());
 		}
 
-		for (int i = 0; i < ecm.physicalCylinderList.size(); i++) {
-			PhysicalCylinder aCylinder = ecm.physicalCylinderList.get(i);
+		for (int i = 0; i < ecm.getPhysicalCylinderList().size(); i++) {
+			PhysicalCylinder aCylinder = ecm.getPhysicalCylinderList().get(i);
 			double[] myNeuriteDistalEnd = aCylinder.distalEnd(); // =
 			// massLocation
 			double[] myNeuriteProximalEnd = aCylinder.proximalEnd();
@@ -487,11 +488,11 @@ public class View extends JComponent {
 		// modified by sabina: uncheck this code to sort the physicalSpheres
 		// according to the viewer position.
 		if (this.sortDraw) {
-			Collections.sort(ecm.physicalSphereList, new SortPhysicalObjects());
+			Collections.sort(ecm.getPhysicalSphereList(), new SortPhysicalObjects());
 		}
 
-		for (int i = 0; i < ecm.physicalSphereList.size(); i++) {
-			ini.cx3d.physics.interfaces.PhysicalSphere aSphere = ecm.physicalSphereList.get(i);
+		for (int i = 0; i < ecm.getPhysicalSphereList().size(); i++) {
+			ini.cx3d.physics.interfaces.PhysicalSphere aSphere = ecm.getPhysicalSphereList().get(i);
 
 			double sphereRadius = 0.5 * aSphere.getDiameter();
 			double[] mySomaMassLocation = aSphere.getMassLocation();
@@ -703,8 +704,8 @@ public class View extends JComponent {
 	}
 
 	private void paintPhysicalNodes(Graphics2D g2D) {
-		for (int i = 0; i < ecm.physicalNodeList.size(); i++) {
-			ini.cx3d.physics.interfaces.PhysicalNode n = ecm.physicalNodeList.get(i);
+		for (int i = 0; i < ecm.getPhysicalNodeList().size(); i++) {
+			ini.cx3d.physics.interfaces.PhysicalNode n = ecm.getPhysicalNodeList().get(i);
 
 			double[] nodeCoord = n.getSoNode().getPosition();
 			nodeCoord = mult(V, nodeCoord); // rotation
@@ -787,20 +788,20 @@ public class View extends JComponent {
 	// **************************************************************************
 
 	private void drawSubstance(Graphics2D g2D, ini.cx3d.physics.interfaces.Substance sub) {
-		if (ecm.gaussianArtificialConcentrationX.containsKey(sub)) {
-			double[] v = ecm.gaussianArtificialConcentrationX.get(sub);
+		if (ecm.getGaussianArtificialConcentrationX().containsKey(sub)) {
+			double[] v = ecm.getGaussianArtificialConcentrationX().get(sub);
 			drawGaussianGradientX(g2D, v, sub);
 		}
-		if (ecm.gaussianArtificialConcentrationZ.containsKey(sub)) {
-			double[] v = ecm.gaussianArtificialConcentrationZ.get(sub);
+		if (ecm.getGaussianArtificialConcentrationZ().containsKey(sub)) {
+			double[] v = ecm.getGaussianArtificialConcentrationZ().get(sub);
 			drawGaussianGradientZ(g2D, v, sub);
 		}
-		if (ecm.linearArtificialConcentrationX.containsKey(sub)) {
-			double[] v = ecm.linearArtificialConcentrationX.get(sub);
+		if (ecm.getLinearArtificialConcentrationX().containsKey(sub)) {
+			double[] v = ecm.getLinearArtificialConcentrationX().get(sub);
 			drawLinearGradientX(g2D, v, sub);
 		}
-		if (ecm.linearArtificialConcentrationZ.containsKey(sub)) {
-			double[] v = ecm.linearArtificialConcentrationZ.get(sub);
+		if (ecm.getLinearArtificialConcentrationZ().containsKey(sub)) {
+			double[] v = ecm.getLinearArtificialConcentrationZ().get(sub);
 			drawLinearGradientZ(g2D, v, sub);
 		}
 	}

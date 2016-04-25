@@ -33,7 +33,7 @@ import ini.cx3d.cells.Cell;
 import ini.cx3d.cells.CellFactory;
 import ini.cx3d.physics.factory.PhysicalObjectFactory;
 import ini.cx3d.simulations.*;
-import ini.cx3d.simulations.ECM;
+import ini.cx3d.simulations.interfaces.ECM;
 import ini.cx3d.simulations.Scheduler;
 import ini.cx3d.swig.biology.*;
 
@@ -56,14 +56,14 @@ public class Figure_9Test extends BaseSimulationTest {
 
 	@Override
 	public void simulate() throws Exception {
-		ECM.setRandomSeed(1L);
+		ini.cx3d.simulations.ECM.setRandomSeed(1L);
 
 		Param.NEURITE_MAX_LENGTH = 20;
 		ini.cx3d.swig.physics.Param.setKNeuriteMaxLength(20);
 		double pi = Math.PI;
 		// get a 2.5D ECM
-		ECM ecm = ECM.getInstance();
-		ECM.setRandomSeed(5L);
+		ECM ecm = ECMFacade.getInstance();
+		ini.cx3d.simulations.ECM.setRandomSeed(5L);
 		ecm.setArtificialWallsForCylinders(true);
 		ecm.setArtificialWallsForSpheres(true);
 		ecm.setBoundaries(-10000, 10000, -10000, 10000, -5, 5);
@@ -91,7 +91,7 @@ public class Figure_9Test extends BaseSimulationTest {
 			
 			Color c = Param.X_SOLID_GRAY;
 
-			double[] cellLocation = new double[] {-200+ECM.getRandomDouble()*400, -200+ECM.getRandomDouble()*400, -5+ECM.getRandomDouble()*10 };
+			double[] cellLocation = new double[] {-200+ecm.getRandomDouble1()*400, -200+ecm.getRandomDouble1()*400, -5+ecm.getRandomDouble1()*10 };
 			
 			if(i==0){
 				c= Param.X_SOLID_RED;
@@ -110,10 +110,10 @@ public class Figure_9Test extends BaseSimulationTest {
 			sphere.setColor(c);
 			sphere.setAdherence(100);
 			
-			int nbOfNeurites = minNbOfNeurites + ((int)((maxNbOfNeurites-minNbOfNeurites)*ECM.getRandomDouble()));
+			int nbOfNeurites = minNbOfNeurites + ((int)((maxNbOfNeurites-minNbOfNeurites)*ecm.getRandomDouble1()));
 			
 			for (int j = 0; j < nbOfNeurites; j++) {
-				double angleOfAxon = pi*2*ECM.getRandomDouble();
+				double angleOfAxon = pi*2*ecm.getRandomDouble1();
 				double growthSpeed = 75;
 				double probaToBranch = 0.003;
 				double linearDiameterDecrease = 0.001;
@@ -126,10 +126,10 @@ public class Figure_9Test extends BaseSimulationTest {
 					linearDiameterDecrease = 0;
 					ne.getPhysicalCylinder().setDiameter(1.5);
 				}else if (j==1){
-					ne = cell.getSomaElement().extendNewNeurite(3.0, Math.PI*0.5, angleOfAxon + Math.PI -0.5+ECM.getRandomDouble());
+					ne = cell.getSomaElement().extendNewNeurite(3.0, Math.PI*0.5, angleOfAxon + Math.PI -0.5+ecm.getRandomDouble1());
 					ne.setAxon(false);
 				}else{
-					ne = cell.getSomaElement().extendNewNeurite(3.0, Math.PI*0.5, Math.PI*2*ECM.getRandomDouble());
+					ne = cell.getSomaElement().extendNewNeurite(3.0, Math.PI*0.5, Math.PI*2*ecm.getRandomDouble1());
 					ne.setAxon(false);
 				}
 				
@@ -149,7 +149,7 @@ public class Figure_9Test extends BaseSimulationTest {
 			Scheduler.simulateOneStep();
 		}
 		
-		ini.cx3d.swig.biology.TestSynapses.extendExcressencesAndSynapseOnEveryNeuriteElement(ECM.getInstance(), 0.4);
+		ini.cx3d.swig.biology.TestSynapses.extendExcressencesAndSynapseOnEveryNeuriteElement(ECMFacade.getInstance(), 0.4);
 //		Exporter.saveExport();
 	}
 }

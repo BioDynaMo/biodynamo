@@ -37,7 +37,8 @@ import ini.cx3d.physics.factory.PhysicalCylinderFactory;
 import ini.cx3d.physics.factory.PhysicalObjectFactory;
 import ini.cx3d.physics.interfaces.IntracellularSubstance;
 import ini.cx3d.physics.interfaces.PhysicalObject;
-import ini.cx3d.simulations.ECM;
+import ini.cx3d.simulations.ECMFacade;
+import ini.cx3d.simulations.interfaces.ECM;
 import ini.cx3d.spatialOrganization.PositionNotAllowedException;
 import ini.cx3d.spatialOrganization.SpatialOrganizationNode;
 import ini.cx3d.spatialOrganization.interfaces.SpaceNode;
@@ -417,8 +418,8 @@ public class PhysicalCylinder extends physics.PhysicalCylinderBase implements in
 			e.printStackTrace();
 		}
 		newProximalCylinder.setSoNode((SpaceNode) newSON);
-		// registering the new cylinder with ECM.getInstance()
-		ECM.getInstance().addPhysicalCylinder(newProximalCylinder);
+		// registering the new cylinder with ECMFacade.getInstance()
+		ECMFacade.getInstance().addPhysicalCylinder(newProximalCylinder);
 		// physics
 		newProximalCylinder.restingLength = (1-distalPortion)*this.restingLength;
 		this.restingLength *= distalPortion;
@@ -514,8 +515,8 @@ public class PhysicalCylinder extends physics.PhysicalCylinderBase implements in
 			updateVolume();
 			// and local coord
 			updateLocalCoordinateAxis();
-			// ECM.getInstance()
-			ECM.getInstance().removePhysicalCylinder(proximalCylinder);
+			// ECMFacade.getInstance()
+			ECMFacade.getInstance().removePhysicalCylinder(proximalCylinder);
 
 			// dealing with excressences:
 			// mine are shifted up :
@@ -698,7 +699,7 @@ public class PhysicalCylinder extends physics.PhysicalCylinderBase implements in
 			}else{
 				mother.removeDaugther(this);
 				this.setStillExisting(false);
-				ECM.getInstance().removePhysicalCylinder(this);  // this method removes the SONode
+				ECMFacade.getInstance().removePhysicalCylinder(this);  // this method removes the SONode
 				// and the associated neuriteElement also disappears :
 				neuriteElement.removeYourself();
 				// intracellularSubstances quantities
@@ -791,9 +792,9 @@ public class PhysicalCylinder extends physics.PhysicalCylinderBase implements in
 		}
 		newBranchR.setSoNode((SpaceNode) newSON);
 
-		// register the new branches with ECM.getInstance()
-		ECM.getInstance().addPhysicalCylinder(newBranchL);
-		ECM.getInstance().addPhysicalCylinder(newBranchR);
+		// register the new branches with ECMFacade.getInstance()
+		ECMFacade.getInstance().addPhysicalCylinder(newBranchL);
+		ECMFacade.getInstance().addPhysicalCylinder(newBranchR);
 
 		// set local coordinate axis in the new branches
 		newBranchL.updateLocalCoordinateAxis();
@@ -869,8 +870,8 @@ public class PhysicalCylinder extends physics.PhysicalCylinderBase implements in
 		newBranch.setSoNode((SpaceNode) newSON);
 		// correct physical values (has to be after family relations and SON assignement).
 		newBranch.updateDependentPhysicalVariables();
-		// register to ECM.getInstance()
-		ECM.getInstance().addPhysicalCylinder(newBranch);
+		// register to ECMFacade.getInstance()
+		ECMFacade.getInstance().addPhysicalCylinder(newBranch);
 
 
 		// i'm scheduled to run physics next time :
@@ -1016,9 +1017,9 @@ public class PhysicalCylinder extends physics.PhysicalCylinderBase implements in
 
 				double[] forceFromThisNeighbor = n.getForceOn(this);
 
-				// 1) "artificial force" to maintain the sphere in the ECM.getInstance() simulation boundaries--------
-				if(ECM.getInstance().getArtificialWallForCylinders()){
-					double[] forceFromArtificialWall = ECM.getInstance().forceFromArtificialWall(getMassLocation(), getDiameter() * 0.5);
+				// 1) "artificial force" to maintain the sphere in the ECMFacade.getInstance() simulation boundaries--------
+				if(ECMFacade.getInstance().getArtificialWallForCylinders()){
+					double[] forceFromArtificialWall = ECMFacade.getInstance().forceFromArtificialWall(getMassLocation(), getDiameter() * 0.5);
 					forceOnMyPointMass[0] += forceFromArtificialWall[0];
 					forceOnMyPointMass[1] += forceFromArtificialWall[1];
 					forceOnMyPointMass[2] += forceFromArtificialWall[2];
@@ -1457,7 +1458,7 @@ public class PhysicalCylinder extends physics.PhysicalCylinderBase implements in
 		if(daughterRight != null){
 			PhysicalObject po1 = this;
 			PhysicalObject po2 = daughterRight;
-			if(ECM.getRandomDouble()<0.5){
+			if(ECMFacade.getRandomDouble()<0.5){
 				po1 = daughterRight;
 				po2 = this;
 			}
@@ -1467,7 +1468,7 @@ public class PhysicalCylinder extends physics.PhysicalCylinderBase implements in
 		if(daughterLeft != null) {
 			PhysicalObject po1 = this;
 			PhysicalObject po2 = daughterLeft;
-			if(ECM.getRandomDouble()<0.5){
+			if(ECMFacade.getRandomDouble()<0.5){
 				po1 = daughterLeft;
 				po2 = this;
 			}

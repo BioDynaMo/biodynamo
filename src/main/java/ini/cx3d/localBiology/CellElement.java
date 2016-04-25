@@ -24,7 +24,8 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 package ini.cx3d.localBiology;
 
 import ini.cx3d.SimStateSerializable;
-import ini.cx3d.simulations.ECM;
+import ini.cx3d.simulations.ECMFacade;
+import ini.cx3d.simulations.interfaces.ECM;
 import ini.cx3d.swig.biology.ListT_LocalBiologyModule;
 
 import java.util.AbstractSequentialList;
@@ -46,7 +47,7 @@ public abstract class CellElement extends ini.cx3d.swig.biology.SomaElement impl
 	static AtomicInteger idCounter = new AtomicInteger(0);
 
 	/* Reference to the ECM. */
-	protected static ECM ecm = ECM.getInstance();
+	protected static ini.cx3d.simulations.interfaces.ECM ecm = ECMFacade.getInstance();
 
 	/* The cells.Cell this CellElement belongs to.*/
 	protected ini.cx3d.cells.interfaces.Cell cell;

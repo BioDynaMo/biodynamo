@@ -5,7 +5,12 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonReader;
-import ini.cx3d.simulations.ECM;
+import ini.cx3d.simulations.ECMFacade;
+import ini.cx3d.simulations.interfaces.ECM;
+import ini.cx3d.swig.biology.Cell;
+import ini.cx3d.swig.biology.CellElement;
+import ini.cx3d.swig.biology.Excrescence;
+import ini.cx3d.swig.physics.PhysicalNode;
 import org.junit.AssumptionViolatedException;
 import org.junit.Rule;
 import org.junit.Test;
@@ -150,14 +155,23 @@ public abstract class BaseSimulationTest {
     }
 
     private void configure() {
-        ECM.headlessGui = true;
+//        ECM.headlessGui = true;
         // run simulation (don't start in pause mode)
-        ECM.getInstance().canRun.release();
-        ECM.setRandomSeed(1L);
+//        ECMFacade.getInstance().canRun.release();
+        ini.cx3d.simulations.ECM.setRandomSeed(1L);
+//        ini.cx3d.swig.biology.ECM.setJavaUtil(java);
+
+        CellElement.setECM(ECMFacade.getInstance());
+        PhysicalNode.setECM(ECMFacade.getInstance());
+        Excrescence.setECM(ECMFacade.getInstance());
+        Cell.setECM(ECMFacade.getInstance());
+
     }
 
+    private static JavaUtil2 java = new JavaUtil2();
+
     private void assertSimulationState() throws IOException {
-        String jsonString = ECM.getInstance().simStateToJson(new NativeStringBuilder()).str();
+        String jsonString = ECMFacade.getInstance().simStateToJson(new NativeStringBuilder()).str();
         JsonElement jsonTree = new JsonParser().parse(jsonString);
         String refFileName = getClass().getSimpleName() + ".json";
         if (!"true".equals(System.getProperty("updateSimStateReferenceFiles"))) {

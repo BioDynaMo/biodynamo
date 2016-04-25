@@ -39,7 +39,8 @@ import java.util.AbstractSequentialList;
 import ini.cx3d.Param;
 import ini.cx3d.physics.interfaces.PhysicalCylinder;
 import ini.cx3d.physics.interfaces.PhysicalNode;
-import ini.cx3d.simulations.ECM;
+import ini.cx3d.simulations.ECMFacade;
+import ini.cx3d.simulations.interfaces.ECM;
 import ini.cx3d.synapses.factory.PhysicalBoutonFactory;
 import ini.cx3d.synapses.factory.PhysicalSpineFactory;
 import ini.cx3d.synapses.interfaces.BiologicalSpine;
@@ -60,7 +61,7 @@ import ini.cx3d.utilities.Matrix;
 public class NeuriteElement extends ini.cx3d.swig.biology.biology.NeuriteElementBase implements ini.cx3d.localBiology.interfaces.NeuriteElement {
 
 	static {
-		ini.cx3d.swig.biology.CellElement.setECM(ECM.getInstance());
+		ini.cx3d.swig.biology.CellElement.setECM(ECMFacade.getInstance());
 	}
 
 	/* The PhysicalObject this NeuriteElement is associated with.*/
@@ -89,7 +90,7 @@ public class NeuriteElement extends ini.cx3d.swig.biology.biology.NeuriteElement
 		super();
 		ini.cx3d.swig.biology.CellElement.registerJavaObject(this);
 		ini.cx3d.swig.biology.NeuriteElement.registerJavaObject(this);
-		ECM.getInstance().addNeuriteElement(this);
+		ECMFacade.getInstance().addNeuriteElement(this);
 	}
 
 	/** Note : doesn't copy the <code>LocalBiologyModule</code> list 
@@ -106,7 +107,7 @@ public class NeuriteElement extends ini.cx3d.swig.biology.biology.NeuriteElement
 	 * It is called by the physicalObject associated with this neuriteElement, when it is deleted.*/
 	public void removeYourself(){
 		// remove from the NeuriteElementList in ECM
-		ECM.getInstance().removeNeuriteElement(this);
+		ECMFacade.getInstance().removeNeuriteElement(this);
 		// Yet the SomaElement doesn't contain a list of the NeuriteElements
 		// but if it does in the future, we'll have to remove this NeuriteElement from there also.
 	}
@@ -367,7 +368,7 @@ public class NeuriteElement extends ini.cx3d.swig.biology.biology.NeuriteElement
 		// TODO : better way to define number (ex : if interval >> length -> no spine at all)
 		for (int i = 0; i < nb; i++) {
 			// create the physical part
-			double[] coord = {length*ECM.getRandomDouble(), 6.28*ECM.getRandomDouble()};
+			double[] coord = {length* ECMFacade.getRandomDouble(), 6.28*ECMFacade.getRandomDouble()};
 			ini.cx3d.synapses.interfaces.PhysicalSpine pSpine = PhysicalSpineFactory.create(physicalCylinder,coord,3);
 			physicalCylinder.addExcrescence(pSpine);
 			// create the biological part and set call backs
@@ -384,7 +385,7 @@ public class NeuriteElement extends ini.cx3d.swig.biology.biology.NeuriteElement
 	public void makeSingleSpine(){
 		double length = physicalCylinder.getActualLength();
 		// create the physical part
-		double[] coord = {length*ECM.getRandomDouble(), 6.28*ECM.getRandomDouble()};
+		double[] coord = {length*ECMFacade.getRandomDouble(), 6.28*ECMFacade.getRandomDouble()};
 		ini.cx3d.synapses.interfaces.PhysicalSpine pSpine = PhysicalSpineFactory.create(physicalCylinder, coord, 3);
 		physicalCylinder.addExcrescence(pSpine);
 		// create the biological part and set call backs
@@ -405,7 +406,7 @@ public class NeuriteElement extends ini.cx3d.swig.biology.biology.NeuriteElement
 			return;
 		}
 		// create the physical part
-		double[] coord = {distFromProximalEnd, 6.28*ECM.getRandomDouble()};
+		double[] coord = {distFromProximalEnd, 6.28*ECMFacade.getRandomDouble()};
 		ini.cx3d.synapses.interfaces.PhysicalSpine pSpine = PhysicalSpineFactory.create(physicalCylinder,coord,3);
 		physicalCylinder.addExcrescence(pSpine);
 		// create the biological part and set call backs
@@ -428,7 +429,7 @@ public class NeuriteElement extends ini.cx3d.swig.biology.biology.NeuriteElement
 		// TODO : better way to define number (ex : if interval >> length -> no spine at all) 
 		for (int i = 0; i < nb; i++) {
 			// create the physical part
-			double[] coord = {length*ECM.getRandomDouble(), -3.14 + 6.28*ECM.getRandomDouble()};
+			double[] coord = {length*ECMFacade.getRandomDouble(), -3.14 + 6.28*ECMFacade.getRandomDouble()};
 			ini.cx3d.synapses.interfaces.PhysicalBouton pBouton = PhysicalBoutonFactory.create(physicalCylinder, coord, 2);
 			physicalCylinder.addExcrescence(pBouton);
 			// create the biological part and set call backs
@@ -450,7 +451,7 @@ public class NeuriteElement extends ini.cx3d.swig.biology.biology.NeuriteElement
 			return;
 		}
 		// create the physical part
-		double[] coord = {distFromProximalEnd, 6.28*ECM.getRandomDouble()};
+		double[] coord = {distFromProximalEnd, 6.28*ECMFacade.getRandomDouble()};
 		ini.cx3d.synapses.interfaces.PhysicalBouton pBouton = PhysicalBoutonFactory.create(physicalCylinder,coord,2);
 		physicalCylinder.addExcrescence(pBouton);
 		// create the biological part and set call backs
@@ -467,7 +468,7 @@ public class NeuriteElement extends ini.cx3d.swig.biology.biology.NeuriteElement
 		// how many boutons for this NeuriteElement ?
 		double length = physicalCylinder.getActualLength();
 		// create the physical part
-		double[] coord = {length*ECM.getRandomDouble(), -3.14 + 6.28*ECM.getRandomDouble()};
+		double[] coord = {length*ECMFacade.getRandomDouble(), -3.14 + 6.28*ECMFacade.getRandomDouble()};
 		ini.cx3d.synapses.interfaces.PhysicalBouton pBouton = PhysicalBoutonFactory.create(physicalCylinder,coord,2);
 		physicalCylinder.addExcrescence(pBouton);
 		// create the biological part and set call backs
@@ -495,7 +496,7 @@ public class NeuriteElement extends ini.cx3d.swig.biology.biology.NeuriteElement
 				continue;
 			}
 			// with a certain probability
-			if(ECM.getRandomDouble()>probabilityToSynapse){
+			if(ECMFacade.getRandomDouble()>probabilityToSynapse){
 				continue;
 			}
 

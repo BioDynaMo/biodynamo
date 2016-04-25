@@ -25,7 +25,7 @@ import static ini.cx3d.utilities.Matrix.add;
 
 import ini.cx3d.physics.factory.PhysicalNodeFactory;
 import ini.cx3d.physics.factory.SubstanceFactory;
-import ini.cx3d.simulations.ECM;
+import ini.cx3d.simulations.interfaces.ECM;
 import ini.cx3d.spatialOrganization.interfaces.SpaceNode;
 import ini.cx3d.physics.interfaces.Substance;
 import ini.cx3d.physics.interfaces.PhysicalNode;

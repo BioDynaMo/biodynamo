@@ -23,7 +23,7 @@ package ini.cx3d.simulations.tutorial;
 
 import ini.cx3d.BaseSimulationTest;
 import ini.cx3d.cells.CellFactory;
-import ini.cx3d.simulations.ECM;
+import ini.cx3d.simulations.interfaces.ECM;
 import ini.cx3d.simulations.Scheduler;
 
 import static ini.cx3d.SimStateSerializationUtil.keyValue;
@@ -36,7 +36,7 @@ public class DividingModuleTest extends BaseSimulationTest {
 
 	@Override
 	public void simulate() {
-		ECM.setRandomSeed(2L);
+		ini.cx3d.simulations.ECM.setRandomSeed(2L);
 		ini.cx3d.cells.interfaces.Cell c = CellFactory.getCellInstance(new double[] {0.0,0.0,0.0});
 		c.addCellModule(new DividingModule());
 

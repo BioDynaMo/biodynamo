@@ -32,7 +32,8 @@ import ini.cx3d.cells.CellFactory;
 import ini.cx3d.localBiology.LocalBiologyModule;
 import ini.cx3d.localBiology.interfaces.CellElement;
 import ini.cx3d.physics.factory.IntracellularSubstanceFactory;
-import ini.cx3d.simulations.ECM;
+import ini.cx3d.simulations.ECMFacade;
+import ini.cx3d.simulations.interfaces.ECM;
 import ini.cx3d.simulations.Scheduler;
 import ini.cx3d.swig.NativeStringBuilder;
 import ini.cx3d.utilities.Matrix;
@@ -47,8 +48,8 @@ public class IntracellularDiffusionTest extends BaseSimulationTest{
 	@Override
 	public void simulate() {
 
-		ECM.setRandomSeed(1L);
-		ECM ecm = ECM.getInstance();
+		ini.cx3d.simulations.ECM.setRandomSeed(1L);
+		ECM ecm = ECMFacade.getInstance();
 		for (int i = 0; i < 18; i++) {
 			ecm.getPhysicalNodeInstance(randomNoise(500,3));
 		}
@@ -154,7 +155,7 @@ public class IntracellularDiffusionTest extends BaseSimulationTest{
 			cyl.movePointMass(speed, direction);
 			cyl.modifyIntracellularQuantity("tubulin", -concentration*consumptionFactor);
 			// test for bifurcation
-			if(ECM.getRandomDouble()<bifurcationProba)
+			if(ECMFacade.getInstance().getRandomDouble1()<bifurcationProba)
 				((ini.cx3d.localBiology.interfaces.NeuriteElement)(getCellElement())).bifurcate();
 		}
 

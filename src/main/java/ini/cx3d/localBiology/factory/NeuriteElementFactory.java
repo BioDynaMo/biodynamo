@@ -3,7 +3,8 @@ package ini.cx3d.localBiology.factory;
 
 import ini.cx3d.localBiology.interfaces.NeuriteElement;
 import ini.cx3d.localBiology.interfaces.SomaElement;
-import ini.cx3d.simulations.ECM;
+import ini.cx3d.simulations.ECMFacade;
+import ini.cx3d.simulations.interfaces.ECM;
 import ini.cx3d.swig.biology.biology;
 
 public class NeuriteElementFactory {
@@ -11,7 +12,7 @@ public class NeuriteElementFactory {
     public static final boolean DEBUG = false;
 
     static {
-        ini.cx3d.swig.biology.CellElement.setECM(ECM.getInstance());
+        ini.cx3d.swig.biology.CellElement.setECM(ECMFacade.getInstance());
     }
 
     public static NeuriteElement create() {

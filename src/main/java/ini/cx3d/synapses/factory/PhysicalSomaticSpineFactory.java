@@ -1,13 +1,14 @@
 package ini.cx3d.synapses.factory;
 
-import ini.cx3d.simulations.ECM;
+import ini.cx3d.simulations.ECMFacade;
+import ini.cx3d.simulations.interfaces.ECM;
 import ini.cx3d.swig.biology.Excrescence;
 import ini.cx3d.swig.biology.biology;
 import ini.cx3d.synapses.interfaces.PhysicalSomaticSpine;
 
 public class PhysicalSomaticSpineFactory {
     static {
-        Excrescence.setECM(ECM.getInstance());
+        Excrescence.setECM(ECMFacade.getInstance());
     }
 
     private static final boolean NATIVE = biology.useNativePhysicalSomaticSpine;

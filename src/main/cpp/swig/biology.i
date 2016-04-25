@@ -25,7 +25,9 @@
 #include "cells/cell_module.h"
 #include "cells/cell_factory.h"
 #include "simulation/scheduler.h"
+#include "physics/substance.h"
 #include "simulation/ecm.h"
+#include "java_util.h"
 using namespace cx3d::local_biology;
 using namespace cx3d::cells;
 using namespace cx3d::simulation;
@@ -34,6 +36,7 @@ using cx3d::physics::PhysicalSphere;
 using cx3d::physics::PhysicalCylinder;
 using cx3d::Color;
 using cx3d::simulation::ECM;
+using cx3d::JavaUtil2;
 %}
 
 // import depending modules
@@ -83,6 +86,7 @@ import ini.cx3d.swig.spatialOrganization.SpaceNodeT_PhysicalNode;"
 %include "class_customization/physics/intracellular_substance.i"
 %include "class_customization/physics/physical_node.i"
 %include "class_customization/space_node.i"
+%include "class_customization/java_util_2.i"
 
 // add the original header files here
 %include "local_biology/local_biology_module.h"

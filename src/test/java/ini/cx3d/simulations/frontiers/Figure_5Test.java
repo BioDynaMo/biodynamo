@@ -24,7 +24,8 @@ package ini.cx3d.simulations.frontiers;
 import ini.cx3d.BaseSimulationTest;
 import ini.cx3d.Param;
 import ini.cx3d.cells.CellFactory;
-import ini.cx3d.simulations.ECM;
+import ini.cx3d.simulations.ECMFacade;
+import ini.cx3d.simulations.interfaces.ECM;
 import ini.cx3d.simulations.Scheduler;
 
 /**
@@ -48,11 +49,11 @@ public class Figure_5Test extends BaseSimulationTest {
 	public void simulate() throws Exception {
 		// 1) Prepare the environment :
 		// 		a reference to ECM, the extra-cellular-matrix
-		ECM ecm = ECM.getInstance();
+		ECM ecm = ECMFacade.getInstance();
 		// 		eight extra PhysicalNodes :
 		for (int i = 0; i < 18; i++) {
-			double angle = 2*Math.PI*ECM.getRandomDouble();
-			double[] loc = {200*Math.sin(angle), 200*Math.cos(angle), -20+300*ECM.getRandomDouble()};
+			double angle = 2*Math.PI*ecm.getRandomDouble1();
+			double[] loc = {200*Math.sin(angle), 200*Math.cos(angle), -20+300*ecm.getRandomDouble1()};
 			ecm.getPhysicalNodeInstance(loc);
 		}
 		
@@ -106,8 +107,8 @@ public class Figure_5Test extends BaseSimulationTest {
 			psB.setDiameter(140);
 			psC.setDiameter(100);
 			psD.setDiameter(50);
-			ecm.setSimulationOnPause(true);
-			ecm.view.repaint();
+//			ecm.setSimulationOnPause(true);
+//			ecm.view.repaint();
 			
 		}
 

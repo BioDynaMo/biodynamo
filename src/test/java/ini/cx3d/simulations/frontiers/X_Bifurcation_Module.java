@@ -27,7 +27,8 @@ import ini.cx3d.cells.CellFactory;
 import ini.cx3d.localBiology.interfaces.CellElement;
 import ini.cx3d.physics.interfaces.PhysicalCylinder;
 import ini.cx3d.physics.factory.SubstanceFactory;
-import ini.cx3d.simulations.ECM;
+import ini.cx3d.simulations.ECMFacade;
+import ini.cx3d.simulations.interfaces.ECM;
 import ini.cx3d.simulations.Scheduler;
 
 import java.awt.Color;
@@ -68,7 +69,7 @@ public class X_Bifurcation_Module extends ini.cx3d.swig.biology.LocalBiologyModu
 
 	/* minimum interval before branching */
 	//double freeInterval = 5+ 15*ECM.getRandomDouble();
-	double freeInterval = 5+ 1*ECM.getRandomDouble();
+	double freeInterval = 5+ 1* ECMFacade.getInstance().getRandomDouble1();
 	
 	public X_Bifurcation_Module() {
 		super();
@@ -168,7 +169,7 @@ public class X_Bifurcation_Module extends ini.cx3d.swig.biology.LocalBiologyModu
 		double y = slope*totalConcentration + shift;
 		if(y>maxProba)
 			y=maxProba;
-		if(ECM.getRandomDouble()<y){
+		if(ECMFacade.getInstance().getRandomDouble1()<y){
 			ini.cx3d.localBiology.interfaces.NeuriteElement[] daughters =  ((ini.cx3d.localBiology.interfaces.NeuriteElement)cellElement).bifurcate();
 			PhysicalCylinder cyl0 = daughters[0].getPhysicalCylinder();
 			PhysicalCylinder cyl1 = daughters[1].getPhysicalCylinder();
@@ -190,7 +191,7 @@ public class X_Bifurcation_Module extends ini.cx3d.swig.biology.LocalBiologyModu
 	public static void main(String[] args) {
 		// 1) Prepare the environment :
 		// 		get a reference to the extracelular matrix (ECM)
-		ECM ecm = ECM.getInstance();
+		ECM ecm = ECMFacade.getInstance();
 		// 		add additional PhysicalNodes (for diffusion)
 		int nbOfAdditionalNodes = 100;
 		for (int i = 0; i < nbOfAdditionalNodes; i++) {

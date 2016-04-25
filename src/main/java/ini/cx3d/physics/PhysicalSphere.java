@@ -40,7 +40,8 @@ import ini.cx3d.localBiology.interfaces.CellElement;
 import ini.cx3d.physics.factory.PhysicalCylinderFactory;
 import ini.cx3d.physics.factory.PhysicalObjectFactory;
 import ini.cx3d.physics.factory.PhysicalSphereFactory;
-import ini.cx3d.simulations.ECM;
+import ini.cx3d.simulations.ECMFacade;
+import ini.cx3d.simulations.interfaces.ECM;
 import ini.cx3d.spatialOrganization.PositionNotAllowedException;
 import ini.cx3d.spatialOrganization.SpatialOrganizationNode;
 import ini.cx3d.spatialOrganization.interfaces.SpaceNode;
@@ -521,8 +522,8 @@ public class PhysicalSphere extends physics.PhysicalSphereBase implements ini.cx
 			e.printStackTrace();
 		}
 		cyl.setSoNode((SpaceNode) newSON);
-		//ECM.getInstance()
-		ECM.getInstance().addPhysicalCylinder(cyl);
+		//ECMFacade.getInstance()
+		ECMFacade.getInstance().addPhysicalCylinder(cyl);
 		//getRwLock().writeLock().unlock(); //wrong spot changeomorrow!! but solved I guess
 		return cyl;
 	}
@@ -609,7 +610,7 @@ public class PhysicalSphere extends physics.PhysicalSphereBase implements ini.cx
 
 		// D) register new Sphere to ECM
 		//getRwLock().writeLock().lock();
-		ECM.getInstance().addPhysicalSphere(newSphere);  // this method also adds the PhysicalNode
+		ECMFacade.getInstance().addPhysicalSphere(newSphere);  // this method also adds the PhysicalNode
 
 		// E) This sphere becomes the 1st daughter.....................................................
 		// move this cx3d.cells on opposite direction (move the centralNode & the massLocation)
@@ -834,10 +835,10 @@ public class PhysicalSphere extends physics.PhysicalSphereBase implements ini.cx
 
 
 
-		// 1) "artificial force" to maintain the sphere in the ECM.getInstance() simulation boundaries--------
+		// 1) "artificial force" to maintain the sphere in the ECMFacade.getInstance() simulation boundaries--------
 
-		if(ECM.getInstance().getArtificialWallForSpheres()){
-			double[] forceFromArtificialWall = ECM.getInstance().forceFromArtificialWall(getMassLocation(), getDiameter() * 0.5);
+		if(ECMFacade.getInstance().getArtificialWallForSpheres()){
+			double[] forceFromArtificialWall = ECMFacade.getInstance().forceFromArtificialWall(getMassLocation(), getDiameter() * 0.5);
 			translationForceOnPointMass[0] += forceFromArtificialWall[0];
 			translationForceOnPointMass[1] += forceFromArtificialWall[1];
 			translationForceOnPointMass[2] += forceFromArtificialWall[2];
@@ -1104,7 +1105,7 @@ public class PhysicalSphere extends physics.PhysicalSphereBase implements ini.cx
 		// is chosen randomly.
 		PhysicalObject po1 = this;
 		PhysicalObject po2 = cyl;
-		if(ECM.getRandomDouble()<0.5){
+		if(ECMFacade.getRandomDouble()<0.5){
 			po1 = cyl;
 			po2 = this;
 		}

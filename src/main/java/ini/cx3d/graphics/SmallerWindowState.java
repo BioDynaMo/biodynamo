@@ -26,7 +26,7 @@ import static ini.cx3d.utilities.Matrix.matRotAroundZ;
 import static ini.cx3d.utilities.Matrix.mult;
 import ini.cx3d.physics.PhysicalNode;
 import ini.cx3d.physics.PhysicalSphere;
-import ini.cx3d.simulations.ECM;
+import ini.cx3d.simulations.interfaces.ECM;
 
 import java.awt.Cursor;
 import java.awt.Rectangle;

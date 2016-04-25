@@ -21,7 +21,8 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 
 package ini.cx3d.graphics;
 
-import ini.cx3d.simulations.ECM;
+import ini.cx3d.simulations.ECMFacade;
+import ini.cx3d.simulations.interfaces.ECM;
 import ini.cx3d.utilities.export.Exporter;
 
 import java.awt.BorderLayout;
@@ -56,7 +57,7 @@ public class ECM_GUI_Creator implements ActionListener{
 	
 	private static int operation_on_close= JFrame.EXIT_ON_CLOSE;
 	private JFrame window1;
-	ECM ecm = ECM.getInstance();
+	ECM ecm = ECMFacade.getInstance();
 	public View view;
 	JToolBar toolBar;
 	JPanel choiceRepresentationPanel;
@@ -424,13 +425,13 @@ public class ECM_GUI_Creator implements ActionListener{
 			if(!pause)
 			{
 				pause = true;
-				ecm.getInstance().canRun.acquire();
+				ini.cx3d.simulations.ECM.getInstance().canRun.acquire();
 				//pausedBymenu = true;
 			}
 			else
 			{
 				pause = false;
-				ecm.getInstance().canRun.release();
+				ini.cx3d.simulations.ECM.getInstance().canRun.release();
 				//pausedBymenu = false;
 				
 			}
@@ -550,7 +551,7 @@ public class ECM_GUI_Creator implements ActionListener{
 
 			}else if(ChoixOption.equals("Print")){
 				PrinterJob job = PrinterJob.getPrinterJob();
-		         job.setPrintable(new ViewPrinter(ecm.view));
+		         job.setPrintable(new ViewPrinter(ini.cx3d.simulations.ECM.getInstance().view));
 		        
 		         boolean ok = job.printDialog();
 		         if (ok) {

@@ -142,7 +142,7 @@ public class ECM extends ini.cx3d.swig.biology.ECM implements SimStateSerializab
 
 	// GUI ..................................................................................
 
-	public static boolean headlessGui = false;
+	public static boolean headlessGui = true;
 	public View view;
 	public ECM_GUI_Creator  myGuiCreator;
 	volatile private boolean simulationOnPause = true;

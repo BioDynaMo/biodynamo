@@ -25,7 +25,8 @@ import ini.cx3d.localBiology.interfaces.SomaElement;
 import ini.cx3d.localBiology.factory.SomaElementFactory;
 import ini.cx3d.physics.interfaces.PhysicalSphere;
 import ini.cx3d.physics.factory.PhysicalSphereFactory;
-import ini.cx3d.simulations.ECM;
+import ini.cx3d.simulations.ECMFacade;
+import ini.cx3d.simulations.interfaces.ECM;
 import ini.cx3d.spatialOrganization.SpatialOrganizationNode;
 import ini.cx3d.spatialOrganization.interfaces.SpaceNode;
 import ini.cx3d.swig.biology.biology;
@@ -45,7 +46,7 @@ import java.util.Vector;
 public class CellFactory {
     
     /* Reference to the ECM. */
-    private static ECM ecm = ECM.getInstance();
+    private static ini.cx3d.simulations.interfaces.ECM ecm = ECMFacade.getInstance();
 
 	/**
 	 * <code>CellFactory</code> constructor.
@@ -54,7 +55,7 @@ public class CellFactory {
     }
 
     static {
-        ini.cx3d.swig.biology.Cell.setECM(ECM.getInstance());
+        ini.cx3d.swig.biology.Cell.setECM(ECMFacade.getInstance());
     }
     
     /**
@@ -64,7 +65,7 @@ public class CellFactory {
      */
     public static ini.cx3d.cells.interfaces.Cell getCellInstance(double[] cellOrigin) {
     	if(biology.useNativeCellFactory) {
-            return ini.cx3d.swig.biology.CellFactory.getCellInstance(cellOrigin, ECM.getInstance());
+            return ini.cx3d.swig.biology.CellFactory.getCellInstance(cellOrigin, ECMFacade.getInstance());
         }
     	// Create new cell
         ini.cx3d.cells.interfaces.Cell cell = new Cell();
@@ -133,7 +134,6 @@ public class CellFactory {
     * @param nx: Number of cells along the x axis
     * @param ny: Number of cells along the y axis
     * @param nz: Number of cells along the z axis
-    * @param noiseStd: Gaussian noise standard deviation
     * @return cellList
     */
    public static Vector<ini.cx3d.cells.interfaces.Cell> get3DCellGrid(double xmin, double xmax, double ymin,

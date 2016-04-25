@@ -28,7 +28,8 @@ import ini.cx3d.Param;
 import ini.cx3d.physics.factory.IntracellularSubstanceFactory;
 import ini.cx3d.physics.factory.PhysicalBondFactory;
 import ini.cx3d.physics.interfaces.IntracellularSubstance;
-import ini.cx3d.simulations.ECM;
+import ini.cx3d.simulations.ECMFacade;
+import ini.cx3d.simulations.interfaces.ECM;
 
 import ini.cx3d.utilities.StringUtilities;
 
@@ -502,7 +503,7 @@ public abstract class PhysicalObject extends ini.cx3d.swig.physics.PhysicalCylin
 
 		ini.cx3d.physics.interfaces.IntracellularSubstance s = intracellularSubstances.get(id);
 		if(s==null){
-			s = ECM.getInstance().intracellularSubstanceInstance(id);
+			s = ECMFacade.getInstance().intracellularSubstanceInstance(id);
 			intracellularSubstances.put(id, s);
 		}
 		double deltaQ = quantityPerTime*Param.SIMULATION_TIME_STEP;

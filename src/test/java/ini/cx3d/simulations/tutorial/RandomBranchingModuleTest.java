@@ -26,7 +26,8 @@ import ini.cx3d.Param;
 import ini.cx3d.cells.CellFactory;
 import ini.cx3d.localBiology.interfaces.CellElement;
 import ini.cx3d.localBiology.LocalBiologyModule;
-import ini.cx3d.simulations.ECM;
+import ini.cx3d.simulations.ECMFacade;
+import ini.cx3d.simulations.interfaces.ECM;
 import ini.cx3d.simulations.Scheduler;
 
 import static ini.cx3d.SimStateSerializationUtil.keyValue;
@@ -42,12 +43,12 @@ public class RandomBranchingModuleTest extends BaseSimulationTest {
 
 	@Override
 	public void simulate() {
-		ECM.setRandomSeed(1L);
-		ECM ecm = ECM.getInstance();
+		ini.cx3d.simulations.ECM.setRandomSeed(1L);
+		ECM ecm = ECMFacade.getInstance();
 		for (int i = 0; i < 18; i++) {
 			ecm.getPhysicalNodeInstance(randomNoise(1000,3));
 		}
-		ECM.setRandomSeed(7L);
+		ini.cx3d.simulations.ECM.setRandomSeed(7L);
 		for(int i = 0; i<1; i++){
 			ini.cx3d.cells.interfaces.Cell c = CellFactory.getCellInstance(randomNoise(40, 3));
 			c.setColorForAllPhysicalObjects(Param.GRAY);
@@ -120,13 +121,13 @@ class RandomBranchingModule extends ini.cx3d.swig.biology.LocalBiologyModule {
 		direction = normalize(direction);
 		neuriteElement.getPhysical().movePointMass(speed, direction);
 		
-		if(ECM.getRandomDouble()<probabilityToBifurcate){
+		if(ECMFacade.getInstance().getRandomDouble1()<probabilityToBifurcate){
 			ini.cx3d.localBiology.interfaces.NeuriteElement[] nn = neuriteElement.bifurcate();
 			nn[0].getPhysical().setColor(Param.RED);
 			nn[1].getPhysical().setColor(Param.BLUE);
 			return;
 		}
-		if(ECM.getRandomDouble()<probabilityToBranch){
+		if(ECMFacade.getInstance().getRandomDouble1()<probabilityToBranch){
 			ini.cx3d.localBiology.interfaces.NeuriteElement n = neuriteElement.branch();
 			n.getPhysical().setColor(Param.VIOLET);
 			return;

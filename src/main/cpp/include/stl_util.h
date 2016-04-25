@@ -33,9 +33,40 @@ class STLUtil {
    * @param map
    * @param key
    */
-  template<typename K, typename V>
-  static bool mapContains(const std::unordered_map<K, V>& map, const K& key) {
+  template<typename K, typename V, typename H, typename E>
+  static bool mapContains(const std::unordered_map<K, V, H, E>& map, const K& key) {
     return map.find(key) != map.end();
+  }
+
+  /**
+   * returns the associated value to this key if it is stored in the map, shared nullptr otherwise
+   * @param map
+   * @param key
+   */
+  template<typename K, typename V>
+  static std::shared_ptr<V> mapGet(const std::unordered_map<K, std::shared_ptr<V>>& map, const K& key) {
+    auto it = map.find(key);
+    if (it != map.end()) {
+      return it->second;
+    } else {
+      return std::shared_ptr<V> { nullptr };
+    }
+  }
+
+  /**
+   * returns the associated value to this key if it is stored in the map, shared nullptr otherwise
+   * @param map
+   * @param key
+   */
+  template<typename K, std::size_t N, typename H, typename E>
+  static std::array<double, N> mapGet(const std::unordered_map<K, std::array<double, N>, H, E>& map, const K& key) {
+    auto it = map.find(key);
+    if (it != map.end()) {
+      return it->second;
+    } else {
+      std::array<double, N> ret;
+      return ret;
+    }
   }
 
   /**
@@ -43,9 +74,18 @@ class STLUtil {
    *          0 if val == 0
    *          1 if val > 0
    */
-  template <typename T>
+  template<typename T>
   static int sgn(T val) {
-      return (T(0) < val) - (val < T(0));
+    return (T(0) < val) - (val < T(0));
+  }
+
+  /**
+   * removes an element from a std::vector container
+   */
+  template<typename T>
+  static void vectorRemove(std::vector<T>& vector, const T& el) {
+    auto it = std::find(vector.begin(), vector.end(), el);
+    vector.erase(it);
   }
 
  private:

@@ -1,6 +1,7 @@
 package ini.cx3d.physics.factory;
 
-import ini.cx3d.simulations.ECM;
+import ini.cx3d.simulations.ECMFacade;
+import ini.cx3d.simulations.interfaces.ECM;
 import ini.cx3d.spatialOrganization.SpatialOrganizationNodeMovementListener;
 import ini.cx3d.swig.physics.physics;
 
@@ -14,9 +15,9 @@ public class PhysicalNodeMovementListenerFactory {
 
     static {
         if(NATIVE){
-            ini.cx3d.swig.physics.PhysicalNodeMovementListener.setMovementOperationId((int)(10000*ECM.getRandomDouble()));
+            ini.cx3d.swig.physics.PhysicalNodeMovementListener.setMovementOperationId((int)(10000* ECMFacade.getRandomDouble()));
         } else {
-            ini.cx3d.physics.PhysicalNodeMovementListener.setMovementOperationId((int)(10000*ECM.getRandomDouble()));
+            ini.cx3d.physics.PhysicalNodeMovementListener.setMovementOperationId((int)(10000*ECMFacade.getRandomDouble()));
         }
     }
 

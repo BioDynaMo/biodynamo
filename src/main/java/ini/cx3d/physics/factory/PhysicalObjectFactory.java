@@ -3,7 +3,7 @@ package ini.cx3d.physics.factory;
 import ini.cx3d.physics.InterObjectForce;
 import ini.cx3d.physics.debug.PhysicalNodeDebug;
 import ini.cx3d.physics.interfaces.PhysicalNode;
-import ini.cx3d.simulations.ECM;
+import ini.cx3d.simulations.interfaces.ECM;
 import ini.cx3d.swig.physics.physics;
 
 /**

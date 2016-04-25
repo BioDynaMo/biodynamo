@@ -31,7 +31,8 @@ import ini.cx3d.Param;
 import ini.cx3d.cells.CellFactory;
 import ini.cx3d.localBiology.LocalBiologyModule;
 import ini.cx3d.physics.factory.SubstanceFactory;
-import ini.cx3d.simulations.ECM;
+import ini.cx3d.simulations.ECMFacade;
+import ini.cx3d.simulations.interfaces.ECM;
 import ini.cx3d.simulations.Scheduler;
 
 public class SomaClusteringTest extends BaseSimulationTest {
@@ -42,8 +43,8 @@ public class SomaClusteringTest extends BaseSimulationTest {
     @Override
     public void simulate() throws Exception {
         ini.cx3d.utilities.SystemUtilities.tic();
-        ECM ecm = ECM.getInstance();
-        ECM.setRandomSeed(1L);
+        ECM ecm = ECMFacade.getInstance();
+        ini.cx3d.simulations.ECM.setRandomSeed(1L);
 
 
 //		// set the rectangle for ROI

@@ -25,7 +25,8 @@ import static ini.cx3d.utilities.Matrix.add;
 import static ini.cx3d.utilities.Matrix.randomNoise;
 import ini.cx3d.Param;
 import ini.cx3d.cells.CellFactory;
-import ini.cx3d.simulations.ECM;
+import ini.cx3d.simulations.ECMFacade;
+import ini.cx3d.simulations.interfaces.ECM;
 import ini.cx3d.simulations.Scheduler;
 
 import java.awt.Color;
@@ -39,7 +40,7 @@ public class TestSynapses {
 	public static void buildLine(){
 		// 1) Prepare the environment :
 		// 		get a reference to the extracelular matrix (ECM)
-		ECM ecm = ECM.getInstance();
+		ini.cx3d.simulations.interfaces.ECM ecm = ECMFacade.getInstance();
 		// 		add additional PhysicalNodes (for diffusion)
 		int nbOfAdditionalNodes = 100;
 		for (int i = 0; i < nbOfAdditionalNodes; i++) {
@@ -92,17 +93,17 @@ public class TestSynapses {
 	}
 
 	public static void extendExcressencesAndSynapseOnEveryNeuriteElement(double probaBilityToSynapse){
-		ECM ecm = ECM.getInstance();
-		for (int i = 0; i < ecm.neuriteElementList.size(); i++) {
-			ini.cx3d.localBiology.interfaces.NeuriteElement ne = ecm.neuriteElementList.get(i);
+		ECM ecm = ECMFacade.getInstance();
+		for (int i = 0; i < ecm.getNeuriteElementList().size(); i++) {
+			ini.cx3d.localBiology.interfaces.NeuriteElement ne = ecm.getNeuriteElementList().get(i);
 			if(ne.isAxon()==true){
 				ne.makeBoutons(2);
 			}else{
 				ne.makeSpines(5);
 			}
 		}
-		for (int i = 0; i < ecm.neuriteElementList.size(); i++) {
-			ini.cx3d.localBiology.interfaces.NeuriteElement ne = ecm.neuriteElementList.get(i);
+		for (int i = 0; i < ecm.getNeuriteElementList().size(); i++) {
+			ini.cx3d.localBiology.interfaces.NeuriteElement ne = ecm.getNeuriteElementList().get(i);
 			if(ne.isAxon() ==true){
 				ne.synapseBetweenExistingBS(probaBilityToSynapse);
 			}

@@ -2,7 +2,8 @@ package ini.cx3d.physics.factory;
 
 import ini.cx3d.physics.debug.PhysicalNodeDebug;
 import ini.cx3d.physics.interfaces.PhysicalNode;
-import ini.cx3d.simulations.ECM;
+import ini.cx3d.simulations.ECMFacade;
+import ini.cx3d.simulations.interfaces.ECM;
 import ini.cx3d.swig.physics.physics;
 
 /**
@@ -14,7 +15,7 @@ public class PhysicalNodeFactory {
     public static final boolean DEBUG = physics.debugPhysicalNode;
 
     static {
-        ini.cx3d.swig.physics.PhysicalNode.setECM(ECM.getInstance());
+        ini.cx3d.swig.physics.PhysicalNode.setECM(ECMFacade.getInstance());
     }
 
     public static PhysicalNode create() {

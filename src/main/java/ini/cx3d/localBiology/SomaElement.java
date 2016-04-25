@@ -29,7 +29,8 @@ import static ini.cx3d.utilities.Matrix.subtract;
 import ini.cx3d.Param;
 import ini.cx3d.localBiology.factory.NeuriteElementFactory;
 import ini.cx3d.physics.interfaces.PhysicalCylinder;
-import ini.cx3d.simulations.ECM;
+import ini.cx3d.simulations.ECMFacade;
+import ini.cx3d.simulations.interfaces.ECM;
 import ini.cx3d.synapses.factory.PhysicalSomaticSpineFactory;
 import ini.cx3d.synapses.interfaces.BiologicalSomaticSpine;
 import ini.cx3d.synapses.PhysicalSomaticSpine;
@@ -49,7 +50,7 @@ import java.util.LinkedList;
 public class SomaElement extends ini.cx3d.swig.biology.SomaElement implements ini.cx3d.localBiology.interfaces.SomaElement {
 
 	static {
-		ini.cx3d.swig.biology.CellElement.setECM(ECM.getInstance());
+		ini.cx3d.swig.biology.CellElement.setECM(ECMFacade.getInstance());
 	}
 
 	/* The PhysicalSphere associated with this SomaElement.*/
@@ -74,7 +75,7 @@ public class SomaElement extends ini.cx3d.swig.biology.SomaElement implements in
 		super();
 		ini.cx3d.swig.biology.CellElement.registerJavaObject(this);
 		ini.cx3d.swig.biology.SomaElement.registerJavaObject(this);
-		ECM.getInstance().addSomaElement(this);
+		ECMFacade.getInstance().addSomaElement(this);
 	}
 
 	@Override
@@ -131,8 +132,8 @@ public class SomaElement extends ini.cx3d.swig.biology.SomaElement implements in
 //		double theta = 6.28318531*ecm.getRandomDouble();
 		
 		//andreas thinks this gives a better distribution based on some friends of mine.
-		double phi =(ECM.getRandomDouble()-0.5f)*2*Math.PI;
-		double theta =Math.asin(ECM.getRandomDouble()*2-1) + Math.PI/2;
+		double phi =(ECMFacade.getRandomDouble()-0.5f)*2*Math.PI;
+		double theta =Math.asin(ECMFacade.getRandomDouble()*2-1) + Math.PI/2;
 
 		return extendNewNeurite(diameter ,phi, theta);
 	}
@@ -206,7 +207,7 @@ public class SomaElement extends ini.cx3d.swig.biology.SomaElement implements in
 			
 			if (Math.random()<p) {
 				// create the physical part
-				double[] coord = {radius, Math.PI*ECM.getRandomDouble(), 2*Math.PI*ECM.getRandomDouble()};
+				double[] coord = {radius, Math.PI*ECMFacade.getRandomDouble(), 2*Math.PI*ECMFacade.getRandomDouble()};
 				ini.cx3d.synapses.interfaces.PhysicalSomaticSpine pSomSpine = PhysicalSomaticSpineFactory.create(physical, coord, 0.1);
 				physical.addExcrescence(pSomSpine);
 				System.out.println(physical.getID());

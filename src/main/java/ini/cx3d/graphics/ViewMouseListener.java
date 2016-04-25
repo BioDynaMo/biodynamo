@@ -25,7 +25,8 @@ import static ini.cx3d.utilities.Matrix.matRotAroundX;
 import static ini.cx3d.utilities.Matrix.matRotAroundZ;
 import static ini.cx3d.utilities.Matrix.mult;
 
-import ini.cx3d.simulations.ECM;
+import ini.cx3d.simulations.ECMFacade;
+import ini.cx3d.simulations.interfaces.ECM;
 
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
@@ -39,7 +40,7 @@ import java.awt.event.MouseWheelListener;
 
 public class ViewMouseListener implements MouseListener, MouseMotionListener, MouseWheelListener {
 
-	ECM ecm = ECM.getInstance();
+	ECM ecm = ECMFacade.getInstance();
 	ini.cx3d.physics.interfaces.PhysicalNode physicalSpace;
 	View view;
 	boolean aNodeIsSelected;
@@ -253,7 +254,7 @@ public class ViewMouseListener implements MouseListener, MouseMotionListener, Mo
 		double z = actualCoord[2];
 		double distance = 20;
 		ini.cx3d.physics.interfaces.PhysicalNode node = null;
-		for (ini.cx3d.physics.interfaces.PhysicalNode pn : ecm.physicalNodeList) {
+		for (ini.cx3d.physics.interfaces.PhysicalNode pn : ecm.getPhysicalNodeList()) {
 			double[] coordOfPn = pn.getSoNode().getPosition();
 			double xpn = coordOfPn[0];
 			double ypn = coordOfPn[1];
@@ -287,7 +288,7 @@ public class ViewMouseListener implements MouseListener, MouseMotionListener, Mo
 		double z = actualCoord[2];
 		double distance = 20;
 		ini.cx3d.physics.interfaces.PhysicalSphere sphere = null;
-		for (ini.cx3d.physics.interfaces.PhysicalSphere ps : ecm.physicalSphereList) {
+		for (ini.cx3d.physics.interfaces.PhysicalSphere ps : ecm.getPhysicalSphereList()) {
 			double[] coordOfPs = ps.getMassLocation();
 			double xps = coordOfPs[0];
 			double yps = coordOfPs[1];
@@ -358,19 +359,19 @@ public class ViewMouseListener implements MouseListener, MouseMotionListener, Mo
 		if (clicks < 0)
 			for (int i = 0; i < Math.abs(clicks); i++)
 			{
-				
-				ecm.view.increaseScalingFactor();
+
+				ini.cx3d.simulations.ECM.getInstance().view.increaseScalingFactor();
 				
 			}	
 		else {
 			for (int i = 0; i < Math.abs(clicks); i++)
-			{	
-				ecm.view.decreaseScalingFactor();
+			{
+				ini.cx3d.simulations.ECM.getInstance().view.decreaseScalingFactor();
 			
 			}
 			
 		}
-		ecm.view.repaint();
+		ini.cx3d.simulations.ECM.getInstance().view.repaint();
 	}
 
 	

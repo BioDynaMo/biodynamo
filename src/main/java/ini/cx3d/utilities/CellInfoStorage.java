@@ -23,7 +23,8 @@ package ini.cx3d.utilities;
 
 import ini.cx3d.cells.CellFactory;
 import ini.cx3d.physics.interfaces.Substance;
-import ini.cx3d.simulations.ECM;
+import ini.cx3d.simulations.ECMFacade;
+import ini.cx3d.simulations.interfaces.ECM;
 
 import java.awt.Color;
 import java.io.FileInputStream;
@@ -56,7 +57,7 @@ public class CellInfoStorage implements Serializable
 		try {
 		      FileOutputStream fout = new FileOutputStream(name);
 		      ObjectOutputStream oos = new ObjectOutputStream(fout);
-		      for (ini.cx3d.cells.interfaces.Cell c : ECM.getInstance().getCellList()) {
+		      for (ini.cx3d.cells.interfaces.Cell c : ECMFacade.getInstance().getCellList()) {
 		    	  CellInfoStorage cont = new CellInfoStorage();
 		    	  cont.cellpos = c.getSomaElement().getLocation();
 		    	  cont.c = c.getSomaElement().getPhysical().getColor();
