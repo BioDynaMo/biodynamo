@@ -35,7 +35,7 @@
   %stdlist_typemap_cross_module(std::shared_ptr<cx3d::cells::CellModule>,
                                 CellModule,
                                 ini.cx3d.cells.CellModule,
-                                ini.cx3d.swig.biology.CellModule);
+                                ini.cx3d.swig.simulation.CellModule);
 %enddef
 
 /**
@@ -44,5 +44,5 @@
 %CellModule_cx3d_shared_ptr();
 %CellModule_java();
 %CellModule_stdlist();
-%typemap(javaimports) cx3d::cells::CellModule "import ini.cx3d.swig.NativeStringBuilder; import ini.cx3d.swig.biology.CellElement;"
+%typemap(javaimports) cx3d::cells::CellModule "import ini.cx3d.swig.NativeStringBuilder; import ini.cx3d.swig.simulation.CellElement;"
 %typemap(javainterfaces) cx3d::cells::CellModule "ini.cx3d.cells.CellModule"

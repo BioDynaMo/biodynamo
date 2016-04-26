@@ -87,14 +87,14 @@ public class SomaClusteringTest extends BaseSimulationTest {
     }
 }
 
-class SomaClustering extends ini.cx3d.swig.biology.biology.AbstractLocalBiologyModuleBase {
+class SomaClustering extends ini.cx3d.swig.simulation.simulation.AbstractLocalBiologyModuleBase {
 
     private String substanceID;
 
     public SomaClustering(String substanceID) {
         super();
-        ini.cx3d.swig.biology.AbstractLocalBiologyModule.registerJavaObject(this);
-        ini.cx3d.swig.biology.LocalBiologyModule.registerJavaObject(this);
+        ini.cx3d.swig.simulation.AbstractLocalBiologyModule.registerJavaObject(this);
+        ini.cx3d.swig.simulation.LocalBiologyModule.registerJavaObject(this);
         this.substanceID = substanceID;
     }
 

@@ -129,7 +129,7 @@
 
 %define %PhysicalNode_stdarray_array_marshalling(SWIG_MODULE, SIZE)
   %typemap(javaimports) std::array<std::shared_ptr<cx3d::physics::PhysicalNode>, SIZE> %{
-    import ini.cx3d.swig.physics.PhysicalNode;
+    import ini.cx3d.swig.simulation.PhysicalNode;
   %}
   %stdarray_array_marshalling(SWIG_MODULE,
                               std::shared_ptr<cx3d::physics::PhysicalNode>,
@@ -140,10 +140,10 @@
 
 %define %PhysicalNode_stdlist()
   %typemap(javaimports) cx3d::ListIteratorCpp<std::shared_ptr<cx3d::physics::PhysicalNode>> %{
-    import ini.cx3d.swig.physics.PhysicalNode;
+    import ini.cx3d.swig.simulation.PhysicalNode;
   %}
   %typemap(javaimports) std::list<std::shared_ptr<cx3d::physics::PhysicalNode>> %{
-    import ini.cx3d.swig.physics.PhysicalNode;
+    import ini.cx3d.swig.simulation.PhysicalNode;
   %}
   %stdlist_typemap(std::shared_ptr<cx3d::physics::PhysicalNode>,
                    PhysicalNode,
@@ -168,17 +168,17 @@
 // set static variable ecm on startup
 %pragma(java) jniclasscode=%{
     static {
-        ini.cx3d.swig.physics.PhysicalNode.setECM(ini.cx3d.simulations.ECM.getInstance());
+        ini.cx3d.swig.simulation.PhysicalNode.setECM(ini.cx3d.simulations.ECM.getInstance());
     }
 %}
 
 // for Tetrahedron:
-%PhysicalNode_stdarray_array_marshalling(spatialOrganization, 4);
+%PhysicalNode_stdarray_array_marshalling(simulation, 4);
 // for SpaceNode
 %PhysicalNode_stdlist();
 %typemap(javainterfaces) cx3d::physics::PhysicalNode "ini.cx3d.physics.interfaces.PhysicalNode"
 %typemap(javaimports) cx3d::physics::PhysicalNode %{
   import ini.cx3d.swig.NativeStringBuilder;
-  import ini.cx3d.swig.spatialOrganization.SpaceNodeT_PhysicalNode;
-  import ini.cx3d.swig.biology.ECM;
+  import ini.cx3d.swig.simulation.SpaceNodeT_PhysicalNode;
+  import ini.cx3d.swig.simulation.ECM;
 %}

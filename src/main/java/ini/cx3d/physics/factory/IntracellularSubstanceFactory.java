@@ -1,7 +1,7 @@
 package ini.cx3d.physics.factory;
 
 import ini.cx3d.physics.interfaces.IntracellularSubstance;
-import ini.cx3d.swig.physics.physics;
+import ini.cx3d.swig.simulation.simulation;
 
 
 /**
@@ -9,12 +9,12 @@ import ini.cx3d.swig.physics.physics;
  */
 public class IntracellularSubstanceFactory {
 
-    private static final boolean NATIVE = physics.useNativeIntracellularSubstance;
-    public static final boolean DEBUG = physics.debugIntracellularSubstance;
+    private static final boolean NATIVE = simulation.useNativeIntracellularSubstance;
+    public static final boolean DEBUG = simulation.debugIntracellularSubstance;
 
     public static IntracellularSubstance create() {
         if (NATIVE) {
-            return ini.cx3d.swig.physics.IntracellularSubstance.create();
+            return ini.cx3d.swig.simulation.IntracellularSubstance.create();
         } else if(!DEBUG) {
             return new ini.cx3d.physics.IntracellularSubstance();
         } else {
@@ -24,7 +24,7 @@ public class IntracellularSubstanceFactory {
 
     public static IntracellularSubstance create(String id, double diffusionConstant, double degradationConstant) {
         if (NATIVE) {
-            return ini.cx3d.swig.physics.IntracellularSubstance.create(id, diffusionConstant, degradationConstant);
+            return ini.cx3d.swig.simulation.IntracellularSubstance.create(id, diffusionConstant, degradationConstant);
         } else if(!DEBUG) {
             return new ini.cx3d.physics.IntracellularSubstance(id, diffusionConstant, degradationConstant);
         } else {
@@ -34,7 +34,7 @@ public class IntracellularSubstanceFactory {
 
     public static IntracellularSubstance create(IntracellularSubstance templateSubstance) {
         if (NATIVE) {
-            return ini.cx3d.swig.physics.IntracellularSubstance.create(templateSubstance);
+            return ini.cx3d.swig.simulation.IntracellularSubstance.create(templateSubstance);
         } else if(!DEBUG) {
             return new ini.cx3d.physics.IntracellularSubstance((ini.cx3d.physics.IntracellularSubstance) templateSubstance);
         } else {

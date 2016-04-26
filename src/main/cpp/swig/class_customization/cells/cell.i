@@ -34,7 +34,7 @@
   %stdlist_typemap_cross_module(std::shared_ptr<cx3d::cells::Cell>,
                                 Cell,
                                 ini.cx3d.cells.interfaces.Cell,
-                                ini.cx3d.swig.biology.Cell);
+                                ini.cx3d.swig.simulation.Cell);
 %enddef
 
 %define %Cell_native()
@@ -60,5 +60,5 @@
 %typemap(javainterfaces) cx3d::cells::Cell "ini.cx3d.cells.interfaces.Cell"
 %typemap(javaimports) cx3d::cells::Cell %{
   import ini.cx3d.swig.NativeStringBuilder;
-  import ini.cx3d.swig.biology.ECM;
+  import ini.cx3d.swig.simulation.ECM;
 %}

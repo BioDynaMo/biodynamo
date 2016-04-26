@@ -59,8 +59,8 @@
   %setJavaDebugSwitch(PhysicalNodeMovementListener, false);
 #endif
 %PhysicalNodeMovementListener_stdlist();
-%typemap(javabase) cx3d::physics::PhysicalNodeMovementListener "ini.cx3d.swig.spatialOrganization.SpatialOrganizationNodeMovementListenerT_PhysicalNode"
-%typemap(javaimports) cx3d::physics::PhysicalNodeMovementListener "import ini.cx3d.swig.spatialOrganization.SpaceNodeT_PhysicalNode;"
+%typemap(javabase) cx3d::physics::PhysicalNodeMovementListener "ini.cx3d.swig.simulation.SpatialOrganizationNodeMovementListenerT_PhysicalNode"
+%typemap(javaimports) cx3d::physics::PhysicalNodeMovementListener "import ini.cx3d.swig.simulation.SpaceNodeT_PhysicalNode;"
 
 // manual modifications because SWIG didn't pick up that PhysicalNodeMovementListener is a derived class
 %typemap(javabody) cx3d::physics::PhysicalNodeMovementListener %{

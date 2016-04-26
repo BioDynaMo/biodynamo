@@ -35,7 +35,7 @@ import ini.cx3d.physics.factory.PhysicalObjectFactory;
 import ini.cx3d.simulations.*;
 import ini.cx3d.simulations.interfaces.ECM;
 import ini.cx3d.simulations.Scheduler;
-import ini.cx3d.swig.biology.*;
+import ini.cx3d.swig.simulation.*;
 import ini.cx3d.JavaUtil2;
 /**
  * This class was used to produce Figure 9 of the paper
@@ -59,7 +59,7 @@ public class Figure_9Test extends BaseSimulationTest {
 		JavaUtil2.setRandomSeed(1L);
 
 		Param.NEURITE_MAX_LENGTH = 20;
-		ini.cx3d.swig.physics.Param.setKNeuriteMaxLength(20);
+		ini.cx3d.swig.simulation.Param.setKNeuriteMaxLength(20);
 		double pi = Math.PI;
 		// get a 2.5D ECM
 		ECM ecm = ECMFacade.getInstance();
@@ -149,7 +149,7 @@ public class Figure_9Test extends BaseSimulationTest {
 			Scheduler.simulateOneStep();
 		}
 		
-		ini.cx3d.swig.biology.TestSynapses.extendExcressencesAndSynapseOnEveryNeuriteElement(ECMFacade.getInstance(), 0.4);
+		ini.cx3d.swig.simulation.TestSynapses.extendExcressencesAndSynapseOnEveryNeuriteElement(ECMFacade.getInstance(), 0.4);
 //		Exporter.saveExport();
 	}
 }

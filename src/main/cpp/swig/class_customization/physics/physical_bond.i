@@ -55,4 +55,4 @@
 %stdlist_typemap_cross_module(std::shared_ptr<cx3d::physics::PhysicalBond>,
                               PhysicalBond,
                               ini.cx3d.physics.interfaces.PhysicalBond,
-                              ini.cx3d.swig.physics.PhysicalBond);
+                              ini.cx3d.swig.simulation.PhysicalBond);

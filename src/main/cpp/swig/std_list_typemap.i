@@ -211,7 +211,7 @@ template<class T> class list {
  * %stdlist_typemap(std::shared_ptr<cx3d::spatial_organization::Tetrahedron<cx3d::physics::PhysicalNode>>,
  *                  Tetrahedron,
  *                  ini.cx3d.spatialOrganization.Tetrahedron
- *                  ini.cx3d.swig.spatialOrganization.TetrahedronT_PhysicalNode);
+ *                  ini.cx3d.swig.simulation.TetrahedronT_PhysicalNode);
  */
 %define %stdlist_typemap_cross_module(CPP_TYPE, TEMPLATE_SUFFIX, JAVA_TYPE, SWIG_JAVA_TYPE)
   %typemap(javaimports) std::list<CPP_TYPE>, std::list<CPP_TYPE>& "import "#SWIG_JAVA_TYPE";"

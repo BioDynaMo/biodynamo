@@ -28,7 +28,7 @@ import ini.cx3d.Param;
 import ini.cx3d.graphics.View;
 import ini.cx3d.physics.ECMChemicalReaction;
 import ini.cx3d.physics.interfaces.PhysicalCylinder;
-import ini.cx3d.swig.biology.biology;
+import ini.cx3d.swig.simulation.simulation;
 import ini.cx3d.simulations.interfaces.ECM;
 
 /**
@@ -72,8 +72,8 @@ public class Scheduler {
 	private static long total_time;
 	/** Runs all the CX3D runnable objects for one time step.*/
 	public static void simulateOneStep(){
-		if(biology.useNativeScheduler) {
-			ini.cx3d.swig.biology.Scheduler.getInstance(ECMFacade.getInstance()).simulateOneStep();
+		if(simulation.useNativeScheduler) {
+			ini.cx3d.swig.simulation.Scheduler.getInstance(ECMFacade.getInstance()).simulateOneStep();
 			return;
 		}
 
@@ -239,8 +239,8 @@ public class Scheduler {
 
 	/** Runs the simulation, i.e. runs each active CX3D runnable objects endlessly.*/
 	public static void simulate(){
-		if(biology.useNativeScheduler) {
-			ini.cx3d.swig.biology.Scheduler.getInstance(ECMFacade.getInstance()).simulate();
+		if(simulation.useNativeScheduler) {
+			ini.cx3d.swig.simulation.Scheduler.getInstance(ECMFacade.getInstance()).simulate();
 			return;
 		}
 
@@ -253,8 +253,8 @@ public class Scheduler {
 	 * @param steps nb of steps that the simulation is run.
 	 */
 	public static void simulateThatManyTimeSteps(int steps){
-		if(biology.useNativeScheduler) {
-			ini.cx3d.swig.biology.Scheduler.getInstance(ECMFacade.getInstance()).simulateThatManyTimeSteps(steps);
+		if(simulation.useNativeScheduler) {
+			ini.cx3d.swig.simulation.Scheduler.getInstance(ECMFacade.getInstance()).simulateThatManyTimeSteps(steps);
 			return;
 		}
 		for (int i = 0; i < steps; i++) {
@@ -263,8 +263,8 @@ public class Scheduler {
 	}
 
 	public static void setPrintCurrentECMTime(boolean printCurrentECMTime) {
-		if(biology.useNativeScheduler) {
-			ini.cx3d.swig.biology.Scheduler.getInstance(ECMFacade.getInstance()).setPrintCurrentECMTime(printCurrentECMTime);
+		if(simulation.useNativeScheduler) {
+			ini.cx3d.swig.simulation.Scheduler.getInstance(ECMFacade.getInstance()).setPrintCurrentECMTime(printCurrentECMTime);
 			return;
 		}
 		Scheduler.printCurrentECMTime = printCurrentECMTime;

@@ -4,5 +4,5 @@
  */
 
 %typemap(javaimports) cx3d::synapse::ConnectionMaker %{
-  import ini.cx3d.swig.biology.ECM;
+  import ini.cx3d.swig.simulation.ECM;
 %}

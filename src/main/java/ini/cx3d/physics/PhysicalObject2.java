@@ -53,7 +53,7 @@ import java.util.*;
  * (cartesian) system, and for transform from global to local..
  *
  */
-public abstract class PhysicalObject2 extends ini.cx3d.swig.physics.PhysicalSphere implements ini.cx3d.physics.interfaces.PhysicalObject {//extends ini.cx3d.swig.physics.PhysicalObject{
+public abstract class PhysicalObject2 extends ini.cx3d.swig.simulation.PhysicalSphere implements ini.cx3d.physics.interfaces.PhysicalObject {//extends ini.cx3d.swig.simulation.PhysicalObject{
 
 	public PhysicalObject2(long cPtr, boolean cMemoryOwn){
 		super(cPtr, cMemoryOwn);

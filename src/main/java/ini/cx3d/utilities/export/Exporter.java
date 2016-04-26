@@ -24,7 +24,7 @@ package ini.cx3d.utilities.export;
 import ini.cx3d.localBiology.interfaces.NeuriteElement;
 import ini.cx3d.simulations.ECMFacade;
 import ini.cx3d.simulations.interfaces.ECM;
-import ini.cx3d.swig.biology.Cell;
+import ini.cx3d.swig.simulation.Cell;
 import ini.cx3d.synapses.Excrescence;
 
 import java.io.BufferedWriter;

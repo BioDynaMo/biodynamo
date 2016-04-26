@@ -42,7 +42,7 @@
   %stdlist_typemap_cross_module(std::shared_ptr<cx3d::physics::Substance>,
                                 Substance,
                                 ini.cx3d.physics.interfaces.Substance,
-                                ini.cx3d.swig.physics.Substance);
+                                ini.cx3d.swig.simulation.Substance);
 %enddef
 
 %define %Substance_typemaps()

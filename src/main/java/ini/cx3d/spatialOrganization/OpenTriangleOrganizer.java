@@ -29,9 +29,9 @@ import ini.cx3d.spatialOrganization.interfaces.SpaceNode;
 import ini.cx3d.spatialOrganization.interfaces.Tetrahedron;
 import ini.cx3d.spatialOrganization.interfaces.Triangle3D;
 import ini.cx3d.spatialOrganization.interfaces.TriangleHashKey;
-import ini.cx3d.swig.spatialOrganization.OpenTriangleOrganizerT_PhysicalNode;
-import ini.cx3d.swig.spatialOrganization.SimpleTriangulationNodeOrganizerT_PhysicalNode;
-import ini.cx3d.swig.spatialOrganization.spatialOrganization;
+import ini.cx3d.swig.simulation.OpenTriangleOrganizerT_PhysicalNode;
+import ini.cx3d.swig.simulation.SimpleTriangulationNodeOrganizerT_PhysicalNode;
+import ini.cx3d.swig.simulation.simulation;
 
 
 import static ini.cx3d.utilities.Matrix.add;
@@ -214,9 +214,9 @@ public class OpenTriangleOrganizer<T> extends OpenTriangleOrganizerT_PhysicalNod
 	 */
 	public static <T> ini.cx3d.spatialOrganization.interfaces.OpenTriangleOrganizer<T> createSimpleOpenTriangleOrganizer_java() {
 		TriangulationNodeOrganizer<T> tno;
-		if (spatialOrganization.useNativeSimpleTriangulationNodeOrganizer) {
+		if (simulation.useNativeSimpleTriangulationNodeOrganizer) {
 			tno = SimpleTriangulationNodeOrganizerT_PhysicalNode.create();
-		} else if(!spatialOrganization.debugSimpleTriangulationNodeOrganizer) {
+		} else if(!simulation.debugSimpleTriangulationNodeOrganizer) {
 			tno = new SimpleTriangulationNodeOrganizer<T>();
 		} else {
 			throw new UnsupportedOperationException("debugging object not yet supported");

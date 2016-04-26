@@ -4,7 +4,7 @@ package ini.cx3d.physics.debug;
 import ini.cx3d.physics.PhysicalNode;
 import ini.cx3d.physics.interfaces.Substance;
 import ini.cx3d.spatialOrganization.interfaces.SpaceNode;
-import ini.cx3d.swig.physics.physics;
+import ini.cx3d.swig.simulation.simulation;
 import ini.cx3d.utilities.DebugUtil;
 
 import java.util.AbstractSequentialList;

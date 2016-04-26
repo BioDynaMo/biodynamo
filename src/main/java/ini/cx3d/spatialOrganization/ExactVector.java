@@ -36,7 +36,7 @@ import ini.cx3d.spatialOrganization.factory.RationalFactory;
  * @author Dennis Goehlsdorf
  *
  */
-public class ExactVector extends ini.cx3d.swig.spatialOrganization.ExactVector implements ini.cx3d.spatialOrganization.interfaces.ExactVector {
+public class ExactVector extends ini.cx3d.swig.simulation.ExactVector implements ini.cx3d.spatialOrganization.interfaces.ExactVector {
 
 	/**
 	 *  Stores the elements of this vector.

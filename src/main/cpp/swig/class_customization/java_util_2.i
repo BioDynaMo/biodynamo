@@ -35,8 +35,8 @@
 %JavaUtil2_java();
 
 %typemap(javaimports) cx3d::JavaUtil2 %{
-  import ini.cx3d.swig.physics.PhysicalBond;
-  import ini.cx3d.swig.physics.PhysicalCylinder;
-  import ini.cx3d.swig.physics.PhysicalObject;
-  import ini.cx3d.swig.physics.PhysicalSphere;
+  import ini.cx3d.swig.simulation.PhysicalBond;
+  import ini.cx3d.swig.simulation.PhysicalCylinder;
+  import ini.cx3d.swig.simulation.PhysicalObject;
+  import ini.cx3d.swig.simulation.PhysicalSphere;
 %}

@@ -13,5 +13,5 @@
   %}
 #endif
 %typemap(javaimports) cx3d::cells::CellFactory %{
-  import ini.cx3d.swig.biology.ECM;
+  import ini.cx3d.swig.simulation.ECM;
 %}

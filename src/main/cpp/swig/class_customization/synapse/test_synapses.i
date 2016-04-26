@@ -4,5 +4,5 @@
  */
 
 %typemap(javaimports) cx3d::synapse::TestSynapses %{
-  import ini.cx3d.swig.biology.ECM;
+  import ini.cx3d.swig.simulation.ECM;
 %}

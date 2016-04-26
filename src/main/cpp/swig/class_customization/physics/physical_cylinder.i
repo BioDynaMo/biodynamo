@@ -49,7 +49,7 @@
                                            ini.cx3d.physics.interfaces.PhysicalCylinder,
                                            Lini/cx3d/physics/interfaces/PhysicalCylinder;,
                                            SIZE,
-                                           ini.cx3d.swig.physics.PhysicalCylinder);
+                                           ini.cx3d.swig.simulation.PhysicalCylinder);
 %enddef
 
 /**
@@ -70,12 +70,12 @@
 
 %typemap(javaimports) cx3d::physics::PhysicalCylinder %{
   import ini.cx3d.swig.NativeStringBuilder;
-  import ini.cx3d.swig.biology.CellElement;
-  import ini.cx3d.swig.biology.NeuriteElement;
+  import ini.cx3d.swig.simulation.CellElement;
+  import ini.cx3d.swig.simulation.NeuriteElement;
 %}
 %typemap(javainterfaces) cx3d::physics::PhysicalCylinder "ini.cx3d.physics.interfaces.PhysicalCylinder"
 %stdlist_typemap_cross_module(std::shared_ptr<cx3d::physics::PhysicalCylinder>,
                               PhysicalCylinder,
                               ini.cx3d.physics.interfaces.PhysicalCylinder,
-                              ini.cx3d.swig.physics.PhysicalCylinder);
-%PhysicalCylinder_stdarray_array_marshalling(physics, 2);
+                              ini.cx3d.swig.simulation.PhysicalCylinder);
+%PhysicalCylinder_stdarray_array_marshalling(simulation, 2);

@@ -70,12 +70,12 @@ public class MembraneContactTest extends BaseSimulationTest {
 	}
 }
 
-class MembraneContact extends ini.cx3d.swig.biology.biology.AbstractLocalBiologyModuleBase {
+class MembraneContact extends ini.cx3d.swig.simulation.simulation.AbstractLocalBiologyModuleBase {
 
 	public MembraneContact(){
 		super();
-		ini.cx3d.swig.biology.AbstractLocalBiologyModule.registerJavaObject(this);
-		ini.cx3d.swig.biology.LocalBiologyModule.registerJavaObject(this);
+		ini.cx3d.swig.simulation.AbstractLocalBiologyModule.registerJavaObject(this);
+		ini.cx3d.swig.simulation.LocalBiologyModule.registerJavaObject(this);
 	}
 
 	public LocalBiologyModule getCopy() {

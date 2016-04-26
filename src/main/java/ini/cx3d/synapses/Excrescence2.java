@@ -35,7 +35,7 @@ import ini.cx3d.synapses.interfaces.Excrescence;
  * @author fredericzubler
  *
  */
-public abstract class Excrescence2 extends ini.cx3d.swig.biology.PhysicalSpine implements SimStateSerializable, ini.cx3d.synapses.interfaces.Excrescence {
+public abstract class Excrescence2 extends ini.cx3d.swig.simulation.PhysicalSpine implements SimStateSerializable, ini.cx3d.synapses.interfaces.Excrescence {
 	/** the physical object it is attached to.*/
 	ini.cx3d.physics.interfaces.PhysicalObject po;
 	/** the other structure with which it forms a synapse.*/
@@ -49,7 +49,7 @@ public abstract class Excrescence2 extends ini.cx3d.swig.biology.PhysicalSpine i
 
 	public Excrescence2() {
 		super();
-		ini.cx3d.swig.biology.Excrescence.registerJavaObject(this);
+		ini.cx3d.swig.simulation.Excrescence.registerJavaObject(this);
 	}
 
 	@Override

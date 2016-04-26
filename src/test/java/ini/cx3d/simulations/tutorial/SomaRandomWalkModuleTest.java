@@ -51,14 +51,14 @@ public class SomaRandomWalkModuleTest extends BaseSimulationTest {
 	}
 }
 
-class SomaRandomWalkModule extends ini.cx3d.swig.biology.biology.AbstractLocalBiologyModuleBase {
+class SomaRandomWalkModule extends ini.cx3d.swig.simulation.simulation.AbstractLocalBiologyModuleBase {
 
 	double direction[] = randomNoise(1.0, 3); // initial direction
 
 	public SomaRandomWalkModule() {
 		super();
-		ini.cx3d.swig.biology.AbstractLocalBiologyModule.registerJavaObject(this);
-		ini.cx3d.swig.biology.LocalBiologyModule.registerJavaObject(this);
+		ini.cx3d.swig.simulation.AbstractLocalBiologyModule.registerJavaObject(this);
+		ini.cx3d.swig.simulation.LocalBiologyModule.registerJavaObject(this);
 	}
 
 	public LocalBiologyModule getCopy() {

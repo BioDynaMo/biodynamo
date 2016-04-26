@@ -222,7 +222,7 @@ class ECM {
         "ECM::getPhysicalCylinder must never be called - Java must provide implementation at this point");
   }
 
-  virtual std::shared_ptr<local_biology::NeuriteElement> getNeuriteElememt(int i) {
+  virtual std::shared_ptr<local_biology::NeuriteElement> getNeuriteElement(int i) {
     throw std::logic_error(
         "ECM::getNeuriteElememt must never be called - Java must provide implementation at this point");
   }
@@ -237,7 +237,7 @@ class ECM {
         "ECM::getPhysicalSphere must never be called - Java must provide implementation at this point");
   }
 
-  virtual std::shared_ptr<local_biology::SomaElement> getSomaElememt(int i) {
+  virtual std::shared_ptr<local_biology::SomaElement> getSomaElement(int i) {
     throw std::logic_error("ECM::getSomaElememt must never be called - Java must provide implementation at this point");
   }
 

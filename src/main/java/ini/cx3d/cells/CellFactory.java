@@ -30,7 +30,7 @@ import ini.cx3d.simulations.ECMFacade;
 import ini.cx3d.simulations.interfaces.ECM;
 import ini.cx3d.spatialOrganization.SpatialOrganizationNode;
 import ini.cx3d.spatialOrganization.interfaces.SpaceNode;
-import ini.cx3d.swig.biology.biology;
+import ini.cx3d.swig.simulation.simulation;
 import ini.cx3d.utilities.Matrix;
 
 import java.util.Vector;
@@ -56,7 +56,7 @@ public class CellFactory {
     }
 
     static {
-        ini.cx3d.swig.biology.Cell.setECM(ECMFacade.getInstance());
+        ini.cx3d.swig.simulation.Cell.setECM(ECMFacade.getInstance());
     }
     
     /**
@@ -65,8 +65,8 @@ public class CellFactory {
      * @return
      */
     public static ini.cx3d.cells.interfaces.Cell getCellInstance(double[] cellOrigin) {
-    	if(biology.useNativeCellFactory) {
-            return ini.cx3d.swig.biology.CellFactory.getCellInstance(cellOrigin, ECMFacade.getInstance());
+    	if(simulation.useNativeCellFactory) {
+            return ini.cx3d.swig.simulation.CellFactory.getCellInstance(cellOrigin, ECMFacade.getInstance());
         }
     	// Create new cell
         ini.cx3d.cells.interfaces.Cell cell = new Cell();

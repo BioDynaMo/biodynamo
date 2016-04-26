@@ -127,8 +127,8 @@
   %typemap(javainterfaces) cx3d::local_biology::AbstractLocalBiologyModule "ini.cx3d.localBiology.LocalBiologyModule"
   %typemap(javaimports) cx3d::local_biology::AbstractLocalBiologyModule %{
     import ini.cx3d.swig.NativeStringBuilder;
-    import ini.cx3d.swig.biology.LocalBiologyModule;
-    import ini.cx3d.swig.biology.CellElement;
+    import ini.cx3d.swig.simulation.LocalBiologyModule;
+    import ini.cx3d.swig.simulation.CellElement;
   %}
 %enddef
 
@@ -145,7 +145,7 @@
 // class hierarchy modifications
 #ifdef ABSTRACTLOCALBIOLOGYMODULE_NATIVE
    %pragma(java) modulecode=%{
-     static public abstract class AbstractLocalBiologyModuleBase extends ini.cx3d.swig.biology.AbstractLocalBiologyModule {}
+     static public abstract class AbstractLocalBiologyModuleBase extends ini.cx3d.swig.simulation.AbstractLocalBiologyModule {}
    %}
 #else
    %pragma(java) modulecode=%{

@@ -47,7 +47,7 @@
 %define %Rational_typemaps()
  %apply long long { int64_t };
  // for class ExactVector
- %Rational_stdarray_array_marshalling(spatialOrganization, 3);
+ %Rational_stdarray_array_marshalling(simulation, 3);
 %enddef
 
 %define %Rational_stdarray_array_marshalling(SWIG_MODULE, SIZE)

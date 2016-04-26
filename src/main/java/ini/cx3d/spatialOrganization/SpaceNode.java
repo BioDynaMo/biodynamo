@@ -31,7 +31,7 @@ import ini.cx3d.spatialOrganization.factory.TetrahedronFactory;
 import ini.cx3d.spatialOrganization.interfaces.Triangle3D;
 import ini.cx3d.spatialOrganization.interfaces.Edge;
 import ini.cx3d.spatialOrganization.interfaces.Tetrahedron;
-import ini.cx3d.swig.spatialOrganization.SpaceNodeT_PhysicalNode;
+import ini.cx3d.swig.simulation.SpaceNodeT_PhysicalNode;
 
 import static ini.cx3d.SimStateSerializationUtil.keyValue;
 import static ini.cx3d.SimStateSerializationUtil.removeLastChar;

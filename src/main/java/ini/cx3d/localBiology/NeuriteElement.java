@@ -59,10 +59,10 @@ import ini.cx3d.utilities.Matrix;
  *
  */
 
-public class NeuriteElement extends ini.cx3d.swig.biology.biology.NeuriteElementBase implements ini.cx3d.localBiology.interfaces.NeuriteElement {
+public class NeuriteElement extends ini.cx3d.swig.simulation.simulation.NeuriteElementBase implements ini.cx3d.localBiology.interfaces.NeuriteElement {
 
 	static {
-		ini.cx3d.swig.biology.CellElement.setECM(ECMFacade.getInstance());
+		ini.cx3d.swig.simulation.CellElement.setECM(ECMFacade.getInstance());
 	}
 
 	/* The PhysicalObject this NeuriteElement is associated with.*/
@@ -89,8 +89,8 @@ public class NeuriteElement extends ini.cx3d.swig.biology.biology.NeuriteElement
 
 	public NeuriteElement() {
 		super();
-		ini.cx3d.swig.biology.CellElement.registerJavaObject(this);
-		ini.cx3d.swig.biology.NeuriteElement.registerJavaObject(this);
+		ini.cx3d.swig.simulation.CellElement.registerJavaObject(this);
+		ini.cx3d.swig.simulation.NeuriteElement.registerJavaObject(this);
 		ECMFacade.getInstance().addNeuriteElement(this);
 	}
 

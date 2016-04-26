@@ -69,7 +69,7 @@ public class NeuriteChemoAttractionTest extends BaseSimulationTest {
 	}
 }
 
-class NeuriteChemoAttraction extends ini.cx3d.swig.biology.biology.AbstractLocalBiologyModuleBase {
+class NeuriteChemoAttraction extends ini.cx3d.swig.simulation.simulation.AbstractLocalBiologyModuleBase {
 
 
 	static ECM ecm = ECMFacade.getInstance();
@@ -82,15 +82,15 @@ class NeuriteChemoAttraction extends ini.cx3d.swig.biology.biology.AbstractLocal
 	
 	public NeuriteChemoAttraction(String substanceID) {
 		super();
-		ini.cx3d.swig.biology.AbstractLocalBiologyModule.registerJavaObject(this);
-		ini.cx3d.swig.biology.LocalBiologyModule.registerJavaObject(this);
+		ini.cx3d.swig.simulation.AbstractLocalBiologyModule.registerJavaObject(this);
+		ini.cx3d.swig.simulation.LocalBiologyModule.registerJavaObject(this);
 		this.substanceID = substanceID;
 	}
 	
 	public NeuriteChemoAttraction(String substanceID, double branchingFactor) {
 		super();
-		ini.cx3d.swig.biology.AbstractLocalBiologyModule.registerJavaObject(this);
-		ini.cx3d.swig.biology.LocalBiologyModule.registerJavaObject(this);
+		ini.cx3d.swig.simulation.AbstractLocalBiologyModule.registerJavaObject(this);
+		ini.cx3d.swig.simulation.LocalBiologyModule.registerJavaObject(this);
 		this.substanceID = substanceID;
 		this.branchingFactor = branchingFactor;
 	}

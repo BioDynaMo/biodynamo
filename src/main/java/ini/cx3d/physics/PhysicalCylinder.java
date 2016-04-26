@@ -43,7 +43,7 @@ import ini.cx3d.simulations.interfaces.ECM;
 import ini.cx3d.spatialOrganization.PositionNotAllowedException;
 import ini.cx3d.spatialOrganization.SpatialOrganizationNode;
 import ini.cx3d.spatialOrganization.interfaces.SpaceNode;
-import ini.cx3d.swig.physics.physics;
+import ini.cx3d.swig.simulation.simulation;
 import ini.cx3d.utilities.StringUtilities;
 
 import java.util.AbstractSequentialList;
@@ -66,7 +66,7 @@ import java.util.Objects;
  * @author fredericzubler
  *
  */
-public class PhysicalCylinder extends physics.PhysicalCylinderBase implements ini.cx3d.physics.interfaces.PhysicalCylinder {//ini.cx3d.swig.physics.PhysicalCylinder{//ini.cx3d.physics.PhysicalObject {
+public class PhysicalCylinder extends simulation.PhysicalCylinderBase implements ini.cx3d.physics.interfaces.PhysicalCylinder {//ini.cx3d.swig.simulation.PhysicalCylinder{//ini.cx3d.physics.PhysicalObject {
 
 	/* Local biology object associated with this PhysicalCylinder.*/
 	private NeuriteElement neuriteElement = null;
@@ -161,9 +161,9 @@ public class PhysicalCylinder extends physics.PhysicalCylinderBase implements in
 		setMass(Param.NEURITE_DEFAULT_MASS);
 		setDiameter(Param.NEURITE_DEFAULT_DIAMETER, false);
 		updateVolume();
-		ini.cx3d.swig.physics.PhysicalNode.registerJavaObject(this);
-		ini.cx3d.swig.physics.PhysicalObject.registerJavaObject(this);
-		ini.cx3d.swig.physics.PhysicalCylinder.registerJavaObject(this);
+		ini.cx3d.swig.simulation.PhysicalNode.registerJavaObject(this);
+		ini.cx3d.swig.simulation.PhysicalObject.registerJavaObject(this);
+		ini.cx3d.swig.simulation.PhysicalCylinder.registerJavaObject(this);
 		//getRwLock().writeLock().unlock();
 	}
 

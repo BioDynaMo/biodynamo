@@ -46,7 +46,7 @@ import ini.cx3d.simulations.interfaces.ECM;
 import ini.cx3d.spatialOrganization.PositionNotAllowedException;
 import ini.cx3d.spatialOrganization.SpatialOrganizationNode;
 import ini.cx3d.spatialOrganization.interfaces.SpaceNode;
-import ini.cx3d.swig.physics.physics;
+import ini.cx3d.swig.simulation.simulation;
 import ini.cx3d.physics.interfaces.PhysicalCylinder;
 
 import java.util.*;
@@ -67,7 +67,7 @@ import ini.cx3d.physics.interfaces.PhysicalObject;
  *
  */
 
-public class PhysicalSphere extends physics.PhysicalSphereBase implements ini.cx3d.physics.interfaces.PhysicalSphere {//ini.cx3d.swig.physics.PhysicalSphere{//ini.cx3d.physics.PhysicalObject2 {
+public class PhysicalSphere extends simulation.PhysicalSphereBase implements ini.cx3d.physics.interfaces.PhysicalSphere {//ini.cx3d.swig.simulation.PhysicalSphere{//ini.cx3d.physics.PhysicalObject2 {
 
 
 	/* Local biology object associated with this PhysicalSphere.*/
@@ -148,9 +148,9 @@ public class PhysicalSphere extends physics.PhysicalSphereBase implements ini.cx
 	public PhysicalSphere() {
 		super();
 		//getRwLock().writeLock().lock();
-		ini.cx3d.swig.physics.PhysicalNode.registerJavaObject(this);
-		ini.cx3d.swig.physics.PhysicalObject.registerJavaObject(this);
-		ini.cx3d.swig.physics.PhysicalSphere.registerJavaObject(this);
+		ini.cx3d.swig.simulation.PhysicalNode.registerJavaObject(this);
+		ini.cx3d.swig.simulation.PhysicalObject.registerJavaObject(this);
+		ini.cx3d.swig.simulation.PhysicalSphere.registerJavaObject(this);
 		setMass(1);
 		setAdherence(Param.SPHERE_DEFAULT_ADHERENCE);
 		setDiameter(Param.SPHERE_DEFAULT_DIAMETER, false);

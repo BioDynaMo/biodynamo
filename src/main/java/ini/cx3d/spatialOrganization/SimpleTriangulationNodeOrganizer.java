@@ -23,7 +23,7 @@ package ini.cx3d.spatialOrganization;
 
 import ini.cx3d.spatialOrganization.interfaces.*;
 import ini.cx3d.spatialOrganization.interfaces.SpaceNode;
-import ini.cx3d.swig.spatialOrganization.SimpleTriangulationNodeOrganizerT_PhysicalNode;
+import ini.cx3d.swig.simulation.SimpleTriangulationNodeOrganizerT_PhysicalNode;
 
 import java.util.AbstractSequentialList;
 import java.util.Iterator;

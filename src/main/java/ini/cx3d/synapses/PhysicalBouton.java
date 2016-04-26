@@ -47,7 +47,7 @@ public class PhysicalBouton extends Excrescence implements ini.cx3d.synapses.int
 
 	public PhysicalBouton() {
 		super();
-		ini.cx3d.swig.biology.PhysicalBouton.registerJavaObject(this);
+		ini.cx3d.swig.simulation.PhysicalBouton.registerJavaObject(this);
 		super.type = BOUTON;
 	}
 

@@ -41,7 +41,7 @@ import java.util.*;
  * 
  * @author fredericzubler
  */
-public class PhysicalNodeMovementListener extends ini.cx3d.swig.physics.PhysicalNodeMovementListener {//implements SpatialOrganizationNodeMovementListener<PhysicalNode>  {
+public class PhysicalNodeMovementListener extends ini.cx3d.swig.simulation.PhysicalNodeMovementListener {//implements SpatialOrganizationNodeMovementListener<PhysicalNode>  {
 
 	// flag we put into each neighboring PhysicalNode before the move
 	// so we recognize a new neighbor after the movement has occurred.

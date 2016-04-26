@@ -49,10 +49,10 @@ import java.util.LinkedList;
  * @author fredericzubler
  *
  */
-public class SomaElement extends ini.cx3d.swig.biology.SomaElement implements ini.cx3d.localBiology.interfaces.SomaElement {
+public class SomaElement extends ini.cx3d.swig.simulation.SomaElement implements ini.cx3d.localBiology.interfaces.SomaElement {
 
 	static {
-		ini.cx3d.swig.biology.CellElement.setECM(ECMFacade.getInstance());
+		ini.cx3d.swig.simulation.CellElement.setECM(ECMFacade.getInstance());
 	}
 
 	/* The PhysicalSphere associated with this SomaElement.*/
@@ -75,8 +75,8 @@ public class SomaElement extends ini.cx3d.swig.biology.SomaElement implements in
 	// *************************************************************************************
 	public SomaElement(){
 		super();
-		ini.cx3d.swig.biology.CellElement.registerJavaObject(this);
-		ini.cx3d.swig.biology.SomaElement.registerJavaObject(this);
+		ini.cx3d.swig.simulation.CellElement.registerJavaObject(this);
+		ini.cx3d.swig.simulation.SomaElement.registerJavaObject(this);
 		ECMFacade.getInstance().addSomaElement(this);
 	}
 

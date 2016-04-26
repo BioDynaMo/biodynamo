@@ -41,7 +41,7 @@
   %stdlist_typemap_cross_module(std::shared_ptr<cx3d::synapse::Excrescence>,
                                 Excrescence,
                                 ini.cx3d.synapses.interfaces.Excrescence,
-                                ini.cx3d.swig.biology.Excrescence);
+                                ini.cx3d.swig.simulation.Excrescence);
 %enddef
 
 /**
@@ -57,6 +57,6 @@
 %typemap(javainterfaces) cx3d::synapse::Excrescence "ini.cx3d.synapses.interfaces.Excrescence"
 %typemap(javaimports) cx3d::synapse::Excrescence %{
   import ini.cx3d.swig.NativeStringBuilder;
-  import ini.cx3d.swig.physics.PhysicalObject;
-  import ini.cx3d.swig.biology.ECM;
+  import ini.cx3d.swig.simulation.PhysicalObject;
+  import ini.cx3d.swig.simulation.ECM;
 %}

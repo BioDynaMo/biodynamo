@@ -31,7 +31,7 @@ import ini.cx3d.physics.interfaces.PhysicalCylinder;
  * @author fredericzubler
  *
  */
-public class X_Adhesive_Force extends ini.cx3d.swig.physics.InterObjectForce{
+public class X_Adhesive_Force extends ini.cx3d.swig.simulation.InterObjectForce{
 	
 	
 	

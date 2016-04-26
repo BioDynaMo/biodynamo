@@ -49,5 +49,5 @@
 %typemap(javainterfaces) cx3d::synapse::PhysicalSpine "ini.cx3d.synapses.interfaces.PhysicalSpine"
 %typemap(javaimports) cx3d::synapse::PhysicalSpine %{
   import ini.cx3d.swig.NativeStringBuilder;
-  import ini.cx3d.swig.physics.PhysicalObject;
+  import ini.cx3d.swig.simulation.PhysicalObject;
 %}

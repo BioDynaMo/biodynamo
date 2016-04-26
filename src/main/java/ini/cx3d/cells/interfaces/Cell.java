@@ -84,10 +84,10 @@ public interface Cell extends SimStateSerializable {
 	void cleanAllCellModules();
 
 	/** Currently, there are two types of cells : Inhibitory_cells and Excitatory_cells.*/
-	void setNeuroMLType(ini.cx3d.swig.biology.Cell.NeuroMLType neuroMLType);
+	void setNeuroMLType(ini.cx3d.swig.simulation.Cell.NeuroMLType neuroMLType);
 
 	/** Currently, there are two types of cells :  <code>Inhibitory_cells</code> and  <code>Excitatory_cells</code>.*/
-	ini.cx3d.swig.biology.Cell.NeuroMLType getNeuroMLType();
+	ini.cx3d.swig.simulation.Cell.NeuroMLType getNeuroMLType();
 
 	/** Returns the cell type. This is just a convenient way to store some property for the cell.
 	 * Should not be confused with NeuroMLType.

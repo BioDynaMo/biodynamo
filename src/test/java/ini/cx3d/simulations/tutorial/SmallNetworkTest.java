@@ -32,7 +32,7 @@ import ini.cx3d.physics.factory.SubstanceFactory;
 import ini.cx3d.simulations.ECMFacade;
 import ini.cx3d.simulations.interfaces.ECM;
 import ini.cx3d.simulations.Scheduler;
-import ini.cx3d.swig.biology.ConnectionMaker;
+import ini.cx3d.swig.simulation.ConnectionMaker;
 
 import static ini.cx3d.utilities.Matrix.*;
 

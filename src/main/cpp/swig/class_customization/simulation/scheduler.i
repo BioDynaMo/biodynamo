@@ -18,12 +18,12 @@
 
 %define %Scheduler_cx3d_shared_ptr()
   %cx3d_shared_ptr(Scheduler,
-                   ini/cx3d/swig/biology/Scheduler,
+                   ini/cx3d/swig/simulation/Scheduler,
                    cx3d::simulation::Scheduler);
 %enddef
 
 %define %Scheduler_typemaps()
-  %typemap(javaimports) cx3d::simulation::Scheduler "import ini.cx3d.swig.biology.ECM;"
+  %typemap(javaimports) cx3d::simulation::Scheduler "import ini.cx3d.swig.simulation.ECM;"
 %enddef
 
  /**

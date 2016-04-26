@@ -51,7 +51,7 @@ public class DividingModuleTest extends BaseSimulationTest {
 	}
 }
 
-class DividingModule extends ini.cx3d.swig.biology.CellModule {
+class DividingModule extends ini.cx3d.swig.simulation.CellModule {
 
 	ini.cx3d.cells.interfaces.Cell cell;
 

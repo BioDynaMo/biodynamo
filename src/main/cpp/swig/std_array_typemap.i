@@ -279,7 +279,7 @@ namespace std {
  *                                          ini.cx3d.physics.interfaces.PhysicalCylinder,
  *                                          Lini/cx3d/physics/interfaces/PhysicalCylinder;,
  *                                          SIZE,
- *                                          ini.cx3d.swig.physics.PhysicalCylinder);
+ *                                          ini.cx3d.swig.simulation.PhysicalCylinder);
  */
 %define %stdarray_array_marshalling_cross_module(SWIG_MODULE, CPP_TYPE, TEMPLATE_SUFFIX,
                                     JAVA_TYPE, JAVA_ARR_TYPE_DESCRIPTOR, SIZE,

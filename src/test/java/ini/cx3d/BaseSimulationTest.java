@@ -7,10 +7,10 @@ import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonReader;
 import ini.cx3d.simulations.ECMFacade;
 import ini.cx3d.simulations.interfaces.ECM;
-import ini.cx3d.swig.biology.Cell;
-import ini.cx3d.swig.biology.CellElement;
-import ini.cx3d.swig.biology.Excrescence;
-import ini.cx3d.swig.physics.PhysicalNode;
+import ini.cx3d.swig.simulation.Cell;
+import ini.cx3d.swig.simulation.CellElement;
+import ini.cx3d.swig.simulation.Excrescence;
+import ini.cx3d.swig.simulation.PhysicalNode;
 import org.junit.AssumptionViolatedException;
 import org.junit.Rule;
 import org.junit.Test;
@@ -159,7 +159,7 @@ public abstract class BaseSimulationTest {
         // run simulation (don't start in pause mode)
 //        ECMFacade.getInstance().canRun.release();
         JavaUtil2.setRandomSeed(1L);
-//        ini.cx3d.swig.biology.ECM.setJavaUtil(java);
+//        ini.cx3d.swig.simulation.ECM.setJavaUtil(java);
 
         CellElement.setECM(ECMFacade.getInstance());
         PhysicalNode.setECM(ECMFacade.getInstance());

@@ -3,16 +3,16 @@ package ini.cx3d.spatialOrganization.factory;
 import ini.cx3d.spatialOrganization.debug.OpenTriangleOrganizerDebug;
 import ini.cx3d.spatialOrganization.interfaces.OpenTriangleOrganizer;
 import ini.cx3d.spatialOrganization.interfaces.TriangulationNodeOrganizer;
-import ini.cx3d.swig.spatialOrganization.OpenTriangleOrganizerT_PhysicalNode;
-import ini.cx3d.swig.spatialOrganization.spatialOrganization;
+import ini.cx3d.swig.simulation.OpenTriangleOrganizerT_PhysicalNode;
+import ini.cx3d.swig.simulation.simulation;
 
 /**
  * Factory that generates OpenTriangleOrganizer objects
  */
 public class OpenTriangleOrganizerFactory {
 
-    private static final boolean NATIVE = spatialOrganization.useNativeOpenTriangleOrganizer;
-    public static final boolean DEBUG = spatialOrganization.debugOpenTriangleOrganizer;
+    private static final boolean NATIVE = simulation.useNativeOpenTriangleOrganizer;
+    public static final boolean DEBUG = simulation.debugOpenTriangleOrganizer;
 
     public static <T> OpenTriangleOrganizer create(int preferredCapacity,
                                         TriangulationNodeOrganizer<T> tno) {

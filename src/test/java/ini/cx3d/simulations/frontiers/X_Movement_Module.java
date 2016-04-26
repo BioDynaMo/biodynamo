@@ -43,7 +43,7 @@ import java.util.Vector;
  * @author fredericzubler
  *
  */
-public class X_Movement_Module extends ini.cx3d.swig.biology.LocalBiologyModule{
+public class X_Movement_Module extends ini.cx3d.swig.simulation.LocalBiologyModule{
 
 	/* The CellElement this module lives in.*/
 	CellElement cellElement;

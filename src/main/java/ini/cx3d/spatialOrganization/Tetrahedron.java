@@ -28,7 +28,7 @@ import ini.cx3d.spatialOrganization.interfaces.Edge;
 import ini.cx3d.spatialOrganization.interfaces.SpaceNode;
 
 import ini.cx3d.spatialOrganization.interfaces.Triangle3D;
-import ini.cx3d.swig.spatialOrganization.TetrahedronT_PhysicalNode;
+import ini.cx3d.swig.simulation.TetrahedronT_PhysicalNode;
 
 import java.lang.reflect.Array;
 import java.util.Arrays;

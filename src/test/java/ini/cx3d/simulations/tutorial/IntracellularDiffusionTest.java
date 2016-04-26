@@ -81,12 +81,12 @@ public class IntracellularDiffusionTest extends BaseSimulationTest{
 		
 	}
 
-	private static class InternalSecretor extends ini.cx3d.swig.biology.biology.AbstractLocalBiologyModuleBase {
+	private static class InternalSecretor extends ini.cx3d.swig.simulation.simulation.AbstractLocalBiologyModuleBase {
 
 		public InternalSecretor(){
 			super();
-			ini.cx3d.swig.biology.AbstractLocalBiologyModule.registerJavaObject(this);
-			ini.cx3d.swig.biology.LocalBiologyModule.registerJavaObject(this);
+			ini.cx3d.swig.simulation.AbstractLocalBiologyModule.registerJavaObject(this);
+			ini.cx3d.swig.simulation.LocalBiologyModule.registerJavaObject(this);
 		}
 		// secretion rate (quantity/time)
 		private double secretionRate = 60;  
@@ -114,7 +114,7 @@ public class IntracellularDiffusionTest extends BaseSimulationTest{
 		}
 	}
 	
-	public static class GrowthCone extends ini.cx3d.swig.biology.biology.AbstractLocalBiologyModuleBase{
+	public static class GrowthCone extends ini.cx3d.swig.simulation.simulation.AbstractLocalBiologyModuleBase{
 		
 		// some parameters 
 		private static double speedFactor = 5000;	
@@ -125,8 +125,8 @@ public class IntracellularDiffusionTest extends BaseSimulationTest{
 
 		public GrowthCone() {
 			super();
-			ini.cx3d.swig.biology.AbstractLocalBiologyModule.registerJavaObject(this);
-			ini.cx3d.swig.biology.LocalBiologyModule.registerJavaObject(this);
+			ini.cx3d.swig.simulation.AbstractLocalBiologyModule.registerJavaObject(this);
+			ini.cx3d.swig.simulation.LocalBiologyModule.registerJavaObject(this);
 		}
 
 		// initial direction is parallel to the cylinder axis

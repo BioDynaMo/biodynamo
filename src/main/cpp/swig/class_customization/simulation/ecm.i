@@ -334,15 +334,6 @@
       }
 
       @Override
-      public ini.cx3d.localBiology.interfaces.NeuriteElement getNeuriteElement(int i) {
-          throw new UnsupportedOperationException();
-      }
-
-      @Override
-      public ini.cx3d.localBiology.interfaces.SomaElement getSomaElement(int i) {
-          throw new UnsupportedOperationException();
-      }
-      @Override
       public void addNewCellTypeColor(String cellType, java.awt.Color color) {
           throw new UnsupportedOperationException();
       }
@@ -400,20 +391,11 @@
 %typemap(javainterfaces) cx3d::simulation::ECM "ini.cx3d.simulations.interfaces.ECM"
 %typemap(javaimports) cx3d::simulation::ECM %{
   import ini.cx3d.swig.NativeStringBuilder;
-  import ini.cx3d.swig.spatialOrganization.SpaceNodeT_PhysicalNode;
-  import ini.cx3d.swig.physics.*;
 
   import ini.cx3d.graphics.View;
   import ini.cx3d.physics.ECMChemicalReaction;
   import ini.cx3d.physics.interfaces.*;
   import ini.cx3d.spatialOrganization.SpatialOrganizationNode;
-  import ini.cx3d.swig.physics.IntracellularSubstance;
-  import ini.cx3d.swig.physics.PhysicalBond;
-  import ini.cx3d.swig.physics.PhysicalCylinder;
-  import ini.cx3d.swig.physics.PhysicalNode;
-  import ini.cx3d.swig.physics.PhysicalObject;
-  import ini.cx3d.swig.physics.PhysicalSphere;
-  import ini.cx3d.swig.physics.Substance;
 
   import java.util.AbstractSequentialList;
   import java.util.Hashtable;

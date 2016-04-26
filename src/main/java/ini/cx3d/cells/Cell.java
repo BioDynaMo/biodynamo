@@ -31,8 +31,8 @@ import ini.cx3d.localBiology.interfaces.NeuriteElement;
 import ini.cx3d.localBiology.interfaces.SomaElement;
 import ini.cx3d.simulations.ECMFacade;
 import ini.cx3d.simulations.interfaces.ECM;
-import ini.cx3d.swig.biology.ListT_CellModule;
-import ini.cx3d.swig.biology.ListT_NeuriteElement;
+import ini.cx3d.swig.simulation.ListT_CellModule;
+import ini.cx3d.swig.simulation.ListT_NeuriteElement;
 
 import java.awt.Color;
 import java.util.AbstractSequentialList;
@@ -49,7 +49,7 @@ import java.util.Vector;
  * @author sabina & RJD & fredericzubler
  *
  */
-public class Cell extends ini.cx3d.swig.biology.Cell implements ini.cx3d.cells.interfaces.Cell {
+public class Cell extends ini.cx3d.swig.simulation.Cell implements ini.cx3d.cells.interfaces.Cell {
 
 	/* Unique identification for this Cell instance. */
 	private int ID = 0;
@@ -70,7 +70,7 @@ public class Cell extends ini.cx3d.swig.biology.Cell implements ini.cx3d.cells.i
 	private Vector<ini.cx3d.localBiology.interfaces.NeuriteElement> neuriteRootList = new Vector<ini.cx3d.localBiology.interfaces.NeuriteElement>(); // TODO: not working yet
 
 	/* The electrophsiology type of this cell */
-	private ini.cx3d.swig.biology.Cell.NeuroMLType neuroMLType = NeuroMLType.kExcitatatory;
+	private ini.cx3d.swig.simulation.Cell.NeuroMLType neuroMLType = NeuroMLType.kExcitatatory;
 	
 	/* Some convenient way to store properties of  for cells. 
 	 * Should not be confused with neuroMLType. */
@@ -251,13 +251,13 @@ public class Cell extends ini.cx3d.swig.biology.Cell implements ini.cx3d.cells.i
 
 	/** Currently, there are two types of cells : Inhibitory_cells and Excitatory_cells.*/
 	@Override
-	public void setNeuroMLType(ini.cx3d.swig.biology.Cell.NeuroMLType neuroMLType) {
+	public void setNeuroMLType(ini.cx3d.swig.simulation.Cell.NeuroMLType neuroMLType) {
 		this.neuroMLType = neuroMLType;
 	}
 	
 	/** Currently, there are two types of cells :  <code>Inhibitory_cells</code> and  <code>Excitatory_cells</code>.*/
 	@Override
-	public ini.cx3d.swig.biology.Cell.NeuroMLType getNeuroMLType() {
+	public ini.cx3d.swig.simulation.Cell.NeuroMLType getNeuroMLType() {
 		return neuroMLType;
 	}
 	

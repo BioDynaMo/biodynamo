@@ -36,11 +36,16 @@ import ini.cx3d.localBiology.interfaces.NeuriteElement;
 import ini.cx3d.physics.ECMChemicalReaction;
 import ini.cx3d.physics.interfaces.*;
 import ini.cx3d.physics.factory.*;
+import ini.cx3d.physics.interfaces.IntracellularSubstance;
+import ini.cx3d.physics.interfaces.PhysicalCylinder;
+import ini.cx3d.physics.interfaces.PhysicalNode;
+import ini.cx3d.physics.interfaces.PhysicalSphere;
+import ini.cx3d.physics.interfaces.Substance;
 import ini.cx3d.spatialOrganization.PositionNotAllowedException;
 import ini.cx3d.spatialOrganization.interfaces.SpaceNode;
 import ini.cx3d.spatialOrganization.SpatialOrganizationNode;
 import ini.cx3d.spatialOrganization.factory.SpaceNodeFactory;
-import ini.cx3d.swig.biology.*;
+import ini.cx3d.swig.simulation.*;
 import ini.cx3d.synapses.factory.PhysicalBoutonFactory;
 import ini.cx3d.synapses.factory.PhysicalSpineFactory;
 import ini.cx3d.utilities.Matrix;
@@ -66,7 +71,7 @@ import javax.swing.JFrame;
  * @author fredericzubler
  *
  */
-public class ECM extends ini.cx3d.swig.biology.ECM implements SimStateSerializable {
+public class ECM extends ini.cx3d.swig.simulation.ECM implements SimStateSerializable {
 //	public double exp(double d) { return Math.exp(d); }
 //	public double sqrt(double d) { return Math.sqrt(d); }
 //	public double cos(double d) { return Math.cos(d); }
@@ -1218,7 +1223,7 @@ public class ECM extends ini.cx3d.swig.biology.ECM implements SimStateSerializab
 		return physicalCylinderList.get(i);
 	}
 
-	public ini.cx3d.localBiology.interfaces.NeuriteElement getNeuriteElememt(int i) {
+	public ini.cx3d.localBiology.interfaces.NeuriteElement getNeuriteElement(int i) {
 		return neuriteElementList.get(i);
 	}
 
@@ -1230,7 +1235,7 @@ public class ECM extends ini.cx3d.swig.biology.ECM implements SimStateSerializab
 		return physicalNodeList.get(i);
 	}
 
-	public ini.cx3d.localBiology.interfaces.SomaElement getSomaElememt(int i) {
+	public ini.cx3d.localBiology.interfaces.SomaElement getSomaElement(int i) {
 		return somaElementList.get(i);
 	}
 

@@ -78,33 +78,14 @@ set(CMAKE_SWIG_OUTDIR ${JAVA_MAIN_SWIG_PATH}/)
 set_source_files_properties(${CPP_MAIN_SRC_PATH}/swig/cx3d.i PROPERTIES CPLUSPLUS ON)
 swig_add_module(cx3d java ${CPP_MAIN_SRC_PATH}/swig/cx3d.i ${SOURCES})
 
-#--------------------- build module spatialOrganization  ----------------
-file(GLOB SOURCES "${CPP_MAIN_SRC_PATH}/src/spatial_organization/*.cc")
-set(CMAKE_SWIG_FLAGS -Wall -package ini.cx3d.swig.spatialOrganization -c++)
-set(CMAKE_SWIG_OUTDIR ${JAVA_MAIN_SWIG_PATH}/spatialOrganization)
+#--------------------- build module simulation  ----------------
+file(GLOB SOURCES "${CPP_MAIN_SRC_PATH}/src/**/*.cc" "${CPP_MAIN_SRC_PATH}/src/param.cc")
+set(CMAKE_SWIG_FLAGS -Wall -package ini.cx3d.swig.simulation -c++)
+set(CMAKE_SWIG_OUTDIR ${JAVA_MAIN_SWIG_PATH}/simulation)
 
-set_source_files_properties(${CPP_MAIN_SRC_PATH}/swig/spatial_organization.i PROPERTIES CPLUSPLUS ON)
-swig_add_module(cx3d_spatialOrganization java ${CPP_MAIN_SRC_PATH}/swig/spatial_organization.i ${SOURCES})
-target_link_libraries(cx3d_spatialOrganization ${GMP_LIBRARY})
-
-#--------------------- build module physics  ----------------
-file(GLOB SOURCES "${CPP_MAIN_SRC_PATH}/src/physics/*.cc" "${CPP_MAIN_SRC_PATH}/src/param.cc")
-set(CMAKE_SWIG_FLAGS -Wall -package ini.cx3d.swig.physics -c++)
-set(CMAKE_SWIG_OUTDIR ${JAVA_MAIN_SWIG_PATH}/physics)
-
-set_source_files_properties(${CPP_MAIN_SRC_PATH}/swig/physics.i PROPERTIES CPLUSPLUS ON)
-swig_add_module(cx3d_physics java ${CPP_MAIN_SRC_PATH}/swig/physics.i ${SOURCES})
-SWIG_LINK_LIBRARIES(cx3d_physics cx3d_biology)
-#target_link_libraries(cx3d_physics ${GMP_LIBRARY})
-
-#--------------------- build module biology  ----------------
-file(GLOB SOURCES "${CPP_MAIN_SRC_PATH}/src/local_biology/*.cc" "${CPP_MAIN_SRC_PATH}/src/synapse/*.cc" "${CPP_MAIN_SRC_PATH}/src/cells/*.cc" "${CPP_MAIN_SRC_PATH}/src/simulation/*.cc")
-set(CMAKE_SWIG_FLAGS -Wall -package ini.cx3d.swig.biology -c++)
-set(CMAKE_SWIG_OUTDIR ${JAVA_MAIN_SWIG_PATH}/biology)
-
-set_source_files_properties(${CPP_MAIN_SRC_PATH}/swig/biology.i PROPERTIES CPLUSPLUS ON)
-swig_add_module(cx3d_biology java ${CPP_MAIN_SRC_PATH}/swig/biology.i ${SOURCES})
-target_link_libraries(cx3d_biology ${GMP_LIBRARY})
+set_source_files_properties(${CPP_MAIN_SRC_PATH}/swig/simulation.i PROPERTIES CPLUSPLUS ON)
+swig_add_module(cx3d_simulation java ${CPP_MAIN_SRC_PATH}/swig/simulation.i ${SOURCES})
+target_link_libraries(cx3d_simulation ${GMP_LIBRARY})
 
 #---------------------------------------------------------------
 #--------------------- build test project ----------------------

@@ -25,7 +25,7 @@ import ini.cx3d.spatialOrganization.factory.ExactVectorFactory;
 import ini.cx3d.spatialOrganization.interfaces.*;
 import ini.cx3d.spatialOrganization.factory.RationalFactory;
 import ini.cx3d.spatialOrganization.interfaces.ExactVector;
-import ini.cx3d.swig.spatialOrganization.Triangle3DT_PhysicalNode;
+import ini.cx3d.swig.simulation.Triangle3DT_PhysicalNode;
 
 import java.util.Objects;
 

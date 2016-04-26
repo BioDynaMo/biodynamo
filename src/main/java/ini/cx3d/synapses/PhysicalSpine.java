@@ -47,7 +47,7 @@ public class PhysicalSpine extends Excrescence2 implements ini.cx3d.synapses.int
 
 	public PhysicalSpine() {
 		super();
-		ini.cx3d.swig.biology.PhysicalSpine.registerJavaObject(this);
+		ini.cx3d.swig.simulation.PhysicalSpine.registerJavaObject(this);
 		super.type = SPINE;
 	}
 	

@@ -26,7 +26,7 @@ package ini.cx3d.localBiology;
 import ini.cx3d.SimStateSerializable;
 import ini.cx3d.simulations.ECMFacade;
 import ini.cx3d.simulations.interfaces.ECM;
-import ini.cx3d.swig.biology.ListT_LocalBiologyModule;
+import ini.cx3d.swig.simulation.ListT_LocalBiologyModule;
 
 import java.util.AbstractSequentialList;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -40,7 +40,7 @@ import static ini.cx3d.SimStateSerializationUtil.unorderedCollection;
  * @author fredericzubler
  *
  */
-public abstract class CellElement extends ini.cx3d.swig.biology.SomaElement implements SimStateSerializable, ini.cx3d.localBiology.interfaces.CellElement {
+public abstract class CellElement extends ini.cx3d.swig.simulation.SomaElement implements SimStateSerializable, ini.cx3d.localBiology.interfaces.CellElement {
 
 	/* Unique identification for this CellElement instance.*/
 	int ID = 0;
@@ -67,7 +67,7 @@ public abstract class CellElement extends ini.cx3d.swig.biology.SomaElement impl
 
 	/** Simple constructor.*/
 	public CellElement() {
-		ini.cx3d.swig.biology.CellElement.registerJavaObject(this);
+		ini.cx3d.swig.simulation.CellElement.registerJavaObject(this);
 		this.ID =  idCounter.incrementAndGet();
 	}
 

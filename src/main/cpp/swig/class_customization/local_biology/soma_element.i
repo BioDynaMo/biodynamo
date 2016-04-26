@@ -37,7 +37,7 @@
   %stdlist_typemap_cross_module(std::shared_ptr<cx3d::local_biology::SomaElement>,
                                 SomaElement,
                                 ini.cx3d.localBiology.interfaces.SomaElement,
-                                ini.cx3d.swig.biology.SomaElement);
+                                ini.cx3d.swig.simulation.SomaElement);
 %enddef
 
 %define %SomaElement_native()
@@ -64,7 +64,7 @@
 %SomaElement_stdlist();
 %typemap(javaimports) cx3d::local_biology::SomaElement %{
   import ini.cx3d.swig.NativeStringBuilder;
-  import ini.cx3d.swig.physics.PhysicalObject;
-  import ini.cx3d.swig.physics.PhysicalSphere;
+  import ini.cx3d.swig.simulation.PhysicalObject;
+  import ini.cx3d.swig.simulation.PhysicalSphere;
 %}
 %typemap(javainterfaces) cx3d::local_biology::SomaElement "ini.cx3d.localBiology.interfaces.SomaElement"

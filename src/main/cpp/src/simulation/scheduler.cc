@@ -83,11 +83,11 @@ void Scheduler::simulateOneStep() {
 
   // somata
   for (auto i = 0; i < ecm_->getSomaElementListSize(); i++) {
-    ecm_->getSomaElememt(i)->run();
+    ecm_->getSomaElement(i)->run();
   }
   // neurites
   for (auto i = 0; i < ecm_->getNeuriteElementListSize(); i++) {
-    ecm_->getNeuriteElememt(i)->run();
+    ecm_->getNeuriteElement(i)->run();
   }
 
   // updating the picture on the GUI

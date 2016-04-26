@@ -59,9 +59,9 @@
 
 %define %SpaceNode_typemaps()
   %SpaceNode_stdlist();
-  %SpaceNode_stdarray_array_marshalling(spatialOrganization, 3);
-  %SpaceNode_stdarray_array_marshalling(spatialOrganization, 4);
-  %int_stdarray_array_marshalling(spatialOrganization, 1);
+  %SpaceNode_stdarray_array_marshalling(simulation, 3);
+  %SpaceNode_stdarray_array_marshalling(simulation, 4);
+  %int_stdarray_array_marshalling(simulation, 1);
   %SpaceNode_type_modification();
 
 
@@ -69,7 +69,7 @@
 
 %define %SpaceNode_stdarray_array_marshalling(SWIG_MODULE, SIZE)
   %typemap(javaimports) std::array<std::shared_ptr<cx3d::spatial_organization::SpaceNode<cx3d::physics::PhysicalNode>>, SIZE> %{
-    import ini.cx3d.swig.spatialOrganization.SpaceNodeT_PhysicalNode;
+    import ini.cx3d.swig.simulation.SpaceNodeT_PhysicalNode;
   %}
   %stdarray_array_marshalling(SWIG_MODULE,
                               std::shared_ptr<cx3d::spatial_organization::SpaceNode<cx3d::physics::PhysicalNode> >,
@@ -81,10 +81,10 @@
 
 %define %SpaceNode_stdlist()
   %typemap(javaimports) cx3d::ListIteratorCpp<std::shared_ptr<cx3d::spatial_organization::SpaceNode<cx3d::physics::PhysicalNode>>> %{
-    import ini.cx3d.swig.spatialOrganization.SpaceNodeT_PhysicalNode;
+    import ini.cx3d.swig.simulation.SpaceNodeT_PhysicalNode;
   %}
   %typemap(javaimports) std::list<std::shared_ptr<cx3d::spatial_organization::SpaceNode<cx3d::physics::PhysicalNode>>> %{
-    import ini.cx3d.swig.spatialOrganization.SpaceNodeT_PhysicalNode;
+    import ini.cx3d.swig.simulation.SpaceNodeT_PhysicalNode;
   %}
   %stdlist_typemap(std::shared_ptr<cx3d::spatial_organization::SpaceNode<cx3d::physics::PhysicalNode>>,
                    SpaceNode,
@@ -96,7 +96,7 @@
     ini.cx3d.SimStateSerializable"
   %typemap(javaimports) cx3d::spatial_organization::SpaceNode<cx3d::physics::PhysicalNode> %{
     import ini.cx3d.swig.NativeStringBuilder;
-    import ini.cx3d.swig.physics.PhysicalNode;
+    import ini.cx3d.swig.simulation.PhysicalNode;
   %}
 %enddef
 

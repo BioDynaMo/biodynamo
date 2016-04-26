@@ -64,7 +64,7 @@ public class RandomBranchingModuleTest extends BaseSimulationTest {
 	}
 }
 
-class RandomBranchingModule extends ini.cx3d.swig.biology.LocalBiologyModule {
+class RandomBranchingModule extends ini.cx3d.swig.simulation.LocalBiologyModule {
 
 	ini.cx3d.localBiology.interfaces.NeuriteElement neuriteElement;
 	
