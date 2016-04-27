@@ -61,7 +61,17 @@ class Param {
   static constexpr double kSphereDefaultMass = 1;
 
   // some colors, that we define, because we find them.. well beautiful.
-  static constexpr Color kViolet = Color(0xFFFFD41F);
+  // fixme change to constexpr and initialize here after porting has been finished
+  static Color kYellow;
+  static Color kYellowSolid;
+  static Color kViolet;
+  static Color kVioletSolid;
+  static Color kRedSolid;
+  static Color kRed;
+  static Color kGreen;
+  static Color kBlue;
+  static Color kGray;
+  static Color kGraySolid;
 };
 
 }  // namespace cx3d

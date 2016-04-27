@@ -62,6 +62,8 @@
 #include "simulation/scheduler.h"
 #include "simulation/ecm.h"
 
+#include "test/dividing_cell_test.h"
+
 using namespace cx3d;
 using namespace cx3d::spatial_organization;
 using namespace cx3d::physics;
@@ -143,7 +145,17 @@ JAVA_LOAD_NATIVE_LIBRARY(cx3d_simulation);
 %include "class_customization/simulation/ecm.i"
 %include "class_customization/simulation/scheduler.i"
 
+%ignore cx3d::Param::kYellow;
+%ignore cx3d::Param::kYellowSolid;
 %ignore cx3d::Param::kViolet;
+%ignore cx3d::Param::kVioletSolid;
+%ignore cx3d::Param::kRed;
+%ignore cx3d::Param::kRedSolid;
+%ignore cx3d::Param::kGreen;
+%ignore cx3d::Param::kBlue;
+%ignore cx3d::Param::kGray;
+%ignore cx3d::Param::kGraySolid;
+
 
 // -----------------------------------------------------------------------------
 // add the original header files here
@@ -199,6 +211,8 @@ JAVA_LOAD_NATIVE_LIBRARY(cx3d_simulation);
 
 %include "simulation/scheduler.h"
 %include "simulation/ecm.h"
+
+%include "test/dividing_cell_test.h"
 
 
 // -----------------------------------------------------------------------------
