@@ -25,6 +25,7 @@ class Cell;
 
 namespace spatial_organization {
 template<class T> class SpaceNode;
+template<class T> class SpatialOrganizationNodeMovementListener;
 }  // namespace spatial_organization
 
 namespace physics {
@@ -36,9 +37,10 @@ class PhysicalCylinder;
 class PhysicalObject;
 class PhysicalBond;
 class PhysicalNode;
+class PhysicalNodeMovementListener;
 //class ECMChemicalReaction;
 
-}  // namespace physics
+}// namespace physics
 
 /**
  * Contains functions to access former static methods that are still implemented in Java
@@ -126,6 +128,16 @@ class JavaUtil2 {
         "JavaUtil2::newPhysicalCylinder must never be called - Java must provide implementation at this point");
   }
 
+  virtual std::shared_ptr<physics::PhysicalNode> newPhysicalNode() const {
+    throw std::logic_error(
+        "JavaUtil2::newPhysicalNode must never be called - Java must provide implementation at this point");
+  }
+
+  virtual std::shared_ptr<physics::PhysicalNodeMovementListener> newPhysicalNodeMovementListener() const {
+    throw std::logic_error(
+        "JavaUtil2::newPhysicalNodeMovementListener must never be called - Java must provide implementation at this point");
+  }
+
   virtual std::shared_ptr<physics::PhysicalSphere> newPhysicalSphere() {
     throw std::logic_error(
         "JavaUtil2::newPhysicalSphere must never be called - Java must provide implementation at this point");
@@ -137,7 +149,8 @@ class JavaUtil2 {
   }
 
   virtual std::shared_ptr<local_biology::SomaElement> newSomaElement() {
-    throw std::logic_error("JavaUtil2::newSomaElement must never be called - Java must provide implementation at this point");
+    throw std::logic_error(
+        "JavaUtil2::newSomaElement must never be called - Java must provide implementation at this point");
   }
 
   virtual std::shared_ptr<cx3d::synapse::PhysicalSpine> newPhysicalSpine(
@@ -164,12 +177,12 @@ class JavaUtil2 {
 
   virtual Color getRandomColor() {
     throw std::logic_error(
-            "JavaUtil2::getRandomColor must never be called - Java must provide implementation at this point");
+        "JavaUtil2::getRandomColor must never be called - Java must provide implementation at this point");
   }
 
   virtual double getGaussianDouble(double mean, double standard_deviation) {
     throw std::logic_error(
-                "JavaUtil2::getGaussianDouble must never be called - Java must provide implementation at this point");
+        "JavaUtil2::getGaussianDouble must never be called - Java must provide implementation at this point");
   }
 };
 

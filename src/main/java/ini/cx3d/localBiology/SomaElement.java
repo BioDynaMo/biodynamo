@@ -52,7 +52,7 @@ import java.util.LinkedList;
 public class SomaElement extends ini.cx3d.swig.simulation.SomaElement implements ini.cx3d.localBiology.interfaces.SomaElement {
 
 	static {
-		ini.cx3d.swig.simulation.CellElement.setECM(ECMFacade.getInstance());
+		ini.cx3d.swig.simulation.CellElement.setECM((ini.cx3d.swig.simulation.ECM) ECMFacade.getInstance());
 	}
 
 	/* The PhysicalSphere associated with this SomaElement.*/

@@ -22,6 +22,7 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 package ini.cx3d.simulations.frontiers;
 
 import ini.cx3d.BaseSimulationTest;
+import ini.cx3d.JavaUtil2;
 import ini.cx3d.Param;
 import ini.cx3d.cells.CellFactory;
 import ini.cx3d.simulations.ECMFacade;
@@ -51,13 +52,18 @@ public class Figure_5Test extends BaseSimulationTest {
 		// 		a reference to ECM, the extra-cellular-matrix
 		ECM ecm = ECMFacade.getInstance();
 		// 		eight extra PhysicalNodes :
+		boolean initPhyscalNodeMovementListener = false;
 		for (int i = 0; i < 18; i++) {
 			double angle = 2*Math.PI*ecm.getRandomDouble1();
 			double[] loc = {200*Math.sin(angle), 200*Math.cos(angle), -20+300*ecm.getRandomDouble1()};
+			if(!initPhyscalNodeMovementListener) {
+				initPhyscalNodeMovementListener = true;
+				initPhysicalNodeMovementListener();
+			}
 			ecm.getPhysicalNodeInstance(loc);
 		}
-		
-		
+
+
 		// 2) creating a first cell, with a neurite going straight up.
 		// 		creating a 4-uple Cell-SomaElement-PhysicalSphere-SpatialOrganizerNode
 		ini.cx3d.cells.interfaces.Cell cellA = CellFactory.getCellInstance(new double[] {0,0,-100});
@@ -73,7 +79,7 @@ public class Figure_5Test extends BaseSimulationTest {
 			Scheduler.simulateOneStep();
 		}
 //		ecm.pause(3000);
-		
+
 		// 3) creating three additional spheres:
 		ini.cx3d.cells.interfaces.Cell cellB = CellFactory.getCellInstance(new double[] {10,0,0});
 		ini.cx3d.physics.interfaces.PhysicalSphere psB = cellB.getSomaElement().getPhysicalSphere();
@@ -93,7 +99,7 @@ public class Figure_5Test extends BaseSimulationTest {
 		psD.setColor(Param.X_SOLID_YELLOW);
 		psD.setColor(Param.YELLOW);
 		psD.setMass(2);
-		
+
 		// 4) setting a large diameter OR letting them grow
 		boolean growing = true;
 		if(growing){
@@ -109,13 +115,13 @@ public class Figure_5Test extends BaseSimulationTest {
 			psD.setDiameter(50);
 //			ecm.setSimulationOnPause(true);
 //			ecm.view.repaint();
-			
+
 		}
 
-		// 5) running the simulation slowly 
+		// 5) running the simulation slowly
 		for (int i = 0; i < 1000; i++) {
 			Scheduler.simulateOneStep();
 		}
-		
+
 	}
 }

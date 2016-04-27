@@ -12,7 +12,7 @@ public class NeuriteElementFactory {
     public static final boolean DEBUG = false;
 
     static {
-        ini.cx3d.swig.simulation.CellElement.setECM(ECMFacade.getInstance());
+        ini.cx3d.swig.simulation.CellElement.setECM((ini.cx3d.swig.simulation.ECM) ECMFacade.getInstance());
     }
 
     public static NeuriteElement create() {

@@ -5,12 +5,10 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonReader;
+import ini.cx3d.physics.factory.PhysicalObjectFactory;
 import ini.cx3d.simulations.ECMFacade;
 import ini.cx3d.simulations.interfaces.ECM;
-import ini.cx3d.swig.simulation.Cell;
-import ini.cx3d.swig.simulation.CellElement;
-import ini.cx3d.swig.simulation.Excrescence;
-import ini.cx3d.swig.simulation.PhysicalNode;
+import ini.cx3d.swig.simulation.*;
 import org.junit.AssumptionViolatedException;
 import org.junit.Rule;
 import org.junit.Test;
@@ -159,16 +157,22 @@ public abstract class BaseSimulationTest {
         // run simulation (don't start in pause mode)
 //        ECMFacade.getInstance().canRun.release();
         JavaUtil2.setRandomSeed(1L);
-//        ini.cx3d.swig.simulation.ECM.setJavaUtil(java);
-
+        ini.cx3d.swig.simulation.ECM.setJavaUtil(java);
         CellElement.setECM(ECMFacade.getInstance());
         PhysicalNode.setECM(ECMFacade.getInstance());
         Excrescence.setECM(ECMFacade.getInstance());
         Cell.setECM(ECMFacade.getInstance());
+        SpaceNodeT_PhysicalNode.setJavaUtil(java_);
+        ini.cx3d.swig.simulation.DefaultForce.setJavaUtil(java);
+        PhysicalObjectFactory.initializeInterObjectForce();
+    }
 
+    protected void initPhysicalNodeMovementListener() {
+        ini.cx3d.swig.simulation.PhysicalNodeMovementListener.setMovementOperationId((int) (10000 * JavaUtil2.getRandomDouble()));
     }
 
     private static JavaUtil2 java = new JavaUtil2();
+    private static JavaUtil java_ = new JavaUtil();
 
     private void assertSimulationState() throws IOException {
         String jsonString = ECMFacade.getInstance().simStateToJson(new NativeStringBuilder()).str();
@@ -184,7 +188,7 @@ public abstract class BaseSimulationTest {
 //            Gson gson = new GsonBuilder().setPrettyPrinting().create();
 //            System.out.println(gson.toJson(jsonTree));
 //            System.out.println(gson.toJson(reference));
-//            assertEquals(gson.toJson(jsonTree), gson.toJson(reference));
+//            assertEquals(gson.toJson(reference), gson.toJson(jsonTree));
 
 //            assertEquals(reference.toString(),jsonString);
             assertTrue(reference.equals(jsonTree));

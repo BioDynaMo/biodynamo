@@ -2,9 +2,7 @@ package ini.cx3d;
 
 import ini.cx3d.localBiology.factory.NeuriteElementFactory;
 import ini.cx3d.localBiology.factory.SomaElementFactory;
-import ini.cx3d.physics.factory.PhysicalBondFactory;
-import ini.cx3d.physics.factory.PhysicalCylinderFactory;
-import ini.cx3d.physics.factory.PhysicalSphereFactory;
+import ini.cx3d.physics.factory.*;
 import ini.cx3d.physics.interfaces.PhysicalBond;
 import ini.cx3d.simulations.ECM;
 import ini.cx3d.spatialOrganization.NewDelaunayTest;
@@ -46,6 +44,8 @@ public class JavaUtil2 extends ini.cx3d.swig.simulation.JavaUtil2 {
     public double matrixNextRandomDouble(){
         return Matrix.getRandomDouble();
     }
+    public ini.cx3d.physics.interfaces.PhysicalNode newPhysicalNode() {return PhysicalNodeFactory.create();}
+    public ini.cx3d.spatialOrganization.SpatialOrganizationNodeMovementListener newPhysicalNodeMovementListener() {return PhysicalNodeMovementListenerFactory.create();}
     public ini.cx3d.physics.interfaces.PhysicalSphere newPhysicalSphere() {return PhysicalSphereFactory.create();}
     public ini.cx3d.localBiology.interfaces.SomaElement newSomaElement() {return SomaElementFactory.create();}
     public ini.cx3d.localBiology.interfaces.NeuriteElement newNeuriteElement() {return NeuriteElementFactory.create();}
@@ -58,12 +58,10 @@ public class JavaUtil2 extends ini.cx3d.swig.simulation.JavaUtil2 {
     public PhysicalBond newPhysicalBond(ini.cx3d.physics.interfaces.PhysicalObject a, double[] positionOnA, ini.cx3d.physics.interfaces.PhysicalObject b , double[] positionOnB, double restingLength, double springConstant) {
         return PhysicalBondFactory.create(a, positionOnA, b, positionOnB, restingLength, springConstant);
     }
-//    public double getGaussianDouble(double mean, double standardDeviation) {
-//        return ECM.getInstance().getGaussianDouble(mean, standardDeviation);
-//    }
 
     public Color getRandomColor(){
-        return new Color((float) getRandomDouble(),(float) getRandomDouble(),(float) getRandomDouble(),0.7f);
+        Color c = new Color((float) getRandomDouble(),(float) getRandomDouble(),(float) getRandomDouble(),0.7f);
+        return c;
     }
 
 

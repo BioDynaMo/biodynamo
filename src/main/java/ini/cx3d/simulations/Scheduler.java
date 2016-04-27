@@ -45,7 +45,7 @@ public class Scheduler {
 	private static ECM ecm = ECMFacade.getInstance();
 	/* Reference to the ECM display window */
 	static {
-		ecm.createGUI();
+//		ecm.createGUI();
 	}
 	/* static counter, needed in case where we want to make regular snapshots.*/
 	private static int cycle_counter = 0;

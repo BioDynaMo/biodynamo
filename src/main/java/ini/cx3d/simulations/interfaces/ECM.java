@@ -58,8 +58,8 @@ public interface ECM extends SimStateSerializable {
 
 	SpaceNode<PhysicalNode> getSpatialOrganizationNodeInstance(double[] position, PhysicalNode userObject);
 
-	SpatialOrganizationNode<PhysicalNode> getSpatialOrganizationNodeInstance(
-			SpatialOrganizationNode<PhysicalNode> n, double[] position, PhysicalNode userObject);
+	SpaceNode<PhysicalNode> getSpatialOrganizationNodeInstance(
+			SpaceNode<PhysicalNode> n, double[] position, PhysicalNode userObject);
 
 	void addGridOfPhysicalNodes(double x1, double x2, double y1, double y2, double z1, double z2, double d);
 

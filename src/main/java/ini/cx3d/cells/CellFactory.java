@@ -56,7 +56,7 @@ public class CellFactory {
     }
 
     static {
-        ini.cx3d.swig.simulation.Cell.setECM(ECMFacade.getInstance());
+        ini.cx3d.swig.simulation.Cell.setECM((ini.cx3d.swig.simulation.ECM) ECMFacade.getInstance());
     }
     
     /**

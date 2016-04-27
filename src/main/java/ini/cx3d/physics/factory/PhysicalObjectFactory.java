@@ -15,7 +15,7 @@ public class PhysicalObjectFactory {
     public static final boolean DEBUG = false;//physics.debugPhysicalObject;
 
     static boolean initializedInterObjectForce = false;
-    static void initializeInterObjectForce() {
+    public static void initializeInterObjectForce() {
         if(!initializedInterObjectForce) {
             setInterObjectForce(DefaultForceFactory.create());
             initializedInterObjectForce = true;

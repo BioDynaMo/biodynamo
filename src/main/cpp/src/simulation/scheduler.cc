@@ -81,7 +81,7 @@ void Scheduler::simulateOneStep() {
     ecm_->getCell(i)->run();
   }
 
-  // somata
+  // sommvn -ata
   for (auto i = 0; i < ecm_->getSomaElementListSize(); i++) {
     ecm_->getSomaElement(i)->run();
   }
@@ -90,8 +90,6 @@ void Scheduler::simulateOneStep() {
     ecm_->getNeuriteElement(i)->run();
   }
 
-  // updating the picture on the GUI
-  ecm_->viewRepaint();
   // ticking ECM's time
   cycle_counter_++;
   ecm_->increaseECMtime(Param::kSimulationTimeStep);
@@ -115,7 +113,6 @@ void Scheduler::setPrintCurrentECMTime(bool print_time) {
 
 Scheduler::Scheduler(const std::shared_ptr<simulation::ECM>& ecm)
     : ecm_ { ecm } {
-  ecm_->createGUI();
 }
 
 }  // namespace simulation

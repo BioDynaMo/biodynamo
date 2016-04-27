@@ -56,14 +56,13 @@ public class Figure_9Test extends BaseSimulationTest {
 
 	@Override
 	public void simulate() throws Exception {
-		JavaUtil2.setRandomSeed(1L);
-
 		Param.NEURITE_MAX_LENGTH = 20;
 		ini.cx3d.swig.simulation.Param.setKNeuriteMaxLength(20);
 		double pi = Math.PI;
 		// get a 2.5D ECM
 		ECM ecm = ECMFacade.getInstance();
 		JavaUtil2.setRandomSeed(5L);
+		ini.cx3d.swig.simulation.PhysicalNodeMovementListener.setMovementOperationId((int) (10000 * JavaUtil2.getRandomDouble()));
 		ecm.setArtificialWallsForCylinders(true);
 		ecm.setArtificialWallsForSpheres(true);
 		ecm.setBoundaries(-10000, 10000, -10000, 10000, -5, 5);

@@ -45,6 +45,7 @@ public class RandomBranchingModuleTest extends BaseSimulationTest {
 	@Override
 	public void simulate() {
 		JavaUtil2.setRandomSeed(1L);
+		initPhysicalNodeMovementListener();
 		ECM ecm = ECMFacade.getInstance();
 		for (int i = 0; i < 18; i++) {
 			ecm.getPhysicalNodeInstance(randomNoise(1000,3));

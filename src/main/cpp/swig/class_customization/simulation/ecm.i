@@ -53,75 +53,8 @@
       }
     }
 
-
-      @Override
-      public void addArtificialGaussianConcentrationZ(ini.cx3d.physics.interfaces.Substance substance, double maxConcentration, double zCoord, double sigma) {
-          throw new UnsupportedOperationException();
-      }
-
-      @Override
-      public void addArtificialGaussianConcentrationZ(String substanceName, double maxConcentration, double zCoord, double sigma) {
-          throw new UnsupportedOperationException();
-      }
-
-      @Override
-      public void addArtificialLinearConcentrationZ(ini.cx3d.physics.interfaces.Substance substance, double maxConcentration, double zCoordMax, double zCoordMin) {
-          throw new UnsupportedOperationException();
-      }
-
-      @Override
-      public void addArtificialLinearConcentrationZ(String substanceName, double maxConcentration, double zCoordMax, double zCoordMin) {
-          throw new UnsupportedOperationException();
-      }
-
-      @Override
-      public void addArtificialGaussianConcentrationX(ini.cx3d.physics.interfaces.Substance substance, double maxConcentration, double xCoord, double sigma) {
-          throw new UnsupportedOperationException();
-      }
-
-      @Override
-      public void addArtificialGaussianConcentrationX(String substanceName, double maxConcentration, double xCoord, double sigma) {
-          throw new UnsupportedOperationException();
-      }
-
-      @Override
-      public void addArtificialLinearConcentrationX(ini.cx3d.physics.interfaces.Substance substance, double maxConcentration, double xCoordMax, double xCoordMin) {
-          throw new UnsupportedOperationException();
-      }
-
-      @Override
-      public void addArtificialLinearConcentrationX(String substanceId, double maxConcentration, double xCoordMax, double xCoordMin) {
-          throw new UnsupportedOperationException();
-      }
-
-      @Override
-      public double getValueArtificialConcentration(ini.cx3d.physics.interfaces.Substance substance, double[] position) {
-          throw new UnsupportedOperationException();
-      }
-      @Override
-      public void setECMtime(double ECMtime) {
-          throw new UnsupportedOperationException();
-      }
-      @Override
-      public double getGradientArtificialConcentration(ini.cx3d.physics.interfaces.Substance s, double[] position) {
-          throw new UnsupportedOperationException();
-      }
-
       @Override
       public String nicelyWrittenECMtime() {
-          throw new UnsupportedOperationException();
-      }
-      @Override
-      public void removePhysicalSphere(ini.cx3d.physics.interfaces.PhysicalSphere oldSphere) {
-          throw new UnsupportedOperationException();
-      }
-      @Override
-      public void addPhysicalNode(ini.cx3d.physics.interfaces.PhysicalNode newPhysicalNode) {
-          throw new UnsupportedOperationException();
-      }
-
-      @Override
-      public void removePhysicalNode(ini.cx3d.physics.interfaces.PhysicalNode oldPhysicalNode) {
           throw new UnsupportedOperationException();
       }
 
@@ -132,36 +65,6 @@
 
       @Override
       public void removeECMChemicalReaction(ECMChemicalReaction chemicalReaction) {
-          throw new UnsupportedOperationException();
-      }
-
-      @Override
-      public void resetTime() {
-          throw new UnsupportedOperationException();
-      }
-
-      @Override
-      public void clearAll() {
-          throw new UnsupportedOperationException();
-      }
-
-      @Override
-      public void addNewSubstanceTemplate(ini.cx3d.physics.interfaces.Substance s) {
-
-      }
-
-      @Override
-      public void addNewIntracellularSubstanceTemplate(ini.cx3d.physics.interfaces.IntracellularSubstance s) {
-          throw new UnsupportedOperationException();
-      }
-
-      @Override
-      public void setArtificialWallsForCylinders(boolean artificialWallsForCylinders) {
-          throw new UnsupportedOperationException();
-      }
-
-      @Override
-      public boolean isAnyArtificialGradientDefined() {
           throw new UnsupportedOperationException();
       }
 
@@ -185,40 +88,6 @@
           throw new UnsupportedOperationException();
       }
 
-      @Override
-      public void removeSomaElement(ini.cx3d.localBiology.interfaces.SomaElement oldSoma) {
-          throw new UnsupportedOperationException();
-      }
-
-      @Override
-      public void removeCell(ini.cx3d.cells.interfaces.Cell oldCell) {
-          throw new UnsupportedOperationException();
-      }
-
-      @Override
-      public SpatialOrganizationNode<ini.cx3d.physics.interfaces.PhysicalNode> getSpatialOrganizationNodeInstance(SpatialOrganizationNode<ini.cx3d.physics.interfaces.PhysicalNode> n, double[] position, ini.cx3d.physics.interfaces.PhysicalNode userObject) {
-          throw new UnsupportedOperationException();
-      }
-
-      @Override
-      public void addGridOfPhysicalNodes(double x1, double x2, double y1, double y2, double z1, double z2, double d) {
-          throw new UnsupportedOperationException();
-      }
-
-      @Override
-      public ini.cx3d.physics.interfaces.PhysicalNode getPhysicalNodeInstance(double[] nodeLocation) {
-          throw new UnsupportedOperationException();
-      }
-
-      @Override
-      public void setBoundaries(double Xmin, double Xmax, double Ymin, double Ymax, double Zmin, double Zmax) {
-          throw new UnsupportedOperationException();
-      }
-
-      @Override
-      public void setArtificialWallsForSpheres(boolean artificialWallsForSpheres) {
-          throw new UnsupportedOperationException();
-      }
       @Override
       public View getView() {
           throw new UnsupportedOperationException();
@@ -289,12 +158,183 @@
       }
 
       @Override
-      public double[] getMinBounds() {
+      public void saveToFile(String file) {
           throw new UnsupportedOperationException();
       }
 
       @Override
-      public double[] getMaxBounds() {
+      public void setPicturesName(String picturesName) {
+          throw new UnsupportedOperationException();
+      }
+
+      @Override
+      public String getPicturesName() {
+          throw new UnsupportedOperationException();
+      }
+
+      @Override
+      public View createGUI(int x, int y, int width, int height) {
+          throw new UnsupportedOperationException();
+      }
+      @Override
+      public void viewRepaint() {
+          throw new UnsupportedOperationException();
+      }
+      @Override
+      public void createGUI() {
+          throw new UnsupportedOperationException();
+      }
+
+      @Override
+      public void dumpImage() {
+          throw new UnsupportedOperationException();
+      }
+
+      @Override
+      public void dumpImage(String name) {
+          throw new UnsupportedOperationException();
+      }
+
+      @Override
+      public AbstractSequentialList<ini.cx3d.localBiology.interfaces.SomaElement> getSomaElementList() {
+          throw new UnsupportedOperationException();
+      }
+      @Override
+      public AbstractSequentialList<ini.cx3d.physics.interfaces.PhysicalNode> getPhysicalNodeList() {
+          throw new UnsupportedOperationException();
+      }
+
+      @Override
+      public AbstractSequentialList<ini.cx3d.cells.interfaces.Cell> getCellList() {
+          throw new UnsupportedOperationException();
+      }
+      @Override
+      public AbstractSequentialList<ini.cx3d.physics.interfaces.PhysicalSphere> getPhysicalSphereList() {
+          throw new UnsupportedOperationException();
+      }
+
+      @Override
+      public AbstractSequentialList<ini.cx3d.physics.interfaces.PhysicalCylinder> getPhysicalCylinderList() {
+          throw new UnsupportedOperationException();
+      }
+  %}
+%enddef
+
+%define %ECM_native()
+  %native_defined_class(cx3d::simulation::ECM,
+                      ECM,
+                      ini.cx3d.simulations.interfaces.ECM,
+                      ECM,
+                      ;);
+  %typemap(javacode) cx3d::simulation::ECM %{
+      public static synchronized void registerJavaObject(ECM o) {
+      }
+
+      public boolean equals(Object o) {
+        return true;
+      }
+
+      @Override
+      public String nicelyWrittenECMtime() {
+          throw new UnsupportedOperationException();
+      }
+
+      @Override
+      public void addECMChemicalReaction(ECMChemicalReaction chemicalReaction) {
+          throw new UnsupportedOperationException();
+      }
+
+      @Override
+      public void removeECMChemicalReaction(ECMChemicalReaction chemicalReaction) {
+          throw new UnsupportedOperationException();
+      }
+
+      @Override
+      public Hashtable<ini.cx3d.physics.interfaces.Substance, double[]> getGaussianArtificialConcentrationZ() {
+          throw new UnsupportedOperationException();
+      }
+
+      @Override
+      public Hashtable<ini.cx3d.physics.interfaces.Substance, double[]> getLinearArtificialConcentrationZ() {
+          throw new UnsupportedOperationException();
+      }
+
+      @Override
+      public Hashtable<ini.cx3d.physics.interfaces.Substance, double[]> getGaussianArtificialConcentrationX() {
+          throw new UnsupportedOperationException();
+      }
+
+      @Override
+      public Hashtable<ini.cx3d.physics.interfaces.Substance, double[]> getLinearArtificialConcentrationX() {
+          throw new UnsupportedOperationException();
+      }
+
+      @Override
+      public View getView() {
+          throw new UnsupportedOperationException();
+      }
+
+      @Override
+      public void setView(View view) {
+          throw new UnsupportedOperationException();
+      }
+
+      @Override
+      public boolean isSimulationOnPause() {
+          throw new UnsupportedOperationException();
+      }
+
+      @Override
+      public void setSimulationOnPause(boolean simulationOnPause) {
+          throw new UnsupportedOperationException();
+      }
+
+      @Override
+      public boolean isContinuouslyRotating() {
+          throw new UnsupportedOperationException();
+      }
+
+      @Override
+      public void setContinuouslyRotating(boolean continuouslyRotating) {
+          throw new UnsupportedOperationException();
+      }
+
+      @Override
+      public boolean isTakingSnapshotAtEachTimeStep() {
+          throw new UnsupportedOperationException();
+      }
+
+      @Override
+      public void setTakingSnapshotAtEachTimeStep(boolean takingSnapshotAtEachTimeStep) {
+          throw new UnsupportedOperationException();
+      }
+
+      @Override
+      public boolean isTakingSnapshotEach100TimeSteps() {
+          throw new UnsupportedOperationException();
+      }
+
+      @Override
+      public void setTakingSnapshotEach100TimeSteps(boolean takingSnapshotEach100TimeSteps) {
+          throw new UnsupportedOperationException();
+      }
+      @Override
+      public void setCellList(AbstractSequentialList<ini.cx3d.cells.interfaces.Cell> cellList) {
+          throw new UnsupportedOperationException();
+      }
+
+      @Override
+      public void setIsLast(boolean b) {
+          throw new UnsupportedOperationException();
+      }
+
+      @Override
+      public Hashtable<String, ini.cx3d.physics.interfaces.IntracellularSubstance> getIntracelularSubstanceTemplates() {
+          throw new UnsupportedOperationException();
+      }
+
+      @Override
+      public Hashtable<String, ini.cx3d.physics.interfaces.Substance> getSubstanceTemplates() {
           throw new UnsupportedOperationException();
       }
 
@@ -314,12 +354,15 @@
       }
 
       @Override
-      public NativeStringBuilder simStateToJson(NativeStringBuilder sb) {
+      public View createGUI(int x, int y, int width, int height) {
           throw new UnsupportedOperationException();
       }
-
       @Override
-      public View createGUI(int x, int y, int width, int height) {
+      public void viewRepaint() {
+          throw new UnsupportedOperationException();
+      }
+      @Override
+      public void createGUI() {
           throw new UnsupportedOperationException();
       }
 
@@ -334,10 +377,6 @@
       }
 
       @Override
-      public void addNewCellTypeColor(String cellType, java.awt.Color color) {
-          throw new UnsupportedOperationException();
-      }
-      @Override
       public AbstractSequentialList<ini.cx3d.localBiology.interfaces.SomaElement> getSomaElementList() {
           throw new UnsupportedOperationException();
       }
@@ -350,10 +389,6 @@
       public AbstractSequentialList<ini.cx3d.cells.interfaces.Cell> getCellList() {
           throw new UnsupportedOperationException();
       }
-      // @Override
-      // public AbstractSequentialList<ini.cx3d.localBiology.interfaces.NeuriteElement> getNeuriteElementList() {
-      //     throw new UnsupportedOperationException();
-      // }
       @Override
       public AbstractSequentialList<ini.cx3d.physics.interfaces.PhysicalSphere> getPhysicalSphereList() {
           throw new UnsupportedOperationException();
@@ -366,22 +401,15 @@
   %}
 %enddef
 
-%define %ECM_native()
-  %native_defined_class(cx3d::simulations::ECM,
-                      ECM,
-                      ini.cx3d.simulations.interfaces.ECM,
-                      ECM,
-                      ;);
-%enddef
-
 /**
  * apply customizations
  */
 %ECM_cx3d_shared_ptr();
 #ifdef ECM_NATIVE
-%pragma(java) modulecode=%{
-    public static boolean useNativeECM = true;
-%}
+// %pragma(java) modulecode=%{
+//     public static boolean useNativeECM = true;
+// %}
+  %ECM_native();
 #else
 // %pragma(java) modulecode=%{
 //     public static boolean useNativeECM = false;
@@ -412,5 +440,4 @@
 %ignore cx3d::simulation::ECM::getPhysicalNodeList;
 %ignore cx3d::simulation::ECM::getPhysicalSphereList;
 %ignore cx3d::simulation::ECM::getPhysicalCylinderList;
-// %ignore cx3d::simulation::ECM::getNeuriteElementList;
 %ignore cx3d::simulation::ECM::getSomaElementList;

@@ -41,6 +41,7 @@ public class MembraneContactTest extends BaseSimulationTest {
 	@Override
 	public void simulate() throws Exception{
 		JavaUtil2.setRandomSeed(1L);
+		initPhysicalNodeMovementListener();
 		ECM ecm = ECMFacade.getInstance();
 
 		ini.cx3d.physics.interfaces.IntracellularSubstance adherence = IntracellularSubstanceFactory.create("A", 0, 0);

@@ -8,7 +8,7 @@ import ini.cx3d.synapses.interfaces.PhysicalBouton;
 
 public class PhysicalBoutonFactory {
     static {
-        ini.cx3d.swig.simulation.Excrescence.setECM(ECMFacade.getInstance());
+        ini.cx3d.swig.simulation.Excrescence.setECM((ini.cx3d.swig.simulation.ECM) ECMFacade.getInstance());
     }
 
     private static final boolean NATIVE = simulation.useNativePhysicalBouton;

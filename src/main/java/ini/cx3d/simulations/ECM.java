@@ -24,8 +24,7 @@ package ini.cx3d.simulations;
 import static ini.cx3d.utilities.Matrix.add;
 import static ini.cx3d.utilities.Matrix.randomNoise;
 
-import ini.cx3d.SimStateSerializable;
-import ini.cx3d.SimStateSerializationUtil;
+import ini.cx3d.*;
 import ini.cx3d.cells.Cell;
 import ini.cx3d.graphics.ECM_GUI_Creator;
 import ini.cx3d.graphics.HeadlessViewMock;
@@ -71,7 +70,7 @@ import javax.swing.JFrame;
  * @author fredericzubler
  *
  */
-public class ECM extends ini.cx3d.swig.simulation.ECM implements SimStateSerializable {
+public class ECM extends ini.cx3d.swig.simulation.ECM implements ini.cx3d.simulations.interfaces.ECM, SimStateSerializable {
 //	public double exp(double d) { return Math.exp(d); }
 //	public double sqrt(double d) { return Math.sqrt(d); }
 //	public double cos(double d) { return Math.cos(d); }
@@ -459,8 +458,8 @@ public class ECM extends ini.cx3d.swig.simulation.ECM implements SimStateSeriali
 	 * @param userObject
 	 * @return
 	 */
-	public SpatialOrganizationNode<ini.cx3d.physics.interfaces.PhysicalNode> getSpatialOrganizationNodeInstance(
-			SpatialOrganizationNode<ini.cx3d.physics.interfaces.PhysicalNode> n, double[] position, ini.cx3d.physics.interfaces.PhysicalNode userObject){
+	public SpaceNode<ini.cx3d.physics.interfaces.PhysicalNode> getSpatialOrganizationNodeInstance(
+			SpaceNode n, double[] position, ini.cx3d.physics.interfaces.PhysicalNode userObject){
 		if(initialNode == null){
 			SpaceNode<ini.cx3d.physics.interfaces.PhysicalNode> sn1 = new SpaceNodeFactory<ini.cx3d.physics.interfaces.PhysicalNode>().create(position, userObject);
 //			XX_oldMoveListener listener = new XX_oldMoveListener();
@@ -470,7 +469,7 @@ public class ECM extends ini.cx3d.swig.simulation.ECM implements SimStateSeriali
 
 		}
 		try {
-			return n.getNewInstance(position, userObject);
+			return (SpaceNode<PhysicalNode>) n.getNewInstance(position, userObject);
 		} catch (PositionNotAllowedException e) {
 			e.printStackTrace();
 			return null;
@@ -514,7 +513,7 @@ public class ECM extends ini.cx3d.swig.simulation.ECM implements SimStateSeriali
 					// request a delaunay vertex
 					SpatialOrganizationNode<ini.cx3d.physics.interfaces.PhysicalNode> newSon;
 					if(oldSon!=null){
-						newSon = getSpatialOrganizationNodeInstance(oldSon, coord, pn);
+						newSon = getSpatialOrganizationNodeInstance((SpaceNode) oldSon, coord, pn);
 					}else{
 						newSon = getSpatialOrganizationNodeInstance(coord, pn);
 					}
@@ -721,7 +720,9 @@ public class ECM extends ini.cx3d.swig.simulation.ECM implements SimStateSeriali
 		}
 		c = cellTypeColorLibrary.get(cellType);
 		if(c==null){
-			c = new Color((float) ini.cx3d.JavaUtil2.getRandomDouble(),(float) ini.cx3d.JavaUtil2.getRandomDouble(),(float) ini.cx3d.JavaUtil2.getRandomDouble(),0.7f);
+//			c = new Color((float) ini.cx3d.JavaUtil2.getRandomDouble(),(float) ini.cx3d.JavaUtil2.getRandomDouble(),(float) ini.cx3d.JavaUtil2.getRandomDouble(),0.7f);
+			c = new ini.cx3d.JavaUtil2().getRandomColor();
+			System.out.println("DBG ECMJava "+SimStateSerializationUtil.colorToHex(c));
 			cellTypeColorLibrary.put(cellType, c);
 		}
 		return c;
@@ -967,7 +968,6 @@ public class ECM extends ini.cx3d.swig.simulation.ECM implements SimStateSeriali
 
 	/**
 	 * Gets the value of a chemical, at a specific position in space
-	 * @param nameOfTheChemical
 	 * @param position the location [x,y,z]
 	 * @return
 	 */

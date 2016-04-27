@@ -62,7 +62,7 @@ import ini.cx3d.utilities.Matrix;
 public class NeuriteElement extends ini.cx3d.swig.simulation.simulation.NeuriteElementBase implements ini.cx3d.localBiology.interfaces.NeuriteElement {
 
 	static {
-		ini.cx3d.swig.simulation.CellElement.setECM(ECMFacade.getInstance());
+		ini.cx3d.swig.simulation.CellElement.setECM((ini.cx3d.swig.simulation.ECM) ECMFacade.getInstance());
 	}
 
 	/* The PhysicalObject this NeuriteElement is associated with.*/

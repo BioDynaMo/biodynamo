@@ -47,6 +47,7 @@ public class SimpleSynapseTest extends BaseSimulationTest {
 	@Override
 	public void simulate() throws Exception {
 		JavaUtil2.setRandomSeed(1L);
+		initPhysicalNodeMovementListener();
 		ECM ecm = ECMFacade.getInstance();
 		int nbOfAdditionalNodes = 10;
 		for (int i = 0; i < nbOfAdditionalNodes; i++) {

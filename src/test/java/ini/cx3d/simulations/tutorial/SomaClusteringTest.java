@@ -46,7 +46,7 @@ public class SomaClusteringTest extends BaseSimulationTest {
         ini.cx3d.utilities.SystemUtilities.tic();
         ECM ecm = ECMFacade.getInstance();
         JavaUtil2.setRandomSeed(1L);
-
+        initPhysicalNodeMovementListener();
 
 //		// set the rectangle for ROI
 //		Rectangle smallWindowRectangle = new Rectangle();

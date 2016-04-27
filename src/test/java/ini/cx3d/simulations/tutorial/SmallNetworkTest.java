@@ -45,6 +45,7 @@ public class SmallNetworkTest extends BaseSimulationTest {
 	@Override
 	public void simulate() throws Exception{
 		JavaUtil2.setRandomSeed(1L);
+		initPhysicalNodeMovementListener();
 		ECM ecm = ECMFacade.getInstance();
 		ini.cx3d.physics.interfaces.Substance L1 = SubstanceFactory.create("L1", Color.red);
 		ecm.addArtificialGaussianConcentrationZ(L1, 1.0, 400.0, 60.0);
