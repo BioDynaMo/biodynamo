@@ -79,6 +79,6 @@ class DividingModuleTest {
   }
 };
 
-}
+}  // namespace cx3d
 
 #endif  // TEST_DIVIDING_MODULE_TEST_H_

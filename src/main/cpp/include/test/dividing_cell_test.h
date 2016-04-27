@@ -42,6 +42,6 @@ class DividingCellTest {
   }
 };
 
-}
+}  // namespace cx3d
 
 #endif  // TEST_DIVIDING_CELL_TEST_H_
