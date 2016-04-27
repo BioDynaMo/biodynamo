@@ -63,6 +63,7 @@
 #include "simulation/ecm.h"
 
 #include "test/dividing_cell_test.h"
+#include "test/dividing_module_test.h"
 
 using namespace cx3d;
 using namespace cx3d::spatial_organization;
@@ -145,6 +146,8 @@ JAVA_LOAD_NATIVE_LIBRARY(cx3d_simulation);
 %include "class_customization/simulation/ecm.i"
 %include "class_customization/simulation/scheduler.i"
 
+%include "class_customization/tests.i"
+
 %ignore cx3d::Param::kYellow;
 %ignore cx3d::Param::kYellowSolid;
 %ignore cx3d::Param::kViolet;
@@ -213,6 +216,7 @@ JAVA_LOAD_NATIVE_LIBRARY(cx3d_simulation);
 %include "simulation/ecm.h"
 
 %include "test/dividing_cell_test.h"
+%include "test/dividing_module_test.h"
 
 
 // -----------------------------------------------------------------------------

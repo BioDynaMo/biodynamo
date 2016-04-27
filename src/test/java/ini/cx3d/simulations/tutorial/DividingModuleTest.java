@@ -24,6 +24,7 @@ package ini.cx3d.simulations.tutorial;
 import ini.cx3d.BaseSimulationTest;
 import ini.cx3d.JavaUtil2;
 import ini.cx3d.cells.CellFactory;
+import ini.cx3d.simulations.ECMFacade;
 import ini.cx3d.simulations.Scheduler;
 
 import static ini.cx3d.SimStateSerializationUtil.keyValue;
@@ -38,16 +39,19 @@ public class DividingModuleTest extends BaseSimulationTest {
 	public void simulate() {
 		JavaUtil2.setRandomSeed(2L);
 		initPhysicalNodeMovementListener();
-		ini.cx3d.cells.interfaces.Cell c = CellFactory.getCellInstance(new double[] {0.0,0.0,0.0});
-		c.addCellModule(new DividingModule());
 
-		Scheduler.simulateOneStep();
-		Scheduler.simulateOneStep();
-		ini.cx3d.utilities.SystemUtilities.tic();
-		for (int i = 0; i < 5000; i++) {
-			Scheduler.simulateOneStep();
-		}
-		ini.cx3d.utilities.SystemUtilities.tac();
+		new ini.cx3d.swig.simulation.DividingModuleTest().simulate(ECMFacade.getInstance());
+
+//		ini.cx3d.cells.interfaces.Cell c = CellFactory.getCellInstance(new double[] {0.0,0.0,0.0});
+//		c.addCellModule(new DividingModule());
+//
+//		Scheduler.simulateOneStep();
+//		Scheduler.simulateOneStep();
+//		ini.cx3d.utilities.SystemUtilities.tic();
+//		for (int i = 0; i < 5000; i++) {
+//			Scheduler.simulateOneStep();
+//		}
+//		ini.cx3d.utilities.SystemUtilities.tac();
 	}
 }
 
