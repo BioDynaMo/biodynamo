@@ -49,6 +49,11 @@ public class NeuriteChemoAttractionTest extends BaseSimulationTest {
 		ECM ecm = ECMFacade.getInstance();
 		JavaUtil2.setRandomSeed(1L);
 		initPhysicalNodeMovementListener();
+
+		new ini.cx3d.swig.simulation.NeuriteChemoAttractionTest().simulate(ECMFacade.getInstance(), new JavaUtil2());
+		if(true) return;
+
+
 		ini.cx3d.physics.interfaces.Substance attractant = SubstanceFactory.create("A", Color.red);
 		ecm.addArtificialGaussianConcentrationZ(attractant, 1.0, 400.0, 160.0);
 

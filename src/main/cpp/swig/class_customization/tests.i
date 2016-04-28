@@ -24,3 +24,8 @@
                  ini/cx3d/swig/simulation/MembraneContact,
                  cx3d::MembraneContact);
 %typemap(javaimports) cx3d::MembraneContact "import ini.cx3d.swig.NativeStringBuilder;"
+
+%cx3d_shared_ptr(NeuriteChemoAttraction,
+                 ini/cx3d/swig/simulation/NeuriteChemoAttraction,
+                 cx3d::NeuriteChemoAttraction);
+%typemap(javaimports) cx3d::NeuriteChemoAttraction "import ini.cx3d.swig.NativeStringBuilder;"
