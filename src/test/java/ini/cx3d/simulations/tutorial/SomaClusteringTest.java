@@ -48,6 +48,9 @@ public class SomaClusteringTest extends BaseSimulationTest {
         JavaUtil2.setRandomSeed(1L);
         initPhysicalNodeMovementListener();
 
+        new ini.cx3d.swig.simulation.SomaClusteringTest().simulate(ecm, new JavaUtil2());
+        if(true) return;
+
 //		// set the rectangle for ROI
 //		Rectangle smallWindowRectangle = new Rectangle();
 //		smallWindowRectangle.x = 100;

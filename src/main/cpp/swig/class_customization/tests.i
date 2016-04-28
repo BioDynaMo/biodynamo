@@ -34,3 +34,8 @@
                  ini/cx3d/swig/simulation/RandomBranchingModule,
                  cx3d::RandomBranchingModule);
 %typemap(javaimports) cx3d::RandomBranchingModule "import ini.cx3d.swig.NativeStringBuilder;"
+
+%cx3d_shared_ptr(SomaClustering,
+                 ini/cx3d/swig/simulation/SomaClustering,
+                 cx3d::SomaClustering);
+%typemap(javaimports) cx3d::SomaClustering "import ini.cx3d.swig.NativeStringBuilder;"
