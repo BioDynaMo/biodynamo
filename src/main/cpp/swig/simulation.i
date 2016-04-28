@@ -72,6 +72,7 @@
 #include "test/simple_synapse_test.h"
 #include "test/small_network_test.h"
 #include "test/soma_clustering_test.h"
+#include "test/figure_5_test.h"
 
 using namespace cx3d;
 using namespace cx3d::spatial_organization;
@@ -233,7 +234,7 @@ JAVA_LOAD_NATIVE_LIBRARY(cx3d_simulation);
 %include "test/simple_synapse_test.h"
 %include "test/small_network_test.h"
 %include "test/soma_clustering_test.h"
-
+%include "test/figure_5_test.h"
 
 // -----------------------------------------------------------------------------
 // generate templates

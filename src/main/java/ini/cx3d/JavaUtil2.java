@@ -64,6 +64,10 @@ public class JavaUtil2 extends ini.cx3d.swig.simulation.JavaUtil2 {
         return c;
     }
 
+    public void initPhysicalNodeMovementListener(){
+        ini.cx3d.swig.simulation.PhysicalNodeMovementListener.setMovementOperationId((int) (10000 * getRandomDouble()));
+    }
+
 
     // **************************************************************************
     // Random Number

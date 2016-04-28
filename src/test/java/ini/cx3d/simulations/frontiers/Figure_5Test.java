@@ -51,6 +51,11 @@ public class Figure_5Test extends BaseSimulationTest {
 		// 1) Prepare the environment :
 		// 		a reference to ECM, the extra-cellular-matrix
 		ECM ecm = ECMFacade.getInstance();
+
+		new ini.cx3d.swig.simulation.Figure5Test().simulate(ecm, new JavaUtil2());
+		if(true) return;
+
+
 		// 		eight extra PhysicalNodes :
 		boolean initPhyscalNodeMovementListener = false;
 		for (int i = 0; i < 18; i++) {
