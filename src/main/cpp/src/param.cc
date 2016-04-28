@@ -13,6 +13,6 @@ Color Param::kRed = Color(0xFFFF0552);
 Color Param::kGreen = Color(0xB329FF26);
 Color Param::kBlue = Color(0xB30000BF);
 Color Param::kGray = Color(0xB3808080);
-Color Param::kGraySolid = Color(0xFF808080);
+Color Param::kGraySolid = Color(0xFF999999);
 
 }  // namespace cx3d

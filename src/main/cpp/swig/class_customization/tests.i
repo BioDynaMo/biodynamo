@@ -39,3 +39,44 @@
                  ini/cx3d/swig/simulation/SomaClustering,
                  cx3d::SomaClustering);
 %typemap(javaimports) cx3d::SomaClustering "import ini.cx3d.swig.NativeStringBuilder;"
+
+%cx3d_shared_ptr(XAdhesiveForce,
+                 ini/cx3d/swig/simulation/XAdhesiveForce,
+                 cx3d::XAdhesiveForce);
+%typemap(javaimports) cx3d::XAdhesiveForce "import ini.cx3d.swig.NativeStringBuilder;"
+
+
+%define %XAdhesiveForce_cx3d_shared_ptr()
+  %cx3d_shared_ptr(XAdhesiveForce,
+                   ini/cx3d/physics/InterObjectForce,
+                   cx3d::XAdhesiveForce);
+%enddef
+
+%define %XAdhesiveForce_native()
+  %native_defined_class(cx3d::XAdhesiveForce,
+                            XAdhesiveForce,
+                            ini.cx3d.physics.InterObjectForce,
+                            XAdhesiveForce,
+                            ;);
+%enddef
+
+%define %XAdhesiveForce_typemaps()
+  %typemap(javainterfaces) cx3d::XAdhesiveForce "ini.cx3d.physics.InterObjectForce"
+  %typemap(javaimports) cx3d::XAdhesiveForce %{
+    import ini.cx3d.swig.NativeStringBuilder;
+%}
+%enddef
+
+%XAdhesiveForce_cx3d_shared_ptr();
+%XAdhesiveForce_native();
+%XAdhesiveForce_typemaps();
+
+%cx3d_shared_ptr(XBifurcationModule,
+                 ini/cx3d/swig/simulation/XBifurcationModule,
+                 cx3d::XBifurcationModule);
+%typemap(javaimports) cx3d::XBifurcationModule "import ini.cx3d.swig.NativeStringBuilder;"
+
+%cx3d_shared_ptr(XMovementModule,
+                 ini/cx3d/swig/simulation/XMovementModule,
+                 cx3d::XMovementModule);
+%typemap(javaimports) cx3d::XMovementModule "import ini.cx3d.swig.NativeStringBuilder;"

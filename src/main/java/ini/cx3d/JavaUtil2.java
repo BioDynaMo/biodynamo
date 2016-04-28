@@ -19,6 +19,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
+import static ini.cx3d.utilities.Matrix.concat;
+import static ini.cx3d.utilities.Matrix.randomNoise;
+
 /**
  * provides functionality that has not been implemented yet in C++
  * especially static methods as they can't be handled by SWIG directors
@@ -104,5 +107,9 @@ public class JavaUtil2 extends ini.cx3d.swig.simulation.JavaUtil2 {
 
     public void setRandomSeed1(int seed){
         setRandomSeed(seed);
+    }
+
+    public double[] foo() {
+        return concat(randomNoise(600,2), randomNoise(100,1));
     }
 }

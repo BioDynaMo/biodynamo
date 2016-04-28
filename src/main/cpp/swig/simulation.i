@@ -73,6 +73,10 @@
 #include "test/small_network_test.h"
 #include "test/soma_clustering_test.h"
 #include "test/figure_5_test.h"
+#include "test/x_adhesive_force.h"
+#include "test/x_bifurcation_module.h"
+#include "test/x_movement_module.h"
+#include "test/figure_9_test.h"
 
 using namespace cx3d;
 using namespace cx3d::spatial_organization;
@@ -235,6 +239,10 @@ JAVA_LOAD_NATIVE_LIBRARY(cx3d_simulation);
 %include "test/small_network_test.h"
 %include "test/soma_clustering_test.h"
 %include "test/figure_5_test.h"
+%include "test/x_adhesive_force.h"
+%include "test/x_bifurcation_module.h"
+%include "test/x_movement_module.h"
+%include "test/figure_9_test.h"
 
 // -----------------------------------------------------------------------------
 // generate templates

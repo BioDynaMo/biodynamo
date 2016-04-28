@@ -22,6 +22,7 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 package ini.cx3d.simulations.frontiers;
 
 import static ini.cx3d.utilities.Matrix.*;
+import static ini.cx3d.utilities.StringUtilities.toStr;
 
 import java.awt.Color;
 
@@ -37,6 +38,7 @@ import ini.cx3d.simulations.interfaces.ECM;
 import ini.cx3d.simulations.Scheduler;
 import ini.cx3d.swig.simulation.*;
 import ini.cx3d.JavaUtil2;
+
 /**
  * This class was used to produce Figure 9 of the paper
  * "A framework for modeling the growth and development of neurons and networks", Zubler & Douglas 2009.
@@ -56,6 +58,11 @@ public class Figure_9Test extends BaseSimulationTest {
 
 	@Override
 	public void simulate() throws Exception {
+		JavaUtil2 java = new JavaUtil2();
+
+		new ini.cx3d.swig.simulation.Figure9Test().simulate(ECMFacade.getInstance(), java);
+		if(true) return;
+
 		Param.NEURITE_MAX_LENGTH = 20;
 		ini.cx3d.swig.simulation.Param.setKNeuriteMaxLength(20);
 		double pi = Math.PI;
@@ -66,8 +73,7 @@ public class Figure_9Test extends BaseSimulationTest {
 		ecm.setArtificialWallsForCylinders(true);
 		ecm.setArtificialWallsForSpheres(true);
 		ecm.setBoundaries(-10000, 10000, -10000, 10000, -5, 5);
-		
-		
+
 		// eighteen extra PhysicalNodes :
 		for (int i = 0; i < 12; i++) {
 			double[] loc = concat(randomNoise(600,2), randomNoise(100,1));
@@ -131,7 +137,7 @@ public class Figure_9Test extends BaseSimulationTest {
 					ne = cell.getSomaElement().extendNewNeurite(3.0, Math.PI*0.5, Math.PI*2*ecm.getRandomDouble1());
 					ne.setAxon(false);
 				}
-				
+
 				X_Bifurcation_Module br = new X_Bifurcation_Module();
 				br.shift = probaToBranch;
 				ne.addLocalBiologyModule(br);

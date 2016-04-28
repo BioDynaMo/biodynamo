@@ -81,6 +81,11 @@ class JavaUtil2 {
             "JavaUtil2::initPhysicalNodeMovementListener must never be called - Java must provide implementation at this point");
   }
 
+  virtual std::array<double, 3> foo() {
+    throw std::logic_error(
+            "JavaUtil2::foo must never be called - Java must provide implementation at this point");
+  }
+
   virtual std::array<double, 3> matrixRandomNoise3(double k) {
     throw std::logic_error(
         "JavaUtil2::matrixRandomNoise must never be called - Java must provide implementation at this point");

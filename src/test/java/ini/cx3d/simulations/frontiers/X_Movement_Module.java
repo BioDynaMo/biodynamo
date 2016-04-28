@@ -57,7 +57,7 @@ public class X_Movement_Module extends ini.cx3d.swig.simulation.LocalBiologyModu
 	Vector<String> repellents = new Vector<String>();
 
 	/* The chemical this Receptor dies if it goes opposite to.*/
-	String cantLeave = null;
+//	String cantLeave = null;
 	double maxConcentration;
 
 	/* Stop if diameter smaller than this..*/
@@ -166,7 +166,7 @@ public class X_Movement_Module extends ini.cx3d.swig.simulation.LocalBiologyModu
 		r.directionWeight = this.directionWeight;
 		r.copiedWhenNeuriteBranches = this.copiedWhenNeuriteBranches;
 		r.minimalBranchDiameter = this.minimalBranchDiameter;
-		r.cantLeave = this.cantLeave;
+//		r.cantLeave = this.cantLeave;
 		r.maxConcentration = this.maxConcentration;
 		r.linearDiameterDecrease = this.linearDiameterDecrease;
 		return r; 
@@ -207,16 +207,16 @@ public class X_Movement_Module extends ini.cx3d.swig.simulation.LocalBiologyModu
 		}
 
 		// can't leave
-		if(cantLeave != null){
-			double currentCantLeaveConcntration = cyl.getExtracellularConcentration(cantLeave);
-			if(currentCantLeaveConcntration>maxConcentration){
-				maxConcentration = currentCantLeaveConcntration;
-			}
-			if(currentCantLeaveConcntration<0.95*maxConcentration){
-				cyl.setColor(Color.black);
-				return;
-			}
-		}
+//		if(cantLeave != null){
+//			double currentCantLeaveConcntration = cyl.getExtracellularConcentration(cantLeave);
+//			if(currentCantLeaveConcntration>maxConcentration){
+//				maxConcentration = currentCantLeaveConcntration;
+//			}
+//			if(currentCantLeaveConcntration<0.95*maxConcentration){
+//				cyl.setColor(Color.black);
+//				return;
+//			}
+//		}
 
 		// find the gradients
 		double[] totalGradient = {0.0, 0.0, 0.0};
