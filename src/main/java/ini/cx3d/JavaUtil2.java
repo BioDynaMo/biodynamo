@@ -97,4 +97,8 @@ public class JavaUtil2 extends ini.cx3d.swig.simulation.JavaUtil2 {
         random = new Random(seed);
         Matrix.setRandomSeedTo(seed);
     }
+
+    public void setRandomSeed1(int seed){
+        setRandomSeed(seed);
+    }
 }

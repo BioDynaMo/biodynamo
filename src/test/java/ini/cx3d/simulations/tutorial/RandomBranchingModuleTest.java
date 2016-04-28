@@ -46,6 +46,10 @@ public class RandomBranchingModuleTest extends BaseSimulationTest {
 	public void simulate() {
 		JavaUtil2.setRandomSeed(1L);
 		initPhysicalNodeMovementListener();
+
+		new ini.cx3d.swig.simulation.RandomBranchingModuleTest().simulate(ECMFacade.getInstance(), new JavaUtil2());
+		if(true) return;
+
 		ECM ecm = ECMFacade.getInstance();
 		for (int i = 0; i < 18; i++) {
 			ecm.getPhysicalNodeInstance(randomNoise(1000,3));

@@ -86,6 +86,11 @@ class JavaUtil2 {
         "JavaUtil2::getRandomDouble must never be called - Java must provide implementation at this point");
   }
 
+  virtual void setRandomSeed1(long seed) {
+    throw std::logic_error(
+        "JavaUtil2::setRandomSeed1 must never be called - Java must provide implementation at this point");
+  }
+
   virtual double matrixNextRandomDouble() {
     throw std::logic_error(
         "JavaUtil2::matrixNextRandomDouble must never be called - Java must provide implementation at this point");

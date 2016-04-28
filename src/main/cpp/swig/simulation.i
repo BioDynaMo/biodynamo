@@ -68,6 +68,7 @@
 #include "test/membrane_contact_test.h"
 #include "test/soma_random_walk_module_test.h"
 #include "test/neurite_chemo_attraction_test.h"
+#include "test/random_branching_module_test.h"
 
 using namespace cx3d;
 using namespace cx3d::spatial_organization;
@@ -225,6 +226,7 @@ JAVA_LOAD_NATIVE_LIBRARY(cx3d_simulation);
 %include "test/membrane_contact_test.h"
 %include "test/soma_random_walk_module_test.h"
 %include "test/neurite_chemo_attraction_test.h"
+%include "test/random_branching_module_test.h"
 
 
 // -----------------------------------------------------------------------------

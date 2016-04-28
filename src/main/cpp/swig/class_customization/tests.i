@@ -29,3 +29,8 @@
                  ini/cx3d/swig/simulation/NeuriteChemoAttraction,
                  cx3d::NeuriteChemoAttraction);
 %typemap(javaimports) cx3d::NeuriteChemoAttraction "import ini.cx3d.swig.NativeStringBuilder;"
+
+%cx3d_shared_ptr(RandomBranchingModule,
+                 ini/cx3d/swig/simulation/RandomBranchingModule,
+                 cx3d::RandomBranchingModule);
+%typemap(javaimports) cx3d::RandomBranchingModule "import ini.cx3d.swig.NativeStringBuilder;"
