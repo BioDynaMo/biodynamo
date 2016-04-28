@@ -44,6 +44,9 @@ public class MembraneContactTest extends BaseSimulationTest {
 		initPhysicalNodeMovementListener();
 		ECM ecm = ECMFacade.getInstance();
 
+		new ini.cx3d.swig.simulation.MembraneContactTest().simulate(ecm, new JavaUtil2());
+		if(true) return;
+
 		ini.cx3d.physics.interfaces.IntracellularSubstance adherence = IntracellularSubstanceFactory.create("A", 0, 0);
 		adherence.setVisibleFromOutside(true);
 		adherence.setVolumeDependant(false);
