@@ -47,6 +47,10 @@ public class SmallNetworkTest extends BaseSimulationTest {
 		JavaUtil2.setRandomSeed(1L);
 		initPhysicalNodeMovementListener();
 		ECM ecm = ECMFacade.getInstance();
+
+		new ini.cx3d.swig.simulation.SmallNetworkTest().simulate(ecm, new JavaUtil2());
+		if(true) return;
+
 		ini.cx3d.physics.interfaces.Substance L1 = SubstanceFactory.create("L1", Color.red);
 		ecm.addArtificialGaussianConcentrationZ(L1, 1.0, 400.0, 60.0);
 

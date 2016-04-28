@@ -43,7 +43,7 @@ class NeuriteChemoAttraction : public AbstractLocalBiologyModule {
       : java_ { java },
         direction_ { { 0.0, 0.0, 0.0 } },
         substance_id_ { substance_id },
-        branching_factor_ { branching_factor_ } {
+        branching_factor_ { branching_factor } {
   }
   NeuriteChemoAttraction(const NeuriteChemoAttraction&) = delete;
   NeuriteChemoAttraction& operator=(const NeuriteChemoAttraction&) = delete;

@@ -70,6 +70,7 @@
 #include "test/neurite_chemo_attraction_test.h"
 #include "test/random_branching_module_test.h"
 #include "test/simple_synapse_test.h"
+#include "test/small_network_test.h"
 
 using namespace cx3d;
 using namespace cx3d::spatial_organization;
@@ -229,6 +230,8 @@ JAVA_LOAD_NATIVE_LIBRARY(cx3d_simulation);
 %include "test/neurite_chemo_attraction_test.h"
 %include "test/random_branching_module_test.h"
 %include "test/simple_synapse_test.h"
+%include "test/small_network_test.h"
+
 
 // -----------------------------------------------------------------------------
 // generate templates
