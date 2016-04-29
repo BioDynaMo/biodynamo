@@ -28,9 +28,9 @@ import static ini.cx3d.utilities.Matrix.randomNoise;
  */
 public class JavaUtil2 extends ini.cx3d.swig.simulation.JavaUtil2 {
 
-   public double[] matrixRandomNoise3(double k){
-        return Matrix.randomNoise(k, 3);
-    }
+//   public double[] matrixRandomNoise3(double k){
+//        return Matrix.randomNoise(k, 3);
+//    }
 
 //    public double exp(double d) { return Math.exp(d); }
 //    public double sqrt(double d) { return Math.sqrt(d); }
@@ -62,14 +62,14 @@ public class JavaUtil2 extends ini.cx3d.swig.simulation.JavaUtil2 {
 //        return PhysicalBondFactory.create(a, positionOnA, b, positionOnB, restingLength, springConstant);
 //    }
 
-    public Color getRandomColor(){
-        Color c = new Color((float) getRandomDouble(),(float) getRandomDouble(),(float) getRandomDouble(),0.7f);
-        return c;
-    }
-
-    public void initPhysicalNodeMovementListener(){
-        ini.cx3d.swig.simulation.PhysicalNodeMovementListener.setMovementOperationId((int) (10000 * getRandomDouble()));
-    }
+//    public Color getRandomColor(){
+//        Color c = new Color((float) getRandomDouble(),(float) getRandomDouble(),(float) getRandomDouble(),0.7f);
+//        return c;
+//    }
+//
+//    public void initPhysicalNodeMovementListener(){
+//        ini.cx3d.swig.simulation.PhysicalNodeMovementListener.setMovementOperationId((int) (10000 * getRandomDouble()));
+//    }
 
 
     // **************************************************************************

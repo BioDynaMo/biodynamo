@@ -24,7 +24,32 @@ using local_biology::NeuriteElement;
 using synapse::PhysicalSpine;
 using synapse::PhysicalBouton;
 
-JavaUtil2::JavaUtil2(){
+JavaUtil2::JavaUtil2() {
+}
+
+void JavaUtil2::initPhysicalNodeMovementListener() const {
+  PhysicalNodeMovementListener::setMovementOperationId((int) (10000 * getRandomDouble1()));
+}
+
+std::array<double, 3> JavaUtil2::matrixRandomNoise3(double k) const {
+  std::array<double, 3> ret;
+  ret[0] = -k + 2 * k * matrixNextRandomDouble();
+  ret[1] = -k + 2 * k * matrixNextRandomDouble();
+  ret[2] = -k + 2 * k * matrixNextRandomDouble();
+  return ret;
+}
+
+Color JavaUtil2::getRandomColor() const {
+  long r = std::lround(255 * getRandomDouble1());
+  long g = std::lround(255 * getRandomDouble1());
+  long b = std::lround(255 * getRandomDouble1());
+
+  int color = 0xB3000000;
+  color |= r << 16;
+  color |= g << 8;
+  color |= b;
+
+  return Color(color);
 }
 
 double JavaUtil2::exp(double d) const {

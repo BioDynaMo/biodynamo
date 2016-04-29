@@ -78,30 +78,19 @@ class JavaUtil2 {
   virtual ~JavaUtil2() {
   }
 
-  virtual void initPhysicalNodeMovementListener() const {
-    throw std::logic_error(
-        "JavaUtil2::initPhysicalNodeMovementListener must never be called - Java must provide implementation at this point");
-  }
+  // ---------------
+  // Miscellaneous
+  // ---------------
 
-  virtual std::array<double, 3> matrixRandomNoise3(double k) {
-    throw std::logic_error(
-        "JavaUtil2::matrixRandomNoise must never be called - Java must provide implementation at this point");
-  }
+  void initPhysicalNodeMovementListener() const;
 
-  virtual double getRandomDouble1() {
-    throw std::logic_error(
-        "JavaUtil2::getRandomDouble must never be called - Java must provide implementation at this point");
-  }
+  std::array<double, 3> matrixRandomNoise3(double k) const;
 
-  virtual void setRandomSeed1(long seed) {
-    throw std::logic_error(
-        "JavaUtil2::setRandomSeed1 must never be called - Java must provide implementation at this point");
-  }
+  Color getRandomColor() const;
 
-  virtual double matrixNextRandomDouble() {
-    throw std::logic_error(
-        "JavaUtil2::matrixNextRandomDouble must never be called - Java must provide implementation at this point");
-  }
+  // ---------------
+  // Math functions
+  // ---------------
 
   double exp(double d) const;
 
@@ -118,6 +107,10 @@ class JavaUtil2 {
   double acos(double d) const;
 
   double atan2(double d, double d1) const;
+
+  // ---------------
+  // Object creation
+  // ---------------
 
   std::shared_ptr<physics::PhysicalCylinder> newPhysicalCylinder() const;
 
@@ -143,13 +136,26 @@ class JavaUtil2 {
                                                          const std::shared_ptr<physics::PhysicalObject>& b,
                                                          const std::array<double, 2>& position_on_b,
                                                          double resting_length, double spring_constant) const;
+  // ---------------
+  // random numbers
+  // ---------------
 
-  virtual Color getRandomColor() {
+  virtual double getRandomDouble1() const {
     throw std::logic_error(
-        "JavaUtil2::getRandomColor must never be called - Java must provide implementation at this point");
+        "JavaUtil2::getRandomDouble must never be called - Java must provide implementation at this point");
   }
 
-  virtual double getGaussianDouble(double mean, double standard_deviation) {
+  virtual void setRandomSeed1(long seed) const {
+    throw std::logic_error(
+        "JavaUtil2::setRandomSeed1 must never be called - Java must provide implementation at this point");
+  }
+
+  virtual double matrixNextRandomDouble() const {
+    throw std::logic_error(
+        "JavaUtil2::matrixNextRandomDouble must never be called - Java must provide implementation at this point");
+  }
+
+  virtual double getGaussianDouble(double mean, double standard_deviation) const {
     throw std::logic_error(
         "JavaUtil2::getGaussianDouble must never be called - Java must provide implementation at this point");
   }
