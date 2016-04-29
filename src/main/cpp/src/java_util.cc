@@ -1,5 +1,7 @@
 #include "java_util.h"
 
+#include <cmath>
+
 #include "physics/physical_node.h"
 #include "physics/physical_sphere.h"
 #include "physics/physical_cylinder.h"
@@ -21,6 +23,41 @@ using local_biology::SomaElement;
 using local_biology::NeuriteElement;
 using synapse::PhysicalSpine;
 using synapse::PhysicalBouton;
+
+JavaUtil2::JavaUtil2(){
+}
+
+double JavaUtil2::exp(double d) const {
+  return std::exp(d);
+}
+
+double JavaUtil2::cbrt(double d) const {
+  return std::cbrt(d);
+}
+
+double JavaUtil2::sqrt(double d) const {
+  return std::sqrt(d);
+}
+
+double JavaUtil2::cos(double d) const {
+  return std::cos(d);
+}
+
+double JavaUtil2::sin(double d) const {
+  return std::sin(d);
+}
+
+double JavaUtil2::asin(double d) const {
+  return std::asin(d);
+}
+
+double JavaUtil2::acos(double d) const {
+  return std::acos(d);
+}
+
+double JavaUtil2::atan2(double d, double d1) const {
+  return std::atan2(d, d1);
+}
 
 std::shared_ptr<physics::PhysicalCylinder> JavaUtil2::newPhysicalCylinder() const {
   return PhysicalCylinder::create();

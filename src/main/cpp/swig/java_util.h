@@ -73,6 +73,8 @@ class JavaUtil {
  */
 class JavaUtil2 {
  public:
+  JavaUtil2();
+
   virtual ~JavaUtil2() {
   }
 
@@ -101,37 +103,21 @@ class JavaUtil2 {
         "JavaUtil2::matrixNextRandomDouble must never be called - Java must provide implementation at this point");
   }
 
-  virtual double exp(double d) {
-    throw std::logic_error("JavaUtil2::exp must never be called - Java must provide implementation at this point");
-  }
+  double exp(double d) const;
 
-  virtual double cbrt(double d) {
-    throw std::logic_error("JavaUtil2::cbrt must never be called - Java must provide implementation at this point");
-  }
+  double cbrt(double d) const;
 
-  virtual double sqrt(double d) {
-    throw std::logic_error("JavaUtil2::sqrt must never be called - Java must provide implementation at this point");
-  }
+  double sqrt(double d) const;
 
-  virtual double cos(double d) {
-    throw std::logic_error("JavaUtil2::cos must never be called - Java must provide implementation at this point");
-  }
+  double cos(double d) const;
 
-  virtual double sin(double d) {
-    throw std::logic_error("JavaUtil2::sin must never be called - Java must provide implementation at this point");
-  }
+  double sin(double d) const;
 
-  virtual double asin(double d) {
-    throw std::logic_error("JavaUtil2::asin must never be called - Java must provide implementation at this point");
-  }
+  double asin(double d) const;
 
-  virtual double acos(double d) {
-    throw std::logic_error("JavaUtil2::acos must never be called - Java must provide implementation at this point");
-  }
+  double acos(double d) const;
 
-  virtual double atan2(double d, double d1) {
-    throw std::logic_error("JavaUtil2::atan2 must never be called - Java must provide implementation at this point");
-  }
+  double atan2(double d, double d1) const;
 
   std::shared_ptr<physics::PhysicalCylinder> newPhysicalCylinder() const;
 

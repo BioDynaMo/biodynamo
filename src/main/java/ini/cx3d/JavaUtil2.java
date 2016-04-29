@@ -32,14 +32,14 @@ public class JavaUtil2 extends ini.cx3d.swig.simulation.JavaUtil2 {
         return Matrix.randomNoise(k, 3);
     }
 
-    public double exp(double d) { return Math.exp(d); }
-    public double sqrt(double d) { return Math.sqrt(d); }
-    public double cos(double d) { return Math.cos(d); }
-    public double sin(double d) { return Math.sin(d); }
-    public double asin(double d) { return Math.asin(d); }
-    public double acos(double d) { return Math.acos(d); }
-    public double atan2(double d, double d1) { return Math.atan2(d, d1); }
-    public double cbrt(double d) { return Math.cbrt(d); }
+//    public double exp(double d) { return Math.exp(d); }
+//    public double sqrt(double d) { return Math.sqrt(d); }
+//    public double cos(double d) { return Math.cos(d); }
+//    public double sin(double d) { return Math.sin(d); }
+//    public double asin(double d) { return Math.asin(d); }
+//    public double acos(double d) { return Math.acos(d); }
+//    public double atan2(double d, double d1) { return Math.atan2(d, d1); }
+//    public double cbrt(double d) { return Math.cbrt(d); }
 //    public ini.cx3d.physics.interfaces.PhysicalCylinder newPhysicalCylinder() {return PhysicalCylinderFactory.create();}
     public double getRandomDouble1(){
         return getRandomDouble();
@@ -101,6 +101,7 @@ public class JavaUtil2 extends ini.cx3d.swig.simulation.JavaUtil2 {
      * @param seed
      */
     public static void setRandomSeed(long seed){
+        Math.atan2(1, 2);
         random = new Random(seed);
         Matrix.setRandomSeedTo(seed);
     }
