@@ -21,7 +21,9 @@ class DividingCellTest {
   DividingCellTest() {
   }
 
-  void simulate(const std::shared_ptr<ECM>& ecm) {
+  void simulate(const std::shared_ptr<ECM>& ecm, const std::shared_ptr<JavaUtil2>& java) {
+    java->setRandomSeed1(1L);
+    java->initPhysicalNodeMovementListener();
     std::array<double, 3> cellOrigin { 0.0, 3.0, 5.0 };
     auto cell = CellFactory::getCellInstance(cellOrigin, ecm);
     cell->setColorForAllPhysicalObjects(Param::kRed);

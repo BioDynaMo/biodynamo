@@ -56,6 +56,9 @@ class MembraneContactTest {
   }
 
   void simulate(const std::shared_ptr<ECM>& ecm, const std::shared_ptr<JavaUtil2>& java) {
+    java->setRandomSeed1(1L);
+    java->initPhysicalNodeMovementListener();
+
     auto adherence = IntracellularSubstance::create("A", 0, 0);
     adherence->setVisibleFromOutside(true);
     adherence->setVolumeDependant(false);

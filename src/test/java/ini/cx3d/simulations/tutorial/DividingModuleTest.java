@@ -37,11 +37,10 @@ public class DividingModuleTest extends BaseSimulationTest {
 
 	@Override
 	public void simulate() {
-		JavaUtil2.setRandomSeed(2L);
-		initPhysicalNodeMovementListener();
+		new ini.cx3d.swig.simulation.DividingModuleTest().simulate(ECMFacade.getInstance(), new JavaUtil2());
 
-		new ini.cx3d.swig.simulation.DividingModuleTest().simulate(ECMFacade.getInstance());
-
+//		JavaUtil2.setRandomSeed(2L);
+//		initPhysicalNodeMovementListener();
 //		ini.cx3d.cells.interfaces.Cell c = CellFactory.getCellInstance(new double[] {0.0,0.0,0.0});
 //		c.addCellModule(new DividingModule());
 //

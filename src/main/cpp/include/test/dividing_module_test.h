@@ -66,7 +66,10 @@ class DividingModuleTest {
   DividingModuleTest() {
   }
 
-  void simulate(const std::shared_ptr<ECM>& ecm) {
+  void simulate(const std::shared_ptr<ECM>& ecm, const std::shared_ptr<JavaUtil2>& java) {
+    java->setRandomSeed1(2L);
+    java->initPhysicalNodeMovementListener();
+
     auto c = CellFactory::getCellInstance( { 0.0, 0.0, 0.0 }, ecm);
     c->addCellModule(std::shared_ptr<DividingModule> { new DividingModule() });
 

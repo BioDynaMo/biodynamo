@@ -36,11 +36,12 @@ public class DividingCellTest extends BaseSimulationTest {
 
 	@Override
 	public void simulate() {
-		JavaUtil2.setRandomSeed(1L);
-		initPhysicalNodeMovementListener();
 
-		new ini.cx3d.swig.simulation.DividingCellTest().simulate(ECMFacade.getInstance());
 
+		new ini.cx3d.swig.simulation.DividingCellTest().simulate(ECMFacade.getInstance(), new JavaUtil2());
+
+//		JavaUtil2.setRandomSeed(1L);
+//		initPhysicalNodeMovementListener();
 //		double[] cellOrigin = {0.0, 3.0, 5.0};
 //		ini.cx3d.cells.interfaces.Cell cell = CellFactory.getCellInstance(cellOrigin);
 //		cell.setColorForAllPhysicalObjects(Param.RED);

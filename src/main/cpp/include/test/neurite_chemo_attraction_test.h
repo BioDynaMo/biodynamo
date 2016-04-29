@@ -114,6 +114,8 @@ class NeuriteChemoAttractionTest {
   }
 
   void simulate(const std::shared_ptr<ECM>& ecm, const std::shared_ptr<JavaUtil2>& java) {
+    java->setRandomSeed1(1L);
+    java->initPhysicalNodeMovementListener();
 
     auto attractant = Substance::create("A", Color(0xFFFF0000));
     ecm->addArtificialGaussianConcentrationZ(attractant, 1.0, 400.0, 160.0);

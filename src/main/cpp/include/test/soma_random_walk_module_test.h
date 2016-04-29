@@ -62,6 +62,9 @@ class SomaRandomWalkModuleTest {
   }
 
   void simulate(const std::shared_ptr<ECM>& ecm, const std::shared_ptr<JavaUtil2>& java) {
+    java->setRandomSeed1(1L);
+    java->initPhysicalNodeMovementListener();
+
     for (int i = 0; i < 5; i++) {
       auto c = CellFactory::getCellInstance(java->matrixRandomNoise3(40), ecm);
       c->getSomaElement()->addLocalBiologyModule(

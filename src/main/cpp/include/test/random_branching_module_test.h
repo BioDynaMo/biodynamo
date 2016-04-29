@@ -118,6 +118,9 @@ class RandomBranchingModuleTest {
   }
 
   void simulate(const std::shared_ptr<ECM>& ecm, const std::shared_ptr<JavaUtil2>& java) {
+    java->setRandomSeed1(1L);
+    java->initPhysicalNodeMovementListener();
+
     for (int i = 0; i < 18; i++) {
       ecm->getPhysicalNodeInstance(java->matrixRandomNoise3(1000));
     }

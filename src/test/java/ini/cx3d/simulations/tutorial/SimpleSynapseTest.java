@@ -46,13 +46,13 @@ public class SimpleSynapseTest extends BaseSimulationTest {
 
 	@Override
 	public void simulate() throws Exception {
-		JavaUtil2.setRandomSeed(1L);
-		initPhysicalNodeMovementListener();
 		ECM ecm = ECMFacade.getInstance();
 
 		new ini.cx3d.swig.simulation.SimpleSynapseTest().simulate(ECMFacade.getInstance(), new JavaUtil2());
 		if(true) return;
 
+		JavaUtil2.setRandomSeed(1L);
+		initPhysicalNodeMovementListener();
 		int nbOfAdditionalNodes = 10;
 		for (int i = 0; i < nbOfAdditionalNodes; i++) {
 			double[] coord = randomNoise(500, 3);

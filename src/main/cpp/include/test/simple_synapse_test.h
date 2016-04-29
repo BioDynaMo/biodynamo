@@ -39,6 +39,9 @@ class SimpleSynapseTest {
   }
 
   void simulate(const std::shared_ptr<ECM>& ecm, const std::shared_ptr<JavaUtil2>& java) {
+    java->setRandomSeed1(1L);
+    java->initPhysicalNodeMovementListener();
+
     int number_of_additional_nodes = 10;
     for (int i = 0; i < number_of_additional_nodes; i++) {
       auto coord = java->matrixRandomNoise3(500);

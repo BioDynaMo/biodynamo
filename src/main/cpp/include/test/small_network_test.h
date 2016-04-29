@@ -44,6 +44,9 @@ class SmallNetworkTest {
   }
 
   void simulate(const std::shared_ptr<ECM>& ecm, const std::shared_ptr<JavaUtil2>& java) {
+    java->setRandomSeed1(1L);
+    java->initPhysicalNodeMovementListener();
+
     auto L1 = Substance::create("L1", Color(0xFFFF0000));  // Color is red
     ecm->addArtificialGaussianConcentrationZ(L1, 1.0, 400.0, 60.0);
 

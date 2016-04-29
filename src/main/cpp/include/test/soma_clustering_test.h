@@ -75,6 +75,9 @@ class SomaClusteringTest {
   }
 
   void simulate(const std::shared_ptr<ECM>& ecm, const std::shared_ptr<JavaUtil2>& java) {
+    java->setRandomSeed1(1L);
+    java->initPhysicalNodeMovementListener();
+
     auto yellow_substance = Substance::create("Yellow", 1000, 0.01);
     auto violet_substance = Substance::create("Violet", 1000, 0.01);
     ecm->addNewSubstanceTemplate(yellow_substance);
@@ -84,12 +87,14 @@ class SomaClusteringTest {
     }
     for (int i = 0; i < 60; i++) {
       auto c = CellFactory::getCellInstance(java->matrixRandomNoise3(50), ecm);
-      c->getSomaElement()->addLocalBiologyModule(std::shared_ptr<LocalBiologyModule> { new SomaClustering("Yellow", java) });
+      c->getSomaElement()->addLocalBiologyModule(
+          std::shared_ptr<LocalBiologyModule> { new SomaClustering("Yellow", java) });
       c->setColorForAllPhysicalObjects(Param::kYellowSolid);
     }
     for (int i = 0; i < 60; i++) {
       auto c = CellFactory::getCellInstance(java->matrixRandomNoise3(50), ecm);
-      c->getSomaElement()->addLocalBiologyModule(std::shared_ptr<LocalBiologyModule> { new SomaClustering("Violet", java) });
+      c->getSomaElement()->addLocalBiologyModule(
+          std::shared_ptr<LocalBiologyModule> { new SomaClustering("Violet", java) });
       c->setColorForAllPhysicalObjects(Param::kVioletSolid);
     }
     auto scheduler = Scheduler::getInstance(ecm);

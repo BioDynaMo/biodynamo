@@ -39,12 +39,12 @@ public class SomaRandomWalkModuleTest extends BaseSimulationTest {
 
 	@Override
 	public void simulate() throws Exception {
-		JavaUtil2.setRandomSeed(1L);
-		initPhysicalNodeMovementListener();
 
 		new ini.cx3d.swig.simulation.SomaRandomWalkModuleTest().simulate(ECMFacade.getInstance(), new JavaUtil2());
 		if(true) return;
 
+		JavaUtil2.setRandomSeed(1L);
+		initPhysicalNodeMovementListener();
 		for(int i = 0; i<5; i++){
 			ini.cx3d.cells.interfaces.Cell c = CellFactory.getCellInstance(randomNoise(40, 3));
 			c.getSomaElement().addLocalBiologyModule(new SomaRandomWalkModule());
