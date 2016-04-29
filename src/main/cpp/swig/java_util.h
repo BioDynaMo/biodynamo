@@ -78,12 +78,7 @@ class JavaUtil2 {
 
   virtual void initPhysicalNodeMovementListener() const {
     throw std::logic_error(
-            "JavaUtil2::initPhysicalNodeMovementListener must never be called - Java must provide implementation at this point");
-  }
-
-  virtual std::array<double, 3> foo() {
-    throw std::logic_error(
-            "JavaUtil2::foo must never be called - Java must provide implementation at this point");
+        "JavaUtil2::initPhysicalNodeMovementListener must never be called - Java must provide implementation at this point");
   }
 
   virtual std::array<double, 3> matrixRandomNoise3(double k) {
@@ -138,57 +133,30 @@ class JavaUtil2 {
     throw std::logic_error("JavaUtil2::atan2 must never be called - Java must provide implementation at this point");
   }
 
-  virtual std::shared_ptr<physics::PhysicalCylinder> newPhysicalCylinder() const {
-    throw std::logic_error(
-        "JavaUtil2::newPhysicalCylinder must never be called - Java must provide implementation at this point");
-  }
+  std::shared_ptr<physics::PhysicalCylinder> newPhysicalCylinder() const;
 
-  virtual std::shared_ptr<physics::PhysicalNode> newPhysicalNode() const {
-    throw std::logic_error(
-        "JavaUtil2::newPhysicalNode must never be called - Java must provide implementation at this point");
-  }
+  std::shared_ptr<physics::PhysicalNode> newPhysicalNode() const;
 
-  virtual std::shared_ptr<physics::PhysicalNodeMovementListener> newPhysicalNodeMovementListener() const {
-    throw std::logic_error(
-        "JavaUtil2::newPhysicalNodeMovementListener must never be called - Java must provide implementation at this point");
-  }
+  std::shared_ptr<physics::PhysicalNodeMovementListener> newPhysicalNodeMovementListener() const;
 
-  virtual std::shared_ptr<physics::PhysicalSphere> newPhysicalSphere() {
-    throw std::logic_error(
-        "JavaUtil2::newPhysicalSphere must never be called - Java must provide implementation at this point");
-  }
+  std::shared_ptr<physics::PhysicalSphere> newPhysicalSphere() const;
 
-  virtual std::shared_ptr<local_biology::NeuriteElement> newNeuriteElement() {
-    throw std::logic_error(
-        "JavaUtil2::newNeuriteElement must never be called - Java must provide implementation at this point");
-  }
+  std::shared_ptr<local_biology::NeuriteElement> newNeuriteElement() const;
 
-  virtual std::shared_ptr<local_biology::SomaElement> newSomaElement() {
-    throw std::logic_error(
-        "JavaUtil2::newSomaElement must never be called - Java must provide implementation at this point");
-  }
+  std::shared_ptr<local_biology::SomaElement> newSomaElement() const;
 
-  virtual std::shared_ptr<cx3d::synapse::PhysicalSpine> newPhysicalSpine(
-      const std::shared_ptr<physics::PhysicalObject>& po, const std::array<double, 2>& origin, double length) {
-    throw std::logic_error(
-        "JavaUtil2::newPhysicalSpine must never be called - Java must provide implementation at this point");
-  }
+  std::shared_ptr<cx3d::synapse::PhysicalSpine> newPhysicalSpine(const std::shared_ptr<physics::PhysicalObject>& po,
+                                                                 const std::array<double, 2>& origin,
+                                                                 double length) const;
 
-  virtual std::shared_ptr<synapse::PhysicalBouton> newPhysicalBouton(const std::shared_ptr<physics::PhysicalObject>& po,
-                                                                     const std::array<double, 2>& origin,
-                                                                     double length) {
-    throw std::logic_error(
-        "JavaUtil2::newPhysicalBouton must never be called - Java must provide implementation at this point");
-  }
+  std::shared_ptr<synapse::PhysicalBouton> newPhysicalBouton(const std::shared_ptr<physics::PhysicalObject>& po,
+                                                             const std::array<double, 2>& origin, double length) const;
 
-  virtual std::shared_ptr<physics::PhysicalBond> newPhysicalBond(const std::shared_ptr<physics::PhysicalObject>& a,
-                                                                 const std::array<double, 2>& position_on_a,
-                                                                 const std::shared_ptr<physics::PhysicalObject>& b,
-                                                                 const std::array<double, 2>& position_on_b,
-                                                                 double resting_length, double spring_constant) {
-    throw std::logic_error(
-        "JavaUtil2::newPhysicalBond must never be called - Java must provide implementation at this point");
-  }
+  std::shared_ptr<physics::PhysicalBond> newPhysicalBond(const std::shared_ptr<physics::PhysicalObject>& a,
+                                                         const std::array<double, 2>& position_on_a,
+                                                         const std::shared_ptr<physics::PhysicalObject>& b,
+                                                         const std::array<double, 2>& position_on_b,
+                                                         double resting_length, double spring_constant) const;
 
   virtual Color getRandomColor() {
     throw std::logic_error(

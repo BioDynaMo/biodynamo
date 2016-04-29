@@ -40,27 +40,27 @@ public class JavaUtil2 extends ini.cx3d.swig.simulation.JavaUtil2 {
     public double acos(double d) { return Math.acos(d); }
     public double atan2(double d, double d1) { return Math.atan2(d, d1); }
     public double cbrt(double d) { return Math.cbrt(d); }
-    public ini.cx3d.physics.interfaces.PhysicalCylinder newPhysicalCylinder() {return PhysicalCylinderFactory.create();}
+//    public ini.cx3d.physics.interfaces.PhysicalCylinder newPhysicalCylinder() {return PhysicalCylinderFactory.create();}
     public double getRandomDouble1(){
         return getRandomDouble();
     }
     public double matrixNextRandomDouble(){
         return Matrix.getRandomDouble();
     }
-    public ini.cx3d.physics.interfaces.PhysicalNode newPhysicalNode() {return PhysicalNodeFactory.create();}
-    public ini.cx3d.spatialOrganization.SpatialOrganizationNodeMovementListener newPhysicalNodeMovementListener() {return PhysicalNodeMovementListenerFactory.create();}
-    public ini.cx3d.physics.interfaces.PhysicalSphere newPhysicalSphere() {return PhysicalSphereFactory.create();}
-    public ini.cx3d.localBiology.interfaces.SomaElement newSomaElement() {return SomaElementFactory.create();}
-    public ini.cx3d.localBiology.interfaces.NeuriteElement newNeuriteElement() {return NeuriteElementFactory.create();}
-    public ini.cx3d.synapses.interfaces.PhysicalSpine newPhysicalSpine(ini.cx3d.physics.interfaces.PhysicalObject po, double[] origin, double length) {
-        return PhysicalSpineFactory.create(po, origin, length);
-    }
-    public ini.cx3d.synapses.interfaces.PhysicalBouton newPhysicalBouton(ini.cx3d.physics.interfaces.PhysicalObject po, double[] origin, double length) {
-        return PhysicalBoutonFactory.create(po, origin, length);
-    }
-    public PhysicalBond newPhysicalBond(ini.cx3d.physics.interfaces.PhysicalObject a, double[] positionOnA, ini.cx3d.physics.interfaces.PhysicalObject b , double[] positionOnB, double restingLength, double springConstant) {
-        return PhysicalBondFactory.create(a, positionOnA, b, positionOnB, restingLength, springConstant);
-    }
+//    public ini.cx3d.physics.interfaces.PhysicalNode newPhysicalNode() {return PhysicalNodeFactory.create();}
+//    public ini.cx3d.spatialOrganization.SpatialOrganizationNodeMovementListener newPhysicalNodeMovementListener() {return PhysicalNodeMovementListenerFactory.create();}
+//    public ini.cx3d.physics.interfaces.PhysicalSphere newPhysicalSphere() {return PhysicalSphereFactory.create();}
+//    public ini.cx3d.localBiology.interfaces.SomaElement newSomaElement() {return SomaElementFactory.create();}
+//    public ini.cx3d.localBiology.interfaces.NeuriteElement newNeuriteElement() {return NeuriteElementFactory.create();}
+//    public ini.cx3d.synapses.interfaces.PhysicalSpine newPhysicalSpine(ini.cx3d.physics.interfaces.PhysicalObject po, double[] origin, double length) {
+//        return PhysicalSpineFactory.create(po, origin, length);
+//    }
+//    public ini.cx3d.synapses.interfaces.PhysicalBouton newPhysicalBouton(ini.cx3d.physics.interfaces.PhysicalObject po, double[] origin, double length) {
+//        return PhysicalBoutonFactory.create(po, origin, length);
+//    }
+//    public PhysicalBond newPhysicalBond(ini.cx3d.physics.interfaces.PhysicalObject a, double[] positionOnA, ini.cx3d.physics.interfaces.PhysicalObject b , double[] positionOnB, double restingLength, double springConstant) {
+//        return PhysicalBondFactory.create(a, positionOnA, b, positionOnB, restingLength, springConstant);
+//    }
 
     public Color getRandomColor(){
         Color c = new Color((float) getRandomDouble(),(float) getRandomDouble(),(float) getRandomDouble(),0.7f);
@@ -107,9 +107,5 @@ public class JavaUtil2 extends ini.cx3d.swig.simulation.JavaUtil2 {
 
     public void setRandomSeed1(int seed){
         setRandomSeed(seed);
-    }
-
-    public double[] foo() {
-        return concat(randomNoise(600,2), randomNoise(100,1));
     }
 }

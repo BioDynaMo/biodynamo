@@ -1,0 +1,67 @@
+#include "java_util.h"
+
+#include "physics/physical_node.h"
+#include "physics/physical_sphere.h"
+#include "physics/physical_cylinder.h"
+#include "physics/physical_bond.h"
+#include "physics/physical_node_movement_listener.h"
+#include "local_biology/soma_element.h"
+#include "local_biology/neurite_element.h"
+#include "synapse/physical_spine.h"
+#include "synapse/physical_bouton.h"
+
+namespace cx3d {
+
+using physics::PhysicalNode;
+using physics::PhysicalSphere;
+using physics::PhysicalCylinder;
+using physics::PhysicalBond;
+using physics::PhysicalNodeMovementListener;
+using local_biology::SomaElement;
+using local_biology::NeuriteElement;
+using synapse::PhysicalSpine;
+using synapse::PhysicalBouton;
+
+std::shared_ptr<physics::PhysicalCylinder> JavaUtil2::newPhysicalCylinder() const {
+  return PhysicalCylinder::create();
+}
+
+std::shared_ptr<physics::PhysicalNode> JavaUtil2::newPhysicalNode() const {
+  return PhysicalNode::create();
+}
+
+std::shared_ptr<physics::PhysicalNodeMovementListener> JavaUtil2::newPhysicalNodeMovementListener() const {
+  return PhysicalNodeMovementListener::create();
+}
+
+std::shared_ptr<physics::PhysicalSphere> JavaUtil2::newPhysicalSphere() const {
+  return PhysicalSphere::create();
+}
+
+std::shared_ptr<local_biology::NeuriteElement> JavaUtil2::newNeuriteElement() const {
+  return NeuriteElement::create();
+}
+
+std::shared_ptr<local_biology::SomaElement> JavaUtil2::newSomaElement() const {
+  return SomaElement::create();
+}
+
+std::shared_ptr<cx3d::synapse::PhysicalSpine> JavaUtil2::newPhysicalSpine(
+    const std::shared_ptr<physics::PhysicalObject>& po, const std::array<double, 2>& origin, double length) const {
+  return PhysicalSpine::create(po, origin, length);
+}
+
+std::shared_ptr<synapse::PhysicalBouton> JavaUtil2::newPhysicalBouton(
+    const std::shared_ptr<physics::PhysicalObject>& po, const std::array<double, 2>& origin, double length) const {
+  return PhysicalBouton::create(po, origin, length);
+}
+
+std::shared_ptr<physics::PhysicalBond> JavaUtil2::newPhysicalBond(const std::shared_ptr<physics::PhysicalObject>& a,
+                                                                  const std::array<double, 2>& position_on_a,
+                                                                  const std::shared_ptr<physics::PhysicalObject>& b,
+                                                                  const std::array<double, 2>& position_on_b,
+                                                                  double resting_length, double spring_constant) const {
+  return PhysicalBond::create(a, position_on_a, b, position_on_b, resting_length, spring_constant);
+}
+
+}  // namespace cx3d

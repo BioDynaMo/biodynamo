@@ -71,7 +71,7 @@ include_directories(${CPP_MAIN_SRC_PATH}/include)
 include_directories(${CPP_MAIN_SRC_PATH}/swig)
 
 #--------------------- build module cx3d  ----------------
-file(GLOB SOURCES "${CPP_MAIN_SRC_PATH}/src/*.cc")
+# file(GLOB SOURCES "${CPP_MAIN_SRC_PATH}/src/*.cc")
 set(CMAKE_SWIG_FLAGS -package ini.cx3d.swig -c++)
 set(CMAKE_SWIG_OUTDIR ${JAVA_MAIN_SWIG_PATH}/)
 
@@ -79,7 +79,7 @@ set_source_files_properties(${CPP_MAIN_SRC_PATH}/swig/cx3d.i PROPERTIES CPLUSPLU
 swig_add_module(cx3d java ${CPP_MAIN_SRC_PATH}/swig/cx3d.i ${SOURCES})
 
 #--------------------- build module simulation  ----------------
-file(GLOB SOURCES "${CPP_MAIN_SRC_PATH}/src/**/*.cc" "${CPP_MAIN_SRC_PATH}/src/param.cc")
+file(GLOB SOURCES "${CPP_MAIN_SRC_PATH}/src/**/*.cc" "${CPP_MAIN_SRC_PATH}/src/param.cc" "${CPP_MAIN_SRC_PATH}/src/java_util.cc")
 set(CMAKE_SWIG_FLAGS -Wall -package ini.cx3d.swig.simulation -c++)
 set(CMAKE_SWIG_OUTDIR ${JAVA_MAIN_SWIG_PATH}/simulation)
 
