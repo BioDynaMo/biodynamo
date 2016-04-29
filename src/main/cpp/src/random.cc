@@ -1,0 +1,41 @@
+#include "random.h"
+
+#include <cmath>
+#include <random>
+
+namespace cx3d {
+
+double Random::nextNextGaussian = 0.0;
+bool Random::haveNextNextGaussian = false;
+
+void Random::setSeed(double seed) {
+  std::srand(seed);
+}
+
+double Random::nextDouble() {
+  return static_cast<double>(std::rand()) / RAND_MAX;
+}
+
+double Random::nextGaussian(double mean, double standard_deviation) {
+  return mean + standard_deviation * nextGaussian();
+}
+
+double Random::nextGaussian() {
+  if (haveNextNextGaussian) {
+    haveNextNextGaussian = false;
+    return nextNextGaussian;
+  } else {
+    double v1, v2, s;
+    do {
+      v1 = 2 * nextDouble() - 1;   // between -1.0 and 1.0
+      v2 = 2 * nextDouble() - 1;   // between -1.0 and 1.0
+      s = v1 * v1 + v2 * v2;
+    } while (s >= 1 || s == 0);
+    double multiplier = std::sqrt(-2 * std::log(s) / s);
+    nextNextGaussian = v2 * multiplier;
+    haveNextNextGaussian = true;
+    return v1 * multiplier;
+  }
+}
+
+}  // namespace cx3d

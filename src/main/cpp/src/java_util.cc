@@ -2,6 +2,7 @@
 
 #include <cmath>
 
+#include "random.h"
 #include "physics/physical_node.h"
 #include "physics/physical_sphere.h"
 #include "physics/physical_cylinder.h"
@@ -124,6 +125,22 @@ std::shared_ptr<physics::PhysicalBond> JavaUtil2::newPhysicalBond(const std::sha
                                                                   const std::array<double, 2>& position_on_b,
                                                                   double resting_length, double spring_constant) const {
   return PhysicalBond::create(a, position_on_a, b, position_on_b, resting_length, spring_constant);
+}
+
+double JavaUtil2::getRandomDouble1() const {
+  return Random::nextDouble();;
+}
+
+void JavaUtil2::setRandomSeed1(long seed) const {
+  Random::setSeed(seed);
+}
+
+double JavaUtil2::matrixNextRandomDouble() const {
+  return getRandomDouble1();
+}
+
+double JavaUtil2::getGaussianDouble(double mean, double standard_deviation) const {
+  return Random::nextGaussian(mean, standard_deviation);
 }
 
 }  // namespace cx3d

@@ -41,12 +41,12 @@ public class JavaUtil2 extends ini.cx3d.swig.simulation.JavaUtil2 {
 //    public double atan2(double d, double d1) { return Math.atan2(d, d1); }
 //    public double cbrt(double d) { return Math.cbrt(d); }
 //    public ini.cx3d.physics.interfaces.PhysicalCylinder newPhysicalCylinder() {return PhysicalCylinderFactory.create();}
-    public double getRandomDouble1(){
-        return getRandomDouble();
-    }
-    public double matrixNextRandomDouble(){
-        return Matrix.getRandomDouble();
-    }
+//    public double getRandomDouble1(){
+//        return getRandomDouble();
+//    }
+//    public double matrixNextRandomDouble(){
+//        return Matrix.getRandomDouble();
+//    }
 //    public ini.cx3d.physics.interfaces.PhysicalNode newPhysicalNode() {return PhysicalNodeFactory.create();}
 //    public ini.cx3d.spatialOrganization.SpatialOrganizationNodeMovementListener newPhysicalNodeMovementListener() {return PhysicalNodeMovementListenerFactory.create();}
 //    public ini.cx3d.physics.interfaces.PhysicalSphere newPhysicalSphere() {return PhysicalSphereFactory.create();}
@@ -90,9 +90,9 @@ public class JavaUtil2 extends ini.cx3d.swig.simulation.JavaUtil2 {
      * @param standardDeviation
      * @return
      */
-    public double getGaussianDouble(double mean, double standardDeviation){
-        return mean + standardDeviation*random.nextGaussian();
-    }
+//    public double getGaussianDouble(double mean, double standardDeviation){
+//        return mean + standardDeviation*random.nextGaussian();
+//    }
 
 
 
@@ -101,12 +101,11 @@ public class JavaUtil2 extends ini.cx3d.swig.simulation.JavaUtil2 {
      * @param seed
      */
     public static void setRandomSeed(long seed){
-        Math.atan2(1, 2);
         random = new Random(seed);
         Matrix.setRandomSeedTo(seed);
     }
 
-    public void setRandomSeed1(int seed){
-        setRandomSeed(seed);
-    }
+//    public void setRandomSeed1(int seed){
+//        setRandomSeed(seed);
+//    }
 }

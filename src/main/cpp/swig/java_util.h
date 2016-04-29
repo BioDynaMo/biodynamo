@@ -140,25 +140,13 @@ class JavaUtil2 {
   // random numbers
   // ---------------
 
-  virtual double getRandomDouble1() const {
-    throw std::logic_error(
-        "JavaUtil2::getRandomDouble must never be called - Java must provide implementation at this point");
-  }
+  double getRandomDouble1() const;
 
-  virtual void setRandomSeed1(long seed) const {
-    throw std::logic_error(
-        "JavaUtil2::setRandomSeed1 must never be called - Java must provide implementation at this point");
-  }
+  void setRandomSeed1(long seed) const;
 
-  virtual double matrixNextRandomDouble() const {
-    throw std::logic_error(
-        "JavaUtil2::matrixNextRandomDouble must never be called - Java must provide implementation at this point");
-  }
+  double matrixNextRandomDouble() const;
 
-  virtual double getGaussianDouble(double mean, double standard_deviation) const {
-    throw std::logic_error(
-        "JavaUtil2::getGaussianDouble must never be called - Java must provide implementation at this point");
-  }
+  double getGaussianDouble(double mean, double standard_deviation) const;
 };
 
 }  // namespace cx3d
