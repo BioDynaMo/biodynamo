@@ -1,8 +1,10 @@
 #ifndef JAVA_UTIL_H_
 #define JAVA_UTIL_H_
 
+#include <vector>
 #include <array>
 #include <memory>
+#include <algorithm>
 
 #include "color.h"
 #include <spatial_organization/open_triangle_organizer.h>
@@ -42,34 +44,11 @@ class PhysicalNodeMovementListener;
 
 }// namespace physics
 
-/**
- * Contains functions to access former static methods that are still implemented in Java
- */
-template<class T>
-class JavaUtil {
- public:
-  virtual ~JavaUtil() {
-  }
-
-  /**
-   * returns a
-   */
-  virtual std::array<int, 4> generateTriangleOrder() {
-    throw std::logic_error(
-        "JavaUtil::generateTriangleOrder must never be called - Java must provide implementation at this point");
-  }
-
-  /**
-   * redirects call, because static methods cannot be handled by SWIG direcotr
-   */
-  virtual std::shared_ptr<spatial_organization::OpenTriangleOrganizer<T>> oto_createSimpleOpenTriangleOrganizer() {
-    throw std::logic_error(
-        "JavaUtil::oto_createSimpleOpenTriangleOrganizer must never be called - Java must provide implementation at this point");
-  }
-};
+using std::vector;
+using spatial_organization::OpenTriangleOrganizer;
 
 /**
- *  java provided functions without templating
+ *  formerly used to delegate function calls to java - now deprecated - will be removed very soon
  */
 class JavaUtil2 {
  public:
@@ -147,6 +126,42 @@ class JavaUtil2 {
   double matrixNextRandomDouble() const;
 
   double getGaussianDouble(double mean, double standard_deviation) const;
+
+  static int randomHelper(int i);
+};
+
+/**
+ * formerly used to delegate function calls to java - now deprecated - will be removed very soon
+ */
+template<class T>
+class JavaUtil {
+ public:
+  virtual ~JavaUtil() {
+  }
+
+  /**
+   * returns a
+   */
+  std::array<int, 4> generateTriangleOrder() {
+    std::random_shuffle(triangle_order_.begin(), triangle_order_.end(), JavaUtil2::randomHelper);
+    std::array<int, 4> ret;
+    ret[0] = triangle_order_[0];
+    ret[1] = triangle_order_[1];
+    ret[2] = triangle_order_[2];
+    ret[3] = triangle_order_[3];
+    return ret;
+  }
+
+  /**
+   * redirects call, because static methods cannot be handled by SWIG direcotr
+   */
+  std::shared_ptr<spatial_organization::OpenTriangleOrganizer<T>> oto_createSimpleOpenTriangleOrganizer() const {
+    return OpenTriangleOrganizer<T>::createSimpleOpenTriangleOrganizer();
+  }
+
+ private:
+  vector<int> triangle_order_ { 0, 1, 2, 3 };
+
 };
 
 }  // namespace cx3d

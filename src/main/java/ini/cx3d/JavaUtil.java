@@ -17,10 +17,10 @@ import java.util.List;
  */
 public class JavaUtil extends JavaUtilT_PhysicalNode {
 
-    @Override
-    public OpenTriangleOrganizer oto_createSimpleOpenTriangleOrganizer() {
-        return OpenTriangleOrganizerFactory.createSimpleOpenTriangleOrganizer();
-    }
+//    @Override
+//    public OpenTriangleOrganizer oto_createSimpleOpenTriangleOrganizer() {
+//        return OpenTriangleOrganizerFactory.createSimpleOpenTriangleOrganizer();
+//    }
 
     static List<Integer> list = Arrays.asList(new Integer[]{
             0, 1, 2, 3});

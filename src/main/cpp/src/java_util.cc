@@ -143,4 +143,8 @@ double JavaUtil2::getGaussianDouble(double mean, double standard_deviation) cons
   return Random::nextGaussian(mean, standard_deviation);
 }
 
+int JavaUtil2::randomHelper(int i) {
+  return Random::nextInt() % i;
+}
+
 }  // namespace cx3d

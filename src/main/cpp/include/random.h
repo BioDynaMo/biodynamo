@@ -12,6 +12,8 @@ class Random {
 
   static void setSeed(double seed);
 
+  static int nextInt();
+
   static double nextDouble();
 
   static double nextGaussian(double mean, double standard_deviation);

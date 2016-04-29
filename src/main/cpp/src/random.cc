@@ -12,6 +12,10 @@ void Random::setSeed(double seed) {
   std::srand(seed);
 }
 
+int Random::nextInt() {
+  return std::rand();
+}
+
 double Random::nextDouble() {
   return static_cast<double>(std::rand()) / RAND_MAX;
 }
