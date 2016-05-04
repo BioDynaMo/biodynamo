@@ -11,6 +11,10 @@ namespace cells {
 int Cell::id_counter_ = 0;
 std::shared_ptr<simulation::ECM> Cell::ecm_ { nullptr };
 
+void Cell::reset() {
+  id_counter_ = 0;
+}
+
 Cell::Cell()
     : id_ { ++id_counter_ } {
 }

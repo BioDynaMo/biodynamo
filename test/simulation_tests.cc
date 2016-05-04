@@ -13,63 +13,54 @@
 #include "figure_5_test.h"
 #include "figure_9_test.h"
 
-//TEST (DividingCellTest, simulation) {
-//  cx3d::DividingCellTest simulation;
-//  simulation.run();
-//}
-//
-//TEST (DividingModuleTest, simulation) {
-//  cx3d::DividingModuleTest simulation;
-//  simulation.run();
-//}
+namespace cx3d {
 
-TEST (IntracellularDiffusionTest, simulation) {
-  cx3d::IntracellularDiffusionTest simulation;
-  simulation.run();
+TEST_F (DividingCellTest, simulation) {
+  run();
 }
 
-//TEST (MembraneContactTest, simulation) {
-//  cx3d::MembraneContactTest simulation;
-//  simulation.run();
-//}
-//
-//TEST (NeuriteChemoAttractionTest, simulation) {
-//  cx3d::NeuriteChemoAttractionTest simulation;
-//  simulation.run();
-//}
-//
-//TEST (RandomBranchingModuleTest, simulation) {
-//  cx3d::RandomBranchingModuleTest simulation;
-//  simulation.run();
-//}
-//
-//TEST (SimpleSynapseTest, simulation) {
-//  cx3d::SimpleSynapseTest simulation;
-//  simulation.run();
-//}
-//
-//TEST (SmallNetworkTest, simulation) {
-//  cx3d::SmallNetworkTest simulation;
-//  simulation.run();
-//}
-//
-//TEST (SomaClusteringTest, simulation) {
-//  cx3d::SomaClusteringTest simulation;
-//  simulation.run();
-//}
-//
-//TEST (SomaRandomWalkModuleTest, simulation) {
-//  cx3d::SomaRandomWalkModuleTest simulation;
-//  simulation.run();
-//}
-//
-//TEST (Figure5Test, simulation) {
-//  cx3d::Figure5Test simulation;
-//  simulation.run();
-//}
-//
-//TEST (Figure9Test, simulation) {
-//  cx3d::Figure9Test simulation;
-//  simulation.run();
-//}
+TEST_F (DividingModuleTest, simulation) {
+  run();
+}
 
+TEST_F (IntracellularDiffusionTest, simulation) {
+  run();
+}
+
+TEST_F (MembraneContactTest, simulation) {
+  run();
+}
+
+TEST_F (NeuriteChemoAttractionTest, simulation) {
+  run();
+}
+
+TEST_F (RandomBranchingModuleTest, simulation) {
+  run();
+}
+
+TEST_F (SimpleSynapseTest, simulation) {
+  run();
+}
+
+TEST_F (SmallNetworkTest, simulation) {
+  run();
+}
+
+TEST_F (SomaClusteringTest, simulation) {
+  run();
+}
+
+TEST_F (SomaRandomWalkModuleTest, simulation) {
+  run();
+}
+
+TEST_F (Figure5Test, simulation) {
+  run();
+}
+
+TEST_F (Figure9Test, simulation) {
+  run();
+}
+
+}  // namespace cx3d

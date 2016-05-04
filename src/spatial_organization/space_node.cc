@@ -31,6 +31,11 @@ template<class T>
 int SpaceNode<T>::id_counter_ = 0;
 
 template<class T>
+void SpaceNode<T>::reset() {
+  id_counter_ = 0;
+}
+
+template<class T>
 std::shared_ptr<Tetrahedron<T> > SpaceNode<T>::searchInitialInsertionTetrahedron(
     const std::shared_ptr<Tetrahedron<T> >& start,
     const std::array<double, 3>& coordinate) {

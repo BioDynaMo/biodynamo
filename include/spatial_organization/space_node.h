@@ -35,6 +35,8 @@ template<class T>
 class SpaceNode : public SpatialOrganizationNode<T>,
     public SimStateSerializable, public std::enable_shared_from_this<SpaceNode<T>> {
  public:
+  static void reset();
+
   /**
    * Creates a new SpaceNode object and returns it within a <code>std::shared_ptr</code>
    * @see Edge(...)

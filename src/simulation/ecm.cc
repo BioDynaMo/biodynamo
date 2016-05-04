@@ -248,25 +248,32 @@ void ECM::resetTime() {
 }
 
 void ECM::clearAll() {
-  // Layer 1 : Cells
-  cells_.clear();
-  // Layer 2 : local biology
-  soma_elements_.clear();
-  neurite_elements_.clear();
-
-  // Layer 3 : physics
   physical_nodes_.clear();
   physical_spheres_.clear();
   physical_cylinders_.clear();
-  all_artificial_substances_.clear();
-  gaussian_artificial_concentration_x_.clear();
-  gaussian_artificial_concentration_z_.clear();
-  linear_artificial_concentration_x_.clear();
-  linear_artificial_concentration_z_.clear();
-  intracellular_substance_lib_.clear();
+  soma_elements_.clear();
+  neurite_elements_.clear();
+  cells_.clear();
+  time_ = 0;
+
+  initial_node_= std::shared_ptr<SpaceNode<PhysicalNode>> { nullptr };
   substance_lib_.clear();
-  // Layer 4 : triangulation
-  initial_node_ = std::shared_ptr<SpaceNode<PhysicalNode>> { nullptr };
+  intracellular_substance_lib_.clear();
+  cell_color_lib_.clear();
+  articicial_walls_for_spheres_ = false;
+  articicial_walls_for_cylinders_ = false;
+  x_min_ = -100;
+  x_max_ = 100;
+  y_min_ = -100;
+  y_max_ = 100;
+  z_min_ = -100;
+  z_max_ = 300;
+  any_artificial_gradient_defined_ = false;
+  gaussian_artificial_concentration_z_.clear();
+  linear_artificial_concentration_z_.clear();
+  gaussian_artificial_concentration_x_.clear();
+  linear_artificial_concentration_x_.clear();
+  all_artificial_substances_.clear();
 }
 
 void ECM::addNewSubstanceTemplate(const std::shared_ptr<physics::Substance>& s) {

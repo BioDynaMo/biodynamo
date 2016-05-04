@@ -46,6 +46,8 @@ class PhysicalNode : public SimStateSerializable, public std::enable_shared_from
   // *      METHODS FOR INTERPOLATION (used only by PhysicalNodeMovementListener)        *
   // *************************************************************************************
 
+  static void reset();
+
   //todo remove after porting has been finished
   static void setECM(std::shared_ptr<simulation::ECM> e) {
     ecm_ = e;

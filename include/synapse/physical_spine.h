@@ -42,8 +42,7 @@ class PhysicalSpine : public Excrescence {
   PhysicalSpine(const PhysicalSpine&) = delete;
   PhysicalSpine& operator=(const PhysicalSpine&) = delete;
 
-  std::shared_ptr<BiologicalSpine> biological_spine_
-  ;
+  std::shared_ptr<BiologicalSpine> biological_spine_;
 };
 
 }  // namespace synapse

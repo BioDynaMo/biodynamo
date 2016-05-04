@@ -14,6 +14,10 @@ std::shared_ptr<simulation::ECM> CellElement::ecm_ { nullptr };
 
 std::size_t CellElement::id_counter_ = 0;
 
+void CellElement::reset() {
+  id_counter_ = 0;
+}
+
 void CellElement::setECM(const std::shared_ptr<cx3d::simulation::ECM>& ecm) {
   ecm_ = ecm;
 }

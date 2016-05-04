@@ -22,6 +22,10 @@ namespace physics {
 std::size_t PhysicalNode::id_counter_ = 0;
 std::shared_ptr<simulation::ECM> PhysicalNode::ecm_ = std::shared_ptr<simulation::ECM>(nullptr);
 
+void PhysicalNode::reset() {
+  id_counter_ = 0;
+}
+
 std::shared_ptr<PhysicalNode> PhysicalNode::create() {
   return std::shared_ptr<PhysicalNode>(new PhysicalNode());
 //  return std::shared_ptr<PhysicalNode>(new PhysicalNodeDebug());

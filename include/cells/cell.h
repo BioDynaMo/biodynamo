@@ -37,6 +37,8 @@ class Cell : public SimStateSerializable, public std::enable_shared_from_this<Ce
     kExcitatatory
   };
 
+  static void reset();
+
   static void setECM(const std::shared_ptr<simulation::ECM>& ecm) {
     ecm_ = ecm;
   }

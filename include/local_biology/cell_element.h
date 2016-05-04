@@ -26,6 +26,8 @@ class LocalBiologyModule;
 
 class CellElement : public SimStateSerializable, public std::enable_shared_from_this<CellElement> {
  public:
+  static void reset();
+
   static void setECM(const std::shared_ptr<cx3d::simulation::ECM>& ecm);
 
   CellElement();
