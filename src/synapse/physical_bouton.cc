@@ -34,7 +34,7 @@ PhysicalBouton::~PhysicalBouton() {
 StringBuilder& PhysicalBouton::simStateToJson(StringBuilder& sb) const {
   Excrescence::simStateToJson(sb);
 
-  SimStateSerializationUtil::keyValue(sb, "biologicalBouton", biological_bouton_);
+  SimStateSerializationUtil::keyValue(sb, "biologicalBouton", biological_bouton_.get());
 
   SimStateSerializationUtil::removeLastChar(sb);
   sb.append("}");
@@ -115,12 +115,12 @@ bool PhysicalBouton::synapseWithShaft(const std::shared_ptr<local_biology::Neuri
   return true;
 }
 
-void PhysicalBouton::setBiologicalBouton(const std::shared_ptr<BiologicalBouton>& bouton) {
-  biological_bouton_ = bouton;
+void PhysicalBouton::setBiologicalBouton(BiologicalBouton::UPtr bouton) {
+  biological_bouton_ = std::move(bouton);
 }
 
-std::shared_ptr<BiologicalBouton> PhysicalBouton::getBiologicalBouton() const {
-  return biological_bouton_;
+BiologicalBouton* PhysicalBouton::getBiologicalBouton() const {
+  return biological_bouton_.get();
 }
 
 }  // namespace synapse

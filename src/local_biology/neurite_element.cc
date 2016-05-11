@@ -247,9 +247,9 @@ void NeuriteElement::makeBoutons(double interval) {
     auto p_bouton = ecm_->newPhysicalBouton(physical_cylinder_, coord, 2);
     physical_cylinder_->addExcrescence(p_bouton);
     // create the biological part and set call backs
-    auto b_bouton = BiologicalBouton::create();
-    p_bouton->setBiologicalBouton(b_bouton);
+    auto b_bouton = BiologicalBouton::UPtr { new BiologicalBouton() };
     b_bouton->setPhysicalBouton(p_bouton);
+    p_bouton->setBiologicalBouton(std::move(b_bouton));
   }
 }
 
@@ -265,9 +265,9 @@ void NeuriteElement::makeSingleBouton(double dist_from_proximal_end) {
   auto p_bouton = ecm_->newPhysicalBouton(physical_cylinder_, coord, 2);
   physical_cylinder_->addExcrescence(p_bouton);
   // create the biological part and set call backs
-  auto b_bouton = BiologicalBouton::create();
-  p_bouton->setBiologicalBouton(b_bouton);
+  auto b_bouton = BiologicalBouton::UPtr { new BiologicalBouton() };
   b_bouton->setPhysicalBouton(p_bouton);
+  p_bouton->setBiologicalBouton(std::move(b_bouton));
 }
 
 void NeuriteElement::makeSingleBouton() {
@@ -278,9 +278,9 @@ void NeuriteElement::makeSingleBouton() {
   auto p_bouton = ecm_->newPhysicalBouton(physical_cylinder_, coord, 2);
   physical_cylinder_->addExcrescence(p_bouton);
   // create the biological part and set call backs
-  auto b_bouton = BiologicalBouton::create();
-  p_bouton->setBiologicalBouton(b_bouton);
+  auto b_bouton = BiologicalBouton::UPtr { new BiologicalBouton() };
   b_bouton->setPhysicalBouton(p_bouton);
+  p_bouton->setBiologicalBouton(std::move(b_bouton));
 }
 
 int NeuriteElement::synapseBetweenExistingBS(double probability_to_synapse) {

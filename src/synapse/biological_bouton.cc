@@ -5,18 +5,10 @@
 namespace cx3d {
 namespace synapse {
 
-std::shared_ptr<BiologicalBouton> BiologicalBouton::create() {
-  return std::shared_ptr<BiologicalBouton>(new BiologicalBouton());
-}
-
 BiologicalBouton::BiologicalBouton() {
 }
 
 BiologicalBouton::~BiologicalBouton() {
-}
-
-bool BiologicalBouton::equalTo(const std::shared_ptr<BiologicalBouton>& other) const {
-  return this == other.get();
 }
 
 StringBuilder& BiologicalBouton::simStateToJson(StringBuilder& sb) const {

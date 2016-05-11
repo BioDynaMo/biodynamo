@@ -74,8 +74,12 @@ class SimStateSerializationUtil {
   }
 
   static StringBuilder& keyValue(StringBuilder& sb, string key, const std::shared_ptr<SimStateSerializable>& value) {
+    return keyValue(sb, key, value.get());
+  }
+
+  static StringBuilder& keyValue(StringBuilder& sb, string key, const SimStateSerializable* value) {
     SimStateSerializationUtil::key(sb, key);
-    if (value.get() != nullptr) {
+    if (value != nullptr) {
       value->simStateToJson(sb);
     } else {
       sb.append("null");

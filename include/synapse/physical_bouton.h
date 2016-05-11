@@ -4,6 +4,7 @@
 #include <memory>
 
 #include "synapse/excrescence.h"
+#include "biological_bouton.h"
 
 namespace cx3d {
 namespace synapse {
@@ -34,15 +35,15 @@ class PhysicalBouton : public Excrescence {
   virtual bool synapseWithShaft(const std::shared_ptr<local_biology::NeuriteElement>& other_ne, double max_dis,
                                 int nr_segments, bool create_phyiscal_bond) override;
 
-  virtual void setBiologicalBouton(const std::shared_ptr<BiologicalBouton>& bouton);
+  virtual void setBiologicalBouton(BiologicalBouton::UPtr bouton);
 
-  virtual std::shared_ptr<BiologicalBouton> getBiologicalBouton() const;
+  virtual BiologicalBouton* getBiologicalBouton() const;
 
  private:
   PhysicalBouton(const PhysicalBouton&) = delete;
   PhysicalBouton& operator=(const PhysicalBouton&) = delete;
 
-  std::shared_ptr<BiologicalBouton> biological_bouton_;
+  BiologicalBouton::UPtr biological_bouton_;
 };
 
 }  // namespace synapse

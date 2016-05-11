@@ -14,13 +14,11 @@ class PhysicalBouton;
 
 class BiologicalBouton : public SimStateSerializable {
  public:
-  static std::shared_ptr<BiologicalBouton> create();
+  using UPtr = std::unique_ptr<BiologicalBouton>;
 
   BiologicalBouton();
 
   virtual ~BiologicalBouton();
-
-  virtual bool equalTo(const std::shared_ptr<BiologicalBouton>& other) const;
 
   virtual StringBuilder& simStateToJson(StringBuilder& sb) const override;
 

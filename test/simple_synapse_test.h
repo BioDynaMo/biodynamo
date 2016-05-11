@@ -79,9 +79,9 @@ class SimpleSynapseTest : public BaseSimulationTest {
     auto p_bouton = PhysicalBouton::create(axon_cyl, { polar_axon_coord[0], polar_axon_coord[1] }, 3);
     axon_cyl->addExcrescence(p_bouton);
     //    create the biological part and set call backs
-    auto b_bouton = BiologicalBouton::create();
-    p_bouton->setBiologicalBouton(b_bouton);
+    auto b_bouton = BiologicalBouton::UPtr { new BiologicalBouton };
     b_bouton->setPhysicalBouton(p_bouton);
+    p_bouton->setBiologicalBouton(std::move(b_bouton));
 
     // 4) a spine on the dendrite:
     //    create the physical part
