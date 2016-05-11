@@ -90,9 +90,9 @@ class SimpleSynapseTest : public BaseSimulationTest {
     auto p_spine = PhysicalSpine::create(dendrite_cyl, { polar_dendrite_coord[0], polar_dendrite_coord[1] }, 3);
     dendrite_cyl->addExcrescence(p_spine);
     //    create the biological part and set call backs
-    auto b_spine = BiologicalSpine::create();
-    p_spine->setBiologicalSpine(b_spine);
+    auto b_spine = BiologicalSpine::UPtr { new BiologicalSpine() };
     b_spine->setPhysicalSpine(p_spine);
+    p_spine->setBiologicalSpine(std::move(b_spine));
 
     // 5) synapse formation
     p_bouton->synapseWith(p_spine, true);

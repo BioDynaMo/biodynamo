@@ -5,6 +5,7 @@
 #include <string>
 
 #include "synapse/excrescence.h"
+#include "biological_spine.h"
 
 namespace cx3d {
 namespace synapse {
@@ -34,15 +35,15 @@ class PhysicalSpine : public Excrescence {
   virtual bool synapseWithShaft(const std::shared_ptr<local_biology::NeuriteElement>& other_ne, double max_dis,
                                 int nr_segments, bool create_phyiscal_bond) override;
 
-  virtual std::shared_ptr<BiologicalSpine> getBiologicalSpine() const;
+  virtual BiologicalSpine* getBiologicalSpine() const;
 
-  virtual void setBiologicalSpine(const std::shared_ptr<BiologicalSpine>& spine);
+  virtual void setBiologicalSpine(BiologicalSpine::UPtr spine);
 
  private:
   PhysicalSpine(const PhysicalSpine&) = delete;
   PhysicalSpine& operator=(const PhysicalSpine&) = delete;
 
-  std::shared_ptr<BiologicalSpine> biological_spine_;
+  BiologicalSpine::UPtr biological_spine_;
 };
 
 }  // namespace synapse

@@ -14,13 +14,11 @@ class PhysicalSpine;
 
 class BiologicalSpine : public SimStateSerializable {
  public:
-  static std::shared_ptr<BiologicalSpine> create();
+  using UPtr = std::unique_ptr<BiologicalSpine>;
 
   BiologicalSpine();
 
   virtual ~BiologicalSpine();
-
-  virtual bool equalTo(const std::shared_ptr<BiologicalSpine>& other) const;
 
   virtual StringBuilder& simStateToJson(StringBuilder& sb) const override;
 

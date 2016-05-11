@@ -200,9 +200,9 @@ void NeuriteElement::makeSpines(double interval) {
     auto p_spine = ecm_->newPhysicalSpine(physical_cylinder_, coord, 3.0);
     physical_cylinder_->addExcrescence(p_spine);
     // create the biological part and set call backs
-    auto b_spine = BiologicalSpine::create();
-    p_spine->setBiologicalSpine(b_spine);
+    auto b_spine = BiologicalSpine::UPtr { new BiologicalSpine() };
     b_spine->setPhysicalSpine(p_spine);
+    p_spine->setBiologicalSpine(std::move(b_spine));
   }
 }
 
@@ -213,9 +213,9 @@ void NeuriteElement::makeSingleSpine() {
   auto p_spine = ecm_->newPhysicalSpine(physical_cylinder_, coord, 3.0);
   physical_cylinder_->addExcrescence(p_spine);
   // create the biological part and set call backs
-  auto b_spine = BiologicalSpine::create();
-  p_spine->setBiologicalSpine(b_spine);
+  auto b_spine = BiologicalSpine::UPtr { new BiologicalSpine() };
   b_spine->setPhysicalSpine(p_spine);
+  p_spine->setBiologicalSpine(std::move(b_spine));
 }
 
 void NeuriteElement::makeSingleSpine(double dist_from_proximal_end) {
@@ -230,9 +230,9 @@ void NeuriteElement::makeSingleSpine(double dist_from_proximal_end) {
   auto p_spine = ecm_->newPhysicalSpine(physical_cylinder_, coord, 3);
   physical_cylinder_->addExcrescence(p_spine);
   // create the biological part and set call backs
-  auto b_spine = BiologicalSpine::create();
-  p_spine->setBiologicalSpine(b_spine);
+  auto b_spine = BiologicalSpine::UPtr { new BiologicalSpine() };
   b_spine->setPhysicalSpine(p_spine);
+  p_spine->setBiologicalSpine(std::move(b_spine));
 }
 
 void NeuriteElement::makeBoutons(double interval) {
