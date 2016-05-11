@@ -23,7 +23,8 @@ package ini.cx3d.graphics;
 
 import static ini.cx3d.utilities.Matrix.mult;
 
-import ini.cx3d.simulations.ECM;
+import ini.cx3d.simulations.ECMFacade;
+import ini.cx3d.simulations.interfaces.ECM;
 import ini.cx3d.utilities.Matrix;
 
 import java.awt.Color;
@@ -77,7 +78,7 @@ public class SelectionState extends MouseActionState{
 		
 			ini.cx3d.physics.interfaces.PhysicalObject node= null;
 			double distance = Double.MAX_VALUE;
-			for (ini.cx3d.physics.interfaces.PhysicalNode pn : ECM.getInstance().physicalNodeList) {
+			for (ini.cx3d.physics.interfaces.PhysicalNode pn : ECMFacade.getInstance().getPhysicalNodeList()) {
 				if(!pn.isAPhysicalObject()) continue;
 				double[] coordOfPn = pn.getSoNode().getPosition();
 				double ypn = coordOfPn[1];

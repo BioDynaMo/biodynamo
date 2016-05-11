@@ -5,16 +5,16 @@ import ini.cx3d.spatialOrganization.PositionNotAllowedException;
 import ini.cx3d.spatialOrganization.debug.SpaceNodeDebug;
 import ini.cx3d.spatialOrganization.interfaces.SpaceNode;
 import ini.cx3d.spatialOrganization.interfaces.Tetrahedron;
-import ini.cx3d.swig.spatialOrganization.SpaceNodeT_PhysicalNode;
-import ini.cx3d.swig.spatialOrganization.spatialOrganization;
+import ini.cx3d.swig.simulation.SpaceNodeT_PhysicalNode;
+import ini.cx3d.swig.simulation.simulation;
 
 /**
  * Factory that generates SpaceNode objects
  */
 public class SpaceNodeFactory<T> {
 
-    private static final boolean NATIVE = spatialOrganization.useNativeSpaceNode;
-    public static final boolean DEBUG = spatialOrganization.debugSpaceNode;
+    private static final boolean NATIVE = simulation.useNativeSpaceNode;
+    public static final boolean DEBUG = simulation.debugSpaceNode;
 
     // JavaUtil needs to be static - otherwise it will be garbage collected and
     // also destroyed on the cpp side

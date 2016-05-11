@@ -25,6 +25,7 @@
 #include "spatial_organization/simple_triangulation_node_organizer.h"
 #include "spatial_organization/open_triangle_organizer.h"
 using namespace cx3d::spatial_organization;
+using cx3d::Color;
 #include "spatial_organizationJAVA_wrap.h"
 %}
 

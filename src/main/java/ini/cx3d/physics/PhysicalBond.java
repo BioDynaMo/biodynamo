@@ -50,7 +50,7 @@ import ini.cx3d.physics.factory.PhysicalBondFactory;
  *
  */
 
-public class PhysicalBond extends ini.cx3d.swig.physics.PhysicalBond implements ini.cx3d.physics.interfaces.PhysicalBond {
+public class PhysicalBond extends ini.cx3d.swig.simulation.PhysicalBond implements ini.cx3d.physics.interfaces.PhysicalBond {
 
 	private ini.cx3d.physics.interfaces.PhysicalObject a;
 	private ini.cx3d.physics.interfaces.PhysicalObject b;

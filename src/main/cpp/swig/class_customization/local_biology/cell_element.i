@@ -31,9 +31,10 @@
 %enddef
 
 %define %CellElement_stdlist()
-  %stdlist_typemap(std::shared_ptr<cx3d::local_biology::CellElement>,
-                   CellElement,
-                   ini.cx3d.localBiology.interfaces.CellElement);
+  %stdlist_typemap_cross_module(std::shared_ptr<cx3d::local_biology::CellElement>,
+                                CellElement,
+                                ini.cx3d.localBiology.interfaces.CellElement,
+                                ini.cx3d.swig.simulation.CellElement);
 %enddef
 
 /**
@@ -41,5 +42,21 @@
  */
 %CellElement_cx3d_shared_ptr();
 %CellElement_java();
+
+#ifdef CELLELEMENT_NATIVE
+    %pragma(java) modulecode=%{
+      static public abstract class NeuriteElementBase extends ini.cx3d.swig.simulation.NeuriteElement {}
+    %}
+#else
+    %pragma(java) modulecode=%{
+      static public abstract class NeuriteElementBase extends ini.cx3d.localBiology.CellElement2 {}
+    %}
+#endif
+
 %CellElement_stdlist();
-%typemap(javaimports) cx3d::local_biology::CellElement "import ini.cx3d.swig.NativeStringBuilder;"
+%typemap(javainterfaces) cx3d::local_biology::CellElement "ini.cx3d.localBiology.interfaces.CellElement"
+%typemap(javaimports) cx3d::local_biology::CellElement %{
+  import ini.cx3d.swig.NativeStringBuilder;
+  import ini.cx3d.swig.simulation.PhysicalObject;
+  import ini.cx3d.swig.simulation.ECM;
+%}

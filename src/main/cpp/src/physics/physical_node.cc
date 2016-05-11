@@ -8,18 +8,19 @@
 #include "string_util.h"
 #include "sim_state_serialization_util.h"
 
-#include "physics/ecm.h"
 #include "physics/substance.h"
 #include "physics/debug/physical_node_debug.h"
 
 #include "spatial_organization/space_node.h"
 #include "spatial_organization/edge.h"
 
+#include "simulation/ecm.h"
+
 namespace cx3d {
 namespace physics {
 
 std::size_t PhysicalNode::id_counter_ = 0;
-std::shared_ptr<ECM> PhysicalNode::ecm_ = std::shared_ptr<ECM>(nullptr);
+std::shared_ptr<simulation::ECM> PhysicalNode::ecm_ = std::shared_ptr<simulation::ECM>(nullptr);
 
 std::shared_ptr<PhysicalNode> PhysicalNode::create() {
   return std::shared_ptr<PhysicalNode>(new PhysicalNode());

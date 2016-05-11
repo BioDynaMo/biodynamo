@@ -1,7 +1,7 @@
 package ini.cx3d.physics.interfaces;
 
 import ini.cx3d.localBiology.interfaces.CellElement;
-import ini.cx3d.localBiology.NeuriteElement;
+import ini.cx3d.localBiology.interfaces.NeuriteElement;
 
 /**
  * Created by lukas on 22.03.16.

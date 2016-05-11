@@ -64,9 +64,10 @@
 
 %define %IntracellularSubstance_typemaps()
   %typemap(javainterfaces) cx3d::physics::IntracellularSubstance "ini.cx3d.physics.interfaces.IntracellularSubstance"
-  %stdlist_typemap(std::shared_ptr<cx3d::physics::IntracellularSubstance>,
-                   IntracellularSubstance,
-                   ini.cx3d.physics.interfaces.IntracellularSubstance);
+  %stdlist_typemap_cross_module(std::shared_ptr<cx3d::physics::IntracellularSubstance>,
+                                IntracellularSubstance,
+                                ini.cx3d.physics.interfaces.IntracellularSubstance,
+                                ini.cx3d.swig.simulation.IntracellularSubstance);
 %enddef
 
  /**

@@ -27,12 +27,13 @@ import static ini.cx3d.utilities.Matrix.normalize;
 import static ini.cx3d.utilities.Matrix.randomNoise;
 
 import ini.cx3d.BaseSimulationTest;
+import ini.cx3d.JavaUtil2;
 import ini.cx3d.Param;
-import ini.cx3d.cells.Cell;
 import ini.cx3d.cells.CellFactory;
-import ini.cx3d.localBiology.AbstractLocalBiologyModule;
+import ini.cx3d.localBiology.LocalBiologyModule;
 import ini.cx3d.physics.factory.SubstanceFactory;
-import ini.cx3d.simulations.ECM;
+import ini.cx3d.simulations.ECMFacade;
+import ini.cx3d.simulations.interfaces.ECM;
 import ini.cx3d.simulations.Scheduler;
 
 public class SomaClusteringTest extends BaseSimulationTest {
@@ -42,11 +43,14 @@ public class SomaClusteringTest extends BaseSimulationTest {
 
     @Override
     public void simulate() throws Exception {
+        ECM ecm = ECMFacade.getInstance();
+
+        new ini.cx3d.swig.simulation.SomaClusteringTest().simulate(ecm, new JavaUtil2());
+        if(true) return;
+
         ini.cx3d.utilities.SystemUtilities.tic();
-        ECM ecm = ECM.getInstance();
-        ECM.setRandomSeed(1L);
-
-
+        JavaUtil2.setRandomSeed(1L);
+        initPhysicalNodeMovementListener();
 //		// set the rectangle for ROI
 //		Rectangle smallWindowRectangle = new Rectangle();
 //		smallWindowRectangle.x = 100;
@@ -64,12 +68,12 @@ public class SomaClusteringTest extends BaseSimulationTest {
             ecm.getPhysicalNodeInstance(randomNoise(700, 3));
         }
         for (int i = 0; i < 60; i++) {
-            Cell c = CellFactory.getCellInstance(randomNoise(50, 3));
+            ini.cx3d.cells.interfaces.Cell c = CellFactory.getCellInstance(randomNoise(50, 3));
             c.getSomaElement().addLocalBiologyModule(new SomaClustering("Yellow"));
             c.setColorForAllPhysicalObjects(Param.X_SOLID_YELLOW);
         }
         for (int i = 0; i < 60; i++) {
-            Cell c = CellFactory.getCellInstance(randomNoise(50, 3));
+            ini.cx3d.cells.interfaces.Cell c = CellFactory.getCellInstance(randomNoise(50, 3));
             c.getSomaElement().addLocalBiologyModule(new SomaClustering("Violet"));
             c.setColorForAllPhysicalObjects(Param.X_SOLID_VIOLET);
         }
@@ -86,20 +90,23 @@ public class SomaClusteringTest extends BaseSimulationTest {
     }
 }
 
-class SomaClustering extends AbstractLocalBiologyModule {
+class SomaClustering extends ini.cx3d.swig.simulation.simulation.AbstractLocalBiologyModuleBase {
 
     private String substanceID;
 
     public SomaClustering(String substanceID) {
+        super();
+        ini.cx3d.swig.simulation.AbstractLocalBiologyModule.registerJavaObject(this);
+        ini.cx3d.swig.simulation.LocalBiologyModule.registerJavaObject(this);
         this.substanceID = substanceID;
     }
 
-    public AbstractLocalBiologyModule getCopy() {
+    public LocalBiologyModule getCopy() {
         return new SomaClustering(substanceID);
     }
 
     public void run() {
-        ini.cx3d.physics.interfaces.PhysicalObject physical = super.cellElement.getPhysical();
+        ini.cx3d.physics.interfaces.PhysicalObject physical = getCellElement().getPhysical();
         // move
         double speed = 100;
         double[] grad = physical.getExtracellularGradient(substanceID);

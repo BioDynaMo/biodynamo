@@ -21,11 +21,10 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 
 package ini.cx3d.utilities;
 
-import ini.cx3d.cells.Cell;
 import ini.cx3d.cells.CellFactory;
-import ini.cx3d.localBiology.SomaElement;
 import ini.cx3d.physics.interfaces.Substance;
-import ini.cx3d.simulations.ECM;
+import ini.cx3d.simulations.ECMFacade;
+import ini.cx3d.simulations.interfaces.ECM;
 
 import java.awt.Color;
 import java.io.FileInputStream;
@@ -35,7 +34,6 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.AbstractSequentialList;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Vector;
 
 public class CellInfoStorage implements Serializable
@@ -50,7 +48,7 @@ public class CellInfoStorage implements Serializable
 	double ioforce = 10;
 	double adherence = 10;
 	Color c;
-	transient Cell cell; 
+	transient ini.cx3d.cells.interfaces.Cell cell;
 	HashMap<String, ini.cx3d.physics.interfaces.Substance> quantity = new HashMap<String, ini.cx3d.physics.interfaces.Substance>();
 	
 	
@@ -59,7 +57,7 @@ public class CellInfoStorage implements Serializable
 		try {
 		      FileOutputStream fout = new FileOutputStream(name);
 		      ObjectOutputStream oos = new ObjectOutputStream(fout);
-		      for (Cell c : ECM.getInstance().getCellList()) {
+		      for (ini.cx3d.cells.interfaces.Cell c : ECMFacade.getInstance().getCellList()) {
 		    	  CellInfoStorage cont = new CellInfoStorage();
 		    	  cont.cellpos = c.getSomaElement().getLocation();
 		    	  cont.c = c.getSomaElement().getPhysical().getColor();
@@ -96,9 +94,9 @@ public class CellInfoStorage implements Serializable
 		   	}
 		  catch (Exception e) { e.printStackTrace(); }
 			 for (CellInfoStorage container : containers) {
-			 Cell cell = CellFactory.getCellInstance(container.cellpos);
+			 ini.cx3d.cells.interfaces.Cell cell = CellFactory.getCellInstance(container.cellpos);
 			 container.cell =cell;
-			 SomaElement soma = cell.getSomaElement();
+			 ini.cx3d.localBiology.interfaces.SomaElement soma = cell.getSomaElement();
 			 cell.getSomaElement().getPhysical().setColor(container.c);
 			 soma.getPhysicalSphere().setMass(container.mass);
 			 soma.getPhysicalSphere().setDiameter(container.diameter);
@@ -108,7 +106,7 @@ public class CellInfoStorage implements Serializable
 		 }
 
 		 for (CellInfoStorage container : containers) {
-			 SomaElement soma = container.cell.getSomaElement();
+			 ini.cx3d.localBiology.interfaces.SomaElement soma = container.cell.getSomaElement();
 			 for (String s : container.quantity.keySet()) {
 				 	ini.cx3d.physics.interfaces.Substance sub = container.quantity.get(s);
 //				 	sub.setQuantity(9999999910000000000.0);

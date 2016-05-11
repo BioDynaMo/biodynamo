@@ -59,6 +59,10 @@ include_directories(${CPP_MAIN_SRC_PATH}/swig)
 file(GLOB SOURCES "${CPP_MAIN_SRC_PATH}/src/*.cc")
 file(GLOB SOURCES "${CPP_MAIN_SRC_PATH}/src/spatial_organization/*.cc")
 file(GLOB SOURCES "${CPP_MAIN_SRC_PATH}/src/physics/*.cc")
+file(GLOB SOURCES "${CPP_MAIN_SRC_PATH}/src/local_biology/*.cc")
+file(GLOB SOURCES "${CPP_MAIN_SRC_PATH}/src/synapse/*.cc")
+file(GLOB SOURCES "${CPP_MAIN_SRC_PATH}/src/cells/*.cc")
+file(GLOB SOURCES "${CPP_MAIN_SRC_PATH}/src/simulation/*.cc")
 
 #--------------------- build cx3d-cpp  ----------------
 #add_library(cx3d-cpp SHARED ${SOURCES})

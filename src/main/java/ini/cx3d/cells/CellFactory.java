@@ -21,12 +21,16 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 
 package ini.cx3d.cells;
 
-import ini.cx3d.localBiology.SomaElement;
+import ini.cx3d.JavaUtil2;
+import ini.cx3d.localBiology.interfaces.SomaElement;
+import ini.cx3d.localBiology.factory.SomaElementFactory;
 import ini.cx3d.physics.interfaces.PhysicalSphere;
 import ini.cx3d.physics.factory.PhysicalSphereFactory;
-import ini.cx3d.simulations.ECM;
+import ini.cx3d.simulations.ECMFacade;
+import ini.cx3d.simulations.interfaces.ECM;
 import ini.cx3d.spatialOrganization.SpatialOrganizationNode;
 import ini.cx3d.spatialOrganization.interfaces.SpaceNode;
+import ini.cx3d.swig.simulation.simulation;
 import ini.cx3d.utilities.Matrix;
 
 import java.util.Vector;
@@ -43,12 +47,16 @@ import java.util.Vector;
 public class CellFactory {
     
     /* Reference to the ECM. */
-    private static ECM ecm = ECM.getInstance();
+    private static ini.cx3d.simulations.interfaces.ECM ecm = ECMFacade.getInstance();
 
 	/**
 	 * <code>CellFactory</code> constructor.
 	 */
     public CellFactory() { 
+    }
+
+    static {
+        ini.cx3d.swig.simulation.Cell.setECM((ini.cx3d.swig.simulation.ECM) ECMFacade.getInstance());
     }
     
     /**
@@ -56,11 +64,13 @@ public class CellFactory {
      * @param cellOrigin
      * @return
      */
-    public static Cell getCellInstance(double[] cellOrigin) {
-    	
+    public static ini.cx3d.cells.interfaces.Cell getCellInstance(double[] cellOrigin) {
+    	if(simulation.useNativeCellFactory) {
+            return ini.cx3d.swig.simulation.CellFactory.getCellInstance(cellOrigin, ECMFacade.getInstance());
+        }
     	// Create new cell
-        Cell cell = new Cell();
-        SomaElement soma = new SomaElement();
+        ini.cx3d.cells.interfaces.Cell cell = new Cell();
+        SomaElement soma = SomaElementFactory.create();
         cell.setSomaElement(soma);        
         PhysicalSphere ps = PhysicalSphereFactory.create();
         soma.setPhysical(ps);
@@ -89,23 +99,24 @@ public class CellFactory {
     * @param noiseStd: Gaussian noise standard deviation
     * @return cellList
     */
-   public static Vector<Cell> get2DCellGrid(double xmin, double xmax, double ymin,
+   public static Vector<ini.cx3d.cells.interfaces.Cell> get2DCellGrid(double xmin, double xmax, double ymin,
 		   double ymax, double zpos, int nx, int ny, double noiseStd) {
 	   
 	   // Insert all generated cells in a vector
-       Vector<Cell> cellList = new Vector<Cell>();
+       Vector<ini.cx3d.cells.interfaces.Cell> cellList = new Vector<ini.cx3d.cells.interfaces.Cell>();
        double dx = (xmax-xmin)/(1+nx);
        double dy = (ymax-ymin)/(1+ny);
        
        // Generate cells
+       JavaUtil2 javaUtil = new JavaUtil2();
        for (int i=1; i < nx+1; i++) {
        	for (int j=1; j < ny+1; j++) {
        		double[] newLocation = {
-       				xmin+i*dx+ecm.getGaussianDouble(0, noiseStd), 
-       				ymin+j*dy+ecm.getGaussianDouble(0, noiseStd), 
-       				zpos + ecm.getGaussianDouble(0, noiseStd)};
+       				xmin+i*dx+javaUtil.getGaussianDouble(0, noiseStd),
+       				ymin+j*dy+javaUtil.getGaussianDouble(0, noiseStd),
+       				zpos + javaUtil.getGaussianDouble(0, noiseStd)};
        		Matrix.print(newLocation);
-       		Cell cell = getCellInstance(newLocation);
+       		ini.cx3d.cells.interfaces.Cell cell = getCellInstance(newLocation);
        		cellList.add(cell);
        	}
        }
@@ -125,27 +136,27 @@ public class CellFactory {
     * @param nx: Number of cells along the x axis
     * @param ny: Number of cells along the y axis
     * @param nz: Number of cells along the z axis
-    * @param noiseStd: Gaussian noise standard deviation
     * @return cellList
     */
-   public static Vector<Cell> get3DCellGrid(double xmin, double xmax, double ymin,
+   public static Vector<ini.cx3d.cells.interfaces.Cell> get3DCellGrid(double xmin, double xmax, double ymin,
 		   double ymax, double zmin, double zmax, int nx, int ny, int nz, double noiseXYStd, double noiseZStd) {
 	   
 	   // Insert all generated cells in a vector
-       Vector<Cell> cellList = new Vector<Cell>();
+       Vector<ini.cx3d.cells.interfaces.Cell> cellList = new Vector<ini.cx3d.cells.interfaces.Cell>();
        double dx = (xmax-xmin)/(1+nx);
        double dy = (ymax-ymin)/(1+ny);
        double dz = (zmax-zmin)/(1+nz);
        
        // Generate cells
+       JavaUtil2 javaUtil = new JavaUtil2();
        for (int i=1; i < nx+1; i++) {
        	for (int j=1; j < ny+1; j++) {
        		for (int k=1; k < nz+1; k++) {
        			double[] newLocation = {
-       					xmin+i*dx+ecm.getGaussianDouble(0, noiseXYStd), 
-       					ymin+j*dy+ecm.getGaussianDouble(0, noiseXYStd), 
-       					zmin+k*dz+ecm.getGaussianDouble(0, noiseZStd)};
-       			Cell cell = getCellInstance(newLocation);
+       					xmin+i*dx+javaUtil.getGaussianDouble(0, noiseXYStd),
+       					ymin+j*dy+javaUtil.getGaussianDouble(0, noiseXYStd),
+       					zmin+k*dz+javaUtil.getGaussianDouble(0, noiseZStd)};
+       			ini.cx3d.cells.interfaces.Cell cell = getCellInstance(newLocation);
        			cellList.add(cell);
        		}
        	}

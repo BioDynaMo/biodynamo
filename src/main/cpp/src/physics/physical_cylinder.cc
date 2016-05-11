@@ -688,7 +688,7 @@ void PhysicalCylinder::updateLocalCoordinateAxis() {
     // If new x_axis_ and old y_axis_ are aligned, we cannot use this scheme;
     // we start by re-defining new perp vectors. Ok, we loose the previous info, but
     // this should almost never happen....
-    z_axis_ = Matrix::perp3(x_axis_, ecm_->matrixNextRandomDouble());
+    z_axis_ = Matrix::perp3(x_axis_, ecm_->matrixNextRandomDouble(), ecm_);
   } else {
     z_axis_ = Matrix::scalarMult((1 / norm_of_z), z_axis_);
   }

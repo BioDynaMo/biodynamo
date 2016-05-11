@@ -36,7 +36,7 @@ import static ini.cx3d.SimStateSerializationUtil.removeLastChar;
  * @author fredericzubler
  *
  */
-public class IntracellularSubstance extends ini.cx3d.swig.physics.IntracellularSubstance implements ini.cx3d.physics.interfaces.IntracellularSubstance {
+public class IntracellularSubstance extends ini.cx3d.swig.simulation.IntracellularSubstance implements ini.cx3d.physics.interfaces.IntracellularSubstance {
 	
 	/* If true, the Substance can be detected from outside of the PhysicalObject
 	 * (equivalent to an membrane bound substance).*/

@@ -49,11 +49,11 @@
 %enddef
 
 %define %Triangle3D_typemaps()
-  %double_stdarray_2dim_array_marshalling(spatialOrganization, 3, 3);
+  %double_stdarray_2dim_array_marshalling(simulation, 3, 3);
   // for class Tetrahedron
-  %Triangle3D_stdarray_array_marshalling(spatialOrganization, 2);
-  %Triangle3D_stdarray_array_marshalling(spatialOrganization, 3);
-  %Triangle3D_stdarray_array_marshalling(spatialOrganization, 4);
+  %Triangle3D_stdarray_array_marshalling(simulation, 2);
+  %Triangle3D_stdarray_array_marshalling(simulation, 3);
+  %Triangle3D_stdarray_array_marshalling(simulation, 4);
 %enddef
 
 %define %Triangle3D_stdarray_array_marshalling(SWIG_MODULE, SIZE)

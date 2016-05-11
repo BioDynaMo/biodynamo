@@ -25,16 +25,18 @@ import static ini.cx3d.SimStateSerializationUtil.keyValue;
 import static ini.cx3d.SimStateSerializationUtil.removeLastChar;
 import static ini.cx3d.utilities.Matrix.distance;
 
-import ini.cx3d.localBiology.*;
 import ini.cx3d.physics.factory.PhysicalBondFactory;
 
-public class PhysicalSpine extends Excrescence{
+import ini.cx3d.synapses.interfaces.Excrescence;
+import ini.cx3d.synapses.interfaces.BiologicalSpine;
+
+public class PhysicalSpine extends Excrescence2 implements ini.cx3d.synapses.interfaces.PhysicalSpine {
 
 	BiologicalSpine biologicalSpine;
 
 	@Override
 	public ini.cx3d.swig.NativeStringBuilder simStateToJson(ini.cx3d.swig.NativeStringBuilder sb) {
-		sb.append("{");
+		sb.append("{"); //fixme bug: should call super.simStateToJson
 
 		keyValue(sb, "biologicalSpine", biologicalSpine);
 
@@ -45,6 +47,7 @@ public class PhysicalSpine extends Excrescence{
 
 	public PhysicalSpine() {
 		super();
+		ini.cx3d.swig.simulation.PhysicalSpine.registerJavaObject(this);
 		super.type = SPINE;
 	}
 	
@@ -56,16 +59,18 @@ public class PhysicalSpine extends Excrescence{
 		super.length = length;
 	}
 	
+	@Override
 	public BiologicalSpine getBiologicalSpine() {
 		return biologicalSpine;
 	}
 
+	@Override
 	public void setBiologicalSpine(BiologicalSpine biologicalSpine) {
 		this.biologicalSpine = biologicalSpine;
 	}
 
 	@Override
-	public boolean synapseWith(Excrescence otherExcressence, boolean createPhysicalBond) {
+	public boolean synapseWith(ini.cx3d.synapses.interfaces.Excrescence otherExcressence, boolean createPhysicalBond) {
 		// only if the other Excrescence is a bouton
 		if(otherExcressence.getType() != BOUTON){
 			(new Throwable(this+" is a spine, and thus can't synapse with "+otherExcressence)).printStackTrace();
@@ -95,14 +100,16 @@ public class PhysicalSpine extends Excrescence{
 		return true;
 	}
 
-	public boolean synapseWithSoma(Excrescence otherExcrescence,
-			boolean creatPhysicalBond) {
+	@Override
+	public boolean synapseWithSoma(ini.cx3d.synapses.interfaces.Excrescence otherExcrescence,
+								   boolean creatPhysicalBond) {
 		return false;
 	}
 	
 
-	public boolean synapseWithShaft(NeuriteElement otherNe, double maxDis, int nrSegments,
-			boolean createPhysicalBond) {
+	@Override
+	public boolean synapseWithShaft(ini.cx3d.localBiology.interfaces.NeuriteElement otherNe, double maxDis, int nrSegments,
+									boolean createPhysicalBond) {
 		return false;
 	}
 

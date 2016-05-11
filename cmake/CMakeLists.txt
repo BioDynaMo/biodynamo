@@ -16,7 +16,7 @@ set(JAVA_TEST_RESOURCE_PATH ../src/test/resources)
 set(JAVA_TEST_SWIG_PATH ../src/test/java/ini/cx3d/swig)
 
 #--------------------- set compiler flags -------------
-set(GCC_COMPILE_FLAGS "-Wall -Wextra -O2")
+set(GCC_COMPILE_FLAGS "-w -O2")
 set(GCC_LINK_FLAGS    "")
 # append
 set( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${GCC_COMPILE_FLAGS}" )
@@ -71,30 +71,21 @@ include_directories(${CPP_MAIN_SRC_PATH}/include)
 include_directories(${CPP_MAIN_SRC_PATH}/swig)
 
 #--------------------- build module cx3d  ----------------
-file(GLOB SOURCES "${CPP_MAIN_SRC_PATH}/src/*.cc")
+# file(GLOB SOURCES "${CPP_MAIN_SRC_PATH}/src/*.cc")
 set(CMAKE_SWIG_FLAGS -package ini.cx3d.swig -c++)
 set(CMAKE_SWIG_OUTDIR ${JAVA_MAIN_SWIG_PATH}/)
 
 set_source_files_properties(${CPP_MAIN_SRC_PATH}/swig/cx3d.i PROPERTIES CPLUSPLUS ON)
 swig_add_module(cx3d java ${CPP_MAIN_SRC_PATH}/swig/cx3d.i ${SOURCES})
 
-#--------------------- build module spatialOrganization  ----------------
-file(GLOB SOURCES "${CPP_MAIN_SRC_PATH}/src/spatial_organization/*.cc")
-set(CMAKE_SWIG_FLAGS -Wall -package ini.cx3d.swig.spatialOrganization -c++)
-set(CMAKE_SWIG_OUTDIR ${JAVA_MAIN_SWIG_PATH}/spatialOrganization)
+#--------------------- build module simulation  ----------------
+file(GLOB SOURCES "${CPP_MAIN_SRC_PATH}/src/**/*.cc" "${CPP_MAIN_SRC_PATH}/src/param.cc" "${CPP_MAIN_SRC_PATH}/src/java_util.cc" "${CPP_MAIN_SRC_PATH}/src/random.cc")
+set(CMAKE_SWIG_FLAGS -Wall -package ini.cx3d.swig.simulation -c++)
+set(CMAKE_SWIG_OUTDIR ${JAVA_MAIN_SWIG_PATH}/simulation)
 
-set_source_files_properties(${CPP_MAIN_SRC_PATH}/swig/spatial_organization.i PROPERTIES CPLUSPLUS ON)
-swig_add_module(cx3d_spatialOrganization java ${CPP_MAIN_SRC_PATH}/swig/spatial_organization.i ${SOURCES})
-target_link_libraries(cx3d_spatialOrganization ${GMP_LIBRARY})
-
-#--------------------- build module physics  ----------------
-file(GLOB SOURCES "${CPP_MAIN_SRC_PATH}/src/physics/*.cc" "${CPP_MAIN_SRC_PATH}/src/param.cc")
-set(CMAKE_SWIG_FLAGS -Wall -package ini.cx3d.swig.physics -c++)
-set(CMAKE_SWIG_OUTDIR ${JAVA_MAIN_SWIG_PATH}/physics)
-
-set_source_files_properties(${CPP_MAIN_SRC_PATH}/swig/physics.i PROPERTIES CPLUSPLUS ON)
-swig_add_module(cx3d_physics java ${CPP_MAIN_SRC_PATH}/swig/physics.i ${SOURCES})
-target_link_libraries(cx3d_physics ${GMP_LIBRARY})
+set_source_files_properties(${CPP_MAIN_SRC_PATH}/swig/simulation.i PROPERTIES CPLUSPLUS ON)
+swig_add_module(cx3d_simulation java ${CPP_MAIN_SRC_PATH}/swig/simulation.i ${SOURCES})
+target_link_libraries(cx3d_simulation ${GMP_LIBRARY})
 
 #---------------------------------------------------------------
 #--------------------- build test project ----------------------

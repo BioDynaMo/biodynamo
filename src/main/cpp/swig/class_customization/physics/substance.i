@@ -39,9 +39,10 @@
 %enddef
 
 %define %Substance_stdlist()
-  %stdlist_typemap(std::shared_ptr<cx3d::physics::Substance>,
-                   Substance,
-                   ini.cx3d.physics.interfaces.Substance);
+  %stdlist_typemap_cross_module(std::shared_ptr<cx3d::physics::Substance>,
+                                Substance,
+                                ini.cx3d.physics.interfaces.Substance,
+                                ini.cx3d.swig.simulation.Substance);
 %enddef
 
 %define %Substance_typemaps()

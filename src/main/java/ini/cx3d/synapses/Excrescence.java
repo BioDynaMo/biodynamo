@@ -25,7 +25,6 @@ import static ini.cx3d.SimStateSerializationUtil.keyValue;
 import static ini.cx3d.utilities.Matrix.*;
 
 import ini.cx3d.SimStateSerializable;
-import ini.cx3d.localBiology.NeuriteElement;
 
 /**
  * General class for dendritic spines and axonal boutons
@@ -33,24 +32,22 @@ import ini.cx3d.localBiology.NeuriteElement;
  * @author fredericzubler
  *
  */
-public abstract class Excrescence extends ini.cx3d.swig.physics.Excrescence implements SimStateSerializable{
+public abstract class Excrescence extends ini.cx3d.swig.simulation.PhysicalBouton implements SimStateSerializable, ini.cx3d.synapses.interfaces.Excrescence {
 	/** the physical object it is attached to.*/
 	ini.cx3d.physics.interfaces.PhysicalObject po;
-	/** the other structure with which it forms a synapse.*/ 
-	Excrescence ex = null; 
+	/** the other structure with which it forms a synapse.*/
+	ini.cx3d.synapses.interfaces.Excrescence ex = null;
 	/** The position on the Physical Object where it's origin is.*/
 	double[] positionOnPO;  // in polar coordinates
 	/** length.*/
 	double length = 1;
 	/** spine or bouton*/
 	int type;
-	public static final int SPINE = 0;
-	public static final int BOUTON = 1;
-	public static final int SOMATICSPINE = 2;
-	public static final int SHAFT = 3;
+
 
 	public Excrescence() {
-		registerJavaObject(this);
+		super();
+		ini.cx3d.swig.simulation.Excrescence.registerJavaObject(this);
 	}
 
 	@Override
@@ -66,61 +63,60 @@ public abstract class Excrescence extends ini.cx3d.swig.physics.Excrescence impl
 		return sb;
 	}
 
-	/**
-	 * Method to create a spine-bouton synapse.
-	 * @param otherExcressence the other spine/bouton
-	 * @param creatPhysicalBond is true, a PhysicalBond is made between the two respective
-	 * PhysicalObjects possessing the Excrescences.
-	 * 
-	 * @return true if the synapse was performed correctly
-	 */
-	public abstract boolean synapseWith(Excrescence otherExcrescence, boolean createPhysicalBond);
-	
-	// Inserted by roman. This modifications allow additionally making synapses with somatic spines and with dendritic shafts.
-	public abstract boolean synapseWithSoma(Excrescence otherExcrescence, boolean createPhysicalBond);
-	public abstract boolean synapseWithShaft(NeuriteElement otherNe, double maxDis, int nrSegments, boolean createPhysicalBond);
 	// The neurite Element to which the shaft synapse is made
-	public NeuriteElement neShaft = null;
+	public ini.cx3d.localBiology.interfaces.NeuriteElement neShaft = null;
 	// End: Changes by roman
 	
 	// dumb getters and setters .......................
-	public Excrescence getEx() {
+	@Override
+	public ini.cx3d.synapses.interfaces.Excrescence getEx() {
 		return ex;
 	}
-	public void setEx(Excrescence ex) {
+	@Override
+	public void setEx(ini.cx3d.synapses.interfaces.Excrescence ex) {
 		this.ex = ex;
 	}
+	@Override
 	public double getLength() {
 		return length;
 	}
+	@Override
 	public void setLength(double length) {
 		this.length = length;
 	}
+	@Override
 	public ini.cx3d.physics.interfaces.PhysicalObject getPo() {
 		return po;
 	}
+	@Override
 	public void setPo(ini.cx3d.physics.interfaces.PhysicalObject po) {
 		this.po = po;
 	}
+	@Override
 	public double[] getPositionOnPO() {
 		return positionOnPO;
 	}
+	@Override
 	public void setPositionOnPO(double[] positionOnPO) {
 		this.positionOnPO = positionOnPO;
 	}
+	@Override
 	public int getType() {
 		return type;
 	}
+	@Override
 	public void setType(int type) {
 		this.type = type;
 	}
 	
 	/** returns the absolute coord of the point where this element is attached on the PO.*/
+	@Override
 	public double[] getProximalEnd(){
 		return po.transformCoordinatesPolarToGlobal(positionOnPO);
 	}
 	
 	/** returns the absolute coord of the point where this element ends.*/
+	@Override
 	public double[] getDistalEnd(){
 		double[] prox =  po.transformCoordinatesPolarToGlobal(positionOnPO);
 		// if no synapse, defined by the length

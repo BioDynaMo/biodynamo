@@ -25,7 +25,7 @@ import static ini.cx3d.utilities.Matrix.add;
 
 import ini.cx3d.physics.factory.PhysicalNodeFactory;
 import ini.cx3d.physics.factory.SubstanceFactory;
-import ini.cx3d.simulations.ECM;
+import ini.cx3d.simulations.interfaces.ECM;
 import ini.cx3d.spatialOrganization.interfaces.SpaceNode;
 import ini.cx3d.physics.interfaces.Substance;
 import ini.cx3d.physics.interfaces.PhysicalNode;
@@ -41,7 +41,7 @@ import java.util.*;
  * 
  * @author fredericzubler
  */
-public class PhysicalNodeMovementListener extends ini.cx3d.swig.physics.PhysicalNodeMovementListener {//implements SpatialOrganizationNodeMovementListener<PhysicalNode>  {
+public class PhysicalNodeMovementListener extends ini.cx3d.swig.simulation.PhysicalNodeMovementListener {//implements SpatialOrganizationNodeMovementListener<PhysicalNode>  {
 
 	// flag we put into each neighboring PhysicalNode before the move
 	// so we recognize a new neighbor after the movement has occurred.

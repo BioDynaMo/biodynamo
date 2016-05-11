@@ -23,13 +23,13 @@ package ini.cx3d.cells;
 
 public abstract class AbstractCellModule implements CellModule {
 
-	protected Cell cell; // and not "private", so that subclass can access it
+	protected ini.cx3d.cells.interfaces.Cell cell; // and not "private", so that subclass can access it
 	
-	public Cell getCell() {
+	public ini.cx3d.cells.interfaces.Cell getCell() {
 		return cell;
 	}
 
-	public void setCell(Cell cell) {
+	public void setCell(ini.cx3d.cells.interfaces.Cell cell) {
 		this.cell = cell;
 	}
 	

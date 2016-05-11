@@ -1,7 +1,7 @@
 package ini.cx3d.physics.factory;
 
 import ini.cx3d.physics.interfaces.PhysicalBond;
-import ini.cx3d.swig.physics.physics;
+import ini.cx3d.swig.simulation.simulation;
 
 import static ini.cx3d.utilities.StringUtilities.toStr;
 
@@ -10,12 +10,12 @@ import static ini.cx3d.utilities.StringUtilities.toStr;
  */
 public class PhysicalBondFactory {
 
-    private static final boolean NATIVE = physics.useNativePhysicalBond;
-    public static final boolean DEBUG = physics.debugPhysicalBond;
+    private static final boolean NATIVE = simulation.useNativePhysicalBond;
+    public static final boolean DEBUG = simulation.debugPhysicalBond;
 
     public static PhysicalBond create() {
         if (NATIVE) {
-            return ini.cx3d.swig.physics.PhysicalBond.create();
+            return ini.cx3d.swig.simulation.PhysicalBond.create();
         } else if(!DEBUG) {
             return new ini.cx3d.physics.PhysicalBond();
         } else {
@@ -25,7 +25,7 @@ public class PhysicalBondFactory {
 
     public static PhysicalBond create(ini.cx3d.physics.interfaces.PhysicalObject a, ini.cx3d.physics.interfaces.PhysicalObject b) {
         if (NATIVE) {
-            return ini.cx3d.swig.physics.PhysicalBond.create(a, b);
+            return ini.cx3d.swig.simulation.PhysicalBond.create(a, b);
         } else if(!DEBUG) {
             return new ini.cx3d.physics.PhysicalBond(a, b);
         } else {
@@ -35,7 +35,7 @@ public class PhysicalBondFactory {
 
     public static PhysicalBond create(ini.cx3d.physics.interfaces.PhysicalObject a, double[] positionOnA, ini.cx3d.physics.interfaces.PhysicalObject b , double[] positionOnB, double restingLength, double springConstant) {
         if (NATIVE) {
-            return ini.cx3d.swig.physics.PhysicalBond.create(a, positionOnA, b, positionOnB, restingLength, springConstant);
+            return ini.cx3d.swig.simulation.PhysicalBond.create(a, positionOnA, b, positionOnB, restingLength, springConstant);
         } else if(!DEBUG) {
             return new ini.cx3d.physics.PhysicalBond(a, positionOnA, b, positionOnB, restingLength, springConstant);
         } else {

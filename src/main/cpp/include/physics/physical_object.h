@@ -28,6 +28,7 @@ class PhysicalBond;
 class PhysicalSphere;
 class PhysicalCylinder;
 class InterObjectForce;
+class IntracellularSubstance;
 
 class PhysicalObject : public PhysicalNode {
  public:

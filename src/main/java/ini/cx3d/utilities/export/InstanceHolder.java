@@ -21,7 +21,6 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 
 package ini.cx3d.utilities.export;
 
-import ini.cx3d.cells.Cell;
 import ini.cx3d.cells.CellFactory;
 
 /**
@@ -31,18 +30,18 @@ import ini.cx3d.cells.CellFactory;
  */
 public class InstanceHolder {
 	
-	private Cell c;
+	private ini.cx3d.cells.interfaces.Cell c;
 	private int id = 0;
 	
 	public InstanceHolder() {}
 	
-	public InstanceHolder(Cell c, int id) {
+	public InstanceHolder(ini.cx3d.cells.interfaces.Cell c, int id) {
 		super();
 		this.c = c;
 		this.id = id;
 	}
 
-	public void setCell(Cell cell) {
+	public void setCell(ini.cx3d.cells.interfaces.Cell cell) {
 		this.c = cell;
 	}
 	
@@ -55,7 +54,7 @@ public class InstanceHolder {
 	}
 
 	public static void main(String[] args) {
-		Cell c = CellFactory.getCellInstance(new double[] {.2, -236.474745, Math.PI});
+		ini.cx3d.cells.interfaces.Cell c = CellFactory.getCellInstance(new double[] {.2, -236.474745, Math.PI});
 		InstanceHolder ch = new InstanceHolder();
 		ch.c = c;
 		System.out.println(ch.toXML("    "));

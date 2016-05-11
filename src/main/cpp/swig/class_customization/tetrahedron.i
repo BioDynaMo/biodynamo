@@ -41,10 +41,10 @@
 
 %define %Tetrahedron_typemaps()
   %Tetrahedron_stdlist();
-  %Tetrahedron_stdarray_array_marshalling(spatialOrganization, 2);
-  %Tetrahedron_stdarray_array_marshalling(spatialOrganization, 3);
+  %Tetrahedron_stdarray_array_marshalling(simulation, 2);
+  %Tetrahedron_stdarray_array_marshalling(simulation, 3);
   %Tetrahedron_type_modification();
-  %int_stdarray_array_marshalling(spatialOrganization, 4);
+  %int_stdarray_array_marshalling(simulation, 4);
 %enddef
 
 %define %Tetrahedron_stdarray_array_marshalling(SWIG_MODULE, SIZE)

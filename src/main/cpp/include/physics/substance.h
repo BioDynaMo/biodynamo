@@ -12,6 +12,9 @@ namespace physics {
 
 class Substance : public SimStateSerializable {
  public:
+  friend struct SubstanceHash;
+  friend struct SubstanceEquals;
+
   Substance();
 
   static std::shared_ptr<Substance> create() {
@@ -147,6 +150,18 @@ class Substance : public SimStateSerializable {
 
  private:
   Substance& operator=(const Substance&) = delete;
+};
+
+struct SubstanceHash {
+  std::size_t operator()(const std::shared_ptr<Substance>& element) const {
+    return reinterpret_cast<std::size_t>(element.get());
+  }
+};
+
+struct SubstanceEqual {
+  bool operator()(const std::shared_ptr<Substance>& lhs, const std::shared_ptr<Substance>& rhs) const {
+    return lhs.get() == rhs.get();
+  }
 };
 
 }  // namespace physics

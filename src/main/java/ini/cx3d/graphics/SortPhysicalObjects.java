@@ -22,7 +22,8 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 package ini.cx3d.graphics;
 
 import ini.cx3d.physics.interfaces.PhysicalCylinder;
-import ini.cx3d.simulations.ECM;
+import ini.cx3d.simulations.ECMFacade;
+import ini.cx3d.simulations.interfaces.ECM;
 
 import java.util.Comparator;
 
@@ -34,7 +35,7 @@ import java.util.Comparator;
 public class SortPhysicalObjects implements Comparator{
 
 	/* ECM reference */
-	ECM ecm = ECM.getInstance();
+	ini.cx3d.simulations.interfaces.ECM ecm = ECMFacade.getInstance();
 
 	public void sortableObject(){
 	}

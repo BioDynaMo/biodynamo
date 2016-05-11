@@ -24,17 +24,19 @@ package ini.cx3d.simulations.tutorial;
 import static ini.cx3d.utilities.Matrix.randomNoise;
 
 import ini.cx3d.BaseSimulationTest;
+import ini.cx3d.JavaUtil2;
 import ini.cx3d.Param;
 import ini.cx3d.cells.Cell;
 import ini.cx3d.cells.CellFactory;
-import ini.cx3d.localBiology.NeuriteElement;
 import ini.cx3d.physics.interfaces.PhysicalCylinder;
-import ini.cx3d.simulations.ECM;
+import ini.cx3d.simulations.ECMFacade;
+import ini.cx3d.simulations.interfaces.ECM;
 import ini.cx3d.simulations.Scheduler;
-import ini.cx3d.synapses.BiologicalBouton;
-import ini.cx3d.synapses.BiologicalSpine;
-import ini.cx3d.synapses.PhysicalBouton;
-import ini.cx3d.synapses.PhysicalSpine;
+import ini.cx3d.synapses.factory.BiologicalBoutonFactory;
+import ini.cx3d.synapses.factory.PhysicalBoutonFactory;
+import ini.cx3d.synapses.factory.PhysicalSpineFactory;
+import ini.cx3d.synapses.interfaces.BiologicalSpine;
+import ini.cx3d.synapses.factory.BiologicalSpineFactory;
 
 public class SimpleSynapseTest extends BaseSimulationTest {
 
@@ -44,8 +46,13 @@ public class SimpleSynapseTest extends BaseSimulationTest {
 
 	@Override
 	public void simulate() throws Exception {
-		ECM.setRandomSeed(1L);
-		ECM ecm = ECM.getInstance();
+		ECM ecm = ECMFacade.getInstance();
+
+		new ini.cx3d.swig.simulation.SimpleSynapseTest().simulate(ECMFacade.getInstance(), new JavaUtil2());
+		if(true) return;
+
+		JavaUtil2.setRandomSeed(1L);
+		initPhysicalNodeMovementListener();
 		int nbOfAdditionalNodes = 10;
 		for (int i = 0; i < nbOfAdditionalNodes; i++) {
 			double[] coord = randomNoise(500, 3);
@@ -54,18 +61,18 @@ public class SimpleSynapseTest extends BaseSimulationTest {
 
 		double[] up = {0.0,0.0,1.0}, down = {0.0,0.0,-1.0};
 		// 1) two cells : and excitatory (down) and an inhibitory one (up)
-		Cell excit = CellFactory.getCellInstance(new double[] {-2.5,0,-30});
-		excit.setNeuroMLType(Cell.ExcitatoryCell);
+		ini.cx3d.cells.interfaces.Cell excit = CellFactory.getCellInstance(new double[] {-2.5,0,-30});
+		excit.setNeuroMLType(Cell.NeuroMLType.kExcitatatory);
 		excit.setColorForAllPhysicalObjects(Param.GREEN);
-		Cell inhib = CellFactory.getCellInstance(new double[] {2.5,0,30});
-		inhib.setNeuroMLType(Cell.InhibitoryCell);
+		ini.cx3d.cells.interfaces.Cell inhib = CellFactory.getCellInstance(new double[] {2.5,0,30});
+		inhib.setNeuroMLType(Cell.NeuroMLType.kInhibitory);
 		inhib.setColorForAllPhysicalObjects(Param.RED);
 		// 2) excitatory cell makes an axon, inhibitory cell makes a dendrite
-		NeuriteElement axon = excit.getSomaElement().extendNewNeurite(up);
-		axon.setIsAnAxon(true);
+		ini.cx3d.localBiology.interfaces.NeuriteElement axon = excit.getSomaElement().extendNewNeurite(up);
+		axon.setAxon(true);
 		PhysicalCylinder axonCyl = axon.getPhysicalCylinder();
-		NeuriteElement dendrite = inhib.getSomaElement().extendNewNeurite(down);
-		dendrite.setIsAnAxon(false);
+		ini.cx3d.localBiology.interfaces.NeuriteElement dendrite = inhib.getSomaElement().extendNewNeurite(down);
+		dendrite.setAxon(false);
 		PhysicalCylinder dendriteCyl = dendrite.getPhysicalCylinder();
 		//		elongate them
 		while (axon.getLocation()[2]<dendrite.getLocation()[2]) {
@@ -79,10 +86,10 @@ public class SimpleSynapseTest extends BaseSimulationTest {
 		double[] polarAxonCoord = axonCyl.transformCoordinatesGlobalToPolar(globalCoord);
 		polarAxonCoord = new double[] {polarAxonCoord[0], polarAxonCoord[1]}; // so r is implicit
 
-		PhysicalBouton pBouton = new PhysicalBouton(axonCyl,polarAxonCoord,3);
+		ini.cx3d.synapses.interfaces.PhysicalBouton pBouton = PhysicalBoutonFactory.create(axonCyl, polarAxonCoord, 3);
 		axonCyl.addExcrescence(pBouton);
 		// 		create the biological part and set call backs
-		BiologicalBouton bBouton = new BiologicalBouton();
+		ini.cx3d.synapses.interfaces.BiologicalBouton bBouton = BiologicalBoutonFactory.create();
 		pBouton.setBiologicalBouton(bBouton);
 		bBouton.setPhysicalBouton(pBouton);
 
@@ -91,10 +98,10 @@ public class SimpleSynapseTest extends BaseSimulationTest {
 		double[] polarDendriteCoord = dendriteCyl.transformCoordinatesGlobalToPolar(globalCoord);
 		polarDendriteCoord = new double[] {polarDendriteCoord[0], polarDendriteCoord[1]}; // so r is implicit
 
-		PhysicalSpine pSpine = new PhysicalSpine(dendriteCyl,polarDendriteCoord,3);
+		ini.cx3d.synapses.interfaces.PhysicalSpine pSpine = PhysicalSpineFactory.create(dendriteCyl, polarDendriteCoord, 3);
 		dendriteCyl.addExcrescence(pSpine);
 		// 		create the biological part and set call backs
-		BiologicalSpine bSpine = new BiologicalSpine();
+		BiologicalSpine bSpine = BiologicalSpineFactory.create();
 		pSpine.setBiologicalSpine(bSpine);
 		bSpine.setPhysicalSpine(pSpine);
 

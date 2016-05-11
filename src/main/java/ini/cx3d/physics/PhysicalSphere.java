@@ -34,19 +34,19 @@ import static ini.cx3d.utilities.Matrix.scalarMult;
 import static ini.cx3d.utilities.Matrix.subtract;
 import static ini.cx3d.utilities.StringUtilities.toStr;
 
+import ini.cx3d.JavaUtil2;
 import ini.cx3d.Param;
-import ini.cx3d.cells.Cell;
 import ini.cx3d.cells.CellFactory;
-import ini.cx3d.localBiology.CellElement;
-import ini.cx3d.localBiology.SomaElement;
+import ini.cx3d.localBiology.interfaces.CellElement;
 import ini.cx3d.physics.factory.PhysicalCylinderFactory;
 import ini.cx3d.physics.factory.PhysicalObjectFactory;
 import ini.cx3d.physics.factory.PhysicalSphereFactory;
-import ini.cx3d.simulations.ECM;
+import ini.cx3d.simulations.ECMFacade;
+import ini.cx3d.simulations.interfaces.ECM;
 import ini.cx3d.spatialOrganization.PositionNotAllowedException;
 import ini.cx3d.spatialOrganization.SpatialOrganizationNode;
 import ini.cx3d.spatialOrganization.interfaces.SpaceNode;
-import ini.cx3d.swig.physics.physics;
+import ini.cx3d.swig.simulation.simulation;
 import ini.cx3d.physics.interfaces.PhysicalCylinder;
 
 import java.util.*;
@@ -67,11 +67,11 @@ import ini.cx3d.physics.interfaces.PhysicalObject;
  *
  */
 
-public class PhysicalSphere extends physics.PhysicalSphereBase implements ini.cx3d.physics.interfaces.PhysicalSphere {//ini.cx3d.swig.physics.PhysicalSphere{//ini.cx3d.physics.PhysicalObject2 {
+public class PhysicalSphere extends simulation.PhysicalSphereBase implements ini.cx3d.physics.interfaces.PhysicalSphere {//ini.cx3d.swig.simulation.PhysicalSphere{//ini.cx3d.physics.PhysicalObject2 {
 
 
 	/* Local biology object associated with this PhysicalSphere.*/
-	private SomaElement somaElement = null;
+	private ini.cx3d.localBiology.interfaces.SomaElement somaElement = null;
 
 	/* The PhysicalCylinders attached to this sphere*/
 	AbstractSequentialList<ini.cx3d.physics.interfaces.PhysicalCylinder> daughters = new LinkedList<>();
@@ -148,9 +148,9 @@ public class PhysicalSphere extends physics.PhysicalSphereBase implements ini.cx
 	public PhysicalSphere() {
 		super();
 		//getRwLock().writeLock().lock();
-		ini.cx3d.swig.physics.PhysicalNode.registerJavaObject(this);
-		ini.cx3d.swig.physics.PhysicalObject.registerJavaObject(this);
-		ini.cx3d.swig.physics.PhysicalSphere.registerJavaObject(this);
+		ini.cx3d.swig.simulation.PhysicalNode.registerJavaObject(this);
+		ini.cx3d.swig.simulation.PhysicalObject.registerJavaObject(this);
+		ini.cx3d.swig.simulation.PhysicalSphere.registerJavaObject(this);
 		setMass(1);
 		setAdherence(Param.SPHERE_DEFAULT_ADHERENCE);
 		setDiameter(Param.SPHERE_DEFAULT_DIAMETER, false);
@@ -346,7 +346,7 @@ public class PhysicalSphere extends physics.PhysicalSphereBase implements ini.cx
 	 * @return the somaElement
 	 */
 	@Override
-	public SomaElement getSomaElement() {
+	public ini.cx3d.localBiology.interfaces.SomaElement getSomaElement() {
 
 		try{
 			//getRwLock().readLock().lock();
@@ -362,7 +362,7 @@ public class PhysicalSphere extends physics.PhysicalSphereBase implements ini.cx
 	 * @param somaElement the somaElement to set
 	 */
 	@Override
-	public void setSomaElement(SomaElement somaElement) {
+	public void setSomaElement(ini.cx3d.localBiology.interfaces.SomaElement somaElement) {
 
 		if (somaElement != null) {
 			//getRwLock().writeLock().lock();
@@ -523,8 +523,8 @@ public class PhysicalSphere extends physics.PhysicalSphereBase implements ini.cx
 			e.printStackTrace();
 		}
 		cyl.setSoNode((SpaceNode) newSON);
-		//ECM.getInstance()
-		ECM.getInstance().addPhysicalCylinder(cyl);
+		//ECMFacade.getInstance()
+		ECMFacade.getInstance().addPhysicalCylinder(cyl);
 		//getRwLock().writeLock().unlock(); //wrong spot changeomorrow!! but solved I guess
 		return cyl;
 	}
@@ -611,7 +611,7 @@ public class PhysicalSphere extends physics.PhysicalSphereBase implements ini.cx
 
 		// D) register new Sphere to ECM
 		//getRwLock().writeLock().lock();
-		ECM.getInstance().addPhysicalSphere(newSphere);  // this method also adds the PhysicalNode
+		ECMFacade.getInstance().addPhysicalSphere(newSphere);  // this method also adds the PhysicalNode
 
 		// E) This sphere becomes the 1st daughter.....................................................
 		// move this cx3d.cells on opposite direction (move the centralNode & the massLocation)
@@ -836,10 +836,10 @@ public class PhysicalSphere extends physics.PhysicalSphereBase implements ini.cx
 
 
 
-		// 1) "artificial force" to maintain the sphere in the ECM.getInstance() simulation boundaries--------
+		// 1) "artificial force" to maintain the sphere in the ECMFacade.getInstance() simulation boundaries--------
 
-		if(ECM.getInstance().getArtificialWallForSpheres()){
-			double[] forceFromArtificialWall = ECM.getInstance().forceFromArtificialWall(getMassLocation(), getDiameter() * 0.5);
+		if(ECMFacade.getInstance().getArtificialWallForSpheres()){
+			double[] forceFromArtificialWall = ECMFacade.getInstance().forceFromArtificialWall(getMassLocation(), getDiameter() * 0.5);
 			translationForceOnPointMass[0] += forceFromArtificialWall[0];
 			translationForceOnPointMass[1] += forceFromArtificialWall[1];
 			translationForceOnPointMass[2] += forceFromArtificialWall[2];
@@ -1106,7 +1106,7 @@ public class PhysicalSphere extends physics.PhysicalSphereBase implements ini.cx
 		// is chosen randomly.
 		PhysicalObject po1 = this;
 		PhysicalObject po2 = cyl;
-		if(ECM.getRandomDouble()<0.5){
+		if(JavaUtil2.getRandomDouble()<0.5){
 			po1 = cyl;
 			po2 = this;
 		}
@@ -1153,8 +1153,8 @@ public class PhysicalSphere extends physics.PhysicalSphereBase implements ini.cx
 		double phi = p/4;
 		double theta = p*17;
 
-		Cell c = CellFactory.getCellInstance(new double[] {10,-0.14,30});
-		SomaElement soma = c.getSomaElement();
+		ini.cx3d.cells.interfaces.Cell c = CellFactory.getCellInstance(new double[] {10,-0.14,30});
+		ini.cx3d.localBiology.interfaces.SomaElement soma = c.getSomaElement();
 		ini.cx3d.physics.interfaces.PhysicalSphere sphere = soma.getPhysicalSphere();
 //		NeuriteElement ne = c.getSomaElement().extendNewNeurite(2, phi, theta);
 //		PhysicalCylinder pc = ne.getPhysicalCylinder();

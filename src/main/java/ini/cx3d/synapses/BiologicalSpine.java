@@ -21,12 +21,10 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 
 package ini.cx3d.synapses;
 
-import ini.cx3d.SimStateSerializable;
-
 import static ini.cx3d.SimStateSerializationUtil.keyValue;
 
-public class BiologicalSpine implements SimStateSerializable{
-	PhysicalSpine physicalSpine;
+public class BiologicalSpine implements ini.cx3d.synapses.interfaces.BiologicalSpine {
+	ini.cx3d.synapses.interfaces.PhysicalSpine physicalSpine;
 
 	@Override
 	public ini.cx3d.swig.NativeStringBuilder simStateToJson(ini.cx3d.swig.NativeStringBuilder sb) {
@@ -40,11 +38,13 @@ public class BiologicalSpine implements SimStateSerializable{
 		return sb;
 	}
 
-	public PhysicalSpine getPhysicalSpine() {
+	@Override
+	public ini.cx3d.synapses.interfaces.PhysicalSpine getPhysicalSpine() {
 		return physicalSpine;
 	}
 
-	public void setPhysicalSpine(PhysicalSpine physicalSpine) {
+	@Override
+	public void setPhysicalSpine(ini.cx3d.synapses.interfaces.PhysicalSpine physicalSpine) {
 		this.physicalSpine = physicalSpine;
 	}
 	

@@ -13,6 +13,7 @@
 
 %include "util.i"
 %include "cx3d_shared_ptr.i"
+%include "std_list_typemap.i"
 
 %define %PO_hybrid(FULL_CPP_TYPE, JAVA_PROXY_CLASS_NAME, CLASS_NAME,
                               JAVA_TYPE, JNI_TYPE, ADDITIONAL_CODE, USE_NATIVE)
@@ -133,9 +134,10 @@
 %enddef
 
 %define %PhysicalObject_stdlist()
-  %stdlist_typemap(std::shared_ptr<cx3d::physics::PhysicalObject>,
-                   PhysicalObject,
-                   ini.cx3d.physics.interfaces.PhysicalObject);
+  %stdlist_typemap_cross_module(std::shared_ptr<cx3d::physics::PhysicalObject>,
+                                PhysicalObject,
+                                ini.cx3d.physics.interfaces.PhysicalObject,
+                                ini.cx3d.swig.simulation.PhysicalObject);
 %enddef
 
 /**
@@ -149,13 +151,17 @@
 #endif
 %PhysicalObject_stdlist();
 %typemap(javainterfaces) cx3d::physics::PhysicalObject "ini.cx3d.physics.interfaces.PhysicalObject"
-%typemap(javaimports) cx3d::physics::PhysicalObject "import ini.cx3d.swig.NativeStringBuilder;"
+%typemap(javaimports) cx3d::physics::PhysicalObject %{
+  import ini.cx3d.swig.NativeStringBuilder;
+  import ini.cx3d.swig.simulation.CellElement;
+  import ini.cx3d.swig.simulation.Excrescence;
+%}
 
 // class hierarchy modifications
 #ifdef PHYSICALOBJECT_NATIVE
     %pragma(java) modulecode=%{
-      static public abstract class PhysicalSphereBase extends ini.cx3d.swig.physics.PhysicalSphere {}
-      static public abstract class PhysicalCylinderBase extends ini.cx3d.swig.physics.PhysicalCylinder {}
+      static public abstract class PhysicalSphereBase extends ini.cx3d.swig.simulation.PhysicalSphere {}
+      static public abstract class PhysicalCylinderBase extends ini.cx3d.swig.simulation.PhysicalCylinder {}
     %}
 #else
     %pragma(java) modulecode=%{

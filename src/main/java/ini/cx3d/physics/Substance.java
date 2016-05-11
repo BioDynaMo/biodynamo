@@ -41,7 +41,7 @@ import static ini.cx3d.SimStateSerializationUtil.removeLastChar;
  */
 
 
-public class Substance extends ini.cx3d.swig.physics.Substance implements ini.cx3d.physics.interfaces.Substance {
+public class Substance extends ini.cx3d.swig.simulation.Substance implements ini.cx3d.physics.interfaces.Substance {
 	
 	/* Name of the Substance.               */
 	protected String id;

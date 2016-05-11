@@ -57,5 +57,14 @@
   %setJavaDebugSwitch(PhysicalSphere, false);
 #endif
 
-%typemap(javaimports) cx3d::physics::PhysicalSphere "import ini.cx3d.swig.NativeStringBuilder;"
+%stdlist_typemap_cross_module(std::shared_ptr<cx3d::physics::PhysicalSphere>,
+                              PhysicalSphere,
+                              ini.cx3d.physics.interfaces.PhysicalSphere,
+                              ini.cx3d.swig.simulation.PhysicalSphere);
+
+%typemap(javaimports) cx3d::physics::PhysicalSphere %{
+  import ini.cx3d.swig.NativeStringBuilder;
+  import ini.cx3d.swig.simulation.CellElement;
+  import ini.cx3d.swig.simulation.SomaElement;
+%}
 %typemap(javainterfaces) cx3d::physics::PhysicalSphere "ini.cx3d.physics.interfaces.PhysicalSphere"

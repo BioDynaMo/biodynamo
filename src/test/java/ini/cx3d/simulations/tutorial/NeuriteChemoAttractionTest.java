@@ -27,14 +27,14 @@ import static ini.cx3d.utilities.Matrix.randomNoise;
 import static ini.cx3d.utilities.Matrix.scalarMult;
 
 import ini.cx3d.BaseSimulationTest;
+import ini.cx3d.JavaUtil2;
 import ini.cx3d.Param;
-import ini.cx3d.cells.Cell;
 import ini.cx3d.cells.CellFactory;
-import ini.cx3d.localBiology.AbstractLocalBiologyModule;
+import ini.cx3d.localBiology.LocalBiologyModule;
 import ini.cx3d.localBiology.interfaces.CellElement;
-import ini.cx3d.localBiology.NeuriteElement;
 import ini.cx3d.physics.factory.SubstanceFactory;
-import ini.cx3d.simulations.ECM;
+import ini.cx3d.simulations.ECMFacade;
+import ini.cx3d.simulations.interfaces.ECM;
 import ini.cx3d.simulations.Scheduler;
 
 import java.awt.Color;
@@ -46,8 +46,14 @@ public class NeuriteChemoAttractionTest extends BaseSimulationTest {
 
 	@Override
 	public void simulate() {
-		ECM ecm = ECM.getInstance();
-		ECM.setRandomSeed(1L);
+		ECM ecm = ECMFacade.getInstance();
+
+
+		new ini.cx3d.swig.simulation.NeuriteChemoAttractionTest().simulate(ECMFacade.getInstance(), new JavaUtil2());
+		if(true) return;
+
+		JavaUtil2.setRandomSeed(1L);
+		initPhysicalNodeMovementListener();
 		ini.cx3d.physics.interfaces.Substance attractant = SubstanceFactory.create("A", Color.red);
 		ecm.addArtificialGaussianConcentrationZ(attractant, 1.0, 400.0, 160.0);
 
@@ -57,9 +63,9 @@ public class NeuriteChemoAttractionTest extends BaseSimulationTest {
 			ecm.getPhysicalNodeInstance(coord);
 		}
 
-		Cell c = CellFactory.getCellInstance(new double[]{0.0, 0.0, 0.0});
+		ini.cx3d.cells.interfaces.Cell c = CellFactory.getCellInstance(new double[]{0.0, 0.0, 0.0});
 		c.setColorForAllPhysicalObjects(Param.VIOLET);
-		NeuriteElement neurite = c.getSomaElement().extendNewNeurite();
+		ini.cx3d.localBiology.interfaces.NeuriteElement neurite = c.getSomaElement().extendNewNeurite();
 		neurite.getPhysicalCylinder().setDiameter(2.0);
 		neurite.addLocalBiologyModule(new NeuriteChemoAttraction("A"));
 
@@ -69,10 +75,10 @@ public class NeuriteChemoAttractionTest extends BaseSimulationTest {
 	}
 }
 
-class NeuriteChemoAttraction extends AbstractLocalBiologyModule {
+class NeuriteChemoAttraction extends ini.cx3d.swig.simulation.simulation.AbstractLocalBiologyModuleBase {
 
 
-	static ECM ecm = ECM.getInstance();
+	static ECM ecm = ECMFacade.getInstance();
 	
 	private double[] direction;
 
@@ -81,10 +87,16 @@ class NeuriteChemoAttraction extends AbstractLocalBiologyModule {
 	private double branchingFactor = 0.005;
 	
 	public NeuriteChemoAttraction(String substanceID) {
+		super();
+		ini.cx3d.swig.simulation.AbstractLocalBiologyModule.registerJavaObject(this);
+		ini.cx3d.swig.simulation.LocalBiologyModule.registerJavaObject(this);
 		this.substanceID = substanceID;
 	}
 	
 	public NeuriteChemoAttraction(String substanceID, double branchingFactor) {
+		super();
+		ini.cx3d.swig.simulation.AbstractLocalBiologyModule.registerJavaObject(this);
+		ini.cx3d.swig.simulation.LocalBiologyModule.registerJavaObject(this);
 		this.substanceID = substanceID;
 		this.branchingFactor = branchingFactor;
 	}
@@ -107,12 +119,12 @@ class NeuriteChemoAttraction extends AbstractLocalBiologyModule {
 		return true;
 	}
 	
-	public AbstractLocalBiologyModule getCopy() {
+	public LocalBiologyModule getCopy() {
 		return new NeuriteChemoAttraction(substanceID);
 	}
 
 	public void run() {		
-		ini.cx3d.physics.interfaces.PhysicalObject physical = super.cellElement.getPhysical();
+		ini.cx3d.physics.interfaces.PhysicalObject physical = getCellElement().getPhysical();
 		double concentration = physical.getExtracellularConcentration(substanceID);
 		double[] grad = physical.getExtracellularGradient(substanceID);
 		
@@ -134,8 +146,8 @@ class NeuriteChemoAttraction extends AbstractLocalBiologyModule {
 		direction = normalize(add(scalarMult(5,direction),newStepDirection));
 
 		// 2) branching based on concentration:
-		if(ecm.getRandomDouble()<concentration*branchingFactor){
-			((NeuriteElement)cellElement).bifurcate();
+		if(ecm.getRandomDouble1()<concentration*branchingFactor){
+			((ini.cx3d.localBiology.interfaces.NeuriteElement)getCellElement()).bifurcate();
 		}
 	}
 

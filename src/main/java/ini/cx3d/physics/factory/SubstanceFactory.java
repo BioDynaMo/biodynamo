@@ -1,7 +1,7 @@
 package ini.cx3d.physics.factory;
 
 import ini.cx3d.physics.interfaces.Substance;
-import ini.cx3d.swig.physics.physics;
+import ini.cx3d.swig.simulation.simulation;
 
 import java.awt.Color;
 
@@ -10,12 +10,12 @@ import java.awt.Color;
  */
 public class SubstanceFactory {
 
-    private static final boolean NATIVE = physics.useNativeSubstance;
-    public static final boolean DEBUG = physics.debugSubstance;
+    private static final boolean NATIVE = simulation.useNativeSubstance;
+    public static final boolean DEBUG = simulation.debugSubstance;
 
     public static Substance create() {
         if (NATIVE) {
-            return ini.cx3d.swig.physics.Substance.create();
+            return ini.cx3d.swig.simulation.Substance.create();
         } else if(!DEBUG) {
             return new ini.cx3d.physics.Substance();
         } else {
@@ -25,7 +25,7 @@ public class SubstanceFactory {
 
     public static Substance create(String id, double diffusionConstant, double degradationConstant) {
         if (NATIVE) {
-            return ini.cx3d.swig.physics.Substance.create(id, diffusionConstant, degradationConstant);
+            return ini.cx3d.swig.simulation.Substance.create(id, diffusionConstant, degradationConstant);
         } else if(!DEBUG) {
             return new ini.cx3d.physics.Substance(id, diffusionConstant, degradationConstant);
         } else {
@@ -35,7 +35,7 @@ public class SubstanceFactory {
 
     public static Substance create(String id, Color color) {
         if (NATIVE) {
-            return ini.cx3d.swig.physics.Substance.create(id, color);
+            return ini.cx3d.swig.simulation.Substance.create(id, color);
         } else if(!DEBUG) {
             return new ini.cx3d.physics.Substance(id, color);
         } else {
@@ -45,7 +45,7 @@ public class SubstanceFactory {
 
     public static Substance create(Substance templateSubstance) {
         if (NATIVE) {
-            return ini.cx3d.swig.physics.Substance.create(templateSubstance);
+            return ini.cx3d.swig.simulation.Substance.create(templateSubstance);
         } else if(!DEBUG) {
             return new ini.cx3d.physics.Substance((ini.cx3d.physics.Substance) templateSubstance);
         } else {

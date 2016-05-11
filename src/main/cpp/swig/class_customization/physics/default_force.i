@@ -47,7 +47,11 @@
 %define %DefaultForce_typemaps()
   %DefaultForce_stdlist();
   %typemap(javainterfaces) cx3d::physics::DefaultForce "ini.cx3d.physics.InterObjectForce"
-  %typemap(javaimports) cx3d::physics::DefaultForce "import ini.cx3d.swig.NativeStringBuilder;"
+  %typemap(javaimports) cx3d::physics::DefaultForce %{
+    import ini.cx3d.swig.NativeStringBuilder;
+    import ini.cx3d.swig.simulation.JavaUtil2;
+
+%}
 %enddef
 
  /**

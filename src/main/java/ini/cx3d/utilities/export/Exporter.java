@@ -21,9 +21,10 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 
 package ini.cx3d.utilities.export;
 
-import ini.cx3d.cells.Cell;
-import ini.cx3d.localBiology.NeuriteElement;
-import ini.cx3d.simulations.ECM;
+import ini.cx3d.localBiology.interfaces.NeuriteElement;
+import ini.cx3d.simulations.ECMFacade;
+import ini.cx3d.simulations.interfaces.ECM;
+import ini.cx3d.swig.simulation.Cell;
 import ini.cx3d.synapses.Excrescence;
 
 import java.io.BufferedWriter;
@@ -44,13 +45,13 @@ public class Exporter {
 	// two types of cells: excitatory (E) or inhibitory (I)
 	private static PopulationHolder inhibitoryPopulation = new PopulationHolder("Inhibitory_cells", "inh_lif");
 	private static PopulationHolder excitatoryPopulation = new PopulationHolder("Excitatory_cells", "exz_lif");
-	private static HashMap<Cell, Integer> inhibID = new HashMap<Cell, Integer>();
-	private static HashMap<Cell, Integer> excitID = new HashMap<Cell, Integer>();
+	private static HashMap<ini.cx3d.cells.interfaces.Cell, Integer> inhibID = new HashMap<ini.cx3d.cells.interfaces.Cell, Integer>();
+	private static HashMap<ini.cx3d.cells.interfaces.Cell, Integer> excitID = new HashMap<ini.cx3d.cells.interfaces.Cell, Integer>();
 	// four types of projections : EE,EI,IE,II
-	private static ProjectionHolder projection_E_to_E = new ProjectionHolder("E_to_E", Cell.ExcitatoryCell, Cell.ExcitatoryCell, "ExzSyn");
-	private static ProjectionHolder projection_E_to_I = new ProjectionHolder("E_to_I", Cell.ExcitatoryCell, Cell.InhibitoryCell, "ExzSyn");;
-	private static ProjectionHolder projection_I_to_E = new ProjectionHolder("I_to_E", Cell.InhibitoryCell, Cell.ExcitatoryCell, "InhSyn");;
-	private static ProjectionHolder projection_I_to_I = new ProjectionHolder("I_to_I", Cell.InhibitoryCell, Cell.InhibitoryCell, "InhSyn");;
+	private static ProjectionHolder projection_E_to_E = new ProjectionHolder("E_to_E", ini.cx3d.cells.interfaces.Cell.ExcitatoryCell, ini.cx3d.cells.interfaces.Cell.ExcitatoryCell, "ExzSyn");
+	private static ProjectionHolder projection_E_to_I = new ProjectionHolder("E_to_I", ini.cx3d.cells.interfaces.Cell.ExcitatoryCell, ini.cx3d.cells.interfaces.Cell.InhibitoryCell, "ExzSyn");;
+	private static ProjectionHolder projection_I_to_E = new ProjectionHolder("I_to_E", ini.cx3d.cells.interfaces.Cell.InhibitoryCell, ini.cx3d.cells.interfaces.Cell.ExcitatoryCell, "InhSyn");;
+	private static ProjectionHolder projection_I_to_I = new ProjectionHolder("I_to_I", ini.cx3d.cells.interfaces.Cell.InhibitoryCell, ini.cx3d.cells.interfaces.Cell.InhibitoryCell, "InhSyn");;
 
 
 	public static void saveExport() {
@@ -84,22 +85,22 @@ public class Exporter {
 	 * @param ne
 	 * @return
 	 */
-	public static Vector<ConnectionHolder> dispatchSynapsesOfThisNeuriteElement(Vector<ConnectionHolder> chs, NeuriteElement ne){
+	public static Vector<ConnectionHolder> dispatchSynapsesOfThisNeuriteElement(Vector<ConnectionHolder> chs, ini.cx3d.localBiology.interfaces.NeuriteElement ne){
 		// all excresc.
-		AbstractSequentialList<Excrescence> exs = ne.getPhysicalCylinder().getExcrescences();
+		AbstractSequentialList<ini.cx3d.synapses.interfaces.Excrescence> exs = ne.getPhysicalCylinder().getExcrescences();
 		for (int i = 0; i < exs.size(); i++) {
-			Excrescence ex = exs.get(i);
+			ini.cx3d.synapses.interfaces.Excrescence ex = exs.get(i);
 			// Are they connected to something? Are they pre-synaptic?
 			if(ex.getEx() != null && ex.getType() == Excrescence.BOUTON){  
 				// the two cells involved
-				Cell preCell = ne.getCell();
-				Cell postCell = ex.getEx().getPo().getCellElement().getCell();
+				ini.cx3d.cells.interfaces.Cell preCell = ne.getCell();
+				ini.cx3d.cells.interfaces.Cell postCell = ex.getEx().getPo().getCellElement().getCell();
 				// synapse connection holder between them
 				ConnectionHolder ch;
 
 				// add it to the special collections
-				if(ne.getCell().getNeuroMLType() == Cell.ExcitatoryCell){
-					if(postCell.getNeuroMLType() == Cell.ExcitatoryCell){
+				if(ne.getCell().getNeuroMLType() == Cell.NeuroMLType.kExcitatatory){
+					if(postCell.getNeuroMLType() == Cell.NeuroMLType.kExcitatatory){
 						// Ex -> Ex
 						ch = new ConnectionHolder(excitID.get(preCell), excitID.get(postCell));
 						projection_E_to_E.addConnectionHolder(ch);
@@ -110,7 +111,7 @@ public class Exporter {
 					}
 				}else{
 					System.out.println("Exporter.dispatchSynapsesOfThisNeuriteElement()");
-					if(postCell.getNeuroMLType() == Cell.ExcitatoryCell){
+					if(postCell.getNeuroMLType() == Cell.NeuroMLType.kExcitatatory){
 						// In -> Ex
 						ch = new ConnectionHolder(inhibID.get(preCell), excitID.get(postCell));
 						projection_I_to_E.addConnectionHolder(ch);
@@ -134,20 +135,20 @@ public class Exporter {
 	}
 
 	public static StringBuilder neuroML_level3_export(){
-		ECM ecm = ECM.getInstance();
+		ECM ecm = ECMFacade.getInstance();
 		// Dispatch all cells in Excitatory or Inhibitory category
 		int excitCounter = 0;
 		int inhibCounter = 0;
 		for (int i = 0; i < ecm.getCellList().size(); i++) {
-			Cell c = ecm.getCellList().get(i);
-			if(c.getNeuroMLType() == Cell.ExcitatoryCell){
+			ini.cx3d.cells.interfaces.Cell c = ecm.getCellList().get(i);
+			if(c.getNeuroMLType() == Cell.NeuroMLType.kExcitatatory){
 				// put into the hash to retreive it's id
 				excitID.put(c, new Integer(excitCounter));
 				// put an instance holder
 				InstanceHolder ih = new InstanceHolder(c, excitCounter);
 				excitatoryPopulation.addInstanceHolder(ih);
 				excitCounter++;
-			}else if(c.getNeuroMLType() == Cell.InhibitoryCell){
+			}else if(c.getNeuroMLType() == Cell.NeuroMLType.kInhibitory){
 				inhibID.put(c, new Integer(inhibCounter));
 				InstanceHolder ih = new InstanceHolder(c, inhibCounter);
 				inhibitoryPopulation.addInstanceHolder(ih);
@@ -156,11 +157,11 @@ public class Exporter {
 		}
 
 		// Get all their Synapses (connections)
-		for (Cell c : ecm.cellList) {
+		for (ini.cx3d.cells.interfaces.Cell c : ecm.getCellList()) {
 			// Find all neurites of the cell :
-			Vector<NeuriteElement> nes = c.getNeuriteElements();
+			AbstractSequentialList<NeuriteElement> nes = c.getNeuriteElements();
 			Vector<ConnectionHolder> chs = new Vector<ConnectionHolder>(); // not really used, necessary for next method
-			for (NeuriteElement neuriteElement : nes) {
+			for (ini.cx3d.localBiology.interfaces.NeuriteElement neuriteElement : nes) {
 				dispatchSynapsesOfThisNeuriteElement(chs, neuriteElement);
 			}
 

@@ -23,7 +23,7 @@ package ini.cx3d.graphics;
 
 
 
-import ini.cx3d.simulations.ECM;
+import ini.cx3d.simulations.interfaces.ECM;
 
 import java.awt.*;
 import java.awt.event.*;

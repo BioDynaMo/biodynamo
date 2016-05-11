@@ -27,7 +27,7 @@ import static ini.cx3d.SimStateSerializationUtil.removeLastChar;
 public class SimpleCellCycle implements CellModule{
 
 	/* the cell it belongs to.*/
-	private Cell cell;
+	private ini.cx3d.cells.interfaces.Cell cell;
 	/* turned on or off */
 	private boolean enable = true;
 	
@@ -50,7 +50,7 @@ public class SimpleCellCycle implements CellModule{
 		return sb;
 	}
 	
-	public Cell getCell() {
+	public ini.cx3d.cells.interfaces.Cell getCell() {
 		return cell;
 	}
 
@@ -72,7 +72,7 @@ public class SimpleCellCycle implements CellModule{
 		}
 	}
 
-	public void setCell(Cell cell) {
+	public void setCell(ini.cx3d.cells.interfaces.Cell cell) {
 		this.cell = cell;
 	}
 

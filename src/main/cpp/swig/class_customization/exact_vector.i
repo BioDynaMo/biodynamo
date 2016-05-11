@@ -40,8 +40,7 @@
 %enddef
 
 %define %ExactVector_typemaps()
-  %double_stdarray_array_marshalling(spatialOrganization, 3);
-  %ExactVector_stdarray_array_marshalling(spatialOrganization, 3);
+  %ExactVector_stdarray_array_marshalling(simulation, 3);
 %enddef
 
 %define %ExactVector_stdarray_array_marshalling(SWIG_MODULE, SIZE)

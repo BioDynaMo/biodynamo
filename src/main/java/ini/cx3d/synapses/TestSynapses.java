@@ -24,10 +24,9 @@ package ini.cx3d.synapses;
 import static ini.cx3d.utilities.Matrix.add;
 import static ini.cx3d.utilities.Matrix.randomNoise;
 import ini.cx3d.Param;
-import ini.cx3d.cells.Cell;
 import ini.cx3d.cells.CellFactory;
-import ini.cx3d.localBiology.NeuriteElement;
-import ini.cx3d.simulations.ECM;
+import ini.cx3d.simulations.ECMFacade;
+import ini.cx3d.simulations.interfaces.ECM;
 import ini.cx3d.simulations.Scheduler;
 
 import java.awt.Color;
@@ -41,7 +40,7 @@ public class TestSynapses {
 	public static void buildLine(){
 		// 1) Prepare the environment :
 		// 		get a reference to the extracelular matrix (ECM)
-		ECM ecm = ECM.getInstance();
+		ini.cx3d.simulations.interfaces.ECM ecm = ECMFacade.getInstance();
 		// 		add additional PhysicalNodes (for diffusion)
 		int nbOfAdditionalNodes = 100;
 		for (int i = 0; i < nbOfAdditionalNodes; i++) {
@@ -51,21 +50,21 @@ public class TestSynapses {
 
 		// 3) two cells
 		double[] cellLocation = new double[] {2,0,60};
-		Cell cell_1 = CellFactory.getCellInstance(cellLocation);
+		ini.cx3d.cells.interfaces.Cell cell_1 = CellFactory.getCellInstance(cellLocation);
 		cell_1.setColorForAllPhysicalObjects(Color.RED);
 
 		cellLocation = new double[] {0,0,-60};
-		Cell cell_2 = CellFactory.getCellInstance(cellLocation);
+		ini.cx3d.cells.interfaces.Cell cell_2 = CellFactory.getCellInstance(cellLocation);
 		cell_2.setColorForAllPhysicalObjects(Param.VIOLET);
 
 
 		// 4) Extend an neuron from each cell
-		NeuriteElement neurite_1 = cell_1.getSomaElement().extendNewNeurite(new double[] {0,0,-1});
+		ini.cx3d.localBiology.interfaces.NeuriteElement neurite_1 = cell_1.getSomaElement().extendNewNeurite(new double[] {0,0,-1});
 		neurite_1.getPhysical().setDiameter(1.0);
 		neurite_1.getPhysicalCylinder().setDiameter(4.0);
-		neurite_1.setIsAnAxon(true);
+		neurite_1.setAxon(true);
 		ini.cx3d.physics.interfaces.PhysicalCylinder pc_1 = neurite_1.getPhysicalCylinder();
-		NeuriteElement neurite_2 = cell_2.getSomaElement().extendNewNeurite(new double[] {0,0,11});
+		ini.cx3d.localBiology.interfaces.NeuriteElement neurite_2 = cell_2.getSomaElement().extendNewNeurite(new double[] {0,0,11});
 		neurite_2.getPhysical().setDiameter(1.0);
 		neurite_2.getPhysicalCylinder().setDiameter(4.0);
 		ini.cx3d.physics.interfaces.PhysicalCylinder pc_2 = neurite_2.getPhysicalCylinder();
@@ -94,18 +93,18 @@ public class TestSynapses {
 	}
 
 	public static void extendExcressencesAndSynapseOnEveryNeuriteElement(double probaBilityToSynapse){
-		ECM ecm = ECM.getInstance();
-		for (int i = 0; i < ecm.neuriteElementList.size(); i++) {
-			NeuriteElement ne = ecm.neuriteElementList.get(i);
-			if(ne.isAnAxon()==true){
+		ECM ecm = ECMFacade.getInstance();
+		for (int i = 0; i < ecm.getNeuriteElementList().size(); i++) {
+			ini.cx3d.localBiology.interfaces.NeuriteElement ne = ecm.getNeuriteElementList().get(i);
+			if(ne.isAxon()==true){
 				ne.makeBoutons(2);
 			}else{
 				ne.makeSpines(5);
 			}
 		}
-		for (int i = 0; i < ecm.neuriteElementList.size(); i++) {
-			NeuriteElement ne = ecm.neuriteElementList.get(i);
-			if(ne.isAnAxon()==true){
+		for (int i = 0; i < ecm.getNeuriteElementList().size(); i++) {
+			ini.cx3d.localBiology.interfaces.NeuriteElement ne = ecm.getNeuriteElementList().get(i);
+			if(ne.isAxon() ==true){
 				ne.synapseBetweenExistingBS(probaBilityToSynapse);
 			}
 		}

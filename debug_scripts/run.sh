@@ -7,8 +7,8 @@
 #
 # ./debug_scripts/run.sh
 
-CLASS=PHYSICALCYLINDER
-TEST=Figure_9Test
+CLASS=NEURITEELEMENT
+TEST=RandomBranchingModuleTest
 
 replace() {
   #$1 file

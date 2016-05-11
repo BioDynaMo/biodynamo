@@ -22,10 +22,9 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 package ini.cx3d.simulations.tutorial;
 
 import ini.cx3d.BaseSimulationTest;
-import ini.cx3d.cells.Cell;
+import ini.cx3d.JavaUtil2;
 import ini.cx3d.cells.CellFactory;
-import ini.cx3d.cells.CellModule;
-import ini.cx3d.simulations.ECM;
+import ini.cx3d.simulations.ECMFacade;
 import ini.cx3d.simulations.Scheduler;
 
 import static ini.cx3d.SimStateSerializationUtil.keyValue;
@@ -38,29 +37,36 @@ public class DividingModuleTest extends BaseSimulationTest {
 
 	@Override
 	public void simulate() {
-		ECM.setRandomSeed(2L);
-		Cell c = CellFactory.getCellInstance(new double[] {0.0,0.0,0.0});
-		c.addCellModule(new DividingModule());
+		new ini.cx3d.swig.simulation.DividingModuleTest().simulate(ECMFacade.getInstance(), new JavaUtil2());
 
-		Scheduler.simulateOneStep();
-		Scheduler.simulateOneStep();
-		ini.cx3d.utilities.SystemUtilities.tic();
-		for (int i = 0; i < 5000; i++) {
-			Scheduler.simulateOneStep();
-		}
-		ini.cx3d.utilities.SystemUtilities.tac();
+//		JavaUtil2.setRandomSeed(2L);
+//		initPhysicalNodeMovementListener();
+//		ini.cx3d.cells.interfaces.Cell c = CellFactory.getCellInstance(new double[] {0.0,0.0,0.0});
+//		c.addCellModule(new DividingModule());
+//
+//		Scheduler.simulateOneStep();
+//		Scheduler.simulateOneStep();
+//		ini.cx3d.utilities.SystemUtilities.tic();
+//		for (int i = 0; i < 5000; i++) {
+//			Scheduler.simulateOneStep();
+//		}
+//		ini.cx3d.utilities.SystemUtilities.tac();
 	}
 }
 
-class DividingModule implements CellModule {
+class DividingModule extends ini.cx3d.swig.simulation.CellModule {
 
-	Cell cell; 
+	ini.cx3d.cells.interfaces.Cell cell;
+
+	public DividingModule() {
+		registerJavaObject(this);
+	}
 	
-	public Cell getCell() {
+	public ini.cx3d.cells.interfaces.Cell getCell() {
 		return cell;
 	}
 
-	public void setCell(Cell cell) {
+	public void setCell(ini.cx3d.cells.interfaces.Cell cell) {
 		this.cell = cell;
 	}
 	

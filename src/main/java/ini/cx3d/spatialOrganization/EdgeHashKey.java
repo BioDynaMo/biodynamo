@@ -21,7 +21,7 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 
 package ini.cx3d.spatialOrganization;
 
-import ini.cx3d.swig.spatialOrganization.EdgeHashKeyT_PhysicalNode;
+import ini.cx3d.swig.simulation.EdgeHashKeyT_PhysicalNode;
 
 import java.util.Objects;
 

@@ -28,6 +28,8 @@ import ini.cx3d.Param;
 import ini.cx3d.graphics.View;
 import ini.cx3d.physics.ECMChemicalReaction;
 import ini.cx3d.physics.interfaces.PhysicalCylinder;
+import ini.cx3d.swig.simulation.simulation;
+import ini.cx3d.simulations.interfaces.ECM;
 
 /**
  * This class contains static methods to loop through all the "runnable" CX3D objects
@@ -40,40 +42,47 @@ import ini.cx3d.physics.interfaces.PhysicalCylinder;
  */
 public class Scheduler {
 	/* Reference to the ECM.*/
-	protected static ECM ecm = ECM.getInstance();
+	private static ECM ecm = ECMFacade.getInstance();
 	/* Reference to the ECM display window */
-	protected static View view = ecm.createGUI();
+	static {
+//		ecm.createGUI();
+	}
 	/* static counter, needed in case where we want to make regular snapshots.*/
-	protected static int cycle_counter = 0; 	
-	protected static int inter_snapshot_time_steps = 30; 	
+	private static int cycle_counter = 0;
+	private static int inter_snapshot_time_steps = 30;
 
 
 	/* if false, the physics is not computed......*/
-	public static boolean runPhyics = true;
-	public static boolean runDiffusion = true;
-	
-	protected static boolean printCurrentECMTime = false;
-	protected static boolean printCurrentStep = false;
+	private static boolean runPhyics = true;
+	private static boolean runDiffusion = true;
+
+	private static boolean printCurrentECMTime = false;
+	private static boolean printCurrentStep = false;
 
 	/** Runs all the CX3D elements for one time step, and pauses for a few ms.
 	 * @param pauseTime the pause time in milliseconds.
 	 */
 	public static void runEveryBodyOnce(int pauseTime){
-		ECM.pause(pauseTime);
+//		ECM.pause(pauseTime);
 		simulateOneStep();
 	}
 
-	protected static long physics_time;
-	protected static long module_time;
-	protected static long total_time;
+	private static long physics_time;
+	private static long module_time;
+	private static long total_time;
 	/** Runs all the CX3D runnable objects for one time step.*/
 	public static void simulateOneStep(){
+		if(simulation.useNativeScheduler) {
+			ini.cx3d.swig.simulation.Scheduler.getInstance(ECMFacade.getInstance()).simulateOneStep();
+			return;
+		}
+
 		long start_time = System.currentTimeMillis(); 
 		
 		
 		try {
 			
-			ECM.getInstance().canRun.acquire();
+//			ECMFacade.getInstance().canRun.acquire();
 			
 
 			Thread.sleep(1);
@@ -95,17 +104,17 @@ public class Scheduler {
 //			} 
 
 			// GUI rotation
-			if (ecm.isContinuouslyRotating()) {
-				ecm.view.rotateAroundZ(ecm.getView().getRotationSpeed());
-			}
+//			if (ecm.isContinuouslyRotating()) {
+//				ecm.view.rotateAroundZ(ecm.getView().getRotationSpeed());
+//			}
 			long phystemptime = System.currentTimeMillis(); 
 			if(runPhyics){
 				// PhysicalNode (diffusion & degradation of Substances)
-				int totalNbOfPhysicalNode =  ecm.physicalNodeList.size();
+				int totalNbOfPhysicalNode =  ecm.getPhysicalNodeList().size();
 				int runPhyisicalNodes = 0;
 				if(runDiffusion){
-					for (int i = 0; i < ecm.physicalNodeList.size(); i++) {
-						ini.cx3d.physics.interfaces.PhysicalNode pn = ecm.physicalNodeList.get(i);
+					for (int i = 0; i < ecm.getPhysicalNodeList().size(); i++) {
+						ini.cx3d.physics.interfaces.PhysicalNode pn = ecm.getPhysicalNodeList().get(i);
 						if(pn.isOnTheSchedulerListForPhysicalNodes()){
 							pn.runExtracellularDiffusion(); 
 							runPhyisicalNodes +=1;
@@ -113,23 +122,23 @@ public class Scheduler {
 					}
 				}
 				
-				if(!ecm.ecmChemicalReactionList.isEmpty()){
-					for (int i = 0; i < ecm.physicalNodeList.size(); i++) {
-						ini.cx3d.physics.interfaces.PhysicalNode pn = ecm.physicalNodeList.get(i);
-						for (ECMChemicalReaction chemicalReaction : ecm.ecmChemicalReactionList) {
-							chemicalReaction.run(pn);
-						}
-					}
-				}
+//				if(!ecm.ecmChemicalReactionList.isEmpty()){
+//					for (int i = 0; i < ecm.physicalNodeList.size(); i++) {
+//						ini.cx3d.physics.interfaces.PhysicalNode pn = ecm.physicalNodeList.get(i);
+//						for (ECMChemicalReaction chemicalReaction : ecm.ecmChemicalReactionList) {
+//							chemicalReaction.run(pn);
+//						}
+//					}
+//				}
 				
 				
 				//		System.out.println("PhysicalNodes : \ttotal = "+totalNbOfPhysicalNode+" ; \tRun = "+runPhyisicalNodes);
 
 				// Physical objects : PhysicalCylinders
-				int totalNbOfPhysicalCylinders =  ecm.physicalCylinderList.size();
+				int totalNbOfPhysicalCylinders =  ecm.getPhysicalCylinderList().size();
 				int runPhysicalCylinder = 0;
-				for (int i = 0; i < ecm.physicalCylinderList.size(); i++) {
-					PhysicalCylinder pc = ecm.physicalCylinderList.get(i);
+				for (int i = 0; i < ecm.getPhysicalCylinderList().size(); i++) {
+					PhysicalCylinder pc = ecm.getPhysicalCylinderList().get(i);
 					if(pc.isOnTheSchedulerListForPhysicalObjects()){
 						pc.runPhysics();
 						runPhysicalCylinder++;
@@ -143,10 +152,10 @@ public class Scheduler {
 				//		System.out.println("PhysicalCylinders : \ttotal = "+totalNbOfPhysicalCylinders+" ; \tRun = "+runPhysicalCylinder);
 
 				// Physical objects : PhysicalSpheres
-				int totalNbOfPhysicalSpheres =  ecm.physicalSphereList.size();
+				int totalNbOfPhysicalSpheres =  ecm.getPhysicalSphereList().size();
 				int runPhyisicalSpheres = 0;
-				for (int i = 0; i < ecm.physicalSphereList.size(); i++) {
-					ini.cx3d.physics.interfaces.PhysicalSphere ps = ecm.physicalSphereList.get(i);
+				for (int i = 0; i < ecm.getPhysicalSphereList().size(); i++) {
+					ini.cx3d.physics.interfaces.PhysicalSphere ps = ecm.getPhysicalSphereList().get(i);
 					if(ps.isOnTheSchedulerListForPhysicalObjects()){
 						ps.runPhysics();
 						runPhyisicalSpheres ++;
@@ -163,9 +172,9 @@ public class Scheduler {
 			// cellList
 			
 			// Modified by Sabina: the new cells should not be run in the same time step as they are created!!!
-			int size = ecm.cellList.size();
+			int size = ecm.getCellList().size();
 			for (int i = 0; i < size; i++) {
-				ecm.cellList.get(i).run();
+				ecm.getCellList().get(i).run();
 			}
 			
 //			for (int i = 0; i < ecm.cellList.size(); i++) {
@@ -175,12 +184,12 @@ public class Scheduler {
 			// somata
 			
 			long moduletime = System.currentTimeMillis(); 
-			for (int i = 0; i < ecm.somaElementList.size(); i++) {
-				ecm.somaElementList.get(i).run();
+			for (int i = 0; i < ecm.getSomaElementList().size(); i++) {
+				ecm.getSomaElementList().get(i).run();
 			}
 			// neurites
-			for (int i = 0; i < ecm.neuriteElementList.size(); i++) {
-				ecm.neuriteElementList.get(i).run();
+			for (int i = 0; i < ecm.getNeuriteElementList().size(); i++) {
+				ecm.getNeuriteElementList().get(i).run();
 			}
 			module_time += System.currentTimeMillis()-moduletime;
 			
@@ -209,12 +218,12 @@ public class Scheduler {
 				ecm.dumpImage();
 			}
 			// updating the picture on the GUI
-			view.repaint();
+			ecm.viewRepaint();
 			// ticking ECM's time
 			cycle_counter += 1;
 			ecm.increaseECMtime(Param.SIMULATION_TIME_STEP);
 			//System.out.println("Machine executed"+Machine.elementsexecuted);
-			ecm.getInstance().canRun.release();
+//			ECMFacade.getInstance().canRun.release();
 			
 			
 			
@@ -230,6 +239,11 @@ public class Scheduler {
 
 	/** Runs the simulation, i.e. runs each active CX3D runnable objects endlessly.*/
 	public static void simulate(){
+		if(simulation.useNativeScheduler) {
+			ini.cx3d.swig.simulation.Scheduler.getInstance(ECMFacade.getInstance()).simulate();
+			return;
+		}
+
 		while(true)
 			simulateOneStep();
 	}
@@ -239,12 +253,20 @@ public class Scheduler {
 	 * @param steps nb of steps that the simulation is run.
 	 */
 	public static void simulateThatManyTimeSteps(int steps){
+		if(simulation.useNativeScheduler) {
+			ini.cx3d.swig.simulation.Scheduler.getInstance(ECMFacade.getInstance()).simulateThatManyTimeSteps(steps);
+			return;
+		}
 		for (int i = 0; i < steps; i++) {
 			simulateOneStep();
 		}
 	}
 
 	public static void setPrintCurrentECMTime(boolean printCurrentECMTime) {
+		if(simulation.useNativeScheduler) {
+			ini.cx3d.swig.simulation.Scheduler.getInstance(ECMFacade.getInstance()).setPrintCurrentECMTime(printCurrentECMTime);
+			return;
+		}
 		Scheduler.printCurrentECMTime = printCurrentECMTime;
 	}
 
@@ -259,8 +281,8 @@ public class Scheduler {
 	
 	public static void PauseAndDraw(boolean val) {
 		
-		if(val!=ecm.myGuiCreator.pause) ecm.myGuiCreator.togglePauseSim();
-		if(val!=ecm.myGuiCreator.isPainted()) ecm.myGuiCreator.togglePaint();
+//		if(val!=ecm.myGuiCreator.pause) ecm.myGuiCreator.togglePauseSim();
+//		if(val!=ecm.myGuiCreator.isPainted()) ecm.myGuiCreator.togglePaint();
 	}
 
 

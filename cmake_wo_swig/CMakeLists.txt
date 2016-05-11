@@ -75,6 +75,11 @@ file(GLOB SOURCES "${CPP_MAIN_SRC_PATH}/src/physics/*.cc" "${CPP_MAIN_SRC_PATH}/
 add_library(cx3d_physics SHARED ${SOURCES} "${JAVA_MAIN_SWIG_PATH}/physics/physicsJAVA_wrap.cxx")
 target_link_libraries(cx3d_physics ${GMP_LIBRARY})
 
+#--------------------- build module biology  ----------------
+file(GLOB SOURCES "${CPP_MAIN_SRC_PATH}/src/local_biology/*.cc")
+
+add_library(cx3d_biology SHARED ${SOURCES} "${JAVA_MAIN_SWIG_PATH}/biology/biologyJAVA_wrap.cxx")
+target_link_libraries(cx3d_biology ${GMP_LIBRARY})
 
 #---------------------------------------------------------------
 #--------------------- build test project ----------------------

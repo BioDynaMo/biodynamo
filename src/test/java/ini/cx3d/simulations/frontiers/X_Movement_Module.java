@@ -26,15 +26,12 @@ import static ini.cx3d.utilities.Matrix.normalize;
 import static ini.cx3d.utilities.Matrix.randomNoise;
 import static ini.cx3d.utilities.Matrix.scalarMult;
 import ini.cx3d.Param;
-import ini.cx3d.cells.Cell;
 import ini.cx3d.cells.CellFactory;
 import ini.cx3d.localBiology.interfaces.CellElement;
-import ini.cx3d.localBiology.LocalBiologyModule;
-import ini.cx3d.localBiology.NeuriteElement;
 import ini.cx3d.physics.interfaces.PhysicalCylinder;
-import ini.cx3d.physics.Substance;
 import ini.cx3d.physics.factory.SubstanceFactory;
-import ini.cx3d.simulations.ECM;
+import ini.cx3d.simulations.ECMFacade;
+import ini.cx3d.simulations.interfaces.ECM;
 import ini.cx3d.simulations.Scheduler;
 
 import java.awt.Color;
@@ -46,7 +43,7 @@ import java.util.Vector;
  * @author fredericzubler
  *
  */
-public class X_Movement_Module extends ini.cx3d.swig.physics.LocalBiologyModule{
+public class X_Movement_Module extends ini.cx3d.swig.simulation.LocalBiologyModule{
 
 	/* The CellElement this module lives in.*/
 	CellElement cellElement;
@@ -60,7 +57,7 @@ public class X_Movement_Module extends ini.cx3d.swig.physics.LocalBiologyModule{
 	Vector<String> repellents = new Vector<String>();
 
 	/* The chemical this Receptor dies if it goes opposite to.*/
-	String cantLeave = null;
+//	String cantLeave = null;
 	double maxConcentration;
 
 	/* Stop if diameter smaller than this..*/
@@ -169,7 +166,7 @@ public class X_Movement_Module extends ini.cx3d.swig.physics.LocalBiologyModule{
 		r.directionWeight = this.directionWeight;
 		r.copiedWhenNeuriteBranches = this.copiedWhenNeuriteBranches;
 		r.minimalBranchDiameter = this.minimalBranchDiameter;
-		r.cantLeave = this.cantLeave;
+//		r.cantLeave = this.cantLeave;
 		r.maxConcentration = this.maxConcentration;
 		r.linearDiameterDecrease = this.linearDiameterDecrease;
 		return r; 
@@ -204,22 +201,22 @@ public class X_Movement_Module extends ini.cx3d.swig.physics.LocalBiologyModule{
 		double lengthBefore = cyl.getLength();
 		// not to thin?
 		if(cyl.getDiameter()<minimalBranchDiameter){
-			if(cyl.lengthToProximalBranchingPoint()>7+10*ECM.getRandomDouble()){ // so we don't end with short segments
+			if(cyl.lengthToProximalBranchingPoint()>7+10* ECMFacade.getInstance().getRandomDouble1()){ // so we don't end with short segments
 				return;
 			}
 		}
 
 		// can't leave
-		if(cantLeave != null){
-			double currentCantLeaveConcntration = cyl.getExtracellularConcentration(cantLeave);
-			if(currentCantLeaveConcntration>maxConcentration){
-				maxConcentration = currentCantLeaveConcntration;
-			}
-			if(currentCantLeaveConcntration<0.95*maxConcentration){
-				cyl.setColor(Color.black);
-				return;
-			}
-		}
+//		if(cantLeave != null){
+//			double currentCantLeaveConcntration = cyl.getExtracellularConcentration(cantLeave);
+//			if(currentCantLeaveConcntration>maxConcentration){
+//				maxConcentration = currentCantLeaveConcntration;
+//			}
+//			if(currentCantLeaveConcntration<0.95*maxConcentration){
+//				cyl.setColor(Color.black);
+//				return;
+//			}
+//		}
 
 		// find the gradients
 		double[] totalGradient = {0.0, 0.0, 0.0};
@@ -258,7 +255,7 @@ public class X_Movement_Module extends ini.cx3d.swig.physics.LocalBiologyModule{
 	public static void main(String[] args) {
 		// 1) Prepare the environment :
 		// 		get a reference to the extracelular matrix (ECM)
-		ECM ecm = ECM.getInstance();
+		ECM ecm = ECMFacade.getInstance();
 		// 		add additional PhysicalNodes (for diffusion)
 		int nbOfAdditionalNodes = 100;
 		for (int i = 0; i < nbOfAdditionalNodes; i++) {
@@ -279,11 +276,11 @@ public class X_Movement_Module extends ini.cx3d.swig.physics.LocalBiologyModule{
 
 		// 3) Create a 4-uple Cell-SomaElement-PhysicalSphere-SpaceNode at the desired location
 		double[] cellLocation = new double[] {0,0,0};
-		Cell cell = CellFactory.getCellInstance(cellLocation);
+		ini.cx3d.cells.interfaces.Cell cell = CellFactory.getCellInstance(cellLocation);
 		cell.setColorForAllPhysicalObjects(Param.RED);
 
 		// 4) Extend an axon from the cell
-		NeuriteElement neurite = cell.getSomaElement().extendNewNeurite(new double[] {0,0,1});
+		ini.cx3d.localBiology.interfaces.NeuriteElement neurite = cell.getSomaElement().extendNewNeurite(new double[] {0,0,1});
 		neurite.getPhysical().setDiameter(1.0);
 		neurite.getPhysicalCylinder().setDiameter(3);
 		// 5) Put a movementReceptor

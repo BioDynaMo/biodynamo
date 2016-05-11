@@ -18,28 +18,53 @@
 
 %define %SomaElement_cx3d_shared_ptr()
   %cx3d_shared_ptr(SomaElement,
-                   ini/cx3d/localBiology/SomaElement,
+                   ini/cx3d/localBiology/interfaces/SomaElement,
                    cx3d::local_biology::SomaElement);
 %enddef
 
 %define %SomaElement_java()
-  %java_defined_class(cx3d::local_biology::SomaElement,
+  %java_defined_class_add(cx3d::local_biology::SomaElement,
                       SomaElement,
                       SomaElement,
-                      ini.cx3d.localBiology.SomaElement,
-                      ini/cx3d/localBiology/SomaElement);
+                      ini.cx3d.localBiology.interfaces.SomaElement,
+                      ini/cx3d/localBiology/interfaces/SomaElement,
+                      public NativeStringBuilder superSuperSimStateToJson(NativeStringBuilder sb) {
+                        return super.simStateToJson(sb);
+                      });
 %enddef
 
 %define %SomaElement_stdlist()
-  %stdlist_typemap(std::shared_ptr<cx3d::local_biology::SomaElement>,
-                   SomaElement,
-                   ini.cx3d.localBiology.SomaElement);
+  %stdlist_typemap_cross_module(std::shared_ptr<cx3d::local_biology::SomaElement>,
+                                SomaElement,
+                                ini.cx3d.localBiology.interfaces.SomaElement,
+                                ini.cx3d.swig.simulation.SomaElement);
+%enddef
+
+%define %SomaElement_native()
+  %native_defined_class(cx3d::local_biology::SomaElement,
+                      SomaElement,
+                      ini.cx3d.localBiology.interfaces.SomaElement,
+                      SomaElement,
+                      public NativeStringBuilder superSuperSimStateToJson(NativeStringBuilder sb) {
+                        return super.simStateToJson(sb);
+                      });
 %enddef
 
 /**
  * apply customizations
  */
 %SomaElement_cx3d_shared_ptr();
-%SomaElement_java();
+
+#ifdef SOMAELEMENT_NATIVE
+  %SomaElement_native();
+#else
+  %SomaElement_java();
+#endif
+
 %SomaElement_stdlist();
-%typemap(javaimports) cx3d::local_biology::SomaElement "import ini.cx3d.swig.NativeStringBuilder;"
+%typemap(javaimports) cx3d::local_biology::SomaElement %{
+  import ini.cx3d.swig.NativeStringBuilder;
+  import ini.cx3d.swig.simulation.PhysicalObject;
+  import ini.cx3d.swig.simulation.PhysicalSphere;
+%}
+%typemap(javainterfaces) cx3d::local_biology::SomaElement "ini.cx3d.localBiology.interfaces.SomaElement"

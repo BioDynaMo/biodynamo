@@ -44,7 +44,7 @@
   // for SpaceNode
   %Edge_stdlist();
   %typemap(javaimports) cx3d::spatial_organization::Edge<cx3d::physics::PhysicalNode> %{
-    import ini.cx3d.swig.physics.PhysicalNode;
+    import ini.cx3d.swig.simulation.PhysicalNode;
   %}
 %enddef
 

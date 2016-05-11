@@ -4,7 +4,9 @@
 #include <array>
 #include <cmath>
 #include <vector>
+#include <memory>
 
+#include "simulation/ecm.h" //fixme remove after porting has been finished
 #include "stl_util.h"
 
 namespace cx3d {
@@ -271,12 +273,13 @@ class Matrix {
    * @return the vector after rotation
    */
   static std::array<double, 3> rotAroundAxis(const std::array<double, 3>& a, double theta,
-                                             const std::array<double, 3>& b) {
+                                             const std::array<double, 3>& b,
+                                             const std::shared_ptr<simulation::ECM>& ecm) {
     auto axis = normalize(b);
 
     auto temp_1 = scalarMult(dot(a, axis), axis);
-    auto temp_2 = scalarMult(std::cos(-theta), subtract(a, temp_1));
-    auto temp_3 = scalarMult(std::sin(-theta), crossProduct(a, axis));
+    auto temp_2 = scalarMult(ecm->cos(-theta), subtract(a, temp_1));
+    auto temp_3 = scalarMult(ecm->sin(-theta), crossProduct(a, axis));
 
     return {
       temp_1[0] + temp_2[0] + temp_3[0],
@@ -449,19 +452,20 @@ class Matrix {
    * @param a
    * @return a vector perpendicular
    */
-  static std::array<double, 3> perp3(const std::array<double, 3>& a, double rand) {
+  static std::array<double, 3> perp3(const std::array<double, 3>& a, double rand,
+                                     const std::shared_ptr<simulation::ECM>& ecm) {
     std::array<double, 3> vect_perp;
     if (a[0] == 0.0) {
       vect_perp[0] = 1.0;
       vect_perp[1] = 0.0;
       vect_perp[2] = 0.0;
-      vect_perp = rotAroundAxis(vect_perp, 6.35 * rand, a);
+      vect_perp = rotAroundAxis(vect_perp, 6.35 * rand, a, ecm);
     } else {
       vect_perp[0] = a[1];
       vect_perp[1] = -a[0];
       vect_perp[2] = 0.0;
       vect_perp = normalize(vect_perp);
-      vect_perp = rotAroundAxis(vect_perp, 6.35 * rand, a);
+      vect_perp = rotAroundAxis(vect_perp, 6.35 * rand, a, ecm);
     }
     return vect_perp;
   }

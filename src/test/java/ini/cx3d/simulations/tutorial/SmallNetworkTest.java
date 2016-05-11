@@ -24,15 +24,16 @@ package ini.cx3d.simulations.tutorial;
 import java.awt.Color;
 
 import ini.cx3d.BaseSimulationTest;
+import ini.cx3d.JavaUtil2;
 import ini.cx3d.Param;
 import ini.cx3d.cells.Cell;
 import ini.cx3d.cells.CellFactory;
-import ini.cx3d.localBiology.NeuriteElement;
-import ini.cx3d.physics.Substance;
 import ini.cx3d.physics.factory.SubstanceFactory;
-import ini.cx3d.simulations.ECM;
+import ini.cx3d.simulations.ECMFacade;
+import ini.cx3d.simulations.interfaces.ECM;
 import ini.cx3d.simulations.Scheduler;
-import ini.cx3d.synapses.ConnectionsMaker;
+import ini.cx3d.swig.simulation.ConnectionMaker;
+
 import static ini.cx3d.utilities.Matrix.*;
 
 public class SmallNetworkTest extends BaseSimulationTest {
@@ -43,8 +44,13 @@ public class SmallNetworkTest extends BaseSimulationTest {
 
 	@Override
 	public void simulate() throws Exception{
-		ECM.setRandomSeed(1L);
-		ECM ecm = ECM.getInstance();
+		ECM ecm = ECMFacade.getInstance();
+
+		new ini.cx3d.swig.simulation.SmallNetworkTest().simulate(ecm, new JavaUtil2());
+		if(true) return;
+
+		JavaUtil2.setRandomSeed(1L);
+		initPhysicalNodeMovementListener();
 		ini.cx3d.physics.interfaces.Substance L1 = SubstanceFactory.create("L1", Color.red);
 		ecm.addArtificialGaussianConcentrationZ(L1, 1.0, 400.0, 60.0);
 
@@ -55,18 +61,18 @@ public class SmallNetworkTest extends BaseSimulationTest {
 		}
 
 		for (int i = 0; i < 8; i++) {
-			Cell c;
+			ini.cx3d.cells.interfaces.Cell c;
 			if(i<4){
-				c= CellFactory.getCellInstance(new double[] {-20+40*ECM.getRandomDouble(),-20+40*ECM.getRandomDouble(),0.0});
-				c.setNeuroMLType(Cell.ExcitatoryCell);
+				c= CellFactory.getCellInstance(new double[] {-20+40*ECMFacade.getInstance().getRandomDouble1(),-20+40*ECMFacade.getInstance().getRandomDouble1(),0.0});
+				c.setNeuroMLType(Cell.NeuroMLType.kExcitatatory);
 				c.setColorForAllPhysicalObjects(Param.VIOLET);
 			}else{
-				c= CellFactory.getCellInstance(new double[] {-20+40*ECM.getRandomDouble(),-20+40*ECM.getRandomDouble(),200.0});
-				c.setNeuroMLType(Cell.InhibitoryCell);
+				c= CellFactory.getCellInstance(new double[] {-20+40*ECMFacade.getInstance().getRandomDouble1(),-20+40*ECMFacade.getInstance().getRandomDouble1(),200.0});
+				c.setNeuroMLType(Cell.NeuroMLType.kInhibitory);
 				c.setColorForAllPhysicalObjects(Param.VIOLET.darker());
 			}
-			NeuriteElement axon = c.getSomaElement().extendNewNeurite();
-			axon.setIsAnAxon(true);
+			ini.cx3d.localBiology.interfaces.NeuriteElement axon = c.getSomaElement().extendNewNeurite();
+			axon.setAxon(true);
 			axon.getPhysicalCylinder().setDiameter(0.5);
 			axon.addLocalBiologyModule(new NeuriteChemoAttraction("L1",0.02));
 
@@ -77,15 +83,15 @@ public class SmallNetworkTest extends BaseSimulationTest {
 			}
 
 
-			NeuriteElement dendrite = c.getSomaElement().extendNewNeurite();
-			dendrite.setIsAnAxon(false);
+			ini.cx3d.localBiology.interfaces.NeuriteElement dendrite = c.getSomaElement().extendNewNeurite();
+			dendrite.setAxon(false);
 			dendrite.getPhysicalCylinder().setDiameter(1.5);
 			dendrite.addLocalBiologyModule(new NeuriteChemoAttraction("L1",0.02));
 		}
 		while (ecm.getECMtime() < 6) {
 			Scheduler.simulateOneStep();
 		}
-		ConnectionsMaker.extendExcressencesAndSynapseOnEveryNeuriteElement();
+		ConnectionMaker.extendExcressencesAndSynapseOnEveryNeuriteElement(ECMFacade.getInstance());
 
 //		Thread.sleep(Integer.MAX_VALUE);
 	}

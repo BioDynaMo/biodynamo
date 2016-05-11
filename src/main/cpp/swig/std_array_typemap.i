@@ -270,6 +270,28 @@ namespace std {
 %enddef
 
 /**
+ * Used for classes that are used across modules
+ * @see %define %stdarray_array_marshalling
+ * usage example:
+ * %stdarray_array_marshalling_cross_module(SWIG_MODULE,
+ *                                          std::shared_ptr<cx3d::physics::PhysicalCylinder>,
+ *                                          shared_ptr_PhysicalCylinder_##SIZE,
+ *                                          ini.cx3d.physics.interfaces.PhysicalCylinder,
+ *                                          Lini/cx3d/physics/interfaces/PhysicalCylinder;,
+ *                                          SIZE,
+ *                                          ini.cx3d.swig.simulation.PhysicalCylinder);
+ */
+%define %stdarray_array_marshalling_cross_module(SWIG_MODULE, CPP_TYPE, TEMPLATE_SUFFIX,
+                                    JAVA_TYPE, JAVA_ARR_TYPE_DESCRIPTOR, SIZE,
+                                    SWIG_JAVA_TYPE)
+  %typemap(javaimports) std::array<CPP_TYPE, SIZE> %{
+    import SWIG_JAVA_TYPE;
+  %}
+  %stdarray_array_marshalling(SWIG_MODULE, CPP_TYPE, TEMPLATE_SUFFIX,
+                              JAVA_TYPE, JAVA_ARR_TYPE_DESCRIPTOR, SIZE);
+%enddef
+
+/**
  * This macro definition is used to enable Java array marshalling to std::array
  * for non primitive data types.
  * Automatically generates a Java object for the given type. A separate call

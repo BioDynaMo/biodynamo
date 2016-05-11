@@ -38,7 +38,7 @@ import java.math.BigInteger;
  * @author Dennis Goehlsdorf
  *
  */
-public class RationalJava extends ini.cx3d.swig.spatialOrganization.Rational implements Rational {
+public class RationalJava extends ini.cx3d.swig.simulation.Rational implements Rational {
 
 	/**
 	 * The numerator of this rational number.

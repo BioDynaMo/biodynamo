@@ -31,7 +31,8 @@ import static ini.cx3d.utilities.StringUtilities.toStr;
 import ini.cx3d.Param;
 import ini.cx3d.SimStateSerializationUtil;
 import ini.cx3d.physics.factory.SubstanceFactory;
-import ini.cx3d.simulations.ECM;
+import ini.cx3d.simulations.ECMFacade;
+import ini.cx3d.simulations.interfaces.ECM;
 import ini.cx3d.spatialOrganization.SpatialOrganizationEdge;
 import ini.cx3d.spatialOrganization.SpatialOrganizationNode;
 
@@ -74,7 +75,7 @@ public class PhysicalNode implements ini.cx3d.physics.interfaces.PhysicalNode {
 
 
 	/* Reference to the ECM. */
-	protected static ECM ecm = ECM.getInstance();
+	protected static ini.cx3d.simulations.interfaces.ECM ecm = ECMFacade.getInstance();
 
 	/* If true, the PhysicalNode will be run by the Scheduler.*/
 	private boolean onTheSchedulerListForPhysicalNodes = true;

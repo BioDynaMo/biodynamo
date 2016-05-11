@@ -24,12 +24,13 @@ package ini.cx3d.simulations.tutorial;
 import static ini.cx3d.utilities.Matrix.randomNoise;
 
 import ini.cx3d.BaseSimulationTest;
+import ini.cx3d.JavaUtil2;
 import ini.cx3d.Param;
-import ini.cx3d.cells.Cell;
 import ini.cx3d.cells.CellFactory;
-import ini.cx3d.localBiology.AbstractLocalBiologyModule;
+import ini.cx3d.localBiology.LocalBiologyModule;
 import ini.cx3d.physics.factory.IntracellularSubstanceFactory;
-import ini.cx3d.simulations.ECM;
+import ini.cx3d.simulations.ECMFacade;
+import ini.cx3d.simulations.interfaces.ECM;
 import ini.cx3d.simulations.Scheduler;
 
 public class MembraneContactTest extends BaseSimulationTest {
@@ -39,9 +40,13 @@ public class MembraneContactTest extends BaseSimulationTest {
 
 	@Override
 	public void simulate() throws Exception{
-		ECM.setRandomSeed(1L);
-		ECM ecm = ECM.getInstance();
+		ECM ecm = ECMFacade.getInstance();
 
+		new ini.cx3d.swig.simulation.MembraneContactTest().simulate(ecm, new JavaUtil2());
+		if(true) return;
+
+		JavaUtil2.setRandomSeed(1L);
+		initPhysicalNodeMovementListener();
 		ini.cx3d.physics.interfaces.IntracellularSubstance adherence = IntracellularSubstanceFactory.create("A", 0, 0);
 		adherence.setVisibleFromOutside(true);
 		adherence.setVolumeDependant(false);
@@ -51,12 +56,12 @@ public class MembraneContactTest extends BaseSimulationTest {
 		ecm.setBoundaries(-150, 150, -150, 150, -100, 100);
 
 		for(int i = 0; i<10; i++){
-			Cell c = CellFactory.getCellInstance(randomNoise(100, 3));
+			ini.cx3d.cells.interfaces.Cell c = CellFactory.getCellInstance(randomNoise(100, 3));
 			c.setColorForAllPhysicalObjects(Param.RED);
 			c.getSomaElement().getPhysical().modifyMembraneQuantity("A", 100000);
 		}
 		for(int i = 0; i<10; i++){
-			Cell c = CellFactory.getCellInstance(randomNoise(50, 3));
+			ini.cx3d.cells.interfaces.Cell c = CellFactory.getCellInstance(randomNoise(50, 3));
 			c.getSomaElement().addLocalBiologyModule(new MembraneContact());
 			c.getSomaElement().addLocalBiologyModule(new SomaRandomWalkModule());
 			c.setColorForAllPhysicalObjects(Param.VIOLET);
@@ -69,18 +74,24 @@ public class MembraneContactTest extends BaseSimulationTest {
 	}
 }
 
-class MembraneContact extends AbstractLocalBiologyModule {
+class MembraneContact extends ini.cx3d.swig.simulation.simulation.AbstractLocalBiologyModuleBase {
 
-	public AbstractLocalBiologyModule getCopy() {
+	public MembraneContact(){
+		super();
+		ini.cx3d.swig.simulation.AbstractLocalBiologyModule.registerJavaObject(this);
+		ini.cx3d.swig.simulation.LocalBiologyModule.registerJavaObject(this);
+	}
+
+	public LocalBiologyModule getCopy() {
 		return new MembraneContact();
 	}
 
 	public void run() {		
-		ini.cx3d.physics.interfaces.PhysicalObject physical = super.cellElement.getPhysical();
+		ini.cx3d.physics.interfaces.PhysicalObject physical = getCellElement().getPhysical();
 		for (ini.cx3d.physics.interfaces.PhysicalObject o: physical.getPhysicalObjectsInContact()) {
 			if(o.getMembraneConcentration("A")>1){
 				physical.setColor(Param.YELLOW);
-				super.cellElement.cleanAllLocalBiologyModules();
+				getCellElement().cleanAllLocalBiologyModules();
 			}
 		}
 	}

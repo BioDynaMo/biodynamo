@@ -26,10 +26,10 @@ import static ini.cx3d.utilities.Matrix.normalize;
 import static ini.cx3d.utilities.Matrix.randomNoise;
 
 import ini.cx3d.BaseSimulationTest;
-import ini.cx3d.cells.Cell;
+import ini.cx3d.JavaUtil2;
 import ini.cx3d.cells.CellFactory;
-import ini.cx3d.localBiology.AbstractLocalBiologyModule;
-import ini.cx3d.simulations.ECM;
+import ini.cx3d.localBiology.LocalBiologyModule;
+import ini.cx3d.simulations.ECMFacade;
 import ini.cx3d.simulations.Scheduler;
 
 public class SomaRandomWalkModuleTest extends BaseSimulationTest {
@@ -39,9 +39,14 @@ public class SomaRandomWalkModuleTest extends BaseSimulationTest {
 
 	@Override
 	public void simulate() throws Exception {
-		ECM.setRandomSeed(1L);
+
+		new ini.cx3d.swig.simulation.SomaRandomWalkModuleTest().simulate(ECMFacade.getInstance(), new JavaUtil2());
+		if(true) return;
+
+		JavaUtil2.setRandomSeed(1L);
+		initPhysicalNodeMovementListener();
 		for(int i = 0; i<5; i++){
-			Cell c = CellFactory.getCellInstance(randomNoise(40, 3));
+			ini.cx3d.cells.interfaces.Cell c = CellFactory.getCellInstance(randomNoise(40, 3));
 			c.getSomaElement().addLocalBiologyModule(new SomaRandomWalkModule());
 //			c.addCellModule(new DividingModule());  // un-comment to have the cells divide
 		}
@@ -51,11 +56,17 @@ public class SomaRandomWalkModuleTest extends BaseSimulationTest {
 	}
 }
 
-class SomaRandomWalkModule extends AbstractLocalBiologyModule {
+class SomaRandomWalkModule extends ini.cx3d.swig.simulation.simulation.AbstractLocalBiologyModuleBase {
 
 	double direction[] = randomNoise(1.0, 3); // initial direction
 
-	public AbstractLocalBiologyModule getCopy() {
+	public SomaRandomWalkModule() {
+		super();
+		ini.cx3d.swig.simulation.AbstractLocalBiologyModule.registerJavaObject(this);
+		ini.cx3d.swig.simulation.LocalBiologyModule.registerJavaObject(this);
+	}
+
+	public LocalBiologyModule getCopy() {
 		return new SomaRandomWalkModule();
 	}
 
@@ -64,7 +75,7 @@ class SomaRandomWalkModule extends AbstractLocalBiologyModule {
 		double[] deltaDirection = randomNoise(0.1, 3);
 		direction = add(direction, deltaDirection);
 		direction = normalize(direction);
-		super.cellElement.move(speed, direction);
+		getCellElement().move(speed, direction);
 	}
 	
 	public boolean isCopiedWhenSomaDivides() {

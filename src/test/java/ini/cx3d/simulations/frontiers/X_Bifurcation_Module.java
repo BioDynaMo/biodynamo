@@ -23,15 +23,12 @@ package ini.cx3d.simulations.frontiers;
 
 import static ini.cx3d.utilities.Matrix.randomNoise;
 import ini.cx3d.Param;
-import ini.cx3d.cells.Cell;
 import ini.cx3d.cells.CellFactory;
 import ini.cx3d.localBiology.interfaces.CellElement;
-import ini.cx3d.localBiology.LocalBiologyModule;
-import ini.cx3d.localBiology.NeuriteElement;
 import ini.cx3d.physics.interfaces.PhysicalCylinder;
-import ini.cx3d.physics.Substance;
 import ini.cx3d.physics.factory.SubstanceFactory;
-import ini.cx3d.simulations.ECM;
+import ini.cx3d.simulations.ECMFacade;
+import ini.cx3d.simulations.interfaces.ECM;
 import ini.cx3d.simulations.Scheduler;
 
 import java.awt.Color;
@@ -43,7 +40,7 @@ import java.util.Vector;
  * @author fredericzubler
  *
  */
-public class X_Bifurcation_Module extends ini.cx3d.swig.physics.LocalBiologyModule {
+public class X_Bifurcation_Module extends ini.cx3d.swig.simulation.LocalBiologyModule {
 	
 	public static int nbrOfGC = 0;
 	
@@ -72,7 +69,7 @@ public class X_Bifurcation_Module extends ini.cx3d.swig.physics.LocalBiologyModu
 
 	/* minimum interval before branching */
 	//double freeInterval = 5+ 15*ECM.getRandomDouble();
-	double freeInterval = 5+ 1*ECM.getRandomDouble();
+	double freeInterval = 5+ 1* ECMFacade.getInstance().getRandomDouble1();
 	
 	public X_Bifurcation_Module() {
 		super();
@@ -172,8 +169,8 @@ public class X_Bifurcation_Module extends ini.cx3d.swig.physics.LocalBiologyModu
 		double y = slope*totalConcentration + shift;
 		if(y>maxProba)
 			y=maxProba;
-		if(ECM.getRandomDouble()<y){
-			NeuriteElement[] daughters =  ((NeuriteElement)cellElement).bifurcate();
+		if(ECMFacade.getInstance().getRandomDouble1()<y){
+			ini.cx3d.localBiology.interfaces.NeuriteElement[] daughters =  ((ini.cx3d.localBiology.interfaces.NeuriteElement)cellElement).bifurcate();
 			PhysicalCylinder cyl0 = daughters[0].getPhysicalCylinder();
 			PhysicalCylinder cyl1 = daughters[1].getPhysicalCylinder();
 			cyl0.setDiameter(cyl.getDiameter()*diameterOfDaughter);
@@ -194,7 +191,7 @@ public class X_Bifurcation_Module extends ini.cx3d.swig.physics.LocalBiologyModu
 	public static void main(String[] args) {
 		// 1) Prepare the environment :
 		// 		get a reference to the extracelular matrix (ECM)
-		ECM ecm = ECM.getInstance();
+		ECM ecm = ECMFacade.getInstance();
 		// 		add additional PhysicalNodes (for diffusion)
 		int nbOfAdditionalNodes = 100;
 		for (int i = 0; i < nbOfAdditionalNodes; i++) {
@@ -215,11 +212,11 @@ public class X_Bifurcation_Module extends ini.cx3d.swig.physics.LocalBiologyModu
 		
 		// 3) Create a 4-uple Cell-SomaElement-PhysicalSphere-SpaceNode at the desired location
 		double[] cellLocation = new double[] {0,0,0};
-		Cell cell = CellFactory.getCellInstance(cellLocation);
+		ini.cx3d.cells.interfaces.Cell cell = CellFactory.getCellInstance(cellLocation);
 		cell.setColorForAllPhysicalObjects(Param.RED);
 		
 		// 4) Extend an axon from the cell
-		NeuriteElement neurite = cell.getSomaElement().extendNewNeurite(new double[] {0,0,1});
+		ini.cx3d.localBiology.interfaces.NeuriteElement neurite = cell.getSomaElement().extendNewNeurite(new double[] {0,0,1});
 		neurite.getPhysical().setDiameter(1.0);
 		// 5) Put a movementReceptor
 		X_Movement_Module mr = new X_Movement_Module();
