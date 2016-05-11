@@ -21,6 +21,8 @@ class CellElement;
  */
 class LocalBiologyModule : public SimStateSerializable {
  public:
+  using UPtr = std::unique_ptr<LocalBiologyModule>;
+
   LocalBiologyModule() {
   }
 
@@ -51,7 +53,7 @@ class LocalBiologyModule : public SimStateSerializable {
   }
 
   /** returns a copy of itself */
-  virtual std::shared_ptr<LocalBiologyModule> getCopy() const {
+  virtual UPtr getCopy() const {
     throw std::logic_error(
         "LocalBiologyModule::getCopy must never be called - Java must provide implementation at this point");
   }

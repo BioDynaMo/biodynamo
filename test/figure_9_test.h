@@ -121,14 +121,14 @@ class Figure9Test : public BaseSimulationTest {
           ne->setAxon(false);
         }
 
-        auto br = std::shared_ptr<XBifurcationModule> { new XBifurcationModule(java) };
+        auto br = std::unique_ptr<XBifurcationModule> { new XBifurcationModule(java) };
         br->setShift(branch_probability);
-        ne->addLocalBiologyModule(br);
-        auto mr = std::shared_ptr<XMovementModule> { new XMovementModule(java) };
+        ne->addLocalBiologyModule(std::move(br));
+        auto mr = std::unique_ptr<XMovementModule> { new XMovementModule(java) };
         mr->setRandomness(0.7);
         mr->setSpeed(growth_speed);
         mr->setLinearDiameterDecrease(linearDiameterDecrease);
-        ne->addLocalBiologyModule(mr);
+        ne->addLocalBiologyModule(std::move(mr));
       }
     }
     auto scheduler = Scheduler::getInstance(ecm);

@@ -34,8 +34,7 @@ std::shared_ptr<SomaElement> SomaElement::divide(double volume_ratio, double phi
   // Copy of the local biological modules:
   for (auto m : local_biology_modules_) {
     if (m->isCopiedWhenSomaDivides()) {
-      auto m_2 = m->getCopy();
-      new_soma->local_biology_modules_.push_back(m_2);
+      new_soma->addLocalBiologyModule(m->getCopy());
     }
   }
   return new_soma;

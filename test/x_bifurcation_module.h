@@ -98,8 +98,8 @@ class XBifurcationModule : public LocalBiologyModule {
     cell_element_ = cell_element;
   }
 
-  std::shared_ptr<LocalBiologyModule> getCopy() const override {
-    auto bf = std::shared_ptr<XBifurcationModule> { new XBifurcationModule(slope_, shift_, java_) };
+  UPtr getCopy() const override {
+    auto bf = std::unique_ptr<XBifurcationModule> { new XBifurcationModule(slope_, shift_, java_) };
     for (auto factor : branching_factors_) {
       bf->branching_factors_.push_back(factor);
     }

@@ -81,8 +81,7 @@ std::shared_ptr<NeuriteElement> NeuriteElement::branch(double diameter,
   // Copy of the local biological modules:
   for (auto m : getLocalBiologyModulesList()) {
     if (m->isCopiedWhenNeuriteBranches()) {
-      auto m2 = m->getCopy();
-      ne->addLocalBiologyModule(m2);
+      ne->addLocalBiologyModule(m->getCopy());
     }
   }
   return ne;
@@ -147,11 +146,9 @@ std::array<std::shared_ptr<NeuriteElement>, 2> NeuriteElement::bifurcate(double 
     // copy...
     if (m->isCopiedWhenNeuriteBranches()) {
       // ...for the first neurite
-      auto m2 = m->getCopy();
-      ne_1->addLocalBiologyModule(m2);
+      ne_1->addLocalBiologyModule(m->getCopy());
       // ...for the second neurite
-      m2 = m->getCopy();
-      ne_2->addLocalBiologyModule(m2);
+      ne_2->addLocalBiologyModule(m->getCopy());
     }
     // and remove
     if (m->isDeletedAfterNeuriteHasBifurcated()) {

@@ -73,7 +73,7 @@ class SmallNetworkTest : public BaseSimulationTest {
       auto axon = c->getSomaElement()->extendNewNeurite();
       axon->setAxon(true);
       axon->getPhysicalCylinder()->setDiameter(0.5);
-      axon->addLocalBiologyModule(std::shared_ptr<LocalBiologyModule> { new NeuriteChemoAttraction("L1", 0.02, java) });
+      axon->addLocalBiologyModule(LocalBiologyModule::UPtr { new NeuriteChemoAttraction("L1", 0.02, java) });
 
       if (i < 4) {
         axon->getPhysicalCylinder()->setColor(Param::kYellow);
@@ -84,8 +84,7 @@ class SmallNetworkTest : public BaseSimulationTest {
       auto dendrite = c->getSomaElement()->extendNewNeurite();
       dendrite->setAxon(false);
       dendrite->getPhysicalCylinder()->setDiameter(1.5);
-      dendrite->addLocalBiologyModule(
-          std::shared_ptr<LocalBiologyModule> { new NeuriteChemoAttraction("L1", 0.02, java) });
+      dendrite->addLocalBiologyModule(LocalBiologyModule::UPtr { new NeuriteChemoAttraction("L1", 0.02, java) });
     }
     auto scheduler = Scheduler::getInstance(ecm);
     while (ecm->getECMtime() < 6) {

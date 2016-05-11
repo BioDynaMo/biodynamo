@@ -31,8 +31,8 @@ class SomaRandomWalkModule : public AbstractLocalBiologyModule {
   SomaRandomWalkModule(const SomaRandomWalkModule&) = delete;
   SomaRandomWalkModule& operator=(const SomaRandomWalkModule&) = delete;
 
-  std::shared_ptr<LocalBiologyModule> getCopy() const override {
-    return std::shared_ptr<LocalBiologyModule> { new SomaRandomWalkModule(java_) };
+  UPtr getCopy() const override {
+    return UPtr { new SomaRandomWalkModule(java_) };
   }
 
   bool isCopiedWhenSomaDivides() const override {
@@ -68,8 +68,7 @@ class SomaRandomWalkModuleTest : public BaseSimulationTest {
 
     for (int i = 0; i < 5; i++) {
       auto c = CellFactory::getCellInstance(java->matrixRandomNoise3(40), ecm);
-      c->getSomaElement()->addLocalBiologyModule(
-          std::shared_ptr<LocalBiologyModule> { new SomaRandomWalkModule(java) });
+      c->getSomaElement()->addLocalBiologyModule(SomaRandomWalkModule::UPtr { new SomaRandomWalkModule(java) });
     }
 
     auto scheduler = Scheduler::getInstance(ecm);

@@ -8,6 +8,7 @@
 #include <exception>
 
 #include "sim_state_serializable.h"
+#include "local_biology_module.h"
 
 namespace cx3d {
 
@@ -37,8 +38,7 @@ class CellElement : public SimStateSerializable, public std::enable_shared_from_
 
   CellElement();
 
-  virtual ~CellElement() {
-  }
+  virtual ~CellElement();
 
   virtual StringBuilder& simStateToJson(StringBuilder& sb) const override;
 
@@ -48,19 +48,16 @@ class CellElement : public SimStateSerializable, public std::enable_shared_from_
 
   /** Adds the argument to the <code>LocalBiologyModule</code> list, and registers this as it's
    * <code>CellElements</code>.*/
-  virtual void addLocalBiologyModule(const std::shared_ptr<LocalBiologyModule>& m);
+  virtual void addLocalBiologyModule(LocalBiologyModule::UPtr m);
 
   /** Removes the argument from the <code>LocalBiologyModule</code> list.*/
-  virtual void removeLocalBiologyModule(const std::shared_ptr<LocalBiologyModule> m);
+  virtual void removeLocalBiologyModule(LocalBiologyModule* m);
 
   /** Removes all the <code>LocalBiologyModule</code> in this <code>CellElements</code>.*/
   virtual void cleanAllLocalBiologyModules();
 
   /** Returns the localBiologyModule List (not a copy).*/
-  virtual std::list<std::shared_ptr<LocalBiologyModule>> getLocalBiologyModulesList();
-
-  /** Sets the localBiologyModule List.*/
-  virtual void setLocalBiologyModulesList(const std::list<std::shared_ptr<LocalBiologyModule>>& modules);
+  virtual std::vector<LocalBiologyModule*> getLocalBiologyModulesList();
 
   // *************************************************************************************
   // *      METHODS FOR SETTING CELL                                                     *
@@ -121,7 +118,7 @@ class CellElement : public SimStateSerializable, public std::enable_shared_from_
 
   Cell* cell_ = nullptr;
 
-  std::vector<std::shared_ptr<LocalBiologyModule>> local_biology_modules_;
+  std::vector<LocalBiologyModule*> local_biology_modules_;
 
  private:
   CellElement(const CellElement&) = delete;

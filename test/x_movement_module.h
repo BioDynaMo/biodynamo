@@ -98,8 +98,8 @@ class XMovementModule : public LocalBiologyModule {
     movement_direction_ = cell_element_->getPhysical()->getXAxis();
   }
 
-  std::shared_ptr<LocalBiologyModule> getCopy() const override {
-    auto r = std::shared_ptr<XMovementModule> { new XMovementModule(java_) };
+  UPtr getCopy() const override {
+    auto r = std::unique_ptr<XMovementModule> { new XMovementModule(java_) };
     for (auto el : attractants_) {
       r->attractants_.push_back(el);
     }

@@ -49,8 +49,8 @@ class NeuriteChemoAttraction : public AbstractLocalBiologyModule {
   NeuriteChemoAttraction(const NeuriteChemoAttraction&) = delete;
   NeuriteChemoAttraction& operator=(const NeuriteChemoAttraction&) = delete;
 
-  std::shared_ptr<LocalBiologyModule> getCopy() const override {
-    return std::shared_ptr<LocalBiologyModule> { new NeuriteChemoAttraction(substance_id_, java_) };
+  UPtr getCopy() const override {
+    return UPtr { new NeuriteChemoAttraction(substance_id_, java_) };
   }
 
   bool isCopiedWhenNeuriteBranches() const override {
@@ -131,7 +131,7 @@ class NeuriteChemoAttractionTest : public BaseSimulationTest {
     c->setColorForAllPhysicalObjects(Param::kViolet);
     auto neurite = c->getSomaElement()->extendNewNeurite();
     neurite->getPhysicalCylinder()->setDiameter(2.0);
-    neurite->addLocalBiologyModule(std::shared_ptr<LocalBiologyModule> { new NeuriteChemoAttraction("A", java) });
+    neurite->addLocalBiologyModule( LocalBiologyModule::UPtr { new NeuriteChemoAttraction("A", java) });
 
     auto scheduler = Scheduler::getInstance(ecm);
     for (int i = 0; i < 1000; i++) {

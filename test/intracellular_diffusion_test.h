@@ -39,8 +39,8 @@ class InternalSecretor : public AbstractLocalBiologyModule {
   InternalSecretor(const InternalSecretor&) = delete;
   InternalSecretor& operator=(const InternalSecretor&) = delete;
 
-  std::shared_ptr<LocalBiologyModule> getCopy() const override {
-    return std::shared_ptr<LocalBiologyModule> { new InternalSecretor() };
+  UPtr getCopy() const override {
+    return UPtr { new InternalSecretor() };
   }
 
   void run() override {
@@ -75,8 +75,8 @@ class GrowthCone : public AbstractLocalBiologyModule {
   /**
    *
    */
-  std::shared_ptr<LocalBiologyModule> getCopy() const override {
-    return std::shared_ptr<LocalBiologyModule> { new GrowthCone(java_) };
+  UPtr getCopy() const override {
+    return UPtr { new GrowthCone(java_) };
   }
 
   /**
@@ -162,11 +162,11 @@ class IntracellularDiffusionTest : public BaseSimulationTest {
     c->setColorForAllPhysicalObjects(Param::kRed);
     // insert production module
     auto soma = c->getSomaElement();
-    soma->addLocalBiologyModule(std::shared_ptr<LocalBiologyModule> { new InternalSecretor() });
+    soma->addLocalBiologyModule(LocalBiologyModule::UPtr { new InternalSecretor() });
     //insert growth cone module
     auto ne = c->getSomaElement()->extendNewNeurite( { 0, 0, 1 });
     ne->getPhysical()->setDiameter(1.0);
-    ne->addLocalBiologyModule(std::shared_ptr<LocalBiologyModule> { new GrowthCone(java) });
+    ne->addLocalBiologyModule(LocalBiologyModule::UPtr { new GrowthCone(java) });
     // run, Forrest, run..
     auto scheduler = Scheduler::getInstance(ecm);
     for (int i = 0; i < 2001; i++) {

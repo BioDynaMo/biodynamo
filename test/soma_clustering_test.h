@@ -42,8 +42,8 @@ class SomaClustering : public AbstractLocalBiologyModule {
   SomaClustering(const SomaClustering&) = delete;
   SomaClustering& operator=(const SomaClustering&) = delete;
 
-  std::shared_ptr<LocalBiologyModule> getCopy() const override {
-    return std::shared_ptr<LocalBiologyModule> { new SomaClustering(substance_id_, java_) };
+  UPtr getCopy() const override {
+    return UPtr { new SomaClustering(substance_id_, java_) };
   }
 
   void run() override {
@@ -88,14 +88,12 @@ class SomaClusteringTest : public BaseSimulationTest {
     }
     for (int i = 0; i < 60; i++) {
       auto c = CellFactory::getCellInstance(java->matrixRandomNoise3(50), ecm);
-      c->getSomaElement()->addLocalBiologyModule(
-          std::shared_ptr<LocalBiologyModule> { new SomaClustering("Yellow", java) });
+      c->getSomaElement()->addLocalBiologyModule(LocalBiologyModule::UPtr { new SomaClustering("Yellow", java) });
       c->setColorForAllPhysicalObjects(Param::kYellowSolid);
     }
     for (int i = 0; i < 60; i++) {
       auto c = CellFactory::getCellInstance(java->matrixRandomNoise3(50), ecm);
-      c->getSomaElement()->addLocalBiologyModule(
-          std::shared_ptr<LocalBiologyModule> { new SomaClustering("Violet", java) });
+      c->getSomaElement()->addLocalBiologyModule(LocalBiologyModule::UPtr { new SomaClustering("Violet", java) });
       c->setColorForAllPhysicalObjects(Param::kVioletSolid);
     }
     auto scheduler = Scheduler::getInstance(ecm);

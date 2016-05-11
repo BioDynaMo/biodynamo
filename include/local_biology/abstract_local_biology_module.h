@@ -41,7 +41,7 @@ class AbstractLocalBiologyModule : public LocalBiologyModule {
     cell_element_ = cell_element;
   }
 
-  virtual std::shared_ptr<LocalBiologyModule> getCopy() const override {
+  virtual UPtr getCopy() const override {
     throw std::logic_error(
         "AbstractLocalBiologyModule::getCopy must never be called - Java must provide implementation at this point");
   }
@@ -64,10 +64,6 @@ class AbstractLocalBiologyModule : public LocalBiologyModule {
 
   virtual bool isDeletedAfterNeuriteHasBifurcated() const override {
     return false;
-  }
-
-  virtual bool equalTo(const std::shared_ptr<AbstractLocalBiologyModule>& other) {
-    return this == other.get();
   }
 
  protected:

@@ -65,12 +65,12 @@ class RandomBranchingModule : public LocalBiologyModule, public std::enable_shar
       direction_ = neurite_->getPhysicalCylinder()->getAxis();
     } else {
       // Sorry, I only work with neurite elements
-      cell_element->removeLocalBiologyModule(shared_from_this());
+      cell_element->removeLocalBiologyModule(this);
     }
   }
 
-  std::shared_ptr<LocalBiologyModule> getCopy() const override {
-    return std::shared_ptr<LocalBiologyModule> { new RandomBranchingModule(java_) };
+  UPtr getCopy() const override {
+    return UPtr { new RandomBranchingModule(java_) };
   }
 
   bool isCopiedWhenNeuriteBranches() const override {
@@ -131,7 +131,7 @@ class RandomBranchingModuleTest : public BaseSimulationTest {
       c->setColorForAllPhysicalObjects(Param::kGray);
       auto neurite = c->getSomaElement()->extendNewNeurite( { 0, 0, 1 });
       neurite->getPhysicalCylinder()->setDiameter(2);
-      neurite->addLocalBiologyModule(std::shared_ptr<LocalBiologyModule> { new RandomBranchingModule(java) });
+      neurite->addLocalBiologyModule(LocalBiologyModule::UPtr { new RandomBranchingModule(java) });
     }
 
     auto scheduler = Scheduler::getInstance(ecm);

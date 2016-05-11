@@ -31,8 +31,8 @@ class MembraneContact : public AbstractLocalBiologyModule {
   MembraneContact(const MembraneContact&) = delete;
   MembraneContact& operator=(const MembraneContact&) = delete;
 
-  std::shared_ptr<LocalBiologyModule> getCopy() const override {
-    return std::shared_ptr<LocalBiologyModule> { new MembraneContact() };
+  UPtr getCopy() const override {
+    return UPtr { new MembraneContact() };
   }
 
   void run() override {
@@ -75,9 +75,8 @@ class MembraneContactTest : public BaseSimulationTest {
     }
     for (int i = 0; i < 10; i++) {
       auto c = CellFactory::getCellInstance(ecm->matrixRandomNoise3(50), ecm);
-      c->getSomaElement()->addLocalBiologyModule(std::shared_ptr<LocalBiologyModule> { new MembraneContact() });
-      c->getSomaElement()->addLocalBiologyModule(
-          std::shared_ptr<LocalBiologyModule> { new SomaRandomWalkModule(java) });
+      c->getSomaElement()->addLocalBiologyModule(LocalBiologyModule::UPtr { new MembraneContact() });
+      c->getSomaElement()->addLocalBiologyModule(LocalBiologyModule::UPtr { new SomaRandomWalkModule(java) });
       c->setColorForAllPhysicalObjects(Param::kViolet);
     }
 
