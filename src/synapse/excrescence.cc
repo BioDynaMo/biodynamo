@@ -21,7 +21,7 @@ Excrescence::Excrescence(Excrescence::Type type)
 Excrescence::Excrescence(const std::shared_ptr<physics::PhysicalObject> po, const std::array<double, 2>& position_on_po,
                          double length, Excrescence::Type type)
     : po_ { po },
-      position_on_po_ { position_on_po },
+      position_on_po_ ( position_on_po ),
       length_ { length },
       type_ { type } {
 

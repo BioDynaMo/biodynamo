@@ -1,3 +1,5 @@
+#include <cmath>
+
 #include "gtest/gtest.h"
 
 #include "dividing_cell_test.h"
@@ -14,6 +16,13 @@
 #include "figure_9_test.h"
 
 namespace cx3d {
+
+TEST (Math, exp) {
+  double x = -0.0028724514195400627;
+  double result = exp(x);
+  double expected = 0.99713167012178527;
+  ASSERT_EQ(expected, result);
+}
 
 TEST_F (DividingCellTest, simulation) {
   run();

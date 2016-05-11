@@ -43,12 +43,17 @@ ExternalProject_Add(
 
 # Create a libjsoncpp target to be used as a dependency by the test program
 add_library(libgmp IMPORTED STATIC GLOBAL)
-set_property(TARGET libgmp PROPERTY IMPORTED_LOCATION "${CMAKE_BINARY_DIR}/gmp/src/gmp/.libs/libgmp.so")
+set_property(TARGET libgmp PROPERTY IMPORTED_LOCATION "${CMAKE_BINARY_DIR}/gmp/src/gmp/.libs/libgmp${CMAKE_SHARED_LIBRARY_SUFFIX}")
 add_dependencies(libgmp gmp)
 
 # copy shared library from gmp build dir to ${CMAKE_BUILD_DIR}
+if(APPLE)
+  set(LIBGMP_DEST "${CMAKE_BINARY_DIR}/libgmp.10${CMAKE_SHARED_LIBRARY_SUFFIX}")
+elseif(UNIX)
+  set(LIBGMP_DEST "${CMAKE_BINARY_DIR}/libgmp${CMAKE_SHARED_LIBRARY_SUFFIX}.10")
+endif()
 add_custom_target(copylibgmp DEPENDS libgmp COMMAND ${CMAKE_COMMAND} -E copy_if_different
-    "${CMAKE_BINARY_DIR}/gmp/src/gmp/.libs/libgmp.so" "${CMAKE_BINARY_DIR}/libgmp.so.10")
+    "${CMAKE_BINARY_DIR}/gmp/src/gmp/.libs/libgmp${CMAKE_SHARED_LIBRARY_SUFFIX}" ${LIBGMP_DEST})
 
 #--------------------- Doxygen ---------------------------------
 add_subdirectory(doc doc)
@@ -113,7 +118,7 @@ if (test)
   # create test executable
   file(GLOB TEST_SOURCES "test/*.cc" "test/*.h")
   set(TEST_TARGET runBiodynamoTests)
-  add_executable(${TEST_TARGET} "${TEST_SOURCES}")
+  add_executable(${TEST_TARGET} ${TEST_SOURCES})
   target_link_libraries(${TEST_TARGET} libgtest)
   target_link_libraries(${TEST_TARGET} libjsoncpp)
   target_link_libraries(${TEST_TARGET} biodynamo)

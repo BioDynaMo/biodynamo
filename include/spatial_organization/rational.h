@@ -43,7 +43,7 @@ class Rational : public std::enable_shared_from_this<Rational> {
    *   return std::shared_ptr<Rational>(new Rational(std::forward<T>(all)...));
    * }
    */
-  static std::shared_ptr<Rational> create(int64_t numerator, int64_t denominator) {
+  static std::shared_ptr<Rational> create(unsigned numerator, unsigned denominator) {
     return std::shared_ptr<Rational>(new Rational(numerator, denominator));
   }
 
@@ -188,7 +188,7 @@ class Rational : public std::enable_shared_from_this<Rational> {
    * @param numerator The numerator of the new rational.
    * @param denominator The denominator of the new rational.
    */
-  Rational(int64_t numerator, int64_t denominator);
+  Rational(unsigned numerator, unsigned denominator);
 
   /**
    * Initializes a new rational number from two values of type {@link BigInteger}.
@@ -219,7 +219,7 @@ class Rational : public std::enable_shared_from_this<Rational> {
    * @param big_int The BigInteger object whose internal representation should be changed
    * @param value The target value which big_int should be set to
    */
-  void setBigIntTo(BigInteger& big_int, int64_t value);
+  void setBigIntTo(BigInteger& big_int, unsigned value);
 };
 
 }  // namespace spatial_organization

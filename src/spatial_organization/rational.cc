@@ -16,7 +16,7 @@ Rational::Rational()
 }
 #endif
 
-Rational::Rational(int64_t numerator, int64_t denominator)
+Rational::Rational(unsigned numerator, unsigned denominator)
     : numerator_(0),
       denominator_(1) {
   setBigIntTo(numerator_, numerator);
@@ -35,14 +35,14 @@ Rational::Rational(const BigInteger& numerator, const BigInteger& denominator)
 Rational::Rational(double value)
     : numerator_(0),
       denominator_(1) {
-  int64_t mantisse;
-  memcpy(&mantisse, &value, sizeof(int64_t));
+  uint64_t mantisse;
+  memcpy(&mantisse, &value, sizeof(uint64_t));
   int64_t ex = ((mantisse & 0x7ff0000000000000L) >> 52) - 1023;
-  int64_t sign = mantisse & 0x8000000000000000L;
+  uint64_t sign = mantisse & 0x8000000000000000L;
 
   // lets calculate the mantisse:
   mantisse &= 0x000fffffffffffffL;
-  int64_t denom = 0x0010000000000000L;
+  uint64_t denom = 0x0010000000000000L;
   // if value is a denormalized value...
   if (ex == -1023) {
     ex++;
@@ -52,10 +52,12 @@ Rational::Rational(double value)
   }
 
   if (sign != 0) {
-    mantisse *= -1;
+    numerator_ -= static_cast<unsigned long int>(mantisse);
+  } else {
+    numerator_ += static_cast<unsigned long int>(mantisse);;
   }
-  numerator_ += mantisse;
-  denominator_ += denom;
+  denominator_ += static_cast<unsigned long int>(denom);;
+
   if (ex > 0) {
     numerator_ = numerator_ * pow2(static_cast<int>(ex));
   } else {
@@ -209,12 +211,12 @@ int Rational::compareTo(const shared_ptr<Rational>& other) const {
   return sgn(this->subtract(other)->numerator_);
 }
 
-void Rational::setBigIntTo(BigInteger& big_int, int64_t value) {
+void Rational::setBigIntTo(BigInteger& big_int, unsigned value) {
   auto representation = big_int.get_mpz_t();
 
   mpz_set_si(representation, static_cast<int>(value >> 32));
   mpz_mul_2exp(representation, representation, 32);
-  mpz_add_ui(representation, representation, static_cast<unsigned int>(value));
+  mpz_add_ui(representation, representation, value);
 }
 
 bool Rational::equalTo(const std::shared_ptr<Rational>& other) {
