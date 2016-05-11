@@ -83,6 +83,7 @@ template<class T>
 void BinaryTreeElement<T>::insert(BinaryTreeElement* element) {
   if (content_id_ == element->content_id_
       && content_.get() == element->content_.get()) {
+    delete element;
     return;
   } else if ((content_id_ >= element->content_id_)) {
     if ((smaller_ != nullptr)) {
