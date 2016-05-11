@@ -22,15 +22,15 @@ class BiologicalSomaticSpine : public SimStateSerializable {
 
   virtual StringBuilder& simStateToJson(StringBuilder& sb) const override;
 
-  virtual std::shared_ptr<PhysicalSomaticSpine> getPhysicalSomaticSpine() const;
+  virtual PhysicalSomaticSpine* getPhysicalSomaticSpine() const;
 
-  virtual void setPhysicalSomaticSpine(const std::shared_ptr<PhysicalSomaticSpine>& ps);
+  virtual void setPhysicalSomaticSpine(PhysicalSomaticSpine* ps);
 
  private:
   BiologicalSomaticSpine(const BiologicalSomaticSpine&) = delete;
   BiologicalSomaticSpine& operator=(const BiologicalSomaticSpine&) = delete;
 
-  std::shared_ptr<PhysicalSomaticSpine> physical_somatic_spine_;
+  PhysicalSomaticSpine* physical_somatic_spine_;
 };
 
 }  // namespace synapse

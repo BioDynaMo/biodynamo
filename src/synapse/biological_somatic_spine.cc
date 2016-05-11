@@ -16,11 +16,11 @@ StringBuilder& BiologicalSomaticSpine::simStateToJson(StringBuilder& sb) const {
   return sb;
 }
 
-std::shared_ptr<PhysicalSomaticSpine> BiologicalSomaticSpine::getPhysicalSomaticSpine() const {
+PhysicalSomaticSpine* BiologicalSomaticSpine::getPhysicalSomaticSpine() const {
   return physical_somatic_spine_;
 }
 
-void BiologicalSomaticSpine::setPhysicalSomaticSpine(const std::shared_ptr<PhysicalSomaticSpine>& ps) {
+void BiologicalSomaticSpine::setPhysicalSomaticSpine(PhysicalSomaticSpine* ps) {
   physical_somatic_spine_ = ps;
 }
 

@@ -8,15 +8,6 @@
 namespace cx3d {
 namespace synapse {
 
-std::shared_ptr<PhysicalSomaticSpine> PhysicalSomaticSpine::create() {
-  return std::shared_ptr<PhysicalSomaticSpine>(new PhysicalSomaticSpine());
-}
-
-std::shared_ptr<PhysicalSomaticSpine> PhysicalSomaticSpine::create(const std::shared_ptr<physics::PhysicalObject>& po,
-                                                     const std::array<double, 2>& origin, double length) {
-  return std::shared_ptr<PhysicalSomaticSpine>(new PhysicalSomaticSpine(po, origin, length));
-}
-
 PhysicalSomaticSpine::PhysicalSomaticSpine()
     : Excrescence(Excrescence::Type::kSomaticSpine) {
 }
@@ -39,7 +30,7 @@ StringBuilder& PhysicalSomaticSpine::simStateToJson(StringBuilder& sb) const {
   return sb;
 }
 
-bool PhysicalSomaticSpine::synapseWith(const std::shared_ptr<Excrescence>& other_excrescence, bool create_physical_bond) {
+bool PhysicalSomaticSpine::synapseWith(Excrescence* other_excrescence, bool create_physical_bond) {
   // only if the other Excrescence is a bouton
   if (other_excrescence->getType() != Excrescence::Type::kBouton) {
     // todo throw exception?
@@ -47,7 +38,7 @@ bool PhysicalSomaticSpine::synapseWith(const std::shared_ptr<Excrescence>& other
   }
   // making the references
   ex_ = other_excrescence;
-  ex_->setEx(shared_from_this());
+  ex_->setEx(this);
   // if needed, formation of the PhysicalBound
   if (create_physical_bond) {
     auto global_pos_on_po = po_->transformCoordinatesPolarToGlobal(position_on_po_);
@@ -58,7 +49,7 @@ bool PhysicalSomaticSpine::synapseWith(const std::shared_ptr<Excrescence>& other
   return true;
 }
 
-bool PhysicalSomaticSpine::synapseWithSoma(const std::shared_ptr<Excrescence>& other_excrescence, bool create_phyiscal_bond) {
+bool PhysicalSomaticSpine::synapseWithSoma(Excrescence* other_excrescence, bool create_phyiscal_bond) {
   return false;
 }
 

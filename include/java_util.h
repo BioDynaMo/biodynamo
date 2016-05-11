@@ -103,13 +103,6 @@ class JavaUtil2 {
 
   std::shared_ptr<local_biology::SomaElement> newSomaElement() const;
 
-  std::shared_ptr<cx3d::synapse::PhysicalSpine> newPhysicalSpine(const std::shared_ptr<physics::PhysicalObject>& po,
-                                                                 const std::array<double, 2>& origin,
-                                                                 double length) const;
-
-  std::shared_ptr<synapse::PhysicalBouton> newPhysicalBouton(const std::shared_ptr<physics::PhysicalObject>& po,
-                                                             const std::array<double, 2>& origin, double length) const;
-
   std::shared_ptr<physics::PhysicalBond> newPhysicalBond(const std::shared_ptr<physics::PhysicalObject>& a,
                                                          const std::array<double, 2>& position_on_a,
                                                          const std::shared_ptr<physics::PhysicalObject>& b,

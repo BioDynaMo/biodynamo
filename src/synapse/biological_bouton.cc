@@ -16,11 +16,11 @@ StringBuilder& BiologicalBouton::simStateToJson(StringBuilder& sb) const {
   return sb;
 }
 
-std::shared_ptr<PhysicalBouton> BiologicalBouton::getPhysicalBouton() const {
+PhysicalBouton* BiologicalBouton::getPhysicalBouton() const {
   return physical_bouton_;
 }
 
-void BiologicalBouton::setPhysicalBouton(const std::shared_ptr<PhysicalBouton>& ps) {
+void BiologicalBouton::setPhysicalBouton(PhysicalBouton* ps) {
   physical_bouton_ = ps;
 }
 

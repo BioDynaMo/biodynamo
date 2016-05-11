@@ -4,6 +4,7 @@
 #include <string>
 #include <list>
 #include <array>
+#include <vector>
 #include <memory>
 #include <exception>
 #include <unordered_map>
@@ -11,12 +12,9 @@
 #include "param.h"
 #include "color.h"
 #include "physics/physical_node.h"
+#include "synapse/excrescence.h"
 
 namespace cx3d {
-
-namespace synapse {
-class Excrescence;
-}  // namespace synapses
 
 namespace local_biology {
 class CellElement;
@@ -29,6 +27,8 @@ class PhysicalSphere;
 class PhysicalCylinder;
 class InterObjectForce;
 class IntracellularSubstance;
+
+using synapse::Excrescence;
 
 class PhysicalObject : public PhysicalNode {
  public:
@@ -83,11 +83,11 @@ class PhysicalObject : public PhysicalNode {
 
   /** Adds an <code>Excrescence</code> instance to the Excrescence list of this
    * <code>PhysicalObject</code>.*/
-  virtual void addExcrescence(const std::shared_ptr<synapse::Excrescence>& ex);
+  virtual void addExcrescence(Excrescence::UPtr ex);
 
   /** Removes an <code>Excrescence</code> instance to the Excrescence list of this
    * <code>PhysicalObject</code>.*/
-  virtual void removeExcrescence(const std::shared_ptr<synapse::Excrescence>& ex);
+  virtual void removeExcrescence(Excrescence* ex);
 
   /**
    * Active displacement of the point mass of this <code>PhysicalObject</code>. ("active" means
@@ -346,11 +346,7 @@ class PhysicalObject : public PhysicalNode {
   virtual void setPhysicalBonds(const std::list<std::shared_ptr<PhysicalBond> >& physicalBonds);  //todo change to vector
 
   /** Returns the vector containing all the Excrescences (PhysicalSpine, PhysicalBouton).*/
-  virtual std::list<std::shared_ptr<synapse::Excrescence> > getExcrescences() const;  //todo change to vector
-
-  /** Sets the vector containing all the Excrescences (PhysicalSpine, PhysicalBouton).
-   * This method should not be used during a simulation. */
-  virtual void setExcrescences(const std::list<std::shared_ptr<synapse::Excrescence> >& excrescences);  //todo change to vector
+  virtual std::vector<Excrescence*> getExcrescences() const;
 
   /** Returns the adherence to the extracellular matrix, i.e. the static friction
    * (the minimum force amplitude needed for triggering a movement). */
@@ -531,7 +527,7 @@ class PhysicalObject : public PhysicalNode {
   std::list<std::shared_ptr<PhysicalBond> > physical_bonds_;  //todo change to vector once porting has been finished
 
   /** List of the Physical bonds that this object can do (for cell adhesion, to restore proper configuration)*/
-  std::list<std::shared_ptr<synapse::Excrescence> > excrescences_;  //todo change to vector once porting has been finished
+  std::vector<Excrescence::UPtr> excrescences_;
 
   /**
    * Tells if a PhysicalObject is still part of the simulation.

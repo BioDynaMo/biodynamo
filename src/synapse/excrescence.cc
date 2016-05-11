@@ -2,7 +2,7 @@
 
 #include "matrix.h"
 #include "sim_state_serialization_util.h"
-
+#include "simulation/ecm.h"
 #include "local_biology/neurite_element.h"
 #include "physics/physical_object.h"
 
@@ -33,17 +33,12 @@ Excrescence::~Excrescence() {
 StringBuilder& Excrescence::simStateToJson(StringBuilder& sb) const {
   sb.append("{");
 
-  //po is circular reference
   SimStateSerializationUtil::keyValue(sb, "ex", ex_);
   SimStateSerializationUtil::keyValue(sb, "positionOnPO", position_on_po_);
   SimStateSerializationUtil::keyValue(sb, "length", length_);
   SimStateSerializationUtil::keyValue(sb, "type", type_);
 
   return sb;
-}
-
-bool Excrescence::equalTo(const std::shared_ptr<Excrescence>& other) const {
-  return this == other.get();
 }
 
 std::array<double, 3> Excrescence::getProximalEnd() const {
@@ -63,11 +58,11 @@ std::array<double, 3> Excrescence::getDistalEnd() const {
   }
 }
 
-std::shared_ptr<Excrescence> Excrescence::getEx() const {
+Excrescence* Excrescence::getEx() const {
   return ex_;
 }
 
-void Excrescence::setEx(const std::shared_ptr<Excrescence>& e) {
+void Excrescence::setEx(Excrescence* e) {
   ex_ = e;
 }
 

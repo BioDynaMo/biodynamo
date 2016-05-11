@@ -5,7 +5,6 @@
 #include <memory>
 
 #include "sim_state_serializable.h"
-#include "simulation/ecm.h"
 
 namespace cx3d {
 
@@ -17,10 +16,16 @@ namespace physics {
 class PhysicalObject;
 }  // namespace physics
 
+namespace simulation {
+class ECM;
+}  // namespace simualtion
+
 namespace synapse {
 
-class Excrescence : public SimStateSerializable, public std::enable_shared_from_this<Excrescence> {
+class Excrescence : public SimStateSerializable {
  public:
+  using UPtr = std::unique_ptr<Excrescence>;
+
   enum Type {
     kSpine = 0,
     kBouton = 1,
@@ -43,25 +48,23 @@ class Excrescence : public SimStateSerializable, public std::enable_shared_from_
 
   virtual StringBuilder& simStateToJson(StringBuilder& sb) const override;
 
-  virtual bool equalTo(const std::shared_ptr<Excrescence>& other) const;
-
   /** returns the absolute coord of the point where this element is attached on the PO.*/
   virtual std::array<double, 3> getProximalEnd() const;
 
   /** returns the absolute coord of the point where this element ends.*/
   virtual std::array<double, 3> getDistalEnd() const;
 
-  virtual bool synapseWith(const std::shared_ptr<Excrescence>& other, bool create_physical_bond) = 0;
+  virtual bool synapseWith(Excrescence* other, bool create_physical_bond) = 0;
 
-  virtual bool synapseWithSoma(const std::shared_ptr<Excrescence>& other_excrescence, bool create_phyiscal_bond) = 0;
+  virtual bool synapseWithSoma(Excrescence* other_excrescence, bool create_phyiscal_bond) = 0;
 
   virtual bool synapseWithShaft(const std::shared_ptr<local_biology::NeuriteElement>& other_ne, double max_dis,
                                 int nr_segments, bool create_phyiscal_bond) = 0;
 
   // getters and setters
-  virtual std::shared_ptr<Excrescence> getEx() const;
+  virtual Excrescence* getEx() const;
 
-  virtual void setEx(const std::shared_ptr<Excrescence>& ex);
+  virtual void setEx(Excrescence* ex);
 
   virtual double getLength() const;
 
@@ -86,7 +89,7 @@ class Excrescence : public SimStateSerializable, public std::enable_shared_from_
   std::shared_ptr<physics::PhysicalObject> po_;
 
   /** the other structure with which it forms a synapse.*/
-  std::shared_ptr<Excrescence> ex_;
+  Excrescence* ex_ = nullptr;
 
   /** The position in polar coordinates on the Physical Object where it's origin is.*/
   std::array<double, 2> position_on_po_;

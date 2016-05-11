@@ -59,12 +59,12 @@ bool PhysicalObject::isAPhysicalObject() const {
   return true;
 }
 
-void PhysicalObject::addExcrescence(const std::shared_ptr<synapse::Excrescence>& ex) {
-  excrescences_.push_back(ex);
+void PhysicalObject::addExcrescence(Excrescence::UPtr ex) {
+  excrescences_.push_back(std::move(ex));
 }
 
-void PhysicalObject::removeExcrescence(const std::shared_ptr<synapse::Excrescence>& ex) {
-  excrescences_.remove(ex);
+void PhysicalObject::removeExcrescence(Excrescence* ex) {
+  STLUtil::vectorRemove(excrescences_, ex);
 }
 
 bool PhysicalObject::isInContact(const std::shared_ptr<PhysicalObject>& o){
@@ -355,12 +355,12 @@ void PhysicalObject::setPhysicalBonds(const std::list<std::shared_ptr<PhysicalBo
   physical_bonds_ = bonds;
 }
 
-std::list<std::shared_ptr<synapse::Excrescence> > PhysicalObject::getExcrescences() const {  //todo change to vector
-  return excrescences_;
-}
-
-void PhysicalObject::setExcrescences(const std::list<std::shared_ptr<synapse::Excrescence> >& list) {  //todo change to vector
-  excrescences_ = list;
+std::vector<Excrescence*> PhysicalObject::getExcrescences() const {
+  std::vector<Excrescence*> ret;
+  for (auto& ex : excrescences_) {
+    ret.push_back(ex.get());
+  }
+  return ret;
 }
 
 double PhysicalObject::getAdherence() const{

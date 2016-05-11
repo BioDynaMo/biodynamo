@@ -10,15 +10,6 @@
 namespace cx3d {
 namespace synapse {
 
-std::shared_ptr<PhysicalBouton> PhysicalBouton::create() {
-  return std::shared_ptr<PhysicalBouton>(new PhysicalBouton());
-}
-
-std::shared_ptr<PhysicalBouton> PhysicalBouton::create(const std::shared_ptr<physics::PhysicalObject>& po,
-                                                       const std::array<double, 2>& origin, double length) {
-  return std::shared_ptr<PhysicalBouton>(new PhysicalBouton(po, origin, length));
-}
-
 PhysicalBouton::PhysicalBouton()
     : Excrescence(Excrescence::Type::kBouton) {
 }
@@ -41,7 +32,7 @@ StringBuilder& PhysicalBouton::simStateToJson(StringBuilder& sb) const {
   return sb;
 }
 
-bool PhysicalBouton::synapseWith(const std::shared_ptr<Excrescence>& other_excrescence, bool create_phyiscal_bond) {
+bool PhysicalBouton::synapseWith(Excrescence* other_excrescence, bool create_phyiscal_bond) {
   // only if the other Excrescence is a bouton
   if (other_excrescence->getType() != Excrescence::Type::kSpine) {
     return false;
@@ -54,7 +45,7 @@ bool PhysicalBouton::synapseWith(const std::shared_ptr<Excrescence>& other_excre
   }
   // making the references
   ex_ = other_excrescence;
-  ex_->setEx(shared_from_this());
+  ex_->setEx(this);
   // if needed, formation of the PhysicalBound
   if (create_phyiscal_bond) {
     auto global_pos_on_po = po_->transformCoordinatesPolarToGlobal(position_on_po_);
@@ -66,14 +57,14 @@ bool PhysicalBouton::synapseWith(const std::shared_ptr<Excrescence>& other_excre
   return true;
 }
 
-bool PhysicalBouton::synapseWithSoma(const std::shared_ptr<Excrescence>& other_excrescence, bool create_phyiscal_bond) {
+bool PhysicalBouton::synapseWithSoma(Excrescence* other_excrescence, bool create_phyiscal_bond) {
   // only if the other Excrescence is a bouton
   if (other_excrescence->getType() == Excrescence::Type::kBouton) {
     return false;
   }
   // making the references
   ex_ = other_excrescence;
-  ex_->setEx(shared_from_this());
+  ex_->setEx(this);
   // if needed, formation of the PhysicalBound
   if (create_phyiscal_bond) {
     auto global_pos_on_po = po_->transformCoordinatesPolarToGlobal(position_on_po_);

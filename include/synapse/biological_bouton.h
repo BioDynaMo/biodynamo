@@ -22,15 +22,15 @@ class BiologicalBouton : public SimStateSerializable {
 
   virtual StringBuilder& simStateToJson(StringBuilder& sb) const override;
 
-  virtual std::shared_ptr<PhysicalBouton> getPhysicalBouton() const;
+  virtual PhysicalBouton* getPhysicalBouton() const;
 
-  virtual void setPhysicalBouton(const std::shared_ptr<PhysicalBouton>& ps);
+  virtual void setPhysicalBouton(PhysicalBouton* ps);
 
  private:
   BiologicalBouton(const BiologicalBouton&) = delete;
   BiologicalBouton& operator=(const BiologicalBouton&) = delete;
 
-  std::shared_ptr<PhysicalBouton> physical_bouton_;
+  PhysicalBouton* physical_bouton_;
 };
 
 }  // namespace synapse

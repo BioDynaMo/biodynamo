@@ -1000,18 +1000,18 @@ std::shared_ptr<local_biology::NeuriteElement> PhysicalCylinder::insertProximalC
   if (!excrescences_.empty()) {
     auto it = excrescences_.begin();
     do {
-      auto ex = *it;
-      auto pos = ex->getPositionOnPO();
+      auto ex_raw = (*it).get();
+      auto pos = ex_raw->getPositionOnPO();
       // transmit them to proximal cyl
       if (pos[0] < new_cylinder->actual_length_) {
-        excrescences_.remove(ex);
-        new_cylinder->addExcrescence(ex);
-        ex->setPo(new_cylinder);
+        ex_raw->setPo(new_cylinder);
+        new_cylinder->addExcrescence(std::move(*it));
+        excrescences_.erase(it);
         it--;
       } else {
         // or kep them here, depending on coordinate
         pos[0] -= new_cylinder->actual_length_;
-        ex->setPositionOnPO(pos);
+        ex_raw->setPositionOnPO(pos);
       }
     } while (++it != excrescences_.end());
   }
@@ -1059,14 +1059,14 @@ void PhysicalCylinder::removeProximalCylinder() {
   // dealing with excressences:
   // mine are shifted up :
   double shift = actual_length_ - proximal_cylinder->actual_length_;
-  for (auto ex : excrescences_) {
+  for (auto& ex : excrescences_) {
     auto pos = ex->getPositionOnPO();
     pos[0] += shift;
     ex->setPositionOnPO(pos);
   }
   // I incorporate the ones of the previous cyl:
-  for (auto ex : proximal_cylinder->excrescences_) {
-    excrescences_.push_back(ex);
+  for (auto& ex : proximal_cylinder->excrescences_) {
+    excrescences_.push_back(std::move(ex));
     ex->setPo(std::static_pointer_cast<PhysicalObject>(this->shared_from_this()));
   }
   // TODO: take care of Physical Bonds

@@ -109,16 +109,6 @@ std::shared_ptr<local_biology::SomaElement> JavaUtil2::newSomaElement() const {
   return SomaElement::create();
 }
 
-std::shared_ptr<cx3d::synapse::PhysicalSpine> JavaUtil2::newPhysicalSpine(
-    const std::shared_ptr<physics::PhysicalObject>& po, const std::array<double, 2>& origin, double length) const {
-  return PhysicalSpine::create(po, origin, length);
-}
-
-std::shared_ptr<synapse::PhysicalBouton> JavaUtil2::newPhysicalBouton(
-    const std::shared_ptr<physics::PhysicalObject>& po, const std::array<double, 2>& origin, double length) const {
-  return PhysicalBouton::create(po, origin, length);
-}
-
 std::shared_ptr<physics::PhysicalBond> JavaUtil2::newPhysicalBond(const std::shared_ptr<physics::PhysicalObject>& a,
                                                                   const std::array<double, 2>& position_on_a,
                                                                   const std::shared_ptr<physics::PhysicalObject>& b,

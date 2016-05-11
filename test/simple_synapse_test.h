@@ -76,8 +76,8 @@ class SimpleSynapseTest : public BaseSimulationTest {
     std::array<double, 3> global_coord { axon->getLocation()[2] + dendrite->getLocation()[2], 0, 0 };
     auto polar_axon_coord = axon_cyl->transformCoordinatesGlobalToPolar(global_coord);
 
-    auto p_bouton = PhysicalBouton::create(axon_cyl, { polar_axon_coord[0], polar_axon_coord[1] }, 3);
-    axon_cyl->addExcrescence(p_bouton);
+    auto p_bouton = new PhysicalBouton(axon_cyl, { polar_axon_coord[0], polar_axon_coord[1] }, 3);
+    axon_cyl->addExcrescence(PhysicalBouton::UPtr { p_bouton });
     //    create the biological part and set call backs
     auto b_bouton = BiologicalBouton::UPtr { new BiologicalBouton };
     b_bouton->setPhysicalBouton(p_bouton);
@@ -87,8 +87,8 @@ class SimpleSynapseTest : public BaseSimulationTest {
     //    create the physical part
     auto polar_dendrite_coord = dendrite_cyl->transformCoordinatesGlobalToPolar(global_coord);
 
-    auto p_spine = PhysicalSpine::create(dendrite_cyl, { polar_dendrite_coord[0], polar_dendrite_coord[1] }, 3);
-    dendrite_cyl->addExcrescence(p_spine);
+    auto p_spine = new PhysicalSpine(dendrite_cyl, { polar_dendrite_coord[0], polar_dendrite_coord[1] }, 3);
+    dendrite_cyl->addExcrescence(PhysicalSpine::UPtr { p_spine });
     //    create the biological part and set call backs
     auto b_spine = BiologicalSpine::UPtr { new BiologicalSpine() };
     b_spine->setPhysicalSpine(p_spine);

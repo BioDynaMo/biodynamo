@@ -197,12 +197,12 @@ void NeuriteElement::makeSpines(double interval) {
   for (auto i = 0; i < nb; i++) {
     // create the physical part
     std::array<double, 2> coord = { length * ecm_->getRandomDouble1(), 6.28 * ecm_->getRandomDouble1() };
-    auto p_spine = ecm_->newPhysicalSpine(physical_cylinder_, coord, 3.0);
-    physical_cylinder_->addExcrescence(p_spine);
+    auto p_spine = PhysicalSpine::UPtr { new PhysicalSpine(physical_cylinder_, coord, 3.0) };
     // create the biological part and set call backs
     auto b_spine = BiologicalSpine::UPtr { new BiologicalSpine() };
-    b_spine->setPhysicalSpine(p_spine);
+    b_spine->setPhysicalSpine(p_spine.get());
     p_spine->setBiologicalSpine(std::move(b_spine));
+    physical_cylinder_->addExcrescence(std::move(p_spine));
   }
 }
 
@@ -210,12 +210,12 @@ void NeuriteElement::makeSingleSpine() {
   double length = physical_cylinder_->getActualLength();
   // create the physical part
   std::array<double, 2> coord = { length * ecm_->getRandomDouble1(), 6.28 * ecm_->getRandomDouble1() };
-  auto p_spine = ecm_->newPhysicalSpine(physical_cylinder_, coord, 3.0);
-  physical_cylinder_->addExcrescence(p_spine);
+  auto p_spine = PhysicalSpine::UPtr { new PhysicalSpine(physical_cylinder_, coord, 3.0) };
   // create the biological part and set call backs
   auto b_spine = BiologicalSpine::UPtr { new BiologicalSpine() };
-  b_spine->setPhysicalSpine(p_spine);
+  b_spine->setPhysicalSpine(p_spine.get());
   p_spine->setBiologicalSpine(std::move(b_spine));
+  physical_cylinder_->addExcrescence(std::move(p_spine));
 }
 
 void NeuriteElement::makeSingleSpine(double dist_from_proximal_end) {
@@ -227,12 +227,12 @@ void NeuriteElement::makeSingleSpine(double dist_from_proximal_end) {
   }
   // create the physical part
   std::array<double, 2> coord = { dist_from_proximal_end, 6.28 * ecm_->getRandomDouble1() };
-  auto p_spine = ecm_->newPhysicalSpine(physical_cylinder_, coord, 3);
-  physical_cylinder_->addExcrescence(p_spine);
+  auto p_spine = PhysicalSpine::UPtr { new PhysicalSpine(physical_cylinder_, coord, 3.0) };
   // create the biological part and set call backs
   auto b_spine = BiologicalSpine::UPtr { new BiologicalSpine() };
-  b_spine->setPhysicalSpine(p_spine);
+  b_spine->setPhysicalSpine(p_spine.get());
   p_spine->setBiologicalSpine(std::move(b_spine));
+  physical_cylinder_->addExcrescence(std::move(p_spine));
 }
 
 void NeuriteElement::makeBoutons(double interval) {
@@ -244,8 +244,8 @@ void NeuriteElement::makeBoutons(double interval) {
   for (int i = 0; i < nb; i++) {
     // create the physical part
     std::array<double, 2> coord = { length * ecm_->getRandomDouble1(), -3.14 + 6.28 * ecm_->getRandomDouble1() };
-    auto p_bouton = ecm_->newPhysicalBouton(physical_cylinder_, coord, 2);
-    physical_cylinder_->addExcrescence(p_bouton);
+    auto p_bouton = new PhysicalBouton(physical_cylinder_, coord, 2);
+    physical_cylinder_->addExcrescence(PhysicalBouton::UPtr { p_bouton });
     // create the biological part and set call backs
     auto b_bouton = BiologicalBouton::UPtr { new BiologicalBouton() };
     b_bouton->setPhysicalBouton(p_bouton);
@@ -262,12 +262,12 @@ void NeuriteElement::makeSingleBouton(double dist_from_proximal_end) {
   }
   // create the physical part
   std::array<double, 2> coord = { dist_from_proximal_end, 6.28 * ecm_->getRandomDouble1() };
-  auto p_bouton = ecm_->newPhysicalBouton(physical_cylinder_, coord, 2);
-  physical_cylinder_->addExcrescence(p_bouton);
+  auto p_bouton = PhysicalBouton::UPtr { new PhysicalBouton(physical_cylinder_, coord, 2) };
   // create the biological part and set call backs
   auto b_bouton = BiologicalBouton::UPtr { new BiologicalBouton() };
-  b_bouton->setPhysicalBouton(p_bouton);
+  b_bouton->setPhysicalBouton(p_bouton.get());
   p_bouton->setBiologicalBouton(std::move(b_bouton));
+  physical_cylinder_->addExcrescence(std::move(p_bouton));
 }
 
 void NeuriteElement::makeSingleBouton() {
@@ -275,12 +275,12 @@ void NeuriteElement::makeSingleBouton() {
   double length = physical_cylinder_->getActualLength();
   // create the physical part
   std::array<double, 2> coord = { length * ecm_->getRandomDouble1(), -3.14 + 6.28 * ecm_->getRandomDouble1() };
-  auto p_bouton = ecm_->newPhysicalBouton(physical_cylinder_, coord, 2);
-  physical_cylinder_->addExcrescence(p_bouton);
+  auto p_bouton = PhysicalBouton::UPtr { new PhysicalBouton(physical_cylinder_, coord, 2) };
   // create the biological part and set call backs
   auto b_bouton = BiologicalBouton::UPtr { new BiologicalBouton() };
-  b_bouton->setPhysicalBouton(p_bouton);
+  b_bouton->setPhysicalBouton(p_bouton.get());
   p_bouton->setBiologicalBouton(std::move(b_bouton));
+  physical_cylinder_->addExcrescence(std::move(p_bouton));
 }
 
 int NeuriteElement::synapseBetweenExistingBS(double probability_to_synapse) {
