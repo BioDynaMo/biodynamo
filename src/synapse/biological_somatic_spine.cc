@@ -5,18 +5,10 @@
 namespace cx3d {
 namespace synapse {
 
-std::shared_ptr<BiologicalSomaticSpine> BiologicalSomaticSpine::create() {
-  return std::shared_ptr<BiologicalSomaticSpine>(new BiologicalSomaticSpine());
-}
-
 BiologicalSomaticSpine::BiologicalSomaticSpine() {
 }
 
 BiologicalSomaticSpine::~BiologicalSomaticSpine() {
-}
-
-bool BiologicalSomaticSpine::equalTo(const std::shared_ptr<BiologicalSomaticSpine>& other) const {
-  return this == other.get();
 }
 
 StringBuilder& BiologicalSomaticSpine::simStateToJson(StringBuilder& sb) const {

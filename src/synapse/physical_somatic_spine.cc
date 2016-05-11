@@ -32,7 +32,7 @@ PhysicalSomaticSpine::~PhysicalSomaticSpine() {
 StringBuilder& PhysicalSomaticSpine::simStateToJson(StringBuilder& sb) const {
   sb.append("{");  //fixme bug: should call Excrescence::simStateToJson
 
-  SimStateSerializationUtil::keyValue(sb, "biologicalSomaticSpine", biological_spine_);
+  SimStateSerializationUtil::keyValue(sb, "biologicalSomaticSpine", biological_spine_.get());
 
   SimStateSerializationUtil::removeLastChar(sb);
   sb.append("}");
@@ -67,12 +67,12 @@ bool PhysicalSomaticSpine::synapseWithShaft(const std::shared_ptr<local_biology:
   return false;
 }
 
-std::shared_ptr<BiologicalSomaticSpine> PhysicalSomaticSpine::getBiologicalSomaticSpine() const {
-  return biological_spine_;
+BiologicalSomaticSpine* PhysicalSomaticSpine::getBiologicalSomaticSpine() const {
+  return biological_spine_.get();
 }
 
-void PhysicalSomaticSpine::setBiologicalSomaticSpine(const std::shared_ptr<BiologicalSomaticSpine>& spine) {
-  biological_spine_ = spine;
+void PhysicalSomaticSpine::setBiologicalSomaticSpine(BiologicalSomaticSpine::UPtr spine) {
+  biological_spine_ = std::move(spine);
 }
 
 }  // namespace synapse

@@ -1,5 +1,5 @@
-#ifndef SYNAPSE_BIOLOGIGICAL_SOMATIC_SPINE_H_
-#define SYNAPSE_BIOLOGIGICAL_SOMATIC_SPINE_H_
+#ifndef SYNAPSE_BIOLOGICAL_SOMATIC_SPINE_H_
+#define SYNAPSE_BIOLOGICAL_SOMATIC_SPINE_H_
 
 #include <memory>
 #include <exception>
@@ -14,13 +14,11 @@ class PhysicalSomaticSpine;
 
 class BiologicalSomaticSpine : public SimStateSerializable {
  public:
-  static std::shared_ptr<BiologicalSomaticSpine> create();
+  using UPtr = std::unique_ptr<BiologicalSomaticSpine>;
 
   BiologicalSomaticSpine();
 
   virtual ~BiologicalSomaticSpine();
-
-  virtual bool equalTo(const std::shared_ptr<BiologicalSomaticSpine>& other) const;
 
   virtual StringBuilder& simStateToJson(StringBuilder& sb) const override;
 
@@ -38,4 +36,4 @@ class BiologicalSomaticSpine : public SimStateSerializable {
 }  // namespace synapse
 }  // namespace cx3d
 
-#endif  // SYNAPSE_BIOLOGIGICAL_SOMATIC_SPINE_H_
+#endif  // SYNAPSE_BIOLOGICAL_SOMATIC_SPINE_H_
