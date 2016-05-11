@@ -58,7 +58,7 @@ class SmallNetworkTest : public BaseSimulationTest {
     }
 
     for (int i = 0; i < 8; i++) {
-      std::shared_ptr<Cell> c;
+      Cell* c;
       double rand_1 = java->getRandomDouble1();
       double rand_2 = java->getRandomDouble1();
       if (i < 4) {

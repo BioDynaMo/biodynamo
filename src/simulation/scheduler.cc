@@ -81,7 +81,7 @@ void Scheduler::simulateOneStep() {
     ecm_->getCell(i)->run();
   }
 
-  // sommvn -ata
+  // soma
   for (auto i = 0; i < ecm_->getSomaElementListSize(); i++) {
     ecm_->getSomaElement(i)->run();
   }

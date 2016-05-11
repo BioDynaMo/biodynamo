@@ -16,7 +16,7 @@
 namespace cx3d {
 
 namespace simulation {
-class ECM;  // todo replace with include once porting has been finished and remove include in cc file
+class ECM;
 }  // namespace simulation
 
 namespace cells {
@@ -29,8 +29,10 @@ namespace cells {
  * (seen as the product of the genes in the Gene vector), and is characterized by a cell type (defined by the
  * relative concentrations of the GeneSubstances.
  */
-class Cell : public SimStateSerializable, public std::enable_shared_from_this<Cell> {
+class Cell : public SimStateSerializable {
  public:
+  using UPtr = std::unique_ptr<Cell>;
+
   /** defines types for the NeuroML export*/
   enum NeuroMLType {
     kInhibitory,
@@ -41,12 +43,6 @@ class Cell : public SimStateSerializable, public std::enable_shared_from_this<Ce
 
   static void setECM(const std::shared_ptr<simulation::ECM>& ecm) {
     ecm_ = ecm;
-  }
-
-  static std::shared_ptr<Cell> create() {
-    auto cell = std::shared_ptr<Cell>(new Cell());
-    cell->init();
-    return cell;
   }
 
   /**
@@ -60,8 +56,6 @@ class Cell : public SimStateSerializable, public std::enable_shared_from_this<Ce
   virtual StringBuilder& simStateToJson(StringBuilder& sb) const override;
 
   virtual std::string toString() const;
-
-  virtual bool equalTo(const std::shared_ptr<Cell>& other) const;
 
   /**
    * Run Cell: run <code>Gene</code>, run <code>LyonCellCycle</code>, run Conditions, run EnergyProduction.
@@ -80,7 +74,7 @@ class Cell : public SimStateSerializable, public std::enable_shared_from_this<Ce
    * the axis of division is random.
    * @return the other daughter cell.
    */
-  virtual std::shared_ptr<Cell> divide();
+  virtual Cell* divide();
 
   /**
    * Divide the cell. Of the two daughter cells, one is this one (but smaller, with half GeneSubstances etc.),
@@ -88,12 +82,12 @@ class Cell : public SimStateSerializable, public std::enable_shared_from_this<Ce
    * @param volumeRatio the ratio (Volume daughter 1)/(Volume daughter 2). 1.0 gives equal cells.
    * @return the second daughter cell.
    */
-  virtual std::shared_ptr<Cell> divide(double volume_ratio);
+  virtual Cell* divide(double volume_ratio);
 
   /**
    * @param axis specifies direction of division
    */
-  virtual std::shared_ptr<Cell> divide(const std::array<double, 3>& axis);
+  virtual Cell* divide(const std::array<double, 3>& axis);
 
   /**
    * Divide the cell. Of the two daughter cells, one is this one (but smaller, with half GeneSubstances etc.),
@@ -102,7 +96,7 @@ class Cell : public SimStateSerializable, public std::enable_shared_from_this<Ce
    * @param axis specifies direction of division
    * @return the second daughter cell
    */
-  virtual std::shared_ptr<Cell> divide(double volume_ratio, const std::array<double, 3>& axis);
+  virtual Cell* divide(double volume_ratio, const std::array<double, 3>& axis);
 
   /**
    * Divide mother cell in two daughter cells by coping <code>Cell</code>, <code>SomaElement</code>,
@@ -117,7 +111,7 @@ class Cell : public SimStateSerializable, public std::enable_shared_from_this<Ce
    *
    * @return the second daughter cell
    */
-  virtual std::shared_ptr<Cell> divide(double volume_ratio, double phi, double theta);
+  virtual Cell* divide(double volume_ratio, double phi, double theta);
 
   // *************************************************************************************
   // *      METHODS FOR CELL MODULES                                                     *
@@ -127,13 +121,13 @@ class Cell : public SimStateSerializable, public std::enable_shared_from_this<Ce
    * Adds a <code>CellModule</code> that will be run at each time step.
    * @param m
    */
-  virtual void addCellModule(const std::shared_ptr<cx3d::cells::CellModule>& m);
+  virtual void addCellModule(CellModule::UPtr m);
   /**
    * Removes a particular <code>CellModule</code> from this <code>Cell</code>.
    * It will therefore not be run anymore.
    * @param m
    */
-  virtual void removeCellModule(const std::shared_ptr<cx3d::cells::CellModule>& m);
+  virtual void removeCellModule(CellModule* m);
 
   /** Removes all the <code>CellModule</code> in this <code>Cell</code>.*/
   virtual void cleanAllCellModules();
@@ -171,9 +165,6 @@ class Cell : public SimStateSerializable, public std::enable_shared_from_this<Ce
 
   virtual int getID() const;
 
-  /** Returns the list of all the CellModules.*/
-  virtual std::vector<std::shared_ptr<cx3d::cells::CellModule> > getCellModules() const;
-
   /**
    * @return a <code>Vector</code> containing all the <code>NeuriteElement</code>s of this cell.
    */
@@ -193,7 +184,7 @@ class Cell : public SimStateSerializable, public std::enable_shared_from_this<Ce
   static std::shared_ptr<simulation::ECM> ecm_;
 
   /* List of all cell modules that are run at each time step*/
-  std::vector<std::shared_ptr<CellModule>> cell_modules_;  //todo change to vector once porting has been finished
+  std::vector<CellModule::UPtr> cell_modules_;
 
   /* List of the SomaElements belonging to the cell */
   std::shared_ptr<local_biology::SomaElement> soma_;
@@ -207,8 +198,6 @@ class Cell : public SimStateSerializable, public std::enable_shared_from_this<Ce
   /** Some convenient way to store properties of  for cells.
    * Should not be confused with neuroMLType. */
   std::string type_ = "";
-
-  void init();
 };
 
 }  // cells

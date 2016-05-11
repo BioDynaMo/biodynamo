@@ -3,7 +3,6 @@
 #include "matrix.h"
 #include "sim_state_serialization_util.h"
 
-#include "local_biology/neurite_element.h"
 #include "local_biology/local_biology_module.h"
 
 #include "simulation/ecm.h"

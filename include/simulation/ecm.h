@@ -12,7 +12,7 @@
 #include "java_util.h"
 #include "color.h"
 #include "sim_state_serializable.h"
-
+#include "cells/cell.h"
 #include "physics/substance.h"
 #include "physics/intracellular_substance.h"
 #include "physics/physical_node.h"
@@ -36,12 +36,9 @@ class PhysicalSpine;
 class PhysicalBouton;
 }  // namespace synapse
 
-namespace cells {
-class Cell;
-}  // namespace cells
-
 namespace simulation {
 
+using cells::Cell;
 using physics::SubstanceHash;
 using physics::SubstanceEqual;
 
@@ -183,9 +180,9 @@ class ECM : public SimStateSerializable {
 
   //  Cells
 
-  virtual void addCell(const std::shared_ptr<cells::Cell>& cell);
+  virtual void addCell(Cell::UPtr cell);
 
-  virtual void removeCell(const std::shared_ptr<cells::Cell>& cell);
+  virtual void removeCell(Cell* cell);
 
   // Cell Elements--------------------------------------------------
   virtual void addSomaElement(const std::shared_ptr<local_biology::SomaElement>& soma);
@@ -389,8 +386,6 @@ class ECM : public SimStateSerializable {
   double getGradientArtificialConcentration(const std::shared_ptr<physics::Substance>& s,
                                             const std::array<double, 3>& position) const;
 
-  std::vector<std::shared_ptr<cells::Cell>> getCellList() const;
-
   std::vector<std::shared_ptr<physics::PhysicalNode>> getPhysicalNodeList() const;
 
   std::vector<std::shared_ptr<physics::PhysicalSphere>> getPhysicalSphereList() const;
@@ -416,8 +411,6 @@ class ECM : public SimStateSerializable {
   void setECMtime(double ECMtime);
 
   virtual void increaseECMtime(double deltaT);
-
-  void setCellList(const std::vector<std::shared_ptr<cells::Cell>>& cellList);
 
   std::unordered_map<std::string, std::shared_ptr<physics::IntracellularSubstance>> getIntracelularSubstanceTemplates() const;
 
@@ -451,8 +444,8 @@ class ECM : public SimStateSerializable {
     return soma_elements_[i];
   }
 
-  virtual std::shared_ptr<cells::Cell> getCell(int i) const {
-    return cells_[i];
+  virtual Cell* getCell(int i) const {
+    return cells_[i].get();
   }
 
   virtual int getCellListSize() const {
@@ -582,7 +575,7 @@ class ECM : public SimStateSerializable {
   /** List of all the NeuriteElement instances. */
   std::vector<std::shared_ptr<local_biology::NeuriteElement>> neurite_elements_;
   /** List of all the Cell instances. */
-  std::vector<std::shared_ptr<cells::Cell>> cells_;
+  std::vector<Cell::UPtr> cells_;
   /** List of all the Chemical reactions instances. */
   //fixme implement std::vector<std::shared_ptr<physics::ECMChemicalReaction>> ecmChemicalReactionList;
   /* Reference time throughout the simulation (in hours) */

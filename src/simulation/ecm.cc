@@ -22,7 +22,7 @@ using spatial_organization::SpaceNode;
 std::shared_ptr<cx3d::JavaUtil2> ECM::java_ = std::shared_ptr<cx3d::JavaUtil2> { nullptr };
 
 std::shared_ptr<ECM> ECM::getInstance() {
-  static std::shared_ptr<ECM> instance { new ECM() };
+  static auto instance = std::make_shared<ECM>();
   return instance;
 }
 
@@ -219,11 +219,11 @@ void ECM::removePhysicalNode(const std::shared_ptr<physics::PhysicalNode>& node)
   STLUtil::vectorRemove(physical_nodes_, node);
 }
 
-void ECM::addCell(const std::shared_ptr<cells::Cell>& cell) {
-  cells_.push_back(cell);
+void ECM::addCell(Cell::UPtr cell) {
+  cells_.push_back(move(cell));
 }
 
-void ECM::removeCell(const std::shared_ptr<cells::Cell>& cell) {
+void ECM::removeCell(Cell* cell) {
   STLUtil::vectorRemove(cells_, cell);
 }
 
@@ -509,10 +509,6 @@ double ECM::getGradientArtificialConcentration(const std::shared_ptr<physics::Su
   return getValueArtificialConcentration(s->getId(), position);
 }
 
-std::vector<std::shared_ptr<cells::Cell>> ECM::getCellList() const {
-  return cells_;
-}
-
 std::vector<std::shared_ptr<physics::PhysicalNode>> ECM::getPhysicalNodeList() const {
   return physical_nodes_;
 }
@@ -568,10 +564,6 @@ void ECM::setECMtime(double time) {
 
 void ECM::increaseECMtime(double delta) {
   time_ += delta;
-}
-
-void ECM::setCellList(const std::vector<std::shared_ptr<cells::Cell>>& cells) {
-  cells_ = cells;
 }
 
 std::unordered_map<std::string, std::shared_ptr<physics::IntracellularSubstance>> ECM::getIntracelularSubstanceTemplates() const {

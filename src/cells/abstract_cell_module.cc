@@ -19,11 +19,11 @@ StringBuilder& AbstractCellModule::simStateToJson(StringBuilder& sb) const {
   return sb;
 }
 
-std::shared_ptr<Cell> AbstractCellModule::getCell() const {
+Cell * AbstractCellModule::getCell() const {
   return cell_;
 }
 
-void AbstractCellModule::setCell(const std::shared_ptr<Cell>& cell) {
+void AbstractCellModule::setCell(Cell* cell) {
   cell_ = cell;
 }
 

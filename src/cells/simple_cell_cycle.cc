@@ -40,10 +40,10 @@ void SimpleCellCycle::run() {
   }
 }
 
-std::shared_ptr<CellModule> SimpleCellCycle::getCopy() const {
-  auto cc = std::shared_ptr<SimpleCellCycle>(new SimpleCellCycle());
+CellModule::UPtr SimpleCellCycle::getCopy() const {
+  auto cc = new SimpleCellCycle();
   cc->enabled_ = enabled_;
-  return cc;
+  return CellModule::UPtr{cc};
 }
 
 bool SimpleCellCycle::isEnabled() const {

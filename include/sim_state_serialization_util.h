@@ -175,10 +175,31 @@ class SimStateSerializationUtil {
   }
 
   template<class T>
+  static StringBuilder& unorderedCollection(StringBuilder& sb, const string& key,
+                                            const std::vector<std::unique_ptr<T> >& elements) {
+    return orderedCollection(sb, key, elements);
+  }
+
+  template<class T>
   static StringBuilder& orderedCollection(StringBuilder& sb, const string& key,
                                           const std::vector<std::shared_ptr<T> >& elements) {
     SimStateSerializationUtil::key(sb, key).append("[");
     for (auto el : elements) {
+      el->simStateToJson(sb);
+      sb.append(",");
+    }
+    if (!elements.empty()) {
+      removeLastChar(sb);
+    }
+    sb.append("],");
+    return sb;
+  }
+
+  template<class T>
+  static StringBuilder& orderedCollection(StringBuilder& sb, const string& key,
+                                          const std::vector<std::unique_ptr<T> >& elements) {
+    SimStateSerializationUtil::key(sb, key).append("[");
+    for (auto& el : elements) {
       el->simStateToJson(sb);
       sb.append(",");
     }

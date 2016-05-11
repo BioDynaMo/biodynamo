@@ -18,16 +18,16 @@ class AbstractCellModule : public CellModule {
   virtual StringBuilder& simStateToJson(StringBuilder& sb) const override;
 
   /** @return the <code>Cell</code> this module leaves in*/
-  virtual std::shared_ptr<Cell> getCell() const override;
+  virtual Cell* getCell() const override;
 
   /**@param cell the <code>Cell</code> this module lives in*/
-  virtual void setCell(const std::shared_ptr<Cell>& cell) override;
+  virtual void setCell(Cell* cell) override;
 
   /** If returns <code>true</code>, this module is copied during cell division.*/
   virtual bool isCopiedWhenCellDivides() const override;
 
  protected:
-  std::shared_ptr<Cell> cell_;
+  Cell* cell_;
 
  private:
   AbstractCellModule(const AbstractCellModule&) = delete;

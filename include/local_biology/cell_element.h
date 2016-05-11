@@ -8,7 +8,6 @@
 #include <exception>
 
 #include "sim_state_serializable.h"
-#include "simulation/ecm.h"
 
 namespace cx3d {
 
@@ -20,9 +19,15 @@ namespace cells {
 class Cell;
 }  // namespace cells
 
+namespace simulation {
+class ECM;
+}  // namespace simulation
+
 namespace local_biology {
 
 class LocalBiologyModule;
+
+using cells::Cell;
 
 class CellElement : public SimStateSerializable, public std::enable_shared_from_this<CellElement> {
  public:
@@ -65,13 +70,13 @@ class CellElement : public SimStateSerializable, public std::enable_shared_from_
    * Sets the <code>Cell</code> this <code>CellElement</code> is part of.
    * @param cell
    */
-  virtual void setCell(const std::shared_ptr<cells::Cell>& c);
+  virtual void setCell(Cell* c);
 
   /**
    *
    * @return the <code>Cell</code> this <code>CellElement</code> is part of.
    */
-  virtual std::shared_ptr<cells::Cell> getCell() const;
+  virtual Cell* getCell() const;
 
   // *************************************************************************************
   // *      METHODS FOR DEFINING TYPE (neurite element vs soma element)                                                  *
@@ -114,7 +119,7 @@ class CellElement : public SimStateSerializable, public std::enable_shared_from_
  protected:
   static std::shared_ptr<simulation::ECM> ecm_;
 
-  std::shared_ptr<cells::Cell> cell_ { nullptr };
+  Cell* cell_ = nullptr;
 
   std::vector<std::shared_ptr<LocalBiologyModule>> local_biology_modules_;
 

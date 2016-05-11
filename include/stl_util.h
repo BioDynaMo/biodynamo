@@ -6,6 +6,8 @@
 #include <unordered_map>
 #include <algorithm>
 
+namespace cx3d {
+
 class STLUtil {
  public:
   /**
@@ -13,7 +15,7 @@ class STLUtil {
    * Caution: linear runtime
    */
   template<typename C>
-  static bool listContains(const std::list<C>& l, C element) {
+  static bool listContains(const std::list<C> &l, C element) {
     return std::find(l.begin(), l.end(), element) != l.end();
   }
 
@@ -21,7 +23,7 @@ class STLUtil {
    * copies the elements of the std::array into std::list
    */
   template<typename C, std::size_t N>
-  static void arrayToList(const std::array<C, N>& arr, std::list<C>& list) {
+  static void arrayToList(const std::array<C, N> &arr, std::list<C> &list) {
     list.clear();
     for (auto el : arr) {
       list.push_back(el);
@@ -34,7 +36,7 @@ class STLUtil {
    * @param key
    */
   template<typename K, typename V, typename H, typename E>
-  static bool mapContains(const std::unordered_map<K, V, H, E>& map, const K& key) {
+  static bool mapContains(const std::unordered_map<K, V, H, E> &map, const K &key) {
     return map.find(key) != map.end();
   }
 
@@ -44,7 +46,7 @@ class STLUtil {
    * @param key
    */
   template<typename K, typename V>
-  static std::shared_ptr<V> mapGet(const std::unordered_map<K, std::shared_ptr<V>>& map, const K& key) {
+  static std::shared_ptr<V> mapGet(const std::unordered_map<K, std::shared_ptr<V>> &map, const K &key) {
     auto it = map.find(key);
     if (it != map.end()) {
       return it->second;
@@ -59,7 +61,7 @@ class STLUtil {
    * @param key
    */
   template<typename K, std::size_t N, typename H, typename E>
-  static std::array<double, N> mapGet(const std::unordered_map<K, std::array<double, N>, H, E>& map, const K& key) {
+  static std::array<double, N> mapGet(const std::unordered_map<K, std::array<double, N>, H, E> &map, const K &key) {
     auto it = map.find(key);
     if (it != map.end()) {
       return it->second;
@@ -83,13 +85,30 @@ class STLUtil {
    * removes an element from a std::vector container
    */
   template<typename T>
-  static void vectorRemove(std::vector<T>& vector, const T& el) {
+  static void vectorRemove(std::vector<T> &vector, const T &el) {
     auto it = std::find(vector.begin(), vector.end(), el);
+    vector.erase(it);
+  }
+
+  /**
+   * removes an element from a std::vector<std::unique_ptr<<T>> container
+   */
+  template<typename T>
+  static void vectorRemove(std::vector<std::unique_ptr<T>> &vector, T* el) {
+    auto it = vector.begin();
+    while (it != vector.end()) {
+      if ((*it).get() == el) {
+        break;
+      }
+      it++;
+    }
     vector.erase(it);
   }
 
  private:
   STLUtil() = delete;
 };
+
+}  // namepspace cx3d
 
 #endif // STL_UTIL_H_

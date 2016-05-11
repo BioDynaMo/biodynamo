@@ -6,6 +6,7 @@
 #include "physics/physical_object.h"
 #include "cells/cell.h"
 #include "local_biology/local_biology_module.h"
+#include "simulation/ecm.h"
 
 namespace cx3d {
 namespace local_biology {
@@ -73,11 +74,11 @@ void CellElement::setLocalBiologyModulesList(const std::list<std::shared_ptr<Loc
   }
 }
 
-void CellElement::setCell(const std::shared_ptr<cells::Cell>& c) {
+void CellElement::setCell(Cell* c) {
   cell_ = c;
 }
 
-std::shared_ptr<cells::Cell> CellElement::getCell() const {
+Cell* CellElement::getCell() const {
   return cell_;
 }
 

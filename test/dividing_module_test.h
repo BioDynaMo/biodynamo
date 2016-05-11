@@ -28,11 +28,11 @@ class DividingModule : public CellModule {
   DividingModule(const DividingModule&) = delete;
   DividingModule& operator=(const DividingModule&) = delete;
 
-  std::shared_ptr<Cell> getCell() const override {
+  Cell* getCell() const override {
     return cell_;
   }
 
-  void setCell(const std::shared_ptr<Cell>& cell) override {
+  void setCell(Cell* cell) override {
     cell_ = cell;
   }
 
@@ -45,8 +45,8 @@ class DividingModule : public CellModule {
     }
   }
 
-  std::shared_ptr<CellModule> getCopy() const override {
-    return std::shared_ptr<CellModule> { new DividingModule() };
+  CellModule::UPtr getCopy() const override {
+    return CellModule::UPtr { new DividingModule() };
   }
 
   bool isCopiedWhenCellDivides() const override {
@@ -59,7 +59,7 @@ class DividingModule : public CellModule {
   }
 
  private:
-  std::shared_ptr<Cell> cell_;
+  Cell* cell_;
 };
 
 class DividingModuleTest : public BaseSimulationTest {
@@ -72,7 +72,7 @@ class DividingModuleTest : public BaseSimulationTest {
     java->initPhysicalNodeMovementListener();
 
     auto c = CellFactory::getCellInstance( { 0.0, 0.0, 0.0 }, ecm);
-    c->addCellModule(std::shared_ptr<DividingModule> { new DividingModule() });
+    c->addCellModule(CellModule::UPtr { new DividingModule() });
 
     auto scheduler = Scheduler::getInstance(ecm);
     scheduler->simulateOneStep();

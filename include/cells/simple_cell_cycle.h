@@ -21,7 +21,7 @@ class SimpleCellCycle : public AbstractCellModule {
   virtual void run() override;
 
   /** Get a copy */
-  virtual std::shared_ptr<CellModule> getCopy() const override;
+  virtual CellModule::UPtr getCopy() const override;
 
   virtual bool isEnabled() const;
 
