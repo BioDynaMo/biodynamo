@@ -58,6 +58,9 @@ If you change the value of this switch, make sure you delete `CMakeCache.txt` be
 
 `make bdmclean` will only clean the `biodynamo` and `runBiodynamoTests` targets
 
+`make doc` will generate the Doxygen documentation in directory `build/doc`. It contains a html and latex version.
+You can view the html version by opening `build/doc/html/index.html` in your browser.
+
 ### Simulation Tests
 Reference files for the simulation outcome are stored as Json in directory `test/resources/`
 In rare cases it might be necessary to update these files:

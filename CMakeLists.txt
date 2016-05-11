@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8.9)
 
-project(biodynamo)
+project(BioDynaMo)
 set(CMAKE_BUILD_TYPE Debug)
 
 # Options. Turn on with 'cmake -Dmyvarname=ON'.
@@ -56,7 +56,7 @@ add_custom_target(copylibgmp DEPENDS libgmp COMMAND ${CMAKE_COMMAND} -E copy_if_
     "${CMAKE_BINARY_DIR}/gmp/src/gmp/.libs/libgmp${CMAKE_SHARED_LIBRARY_SUFFIX}" ${LIBGMP_DEST})
 
 #--------------------- Doxygen ---------------------------------
-add_subdirectory(doc doc)
+include(cmake/doxygen.cmake)
 
 #--------------------- build shared library  ----------------
 # add the headers into the project
