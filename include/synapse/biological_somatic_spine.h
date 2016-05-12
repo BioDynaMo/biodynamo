@@ -30,7 +30,7 @@ class BiologicalSomaticSpine : public SimStateSerializable {
   BiologicalSomaticSpine(const BiologicalSomaticSpine&) = delete;
   BiologicalSomaticSpine& operator=(const BiologicalSomaticSpine&) = delete;
 
-  PhysicalSomaticSpine* physical_somatic_spine_;
+  PhysicalSomaticSpine* physical_somatic_spine_ = nullptr;
 };
 
 }  // namespace synapse

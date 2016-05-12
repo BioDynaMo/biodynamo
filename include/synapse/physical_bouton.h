@@ -39,7 +39,7 @@ class PhysicalBouton : public Excrescence {
   PhysicalBouton(const PhysicalBouton&) = delete;
   PhysicalBouton& operator=(const PhysicalBouton&) = delete;
 
-  BiologicalBouton::UPtr biological_bouton_;
+  BiologicalBouton::UPtr biological_bouton_ = nullptr;
 };
 
 }  // namespace synapse

@@ -30,7 +30,7 @@ class BiologicalBouton : public SimStateSerializable {
   BiologicalBouton(const BiologicalBouton&) = delete;
   BiologicalBouton& operator=(const BiologicalBouton&) = delete;
 
-  PhysicalBouton* physical_bouton_;
+  PhysicalBouton* physical_bouton_ = nullptr;
 };
 
 }  // namespace synapse

@@ -27,7 +27,7 @@ class AbstractCellModule : public CellModule {
   virtual bool isCopiedWhenCellDivides() const override;
 
  protected:
-  Cell* cell_;
+  Cell* cell_ = nullptr;
 
  private:
   AbstractCellModule(const AbstractCellModule&) = delete;
