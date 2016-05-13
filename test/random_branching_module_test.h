@@ -55,13 +55,13 @@ class RandomBranchingModule : public LocalBiologyModule, public std::enable_shar
     }
   }
 
-  std::shared_ptr<CellElement> getCellElement() const override {
+  CellElement* getCellElement() const override {
     return neurite_;
   }
 
-  void setCellElement(const std::shared_ptr<CellElement>& cell_element) override {
+  void setCellElement(CellElement* cell_element) override {
     if (cell_element->isANeuriteElement()) {
-      neurite_ = std::static_pointer_cast<NeuriteElement>(cell_element);
+      neurite_ = static_cast<NeuriteElement*>(cell_element);
       direction_ = neurite_->getPhysicalCylinder()->getAxis();
     } else {
       // Sorry, I only work with neurite elements
@@ -109,7 +109,7 @@ class RandomBranchingModule : public LocalBiologyModule, public std::enable_shar
   static constexpr double kProbabilityToBranch = 0.005;
 
   std::shared_ptr<JavaUtil2> java_;
-  std::shared_ptr<NeuriteElement> neurite_;
+  NeuriteElement* neurite_;
   std::array<double, 3> direction_;
 };
 

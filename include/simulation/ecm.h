@@ -39,6 +39,8 @@ class PhysicalBouton;
 namespace simulation {
 
 using cells::Cell;
+using local_biology::SomaElement;
+using local_biology::NeuriteElement;
 using physics::SubstanceHash;
 using physics::SubstanceEqual;
 
@@ -185,13 +187,13 @@ class ECM : public SimStateSerializable {
   virtual void removeCell(Cell* cell);
 
   // Cell Elements--------------------------------------------------
-  virtual void addSomaElement(const std::shared_ptr<local_biology::SomaElement>& soma);
+  virtual void addSomaElement(SomaElement* soma);
 
-  virtual void removeSomaElement(const std::shared_ptr<local_biology::SomaElement>& soma);
+  virtual void removeSomaElement(SomaElement* soma);
 
-  virtual void addNeuriteElement(const std::shared_ptr<local_biology::NeuriteElement>& neurite);
+  virtual void addNeuriteElement(NeuriteElement* neurite);
 
-  virtual void removeNeuriteElement(const std::shared_ptr<local_biology::NeuriteElement>& neurite);
+  virtual void removeNeuriteElement(NeuriteElement* neurite);
 
   void resetTime();
 
@@ -392,9 +394,9 @@ class ECM : public SimStateSerializable {
 
   std::vector<std::shared_ptr<physics::PhysicalCylinder>> getPhysicalCylinderList() const;
 
-  virtual std::list<std::shared_ptr<local_biology::NeuriteElement>> getNeuriteElementList() const;
+  virtual std::list<NeuriteElement*> getNeuriteElementList() const;
 
-  std::vector<std::shared_ptr<local_biology::SomaElement>> getSomaElementList() const;
+  std::vector<SomaElement*> getSomaElementList() const;
 
   bool isAnyArtificialGradientDefined() const;
 
@@ -428,7 +430,7 @@ class ECM : public SimStateSerializable {
     return physical_cylinders_[i];
   }
 
-  virtual std::shared_ptr<local_biology::NeuriteElement> getNeuriteElement(int i) const {
+  virtual NeuriteElement* getNeuriteElement(int i) const {
     return neurite_elements_[i];
   }
 
@@ -440,7 +442,7 @@ class ECM : public SimStateSerializable {
     return physical_spheres_[i];
   }
 
-  virtual std::shared_ptr<local_biology::SomaElement> getSomaElement(int i) const {
+  virtual SomaElement* getSomaElement(int i) const {
     return soma_elements_[i];
   }
 
@@ -528,14 +530,6 @@ class ECM : public SimStateSerializable {
     return java_->newPhysicalSphere();
   }
 
-  std::shared_ptr<local_biology::NeuriteElement> newNeuriteElement() const {
-    return java_->newNeuriteElement();
-  }
-
-  std::shared_ptr<local_biology::SomaElement> newSomaElement() const {
-    return java_->newSomaElement();
-  }
-
   std::shared_ptr<physics::PhysicalBond> newPhysicalBond(const std::shared_ptr<physics::PhysicalObject>& a,
                                                          const std::array<double, 2>& position_on_a,
                                                          const std::shared_ptr<physics::PhysicalObject>& b,
@@ -560,9 +554,9 @@ class ECM : public SimStateSerializable {
   /** List of all the PhysicalCylinder instances. */
   std::vector<std::shared_ptr<physics::PhysicalCylinder>> physical_cylinders_;
   /** List of all the SomaElement instances. */
-  std::vector<std::shared_ptr<local_biology::SomaElement>> soma_elements_;
+  std::vector<SomaElement*> soma_elements_;
   /** List of all the NeuriteElement instances. */
-  std::vector<std::shared_ptr<local_biology::NeuriteElement>> neurite_elements_;
+  std::vector<NeuriteElement*> neurite_elements_;
   /** List of all the Cell instances. */
   std::vector<Cell::UPtr> cells_;
   /** List of all the Chemical reactions instances. */

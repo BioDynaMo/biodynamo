@@ -14,6 +14,11 @@ namespace local_biology {
 
 SomaElement::SomaElement()
     : CellElement() {
+  ecm_->addSomaElement(this);
+}
+
+SomaElement::~SomaElement() {
+  ecm_->removeSomaElement(this);
 }
 
 StringBuilder& SomaElement::simStateToJson(StringBuilder& sb) const {
@@ -26,8 +31,8 @@ StringBuilder& SomaElement::simStateToJson(StringBuilder& sb) const {
   return sb;
 }
 
-std::shared_ptr<SomaElement> SomaElement::divide(double volume_ratio, double phi, double theta) {
-  auto new_soma = create();
+SomaElement::UPtr SomaElement::divide(double volume_ratio, double phi, double theta) {
+  auto new_soma = UPtr(new SomaElement());
   auto pc = physical_->divide(volume_ratio, phi, theta);
   new_soma->setPhysical(pc);   // this method also sets the callback
 
@@ -44,11 +49,11 @@ void SomaElement::run() {
   runLocalBiologyModules();
 }
 
-std::shared_ptr<NeuriteElement> SomaElement::extendNewNeurite() {
+NeuriteElement* SomaElement::extendNewNeurite() {
   return extendNewNeurite(Param::kNeuriteDefaultDiameter);
 }
 
-std::shared_ptr<NeuriteElement> SomaElement::extendNewNeurite(double diameter) {
+NeuriteElement* SomaElement::extendNewNeurite(double diameter) {
   //andreas thinks this gives a better distribution based on some friends of mine.
   double phi = (ecm_->getRandomDouble1() - 0.5f) * 2 * Param::kPi;
   double theta = ecm_->asin(ecm_->getRandomDouble1() * 2 - 1) + Param::kPi / 2;
@@ -56,24 +61,24 @@ std::shared_ptr<NeuriteElement> SomaElement::extendNewNeurite(double diameter) {
   return extendNewNeurite(diameter, phi, theta);
 }
 
-std::shared_ptr<NeuriteElement> SomaElement::extendNewNeurite(const std::array<double, 3>& direction) {
+NeuriteElement* SomaElement::extendNewNeurite(const std::array<double, 3>& direction) {
   // we do this cause transform is for 2 points in space and not for a direction:
   auto dir = Matrix::add(direction, physical_->getMassLocation());
   auto angles = physical_->transformCoordinatesGlobalToPolar(dir);
   return extendNewNeurite(Param::kNeuriteDefaultDiameter, angles[1], angles[2]);
 }
 
-std::shared_ptr<NeuriteElement> SomaElement::extendNewNeurite(double diameter, const std::array<double, 3>& direction) {
+NeuriteElement* SomaElement::extendNewNeurite(double diameter, const std::array<double, 3>& direction) {
   // we do this cause transform is for 2 points in space and not for a direction:
   auto dir = Matrix::add(direction, physical_->getMassLocation());
   auto angles = physical_->transformCoordinatesGlobalToPolar(dir);
   return extendNewNeurite(diameter, angles[1], angles[2]);
 }
 
-std::shared_ptr<NeuriteElement> SomaElement::extendNewNeurite(double diameter, double phi, double theta) {
+NeuriteElement* SomaElement::extendNewNeurite(double diameter, double phi, double theta) {
   // creating the new NeuriteElement and PhysicalCylinder, linking them
   double length = Param::kNeuriteDefaultActualLength;
-  auto ne = ecm_->newNeuriteElement();
+  auto ne = NeuriteElement::UPtr { new NeuriteElement() };
   auto pc = physical_->addNewPhysicalCylinder(length, phi, theta);
   ne->setPhysical(pc);
   // setting diameter for new branch
@@ -85,8 +90,9 @@ std::shared_ptr<NeuriteElement> SomaElement::extendNewNeurite(double diameter, d
     if (module->isCopiedWhenNeuriteExtendsFromSoma())
       ne->addLocalBiologyModule(module->getCopy());
   }
-  // return the new neurite
-  return ne;
+  auto ne_raw = ne.get();
+  cell_->addNeuriteElement(std::move(ne));
+  return ne_raw;
 }
 
 std::shared_ptr<physics::PhysicalObject> SomaElement::getPhysical() const {
@@ -95,7 +101,7 @@ std::shared_ptr<physics::PhysicalObject> SomaElement::getPhysical() const {
 
 void SomaElement::setPhysical(const std::shared_ptr<physics::PhysicalObject>& po) {
   physical_ = std::static_pointer_cast<physics::PhysicalSphere>(po);
-  physical_->setSomaElement(std::static_pointer_cast<SomaElement>(shared_from_this()));
+  physical_->setSomaElement(this);
 }
 
 std::shared_ptr<physics::PhysicalSphere> SomaElement::getPhysicalSphere() const {
@@ -104,11 +110,11 @@ std::shared_ptr<physics::PhysicalSphere> SomaElement::getPhysicalSphere() const 
 
 void SomaElement::setPhysicalSphere(const std::shared_ptr<physics::PhysicalSphere>& ps) {
   physical_ = ps;
-  physical_->setSomaElement(std::static_pointer_cast<SomaElement>(shared_from_this()));
+  physical_->setSomaElement(this);
 }
 
-std::list<std::shared_ptr<NeuriteElement>> SomaElement::getNeuriteList() const {
-  std::list<std::shared_ptr<NeuriteElement>> neurites;
+std::list<NeuriteElement*> SomaElement::getNeuriteList() const {
+  std::list<NeuriteElement*> neurites;
   auto cylinders = physical_->getDaughters();
   for (auto pc : cylinders) {
     neurites.push_back(pc->getNeuriteElement());
@@ -122,10 +128,6 @@ bool SomaElement::isANeuriteElement() const {
 
 bool SomaElement::isASomaElement() const {
   return true;
-}
-
-void SomaElement::init() {
-  ecm_->addSomaElement(std::static_pointer_cast<SomaElement>(shared_from_this()));
 }
 
 }  // namespace local_biology

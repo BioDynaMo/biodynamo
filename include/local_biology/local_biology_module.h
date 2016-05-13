@@ -41,13 +41,13 @@ class LocalBiologyModule : public SimStateSerializable {
   }
 
   /** returns the cell element this module lives in */
-  virtual std::shared_ptr<CellElement> getCellElement() const {
+  virtual CellElement* getCellElement() const {
     throw std::logic_error(
         "LocalBiologyModule::getCellElement must never be called - Java must provide implementation at this point");
   }
 
   /** @param cell_element the cell element this module lives in */
-  virtual void setCellElement(const std::shared_ptr<CellElement>& cell_element) {
+  virtual void setCellElement(CellElement* cell_element) {
     throw std::logic_error(
         "LocalBiologyModule::setCellElement must never be called - Java must provide implementation at this point");
   }

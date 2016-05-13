@@ -258,21 +258,21 @@ class PhysicalCylinderDebug : public PhysicalCylinder {
     return ret;
   }
 
-  virtual std::shared_ptr<local_biology::CellElement> getCellElement() const override {
+  virtual CellElement* getCellElement() const override {
     logCallParameterless();
     auto ret = PhysicalCylinder::getCellElement();
     logReturn(ret);
     return ret;
   }
 
-  virtual std::shared_ptr<local_biology::NeuriteElement> getNeuriteElement() const override {
+  virtual NeuriteElement* getNeuriteElement() const override {
     logCallParameterless();
     auto ret = PhysicalCylinder::getNeuriteElement();
     logReturn(ret);
     return ret;
   }
 
-  virtual void setNeuriteElement(const std::shared_ptr<local_biology::NeuriteElement>& neurite) override {
+  virtual void setNeuriteElement(NeuriteElement* neurite) override {
     logCall(neurite);
     PhysicalCylinder::setNeuriteElement(neurite);
     logReturnVoid();

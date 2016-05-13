@@ -1,3 +1,4 @@
+#include <simulation/ecm.h>
 #include "cells/cell.h"
 
 #include "matrix.h"
@@ -7,6 +8,8 @@
 
 namespace cx3d {
 namespace cells {
+
+using simulation::ECM;
 
 int Cell::id_counter_ = 0;
 std::shared_ptr<simulation::ECM> Cell::ecm_ { nullptr };
@@ -29,7 +32,7 @@ StringBuilder& Cell::simStateToJson(StringBuilder& sb) const {
   SimStateSerializationUtil::keyValue(sb, "id", id_);
   SimStateSerializationUtil::keyValue(sb, "idCounter", id_counter_);
   SimStateSerializationUtil::unorderedCollection(sb, "cellModules", cell_modules_);
-  SimStateSerializationUtil::keyValue(sb, "somaElement", soma_);
+  SimStateSerializationUtil::keyValue(sb, "somaElement", soma_.get());
   SimStateSerializationUtil::unorderedCollection(sb, "neuriteRootList", neurite_root_list_);
   std::string neuro_type = "";
   switch (neuro_ml_type_) {
@@ -137,12 +140,12 @@ void Cell::setType(const std::string& type) {
   type_ = type;
 }
 
-std::shared_ptr<local_biology::SomaElement> Cell::getSomaElement() const {
-  return soma_;
+SomaElement* Cell::getSomaElement() const {
+  return soma_.get();
 }
 
-void Cell::setSomaElement(const std::shared_ptr<local_biology::SomaElement>& soma) {
-  soma_ = soma;
+void Cell::setSomaElement(SomaElement::UPtr soma) {
+  soma_ = std::move(soma);
   soma_->setCell(this);
 }
 
@@ -150,13 +153,18 @@ int Cell::getID() const {
   return id_;
 }
 
-std::list<std::shared_ptr<local_biology::NeuriteElement>> Cell::getNeuriteElements() const {
-  std::list<std::shared_ptr<local_biology::NeuriteElement>> neurite_elements;
+std::list<NeuriteElement*> Cell::getNeuriteElements() const {
+  std::list<NeuriteElement*> neurite_elements;
   for (auto ne : soma_->getNeuriteList()) {
     ne->addYourselfAndDistalNeuriteElements(neurite_elements);
   }
   return neurite_elements;
 }
+
+void Cell::addNeuriteElement(NeuriteElement::UPtr neurite) {
+  neurites_.push_back(std::move(neurite));
+}
+
 
 }  // namespace cells
 }  // namespace cx3d

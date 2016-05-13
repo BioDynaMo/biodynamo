@@ -82,7 +82,7 @@ class XBifurcationModule : public LocalBiologyModule {
       y = max_proba_;
     }
     if (java_->getRandomDouble1() < y) {
-      auto daughters = std::static_pointer_cast<NeuriteElement>(cell_element_)->bifurcate();
+      auto daughters = static_cast<NeuriteElement*>(cell_element_)->bifurcate();
       auto cyl0 = daughters[0]->getPhysicalCylinder();
       auto cyl1 = daughters[1]->getPhysicalCylinder();
       cyl0->setDiameter(cyl->getDiameter() * diameter_of_daughter_);
@@ -90,11 +90,11 @@ class XBifurcationModule : public LocalBiologyModule {
     }
   }
 
-  std::shared_ptr<CellElement> getCellElement() const override {
+  CellElement* getCellElement() const override {
     return cell_element_;
   }
 
-  void setCellElement(const std::shared_ptr<CellElement>& cell_element) override {
+  void setCellElement(CellElement* cell_element) override {
     cell_element_ = cell_element;
   }
 
@@ -167,7 +167,7 @@ class XBifurcationModule : public LocalBiologyModule {
   std::shared_ptr<JavaUtil2> java_;
 
   /** The CellElement this module lives in.*/
-  std::shared_ptr<CellElement> cell_element_;
+  CellElement* cell_element_ = nullptr;
 
   /** Whether copied or not in branching.*/
   bool copied_when_neurite_branches_ = true;

@@ -19,30 +19,25 @@ class NeuriteElement;
 
 class SomaElement : public CellElement {
  public:
-  static std::shared_ptr<SomaElement> create() {
-    std::shared_ptr<SomaElement> soma { new SomaElement() };
-    soma->init();
-    return soma;
-  }
+  using UPtr = std::unique_ptr<SomaElement>;
 
   SomaElement();  // fixme protected after porting is complete
 
-  virtual ~SomaElement() {
-  }
+  virtual ~SomaElement();
 
   virtual StringBuilder& simStateToJson(StringBuilder& sb) const override;
 
-  virtual std::shared_ptr<SomaElement> divide(double volume_ratio, double phi, double theta);
+  virtual UPtr divide(double volume_ratio, double phi, double theta);
 
   virtual void run();
 
-  virtual std::shared_ptr<NeuriteElement> extendNewNeurite();
+  virtual NeuriteElement* extendNewNeurite();
 
-  virtual std::shared_ptr<NeuriteElement> extendNewNeurite(double diameter);
+  virtual NeuriteElement* extendNewNeurite(double diameter);
 
-  virtual std::shared_ptr<NeuriteElement> extendNewNeurite(const std::array<double, 3>& direction);
+  virtual NeuriteElement* extendNewNeurite(const std::array<double, 3>& direction);
 
-  virtual std::shared_ptr<NeuriteElement> extendNewNeurite(double diameter, const std::array<double, 3>& direction);
+  virtual NeuriteElement* extendNewNeurite(double diameter, const std::array<double, 3>& direction);
 
   /**
    * Extends a new neurites
@@ -51,7 +46,7 @@ class SomaElement : public CellElement {
    * @param theta the angle from the xAxis around the zAxis
    * @return
    */
-  virtual std::shared_ptr<NeuriteElement> extendNewNeurite(double diameter, double phi, double theta);
+  virtual NeuriteElement* extendNewNeurite(double diameter, double phi, double theta);
 
   //todo implement makeSomaticSpines
 
@@ -63,7 +58,7 @@ class SomaElement : public CellElement {
 
   virtual void setPhysicalSphere(const std::shared_ptr<physics::PhysicalSphere>& po);
 
-  virtual std::list<std::shared_ptr<NeuriteElement>> getNeuriteList() const;
+  virtual std::list<NeuriteElement*> getNeuriteList() const;
 
   virtual bool isANeuriteElement() const override;
 
@@ -74,8 +69,6 @@ class SomaElement : public CellElement {
   SomaElement& operator=(const SomaElement&) = delete;
 
   std::shared_ptr<physics::PhysicalSphere> physical_;
-
-  void init();
 };
 
 }  // namespace local_biology

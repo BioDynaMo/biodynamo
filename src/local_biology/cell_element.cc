@@ -45,13 +45,9 @@ std::string CellElement::toString() const {
   return "CE";
 }
 
-bool CellElement::equalTo(const std::shared_ptr<CellElement>& other) const {
-  return this == other.get();
-}
-
 void CellElement::addLocalBiologyModule(LocalBiologyModule::UPtr m) {
   local_biology_modules_.push_back(m.get());
-  m->setCellElement(shared_from_this());  // set the callback
+  m->setCellElement(this);  // set the callback
   m.release();
 }
 

@@ -4,6 +4,7 @@
 #include <array>
 #include <memory>
 #include <exception>
+#include <cells/cell.h>
 
 #include "physics/physical_object.h"
 
@@ -15,6 +16,9 @@ class NeuriteElement;
 }  // namespace local_biology
 
 namespace physics {
+
+using local_biology::CellElement;
+using local_biology::NeuriteElement;
 
 /**
  * A cylinder can be seen as a normal cylinder, with two end points and a diameter. It is oriented;
@@ -281,17 +285,17 @@ class PhysicalCylinder : public PhysicalObject {
   // *************************************************************************************
 
   /** Well, there is no field cellElement. We return neuriteElement.*/
-  virtual std::shared_ptr<local_biology::CellElement> getCellElement() const override;
+  virtual CellElement* getCellElement() const override;
 
   /**
    * @return the neuriteElement
    */
-  virtual std::shared_ptr<local_biology::NeuriteElement> getNeuriteElement() const;
+  virtual NeuriteElement* getNeuriteElement() const;
 
   /**
    * @param neuriteElement the neuriteElement to set
    */
-  virtual void setNeuriteElement(const std::shared_ptr<local_biology::NeuriteElement>& neurite);
+  virtual void setNeuriteElement(NeuriteElement* neurite);
 
   /**
    * @return the daughterLeft
@@ -449,7 +453,7 @@ class PhysicalCylinder : public PhysicalObject {
   PhysicalCylinder& operator=(const PhysicalCylinder& other) = delete;
 
   /** Local biology object associated with this PhysicalCylinder.*/
-  std::shared_ptr<local_biology::NeuriteElement> neurite_element_;
+  NeuriteElement* neurite_element_;
 
   /** Parent node in the neuron tree structure (can be PhysicalSphere or PhysicalCylinder)*/
   std::shared_ptr<PhysicalObject> mother_;
@@ -486,7 +490,7 @@ class PhysicalCylinder : public PhysicalObject {
    * A new PhysicalCylinder is instantiated and becomes the proximal part. All characteristics are transmitted.
    * A new Neurite element is also instantiated, and assigned to the new proximal PhysicalCylinder
    */
-  std::shared_ptr<local_biology::NeuriteElement> insertProximalCylinder();
+  NeuriteElement* insertProximalCylinder();
 
   /**
    * Divides the PhysicalCylinder into two PhysicalCylinders (in fact, into two instances of the derived class).
@@ -495,7 +499,7 @@ class PhysicalCylinder : public PhysicalObject {
    *
    *@param distalPortion the fraction of the total old length devoted to the distal half (should be between 0 and 1).
    */
-  std::shared_ptr<local_biology::NeuriteElement> insertProximalCylinder(double distal_portion);
+  NeuriteElement* insertProximalCylinder(double distal_portion);
 
   /**
    * Merges two Cylinders together. The one in which the method is called phagocytes it's mother.

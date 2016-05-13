@@ -20,20 +20,15 @@ class LocalBiologyModule;
 
 class NeuriteElement : public CellElement {
  public:
-  static std::shared_ptr<NeuriteElement> create() {
-    std::shared_ptr<NeuriteElement> neurit { new NeuriteElement() };
-    neurit->init();
-    return neurit;
-  }
+  using UPtr = std::unique_ptr<NeuriteElement>;
 
   NeuriteElement();  // fixme protected after porting is complete
 
-  virtual ~NeuriteElement() {
-  }
+  virtual ~NeuriteElement();
 
   virtual StringBuilder& simStateToJson(StringBuilder& sb) const override;
 
-  virtual std::shared_ptr<NeuriteElement> getCopy() const;
+  NeuriteElement* getCopy() const;
 
   /** <b>Users should not use this method!</b>
    * It is called by the physicalObject associated with this neuriteElement, when it is deleted.*/
@@ -60,7 +55,7 @@ class NeuriteElement : public CellElement {
    * @param growthDirection (But will be automatically corrected if not at least 45 degrees from the cylinder's axis).
    * @return
    */
-  virtual std::shared_ptr<NeuriteElement> branch(double newBranchDiameter,
+  virtual NeuriteElement* branch(double newBranchDiameter,
                                                  const std::array<double, 3>& direction);
 
   /**
@@ -68,20 +63,20 @@ class NeuriteElement : public CellElement {
    * @param growthDirection (But will be automatically corrected if not at least 45 degrees from the cylinder's axis).
    * @return
    */
-  virtual std::shared_ptr<NeuriteElement> branch(const std::array<double, 3>& direction);
+  virtual NeuriteElement* branch(const std::array<double, 3>& direction);
 
   /**
    * Makes a side branch, i.e. splits this cylinder into two and puts a daughter right at the proximal half.
    * @param diameter of the side branch
    * @return
    */
-  virtual std::shared_ptr<NeuriteElement> branch(double diameter);
+  virtual NeuriteElement* branch(double diameter);
 
   /**
    * Makes a side branch, i.e. splits this cylinder into two and puts a daughter right at the proximal half.
    * @return
    */
-  virtual std::shared_ptr<NeuriteElement> branch();
+  virtual NeuriteElement* branch();
 
   /**
    Returns <code>true</code> if it is a terminal cylinder with length of at least 1micron.
@@ -98,7 +93,7 @@ class NeuriteElement : public CellElement {
    * @param direction_2
    * @return
    */
-  virtual std::array<std::shared_ptr<NeuriteElement>, 2> bifurcate(double diameter_1, double diameter_2,
+  virtual std::array<NeuriteElement*, 2> bifurcate(double diameter_1, double diameter_2,
                                                                    const std::array<double, 3>& direction_1,
                                                                    const std::array<double, 3>& direction_2);
 
@@ -112,14 +107,14 @@ class NeuriteElement : public CellElement {
    * @param direction_2
    * @return
    */
-  virtual std::array<std::shared_ptr<NeuriteElement>, 2> bifurcate(double length, double diameter_1, double diameter_2,
+  virtual std::array<NeuriteElement*, 2> bifurcate(double length, double diameter_1, double diameter_2,
                                                                    const std::array<double, 3>& direction_1,
                                                                    const std::array<double, 3>& direction_2);
 
-  virtual std::array<std::shared_ptr<NeuriteElement>, 2> bifurcate(const std::array<double, 3>& direction_1,
+  virtual std::array<NeuriteElement*, 2> bifurcate(const std::array<double, 3>& direction_1,
                                                                    const std::array<double, 3>& direction_2);
 
-  virtual std::array<std::shared_ptr<NeuriteElement>, 2> bifurcate();
+  virtual std::array<NeuriteElement*, 2> bifurcate();
 
   // *************************************************************************************
   //   Synapses
@@ -188,21 +183,20 @@ class NeuriteElement : public CellElement {
    * @return the (first) distal <code>NeuriteElement</code>, if it exists,
    * i.e. if this is not the terminal segment (otherwise returns <code>null</code>).
    */
-  virtual std::shared_ptr<NeuriteElement> getDaughterLeft() const;
+  virtual NeuriteElement* getDaughterLeft() const;
 
   /**
    * @return the second distal <code>NeuriteElement</code>, if it exists
    * i.e. if there is a branching point just after this element (otherwise returns <code>null</code>).
    */
-  virtual std::shared_ptr<NeuriteElement> getDaughterRight() const;
+  virtual NeuriteElement* getDaughterRight() const;
 
   /**
    * Adds to a Vector of NeuriteElements (NE) all the NE distal to this particular NE (including it).
    * @param elements the vector where it should be added.
    * @return
    */
-  virtual std::list<std::shared_ptr<NeuriteElement>> addYourselfAndDistalNeuriteElements(
-      std::list<std::shared_ptr<NeuriteElement>>& elements);
+  virtual std::list<NeuriteElement*> addYourselfAndDistalNeuriteElements(std::list<NeuriteElement*>& elements);
 
  private:
   NeuriteElement(const NeuriteElement&) = delete;
@@ -211,8 +205,6 @@ class NeuriteElement : public CellElement {
   std::shared_ptr<physics::PhysicalCylinder> physical_cylinder_;
 
   bool is_axon_ = false;
-
-  void init();
 };
 
 }  // namespace local_biology

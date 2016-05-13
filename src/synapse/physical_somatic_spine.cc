@@ -53,7 +53,7 @@ bool PhysicalSomaticSpine::synapseWithSoma(Excrescence* other_excrescence, bool 
   return false;
 }
 
-bool PhysicalSomaticSpine::synapseWithShaft(const std::shared_ptr<local_biology::NeuriteElement>& other_ne, double max_dis,
+bool PhysicalSomaticSpine::synapseWithShaft(NeuriteElement* other_ne, double max_dis,
                                      int nr_segments, bool create_phyiscal_bond) {
   return false;
 }

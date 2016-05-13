@@ -89,11 +89,11 @@ class XMovementModule : public LocalBiologyModule {
     cyl->setDiameter(cyl->getDiameter() * (1 - delta_l * linear_diameter_decrease_));
   }
 
-  std::shared_ptr<CellElement> getCellElement() const override {
+  CellElement* getCellElement() const override {
     return cell_element_;
   }
 
-  void setCellElement(const std::shared_ptr<CellElement>& cell_element) override {
+  void setCellElement(CellElement* cell_element) override {
     cell_element_ = cell_element;
     movement_direction_ = cell_element_->getPhysical()->getXAxis();
   }
@@ -204,7 +204,7 @@ class XMovementModule : public LocalBiologyModule {
   std::shared_ptr<JavaUtil2> java_;
 
   /** The CellElement this module lives in.*/
-  std::shared_ptr<CellElement> cell_element_;
+  CellElement* cell_element_ = nullptr;
 
   /** Whether copied or not in branching.*/
   bool copied_when_neurite_branches_ = true;

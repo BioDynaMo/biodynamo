@@ -27,7 +27,7 @@ class PhysicalSomaticSpine : public Excrescence {
 
   virtual bool synapseWithSoma(Excrescence* other_excrescence, bool create_phyiscal_bond) override;
 
-  virtual bool synapseWithShaft(const std::shared_ptr<local_biology::NeuriteElement>& other_ne, double max_dis,
+  virtual bool synapseWithShaft(NeuriteElement* other_ne, double max_dis,
                                 int nr_segments, bool create_phyiscal_bond) override;
 
   virtual BiologicalSomaticSpine* getBiologicalSomaticSpine() const;

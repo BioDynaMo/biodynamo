@@ -25,6 +25,11 @@ using namespace cx3d::synapse;
 
 NeuriteElement::NeuriteElement()
     : CellElement() {
+  ecm_->addNeuriteElement(this);
+}
+
+NeuriteElement::~NeuriteElement() {
+  ecm_->removeNeuriteElement(this);
 }
 
 StringBuilder& NeuriteElement::simStateToJson(StringBuilder& sb) const {
@@ -38,15 +43,18 @@ StringBuilder& NeuriteElement::simStateToJson(StringBuilder& sb) const {
   return sb;
 }
 
-std::shared_ptr<NeuriteElement> NeuriteElement::getCopy() const {
-  auto ne = ecm_->newNeuriteElement();
+NeuriteElement* NeuriteElement::getCopy() const {
+  auto ne = UPtr { new NeuriteElement() };
   ne->is_axon_ = is_axon_;
   ne->cell_ = cell_;
-  return ne;
+  auto ne_raw = ne.get();
+  cell_->addNeuriteElement(std::move(ne));
+  return ne_raw;
 }
 
 void NeuriteElement::removeYourself() {
-  ecm_->removeNeuriteElement(std::static_pointer_cast<NeuriteElement>(shared_from_this()));
+  // todo check if still necessary - see destructor
+  ecm_->removeNeuriteElement(this);
 }
 
 void NeuriteElement::run() {
@@ -61,7 +69,7 @@ void NeuriteElement::elongateTerminalEnd(double speed, const std::array<double, 
   physical_cylinder_->extendCylinder(speed, direction);
 }
 
-std::shared_ptr<NeuriteElement> NeuriteElement::branch(double diameter,
+NeuriteElement* NeuriteElement::branch(double diameter,
                                                        const std::array<double, 3>& direction) {
   // create a new NeuriteElement for side branch
   auto ne = getCopy();
@@ -87,11 +95,11 @@ std::shared_ptr<NeuriteElement> NeuriteElement::branch(double diameter,
   return ne;
 }
 
-std::shared_ptr<NeuriteElement> NeuriteElement::branch(const std::array<double, 3>& direction) {
+NeuriteElement* NeuriteElement::branch(const std::array<double, 3>& direction) {
   return branch(physical_cylinder_->getDiameter(), direction);
 }
 
-std::shared_ptr<NeuriteElement> NeuriteElement::branch(double diameter) {
+NeuriteElement* NeuriteElement::branch(double diameter) {
   auto rand_noise = ecm_->matrixRandomNoise3(0.1);
   auto growth_direction = Matrix::perp3(
       Matrix::add(physical_cylinder_->getUnitaryAxisDirectionVector(), rand_noise),
@@ -100,7 +108,7 @@ std::shared_ptr<NeuriteElement> NeuriteElement::branch(double diameter) {
   return branch(diameter, growth_direction);
 }
 
-std::shared_ptr<NeuriteElement> NeuriteElement::branch() {
+NeuriteElement* NeuriteElement::branch() {
   double branch_diameter = physical_cylinder_->getDiameter();
   auto rand_noise = ecm_->matrixRandomNoise3(0.1);
   auto growth_direction = Matrix::perp3(Matrix::add(physical_cylinder_->getUnitaryAxisDirectionVector(), rand_noise),
@@ -112,13 +120,13 @@ bool NeuriteElement::bifurcationPermitted() const {
   return physical_cylinder_->bifurcationPermitted();
 }
 
-std::array<std::shared_ptr<NeuriteElement>, 2> NeuriteElement::bifurcate(double diameter_1, double diameter_2,
+std::array<NeuriteElement*, 2> NeuriteElement::bifurcate(double diameter_1, double diameter_2,
                                                                          const std::array<double, 3>& direction_1,
                                                                          const std::array<double, 3>& direction_2) {
   return bifurcate(Param::kNeuriteDefaultActualLength, diameter_1, diameter_2, direction_1, direction_2);
 }
 
-std::array<std::shared_ptr<NeuriteElement>, 2> NeuriteElement::bifurcate(double length, double diameter_1,
+std::array<NeuriteElement*, 2> NeuriteElement::bifurcate(double length, double diameter_1,
                                                                          double diameter_2,
                                                                          const std::array<double, 3>& direction_1,
                                                                          const std::array<double, 3>& direction_2) {
@@ -158,7 +166,7 @@ std::array<std::shared_ptr<NeuriteElement>, 2> NeuriteElement::bifurcate(double 
   return {ne_1, ne_2};
 }
 
-std::array<std::shared_ptr<NeuriteElement>, 2> NeuriteElement::bifurcate(const std::array<double, 3>& direction_1,
+std::array<NeuriteElement*, 2> NeuriteElement::bifurcate(const std::array<double, 3>& direction_1,
                                                                          const std::array<double, 3>& direction_2) {
   // initial default length :
   double l = Param::kNeuriteDefaultActualLength;
@@ -168,7 +176,7 @@ std::array<std::shared_ptr<NeuriteElement>, 2> NeuriteElement::bifurcate(const s
   return bifurcate(l, d, d, direction_1, direction_2);
 }
 
-std::array<std::shared_ptr<NeuriteElement>, 2> NeuriteElement::bifurcate() {
+std::array<NeuriteElement*, 2> NeuriteElement::bifurcate() {
   // initial default length :
   double l = Param::kNeuriteDefaultActualLength;
   // diameters :
@@ -344,7 +352,7 @@ std::shared_ptr<physics::PhysicalObject> NeuriteElement::getPhysical() const {
 
 void NeuriteElement::setPhysical(const std::shared_ptr<physics::PhysicalObject>& po) {
   physical_cylinder_ = std::static_pointer_cast<physics::PhysicalCylinder>(po);
-  physical_cylinder_->setNeuriteElement(std::static_pointer_cast<NeuriteElement>(shared_from_this()));
+  physical_cylinder_->setNeuriteElement(this);
 }
 
 std::shared_ptr<physics::PhysicalCylinder> NeuriteElement::getPhysicalCylinder() const {
@@ -353,7 +361,7 @@ std::shared_ptr<physics::PhysicalCylinder> NeuriteElement::getPhysicalCylinder()
 
 void NeuriteElement::setPhysicalCylinder(const std::shared_ptr<physics::PhysicalCylinder>& pc) {
   physical_cylinder_ = pc;
-  physical_cylinder_->setNeuriteElement(std::static_pointer_cast<NeuriteElement>(shared_from_this()));
+  physical_cylinder_->setNeuriteElement(this);
 }
 
 bool NeuriteElement::isAxon() const {
@@ -372,25 +380,24 @@ bool NeuriteElement::isASomaElement() const {
   return false;
 }
 
-std::shared_ptr<NeuriteElement> NeuriteElement::getDaughterLeft() const {
+NeuriteElement* NeuriteElement::getDaughterLeft() const {
   if (physical_cylinder_->getDaughterLeft() == nullptr) {
-    return std::shared_ptr<NeuriteElement>(nullptr);
+    return nullptr;
   } else {
     return physical_cylinder_->getDaughterLeft()->getNeuriteElement();
   }
 }
 
-std::shared_ptr<NeuriteElement> NeuriteElement::getDaughterRight() const {
+NeuriteElement* NeuriteElement::getDaughterRight() const {
   if (physical_cylinder_->getDaughterRight() == nullptr) {
-    return std::shared_ptr<NeuriteElement>(nullptr);
+    return nullptr;
   } else {
     return physical_cylinder_->getDaughterRight()->getNeuriteElement();
   }
 }
 
-std::list<std::shared_ptr<NeuriteElement>> NeuriteElement::addYourselfAndDistalNeuriteElements(
-    std::list<std::shared_ptr<NeuriteElement>>& elements) {
-  elements.push_back(std::static_pointer_cast<NeuriteElement>(shared_from_this()));
+std::list<NeuriteElement*> NeuriteElement::addYourselfAndDistalNeuriteElements(std::list<NeuriteElement*>& elements) {
+  elements.push_back(this);
   auto left = getDaughterLeft();
   if (left != nullptr) {
     left->addYourselfAndDistalNeuriteElements(elements);
@@ -400,10 +407,6 @@ std::list<std::shared_ptr<NeuriteElement>> NeuriteElement::addYourselfAndDistalN
     }
   }
   return elements;
-}
-
-void NeuriteElement::init() {
-  ecm_->addNeuriteElement(std::static_pointer_cast<NeuriteElement>(shared_from_this()));
 }
 
 }  // namespace local_biology

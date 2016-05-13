@@ -227,19 +227,19 @@ void ECM::removeCell(Cell* cell) {
   STLUtil::vectorRemove(cells_, cell);
 }
 
-void ECM::addSomaElement(const std::shared_ptr<local_biology::SomaElement>& soma) {
+void ECM::addSomaElement(SomaElement* soma) {
   soma_elements_.push_back(soma);
 }
 
-void ECM::removeSomaElement(const std::shared_ptr<local_biology::SomaElement>& soma) {
+void ECM::removeSomaElement(SomaElement* soma) {
   STLUtil::vectorRemove(soma_elements_, soma);
 }
 
-void ECM::addNeuriteElement(const std::shared_ptr<local_biology::NeuriteElement>& neurite) {
+void ECM::addNeuriteElement(NeuriteElement* neurite) {
   neurite_elements_.push_back(neurite);
 }
 
-void ECM::removeNeuriteElement(const std::shared_ptr<local_biology::NeuriteElement>& neurite) {
+void ECM::removeNeuriteElement(NeuriteElement* neurite) {
   STLUtil::vectorRemove(neurite_elements_, neurite);
 }
 
@@ -521,8 +521,8 @@ std::vector<std::shared_ptr<physics::PhysicalCylinder>> ECM::getPhysicalCylinder
   return physical_cylinders_;
 }
 
-std::list<std::shared_ptr<local_biology::NeuriteElement>> ECM::getNeuriteElementList() const {
-  std::list<std::shared_ptr<local_biology::NeuriteElement>> ret;
+std::list<NeuriteElement*> ECM::getNeuriteElementList() const {
+  std::list<NeuriteElement*> ret;
   for (auto neurite : neurite_elements_) {
     ret.push_back(neurite);
   }
@@ -530,7 +530,7 @@ std::list<std::shared_ptr<local_biology::NeuriteElement>> ECM::getNeuriteElement
   //fixme change to return neuriteElementList
 }
 
-std::vector<std::shared_ptr<local_biology::SomaElement>> ECM::getSomaElementList() const {
+std::vector<SomaElement*> ECM::getSomaElementList() const {
   return soma_elements_;
 }
 

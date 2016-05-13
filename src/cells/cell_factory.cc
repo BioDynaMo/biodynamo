@@ -14,8 +14,7 @@ Cell* CellFactory::getCellInstance(const std::array<double, 3>& cell_origin,
                                    const std::shared_ptr<simulation::ECM>& ecm) {
   // Create new cell
   auto cell = new Cell();
-  auto soma = ecm->newSomaElement();
-  cell->setSomaElement(soma);
+  auto soma = SomaElement::UPtr(new SomaElement());
   auto ps = ecm->newPhysicalSphere();
   soma->setPhysical(ps);
   auto son = ecm->getSpatialOrganizationNodeInstance(cell_origin, ps);
@@ -23,6 +22,8 @@ Cell* CellFactory::getCellInstance(const std::array<double, 3>& cell_origin,
 
   // Add cell to ECM instance
   ecm->addPhysicalSphere(soma->getPhysicalSphere());
+
+  cell->setSomaElement(std::move(soma));
 
   // Set cell properties
   ps->setMassLocation(cell_origin);

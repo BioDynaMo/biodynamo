@@ -751,15 +751,15 @@ std::array<double, 3> PhysicalCylinder::transformCoordinatesGlobalToPolar(const 
   return transformCoordinatesLocalToPolar(local);
 }
 
-std::shared_ptr<local_biology::CellElement> PhysicalCylinder::getCellElement() const {
+CellElement* PhysicalCylinder::getCellElement() const {
   return neurite_element_;
 }
 
-std::shared_ptr<local_biology::NeuriteElement> PhysicalCylinder::getNeuriteElement() const {
+NeuriteElement* PhysicalCylinder::getNeuriteElement() const {
   return neurite_element_;
 }
 
-void PhysicalCylinder::setNeuriteElement(const std::shared_ptr<local_biology::NeuriteElement>& neurite_element) {
+void PhysicalCylinder::setNeuriteElement(NeuriteElement* neurite_element) {
   if (neurite_element != nullptr) {
     neurite_element_ = neurite_element;
   } else {
@@ -939,11 +939,11 @@ void PhysicalCylinder::updateIntracellularConcentrations() {
   }
 }
 
-std::shared_ptr<local_biology::NeuriteElement> PhysicalCylinder::insertProximalCylinder() {
+NeuriteElement* PhysicalCylinder::insertProximalCylinder() {
   return insertProximalCylinder(0.5);
 }
 
-std::shared_ptr<local_biology::NeuriteElement> PhysicalCylinder::insertProximalCylinder(double distal_portion) {
+NeuriteElement* PhysicalCylinder::insertProximalCylinder(double distal_portion) {
   // location
   std::array<double, 3> new_mass_location { mass_location_[0] - distal_portion * spring_axis_[0], mass_location_[1]
       - distal_portion * spring_axis_[1], mass_location_[2] - distal_portion * spring_axis_[2] };

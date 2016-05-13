@@ -101,14 +101,6 @@ std::shared_ptr<physics::PhysicalSphere> JavaUtil2::newPhysicalSphere() const {
   return PhysicalSphere::create();
 }
 
-std::shared_ptr<local_biology::NeuriteElement> JavaUtil2::newNeuriteElement() const {
-  return NeuriteElement::create();
-}
-
-std::shared_ptr<local_biology::SomaElement> JavaUtil2::newSomaElement() const {
-  return SomaElement::create();
-}
-
 std::shared_ptr<physics::PhysicalBond> JavaUtil2::newPhysicalBond(const std::shared_ptr<physics::PhysicalObject>& a,
                                                                   const std::array<double, 2>& position_on_a,
                                                                   const std::shared_ptr<physics::PhysicalObject>& b,

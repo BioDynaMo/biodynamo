@@ -83,7 +83,7 @@ class GrowthCone : public AbstractLocalBiologyModule {
    * initial direction is parallel to the cylinder axis
    * therefore we overwrite this method from the superclass:
    */
-  void setCellElement(const std::shared_ptr<CellElement>& cell_element) override {
+  void setCellElement(CellElement* cell_element) override {
     AbstractLocalBiologyModule::setCellElement(cell_element);
     previous_dir_ = cell_element->getPhysical()->getAxis();
   }
@@ -112,7 +112,7 @@ class GrowthCone : public AbstractLocalBiologyModule {
     cyl->modifyIntracellularQuantity("tubulin", -concentration * kConsumptionFactor);
     // test for bifurcation
     if (java_->getRandomDouble1() < kBifurcationProbability) {
-      std::static_pointer_cast<NeuriteElement>(getCellElement())->bifurcate();
+      static_cast<NeuriteElement*>(getCellElement())->bifurcate();
     }
   }
 

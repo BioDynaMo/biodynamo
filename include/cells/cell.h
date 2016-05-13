@@ -6,6 +6,7 @@
 #include <list>
 #include <vector>
 #include <memory>
+#include <local_biology/cell_element.h>
 
 #include "color.h"
 #include "sim_state_serializable.h"
@@ -20,6 +21,9 @@ class ECM;
 }  // namespace simulation
 
 namespace cells {
+
+using local_biology::SomaElement;
+using local_biology::NeuriteElement;
 
 /**
  * Class <code>Cell</code> implements the cell at biological level. Every cell is characterized
@@ -113,6 +117,8 @@ class Cell : public SimStateSerializable {
    */
   virtual Cell* divide(double volume_ratio, double phi, double theta);
 
+  void addNeuriteElement(NeuriteElement::UPtr neurite);
+
   // *************************************************************************************
   // *      METHODS FOR CELL MODULES                                                     *
   // *************************************************************************************
@@ -159,16 +165,16 @@ class Cell : public SimStateSerializable {
    */
   virtual void setType(const std::string& type);
 
-  virtual std::shared_ptr<local_biology::SomaElement> getSomaElement() const;
+  virtual SomaElement* getSomaElement() const;
 
-  virtual void setSomaElement(const std::shared_ptr<local_biology::SomaElement>& soma);
+  virtual void setSomaElement(SomaElement::UPtr soma);
 
   virtual int getID() const;
 
   /**
    * @return a <code>Vector</code> containing all the <code>NeuriteElement</code>s of this cell.
    */
-  virtual std::list<std::shared_ptr<local_biology::NeuriteElement>> getNeuriteElements() const;
+  virtual std::list<NeuriteElement*> getNeuriteElements() const;
 
  private:
   Cell(const Cell&) = delete;
@@ -187,10 +193,12 @@ class Cell : public SimStateSerializable {
   std::vector<CellModule::UPtr> cell_modules_;
 
   /* List of the SomaElements belonging to the cell */
-  std::shared_ptr<local_biology::SomaElement> soma_;
+  SomaElement::UPtr soma_;
+
+  std::vector<NeuriteElement::UPtr> neurites_;
 
   /* List of the first Neurite of all Nurites belonging to the cell */
-  std::list<std::shared_ptr<local_biology::NeuriteElement>> neurite_root_list_;  // TODO: not working yet
+  std::list<NeuriteElement*> neurite_root_list_;  // TODO: not working yet
 
   /* The electrophsiology type of this cell */
   NeuroMLType neuro_ml_type_ = NeuroMLType::kExcitatatory;

@@ -66,14 +66,14 @@ class PhysicalSphereDebug : public PhysicalSphere {
 
   }
 
-  std::shared_ptr<local_biology::SomaElement> getSomaElement() const {
+  SomaElement* getSomaElement() const {
     logCallParameterless();
     auto ret = PhysicalSphere::getSomaElement();
     logReturn(ret);
     return ret;
   }
 
-  void setSomaElement(const std::shared_ptr<local_biology::SomaElement>& soma) {
+  void setSomaElement(SomaElement* soma) {
     logCall(soma);
     PhysicalSphere::setSomaElement(soma);
     logReturnVoid();
@@ -213,7 +213,7 @@ class PhysicalSphereDebug : public PhysicalSphere {
     return ret;
   }
 
-  std::shared_ptr<local_biology::CellElement> getCellElement() const {
+  CellElement* getCellElement() const {
     logCallParameterless();
     auto ret = PhysicalSphere::getCellElement();
     logReturn(ret);

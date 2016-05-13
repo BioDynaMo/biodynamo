@@ -18,6 +18,8 @@ class CellElement;
 
 namespace physics {
 
+using local_biology::SomaElement;
+
 /**
  * The embodiment of SomaElement. Contains
  *
@@ -60,12 +62,12 @@ class PhysicalSphere : public PhysicalObject {
   /**
    * @return the somaElement
    */
-  virtual std::shared_ptr<local_biology::SomaElement> getSomaElement() const;
+  virtual SomaElement* getSomaElement() const;
 
   /**
    * @param somaElement the somaElement to set
    */
-  virtual void setSomaElement(const std::shared_ptr<local_biology::SomaElement>& soma_element);
+  virtual void setSomaElement(SomaElement* soma_element);
 
   /**
    * Progressive modification of the volume. Updates the diameter, the intracellular concentration
@@ -204,7 +206,7 @@ class PhysicalSphere : public PhysicalObject {
 
   virtual std::array<double, 3> getUnitNormalVector(const std::array<double, 3>& position) const override;
 
-  virtual std::shared_ptr<local_biology::CellElement> getCellElement() const;
+  virtual CellElement* getCellElement() const;
 
   virtual bool isRelative(const std::shared_ptr<PhysicalObject>& po) const;
 
@@ -244,7 +246,7 @@ class PhysicalSphere : public PhysicalObject {
   PhysicalSphere& operator=(const PhysicalSphere& other) = delete;
 
   /** Local biology object associated with this PhysicalSphere.*/
-  std::shared_ptr<local_biology::SomaElement> soma_element_ { nullptr };
+  SomaElement* soma_element_ = nullptr;
 
   /* The PhysicalCylinders attached to this sphere*/
   std::list<std::shared_ptr<PhysicalCylinder>> daughters_;

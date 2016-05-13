@@ -103,7 +103,7 @@ class Figure9Test : public BaseSimulationTest {
         double growth_speed = 75;
         double branch_probability = 0.003;
         double linearDiameterDecrease = 0.001;
-        std::shared_ptr<NeuriteElement> ne;
+        NeuriteElement* ne = nullptr;
         if (j == 0) {
           ne = cell->getSomaElement()->extendNewNeurite(3.0, Param::kPi * 0.5, angle_of_axon);
           ne->setAxon(true);

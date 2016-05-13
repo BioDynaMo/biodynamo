@@ -150,11 +150,11 @@ std::array<double, 3> PhysicalSphere::originOf(const std::shared_ptr<PhysicalObj
   };
 }
 
-std::shared_ptr<local_biology::SomaElement> PhysicalSphere::getSomaElement() const {
+SomaElement* PhysicalSphere::getSomaElement() const {
   return soma_element_;
 }
 
-void PhysicalSphere::setSomaElement(const std::shared_ptr<local_biology::SomaElement>& soma_element) {
+void PhysicalSphere::setSomaElement(SomaElement* soma_element) {
   if (soma_element != nullptr) {
     soma_element_ = soma_element;
   } else {
@@ -618,7 +618,7 @@ std::array<double, 3> PhysicalSphere::getUnitNormalVector(const std::array<doubl
   };
 }
 
-std::shared_ptr<local_biology::CellElement> PhysicalSphere::getCellElement() const {
+CellElement* PhysicalSphere::getCellElement() const {
   return getSomaElement();
 }
 

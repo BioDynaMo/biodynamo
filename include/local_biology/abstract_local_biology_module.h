@@ -33,11 +33,11 @@ class AbstractLocalBiologyModule : public LocalBiologyModule {
         "AbstractLocalBiologyModule::run must never be called - Java must provide implementation at this point");
   }
 
-  virtual std::shared_ptr<CellElement> getCellElement() const override {
+  virtual CellElement* getCellElement() const override {
     return cell_element_;
   }
 
-  virtual void setCellElement(const std::shared_ptr<CellElement>& cell_element) override {
+  virtual void setCellElement(CellElement* cell_element) override {
     cell_element_ = cell_element;
   }
 
@@ -67,7 +67,7 @@ class AbstractLocalBiologyModule : public LocalBiologyModule {
   }
 
  protected:
-  std::shared_ptr<CellElement> cell_element_;
+  CellElement* cell_element_ = nullptr;
 
  private:
   AbstractLocalBiologyModule(const AbstractLocalBiologyModule&) = delete;

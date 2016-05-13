@@ -3,6 +3,7 @@
 
 #include <array>
 #include <memory>
+#include <local_biology/neurite_element.h>
 
 #include "sim_state_serializable.h"
 
@@ -21,6 +22,8 @@ class ECM;
 }  // namespace simualtion
 
 namespace synapse {
+
+using local_biology::NeuriteElement;
 
 class Excrescence : public SimStateSerializable {
  public:
@@ -58,7 +61,7 @@ class Excrescence : public SimStateSerializable {
 
   virtual bool synapseWithSoma(Excrescence* other_excrescence, bool create_phyiscal_bond) = 0;
 
-  virtual bool synapseWithShaft(const std::shared_ptr<local_biology::NeuriteElement>& other_ne, double max_dis,
+  virtual bool synapseWithShaft(NeuriteElement* other_ne, double max_dis,
                                 int nr_segments, bool create_phyiscal_bond) = 0;
 
   // getters and setters
@@ -100,7 +103,7 @@ class Excrescence : public SimStateSerializable {
   int type_ = 0;  //fixme change to Excrescence::Type
 
   /** The neurite Element to which the shaft synapse is made */
-  std::shared_ptr<local_biology::NeuriteElement> ne_shaft_;
+  NeuriteElement* ne_shaft_;
 
  private:
   Excrescence(const Excrescence&) = delete;

@@ -99,10 +99,6 @@ class JavaUtil2 {
 
   std::shared_ptr<physics::PhysicalSphere> newPhysicalSphere() const;
 
-  std::shared_ptr<local_biology::NeuriteElement> newNeuriteElement() const;
-
-  std::shared_ptr<local_biology::SomaElement> newSomaElement() const;
-
   std::shared_ptr<physics::PhysicalBond> newPhysicalBond(const std::shared_ptr<physics::PhysicalObject>& a,
                                                          const std::array<double, 2>& position_on_a,
                                                          const std::shared_ptr<physics::PhysicalObject>& b,

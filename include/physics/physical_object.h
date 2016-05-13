@@ -8,6 +8,7 @@
 #include <memory>
 #include <exception>
 #include <unordered_map>
+#include <local_biology/cell_element.h>
 
 #include "param.h"
 #include "color.h"
@@ -28,6 +29,7 @@ class PhysicalCylinder;
 class InterObjectForce;
 class IntracellularSubstance;
 
+using local_biology::CellElement;
 using synapse::Excrescence;
 
 class PhysicalObject : public PhysicalNode {
@@ -79,7 +81,7 @@ class PhysicalObject : public PhysicalNode {
                               const std::shared_ptr<PhysicalObject>& newRelative) = 0;
 
   /** Returns the <code>CellElement</code>linked to this <code>PhysicalObject</code>.*/
-  virtual std::shared_ptr<local_biology::CellElement> getCellElement() const = 0;
+  virtual CellElement* getCellElement() const = 0;
 
   /** Adds an <code>Excrescence</code> instance to the Excrescence list of this
    * <code>PhysicalObject</code>.*/

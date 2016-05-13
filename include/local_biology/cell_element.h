@@ -30,8 +30,10 @@ class LocalBiologyModule;
 
 using cells::Cell;
 
-class CellElement : public SimStateSerializable, public std::enable_shared_from_this<CellElement> {
+class CellElement : public SimStateSerializable {
  public:
+  using UPtr = std::unique_ptr<CellElement>;
+
   static void reset();
 
   static void setECM(const std::shared_ptr<cx3d::simulation::ECM>& ecm);
@@ -43,8 +45,6 @@ class CellElement : public SimStateSerializable, public std::enable_shared_from_
   virtual StringBuilder& simStateToJson(StringBuilder& sb) const override;
 
   virtual std::string toString() const;
-
-  virtual bool equalTo(const std::shared_ptr<CellElement>& other) const;
 
   /** Adds the argument to the <code>LocalBiologyModule</code> list, and registers this as it's
    * <code>CellElements</code>.*/

@@ -75,7 +75,7 @@ bool PhysicalBouton::synapseWithSoma(Excrescence* other_excrescence, bool create
   return true;
 }
 
-bool PhysicalBouton::synapseWithShaft(const std::shared_ptr<local_biology::NeuriteElement>& other_ne, double max_dis,
+bool PhysicalBouton::synapseWithShaft(NeuriteElement* other_ne, double max_dis,
                                       int nr_segments, bool create_phyiscal_bond) {
   auto pc = other_ne->getPhysicalCylinder();
   double neLength = pc->getActualLength();
