@@ -86,8 +86,13 @@ class STLUtil {
    */
   template<typename T>
   static void vectorRemove(std::vector<T> &vector, const T &el) {
+    if (vector.empty()) {
+      return;
+    }
     auto it = std::find(vector.begin(), vector.end(), el);
-    vector.erase(it);
+    if (it != vector.end()) {
+      vector.erase(it);
+    }
   }
 
   /**
@@ -95,6 +100,9 @@ class STLUtil {
    */
   template<typename T>
   static void vectorRemove(std::vector<std::unique_ptr<T>> &vector, T* el) {
+    if (vector.empty()) {
+      return;
+    }
     auto it = vector.begin();
     while (it != vector.end()) {
       if ((*it).get() == el) {
@@ -102,7 +110,9 @@ class STLUtil {
       }
       it++;
     }
-    vector.erase(it);
+    if (it != vector.end()) {
+      vector.erase(it);
+    }
   }
 
  private:
