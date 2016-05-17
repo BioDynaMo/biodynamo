@@ -30,6 +30,7 @@ using cells::CellFactory;
 using local_biology::CellElement;
 using local_biology::NeuriteElement;
 using local_biology::LocalBiologyModule;
+using physics::PhysicalNode;
 using simulation::ECM;
 using simulation::Scheduler;
 using physics::PhysicalObject;
@@ -55,7 +56,7 @@ class Figure9Test : public BaseSimulationTest {
       loc[0] = -600 + 2 * 600 * java->matrixNextRandomDouble();
       loc[1] = -600 + 2 * 600 * java->matrixNextRandomDouble();
       loc[2] = -100 + 2 * 100 * java->matrixNextRandomDouble();
-      ecm->getPhysicalNodeInstance(loc);
+      physical_nodes_.push_back(ecm->createPhysicalNodeInstance(loc));
     }
 
     // set the inter object force

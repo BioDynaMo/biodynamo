@@ -83,7 +83,7 @@ class PhysicalNodeMovementListener : public spatial_organization::SpatialOrganiz
    */
   virtual void nodeAboutToBeAdded(
       const std::shared_ptr<SpaceNode<PhysicalNode>>& node, const std::array<double, 3>& planned_position,
-      const std::array<std::shared_ptr<PhysicalNode>, 4>& vertices_of_the_tetrahedron_containing_the_position) override;
+      const std::array<PhysicalNode*, 4>& vertices_of_the_tetrahedron_containing_the_position) override;
 
   virtual void nodeAdded(const std::shared_ptr<SpaceNode<PhysicalNode> >& node) override;
 
@@ -119,7 +119,7 @@ class PhysicalNodeMovementListener : public spatial_organization::SpatialOrganiz
   /**
    * all the neighbors of the PhysicalNode.
    */
-  std::list<std::shared_ptr<PhysicalNode>> neighbors_before_;
+  std::list<PhysicalNode*> neighbors_before_;
 };
 
 }  // namespace physics

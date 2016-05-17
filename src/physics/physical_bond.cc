@@ -16,16 +16,15 @@ std::shared_ptr<PhysicalBond> PhysicalBond::create() {
   return std::shared_ptr<PhysicalBond>(new PhysicalBond());
 }
 
-std::shared_ptr<PhysicalBond> PhysicalBond::create(const std::shared_ptr<PhysicalObject>& a,
-                                                   const std::shared_ptr<PhysicalObject>& b) {
+std::shared_ptr<PhysicalBond> PhysicalBond::create(PhysicalObject* a, PhysicalObject* b) {
   auto pb = std::shared_ptr<PhysicalBond>(new PhysicalBond());
   pb->init(a, b);
   return pb;
 }
 
-std::shared_ptr<PhysicalBond> PhysicalBond::create(const std::shared_ptr<PhysicalObject>& a,
+std::shared_ptr<PhysicalBond> PhysicalBond::create(PhysicalObject* a,
                                                    const std::array<double, 2>& position_on_a,
-                                                   const std::shared_ptr<PhysicalObject>& b,
+                                                   PhysicalObject* b,
                                                    const std::array<double, 2>& position_on_b, double resting_length,
                                                    double spring_constant) {
   auto pb = std::shared_ptr<PhysicalBond>(new PhysicalBond());
@@ -36,7 +35,7 @@ std::shared_ptr<PhysicalBond> PhysicalBond::create(const std::shared_ptr<Physica
 PhysicalBond::PhysicalBond() {
 }
 
-void PhysicalBond::init(const std::shared_ptr<PhysicalObject>& a, const std::shared_ptr<PhysicalObject>& b) {
+void PhysicalBond::init(PhysicalObject* a, PhysicalObject* b) {
   dolocking(a, b);
   //fixme critical
 //  origin_on_a_ = a_->transformCoordinatesGlobalToPolar(a_->getMassLocation());
@@ -48,8 +47,8 @@ void PhysicalBond::init(const std::shared_ptr<PhysicalObject>& a, const std::sha
   past_length_ = resting_length_;
 }
 
-void PhysicalBond::init(const std::shared_ptr<PhysicalObject>& a, const std::array<double, 2>& position_on_a,
-                        const std::shared_ptr<PhysicalObject>& b, const std::array<double, 2>& position_on_b,
+void PhysicalBond::init(PhysicalObject* a, const std::array<double, 2>& position_on_a, PhysicalObject* b,
+                        const std::array<double, 2>& position_on_b,
                         double resting_length, double spring_constant) {
   dolocking(a, b);
   origin_on_a_ = position_on_a;
@@ -60,19 +59,19 @@ void PhysicalBond::init(const std::shared_ptr<PhysicalObject>& a, const std::arr
   past_length_ = resting_length;
 }
 
-std::shared_ptr<PhysicalObject> PhysicalBond::getFirstPhysicalObject() {
+PhysicalObject* PhysicalBond::getFirstPhysicalObject() {
   return a_;
 }
 
-std::shared_ptr<PhysicalObject> PhysicalBond::getSecondPhysicalObject() {
+PhysicalObject* PhysicalBond::getSecondPhysicalObject() {
   return a_;
 }
 
-void PhysicalBond::setFirstPhysicalObject(const std::shared_ptr<PhysicalObject>& a) {
+void PhysicalBond::setFirstPhysicalObject(PhysicalObject* a) {
   a_ = a;
 }
 
-void PhysicalBond::setSecondPhysicalObject(const std::shared_ptr<PhysicalObject>& b) {
+void PhysicalBond::setSecondPhysicalObject(PhysicalObject* b) {
   b_ = b;
 }
 
@@ -100,8 +99,7 @@ void PhysicalBond::setSlidingAllowed(bool sliding_allowed) {
   sliding_allowed_ = sliding_allowed;
 }
 
-void PhysicalBond::exchangePhysicalObject(const std::shared_ptr<PhysicalObject>& oldPo,
-                                          const std::shared_ptr<PhysicalObject>& newPo) {
+void PhysicalBond::exchangePhysicalObject(PhysicalObject* oldPo, PhysicalObject* newPo) {
 
   if (oldPo == a_) {
     a_ = newPo;
@@ -118,7 +116,7 @@ void PhysicalBond::vanish() {
   b_->removePhysicalBond(this->shared_from_this());
 }
 
-std::shared_ptr<PhysicalObject> PhysicalBond::getOppositePhysicalObject(const std::shared_ptr<PhysicalObject>& po) {
+PhysicalObject* PhysicalBond::getOppositePhysicalObject(PhysicalObject* po) {
   if (po == a_) {
     return b_;
   } else {
@@ -126,7 +124,7 @@ std::shared_ptr<PhysicalObject> PhysicalBond::getOppositePhysicalObject(const st
   }
 }
 
-void PhysicalBond::setPositionOnObjectInLocalCoord(const std::shared_ptr<PhysicalObject>& po,
+void PhysicalBond::setPositionOnObjectInLocalCoord(PhysicalObject* po,
                                                    const std::array<double, 2>& positionInLocalCoordinates) {
   if (po == a_) {
     origin_on_a_ = positionInLocalCoordinates;
@@ -135,7 +133,7 @@ void PhysicalBond::setPositionOnObjectInLocalCoord(const std::shared_ptr<Physica
   }
 }
 
-std::array<double, 2> PhysicalBond::getPositionOnObjectInLocalCoord(const std::shared_ptr<PhysicalObject>& po) {
+std::array<double, 2> PhysicalBond::getPositionOnObjectInLocalCoord(PhysicalObject* po) {
   if (po == a_) {
     return origin_on_a_;
   } else {
@@ -143,7 +141,7 @@ std::array<double, 2> PhysicalBond::getPositionOnObjectInLocalCoord(const std::s
   }
 }
 
-std::array<double, 4> PhysicalBond::getForceOn(const std::shared_ptr<PhysicalObject>& po) {
+std::array<double, 4> PhysicalBond::getForceOn(PhysicalObject* po) {
   // 0. Find if this physicalBound has an effect at all on the object
   if ((po == a_ && !has_effect_on_a_) || (po == b_ && !has_effect_on_b_))
     return std::array<double, 4>( { 0.0, 0.0, 0.0, 0.0 });
@@ -157,7 +155,7 @@ std::array<double, 4> PhysicalBond::getForceOn(const std::shared_ptr<PhysicalObj
   // 3'. If sliding along the other object is possible,
   // only the component perpendicular to the xAxis of the other object is taken into account
   if (po == a_ && sliding_allowed_ && other_po->isAPhysicalCylinder()) {
-    auto pc = std::static_pointer_cast<PhysicalCylinder>(other_po);
+    auto pc = static_cast<PhysicalCylinder*>(other_po);
     double proj_norm = Matrix::dot(forceDirection, other_po->getXAxis());
     auto parallel_component = Matrix::scalarMult(proj_norm, other_po->getXAxis());
 //      forceDirection = subtract(forceDirection,parallelComponent);
@@ -174,7 +172,7 @@ std::array<double, 4> PhysicalBond::getForceOn(const std::shared_ptr<PhysicalObj
     } else if (new_position_on_other_po[0] < -1) {
       auto mo = pc->getMother();
       if (mo->isAPhysicalCylinder()) {
-        auto m = std::static_pointer_cast<PhysicalCylinder>(mo);
+        auto m = static_cast<PhysicalCylinder*>(mo);
         exchangePhysicalObject(pc, m);
         new_position_on_other_po[0] = m->getActualLength() + new_position_on_other_po[0];
       } else {
@@ -196,7 +194,7 @@ std::array<double, 4> PhysicalBond::getForceOn(const std::shared_ptr<PhysicalObj
   // 4. Return it
   // TODO : cleaner way to to this...
   if (po->isAPhysicalCylinder()) {
-    auto pc = std::static_pointer_cast<PhysicalCylinder>(po);
+    auto pc = static_cast<PhysicalCylinder*>(po);
 //      return new double[] {force[0], force[1], force[2], 1-(getPositionOnObjectInLocalCoord(po)[0]/pc.getActualLength()) };
     double p = 1 - (getPositionOnObjectInLocalCoord(po)[0] / pc->getActualLength());
     if (p > 0.8) {
@@ -279,7 +277,7 @@ StringBuilder& PhysicalBond::simStateToJson(StringBuilder& sb) const {
   return sb;
 }
 
-void PhysicalBond::dolocking(const std::shared_ptr<PhysicalObject>& a, const std::shared_ptr<PhysicalObject>& b) {
+void PhysicalBond::dolocking(PhysicalObject* a, PhysicalObject* b) {
   a_ = a;
   b_ = b;
   a_->addPhysicalBond(this->shared_from_this());

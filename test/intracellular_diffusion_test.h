@@ -27,6 +27,7 @@ using local_biology::CellElement;
 using local_biology::NeuriteElement;
 using local_biology::LocalBiologyModule;
 using local_biology::AbstractLocalBiologyModule;
+using physics::PhysicalNode;
 using physics::Substance;
 using physics::IntracellularSubstance;
 using simulation::ECM;
@@ -148,7 +149,7 @@ class IntracellularDiffusionTest : public BaseSimulationTest {
     java->initPhysicalNodeMovementListener();
 
     for (int i = 0; i < 18; i++) {
-      ecm->getPhysicalNodeInstance(java->matrixRandomNoise3(500));
+      physical_nodes_.push_back(ecm->createPhysicalNodeInstance(java->matrixRandomNoise3(500)));
     }
 
     // defining the templates for the intracellular substance

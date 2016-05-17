@@ -33,7 +33,7 @@ std::shared_ptr<SpaceNode<T>> Edge<T>::getOpposite(
 }
 
 template<class T>
-std::shared_ptr<T> Edge<T>::getOppositeElement(const std::shared_ptr<T>& element) const {
+T* Edge<T>::getOppositeElement(T* element) const {
   if (a_.get() != nullptr && b_.get() != nullptr) {
     if (element == a_->getUserObject()) {
       return b_->getUserObject();
@@ -41,16 +41,16 @@ std::shared_ptr<T> Edge<T>::getOppositeElement(const std::shared_ptr<T>& element
       return a_->getUserObject();
     }
   }
-  return std::shared_ptr<T>(nullptr);
+  return nullptr;
 }
 
 template<class T>
-std::shared_ptr<T> Edge<T>::getFirstElement() const {
+T* Edge<T>::getFirstElement() const {
   return a_->getUserObject();
 }
 
 template<class T>
-std::shared_ptr<T> Edge<T>::getSecondElement() const {
+T* Edge<T>::getSecondElement() const {
   return b_->getUserObject();
 }
 

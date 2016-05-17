@@ -25,6 +25,7 @@ using cells::CellFactory;
 using local_biology::CellElement;
 using local_biology::NeuriteElement;
 using local_biology::LocalBiologyModule;
+using physics::PhysicalNode;
 using simulation::ECM;
 using simulation::Scheduler;
 
@@ -123,7 +124,7 @@ class RandomBranchingModuleTest : public BaseSimulationTest {
     java->initPhysicalNodeMovementListener();
 
     for (int i = 0; i < 18; i++) {
-      ecm->getPhysicalNodeInstance(java->matrixRandomNoise3(1000));
+      physical_nodes_.push_back(ecm->createPhysicalNodeInstance(java->matrixRandomNoise3(1000)));
     }
     java->setRandomSeed1(7L);
     for (int i = 0; i < 1; i++) {

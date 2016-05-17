@@ -67,7 +67,7 @@ SpaceNode<T>::SpaceNode()
 
 template<class T>
 SpaceNode<T>::SpaceNode(const std::array<double, 3>& position,
-                        const std::shared_ptr<T> content)
+                        T* content)
     : id_(SpaceNode::id_counter_++),
       content_(content),
       listeners_(),
@@ -79,7 +79,7 @@ SpaceNode<T>::SpaceNode(const std::array<double, 3>& position,
 
 template<class T>
 SpaceNode<T>::SpaceNode(double x, double y, double z,
-                        const std::shared_ptr<T> content)
+                        T* content)
     : id_(SpaceNode::id_counter_++),
       content_(content),
       listeners_(),
@@ -101,8 +101,8 @@ std::list<std::shared_ptr<Edge<T> > > SpaceNode<T>::getEdges() const {
 }
 
 template<class T>
-std::list<std::shared_ptr<T> > SpaceNode<T>::getNeighbors() const {
-  std::list<std::shared_ptr<T>> result;
+std::list<T*> SpaceNode<T>::getNeighbors() const {
+  std::list<T*> result;
   for (auto e : adjacent_edges_) {
     result.push_back(e->getOpposite(this->shared_from_this())->getUserObject());
   }
@@ -112,7 +112,7 @@ std::list<std::shared_ptr<T> > SpaceNode<T>::getNeighbors() const {
 template<class T>
 std::shared_ptr<SpaceNode<T> > SpaceNode<T>::getNewInstance(
     const std::array<double, 3>& position,
-    const std::shared_ptr<T>& user_object) {
+    T* user_object) {
   // create a new SpaceNode:
   auto insert_point = std::shared_ptr<SpaceNode<T> >(
       SpaceNode<T>::create(position, user_object));
@@ -150,8 +150,8 @@ std::shared_ptr<SpaceNode<T> > SpaceNode<T>::getNewInstance(
 }
 
 template<class T>
-std::list<std::shared_ptr<T> > SpaceNode<T>::getPermanentListOfNeighbors() const {
-  std::list<std::shared_ptr<T> > ret;
+std::list<T*> SpaceNode<T>::getPermanentListOfNeighbors() const {
+  std::list<T*> ret;
   for (auto e : adjacent_edges_) {
     auto opp = e->getOpposite(this->shared_from_this());
     if (opp != nullptr) {
@@ -167,18 +167,18 @@ std::array<double, 3> SpaceNode<T>::getPosition() const {
 }
 
 template<class T>
-std::shared_ptr<T> SpaceNode<T>::getUserObject() const {
+T* SpaceNode<T>::getUserObject() const {
   return content_;
 }
 
 template<class T>
-std::array<std::shared_ptr<T>, 4> SpaceNode<T>::getVerticesOfTheTetrahedronContaining(
+std::array<T*, 4> SpaceNode<T>::getVerticesOfTheTetrahedronContaining(
     const std::array<double, 3>& position,
     std::array<int, 1>& returned_null) const {
   returned_null[0] = 0;
   if (adjacent_tetrahedra_.empty()) {
     returned_null[0] = 1;
-    return std::array<std::shared_ptr<T>, 4>();
+    return std::array<T*, 4>();
   }
   auto insertion_tetrahedron = adjacent_tetrahedra_.front();
   if (insertion_tetrahedron->isInfinite()) {
@@ -202,9 +202,9 @@ std::array<std::shared_ptr<T>, 4> SpaceNode<T>::getVerticesOfTheTetrahedronConta
   }
   if (insertion_tetrahedron->isInfinite()) {
     returned_null[0] = 1;
-    return std::array<std::shared_ptr<T>, 4>();
+    return std::array<T*, 4>();
   }
-  std::array<std::shared_ptr<T>, 4> ret;
+  std::array<T*, 4> ret;
   auto cnt = 0;
   for (auto node : insertion_tetrahedron->getAdjacentNodes()) {
     if (node != nullptr) {

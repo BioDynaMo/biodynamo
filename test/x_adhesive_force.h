@@ -30,8 +30,8 @@ class XAdhesiveForce : public InterObjectForce {
   XAdhesiveForce(const XAdhesiveForce&) = delete;
   XAdhesiveForce& operator=(const XAdhesiveForce&) = delete;
 
-  std::array<double, 3> forceOnASphereFromASphere(const std::shared_ptr<PhysicalSphere>& sphere1,
-                                                  const std::shared_ptr<PhysicalSphere>& sphere2) const override {
+  std::array<double, 3> forceOnASphereFromASphere(PhysicalSphere* sphere1,
+                                                  PhysicalSphere* sphere2) const override {
     // defining center and radius of spheres
     auto c_1 = sphere1->getMassLocation();
     double r_1 = 0.5 * sphere1->getDiameter();
@@ -65,8 +65,8 @@ class XAdhesiveForce : public InterObjectForce {
     }
   }
 
-  std::array<double, 4> forceOnACylinderFromASphere(const std::shared_ptr<PhysicalCylinder>& cylinder,
-                                                    const std::shared_ptr<PhysicalSphere>& sphere) const override {
+  std::array<double, 4> forceOnACylinderFromASphere(PhysicalCylinder* cylinder,
+                                                    PhysicalSphere* sphere) const override {
     // define some geometrical values
     auto p_p = cylinder->proximalEnd();
     auto p_d = cylinder->distalEnd();
@@ -129,15 +129,15 @@ class XAdhesiveForce : public InterObjectForce {
     return {force[0], force[1], force[2], proportion_transmited_to_proximal_end};
   }
 
-  std::array<double, 3> forceOnASphereFromACylinder(const std::shared_ptr<PhysicalSphere>& sphere,
-                                                    const std::shared_ptr<PhysicalCylinder>& cylinder) const override {
+  std::array<double, 3> forceOnASphereFromACylinder(PhysicalSphere* sphere,
+                                                    PhysicalCylinder* cylinder) const override {
     // it is the opposite of force on a cylinder from sphere:
     auto temp = forceOnACylinderFromASphere(cylinder, sphere);
     return {-temp[0], -temp[1], -temp[2]};
   }
 
-  std::array<double, 4> forceOnACylinderFromACylinder(const std::shared_ptr<PhysicalCylinder>& cylinder1,
-                                                      const std::shared_ptr<PhysicalCylinder>& cylinder2) const
+  std::array<double, 4> forceOnACylinderFromACylinder(PhysicalCylinder* cylinder1,
+                                                      PhysicalCylinder* cylinder2) const
                                                           override {
     // define some geometrical values
     auto a = cylinder1->proximalEnd();

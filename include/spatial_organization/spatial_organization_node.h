@@ -36,20 +36,20 @@ class SpatialOrganizationNode {
    */
   virtual std::list<std::shared_ptr<Edge<T>> > getEdges() const = 0;  //TODO change to SpatialOrganizationEdge once porting has been finished
 
-  virtual std::list<std::shared_ptr<T>> getNeighbors() const = 0;
+  virtual std::list<T*> getNeighbors() const = 0;
 
   // todo change to interface type
   virtual std::shared_ptr<SpaceNode<T>> getNewInstance(
       const std::array<double, 3>& position,
-      const std::shared_ptr<T>& user_object) = 0;
+      T* user_object) = 0;
 
-  virtual std::list<std::shared_ptr<T>> getPermanentListOfNeighbors() const = 0;
+  virtual std::list<T*> getPermanentListOfNeighbors() const = 0;
 
   virtual std::array<double, 3> getPosition() const = 0;
 
-  virtual std::shared_ptr<T> getUserObject() const = 0;
+  virtual T* getUserObject() const = 0;
 
-  virtual std::array<std::shared_ptr<T>, 4> getVerticesOfTheTetrahedronContaining(
+  virtual std::array<T*, 4> getVerticesOfTheTetrahedronContaining(
       const std::array<double, 3>& position, std::array<int, 1>& returned_null) const = 0;
 
   virtual double getVolume() const = 0;

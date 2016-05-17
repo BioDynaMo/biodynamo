@@ -1,4 +1,3 @@
-#include <simulation/ecm.h>
 #include "cells/cell.h"
 
 #include "matrix.h"

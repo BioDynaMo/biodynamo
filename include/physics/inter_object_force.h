@@ -28,8 +28,7 @@ class InterObjectForce : public SimStateSerializable {
    * @param sphere_2
    * @return
    */
-  virtual std::array<double, 3> forceOnASphereFromASphere(const std::shared_ptr<PhysicalSphere>& sphere_1,
-                                                          const std::shared_ptr<PhysicalSphere>& sphere_2) const{ //todo change =0 after porting has been finished
+  virtual std::array<double, 3> forceOnASphereFromASphere(PhysicalSphere* sphere_1, PhysicalSphere* sphere_2) const {  //todo change =0 after porting has been finished
     throw std::logic_error("InterObjectForce::forceOnASphereFromASphere");
   }
 
@@ -42,8 +41,7 @@ class InterObjectForce : public SimStateSerializable {
    * (= the point mass of the mother).
    *
    */
-  virtual std::array<double, 4> forceOnACylinderFromASphere(const std::shared_ptr<PhysicalCylinder>& cylinder,
-                                                            const std::shared_ptr<PhysicalSphere>& sphere) const{ //todo change =0 after porting has been finished
+  virtual std::array<double, 4> forceOnACylinderFromASphere(PhysicalCylinder* cylinder, PhysicalSphere* sphere) const {  //todo change =0 after porting has been finished
     throw std::logic_error("InterObjectForce::forceOnACylinderFromASphere must no be called - Java must provide implementation");
   }
 
@@ -54,7 +52,7 @@ class InterObjectForce : public SimStateSerializable {
    * @return
    */
   virtual std::array<double, 3> forceOnASphereFromACylinder(
-      const std::shared_ptr<PhysicalSphere>& sphere, const std::shared_ptr<PhysicalCylinder>& cylinder) const { //todo change =0 after porting has been finished
+      PhysicalSphere* sphere, PhysicalCylinder* cylinder) const {  //todo change =0 after porting has been finished
     throw std::logic_error("InterObjectForce::forceOnASphereFromACylinder must no be called - Java must provide implementation");
   }
 
@@ -67,7 +65,8 @@ class InterObjectForce : public SimStateSerializable {
    * of cylinder1 (= the point mass of the mother).
    */
   virtual std::array<double, 4> forceOnACylinderFromACylinder(
-      const std::shared_ptr<PhysicalCylinder>& cylinder1, const std::shared_ptr<PhysicalCylinder>& cylinder2) const { //todo change =0 after porting has been finished
+      PhysicalCylinder* cylinder1,
+                                                              PhysicalCylinder* cylinder2) const {  //todo change =0 after porting has been finished
     throw std::logic_error("InterObjectForce::forceOnACylinderFromACylinder must no be called - Java must provide implementation");
   }
 

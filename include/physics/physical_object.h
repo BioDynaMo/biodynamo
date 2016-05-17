@@ -8,7 +8,6 @@
 #include <memory>
 #include <exception>
 #include <unordered_map>
-#include <local_biology/cell_element.h>
 
 #include "param.h"
 #include "color.h"
@@ -34,6 +33,8 @@ using synapse::Excrescence;
 
 class PhysicalObject : public PhysicalNode {
  public:
+  using UPtr = std::unique_ptr<PhysicalObject>;
+
   /** The class computing the inter object force.*/
   static std::shared_ptr<InterObjectForce> getInterObjectForce();
 
@@ -54,7 +55,7 @@ class PhysicalObject : public PhysicalNode {
    * Returns true if this <code>PhysicalObject</code> and the <code>PhysicalObject</code> given as
    * argument have a mother-daughter or sister-sister (e.g. two daughters of a same mother) relation.
    */
-  virtual bool isRelative(const std::shared_ptr<PhysicalObject>& po) const = 0;
+  virtual bool isRelative(PhysicalObject* po) const = 0;
 
   /**
    * Returns the absolute coordinates of the location where a <code>PhysicalObject</code> is attached
@@ -64,12 +65,12 @@ class PhysicalObject : public PhysicalNode {
    * @param daughterWhoAsks the PhysicalObject attached to us.
    * @return the coord
    */
-  virtual std::array<double, 3> originOf(const std::shared_ptr<PhysicalObject>& daughterWhoAsks) = 0;
+  virtual std::array<double, 3> originOf(PhysicalObject* daughterWhoAsks) = 0;
 
   /**
    * Removal of a <code>PhysicalObject</code> from the list of our daughters.
    * (Mainly in case of complete retraction of the daughter.*/
-  virtual void removeDaugther(const std::shared_ptr<PhysicalObject>& daughterToRemove) = 0;
+  virtual void removeDaugther(PhysicalObject* daughterToRemove) = 0;
 
   /**
    * Convenient way to change family links in the neuron tree structure
@@ -77,8 +78,7 @@ class PhysicalObject : public PhysicalNode {
    * retraction for intercalation/removal of elements.
    * of elements.
    */
-  virtual void updateRelative(const std::shared_ptr<PhysicalObject>& oldRelative,
-                              const std::shared_ptr<PhysicalObject>& newRelative) = 0;
+  virtual void updateRelative(PhysicalObject* oldRelative, PhysicalObject* newRelative) = 0;
 
   /** Returns the <code>CellElement</code>linked to this <code>PhysicalObject</code>.*/
   virtual CellElement* getCellElement() const = 0;
@@ -119,7 +119,7 @@ class PhysicalObject : public PhysicalNode {
    * @param c
    * @return
    */
-  virtual std::array<double, 4> getForceOn(const std::shared_ptr<PhysicalCylinder>& c) = 0;
+  virtual std::array<double, 4> getForceOn(PhysicalCylinder* c) = 0;
 
   /**
    * Returns the inter-object force that the <code>PhysicalObject</code> in which the method is called applies
@@ -127,7 +127,7 @@ class PhysicalObject : public PhysicalNode {
    * @param s
    * @return
    */
-  virtual std::array<double, 3> getForceOn(const std::shared_ptr<PhysicalSphere>& s) = 0;
+  virtual std::array<double, 3> getForceOn(PhysicalSphere* s) = 0;
 
   /**
    * Returns true if this <code>PhysicalObject</code> is in contact, i.e. if it is
@@ -135,13 +135,13 @@ class PhysicalObject : public PhysicalNode {
    * @param o
    * @return
    */
-  virtual bool isInContact(const std::shared_ptr<PhysicalObject>& o);
+  virtual bool isInContact(PhysicalObject* o);
 
   /**
    * Returns all the neighboring objects considered as being in contact with this PhysicalObject.
    * @return
    */
-  virtual std::list<std::shared_ptr<PhysicalObject>> getPhysicalObjectsInContact();  //todo change to vector
+  virtual std::list<PhysicalObject*> getPhysicalObjectsInContact();  //todo change to vector
 
   /**
    * Returns the position in the local coordinate system (xAxis, yXis, zAxis)
@@ -186,7 +186,7 @@ class PhysicalObject : public PhysicalNode {
   virtual void removePhysicalBond(const std::shared_ptr<PhysicalBond>& bond);
 
   /** Returns true if there is a PhysicalBond that fixes me to this other PhysicalObject.*/
-  virtual bool getHasAPhysicalBondWith(const std::shared_ptr<PhysicalObject>& po);
+  virtual bool getHasAPhysicalBondWith(PhysicalObject* po);
 
   /**
    * Creates a new PhysicalBond between this PhysicalObject and the one given as argument.
@@ -194,7 +194,7 @@ class PhysicalObject : public PhysicalNode {
    * @param po
    * @return
    */
-  virtual std::shared_ptr<PhysicalBond> makePhysicalBondWith(const std::shared_ptr<PhysicalObject>& po);
+  virtual std::shared_ptr<PhysicalBond> makePhysicalBondWith(PhysicalObject* po);
 
   /**
    * If there is a PhysicalBond between this PhysicalObject and po,
@@ -203,7 +203,7 @@ class PhysicalObject : public PhysicalNode {
    * @param removeThemAll if true, makes multiple removals (if multiple bonds)
    * @return true if at least one PhysicalBond was removed
    */
-  virtual bool removePhysicalBondWith(const std::shared_ptr<PhysicalObject>& po, bool removeThemAll);
+  virtual bool removePhysicalBondWith(PhysicalObject* po, bool removeThemAll);
 
   // *************************************************************************************
   // *      METHODS FOR DIFFUSION (INTRA-CELLULAR & MEMBRANE-BOUNDED SUBSTANCES)         *
@@ -266,7 +266,7 @@ class PhysicalObject : public PhysicalNode {
 
   /* Diffusion of diffusible IntracellularSubstances between two PhysicalObjects.
    */
-  virtual void diffuseWithThisPhysicalObjects(const std::shared_ptr<PhysicalObject>& po, double distance);
+  virtual void diffuseWithThisPhysicalObjects(PhysicalObject* po, double distance);
 
   // *************************************************************************************
   // *      GETTERS & SETTERS                                                            *
@@ -456,7 +456,7 @@ class PhysicalObject : public PhysicalNode {
    * @return the force in a std::array<double, 3>
    */
   virtual std::array<double, 3> forceTransmittedFromDaugtherToMother(
-      const std::shared_ptr<PhysicalObject>& motherWhoAsks) = 0;
+      PhysicalObject* motherWhoAsks) = 0;
 
   /**
    * Returns true if this <code>PhysicalObject</code> and the <code>PhysicalSphere</code> given as
@@ -464,7 +464,7 @@ class PhysicalObject : public PhysicalNode {
    * @param s
    * @return
    */
-  virtual bool isInContactWithSphere(const std::shared_ptr<PhysicalSphere>& s) = 0;
+  virtual bool isInContactWithSphere(PhysicalSphere* s) = 0;
 
   /**
    * Returns true if this <code>PhysicalObject</code> and the <code>PhysicalSphere</code> given as
@@ -472,7 +472,7 @@ class PhysicalObject : public PhysicalNode {
    * @param c
    * @return
    */
-  virtual bool isInContactWithCylinder(const std::shared_ptr<PhysicalCylinder>& c) = 0;
+  virtual bool isInContactWithCylinder(PhysicalCylinder* c) = 0;
 
   /** Recompute volume after diameter has changed.*/
   virtual void updateVolume() = 0;

@@ -346,14 +346,13 @@ std::array<std::shared_ptr<Tetrahedron<T> >, 2> Tetrahedron<T>::flip3to2(
 }
 
 template<class T>
-std::array<std::shared_ptr<T>, 4> Tetrahedron<T>::getVerticeContents() const {
-  std::array<std::shared_ptr<T>, 4> ret;
+std::array<T*, 4> Tetrahedron<T>::getVerticeContents() const {
+  std::array<T*, 4> ret;
   for (size_t i = 0; i < 4; i++) {
     if (adjacent_nodes_[i] != nullptr) {
       ret[i] = adjacent_nodes_[i]->getUserObject();
     } else {
-      std::shared_ptr<T> null_T(nullptr);
-      ret[i] = null_T; // todo - should be return null!
+      ret[i] = nullptr; // todo - should be return null!
     }
   }
   return ret;

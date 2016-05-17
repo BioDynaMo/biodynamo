@@ -2,11 +2,13 @@
 #define BASE_SIMULATION_TEST_H_
 
 #include <string>
+#include <vector>
 
 #include "gtest/gtest.h"
 
 #include "java_util.h"
 #include "simulation/ecm.h"
+#include "physics/physical_node.h"
 
 namespace cx3d {
 
@@ -53,6 +55,12 @@ class BaseSimulationTest : public ::testing::Test {
   void run();
 
  protected:
+  /**
+   * holds instances additional instances of PhysicalNode that are created during the simulation
+   * and are not an instanceof PhysicalCylinder and PhysicalSphere
+   */
+  std::vector<physics::PhysicalNode::UPtr> physical_nodes_;
+
   /**
    * Simulation logic defined in the subclass
    */

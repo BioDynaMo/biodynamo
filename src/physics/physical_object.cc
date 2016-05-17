@@ -67,19 +67,19 @@ void PhysicalObject::removeExcrescence(Excrescence* ex) {
   STLUtil::vectorRemove(excrescences_, ex);
 }
 
-bool PhysicalObject::isInContact(const std::shared_ptr<PhysicalObject>& o){
+bool PhysicalObject::isInContact(PhysicalObject* o) {
   if (o->isAPhysicalSphere()) {
-    return isInContactWithSphere(std::static_pointer_cast<PhysicalSphere>(o));
+    return isInContactWithSphere(static_cast<PhysicalSphere*>(o));
   } else {
-    return isInContactWithCylinder(std::static_pointer_cast<PhysicalCylinder>(o));
+    return isInContactWithCylinder(static_cast<PhysicalCylinder*>(o));
   }
 }
 
-std::list<std::shared_ptr<PhysicalObject>> PhysicalObject::getPhysicalObjectsInContact(){
-  std::list<std::shared_ptr<PhysicalObject> > po;
+std::list<PhysicalObject*> PhysicalObject::getPhysicalObjectsInContact() {
+  std::list<PhysicalObject*> po;
   for (auto n : getSoNode()->getNeighbors()) {
-    if (n->isAPhysicalObject() && isInContact(std::static_pointer_cast<PhysicalObject>(n))) {
-      po.push_back(std::static_pointer_cast<PhysicalObject>(n));
+    if (n->isAPhysicalObject() && isInContact(static_cast<PhysicalObject*>(n))) {
+      po.push_back(static_cast<PhysicalObject*>(n));
     }
   }
   return po;
@@ -107,26 +107,26 @@ void PhysicalObject::removePhysicalBond(const std::shared_ptr<PhysicalBond>& bon
   physical_bonds_.remove(bond);
 }
 
-bool PhysicalObject::getHasAPhysicalBondWith(const std::shared_ptr<PhysicalObject>& po) {
+bool PhysicalObject::getHasAPhysicalBondWith(PhysicalObject* po) {
   for (auto pb : physical_bonds_) {
-    if (po == pb->getOppositePhysicalObject(std::static_pointer_cast<PhysicalObject>(this->shared_from_this()))) {
+    if (po == pb->getOppositePhysicalObject(this)) {
       return true;
     }
   }
   return false;
 }
 
-std::shared_ptr<PhysicalBond> PhysicalObject::makePhysicalBondWith(const std::shared_ptr<PhysicalObject>& po) {
-  return PhysicalBond::create(std::static_pointer_cast<PhysicalObject>(this->shared_from_this()), po);
+std::shared_ptr<PhysicalBond> PhysicalObject::makePhysicalBondWith(PhysicalObject* po) {
+  return PhysicalBond::create(this, po);
 }
 
-bool PhysicalObject::removePhysicalBondWith(const std::shared_ptr<PhysicalObject>& po, bool removeThemAll) {
+bool PhysicalObject::removePhysicalBondWith(PhysicalObject* po, bool removeThemAll) {
   bool there_was_a_bond = false;
   std::size_t i = 0;
   auto it = physical_bonds_.begin();
   while (it != physical_bonds_.end()) {
     auto pb = *it;
-    if (po == pb->getOppositePhysicalObject(std::static_pointer_cast<PhysicalObject>(this->shared_from_this()))) {
+    if (po == pb->getOppositePhysicalObject(this)) {
       physical_bonds_.remove(*it);
       po->physical_bonds_.remove(pb);
       if (!removeThemAll) {
@@ -203,7 +203,7 @@ std::shared_ptr<IntracellularSubstance> PhysicalObject::giveYouIntracellularSubs
   return s;
 }
 
-void PhysicalObject::diffuseWithThisPhysicalObjects(const std::shared_ptr<PhysicalObject>& po, double distance) {
+void PhysicalObject::diffuseWithThisPhysicalObjects(PhysicalObject* po, double distance) {
   // We store these temporary variable, because we still don't know if the
   // Substances depend on volumes or not
 

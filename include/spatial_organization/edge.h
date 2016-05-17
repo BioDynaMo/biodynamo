@@ -81,17 +81,17 @@ class Edge : public SpatialOrganizationEdge<T>, public std::enable_shared_from_t
   /**
    * {@inheritDoc}
    */
-  std::shared_ptr<T> getOppositeElement(const std::shared_ptr<T>& first) const override;
+  T* getOppositeElement(T* first) const override;
 
   /**
    * {@inheritDoc}
    */
-  std::shared_ptr<T> getFirstElement() const override;
+  T* getFirstElement() const override;
 
   /**
    * {@inheritDoc}
    */
-  std::shared_ptr<T> getSecondElement() const override;
+  T* getSecondElement() const override;
 
   /**
    * {@inheritDoc}

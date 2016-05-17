@@ -23,8 +23,7 @@ StringBuilder& DefaultForce::simStateToJson(StringBuilder& sb) const {
   return sb;
 }
 
-std::array<double, 3> DefaultForce::forceOnASphereFromASphere(const std::shared_ptr<PhysicalSphere>& sphere1,
-                                                              const std::shared_ptr<PhysicalSphere>& sphere2) const {
+std::array<double, 3> DefaultForce::forceOnASphereFromASphere(PhysicalSphere* sphere1, PhysicalSphere* sphere2) const {
   auto c1 = sphere1->getMassLocation();
   double r1 = 0.5 * sphere1->getDiameter();
   auto c2 = sphere2->getMassLocation();
@@ -61,8 +60,8 @@ std::array<double, 3> DefaultForce::forceOnASphereFromASphere(const std::shared_
   }
 }
 
-std::array<double, 4> DefaultForce::forceOnACylinderFromASphere(const std::shared_ptr<PhysicalCylinder>& cylinder,
-                                                                const std::shared_ptr<PhysicalSphere>& sphere) const {
+std::array<double, 4> DefaultForce::forceOnACylinderFromASphere(PhysicalCylinder* cylinder,
+                                                                PhysicalSphere* sphere) const {
   auto pP = cylinder->proximalEnd();
   auto pD = cylinder->distalEnd();
   auto axis = cylinder->getSpringAxis();
@@ -123,15 +122,15 @@ std::array<double, 4> DefaultForce::forceOnACylinderFromASphere(const std::share
   return std::array<double, 4> { force[0], force[1], force[2], proportionTransmitedToProximalEnd };
 }
 
-std::array<double, 3> DefaultForce::forceOnASphereFromACylinder(const std::shared_ptr<PhysicalSphere>& sphere,
-                                                                const std::shared_ptr<PhysicalCylinder>& cylinder) const {
+std::array<double, 3> DefaultForce::forceOnASphereFromACylinder(PhysicalSphere* sphere,
+                                                                PhysicalCylinder* cylinder) const {
   // it is the opposite of force on a cylinder from sphere:
   auto temp = forceOnACylinderFromASphere(cylinder, sphere);
   return std::array<double, 3> { -temp[0], -temp[1], -temp[2] };
 }
 
-std::array<double, 4> DefaultForce::forceOnACylinderFromACylinder(const std::shared_ptr<PhysicalCylinder>& cylinder1,
-                                                                  const std::shared_ptr<PhysicalCylinder>& cylinder2) const {
+std::array<double, 4> DefaultForce::forceOnACylinderFromACylinder(PhysicalCylinder* cylinder1,
+                                                                  PhysicalCylinder* cylinder2) const {
   auto A = cylinder1->proximalEnd();
   auto B = cylinder1->getMassLocation();
   double d1 = cylinder1->getDiameter();

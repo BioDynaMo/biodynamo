@@ -4,7 +4,6 @@
 #include <array>
 #include <memory>
 #include <exception>
-#include <cells/cell.h>
 
 #include "physics/physical_object.h"
 
@@ -38,7 +37,7 @@ using local_biology::NeuriteElement;
  */
 class PhysicalCylinder : public PhysicalObject {
  public:
-  static std::shared_ptr<PhysicalCylinder> create();
+  using UPtr = std::unique_ptr<PhysicalCylinder>;
 
   PhysicalCylinder();  //todo should be protected
 
@@ -54,7 +53,7 @@ class PhysicalCylinder : public PhysicalObject {
    * tension, the volume, the
    * <code>CellElement</code>, as well as<code>Excrescences</code> and the
    * <code>IntracellularSubstances</code> are not copied. */
-  virtual std::shared_ptr<PhysicalCylinder> getCopy() const;
+  virtual UPtr getCopy() const;
 
   // *************************************************************************************
   // *      METHODS FOR NEURON TREE STRUCTURE                                            *
@@ -63,7 +62,7 @@ class PhysicalCylinder : public PhysicalObject {
   /**
    * Returns true if the <code>PhysicalObject</code> given as argument is a mother, daughter
    * or sister branch.*/
-  virtual bool isRelative(const std::shared_ptr<PhysicalObject>& po) const;
+  virtual bool isRelative(PhysicalObject* po) const;
 
   /**
    * Returns the location in absolute coordinates of where the <code>PhysicalObject</code>
@@ -74,19 +73,18 @@ class PhysicalCylinder : public PhysicalObject {
    * @param daughterWhoAsks the PhysicalObject requesting it's origin.
    *
    */
-  virtual std::array<double, 3> originOf(const std::shared_ptr<PhysicalObject>& daughter) override;
+  virtual std::array<double, 3> originOf(PhysicalObject* daughter) override;
 
-  virtual void removeDaugther(const std::shared_ptr<PhysicalObject>& daughter) override;
+  virtual void removeDaugther(PhysicalObject* daughter) override;
 
-  virtual void updateRelative(const std::shared_ptr<PhysicalObject>& old_relative,
-                              const std::shared_ptr<PhysicalObject>& new_relative) override;
+  virtual void updateRelative(PhysicalObject* old_relative, PhysicalObject* new_relative) override;
 
   /**
    * returns the total force that this <code>PhysicalCylinder</code> exerts on it's mother.
    * It is the sum of the spring force an the part of the inter-object force computed earlier in
    * <code>runPhysics()</code>.
    */
-  virtual std::array<double, 3> forceTransmittedFromDaugtherToMother(const std::shared_ptr<PhysicalObject>& mother)
+  virtual std::array<double, 3> forceTransmittedFromDaugtherToMother(PhysicalObject* mother)
       override;
 
   // *************************************************************************************
@@ -146,9 +144,8 @@ class PhysicalCylinder : public PhysicalObject {
    * @param newBranchR
    */
 
-  virtual std::array<std::shared_ptr<PhysicalCylinder>, 2> bifurcateCylinder(double length,
-                                                                             const std::array<double, 3>& direction_1,
-                                                                             const std::array<double, 3>& direction_2);
+  virtual std::array<UPtr, 2> bifurcateCylinder(double length, const std::array<double, 3>& direction_1,
+                                                const std::array<double, 3>& direction_2);
 
   /**
    * Makes a side branching by adding a second daughter to a non terminal <code>PhysicalCylinder</code>.
@@ -157,7 +154,7 @@ class PhysicalCylinder : public PhysicalObject {
    * not al least 45 degrees from the cylinder's axis).
    * @return the newly added <code>NeuriteSegment</code>
    */
-  virtual std::shared_ptr<PhysicalCylinder> branchCylinder(double length, const std::array<double, 3>& direction);
+  virtual UPtr branchCylinder(double length, const std::array<double, 3>& direction);
 
   virtual void setRestingLengthForDesiredTension(double tension);
 
@@ -179,13 +176,13 @@ class PhysicalCylinder : public PhysicalObject {
 
   virtual void runPhysics() override;
 
-  virtual std::array<double, 3> getForceOn(const std::shared_ptr<PhysicalSphere>& s) override;
+  virtual std::array<double, 3> getForceOn(PhysicalSphere* s) override;
 
-  virtual std::array<double, 4> getForceOn(const std::shared_ptr<PhysicalCylinder>& c) override;
+  virtual std::array<double, 4> getForceOn(PhysicalCylinder* c) override;
 
-  virtual bool isInContactWithSphere(const std::shared_ptr<PhysicalSphere>& s) override;
+  virtual bool isInContactWithSphere(PhysicalSphere* s) override;
 
-  virtual bool isInContactWithCylinder(const std::shared_ptr<PhysicalCylinder>& c) override;
+  virtual bool isInContactWithCylinder(PhysicalCylinder* c) override;
 
   /** Returns the point on this cylinder's spring axis that is the closest to the point p.*/
   virtual std::array<double, 3> closestPointTo(const std::array<double, 3>& p);
@@ -300,32 +297,32 @@ class PhysicalCylinder : public PhysicalObject {
   /**
    * @return the daughterLeft
    */
-  virtual std::shared_ptr<PhysicalCylinder> getDaughterLeft() const;
+  virtual PhysicalCylinder* getDaughterLeft() const;
 
   /**
    * @return the daughterRight
    */
-  virtual std::shared_ptr<PhysicalCylinder> getDaughterRight() const;
+  virtual PhysicalCylinder* getDaughterRight() const;
 
   /**
    * @return the mother
    */
-  virtual std::shared_ptr<PhysicalObject> getMother() const;
+  virtual PhysicalObject* getMother() const;
 
   /**
    * @param mother the mother to set
    */
-  virtual void setMother(const std::shared_ptr<PhysicalObject>& mother);
+  virtual void setMother(PhysicalObject* mother);
 
   /**
    * @param daughterLeft the daughterLeft to set
    */
-  virtual void setDaughterLeft(const std::shared_ptr<PhysicalCylinder>& daughter_left);
+  virtual void setDaughterLeft(PhysicalCylinder* daughter_left);
 
   /**
    * @param daughterRight the daughterRight to set
    */
-  virtual void setDaughterRight(const std::shared_ptr<PhysicalCylinder>& daughter_right);
+  virtual void setDaughterRight(PhysicalCylinder* daughter_right);
 
   /**
    * @param branchOrder the branchOrder to set
@@ -453,16 +450,16 @@ class PhysicalCylinder : public PhysicalObject {
   PhysicalCylinder& operator=(const PhysicalCylinder& other) = delete;
 
   /** Local biology object associated with this PhysicalCylinder.*/
-  NeuriteElement* neurite_element_;
+  NeuriteElement* neurite_element_ = nullptr;
 
   /** Parent node in the neuron tree structure (can be PhysicalSphere or PhysicalCylinder)*/
-  std::shared_ptr<PhysicalObject> mother_;
+  PhysicalObject* mother_ = nullptr;
 
   /** First child node in the neuron tree structure (can only be PhysicalCylinder)*/
-  std::shared_ptr<PhysicalCylinder> daughter_left_;
+  PhysicalCylinder* daughter_left_ = nullptr;
 
   /** Second child node in the neuron tree structure. (only PhysicalCylinder) */
-  std::shared_ptr<PhysicalCylinder> daughter_right_;
+  PhysicalCylinder* daughter_right_ = nullptr;
 
   /** number of branching points from here to the soma (root of the neuron tree-structure).*/
   int branch_order_ = 0;
@@ -497,7 +494,7 @@ class PhysicalCylinder : public PhysicalObject {
    * The one in which the method is called becomes the distal half, and it's length is reduced.
    * A new PhysicalCylinder is instantiated and becomes the proximal part (=the mother). All characteristics are transmitted
    *
-   *@param distalPortion the fraction of the total old length devoted to the distal half (should be between 0 and 1).
+   * @param distalPortion the fraction of the total old length devoted to the distal half (should be between 0 and 1).
    */
   NeuriteElement* insertProximalCylinder(double distal_portion);
 
@@ -513,18 +510,18 @@ class PhysicalCylinder : public PhysicalObject {
    */
   void scheduleMeAndAllMyFriends();
 
-  std::shared_ptr<PhysicalCylinder> extendSideCylinder(double length, const std::array<double, 3>& direction);
+  UPtr extendSideCylinder(double length, const std::array<double, 3>& direction);
 };
 
 struct PhysicalCylinderHash {
-  std::size_t operator()(const std::shared_ptr<PhysicalCylinder>& element) const {
-    return reinterpret_cast<std::size_t>(element.get());
+  std::size_t operator()(PhysicalCylinder* element) const {
+    return reinterpret_cast<std::size_t>(element);
   }
 };
 
 struct PhysicalCylinderEqual {
-  bool operator()(const std::shared_ptr<PhysicalCylinder>& lhs, const std::shared_ptr<PhysicalCylinder>& rhs) const {
-    return lhs.get() == rhs.get();
+  bool operator()(PhysicalCylinder* lhs, PhysicalCylinder* rhs) const {
+    return lhs == rhs;
   }
 };
 

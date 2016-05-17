@@ -8,6 +8,8 @@
 
 #include "color.h"
 #include <spatial_organization/open_triangle_organizer.h>
+#include <physics/physical_cylinder.h>
+#include <physics/physical_sphere.h>
 
 namespace cx3d {
 
@@ -45,6 +47,9 @@ class PhysicalNodeMovementListener;
 }// namespace physics
 
 using std::vector;
+using physics::PhysicalObject;
+using physics::PhysicalSphere;
+using physics::PhysicalCylinder;
 using spatial_organization::OpenTriangleOrganizer;
 
 /**
@@ -91,17 +96,11 @@ class JavaUtil2 {
   // Object creation
   // ---------------
 
-  std::shared_ptr<physics::PhysicalCylinder> newPhysicalCylinder() const;
-
-  std::shared_ptr<physics::PhysicalNode> newPhysicalNode() const;
-
   std::shared_ptr<physics::PhysicalNodeMovementListener> newPhysicalNodeMovementListener() const;
 
-  std::shared_ptr<physics::PhysicalSphere> newPhysicalSphere() const;
-
-  std::shared_ptr<physics::PhysicalBond> newPhysicalBond(const std::shared_ptr<physics::PhysicalObject>& a,
+  std::shared_ptr<physics::PhysicalBond> newPhysicalBond(PhysicalObject* a,
                                                          const std::array<double, 2>& position_on_a,
-                                                         const std::shared_ptr<physics::PhysicalObject>& b,
+                                                         PhysicalObject* b,
                                                          const std::array<double, 2>& position_on_b,
                                                          double resting_length, double spring_constant) const;
   // ---------------

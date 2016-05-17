@@ -23,11 +23,6 @@
 namespace cx3d {
 namespace physics {
 
-std::shared_ptr<PhysicalSphere> PhysicalSphere::create() {
-  return std::shared_ptr<PhysicalSphere>(new PhysicalSphere());
-//  return std::shared_ptr<PhysicalSphere>(new PhysicalSphereDebug());
-}
-
 PhysicalSphere::PhysicalSphere() {
   mass_ = Param::kSphereDefaultMass;
   adherence_ = Param::kSphereDefaultAdherence;
@@ -137,8 +132,8 @@ void PhysicalSphere::movePointMass(double speed, const std::array<double, 3>& di
   }
 }
 
-std::array<double, 3> PhysicalSphere::originOf(const std::shared_ptr<PhysicalObject>& daughter_asking) {
-  std::array<double, 3> xyz = daughters_coord_[std::static_pointer_cast<PhysicalCylinder>(daughter_asking)];
+std::array<double, 3> PhysicalSphere::originOf(PhysicalObject* daughter_asking) {
+  std::array<double, 3> xyz = daughters_coord_[static_cast<PhysicalCylinder*>(daughter_asking)];
 
   double radius = diameter_ * .5;
   xyz = Matrix::scalarMult(radius, xyz);
@@ -186,7 +181,7 @@ void PhysicalSphere::changeDiameter(double speed) {
   scheduleMeAndAllMyFriends();
 }
 
-std::shared_ptr<PhysicalCylinder> PhysicalSphere::addNewPhysicalCylinder(double new_length, double phi, double theta) {
+PhysicalCylinder::UPtr PhysicalSphere::addNewPhysicalCylinder(double new_length, double phi, double theta) {
   double radius = 0.5 * diameter_;
   // position in cx3d.cells coord
   double x_coord = ecm_->cos(theta) * ecm_->sin(phi);
@@ -204,7 +199,7 @@ std::shared_ptr<PhysicalCylinder> PhysicalSphere::addNewPhysicalCylinder(double 
   auto new_cyl_central_node_location = Matrix::add(new_cyl_begin_location,
                                                    Matrix::scalarMult(0.5, new_cyl_spring_axis));
   // new PhysicalCylinder
-  auto cyl = ecm_->newPhysicalCylinder();
+  auto cyl = PhysicalCylinder::UPtr(new PhysicalCylinder());
   cyl->setSpringAxis(new_cyl_spring_axis);
   cyl->setMassLocation(new_cyl_mass_location);
   cyl->setActualLength(new_length);
@@ -213,19 +208,19 @@ std::shared_ptr<PhysicalCylinder> PhysicalSphere::addNewPhysicalCylinder(double 
   cyl->setDiameter(Param::kNeuriteDefaultDiameter, true);
   cyl->setColor(color_);
   // family relations
-  daughters_.push_back(cyl);
-  cyl->setMother(std::static_pointer_cast<PhysicalSphere>(this->shared_from_this()));
-  daughters_coord_[cyl] = {x_coord, y_coord, z_coord};
+  daughters_.push_back(cyl.get()); //fixme
+  cyl->setMother(this);
+  daughters_coord_[cyl.get()] = {x_coord, y_coord, z_coord};
 
   // SpaceNode
-  auto new_son = PhysicalObject::so_node_->getNewInstance(new_cyl_central_node_location, cyl);  // fixme catch PositionNotAllowedException
+  auto new_son = PhysicalObject::so_node_->getNewInstance(new_cyl_central_node_location, cyl.get());  // fixme catch PositionNotAllowedException
 
   cyl->setSoNode(new_son);
-  PhysicalNode::ecm_->addPhysicalCylinder(cyl);
+  PhysicalNode::ecm_->addPhysicalCylinder(cyl.get());
   return cyl;
 }
 
-std::shared_ptr<PhysicalSphere> PhysicalSphere::divide(double vr, double phi, double theta) {
+PhysicalSphere::UPtr PhysicalSphere::divide(double vr, double phi, double theta) {
   // A) Defining some values ..................................................................
   double old_volume = volume_;
   // defining the two radii s.t total volume is conserved ( R^3 = r1^3 + r2^3 ; vr = r2^3 / r1^3 )
@@ -249,7 +244,7 @@ std::shared_ptr<PhysicalSphere> PhysicalSphere::divide(double vr, double phi, do
 
   // B) Instantiating a new sphere = 2nd daughter................................................
   // getting a new sphere
-  auto new_sphere = ecm_->newPhysicalSphere();  // change to create(); once porting has been finished
+  auto new_sphere = UPtr(new PhysicalSphere());
 
   // super class variables (except masLocation, filled below)
   new_sphere->setXAxis(x_axis_);
@@ -274,11 +269,11 @@ std::shared_ptr<PhysicalSphere> PhysicalSphere::divide(double vr, double phi, do
 
   // C) Request a SpaceNode
 
-  auto new_son = so_node_->getNewInstance(new_mass_location, new_sphere);  //fixme catch PositionNotAllowedException catch exception
+  auto new_son = so_node_->getNewInstance(new_mass_location, new_sphere.get());  //fixme catch PositionNotAllowedException catch exception
   new_sphere->setSoNode(new_son);
 
   // D) register new Sphere to ECM
-  ecm_->addPhysicalSphere(new_sphere);  // this method also adds the PhysicalNode
+  ecm_->addPhysicalSphere(new_sphere.get());  // this method also adds the PhysicalNode
 
   // E) This sphere becomes the 1st daughter.....................................................
   // move this cx3d.cells on opposite direction (move the centralNode & the massLocation)
@@ -303,27 +298,23 @@ std::shared_ptr<PhysicalSphere> PhysicalSphere::divide(double vr, double phi, do
   return new_sphere;
 }
 
-bool PhysicalSphere::isInContactWithSphere(const std::shared_ptr<PhysicalSphere>& s) {
-  auto force = inter_object_force_->forceOnASphereFromASphere(
-      std::static_pointer_cast<PhysicalSphere>(this->shared_from_this()), s);
+bool PhysicalSphere::isInContactWithSphere(PhysicalSphere* s) {
+  auto force = inter_object_force_->forceOnASphereFromASphere( this, s);
   return Matrix::norm(force) > 1E-15;
 }
 
-bool PhysicalSphere::isInContactWithCylinder(const std::shared_ptr<PhysicalCylinder>& c) {
-  auto force = inter_object_force_->forceOnACylinderFromASphere(
-      c, std::static_pointer_cast<PhysicalSphere>(this->shared_from_this()));
+bool PhysicalSphere::isInContactWithCylinder(PhysicalCylinder* c) {
+  auto force = inter_object_force_->forceOnACylinderFromASphere( c, this);
   return Matrix::norm(force) > 1E-15;
 }
 
-std::array<double, 4> PhysicalSphere::getForceOn(const std::shared_ptr<PhysicalCylinder>& c) {
+std::array<double, 4> PhysicalSphere::getForceOn(PhysicalCylinder* c) {
 // get force on a Cylinder from a sphere
-  return inter_object_force_->forceOnACylinderFromASphere(
-      c, std::static_pointer_cast<PhysicalSphere>(this->shared_from_this()));
+  return inter_object_force_->forceOnACylinderFromASphere( c, this);
 }
 
-std::array<double, 3> PhysicalSphere::getForceOn(const std::shared_ptr<PhysicalSphere>& s) {
-  return inter_object_force_->forceOnASphereFromASphere(
-      s, std::static_pointer_cast<PhysicalSphere>(this->shared_from_this()));
+std::array<double, 3> PhysicalSphere::getForceOn(PhysicalSphere* s) {
+  return inter_object_force_->forceOnASphereFromASphere( s, this);
 }
 
 void PhysicalSphere::runPhysics() {
@@ -374,8 +365,7 @@ void PhysicalSphere::runPhysics() {
 
   // 2) Spring force from my neurites (translation and rotation)--------------------------
   for (auto c : daughters_) {
-    auto force_from_daughter = c->forceTransmittedFromDaugtherToMother(
-        std::static_pointer_cast<PhysicalSphere>(this->shared_from_this()));
+    auto force_from_daughter = c->forceTransmittedFromDaugtherToMother( this);
     // for mass translation
     translation_force_on_point_mass[0] += force_from_daughter[0];
     translation_force_on_point_mass[1] += force_from_daughter[1];
@@ -389,22 +379,22 @@ void PhysicalSphere::runPhysics() {
   // 3) Object avoidance force -----------------------------------------------------------
   //  (We check for every neighbor object if they touch us, i.e. push us away)
   for (auto neighbor : so_node_->getNeighbors()) {
-    // of course, only if it is an instance of std::shared_ptr<PhysicalObject>
+    // of course, only if it is an instance of PhysicalObject*
     if (neighbor->isAPhysicalObject()) {
-      auto n = std::static_pointer_cast<PhysicalObject>(neighbor);
+      auto n = static_cast<PhysicalObject*>(neighbor);
       // if it is a direct relative, we don't take it into account
       if (neighbor->isAPhysicalCylinder()
-          && STLUtil::listContains(daughters_, std::static_pointer_cast<PhysicalCylinder>(neighbor))) {  // no physical effect of a member of the family...
+          && STLUtil::listContains(daughters_, static_cast<PhysicalCylinder*>(neighbor))) {  // no physical effect of a member of the family...
         continue;
       }
       // if we have a PhysicalBond with him, we also don't take it into account
       for (auto pb : physical_bonds_) {
-        if (pb->getOppositePhysicalObject(std::static_pointer_cast<PhysicalSphere>(this->shared_from_this()))
+        if (pb->getOppositePhysicalObject(this)
             == neighbor) {
           continue;
         }
       }
-      auto force_from_this_neighbor = n->getForceOn(std::static_pointer_cast<PhysicalSphere>(this->shared_from_this()));
+      auto force_from_this_neighbor = n->getForceOn(this);
       translation_force_on_point_mass[0] += force_from_this_neighbor[0];
       translation_force_on_point_mass[1] += force_from_this_neighbor[1];
       translation_force_on_point_mass[2] += force_from_this_neighbor[2];
@@ -413,8 +403,7 @@ void PhysicalSphere::runPhysics() {
 
   // 4) PhysicalBonds--------------------------------------------------------------------
   for (auto pb : physical_bonds_) {
-    auto force_from_this_physical_bond = pb->getForceOn(
-        std::static_pointer_cast<PhysicalSphere>(this->shared_from_this()));
+    auto force_from_this_physical_bond = pb->getForceOn( this);
     // for mass translation only (no rotation)
     translation_force_on_point_mass[0] += force_from_this_physical_bond[0];
     translation_force_on_point_mass[1] += force_from_this_physical_bond[1];
@@ -499,12 +488,12 @@ void PhysicalSphere::runPhysics() {
     // neighbors :
     for (auto neighbor : so_node_->getNeighbors()) {
       if (neighbor->isAPhysicalObject()) {
-        std::static_pointer_cast<PhysicalObject>(neighbor)->setOnTheSchedulerListForPhysicalObjects(true);
+        static_cast<PhysicalObject*>(neighbor)->setOnTheSchedulerListForPhysicalObjects(true);
       }
     }
     // physical objects at the other side of a PhysicalBond:
     for (auto pb : physical_bonds_) {
-      pb->getOppositePhysicalObject(std::static_pointer_cast<PhysicalSphere>(this->shared_from_this()))
+      pb->getOppositePhysicalObject(this)
           ->setOnTheSchedulerListForPhysicalObjects(true);
     }
   }
@@ -520,7 +509,7 @@ std::array<double, 3> PhysicalSphere::getAxis() const {
   return z_axis_;
 }
 
-std::list<std::shared_ptr<PhysicalCylinder>> PhysicalSphere::getDaughters() const {
+std::list<PhysicalCylinder*> PhysicalSphere::getDaughters() const {
   return daughters_;
 }
 
@@ -542,13 +531,13 @@ void PhysicalSphere::runIntracellularDiffusion() {
   auto daugters = daughters_;  //fixme typo - copy really needed?
   for (auto cyl : daughters_) {
     // To be sure that we diffuse all the chemicals,
-    // the direction (i.e.who calls diffuseWithThisstd::shared_ptr<PhysicalObject>() )
+    // the direction (i.e.who calls diffuseWithThisPhysicalObject*() )
     // is chosen randomly.
-    auto po1 = std::static_pointer_cast<PhysicalObject>(this->shared_from_this());
-    std::shared_ptr<PhysicalObject> po2 = cyl;
+    PhysicalObject* po1 = this;
+    PhysicalObject* po2 = cyl;
     if (ecm_->getRandomDouble1() < 0.5) {
       po1 = cyl;
-      po2 = std::static_pointer_cast<PhysicalSphere>(this->shared_from_this());
+      po2 = this;
     }
     // now we call the diffusion function in the super class
     po1->diffuseWithThisPhysicalObjects(po2, cyl->getActualLength());
@@ -622,8 +611,8 @@ CellElement* PhysicalSphere::getCellElement() const {
   return getSomaElement();
 }
 
-bool PhysicalSphere::isRelative(const std::shared_ptr<PhysicalObject>& po) const {
-  return po->isAPhysicalCylinder() && STLUtil::listContains(daughters_, std::static_pointer_cast<PhysicalCylinder>(po));
+bool PhysicalSphere::isRelative(PhysicalObject* po) const {
+  return po->isAPhysicalCylinder() && STLUtil::listContains(daughters_, static_cast<PhysicalCylinder*>(po));
 }
 
 double PhysicalSphere::getLength() const {
@@ -631,23 +620,23 @@ double PhysicalSphere::getLength() const {
 }
 
 std::array<double, 3> PhysicalSphere::forceTransmittedFromDaugtherToMother(
-    const std::shared_ptr<PhysicalObject>& motherWhoAsks) {
+    PhysicalObject* motherWhoAsks) {
   return {0, 0, 0};  //fixme should return null
 }
 
-void PhysicalSphere::removeDaugther(const std::shared_ptr<PhysicalObject>& po) {
+void PhysicalSphere::removeDaugther(PhysicalObject* po) {
   if (po->isAPhysicalCylinder()) {
-    auto daughter = std::static_pointer_cast<PhysicalCylinder>(po);
+    auto daughter = static_cast<PhysicalCylinder*>(po);
     daughters_.remove(daughter);
     daughters_coord_.erase(daughter);
   }
 }
 
-void PhysicalSphere::updateRelative(const std::shared_ptr<PhysicalObject>& old_rel,
-                                    const std::shared_ptr<PhysicalObject>& new_rel) {
-  std::array<double, 3> coord = daughters_coord_[std::static_pointer_cast<PhysicalCylinder>(old_rel)];
-  auto old_cyl = std::static_pointer_cast<PhysicalCylinder>(old_rel);
-  auto new_cyl = std::static_pointer_cast<PhysicalCylinder>(new_rel);
+void PhysicalSphere::updateRelative(PhysicalObject* old_rel,
+                                    PhysicalObject* new_rel) {
+  std::array<double, 3> coord = daughters_coord_[static_cast<PhysicalCylinder*>(old_rel)];
+  auto old_cyl = static_cast<PhysicalCylinder*>(old_rel);
+  auto new_cyl = static_cast<PhysicalCylinder*>(new_rel);
   daughters_.remove(old_cyl);
   daughters_.push_back(new_cyl);
   daughters_coord_[new_cyl] = coord;
@@ -701,12 +690,12 @@ void PhysicalSphere::scheduleMeAndAllMyFriends() {
   // neighbors :
   for (auto neighbor : so_node_->getNeighbors()) {
     if (neighbor->isAPhysicalObject()) {
-      std::static_pointer_cast<PhysicalObject>(neighbor)->setOnTheSchedulerListForPhysicalObjects(true);
+      static_cast<PhysicalObject*>(neighbor)->setOnTheSchedulerListForPhysicalObjects(true);
     }
   }
   // physical objects at the other side of a PhysicalBond:
   for (auto pb : physical_bonds_) {
-    pb->getOppositePhysicalObject(std::static_pointer_cast<PhysicalSphere>(this->shared_from_this()))
+    pb->getOppositePhysicalObject(this)
         ->setOnTheSchedulerListForPhysicalObjects(true);
   }
 }

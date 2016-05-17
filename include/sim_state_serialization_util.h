@@ -129,7 +129,7 @@ class SimStateSerializationUtil {
   template<class T, class U, class V>
   static StringBuilder& mapOfDoubleArray(
       StringBuilder& sb, const string& key,
-      const std::unordered_map<std::shared_ptr<T>, std::array<double, 3>, U, V>& map) {
+                                         const std::unordered_map<T, std::array<double, 3>, U, V>& map) {
     SimStateSerializationUtil::key(sb, key).append("{");
     for (auto el : map) {
       SimStateSerializationUtil::keyValue(sb, el.first->toString(), el.second);

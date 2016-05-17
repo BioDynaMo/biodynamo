@@ -3,7 +3,6 @@
 
 #include <array>
 #include <memory>
-#include <local_biology/neurite_element.h>
 
 #include "sim_state_serializable.h"
 
@@ -24,6 +23,7 @@ class ECM;
 namespace synapse {
 
 using local_biology::NeuriteElement;
+using physics::PhysicalObject;
 
 class Excrescence : public SimStateSerializable {
  public:
@@ -44,7 +44,7 @@ class Excrescence : public SimStateSerializable {
 
   Excrescence(Excrescence::Type type);
 
-  Excrescence(const std::shared_ptr<physics::PhysicalObject> po, const std::array<double, 2>& origin, double length,
+  Excrescence(PhysicalObject* po, const std::array<double, 2>& origin, double length,
               Excrescence::Type type);
 
   virtual ~Excrescence();
@@ -73,9 +73,9 @@ class Excrescence : public SimStateSerializable {
 
   virtual void setLength(double length);
 
-  virtual std::shared_ptr<physics::PhysicalObject> getPo() const;
+  virtual PhysicalObject* getPo() const;
 
-  virtual void setPo(const std::shared_ptr<physics::PhysicalObject>& po);
+  virtual void setPo(PhysicalObject* po);
 
   virtual std::array<double, 2> getPositionOnPO() const;
 
@@ -89,7 +89,7 @@ class Excrescence : public SimStateSerializable {
   static std::shared_ptr<simulation::ECM> ecm_;
 
   /** the physical object it is attached to.*/
-  std::shared_ptr<physics::PhysicalObject> po_;
+  PhysicalObject* po_ = nullptr;
 
   /** the other structure with which it forms a synapse.*/
   Excrescence* ex_ = nullptr;

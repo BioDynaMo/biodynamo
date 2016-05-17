@@ -1,6 +1,7 @@
 #include "local_biology/soma_element.h"
 
 #include "matrix.h"
+#include "stl_util.h"
 #include "sim_state_serialization_util.h"
 
 #include "local_biology/local_biology_module.h"
@@ -24,7 +25,7 @@ SomaElement::~SomaElement() {
 StringBuilder& SomaElement::simStateToJson(StringBuilder& sb) const {
   CellElement::simStateToJson(sb);
 
-  SimStateSerializationUtil::keyValue(sb, "physical", physical_);
+  SimStateSerializationUtil::keyValue(sb, "physical", physical_.get());
   SimStateSerializationUtil::removeLastChar(sb);
 
   sb.append("}");
@@ -34,7 +35,7 @@ StringBuilder& SomaElement::simStateToJson(StringBuilder& sb) const {
 SomaElement::UPtr SomaElement::divide(double volume_ratio, double phi, double theta) {
   auto new_soma = UPtr(new SomaElement());
   auto pc = physical_->divide(volume_ratio, phi, theta);
-  new_soma->setPhysical(pc);   // this method also sets the callback
+  new_soma->setPhysical(std::move(pc));   // this method also sets the callback
 
   // Copy of the local biological modules:
   for (auto m : local_biology_modules_) {
@@ -80,9 +81,9 @@ NeuriteElement* SomaElement::extendNewNeurite(double diameter, double phi, doubl
   double length = Param::kNeuriteDefaultActualLength;
   auto ne = NeuriteElement::UPtr { new NeuriteElement() };
   auto pc = physical_->addNewPhysicalCylinder(length, phi, theta);
-  ne->setPhysical(pc);
   // setting diameter for new branch
   pc->setDiameter(diameter, true);
+  ne->setPhysical(std::move(pc));
   // setting ref for Cell
   ne->setCell(getCell());
   // copy of the biological modules
@@ -95,21 +96,21 @@ NeuriteElement* SomaElement::extendNewNeurite(double diameter, double phi, doubl
   return ne_raw;
 }
 
-std::shared_ptr<physics::PhysicalObject> SomaElement::getPhysical() const {
-  return physical_;
+PhysicalObject* SomaElement::getPhysical() const {
+  return physical_.get();
 }
 
-void SomaElement::setPhysical(const std::shared_ptr<physics::PhysicalObject>& po) {
-  physical_ = std::static_pointer_cast<physics::PhysicalSphere>(po);
+void SomaElement::setPhysical(PhysicalObject::UPtr po) {
+  physical_ = STLUtil::staticUPtrCast < PhysicalSphere > (std::move(po));
   physical_->setSomaElement(this);
 }
 
-std::shared_ptr<physics::PhysicalSphere> SomaElement::getPhysicalSphere() const {
-  return physical_;
+PhysicalSphere* SomaElement::getPhysicalSphere() const {
+  return physical_.get();
 }
 
-void SomaElement::setPhysicalSphere(const std::shared_ptr<physics::PhysicalSphere>& ps) {
-  physical_ = ps;
+void SomaElement::setPhysicalSphere(PhysicalSphere::UPtr ps) {
+  physical_ = std::move(ps);
   physical_->setSomaElement(this);
 }
 

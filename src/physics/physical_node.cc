@@ -26,11 +26,6 @@ void PhysicalNode::reset() {
   id_counter_ = 0;
 }
 
-std::shared_ptr<PhysicalNode> PhysicalNode::create() {
-  return std::shared_ptr<PhysicalNode>(new PhysicalNode());
-//  return std::shared_ptr<PhysicalNode>(new PhysicalNodeDebug());
-}
-
 std::array<double, 4> PhysicalNode::getBarycentricCoordinates(const std::array<double, 3>& Q,
                                                               const std::array<double, 3>& P1,
                                                               const std::array<double, 3>& P2,
@@ -53,7 +48,7 @@ std::array<double, 4> PhysicalNode::getBarycentricCoordinates(const std::array<d
 }
 
 std::array<double, 4> PhysicalNode::getBarycentricCoordinates(
-    const std::array<double, 3>& Q, const std::array<std::shared_ptr<PhysicalNode>, 4>& vertices) {
+    const std::array<double, 3>& Q, const std::array<PhysicalNode*, 4>& vertices) {
   auto a = vertices[0]->getSoNode()->getPosition();
   auto b = vertices[1]->getSoNode()->getPosition();
   auto c = vertices[2]->getSoNode()->getPosition();
@@ -69,6 +64,9 @@ PhysicalNode::PhysicalNode()
   if (PhysicalNode::ecm_ != nullptr) {  //todo remove this if after porting has been finished
     last_ecm_time_degradate_was_run_ = PhysicalNode::ecm_->getECMtime();
   }
+}
+
+PhysicalNode::~PhysicalNode() {
 }
 
 StringBuilder& PhysicalNode::simStateToJson(StringBuilder& sb) const {
@@ -347,8 +345,8 @@ void PhysicalNode::degradate(double currentEcmTime) {  //changed to proteceted
 void PhysicalNode::diffuseEdgeAnalytically(
     const std::shared_ptr<spatial_organization::SpatialOrganizationEdge<PhysicalNode>>& e, double current_ecm_time) {
   // the two PhysicalNodes
-  auto n_a = this->shared_from_this();
-  auto n_b = e->getOppositeElement(this->shared_from_this());
+  auto n_a = this;
+  auto n_b = e->getOppositeElement(this);
 
   // make sure the other one is up-to-date with degradation
   n_b->degradate(current_ecm_time);

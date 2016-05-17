@@ -27,6 +27,7 @@ using cells::CellFactory;
 using local_biology::CellElement;
 using local_biology::NeuriteElement;
 using local_biology::LocalBiologyModule;
+using physics::PhysicalNode;
 using simulation::ECM;
 using simulation::Scheduler;
 using synapse::PhysicalBouton;
@@ -61,7 +62,7 @@ class Figure5Test : public BaseSimulationTest {
         init_physical_node_movement_listener = false;
         java->initPhysicalNodeMovementListener();
       }
-      ecm->getPhysicalNodeInstance(loc);
+      physical_nodes_.push_back(ecm->createPhysicalNodeInstance(loc));
     }
 
     // 2) creating a first cell, with a neurite going straight up.

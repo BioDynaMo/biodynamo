@@ -12,7 +12,7 @@ PhysicalSomaticSpine::PhysicalSomaticSpine()
     : Excrescence(Excrescence::Type::kSomaticSpine) {
 }
 
-PhysicalSomaticSpine::PhysicalSomaticSpine(const std::shared_ptr<physics::PhysicalObject>& po, const std::array<double, 2>& origin,
+PhysicalSomaticSpine::PhysicalSomaticSpine(PhysicalObject* po, const std::array<double, 2>& origin,
                              double length)
     : Excrescence(po, origin, length, Excrescence::Type::kSomaticSpine) {
 }

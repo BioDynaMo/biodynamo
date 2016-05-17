@@ -6,17 +6,17 @@
 #include <exception>
 
 #include "local_biology/cell_element.h"
+//#include "physics/physical_object.h"
+#include "physics/physical_cylinder.h"
 
 namespace cx3d {
-
-namespace physics {
-class PhysicalObject;
-class PhysicalCylinder;
-}  // namespace physics
 
 namespace local_biology {
 
 class LocalBiologyModule;
+
+using physics::PhysicalObject;
+using physics::PhysicalCylinder;
 
 class NeuriteElement : public CellElement {
  public:
@@ -163,13 +163,13 @@ class NeuriteElement : public CellElement {
   //   Getters & Setters
   // *************************************************************************************
 
-  virtual std::shared_ptr<physics::PhysicalObject> getPhysical() const override;
+  virtual PhysicalObject* getPhysical() const override;
 
-  virtual void setPhysical(const std::shared_ptr<physics::PhysicalObject>& po) override;
+  virtual void setPhysical(PhysicalObject::UPtr po) override;
 
-  virtual std::shared_ptr<physics::PhysicalCylinder> getPhysicalCylinder() const;
+  virtual PhysicalCylinder* getPhysicalCylinder() const;
 
-  virtual void setPhysicalCylinder(const std::shared_ptr<physics::PhysicalCylinder>& pc);
+  virtual void setPhysicalCylinder(PhysicalCylinder::UPtr pc);
 
   virtual bool isAxon() const;
 
@@ -202,7 +202,7 @@ class NeuriteElement : public CellElement {
   NeuriteElement(const NeuriteElement&) = delete;
   NeuriteElement& operator=(const NeuriteElement&) = delete;
 
-  std::shared_ptr<physics::PhysicalCylinder> physical_cylinder_;
+  PhysicalCylinder::UPtr physical_cylinder_;
 
   bool is_axon_ = false;
 };

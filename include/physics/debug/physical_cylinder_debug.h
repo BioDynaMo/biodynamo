@@ -25,41 +25,40 @@ class PhysicalCylinderDebug : public PhysicalCylinder {
     return ret;
   }
 
-  virtual std::shared_ptr<PhysicalCylinder> getCopy() const override {
+  virtual PhysicalCylinder::UPtr getCopy() const override {
     logCallParameterless();
     auto ret = PhysicalCylinder::getCopy();
-    logReturn(ret);
-    return ret;
+    logReturn(ret.get());
+    return std::move(ret);
   }
 
-  virtual bool isRelative(const std::shared_ptr<PhysicalObject>& po) const override {
+  virtual bool isRelative(PhysicalObject* po) const override {
     logCall(po);
     auto ret = PhysicalCylinder::isRelative(po);
     logReturn(ret);
     return ret;
   }
 
-  virtual std::array<double, 3> originOf(const std::shared_ptr<PhysicalObject>& daughter) override {
+  virtual std::array<double, 3> originOf(PhysicalObject* daughter) override {
     logCall(daughter);
     auto ret = PhysicalCylinder::originOf(daughter);
     logReturn(ret);
     return ret;
   }
 
-  virtual void removeDaugther(const std::shared_ptr<PhysicalObject>& daughter) override {
+  virtual void removeDaugther(PhysicalObject* daughter) override {
     logCall(daughter);
     PhysicalCylinder::removeDaugther(daughter);
     logReturnVoid();
   }
 
-  virtual void updateRelative(const std::shared_ptr<PhysicalObject>& old_relative,
-      const std::shared_ptr<PhysicalObject>& new_Relative) override {
+  virtual void updateRelative(PhysicalObject* old_relative, PhysicalObject* new_Relative) override {
     logCall(old_relative, new_Relative);
     PhysicalCylinder::updateRelative(old_relative, new_Relative);
     logReturnVoid();
   }
 
-  virtual std::array<double, 3> forceTransmittedFromDaugtherToMother(const std::shared_ptr<PhysicalObject>& mother) override {
+  virtual std::array<double, 3> forceTransmittedFromDaugtherToMother(PhysicalObject* mother) override {
     logCall(mother);
     auto ret = PhysicalCylinder::forceTransmittedFromDaugtherToMother(mother);
     logReturn(ret);
@@ -98,20 +97,21 @@ class PhysicalCylinderDebug : public PhysicalCylinder {
     return ret;
   }
 
-  virtual std::array<std::shared_ptr<PhysicalCylinder>, 2> bifurcateCylinder(double length,
+  virtual std::array<PhysicalCylinder::UPtr, 2> bifurcateCylinder(double length,
       const std::array<double, 3>& direction_1,
       const std::array<double, 3>& direction_2) override {
     logCall(length, direction_1, direction_2);
     auto ret = PhysicalCylinder::bifurcateCylinder(length, direction_1, direction_2);
-    logReturn(ret);
-    return ret;
+    array<PhysicalCylinder*, 2> tmp = { ret[0].get(), ret[1].get() };
+    logReturn(tmp);
+    return std::move(ret);
   }
 
-  virtual std::shared_ptr<PhysicalCylinder> branchCylinder(double length, const std::array<double, 3>& direction) override {
+  virtual PhysicalCylinder::UPtr branchCylinder(double length, const std::array<double, 3>& direction) override {
     logCall(length, direction);
-    auto ret = PhysicalCylinder::branchCylinder(length, direction);
-    logReturn(ret);
-    return ret;
+    auto&& ret = PhysicalCylinder::branchCylinder(length, direction);
+    logReturn(ret.get());
+    return std::move(ret);
   }
 
   virtual void setRestingLengthForDesiredTension(double tension) override {
@@ -138,28 +138,28 @@ class PhysicalCylinderDebug : public PhysicalCylinder {
     logReturnVoid();
   }
 
-  virtual std::array<double, 3> getForceOn(const std::shared_ptr<PhysicalSphere>& s) override {
+  virtual std::array<double, 3> getForceOn(PhysicalSphere* s) override {
     logCall(s);
     auto ret = PhysicalCylinder::getForceOn(s);
     logReturn(ret);
     return ret;
   }
 
-  virtual std::array<double, 4> getForceOn(const std::shared_ptr<PhysicalCylinder>& c) override {
+  virtual std::array<double, 4> getForceOn(PhysicalCylinder* c) override {
     logCall(c);
     auto ret = PhysicalCylinder::getForceOn(c);
     logReturn(ret);
     return ret;
   }
 
-  virtual bool isInContactWithSphere(const std::shared_ptr<PhysicalSphere>& s) override {
+  virtual bool isInContactWithSphere(PhysicalSphere* s) override {
     logCall(s);
     auto ret = PhysicalCylinder::isInContactWithSphere(s);
     logReturn(ret);
     return ret;
   }
 
-  virtual bool isInContactWithCylinder(const std::shared_ptr<PhysicalCylinder>& c) override {
+  virtual bool isInContactWithCylinder(PhysicalCylinder* c) override {
     logCall(c);
     auto ret = PhysicalCylinder::isInContactWithCylinder(c);
     logReturn(ret);
@@ -278,40 +278,40 @@ class PhysicalCylinderDebug : public PhysicalCylinder {
     logReturnVoid();
   }
 
-  virtual std::shared_ptr<PhysicalCylinder> getDaughterLeft() const override {
+  virtual PhysicalCylinder* getDaughterLeft() const override {
     logCallParameterless();
     auto ret = PhysicalCylinder::getDaughterLeft();
     logReturn(ret);
     return ret;
   }
 
-  virtual std::shared_ptr<PhysicalCylinder> getDaughterRight() const override {
+  virtual PhysicalCylinder* getDaughterRight() const override {
     logCallParameterless();
     auto ret = PhysicalCylinder::getDaughterRight();
     logReturn(ret);
     return ret;
   }
 
-//  virtual std::shared_ptr<PhysicalObject> getMother() const override {
+//  virtual PhysicalObject* getMother() const override {
 //    logCallParameterless();
 //    auto ret = PhysicalCylinder::getMother();
 //    logReturn(ret);
 //    return ret;
 //  }
 
-  virtual void setMother(const std::shared_ptr<PhysicalObject>& mother) override {
+  virtual void setMother(PhysicalObject* mother) override {
     logCall(mother);
     PhysicalCylinder::setMother(mother);
     logReturnVoid();
   }
 
-  virtual void setDaughterLeft(const std::shared_ptr<PhysicalCylinder>& daughter) override {
+  virtual void setDaughterLeft(PhysicalCylinder* daughter) override {
     logCall(daughter);
     PhysicalCylinder::setDaughterLeft(daughter);
     logReturnVoid();
   }
 
-  virtual void setDaughterRight(const std::shared_ptr<PhysicalCylinder>& daughter) override {
+  virtual void setDaughterRight(PhysicalCylinder* daughter) override {
     logCall(daughter);
     PhysicalCylinder::setDaughterRight(daughter);
     logReturnVoid();

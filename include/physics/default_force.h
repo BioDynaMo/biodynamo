@@ -35,8 +35,7 @@ class DefaultForce : public InterObjectForce {
    * @param sphere_2
    * @return
    */
-  virtual std::array<double, 3> forceOnASphereFromASphere(const std::shared_ptr<PhysicalSphere>& sphere_1,
-                                                          const std::shared_ptr<PhysicalSphere>& sphere_2) const
+  virtual std::array<double, 3> forceOnASphereFromASphere(PhysicalSphere* sphere_1, PhysicalSphere* sphere_2) const
                                                               override;
 
   /**
@@ -48,8 +47,7 @@ class DefaultForce : public InterObjectForce {
    * (= the point mass of the mother).
    *
    */
-  virtual std::array<double, 4> forceOnACylinderFromASphere(const std::shared_ptr<PhysicalCylinder>& cylinder,
-                                                            const std::shared_ptr<PhysicalSphere>& sphere) const
+  virtual std::array<double, 4> forceOnACylinderFromASphere(PhysicalCylinder* cylinder, PhysicalSphere* sphere) const
                                                                 override;
 
   /**
@@ -58,8 +56,7 @@ class DefaultForce : public InterObjectForce {
    * @param cylinder
    * @return
    */
-  virtual std::array<double, 3> forceOnASphereFromACylinder(const std::shared_ptr<PhysicalSphere>& sphere,
-                                                            const std::shared_ptr<PhysicalCylinder>& cylinder) const
+  virtual std::array<double, 3> forceOnASphereFromACylinder(PhysicalSphere* sphere, PhysicalCylinder* cylinder) const
                                                                 override;
 
   /**
@@ -70,8 +67,8 @@ class DefaultForce : public InterObjectForce {
    * the fourth -when it exists- is the proportion of the force that is transmitted to the proximal end
    * of cylinder1 (= the point mass of the mother).
    */
-  virtual std::array<double, 4> forceOnACylinderFromACylinder(const std::shared_ptr<PhysicalCylinder>& cylinder1,
-                                                              const std::shared_ptr<PhysicalCylinder>& cylinder2) const
+  virtual std::array<double, 4> forceOnACylinderFromACylinder(PhysicalCylinder* cylinder1,
+                                                              PhysicalCylinder* cylinder2) const
                                                                   override;
 
   virtual std::string toString() const;

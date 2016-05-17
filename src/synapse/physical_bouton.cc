@@ -14,7 +14,7 @@ PhysicalBouton::PhysicalBouton()
     : Excrescence(Excrescence::Type::kBouton) {
 }
 
-PhysicalBouton::PhysicalBouton(const std::shared_ptr<physics::PhysicalObject>& po, const std::array<double, 2>& origin,
+PhysicalBouton::PhysicalBouton(PhysicalObject* po, const std::array<double, 2>& origin,
                                double length)
     : Excrescence(po, origin, length, Excrescence::Type::kBouton) {
 }

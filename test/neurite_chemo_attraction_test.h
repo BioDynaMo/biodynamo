@@ -28,6 +28,7 @@ using local_biology::CellElement;
 using local_biology::NeuriteElement;
 using local_biology::AbstractLocalBiologyModule;
 using local_biology::LocalBiologyModule;
+using physics::PhysicalNode;
 using physics::Substance;
 using simulation::ECM;
 using simulation::Scheduler;
@@ -124,7 +125,7 @@ class NeuriteChemoAttractionTest : public BaseSimulationTest {
     int number_of_additional_nodes = 10;
     for (int i = 0; i < number_of_additional_nodes; i++) {
       auto coord = java->matrixRandomNoise3(500);
-      ecm->getPhysicalNodeInstance(coord);
+      physical_nodes_.push_back(ecm->createPhysicalNodeInstance(coord));
     }
 
     auto c = CellFactory::getCellInstance( { 0.0, 0.0, 0.0 }, ecm);

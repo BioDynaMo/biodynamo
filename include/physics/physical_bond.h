@@ -16,12 +16,11 @@ class PhysicalBond : public SimStateSerializable, public std::enable_shared_from
  public:
   static std::shared_ptr<PhysicalBond> create();
 
-  static std::shared_ptr<PhysicalBond> create(const std::shared_ptr<PhysicalObject>& a,
-                                              const std::shared_ptr<PhysicalObject>& b);
+  static std::shared_ptr<PhysicalBond> create(PhysicalObject* a, PhysicalObject* b);
 
-  static std::shared_ptr<PhysicalBond> create(const std::shared_ptr<PhysicalObject>& a,
+  static std::shared_ptr<PhysicalBond> create(PhysicalObject* a,
                                               const std::array<double, 2>& position_on_a,
-                                              const std::shared_ptr<PhysicalObject>& b,
+                                              PhysicalObject* b,
                                               const std::array<double, 2>& position_on_b, double resting_length,
                                               double spring_constant);
 
@@ -32,13 +31,13 @@ class PhysicalBond : public SimStateSerializable, public std::enable_shared_from
 
   virtual StringBuilder& simStateToJson(StringBuilder& sb) const override;
 
-  virtual std::shared_ptr<PhysicalObject> getFirstPhysicalObject();
+  virtual PhysicalObject* getFirstPhysicalObject();
 
-  virtual std::shared_ptr<PhysicalObject> getSecondPhysicalObject();
+  virtual PhysicalObject* getSecondPhysicalObject();
 
-  virtual void setFirstPhysicalObject(const std::shared_ptr<PhysicalObject>& a);
+  virtual void setFirstPhysicalObject(PhysicalObject* a);
 
-  virtual void setSecondPhysicalObject(const std::shared_ptr<PhysicalObject>& b);
+  virtual void setSecondPhysicalObject(PhysicalObject* b);
 
   /** If false, the first PhysicalObject doesn't feel the influence of this PhysicalBond.*/
   virtual bool isHasEffectOnA();
@@ -62,17 +61,16 @@ class PhysicalBond : public SimStateSerializable, public std::enable_shared_from
    */
   virtual void setSlidingAllowed(bool sliding_allowed);
 
-  virtual void exchangePhysicalObject(const std::shared_ptr<PhysicalObject>& oldPo,
-                                      const std::shared_ptr<PhysicalObject>& newPo);
+  virtual void exchangePhysicalObject(PhysicalObject* oldPo, PhysicalObject* newPo);
 
   virtual void vanish();
 
-  virtual std::shared_ptr<PhysicalObject> getOppositePhysicalObject(const std::shared_ptr<PhysicalObject>& po);
+  virtual PhysicalObject* getOppositePhysicalObject(PhysicalObject* po);
 
-  virtual void setPositionOnObjectInLocalCoord(const std::shared_ptr<PhysicalObject>& po,
+  virtual void setPositionOnObjectInLocalCoord(PhysicalObject* po,
                                                const std::array<double, 2>& positionInLocalCoordinates);
 
-  virtual std::array<double, 2> getPositionOnObjectInLocalCoord(const std::shared_ptr<PhysicalObject>& po);
+  virtual std::array<double, 2> getPositionOnObjectInLocalCoord(PhysicalObject* po);
 
   /**
    * Returns the force that this PhysicalBond is applying to a PhsicalObject.
@@ -84,7 +82,7 @@ class PhysicalBond : public SimStateSerializable, public std::enable_shared_from
    * @return [Fx,Fy,Fz,p] an array with the 3 force components and the proportion
    * applied to the proximal end - in case of a PhysicalCylinder.
    */
-  std::array<double, 4> getForceOn(const std::shared_ptr<PhysicalObject>& po);
+  std::array<double, 4> getForceOn(PhysicalObject* po);
 
   /**
    * Gets the location in absolute cartesian coord of the first insertion point (on a).
@@ -148,8 +146,9 @@ class PhysicalBond : public SimStateSerializable, public std::enable_shared_from
   virtual bool equalTo(const std::shared_ptr<PhysicalBond>& other) const;
 
  private:
-  std::shared_ptr<PhysicalObject> a_;
-  std::shared_ptr<PhysicalObject> b_;
+  PhysicalObject* a_ = nullptr;
+  PhysicalObject* b_ = nullptr;
+  ;
   std::array<double, 2> origin_on_a_;
   std::array<double, 2> origin_on_b_;
   double resting_length_ = 0;
@@ -167,13 +166,13 @@ class PhysicalBond : public SimStateSerializable, public std::enable_shared_from
   /** If false, there is no force transmitted on the second PhysicalObject (b).*/
   bool has_effect_on_b_ = true;
 
-  void dolocking(const std::shared_ptr<PhysicalObject>& a, const std::shared_ptr<PhysicalObject>& b);
+  void dolocking(PhysicalObject* a, PhysicalObject* b);
 
   // necessary because initialization code uses this->shared_from_this() - cannot be in constructor
-  void init(const std::shared_ptr<PhysicalObject>& a, const std::shared_ptr<PhysicalObject>& b);
+  void init(PhysicalObject* a, PhysicalObject* b);
 
-  void init(const std::shared_ptr<PhysicalObject>& a, const std::array<double, 2>& position_on_a,
-            const std::shared_ptr<PhysicalObject>& b, const std::array<double, 2>& position_on_b, double resting_length,
+  void init(PhysicalObject* a, const std::array<double, 2>& position_on_a, PhysicalObject* b,
+            const std::array<double, 2>& position_on_b, double resting_length,
             double spring_constant);
 };
 

@@ -1,7 +1,7 @@
 #ifndef SPATIAL_ORGANIZATION_SIMPLE_TRIANGULATION_NODE_ORGANIZER_H_
 #define SPATIAL_ORGANIZATION_SIMPLE_TRIANGULATION_NODE_ORGANIZER_H_
 
-#include <spatial_organization/abstract_triangulation_node_organizer.h>
+#include "spatial_organization/abstract_triangulation_node_organizer.h"
 
 namespace cx3d {
 namespace spatial_organization {

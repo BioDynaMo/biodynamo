@@ -9,12 +9,9 @@
 
 #include "sim_state_serializable.h"
 #include "local_biology_module.h"
+#include "physics/physical_object.h"
 
 namespace cx3d {
-
-namespace physics {
-class PhysicalObject;
-}  // namespace physics
 
 namespace cells {
 class Cell;
@@ -24,11 +21,12 @@ namespace simulation {
 class ECM;
 }  // namespace simulation
 
-namespace local_biology {
+namespace local_biology {\
 
 class LocalBiologyModule;
 
 using cells::Cell;
+using physics::PhysicalObject;
 
 class CellElement : public SimStateSerializable {
  public:
@@ -94,10 +92,10 @@ class CellElement : public SimStateSerializable {
   virtual std::array<double, 3> getLocation();
 
   /** The <code>PhysicalSphere or <code>PhysicalCylinder</code> linked with this <code>CellElement</code>.*/
-  virtual std::shared_ptr<physics::PhysicalObject> getPhysical() const = 0;
+  virtual PhysicalObject* getPhysical() const = 0;
 
   /** The <code>PhysicalSphere or <code>PhysicalCylinder</code> linked with this <code>CellElement</code>.*/
-  virtual void setPhysical(const std::shared_ptr<physics::PhysicalObject>& p) = 0;
+  virtual void setPhysical(PhysicalObject::UPtr p) = 0;
 
   /**
    * Displaces the point mass of the <code>PhysicalObject</code> associated with

@@ -6,7 +6,6 @@
 #include <list>
 #include <vector>
 #include <memory>
-#include <local_biology/cell_element.h>
 
 #include "color.h"
 #include "sim_state_serializable.h"

@@ -32,7 +32,7 @@ class SpatialOrganizationNodeMovementListener {
 
   virtual void nodeAboutToBeAdded(
       const std::shared_ptr<SpaceNode<T>>& node, const std::array<double, 3>& planned_position,
-      const std::array<std::shared_ptr<T>, 4>& vertices_of_the_tetrahedron_containing_the_position) = 0;
+                                  const std::array<T*, 4>& vertices_of_the_tetrahedron_containing_the_position) = 0;
 
   virtual void nodeAdded(const std::shared_ptr<SpaceNode<T> >& node) = 0;
 

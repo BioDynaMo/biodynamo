@@ -58,7 +58,7 @@ class PhysicalSphereDebug : public PhysicalSphere {
     logReturnVoid();
   }
 
-  std::array<double, 3> originOf(const std::shared_ptr<PhysicalObject>& daughter) {
+  std::array<double, 3> originOf(PhysicalObject* daughter) {
     logCall(daughter);
     auto ret = PhysicalSphere::originOf(daughter);
     logReturn(ret);
@@ -91,42 +91,42 @@ class PhysicalSphereDebug : public PhysicalSphere {
     logReturnVoid();
   }
 
-  std::shared_ptr<PhysicalCylinder> addNewPhysicalCylinder(double new_length, double phi, double theta) {
+  PhysicalCylinder::UPtr addNewPhysicalCylinder(double new_length, double phi, double theta) {
     logCall(new_length, phi, theta);
     auto ret = PhysicalSphere::addNewPhysicalCylinder(new_length, phi, theta);
-    logReturn(ret);
-    return ret;
+    logReturn(ret.get());
+    return std::move(ret);
   }
 
-  std::shared_ptr<PhysicalSphere> divide(double vr, double phi, double theta) {
+  PhysicalSphere::UPtr divide(double vr, double phi, double theta) {
     logCall(vr, phi, theta);
     auto ret = PhysicalSphere::divide(vr, phi, theta);
-    logReturn(ret);
-    return ret;
+    logReturn(ret.get());
+    return std::move(ret);
   }
 
-  bool isInContactWithSphere(const std::shared_ptr<PhysicalSphere>& s) {
+  bool isInContactWithSphere(PhysicalSphere* s) {
     logCall(s);
     auto ret = PhysicalSphere::isInContactWithSphere(s);
     logReturn(ret);
     return ret;
   }
 
-  bool isInContactWithCylinder(const std::shared_ptr<PhysicalCylinder>& c) {
+  bool isInContactWithCylinder(PhysicalCylinder* c) {
     logCall(c);
     auto ret = PhysicalSphere::isInContactWithCylinder(c);
     logReturn(ret);
     return ret;
   }
 
-  std::array<double, 4> getForceOn(const std::shared_ptr<PhysicalCylinder>& c) {
+  std::array<double, 4> getForceOn(PhysicalCylinder* c) {
     logCall(c);
     auto ret = PhysicalSphere::getForceOn(c);
     logReturn(ret);
     return ret;
   }
 
-  std::array<double, 3> getForceOn(const std::shared_ptr<PhysicalSphere>& s) {
+  std::array<double, 3> getForceOn(PhysicalSphere* s) {
     logCall(s);
     auto ret = PhysicalSphere::getForceOn(s);
     logReturn(ret);
@@ -146,7 +146,7 @@ class PhysicalSphereDebug : public PhysicalSphere {
     return ret;
   }
 
-  std::list<std::shared_ptr<PhysicalCylinder>> getDaughters() const {
+  std::list<PhysicalCylinder*> getDaughters() const {
     logCallParameterless();
     auto ret = PhysicalSphere::getDaughters();
     logReturn(ret);
@@ -220,7 +220,7 @@ class PhysicalSphereDebug : public PhysicalSphere {
     return ret;
   }
 
-  bool isRelative(const std::shared_ptr<PhysicalObject>& po) const {
+  bool isRelative(PhysicalObject* po) const {
     logCall(po);
     auto ret = PhysicalSphere::isRelative(po);
     logReturn(ret);
@@ -234,21 +234,20 @@ class PhysicalSphereDebug : public PhysicalSphere {
     return ret;
   }
 
-  std::array<double, 3> forceTransmittedFromDaugtherToMother(const std::shared_ptr<PhysicalObject>& mother) {
+  std::array<double, 3> forceTransmittedFromDaugtherToMother(PhysicalObject* mother) {
     logCall(mother);
     auto ret = PhysicalSphere::forceTransmittedFromDaugtherToMother(mother);
     logReturn(ret);
     return ret;
   }
 
-  void removeDaugther(const std::shared_ptr<PhysicalObject>& daughter) {
+  void removeDaugther(PhysicalObject* daughter) {
     logCall(daughter);
     PhysicalSphere::removeDaugther(daughter);
     logReturnVoid();
   }
 
-  void updateRelative(const std::shared_ptr<PhysicalObject>& old_relative,
-      const std::shared_ptr<PhysicalObject>& new_relative) {
+  void updateRelative(PhysicalObject* old_relative, PhysicalObject* new_relative) {
     logCall(old_relative, new_relative);
     PhysicalSphere::updateRelative(old_relative, new_relative);
     logReturnVoid();

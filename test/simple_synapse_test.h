@@ -27,6 +27,7 @@ using cells::CellFactory;
 using local_biology::CellElement;
 using local_biology::NeuriteElement;
 using local_biology::LocalBiologyModule;
+using physics::PhysicalNode;
 using simulation::ECM;
 using simulation::Scheduler;
 using synapse::PhysicalBouton;
@@ -46,7 +47,7 @@ class SimpleSynapseTest : public BaseSimulationTest {
     int number_of_additional_nodes = 10;
     for (int i = 0; i < number_of_additional_nodes; i++) {
       auto coord = java->matrixRandomNoise3(500);
-      ecm->getPhysicalNodeInstance(coord);
+      physical_nodes_.push_back(ecm->createPhysicalNodeInstance(coord));
     }
 
     std::array<double, 3> up { 0.0, 0.0, 1.0 }, down { 0.0, 0.0, -1.0 };

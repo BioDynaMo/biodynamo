@@ -53,7 +53,7 @@ class XBifurcationModule : public LocalBiologyModule {
   XBifurcationModule& operator=(const XBifurcationModule&) = delete;
 
   void run() override {
-    auto cyl = std::static_pointer_cast<PhysicalCylinder>(cell_element_->getPhysical());
+    auto cyl = static_cast<PhysicalCylinder*>(cell_element_->getPhysical());
     if (cyl->getActualLength() < free_interval_) {
       return;
     }

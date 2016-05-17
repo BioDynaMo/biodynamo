@@ -42,6 +42,7 @@ class Substance;
  */
 class PhysicalNode : public SimStateSerializable, public std::enable_shared_from_this<PhysicalNode> {
  public:
+  using UPtr = std::unique_ptr<PhysicalNode>;
   // *************************************************************************************
   // *      METHODS FOR INTERPOLATION (used only by PhysicalNodeMovementListener)        *
   // *************************************************************************************
@@ -52,8 +53,6 @@ class PhysicalNode : public SimStateSerializable, public std::enable_shared_from
   static void setECM(std::shared_ptr<simulation::ECM> e) {
     ecm_ = e;
   }
-
-  static std::shared_ptr<PhysicalNode> create();
 
   /**
    * Finding the barycentric coordinates of a point Q with respect to the the four points P
@@ -78,18 +77,13 @@ class PhysicalNode : public SimStateSerializable, public std::enable_shared_from
    * @return
    */
   static std::array<double, 4> getBarycentricCoordinates(const std::array<double, 3>& Q,
-                                                         const std::array<std::shared_ptr<PhysicalNode>, 4>& vertices);
+                                                         const std::array<PhysicalNode*, 4>& vertices);
 
   PhysicalNode();
 
-  virtual ~PhysicalNode() {
-  }
+  virtual ~PhysicalNode();
 
   virtual StringBuilder& simStateToJson(StringBuilder& sb) const override;
-
-  virtual bool equalTo(const std::shared_ptr<PhysicalNode>& other) {
-    return this == other.get();
-  }
 
   virtual std::string toString() const;
 

@@ -289,7 +289,7 @@ class Tetrahedron : public std::enable_shared_from_this<Tetrahedron<T>> {
    *
    * @return An array of objects of type <code>T</code>.
    */
-  virtual std::array<std::shared_ptr<T>, 4> getVerticeContents() const;
+  virtual std::array<T*, 4> getVerticeContents() const;
 
   /**
    * Returns whether this tetrahedron is infinite.

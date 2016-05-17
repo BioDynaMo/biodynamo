@@ -60,7 +60,7 @@ class SpaceNode : public SpatialOrganizationNode<T>,
    * </code>
    */
   static std::shared_ptr<SpaceNode<T>> create(
-      const std::array<double, 3>& position, const std::shared_ptr<T> content) {
+      const std::array<double, 3>& position, T* content) {
 #ifdef SPACENODE_DEBUG
     SpaceNode<T>* raw_pointer = new SpaceNodeDebug<T>(position, content);
 #else
@@ -71,7 +71,7 @@ class SpaceNode : public SpatialOrganizationNode<T>,
   }
 
   static std::shared_ptr<SpaceNode<T>> create(
-      double x, double y, double z, const std::shared_ptr<T> content) {
+      double x, double y, double z, T* content) {
 #ifdef SPACENODE_DEBUG
     SpaceNode<T>* raw_pointer = new SpaceNodeDebug<T>(x, y, z, content);
 #else
@@ -117,21 +117,21 @@ class SpaceNode : public SpatialOrganizationNode<T>,
 
   virtual std::list<std::shared_ptr<Edge<T>> > getEdges() const override;  //TODO change back to SpatialOrganizationEdge afte porting has been finished
 
-  virtual std::list<std::shared_ptr<T>> getNeighbors() const override;
+  virtual std::list<T*> getNeighbors() const override;
 
   virtual std::shared_ptr<SpaceNode<T>> getNewInstance(
       const std::array<double, 3>& position,
-      const std::shared_ptr<T>& user_object) override;
+      T* user_object) override;
 
-  virtual std::list<std::shared_ptr<T>> getPermanentListOfNeighbors() const
+  virtual std::list<T*> getPermanentListOfNeighbors() const
       override;
 
   virtual std::array<double, 3> getPosition() const override;
 
-  virtual std::shared_ptr<T> getUserObject() const override;
+  virtual T* getUserObject() const override;
 
   //TODO clean up this hack after porting has been finished
-  virtual std::array<std::shared_ptr<T>, 4> getVerticesOfTheTetrahedronContaining(
+  virtual std::array<T*, 4> getVerticesOfTheTetrahedronContaining(
       const std::array<double, 3>& position,
       std::array<int, 1>& returned_null) const override;
 
@@ -295,7 +295,7 @@ class SpaceNode : public SpatialOrganizationNode<T>,
    *            The user object that should be associated with this SpaceNode.
    */
   SpaceNode(const std::array<double, 3>& position,
-            const std::shared_ptr<T> content);
+            T* content);
 
   /**
    * Creates a new SpaceNode with at a given coordinate and associates it with
@@ -310,7 +310,7 @@ class SpaceNode : public SpatialOrganizationNode<T>,
    * @param content
    *            The user object that should be associated with this SpaceNode.
    */
-  SpaceNode(double x, double y, double z, const std::shared_ptr<T> content);
+  SpaceNode(double x, double y, double z, T* content);
 
  private:
   /**
@@ -349,7 +349,7 @@ class SpaceNode : public SpatialOrganizationNode<T>,
   /**
    * The user object associated with this SpaceNode.
    */
-  std::shared_ptr<T> content_;
+  T* content_ = nullptr;
 
   /**
    * A std::list of std::listener objects that are called whenever this node is beeing

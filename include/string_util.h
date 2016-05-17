@@ -118,7 +118,7 @@ class StringUtil {
   }
 
   template<class T, size_t N>
-  static std::string toStr(const std::array<std::shared_ptr<T>, N>& arr) {
+  static std::string toStr(const std::array<T, N>& arr) {
     std::stringstream str;
     str << "{";
     for (auto el : arr) {
@@ -191,7 +191,7 @@ class StringUtil {
   }
 
   template<class T>
-  static std::string toStr(const std::list<std::shared_ptr<T>>& list) {
+  static std::string toStr(const std::list<T>& list) {
     std::stringstream str;
     str << "{";
     for (auto el : list) {

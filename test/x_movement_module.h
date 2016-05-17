@@ -48,7 +48,7 @@ class XMovementModule : public LocalBiologyModule {
   XMovementModule& operator=(const XMovementModule&) = delete;
 
   void run() override {
-    auto cyl = std::static_pointer_cast<PhysicalCylinder>(cell_element_->getPhysical());
+    auto cyl = static_cast<PhysicalCylinder*>(cell_element_->getPhysical());
     double length_before = cyl->getLength();
     // not to thin?
     if (cyl->getDiameter() < minimal_branch_diameter_) {

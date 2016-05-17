@@ -120,7 +120,7 @@ std::array<double, 3> ECM::forceFromArtificialWall(const std::array<double, 3>& 
 }
 
 std::shared_ptr<spatial_organization::SpaceNode<physics::PhysicalNode> > ECM::getSpatialOrganizationNodeInstance(
-    const std::array<double, 3>& position, const std::shared_ptr<physics::PhysicalNode>& userObject) {
+    const std::array<double, 3>& position, PhysicalNode* userObject) {
   if (initial_node_ == nullptr) {
     auto sn1 = SpaceNode<PhysicalNode>::create(position, userObject);
     sn1->addSpatialOrganizationNodeMovementListener(PhysicalNodeMovementListener::create());
@@ -132,7 +132,7 @@ std::shared_ptr<spatial_organization::SpaceNode<physics::PhysicalNode> > ECM::ge
 
 std::shared_ptr<spatial_organization::SpaceNode<physics::PhysicalNode> > ECM::getSpatialOrganizationNodeInstance(
     const std::shared_ptr<spatial_organization::SpaceNode<physics::PhysicalNode> >& n,
-    const std::array<double, 3>& position, const std::shared_ptr<physics::PhysicalNode>& userObject) {
+    const std::array<double, 3>& position, PhysicalNode* userObject) {
   if (initial_node_ == nullptr) {
     auto sn1 = SpaceNode<PhysicalNode>::create(position, userObject);
     sn1->addSpatialOrganizationNodeMovementListener(PhysicalNodeMovementListener::create());
@@ -143,7 +143,9 @@ std::shared_ptr<spatial_organization::SpaceNode<physics::PhysicalNode> > ECM::ge
   return n->getNewInstance(position, userObject);
 }
 
-void ECM::addGridOfPhysicalNodes(double x1, double x2, double y1, double y2, double z1, double z2, double d) {
+std::vector<PhysicalNode::UPtr> ECM::createGridOfPhysicalNodes(double x1, double x2, double y1, double y2, double z1,
+                                                               double z2, double d) {
+  std::vector < PhysicalNode::UPtr > result;
   // distance outside the boundary where you put your first nodes
   double border_length = 20;
 
@@ -164,58 +166,61 @@ void ECM::addGridOfPhysicalNodes(double x1, double x2, double y1, double y2, dou
         // add small jitter
         coord = Matrix::add(coord, matrixRandomNoise3(d * 0.01));
         // create the node
-        auto pn = java_->newPhysicalNode();
+        auto pn = PhysicalNode::UPtr(new PhysicalNode());
         // request a delaunay vertex
         std::shared_ptr<SpaceNode<PhysicalNode>> new_son;
         if (old_son != nullptr) {
-          new_son = getSpatialOrganizationNodeInstance(old_son, coord, pn);
+          new_son = getSpatialOrganizationNodeInstance(old_son, coord, pn.get());
         } else {
-          new_son = getSpatialOrganizationNodeInstance(coord, pn);
+          new_son = getSpatialOrganizationNodeInstance(coord, pn.get());
         }
         // setting call-back
         pn->setSoNode(new_son);
         // register this node as in ECM
-        addPhysicalNode(pn);
+        addPhysicalNode(pn.get());
         // becomes the neighbor of the next node
         old_son = new_son;
+
+        result.push_back(std::move(pn));
       }
     }
   }
+  return result;
 }
 
-std::shared_ptr<physics::PhysicalNode> ECM::getPhysicalNodeInstance(const std::array<double, 3>& position) {
-  auto pn = java_->newPhysicalNode();
-  auto son = getSpatialOrganizationNodeInstance(position, pn);
+PhysicalNode::UPtr ECM::createPhysicalNodeInstance(const std::array<double, 3>& position) {
+  auto pn = PhysicalNode::UPtr(new PhysicalNode());
+  auto son = getSpatialOrganizationNodeInstance(position, pn.get());
   pn->setSoNode(son);
-  addPhysicalNode(pn);
+  addPhysicalNode(pn.get());
   return pn;
 }
 
-void ECM::addPhysicalCylinder(const std::shared_ptr<physics::PhysicalCylinder>& cyl) {
+void ECM::addPhysicalCylinder(PhysicalCylinder* cyl) {
   physical_cylinders_.push_back(cyl);
   addPhysicalNode(cyl);
 }
 
-void ECM::removePhysicalCylinder(const std::shared_ptr<physics::PhysicalCylinder>& cyl) {
+void ECM::removePhysicalCylinder(PhysicalCylinder* cyl) {
   STLUtil::vectorRemove(physical_cylinders_, cyl);
   removePhysicalNode(cyl);
 }
 
-void ECM::addPhysicalSphere(const std::shared_ptr<physics::PhysicalSphere>& sphere) {
+void ECM::addPhysicalSphere(PhysicalSphere* sphere) {
   physical_spheres_.push_back(sphere);
   addPhysicalNode(sphere);
 }
 
-void ECM::removePhysicalSphere(const std::shared_ptr<physics::PhysicalSphere>& sphere) {
+void ECM::removePhysicalSphere(PhysicalSphere* sphere) {
   STLUtil::vectorRemove(physical_spheres_, sphere);
   removePhysicalNode(sphere);
 }
 
-void ECM::addPhysicalNode(const std::shared_ptr<physics::PhysicalNode>& node) {
+void ECM::addPhysicalNode(PhysicalNode* node) {
   physical_nodes_.push_back(node);
 }
 
-void ECM::removePhysicalNode(const std::shared_ptr<physics::PhysicalNode>& node) {
+void ECM::removePhysicalNode(PhysicalNode* node) {
   STLUtil::vectorRemove(physical_nodes_, node);
 }
 
@@ -509,15 +514,15 @@ double ECM::getGradientArtificialConcentration(const std::shared_ptr<physics::Su
   return getValueArtificialConcentration(s->getId(), position);
 }
 
-std::vector<std::shared_ptr<physics::PhysicalNode>> ECM::getPhysicalNodeList() const {
+std::vector<PhysicalNode*> ECM::getPhysicalNodeList() const {
   return physical_nodes_;
 }
 
-std::vector<std::shared_ptr<physics::PhysicalSphere>> ECM::getPhysicalSphereList() const {
+std::vector<PhysicalSphere*> ECM::getPhysicalSphereList() const {
   return physical_spheres_;
 }
 
-std::vector<std::shared_ptr<physics::PhysicalCylinder>> ECM::getPhysicalCylinderList() const {
+std::vector<PhysicalCylinder*> ECM::getPhysicalCylinderList() const {
   return physical_cylinders_;
 }
 

@@ -18,7 +18,7 @@ Excrescence::Excrescence(Excrescence::Type type)
     : type_ { type } {
 }
 
-Excrescence::Excrescence(const std::shared_ptr<physics::PhysicalObject> po, const std::array<double, 2>& position_on_po,
+Excrescence::Excrescence(PhysicalObject* po, const std::array<double, 2>& position_on_po,
                          double length, Excrescence::Type type)
     : po_ { po },
       position_on_po_ ( position_on_po ),
@@ -74,11 +74,11 @@ void Excrescence::setLength(double length) {
   length_ = length;
 }
 
-std::shared_ptr<physics::PhysicalObject> Excrescence::getPo() const {
+PhysicalObject* Excrescence::getPo() const {
   return po_;
 }
 
-void Excrescence::setPo(const std::shared_ptr<physics::PhysicalObject>& po) {
+void Excrescence::setPo(PhysicalObject* po) {
   po_ = po;
 }
 

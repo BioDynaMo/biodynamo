@@ -115,6 +115,29 @@ class STLUtil {
     }
   }
 
+  /**
+   * Function to statically downcast a unique pointer from a base type to its derived type
+   * http://stackoverflow.com/questions/21174593/downcasting-unique-ptrbase-to-unique-ptrderived
+   */
+  template<typename Derived, typename Base>
+  static std::unique_ptr<Derived> staticUPtrCast(std::unique_ptr<Base>&& p) {
+    auto d = static_cast<Derived*>(p.release());
+    return std::unique_ptr < Derived > (d);
+  }
+
+  /**
+   * Function to dymamically downcast a unique pointer from a base type to its derived type
+   * http://stackoverflow.com/questions/21174593/downcasting-unique-ptrbase-to-unique-ptrderived
+   */
+  template<typename Derived, typename Base>
+  static std::unique_ptr<Derived> dynamicUPtrCast(std::unique_ptr<Base>&& p) {
+    if (Derived* result = dynamic_cast<Derived*>(p.get())) {
+      p.release();
+      return std::unique_ptr < Derived > (result);
+    }
+    return std::unique_ptr < Derived > (nullptr);
+  }
+
  private:
   STLUtil() = delete;
 };

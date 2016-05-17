@@ -18,7 +18,7 @@ class PhysicalSpine : public Excrescence {
 
   PhysicalSpine();
 
-  PhysicalSpine(const std::shared_ptr<physics::PhysicalObject>& po, const std::array<double, 2>& origin, double length);
+  PhysicalSpine(PhysicalObject* po, const std::array<double, 2>& origin, double length);
 
   virtual ~PhysicalSpine();
 

@@ -15,19 +15,19 @@ Cell* CellFactory::getCellInstance(const std::array<double, 3>& cell_origin,
   // Create new cell
   auto cell = new Cell();
   auto soma = SomaElement::UPtr(new SomaElement());
-  auto ps = ecm->newPhysicalSphere();
-  soma->setPhysical(ps);
-  auto son = ecm->getSpatialOrganizationNodeInstance(cell_origin, ps);
+  auto ps = PhysicalSphere::UPtr(new PhysicalSphere());
+  auto son = ecm->getSpatialOrganizationNodeInstance(cell_origin, ps.get());
   ps->setSoNode(son);
 
   // Add cell to ECM instance
-  ecm->addPhysicalSphere(soma->getPhysicalSphere());
-
-  cell->setSomaElement(std::move(soma));
+  ecm->addPhysicalSphere(ps.get());  //fixme critical
 
   // Set cell properties
   ps->setMassLocation(cell_origin);
   ps->setColor(ecm->cellTypeColor(cell->getType()));
+
+  soma->setPhysical(std::move(ps));
+  cell->setSomaElement(std::move(soma));
   return cell;
 }
 

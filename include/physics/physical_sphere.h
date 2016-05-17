@@ -6,7 +6,7 @@
 #include <memory>
 #include <unordered_map>
 
-#include "physics/physical_object.h"
+//#include "physics/physical_object.h"
 #include "physics/physical_cylinder.h"
 
 namespace cx3d {
@@ -31,7 +31,7 @@ using local_biology::SomaElement;
  */
 class PhysicalSphere : public PhysicalObject {
  public:
-  static std::shared_ptr<PhysicalSphere> create();
+  using UPtr = std::unique_ptr<PhysicalSphere>;
 
   PhysicalSphere();  //todo should be protected
 
@@ -53,7 +53,7 @@ class PhysicalSphere : public PhysicalObject {
 
   virtual void movePointMass(double speed, const std::array<double, 3>& direction) override;
 
-  virtual std::array<double, 3> originOf(const std::shared_ptr<PhysicalObject>& daughter) override;
+  virtual std::array<double, 3> originOf(PhysicalObject* daughter) override;
 
   // *************************************************************************************
   //   BIOLOGY (growth, division, new neurite... )
@@ -92,7 +92,7 @@ class PhysicalSphere : public PhysicalObject {
    * @param phi the angle from the zAxis
    * @param theta the angle from the xAxis around the zAxis
    */
-  virtual std::shared_ptr<PhysicalCylinder> addNewPhysicalCylinder(double new_length, double phi, double theta);
+  virtual PhysicalCylinder::UPtr addNewPhysicalCylinder(double new_length, double phi, double theta);
 
   /**
    * Division of the sphere into two spheres. The one in which the method is called becomes
@@ -107,7 +107,7 @@ class PhysicalSphere : public PhysicalObject {
    * @param theta the angle from the xAxis around the zAxis (for the division axis)
    * @return the other daughter (new sphere)
    */
-  virtual std::shared_ptr<PhysicalSphere> divide(double vr, double phi, double theta);
+  virtual UPtr divide(double vr, double phi, double theta);
 
   // *************************************************************************************
   //   PHYSICS
@@ -116,13 +116,13 @@ class PhysicalSphere : public PhysicalObject {
   /**
    * Tells if a sphere is in the detection range of an other sphere.
    */
-  virtual bool isInContactWithSphere(const std::shared_ptr<PhysicalSphere>& s) override;
+  virtual bool isInContactWithSphere(PhysicalSphere* s) override;
 
-  virtual bool isInContactWithCylinder(const std::shared_ptr<PhysicalCylinder>& c) override;
+  virtual bool isInContactWithCylinder(PhysicalCylinder* c) override;
 
-  virtual std::array<double, 4> getForceOn(const std::shared_ptr<PhysicalCylinder>& c) override;
+  virtual std::array<double, 4> getForceOn(PhysicalCylinder* c) override;
 
-  virtual std::array<double, 3> getForceOn(const std::shared_ptr<PhysicalSphere>& s) override;
+  virtual std::array<double, 3> getForceOn(PhysicalSphere* s) override;
 
   virtual void runPhysics() override;
 
@@ -131,7 +131,7 @@ class PhysicalSphere : public PhysicalObject {
   /**
    * @return the daughters
    */
-  virtual std::list<std::shared_ptr<PhysicalCylinder>> getDaughters() const;
+  virtual std::list<PhysicalCylinder*> getDaughters() const;
 
   virtual void runIntracellularDiffusion() override;
 
@@ -208,7 +208,7 @@ class PhysicalSphere : public PhysicalObject {
 
   virtual CellElement* getCellElement() const;
 
-  virtual bool isRelative(const std::shared_ptr<PhysicalObject>& po) const;
+  virtual bool isRelative(PhysicalObject* po) const;
 
   virtual double getLength() const override;
 
@@ -216,13 +216,12 @@ class PhysicalSphere : public PhysicalObject {
   /**
    * A PhysicalSphere has no mother that could call, so this method is not used.
    */
-  virtual std::array<double, 3> forceTransmittedFromDaugtherToMother(const std::shared_ptr<PhysicalObject>& mother)
+  virtual std::array<double, 3> forceTransmittedFromDaugtherToMother(PhysicalObject* mother)
       override;
 
-  virtual void removeDaugther(const std::shared_ptr<PhysicalObject>& daughter) override;
+  virtual void removeDaugther(PhysicalObject* daughter) override;
 
-  virtual void updateRelative(const std::shared_ptr<PhysicalObject>& old_relative,
-                              const std::shared_ptr<PhysicalObject>& new_relative) override;
+  virtual void updateRelative(PhysicalObject* old_relative, PhysicalObject* new_relative) override;
 
   virtual void updateDependentPhysicalVariables();
 
@@ -249,10 +248,10 @@ class PhysicalSphere : public PhysicalObject {
   SomaElement* soma_element_ = nullptr;
 
   /* The PhysicalCylinders attached to this sphere*/
-  std::list<std::shared_ptr<PhysicalCylinder>> daughters_;
-  /* Position in local coordinates (std::shared_ptr<PhysicalObject>'s xAxis,yAxis,zAxis) of
+  std::list<PhysicalCylinder*> daughters_;
+  /* Position in local coordinates (PhysicalObject*'s xAxis,yAxis,zAxis) of
    * the attachment point of my daughters.*/
-  std::unordered_map<std::shared_ptr<PhysicalCylinder>, std::array<double, 3>, PhysicalCylinderHash,
+  std::unordered_map<PhysicalCylinder*, std::array<double, 3>, PhysicalCylinderHash,
       PhysicalCylinderEqual> daughters_coord_;
 
   /* Plays the same role than mass and adherence, for rotation around center of mass. */

@@ -21,6 +21,7 @@
 namespace cx3d {
 namespace local_biology {
 
+using physics::PhysicalObject;
 using namespace cx3d::synapse;
 
 NeuriteElement::NeuriteElement()
@@ -35,7 +36,7 @@ NeuriteElement::~NeuriteElement() {
 StringBuilder& NeuriteElement::simStateToJson(StringBuilder& sb) const {
   CellElement::simStateToJson(sb);
 
-  SimStateSerializationUtil::keyValue(sb, "physicalCylinder", physical_cylinder_);
+  SimStateSerializationUtil::keyValue(sb, "physicalCylinder", physical_cylinder_.get());
   SimStateSerializationUtil::keyValue(sb, "isAnAxon", is_axon_);
   SimStateSerializationUtil::removeLastChar(sb);
 
@@ -78,13 +79,14 @@ NeuriteElement* NeuriteElement::branch(double diameter,
 
   // making the branching at physicalObject level
   auto pc_1 = physical_cylinder_->branchCylinder(1.0, direction);
-  // linking biology and phyics
-  ne->setPhysical(pc_1);  // (this also sets the call back)
   // specifying the diameter we wanted
   pc_1->setDiameter(diameter);
   //
   pc_1->setBranchOrder(physical_cylinder_->getBranchOrder() + 1);
   // TODO : Caution : doesn't change the value distally on the main branch
+
+  // linking biology and phyics
+  ne->setPhysical(std::move(pc_1));  // (this also sets the call back)
 
   // Copy of the local biological modules:
   for (auto m : getLocalBiologyModulesList()) {
@@ -137,15 +139,15 @@ std::array<NeuriteElement*, 2> NeuriteElement::bifurcate(double length, double d
 
   // 2) creating the first daughter branch
   auto ne_1 = getCopy();
-  auto pc_1 = pc[0];
-  ne_1->setPhysical(pc_1);
+  auto pc_1 = pc[0].get();
+  ne_1->setPhysical(std::move(pc[0]));
   pc_1->setDiameter(diameter_1);
   pc_1->setBranchOrder(physical_cylinder_->getBranchOrder() + 1);
 
   // 3) the second one
   auto ne_2 = getCopy();
-  auto pc_2 = pc[1];
-  ne_2->setPhysical(pc_2);
+  auto pc_2 = pc[1].get();
+  ne_2->setPhysical(std::move(pc[1]));
   pc_2->setDiameter(diameter_2);
   pc_2->setBranchOrder(physical_cylinder_->getBranchOrder() + 1);
 
@@ -202,7 +204,7 @@ void NeuriteElement::makeSpines(double interval) {
   for (auto i = 0; i < nb; i++) {
     // create the physical part
     std::array<double, 2> coord = { length * ecm_->getRandomDouble1(), 6.28 * ecm_->getRandomDouble1() };
-    auto p_spine = PhysicalSpine::UPtr { new PhysicalSpine(physical_cylinder_, coord, 3.0) };
+    auto p_spine = PhysicalSpine::UPtr { new PhysicalSpine(physical_cylinder_.get(), coord, 3.0) };
     // create the biological part and set call backs
     auto b_spine = BiologicalSpine::UPtr { new BiologicalSpine() };
     b_spine->setPhysicalSpine(p_spine.get());
@@ -215,7 +217,7 @@ void NeuriteElement::makeSingleSpine() {
   double length = physical_cylinder_->getActualLength();
   // create the physical part
   std::array<double, 2> coord = { length * ecm_->getRandomDouble1(), 6.28 * ecm_->getRandomDouble1() };
-  auto p_spine = PhysicalSpine::UPtr { new PhysicalSpine(physical_cylinder_, coord, 3.0) };
+  auto p_spine = PhysicalSpine::UPtr { new PhysicalSpine(physical_cylinder_.get(), coord, 3.0) };
   // create the biological part and set call backs
   auto b_spine = BiologicalSpine::UPtr { new BiologicalSpine() };
   b_spine->setPhysicalSpine(p_spine.get());
@@ -232,7 +234,7 @@ void NeuriteElement::makeSingleSpine(double dist_from_proximal_end) {
   }
   // create the physical part
   std::array<double, 2> coord = { dist_from_proximal_end, 6.28 * ecm_->getRandomDouble1() };
-  auto p_spine = PhysicalSpine::UPtr { new PhysicalSpine(physical_cylinder_, coord, 3.0) };
+  auto p_spine = PhysicalSpine::UPtr { new PhysicalSpine(physical_cylinder_.get(), coord, 3.0) };
   // create the biological part and set call backs
   auto b_spine = BiologicalSpine::UPtr { new BiologicalSpine() };
   b_spine->setPhysicalSpine(p_spine.get());
@@ -249,7 +251,7 @@ void NeuriteElement::makeBoutons(double interval) {
   for (int i = 0; i < nb; i++) {
     // create the physical part
     std::array<double, 2> coord = { length * ecm_->getRandomDouble1(), -3.14 + 6.28 * ecm_->getRandomDouble1() };
-    auto p_bouton = new PhysicalBouton(physical_cylinder_, coord, 2);
+    auto p_bouton = new PhysicalBouton(physical_cylinder_.get(), coord, 2);
     physical_cylinder_->addExcrescence(PhysicalBouton::UPtr { p_bouton });
     // create the biological part and set call backs
     auto b_bouton = BiologicalBouton::UPtr { new BiologicalBouton() };
@@ -267,7 +269,7 @@ void NeuriteElement::makeSingleBouton(double dist_from_proximal_end) {
   }
   // create the physical part
   std::array<double, 2> coord = { dist_from_proximal_end, 6.28 * ecm_->getRandomDouble1() };
-  auto p_bouton = PhysicalBouton::UPtr { new PhysicalBouton(physical_cylinder_, coord, 2) };
+  auto p_bouton = PhysicalBouton::UPtr { new PhysicalBouton(physical_cylinder_.get(), coord, 2) };
   // create the biological part and set call backs
   auto b_bouton = BiologicalBouton::UPtr { new BiologicalBouton() };
   b_bouton->setPhysicalBouton(p_bouton.get());
@@ -280,7 +282,7 @@ void NeuriteElement::makeSingleBouton() {
   double length = physical_cylinder_->getActualLength();
   // create the physical part
   std::array<double, 2> coord = { length * ecm_->getRandomDouble1(), -3.14 + 6.28 * ecm_->getRandomDouble1() };
-  auto p_bouton = PhysicalBouton::UPtr { new PhysicalBouton(physical_cylinder_, coord, 2) };
+  auto p_bouton = PhysicalBouton::UPtr { new PhysicalBouton(physical_cylinder_.get(), coord, 2) };
   // create the biological part and set call backs
   auto b_bouton = BiologicalBouton::UPtr { new BiologicalBouton() };
   b_bouton->setPhysicalBouton(p_bouton.get());
@@ -302,7 +304,7 @@ int NeuriteElement::synapseBetweenExistingBS(double probability_to_synapse) {
       continue;
     }
 
-    auto po = std::static_pointer_cast<physics::PhysicalObject>(pn);
+    auto po = static_cast<PhysicalObject*>(pn);
     // for all Excrescence pair :
     for (auto e1 : physical_cylinder_->getExcrescences()) {
       // only if this one is a free bouton:
@@ -346,21 +348,21 @@ int NeuriteElement::synapseBetweenExistingBS(double probability_to_synapse) {
   // and : calculation of physical.getUnitNormalVector outside inner most loop
 }
 
-std::shared_ptr<physics::PhysicalObject> NeuriteElement::getPhysical() const {
-  return physical_cylinder_;
+PhysicalObject* NeuriteElement::getPhysical() const {
+  return physical_cylinder_.get();
 }
 
-void NeuriteElement::setPhysical(const std::shared_ptr<physics::PhysicalObject>& po) {
-  physical_cylinder_ = std::static_pointer_cast<physics::PhysicalCylinder>(po);
+void NeuriteElement::setPhysical(PhysicalObject::UPtr po) {
+  physical_cylinder_ = STLUtil::staticUPtrCast < PhysicalCylinder > (std::move(po));
   physical_cylinder_->setNeuriteElement(this);
 }
 
-std::shared_ptr<physics::PhysicalCylinder> NeuriteElement::getPhysicalCylinder() const {
-  return physical_cylinder_;
+PhysicalCylinder* NeuriteElement::getPhysicalCylinder() const {
+  return physical_cylinder_.get();
 }
 
-void NeuriteElement::setPhysicalCylinder(const std::shared_ptr<physics::PhysicalCylinder>& pc) {
-  physical_cylinder_ = pc;
+void NeuriteElement::setPhysicalCylinder(PhysicalCylinder::UPtr pc) {
+  physical_cylinder_ = std::move(pc);
   physical_cylinder_->setNeuriteElement(this);
 }
 

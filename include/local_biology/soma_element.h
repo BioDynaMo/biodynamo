@@ -5,17 +5,16 @@
 #include <string>
 
 #include "local_biology/cell_element.h"
+#include "physics/physical_sphere.h"
 
 namespace cx3d {
-
-namespace physics {
-class PhysicalObject;
-class PhysicalSphere;
-}  // namespace physics
 
 namespace local_biology {
 
 class NeuriteElement;
+
+using physics::PhysicalObject;
+using physics::PhysicalSphere;
 
 class SomaElement : public CellElement {
  public:
@@ -50,13 +49,13 @@ class SomaElement : public CellElement {
 
   //todo implement makeSomaticSpines
 
-  virtual std::shared_ptr<physics::PhysicalObject> getPhysical() const override;
+  virtual PhysicalObject* getPhysical() const override;
 
-  virtual void setPhysical(const std::shared_ptr<physics::PhysicalObject>& po) override;
+  virtual void setPhysical(PhysicalObject::UPtr po) override;
 
-  virtual std::shared_ptr<physics::PhysicalSphere> getPhysicalSphere() const;
+  virtual PhysicalSphere* getPhysicalSphere() const;
 
-  virtual void setPhysicalSphere(const std::shared_ptr<physics::PhysicalSphere>& po);
+  virtual void setPhysicalSphere(PhysicalSphere::UPtr po);
 
   virtual std::list<NeuriteElement*> getNeuriteList() const;
 
@@ -68,7 +67,7 @@ class SomaElement : public CellElement {
   SomaElement(const SomaElement&) = delete;
   SomaElement& operator=(const SomaElement&) = delete;
 
-  std::shared_ptr<physics::PhysicalSphere> physical_;
+  PhysicalSphere::UPtr physical_;
 };
 
 }  // namespace local_biology

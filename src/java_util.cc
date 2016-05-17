@@ -85,25 +85,13 @@ double JavaUtil2::atan2(double d, double d1) const {
   return std::atan2(d, d1);
 }
 
-std::shared_ptr<physics::PhysicalCylinder> JavaUtil2::newPhysicalCylinder() const {
-  return PhysicalCylinder::create();
-}
-
-std::shared_ptr<physics::PhysicalNode> JavaUtil2::newPhysicalNode() const {
-  return PhysicalNode::create();
-}
-
 std::shared_ptr<physics::PhysicalNodeMovementListener> JavaUtil2::newPhysicalNodeMovementListener() const {
   return PhysicalNodeMovementListener::create();
 }
 
-std::shared_ptr<physics::PhysicalSphere> JavaUtil2::newPhysicalSphere() const {
-  return PhysicalSphere::create();
-}
-
-std::shared_ptr<physics::PhysicalBond> JavaUtil2::newPhysicalBond(const std::shared_ptr<physics::PhysicalObject>& a,
+std::shared_ptr<physics::PhysicalBond> JavaUtil2::newPhysicalBond(PhysicalObject* a,
                                                                   const std::array<double, 2>& position_on_a,
-                                                                  const std::shared_ptr<physics::PhysicalObject>& b,
+                                                                  PhysicalObject* b,
                                                                   const std::array<double, 2>& position_on_b,
                                                                   double resting_length, double spring_constant) const {
   return PhysicalBond::create(a, position_on_a, b, position_on_b, resting_length, spring_constant);

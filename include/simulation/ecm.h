@@ -41,6 +41,7 @@ namespace simulation {
 using cells::Cell;
 using local_biology::SomaElement;
 using local_biology::NeuriteElement;
+using physics::PhysicalNode;
 using physics::SubstanceHash;
 using physics::SubstanceEqual;
 
@@ -124,7 +125,7 @@ class ECM : public SimStateSerializable {
    * @return
    */
   virtual std::shared_ptr<cx3d::spatial_organization::SpaceNode<physics::PhysicalNode> > getSpatialOrganizationNodeInstance(
-      const std::array<double, 3>& position, const std::shared_ptr<physics::PhysicalNode>& user_object);
+      const std::array<double, 3>& position, PhysicalNode* user_object);
 
   /**
    * Returns an instance of a class implementing SpatialOrganizationNode.
@@ -139,10 +140,10 @@ class ECM : public SimStateSerializable {
    */
   std::shared_ptr<cx3d::spatial_organization::SpaceNode<physics::PhysicalNode> > getSpatialOrganizationNodeInstance(
       const std::shared_ptr<spatial_organization::SpaceNode<physics::PhysicalNode> >& n,
-      const std::array<double, 3>& position, const std::shared_ptr<physics::PhysicalNode>& user_object);
+      const std::array<double, 3>& position, PhysicalNode* user_object);
 
   /**
-   * Adding some "dummy nodes", i.e. some  PhysicalSplace.
+   * Creating some "dummy nodes", i.e. some  PhysicalSplace.
    * @param x1 lower boundary on the X axis
    * @param x2 upper boundary on the X axis
    * @param y1 upper boundary on the Y axis
@@ -150,11 +151,16 @@ class ECM : public SimStateSerializable {
    * @param z1 upper boundary on the Z axis
    * @param z2 lower boundary on the Z axis
    * @param d inter-node distance
+   * @return vector of unique PhysicalNode pointers - PhysicalNodes will be destructed if this vector gets destroyed
    */
-  void addGridOfPhysicalNodes(double x1, double x2, double y1, double y2, double z1, double z2, double d);
+  std::vector<PhysicalNode::UPtr> createGridOfPhysicalNodes(double x1, double x2, double y1, double y2, double z1,
+                                                            double z2, double d);
 
-  /** Adds a "simple" PhysicalNode (with its SON) at a desired location.*/
-  std::shared_ptr<physics::PhysicalNode> getPhysicalNodeInstance(const std::array<double, 3>& position);
+  /**
+   * Adds a "simple" PhysicalNode (with its SON) at a desired location.
+   * @return unique PhysicalNode pointer
+   */
+  PhysicalNode::UPtr createPhysicalNodeInstance(const std::array<double, 3>& position);
 
   // Physical Objects-------------------------------------------
   // PhysicalCylinder and PhysicalSphere are also instances of PhysicalNode.
@@ -163,17 +169,17 @@ class ECM : public SimStateSerializable {
   // add/remove-PhysicalNode.
   // the later also calls the remove() method of the associated SpatialOrganizationNode.
 
-  virtual void addPhysicalCylinder(const std::shared_ptr<physics::PhysicalCylinder>& cyl);
+  virtual void addPhysicalCylinder(PhysicalCylinder* cyl);
 
-  virtual void removePhysicalCylinder(const std::shared_ptr<physics::PhysicalCylinder>& cyl);
+  virtual void removePhysicalCylinder(PhysicalCylinder* cyl);
 
-  virtual void addPhysicalSphere(const std::shared_ptr<physics::PhysicalSphere>& sphere);
+  virtual void addPhysicalSphere(PhysicalSphere* sphere);
 
-  virtual void removePhysicalSphere(const std::shared_ptr<physics::PhysicalSphere>& sphere);
+  virtual void removePhysicalSphere(PhysicalSphere* sphere);
 
-  virtual void addPhysicalNode(const std::shared_ptr<physics::PhysicalNode>& node);
+  virtual void addPhysicalNode(PhysicalNode* node);
 
-  virtual void removePhysicalNode(const std::shared_ptr<physics::PhysicalNode>& node);
+  virtual void removePhysicalNode(PhysicalNode* node);
 
   //fixme implement
 //     void addECMChemicalReaction(ECMChemicalReaction chemicalReaction);
@@ -388,11 +394,11 @@ class ECM : public SimStateSerializable {
   double getGradientArtificialConcentration(const std::shared_ptr<physics::Substance>& s,
                                             const std::array<double, 3>& position) const;
 
-  std::vector<std::shared_ptr<physics::PhysicalNode>> getPhysicalNodeList() const;
+  std::vector<PhysicalNode*> getPhysicalNodeList() const;
 
-  std::vector<std::shared_ptr<physics::PhysicalSphere>> getPhysicalSphereList() const;
+  std::vector<PhysicalSphere*> getPhysicalSphereList() const;
 
-  std::vector<std::shared_ptr<physics::PhysicalCylinder>> getPhysicalCylinderList() const;
+  std::vector<PhysicalCylinder*> getPhysicalCylinderList() const;
 
   virtual std::list<NeuriteElement*> getNeuriteElementList() const;
 
@@ -426,7 +432,7 @@ class ECM : public SimStateSerializable {
   //
   //
 
-  virtual std::shared_ptr<physics::PhysicalCylinder> getPhysicalCylinder(int i) const {
+  virtual PhysicalCylinder* getPhysicalCylinder(int i) const {
     return physical_cylinders_[i];
   }
 
@@ -434,11 +440,11 @@ class ECM : public SimStateSerializable {
     return neurite_elements_[i];
   }
 
-  virtual std::shared_ptr<physics::PhysicalNode> getPhysicalNode(int i) const {
+  virtual PhysicalNode* getPhysicalNode(int i) const {
     return physical_nodes_[i];
   }
 
-  virtual std::shared_ptr<physics::PhysicalSphere> getPhysicalSphere(int i) const {
+  virtual PhysicalSphere* getPhysicalSphere(int i) const {
     return physical_spheres_[i];
   }
 
@@ -518,21 +524,13 @@ class ECM : public SimStateSerializable {
     return java_->atan2(d, d1);
   }
 
-  std::shared_ptr<physics::PhysicalCylinder> newPhysicalCylinder() const {
-    return java_->newPhysicalCylinder();
-  }
-
   std::array<double, 3> matrixRandomNoise3(double k) const {
     return java_->matrixRandomNoise3(k);
   }
 
-  std::shared_ptr<physics::PhysicalSphere> newPhysicalSphere() const {
-    return java_->newPhysicalSphere();
-  }
-
-  std::shared_ptr<physics::PhysicalBond> newPhysicalBond(const std::shared_ptr<physics::PhysicalObject>& a,
+  std::shared_ptr<physics::PhysicalBond> newPhysicalBond(PhysicalObject* a,
                                                          const std::array<double, 2>& position_on_a,
-                                                         const std::shared_ptr<physics::PhysicalObject>& b,
+                                                         PhysicalObject* b,
                                                          const std::array<double, 2>& position_on_b,
                                                          double resting_length, double spring_constant) const {
     return java_->newPhysicalBond(a, position_on_a, b, position_on_b, resting_length, spring_constant);
@@ -548,11 +546,11 @@ class ECM : public SimStateSerializable {
   // List of all the CX3DRunnable objects in the simulation ............................
 
   /** List of all the PhysicalNode instances. */
-  std::vector<std::shared_ptr<physics::PhysicalNode>> physical_nodes_;
+  std::vector<PhysicalNode*> physical_nodes_;
   /** List of all the PhysicalSphere instances. */
-  std::vector<std::shared_ptr<physics::PhysicalSphere>> physical_spheres_;
+  std::vector<PhysicalSphere*> physical_spheres_;
   /** List of all the PhysicalCylinder instances. */
-  std::vector<std::shared_ptr<physics::PhysicalCylinder>> physical_cylinders_;
+  std::vector<PhysicalCylinder*> physical_cylinders_;
   /** List of all the SomaElement instances. */
   std::vector<SomaElement*> soma_elements_;
   /** List of all the NeuriteElement instances. */

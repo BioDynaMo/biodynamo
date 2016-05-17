@@ -32,6 +32,7 @@ using local_biology::NeuriteElement;
 using local_biology::LocalBiologyModule;
 using simulation::ECM;
 using simulation::Scheduler;
+using physics::PhysicalNode;
 using physics::Substance;
 using synapse::PhysicalBouton;
 using synapse::BiologicalBouton;
@@ -54,7 +55,7 @@ class SmallNetworkTest : public BaseSimulationTest {
     int number_of_nodes = 10;
     for (int i = 0; i < number_of_nodes; i++) {
       auto coord = java->matrixRandomNoise3(500);
-      ecm->getPhysicalNodeInstance(coord);
+      physical_nodes_.push_back(ecm->createPhysicalNodeInstance(coord));
     }
 
     for (int i = 0; i < 8; i++) {

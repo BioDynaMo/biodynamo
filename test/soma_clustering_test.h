@@ -29,6 +29,7 @@ using local_biology::CellElement;
 using local_biology::NeuriteElement;
 using local_biology::AbstractLocalBiologyModule;
 using local_biology::LocalBiologyModule;
+using physics::PhysicalNode;
 using physics::Substance;
 using simulation::ECM;
 using simulation::Scheduler;
@@ -84,7 +85,7 @@ class SomaClusteringTest : public BaseSimulationTest {
     ecm->addNewSubstanceTemplate(yellow_substance);
     ecm->addNewSubstanceTemplate(violet_substance);
     for (int i = 0; i < 400; i++) {
-      ecm->getPhysicalNodeInstance(java->matrixRandomNoise3(700));
+      physical_nodes_.push_back(ecm->createPhysicalNodeInstance(java->matrixRandomNoise3(700)));
     }
     for (int i = 0; i < 60; i++) {
       auto c = CellFactory::getCellInstance(java->matrixRandomNoise3(50), ecm);
