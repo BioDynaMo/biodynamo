@@ -16,14 +16,14 @@
 namespace cx3d {
 namespace physics {
 
-std::shared_ptr<InterObjectForce> PhysicalObject::inter_object_force_{nullptr}; //todo change to DefaultForce::create(); after porting has been finished
+InterObjectForce::UPtr PhysicalObject::inter_object_force_{nullptr}; //todo change to DefaultForce::create(); after porting has been finished
 
-std::shared_ptr<InterObjectForce> PhysicalObject::getInterObjectForce() {
-  return inter_object_force_;
+InterObjectForce* PhysicalObject::getInterObjectForce() {
+  return inter_object_force_.get();
 }
 
-void PhysicalObject::setInterObjectForce(const std::shared_ptr<InterObjectForce>& force) {
-  inter_object_force_ = force;
+void PhysicalObject::setInterObjectForce(InterObjectForce::UPtr force) {
+  inter_object_force_ = std::move(force);
 }
 
 PhysicalObject::PhysicalObject() {
@@ -35,7 +35,7 @@ StringBuilder& PhysicalObject::simStateToJson(StringBuilder& sb) const {
   SimStateSerializationUtil::removeLastChar(sb);
   sb.append(",");
 
-  SimStateSerializationUtil::keyValue(sb, "interObjectForce", inter_object_force_);
+  SimStateSerializationUtil::keyValue(sb, "interObjectForce", inter_object_force_.get());
   SimStateSerializationUtil::keyValue(sb, "stillExisting", still_existing_);
   SimStateSerializationUtil::keyValue(sb, "onTheSchedulerListForPhysicalObjects", on_scheduler_list_for_physical_objects_);
   SimStateSerializationUtil::keyValue(sb, "massLocation", mass_location_);

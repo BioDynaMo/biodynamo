@@ -19,8 +19,6 @@ class DefaultForce : public InterObjectForce {
     java_ = java;
   }
 
-  static std::shared_ptr<DefaultForce> create();
-
   DefaultForce();
 
   virtual ~DefaultForce() {
@@ -72,8 +70,6 @@ class DefaultForce : public InterObjectForce {
                                                                   override;
 
   virtual std::string toString() const;
-
-  virtual bool equalTo(const std::shared_ptr<DefaultForce>& other) const;
 
  private:
   DefaultForce(const DefaultForce&) = delete;

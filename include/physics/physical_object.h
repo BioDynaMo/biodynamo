@@ -12,7 +12,9 @@
 #include "param.h"
 #include "color.h"
 #include "physics/physical_node.h"
+#include "physics/inter_object_force.h"
 #include "synapse/excrescence.h"
+#include "inter_object_force.h"
 
 namespace cx3d {
 
@@ -25,10 +27,10 @@ namespace physics {
 class PhysicalBond;
 class PhysicalSphere;
 class PhysicalCylinder;
-class InterObjectForce;
 class IntracellularSubstance;
 
 using local_biology::CellElement;
+using physics::InterObjectForce;
 using synapse::Excrescence;
 
 class PhysicalObject : public PhysicalNode {
@@ -36,10 +38,10 @@ class PhysicalObject : public PhysicalNode {
   using UPtr = std::unique_ptr<PhysicalObject>;
 
   /** The class computing the inter object force.*/
-  static std::shared_ptr<InterObjectForce> getInterObjectForce();
+  static InterObjectForce* getInterObjectForce();
 
   /** The class computing the inter object force.*/
-  static void setInterObjectForce(const std::shared_ptr<InterObjectForce>& force);
+  static void setInterObjectForce(InterObjectForce::UPtr force);
 
   PhysicalObject();
 
@@ -493,7 +495,7 @@ class PhysicalObject : public PhysicalNode {
 
  protected:
   /** The simulation of Force in this simulation.*/
-  static std::shared_ptr<InterObjectForce> inter_object_force_;
+  static InterObjectForce::UPtr inter_object_force_;
 
   /** The unique point mass of the object*/
   std::array<double, 3> mass_location_ = std::array<double, 3> { 0.0, 0.0, 0.0 };

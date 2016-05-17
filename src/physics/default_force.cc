@@ -11,10 +11,6 @@ namespace physics {
 
 std::shared_ptr<JavaUtil2> DefaultForce::java_ = nullptr;
 
-std::shared_ptr<DefaultForce> DefaultForce::create() {
-  return std::shared_ptr<DefaultForce>(new DefaultForce());
-}
-
 DefaultForce::DefaultForce() {
 }
 
@@ -201,10 +197,6 @@ std::array<double, 4> DefaultForce::forceOnACylinderFromACylinder(PhysicalCylind
 
 std::string DefaultForce::toString() const {
   return "DefaultForce@";// + this;
-}
-
-bool DefaultForce::equalTo(const std::shared_ptr<DefaultForce>& other) const {
-  return this == other.get();
 }
 
 std::array<double, 4> DefaultForce::computeForceOfASphereOnASphere(const std::array<double, 3>& c1, double r1,

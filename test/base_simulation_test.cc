@@ -55,7 +55,7 @@ void BaseSimulationTest::SetUp() {
   Cell::setECM(ecm);
   SpaceNode < PhysicalNode > ::setJavaUtil(java1);
   DefaultForce::setJavaUtil(java_);
-  PhysicalObject::setInterObjectForce(DefaultForce::create());
+  PhysicalObject::setInterObjectForce(DefaultForce::UPtr(new DefaultForce()));
 }
 
 void BaseSimulationTest::TearDown() {

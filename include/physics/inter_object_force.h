@@ -16,6 +16,8 @@ class PhysicalCylinder;
  */
 class InterObjectForce : public SimStateSerializable {
  public:
+  using UPtr = std::unique_ptr<InterObjectForce>;
+
   InterObjectForce() {
   }
 
@@ -65,17 +67,12 @@ class InterObjectForce : public SimStateSerializable {
    * of cylinder1 (= the point mass of the mother).
    */
   virtual std::array<double, 4> forceOnACylinderFromACylinder(
-      PhysicalCylinder* cylinder1,
-                                                              PhysicalCylinder* cylinder2) const {  //todo change =0 after porting has been finished
+      PhysicalCylinder* cylinder1, PhysicalCylinder* cylinder2) const {  //todo change =0 after porting has been finished
     throw std::logic_error("InterObjectForce::forceOnACylinderFromACylinder must no be called - Java must provide implementation");
   }
 
   virtual StringBuilder& simStateToJson(StringBuilder& sb) const override { //todo change =0 after porting has been finished
     throw std::logic_error("InterObjectForce::simStateToJson must no be called - Java must provide implementation");
-  }
-
-  virtual bool equalTo(const std::shared_ptr<InterObjectForce>& other){
-    return this == other.get();
   }
 };
 

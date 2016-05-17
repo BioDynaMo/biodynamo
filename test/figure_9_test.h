@@ -60,11 +60,11 @@ class Figure9Test : public BaseSimulationTest {
     }
 
     // set the inter object force
-    auto nogo = std::shared_ptr<XAdhesiveForce>(new XAdhesiveForce(java));
+    auto nogo = std::unique_ptr<XAdhesiveForce>(new XAdhesiveForce(java));
     nogo->setAttractionRange(3);
     nogo->setAttractionStrength(5);
 
-    PhysicalObject::setInterObjectForce(nogo);
+    PhysicalObject::setInterObjectForce(std::move(nogo));
 
     // generate cells
     int nb_of_cells = 20;
