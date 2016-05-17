@@ -15,11 +15,15 @@ template<class T> class SpaceNode;
 template<class T>
 class SpatialOrganizationNodeMovementListener {
  public:
+  using UPtr = typename std::unique_ptr<SpatialOrganizationNodeMovementListener<T>>;
+
   SpatialOrganizationNodeMovementListener(){
 
   }
   virtual ~SpatialOrganizationNodeMovementListener() {
   }
+
+  virtual UPtr getCopy() const = 0;
 
   virtual void nodeAboutToMove(const std::shared_ptr<SpaceNode<T>>& node,
                                const std::array<double, 3>& planned_movement) = 0;
@@ -40,11 +44,9 @@ class SpatialOrganizationNodeMovementListener {
    * Returns a String representation of this SpatialOrganizationNodeMovementListener
    */
   virtual std::string toString() const = 0;
-
-  virtual bool equalTo(const std::shared_ptr<SpatialOrganizationNodeMovementListener>& other) const {
-    return this == other.get();
-  }
 };
+
+
 
 }  // namespace spatial_organization
 }  // namespace cx3d

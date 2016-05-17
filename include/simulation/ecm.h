@@ -20,7 +20,6 @@
 #include "physics/physical_sphere.h"
 #include "physics/physical_cylinder.h"
 #include "physics/physical_bond.h"
-#include "physics/physical_node_movement_listener.h"
 #include "physics/substance.h"
 #include "spatial_organization/space_node.h"
 

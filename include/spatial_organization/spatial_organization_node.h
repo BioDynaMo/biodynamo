@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "string_builder.h"
+#include "spatial_organization/spatial_organization_node_movement_listener.h"
 
 namespace cx3d {
 namespace spatial_organization {
@@ -14,7 +15,6 @@ namespace spatial_organization {
 template<class T> class Edge;
 template<class T> class SpaceNode;
 template<class T> class SpatialOrganizationEdge;
-template<class T> class SpatialOrganizationNodeMovementListener;
 
 /**
  * Interface to define the basic properties of a node in the triangulation.
@@ -27,8 +27,7 @@ class SpatialOrganizationNode {
   virtual ~SpatialOrganizationNode() {
   }
 
-  virtual void addSpatialOrganizationNodeMovementListener(
-      const std::shared_ptr<SpatialOrganizationNodeMovementListener<T>>& listener) = 0;
+  virtual void addSpatialOrganizationNodeMovementListener(typename SpatialOrganizationNodeMovementListener<T>::UPtr listener) = 0;
 
   /**
    * Returns a list that allows to iterate over all edges

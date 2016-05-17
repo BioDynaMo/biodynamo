@@ -85,10 +85,6 @@ double JavaUtil2::atan2(double d, double d1) const {
   return std::atan2(d, d1);
 }
 
-std::shared_ptr<physics::PhysicalNodeMovementListener> JavaUtil2::newPhysicalNodeMovementListener() const {
-  return PhysicalNodeMovementListener::create();
-}
-
 std::shared_ptr<physics::PhysicalBond> JavaUtil2::newPhysicalBond(PhysicalObject* a,
                                                                   const std::array<double, 2>& position_on_a,
                                                                   PhysicalObject* b,

@@ -90,9 +90,8 @@ SpaceNode<T>::SpaceNode(double x, double y, double z,
 }
 
 template<class T>
-void SpaceNode<T>::addSpatialOrganizationNodeMovementListener(
-    const std::shared_ptr<SpatialOrganizationNodeMovementListener<T> >& listener) {
-  listeners_.push_back(listener);
+void SpaceNode<T>::addSpatialOrganizationNodeMovementListener(typename SpatialOrganizationNodeMovementListener<T>::UPtr listener) {
+  listeners_.push_back(std::move(listener));
 }
 
 template<class T>
@@ -118,7 +117,9 @@ std::shared_ptr<SpaceNode<T> > SpaceNode<T>::getNewInstance(
       SpaceNode<T>::create(position, user_object));
 
   // the new instance should have the same listeners!
-  insert_point->setListenerList(listeners_);
+  for(auto& listener : listeners_){
+    insert_point->addSpatialOrganizationNodeMovementListener(listener->getCopy());
+  }
   // check if this point is capable of inserting a new point:
   if (adjacent_tetrahedra_.empty()) {
     // enough nodes collected:
@@ -263,12 +264,12 @@ template<class T>
 void SpaceNode<T>::moveTo(const std::array<double, 3>& new_position) {
   if (checkIfTriangulationIsStillValid(new_position)) {
     auto delta = Matrix::subtract(new_position, position_);
-    for (auto listener : listeners_) {
+    for (auto& listener : listeners_) {
       listener->nodeAboutToMove(this->shared_from_this(), delta);
     }
     position_ = new_position;
     restoreDelaunay();
-    for (auto listener : listeners_) {
+    for (auto& listener : listeners_) {
       listener->nodeMoved(this->shared_from_this());
     }
   } else {
@@ -325,12 +326,6 @@ void SpaceNode<T>::removeEdge(const std::shared_ptr<Edge<T> >& edge) {
 }
 
 template<class T>
-void SpaceNode<T>::setListenerList(
-    const std::list<std::shared_ptr<SpatialOrganizationNodeMovementListener<T> > >& listeners) {
-  listeners_ = listeners;
-}
-
-template<class T>
 std::shared_ptr<Tetrahedron<T> > SpaceNode<T>::searchInitialInsertionTetrahedron(
     const std::shared_ptr<Tetrahedron<T> >& start) {
   return SpaceNode<T>::searchInitialInsertionTetrahedron(start, position_);
@@ -344,7 +339,7 @@ std::shared_ptr<Tetrahedron<T> > SpaceNode<T>::insert(
   if (listeners_.size() != 0) {
     // tell the listeners that there will be a new node:
     auto vertice_contents = insertion_start->getVerticeContents();
-    for (auto listener : listeners_) {
+    for (auto& listener : listeners_) {
       listener->nodeAboutToBeAdded(this->shared_from_this(), position_,
                                    vertice_contents);
     }
@@ -378,7 +373,7 @@ std::shared_ptr<Tetrahedron<T> > SpaceNode<T>::insert(
   }
   // }
   // tell the listeners that the node was added:
-  for (auto listener : listeners_) {
+  for (auto& listener : listeners_) {
     listener->nodeAdded(this->shared_from_this());
   }
 
@@ -607,7 +602,7 @@ int SpaceNode<T>::createNewCheckingIndex() {
 
 template<class T>
 std::shared_ptr<Tetrahedron<T> > SpaceNode<T>::removeAndReturnCreatedTetrahedron() {
-  for (auto listener : listeners_) {
+  for (auto& listener : listeners_) {
     listener->nodeAboutToBeRemoved(
         std::shared_ptr<SpaceNode<T>>(this->shared_from_this()));
   }
@@ -640,7 +635,7 @@ std::shared_ptr<Tetrahedron<T> > SpaceNode<T>::removeAndReturnCreatedTetrahedron
     }
   }
   oto->triangulate();
-  for (auto listener : listeners_) {
+  for (auto& listener : listeners_) {
     listener->nodeRemoved(this->shared_from_this());
   }
   return oto->getANewTetrahedron();

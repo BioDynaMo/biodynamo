@@ -13,6 +13,14 @@ using std::size_t;
 
 int PhysicalNodeMovementListener::movement_operation_id_ = 0;
 
+PhysicalNodeMovementListener::UPtr PhysicalNodeMovementListener::create() {
+  return UPtr(new PhysicalNodeMovementListener());
+}
+
+SpatialOrganizationNodeMovementListener<PhysicalNode>::UPtr PhysicalNodeMovementListener::getCopy() const {
+  return SpatialOrganizationNodeMovementListener<PhysicalNode>::UPtr(new PhysicalNodeMovementListener());
+}
+
 void PhysicalNodeMovementListener::nodeAboutToMove(const std::shared_ptr<SpaceNode<PhysicalNode>>& node,
                                                    const std::array<double, 3>& planned_movement) {
   auto pn = node->getUserObject();

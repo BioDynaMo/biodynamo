@@ -95,9 +95,6 @@ class JavaUtil2 {
   // ---------------
   // Object creation
   // ---------------
-
-  std::shared_ptr<physics::PhysicalNodeMovementListener> newPhysicalNodeMovementListener() const;
-
   std::shared_ptr<physics::PhysicalBond> newPhysicalBond(PhysicalObject* a,
                                                          const std::array<double, 2>& position_on_a,
                                                          PhysicalObject* b,

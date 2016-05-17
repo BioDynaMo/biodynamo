@@ -7,6 +7,7 @@
 #include "cells/cell.h"
 #include "local_biology/soma_element.h"
 #include "local_biology/neurite_element.h"
+#include "physics/physical_node_movement_listener.h"
 
 namespace cx3d {
 namespace simulation {

@@ -9,6 +9,7 @@
 
 #include "java_util.h"
 #include "sim_state_serializable.h"
+#include "spatial_organization/spatial_organization_node_movement_listener.h"
 #include "spatial_organization/spatial_organization_node.h"
 
 #ifdef SPACENODE_DEBUG
@@ -23,7 +24,8 @@ template<class T> class Triangle3D;
 template<class T> class Tetrahedron;
 template<class T> class OpenTriangleOrganizer;
 template<class T> class SpatialOrganizationEdge;
-template<class T> class SpatialOrganizationNodeMovementListener;
+
+using spatial_organization::SpatialOrganizationNodeMovementListener;
 
 /**
  * This class is used to represent a node of a triangulation. Each node is
@@ -111,8 +113,7 @@ class SpaceNode : public SpatialOrganizationNode<T>,
   virtual ~SpaceNode() {
   }
 
-  virtual void addSpatialOrganizationNodeMovementListener(
-      const std::shared_ptr<SpatialOrganizationNodeMovementListener<T>>& listener)
+  virtual void addSpatialOrganizationNodeMovementListener(typename SpatialOrganizationNodeMovementListener<T>::UPtr listener)
           override;
 
   virtual std::list<std::shared_ptr<Edge<T>> > getEdges() const override;  //TODO change back to SpatialOrganizationEdge afte porting has been finished
@@ -213,18 +214,6 @@ class SpaceNode : public SpatialOrganizationNode<T>,
    *            The edge to be removed.
    */
   virtual void removeEdge(const std::shared_ptr<Edge<T>>& edge);
-
-  /**
-   * Sets the list of movement listeners attached to this node to a specified
-   * list.
-   *
-   * @param listeners
-   *            The movement listeners that are listening to this node's
-   *            movements.
-   */
-  virtual void setListenerList(
-      const std::list<
-          std::shared_ptr<SpatialOrganizationNodeMovementListener<T>> >& listeners);
 
   /**
    * Starting at a given tetrahedron, this function searches the triangulation
@@ -355,8 +344,7 @@ class SpaceNode : public SpatialOrganizationNode<T>,
    * A std::list of std::listener objects that are called whenever this node is beeing
    * moved.
    */
-  // LinkedList<SpatialOrganizationNodeMovementListener<T>> std::listeners = null;
-  std::list<std::shared_ptr<SpatialOrganizationNodeMovementListener<T>> > listeners_;
+  std::vector<std::unique_ptr<SpatialOrganizationNodeMovementListener<T>>> listeners_;
 
   /**
    * The coordinate of this SpaceNode.
@@ -366,13 +354,11 @@ class SpaceNode : public SpatialOrganizationNode<T>,
   /**
    * A std::list of all edges incident to this node.
    */
-  // LinkedList<SpatialOrganizationEdge<T>> adjacentEdges = new LinkedList<SpatialOrganizationEdge<T>>();
   std::list<std::shared_ptr<Edge<T>> > adjacent_edges_;
 
   /**
    * A std::list of all tetrahedra incident to this node.
    */
-  // LinkedList<Tetrahedron<T>> adjacentTetrahedra = new LinkedList<Tetrahedron<T>>();
   std::list<std::shared_ptr<Tetrahedron<T>> > adjacent_tetrahedra_;
 
   /**
@@ -434,8 +420,7 @@ class SpaceNode : public SpatialOrganizationNode<T>,
    * @param messed_up_tetrahedra A set of tetrahedra that are not Delaunay and cannot be replaced using a
    * flip algorithm.
    */
-  void cleanUp(
-      const std::list<std::shared_ptr<Tetrahedron<T>> >& messed_up_tetrahedra);
+  void cleanUp(const std::list<std::shared_ptr<Tetrahedron<T>> >& messed_up_tetrahedra);
 };
 
 }  // namespace spatial_organization

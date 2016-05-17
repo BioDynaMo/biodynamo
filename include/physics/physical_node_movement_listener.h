@@ -7,10 +7,8 @@
 #include <memory>
 
 #include "physics/physical_node.h"
-
 #include "spatial_organization/spatial_organization_node_movement_listener.h"
 
-using cx3d::spatial_organization::SpaceNode;
 
 namespace cx3d {
 
@@ -21,6 +19,8 @@ template<class T> class SpaceNode;
 namespace physics {
 
 class Substance;
+using spatial_organization::SpaceNode;
+using spatial_organization::SpatialOrganizationNodeMovementListener;
 
 /**
  * The role of this class is a) to determinate the concentration of different chemicals
@@ -29,11 +29,11 @@ class Substance;
  * To be efficient, the methods have to be executed right before or after the node operation.
  * Therefore the class implements the SpatialOrganizationNodeMovementListener interface.
  */
-class PhysicalNodeMovementListener : public spatial_organization::SpatialOrganizationNodeMovementListener<PhysicalNode> {
+class PhysicalNodeMovementListener : public SpatialOrganizationNodeMovementListener<PhysicalNode> {
  public:
-  static std::shared_ptr<PhysicalNodeMovementListener> create() {
-    return std::shared_ptr<PhysicalNodeMovementListener>(new PhysicalNodeMovementListener());
-  }
+  using UPtr = std::unique_ptr<PhysicalNodeMovementListener>;
+
+  static UPtr create();
 
   static void setMovementOperationId(int i) {
     movement_operation_id_ = i;
@@ -43,6 +43,8 @@ class PhysicalNodeMovementListener : public spatial_organization::SpatialOrganiz
   }
   virtual ~PhysicalNodeMovementListener() {
   }
+
+  virtual SpatialOrganizationNodeMovementListener<PhysicalNode>::UPtr getCopy() const;
 
   /**
    * MASS CONSERVATION WHEN A POINT IS MOVED :
@@ -91,10 +93,6 @@ class PhysicalNodeMovementListener : public spatial_organization::SpatialOrganiz
    * Returns a String representation of this PhysicalNodeMovementListener
    */
   virtual std::string toString() const override;
-
-  virtual bool equalTo(const std::shared_ptr<PhysicalNodeMovementListener>& other) {
-    return this == other.get();
-  }
 
  private:
   PhysicalNodeMovementListener(const PhysicalNodeMovementListener&) = delete;
