@@ -99,7 +99,8 @@ class XBifurcationModule : public LocalBiologyModule {
   }
 
   UPtr getCopy() const override {
-    auto bf = std::unique_ptr<XBifurcationModule> { new XBifurcationModule(slope_, shift_, java_) };
+    auto bf = new XBifurcationModule(slope_, shift_, java_);
+    auto uptr = UPtr(bf);
     for (auto factor : branching_factors_) {
       bf->branching_factors_.push_back(factor);
     }
@@ -108,7 +109,7 @@ class XBifurcationModule : public LocalBiologyModule {
     bf->min_concentration_ = min_concentration_;
     bf->diameter_of_daughter_ = diameter_of_daughter_;
     bf->minimal_branch_diameter_ = minimal_branch_diameter_;
-    return bf;
+    return uptr;
   }
 
   bool isCopiedWhenNeuriteBranches() const override {

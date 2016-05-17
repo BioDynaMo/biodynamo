@@ -99,7 +99,8 @@ class XMovementModule : public LocalBiologyModule {
   }
 
   UPtr getCopy() const override {
-    auto r = std::unique_ptr<XMovementModule> { new XMovementModule(java_) };
+    auto r = new XMovementModule(java_);
+    auto uptr = UPtr(r);
     for (auto el : attractants_) {
       r->attractants_.push_back(el);
     }
@@ -113,7 +114,7 @@ class XMovementModule : public LocalBiologyModule {
     r->minimal_branch_diameter_ = minimal_branch_diameter_;
     r->max_concentration_ = max_concentration_;
     r->linear_diameter_decrease_ = linear_diameter_decrease_;
-    return r;
+    return uptr;
   }
 
   bool isCopiedWhenNeuriteBranches() const override {
