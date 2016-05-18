@@ -60,10 +60,10 @@ class MembraneContactTest : public BaseSimulationTest {
     java->setRandomSeed1(1L);
     java->initPhysicalNodeMovementListener();
 
-    auto adherence = IntracellularSubstance::create("A", 0, 0);
+    auto adherence = IntracellularSubstance::UPtr(new IntracellularSubstance("A", 0, 0));
     adherence->setVisibleFromOutside(true);
     adherence->setVolumeDependant(false);
-    ecm->addNewIntracellularSubstanceTemplate(adherence);
+    ecm->addNewIntracellularSubstanceTemplate(std::move(adherence));
 
     ecm->setArtificialWallsForSpheres(true);
     ecm->setBoundaries(-150, 150, -150, 150, -100, 100);

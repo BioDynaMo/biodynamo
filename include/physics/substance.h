@@ -12,27 +12,18 @@ namespace physics {
 
 class Substance : public SimStateSerializable {
  public:
+  using UPtr = std::unique_ptr<Substance>;
+
   friend struct SubstanceHash;
   friend struct SubstanceEquals;
 
   Substance();
 
-  static std::shared_ptr<Substance> create() {
-    return std::shared_ptr<Substance>(new Substance());
-  }
+  Substance(const Substance& other);
 
-  static std::shared_ptr<Substance> create(const std::shared_ptr<Substance>& other) {
-    return std::shared_ptr<Substance>(new Substance(*other));
-  }
+  Substance(const std::string& id, Color color);
 
-  static std::shared_ptr<Substance> create(const std::string& id, double diffusion_constant,
-                                           double degradation_constant) {
-    return std::shared_ptr<Substance>(new Substance(id, diffusion_constant, degradation_constant));
-  }
-
-  static std::shared_ptr<Substance> create(const std::string& id, Color color) {
-    return std::shared_ptr<Substance>(new Substance(id, color));
-  }
+  Substance(const std::string& id, double diffusion_constant, double degradation_constant);
 
   /**
    * This function is called after the simulation has finished to serialize the
@@ -75,7 +66,7 @@ class Substance : public SimStateSerializable {
    * degradationConstant and diffusionConstant. The
    * quantity and concentration are note taken into account.
    */
-  virtual bool equalTo(const std::shared_ptr<Substance>& o);
+  virtual bool equalTo(Substance* o);
 
   /**
    * Returns the color scaled by the concentration. Useful for painting PhysicalObjects / PhysicalNode
@@ -109,15 +100,11 @@ class Substance : public SimStateSerializable {
 
   virtual void setQuantity(double quantity);
 
-  virtual std::shared_ptr<Substance> getCopy() const;
+  virtual UPtr getCopy() const;
 
   virtual std::string toString() const;
 
  protected:
-  Substance(const Substance& other);
-  Substance(const std::string& id, double diffusion_constant, double degradation_constant);
-  Substance(const std::string& id, Color color);
-
   /**
    * name of the substance
    */
@@ -153,14 +140,14 @@ class Substance : public SimStateSerializable {
 };
 
 struct SubstanceHash {
-  std::size_t operator()(const std::shared_ptr<Substance>& element) const {
-    return reinterpret_cast<std::size_t>(element.get());
+  std::size_t operator()(Substance* element) const {
+    return reinterpret_cast<std::size_t>(element);
   }
 };
 
 struct SubstanceEqual {
-  bool operator()(const std::shared_ptr<Substance>& lhs, const std::shared_ptr<Substance>& rhs) const {
-    return lhs.get() == rhs.get();
+  bool operator()(Substance* lhs, Substance* rhs) const {
+    return lhs == rhs;
   }
 };
 

@@ -26,7 +26,7 @@ void PhysicalNodeMovementListener::nodeAboutToMove(const std::shared_ptr<SpaceNo
   auto pn = node->getUserObject();
   neighbors_before_ = node->getPermanentListOfNeighbors();
   auto extracellular_substances_in_pn = pn->getExtracellularSubstances();
-  substances_in_n_ = std::vector<std::shared_ptr<Substance>>(extracellular_substances_in_pn.size());
+  substances_in_n_ = std::vector<Substance*>(extracellular_substances_in_pn.size());
   q_ = std::vector<double>(substances_in_n_.size());
   movement_operation_id_ = (movement_operation_id_ + 1) % 1000000;
   // 1) Quantities summation in pn & pn's neighbors before the move:
@@ -154,7 +154,7 @@ void PhysicalNodeMovementListener::nodeAboutToBeRemoved(const std::shared_ptr<Sp
   auto pn = node->getUserObject();
   neighbors_before_ = node->getPermanentListOfNeighbors();
   auto pn_extracellular_substances = pn->getExtracellularSubstances();
-  substances_in_n_ = std::vector<std::shared_ptr<Substance>>(pn_extracellular_substances.size());
+  substances_in_n_ = std::vector<Substance*>(pn_extracellular_substances.size());
   q_ = std::vector<double>(substances_in_n_.size());
   // 1) Quantities summation in pn & pn's neighbors (before pn is removed):
   // (for all extracellularSubstances in the moving node)
@@ -219,7 +219,7 @@ void PhysicalNodeMovementListener::nodeAboutToBeAdded(const std::shared_ptr<Spac
       for (size_t j = 0; j < 4; j++) {
         new_concentration += vertices[j]->getExtracellularConcentration(name) * barycentric_coord[j];
       }
-      auto new_substance = Substance::create(s);
+      auto new_substance = Substance::UPtr(new Substance(*s));
       new_substance->setConcentration(new_concentration);
       //pn.getExtracellularSubstances().put(name, newSubstance); //fixme this looks like a bug - hashmap is cloned -> inserting a value won't have an effect
     }
@@ -233,7 +233,7 @@ void PhysicalNodeMovementListener::nodeAdded(const std::shared_ptr<SpaceNode<Phy
   // pn, we take a neighbor as furnishing the templates
   auto neighbors = node->getPermanentListOfNeighbors();
   auto pnn = neighbors.front();
-  substances_in_n_ = std::vector<std::shared_ptr<Substance>>(pnn->getExtracellularSubstances().size());  //todo more efficient if # of needed elements are already reserved here
+  substances_in_n_ = std::vector<Substance*>(pnn->getExtracellularSubstances().size());  //todo more efficient if # of needed elements are already reserved here
   q_ = std::vector<double>(substances_in_n_.size());
   int i = 0;
   for (auto s : pnn->getExtracellularSubstances()) {

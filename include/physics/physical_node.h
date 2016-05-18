@@ -9,6 +9,7 @@
 #include <unordered_map>
 
 #include "sim_state_serializable.h"
+#include "physics/substance.h"
 
 namespace cx3d {
 
@@ -22,8 +23,6 @@ class ECM;  // todo replace with include once porting has been finished and remo
 }  // namespace simulation
 
 namespace physics {
-
-class Substance;
 
 /**
  * PhysicalNode represents a piece of the simulation space, whether it contains a physical object of not.
@@ -159,7 +158,7 @@ class PhysicalNode : public SimStateSerializable, public std::enable_shared_from
    * than the Substance given as argument. If there is no such Instance, a new one
    * is created, inserted into the list extracellularSubstances and returned.
    * Used for diffusion and for ECMChemicalReaction.*/
-  virtual std::shared_ptr<Substance> getSubstanceInstance(const std::shared_ptr<Substance>& template_s);
+  virtual Substance* getSubstanceInstance(Substance* template_s);
 
   /* Interpolation of the concentration value at a certain distance. Used to update
    * the chemicals in case of a displacement or for the creation of new nodes, in
@@ -168,7 +167,7 @@ class PhysicalNode : public SimStateSerializable, public std::enable_shared_from
    * @param dX the distance from this nodes's location
    * @return
    */
-  virtual double computeConcentrationAtDistanceBasedOnGradient(const std::shared_ptr<Substance>& s,
+  virtual double computeConcentrationAtDistanceBasedOnGradient(Substance* s,
                                                                const std::array<double, 3>& dX);
 
   // *************************************************************************************
@@ -202,16 +201,16 @@ class PhysicalNode : public SimStateSerializable, public std::enable_shared_from
 
   /** Add an extracellular or membrane-bound chemicals
    *  in this PhysicalNode. */
-  virtual void addExtracellularSubstance(const std::shared_ptr<Substance>& is);
+  virtual void addExtracellularSubstance(Substance::UPtr is);
 
   /** Remove an extracellular or membrane-bound chemicals that are present
    *  in this PhysicalNode. */
-  virtual void removeExtracellularSubstance(const std::shared_ptr<Substance>& is);
+  virtual void removeExtracellularSubstance(Substance* is);
 
   /** All the (diffusible) chemicals that are present in the space defined by this physicalNode. */
-  virtual std::list<std::shared_ptr<Substance>> getExtracellularSubstances() const;  //todo refactor - originally returned the whole map
+  virtual std::list<Substance*> getExtracellularSubstances() const;  //todo refactor - originally returned the whole map
 
-  virtual std::shared_ptr<Substance> getExtracellularSubstance(const std::string& key);  //todo refactor - added to avoid implementing unorederd_map for swig
+  virtual Substance* getExtracellularSubstance(const std::string& key);  //todo refactor - added to avoid implementing unorederd_map for swig
 
   /** Returns a unique ID for this PhysicalNode.*/
   virtual int getID() const;
@@ -259,7 +258,7 @@ class PhysicalNode : public SimStateSerializable, public std::enable_shared_from
   /**
    * All the (diffusible) chemicals that are present in the space defined by this physicalNode.
    */
-  std::unordered_map<std::string, std::shared_ptr<Substance>> extracellular_substances_;
+  std::unordered_map<std::string, Substance::UPtr> extracellular_substances_;
 
   /* Analytic solution of the diffusion process along the edge between two PhysicalNodes.
    * dQA/dt = diffCst*(Area/distance)*(QB/VB-QA/VA)

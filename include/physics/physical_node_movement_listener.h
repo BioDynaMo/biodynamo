@@ -107,7 +107,7 @@ class PhysicalNodeMovementListener : public SpatialOrganizationNodeMovementListe
   /**
    * all extracellularSubstances present in this PhysicalNode.
    */
-  std::vector<std::shared_ptr<Substance> > substances_in_n_;
+  std::vector<Substance*> substances_in_n_;
 
   /**
    * respective quantity of the extracellularSubstances before the move.

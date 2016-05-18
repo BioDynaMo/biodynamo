@@ -287,13 +287,13 @@ PhysicalSphere::UPtr PhysicalSphere::divide(double vr, double phi, double theta)
   volume_ = 0.523598776 * diameter_ * diameter_ * diameter_;  // 0,523598776 = (4/3)*pi*(1/(2^3))
 
   // G) Copy the intracellular and membrane bound Substances
-  for (auto el : intracellular_substances_) {
-    auto sub = el.second;
-    auto sub_copy = std::static_pointer_cast<IntracellularSubstance>(sub->getCopy());   //copy substance
-    sub->distributeConcentrationOnDivision(sub_copy);
+  for (auto& el : intracellular_substances_) {
+    auto sub = el.second.get();
+    auto sub_copy = STLUtil::staticUPtrCast<IntracellularSubstance>(sub->getCopy());   //copy substance
+    sub->distributeConcentrationOnDivision(sub_copy.get());
     sub->updateQuantityBasedOnConcentration(volume_);
     sub_copy->updateQuantityBasedOnConcentration(new_sphere->volume_);
-    new_sphere->intracellular_substances_[sub_copy->getId()] = sub_copy;
+    new_sphere->intracellular_substances_[sub_copy->getId()] = std::move(sub_copy);
   }
   return new_sphere;
 }
@@ -516,8 +516,8 @@ std::list<PhysicalCylinder*> PhysicalSphere::getDaughters() const {
 void PhysicalSphere::runIntracellularDiffusion() {
 
   // 1) Degradation according to the degradation constant for each chemical
-  for (auto el : intracellular_substances_) {
-    auto is = el.second;
+  for (auto& el : intracellular_substances_) {
+    auto is = el.second.get();
     is->degrade();
     if (is->isVolumeDependant()) {
       is->updateQuantityBasedOnConcentration(volume_);
@@ -647,8 +647,8 @@ void PhysicalSphere::updateDependentPhysicalVariables() {
 }
 
 void PhysicalSphere::updateIntracellularConcentrations() {
-  for (auto el : intracellular_substances_) {
-    auto s = el.second;
+  for (auto& el : intracellular_substances_) {
+    auto s = el.second.get();
     if (s->isVolumeDependant()) {
       s->updateConcentrationBasedOnQuantity(volume_);
     } else {

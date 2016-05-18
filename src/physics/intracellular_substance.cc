@@ -45,7 +45,7 @@ StringBuilder& IntracellularSubstance::simStateToJson(StringBuilder& sb) const {
   return sb;
 }
 
-void IntracellularSubstance::distributeConcentrationOnDivision(std::shared_ptr<IntracellularSubstance>& new_is) {
+void IntracellularSubstance::distributeConcentrationOnDivision(IntracellularSubstance* new_is) {
   double p = asymmetry_constant_ * (1 - concentration_) * concentration_;
   new_is->setConcentration(concentration_ * (1 + p));
   concentration_ = concentration_ * (1 - p);
@@ -79,8 +79,8 @@ void IntracellularSubstance::setVolumeDependant(bool volume_dependant) {
   volume_dependant_ = volume_dependant;
 }
 
-std::shared_ptr<Substance> IntracellularSubstance::getCopy() const {
-  return std::shared_ptr<Substance>(new IntracellularSubstance(*this));
+Substance::UPtr IntracellularSubstance::getCopy() const {
+  return Substance::UPtr(new IntracellularSubstance(*this));
 }
 
 }  // namespace physics

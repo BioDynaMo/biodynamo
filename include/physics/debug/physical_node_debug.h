@@ -82,14 +82,14 @@ class PhysicalNodeDebug : public PhysicalNode {
     logReturnVoid();
   }
 
-  std::shared_ptr<Substance> getSubstanceInstance(const std::shared_ptr<Substance>& template_s) {
+  Substance* getSubstanceInstance(Substance* template_s) {
     logCall(template_s);
     auto ret = PhysicalNode::getSubstanceInstance(template_s);
     logReturn(ret);
     return ret;
   }
 
-  double computeConcentrationAtDistanceBasedOnGradient(const std::shared_ptr<Substance>& s,
+  double computeConcentrationAtDistanceBasedOnGradient(Substance* s,
       std::array<double, 3>& dX) {
     logCall(s, dX);
     auto ret = PhysicalNode::computeConcentrationAtDistanceBasedOnGradient(s, dX);
@@ -143,26 +143,26 @@ class PhysicalNodeDebug : public PhysicalNode {
     logReturnVoid();
   }
 
-  void addExtracellularSubstance(const std::shared_ptr<Substance>& is) {
-    logCall(is);
-    PhysicalNode::addExtracellularSubstance(is);
+  void addExtracellularSubstance(Substance::UPtr is) {
+    logCall(is.get());
+    PhysicalNode::addExtracellularSubstance(std::move(is));
     logReturnVoid();
   }
 
-  void removeExtracellularSubstance(const std::shared_ptr<Substance>& is) {
+  void removeExtracellularSubstance(Substance* is) {
     logCall(is);
     PhysicalNode::removeExtracellularSubstance(is);
     logReturnVoid();
   }
 
-  std::list<std::shared_ptr<Substance>> getExtracellularSubstances() {
+  std::list<Substance*> getExtracellularSubstances() {
     logCallParameterless();
     auto ret = PhysicalNode::getExtracellularSubstances();
     logReturn(ret);
     return ret;
   }
 
-  std::shared_ptr<Substance> getExtracellularSubstance(const std::string& key) {
+  Substance* getExtracellularSubstance(const std::string& key) {
     logCall(key);
     auto ret = PhysicalNode::getExtracellularSubstance(key);
     logReturn(ret);

@@ -12,20 +12,13 @@ namespace physics {
 
 class IntracellularSubstance : public Substance {
  public:
+  using UPtr = std::unique_ptr<IntracellularSubstance>;
+
   IntracellularSubstance();
 
-  static std::shared_ptr<IntracellularSubstance> create() {
-    return std::shared_ptr<IntracellularSubstance>(new IntracellularSubstance());
-  }
+  IntracellularSubstance(const IntracellularSubstance& other);
 
-  static std::shared_ptr<IntracellularSubstance> create(const std::shared_ptr<IntracellularSubstance>& other) {
-    return std::shared_ptr<IntracellularSubstance>(new IntracellularSubstance(*other));
-  }
-
-  static std::shared_ptr<IntracellularSubstance> create(const std::string& id, double diffusion_constant,
-                                           double degradation_constant) {
-    return std::shared_ptr<IntracellularSubstance>(new IntracellularSubstance(id, diffusion_constant, degradation_constant));
-  }
+  IntracellularSubstance(const std::string& id, double diffusion_constant, double degradation_constant);
 
   StringBuilder& simStateToJson(StringBuilder& sb) const override;
 
@@ -33,7 +26,7 @@ class IntracellularSubstance : public Substance {
    * Distribute IntracellularSubstance concentration at division and update quantity.
    * @param new_is
    */
-  virtual void distributeConcentrationOnDivision(std::shared_ptr<IntracellularSubstance>& new_is);
+  virtual void distributeConcentrationOnDivision(IntracellularSubstance* new_is);
 
   /**
    * Degradation of the <code>IntracellularSubstance</code>.
@@ -80,15 +73,9 @@ class IntracellularSubstance : public Substance {
    */
   virtual void setVolumeDependant(bool volume_dependant);
 
-  virtual std::shared_ptr<Substance> getCopy() const override;
-
-  bool equalTo(const std::shared_ptr<IntracellularSubstance>& other){
-    return this == other.get();
-  }
+  virtual Substance::UPtr getCopy() const override;
 
  protected:
-  IntracellularSubstance(const std::string& id, double diffusion_constant, double degradation_constant);
-
   /**
    * Degree of asymmetric distribution during cell division.
    * 0 represents complete symmetrical division, 1 represents complete asymmetric division.
@@ -114,7 +101,6 @@ class IntracellularSubstance : public Substance {
    * but : QUANTITY AND CONCENTRATION ARE NOT COPIED !!
    * @param other
    */
-  IntracellularSubstance(const IntracellularSubstance& other);
   IntracellularSubstance& operator=(const IntracellularSubstance&) = delete;
 };
 

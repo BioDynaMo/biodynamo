@@ -119,8 +119,8 @@ class NeuriteChemoAttractionTest : public BaseSimulationTest {
     java->setRandomSeed1(1L);
     java->initPhysicalNodeMovementListener();
 
-    auto attractant = Substance::create("A", Color(0xFFFF0000));
-    ecm->addArtificialGaussianConcentrationZ(attractant, 1.0, 400.0, 160.0);
+    auto attractant = Substance::UPtr(new Substance("A", Color(0xFFFF0000)));
+    ecm->addArtificialGaussianConcentrationZ(attractant.get(), 1.0, 400.0, 160.0);
 
     int number_of_additional_nodes = 10;
     for (int i = 0; i < number_of_additional_nodes; i++) {

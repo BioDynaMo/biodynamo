@@ -155,9 +155,9 @@ class IntracellularDiffusionTest : public BaseSimulationTest {
     // defining the templates for the intracellular substance
     double D = 1000;  // diffusion cst
     double d = 0.01;  // degradation cst
-    auto tubulin = IntracellularSubstance::create("tubulin", D, d);
+    auto tubulin = IntracellularSubstance::UPtr(new IntracellularSubstance("tubulin", D, d));
     tubulin->setVolumeDependant(false);
-    ecm->addNewIntracellularSubstanceTemplate(tubulin);
+    ecm->addNewIntracellularSubstanceTemplate(std::move(tubulin));
     // getting a cell
     auto c = CellFactory::getCellInstance( { 0.0, 0.0, 0.0 }, ecm);
     c->setColorForAllPhysicalObjects(Param::kRed);

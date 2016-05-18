@@ -41,6 +41,8 @@ using cells::Cell;
 using local_biology::SomaElement;
 using local_biology::NeuriteElement;
 using physics::PhysicalNode;
+using physics::Substance;
+using physics::IntracellularSubstance;
 using physics::SubstanceHash;
 using physics::SubstanceEqual;
 
@@ -213,11 +215,11 @@ class ECM : public SimStateSerializable {
 
   /** Define a template for each (extra-cellular) <code>Substance</code> in the simulation that has
    * non-standard values for diffusion and degradation constant.*/
-  void addNewSubstanceTemplate(const std::shared_ptr<physics::Substance>& s);
+  void addNewSubstanceTemplate(Substance::UPtr s);
 
   /** Define a template for each <code>IntracellularSubstance</code> in the simulation that has
    * non-standard values for diffusion and degradation constant, and outside visibility and volume dependency.*/
-  void addNewIntracellularSubstanceTemplate(const std::shared_ptr<physics::IntracellularSubstance>& s);
+  void addNewIntracellularSubstanceTemplate(IntracellularSubstance::UPtr s);
 
   /** Returns an instance of <code>Substance</code>. If a similar substance (with the same id)
    * has already been declared as a template Substance, a copy of it is made (with
@@ -227,7 +229,7 @@ class ECM : public SimStateSerializable {
    * @param id
    * @return new Substance instance
    */
-  virtual std::shared_ptr<physics::Substance> substanceInstance(const std::string& id);
+  virtual Substance::UPtr substanceInstance(const std::string& id);
 
   /** Returns an instance of <code>IntracellularSubstance</code>. If a similar
    * IntracellularSubstance (with the same id) has already been declared as a template
@@ -239,7 +241,7 @@ class ECM : public SimStateSerializable {
    * @param id
    * @return new IntracellularSubstance instance
    */
-  virtual std::shared_ptr<physics::IntracellularSubstance> intracellularSubstanceInstance(const std::string& id);
+  virtual IntracellularSubstance::UPtr intracellularSubstanceInstance(const std::string& id);
 
   // *********************************************************************
   // *** Pre-defined cellType colors
@@ -264,7 +266,7 @@ class ECM : public SimStateSerializable {
    * @param z_coord the location of the peak
    * @param sigma the thickness of the layer (= the variance)
    */
-  void addArtificialGaussianConcentrationZ(const std::shared_ptr<physics::Substance>& substance,
+  void addArtificialGaussianConcentrationZ(Substance* substance,
                                            double max_concentration, double z_coord, double sigma);
 
   /**
@@ -291,7 +293,7 @@ class ECM : public SimStateSerializable {
    * @param z_coord_max the location of the peak
    * @param z_coord_min the location where the concentration reaches the value 0
    */
-  void addArtificialLinearConcentrationZ(const std::shared_ptr<physics::Substance>& substance,
+  void addArtificialLinearConcentrationZ(Substance* substance,
                                          double max_concentatration, double z_coord_max, double z_coord_min);
 
   /**
@@ -318,7 +320,7 @@ class ECM : public SimStateSerializable {
    * @param x_coord the location of the peak
    * @param sigma the thickness of the layer (= the variance)
    */
-  void addArtificialGaussianConcentrationX(const std::shared_ptr<physics::Substance>& substance,
+  void addArtificialGaussianConcentrationX(Substance* substance,
                                            double max_concentatration, double x_coord, double sigma);
 
   /**
@@ -345,7 +347,7 @@ class ECM : public SimStateSerializable {
    * @param x_coord_max the location of the peak
    * @param x_coord_min the location where the concentration reaches the value 0
    */
-  void addArtificialLinearConcentrationX(const std::shared_ptr<physics::Substance>& substance,
+  void addArtificialLinearConcentrationX(Substance* substance,
                                          double max_concentatration, double x_coord_max, double x_coord_min);
 
   /**
@@ -378,7 +380,7 @@ class ECM : public SimStateSerializable {
    * @param position the location [x,y,z]
    * @return
    */
-  double getValueArtificialConcentration(const std::shared_ptr<physics::Substance>& substance,
+  double getValueArtificialConcentration(Substance* substance,
                                          const std::array<double, 3>& position) const;
   ///////// GRADIENT
   /**
@@ -390,7 +392,7 @@ class ECM : public SimStateSerializable {
   virtual std::array<double, 3> getGradientArtificialConcentration(const std::string& substance_name,
                                                                    const std::array<double, 3>& position) const;
 
-  double getGradientArtificialConcentration(const std::shared_ptr<physics::Substance>& s,
+  double getGradientArtificialConcentration(Substance* s,
                                             const std::array<double, 3>& position) const;
 
   std::vector<PhysicalNode*> getPhysicalNodeList() const;
@@ -405,23 +407,19 @@ class ECM : public SimStateSerializable {
 
   bool isAnyArtificialGradientDefined() const;
 
-  std::unordered_map<std::shared_ptr<physics::Substance>, std::array<double, 3>, SubstanceHash, SubstanceEqual> getGaussianArtificialConcentrationZ() const;
+  std::unordered_map<Substance*, std::array<double, 3>, SubstanceHash, SubstanceEqual> getGaussianArtificialConcentrationZ() const;
 
-  std::unordered_map<std::shared_ptr<physics::Substance>, std::array<double, 3>, SubstanceHash, SubstanceEqual> getLinearArtificialConcentrationZ() const;
+  std::unordered_map<Substance*, std::array<double, 3>, SubstanceHash, SubstanceEqual> getLinearArtificialConcentrationZ() const;
 
-  std::unordered_map<std::shared_ptr<physics::Substance>, std::array<double, 3>, SubstanceHash, SubstanceEqual> getGaussianArtificialConcentrationX() const;
+  std::unordered_map<Substance*, std::array<double, 3>, SubstanceHash, SubstanceEqual> getGaussianArtificialConcentrationX() const;
 
-  std::unordered_map<std::shared_ptr<physics::Substance>, std::array<double, 3>, SubstanceHash, SubstanceEqual> getLinearArtificialConcentrationX() const;
+  std::unordered_map<Substance*, std::array<double, 3>, SubstanceHash, SubstanceEqual> getLinearArtificialConcentrationX() const;
 
   virtual double getECMtime() const;
 
   void setECMtime(double ECMtime);
 
   virtual void increaseECMtime(double deltaT);
-
-  std::unordered_map<std::string, std::shared_ptr<physics::IntracellularSubstance>> getIntracelularSubstanceTemplates() const;
-
-  std::unordered_map<std::string, std::shared_ptr<physics::Substance>> getSubstanceTemplates() const;
 
   std::array<double, 3> getMinBounds() const;
 
@@ -566,11 +564,11 @@ class ECM : public SimStateSerializable {
 
   /* In here we keep a template for each (extra-cellular) Substance in the simulation that have
    * non-standard value for diffusion and degradation constant.*/
-  std::unordered_map<std::string, std::shared_ptr<physics::Substance>> substance_lib_;
+  std::unordered_map<std::string, Substance::UPtr> substance_lib_;
 
   /* In here we keep a template for each (intra-cellular) Substance in the simulation that have
    * non-standard value for diffusion and degradation constant.*/
-  std::unordered_map<std::string, std::shared_ptr<physics::IntracellularSubstance>> intracellular_substance_lib_;
+  std::unordered_map<std::string, IntracellularSubstance::UPtr> intracellular_substance_lib_;
 
   /* In here we store a color attributed to specific cell types.*/
   std::unordered_map<std::string, Color> cell_color_lib_;
@@ -599,23 +597,23 @@ class ECM : public SimStateSerializable {
   // (in the next: all hash tables are public for View.paint)
   /* List of all the chemicals with a gaussian distribution along the Z-axis
    * max value, mean (z-coord of the max value), sigma2 (thickness). */
-  std::unordered_map<std::shared_ptr<physics::Substance>, std::array<double, 3>, SubstanceHash, SubstanceEqual> gaussian_artificial_concentration_z_;
+  std::unordered_map<Substance*, std::array<double, 3>, SubstanceHash, SubstanceEqual> gaussian_artificial_concentration_z_;
 
   /* List of all the chemicals with a linear distribution along the Z-axis
    * max value, TOP (z-coord of the max value), DOWN (z-coord of the 0 value). */
-  std::unordered_map<std::shared_ptr<physics::Substance>, std::array<double, 3>, SubstanceHash, SubstanceEqual> linear_artificial_concentration_z_;
+  std::unordered_map<Substance*, std::array<double, 3>, SubstanceHash, SubstanceEqual> linear_artificial_concentration_z_;
 
   /* List of all the chemicals with a gaussian distribution along the X-axis
    * max value, mean (x-coord of the max value), sigma2 (thickness). */
-  std::unordered_map<std::shared_ptr<physics::Substance>, std::array<double, 3>, SubstanceHash, SubstanceEqual> gaussian_artificial_concentration_x_;
+  std::unordered_map<Substance*, std::array<double, 3>, SubstanceHash, SubstanceEqual> gaussian_artificial_concentration_x_;
 
   /* List of all the chemicals with a linear distribution along the X-axis
    * max value, TOP (x-coord of the max value), DOWN (x-coord of the 0 value). */
-  std::unordered_map<std::shared_ptr<physics::Substance>, std::array<double, 3>, SubstanceHash, SubstanceEqual> linear_artificial_concentration_x_;
+  std::unordered_map<Substance*, std::array<double, 3>, SubstanceHash, SubstanceEqual> linear_artificial_concentration_x_;
 
   /* to link the one instance of Substance we have used in the definition of the gradient, with the name of
    * the chemical that can be given as argument in the methods to know the concentration/grad.. */
-  std::unordered_map<std::string, std::shared_ptr<physics::Substance>> all_artificial_substances_;
+  std::unordered_map<std::string, Substance::UPtr> all_artificial_substances_;
 
 //  ECM();
 
@@ -624,11 +622,10 @@ class ECM : public SimStateSerializable {
   // *********************************************************************
 
   /** If as Substance is not already registered, we register it for you. No charges! Order now!*/
-  std::shared_ptr<physics::Substance> getRegisteredArtificialSubstance(
-      const std::shared_ptr<physics::Substance>& substance);
+  Substance* getRegisteredArtificialSubstance(Substance* substance);
 
   /** If as Substance is not already registered, we register it for you. No charges! Order now!*/
-  std::shared_ptr<physics::Substance> getRegisteredArtificialSubstance(const std::string& substanceId);
+  Substance* getRegisteredArtificialSubstance(const std::string& substanceId);
 };
 
 }  // namespace simulation

@@ -282,34 +282,34 @@ void ECM::clearAll() {
   all_artificial_substances_.clear();
 }
 
-void ECM::addNewSubstanceTemplate(const std::shared_ptr<physics::Substance>& s) {
-  substance_lib_[s->getId()] = s;
+void ECM::addNewSubstanceTemplate(Substance::UPtr s) {
+  substance_lib_[s->getId()] = std::move(s);
 }
 
-void ECM::addNewIntracellularSubstanceTemplate(const std::shared_ptr<physics::IntracellularSubstance>& s) {
-  intracellular_substance_lib_[s->getId()] = s;
+void ECM::addNewIntracellularSubstanceTemplate(IntracellularSubstance::UPtr s) {
+  intracellular_substance_lib_[s->getId()] = std::move(s);
 }
 
-std::shared_ptr<physics::Substance> ECM::substanceInstance(const std::string& id) {
+Substance::UPtr ECM::substanceInstance(const std::string& id) {
   auto s = STLUtil::mapGet(substance_lib_, id);
   if (s == nullptr) {
-    s = Substance::create();
-    s->setId(id);
+    s = new Substance();
+    substance_lib_[id] = Substance::UPtr(s);
     // s will have the default color blue, diff const 1000 and degrad const 0.01
-    substance_lib_[id] = s;
+    s->setId(id);
   }
-  return Substance::create(s);
+  return Substance::UPtr(new Substance(*s));
 }
 
-std::shared_ptr<physics::IntracellularSubstance> ECM::intracellularSubstanceInstance(const std::string& id) {
+IntracellularSubstance::UPtr ECM::intracellularSubstanceInstance(const std::string& id) {
   auto s = STLUtil::mapGet(intracellular_substance_lib_, id);
   if (s == nullptr) {
-    s = IntracellularSubstance::create();
+    s = new IntracellularSubstance();
+    intracellular_substance_lib_[id] = IntracellularSubstance::UPtr(s);
     s->setId(id);
     // s will have the default color blue, diff const 1000 and degrad const 0.01
-    intracellular_substance_lib_[id] = s;
   }
-  return IntracellularSubstance::create(s);
+  return IntracellularSubstance::UPtr(new IntracellularSubstance(*s));
 }
 
 void ECM::addNewCellTypeColor(const std::string& cellType, Color color) {
@@ -332,7 +332,7 @@ bool ECM::thereAreArtificialGradients() const {
   return any_artificial_gradient_defined_;
 }
 
-void ECM::addArtificialGaussianConcentrationZ(const std::shared_ptr<physics::Substance>& substance,
+void ECM::addArtificialGaussianConcentrationZ(Substance* substance,
                                               double max_concentration, double z_coord, double sigma) {
   auto s = getRegisteredArtificialSubstance(substance);  //todo why?
   // define distribution values for the chemical, and store them together
@@ -348,7 +348,7 @@ void ECM::addArtificialGaussianConcentrationZ(const std::string& substance_name,
   gaussian_artificial_concentration_z_[s] = value;
 }
 
-void ECM::addArtificialLinearConcentrationZ(const std::shared_ptr<physics::Substance>& substance,
+void ECM::addArtificialLinearConcentrationZ(Substance* substance,
                                             double max_concentration, double z_coord_max, double z_coord_min) {
   auto s = getRegisteredArtificialSubstance(substance);  //todo why?
   // define distribution values for the chemical, and store them together
@@ -364,7 +364,7 @@ void ECM::addArtificialLinearConcentrationZ(const std::string& substance_name, d
   linear_artificial_concentration_z_[s] = value;
 }
 
-void ECM::addArtificialGaussianConcentrationX(const std::shared_ptr<physics::Substance>& substance,
+void ECM::addArtificialGaussianConcentrationX(Substance* substance,
                                               double max_concentration, double x_coord, double sigma) {
   auto s = getRegisteredArtificialSubstance(substance);  //todo why?
   // define distribution values for the chemical, and store them together
@@ -380,7 +380,7 @@ void ECM::addArtificialGaussianConcentrationX(const std::string& substance_name,
   gaussian_artificial_concentration_x_[s] = value;
 }
 
-void ECM::addArtificialLinearConcentrationX(const std::shared_ptr<physics::Substance>& substance,
+void ECM::addArtificialLinearConcentrationX(Substance* substance,
                                             double max_concentration, double x_coord_max, double x_coord_min) {
   auto s = getRegisteredArtificialSubstance(substance);  //todo why?
   // define distribution values for the chemical, and store them together
@@ -401,7 +401,7 @@ double ECM::getValueArtificialConcentration(const std::string& chemical,
   double x = position[0];
   double z = position[2];
   // does the substance exist at all ?
-  std::shared_ptr<Substance> sub;
+  Substance* sub = nullptr;
   if (STLUtil::mapContains(all_artificial_substances_, chemical)) {
     sub = STLUtil::mapGet(all_artificial_substances_, chemical);
   } else {
@@ -447,7 +447,7 @@ double ECM::getValueArtificialConcentration(const std::string& chemical,
   return concentration;
 }
 
-double ECM::getValueArtificialConcentration(const std::shared_ptr<physics::Substance>& substance,
+double ECM::getValueArtificialConcentration(Substance* substance,
                                             const std::array<double, 3>& position) const {
   return getValueArtificialConcentration(substance->getId(), position);
 }
@@ -455,7 +455,7 @@ double ECM::getValueArtificialConcentration(const std::shared_ptr<physics::Subst
 std::array<double, 3> ECM::getGradientArtificialConcentration(const std::string& chemical,
                                                               const std::array<double, 3>& position) const {
   // Do we have the substance in stock?
-  std::shared_ptr<Substance> sub;
+  Substance* sub = nullptr;
   if (STLUtil::mapContains(all_artificial_substances_, chemical)) {
     sub = STLUtil::mapGet(all_artificial_substances_, chemical);
   } else {
@@ -510,7 +510,7 @@ std::array<double, 3> ECM::getGradientArtificialConcentration(const std::string&
   return gradient;
 }
 
-double ECM::getGradientArtificialConcentration(const std::shared_ptr<physics::Substance>& s,
+double ECM::getGradientArtificialConcentration(Substance* s,
                                                const std::array<double, 3>& position) const {
   return getValueArtificialConcentration(s->getId(), position);
 }
@@ -544,19 +544,19 @@ bool ECM::isAnyArtificialGradientDefined() const {
   return any_artificial_gradient_defined_;
 }
 
-std::unordered_map<std::shared_ptr<physics::Substance>, std::array<double, 3>, SubstanceHash, SubstanceEqual> ECM::getGaussianArtificialConcentrationZ() const {
+std::unordered_map<Substance*, std::array<double, 3>, SubstanceHash, SubstanceEqual> ECM::getGaussianArtificialConcentrationZ() const {
   return gaussian_artificial_concentration_z_;
 }
 
-std::unordered_map<std::shared_ptr<physics::Substance>, std::array<double, 3>, SubstanceHash, SubstanceEqual> ECM::getLinearArtificialConcentrationZ() const {
+std::unordered_map<Substance*, std::array<double, 3>, SubstanceHash, SubstanceEqual> ECM::getLinearArtificialConcentrationZ() const {
   return linear_artificial_concentration_z_;
 }
 
-std::unordered_map<std::shared_ptr<physics::Substance>, std::array<double, 3>, SubstanceHash, SubstanceEqual> ECM::getGaussianArtificialConcentrationX() const {
+std::unordered_map<Substance*, std::array<double, 3>, SubstanceHash, SubstanceEqual> ECM::getGaussianArtificialConcentrationX() const {
   return gaussian_artificial_concentration_x_;
 }
 
-std::unordered_map<std::shared_ptr<physics::Substance>, std::array<double, 3>, SubstanceHash, SubstanceEqual> ECM::getLinearArtificialConcentrationX() const {
+std::unordered_map<Substance*, std::array<double, 3>, SubstanceHash, SubstanceEqual> ECM::getLinearArtificialConcentrationX() const {
   return linear_artificial_concentration_x_;
 }
 
@@ -572,14 +572,6 @@ void ECM::increaseECMtime(double delta) {
   time_ += delta;
 }
 
-std::unordered_map<std::string, std::shared_ptr<physics::IntracellularSubstance>> ECM::getIntracelularSubstanceTemplates() const {
-  return intracellular_substance_lib_;
-}
-
-std::unordered_map<std::string, std::shared_ptr<physics::Substance>> ECM::getSubstanceTemplates() const {
-  return substance_lib_;
-}
-
 std::array<double, 3> ECM::getMinBounds() const {
   return {x_min_,y_min_,z_min_};
 }
@@ -591,26 +583,27 @@ std::array<double, 3> ECM::getMaxBounds() const {
 ECM::ECM() {
 }
 
-std::shared_ptr<physics::Substance> ECM::getRegisteredArtificialSubstance(
-    const std::shared_ptr<physics::Substance>& substance) {
+Substance* ECM::getRegisteredArtificialSubstance(Substance* substance) {
   auto registered_substance = STLUtil::mapGet(all_artificial_substances_, substance->getId());
   if (registered_substance != nullptr) {
     return registered_substance;
   } else {
-    registered_substance = substance->getCopy();
-    all_artificial_substances_[substance->getId()] = registered_substance;
+    auto substance_copy = substance->getCopy();
+    registered_substance = substance_copy.get();
+    all_artificial_substances_[substance->getId()] = std::move(substance_copy);
     any_artificial_gradient_defined_ = true;
     return registered_substance;
   }
 }
 
-std::shared_ptr<physics::Substance> ECM::getRegisteredArtificialSubstance(const std::string& substanceId) {
+Substance* ECM::getRegisteredArtificialSubstance(const std::string& substanceId) {
   auto registered_substance = STLUtil::mapGet(all_artificial_substances_, substanceId);
   if (registered_substance != nullptr) {
     return registered_substance;
   } else {
-    registered_substance = Substance::create(substanceId, Color(0xFF));
-    all_artificial_substances_[substanceId] = registered_substance;
+    auto substance_copy = Substance::UPtr(new Substance(substanceId, Color(0xFF)));
+    registered_substance = substance_copy.get();
+    all_artificial_substances_[substanceId] = std::move(substance_copy);
     any_artificial_gradient_defined_ = true;
     return registered_substance;
   }

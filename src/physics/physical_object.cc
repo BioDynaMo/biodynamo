@@ -152,12 +152,13 @@ double PhysicalObject::getIntracellularConcentration(const std::string& substanc
 
 void PhysicalObject::modifyIntracellularQuantity(const std::string& id, double quantityPerTime) {
 
-  std::shared_ptr<IntracellularSubstance> s;
+  IntracellularSubstance* s = nullptr;
   if (!STLUtil::mapContains(intracellular_substances_, id)) {
-    s = PhysicalNode::ecm_->intracellularSubstanceInstance(id);
-    intracellular_substances_[id] = s;
+    auto s_uptr = PhysicalNode::ecm_->intracellularSubstanceInstance(id);
+    s = s_uptr.get();
+    intracellular_substances_[id] = std::move(s_uptr);
   } else {
-    s = intracellular_substances_[id];
+    s = intracellular_substances_[id].get();
   }
   double delta_q = quantityPerTime * Param::kSimulationTimeStep;
   s->changeQuantityFrom(delta_q);
@@ -166,7 +167,6 @@ void PhysicalObject::modifyIntracellularQuantity(const std::string& id, double q
   } else {
     s->updateConcentrationBasedOnQuantity(getLength());
   }
-
 }
 
 double PhysicalObject::getMembraneConcentration(const std::string& id) {
@@ -178,7 +178,7 @@ double PhysicalObject::getMembraneConcentration(const std::string& id) {
     return 0.0;
   } else {
     // if yes, is it a membrane substance ?
-    auto s = intracellular_substances_[id];
+    auto s = intracellular_substances_[id].get();
     if (!s->isVisibleFromOutside()) {
       return 0.0;
     }
@@ -191,14 +191,14 @@ void PhysicalObject::modifyMembraneQuantity(const std::string& id, double quanti
   modifyIntracellularQuantity(id, quantityPerTime);
 }
 
-std::shared_ptr<IntracellularSubstance> PhysicalObject::giveYouIntracellularSubstanceInstance(
-    const std::shared_ptr<IntracellularSubstance>& templateS) {
-  std::shared_ptr<IntracellularSubstance> s;
+IntracellularSubstance* PhysicalObject::giveYouIntracellularSubstanceInstance(IntracellularSubstance* templateS) {
+  IntracellularSubstance* s = nullptr;
   if (!STLUtil::mapContains(intracellular_substances_, templateS->getId())) {
-    s = IntracellularSubstance::create(templateS);
-    intracellular_substances_[s->getId()] = s;
+    auto s_uptr = IntracellularSubstance::UPtr(new IntracellularSubstance(*templateS));
+    s = s_uptr.get();
+    intracellular_substances_[s->getId()] = std::move(s_uptr);
   } else {
-    s = intracellular_substances_[templateS->getId()];
+    s = intracellular_substances_[templateS->getId()].get();
   }
   return s;
 }
@@ -222,9 +222,9 @@ void PhysicalObject::diffuseWithThisPhysicalObjects(PhysicalObject* po, double d
   double pre_a;
   double pre_m;
 
-  for (auto element : intracellular_substances_) {
+  for (auto& element : intracellular_substances_) {
     // for a given substance
-    auto s_a = element.second;
+    auto s_a = element.second.get();
 
     // does the substance depend on volumes or not ?
     if (s_a->isVolumeDependant()) {
@@ -410,36 +410,31 @@ void PhysicalObject::setVolume(double volume) {
   setVolume(volume, true);
 }
 
-std::shared_ptr<IntracellularSubstance> PhysicalObject::getIntracellularSubstance(const std::string& id){
+IntracellularSubstance* PhysicalObject::getIntracellularSubstance(const std::string& id) {
   if (STLUtil::mapContains(intracellular_substances_, id)) {
-    return intracellular_substances_[id];
+    return intracellular_substances_[id].get();
   }
-  return std::shared_ptr<IntracellularSubstance> { nullptr };
+  return nullptr;
 }
 
-void PhysicalObject::addIntracellularSubstance(std::shared_ptr<IntracellularSubstance> is) {
-  intracellular_substances_[is->getId()] = is;
+void PhysicalObject::addIntracellularSubstance(IntracellularSubstance::UPtr is) {
+  intracellular_substances_[is->getId()] = std::move(is);
 }
 
-void PhysicalObject::removeIntracellularSubstance(std::shared_ptr<IntracellularSubstance> is) {
+void PhysicalObject::removeIntracellularSubstance(IntracellularSubstance* is) {
   intracellular_substances_.erase(is->getId());
 }
 
-std::list<std::shared_ptr<IntracellularSubstance>> PhysicalObject::getIntracellularSubstances1() const {
-  std::list<std::shared_ptr<IntracellularSubstance>> list;
-  for(auto el : intracellular_substances_){
-    list.push_back(el.second);
+std::list<IntracellularSubstance*> PhysicalObject::getIntracellularSubstances1() const {
+  std::list<IntracellularSubstance*> list;
+  for (auto& el : intracellular_substances_) {
+    list.push_back(el.second.get());
   }
   return list;
 }
 
-void PhysicalObject::setIntracellularSubstances(
-    const std::unordered_map<std::string, std::shared_ptr<IntracellularSubstance>>& intracellular_substances) {
-  intracellular_substances_ = intracellular_substances;  // fixme critical not copied
-}
-
-void PhysicalObject::addNewIntracellularSubstance(const std::shared_ptr<IntracellularSubstance>& s) {
-  intracellular_substances_[s->getId()] = s;
+void PhysicalObject::addNewIntracellularSubstance(IntracellularSubstance::UPtr s) {
+  intracellular_substances_[s->getId()] = std::move(s);
 }
 
 void PhysicalObject::setTotalForceLastTimeStep(const std::array<double, 4>& force){

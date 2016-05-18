@@ -279,8 +279,8 @@ bool PhysicalCylinder::retractCylinder(double speed) {
     neurite_element_->removeYourself();
     // intracellularSubstances quantities
     // (concentrations are solved in updateDependentPhysicalVariables():
-    for (auto el : intracellular_substances_) {
-      auto s = el.second;
+    for (auto& el : intracellular_substances_) {
+      auto s = el.second.get();
       mother_->modifyIntracellularQuantity(s->getId(), s->getQuantity() / Param::kSimulationTimeStep);
       // (divide by time step because it is multiplied by it in the method)
     }
@@ -629,8 +629,8 @@ std::array<double, 3> PhysicalCylinder::closestPointTo(const std::array<double, 
 
 void PhysicalCylinder::runIntracellularDiffusion() {
 // 1) Degradation according to the degradation constant for each chemical
-  for (auto el : intracellular_substances_) {
-    auto s = el.second;
+  for (auto& el : intracellular_substances_) {
+    auto s = el.second.get();
     double decay = ecm_->exp(-s->getDegradationConstant() * Param::kSimulationTimeStep);
     s->multiplyQuantityAndConcentrationBy(decay);
   }
@@ -921,8 +921,8 @@ void PhysicalCylinder::updateDependentPhysicalVariables() {
 }
 
 void PhysicalCylinder::updateIntracellularConcentrations() {
-  for (auto el : intracellular_substances_) {
-    auto s = el.second;
+  for (auto& el : intracellular_substances_) {
+    auto s = el.second.get();
     if (s->isVolumeDependant()) {
       s->updateConcentrationBasedOnQuantity(volume_);
     } else {
@@ -962,17 +962,17 @@ NeuriteElement* PhysicalCylinder::insertProximalCylinder(double distal_portion) 
 
   // intracellularSubstances quantities .....................................
   // (concentrations are solved in updateDependentPhysicalVariables():
-  for (auto pair : intracellular_substances_) {
-    auto s = pair.second;
+  for (auto& pair : intracellular_substances_) {
+    auto s = pair.second.get();
     // if doesn't diffuse at all : all the substance stays in the distal part !
     if (s->getDiffusionConstant() < 0.000000000001) {
       continue;
     }
     // create similar IntracellularSubstance and insert it into the new cylinder
     double quantity_before_distribution = s->getQuantity();
-    auto s2 = IntracellularSubstance::create(s);
+    auto s2 = IntracellularSubstance::UPtr(new IntracellularSubstance(*s));
     s2->setQuantity(quantity_before_distribution * (1 - distal_portion));
-    new_cylinder->addNewIntracellularSubstance(s2);
+    new_cylinder->addNewIntracellularSubstance(std::move(s2));
     // decrease value of IntracellularSubstance in this cylinder
     s->setQuantity(quantity_before_distribution * distal_portion);
   }

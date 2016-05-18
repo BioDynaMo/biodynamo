@@ -80,10 +80,10 @@ class SomaClusteringTest : public BaseSimulationTest {
     java->setRandomSeed1(1L);
     java->initPhysicalNodeMovementListener();
 
-    auto yellow_substance = Substance::create("Yellow", 1000, 0.01);
-    auto violet_substance = Substance::create("Violet", 1000, 0.01);
-    ecm->addNewSubstanceTemplate(yellow_substance);
-    ecm->addNewSubstanceTemplate(violet_substance);
+    auto yellow_substance = Substance::UPtr(new Substance("Yellow", 1000, 0.01));
+    auto violet_substance = Substance::UPtr(new Substance("Violet", 1000, 0.01));
+    ecm->addNewSubstanceTemplate(std::move(yellow_substance));
+    ecm->addNewSubstanceTemplate(std::move(violet_substance));
     for (int i = 0; i < 400; i++) {
       physical_nodes_.push_back(ecm->createPhysicalNodeInstance(java->matrixRandomNoise3(700)));
     }

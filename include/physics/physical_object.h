@@ -13,6 +13,7 @@
 #include "color.h"
 #include "physics/physical_node.h"
 #include "physics/inter_object_force.h"
+#include "physics/intracellular_substance.h"
 #include "synapse/excrescence.h"
 #include "inter_object_force.h"
 
@@ -263,8 +264,7 @@ class PhysicalObject : public PhysicalNode {
    * vector and then returned. Only used between subclasses of physicalObject for intracellular
    * diffusion. C.f. very similar method : PhysicalNode.giveYourSubstanceInstance.
    */
-  virtual std::shared_ptr<IntracellularSubstance> giveYouIntracellularSubstanceInstance(
-      const std::shared_ptr<IntracellularSubstance>& templateS);
+  virtual IntracellularSubstance* giveYouIntracellularSubstanceInstance(IntracellularSubstance* templateS);
 
   /* Diffusion of diffusible IntracellularSubstances between two PhysicalObjects.
    */
@@ -407,25 +407,19 @@ class PhysicalObject : public PhysicalNode {
 
   /** Get an intracellular and membrane-bound chemicals that are present
    *  in this PhysicalNode. */
-  virtual std::shared_ptr<IntracellularSubstance> getIntracellularSubstance(const std::string& id);
+  virtual IntracellularSubstance* getIntracellularSubstance(const std::string& id);
 
   /** Add an intracellular or membrane-bound chemicals
    *  in this PhysicalNode. */
-  virtual void addIntracellularSubstance(std::shared_ptr<IntracellularSubstance> is);
+  virtual void addIntracellularSubstance(IntracellularSubstance::UPtr is);
 
   /** Remove an intracellular or membrane-bound chemicals that are present
    *  in this PhysicalNode. */
-  virtual void removeIntracellularSubstance(std::shared_ptr<IntracellularSubstance> is);
+  virtual void removeIntracellularSubstance(IntracellularSubstance* is);
 
   /** All the intracellular and membrane-bound chemicals that are present
    *  in this PhysicalNode. */
-  //virtual std::unordered_map<std::string, std::shared_ptr<IntracellularSubstance>> getIntracellularSubstances();
-  virtual std::list<std::shared_ptr<IntracellularSubstance>> getIntracellularSubstances1() const;  //todo return map after porting has been finished
-
-  /** All the intracellular and membrane-bound chemicals that are present
-   *  in this PhysicalNode. */
-  virtual void setIntracellularSubstances(
-      const std::unordered_map<std::string, std::shared_ptr<IntracellularSubstance>>& intracellularSubstances);
+  virtual std::list<IntracellularSubstance*> getIntracellularSubstances1() const;  //todo return map after porting has been finished
 
   /** Returns the length of a cylinder, or the diameter of a sphere.*/
   virtual double getLength() const = 0;
@@ -444,7 +438,7 @@ class PhysicalObject : public PhysicalNode {
    * and therefore is not a public method. Instead , this method is used for filling up a new
    * PhysicalObject in case of extension).
    */
-  virtual void addNewIntracellularSubstance(const std::shared_ptr<IntracellularSubstance>& s);
+  virtual void addNewIntracellularSubstance(IntracellularSubstance::UPtr s);
 
   /**
    * Returns the force that a daughter branch transmits to a mother's point
@@ -525,7 +519,7 @@ class PhysicalObject : public PhysicalNode {
 
   /** All the internal and membrane-bound (diffusible and non-diffusible)
    *  chemicals that are present inside the PhysicalObject.*/
-  std::unordered_map<std::string, std::shared_ptr<IntracellularSubstance> > intracellular_substances_;
+  std::unordered_map<std::string, IntracellularSubstance::UPtr> intracellular_substances_;
 
   /** List of the Physical bonds that this object can do (for cell adhesion where synapse formation occurs)*/
   std::list<std::shared_ptr<PhysicalBond> > physical_bonds_;  //todo change to vector once porting has been finished

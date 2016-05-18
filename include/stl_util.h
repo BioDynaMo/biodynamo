@@ -41,22 +41,37 @@ class STLUtil {
   }
 
   /**
-   * returns the associated value to this key if it is stored in the map, shared nullptr otherwise
+   * returns the associated value to this key if it is stored in the map, nullptr otherwise
    * @param map
    * @param key
    */
   template<typename K, typename V>
-  static std::shared_ptr<V> mapGet(const std::unordered_map<K, std::shared_ptr<V>> &map, const K &key) {
+  static V* mapGet(const std::unordered_map<K, std::unique_ptr<V>>& map, const K& key) {
     auto it = map.find(key);
     if (it != map.end()) {
-      return it->second;
+      return it->second.get();
     } else {
-      return std::shared_ptr<V> { nullptr };
+      return nullptr;
     }
   }
 
   /**
-   * returns the associated value to this key if it is stored in the map, shared nullptr otherwise
+   * returns the associated value to this key if it is stored in the map, nullptr otherwise
+   * @param map
+   * @param key
+   */
+  template<typename K, typename V>
+  static V* mapGet(const std::unordered_map<K, V*>& map, const K& key) {
+    auto it = map.find(key);
+    if (it != map.end()) {
+      return it->second;
+    } else {
+      return nullptr;
+    }
+  }
+
+  /**
+   * returns the associated value to this key if it is stored in the map, default array otherwise
    * @param map
    * @param key
    */

@@ -127,11 +127,11 @@ double PhysicalNode::getExtracellularConcentration(const std::string& id) {
   if (PhysicalNode::ecm_->thereAreArtificialGradients()) {
     c += PhysicalNode::ecm_->getValueArtificialConcentration(id, so_node_->getPosition());
   }
-  std::shared_ptr<Substance> s;
+  Substance* s= nullptr;
   if (!STLUtil::mapContains(extracellular_substances_, id)) {
     return c;
   } else {
-    s = extracellular_substances_[id];
+    s = extracellular_substances_[id].get();
     degradate(PhysicalNode::ecm_->getECMtime());  // make sure you are up-to-date weight/ degradation
     return c + s->getConcentration();
   }
@@ -175,11 +175,11 @@ std::array<double, 3> PhysicalNode::getExtracellularGradient(const std::string& 
   // the gradient can be composed of diffusible Substances and artificial substances in ecm
   std::array<double, 3> grad;
   // 1. diffusible substance component
-  std::shared_ptr<Substance> s;
+  Substance* s = nullptr;
   if (!STLUtil::mapContains(extracellular_substances_, id)) {
     grad = {0.0, 0.0, 0.0};
   } else {
-    s = extracellular_substances_[id];
+    s = extracellular_substances_[id].get();
     // distance to three neighbors
     std::array<std::array<double, 3>, 3> vectors_to_neighbors;
     std::array<double, 3> differences_between_neighbors_and_this;
@@ -206,12 +206,13 @@ std::array<double, 3> PhysicalNode::getExtracellularGradient(const std::string& 
 }
 
 void PhysicalNode::modifyExtracellularQuantity(const std::string& id, double quantityPerTime) {
-  std::shared_ptr<Substance> ss;
+  Substance* ss = nullptr;
   if (STLUtil::mapContains(extracellular_substances_, id)) {
-    ss = extracellular_substances_[id];
+    ss = extracellular_substances_[id].get();
   } else {
-    ss = PhysicalNode::ecm_->substanceInstance(id);
-    extracellular_substances_[id] = ss;
+    auto ss_uptr = PhysicalNode::ecm_->substanceInstance(id);
+    ss = ss_uptr.get();
+    extracellular_substances_[id] = std::move(ss_uptr);
   }
   double delta_q = quantityPerTime * Param::kSimulationTimeStep;
   double volume = so_node_->getVolume();
@@ -236,21 +237,22 @@ void PhysicalNode::runExtracellularDiffusion() {
   }
 }
 
-std::shared_ptr<Substance> PhysicalNode::getSubstanceInstance(const std::shared_ptr<Substance>& templateS) {
-  std::shared_ptr<Substance> s;
+Substance* PhysicalNode::getSubstanceInstance(Substance* templateS) {
+  Substance* s = nullptr;
   if (!STLUtil::mapContains(extracellular_substances_, templateS->getId())) {
     // if it doesn't exist, you create it (with concentration 0)
-    s = Substance::create(templateS);
+    auto s_uptr = Substance::UPtr(new Substance(*templateS));
+    s = s_uptr.get();
     s->setConcentration(0);
     s->setQuantity(0);
-    extracellular_substances_[s->getId()] = s;
+    extracellular_substances_[s->getId()] = std::move(s_uptr);
   } else {
-    s = extracellular_substances_[templateS->getId()];
+    s = extracellular_substances_[templateS->getId()].get();
   }
   return s;
 }
 
-double PhysicalNode::computeConcentrationAtDistanceBasedOnGradient(const std::shared_ptr<Substance>& s,
+double PhysicalNode::computeConcentrationAtDistanceBasedOnGradient(Substance* s,
                                                                    const std::array<double, 3>& dX) {
   // if the point that interests us is inside a tetrahedron, we interpolate the
   // value based on the tetrahedron
@@ -292,31 +294,32 @@ void PhysicalNode::setMovementConcentratioUpdateProcedure(int movement_concentra
   movement_concentration_update_procedure_ = movement_concentration_update_procedure;
 }
 
-void PhysicalNode::addExtracellularSubstance(const std::shared_ptr<Substance>& is) {
-  extracellular_substances_[is->getId()] = is;
+void PhysicalNode::addExtracellularSubstance(Substance::UPtr is) {
+  extracellular_substances_[is->getId()] = std::move(is);
 }
 
-void PhysicalNode::removeExtracellularSubstance(const std::shared_ptr<Substance>& is) {
+void PhysicalNode::removeExtracellularSubstance(Substance* is) {
   extracellular_substances_.erase(is->getId());  //TODO critical
 }
 
-std::list<std::shared_ptr<Substance>> PhysicalNode::getExtracellularSubstances() const {  //todo refactor - originally returned the whole map
-  std::list<std::shared_ptr<Substance>> list;
-  for (auto i : extracellular_substances_) {
-    list.push_front(i.second);
+std::list<Substance*> PhysicalNode::getExtracellularSubstances() const {  //todo refactor - originally returned the whole map
+  std::list<Substance*> list;
+  for (auto& i : extracellular_substances_) {
+    list.push_front(i.second.get());
   }
 
+  // todo remove - only used to get reproducible results with Java
   list.sort(
-      [](const std::shared_ptr<Substance> & a, const std::shared_ptr<Substance> & b) {return a->toString() < b->toString();});
+      [](const Substance* a, const Substance* b) {return a->toString() < b->toString();});
 
   return list;
 }
 
-std::shared_ptr<Substance> PhysicalNode::getExtracellularSubstance(const std::string& key) {  //todo refactor - added to avoid implementing unorederd_ma for swig
+Substance* PhysicalNode::getExtracellularSubstance(const std::string& key) {  //todo refactor - added to avoid implementing unorederd_ma for swig
   if (STLUtil::mapContains(extracellular_substances_, key)) {
-    return extracellular_substances_[key];
+    return extracellular_substances_[key].get();
   } else {
-    return std::shared_ptr<Substance>(nullptr);
+    return nullptr;
   }
 }
 
@@ -332,8 +335,8 @@ void PhysicalNode::degradate(double currentEcmTime) {  //changed to proteceted
   }
   // Otherwise, degradation according to the degradation constant for each chemical
   double delta_t = currentEcmTime - last_ecm_time_degradate_was_run_;
-  for (auto i : extracellular_substances_) {
-    auto s = i.second;
+  for (auto& i : extracellular_substances_) {
+    auto s = i.second.get();
     double decay = PhysicalNode::ecm_->exp(-s->getDegradationConstant() * delta_t);
     s->multiplyQuantityAndConcentrationBy(decay);
   }

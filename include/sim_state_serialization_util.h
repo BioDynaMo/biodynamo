@@ -102,7 +102,7 @@ class SimStateSerializationUtil {
   template<class K, class V>
   static StringBuilder& map(StringBuilder& sb, string key, const std::unordered_map<K, V>& map) {
     SimStateSerializationUtil::key(sb, key).append("{");
-    for (auto i : map) {
+    for (auto& i : map) {
       SimStateSerializationUtil::key(sb, i.first);
       i.second->simStateToJson(sb).append(",");
     }

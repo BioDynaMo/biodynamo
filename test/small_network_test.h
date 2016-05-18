@@ -49,8 +49,8 @@ class SmallNetworkTest : public BaseSimulationTest {
     java->setRandomSeed1(1L);
     java->initPhysicalNodeMovementListener();
 
-    auto L1 = Substance::create("L1", Color(0xFFFF0000));  // Color is red
-    ecm->addArtificialGaussianConcentrationZ(L1, 1.0, 400.0, 60.0);
+    auto L1 = Substance::UPtr(new Substance("L1", Color(0xFFFF0000)));  // Color is red
+    ecm->addArtificialGaussianConcentrationZ(L1.get(), 1.0, 400.0, 60.0);
 
     int number_of_nodes = 10;
     for (int i = 0; i < number_of_nodes; i++) {

@@ -83,7 +83,7 @@ void Substance::updateConcentrationBasedOnQuantity(double volume) {
   setConcentration(quantity_ / volume);
 }
 
-bool Substance::equalTo(const std::shared_ptr<Substance>& o) {
+bool Substance::equalTo(Substance* o) {
 
   return id_.compare(o->id_) == 0 && color_ == o->color_
       && std::abs(degradation_constant_ - o->degradation_constant_) < 1E-10
@@ -153,8 +153,8 @@ void Substance::setQuantity(double quantity) {
   quantity_ = quantity;
 }
 
-std::shared_ptr<Substance> Substance::getCopy() const {
-  return std::shared_ptr<Substance>(new Substance(*this));
+Substance::UPtr Substance::getCopy() const {
+  return UPtr(new Substance(*this));
 }
 
 std::string Substance::toString() const {
