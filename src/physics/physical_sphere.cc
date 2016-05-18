@@ -215,7 +215,7 @@ PhysicalCylinder::UPtr PhysicalSphere::addNewPhysicalCylinder(double new_length,
   // SpaceNode
   auto new_son = PhysicalObject::so_node_->getNewInstance(new_cyl_central_node_location, cyl.get());  // fixme catch PositionNotAllowedException
 
-  cyl->setSoNode(new_son);
+  cyl->setSoNode(std::move(new_son));
   PhysicalNode::ecm_->addPhysicalCylinder(cyl.get());
   return cyl;
 }
@@ -270,7 +270,7 @@ PhysicalSphere::UPtr PhysicalSphere::divide(double vr, double phi, double theta)
   // C) Request a SpaceNode
 
   auto new_son = so_node_->getNewInstance(new_mass_location, new_sphere.get());  //fixme catch PositionNotAllowedException catch exception
-  new_sphere->setSoNode(new_son);
+  new_sphere->setSoNode(std::move(new_son));
 
   // D) register new Sphere to ECM
   ecm_->addPhysicalSphere(new_sphere.get());  // this method also adds the PhysicalNode

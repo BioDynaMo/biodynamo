@@ -41,8 +41,8 @@ class TriangleHashKey {
    * @param b The second node.
    * @param c The third node.
    */
-  TriangleHashKey(const std::shared_ptr<SpaceNode<T>>& a, const std::shared_ptr<SpaceNode<T>>& b,
-                  const std::shared_ptr<SpaceNode<T>>& c);
+  TriangleHashKey(SpaceNode<T>* a, SpaceNode<T>* b,
+                  SpaceNode<T>* c);
 
   TriangleHashKey(const TriangleHashKey& other);
 
@@ -71,7 +71,9 @@ class TriangleHashKey {
   /**
    * The points of the triangle for which a hash value should be calculated.
    */
-  std::shared_ptr<SpaceNode<T>> a_, b_, c_;
+  SpaceNode<T>* a_ = nullptr;
+  SpaceNode<T>* b_ = nullptr;
+  SpaceNode<T>* c_ = nullptr;
 
   /**
    * The hash value associated with this edge.

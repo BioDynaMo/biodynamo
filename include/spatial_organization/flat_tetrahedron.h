@@ -65,7 +65,7 @@ class FlatTetrahedron : public Tetrahedron<T> {  //, public std::enable_shared_f
 
   static std::shared_ptr<Tetrahedron<T>> create(
       const std::shared_ptr<Triangle3D<T>>& one_triangle,
-      const std::shared_ptr<SpaceNode<T>>& fourth_point,
+      SpaceNode<T>* fourth_point,
       const std::shared_ptr<OpenTriangleOrganizer<T>>& oto) {
 #ifdef TETRAHEDRON_DEBUG
     FlatTetrahedron<T>* tetrahedron = new FlatTetrahedronDebug<T>();
@@ -104,10 +104,10 @@ class FlatTetrahedron : public Tetrahedron<T> {  //, public std::enable_shared_f
                                                 const std::shared_ptr<Triangle3D<T>>& triangle_b,
                                                 const std::shared_ptr<Triangle3D<T>>& triangle_c,
                                                 const std::shared_ptr<Triangle3D<T>>& triangle_d,
-                                                const std::shared_ptr<SpaceNode<T>>& node_a,
-                                                const std::shared_ptr<SpaceNode<T>>& node_b,
-                                                const std::shared_ptr<SpaceNode<T>>& node_c,
-                                                const std::shared_ptr<SpaceNode<T>>& node_d) {
+                                                SpaceNode<T>* node_a,
+                                                SpaceNode<T>* node_b,
+                                                SpaceNode<T>* node_c,
+                                                SpaceNode<T>* node_d) {
 #ifdef TETRAHEDRON_DEBUG
     FlatTetrahedron<T>* tetrahedron = new FlatTetrahedronDebug<T>();
 #else
@@ -132,7 +132,7 @@ class FlatTetrahedron : public Tetrahedron<T> {  //, public std::enable_shared_f
    * informed about the movement of <code>movedNode</code>.
    * @param moved_node The node that was moved.
    */
-  void updateCirumSphereAfterNodeMovement(const std::shared_ptr<SpaceNode<T>>& moved_node) override;
+  void updateCirumSphereAfterNodeMovement(SpaceNode<T>* moved_node) override;
 
   /**
    * Calculates the volume of this flat tetrahedron. Since the volume of a flat tetrahedron is

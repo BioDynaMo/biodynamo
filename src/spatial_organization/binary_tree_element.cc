@@ -18,11 +18,11 @@ BinaryTreeElement<T>* BinaryTreeElement<T>::generateTreeHead() {
 }
 
 template<class T>
-BinaryTreeElement<T>::BinaryTreeElement(std::shared_ptr<SpaceNode<T>> content)
+BinaryTreeElement<T>::BinaryTreeElement(SpaceNode<T>* content)
     : content_ { content },
       bigger_ { nullptr },
       smaller_ { nullptr } {
-  if (content_.get() != nullptr) {
+  if (content_ != nullptr) {
     content_id_ = getHash(content);
   } else {
     content_id_ = -1;
@@ -37,20 +37,20 @@ BinaryTreeElement<T>::~BinaryTreeElement() {
 
 template<class T>
 bool BinaryTreeElement<T>::contains(
-    const std::shared_ptr<SpaceNode<T>>& content) const {
+    SpaceNode<T>* content) const {
   return contains(getHash(content), content);
 }
 
 template<class T>
 void BinaryTreeElement<T>::insert(
-    const std::shared_ptr<SpaceNode<T>>& content) {
-  if (content.get() != nullptr) {
+    SpaceNode<T>* content) {
+  if (content != nullptr) {
     insert(new BinaryTreeElement<T>(content));
   }
 }
 
 template<class T>
-void BinaryTreeElement<T>::remove(const std::shared_ptr<SpaceNode<T>>& content,
+void BinaryTreeElement<T>::remove(SpaceNode<T>* content,
                                   BinaryTreeElement* parent) {
   remove(getHash(content), content, parent);
 }
@@ -67,7 +67,7 @@ std::string BinaryTreeElement<T>::toString() const {
 }
 
 template<class T>
-int BinaryTreeElement<T>::getHash(std::shared_ptr<SpaceNode<T>> content) const {
+int BinaryTreeElement<T>::getHash(SpaceNode<T>* content) const {
   uint64_t id = content_->getId();
   uint64_t c = 7481;
   return (id * c) % 74317;
@@ -75,14 +75,14 @@ int BinaryTreeElement<T>::getHash(std::shared_ptr<SpaceNode<T>> content) const {
 
 template<class T>
 bool BinaryTreeElement<T>::contains(
-    int id, const std::shared_ptr<SpaceNode<T>>& content) const {
+    int id, SpaceNode<T>* content) const {
   return contains(getHash(content), content);
 }
 
 template<class T>
 void BinaryTreeElement<T>::insert(BinaryTreeElement* element) {
   if (content_id_ == element->content_id_
-      && content_.get() == element->content_.get()) {
+      && content_ == element->content_) {
     delete element;
     return;
   } else if ((content_id_ >= element->content_id_)) {
@@ -102,9 +102,9 @@ void BinaryTreeElement<T>::insert(BinaryTreeElement* element) {
 
 template<class T>
 void BinaryTreeElement<T>::remove(int id,
-                                  const std::shared_ptr<SpaceNode<T>>& content,
+                                  SpaceNode<T>* content,
                                   BinaryTreeElement* parent) {
-  if ((content_id_ == id) && (content_.get() == content.get())) {
+  if ((content_id_ == id) && (content_ == content)) {
     if ((smaller_ == nullptr) && (bigger_ == nullptr)) {
       parent->changeLink(this, nullptr);
       //use of randomization in the next if showed no influence on the simulation outcome
@@ -140,8 +140,8 @@ void BinaryTreeElement<T>::changeLink(BinaryTreeElement* old_el,
 }
 
 template<class T>
-std::list<std::shared_ptr<SpaceNode<T>>>BinaryTreeElement<T>::inOrderTraversal() const {
-  std::list<std::shared_ptr<SpaceNode<T>>> traversal;
+std::list<SpaceNode<T>*>BinaryTreeElement<T>::inOrderTraversal() const {
+  std::list<SpaceNode<T>*> traversal;
   std::stack<const BinaryTreeElement<T>*> stack;
   const BinaryTreeElement<T>* dummy = this;
   while(dummy != nullptr) {
@@ -167,19 +167,19 @@ std::list<std::shared_ptr<SpaceNode<T>>>BinaryTreeElement<T>::inOrderTraversal()
 
 template<class T>
 TreeHead<T>::TreeHead()
-    : BinaryTreeElement<T>(std::shared_ptr<SpaceNode<T>>(nullptr)) {
+    : BinaryTreeElement<T>(nullptr) {
 
 }
 
 template<class T>
-bool TreeHead<T>::contains(const std::shared_ptr<SpaceNode<T>>& content) const {
+bool TreeHead<T>::contains(SpaceNode<T>* content) const {
   return
       BinaryTreeElement<T>::bigger_ != nullptr ?
           BinaryTreeElement<T>::bigger_->contains(content) : false;
 }
 
 template<class T>
-void TreeHead<T>::insert(const std::shared_ptr<SpaceNode<T>>& content) {
+void TreeHead<T>::insert(SpaceNode<T>* content) {
   if (BinaryTreeElement<T>::bigger_ != nullptr) {
     BinaryTreeElement<T>::bigger_->insert(content);
   } else {
@@ -188,7 +188,7 @@ void TreeHead<T>::insert(const std::shared_ptr<SpaceNode<T>>& content) {
 }
 
 template<class T>
-void TreeHead<T>::remove(const std::shared_ptr<SpaceNode<T>>& content,
+void TreeHead<T>::remove(SpaceNode<T>* content,
                          BinaryTreeElement<T>* parent) {
   if (BinaryTreeElement<T>::bigger_ != nullptr) {
     BinaryTreeElement<T>::bigger_->remove(content, this);
@@ -196,11 +196,11 @@ void TreeHead<T>::remove(const std::shared_ptr<SpaceNode<T>>& content,
 }
 
 template<class T>
-std::list<std::shared_ptr<SpaceNode<T>>>TreeHead<T>::inOrderTraversal() const {
+std::list<SpaceNode<T>*>TreeHead<T>::inOrderTraversal() const {
   if(BinaryTreeElement<T>::bigger_ != nullptr) {
     return BinaryTreeElement<T>::bigger_->inOrderTraversal();
   }
-  return std::list<std::shared_ptr<SpaceNode<T>>>();
+  return std::list<SpaceNode<T>*>();
 }
 
 template class BinaryTreeElement<cx3d::physics::PhysicalNode>;

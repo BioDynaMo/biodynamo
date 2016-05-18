@@ -58,9 +58,9 @@ class Triangle3D : public Plane3D<T>, public std::enable_shared_from_this<Triang
    * </code>
    */
   static std::shared_ptr<Triangle3D<T>> create(
-      const std::shared_ptr<SpaceNode<T>>& sn_1,
-      const std::shared_ptr<SpaceNode<T>>& sn_2,
-      const std::shared_ptr<SpaceNode<T>>& sn_3,
+      SpaceNode<T>* sn_1,
+      SpaceNode<T>* sn_2,
+      SpaceNode<T>* sn_3,
       const std::shared_ptr<Tetrahedron<T>>& tetrahedron_1,
       const std::shared_ptr<Tetrahedron<T>>& tetrahedron_2) {
 #ifdef TRIANGLE3D_DEBUG
@@ -333,7 +333,7 @@ class Triangle3D : public Plane3D<T>, public std::enable_shared_from_this<Triang
    * @return A reference to the array storing the three endpoints of this
    * tetrahedron.
    */
-  virtual std::array<std::shared_ptr<SpaceNode<T> >, 3> getNodes() const;
+  virtual std::array<SpaceNode<T>*, 3> getNodes() const;
 
   /**
    * Adds an incident tetrahedron to this triangle.
@@ -367,7 +367,7 @@ class Triangle3D : public Plane3D<T>, public std::enable_shared_from_this<Triang
    * @param node A node that might be incident to this triangle.
    * @return <code>true</code>, iff the node is incident to this triangle.
    */
-  virtual bool isAdjacentTo(const std::shared_ptr<SpaceNode<T>>& node) const;
+  virtual bool isAdjacentTo(SpaceNode<T>* node) const;
 
   /**
    * Tests if this triangle is not incident to any tetrahedron.
@@ -396,8 +396,8 @@ class Triangle3D : public Plane3D<T>, public std::enable_shared_from_this<Triang
    * @param tetrahedron_2
    *            The second incident tetrahedron.
    */
-  Triangle3D(const std::shared_ptr<SpaceNode<T>>& sn_1, const std::shared_ptr<SpaceNode<T>>& sn_2,
-             const std::shared_ptr<SpaceNode<T>>& sn_3,
+  Triangle3D(SpaceNode<T>* sn_1, SpaceNode<T>* sn_2,
+             SpaceNode<T>* sn_3,
              const std::shared_ptr<Tetrahedron<T>>& tetrahedron_1,
              const std::shared_ptr<Tetrahedron<T>>& tetrahedron_2);
 
@@ -432,7 +432,7 @@ class Triangle3D : public Plane3D<T>, public std::enable_shared_from_this<Triang
   /**
    * The three nodes that are incident to this triangle.
    */
-  std::array<std::shared_ptr<SpaceNode<T> >, 3> nodes_;
+  std::array<SpaceNode<T>*, 3> nodes_;
 
   /**
    * The coordinate of this triangle's circumcenter.

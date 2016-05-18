@@ -56,7 +56,7 @@ class SpaceNodeDebug : public SpaceNode<T> {
     return ret;
   }
 
-  std::shared_ptr<SpaceNode<T> > getNewInstance(
+  SpaceNode<T>* getNewInstance(
       const std::array<double, 3>& position,
       const std::shared_ptr<T>& user_object) {
     logCall(position, user_object);
@@ -160,7 +160,7 @@ class SpaceNodeDebug : public SpaceNode<T> {
   }
 
   std::shared_ptr<Edge<T> > searchEdge(
-      const std::shared_ptr<SpaceNode<T> >& opposite_node) {
+      SpaceNode<T>* opposite_node) {
     logCall(opposite_node);
     auto ret = SpaceNode<T>::searchEdge(opposite_node);
     logReturn(ret);
@@ -216,7 +216,7 @@ class SpaceNodeDebug : public SpaceNode<T> {
     return ret;
   }
 
-//  bool equalTo(const std::shared_ptr<SpaceNode<T>>& other) {
+//  bool equalTo(SpaceNode<T>* other) {
 //    logCall(other);
 //    auto ret = SpaceNode<T>::equalTo(other);
 //    logReturn(ret);
@@ -257,7 +257,7 @@ class SpaceNodeDebug : public SpaceNode<T> {
   bool removeTetrahedronDuringCleanUp(
       std::shared_ptr<Tetrahedron<T> >& tetrahedron_to_remove,
       std::list<std::shared_ptr<Tetrahedron<T> > >& list,
-      std::list<std::shared_ptr<SpaceNode<T> > >& node_list,
+      std::list<SpaceNode<T>* >& node_list,
       std::shared_ptr<OpenTriangleOrganizer<T> >& oto) {
     logCall(tetrahedron_to_remove, list, node_list, oto);
     auto ret = SpaceNode<T>::removeTetrahedronDuringCleanUp(tetrahedron_to_remove, list, node_list, oto);

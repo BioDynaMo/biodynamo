@@ -21,8 +21,8 @@ namespace spatial_organization {
 
 template<class T>
 std::shared_ptr<Tetrahedron<T> > Tetrahedron<T>::createInitialTetrahedron(
-    const std::shared_ptr<SpaceNode<T> >& a, const std::shared_ptr<SpaceNode<T> >& b,
-    const std::shared_ptr<SpaceNode<T> >& c, const std::shared_ptr<SpaceNode<T> >& d,
+    SpaceNode<T>* a, SpaceNode<T>* b,
+    SpaceNode<T>* c, SpaceNode<T>* d,
     const std::shared_ptr<OpenTriangleOrganizer<T>>& simple_oto) {
 
   std::shared_ptr<Tetrahedron<T>> null_tetrahedron(nullptr);
@@ -32,7 +32,7 @@ std::shared_ptr<Tetrahedron<T> > Tetrahedron<T>::createInitialTetrahedron(
   auto triangle_d = Triangle3D<T>::create(a, b, c, null_tetrahedron, null_tetrahedron);
   auto ret = Tetrahedron<T>::create(triangle_a, triangle_b, triangle_c, triangle_d, a, b, c, d);
 
-  std::shared_ptr<SpaceNode<T>> null_spacenode(nullptr);
+  SpaceNode<T>* null_spacenode(nullptr);
   Tetrahedron<T>::create(triangle_a, null_spacenode, simple_oto);
   Tetrahedron<T>::create(triangle_b, null_spacenode, simple_oto);
   Tetrahedron<T>::create(triangle_c, null_spacenode, simple_oto);
@@ -52,7 +52,7 @@ void Tetrahedron<T>::calculateCircumSphere() {
 
 template<class T>
 void Tetrahedron<T>::updateCirumSphereAfterNodeMovement(
-    const std::shared_ptr<SpaceNode<T> >& moved_node) {
+    SpaceNode<T>* moved_node) {
   int node_number = getNodeNumber(moved_node);
   if (!isInfinite()) {
     circum_center_ = {0.0, 0.0, 0.0};
@@ -144,7 +144,7 @@ std::array<std::shared_ptr<Triangle3D<T> >, 4> Tetrahedron<T>::getAdjacentTriang
 }
 
 template<class T>
-bool Tetrahedron<T>::isAdjacentTo(const std::shared_ptr<SpaceNode<T> >& node) const {
+bool Tetrahedron<T>::isAdjacentTo(SpaceNode<T>* node) const {
   return (adjacent_nodes_[0] == node) || (adjacent_nodes_[1] == node)
       || (adjacent_nodes_[2] == node) || (adjacent_nodes_[3] == node);
 }
@@ -295,7 +295,7 @@ std::array<std::shared_ptr<Tetrahedron<T> >, 2> Tetrahedron<T>::flip3to2(
     const std::shared_ptr<Tetrahedron<T> >& tetrahedron_a,
     const std::shared_ptr<Tetrahedron<T> >& tetrahedron_b,
     const std::shared_ptr<Tetrahedron<T> >& tetrahedron_c) {
-  std::array<std::shared_ptr<SpaceNode<T>>, 3> newTriangleNodes;
+  std::array<SpaceNode<T>*, 3> newTriangleNodes;
 
   int num_a = tetrahedron_a->getConnectingTriangleNumber(tetrahedron_b);
   int num_b = tetrahedron_b->getConnectingTriangleNumber(tetrahedron_c);
@@ -485,7 +485,7 @@ void Tetrahedron<T>::replaceTriangle(const std::shared_ptr<Triangle3D<T> >& old_
 }
 
 template<class T>
-int Tetrahedron<T>::getNodeNumber(const std::shared_ptr<SpaceNode<T> >& node) const {
+int Tetrahedron<T>::getNodeNumber(SpaceNode<T>* node) const {
   for (size_t i = 0; i < adjacent_nodes_.size(); i++) {
     if (adjacent_nodes_[i] == node) {
       return i;
@@ -512,20 +512,20 @@ std::shared_ptr<Edge<T> > Tetrahedron<T>::getEdge(int node_number_1, int node_nu
 }
 
 template<class T>
-std::shared_ptr<Edge<T> > Tetrahedron<T>::getEdge(const std::shared_ptr<SpaceNode<T> >& a,
-                                                  const std::shared_ptr<SpaceNode<T> >& b) const {
+std::shared_ptr<Edge<T> > Tetrahedron<T>::getEdge(SpaceNode<T>* a,
+                                                  SpaceNode<T>* b) const {
   return adjacent_edges_[getEdgeNumber(a, b)];
 }
 
 template<class T>
-int Tetrahedron<T>::getEdgeNumber(const std::shared_ptr<SpaceNode<T> >& a,
-                                  const std::shared_ptr<SpaceNode<T> >& b) const {
+int Tetrahedron<T>::getEdgeNumber(SpaceNode<T>* a,
+                                  SpaceNode<T>* b) const {
   return getEdgeNumber(getNodeNumber(a), getNodeNumber(b));
 }
 
 template<class T>
 std::shared_ptr<Triangle3D<T> > Tetrahedron<T>::getOppositeTriangle(
-    const std::shared_ptr<SpaceNode<T> >& node) const {
+    SpaceNode<T>* node) const {
   for (size_t i = 0; i < 4; i++) {
     if (adjacent_nodes_[i] == node)
       return adjacent_triangles_[i];
@@ -535,7 +535,7 @@ std::shared_ptr<Triangle3D<T> > Tetrahedron<T>::getOppositeTriangle(
 }
 
 template<class T>
-std::shared_ptr<SpaceNode<T> > Tetrahedron<T>::getOppositeNode(
+SpaceNode<T>* Tetrahedron<T>::getOppositeNode(
     const std::shared_ptr<Triangle3D<T>>& triangle) const {
   for (size_t i = 0; i < 4; i++) {
     if (adjacent_triangles_[i] == triangle) {
@@ -642,7 +642,7 @@ int Tetrahedron<T>::isInConvexPosition(const std::array<double, 3>& point,
 }
 
 template<class T>
-std::array<std::shared_ptr<SpaceNode<T> >, 4> Tetrahedron<T>::getAdjacentNodes() const {
+std::array<SpaceNode<T>*, 4> Tetrahedron<T>::getAdjacentNodes() const {
   return adjacent_nodes_;
 }
 
@@ -916,27 +916,27 @@ void Tetrahedron<T>::computeRadius() {
 }
 
 template<class T>
-std::shared_ptr<SpaceNode<T> > Tetrahedron<T>::getFirstOtherNode(
-    const std::shared_ptr<SpaceNode<T> >& node_a,
-    const std::shared_ptr<SpaceNode<T> >& node_b) const {
+SpaceNode<T>* Tetrahedron<T>::getFirstOtherNode(
+    SpaceNode<T>* node_a,
+    SpaceNode<T>* node_b) const {
   for (auto node : adjacent_nodes_) {
     if (node != node_a && node != node_b) {
       return node;
     }
   }
-  return std::shared_ptr<SpaceNode<T> >(nullptr);
+  return nullptr;
 }
 
 template<class T>
-std::shared_ptr<SpaceNode<T> > Tetrahedron<T>::getSecondOtherNode(
-    const std::shared_ptr<SpaceNode<T> >& node_a,
-    const std::shared_ptr<SpaceNode<T> >& node_b) const {
+SpaceNode<T>* Tetrahedron<T>::getSecondOtherNode(
+    SpaceNode<T>* node_a,
+    SpaceNode<T>* node_b) const {
   for (size_t i = adjacent_nodes_.size() - 1; i >= 0; i--) {
     if (adjacent_nodes_[i] != node_a && adjacent_nodes_[i] != node_b) {
       return adjacent_nodes_[i];
     }
   }
-  return std::shared_ptr<SpaceNode<T> >(nullptr);
+  return nullptr;
 }
 
 template<class T>
@@ -955,7 +955,7 @@ Tetrahedron<T>::Tetrahedron()
 
 template<class T>
 void Tetrahedron<T>::initializationHelper(const std::shared_ptr<Triangle3D<T>>& one_triangle,
-                                          const std::shared_ptr<SpaceNode<T>>& fourth_point,
+                                          SpaceNode<T>* fourth_point,
                                           const std::shared_ptr<OpenTriangleOrganizer<T>>& oto) {
   auto triangle = one_triangle;
   auto point = fourth_point;
@@ -964,7 +964,7 @@ void Tetrahedron<T>::initializationHelper(const std::shared_ptr<Triangle3D<T>>& 
     auto space_node_a = (nodes[0] == nullptr) ? nodes[1] : nodes[0];
     auto space_node_b = (nodes[2] == nullptr) ? nodes[1] : nodes[2];
     triangle = oto->getTriangleWithoutRemoving(space_node_a, space_node_b, point);
-    point = std::shared_ptr<SpaceNode<T>>(nullptr);
+    point = nullptr;
   }
   adjacent_nodes_[0] = point;
   if (point != nullptr) {
@@ -996,10 +996,10 @@ void Tetrahedron<T>::initializationHelper(const std::shared_ptr<Triangle3D<T>>& 
                                           const std::shared_ptr<Triangle3D<T>>& triangle_b,
                                           const std::shared_ptr<Triangle3D<T>>& triangle_c,
                                           const std::shared_ptr<Triangle3D<T>>& triangle_d,
-                                          const std::shared_ptr<SpaceNode<T>>& node_a,
-                                          const std::shared_ptr<SpaceNode<T>>& node_b,
-                                          const std::shared_ptr<SpaceNode<T>>& node_c,
-                                          const std::shared_ptr<SpaceNode<T>>& node_d) {
+                                          SpaceNode<T>* node_a,
+                                          SpaceNode<T>* node_b,
+                                          SpaceNode<T>* node_c,
+                                          SpaceNode<T>* node_d) {
   adjacent_triangles_[0] = triangle_a;
   adjacent_triangles_[1] = triangle_b;
   adjacent_triangles_[2] = triangle_c;

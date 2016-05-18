@@ -12,7 +12,7 @@ namespace cx3d {
 namespace spatial_organization {
 
 template<class T>
-Edge<T>::Edge(const std::shared_ptr<SpaceNode<T>>& a, const std::shared_ptr<SpaceNode<T>>& b)
+Edge<T>::Edge(SpaceNode<T>* a, SpaceNode<T>* b)
     : a_(a),
       b_(b),
       cross_section_area_(0.0),
@@ -20,8 +20,8 @@ Edge<T>::Edge(const std::shared_ptr<SpaceNode<T>>& a, const std::shared_ptr<Spac
 }
 
 template<class T>
-std::shared_ptr<SpaceNode<T>> Edge<T>::getOpposite(
-    const std::shared_ptr<const SpaceNode<T>>& node) const {
+SpaceNode<T>* Edge<T>::getOpposite(
+    const SpaceNode<T>* node) const {
   if (node == a_) {
     return b_;
   } else if (node == b_) {
@@ -34,7 +34,7 @@ std::shared_ptr<SpaceNode<T>> Edge<T>::getOpposite(
 
 template<class T>
 T* Edge<T>::getOppositeElement(T* element) const {
-  if (a_.get() != nullptr && b_.get() != nullptr) {
+  if (a_ != nullptr && b_ != nullptr) {
     if (element == a_->getUserObject()) {
       return b_->getUserObject();
     } else {
@@ -81,8 +81,8 @@ bool Edge<T>::equalTo(const std::shared_ptr<Edge<T>>& other) {
 }
 
 template<class T>
-bool Edge<T>::equals(const std::shared_ptr<SpaceNode<T>>& a,
-                     const std::shared_ptr<SpaceNode<T>>& b) const {
+bool Edge<T>::equals(SpaceNode<T>* a,
+                     SpaceNode<T>* b) const {
   return ((a_ == a) && (b_ == b)) || ((b_ == a) && (a_ == b));
 }
 
@@ -101,10 +101,10 @@ void Edge<T>::addTetrahedron(const std::shared_ptr<Tetrahedron<T>>& tetrahedron)
 
 template<class T>
 void Edge<T>::remove() {
-  if (a_.get() != nullptr) {
+  if (a_ != nullptr) {
     a_->removeEdge(this->shared_from_this());
   }
-  if (b_.get() != nullptr) {
+  if (b_ != nullptr) {
     b_->removeEdge(this->shared_from_this());
   }
 }
@@ -120,10 +120,10 @@ void Edge<T>::changeCrossSectionArea(double change) {
 }
 template<class T>
 void Edge<T>::initializationHelper() {
-  if (a_.get() != nullptr) {
+  if (a_ != nullptr) {
     a_->addEdge(this->shared_from_this());
   }
-  if (b_.get() != nullptr) {
+  if (b_ != nullptr) {
     b_->addEdge(this->shared_from_this());
   }
 }

@@ -104,16 +104,16 @@ class PhysicalNodeDebug : public PhysicalNode {
     return ret;
   }
 
-  std::shared_ptr<spatial_organization::SpaceNode<PhysicalNode>> getSoNode() {
+  SpaceNode<PhysicalNode>* getSoNode() {
     logCallParameterless();
     auto ret = PhysicalNode::getSoNode();
     logReturn(ret);
     return ret;
   }
 
-  void setSoNode(const std::shared_ptr<spatial_organization::SpaceNode<PhysicalNode>>& son) {
-    logCall(son);
-    PhysicalNode::setSoNode(son);
+  void setSoNode(typename SpaceNode<PhysicalNode>::UPtr son) {
+    logCall(son.get());
+    PhysicalNode::setSoNode(std::move(son));
     logReturnVoid();
   }
 

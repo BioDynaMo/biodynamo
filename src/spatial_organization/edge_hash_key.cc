@@ -12,9 +12,9 @@ namespace cx3d {
 namespace spatial_organization {
 
 template<class T>
-EdgeHashKey<T>::EdgeHashKey(const std::shared_ptr<SpaceNode<T>>& a,
-                            const std::shared_ptr<SpaceNode<T>>& b,
-                            const std::shared_ptr<SpaceNode<T>>& opposite_node)
+EdgeHashKey<T>::EdgeHashKey(SpaceNode<T>* a,
+                            SpaceNode<T>* b,
+                            SpaceNode<T>* opposite_node)
     : a_(a),
       b_(b),
       hash_code_(0),
@@ -80,18 +80,18 @@ double EdgeHashKey<T>::getCosine(const std::array<double, 3>& fourth_point) cons
 }
 
 template<class T>
-std::shared_ptr<SpaceNode<T>> EdgeHashKey<T>::getEndpointA() const {
+SpaceNode<T>* EdgeHashKey<T>::getEndpointA() const {
   return a_;
 }
 
 template<class T>
-std::shared_ptr<SpaceNode<T>> EdgeHashKey<T>::getEndpointB() const {
+SpaceNode<T>* EdgeHashKey<T>::getEndpointB() const {
   return b_;
 }
 
 template<class T>
-std::shared_ptr<SpaceNode<T>> EdgeHashKey<T>::oppositeNode(
-    const std::shared_ptr<SpaceNode<T>>& node) const {
+SpaceNode<T>* EdgeHashKey<T>::oppositeNode(
+    SpaceNode<T>* node) const {
   if (node == a_) {
     return b_;
   } else if (node == b_) {

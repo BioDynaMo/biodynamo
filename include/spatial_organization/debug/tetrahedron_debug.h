@@ -27,7 +27,7 @@ class TetrahedronDebug : public Tetrahedron<T> {
     logReturnVoid();
   }
 
-  void updateCirumSphereAfterNodeMovement(const std::shared_ptr<SpaceNode<T>>& moved_node)
+  void updateCirumSphereAfterNodeMovement(SpaceNode<T>* moved_node)
   override {
     logCall(moved_node);
     Tetrahedron<T>::updateCirumSphereAfterNodeMovement(moved_node);
@@ -69,7 +69,7 @@ class TetrahedronDebug : public Tetrahedron<T> {
     return ret;
   }
 
-  bool isAdjacentTo(const std::shared_ptr<SpaceNode<T>>& node) const override {
+  bool isAdjacentTo(SpaceNode<T>* node) const override {
     logCall(node);
     auto ret = Tetrahedron<T>::isAdjacentTo(node);
     logReturn(ret);
@@ -85,7 +85,7 @@ class TetrahedronDebug : public Tetrahedron<T> {
     return ret;
   }
 
-  std::array<std::shared_ptr<SpaceNode<T> >, 4> getAdjacentNodes() const override {
+  std::array<SpaceNode<T>*, 4> getAdjacentNodes() const override {
     logCallParameterless();
     auto ret = Tetrahedron<T>::getAdjacentNodes();
     logReturn(ret);
@@ -145,7 +145,7 @@ class TetrahedronDebug : public Tetrahedron<T> {
     logReturnVoid();
   }
 
-  int getNodeNumber(const std::shared_ptr<SpaceNode<T>>& node) const override {
+  int getNodeNumber(SpaceNode<T>* node) const override {
     logCall(node);
     auto ret = Tetrahedron<T>::getNodeNumber(node);
     logReturn(ret);
@@ -166,16 +166,16 @@ class TetrahedronDebug : public Tetrahedron<T> {
     return ret;
   }
 
-  std::shared_ptr<Edge<T>> getEdge(const std::shared_ptr<SpaceNode<T>>& a,
-      const std::shared_ptr<SpaceNode<T>>& b) const override {
+  std::shared_ptr<Edge<T>> getEdge(SpaceNode<T>* a,
+      SpaceNode<T>* b) const override {
     logCall(a, b);
     auto ret = Tetrahedron<T>::getEdge(a, b);
     logReturn(ret);
     return ret;
   }
 
-  int getEdgeNumber(const std::shared_ptr<SpaceNode<T>>& a,
-      const std::shared_ptr<SpaceNode<T>>& b) const override {
+  int getEdgeNumber(SpaceNode<T>* a,
+      SpaceNode<T>* b) const override {
     logCall(a, b);
     auto ret = Tetrahedron<T>::getEdgeNumber(a, b);
     logReturn(ret);
@@ -183,14 +183,14 @@ class TetrahedronDebug : public Tetrahedron<T> {
   }
 
   std::shared_ptr<Triangle3D<T>> getOppositeTriangle(
-      const std::shared_ptr<SpaceNode<T>>& node) const override {
+      SpaceNode<T>* node) const override {
     logCall(node);
     auto ret = Tetrahedron<T>::getOppositeTriangle(node);
     logReturn(ret);
     return ret;
   }
 
-  std::shared_ptr<SpaceNode<T> > getOppositeNode(
+  SpaceNode<T>* getOppositeNode(
       const std::shared_ptr<Triangle3D<T>>& triangle) const override {
     logCall(triangle);
     auto ret = Tetrahedron<T>::getOppositeNode(triangle);
@@ -272,18 +272,18 @@ class TetrahedronDebug : public Tetrahedron<T> {
     return ret;
   }
 
-  std::shared_ptr<SpaceNode<T>> getFirstOtherNode(
-      const std::shared_ptr<SpaceNode<T>>& node_a,
-      const std::shared_ptr<SpaceNode<T>>& node_b) const override {
+  SpaceNode<T>* getFirstOtherNode(
+      SpaceNode<T>* node_a,
+      SpaceNode<T>* node_b) const override {
     logCall(node_a, node_b);
     auto ret = Tetrahedron<T>::getFirstOtherNode(node_a, node_b);
     logReturn(ret);
     return ret;
   }
 
-  std::shared_ptr<SpaceNode<T>> getSecondOtherNode(
-      const std::shared_ptr<SpaceNode<T>>& node_a,
-      const std::shared_ptr<SpaceNode<T>>& node_b) const override {
+  SpaceNode<T>* getSecondOtherNode(
+      SpaceNode<T>* node_a,
+      SpaceNode<T>* node_b) const override {
     logCall(node_a, node_b);
     auto ret = Tetrahedron<T>::getSecondOtherNode(node_a, node_b);
     logReturn(ret);

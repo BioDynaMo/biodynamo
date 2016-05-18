@@ -38,9 +38,7 @@ class SpatialOrganizationNode {
   virtual std::list<T*> getNeighbors() const = 0;
 
   // todo change to interface type
-  virtual std::shared_ptr<SpaceNode<T>> getNewInstance(
-      const std::array<double, 3>& position,
-      T* user_object) = 0;
+  virtual std::unique_ptr<SpaceNode<T>> getNewInstance(const std::array<double, 3>& position, T* user_object) = 0;
 
   virtual std::list<T*> getPermanentListOfNeighbors() const = 0;
 

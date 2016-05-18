@@ -57,8 +57,8 @@ class Edge : public SpatialOrganizationEdge<T>, public std::enable_shared_from_t
    * }
    * </code>
    */
-  static std::shared_ptr<Edge<T>> create(const std::shared_ptr<SpaceNode<T>>& a,
-                                         const std::shared_ptr<SpaceNode<T>>& b) {
+  static std::shared_ptr<Edge<T>> create(SpaceNode<T>* a,
+                                         SpaceNode<T>* b) {
 #ifdef EDGE_DEBUG
     std::shared_ptr<Edge<T>> edge(new EdgeDebug<T>(a, b));
 #else
@@ -75,7 +75,7 @@ class Edge : public SpatialOrganizationEdge<T>, public std::enable_shared_from_t
   /**
    * {@inheritDoc}
    */
-  std::shared_ptr<SpaceNode<T>> getOpposite(const std::shared_ptr<const SpaceNode<T>>& node) const
+  SpaceNode<T>* getOpposite(const SpaceNode<T>* node) const
       override;
 
   /**
@@ -114,8 +114,8 @@ class Edge : public SpatialOrganizationEdge<T>, public std::enable_shared_from_t
    * @param b The second node.
    * @return <code>true</code>, if this edge connects <code>a</code> and <code>b</code>.
    */
-  virtual bool equals(const std::shared_ptr<SpaceNode<T>>& a,
-                      const std::shared_ptr<SpaceNode<T>>& b) const;
+  virtual bool equals(SpaceNode<T>* a,
+                      SpaceNode<T>* b) const;
   /**
    * Removes a tetrahedron from this edge's list of tetrahedra. If this edge is not incident to
    * any tetrahedra after the removal of the specified tetrahedron, the edge removes itself from
@@ -156,7 +156,7 @@ class Edge : public SpatialOrganizationEdge<T>, public std::enable_shared_from_t
    * @param a The first endpoint of the new edge.
    * @param b The second endpoint of the new edge.
    */
-  Edge(const std::shared_ptr<SpaceNode<T>>& a, const std::shared_ptr<SpaceNode<T>>& b);
+  Edge(SpaceNode<T>* a, SpaceNode<T>* b);
 
  private:
 #ifdef EDGE_NATIVE
@@ -168,7 +168,8 @@ class Edge : public SpatialOrganizationEdge<T>, public std::enable_shared_from_t
   /**
    * The two endpoints of this edge.
    */
-  std::shared_ptr<SpaceNode<T>> a_, b_;
+  SpaceNode<T>* a_ = nullptr;
+  SpaceNode<T>* b_ = nullptr;
 
   /**
    * A list of all tetrahedra that are adjacent to this edge.

@@ -40,7 +40,7 @@ std::shared_ptr<Tetrahedron<T> > SpaceNode<T>::searchInitialInsertionTetrahedron
     const std::shared_ptr<Tetrahedron<T> >& start,
     const std::array<double, 3>& coordinate) {
   auto current = start;
-  std::shared_ptr<SpaceNode<T>> null_space_node(nullptr);
+  SpaceNode<T>* null_space_node(nullptr);
   std::shared_ptr<Tetrahedron<T>> null_tetrahedron(nullptr);
   if (current->isInfinite()) {
     current = current->getOppositeTriangle(null_space_node)
@@ -103,18 +103,17 @@ template<class T>
 std::list<T*> SpaceNode<T>::getNeighbors() const {
   std::list<T*> result;
   for (auto e : adjacent_edges_) {
-    result.push_back(e->getOpposite(this->shared_from_this())->getUserObject());
+    result.push_back(e->getOpposite(this)->getUserObject());
   }
   return result;
 }
 
 template<class T>
-std::shared_ptr<SpaceNode<T> > SpaceNode<T>::getNewInstance(
+typename SpaceNode<T>::UPtr SpaceNode<T>::getNewInstance(
     const std::array<double, 3>& position,
     T* user_object) {
   // create a new SpaceNode:
-  auto insert_point = std::shared_ptr<SpaceNode<T> >(
-      SpaceNode<T>::create(position, user_object));
+  auto insert_point = UPtr(new SpaceNode(position, user_object));
 
   // the new instance should have the same listeners!
   for(auto& listener : listeners_){
@@ -125,36 +124,36 @@ std::shared_ptr<SpaceNode<T> > SpaceNode<T>::getNewInstance(
     // enough nodes collected:
     if (adjacent_edges_.size() == 2) {
       // collect the nodes:
-      auto a = adjacent_edges_.front()->getOpposite(this->shared_from_this());
-      auto b = adjacent_edges_.back()->getOpposite(this->shared_from_this());
+      auto a = adjacent_edges_.front()->getOpposite(this);
+      auto b = adjacent_edges_.back()->getOpposite(this);
       // clear the edge lists:
       adjacent_edges_.clear();
       a->adjacent_edges_.clear();
       b->adjacent_edges_.clear();
       // now create the first tetrahedron:
       auto oto = java_->oto_createSimpleOpenTriangleOrganizer();
-      Tetrahedron<T>::createInitialTetrahedron(this->shared_from_this(),
-                                               insert_point, a, b, oto);
+      Tetrahedron<T>::createInitialTetrahedron(this,
+                                               insert_point.get(), a, b, oto);
     } else {
-      Edge<T>::create(this->shared_from_this(), insert_point);
+      Edge<T>::create(this, insert_point.get());
       if (adjacent_edges_.size() == 2) {
         Edge<T>::create(
-            adjacent_edges_.back()->getOpposite(this->shared_from_this()),
-            insert_point);
+            adjacent_edges_.back()->getOpposite(this),
+            insert_point.get());
       }
     }
   } else {
     // insert point:
     insert_point->insert(adjacent_tetrahedra_.front());
   }
-  return std::shared_ptr<SpaceNode<T> >(insert_point);
+  return std::move(insert_point);
 }
 
 template<class T>
 std::list<T*> SpaceNode<T>::getPermanentListOfNeighbors() const {
   std::list<T*> ret;
   for (auto e : adjacent_edges_) {
-    auto opp = e->getOpposite(this->shared_from_this());
+    auto opp = e->getOpposite(this);
     if (opp != nullptr) {
       ret.push_back(opp->getUserObject());
     }
@@ -183,8 +182,7 @@ std::array<T*, 4> SpaceNode<T>::getVerticesOfTheTetrahedronContaining(
   }
   auto insertion_tetrahedron = adjacent_tetrahedra_.front();
   if (insertion_tetrahedron->isInfinite()) {
-    auto opposite_triangle = insertion_tetrahedron->getOppositeTriangle(
-        std::shared_ptr<SpaceNode<T> >(nullptr));
+    auto opposite_triangle = insertion_tetrahedron->getOppositeTriangle(nullptr);
     insertion_tetrahedron = opposite_triangle->getOppositeTetrahedron(
         insertion_tetrahedron);
   }
@@ -265,12 +263,12 @@ void SpaceNode<T>::moveTo(const std::array<double, 3>& new_position) {
   if (checkIfTriangulationIsStillValid(new_position)) {
     auto delta = Matrix::subtract(new_position, position_);
     for (auto& listener : listeners_) {
-      listener->nodeAboutToMove(this->shared_from_this(), delta);
+      listener->nodeAboutToMove(this, delta);
     }
     position_ = new_position;
     restoreDelaunay();
     for (auto& listener : listeners_) {
-      listener->nodeMoved(this->shared_from_this());
+      listener->nodeMoved(this);
     }
   } else {
     auto insert_position = SpaceNode<T>::searchInitialInsertionTetrahedron(
@@ -308,16 +306,16 @@ int SpaceNode<T>::getId() const {
 
 template<class T>
 std::shared_ptr<Edge<T> > SpaceNode<T>::searchEdge(
-    const std::shared_ptr<SpaceNode<T> >& opposite_node) {
+    SpaceNode<T>* opposite_node) {
   for (auto e : adjacent_edges_) {
-    auto opp = e->getOpposite(this->shared_from_this());
+    auto opp = e->getOpposite(this);
     if ((opp != nullptr && opp->equalTo(opposite_node))
         || (opposite_node != nullptr && opposite_node->equalTo(opp))) {
       return e;
     }
   }
   return std::shared_ptr<Edge<T>>(
-      Edge<T>::create(this->shared_from_this(), opposite_node));
+      Edge<T>::create(this, opposite_node));
 }
 
 template<class T>
@@ -340,7 +338,7 @@ std::shared_ptr<Tetrahedron<T> > SpaceNode<T>::insert(
     // tell the listeners that there will be a new node:
     auto vertice_contents = insertion_start->getVerticeContents();
     for (auto& listener : listeners_) {
-      listener->nodeAboutToBeAdded(this->shared_from_this(), position_,
+      listener->nodeAboutToBeAdded(this, position_,
                                    vertice_contents);
     }
   }
@@ -367,14 +365,14 @@ std::shared_ptr<Tetrahedron<T> > SpaceNode<T>::insert(
   // create a star-shaped triangulation:
   for (auto current_triangle : outer_triangles) {
     if (!current_triangle->isCompletelyOpen()) {
-      ret = Tetrahedron<T>::create(current_triangle, this->shared_from_this(),
+      ret = Tetrahedron<T>::create(current_triangle, this,
                                    oto);
     }
   }
   // }
   // tell the listeners that the node was added:
   for (auto& listener : listeners_) {
-    listener->nodeAdded(this->shared_from_this());
+    listener->nodeAdded(this);
   }
 
   return ret;
@@ -384,7 +382,7 @@ template<class T>
 void SpaceNode<T>::restoreDelaunay() {
   std::list<std::shared_ptr<Tetrahedron<T>>>active_tetrahedra;
   for (auto tetrahedron : getAdjacentTetrahedra()) {
-    tetrahedron->updateCirumSphereAfterNodeMovement(this->shared_from_this());
+    tetrahedron->updateCirumSphereAfterNodeMovement(this);
     active_tetrahedra.push_back(tetrahedron);
   }
   while (!active_tetrahedra.empty()) {
@@ -528,7 +526,7 @@ std::array<double, 3> SpaceNode<T>::proposeNewPosition() {
   std::array<double, 3> farthest_away_diff;
   auto max_distance = std::numeric_limits<double>::min();
   for (auto edge : adjacent_edges_) {
-    auto other_node = edge->getOpposite(this->shared_from_this());
+    auto other_node = edge->getOpposite(this);
     if (other_node != nullptr) {
       auto diff = Matrix::subtract(other_node->getPosition(), position_);
       double distance = Matrix::dot(diff, diff);
@@ -590,8 +588,8 @@ std::string SpaceNode<T>::toString() const {
 }
 
 template<class T>
-bool SpaceNode<T>::equalTo(const std::shared_ptr<SpaceNode<T>>& other) {
-  return other.get() == this;
+bool SpaceNode<T>::equalTo(SpaceNode<T>* other) {
+  return other == this;
 }
 
 template<class T>
@@ -603,21 +601,20 @@ int SpaceNode<T>::createNewCheckingIndex() {
 template<class T>
 std::shared_ptr<Tetrahedron<T> > SpaceNode<T>::removeAndReturnCreatedTetrahedron() {
   for (auto& listener : listeners_) {
-    listener->nodeAboutToBeRemoved(
-        std::shared_ptr<SpaceNode<T>>(this->shared_from_this()));
+    listener->nodeAboutToBeRemoved(this);
   }
   auto oto = java_->oto_createSimpleOpenTriangleOrganizer();
-  std::list<std::shared_ptr<Tetrahedron<T>>>messed_up_tetrahedra;
+  std::list<std::shared_ptr<Tetrahedron<T>>> messed_up_tetrahedra;
   // Collect the triangles that are opened by removing the point and
   // remove the corresponding tetrahedrons:
-  std::list<std::shared_ptr<Tetrahedron<T>>>adjacent_tetrahedra_cpy;
+  std::list<std::shared_ptr<Tetrahedron<T>>> adjacent_tetrahedra_cpy;
   for (auto tetrahedron : adjacent_tetrahedra_) {
     adjacent_tetrahedra_cpy.push_back(tetrahedron);
   }
   for (auto tetrahedron : adjacent_tetrahedra_cpy) {
     if (tetrahedron->isValid()) {
       auto opposite_triangle = tetrahedron->getOppositeTriangle(
-          this->shared_from_this());
+          this);
       oto->putTriangle(opposite_triangle);
       auto opposite_tetrahedron = opposite_triangle->getOppositeTetrahedron(
           tetrahedron);
@@ -636,7 +633,7 @@ std::shared_ptr<Tetrahedron<T> > SpaceNode<T>::removeAndReturnCreatedTetrahedron
   }
   oto->triangulate();
   for (auto& listener : listeners_) {
-    listener->nodeRemoved(this->shared_from_this());
+    listener->nodeRemoved(this);
   }
   return oto->getANewTetrahedron();
 }
@@ -677,7 +674,7 @@ bool SpaceNode<T>::checkIfTriangulationIsStillValid(
     } else {
       // check for each adjacent triangle if this node would remain on the same side:
       auto triangle = tetrahedron->getOppositeTriangle(
-          this->shared_from_this());
+          this);
       triangle->updatePlaneEquationIfNecessary();
       if (!triangle->trulyOnSameSide(position_, new_position)) {
         tetrahedron->testPosition(new_position);
@@ -692,7 +689,7 @@ template<class T>
 bool SpaceNode<T>::removeTetrahedronDuringCleanUp(
     std::shared_ptr<Tetrahedron<T> >& tetrahedron_to_remove,
     std::list<std::shared_ptr<Tetrahedron<T> > >& list,
-    std::list<std::shared_ptr<SpaceNode<T> > >& node_list,
+    std::list<SpaceNode<T>*>& node_list,
     std::shared_ptr<OpenTriangleOrganizer<T> >& oto) {
   bool ret = false;
   for (auto node : tetrahedron_to_remove->getAdjacentNodes()) {
@@ -725,7 +722,7 @@ template<class T>
 void SpaceNode<T>::cleanUp(
     const std::list<std::shared_ptr<Tetrahedron<T> > >& messed_up_tetrahedra) {
   std::list<std::shared_ptr<Tetrahedron<T>>>outer_tetrahedra;
-  std::list<std::shared_ptr<SpaceNode<T>>> problem_nodes;
+  std::list<SpaceNode<T>*> problem_nodes;
   auto oto = java_->oto_createSimpleOpenTriangleOrganizer();
   for (auto tetrahedron : messed_up_tetrahedra) {
     if (tetrahedron->isValid()) {

@@ -63,7 +63,7 @@ class Tetrahedron : public std::enable_shared_from_this<Tetrahedron<T>> {
    */
   static std::shared_ptr<Tetrahedron<T>> create(
       const std::shared_ptr<Triangle3D<T>>& one_triangle,
-      const std::shared_ptr<SpaceNode<T>>& fourth_point,
+      SpaceNode<T>* fourth_point,
       const std::shared_ptr<OpenTriangleOrganizer<T>>& oto) {
 #ifdef TETRAHEDRON_DEBUG
     Tetrahedron<T>* raw_pointer = new TetrahedronDebug<T>();
@@ -82,10 +82,10 @@ class Tetrahedron : public std::enable_shared_from_this<Tetrahedron<T>> {
                                                 const std::shared_ptr<Triangle3D<T>>& triangle_b,
                                                 const std::shared_ptr<Triangle3D<T>>& triangle_c,
                                                 const std::shared_ptr<Triangle3D<T>>& triangle_d,
-                                                const std::shared_ptr<SpaceNode<T>>& node_a,
-                                                const std::shared_ptr<SpaceNode<T>>& node_b,
-                                                const std::shared_ptr<SpaceNode<T>>& node_c,
-                                                const std::shared_ptr<SpaceNode<T>>& node_d) {
+                                                SpaceNode<T>* node_a,
+                                                SpaceNode<T>* node_b,
+                                                SpaceNode<T>* node_c,
+                                                SpaceNode<T>* node_d) {
 #ifdef TETRAHEDRON_DEBUG
     Tetrahedron<T>* raw_pointer = new TetrahedronDebug<T>();
 #else
@@ -123,8 +123,8 @@ class Tetrahedron : public std::enable_shared_from_this<Tetrahedron<T>> {
    *         tetrahedra.
    */
   static std::shared_ptr<Tetrahedron<T>> createInitialTetrahedron(
-      const std::shared_ptr<SpaceNode<T>>& a, const std::shared_ptr<SpaceNode<T>>& b,
-      const std::shared_ptr<SpaceNode<T>>& c, const std::shared_ptr<SpaceNode<T>>& d,
+      SpaceNode<T>* a, SpaceNode<T>* b,
+      SpaceNode<T>* c, SpaceNode<T>* d,
       const std::shared_ptr<OpenTriangleOrganizer<T>>& simple_oto);
 
   virtual ~Tetrahedron() {
@@ -148,7 +148,7 @@ class Tetrahedron : public std::enable_shared_from_this<Tetrahedron<T>> {
    * @param moved_node
    *            The node that was moved.
    */
-  virtual void updateCirumSphereAfterNodeMovement(const std::shared_ptr<SpaceNode<T>>& moved_node);
+  virtual void updateCirumSphereAfterNodeMovement(SpaceNode<T>* moved_node);
 
   /**
    * Determines whether a given point lies inside or outside the circumsphere
@@ -206,7 +206,7 @@ class Tetrahedron : public std::enable_shared_from_this<Tetrahedron<T>> {
    * @param node The node of interest.
    * @return <code>true</code>, if the node is an endpoint.
    */
-  virtual bool isAdjacentTo(const std::shared_ptr<SpaceNode<T>>& node) const;
+  virtual bool isAdjacentTo(SpaceNode<T>* node) const;
 
   /**
    * Walks toward a specified point. If the point lies inside this
@@ -226,7 +226,7 @@ class Tetrahedron : public std::enable_shared_from_this<Tetrahedron<T>> {
   /**
    * @return An array containing the nodes incident to this tetrahedron.
    */
-  virtual std::array<std::shared_ptr<SpaceNode<T> >, 4> getAdjacentNodes() const;
+  virtual std::array<SpaceNode<T>*, 4> getAdjacentNodes() const;
 //
 // protected:
 //
@@ -370,7 +370,7 @@ class Tetrahedron : public std::enable_shared_from_this<Tetrahedron<T>> {
    *            The node of interest.
    * @return An index between 0 and 3.
    */
-  virtual int getNodeNumber(const std::shared_ptr<SpaceNode<T>>& node) const;
+  virtual int getNodeNumber(SpaceNode<T>* node) const;
 
   /**
    * Determines which index a given triangle has in this tetrahedron's list of
@@ -402,8 +402,8 @@ class Tetrahedron : public std::enable_shared_from_this<Tetrahedron<T>> {
    *            The second endpoint of the edge.
    * @return The edge connecting the two given endpoints.
    */
-  virtual std::shared_ptr<Edge<T>> getEdge(const std::shared_ptr<SpaceNode<T>>& a,
-                                           const std::shared_ptr<SpaceNode<T>>& b) const;
+  virtual std::shared_ptr<Edge<T>> getEdge(SpaceNode<T>* a,
+                                           SpaceNode<T>* b) const;
 
   /**
    * Determines the edge that connects two endpoints of this tetrahedron.
@@ -415,8 +415,8 @@ class Tetrahedron : public std::enable_shared_from_this<Tetrahedron<T>> {
    * @return A number between 0 and 5, giving the index of the edge of
    *         interest.
    */
-  virtual int getEdgeNumber(const std::shared_ptr<SpaceNode<T>>& a,
-                            const std::shared_ptr<SpaceNode<T>>& b) const;
+  virtual int getEdgeNumber(SpaceNode<T>* a,
+                            SpaceNode<T>* b) const;
 
   /**
    * Returns the incident triangle opposite to a given endpoint of this
@@ -428,7 +428,7 @@ class Tetrahedron : public std::enable_shared_from_this<Tetrahedron<T>> {
    *         <code>node</code>.
    */
   virtual std::shared_ptr<Triangle3D<T>> getOppositeTriangle(
-      const std::shared_ptr<SpaceNode<T>>& node) const;
+      SpaceNode<T>* node) const;
 
   /**
    * Returns the incident node opposite to a given triangle which is incident
@@ -439,7 +439,7 @@ class Tetrahedron : public std::enable_shared_from_this<Tetrahedron<T>> {
    * @return The endpoint of this triangle that lies opposite to
    *         <code>triangle</code>.
    */
-  virtual std::shared_ptr<SpaceNode<T> > getOppositeNode(
+  virtual SpaceNode<T>* getOppositeNode(
       const std::shared_ptr<Triangle3D<T>>& triangle) const;
 
   /**
@@ -567,9 +567,9 @@ class Tetrahedron : public std::enable_shared_from_this<Tetrahedron<T>> {
    *            A second incident node.
    * @return A third incident node.
    */
-  virtual std::shared_ptr<SpaceNode<T>> getFirstOtherNode(
-      const std::shared_ptr<SpaceNode<T>>& node_a,
-      const std::shared_ptr<SpaceNode<T>>& node_b) const;
+  virtual SpaceNode<T>* getFirstOtherNode(
+      SpaceNode<T>* node_a,
+      SpaceNode<T>* node_b) const;
 
   /**
    * Given two nodes incident to this tetrahedron, this function returns
@@ -582,9 +582,9 @@ class Tetrahedron : public std::enable_shared_from_this<Tetrahedron<T>> {
    *            A second incident node.
    * @return A third incident node.
    */
-  virtual std::shared_ptr<SpaceNode<T>> getSecondOtherNode(
-      const std::shared_ptr<SpaceNode<T>>& node_a,
-      const std::shared_ptr<SpaceNode<T>>& node_b) const;
+  virtual SpaceNode<T>* getSecondOtherNode(
+      SpaceNode<T>* node_a,
+      SpaceNode<T>* node_b) const;
 
  protected:
 #ifdef TETRAHEDRON_NATIVE
@@ -613,7 +613,7 @@ class Tetrahedron : public std::enable_shared_from_this<Tetrahedron<T>> {
    *            newly created triangles.
    */
   void initializationHelper(const std::shared_ptr<Triangle3D<T>>& one_triangle,
-                            const std::shared_ptr<SpaceNode<T>>& fourth_point,
+                            SpaceNode<T>* fourth_point,
                             const std::shared_ptr<OpenTriangleOrganizer<T>>& oto);
 
   /**
@@ -645,10 +645,10 @@ class Tetrahedron : public std::enable_shared_from_this<Tetrahedron<T>> {
                             const std::shared_ptr<Triangle3D<T>>& triangle_b,
                             const std::shared_ptr<Triangle3D<T>>& triangle_c,
                             const std::shared_ptr<Triangle3D<T>>& triangle_d,
-                            const std::shared_ptr<SpaceNode<T>>& node_a,
-                            const std::shared_ptr<SpaceNode<T>>& node_b,
-                            const std::shared_ptr<SpaceNode<T>>& node_c,
-                            const std::shared_ptr<SpaceNode<T>>& node_d);
+                            SpaceNode<T>* node_a,
+                            SpaceNode<T>* node_b,
+                            SpaceNode<T>* node_c,
+                            SpaceNode<T>* node_d);
 
   /**
    * A small list containing a permutation of the number 0-3. This list is
@@ -659,7 +659,7 @@ class Tetrahedron : public std::enable_shared_from_this<Tetrahedron<T>> {
   /**
    * Contains references to the nodes incident to this tetrahedron.
    */
-  std::array<std::shared_ptr<SpaceNode<T>>, 4> adjacent_nodes_;
+  std::array<SpaceNode<T>*, 4> adjacent_nodes_;
   /**
    * Contains references to the 6 edges incident to this tetrahedron.
    */

@@ -22,24 +22,24 @@ SimpleTriangulationNodeOrganizer<T>::~SimpleTriangulationNodeOrganizer() {
 }
 
 template<class T>
-std::list<std::shared_ptr<SpaceNode<T>>>SimpleTriangulationNodeOrganizer<T>::getNodes(const std::shared_ptr<SpaceNode<T>>& reference_point) {
+std::list<SpaceNode<T>*>SimpleTriangulationNodeOrganizer<T>::getNodes(SpaceNode<T>* reference_point) {
   return tree_head_->inOrderTraversal();
 }
 
 template<class T>
 void SimpleTriangulationNodeOrganizer<T>::removeNode(
-    const std::shared_ptr<SpaceNode<T>>& node) {
+    SpaceNode<T>* node) {
   tree_head_->remove(node, nullptr);
 }
 
 template<class T>
 void SimpleTriangulationNodeOrganizer<T>::addNode(
-    const std::shared_ptr<SpaceNode<T>>& node) {
+    SpaceNode<T>* node) {
   tree_head_->insert(node);
 }
 
 template<class T>
-std::shared_ptr<SpaceNode<T>> SimpleTriangulationNodeOrganizer<T>::getFirstNode() const {
+SpaceNode<T>* SimpleTriangulationNodeOrganizer<T>::getFirstNode() const {
   return tree_head_->bigger_->content_;
 }
 

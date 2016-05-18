@@ -56,8 +56,8 @@ class Plane3D {
    * @param nonUsedNode The node in <code>nodes</code> which will not become part of the newly created plane.
    * @param normalize Defines whether or not the normal vector of this plane should be normalized or not.
    */
-  Plane3D(const std::array<std::shared_ptr<SpaceNode<T> >, 4>& nodes,
-          const std::shared_ptr<SpaceNode<T>>& non_used_node, bool normalize);
+  Plane3D(const std::array<SpaceNode<T>*, 4>& nodes,
+          SpaceNode<T>* non_used_node, bool normalize);
 
   /**
    * Creates a plane from a set of nodes. The normal vector of the resulting plane will be
@@ -66,8 +66,8 @@ class Plane3D {
    * create the plane. <code>nonUsedNode</code> defines, which node will not be upublicsed.
    * @param nonUsedNode The node in <code>nodes</code> which will not become part of the newly created plane.
    */
-  Plane3D(const std::array<std::shared_ptr<SpaceNode<T> >, 4>& nodes,
-          const std::shared_ptr<SpaceNode<T>>& non_used_node);
+  Plane3D(const std::array<SpaceNode<T>*, 4>& nodes,
+          SpaceNode<T>* non_used_node);
 
   /**
    * Creates a plane from the endpoint of a tetrahedron. The normal vector of the resulting plane will be
@@ -77,7 +77,7 @@ class Plane3D {
    * @param nonUsedNode The node in <code>nodes</code> which will not become part of the newly created plane.
    */
   Plane3D(const std::shared_ptr<Tetrahedron<T>>& tetrahedron,
-          const std::shared_ptr<SpaceNode<T>>& non_used_node);
+          SpaceNode<T>* non_used_node);
 
   virtual ~Plane3D() {
   }

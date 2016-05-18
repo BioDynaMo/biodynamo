@@ -132,9 +132,9 @@ class OpenTriangleOrganizer : public std::enable_shared_from_this<
    * @return A triangle with the requested three endpoints.
    */
   virtual std::shared_ptr<Triangle3D<T>> getTriangle(
-      const std::shared_ptr<SpaceNode<T>>& a,
-      const std::shared_ptr<SpaceNode<T>>& b,
-      const std::shared_ptr<SpaceNode<T>>& c);
+      SpaceNode<T>* a,
+      SpaceNode<T>* b,
+      SpaceNode<T>* c);
 
   /**
    * Searches for a triangle which is incident to three specified nodes.
@@ -148,9 +148,9 @@ class OpenTriangleOrganizer : public std::enable_shared_from_this<
    * @return A triangle with the requested three endpoints.
    */
   virtual std::shared_ptr<Triangle3D<T>> getTriangleWithoutRemoving(
-      const std::shared_ptr<SpaceNode<T>>& a,
-      const std::shared_ptr<SpaceNode<T>>& b,
-      const std::shared_ptr<SpaceNode<T>>& c);
+      SpaceNode<T>* a,
+      SpaceNode<T>* b,
+      SpaceNode<T>* c);
 
   /**
    * Finishes an incomplete triangulation. Before calling this function the open triangle organizer
@@ -186,9 +186,9 @@ class OpenTriangleOrganizer : public std::enable_shared_from_this<
    * @return <code>true</code>, if an open triangle with the desired endpoints
    * is already stored in this triangle organizer.
    */
-  virtual bool contains(const std::shared_ptr<SpaceNode<T>>& a,
-                const std::shared_ptr<SpaceNode<T>>& b,
-                const std::shared_ptr<SpaceNode<T>>& c) const;
+  virtual bool contains(SpaceNode<T>* a,
+                SpaceNode<T>* b,
+                SpaceNode<T>* c) const;
 
   /**
    * Returns whether this triangle organizer is storing any more open triangles.
@@ -265,9 +265,9 @@ class OpenTriangleOrganizer : public std::enable_shared_from_this<
    * two endpoints.
    */
   std::shared_ptr<EdgeHashKey<T>> putEdgeOnMap(
-      const std::shared_ptr<SpaceNode<T>>& a,
-      const std::shared_ptr<SpaceNode<T>>& b,
-      const std::shared_ptr<SpaceNode<T>>& opposite_node,
+      SpaceNode<T>* a,
+      SpaceNode<T>* b,
+      SpaceNode<T>* opposite_node,
       const std::shared_ptr<EdgeHashKey<T>>& old_open_edge,
       std::unordered_map<EdgeHashKey<T>, std::shared_ptr<EdgeHashKey<T>>, EdgeHashKeyHash<T>, EdgeHashKeyEqual<T> >& map);
 
@@ -276,7 +276,7 @@ class OpenTriangleOrganizer : public std::enable_shared_from_this<
    * @param nodes The list of nodes.
    * @return The node with lowest id.
    */
-  std::shared_ptr<SpaceNode<T>> findCenterNode(const std::list<std::shared_ptr<SpaceNode<T> > >& nodes);
+  SpaceNode<T>* findCenterNode(const std::list<SpaceNode<T>* >& nodes);
 
   /**
    * Creates a two-dimensional triangulation for a set of points that all lie on one plane and on the
@@ -289,8 +289,8 @@ class OpenTriangleOrganizer : public std::enable_shared_from_this<
    * @return An open edge on the convex hull of the triangulated circle.
    */
   std::shared_ptr<EdgeHashKey<T>> triangulateSortedCirclePoints(
-      const std::list<std::shared_ptr<SpaceNode<T> > >& sorted_nodes,
-      const std::shared_ptr<SpaceNode<T>>& center_node,
+      const std::list<SpaceNode<T>* >& sorted_nodes,
+      SpaceNode<T>* center_node,
       std::unordered_map<EdgeHashKey<T>, std::shared_ptr<EdgeHashKey<T>>, EdgeHashKeyHash<T>, EdgeHashKeyEqual<T> >& map,
       std::list<std::shared_ptr<Triangle3D<T> > >& triangle_list);
 
@@ -303,7 +303,7 @@ class OpenTriangleOrganizer : public std::enable_shared_from_this<
    * @param sortedNodes A list of nodes that lie on one circle. This list is expected to be sorted in terms of angular
    * neighborhoodship of nodes.
    */
-  void removeForbiddenTriangles(const std::list<std::shared_ptr<SpaceNode<T> > >& sorted_nodes);
+  void removeForbiddenTriangles(const std::list<SpaceNode<T>* >& sorted_nodes);
 
   /**
    * Sorts a list of nodes that all lie on one circle.
@@ -313,9 +313,9 @@ class OpenTriangleOrganizer : public std::enable_shared_from_this<
    * @return A sorted list of nodes. The first node in this list will be the node with lowest ID, successive nodes are sorted
    * according to their occurrence on the circle.
    */
-  std::list<std::shared_ptr<SpaceNode<T> > > sortCircleNodes(
-      std::list<std::shared_ptr<SpaceNode<T> > >& nodes,
-      std::shared_ptr<EdgeHashKey<T>> startingEdge, const std::shared_ptr<SpaceNode<T> >& center_node);
+  std::list<SpaceNode<T>* > sortCircleNodes(
+      std::list<SpaceNode<T>* >& nodes,
+      std::shared_ptr<EdgeHashKey<T>> startingEdge, SpaceNode<T>* center_node);
 
   /**
    * Creates a two-dimensional triangulation for a set of 4 or more points that lie in the same plane and on the border of the same circle.
@@ -328,7 +328,7 @@ class OpenTriangleOrganizer : public std::enable_shared_from_this<
    * @return An open edge on the convex hull of the triangulated circle.
    */
   std::shared_ptr<EdgeHashKey<T>> triangulatePointsOnCircle(
-      std::list<std::shared_ptr<SpaceNode<T> > >& similar_distance_nodes,
+      std::list<SpaceNode<T>* >& similar_distance_nodes,
       const std::shared_ptr<EdgeHashKey<T>>& starting_edge,
       std::unordered_map<EdgeHashKey<T>, std::shared_ptr<EdgeHashKey<T>>, EdgeHashKeyHash<T>, EdgeHashKeyEqual<T> >& map,
       std::list<std::shared_ptr<Triangle3D<T> > >& triangle_list);  //todo order of parameters not conform with coding style - output param at the end
@@ -340,8 +340,8 @@ class OpenTriangleOrganizer : public std::enable_shared_from_this<
    * @param startingTriangle An initial triangle which will be part of the triangulation.
    */
   void triangulatePointsOnSphere(
-      std::list<std::shared_ptr<SpaceNode<T> > >& nodes,
-      std::list<std::shared_ptr<SpaceNode<T> > >& on_circle_nodes,
+      std::list<SpaceNode<T>* >& nodes,
+      std::list<SpaceNode<T>* >& on_circle_nodes,
       const std::shared_ptr<Triangle3D<T>>& starting_triangle);  //todo order of parameters not conform with coding style - output param at the end
 
   /**
@@ -376,7 +376,7 @@ class OpenTriangleOrganizer : public std::enable_shared_from_this<
    * @param openTriangle One side of the new tetrahedron.
    * @param oppositeNode The fourth point of the tetrahedron.
    */
-  void createNewTetrahedron(const std::shared_ptr<Triangle3D<T>>& openTriangle, const std::shared_ptr<SpaceNode<T>>& opposite_node);
+  void createNewTetrahedron(const std::shared_ptr<Triangle3D<T>>& openTriangle, SpaceNode<T>* opposite_node);
 };
 
 }  // namespace spatial_organization

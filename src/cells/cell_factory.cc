@@ -17,7 +17,7 @@ Cell* CellFactory::getCellInstance(const std::array<double, 3>& cell_origin,
   auto soma = SomaElement::UPtr(new SomaElement());
   auto ps = PhysicalSphere::UPtr(new PhysicalSphere());
   auto son = ecm->getSpatialOrganizationNodeInstance(cell_origin, ps.get());
-  ps->setSoNode(son);
+  ps->setSoNode(std::move(son));
 
   // Add cell to ECM instance
   ecm->addPhysicalSphere(ps.get());  //fixme critical

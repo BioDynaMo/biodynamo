@@ -25,20 +25,19 @@ class SpatialOrganizationNodeMovementListener {
 
   virtual UPtr getCopy() const = 0;
 
-  virtual void nodeAboutToMove(const std::shared_ptr<SpaceNode<T>>& node,
+  virtual void nodeAboutToMove(const SpaceNode<T>* node,
                                const std::array<double, 3>& planned_movement) = 0;
 
-  virtual void nodeMoved(const std::shared_ptr<SpaceNode<T> >& node) = 0;
+  virtual void nodeMoved(const SpaceNode<T>* node) = 0;
 
-  virtual void nodeAboutToBeRemoved(const std::shared_ptr<SpaceNode<T> >& node) = 0;
+  virtual void nodeAboutToBeRemoved(const SpaceNode<T>* node) = 0;
 
-  virtual void nodeRemoved(const std::shared_ptr<SpaceNode<T> >& node) = 0;
+  virtual void nodeRemoved(const SpaceNode<T>* node) = 0;
 
-  virtual void nodeAboutToBeAdded(
-      const std::shared_ptr<SpaceNode<T>>& node, const std::array<double, 3>& planned_position,
+  virtual void nodeAboutToBeAdded(const SpaceNode<T>*, const std::array<double, 3>& planned_position,
                                   const std::array<T*, 4>& vertices_of_the_tetrahedron_containing_the_position) = 0;
 
-  virtual void nodeAdded(const std::shared_ptr<SpaceNode<T> >& node) = 0;
+  virtual void nodeAdded(const SpaceNode<T>* node) = 0;
 
   /**
    * Returns a String representation of this SpatialOrganizationNodeMovementListener

@@ -34,54 +34,11 @@ using spatial_organization::SpatialOrganizationNodeMovementListener;
  * @param <T> The type of the user objects associated with each node.
  */
 template<class T>
-class SpaceNode : public SpatialOrganizationNode<T>,
-    public SimStateSerializable, public std::enable_shared_from_this<SpaceNode<T>> {
+class SpaceNode : public SpatialOrganizationNode<T>, public SimStateSerializable {
  public:
+  using UPtr = std::unique_ptr<SpaceNode<T>>;
+
   static void reset();
-
-  /**
-   * Creates a new SpaceNode object and returns it within a <code>std::shared_ptr</code>
-   * @see Edge(...)
-   *
-   * If functions return a std::shared_ptr of <code>this</code> using
-   * <code>return shared_from_this();</code>, the following precondition must be met:
-   * There must be at least one std::shared_ptr p that owns *this!
-   * Calling <code>shared_from_this</code> on a non-shared object results in undefined behaviour.
-   * http://mortoray.com/2013/08/02/safely-using-enable_shared_from_this/
-   *
-   * Therefore, all constructors are private and accessed through static factory methods that return
-   * a std::shared_ptr.
-   *
-   * TODO(lukas) SWIG doesn't seem to support variadic templates and perfect forwarding system.
-   * Once mapping to Java is not needed anymore, replace following create functions with:
-   * <code>
-   * template<typename ... T>
-   * static std::shared_ptr<SpaceNode> create(T&& ... all) {
-   *   return std::shared_ptr<SpaceNode>(new SpaceNode(std::forward<T>(all)...));
-   * }
-   * </code>
-   */
-  static std::shared_ptr<SpaceNode<T>> create(
-      const std::array<double, 3>& position, T* content) {
-#ifdef SPACENODE_DEBUG
-    SpaceNode<T>* raw_pointer = new SpaceNodeDebug<T>(position, content);
-#else
-    SpaceNode<T>* raw_pointer = new SpaceNode<T>(position, content);
-#endif
-    std::shared_ptr<SpaceNode<T>> space_node(raw_pointer);
-    return space_node;
-  }
-
-  static std::shared_ptr<SpaceNode<T>> create(
-      double x, double y, double z, T* content) {
-#ifdef SPACENODE_DEBUG
-    SpaceNode<T>* raw_pointer = new SpaceNodeDebug<T>(x, y, z, content);
-#else
-    SpaceNode<T>* raw_pointer = new SpaceNode(x, y, z, content);
-#endif
-    std::shared_ptr<SpaceNode<T>> space_node(raw_pointer);
-    return space_node;
-  }
 
   static void setJavaUtil(std::shared_ptr<JavaUtil<T>> java) {
     java_ = java;
@@ -110,6 +67,33 @@ class SpaceNode : public SpatialOrganizationNode<T>,
   SpaceNode();
 #endif
 
+  /**
+   * Creates a new SpaceNode with at a given coordinate and associates it with
+   * a user object.
+   *
+   * @param position
+   *            The position for this SpaceNode.
+   * @param content
+   *            The user object that should be associated with this SpaceNode.
+   */
+  SpaceNode(const std::array<double, 3>& position,
+            T* content);
+
+  /**
+   * Creates a new SpaceNode with at a given coordinate and associates it with
+   * a user object.
+   *
+   * @param x
+   *            The x-coordinate for this SpaceNode.
+   * @param y
+   *            The y-coordinate for this SpaceNode.
+   * @param z
+   *            The z-coordinate for this SpaceNode.
+   * @param content
+   *            The user object that should be associated with this SpaceNode.
+   */
+  SpaceNode(double x, double y, double z, T* content);
+
   virtual ~SpaceNode() {
   }
 
@@ -120,12 +104,9 @@ class SpaceNode : public SpatialOrganizationNode<T>,
 
   virtual std::list<T*> getNeighbors() const override;
 
-  virtual std::shared_ptr<SpaceNode<T>> getNewInstance(
-      const std::array<double, 3>& position,
-      T* user_object) override;
+  virtual UPtr getNewInstance(const std::array<double, 3>& position, T* user_object) override;
 
-  virtual std::list<T*> getPermanentListOfNeighbors() const
-      override;
+  virtual std::list<T*> getPermanentListOfNeighbors() const override;
 
   virtual std::array<double, 3> getPosition() const override;
 
@@ -205,7 +186,7 @@ class SpaceNode : public SpatialOrganizationNode<T>,
    *         node, a new edge is created.
    */
   virtual std::shared_ptr<Edge<T>> searchEdge(
-      const std::shared_ptr<SpaceNode<T>>& opposite_node);
+      SpaceNode<T>* opposite_node);
 
   /**
    * Removes a given edge from the std::list of incident edges.
@@ -271,35 +252,7 @@ class SpaceNode : public SpatialOrganizationNode<T>,
   /**
    * Determines if two instances of this object are equal
    */
-  virtual bool equalTo(const std::shared_ptr<SpaceNode<T>>& other);
-
- protected:
-  /**
-   * Creates a new SpaceNode with at a given coordinate and associates it with
-   * a user object.
-   *
-   * @param position
-   *            The position for this SpaceNode.
-   * @param content
-   *            The user object that should be associated with this SpaceNode.
-   */
-  SpaceNode(const std::array<double, 3>& position,
-            T* content);
-
-  /**
-   * Creates a new SpaceNode with at a given coordinate and associates it with
-   * a user object.
-   *
-   * @param x
-   *            The x-coordinate for this SpaceNode.
-   * @param y
-   *            The y-coordinate for this SpaceNode.
-   * @param z
-   *            The z-coordinate for this SpaceNode.
-   * @param content
-   *            The user object that should be associated with this SpaceNode.
-   */
-  SpaceNode(double x, double y, double z, T* content);
+  virtual bool equalTo(SpaceNode<T>* other);
 
  private:
   /**
@@ -408,7 +361,7 @@ class SpaceNode : public SpatialOrganizationNode<T>,
   bool removeTetrahedronDuringCleanUp(
       std::shared_ptr<Tetrahedron<T>>& tetrahedron_to_remove,
       std::list<std::shared_ptr<Tetrahedron<T>> >& list,
-      std::list<std::shared_ptr<SpaceNode<T>> >& node_list,
+      std::list<SpaceNode<T>* >& node_list,
       std::shared_ptr<OpenTriangleOrganizer<T>>& oto);
   /**
    * Restores the Delaunay criterion for  a section of the triangulation which

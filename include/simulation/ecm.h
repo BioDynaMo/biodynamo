@@ -45,6 +45,7 @@ using physics::Substance;
 using physics::IntracellularSubstance;
 using physics::SubstanceHash;
 using physics::SubstanceEqual;
+using spatial_organization::SpaceNode;
 
 /**
  * Contains some lists with all the elements of the simulation, and methods to add
@@ -125,7 +126,7 @@ class ECM : public SimStateSerializable {
    * @param userObject
    * @return
    */
-  virtual std::shared_ptr<cx3d::spatial_organization::SpaceNode<physics::PhysicalNode> > getSpatialOrganizationNodeInstance(
+  SpaceNode<PhysicalNode>::UPtr getSpatialOrganizationNodeInstance(
       const std::array<double, 3>& position, PhysicalNode* user_object);
 
   /**
@@ -139,8 +140,7 @@ class ECM : public SimStateSerializable {
    * @param userObject
    * @return
    */
-  std::shared_ptr<cx3d::spatial_organization::SpaceNode<physics::PhysicalNode> > getSpatialOrganizationNodeInstance(
-      const std::shared_ptr<spatial_organization::SpaceNode<physics::PhysicalNode> >& n,
+  SpaceNode<PhysicalNode>::UPtr getSpatialOrganizationNodeInstance(SpaceNode<PhysicalNode>* n,
       const std::array<double, 3>& position, PhysicalNode* user_object);
 
   /**
@@ -560,7 +560,7 @@ class ECM : public SimStateSerializable {
   double time_ = 0;
 
   /* An SON used to get new SON instances from*/
-  std::shared_ptr<spatial_organization::SpaceNode<physics::PhysicalNode>> initial_node_;
+  SpaceNode<PhysicalNode>* initial_node_ = nullptr;
 
   /* In here we keep a template for each (extra-cellular) Substance in the simulation that have
    * non-standard value for diffusion and degradation constant.*/

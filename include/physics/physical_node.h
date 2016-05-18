@@ -10,11 +10,11 @@
 
 #include "sim_state_serializable.h"
 #include "physics/substance.h"
+#include "spatial_organization/space_node.h"
 
 namespace cx3d {
 
 namespace spatial_organization {
-template<class T> class SpaceNode;
 template<class T> class SpatialOrganizationEdge;
 }  // namespace spatial_organization
 
@@ -23,6 +23,8 @@ class ECM;  // todo replace with include once porting has been finished and remo
 }  // namespace simulation
 
 namespace physics {
+
+using spatial_organization::SpaceNode;
 
 /**
  * PhysicalNode represents a piece of the simulation space, whether it contains a physical object of not.
@@ -182,10 +184,10 @@ class PhysicalNode : public SimStateSerializable, public std::enable_shared_from
   /**
    * Sets the SpatialOrganizationNode (vertex in the triangulation neighboring system).
    */
-  virtual std::shared_ptr<spatial_organization::SpaceNode<PhysicalNode>> getSoNode() const;  //todo change to SpatialOrganizationNode after porting has been finished
+  virtual SpaceNode<PhysicalNode>* getSoNode() const;  //todo change to SpatialOrganizationNode after porting has been finished
 
   /** Returns the SpatialOrganizationNode (vertex in the triangulation neighboring system).*/
-  virtual void setSoNode(const std::shared_ptr<spatial_organization::SpaceNode<PhysicalNode>>& son);  //todo change to SpatialOrganizationNode after porting has been finished
+  virtual void setSoNode(typename SpaceNode<PhysicalNode>::UPtr son);  //todo change to SpatialOrganizationNode after porting has been finished
 
   /** if <code>true</code>, the PhysicalNode will be run by the Scheduler.**/
   virtual bool isOnTheSchedulerListForPhysicalNodes() const;
@@ -230,7 +232,7 @@ class PhysicalNode : public SimStateSerializable, public std::enable_shared_from
   /**
    *  My anchor point in the neighboring system
    */
-  std::shared_ptr<spatial_organization::SpaceNode<PhysicalNode>> so_node_;  //todo use interface type
+  typename SpaceNode<PhysicalNode>::UPtr so_node_;
 
  private:
   static std::size_t id_counter_;

@@ -80,7 +80,7 @@ StringBuilder& PhysicalNode::simStateToJson(StringBuilder& sb) const {
                                       movement_concentration_update_procedure_);
 
   SimStateSerializationUtil::map(sb, "extracellularSubstances", extracellular_substances_);
-  SimStateSerializationUtil::keyValue(sb, "soNode", so_node_);
+  SimStateSerializationUtil::keyValue(sb, "soNode", so_node_.get());
 
   SimStateSerializationUtil::removeLastChar(sb);
   sb.append("}");
@@ -102,7 +102,7 @@ std::string PhysicalNode::toString() const {
   str_stream << ", ";
   str_stream << StringUtil::toStr(extracellular_substances_);
   str_stream << ", ";
-  str_stream << StringUtil::toStr(so_node_);
+  str_stream << StringUtil::toStr(so_node_.get());
   str_stream << ")";
   return str_stream.str();
 }
@@ -270,12 +270,12 @@ std::array<double, 3> PhysicalNode::soNodePosition() const {
   return so_node_->getPosition();
 }
 
-std::shared_ptr<spatial_organization::SpaceNode<PhysicalNode>> PhysicalNode::getSoNode() const {
-  return so_node_;
+SpaceNode<PhysicalNode>* PhysicalNode::getSoNode() const {
+  return so_node_.get();
 }
 
-void PhysicalNode::setSoNode(const std::shared_ptr<spatial_organization::SpaceNode<PhysicalNode>>& son) {
-  so_node_ = son;
+void PhysicalNode::setSoNode(typename SpaceNode<PhysicalNode>::UPtr son) {
+  so_node_ = std::move(son);
 }
 
 bool PhysicalNode::isOnTheSchedulerListForPhysicalNodes() const {
@@ -354,7 +354,7 @@ void PhysicalNode::diffuseEdgeAnalytically(
   // make sure the other one is up-to-date with degradation
   n_b->degradate(current_ecm_time);
   // some values about space node distances, contact area and volume
-  auto son_a = so_node_;
+  auto son_a = so_node_.get();
   auto son_b = n_b->getSoNode();
   double dist = Matrix::distance(son_a->getPosition(), son_b->getPosition());
   double v_a = son_a->getVolume();

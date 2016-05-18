@@ -87,9 +87,9 @@ void OpenTriangleOrganizer<T>::removeTriangle(
 
 template<class T>
 std::shared_ptr<Triangle3D<T> > OpenTriangleOrganizer<T>::getTriangle(
-    const std::shared_ptr<SpaceNode<T> >& a,
-    const std::shared_ptr<SpaceNode<T> >& b,
-    const std::shared_ptr<SpaceNode<T> >& c) {
+    SpaceNode<T>* a,
+    SpaceNode<T>* b,
+    SpaceNode<T>* c) {
   TriangleHashKey<T> key(a, b, c);
   std::shared_ptr<Triangle3D<T>> ret(nullptr);
   if (map_.find(key) == map_.end()) {
@@ -110,9 +110,9 @@ std::shared_ptr<Triangle3D<T> > OpenTriangleOrganizer<T>::getTriangle(
 
 template<class T>
 std::shared_ptr<Triangle3D<T> > OpenTriangleOrganizer<T>::getTriangleWithoutRemoving(
-    const std::shared_ptr<SpaceNode<T> >& a,
-    const std::shared_ptr<SpaceNode<T> >& b,
-    const std::shared_ptr<SpaceNode<T> >& c) {
+    SpaceNode<T>* a,
+    SpaceNode<T>* b,
+    SpaceNode<T>* c) {
   TriangleHashKey<T> key(a, b, c);
   std::shared_ptr<Triangle3D<T>> ret(nullptr);
   if (map_.find(key) == map_.end()) {
@@ -131,13 +131,13 @@ void OpenTriangleOrganizer<T>::triangulate() {
   if (open_triangles_.empty())
     createInitialTriangle();
   double upper_bound = 0, lower_bound = 0;
-  std::list<std::shared_ptr<SpaceNode<T>>>similar_distance_nodes;
-  std::list<std::shared_ptr<SpaceNode<T>>>onCircle_nodes;
+  std::list<SpaceNode<T>*>similar_distance_nodes;
+  std::list<SpaceNode<T>*>onCircle_nodes;
   auto open_triangle = getAnOpenTriangle();
   int security_counter = 0;
   while (open_triangle.get() != nullptr) {
     open_triangle->update();
-    std::shared_ptr<SpaceNode<T>> picked_node(nullptr);
+    SpaceNode<T>* picked_node(nullptr);
     open_triangle->orientToOpenSide();
     auto last_tetrahedron = open_triangle->getOppositeTetrahedron(
         std::shared_ptr<Tetrahedron<T>>(nullptr));
@@ -180,7 +180,7 @@ void OpenTriangleOrganizer<T>::triangulate() {
         }
       }
     }
-    if (picked_node.get() == nullptr
+    if (picked_node == nullptr
         || (similar_distance_nodes.empty() && onCircle_nodes.empty())) {
       createNewTetrahedron(open_triangle, picked_node);
     } else {
@@ -225,9 +225,9 @@ bool OpenTriangleOrganizer<T>::equalTo(
 
 template<class T>
 bool OpenTriangleOrganizer<T>::contains(
-    const std::shared_ptr<SpaceNode<T> >& a,
-    const std::shared_ptr<SpaceNode<T> >& b,
-    const std::shared_ptr<SpaceNode<T> >& c) const {
+    SpaceNode<T>* a,
+    SpaceNode<T>* b,
+    SpaceNode<T>* c) const {
   TriangleHashKey<T> key(a, b, c);
   return map_.find(key) != map_.end();
 }
@@ -256,9 +256,9 @@ std::shared_ptr<Triangle3D<T> > OpenTriangleOrganizer<T>::getAnOpenTriangle() {
 
 template<class T>
 std::shared_ptr<EdgeHashKey<T>> OpenTriangleOrganizer<T>::putEdgeOnMap(
-    const std::shared_ptr<SpaceNode<T>>& a,
-    const std::shared_ptr<SpaceNode<T>>& b,
-    const std::shared_ptr<SpaceNode<T>>& opposite_node,
+    SpaceNode<T>* a,
+    SpaceNode<T>* b,
+    SpaceNode<T>* opposite_node,
     const std::shared_ptr<EdgeHashKey<T>>& old_open_edge,
     std::unordered_map<EdgeHashKey<T>, std::shared_ptr<EdgeHashKey<T>>,
         EdgeHashKeyHash<T>, EdgeHashKeyEqual<T> >& map) {
@@ -274,9 +274,9 @@ std::shared_ptr<EdgeHashKey<T>> OpenTriangleOrganizer<T>::putEdgeOnMap(
 }
 
 template<class T>
-std::shared_ptr<SpaceNode<T> > OpenTriangleOrganizer<T>::findCenterNode(
-    const std::list<std::shared_ptr<SpaceNode<T> > >& nodes) {
-  std::shared_ptr<SpaceNode<T>> center_node(nullptr);
+SpaceNode<T>* OpenTriangleOrganizer<T>::findCenterNode(
+    const std::list<SpaceNode<T>* >& nodes) {
+  SpaceNode<T>* center_node(nullptr);
   int minID = std::numeric_limits<int>::max();
   for (auto node : nodes) {
     if (node->getId() < minID) {
@@ -289,8 +289,8 @@ std::shared_ptr<SpaceNode<T> > OpenTriangleOrganizer<T>::findCenterNode(
 
 template<class T>
 std::shared_ptr<EdgeHashKey<T>> OpenTriangleOrganizer<T>::triangulateSortedCirclePoints(
-    const std::list<std::shared_ptr<SpaceNode<T> > >& sorted_nodes,
-    const std::shared_ptr<SpaceNode<T> >& center_node,
+    const std::list<SpaceNode<T>* >& sorted_nodes,
+    SpaceNode<T>* center_node,
     std::unordered_map<EdgeHashKey<T>, std::shared_ptr<EdgeHashKey<T>>,
         EdgeHashKeyHash<T>, EdgeHashKeyEqual<T> >& map,
     std::list<std::shared_ptr<Triangle3D<T> > >& triangle_list) {
@@ -314,7 +314,7 @@ std::shared_ptr<EdgeHashKey<T>> OpenTriangleOrganizer<T>::triangulateSortedCircl
 
 template<class T>
 void OpenTriangleOrganizer<T>::removeForbiddenTriangles(
-    const std::list<std::shared_ptr<SpaceNode<T> > >& sorted_nodes) {  //todo list is inefficient here - use vector
+    const std::list<SpaceNode<T>* >& sorted_nodes) {  //todo list is inefficient here - use vector
   std::shared_ptr<Tetrahedron<T>> null_tetrahedron(nullptr);
   // Special treatment for situation with 4 nodes only:
   if (sorted_nodes.size() == 4) {
@@ -351,7 +351,7 @@ void OpenTriangleOrganizer<T>::removeForbiddenTriangles(
   else {
     bool remove_all_circle_triangles = false;
     // first, copy nodes to array for faster access:
-    std::vector<std::shared_ptr<SpaceNode<T>>>nodes(sorted_nodes.begin(), sorted_nodes.end());  //todo inefficient
+    std::vector<SpaceNode<T>*>nodes(sorted_nodes.begin(), sorted_nodes.end());  //todo inefficient
     // check if any valid triangle is missing, if yes, set removeAllCircleTriangles = true
     for (int i = 1; (i < nodes.size() - 1) && (!remove_all_circle_triangles);
         i++) {
@@ -380,12 +380,12 @@ void OpenTriangleOrganizer<T>::removeForbiddenTriangles(
 }
 
 template<class T>
-std::list<std::shared_ptr<SpaceNode<T> > > OpenTriangleOrganizer<T>::sortCircleNodes(
-    std::list<std::shared_ptr<SpaceNode<T> > >& nodes,
+std::list<SpaceNode<T>* > OpenTriangleOrganizer<T>::sortCircleNodes(
+    std::list<SpaceNode<T>* >& nodes,
     std::shared_ptr<EdgeHashKey<T>> starting_edge,
-    const std::shared_ptr<SpaceNode<T> >& center_node) {
-  std::list<std::shared_ptr<SpaceNode<T>>>sorted_nodes;
-  std::shared_ptr<SpaceNode<T>> null_space_node(nullptr);
+    SpaceNode<T>* center_node) {
+  std::list<SpaceNode<T>*>sorted_nodes;
+  SpaceNode<T>* null_space_node(nullptr);
   auto search_node = null_space_node;
   auto last_search_node = null_space_node;
   auto removed_node_1 = null_space_node;
@@ -446,7 +446,7 @@ std::list<std::shared_ptr<SpaceNode<T> > > OpenTriangleOrganizer<T>::sortCircleN
 
 template<class T>
 std::shared_ptr<EdgeHashKey<T>> OpenTriangleOrganizer<T>::triangulatePointsOnCircle(
-    std::list<std::shared_ptr<SpaceNode<T> > >& similar_distance_nodes,
+    std::list<SpaceNode<T>* >& similar_distance_nodes,
     const std::shared_ptr<EdgeHashKey<T>>& starting_edge,
     std::unordered_map<EdgeHashKey<T>, std::shared_ptr<EdgeHashKey<T>>,
         EdgeHashKeyHash<T>, EdgeHashKeyEqual<T> >& map,
@@ -469,8 +469,8 @@ std::shared_ptr<EdgeHashKey<T>> OpenTriangleOrganizer<T>::triangulatePointsOnCir
 
 template<class T>
 void OpenTriangleOrganizer<T>::triangulatePointsOnSphere(
-    std::list<std::shared_ptr<SpaceNode<T> > >& nodes,
-    std::list<std::shared_ptr<SpaceNode<T> > >& on_circle_nodes,
+    std::list<SpaceNode<T>* >& nodes,
+    std::list<SpaceNode<T>* >& on_circle_nodes,
     const std::shared_ptr<Triangle3D<T> >& startingTriangle) {
   std::list<std::shared_ptr<Triangle3D<T>>>surface_triangles;
   auto starting_triangle_nodes = startingTriangle->getNodes();
@@ -497,18 +497,18 @@ void OpenTriangleOrganizer<T>::triangulatePointsOnSphere(
     on_circle_nodes.push_back(starting_triangle_nodes[2]);
     an_open_edge = triangulatePointsOnCircle(on_circle_nodes, std::shared_ptr<EdgeHashKey<T>>(nullptr), map, surface_triangles);
   }
-  std::list<std::shared_ptr<SpaceNode<T>>> similar_distance_nodes;
+  std::list<SpaceNode<T>*> similar_distance_nodes;
   double upper_bound, lower_bound;
   while (!map.empty()) {
     auto a = an_open_edge->getEndpointA(), b = an_open_edge->getEndpointB();
     double smallest_cosinus = std::numeric_limits<double>::max();
     upper_bound = smallest_cosinus;
     lower_bound = smallest_cosinus;
-    std::shared_ptr<SpaceNode<T>> picked_node(nullptr);
+    SpaceNode<T>* picked_node(nullptr);
     double tolerance = 0.000000001;
     for (auto current_node : nodes) {
-      if (current_node.get() != an_open_edge->getEndpointA().get()
-          && current_node.get() != an_open_edge->getEndpointB().get()) {
+      if (current_node != an_open_edge->getEndpointA()
+          && current_node != an_open_edge->getEndpointB()) {
         double cosinus = an_open_edge->getCosine(current_node->getPosition());
         if (cosinus < upper_bound) {
           if (cosinus > lower_bound) {
@@ -579,7 +579,7 @@ void OpenTriangleOrganizer<T>::createInitialTriangle() {
   double tolerance = 0.000000001;  //todo bad design
   // find the second node by minimizing the distance to the first node:
   shortest_distance_ = std::numeric_limits<double>::max();
-  std::shared_ptr<SpaceNode<T>> b(nullptr);
+  SpaceNode<T>* b(nullptr);
   for (auto dummy : tno_->getNodes(a)) {
     auto vector = Matrix::subtract(dummy->getPosition(), a->getPosition());
     double distance = Matrix::dot(vector, vector);
@@ -611,7 +611,7 @@ void OpenTriangleOrganizer<T>::createInitialTriangle() {
   normals[0] = Matrix::subtract(bv, av);
   std::array<double, 3> offsets;
   offsets[0] = 0.5 * Matrix::dot(normals[0], Matrix::add(av, bv));
-  std::shared_ptr<SpaceNode<T>> c(nullptr);
+  SpaceNode<T>* c(nullptr);
   tolerance = Matrix::dot(normals[0], normals[0]) * 0.000000001;
 
   for (auto dummy : tno_->getNodes(a)) {
@@ -654,7 +654,7 @@ void OpenTriangleOrganizer<T>::createInitialTriangle() {
 template<class T>
 void OpenTriangleOrganizer<T>::createNewTetrahedron(
     const std::shared_ptr<Triangle3D<T> >& open_triangle,
-    const std::shared_ptr<SpaceNode<T> >& opposite_node) {
+    SpaceNode<T>* opposite_node) {
   a_new_tetrahedron_ = Tetrahedron<T>::create(open_triangle, opposite_node,
                                               this->shared_from_this());
   new_tetrahedra_.push_back(a_new_tetrahedron_);

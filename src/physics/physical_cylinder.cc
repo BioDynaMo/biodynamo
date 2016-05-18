@@ -338,11 +338,11 @@ std::array<PhysicalCylinder::UPtr, 2> PhysicalCylinder::bifurcateCylinder(
   // spatial organization node
   auto new_branch_center = Matrix::add(mass_location_, Matrix::scalarMult(0.5, new_branch_l->spring_axis_));
   auto new_son = so_node_->getNewInstance(new_branch_center, new_branch_l.get());  // todo catch PositionNotAllowedException
-  new_branch_l->setSoNode(new_son);
+  new_branch_l->setSoNode(std::move(new_son));
 
   new_branch_center = Matrix::add(mass_location_, Matrix::scalarMult(0.5, new_branch_r->spring_axis_));
   new_son = so_node_->getNewInstance(new_branch_center, new_branch_r.get());  // todo catch PositionNotAllowedException
-  new_branch_r->setSoNode(new_son);
+  new_branch_r->setSoNode(std::move(new_son));
 
   // register the new branches with ecm
   ecm_->addPhysicalCylinder(new_branch_l.get());
@@ -953,7 +953,7 @@ NeuriteElement* PhysicalCylinder::insertProximalCylinder(double distal_portion) 
   new_cylinder->setDaughterLeft(this);
   // SOM relation
   auto new_son = so_node_->getNewInstance(newProximalCylinderSpatialNodeLocation, new_cylinder.get());  // todo catch PositionNotAllowedException
-  new_cylinder->setSoNode(new_son);
+  new_cylinder->setSoNode(std::move(new_son));
   // registering the new cylinder with ecm
   ecm_->addPhysicalCylinder(new_cylinder.get());
   // physics
@@ -1117,7 +1117,7 @@ PhysicalCylinder::UPtr PhysicalCylinder::extendSideCylinder(double length,
   // new CentralNode
   auto new_center_location = Matrix::add(mass_location_, Matrix::scalarMult(0.5, new_spring_axis));
   auto new_son = so_node_->getNewInstance(new_center_location, new_branch.get());  // todo catch PositionNotAllowedException
-  new_branch->setSoNode(new_son);
+  new_branch->setSoNode(std::move(new_son));
   // correct physical values (has to be after family relations and SON assignement).
   new_branch->updateDependentPhysicalVariables();
   // register to ecm

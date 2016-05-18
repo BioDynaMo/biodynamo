@@ -72,9 +72,9 @@ std::shared_ptr<ExactVector> Triangle3D<T>::calculate3PlaneXPoint(
 }
 
 template<class T>
-Triangle3D<T>::Triangle3D(const std::shared_ptr<SpaceNode<T>>& sn_1,
-                          const std::shared_ptr<SpaceNode<T>>& sn_2,
-                          const std::shared_ptr<SpaceNode<T>>& sn_3,
+Triangle3D<T>::Triangle3D(SpaceNode<T>* sn_1,
+                          SpaceNode<T>* sn_2,
+                          SpaceNode<T>* sn_3,
                           const std::shared_ptr<Tetrahedron<T>>& tetrahedron_1,
                           const std::shared_ptr<Tetrahedron<T>>& tetrahedron_2)
     : Plane3D<T>(),
@@ -86,13 +86,13 @@ Triangle3D<T>::Triangle3D(const std::shared_ptr<SpaceNode<T>>& sn_1,
       upper_side_positive_(true),
       connection_checked_(-1) {
 
-  if (sn_2.get() == nullptr) {
+  if (sn_2 == nullptr) {
     nodes_[1] = sn_1;
-    nodes_[0] = std::shared_ptr<SpaceNode<T>>(nullptr);
+    nodes_[0] = nullptr;
   }
-  if (sn_3.get() == nullptr) {
+  if (sn_3 == nullptr) {
     nodes_[2] = sn_1;
-    nodes_[0] = std::shared_ptr<SpaceNode<T>>(nullptr);
+    nodes_[0] = nullptr;
   }
 }
 
@@ -368,11 +368,11 @@ std::string Triangle3D<T>::toString() const {
 
 template<class T>
 bool Triangle3D<T>::isInfinite() const {
-  return nodes_[0].get() == nullptr;
+  return nodes_[0] == nullptr;
 }
 
 template<class T>
-std::array<std::shared_ptr<SpaceNode<T> >, 3> Triangle3D<T>::getNodes() const {
+std::array<SpaceNode<T>*, 3> Triangle3D<T>::getNodes() const {
   return nodes_;
 }
 
@@ -402,7 +402,7 @@ bool Triangle3D<T>::isAdjacentTo(const std::shared_ptr<Tetrahedron<T>>& tetrahed
 }
 
 template<class T>
-bool Triangle3D<T>::isAdjacentTo(const std::shared_ptr<SpaceNode<T>>& node) const {
+bool Triangle3D<T>::isAdjacentTo(SpaceNode<T>* node) const {
   return (nodes_[0] == node) || (nodes_[1] == node) || (nodes_[2] == node);
 }
 

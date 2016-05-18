@@ -8,8 +8,6 @@
 
 #include "color.h"
 #include <spatial_organization/open_triangle_organizer.h>
-#include <physics/physical_cylinder.h>
-#include <physics/physical_sphere.h>
 
 namespace cx3d {
 

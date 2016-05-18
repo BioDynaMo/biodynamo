@@ -65,9 +65,9 @@ class OpenTriangleOrganizerDebug : public OpenTriangleOrganizer<T> {
   }
 
   std::shared_ptr<Triangle3D<T>> getTriangle(
-      const std::shared_ptr<SpaceNode<T>>& a,
-      const std::shared_ptr<SpaceNode<T>>& b,
-      const std::shared_ptr<SpaceNode<T>>& c) {
+      SpaceNode<T>* a,
+      SpaceNode<T>* b,
+      SpaceNode<T>* c) {
     logCall(a, b, c);
     auto ret = OpenTriangleOrganizer<T>::getTriangle(a, b, c);
     logReturn(ret);
@@ -75,9 +75,9 @@ class OpenTriangleOrganizerDebug : public OpenTriangleOrganizer<T> {
   }
 
   std::shared_ptr<Triangle3D<T>> getTriangleWithoutRemoving(
-      const std::shared_ptr<SpaceNode<T>>& a,
-      const std::shared_ptr<SpaceNode<T>>& b,
-      const std::shared_ptr<SpaceNode<T>>& c) {
+      SpaceNode<T>* a,
+      SpaceNode<T>* b,
+      SpaceNode<T>* c) {
     logCall(a, b, c);
     auto ret = OpenTriangleOrganizer<T>::getTriangleWithoutRemoving(a, b, c);
     logReturn(ret);

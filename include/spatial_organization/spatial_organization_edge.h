@@ -33,8 +33,8 @@ class SpatialOrganizationEdge {
    * @return The other endpoint of this edge. Throws a RuntimeException if the node <code>first</code>
    * is not incident to this edge.
    */
-  virtual std::shared_ptr<SpaceNode<T>> getOpposite(
-      const std::shared_ptr<const SpaceNode<T>>& node) const = 0;
+  virtual SpaceNode<T>* getOpposite(
+      const SpaceNode<T>* node) const = 0;
 
   /**
    * @return One of the two user objects associated to the endpoints of this edge.

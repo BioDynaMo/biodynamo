@@ -16,9 +16,9 @@ template<class T> class Triangle3D;
 template<class T>
 class Triangle3DDebug : public Triangle3D<T> {
  public:
-  Triangle3DDebug(const std::shared_ptr<SpaceNode<T>>& sn_1,
-                  const std::shared_ptr<SpaceNode<T>>& sn_2,
-                  const std::shared_ptr<SpaceNode<T>>& sn_3,
+  Triangle3DDebug(SpaceNode<T>* sn_1,
+                  SpaceNode<T>* sn_2,
+                  SpaceNode<T>* sn_3,
                   const std::shared_ptr<Tetrahedron<T>>& tetrahedron_1,
                   const std::shared_ptr<Tetrahedron<T>>& tetrahedron_2)
       : Triangle3D<T>(sn_1, sn_2, sn_3, tetrahedron_1, tetrahedron_2) {
@@ -174,7 +174,7 @@ class Triangle3DDebug : public Triangle3D<T> {
     return ret;
   }
 
-  std::array<std::shared_ptr<SpaceNode<T> >, 3> getNodes() const override {
+  std::array<SpaceNode<T>*, 3> getNodes() const override {
     logCallParameterless();
     auto ret = Triangle3D<T>::getNodes();
     logReturn(ret);
@@ -201,7 +201,7 @@ class Triangle3DDebug : public Triangle3D<T> {
     return ret;
   }
 
-  bool isAdjacentTo(const std::shared_ptr<SpaceNode<T>>& node) const override {
+  bool isAdjacentTo(SpaceNode<T>* node) const override {
     logCall(node);
     auto ret = Triangle3D<T>::isAdjacentTo(node);
     logReturn(ret);

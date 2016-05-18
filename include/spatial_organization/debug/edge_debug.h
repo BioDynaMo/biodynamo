@@ -14,7 +14,7 @@ namespace spatial_organization {
 template<class T>
 class EdgeDebug : public Edge<T> {
  public:
-  EdgeDebug(const std::shared_ptr<SpaceNode<T>>& a, const std::shared_ptr<SpaceNode<T>>& b)
+  EdgeDebug(SpaceNode<T>* a, SpaceNode<T>* b)
       : Edge<T>(a, b) {
     logConstr("Edge", a, b);
   }
@@ -22,7 +22,7 @@ class EdgeDebug : public Edge<T> {
   virtual ~EdgeDebug() {
   }
 
-  std::shared_ptr<SpaceNode<T>> getOpposite(const std::shared_ptr<SpaceNode<T>>& node) const override {
+  SpaceNode<T>* getOpposite(SpaceNode<T>* node) const override {
     logCall(node);
     auto ret = Edge<T>::getOpposite(node);
     logReturn(ret);
@@ -64,8 +64,8 @@ class EdgeDebug : public Edge<T> {
     return ret;
   }
 
-  bool equals(const std::shared_ptr<SpaceNode<T>>& a,
-      const std::shared_ptr<SpaceNode<T>>& b) const override {
+  bool equals(SpaceNode<T>* a,
+      SpaceNode<T>* b) const override {
     logCall(a, b);
     auto ret = Edge<T>::equals(a, b);
     logReturn(ret);
