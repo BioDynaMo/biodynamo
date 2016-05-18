@@ -25,49 +25,24 @@ template<class T> class Tetrahedron;
  * @param <T> The type of the user objects stored in the endpoints of an edge.
  */
 template<class T>
-class Edge : public SpatialOrganizationEdge<T>, public std::enable_shared_from_this<Edge<T>> {
+class Edge : public SpatialOrganizationEdge<T> {
  public:
-#ifndef EDGE_NATIVE
-  Edge()
-      : a_(),
-        b_(),
-        cross_section_area_(0.0),
-        adjacent_tetrahedra_() {
-  }
-#endif
+  using SPtr = std::shared_ptr<Edge<T>>;
+
   /**
    * Creates a new Edge object and returns it within a <code>std::shared_ptr</code>
-   * @see Edge(...)
-   *
-   * If functions return a std::shared_ptr of <code>*this</code> using
-   * <code>return shared_from_this();</code>, the following precondition must be met:
-   * There must be at least one std::shared_ptr p that owns *this!
-   * Calling <code>shared_from_this</code> on a non-shared object results in undefined behaviour.
-   * http://mortoray.com/2013/08/02/safely-using-enable_shared_from_this/
-   *
-   * Therefore, all constructors are private and accessed through static factory methods that return
-   * a std::shared_ptr.
-   *
-   * TODO(lukas) SWIG doesn't seem to support variadic templates and perfect forwarding system.
-   * Once mapping to Java is not needed anymore, replace following create functions with:
-   * <code>
-   * template<typename ... T>
-   * static std::shared_ptr<Edge> create(T&& ... all) {
-   *   return std::shared_ptr<Edge>(new Edge(std::forward<T>(all)...));
-   * }
-   * </code>
+   * adds the newly created object to the given SpaceNodes a and b
    */
-  static std::shared_ptr<Edge<T>> create(SpaceNode<T>* a,
-                                         SpaceNode<T>* b) {
-#ifdef EDGE_DEBUG
-    std::shared_ptr<Edge<T>> edge(new EdgeDebug<T>(a, b));
-#else
-    std::shared_ptr<Edge<T>> edge(new Edge(a, b));
-#endif
-    edge->initializationHelper();
+  static SPtr create(SpaceNode<T>* a, SpaceNode<T>* b) {
+    SPtr edge(new Edge(a, b));
+    if (edge->a_ != nullptr) {
+      edge->a_->addEdge(edge);
+    }
+    if (edge->b_ != nullptr) {
+      edge->b_->addEdge(edge);
+    }
     return edge;
   }
-
 
   virtual ~Edge() {
   }
@@ -102,11 +77,6 @@ class Edge : public SpatialOrganizationEdge<T>, public std::enable_shared_from_t
    *  @return A string representation of this edge
    */
   virtual const std::string toString() const;
-
-  /**
-   * Determines if two instances of this object are equal
-   */
-  virtual bool equalTo(const std::shared_ptr<Edge<T>>& other);
 
   /**
    * Tests whether this edge is connecting a pair of points.
@@ -159,9 +129,7 @@ class Edge : public SpatialOrganizationEdge<T>, public std::enable_shared_from_t
   Edge(SpaceNode<T>* a, SpaceNode<T>* b);
 
  private:
-#ifdef EDGE_NATIVE
   Edge() = delete;
-#endif
   Edge(const Edge&) = delete;
   Edge& operator=(const Edge&) = delete;
 
@@ -180,14 +148,6 @@ class Edge : public SpatialOrganizationEdge<T>, public std::enable_shared_from_t
    * Stores the cross section area associated with this edge.
    */
   double cross_section_area_;
-
-  /**
-   * Initialization code that cannot be called inside the constructor, because it passes
-   * a std::shared_ptr of itself to another function.
-   * It does that using shared_from_this(). @see create function documentation for a more
-   * detailed explanation of the requirements before calling shared_from_this()
-   */
-  void initializationHelper();
 };
 
 }  // namespace spatial_organization

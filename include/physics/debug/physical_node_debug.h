@@ -182,8 +182,7 @@ class PhysicalNodeDebug : public PhysicalNode {
     logReturnVoid();
   }
 
-//  void diffuseEdgeAnalytically(
-//      const std::shared_ptr<spatial_organization::SpatialOrganizationEdge<PhysicalNode>>& e, double currentEcmTime) {
+//  void diffuseEdgeAnalytically(SpatialOrganizationEdge<PhysicalNode>* e, double currentEcmTime) {
 //    PhysicalNode::diffuseEdgeAnalytically(e, currentEcmTime);
 //    logReturnVoid();
 //  }

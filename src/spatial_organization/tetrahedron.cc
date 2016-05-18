@@ -507,12 +507,12 @@ int Tetrahedron<T>::getTriangleNumber(const std::shared_ptr<Triangle3D<T> >& tri
 }
 
 template<class T>
-std::shared_ptr<Edge<T> > Tetrahedron<T>::getEdge(int node_number_1, int node_number_2) const {
+Edge<T>* Tetrahedron<T>::getEdge(int node_number_1, int node_number_2) const {
   return adjacent_edges_[getEdgeNumber(node_number_1, node_number_2)];
 }
 
 template<class T>
-std::shared_ptr<Edge<T> > Tetrahedron<T>::getEdge(SpaceNode<T>* a,
+Edge<T>* Tetrahedron<T>::getEdge(SpaceNode<T>* a,
                                                   SpaceNode<T>* b) const {
   return adjacent_edges_[getEdgeNumber(a, b)];
 }

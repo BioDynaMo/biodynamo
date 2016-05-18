@@ -345,8 +345,7 @@ void PhysicalNode::degradate(double currentEcmTime) {  //changed to proteceted
   last_ecm_time_degradate_was_run_ = currentEcmTime + 0.0000001;
 }
 
-void PhysicalNode::diffuseEdgeAnalytically(
-    const std::shared_ptr<spatial_organization::SpatialOrganizationEdge<PhysicalNode>>& e, double current_ecm_time) {
+void PhysicalNode::diffuseEdgeAnalytically(SpatialOrganizationEdge<PhysicalNode>* e, double current_ecm_time) {
   // the two PhysicalNodes
   auto n_a = this;
   auto n_b = e->getOppositeElement(this);

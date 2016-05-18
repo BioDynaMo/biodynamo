@@ -25,6 +25,7 @@ class ECM;  // todo replace with include once porting has been finished and remo
 namespace physics {
 
 using spatial_organization::SpaceNode;
+using spatial_organization::SpatialOrganizationEdge;
 
 /**
  * PhysicalNode represents a piece of the simulation space, whether it contains a physical object of not.
@@ -265,8 +266,7 @@ class PhysicalNode : public SimStateSerializable, public std::enable_shared_from
   /* Analytic solution of the diffusion process along the edge between two PhysicalNodes.
    * dQA/dt = diffCst*(Area/distance)*(QB/VB-QA/VA)
    */
-  virtual void diffuseEdgeAnalytically(
-      const std::shared_ptr<spatial_organization::SpatialOrganizationEdge<PhysicalNode>>& e, double current_ecm_time);
+  virtual void diffuseEdgeAnalytically(SpatialOrganizationEdge<PhysicalNode>* e, double current_ecm_time);
 };
 
 }  // namespace physics

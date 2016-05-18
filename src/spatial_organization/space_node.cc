@@ -95,8 +95,12 @@ void SpaceNode<T>::addSpatialOrganizationNodeMovementListener(typename SpatialOr
 }
 
 template<class T>
-std::list<std::shared_ptr<Edge<T> > > SpaceNode<T>::getEdges() const {
-  return adjacent_edges_;
+std::list<Edge<T>*> SpaceNode<T>::getEdges() const {
+  std::list<Edge<T>*> ret;  // todo inefficient
+  for (auto& edge : adjacent_edges_) {
+    ret.push_back(edge.get());
+  }
+  return ret;
 }
 
 template<class T>
@@ -295,7 +299,7 @@ void SpaceNode<T>::changeVolume(double change) {
 }
 
 template<class T>
-void SpaceNode<T>::addEdge(const std::shared_ptr<Edge<T> >& edge) {
+void SpaceNode<T>::addEdge(const typename Edge<T>::SPtr& edge) {
   adjacent_edges_.push_front(edge);
 }
 
@@ -305,22 +309,25 @@ int SpaceNode<T>::getId() const {
 }
 
 template<class T>
-std::shared_ptr<Edge<T> > SpaceNode<T>::searchEdge(
+Edge<T>* SpaceNode<T>::searchEdge(
     SpaceNode<T>* opposite_node) {
-  for (auto e : adjacent_edges_) {
+  for (auto& e : adjacent_edges_) {
     auto opp = e->getOpposite(this);
     if ((opp != nullptr && opp->equalTo(opposite_node))
         || (opposite_node != nullptr && opposite_node->equalTo(opp))) {
-      return e;
+      return e.get();
     }
   }
-  return std::shared_ptr<Edge<T>>(
-      Edge<T>::create(this, opposite_node));
+  return Edge < T > ::create(this, opposite_node).get();
 }
 
 template<class T>
-void SpaceNode<T>::removeEdge(const std::shared_ptr<Edge<T> >& edge) {
-  adjacent_edges_.remove(edge);
+void SpaceNode<T>::removeEdge(Edge<T>* edge) {
+  auto it = std::find_if(adjacent_edges_.begin(), adjacent_edges_.end(),
+                         [&](const std::shared_ptr<Edge<T>>& element) {return element.get() == edge;});
+  if (it != adjacent_edges_.end()) {
+    adjacent_edges_.erase(it);
+  }
 }
 
 template<class T>
@@ -559,11 +566,6 @@ std::array<double, 3> SpaceNode<T>::proposeNewPosition() {
       position_,
       Matrix::scalarMult(std::sqrt(min_distance) * 0.5,
                          Matrix::normalize(farthest_away_diff)));
-}
-
-template<class T>
-std::list<std::shared_ptr<Edge<T> > > SpaceNode<T>::getAdjacentEdges() const {
-  return adjacent_edges_;
 }
 
 template<class T>

@@ -159,14 +159,14 @@ class TetrahedronDebug : public Tetrahedron<T> {
     return ret;
   }
 
-  std::shared_ptr<Edge<T>> getEdge(int node_number_1, int node_number_2) const override {
+  Edge<T>* getEdge(int node_number_1, int node_number_2) const override {
     logCall(node_number_1, node_number_2);
     auto ret = Tetrahedron<T>::getEdge(node_number_1, node_number_2);
     logReturn(ret);
     return ret;
   }
 
-  std::shared_ptr<Edge<T>> getEdge(SpaceNode<T>* a,
+  Edge<T>* getEdge(SpaceNode<T>* a,
       SpaceNode<T>* b) const override {
     logCall(a, b);
     auto ret = Tetrahedron<T>::getEdge(a, b);

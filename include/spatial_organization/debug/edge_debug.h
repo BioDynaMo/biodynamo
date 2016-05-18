@@ -57,7 +57,7 @@ class EdgeDebug : public Edge<T> {
     return ret;
   }
 
-  bool equalTo(const std::shared_ptr<Edge<T>>& other) override {
+  bool equalTo(Edge<T>* other) override {
     logCall(other);
     auto ret = Edge<T>::equalTo(other);
     logReturn(ret);

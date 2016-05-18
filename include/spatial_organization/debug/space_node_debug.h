@@ -42,7 +42,7 @@ class SpaceNodeDebug : public SpaceNode<T> {
     logReturnVoid();
   }
 
-  std::list<std::shared_ptr<Edge<T> > > getEdges() const {
+  std::list<Edge<T>*> getEdges() const {
     logCallParameterless();
     auto ret = SpaceNode<T>::getEdges();
     logReturn(ret);
@@ -146,7 +146,7 @@ class SpaceNodeDebug : public SpaceNode<T> {
     logReturnVoid();
   }
 
-  void addEdge(const std::shared_ptr<Edge<T> >& edge) {
+  void addEdge(Edge<T>* edge) {
     logCall(edge);
     SpaceNode<T>::addEdge(edge);
     logReturnVoid();
@@ -159,7 +159,7 @@ class SpaceNodeDebug : public SpaceNode<T> {
     return ret;
   }
 
-  std::shared_ptr<Edge<T> > searchEdge(
+  Edge<T>* searchEdge(
       SpaceNode<T>* opposite_node) {
     logCall(opposite_node);
     auto ret = SpaceNode<T>::searchEdge(opposite_node);
@@ -167,7 +167,7 @@ class SpaceNodeDebug : public SpaceNode<T> {
     return ret;
   }
 
-  void removeEdge(const std::shared_ptr<Edge<T> >& edge) {
+  void removeEdge(Edge<T>* edge) {
     logCall(edge);
     SpaceNode<T>::removeEdge(edge);
     logReturnVoid();
@@ -209,7 +209,7 @@ class SpaceNodeDebug : public SpaceNode<T> {
     return ret;
   }
 
-  std::list<std::shared_ptr<Edge<T> > > getAdjacentEdges() const {
+  std::list<Edge<T>*> getAdjacentEdges() const {
     logCallParameterless();
     auto ret = SpaceNode<T>::getAdjacentEdges();
     logReturn(ret);

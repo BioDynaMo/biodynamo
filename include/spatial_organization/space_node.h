@@ -11,6 +11,7 @@
 #include "sim_state_serializable.h"
 #include "spatial_organization/spatial_organization_node_movement_listener.h"
 #include "spatial_organization/spatial_organization_node.h"
+#include "spatial_organization/edge.h"
 
 #ifdef SPACENODE_DEBUG
 #include "spatial_organization/debug/space_node_debug.h"
@@ -19,7 +20,6 @@
 namespace cx3d {
 namespace spatial_organization {
 
-template<class T> class Edge;
 template<class T> class Triangle3D;
 template<class T> class Tetrahedron;
 template<class T> class OpenTriangleOrganizer;
@@ -100,7 +100,7 @@ class SpaceNode : public SpatialOrganizationNode<T>, public SimStateSerializable
   virtual void addSpatialOrganizationNodeMovementListener(typename SpatialOrganizationNodeMovementListener<T>::UPtr listener)
           override;
 
-  virtual std::list<std::shared_ptr<Edge<T>> > getEdges() const override;  //TODO change back to SpatialOrganizationEdge afte porting has been finished
+  virtual std::list<Edge<T>* > getEdges() const override;  //TODO change back to SpatialOrganizationEdge afte porting has been finished
 
   virtual std::list<T*> getNeighbors() const override;
 
@@ -167,7 +167,7 @@ class SpaceNode : public SpatialOrganizationNode<T>, public SimStateSerializable
    * @param newEdge
    *            The edge to be added.
    */
-  virtual void addEdge(const std::shared_ptr<Edge<T>>& edge);
+  virtual void addEdge(const typename Edge<T>::SPtr& edge);
 
   /**
    * @return The identification number of this SpaceNode.
@@ -185,7 +185,7 @@ class SpaceNode : public SpatialOrganizationNode<T>, public SimStateSerializable
    *         such an edge didn't exist in the std::list of edges incident to this
    *         node, a new edge is created.
    */
-  virtual std::shared_ptr<Edge<T>> searchEdge(
+  virtual Edge<T>* searchEdge(
       SpaceNode<T>* opposite_node);
 
   /**
@@ -194,7 +194,7 @@ class SpaceNode : public SpatialOrganizationNode<T>, public SimStateSerializable
    * @param edge
    *            The edge to be removed.
    */
-  virtual void removeEdge(const std::shared_ptr<Edge<T>>& edge);
+  virtual void removeEdge(Edge<T>* edge);
 
   /**
    * Starting at a given tetrahedron, this function searches the triangulation
@@ -237,12 +237,6 @@ class SpaceNode : public SpatialOrganizationNode<T>, public SimStateSerializable
    * @return A coordinate which can be used to place the problematic node.
    */
   virtual std::array<double, 3> proposeNewPosition();
-
-  /**
-   * Returns a list of all edges that are incident to this node.
-   * @return A list of edges.
-   */
-  virtual std::list<std::shared_ptr<Edge<T>> > getAdjacentEdges() const;
 
   /**
    * Returns a string representation of this node.
@@ -307,7 +301,7 @@ class SpaceNode : public SpatialOrganizationNode<T>, public SimStateSerializable
   /**
    * A std::list of all edges incident to this node.
    */
-  std::list<std::shared_ptr<Edge<T>> > adjacent_edges_;
+  std::list<typename Edge<T>::SPtr > adjacent_edges_;
 
   /**
    * A std::list of all tetrahedra incident to this node.

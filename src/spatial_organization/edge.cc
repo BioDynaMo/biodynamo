@@ -76,11 +76,6 @@ const std::string Edge<T>::toString() const {
 }
 
 template<class T>
-bool Edge<T>::equalTo(const std::shared_ptr<Edge<T>>& other) {
-  return other.get() == this;
-}
-
-template<class T>
 bool Edge<T>::equals(SpaceNode<T>* a,
                      SpaceNode<T>* b) const {
   return ((a_ == a) && (b_ == b)) || ((b_ == a) && (a_ == b));
@@ -102,10 +97,10 @@ void Edge<T>::addTetrahedron(const std::shared_ptr<Tetrahedron<T>>& tetrahedron)
 template<class T>
 void Edge<T>::remove() {
   if (a_ != nullptr) {
-    a_->removeEdge(this->shared_from_this());
+    a_->removeEdge(this);
   }
   if (b_ != nullptr) {
-    b_->removeEdge(this->shared_from_this());
+    b_->removeEdge(this);
   }
 }
 
@@ -117,15 +112,6 @@ std::list<std::shared_ptr<Tetrahedron<T>> > Edge<T>::getAdjacentTetrahedra() con
 template<class T>
 void Edge<T>::changeCrossSectionArea(double change) {
   cross_section_area_ += change;
-}
-template<class T>
-void Edge<T>::initializationHelper() {
-  if (a_ != nullptr) {
-    a_->addEdge(this->shared_from_this());
-  }
-  if (b_ != nullptr) {
-    b_->addEdge(this->shared_from_this());
-  }
 }
 
 template class Edge<cx3d::physics::PhysicalNode>;

@@ -33,7 +33,7 @@ class SpatialOrganizationNode {
    * Returns a list that allows to iterate over all edges
    * incident to this node.
    */
-  virtual std::list<std::shared_ptr<Edge<T>> > getEdges() const = 0;  //TODO change to SpatialOrganizationEdge once porting has been finished
+  virtual std::list<Edge<T>*> getEdges() const = 0;  //TODO change to SpatialOrganizationEdge once porting has been finished
 
   virtual std::list<T*> getNeighbors() const = 0;
 

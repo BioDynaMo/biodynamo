@@ -7,6 +7,8 @@
 #include <memory>
 #include <stdexcept>
 
+#include "spatial_organization/edge.h"
+
 #ifdef TETRAHEDRON_DEBUG
 #include "spatial_organization/debug/tetrahedron_debug.h"
 #endif
@@ -14,7 +16,6 @@
 namespace cx3d {
 namespace spatial_organization {
 
-template<class T> class Edge;
 template<class T> class SpaceNode;
 template<class T> class Triangle3D;
 template<class T> class OpenTriangleOrganizer;
@@ -391,7 +392,7 @@ class Tetrahedron : public std::enable_shared_from_this<Tetrahedron<T>> {
    *            The index of the second endpoint of the edge.
    * @return The edge connecting the two endpoints with the given indices.
    */
-  virtual std::shared_ptr<Edge<T>> getEdge(int node_number_1, int node_number_2) const;
+  virtual Edge<T>* getEdge(int node_number_1, int node_number_2) const;
 
   /**
    * Determines the edge that connects two endpoints of this tetrahedron.
@@ -402,7 +403,7 @@ class Tetrahedron : public std::enable_shared_from_this<Tetrahedron<T>> {
    *            The second endpoint of the edge.
    * @return The edge connecting the two given endpoints.
    */
-  virtual std::shared_ptr<Edge<T>> getEdge(SpaceNode<T>* a,
+  virtual Edge<T>* getEdge(SpaceNode<T>* a,
                                            SpaceNode<T>* b) const;
 
   /**
@@ -663,7 +664,7 @@ class Tetrahedron : public std::enable_shared_from_this<Tetrahedron<T>> {
   /**
    * Contains references to the 6 edges incident to this tetrahedron.
    */
-  std::array<std::shared_ptr<Edge<T>>, 6> adjacent_edges_;
+  std::array<Edge<T>*, 6> adjacent_edges_;
   /**
    * Contains references to the 4 triangles incident to this tetrahedron.
    */
