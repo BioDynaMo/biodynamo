@@ -78,7 +78,6 @@ Triangle3D<T>::Triangle3D(SpaceNode<T>* sn_1,
                           const std::shared_ptr<Tetrahedron<T>>& tetrahedron_1,
                           const std::shared_ptr<Tetrahedron<T>>& tetrahedron_2)
     : Plane3D<T>(),
-      adjacent_tetrahedra_({ tetrahedron_1, tetrahedron_2 }),
       nodes_({ sn_1, sn_2, sn_3 }),
       circum_center_ { 0.0, 0.0, 0.0 },
       plane_updated_(false),
@@ -222,10 +221,10 @@ int Triangle3D<T>::circleOrientation(const std::array<double, 3>& point) {
 template<class T>
 std::shared_ptr<Tetrahedron<T>> Triangle3D<T>::getOppositeTetrahedron(
     const std::shared_ptr<Tetrahedron<T>>& incident_tetrahedron) const {
-  if (adjacent_tetrahedra_[0] == incident_tetrahedron) {
-    return adjacent_tetrahedra_[1];
-  } else if (adjacent_tetrahedra_[1] == incident_tetrahedron) {
-    return adjacent_tetrahedra_[0];
+  if (adjacent_tetrahedra_[0].lock() == incident_tetrahedron) {
+    return adjacent_tetrahedra_[1].lock();
+  } else if (adjacent_tetrahedra_[1].lock() == incident_tetrahedron) {
+    return adjacent_tetrahedra_[0].lock();
   } else {
     std::cout << __FUNCTION__ << std::endl; throw std::invalid_argument("Tetrahedron not known!");
   }
@@ -233,7 +232,7 @@ std::shared_ptr<Tetrahedron<T>> Triangle3D<T>::getOppositeTetrahedron(
 
 template<class T>
 void Triangle3D<T>::removeTetrahedron(const std::shared_ptr<Tetrahedron<T>>& tetrahedron) {
-  if (adjacent_tetrahedra_[0] == tetrahedron) {
+  if (adjacent_tetrahedra_[0].lock() == tetrahedron) {
     adjacent_tetrahedra_[0] = std::shared_ptr<Tetrahedron<T>>(nullptr);
   } else {
     adjacent_tetrahedra_[1] = std::shared_ptr<Tetrahedron<T>>(nullptr);
@@ -242,23 +241,23 @@ void Triangle3D<T>::removeTetrahedron(const std::shared_ptr<Tetrahedron<T>>& tet
 
 template<class T>
 bool Triangle3D<T>::isOpenToSide(const std::array<double, 3>& point) {
-  if (adjacent_tetrahedra_[0].get() == nullptr) {
-    if (adjacent_tetrahedra_[1].get() == nullptr) {
+  if (adjacent_tetrahedra_[0].lock().get() == nullptr) {
+    if (adjacent_tetrahedra_[1].lock().get() == nullptr) {
       return true;
     } else {
-      if (adjacent_tetrahedra_[1]->isInfinite()) {
+      if (adjacent_tetrahedra_[1].lock()->isInfinite()) {
         return true;
       }
-      auto position = adjacent_tetrahedra_[1]->getOppositeNode(this->shared_from_this())
+      auto position = adjacent_tetrahedra_[1].lock()->getOppositeNode(this->shared_from_this())
           ->getPosition();
       return !(this->onSameSide(position, point));
     }
-  } else if (adjacent_tetrahedra_[1].get() == nullptr) {
-    if (adjacent_tetrahedra_[0]->isInfinite()) {
+  } else if (adjacent_tetrahedra_[1].lock().get() == nullptr) {
+    if (adjacent_tetrahedra_[0].lock()->isInfinite()) {
       return true;
     }
     auto position =
-        adjacent_tetrahedra_[0]->getOppositeNode(this->shared_from_this())->getPosition();
+        adjacent_tetrahedra_[0].lock()->getOppositeNode(this->shared_from_this())->getPosition();
     return !(this->onSameSide(position, point));
   } else {
     return false;
@@ -292,19 +291,19 @@ void Triangle3D<T>::orientToSide(const std::array<double, 3>& position) {
 template<class T>
 void Triangle3D<T>::orientToOpenSide() {
   if (!isInfinite()) {
-    if (adjacent_tetrahedra_[0].get() == nullptr) {
-      if (adjacent_tetrahedra_[1].get() == nullptr) {
+    if (adjacent_tetrahedra_[0].lock().get() == nullptr) {
+      if (adjacent_tetrahedra_[1].lock().get() == nullptr) {
         throw std::logic_error("The triangle has two open sides!");
       }
-      if (!adjacent_tetrahedra_[1]->isInfinite()) {
+      if (!adjacent_tetrahedra_[1].lock()->isInfinite()) {
         orientToSide(
-            adjacent_tetrahedra_[1]->getOppositeNode(this->shared_from_this())->getPosition());
+            adjacent_tetrahedra_[1].lock()->getOppositeNode(this->shared_from_this())->getPosition());
         upper_side_positive_ ^= true;
       }
-    } else if (adjacent_tetrahedra_[1].get() == nullptr) {
-      if (!adjacent_tetrahedra_[0]->isInfinite()) {
+    } else if (adjacent_tetrahedra_[1].lock().get() == nullptr) {
+      if (!adjacent_tetrahedra_[0].lock()->isInfinite()) {
         orientToSide(
-            adjacent_tetrahedra_[0]->getOppositeNode(this->shared_from_this())->getPosition());
+            adjacent_tetrahedra_[0].lock()->getOppositeNode(this->shared_from_this())->getPosition());
         upper_side_positive_ ^= true;
       }
     } else {
@@ -378,7 +377,7 @@ std::array<SpaceNode<T>*, 3> Triangle3D<T>::getNodes() const {
 
 template<class T>
 void Triangle3D<T>::addTetrahedron(const std::shared_ptr<Tetrahedron<T>>& tetrahedron) {
-  if (adjacent_tetrahedra_[0].get() == nullptr) {
+  if (adjacent_tetrahedra_[0].lock().get() == nullptr) {
     adjacent_tetrahedra_[0] = tetrahedron;
   } else {
     adjacent_tetrahedra_[1] = tetrahedron;
@@ -398,7 +397,7 @@ bool Triangle3D<T>::wasCheckedAlready(int checking_index) {
 
 template<class T>
 bool Triangle3D<T>::isAdjacentTo(const std::shared_ptr<Tetrahedron<T>>& tetrahedron) const {
-  return (adjacent_tetrahedra_[0] == tetrahedron) || (adjacent_tetrahedra_[1] == tetrahedron);
+  return (adjacent_tetrahedra_[0].lock() == tetrahedron) || (adjacent_tetrahedra_[1].lock() == tetrahedron);
 }
 
 template<class T>
@@ -408,12 +407,12 @@ bool Triangle3D<T>::isAdjacentTo(SpaceNode<T>* node) const {
 
 template<class T>
 bool Triangle3D<T>::isCompletelyOpen() const {
-  return (adjacent_tetrahedra_[0].get() == nullptr) && (adjacent_tetrahedra_[1].get() == nullptr);
+  return (adjacent_tetrahedra_[0].lock().get() == nullptr) && (adjacent_tetrahedra_[1].lock().get() == nullptr);
 }
 
 template<class T>
 bool Triangle3D<T>::isClosed() const {
-  return (adjacent_tetrahedra_[0].get() != nullptr) && (adjacent_tetrahedra_[1].get() != nullptr);
+  return (adjacent_tetrahedra_[0].lock().get() != nullptr) && (adjacent_tetrahedra_[1].lock().get() != nullptr);
 }
 
 template<class T>

@@ -427,7 +427,7 @@ class Triangle3D : public Plane3D<T>, public std::enable_shared_from_this<Triang
   /**
    * The two tetrahedra that are incident to this triangle.
    */
-  std::array<std::shared_ptr<Tetrahedron<T>>, 2> adjacent_tetrahedra_;
+  std::array<std::weak_ptr<Tetrahedron<T>>, 2> adjacent_tetrahedra_;
 
   /**
    * The three nodes that are incident to this triangle.
