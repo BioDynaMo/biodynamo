@@ -22,9 +22,11 @@ using simulation::ECM;
  * should run on the same machine with the same load profile.
  *
  * If the code for the simulate state changes or if new tests are added one wants to update the reference files for
- * the simulation. This can easily be done by setting the command line parameter<code>updateSimStateReferenceFiles</code>
- * e.g. ./runBiodynamoTests updateSimStateReferenceFiles
+ * the simulation. This can easily be done by setting the command line parameter<code>--update-references</code>
+ * e.g. ./runBiodynamoTests --update-references
  * In this case no assertions are made
+ *
+ * Assertions can be turned off using the parameter <code>--disable-assertions</code>
  *
  * Each SimulationTest has two associated files in the test resource folder
  *  ClassName.json      contains the reference simulate state in json format
@@ -33,9 +35,10 @@ using simulation::ECM;
 class BaseSimulationTest : public ::testing::Test {
  public:
   /**
-   * This parameter is set in the main function if the command line parameter is specified
+   * This parameters are set in the main function if the command line parameter is specified
    */
   static bool update_sim_state_reference_file_;
+  static bool disable_assertions_;
 
   BaseSimulationTest();
 

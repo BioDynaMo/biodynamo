@@ -39,35 +39,49 @@ cmake ..
 make
 ```
 
-This commands build a shared library for biodynamo together with a test executable. Furthermore, dependencies
+This commands build a shared library for BioDynaMo together with a test executable. Furthermore, dependencies
 (GMP, gtest, ...) are automatically downloaded and built as well. They are defined in CMake as ExternalProjects
 
-Run tests by executing `./runBiodynamoTests` or `make test`. The former one is the
-preferred way as it gives more output.
+Run Tests
+```
+make check
+```
 
-### CMake
+In contrast to `make test`, the target `check` will show the test ouput on failure
+
+### CMake Options
 
 If you do not want to build the test executable, run CMake with the test switch set to off:
 ```
 cmake .. -Dtest=off
 ```
-If you change the value of this switch, make sure you delete `CMakeCache.txt` beforehand.
+
+There is another option to disable memory leak checks: `-Dvalgrind=on/off`
+Default value is `on` for both options. If you change the value of these switches, you might have to delete `CMakeCache.txt` beforehand.
 
 ### Make Targets
+`make test` executes all tests
+
+`make check` executes all tests and shows test output on failure
+
 `make clean` will clean all targets, also the external projects
 
 `make bdmclean` will only clean the `biodynamo` and `runBiodynamoTests` targets
 
+`make testbdmclean` will only clean the `runBiodynamoTests` target
+
 `make doc` will generate the Doxygen documentation in directory `build/doc`. It contains a html and latex version.
 You can view the html version by opening `build/doc/html/index.html` in your browser.
 
-### Simulation Tests
+### Automated Tests
 Reference files for the simulation outcome are stored as Json in directory `test/resources/`
 In rare cases it might be necessary to update these files:
 ```
-./runBiodynamoTests updateSimStateReferenceFiles
+./runBiodynamoTests --update-references
 ```
 The reference files are then overwritten with the simulation result of the current execution. No assertions
 will be performed! Therefore, handle this option with care!
 
 After each run, simulation test execution time are stored together with the latest_commit id in the corresponding csv file in `test/resources/`
+
+Memory leak tests are run using the tool `valgrind`. To reduce the execution time, simulation result assertions are turned off by adding the `--disable-assertions` option.

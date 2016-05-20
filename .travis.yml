@@ -30,6 +30,7 @@ addons:
     - cmake
     - cmake-data
     - doxygen
+    - valgrind
 os:
   - linux
 #  - osx
@@ -40,4 +41,4 @@ script:
   - mkdir build
   - cd build
   - cmake .. && make
-  - ./runBiodynamoTests
+  - make check

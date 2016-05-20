@@ -29,6 +29,7 @@ using spatial_organization::SpaceNode;
 using synapse::Excrescence;
 
 bool BaseSimulationTest::update_sim_state_reference_file_ = false;
+bool BaseSimulationTest::disable_assertions_ = false;
 
 BaseSimulationTest::BaseSimulationTest() {
 }
@@ -69,7 +70,9 @@ void BaseSimulationTest::run() {
   runtime_ = end - start;
 
   // ensure correct result
-  assertSimulationState();
+  if (!disable_assertions_) {
+    assertSimulationState();
+  }
 }
 
 void BaseSimulationTest::assertSimulationState() {
