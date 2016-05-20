@@ -6,9 +6,12 @@
 #include "local_biology/neurite_element.h"
 #include "physics/physical_object.h"
 #include "physics/physical_cylinder.h"
+#include "physics/physical_bond.h"
 
 namespace cx3d {
 namespace synapse {
+
+using physics::PhysicalBond;
 
 PhysicalBouton::PhysicalBouton()
     : Excrescence(Excrescence::Type::kBouton) {
@@ -51,7 +54,7 @@ bool PhysicalBouton::synapseWith(Excrescence* other_excrescence, bool create_phy
     auto global_pos_on_po = po_->transformCoordinatesPolarToGlobal(position_on_po_);
     auto ex_global_pos_on_po = ex_->getPo()->transformCoordinatesPolarToGlobal(ex_->getPositionOnPO());
     auto distance = Matrix::distance(global_pos_on_po, ex_global_pos_on_po);
-    auto pb = ecm_->newPhysicalBond(po_, position_on_po_, ex_->getPo(), ex_->getPositionOnPO(), distance, 1);
+    auto pb = PhysicalBond::create(po_, position_on_po_, ex_->getPo(), ex_->getPositionOnPO(), distance, 1);
   }
 
   return true;
@@ -70,7 +73,7 @@ bool PhysicalBouton::synapseWithSoma(Excrescence* other_excrescence, bool create
     auto global_pos_on_po = po_->transformCoordinatesPolarToGlobal(position_on_po_);
     auto ex_global_pos_on_po = ex_->getPo()->transformCoordinatesPolarToGlobal(ex_->getPositionOnPO());
     auto distance = Matrix::distance(global_pos_on_po, ex_global_pos_on_po);
-    auto pb = ecm_->newPhysicalBond(po_, position_on_po_, ex_->getPo(), ex_->getPositionOnPO(), distance, 1);
+    auto pb = PhysicalBond::create(po_, position_on_po_, ex_->getPo(), ex_->getPositionOnPO(), distance, 1);
   }
   return true;
 }
@@ -98,7 +101,7 @@ bool PhysicalBouton::synapseWithShaft(NeuriteElement* other_ne, double max_dis,
     auto tmp = other_ne->getPhysicalCylinder()->transformCoordinatesLocalToPolar(currVec);  //fixme critical
     double distance = Matrix::distance(getProximalEnd(), currPos);
     auto other_position_on_po = std::array<double, 2> { tmp[0], tmp[1] };
-    auto pb = ecm_->newPhysicalBond(po_, position_on_po_, other_ne->getPhysicalCylinder(), other_position_on_po,
+    auto pb = PhysicalBond::create(po_, position_on_po_, other_ne->getPhysicalCylinder(), other_position_on_po,
                                     distance, 1);
     ne_shaft_ = other_ne;
 

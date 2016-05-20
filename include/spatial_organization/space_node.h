@@ -5,9 +5,9 @@
 #include <stdexcept>
 #include <string>
 #include <list>
+#include <vector>
 #include <memory>
 
-#include "java_util.h"
 #include "sim_state_serializable.h"
 #include "spatial_organization/spatial_organization_node_movement_listener.h"
 #include "spatial_organization/spatial_organization_node.h"
@@ -39,10 +39,6 @@ class SpaceNode : public SpatialOrganizationNode<T>, public SimStateSerializable
   using UPtr = std::unique_ptr<SpaceNode<T>>;
 
   static void reset();
-
-  static void setJavaUtil(std::shared_ptr<JavaUtil<T>> java) {
-    java_ = java;
-  }
 
   /**
    * Starting at a given tetrahedron, this function searches the triangulation
@@ -264,8 +260,6 @@ class SpaceNode : public SpatialOrganizationNode<T>, public SimStateSerializable
   SpaceNode(const SpaceNode&);
   SpaceNode& operator=(const SpaceNode&) = delete;
 
-  static std::shared_ptr<JavaUtil<T>> java_;
-
   /**
    * A static variable that is used to assign a unique number to each
    * initialized flip process.
@@ -276,6 +270,8 @@ class SpaceNode : public SpatialOrganizationNode<T>, public SimStateSerializable
    * A static counter used to keep track of the number of created SpaceNodes.
    */
   static int id_counter_;
+
+  static std::vector<int> triangle_order_;
 
   /**
    * The ID number of this SpaceNode.
@@ -368,6 +364,16 @@ class SpaceNode : public SpatialOrganizationNode<T>, public SimStateSerializable
    * flip algorithm.
    */
   void cleanUp(const std::list<std::shared_ptr<Tetrahedron<T>> >& messed_up_tetrahedra);
+
+  /**
+   * returns a permutation of the vector triangle_order_
+   */
+  static std::array<int, 4> generateTriangleOrder();
+
+  /**
+   * helper function used by function generateTriangleOrder
+   */
+  static int randomHelper(int i);
 };
 
 }  // namespace spatial_organization

@@ -14,6 +14,7 @@
 #include "physics/physical_node.h"
 #include "physics/physical_object.h"
 #include "physics/default_force.h"
+#include "physics/physical_node_movement_listener.h"
 #include "spatial_organization/space_node.h"
 #include "synapse/excrescence.h"
 
@@ -25,6 +26,7 @@ using local_biology::CellElement;
 using physics::PhysicalNode;
 using physics::DefaultForce;
 using physics::PhysicalObject;
+using physics::PhysicalNodeMovementListener;
 using spatial_organization::SpaceNode;
 using synapse::Excrescence;
 
@@ -45,17 +47,12 @@ void BaseSimulationTest::SetUp() {
   SpaceNode < PhysicalNode > ::reset();
 
   Random::setSeed(1L);
-  std::shared_ptr < JavaUtil < PhysicalNode >> java1 { new JavaUtil<PhysicalNode>() };
-  std::shared_ptr < JavaUtil2 > java_ { new JavaUtil2() };
   auto ecm = ECM::getInstance();
 
-  ECM::setJavaUtil (java_);
   CellElement::setECM(ecm);
   PhysicalNode::setECM(ecm);
   Excrescence::setECM(ecm);
   Cell::setECM(ecm);
-  SpaceNode < PhysicalNode > ::setJavaUtil(java1);
-  DefaultForce::setJavaUtil(java_);
   PhysicalObject::setInterObjectForce(DefaultForce::UPtr(new DefaultForce()));
 }
 
@@ -65,7 +62,7 @@ void BaseSimulationTest::TearDown() {
 void BaseSimulationTest::run() {
   // run simulation
   long start = timestamp();
-  simulate(ECM::getInstance(), std::shared_ptr < JavaUtil2 > (new JavaUtil2()));
+  simulate(ECM::getInstance());
   long end = timestamp();
   runtime_ = end - start;
 
@@ -167,6 +164,10 @@ string BaseSimulationTest::exec(const char* cmd) {
     }
   }
   return result;
+}
+
+void BaseSimulationTest::initPhysicalNodeMovementListener() {
+  PhysicalNodeMovementListener::setMovementOperationId((int) (10000 * Random::nextDouble()));
 }
 
 }  // namespace cx3d

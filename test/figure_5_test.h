@@ -6,7 +6,6 @@
 
 #include "base_simulation_test.h"
 #include "param.h"
-#include "java_util.h"
 
 #include "cells/cell.h"
 #include "cells/cell_factory.h"
@@ -49,18 +48,19 @@ class Figure5Test : public BaseSimulationTest {
   Figure5Test() {
   }
 
-  void simulate(const std::shared_ptr<ECM>& ecm, const std::shared_ptr<JavaUtil2>& java) override {
+  void simulate(const std::shared_ptr<ECM>& ecm) override {
     // 1) Prepare the environment :
     //    eight extra PhysicalNodes :
     auto scheduler = Scheduler::getInstance(ecm);
 
     bool init_physical_node_movement_listener = true;  // hack to emulate original initialization order in Java (important for random number sequence)
     for (int i = 0; i < 18; i++) {
-      double angle = 2 * Param::kPi * java->getRandomDouble1();
-      std::array<double, 3> loc { 200 * java->sin(angle), 200 * java->cos(angle), -20 + 300 * java->getRandomDouble1() };
+      double angle = 2 * Param::kPi * Random::nextDouble();
+      std::array<double, 3> loc { 200 * MathUtil::sin(angle), 200 * MathUtil::cos(angle), -20
+          + 300 * Random::nextDouble() };
       if (init_physical_node_movement_listener) {
         init_physical_node_movement_listener = false;
-        java->initPhysicalNodeMovementListener();
+        initPhysicalNodeMovementListener();
       }
       physical_nodes_.push_back(ecm->createPhysicalNodeInstance(loc));
     }

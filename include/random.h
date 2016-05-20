@@ -1,7 +1,8 @@
 #ifndef RANDOM_H_
 #define RANDOM_H_
 
-#include "java_util.h"
+#include <array>
+#include <cstdio>
 
 namespace cx3d {
 
@@ -17,6 +18,8 @@ class Random {
   static double nextDouble();
 
   static double nextGaussian(double mean, double standard_deviation);
+
+  static std::array<double, 3> nextNoise(double k);
 
  private:
   static double nextNextGaussian;

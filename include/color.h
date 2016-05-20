@@ -1,6 +1,9 @@
 #ifndef COLOR_H_
 #define COLOR_H_
 
+#include <cmath>
+#include "random.h"
+
 namespace cx3d {
 
 /**
@@ -12,9 +15,26 @@ namespace cx3d {
  */
 class Color {
  public:
-  constexpr Color(unsigned value) : value_{value} {}
+  static Color getRandomColor() {
+    long r = std::lround(255 * Random::nextDouble());
+    long g = std::lround(255 * Random::nextDouble());
+    long b = std::lround(255 * Random::nextDouble());
 
-  Color() : value_{0} {}
+    int color = 0xB3000000;
+    color |= r << 16;
+    color |= g << 8;
+    color |= b;
+
+    return Color(color);
+  }
+
+  constexpr Color(unsigned value)
+      : value_ { value } {
+  }
+
+  Color()
+      : value_ { 0 } {
+  }
 
   bool operator==(const Color& other) const {
     return value_ == other.value_;

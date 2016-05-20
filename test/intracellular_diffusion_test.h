@@ -8,7 +8,7 @@
 #include "base_simulation_test.h"
 #include "param.h"
 #include "matrix.h"
-#include "java_util.h"
+
 #include "sim_state_serialization_util.h"
 #include "cells/cell.h"
 #include "cells/cell_factory.h"
@@ -64,9 +64,8 @@ class InternalSecretor : public AbstractLocalBiologyModule {
 
 class GrowthCone : public AbstractLocalBiologyModule {
  public:
-  GrowthCone(const std::shared_ptr<JavaUtil2>& java)
-      : java_ { java },
-        previous_dir_ { { 0.0, 0.0, 0.0 } } {
+  GrowthCone()
+      : previous_dir_ { { 0.0, 0.0, 0.0 } } {
   }
   virtual ~GrowthCone() {
   }
@@ -77,7 +76,7 @@ class GrowthCone : public AbstractLocalBiologyModule {
    *
    */
   UPtr getCopy() const override {
-    return UPtr { new GrowthCone(java_) };
+    return UPtr { new GrowthCone() };
   }
 
   /**
@@ -106,13 +105,13 @@ class GrowthCone : public AbstractLocalBiologyModule {
       speed = 100;
     }
     // movement and consumption
-    auto noise = java_->matrixRandomNoise3(0.1);
+    auto noise = Random::nextNoise(0.1);
     auto direction = Matrix::add(previous_dir_, noise);
     previous_dir_ = Matrix::normalize(direction);
     cyl->movePointMass(speed, direction);
     cyl->modifyIntracellularQuantity("tubulin", -concentration * kConsumptionFactor);
     // test for bifurcation
-    if (java_->getRandomDouble1() < kBifurcationProbability) {
+    if (Random::nextDouble() < kBifurcationProbability) {
       static_cast<NeuriteElement*>(getCellElement())->bifurcate();
     }
   }
@@ -135,7 +134,6 @@ class GrowthCone : public AbstractLocalBiologyModule {
   static constexpr double kConsumptionFactor = 100;
   static constexpr double kBifurcationProbability = 0.003;
 
-  std::shared_ptr<JavaUtil2> java_;
   std::array<double, 3> previous_dir_;
 };
 
@@ -144,12 +142,12 @@ class IntracellularDiffusionTest : public BaseSimulationTest {
   IntracellularDiffusionTest() {
   }
 
-  void simulate(const std::shared_ptr<ECM>& ecm, const std::shared_ptr<JavaUtil2>& java) override {
-    java->setRandomSeed1(1L);
-    java->initPhysicalNodeMovementListener();
+  void simulate(const std::shared_ptr<ECM>& ecm) override {
+    Random::setSeed(1L);
+    initPhysicalNodeMovementListener();
 
     for (int i = 0; i < 18; i++) {
-      physical_nodes_.push_back(ecm->createPhysicalNodeInstance(java->matrixRandomNoise3(500)));
+      physical_nodes_.push_back(ecm->createPhysicalNodeInstance(Random::nextNoise(500)));
     }
 
     // defining the templates for the intracellular substance
@@ -167,7 +165,7 @@ class IntracellularDiffusionTest : public BaseSimulationTest {
     //insert growth cone module
     auto ne = c->getSomaElement()->extendNewNeurite( { 0, 0, 1 });
     ne->getPhysical()->setDiameter(1.0);
-    ne->addLocalBiologyModule(LocalBiologyModule::UPtr { new GrowthCone(java) });
+    ne->addLocalBiologyModule(LocalBiologyModule::UPtr { new GrowthCone() });
     // run, Forrest, run..
     auto scheduler = Scheduler::getInstance(ecm);
     for (int i = 0; i < 2001; i++) {

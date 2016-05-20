@@ -6,7 +6,6 @@
 
 #include "base_simulation_test.h"
 #include "param.h"
-#include "java_util.h"
 
 #include "cells/cell.h"
 #include "cells/cell_factory.h"
@@ -40,13 +39,13 @@ class SimpleSynapseTest : public BaseSimulationTest {
   SimpleSynapseTest() {
   }
 
-  void simulate(const std::shared_ptr<ECM>& ecm, const std::shared_ptr<JavaUtil2>& java) override {
-    java->setRandomSeed1(1L);
-    java->initPhysicalNodeMovementListener();
+  void simulate(const std::shared_ptr<ECM>& ecm) override {
+    Random::setSeed(1L);
+    initPhysicalNodeMovementListener();
 
     int number_of_additional_nodes = 10;
     for (int i = 0; i < number_of_additional_nodes; i++) {
-      auto coord = java->matrixRandomNoise3(500);
+      auto coord = Random::nextNoise(500);
       physical_nodes_.push_back(ecm->createPhysicalNodeInstance(coord));
     }
 

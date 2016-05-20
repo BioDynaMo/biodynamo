@@ -3,7 +3,6 @@
 
 #include <string>
 
-#include "java_util.h"
 #include "sim_state_serializable.h"
 #include "physics/inter_object_force.h"
 
@@ -15,10 +14,6 @@ namespace physics {
  */
 class DefaultForce : public InterObjectForce {
  public:
-  static void setJavaUtil(std::shared_ptr<cx3d::JavaUtil2> java) {
-    java_ = java;
-  }
-
   DefaultForce();
 
   virtual ~DefaultForce() {
@@ -34,7 +29,7 @@ class DefaultForce : public InterObjectForce {
    * @return
    */
   virtual std::array<double, 3> forceOnASphereFromASphere(PhysicalSphere* sphere_1, PhysicalSphere* sphere_2) const
-                                                              override;
+      override;
 
   /**
    * Force felt by a cylinder due to the presence of a sphere
@@ -46,7 +41,7 @@ class DefaultForce : public InterObjectForce {
    *
    */
   virtual std::array<double, 4> forceOnACylinderFromASphere(PhysicalCylinder* cylinder, PhysicalSphere* sphere) const
-                                                                override;
+      override;
 
   /**
    * Force felt by sphere due to the presence of a cylinder
@@ -55,7 +50,7 @@ class DefaultForce : public InterObjectForce {
    * @return
    */
   virtual std::array<double, 3> forceOnASphereFromACylinder(PhysicalSphere* sphere, PhysicalCylinder* cylinder) const
-                                                                override;
+      override;
 
   /**
    * Force felt by a cylinder (cylinder1) due to the presence of another cylinder (cylinder2)
@@ -66,16 +61,13 @@ class DefaultForce : public InterObjectForce {
    * of cylinder1 (= the point mass of the mother).
    */
   virtual std::array<double, 4> forceOnACylinderFromACylinder(PhysicalCylinder* cylinder1,
-                                                              PhysicalCylinder* cylinder2) const
-                                                                  override;
+                                                              PhysicalCylinder* cylinder2) const override;
 
   virtual std::string toString() const;
 
  private:
   DefaultForce(const DefaultForce&) = delete;
   DefaultForce& operator=(const DefaultForce&) = delete;
-
-  static std::shared_ptr<JavaUtil2> java_;
 
   std::array<double, 4> computeForceOfASphereOnASphere(const std::array<double, 3>& c1, double r1,
                                                        const std::array<double, 3>& c2, double r2) const;

@@ -5,7 +5,6 @@
 
 #include "base_simulation_test.h"
 #include "param.h"
-#include "java_util.h"
 
 #include "cells/cell.h"
 #include "cells/cell_module.h"
@@ -67,9 +66,9 @@ class DividingModuleTest : public BaseSimulationTest {
   DividingModuleTest() {
   }
 
-  void simulate(const std::shared_ptr<ECM>& ecm, const std::shared_ptr<JavaUtil2>& java) override {
-    java->setRandomSeed1(2L);
-    java->initPhysicalNodeMovementListener();
+  void simulate(const std::shared_ptr<ECM>& ecm) override {
+    Random::setSeed(2L);
+    initPhysicalNodeMovementListener();
 
     auto c = CellFactory::getCellInstance( { 0.0, 0.0, 0.0 }, ecm);
     c->addCellModule(CellModule::UPtr { new DividingModule() });

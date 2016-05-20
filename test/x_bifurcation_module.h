@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "param.h"
-#include "java_util.h"
+
 #include "matrix.h"
 #include "sim_state_serialization_util.h"
 
@@ -37,17 +37,15 @@ using simulation::Scheduler;
  */
 class XBifurcationModule : public LocalBiologyModule {
  public:
-  XBifurcationModule(const std::shared_ptr<JavaUtil2>& java)
+  XBifurcationModule()
       : slope_ { 0.03 },
         shift_ { -0.01 },
-        free_interval_ { 5 + 1 * java->getRandomDouble1() },
-        java_ { java } {
+        free_interval_ { 5 + 1 * Random::nextDouble() } {
   }
-  XBifurcationModule(double slope, double shift, const std::shared_ptr<JavaUtil2>& java)
+  XBifurcationModule(double slope, double shift)
       : slope_ { slope },
         shift_ { shift },
-        free_interval_ { 5 + 1 * java->getRandomDouble1() },
-        java_ { java } {
+        free_interval_ { 5 + 1 * Random::nextDouble() } {
   }
   XBifurcationModule(const XBifurcationModule&) = delete;
   XBifurcationModule& operator=(const XBifurcationModule&) = delete;
@@ -81,7 +79,7 @@ class XBifurcationModule : public LocalBiologyModule {
     if (y > max_proba_) {
       y = max_proba_;
     }
-    if (java_->getRandomDouble1() < y) {
+    if (Random::nextDouble() < y) {
       auto daughters = static_cast<NeuriteElement*>(cell_element_)->bifurcate();
       auto cyl0 = daughters[0]->getPhysicalCylinder();
       auto cyl1 = daughters[1]->getPhysicalCylinder();
@@ -99,7 +97,7 @@ class XBifurcationModule : public LocalBiologyModule {
   }
 
   UPtr getCopy() const override {
-    auto bf = new XBifurcationModule(slope_, shift_, java_);
+    auto bf = new XBifurcationModule(slope_, shift_);
     auto uptr = UPtr(bf);
     for (auto factor : branching_factors_) {
       bf->branching_factors_.push_back(factor);
@@ -165,8 +163,6 @@ class XBifurcationModule : public LocalBiologyModule {
   }
 
  private:
-  std::shared_ptr<JavaUtil2> java_;
-
   /** The CellElement this module lives in.*/
   CellElement* cell_element_ = nullptr;
 

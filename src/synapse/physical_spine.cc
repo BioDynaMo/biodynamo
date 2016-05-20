@@ -4,16 +4,18 @@
 #include "sim_state_serialization_util.h"
 #include "synapse/biological_spine.h"
 #include "physics/physical_object.h"
+#include "physics/physical_bond.h"
 
 namespace cx3d {
 namespace synapse {
+
+using physics::PhysicalBond;
 
 PhysicalSpine::PhysicalSpine()
     : Excrescence(Excrescence::Type::kSpine) {
 }
 
-PhysicalSpine::PhysicalSpine(PhysicalObject* po, const std::array<double, 2>& origin,
-                             double length)
+PhysicalSpine::PhysicalSpine(PhysicalObject* po, const std::array<double, 2>& origin, double length)
     : Excrescence(po, origin, length, Excrescence::Type::kSpine) {
 }
 
@@ -44,7 +46,7 @@ bool PhysicalSpine::synapseWith(Excrescence* other_excrescence, bool create_phys
     auto global_pos_on_po = po_->transformCoordinatesPolarToGlobal(position_on_po_);
     auto ex_global_pos_on_po = ex_->getPo()->transformCoordinatesPolarToGlobal(ex_->getPositionOnPO());
     auto distance = Matrix::distance(global_pos_on_po, ex_global_pos_on_po);
-    auto pb = ecm_->newPhysicalBond(po_, position_on_po_, ex_->getPo(), ex_->getPositionOnPO(), distance, 1);
+    auto pb = PhysicalBond::create(po_, position_on_po_, ex_->getPo(), ex_->getPositionOnPO(), distance, 1);
   }
   return true;
 }
@@ -53,8 +55,8 @@ bool PhysicalSpine::synapseWithSoma(Excrescence* other_excrescence, bool create_
   return false;
 }
 
-bool PhysicalSpine::synapseWithShaft(NeuriteElement* other_ne, double max_dis,
-                                     int nr_segments, bool create_phyiscal_bond) {
+bool PhysicalSpine::synapseWithShaft(NeuriteElement* other_ne, double max_dis, int nr_segments,
+                                     bool create_phyiscal_bond) {
   return false;
 }
 

@@ -4,7 +4,6 @@
 #include "base_simulation_test.h"
 #include "param.h"
 #include "matrix.h"
-#include "java_util.h"
 
 #include "cells/cell.h"
 #include "cells/cell_factory.h"
@@ -24,15 +23,14 @@ using simulation::Scheduler;
 
 class SomaRandomWalkModule : public AbstractLocalBiologyModule {
  public:
-  SomaRandomWalkModule(const std::shared_ptr<JavaUtil2>& java)
-      : java_ { java } {
-    direction_ = java_->matrixRandomNoise3(1.0);
+  SomaRandomWalkModule() {
+    direction_ = Random::nextNoise(1.0);
   }
   SomaRandomWalkModule(const SomaRandomWalkModule&) = delete;
   SomaRandomWalkModule& operator=(const SomaRandomWalkModule&) = delete;
 
   UPtr getCopy() const override {
-    return UPtr { new SomaRandomWalkModule(java_) };
+    return UPtr { new SomaRandomWalkModule() };
   }
 
   bool isCopiedWhenSomaDivides() const override {
@@ -40,7 +38,7 @@ class SomaRandomWalkModule : public AbstractLocalBiologyModule {
   }
 
   void run() override {
-    auto delta = java_->matrixRandomNoise3(0.1);
+    auto delta = Random::nextNoise(0.1);
     direction_ = Matrix::add(direction_, delta);
     direction_ = Matrix::normalize(direction_);
     getCellElement()->move(kSpeed, direction_);
@@ -53,7 +51,6 @@ class SomaRandomWalkModule : public AbstractLocalBiologyModule {
 
  private:
   static constexpr double kSpeed = 50;
-  std::shared_ptr<JavaUtil2> java_;
   std::array<double, 3> direction_;
 };
 
@@ -62,13 +59,13 @@ class SomaRandomWalkModuleTest : public BaseSimulationTest {
   SomaRandomWalkModuleTest() {
   }
 
-  void simulate(const std::shared_ptr<ECM>& ecm, const std::shared_ptr<JavaUtil2>& java) override {
-    java->setRandomSeed1(1L);
-    java->initPhysicalNodeMovementListener();
+  void simulate(const std::shared_ptr<ECM>& ecm) override {
+    Random::setSeed(1L);
+    initPhysicalNodeMovementListener();
 
     for (int i = 0; i < 5; i++) {
-      auto c = CellFactory::getCellInstance(java->matrixRandomNoise3(40), ecm);
-      c->getSomaElement()->addLocalBiologyModule(SomaRandomWalkModule::UPtr { new SomaRandomWalkModule(java) });
+      auto c = CellFactory::getCellInstance(Random::nextNoise(40), ecm);
+      c->getSomaElement()->addLocalBiologyModule(SomaRandomWalkModule::UPtr { new SomaRandomWalkModule() });
     }
 
     auto scheduler = Scheduler::getInstance(ecm);

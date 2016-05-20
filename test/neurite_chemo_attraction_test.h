@@ -8,7 +8,7 @@
 #include "base_simulation_test.h"
 #include "param.h"
 #include "matrix.h"
-#include "java_util.h"
+
 
 #include "cells/cell.h"
 #include "cells/cell_factory.h"
@@ -35,15 +35,12 @@ using simulation::Scheduler;
 
 class NeuriteChemoAttraction : public AbstractLocalBiologyModule {
  public:
-  NeuriteChemoAttraction(const std::string& substance_id, const std::shared_ptr<JavaUtil2>& java)
-      : java_ { java },
-        direction_ { { 0.0, 0.0, 0.0 } },
+  NeuriteChemoAttraction(const std::string& substance_id)
+      : direction_ { { 0.0, 0.0, 0.0 } },
         substance_id_ { substance_id } {
   }
-  NeuriteChemoAttraction(const std::string& substance_id, double branching_factor,
-                         const std::shared_ptr<JavaUtil2>& java)
-      : java_ { java },
-        direction_ { { 0.0, 0.0, 0.0 } },
+  NeuriteChemoAttraction(const std::string& substance_id, double branching_factor)
+      : direction_ { { 0.0, 0.0, 0.0 } },
         substance_id_ { substance_id },
         branching_factor_ { branching_factor } {
   }
@@ -51,7 +48,7 @@ class NeuriteChemoAttraction : public AbstractLocalBiologyModule {
   NeuriteChemoAttraction& operator=(const NeuriteChemoAttraction&) = delete;
 
   UPtr getCopy() const override {
-    return UPtr { new NeuriteChemoAttraction(substance_id_, java_) };
+    return UPtr { new NeuriteChemoAttraction(substance_id_) };
   }
 
   bool isCopiedWhenNeuriteBranches() const override {
@@ -79,7 +76,7 @@ class NeuriteChemoAttraction : public AbstractLocalBiologyModule {
       grad = {0.0, 0.0, 0.0};
     }
 
-    auto noise = java_->matrixRandomNoise3(kRandomnessWeight);
+    auto noise = Random::nextNoise(kRandomnessWeight);
     auto scaled_direction = Matrix::scalarMult(kOldDirectionWeight, direction_);
     auto scaled_normalized_grad = Matrix::scalarMult(kGradientWeight, Matrix::normalize(grad));
     auto new_dir = Matrix::add(Matrix::add(scaled_direction, scaled_normalized_grad), noise);
@@ -89,7 +86,7 @@ class NeuriteChemoAttraction : public AbstractLocalBiologyModule {
     direction_ = Matrix::normalize(Matrix::add(Matrix::scalarMult(5, direction_), new_dir));
 
     // 2) branching based on concentration:
-    if (java_->getRandomDouble1() < concentration * branching_factor_) {
+    if (Random::nextDouble() < concentration * branching_factor_) {
       static_cast<NeuriteElement*>(getCellElement())->bifurcate();
     }
   }
@@ -104,7 +101,6 @@ class NeuriteChemoAttraction : public AbstractLocalBiologyModule {
   static constexpr double kGradientWeight = 0.2;
   static constexpr double kRandomnessWeight = 0.6;
 
-  std::shared_ptr<JavaUtil2> java_;
   std::array<double, 3> direction_;
   double branching_factor_ = 0.005;
   std::string substance_id_;
@@ -115,16 +111,16 @@ class NeuriteChemoAttractionTest : public BaseSimulationTest {
   NeuriteChemoAttractionTest() {
   }
 
-  void simulate(const std::shared_ptr<ECM>& ecm, const std::shared_ptr<JavaUtil2>& java) override {
-    java->setRandomSeed1(1L);
-    java->initPhysicalNodeMovementListener();
+  void simulate(const std::shared_ptr<ECM>& ecm) override {
+    Random::setSeed(1L);
+    initPhysicalNodeMovementListener();
 
     auto attractant = Substance::UPtr(new Substance("A", Color(0xFFFF0000)));
     ecm->addArtificialGaussianConcentrationZ(attractant.get(), 1.0, 400.0, 160.0);
 
     int number_of_additional_nodes = 10;
     for (int i = 0; i < number_of_additional_nodes; i++) {
-      auto coord = java->matrixRandomNoise3(500);
+      auto coord = Random::nextNoise(500);
       physical_nodes_.push_back(ecm->createPhysicalNodeInstance(coord));
     }
 
@@ -132,7 +128,7 @@ class NeuriteChemoAttractionTest : public BaseSimulationTest {
     c->setColorForAllPhysicalObjects(Param::kViolet);
     auto neurite = c->getSomaElement()->extendNewNeurite();
     neurite->getPhysicalCylinder()->setDiameter(2.0);
-    neurite->addLocalBiologyModule( LocalBiologyModule::UPtr { new NeuriteChemoAttraction("A", java) });
+    neurite->addLocalBiologyModule( LocalBiologyModule::UPtr { new NeuriteChemoAttraction("A") });
 
     auto scheduler = Scheduler::getInstance(ecm);
     for (int i = 0; i < 1000; i++) {

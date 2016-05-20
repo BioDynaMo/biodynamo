@@ -337,7 +337,7 @@ void PhysicalNode::degradate(double currentEcmTime) {  //changed to proteceted
   double delta_t = currentEcmTime - last_ecm_time_degradate_was_run_;
   for (auto& i : extracellular_substances_) {
     auto s = i.second.get();
-    double decay = PhysicalNode::ecm_->exp(-s->getDegradationConstant() * delta_t);
+    double decay = MathUtil::exp(-s->getDegradationConstant() * delta_t);
     s->multiplyQuantityAndConcentrationBy(decay);
   }
   // We store the current time as the last time we updated degradation
@@ -395,7 +395,7 @@ void PhysicalNode::diffuseEdgeAnalytically(SpatialOrganizationEdge<PhysicalNode>
     double n = a * tot / v_b;
     double n_over_M = n / m;
     double K = q_a - n_over_M;
-    q_a = K * PhysicalNode::ecm_->exp(-m * Param::kSimulationTimeStep) + n_over_M;
+    q_a = K * MathUtil::exp(-m * Param::kSimulationTimeStep) + n_over_M;
     q_b = tot - q_a;
 
     s_a->setQuantity(q_a);

@@ -2,7 +2,6 @@
 #define TEST_MEMBRANE_CONTACT_TEST_H_
 
 #include "param.h"
-#include "java_util.h"
 
 #include "base_simulation_test.h"
 #include "soma_random_walk_module_test.h"
@@ -56,9 +55,9 @@ class MembraneContactTest : public BaseSimulationTest {
   MembraneContactTest() {
   }
 
-  void simulate(const std::shared_ptr<ECM>& ecm, const std::shared_ptr<JavaUtil2>& java) override {
-    java->setRandomSeed1(1L);
-    java->initPhysicalNodeMovementListener();
+  void simulate(const std::shared_ptr<ECM>& ecm) override {
+    Random::setSeed(1L);
+    initPhysicalNodeMovementListener();
 
     auto adherence = IntracellularSubstance::UPtr(new IntracellularSubstance("A", 0, 0));
     adherence->setVisibleFromOutside(true);
@@ -69,14 +68,14 @@ class MembraneContactTest : public BaseSimulationTest {
     ecm->setBoundaries(-150, 150, -150, 150, -100, 100);
 
     for (int i = 0; i < 10; i++) {
-      auto c = CellFactory::getCellInstance(ecm->matrixRandomNoise3(100), ecm);
+      auto c = CellFactory::getCellInstance(Random::nextNoise(100), ecm);
       c->setColorForAllPhysicalObjects(Param::kRed);
       c->getSomaElement()->getPhysical()->modifyMembraneQuantity("A", 100000);
     }
     for (int i = 0; i < 10; i++) {
-      auto c = CellFactory::getCellInstance(ecm->matrixRandomNoise3(50), ecm);
+      auto c = CellFactory::getCellInstance(Random::nextNoise(50), ecm);
       c->getSomaElement()->addLocalBiologyModule(LocalBiologyModule::UPtr { new MembraneContact() });
-      c->getSomaElement()->addLocalBiologyModule(LocalBiologyModule::UPtr { new SomaRandomWalkModule(java) });
+      c->getSomaElement()->addLocalBiologyModule(LocalBiologyModule::UPtr { new SomaRandomWalkModule() });
       c->setColorForAllPhysicalObjects(Param::kViolet);
     }
 

@@ -20,8 +20,6 @@ using physics::IntracellularSubstance;
 using physics::PhysicalNodeMovementListener;
 using spatial_organization::SpaceNode;
 
-std::shared_ptr<cx3d::JavaUtil2> ECM::java_ = std::shared_ptr<cx3d::JavaUtil2> { nullptr };
-
 std::shared_ptr<ECM> ECM::getInstance() {
   static auto instance = std::make_shared<ECM>();
   return instance;
@@ -120,10 +118,10 @@ std::array<double, 3> ECM::forceFromArtificialWall(const std::array<double, 3>& 
   return force;
 }
 
-SpaceNode<PhysicalNode>::UPtr ECM::getSpatialOrganizationNodeInstance(
-    const std::array<double, 3>& position, PhysicalNode* userObject) {
+SpaceNode<PhysicalNode>::UPtr ECM::getSpatialOrganizationNodeInstance(const std::array<double, 3>& position,
+                                                                      PhysicalNode* userObject) {
   if (initial_node_ == nullptr) {
-    auto sn1 = SpaceNode<PhysicalNode>::UPtr(new SpaceNode<PhysicalNode>(position, userObject));
+    auto sn1 = SpaceNode < PhysicalNode > ::UPtr(new SpaceNode<PhysicalNode>(position, userObject));
     sn1->addSpatialOrganizationNodeMovementListener(PhysicalNodeMovementListener::create());
     initial_node_ = sn1.get();
     return std::move(sn1);
@@ -132,9 +130,10 @@ SpaceNode<PhysicalNode>::UPtr ECM::getSpatialOrganizationNodeInstance(
 }
 
 SpaceNode<PhysicalNode>::UPtr ECM::getSpatialOrganizationNodeInstance(SpaceNode<PhysicalNode>* n,
-    const std::array<double, 3>& position, PhysicalNode* userObject) {
+                                                                      const std::array<double, 3>& position,
+                                                                      PhysicalNode* userObject) {
   if (initial_node_ == nullptr) {
-    auto sn1 = SpaceNode<PhysicalNode>::UPtr(new SpaceNode<PhysicalNode>(position, userObject));
+    auto sn1 = SpaceNode < PhysicalNode > ::UPtr(new SpaceNode<PhysicalNode>(position, userObject));
     sn1->addSpatialOrganizationNodeMovementListener(PhysicalNodeMovementListener::create());
     initial_node_ = sn1.get();
     return std::move(sn1);
@@ -155,7 +154,7 @@ std::vector<PhysicalNode::UPtr> ECM::createGridOfPhysicalNodes(double x1, double
   int z_lim = (int) ((z2 - z1 + 2 * border_length) / d);
 
   // the neighbor Node (close to which we will create the new one
-  SpaceNode<PhysicalNode>* old_son;
+  SpaceNode < PhysicalNode > *old_son;
   // loop to put the nodes in 3D space
   for (int kx = 0; kx < x_lim + 1; kx++) {
     for (int ky = 0; ky < y_lim + 1; ky++) {
@@ -164,7 +163,7 @@ std::vector<PhysicalNode::UPtr> ECM::createGridOfPhysicalNodes(double x1, double
         std::array<double, 3> coord { (x1 - border_length) + d * kx, (y1 - border_length) + d * ky, (z1 - border_length)
             + d * kz };
         // add small jitter
-        coord = Matrix::add(coord, matrixRandomNoise3(d * 0.01));
+        coord = Matrix::add(coord, Random::nextNoise(d * 0.01));
         // create the node
         auto pn = PhysicalNode::UPtr(new PhysicalNode());
         // request a delaunay vertex
@@ -261,7 +260,7 @@ void ECM::clearAll() {
   cells_.clear();
   time_ = 0;
 
-  initial_node_= nullptr;
+  initial_node_ = nullptr;
   substance_lib_.clear();
   intracellular_substance_lib_.clear();
   cell_color_lib_.clear();
@@ -321,7 +320,7 @@ Color ECM::cellTypeColor(const std::string& cellType) {
     auto c = cell_color_lib_[cellType];
     return c;
   } else {
-    auto c = java_->getRandomColor();
+    auto c = Color::getRandomColor();
     cell_color_lib_[cellType] = c;
     return c;
   }
@@ -331,72 +330,71 @@ bool ECM::thereAreArtificialGradients() const {
   return any_artificial_gradient_defined_;
 }
 
-void ECM::addArtificialGaussianConcentrationZ(Substance* substance,
-                                              double max_concentration, double z_coord, double sigma) {
+void ECM::addArtificialGaussianConcentrationZ(Substance* substance, double max_concentration, double z_coord,
+                                              double sigma) {
   auto s = getRegisteredArtificialSubstance(substance);  //todo why?
   // define distribution values for the chemical, and store them together
   std::array<double, 3> value { max_concentration, z_coord, sigma };
   gaussian_artificial_concentration_z_[s] = value;
 }
 
-void ECM::addArtificialGaussianConcentrationZ(const std::string& substance_name, double max_concentration, double z_coord,
-                                              double sigma) {
+void ECM::addArtificialGaussianConcentrationZ(const std::string& substance_name, double max_concentration,
+                                              double z_coord, double sigma) {
   auto s = getRegisteredArtificialSubstance(substance_name);  //todo why?
   // define distribution values for the chemical, and store them together
   std::array<double, 3> value { max_concentration, z_coord, sigma };
   gaussian_artificial_concentration_z_[s] = value;
 }
 
-void ECM::addArtificialLinearConcentrationZ(Substance* substance,
-                                            double max_concentration, double z_coord_max, double z_coord_min) {
-  auto s = getRegisteredArtificialSubstance(substance);  //todo why?
-  // define distribution values for the chemical, and store them together
-  std::array<double, 3> value { max_concentration, z_coord_max, z_coord_min };
-  linear_artificial_concentration_z_[s] = value;
-}
-
-void ECM::addArtificialLinearConcentrationZ(const std::string& substance_name, double max_concentration, double z_coord_max,
+void ECM::addArtificialLinearConcentrationZ(Substance* substance, double max_concentration, double z_coord_max,
                                             double z_coord_min) {
+  auto s = getRegisteredArtificialSubstance(substance);  //todo why?
+  // define distribution values for the chemical, and store them together
+  std::array<double, 3> value { max_concentration, z_coord_max, z_coord_min };
+  linear_artificial_concentration_z_[s] = value;
+}
+
+void ECM::addArtificialLinearConcentrationZ(const std::string& substance_name, double max_concentration,
+                                            double z_coord_max, double z_coord_min) {
   auto s = getRegisteredArtificialSubstance(substance_name);  //todo why?
   // define distribution values for the chemical, and store them together
   std::array<double, 3> value { max_concentration, z_coord_max, z_coord_min };
   linear_artificial_concentration_z_[s] = value;
 }
 
-void ECM::addArtificialGaussianConcentrationX(Substance* substance,
-                                              double max_concentration, double x_coord, double sigma) {
+void ECM::addArtificialGaussianConcentrationX(Substance* substance, double max_concentration, double x_coord,
+                                              double sigma) {
   auto s = getRegisteredArtificialSubstance(substance);  //todo why?
   // define distribution values for the chemical, and store them together
   std::array<double, 3> value { max_concentration, x_coord, sigma };
   gaussian_artificial_concentration_x_[s] = value;
 }
 
-void ECM::addArtificialGaussianConcentrationX(const std::string& substance_name, double max_concentration, double x_coord,
-                                              double sigma) {
+void ECM::addArtificialGaussianConcentrationX(const std::string& substance_name, double max_concentration,
+                                              double x_coord, double sigma) {
   auto s = getRegisteredArtificialSubstance(substance_name);  //todo why?
   // define distribution values for the chemical, and store them together
   std::array<double, 3> value { max_concentration, x_coord, sigma };
   gaussian_artificial_concentration_x_[s] = value;
 }
 
-void ECM::addArtificialLinearConcentrationX(Substance* substance,
-                                            double max_concentration, double x_coord_max, double x_coord_min) {
+void ECM::addArtificialLinearConcentrationX(Substance* substance, double max_concentration, double x_coord_max,
+                                            double x_coord_min) {
   auto s = getRegisteredArtificialSubstance(substance);  //todo why?
   // define distribution values for the chemical, and store them together
   std::array<double, 3> value { max_concentration, x_coord_max, x_coord_min };
   linear_artificial_concentration_x_[s] = value;
 }
 
-void ECM::addArtificialLinearConcentrationX(const std::string& substanceId, double max_concentration, double x_coord_max,
-                                            double x_coord_min) {
+void ECM::addArtificialLinearConcentrationX(const std::string& substanceId, double max_concentration,
+                                            double x_coord_max, double x_coord_min) {
   auto s = getRegisteredArtificialSubstance(substanceId);  //todo why?
   // define distribution values for the chemical, and store them together
   std::array<double, 3> value { max_concentration, x_coord_max, x_coord_min };
   linear_artificial_concentration_x_[s] = value;
 }
 
-double ECM::getValueArtificialConcentration(const std::string& chemical,
-                                            const std::array<double, 3>& position) const {
+double ECM::getValueArtificialConcentration(const std::string& chemical, const std::array<double, 3>& position) const {
   double x = position[0];
   double z = position[2];
   // does the substance exist at all ?
@@ -414,14 +412,14 @@ double ECM::getValueArtificialConcentration(const std::string& chemical,
     auto val = STLUtil::mapGet(gaussian_artificial_concentration_x_, sub);
     double exposant = (x - val[1]) / val[2];
     exposant = exposant * exposant * 0.5;
-    concentration += val[0] * java_->exp(-exposant);
+    concentration += val[0] * MathUtil::exp(-exposant);
   }
   // Z Gaussian
   if (STLUtil::mapContains(gaussian_artificial_concentration_z_, sub)) {
     auto val = STLUtil::mapGet(gaussian_artificial_concentration_z_, sub);
     double exposant = (z - val[1]) / val[2];
     exposant = exposant * exposant * 0.5;
-    concentration += val[0] * java_->exp(-exposant);
+    concentration += val[0] * MathUtil::exp(-exposant);
   }
   // X linear
   if (STLUtil::mapContains(linear_artificial_concentration_x_, sub)) {
@@ -446,8 +444,7 @@ double ECM::getValueArtificialConcentration(const std::string& chemical,
   return concentration;
 }
 
-double ECM::getValueArtificialConcentration(Substance* substance,
-                                            const std::array<double, 3>& position) const {
+double ECM::getValueArtificialConcentration(Substance* substance, const std::array<double, 3>& position) const {
   return getValueArtificialConcentration(substance->getId(), position);
 }
 
@@ -469,7 +466,7 @@ std::array<double, 3> ECM::getGradientArtificialConcentration(const std::string&
     auto val = STLUtil::mapGet(gaussian_artificial_concentration_x_, sub);
     double exposant = (x - val[1]) / val[2];
     exposant = exposant * exposant * 0.5;
-    double xValOfGradient = -((x - val[1]) / (val[2] * val[2])) * val[0] * java_->exp(-exposant);
+    double xValOfGradient = -((x - val[1]) / (val[2] * val[2])) * val[0] * MathUtil::exp(-exposant);
     gradient[0] += xValOfGradient;
   }
   // Gaussian Z
@@ -477,7 +474,7 @@ std::array<double, 3> ECM::getGradientArtificialConcentration(const std::string&
     auto val = STLUtil::mapGet(gaussian_artificial_concentration_z_, sub);
     double exposant = (z - val[1]) / val[2];
     exposant = exposant * exposant * 0.5;
-    double zValOfGradient = -((z - val[1]) / (val[2] * val[2])) * val[0] * java_->exp(-exposant);
+    double zValOfGradient = -((z - val[1]) / (val[2] * val[2])) * val[0] * MathUtil::exp(-exposant);
     gradient[2] += zValOfGradient;
   }
   // Linear X
@@ -509,8 +506,7 @@ std::array<double, 3> ECM::getGradientArtificialConcentration(const std::string&
   return gradient;
 }
 
-double ECM::getGradientArtificialConcentration(Substance* s,
-                                               const std::array<double, 3>& position) const {
+double ECM::getGradientArtificialConcentration(Substance* s, const std::array<double, 3>& position) const {
   return getValueArtificialConcentration(s->getId(), position);
 }
 

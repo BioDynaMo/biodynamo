@@ -6,6 +6,7 @@
 #include <vector>
 #include <memory>
 
+#include "math_util.h"
 #include "simulation/ecm.h" //fixme remove after porting has been finished
 #include "stl_util.h"
 
@@ -278,8 +279,8 @@ class Matrix {
     auto axis = normalize(b);
 
     auto temp_1 = scalarMult(dot(a, axis), axis);
-    auto temp_2 = scalarMult(ecm->cos(-theta), subtract(a, temp_1));
-    auto temp_3 = scalarMult(ecm->sin(-theta), crossProduct(a, axis));
+    auto temp_2 = scalarMult(MathUtil::cos(-theta), subtract(a, temp_1));
+    auto temp_3 = scalarMult(MathUtil::sin(-theta), crossProduct(a, axis));
 
     return {
       temp_1[0] + temp_2[0] + temp_3[0],

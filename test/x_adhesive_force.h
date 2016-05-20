@@ -4,7 +4,7 @@
 #include <array>
 #include <memory>
 
-#include "java_util.h"
+
 #include "physics/inter_object_force.h"
 #include "physics/physical_sphere.h"
 #include "physics/physical_cylinder.h"
@@ -21,8 +21,7 @@ using physics::InterObjectForce;
  */
 class XAdhesiveForce : public InterObjectForce {
  public:
-  XAdhesiveForce(const std::shared_ptr<JavaUtil2>& java)
-      : java_ { java } {
+  XAdhesiveForce() {
   }
 
   virtual ~XAdhesiveForce() {
@@ -44,7 +43,7 @@ class XAdhesiveForce : public InterObjectForce {
     double comp_1 = c_1[0] - c_2[0];
     double comp_2 = c_1[1] - c_2[1];
     double comp_3 = c_1[2] - c_2[2];
-    double distance_between_centers = java_->sqrt(comp_1 * comp_1 + comp_2 * comp_2 + comp_3 * comp_3);
+    double distance_between_centers = MathUtil::sqrt(comp_1 * comp_1 + comp_2 * comp_2 + comp_3 * comp_3);
     // the overlap distance (how much one penetrates in the other)
     double delta = r_1 + r_2 - distance_between_centers;
     // if no overlap : no force
@@ -52,13 +51,13 @@ class XAdhesiveForce : public InterObjectForce {
       return {0,0,0};
     // to avoid a division by 0 if the centers are (almost) at the same location
     if (distance_between_centers < 0.00000001) {
-      return java_->matrixRandomNoise3(3);;
+      return Random::nextNoise(3);;
     } else {
       // the force itself
       double r = (r_1 * r_2) / (r_1 + r_2);
       double gamma = 1;     // attraction coeff
       double k = 2;           // repulsion coeff
-      double f = k * delta - gamma * java_->sqrt(r * delta);
+      double f = k * delta - gamma * MathUtil::sqrt(r * delta);
 
       double module = f / distance_between_centers;
       return {module * comp_1, module * comp_2, module * comp_3};
@@ -278,8 +277,6 @@ class XAdhesiveForce : public InterObjectForce {
   }
 
  private:
-  std::shared_ptr<JavaUtil2> java_;
-
   double attraction_range_ = 4;
 
   double attraction_strength_ = 1;
@@ -291,7 +288,7 @@ class XAdhesiveForce : public InterObjectForce {
     double comp_1 = c1[0] - c2[0];
     double comp_2 = c1[1] - c2[1];
     double comp_3 = c1[2] - c2[2];
-    double distance_between_centers = java_->sqrt(comp_1 * comp_1 + comp_2 * comp_2 + comp_3 * comp_3);
+    double distance_between_centers = MathUtil::sqrt(comp_1 * comp_1 + comp_2 * comp_2 + comp_3 * comp_3);
     // the overlap distance (how much one penetrates in the other)
     double a = r1 + r2 - distance_between_centers;
     // if no overlap : no force
@@ -307,7 +304,7 @@ class XAdhesiveForce : public InterObjectForce {
 
     // to avoid a division by 0 if the centers are (almost) at the same location
     if (distance_between_centers < 0.00000001) {
-      return java_->matrixRandomNoise3(3);
+      return Random::nextNoise(3);
     } else {
       // the force is prop to the square of the interpentration distance and to the radii.
       double module = a / distance_between_centers;

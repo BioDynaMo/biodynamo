@@ -4,10 +4,11 @@
 #include <limits>
 #include <sstream>
 
+#include "random.h"
 #include "matrix.h"
 #include "stl_util.h"
 #include "string_util.h"
-#include "java_util.h"
+
 #include "physics/physical_node.h"
 #include "sim_state_serialization_util.h"
 #include "spatial_organization/edge.h"
@@ -21,8 +22,7 @@ namespace cx3d {
 namespace spatial_organization {
 
 template<class T>
-std::shared_ptr<JavaUtil<T>> SpaceNode<T>::java_ = std::shared_ptr<JavaUtil<T>>(
-    nullptr);
+std::vector<int> SpaceNode<T>::triangle_order_ = { 0, 1, 2, 3 };
 
 template<class T>
 int SpaceNode<T>::checking_index_ = 0;
@@ -33,6 +33,7 @@ int SpaceNode<T>::id_counter_ = 0;
 template<class T>
 void SpaceNode<T>::reset() {
   id_counter_ = 0;
+  triangle_order_ = {0, 1, 2, 3};
 }
 
 template<class T>
@@ -49,7 +50,7 @@ std::shared_ptr<Tetrahedron<T> > SpaceNode<T>::searchInitialInsertionTetrahedron
   auto last = null_tetrahedron;
   while (current != last && !current->isInfinite()) {
     last = current;
-    current = current->walkToPoint(coordinate, java_->generateTriangleOrder());
+    current = current->walkToPoint(coordinate, generateTriangleOrder());
   }
   return current;
 }
@@ -135,7 +136,7 @@ typename SpaceNode<T>::UPtr SpaceNode<T>::getNewInstance(
       a->adjacent_edges_.clear();
       b->adjacent_edges_.clear();
       // now create the first tetrahedron:
-      auto oto = java_->oto_createSimpleOpenTriangleOrganizer();
+      auto oto = OpenTriangleOrganizer<T>::createSimpleOpenTriangleOrganizer();;
       Tetrahedron<T>::createInitialTetrahedron(this,
                                                insert_point.get(), a, b, oto);
     } else {
@@ -196,7 +197,7 @@ std::array<T*, 4> SpaceNode<T>::getVerticesOfTheTetrahedronContaining(
     last = insertion_tetrahedron;
     // TODO walktoPoint doesn't throw exception
     //    try {
-    std::array<int, 4> triangleOrder = java_->generateTriangleOrder();
+    std::array<int, 4> triangleOrder = generateTriangleOrder();
     insertion_tetrahedron = insertion_tetrahedron->walkToPoint(position,
                                                                triangleOrder);
 //    } catch (PositionNotAllowedException e) {
@@ -350,7 +351,7 @@ std::shared_ptr<Tetrahedron<T> > SpaceNode<T>::insert(
     }
   }
 
-  auto oto = java_->oto_createSimpleOpenTriangleOrganizer();
+  auto oto = OpenTriangleOrganizer<T>::createSimpleOpenTriangleOrganizer();;
   std::list<std::shared_ptr<Triangle3D<T> >> queue;
   std::list<std::shared_ptr<Triangle3D<T> >> outer_triangles;
 
@@ -605,7 +606,7 @@ std::shared_ptr<Tetrahedron<T> > SpaceNode<T>::removeAndReturnCreatedTetrahedron
   for (auto& listener : listeners_) {
     listener->nodeAboutToBeRemoved(this);
   }
-  auto oto = java_->oto_createSimpleOpenTriangleOrganizer();
+  auto oto = OpenTriangleOrganizer<T>::createSimpleOpenTriangleOrganizer();;
   std::list<std::shared_ptr<Tetrahedron<T>>> messed_up_tetrahedra;
   // Collect the triangles that are opened by removing the point and
   // remove the corresponding tetrahedrons:
@@ -725,7 +726,7 @@ void SpaceNode<T>::cleanUp(
     const std::list<std::shared_ptr<Tetrahedron<T> > >& messed_up_tetrahedra) {
   std::list<std::shared_ptr<Tetrahedron<T>>>outer_tetrahedra;
   std::list<SpaceNode<T>*> problem_nodes;
-  auto oto = java_->oto_createSimpleOpenTriangleOrganizer();
+  auto oto = OpenTriangleOrganizer<T>::createSimpleOpenTriangleOrganizer();;
   for (auto tetrahedron : messed_up_tetrahedra) {
     if (tetrahedron->isValid()) {
       removeTetrahedronDuringCleanUp(tetrahedron, outer_tetrahedra, problem_nodes, oto);
@@ -759,6 +760,22 @@ void SpaceNode<T>::cleanUp(
     }
   }
   oto->triangulate();
+}
+
+template<class T>
+std::array<int, 4> SpaceNode<T>::generateTriangleOrder() {
+  std::random_shuffle(triangle_order_.begin(), triangle_order_.end(), SpaceNode::randomHelper);
+  std::array<int, 4> ret;
+  ret[0] = triangle_order_[0];
+  ret[1] = triangle_order_[1];
+  ret[2] = triangle_order_[2];
+  ret[3] = triangle_order_[3];
+  return ret;
+}
+
+template<class T>
+int SpaceNode<T>::randomHelper(int i) {
+  return Random::nextInt() % i;
 }
 
 template class SpaceNode<cx3d::physics::PhysicalNode>;

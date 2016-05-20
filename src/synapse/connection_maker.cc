@@ -20,7 +20,7 @@ void ConnectionMaker::extendExcressencesAndSynapseOnEveryNeuriteElement(const st
   }
   for (auto ne : ecm->getNeuriteElementList()) {
     if (ne->isAxon()) {
-      if (ecm->getRandomDouble1() < probability_to_synapse) {
+      if (Random::nextDouble() < probability_to_synapse) {
         ne->synapseBetweenExistingBS(probability_to_synapse);
       }
     }

@@ -70,8 +70,7 @@ void NeuriteElement::elongateTerminalEnd(double speed, const std::array<double, 
   physical_cylinder_->extendCylinder(speed, direction);
 }
 
-NeuriteElement* NeuriteElement::branch(double diameter,
-                                                       const std::array<double, 3>& direction) {
+NeuriteElement* NeuriteElement::branch(double diameter, const std::array<double, 3>& direction) {
   // create a new NeuriteElement for side branch
   auto ne = getCopy();
   // todo if direction changed to pointer - define direction if equal to nullptr
@@ -102,19 +101,18 @@ NeuriteElement* NeuriteElement::branch(const std::array<double, 3>& direction) {
 }
 
 NeuriteElement* NeuriteElement::branch(double diameter) {
-  auto rand_noise = ecm_->matrixRandomNoise3(0.1);
-  auto growth_direction = Matrix::perp3(
-      Matrix::add(physical_cylinder_->getUnitaryAxisDirectionVector(), rand_noise),
-      ecm_->matrixNextRandomDouble(), ecm_);
+  auto rand_noise = Random::nextNoise(0.1);
+  auto growth_direction = Matrix::perp3(Matrix::add(physical_cylinder_->getUnitaryAxisDirectionVector(), rand_noise),
+                                        Random::nextDouble(), ecm_);
   growth_direction = Matrix::normalize(growth_direction);
   return branch(diameter, growth_direction);
 }
 
 NeuriteElement* NeuriteElement::branch() {
   double branch_diameter = physical_cylinder_->getDiameter();
-  auto rand_noise = ecm_->matrixRandomNoise3(0.1);
+  auto rand_noise = Random::nextNoise(0.1);
   auto growth_direction = Matrix::perp3(Matrix::add(physical_cylinder_->getUnitaryAxisDirectionVector(), rand_noise),
-                                        ecm_->matrixNextRandomDouble(), ecm_);
+                                        Random::nextDouble(), ecm_);
   return branch(branch_diameter, growth_direction);
 }
 
@@ -123,15 +121,14 @@ bool NeuriteElement::bifurcationPermitted() const {
 }
 
 std::array<NeuriteElement*, 2> NeuriteElement::bifurcate(double diameter_1, double diameter_2,
-                                                                         const std::array<double, 3>& direction_1,
-                                                                         const std::array<double, 3>& direction_2) {
+                                                         const std::array<double, 3>& direction_1,
+                                                         const std::array<double, 3>& direction_2) {
   return bifurcate(Param::kNeuriteDefaultActualLength, diameter_1, diameter_2, direction_1, direction_2);
 }
 
-std::array<NeuriteElement*, 2> NeuriteElement::bifurcate(double length, double diameter_1,
-                                                                         double diameter_2,
-                                                                         const std::array<double, 3>& direction_1,
-                                                                         const std::array<double, 3>& direction_2) {
+std::array<NeuriteElement*, 2> NeuriteElement::bifurcate(double length, double diameter_1, double diameter_2,
+                                                         const std::array<double, 3>& direction_1,
+                                                         const std::array<double, 3>& direction_2) {
   // 1) physical bifurcation
   auto pc = physical_cylinder_->bifurcateCylinder(length, direction_1, direction_2);
   // if bifurcation is not allowed...
@@ -169,7 +166,7 @@ std::array<NeuriteElement*, 2> NeuriteElement::bifurcate(double length, double d
 }
 
 std::array<NeuriteElement*, 2> NeuriteElement::bifurcate(const std::array<double, 3>& direction_1,
-                                                                         const std::array<double, 3>& direction_2) {
+                                                         const std::array<double, 3>& direction_2) {
   // initial default length :
   double l = Param::kNeuriteDefaultActualLength;
   // diameters :
@@ -184,7 +181,7 @@ std::array<NeuriteElement*, 2> NeuriteElement::bifurcate() {
   // diameters :
   double d = physical_cylinder_->getDiameter();
   // direction : (60 degrees between branches)
-  double rand = ecm_->matrixNextRandomDouble();
+  double rand = Random::nextDouble();
   auto perp_plane = Matrix::perp3(physical_cylinder_->getSpringAxis(), rand, ecm_);
   double angle_between_branches = Param::kPi / 3.0;
   auto direction_1 = Matrix::rotAroundAxis(physical_cylinder_->getSpringAxis(), angle_between_branches * 0.5,
@@ -203,7 +200,7 @@ void NeuriteElement::makeSpines(double interval) {
   // TODO : better way to define number (ex : if interval >> length -> no spine at all)
   for (auto i = 0; i < nb; i++) {
     // create the physical part
-    std::array<double, 2> coord = { length * ecm_->getRandomDouble1(), 6.28 * ecm_->getRandomDouble1() };
+    std::array<double, 2> coord = { length * Random::nextDouble(), 6.28 * Random::nextDouble() };
     auto p_spine = PhysicalSpine::UPtr { new PhysicalSpine(physical_cylinder_.get(), coord, 3.0) };
     // create the biological part and set call backs
     auto b_spine = BiologicalSpine::UPtr { new BiologicalSpine() };
@@ -216,7 +213,7 @@ void NeuriteElement::makeSpines(double interval) {
 void NeuriteElement::makeSingleSpine() {
   double length = physical_cylinder_->getActualLength();
   // create the physical part
-  std::array<double, 2> coord = { length * ecm_->getRandomDouble1(), 6.28 * ecm_->getRandomDouble1() };
+  std::array<double, 2> coord = { length * Random::nextDouble(), 6.28 * Random::nextDouble() };
   auto p_spine = PhysicalSpine::UPtr { new PhysicalSpine(physical_cylinder_.get(), coord, 3.0) };
   // create the biological part and set call backs
   auto b_spine = BiologicalSpine::UPtr { new BiologicalSpine() };
@@ -229,11 +226,11 @@ void NeuriteElement::makeSingleSpine(double dist_from_proximal_end) {
   double length = physical_cylinder_->getActualLength();
   if (dist_from_proximal_end > length) {
     std::cout << "NeuriteElement.makeSingleSpine(): no spine formed 'cause this cylinder is shorter than "
-              << dist_from_proximal_end << " microns." << std::endl;
+        << dist_from_proximal_end << " microns." << std::endl;
     return;
   }
   // create the physical part
-  std::array<double, 2> coord = { dist_from_proximal_end, 6.28 * ecm_->getRandomDouble1() };
+  std::array<double, 2> coord = { dist_from_proximal_end, 6.28 * Random::nextDouble() };
   auto p_spine = PhysicalSpine::UPtr { new PhysicalSpine(physical_cylinder_.get(), coord, 3.0) };
   // create the biological part and set call backs
   auto b_spine = BiologicalSpine::UPtr { new BiologicalSpine() };
@@ -250,7 +247,7 @@ void NeuriteElement::makeBoutons(double interval) {
   // TODO : better way to define number (ex : if interval >> length -> no spine at all)
   for (int i = 0; i < nb; i++) {
     // create the physical part
-    std::array<double, 2> coord = { length * ecm_->getRandomDouble1(), -3.14 + 6.28 * ecm_->getRandomDouble1() };
+    std::array<double, 2> coord = { length * Random::nextDouble(), -3.14 + 6.28 * Random::nextDouble() };
     auto p_bouton = new PhysicalBouton(physical_cylinder_.get(), coord, 2);
     physical_cylinder_->addExcrescence(PhysicalBouton::UPtr { p_bouton });
     // create the biological part and set call backs
@@ -264,11 +261,11 @@ void NeuriteElement::makeSingleBouton(double dist_from_proximal_end) {
   double length = physical_cylinder_->getActualLength();
   if (dist_from_proximal_end > length) {
     std::cout << "NeuriteElement.makeSingleBouton(): no spine formed 'cause this cylinder is shorter than "
-              << dist_from_proximal_end << " microns." << std::endl;
+        << dist_from_proximal_end << " microns." << std::endl;
     return;
   }
   // create the physical part
-  std::array<double, 2> coord = { dist_from_proximal_end, 6.28 * ecm_->getRandomDouble1() };
+  std::array<double, 2> coord = { dist_from_proximal_end, 6.28 * Random::nextDouble() };
   auto p_bouton = PhysicalBouton::UPtr { new PhysicalBouton(physical_cylinder_.get(), coord, 2) };
   // create the biological part and set call backs
   auto b_bouton = BiologicalBouton::UPtr { new BiologicalBouton() };
@@ -281,7 +278,7 @@ void NeuriteElement::makeSingleBouton() {
   // how many boutons for this NeuriteElement ?
   double length = physical_cylinder_->getActualLength();
   // create the physical part
-  std::array<double, 2> coord = { length * ecm_->getRandomDouble1(), -3.14 + 6.28 * ecm_->getRandomDouble1() };
+  std::array<double, 2> coord = { length * Random::nextDouble(), -3.14 + 6.28 * Random::nextDouble() };
   auto p_bouton = PhysicalBouton::UPtr { new PhysicalBouton(physical_cylinder_.get(), coord, 2) };
   // create the biological part and set call backs
   auto b_bouton = BiologicalBouton::UPtr { new BiologicalBouton() };
@@ -300,7 +297,7 @@ int NeuriteElement::synapseBetweenExistingBS(double probability_to_synapse) {
       continue;
     }
     // with a certain probability
-    if (ecm_->getRandomDouble1() > probability_to_synapse) {
+    if (Random::nextDouble() > probability_to_synapse) {
       continue;
     }
 

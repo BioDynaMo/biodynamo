@@ -16,7 +16,7 @@
 namespace cx3d {
 namespace physics {
 
-InterObjectForce::UPtr PhysicalObject::inter_object_force_{nullptr}; //todo change to DefaultForce::create(); after porting has been finished
+InterObjectForce::UPtr PhysicalObject::inter_object_force_ { nullptr };  //todo change to DefaultForce::create(); after porting has been finished
 
 InterObjectForce* PhysicalObject::getInterObjectForce() {
   return inter_object_force_.get();
@@ -37,7 +37,8 @@ StringBuilder& PhysicalObject::simStateToJson(StringBuilder& sb) const {
 
   SimStateSerializationUtil::keyValue(sb, "interObjectForce", inter_object_force_.get());
   SimStateSerializationUtil::keyValue(sb, "stillExisting", still_existing_);
-  SimStateSerializationUtil::keyValue(sb, "onTheSchedulerListForPhysicalObjects", on_scheduler_list_for_physical_objects_);
+  SimStateSerializationUtil::keyValue(sb, "onTheSchedulerListForPhysicalObjects",
+                                      on_scheduler_list_for_physical_objects_);
   SimStateSerializationUtil::keyValue(sb, "massLocation", mass_location_);
   SimStateSerializationUtil::keyValue(sb, "xAxis", x_axis_);
   SimStateSerializationUtil::keyValue(sb, "yAxis", y_axis_);
@@ -46,7 +47,8 @@ StringBuilder& PhysicalObject::simStateToJson(StringBuilder& sb) const {
   SimStateSerializationUtil::keyValue(sb, "mass", mass_);
   SimStateSerializationUtil::keyValue(sb, "diameter", diameter_);
   SimStateSerializationUtil::keyValue(sb, "volume", volume_);
-  SimStateSerializationUtil::keyValue(sb, "color", SimStateSerializationUtil::colorToHexString(color_.getValue()), true);
+  SimStateSerializationUtil::keyValue(sb, "color", SimStateSerializationUtil::colorToHexString(color_.getValue()),
+                                      true);
   SimStateSerializationUtil::keyValue(sb, "totalForceLastTimeStep", total_force_last_time_step_);
   SimStateSerializationUtil::map(sb, "intracellularSubstances", intracellular_substances_);
   SimStateSerializationUtil::unorderedCollection(sb, "physicalBonds", physical_bonds_);
@@ -86,17 +88,18 @@ std::list<PhysicalObject*> PhysicalObject::getPhysicalObjectsInContact() {
 }
 
 std::array<double, 3> PhysicalObject::transformCoordinatesGlobalToLocal(
-    const std::array<double, 3>& positionInGlobalCoord) const{
-  return std::array<double, 3> { Matrix::dot(positionInGlobalCoord, x_axis_), Matrix::dot(positionInGlobalCoord, y_axis_),
-      Matrix::dot(positionInGlobalCoord, z_axis_) };
+    const std::array<double, 3>& positionInGlobalCoord) const {
+  return std::array<double, 3> { Matrix::dot(positionInGlobalCoord, x_axis_), Matrix::dot(positionInGlobalCoord,
+                                                                                          y_axis_), Matrix::dot(
+      positionInGlobalCoord, z_axis_) };
 }
 
 std::array<double, 3> PhysicalObject::transformCoordinatesLocalToGlobal(
-    const std::array<double, 3>& positionInLocalCoord) const{
+    const std::array<double, 3>& positionInLocalCoord) const {
   return std::array<double, 3> { positionInLocalCoord[0] * x_axis_[0] + positionInLocalCoord[1] * y_axis_[0]
-      + positionInLocalCoord[2] * z_axis_[0], positionInLocalCoord[0] * x_axis_[1] + positionInLocalCoord[1] * y_axis_[1]
-      + positionInLocalCoord[2] * z_axis_[1], positionInLocalCoord[0] * x_axis_[2] + positionInLocalCoord[1] * y_axis_[2]
-      + positionInLocalCoord[2] * z_axis_[2] };
+      + positionInLocalCoord[2] * z_axis_[0], positionInLocalCoord[0] * x_axis_[1]
+      + positionInLocalCoord[1] * y_axis_[1] + positionInLocalCoord[2] * z_axis_[1], positionInLocalCoord[0]
+      * x_axis_[2] + positionInLocalCoord[1] * y_axis_[2] + positionInLocalCoord[2] * z_axis_[2] };
 }
 
 void PhysicalObject::addPhysicalBond(const std::shared_ptr<PhysicalBond>& bond) {
@@ -270,7 +273,7 @@ void PhysicalObject::diffuseWithThisPhysicalObjects(PhysicalObject* po, double d
     double n = a * Tot / vB;
     double n_over_m = n / m;
     double K = q_a - n_over_m;
-    q_a = K * PhysicalNode::ecm_->exp(-m * Param::kSimulationTimeStep) + n_over_m;  //todo change to std::exp
+    q_a = K * MathUtil::exp(-m * Param::kSimulationTimeStep) + n_over_m;  //todo change to std::exp
     q_b = Tot - q_a;
 
     s_a->setQuantity(q_a);
@@ -283,7 +286,7 @@ void PhysicalObject::diffuseWithThisPhysicalObjects(PhysicalObject* po, double d
   }
 }
 
-Color PhysicalObject::getColor() const{
+Color PhysicalObject::getColor() const {
   return color_;
 }
 
@@ -291,15 +294,15 @@ void PhysicalObject::setColor(Color c) {
   color_ = c;
 }
 
-std::array<double, 3> PhysicalObject::getMassLocation() const{
-  return std::array<double, 3> { mass_location_[0], mass_location_[1], mass_location_[2] }; //todo copy really needed?
+std::array<double, 3> PhysicalObject::getMassLocation() const {
+  return std::array<double, 3> { mass_location_[0], mass_location_[1], mass_location_[2] };  //todo copy really needed?
 }
 
 void PhysicalObject::setMassLocation(const std::array<double, 3>& mass_location) {
   mass_location_ = mass_location;
 }
 
-std::array<double, 3> PhysicalObject::getXAxis() const{
+std::array<double, 3> PhysicalObject::getXAxis() const {
   return x_axis_;
 }
 
@@ -307,7 +310,7 @@ void PhysicalObject::setXAxis(const std::array<double, 3>& axis) {
   x_axis_ = axis;
 }
 
-std::array<double, 3> PhysicalObject::getYAxis() const{
+std::array<double, 3> PhysicalObject::getYAxis() const {
   return y_axis_;
 }
 
@@ -315,7 +318,7 @@ void PhysicalObject::setYAxis(const std::array<double, 3>& axis) {
   y_axis_ = axis;
 }
 
-std::array<double, 3> PhysicalObject::getZAxis() const{
+std::array<double, 3> PhysicalObject::getZAxis() const {
   return z_axis_;
 }
 
@@ -323,11 +326,11 @@ void PhysicalObject::setZAxis(const std::array<double, 3>& axis) {
   z_axis_ = axis;
 }
 
-std::array<double, 4> PhysicalObject::getTotalForceLastTimeStep()const {
+std::array<double, 4> PhysicalObject::getTotalForceLastTimeStep() const {
   return total_force_last_time_step_;
 }
 
-bool PhysicalObject::isStillExisting() const{
+bool PhysicalObject::isStillExisting() const {
   return still_existing_;
 }
 
@@ -344,7 +347,7 @@ void PhysicalObject::setOnTheSchedulerListForPhysicalObjects(bool on_scheduler_l
 }
 
 std::list<std::shared_ptr<PhysicalBond>> PhysicalObject::getPhysicalBonds() const {
-  std::list<std::shared_ptr<PhysicalBond> > list;
+  std::list < std::shared_ptr<PhysicalBond> > list;
   for (auto pb : physical_bonds_) {
     list.push_back(pb);
   }
@@ -363,7 +366,7 @@ std::vector<Excrescence*> PhysicalObject::getExcrescences() const {
   return ret;
 }
 
-double PhysicalObject::getAdherence() const{
+double PhysicalObject::getAdherence() const {
   return adherence_;
 }
 
@@ -371,7 +374,7 @@ void PhysicalObject::setAdherence(double a) {
   adherence_ = a;
 }
 
-double PhysicalObject::getMass() const{
+double PhysicalObject::getMass() const {
   return mass_;
 }
 
@@ -437,11 +440,11 @@ void PhysicalObject::addNewIntracellularSubstance(IntracellularSubstance::UPtr s
   intracellular_substances_[s->getId()] = std::move(s);
 }
 
-void PhysicalObject::setTotalForceLastTimeStep(const std::array<double, 4>& force){
+void PhysicalObject::setTotalForceLastTimeStep(const std::array<double, 4>& force) {
   total_force_last_time_step_ = force;
 }
 
-void PhysicalObject::setVolumeOnly(double v){
+void PhysicalObject::setVolumeOnly(double v) {
   volume_ = v;
 }
 

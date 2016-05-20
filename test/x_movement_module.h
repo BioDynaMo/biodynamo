@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "param.h"
-#include "java_util.h"
+
 #include "matrix.h"
 #include "sim_state_serialization_util.h"
 
@@ -40,9 +40,8 @@ using simulation::Scheduler;
  */
 class XMovementModule : public LocalBiologyModule {
  public:
-  XMovementModule(const std::shared_ptr<JavaUtil2>& java)
-      : movement_direction_ { { 0, 0, 0 } },
-        java_ { java } {
+  XMovementModule()
+      : movement_direction_ { { 0, 0, 0 } } {
   }
   XMovementModule(const XMovementModule&) = delete;
   XMovementModule& operator=(const XMovementModule&) = delete;
@@ -52,7 +51,7 @@ class XMovementModule : public LocalBiologyModule {
     double length_before = cyl->getLength();
     // not to thin?
     if (cyl->getDiameter() < minimal_branch_diameter_) {
-      if (cyl->lengthToProximalBranchingPoint() > 7 + 10 * java_->getRandomDouble1()) {  // so we don't end with short segments
+      if (cyl->lengthToProximalBranchingPoint() > 7 + 10 * Random::nextDouble()) {  // so we don't end with short segments
         return;
       }
     }
@@ -72,7 +71,7 @@ class XMovementModule : public LocalBiologyModule {
       total_gradient = movement_direction_;
     }
 
-    auto noise = java_->matrixRandomNoise3(randomness_);
+    auto noise = Random::nextNoise(randomness_);
     auto new_step_direction = Matrix::add(
         Matrix::add(movement_direction_, Matrix::scalarMult(direction_weight_, total_gradient)), noise);
 
@@ -99,7 +98,7 @@ class XMovementModule : public LocalBiologyModule {
   }
 
   UPtr getCopy() const override {
-    auto r = new XMovementModule(java_);
+    auto r = new XMovementModule();
     auto uptr = UPtr(r);
     for (auto el : attractants_) {
       r->attractants_.push_back(el);
@@ -202,8 +201,6 @@ class XMovementModule : public LocalBiologyModule {
   }
 
  private:
-  std::shared_ptr<JavaUtil2> java_;
-
   /** The CellElement this module lives in.*/
   CellElement* cell_element_ = nullptr;
 

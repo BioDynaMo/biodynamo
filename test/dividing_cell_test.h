@@ -6,7 +6,6 @@
 #include "base_simulation_test.h"
 
 #include "param.h"
-#include "java_util.h"
 
 #include "cells/cell_factory.h"
 #include "simulation/ecm.h"
@@ -23,9 +22,9 @@ class DividingCellTest : public BaseSimulationTest {
   DividingCellTest() {
   }
 
-  void simulate(const std::shared_ptr<ECM>& ecm, const std::shared_ptr<JavaUtil2>& java) override {
-    java->setRandomSeed1(1L);
-    java->initPhysicalNodeMovementListener();
+  void simulate(const std::shared_ptr<ECM>& ecm) override {
+    Random::setSeed(1L);
+    initPhysicalNodeMovementListener();
     std::array<double, 3> cellOrigin { 0.0, 3.0, 5.0 };
     auto cell = CellFactory::getCellInstance(cellOrigin, ecm);
     cell->setColorForAllPhysicalObjects(Param::kRed);

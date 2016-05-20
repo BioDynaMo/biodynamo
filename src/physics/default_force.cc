@@ -9,8 +9,6 @@
 namespace cx3d {
 namespace physics {
 
-std::shared_ptr<JavaUtil2> DefaultForce::java_ = nullptr;
-
 DefaultForce::DefaultForce() {
 }
 
@@ -41,7 +39,7 @@ std::array<double, 3> DefaultForce::forceOnASphereFromASphere(PhysicalSphere* sp
     return std::array<double, 3>( { 0.0, 0.0, 0.0 });
   // to avoid a division by 0 if the centers are (almost) at the same location
   if (distanceBetweenCenters < 0.00000001) {
-    auto force2on1 = java_->matrixRandomNoise3(3.0);
+    auto force2on1 = Random::nextNoise(3.0);
     return force2on1;
   } else {
     // the force itself
@@ -172,7 +170,7 @@ std::array<double, 4> DefaultForce::forceOnACylinderFromACylinder(PhysicalCylind
       P1 = B;
       K = 0;
     } else {
-      P1 = std::array<double, 3> { A[0] + mua * p21x, A[1] + mua * p21y, A[2] + mua * p21z};
+      P1 = std::array<double, 3> { A[0] + mua * p21x, A[1] + mua * p21y, A[2] + mua * p21z };
       K = 1 - mua;
     }
 
@@ -196,11 +194,11 @@ std::array<double, 4> DefaultForce::forceOnACylinderFromACylinder(PhysicalCylind
 }
 
 std::string DefaultForce::toString() const {
-  return "DefaultForce@";// + this;
+  return "DefaultForce@";  // + this;
 }
 
 std::array<double, 4> DefaultForce::computeForceOfASphereOnASphere(const std::array<double, 3>& c1, double r1,
-                                                                   const std::array<double, 3>& c2, double r2) const{
+                                                                   const std::array<double, 3>& c2, double r2) const {
   double comp1 = c1[0] - c2[0];
   double comp2 = c1[1] - c2[1];
   double comp3 = c1[2] - c2[2];
@@ -209,12 +207,12 @@ std::array<double, 4> DefaultForce::computeForceOfASphereOnASphere(const std::ar
   double a = r1 + r2 - distanceBetweenCenters;
   // if no overlap : no force
   if (a < 0) {
-    return std::array<double, 4>{ 0.0, 0.0, 0.0, 0.0 };
+    return std::array<double, 4> { 0.0, 0.0, 0.0, 0.0 };
   }
   // to avoid a division by 0 if the centers are (almost) at the same location
   if (distanceBetweenCenters < 0.00000001) {
-    auto force2on1 = java_->matrixRandomNoise3(3);
-    return std::array<double, 4>{force2on1[0], force2on1[1], force2on1[2], 0.0};
+    auto force2on1 = Random::nextNoise(3);
+    return std::array<double, 4> { force2on1[0], force2on1[1], force2on1[2], 0.0 };
   } else {
     // the force is prop to the square of the interpentration distance and to the radii.
     double module = a / distanceBetweenCenters;

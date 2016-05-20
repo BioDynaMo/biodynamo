@@ -6,7 +6,7 @@
 
 #include "base_simulation_test.h"
 #include "param.h"
-#include "java_util.h"
+
 #include "matrix.h"
 #include "sim_state_serialization_util.h"
 
@@ -31,25 +31,24 @@ using simulation::Scheduler;
 
 class RandomBranchingModule : public LocalBiologyModule, public std::enable_shared_from_this<RandomBranchingModule> {
  public:
-  RandomBranchingModule(const std::shared_ptr<JavaUtil2>& java)
-      : java_ { java } {
+  RandomBranchingModule() {
   }
   RandomBranchingModule(const RandomBranchingModule&) = delete;
   RandomBranchingModule& operator=(const RandomBranchingModule&) = delete;
 
   void run() override {
-    auto delta = java_->matrixRandomNoise3(0.1);
+    auto delta = Random::nextNoise(0.1);
     direction_ = Matrix::add(direction_, delta);
     direction_ = Matrix::normalize(direction_);
     neurite_->getPhysical()->movePointMass(kSpeed, direction_);
 
-    if (java_->getRandomDouble1() < kProbabilityToBifurcate) {
+    if (Random::nextDouble() < kProbabilityToBifurcate) {
       auto nn = neurite_->bifurcate();
       nn[0]->getPhysical()->setColor(Param::kRed);
       nn[1]->getPhysical()->setColor(Param::kBlue);
       return;
     }
-    if (java_->getRandomDouble1() < kProbabilityToBranch) {
+    if (Random::nextDouble() < kProbabilityToBranch) {
       auto n = neurite_->branch();
       n->getPhysical()->setColor(Param::kViolet);
       return;
@@ -71,7 +70,7 @@ class RandomBranchingModule : public LocalBiologyModule, public std::enable_shar
   }
 
   UPtr getCopy() const override {
-    return UPtr { new RandomBranchingModule(java_) };
+    return UPtr { new RandomBranchingModule() };
   }
 
   bool isCopiedWhenNeuriteBranches() const override {
@@ -109,7 +108,6 @@ class RandomBranchingModule : public LocalBiologyModule, public std::enable_shar
   static constexpr double kProbabilityToBifurcate = 0.005;
   static constexpr double kProbabilityToBranch = 0.005;
 
-  std::shared_ptr<JavaUtil2> java_;
   NeuriteElement* neurite_;
   std::array<double, 3> direction_;
 };
@@ -119,20 +117,20 @@ class RandomBranchingModuleTest : public BaseSimulationTest {
   RandomBranchingModuleTest() {
   }
 
-  void simulate(const std::shared_ptr<ECM>& ecm, const std::shared_ptr<JavaUtil2>& java) override {
-    java->setRandomSeed1(1L);
-    java->initPhysicalNodeMovementListener();
+  void simulate(const std::shared_ptr<ECM>& ecm) override {
+    Random::setSeed(1L);
+    initPhysicalNodeMovementListener();
 
     for (int i = 0; i < 18; i++) {
-      physical_nodes_.push_back(ecm->createPhysicalNodeInstance(java->matrixRandomNoise3(1000)));
+      physical_nodes_.push_back(ecm->createPhysicalNodeInstance(Random::nextNoise(1000)));
     }
-    java->setRandomSeed1(7L);
+    Random::setSeed(7L);
     for (int i = 0; i < 1; i++) {
-      auto c = CellFactory::getCellInstance(java->matrixRandomNoise3(40), ecm);
+      auto c = CellFactory::getCellInstance(Random::nextNoise(40), ecm);
       c->setColorForAllPhysicalObjects(Param::kGray);
       auto neurite = c->getSomaElement()->extendNewNeurite( { 0, 0, 1 });
       neurite->getPhysicalCylinder()->setDiameter(2);
-      neurite->addLocalBiologyModule(LocalBiologyModule::UPtr { new RandomBranchingModule(java) });
+      neurite->addLocalBiologyModule(LocalBiologyModule::UPtr { new RandomBranchingModule() });
     }
 
     auto scheduler = Scheduler::getInstance(ecm);

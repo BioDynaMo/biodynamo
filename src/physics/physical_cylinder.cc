@@ -223,7 +223,7 @@ void PhysicalCylinder::movePointMass(double speed, const std::array<double, 3>& 
   spring_axis_[0] = mass_location_[0] - relative_ml[0];
   spring_axis_[1] = mass_location_[1] - relative_ml[1];
   spring_axis_[2] = mass_location_[2] - relative_ml[2];
-  actual_length_ = ecm_->sqrt(
+  actual_length_ = MathUtil::sqrt(
       spring_axis_[0] * spring_axis_[0] + spring_axis_[1] * spring_axis_[1] + spring_axis_[2] * spring_axis_[2]);
   // process of elongation : setting tension to 0 increases the restingLength :
   setRestingLengthForDesiredTension(0.0);
@@ -631,7 +631,7 @@ void PhysicalCylinder::runIntracellularDiffusion() {
 // 1) Degradation according to the degradation constant for each chemical
   for (auto& el : intracellular_substances_) {
     auto s = el.second.get();
-    double decay = ecm_->exp(-s->getDegradationConstant() * Param::kSimulationTimeStep);
+    double decay = MathUtil::exp(-s->getDegradationConstant() * Param::kSimulationTimeStep);
     s->multiplyQuantityAndConcentrationBy(decay);
   }
 
@@ -645,7 +645,7 @@ void PhysicalCylinder::runIntracellularDiffusion() {
   if (daughter_right != nullptr) {
     auto po_1 = this;
     PhysicalObject* po_2 = daughter_right;
-    if (ecm_->getRandomDouble1() < 0.5) {
+    if (Random::nextDouble() < 0.5) {
       po_1 = daughter_right;
       po_2 = this;
     }
@@ -655,7 +655,7 @@ void PhysicalCylinder::runIntracellularDiffusion() {
   if (daughter_left != nullptr) {
     auto po_1 = this;
     PhysicalObject* po_2 = daughter_left;
-    if (ecm_->getRandomDouble1() < 0.5) {
+    if (Random::nextDouble() < 0.5) {
       po_1 = daughter_left;
       po_2 = this;
     }
@@ -665,8 +665,8 @@ void PhysicalCylinder::runIntracellularDiffusion() {
 }
 
 std::array<double, 3> PhysicalCylinder::getUnitNormalVector(const std::array<double, 3>& position) const {
-  return Matrix::add(Matrix::scalarMult(ecm_->cos(position[1]), y_axis_),
-                     Matrix::scalarMult(ecm_->sin(position[1]), z_axis_));
+  return Matrix::add(Matrix::scalarMult(MathUtil::cos(position[1]), y_axis_),
+                     Matrix::scalarMult(MathUtil::sin(position[1]), z_axis_));
 }
 
 void PhysicalCylinder::updateLocalCoordinateAxis() {
@@ -680,7 +680,7 @@ void PhysicalCylinder::updateLocalCoordinateAxis() {
     // If new x_axis_ and old y_axis_ are aligned, we cannot use this scheme;
     // we start by re-defining new perp vectors. Ok, we loose the previous info, but
     // this should almost never happen....
-    z_axis_ = Matrix::perp3(x_axis_, ecm_->matrixNextRandomDouble(), ecm_);
+    z_axis_ = Matrix::perp3(x_axis_, Random::nextDouble(), ecm_);
   } else {
     z_axis_ = Matrix::scalarMult((1 / norm_of_z), z_axis_);
   }
@@ -688,7 +688,7 @@ void PhysicalCylinder::updateLocalCoordinateAxis() {
 }
 
 void PhysicalCylinder::updateDiameter() {
-  diameter_ = ecm_->sqrt(volume_ * 1.27323954 / actual_length_);   // 1.27323 = 4/pi
+  diameter_ = MathUtil::sqrt(volume_ * 1.27323954 / actual_length_);   // 1.27323 = 4/pi
 }
 
 void PhysicalCylinder::updateVolume() {           // 0.78539 = pi/4
@@ -715,16 +715,16 @@ std::array<double, 3> PhysicalCylinder::transformCoordinatesLocalToGlobal(const 
 std::array<double, 3> PhysicalCylinder::transformCoordinatesLocalToPolar(const std::array<double, 3>& position) const {
   return {
     position[0],
-    ecm_->atan2(position[2], position[1]),
-    ecm_->sqrt(position[1]*position[1] + position[2]*position[2])
+    MathUtil::atan2(position[2], position[1]),
+    MathUtil::sqrt(position[1]*position[1] + position[2]*position[2])
   };
 }
 
 std::array<double, 3> PhysicalCylinder::transformCoordinatesPolarToLocal(const std::array<double, 3>& position) const {
   return {
     position[0],
-    position[2]*ecm_->cos(position[1]),
-    position[2]*ecm_->sin(position[1])
+    position[2]*MathUtil::cos(position[1]),
+    position[2]*MathUtil::sin(position[1])
   };
 }
 
@@ -901,7 +901,7 @@ void PhysicalCylinder::updateSpatialOrganizationNodePosition() {
     return;
   // To avoid perfect alignment (pathologic position for Delaunay, eg), we Matrix::add a small jitter
   // TODO remove next line when we have Dennis'stable Delaunay
-  center_displacement = Matrix::add(center_displacement, ecm_->matrixRandomNoise3(diameter / 4.0));
+  center_displacement = Matrix::add(center_displacement, Random::nextNoise(diameter / 4.0));
 
   // Tell the node to moves
   so_node_->moveFrom(center_displacement);  // todo catch PositionNotAllowedException
@@ -912,7 +912,7 @@ void PhysicalCylinder::updateDependentPhysicalVariables() {
   spring_axis_[0] = mass_location_[0] - relative_ml[0];
   spring_axis_[1] = mass_location_[1] - relative_ml[1];
   spring_axis_[2] = mass_location_[2] - relative_ml[2];
-  actual_length_ = ecm_->sqrt(
+  actual_length_ = MathUtil::sqrt(
       spring_axis_[0] * spring_axis_[0] + spring_axis_[1] * spring_axis_[1] + spring_axis_[2] * spring_axis_[2]);
   tension_ = spring_constant_ * (actual_length_ - resting_length_) / resting_length_;
   updateVolume();

@@ -56,8 +56,8 @@ NeuriteElement* SomaElement::extendNewNeurite() {
 
 NeuriteElement* SomaElement::extendNewNeurite(double diameter) {
   //andreas thinks this gives a better distribution based on some friends of mine.
-  double phi = (ecm_->getRandomDouble1() - 0.5f) * 2 * Param::kPi;
-  double theta = ecm_->asin(ecm_->getRandomDouble1() * 2 - 1) + Param::kPi / 2;
+  double phi = (Random::nextDouble() - 0.5f) * 2 * Param::kPi;
+  double theta = MathUtil::asin(Random::nextDouble() * 2 - 1) + Param::kPi / 2;
 
   return extendNewNeurite(diameter, phi, theta);
 }

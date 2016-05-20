@@ -64,20 +64,20 @@ void Cell::run() {
 
 Cell* Cell::divide() {
   // find a volume ration close to 1;
-  return divide(0.9 + 0.2 * ecm_->getRandomDouble1());
+  return divide(0.9 + 0.2 * Random::nextDouble());
 }
 
 Cell* Cell::divide(double volume_ratio) {
   // find random point on sphere (based on : http://mathworld.wolfram.com/SpherePointPicking.html)
-  double theta = 6.28318531 * ecm_->getRandomDouble1();
-  double phi = ecm_->acos(2 * ecm_->getRandomDouble1() - 1);
+  double theta = 6.28318531 * Random::nextDouble();
+  double phi = MathUtil::acos(2 * Random::nextDouble() - 1);
   return divide(volume_ratio, phi, theta);
 }
 
 Cell* Cell::divide(const std::array<double, 3>& axis) {
   auto sphere = soma_->getPhysicalSphere();
   auto polarcoord = sphere->transformCoordinatesGlobalToPolar(Matrix::add(axis, sphere->getMassLocation()));
-  return divide(0.9 + 0.2 * ecm_->getRandomDouble1(), polarcoord[1], polarcoord[2]);
+  return divide(0.9 + 0.2 * Random::nextDouble(), polarcoord[1], polarcoord[2]);
 }
 
 Cell* Cell::divide(double volume_ratio, const std::array<double, 3>& axis) {
@@ -163,7 +163,6 @@ std::list<NeuriteElement*> Cell::getNeuriteElements() const {
 void Cell::addNeuriteElement(NeuriteElement::UPtr neurite) {
   neurites_.push_back(std::move(neurite));
 }
-
 
 }  // namespace cells
 }  // namespace cx3d

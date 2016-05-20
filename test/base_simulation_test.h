@@ -6,7 +6,6 @@
 
 #include "gtest/gtest.h"
 
-#include "java_util.h"
 #include "simulation/ecm.h"
 #include "physics/physical_node.h"
 
@@ -67,13 +66,18 @@ class BaseSimulationTest : public ::testing::Test {
   /**
    * Simulation logic defined in the subclass
    */
-  virtual void simulate(const std::shared_ptr<ECM>& ecm, const std::shared_ptr<JavaUtil2>& java) = 0;
+  virtual void simulate(const std::shared_ptr<ECM>& ecm) = 0;
 
   /**
    * Subclass has to provide the test name. BaseSimulationTest needs that to access test resources like the
    * reference simulation state and the runtime file
    */
   virtual string getTestName() const = 0;
+
+  /**
+   * helper function used to replicate the initialization point of PhysicalNodeMovementListener
+   */
+  void initPhysicalNodeMovementListener();
 
  private:
   long runtime_ = 0;

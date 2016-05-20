@@ -7,7 +7,6 @@
 #include "base_simulation_test.h"
 #include "neurite_chemo_attraction_test.h"
 #include "param.h"
-#include "java_util.h"
 
 #include "cells/cell.h"
 #include "cells/cell_factory.h"
@@ -45,23 +44,23 @@ class SmallNetworkTest : public BaseSimulationTest {
   SmallNetworkTest() {
   }
 
-  void simulate(const std::shared_ptr<ECM>& ecm, const std::shared_ptr<JavaUtil2>& java) override {
-    java->setRandomSeed1(1L);
-    java->initPhysicalNodeMovementListener();
+  void simulate(const std::shared_ptr<ECM>& ecm) override {
+    Random::setSeed(1L);
+    initPhysicalNodeMovementListener();
 
     auto L1 = Substance::UPtr(new Substance("L1", Color(0xFFFF0000)));  // Color is red
     ecm->addArtificialGaussianConcentrationZ(L1.get(), 1.0, 400.0, 60.0);
 
     int number_of_nodes = 10;
     for (int i = 0; i < number_of_nodes; i++) {
-      auto coord = java->matrixRandomNoise3(500);
+      auto coord = Random::nextNoise(500);
       physical_nodes_.push_back(ecm->createPhysicalNodeInstance(coord));
     }
 
     for (int i = 0; i < 8; i++) {
       Cell* c;
-      double rand_1 = java->getRandomDouble1();
-      double rand_2 = java->getRandomDouble1();
+      double rand_1 = Random::nextDouble();
+      double rand_2 = Random::nextDouble();
       if (i < 4) {
         c = CellFactory::getCellInstance( { -20 + 40 * rand_1, -20 + 40 * rand_2, 0.0 }, ecm);
         c->setNeuroMLType(Cell::NeuroMLType::kExcitatatory);
@@ -74,7 +73,7 @@ class SmallNetworkTest : public BaseSimulationTest {
       auto axon = c->getSomaElement()->extendNewNeurite();
       axon->setAxon(true);
       axon->getPhysicalCylinder()->setDiameter(0.5);
-      axon->addLocalBiologyModule(LocalBiologyModule::UPtr { new NeuriteChemoAttraction("L1", 0.02, java) });
+      axon->addLocalBiologyModule(LocalBiologyModule::UPtr { new NeuriteChemoAttraction("L1", 0.02) });
 
       if (i < 4) {
         axon->getPhysicalCylinder()->setColor(Param::kYellow);
@@ -85,7 +84,7 @@ class SmallNetworkTest : public BaseSimulationTest {
       auto dendrite = c->getSomaElement()->extendNewNeurite();
       dendrite->setAxon(false);
       dendrite->getPhysicalCylinder()->setDiameter(1.5);
-      dendrite->addLocalBiologyModule(LocalBiologyModule::UPtr { new NeuriteChemoAttraction("L1", 0.02, java) });
+      dendrite->addLocalBiologyModule(LocalBiologyModule::UPtr { new NeuriteChemoAttraction("L1", 0.02) });
     }
     auto scheduler = Scheduler::getInstance(ecm);
     while (ecm->getECMtime() < 6) {

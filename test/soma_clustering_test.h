@@ -8,7 +8,7 @@
 #include "base_simulation_test.h"
 #include "param.h"
 #include "matrix.h"
-#include "java_util.h"
+
 #include "sim_state_serialization_util.h"
 
 #include "cells/cell.h"
@@ -36,15 +36,14 @@ using simulation::Scheduler;
 
 class SomaClustering : public AbstractLocalBiologyModule {
  public:
-  SomaClustering(const std::string& substance_id, const std::shared_ptr<JavaUtil2>& java)
-      : java_ { java },
-        substance_id_ { substance_id } {
+  SomaClustering(const std::string& substance_id)
+      : substance_id_ { substance_id } {
   }
   SomaClustering(const SomaClustering&) = delete;
   SomaClustering& operator=(const SomaClustering&) = delete;
 
   UPtr getCopy() const override {
-    return UPtr { new SomaClustering(substance_id_, java_) };
+    return UPtr { new SomaClustering(substance_id_) };
   }
 
   void run() override {
@@ -67,7 +66,6 @@ class SomaClustering : public AbstractLocalBiologyModule {
  private:
   static constexpr double kSpeed = 100;
 
-  std::shared_ptr<JavaUtil2> java_;
   std::string substance_id_;
 };
 
@@ -76,25 +74,25 @@ class SomaClusteringTest : public BaseSimulationTest {
   SomaClusteringTest() {
   }
 
-  void simulate(const std::shared_ptr<ECM>& ecm, const std::shared_ptr<JavaUtil2>& java) {
-    java->setRandomSeed1(1L);
-    java->initPhysicalNodeMovementListener();
+  void simulate(const std::shared_ptr<ECM>& ecm) {
+    Random::setSeed(1L);
+    initPhysicalNodeMovementListener();
 
     auto yellow_substance = Substance::UPtr(new Substance("Yellow", 1000, 0.01));
     auto violet_substance = Substance::UPtr(new Substance("Violet", 1000, 0.01));
     ecm->addNewSubstanceTemplate(std::move(yellow_substance));
     ecm->addNewSubstanceTemplate(std::move(violet_substance));
     for (int i = 0; i < 400; i++) {
-      physical_nodes_.push_back(ecm->createPhysicalNodeInstance(java->matrixRandomNoise3(700)));
+      physical_nodes_.push_back(ecm->createPhysicalNodeInstance(Random::nextNoise(700)));
     }
     for (int i = 0; i < 60; i++) {
-      auto c = CellFactory::getCellInstance(java->matrixRandomNoise3(50), ecm);
-      c->getSomaElement()->addLocalBiologyModule(LocalBiologyModule::UPtr { new SomaClustering("Yellow", java) });
+      auto c = CellFactory::getCellInstance(Random::nextNoise(50), ecm);
+      c->getSomaElement()->addLocalBiologyModule(LocalBiologyModule::UPtr { new SomaClustering("Yellow") });
       c->setColorForAllPhysicalObjects(Param::kYellowSolid);
     }
     for (int i = 0; i < 60; i++) {
-      auto c = CellFactory::getCellInstance(java->matrixRandomNoise3(50), ecm);
-      c->getSomaElement()->addLocalBiologyModule(LocalBiologyModule::UPtr { new SomaClustering("Violet", java) });
+      auto c = CellFactory::getCellInstance(Random::nextNoise(50), ecm);
+      c->getSomaElement()->addLocalBiologyModule(LocalBiologyModule::UPtr { new SomaClustering("Violet") });
       c->setColorForAllPhysicalObjects(Param::kVioletSolid);
     }
     auto scheduler = Scheduler::getInstance(ecm);

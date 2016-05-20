@@ -9,7 +9,6 @@
 #include <list>
 #include <unordered_map>
 
-#include "java_util.h"
 #include "color.h"
 #include "sim_state_serializable.h"
 #include "cells/cell.h"
@@ -41,6 +40,8 @@ using cells::Cell;
 using local_biology::SomaElement;
 using local_biology::NeuriteElement;
 using physics::PhysicalNode;
+using physics::PhysicalSphere;
+using physics::PhysicalCylinder;
 using physics::Substance;
 using physics::IntracellularSubstance;
 using physics::SubstanceHash;
@@ -55,9 +56,6 @@ using spatial_organization::SpaceNode;
 class ECM : public SimStateSerializable {
  public:
   static std::shared_ptr<ECM> getInstance();
-  static void setJavaUtil(const std::shared_ptr<cx3d::JavaUtil2>& java) {
-    java_ = java;
-  }
 
   ECM();  // todo make private after porting has been finished
   virtual ~ECM();
@@ -126,8 +124,8 @@ class ECM : public SimStateSerializable {
    * @param userObject
    * @return
    */
-  SpaceNode<PhysicalNode>::UPtr getSpatialOrganizationNodeInstance(
-      const std::array<double, 3>& position, PhysicalNode* user_object);
+  SpaceNode<PhysicalNode>::UPtr getSpatialOrganizationNodeInstance(const std::array<double, 3>& position,
+                                                                   PhysicalNode* user_object);
 
   /**
    * Returns an instance of a class implementing SpatialOrganizationNode.
@@ -141,7 +139,8 @@ class ECM : public SimStateSerializable {
    * @return
    */
   SpaceNode<PhysicalNode>::UPtr getSpatialOrganizationNodeInstance(SpaceNode<PhysicalNode>* n,
-      const std::array<double, 3>& position, PhysicalNode* user_object);
+                                                                   const std::array<double, 3>& position,
+                                                                   PhysicalNode* user_object);
 
   /**
    * Creating some "dummy nodes", i.e. some  PhysicalSplace.
@@ -266,8 +265,8 @@ class ECM : public SimStateSerializable {
    * @param z_coord the location of the peak
    * @param sigma the thickness of the layer (= the variance)
    */
-  void addArtificialGaussianConcentrationZ(Substance* substance,
-                                           double max_concentration, double z_coord, double sigma);
+  void addArtificialGaussianConcentrationZ(Substance* substance, double max_concentration, double z_coord,
+                                           double sigma);
 
   /**
    * Defines a bell-shaped artificial concentration in ECM, along the Z axis (ie uniform along X,Y axis).
@@ -293,8 +292,8 @@ class ECM : public SimStateSerializable {
    * @param z_coord_max the location of the peak
    * @param z_coord_min the location where the concentration reaches the value 0
    */
-  void addArtificialLinearConcentrationZ(Substance* substance,
-                                         double max_concentatration, double z_coord_max, double z_coord_min);
+  void addArtificialLinearConcentrationZ(Substance* substance, double max_concentatration, double z_coord_max,
+                                         double z_coord_min);
 
   /**
    * Defines a linear artificial concentration in ECM, between two points along the Z axis. Outside this interval
@@ -320,8 +319,8 @@ class ECM : public SimStateSerializable {
    * @param x_coord the location of the peak
    * @param sigma the thickness of the layer (= the variance)
    */
-  void addArtificialGaussianConcentrationX(Substance* substance,
-                                           double max_concentatration, double x_coord, double sigma);
+  void addArtificialGaussianConcentrationX(Substance* substance, double max_concentatration, double x_coord,
+                                           double sigma);
 
   /**
    * Defines a bell-shaped artificial concentration in ECM, along the X axis (ie uniform along Y,Z axis).
@@ -347,8 +346,8 @@ class ECM : public SimStateSerializable {
    * @param x_coord_max the location of the peak
    * @param x_coord_min the location where the concentration reaches the value 0
    */
-  void addArtificialLinearConcentrationX(Substance* substance,
-                                         double max_concentatration, double x_coord_max, double x_coord_min);
+  void addArtificialLinearConcentrationX(Substance* substance, double max_concentatration, double x_coord_max,
+                                         double x_coord_min);
 
   /**
    * Defines a linear artificial concentration in ECM, between two points along the X axis. Outside this interval
@@ -380,8 +379,7 @@ class ECM : public SimStateSerializable {
    * @param position the location [x,y,z]
    * @return
    */
-  double getValueArtificialConcentration(Substance* substance,
-                                         const std::array<double, 3>& position) const;
+  double getValueArtificialConcentration(Substance* substance, const std::array<double, 3>& position) const;
   ///////// GRADIENT
   /**
    * Gets the gradient of a chemical, at a specific altitude
@@ -392,8 +390,7 @@ class ECM : public SimStateSerializable {
   virtual std::array<double, 3> getGradientArtificialConcentration(const std::string& substance_name,
                                                                    const std::array<double, 3>& position) const;
 
-  double getGradientArtificialConcentration(Substance* s,
-                                            const std::array<double, 3>& position) const;
+  double getGradientArtificialConcentration(Substance* s, const std::array<double, 3>& position) const;
 
   std::vector<PhysicalNode*> getPhysicalNodeList() const;
 
@@ -477,69 +474,7 @@ class ECM : public SimStateSerializable {
     return neurite_elements_.size();
   }
 
-  //
-  //
-  //
-
-  double getRandomDouble1() const {
-    return java_->getRandomDouble1();
-  }
-
-  double matrixNextRandomDouble() const {
-    return java_->matrixNextRandomDouble();
-  }
-
-  double exp(double d) const {
-    return java_->exp(d);
-  }
-
-  double cbrt(double d) const {
-    return java_->cbrt(d);
-  }
-
-  double sqrt(double d) const {
-    return java_->sqrt(d);
-  }
-
-  double cos(double d) const {
-    return java_->cos(d);
-  }
-
-  double sin(double d) const {
-    return java_->sin(d);
-  }
-
-  double asin(double d) const {
-    return java_->asin(d);
-  }
-
-  double acos(double d) const {
-    return java_->acos(d);
-  }
-
-  double atan2(double d, double d1) const {
-    return java_->atan2(d, d1);
-  }
-
-  std::array<double, 3> matrixRandomNoise3(double k) const {
-    return java_->matrixRandomNoise3(k);
-  }
-
-  std::shared_ptr<physics::PhysicalBond> newPhysicalBond(PhysicalObject* a,
-                                                         const std::array<double, 2>& position_on_a,
-                                                         PhysicalObject* b,
-                                                         const std::array<double, 2>& position_on_b,
-                                                         double resting_length, double spring_constant) const {
-    return java_->newPhysicalBond(a, position_on_a, b, position_on_b, resting_length, spring_constant);
-  }
-
-  double getGaussianDouble(double mean, double standard_deviation) const {
-    return java_->getGaussianDouble(mean, standard_deviation);
-  }
-
  private:
-  static std::shared_ptr<JavaUtil2> java_;
-
   // List of all the CX3DRunnable objects in the simulation ............................
 
   /** List of all the PhysicalNode instances. */
