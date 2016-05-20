@@ -54,9 +54,13 @@ void CellElement::addLocalBiologyModule(LocalBiologyModule::UPtr m) {
 void CellElement::removeLocalBiologyModule(LocalBiologyModule* m) {
   auto it = std::find(local_biology_modules_.begin(), local_biology_modules_.end(), m);
   local_biology_modules_.erase(it);
+  delete m;
 }
 
 void CellElement::cleanAllLocalBiologyModules() {
+  for(auto module : local_biology_modules_) {
+    delete module;
+  }
   local_biology_modules_.clear();
 }
 

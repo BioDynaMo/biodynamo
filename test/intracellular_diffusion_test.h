@@ -68,7 +68,7 @@ class GrowthCone : public AbstractLocalBiologyModule {
       : java_ { java },
         previous_dir_ { { 0.0, 0.0, 0.0 } } {
   }
-  ~GrowthCone() {
+  virtual ~GrowthCone() {
   }
   GrowthCone(const GrowthCone&) = delete;
   GrowthCone& operator=(const GrowthCone&) = delete;
