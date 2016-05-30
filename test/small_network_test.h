@@ -44,7 +44,8 @@ class SmallNetworkTest : public BaseSimulationTest {
   SmallNetworkTest() {
   }
 
-  void simulate(const std::shared_ptr<ECM>& ecm) override {
+  void simulate() override {
+    auto ecm = ECM::getInstance();
     Random::setSeed(1L);
     initPhysicalNodeMovementListener();
 
@@ -62,11 +63,11 @@ class SmallNetworkTest : public BaseSimulationTest {
       double rand_1 = Random::nextDouble();
       double rand_2 = Random::nextDouble();
       if (i < 4) {
-        c = CellFactory::getCellInstance( { -20 + 40 * rand_1, -20 + 40 * rand_2, 0.0 }, ecm);
+        c = CellFactory::getCellInstance( { -20 + 40 * rand_1, -20 + 40 * rand_2, 0.0 });
         c->setNeuroMLType(Cell::NeuroMLType::kExcitatatory);
         c->setColorForAllPhysicalObjects(Param::kViolet);
       } else {
-        c = CellFactory::getCellInstance( { -20 + 40 * rand_1, -20 + 40 * rand_2, 200.0 }, ecm);
+        c = CellFactory::getCellInstance( { -20 + 40 * rand_1, -20 + 40 * rand_2, 200.0 });
         c->setNeuroMLType(Cell::NeuroMLType::kInhibitory);
         c->setColorForAllPhysicalObjects(Color(0xB38200AC));  // darker Param::kViolet
       }
@@ -86,11 +87,11 @@ class SmallNetworkTest : public BaseSimulationTest {
       dendrite->getPhysicalCylinder()->setDiameter(1.5);
       dendrite->addLocalBiologyModule(LocalBiologyModule::UPtr { new NeuriteChemoAttraction("L1", 0.02) });
     }
-    auto scheduler = Scheduler::getInstance(ecm);
+    auto scheduler = Scheduler::getInstance();
     while (ecm->getECMtime() < 6) {
       scheduler->simulateOneStep();
     }
-    ConnectionMaker::extendExcressencesAndSynapseOnEveryNeuriteElement(ecm);
+    ConnectionMaker::extendExcressencesAndSynapseOnEveryNeuriteElement();
   }
 
   std::string getTestName() const override {

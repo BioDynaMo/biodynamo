@@ -55,7 +55,7 @@ using spatial_organization::SpaceNode;
  */
 class ECM : public SimStateSerializable {
  public:
-  static std::shared_ptr<ECM> getInstance();
+  static ECM* getInstance();
 
   ECM();  // todo make private after porting has been finished
   virtual ~ECM();

@@ -41,7 +41,8 @@ class Figure9Test : public BaseSimulationTest {
   Figure9Test() {
   }
 
-  void simulate(const std::shared_ptr<ECM>& ecm) {
+  void simulate() override {
+    auto ecm = ECM::getInstance();
     Param::kNeuriteMaxLength = 20;
     double pi = Param::kPi;
     // get a 2.5D ECM
@@ -85,7 +86,7 @@ class Figure9Test : public BaseSimulationTest {
         cell_location = {0,0,0};
       }
 
-      auto cell = CellFactory::getCellInstance(cell_location, ecm);
+      auto cell = CellFactory::getCellInstance(cell_location);
       auto soma = cell->getSomaElement();
       auto sphere = soma->getPhysicalSphere();
       if (i == 0) {
@@ -132,12 +133,12 @@ class Figure9Test : public BaseSimulationTest {
         ne->addLocalBiologyModule(std::move(mr));
       }
     }
-    auto scheduler = Scheduler::getInstance(ecm);
+    auto scheduler = Scheduler::getInstance();
     for (int i = 0; i < 350; i++) {  // 350
       scheduler->simulateOneStep();
     }
 
-    TestSynapses::extendExcressencesAndSynapseOnEveryNeuriteElement(ecm, 0.4);
+    TestSynapses::extendExcressencesAndSynapseOnEveryNeuriteElement(0.4);
   }
 
   std::string getTestName() const {

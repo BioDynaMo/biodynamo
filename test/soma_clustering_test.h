@@ -74,7 +74,8 @@ class SomaClusteringTest : public BaseSimulationTest {
   SomaClusteringTest() {
   }
 
-  void simulate(const std::shared_ptr<ECM>& ecm) {
+  void simulate() override {
+    auto ecm = ECM::getInstance();
     Random::setSeed(1L);
     initPhysicalNodeMovementListener();
 
@@ -86,16 +87,16 @@ class SomaClusteringTest : public BaseSimulationTest {
       physical_nodes_.push_back(ecm->createPhysicalNodeInstance(Random::nextNoise(700)));
     }
     for (int i = 0; i < 60; i++) {
-      auto c = CellFactory::getCellInstance(Random::nextNoise(50), ecm);
+      auto c = CellFactory::getCellInstance(Random::nextNoise(50));
       c->getSomaElement()->addLocalBiologyModule(LocalBiologyModule::UPtr { new SomaClustering("Yellow") });
       c->setColorForAllPhysicalObjects(Param::kYellowSolid);
     }
     for (int i = 0; i < 60; i++) {
-      auto c = CellFactory::getCellInstance(Random::nextNoise(50), ecm);
+      auto c = CellFactory::getCellInstance(Random::nextNoise(50));
       c->getSomaElement()->addLocalBiologyModule(LocalBiologyModule::UPtr { new SomaClustering("Violet") });
       c->setColorForAllPhysicalObjects(Param::kVioletSolid);
     }
-    auto scheduler = Scheduler::getInstance(ecm);
+    auto scheduler = Scheduler::getInstance();
     for (int i = 0; i < 1000; i++) {
       scheduler->simulateOneStep();
     }

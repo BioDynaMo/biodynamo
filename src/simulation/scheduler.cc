@@ -15,8 +15,10 @@
 namespace cx3d {
 namespace simulation {
 
-std::shared_ptr<Scheduler> Scheduler::getInstance(const std::shared_ptr<simulation::ECM>& ecm) {  //todo remove ecm parameter once porting has been finished
-  static std::shared_ptr<Scheduler> instance { new Scheduler(ecm) };
+ECM* Scheduler::ecm_ = ECM::getInstance();
+
+std::shared_ptr<Scheduler> Scheduler::getInstance() {
+  static std::shared_ptr<Scheduler> instance { new Scheduler() };
   return instance;
 }
 
@@ -55,7 +57,7 @@ void Scheduler::simulateOneStep() {
 //      }
 //    }
 
-    // Physical objects : PhysicalCylinders
+// Physical objects : PhysicalCylinders
     for (int i = 0; i < ecm_->getPhysicalCylinderListSize(); i++) {
       auto pc = ecm_->getPhysicalCylinder(i);
       if (pc->isOnTheSchedulerListForPhysicalObjects()) {
@@ -111,8 +113,7 @@ void Scheduler::setPrintCurrentECMTime(bool print_time) {
   print_current_ecm_time_ = print_time;
 }
 
-Scheduler::Scheduler(const std::shared_ptr<simulation::ECM>& ecm)
-    : ecm_ { ecm } {
+Scheduler::Scheduler() {
 }
 
 }  // namespace simulation

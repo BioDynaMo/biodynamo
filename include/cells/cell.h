@@ -23,6 +23,7 @@ namespace cells {
 
 using local_biology::SomaElement;
 using local_biology::NeuriteElement;
+using simulation::ECM;
 
 /**
  * Class <code>Cell</code> implements the cell at biological level. Every cell is characterized
@@ -43,10 +44,6 @@ class Cell : public SimStateSerializable {
   };
 
   static void reset();
-
-  static void setECM(const std::shared_ptr<simulation::ECM>& ecm) {
-    ecm_ = ecm;
-  }
 
   /**
    * Generate <code>Cell</code>. and registers the <code>Cell</code> to <code>ECM<</code>.
@@ -186,7 +183,7 @@ class Cell : public SimStateSerializable {
   static int id_counter_;
 
   /* Reference to the ECM. */
-  static std::shared_ptr<simulation::ECM> ecm_;
+  static ECM* ecm_;
 
   /* List of all cell modules that are run at each time step*/
   std::vector<CellModule::UPtr> cell_modules_;

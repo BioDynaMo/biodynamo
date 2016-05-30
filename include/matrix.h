@@ -274,8 +274,7 @@ class Matrix {
    * @return the vector after rotation
    */
   static std::array<double, 3> rotAroundAxis(const std::array<double, 3>& a, double theta,
-                                             const std::array<double, 3>& b,
-                                             const std::shared_ptr<simulation::ECM>& ecm) {
+                                             const std::array<double, 3>& b) {
     auto axis = normalize(b);
 
     auto temp_1 = scalarMult(dot(a, axis), axis);
@@ -453,20 +452,19 @@ class Matrix {
    * @param a
    * @return a vector perpendicular
    */
-  static std::array<double, 3> perp3(const std::array<double, 3>& a, double rand,
-                                     const std::shared_ptr<simulation::ECM>& ecm) {
+  static std::array<double, 3> perp3(const std::array<double, 3>& a, double rand) {
     std::array<double, 3> vect_perp;
     if (a[0] == 0.0) {
       vect_perp[0] = 1.0;
       vect_perp[1] = 0.0;
       vect_perp[2] = 0.0;
-      vect_perp = rotAroundAxis(vect_perp, 6.35 * rand, a, ecm);
+      vect_perp = rotAroundAxis(vect_perp, 6.35 * rand, a);
     } else {
       vect_perp[0] = a[1];
       vect_perp[1] = -a[0];
       vect_perp[2] = 0.0;
       vect_perp = normalize(vect_perp);
-      vect_perp = rotAroundAxis(vect_perp, 6.35 * rand, a, ecm);
+      vect_perp = rotAroundAxis(vect_perp, 6.35 * rand, a);
     }
     return vect_perp;
   }

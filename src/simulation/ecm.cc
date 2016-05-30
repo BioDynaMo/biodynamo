@@ -20,9 +20,9 @@ using physics::IntracellularSubstance;
 using physics::PhysicalNodeMovementListener;
 using spatial_organization::SpaceNode;
 
-std::shared_ptr<ECM> ECM::getInstance() {
-  static auto instance = std::make_shared<ECM>();
-  return instance;
+ECM* ECM::getInstance() {
+  static auto instance = std::unique_ptr < ECM > (new ECM());
+  return instance.get();
 }
 
 ECM::~ECM() {

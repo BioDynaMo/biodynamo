@@ -11,7 +11,7 @@ namespace cells {
 using simulation::ECM;
 
 int Cell::id_counter_ = 0;
-std::shared_ptr<simulation::ECM> Cell::ecm_ { nullptr };
+ECM* Cell::ecm_ = ECM::getInstance();
 
 void Cell::reset() {
   id_counter_ = 0;

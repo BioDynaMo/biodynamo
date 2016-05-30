@@ -48,10 +48,11 @@ class Figure5Test : public BaseSimulationTest {
   Figure5Test() {
   }
 
-  void simulate(const std::shared_ptr<ECM>& ecm) override {
+  void simulate() override {
+    auto ecm = ECM::getInstance();
     // 1) Prepare the environment :
     //    eight extra PhysicalNodes :
-    auto scheduler = Scheduler::getInstance(ecm);
+    auto scheduler = Scheduler::getInstance();
 
     bool init_physical_node_movement_listener = true;  // hack to emulate original initialization order in Java (important for random number sequence)
     for (int i = 0; i < 18; i++) {
@@ -67,7 +68,7 @@ class Figure5Test : public BaseSimulationTest {
 
     // 2) creating a first cell, with a neurite going straight up.
     //    creating a 4-uple Cell-SomaElement-PhysicalSphere-SpatialOrganizerNode
-    auto cell_a = CellFactory::getCellInstance( { 0, 0, -100 }, ecm);
+    auto cell_a = CellFactory::getCellInstance( { 0, 0, -100 });
     cell_a->setColorForAllPhysicalObjects(Param::kRedSolid);
     //    creating a single neurite
     auto ne = cell_a->getSomaElement()->extendNewNeurite(2.0, 0, 0);
@@ -82,19 +83,19 @@ class Figure5Test : public BaseSimulationTest {
     //    ecm.pause(3000);
 
     // 3) creating three additional spheres:
-    auto cell_b = CellFactory::getCellInstance( { 10, 0, 0 }, ecm);
+    auto cell_b = CellFactory::getCellInstance( { 10, 0, 0 });
     auto ps_b = cell_b->getSomaElement()->getPhysicalSphere();
 
     ps_b->setMass(3);
     ps_b->setColor(Param::kYellowSolid);
     ps_b->setColor(Param::kYellow);
-    auto cellC = CellFactory::getCellInstance( { -10, 0, 100 }, ecm);
+    auto cellC = CellFactory::getCellInstance( { -10, 0, 100 });
     auto ps_c = cellC->getSomaElement()->getPhysicalSphere();
 
     ps_c->setMass(3);
     ps_c->setColor(Param::kYellowSolid);
     ps_c->setColor(Param::kYellow);
-    auto cell_d = CellFactory::getCellInstance( { 10, 0, 160 }, ecm);
+    auto cell_d = CellFactory::getCellInstance( { 10, 0, 160 });
     auto ps_d = cell_d->getSomaElement()->getPhysicalSphere();
 
     ps_d->setColor(Param::kYellowSolid);

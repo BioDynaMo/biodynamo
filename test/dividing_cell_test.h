@@ -22,16 +22,16 @@ class DividingCellTest : public BaseSimulationTest {
   DividingCellTest() {
   }
 
-  void simulate(const std::shared_ptr<ECM>& ecm) override {
+  void simulate() override {
     Random::setSeed(1L);
     initPhysicalNodeMovementListener();
     std::array<double, 3> cellOrigin { 0.0, 3.0, 5.0 };
-    auto cell = CellFactory::getCellInstance(cellOrigin, ecm);
+    auto cell = CellFactory::getCellInstance(cellOrigin);
     cell->setColorForAllPhysicalObjects(Param::kRed);
     auto soma = cell->getSomaElement();
     auto sphere = soma->getPhysicalSphere();
 
-    auto scheduler = Scheduler::getInstance(ecm);
+    auto scheduler = Scheduler::getInstance();
 
     for (int i = 0; i < 5000; i++) {
       scheduler->simulateOneStep();     // run the simulation

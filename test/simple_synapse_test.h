@@ -39,7 +39,8 @@ class SimpleSynapseTest : public BaseSimulationTest {
   SimpleSynapseTest() {
   }
 
-  void simulate(const std::shared_ptr<ECM>& ecm) override {
+  void simulate() override {
+    auto ecm = ECM::getInstance();
     Random::setSeed(1L);
     initPhysicalNodeMovementListener();
 
@@ -51,10 +52,10 @@ class SimpleSynapseTest : public BaseSimulationTest {
 
     std::array<double, 3> up { 0.0, 0.0, 1.0 }, down { 0.0, 0.0, -1.0 };
     // 1) two cells : and excitatory (down) and an inhibitory one (up)
-    auto excit = CellFactory::getCellInstance( { -2.5, 0, -30 }, ecm);
+    auto excit = CellFactory::getCellInstance( { -2.5, 0, -30 });
     excit->setNeuroMLType(Cell::NeuroMLType::kExcitatatory);
     excit->setColorForAllPhysicalObjects(Param::kGreen);
-    auto inhib = CellFactory::getCellInstance( { 2.5, 0, 30 }, ecm);
+    auto inhib = CellFactory::getCellInstance( { 2.5, 0, 30 });
     inhib->setNeuroMLType(Cell::NeuroMLType::kInhibitory);
     inhib->setColorForAllPhysicalObjects(Param::kRed);
     // 2) excitatory cell makes an axon, inhibitory cell makes a dendrite
@@ -65,7 +66,7 @@ class SimpleSynapseTest : public BaseSimulationTest {
     dendrite->setAxon(false);
     auto dendrite_cyl = dendrite->getPhysicalCylinder();
     //    elongate them
-    auto scheduler = Scheduler::getInstance(ecm);
+    auto scheduler = Scheduler::getInstance();
     while (axon->getLocation()[2] < dendrite->getLocation()[2]) {
       axon->elongateTerminalEnd(1 / Param::kSimulationTimeStep, up);
       dendrite->elongateTerminalEnd(1 / Param::kSimulationTimeStep, down);

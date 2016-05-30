@@ -20,7 +20,7 @@ namespace cx3d {
 namespace physics {
 
 std::size_t PhysicalNode::id_counter_ = 0;
-std::shared_ptr<simulation::ECM> PhysicalNode::ecm_ = std::shared_ptr<simulation::ECM>(nullptr);
+ECM* PhysicalNode::ecm_ = ECM::getInstance();
 
 void PhysicalNode::reset() {
   id_counter_ = 0;

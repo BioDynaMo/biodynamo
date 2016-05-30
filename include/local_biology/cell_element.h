@@ -21,20 +21,19 @@ namespace simulation {
 class ECM;
 }  // namespace simulation
 
-namespace local_biology {\
+namespace local_biology {
 
 class LocalBiologyModule;
 
 using cells::Cell;
 using physics::PhysicalObject;
+using simulation::ECM;
 
 class CellElement : public SimStateSerializable {
  public:
   using UPtr = std::unique_ptr<CellElement>;
 
   static void reset();
-
-  static void setECM(const std::shared_ptr<cx3d::simulation::ECM>& ecm);
 
   CellElement();
 
@@ -112,7 +111,7 @@ class CellElement : public SimStateSerializable {
   void runLocalBiologyModules();  //fixme make protected after porting has been finished
 
  protected:
-  static std::shared_ptr<simulation::ECM> ecm_;
+  static ECM* ecm_;
 
   Cell* cell_ = nullptr;
 

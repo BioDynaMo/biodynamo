@@ -47,12 +47,7 @@ void BaseSimulationTest::SetUp() {
   SpaceNode < PhysicalNode > ::reset();
 
   Random::setSeed(1L);
-  auto ecm = ECM::getInstance();
 
-  CellElement::setECM(ecm);
-  PhysicalNode::setECM(ecm);
-  Excrescence::setECM(ecm);
-  Cell::setECM(ecm);
   PhysicalObject::setInterObjectForce(DefaultForce::UPtr(new DefaultForce()));
 }
 
@@ -62,7 +57,7 @@ void BaseSimulationTest::TearDown() {
 void BaseSimulationTest::run() {
   // run simulation
   long start = timestamp();
-  simulate(ECM::getInstance());
+  simulate();
   long end = timestamp();
   runtime_ = end - start;
 

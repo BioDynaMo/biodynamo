@@ -15,10 +15,9 @@ namespace simulation {
  */
 class Scheduler {
  public:
-  static std::shared_ptr<Scheduler> getInstance(const std::shared_ptr<simulation::ECM>& ecm);  //todo remove ecm once porting has been finished
+  static std::shared_ptr<Scheduler> getInstance();
 
   ~Scheduler();
-  Scheduler() = delete;
   Scheduler(const Scheduler&) = delete;
   Scheduler& operator=(const Scheduler&) = delete;
 
@@ -37,15 +36,15 @@ class Scheduler {
   void setPrintCurrentECMTime(bool print_time);
 
  private:
-  Scheduler(const std::shared_ptr<simulation::ECM>& ecm);
+  Scheduler();
 
+  /** Reference to the ECM.*/
+  static ECM* ecm_;
 
-  /* Reference to the ECM.*/
-  std::shared_ptr<simulation::ECM> ecm_ { nullptr };
-  /* static counter, needed in case where we want to make regular snapshots.*/
+  /** static counter, needed in case where we want to make regular snapshots.*/
   int cycle_counter_ = 0;
 
-  /* if false, the physics is not computed......*/
+  /** if false, the physics is not computed......*/
   bool run_physics_ = true;
   bool run_diffusion_ = true;
 

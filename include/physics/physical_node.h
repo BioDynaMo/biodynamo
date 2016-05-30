@@ -19,11 +19,13 @@ template<class T> class SpatialOrganizationEdge;
 }  // namespace spatial_organization
 
 namespace simulation {
-class ECM;  // todo replace with include once porting has been finished and remove include in cc file
-}  // namespace simulation
+class ECM;
+// todo replace with include once porting has been finished and remove include in cc file
+}// namespace simulation
 
 namespace physics {
 
+using simulation::ECM;
 using spatial_organization::SpaceNode;
 using spatial_organization::SpatialOrganizationEdge;
 
@@ -50,11 +52,6 @@ class PhysicalNode : public SimStateSerializable, public std::enable_shared_from
   // *************************************************************************************
 
   static void reset();
-
-  //todo remove after porting has been finished
-  static void setECM(std::shared_ptr<simulation::ECM> e) {
-    ecm_ = e;
-  }
 
   /**
    * Finding the barycentric coordinates of a point Q with respect to the the four points P
@@ -170,8 +167,7 @@ class PhysicalNode : public SimStateSerializable, public std::enable_shared_from
    * @param dX the distance from this nodes's location
    * @return
    */
-  virtual double computeConcentrationAtDistanceBasedOnGradient(Substance* s,
-                                                               const std::array<double, 3>& dX);
+  virtual double computeConcentrationAtDistanceBasedOnGradient(Substance* s, const std::array<double, 3>& dX);
 
   // *************************************************************************************
   // *      GETTERS & SETTERS                                                            *
@@ -228,7 +224,7 @@ class PhysicalNode : public SimStateSerializable, public std::enable_shared_from
 
  protected:
   /* Reference to the ECM. */
-  static std::shared_ptr<simulation::ECM> ecm_;
+  static ECM* ecm_;
 
   /**
    *  My anchor point in the neighboring system

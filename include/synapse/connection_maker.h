@@ -10,10 +10,9 @@ namespace synapse {
 
 class ConnectionMaker {
  public:
-  static void extendExcressencesAndSynapseOnEveryNeuriteElement(const std::shared_ptr<simulation::ECM>& ecm);
+  static void extendExcressencesAndSynapseOnEveryNeuriteElement();
 
-  static void extendExcressencesAndSynapseOnEveryNeuriteElement(const std::shared_ptr<simulation::ECM>& ecm,
-                                                                double probability_to_synapse);
+  static void extendExcressencesAndSynapseOnEveryNeuriteElement(double probability_to_synapse);
 };
 
 }  // namespace synapse

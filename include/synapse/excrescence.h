@@ -18,12 +18,13 @@ class PhysicalObject;
 
 namespace simulation {
 class ECM;
-}  // namespace simualtion
+}  // namespace simulation
 
 namespace synapse {
 
 using local_biology::NeuriteElement;
 using physics::PhysicalObject;
+using simulation::ECM;
 
 class Excrescence : public SimStateSerializable {
  public:
@@ -36,16 +37,11 @@ class Excrescence : public SimStateSerializable {
     kShaft = 3
   };
 
-  static void setECM(const std::shared_ptr<simulation::ECM>& ecm) {
-    ecm_ = ecm;
-  }
-
   Excrescence();
 
   Excrescence(Excrescence::Type type);
 
-  Excrescence(PhysicalObject* po, const std::array<double, 2>& origin, double length,
-              Excrescence::Type type);
+  Excrescence(PhysicalObject* po, const std::array<double, 2>& origin, double length, Excrescence::Type type);
 
   virtual ~Excrescence();
 
@@ -61,8 +57,8 @@ class Excrescence : public SimStateSerializable {
 
   virtual bool synapseWithSoma(Excrescence* other_excrescence, bool create_phyiscal_bond) = 0;
 
-  virtual bool synapseWithShaft(NeuriteElement* other_ne, double max_dis,
-                                int nr_segments, bool create_phyiscal_bond) = 0;
+  virtual bool synapseWithShaft(NeuriteElement* other_ne, double max_dis, int nr_segments,
+                                bool create_phyiscal_bond) = 0;
 
   // getters and setters
   virtual Excrescence* getEx() const;
@@ -86,7 +82,7 @@ class Excrescence : public SimStateSerializable {
   virtual void setType(int type);
 
  protected:
-  static std::shared_ptr<simulation::ECM> ecm_;
+  static ECM* ecm_;
 
   /** the physical object it is attached to.*/
   PhysicalObject* po_ = nullptr;

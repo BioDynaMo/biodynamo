@@ -111,7 +111,8 @@ class NeuriteChemoAttractionTest : public BaseSimulationTest {
   NeuriteChemoAttractionTest() {
   }
 
-  void simulate(const std::shared_ptr<ECM>& ecm) override {
+  void simulate() override {
+    auto ecm = ECM::getInstance();
     Random::setSeed(1L);
     initPhysicalNodeMovementListener();
 
@@ -124,13 +125,13 @@ class NeuriteChemoAttractionTest : public BaseSimulationTest {
       physical_nodes_.push_back(ecm->createPhysicalNodeInstance(coord));
     }
 
-    auto c = CellFactory::getCellInstance( { 0.0, 0.0, 0.0 }, ecm);
+    auto c = CellFactory::getCellInstance( { 0.0, 0.0, 0.0 });
     c->setColorForAllPhysicalObjects(Param::kViolet);
     auto neurite = c->getSomaElement()->extendNewNeurite();
     neurite->getPhysicalCylinder()->setDiameter(2.0);
     neurite->addLocalBiologyModule( LocalBiologyModule::UPtr { new NeuriteChemoAttraction("A") });
 
-    auto scheduler = Scheduler::getInstance(ecm);
+    auto scheduler = Scheduler::getInstance();
     for (int i = 0; i < 1000; i++) {
       scheduler->simulateOneStep();
     }

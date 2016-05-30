@@ -142,7 +142,8 @@ class IntracellularDiffusionTest : public BaseSimulationTest {
   IntracellularDiffusionTest() {
   }
 
-  void simulate(const std::shared_ptr<ECM>& ecm) override {
+  void simulate() override {
+    auto ecm = ECM::getInstance();
     Random::setSeed(1L);
     initPhysicalNodeMovementListener();
 
@@ -157,7 +158,7 @@ class IntracellularDiffusionTest : public BaseSimulationTest {
     tubulin->setVolumeDependant(false);
     ecm->addNewIntracellularSubstanceTemplate(std::move(tubulin));
     // getting a cell
-    auto c = CellFactory::getCellInstance( { 0.0, 0.0, 0.0 }, ecm);
+    auto c = CellFactory::getCellInstance( { 0.0, 0.0, 0.0 });
     c->setColorForAllPhysicalObjects(Param::kRed);
     // insert production module
     auto soma = c->getSomaElement();
@@ -167,7 +168,7 @@ class IntracellularDiffusionTest : public BaseSimulationTest {
     ne->getPhysical()->setDiameter(1.0);
     ne->addLocalBiologyModule(LocalBiologyModule::UPtr { new GrowthCone() });
     // run, Forrest, run..
-    auto scheduler = Scheduler::getInstance(ecm);
+    auto scheduler = Scheduler::getInstance();
     for (int i = 0; i < 2001; i++) {
       scheduler->simulateOneStep();
     }

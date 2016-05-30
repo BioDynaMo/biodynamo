@@ -66,14 +66,14 @@ class DividingModuleTest : public BaseSimulationTest {
   DividingModuleTest() {
   }
 
-  void simulate(const std::shared_ptr<ECM>& ecm) override {
+  void simulate() override {
     Random::setSeed(2L);
     initPhysicalNodeMovementListener();
 
-    auto c = CellFactory::getCellInstance( { 0.0, 0.0, 0.0 }, ecm);
+    auto c = CellFactory::getCellInstance( { 0.0, 0.0, 0.0 });
     c->addCellModule(CellModule::UPtr { new DividingModule() });
 
-    auto scheduler = Scheduler::getInstance(ecm);
+    auto scheduler = Scheduler::getInstance();
     scheduler->simulateOneStep();
     scheduler->simulateOneStep();
     for (int i = 0; i < 5000; i++) {

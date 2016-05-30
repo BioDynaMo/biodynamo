@@ -103,7 +103,7 @@ NeuriteElement* NeuriteElement::branch(const std::array<double, 3>& direction) {
 NeuriteElement* NeuriteElement::branch(double diameter) {
   auto rand_noise = Random::nextNoise(0.1);
   auto growth_direction = Matrix::perp3(Matrix::add(physical_cylinder_->getUnitaryAxisDirectionVector(), rand_noise),
-                                        Random::nextDouble(), ecm_);
+                                        Random::nextDouble());
   growth_direction = Matrix::normalize(growth_direction);
   return branch(diameter, growth_direction);
 }
@@ -112,7 +112,7 @@ NeuriteElement* NeuriteElement::branch() {
   double branch_diameter = physical_cylinder_->getDiameter();
   auto rand_noise = Random::nextNoise(0.1);
   auto growth_direction = Matrix::perp3(Matrix::add(physical_cylinder_->getUnitaryAxisDirectionVector(), rand_noise),
-                                        Random::nextDouble(), ecm_);
+                                        Random::nextDouble());
   return branch(branch_diameter, growth_direction);
 }
 
@@ -182,12 +182,12 @@ std::array<NeuriteElement*, 2> NeuriteElement::bifurcate() {
   double d = physical_cylinder_->getDiameter();
   // direction : (60 degrees between branches)
   double rand = Random::nextDouble();
-  auto perp_plane = Matrix::perp3(physical_cylinder_->getSpringAxis(), rand, ecm_);
+  auto perp_plane = Matrix::perp3(physical_cylinder_->getSpringAxis(), rand);
   double angle_between_branches = Param::kPi / 3.0;
   auto direction_1 = Matrix::rotAroundAxis(physical_cylinder_->getSpringAxis(), angle_between_branches * 0.5,
-                                           perp_plane, ecm_);
+                                           perp_plane);
   auto direction_2 = Matrix::rotAroundAxis(physical_cylinder_->getSpringAxis(), -angle_between_branches * 0.5,
-                                           perp_plane, ecm_);
+                                           perp_plane);
 
   return bifurcate(l, d, d, direction_1, direction_2);
 }

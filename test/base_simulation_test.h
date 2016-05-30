@@ -66,7 +66,7 @@ class BaseSimulationTest : public ::testing::Test {
   /**
    * Simulation logic defined in the subclass
    */
-  virtual void simulate(const std::shared_ptr<ECM>& ecm) = 0;
+  virtual void simulate() = 0;
 
   /**
    * Subclass has to provide the test name. BaseSimulationTest needs that to access test resources like the

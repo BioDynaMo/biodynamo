@@ -11,16 +11,12 @@
 namespace cx3d {
 namespace local_biology {
 
-std::shared_ptr<simulation::ECM> CellElement::ecm_ { nullptr };
+ECM* CellElement::ecm_ = ECM::getInstance();
 
 std::size_t CellElement::id_counter_ = 0;
 
 void CellElement::reset() {
   id_counter_ = 0;
-}
-
-void CellElement::setECM(const std::shared_ptr<cx3d::simulation::ECM>& ecm) {
-  ecm_ = ecm;
 }
 
 CellElement::CellElement()
@@ -58,7 +54,7 @@ void CellElement::removeLocalBiologyModule(LocalBiologyModule* m) {
 }
 
 void CellElement::cleanAllLocalBiologyModules() {
-  for(auto module : local_biology_modules_) {
+  for (auto module : local_biology_modules_) {
     delete module;
   }
   local_biology_modules_.clear();

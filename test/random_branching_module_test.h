@@ -117,7 +117,8 @@ class RandomBranchingModuleTest : public BaseSimulationTest {
   RandomBranchingModuleTest() {
   }
 
-  void simulate(const std::shared_ptr<ECM>& ecm) override {
+  void simulate() override {
+    auto ecm = ECM::getInstance();
     Random::setSeed(1L);
     initPhysicalNodeMovementListener();
 
@@ -126,14 +127,14 @@ class RandomBranchingModuleTest : public BaseSimulationTest {
     }
     Random::setSeed(7L);
     for (int i = 0; i < 1; i++) {
-      auto c = CellFactory::getCellInstance(Random::nextNoise(40), ecm);
+      auto c = CellFactory::getCellInstance(Random::nextNoise(40));
       c->setColorForAllPhysicalObjects(Param::kGray);
       auto neurite = c->getSomaElement()->extendNewNeurite( { 0, 0, 1 });
       neurite->getPhysicalCylinder()->setDiameter(2);
       neurite->addLocalBiologyModule(LocalBiologyModule::UPtr { new RandomBranchingModule() });
     }
 
-    auto scheduler = Scheduler::getInstance(ecm);
+    auto scheduler = Scheduler::getInstance();
     for (int i = 0; i < 500; i++) {
       scheduler->simulateOneStep();
     }

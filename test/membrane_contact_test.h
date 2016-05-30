@@ -55,7 +55,8 @@ class MembraneContactTest : public BaseSimulationTest {
   MembraneContactTest() {
   }
 
-  void simulate(const std::shared_ptr<ECM>& ecm) override {
+  void simulate() override {
+    auto ecm = ECM::getInstance();
     Random::setSeed(1L);
     initPhysicalNodeMovementListener();
 
@@ -68,18 +69,18 @@ class MembraneContactTest : public BaseSimulationTest {
     ecm->setBoundaries(-150, 150, -150, 150, -100, 100);
 
     for (int i = 0; i < 10; i++) {
-      auto c = CellFactory::getCellInstance(Random::nextNoise(100), ecm);
+      auto c = CellFactory::getCellInstance(Random::nextNoise(100));
       c->setColorForAllPhysicalObjects(Param::kRed);
       c->getSomaElement()->getPhysical()->modifyMembraneQuantity("A", 100000);
     }
     for (int i = 0; i < 10; i++) {
-      auto c = CellFactory::getCellInstance(Random::nextNoise(50), ecm);
+      auto c = CellFactory::getCellInstance(Random::nextNoise(50));
       c->getSomaElement()->addLocalBiologyModule(LocalBiologyModule::UPtr { new MembraneContact() });
       c->getSomaElement()->addLocalBiologyModule(LocalBiologyModule::UPtr { new SomaRandomWalkModule() });
       c->setColorForAllPhysicalObjects(Param::kViolet);
     }
 
-    auto scheduler = Scheduler::getInstance(ecm);
+    auto scheduler = Scheduler::getInstance();
     for (int i = 0; i < 1500; i++) {
       scheduler->simulateOneStep();
     }

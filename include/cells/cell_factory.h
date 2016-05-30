@@ -12,6 +12,7 @@ namespace cx3d {
 namespace cells {
 
 using std::vector;
+using simulation::ECM;
 
 /**
  * <code>CellFacory</code> generates a new  <code>Cell</code>, <code>SomaElement</code>,
@@ -27,8 +28,7 @@ class CellFactory {
    * @param cell_origin
    * @return
    */
-  //todo remove ecm parameter once porting has been finished
-  static Cell* getCellInstance(const std::array<double, 3>& cell_origin, const std::shared_ptr<simulation::ECM>& ecm);
+  static Cell* getCellInstance(const std::array<double, 3>& cell_origin);
 
   /**
    * Generates a 2D grid of cells according according to the desired number of cells along
@@ -43,9 +43,8 @@ class CellFactory {
    * @param noise_std: Gaussian noise standard deviation
    * @return cellList
    */
-  //todo remove ecm parameter once porting has been finished
   static vector<Cell*> get2DCellGrid(double x_min, double x_max, double y_min, double y_max, double z_pos, int n_x,
-                                     int n_y, double noise_std, const std::shared_ptr<simulation::ECM>& ecm);
+                                     int n_y, double noise_std);
 
   /**
    * Generates a 3D grid of cells according to the desired number of cells along
@@ -64,10 +63,8 @@ class CellFactory {
    * @param noise_z_std: Gaussian noise standard deviation for the z direction
    * @return cellList
    */
-  //todo remove ecm parameter once porting has been finished
   static vector<Cell*> get3DCellGrid(double x_min, double x_max, double y_min, double y_max, double z_min, double z_max,
-                                     int n_x, int n_y, int n_z, double noise_xy_std, double noise_z_std,
-                                     const std::shared_ptr<simulation::ECM>& ecm);
+                                     int n_x, int n_y, int n_z, double noise_xy_std, double noise_z_std);
  private:
   CellFactory() = delete;
   CellFactory(const CellFactory&) = delete;

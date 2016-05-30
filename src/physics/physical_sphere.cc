@@ -466,9 +466,9 @@ void PhysicalSphere::runPhysics() {
   // Performing the rotation
   if (physical_rotation) {
     double rotation_angle = 3.14 * Param::kSimulationTimeStep;
-    x_axis_ = Matrix::rotAroundAxis(xAxis, rotation_angle, rotation_force, ecm_);
-    y_axis_ = Matrix::rotAroundAxis(yAxis, rotation_angle, rotation_force, ecm_);
-    z_axis_ = Matrix::rotAroundAxis(zAxis, rotation_angle, rotation_force, ecm_);
+    x_axis_ = Matrix::rotAroundAxis(xAxis, rotation_angle, rotation_force);
+    y_axis_ = Matrix::rotAroundAxis(yAxis, rotation_angle, rotation_force);
+    z_axis_ = Matrix::rotAroundAxis(zAxis, rotation_angle, rotation_force);
   }
   // updating some values :
   if (biological_translation || physical_translation || physical_rotation) {

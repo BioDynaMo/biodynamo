@@ -59,16 +59,16 @@ class SomaRandomWalkModuleTest : public BaseSimulationTest {
   SomaRandomWalkModuleTest() {
   }
 
-  void simulate(const std::shared_ptr<ECM>& ecm) override {
+  void simulate() override {
     Random::setSeed(1L);
     initPhysicalNodeMovementListener();
 
     for (int i = 0; i < 5; i++) {
-      auto c = CellFactory::getCellInstance(Random::nextNoise(40), ecm);
+      auto c = CellFactory::getCellInstance(Random::nextNoise(40));
       c->getSomaElement()->addLocalBiologyModule(SomaRandomWalkModule::UPtr { new SomaRandomWalkModule() });
     }
 
-    auto scheduler = Scheduler::getInstance(ecm);
+    auto scheduler = Scheduler::getInstance();
     for (int i = 0; i < 1000; i++) {
       scheduler->simulateOneStep();
     }
