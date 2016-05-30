@@ -17,9 +17,9 @@ namespace simulation {
 
 ECM* Scheduler::ecm_ = ECM::getInstance();
 
-std::shared_ptr<Scheduler> Scheduler::getInstance() {
-  static std::shared_ptr<Scheduler> instance { new Scheduler() };
-  return instance;
+Scheduler* Scheduler::getInstance() {
+  static std::unique_ptr<Scheduler> instance { new Scheduler() };
+  return instance.get();
 }
 
 Scheduler::~Scheduler() {

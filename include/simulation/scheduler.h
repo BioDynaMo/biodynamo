@@ -15,7 +15,7 @@ namespace simulation {
  */
 class Scheduler {
  public:
-  static std::shared_ptr<Scheduler> getInstance();
+  static Scheduler* getInstance();
 
   ~Scheduler();
   Scheduler(const Scheduler&) = delete;
