@@ -53,7 +53,7 @@ void Tetrahedron<T>::calculateCircumSphere() {
 template<class T>
 void Tetrahedron<T>::updateCirumSphereAfterNodeMovement(
     SpaceNode<T>* moved_node) {
-  int node_number = getNodeNumber(moved_node);
+  size_t node_number = getNodeNumber(moved_node);
   if (!isInfinite()) {
     circum_center_ = {0.0, 0.0, 0.0};
     circum_center_is_null_ = true;
@@ -462,7 +462,7 @@ void Tetrahedron<T>::replaceTriangle(const std::shared_ptr<Triangle3D<T> >& old_
                                      const std::shared_ptr<Triangle3D<T> >& new_triangle) {
   new_triangle->addTetrahedron(this->shared_from_this());
   auto other_tetrahedron = new_triangle->getOppositeTetrahedron(this->shared_from_this());
-  int triangle_number = getTriangleNumber(old_triangle);
+  size_t triangle_number = getTriangleNumber(old_triangle);
   for (size_t i = 0, position = (triangle_number + 2) % 4, last_position = (triangle_number + 1)
       % 4; i < 3; i++) {
     int edge_number = getEdgeNumber(last_position, position);
@@ -603,7 +603,7 @@ void Tetrahedron<T>::remove() {
 
 template<class T>
 bool Tetrahedron<T>::isPointInConvexPosition(const std::array<double, 3>& point,
-                                             int connecting_triangle_number) const {
+                                             size_t connecting_triangle_number) const {
   if (!isInfinite()) {
     for (size_t i = 0; i < 4; i++) {
       if (i != connecting_triangle_number) {
@@ -620,7 +620,7 @@ bool Tetrahedron<T>::isPointInConvexPosition(const std::array<double, 3>& point,
 
 template<class T>
 int Tetrahedron<T>::isInConvexPosition(const std::array<double, 3>& point,
-                                       int connecting_triangle_number) const {
+                                       size_t connecting_triangle_number) const {
   if (!isInfinite()) {
     int result = 1;
     for (size_t i = 0; i < 4; i++) {
@@ -785,8 +785,8 @@ std::array<std::array<double, 3>, 3> Tetrahedron<T>::getPlaneNormals() const {
 template<class T>
 double Tetrahedron<T>::maxAbs(const std::array<std::array<double, 3>, 3>& values) const {
   double ret = 0.0;
-  for (int i = 0; i < values.size(); i++) {
-    for (int j = 0; j < values[i].size(); j++) {
+  for (size_t i = 0; i < values.size(); i++) {
+    for (size_t j = 0; j < values[i].size(); j++) {
       if (std::abs(values[i][j]) > ret) {
         ret = std::abs(values[i][j]);
       }
@@ -851,7 +851,7 @@ void Tetrahedron<T>::computeCircumsphereCenterAndVolume() {
 
   double nm = maxAbs(normals);
   double max_length_2 = 0.0;
-// normalize normal-vectors
+  // normalize normal-vectors
   for (int i = 0; i < 3; i++) {
     double length = normals[i][0] * normals[i][0] + normals[i][1] * normals[i][1]
         + normals[i][2] * normals[i][2];
@@ -865,7 +865,7 @@ void Tetrahedron<T>::computeCircumsphereCenterAndVolume() {
     normals[i][2] /= length;
   }
   double my_2 = 0.000000000000001;
-// max squared error of the new normal value / my2
+  // max squared error of the new normal value / my2
   double tmp = nm * nm * (1 / max_length_2 + 1 / (max_length_2 * max_length_2));
   double dns_2 = std::max(1.0, tmp);
   double ddet_2 = 36 * dns_2;
@@ -873,13 +873,12 @@ void Tetrahedron<T>::computeCircumsphereCenterAndVolume() {
   double pm_2 = maxAbs(adjacent_nodes_[0]->getPosition(), adjacent_nodes_[1]->getPosition(),
                        adjacent_nodes_[2]->getPosition(), adjacent_nodes_[3]->getPosition());
   pm_2 *= pm_2;
-// Offset-Error / My2
+  // Offset-Error / My2
   double doff_2 = 6 * pm_2 * (dns_2 + 1);
   double dscalar_2 = 4 * doff_2 + 36 * pm_2 * dns_2;
   double ddiv_2 = 0.0;
   double det = Matrix::det(normals);
 
-// double detError2 = detError2(normals, normalErrors, det);
   auto add_01 = Matrix::add(adjacent_nodes_[0]->getPosition(), adjacent_nodes_[1]->getPosition());
   auto add_02 = Matrix::add(adjacent_nodes_[0]->getPosition(), adjacent_nodes_[2]->getPosition());
   auto add_03 = Matrix::add(adjacent_nodes_[0]->getPosition(), adjacent_nodes_[3]->getPosition());
@@ -887,15 +886,6 @@ void Tetrahedron<T>::computeCircumsphereCenterAndVolume() {
   offsets[0] = 0.5 * Matrix::dot(normals[0], add_01);
   offsets[1] = 0.5 * Matrix::dot(normals[1], add_02);
   offsets[2] = 0.5 * Matrix::dot(normals[2], add_03);
-
-  auto cross_12 = Matrix::crossProduct(normals[1], normals[2]);
-  auto cross_20 = Matrix::crossProduct(normals[2], normals[0]);
-  auto cross_01 = Matrix::crossProduct(normals[0], normals[1]);
-
-  auto scalar_mult_0 = Matrix::scalarMult(offsets[0], cross_12);
-  auto scalar_mult_1 = Matrix::scalarMult(offsets[1], cross_20);
-  auto scalar_mult_2 = Matrix::scalarMult(offsets[2], cross_01);
-  auto add = Matrix::add(scalar_mult_0, Matrix::add(scalar_mult_1, scalar_mult_2));
 
   circum_center_ = Triangle3D<T>::calculate3PlaneXPoint(normals, offsets, det);
   circum_center_is_null_ = false;

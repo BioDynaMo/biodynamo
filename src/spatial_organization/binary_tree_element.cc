@@ -20,8 +20,8 @@ BinaryTreeElement<T>* BinaryTreeElement<T>::generateTreeHead() {
 template<class T>
 BinaryTreeElement<T>::BinaryTreeElement(SpaceNode<T>* content)
     : content_ { content },
-      bigger_ { nullptr },
-      smaller_ { nullptr } {
+      smaller_ { nullptr },
+      bigger_ { nullptr } {
   if (content_ != nullptr) {
     content_id_ = getHash(content);
   } else {

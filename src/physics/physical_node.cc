@@ -347,7 +347,6 @@ void PhysicalNode::degradate(double currentEcmTime) {  //changed to proteceted
 
 void PhysicalNode::diffuseEdgeAnalytically(SpatialOrganizationEdge<PhysicalNode>* e, double current_ecm_time) {
   // the two PhysicalNodes
-  auto n_a = this;
   auto n_b = e->getOppositeElement(this);
 
   // make sure the other one is up-to-date with degradation

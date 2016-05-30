@@ -81,7 +81,7 @@ void CellElement::move(double speed, std::array<double, 3>& direction) {
 }
 
 void CellElement::runLocalBiologyModules() {
-  for (auto i = 0; i < local_biology_modules_.size(); i++) {
+  for (size_t i = 0; i < local_biology_modules_.size(); i++) {
     local_biology_modules_[i]->run();
   }
 }

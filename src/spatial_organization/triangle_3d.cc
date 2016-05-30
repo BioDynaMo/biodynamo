@@ -138,7 +138,7 @@ std::shared_ptr<Rational> Triangle3D<T>::getSDDistanceExact(
       return calculateSDDistanceExact(points, normal_vector)->negate();
     }
   } else {
-    return Rational::create(std::numeric_limits<int64_t>::max(), 1);
+    return Rational::create(std::numeric_limits < uint64_t > ::max(), 1);
   }
 }
 

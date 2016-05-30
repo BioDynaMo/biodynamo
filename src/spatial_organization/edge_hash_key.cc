@@ -17,9 +17,9 @@ EdgeHashKey<T>::EdgeHashKey(SpaceNode<T>* a,
                             SpaceNode<T>* opposite_node)
     : a_(a),
       b_(b),
-      hash_code_(0),
       ab_ { 0.0, 0.0, 0.0 },
-      last_normal_vector_ { 0.0, 0.0, 0.0 } {
+      last_normal_vector_ { 0.0, 0.0, 0.0 },
+      hash_code_(0) {
   ab_ = Matrix::subtract(b_->getPosition(), a_->getPosition());
   auto subtraction = Matrix::subtract(opposite_node->getPosition(), a_->getPosition());
   last_normal_vector_ = Matrix::normalize(Matrix::crossProduct(ab_, subtraction));

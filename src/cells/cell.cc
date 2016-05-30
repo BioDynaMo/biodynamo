@@ -57,7 +57,7 @@ std::string Cell::toString() const {
 void Cell::run() {
   // Run all the CellModules
   // Important : the vector might be modified during the loop (for instance if a module deletes itself)
-  for (auto i = 0; i < cell_modules_.size(); i++) {
+  for (size_t i = 0; i < cell_modules_.size(); i++) {
     cell_modules_[i]->run();
   }
 }

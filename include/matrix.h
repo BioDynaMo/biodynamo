@@ -114,7 +114,7 @@ class Matrix {
     // R = copy of A (the matrix on which we make the operations, so we leave A unchanged)
     for (size_t i = 0; i < n; i++) {
       std::vector<double> row;
-      for (int j = 0; j < n; j++) {
+      for (size_t j = 0; j < n; j++) {
         R[i][j] = A[i][j];
       }
     }
@@ -238,7 +238,7 @@ class Matrix {
   template<std::size_t N>
   static std::array<double, N> subtract(const std::array<double, N>& a, const std::array<double, N>& b) {
     std::array<double, N> result;
-    int length = a.size();
+    size_t length = a.size();
     for (size_t i = 0; i < length; i++) {
       result[i] = a[i] - b[i];
     }
@@ -374,7 +374,7 @@ class Matrix {
                                           const std::array<double, N>& b) {
     // based on the chapter IV of the course "Analyse numerique" taught by Pr Ernst Hairer at the University of Geneva
 
-    auto length = A.size();
+    size_t length = A.size();
     std::array<std::array<double, M>, M> R;
     std::array<double, M> c;
     std::array<double, M> x;
@@ -382,17 +382,17 @@ class Matrix {
 
     // R = copy of A (the matrix on which we make the operations, so we leave A unchanged)
     // c = copy of b (same reason)
-    for (auto i = 0; i < length; i++) {
+    for (size_t i = 0; i < length; i++) {
       c[i] = b[i];
-      for (auto j = 0; j < length; j++) {
+      for (size_t j = 0; j < length; j++) {
         R[i][j] = A[i][j];
       }
     }
     // Triangulation of R
-    for (auto i = 0; i < length - 1; i++) {
+    for (size_t i = 0; i < length - 1; i++) {
       // Find pivot and swap lines
       double a = std::abs(R[i][i]);
-      for (auto j = i + 1; j < length; j++) {
+      for (size_t j = i + 1; j < length; j++) {
         if (std::abs(R[j][i]) > a) {
           a = std::abs(R[j][i]);
           auto tempLine = R[j];
@@ -404,7 +404,7 @@ class Matrix {
         }
       }
       // Elimination of (i+i)th element of each line >i
-      for (auto j = i + 1; j < length; j++) {
+      for (size_t j = i + 1; j < length; j++) {
         double l = R[j][i] / R[i][i];
         c[j] -= l * c[i];
         for (auto k = i; k < length; k++) {
@@ -414,9 +414,9 @@ class Matrix {
 
     }
     // Find x
-    for (auto i = length - 1; i > -1; i--) {
+    for (int i = length - 1; i > -1; i--) {
       double sum = 0.0;
-      for (auto j = i + 1; j < length; j++)
+      for (size_t j = i + 1; j < length; j++)
         sum += R[i][j] * x[j];
       x[i] = (c[i] - sum) / R[i][i];
     }

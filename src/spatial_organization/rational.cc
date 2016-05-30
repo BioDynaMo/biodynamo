@@ -16,7 +16,7 @@ Rational::Rational()
 }
 #endif
 
-Rational::Rational(unsigned numerator, unsigned denominator)
+Rational::Rational(uint64_t numerator, uint64_t denominator)
     : numerator_(0),
       denominator_(1) {
   setBigIntTo(numerator_, numerator);
@@ -211,7 +211,7 @@ int Rational::compareTo(const shared_ptr<Rational>& other) const {
   return sgn(this->subtract(other)->numerator_);
 }
 
-void Rational::setBigIntTo(BigInteger& big_int, unsigned value) {
+void Rational::setBigIntTo(BigInteger& big_int, uint64_t value) {
   auto representation = big_int.get_mpz_t();
 
   mpz_set_si(representation, static_cast<int>(value >> 32));

@@ -90,17 +90,6 @@ bool Substance::equalTo(Substance* o) {
       && std::abs(diffusion_constant_ - o->diffusion_constant_) < 1E-10;
 }
 
-Color Substance::getConcentrationDependentColor() const {  // todo bad design - view code shouldn't be here
-  // only used by graphics package -> not ported
-//  int alpha = (int) (255.0 * concentration_ * View.chemicalDrawFactor);
-//  if (alpha < 0) {
-//    alpha = 0;
-//  } else if (alpha > 255) {
-//    alpha = 255;
-//  }
-//  return Color((color_.getValue() & 0xFF000000) | (alpha << 24));
-}
-
 std::string Substance::getId() const {
   return id_;
 }

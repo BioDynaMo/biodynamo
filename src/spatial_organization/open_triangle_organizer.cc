@@ -23,8 +23,8 @@ template<class T>
 OpenTriangleOrganizer<T>::OpenTriangleOrganizer(
     int preferred_capacity,
     const std::shared_ptr<SimpleTriangulationNodeOrganizer<T> >& tno)
-    : shortest_distance_ { std::numeric_limits<double>::max() },
-      tno_ { tno } {
+    : tno_ { tno },
+      shortest_distance_ { std::numeric_limits<double>::max() } {
 }
 
 template<class T>
@@ -234,7 +234,7 @@ bool OpenTriangleOrganizer<T>::contains(
 
 template<class T>
 bool OpenTriangleOrganizer<T>::isEmpty() const {
-  map_.empty();
+  return map_.empty();
 }
 
 template<class T>
@@ -353,7 +353,7 @@ void OpenTriangleOrganizer<T>::removeForbiddenTriangles(
     // first, copy nodes to array for faster access:
     std::vector<SpaceNode<T>*>nodes(sorted_nodes.begin(), sorted_nodes.end());  //todo inefficient
     // check if any valid triangle is missing, if yes, set removeAllCircleTriangles = true
-    for (int i = 1; (i < nodes.size() - 1) && (!remove_all_circle_triangles);
+    for (size_t i = 1; (i < nodes.size() - 1) && (!remove_all_circle_triangles);
         i++) {
       if (!contains(nodes[0], nodes[i], nodes[i + 1])) {
         remove_all_circle_triangles = true;
@@ -362,9 +362,9 @@ void OpenTriangleOrganizer<T>::removeForbiddenTriangles(
     // if any valid triangle was missing...
     if (remove_all_circle_triangles) {
       // ...test if any triangle imaginable exists...
-      for (int i = 0; i < nodes.size() - 2; i++) {
-        for (int j = i + 1; j < nodes.size() - 1; j++) {
-          for (int k = j + 1; k < nodes.size(); k++) {
+      for (size_t i = 0; i < nodes.size() - 2; i++) {
+        for (size_t j = i + 1; j < nodes.size() - 1; j++) {
+          for (size_t k = j + 1; k < nodes.size(); k++) {
             if (contains(nodes[i], nodes[j], nodes[k])) {
               // and remove it together with incident tetrahedra:
               auto tetrahedron = getTriangleWithoutRemoving(nodes[i], nodes[j],

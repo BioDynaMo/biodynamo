@@ -222,7 +222,6 @@ PhysicalCylinder::UPtr PhysicalSphere::addNewPhysicalCylinder(double new_length,
 
 PhysicalSphere::UPtr PhysicalSphere::divide(double vr, double phi, double theta) {
   // A) Defining some values ..................................................................
-  double old_volume = volume_;
   // defining the two radii s.t total volume is conserved ( R^3 = r1^3 + r2^3 ; vr = r2^3 / r1^3 )
   double radius = diameter_ * 0.5;
   double r1 = radius / std::pow(1.0 + vr, 1.0 / 3.0);

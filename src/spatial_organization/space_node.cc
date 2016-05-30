@@ -282,15 +282,9 @@ void SpaceNode<T>::moveTo(const std::array<double, 3>& new_position) {
     if (!insert_position->isValid()) {
       insert_position = aNewTetrahedron;
     }
-    auto oldPosition = position_;
     position_ = new_position;
-    // TODO positionnotallowedexception
-//    try {
+    // TODO catch positionnotallowedexception
     insert(insert_position);
-//    } catch (PositionNotAllowedException e) {
-//       position_ = oldPosition;
-//       insert(insert_position);
-//      throw e;
   }
 }
 

@@ -87,7 +87,7 @@ void PhysicalNodeMovementListener::nodeMoved(const SpaceNode<PhysicalNode>* node
   }
 
   // 4) adding all the new neighbors contribution to the total quantity before the move:
-  for (int i = 0; i < substances_in_n_.size(); i++) {
+  for (size_t i = 0; i < substances_in_n_.size(); i++) {
     for (auto nn : new_neighbors) {
       auto ss = nn->getExtracellularSubstance(substances_in_n_[i]->getId());
       if (ss != nullptr) {
@@ -97,7 +97,7 @@ void PhysicalNodeMovementListener::nodeMoved(const SpaceNode<PhysicalNode>* node
   }
 
   // For all extracellularSubstances:
-  for (int i = 0; i < substances_in_n_.size(); i++) {
+  for (size_t i = 0; i < substances_in_n_.size(); i++) {
 
     // 5) Update the quantities in every cell that has been affected, and sum it
     // 5.a) in pn itself
@@ -174,7 +174,7 @@ void PhysicalNodeMovementListener::nodeAboutToBeRemoved(const SpaceNode<Physical
 
 void PhysicalNodeMovementListener::nodeRemoved(const SpaceNode<PhysicalNode>* node) {
   // For all extracellularSubstances:
-  for (int i = 0; i < substances_in_n_.size(); i++) {
+  for (size_t i = 0; i < substances_in_n_.size(); i++) {
 
     // 2) Update the quantities in the old neighbors, and sum it
     auto s = substances_in_n_[i];
@@ -207,7 +207,7 @@ void PhysicalNodeMovementListener::nodeRemoved(const SpaceNode<PhysicalNode>* no
 void PhysicalNodeMovementListener::nodeAboutToBeAdded(const SpaceNode<PhysicalNode>* node,
                                                       const std::array<double, 3>& planned_position,
                                                       const std::array<PhysicalNode*, 4>& vertices) {
-  auto pn = node->getUserObject();
+//  auto pn = node->getUserObject();
   if (vertices[0] != nullptr) {  // fixme hack:  && vertices[0] != null
     auto pnn = vertices[0];  // a future neighbor of the PhysicalNode about to be inserted
     // (we have to rely on it to know the chemicals present )
@@ -221,7 +221,7 @@ void PhysicalNodeMovementListener::nodeAboutToBeAdded(const SpaceNode<PhysicalNo
       }
       auto new_substance = Substance::UPtr(new Substance(*s));
       new_substance->setConcentration(new_concentration);
-      //pn.getExtracellularSubstances().put(name, newSubstance); //fixme this looks like a bug - hashmap is cloned -> inserting a value won't have an effect
+//      pn->addExtracellularSubstance(std::move(new_substance));
     }
   }
 }
@@ -235,7 +235,7 @@ void PhysicalNodeMovementListener::nodeAdded(const SpaceNode<PhysicalNode>* node
   auto pnn = neighbors.front();
   substances_in_n_ = std::vector<Substance*>(pnn->getExtracellularSubstances().size());  //todo more efficient if # of needed elements are already reserved here
   q_ = std::vector<double>(substances_in_n_.size());
-  int i = 0;
+  size_t i = 0;
   for (auto s : pnn->getExtracellularSubstances()) {
     q_[i] = 0;
     substances_in_n_[i] = s;

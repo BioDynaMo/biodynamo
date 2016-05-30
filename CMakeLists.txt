@@ -8,7 +8,7 @@ option(test "Build all tests." ON) # Makes boolean 'test' available.
 option(valgrind "Enable valgrind tests and make build compatible with valgrind tool." ON)
 
 #--------------------- set compiler flags -------------
-set(GCC_COMPILE_FLAGS "-w -O2")
+set(GCC_COMPILE_FLAGS "-Wall -O2")
 set(GCC_LINK_FLAGS    "")
 # append
 set( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${GCC_COMPILE_FLAGS}" )

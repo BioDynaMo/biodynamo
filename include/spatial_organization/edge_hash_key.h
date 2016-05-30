@@ -33,9 +33,9 @@ class EdgeHashKey {
   EdgeHashKey()
       : a_(),
         b_(),
-        hash_code_(0),
         ab_ { 0.0, 0.0, 0.0 },
-        last_normal_vector_ { 0.0, 0.0, 0.0 } {
+        last_normal_vector_ { 0.0, 0.0, 0.0 },
+        hash_code_(0) {
   }
 #endif
 

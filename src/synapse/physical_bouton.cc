@@ -82,7 +82,6 @@ bool PhysicalBouton::synapseWithShaft(NeuriteElement* other_ne, double max_dis,
                                       int nr_segments, bool create_phyiscal_bond) {
   auto pc = other_ne->getPhysicalCylinder();
   double neLength = pc->getActualLength();
-  double dx = neLength / nr_segments;
   std::array<double, 3> currPos;
   std::array<double, 3> currVec;
 
@@ -97,7 +96,6 @@ bool PhysicalBouton::synapseWithShaft(NeuriteElement* other_ne, double max_dis,
   currPos = other_ne->getPhysicalCylinder()->transformCoordinatesLocalToGlobal(currVec);
   if ((Matrix::norm(Matrix::subtract(currPos, getProximalEnd())) < max_dis) && create_phyiscal_bond) {
 
-    auto p1 = getProximalEnd();
     auto tmp = other_ne->getPhysicalCylinder()->transformCoordinatesLocalToPolar(currVec);  //fixme critical
     double distance = Matrix::distance(getProximalEnd(), currPos);
     auto other_position_on_po = std::array<double, 2> { tmp[0], tmp[1] };

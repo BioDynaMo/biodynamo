@@ -68,13 +68,6 @@ class Substance : public SimStateSerializable {
    */
   virtual bool equalTo(Substance* o);
 
-  /**
-   * Returns the color scaled by the concentration. Useful for painting PhysicalObjects / PhysicalNode
-   * based on their Substance concentrations.
-   * @return scaled Color
-   */
-  virtual Color getConcentrationDependentColor() const;
-
   // --------- GETTERS & SETTERS--------------------------------------------------------
   virtual std::string getId() const;
 

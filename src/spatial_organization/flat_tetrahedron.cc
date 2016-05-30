@@ -75,14 +75,14 @@ bool FlatTetrahedron<T>::isInsideSphere(const std::array<double, 3>& point) {
 
 template<class T>
 bool FlatTetrahedron<T>::isPointInConvexPosition(const std::array<double, 3>& point,
-                                                 int connecting_triangle_number) const {
+                                                 size_t connecting_triangle_number) const {
   this->adjacent_triangles_[0]->updatePlaneEquationIfNecessary();
   return this->adjacent_triangles_[0]->orientation(point, point) == 0;
 }
 
 template<class T>
 int FlatTetrahedron<T>::isInConvexPosition(const std::array<double, 3>& point,
-                                           int connecting_triangle_number) const {
+                                           size_t connecting_triangle_number) const {
   this->adjacent_triangles_[0]->updatePlaneEquationIfNecessary();
   if (this->adjacent_triangles_[0]->orientation(point, point) == 0) {
     return 0;

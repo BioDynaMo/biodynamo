@@ -503,7 +503,7 @@ class Tetrahedron : public std::enable_shared_from_this<Tetrahedron<T>> {
    *         convex position and <code>false</code> otherwise.
    */
   virtual bool isPointInConvexPosition(const std::array<double, 3>& point,
-                                       int connecting_triangle_number) const;
+                                       size_t connecting_triangle_number) const;
 
   /**
    * Determines whether a given coordinate lies in convex position, meaning
@@ -524,7 +524,7 @@ class Tetrahedron : public std::enable_shared_from_this<Tetrahedron<T>> {
    *         if the point lies in a non-convex position.
    */
   virtual int isInConvexPosition(const std::array<double, 3>& point,
-                                 int connecting_triangle_number) const;
+                                 size_t connecting_triangle_number) const;
 
   /**
    * Returns the second tetrahedron that is incident to the incident triangle with index <code>number</code>.

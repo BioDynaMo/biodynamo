@@ -15,8 +15,8 @@ template<class T>
 Edge<T>::Edge(SpaceNode<T>* a, SpaceNode<T>* b)
     : a_(a),
       b_(b),
-      cross_section_area_(0.0),
-      adjacent_tetrahedra_() {
+      adjacent_tetrahedra_(),
+      cross_section_area_(0.0) {
 }
 
 template<class T>

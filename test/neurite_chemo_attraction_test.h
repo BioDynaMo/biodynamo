@@ -102,8 +102,8 @@ class NeuriteChemoAttraction : public AbstractLocalBiologyModule {
   static constexpr double kRandomnessWeight = 0.6;
 
   std::array<double, 3> direction_;
-  double branching_factor_ = 0.005;
   std::string substance_id_;
+  double branching_factor_ = 0.005;
 };
 
 class NeuriteChemoAttractionTest : public BaseSimulationTest {

@@ -37,9 +37,6 @@ PhysicalBond::PhysicalBond() {
 
 void PhysicalBond::init(PhysicalObject* a, PhysicalObject* b) {
   dolocking(a, b);
-  //fixme critical
-//  origin_on_a_ = a_->transformCoordinatesGlobalToPolar(a_->getMassLocation());
-//  origin_on_b_ = b_->transformCoordinatesGlobalToPolar(b_->getMassLocation());
   resting_length_ = Matrix::norm(Matrix::subtract(a_->getMassLocation(), b_->getMassLocation()));
   spring_constant_ = 10;
   dumping_constant_ = 0;
@@ -157,8 +154,6 @@ std::array<double, 4> PhysicalBond::getForceOn(PhysicalObject* po) {
   if (po == a_ && sliding_allowed_ && other_po->isAPhysicalCylinder()) {
     auto pc = static_cast<PhysicalCylinder*>(other_po);
     double proj_norm = Matrix::dot(forceDirection, other_po->getXAxis());
-    auto parallel_component = Matrix::scalarMult(proj_norm, other_po->getXAxis());
-//      forceDirection = subtract(forceDirection,parallelComponent);
     auto new_position_on_other_po = getPositionOnObjectInLocalCoord(other_po);
     new_position_on_other_po[0] -= proj_norm;
     if (new_position_on_other_po[0] > pc->getActualLength() + 1) {

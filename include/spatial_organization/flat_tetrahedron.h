@@ -187,12 +187,12 @@ class FlatTetrahedron : public Tetrahedron<T> {  //, public std::enable_shared_f
    * {@inheritDoc}
    */
   bool isPointInConvexPosition(const std::array<double, 3>& point,
-                               int connecting_triangle_number) const override;
+                               size_t connecting_triangle_number) const override;
 
   /**
    * {@inheritDoc}
    */
-  int isInConvexPosition(const std::array<double, 3>& point, int connecting_triangle_number) const
+  int isInConvexPosition(const std::array<double, 3>& point, size_t connecting_triangle_number) const
       override;
 
  protected:

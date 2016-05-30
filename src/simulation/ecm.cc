@@ -154,7 +154,7 @@ std::vector<PhysicalNode::UPtr> ECM::createGridOfPhysicalNodes(double x1, double
   int z_lim = (int) ((z2 - z1 + 2 * border_length) / d);
 
   // the neighbor Node (close to which we will create the new one
-  SpaceNode < PhysicalNode > *old_son;
+  SpaceNode < PhysicalNode > *old_son = nullptr;
   // loop to put the nodes in 3D space
   for (int kx = 0; kx < x_lim + 1; kx++) {
     for (int ky = 0; ky < y_lim + 1; ky++) {
