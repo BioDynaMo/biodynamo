@@ -29,7 +29,6 @@ addons:
     - clang-3.7
     - cmake
     - cmake-data
-    - doxygen
     - valgrind
 os:
   - linux
