@@ -72,8 +72,8 @@ bool TriangleHashKeyEqual<T>::operator()(const TriangleHashKey<T>& lhs,
 }
 
 template class TriangleHashKey<cx3d::physics::PhysicalNode>;
-template class TriangleHashKeyHash<cx3d::physics::PhysicalNode>;
-template class TriangleHashKeyEqual<cx3d::physics::PhysicalNode>;
+template struct TriangleHashKeyHash<cx3d::physics::PhysicalNode>;
+template struct TriangleHashKeyEqual<cx3d::physics::PhysicalNode>;
 
 }  // namespace spatial_organization
 }  // namespace cx3d

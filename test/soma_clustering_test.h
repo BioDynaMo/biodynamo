@@ -102,7 +102,7 @@ class SomaClusteringTest : public BaseSimulationTest {
     }
   }
 
-  std::string getTestName() const {
+  std::string getTestName() const override {
     return "SomaClusteringTest";
   }
 };

@@ -206,9 +206,9 @@ class PhysicalSphere : public PhysicalObject {
 
   virtual std::array<double, 3> getUnitNormalVector(const std::array<double, 3>& position) const override;
 
-  virtual CellElement* getCellElement() const;
+  virtual CellElement* getCellElement() const override;
 
-  virtual bool isRelative(PhysicalObject* po) const;
+  virtual bool isRelative(PhysicalObject* po) const override;
 
   virtual double getLength() const override;
 
@@ -223,22 +223,22 @@ class PhysicalSphere : public PhysicalObject {
 
   virtual void updateRelative(PhysicalObject* old_relative, PhysicalObject* new_relative) override;
 
-  virtual void updateDependentPhysicalVariables();
+  virtual void updateDependentPhysicalVariables() override;
 
   /**
    * Updates the concentration of substances, based on the volume of the object.
    * Is usually called after change of the volume (and therefore we don't modify it here)
    */
-  virtual void updateIntracellularConcentrations();
+  virtual void updateIntracellularConcentrations() override;
 
   /**
    * Recompute volume after diameter has changed.
    */
-  virtual void updateVolume();
+  virtual void updateVolume() override;
 
-  virtual void updateDiameter();
+  virtual void updateDiameter() override;
 
-  virtual std::string toString() const;
+  virtual std::string toString() const override;
 
  private:
   PhysicalSphere(const PhysicalSphere& other) = delete;

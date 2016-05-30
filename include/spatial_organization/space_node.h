@@ -237,7 +237,7 @@ class SpaceNode : public SpatialOrganizationNode<T>, public SimStateSerializable
   /**
    * Returns a string representation of this node.
    */
-  virtual std::string toString() const;
+  virtual std::string toString() const override;
 
   /**
    * Determines if two instances of this object are equal

@@ -921,7 +921,7 @@ template<class T>
 SpaceNode<T>* Tetrahedron<T>::getSecondOtherNode(
     SpaceNode<T>* node_a,
     SpaceNode<T>* node_b) const {
-  for (size_t i = adjacent_nodes_.size() - 1; i >= 0; i--) {
+  for (int i = adjacent_nodes_.size() - 1; i >= 0; i--) {
     if (adjacent_nodes_[i] != node_a && adjacent_nodes_[i] != node_b) {
       return adjacent_nodes_[i];
     }

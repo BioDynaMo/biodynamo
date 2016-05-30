@@ -44,7 +44,7 @@ class PhysicalNodeMovementListener : public SpatialOrganizationNodeMovementListe
   virtual ~PhysicalNodeMovementListener() {
   }
 
-  virtual SpatialOrganizationNodeMovementListener<PhysicalNode>::UPtr getCopy() const;
+  virtual SpatialOrganizationNodeMovementListener<PhysicalNode>::UPtr getCopy() const override;
 
   /**
    * MASS CONSERVATION WHEN A POINT IS MOVED :

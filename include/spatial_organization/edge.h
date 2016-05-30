@@ -76,7 +76,7 @@ class Edge : public SpatialOrganizationEdge<T> {
   /**
    *  @return A string representation of this edge
    */
-  virtual const std::string toString() const;
+  virtual const std::string toString() const override;
 
   /**
    * Tests whether this edge is connecting a pair of points.

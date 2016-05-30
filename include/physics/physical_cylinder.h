@@ -62,7 +62,7 @@ class PhysicalCylinder : public PhysicalObject {
   /**
    * Returns true if the <code>PhysicalObject</code> given as argument is a mother, daughter
    * or sister branch.*/
-  virtual bool isRelative(PhysicalObject* po) const;
+  virtual bool isRelative(PhysicalObject* po) const override;
 
   /**
    * Returns the location in absolute coordinates of where the <code>PhysicalObject</code>
@@ -436,7 +436,7 @@ class PhysicalCylinder : public PhysicalObject {
    * Updates the concentration of substances, based on the volume of the object.
    * Is usually called after change of the volume (and therefore we don't modify it here)
    */
-  virtual void updateIntracellularConcentrations();
+  virtual void updateIntracellularConcentrations() override;
 
  protected:
   /**

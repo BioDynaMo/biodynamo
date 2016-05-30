@@ -21,168 +21,168 @@ class PhysicalNodeDebug : public PhysicalNode {
 //    logConstrParameterless("PhysicalNode");
   }
 
-  bool isAPhysicalObject() {
+  virtual bool isAPhysicalObject() const  override {
     logCallParameterless();
     auto ret = PhysicalNode::isAPhysicalObject();
     logReturn(ret);
     return ret;
   }
 
-  bool isAPhysicalCylinder() {
+  virtual bool isAPhysicalCylinder() const override {
     logCallParameterless();
     auto ret = PhysicalNode::isAPhysicalCylinder();
     logReturn(ret);
     return ret;
   }
 
-  bool isAPhysicalSphere() {
+  virtual bool isAPhysicalSphere() const override {
     logCallParameterless();
     auto ret = PhysicalNode::isAPhysicalSphere();
     logReturn(ret);
     return ret;
   }
 
-  double getExtracellularConcentration(const std::string& id) {
+  virtual double getExtracellularConcentration(const std::string& id) override {
     logCall(id);
     auto ret = PhysicalNode::getExtracellularConcentration(id);
     logReturn(ret);
     return ret;
   }
 
-  double getConvolvedConcentration(const std::string& id) {
+  virtual double getConvolvedConcentration(const std::string& id) override {
     logCall(id);
     auto ret = PhysicalNode::getConvolvedConcentration(id);
     logReturn(ret);
     return ret;
   }
 
-  double getExtracellularConcentration(const std::string& id, const std::array<double, 3>& location) {
+  virtual double getExtracellularConcentration(const std::string& id, const std::array<double, 3>& location) override {
     logCall(id, location);
     auto ret = PhysicalNode::getExtracellularConcentration(id, location);
     logReturn(ret);
     return ret;
   }
 
-  std::array<double, 3> getExtracellularGradient(const std::string& id) {
+  virtual std::array<double, 3> getExtracellularGradient(const std::string& id) override {
     logCall(id);
     auto ret = PhysicalNode::getExtracellularGradient(id);
     logReturn(ret);
     return ret;
   }
 
-  void modifyExtracellularQuantity(const std::string& id, double quantity_per_time) {
+  virtual void modifyExtracellularQuantity(const std::string& id, double quantity_per_time) override {
     logCall(id, quantity_per_time)
     PhysicalNode::modifyExtracellularQuantity(id, quantity_per_time);
     logReturnVoid();
   }
 
-  void runExtracellularDiffusion() {
+  virtual void runExtracellularDiffusion() override {
     logCallParameterless();
     PhysicalNode::runExtracellularDiffusion();
     logReturnVoid();
   }
 
-  Substance* getSubstanceInstance(Substance* template_s) {
+  virtual Substance* getSubstanceInstance(Substance* template_s) override {
     logCall(template_s);
     auto ret = PhysicalNode::getSubstanceInstance(template_s);
     logReturn(ret);
     return ret;
   }
 
-  double computeConcentrationAtDistanceBasedOnGradient(Substance* s,
-      std::array<double, 3>& dX) {
+  virtual double computeConcentrationAtDistanceBasedOnGradient(Substance* s,
+      const std::array<double, 3>& dX) override {
     logCall(s, dX);
     auto ret = PhysicalNode::computeConcentrationAtDistanceBasedOnGradient(s, dX);
     logReturn(ret);
     return ret;
   }
 
-  std::array<double, 3> soNodePosition() {
+  virtual std::array<double, 3> soNodePosition() const override {
     logCallParameterless();
     auto ret = PhysicalNode::soNodePosition();
     logReturn(ret);
     return ret;
   }
 
-  SpaceNode<PhysicalNode>* getSoNode() {
+  virtual SpaceNode<PhysicalNode>* getSoNode() const override {
     logCallParameterless();
     auto ret = PhysicalNode::getSoNode();
     logReturn(ret);
     return ret;
   }
 
-  void setSoNode(typename SpaceNode<PhysicalNode>::UPtr son) {
+  virtual void setSoNode(typename SpaceNode<PhysicalNode>::UPtr son) override {
     logCall(son.get());
     PhysicalNode::setSoNode(std::move(son));
     logReturnVoid();
   }
 
-  bool isOnTheSchedulerListForPhysicalNodes() {
+  virtual bool isOnTheSchedulerListForPhysicalNodes() const override {
     logCallParameterless();
     auto ret = PhysicalNode::isOnTheSchedulerListForPhysicalNodes();
     logReturn(ret);
     return ret;
   }
 
-  void setOnTheSchedulerListForPhysicalNodes(bool on_the_scheduler_list_for_physical_nodes) {
+  virtual void setOnTheSchedulerListForPhysicalNodes(bool on_the_scheduler_list_for_physical_nodes) override {
     logCall(on_the_scheduler_list_for_physical_nodes);
     PhysicalNode::setOnTheSchedulerListForPhysicalNodes(on_the_scheduler_list_for_physical_nodes);
     logReturnVoid();
   }
 
-  int getMovementConcentratioUpdateProcedure() {
+  virtual int getMovementConcentratioUpdateProcedure() const override {
     logCallParameterless();
     auto ret = PhysicalNode::getMovementConcentratioUpdateProcedure();
     logReturn(ret);
     return ret;
   }
 
-  void setMovementConcentratioUpdateProcedure(int movement_concentration_update_procedure) {
+  virtual void setMovementConcentratioUpdateProcedure(int movement_concentration_update_procedure) override {
     logCall(movement_concentration_update_procedure);
     PhysicalNode::setMovementConcentratioUpdateProcedure(movement_concentration_update_procedure);
     logReturnVoid();
   }
 
-  void addExtracellularSubstance(Substance::UPtr is) {
+  virtual void addExtracellularSubstance(Substance::UPtr is) override {
     logCall(is.get());
     PhysicalNode::addExtracellularSubstance(std::move(is));
     logReturnVoid();
   }
 
-  void removeExtracellularSubstance(Substance* is) {
+  virtual void removeExtracellularSubstance(Substance* is) override {
     logCall(is);
     PhysicalNode::removeExtracellularSubstance(is);
     logReturnVoid();
   }
 
-  std::list<Substance*> getExtracellularSubstances() {
+  virtual std::list<Substance*> getExtracellularSubstances() const override {
     logCallParameterless();
     auto ret = PhysicalNode::getExtracellularSubstances();
     logReturn(ret);
     return ret;
   }
 
-  Substance* getExtracellularSubstance(const std::string& key) {
+  virtual Substance* getExtracellularSubstance(const std::string& key) override {
     logCall(key);
     auto ret = PhysicalNode::getExtracellularSubstance(key);
     logReturn(ret);
     return ret;
   }
 
-  int getID() {
+  virtual int getID() const override {
     logCallParameterless();
     auto ret = PhysicalNode::getID();
     logReturn(ret);
     return ret;
   }
 
-  void degradate(double currentEcmTime) {
+  virtual void degradate(double currentEcmTime) override {
     logCall(currentEcmTime);
     PhysicalNode::degradate(currentEcmTime);
     logReturnVoid();
   }
 
-//  void diffuseEdgeAnalytically(SpatialOrganizationEdge<PhysicalNode>* e, double currentEcmTime) {
+//  void diffuseEdgeAnalytically(SpatialOrganizationEdge<PhysicalNode>* e, double currentEcmTime) override  {
 //    PhysicalNode::diffuseEdgeAnalytically(e, currentEcmTime);
 //    logReturnVoid();
 //  }

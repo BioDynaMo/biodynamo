@@ -141,7 +141,7 @@ class Figure9Test : public BaseSimulationTest {
     TestSynapses::extendExcressencesAndSynapseOnEveryNeuriteElement(0.4);
   }
 
-  std::string getTestName() const {
+  std::string getTestName() const override {
     return "Figure9Test";
   }
 };
