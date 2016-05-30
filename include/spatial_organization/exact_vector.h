@@ -23,10 +23,6 @@ class Rational;
  */
 class ExactVector : public std::enable_shared_from_this<ExactVector> {
  public:
-#ifndef EXACTVECTOR_NATIVE
-  ExactVector();
-#endif
-
   /**
    * Creates a new ExactVector object and returns it within a <code>std::shared_ptr</code>
    * @see ExactVector(const std::array<std::shared_ptr<Rational>, 3>& values)
@@ -174,9 +170,7 @@ class ExactVector : public std::enable_shared_from_this<ExactVector> {
    */
   std::array<std::shared_ptr<Rational>, 3> elements_;
 
-#ifdef EXACTVECTOR_NATIVE
   ExactVector() = delete;
-#endif
   ExactVector(const ExactVector&) = delete;
   ExactVector& operator=(const ExactVector&) = delete;
 
@@ -194,7 +188,7 @@ class ExactVector : public std::enable_shared_from_this<ExactVector> {
   explicit ExactVector(const std::array<double, 3>& values);
 };
 
-}  // namespace spatial_organization
+}  // namespace spatial_organizationd
 }  // namespace cx3d
 
 #endif  // SPATIAL_ORGANIZATION_EXACT_VECTOR_H_

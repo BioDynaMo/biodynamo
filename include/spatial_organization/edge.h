@@ -7,11 +7,6 @@
 
 #include "spatial_organization/spatial_organization_edge.h"
 
-#ifdef EDGE_DEBUG
-#include "spatial_organization/debug/edge_debug.h"
-#endif
-
-
 namespace cx3d {
 namespace spatial_organization {
 

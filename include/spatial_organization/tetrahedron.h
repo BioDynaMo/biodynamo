@@ -9,10 +9,6 @@
 
 #include "spatial_organization/edge.h"
 
-#ifdef TETRAHEDRON_DEBUG
-#include "spatial_organization/debug/tetrahedron_debug.h"
-#endif
-
 namespace cx3d {
 namespace spatial_organization {
 
@@ -36,10 +32,6 @@ template<class T> class OpenTriangleOrganizer;
 template<class T>
 class Tetrahedron : public std::enable_shared_from_this<Tetrahedron<T>> {
  public:
-#ifndef TETRAHEDRON_NATIVE
-  Tetrahedron();
-#endif
-
   /**
    * Creates a new Tetrahedron object and returns it within a <code>std::shared_ptr</code>
    * @see Edge(...)
@@ -66,16 +58,9 @@ class Tetrahedron : public std::enable_shared_from_this<Tetrahedron<T>> {
       const std::shared_ptr<Triangle3D<T>>& one_triangle,
       SpaceNode<T>* fourth_point,
       const std::shared_ptr<OpenTriangleOrganizer<T>>& oto) {
-#ifdef TETRAHEDRON_DEBUG
-    Tetrahedron<T>* raw_pointer = new TetrahedronDebug<T>();
-#else
     Tetrahedron<T>* raw_pointer = new Tetrahedron();
-#endif
     std::shared_ptr<Tetrahedron<T>> tetrahedron(raw_pointer);
     tetrahedron->initializationHelper(one_triangle, fourth_point, oto);
-#ifdef TETRAHEDRON_DEBUG
-    logConstrFromStatic("Tetrahedron", tetrahedron, one_triangle, fourth_point, oto);
-#endif
     return tetrahedron;
   }
 
@@ -87,18 +72,10 @@ class Tetrahedron : public std::enable_shared_from_this<Tetrahedron<T>> {
                                                 SpaceNode<T>* node_b,
                                                 SpaceNode<T>* node_c,
                                                 SpaceNode<T>* node_d) {
-#ifdef TETRAHEDRON_DEBUG
-    Tetrahedron<T>* raw_pointer = new TetrahedronDebug<T>();
-#else
     Tetrahedron<T>* raw_pointer = new Tetrahedron();
-#endif
     std::shared_ptr<Tetrahedron<T>> tetrahedron(raw_pointer);
     tetrahedron->initializationHelper(triangle_a, triangle_b, triangle_c, triangle_d, node_a,
                                       node_b, node_c, node_d);
-#ifdef TETRAHEDRON_DEBUG
-    logConstrFromStatic("Tetrahedron", tetrahedron, triangle_a, triangle_b, triangle_c, triangle_d,
-                        node_a, node_b, node_c, node_d);
-#endif
     return tetrahedron;
   }
 
@@ -588,13 +565,11 @@ class Tetrahedron : public std::enable_shared_from_this<Tetrahedron<T>> {
       SpaceNode<T>* node_b) const;
 
  protected:
-#ifdef TETRAHEDRON_NATIVE
   /**
    * Initialization is done within initializationHelper methods
    * Have a look at their documentation to understand why
    */
   Tetrahedron();
-#endif
 
   /**
    * Initialization code that cannot be called inside the constructor, because it passes

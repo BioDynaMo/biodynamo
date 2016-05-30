@@ -11,10 +11,6 @@
 #include "spatial_organization/simple_triangulation_node_organizer.h"
 #include "spatial_organization/triangle_hash_key.h"
 
-#ifdef OPENTRIANGLEORGANIZER_DEBUG
-#include "spatial_organization/debug/open_triangle_organizer_debug.h"
-#endif
-
 namespace cx3d {
 namespace spatial_organization {
 
@@ -44,22 +40,13 @@ template<class T>
 class OpenTriangleOrganizer : public std::enable_shared_from_this<
     OpenTriangleOrganizer<T>> {
  public:
-#ifndef OPENTRIANGLEORGANIZER_NATIVE
-  OpenTriangleOrganizer()
-      : shortest_distance_(0) {
-  }
-#endif
   virtual ~OpenTriangleOrganizer() {
   }
 
   static std::shared_ptr<OpenTriangleOrganizer<T>> create(
       int preferred_capacity,
       const std::shared_ptr<SimpleTriangulationNodeOrganizer<T>>& tno) {
-#ifndef OPENTRIANGLEORGANIZER_DEBUG
     auto raw_ptr = new OpenTriangleOrganizer<T>(preferred_capacity, tno);
-#else
-    auto raw_ptr = new OpenTriangleOrganizerDebug<T>(preferred_capacity, tno);
-#endif
     std::shared_ptr<OpenTriangleOrganizer<T>> s_ptr(raw_ptr);
     return s_ptr;
   }
@@ -201,9 +188,7 @@ class OpenTriangleOrganizer : public std::enable_shared_from_this<
       const std::shared_ptr<SimpleTriangulationNodeOrganizer<T>>& tno);
 
  private:
-#ifdef OPENTRIANGLEORGANIZER_NATIVE
   OpenTriangleOrganizer() = delete;
-#endif
   OpenTriangleOrganizer(const OpenTriangleOrganizer&) = delete;
   OpenTriangleOrganizer& operator=(const OpenTriangleOrganizer&) = delete;
 

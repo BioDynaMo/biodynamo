@@ -21,10 +21,6 @@ using BigInteger = mpz_class;
  */
 class Rational : public std::enable_shared_from_this<Rational> {
  public:
-#ifndef RATIONAL_NATIVE
-  Rational();
-#endif
-
   /**
    * If functions return a std::shared_ptr of <code>*this</code> using
    * <code>return shared_from_this();</code>, the following precondition must be met:
@@ -176,9 +172,7 @@ class Rational : public std::enable_shared_from_this<Rational> {
    */
   BigInteger denominator_;
 
-#ifdef RATIONAL_NATIVE
   Rational() = delete;
-#endif
   Rational(const Rational&) = delete;
   Rational& operator=(const Rational& other) = delete;
 

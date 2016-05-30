@@ -29,15 +29,6 @@ class EdgeHashKey {
  public:
   friend struct EdgeHashKeyHash<T>;
   friend struct EdgeHashKeyEqual<T>;
-#ifndef EDGEHASHKEY_NATIVE
-  EdgeHashKey()
-      : a_(),
-        b_(),
-        ab_ { 0.0, 0.0, 0.0 },
-        last_normal_vector_ { 0.0, 0.0, 0.0 },
-        hash_code_(0) {
-  }
-#endif
 
   /**
    * Creates a new instance of <code>EdgeHashKey</code> with the two endpoints
@@ -104,10 +95,7 @@ class EdgeHashKey {
       SpaceNode<T>* node) const;
 
  private:
-#ifdef EDGEHASHKEY_NATIVE
   EdgeHashKey() = delete;
-#endif
-//  EdgeHashKey& operator=(const EdgeHashKey&) = delete;
 
   /**
    * The endpoints of the edge for which a hash value should be calculated.

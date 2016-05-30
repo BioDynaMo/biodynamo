@@ -56,17 +56,6 @@ std::shared_ptr<Tetrahedron<T> > SpaceNode<T>::searchInitialInsertionTetrahedron
 }
 
 template<class T>
-SpaceNode<T>::SpaceNode()
-    : id_(SpaceNode::id_counter_++),
-      content_(),
-      listeners_(),
-      position_({ 0.0, 0.0, 0.0 }),
-      adjacent_edges_(),
-      adjacent_tetrahedra_(),
-      volume_(0.0) {
-}
-
-template<class T>
 SpaceNode<T>::SpaceNode(const std::array<double, 3>& position,
                         T* content)
     : id_(SpaceNode::id_counter_++),

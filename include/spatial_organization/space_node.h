@@ -13,10 +13,6 @@
 #include "spatial_organization/spatial_organization_node.h"
 #include "spatial_organization/edge.h"
 
-#ifdef SPACENODE_DEBUG
-#include "spatial_organization/debug/space_node_debug.h"
-#endif
-
 namespace cx3d {
 namespace spatial_organization {
 
@@ -58,10 +54,6 @@ class SpaceNode : public SpatialOrganizationNode<T>, public SimStateSerializable
       const std::shared_ptr<Tetrahedron<T>>& start,
       const std::array<double, 3>& coordinate);
 //        throws PositionNotAllowedException {
-
-#ifndef SPACENODE_NATIVE
-  SpaceNode();
-#endif
 
   /**
    * Creates a new SpaceNode with at a given coordinate and associates it with
@@ -254,9 +246,7 @@ class SpaceNode : public SpatialOrganizationNode<T>, public SimStateSerializable
    */
   static int createNewCheckingIndex();
 
-#ifdef SPACENODE_NATIVE
   SpaceNode() = delete;
-#endif
   SpaceNode(const SpaceNode&);
   SpaceNode& operator=(const SpaceNode&) = delete;
 

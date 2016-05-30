@@ -28,13 +28,6 @@ ExactVector::ExactVector(const array<double, 3>& values)
             Rational::create(values[2]) })) {
 }
 
-#ifndef EXACTVECTOR_NATIVE
-ExactVector::ExactVector() : elements_(
-      array<shared_ptr<Rational>, 3>({ Rational::create(0.0), Rational::create(0.0),
-          Rational::create(0.0) })) {
-}
-#endif
-
 ExactVector::~ExactVector() {
 }
 

@@ -53,9 +53,6 @@ std::shared_ptr<ExactVector> Triangle3D<T>::calculate3PlaneXPoint(
     auto ret = normals[1]->crossProduct(normals[2])->multiplyBy(offsets[0])->increaseBy(
         normals[2]->crossProduct(normals[0])->multiplyBy(offsets[1])->increaseBy(
             normals[0]->crossProduct(normals[1])->multiplyBy(offsets[2])))->divideBy(normal_det);
-#ifdef TRIANGLE3D_DEBUG
-    logReturnStatic(ret);
-#endif
     return ret;
   } else {
     double max_value = std::numeric_limits<double>::max();
@@ -64,9 +61,6 @@ std::shared_ptr<ExactVector> Triangle3D<T>::calculate3PlaneXPoint(
       rationals[i] = Rational::create(max_value, 1);
     }
     auto ret = ExactVector::create(rationals);
-#ifdef TRIANGLE3D_DEBUG
-    logReturnStatic(ret);
-#endif
     return ret;
   }
 }

@@ -9,10 +9,6 @@
 #include "spatial_organization/exact_vector.h"
 #include "spatial_organization/rational.h"
 
-#ifdef TRIANGLE3D_DEBUG
-#include "spatial_organization/debug/triangle_3d_debug.h"
-#endif
-
 namespace cx3d {
 namespace spatial_organization {
 
@@ -22,19 +18,6 @@ template<class T> class SpaceNode;
 template<class T>
 class Triangle3D : public Plane3D<T>, public std::enable_shared_from_this<Triangle3D<T>> {
  public:
-#ifndef TRIANGLE3D_NATIVE
-  Triangle3D()
-      : Plane3D<T>(),
-        adjacent_tetrahedra_(),
-        nodes_(),
-        circum_center_ { 0.0, 0.0, 0.0 },
-        plane_updated_(false),
-        circum_center_updated_(false),
-        upper_side_positive_(true),
-        connection_checked_(-1) {
-  }
-#endif
-
   /**
    * Creates a new Triangle3D object and returns it within a <code>std::shared_ptr</code>
    * @see Triangle3D(...)
@@ -47,15 +30,6 @@ class Triangle3D : public Plane3D<T>, public std::enable_shared_from_this<Triang
    *
    * Therefore, all constructors are private and accessed through static factory methods that return
    * a std::shared_ptr.
-   *
-   * TODO(lukas) SWIG doesn't seem to support variadic templates and perfect forwarding system.
-   * Once mapping to Java is not needed anymore, replace following create functions with:
-   * <code>
-   * template<typename ... T>
-   * static std::shared_ptr<Triangle3D> create(T&& ... all) {
-   *   return std::shared_ptr<Triangle3D>(new Triangle3D(std::forward<T>(all)...));
-   * }
-   * </code>
    */
   static std::shared_ptr<Triangle3D<T>> create(
       SpaceNode<T>* sn_1,
@@ -63,12 +37,8 @@ class Triangle3D : public Plane3D<T>, public std::enable_shared_from_this<Triang
       SpaceNode<T>* sn_3,
       const std::shared_ptr<Tetrahedron<T>>& tetrahedron_1,
       const std::shared_ptr<Tetrahedron<T>>& tetrahedron_2) {
-#ifdef TRIANGLE3D_DEBUG
-    std::shared_ptr<Triangle3D<T>> triangle(new Triangle3DDebug<T>(sn_1, sn_2, sn_3, tetrahedron_1, tetrahedron_2));
-#else
     std::shared_ptr<Triangle3D<T>> triangle(
         new Triangle3D(sn_1, sn_2, sn_3, tetrahedron_1, tetrahedron_2));
-#endif
     return triangle;
   }
 
@@ -418,9 +388,7 @@ class Triangle3D : public Plane3D<T>, public std::enable_shared_from_this<Triang
   virtual void updateNormalVector(const std::array<double, 3>& new_normal_vector);
 
  private:
-#ifdef TRIANGLE3D_NATIVE
   Triangle3D() = delete;
-#endif
   Triangle3D(const Triangle3D&) = delete;
   Triangle3D& operator=(const Triangle3D&) = delete;
 

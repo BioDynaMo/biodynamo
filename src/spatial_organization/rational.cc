@@ -9,13 +9,6 @@ using std::shared_ptr;
 namespace cx3d {
 namespace spatial_organization {
 
-#ifndef RATIONAL_NATIVE
-Rational::Rational()
-    : numerator_(0),
-      denominator_(1) {
-}
-#endif
-
 Rational::Rational(uint64_t numerator, uint64_t denominator)
     : numerator_(0),
       denominator_(1) {
