@@ -76,7 +76,7 @@ void BaseSimulationTest::assertSimulationState() {
 
   if (update_sim_state_reference_file_) {
     // update reference file
-    std::cout << "NOTE: parameter updateSimStateReferenceFiles specified: Reference File will be updated and "
+    std::cout << "NOTE: parameter --update-references specified: Reference File will be updated and "
         "no assertions will be performed" << std::endl;
     string content = sb.str();
     writeToFile("../test/resources/" + getTestName() + ".json", content);
