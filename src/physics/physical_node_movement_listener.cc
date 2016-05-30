@@ -207,7 +207,7 @@ void PhysicalNodeMovementListener::nodeRemoved(const SpaceNode<PhysicalNode>* no
 void PhysicalNodeMovementListener::nodeAboutToBeAdded(const SpaceNode<PhysicalNode>* node,
                                                       const std::array<double, 3>& planned_position,
                                                       const std::array<PhysicalNode*, 4>& vertices) {
-//  auto pn = node->getUserObject();
+  auto pn = node->getUserObject();
   if (vertices[0] != nullptr) {  // fixme hack:  && vertices[0] != null
     auto pnn = vertices[0];  // a future neighbor of the PhysicalNode about to be inserted
     // (we have to rely on it to know the chemicals present )
@@ -221,7 +221,7 @@ void PhysicalNodeMovementListener::nodeAboutToBeAdded(const SpaceNode<PhysicalNo
       }
       auto new_substance = Substance::UPtr(new Substance(*s));
       new_substance->setConcentration(new_concentration);
-//      pn->addExtracellularSubstance(std::move(new_substance));
+      pn->addExtracellularSubstance(std::move(new_substance));
     }
   }
 }
