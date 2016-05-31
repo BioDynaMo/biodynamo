@@ -421,57 +421,29 @@ class ECM : public SimStateSerializable {
 
   std::array<double, 3> getMaxBounds() const;
 
-  //
-  //
-  //
+  virtual PhysicalCylinder* getPhysicalCylinder(int i) const;
 
-  virtual PhysicalCylinder* getPhysicalCylinder(int i) const {
-    return physical_cylinders_[i];
-  }
+  virtual NeuriteElement* getNeuriteElement(int i) const;
 
-  virtual NeuriteElement* getNeuriteElement(int i) const {
-    return neurite_elements_[i];
-  }
+  virtual PhysicalNode* getPhysicalNode(int i) const;
 
-  virtual PhysicalNode* getPhysicalNode(int i) const {
-    return physical_nodes_[i];
-  }
+  virtual PhysicalSphere* getPhysicalSphere(int i) const;
 
-  virtual PhysicalSphere* getPhysicalSphere(int i) const {
-    return physical_spheres_[i];
-  }
+  virtual SomaElement* getSomaElement(int i) const;
 
-  virtual SomaElement* getSomaElement(int i) const {
-    return soma_elements_[i];
-  }
+  virtual Cell* getCell(int i) const;
 
-  virtual Cell* getCell(int i) const {
-    return cells_[i].get();
-  }
+  virtual int getCellListSize() const;
 
-  virtual int getCellListSize() const {
-    return cells_.size();
-  }
+  virtual int getPhysicalNodeListSize() const;
 
-  virtual int getPhysicalNodeListSize() const {
-    return physical_nodes_.size();
-  }
+  virtual int getPhysicalCylinderListSize() const;
 
-  virtual int getPhysicalCylinderListSize() const {
-    return physical_cylinders_.size();
-  }
+  virtual int getPhysicalSphereListSize() const;
 
-  virtual int getPhysicalSphereListSize() const {
-    return physical_spheres_.size();
-  }
+  virtual int getSomaElementListSize() const;
 
-  virtual int getSomaElementListSize() const {
-    return soma_elements_.size();
-  }
-
-  virtual int getNeuriteElementListSize() const {
-    return neurite_elements_.size();
-  }
+  virtual int getNeuriteElementListSize() const;
 
  private:
   // List of all the CX3DRunnable objects in the simulation ............................

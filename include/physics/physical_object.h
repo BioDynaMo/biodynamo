@@ -34,6 +34,21 @@ using local_biology::CellElement;
 using physics::InterObjectForce;
 using synapse::Excrescence;
 
+/**
+ * Superclass of all the physical objects of the simulation (<code>PhysicalSphere</code> and
+ * <code>PhysicalCylinder</code>). It contains methods for different kinds of task:
+ * (1) to organize discrete elements composing the same neuron, in a tree-like structure
+ * (2) to communicate with the local biology module (<code>CellElement</code>)
+ * (3) to run the (inter-object) physics
+ * (4) to run intracellular diffusion of <code>IntracellularSubstances</code>.
+ * <p>
+ * There are three different coordinates systems :
+ * global : the global unique cartesian coordinates ([1,0,0], [0,1,0], [0,0,1])
+ * local: the local coord (xAxis, yAxis, zAxis)
+ * polar: cylindrical (for PhysicalCylinder) or spherical (for PhysicalSphere)
+ * There exist methods to transform the polar (cylindrical/spherical) into a global
+ * (cartesian) system, and for transform from global to local..
+ */
 class PhysicalObject : public PhysicalNode {
  public:
   using UPtr = std::unique_ptr<PhysicalObject>;
@@ -46,8 +61,7 @@ class PhysicalObject : public PhysicalNode {
 
   PhysicalObject();
 
-  virtual ~PhysicalObject() {
-  }
+  virtual ~PhysicalObject();
 
   virtual StringBuilder& simStateToJson(StringBuilder& sb) const override;
 

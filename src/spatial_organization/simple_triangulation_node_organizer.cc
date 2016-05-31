@@ -12,6 +12,12 @@ namespace cx3d {
 namespace spatial_organization {
 
 template<class T>
+std::shared_ptr<SimpleTriangulationNodeOrganizer<T>> SimpleTriangulationNodeOrganizer<T>::create() {
+  return std::shared_ptr<SimpleTriangulationNodeOrganizer<T>>(
+      new SimpleTriangulationNodeOrganizer());
+}
+
+template<class T>
 SimpleTriangulationNodeOrganizer<T>::SimpleTriangulationNodeOrganizer()
     : tree_head_ { BinaryTreeElement<T>::generateTreeHead() } {
 }

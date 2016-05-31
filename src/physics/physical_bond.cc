@@ -35,6 +35,9 @@ std::shared_ptr<PhysicalBond> PhysicalBond::create(PhysicalObject* a,
 PhysicalBond::PhysicalBond() {
 }
 
+PhysicalBond::~PhysicalBond() {
+}
+
 void PhysicalBond::init(PhysicalObject* a, PhysicalObject* b) {
   dolocking(a, b);
   resting_length_ = Matrix::norm(Matrix::subtract(a_->getMassLocation(), b_->getMassLocation()));

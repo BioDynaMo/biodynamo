@@ -9,6 +9,18 @@ using std::array;
 using std::shared_ptr;
 using cx3d::spatial_organization::ExactVector;
 
+std::shared_ptr<ExactVector> ExactVector::create(const std::array<std::shared_ptr<Rational>, 3>& values) {
+  return std::shared_ptr<ExactVector>(new ExactVector(values));
+}
+
+/**
+ * @see create(const std::array<std::shared_ptr<Rational>, 3>& values)
+ * @see ExactVector(const std::array<double, 3>& values)
+ */
+std::shared_ptr<ExactVector> ExactVector::create(const std::array<double, 3>& values) {
+  return std::shared_ptr<ExactVector>(new ExactVector(values));
+}
+
 shared_ptr<Rational> ExactVector::det(const std::array<shared_ptr<ExactVector>, 3>& c) {
   return c[0]->elements_[0]->multiply(c[1]->elements_[1])->multiply(c[2]->elements_[2])->add(
       c[0]->elements_[1]->multiply(c[1]->elements_[2])->multiply(c[2]->elements_[0]))->add(

@@ -31,9 +31,6 @@ using local_biology::NeuriteElement;
  * All the mass of this cylinder is concentrated at the distal point. Only the distal end is moved
  * by a PhysicalCylinder. All the forces in a cylinder that are applied to the proximal node (belonging to the
  * mother PhysicalNode) are transmitted to the mother element
- *
- * @author fredericzubler
- *
  */
 class PhysicalCylinder : public PhysicalObject {
  public:
@@ -41,8 +38,7 @@ class PhysicalCylinder : public PhysicalObject {
 
   PhysicalCylinder();
 
-  virtual ~PhysicalCylinder() {
-  }
+  virtual ~PhysicalCylinder();
 
   virtual StringBuilder& simStateToJson(StringBuilder& sb) const override;
 

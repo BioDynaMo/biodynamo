@@ -29,6 +29,9 @@ PhysicalCylinder::PhysicalCylinder() {
   updateVolume();
 }
 
+PhysicalCylinder::~PhysicalCylinder() {
+}
+
 StringBuilder& PhysicalCylinder::simStateToJson(StringBuilder& sb) const {
   PhysicalObject::simStateToJson(sb);
 

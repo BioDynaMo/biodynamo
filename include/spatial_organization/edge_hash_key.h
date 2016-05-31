@@ -46,8 +46,7 @@ class EdgeHashKey {
 
   EdgeHashKey<T>& operator=(const EdgeHashKey<T>& rhs);
 
-  virtual ~EdgeHashKey() {
-  }
+  virtual ~EdgeHashKey();
 
   /**
    * Creates a string representation of this object.

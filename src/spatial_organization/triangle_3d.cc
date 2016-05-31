@@ -18,6 +18,14 @@ namespace spatial_organization {
 using std::shared_ptr;
 
 template<class T>
+std::shared_ptr<Triangle3D<T>> Triangle3D<T>::create(SpaceNode<T>* sn_1, SpaceNode<T>* sn_2, SpaceNode<T>* sn_3,
+                                                            const std::shared_ptr<Tetrahedron<T>>& tetrahedron_1,
+                                                            const std::shared_ptr<Tetrahedron<T>>& tetrahedron_2) {
+  std::shared_ptr < Triangle3D < T >> triangle(new Triangle3D(sn_1, sn_2, sn_3, tetrahedron_1, tetrahedron_2));
+  return triangle;
+}
+
+template<class T>
 std::array<double, 3> Triangle3D<T>::calculate3PlaneXPoint(
     const std::array<std::array<double, 3>, 3>& normals, const std::array<double, 3>& offsets,
     double normal_det) {

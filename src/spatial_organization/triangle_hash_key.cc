@@ -28,7 +28,11 @@ TriangleHashKey<T>::TriangleHashKey(const TriangleHashKey& other) {
     a_ = other.a_;
     b_ = other.b_;
     c_ = other.c_;
-  }
+}
+
+template<class T>
+TriangleHashKey<T>::~TriangleHashKey() {
+}
 
 template<class T>
 int TriangleHashKey<T>::hashCode() const {

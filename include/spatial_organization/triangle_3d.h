@@ -36,11 +36,7 @@ class Triangle3D : public Plane3D<T>, public std::enable_shared_from_this<Triang
       SpaceNode<T>* sn_2,
       SpaceNode<T>* sn_3,
       const std::shared_ptr<Tetrahedron<T>>& tetrahedron_1,
-      const std::shared_ptr<Tetrahedron<T>>& tetrahedron_2) {
-    std::shared_ptr<Triangle3D<T>> triangle(
-        new Triangle3D(sn_1, sn_2, sn_3, tetrahedron_1, tetrahedron_2));
-    return triangle;
-  }
+      const std::shared_ptr<Tetrahedron<T>>& tetrahedron_2);
 
   /**
    * Calculates the crossing point of three planes given in normal form.

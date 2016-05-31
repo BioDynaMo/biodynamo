@@ -39,24 +39,18 @@ class Rational : public std::enable_shared_from_this<Rational> {
    *   return std::shared_ptr<Rational>(new Rational(std::forward<T>(all)...));
    * }
    */
-  static std::shared_ptr<Rational> create(uint64_t numerator, uint64_t denominator) {
-    return std::shared_ptr<Rational>(new Rational(numerator, denominator));
-  }
+  static std::shared_ptr<Rational> create(uint64_t numerator, uint64_t denominator);
 
   /**
    * @see static std::shared_ptr<Rational> create(long numerator, long denominator)
    */
   static std::shared_ptr<Rational> create(const BigInteger& numerator,
-                                          const BigInteger& denominator) {
-    return std::shared_ptr<Rational>(new Rational(numerator, denominator));
-  }
+                                          const BigInteger& denominator);
 
   /**
    * @see static std::shared_ptr<Rational> create(long numerator, long denominator)
    */
-  static std::shared_ptr<Rational> create(double value) {
-    return std::shared_ptr<Rational>(new Rational(value));
-  }
+  static std::shared_ptr<Rational> create(double value);
 
   virtual ~Rational();
 

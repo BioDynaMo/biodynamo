@@ -19,10 +19,7 @@ template<class T>
 class SimpleTriangulationNodeOrganizer :
     public AbstractTriangulationNodeOrganizer<T> {
  public:
-  static std::shared_ptr<SimpleTriangulationNodeOrganizer<T>> create() {
-    return std::shared_ptr<SimpleTriangulationNodeOrganizer<T>>(
-        new SimpleTriangulationNodeOrganizer());
-  }
+  static std::shared_ptr<SimpleTriangulationNodeOrganizer<T>> create();
 
   SimpleTriangulationNodeOrganizer();
 

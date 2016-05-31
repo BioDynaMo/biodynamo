@@ -20,6 +20,33 @@ namespace cx3d {
 namespace spatial_organization {
 
 template<class T>
+std::shared_ptr<Tetrahedron<T>> Tetrahedron<T>::create(
+    const std::shared_ptr<Triangle3D<T>>& one_triangle,
+    SpaceNode<T>* fourth_point,
+    const std::shared_ptr<OpenTriangleOrganizer<T>>& oto) {
+  Tetrahedron<T>* raw_pointer = new Tetrahedron();
+  std::shared_ptr<Tetrahedron<T>> tetrahedron(raw_pointer);
+  tetrahedron->initializationHelper(one_triangle, fourth_point, oto);
+  return tetrahedron;
+}
+
+template<class T>
+std::shared_ptr<Tetrahedron<T>> Tetrahedron<T>::create(const std::shared_ptr<Triangle3D<T>>& triangle_a,
+                                              const std::shared_ptr<Triangle3D<T>>& triangle_b,
+                                              const std::shared_ptr<Triangle3D<T>>& triangle_c,
+                                              const std::shared_ptr<Triangle3D<T>>& triangle_d,
+                                              SpaceNode<T>* node_a,
+                                              SpaceNode<T>* node_b,
+                                              SpaceNode<T>* node_c,
+                                              SpaceNode<T>* node_d) {
+  Tetrahedron<T>* raw_pointer = new Tetrahedron();
+  std::shared_ptr<Tetrahedron<T>> tetrahedron(raw_pointer);
+  tetrahedron->initializationHelper(triangle_a, triangle_b, triangle_c, triangle_d, node_a,
+                                    node_b, node_c, node_d);
+  return tetrahedron;
+}
+
+template<class T>
 std::shared_ptr<Tetrahedron<T> > Tetrahedron<T>::createInitialTetrahedron(
     SpaceNode<T>* a, SpaceNode<T>* b,
     SpaceNode<T>* c, SpaceNode<T>* d,
@@ -38,6 +65,10 @@ std::shared_ptr<Tetrahedron<T> > Tetrahedron<T>::createInitialTetrahedron(
   Tetrahedron<T>::create(triangle_c, null_spacenode, simple_oto);
   Tetrahedron<T>::create(triangle_d, null_spacenode, simple_oto);
   return ret;
+}
+
+template<class T>
+Tetrahedron<T>::~Tetrahedron(){
 }
 
 template<class T>

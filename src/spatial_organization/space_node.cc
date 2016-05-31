@@ -80,6 +80,10 @@ SpaceNode<T>::SpaceNode(double x, double y, double z,
 }
 
 template<class T>
+SpaceNode<T>::~SpaceNode() {
+}
+
+template<class T>
 void SpaceNode<T>::addSpatialOrganizationNodeMovementListener(typename SpatialOrganizationNodeMovementListener<T>::UPtr listener) {
   listeners_.push_back(std::move(listener));
 }

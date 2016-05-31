@@ -32,6 +32,10 @@ EdgeHashKey<T>::EdgeHashKey(const EdgeHashKey<T>& other){
 }
 
 template<class T>
+EdgeHashKey<T>::~EdgeHashKey(){
+}
+
+template<class T>
 EdgeHashKey<T>& EdgeHashKey<T>::operator=(const EdgeHashKey<T>& rhs) {
   if(this == &rhs){
     return *this;

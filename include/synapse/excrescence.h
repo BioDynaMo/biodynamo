@@ -26,6 +26,10 @@ using local_biology::NeuriteElement;
 using physics::PhysicalObject;
 using simulation::ECM;
 
+/**
+ * General class for dendritic spines and axonal boutons
+ * This class doesn't derive from PhysicalObject. It has thus no SpaceNode.
+ */
 class Excrescence : public SimStateSerializable {
  public:
   using UPtr = std::unique_ptr<Excrescence>;

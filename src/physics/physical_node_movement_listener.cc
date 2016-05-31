@@ -17,6 +17,16 @@ PhysicalNodeMovementListener::UPtr PhysicalNodeMovementListener::create() {
   return UPtr(new PhysicalNodeMovementListener());
 }
 
+void PhysicalNodeMovementListener::setMovementOperationId(int i) {
+  movement_operation_id_ = i;
+}
+
+PhysicalNodeMovementListener::PhysicalNodeMovementListener() {
+}
+
+PhysicalNodeMovementListener::~PhysicalNodeMovementListener() {
+}
+
 SpatialOrganizationNodeMovementListener<PhysicalNode>::UPtr PhysicalNodeMovementListener::getCopy() const {
   return SpatialOrganizationNodeMovementListener<PhysicalNode>::UPtr(new PhysicalNodeMovementListener());
 }

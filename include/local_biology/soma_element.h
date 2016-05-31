@@ -16,6 +16,10 @@ class NeuriteElement;
 using physics::PhysicalObject;
 using physics::PhysicalSphere;
 
+/**
+ * This class contains the description of the biological properties of a soma (if it contains
+ * instances of <code>LocalBiologyModule</code>. It is asociated with a <code>PhysicalSphere</code>.
+ */
 class SomaElement : public CellElement {
  public:
   using UPtr = std::unique_ptr<SomaElement>;

@@ -17,8 +17,8 @@ class SpatialOrganizationNodeMovementListener {
   using UPtr = typename std::unique_ptr<SpatialOrganizationNodeMovementListener<T>>;
 
   SpatialOrganizationNodeMovementListener(){
-
   }
+
   virtual ~SpatialOrganizationNodeMovementListener() {
   }
 

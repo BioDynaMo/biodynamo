@@ -15,34 +15,17 @@ namespace cx3d {
  */
 class Color {
  public:
-  static Color getRandomColor() {
-    long r = std::lround(255 * Random::nextDouble());
-    long g = std::lround(255 * Random::nextDouble());
-    long b = std::lround(255 * Random::nextDouble());
-
-    int color = 0xB3000000;
-    color |= r << 16;
-    color |= g << 8;
-    color |= b;
-
-    return Color(color);
-  }
+  static Color getRandomColor();
 
   constexpr Color(unsigned value)
       : value_ { value } {
   }
 
-  Color()
-      : value_ { 0 } {
-  }
+  Color();
 
-  bool operator==(const Color& other) const {
-    return value_ == other.value_;
-  }
+  bool operator==(const Color& other) const;
 
-  unsigned getValue() const {
-    return value_;
-  }
+  unsigned getValue() const;
 
  private:
   unsigned value_;

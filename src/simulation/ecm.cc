@@ -577,6 +577,54 @@ std::array<double, 3> ECM::getMaxBounds() const {
   return {x_max_,y_max_,z_max_};
 }
 
+PhysicalCylinder* ECM::getPhysicalCylinder(int i) const {
+  return physical_cylinders_[i];
+}
+
+NeuriteElement* ECM::getNeuriteElement(int i) const {
+  return neurite_elements_[i];
+}
+
+PhysicalNode* ECM::getPhysicalNode(int i) const {
+  return physical_nodes_[i];
+}
+
+PhysicalSphere* ECM::getPhysicalSphere(int i) const {
+  return physical_spheres_[i];
+}
+
+SomaElement* ECM::getSomaElement(int i) const {
+  return soma_elements_[i];
+}
+
+Cell* ECM::getCell(int i) const {
+  return cells_[i].get();
+}
+
+int ECM::getCellListSize() const {
+  return cells_.size();
+}
+
+int ECM::getPhysicalNodeListSize() const {
+  return physical_nodes_.size();
+}
+
+int ECM::getPhysicalCylinderListSize() const {
+  return physical_cylinders_.size();
+}
+
+int ECM::getPhysicalSphereListSize() const {
+  return physical_spheres_.size();
+}
+
+int ECM::getSomaElementListSize() const {
+  return soma_elements_.size();
+}
+
+int ECM::getNeuriteElementListSize() const {
+  return neurite_elements_.size();
+}
+
 ECM::ECM() {
 }
 

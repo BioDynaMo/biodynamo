@@ -29,6 +29,10 @@ using cells::Cell;
 using physics::PhysicalObject;
 using simulation::ECM;
 
+/**
+ * Super class for the local biological discrete elements (SomaElement & NeuriteElement).
+ * Contains a <code>Vector</code> of <code>LocalBiologyModule</code>.
+ */
 class CellElement : public SimStateSerializable {
  public:
   using UPtr = std::unique_ptr<CellElement>;

@@ -6,7 +6,6 @@
 #include <exception>
 
 #include "local_biology/cell_element.h"
-//#include "physics/physical_object.h"
 #include "physics/physical_cylinder.h"
 
 namespace cx3d {
@@ -18,6 +17,10 @@ class LocalBiologyModule;
 using physics::PhysicalObject;
 using physics::PhysicalCylinder;
 
+/**
+ * Class defining the biological properties of a neurite segment, if it contains
+ * a <code>LacalBiologyModule</code>. This class is associated with a <code>PhysicalCylinder</code>.
+ */
 class NeuriteElement : public CellElement {
  public:
   using UPtr = std::unique_ptr<NeuriteElement>;

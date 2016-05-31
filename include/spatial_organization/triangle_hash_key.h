@@ -38,8 +38,7 @@ class TriangleHashKey {
 
   TriangleHashKey(const TriangleHashKey& other);
 
-  virtual ~TriangleHashKey() {
-  }
+  virtual ~TriangleHashKey();
 
   /**
    * Creates a integer representation of this object.

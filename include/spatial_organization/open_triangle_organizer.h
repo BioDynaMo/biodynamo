@@ -40,16 +40,9 @@ template<class T>
 class OpenTriangleOrganizer : public std::enable_shared_from_this<
     OpenTriangleOrganizer<T>> {
  public:
-  virtual ~OpenTriangleOrganizer() {
-  }
-
   static std::shared_ptr<OpenTriangleOrganizer<T>> create(
       int preferred_capacity,
-      const std::shared_ptr<SimpleTriangulationNodeOrganizer<T>>& tno) {
-    auto raw_ptr = new OpenTriangleOrganizer<T>(preferred_capacity, tno);
-    std::shared_ptr<OpenTriangleOrganizer<T>> s_ptr(raw_ptr);
-    return s_ptr;
-  }
+      const std::shared_ptr<SimpleTriangulationNodeOrganizer<T>>& tno);
 
   /**
    * Returns a simple instance of <code>OpenTriangleOrganizer</code>. As a node
@@ -59,10 +52,9 @@ class OpenTriangleOrganizer : public std::enable_shared_from_this<
    * @param <T> The type of user objects associated with nodes in the triangulation.
    * @return A new instance of <code>OpenTriangleOrganizer</code>.
    */
-  static std::shared_ptr<OpenTriangleOrganizer<T>> createSimpleOpenTriangleOrganizer() {
-    auto tno = SimpleTriangulationNodeOrganizer<T>::create();
-    return OpenTriangleOrganizer<T>::create(30, tno);
-  }
+  static std::shared_ptr<OpenTriangleOrganizer<T>> createSimpleOpenTriangleOrganizer();
+
+  virtual ~OpenTriangleOrganizer();
 
   /**
    * Starts the recording of newly created tetrahedra.

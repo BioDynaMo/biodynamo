@@ -40,8 +40,7 @@ class Edge : public SpatialOrganizationEdge<T> {
     return edge;
   }
 
-  virtual ~Edge() {
-  }
+  virtual ~Edge();
 
   /**
    * {@inheritDoc}

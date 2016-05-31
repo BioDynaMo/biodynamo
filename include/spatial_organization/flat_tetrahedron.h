@@ -59,15 +59,9 @@ class FlatTetrahedron : public Tetrahedron<T> {  //, public std::enable_shared_f
    *            newly created triangles.
    */
 
-  static std::shared_ptr<Tetrahedron<T>> create(
-      const std::shared_ptr<Triangle3D<T>>& one_triangle,
-      SpaceNode<T>* fourth_point,
-      const std::shared_ptr<OpenTriangleOrganizer<T>>& oto) {
-    FlatTetrahedron<T>* tetrahedron = new FlatTetrahedron<T>();
-    tetrahedron->initializationHelper(one_triangle, fourth_point, oto);
-    std::shared_ptr<Tetrahedron<T>> ret(tetrahedron);
-    return ret;
-  }
+  static std::shared_ptr<Tetrahedron<T>> create(const std::shared_ptr<Triangle3D<T>>& one_triangle,
+                                                SpaceNode<T>* fourth_point,
+                                                const std::shared_ptr<OpenTriangleOrganizer<T>>& oto);
 
   /**
    * Creates a new flat tetrahedron from four triangles and four points.
@@ -96,16 +90,9 @@ class FlatTetrahedron : public Tetrahedron<T> {  //, public std::enable_shared_f
                                                 SpaceNode<T>* node_a,
                                                 SpaceNode<T>* node_b,
                                                 SpaceNode<T>* node_c,
-                                                SpaceNode<T>* node_d) {
-    FlatTetrahedron<T>* tetrahedron = new FlatTetrahedron<T>();
-    tetrahedron->initializationHelper(triangle_a, triangle_b, triangle_c, triangle_d, node_a,
-                                      node_b, node_c, node_d);
-    std::shared_ptr<Tetrahedron<T>> ret(tetrahedron);
-    return ret;
-  }
+                                                SpaceNode<T>* node_d);
 
-  virtual ~FlatTetrahedron() {
-  }
+  virtual ~FlatTetrahedron();
 
   /**
    * Updates the circumsphere of this tetrahedron. Since a flat tetrahedron does not

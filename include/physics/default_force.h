@@ -16,9 +16,7 @@ class DefaultForce : public InterObjectForce {
  public:
   DefaultForce();
 
-  virtual ~DefaultForce() {
-
-  }
+  virtual ~DefaultForce();
 
   virtual StringBuilder& simStateToJson(StringBuilder& sb) const override;
 

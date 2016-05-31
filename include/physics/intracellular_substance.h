@@ -10,6 +10,11 @@
 namespace cx3d {
 namespace physics {
 
+/**
+ * Instances of this class represent the intracellular and surface (membrane bound)
+ * Substances. The visibility from outside (fact that they are expressed on the surface)
+ * is specified by the appropriate getter and setter.
+ */
 class IntracellularSubstance : public Substance {
  public:
   using UPtr = std::unique_ptr<IntracellularSubstance>;

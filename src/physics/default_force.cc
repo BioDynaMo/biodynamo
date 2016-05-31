@@ -12,6 +12,9 @@ namespace physics {
 DefaultForce::DefaultForce() {
 }
 
+DefaultForce::~DefaultForce() {
+}
+
 StringBuilder& DefaultForce::simStateToJson(StringBuilder& sb) const {
   sb.append("{}");
   return sb;

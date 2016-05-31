@@ -81,8 +81,7 @@ class SpaceNode : public SpatialOrganizationNode<T> {
    */
   SpaceNode(double x, double y, double z, T* content);
 
-  virtual ~SpaceNode() {
-  }
+  virtual ~SpaceNode();
 
   virtual void addSpatialOrganizationNodeMovementListener(typename SpatialOrganizationNodeMovementListener<T>::UPtr listener)
           override;

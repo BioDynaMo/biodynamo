@@ -86,6 +86,10 @@ Plane3D<T>::Plane3D(const std::shared_ptr<Tetrahedron<T>>& tetrahedron,
 }
 
 template<class T>
+Plane3D<T>::~Plane3D() {
+}
+
+template<class T>
 void Plane3D<T>::initPlane(const std::array<double, 3>& direction_vector_1,
                            const std::array<double, 3>& direction_vector_2,
                            const std::array<double, 3>& position_vector, bool normalize) {

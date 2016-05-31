@@ -27,7 +27,9 @@ void PhysicalObject::setInterObjectForce(InterObjectForce::UPtr force) {
 }
 
 PhysicalObject::PhysicalObject() {
+}
 
+PhysicalObject::~PhysicalObject() {
 }
 
 StringBuilder& PhysicalObject::simStateToJson(StringBuilder& sb) const {

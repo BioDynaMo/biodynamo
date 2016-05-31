@@ -35,14 +35,11 @@ class PhysicalNodeMovementListener : public SpatialOrganizationNodeMovementListe
 
   static UPtr create();
 
-  static void setMovementOperationId(int i) {
-    movement_operation_id_ = i;
-  }
+  static void setMovementOperationId(int i);
 
-  PhysicalNodeMovementListener() {
-  }
-  virtual ~PhysicalNodeMovementListener() {
-  }
+  PhysicalNodeMovementListener();
+
+  virtual ~PhysicalNodeMovementListener();
 
   virtual SpatialOrganizationNodeMovementListener<PhysicalNode>::UPtr getCopy() const override;
 

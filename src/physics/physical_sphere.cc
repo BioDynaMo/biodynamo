@@ -29,6 +29,9 @@ PhysicalSphere::PhysicalSphere() {
   updateVolume();
 }
 
+PhysicalSphere::~PhysicalSphere() {
+}
+
 StringBuilder& PhysicalSphere::simStateToJson(StringBuilder& sb) const {
   PhysicalObject::simStateToJson(sb);
 

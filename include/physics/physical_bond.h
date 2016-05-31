@@ -12,6 +12,18 @@ namespace physics {
 class PhysicalObject;
 class PhysicalCylinder;
 
+/**
+ * This class represents an elastic bond between two physical objects.
+ * It can be used (1) to represent a cell adhesion mechanism - zip/anchor- and
+ * in this case is permanent, or (2) to force two cylinders that crossed
+ * each other to come back on the right side, and in this case it vanishes
+ * when the right conformation is re-established.
+ *
+ * It works as a spring, with
+ * a resting length and a spring constant, used to compute a force along the vector
+ * joining the two ends, depending on the actual length. (Note that it is considered as a
+ * real unique spring and not a linear spring constant as in PhysicalCylinder)
+ */
 class PhysicalBond : public SimStateSerializable, public std::enable_shared_from_this<PhysicalBond> {
  public:
   static std::shared_ptr<PhysicalBond> create();
@@ -26,8 +38,7 @@ class PhysicalBond : public SimStateSerializable, public std::enable_shared_from
 
   PhysicalBond();
 
-  virtual ~PhysicalBond() {
-  }
+  virtual ~PhysicalBond();
 
   virtual StringBuilder& simStateToJson(StringBuilder& sb) const override;
 

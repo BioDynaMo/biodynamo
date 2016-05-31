@@ -34,8 +34,7 @@ class PhysicalSphere : public PhysicalObject {
 
   PhysicalSphere();
 
-  virtual ~PhysicalSphere() {
-  }
+  virtual ~PhysicalSphere();
 
   virtual StringBuilder& simStateToJson(StringBuilder& sb) const override;
 

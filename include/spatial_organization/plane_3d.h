@@ -10,6 +10,11 @@ namespace spatial_organization {
 template<class T> class SpaceNode;
 template<class T> class Tetrahedron;
 
+/**
+ * Used to represent a plane in three dimensional space. Here, a plane is fully defined by
+ * a normal vector and an offset value.
+ * @param <T> The type of user objects associated with nodes in the current triangulation.
+ */
 template<class T>
 class Plane3D {
  public:
@@ -79,8 +84,7 @@ class Plane3D {
   Plane3D(const std::shared_ptr<Tetrahedron<T>>& tetrahedron,
           SpaceNode<T>* non_used_node);
 
-  virtual ~Plane3D() {
-  }
+  virtual ~Plane3D();
 
   /**
    * Initializes the plane by computing a normal vector and an offset value from

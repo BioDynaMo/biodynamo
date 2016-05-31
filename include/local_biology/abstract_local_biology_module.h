@@ -15,49 +15,29 @@ namespace local_biology {
  */
 class AbstractLocalBiologyModule : public LocalBiologyModule {
  public:
-  AbstractLocalBiologyModule() {
-  }
+  AbstractLocalBiologyModule();
 
-  virtual ~AbstractLocalBiologyModule() {
-  }
+  virtual ~AbstractLocalBiologyModule();
 
-  virtual StringBuilder& simStateToJson(StringBuilder& sb) const override {
-    sb.append("{");
-    //cellElement is circular reference
-    return sb;
-  }
+  virtual StringBuilder& simStateToJson(StringBuilder& sb) const override;
 
   virtual void run() override = 0;
 
-  virtual CellElement* getCellElement() const override {
-    return cell_element_;
-  }
+  virtual CellElement* getCellElement() const override;
 
-  virtual void setCellElement(CellElement* cell_element) override {
-    cell_element_ = cell_element;
-  }
+  virtual void setCellElement(CellElement* cell_element) override;
 
   virtual UPtr getCopy() const override = 0;
 
-  virtual bool isCopiedWhenNeuriteBranches() const override {
-    return false;
-  }
+  virtual bool isCopiedWhenNeuriteBranches() const override;
 
-  virtual bool isCopiedWhenSomaDivides() const override {
-    return false;
-  }
+  virtual bool isCopiedWhenSomaDivides() const override;
 
-  virtual bool isCopiedWhenNeuriteElongates() const override {
-    return false;
-  }
+  virtual bool isCopiedWhenNeuriteElongates() const override;
 
-  virtual bool isCopiedWhenNeuriteExtendsFromSoma() const override {
-    return false;
-  }
+  virtual bool isCopiedWhenNeuriteExtendsFromSoma() const override;
 
-  virtual bool isDeletedAfterNeuriteHasBifurcated() const override {
-    return false;
-  }
+  virtual bool isDeletedAfterNeuriteHasBifurcated() const override;
 
  protected:
   CellElement* cell_element_ = nullptr;

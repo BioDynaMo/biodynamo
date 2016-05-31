@@ -9,6 +9,25 @@ using std::shared_ptr;
 namespace cx3d {
 namespace spatial_organization {
 
+std::shared_ptr<Rational> Rational::create(uint64_t numerator, uint64_t denominator) {
+  return std::shared_ptr<Rational>(new Rational(numerator, denominator));
+}
+
+/**
+ * @see static std::shared_ptr<Rational> create(long numerator, long denominator)
+ */
+std::shared_ptr<Rational> Rational::create(const BigInteger& numerator,
+                                        const BigInteger& denominator) {
+  return std::shared_ptr<Rational>(new Rational(numerator, denominator));
+}
+
+/**
+ * @see static std::shared_ptr<Rational> create(long numerator, long denominator)
+ */
+std::shared_ptr<Rational> Rational::create(double value) {
+  return std::shared_ptr<Rational>(new Rational(value));
+}
+
 Rational::Rational(uint64_t numerator, uint64_t denominator)
     : numerator_(0),
       denominator_(1) {

@@ -20,11 +20,29 @@ namespace cx3d {
 namespace spatial_organization {
 
 template<class T>
+std::shared_ptr<OpenTriangleOrganizer<T>> OpenTriangleOrganizer<T>::create(
+    int preferred_capacity, const std::shared_ptr<SimpleTriangulationNodeOrganizer<T>>& tno) {
+  auto raw_ptr = new OpenTriangleOrganizer<T>(preferred_capacity, tno);
+  std::shared_ptr < OpenTriangleOrganizer < T >> s_ptr(raw_ptr);
+  return s_ptr;
+}
+
+template<class T>
+std::shared_ptr<OpenTriangleOrganizer<T>> OpenTriangleOrganizer<T>::createSimpleOpenTriangleOrganizer() {
+  auto tno = SimpleTriangulationNodeOrganizer < T > ::create();
+  return OpenTriangleOrganizer < T > ::create(30, tno);
+}
+
+template<class T>
 OpenTriangleOrganizer<T>::OpenTriangleOrganizer(
     int preferred_capacity,
     const std::shared_ptr<SimpleTriangulationNodeOrganizer<T> >& tno)
     : tno_ { tno },
       shortest_distance_ { std::numeric_limits<double>::max() } {
+}
+
+template<class T>
+OpenTriangleOrganizer<T>::~OpenTriangleOrganizer() {
 }
 
 template<class T>

@@ -45,18 +45,13 @@ class ExactVector : public std::enable_shared_from_this<ExactVector> {
    * }
    * </code>
    */
-  static std::shared_ptr<ExactVector> create(
-      const std::array<std::shared_ptr<Rational>, 3>& values) {
-    return std::shared_ptr<ExactVector>(new ExactVector(values));
-  }
+  static std::shared_ptr<ExactVector> create(const std::array<std::shared_ptr<Rational>, 3>& values);
 
   /**
    * @see create(const std::array<std::shared_ptr<Rational>, 3>& values)
    * @see ExactVector(const std::array<double, 3>& values)
    */
-  static std::shared_ptr<ExactVector> create(const std::array<double, 3>& values) {
-    return std::shared_ptr<ExactVector>(new ExactVector(values));
-  }
+  static std::shared_ptr<ExactVector> create(const std::array<double, 3>& values);
 
   /**
    * Computes the determinant of a 3x3 matrix.
