@@ -113,12 +113,12 @@ class SpaceNode : public SpatialOrganizationNode<T> {
   /**
    * @return The list of tetrahedra incident to this node.
    */
-  virtual std::list<std::shared_ptr<Tetrahedron<T>> > getAdjacentTetrahedra() const;
+  std::list<std::shared_ptr<Tetrahedron<T>> > getAdjacentTetrahedra() const;
 
   /**
    * Adds an element to the list of adjacent tetrahedra incident to this node.
    */
-  virtual void addTetrahedron(const std::shared_ptr<Tetrahedron<T>>& tetrahedron);
+  void addTetrahedron(const std::shared_ptr<Tetrahedron<T>>& tetrahedron);
 
   /**
    * Removes a given tetrahedron from the list of incident tetrahedra.
@@ -126,15 +126,14 @@ class SpaceNode : public SpatialOrganizationNode<T> {
    * @param tetrahedron
    *            The tetrahedron to be remobed.
    */
-  virtual void removeTetrahedron(
-      const std::shared_ptr<Tetrahedron<T>>& tetrahedron);
+  void removeTetrahedron(const std::shared_ptr<Tetrahedron<T>>& tetrahedron);
 
   /**
    * Moves this node to a new position.
    * @param new_position The new coordinate for this node.
    * @throws PositionNotAllowedException
    */
-  virtual void moveTo(const std::array<double, 3>& new_position);
+  void moveTo(const std::array<double, 3>& new_position);
 
   /**
    * Modifies the volume associated with this SpaceNode by a given value.
@@ -142,7 +141,7 @@ class SpaceNode : public SpatialOrganizationNode<T> {
    * @param change
    *            The change value that will be added to the volume.
    */
-  virtual void changeVolume(double change);
+  void changeVolume(double change);
 
   /**
    * Adds a new edge to the std::list of adjacent edges.
@@ -150,12 +149,12 @@ class SpaceNode : public SpatialOrganizationNode<T> {
    * @param newEdge
    *            The edge to be added.
    */
-  virtual void addEdge(const typename Edge<T>::SPtr& edge);
+  void addEdge(const typename Edge<T>::SPtr& edge);
 
   /**
    * @return The identification number of this SpaceNode.
    */
-  virtual int getId() const;
+  int getId() const;
 
   /**
    * Searches for an edge which connects this SpaceNode with another
@@ -168,8 +167,7 @@ class SpaceNode : public SpatialOrganizationNode<T> {
    *         such an edge didn't exist in the std::list of edges incident to this
    *         node, a new edge is created.
    */
-  virtual Edge<T>* searchEdge(
-      SpaceNode<T>* opposite_node);
+  Edge<T>* searchEdge(SpaceNode<T>* opposite_node);
 
   /**
    * Removes a given edge from the std::list of incident edges.
@@ -177,7 +175,7 @@ class SpaceNode : public SpatialOrganizationNode<T> {
    * @param edge
    *            The edge to be removed.
    */
-  virtual void removeEdge(Edge<T>* edge);
+  void removeEdge(Edge<T>* edge);
 
   /**
    * Starting at a given tetrahedron, this function searches the triangulation
@@ -188,7 +186,7 @@ class SpaceNode : public SpatialOrganizationNode<T> {
    * @return A tetrahedron which contains the position of this node.
    * @throws PositionNotAllowedException
    */
-  virtual std::shared_ptr<Tetrahedron<T>> searchInitialInsertionTetrahedron(
+  std::shared_ptr<Tetrahedron<T>> searchInitialInsertionTetrahedron(
       const std::shared_ptr<Tetrahedron<T>>& start);
 
   /**
@@ -202,8 +200,7 @@ class SpaceNode : public SpatialOrganizationNode<T> {
    * @return A tetrahedron which was created while inserting this node.
    * @throws PositionNotAllowedException
    */
-  virtual std::shared_ptr<Tetrahedron<T>> insert(
-      const std::shared_ptr<Tetrahedron<T>>& start);
+  std::shared_ptr<Tetrahedron<T>> insert(const std::shared_ptr<Tetrahedron<T>>& start);
 
   /**
    * Restores the Delaunay property for the current triangulation after a movement of this node.
@@ -213,23 +210,23 @@ class SpaceNode : public SpatialOrganizationNode<T> {
    * If the Delaunay property cannot be restored using this flip algorithm, a cleanup procedure is used,
    * which removes all tetrahedra that cause a problem and then re-triangulates the resulted hole.
    */
-  virtual void restoreDelaunay();
+  void restoreDelaunay();
 
   /**
    * Proposes a new position for a node that was moved to the same coordinate as this node.
    * @return A coordinate which can be used to place the problematic node.
    */
-  virtual std::array<double, 3> proposeNewPosition();
+  std::array<double, 3> proposeNewPosition();
 
   /**
    * Returns a string representation of this node.
    */
-  virtual std::string toString() const override;
+  std::string toString() const override;
 
   /**
    * Determines if two instances of this object are equal
    */
-  virtual bool equalTo(SpaceNode<T>* other);
+  bool equalTo(SpaceNode<T>* other);
 
  private:
   /**

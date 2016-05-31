@@ -19,25 +19,25 @@ class StringBuilder {
 
   StringBuilder(const StringBuilder &src);
 
-  virtual ~StringBuilder();
+  ~StringBuilder();
 
   /**
    * Appends the given string to the current string builder
    * @param str string to append
    * @return returns itself
    */
-  virtual StringBuilder& append(const string &str);
+  StringBuilder& append(const string &str);
 
   /**
    * Sets the pointer to the second last character.
    * A consecutive call of append will overwrite the last char
    */
-  virtual void overwriteLastCharOnNextAppend();
+  void overwriteLastCharOnNextAppend();
 
   /**
    *  Returns a string object with a copy of the current contents of the stream.
    */
-  virtual string str() const;
+  string str() const;
 
  private:
   stringstream string_stream_;

@@ -18,13 +18,13 @@ class BiologicalBouton : public SimStateSerializable {
 
   BiologicalBouton();
 
-  virtual ~BiologicalBouton();
+  ~BiologicalBouton();
 
-  virtual StringBuilder& simStateToJson(StringBuilder& sb) const override;
+  StringBuilder& simStateToJson(StringBuilder& sb) const override;
 
-  virtual PhysicalBouton* getPhysicalBouton() const;
+  PhysicalBouton* getPhysicalBouton() const;
 
-  virtual void setPhysicalBouton(PhysicalBouton* ps);
+  void setPhysicalBouton(PhysicalBouton* ps);
 
  private:
   BiologicalBouton(const BiologicalBouton&) = delete;

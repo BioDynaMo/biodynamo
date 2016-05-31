@@ -44,17 +44,17 @@ class EdgeHashKey {
 
   EdgeHashKey<T>& operator=(const EdgeHashKey<T>& rhs);
 
-  virtual ~EdgeHashKey();
+  ~EdgeHashKey();
 
   /**
    * Creates a string representation of this object.
    */
-  virtual std::string toString() const;
+  std::string toString() const;
 
   /**
    * Creates a integer representation of this object.
    */
-  virtual int hashCode() const;
+  int hashCode() const;
 
   /**
    * Compares the represented edge with another object.
@@ -62,7 +62,7 @@ class EdgeHashKey {
    * @return <code>true</code>, if other has the same endpoints as this edge.
    * <code>false</code> is returned in all other cases.
    */
-  virtual bool equalTo(const std::shared_ptr<EdgeHashKey<T>>& other) const;
+  bool equalTo(const std::shared_ptr<EdgeHashKey<T>>& other) const;
 
   /**
    * computes the cosine between this edge to another point measured at the
@@ -71,24 +71,24 @@ class EdgeHashKey {
    * @return The cosine between this edge and an edge between the first
    * endpoint of this edge and <code>fourthPoint</code>.
    */
-  virtual double getCosine(const std::array<double, 3>& fourth_point) const;
+  double getCosine(const std::array<double, 3>& fourth_point) const;
 
   /**
    * @return endpoint A of this edge
    */
-  virtual SpaceNode<T>* getEndpointA() const;
+  SpaceNode<T>* getEndpointA() const;
 
   /**
    * @return endpoint B of this edge
    */
-  virtual SpaceNode<T>* getEndpointB() const;
+  SpaceNode<T>* getEndpointB() const;
 
   /**
    * Returns the opposite node of a given node if the latter is incident to this edge.
    * @param node The given node.
    * @return The incident node opposite to <code>node</code>.
    */
-  virtual SpaceNode<T>* oppositeNode(SpaceNode<T>* node) const;
+  SpaceNode<T>* oppositeNode(SpaceNode<T>* node) const;
 
  private:
   EdgeHashKey() = delete;

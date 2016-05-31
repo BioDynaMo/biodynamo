@@ -13,21 +13,21 @@ class SimpleCellCycle : public AbstractCellModule {
  public:
   SimpleCellCycle();
 
-  virtual ~SimpleCellCycle();
+  ~SimpleCellCycle();
 
-  virtual StringBuilder& simStateToJson(StringBuilder& sb) const override;
+  StringBuilder& simStateToJson(StringBuilder& sb) const override;
 
   /** Run the simulation*/
-  virtual void run() override;
+  void run() override;
 
   /** Get a copy */
-  virtual CellModule::UPtr getCopy() const override;
+  CellModule::UPtr getCopy() const override;
 
-  virtual bool isEnabled() const;
+  bool isEnabled() const;
 
-  virtual void setEnabled(bool enabled);
+  void setEnabled(bool enabled);
 
-  virtual void reset();
+  void reset();
 
  private:
   SimpleCellCycle(const SimpleCellCycle&) = delete;

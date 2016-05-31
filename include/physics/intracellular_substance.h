@@ -31,18 +31,18 @@ class IntracellularSubstance : public Substance {
    * Distribute IntracellularSubstance concentration at division and update quantity.
    * @param new_is
    */
-  virtual void distributeConcentrationOnDivision(IntracellularSubstance* new_is);
+  void distributeConcentrationOnDivision(IntracellularSubstance* new_is);
 
   /**
    * Degradation of the <code>IntracellularSubstance</code>.
    */
-  virtual void degrade();
+  void degrade();
 
   /**
    * Returns the degree of asymmetric distribution during cell division.
    * 0 represents complete symmetrical division, 1 represents complete asymmetric division.
    */
-  virtual double getAsymmetryConstant() const;
+  double getAsymmetryConstant() const;
 
   /**
    * Sets the degree of asymmetric distribution during cell division.
@@ -50,33 +50,33 @@ class IntracellularSubstance : public Substance {
    * The sign + or - is used to distinguish between one daughter (mother cell) and the other
    * (new cell).
    */
-  virtual void setAsymmetryConstant(double asymmetry_constant);
+  void setAsymmetryConstant(double asymmetry_constant);
 
   /**
    * If true, the Substance can be detected from outside of the PhysicalObject
    * (equivalent to an membrane bound substance).
    */
-  virtual bool isVisibleFromOutside() const;
+  bool isVisibleFromOutside() const;
 
   /**
    * If true, the Substance can be detected from outside of the PhysicalObject
    * (equivalent to an membrane bound substance).
    */
-  virtual void setVisibleFromOutside(bool visible_from_outside);
+  void setVisibleFromOutside(bool visible_from_outside);
 
   /**
    * If true, the volume is taken into account for computing the concentration,
    * otherwise a virtual volume corresponding to the length of the physical object
    * (with virtual radius 1) is used.
    */
-  virtual bool isVolumeDependant() const;
+  bool isVolumeDependant() const;
 
   /**
    * If true, the volume is taken into account for computing the concentration,
    * otherwise a virtual volume corresponding to the length of the physical object
    * (with virtual radius 1) is used.
    */
-  virtual void setVolumeDependant(bool volume_dependant);
+  void setVolumeDependant(bool volume_dependant);
 
   virtual Substance::UPtr getCopy() const override;
 

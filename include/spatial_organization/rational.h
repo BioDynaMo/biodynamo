@@ -56,13 +56,13 @@ class Rational : public std::enable_shared_from_this<Rational> {
   /**
    * @return <code>true</code>, if this number is equal to 0.
    */
-  virtual bool isZero() const;
+  bool isZero() const;
 
   /**
    * Negates this rational number. The number itself is changed during this process.
    * @return A reference to <code><b>this</b></code>.
    */
-  virtual std::shared_ptr<Rational> negate();
+  std::shared_ptr<Rational> negate();
 
   /**
    * Adds another rational number to this rational and returns a new instance of Rational. This number itself
@@ -70,14 +70,14 @@ class Rational : public std::enable_shared_from_this<Rational> {
    * @param other The second argument of the addition.
    * @return A new instance of <code>Rational</code> representing the result.
    */
-  virtual std::shared_ptr<Rational> add(const std::shared_ptr<Rational>& other) const;
+  std::shared_ptr<Rational> add(const std::shared_ptr<Rational>& other) const;
 
   /**
    * Increases this rational by another rational. The number itself is modified during this calculation.
    * @param otherValue The value by which this rational should be increased.
    * @return A reference to this object itself.
    */
-  virtual std::shared_ptr<Rational> increaseBy(const std::shared_ptr<Rational>& other);
+  std::shared_ptr<Rational> increaseBy(const std::shared_ptr<Rational>& other);
 
   /**
    * Subtracts another rational number from this rational and returns a new instance of Rational. This number itself
@@ -85,14 +85,14 @@ class Rational : public std::enable_shared_from_this<Rational> {
    * @param otherValue The second argument of the subtraction.
    * @return A new instance of <code>Rational</code> representing the result.
    */
-  virtual std::shared_ptr<Rational> subtract(const std::shared_ptr<Rational>& other) const;
+  std::shared_ptr<Rational> subtract(const std::shared_ptr<Rational>& other) const;
 
   /**
    * Decreases this rational by another rational. The number itself is modified during this calculation.
    * @param otherValue The value by which this rational should be decreased.
    * @return A reference to this object itself.
    */
-  virtual std::shared_ptr<Rational> decreaseBy(const std::shared_ptr<Rational>& other);
+  std::shared_ptr<Rational> decreaseBy(const std::shared_ptr<Rational>& other);
 
   /**
    * Multiplies another rational number with this rational and returns a new instance of <code>Rational</code>. This number itself
@@ -100,14 +100,14 @@ class Rational : public std::enable_shared_from_this<Rational> {
    * @param otherValue The second argument of the multiplication.
    * @return A new instance of <code>Rational</code> representing the result.
    */
-  virtual std::shared_ptr<Rational> multiply(const std::shared_ptr<Rational>& other) const;
+  std::shared_ptr<Rational> multiply(const std::shared_ptr<Rational>& other) const;
 
   /**
    * Multiplies this rational by another rational number. The number itself is modified during this calculation.
    * @param otherValue The value by which this rational should be multiplied.
    * @return A reference to this object itself.
    */
-  virtual std::shared_ptr<Rational> multiplyBy(const std::shared_ptr<Rational>& other);
+  std::shared_ptr<Rational> multiplyBy(const std::shared_ptr<Rational>& other);
 
   /**
    * Divides this rational number by another rational number and returns a new instance of <code>Rational</code>. This number itself
@@ -115,44 +115,44 @@ class Rational : public std::enable_shared_from_this<Rational> {
    * @param otherValue The second argument of the division.
    * @return A new instance of <code>Rational</code> representing the result.
    */
-  virtual std::shared_ptr<Rational> divide(const std::shared_ptr<Rational>& other) const;
+  std::shared_ptr<Rational> divide(const std::shared_ptr<Rational>& other) const;
 
   /**
    * Divides this rational by another rational number. The number itself is modified during this calculation.
    * @param otherValue The value by which this rational should be divided.
    * @return A reference to this object itself.
    */
-  virtual std::shared_ptr<Rational> divideBy(const std::shared_ptr<Rational>& other);
+  std::shared_ptr<Rational> divideBy(const std::shared_ptr<Rational>& other);
 
   /**
    * Creates a double approximation of this rational.
    * @return An approximation of this rational. The function internally transforms the numerator and the denominator
    * into <code>double</code> values and then returns the division of the first by the second.
    */
-  virtual double doubleValue() const;
+  double doubleValue() const;
 
   /**
    * Compares this object with the specified object for order.
    * Returns a negative integer, zero, or a positive integer as this object is less than, equal to, or greater
    * than the specified object.
    */
-  virtual int compareTo(const std::shared_ptr<Rational>& other) const;
+  int compareTo(const std::shared_ptr<Rational>& other) const;
 
   /**
    * Returns a string representation of this object.
    */
-  virtual std::string toString();
+  std::string toString();
 
   /**
    * Determines if two instances of this object are equal
    */
-  virtual bool equalTo(const std::shared_ptr<Rational>& other);
+  bool equalTo(const std::shared_ptr<Rational>& other);
 
  protected:
   /**
    * Divides numerator and denominator of this rational number by their greatest common divisor.
    */
-  virtual void cancel();
+  void cancel();
 
  private:
   /**

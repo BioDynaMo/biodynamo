@@ -18,13 +18,13 @@ class BiologicalSpine : public SimStateSerializable {
 
   BiologicalSpine();
 
-  virtual ~BiologicalSpine();
+  ~BiologicalSpine();
 
-  virtual StringBuilder& simStateToJson(StringBuilder& sb) const override;
+  StringBuilder& simStateToJson(StringBuilder& sb) const override;
 
-  virtual PhysicalSpine* getPhysicalSpine() const;
+  PhysicalSpine* getPhysicalSpine() const;
 
-  virtual void setPhysicalSpine(PhysicalSpine* ps);
+  void setPhysicalSpine(PhysicalSpine* ps);
 
  private:
   BiologicalSpine(const BiologicalSpine&) = delete;

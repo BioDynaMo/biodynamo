@@ -40,46 +40,45 @@ class PhysicalBond : public SimStateSerializable, public std::enable_shared_from
 
   virtual StringBuilder& simStateToJson(StringBuilder& sb) const override;
 
-  virtual PhysicalObject* getFirstPhysicalObject();
+  PhysicalObject* getFirstPhysicalObject();
 
-  virtual PhysicalObject* getSecondPhysicalObject();
+  PhysicalObject* getSecondPhysicalObject();
 
-  virtual void setFirstPhysicalObject(PhysicalObject* a);
+  void setFirstPhysicalObject(PhysicalObject* a);
 
-  virtual void setSecondPhysicalObject(PhysicalObject* b);
-
-  /** If false, the first PhysicalObject doesn't feel the influence of this PhysicalBond.*/
-  virtual bool hasEffectOnA();
+  void setSecondPhysicalObject(PhysicalObject* b);
 
   /** If false, the first PhysicalObject doesn't feel the influence of this PhysicalBond.*/
-  virtual void setHasEffectOnA(bool has_effect_on_a);
+  bool hasEffectOnA();
+
+  /** If false, the first PhysicalObject doesn't feel the influence of this PhysicalBond.*/
+  void setHasEffectOnA(bool has_effect_on_a);
 
   /** If false, the second PhysicalObject doesn't feel the influence of this PhysicalBond.*/
-  virtual bool hasEffectOnB();
+  bool hasEffectOnB();
 
   /** If false, the second PhysicalObject doesn't feel the influence of this PhysicalBond.*/
-  virtual void setHasEffectOnB(bool has_effect_on_b);
+  void setHasEffectOnB(bool has_effect_on_b);
 
   /** If true, allows the physical bond to "slide" from b to b's mother or daughter left,
    * if b is a chain of PhysicalCylinders. It can be seen as the migration of a along b.*/
-  virtual bool isSlidingAllowed();
+  bool isSlidingAllowed();
   /**
    * If true, allows the physical bond to "slide" from b to b's mother or daughter left,
    * if b is a chain of PhysicalCylinders. It can be seen as the migration of a along b.
    * @param slidingAllowed
    */
-  virtual void setSlidingAllowed(bool sliding_allowed);
+  void setSlidingAllowed(bool sliding_allowed);
 
-  virtual void exchangePhysicalObject(PhysicalObject* oldPo, PhysicalObject* newPo);
+  void exchangePhysicalObject(PhysicalObject* oldPo, PhysicalObject* newPo);
 
-  virtual void vanish();
+  void vanish();
 
-  virtual PhysicalObject* getOppositePhysicalObject(PhysicalObject* po);
+  PhysicalObject* getOppositePhysicalObject(PhysicalObject* po);
 
-  virtual void setPositionOnObjectInLocalCoord(PhysicalObject* po,
-                                               const std::array<double, 2>& positionInLocalCoordinates);
+  void setPositionOnObjectInLocalCoord(PhysicalObject* po, const std::array<double, 2>& positionInLocalCoordinates);
 
-  virtual std::array<double, 2> getPositionOnObjectInLocalCoord(PhysicalObject* po);
+  std::array<double, 2> getPositionOnObjectInLocalCoord(PhysicalObject* po);
 
   /**
    * Returns the force that this PhysicalBond is applying to a PhsicalObject.
@@ -98,61 +97,61 @@ class PhysicalBond : public SimStateSerializable, public std::enable_shared_from
    * (Only for graphical display).Raises a NullPointerException if a == null.
    * @return x,y,z coord of the insertion point of one end
    */
-  virtual std::array<double, 3> getFirstEndLocation();
+  std::array<double, 3> getFirstEndLocation();
 
   /**
    * Gets the location in absolute cartesian coord of the first insertion point (on a).
    * (Only for graphical display). Raises a NullPointerException if b == null.
    * @return x,y,z coord of the insertion point of one end
    */
-  virtual std::array<double, 3> getSecondEndLocation();
+  std::array<double, 3> getSecondEndLocation();
 
   /**
    * @return the restingLength
    */
-  virtual double getRestingLength();
+  double getRestingLength();
 
   /**
    * @param restingLength the restingLength to set
    */
-  virtual void setRestingLength(double resting_length);
+  void setRestingLength(double resting_length);
 
   /**
    * @return the springConstant
    */
-  virtual double getSpringConstant();
+  double getSpringConstant();
 
   /**
    * @param springConstant the springConstant to set
    */
-  virtual void setSpringConstant(double spring_constant);
+  void setSpringConstant(double spring_constant);
 
   /**
    * @return the maxTension
    */
-  virtual double getMaxTension();
+  double getMaxTension();
 
   /**
    * @param maxTension the maxTension to set
    */
-  virtual void setMaxTension(double max_tension);
+  void setMaxTension(double max_tension);
 
   /**
    * @return the dumpingConstant
    */
-  virtual double getDumpingConstant();
+  double getDumpingConstant();
 
   /**
    * @param dumpingConstant the dumpingConstant to set
    */
-  virtual void setDumpingConstant(double dumping_constant);
+  void setDumpingConstant(double dumping_constant);
 
   /**
    * Returns a String representation of this PhysicalNodeMovementListener
    */
-  virtual std::string toString() const;
+  std::string toString() const;
 
-  virtual bool equalTo(const std::shared_ptr<PhysicalBond>& other) const;
+  bool equalTo(const std::shared_ptr<PhysicalBond>& other) const;
 
  private:
   PhysicalObject* a_ = nullptr;

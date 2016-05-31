@@ -30,9 +30,9 @@ class PhysicalBouton : public Excrescence {
   virtual bool synapseWithShaft(NeuriteElement* other_ne, double max_dis, int nr_segments, bool create_phyiscal_bond)
       override;
 
-  virtual void setBiologicalBouton(BiologicalBouton::UPtr bouton);
+  void setBiologicalBouton(BiologicalBouton::UPtr bouton);
 
-  virtual BiologicalBouton* getBiologicalBouton() const;
+  BiologicalBouton* getBiologicalBouton() const;
 
  private:
   PhysicalBouton(const PhysicalBouton&) = delete;

@@ -52,10 +52,10 @@ class Excrescence : public SimStateSerializable {
   virtual StringBuilder& simStateToJson(StringBuilder& sb) const override;
 
   /** returns the absolute coord of the point where this element is attached on the PO.*/
-  virtual std::array<double, 3> getProximalEnd() const;
+  std::array<double, 3> getProximalEnd() const;
 
   /** returns the absolute coord of the point where this element ends.*/
-  virtual std::array<double, 3> getDistalEnd() const;
+  std::array<double, 3> getDistalEnd() const;
 
   virtual bool synapseWith(Excrescence* other, bool create_physical_bond) = 0;
 
@@ -65,25 +65,25 @@ class Excrescence : public SimStateSerializable {
                                 bool create_phyiscal_bond) = 0;
 
   // getters and setters
-  virtual Excrescence* getEx() const;
+  Excrescence* getEx() const;
 
-  virtual void setEx(Excrescence* ex);
+  void setEx(Excrescence* ex);
 
-  virtual double getLength() const;
+  double getLength() const;
 
-  virtual void setLength(double length);
+  void setLength(double length);
 
-  virtual PhysicalObject* getPo() const;
+  PhysicalObject* getPo() const;
 
-  virtual void setPo(PhysicalObject* po);
+  void setPo(PhysicalObject* po);
 
-  virtual std::array<double, 2> getPositionOnPO() const;
+  std::array<double, 2> getPositionOnPO() const;
 
-  virtual void setPositionOnPO(const std::array<double, 2>& position);
+  void setPositionOnPO(const std::array<double, 2>& position);
 
-  virtual Type getType() const;
+  Type getType() const;
 
-  virtual void setType(Type type);
+  void setType(Type type);
 
  protected:
   static ECM* ecm_;

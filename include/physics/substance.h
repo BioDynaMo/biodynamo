@@ -37,27 +37,27 @@ class Substance : public SimStateSerializable {
    * Increases or decreases the quantity. Makes sure the quantity is never negative.
    * @param delta_q
    */
-  virtual void changeQuantityFrom(double delta_q);
+  void changeQuantityFrom(double delta_q);
 
   /**
    * Well, as the name says, it multiplies the quantity and the concentration
    * by a certain value. This method is mainly used for degradation .
    */
-  virtual void multiplyQuantityAndConcentrationBy(double factor);
+  void multiplyQuantityAndConcentrationBy(double factor);
 
   /**
    * Computes the quantity represented when the current concentration is maintained
    * but the volume changes. Important when PhysicalNodes are moved.
    * @param volume
    */
-  virtual void updateQuantityBasedOnConcentration(double volume);
+  void updateQuantityBasedOnConcentration(double volume);
 
   /**
    * Computes the new concentration if the current quantity is distributed in a given volume.
    *  Important when PhysicalNodes are moved.
    * @param volume
    */
-  virtual void updateConcentrationBasedOnQuantity(double volume);
+  void updateConcentrationBasedOnQuantity(double volume);
 
   /**
    * Determines whether an other object is equal to this Substance.
@@ -66,36 +66,36 @@ class Substance : public SimStateSerializable {
    * degradationConstant and diffusionConstant. The
    * quantity and concentration are note taken into account.
    */
-  virtual bool equalTo(Substance* o);
+  bool equalTo(Substance* o);
 
   // --------- GETTERS & SETTERS--------------------------------------------------------
-  virtual std::string getId() const;
+  std::string getId() const;
 
-  virtual void setId(const std::string& id);
+  void setId(const std::string& id);
 
-  virtual double getDiffusionConstant() const;
+  double getDiffusionConstant() const;
 
-  virtual void setDiffusionConstant(double diffusion_constant);
+  void setDiffusionConstant(double diffusion_constant);
 
-  virtual double getDegradationConstant() const;
+  double getDegradationConstant() const;
 
-  virtual void setDegradationConstant(double degradation_constant);
+  void setDegradationConstant(double degradation_constant);
 
-  virtual Color getColor() const;
+  Color getColor() const;
 
-  virtual void setColor(Color color);
+  void setColor(Color color);
 
-  virtual double getConcentration() const;
+  double getConcentration() const;
 
-  virtual void setConcentration(double concentration);
+  void setConcentration(double concentration);
 
-  virtual double getQuantity() const;
+  double getQuantity() const;
 
-  virtual void setQuantity(double quantity);
+  void setQuantity(double quantity);
 
   virtual UPtr getCopy() const;
 
-  virtual std::string toString() const;
+  std::string toString() const;
 
  protected:
   /**

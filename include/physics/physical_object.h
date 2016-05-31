@@ -102,11 +102,11 @@ class PhysicalObject : public PhysicalNode {
 
   /** Adds an <code>Excrescence</code> instance to the Excrescence list of this
    * <code>PhysicalObject</code>.*/
-  virtual void addExcrescence(Excrescence::UPtr ex);
+  void addExcrescence(Excrescence::UPtr ex);
 
   /** Removes an <code>Excrescence</code> instance to the Excrescence list of this
    * <code>PhysicalObject</code>.*/
-  virtual void removeExcrescence(Excrescence* ex);
+  void removeExcrescence(Excrescence* ex);
 
   /**
    * Active displacement of the point mass of this <code>PhysicalObject</code>. ("active" means
@@ -152,13 +152,13 @@ class PhysicalObject : public PhysicalNode {
    * @param o
    * @return
    */
-  virtual bool isInContact(PhysicalObject* o);
+  bool isInContact(PhysicalObject* o);
 
   /**
    * Returns all the neighboring objects considered as being in contact with this PhysicalObject.
    * @return
    */
-  virtual std::list<PhysicalObject*> getPhysicalObjectsInContact();  //todo change to vector
+  std::list<PhysicalObject*> getPhysicalObjectsInContact();  //todo change to vector
 
   /**
    * Returns the position in the local coordinate system (xAxis, yXis, zAxis)
@@ -196,14 +196,14 @@ class PhysicalObject : public PhysicalNode {
 
   /** Simply adds the argument to the vector containing all the PhysicalBonds of this
    * PhysicalObject.*/
-  virtual void addPhysicalBond(const std::shared_ptr<PhysicalBond>& bond);
+  void addPhysicalBond(const std::shared_ptr<PhysicalBond>& bond);
 
   /** Simply removes the argument from the vector containing all the PhysicalBonds of this
    * PhysicalObject. */
-  virtual void removePhysicalBond(const std::shared_ptr<PhysicalBond>& bond);
+  void removePhysicalBond(const std::shared_ptr<PhysicalBond>& bond);
 
   /** Returns true if there is a PhysicalBond that fixes me to this other PhysicalObject.*/
-  virtual bool getHasAPhysicalBondWith(PhysicalObject* po);
+  bool getHasAPhysicalBondWith(PhysicalObject* po);
 
   /**
    * Creates a new PhysicalBond between this PhysicalObject and the one given as argument.
@@ -211,7 +211,7 @@ class PhysicalObject : public PhysicalNode {
    * @param po
    * @return
    */
-  virtual std::shared_ptr<PhysicalBond> makePhysicalBondWith(PhysicalObject* po);
+  std::shared_ptr<PhysicalBond> makePhysicalBondWith(PhysicalObject* po);
 
   /**
    * If there is a PhysicalBond between this PhysicalObject and po,
@@ -220,7 +220,7 @@ class PhysicalObject : public PhysicalNode {
    * @param removeThemAll if true, makes multiple removals (if multiple bonds)
    * @return true if at least one PhysicalBond was removed
    */
-  virtual bool removePhysicalBondWith(PhysicalObject* po, bool removeThemAll);
+  bool removePhysicalBondWith(PhysicalObject* po, bool removeThemAll);
 
   // *************************************************************************************
   // *      METHODS FOR DIFFUSION (INTRA-CELLULAR & MEMBRANE-BOUNDED SUBSTANCES)         *
@@ -238,7 +238,7 @@ class PhysicalObject : public PhysicalNode {
    * @param substanceId
    * @return
    */
-  virtual double getIntracellularConcentration(const std::string& substanceId);
+  double getIntracellularConcentration(const std::string& substanceId);
 
   /** Modifies the quantity (increases or decreases) of an IntracellularSubstance.
    * If this <code>PhysicalNode</code> already has an <code>IntracellularSubstance</code>
@@ -252,7 +252,7 @@ class PhysicalObject : public PhysicalNode {
    * @param id the name of the Substance to change.
    * @param quantityPerTime the rate of quantity production
    */
-  virtual void modifyIntracellularQuantity(const std::string& id, double quantityPerTime);
+  void modifyIntracellularQuantity(const std::string& id, double quantityPerTime);
 
   /** Returns the concentration of a membrane bound IntracellularSubstance on
    * this PhysicalObject. Recall that by definition, the PhysicalObject are
@@ -261,7 +261,7 @@ class PhysicalObject : public PhysicalNode {
    * @param id
    * @return
    */
-  virtual double getMembraneConcentration(const std::string& id);
+  double getMembraneConcentration(const std::string& id);
 
   /** Modifies the quantity (increases or decreases) of an membrane-bound chemical.
    *
@@ -270,7 +270,7 @@ class PhysicalObject : public PhysicalNode {
    * @param quantityPerTime the rate of quantity production
    */
 
-  virtual void modifyMembraneQuantity(const std::string& id, double quantityPerTime);
+  void modifyMembraneQuantity(const std::string& id, double quantityPerTime);
 
   /* Returns the INSTANCE of IntracellularSubstance in this PhysicalObject with the same id
    * than the IntracellularSubstance given as argument. If there is no such instance, a
@@ -278,24 +278,24 @@ class PhysicalObject : public PhysicalNode {
    * vector and then returned. Only used between subclasses of physicalObject for intracellular
    * diffusion. C.f. very similar method : PhysicalNode.giveYourSubstanceInstance.
    */
-  virtual IntracellularSubstance* giveYouIntracellularSubstanceInstance(IntracellularSubstance* templateS);
+  IntracellularSubstance* giveYouIntracellularSubstanceInstance(IntracellularSubstance* templateS);
 
   /* Diffusion of diffusible IntracellularSubstances between two PhysicalObjects.
    */
-  virtual void diffuseWithThisPhysicalObjects(PhysicalObject* po, double distance);
+  void diffuseWithThisPhysicalObjects(PhysicalObject* po, double distance);
 
   // *************************************************************************************
   // *      GETTERS & SETTERS                                                            *
   // *************************************************************************************
 
   /** Returns the <code>java.awt.Color</code> used to draw this PhysicalObject in the GUI. */
-  virtual Color getColor() const;
+  Color getColor() const;
 
   /** Sets the <code>java.awt.Color</code> used to draw this PhysicalObject in the GUI. */
-  virtual void setColor(Color color);
+  void setColor(Color color);
 
   /** Returns a copy of the masslocation.*/
-  virtual std::array<double, 3> getMassLocation() const;
+  std::array<double, 3> getMassLocation() const;
 
   /**
    * - CAUTION : Never use this method to move a PhysicalObject, because the physics is not updated.
@@ -305,47 +305,47 @@ class PhysicalObject : public PhysicalNode {
    *  - I said NEVER !
    * @param massLocation the massLocation to set
    */
-  virtual void setMassLocation(const std::array<double, 3>& massLocation);
+  void setMassLocation(const std::array<double, 3>& massLocation);
 
   /** Returns the "Up" direction for a Sphere, and the axis direction for a Cylinder*/
   virtual std::array<double, 3> getAxis() const = 0;
 
   /** Returns the first axis of the local coordinate system.*/
-  virtual std::array<double, 3> getXAxis() const;
+  std::array<double, 3> getXAxis() const;
 
   /** Sets the first axis of the local coordinate system. Should have a norm of 1.*/
-  virtual void setXAxis(const std::array<double, 3>& axis);
+  void setXAxis(const std::array<double, 3>& axis);
 
   /** Returns the second axis of the local coordinate system.*/
-  virtual std::array<double, 3> getYAxis() const;
+  std::array<double, 3> getYAxis() const;
 
   /** Sets the second axis of the local coordinate system. Should have a norm of 1*/
-  virtual void setYAxis(const std::array<double, 3>& axis);
+  void setYAxis(const std::array<double, 3>& axis);
 
   /** Returns the third axis of the local coordinate system.*/
-  virtual std::array<double, 3> getZAxis() const;
+  std::array<double, 3> getZAxis() const;
 
   /** Sets the third axis of the local coordinate system. Should have a norm of 1*/
-  virtual void setZAxis(const std::array<double, 3>& axis);
+  void setZAxis(const std::array<double, 3>& axis);
 
   /** Only for GUI display. Total force on this objects point mass, last time it was computed.
    * 3 first components give the x,y,z coord, and last one if movement was applied (<0 means no).*/
-  virtual std::array<double, 4> getTotalForceLastTimeStep() const;
+  std::array<double, 4> getTotalForceLastTimeStep() const;
 
   /** Returns true if this object still plays a role in the simulation.
    * For instance a PhysicalObject associated with a neurite that just retracted
    * is not exxisting. */
-  virtual bool isStillExisting() const;
+  bool isStillExisting() const;
 
   /** The role of the method is to indicate that an object is about to
    * be garbage Collected. Caution: don't use this method! */
-  virtual void setStillExisting(bool stillExists);
+  void setStillExisting(bool stillExists);
 
   /** If true, this PhysicalObject will be run by the Scheduler on the next occasion.*/
-  virtual bool isOnTheSchedulerListForPhysicalObjects() const;
+  bool isOnTheSchedulerListForPhysicalObjects() const;
 
   /** If true, this PhysicalObject will be run by the Scheduler on the next occasion.*/
-  virtual void setOnTheSchedulerListForPhysicalObjects(bool onTheSchedulerListForPhysicalObjects);
+  void setOnTheSchedulerListForPhysicalObjects(bool onTheSchedulerListForPhysicalObjects);
 
   /**
    * Returns a unit vector, pointing out of the PhysicalObject if origin at location
@@ -357,39 +357,39 @@ class PhysicalObject : public PhysicalNode {
 
   /** Returns the vector containing all the PhysicalBonds of this PhysicalObject.*/
   // todo change to vector if porting has been finished
-  virtual std::list<std::shared_ptr<PhysicalBond>> getPhysicalBonds() const;
+  std::list<std::shared_ptr<PhysicalBond>> getPhysicalBonds() const;
 
   /** Sets the vector containing all the PhysicalBonds of this PhysicalObject.
    * This methof should not be used during the simulation. */
-  virtual void setPhysicalBonds(const std::list<std::shared_ptr<PhysicalBond> >& physicalBonds);  //todo change to vector
+  void setPhysicalBonds(const std::list<std::shared_ptr<PhysicalBond> >& physicalBonds);  //todo change to vector
 
   /** Returns the vector containing all the Excrescences (PhysicalSpine, PhysicalBouton).*/
-  virtual std::vector<Excrescence*> getExcrescences() const;
+  std::vector<Excrescence*> getExcrescences() const;
 
   /** Returns the adherence to the extracellular matrix, i.e. the static friction
    * (the minimum force amplitude needed for triggering a movement). */
-  virtual double getAdherence() const;
+  double getAdherence() const;
 
   /** Sets the adherence to the extracellular matrix, i.e. the static friction
    * (the minimum force amplitude needed for triggering a movement). */
-  virtual void setAdherence(double adherence);
+  void setAdherence(double adherence);
 
   /** Returns the mass, i.e. the kinetic friction
    * (scales the movement amplitude, therefore is considered as the mass).*/
-  virtual double getMass() const;
+  double getMass() const;
 
   /** Sets the mass, i.e. the kinetic friction
    * (scales the movement amplitude, therefore is considered as the mass).*/
-  virtual void setMass(double mass);
+  void setMass(double mass);
 
-  virtual double getDiameter() const;
+  double getDiameter() const;
 
   /**
    * Sets the diameter to a new value, and update the volume accordingly.
    * is equivalent to setDiamater(diameter, true)
    * @param diameter
    */
-  virtual void setDiameter(double diameter);
+  void setDiameter(double diameter);
 
   /**
    * Sets the diameter. The volume is sets accordingly if desired.
@@ -397,10 +397,10 @@ class PhysicalObject : public PhysicalNode {
    * @param diameter the new diameter
    * @param updateVolume if true, the volume is set to match the new diameter.
    */
-  virtual void setDiameter(double diameter, bool updateVolume);
+  void setDiameter(double diameter, bool updateVolume);
 
   /** Returns the volume of this PhysicalObject.*/
-  virtual double getVolume() const;
+  double getVolume() const;
 
   /**
    * Sets the volume, and (optionally) recomputes an new diameter.
@@ -409,7 +409,7 @@ class PhysicalObject : public PhysicalNode {
    * @param volume the new volume
    * @param updateDiameter if true, the diameter will be updated.
    */
-  virtual void setVolume(double volume, bool updateDiameter);
+  void setVolume(double volume, bool updateDiameter);
 
   /**
    * Sets the volume, and recomputes an new diameter.
@@ -417,23 +417,23 @@ class PhysicalObject : public PhysicalNode {
    * DEFINE DIMENSIONS, AND THE VOLUME WILL BE COMPUTED.
    * @param volume the new volume
    */
-  virtual void setVolume(double volume);
+  void setVolume(double volume);
 
   /** Get an intracellular and membrane-bound chemicals that are present
    *  in this PhysicalNode. */
-  virtual IntracellularSubstance* getIntracellularSubstance(const std::string& id);
+  IntracellularSubstance* getIntracellularSubstance(const std::string& id);
 
   /** Add an intracellular or membrane-bound chemicals
    *  in this PhysicalNode. */
-  virtual void addIntracellularSubstance(IntracellularSubstance::UPtr is);
+  void addIntracellularSubstance(IntracellularSubstance::UPtr is);
 
   /** Remove an intracellular or membrane-bound chemicals that are present
    *  in this PhysicalNode. */
-  virtual void removeIntracellularSubstance(IntracellularSubstance* is);
+  void removeIntracellularSubstance(IntracellularSubstance* is);
 
   /** All the intracellular and membrane-bound chemicals that are present
    *  in this PhysicalNode. */
-  virtual std::list<IntracellularSubstance*> getIntracellularSubstances1() const;  //todo return map after porting has been finished
+  std::list<IntracellularSubstance*> getIntracellularSubstances1() const;  //todo return map after porting has been finished
 
   /** Returns the length of a cylinder, or the diameter of a sphere.*/
   virtual double getLength() const = 0;
@@ -451,7 +451,7 @@ class PhysicalObject : public PhysicalNode {
    * and therefore is not a public method. Instead , this method is used for filling up a new
    * PhysicalObject in case of extension).
    */
-  virtual void addNewIntracellularSubstance(IntracellularSubstance::UPtr s);
+  void addNewIntracellularSubstance(IntracellularSubstance::UPtr s);
 
   /**
    * Returns the force that a daughter branch transmits to a mother's point
@@ -494,7 +494,7 @@ class PhysicalObject : public PhysicalNode {
    */
   virtual void updateIntracellularConcentrations() = 0;
 
-  virtual void setVolumeOnly(double v);
+  void setVolumeOnly(double v);
 
   /** The simulation of Force in this simulation.*/
   static InterObjectForce::UPtr inter_object_force_;

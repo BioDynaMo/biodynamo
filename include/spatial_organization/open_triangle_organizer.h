@@ -59,28 +59,28 @@ class OpenTriangleOrganizer : public std::enable_shared_from_this<
   /**
    * Starts the recording of newly created tetrahedra.
    */
-  virtual void recoredNewTetrahedra();
+  void recoredNewTetrahedra();
 
   /**
    * Returns the list of newly created tetrahedra.
    * @return The list of newly created tetrahedra, if recording was turned on before
    * (Use {@link #recoredNewTetrahedra()}) or <code>null</code> else.
    */
-  virtual std::list<std::shared_ptr<Tetrahedron<T> > > getNewTetrahedra();
+  std::list<std::shared_ptr<Tetrahedron<T> > > getNewTetrahedra();
 
   /**
    * Returns an arbitrary tetrahedron which was created during the process of
    * triangulation.
    * @return A tetrahedron which was created during triangulation.
    */
-  virtual std::shared_ptr<Tetrahedron<T>> getANewTetrahedron();
+  std::shared_ptr<Tetrahedron<T>> getANewTetrahedron();
 
   /**
    * Removes one tetrahedron from the triangulation and possibly all adjacent tetrahedra that have the same circumsphere as the
    * first tetrahedron.
    * @param startingTetrahedron The first tetrahedron to remove.
    */
-  virtual void removeAllTetrahedraInSphere(
+  void removeAllTetrahedraInSphere(
       const std::shared_ptr<Tetrahedron<T>>& starting_tetrahedron);
 
   /**
@@ -89,7 +89,7 @@ class OpenTriangleOrganizer : public std::enable_shared_from_this<
    * triangle is added to the hashmap.
    * @param triangle The new open triangle.
    */
-  virtual void putTriangle(const std::shared_ptr<Triangle3D<T>>& triangle);
+  void putTriangle(const std::shared_ptr<Triangle3D<T>>& triangle);
 
   /**
    * Informs this open triangle organizer that an open triangle
@@ -97,7 +97,7 @@ class OpenTriangleOrganizer : public std::enable_shared_from_this<
    * triangle is removed from the hashmap.
    * @param triangle The triangle that should be removed.
    */
-  virtual void removeTriangle(const std::shared_ptr<Triangle3D<T> >& triangle);
+  void removeTriangle(const std::shared_ptr<Triangle3D<T> >& triangle);
 
   /**
    * Searches for a triangle which is incident to three specified nodes.
@@ -110,7 +110,7 @@ class OpenTriangleOrganizer : public std::enable_shared_from_this<
    * @param c The third node incident to the requested triangle.
    * @return A triangle with the requested three endpoints.
    */
-  virtual std::shared_ptr<Triangle3D<T>> getTriangle(
+  std::shared_ptr<Triangle3D<T>> getTriangle(
       SpaceNode<T>* a,
       SpaceNode<T>* b,
       SpaceNode<T>* c);
@@ -126,7 +126,7 @@ class OpenTriangleOrganizer : public std::enable_shared_from_this<
    * @param c The third node incident to the requested triangle.
    * @return A triangle with the requested three endpoints.
    */
-  virtual std::shared_ptr<Triangle3D<T>> getTriangleWithoutRemoving(
+  std::shared_ptr<Triangle3D<T>> getTriangleWithoutRemoving(
       SpaceNode<T>* a,
       SpaceNode<T>* b,
       SpaceNode<T>* c);
@@ -143,17 +143,17 @@ class OpenTriangleOrganizer : public std::enable_shared_from_this<
    * All tetrahedra created by this function will be reported in
    *
    */
-  virtual void triangulate();
+  void triangulate();
 
   /**
    * Returns a String representation of this OpenTriangleOrganizer
    */
-  virtual std::string toString() const;
+  std::string toString() const;
 
   /**
    * Determines if two instances of this object are equal
    */
-  virtual bool equalTo(const std::shared_ptr<OpenTriangleOrganizer<T>>& other) const;
+  bool equalTo(const std::shared_ptr<OpenTriangleOrganizer<T>>& other) const;
 
  protected:
   /**
@@ -165,7 +165,7 @@ class OpenTriangleOrganizer : public std::enable_shared_from_this<
    * @return <code>true</code>, if an open triangle with the desired endpoints
    * is already stored in this triangle organizer.
    */
-  virtual bool contains(SpaceNode<T>* a,
+  bool contains(SpaceNode<T>* a,
                 SpaceNode<T>* b,
                 SpaceNode<T>* c) const;
 
@@ -173,7 +173,7 @@ class OpenTriangleOrganizer : public std::enable_shared_from_this<
    * Returns whether this triangle organizer is storing any more open triangles.
    * @return <code>true</code>, if the hashmap storing empty triangles is empty.
    */
-  virtual bool isEmpty() const;
+  bool isEmpty() const;
 
   OpenTriangleOrganizer(
       int preferredCapacity,

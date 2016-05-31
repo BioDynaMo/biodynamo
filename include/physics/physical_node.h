@@ -103,7 +103,7 @@ class PhysicalNode : public SimStateSerializable, public std::enable_shared_from
    * @param id the name of the substance
    * @return the concentration
    */
-  virtual double getExtracellularConcentration(const std::string& id);
+  double getExtracellularConcentration(const std::string& id);
 
   /**
    * Returns the average concentration of for a PhysicalNode and all its neighbors,
@@ -112,7 +112,7 @@ class PhysicalNode : public SimStateSerializable, public std::enable_shared_from
    * @param id the name of the substance
    * @return the concentration
    */
-  virtual double getConvolvedConcentration(const std::string& id);
+  double getConvolvedConcentration(const std::string& id);
 
   /**
    * Returns the concentration of an extra-cellular Substance outside this PhysicalNode.
@@ -120,7 +120,7 @@ class PhysicalNode : public SimStateSerializable, public std::enable_shared_from
    * @param location the place where concentration is probed
    * @return the concentration
    */
-  virtual double getExtracellularConcentration(const std::string& id, const std::array<double, 3>& location);
+  double getExtracellularConcentration(const std::string& id, const std::array<double, 3>& location);
 
   /**
    * Returns the gradient at the space node location for a given substance.
@@ -128,7 +128,7 @@ class PhysicalNode : public SimStateSerializable, public std::enable_shared_from
    * @param id the name of the Substance we have to compute the gradient of.
    * @return [dc/dx, dc/dy, dc/dz]
    */
-  virtual std::array<double, 3> getExtracellularGradient(const std::string& id);
+  std::array<double, 3> getExtracellularGradient(const std::string& id);
 
   /** Modifies the quantity (increases or decreases) of an extra-cellular Substance.
    * If this <code>PhysicalNode</code> already has an <code>Substance</code> instance
@@ -141,7 +141,7 @@ class PhysicalNode : public SimStateSerializable, public std::enable_shared_from
    * @param id the name of the Substance to change.
    * @param quantityPerTime the rate of quantity production
    */
-  virtual void modifyExtracellularQuantity(const std::string& id, double quantity_per_time);
+  void modifyExtracellularQuantity(const std::string& id, double quantity_per_time);
 
   // *************************************************************************************
   // *                            RUN (diffusion, degradation)                           *
@@ -151,13 +151,13 @@ class PhysicalNode : public SimStateSerializable, public std::enable_shared_from
    * Degradate (according to degrad. constant) and diffuse 8according to diff. constant)
    * all the <code>Substance</code> stored in this <code>PhysicalNode</code>.
    */
-  virtual void runExtracellularDiffusion();
+  void runExtracellularDiffusion();
 
   /** Returns the INSTANCE of Substance stored in this node, with the same id
    * than the Substance given as argument. If there is no such Instance, a new one
    * is created, inserted into the list extracellularSubstances and returned.
    * Used for diffusion and for ECMChemicalReaction.*/
-  virtual Substance* getSubstanceInstance(Substance* template_s);
+  Substance* getSubstanceInstance(Substance* template_s);
 
   /* Interpolation of the concentration value at a certain distance. Used to update
    * the chemicals in case of a displacement or for the creation of new nodes, in
@@ -166,7 +166,7 @@ class PhysicalNode : public SimStateSerializable, public std::enable_shared_from
    * @param dX the distance from this nodes's location
    * @return
    */
-  virtual double computeConcentrationAtDistanceBasedOnGradient(Substance* s, const std::array<double, 3>& dX);
+  double computeConcentrationAtDistanceBasedOnGradient(Substance* s, const std::array<double, 3>& dX);
 
   // *************************************************************************************
   // *      GETTERS & SETTERS                                                            *
@@ -175,43 +175,43 @@ class PhysicalNode : public SimStateSerializable, public std::enable_shared_from
   /** Returns the position of the <code>SpatialOrganizationNode</code>.
    * Equivalent to getSoNode().getPosition(). */
   // not a real getter...
-  virtual std::array<double, 3> soNodePosition() const;
+  std::array<double, 3> soNodePosition() const;
 
   /**
    * Sets the SpatialOrganizationNode (vertex in the triangulation neighboring system).
    */
-  virtual SpatialOrganizationNode<PhysicalNode>* getSoNode() const;
+  SpatialOrganizationNode<PhysicalNode>* getSoNode() const;
 
   /** Returns the SpatialOrganizationNode (vertex in the triangulation neighboring system).*/
-  virtual void setSoNode(typename SpatialOrganizationNode<PhysicalNode>::UPtr son);
+  void setSoNode(typename SpatialOrganizationNode<PhysicalNode>::UPtr son);
 
   /** if <code>true</code>, the PhysicalNode will be run by the Scheduler.**/
-  virtual bool isOnTheSchedulerListForPhysicalNodes() const;
+  bool isOnTheSchedulerListForPhysicalNodes() const;
 
   /** if <code>true</code>, the PhysicalNode will be run by the Scheduler.**/
-  virtual void setOnTheSchedulerListForPhysicalNodes(bool on_the_scheduler_list_for_physical_nodes);
+  void setOnTheSchedulerListForPhysicalNodes(bool on_the_scheduler_list_for_physical_nodes);
 
   /** Solely used by the PhysicalNodeMovementListener to update substance concentrations.**/
-  virtual int getMovementConcentratioUpdateProcedure() const;
+  int getMovementConcentratioUpdateProcedure() const;
 
   /** Solely used by the PhysicalNodeMovementListener to update substance concentrations.**/
-  virtual void setMovementConcentratioUpdateProcedure(int movement_concentration_update_procedure);
+  void setMovementConcentratioUpdateProcedure(int movement_concentration_update_procedure);
 
   /** Add an extracellular or membrane-bound chemicals
    *  in this PhysicalNode. */
-  virtual void addExtracellularSubstance(Substance::UPtr is);
+  void addExtracellularSubstance(Substance::UPtr is);
 
   /** Remove an extracellular or membrane-bound chemicals that are present
    *  in this PhysicalNode. */
-  virtual void removeExtracellularSubstance(Substance* is);
+  void removeExtracellularSubstance(Substance* is);
 
   /** All the (diffusible) chemicals that are present in the space defined by this physicalNode. */
-  virtual std::list<Substance*> getExtracellularSubstances() const;  //todo refactor - originally returned the whole map
+  std::list<Substance*> getExtracellularSubstances() const;  //todo refactor - originally returned the whole map
 
-  virtual Substance* getExtracellularSubstance(const std::string& key);  //todo refactor - added to avoid implementing unorederd_map for swig
+  Substance* getExtracellularSubstance(const std::string& key);  //todo refactor - added to avoid implementing unorederd_map for swig
 
   /** Returns a unique ID for this PhysicalNode.*/
-  virtual int getID() const;
+  int getID() const;
 
   /**
    * Runs the degradation of all Substances (only if it is not up-to-date). This method
@@ -219,7 +219,7 @@ class PhysicalNode : public SimStateSerializable, public std::enable_shared_from
    * @param currentEcmTime the current time of the caller
    * (so that it doesn't require a call to ECM).
    */
-  virtual void degradate(double currentEcmTime);
+  void degradate(double currentEcmTime);
 
  protected:
   /* Reference to the ECM. */
@@ -261,7 +261,7 @@ class PhysicalNode : public SimStateSerializable, public std::enable_shared_from
   /* Analytic solution of the diffusion process along the edge between two PhysicalNodes.
    * dQA/dt = diffCst*(Area/distance)*(QB/VB-QA/VA)
    */
-  virtual void diffuseEdgeAnalytically(SpatialOrganizationEdge<PhysicalNode>* e, double current_ecm_time);
+  void diffuseEdgeAnalytically(SpatialOrganizationEdge<PhysicalNode>* e, double current_ecm_time);
 };
 
 }  // namespace physics

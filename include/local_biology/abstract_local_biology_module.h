@@ -19,25 +19,25 @@ class AbstractLocalBiologyModule : public LocalBiologyModule {
 
   virtual ~AbstractLocalBiologyModule();
 
-  virtual StringBuilder& simStateToJson(StringBuilder& sb) const override;
+  StringBuilder& simStateToJson(StringBuilder& sb) const override;
 
-  virtual void run() override = 0;
+  void run() override = 0;
 
-  virtual CellElement* getCellElement() const override;
+  CellElement* getCellElement() const override;
 
-  virtual void setCellElement(CellElement* cell_element) override;
+  void setCellElement(CellElement* cell_element) override;
 
-  virtual UPtr getCopy() const override = 0;
+  UPtr getCopy() const override = 0;
 
-  virtual bool isCopiedWhenNeuriteBranches() const override;
+  bool isCopiedWhenNeuriteBranches() const override;
 
-  virtual bool isCopiedWhenSomaDivides() const override;
+  bool isCopiedWhenSomaDivides() const override;
 
-  virtual bool isCopiedWhenNeuriteElongates() const override;
+  bool isCopiedWhenNeuriteElongates() const override;
 
-  virtual bool isCopiedWhenNeuriteExtendsFromSoma() const override;
+  bool isCopiedWhenNeuriteExtendsFromSoma() const override;
 
-  virtual bool isDeletedAfterNeuriteHasBifurcated() const override;
+  bool isDeletedAfterNeuriteHasBifurcated() const override;
 
  protected:
   CellElement* cell_element_ = nullptr;

@@ -40,7 +40,7 @@ class PhysicalNodeMovementListener : public SpatialOrganizationNodeMovementListe
 
   virtual ~PhysicalNodeMovementListener();
 
-  virtual SpatialOrganizationNodeMovementListener<PhysicalNode>::UPtr getCopy() const override;
+  SpatialOrganizationNodeMovementListener<PhysicalNode>::UPtr getCopy() const override;
 
   /**
    * MASS CONSERVATION WHEN A POINT IS MOVED :
@@ -52,10 +52,10 @@ class PhysicalNodeMovementListener : public SpatialOrganizationNodeMovementListe
    * (Implementation note : the neighbors after the movement are only known after
    * the move, i.e. when the second method is called).
    */
-  virtual void nodeAboutToMove(const SpatialOrganizationNode<PhysicalNode>* node,
-                               const std::array<double, 3>& planned_movement) override;
+  void nodeAboutToMove(const SpatialOrganizationNode<PhysicalNode>* node, const std::array<double, 3>& planned_movement)
+      override;
 
-  virtual void nodeMoved(const SpatialOrganizationNode<PhysicalNode>* node) override;
+  void nodeMoved(const SpatialOrganizationNode<PhysicalNode>* node) override;
 
   /**
    * MASS CONSERVATION WHEN A POINT IS REMOVED :
@@ -65,9 +65,9 @@ class PhysicalNodeMovementListener : public SpatialOrganizationNodeMovementListe
    * is then bigger). The concentration in the ex-neighbors is multiplied
    * by the ratio of the two sums.
    */
-  virtual void nodeAboutToBeRemoved(const SpatialOrganizationNode<PhysicalNode>* node) override;
+  void nodeAboutToBeRemoved(const SpatialOrganizationNode<PhysicalNode>* node) override;
 
-  virtual void nodeRemoved(const SpatialOrganizationNode<PhysicalNode>* node) override;
+  void nodeRemoved(const SpatialOrganizationNode<PhysicalNode>* node) override;
 
   /**
    * MASS CONSERVATION WHEN A NEW POINT IS ADDED :
@@ -79,16 +79,17 @@ class PhysicalNodeMovementListener : public SpatialOrganizationNodeMovementListe
    * including the new node). The concentration in the ex-neighbors is multiplied
    *  by the ratio of the two sums.
    */
-  virtual void nodeAboutToBeAdded(
-      const SpatialOrganizationNode<PhysicalNode>* node, const std::array<double, 3>& planned_position,
-      const std::array<PhysicalNode*, 4>& vertices_of_the_tetrahedron_containing_the_position) override;
+  void nodeAboutToBeAdded(const SpatialOrganizationNode<PhysicalNode>* node,
+                          const std::array<double, 3>& planned_position,
+                          const std::array<PhysicalNode*, 4>& vertices_of_the_tetrahedron_containing_the_position)
+                              override;
 
-  virtual void nodeAdded(const SpatialOrganizationNode<PhysicalNode>* node) override;
+  void nodeAdded(const SpatialOrganizationNode<PhysicalNode>* node) override;
 
   /**
    * Returns a String representation of this PhysicalNodeMovementListener
    */
-  virtual std::string toString() const override;
+  std::string toString() const override;
 
  private:
   PhysicalNodeMovementListener(const PhysicalNodeMovementListener&) = delete;

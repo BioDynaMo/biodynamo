@@ -45,20 +45,20 @@ class CellElement : public SimStateSerializable {
 
   virtual StringBuilder& simStateToJson(StringBuilder& sb) const override;
 
-  virtual std::string toString() const;
+  std::string toString() const;
 
   /** Adds the argument to the <code>LocalBiologyModule</code> list, and registers this as it's
    * <code>CellElements</code>.*/
-  virtual void addLocalBiologyModule(LocalBiologyModule::UPtr m);
+  void addLocalBiologyModule(LocalBiologyModule::UPtr m);
 
   /** Removes the argument from the <code>LocalBiologyModule</code> list.*/
-  virtual void removeLocalBiologyModule(LocalBiologyModule* m);
+  void removeLocalBiologyModule(LocalBiologyModule* m);
 
   /** Removes all the <code>LocalBiologyModule</code> in this <code>CellElements</code>.*/
-  virtual void cleanAllLocalBiologyModules();
+  void cleanAllLocalBiologyModules();
 
   /** Returns the localBiologyModule List (not a copy).*/
-  virtual std::vector<LocalBiologyModule*> getLocalBiologyModulesList();
+  std::vector<LocalBiologyModule*> getLocalBiologyModulesList();
 
   // *************************************************************************************
   // *      METHODS FOR SETTING CELL                                                     *
@@ -68,13 +68,13 @@ class CellElement : public SimStateSerializable {
    * Sets the <code>Cell</code> this <code>CellElement</code> is part of.
    * @param cell
    */
-  virtual void setCell(Cell* c);
+  void setCell(Cell* c);
 
   /**
    *
    * @return the <code>Cell</code> this <code>CellElement</code> is part of.
    */
-  virtual Cell* getCell() const;
+  Cell* getCell() const;
 
   // *************************************************************************************
   // *      METHODS FOR DEFINING TYPE (neurite element vs soma element)                                                  *
@@ -92,7 +92,7 @@ class CellElement : public SimStateSerializable {
   /** Returns the location of the point mass of the <code>PhysicalObject</code>
    * associated with this <code>CellElement</code>.
    */
-  virtual std::array<double, 3> getLocation();
+  std::array<double, 3> getLocation();
 
   /** The <code>PhysicalSphere or <code>PhysicalCylinder</code> linked with this <code>CellElement</code>.*/
   virtual PhysicalObject* getPhysical() const = 0;
@@ -106,7 +106,7 @@ class CellElement : public SimStateSerializable {
    * @param speed in microns/hours
    * @param direction (norm not taken into account)
    */
-  virtual void move(double speed, std::array<double, 3>& direction);
+  void move(double speed, std::array<double, 3>& direction);
 
  protected:
   static ECM* ecm_;

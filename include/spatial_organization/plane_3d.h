@@ -89,22 +89,21 @@ class Plane3D {
    * @param position_vector The coordinate of a point on the plane.
    * @param normalize Defines whether or not the normal vector of this plane should be normalized or not.
    */
-  virtual void initPlane(const std::array<double, 3>& direction_vector_1,
-                         const std::array<double, 3>& direction_vector_2, const std::array<double, 3>& position_vector,
-                         bool normalize);
+  void initPlane(const std::array<double, 3>& direction_vector_1, const std::array<double, 3>& direction_vector_2,
+                 const std::array<double, 3>& position_vector, bool normalize);
 
   /**
    * Reverts the orientation of this plane by switching the sign of all entries
    * in the normal vector and the offset value.
    */
-  virtual void changeUpperSide();
+  void changeUpperSide();
 
   /**
    * Defines the upper side of this plane. The upper side is defined to be the one side
    * to which the normal vector points to.
    * @param point A coordinate on the upper side of the plane.
    */
-  virtual void defineUpperSide(const std::array<double, 3>& point);
+  void defineUpperSide(const std::array<double, 3>& point);
 
   /**
    * Computes the orientation of two coordinates relative this plane.
@@ -114,7 +113,7 @@ class Plane3D {
    * lie on opposite sides of the plane and 0, if either one of the points lies
    * on the plane.
    */
-  virtual int orientation(const std::array<double, 3>& point_1, const std::array<double, 3>& point_2) const;
+  int orientation(const std::array<double, 3>& point_1, const std::array<double, 3>& point_2) const;
 
   /**
    * Returns whether or not two points lie on the same side of this plane.
@@ -125,7 +124,7 @@ class Plane3D {
    *         plane and <code>false</code>, if they don't or if one of them
    *         lies in the plane.
    */
-  virtual bool trulyOnSameSide(const std::array<double, 3>& point_1, const std::array<double, 3>& point_2);
+  bool trulyOnSameSide(const std::array<double, 3>& point_1, const std::array<double, 3>& point_2);
 
   /**
    * Returns whether or not two points lie on different sides of this plane.
@@ -136,7 +135,7 @@ class Plane3D {
    *         plane and <code>false</code>, if they don't or if one of them
    *         lies in the plane.
    */
-  virtual bool trulyOnDifferentSides(const std::array<double, 3>& point_1, const std::array<double, 3>& point_2);
+  bool trulyOnDifferentSides(const std::array<double, 3>& point_1, const std::array<double, 3>& point_2);
 
   /**
    * Returns whether or not two points lie on the same side of this plane.
@@ -148,12 +147,12 @@ class Plane3D {
    *         and <code>false</code>, if they don't or if one of them
    *         lies in the plane.
    */
-  virtual bool onSameSide(const std::array<double, 3>& point_1, const std::array<double, 3>& point_2) const;
+  bool onSameSide(const std::array<double, 3>& point_1, const std::array<double, 3>& point_2) const;
 
   /**
    * @return The normal vector of this plane.
    */
-  virtual std::array<double, 3> getNormalVector();
+  std::array<double, 3> getNormalVector();
 
  protected:
   /**

@@ -18,7 +18,7 @@ class DefaultForce : public InterObjectForce {
 
   virtual ~DefaultForce();
 
-  virtual StringBuilder& simStateToJson(StringBuilder& sb) const override;
+  StringBuilder& simStateToJson(StringBuilder& sb) const override;
 
   /**
    * Force felt by a sphere (sphere1) due to the presence of another sphere (sphere2)
@@ -26,8 +26,7 @@ class DefaultForce : public InterObjectForce {
    * @param sphere_2
    * @return
    */
-  virtual std::array<double, 3> forceOnASphereFromASphere(PhysicalSphere* sphere_1, PhysicalSphere* sphere_2) const
-      override;
+  std::array<double, 3> forceOnASphereFromASphere(PhysicalSphere* sphere_1, PhysicalSphere* sphere_2) const override;
 
   /**
    * Force felt by a cylinder due to the presence of a sphere
@@ -38,8 +37,7 @@ class DefaultForce : public InterObjectForce {
    * (= the point mass of the mother).
    *
    */
-  virtual std::array<double, 4> forceOnACylinderFromASphere(PhysicalCylinder* cylinder, PhysicalSphere* sphere) const
-      override;
+  std::array<double, 4> forceOnACylinderFromASphere(PhysicalCylinder* cylinder, PhysicalSphere* sphere) const override;
 
   /**
    * Force felt by sphere due to the presence of a cylinder
@@ -47,8 +45,7 @@ class DefaultForce : public InterObjectForce {
    * @param cylinder
    * @return
    */
-  virtual std::array<double, 3> forceOnASphereFromACylinder(PhysicalSphere* sphere, PhysicalCylinder* cylinder) const
-      override;
+  std::array<double, 3> forceOnASphereFromACylinder(PhysicalSphere* sphere, PhysicalCylinder* cylinder) const override;
 
   /**
    * Force felt by a cylinder (cylinder1) due to the presence of another cylinder (cylinder2)
@@ -58,10 +55,10 @@ class DefaultForce : public InterObjectForce {
    * the fourth -when it exists- is the proportion of the force that is transmitted to the proximal end
    * of cylinder1 (= the point mass of the mother).
    */
-  virtual std::array<double, 4> forceOnACylinderFromACylinder(PhysicalCylinder* cylinder1,
-                                                              PhysicalCylinder* cylinder2) const override;
+  std::array<double, 4> forceOnACylinderFromACylinder(PhysicalCylinder* cylinder1, PhysicalCylinder* cylinder2) const
+      override;
 
-  virtual std::string toString() const;
+  std::string toString() const;
 
  private:
   DefaultForce(const DefaultForce&) = delete;

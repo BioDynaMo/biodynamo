@@ -155,19 +155,19 @@ class Tetrahedron : public std::enable_shared_from_this<Tetrahedron<T>> {
   /**
    * Determines if two instances of this object are equal
    */
-  virtual bool equalTo(const std::shared_ptr<Tetrahedron<T>>& other);
+  bool equalTo(const std::shared_ptr<Tetrahedron<T>>& other);
 
   /**
    * @return An array of triangles containing the 4 triangles incident to this tetrahedron.
    */
-  virtual std::array<std::shared_ptr<Triangle3D<T>>, 4> getAdjacentTriangles() const;
+  std::array<std::shared_ptr<Triangle3D<T>>, 4> getAdjacentTriangles() const;
 
   /**
    * Determines whether a given node is an endpoint of this tetrahedron.
    * @param node The node of interest.
    * @return <code>true</code>, if the node is an endpoint.
    */
-  virtual bool isAdjacentTo(SpaceNode<T>* node) const;
+  bool isAdjacentTo(SpaceNode<T>* node) const;
 
   /**
    * Walks toward a specified point. If the point lies inside this
@@ -182,12 +182,12 @@ class Tetrahedron : public std::enable_shared_from_this<Tetrahedron<T>> {
    * @return An adjacent tetrahedron that lies closer to the specified point
    *         than this tetrahedron, or this tetrahedron, if the point lies inside it.
    */
-  virtual std::shared_ptr<Tetrahedron<T>> walkToPoint(const std::array<double, 3>& coordinate,
-                                                      const std::array<int, 4>& triangle_order);
+  std::shared_ptr<Tetrahedron<T>> walkToPoint(const std::array<double, 3>& coordinate,
+                                              const std::array<int, 4>& triangle_order);
   /**
    * @return An array containing the nodes incident to this tetrahedron.
    */
-  virtual std::array<SpaceNode<T>*, 4> getAdjacentNodes() const;
+  std::array<SpaceNode<T>*, 4> getAdjacentNodes() const;
 //
 // protected:
 //
@@ -247,7 +247,7 @@ class Tetrahedron : public std::enable_shared_from_this<Tetrahedron<T>> {
    *
    * @return An array of objects of type <code>T</code>.
    */
-  virtual std::array<T*, 4> getVerticeContents() const;
+  std::array<T*, 4> getVerticeContents() const;
 
   /**
    * Returns whether this tetrahedron is infinite.
@@ -255,7 +255,7 @@ class Tetrahedron : public std::enable_shared_from_this<Tetrahedron<T>> {
    * @return <code>true</code>, if the tetrahedron is infinite (first
    *         endpoint is null).
    */
-  virtual bool isInfinite() const;
+  bool isInfinite() const;
 
   /**
    * Returns whether this tetrahedron is a flat tetrahedron. Used to simplify
@@ -280,7 +280,7 @@ class Tetrahedron : public std::enable_shared_from_this<Tetrahedron<T>> {
    *            The new value for the cross section area of the specified
    *            edge.
    */
-  virtual void changeCrossSection(int number, double new_value);
+  void changeCrossSection(int number, double new_value);
 
   /**
    * Calculates all cross section areas of the six edges incident to this
@@ -306,7 +306,7 @@ class Tetrahedron : public std::enable_shared_from_this<Tetrahedron<T>> {
    *         if it is inside the sphere and 0, if it lies on the surface of
    *         the sphere.
    */
-  virtual int orientationExact(const std::array<double, 3>& position) const;
+  int orientationExact(const std::array<double, 3>& position) const;
 
   /**
    * Replaces one of the incident triangles of this tetrahedron. Automatically
@@ -317,8 +317,8 @@ class Tetrahedron : public std::enable_shared_from_this<Tetrahedron<T>> {
    * @param new_triangle
    *            The new trianlge.
    */
-  virtual void replaceTriangle(const std::shared_ptr<Triangle3D<T>>& old_triangle,
-                               const std::shared_ptr<Triangle3D<T>>& new_triangle);
+  void replaceTriangle(const std::shared_ptr<Triangle3D<T>>& old_triangle,
+                       const std::shared_ptr<Triangle3D<T>>& new_triangle);
 
   /**
    * Determines which index a given node has in this tetrahedron's list of
@@ -328,7 +328,7 @@ class Tetrahedron : public std::enable_shared_from_this<Tetrahedron<T>> {
    *            The node of interest.
    * @return An index between 0 and 3.
    */
-  virtual int getNodeNumber(SpaceNode<T>* node) const;
+  int getNodeNumber(SpaceNode<T>* node) const;
 
   /**
    * Determines which index a given triangle has in this tetrahedron's list of
@@ -338,7 +338,7 @@ class Tetrahedron : public std::enable_shared_from_this<Tetrahedron<T>> {
    *            The triangle of interest.
    * @return An index between 0 and 3.
    */
-  virtual int getTriangleNumber(const std::shared_ptr<Triangle3D<T>>& triangle) const;
+  int getTriangleNumber(const std::shared_ptr<Triangle3D<T>>& triangle) const;
 
   /**
    * Determines the edge that connects two endpoints of this tetrahedron.
@@ -349,7 +349,7 @@ class Tetrahedron : public std::enable_shared_from_this<Tetrahedron<T>> {
    *            The index of the second endpoint of the edge.
    * @return The edge connecting the two endpoints with the given indices.
    */
-  virtual Edge<T>* getEdge(int node_number_1, int node_number_2) const;
+  Edge<T>* getEdge(int node_number_1, int node_number_2) const;
 
   /**
    * Determines the edge that connects two endpoints of this tetrahedron.
@@ -360,7 +360,7 @@ class Tetrahedron : public std::enable_shared_from_this<Tetrahedron<T>> {
    *            The second endpoint of the edge.
    * @return The edge connecting the two given endpoints.
    */
-  virtual Edge<T>* getEdge(SpaceNode<T>* a, SpaceNode<T>* b) const;
+  Edge<T>* getEdge(SpaceNode<T>* a, SpaceNode<T>* b) const;
 
   /**
    * Determines the edge that connects two endpoints of this tetrahedron.
@@ -372,7 +372,7 @@ class Tetrahedron : public std::enable_shared_from_this<Tetrahedron<T>> {
    * @return A number between 0 and 5, giving the index of the edge of
    *         interest.
    */
-  virtual int getEdgeNumber(SpaceNode<T>* a, SpaceNode<T>* b) const;
+  int getEdgeNumber(SpaceNode<T>* a, SpaceNode<T>* b) const;
 
   /**
    * Returns the incident triangle opposite to a given endpoint of this
@@ -383,7 +383,7 @@ class Tetrahedron : public std::enable_shared_from_this<Tetrahedron<T>> {
    * @return A reference to the triangle that lies opposite to
    *         <code>node</code>.
    */
-  virtual std::shared_ptr<Triangle3D<T>> getOppositeTriangle(SpaceNode<T>* node) const;
+  std::shared_ptr<Triangle3D<T>> getOppositeTriangle(SpaceNode<T>* node) const;
 
   /**
    * Returns the incident node opposite to a given triangle which is incident
@@ -394,7 +394,7 @@ class Tetrahedron : public std::enable_shared_from_this<Tetrahedron<T>> {
    * @return The endpoint of this triangle that lies opposite to
    *         <code>triangle</code>.
    */
-  virtual SpaceNode<T>* getOppositeNode(const std::shared_ptr<Triangle3D<T>>& triangle) const;
+  SpaceNode<T>* getOppositeNode(const std::shared_ptr<Triangle3D<T>>& triangle) const;
 
   /**
    * Ret#include "spatial_organization/space_node.h"urns a reference to the triangle connecting this tetrahedron with
@@ -405,8 +405,7 @@ class Tetrahedron : public std::enable_shared_from_this<Tetrahedron<T>> {
    * @return The triangle which is incident to this tetrahedron and
    *         <code>tetrahedron</code>.
    */
-  virtual std::shared_ptr<Triangle3D<T>> getConnectingTriangle(
-      const std::shared_ptr<Tetrahedron<T>>& tetrahedron) const;
+  std::shared_ptr<Triangle3D<T>> getConnectingTriangle(const std::shared_ptr<Tetrahedron<T>>& tetrahedron) const;
 
   /**
    * Returns this index of the triangle connecting this tetrahedron with
@@ -418,7 +417,7 @@ class Tetrahedron : public std::enable_shared_from_this<Tetrahedron<T>> {
    *         incident to this tetrahedron and <code>tetrahedron</code> in
    *         this tetrahedron's list of incident triangles.
    */
-  virtual int getConnectingTriangleNumber(const std::shared_ptr<Tetrahedron<T>>& tetrahedron) const;
+  int getConnectingTriangleNumber(const std::shared_ptr<Tetrahedron<T>>& tetrahedron) const;
 
   /**
    * Returns the three incident triangles that are adjacent to a given
@@ -428,8 +427,7 @@ class Tetrahedron : public std::enable_shared_from_this<Tetrahedron<T>> {
    *            A triangle which is incident to this tetrahedron.
    * @return An array of three triangles.
    */
-  virtual std::array<std::shared_ptr<Triangle3D<T>>, 3> getTouchingTriangles(
-      const std::shared_ptr<Triangle3D<T>>& base) const;
+  std::array<std::shared_ptr<Triangle3D<T>>, 3> getTouchingTriangles(const std::shared_ptr<Triangle3D<T>>& base) const;
 
   /**
    * Removes this tetrahedron from the triangulation. All the incident nodes,
@@ -439,7 +437,7 @@ class Tetrahedron : public std::enable_shared_from_this<Tetrahedron<T>> {
    * this tetrahedron. A caller of this function must keep track of the new
    * open triangles itself!
    */
-  virtual void remove();
+  void remove();
 
   /**
    * Determines whether a given coordinate lies in convex position, meaning
@@ -483,14 +481,14 @@ class Tetrahedron : public std::enable_shared_from_this<Tetrahedron<T>> {
    * corresponding triangle will be chosen to determine the adjacent tetrahedron.
    * @return An adjacent tetrahedron.
    */
-  virtual std::shared_ptr<Tetrahedron<T>> getAdjacentTetrahedron(int number);
+  std::shared_ptr<Tetrahedron<T>> getAdjacentTetrahedron(int number);
 
   /**
    * Checks if a node may be moved to a given coordinate.
    * @param position The coordinate of interest.
    * @throws PositionNotAllowedException If the position is equal to any endpoint of this tetrahedron.
    */
-  virtual void testPosition(const std::array<double, 3>& position) const throw (std::exception);
+  void testPosition(const std::array<double, 3>& position) const throw (std::exception);
 
   /**
    * When this tetrahedron is removed, there might still be references to
@@ -499,14 +497,14 @@ class Tetrahedron : public std::enable_shared_from_this<Tetrahedron<T>> {
    *
    * @return <code>true</code>, iff this tetrahedron is still part of the triangulation.
    */
-  virtual bool isValid() const;
+  bool isValid() const;
 
   /**
    * Returns whether a given tetrahedron is adjacent to this tetrahedron.
    * @param other_tetrahedron The potential neighbor of this tetrahedron.
    * @return <code>true</code>, iff this tetrahedron is adjacent to <code>otherTetrahedron</code>.
    */
-  virtual bool isNeighbor(const std::shared_ptr<Tetrahedron<T>>& other_tetrahedron) const;
+  bool isNeighbor(const std::shared_ptr<Tetrahedron<T>>& other_tetrahedron) const;
 
   /**
    * Given two nodes incident to this tetrahedron, this function returns
@@ -519,7 +517,7 @@ class Tetrahedron : public std::enable_shared_from_this<Tetrahedron<T>> {
    *            A second incident node.
    * @return A third incident node.
    */
-  virtual SpaceNode<T>* getFirstOtherNode(SpaceNode<T>* node_a, SpaceNode<T>* node_b) const;
+  SpaceNode<T>* getFirstOtherNode(SpaceNode<T>* node_a, SpaceNode<T>* node_b) const;
 
   /**
    * Given two nodes incident to this tetrahedron, this function returns
@@ -532,7 +530,7 @@ class Tetrahedron : public std::enable_shared_from_this<Tetrahedron<T>> {
    *            A second incident node.
    * @return A third incident node.
    */
-  virtual SpaceNode<T>* getSecondOtherNode(SpaceNode<T>* node_a, SpaceNode<T>* node_b) const;
+  SpaceNode<T>* getSecondOtherNode(SpaceNode<T>* node_a, SpaceNode<T>* node_b) const;
 
  protected:
   /**
@@ -651,7 +649,7 @@ class Tetrahedron : public std::enable_shared_from_this<Tetrahedron<T>> {
   /**
    * Used during initialization to make sure that edges are created only once.
    */
-  virtual void registerEdges();
+  void registerEdges();
 
   /**
    * Changes the volume_ associated with this tetrahedron to a new value. The
@@ -660,7 +658,7 @@ class Tetrahedron : public std::enable_shared_from_this<Tetrahedron<T>> {
    * @param new_volume
    *            The new volume_.
    */
-  virtual void changeVolume(double new_volume);
+  void changeVolume(double new_volume);
 
   /**
    * Calculates the vectors connecting the first endpoint of this tetrahedron
@@ -669,7 +667,7 @@ class Tetrahedron : public std::enable_shared_from_this<Tetrahedron<T>> {
    * @return A two-dimensional array of length 3x3 and type double, containing
    *         three vectors.
    */
-  virtual std::array<std::array<double, 3>, 3> getPlaneNormals() const;
+  std::array<std::array<double, 3>, 3> getPlaneNormals() const;
 
   /**
    * Finds the maximal absolute value in a two-dimensional array. Used for
@@ -680,7 +678,7 @@ class Tetrahedron : public std::enable_shared_from_this<Tetrahedron<T>> {
    * @return The entry in <code>values</code> with the highest absolute
    *         value.
    */
-  virtual double maxAbs(const std::array<std::array<double, 3>, 3>& values) const;
+  double maxAbs(const std::array<std::array<double, 3>, 3>& values) const;
 
   /**
    * Finds the maximal absolute value in four arrays. Used for tolerance_
@@ -697,16 +695,16 @@ class Tetrahedron : public std::enable_shared_from_this<Tetrahedron<T>> {
    * @return The entry with the highest absolute value in any of the 4 given
    *         arrays.
    */
-  virtual double maxAbs(const std::array<double, 3>& values_1, const std::array<double, 3>& values_2,
-                        const std::array<double, 3>& values_3, const std::array<double, 3>& values_4) const;
+  double maxAbs(const std::array<double, 3>& values_1, const std::array<double, 3>& values_2,
+                const std::array<double, 3>& values_3, const std::array<double, 3>& values_4) const;
 
-  virtual double multError2(double a, double a_err_2, double b, double b_err_2) const;
+  double multError2(double a, double a_err_2, double b, double b_err_2) const;
 
-  virtual double multError2(double a, double a_err_2, double b, double b_err_2, double c, double c_err_2) const;
+  double multError2(double a, double a_err_2, double b, double b_err_2, double c, double c_err_2) const;
 
-  virtual double addError2(double a_err_2, double b_err_2, double result) const;
+  double addError2(double a_err_2, double b_err_2, double result) const;
 
-  virtual double addError2(double a_err_2, double b_err_2, double c_err_2, double result) const;
+  double addError2(double a_err_2, double b_err_2, double c_err_2, double result) const;
 
   /**
    * Calculates the center of the circumsphere of this tetrahedron and the
@@ -716,12 +714,12 @@ class Tetrahedron : public std::enable_shared_from_this<Tetrahedron<T>> {
    * Along with the circumsphere calculation, an upper bound of the
    * uncertainty of this value is calculated.
    */
-  virtual void computeCircumsphereCenterAndVolume();
+  void computeCircumsphereCenterAndVolume();
 
   /**
    * Calculates the radius of this tetrahedron's circumsphere.
    */
-  virtual void computeRadius();
+  void computeRadius();
 };
 
 }  // namespace spatial_organization

@@ -31,9 +31,9 @@ class PhysicalSpine : public Excrescence {
   virtual bool synapseWithShaft(NeuriteElement* other_ne, double max_dis, int nr_segments, bool create_phyiscal_bond)
       override;
 
-  virtual BiologicalSpine* getBiologicalSpine() const;
+  BiologicalSpine* getBiologicalSpine() const;
 
-  virtual void setBiologicalSpine(BiologicalSpine::UPtr spine);
+  void setBiologicalSpine(BiologicalSpine::UPtr spine);
 
  private:
   PhysicalSpine(const PhysicalSpine&) = delete;

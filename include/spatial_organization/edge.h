@@ -78,32 +78,32 @@ class Edge : public SpatialOrganizationEdge<T> {
    * @param b The second node.
    * @return <code>true</code>, if this edge connects <code>a</code> and <code>b</code>.
    */
-  virtual bool equals(SpaceNode<T>* a, SpaceNode<T>* b) const;
+  bool equals(SpaceNode<T>* a, SpaceNode<T>* b) const;
   /**
    * Removes a tetrahedron from this edge's list of tetrahedra. If this edge is not incident to
    * any tetrahedra after the removal of the specified tetrahedron, the edge removes itself from
    * the triangulation by calling {@link #remove()}.
    * @param tetrahedron A tetrahedron incident to this edge which should be removed.
    */
-  virtual void removeTetrahedron(const std::shared_ptr<Tetrahedron<T>>& tetrahedron);
+  void removeTetrahedron(const std::shared_ptr<Tetrahedron<T>>& tetrahedron);
 
   /**
    * Adds a tetrahedron to this edge's list of tetrahedra.
    * @param tetrahedron A tetrahedron incident to this edge which should be added.
    */
-  virtual void addTetrahedron(const std::shared_ptr<Tetrahedron<T>>& tetrahedron);
+  void addTetrahedron(const std::shared_ptr<Tetrahedron<T>>& tetrahedron);
 
   /**
    * Removes this edge from the triangulation. To do so, the two endpoints are informed
    * that the edge was removed.
    */
-  virtual void remove();
+  void remove();
 
   /**
    * Returns the list of incident tetrahedra.
    * @return The list of incident tetrahedra.
    */
-  virtual std::list<std::shared_ptr<Tetrahedron<T>> > getAdjacentTetrahedra() const;
+  std::list<std::shared_ptr<Tetrahedron<T>> > getAdjacentTetrahedra() const;
 
   /**
    * Changes the cross section area of this edge.
@@ -111,7 +111,7 @@ class Edge : public SpatialOrganizationEdge<T> {
    * At initialization, this area is set to zero and all tetrahedra that are registered as
    * incident tetrahedra increase the cross section area.
    */
-  virtual void changeCrossSectionArea(double change);
+  void changeCrossSectionArea(double change);
 
  protected:
   /**

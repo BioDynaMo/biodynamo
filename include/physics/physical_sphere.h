@@ -36,22 +36,22 @@ class PhysicalSphere : public PhysicalObject {
 
   virtual ~PhysicalSphere();
 
-  virtual StringBuilder& simStateToJson(StringBuilder& sb) const override;
+  StringBuilder& simStateToJson(StringBuilder& sb) const override;
 
-  virtual double getInterObjectForceCoefficient() const override;
+  double getInterObjectForceCoefficient() const override;
 
-  virtual void setInterObjectForceCoefficient(double inter_object_force_coefficient) override;
+  void setInterObjectForceCoefficient(double inter_object_force_coefficient) override;
 
-  virtual double getRotationalInertia() const;
+  double getRotationalInertia() const;
 
-  virtual void setRotationalInertia(double rotational_inertia);
+  void setRotationalInertia(double rotational_inertia);
 
   /** returns true because this object is a PhysicalSphere */
-  virtual bool isAPhysicalSphere() const override;
+  bool isAPhysicalSphere() const override;
 
-  virtual void movePointMass(double speed, const std::array<double, 3>& direction) override;
+  void movePointMass(double speed, const std::array<double, 3>& direction) override;
 
-  virtual std::array<double, 3> originOf(PhysicalObject* daughter) override;
+  std::array<double, 3> originOf(PhysicalObject* daughter) override;
 
   // *************************************************************************************
   //   BIOLOGY (growth, division, new neurite... )
@@ -60,24 +60,24 @@ class PhysicalSphere : public PhysicalObject {
   /**
    * @return the somaElement
    */
-  virtual SomaElement* getSomaElement() const;
+  SomaElement* getSomaElement() const;
 
   /**
    * @param somaElement the somaElement to set
    */
-  virtual void setSomaElement(SomaElement* soma_element);
+  void setSomaElement(SomaElement* soma_element);
 
   /**
    * Progressive modification of the volume. Updates the diameter, the intracellular concentration
    * @param speed cubic micron/ h
    */
-  virtual void changeVolume(double speed) override;
+  void changeVolume(double speed) override;
 
   /**
    * Progressive modification of the diameter. Updates the volume, the intracellular concentration
    * @param speed micron/ h
    */
-  virtual void changeDiameter(double speed) override;
+  void changeDiameter(double speed) override;
 
   /**
    * Extension of a PhysicalCylinder as a daughter of this PhysicalSphere. The position on the sphere where
@@ -90,7 +90,7 @@ class PhysicalSphere : public PhysicalObject {
    * @param phi the angle from the zAxis
    * @param theta the angle from the xAxis around the zAxis
    */
-  virtual PhysicalCylinder::UPtr addNewPhysicalCylinder(double new_length, double phi, double theta);
+  PhysicalCylinder::UPtr addNewPhysicalCylinder(double new_length, double phi, double theta);
 
   /**
    * Division of the sphere into two spheres. The one in which the method is called becomes
@@ -105,7 +105,7 @@ class PhysicalSphere : public PhysicalObject {
    * @param theta the angle from the xAxis around the zAxis (for the division axis)
    * @return the other daughter (new sphere)
    */
-  virtual UPtr divide(double vr, double phi, double theta);
+  UPtr divide(double vr, double phi, double theta);
 
   // *************************************************************************************
   //   PHYSICS
@@ -114,24 +114,24 @@ class PhysicalSphere : public PhysicalObject {
   /**
    * Tells if a sphere is in the detection range of an other sphere.
    */
-  virtual bool isInContactWithSphere(PhysicalSphere* s) override;
+  bool isInContactWithSphere(PhysicalSphere* s) override;
 
-  virtual bool isInContactWithCylinder(PhysicalCylinder* c) override;
+  bool isInContactWithCylinder(PhysicalCylinder* c) override;
 
-  virtual std::array<double, 4> getForceOn(PhysicalCylinder* c) override;
+  std::array<double, 4> getForceOn(PhysicalCylinder* c) override;
 
-  virtual std::array<double, 3> getForceOn(PhysicalSphere* s) override;
+  std::array<double, 3> getForceOn(PhysicalSphere* s) override;
 
-  virtual void runPhysics() override;
+  void runPhysics() override;
 
-  virtual std::array<double, 3> getAxis() const override;
+  std::array<double, 3> getAxis() const override;
 
   /**
    * @return the daughters
    */
-  virtual std::list<PhysicalCylinder*> getDaughters() const;
+  std::list<PhysicalCylinder*> getDaughters() const;
 
-  virtual void runIntracellularDiffusion() override;
+  void runIntracellularDiffusion() override;
 
   // *************************************************************************************
   //   Coordinates transform
@@ -169,7 +169,7 @@ class PhysicalSphere : public PhysicalObject {
    * @param positionInGlobalCoord
    * @return
    */
-  virtual std::array<double, 3> transformCoordinatesGlobalToLocal(const std::array<double, 3>& position) const override;
+  std::array<double, 3> transformCoordinatesGlobalToLocal(const std::array<double, 3>& position) const override;
 
   // L -> G
   /**
@@ -178,7 +178,7 @@ class PhysicalSphere : public PhysicalObject {
    * @param positionInLocalCoord
    * @return
    */
-  virtual std::array<double, 3> transformCoordinatesLocalToGlobal(const std::array<double, 3>& position) const override;
+  std::array<double, 3> transformCoordinatesLocalToGlobal(const std::array<double, 3>& position) const override;
 
   // L -> P
   /**
@@ -187,7 +187,7 @@ class PhysicalSphere : public PhysicalObject {
    * @param positionInLocalCoord
    * @return
    */
-  virtual std::array<double, 3> transformCoordinatesLocalToPolar(const std::array<double, 3>& position) const;
+  std::array<double, 3> transformCoordinatesLocalToPolar(const std::array<double, 3>& position) const;
 
   // P -> L
   /**
@@ -196,46 +196,46 @@ class PhysicalSphere : public PhysicalObject {
    * @param positionInLocalCoord
    * @return
    */
-  virtual std::array<double, 3> transformCoordinatesPolarToLocal(const std::array<double, 3>& position) const;
+  std::array<double, 3> transformCoordinatesPolarToLocal(const std::array<double, 3>& position) const;
 
-  virtual std::array<double, 3> transformCoordinatesPolarToGlobal(const std::array<double, 2>& position) const override;
+  std::array<double, 3> transformCoordinatesPolarToGlobal(const std::array<double, 2>& position) const override;
 
-  virtual std::array<double, 3> transformCoordinatesGlobalToPolar(const std::array<double, 3>& position) const override;
+  std::array<double, 3> transformCoordinatesGlobalToPolar(const std::array<double, 3>& position) const override;
 
-  virtual std::array<double, 3> getUnitNormalVector(const std::array<double, 3>& position) const override;
+  std::array<double, 3> getUnitNormalVector(const std::array<double, 3>& position) const override;
 
-  virtual CellElement* getCellElement() const override;
+  CellElement* getCellElement() const override;
 
-  virtual bool isRelative(PhysicalObject* po) const override;
+  bool isRelative(PhysicalObject* po) const override;
 
-  virtual double getLength() const override;
+  double getLength() const override;
 
  protected:
   /**
    * A PhysicalSphere has no mother that could call, so this method is not used.
    */
-  virtual std::array<double, 3> forceTransmittedFromDaugtherToMother(PhysicalObject* mother) override;
+  std::array<double, 3> forceTransmittedFromDaugtherToMother(PhysicalObject* mother) override;
 
-  virtual void removeDaughter(PhysicalObject* daughter) override;
+  void removeDaughter(PhysicalObject* daughter) override;
 
-  virtual void updateRelative(PhysicalObject* old_relative, PhysicalObject* new_relative) override;
+  void updateRelative(PhysicalObject* old_relative, PhysicalObject* new_relative) override;
 
-  virtual void updateDependentPhysicalVariables() override;
+  void updateDependentPhysicalVariables() override;
 
   /**
    * Updates the concentration of substances, based on the volume of the object.
    * Is usually called after change of the volume (and therefore we don't modify it here)
    */
-  virtual void updateIntracellularConcentrations() override;
+  void updateIntracellularConcentrations() override;
 
   /**
    * Recompute volume after diameter has changed.
    */
-  virtual void updateVolume() override;
+  void updateVolume() override;
 
-  virtual void updateDiameter() override;
+  void updateDiameter() override;
 
-  virtual std::string toString() const override;
+  std::string toString() const override;
 
  private:
   PhysicalSphere(const PhysicalSphere& other) = delete;

@@ -97,7 +97,7 @@ class Triangle3D : public Plane3D<T>, public std::enable_shared_from_this<Triang
    * @return <code>true</code>, if both triangles are incident to the same
    *         nodes.
    */
-  virtual bool isSimilarTo(const std::shared_ptr<Triangle3D<T>>& other_triangle) const;
+  bool isSimilarTo(const std::shared_ptr<Triangle3D<T>>& other_triangle) const;
 
   /**
    * Returns the distance of the center of a circumsphere touching all points
@@ -115,7 +115,7 @@ class Triangle3D : public Plane3D<T>, public std::enable_shared_from_this<Triang
    *
    * @see #calculateSDDistance(double[])
    */
-  virtual double getSDDistance(const std::array<double, 3>& fourth_point) const;
+  double getSDDistance(const std::array<double, 3>& fourth_point) const;
 
   /**
    * Calculates the distance of the center of a circumsphere touching all
@@ -128,7 +128,7 @@ class Triangle3D : public Plane3D<T>, public std::enable_shared_from_this<Triang
    * @return The signed delaunay distance or -1 if it cannot be calculated.
    *
    */
-  virtual std::shared_ptr<Rational> getSDDistanceExact(const std::array<double, 3>& fourth_point) const;
+  std::shared_ptr<Rational> getSDDistanceExact(const std::array<double, 3>& fourth_point) const;
 
   /**
    * Calculates the center of the circumsphere around the three endpoints of this triangle and a
@@ -139,7 +139,7 @@ class Triangle3D : public Plane3D<T>, public std::enable_shared_from_this<Triang
    * @param fourth_point The fourth point defining the sphere.
    * @return The coordinate of the center of the circumsphere if it can be computed and <code>null</code> else.
    */
-  virtual std::array<double, 3> calculateCircumSphereCenter(const std::array<double, 3>& fourth_point) const;
+  std::array<double, 3> calculateCircumSphereCenter(const std::array<double, 3>& fourth_point) const;
 
   /**
    * Calculates the center of the circumsphere around the three endpoints of this triangle and a
@@ -151,24 +151,24 @@ class Triangle3D : public Plane3D<T>, public std::enable_shared_from_this<Triang
    * @return The coordinate of the center of the circumsphere if the circumcenter of
    *  this triangle was updated and <code>null</code> else.
    */
-  virtual std::array<double, 3> calculateCircumSphereCenterIfEasy(const std::array<double, 3>& fourth_point) const;
+  std::array<double, 3> calculateCircumSphereCenterIfEasy(const std::array<double, 3>& fourth_point) const;
 
   /**
    * This function informs the triangle that one of its incident nodes moved.
    * Therefore, the plane equation and the circumcircle will have to be recalculated.
    */
-  virtual void informAboutNodeMovement();
+  void informAboutNodeMovement();
 
   /**
    * Updates the plane equation for this triangle if and incident node has moved since the last
    * update.
    */
-  virtual void updatePlaneEquationIfNecessary();
+  void updatePlaneEquationIfNecessary();
 
   /**
    * Updates all parameters of this triangle.
    */
-  virtual void update();
+  void update();
 
   /**
    * {@inheritDoc}
@@ -184,7 +184,7 @@ class Triangle3D : public Plane3D<T>, public std::enable_shared_from_this<Triang
    * @return 1, if the distance of <code>point</code> is smaller than the radius of the circumcircle, 0, if it is equal and 1, if
    * it is bigger.
    */
-  virtual int circleOrientation(const std::array<double, 3>& point);
+  int circleOrientation(const std::array<double, 3>& point);
 
   /**
    * Given a tetrahedron which is incident to this triangle, this function returns the second tetrahedron incident to
@@ -193,14 +193,14 @@ class Triangle3D : public Plane3D<T>, public std::enable_shared_from_this<Triang
    * @return The tetrahedron opposite to <code>incidentTetrahedron</code> at this triangle.
    * @throws RuntimeException if <code>incidentTetrahedron</code> is not incident to this triangle.
    */
-  virtual std::shared_ptr<Tetrahedron<T>> getOppositeTetrahedron(
+  std::shared_ptr<Tetrahedron<T>> getOppositeTetrahedron(
       const std::shared_ptr<Tetrahedron<T>>& incident_tetrahedron) const;
 
   /**
    * Removes a given tetrahedron from the list of incident tetrahedra.
    * @param tetrahedron A tetrahedron incident to this triangle.
    */
-  virtual void removeTetrahedron(const std::shared_ptr<Tetrahedron<T>>& tetrahedron);
+  void removeTetrahedron(const std::shared_ptr<Tetrahedron<T>>& tetrahedron);
 
   /**
    * Tests whether this triangle has an open side and whether a given coordinate
@@ -209,7 +209,7 @@ class Triangle3D : public Plane3D<T>, public std::enable_shared_from_this<Triang
    * @return <code>true</code>, if this triangle has an open side and
    * if the given coordinate lies on the open side.
    */
-  virtual bool isOpenToSide(const std::array<double, 3>& point);
+  bool isOpenToSide(const std::array<double, 3>& point);
 
   /**
    * This function detects on which side of the plane defined by this
@@ -219,7 +219,7 @@ class Triangle3D : public Plane3D<T>, public std::enable_shared_from_this<Triang
    *      A runtime exception is thrown if the given point lies in the plane
    *      defined by this triangle.
    */
-  virtual void orientToSide(const std::array<double, 3>& position);
+  void orientToSide(const std::array<double, 3>& position);
 
   /**
    * This function determines whether this triangle has a single open side.
@@ -227,7 +227,7 @@ class Triangle3D : public Plane3D<T>, public std::enable_shared_from_this<Triang
    * is defined to be on the lower side of the triangle, thereby defining the open side as the upper side.
    * If this triangle has either two open sides or no open sides, this function throws a RuntimeException.
    */
-  virtual void orientToOpenSide();
+  void orientToOpenSide();
 
   /**
    * Determines whether a given coordinate lies on the upper side of this triangle (which must be defined
@@ -236,7 +236,7 @@ class Triangle3D : public Plane3D<T>, public std::enable_shared_from_this<Triang
    * @return -1, if the coordinate lies on the lower side of the triangle, +1 if it lies on the upper
    *      side of the triangle an 0 if it lies in the plane.
    */
-  virtual int orientationToUpperSide(const std::array<double, 3>& point) const;
+  int orientationToUpperSide(const std::array<double, 3>& point) const;
 
   /**
    * Determines whether a given coordinate lies on the upper side of this triangle.
@@ -246,7 +246,7 @@ class Triangle3D : public Plane3D<T>, public std::enable_shared_from_this<Triang
    * @see #orientToSide(double[])
    * @see #orientToOpenSide()
    */
-  virtual bool onUpperSide(const std::array<double, 3>& point) const;
+  bool onUpperSide(const std::array<double, 3>& point) const;
 
   /**
    * Determines whether a given coordinate lies truly on the upper side of this triangle.
@@ -255,7 +255,7 @@ class Triangle3D : public Plane3D<T>, public std::enable_shared_from_this<Triang
    * @see #orientToSide(double[])
    * @see #orientToOpenSide()
    */
-  virtual bool trulyOnUpperSide(const std::array<double, 3>& point) const;
+  bool trulyOnUpperSide(const std::array<double, 3>& point) const;
 
   /**
    * Calculates an sd-distance which could typically be expected from points lying in a distance
@@ -264,17 +264,17 @@ class Triangle3D : public Plane3D<T>, public std::enable_shared_from_this<Triang
    * @return An unreliable double value.
    *
    */
-  virtual double getTypicalSDDistance() const;
+  double getTypicalSDDistance() const;
 
   /**
    * Creates a string representation of this object.
    */
-  virtual std::string toString() const;
+  std::string toString() const;
 
   /**
    * Determines if two instances of this object are equal
    */
-  virtual bool equalTo(const std::shared_ptr<Triangle3D<T>>& other) {
+  bool equalTo(const std::shared_ptr<Triangle3D<T>>& other) {
     return this == other.get();
   }
 
@@ -284,20 +284,20 @@ class Triangle3D : public Plane3D<T>, public std::enable_shared_from_this<Triang
    *
    * @return <code>true</code>, if this tetrahedron is incident to a '<code>null</code>'-node.
    */
-  virtual bool isInfinite() const;
+  bool isInfinite() const;
 
   /**
    * @return A reference to the array storing the three endpoints of this
    * tetrahedron.
    */
-  virtual std::array<SpaceNode<T>*, 3> getNodes() const;
+  std::array<SpaceNode<T>*, 3> getNodes() const;
 
   /**
    * Adds an incident tetrahedron to this triangle.
    *
    * @param tetrahedron A new tetrahedron which is incident to this triangle.
    */
-  virtual void addTetrahedron(const std::shared_ptr<Tetrahedron<T>>& tetrahedron);
+  void addTetrahedron(const std::shared_ptr<Tetrahedron<T>>& tetrahedron);
 
   /**
    * Returns whether this triangle has already been tested if it is locally Delaunay.
@@ -309,14 +309,14 @@ class Triangle3D : public Plane3D<T>, public std::enable_shared_from_this<Triang
    * @return <code>true</code>, iff this triangle has already been tested for the
    * Delaunay property.
    */
-  virtual bool wasCheckedAlready(int checking_index);
+  bool wasCheckedAlready(int checking_index);
 
   /**
    * Returns whether this triangle is incident to a given tetrahedron.
    * @param tetrahedron a tetrahedron that might be incident to this triangle.
    * @return <code>true</code>, iff the tetrahedron is incident to this triangle.
    */
-  virtual bool isAdjacentTo(const std::shared_ptr<Tetrahedron<T>>& tetrahedron) const;
+  bool isAdjacentTo(const std::shared_ptr<Tetrahedron<T>>& tetrahedron) const;
 
   /**
    * Returns whether this triangle is incident to a given node.
@@ -324,19 +324,19 @@ class Triangle3D : public Plane3D<T>, public std::enable_shared_from_this<Triang
    * @param node A node that might be incident to this triangle.
    * @return <code>true</code>, iff the node is incident to this triangle.
    */
-  virtual bool isAdjacentTo(SpaceNode<T>* node) const;
+  bool isAdjacentTo(SpaceNode<T>* node) const;
 
   /**
    * Tests if this triangle is not incident to any tetrahedron.
    * @return <code>true</code>, iff this triangle has no incident tetrahedra.
    */
-  virtual bool isCompletelyOpen() const;
+  bool isCompletelyOpen() const;
 
   /**
    * Tests if this triangle is incident to two tetrahedra.
    * @return <code>true</code>, iff this triangle has two incident tetrahedra.
    */
-  virtual bool isClosed() const;
+  bool isClosed() const;
 
  protected:
   /**
@@ -364,14 +364,14 @@ class Triangle3D : public Plane3D<T>, public std::enable_shared_from_this<Triang
    *
    * @return The normal vector for this triangle.
    */
-  virtual std::shared_ptr<ExactVector> getExactNormalVector() const;
+  std::shared_ptr<ExactVector> getExactNormalVector() const;
 
   /**
    * Internal function that is called whenever the normal vector of this
    * triangle is changed.
    * @param new_normal_vector The new normal vector.
    */
-  virtual void updateNormalVector(const std::array<double, 3>& new_normal_vector);
+  void updateNormalVector(const std::array<double, 3>& new_normal_vector);
 
  private:
   Triangle3D() = delete;
@@ -439,7 +439,7 @@ class Triangle3D : public Plane3D<T>, public std::enable_shared_from_this<Triang
    *            The 4th point defining the circumsphere.
    * @return The signed delaunay distance or -1 if it cannot be calculated.
    */
-  virtual double calculateSDDistance(const std::array<double, 3>& fourth_point) const;
+  double calculateSDDistance(const std::array<double, 3>& fourth_point) const;
 
   /**
    * Computes the normal vector for a plane equation given by three position
@@ -452,7 +452,7 @@ class Triangle3D : public Plane3D<T>, public std::enable_shared_from_this<Triang
    * @return The normal vector for the triangle defined by the three
    *         coordinates.
    */
-  virtual std::shared_ptr<ExactVector> calculateExactNormalVector(
+  std::shared_ptr<ExactVector> calculateExactNormalVector(
       const std::array<std::shared_ptr<ExactVector>, 3>& points) const;
 
   /**
@@ -480,19 +480,19 @@ class Triangle3D : public Plane3D<T>, public std::enable_shared_from_this<Triang
    * @return The signed delaunay distance or {@link Long#MAX_VALUE} if it
    *         cannot be calculated.
    */
-  virtual std::shared_ptr<Rational> calculateSDDistanceExact(const std::array<std::shared_ptr<ExactVector>, 4>& points,
-                                                             const std::shared_ptr<ExactVector>& normal_vector) const;
+  std::shared_ptr<Rational> calculateSDDistanceExact(const std::array<std::shared_ptr<ExactVector>, 4>& points,
+                                                     const std::shared_ptr<ExactVector>& normal_vector) const;
 
   /**
    * Recomputes the center of the circumsphere of this triangle if any incident node moved since the last change.
    */
-  virtual void updateCircumCenterIfNecessary();
+  void updateCircumCenterIfNecessary();
 
   /**
    * @return An array of three instances of <code>ExactVector</code> which contain the
    * coordinates of this triangle's endpoints as rational numbers.
    */
-  virtual std::array<std::shared_ptr<ExactVector>, 3> getExactPositionVectors() const;
+  std::array<std::shared_ptr<ExactVector>, 3> getExactPositionVectors() const;
 };
 
 }  // namespace spatial_organization

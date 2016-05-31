@@ -57,11 +57,11 @@ class ECM : public SimStateSerializable {
  public:
   static ECM* getInstance();
 
-  virtual ~ECM();
+  ~ECM();
   ECM(const ECM&) = delete;
   ECM& operator=(const ECM&) = delete;
 
-  virtual StringBuilder& simStateToJson(StringBuilder& sb) const override;
+  StringBuilder& simStateToJson(StringBuilder& sb) const override;
 
   // **************************************************************************
   // Artificial Wall
@@ -87,7 +87,7 @@ class ECM : public SimStateSerializable {
   /** If true, the PhysicalSpheres tend to stay inside a box, who's boundaries are set with
    * setBoundaries().
    */
-  virtual bool getArtificialWallForSpheres() const;
+  bool getArtificialWallForSpheres() const;
 
   /** If set to true, the PhysicalCyliners tend to stay inside a box,
    * who's boundaries are set with setBoundaries().
@@ -98,7 +98,7 @@ class ECM : public SimStateSerializable {
   /** If true, the PhysicalCyliners tend to stay inside a box, who's boundaries are set with
    * setBoundaries().
    */
-  virtual bool getArtificialWallForCylinders() const;
+  bool getArtificialWallForCylinders() const;
 
   /**
    * Returns a force that would be applied to a PhysicalSphere that left the boundaries
@@ -107,7 +107,7 @@ class ECM : public SimStateSerializable {
    * @param radius the radius of the PhysicalSphere
    * @return [Fx,Fy,Fz] the force applied to the cell
    */
-  virtual std::array<double, 3> forceFromArtificialWall(const std::array<double, 3>& location, double radius);
+  std::array<double, 3> forceFromArtificialWall(const std::array<double, 3>& location, double radius);
 
   // **************************************************************************
   // SOM and Interaction with PO & CellElements (add, remove, ..)
@@ -167,17 +167,17 @@ class ECM : public SimStateSerializable {
   // add/remove-PhysicalNode.
   // the later also calls the remove() method of the associated SpatialOrganizationNode.
 
-  virtual void addPhysicalCylinder(PhysicalCylinder* cyl);
+  void addPhysicalCylinder(PhysicalCylinder* cyl);
 
-  virtual void removePhysicalCylinder(PhysicalCylinder* cyl);
+  void removePhysicalCylinder(PhysicalCylinder* cyl);
 
-  virtual void addPhysicalSphere(PhysicalSphere* sphere);
+  void addPhysicalSphere(PhysicalSphere* sphere);
 
-  virtual void removePhysicalSphere(PhysicalSphere* sphere);
+  void removePhysicalSphere(PhysicalSphere* sphere);
 
-  virtual void addPhysicalNode(PhysicalNode* node);
+  void addPhysicalNode(PhysicalNode* node);
 
-  virtual void removePhysicalNode(PhysicalNode* node);
+  void removePhysicalNode(PhysicalNode* node);
 
   //fixme implement
 //     void addECMChemicalReaction(ECMChemicalReaction chemicalReaction);
@@ -186,18 +186,18 @@ class ECM : public SimStateSerializable {
 
   //  Cells
 
-  virtual void addCell(Cell::UPtr cell);
+  void addCell(Cell::UPtr cell);
 
-  virtual void removeCell(Cell* cell);
+  void removeCell(Cell* cell);
 
   // Cell Elements--------------------------------------------------
-  virtual void addSomaElement(SomaElement* soma);
+  void addSomaElement(SomaElement* soma);
 
-  virtual void removeSomaElement(SomaElement* soma);
+  void removeSomaElement(SomaElement* soma);
 
-  virtual void addNeuriteElement(NeuriteElement* neurite);
+  void addNeuriteElement(NeuriteElement* neurite);
 
-  virtual void removeNeuriteElement(NeuriteElement* neurite);
+  void removeNeuriteElement(NeuriteElement* neurite);
 
   void resetTime();
 
@@ -226,7 +226,7 @@ class ECM : public SimStateSerializable {
    * @param id
    * @return new Substance instance
    */
-  virtual Substance::UPtr substanceInstance(const std::string& id);
+  Substance::UPtr substanceInstance(const std::string& id);
 
   /** Returns an instance of <code>IntracellularSubstance</code>. If a similar
    * IntracellularSubstance (with the same id) has already been declared as a template
@@ -238,21 +238,21 @@ class ECM : public SimStateSerializable {
    * @param id
    * @return new IntracellularSubstance instance
    */
-  virtual IntracellularSubstance::UPtr intracellularSubstanceInstance(const std::string& id);
+  IntracellularSubstance::UPtr intracellularSubstanceInstance(const std::string& id);
 
   // *********************************************************************
   // *** Pre-defined cellType colors
   // *********************************************************************
   void addNewCellTypeColor(const std::string& cell_type, Color color);
 
-  virtual Color cellTypeColor(const std::string& cell_type);
+  Color cellTypeColor(const std::string& cell_type);
 
   // *********************************************************************
   // *** Artificial concentration of chemicals
   // *********************************************************************
 
   /** Returns true if some artificial gradient (of any sorts) have been defined.*/
-  virtual bool thereAreArtificialGradients() const;
+  bool thereAreArtificialGradients() const;
 
   /**
    * Defines a bell-shaped artificial concentration in ECM, along the Z axis (ie uniform along X,Y axis).
@@ -368,8 +368,8 @@ class ECM : public SimStateSerializable {
    * @param position the location [x,y,z]
    * @return
    */
-  virtual double getValueArtificialConcentration(const std::string& nameOfTheChemical,
-                                                 const std::array<double, 3>& position) const;
+  double getValueArtificialConcentration(const std::string& nameOfTheChemical,
+                                         const std::array<double, 3>& position) const;
 
   /**
    * Gets the value of a chemical, at a specific position in space
@@ -385,8 +385,8 @@ class ECM : public SimStateSerializable {
    * @param position the location [x,y,z]
    * @return the gradient [dc/dx , dc/dy , dc/dz]
    */
-  virtual std::array<double, 3> getGradientArtificialConcentration(const std::string& substance_name,
-                                                                   const std::array<double, 3>& position) const;
+  std::array<double, 3> getGradientArtificialConcentration(const std::string& substance_name,
+                                                           const std::array<double, 3>& position) const;
 
   double getGradientArtificialConcentration(Substance* s, const std::array<double, 3>& position) const;
 
@@ -396,7 +396,7 @@ class ECM : public SimStateSerializable {
 
   std::vector<PhysicalCylinder*> getPhysicalCylinderList() const;
 
-  virtual std::list<NeuriteElement*> getNeuriteElementList() const;
+  std::list<NeuriteElement*> getNeuriteElementList() const;
 
   std::vector<SomaElement*> getSomaElementList() const;
 
@@ -410,39 +410,39 @@ class ECM : public SimStateSerializable {
 
   std::unordered_map<Substance*, std::array<double, 3>, SubstanceHash, SubstanceEqual> getLinearArtificialConcentrationX() const;
 
-  virtual double getECMtime() const;
+  double getECMtime() const;
 
   void setECMtime(double ECMtime);
 
-  virtual void increaseECMtime(double deltaT);
+  void increaseECMtime(double deltaT);
 
   std::array<double, 3> getMinBounds() const;
 
   std::array<double, 3> getMaxBounds() const;
 
-  virtual PhysicalCylinder* getPhysicalCylinder(int i) const;
+  PhysicalCylinder* getPhysicalCylinder(int i) const;
 
-  virtual NeuriteElement* getNeuriteElement(int i) const;
+  NeuriteElement* getNeuriteElement(int i) const;
 
-  virtual PhysicalNode* getPhysicalNode(int i) const;
+  PhysicalNode* getPhysicalNode(int i) const;
 
-  virtual PhysicalSphere* getPhysicalSphere(int i) const;
+  PhysicalSphere* getPhysicalSphere(int i) const;
 
-  virtual SomaElement* getSomaElement(int i) const;
+  SomaElement* getSomaElement(int i) const;
 
-  virtual Cell* getCell(int i) const;
+  Cell* getCell(int i) const;
 
-  virtual int getCellListSize() const;
+  int getCellListSize() const;
 
-  virtual int getPhysicalNodeListSize() const;
+  int getPhysicalNodeListSize() const;
 
-  virtual int getPhysicalCylinderListSize() const;
+  int getPhysicalCylinderListSize() const;
 
-  virtual int getPhysicalSphereListSize() const;
+  int getPhysicalSphereListSize() const;
 
-  virtual int getSomaElementListSize() const;
+  int getSomaElementListSize() const;
 
-  virtual int getNeuriteElementListSize() const;
+  int getNeuriteElementListSize() const;
 
  private:
   // List of all the BioDynaMoRunnable objects in the simulation ............................

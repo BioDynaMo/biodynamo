@@ -28,19 +28,19 @@ class SomaElement : public CellElement {
 
   virtual ~SomaElement();
 
-  virtual StringBuilder& simStateToJson(StringBuilder& sb) const override;
+  StringBuilder& simStateToJson(StringBuilder& sb) const override;
 
-  virtual UPtr divide(double volume_ratio, double phi, double theta);
+  UPtr divide(double volume_ratio, double phi, double theta);
 
-  virtual void run();
+  void run();
 
-  virtual NeuriteElement* extendNewNeurite();
+  NeuriteElement* extendNewNeurite();
 
-  virtual NeuriteElement* extendNewNeurite(double diameter);
+  NeuriteElement* extendNewNeurite(double diameter);
 
-  virtual NeuriteElement* extendNewNeurite(const std::array<double, 3>& direction);
+  NeuriteElement* extendNewNeurite(const std::array<double, 3>& direction);
 
-  virtual NeuriteElement* extendNewNeurite(double diameter, const std::array<double, 3>& direction);
+  NeuriteElement* extendNewNeurite(double diameter, const std::array<double, 3>& direction);
 
   /**
    * Extends a new neurites
@@ -49,23 +49,23 @@ class SomaElement : public CellElement {
    * @param theta the angle from the xAxis around the zAxis
    * @return
    */
-  virtual NeuriteElement* extendNewNeurite(double diameter, double phi, double theta);
+  NeuriteElement* extendNewNeurite(double diameter, double phi, double theta);
 
   //todo implement makeSomaticSpines
 
-  virtual PhysicalObject* getPhysical() const override;
+  PhysicalObject* getPhysical() const override;
 
-  virtual void setPhysical(PhysicalObject::UPtr po) override;
+  void setPhysical(PhysicalObject::UPtr po) override;
 
-  virtual PhysicalSphere* getPhysicalSphere() const;
+  PhysicalSphere* getPhysicalSphere() const;
 
-  virtual void setPhysicalSphere(PhysicalSphere::UPtr po);
+  void setPhysicalSphere(PhysicalSphere::UPtr po);
 
-  virtual std::list<NeuriteElement*> getNeuriteList() const;
+  std::list<NeuriteElement*> getNeuriteList() const;
 
-  virtual bool isANeuriteElement() const override;
+  bool isANeuriteElement() const override;
 
-  virtual bool isASomaElement() const override;
+  bool isASomaElement() const override;
 
  private:
   SomaElement(const SomaElement&) = delete;

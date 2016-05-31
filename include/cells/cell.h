@@ -51,18 +51,18 @@ class Cell : public SimStateSerializable {
    */
   Cell();
 
-  virtual ~Cell();
+  ~Cell();
 
-  virtual StringBuilder& simStateToJson(StringBuilder& sb) const override;
+  StringBuilder& simStateToJson(StringBuilder& sb) const override;
 
-  virtual std::string toString() const;
+  std::string toString() const;
 
   /**
    * Run Cell: run <code>Gene</code>, run <code>LyonCellCycle</code>, run Conditions, run EnergyProduction.
    * We move one step further in the simulation by running the <code>Gene</code>, <code>GeneSubstances</code>,
    * the <code>LyonCellCycle</code>, EnergyProduction and than we test conditions with ConditionTester.
    */
-  virtual void run();
+  void run();
 
   // *************************************************************************************
   // *      METHODS FOR DIVISION                                                         *
@@ -74,7 +74,7 @@ class Cell : public SimStateSerializable {
    * the axis of division is random.
    * @return the other daughter cell.
    */
-  virtual Cell* divide();
+  Cell* divide();
 
   /**
    * Divide the cell. Of the two daughter cells, one is this one (but smaller, with half GeneSubstances etc.),
@@ -82,12 +82,12 @@ class Cell : public SimStateSerializable {
    * @param volumeRatio the ratio (Volume daughter 1)/(Volume daughter 2). 1.0 gives equal cells.
    * @return the second daughter cell.
    */
-  virtual Cell* divide(double volume_ratio);
+  Cell* divide(double volume_ratio);
 
   /**
    * @param axis specifies direction of division
    */
-  virtual Cell* divide(const std::array<double, 3>& axis);
+  Cell* divide(const std::array<double, 3>& axis);
 
   /**
    * Divide the cell. Of the two daughter cells, one is this one (but smaller, with half GeneSubstances etc.),
@@ -96,7 +96,7 @@ class Cell : public SimStateSerializable {
    * @param axis specifies direction of division
    * @return the second daughter cell
    */
-  virtual Cell* divide(double volume_ratio, const std::array<double, 3>& axis);
+  Cell* divide(double volume_ratio, const std::array<double, 3>& axis);
 
   /**
    * Divide mother cell in two daughter cells by coping <code>Cell</code>, <code>SomaElement</code>,
@@ -111,7 +111,7 @@ class Cell : public SimStateSerializable {
    *
    * @return the second daughter cell
    */
-  virtual Cell* divide(double volume_ratio, double phi, double theta);
+  Cell* divide(double volume_ratio, double phi, double theta);
 
   void addNeuriteElement(NeuriteElement::UPtr neurite);
 
@@ -123,54 +123,54 @@ class Cell : public SimStateSerializable {
    * Adds a <code>CellModule</code> that will be run at each time step.
    * @param m
    */
-  virtual void addCellModule(CellModule::UPtr m);
+  void addCellModule(CellModule::UPtr m);
   /**
    * Removes a particular <code>CellModule</code> from this <code>Cell</code>.
    * It will therefore not be run anymore.
    * @param m
    */
-  virtual void removeCellModule(CellModule* m);
+  void removeCellModule(CellModule* m);
 
   /** Removes all the <code>CellModule</code> in this <code>Cell</code>.*/
-  virtual void cleanAllCellModules();
+  void cleanAllCellModules();
 
   /**
    * Sets the color for all the <code>PhysicalObjects</code> associated with the
    * <code>CellElements</code> of this Cell..
    * @param color
    */
-  virtual void setColorForAllPhysicalObjects(bdm::Color color);
+  void setColorForAllPhysicalObjects(bdm::Color color);
 
   // *************************************************************************************
   // *      GETTERS & SETTERS                                                            *
   // *************************************************************************************
 
   /** Currently, there are two types of cells : Inhibitory_cells and Excitatory_cells.*/
-  virtual void setNeuroMLType(NeuroMLType neuro_ml_type);
+  void setNeuroMLType(NeuroMLType neuro_ml_type);
 
   /** Currently, there are two types of cells :  <code>Inhibitory_cells</code> and  <code>Excitatory_cells</code>.*/
-  virtual NeuroMLType getNeuroMLType() const;
+  NeuroMLType getNeuroMLType() const;
 
   /** Returns the cell type. This is just a convenient way to store some property for the cell.
    * Should not be confused with NeuroMLType.
    */
-  virtual std::string getType() const;
+  std::string getType() const;
 
   /** Sets the cell type. This is just a convenient way to store some property for the cell.
    * Should not be confused with NeuroMLType.
    */
-  virtual void setType(const std::string& type);
+  void setType(const std::string& type);
 
-  virtual SomaElement* getSomaElement() const;
+  SomaElement* getSomaElement() const;
 
-  virtual void setSomaElement(SomaElement::UPtr soma);
+  void setSomaElement(SomaElement::UPtr soma);
 
-  virtual int getID() const;
+  int getID() const;
 
   /**
    * @return a <code>Vector</code> containing all the <code>NeuriteElement</code>s of this cell.
    */
-  virtual std::list<NeuriteElement*> getNeuriteElements() const;
+  std::list<NeuriteElement*> getNeuriteElements() const;
 
  private:
   Cell(const Cell&) = delete;

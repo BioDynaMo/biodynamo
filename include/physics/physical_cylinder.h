@@ -40,16 +40,16 @@ class PhysicalCylinder : public PhysicalObject {
 
   virtual ~PhysicalCylinder();
 
-  virtual StringBuilder& simStateToJson(StringBuilder& sb) const override;
+  StringBuilder& simStateToJson(StringBuilder& sb) const override;
 
-  virtual std::string toString() const override;
+  std::string toString() const override;
 
   /** Returns a <code>PhysicalCylinder</code> with all fields similar than in this
    * <code>PhysicalCylinder</code>. Note that the relatives in the tree structure, the
    * tension, the volume, the
    * <code>CellElement</code>, as well as<code>Excrescences</code> and the
    * <code>IntracellularSubstances</code> are not copied. */
-  virtual UPtr getCopy() const;
+  UPtr getCopy() const;
 
   // *************************************************************************************
   // *      METHODS FOR NEURON TREE STRUCTURE                                            *
@@ -58,7 +58,7 @@ class PhysicalCylinder : public PhysicalObject {
   /**
    * Returns true if the <code>PhysicalObject</code> given as argument is a mother, daughter
    * or sister branch.*/
-  virtual bool isRelative(PhysicalObject* po) const override;
+  bool isRelative(PhysicalObject* po) const override;
 
   /**
    * Returns the location in absolute coordinates of where the <code>PhysicalObject</code>
@@ -69,18 +69,18 @@ class PhysicalCylinder : public PhysicalObject {
    * @param daughterWhoAsks the PhysicalObject requesting it's origin.
    *
    */
-  virtual std::array<double, 3> originOf(PhysicalObject* daughter) override;
+  std::array<double, 3> originOf(PhysicalObject* daughter) override;
 
-  virtual void removeDaughter(PhysicalObject* daughter) override;
+  void removeDaughter(PhysicalObject* daughter) override;
 
-  virtual void updateRelative(PhysicalObject* old_relative, PhysicalObject* new_relative) override;
+  void updateRelative(PhysicalObject* old_relative, PhysicalObject* new_relative) override;
 
   /**
    * returns the total force that this <code>PhysicalCylinder</code> exerts on it's mother.
    * It is the sum of the spring force an the part of the inter-object force computed earlier in
    * <code>runPhysics()</code>.
    */
-  virtual std::array<double, 3> forceTransmittedFromDaugtherToMother(PhysicalObject* mother) override;
+  std::array<double, 3> forceTransmittedFromDaugtherToMother(PhysicalObject* mother) override;
 
   // *************************************************************************************
   //   DISCRETIZATION , SPATIAL NODE, CELL ELEMENT
@@ -91,7 +91,7 @@ class PhysicalCylinder : public PhysicalObject {
    * another <code>PhysicalCylinder</code>), or too short (and in this second case fuse it with the
    * proximal element or even delete it).
    * */
-  virtual bool runDiscretization();
+  bool runDiscretization();
 
   // *************************************************************************************
   //   ELONGATION, RETRACTION, BRANCHING
@@ -103,7 +103,7 @@ class PhysicalCylinder : public PhysicalObject {
    * @param speed of the growth rate (microns/hours).
    * @direction the 3D direction of movement.
    */
-  virtual void extendCylinder(double speed, const std::array<double, 3>& direction);
+  void extendCylinder(double speed, const std::array<double, 3>& direction);
 
   /** Method used for active extension of a terminal branch, representing the steering of a
    * growth cone. There is no check for real extension (unlike in extendCylinder() ).
@@ -111,7 +111,7 @@ class PhysicalCylinder : public PhysicalObject {
    * @param speed of the growth rate (microns/hours).
    * @direction the 3D direction of movement.
    */
-  virtual void movePointMass(double speed, const std::array<double, 3>& direction) override;
+  void movePointMass(double speed, const std::array<double, 3>& direction) override;
 
   /**
    * Branch retraction by moving the distal end (i.e. the massLocation) toward the
@@ -128,7 +128,7 @@ class PhysicalCylinder : public PhysicalObject {
    * @param speed of the retraction (microns/hours).
    * @return false if the neurite doesn't exist anymore (complete retraction)
    */
-  virtual bool retractCylinder(double speed);
+  bool retractCylinder(double speed);
 
   /**
    * Bifurcation of the growth cone creating : adds the 2 <code>PhysicalCylinder</code> that become
@@ -139,8 +139,8 @@ class PhysicalCylinder : public PhysicalObject {
    * @param newBranchR
    */
 
-  virtual std::array<UPtr, 2> bifurcateCylinder(double length, const std::array<double, 3>& direction_1,
-                                                const std::array<double, 3>& direction_2);
+  std::array<UPtr, 2> bifurcateCylinder(double length, const std::array<double, 3>& direction_1,
+                                        const std::array<double, 3>& direction_2);
 
   /**
    * Makes a side branching by adding a second daughter to a non terminal <code>PhysicalCylinder</code>.
@@ -149,42 +149,42 @@ class PhysicalCylinder : public PhysicalObject {
    * not al least 45 degrees from the cylinder's axis).
    * @return the newly added <code>NeuriteSegment</code>
    */
-  virtual UPtr branchCylinder(double length, const std::array<double, 3>& direction);
+  UPtr branchCylinder(double length, const std::array<double, 3>& direction);
 
-  virtual void setRestingLengthForDesiredTension(double tension);
+  void setRestingLengthForDesiredTension(double tension);
 
   /**
    * Progressive modification of the volume. Updates the diameter, the intracellular concentration
    * @param speed cubic micron/ h
    */
-  virtual void changeVolume(double speed) override;
+  void changeVolume(double speed) override;
 
   /**
    * Progressive modification of the diameter. Updates the volume, the intracellular concentration
    * @param speed micron/ h
    */
-  virtual void changeDiameter(double speed) override;
+  void changeDiameter(double speed) override;
 
   // *************************************************************************************
   //   Physics
   // *************************************************************************************
 
-  virtual void runPhysics() override;
+  void runPhysics() override;
 
-  virtual std::array<double, 3> getForceOn(PhysicalSphere* s) override;
+  std::array<double, 3> getForceOn(PhysicalSphere* s) override;
 
-  virtual std::array<double, 4> getForceOn(PhysicalCylinder* c) override;
+  std::array<double, 4> getForceOn(PhysicalCylinder* c) override;
 
-  virtual bool isInContactWithSphere(PhysicalSphere* s) override;
+  bool isInContactWithSphere(PhysicalSphere* s) override;
 
-  virtual bool isInContactWithCylinder(PhysicalCylinder* c) override;
+  bool isInContactWithCylinder(PhysicalCylinder* c) override;
 
   /** Returns the point on this cylinder's spring axis that is the closest to the point p.*/
-  virtual std::array<double, 3> closestPointTo(const std::array<double, 3>& p);
+  std::array<double, 3> closestPointTo(const std::array<double, 3>& p);
 
-  virtual void runIntracellularDiffusion() override;
+  void runIntracellularDiffusion() override;
 
-  virtual std::array<double, 3> getUnitNormalVector(const std::array<double, 3>& position) const override;
+  std::array<double, 3> getUnitNormalVector(const std::array<double, 3>& position) const override;
 
   /**
    * Defines the three orthonormal local axis so that a cylindrical coordinate system
@@ -193,14 +193,14 @@ class PhysicalCylinder : public PhysicalObject {
    * Matt Coock. - Although not perfectly exact, it is accurate enough for us to use.
    *
    */
-  virtual void updateLocalCoordinateAxis();
+  void updateLocalCoordinateAxis();
 
   /** Recomputes diameter after volume has changed.*/
-  virtual void updateDiameter() override;
+  void updateDiameter() override;
 
   /** Recomputes volume, after diameter has been change. And makes a call for
    * recomputing then concentration of IntracellularSubstances.*/
-  virtual void updateVolume() override;
+  void updateVolume() override;
 
   // *************************************************************************************
   //   Coordinates transform
@@ -238,7 +238,7 @@ class PhysicalCylinder : public PhysicalObject {
    * @param positionInGlobalCoord
    * @return
    */
-  virtual std::array<double, 3> transformCoordinatesGlobalToLocal(const std::array<double, 3>& position) const override;
+  std::array<double, 3> transformCoordinatesGlobalToLocal(const std::array<double, 3>& position) const override;
 
   /**
    * L -> G
@@ -247,7 +247,7 @@ class PhysicalCylinder : public PhysicalObject {
    * @param positionInLocalCoord
    * @return
    */
-  virtual std::array<double, 3> transformCoordinatesLocalToGlobal(const std::array<double, 3>& position) const override;
+  std::array<double, 3> transformCoordinatesLocalToGlobal(const std::array<double, 3>& position) const override;
 
   /**
    *  L -> P
@@ -256,7 +256,7 @@ class PhysicalCylinder : public PhysicalObject {
    * @param positionInLocalCoord
    * @return
    */
-  virtual std::array<double, 3> transformCoordinatesLocalToPolar(const std::array<double, 3>& position) const;
+  std::array<double, 3> transformCoordinatesLocalToPolar(const std::array<double, 3>& position) const;
   /**
    * P -> L
    * Returns the position in the local coordinate system (xAxis, yXis, zAxis)
@@ -264,128 +264,128 @@ class PhysicalCylinder : public PhysicalObject {
    * @param positionInLocalCoord
    * @return
    */
-  virtual std::array<double, 3> transformCoordinatesPolarToLocal(const std::array<double, 3>& position) const;
+  std::array<double, 3> transformCoordinatesPolarToLocal(const std::array<double, 3>& position) const;
 
   /** P -> G :    P -> L, then L -> G */
-  virtual std::array<double, 3> transformCoordinatesPolarToGlobal(const std::array<double, 2>& position) const override;
+  std::array<double, 3> transformCoordinatesPolarToGlobal(const std::array<double, 2>& position) const override;
 
   /** G -> L :    G -> L, then L -> P */
-  virtual std::array<double, 3> transformCoordinatesGlobalToPolar(const std::array<double, 3>& position) const override;
+  std::array<double, 3> transformCoordinatesGlobalToPolar(const std::array<double, 3>& position) const override;
 
   // *************************************************************************************
   //   GETTERS & SETTERS
   // *************************************************************************************
 
   /** Well, there is no field cellElement. We return neuriteElement.*/
-  virtual CellElement* getCellElement() const override;
+  CellElement* getCellElement() const override;
 
   /**
    * @return the neuriteElement
    */
-  virtual NeuriteElement* getNeuriteElement() const;
+  NeuriteElement* getNeuriteElement() const;
 
   /**
    * @param neuriteElement the neuriteElement to set
    */
-  virtual void setNeuriteElement(NeuriteElement* neurite);
+  void setNeuriteElement(NeuriteElement* neurite);
 
   /**
    * @return the daughterLeft
    */
-  virtual PhysicalCylinder* getDaughterLeft() const;
+  PhysicalCylinder* getDaughterLeft() const;
 
   /**
    * @return the daughterRight
    */
-  virtual PhysicalCylinder* getDaughterRight() const;
+  PhysicalCylinder* getDaughterRight() const;
 
   /**
    * @return the mother
    */
-  virtual PhysicalObject* getMother() const;
+  PhysicalObject* getMother() const;
 
   /**
    * @param mother the mother to set
    */
-  virtual void setMother(PhysicalObject* mother);
+  void setMother(PhysicalObject* mother);
 
   /**
    * @param daughterLeft the daughterLeft to set
    */
-  virtual void setDaughterLeft(PhysicalCylinder* daughter_left);
+  void setDaughterLeft(PhysicalCylinder* daughter_left);
 
   /**
    * @param daughterRight the daughterRight to set
    */
-  virtual void setDaughterRight(PhysicalCylinder* daughter_right);
+  void setDaughterRight(PhysicalCylinder* daughter_right);
 
   /**
    * @param branchOrder the branchOrder to set
    */
-  virtual void setBranchOrder(int branch_order);
+  void setBranchOrder(int branch_order);
 
   /**
    * @return the branchOrder
    */
-  virtual int getBranchOrder() const;
+  int getBranchOrder() const;
 
-  virtual double getActualLength() const;
+  double getActualLength() const;
 
   /**
    * Should not be used, since the actual length depends on the geometry.
    * @param actualLength
    */
-  virtual void setActualLength(double actual_length);
+  void setActualLength(double actual_length);
 
-  virtual double getRestingLength() const;
+  double getRestingLength() const;
 
-  virtual void setRestingLength(double resting_length);
+  void setRestingLength(double resting_length);
 
-  virtual std::array<double, 3> getSpringAxis() const;
+  std::array<double, 3> getSpringAxis() const;
 
-  virtual void setSpringAxis(const std::array<double, 3>& axis);
+  void setSpringAxis(const std::array<double, 3>& axis);
 
-  virtual double getSpringConstant() const;
+  double getSpringConstant() const;
 
-  virtual void setSpringConstant(double spring_constant);
+  void setSpringConstant(double spring_constant);
 
-  virtual double getTension() const;
+  double getTension() const;
 
-  virtual void setTension(double tension);
+  void setTension(double tension);
 
   /**
    * NOT A "REAL" GETTER
    * Gets a vector of length 1, with the same direction as the SpringAxis.
    * @return a normalized springAxis
    */
-  virtual std::array<double, 3> getUnitaryAxisDirectionVector() const;
+  std::array<double, 3> getUnitaryAxisDirectionVector() const;
 
   /**
    * Should return yes if the PhysicalCylinder is considered a terminal branch.
    * @return is it a terminal branch
    */
-  virtual bool isTerminal() const;
+  bool isTerminal() const;
 
   /**
    * Returns true if a bifurcation is physicaly possible. That is if the PhysicalCylinder
    * has no daughter and the actual length is bigger than the minimum required.
    * @return
    */
-  virtual bool bifurcationPermitted() const;
+  bool bifurcationPermitted() const;
 
   /**
    * Returns true if a side branch is physically possible. That is if this is not a terminal
    * branch and if there is not already a second daughter.
    * @return
    */
-  virtual bool branchPermitted() const;
+  bool branchPermitted() const;
 
   /**
    * retuns the position of the proximal end, ie the massLocation minus the spring axis.
    * Is mainly used for paint
    * @return
    */
-  virtual std::array<double, 3> proximalEnd() const;
+  std::array<double, 3> proximalEnd() const;
 
   /**
    * retuns the position of the distal end, ie the massLocation coordinates (but not the
@@ -393,7 +393,7 @@ class PhysicalCylinder : public PhysicalObject {
    * Is mainly used for paint
    * @return
    */
-  virtual std::array<double, 3> distalEnd() const;
+  std::array<double, 3> distalEnd() const;
 
   /**
    * Returns the total (actual) length of all the cylinders (including the one in which this method is
@@ -401,18 +401,18 @@ class PhysicalCylinder : public PhysicalObject {
    * independently of the discretization.
    * @return
    */
-  virtual double lengthToProximalBranchingPoint() const;
+  double lengthToProximalBranchingPoint() const;
 
   /** returns true because this object is a PhysicalCylinder */
-  virtual bool isAPhysicalCylinder() const override;
+  bool isAPhysicalCylinder() const override;
 
-  virtual double getLength() const override;
+  double getLength() const override;
 
-  virtual double getInterObjectForceCoefficient() const override;
+  double getInterObjectForceCoefficient() const override;
 
-  virtual void setInterObjectForceCoefficient(double coefficient) override;
+  void setInterObjectForceCoefficient(double coefficient) override;
 
-  virtual std::array<double, 3> getAxis() const override;
+  std::array<double, 3> getAxis() const override;
 
   /**
    * Updates the spring axis, the actual length, the tension and the volume.
@@ -424,20 +424,20 @@ class PhysicalCylinder : public PhysicalObject {
    * This method also automatically calls the <code>resetComputationCenterPosition()</code>
    * method at the end.
    */
-  virtual void updateDependentPhysicalVariables() override;
+  void updateDependentPhysicalVariables() override;
 
  protected:
   /**
    * Updates the concentration of substances, based on the volume of the object.
    * Is usually called after change of the volume (and therefore we don't modify it here)
    */
-  virtual void updateIntracellularConcentrations() override;
+  void updateIntracellularConcentrations() override;
 
   /**
    * Repositioning of the SpatialNode location (usually a Delaunay vertex) at the barycenter of the cylinder.
    * If it is already closer than a quarter of the diameter of the cylinder, it is not displaced.
    */
-  virtual void updateSpatialOrganizationNodePosition();
+  void updateSpatialOrganizationNodePosition();
 
  private:
   PhysicalCylinder(const PhysicalCylinder& other) = delete;
