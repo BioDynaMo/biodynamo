@@ -4,7 +4,7 @@
 #include "string_util.h"
 #include "sim_state_serialization_util.h"
 
-namespace cx3d {
+namespace bdm {
 namespace physics {
 
 PhysicalSphere::PhysicalSphere() {
@@ -170,7 +170,7 @@ void PhysicalSphere::changeDiameter(double speed) {
 
 PhysicalCylinder::UPtr PhysicalSphere::addNewPhysicalCylinder(double new_length, double phi, double theta) {
   double radius = 0.5 * diameter_;
-  // position in cx3d.cells coord
+  // position in bdm.cells coord
   double x_coord = MathUtil::cos(theta) * MathUtil::sin(phi);
   double y_coord = MathUtil::sin(theta) * MathUtil::sin(phi);
   double z_coord = MathUtil::cos(phi);
@@ -213,7 +213,7 @@ PhysicalSphere::UPtr PhysicalSphere::divide(double vr, double phi, double theta)
   double radius = diameter_ * 0.5;
   double r1 = radius / std::pow(1.0 + vr, 1.0 / 3.0);
   double r2 = radius / std::pow(1.0 + 1 / vr, 1.0 / 3.0);
-  // define an axis for division (along which the nuclei will move) in cx3d.cells Coord
+  // define an axis for division (along which the nuclei will move) in bdm.cells Coord
   double x_coord = MathUtil::cos(theta) * MathUtil::sin(phi);
   double y_coord = MathUtil::sin(theta) * MathUtil::sin(phi);
   double z_coord = MathUtil::cos(phi);
@@ -262,7 +262,7 @@ PhysicalSphere::UPtr PhysicalSphere::divide(double vr, double phi, double theta)
   ecm_->addPhysicalSphere(new_sphere.get());  // this method also adds the PhysicalNode
 
   // E) This sphere becomes the 1st daughter.....................................................
-  // move this cx3d.cells on opposite direction (move the centralNode & the massLocation)
+  // move this bdm.cells on opposite direction (move the centralNode & the massLocation)
   so_node_->moveFrom( { -d_1 * axis_of_division[0], -d_1 * axis_of_division[1], -d_1 * axis_of_division[2] });  //fixme catch PositionNotAllowedException catch exception
   mass_location_[0] -= d_1 * axis_of_division[0];
   mass_location_[1] -= d_1 * axis_of_division[1];
@@ -687,4 +687,4 @@ void PhysicalSphere::scheduleMeAndAllMyFriends() {
 }
 
 }  // namespace physics
-}  // namespace cx3d
+}  // namespace bdm

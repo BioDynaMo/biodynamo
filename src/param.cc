@@ -1,6 +1,6 @@
 #include "param.h"
 
-namespace cx3d {
+namespace bdm {
 
 double Param::kNeuriteMaxLength = 15.0;
 
@@ -15,4 +15,4 @@ Color Param::kBlue = Color(0xB30000BF);
 Color Param::kGray = Color(0xB3808080);
 Color Param::kGraySolid = Color(0xFF999999);
 
-}  // namespace cx3d
+}  // namespace bdm

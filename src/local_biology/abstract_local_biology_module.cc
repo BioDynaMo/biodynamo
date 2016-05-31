@@ -1,6 +1,6 @@
 #include "local_biology/abstract_local_biology_module.h"
 
-namespace cx3d {
+namespace bdm {
 namespace local_biology {
 
 AbstractLocalBiologyModule::AbstractLocalBiologyModule() {
@@ -44,4 +44,4 @@ bool AbstractLocalBiologyModule::isDeletedAfterNeuriteHasBifurcated() const {
 }
 
 }  // namespace local_biology
-}  // namespace cx3d
+}  // namespace bdm

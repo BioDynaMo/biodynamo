@@ -21,7 +21,7 @@
 #include "simulation/ecm.h"
 #include "simulation/scheduler.h"
 
-namespace cx3d {
+namespace bdm {
 
 using cells::Cell;
 using cells::CellFactory;
@@ -107,6 +107,6 @@ class SomaClusteringTest : public BaseSimulationTest {
   }
 };
 
-}  // namespace cx3d
+}  // namespace bdm
 
 #endif  // TEST_SOMA_CLUSTERING_TEST_H_

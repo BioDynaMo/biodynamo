@@ -4,7 +4,7 @@
 #include "spatial_organization/triangle_3d.h"
 #include "spatial_organization/open_triangle_organizer.h"
 
-namespace cx3d {
+namespace bdm {
 namespace spatial_organization {
 
 template<class T>
@@ -119,7 +119,7 @@ FlatTetrahedron<T>::FlatTetrahedron()
     : Tetrahedron<T>() {
 }
 
-template class FlatTetrahedron<cx3d::physics::PhysicalNode> ;
+template class FlatTetrahedron<bdm::physics::PhysicalNode> ;
 
 }  // namespace spatial_organization
-}  // namespace cx3d
+}  // namespace bdm

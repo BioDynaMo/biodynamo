@@ -8,7 +8,7 @@
 
 #include "physics/physical_cylinder.h"
 
-namespace cx3d {
+namespace bdm {
 
 namespace local_biology {
 class SomaElement;
@@ -82,7 +82,7 @@ class PhysicalSphere : public PhysicalObject {
   /**
    * Extension of a PhysicalCylinder as a daughter of this PhysicalSphere. The position on the sphere where
    * the cylinder will be attached is specified in spherical coordinates with respect to the
-   * cx3d.cells Axis with two angles. The cylinder that is produced is specified by the object (usually
+   * bdm.cells Axis with two angles. The cylinder that is produced is specified by the object (usually
    * a SomaElement) that calls this method. Indeed, unlike PhysicalCylinder.insertProximalCylinder() for instance,
    * this method is called for biological reasons, and not for discretization purposes.
    *
@@ -97,7 +97,7 @@ class PhysicalSphere : public PhysicalObject {
    * one the 1st daughter sphere (it keeps its Soma); a new PhysicalSphere is instantiated
    * and becomes the 2nd daughter (and the Soma given as argument is attributed to it
    * as CellElement). One can specify the relative size of the daughters (2nd/1st).
-   * In asymmetrical division the cx3d.cells that divides stays the progenitor, so the ratio is
+   * In asymmetrical division the bdm.cells that divides stays the progenitor, so the ratio is
    * smaller than 1.
    * @param somaElement the PhysicalSphere for daughter 2
    * @param vr ratio of the two volumes (vr = v2/v1)
@@ -267,6 +267,6 @@ class PhysicalSphere : public PhysicalObject {
 };
 
 }  //namespace physics
-}  //namespace cx3d
+}  //namespace bdm
 
 #endif  // PHYSICS_PHYSICAL_SPHERE_H_

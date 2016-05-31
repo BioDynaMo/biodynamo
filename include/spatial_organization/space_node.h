@@ -12,7 +12,7 @@
 #include "spatial_organization/spatial_organization_node.h"
 #include "spatial_organization/edge.h"
 
-namespace cx3d {
+namespace bdm {
 namespace spatial_organization {
 
 template<class T> class Triangle3D;
@@ -362,6 +362,6 @@ class SpaceNode : public SpatialOrganizationNode<T> {
 };
 
 }  // namespace spatial_organization
-}  // namespace cx3d
+}  // namespace bdm
 
 #endif  // SPATIAL_ORGANIZATION_SPACE_NODE_H_

@@ -2,12 +2,12 @@
 
 #include "spatial_organization/rational.h"
 
-namespace cx3d {
+namespace bdm {
 namespace spatial_organization {
 
 using std::array;
 using std::shared_ptr;
-using cx3d::spatial_organization::ExactVector;
+using bdm::spatial_organization::ExactVector;
 
 std::shared_ptr<ExactVector> ExactVector::create(const std::array<std::shared_ptr<Rational>, 3>& values) {
   return std::shared_ptr < ExactVector > (new ExactVector(values));
@@ -160,4 +160,4 @@ bool ExactVector::equalTo(const shared_ptr<ExactVector>& other) {
 }
 
 }  // namespace spatial_organization
-}  // namespace cx3d
+}  // namespace bdm

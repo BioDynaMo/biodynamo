@@ -4,7 +4,7 @@
 #include "string_util.h"
 #include "spatial_organization/flat_tetrahedron.h"
 
-namespace cx3d {
+namespace bdm {
 namespace spatial_organization {
 
 /**
@@ -283,6 +283,6 @@ class FlatTetrahedronDebug : public FlatTetrahedron<T> {
 };
 
 }  // namespace spatial_organization
-}  // namespace cx3d
+}  // namespace bdm
 
 #endif  // SPATIAL_ORGANIZATION_DEBUG_FLAT_TETRAHEDRON_DEBUG_H_

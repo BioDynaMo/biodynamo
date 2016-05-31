@@ -6,7 +6,7 @@
 
 #include "sim_state_serializable.h"
 
-namespace cx3d {
+namespace bdm {
 
 namespace local_biology {
 class NeuriteElement;
@@ -111,6 +111,6 @@ class Excrescence : public SimStateSerializable {
 };
 
 }  // namespace synapse
-}  // namespace cx3d
+}  // namespace bdm
 
 #endif  // SYNAPSE_EXCRESCENCE_H_

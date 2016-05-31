@@ -2,7 +2,7 @@
 
 #include "sim_state_serialization_util.h"
 
-namespace cx3d {
+namespace bdm {
 namespace physics {
 
 IntracellularSubstance::IntracellularSubstance()
@@ -82,4 +82,4 @@ Substance::UPtr IntracellularSubstance::getCopy() const {
 }
 
 }  // namespace physics
-}  // namespace cx3d
+}  // namespace bdm

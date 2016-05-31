@@ -1,7 +1,7 @@
 #ifndef MATH_UTIL_H_
 #define MATH_UTIL_H_
 
-namespace cx3d {
+namespace bdm {
 
 /**
  * wrapper for Math functions
@@ -24,6 +24,6 @@ struct MathUtil {
   static double atan2(double d, double d1);
 };
 
-}  // namespace cx3d
+}  // namespace bdm
 
 #endif  // MATH_UTIL_H_

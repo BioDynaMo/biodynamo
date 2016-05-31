@@ -7,7 +7,7 @@
 
 #include "spatial_organization/tetrahedron.h"
 
-namespace cx3d {
+namespace bdm {
 namespace spatial_organization {
 
 template<class T> class SpaceNode;
@@ -167,6 +167,6 @@ class FlatTetrahedron : public Tetrahedron<T> {  //, public std::enable_shared_f
 };
 
 }  // namespace spatial_organization
-}  // namespace cx3d
+}  // namespace bdm
 
 #endif  // SPATIAL_ORGANIZATION_FLAT_TETRAHEDRON_H_

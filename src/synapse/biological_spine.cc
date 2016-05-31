@@ -2,7 +2,7 @@
 
 #include "synapse/physical_spine.h"
 
-namespace cx3d {
+namespace bdm {
 namespace synapse {
 
 BiologicalSpine::BiologicalSpine() {
@@ -25,4 +25,4 @@ void BiologicalSpine::setPhysicalSpine(PhysicalSpine* ps) {
 }
 
 }  // namespace synapse
-}  // namespace cx3d
+}  // namespace bdm

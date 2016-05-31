@@ -22,7 +22,7 @@
 #include "physics/substance.h"
 #include "spatial_organization/space_node.h"
 
-namespace cx3d {
+namespace bdm {
 
 namespace local_biology {
 class SomaElement;
@@ -445,7 +445,7 @@ class ECM : public SimStateSerializable {
   virtual int getNeuriteElementListSize() const;
 
  private:
-  // List of all the CX3DRunnable objects in the simulation ............................
+  // List of all the BioDynaMoRunnable objects in the simulation ............................
 
   /** List of all the PhysicalNode instances. */
   std::vector<PhysicalNode*> physical_nodes_;
@@ -534,6 +534,6 @@ class ECM : public SimStateSerializable {
 };
 
 }  // namespace simulation
-}  // namespace cx3d
+}  // namespace bdm
 
 #endif  // SIMULATION_ECM_H_

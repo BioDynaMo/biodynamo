@@ -12,7 +12,7 @@
 #include "physics/substance.h"
 #include "spatial_organization/space_node.h"
 
-namespace cx3d {
+namespace bdm {
 
 namespace spatial_organization {
 template<class T> class SpatialOrganizationEdge;
@@ -39,7 +39,7 @@ using spatial_organization::SpatialOrganizationEdge;
  * inherit from this class. This emphasize the fact that they take part in the definition of space and
  * that diffusion of chemical occurs across them.
  * <p>
- * As all the CX3D runnable objects, the PhysicalNode updates its state (i.e. diffuses and degradates) only
+ * As all the BioDynaMo runnable objects, the PhysicalNode updates its state (i.e. diffuses and degradates) only
  * if needed. The private field <code>onTheSchedulerListForPhysicalNodes</code> is set to <code>true</code>
  * in this case. (For degradation, there is an update mechanism, catching up from the last time it was performed).
  */
@@ -265,6 +265,6 @@ class PhysicalNode : public SimStateSerializable, public std::enable_shared_from
 };
 
 }  // namespace physics
-}  // namespace cx3d
+}  // namespace bdm
 
 #endif  // PHYSICS_PHYSICAL_NODE_H_

@@ -4,7 +4,7 @@
 #include "string_util.h"
 #include "spatial_organization/space_node.h"
 
-namespace cx3d {
+namespace bdm {
 namespace spatial_organization {
 
 /**
@@ -264,6 +264,6 @@ class SpaceNodeDebug : public SpaceNode<T> {
 };
 
 }  // spatial_organization
-}  // cx3d
+}  // bdm
 
 #endif // SPATIAL_ORGANIZATION_DEBUG_SPACE_NODE_DEBUG_H_

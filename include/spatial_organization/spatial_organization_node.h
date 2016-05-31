@@ -10,7 +10,7 @@
 #include "string_builder.h"
 #include "spatial_organization/spatial_organization_node_movement_listener.h"
 
-namespace cx3d {
+namespace bdm {
 namespace spatial_organization {
 
 template<class T> class SpatialOrganizationEdge;
@@ -61,6 +61,6 @@ class SpatialOrganizationNode : public SimStateSerializable {
 };
 
 }  // namespace spatial_organization
-}  // namespace cx3d
+}  // namespace bdm
 
 #endif  // SPATIAL_ORGANIZATION_SPATIAL_ORGANIZATION_NODE_H_

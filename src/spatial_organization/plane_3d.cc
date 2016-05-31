@@ -5,7 +5,7 @@
 #include "spatial_organization/exact_vector.h"
 #include "spatial_organization/rational.h"
 
-namespace cx3d {
+namespace bdm {
 namespace spatial_organization {
 
 template<class T>
@@ -174,8 +174,8 @@ int Plane3D<T>::orientationExact(const std::array<double, 3>& point_1, const std
 }
 
 // define templates that should be compiled
-template class Plane3D<cx3d::physics::PhysicalNode> ;
+template class Plane3D<bdm::physics::PhysicalNode> ;
 
 }  // namespace spatial_organization
-}  // namespace cx3d
+}  // namespace bdm
 

@@ -7,7 +7,7 @@
 #include "spatial_organization/space_node.h"
 #include "spatial_organization/spatial_organization_edge.h"
 
-namespace cx3d {
+namespace bdm {
 namespace physics {
 
 /**
@@ -192,6 +192,6 @@ class PhysicalNodeDebug : public PhysicalNode {
 };
 
 }  // physics
-}  // cx3d
+}  // bdm
 
 #endif // PHYSICS_DEBUG_PHYSICAL_NODE_DEBUG_H_

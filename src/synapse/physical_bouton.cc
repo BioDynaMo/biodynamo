@@ -3,7 +3,7 @@
 #include "matrix.h"
 #include "sim_state_serialization_util.h"
 
-namespace cx3d {
+namespace bdm {
 namespace synapse {
 
 using physics::PhysicalBond;
@@ -109,4 +109,4 @@ BiologicalBouton* PhysicalBouton::getBiologicalBouton() const {
 }
 
 }  // namespace synapse
-}  // namespace cx3d
+}  // namespace bdm

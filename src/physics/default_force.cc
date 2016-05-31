@@ -4,7 +4,7 @@
 
 #include "matrix.h"
 
-namespace cx3d {
+namespace bdm {
 namespace physics {
 
 DefaultForce::DefaultForce() {
@@ -223,4 +223,4 @@ std::array<double, 4> DefaultForce::computeForceOfASphereOnASphere(const std::ar
 }
 
 }  // namespace physics
-}  // namespace cx3d
+}  // namespace bdm

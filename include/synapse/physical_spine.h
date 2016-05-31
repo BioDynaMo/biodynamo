@@ -7,7 +7,7 @@
 #include "synapse/excrescence.h"
 #include "biological_spine.h"
 
-namespace cx3d {
+namespace bdm {
 namespace synapse {
 
 class BiologicalSpine;
@@ -43,6 +43,6 @@ class PhysicalSpine : public Excrescence {
 };
 
 }  // namespace synapse
-}  // namespace cx3d
+}  // namespace bdm
 
 #endif  // SYNAPSE_PHYSICAL_SPINE_H_

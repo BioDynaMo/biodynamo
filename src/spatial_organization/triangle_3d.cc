@@ -7,7 +7,7 @@
 #include "string_util.h"
 #include "spatial_organization/tetrahedron.h"
 
-namespace cx3d {
+namespace bdm {
 namespace spatial_organization {
 
 using std::shared_ptr;
@@ -519,7 +519,7 @@ std::shared_ptr<ExactVector> Triangle3D<T>::calculateExactNormalVector(
 }
 
 // define templates that should be compiled
-template class Triangle3D<cx3d::physics::PhysicalNode> ;
+template class Triangle3D<bdm::physics::PhysicalNode> ;
 
 }  // namespace spatial_organization
-}  // namespace cx3d
+}  // namespace bdm

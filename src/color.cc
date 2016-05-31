@@ -1,6 +1,6 @@
 #include "color.h"
 
-namespace cx3d {
+namespace bdm {
 
 Color Color::getRandomColor() {
   long r = std::lround(255 * Random::nextDouble());
@@ -27,4 +27,4 @@ unsigned Color::getValue() const {
   return value_;
 }
 
-}  // namespace cx3d
+}  // namespace bdm

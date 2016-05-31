@@ -6,7 +6,7 @@
 #include <unordered_map>
 #include <algorithm>
 
-namespace cx3d {
+namespace bdm {
 
 class STLUtil {
  public:
@@ -157,6 +157,6 @@ class STLUtil {
   STLUtil() = delete;
 };
 
-}  // namepspace cx3d
+}  // namepspace bdm
 
 #endif // STL_UTIL_H_

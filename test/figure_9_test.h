@@ -22,7 +22,7 @@
 #include "synapse/test_synapses.h"
 
 
-namespace cx3d {
+namespace bdm {
 
 using std::array;
 using cells::Cell;
@@ -146,6 +146,6 @@ class Figure9Test : public BaseSimulationTest {
   }
 };
 
-}  // namespace cx3d
+}  // namespace bdm
 
 #endif  // TEST_FIGURE_9_TEST_H_

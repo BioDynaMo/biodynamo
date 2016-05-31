@@ -4,7 +4,7 @@
 #include "string_util.h"
 #include "sim_state_serialization_util.h"
 
-namespace cx3d {
+namespace bdm {
 namespace physics {
 
 PhysicalCylinder::PhysicalCylinder() {
@@ -1117,4 +1117,4 @@ PhysicalCylinder::UPtr PhysicalCylinder::extendSideCylinder(double length,
 }
 
 }  // namespace physics
-}  // namespace cx3d
+}  // namespace bdm

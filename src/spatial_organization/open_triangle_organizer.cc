@@ -10,7 +10,7 @@
 #include "spatial_organization/tetrahedron.h"
 #include "spatial_organization/edge_hash_key.h"
 
-namespace cx3d {
+namespace bdm {
 namespace spatial_organization {
 
 template<class T>
@@ -622,7 +622,7 @@ void OpenTriangleOrganizer<T>::createNewTetrahedron(const std::shared_ptr<Triang
   new_tetrahedra_.push_back(a_new_tetrahedron_);
 }
 
-template class OpenTriangleOrganizer<cx3d::physics::PhysicalNode> ;
+template class OpenTriangleOrganizer<bdm::physics::PhysicalNode> ;
 
-}  // namespace cx3d
+}  // namespace bdm
 }  // namespace spatial_organization

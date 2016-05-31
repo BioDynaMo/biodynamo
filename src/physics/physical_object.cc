@@ -3,7 +3,7 @@
 #include "matrix.h"
 #include "sim_state_serialization_util.h"
 
-namespace cx3d {
+namespace bdm {
 namespace physics {
 
 InterObjectForce::UPtr PhysicalObject::inter_object_force_ { nullptr };
@@ -437,4 +437,4 @@ void PhysicalObject::setVolumeOnly(double v) {
 }
 
 }  // namespace physics
-}  // namespace cx3d
+}  // namespace bdm

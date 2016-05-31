@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-namespace cx3d {
+namespace bdm {
 namespace simulation {
 
 ECM* Scheduler::ecm_ = ECM::getInstance();
@@ -39,7 +39,7 @@ void Scheduler::simulateOneStep() {
     //fixme implement - not used atm
 //    if (!ecm_.ecm_ChemicalReactionList.isEmpty()) {
 //      for (int i = 0; i < ecm_.physicalNodeList.size(); i++) {
-//        ini.cx3d.physics.interfaces.PhysicalNode
+//        ini.bdm.physics.interfaces.PhysicalNode
 //        pn = ecm_.physicalNodeList.get(i);
 //        for (ecm_ChemicalReaction chemicalReaction : ecm_.ecm_ChemicalReactionList) {
 //          chemicalReaction.run(pn);
@@ -107,5 +107,5 @@ Scheduler::Scheduler() {
 }
 
 }  // namespace simulation
-}  // namespace cx3d
+}  // namespace bdm
 

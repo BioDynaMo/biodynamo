@@ -5,7 +5,7 @@
 
 #include "physics/physical_node_movement_listener.h"
 
-namespace cx3d {
+namespace bdm {
 namespace simulation {
 
 using physics::Substance;
@@ -649,4 +649,4 @@ Substance* ECM::getRegisteredArtificialSubstance(const std::string& substanceId)
 }
 
 }  // namespace simulation
-}  // namespace cx3d
+}  // namespace bdm

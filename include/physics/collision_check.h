@@ -4,7 +4,7 @@
 #include <array>
 #include <memory>
 
-namespace cx3d {
+namespace bdm {
 namespace physics {
 
 class PhysicalCylinder;
@@ -24,6 +24,6 @@ class CollisionCheck {
 };
 
 }  // namespace physics
-}  // namespace cx3d
+}  // namespace bdm
 
 #endif  // PHYSICS_COLLISION_CHECK_H_

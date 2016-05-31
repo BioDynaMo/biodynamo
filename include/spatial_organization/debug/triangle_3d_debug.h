@@ -4,7 +4,7 @@
 #include "string_util.h"
 #include "spatial_organization/triangle_3d.h"
 
-namespace cx3d {
+namespace bdm {
 namespace spatial_organization {
 
 template<class T> class Triangle3D;
@@ -237,6 +237,6 @@ class Triangle3DDebug : public Triangle3D<T> {
 };
 
 }  // namespace spatial_organization
-}  // namespace cx3d
+}  // namespace bdm
 
 #endif  // SPATIAL_ORGANIZATION_DEBUG_TRIANGLE_3D_DEBUG_H_

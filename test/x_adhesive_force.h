@@ -9,7 +9,7 @@
 #include "physics/physical_sphere.h"
 #include "physics/physical_cylinder.h"
 
-namespace cx3d {
+namespace bdm {
 
 using physics::PhysicalSphere;
 using physics::PhysicalCylinder;
@@ -313,6 +313,6 @@ class XAdhesiveForce : public InterObjectForce {
   }
 };
 
-}  //namespace cx3d
+}  //namespace bdm
 
 #endif  // TEST_X_ADHESIVE_FORCE_H_

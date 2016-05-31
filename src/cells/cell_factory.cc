@@ -1,6 +1,6 @@
 #include "cells/cell_factory.h"
 
-namespace cx3d {
+namespace bdm {
 namespace cells {
 
 using std::vector;
@@ -71,4 +71,4 @@ vector<Cell*> CellFactory::get3DCellGrid(double x_min, double x_max, double y_mi
 }
 
 }  // namespace cells
-}  // namespace cx3d
+}  // namespace bdm

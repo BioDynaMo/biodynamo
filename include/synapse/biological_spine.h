@@ -7,7 +7,7 @@
 
 #include "sim_state_serializable.h"
 
-namespace cx3d {
+namespace bdm {
 namespace synapse {
 
 class PhysicalSpine;
@@ -34,6 +34,6 @@ class BiologicalSpine : public SimStateSerializable {
 };
 
 }  // namespace synapse
-}  // namespace cx3d
+}  // namespace bdm
 
 #endif  // SYNAPSE_BIOLOGIGICAL_SPINE_H_

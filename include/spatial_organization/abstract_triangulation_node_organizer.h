@@ -5,7 +5,7 @@
 #include <memory>
 #include <string>
 
-namespace cx3d {
+namespace bdm {
 namespace spatial_organization {
 
 template<class T> class SpaceNode;
@@ -42,6 +42,6 @@ class AbstractTriangulationNodeOrganizer {
 };
 
 }  // namespace spatial_organization
-}  // namespace cx3d
+}  // namespace bdm
 
 #endif // SPATIAL_ORGANIZATION_ABSTRACT_TRIANGULATION_NODE_ORGANIZER_H_

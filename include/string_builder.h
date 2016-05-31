@@ -4,7 +4,7 @@
 #include <string>
 #include <sstream>
 
-namespace cx3d {
+namespace bdm {
 
 using std::string;
 using std::stringstream;
@@ -45,6 +45,6 @@ class StringBuilder {
   StringBuilder &operator=(const StringBuilder &) = delete;
 };
 
-}  // namespace cx3d
+}  // namespace bdm
 
 #endif  // STRING_BUILDER_H_

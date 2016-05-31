@@ -3,7 +3,7 @@
 #include "physics/physical_node.h"
 #include "spatial_organization/triangle_3d.h"
 
-namespace cx3d {
+namespace bdm {
 namespace spatial_organization {
 
 template<typename T>
@@ -22,7 +22,7 @@ void AbstractTriangulationNodeOrganizer<T>::addTriangleNodes(const std::shared_p
   addNode(nodes[0]);
 }
 
-template class AbstractTriangulationNodeOrganizer<cx3d::physics::PhysicalNode> ;
+template class AbstractTriangulationNodeOrganizer<bdm::physics::PhysicalNode> ;
 
 }  // namespace spatial_organization
-}  // namespace cx3d
+}  // namespace bdm

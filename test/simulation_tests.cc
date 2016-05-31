@@ -15,7 +15,7 @@
 #include "figure_5_test.h"
 #include "figure_9_test.h"
 
-namespace cx3d {
+namespace bdm {
 
 TEST (Math, exp) {
   double x = -0.0028724514195400627;
@@ -73,4 +73,4 @@ TEST_F (Figure9Test, simulation) {
 }
 
 }
-  // namespace cx3d
+  // namespace bdm

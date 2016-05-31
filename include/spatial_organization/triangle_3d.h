@@ -9,7 +9,7 @@
 #include "spatial_organization/exact_vector.h"
 #include "spatial_organization/rational.h"
 
-namespace cx3d {
+namespace bdm {
 namespace spatial_organization {
 
 template<class T> class Tetrahedron;
@@ -496,6 +496,6 @@ class Triangle3D : public Plane3D<T>, public std::enable_shared_from_this<Triang
 };
 
 }  // namespace spatial_organization
-}  // namespace cx3d
+}  // namespace bdm
 
 #endif  // SPATIAL_ORGANIZATION_TRIANGLE_3D_H_

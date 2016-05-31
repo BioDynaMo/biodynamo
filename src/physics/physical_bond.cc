@@ -5,7 +5,7 @@
 #include "string_util.h"
 #include "sim_state_serialization_util.h"
 
-namespace cx3d {
+namespace bdm {
 namespace physics {
 
 std::shared_ptr<PhysicalBond> PhysicalBond::create() {
@@ -274,4 +274,4 @@ void PhysicalBond::dolocking(PhysicalObject* a, PhysicalObject* b) {
 }
 
 }  // namespace physics
-}  // namespace cx3d
+}  // namespace bdm

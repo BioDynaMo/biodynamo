@@ -4,7 +4,7 @@
 #include "string_util.h"
 #include "sim_state_serialization_util.h"
 
-namespace cx3d {
+namespace bdm {
 namespace physics {
 
 std::size_t PhysicalNode::id_counter_ = 0;
@@ -387,5 +387,5 @@ void PhysicalNode::diffuseEdgeAnalytically(SpatialOrganizationEdge<PhysicalNode>
 }
 
 }  // namespace physics
-}  // namespace cx3d
+}  // namespace bdm
 

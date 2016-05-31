@@ -3,7 +3,7 @@
 #include "cells/cell.h"
 #include "sim_state_serialization_util.h"
 
-namespace cx3d {
+namespace bdm {
 namespace cells {
 
 AbstractCellModule::AbstractCellModule() {
@@ -32,4 +32,4 @@ bool AbstractCellModule::isCopiedWhenCellDivides() const {
 }
 
 }  // namespace cells
-}  // namespace cx3d
+}  // namespace bdm

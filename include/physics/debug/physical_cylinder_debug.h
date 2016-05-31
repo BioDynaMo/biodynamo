@@ -4,7 +4,7 @@
 #include "string_util.h"
 #include "physics/physical_cylinder.h"
 
-namespace cx3d {
+namespace bdm {
 namespace physics {
 
 /**
@@ -475,6 +475,6 @@ class PhysicalCylinderDebug : public PhysicalCylinder {
 };
 
 }  // physics
-}  // cx3d
+}  // bdm
 
 #endif // PHYSICS_DEBUG_PHYSICAL_CYLINDER_DEBUG_H_

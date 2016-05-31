@@ -3,7 +3,7 @@
 
 #include <memory>
 
-namespace cx3d {
+namespace bdm {
 namespace spatial_organization {
 
 template<class T> class SpatialOrganizationNode;
@@ -57,6 +57,6 @@ class SpatialOrganizationEdge {
 };
 
 }  // namespace spatial_organization
-}  // namespace cx3d
+}  // namespace bdm
 
 #endif  // SPATIAL_ORGANIZATION_SPATIAL_ORGANIZATION_EDGE_H_

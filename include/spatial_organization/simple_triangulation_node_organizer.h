@@ -3,7 +3,7 @@
 
 #include "spatial_organization/abstract_triangulation_node_organizer.h"
 
-namespace cx3d {
+namespace bdm {
 namespace spatial_organization {
 
 template<class T> class BinaryTreeElement;
@@ -44,6 +44,6 @@ class SimpleTriangulationNodeOrganizer : public AbstractTriangulationNodeOrganiz
 };
 
 }  // namespace spatial_organization
-}  // namespace cx3d
+}  // namespace bdm
 
 #endif // SPATIAL_ORGANIZATION_SIMPLE_TRIANGULATION_NODE_ORGANIZER_H_

@@ -4,7 +4,7 @@
 #include "string_util.h"
 #include "spatial_organization/tetrahedron.h"
 
-namespace cx3d {
+namespace bdm {
 namespace spatial_organization {
 
 template<class T>
@@ -111,7 +111,7 @@ void Edge<T>::changeCrossSectionArea(double change) {
   cross_section_area_ += change;
 }
 
-template class Edge<cx3d::physics::PhysicalNode> ;
+template class Edge<bdm::physics::PhysicalNode> ;
 
 }  // namespace spatial_organization
-}  // namespace cx3d
+}  // namespace bdm

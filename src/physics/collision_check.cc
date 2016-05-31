@@ -2,7 +2,7 @@
 
 #include "matrix.h"
 
-namespace cx3d {
+namespace bdm {
 namespace physics {
 
 double CollisionCheck::howMuchCanWeMove(const std::array<double, 3>& A, const std::array<double, 3>& B,
@@ -160,4 +160,4 @@ void CollisionCheck::addPhysicalBondIfCrossing(const std::array<double, 3>& A, c
 }
 
 }  // namespace physics
-}  // namespace cx3d
+}  // namespace bdm

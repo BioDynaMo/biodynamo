@@ -4,7 +4,7 @@
 #include <cmath>
 #include "random.h"
 
-namespace cx3d {
+namespace bdm {
 
 /**
  * C++ representation of java.awt.Color
@@ -31,6 +31,6 @@ class Color {
   unsigned value_;
 };
 
-}  // namespace cx3d
+}  // namespace bdm
 
 #endif  // COLOR_H_

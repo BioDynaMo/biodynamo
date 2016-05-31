@@ -6,7 +6,7 @@
 #include "cells/cell.h"
 #include "simulation/ecm.h"
 
-namespace cx3d {
+namespace bdm {
 namespace local_biology {
 
 ECM* CellElement::ecm_ = ECM::getInstance();
@@ -85,4 +85,4 @@ void CellElement::runLocalBiologyModules() {
 }
 
 }  // namespace local_biology
-}  // namespace cx3d
+}  // namespace bdm

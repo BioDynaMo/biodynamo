@@ -6,7 +6,7 @@
 #include "string_util.h"
 #include "physics/physical_node.h"
 
-namespace cx3d {
+namespace bdm {
 namespace spatial_organization {
 
 template<class T>
@@ -189,7 +189,7 @@ std::list<SpaceNode<T>*> TreeHead<T>::inOrderTraversal() const {
   return std::list<SpaceNode<T>*>();
 }
 
-template class BinaryTreeElement<cx3d::physics::PhysicalNode> ;
+template class BinaryTreeElement<bdm::physics::PhysicalNode> ;
 
 }  // namespace spatial_organization
-}  // namespace cx3d
+}  // namespace bdm

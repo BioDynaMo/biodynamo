@@ -4,7 +4,7 @@
 
 #include "physics/physical_node.h"
 
-namespace cx3d {
+namespace bdm {
 namespace spatial_organization {
 
 template<class T>
@@ -62,10 +62,10 @@ bool TriangleHashKeyEqual<T>::operator()(const TriangleHashKey<T>& lhs, const Tr
       || (lhs.a_ == rhs.c_ && ((lhs.b_ == rhs.a_ && lhs.c_ == rhs.b_) || (lhs.b_ == rhs.b_ && lhs.c_ == rhs.a_)));
 }
 
-template class TriangleHashKey<cx3d::physics::PhysicalNode> ;
-template struct TriangleHashKeyHash<cx3d::physics::PhysicalNode> ;
-template struct TriangleHashKeyEqual<cx3d::physics::PhysicalNode> ;
+template class TriangleHashKey<bdm::physics::PhysicalNode> ;
+template struct TriangleHashKeyHash<bdm::physics::PhysicalNode> ;
+template struct TriangleHashKeyEqual<bdm::physics::PhysicalNode> ;
 
 }  // namespace spatial_organization
-}  // namespace cx3d
+}  // namespace bdm
 

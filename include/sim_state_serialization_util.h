@@ -12,13 +12,13 @@
 #include "string_builder.h"
 #include "sim_state_serializable.h"
 
-namespace cx3d {
+namespace bdm {
 
 using std::string;
 using std::array;
 
-using cx3d::StringBuilder;
-using cx3d::SimStateSerializable;
+using bdm::StringBuilder;
+using bdm::SimStateSerializable;
 
 /**
  * Classes that implement that interface serialize their simulation state to
@@ -189,6 +189,6 @@ class SimStateSerializationUtil {
   }
 };
 
-}  // namespace cx3d
+}  // namespace bdm
 
 #endif  // SIM_STATE_SERIALIZATION_UTIL_H_

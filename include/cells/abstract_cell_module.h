@@ -6,7 +6,7 @@
 #include "sim_state_serializable.h"
 #include "cells/cell_module.h"
 
-namespace cx3d {
+namespace bdm {
 namespace cells {
 
 class AbstractCellModule : public CellModule {
@@ -35,6 +35,6 @@ class AbstractCellModule : public CellModule {
 };
 
 }  // namespace cells
-}  // namespace cx3d
+}  // namespace bdm
 
 #endif  // CELLS_ABSTRACT_CELL_MODULE_H_

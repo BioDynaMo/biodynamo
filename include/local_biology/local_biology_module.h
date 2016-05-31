@@ -6,14 +6,14 @@
 
 #include "sim_state_serializable.h"
 
-namespace cx3d {
+namespace bdm {
 namespace local_biology {
 
 class CellElement;
 
 /**
  * Classes implementing this interface can be added in the CellElements, and be run.
- * They represent the biological model that CX3D is simulating.
+ * They represent the biological model that BioDynaMo is simulating.
  * Each instance of a localBiologyModule "lives" inside a particular CellElement.
  * At SomaElement division or NeuriteElement branching, a cloned version is inserted into the new CellElement.
  * If the clone() method is overwritten to return null, than the new CellElement doesn't contain a copy of the module.
@@ -76,6 +76,6 @@ class LocalBiologyModule : public SimStateSerializable {
 };
 
 }  // namespace local_biology
-}  // namespace cx3d
+}  // namespace bdm
 
 #endif  // LOCAL_BIOLOGY_LOCAL_BIOLOGY_MODULE_H_

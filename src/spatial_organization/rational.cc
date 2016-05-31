@@ -4,7 +4,7 @@
 
 using std::shared_ptr;
 
-namespace cx3d {
+namespace bdm {
 namespace spatial_organization {
 
 std::shared_ptr<Rational> Rational::create(uint64_t numerator, uint64_t denominator) {
@@ -235,4 +235,4 @@ bool Rational::equalTo(const std::shared_ptr<Rational>& other) {
 }
 
 }  // namespace spatial_organization
-}  // namespace cx3d
+}  // namespace bdm

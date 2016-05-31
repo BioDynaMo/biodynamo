@@ -1,6 +1,6 @@
 #include "synapse/connection_maker.h"
 
-namespace cx3d {
+namespace bdm {
 namespace synapse {
 
 void ConnectionMaker::extendExcressencesAndSynapseOnEveryNeuriteElement() {
@@ -25,4 +25,4 @@ void ConnectionMaker::extendExcressencesAndSynapseOnEveryNeuriteElement(double p
 }
 
 }  // namespace synapse
-}  // namespace cx3d
+}  // namespace bdm

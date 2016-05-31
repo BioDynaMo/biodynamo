@@ -2,7 +2,7 @@
 
 #include "matrix.h"
 
-namespace cx3d {
+namespace bdm {
 namespace physics {
 
 using std::size_t;
@@ -303,6 +303,6 @@ std::string PhysicalNodeMovementListener::toString() const {
   return "PhyscicalNodeMovementListener";
 }
 
-}  // namespace cx3d
+}  // namespace bdm
 }  // namespace physics
 

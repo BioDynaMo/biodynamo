@@ -3,7 +3,7 @@
 #include "matrix.h"
 #include "sim_state_serialization_util.h"
 
-namespace cx3d {
+namespace bdm {
 namespace synapse {
 
 using physics::PhysicalBond;
@@ -66,4 +66,4 @@ void PhysicalSomaticSpine::setBiologicalSomaticSpine(BiologicalSomaticSpine::UPt
 }
 
 }  // namespace synapse
-}  // namespace cx3d
+}  // namespace bdm

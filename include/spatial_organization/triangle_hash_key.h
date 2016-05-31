@@ -5,7 +5,7 @@
 #include <string>
 #include <array>
 
-namespace cx3d {
+namespace bdm {
 namespace spatial_organization {
 
 template<class T> class SpaceNode;
@@ -88,6 +88,6 @@ struct TriangleHashKeyEqual {
 };
 
 }  // namespace spatial_organization
-}  // namespace cx3d
+}  // namespace bdm
 
 #endif  // SPATIAL_ORGANIZATION_TRIANGLE_HASH_KEY_H_

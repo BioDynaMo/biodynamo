@@ -2,7 +2,7 @@
 
 #include <cmath>
 
-namespace cx3d {
+namespace bdm {
 
 double MathUtil::exp(double d) {
   return std::exp(d);
@@ -36,4 +36,4 @@ double MathUtil::atan2(double d, double d1) {
   return std::atan2(d, d1);
 }
 
-}  // namespace cx3d
+}  // namespace bdm

@@ -9,7 +9,7 @@
 #include "physics/default_force.h"
 #include "physics/physical_node_movement_listener.h"
 
-namespace cx3d {
+namespace bdm {
 
 using std::ofstream;
 using cells::Cell;
@@ -156,4 +156,4 @@ void BaseSimulationTest::initPhysicalNodeMovementListener() {
   PhysicalNodeMovementListener::setMovementOperationId((int) (10000 * Random::nextDouble()));
 }
 
-}  // namespace cx3d
+}  // namespace bdm

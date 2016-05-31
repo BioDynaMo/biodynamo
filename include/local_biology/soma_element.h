@@ -7,7 +7,7 @@
 #include "local_biology/cell_element.h"
 #include "physics/physical_sphere.h"
 
-namespace cx3d {
+namespace bdm {
 
 namespace local_biology {
 
@@ -75,6 +75,6 @@ class SomaElement : public CellElement {
 };
 
 }  // namespace local_biology
-}  // namespace cx3d
+}  // namespace bdm
 
 #endif  // LOCAL_BIOLOGY_SOMA_ELEMENT_H_

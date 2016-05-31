@@ -6,7 +6,7 @@
 #include "synapse/excrescence.h"
 #include "biological_bouton.h"
 
-namespace cx3d {
+namespace bdm {
 namespace synapse {
 
 class BiologicalBouton;
@@ -42,6 +42,6 @@ class PhysicalBouton : public Excrescence {
 };
 
 }  // namespace synapse
-}  // namespace cx3d
+}  // namespace bdm
 
 #endif  // SYNAPSE_PHYSICAL_BOUTON_H_

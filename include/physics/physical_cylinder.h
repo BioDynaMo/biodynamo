@@ -7,7 +7,7 @@
 
 #include "physics/physical_object.h"
 
-namespace cx3d {
+namespace bdm {
 
 namespace local_biology {
 class CellElement;
@@ -520,6 +520,6 @@ struct PhysicalCylinderEqual {
 };
 
 }  //namespace physics
-}  //namespace cx3d
+}  //namespace bdm
 
 #endif  // PHYSICS_PHYSICAL_CYLINDER_H_

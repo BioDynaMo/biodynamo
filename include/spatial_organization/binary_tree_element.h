@@ -5,7 +5,7 @@
 #include <memory>
 #include <string>
 
-namespace cx3d {
+namespace bdm {
 namespace spatial_organization {
 
 template<class T> class SpaceNode;
@@ -72,6 +72,6 @@ class TreeHead : public BinaryTreeElement<T> {
 };
 
 }  // namespace spatial_organization
-}  // namespace cx3d
+}  // namespace bdm
 
 #endif // SPATIAL_ORGANIZATION_BINARY_TREE_ELEMENT_H_

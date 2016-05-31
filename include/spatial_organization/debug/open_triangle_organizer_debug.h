@@ -4,7 +4,7 @@
 #include "string_util.h"
 #include "spatial_organization/open_triangle_organizer.h"
 
-namespace cx3d {
+namespace bdm {
 namespace spatial_organization {
 
 template<class T> class SimpleTriangulationNodeOrganizer;
@@ -89,7 +89,7 @@ class OpenTriangleOrganizerDebug : public OpenTriangleOrganizer<T> {
 };
 
 }  // spatial_organization
-}  // cx3d
+}  // bdm
 
 #endif // SPATIAL_ORGANIZATION_DEBUG_OPEN_TRIANGLE_ORGANIZER_DEBUG_H_
 

@@ -3,7 +3,7 @@
 #include <cmath>
 #include <random>
 
-namespace cx3d {
+namespace bdm {
 
 double Random::nextNextGaussian = 0.0;
 bool Random::haveNextNextGaussian = false;
@@ -50,4 +50,4 @@ std::array<double, 3> Random::nextNoise(double k) {
   return ret;
 }
 
-}  // namespace cx3d
+}  // namespace bdm

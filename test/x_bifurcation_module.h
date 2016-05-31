@@ -20,7 +20,7 @@
 #include "simulation/ecm.h"
 #include "simulation/scheduler.h"
 
-namespace cx3d {
+namespace bdm {
 
 using cells::Cell;
 using cells::CellFactory;
@@ -191,6 +191,6 @@ class XBifurcationModule : public LocalBiologyModule {
   double free_interval_;
 };
 
-}  // namespace cx3d
+}  // namespace bdm
 
 #endif  // TEST_X_BIFURCATION_MODULE_H_

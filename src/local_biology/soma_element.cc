@@ -3,7 +3,7 @@
 #include "matrix.h"
 #include "sim_state_serialization_util.h"
 
-namespace cx3d {
+namespace bdm {
 namespace local_biology {
 
 SomaElement::SomaElement()
@@ -125,4 +125,4 @@ bool SomaElement::isASomaElement() const {
 }
 
 }  // namespace local_biology
-}  // namespace cx3d
+}  // namespace bdm

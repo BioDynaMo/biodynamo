@@ -4,7 +4,7 @@
 #include <array>
 #include <memory>
 
-namespace cx3d {
+namespace bdm {
 namespace spatial_organization {
 
 template<class T> class SpaceNode;
@@ -199,6 +199,6 @@ class Plane3D {
 };
 
 }  // namespace spatial_organization
-}  // namespace cx3d
+}  // namespace bdm
 
 #endif  // SPATIAL_ORGANIZATION_PLANE_3D_H_

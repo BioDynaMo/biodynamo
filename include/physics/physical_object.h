@@ -17,7 +17,7 @@
 #include "synapse/excrescence.h"
 #include "inter_object_force.h"
 
-namespace cx3d {
+namespace bdm {
 
 namespace local_biology {
 class CellElement;
@@ -554,6 +554,6 @@ class PhysicalObject : public PhysicalNode {
 };
 
 }  //namespace physics
-}  //namespace cx3d
+}  //namespace bdm
 
 #endif  // PHYSICS_PHYSICAL_OBJECT_H_

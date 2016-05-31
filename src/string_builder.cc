@@ -1,6 +1,6 @@
 #include "string_builder.h"
 
-namespace cx3d {
+namespace bdm {
 
 StringBuilder::StringBuilder()
     : string_stream_() {
@@ -29,4 +29,4 @@ string StringBuilder::str() const {
   return string_stream_.str();
 }
 
-}  // namespace cx3d
+}  // namespace bdm

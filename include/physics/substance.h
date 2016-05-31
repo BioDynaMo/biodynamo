@@ -7,7 +7,7 @@
 #include "color.h"
 #include "sim_state_serializable.h"
 
-namespace cx3d {
+namespace bdm {
 namespace physics {
 
 class Substance : public SimStateSerializable {
@@ -145,6 +145,6 @@ struct SubstanceEqual {
 };
 
 }  // namespace physics
-}  // namespace cx3d
+}  // namespace bdm
 
 #endif // PHYSICS_SUBSTANCE_H_

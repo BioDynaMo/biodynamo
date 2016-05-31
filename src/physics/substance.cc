@@ -3,7 +3,7 @@
 #include "string_util.h"
 #include "sim_state_serialization_util.h"
 
-namespace cx3d {
+namespace bdm {
 namespace physics {
 
 Substance::Substance()
@@ -157,4 +157,4 @@ std::string Substance::toString() const {
 }
 
 }  // namespace physics
-}  // namespace cx3d
+}  // namespace bdm

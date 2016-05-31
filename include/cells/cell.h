@@ -13,7 +13,7 @@
 #include "local_biology/neurite_element.h"
 #include "cells/cell_module.h"
 
-namespace cx3d {
+namespace bdm {
 
 namespace simulation {
 class ECM;
@@ -139,7 +139,7 @@ class Cell : public SimStateSerializable {
    * <code>CellElements</code> of this Cell..
    * @param color
    */
-  virtual void setColorForAllPhysicalObjects(cx3d::Color color);
+  virtual void setColorForAllPhysicalObjects(bdm::Color color);
 
   // *************************************************************************************
   // *      GETTERS & SETTERS                                                            *
@@ -205,6 +205,6 @@ class Cell : public SimStateSerializable {
 };
 
 }  // cells
-}  // cx3d
+}  // bdm
 
 #endif  // CELLS_CELL_H_

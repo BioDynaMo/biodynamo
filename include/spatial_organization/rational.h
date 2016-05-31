@@ -6,7 +6,7 @@
 #include <string>
 #include "gmpxx.h"
 
-namespace cx3d {
+namespace bdm {
 namespace spatial_organization {
 
 using BigInteger = mpz_class;
@@ -210,6 +210,6 @@ class Rational : public std::enable_shared_from_this<Rational> {
 };
 
 }  // namespace spatial_organization
-}  // namespace cx3d
+}  // namespace bdm
 
 #endif  // SPATIAL_ORGANIZATION_RATIONAL_H_

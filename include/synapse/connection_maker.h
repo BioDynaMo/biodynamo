@@ -5,7 +5,7 @@
 
 #include "simulation/ecm.h"
 
-namespace cx3d {
+namespace bdm {
 namespace synapse {
 
 class ConnectionMaker {
@@ -16,6 +16,6 @@ class ConnectionMaker {
 };
 
 }  // namespace synapse
-}  // namespace cx3d
+}  // namespace bdm
 
 #endif  // SYNAPSE_CONNECTION_MAKER_H_

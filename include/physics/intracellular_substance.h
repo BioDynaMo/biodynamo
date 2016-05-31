@@ -7,7 +7,7 @@
 #include "param.h"
 #include "physics/substance.h"
 
-namespace cx3d {
+namespace bdm {
 namespace physics {
 
 /**
@@ -110,6 +110,6 @@ class IntracellularSubstance : public Substance {
 };
 
 }  // namespace physics
-}  // namespace cx3d
+}  // namespace bdm
 
 #endif // PHYSICS_INTRACELLULAR_SUBSTANCE_H_

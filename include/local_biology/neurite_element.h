@@ -8,7 +8,7 @@
 #include "local_biology/cell_element.h"
 #include "physics/physical_cylinder.h"
 
-namespace cx3d {
+namespace bdm {
 
 namespace local_biology {
 
@@ -210,6 +210,6 @@ class NeuriteElement : public CellElement {
 };
 
 }  // namespace local_biology
-}  // namespace cx3d
+}  // namespace bdm
 
 #endif  // LOCAL_BIOLOGY_NEURITE_ELEMENT_H_

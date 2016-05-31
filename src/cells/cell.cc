@@ -3,7 +3,7 @@
 #include "matrix.h"
 #include "sim_state_serialization_util.h"
 
-namespace cx3d {
+namespace bdm {
 namespace cells {
 
 using simulation::ECM;
@@ -163,5 +163,5 @@ void Cell::addNeuriteElement(NeuriteElement::UPtr neurite) {
 }
 
 }  // namespace cells
-}  // namespace cx3d
+}  // namespace bdm
 

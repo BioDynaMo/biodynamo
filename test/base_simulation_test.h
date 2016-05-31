@@ -9,7 +9,7 @@
 #include "simulation/ecm.h"
 #include "physics/physical_node.h"
 
-namespace cx3d {
+namespace bdm {
 
 using std::string;
 using simulation::ECM;
@@ -115,6 +115,6 @@ class BaseSimulationTest : public ::testing::Test {
   string exec(const char* cmd);
 };
 
-}  // namespace cx3d
+}  // namespace bdm
 
 #endif  // BASE_SIMULATION_TEST_H_

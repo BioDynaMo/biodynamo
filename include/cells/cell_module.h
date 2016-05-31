@@ -5,14 +5,14 @@
 
 #include "sim_state_serializable.h"
 
-namespace cx3d {
+namespace bdm {
 namespace cells {
 
 class Cell;
 
 /**
  * Classes implementing this interface can be added to a <code>Cell</code>, and be run.
- * They represent the biological model that CX3D is simulating.
+ * They represent the biological model that BioDynaMo is simulating.
  */
 class CellModule : public SimStateSerializable {
  public:
@@ -47,6 +47,6 @@ class CellModule : public SimStateSerializable {
 };
 
 }  // namespace cells
-}  // namespace cx3d
+}  // namespace bdm
 
 #endif  // CELLS_CELL_MODULE_H_

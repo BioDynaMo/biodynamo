@@ -6,7 +6,7 @@
 
 #include "local_biology/local_biology_module.h"
 
-namespace cx3d {
+namespace bdm {
 namespace local_biology {
 
 /**
@@ -48,6 +48,6 @@ class AbstractLocalBiologyModule : public LocalBiologyModule {
 };
 
 }  // namespace local_biology
-}  // namespace cx3d
+}  // namespace bdm
 
 #endif  // LOCAL_BIOLOGY_ABSTRACT_LOCAL_BIOLOGY_MODULE_H_

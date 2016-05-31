@@ -7,7 +7,7 @@
 
 #include "sim_state_serializable.h"
 
-namespace cx3d {
+namespace bdm {
 namespace synapse {
 
 class PhysicalBouton;
@@ -34,6 +34,6 @@ class BiologicalBouton : public SimStateSerializable {
 };
 
 }  // namespace synapse
-}  // namespace cx3d
+}  // namespace bdm
 
 #endif  // SYNAPSE_BIOLOGIGICAL_BOUTON_H_

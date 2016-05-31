@@ -8,7 +8,7 @@
 #include "spatial_organization/spatial_organization_edge.h"
 #include "spatial_organization_node.h"
 
-namespace cx3d {
+namespace bdm {
 namespace spatial_organization {
 
 template<class T> class SpaceNode;
@@ -144,6 +144,6 @@ class Edge : public SpatialOrganizationEdge<T> {
 };
 
 }  // namespace spatial_organization
-}  // namespace cx3d
+}  // namespace bdm
 
 #endif  // SPATIAL_ORGANIZATION_EDGE_H_

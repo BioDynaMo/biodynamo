@@ -9,7 +9,7 @@
 
 #include "spatial_organization/edge.h"
 
-namespace cx3d {
+namespace bdm {
 namespace spatial_organization {
 
 template<class T> class SpaceNode;
@@ -725,6 +725,6 @@ class Tetrahedron : public std::enable_shared_from_this<Tetrahedron<T>> {
 };
 
 }  // namespace spatial_organization
-}  // namespace cx3d
+}  // namespace bdm
 
 #endif  // SPATIAL_ORGANIZATION_TETRAHEDRON_H_

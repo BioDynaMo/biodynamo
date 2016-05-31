@@ -11,7 +11,7 @@
 #include "spatial_organization/simple_triangulation_node_organizer.h"
 #include "spatial_organization/triangle_hash_key.h"
 
-namespace cx3d {
+namespace bdm {
 namespace spatial_organization {
 
 class Rational;
@@ -232,7 +232,7 @@ class OpenTriangleOrganizer : public std::enable_shared_from_this<
 
   /**
    * Stores an edge onto a hashmap for edges. This function implements the
-   * same functinoality as {@link #putTriangle(ini.cx3d.spatialOrganization.interfaces.Triangle3D)} but for edges.
+   * same functinoality as {@link #putTriangle(ini.bdm.spatialOrganization.interfaces.Triangle3D)} but for edges.
    * @param a The first endpoint of the edge that should be placed on the hashmap.
    * @param a The second endpoint of the edge that should be placed on the hashmap.
    * @param oppositeNode A node lying on the non-open side of this edge.
@@ -299,7 +299,7 @@ class OpenTriangleOrganizer : public std::enable_shared_from_this<
    * @param similarDistanceNodes A list of nodes that have a similar 2D-signed delaunay distance to the  <code>startingEdge</code>.
    * @param startingEdge An initial edge which is part of the circle.
    * @param map A hashmap for instances of type <code>EdgeHashKey</code> which is used to keep track of open edges in
-   * {@link #triangulatePointsOnSphere(LinkedList, LinkedList, ini.cx3d.spatialOrganization.interfaces.Triangle3D)}.
+   * {@link #triangulatePointsOnSphere(LinkedList, LinkedList, ini.bdm.spatialOrganization.interfaces.Triangle3D)}.
    * @param triangleList A list of triangles, which is used to store all triangles created in this function and
    * pass them to the calling function.
    * @return An open edge on the convex hull of the triangulated circle.
@@ -357,6 +357,6 @@ class OpenTriangleOrganizer : public std::enable_shared_from_this<
 };
 
 }  // namespace spatial_organization
-}  // namespace cx3d
+}  // namespace bdm
 
 #endif  // SPATIAL_ORGANIZATION_OPEN_TRIANGLE_ORGANIZER_H_

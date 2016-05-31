@@ -6,7 +6,7 @@
 #include "sim_state_serializable.h"
 #include "physics/inter_object_force.h"
 
-namespace cx3d {
+namespace bdm {
 namespace physics {
 
 /**
@@ -72,6 +72,6 @@ class DefaultForce : public InterObjectForce {
 };
 
 }  //namespace physics
-}  //namespace cx3d
+}  //namespace bdm
 
 #endif  // PHYSICS_INTER_OBJECT_FORCE_H_

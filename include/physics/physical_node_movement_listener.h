@@ -9,7 +9,7 @@
 #include "physics/physical_node.h"
 #include "spatial_organization/spatial_organization_node_movement_listener.h"
 
-namespace cx3d {
+namespace bdm {
 
 namespace spatial_organization {
 template<class T> class SpaceNode;
@@ -117,6 +117,6 @@ class PhysicalNodeMovementListener : public SpatialOrganizationNodeMovementListe
 };
 
 }  // namespace physics
-}  // namespace cx3d
+}  // namespace bdm
 
 #endif  // PHYSICS_PHYSICAL_NODE_MOVEMENT_LISTENER_H_

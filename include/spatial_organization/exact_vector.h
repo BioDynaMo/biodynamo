@@ -7,7 +7,7 @@
 #include <string>
 #include <sstream>
 
-namespace cx3d {
+namespace bdm {
 namespace spatial_organization {
 
 class Rational;
@@ -184,6 +184,6 @@ class ExactVector : public std::enable_shared_from_this<ExactVector> {
 };
 
 }  // namespace spatial_organizationd
-}  // namespace cx3d
+}  // namespace bdm
 
 #endif  // SPATIAL_ORGANIZATION_EXACT_VECTOR_H_

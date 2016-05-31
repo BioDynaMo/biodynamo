@@ -10,7 +10,7 @@
 #include "simulation/ecm.h" //fixme remove after porting has been finished
 #include "stl_util.h"
 
-namespace cx3d {
+namespace bdm {
 
 class Matrix {
  public:
@@ -470,6 +470,6 @@ class Matrix {
   }
 };
 
-}  // namespace cx3d
+}  // namespace bdm
 
 #endif  // MATRIX_H_

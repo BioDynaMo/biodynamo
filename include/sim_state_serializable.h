@@ -3,9 +3,9 @@
 
 #include "string_builder.h"
 
-namespace cx3d {
+namespace bdm {
 
-using cx3d::StringBuilder;
+using bdm::StringBuilder;
 
 /**
  * Classes that implement that interface serialize their simulation state to
@@ -26,6 +26,6 @@ class SimStateSerializable {
   virtual StringBuilder& simStateToJson(StringBuilder& sb) const = 0;  // NOLINT(runtime/references)
 };
 
-}  // namespace cx3d
+}  // namespace bdm
 
 #endif  // SIM_STATE_SERIALIZABLE_H_

@@ -39,7 +39,7 @@
 #define logConstrFromStatic(CLASS_NAME, OBJECT, ...) \
     StringUtil::logMethodCall(CLASS_NAME" created", OBJECT->toString(), __VA_ARGS__);
 
-namespace cx3d {
+namespace bdm {
 
 class StringUtil {
  public:
@@ -220,6 +220,6 @@ class StringUtil {
   }
 };
 
-}  // namespace cx3d
+}  // namespace bdm
 
 #endif  // STRING_UTIL_H_

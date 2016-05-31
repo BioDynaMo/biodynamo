@@ -19,7 +19,7 @@
 #include "synapse/physical_spine.h"
 #include "synapse/biological_spine.h"
 
-namespace cx3d {
+namespace bdm {
 
 using cells::Cell;
 using cells::CellFactory;
@@ -128,6 +128,6 @@ class Figure5Test : public BaseSimulationTest {
   }
 };
 
-}  // namespace cx3d
+}  // namespace bdm
 
 #endif  // TEST_FIGURE_5_TEST_H_

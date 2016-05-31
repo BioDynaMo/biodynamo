@@ -4,7 +4,7 @@
 #include <array>
 #include <cstdio>
 
-namespace cx3d {
+namespace bdm {
 
 // todo change to C++11 random implementation
 class Random {
@@ -28,6 +28,6 @@ class Random {
   static double nextGaussian();
 };
 
-}  // namespace cx3d
+}  // namespace bdm
 
 #endif  //RANDOM_H_

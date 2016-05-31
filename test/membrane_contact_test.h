@@ -13,7 +13,7 @@
 #include "simulation/ecm.h"
 #include "simulation/scheduler.h"
 
-namespace cx3d {
+namespace bdm {
 
 using cells::Cell;
 using cells::CellFactory;
@@ -91,6 +91,6 @@ class MembraneContactTest : public BaseSimulationTest {
   }
 };
 
-}  // namespace cx3d
+}  // namespace bdm
 
 #endif  // TEST_MEMBRANE_CONTACT_TEST_H_

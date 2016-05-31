@@ -1,6 +1,6 @@
 #include "synapse/test_synapses.h"
 
-namespace cx3d {
+namespace bdm {
 namespace synapse {
 
 void TestSynapses::extendExcressencesAndSynapseOnEveryNeuriteElement() {
@@ -23,4 +23,4 @@ void TestSynapses::extendExcressencesAndSynapseOnEveryNeuriteElement(double prob
 }
 
 }  // namespace synapse
-}  // namespace cx3d
+}  // namespace bdm

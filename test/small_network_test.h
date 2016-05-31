@@ -22,7 +22,7 @@
 #include "synapse/biological_spine.h"
 #include "synapse/connection_maker.h"
 
-namespace cx3d {
+namespace bdm {
 
 using cells::Cell;
 using cells::CellFactory;
@@ -99,6 +99,6 @@ class SmallNetworkTest : public BaseSimulationTest {
   }
 };
 
-}  // namespace cx3d
+}  // namespace bdm
 
 #endif  // TEST_SMALL_NETWORK_TEST_H_

@@ -11,7 +11,7 @@
 #include "local_biology_module.h"
 #include "physics/physical_object.h"
 
-namespace cx3d {
+namespace bdm {
 
 namespace cells {
 class Cell;
@@ -132,6 +132,6 @@ class CellElement : public SimStateSerializable {
 };
 
 }  // namespace local_biology
-}  // namespace cx3d
+}  // namespace bdm
 
 #endif  // LOCAL_BIOLOGY_CELL_ELEMENT_H_

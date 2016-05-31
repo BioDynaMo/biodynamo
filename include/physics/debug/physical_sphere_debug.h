@@ -4,7 +4,7 @@
 #include "string_util.h"
 #include "physics/physical_sphere.h"
 
-namespace cx3d {
+namespace bdm {
 namespace physics {
 
 /**
@@ -279,6 +279,6 @@ class PhysicalSphereDebug : public PhysicalSphere {
 
 }
 // physics
-}// cx3d
+}// bdm
 
 #endif // PHYSICS_DEBUG_PHYSICAL_SPHERE_DEBUG_H_

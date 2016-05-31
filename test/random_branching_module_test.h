@@ -18,7 +18,7 @@
 #include "simulation/ecm.h"
 #include "simulation/scheduler.h"
 
-namespace cx3d {
+namespace bdm {
 
 using cells::Cell;
 using cells::CellFactory;
@@ -145,6 +145,6 @@ class RandomBranchingModuleTest : public BaseSimulationTest {
   }
 };
 
-}  // namespace cx3d
+}  // namespace bdm
 
 #endif  // TEST_RANDOM_BRANCHING_MODULE_TEST_H_

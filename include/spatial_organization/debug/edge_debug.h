@@ -4,7 +4,7 @@
 #include "string_util.h"
 #include "spatial_organization/edge.h"
 
-namespace cx3d {
+namespace bdm {
 namespace spatial_organization {
 
 /**
@@ -102,6 +102,6 @@ class EdgeDebug : public Edge<T> {
 };
 
 }  // namespace spatial_organization
-}  // namespace cx3d
+}  // namespace bdm
 
 #endif  // SPATIAL_ORGANIZATION_DEBUG_EDGE_DEBUG_H_

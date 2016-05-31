@@ -5,7 +5,7 @@
 
 #include "simulation/ecm.h"
 
-namespace cx3d {
+namespace bdm {
 namespace synapse {
 
 class TestSynapses {
@@ -16,6 +16,6 @@ class TestSynapses {
 };
 
 }  // namespace synapse
-}  // namespace cx3d
+}  // namespace bdm
 
 #endif  // SYNAPSE_TEST_SYNAPSES_H_

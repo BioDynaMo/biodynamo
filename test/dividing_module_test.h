@@ -12,13 +12,13 @@
 #include "simulation/ecm.h"
 #include "simulation/scheduler.h"
 
-namespace cx3d {
+namespace bdm {
 
-using cx3d::cells::Cell;
-using cx3d::cells::CellModule;
-using cx3d::cells::CellFactory;
-using cx3d::simulation::ECM;
-using cx3d::simulation::Scheduler;
+using bdm::cells::Cell;
+using bdm::cells::CellModule;
+using bdm::cells::CellFactory;
+using bdm::simulation::ECM;
+using bdm::simulation::Scheduler;
 
 class DividingModule : public CellModule {
  public:
@@ -86,6 +86,6 @@ class DividingModuleTest : public BaseSimulationTest {
   }
 };
 
-}  // namespace cx3d
+}  // namespace bdm
 
 #endif  // TEST_DIVIDING_MODULE_TEST_H_

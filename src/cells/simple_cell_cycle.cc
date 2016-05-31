@@ -3,7 +3,7 @@
 #include "cells/cell.h"
 #include "sim_state_serialization_util.h"
 
-namespace cx3d {
+namespace bdm {
 namespace cells {
 
 SimpleCellCycle::SimpleCellCycle() {
@@ -57,4 +57,4 @@ void SimpleCellCycle::reset() {
 }
 
 }  // namespace cells
-}  // namespace cx3d
+}  // namespace bdm

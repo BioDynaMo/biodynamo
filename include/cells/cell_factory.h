@@ -8,7 +8,7 @@
 #include "cells/cell.h"
 #include "simulation/ecm.h"
 
-namespace cx3d {
+namespace bdm {
 namespace cells {
 
 using std::vector;
@@ -72,6 +72,6 @@ class CellFactory {
 };
 
 }  // namespace cells
-}  // namespace cx3d
+}  // namespace bdm
 
 #endif  // CELLS_CELL_FACTORY_H_

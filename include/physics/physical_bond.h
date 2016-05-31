@@ -6,7 +6,7 @@
 
 #include "sim_state_serializable.h"
 
-namespace cx3d {
+namespace bdm {
 namespace physics {
 
 class PhysicalObject;
@@ -185,6 +185,6 @@ class PhysicalBond : public SimStateSerializable, public std::enable_shared_from
 };
 
 }  //namespace physics
-}  //namespace cx3d
+}  //namespace bdm
 
 #endif  // PHYSICS_PHYSICAL_BOND_H_

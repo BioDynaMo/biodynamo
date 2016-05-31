@@ -12,7 +12,7 @@
 #include "spatial_organization/tetrahedron.h"
 #include "spatial_organization/open_triangle_organizer.h"
 
-namespace cx3d {
+namespace bdm {
 namespace spatial_organization {
 
 template<class T>
@@ -755,7 +755,7 @@ int SpaceNode<T>::randomHelper(int i) {
   return Random::nextInt() % i;
 }
 
-template class SpaceNode<cx3d::physics::PhysicalNode>;
+template class SpaceNode<bdm::physics::PhysicalNode>;
 
 }  // namespace spatial_organization
-}  // namespace cx3d
+}  // namespace bdm

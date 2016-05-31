@@ -5,7 +5,7 @@
 #include <array>
 #include <memory>
 
-namespace cx3d {
+namespace bdm {
 namespace spatial_organization {
 
 // forward declaration
@@ -45,6 +45,6 @@ class SpatialOrganizationNodeMovementListener {
 };
 
 }  // namespace spatial_organization
-}  // namespace cx3d
+}  // namespace bdm
 
 #endif  // SPATIAL_ORGANIZATION_SPATIAL_ORGANIZATION_NODE_MOVEMENT_LISTENER_H_

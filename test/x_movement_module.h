@@ -20,7 +20,7 @@
 #include "simulation/ecm.h"
 #include "simulation/scheduler.h"
 
-namespace cx3d {
+namespace bdm {
 
 using std::vector;
 using std::array;
@@ -230,6 +230,6 @@ class XMovementModule : public LocalBiologyModule {
   double speed_ = 100;
 };
 
-}  // namespace cx3d
+}  // namespace bdm
 
 #endif  // TEST_X_MOVEMENT_MODULE_H_

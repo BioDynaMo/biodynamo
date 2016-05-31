@@ -2,7 +2,7 @@
 
 #include "synapse/physical_bouton.h"
 
-namespace cx3d {
+namespace bdm {
 namespace synapse {
 
 BiologicalBouton::BiologicalBouton() {
@@ -25,4 +25,4 @@ void BiologicalBouton::setPhysicalBouton(PhysicalBouton* ps) {
 }
 
 }  // namespace synapse
-}  // namespace cx3d
+}  // namespace bdm

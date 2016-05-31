@@ -7,7 +7,7 @@
 #include "spatial_organization/triangle_3d.h"
 #include "spatial_organization/binary_tree_element.h"
 
-namespace cx3d {
+namespace bdm {
 namespace spatial_organization {
 
 template<class T>
@@ -59,8 +59,8 @@ bool SimpleTriangulationNodeOrganizer<T>::equalTo(const std::shared_ptr<SimpleTr
   return this == other.get();
 }
 
-template class SimpleTriangulationNodeOrganizer<cx3d::physics::PhysicalNode> ;
+template class SimpleTriangulationNodeOrganizer<bdm::physics::PhysicalNode> ;
 
 }  // namespace spatial_organization
-}  // namespace cx3d
+}  // namespace bdm
 

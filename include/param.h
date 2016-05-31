@@ -3,7 +3,7 @@
 
 #include "color.h"
 
-namespace cx3d {
+namespace bdm {
 
 class Param {
  public:
@@ -80,6 +80,6 @@ class Param {
   static Color kGraySolid;
 };
 
-}  // namespace cx3d
+}  // namespace bdm
 
 #endif  // PARAM_H_

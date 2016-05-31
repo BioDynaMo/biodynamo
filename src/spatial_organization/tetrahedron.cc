@@ -11,7 +11,7 @@
 #include "spatial_organization/open_triangle_organizer.h"
 #include "spatial_organization/flat_tetrahedron.h"
 
-namespace cx3d {
+namespace bdm {
 namespace spatial_organization {
 
 template<class T>
@@ -1037,7 +1037,7 @@ void Tetrahedron<T>::initializationHelper(const std::shared_ptr<Triangle3D<T>>& 
   calculateCircumSphere();
 }
 
-template class Tetrahedron<cx3d::physics::PhysicalNode>;
+template class Tetrahedron<bdm::physics::PhysicalNode>;
 
 }  // namespace spatial_organization
-}  // namespace cx3d
+}  // namespace bdm

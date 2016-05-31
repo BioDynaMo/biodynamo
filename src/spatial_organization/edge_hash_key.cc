@@ -6,7 +6,7 @@
 #include "physics/physical_node.h"
 #include "matrix.h"
 
-namespace cx3d {
+namespace bdm {
 namespace spatial_organization {
 
 template<class T>
@@ -110,9 +110,9 @@ bool EdgeHashKeyEqual<T>::operator()(const EdgeHashKey<T>& lhs, const EdgeHashKe
   return lhs.hash_code_ == rhs.hash_code_;
 }
 
-template class EdgeHashKey<cx3d::physics::PhysicalNode> ;
-template struct EdgeHashKeyHash<cx3d::physics::PhysicalNode> ;
-template struct EdgeHashKeyEqual<cx3d::physics::PhysicalNode> ;
+template class EdgeHashKey<bdm::physics::PhysicalNode> ;
+template struct EdgeHashKeyHash<bdm::physics::PhysicalNode> ;
+template struct EdgeHashKeyEqual<bdm::physics::PhysicalNode> ;
 
 }  // namespace spatial_organization
-}  // namespace cx3d
+}  // namespace bdm

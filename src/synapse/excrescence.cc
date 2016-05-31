@@ -3,7 +3,7 @@
 #include "matrix.h"
 #include "sim_state_serialization_util.h"
 
-namespace cx3d {
+namespace bdm {
 namespace synapse {
 
 ECM* Excrescence::ecm_ = ECM::getInstance();
@@ -96,4 +96,4 @@ void Excrescence::setType(Type type) {
 }
 
 }  // namespace synapse
-}  // namespace cx3d
+}  // namespace bdm

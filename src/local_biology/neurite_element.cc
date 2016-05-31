@@ -10,11 +10,11 @@
 #include "synapse/physical_spine.h"
 #include "synapse/physical_bouton.h"
 
-namespace cx3d {
+namespace bdm {
 namespace local_biology {
 
 using physics::PhysicalObject;
-using namespace cx3d::synapse;
+using namespace bdm::synapse;
 
 NeuriteElement::NeuriteElement()
     : CellElement() {
@@ -401,4 +401,4 @@ std::list<NeuriteElement*> NeuriteElement::addYourselfAndDistalNeuriteElements(s
 }
 
 }  // namespace local_biology
-}  // namespace cx3d
+}  // namespace bdm
