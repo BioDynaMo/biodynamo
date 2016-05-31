@@ -4,7 +4,7 @@
 #include "physics/substance.h"
 #include "physics/physical_node.h"
 
-#include "spatial_organization/space_node.h"
+#include "spatial_organization/spatial_organization_node.h"
 
 namespace cx3d {
 namespace physics {
@@ -21,7 +21,7 @@ SpatialOrganizationNodeMovementListener<PhysicalNode>::UPtr PhysicalNodeMovement
   return SpatialOrganizationNodeMovementListener<PhysicalNode>::UPtr(new PhysicalNodeMovementListener());
 }
 
-void PhysicalNodeMovementListener::nodeAboutToMove(const SpaceNode<PhysicalNode>* node,
+void PhysicalNodeMovementListener::nodeAboutToMove(const SpatialOrganizationNode<PhysicalNode>* node,
                                                    const std::array<double, 3>& planned_movement) {
   auto pn = node->getUserObject();
   neighbors_before_ = node->getPermanentListOfNeighbors();
@@ -49,11 +49,11 @@ void PhysicalNodeMovementListener::nodeAboutToMove(const SpaceNode<PhysicalNode>
 
   // if possible : find the tetrahedron the new location belongs to :
   auto future_position = Matrix::add(pn->getSoNode()->getPosition(), planned_movement);
-  std::array<int, 1> returned_null;
+  bool returned_null = false;
   auto vertices = pn->getSoNode()->getVerticesOfTheTetrahedronContaining(future_position, returned_null);
   // if there is one : find by interpolation the new concentration :
   // we weight the concentration of each vertex by the barycentric coord of the new point
-  if (returned_null[0] != 1) {
+  if (!returned_null) {
     auto barycentric_coord = PhysicalNode::getBarycentricCoordinates(future_position, vertices);
     for (i = 0; i < substances_in_n_.size(); i++) {
       auto name = substances_in_n_[i]->getId();
@@ -73,7 +73,7 @@ void PhysicalNodeMovementListener::nodeAboutToMove(const SpaceNode<PhysicalNode>
   }
 }
 
-void PhysicalNodeMovementListener::nodeMoved(const SpaceNode<PhysicalNode>* node) {
+void PhysicalNodeMovementListener::nodeMoved(const SpatialOrganizationNode<PhysicalNode>* node) {
   auto pn = node->getUserObject();
   auto neighbors_after = node->getNeighbors();
   std::vector<PhysicalNode*> new_neighbors;
@@ -150,7 +150,7 @@ void PhysicalNodeMovementListener::nodeMoved(const SpaceNode<PhysicalNode>* node
   }
 }
 
-void PhysicalNodeMovementListener::nodeAboutToBeRemoved(const SpaceNode<PhysicalNode>* node) {
+void PhysicalNodeMovementListener::nodeAboutToBeRemoved(const SpatialOrganizationNode<PhysicalNode>* node) {
   auto pn = node->getUserObject();
   neighbors_before_ = node->getPermanentListOfNeighbors();
   auto pn_extracellular_substances = pn->getExtracellularSubstances();
@@ -172,7 +172,7 @@ void PhysicalNodeMovementListener::nodeAboutToBeRemoved(const SpaceNode<Physical
   }
 }
 
-void PhysicalNodeMovementListener::nodeRemoved(const SpaceNode<PhysicalNode>* node) {
+void PhysicalNodeMovementListener::nodeRemoved(const SpatialOrganizationNode<PhysicalNode>* node) {
   // For all extracellularSubstances:
   for (size_t i = 0; i < substances_in_n_.size(); i++) {
 
@@ -204,7 +204,7 @@ void PhysicalNodeMovementListener::nodeRemoved(const SpaceNode<PhysicalNode>* no
   }
 }
 
-void PhysicalNodeMovementListener::nodeAboutToBeAdded(const SpaceNode<PhysicalNode>* node,
+void PhysicalNodeMovementListener::nodeAboutToBeAdded(const SpatialOrganizationNode<PhysicalNode>* node,
                                                       const std::array<double, 3>& planned_position,
                                                       const std::array<PhysicalNode*, 4>& vertices) {
   auto pn = node->getUserObject();
@@ -226,20 +226,20 @@ void PhysicalNodeMovementListener::nodeAboutToBeAdded(const SpaceNode<PhysicalNo
   }
 }
 
-void PhysicalNodeMovementListener::nodeAdded(const SpaceNode<PhysicalNode>* node) {
+void PhysicalNodeMovementListener::nodeAdded(const SpatialOrganizationNode<PhysicalNode>* node) {
   // 2) sum the quantity before update
   auto pn = node->getUserObject();
   // since there might be no substances yet in the point
   // pn, we take a neighbor as furnishing the templates
   auto neighbors = node->getPermanentListOfNeighbors();
   auto pnn = neighbors.front();
-  substances_in_n_ = std::vector<Substance*>(pnn->getExtracellularSubstances().size());  //todo more efficient if # of needed elements are already reserved here
+  substances_in_n_ = std::vector<Substance*>(pnn->getExtracellularSubstances().size());
   q_ = std::vector<double>(substances_in_n_.size());
   size_t i = 0;
   for (auto s : pnn->getExtracellularSubstances()) {
     q_[i] = 0;
     substances_in_n_[i] = s;
-    for (auto nn : neighbors) {  //todo critical
+    for (auto nn : neighbors) {
       auto ss = nn->getExtracellularSubstance(s->getId());
       if (ss != nullptr) {
         q_[i] += ss->getQuantity();

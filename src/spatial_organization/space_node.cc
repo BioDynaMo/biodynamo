@@ -85,8 +85,8 @@ void SpaceNode<T>::addSpatialOrganizationNodeMovementListener(typename SpatialOr
 }
 
 template<class T>
-std::list<Edge<T>*> SpaceNode<T>::getEdges() const {
-  std::list<Edge<T>*> ret;  // todo inefficient
+std::list<SpatialOrganizationEdge<T>*> SpaceNode<T>::getEdges() const {
+  std::list<SpatialOrganizationEdge<T>*> ret;  // todo inefficient
   for (auto& edge : adjacent_edges_) {
     ret.push_back(edge.get());
   }
@@ -103,7 +103,7 @@ std::list<T*> SpaceNode<T>::getNeighbors() const {
 }
 
 template<class T>
-typename SpaceNode<T>::UPtr SpaceNode<T>::getNewInstance(
+typename SpatialOrganizationNode<T>::UPtr SpaceNode<T>::getNewInstance(
     const std::array<double, 3>& position,
     T* user_object) {
   // create a new SpaceNode:
@@ -118,8 +118,8 @@ typename SpaceNode<T>::UPtr SpaceNode<T>::getNewInstance(
     // enough nodes collected:
     if (adjacent_edges_.size() == 2) {
       // collect the nodes:
-      auto a = adjacent_edges_.front()->getOpposite(this);
-      auto b = adjacent_edges_.back()->getOpposite(this);
+      auto a = static_cast<SpaceNode<T>*>(adjacent_edges_.front()->getOpposite(this));
+      auto b = static_cast<SpaceNode<T>*>(adjacent_edges_.back()->getOpposite(this));
       // clear the edge lists:
       adjacent_edges_.clear();
       a->adjacent_edges_.clear();
@@ -132,7 +132,7 @@ typename SpaceNode<T>::UPtr SpaceNode<T>::getNewInstance(
       Edge<T>::create(this, insert_point.get());
       if (adjacent_edges_.size() == 2) {
         Edge<T>::create(
-            adjacent_edges_.back()->getOpposite(this),
+            static_cast<SpaceNode<T>*>(adjacent_edges_.back()->getOpposite(this)),
             insert_point.get());
       }
     }
@@ -168,10 +168,10 @@ T* SpaceNode<T>::getUserObject() const {
 template<class T>
 std::array<T*, 4> SpaceNode<T>::getVerticesOfTheTetrahedronContaining(
     const std::array<double, 3>& position,
-    std::array<int, 1>& returned_null) const {
-  returned_null[0] = 0;
+    bool& returned_null) const {
+  returned_null = false;
   if (adjacent_tetrahedra_.empty()) {
-    returned_null[0] = 1;
+    returned_null = true;
     return std::array<T*, 4>();
   }
   auto insertion_tetrahedron = adjacent_tetrahedra_.front();
@@ -184,17 +184,13 @@ std::array<T*, 4> SpaceNode<T>::getVerticesOfTheTetrahedronContaining(
   while (!insertion_tetrahedron->equalTo(last)
       && (!insertion_tetrahedron->isInfinite())) {
     last = insertion_tetrahedron;
-    // TODO walktoPoint doesn't throw exception
-    //    try {
     std::array<int, 4> triangleOrder = generateTriangleOrder();
+    // TODO walktoPoint doesn't throw exception
     insertion_tetrahedron = insertion_tetrahedron->walkToPoint(position,
-                                                               triangleOrder);
-//    } catch (PositionNotAllowedException e) {
-//      insertionTetrahedron = last;
-//    }
+                                                               triangleOrder);  //todo catch PositionNotAllowedException
   }
   if (insertion_tetrahedron->isInfinite()) {
-    returned_null[0] = 1;
+    returned_null = true;
     return std::array<T*, 4>();
   }
   std::array<T*, 4> ret;
@@ -241,7 +237,7 @@ std::list<std::shared_ptr<Tetrahedron<T> > > SpaceNode<T>::getAdjacentTetrahedra
 }
 
 template<class T>
-void SpaceNode<T>::addAdjacentTetrahedron(
+void SpaceNode<T>::addTetrahedron(
     const std::shared_ptr<Tetrahedron<T> >& tetrahedron) {
   adjacent_tetrahedra_.push_back(tetrahedron);
 }
@@ -296,13 +292,13 @@ template<class T>
 Edge<T>* SpaceNode<T>::searchEdge(
     SpaceNode<T>* opposite_node) {
   for (auto& e : adjacent_edges_) {
-    auto opp = e->getOpposite(this);
+    auto opp = static_cast<SpaceNode<T>*>(e->getOpposite(this));
     if ((opp != nullptr && opp->equalTo(opposite_node))
         || (opposite_node != nullptr && opposite_node->equalTo(opp))) {
       return e.get();
     }
   }
-  return Edge < T > ::create(this, opposite_node).get();
+  return Edge<T>::create(this, opposite_node).get();
 }
 
 template<class T>

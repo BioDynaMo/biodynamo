@@ -196,7 +196,7 @@ void NeuriteElement::makeSpines(double interval) {
   // how many spines for this NeuriteElement ?
   double length = physical_cylinder_->getActualLength();
   double spine_on_this_segment = length / interval;
-  long nb = std::lround(spine_on_this_segment);  //fixme critical
+  long nb = std::lround(spine_on_this_segment);
   // TODO : better way to define number (ex : if interval >> length -> no spine at all)
   for (auto i = 0; i < nb; i++) {
     // create the physical part

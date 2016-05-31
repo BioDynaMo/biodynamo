@@ -87,16 +87,14 @@ bool PhysicalBouton::synapseWithShaft(NeuriteElement* other_ne, double max_dis,
 
   auto currDir = pc->getUnitaryAxisDirectionVector();
 
-  // for (double dX = dx; dX<neLength; dX=dX+dx) {
-  double dX = neLength * 0.5;    // FIXME aaaaaaaa  Math.random();
+  double dX = neLength * 0.5;
   currVec = {-currDir[0] * dX, -currDir[1] * dX,
     -currDir[2] * dX};
 
-  // currPos = add(pc.getMassLocation(),currVec);
   currPos = other_ne->getPhysicalCylinder()->transformCoordinatesLocalToGlobal(currVec);
   if ((Matrix::norm(Matrix::subtract(currPos, getProximalEnd())) < max_dis) && create_phyiscal_bond) {
 
-    auto tmp = other_ne->getPhysicalCylinder()->transformCoordinatesLocalToPolar(currVec);  //fixme critical
+    auto tmp = other_ne->getPhysicalCylinder()->transformCoordinatesLocalToPolar(currVec);
     double distance = Matrix::distance(getProximalEnd(), currPos);
     auto other_position_on_po = std::array<double, 2> { tmp[0], tmp[1] };
     auto pb = PhysicalBond::create(po_, position_on_po_, other_ne->getPhysicalCylinder(), other_position_on_po,

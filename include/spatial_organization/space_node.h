@@ -8,7 +8,6 @@
 #include <vector>
 #include <memory>
 
-#include "sim_state_serializable.h"
 #include "spatial_organization/spatial_organization_node_movement_listener.h"
 #include "spatial_organization/spatial_organization_node.h"
 #include "spatial_organization/edge.h"
@@ -30,7 +29,7 @@ using spatial_organization::SpatialOrganizationNodeMovementListener;
  * @param <T> The type of the user objects associated with each node.
  */
 template<class T>
-class SpaceNode : public SpatialOrganizationNode<T>, public SimStateSerializable {
+class SpaceNode : public SpatialOrganizationNode<T> {
  public:
   using UPtr = std::unique_ptr<SpaceNode<T>>;
 
@@ -88,11 +87,11 @@ class SpaceNode : public SpatialOrganizationNode<T>, public SimStateSerializable
   virtual void addSpatialOrganizationNodeMovementListener(typename SpatialOrganizationNodeMovementListener<T>::UPtr listener)
           override;
 
-  virtual std::list<Edge<T>* > getEdges() const override;  //TODO change back to SpatialOrganizationEdge afte porting has been finished
+  virtual std::list<SpatialOrganizationEdge<T>* > getEdges() const override;
 
   virtual std::list<T*> getNeighbors() const override;
 
-  virtual UPtr getNewInstance(const std::array<double, 3>& position, T* user_object) override;
+  virtual typename SpatialOrganizationNode<T>::UPtr getNewInstance(const std::array<double, 3>& position, T* user_object) override;
 
   virtual std::list<T*> getPermanentListOfNeighbors() const override;
 
@@ -100,10 +99,9 @@ class SpaceNode : public SpatialOrganizationNode<T>, public SimStateSerializable
 
   virtual T* getUserObject() const override;
 
-  //TODO clean up this hack after porting has been finished
   virtual std::array<T*, 4> getVerticesOfTheTetrahedronContaining(
       const std::array<double, 3>& position,
-      std::array<int, 1>& returned_null) const override;
+      bool& returned_null) const override;
 
   virtual double getVolume() const override;
 
@@ -121,9 +119,7 @@ class SpaceNode : public SpatialOrganizationNode<T>, public SimStateSerializable
   /**
    * Adds an element to the list of adjacent tetrahedra incident to this node.
    */
-  // todo rename to addTetrahedron to be consistent
-  virtual void addAdjacentTetrahedron(
-      const std::shared_ptr<Tetrahedron<T>>& tetrahedron);
+  virtual void addTetrahedron(const std::shared_ptr<Tetrahedron<T>>& tetrahedron);
 
   /**
    * Removes a given tetrahedron from the list of incident tetrahedra.

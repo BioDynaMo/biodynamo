@@ -6,14 +6,13 @@
 #include <array>
 #include <memory>
 
+#include "sim_state_serializable.h"
 #include "string_builder.h"
 #include "spatial_organization/spatial_organization_node_movement_listener.h"
 
 namespace cx3d {
 namespace spatial_organization {
 
-template<class T> class Edge;
-template<class T> class SpaceNode;
 template<class T> class SpatialOrganizationEdge;
 
 /**
@@ -22,8 +21,10 @@ template<class T> class SpatialOrganizationEdge;
  * @param <T> The type of user objects associated with each node in the triangulation.
  */
 template<class T>
-class SpatialOrganizationNode {
+class SpatialOrganizationNode : public SimStateSerializable {
  public:
+  using UPtr = std::unique_ptr<SpatialOrganizationNode<T>>;
+
   virtual ~SpatialOrganizationNode() {
   }
 
@@ -33,12 +34,11 @@ class SpatialOrganizationNode {
    * Returns a list that allows to iterate over all edges
    * incident to this node.
    */
-  virtual std::list<Edge<T>*> getEdges() const = 0;  //TODO change to SpatialOrganizationEdge once porting has been finished
+  virtual std::list<SpatialOrganizationEdge<T>*> getEdges() const = 0;
 
   virtual std::list<T*> getNeighbors() const = 0;
 
-  // todo change to interface type
-  virtual std::unique_ptr<SpaceNode<T>> getNewInstance(const std::array<double, 3>& position, T* user_object) = 0;
+  virtual std::unique_ptr<SpatialOrganizationNode<T>> getNewInstance(const std::array<double, 3>& position, T* user_object) = 0;
 
   virtual std::list<T*> getPermanentListOfNeighbors() const = 0;
 
@@ -47,7 +47,7 @@ class SpatialOrganizationNode {
   virtual T* getUserObject() const = 0;
 
   virtual std::array<T*, 4> getVerticesOfTheTetrahedronContaining(
-      const std::array<double, 3>& position, std::array<int, 1>& returned_null) const = 0;
+      const std::array<double, 3>& position, bool& returned_null) const = 0;
 
   virtual double getVolume() const = 0;
 

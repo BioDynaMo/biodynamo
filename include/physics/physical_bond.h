@@ -40,13 +40,13 @@ class PhysicalBond : public SimStateSerializable, public std::enable_shared_from
   virtual void setSecondPhysicalObject(PhysicalObject* b);
 
   /** If false, the first PhysicalObject doesn't feel the influence of this PhysicalBond.*/
-  virtual bool isHasEffectOnA();
+  virtual bool hasEffectOnA();
 
   /** If false, the first PhysicalObject doesn't feel the influence of this PhysicalBond.*/
   virtual void setHasEffectOnA(bool has_effect_on_a);
 
   /** If false, the second PhysicalObject doesn't feel the influence of this PhysicalBond.*/
-  virtual bool isHasEffectOnB();
+  virtual bool hasEffectOnB();
 
   /** If false, the second PhysicalObject doesn't feel the influence of this PhysicalBond.*/
   virtual void setHasEffectOnB(bool has_effect_on_b);

@@ -39,7 +39,7 @@ class PhysicalCylinder : public PhysicalObject {
  public:
   using UPtr = std::unique_ptr<PhysicalCylinder>;
 
-  PhysicalCylinder();  //todo should be protected
+  PhysicalCylinder();
 
   virtual ~PhysicalCylinder() {
   }
@@ -75,7 +75,7 @@ class PhysicalCylinder : public PhysicalObject {
    */
   virtual std::array<double, 3> originOf(PhysicalObject* daughter) override;
 
-  virtual void removeDaugther(PhysicalObject* daughter) override;
+  virtual void removeDaughter(PhysicalObject* daughter) override;
 
   virtual void updateRelative(PhysicalObject* old_relative, PhysicalObject* new_relative) override;
 
@@ -431,14 +431,13 @@ class PhysicalCylinder : public PhysicalObject {
    */
   virtual void updateDependentPhysicalVariables() override;
 
-  //fixme java side forces to be public
+ protected:
   /**
    * Updates the concentration of substances, based on the volume of the object.
    * Is usually called after change of the volume (and therefore we don't modify it here)
    */
   virtual void updateIntracellularConcentrations() override;
 
- protected:
   /**
    * Repositioning of the SpatialNode location (usually a Delaunay vertex) at the barycenter of the cylinder.
    * If it is already closer than a quarter of the diameter of the cylinder, it is not displaced.

@@ -20,8 +20,7 @@ Edge<T>::Edge(SpaceNode<T>* a, SpaceNode<T>* b)
 }
 
 template<class T>
-SpaceNode<T>* Edge<T>::getOpposite(
-    const SpaceNode<T>* node) const {
+SpatialOrganizationNode<T>* Edge<T>::getOpposite(const SpatialOrganizationNode<T>* node) const {
   if (node == a_) {
     return b_;
   } else if (node == b_) {

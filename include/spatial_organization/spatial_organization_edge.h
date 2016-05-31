@@ -6,7 +6,7 @@
 namespace cx3d {
 namespace spatial_organization {
 
-template<class T> class SpaceNode;
+template<class T> class SpatialOrganizationNode;
 
 /**
  * Interface to define the basic properties of an edge in the simulation.
@@ -33,8 +33,7 @@ class SpatialOrganizationEdge {
    * @return The other endpoint of this edge. Throws a RuntimeException if the node <code>first</code>
    * is not incident to this edge.
    */
-  virtual SpaceNode<T>* getOpposite(
-      const SpaceNode<T>* node) const = 0;
+  virtual SpatialOrganizationNode<T>* getOpposite(const SpatialOrganizationNode<T>* node) const = 0;
 
   /**
    * @return One of the two user objects associated to the endpoints of this edge.

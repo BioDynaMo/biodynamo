@@ -73,7 +73,7 @@ class PhysicalObject : public PhysicalNode {
   /**
    * Removal of a <code>PhysicalObject</code> from the list of our daughters.
    * (Mainly in case of complete retraction of the daughter.*/
-  virtual void removeDaugther(PhysicalObject* daughterToRemove) = 0;
+  virtual void removeDaughter(PhysicalObject* daughterToRemove) = 0;
 
   /**
    * Convenient way to change family links in the neuron tree structure
@@ -432,8 +432,7 @@ class PhysicalObject : public PhysicalNode {
 
   virtual void setInterObjectForceCoefficient(double interObjectForceCoefficient) = 0;
 
-  //fixme functions below were protected before - swig requires them to be public
-
+ protected:
   /** adding an IntracellularSubstance instance (CAUTION : should not be used for biologic production,
    * and therefore is not a public method. Instead , this method is used for filling up a new
    * PhysicalObject in case of extension).
@@ -482,12 +481,8 @@ class PhysicalObject : public PhysicalNode {
    */
   virtual void updateIntracellularConcentrations() = 0;
 
-  //fixme function only needed for swig - remove after porting has been finished
-  virtual void setTotalForceLastTimeStep(const std::array<double, 4>& force);
-
   virtual void setVolumeOnly(double v);
 
- protected:
   /** The simulation of Force in this simulation.*/
   static InterObjectForce::UPtr inter_object_force_;
 

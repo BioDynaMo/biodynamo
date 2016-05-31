@@ -14,7 +14,6 @@
 #include "physics/physical_sphere.h"
 #include "physics/intracellular_substance.h"
 #include "physics/inter_object_force.h"
-#include "physics/debug/physical_cylinder_debug.h"
 
 #include "synapse/excrescence.h"
 
@@ -123,7 +122,7 @@ std::array<double, 3> PhysicalCylinder::originOf(PhysicalObject* daughter) {
   throw std::logic_error("PhysicalCylinder.getOrigin() says : this is not one of my relatives !!!");
 }
 
-void PhysicalCylinder::removeDaugther(PhysicalObject* daughter) {
+void PhysicalCylinder::removeDaughter(PhysicalObject* daughter) {
   // If there is another daughter than the one we want to remove,
   // we have to be sure that it will be the daughterLeft->
   if (daughter == daughter_right_) {
@@ -136,7 +135,7 @@ void PhysicalCylinder::removeDaugther(PhysicalObject* daughter) {
     daughter_right_ = nullptr;
     return;
   }
-  throw std::logic_error("PhysicalCylinder.removeDaugther() says : this is not one of my relatives !!!");
+  throw std::logic_error("PhysicalCylinder.removeDaughter() says : this is not one of my relatives !!!");
 }
 
 void PhysicalCylinder::updateRelative(PhysicalObject* old_relative,
@@ -272,7 +271,7 @@ bool PhysicalCylinder::retractCylinder(double speed) {
     return retractCylinder(speed / Param::kSimulationTimeStep);
     // if mother is cylinder with other daughter or is not a cylinder : disappear.
   } else {
-    mother_->removeDaugther(this);
+    mother_->removeDaughter(this);
     still_existing_ = false;
     ecm_->removePhysicalCylinder(this);  // this method removes the SONode
     // and the associated neuriteElement also disappears :

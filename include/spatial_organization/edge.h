@@ -6,6 +6,7 @@
 #include <list>
 
 #include "spatial_organization/spatial_organization_edge.h"
+#include "spatial_organization_node.h"
 
 namespace cx3d {
 namespace spatial_organization {
@@ -45,8 +46,7 @@ class Edge : public SpatialOrganizationEdge<T> {
   /**
    * {@inheritDoc}
    */
-  SpaceNode<T>* getOpposite(const SpaceNode<T>* node) const
-      override;
+  SpatialOrganizationNode<T>* getOpposite(const SpatialOrganizationNode<T>* node) const override;
 
   /**
    * {@inheritDoc}

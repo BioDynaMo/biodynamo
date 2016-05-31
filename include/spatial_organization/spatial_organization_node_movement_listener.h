@@ -9,9 +9,8 @@ namespace cx3d {
 namespace spatial_organization {
 
 // forward declaration
-template<class T> class SpaceNode;
+template<class T> class SpatialOrganizationNode;
 
-//TODO change all occurences to SpatialOrganizationNode once porting has been finished
 template<class T>
 class SpatialOrganizationNodeMovementListener {
  public:
@@ -25,19 +24,19 @@ class SpatialOrganizationNodeMovementListener {
 
   virtual UPtr getCopy() const = 0;
 
-  virtual void nodeAboutToMove(const SpaceNode<T>* node,
+  virtual void nodeAboutToMove(const SpatialOrganizationNode<T>* node,
                                const std::array<double, 3>& planned_movement) = 0;
 
-  virtual void nodeMoved(const SpaceNode<T>* node) = 0;
+  virtual void nodeMoved(const SpatialOrganizationNode<T>* node) = 0;
 
-  virtual void nodeAboutToBeRemoved(const SpaceNode<T>* node) = 0;
+  virtual void nodeAboutToBeRemoved(const SpatialOrganizationNode<T>* node) = 0;
 
-  virtual void nodeRemoved(const SpaceNode<T>* node) = 0;
+  virtual void nodeRemoved(const SpatialOrganizationNode<T>* node) = 0;
 
-  virtual void nodeAboutToBeAdded(const SpaceNode<T>*, const std::array<double, 3>& planned_position,
+  virtual void nodeAboutToBeAdded(const SpatialOrganizationNode<T>*, const std::array<double, 3>& planned_position,
                                   const std::array<T*, 4>& vertices_of_the_tetrahedron_containing_the_position) = 0;
 
-  virtual void nodeAdded(const SpaceNode<T>* node) = 0;
+  virtual void nodeAdded(const SpatialOrganizationNode<T>* node) = 0;
 
   /**
    * Returns a String representation of this SpatialOrganizationNodeMovementListener

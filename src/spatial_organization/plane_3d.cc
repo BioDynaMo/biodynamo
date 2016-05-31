@@ -22,7 +22,7 @@ template<class T>
 Plane3D<T>::Plane3D(const std::array<double, 3>& normal_vector, double offset)
     : normal_vector_(normal_vector),
       offset_(offset),
-      tolerance_(Matrix::dot(normal_vector_, normal_vector_) * 0.000000001),
+      tolerance_(Matrix::dot(normal_vector_, normal_vector_) * Param::kDefaultTolerance),
       normal_vector_updated_(false) {
 }
 
@@ -92,7 +92,7 @@ void Plane3D<T>::initPlane(const std::array<double, 3>& direction_vector_1,
   if (!normal_vector_updated_) {
     normal_vector_updated_ = true;
     normal_vector_ = Matrix::crossProduct(direction_vector_1, direction_vector_2);
-    tolerance_ = Matrix::dot(normal_vector_, normal_vector_) * 0.000000001;
+    tolerance_ = Matrix::dot(normal_vector_, normal_vector_) * Param::kDefaultTolerance;
     if (tolerance_ == 0.0) {
       throw std::range_error("tolerance was set to 0!");
     }
@@ -102,7 +102,7 @@ void Plane3D<T>::initPlane(const std::array<double, 3>& direction_vector_1,
     normal_vector_[0] /= norm;
     normal_vector_[1] /= norm;
     normal_vector_[2] /= norm;
-    tolerance_ = 0.000000001;
+    tolerance_ = Param::kDefaultTolerance;
   }
   offset_ = Matrix::dot(normal_vector_, position_vector);
 }

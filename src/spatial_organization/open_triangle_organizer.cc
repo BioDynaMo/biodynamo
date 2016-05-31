@@ -505,7 +505,7 @@ void OpenTriangleOrganizer<T>::triangulatePointsOnSphere(
     upper_bound = smallest_cosinus;
     lower_bound = smallest_cosinus;
     SpaceNode<T>* picked_node(nullptr);
-    double tolerance = 0.000000001;
+    double tolerance = Param::kDefaultTolerance;
     for (auto current_node : nodes) {
       if (current_node != an_open_edge->getEndpointA()
           && current_node != an_open_edge->getEndpointB()) {
@@ -576,7 +576,7 @@ void OpenTriangleOrganizer<T>::createInitialTriangle() {
   // find a starting node:
   auto a = tno_->getFirstNode();
 
-  double tolerance = 0.000000001;  //todo bad design
+  double tolerance = Param::kDefaultTolerance;
   // find the second node by minimizing the distance to the first node:
   shortest_distance_ = std::numeric_limits<double>::max();
   SpaceNode<T>* b(nullptr);
@@ -596,7 +596,7 @@ void OpenTriangleOrganizer<T>::createInitialTriangle() {
       } else {
         b = dummy;
         shortest_distance_ = distance;
-        tolerance = 0.000000001 * distance;
+        tolerance = Param::kDefaultTolerance * distance;
       }
     }
   }
@@ -612,7 +612,7 @@ void OpenTriangleOrganizer<T>::createInitialTriangle() {
   std::array<double, 3> offsets;
   offsets[0] = 0.5 * Matrix::dot(normals[0], Matrix::add(av, bv));
   SpaceNode<T>* c(nullptr);
-  tolerance = Matrix::dot(normals[0], normals[0]) * 0.000000001;
+  tolerance = Matrix::dot(normals[0], normals[0]) * Param::kDefaultTolerance;
 
   for (auto dummy : tno_->getNodes(a)) {
     auto dummy_pos = dummy->getPosition();

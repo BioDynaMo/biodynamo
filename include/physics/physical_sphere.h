@@ -6,7 +6,6 @@
 #include <memory>
 #include <unordered_map>
 
-//#include "physics/physical_object.h"
 #include "physics/physical_cylinder.h"
 
 namespace cx3d {
@@ -33,7 +32,7 @@ class PhysicalSphere : public PhysicalObject {
  public:
   using UPtr = std::unique_ptr<PhysicalSphere>;
 
-  PhysicalSphere();  //todo should be protected
+  PhysicalSphere();
 
   virtual ~PhysicalSphere() {
   }
@@ -212,14 +211,14 @@ class PhysicalSphere : public PhysicalObject {
 
   virtual double getLength() const override;
 
-//fixme swig forces following methods to be public -> change to  protected:
+ protected:
   /**
    * A PhysicalSphere has no mother that could call, so this method is not used.
    */
   virtual std::array<double, 3> forceTransmittedFromDaugtherToMother(PhysicalObject* mother)
       override;
 
-  virtual void removeDaugther(PhysicalObject* daughter) override;
+  virtual void removeDaughter(PhysicalObject* daughter) override;
 
   virtual void updateRelative(PhysicalObject* old_relative, PhysicalObject* new_relative) override;
 
@@ -247,22 +246,22 @@ class PhysicalSphere : public PhysicalObject {
   /** Local biology object associated with this PhysicalSphere.*/
   SomaElement* soma_element_ = nullptr;
 
-  /* The PhysicalCylinders attached to this sphere*/
+  /** The PhysicalCylinders attached to this sphere*/
   std::list<PhysicalCylinder*> daughters_;
-  /* Position in local coordinates (PhysicalObject*'s xAxis,yAxis,zAxis) of
+  /** Position in local coordinates (PhysicalObject*'s xAxis,yAxis,zAxis) of
    * the attachment point of my daughters.*/
   std::unordered_map<PhysicalCylinder*, std::array<double, 3>, PhysicalCylinderHash,
       PhysicalCylinderEqual> daughters_coord_;
 
-  /* Plays the same role than mass and adherence, for rotation around center of mass. */
-  double rotational_inertia_ = 0.5;  // 5.0  //todo hardcoded parameters - better in config file
+  /** Plays the same role than mass and adherence, for rotation around center of mass. */
+  double rotational_inertia_ = Param::kSphereDefaultRotationalInertia;
 
-  double inter_object_force_coefficient_ = 0.15;  //todo hardcoded parameters - better in config file
+  double inter_object_force_coefficient_ = Param::kSphereDefaultInterObjectCoefficient;
 
-  /* Force applied by the biology. Is taken into account during runPhysics(), and the set to 0.*/
+  /** Force applied by the biology. Is taken into account during runPhysics(), and the set to 0.*/
   std::array<double, 3> tractor_force_ = std::array<double, 3> { 0, 0, 0 };
 
-  /* Move the SpatialOrganizationNode in the center of this PhysicalSphere. If it is
+  /** Move the SpatialOrganizationNode in the center of this PhysicalSphere. If it is
    * only a small distance off (half of the radius), there is no movement.
    */
   void updateSpatialOrganizationNodePosition();

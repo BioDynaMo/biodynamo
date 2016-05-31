@@ -77,9 +77,9 @@ class Excrescence : public SimStateSerializable {
 
   virtual void setPositionOnPO(const std::array<double, 2>& position);
 
-  virtual int getType() const;
+  virtual Type getType() const;
 
-  virtual void setType(int type);
+  virtual void setType(Type type);
 
  protected:
   static ECM* ecm_;
@@ -96,7 +96,7 @@ class Excrescence : public SimStateSerializable {
   double length_ = 1.0;
 
   /** spine or bouton*/
-  int type_ = 0;  //fixme change to Excrescence::Type
+  Excrescence::Type type_ = Type::kSpine;
 
   /** The neurite Element to which the shaft synapse is made */
   NeuriteElement* ne_shaft_;

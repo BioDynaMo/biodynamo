@@ -20,7 +20,7 @@ Cell* CellFactory::getCellInstance(const std::array<double, 3>& cell_origin) {
   ps->setSoNode(std::move(son));
 
   // Add cell to ECM instance
-  ECM::getInstance()->addPhysicalSphere(ps.get());  //fixme critical
+  ECM::getInstance()->addPhysicalSphere(ps.get());
 
   // Set cell properties
   ps->setMassLocation(cell_origin);

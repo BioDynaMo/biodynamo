@@ -228,7 +228,7 @@ class OpenTriangleOrganizer : public std::enable_shared_from_this<
    * A link to a tetrahedron that was created during the completion of an
    * incomplete triangulation.
    */
-  std::shared_ptr<Tetrahedron<T>> a_new_tetrahedron_;  //fixme remove = null;
+  std::shared_ptr<Tetrahedron<T>> a_new_tetrahedron_;
 
   /**
    * Returns an open triangle if there is any left. This function uses the stack {@link #openTriangles}

@@ -11,7 +11,6 @@ namespace local_biology {
 
 class CellElement;
 
-//fixme change to pure virtual function after porting has been finished
 /**
  * Classes implementing this interface can be added in the CellElements, and be run.
  * They represent the biological model that CX3D is simulating.
@@ -29,77 +28,47 @@ class LocalBiologyModule : public SimStateSerializable {
   virtual ~LocalBiologyModule() {
   }
 
-  virtual StringBuilder& simStateToJson(StringBuilder& sb) const override {
-    throw std::logic_error(
-        "LocalBiologyModule::simStateToJson must never be called - Java must provide implementation at this point");
-  }
+  virtual StringBuilder& simStateToJson(StringBuilder& sb) const override = 0;
 
   /** Performs your specific action */
-  virtual void run() {
-    throw std::logic_error(
-        "LocalBiologyModule::run must never be called - Java must provide implementation at this point");
-  }
+  virtual void run() = 0;
 
   /** returns the cell element this module lives in */
-  virtual CellElement* getCellElement() const {
-    throw std::logic_error(
-        "LocalBiologyModule::getCellElement must never be called - Java must provide implementation at this point");
-  }
+  virtual CellElement* getCellElement() const = 0;
 
   /** @param cell_element the cell element this module lives in */
-  virtual void setCellElement(CellElement* cell_element) {
-    throw std::logic_error(
-        "LocalBiologyModule::setCellElement must never be called - Java must provide implementation at this point");
-  }
+  virtual void setCellElement(CellElement* cell_element) = 0;
 
   /** returns a copy of itself */
-  virtual UPtr getCopy() const {
-    throw std::logic_error(
-        "LocalBiologyModule::getCopy must never be called - Java must provide implementation at this point");
-  }
+  virtual UPtr getCopy() const = 0;
 
   /**
    * Specifies if instances of LocalBiologicalModules are are copied into new branches.
    */
-  virtual bool isCopiedWhenNeuriteBranches() const {
-    throw std::logic_error(
-        "LocalBiologyModule::isCopiedWhenNeuriteBranches must never be called - Java must provide implementation at this point");
-  }
+  virtual bool isCopiedWhenNeuriteBranches() const = 0;
 
   /**
    * Specifies if instances of LocalBiologicalModules are copied when the soma divides.
    */
-  virtual bool isCopiedWhenSomaDivides() const {
-    throw std::logic_error(
-        "LocalBiologyModule::isCopiedWhenSomaDivides must never be called - Java must provide implementation at this point");
-  }
+  virtual bool isCopiedWhenSomaDivides() const = 0;
 
   /**
    * Specifies if instances of LocalBiologicalModules are copied when the neurite elongates
    * (not in new branches!).
    */
-  virtual bool isCopiedWhenNeuriteElongates() const {
-    throw std::logic_error(
-        "LocalBiologyModule::isCopiedWhenNeuriteElongates must never be called - Java must provide implementation at this point");
-  }
+  virtual bool isCopiedWhenNeuriteElongates() const = 0;
 
   /**
    * Specifies if instances of LocalBiologicalModules are copied into NeuriteElements in case of
    * extension of a new neurte from a soma.
    */
-  virtual bool isCopiedWhenNeuriteExtendsFromSoma() const {
-    throw std::logic_error(
-        "LocalBiologyModule::isCopiedWhenNeuriteExtendsFromSoma must never be called - Java must provide implementation at this point");
-  }
+  virtual bool isCopiedWhenNeuriteExtendsFromSoma() const = 0;
 
   /**
    * Specifies if instances of LocalBiologicalModules are deleted in a NeuriteElement that
    * has just bifurcated (and is thus no longer a terminal neurite element).
    */
-  virtual bool isDeletedAfterNeuriteHasBifurcated() const {
-    throw std::logic_error(
-        "LocalBiologyModule::isDeletedAfterNeuriteHasBifurcated must never be called - Java must provide implementation at this point");
-  }
+  virtual bool isDeletedAfterNeuriteHasBifurcated() const = 0;
 
  private:
   LocalBiologyModule(const LocalBiologyModule&) = delete;

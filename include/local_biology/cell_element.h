@@ -104,18 +104,18 @@ class CellElement : public SimStateSerializable {
    */
   virtual void move(double speed, std::array<double, 3>& direction);
 
-  /**
-   * Calls the run() method in all the <code>SubElements</code>.
-   * Is done automatically during the simulation, and thus doesn't have to be called by the user
-   */
-  void runLocalBiologyModules();  //fixme make protected after porting has been finished
-
  protected:
   static ECM* ecm_;
 
   Cell* cell_ = nullptr;
 
   std::vector<LocalBiologyModule*> local_biology_modules_;
+
+  /**
+  * Calls the run() method in all the <code>SubElements</code>.
+  * Is done automatically during the simulation, and thus doesn't have to be called by the user
+  */
+  void runLocalBiologyModules();
 
  private:
   CellElement(const CellElement&) = delete;

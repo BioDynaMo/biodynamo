@@ -72,7 +72,7 @@ void PhysicalBond::setSecondPhysicalObject(PhysicalObject* b) {
   b_ = b;
 }
 
-bool PhysicalBond::isHasEffectOnA() {
+bool PhysicalBond::hasEffectOnA() {
   return has_effect_on_a_;
 }
 
@@ -80,7 +80,7 @@ void PhysicalBond::setHasEffectOnA(bool has_effect_on_a) {
   has_effect_on_a_ = has_effect_on_a;
 }
 
-bool PhysicalBond::isHasEffectOnB() {  //todo rename function
+bool PhysicalBond::hasEffectOnB() {
   return has_effect_on_b_;
 }
 
@@ -187,10 +187,8 @@ std::array<double, 4> PhysicalBond::getForceOn(PhysicalObject* po) {
   auto force = Matrix::scalarMult(tension / actual_length, forceDirection);
 
   // 4. Return it
-  // TODO : cleaner way to to this...
   if (po->isAPhysicalCylinder()) {
     auto pc = static_cast<PhysicalCylinder*>(po);
-//      return new double[] {force[0], force[1], force[2], 1-(getPositionOnObjectInLocalCoord(po)[0]/pc.getActualLength()) };
     double p = 1 - (getPositionOnObjectInLocalCoord(po)[0] / pc->getActualLength());
     if (p > 0.8) {
       p = 0.8;

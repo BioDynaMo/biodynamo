@@ -15,6 +15,8 @@ class Param {
   /** Maximum jump that a point mass can do in one time step. Useful to stabilize the simulation*/
   static constexpr double kSimulationMaximalDisplacement = 3.0;
 
+  static constexpr double kDefaultTolerance = 0.000000001;
+
   /** Maximum length of a discrete segment before it is cut into two parts.*/
   static double kNeuriteMaxLength;  // usual value : 20
   /** Minimum length of a discrete segment before. If smaller it will try to fuse with the proximal one*/
@@ -59,6 +61,10 @@ class Param {
   static constexpr double kSphereDefaultAdherence = 0.4;
   /** Restistance to the movement ( = kinetic friction).*/
   static constexpr double kSphereDefaultMass = 1;
+
+  static constexpr double kSphereDefaultRotationalInertia = 0.5;
+
+  static constexpr double kSphereDefaultInterObjectCoefficient = 0.15;
 
   // some colors, that we define, because we find them.. well beautiful.
   // fixme change to constexpr and initialize here after porting has been finished

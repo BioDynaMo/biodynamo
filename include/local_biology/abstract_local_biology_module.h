@@ -9,7 +9,6 @@
 namespace cx3d {
 namespace local_biology {
 
-//fixme change to pure virtual function after porting has been finished
 /**
  * Abstract class implementing the <code>LocalBiologyModule</code> interface. This class can be extended
  * to design new local modules. By default, each copy method returns <code>false</code>.
@@ -28,10 +27,7 @@ class AbstractLocalBiologyModule : public LocalBiologyModule {
     return sb;
   }
 
-  virtual void run() override {
-    throw std::logic_error(
-        "AbstractLocalBiologyModule::run must never be called - Java must provide implementation at this point");
-  }
+  virtual void run() override = 0;
 
   virtual CellElement* getCellElement() const override {
     return cell_element_;
@@ -41,10 +37,7 @@ class AbstractLocalBiologyModule : public LocalBiologyModule {
     cell_element_ = cell_element;
   }
 
-  virtual UPtr getCopy() const override {
-    throw std::logic_error(
-        "AbstractLocalBiologyModule::getCopy must never be called - Java must provide implementation at this point");
-  }
+  virtual UPtr getCopy() const override = 0;
 
   virtual bool isCopiedWhenNeuriteBranches() const override {
     return false;

@@ -16,7 +16,7 @@
 namespace cx3d {
 namespace physics {
 
-InterObjectForce::UPtr PhysicalObject::inter_object_force_ { nullptr };  //todo change to DefaultForce::create(); after porting has been finished
+InterObjectForce::UPtr PhysicalObject::inter_object_force_ { nullptr };
 
 InterObjectForce* PhysicalObject::getInterObjectForce() {
   return inter_object_force_.get();
@@ -273,7 +273,7 @@ void PhysicalObject::diffuseWithThisPhysicalObjects(PhysicalObject* po, double d
     double n = a * Tot / vB;
     double n_over_m = n / m;
     double K = q_a - n_over_m;
-    q_a = K * MathUtil::exp(-m * Param::kSimulationTimeStep) + n_over_m;  //todo change to std::exp
+    q_a = K * MathUtil::exp(-m * Param::kSimulationTimeStep) + n_over_m;
     q_b = Tot - q_a;
 
     s_a->setQuantity(q_a);
@@ -438,10 +438,6 @@ std::list<IntracellularSubstance*> PhysicalObject::getIntracellularSubstances1()
 
 void PhysicalObject::addNewIntracellularSubstance(IntracellularSubstance::UPtr s) {
   intracellular_substances_[s->getId()] = std::move(s);
-}
-
-void PhysicalObject::setTotalForceLastTimeStep(const std::array<double, 4>& force) {
-  total_force_last_time_step_ = force;
 }
 
 void PhysicalObject::setVolumeOnly(double v) {

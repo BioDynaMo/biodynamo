@@ -30,9 +30,7 @@ class InterObjectForce : public SimStateSerializable {
    * @param sphere_2
    * @return
    */
-  virtual std::array<double, 3> forceOnASphereFromASphere(PhysicalSphere* sphere_1, PhysicalSphere* sphere_2) const {  //todo change =0 after porting has been finished
-    throw std::logic_error("InterObjectForce::forceOnASphereFromASphere");
-  }
+  virtual std::array<double, 3> forceOnASphereFromASphere(PhysicalSphere* sphere_1, PhysicalSphere* sphere_2) const = 0;
 
   /**
    * Force felt by a cylinder due to the presence of a sphere
@@ -43,9 +41,7 @@ class InterObjectForce : public SimStateSerializable {
    * (= the point mass of the mother).
    *
    */
-  virtual std::array<double, 4> forceOnACylinderFromASphere(PhysicalCylinder* cylinder, PhysicalSphere* sphere) const {  //todo change =0 after porting has been finished
-    throw std::logic_error("InterObjectForce::forceOnACylinderFromASphere must no be called - Java must provide implementation");
-  }
+  virtual std::array<double, 4> forceOnACylinderFromASphere(PhysicalCylinder* cylinder, PhysicalSphere* sphere) const = 0;
 
   /**
    * Force felt by sphere due to the presence of a cylinder
@@ -54,9 +50,7 @@ class InterObjectForce : public SimStateSerializable {
    * @return
    */
   virtual std::array<double, 3> forceOnASphereFromACylinder(
-      PhysicalSphere* sphere, PhysicalCylinder* cylinder) const {  //todo change =0 after porting has been finished
-    throw std::logic_error("InterObjectForce::forceOnASphereFromACylinder must no be called - Java must provide implementation");
-  }
+      PhysicalSphere* sphere, PhysicalCylinder* cylinder) const = 0;
 
   /**
    * Force felt by a cylinder (cylinder1) due to the presence of another cylinder (cylinder2)
@@ -67,13 +61,9 @@ class InterObjectForce : public SimStateSerializable {
    * of cylinder1 (= the point mass of the mother).
    */
   virtual std::array<double, 4> forceOnACylinderFromACylinder(
-      PhysicalCylinder* cylinder1, PhysicalCylinder* cylinder2) const {  //todo change =0 after porting has been finished
-    throw std::logic_error("InterObjectForce::forceOnACylinderFromACylinder must no be called - Java must provide implementation");
-  }
+      PhysicalCylinder* cylinder1, PhysicalCylinder* cylinder2) const = 0;
 
-  virtual StringBuilder& simStateToJson(StringBuilder& sb) const override { //todo change =0 after porting has been finished
-    throw std::logic_error("InterObjectForce::simStateToJson must no be called - Java must provide implementation");
-  }
+  virtual StringBuilder& simStateToJson(StringBuilder& sb) const override = 0;
 };
 
 }  //namespace physics

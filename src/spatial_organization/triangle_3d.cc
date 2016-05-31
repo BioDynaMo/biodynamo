@@ -196,7 +196,7 @@ int Triangle3D<T>::circleOrientation(const std::array<double, 3>& point) {
   double squared_distance = Matrix::dot(dummy, dummy);
   auto radial = Matrix::subtract(nodes_[0]->getPosition(), circum_center_);
   double squared_radius = Matrix::dot(radial, radial);
-  double tolerance = squared_radius * 0.000000001;
+  double tolerance = squared_radius * Param::kDefaultTolerance;
   if (squared_distance < squared_radius + tolerance) {
     if (squared_distance > squared_radius - tolerance) {
       auto points = getExactPositionVectors();
@@ -506,7 +506,7 @@ void Triangle3D<T>::updateCircumCenterIfNecessary() {
     n[2] = Matrix::crossProduct(n[0], n[1]);
     updateNormalVector(n[2]);
     this->normal_vector_updated_ = true;
-    this->tolerance_ = Matrix::dot(this->normal_vector_, this->normal_vector_) * 0.000000001;
+    this->tolerance_ = Matrix::dot(this->normal_vector_, this->normal_vector_) * Param::kDefaultTolerance;
     this->normal_vector_updated_ = true;
     // cut the three planes:
     circum_center_ = calculate3PlaneXPoint(

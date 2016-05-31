@@ -20,7 +20,7 @@ class SomaElement : public CellElement {
  public:
   using UPtr = std::unique_ptr<SomaElement>;
 
-  SomaElement();  // fixme protected after porting is complete
+  SomaElement();
 
   virtual ~SomaElement();
 

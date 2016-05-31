@@ -13,7 +13,6 @@
 #include "physics/physical_bond.h"
 #include "physics/inter_object_force.h"
 #include "physics/intracellular_substance.h"
-#include "physics/debug/physical_sphere_debug.h"
 
 #include "spatial_organization/space_node.h"
 
@@ -208,7 +207,7 @@ PhysicalCylinder::UPtr PhysicalSphere::addNewPhysicalCylinder(double new_length,
   cyl->setDiameter(Param::kNeuriteDefaultDiameter, true);
   cyl->setColor(color_);
   // family relations
-  daughters_.push_back(cyl.get()); //fixme
+  daughters_.push_back(cyl.get());
   cyl->setMother(this);
   daughters_coord_[cyl.get()] = {x_coord, y_coord, z_coord};
 
@@ -623,7 +622,7 @@ std::array<double, 3> PhysicalSphere::forceTransmittedFromDaugtherToMother(
   return {0, 0, 0};  //fixme should return null
 }
 
-void PhysicalSphere::removeDaugther(PhysicalObject* po) {
+void PhysicalSphere::removeDaughter(PhysicalObject* po) {
   if (po->isAPhysicalCylinder()) {
     auto daughter = static_cast<PhysicalCylinder*>(po);
     daughters_.remove(daughter);

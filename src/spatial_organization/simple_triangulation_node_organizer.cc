@@ -52,16 +52,6 @@ std::string SimpleTriangulationNodeOrganizer<T>::toString() const {
   return str_stream.str();
 }
 
-// TODO move to AbstractTriangulationNodeOrganizer once porting has been finished
-template<typename T>
-void SimpleTriangulationNodeOrganizer<T>::addTriangleNodes(
-    const std::shared_ptr<Triangle3D<T>>& triangle) {
-  auto nodes = triangle->getNodes();
-  addNode(nodes[1]);
-  addNode(nodes[2]);
-  addNode(nodes[0]);
-}
-
 template<typename T>
 bool SimpleTriangulationNodeOrganizer<T>::equalTo(
     const std::shared_ptr<SimpleTriangulationNodeOrganizer<T>>& other) {

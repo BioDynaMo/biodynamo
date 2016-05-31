@@ -90,11 +90,11 @@ void Excrescence::setPositionOnPO(const std::array<double, 2>& position) {
   position_on_po_ = position;
 }
 
-int Excrescence::getType() const {
+Excrescence::Type Excrescence::getType() const {
   return type_;
 }
 
-void Excrescence::setType(int type) {
+void Excrescence::setType(Type type) {
   type_ = type;
 }
 

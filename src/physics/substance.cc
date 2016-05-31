@@ -128,7 +128,7 @@ double Substance::getConcentration() const {
 
 void Substance::setConcentration(double concentration) {
   if (concentration < 0.0) {
-    concentration = 0.0;  //todo possible bug in java version
+    concentration_ = 0.0;
   } else {
     concentration_ = concentration;
   }

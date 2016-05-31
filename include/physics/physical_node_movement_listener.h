@@ -56,10 +56,10 @@ class PhysicalNodeMovementListener : public SpatialOrganizationNodeMovementListe
    * (Implementation note : the neighbors after the movement are only known after
    * the move, i.e. when the second method is called).
    */
-  virtual void nodeAboutToMove(const SpaceNode<PhysicalNode>* node,
+  virtual void nodeAboutToMove(const SpatialOrganizationNode<PhysicalNode>* node,
                                const std::array<double, 3>& planned_movement) override;
 
-  virtual void nodeMoved(const SpaceNode<PhysicalNode>* node) override;
+  virtual void nodeMoved(const SpatialOrganizationNode<PhysicalNode>* node) override;
 
   /**
    * MASS CONSERVATION WHEN A POINT IS REMOVED :
@@ -69,9 +69,9 @@ class PhysicalNodeMovementListener : public SpatialOrganizationNodeMovementListe
    * is then bigger). The concentration in the ex-neighbors is multiplied
    * by the ratio of the two sums.
    */
-  virtual void nodeAboutToBeRemoved(const SpaceNode<PhysicalNode>* node) override;
+  virtual void nodeAboutToBeRemoved(const SpatialOrganizationNode<PhysicalNode>* node) override;
 
-  virtual void nodeRemoved(const SpaceNode<PhysicalNode>* node) override;
+  virtual void nodeRemoved(const SpatialOrganizationNode<PhysicalNode>* node) override;
 
   /**
    * MASS CONSERVATION WHEN A NEW POINT IS ADDED :
@@ -83,10 +83,10 @@ class PhysicalNodeMovementListener : public SpatialOrganizationNodeMovementListe
    * including the new node). The concentration in the ex-neighbors is multiplied
    *  by the ratio of the two sums.
    */
-  virtual void nodeAboutToBeAdded(const SpaceNode<PhysicalNode>* node, const std::array<double, 3>& planned_position,
+  virtual void nodeAboutToBeAdded(const SpatialOrganizationNode<PhysicalNode>* node, const std::array<double, 3>& planned_position,
       const std::array<PhysicalNode*, 4>& vertices_of_the_tetrahedron_containing_the_position) override;
 
-  virtual void nodeAdded(const SpaceNode<PhysicalNode>* node) override;
+  virtual void nodeAdded(const SpatialOrganizationNode<PhysicalNode>* node) override;
 
   /**
    * Returns a String representation of this PhysicalNodeMovementListener

@@ -958,12 +958,12 @@ void Tetrahedron<T>::initializationHelper(const std::shared_ptr<Triangle3D<T>>& 
   }
   adjacent_nodes_[0] = point;
   if (point != nullptr) {
-    point->addAdjacentTetrahedron(this->shared_from_this());
+    point->addTetrahedron(this->shared_from_this());
   }
   auto triangle_nodes = triangle->getNodes();
   for (size_t i = 0; i < triangle_nodes.size(); i++) {
     adjacent_nodes_[i + 1] = triangle_nodes[i];
-    triangle_nodes[i]->addAdjacentTetrahedron(this->shared_from_this());
+    triangle_nodes[i]->addTetrahedron(this->shared_from_this());
   }
   // add triangle and make sure that adjacent_triangles_[i] lies opposite to
   // adjacent_nodes_[i]:
@@ -1001,11 +1001,11 @@ void Tetrahedron<T>::initializationHelper(const std::shared_ptr<Triangle3D<T>>& 
 
   adjacent_triangles_[0]->addTetrahedron(this->shared_from_this());
   if (adjacent_nodes_[0] != nullptr) {
-    adjacent_nodes_[0]->addAdjacentTetrahedron(this->shared_from_this());
+    adjacent_nodes_[0]->addTetrahedron(this->shared_from_this());
   }
   for (size_t i = 1; i < 4; i++) {
     adjacent_triangles_[i]->addTetrahedron(this->shared_from_this());
-    adjacent_nodes_[i]->addAdjacentTetrahedron(this->shared_from_this());
+    adjacent_nodes_[i]->addTetrahedron(this->shared_from_this());
   }
   registerEdges();
   calculateCircumSphere();

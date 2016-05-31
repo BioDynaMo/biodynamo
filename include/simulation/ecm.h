@@ -46,7 +46,7 @@ using physics::Substance;
 using physics::IntracellularSubstance;
 using physics::SubstanceHash;
 using physics::SubstanceEqual;
-using spatial_organization::SpaceNode;
+using spatial_organization::SpatialOrganizationNode;
 
 /**
  * Contains some lists with all the elements of the simulation, and methods to add
@@ -57,7 +57,6 @@ class ECM : public SimStateSerializable {
  public:
   static ECM* getInstance();
 
-  ECM();  // todo make private after porting has been finished
   virtual ~ECM();
   ECM(const ECM&) = delete;
   ECM& operator=(const ECM&) = delete;
@@ -124,7 +123,7 @@ class ECM : public SimStateSerializable {
    * @param userObject
    * @return
    */
-  SpaceNode<PhysicalNode>::UPtr getSpatialOrganizationNodeInstance(const std::array<double, 3>& position,
+  SpatialOrganizationNode<PhysicalNode>::UPtr getSpatialOrganizationNodeInstance(const std::array<double, 3>& position,
                                                                    PhysicalNode* user_object);
 
   /**
@@ -133,12 +132,12 @@ class ECM : public SimStateSerializable {
    * CAUTION : NEVER call this method if there exist already SpatialOrganizationNodes in
    * the simulation, and initialNode in ECM has not been instantiated : there will then be
    * two different unconnected Delaunay
-   * @param n an already existing SpaceNode close to the place where the new one should be
+   * @param n an already existing SpatialOrganizationNode close to the place where the new one should be
    * @param position
    * @param userObject
    * @return
    */
-  SpaceNode<PhysicalNode>::UPtr getSpatialOrganizationNodeInstance(SpaceNode<PhysicalNode>* n,
+  SpatialOrganizationNode<PhysicalNode>::UPtr getSpatialOrganizationNodeInstance(SpatialOrganizationNode<PhysicalNode>* n,
                                                                    const std::array<double, 3>& position,
                                                                    PhysicalNode* user_object);
 
@@ -495,7 +494,7 @@ class ECM : public SimStateSerializable {
   double time_ = 0;
 
   /* An SON used to get new SON instances from*/
-  SpaceNode<PhysicalNode>* initial_node_ = nullptr;
+  SpatialOrganizationNode<PhysicalNode>* initial_node_ = nullptr;
 
   /* In here we keep a template for each (extra-cellular) Substance in the simulation that have
    * non-standard value for diffusion and degradation constant.*/
@@ -550,7 +549,7 @@ class ECM : public SimStateSerializable {
    * the chemical that can be given as argument in the methods to know the concentration/grad.. */
   std::unordered_map<std::string, Substance::UPtr> all_artificial_substances_;
 
-//  ECM();
+  ECM();
 
   // *********************************************************************
   // *** Artificial concentration of chemicals

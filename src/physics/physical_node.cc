@@ -9,9 +9,8 @@
 #include "sim_state_serialization_util.h"
 
 #include "physics/substance.h"
-#include "physics/debug/physical_node_debug.h"
 
-#include "spatial_organization/space_node.h"
+#include "spatial_organization/spatial_organization_node.h"
 #include "spatial_organization/edge.h"
 
 #include "simulation/ecm.h"
@@ -61,9 +60,7 @@ PhysicalNode::PhysicalNode()
       on_scheduler_list_for_physical_nodes_ { true },
       last_ecm_time_degradate_was_run_ { 0 },
       movement_concentration_update_procedure_ { -999 } {
-  if (PhysicalNode::ecm_ != nullptr) {  //todo remove this if after porting has been finished
-    last_ecm_time_degradate_was_run_ = PhysicalNode::ecm_->getECMtime();
-  }
+  last_ecm_time_degradate_was_run_ = ecm_->getECMtime();
 }
 
 PhysicalNode::~PhysicalNode() {
@@ -159,10 +156,10 @@ double PhysicalNode::getExtracellularConcentration(const std::string& id, const 
     c += PhysicalNode::ecm_->getValueArtificialConcentration(id, location);
   }
 
-  std::array<int, 1> returned_null = { 0 };
+  bool returned_null = false;
   auto vertices = so_node_->getVerticesOfTheTetrahedronContaining(location, returned_null);
   double concentration_at_location = 0;
-  if (returned_null[0] != 1) {
+  if (!returned_null) {
     auto barycentric_coord = PhysicalNode::getBarycentricCoordinates(location, vertices);
     for (auto j = 0; j < 4; j++) {
       concentration_at_location += vertices[j]->getExtracellularConcentration(id) * barycentric_coord[j];
@@ -270,11 +267,11 @@ std::array<double, 3> PhysicalNode::soNodePosition() const {
   return so_node_->getPosition();
 }
 
-SpaceNode<PhysicalNode>* PhysicalNode::getSoNode() const {
+SpatialOrganizationNode<PhysicalNode>* PhysicalNode::getSoNode() const {
   return so_node_.get();
 }
 
-void PhysicalNode::setSoNode(typename SpaceNode<PhysicalNode>::UPtr son) {
+void PhysicalNode::setSoNode(typename SpatialOrganizationNode<PhysicalNode>::UPtr son) {
   so_node_ = std::move(son);
 }
 
@@ -299,7 +296,7 @@ void PhysicalNode::addExtracellularSubstance(Substance::UPtr is) {
 }
 
 void PhysicalNode::removeExtracellularSubstance(Substance* is) {
-  extracellular_substances_.erase(is->getId());  //TODO critical
+  extracellular_substances_.erase(is->getId());
 }
 
 std::list<Substance*> PhysicalNode::getExtracellularSubstances() const {  //todo refactor - originally returned the whole map
@@ -307,11 +304,6 @@ std::list<Substance*> PhysicalNode::getExtracellularSubstances() const {  //todo
   for (auto& i : extracellular_substances_) {
     list.push_front(i.second.get());
   }
-
-  // todo remove - only used to get reproducible results with Java
-  list.sort(
-      [](const Substance* a, const Substance* b) {return a->toString() < b->toString();});
-
   return list;
 }
 

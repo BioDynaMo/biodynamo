@@ -8,6 +8,7 @@
 #include "local_biology/soma_element.h"
 #include "local_biology/neurite_element.h"
 #include "physics/physical_node_movement_listener.h"
+#include "spatial_organization/space_node.h"
 
 namespace cx3d {
 namespace simulation {
@@ -18,6 +19,7 @@ using physics::SubstanceEqual;
 using physics::PhysicalNode;
 using physics::IntracellularSubstance;
 using physics::PhysicalNodeMovementListener;
+using spatial_organization::SpatialOrganizationNode;
 using spatial_organization::SpaceNode;
 
 ECM* ECM::getInstance() {
@@ -118,7 +120,7 @@ std::array<double, 3> ECM::forceFromArtificialWall(const std::array<double, 3>& 
   return force;
 }
 
-SpaceNode<PhysicalNode>::UPtr ECM::getSpatialOrganizationNodeInstance(const std::array<double, 3>& position,
+SpatialOrganizationNode<PhysicalNode>::UPtr ECM::getSpatialOrganizationNodeInstance(const std::array<double, 3>& position,
                                                                       PhysicalNode* userObject) {
   if (initial_node_ == nullptr) {
     auto sn1 = SpaceNode < PhysicalNode > ::UPtr(new SpaceNode<PhysicalNode>(position, userObject));
@@ -129,7 +131,7 @@ SpaceNode<PhysicalNode>::UPtr ECM::getSpatialOrganizationNodeInstance(const std:
   return initial_node_->getNewInstance(position, userObject);  // todo catch PositionNotAllowedException
 }
 
-SpaceNode<PhysicalNode>::UPtr ECM::getSpatialOrganizationNodeInstance(SpaceNode<PhysicalNode>* n,
+SpatialOrganizationNode<PhysicalNode>::UPtr ECM::getSpatialOrganizationNodeInstance(SpatialOrganizationNode<PhysicalNode>* n,
                                                                       const std::array<double, 3>& position,
                                                                       PhysicalNode* userObject) {
   if (initial_node_ == nullptr) {
@@ -154,7 +156,7 @@ std::vector<PhysicalNode::UPtr> ECM::createGridOfPhysicalNodes(double x1, double
   int z_lim = (int) ((z2 - z1 + 2 * border_length) / d);
 
   // the neighbor Node (close to which we will create the new one
-  SpaceNode < PhysicalNode > *old_son = nullptr;
+  SpatialOrganizationNode<PhysicalNode> *old_son = nullptr;
   // loop to put the nodes in 3D space
   for (int kx = 0; kx < x_lim + 1; kx++) {
     for (int ky = 0; ky < y_lim + 1; ky++) {
@@ -167,7 +169,7 @@ std::vector<PhysicalNode::UPtr> ECM::createGridOfPhysicalNodes(double x1, double
         // create the node
         auto pn = PhysicalNode::UPtr(new PhysicalNode());
         // request a delaunay vertex
-        SpaceNode<PhysicalNode>::UPtr new_son;
+        SpatialOrganizationNode<PhysicalNode>::UPtr new_son;
         if (old_son != nullptr) {
           new_son = getSpatialOrganizationNodeInstance(old_son, coord, pn.get());
         } else {

@@ -20,15 +20,13 @@ template<class T> class Triangle3D;
 template<class T>
 class AbstractTriangulationNodeOrganizer {
  public:
-  AbstractTriangulationNodeOrganizer() {
-  }
+  AbstractTriangulationNodeOrganizer();
 
-  virtual ~AbstractTriangulationNodeOrganizer() {
-  }
+  virtual ~AbstractTriangulationNodeOrganizer();
 
   virtual std::list<SpaceNode<T>* > getNodes(SpaceNode<T>* reference_point) = 0;
 
-  virtual void addTriangleNodes(const std::shared_ptr<Triangle3D<T>>& triangle) = 0;
+  virtual void addTriangleNodes(const std::shared_ptr<Triangle3D<T>>& triangle);
 
   virtual void removeNode(SpaceNode<T>* node) = 0;
 

@@ -241,7 +241,7 @@ class PhysicalSphereDebug : public PhysicalSphere {
     return ret;
   }
 
-  void removeDaugther(PhysicalObject* daughter) {
+  void removeDaughter(PhysicalObject* daughter) {
     logCall(daughter);
     PhysicalSphere::removeDaugther(daughter);
     logReturnVoid();

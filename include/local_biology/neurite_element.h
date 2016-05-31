@@ -22,7 +22,7 @@ class NeuriteElement : public CellElement {
  public:
   using UPtr = std::unique_ptr<NeuriteElement>;
 
-  NeuriteElement();  // fixme protected after porting is complete
+  NeuriteElement();
 
   virtual ~NeuriteElement();
 

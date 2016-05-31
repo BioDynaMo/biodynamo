@@ -20,13 +20,12 @@ template<class T> class SpatialOrganizationEdge;
 
 namespace simulation {
 class ECM;
-// todo replace with include once porting has been finished and remove include in cc file
 }// namespace simulation
 
 namespace physics {
 
 using simulation::ECM;
-using spatial_organization::SpaceNode;
+using spatial_organization::SpatialOrganizationNode;
 using spatial_organization::SpatialOrganizationEdge;
 
 /**
@@ -181,10 +180,10 @@ class PhysicalNode : public SimStateSerializable, public std::enable_shared_from
   /**
    * Sets the SpatialOrganizationNode (vertex in the triangulation neighboring system).
    */
-  virtual SpaceNode<PhysicalNode>* getSoNode() const;  //todo change to SpatialOrganizationNode after porting has been finished
+  virtual SpatialOrganizationNode<PhysicalNode>* getSoNode() const;
 
   /** Returns the SpatialOrganizationNode (vertex in the triangulation neighboring system).*/
-  virtual void setSoNode(typename SpaceNode<PhysicalNode>::UPtr son);  //todo change to SpatialOrganizationNode after porting has been finished
+  virtual void setSoNode(typename SpatialOrganizationNode<PhysicalNode>::UPtr son);
 
   /** if <code>true</code>, the PhysicalNode will be run by the Scheduler.**/
   virtual bool isOnTheSchedulerListForPhysicalNodes() const;
@@ -229,7 +228,7 @@ class PhysicalNode : public SimStateSerializable, public std::enable_shared_from
   /**
    *  My anchor point in the neighboring system
    */
-  typename SpaceNode<PhysicalNode>::UPtr so_node_;
+  typename SpatialOrganizationNode<PhysicalNode>::UPtr so_node_;
 
  private:
   static std::size_t id_counter_;
