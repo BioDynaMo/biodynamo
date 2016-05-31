@@ -3,7 +3,6 @@
 
 #include <array>
 #include <string>
-#include <list>
 #include <vector>
 #include <memory>
 
@@ -170,7 +169,7 @@ class Cell : public SimStateSerializable {
   /**
    * @return a <code>Vector</code> containing all the <code>NeuriteElement</code>s of this cell.
    */
-  std::list<NeuriteElement*> getNeuriteElements() const;
+  std::vector<NeuriteElement*> getNeuriteElements() const;
 
  private:
   Cell(const Cell&) = delete;
@@ -194,7 +193,7 @@ class Cell : public SimStateSerializable {
   std::vector<NeuriteElement::UPtr> neurites_;
 
   /* List of the first Neurite of all Nurites belonging to the cell */
-  std::list<NeuriteElement*> neurite_root_list_;  // TODO: not working yet
+  std::vector<NeuriteElement*> neurite_root_list_;  // TODO: not working yet
 
   /* The electrophsiology type of this cell */
   NeuroMLType neuro_ml_type_ = NeuroMLType::kExcitatatory;

@@ -2,7 +2,6 @@
 #define SPATIAL_ORGANIZATION_TETRAHEDRON_H_
 
 #include <array>
-#include <list>
 #include <string>
 #include <memory>
 #include <stdexcept>
@@ -216,7 +215,7 @@ class Tetrahedron : public std::enable_shared_from_this<Tetrahedron<T>> {
    * @return A list of tetrahedra that were originally adjacent to either one
    *         of the two flat tetrahedra that were removed.
    */
-  static std::list<std::shared_ptr<Tetrahedron<T>> > remove2FlatTetrahedra(
+  static std::vector<std::shared_ptr<Tetrahedron<T>> > remove2FlatTetrahedra(
       const std::shared_ptr<Tetrahedron<T>>& tetrahedron_a, const std::shared_ptr<Tetrahedron<T>>& tetrahedron_b);
 
   /**

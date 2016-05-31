@@ -2,7 +2,6 @@
 #define PHYSICS_PHYSICAL_NODE_H_
 
 #include <array>
-#include <list>
 #include <string>
 #include <memory>
 #include <stdexcept>
@@ -206,7 +205,7 @@ class PhysicalNode : public SimStateSerializable, public std::enable_shared_from
   void removeExtracellularSubstance(Substance* is);
 
   /** All the (diffusible) chemicals that are present in the space defined by this physicalNode. */
-  std::list<Substance*> getExtracellularSubstances() const;  //todo refactor - originally returned the whole map
+  std::vector<Substance*> getExtracellularSubstances() const;
 
   Substance* getExtracellularSubstance(const std::string& key);  //todo refactor - added to avoid implementing unorederd_map for swig
 

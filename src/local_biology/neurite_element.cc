@@ -387,7 +387,8 @@ NeuriteElement* NeuriteElement::getDaughterRight() const {
   }
 }
 
-std::list<NeuriteElement*> NeuriteElement::addYourselfAndDistalNeuriteElements(std::list<NeuriteElement*>& elements) {
+std::vector<NeuriteElement*> NeuriteElement::addYourselfAndDistalNeuriteElements(
+    std::vector<NeuriteElement*>& elements) {
   elements.push_back(this);
   auto left = getDaughterLeft();
   if (left != nullptr) {

@@ -2,7 +2,6 @@
 #define PHYSICS_PHYSICAL_OBJECT_H_
 
 #include <string>
-#include <list>
 #include <array>
 #include <vector>
 #include <memory>
@@ -158,7 +157,7 @@ class PhysicalObject : public PhysicalNode {
    * Returns all the neighboring objects considered as being in contact with this PhysicalObject.
    * @return
    */
-  std::list<PhysicalObject*> getPhysicalObjectsInContact();  //todo change to vector
+  std::vector<PhysicalObject*> getPhysicalObjectsInContact();
 
   /**
    * Returns the position in the local coordinate system (xAxis, yXis, zAxis)
@@ -356,12 +355,11 @@ class PhysicalObject : public PhysicalNode {
   virtual std::array<double, 3> getUnitNormalVector(const std::array<double, 3>& positionInPolarCoordinates) const = 0;
 
   /** Returns the vector containing all the PhysicalBonds of this PhysicalObject.*/
-  // todo change to vector if porting has been finished
-  std::list<std::shared_ptr<PhysicalBond>> getPhysicalBonds() const;
+  std::vector<std::shared_ptr<PhysicalBond>> getPhysicalBonds() const;
 
   /** Sets the vector containing all the PhysicalBonds of this PhysicalObject.
    * This methof should not be used during the simulation. */
-  void setPhysicalBonds(const std::list<std::shared_ptr<PhysicalBond> >& physicalBonds);  //todo change to vector
+  void setPhysicalBonds(const std::vector<std::shared_ptr<PhysicalBond> >& physicalBonds);
 
   /** Returns the vector containing all the Excrescences (PhysicalSpine, PhysicalBouton).*/
   std::vector<Excrescence*> getExcrescences() const;
@@ -433,7 +431,7 @@ class PhysicalObject : public PhysicalNode {
 
   /** All the intracellular and membrane-bound chemicals that are present
    *  in this PhysicalNode. */
-  std::list<IntracellularSubstance*> getIntracellularSubstances1() const;  //todo return map after porting has been finished
+  std::vector<IntracellularSubstance*> getIntracellularSubstances1() const;
 
   /** Returns the length of a cylinder, or the diameter of a sphere.*/
   virtual double getLength() const = 0;
@@ -530,7 +528,7 @@ class PhysicalObject : public PhysicalNode {
   std::unordered_map<std::string, IntracellularSubstance::UPtr> intracellular_substances_;
 
   /** List of the Physical bonds that this object can do (for cell adhesion where synapse formation occurs)*/
-  std::list<std::shared_ptr<PhysicalBond> > physical_bonds_;  //todo change to vector once porting has been finished
+  std::vector<std::shared_ptr<PhysicalBond> > physical_bonds_;  //todo change to vector once porting has been finished
 
   /** List of the Physical bonds that this object can do (for cell adhesion, to restore proper configuration)*/
   std::vector<Excrescence::UPtr> excrescences_;

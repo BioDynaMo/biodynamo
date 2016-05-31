@@ -370,7 +370,7 @@ void PhysicalSphere::runPhysics() {
       auto n = static_cast<PhysicalObject*>(neighbor);
       // if it is a direct relative, we don't take it into account
       if (neighbor->isAPhysicalCylinder()
-          && STLUtil::listContains(daughters_, static_cast<PhysicalCylinder*>(neighbor))) {  // no physical effect of a member of the family...
+          && STLUtil::contains(daughters_, static_cast<PhysicalCylinder*>(neighbor))) {  // no physical effect of a member of the family...
         continue;
       }
       // if we have a PhysicalBond with him, we also don't take it into account
@@ -495,7 +495,7 @@ std::array<double, 3> PhysicalSphere::getAxis() const {
   return z_axis_;
 }
 
-std::list<PhysicalCylinder*> PhysicalSphere::getDaughters() const {
+std::vector<PhysicalCylinder*> PhysicalSphere::getDaughters() const {
   return daughters_;
 }
 
@@ -598,7 +598,7 @@ CellElement* PhysicalSphere::getCellElement() const {
 }
 
 bool PhysicalSphere::isRelative(PhysicalObject* po) const {
-  return po->isAPhysicalCylinder() && STLUtil::listContains(daughters_, static_cast<PhysicalCylinder*>(po));
+  return po->isAPhysicalCylinder() && STLUtil::contains(daughters_, static_cast<PhysicalCylinder*>(po));
 }
 
 double PhysicalSphere::getLength() const {
@@ -613,7 +613,7 @@ std::array<double, 3> PhysicalSphere::forceTransmittedFromDaugtherToMother(
 void PhysicalSphere::removeDaughter(PhysicalObject* po) {
   if (po->isAPhysicalCylinder()) {
     auto daughter = static_cast<PhysicalCylinder*>(po);
-    daughters_.remove(daughter);
+    STLUtil::vectorRemove(daughters_, daughter);
     daughters_coord_.erase(daughter);
   }
 }
@@ -623,7 +623,7 @@ void PhysicalSphere::updateRelative(PhysicalObject* old_rel,
   std::array<double, 3> coord = daughters_coord_[static_cast<PhysicalCylinder*>(old_rel)];
   auto old_cyl = static_cast<PhysicalCylinder*>(old_rel);
   auto new_cyl = static_cast<PhysicalCylinder*>(new_rel);
-  daughters_.remove(old_cyl);
+  STLUtil::vectorRemove(daughters_, old_cyl);
   daughters_.push_back(new_cyl);
   daughters_coord_[new_cyl] = coord;
 }

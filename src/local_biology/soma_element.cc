@@ -107,8 +107,8 @@ void SomaElement::setPhysicalSphere(PhysicalSphere::UPtr ps) {
   physical_->setSomaElement(this);
 }
 
-std::list<NeuriteElement*> SomaElement::getNeuriteList() const {
-  std::list<NeuriteElement*> neurites;
+std::vector<NeuriteElement*> SomaElement::getNeuriteList() const {
+  std::vector<NeuriteElement*> neurites;
   auto cylinders = physical_->getDaughters();
   for (auto pc : cylinders) {
     neurites.push_back(pc->getNeuriteElement());

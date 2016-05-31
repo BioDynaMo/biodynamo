@@ -32,7 +32,7 @@ class SimpleTriangulationNodeOrganizer : public AbstractTriangulationNodeOrganiz
 
   virtual std::string toString() const override;
 
-  std::list<SpaceNode<T>*> getNodes(SpaceNode<T>* reference_point) override;
+  std::vector<SpaceNode<T>*> getNodes(SpaceNode<T>* reference_point) override;
 
   bool equalTo(const std::shared_ptr<SimpleTriangulationNodeOrganizer<T>>& other);
 

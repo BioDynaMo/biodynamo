@@ -150,8 +150,8 @@ int Cell::getID() const {
   return id_;
 }
 
-std::list<NeuriteElement*> Cell::getNeuriteElements() const {
-  std::list<NeuriteElement*> neurite_elements;
+std::vector<NeuriteElement*> Cell::getNeuriteElements() const {
+  std::vector<NeuriteElement*> neurite_elements;
   for (auto ne : soma_->getNeuriteList()) {
     ne->addYourselfAndDistalNeuriteElements(neurite_elements);
   }

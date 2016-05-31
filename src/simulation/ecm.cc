@@ -518,13 +518,8 @@ std::vector<PhysicalCylinder*> ECM::getPhysicalCylinderList() const {
   return physical_cylinders_;
 }
 
-std::list<NeuriteElement*> ECM::getNeuriteElementList() const {
-  std::list<NeuriteElement*> ret;
-  for (auto neurite : neurite_elements_) {
-    ret.push_back(neurite);
-  }
-  return ret;
-  //fixme change to return neuriteElementList
+std::vector<NeuriteElement*> ECM::getNeuriteElementList() const {
+  return neurite_elements_;
 }
 
 std::vector<SomaElement*> ECM::getSomaElementList() const {

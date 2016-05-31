@@ -6,7 +6,6 @@
 #include <string>
 #include <memory>
 #include <exception>
-#include <list>
 #include <unordered_map>
 
 #include "color.h"
@@ -396,7 +395,7 @@ class ECM : public SimStateSerializable {
 
   std::vector<PhysicalCylinder*> getPhysicalCylinderList() const;
 
-  std::list<NeuriteElement*> getNeuriteElementList() const;
+  std::vector<NeuriteElement*> getNeuriteElementList() const;
 
   std::vector<SomaElement*> getSomaElementList() const;
 

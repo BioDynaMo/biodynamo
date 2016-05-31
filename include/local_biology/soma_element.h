@@ -3,6 +3,7 @@
 
 #include <exception>
 #include <string>
+#include <vector>
 
 #include "local_biology/cell_element.h"
 #include "physics/physical_sphere.h"
@@ -61,7 +62,7 @@ class SomaElement : public CellElement {
 
   void setPhysicalSphere(PhysicalSphere::UPtr po);
 
-  std::list<NeuriteElement*> getNeuriteList() const;
+  std::vector<NeuriteElement*> getNeuriteList() const;
 
   bool isANeuriteElement() const override;
 

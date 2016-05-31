@@ -212,12 +212,12 @@ int Tetrahedron<T>::getEdgeNumber(int node_number_1, int node_number_2) {
 }
 
 template<class T>
-std::list<std::shared_ptr<Tetrahedron<T> > > Tetrahedron<T>::remove2FlatTetrahedra(
+std::vector<std::shared_ptr<Tetrahedron<T> > > Tetrahedron<T>::remove2FlatTetrahedra(
     const std::shared_ptr<Tetrahedron<T> >& tetrahedron_a,
     const std::shared_ptr<Tetrahedron<T> >& tetrahedron_b) {
   auto triangle_list_a = tetrahedron_a->getAdjacentTriangles();
   auto triangle_list_b = tetrahedron_b->getAdjacentTriangles();
-  std::list<std::shared_ptr<Tetrahedron<T>> > adjacent_tetrahedra;
+  std::vector<std::shared_ptr<Tetrahedron<T>> > adjacent_tetrahedra;
   std::array<double, 3> outer_triangles_a = { -1.0, -1.0, -1.0 };
   std::array<double, 3> outer_triangles_b = { -1.0, -1.0, -1.0 };
   int outer_triangle_count = 0;

@@ -44,7 +44,7 @@ void OpenTriangleOrganizer<T>::recoredNewTetrahedra() {
 }
 
 template<class T>
-std::list<std::shared_ptr<Tetrahedron<T> > > OpenTriangleOrganizer<T>::getNewTetrahedra() {
+std::vector<std::shared_ptr<Tetrahedron<T> > > OpenTriangleOrganizer<T>::getNewTetrahedra() {
   return new_tetrahedra_;
 }
 
@@ -136,8 +136,8 @@ void OpenTriangleOrganizer<T>::triangulate() {
   if (open_triangles_.empty())
     createInitialTriangle();
   double upper_bound = 0, lower_bound = 0;
-  std::list<SpaceNode<T>*> similar_distance_nodes;
-  std::list<SpaceNode<T>*> onCircle_nodes;
+  std::deque<SpaceNode<T>*> similar_distance_nodes;
+  std::deque<SpaceNode<T>*> onCircle_nodes;
   auto open_triangle = getAnOpenTriangle();
   int security_counter = 0;
   while (open_triangle.get() != nullptr) {
@@ -266,7 +266,7 @@ std::shared_ptr<EdgeHashKey<T>> OpenTriangleOrganizer<T>::putEdgeOnMap(
 }
 
 template<class T>
-SpaceNode<T>* OpenTriangleOrganizer<T>::findCenterNode(const std::list<SpaceNode<T>*>& nodes) {
+SpaceNode<T>* OpenTriangleOrganizer<T>::findCenterNode(const std::deque<SpaceNode<T>*>& nodes) {
   SpaceNode < T > *center_node(nullptr);
   int minID = std::numeric_limits<int>::max();
   for (auto node : nodes) {
@@ -280,9 +280,9 @@ SpaceNode<T>* OpenTriangleOrganizer<T>::findCenterNode(const std::list<SpaceNode
 
 template<class T>
 std::shared_ptr<EdgeHashKey<T>> OpenTriangleOrganizer<T>::triangulateSortedCirclePoints(
-    const std::list<SpaceNode<T>*>& sorted_nodes, SpaceNode<T>* center_node,
+    const std::deque<SpaceNode<T>*>& sorted_nodes, SpaceNode<T>* center_node,
     std::unordered_map<EdgeHashKey<T>, std::shared_ptr<EdgeHashKey<T>>, EdgeHashKeyHash<T>, EdgeHashKeyEqual<T> >& map,
-    std::list<std::shared_ptr<Triangle3D<T> > >& triangle_list) {
+    std::deque<std::shared_ptr<Triangle3D<T> > >& triangle_list) {
   auto it = sorted_nodes.begin();
   auto last = *it;
   it++;
@@ -302,7 +302,7 @@ std::shared_ptr<EdgeHashKey<T>> OpenTriangleOrganizer<T>::triangulateSortedCircl
 }
 
 template<class T>
-void OpenTriangleOrganizer<T>::removeForbiddenTriangles(const std::list<SpaceNode<T>*>& sorted_nodes) {  //todo list is inefficient here - use vector
+void OpenTriangleOrganizer<T>::removeForbiddenTriangles(const std::deque<SpaceNode<T>*>& sorted_nodes) {
   std::shared_ptr < Tetrahedron < T >> null_tetrahedron(nullptr);
   // Special treatment for situation with 4 nodes only:
   if (sorted_nodes.size() == 4) {
@@ -360,10 +360,10 @@ void OpenTriangleOrganizer<T>::removeForbiddenTriangles(const std::list<SpaceNod
 }
 
 template<class T>
-std::list<SpaceNode<T>*> OpenTriangleOrganizer<T>::sortCircleNodes(std::list<SpaceNode<T>*>& nodes,
-                                                                   std::shared_ptr<EdgeHashKey<T>> starting_edge,
-                                                                   SpaceNode<T>* center_node) {
-  std::list<SpaceNode<T>*> sorted_nodes;
+std::deque<SpaceNode<T>*> OpenTriangleOrganizer<T>::sortCircleNodes(std::deque<SpaceNode<T>*>& nodes,
+                                                                    std::shared_ptr<EdgeHashKey<T>> starting_edge,
+                                                                    SpaceNode<T>* center_node) {
+  std::deque<SpaceNode<T>*> sorted_nodes;
   SpaceNode < T > *null_space_node(nullptr);
   auto search_node = null_space_node;
   auto last_search_node = null_space_node;
@@ -381,7 +381,7 @@ std::list<SpaceNode<T>*> OpenTriangleOrganizer<T>::sortCircleNodes(std::list<Spa
         min_distance = dot;
       }
     }
-    nodes.remove(search_node);
+    STLUtil::dequeRemove(nodes, search_node);
     removed_node_1 = last_search_node;
     removed_node_2 = search_node;
   } else {
@@ -403,7 +403,7 @@ std::list<SpaceNode<T>*> OpenTriangleOrganizer<T>::sortCircleNodes(std::list<Spa
     sorted_nodes.push_back(picked_node);
     last_search_node = search_node;
     search_node = picked_node;
-    nodes.remove(picked_node);
+    STLUtil::dequeRemove(nodes, picked_node);
   }
   if (starting_edge.get() != nullptr) {
     sorted_nodes.push_front(starting_edge->getEndpointB());
@@ -425,9 +425,9 @@ std::list<SpaceNode<T>*> OpenTriangleOrganizer<T>::sortCircleNodes(std::list<Spa
 
 template<class T>
 std::shared_ptr<EdgeHashKey<T>> OpenTriangleOrganizer<T>::triangulatePointsOnCircle(
-    std::list<SpaceNode<T>*>& similar_distance_nodes, const std::shared_ptr<EdgeHashKey<T>>& starting_edge,
+    std::deque<SpaceNode<T>*>& similar_distance_nodes, const std::shared_ptr<EdgeHashKey<T>>& starting_edge,
     std::unordered_map<EdgeHashKey<T>, std::shared_ptr<EdgeHashKey<T>>, EdgeHashKeyHash<T>, EdgeHashKeyEqual<T> >& map,
-    std::list<std::shared_ptr<Triangle3D<T> > >& triangle_list) {
+    std::deque<std::shared_ptr<Triangle3D<T> > >& triangle_list) {
   if (starting_edge.get() != nullptr) {
     similar_distance_nodes.push_front(starting_edge->getEndpointA());
     similar_distance_nodes.push_front(starting_edge->getEndpointB());
@@ -443,10 +443,10 @@ std::shared_ptr<EdgeHashKey<T>> OpenTriangleOrganizer<T>::triangulatePointsOnCir
 }
 
 template<class T>
-void OpenTriangleOrganizer<T>::triangulatePointsOnSphere(std::list<SpaceNode<T>*>& nodes,
-                                                         std::list<SpaceNode<T>*>& on_circle_nodes,
+void OpenTriangleOrganizer<T>::triangulatePointsOnSphere(std::deque<SpaceNode<T>*>& nodes,
+                                                         std::deque<SpaceNode<T>*>& on_circle_nodes,
                                                          const std::shared_ptr<Triangle3D<T> >& startingTriangle) {
-  std::list < std::shared_ptr<Triangle3D<T>>>surface_triangles;
+  std::deque < std::shared_ptr<Triangle3D<T>>>surface_triangles;
   auto starting_triangle_nodes = startingTriangle->getNodes();
   nodes.push_back(starting_triangle_nodes[0]);
   nodes.push_back(starting_triangle_nodes[1]);
@@ -469,7 +469,7 @@ void OpenTriangleOrganizer<T>::triangulatePointsOnSphere(std::list<SpaceNode<T>*
     an_open_edge = triangulatePointsOnCircle(on_circle_nodes, std::shared_ptr < EdgeHashKey < T >> (nullptr), map,
                                              surface_triangles);
   }
-  std::list<SpaceNode<T>*> similar_distance_nodes;
+  std::deque<SpaceNode<T>*> similar_distance_nodes;
   double upper_bound, lower_bound;
   while (!map.empty()) {
     auto a = an_open_edge->getEndpointA(), b = an_open_edge->getEndpointB();

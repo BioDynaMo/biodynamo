@@ -69,8 +69,8 @@ bool PhysicalObject::isInContact(PhysicalObject* o) {
   }
 }
 
-std::list<PhysicalObject*> PhysicalObject::getPhysicalObjectsInContact() {
-  std::list<PhysicalObject*> po;
+std::vector<PhysicalObject*> PhysicalObject::getPhysicalObjectsInContact() {
+  std::vector<PhysicalObject*> po;
   for (auto n : getSoNode()->getNeighbors()) {
     if (n->isAPhysicalObject() && isInContact(static_cast<PhysicalObject*>(n))) {
       po.push_back(static_cast<PhysicalObject*>(n));
@@ -99,7 +99,7 @@ void PhysicalObject::addPhysicalBond(const std::shared_ptr<PhysicalBond>& bond) 
 }
 
 void PhysicalObject::removePhysicalBond(const std::shared_ptr<PhysicalBond>& bond) {
-  physical_bonds_.remove(bond);
+  STLUtil::vectorRemove(physical_bonds_, bond);
 }
 
 bool PhysicalObject::getHasAPhysicalBondWith(PhysicalObject* po) {
@@ -122,8 +122,8 @@ bool PhysicalObject::removePhysicalBondWith(PhysicalObject* po, bool removeThemA
   while (it != physical_bonds_.end()) {
     auto pb = *it;
     if (po == pb->getOppositePhysicalObject(this)) {
-      physical_bonds_.remove(*it);
-      po->physical_bonds_.remove(pb);
+      physical_bonds_.erase(it);
+      po->physical_bonds_.erase(it);
       if (!removeThemAll) {
         return true;
       } else {
@@ -338,15 +338,11 @@ void PhysicalObject::setOnTheSchedulerListForPhysicalObjects(bool on_scheduler_l
   on_scheduler_list_for_physical_objects_ = on_scheduler_list;
 }
 
-std::list<std::shared_ptr<PhysicalBond>> PhysicalObject::getPhysicalBonds() const {
-  std::list < std::shared_ptr<PhysicalBond> > list;
-  for (auto pb : physical_bonds_) {
-    list.push_back(pb);
-  }
-  return list;
+std::vector<std::shared_ptr<PhysicalBond>> PhysicalObject::getPhysicalBonds() const {
+  return physical_bonds_;
 }
 
-void PhysicalObject::setPhysicalBonds(const std::list<std::shared_ptr<PhysicalBond> >& bonds) {  //todo change to vector
+void PhysicalObject::setPhysicalBonds(const std::vector<std::shared_ptr<PhysicalBond> >& bonds) {  //todo change to vector
   physical_bonds_ = bonds;
 }
 
@@ -420,12 +416,12 @@ void PhysicalObject::removeIntracellularSubstance(IntracellularSubstance* is) {
   intracellular_substances_.erase(is->getId());
 }
 
-std::list<IntracellularSubstance*> PhysicalObject::getIntracellularSubstances1() const {
-  std::list<IntracellularSubstance*> list;
+std::vector<IntracellularSubstance*> PhysicalObject::getIntracellularSubstances1() const {
+  std::vector<IntracellularSubstance*> vector;  // fixme inefficient
   for (auto& el : intracellular_substances_) {
-    list.push_back(el.second.get());
+    vector.push_back(el.second.get());
   }
-  return list;
+  return vector;
 }
 
 void PhysicalObject::addNewIntracellularSubstance(IntracellularSubstance::UPtr s) {

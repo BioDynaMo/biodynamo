@@ -26,7 +26,7 @@ SimpleTriangulationNodeOrganizer<T>::~SimpleTriangulationNodeOrganizer() {
 }
 
 template<class T>
-std::list<SpaceNode<T>*> SimpleTriangulationNodeOrganizer<T>::getNodes(SpaceNode<T>* reference_point) {
+std::vector<SpaceNode<T>*> SimpleTriangulationNodeOrganizer<T>::getNodes(SpaceNode<T>* reference_point) {
   return tree_head_->inOrderTraversal();
 }
 

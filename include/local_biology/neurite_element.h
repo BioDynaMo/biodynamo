@@ -1,7 +1,7 @@
 #ifndef LOCAL_BIOLOGY_NEURITE_ELEMENT_H_
 #define LOCAL_BIOLOGY_NEURITE_ELEMENT_H_
 
-#include <list>
+#include <vector>
 #include <memory>
 #include <exception>
 
@@ -198,7 +198,7 @@ class NeuriteElement : public CellElement {
    * @param elements the vector where it should be added.
    * @return
    */
-  std::list<NeuriteElement*> addYourselfAndDistalNeuriteElements(std::list<NeuriteElement*>& elements);
+  std::vector<NeuriteElement*> addYourselfAndDistalNeuriteElements(std::vector<NeuriteElement*>& elements);
 
  private:
   NeuriteElement(const NeuriteElement&) = delete;

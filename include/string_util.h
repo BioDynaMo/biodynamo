@@ -5,6 +5,7 @@
 #include <sstream>
 #include <array>
 #include <list>
+#include <vector>
 #include <memory>
 #include <cstdio>
 #include <iostream>
@@ -192,6 +193,17 @@ class StringUtil {
 
   template<class T>
   static std::string toStr(const std::list<T>& list) {
+    std::stringstream str;
+    str << "{";
+    for (auto el : list) {
+      str << toStr(el) << ", ";
+    }
+    str << "}";
+    return str.str();
+  }
+
+  template<class T>
+  static std::string toStr(const std::vector<T>& list) {
     std::stringstream str;
     str << "{";
     for (auto el : list) {

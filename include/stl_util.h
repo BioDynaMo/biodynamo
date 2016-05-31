@@ -3,8 +3,10 @@
 
 #include <list>
 #include <array>
+#include <deque>
 #include <unordered_map>
 #include <algorithm>
+#include <memory>
 
 namespace bdm {
 
@@ -20,10 +22,30 @@ class STLUtil {
   }
 
   /**
+   * returns whether an element is contained in a std::vector
+   * Caution: linear runtime
+   */
+  template<typename C>
+  static bool contains(const std::vector<C> &l, C element) {
+    return std::find(l.begin(), l.end(), element) != l.end();
+  }
+
+  /**
    * copies the elements of the std::array into std::list
    */
   template<typename C, std::size_t N>
   static void arrayToList(const std::array<C, N> &arr, std::list<C> &list) {
+    list.clear();
+    for (auto el : arr) {
+      list.push_back(el);
+    }
+  }
+
+  /**
+   * copies the elements of the std::array into std::list
+   */
+  template<typename C, std::size_t N>
+  static void arrayToVector(const std::array<C, N> &arr, std::vector<C> &list) {
     list.clear();
     for (auto el : arr) {
       list.push_back(el);
@@ -125,6 +147,20 @@ class STLUtil {
       }
       it++;
     }
+    if (it != vector.end()) {
+      vector.erase(it);
+    }
+  }
+
+  /**
+   * removes an element from a std::vector container
+   */
+  template<typename T>
+  static void dequeRemove(std::deque<T> &vector, const T &el) {
+    if (vector.empty()) {
+      return;
+    }
+    auto it = std::find(vector.begin(), vector.end(), el);
     if (it != vector.end()) {
       vector.erase(it);
     }

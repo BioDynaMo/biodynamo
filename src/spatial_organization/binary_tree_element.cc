@@ -129,8 +129,8 @@ void BinaryTreeElement<T>::changeLink(BinaryTreeElement* old_el, BinaryTreeEleme
 }
 
 template<class T>
-std::list<SpaceNode<T>*> BinaryTreeElement<T>::inOrderTraversal() const {
-  std::list<SpaceNode<T>*> traversal;
+std::vector<SpaceNode<T>*> BinaryTreeElement<T>::inOrderTraversal() const {
+  std::vector<SpaceNode<T>*> traversal;
   std::stack<const BinaryTreeElement<T>*> stack;
   const BinaryTreeElement<T>* dummy = this;
   while (dummy != nullptr) {
@@ -182,11 +182,11 @@ void TreeHead<T>::remove(SpaceNode<T>* content, BinaryTreeElement<T>* parent) {
 }
 
 template<class T>
-std::list<SpaceNode<T>*> TreeHead<T>::inOrderTraversal() const {
+std::vector<SpaceNode<T>*> TreeHead<T>::inOrderTraversal() const {
   if (BinaryTreeElement < T > ::bigger_ != nullptr) {
     return BinaryTreeElement < T > ::bigger_->inOrderTraversal();
   }
-  return std::list<SpaceNode<T>*>();
+  return std::vector<SpaceNode<T>*>();
 }
 
 template class BinaryTreeElement<bdm::physics::PhysicalNode> ;

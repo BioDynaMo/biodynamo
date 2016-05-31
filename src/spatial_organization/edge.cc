@@ -1,3 +1,4 @@
+#include <stl_util.h>
 #include "spatial_organization/edge.h"
 
 #include "physics/physical_node.h"
@@ -80,7 +81,7 @@ bool Edge<T>::equals(SpaceNode<T>* a, SpaceNode<T>* b) const {
 
 template<class T>
 void Edge<T>::removeTetrahedron(const std::shared_ptr<Tetrahedron<T>>& tetrahedron) {
-  adjacent_tetrahedra_.remove(tetrahedron);
+  STLUtil::vectorRemove(adjacent_tetrahedra_, tetrahedron);
   if (adjacent_tetrahedra_.empty()) {
     remove();
   }
@@ -102,7 +103,7 @@ void Edge<T>::remove() {
 }
 
 template<class T>
-std::list<std::shared_ptr<Tetrahedron<T>> > Edge<T>::getAdjacentTetrahedra() const {
+std::vector<std::shared_ptr<Tetrahedron<T>> > Edge<T>::getAdjacentTetrahedra() const {
   return adjacent_tetrahedra_;
 }
 

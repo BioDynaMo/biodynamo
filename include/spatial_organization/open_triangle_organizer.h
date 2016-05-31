@@ -1,7 +1,7 @@
 #ifndef SPATIAL_ORGANIZATION_OPEN_TRIANGLE_ORGANIZER_H_
 #define SPATIAL_ORGANIZATION_OPEN_TRIANGLE_ORGANIZER_H_
 
-#include <list>
+#include <deque>
 #include <stack>
 #include <vector>
 #include <string>
@@ -66,7 +66,7 @@ class OpenTriangleOrganizer : public std::enable_shared_from_this<
    * @return The list of newly created tetrahedra, if recording was turned on before
    * (Use {@link #recoredNewTetrahedra()}) or <code>null</code> else.
    */
-  std::list<std::shared_ptr<Tetrahedron<T> > > getNewTetrahedra();
+  std::vector<std::shared_ptr<Tetrahedron<T> > > getNewTetrahedra();
 
   /**
    * Returns an arbitrary tetrahedron which was created during the process of
@@ -195,7 +195,7 @@ class OpenTriangleOrganizer : public std::enable_shared_from_this<
    * be recorded if this reference is <code>null</code>, which is the default.
    * Use {@link #recoredNewTetrahedra()} to start recording.
    */
-  std::list<std::shared_ptr<Tetrahedron<T>>> new_tetrahedra_;
+  std::vector<std::shared_ptr<Tetrahedron<T>>> new_tetrahedra_;
 
   /**
    * A node organizer used to keep track of all nodes that are adjacent to
@@ -253,7 +253,7 @@ class OpenTriangleOrganizer : public std::enable_shared_from_this<
    * @param nodes The list of nodes.
    * @return The node with lowest id.
    */
-  SpaceNode<T>* findCenterNode(const std::list<SpaceNode<T>* >& nodes);
+  SpaceNode<T>* findCenterNode(const std::deque<SpaceNode<T>* >& nodes);
 
   /**
    * Creates a two-dimensional triangulation for a set of points that all lie on one plane and on the
@@ -266,10 +266,10 @@ class OpenTriangleOrganizer : public std::enable_shared_from_this<
    * @return An open edge on the convex hull of the triangulated circle.
    */
   std::shared_ptr<EdgeHashKey<T>> triangulateSortedCirclePoints(
-      const std::list<SpaceNode<T>* >& sorted_nodes,
+      const std::deque<SpaceNode<T>* >& sorted_nodes,
       SpaceNode<T>* center_node,
       std::unordered_map<EdgeHashKey<T>, std::shared_ptr<EdgeHashKey<T>>, EdgeHashKeyHash<T>, EdgeHashKeyEqual<T> >& map,
-      std::list<std::shared_ptr<Triangle3D<T> > >& triangle_list);
+      std::deque<std::shared_ptr<Triangle3D<T> > >& triangle_list);
 
   /**
    * Given an order of nodes that all lie on the surface of one circle, this function searches for triangles in the triangulation that
@@ -280,7 +280,7 @@ class OpenTriangleOrganizer : public std::enable_shared_from_this<
    * @param sortedNodes A list of nodes that lie on one circle. This list is expected to be sorted in terms of angular
    * neighborhoodship of nodes.
    */
-  void removeForbiddenTriangles(const std::list<SpaceNode<T>* >& sorted_nodes);
+  void removeForbiddenTriangles(const std::deque<SpaceNode<T>* >& sorted_nodes);
 
   /**
    * Sorts a list of nodes that all lie on one circle.
@@ -290,8 +290,8 @@ class OpenTriangleOrganizer : public std::enable_shared_from_this<
    * @return A sorted list of nodes. The first node in this list will be the node with lowest ID, successive nodes are sorted
    * according to their occurrence on the circle.
    */
-  std::list<SpaceNode<T>* > sortCircleNodes(
-      std::list<SpaceNode<T>* >& nodes,
+  std::deque<SpaceNode<T>* > sortCircleNodes(
+      std::deque<SpaceNode<T>* >& nodes,
       std::shared_ptr<EdgeHashKey<T>> startingEdge, SpaceNode<T>* center_node);
 
   /**
@@ -305,10 +305,10 @@ class OpenTriangleOrganizer : public std::enable_shared_from_this<
    * @return An open edge on the convex hull of the triangulated circle.
    */
   std::shared_ptr<EdgeHashKey<T>> triangulatePointsOnCircle(
-      std::list<SpaceNode<T>* >& similar_distance_nodes,
+      std::deque<SpaceNode<T>* >& similar_distance_nodes,
       const std::shared_ptr<EdgeHashKey<T>>& starting_edge,
       std::unordered_map<EdgeHashKey<T>, std::shared_ptr<EdgeHashKey<T>>, EdgeHashKeyHash<T>, EdgeHashKeyEqual<T> >& map,
-      std::list<std::shared_ptr<Triangle3D<T> > >& triangle_list);  //todo order of parameters not conform with coding style - output param at the end
+      std::deque<std::shared_ptr<Triangle3D<T> > >& triangle_list);  //todo order of parameters not conform with coding style - output param at the end
 
   /**
    * Creates a tetrahedralization for a set of 5 or more points that lie on the surface of one sphere.
@@ -317,8 +317,8 @@ class OpenTriangleOrganizer : public std::enable_shared_from_this<
    * @param startingTriangle An initial triangle which will be part of the triangulation.
    */
   void triangulatePointsOnSphere(
-      std::list<SpaceNode<T>* >& nodes,
-      std::list<SpaceNode<T>* >& on_circle_nodes,
+      std::deque<SpaceNode<T>* >& nodes,
+      std::deque<SpaceNode<T>* >& on_circle_nodes,
       const std::shared_ptr<Triangle3D<T>>& starting_triangle);  //todo order of parameters not conform with coding style - output param at the end
 
   /**

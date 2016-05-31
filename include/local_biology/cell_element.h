@@ -1,7 +1,6 @@
 #ifndef LOCAL_BIOLOGY_CELL_ELEMENT_H_
 #define LOCAL_BIOLOGY_CELL_ELEMENT_H_
 
-#include <list>
 #include <vector>
 #include <memory>
 #include <string>

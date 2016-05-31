@@ -2,7 +2,6 @@
 #define SPATIAL_ORGANIZATION_SPATIAL_ORGANIZATION_NODE_H_
 
 #include <string>
-#include <list>
 #include <array>
 #include <memory>
 
@@ -35,14 +34,14 @@ class SpatialOrganizationNode : public SimStateSerializable {
    * Returns a list that allows to iterate over all edges
    * incident to this node.
    */
-  virtual std::list<SpatialOrganizationEdge<T>*> getEdges() const = 0;
+  virtual std::vector<SpatialOrganizationEdge<T>*> getEdges() const = 0;
 
-  virtual std::list<T*> getNeighbors() const = 0;
+  virtual std::vector<T*> getNeighbors() const = 0;
 
   virtual std::unique_ptr<SpatialOrganizationNode<T>> getNewInstance(const std::array<double, 3>& position,
                                                                      T* user_object) = 0;
 
-  virtual std::list<T*> getPermanentListOfNeighbors() const = 0;
+  virtual std::vector<T*> getPermanentListOfNeighbors() const = 0;
 
   virtual std::array<double, 3> getPosition() const = 0;
 

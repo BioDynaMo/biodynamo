@@ -288,10 +288,10 @@ void PhysicalNode::removeExtracellularSubstance(Substance* is) {
   extracellular_substances_.erase(is->getId());
 }
 
-std::list<Substance*> PhysicalNode::getExtracellularSubstances() const {  //todo refactor - originally returned the whole map
-  std::list<Substance*> list;
+std::vector<Substance*> PhysicalNode::getExtracellularSubstances() const {  //todo refactor - originally returned the whole map
+  std::vector<Substance*> list;
   for (auto& i : extracellular_substances_) {
-    list.push_front(i.second.get());
+    list.push_back(i.second.get());  // fixme critical
   }
   return list;
 }
