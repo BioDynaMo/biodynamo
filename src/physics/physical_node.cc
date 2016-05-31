@@ -1,19 +1,8 @@
 #include "physics/physical_node.h"
 
-#include <sstream>
-
 #include "matrix.h"
-#include "param.h"
-#include "stl_util.h"
 #include "string_util.h"
 #include "sim_state_serialization_util.h"
-
-#include "physics/substance.h"
-
-#include "spatial_organization/spatial_organization_node.h"
-#include "spatial_organization/edge.h"
-
-#include "simulation/ecm.h"
 
 namespace cx3d {
 namespace physics {

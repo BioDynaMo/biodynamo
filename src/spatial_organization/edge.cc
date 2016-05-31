@@ -1,11 +1,7 @@
 #include "spatial_organization/edge.h"
 
-#include <sstream>
-#include <stdexcept>
-
 #include "physics/physical_node.h"
 #include "string_util.h"
-#include "spatial_organization/space_node.h"
 #include "spatial_organization/tetrahedron.h"
 
 namespace cx3d {

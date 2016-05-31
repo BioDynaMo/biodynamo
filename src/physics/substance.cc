@@ -1,8 +1,5 @@
 #include "physics/substance.h"
 
-#include <sstream>
-#include <cmath>
-
 #include "string_util.h"
 #include "sim_state_serialization_util.h"
 

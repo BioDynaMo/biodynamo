@@ -1,17 +1,12 @@
 #include "spatial_organization/tetrahedron.h"
 
 #include <cmath>
-#include <sstream>
-#include <stdexcept>
 #include <algorithm>
 
 #include "matrix.h"
 #include "string_util.h"
-#include "physics/physical_node.h"
 #include "spatial_organization/exact_vector.h"
 #include "spatial_organization/rational.h"
-#include "spatial_organization/edge.h"
-#include "spatial_organization/space_node.h"
 #include "spatial_organization/triangle_3d.h"
 #include "spatial_organization/open_triangle_organizer.h"
 #include "spatial_organization/flat_tetrahedron.h"

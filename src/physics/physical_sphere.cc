@@ -1,23 +1,8 @@
 #include "physics/physical_sphere.h"
 
-#include <sstream>
-#include <cmath>
-#include <exception>
-
-#include "param.h"
 #include "matrix.h"
-#include "stl_util.h"
 #include "string_util.h"
 #include "sim_state_serialization_util.h"
-
-#include "physics/physical_bond.h"
-#include "physics/inter_object_force.h"
-#include "physics/intracellular_substance.h"
-
-#include "spatial_organization/space_node.h"
-
-#include "local_biology/cell_element.h"
-#include "local_biology/soma_element.h"
 
 namespace cx3d {
 namespace physics {

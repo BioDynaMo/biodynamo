@@ -1,7 +1,5 @@
 #include "spatial_organization/rational.h"
 
-#include <stdexcept>
-
 #include "string_util.h"
 
 using std::shared_ptr;

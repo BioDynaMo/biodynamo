@@ -1,22 +1,13 @@
 #include "base_simulation_test.h"
 
 #include <fstream>
-#include <memory>
 #include <chrono>
 #include <iostream>
-#include <random.h>
 
 #include "json/json.h"
 
-#include "random.h"
-#include "cells/cell.h"
-#include "local_biology/cell_element.h"
-#include "physics/physical_node.h"
-#include "physics/physical_object.h"
 #include "physics/default_force.h"
 #include "physics/physical_node_movement_listener.h"
-#include "spatial_organization/space_node.h"
-#include "synapse/excrescence.h"
 
 namespace cx3d {
 

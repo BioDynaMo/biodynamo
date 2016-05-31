@@ -1,13 +1,9 @@
 #include "physics/physical_bond.h"
 
-#include <sstream>
-
 #include "param.h"
 #include "matrix.h"
 #include "string_util.h"
 #include "sim_state_serialization_util.h"
-#include "physics/physical_object.h"
-#include "physics/physical_cylinder.h"
 
 namespace cx3d {
 namespace physics {

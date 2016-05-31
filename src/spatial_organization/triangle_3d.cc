@@ -1,16 +1,11 @@
 #include "spatial_organization/triangle_3d.h"
 
-#include <stdint.h>
 #include <cmath>
-#include <array>
 #include <limits>
-#include <memory>
 
 #include "matrix.h"
 #include "string_util.h"
-#include "physics/physical_node.h"
 #include "spatial_organization/tetrahedron.h"
-#include "spatial_organization/space_node.h"
 
 namespace cx3d {
 namespace spatial_organization {

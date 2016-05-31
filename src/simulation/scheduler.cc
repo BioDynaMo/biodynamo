@@ -2,16 +2,6 @@
 
 #include <iostream>
 
-#include "param.h"
-#include "physics/physical_node.h"
-#include "physics/physical_sphere.h"
-#include "physics/physical_cylinder.h"
-
-#include "local_biology/soma_element.h"
-#include "local_biology/neurite_element.h"
-
-#include "cells/cell.h"
-
 namespace cx3d {
 namespace simulation {
 

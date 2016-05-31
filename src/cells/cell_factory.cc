@@ -1,10 +1,5 @@
 #include "cells/cell_factory.h"
 
-#include "physics/physical_node.h"
-#include "physics/physical_sphere.h"
-#include "local_biology/soma_element.h"
-#include "spatial_organization/space_node.h"
-
 namespace cx3d {
 namespace cells {
 

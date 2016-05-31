@@ -1,14 +1,7 @@
 #include "local_biology/soma_element.h"
 
 #include "matrix.h"
-#include "stl_util.h"
 #include "sim_state_serialization_util.h"
-
-#include "local_biology/local_biology_module.h"
-
-#include "simulation/ecm.h"
-#include "physics/physical_object.h"
-#include "physics/physical_sphere.h"
 
 namespace cx3d {
 namespace local_biology {

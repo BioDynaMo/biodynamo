@@ -2,8 +2,6 @@
 
 #include "matrix.h"
 #include "sim_state_serialization_util.h"
-#include "physics/physical_sphere.h"
-#include "simulation/ecm.h"
 
 namespace cx3d {
 namespace cells {

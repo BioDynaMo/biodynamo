@@ -1,13 +1,10 @@
 #include "spatial_organization/binary_tree_element.h"
 
-#include <stdint.h>
-
 #include <stack>
 #include <sstream>
 
 #include "string_util.h"
 #include "physics/physical_node.h"
-#include "spatial_organization/space_node.h"
 
 namespace cx3d {
 namespace spatial_organization {

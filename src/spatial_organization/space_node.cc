@@ -2,21 +2,15 @@
 
 #include <cmath>
 #include <limits>
-#include <sstream>
 
 #include "random.h"
 #include "matrix.h"
-#include "stl_util.h"
 #include "string_util.h"
 
-#include "physics/physical_node.h"
 #include "sim_state_serialization_util.h"
-#include "spatial_organization/edge.h"
 #include "spatial_organization/triangle_3d.h"
 #include "spatial_organization/tetrahedron.h"
 #include "spatial_organization/open_triangle_organizer.h"
-#include "spatial_organization/spatial_organization_edge.h"
-#include "spatial_organization/spatial_organization_node_movement_listener.h"
 
 namespace cx3d {
 namespace spatial_organization {

@@ -1,7 +1,5 @@
 #include "physics/intracellular_substance.h"
 
-#include <cmath>
-
 #include "sim_state_serialization_util.h"
 
 namespace cx3d {

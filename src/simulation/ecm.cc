@@ -1,14 +1,9 @@
 #include "simulation/ecm.h"
 
 #include "matrix.h"
-#include "stl_util.h"
 #include "sim_state_serialization_util.h"
 
-#include "cells/cell.h"
-#include "local_biology/soma_element.h"
-#include "local_biology/neurite_element.h"
 #include "physics/physical_node_movement_listener.h"
-#include "spatial_organization/space_node.h"
 
 namespace cx3d {
 namespace simulation {

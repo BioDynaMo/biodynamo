@@ -1,23 +1,8 @@
 #include "physics/physical_cylinder.h"
 
-#include <exception>
-
 #include "matrix.h"
 #include "string_util.h"
 #include "sim_state_serialization_util.h"
-
-#include "local_biology/cell_element.h"
-#include "local_biology/neurite_element.h"
-#include "local_biology/local_biology_module.h"
-
-#include "physics/physical_bond.h"
-#include "physics/physical_sphere.h"
-#include "physics/intracellular_substance.h"
-#include "physics/inter_object_force.h"
-
-#include "synapse/excrescence.h"
-
-#include "spatial_organization/space_node.h"
 
 namespace cx3d {
 namespace physics {

@@ -1,22 +1,14 @@
 #include "local_biology/neurite_element.h"
 
 #include <iostream>
-#include <cmath>
 
 #include "matrix.h"
 #include "sim_state_serialization_util.h"
-
-#include "local_biology/local_biology_module.h"
-
-#include "spatial_organization/space_node.h"
 
 #include "synapse/biological_spine.h"
 #include "synapse/biological_bouton.h"
 #include "synapse/physical_spine.h"
 #include "synapse/physical_bouton.h"
-
-#include "physics/physical_object.h"
-#include "physics/physical_cylinder.h"
 
 namespace cx3d {
 namespace local_biology {

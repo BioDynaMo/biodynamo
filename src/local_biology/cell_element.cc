@@ -3,9 +3,7 @@
 #include <algorithm>
 
 #include "sim_state_serialization_util.h"
-#include "physics/physical_object.h"
 #include "cells/cell.h"
-#include "local_biology/local_biology_module.h"
 #include "simulation/ecm.h"
 
 namespace cx3d {

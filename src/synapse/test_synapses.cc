@@ -1,7 +1,5 @@
 #include "synapse/test_synapses.h"
 
-#include "local_biology/neurite_element.h"
-
 namespace cx3d {
 namespace synapse {
 

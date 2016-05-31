@@ -1,10 +1,6 @@
 #include "physics/physical_node_movement_listener.h"
 
 #include "matrix.h"
-#include "physics/substance.h"
-#include "physics/physical_node.h"
-
-#include "spatial_organization/spatial_organization_node.h"
 
 namespace cx3d {
 namespace physics {

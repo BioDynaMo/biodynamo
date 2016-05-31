@@ -1,20 +1,14 @@
 #include "spatial_organization/open_triangle_organizer.h"
 
 #include <limits>
-#include <vector>
-#include <cstdlib>
-#include <stdexcept>
 
 #include "matrix.h"
 #include "string_util.h"
-#include "physics/physical_node.h"
 #include "spatial_organization/rational.h"
 #include "spatial_organization/exact_vector.h"
-#include "spatial_organization/space_node.h"
 #include "spatial_organization/triangle_3d.h"
 #include "spatial_organization/tetrahedron.h"
 #include "spatial_organization/edge_hash_key.h"
-#include "spatial_organization/triangle_hash_key.h"
 
 namespace cx3d {
 namespace spatial_organization {

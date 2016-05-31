@@ -2,11 +2,6 @@
 
 #include "matrix.h"
 #include "sim_state_serialization_util.h"
-#include "synapse/biological_bouton.h"
-#include "local_biology/neurite_element.h"
-#include "physics/physical_object.h"
-#include "physics/physical_cylinder.h"
-#include "physics/physical_bond.h"
 
 namespace cx3d {
 namespace synapse {

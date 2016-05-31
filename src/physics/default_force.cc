@@ -3,8 +3,6 @@
 #include <cmath>
 
 #include "matrix.h"
-#include "physics/physical_sphere.h"
-#include "physics/physical_cylinder.h"
 
 namespace cx3d {
 namespace physics {

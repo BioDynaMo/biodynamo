@@ -2,11 +2,9 @@
 
 #include <cmath>
 #include <sstream>
-#include <stdexcept>
 
 #include "physics/physical_node.h"
 #include "matrix.h"
-#include "spatial_organization/space_node.h"
 
 namespace cx3d {
 namespace spatial_organization {

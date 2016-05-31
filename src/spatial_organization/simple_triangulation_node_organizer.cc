@@ -4,7 +4,6 @@
 
 #include "string_util.h"
 #include "physics/physical_node.h"
-#include "spatial_organization/space_node.h"
 #include "spatial_organization/triangle_3d.h"
 #include "spatial_organization/binary_tree_element.h"
 

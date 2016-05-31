@@ -2,8 +2,6 @@
 
 #include "cells/cell.h"
 #include "sim_state_serialization_util.h"
-#include "local_biology/soma_element.h"
-#include "physics/physical_sphere.h"
 
 namespace cx3d {
 namespace cells {

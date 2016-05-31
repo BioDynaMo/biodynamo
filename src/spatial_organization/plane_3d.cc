@@ -1,11 +1,9 @@
 #include "spatial_organization/plane_3d.h"
 
 #include "matrix.h"
-#include "spatial_organization/space_node.h"
 #include "spatial_organization/tetrahedron.h"
 #include "spatial_organization/exact_vector.h"
 #include "spatial_organization/rational.h"
-#include "physics/physical_node.h"
 
 namespace cx3d {
 namespace spatial_organization {

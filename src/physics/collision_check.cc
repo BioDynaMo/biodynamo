@@ -1,9 +1,6 @@
 #include "physics/collision_check.h"
 
 #include "matrix.h"
-#include "stl_util.h"
-#include "physics/physical_cylinder.h"
-#include "physics/physical_bond.h"
 
 namespace cx3d {
 namespace physics {
