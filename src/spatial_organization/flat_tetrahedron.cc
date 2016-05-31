@@ -37,8 +37,7 @@ FlatTetrahedron<T>::~FlatTetrahedron() {
 }
 
 template<class T>
-void FlatTetrahedron<T>::updateCirumSphereAfterNodeMovement(
-    SpaceNode<T>* moved_node) {
+void FlatTetrahedron<T>::updateCirumSphereAfterNodeMovement(SpaceNode<T>* moved_node) {
   for (size_t i = 0; i < 4; i++) {
     if (this->adjacent_nodes_[i] != moved_node) {
       this->adjacent_triangles_[i]->informAboutNodeMovement();
@@ -122,7 +121,7 @@ FlatTetrahedron<T>::FlatTetrahedron()
     : Tetrahedron<T>() {
 }
 
-template class FlatTetrahedron<cx3d::physics::PhysicalNode>;
+template class FlatTetrahedron<cx3d::physics::PhysicalNode> ;
 
 }  // namespace spatial_organization
 }  // namespace cx3d

@@ -28,7 +28,8 @@ class SpatialOrganizationNode : public SimStateSerializable {
   virtual ~SpatialOrganizationNode() {
   }
 
-  virtual void addSpatialOrganizationNodeMovementListener(typename SpatialOrganizationNodeMovementListener<T>::UPtr listener) = 0;
+  virtual void addSpatialOrganizationNodeMovementListener(
+      typename SpatialOrganizationNodeMovementListener<T>::UPtr listener) = 0;
 
   /**
    * Returns a list that allows to iterate over all edges
@@ -38,7 +39,8 @@ class SpatialOrganizationNode : public SimStateSerializable {
 
   virtual std::list<T*> getNeighbors() const = 0;
 
-  virtual std::unique_ptr<SpatialOrganizationNode<T>> getNewInstance(const std::array<double, 3>& position, T* user_object) = 0;
+  virtual std::unique_ptr<SpatialOrganizationNode<T>> getNewInstance(const std::array<double, 3>& position,
+                                                                     T* user_object) = 0;
 
   virtual std::list<T*> getPermanentListOfNeighbors() const = 0;
 
@@ -46,8 +48,8 @@ class SpatialOrganizationNode : public SimStateSerializable {
 
   virtual T* getUserObject() const = 0;
 
-  virtual std::array<T*, 4> getVerticesOfTheTetrahedronContaining(
-      const std::array<double, 3>& position, bool& returned_null) const = 0;
+  virtual std::array<T*, 4> getVerticesOfTheTetrahedronContaining(const std::array<double, 3>& position,
+                                                                  bool& returned_null) const = 0;
 
   virtual double getVolume() const = 0;
 

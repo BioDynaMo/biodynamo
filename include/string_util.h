@@ -203,7 +203,7 @@ class StringUtil {
 
   template<class K, class V, class E, class H>
   static std::string toStr(const std::unordered_map<K, V, E, H>& map) {
-    std::list<std::string> list;
+    std::list < std::string > list;
     for (auto& i : map) {
       std::stringstream strEntry;
       strEntry << "(" << toStr(i.first) << " -> " << toStr(i.second.get()) << "), ";
@@ -212,7 +212,7 @@ class StringUtil {
     list.sort();
     std::stringstream str;
     str << "{";
-    for(auto entry : list){
+    for (auto entry : list) {
       str << entry;
     }
     str << "}";

@@ -43,7 +43,7 @@ void SimpleCellCycle::run() {
 CellModule::UPtr SimpleCellCycle::getCopy() const {
   auto cc = new SimpleCellCycle();
   cc->enabled_ = enabled_;
-  return CellModule::UPtr{cc};
+  return CellModule::UPtr { cc };
 }
 
 bool SimpleCellCycle::isEnabled() const {

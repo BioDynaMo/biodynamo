@@ -13,21 +13,19 @@ namespace cx3d {
 namespace physics {
 
 std::shared_ptr<PhysicalBond> PhysicalBond::create() {
-  return std::shared_ptr<PhysicalBond>(new PhysicalBond());
+  return std::shared_ptr < PhysicalBond > (new PhysicalBond());
 }
 
 std::shared_ptr<PhysicalBond> PhysicalBond::create(PhysicalObject* a, PhysicalObject* b) {
-  auto pb = std::shared_ptr<PhysicalBond>(new PhysicalBond());
+  auto pb = std::shared_ptr < PhysicalBond > (new PhysicalBond());
   pb->init(a, b);
   return pb;
 }
 
-std::shared_ptr<PhysicalBond> PhysicalBond::create(PhysicalObject* a,
-                                                   const std::array<double, 2>& position_on_a,
-                                                   PhysicalObject* b,
-                                                   const std::array<double, 2>& position_on_b, double resting_length,
-                                                   double spring_constant) {
-  auto pb = std::shared_ptr<PhysicalBond>(new PhysicalBond());
+std::shared_ptr<PhysicalBond> PhysicalBond::create(PhysicalObject* a, const std::array<double, 2>& position_on_a,
+                                                   PhysicalObject* b, const std::array<double, 2>& position_on_b,
+                                                   double resting_length, double spring_constant) {
+  auto pb = std::shared_ptr < PhysicalBond > (new PhysicalBond());
   pb->init(a, position_on_a, b, position_on_b, resting_length, spring_constant);
   return pb;
 }
@@ -48,8 +46,7 @@ void PhysicalBond::init(PhysicalObject* a, PhysicalObject* b) {
 }
 
 void PhysicalBond::init(PhysicalObject* a, const std::array<double, 2>& position_on_a, PhysicalObject* b,
-                        const std::array<double, 2>& position_on_b,
-                        double resting_length, double spring_constant) {
+                        const std::array<double, 2>& position_on_b, double resting_length, double spring_constant) {
   dolocking(a, b);
   origin_on_a_ = position_on_a;
   origin_on_b_ = position_on_b;

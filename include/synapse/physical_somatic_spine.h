@@ -10,7 +10,6 @@
 namespace cx3d {
 namespace synapse {
 
-
 class PhysicalSomaticSpine : public Excrescence {
  public:
   using UPtr = std::unique_ptr<PhysicalSomaticSpine>;
@@ -27,8 +26,8 @@ class PhysicalSomaticSpine : public Excrescence {
 
   virtual bool synapseWithSoma(Excrescence* other_excrescence, bool create_phyiscal_bond) override;
 
-  virtual bool synapseWithShaft(NeuriteElement* other_ne, double max_dis,
-                                int nr_segments, bool create_phyiscal_bond) override;
+  virtual bool synapseWithShaft(NeuriteElement* other_ne, double max_dis, int nr_segments, bool create_phyiscal_bond)
+      override;
 
   virtual BiologicalSomaticSpine* getBiologicalSomaticSpine() const;
 

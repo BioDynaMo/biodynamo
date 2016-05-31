@@ -17,8 +17,7 @@ class PhysicalBouton : public Excrescence {
 
   PhysicalBouton();
 
-  PhysicalBouton(PhysicalObject* po, const std::array<double, 2>& origin,
-                 double length);
+  PhysicalBouton(PhysicalObject* po, const std::array<double, 2>& origin, double length);
 
   virtual ~PhysicalBouton();
 
@@ -28,8 +27,8 @@ class PhysicalBouton : public Excrescence {
 
   virtual bool synapseWithSoma(Excrescence* other_excrescence, bool create_phyiscal_bond) override;
 
-  virtual bool synapseWithShaft(NeuriteElement* other_ne, double max_dis,
-                                int nr_segments, bool create_phyiscal_bond) override;
+  virtual bool synapseWithShaft(NeuriteElement* other_ne, double max_dis, int nr_segments, bool create_phyiscal_bond)
+      override;
 
   virtual void setBiologicalBouton(BiologicalBouton::UPtr bouton);
 

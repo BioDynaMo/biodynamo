@@ -80,8 +80,7 @@ class PhysicalCylinder : public PhysicalObject {
    * It is the sum of the spring force an the part of the inter-object force computed earlier in
    * <code>runPhysics()</code>.
    */
-  virtual std::array<double, 3> forceTransmittedFromDaugtherToMother(PhysicalObject* mother)
-      override;
+  virtual std::array<double, 3> forceTransmittedFromDaugtherToMother(PhysicalObject* mother) override;
 
   // *************************************************************************************
   //   DISCRETIZATION , SPATIAL NODE, CELL ELEMENT

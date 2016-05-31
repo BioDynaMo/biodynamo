@@ -9,9 +9,7 @@ namespace cx3d {
 namespace spatial_organization {
 
 template<class T>
-TriangleHashKey<T>::TriangleHashKey(SpaceNode<T>* a,
-                                    SpaceNode<T>* b,
-                                    SpaceNode<T>* c)
+TriangleHashKey<T>::TriangleHashKey(SpaceNode<T>* a, SpaceNode<T>* b, SpaceNode<T>* c)
     : a_(a),
       b_(b),
       c_(c),
@@ -24,10 +22,10 @@ TriangleHashKey<T>::TriangleHashKey(SpaceNode<T>* a,
 
 template<class T>
 TriangleHashKey<T>::TriangleHashKey(const TriangleHashKey& other) {
-    hash_code_ = other.hash_code_;
-    a_ = other.a_;
-    b_ = other.b_;
-    c_ = other.c_;
+  hash_code_ = other.hash_code_;
+  a_ = other.a_;
+  b_ = other.b_;
+  c_ = other.c_;
 }
 
 template<class T>
@@ -41,12 +39,9 @@ int TriangleHashKey<T>::hashCode() const {
 
 template<class T>
 bool TriangleHashKey<T>::equalTo(const std::shared_ptr<TriangleHashKey<T>>& other) const {
-  return (a_ == other->a_
-      && ((b_ == other->b_ && c_ == other->c_) || (b_ == other->c_ && c_ == other->b_)))
-      || (a_ == other->b_
-          && ((b_ == other->a_ && c_ == other->c_) || (b_ == other->c_ && c_ == other->a_)))
-      || (a_ == other->c_
-          && ((b_ == other->a_ && c_ == other->b_) || (b_ == other->b_ && c_ == other->a_)));
+  return (a_ == other->a_ && ((b_ == other->b_ && c_ == other->c_) || (b_ == other->c_ && c_ == other->b_)))
+      || (a_ == other->b_ && ((b_ == other->a_ && c_ == other->c_) || (b_ == other->c_ && c_ == other->a_)))
+      || (a_ == other->c_ && ((b_ == other->a_ && c_ == other->b_) || (b_ == other->b_ && c_ == other->a_)));
 }
 
 template<class T>
@@ -62,22 +57,15 @@ std::size_t TriangleHashKeyHash<T>::operator()(const TriangleHashKey<T>& key) co
 }
 
 template<class T>
-bool TriangleHashKeyEqual<T>::operator()(const TriangleHashKey<T>& lhs,
-                                         const TriangleHashKey<T>& rhs) const {
-  return (lhs.a_ == rhs.a_
-      && ((lhs.b_ == rhs.b_ && lhs.c_ == rhs.c_)
-          || (lhs.b_ == rhs.c_ && lhs.c_ == rhs.b_)))
-      || (lhs.a_ == rhs.b_
-          && ((lhs.b_ == rhs.a_ && lhs.c_ == rhs.c_)
-              || (lhs.b_ == rhs.c_ && lhs.c_ == rhs.a_)))
-      || (lhs.a_ == rhs.c_
-          && ((lhs.b_ == rhs.a_ && lhs.c_ == rhs.b_)
-              || (lhs.b_ == rhs.b_ && lhs.c_ == rhs.a_)));
+bool TriangleHashKeyEqual<T>::operator()(const TriangleHashKey<T>& lhs, const TriangleHashKey<T>& rhs) const {
+  return (lhs.a_ == rhs.a_ && ((lhs.b_ == rhs.b_ && lhs.c_ == rhs.c_) || (lhs.b_ == rhs.c_ && lhs.c_ == rhs.b_)))
+      || (lhs.a_ == rhs.b_ && ((lhs.b_ == rhs.a_ && lhs.c_ == rhs.c_) || (lhs.b_ == rhs.c_ && lhs.c_ == rhs.a_)))
+      || (lhs.a_ == rhs.c_ && ((lhs.b_ == rhs.a_ && lhs.c_ == rhs.b_) || (lhs.b_ == rhs.b_ && lhs.c_ == rhs.a_)));
 }
 
-template class TriangleHashKey<cx3d::physics::PhysicalNode>;
-template struct TriangleHashKeyHash<cx3d::physics::PhysicalNode>;
-template struct TriangleHashKeyEqual<cx3d::physics::PhysicalNode>;
+template class TriangleHashKey<cx3d::physics::PhysicalNode> ;
+template struct TriangleHashKeyHash<cx3d::physics::PhysicalNode> ;
+template struct TriangleHashKeyEqual<cx3d::physics::PhysicalNode> ;
 
 }  // namespace spatial_organization
 }  // namespace cx3d

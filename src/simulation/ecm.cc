@@ -120,8 +120,8 @@ std::array<double, 3> ECM::forceFromArtificialWall(const std::array<double, 3>& 
   return force;
 }
 
-SpatialOrganizationNode<PhysicalNode>::UPtr ECM::getSpatialOrganizationNodeInstance(const std::array<double, 3>& position,
-                                                                      PhysicalNode* userObject) {
+SpatialOrganizationNode<PhysicalNode>::UPtr ECM::getSpatialOrganizationNodeInstance(
+    const std::array<double, 3>& position, PhysicalNode* userObject) {
   if (initial_node_ == nullptr) {
     auto sn1 = SpaceNode < PhysicalNode > ::UPtr(new SpaceNode<PhysicalNode>(position, userObject));
     sn1->addSpatialOrganizationNodeMovementListener(PhysicalNodeMovementListener::create());
@@ -131,9 +131,8 @@ SpatialOrganizationNode<PhysicalNode>::UPtr ECM::getSpatialOrganizationNodeInsta
   return initial_node_->getNewInstance(position, userObject);  // todo catch PositionNotAllowedException
 }
 
-SpatialOrganizationNode<PhysicalNode>::UPtr ECM::getSpatialOrganizationNodeInstance(SpatialOrganizationNode<PhysicalNode>* n,
-                                                                      const std::array<double, 3>& position,
-                                                                      PhysicalNode* userObject) {
+SpatialOrganizationNode<PhysicalNode>::UPtr ECM::getSpatialOrganizationNodeInstance(
+    SpatialOrganizationNode<PhysicalNode>* n, const std::array<double, 3>& position, PhysicalNode* userObject) {
   if (initial_node_ == nullptr) {
     auto sn1 = SpaceNode < PhysicalNode > ::UPtr(new SpaceNode<PhysicalNode>(position, userObject));
     sn1->addSpatialOrganizationNodeMovementListener(PhysicalNodeMovementListener::create());
@@ -156,7 +155,7 @@ std::vector<PhysicalNode::UPtr> ECM::createGridOfPhysicalNodes(double x1, double
   int z_lim = (int) ((z2 - z1 + 2 * border_length) / d);
 
   // the neighbor Node (close to which we will create the new one
-  SpatialOrganizationNode<PhysicalNode> *old_son = nullptr;
+  SpatialOrganizationNode < PhysicalNode > *old_son = nullptr;
   // loop to put the nodes in 3D space
   for (int kx = 0; kx < x_lim + 1; kx++) {
     for (int ky = 0; ky < y_lim + 1; ky++) {

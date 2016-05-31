@@ -464,8 +464,7 @@ class PhysicalObject : public PhysicalNode {
    * @param motherWhoAsks the PhysicalObject attached to the mass.
    * @return the force in a std::array<double, 3>
    */
-  virtual std::array<double, 3> forceTransmittedFromDaugtherToMother(
-      PhysicalObject* motherWhoAsks) = 0;
+  virtual std::array<double, 3> forceTransmittedFromDaugtherToMother(PhysicalObject* motherWhoAsks) = 0;
 
   /**
    * Returns true if this <code>PhysicalObject</code> and the <code>PhysicalSphere</code> given as

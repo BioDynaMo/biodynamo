@@ -27,10 +27,9 @@ Plane3D<T>::Plane3D(const std::array<double, 3>& normal_vector, double offset)
 }
 
 template<class T>
-Plane3D<T>::Plane3D(const std::array<double, 3>& direction_vector_1,
-                    const std::array<double, 3>& direction_vector_2,
+Plane3D<T>::Plane3D(const std::array<double, 3>& direction_vector_1, const std::array<double, 3>& direction_vector_2,
                     const std::array<double, 3>& position_vector, bool normalize)
-    : normal_vector_({ 0.0, 0.0, 0.0 }),
+    : normal_vector_( { 0.0, 0.0, 0.0 }),
       offset_(0.0),
       tolerance_(0.0),
       normal_vector_updated_(false) {
@@ -38,10 +37,9 @@ Plane3D<T>::Plane3D(const std::array<double, 3>& direction_vector_1,
 }
 
 template<class T>
-Plane3D<T>::Plane3D(const std::array<double, 3>& direction_vector_1,
-                    const std::array<double, 3>& direction_vector_2,
+Plane3D<T>::Plane3D(const std::array<double, 3>& direction_vector_1, const std::array<double, 3>& direction_vector_2,
                     const std::array<double, 3>& position_vector)
-    : normal_vector_({ 0.0, 0.0, 0.0 }),
+    : normal_vector_( { 0.0, 0.0, 0.0 }),
       offset_(0.0),
       tolerance_(0.0),
       normal_vector_updated_(false) {
@@ -49,9 +47,8 @@ Plane3D<T>::Plane3D(const std::array<double, 3>& direction_vector_1,
 }
 
 template<class T>
-Plane3D<T>::Plane3D(const std::array<SpaceNode<T>*, 4>& nodes,
-                    SpaceNode<T>* non_used_node, bool normalize)
-    : normal_vector_({ 0.0, 0.0, 0.0 }),
+Plane3D<T>::Plane3D(const std::array<SpaceNode<T>*, 4>& nodes, SpaceNode<T>* non_used_node, bool normalize)
+    : normal_vector_( { 0.0, 0.0, 0.0 }),
       offset_(0.0),
       tolerance_(0.0),
       normal_vector_updated_(false) {
@@ -74,14 +71,12 @@ Plane3D<T>::Plane3D(const std::array<SpaceNode<T>*, 4>& nodes,
 }
 
 template<class T>
-Plane3D<T>::Plane3D(const std::array<SpaceNode<T>*, 4>& nodes,
-                    SpaceNode<T>* non_used_node)
+Plane3D<T>::Plane3D(const std::array<SpaceNode<T>*, 4>& nodes, SpaceNode<T>* non_used_node)
     : Plane3D(nodes, non_used_node, Plane3D::normalize_) {
 }
 
 template<class T>
-Plane3D<T>::Plane3D(const std::shared_ptr<Tetrahedron<T>>& tetrahedron,
-                    SpaceNode<T>* non_used_node)
+Plane3D<T>::Plane3D(const std::shared_ptr<Tetrahedron<T>>& tetrahedron, SpaceNode<T>* non_used_node)
     : Plane3D(tetrahedron->getAdjacentNodes(), non_used_node) {
 }
 
@@ -127,8 +122,7 @@ void Plane3D<T>::defineUpperSide(const std::array<double, 3>& point) {
 }
 
 template<class T>
-int Plane3D<T>::orientation(const std::array<double, 3>& point_1,
-                            const std::array<double, 3>& point_2) const {
+int Plane3D<T>::orientation(const std::array<double, 3>& point_1, const std::array<double, 3>& point_2) const {
   double dot_1 = Matrix::dot(point_1, normal_vector_);
   double dot_2 = Matrix::dot(point_2, normal_vector_);
   if (dot_1 > offset_ + tolerance_) {
@@ -153,20 +147,17 @@ int Plane3D<T>::orientation(const std::array<double, 3>& point_1,
 }
 
 template<class T>
-bool Plane3D<T>::trulyOnSameSide(const std::array<double, 3>& point_1,
-                                 const std::array<double, 3>& point_2) {
+bool Plane3D<T>::trulyOnSameSide(const std::array<double, 3>& point_1, const std::array<double, 3>& point_2) {
   return orientation(point_1, point_2) > 0;
 }
 
 template<class T>
-bool Plane3D<T>::trulyOnDifferentSides(const std::array<double, 3>& point_1,
-                                       const std::array<double, 3>& point_2) {
+bool Plane3D<T>::trulyOnDifferentSides(const std::array<double, 3>& point_1, const std::array<double, 3>& point_2) {
   return orientation(point_1, point_2) < 0;
 }
 
 template<class T>
-bool Plane3D<T>::onSameSide(const std::array<double, 3>& point_1,
-                            const std::array<double, 3>& point_2) const {
+bool Plane3D<T>::onSameSide(const std::array<double, 3>& point_1, const std::array<double, 3>& point_2) const {
   return orientation(point_1, point_2) >= 0;
 }
 
@@ -176,8 +167,7 @@ std::array<double, 3> Plane3D<T>::getNormalVector() {
 }
 
 template<class T>
-int Plane3D<T>::orientationExact(const std::array<double, 3>& point_1,
-                                 const std::array<double, 3>& point_2) const {
+int Plane3D<T>::orientationExact(const std::array<double, 3>& point_1, const std::array<double, 3>& point_2) const {
   auto exact_normal_vector = ExactVector::create(normal_vector_);
   auto offset = Rational::create(offset_);
   auto dot_1 = exact_normal_vector->dotProduct(ExactVector::create(point_1));
@@ -186,7 +176,7 @@ int Plane3D<T>::orientationExact(const std::array<double, 3>& point_1,
 }
 
 // define templates that should be compiled
-template class Plane3D<cx3d::physics::PhysicalNode>;
+template class Plane3D<cx3d::physics::PhysicalNode> ;
 
 }  // namespace spatial_organization
 }  // namespace cx3d

@@ -19,16 +19,15 @@ using std::shared_ptr;
 
 template<class T>
 std::shared_ptr<Triangle3D<T>> Triangle3D<T>::create(SpaceNode<T>* sn_1, SpaceNode<T>* sn_2, SpaceNode<T>* sn_3,
-                                                            const std::shared_ptr<Tetrahedron<T>>& tetrahedron_1,
-                                                            const std::shared_ptr<Tetrahedron<T>>& tetrahedron_2) {
+                                                     const std::shared_ptr<Tetrahedron<T>>& tetrahedron_1,
+                                                     const std::shared_ptr<Tetrahedron<T>>& tetrahedron_2) {
   std::shared_ptr < Triangle3D < T >> triangle(new Triangle3D(sn_1, sn_2, sn_3, tetrahedron_1, tetrahedron_2));
   return triangle;
 }
 
 template<class T>
-std::array<double, 3> Triangle3D<T>::calculate3PlaneXPoint(
-    const std::array<std::array<double, 3>, 3>& normals, const std::array<double, 3>& offsets,
-    double normal_det) {
+std::array<double, 3> Triangle3D<T>::calculate3PlaneXPoint(const std::array<std::array<double, 3>, 3>& normals,
+                                                           const std::array<double, 3>& offsets, double normal_det) {
   std::array<double, 3> result;
   if (normal_det != 0.0) {
     auto vec_1 = Matrix::scalarMult(offsets[0], Matrix::crossProduct(normals[1], normals[2]));
@@ -47,15 +46,14 @@ std::array<double, 3> Triangle3D<T>::calculate3PlaneXPoint(
 }
 
 template<class T>
-std::array<double, 3> Triangle3D<T>::calculate3PlaneXPoint(
-    const std::array<std::array<double, 3>, 3>& normals, const std::array<double, 3>& offsets) {
+std::array<double, 3> Triangle3D<T>::calculate3PlaneXPoint(const std::array<std::array<double, 3>, 3>& normals,
+                                                           const std::array<double, 3>& offsets) {
   return calculate3PlaneXPoint(normals, offsets, Matrix::det(normals));
 }
 
 template<class T>
 std::shared_ptr<ExactVector> Triangle3D<T>::calculate3PlaneXPoint(
-    const std::array<std::shared_ptr<ExactVector>, 3>& normals,
-    const std::array<std::shared_ptr<Rational>, 3>& offsets,
+    const std::array<std::shared_ptr<ExactVector>, 3>& normals, const std::array<std::shared_ptr<Rational>, 3>& offsets,
     const std::shared_ptr<Rational>& normal_det) {
   if (!normal_det->isZero()) {
     auto ret = normals[1]->crossProduct(normals[2])->multiplyBy(offsets[0])->increaseBy(
@@ -74,13 +72,11 @@ std::shared_ptr<ExactVector> Triangle3D<T>::calculate3PlaneXPoint(
 }
 
 template<class T>
-Triangle3D<T>::Triangle3D(SpaceNode<T>* sn_1,
-                          SpaceNode<T>* sn_2,
-                          SpaceNode<T>* sn_3,
+Triangle3D<T>::Triangle3D(SpaceNode<T>* sn_1, SpaceNode<T>* sn_2, SpaceNode<T>* sn_3,
                           const std::shared_ptr<Tetrahedron<T>>& tetrahedron_1,
                           const std::shared_ptr<Tetrahedron<T>>& tetrahedron_2)
     : Plane3D<T>(),
-      nodes_({ sn_1, sn_2, sn_3 }),
+      nodes_( { sn_1, sn_2, sn_3 }),
       circum_center_ { 0.0, 0.0, 0.0 },
       plane_updated_(false),
       circum_center_updated_(false),
@@ -100,8 +96,7 @@ Triangle3D<T>::Triangle3D(SpaceNode<T>* sn_1,
 template<class T>
 bool Triangle3D<T>::isSimilarTo(const std::shared_ptr<Triangle3D<T>>& other_triangle) const {
   auto other_nodes = other_triangle->getNodes();
-  return isAdjacentTo(other_nodes[0]) && isAdjacentTo(other_nodes[1])
-      && isAdjacentTo(other_nodes[2]);
+  return isAdjacentTo(other_nodes[0]) && isAdjacentTo(other_nodes[1]) && isAdjacentTo(other_nodes[2]);
 }
 
 template<class T>
@@ -119,8 +114,7 @@ double Triangle3D<T>::getSDDistance(const std::array<double, 3>& fourth_point) c
 }
 
 template<class T>
-std::shared_ptr<Rational> Triangle3D<T>::getSDDistanceExact(
-    const std::array<double, 3>& fourth_point) const {
+std::shared_ptr<Rational> Triangle3D<T>::getSDDistanceExact(const std::array<double, 3>& fourth_point) const {
   if (!isInfinite() && onUpperSide(fourth_point)) {
     std::array<std::shared_ptr<ExactVector>, 4> points;
     std::array<std::shared_ptr<ExactVector>, 3> points_3;
@@ -130,8 +124,7 @@ std::shared_ptr<Rational> Triangle3D<T>::getSDDistanceExact(
     }
     points[3] = ExactVector::create(fourth_point);
     auto normal_vector = calculateExactNormalVector(points_3);
-    if (normal_vector->dotProduct(ExactVector::create(this->normal_vector_))->compareTo(
-        Rational::create(0, 1)) < 0) {
+    if (normal_vector->dotProduct(ExactVector::create(this->normal_vector_))->compareTo(Rational::create(0, 1)) < 0) {
       normal_vector->negate();
     }
     if (upper_side_positive_) {
@@ -145,8 +138,7 @@ std::shared_ptr<Rational> Triangle3D<T>::getSDDistanceExact(
 }
 
 template<class T>
-std::array<double, 3> Triangle3D<T>::calculateCircumSphereCenter(
-    const std::array<double, 3>& fourth_point) const {
+std::array<double, 3> Triangle3D<T>::calculateCircumSphereCenter(const std::array<double, 3>& fourth_point) const {
   if (!isInfinite()) {
     double sd = calculateSDDistance(fourth_point);
     return Matrix::add(circum_center_, Matrix::scalarMult(sd, this->normal_vector_));
@@ -188,8 +180,7 @@ void Triangle3D<T>::update() {
 }
 
 template<class T>
-int Triangle3D<T>::orientationExact(const std::array<double, 3>& point_1,
-                                    const std::array<double, 3>& point_2) const {
+int Triangle3D<T>::orientationExact(const std::array<double, 3>& point_1, const std::array<double, 3>& point_2) const {
   auto points = getExactPositionVectors();
   auto normal_vector = points[1]->subtract(points[0])->crossProduct(points[2]->subtract(points[0]));
   auto offset = normal_vector->dotProduct(points[0]);
@@ -228,16 +219,17 @@ std::shared_ptr<Tetrahedron<T>> Triangle3D<T>::getOppositeTetrahedron(
   } else if (adjacent_tetrahedra_[1].lock() == incident_tetrahedron) {
     return adjacent_tetrahedra_[0].lock();
   } else {
-    std::cout << __FUNCTION__ << std::endl; throw std::invalid_argument("Tetrahedron not known!");
+    std::cout << __FUNCTION__ << std::endl;
+    throw std::invalid_argument("Tetrahedron not known!");
   }
 }
 
 template<class T>
 void Triangle3D<T>::removeTetrahedron(const std::shared_ptr<Tetrahedron<T>>& tetrahedron) {
   if (adjacent_tetrahedra_[0].lock() == tetrahedron) {
-    adjacent_tetrahedra_[0] = std::shared_ptr<Tetrahedron<T>>(nullptr);
+    adjacent_tetrahedra_[0] = std::shared_ptr < Tetrahedron < T >> (nullptr);
   } else {
-    adjacent_tetrahedra_[1] = std::shared_ptr<Tetrahedron<T>>(nullptr);
+    adjacent_tetrahedra_[1] = std::shared_ptr < Tetrahedron < T >> (nullptr);
   }
 }
 
@@ -250,16 +242,14 @@ bool Triangle3D<T>::isOpenToSide(const std::array<double, 3>& point) {
       if (adjacent_tetrahedra_[1].lock()->isInfinite()) {
         return true;
       }
-      auto position = adjacent_tetrahedra_[1].lock()->getOppositeNode(this->shared_from_this())
-          ->getPosition();
+      auto position = adjacent_tetrahedra_[1].lock()->getOppositeNode(this->shared_from_this())->getPosition();
       return !(this->onSameSide(position, point));
     }
   } else if (adjacent_tetrahedra_[1].lock().get() == nullptr) {
     if (adjacent_tetrahedra_[0].lock()->isInfinite()) {
       return true;
     }
-    auto position =
-        adjacent_tetrahedra_[0].lock()->getOppositeNode(this->shared_from_this())->getPosition();
+    auto position = adjacent_tetrahedra_[0].lock()->getOppositeNode(this->shared_from_this())->getPosition();
     return !(this->onSameSide(position, point));
   } else {
     return false;
@@ -282,8 +272,7 @@ void Triangle3D<T>::orientToSide(const std::array<double, 3>& position) {
       auto dot_2 = normal_vector->dotProduct(ExactVector::create(position));
       int comparison = dot_1->compareTo(dot_2);
       if (comparison == 0) {
-        throw std::logic_error(
-            "The triangle cannot be oriented to because that point lies in the plane!");
+        throw std::logic_error("The triangle cannot be oriented to because that point lies in the plane!");
       }
       upper_side_positive_ = comparison < 0;
     }
@@ -298,14 +287,12 @@ void Triangle3D<T>::orientToOpenSide() {
         throw std::logic_error("The triangle has two open sides!");
       }
       if (!adjacent_tetrahedra_[1].lock()->isInfinite()) {
-        orientToSide(
-            adjacent_tetrahedra_[1].lock()->getOppositeNode(this->shared_from_this())->getPosition());
+        orientToSide(adjacent_tetrahedra_[1].lock()->getOppositeNode(this->shared_from_this())->getPosition());
         upper_side_positive_ ^= true;
       }
     } else if (adjacent_tetrahedra_[1].lock().get() == nullptr) {
       if (!adjacent_tetrahedra_[0].lock()->isInfinite()) {
-        orientToSide(
-            adjacent_tetrahedra_[0].lock()->getOppositeNode(this->shared_from_this())->getPosition());
+        orientToSide(adjacent_tetrahedra_[0].lock()->getOppositeNode(this->shared_from_this())->getPosition());
         upper_side_positive_ ^= true;
       }
     } else {
@@ -431,15 +418,13 @@ void Triangle3D<T>::updateNormalVector(const std::array<double, 3>& new_normal_v
 
 template<class T>
 std::shared_ptr<ExactVector> Triangle3D<T>::calculateCircumCenterExact(
-    const std::array<std::shared_ptr<ExactVector>, 3>& points,
-    const std::shared_ptr<ExactVector>& normal_vector) {
+    const std::array<std::shared_ptr<ExactVector>, 3>& points, const std::shared_ptr<ExactVector>& normal_vector) {
   auto a = points[0];
   // Start by calculating the normal vectors:
-  std::array<std::shared_ptr<ExactVector>, 3> n = { points[1]->subtract(a), points[2]->subtract(a),
-      normal_vector };
-  std::array<std::shared_ptr<Rational>, 3> rationals = { points[1]->add(a)->dotProduct(n[0])
-      ->divideBy(Rational::create(2, 1)), points[2]->add(a)->dotProduct(n[1])->divideBy(
-      Rational::create(2, 1)), a->dotProduct(n[2]) };
+  std::array<std::shared_ptr<ExactVector>, 3> n = { points[1]->subtract(a), points[2]->subtract(a), normal_vector };
+  std::array<std::shared_ptr<Rational>, 3> rationals = { points[1]->add(a)->dotProduct(n[0])->divideBy(
+      Rational::create(2, 1)), points[2]->add(a)->dotProduct(n[1])->divideBy(Rational::create(2, 1)), a->dotProduct(
+      n[2]) };
   return calculate3PlaneXPoint(n, rationals, ExactVector::det(n));
 }
 
@@ -469,9 +454,8 @@ double Triangle3D<T>::calculateSDDistance(const std::array<double, 3>& fourth_po
     if (denominator != 0) {
       double sd_distance = Matrix::dot(
           ad,
-          Matrix::subtract(
-              Matrix::scalarMult(0.5, Matrix::add(nodes_[0]->getPosition(), fourth_point)),
-              circum_center_)) / denominator;
+          Matrix::subtract(Matrix::scalarMult(0.5, Matrix::add(nodes_[0]->getPosition(), fourth_point)),
+                           circum_center_)) / denominator;
       return sd_distance;
     }
   }
@@ -493,11 +477,11 @@ std::shared_ptr<Rational> Triangle3D<T>::calculateSDDistanceExact(
         points_3[i] = points[i];
       }
       auto circum_center = calculateCircumCenterExact(points_3, normal_vector);
-      return points[0]->add(points[3])->divideBy(Rational::create(2, 1))->decreaseBy(circum_center)
-          ->dotProduct(ad)->divideBy(denominator);
+      return points[0]->add(points[3])->divideBy(Rational::create(2, 1))->decreaseBy(circum_center)->dotProduct(ad)
+          ->divideBy(denominator);
     }
   }
-  return Rational::create(std::numeric_limits<int64_t>::max());
+  return Rational::create(std::numeric_limits < int64_t > ::max());
 }
 
 template<class T>
@@ -540,7 +524,7 @@ std::shared_ptr<ExactVector> Triangle3D<T>::calculateExactNormalVector(
 }
 
 // define templates that should be compiled
-template class Triangle3D<cx3d::physics::PhysicalNode>;
+template class Triangle3D<cx3d::physics::PhysicalNode> ;
 
 }  // namespace spatial_organization
 }  // namespace cx3d

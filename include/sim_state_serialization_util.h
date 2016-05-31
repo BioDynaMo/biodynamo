@@ -127,8 +127,7 @@ class SimStateSerializationUtil {
     return stream.str();
   }
   template<class T, class U, class V>
-  static StringBuilder& mapOfDoubleArray(
-      StringBuilder& sb, const string& key,
+  static StringBuilder& mapOfDoubleArray(StringBuilder& sb, const string& key,
                                          const std::unordered_map<T, std::array<double, 3>, U, V>& map) {
     SimStateSerializationUtil::key(sb, key).append("{");
     for (auto el : map) {
@@ -142,8 +141,7 @@ class SimStateSerializationUtil {
   }
 
   template<class T>
-  static StringBuilder& unorderedCollection(StringBuilder& sb, const string& key,
-                                            const std::list<T>& elements) {
+  static StringBuilder& unorderedCollection(StringBuilder& sb, const string& key, const std::list<T>& elements) {
     //simple implementation of unorderedCollection did not work
     //for now forward call to ordered collection (position of an element matters in equality comparisons)
     //if true position invariance in a collection is needed implement a more sophisticated solution
@@ -153,8 +151,7 @@ class SimStateSerializationUtil {
   }
 
   template<class T>
-  static StringBuilder& orderedCollection(StringBuilder& sb, const string& key,
-                                          const std::list<T>& elements) {
+  static StringBuilder& orderedCollection(StringBuilder& sb, const string& key, const std::list<T>& elements) {
     SimStateSerializationUtil::key(sb, key).append("[");
     for (auto el : elements) {
       el->simStateToJson(sb);
@@ -168,8 +165,7 @@ class SimStateSerializationUtil {
   }
 
   template<class T>
-  static StringBuilder& unorderedCollection(StringBuilder& sb, const string& key,
-                                            const std::vector<T>& elements) {
+  static StringBuilder& unorderedCollection(StringBuilder& sb, const string& key, const std::vector<T>& elements) {
     //simple implementation of unorderedCollection did not work
     //for now forward call to ordered collection (position of an element matters in equality comparisons)
     //if true position invariance in a collection is needed implement a more sophisticated solution
@@ -179,8 +175,7 @@ class SimStateSerializationUtil {
   }
 
   template<class T>
-  static StringBuilder& orderedCollection(StringBuilder& sb, const string& key,
-                                          const std::vector<T>& elements) {
+  static StringBuilder& orderedCollection(StringBuilder& sb, const string& key, const std::vector<T>& elements) {
     SimStateSerializationUtil::key(sb, key).append("[");
     for (auto& el : elements) {
       el->simStateToJson(sb);

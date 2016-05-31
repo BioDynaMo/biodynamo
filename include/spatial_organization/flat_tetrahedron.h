@@ -86,11 +86,8 @@ class FlatTetrahedron : public Tetrahedron<T> {  //, public std::enable_shared_f
   static std::shared_ptr<Tetrahedron<T>> create(const std::shared_ptr<Triangle3D<T>>& triangle_a,
                                                 const std::shared_ptr<Triangle3D<T>>& triangle_b,
                                                 const std::shared_ptr<Triangle3D<T>>& triangle_c,
-                                                const std::shared_ptr<Triangle3D<T>>& triangle_d,
-                                                SpaceNode<T>* node_a,
-                                                SpaceNode<T>* node_b,
-                                                SpaceNode<T>* node_c,
-                                                SpaceNode<T>* node_d);
+                                                const std::shared_ptr<Triangle3D<T>>& triangle_d, SpaceNode<T>* node_a,
+                                                SpaceNode<T>* node_b, SpaceNode<T>* node_c, SpaceNode<T>* node_d);
 
   virtual ~FlatTetrahedron();
 
@@ -154,14 +151,12 @@ class FlatTetrahedron : public Tetrahedron<T> {  //, public std::enable_shared_f
   /**
    * {@inheritDoc}
    */
-  bool isPointInConvexPosition(const std::array<double, 3>& point,
-                               size_t connecting_triangle_number) const override;
+  bool isPointInConvexPosition(const std::array<double, 3>& point, size_t connecting_triangle_number) const override;
 
   /**
    * {@inheritDoc}
    */
-  int isInConvexPosition(const std::array<double, 3>& point, size_t connecting_triangle_number) const
-      override;
+  int isInConvexPosition(const std::array<double, 3>& point, size_t connecting_triangle_number) const override;
 
  protected:
   FlatTetrahedron();

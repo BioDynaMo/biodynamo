@@ -16,7 +16,7 @@ class SpatialOrganizationNodeMovementListener {
  public:
   using UPtr = typename std::unique_ptr<SpatialOrganizationNodeMovementListener<T>>;
 
-  SpatialOrganizationNodeMovementListener(){
+  SpatialOrganizationNodeMovementListener() {
   }
 
   virtual ~SpatialOrganizationNodeMovementListener() {
@@ -43,8 +43,6 @@ class SpatialOrganizationNodeMovementListener {
    */
   virtual std::string toString() const = 0;
 };
-
-
 
 }  // namespace spatial_organization
 }  // namespace cx3d

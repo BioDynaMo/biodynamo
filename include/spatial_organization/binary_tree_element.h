@@ -13,7 +13,7 @@ template<class T> class SimpleTriangulationNodeOrganizer;
 
 template<class T>
 class BinaryTreeElement {
-  friend class SimpleTriangulationNodeOrganizer<T>;
+  friend class SimpleTriangulationNodeOrganizer<T> ;
  public:
   static BinaryTreeElement<T>* generateTreeHead();
 
@@ -24,11 +24,10 @@ class BinaryTreeElement {
 
   virtual void insert(SpaceNode<T>* content);
 
-  virtual void remove(SpaceNode<T>* content,
-                      BinaryTreeElement<T>* parent);
+  virtual void remove(SpaceNode<T>* content, BinaryTreeElement<T>* parent);
 
   // todo replace with STL iterator
-  virtual std::list<SpaceNode<T>*>inOrderTraversal() const;
+  virtual std::list<SpaceNode<T>*> inOrderTraversal() const;
 
   std::string toString() const;
 
@@ -63,17 +62,16 @@ class TreeHead : public BinaryTreeElement<T> {
 
   void insert(SpaceNode<T>* content) override;
 
-  void remove(SpaceNode<T>* content,
-              BinaryTreeElement<T>* parent) override;
+  void remove(SpaceNode<T>* content, BinaryTreeElement<T>* parent) override;
 
-  std::list<SpaceNode<T>*>inOrderTraversal() const override;
+  std::list<SpaceNode<T>*> inOrderTraversal() const override;
 
-private:
+ private:
   TreeHead(const TreeHead&) = delete;
   TreeHead& operator=(const TreeHead&) = delete;
 };
 
-} // namespace spatial_organization
-} // namespace cx3d
+}  // namespace spatial_organization
+}  // namespace cx3d
 
 #endif // SPATIAL_ORGANIZATION_BINARY_TREE_ELEMENT_H_

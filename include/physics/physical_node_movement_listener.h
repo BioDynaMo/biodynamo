@@ -9,7 +9,6 @@
 #include "physics/physical_node.h"
 #include "spatial_organization/spatial_organization_node_movement_listener.h"
 
-
 namespace cx3d {
 
 namespace spatial_organization {
@@ -80,7 +79,8 @@ class PhysicalNodeMovementListener : public SpatialOrganizationNodeMovementListe
    * including the new node). The concentration in the ex-neighbors is multiplied
    *  by the ratio of the two sums.
    */
-  virtual void nodeAboutToBeAdded(const SpatialOrganizationNode<PhysicalNode>* node, const std::array<double, 3>& planned_position,
+  virtual void nodeAboutToBeAdded(
+      const SpatialOrganizationNode<PhysicalNode>* node, const std::array<double, 3>& planned_position,
       const std::array<PhysicalNode*, 4>& vertices_of_the_tetrahedron_containing_the_position) override;
 
   virtual void nodeAdded(const SpatialOrganizationNode<PhysicalNode>* node) override;

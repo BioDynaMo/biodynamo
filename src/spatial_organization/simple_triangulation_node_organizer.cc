@@ -13,13 +13,12 @@ namespace spatial_organization {
 
 template<class T>
 std::shared_ptr<SimpleTriangulationNodeOrganizer<T>> SimpleTriangulationNodeOrganizer<T>::create() {
-  return std::shared_ptr<SimpleTriangulationNodeOrganizer<T>>(
-      new SimpleTriangulationNodeOrganizer());
+  return std::shared_ptr < SimpleTriangulationNodeOrganizer < T >> (new SimpleTriangulationNodeOrganizer());
 }
 
 template<class T>
 SimpleTriangulationNodeOrganizer<T>::SimpleTriangulationNodeOrganizer()
-    : tree_head_ { BinaryTreeElement<T>::generateTreeHead() } {
+    : tree_head_ { BinaryTreeElement < T > ::generateTreeHead() } {
 }
 
 template<class T>
@@ -28,19 +27,17 @@ SimpleTriangulationNodeOrganizer<T>::~SimpleTriangulationNodeOrganizer() {
 }
 
 template<class T>
-std::list<SpaceNode<T>*>SimpleTriangulationNodeOrganizer<T>::getNodes(SpaceNode<T>* reference_point) {
+std::list<SpaceNode<T>*> SimpleTriangulationNodeOrganizer<T>::getNodes(SpaceNode<T>* reference_point) {
   return tree_head_->inOrderTraversal();
 }
 
 template<class T>
-void SimpleTriangulationNodeOrganizer<T>::removeNode(
-    SpaceNode<T>* node) {
+void SimpleTriangulationNodeOrganizer<T>::removeNode(SpaceNode<T>* node) {
   tree_head_->remove(node, nullptr);
 }
 
 template<class T>
-void SimpleTriangulationNodeOrganizer<T>::addNode(
-    SpaceNode<T>* node) {
+void SimpleTriangulationNodeOrganizer<T>::addNode(SpaceNode<T>* node) {
   tree_head_->insert(node);
 }
 
@@ -59,8 +56,7 @@ std::string SimpleTriangulationNodeOrganizer<T>::toString() const {
 }
 
 template<typename T>
-bool SimpleTriangulationNodeOrganizer<T>::equalTo(
-    const std::shared_ptr<SimpleTriangulationNodeOrganizer<T>>& other) {
+bool SimpleTriangulationNodeOrganizer<T>::equalTo(const std::shared_ptr<SimpleTriangulationNodeOrganizer<T>>& other) {
   return this == other.get();
 }
 

@@ -116,9 +116,9 @@ class CellElement : public SimStateSerializable {
   std::vector<LocalBiologyModule*> local_biology_modules_;
 
   /**
-  * Calls the run() method in all the <code>SubElements</code>.
-  * Is done automatically during the simulation, and thus doesn't have to be called by the user
-  */
+   * Calls the run() method in all the <code>SubElements</code>.
+   * Is done automatically during the simulation, and thus doesn't have to be called by the user
+   */
   void runLocalBiologyModules();
 
  private:

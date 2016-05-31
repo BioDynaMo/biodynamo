@@ -38,8 +38,7 @@ class Plane3D {
    * @param position_vector The coordinate of a point on the plane.
    * @param normalize Defines whether or not the normal vector of this plane should be normalized or not.
    */
-  Plane3D(const std::array<double, 3>& direction_vector_1,
-          const std::array<double, 3>& direction_vector_2,
+  Plane3D(const std::array<double, 3>& direction_vector_1, const std::array<double, 3>& direction_vector_2,
           const std::array<double, 3>& position_vector, bool normalize);
 
   /**
@@ -50,8 +49,7 @@ class Plane3D {
    * @param directionVector2 The second direction vector. Must not be colinear to <code>directionVector1</code>.
    * @param position_vector The coordinate of a point on the plane.
    */
-  Plane3D(const std::array<double, 3>& direction_vector_1,
-          const std::array<double, 3>& direction_vector_2,
+  Plane3D(const std::array<double, 3>& direction_vector_1, const std::array<double, 3>& direction_vector_2,
           const std::array<double, 3>& position_vector);
 
   /**
@@ -61,8 +59,7 @@ class Plane3D {
    * @param nonUsedNode The node in <code>nodes</code> which will not become part of the newly created plane.
    * @param normalize Defines whether or not the normal vector of this plane should be normalized or not.
    */
-  Plane3D(const std::array<SpaceNode<T>*, 4>& nodes,
-          SpaceNode<T>* non_used_node, bool normalize);
+  Plane3D(const std::array<SpaceNode<T>*, 4>& nodes, SpaceNode<T>* non_used_node, bool normalize);
 
   /**
    * Creates a plane from a set of nodes. The normal vector of the resulting plane will be
@@ -71,8 +68,7 @@ class Plane3D {
    * create the plane. <code>nonUsedNode</code> defines, which node will not be upublicsed.
    * @param nonUsedNode The node in <code>nodes</code> which will not become part of the newly created plane.
    */
-  Plane3D(const std::array<SpaceNode<T>*, 4>& nodes,
-          SpaceNode<T>* non_used_node);
+  Plane3D(const std::array<SpaceNode<T>*, 4>& nodes, SpaceNode<T>* non_used_node);
 
   /**
    * Creates a plane from the endpoint of a tetrahedron. The normal vector of the resulting plane will be
@@ -81,8 +77,7 @@ class Plane3D {
    * <code>tetra</code> will be used for the new plane/
    * @param nonUsedNode The node in <code>nodes</code> which will not become part of the newly created plane.
    */
-  Plane3D(const std::shared_ptr<Tetrahedron<T>>& tetrahedron,
-          SpaceNode<T>* non_used_node);
+  Plane3D(const std::shared_ptr<Tetrahedron<T>>& tetrahedron, SpaceNode<T>* non_used_node);
 
   virtual ~Plane3D();
 
@@ -95,8 +90,8 @@ class Plane3D {
    * @param normalize Defines whether or not the normal vector of this plane should be normalized or not.
    */
   virtual void initPlane(const std::array<double, 3>& direction_vector_1,
-                         const std::array<double, 3>& direction_vector_2,
-                         const std::array<double, 3>& position_vector, bool normalize);
+                         const std::array<double, 3>& direction_vector_2, const std::array<double, 3>& position_vector,
+                         bool normalize);
 
   /**
    * Reverts the orientation of this plane by switching the sign of all entries
@@ -119,8 +114,7 @@ class Plane3D {
    * lie on opposite sides of the plane and 0, if either one of the points lies
    * on the plane.
    */
-  virtual int orientation(const std::array<double, 3>& point_1,
-                          const std::array<double, 3>& point_2) const;
+  virtual int orientation(const std::array<double, 3>& point_1, const std::array<double, 3>& point_2) const;
 
   /**
    * Returns whether or not two points lie on the same side of this plane.
@@ -131,8 +125,7 @@ class Plane3D {
    *         plane and <code>false</code>, if they don't or if one of them
    *         lies in the plane.
    */
-  virtual bool trulyOnSameSide(const std::array<double, 3>& point_1,
-                               const std::array<double, 3>& point_2);
+  virtual bool trulyOnSameSide(const std::array<double, 3>& point_1, const std::array<double, 3>& point_2);
 
   /**
    * Returns whether or not two points lie on different sides of this plane.
@@ -143,8 +136,7 @@ class Plane3D {
    *         plane and <code>false</code>, if they don't or if one of them
    *         lies in the plane.
    */
-  virtual bool trulyOnDifferentSides(const std::array<double, 3>& point_1,
-                                     const std::array<double, 3>& point_2);
+  virtual bool trulyOnDifferentSides(const std::array<double, 3>& point_1, const std::array<double, 3>& point_2);
 
   /**
    * Returns whether or not two points lie on the same side of this plane.
@@ -156,8 +148,7 @@ class Plane3D {
    *         and <code>false</code>, if they don't or if one of them
    *         lies in the plane.
    */
-  virtual bool onSameSide(const std::array<double, 3>& point_1,
-                          const std::array<double, 3>& point_2) const;
+  virtual bool onSameSide(const std::array<double, 3>& point_1, const std::array<double, 3>& point_2) const;
 
   /**
    * @return The normal vector of this plane.
@@ -200,8 +191,7 @@ class Plane3D {
    * lie on opposite sides of the plane and 0, if either one of the points lies
    * on the plane.
    */
-  virtual int orientationExact(const std::array<double, 3>& point_1,
-                               const std::array<double, 3>& point_2) const;
+  virtual int orientationExact(const std::array<double, 3>& point_1, const std::array<double, 3>& point_2) const;
 
  private:
   Plane3D(const Plane3D&) = delete;

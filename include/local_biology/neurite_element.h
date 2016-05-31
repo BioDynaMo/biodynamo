@@ -58,8 +58,7 @@ class NeuriteElement : public CellElement {
    * @param growthDirection (But will be automatically corrected if not at least 45 degrees from the cylinder's axis).
    * @return
    */
-  virtual NeuriteElement* branch(double newBranchDiameter,
-                                                 const std::array<double, 3>& direction);
+  virtual NeuriteElement* branch(double newBranchDiameter, const std::array<double, 3>& direction);
 
   /**
    * Makes a side branch, i.e. splits this cylinder into two and puts a daughteRight at the proximal half.
@@ -97,8 +96,8 @@ class NeuriteElement : public CellElement {
    * @return
    */
   virtual std::array<NeuriteElement*, 2> bifurcate(double diameter_1, double diameter_2,
-                                                                   const std::array<double, 3>& direction_1,
-                                                                   const std::array<double, 3>& direction_2);
+                                                   const std::array<double, 3>& direction_1,
+                                                   const std::array<double, 3>& direction_2);
 
   /**
    * Bifurcation of a growth come (only works for terminal segments).
@@ -111,11 +110,11 @@ class NeuriteElement : public CellElement {
    * @return
    */
   virtual std::array<NeuriteElement*, 2> bifurcate(double length, double diameter_1, double diameter_2,
-                                                                   const std::array<double, 3>& direction_1,
-                                                                   const std::array<double, 3>& direction_2);
+                                                   const std::array<double, 3>& direction_1,
+                                                   const std::array<double, 3>& direction_2);
 
   virtual std::array<NeuriteElement*, 2> bifurcate(const std::array<double, 3>& direction_1,
-                                                                   const std::array<double, 3>& direction_2);
+                                                   const std::array<double, 3>& direction_2);
 
   virtual std::array<NeuriteElement*, 2> bifurcate();
 

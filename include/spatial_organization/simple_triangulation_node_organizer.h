@@ -16,8 +16,7 @@ template<class T> class BinaryTreeElement;
  * @param <T> The type of user objects associated with the nodes in the current triangulation.
  */
 template<class T>
-class SimpleTriangulationNodeOrganizer :
-    public AbstractTriangulationNodeOrganizer<T> {
+class SimpleTriangulationNodeOrganizer : public AbstractTriangulationNodeOrganizer<T> {
  public:
   static std::shared_ptr<SimpleTriangulationNodeOrganizer<T>> create();
 
@@ -33,11 +32,11 @@ class SimpleTriangulationNodeOrganizer :
 
   virtual std::string toString() const override;
 
-  std::list<SpaceNode<T>*>getNodes(SpaceNode<T>* reference_point) override;
+  std::list<SpaceNode<T>*> getNodes(SpaceNode<T>* reference_point) override;
 
   bool equalTo(const std::shared_ptr<SimpleTriangulationNodeOrganizer<T>>& other);
 
-private:
+ private:
   BinaryTreeElement<T>* tree_head_;
 
   SimpleTriangulationNodeOrganizer(const SimpleTriangulationNodeOrganizer<T>&) = delete;

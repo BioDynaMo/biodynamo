@@ -98,8 +98,8 @@ class PhysicalCylinderDebug : public PhysicalCylinder {
   }
 
   virtual std::array<PhysicalCylinder::UPtr, 2> bifurcateCylinder(double length,
-      const std::array<double, 3>& direction_1,
-      const std::array<double, 3>& direction_2) override {
+                                                                  const std::array<double, 3>& direction_1,
+                                                                  const std::array<double, 3>& direction_2) override {
     logCall(length, direction_1, direction_2);
     auto ret = PhysicalCylinder::bifurcateCylinder(length, direction_1, direction_2);
     array<PhysicalCylinder*, 2> tmp = { ret[0].get(), ret[1].get() };
@@ -216,14 +216,16 @@ class PhysicalCylinderDebug : public PhysicalCylinder {
 //    logReturnVoid();
 //  }
 
-  virtual std::array<double, 3> transformCoordinatesGlobalToLocal(const std::array<double, 3>& position) const override {
+  virtual std::array<double, 3> transformCoordinatesGlobalToLocal(const std::array<double, 3>& position) const
+      override {
     logCall(position);
     auto ret = PhysicalCylinder::transformCoordinatesGlobalToLocal(position);
     logReturn(ret);
     return ret;
   }
 
-  virtual std::array<double, 3> transformCoordinatesLocalToGlobal(const std::array<double, 3>& position) const override {
+  virtual std::array<double, 3> transformCoordinatesLocalToGlobal(const std::array<double, 3>& position) const
+      override {
     logCall(position);
     auto ret = PhysicalCylinder::transformCoordinatesLocalToGlobal(position);
     logReturn(ret);
@@ -244,14 +246,16 @@ class PhysicalCylinderDebug : public PhysicalCylinder {
     return ret;
   }
 
-  virtual std::array<double, 3> transformCoordinatesPolarToGlobal(const std::array<double, 2>& position) const override {
+  virtual std::array<double, 3> transformCoordinatesPolarToGlobal(const std::array<double, 2>& position) const
+      override {
     logCall(position);
     auto ret = PhysicalCylinder::transformCoordinatesPolarToGlobal(position);
     logReturn(ret);
     return ret;
   }
 
-  virtual std::array<double, 3> transformCoordinatesGlobalToPolar(const std::array<double, 3>& position) const override {
+  virtual std::array<double, 3> transformCoordinatesGlobalToPolar(const std::array<double, 3>& position) const
+      override {
     logCall(position);
     auto ret = PhysicalCylinder::transformCoordinatesGlobalToPolar(position);
     logReturn(ret);
@@ -465,7 +469,7 @@ class PhysicalCylinderDebug : public PhysicalCylinder {
     logReturnVoid();
   }
 
-private:
+ private:
   PhysicalCylinderDebug(const PhysicalCylinderDebug&) = delete;
   PhysicalCylinderDebug& operator=(const PhysicalCylinderDebug&) = delete;
 };

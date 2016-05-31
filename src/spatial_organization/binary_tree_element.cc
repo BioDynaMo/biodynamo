@@ -36,22 +36,19 @@ BinaryTreeElement<T>::~BinaryTreeElement() {
 }
 
 template<class T>
-bool BinaryTreeElement<T>::contains(
-    SpaceNode<T>* content) const {
+bool BinaryTreeElement<T>::contains(SpaceNode<T>* content) const {
   return contains(getHash(content), content);
 }
 
 template<class T>
-void BinaryTreeElement<T>::insert(
-    SpaceNode<T>* content) {
+void BinaryTreeElement<T>::insert(SpaceNode<T>* content) {
   if (content != nullptr) {
     insert(new BinaryTreeElement<T>(content));
   }
 }
 
 template<class T>
-void BinaryTreeElement<T>::remove(SpaceNode<T>* content,
-                                  BinaryTreeElement* parent) {
+void BinaryTreeElement<T>::remove(SpaceNode<T>* content, BinaryTreeElement* parent) {
   remove(getHash(content), content, parent);
 }
 
@@ -74,15 +71,13 @@ int BinaryTreeElement<T>::getHash(SpaceNode<T>* content) const {
 }
 
 template<class T>
-bool BinaryTreeElement<T>::contains(
-    int id, SpaceNode<T>* content) const {
+bool BinaryTreeElement<T>::contains(int id, SpaceNode<T>* content) const {
   return contains(getHash(content), content);
 }
 
 template<class T>
 void BinaryTreeElement<T>::insert(BinaryTreeElement* element) {
-  if (content_id_ == element->content_id_
-      && content_ == element->content_) {
+  if (content_id_ == element->content_id_ && content_ == element->content_) {
     delete element;
     return;
   } else if ((content_id_ >= element->content_id_)) {
@@ -101,9 +96,7 @@ void BinaryTreeElement<T>::insert(BinaryTreeElement* element) {
 }
 
 template<class T>
-void BinaryTreeElement<T>::remove(int id,
-                                  SpaceNode<T>* content,
-                                  BinaryTreeElement* parent) {
+void BinaryTreeElement<T>::remove(int id, SpaceNode<T>* content, BinaryTreeElement* parent) {
   if ((content_id_ == id) && (content_ == content)) {
     if ((smaller_ == nullptr) && (bigger_ == nullptr)) {
       parent->changeLink(this, nullptr);
@@ -130,8 +123,7 @@ void BinaryTreeElement<T>::remove(int id,
 }
 
 template<class T>
-void BinaryTreeElement<T>::changeLink(BinaryTreeElement* old_el,
-                                      BinaryTreeElement* new_el) {
+void BinaryTreeElement<T>::changeLink(BinaryTreeElement* old_el, BinaryTreeElement* new_el) {
   if (smaller_ == old_el) {
     smaller_ = new_el;
   } else if (bigger_ == old_el) {
@@ -140,20 +132,20 @@ void BinaryTreeElement<T>::changeLink(BinaryTreeElement* old_el,
 }
 
 template<class T>
-std::list<SpaceNode<T>*>BinaryTreeElement<T>::inOrderTraversal() const {
+std::list<SpaceNode<T>*> BinaryTreeElement<T>::inOrderTraversal() const {
   std::list<SpaceNode<T>*> traversal;
   std::stack<const BinaryTreeElement<T>*> stack;
   const BinaryTreeElement<T>* dummy = this;
-  while(dummy != nullptr) {
+  while (dummy != nullptr) {
     stack.push(dummy);
     dummy = dummy->smaller_;
   }
 
-  while(!stack.empty()) {
+  while (!stack.empty()) {
     dummy = stack.top();
     stack.pop();
     auto it = dummy->bigger_;
-    while(it != nullptr) {
+    while (it != nullptr) {
       stack.push(it);
       it = it->smaller_;
     }
@@ -173,37 +165,34 @@ TreeHead<T>::TreeHead()
 
 template<class T>
 bool TreeHead<T>::contains(SpaceNode<T>* content) const {
-  return
-      BinaryTreeElement<T>::bigger_ != nullptr ?
-          BinaryTreeElement<T>::bigger_->contains(content) : false;
+  return BinaryTreeElement < T > ::bigger_ != nullptr ? BinaryTreeElement < T > ::bigger_->contains(content) : false;
 }
 
 template<class T>
 void TreeHead<T>::insert(SpaceNode<T>* content) {
-  if (BinaryTreeElement<T>::bigger_ != nullptr) {
-    BinaryTreeElement<T>::bigger_->insert(content);
+  if (BinaryTreeElement < T > ::bigger_ != nullptr) {
+    BinaryTreeElement < T > ::bigger_->insert(content);
   } else {
-    BinaryTreeElement<T>::bigger_ = new BinaryTreeElement<T>(content);
+    BinaryTreeElement < T > ::bigger_ = new BinaryTreeElement<T>(content);
   }
 }
 
 template<class T>
-void TreeHead<T>::remove(SpaceNode<T>* content,
-                         BinaryTreeElement<T>* parent) {
-  if (BinaryTreeElement<T>::bigger_ != nullptr) {
-    BinaryTreeElement<T>::bigger_->remove(content, this);
+void TreeHead<T>::remove(SpaceNode<T>* content, BinaryTreeElement<T>* parent) {
+  if (BinaryTreeElement < T > ::bigger_ != nullptr) {
+    BinaryTreeElement < T > ::bigger_->remove(content, this);
   }
 }
 
 template<class T>
-std::list<SpaceNode<T>*>TreeHead<T>::inOrderTraversal() const {
-  if(BinaryTreeElement<T>::bigger_ != nullptr) {
-    return BinaryTreeElement<T>::bigger_->inOrderTraversal();
+std::list<SpaceNode<T>*> TreeHead<T>::inOrderTraversal() const {
+  if (BinaryTreeElement < T > ::bigger_ != nullptr) {
+    return BinaryTreeElement < T > ::bigger_->inOrderTraversal();
   }
   return std::list<SpaceNode<T>*>();
 }
 
-template class BinaryTreeElement<cx3d::physics::PhysicalNode>;
+template class BinaryTreeElement<cx3d::physics::PhysicalNode> ;
 
 }  // namespace spatial_organization
 }  // namespace cx3d

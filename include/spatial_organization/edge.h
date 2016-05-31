@@ -78,8 +78,7 @@ class Edge : public SpatialOrganizationEdge<T> {
    * @param b The second node.
    * @return <code>true</code>, if this edge connects <code>a</code> and <code>b</code>.
    */
-  virtual bool equals(SpaceNode<T>* a,
-                      SpaceNode<T>* b) const;
+  virtual bool equals(SpaceNode<T>* a, SpaceNode<T>* b) const;
   /**
    * Removes a tetrahedron from this edge's list of tetrahedra. If this edge is not incident to
    * any tetrahedra after the removal of the specified tetrahedron, the edge removes itself from

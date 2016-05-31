@@ -30,11 +30,9 @@ class PhysicalBond : public SimStateSerializable, public std::enable_shared_from
 
   static std::shared_ptr<PhysicalBond> create(PhysicalObject* a, PhysicalObject* b);
 
-  static std::shared_ptr<PhysicalBond> create(PhysicalObject* a,
-                                              const std::array<double, 2>& position_on_a,
-                                              PhysicalObject* b,
-                                              const std::array<double, 2>& position_on_b, double resting_length,
-                                              double spring_constant);
+  static std::shared_ptr<PhysicalBond> create(PhysicalObject* a, const std::array<double, 2>& position_on_a,
+                                              PhysicalObject* b, const std::array<double, 2>& position_on_b,
+                                              double resting_length, double spring_constant);
 
   PhysicalBond();
 
@@ -183,8 +181,7 @@ class PhysicalBond : public SimStateSerializable, public std::enable_shared_from
   void init(PhysicalObject* a, PhysicalObject* b);
 
   void init(PhysicalObject* a, const std::array<double, 2>& position_on_a, PhysicalObject* b,
-            const std::array<double, 2>& position_on_b, double resting_length,
-            double spring_constant);
+            const std::array<double, 2>& position_on_b, double resting_length, double spring_constant);
 };
 
 }  //namespace physics

@@ -15,8 +15,7 @@ AbstractTriangulationNodeOrganizer<T>::~AbstractTriangulationNodeOrganizer() {
 }
 
 template<typename T>
-void AbstractTriangulationNodeOrganizer<T>::addTriangleNodes(
-    const std::shared_ptr<Triangle3D<T>>& triangle) {
+void AbstractTriangulationNodeOrganizer<T>::addTriangleNodes(const std::shared_ptr<Triangle3D<T>>& triangle) {
   auto nodes = triangle->getNodes();
   addNode(nodes[1]);
   addNode(nodes[2]);

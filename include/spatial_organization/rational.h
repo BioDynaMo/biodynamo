@@ -44,8 +44,7 @@ class Rational : public std::enable_shared_from_this<Rational> {
   /**
    * @see static std::shared_ptr<Rational> create(long numerator, long denominator)
    */
-  static std::shared_ptr<Rational> create(const BigInteger& numerator,
-                                          const BigInteger& denominator);
+  static std::shared_ptr<Rational> create(const BigInteger& numerator, const BigInteger& denominator);
 
   /**
    * @see static std::shared_ptr<Rational> create(long numerator, long denominator)

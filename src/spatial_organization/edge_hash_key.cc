@@ -12,9 +12,7 @@ namespace cx3d {
 namespace spatial_organization {
 
 template<class T>
-EdgeHashKey<T>::EdgeHashKey(SpaceNode<T>* a,
-                            SpaceNode<T>* b,
-                            SpaceNode<T>* opposite_node)
+EdgeHashKey<T>::EdgeHashKey(SpaceNode<T>* a, SpaceNode<T>* b, SpaceNode<T>* opposite_node)
     : a_(a),
       b_(b),
       ab_ { 0.0, 0.0, 0.0 },
@@ -27,17 +25,17 @@ EdgeHashKey<T>::EdgeHashKey(SpaceNode<T>* a,
 }
 
 template<class T>
-EdgeHashKey<T>::EdgeHashKey(const EdgeHashKey<T>& other){
+EdgeHashKey<T>::EdgeHashKey(const EdgeHashKey<T>& other) {
   hash_code_ = other.hash_code_;
 }
 
 template<class T>
-EdgeHashKey<T>::~EdgeHashKey(){
+EdgeHashKey<T>::~EdgeHashKey() {
 }
 
 template<class T>
 EdgeHashKey<T>& EdgeHashKey<T>::operator=(const EdgeHashKey<T>& rhs) {
-  if(this == &rhs){
+  if (this == &rhs) {
     return *this;
   }
   a_ = rhs.a_;
@@ -94,8 +92,7 @@ SpaceNode<T>* EdgeHashKey<T>::getEndpointB() const {
 }
 
 template<class T>
-SpaceNode<T>* EdgeHashKey<T>::oppositeNode(
-    SpaceNode<T>* node) const {
+SpaceNode<T>* EdgeHashKey<T>::oppositeNode(SpaceNode<T>* node) const {
   if (node == a_) {
     return b_;
   } else if (node == b_) {
@@ -106,7 +103,7 @@ SpaceNode<T>* EdgeHashKey<T>::oppositeNode(
 }
 
 template<class T>
-std::size_t EdgeHashKeyHash<T>::operator()( const EdgeHashKey<T>& element) const {
+std::size_t EdgeHashKeyHash<T>::operator()(const EdgeHashKey<T>& element) const {
   return element.hash_code_;
 }
 
@@ -115,10 +112,9 @@ bool EdgeHashKeyEqual<T>::operator()(const EdgeHashKey<T>& lhs, const EdgeHashKe
   return lhs.hash_code_ == rhs.hash_code_;
 }
 
-
-template class EdgeHashKey<cx3d::physics::PhysicalNode>;
-template struct EdgeHashKeyHash<cx3d::physics::PhysicalNode>;
-template struct EdgeHashKeyEqual<cx3d::physics::PhysicalNode>;
+template class EdgeHashKey<cx3d::physics::PhysicalNode> ;
+template struct EdgeHashKeyHash<cx3d::physics::PhysicalNode> ;
+template struct EdgeHashKeyEqual<cx3d::physics::PhysicalNode> ;
 
 }  // namespace spatial_organization
 }  // namespace cx3d

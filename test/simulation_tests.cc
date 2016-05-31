@@ -72,4 +72,5 @@ TEST_F (Figure9Test, simulation) {
   run();
 }
 
-}  // namespace cx3d
+}
+  // namespace cx3d

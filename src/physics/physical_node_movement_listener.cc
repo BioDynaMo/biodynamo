@@ -28,7 +28,7 @@ PhysicalNodeMovementListener::~PhysicalNodeMovementListener() {
 }
 
 SpatialOrganizationNodeMovementListener<PhysicalNode>::UPtr PhysicalNodeMovementListener::getCopy() const {
-  return SpatialOrganizationNodeMovementListener<PhysicalNode>::UPtr(new PhysicalNodeMovementListener());
+  return SpatialOrganizationNodeMovementListener < PhysicalNode > ::UPtr(new PhysicalNodeMovementListener());
 }
 
 void PhysicalNodeMovementListener::nodeAboutToMove(const SpatialOrganizationNode<PhysicalNode>* node,

@@ -10,7 +10,7 @@ using std::shared_ptr;
 using cx3d::spatial_organization::ExactVector;
 
 std::shared_ptr<ExactVector> ExactVector::create(const std::array<std::shared_ptr<Rational>, 3>& values) {
-  return std::shared_ptr<ExactVector>(new ExactVector(values));
+  return std::shared_ptr < ExactVector > (new ExactVector(values));
 }
 
 /**
@@ -18,7 +18,7 @@ std::shared_ptr<ExactVector> ExactVector::create(const std::array<std::shared_pt
  * @see ExactVector(const std::array<double, 3>& values)
  */
 std::shared_ptr<ExactVector> ExactVector::create(const std::array<double, 3>& values) {
-  return std::shared_ptr<ExactVector>(new ExactVector(values));
+  return std::shared_ptr < ExactVector > (new ExactVector(values));
 }
 
 shared_ptr<Rational> ExactVector::det(const std::array<shared_ptr<ExactVector>, 3>& c) {
@@ -35,9 +35,8 @@ ExactVector::ExactVector(const array<shared_ptr<Rational>, 3>& values)
 }
 
 ExactVector::ExactVector(const array<double, 3>& values)
-    : elements_(
-        array<shared_ptr<Rational>, 3>({ Rational::create(values[0]), Rational::create(values[1]),
-            Rational::create(values[2]) })) {
+    : elements_(array<shared_ptr<Rational>, 3>( { Rational::create(values[0]), Rational::create(values[1]),
+        Rational::create(values[2]) })) {
 }
 
 ExactVector::~ExactVector() {

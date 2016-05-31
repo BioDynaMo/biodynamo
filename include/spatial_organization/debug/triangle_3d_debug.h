@@ -16,9 +16,7 @@ template<class T> class Triangle3D;
 template<class T>
 class Triangle3DDebug : public Triangle3D<T> {
  public:
-  Triangle3DDebug(SpaceNode<T>* sn_1,
-                  SpaceNode<T>* sn_2,
-                  SpaceNode<T>* sn_3,
+  Triangle3DDebug(SpaceNode<T>* sn_1, SpaceNode<T>* sn_2, SpaceNode<T>* sn_3,
                   const std::shared_ptr<Tetrahedron<T>>& tetrahedron_1,
                   const std::shared_ptr<Tetrahedron<T>>& tetrahedron_2)
       : Triangle3D<T>(sn_1, sn_2, sn_3, tetrahedron_1, tetrahedron_2) {
@@ -42,24 +40,21 @@ class Triangle3DDebug : public Triangle3D<T> {
     return ret;
   }
 
-  std::shared_ptr<Rational> getSDDistanceExact(const std::array<double, 3>& fourth_point) const
-      override {
+  std::shared_ptr<Rational> getSDDistanceExact(const std::array<double, 3>& fourth_point) const override {
     logCall(fourth_point);
     auto ret = Triangle3D<T>::getSDDistanceExact(fourth_point);
     logReturn(ret);
     return ret;
   }
 
-  std::array<double, 3> calculateCircumSphereCenter(const std::array<double, 3>& fourth_point) const
-      override {
+  std::array<double, 3> calculateCircumSphereCenter(const std::array<double, 3>& fourth_point) const override {
     logCall(fourth_point);
     auto ret = Triangle3D<T>::calculateCircumSphereCenter(fourth_point);
     logReturn(ret);
     return ret;
   }
 
-  std::array<double, 3> calculateCircumSphereCenterIfEasy(
-      const std::array<double, 3>& fourth_point) const override {
+  std::array<double, 3> calculateCircumSphereCenterIfEasy(const std::array<double, 3>& fourth_point) const override {
     logCall(fourth_point);
     auto ret = Triangle3D<T>::calculateCircumSphereCenterIfEasy(fourth_point);
     logReturn(ret);
@@ -84,8 +79,7 @@ class Triangle3DDebug : public Triangle3D<T> {
     logReturnVoid();
   }
 
-  int orientationExact(const std::array<double, 3>& point_1,
-      const std::array<double, 3>& point_2) const override {
+  int orientationExact(const std::array<double, 3>& point_1, const std::array<double, 3>& point_2) const override {
     logCall(point_1, point_2);
     auto ret = Triangle3D<T>::orientationExact(point_1, point_2);
     logReturn(ret);

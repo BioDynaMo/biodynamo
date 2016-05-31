@@ -27,8 +27,8 @@ template<class T> struct EdgeHashKeyEqual;
 template<class T>
 class EdgeHashKey {
  public:
-  friend struct EdgeHashKeyHash<T>;
-  friend struct EdgeHashKeyEqual<T>;
+  friend struct EdgeHashKeyHash<T> ;
+  friend struct EdgeHashKeyEqual<T> ;
 
   /**
    * Creates a new instance of <code>EdgeHashKey</code> with the two endpoints
@@ -38,9 +38,7 @@ class EdgeHashKey {
    * @param b The second enpoint of the represented edge.
    * @param opposite_node A node on the non-open side of this edge.
    */
-  EdgeHashKey(SpaceNode<T>* a,
-              SpaceNode<T>* b,
-              SpaceNode<T>* opposite_node);
+  EdgeHashKey(SpaceNode<T>* a, SpaceNode<T>* b, SpaceNode<T>* opposite_node);
 
   EdgeHashKey(const EdgeHashKey& other);
 
@@ -90,8 +88,7 @@ class EdgeHashKey {
    * @param node The given node.
    * @return The incident node opposite to <code>node</code>.
    */
-  virtual SpaceNode<T>* oppositeNode(
-      SpaceNode<T>* node) const;
+  virtual SpaceNode<T>* oppositeNode(SpaceNode<T>* node) const;
 
  private:
   EdgeHashKey() = delete;

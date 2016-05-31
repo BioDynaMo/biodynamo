@@ -24,7 +24,7 @@ class AbstractTriangulationNodeOrganizer {
 
   virtual ~AbstractTriangulationNodeOrganizer();
 
-  virtual std::list<SpaceNode<T>* > getNodes(SpaceNode<T>* reference_point) = 0;
+  virtual std::list<SpaceNode<T>*> getNodes(SpaceNode<T>* reference_point) = 0;
 
   virtual void addTriangleNodes(const std::shared_ptr<Triangle3D<T>>& triangle);
 
@@ -38,7 +38,7 @@ class AbstractTriangulationNodeOrganizer {
 
  private:
   AbstractTriangulationNodeOrganizer(const AbstractTriangulationNodeOrganizer<T>&) = delete;
-  AbstractTriangulationNodeOrganizer<T>& operator=(const AbstractTriangulationNodeOrganizer<T>& ) = delete;
+  AbstractTriangulationNodeOrganizer<T>& operator=(const AbstractTriangulationNodeOrganizer<T>&) = delete;
 };
 
 }  // namespace spatial_organization

@@ -41,7 +41,8 @@ class InterObjectForce : public SimStateSerializable {
    * (= the point mass of the mother).
    *
    */
-  virtual std::array<double, 4> forceOnACylinderFromASphere(PhysicalCylinder* cylinder, PhysicalSphere* sphere) const = 0;
+  virtual std::array<double, 4> forceOnACylinderFromASphere(PhysicalCylinder* cylinder,
+                                                            PhysicalSphere* sphere) const = 0;
 
   /**
    * Force felt by sphere due to the presence of a cylinder
@@ -49,8 +50,8 @@ class InterObjectForce : public SimStateSerializable {
    * @param cylinder
    * @return
    */
-  virtual std::array<double, 3> forceOnASphereFromACylinder(
-      PhysicalSphere* sphere, PhysicalCylinder* cylinder) const = 0;
+  virtual std::array<double, 3> forceOnASphereFromACylinder(PhysicalSphere* sphere,
+                                                            PhysicalCylinder* cylinder) const = 0;
 
   /**
    * Force felt by a cylinder (cylinder1) due to the presence of another cylinder (cylinder2)
@@ -60,8 +61,8 @@ class InterObjectForce : public SimStateSerializable {
    * the fourth -when it exists- is the proportion of the force that is transmitted to the proximal end
    * of cylinder1 (= the point mass of the mother).
    */
-  virtual std::array<double, 4> forceOnACylinderFromACylinder(
-      PhysicalCylinder* cylinder1, PhysicalCylinder* cylinder2) const = 0;
+  virtual std::array<double, 4> forceOnACylinderFromACylinder(PhysicalCylinder* cylinder1,
+                                                              PhysicalCylinder* cylinder2) const = 0;
 
   virtual StringBuilder& simStateToJson(StringBuilder& sb) const override = 0;
 };

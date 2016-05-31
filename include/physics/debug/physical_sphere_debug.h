@@ -166,40 +166,35 @@ class PhysicalSphereDebug : public PhysicalSphere {
     return ret;
   }
 
-  std::array<double, 3> transformCoordinatesLocalToGlobal(
-      const std::array<double, 3>& position) const {
+  std::array<double, 3> transformCoordinatesLocalToGlobal(const std::array<double, 3>& position) const {
     logCall(position);
     auto ret = PhysicalSphere::transformCoordinatesLocalToGlobal(position);
     logReturn(ret);
     return ret;
   }
 
-  std::array<double, 3> transformCoordinatesLocalToPolar(
-      const std::array<double, 3>& position) const {
+  std::array<double, 3> transformCoordinatesLocalToPolar(const std::array<double, 3>& position) const {
     logCall(position);
     auto ret = PhysicalSphere::transformCoordinatesLocalToPolar(position);
     logReturn(ret);
     return ret;
   }
 
-  std::array<double, 3> transformCoordinatesPolarToLocal(
-      const std::array<double, 3>& position) const {
+  std::array<double, 3> transformCoordinatesPolarToLocal(const std::array<double, 3>& position) const {
     logCall(position);
     auto ret = PhysicalSphere::transformCoordinatesPolarToLocal(position);
     logReturn(ret);
     return ret;
   }
 
-  std::array<double, 3> transformCoordinatesPolarToGlobal(
-      const std::array<double, 2>& position) const {
+  std::array<double, 3> transformCoordinatesPolarToGlobal(const std::array<double, 2>& position) const {
     logCall(position);
     auto ret = PhysicalSphere::transformCoordinatesPolarToGlobal(position);
     logReturn(ret);
     return ret;
   }
 
-  std::array<double, 3> transformCoordinatesGlobalToPolar(
-      const std::array<double, 3>& position) const {
+  std::array<double, 3> transformCoordinatesGlobalToPolar(const std::array<double, 3>& position) const {
     logCall(position);
     auto ret = PhysicalSphere::transformCoordinatesGlobalToPolar(position);
     logReturn(ret);
@@ -277,7 +272,7 @@ class PhysicalSphereDebug : public PhysicalSphere {
     logReturnVoid();
   }
 
-private:
+ private:
   PhysicalSphereDebug(const PhysicalSphereDebug&) = delete;
   PhysicalSphereDebug& operator=(const PhysicalSphereDebug&) = delete;
 };

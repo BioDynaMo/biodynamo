@@ -20,7 +20,7 @@ template<class T> class SpatialOrganizationEdge;
 
 namespace simulation {
 class ECM;
-}// namespace simulation
+}  // namespace simulation
 
 namespace physics {
 

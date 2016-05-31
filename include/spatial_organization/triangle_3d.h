@@ -31,12 +31,9 @@ class Triangle3D : public Plane3D<T>, public std::enable_shared_from_this<Triang
    * Therefore, all constructors are private and accessed through static factory methods that return
    * a std::shared_ptr.
    */
-  static std::shared_ptr<Triangle3D<T>> create(
-      SpaceNode<T>* sn_1,
-      SpaceNode<T>* sn_2,
-      SpaceNode<T>* sn_3,
-      const std::shared_ptr<Tetrahedron<T>>& tetrahedron_1,
-      const std::shared_ptr<Tetrahedron<T>>& tetrahedron_2);
+  static std::shared_ptr<Triangle3D<T>> create(SpaceNode<T>* sn_1, SpaceNode<T>* sn_2, SpaceNode<T>* sn_3,
+                                               const std::shared_ptr<Tetrahedron<T>>& tetrahedron_1,
+                                               const std::shared_ptr<Tetrahedron<T>>& tetrahedron_2);
 
   /**
    * Calculates the crossing point of three planes given in normal form.
@@ -52,9 +49,8 @@ class Triangle3D : public Plane3D<T>, public std::enable_shared_from_this<Triang
    * @param[OUT] result The cutting point of the three planes if there is any and the
    *         maximum vector possible if not.
    */
-  static std::array<double, 3> calculate3PlaneXPoint(
-      const std::array<std::array<double, 3>, 3>& normals, const std::array<double, 3>& offsets,
-      double normal_det);
+  static std::array<double, 3> calculate3PlaneXPoint(const std::array<std::array<double, 3>, 3>& normals,
+                                                     const std::array<double, 3>& offsets, double normal_det);
 
   /**
    * Calculates the crossing point of three planes given in normal form.
@@ -68,8 +64,8 @@ class Triangle3D : public Plane3D<T>, public std::enable_shared_from_this<Triang
    * @return The cutting point of the three planes if there is any and the
    *         maximum vector possible if not.
    */
-  static std::array<double, 3> calculate3PlaneXPoint(
-      const std::array<std::array<double, 3>, 3>& normals, const std::array<double, 3>& offsets);
+  static std::array<double, 3> calculate3PlaneXPoint(const std::array<std::array<double, 3>, 3>& normals,
+                                                     const std::array<double, 3>& offsets);
 
   /**
    * Calculates the crossing point of three planes given in normal form using
@@ -86,10 +82,9 @@ class Triangle3D : public Plane3D<T>, public std::enable_shared_from_this<Triang
    * @return The cutting point of the three planes if there is any and the
    *         maximum vector possible if not.
    */
-  static std::shared_ptr<ExactVector> calculate3PlaneXPoint(
-      const std::array<std::shared_ptr<ExactVector>, 3>& normals,
-      const std::array<std::shared_ptr<Rational>, 3>& offsets,
-      const std::shared_ptr<Rational>& normal_det);
+  static std::shared_ptr<ExactVector> calculate3PlaneXPoint(const std::array<std::shared_ptr<ExactVector>, 3>& normals,
+                                                            const std::array<std::shared_ptr<Rational>, 3>& offsets,
+                                                            const std::shared_ptr<Rational>& normal_det);
 
   virtual ~Triangle3D() {
   }
@@ -133,8 +128,7 @@ class Triangle3D : public Plane3D<T>, public std::enable_shared_from_this<Triang
    * @return The signed delaunay distance or -1 if it cannot be calculated.
    *
    */
-  virtual std::shared_ptr<Rational> getSDDistanceExact(
-      const std::array<double, 3>& fourth_point) const;
+  virtual std::shared_ptr<Rational> getSDDistanceExact(const std::array<double, 3>& fourth_point) const;
 
   /**
    * Calculates the center of the circumsphere around the three endpoints of this triangle and a
@@ -145,8 +139,7 @@ class Triangle3D : public Plane3D<T>, public std::enable_shared_from_this<Triang
    * @param fourth_point The fourth point defining the sphere.
    * @return The coordinate of the center of the circumsphere if it can be computed and <code>null</code> else.
    */
-  virtual std::array<double, 3> calculateCircumSphereCenter(
-      const std::array<double, 3>& fourth_point) const;
+  virtual std::array<double, 3> calculateCircumSphereCenter(const std::array<double, 3>& fourth_point) const;
 
   /**
    * Calculates the center of the circumsphere around the three endpoints of this triangle and a
@@ -158,8 +151,7 @@ class Triangle3D : public Plane3D<T>, public std::enable_shared_from_this<Triang
    * @return The coordinate of the center of the circumsphere if the circumcenter of
    *  this triangle was updated and <code>null</code> else.
    */
-  virtual std::array<double, 3> calculateCircumSphereCenterIfEasy(
-      const std::array<double, 3>& fourth_point) const;
+  virtual std::array<double, 3> calculateCircumSphereCenterIfEasy(const std::array<double, 3>& fourth_point) const;
 
   /**
    * This function informs the triangle that one of its incident nodes moved.
@@ -181,8 +173,7 @@ class Triangle3D : public Plane3D<T>, public std::enable_shared_from_this<Triang
   /**
    * {@inheritDoc}
    */
-  int orientationExact(const std::array<double, 3>& point_1,
-                       const std::array<double, 3>& point_2) const override;
+  int orientationExact(const std::array<double, 3>& point_1, const std::array<double, 3>& point_2) const override;
 
   /**
    * Computes the orientation of a point to the circumcircle of this triangle.
@@ -362,8 +353,7 @@ class Triangle3D : public Plane3D<T>, public std::enable_shared_from_this<Triang
    * @param tetrahedron_2
    *            The second incident tetrahedron.
    */
-  Triangle3D(SpaceNode<T>* sn_1, SpaceNode<T>* sn_2,
-             SpaceNode<T>* sn_3,
+  Triangle3D(SpaceNode<T>* sn_1, SpaceNode<T>* sn_2, SpaceNode<T>* sn_3,
              const std::shared_ptr<Tetrahedron<T>>& tetrahedron_1,
              const std::shared_ptr<Tetrahedron<T>>& tetrahedron_2);
 
@@ -436,8 +426,7 @@ class Triangle3D : public Plane3D<T>, public std::enable_shared_from_this<Triang
    * @return The center of the circumcircle around the given triangle.
    */
   static std::shared_ptr<ExactVector> calculateCircumCenterExact(
-      const std::array<std::shared_ptr<ExactVector>, 3>& points,
-      const std::shared_ptr<ExactVector>& normal_vector);
+      const std::array<std::shared_ptr<ExactVector>, 3>& points, const std::shared_ptr<ExactVector>& normal_vector);
 
   /**
    * Calculates the distance of the center of a circumsphere touching all
@@ -491,9 +480,8 @@ class Triangle3D : public Plane3D<T>, public std::enable_shared_from_this<Triang
    * @return The signed delaunay distance or {@link Long#MAX_VALUE} if it
    *         cannot be calculated.
    */
-  virtual std::shared_ptr<Rational> calculateSDDistanceExact(
-      const std::array<std::shared_ptr<ExactVector>, 4>& points,
-      const std::shared_ptr<ExactVector>& normal_vector) const;
+  virtual std::shared_ptr<Rational> calculateSDDistanceExact(const std::array<std::shared_ptr<ExactVector>, 4>& points,
+                                                             const std::shared_ptr<ExactVector>& normal_vector) const;
 
   /**
    * Recomputes the center of the circumsphere of this triangle if any incident node moved since the last change.

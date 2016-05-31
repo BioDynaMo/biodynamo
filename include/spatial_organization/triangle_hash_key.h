@@ -24,8 +24,8 @@ template<class T> struct TriangleHashKeyEqual;
 template<class T>
 class TriangleHashKey {
  public:
-  friend struct TriangleHashKeyHash<T>;
-  friend struct TriangleHashKeyEqual<T>;
+  friend struct TriangleHashKeyHash<T> ;
+  friend struct TriangleHashKeyEqual<T> ;
 
   /**
    * Creates a hash value for a triplet of nodes.
@@ -33,8 +33,7 @@ class TriangleHashKey {
    * @param b The second node.
    * @param c The third node.
    */
-  TriangleHashKey(SpaceNode<T>* a, SpaceNode<T>* b,
-                  SpaceNode<T>* c);
+  TriangleHashKey(SpaceNode<T>* a, SpaceNode<T>* b, SpaceNode<T>* c);
 
   TriangleHashKey(const TriangleHashKey& other);
 
@@ -87,7 +86,6 @@ template<class T>
 struct TriangleHashKeyEqual {
   bool operator()(const TriangleHashKey<T>& lhs, const TriangleHashKey<T>& rhs) const;
 };
-
 
 }  // namespace spatial_organization
 }  // namespace cx3d

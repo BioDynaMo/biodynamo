@@ -21,7 +21,7 @@ class PhysicalNodeDebug : public PhysicalNode {
 //    logConstrParameterless("PhysicalNode");
   }
 
-  virtual bool isAPhysicalObject() const  override {
+  virtual bool isAPhysicalObject() const override {
     logCallParameterless();
     auto ret = PhysicalNode::isAPhysicalObject();
     logReturn(ret);
@@ -89,8 +89,7 @@ class PhysicalNodeDebug : public PhysicalNode {
     return ret;
   }
 
-  virtual double computeConcentrationAtDistanceBasedOnGradient(Substance* s,
-      const std::array<double, 3>& dX) override {
+  virtual double computeConcentrationAtDistanceBasedOnGradient(Substance* s, const std::array<double, 3>& dX) override {
     logCall(s, dX);
     auto ret = PhysicalNode::computeConcentrationAtDistanceBasedOnGradient(s, dX);
     logReturn(ret);
@@ -187,7 +186,7 @@ class PhysicalNodeDebug : public PhysicalNode {
 //    logReturnVoid();
 //  }
 
-private:
+ private:
   PhysicalNodeDebug(const PhysicalNodeDebug&) = delete;
   PhysicalNodeDebug& operator=(const PhysicalNodeDebug&) = delete;
 };

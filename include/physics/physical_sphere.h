@@ -214,8 +214,7 @@ class PhysicalSphere : public PhysicalObject {
   /**
    * A PhysicalSphere has no mother that could call, so this method is not used.
    */
-  virtual std::array<double, 3> forceTransmittedFromDaugtherToMother(PhysicalObject* mother)
-      override;
+  virtual std::array<double, 3> forceTransmittedFromDaugtherToMother(PhysicalObject* mother) override;
 
   virtual void removeDaughter(PhysicalObject* daughter) override;
 
@@ -249,8 +248,7 @@ class PhysicalSphere : public PhysicalObject {
   std::list<PhysicalCylinder*> daughters_;
   /** Position in local coordinates (PhysicalObject*'s xAxis,yAxis,zAxis) of
    * the attachment point of my daughters.*/
-  std::unordered_map<PhysicalCylinder*, std::array<double, 3>, PhysicalCylinderHash,
-      PhysicalCylinderEqual> daughters_coord_;
+  std::unordered_map<PhysicalCylinder*, std::array<double, 3>, PhysicalCylinderHash, PhysicalCylinderEqual> daughters_coord_;
 
   /** Plays the same role than mass and adherence, for rotation around center of mass. */
   double rotational_inertia_ = Param::kSphereDefaultRotationalInertia;

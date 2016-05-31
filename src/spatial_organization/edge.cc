@@ -30,8 +30,7 @@ SpatialOrganizationNode<T>* Edge<T>::getOpposite(const SpatialOrganizationNode<T
   } else if (node == b_) {
     return a_;
   } else {
-    throw std::invalid_argument(
-        "The edge " + toString() + " is not adjacent to the node " + node->toString());
+    throw std::invalid_argument("The edge " + toString() + " is not adjacent to the node " + node->toString());
   }
 }
 
@@ -79,8 +78,7 @@ const std::string Edge<T>::toString() const {
 }
 
 template<class T>
-bool Edge<T>::equals(SpaceNode<T>* a,
-                     SpaceNode<T>* b) const {
+bool Edge<T>::equals(SpaceNode<T>* a, SpaceNode<T>* b) const {
   return ((a_ == a) && (b_ == b)) || ((b_ == a) && (a_ == b));
 }
 
@@ -117,7 +115,7 @@ void Edge<T>::changeCrossSectionArea(double change) {
   cross_section_area_ += change;
 }
 
-template class Edge<cx3d::physics::PhysicalNode>;
+template class Edge<cx3d::physics::PhysicalNode> ;
 
 }  // namespace spatial_organization
 }  // namespace cx3d

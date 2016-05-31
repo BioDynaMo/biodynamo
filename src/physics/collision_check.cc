@@ -88,8 +88,7 @@ double CollisionCheck::howMuchCanWeMove(const std::array<double, 3>& A, const st
 }
 
 void CollisionCheck::addPhysicalBondIfCrossing(const std::array<double, 3>& A, const std::array<double, 3>& B,
-                                               const std::array<double, 3>& C,
-                                               PhysicalCylinder* moving,
+                                               const std::array<double, 3>& C, PhysicalCylinder* moving,
                                                PhysicalCylinder* still) {
   //the immobile end of the moving cylinder
 

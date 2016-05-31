@@ -124,7 +124,7 @@ class ECM : public SimStateSerializable {
    * @return
    */
   SpatialOrganizationNode<PhysicalNode>::UPtr getSpatialOrganizationNodeInstance(const std::array<double, 3>& position,
-                                                                   PhysicalNode* user_object);
+                                                                                 PhysicalNode* user_object);
 
   /**
    * Returns an instance of a class implementing SpatialOrganizationNode.
@@ -137,9 +137,8 @@ class ECM : public SimStateSerializable {
    * @param userObject
    * @return
    */
-  SpatialOrganizationNode<PhysicalNode>::UPtr getSpatialOrganizationNodeInstance(SpatialOrganizationNode<PhysicalNode>* n,
-                                                                   const std::array<double, 3>& position,
-                                                                   PhysicalNode* user_object);
+  SpatialOrganizationNode<PhysicalNode>::UPtr getSpatialOrganizationNodeInstance(
+      SpatialOrganizationNode<PhysicalNode>* n, const std::array<double, 3>& position, PhysicalNode* user_object);
 
   /**
    * Creating some "dummy nodes", i.e. some  PhysicalSplace.
