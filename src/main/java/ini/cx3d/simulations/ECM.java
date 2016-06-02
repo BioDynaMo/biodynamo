@@ -24,6 +24,7 @@ package ini.cx3d.simulations;
 import static ini.cx3d.utilities.Matrix.add;
 import static ini.cx3d.utilities.Matrix.randomNoise;
 
+import ini.cx3d.Random;
 import ini.cx3d.SimStateSerializable;
 import ini.cx3d.SimStateSerializationUtil;
 import ini.cx3d.cells.Cell;
@@ -49,7 +50,6 @@ import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.Hashtable;
-import java.util.Random;
 import java.util.Vector;
 import java.util.concurrent.Semaphore;
 
@@ -234,13 +234,12 @@ public class ECM implements SimStateSerializable {
 	// **************************************************************************
 	// Random Number
 	// **************************************************************************
-	static Random random = new Random();
-	
+
 	/**
 	 * @return a random number between, from uniform probability 0 and 1;
 	 */
 	public static double getRandomDouble(){
-		return random.nextDouble();
+		return Random.nextDoubleECM();
 	}
 	
 	/**
@@ -250,7 +249,7 @@ public class ECM implements SimStateSerializable {
 	 * @return
 	 */
 	public static double getGaussianDouble(double mean, double standardDeviation){
-		return mean + standardDeviation*random.nextGaussian();
+		return Random.nextGaussianDoubleECM(mean, standardDeviation);
 	}
 	
 	
@@ -260,8 +259,7 @@ public class ECM implements SimStateSerializable {
 	 * @param seed
 	 */
 	public static void setRandomSeed(long seed){
-		random = new Random(seed);
-		Matrix.setRandomSeedTo(seed);
+		Random.setSeed(seed);
 	}
 	
 	// **************************************************************************

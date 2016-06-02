@@ -21,9 +21,8 @@ along with CX3D.  If not, see <http://www.gnu.org/licenses/>.
 
 package ini.cx3d.utilities;
 
-import java.util.Random;
 
-
+import ini.cx3d.Random;
 
 /**
  * The Matrix class contains several methods for manipulation of vectors and matrices of <code>double</code>. 
@@ -75,25 +74,15 @@ import java.util.Random;
 
 public abstract class Matrix {	
 	
-	static private Random random = new Random();
-	
+
 	/**
 	 * @return a random number between 0 and 1;
 	 */
 	public static double getRandomDouble(){
-		return random.nextDouble();
+		return Random.nextDoubleMatrix();
 	}
 	
-	/**
-	 * Initializes the random number generator. 
-	 * @param seed
-	 */
-	public static void setRandomSeedTo(long seed){
-		random = new Random(seed);
-	}
-	
-	
-	
+
 	/**
 	 * Returns the vector resulting from the addition of two vectors.
 	 * 
@@ -800,14 +789,14 @@ public abstract class Matrix {
 			vectPerp[0] = 1.0;
 			vectPerp[1] = 0.0;
 			vectPerp[2] = 0.0;
-			vectPerp = rotAroundAxis(vectPerp,6.35*random.nextDouble(),a);
+			vectPerp = rotAroundAxis(vectPerp,6.35*Random.nextDoubleMatrix(),a);
 		}
 		else {
 			vectPerp[0] = a[1];
 			vectPerp[1] = -a[0];
 			vectPerp[2] = 0.0;
 			vectPerp = normalize(vectPerp);
-			vectPerp = rotAroundAxis(vectPerp,6.35*random.nextDouble(),a);
+			vectPerp = rotAroundAxis(vectPerp,6.35*Random.nextDoubleMatrix(),a);
 		}
 		return vectPerp;
 	}
@@ -916,7 +905,7 @@ public abstract class Matrix {
 	public static double[] random(int n){
 	    double[] a = new double [n];
 	    for(int i=0; i<n; i++)             
-	    	a[i] = (double)random.nextDouble();
+	    	a[i] = (double)Random.nextDoubleMatrix();
 	    return a;
 	}
 
@@ -930,7 +919,7 @@ public abstract class Matrix {
         double[][] A = new double [n][m];
         for(int i=0; i<n; i++)              
             for(int j=0; j<m; j++)       
-                A[i][j] = (double)random.nextDouble();
+                A[i][j] = (double)Random.nextDoubleMatrix();
                 return A;
     }
     
@@ -943,7 +932,7 @@ public abstract class Matrix {
 	public static double[] randomNoise(double k, int n){
 	    double[] a = new double [n];
 	    for(int i=0; i<n; i++)             
-	    	a[i] = -k + 2*k*(double)random.nextDouble();
+	    	a[i] = -k + 2*k*(double)Random.nextDoubleMatrix();
 	    return a;
 	}
 
@@ -959,7 +948,7 @@ public abstract class Matrix {
         double[][] A = new double [n][m];
         for(int i=0; i<n; i++){              
             for(int j=0; j<m; j++){
-            	A[i][j] = -k + 2*k*(double)random.nextDouble();
+            	A[i][j] = -k + 2*k*(double)Random.nextDoubleMatrix();
             	
             }
         }
@@ -975,7 +964,7 @@ public abstract class Matrix {
 	public static double[] randomZeroOne(int n){
 	    double[] a = new double [n];
 	    for(int i=0; i<n; i++)              
-	        a[i] = (double)Math.rint(random.nextDouble());
+	        a[i] = (double)Math.rint(Random.nextDoubleMatrix());
 	    return a; 
 	}
 
@@ -990,7 +979,7 @@ public abstract class Matrix {
         double[][] A = new double [n][m];
         for(int i=0; i<n; i++)              
             for(int j=0; j<m; j++)       
-                A[i][j] = (double)Math.rint(random.nextDouble());
+                A[i][j] = (double)Math.rint(Random.nextDoubleMatrix());
                 return A;
     }
     
@@ -1002,7 +991,7 @@ public abstract class Matrix {
 	public static double[] randomOneMinusOne(int n){
 	    double[] A = new double [n];
 	    for(int i=0; i<n; i++) 
-	    		if (random.nextDouble() >0.5)
+	    		if (Random.nextDoubleMatrix() >0.5)
 	    			A[i] = 1.0;
 	    		else
 	    			A[i] = -1.0;
@@ -1019,7 +1008,7 @@ public abstract class Matrix {
         double[][] A = new double [n][m];
         for(int i=0; i<n; i++)              
             for(int j=0; j<m; j++)       
-            	if (random.nextDouble() >0.5)
+            	if (Random.nextDoubleMatrix() >0.5)
 	    			A[i][j] = 1.0;
 	    		else
 	    			A[i][j] = -1.0;
@@ -1036,7 +1025,7 @@ public abstract class Matrix {
 	public static double[] randomPositiveNoise(double d, int n){
 	    double[] a = new double [n];
 	    for(int i=0; i<n; i++)             
-	    	a[i] = (double)random.nextDouble()*d;
+	    	a[i] = (double)Random.nextDoubleMatrix()*d;
 	    return a;
 	}
 
