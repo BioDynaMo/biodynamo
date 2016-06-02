@@ -1,7 +1,43 @@
-language: java
-jdk:
-  - oraclejdk8
-
-branches:
-  only:
-    - master
+language: cpp
+sudo: required
+dist: trusty
+install:
+  - echo ${TRAVIS_OS_NAME}
+  # update and install packges on osx
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew update; fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install doxygen; fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ] && [ "$CXX" = "g++" ]; then brew outdated gcc || brew upgrade gcc; fi
+  # link to newest compiler
+  - if [ "$TRAVIS_OS_NAME" = "linux" ] && [ "$CXX" = "g++" ]; then export CXX="g++-5" CC="gcc-5"; fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ] && [ "$CXX" = "clang++" ]; then export CXX="clang++-3.7" CC="clang-3.7"; fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ] && [ "$CXX" = "g++" ]; then export CXX="/usr/local/Cellar/gcc/5.3.0/bin/g++-5" CC="/usr/local/Cellar/gcc/5.3.0/bin/gcc-5"; fi
+  # output compiler information
+  - echo ${CXX}
+  - ${CXX} --version
+  - ${CXX} -v
+addons:
+  apt:
+    # List of whitelisted in travis packages for ubuntu-precise can be found here:
+    #   https://github.com/travis-ci/apt-package-whitelist/blob/master/ubuntu-precise
+    sources:
+    - ubuntu-toolchain-r-test
+    - llvm-toolchain-precise-3.7
+    - george-edison55-precise-backports # cmake 3.2.3 / doxygen 1.8.3
+    packages:
+    - gcc-5
+    - g++-5
+    - clang-3.7
+    - cmake
+    - cmake-data
+    - valgrind
+os:
+  - linux
+#  - osx
+compiler:
+  - gcc
+  - clang
+script:
+  - mkdir build
+  - cd build
+  - cmake .. && make
+  - travis_wait 30 make check

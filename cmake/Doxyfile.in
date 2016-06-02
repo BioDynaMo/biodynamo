@@ -1,0 +1,26 @@
+# "Calling Doxygen from cmake" from Thomas Pircher
+# used under a Creative Commons Attribution-Share Alike 3.0 Unported License
+# https://creativecommons.org/licenses/by-sa/3.0/
+# Changes where made; original article can be found at:
+# https://www.tty1.net/blog/2014/cmake-doxygen_en.html
+
+PROJECT_NAME           = "@CMAKE_PROJECT_NAME@"
+PROJECT_NUMBER         = @VERSION_MAJOR@.@VERSION_MINOR@.@VERSION_PATCH@
+STRIP_FROM_PATH        = "@PROJECT_SOURCE_DIR@/src" \
+                         "@PROJECT_SOURCE_DIR@/include" 
+INPUT                  = "@PROJECT_SOURCE_DIR@/src" \
+                         "@PROJECT_SOURCE_DIR@/include" \
+                         "@PROJECT_SOURCE_DIR@/README.md"
+FILE_PATTERNS          = *.h \
+                         *.cc
+RECURSIVE              = YES
+USE_MDFILE_AS_MAINPAGE = "@PROJECT_SOURCE_DIR@/README.md"
+EXTRACT_PRIVATE        = YES
+EXTRACT_ALL            = YES
+HTML_OUTPUT            = "@PROJECT_BINARY_DIR@/doc/html"
+LATEX_OUTPUT           = "@PROJECT_BINARY_DIR@/doc/latex"
+CALL_GRAPH             = YES
+CALLER_GRAPH           = YES
+
+# DOT_IMAGE_FORMAT       = svg
+# INTERACTIVE_SVG        = YES
