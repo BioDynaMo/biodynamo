@@ -44,7 +44,7 @@ public class Scheduler {
 	/* Reference to the ECM.*/
 	protected static ECM ecm = ECM.getInstance();
 	/* Reference to the ECM display window */
-	protected static View view = ecm.createGUI();
+	protected static View view = null;//ecm.createGUI();
 	/* static counter, needed in case where we want to make regular snapshots.*/
 	protected static int cycle_counter = 0; 	
 	protected static int inter_snapshot_time_steps = 30; 	
@@ -97,9 +97,9 @@ public class Scheduler {
 //			} 
 
 			// GUI rotation
-			if (ecm.isContinuouslyRotating()) {
-				ecm.view.rotateAroundZ(ecm.getView().getRotationSpeed());
-			}
+//			if (ecm.isContinuouslyRotating()) {
+//				ecm.view.rotateAroundZ(ecm.getView().getRotationSpeed());
+//			}
 			long phystemptime = System.currentTimeMillis(); 
 			if(runPhyics){
 				// PhysicalNode (diffusion & degradation of Substances)
@@ -211,7 +211,7 @@ public class Scheduler {
 				ecm.dumpImage();
 			}
 			// updating the picture on the GUI
-			view.repaint();
+			//view.repaint();
 			// ticking ECM's time
 			cycle_counter += 1;
 			ecm.increaseECMtime(Param.SIMULATION_TIME_STEP);

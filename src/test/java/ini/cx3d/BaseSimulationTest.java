@@ -1,5 +1,7 @@
 package ini.cx3d;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonReader;
@@ -68,42 +70,6 @@ public abstract class BaseSimulationTest {
      */
     private double maxAllowedRuntime = Double.MAX_VALUE;
 
-    @Rule
-    public Stopwatch stopwatch = new Stopwatch() {
-
-        @Override
-        protected void succeeded(long nanos, Description description) {
-            logInfo(description, "succeeded", nanos);
-            String execTimesFilePath = TestUtil.getResourcePath() + execTimesFileName;
-            logger.info(execTimesFilePath);
-            Map.Entry<String, Double> entry = executionTimes.isEmpty() ? null : executionTimes.getLast();
-            if (entry != null && entry.getKey().equals(lastCommit)) {
-                executionTimes.removeLast();
-            }
-            executionTimes.add(new AbstractMap.SimpleEntry<String, Double>(lastCommit, nanos / 1000000d));
-            try {
-                TestUtil.persistExecutionTimesCsv(execTimesFilePath, executionTimes);
-            } catch (IOException e) {
-                logger.info(e.getMessage());
-            }
-        }
-
-        @Override
-        protected void failed(long nanos, Throwable e, Description description) {
-            logInfo(description, "failed", nanos);
-        }
-
-        @Override
-        protected void skipped(long nanos, AssumptionViolatedException e, Description description) {
-            logInfo(description, "skipped", nanos);
-        }
-
-        @Override
-        protected void finished(long nanos, Description description) {
-            logInfo(description, "finished", nanos);
-        }
-    };
-
     public BaseSimulationTest(Class clazz) {
         //apply and extract execution time of last commit
         try {
@@ -133,19 +99,24 @@ public abstract class BaseSimulationTest {
     public void runTest() {
         try {
             configure();
+
+            long start = System.currentTimeMillis();
             simulation();
+            long stop = System.currentTimeMillis();
+            persistRuntime(stop - start);
+
             assertSimulationState();
         } catch (Exception e) {
             e.printStackTrace();
             fail(e.getMessage());
         }
-        if (assertPerformance) {
-            assertTrue(stopwatch.runtime(TimeUnit.MILLISECONDS) < maxAllowedRuntime);
-        }
+//        if (assertPerformance) {
+//            assertTrue(stopwatch.runtime(TimeUnit.MILLISECONDS) < maxAllowedRuntime);
+//        }
     }
 
     private void configure() {
-        ECM.headlessGui = TestUtil.isRunningOnTravis();
+        ECM.headlessGui = true;// TestUtil.isRunningOnTravis();
         // run simulation (don't start in pause mode)
         ECM.getInstance().canRun.release();
         ECM.setRandomSeed(1L);
@@ -167,7 +138,7 @@ public abstract class BaseSimulationTest {
 //            System.out.println(gson.toJson(jsonTree));
 //            System.out.println(gson.toJson(reference));
 
-//            assertEquals(reference.toString(),jsonString);
+//            assertEquals(gson.toJson(reference),gson.toJson(jsonTree));
             assertTrue(jsonTree.equals(reference));
         } else {
             TestUtil.persistJson(TestUtil.getResourcePath()+refFileName, jsonString);
@@ -194,6 +165,20 @@ public abstract class BaseSimulationTest {
             maxAllowedRuntime = entry.getValue()+30;
         } else {
             maxAllowedRuntime = Double.MAX_VALUE;
+        }
+    }
+
+    private void persistRuntime(long milliseconds) {
+        String execTimesFilePath = TestUtil.getResourcePath() + execTimesFileName;
+        Map.Entry<String, Double> entry = executionTimes.isEmpty() ? null : executionTimes.getLast();
+        if (entry != null && entry.getKey().equals(lastCommit)) {
+            executionTimes.removeLast();
+        }
+        executionTimes.add(new AbstractMap.SimpleEntry<String, Double>(lastCommit, (double) milliseconds));
+        try {
+            TestUtil.persistExecutionTimesCsv(execTimesFilePath, executionTimes);
+        } catch (IOException e) {
+            logger.info(e.getMessage());
         }
     }
 }
