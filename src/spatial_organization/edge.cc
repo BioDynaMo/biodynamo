@@ -1,3 +1,4 @@
+#include <vector>
 #include <stl_util.h>
 #include "spatial_organization/edge.h"
 
