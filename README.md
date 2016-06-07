@@ -2,6 +2,7 @@
 Biological Dynamic Modeller - Based on Cortex 3D (Cx3D)
 
 [![Build Status](https://travis-ci.org/BioDynaMo/biodynamo.svg?branch=master)](https://travis-ci.org/BioDynaMo/biodynamo)
+[![Join the chat at https://gitter.im/BioDynaMo/biodynamo](https://badges.gitter.im/BioDynaMo/biodynamo.svg)](https://gitter.im/BioDynaMo/biodynamo?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 ##Introduction:
 
