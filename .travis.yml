@@ -21,12 +21,10 @@ addons:
     #   https://github.com/travis-ci/apt-package-whitelist/blob/master/ubuntu-precise
     sources:
     - ubuntu-toolchain-r-test
-    - llvm-toolchain-precise-3.7
     - george-edison55-precise-backports # cmake 3.2.3 / doxygen 1.8.3
     packages:
     - gcc-5
     - g++-5
-    - clang-3.7
     - cmake
     - cmake-data
     - valgrind
@@ -35,7 +33,6 @@ os:
 #  - osx
 compiler:
   - gcc
-  - clang
 script:
   - mkdir build
   - cd build
