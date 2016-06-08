@@ -6,12 +6,14 @@
 
 namespace bdm {
 
-// todo change to C++11 random implementation
+/**
+ * C++ implementation of the Java default random number generator (java.util.Random)
+ */
 class Random {
  public:
   Random() = delete;
 
-  static void setSeed(double seed);
+  static void setSeed(long seed);
 
   static int nextInt();
 
@@ -22,10 +24,15 @@ class Random {
   static std::array<double, 3> nextNoise(double k);
 
  private:
+  static long seed_;
   static double nextNextGaussian;
   static bool haveNextNextGaussian;
 
+  static int next(int i);
+
   static double nextGaussian();
+
+  static bool compareAndSet(long& current, long expected, long update);
 };
 
 }  // namespace bdm

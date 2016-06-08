@@ -7,9 +7,12 @@ namespace bdm {
 
 double Random::nextNextGaussian = 0.0;
 bool Random::haveNextNextGaussian = false;
+long Random::seed_ = 0;
 
-void Random::setSeed(double seed) {
-  std::srand(seed);
+void Random::setSeed(long seed) {
+  seed_ = (seed ^ 25214903917L) & 281474976710655L;
+  nextNextGaussian = 0.0;
+  haveNextNextGaussian = false;
 }
 
 int Random::nextInt() {
@@ -17,12 +20,34 @@ int Random::nextInt() {
 }
 
 double Random::nextDouble() {
-  return static_cast<double>(std::rand()) / RAND_MAX;
+  return (double)(((long)next(26) << 27) + (long)next(27)) * 1.1102230246251565E-16;
 }
 
 double Random::nextGaussian(double mean, double standard_deviation) {
   return mean + standard_deviation * nextGaussian();
 }
+
+int Random::next(int var1) {
+  long var6 = seed_;
+
+  long var2;
+  long var4;
+  do {
+    var2 = var6;
+    var4 = var2 * 25214903917L + 11L & 281474976710655L;
+  } while(!compareAndSet(var6, var2, var4));
+  seed_ = var6;
+  return (int)(var4 >> 48 - var1);
+}
+
+bool Random::compareAndSet(long& current, long expected, long update) {
+  if(current == expected) {
+    current = update;
+    return true;
+  }
+  return false;
+}
+
 
 double Random::nextGaussian() {
   if (haveNextNextGaussian) {

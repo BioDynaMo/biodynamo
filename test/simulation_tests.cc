@@ -1,4 +1,5 @@
 #include <cmath>
+#include "random.h"
 
 #include "gtest/gtest.h"
 
@@ -22,6 +23,24 @@ TEST (Math, exp) {
   double result = exp(x);
   double expected = 0.99713167012178527;
   ASSERT_EQ(expected, result);
+}
+
+TEST (Random, all) {
+  Random::setSeed(1L);
+  ASSERT_TRUE(std::abs(0.7308781907032908 - Random::nextDouble()) < 1e-20);
+  ASSERT_TRUE(std::abs(0.41008081149220166 - Random::nextDouble()) < 1e-20);
+  for(int i = 0; i < 10000000; i++) Random::nextDouble();
+  ASSERT_TRUE(std::abs(0.06991942722947553 - Random::nextDouble()) < 1e-20);
+  ASSERT_TRUE(std::abs(-0.3648863101313806 - Random::nextGaussian(0, 1)) < 1e-20);
+  for(int i = 0; i < 100000; i++) Random::nextGaussian(2, 3);
+  ASSERT_TRUE(0.4512373907254288 - Random::nextGaussian(3, 4) < 1e-20);
+  Random::setSeed(99L);
+  ASSERT_TRUE(std::abs(0.7224575488195071 - Random::nextDouble()) < 1e-20);
+  ASSERT_TRUE(std::abs(0.9246892004845302 - Random::nextGaussian(3, 4)) < 1e-20);
+  auto noise = Random::nextNoise(100);
+  ASSERT_TRUE(std::abs(73.40813456108145 - noise[0]) < 1e-20);
+  ASSERT_TRUE(std::abs(53.51089851859078 - noise[1]) < 1e-20);
+  ASSERT_TRUE(std::abs(-48.27938452667355 - noise[2]) < 1e-20);
 }
 
 TEST_F (DividingCellTest, simulation) {
