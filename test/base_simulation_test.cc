@@ -51,7 +51,7 @@ void BaseSimulationTest::run() {
   simulate();
   long end = timestamp();
   runtime_ = end - start;
-
+  std::cout << "RUNTIME " << getTestName() << " " << (end-start) << std::endl;
   // ensure correct result
   if (!disable_assertions_) {
     assertSimulationState();
