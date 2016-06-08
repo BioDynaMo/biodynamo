@@ -5,24 +5,22 @@ package ini.cx3d;
  * -> important for reproducibility of simulation results
  */
 public class Random {
-    private static java.util.Random ecmRandom = new java.util.Random();
-    private static java.util.Random matrixRandom = new java.util.Random();
+
+    private static java.util.Random random = new java.util.Random();
 
     public static void setSeed(long seed){
-        ecmRandom = new java.util.Random(seed);
-        matrixRandom = new java.util.Random(seed);
+        random = new java.util.Random(seed);
     }
 
     public static double nextDoubleECM() {
-        return ecmRandom.nextDouble();
+        return random.nextDouble();
     }
 
     public static double nextGaussianDoubleECM(double mean , double standardDeviation) {
-        return mean + standardDeviation*ecmRandom.nextGaussian();
+        return mean + standardDeviation* random.nextGaussian();
     }
 
     public static double nextDoubleMatrix() {
-        return matrixRandom.nextDouble();
+        return random.nextDouble();
     }
-
 }
