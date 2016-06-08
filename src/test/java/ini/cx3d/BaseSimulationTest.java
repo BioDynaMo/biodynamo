@@ -103,6 +103,7 @@ public abstract class BaseSimulationTest {
             long start = System.currentTimeMillis();
             simulation();
             long stop = System.currentTimeMillis();
+            System.out.println("RUNTIME "+getClass().getSimpleName().replace("_", "") + " " + (stop - start));
             persistRuntime(stop - start);
 
             assertSimulationState();
