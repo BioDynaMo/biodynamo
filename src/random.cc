@@ -5,14 +5,14 @@
 
 namespace bdm {
 
-double Random::nextNextGaussian = 0.0;
-bool Random::haveNextNextGaussian = false;
+double Random::next_next_gaussian_ = 0.0;
+bool Random::have_next_next_gaussian_ = false;
 long Random::seed_ = 0;
 
 void Random::setSeed(long seed) {
   seed_ = (seed ^ 25214903917L) & 281474976710655L;
-  nextNextGaussian = 0.0;
-  haveNextNextGaussian = false;
+  next_next_gaussian_ = 0.0;
+  have_next_next_gaussian_ = false;
 }
 
 int Random::nextInt() {
@@ -20,7 +20,7 @@ int Random::nextInt() {
 }
 
 double Random::nextDouble() {
-  return (double)(((long)next(26) << 27) + (long)next(27)) * 1.1102230246251565E-16;
+  return (double) (((long) next(26) << 27) + (long) next(27)) * 1.1102230246251565E-16;
 }
 
 double Random::nextGaussian(double mean, double standard_deviation) {
@@ -34,25 +34,24 @@ int Random::next(int var1) {
   long var4;
   do {
     var2 = var6;
-    var4 = var2 * 25214903917L + 11L & 281474976710655L;
-  } while(!compareAndSet(var6, var2, var4));
+    var4 = (var2 * 25214903917L + 11L) & 281474976710655L;
+  } while (!compareAndSet(var6, var2, var4));
   seed_ = var6;
-  return (int)(var4 >> 48 - var1);
+  return (int) (var4 >> (48 - var1));
 }
 
 bool Random::compareAndSet(long& current, long expected, long update) {
-  if(current == expected) {
+  if (current == expected) {
     current = update;
     return true;
   }
   return false;
 }
 
-
 double Random::nextGaussian() {
-  if (haveNextNextGaussian) {
-    haveNextNextGaussian = false;
-    return nextNextGaussian;
+  if (have_next_next_gaussian_) {
+    have_next_next_gaussian_ = false;
+    return next_next_gaussian_;
   } else {
     double v1, v2, s;
     do {
@@ -61,8 +60,8 @@ double Random::nextGaussian() {
       s = v1 * v1 + v2 * v2;
     } while (s >= 1 || s == 0);
     double multiplier = std::sqrt(-2 * std::log(s) / s);
-    nextNextGaussian = v2 * multiplier;
-    haveNextNextGaussian = true;
+    next_next_gaussian_ = v2 * multiplier;
+    have_next_next_gaussian_ = true;
     return v1 * multiplier;
   }
 }

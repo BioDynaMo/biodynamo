@@ -25,8 +25,8 @@ class Random {
 
  private:
   static long seed_;
-  static double nextNextGaussian;
-  static bool haveNextNextGaussian;
+  static double next_next_gaussian_;
+  static bool have_next_next_gaussian_;
 
   static int next(int i);
 
