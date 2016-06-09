@@ -60,6 +60,8 @@ cmake .. -Dtest=off
 There is another option to disable memory leak checks: `-Dvalgrind=on/off`
 Default value is `on` for both options. If you change the value of these switches, you might have to delete `CMakeCache.txt` beforehand.
 
+The build type can be specified using the `-DCMAKE_BUILD_TYPE=` command line parameter. Possible values are `Debug|Release|RelWithDebInfo|MinSizeRel`
+
 ### Make Targets
 `make test` executes all tests
 
