@@ -78,11 +78,6 @@ public class Scheduler {
 			ECM.getInstance().canRun.acquire();
 			
 
-			Thread.sleep(1);
-
-
-		
-
 			if(printCurrentECMTime){
 				System.out.println("time = "+doubleToString(ecm.getECMtime(), 2));
 			}
