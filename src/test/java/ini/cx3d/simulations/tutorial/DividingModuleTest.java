@@ -47,7 +47,7 @@ public class DividingModuleTest extends BaseSimulationTest {
 		Scheduler.simulateOneStep();
 		Scheduler.simulateOneStep();
 		ini.cx3d.utilities.SystemUtilities.tic();
-		for (int i = 0; i < 5000; i++) {
+		for (int i = 0; i < 8808; i++) {
 			Scheduler.simulateOneStep();
 		}
 		ini.cx3d.utilities.SystemUtilities.tac();

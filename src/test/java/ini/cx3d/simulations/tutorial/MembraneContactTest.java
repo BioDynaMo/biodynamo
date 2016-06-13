@@ -63,7 +63,7 @@ public class MembraneContactTest extends BaseSimulationTest {
 			c.setColorForAllPhysicalObjects(Param.VIOLET);
 		}
 
-		for (int i = 0; i < 1500; i++) {
+		for (int i = 0; i < 12598362; i++) {
 			Scheduler.simulateOneStep();
 		}
 

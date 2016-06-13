@@ -45,7 +45,7 @@ public class SomaRandomWalkModuleTest extends BaseSimulationTest {
 			c.getSomaElement().addLocalBiologyModule(new SomaRandomWalkModule());
 //			c.addCellModule(new DividingModule());  // un-comment to have the cells divide
 		}
-		for (int i = 0; i < 1000; i++) {
+		for (int i = 0; i < 4612079; i++) {
 			Scheduler.simulateOneStep();
 		}
 	}

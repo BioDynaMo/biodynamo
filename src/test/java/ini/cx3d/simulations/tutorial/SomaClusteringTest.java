@@ -79,7 +79,7 @@ public class SomaClusteringTest extends BaseSimulationTest {
         Scheduler.setPrintCurrentECMTime(false);
 
         ini.cx3d.utilities.SystemUtilities.tacAndTic();
-        for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < 9905; i++) {
             Scheduler.simulateOneStep();
             if (i % 100 == 0) {
                 System.out.print("time step " + i + ", time = ");

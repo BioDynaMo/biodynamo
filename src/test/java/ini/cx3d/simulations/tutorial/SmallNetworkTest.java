@@ -79,9 +79,9 @@ public class SmallNetworkTest extends BaseSimulationTest {
 			NeuriteElement dendrite = c.getSomaElement().extendNewNeurite();
 			dendrite.setIsAnAxon(false);
 			dendrite.getPhysicalCylinder().setDiameter(1.5);
-			dendrite.addLocalBiologyModule(new NeuriteChemoAttraction("L1",0.02));
+			dendrite.addLocalBiologyModule(new NeuriteChemoAttraction("L1", 0.02));
 		}
-		while (ecm.getECMtime() < 6) {
+		for (int i = 0; i < 1343; i++) {
 			Scheduler.simulateOneStep();
 		}	
 		ConnectionsMaker.extendExcressencesAndSynapseOnEveryNeuriteElement();

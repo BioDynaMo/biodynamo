@@ -141,7 +141,7 @@ public class Figure_9Test extends BaseSimulationTest {
 			}
 		}
 		
-		for (int i = 0; i < 350; i++) { // 350
+		for (int i = 0; i < 549; i++) { // 350
 			Scheduler.simulateOneStep();
 		}
 		

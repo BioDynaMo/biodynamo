@@ -50,7 +50,7 @@ public class DividingCellTest extends BaseSimulationTest {
 
 
 
-		for (int i = 0; i < 5000; i++) {
+		for (int i = 0; i < 466032; i++) {
 			Scheduler.simulateOneStep();		// run the simulation
 			if(sphere.getDiameter()<20){		// if small..
 				sphere.changeVolume(350);		// .. increase volume

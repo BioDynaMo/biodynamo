@@ -64,7 +64,7 @@ public class NeuriteChemoAttractionTest extends BaseSimulationTest {
 		neurite.getPhysicalCylinder().setDiameter(2.0);
 		neurite.addLocalBiologyModule(new NeuriteChemoAttraction("A"));
 
-		for (int i = 0; i < 1000; i++) {
+		for (int i = 0; i < 1845; i++) {
 			Scheduler.simulateOneStep();
 		}
 	}

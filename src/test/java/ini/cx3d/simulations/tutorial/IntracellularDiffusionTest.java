@@ -76,7 +76,7 @@ public class IntracellularDiffusionTest extends BaseSimulationTest{
 		
 		// run, Forrest, run..
 		ini.cx3d.utilities.SystemUtilities.tic();
-		for (int i = 0; i < 2001; i++) {
+		for (int i = 0; i < 2557; i++) {
 			Scheduler.simulateOneStep();
 		}
 		ini.cx3d.utilities.SystemUtilities.tac();
