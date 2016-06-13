@@ -25,6 +25,25 @@ else()
   message(STATUS "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler.")
 endif()
 
+#---RPATH options-------------------------------------------------------------------------------
+#  When building, don't use the install RPATH already (but later on when installing)
+set(CMAKE_SKIP_BUILD_RPATH FALSE)         # don't skip the full RPATH for the build tree
+set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)  # use always the build RPATH for the build tree
+set(CMAKE_MACOSX_RPATH TRUE)              # use RPATH for MacOSX
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE) # point to directories outside the build tree to the install RPATH
+
+# Check whether to add RPATH to the installation (the build tree always has the RPATH enabled)
+if(rpath OR gnuinstall)
+  set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_FULL_LIBDIR}) # install LIBDIR
+  set(CMAKE_SKIP_INSTALL_RPATH FALSE)          # don't skip the full RPATH for the install tree
+elseif(APPLE)
+  set(CMAKE_INSTALL_NAME_DIR "@rpath")
+  set(CMAKE_INSTALL_RPATH "@loader_path/")     # self relative LIBDIR
+  set(CMAKE_SKIP_INSTALL_RPATH FALSE)          # don't skip the full RPATH for the install tree
+else()
+  set(CMAKE_SKIP_INSTALL_RPATH TRUE)           # skip the full RPATH for the install tree
+endif()
+
 #--------------------- setup GMP ------------------------------
 # Enable ExternalProject CMake module
 include(ExternalProject)
@@ -41,7 +60,7 @@ ExternalProject_Add(
     URL https://gmplib.org/download/gmp/gmp-6.1.0.tar.bz2
     PREFIX "${CMAKE_CURRENT_BINARY_DIR}/gmp"
     BUILD_IN_SOURCE 1
-    CONFIGURE_COMMAND ./configure ${GMP_CONFIG_PARAMETER}
+    CONFIGURE_COMMAND ./configure CC=${CMAKE_C_COMPILER} CXX=${CMAKE_CXX_COMPILER} ${GMP_CONFIG_PARAMETER}
     BUILD_COMMAND make
     TEST_COMMAND make check
     INSTALL_COMMAND "" # Disable install step
@@ -55,6 +74,7 @@ add_dependencies(libgmp gmp)
 # copy shared library from gmp build dir to ${CMAKE_BUILD_DIR}
 if(APPLE)
   set(LIBGMP_DEST "${CMAKE_BINARY_DIR}/libgmp.10${CMAKE_SHARED_LIBRARY_SUFFIX}")
+  execute_process(COMMAND install_name_tool -id @rpath/libgmp.10.dylib "${CMAKE_BINARY_DIR}/gmp/src/gmp/.libs/libgmp${CMAKE_SHARED_LIBRARY_SUFFIX}")
 elseif(UNIX)
   set(LIBGMP_DEST "${CMAKE_BINARY_DIR}/libgmp${CMAKE_SHARED_LIBRARY_SUFFIX}.10")
 endif()
