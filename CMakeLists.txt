@@ -61,6 +61,12 @@ ExternalProject_Add(
     INSTALL_COMMAND "" # Disable install step
 )
 
+if(APPLE)
+ExternalProject_Add_Step(gmp install_name
+                         COMMAND install_name_tool -id @rpath/libgmp.10.dylib "${CMAKE_BINARY_DIR}/gmp/src/gmp/.libs/libgmp${CMAKE_SHARED_LIBRARY_SUFFIX}"
+                         DEPENDEES install)
+endif()
+
 # Create a libgmp target to be used as a dependency by the test program
 add_library(libgmp IMPORTED STATIC GLOBAL)
 set_property(TARGET libgmp PROPERTY IMPORTED_LOCATION "${CMAKE_BINARY_DIR}/gmp/src/gmp/.libs/libgmp${CMAKE_SHARED_LIBRARY_SUFFIX}")
@@ -69,14 +75,11 @@ add_dependencies(libgmp gmp)
 # copy shared library from gmp build dir to ${CMAKE_BUILD_DIR}
 if(APPLE)
   set(LIBGMP_DEST "${CMAKE_BINARY_DIR}/libgmp.10${CMAKE_SHARED_LIBRARY_SUFFIX}")
-  add_custom_target(copylibgmp DEPENDS libgmp
-                    COMMAND install_name_tool -id @rpath/libgmp.10.dylib "${CMAKE_BINARY_DIR}/gmp/src/gmp/.libs/libgmp${CMAKE_SHARED_LIBRARY_SUFFIX}"
-                    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_BINARY_DIR}/gmp/src/gmp/.libs/libgmp${CMAKE_SHARED_LIBRARY_SUFFIX}" ${LIBGMP_DEST})
 elseif(UNIX)
   set(LIBGMP_DEST "${CMAKE_BINARY_DIR}/libgmp${CMAKE_SHARED_LIBRARY_SUFFIX}.10")
-  add_custom_target(copylibgmp DEPENDS libgmp
-                    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_BINARY_DIR}/gmp/src/gmp/.libs/libgmp${CMAKE_SHARED_LIBRARY_SUFFIX}" ${LIBGMP_DEST})
 endif()
+add_custom_target(copylibgmp DEPENDS libgmp
+                  COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_BINARY_DIR}/gmp/src/gmp/.libs/libgmp${CMAKE_SHARED_LIBRARY_SUFFIX}" ${LIBGMP_DEST})
 
 #--------------------- Doxygen ---------------------------------
 include(cmake/doxygen.cmake)
