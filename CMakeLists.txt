@@ -25,10 +25,10 @@ else()
   message(STATUS "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler.")
 endif()
 
-#---RPATH options-------------------------------------------------------------------------------
+#--------------------- set rpath options -------------
 #  When building, don't use the install RPATH already (but later on when installing)
 set(CMAKE_SKIP_BUILD_RPATH FALSE)         # don't skip the full RPATH for the build tree
-set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)  # use always the build RPATH for the build tree
+set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE) # use always the build RPATH for the build tree
 set(CMAKE_MACOSX_RPATH TRUE)              # use RPATH for MacOSX
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE) # point to directories outside the build tree to the install RPATH
 
