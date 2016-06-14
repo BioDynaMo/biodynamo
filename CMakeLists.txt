@@ -26,22 +26,17 @@ else()
 endif()
 
 #--------------------- set rpath options -------------
-#  When building, don't use the install RPATH already (but later on when installing)
+# When building, use the RPATH
 set(CMAKE_SKIP_BUILD_RPATH FALSE)         # don't skip the full RPATH for the build tree
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE) # use always the build RPATH for the build tree
-set(CMAKE_MACOSX_RPATH TRUE)              # use RPATH for MacOSX
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE) # point to directories outside the build tree to the install RPATH
 
-# Check whether to add RPATH to the installation (the build tree always has the RPATH enabled)
-if(rpath OR gnuinstall)
-  set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_FULL_LIBDIR}) # install LIBDIR
-  set(CMAKE_SKIP_INSTALL_RPATH FALSE)          # don't skip the full RPATH for the install tree
-elseif(APPLE)
+if(APPLE)
+  set(CMAKE_MACOSX_RPATH TRUE)              # use RPATH for MacOSX
   set(CMAKE_INSTALL_NAME_DIR "@rpath")
   set(CMAKE_INSTALL_RPATH "@loader_path/")     # self relative LIBDIR
-  set(CMAKE_SKIP_INSTALL_RPATH FALSE)          # don't skip the full RPATH for the install tree
 else()
-  set(CMAKE_SKIP_INSTALL_RPATH TRUE)           # skip the full RPATH for the install tree
+  set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_FULL_LIBDIR}) # install LIBDIR
 endif()
 
 #--------------------- setup GMP ------------------------------
@@ -66,7 +61,7 @@ ExternalProject_Add(
     INSTALL_COMMAND "" # Disable install step
 )
 
-# Create a libjsoncpp target to be used as a dependency by the test program
+# Create a libgmp target to be used as a dependency by the test program
 add_library(libgmp IMPORTED STATIC GLOBAL)
 set_property(TARGET libgmp PROPERTY IMPORTED_LOCATION "${CMAKE_BINARY_DIR}/gmp/src/gmp/.libs/libgmp${CMAKE_SHARED_LIBRARY_SUFFIX}")
 add_dependencies(libgmp gmp)
@@ -74,12 +69,14 @@ add_dependencies(libgmp gmp)
 # copy shared library from gmp build dir to ${CMAKE_BUILD_DIR}
 if(APPLE)
   set(LIBGMP_DEST "${CMAKE_BINARY_DIR}/libgmp.10${CMAKE_SHARED_LIBRARY_SUFFIX}")
-  execute_process(COMMAND install_name_tool -id @rpath/libgmp.10.dylib "${CMAKE_BINARY_DIR}/gmp/src/gmp/.libs/libgmp${CMAKE_SHARED_LIBRARY_SUFFIX}")
+  add_custom_target(copylibgmp DEPENDS libgmp
+                    COMMAND install_name_tool -id @rpath/libgmp.10.dylib "${CMAKE_BINARY_DIR}/gmp/src/gmp/.libs/libgmp${CMAKE_SHARED_LIBRARY_SUFFIX}"
+                    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_BINARY_DIR}/gmp/src/gmp/.libs/libgmp${CMAKE_SHARED_LIBRARY_SUFFIX}" ${LIBGMP_DEST})
 elseif(UNIX)
   set(LIBGMP_DEST "${CMAKE_BINARY_DIR}/libgmp${CMAKE_SHARED_LIBRARY_SUFFIX}.10")
+  add_custom_target(copylibgmp DEPENDS libgmp
+                    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_BINARY_DIR}/gmp/src/gmp/.libs/libgmp${CMAKE_SHARED_LIBRARY_SUFFIX}" ${LIBGMP_DEST})
 endif()
-add_custom_target(copylibgmp DEPENDS libgmp COMMAND ${CMAKE_COMMAND} -E copy_if_different
-    "${CMAKE_BINARY_DIR}/gmp/src/gmp/.libs/libgmp${CMAKE_SHARED_LIBRARY_SUFFIX}" ${LIBGMP_DEST})
 
 #--------------------- Doxygen ---------------------------------
 include(cmake/doxygen.cmake)
