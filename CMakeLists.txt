@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 2.8.9)
 
 project(BioDynaMo)
 
+set(CMAKE_VERBOSE_MAKEFILE on)
+
 # Options. Turn on with 'cmake -Dmyvarname=ON'.
 option(test "Build all tests." ON) # Makes boolean 'test' available.
 option(valgrind "Enable valgrind tests and make build compatible with valgrind tool." ON)
@@ -10,6 +12,7 @@ option(valgrind "Enable valgrind tests and make build compatible with valgrind t
 set(GCC_COMPILE_FLAGS "-Wall -Wno-missing-braces -O2")
 set(GCC_LINK_FLAGS    "")
 # append
+set( CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} ${GCC_COMPILE_FLAGS}" )
 set( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${GCC_COMPILE_FLAGS}" )
 set( CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} ${GCC_LINK_FLAGS}")
 
@@ -111,6 +114,9 @@ if (test)
     gtest
     URL https://googletest.googlecode.com/files/gtest-1.7.0.zip
     PREFIX "${CMAKE_CURRENT_BINARY_DIR}/gtest"
+    CMAKE_CACHE_ARGS
+       -DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}
+       -DCMAKE_C_COMPILER:FILEPATH=${CMAKE_C_COMPILER}
     INSTALL_COMMAND "" # Disable install step
   )
   ExternalProject_Get_Property(gtest source_dir binary_dir)
@@ -125,10 +131,13 @@ if (test)
 
   # setup jsoncpp
   ExternalProject_Add(
-        jsoncpp
-        URL https://github.com/open-source-parsers/jsoncpp/archive/1.7.2.zip
-        PREFIX "${CMAKE_CURRENT_BINARY_DIR}/jsoncpp"
-        INSTALL_COMMAND ""  # Disable install step
+    jsoncpp
+    URL https://github.com/open-source-parsers/jsoncpp/archive/1.7.2.zip
+    PREFIX "${CMAKE_CURRENT_BINARY_DIR}/jsoncpp"
+    CMAKE_CACHE_ARGS
+       -DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}
+       -DCMAKE_C_COMPILER:FILEPATH=${CMAKE_C_COMPILER}
+    INSTALL_COMMAND ""  # Disable install step
   )
   ExternalProject_Get_Property(jsoncpp install_dir)
 
