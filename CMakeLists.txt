@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8.9)
 
 project(BioDynaMo)
 
-set(CMAKE_VERBOSE_MAKEFILE on)
+#set(CMAKE_VERBOSE_MAKEFILE on)
 
 # Options. Turn on with 'cmake -Dmyvarname=ON'.
 option(test "Build all tests." ON) # Makes boolean 'test' available.
