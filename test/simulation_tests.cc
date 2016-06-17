@@ -75,9 +75,9 @@ TEST_F (SmallNetworkTest, simulation) {
   run();
 }
 
-TEST_F (SomaClusteringTest, simulation) {
-  run();
-}
+//TEST_F (SomaClusteringTest, simulation) {
+//  run();
+//}
 
 TEST_F (SomaRandomWalkModuleTest, simulation) {
   run();
@@ -91,5 +91,4 @@ TEST_F (Figure9Test, simulation) {
   run();
 }
 
-}
-  // namespace bdm
+}  // namespace bdm
