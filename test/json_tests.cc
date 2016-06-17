@@ -43,3 +43,18 @@ TEST (Json, floatsNotEqual) {
   reader.parse("{ \"key\": 230.8781907032909}", j2);
   EXPECT_NE(j1, j2);
 }
+
+TEST (Json, nearlyEqual) {
+  Json::Reader reader;
+  Json::Value j1;
+  Json::Value j2;
+
+  Json::Value::epsilon_ = 1e-10;
+
+  reader.parse("{ \"key\": 10.002}", j1);
+  reader.parse("{ \"key\": 10.0}", j2);
+  EXPECT_NE(j1, j2);
+
+  Json::Value::epsilon_ = 1e-3;
+  EXPECT_EQ(j1, j2);
+}

@@ -132,7 +132,7 @@ if (test)
   # setup jsoncpp
   ExternalProject_Add(
     jsoncpp
-    URL https://github.com/open-source-parsers/jsoncpp/archive/1.7.2.zip
+    URL "${CMAKE_CURRENT_BINARY_DIR}/../external/jsoncpp.tar.gz"
     PREFIX "${CMAKE_CURRENT_BINARY_DIR}/jsoncpp"
     CMAKE_CACHE_ARGS
        -DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}
