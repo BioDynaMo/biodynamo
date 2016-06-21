@@ -7,9 +7,7 @@
 # add a target to generate API documentation with Doxygen
 find_package(Doxygen)
 
-if(NOT DOXYGEN_FOUND)
-  message(WARNING "Doxygen not found! Doxygen is needed to build the documentation.")
-else()
+if(DOXYGEN_FOUND)
   # create output directory
   file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/doc")
 
