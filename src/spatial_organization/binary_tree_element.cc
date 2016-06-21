@@ -69,7 +69,17 @@ int BinaryTreeElement<T>::getHash(SpaceNode<T>* content) const {
 
 template<class T>
 bool BinaryTreeElement<T>::contains(int id, SpaceNode<T>* content) const {
-  return contains(getHash(content), content);
+  if (content_ == content) {
+    return true;
+  } else {
+    if (content_id_ >= id && smaller_ != nullptr) {
+      return smaller_->contains(id, content);
+    } else if (content_id_ < id && bigger_ != nullptr) {
+      return bigger_->contains(id, content);
+    }else {
+      return false;
+    }
+  }
 }
 
 template<class T>
