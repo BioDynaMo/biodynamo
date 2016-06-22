@@ -86,7 +86,7 @@ add_custom_target(copylibgmp DEPENDS libgmp
 
 #--------------------- Find ROOT ---------------------------------
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
-find_package(ROOT)
+find_package(ROOT REQUIRED)
 
 #--------------------- Find Doxygen and set doc target -----------
 include(cmake/doxygen.cmake)
@@ -153,6 +153,7 @@ if (test)
   # add include directories for gtest and jsoncpp
   include_directories("${CMAKE_BINARY_DIR}/gtest/src/gtest/include")
   include_directories("${CMAKE_BINARY_DIR}/jsoncpp/src/jsoncpp/include")
+  include_directories(${ROOT_INCLUDE_DIRS})
 
   # create test executable
   file(GLOB TEST_SOURCES "test/*.cc" "test/*.h")
@@ -160,6 +161,7 @@ if (test)
   add_executable(${TEST_TARGET} ${TEST_SOURCES})
   target_link_libraries(${TEST_TARGET} libgtest)
   target_link_libraries(${TEST_TARGET} libjsoncpp)
+  target_link_libraries(${TEST_TARGET} ${ROOT_LIBRARIES})
   target_link_libraries(${TEST_TARGET} biodynamo)
 
   # copy test resources to build dir
