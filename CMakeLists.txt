@@ -55,7 +55,7 @@ endif()
 # download gmp
 ExternalProject_Add(
     gmp
-    URL https://gmplib.org/download/gmp/gmp-6.1.0.tar.bz2
+    URL "${CMAKE_CURRENT_BINARY_DIR}/../external/gmp-6.1.0.tar.bz2"
     PREFIX "${CMAKE_CURRENT_BINARY_DIR}/gmp"
     BUILD_IN_SOURCE 1
     CONFIGURE_COMMAND ./configure CC=${CMAKE_C_COMPILER} CXX=${CMAKE_CXX_COMPILER} ${GMP_CONFIG_PARAMETER}
@@ -116,7 +116,7 @@ if (test)
   find_package(Threads REQUIRED)
   ExternalProject_Add(
     gtest
-    URL https://googletest.googlecode.com/files/gtest-1.7.0.zip
+    URL "${CMAKE_CURRENT_BINARY_DIR}/../external/gtest-1.7.0.zip"
     PREFIX "${CMAKE_CURRENT_BINARY_DIR}/gtest"
     CMAKE_CACHE_ARGS
        -DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}
