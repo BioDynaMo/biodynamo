@@ -18,7 +18,7 @@ fi
 
 # install root
 cd ..
-wget https://root.cern.ch/download/root_v6.06.04.Linux-ubuntu14-x86_64-gcc4.8.tar.gz >/dev/null
+wget https://root.cern.ch/download/root_v6.06.04.Linux-ubuntu14-x86_64-gcc4.8.tar.gz 2>/dev/null
 tar zxvf root_v6.06.04.Linux-ubuntu14-x86_64-gcc4.8.tar.gz >/dev/null
 cd root
 bin/thisroot.sh
