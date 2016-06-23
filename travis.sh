@@ -8,17 +8,19 @@ echo ${TRAVIS_OS_NAME}
 if [ "$TRAVIS_OS_NAME" = "osx" ]; then
   brew update
   brew install doxygen
-  brew outdated gcc || brew upgrade gcc
+  #brew outdated gcc || brew upgrade gcc
 fi
 
 if [ "$TRAVIS_OS_NAME" = "linux" ]; then
-  sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
-  sudo add-apt-repository -y ppa:george-edison55/precise-backports
-  sudo apt-get update
-  sudo apt-get -y install gcc-5 g++-5 cmake cmake-data valgrind
+  #sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+  #sudo add-apt-repository -y ppa:george-edison55/precise-backports
+  #sudo apt-get update
+  #sudo apt-get -y install gcc-5 g++-5 cmake cmake-data valgrind
+  sudo apt-get -y install cmake cmake-data valgrind
 fi
 
 # install ROOT
+cd
 wget https://root.cern.ch/download/root_v6.06.04.Linux-ubuntu14-x86_64-gcc4.8.tar.gz 2> /dev/null
 tar zxvf root_v6.06.04.Linux-ubuntu14-x86_64-gcc4.8.tar.gz > /dev/null
 cd root
@@ -35,8 +37,8 @@ echo ${CXX}
 ${CXX} --version
 ${CXX} -v
 
-# build and run tests
-cd  ../biodynamo
+# build biodynamo and run tests
+cd  ../BioDynaMo/biodynamo
 mkdir build
 cd build
 cmake .. && make
