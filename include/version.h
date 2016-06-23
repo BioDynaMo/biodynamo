@@ -14,11 +14,11 @@
  *
 */
 
-#define BDM_RELEASE "1.00/00"
+#define BDM_RELEASE "0.9.0"
 #define BDM_RELEASE_DATE "Jun 22 2016"
 #define BDM_RELEASE_TIME "16:27:00"
 #define BDM_VERSION(a,b,c) (((a) << 16) + ((b) << 8) + (c))
-#define BDM_VERSION_CODE BDM_VERSION(1,0,0)
+#define BDM_VERSION_CODE BDM_VERSION(0,9,0)
 
 namespace bdm {
 
