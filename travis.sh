@@ -16,6 +16,13 @@ if [ "$TRAVIS_OS_NAME" = "linux" ]; then
   sudo apt-get -y install gcc-5 g++-5 cmake cmake-data valgrind
 fi
 
+# install root
+cd ..
+wget https://root.cern.ch/download/root_v6.06.04.Linux-ubuntu14-x86_64-gcc4.8.tar.gz >/dev/null
+tar zxvf root_v6.06.04.Linux-ubuntu14-x86_64-gcc4.8.tar.gz >/dev/null
+cd root
+bin/thisroot.sh
+cd  ../biodynamo
 
 # link to newest compiler
 if [ "$TRAVIS_OS_NAME" = "linux" ] && [ "$CXX" = "g++" ]; then export CXX="g++-5" CC="gcc-5"; fi
