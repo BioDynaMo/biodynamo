@@ -3,6 +3,7 @@
 set -e -x
 
 echo ${TRAVIS_OS_NAME}
+biod=`pwd`
 
 # update and install packges
 if [ "$TRAVIS_OS_NAME" = "osx" ]; then
@@ -16,7 +17,7 @@ if [ "$TRAVIS_OS_NAME" = "linux" ]; then
   #sudo add-apt-repository -y ppa:george-edison55/precise-backports
   #sudo apt-get update
   #sudo apt-get -y install gcc-5 g++-5 cmake cmake-data valgrind
-  sudo apt-get -y install cmake cmake-data valgrind
+  sudo apt-get -y install valgrind
 fi
 
 # install ROOT
@@ -38,7 +39,7 @@ ${CXX} --version
 ${CXX} -v
 
 # build biodynamo and run tests
-cd  ../BioDynaMo/biodynamo
+cd $biod
 mkdir build
 cd build
 cmake .. && make
