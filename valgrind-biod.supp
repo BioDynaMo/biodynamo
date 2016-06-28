@@ -1,0 +1,16 @@
+# Additional valgrind suppression file for BioDynaMo.
+#
+# To use, run valgrind with:
+#   valgrind --suppressions=valgrind.supp ...
+#
+# This file suppresses known and expected / inevitable valgrind
+# reports, e.g. due to ROOT's runtime type information that must
+# survive until the end of the process and thus leaks.
+
+######### Suppress ROOT issues, they are checked by the ROOT team
+{
+   ignore_root_libs
+   Memcheck:Leak
+   ...
+   obj:*/root/lib/*.so
+}
