@@ -9,8 +9,15 @@
 
 ######### Suppress ROOT issues, they are checked by the ROOT team
 {
-   ignore_root_libs
+   ignore_root_libs_leak
    Memcheck:Leak
+   ...
+   obj:*/root/lib/*.so
+}
+
+{
+   ignore_root_libs_cond
+   Memcheck:Cond
    ...
    obj:*/root/lib/*.so
 }

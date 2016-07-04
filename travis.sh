@@ -5,7 +5,7 @@ set -e -x
 echo ${TRAVIS_OS_NAME}
 biod=`pwd`
 
-# update and install packges
+# update and install packages
 if [ "$TRAVIS_OS_NAME" = "osx" ]; then
   brew update
   brew install doxygen
