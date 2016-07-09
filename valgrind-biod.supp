@@ -21,3 +21,38 @@
    ...
    obj:*/root/lib/*.so
 }
+
+{
+   ignore_macos_dyld_leak
+   Memcheck:Leak
+   ...
+   obj:/usr/lib/dyld
+}
+
+{
+   ignore_macos_dyld_cond
+   Memcheck:Cond
+   ...
+   obj:/usr/lib/dyld
+}
+
+{
+   ignore_macos_dyld_val8
+   Memcheck:Value8
+   ...
+   obj:/usr/lib/dyld
+}
+
+{
+   ignore_macos_frameworks_leak
+   Memcheck:Leak
+   ...
+   obj:/System/Library/Frameworks/*
+}
+
+{
+   ignore_macos_libs_leak
+   Memcheck:Leak
+   ...
+   obj:/usr/lib/system/*.dylib
+}
