@@ -2,6 +2,8 @@
 #include <memory>
 #include <string>
 
+#include <TROOT.h>
+
 #include "soma_clustering_test.h"
 #include "base_simulation_test.h"
 #include "param.h"
