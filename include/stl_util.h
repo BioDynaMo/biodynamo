@@ -42,7 +42,7 @@ class STLUtil {
   }
 
   /**
-   * copies the elements of the std::array into std::list
+   * copies the elements of the std::array into std::vector
    */
   template<typename C, std::size_t N>
   static void arrayToVector(const std::array<C, N> &arr, std::vector<C> &list) {
@@ -153,7 +153,7 @@ class STLUtil {
   }
 
   /**
-   * removes an element from a std::vector container
+   * removes an element from a std::deque container
    */
   template<typename T>
   static void dequeRemove(std::deque<T> &vector, const T &el) {
