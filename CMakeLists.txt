@@ -86,7 +86,7 @@ add_custom_target(copylibgmp DEPENDS libgmp
 
 #--------------------- Find ROOT ---------------------------------
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
-find_package(ROOT REQUIRED COMPONENTS RGL Eve Geom Gui)
+find_package(ROOT REQUIRED COMPONENTS Eve Geom)
 
 #--------------------- Find Doxygen and set doc target -----------
 include(cmake/doxygen.cmake)
@@ -183,9 +183,16 @@ if (test)
   add_dependencies(bdmclean testbdmclean)
 endif()
 
-# BUILD VISUALIZATION
-set(VIZ_TARGET biodynamo-viz)
-add_executable(${VIZ_TARGET} ${SOURCES} viz/dividing_cell_visualization.cpp)
-target_include_directories(${VIZ_TARGET} PUBLIC include)
-target_link_libraries(${VIZ_TARGET} ${ROOT_LIBRARIES})
-target_link_libraries(${VIZ_TARGET} biodynamo)
+# BUILD DIVIDING CELL VISUALIZATION
+set(VIZ_TARGET_1 dividing-cell-viz)
+add_executable(${VIZ_TARGET_1} ${SOURCES} viz/dividing_cell_visualization.cpp)
+target_include_directories(${VIZ_TARGET_1} PUBLIC include)
+target_link_libraries(${VIZ_TARGET_1} ${ROOT_LIBRARIES})
+target_link_libraries(${VIZ_TARGET_1} biodynamo)
+
+# BUILD SMALL NETWORK VISUALIZATION
+set(VIZ_TARGET_2 small-network-viz)
+add_executable(${VIZ_TARGET_2} ${SOURCES} viz/small_network_visualization.cpp)
+target_include_directories(${VIZ_TARGET_2} PUBLIC include)
+target_link_libraries(${VIZ_TARGET_2} ${ROOT_LIBRARIES})
+target_link_libraries(${VIZ_TARGET_2} biodynamo)

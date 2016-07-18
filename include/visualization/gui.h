@@ -5,21 +5,22 @@
 #ifndef BIODYNAMO_GUI_H
 #define BIODYNAMO_GUI_H
 
-#include <memory>
 #include <TGeoManager.h>
 #include "simulation/ecm.h"
-
+#include "color.h"
 
 namespace visualization {
 
 using bdm::simulation::ECM;
+using bdm::Color;
+using bdm::physics::PhysicalCylinder;
+
 
 /**
  * Singleton class, which draws graphical user interface
  */
 class GUI {
-// members
- private:
+ private: // private members
   TGeoManager *geom;
   TGeoVolume  *top;
 
@@ -32,15 +33,19 @@ class GUI {
 
   bool init;
 
- public:
+private: // private functions
+  TGeoCombiTrans * cylinderTransformation(const PhysicalCylinder *cylinder);
+  EColor translateColor(Color color);
+
+ public: // public interface
   void Init();
   void Update();
 
-// Singleton properties:
-private:
+
+private: // singleton properties
   GUI();
 
-public: // Singleton methods
+public: // singleton interface
   static GUI &getInstance() {
     static GUI instance; // Guaranteed to be destroyed.
     // Instantiated on first use.
@@ -49,7 +54,7 @@ public: // Singleton methods
 
   // C++ 11
   GUI(GUI const &) = delete;
-  void operator=(GUI const &) = delete;
+  GUI& operator=(GUI const &) = delete;
 
   // Note: Scott Meyers mentions in his Effective Modern
   //       C++ book, that deleted functions should generally

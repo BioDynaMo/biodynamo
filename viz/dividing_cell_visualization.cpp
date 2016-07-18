@@ -61,9 +61,9 @@ int main(int argc, char** argv){
       auto c2 = cell->divide();       // otherwise divide
       c2->setColorForAllPhysicalObjects(Param::kBlue);
     }
-    visualization::GUI::getInstance().Update();
 
   }
+  visualization::GUI::getInstance().Update();
 
   app.Run();
 }

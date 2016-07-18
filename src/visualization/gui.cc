@@ -2,6 +2,7 @@
 // Created by bogdan on 7/13/16.
 //
 
+#include <math.h>
 #include <TView.h>
 #include <TEveManager.h>
 #include <TEveGeoNode.h>
@@ -12,9 +13,6 @@ using visualization::GUI;
 GUI::GUI() : geom(nullptr), top(nullptr), init(false) {}
 
 void GUI::Update() {
-  geom->ResetState();
-
-
   TGeoVolume *volume;
 
   // add spheres to the world
@@ -27,10 +25,11 @@ void GUI::Update() {
 
     // name, medSolid, radius of inner sphere, radius of outer sphere
     volume = geom->MakeSphere(name, medSolid, 0., radius);
-    // fixme Color_t is short, sphere color is unsigned int
-    volume->SetLineColor((Color_t)sphere->getColor().getValue());
 
-    std::array<double, 3> massLocation = sphere->getMassLocation();
+    EColor color = this->translateColor(sphere->getColor());
+    volume->SetLineColor(color);
+
+    auto massLocation = sphere->getMassLocation();
     TGeoTranslation *position =
         new TGeoTranslation(massLocation[0], massLocation[1], massLocation[2]);
 
@@ -42,26 +41,26 @@ void GUI::Update() {
     char name[128];
     sprintf(name, "C%d", cylinder->getID());
 
-    double length = cylinder->getLength();
-    double diameter = cylinder->getDiameter();
-    std::array<double, 3> massLocation = cylinder->getMassLocation();
+    auto length = cylinder->getLength();
+    auto radius = cylinder->getDiameter() / 2;
 
-    volume = geom->MakeTube(name, medSolid, 0., diameter, length);
-    // fixme Color_t is short, cylinder color is unsigned int
-    volume->SetLineColor((Color_t)cylinder->getColor().getValue());
+    volume = geom->MakeTube(name, medSolid, 0., radius, length / 2);
 
-    TGeoTranslation *position =
-        new TGeoTranslation(massLocation[0], massLocation[1], massLocation[2]);
-    top->AddNode(volume, cylinder->getID(), position);
+    EColor color = this->translateColor(cylinder->getColor());
+    volume->SetLineColor(color);
+
+    TGeoCombiTrans *trans = this->cylinderTransformation(cylinder);
+    top->AddNode(volume, cylinder->getID(), trans);
   }
 
-  gEve->Redraw3D(kTRUE);
+  geom->CloseGeometry();
+  top->Draw("ogl");
 }
 
 void GUI::Init() {
   this->ecm = ECM::getInstance();
 
-  TEveManager::Create();
+  // TEveManager::Create();
 
   geom = new TGeoManager("Visualization", "Biodynamo");
 
@@ -75,15 +74,72 @@ void GUI::Init() {
   medSolid = new TGeoMedium("Solid", 1, matSolid);
 
   // we don't know how to calculate world radius yet
-  double worldRadius = 1000.0;
+  double worldRadius = 10000.0;
   top = geom->MakeBox("World", medEmptySpace, worldRadius, worldRadius,
                       worldRadius);
   geom->SetTopVolume(top);
 
-  TGeoNode* node = geom->GetTopNode();
-  TEveGeoTopNode* en = new TEveGeoTopNode(geom, node);
-  gEve->AddGlobalElement(en);
-
+  // TGeoNode *node = geom->GetTopNode();
+  // TEveGeoTopNode *en = new TEveGeoTopNode(geom, node);
+  // gEve->AddGlobalElement(en);
 
   init = true;
+}
+
+TGeoCombiTrans *GUI::cylinderTransformation(const PhysicalCylinder *cylinder) {
+  double phiX = 0.0, thetaY = 0.0, psiZ = 0.0;
+
+  double length = cylinder->getLength();
+  auto springAxis = cylinder->getSpringAxis();
+  auto massLocation = cylinder->getMassLocation();
+
+  auto x1 = massLocation[0];
+  auto y1 = massLocation[1];
+  auto z1 = massLocation[2];
+
+  auto dx = springAxis[0];
+  auto dy = springAxis[1];
+  auto dz = springAxis[2];
+
+  auto position = new TGeoTranslation(x1 - dx / 2, y1 - dy / 2, z1 - dz / 2);
+
+  if ((dx > 0 && dy > 0 && dz > 0) || (dx < 0 && dy < 0 && dz < 0)) {
+    phiX = atan2(dy, dx) * 180. / M_PI + 90.;
+    thetaY = acos(dz / length) * 180. / M_PI;
+
+  } else if ((dx < 0 && dy > 0 && dz > 0) || (dx > 0 && dy < 0 && dz < 0)) {
+    phiX = 180. - atan2(dx, dy) * 180. / M_PI;
+    thetaY = acos(dz / length) * 180. / M_PI;
+
+  } else if ((dx < 0 && dy < 0 && dz > 0) || (dx > 0 && dy > 0 && dz < 0)) {
+    phiX = atan2(dy, dx) * 180. / M_PI + 90.;
+    thetaY = acos(dz / length) * 180. / M_PI;
+
+  } else if ((dx < 0 && dy > 0 && dz < 0) || (dx > 0 && dy < 0 && dz > 0)) {
+    phiX = atan2(dy, dx) * 180. / M_PI + 90.;
+    thetaY = acos(dz / length) * 180. / M_PI;
+  }
+
+  auto rotation = new TGeoRotation("rot", phiX, thetaY, psiZ);
+
+  return new TGeoCombiTrans(*position, *rotation);
+}
+
+EColor GUI::translateColor(Color color) {
+  if (color == bdm::Param::kYellow) {
+    return kYellow;
+  } else if (color == bdm::Param::kViolet) {
+    return kViolet;
+  } else if (color == bdm::Param::kBlue) {
+    return kBlue;
+  } else if (color == bdm::Param::kRed) {
+    return kRed;
+  } else if (color == bdm::Param::kGreen) {
+    return kGreen;
+  } else if (color == bdm::Param::kGray) {
+    return kGray;
+  } else {
+    // ROOT doesn't know this `color`, return kAzure :)
+    return kAzure;
+  }
 }
