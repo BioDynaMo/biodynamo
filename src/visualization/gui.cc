@@ -2,10 +2,12 @@
 // Created by bogdan on 7/13/16.
 //
 
-#include <math.h>
+#include <TMath.h>
 #include <TView.h>
 #include <TEveManager.h>
 #include <TEveGeoNode.h>
+#include <TBenchmark.h>
+
 #include "visualization/gui.h"
 
 using visualization::GUI;
@@ -15,6 +17,7 @@ GUI::GUI() : geom(nullptr), top(nullptr), init(false) {}
 void GUI::Update() {
   TGeoVolume *volume;
 
+  printf("[Info] Adding spheres to the world\n");
   // add spheres to the world
   for (auto sphere : ecm->getPhysicalSphereList()) {
     int id = sphere->getID();
@@ -36,6 +39,7 @@ void GUI::Update() {
     top->AddNode(volume, sphere->getID(), position);
   }
 
+  printf("[Info] Adding cylinders to the world\n");
   // add cylinders to the world
   for (auto cylinder : ecm->getPhysicalCylinderList()) {
     char name[128];
@@ -52,6 +56,9 @@ void GUI::Update() {
     TGeoCombiTrans *trans = this->cylinderTransformation(cylinder);
     top->AddNode(volume, cylinder->getID(), trans);
   }
+
+  printf("[Info] Finished adding nodes to the world\n");
+
 
   geom->CloseGeometry();
   top->Draw("ogl");
@@ -82,6 +89,8 @@ void GUI::Init() {
   // TGeoNode *node = geom->GetTopNode();
   // TEveGeoTopNode *en = new TEveGeoTopNode(geom, node);
   // gEve->AddGlobalElement(en);
+
+  geom->SetMaxVisNodes(1000000);
 
   init = true;
 }
