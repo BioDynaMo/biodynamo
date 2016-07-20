@@ -14,15 +14,15 @@ namespace visualization {
 using bdm::simulation::ECM;
 using bdm::Color;
 using bdm::physics::PhysicalCylinder;
-
+using bdm::physics::PhysicalSphere;
 
 /**
  * Singleton class, which draws graphical user interface
  */
 class GUI {
- private: // private members
+private: // private members
   TGeoManager *geom;
-  TGeoVolume  *top;
+  TGeoVolume *top;
 
   TGeoMaterial *matEmptySpace;
   TGeoMaterial *matSolid;
@@ -34,13 +34,18 @@ class GUI {
   bool init;
 
 private: // private functions
-  TGeoCombiTrans * cylinderTransformation(const PhysicalCylinder *cylinder);
+  TGeoCombiTrans *cylinderTransformation(const PhysicalCylinder *cylinder);
   EColor translateColor(Color color);
+  void addBranch(TGeoVolume *container, PhysicalSphere *sphere);
+  void preOrderTraversalCylinder(TGeoVolume *container,
+                                 PhysicalCylinder *cylinder);
 
- public: // public interface
+  void addSphereToVolume(TGeoVolume *container, PhysicalSphere *sphere);
+  void addCylinderToVolume(TGeoVolume *container, PhysicalCylinder *cylinder);
+
+public: // public interface
   void Init();
   void Update();
-
 
 private: // singleton properties
   GUI();
@@ -54,7 +59,7 @@ public: // singleton interface
 
   // C++ 11
   GUI(GUI const &) = delete;
-  GUI& operator=(GUI const &) = delete;
+  GUI &operator=(GUI const &) = delete;
 
   // Note: Scott Meyers mentions in his Effective Modern
   //       C++ book, that deleted functions should generally

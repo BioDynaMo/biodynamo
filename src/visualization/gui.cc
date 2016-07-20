@@ -6,7 +6,6 @@
 #include <TView.h>
 #include <TEveManager.h>
 #include <TEveGeoNode.h>
-#include <TBenchmark.h>
 
 #include "visualization/gui.h"
 
@@ -15,50 +14,16 @@ using visualization::GUI;
 GUI::GUI() : geom(nullptr), top(nullptr), init(false) {}
 
 void GUI::Update() {
-  TGeoVolume *volume;
-
-  printf("[Info] Adding spheres to the world\n");
-  // add spheres to the world
   for (auto sphere : ecm->getPhysicalSphereList()) {
-    int id = sphere->getID();
-    char name[128];
-    sprintf(name, "S%d", id);
+    auto sphereId = sphere->getID();
 
-    double radius = sphere->getDiameter() / 2;
+    char name[12];
+    sprintf(name, "A%d", sphereId);
 
-    // name, medSolid, radius of inner sphere, radius of outer sphere
-    volume = geom->MakeSphere(name, medSolid, 0., radius);
-
-    EColor color = this->translateColor(sphere->getColor());
-    volume->SetLineColor(color);
-
-    auto massLocation = sphere->getMassLocation();
-    TGeoTranslation *position =
-        new TGeoTranslation(massLocation[0], massLocation[1], massLocation[2]);
-
-    top->AddNode(volume, sphere->getID(), position);
+    auto container = new TGeoVolumeAssembly(name);
+    addBranch(container, sphere);
+    top->AddNode(container, sphereId);
   }
-
-  printf("[Info] Adding cylinders to the world\n");
-  // add cylinders to the world
-  for (auto cylinder : ecm->getPhysicalCylinderList()) {
-    char name[128];
-    sprintf(name, "C%d", cylinder->getID());
-
-    auto length = cylinder->getLength();
-    auto radius = cylinder->getDiameter() / 2;
-
-    volume = geom->MakeTube(name, medSolid, 0., radius, length / 2);
-
-    EColor color = this->translateColor(cylinder->getColor());
-    volume->SetLineColor(color);
-
-    TGeoCombiTrans *trans = this->cylinderTransformation(cylinder);
-    top->AddNode(volume, cylinder->getID(), trans);
-  }
-
-  printf("[Info] Finished adding nodes to the world\n");
-
 
   geom->CloseGeometry();
   top->Draw("ogl");
@@ -90,15 +55,13 @@ void GUI::Init() {
   // TEveGeoTopNode *en = new TEveGeoTopNode(geom, node);
   // gEve->AddGlobalElement(en);
 
-  geom->SetMaxVisNodes(1000000);
+  // geom->SetMaxVisNodes(1000000);
 
   init = true;
 }
 
 TGeoCombiTrans *GUI::cylinderTransformation(const PhysicalCylinder *cylinder) {
-  double phiX = 0.0, thetaY = 0.0, psiZ = 0.0;
-
-  double length = cylinder->getLength();
+  auto length = cylinder->getLength();
   auto springAxis = cylinder->getSpringAxis();
   auto massLocation = cylinder->getMassLocation();
 
@@ -112,21 +75,12 @@ TGeoCombiTrans *GUI::cylinderTransformation(const PhysicalCylinder *cylinder) {
 
   auto position = new TGeoTranslation(x1 - dx / 2, y1 - dy / 2, z1 - dz / 2);
 
-  if ((dx > 0 && dy > 0 && dz > 0) || (dx < 0 && dy < 0 && dz < 0)) {
-    phiX = atan2(dy, dx) * 180. / M_PI + 90.;
-    thetaY = acos(dz / length) * 180. / M_PI;
+  auto phiX = 0.0, thetaY = acos(dz / length) * 180. / M_PI, psiZ = 0.0;
 
-  } else if ((dx < 0 && dy > 0 && dz > 0) || (dx > 0 && dy < 0 && dz < 0)) {
+  if ((dx < 0 && dy > 0 && dz > 0) || (dx > 0 && dy < 0 && dz < 0)) {
     phiX = 180. - atan2(dx, dy) * 180. / M_PI;
-    thetaY = acos(dz / length) * 180. / M_PI;
-
-  } else if ((dx < 0 && dy < 0 && dz > 0) || (dx > 0 && dy > 0 && dz < 0)) {
+  } else {
     phiX = atan2(dy, dx) * 180. / M_PI + 90.;
-    thetaY = acos(dz / length) * 180. / M_PI;
-
-  } else if ((dx < 0 && dy > 0 && dz < 0) || (dx > 0 && dy < 0 && dz > 0)) {
-    phiX = atan2(dy, dx) * 180. / M_PI + 90.;
-    thetaY = acos(dz / length) * 180. / M_PI;
   }
 
   auto rotation = new TGeoRotation("rot", phiX, thetaY, psiZ);
@@ -151,4 +105,82 @@ EColor GUI::translateColor(Color color) {
     // ROOT doesn't know this `color`, return kAzure :)
     return kAzure;
   }
+}
+
+void GUI::addBranch(TGeoVolume *container, PhysicalSphere *sphere) {
+  addSphereToVolume(container, sphere);
+
+  for (auto cylinder : sphere->getDaughters()) {
+    addCylinderToVolume(container, cylinder);
+    preOrderTraversalCylinder(container, cylinder);
+  }
+}
+
+void GUI::preOrderTraversalCylinder(TGeoVolume *container,
+                                    PhysicalCylinder *cylinder) {
+  auto left = cylinder->getDaughterLeft();
+  auto right = cylinder->getDaughterRight();
+
+  if (left != nullptr && right != nullptr) {
+    // current cylinder is bifurcation
+    char name[13];
+    sprintf(name, "AB%d", cylinder->getID());
+
+    auto newContainer = new TGeoVolumeAssembly(name);
+    addCylinderToVolume(newContainer, left);
+    addCylinderToVolume(newContainer, right);
+
+    preOrderTraversalCylinder(newContainer, left);
+    preOrderTraversalCylinder(newContainer, right);
+
+    container->AddNode(newContainer, cylinder->getID());
+
+    return;
+  }
+
+  if (left != nullptr) {
+    addCylinderToVolume(container, left);
+    preOrderTraversalCylinder(container, left);
+  }
+
+  if (right != nullptr) {
+    addCylinderToVolume(container, right);
+    preOrderTraversalCylinder(container, right);
+  }
+}
+
+void GUI::addCylinderToVolume(TGeoVolume *container,
+                              PhysicalCylinder *cylinder) {
+  int id = cylinder->getID();
+
+  char name[12];
+  sprintf(name, "C%d", id);
+
+  auto length = cylinder->getLength();
+  auto radius = cylinder->getDiameter() / 2;
+  auto trans = this->cylinderTransformation(cylinder);
+
+  auto volume = geom->MakeTube(name, medSolid, 0., radius, length / 2);
+  volume->SetLineColor(this->translateColor(cylinder->getColor()));
+
+  container->AddNode(volume, id, trans);
+}
+
+void GUI::addSphereToVolume(TGeoVolume *container, PhysicalSphere *sphere) {
+  int id = sphere->getID();
+
+  char name[12];
+  sprintf(name, "S%d", id);
+
+  auto radius = sphere->getDiameter() / 2;
+  auto massLocation = sphere->getMassLocation();
+  auto x = massLocation[0];
+  auto y = massLocation[1];
+  auto z = massLocation[2];
+  auto position = new TGeoTranslation(x, y, z);
+
+  auto volume = geom->MakeSphere(name, medSolid, 0., radius);
+  volume->SetLineColor(this->translateColor(sphere->getColor()));
+
+  container->AddNode(volume, id, position);
 }

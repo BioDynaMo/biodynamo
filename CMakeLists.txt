@@ -183,6 +183,7 @@ if (test)
   add_dependencies(bdmclean testbdmclean)
 endif()
 
+#--------------------- build visualization projects ----------------------
 # BUILD DIVIDING CELL VISUALIZATION
 set(VIZ_TARGET_1 dividing-cell-viz)
 add_executable(${VIZ_TARGET_1} ${SOURCES} viz/dividing_cell_visualization.cpp)

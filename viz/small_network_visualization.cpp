@@ -94,7 +94,7 @@ int main(int argc, char **argv) {
 
 
   auto scheduler = Scheduler::getInstance();
-  auto max_time = 19;
+  auto max_time = 16;
   auto begin = std::chrono::steady_clock::now();
   while (ecm->getECMtime() < max_time) {
     auto middle = std::chrono::steady_clock::now();
@@ -102,13 +102,17 @@ int main(int argc, char **argv) {
     scheduler->simulateOneStep();
 
     auto end = std::chrono::steady_clock::now();
-    double diff = std::chrono::duration_cast<std::chrono::microseconds>(
+    double step = std::chrono::duration_cast<std::chrono::microseconds>(
                       end - middle).count() / 1e3;
-    double s = std::chrono::duration_cast<std::chrono::microseconds>(
+    double elapsed = std::chrono::duration_cast<std::chrono::microseconds>(
                     end - begin).count() / 1e6;
     printf("[Status] %2.1f %%, [elapsed] %2.1f s, [step] %3.1f ms\n",
-           (ecm->getECMtime() * 100.0 / max_time), s, diff);
+           (ecm->getECMtime() * 100.0 / max_time), elapsed, step);
   }
+
+  int objects = ecm->getPhysicalSphereListSize() + ecm->getPhysicalCylinderListSize();
+  printf("[Info] Total objects in simulation: %d\n", objects);
+
   ConnectionMaker::extendExcressencesAndSynapseOnEveryNeuriteElement();
 
   visualization::GUI::getInstance().Update();
