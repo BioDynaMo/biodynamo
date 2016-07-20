@@ -20,10 +20,7 @@ void GUI::Update() {
     top->AddNode(container, top->GetNdaughters());
   }
 
-  gEve->AddElement(eveTop);
-
   geom->CloseGeometry();
-  // top->Draw("ogl");
   gEve->Redraw3D(kTRUE);
 }
 
@@ -50,10 +47,14 @@ void GUI::Init() {
   geom->SetTopVolume(top);
   geom->SetMultiThread(true);
 
+  // connect geom to eve
   TGeoNode *node = geom->GetTopNode();
   eveTop = new TEveGeoTopNode(geom, node);
   gEve->AddGlobalElement(eveTop);
+  gEve->AddElement(eveTop);
 
+  // number of visualized nodes inside one volume. If you exceed this number,
+  // ROOT will draw nothing.
   geom->SetMaxVisNodes((Int_t)1e6);
   init = true;
 }
@@ -122,6 +123,7 @@ void GUI::preOrderTraversalCylinder(PhysicalCylinder *cylinder,
   if (left != nullptr && right != nullptr) {
     // current cylinder is bifurcation
     auto newContainer = new TGeoVolumeAssembly("B");
+
     addCylinderToVolume(left, newContainer);
     addCylinderToVolume(right, newContainer);
 
@@ -133,11 +135,13 @@ void GUI::preOrderTraversalCylinder(PhysicalCylinder *cylinder,
     return;
   }
 
+  // add left subtree to container
   if (left != nullptr) {
     addCylinderToVolume(left, container);
     preOrderTraversalCylinder(left, container);
   }
 
+  // add right subtree to container
   if (right != nullptr) {
     addCylinderToVolume(right, container);
     preOrderTraversalCylinder(right, container);
@@ -146,8 +150,6 @@ void GUI::preOrderTraversalCylinder(PhysicalCylinder *cylinder,
 
 void GUI::addCylinderToVolume(PhysicalCylinder *cylinder,
                               TGeoVolume *container) {
-  int id = cylinder->getID();
-
   /**
    * This is the fastest way to create formatted string, according to my
    * benchmark:
@@ -157,7 +159,7 @@ void GUI::addCylinderToVolume(PhysicalCylinder *cylinder,
    *  sstream:	3179678.000000 us
    */
   char name[12];
-  sprintf(name, "C%d", id);
+  sprintf(name, "C%d", cylinder->getID());
 
   auto length = cylinder->getLength();
   auto radius = cylinder->getDiameter() / 2;
@@ -170,10 +172,8 @@ void GUI::addCylinderToVolume(PhysicalCylinder *cylinder,
 }
 
 void GUI::addSphereToVolume(PhysicalSphere *sphere, TGeoVolume *container) {
-  int id = sphere->getID();
-
   char name[12];
-  sprintf(name, "S%d", id);
+  sprintf(name, "S%d", sphere->getID());
 
   auto radius = sphere->getDiameter() / 2;
   auto massLocation = sphere->getMassLocation();
@@ -187,4 +187,3 @@ void GUI::addSphereToVolume(PhysicalSphere *sphere, TGeoVolume *container) {
 
   container->AddNode(volume, container->GetNdaughters(), position);
 }
-

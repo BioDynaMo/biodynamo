@@ -18,10 +18,13 @@ using bdm::physics::PhysicalCylinder;
 using bdm::physics::PhysicalSphere;
 
 /**
- * Singleton class, which draws graphical user interface
+ * Singleton class, which creates graphical user interface for biodynamo simulation
  */
 class GUI {
-private: // private members
+private: // members related to animation block
+  // TODO
+
+private: // members related to visualization
   TGeoManager *geom;
   TGeoVolume *top;
   TEveGeoTopNode *eveTop;
@@ -35,17 +38,45 @@ private: // private members
 
   bool init;
 
-private: // private functions
+  // private util functions
+private:
+  /**
+   * Calculates cylinder transformations: position (based on massLocation) and
+   * rotation (based on springAxis)
+   */
   TGeoCombiTrans *cylinderTransformation(const PhysicalCylinder *cylinder);
+  /**
+   * Gets ROOT's EColor from bdm::Color
+   */
   EColor translateColor(Color color);
 
+  /**
+   * Recursively adds sphere and its daughters to the container.
+   */
   void addBranch(PhysicalSphere *sphere, TGeoVolume *container);
-  void preOrderTraversalCylinder(PhysicalCylinder *cylinder, TGeoVolume *container);
+  /**
+   * Util function for recursive pre-order traversal of cylinders in one
+   * sphere's daughter
+   */
+  void preOrderTraversalCylinder(PhysicalCylinder *cylinder,
+                                 TGeoVolume *container);
+  /**
+   * Adds sphere to the volume, its name will be: "S%d", sphereID
+   */
   void addSphereToVolume(PhysicalSphere *sphere, TGeoVolume *container);
+  /**
+   * Adds cylinder to the volume, its name will be: "C%d", cylinderID
+   */
   void addCylinderToVolume(PhysicalCylinder *cylinder, TGeoVolume *container);
 
 public: // public interface
+  /**
+   * Creates TEveManager, initializes members
+   */
   void Init();
+  /**
+   * Update objects in the scene
+   */
   void Update();
 
 private: // singleton properties
