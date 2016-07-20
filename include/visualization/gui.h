@@ -6,6 +6,7 @@
 #define BIODYNAMO_GUI_H
 
 #include <TGeoManager.h>
+#include <TEveGeoNode.h>
 #include "simulation/ecm.h"
 #include "color.h"
 
@@ -23,6 +24,7 @@ class GUI {
 private: // private members
   TGeoManager *geom;
   TGeoVolume *top;
+  TEveGeoTopNode *eveTop;
 
   TGeoMaterial *matEmptySpace;
   TGeoMaterial *matSolid;
@@ -36,12 +38,11 @@ private: // private members
 private: // private functions
   TGeoCombiTrans *cylinderTransformation(const PhysicalCylinder *cylinder);
   EColor translateColor(Color color);
-  void addBranch(TGeoVolume *container, PhysicalSphere *sphere);
-  void preOrderTraversalCylinder(TGeoVolume *container,
-                                 PhysicalCylinder *cylinder);
 
-  void addSphereToVolume(TGeoVolume *container, PhysicalSphere *sphere);
-  void addCylinderToVolume(TGeoVolume *container, PhysicalCylinder *cylinder);
+  void addBranch(PhysicalSphere *sphere, TGeoVolume *container);
+  void preOrderTraversalCylinder(PhysicalCylinder *cylinder, TGeoVolume *container);
+  void addSphereToVolume(PhysicalSphere *sphere, TGeoVolume *container);
+  void addCylinderToVolume(PhysicalCylinder *cylinder, TGeoVolume *container);
 
 public: // public interface
   void Init();

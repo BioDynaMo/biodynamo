@@ -94,7 +94,7 @@ int main(int argc, char **argv) {
 
 
   auto scheduler = Scheduler::getInstance();
-  auto max_time = 16;
+  auto max_time = 6;
   auto begin = std::chrono::steady_clock::now();
   while (ecm->getECMtime() < max_time) {
     auto middle = std::chrono::steady_clock::now();
@@ -115,7 +115,13 @@ int main(int argc, char **argv) {
 
   ConnectionMaker::extendExcressencesAndSynapseOnEveryNeuriteElement();
 
+  auto beginUpd = std::chrono::steady_clock::now();
   visualization::GUI::getInstance().Update();
+  auto endUpd = std::chrono::steady_clock::now();
+  double vizTime = std::chrono::duration_cast<std::chrono::microseconds>(
+      endUpd - beginUpd).count() / 1e3;
+
+  printf("[Info] Total visualization time for one frame: %2.1f ms\n", vizTime);
 
   app.Run();
 }

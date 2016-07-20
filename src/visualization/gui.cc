@@ -15,24 +15,22 @@ GUI::GUI() : geom(nullptr), top(nullptr), init(false) {}
 
 void GUI::Update() {
   for (auto sphere : ecm->getPhysicalSphereList()) {
-    auto sphereId = sphere->getID();
-
-    char name[12];
-    sprintf(name, "A%d", sphereId);
-
-    auto container = new TGeoVolumeAssembly(name);
-    addBranch(container, sphere);
-    top->AddNode(container, sphereId);
+    auto container = new TGeoVolumeAssembly("A");
+    addBranch(sphere, container);
+    top->AddNode(container, top->GetNdaughters());
   }
 
+  gEve->AddElement(eveTop);
+
   geom->CloseGeometry();
-  top->Draw("ogl");
+  // top->Draw("ogl");
+  gEve->Redraw3D(kTRUE);
 }
 
 void GUI::Init() {
   this->ecm = ECM::getInstance();
 
-  // TEveManager::Create();
+  TEveManager::Create();
 
   geom = new TGeoManager("Visualization", "Biodynamo");
 
@@ -50,13 +48,13 @@ void GUI::Init() {
   top = geom->MakeBox("World", medEmptySpace, worldRadius, worldRadius,
                       worldRadius);
   geom->SetTopVolume(top);
+  geom->SetMultiThread(true);
 
-  // TGeoNode *node = geom->GetTopNode();
-  // TEveGeoTopNode *en = new TEveGeoTopNode(geom, node);
-  // gEve->AddGlobalElement(en);
+  TGeoNode *node = geom->GetTopNode();
+  eveTop = new TEveGeoTopNode(geom, node);
+  gEve->AddGlobalElement(eveTop);
 
-  // geom->SetMaxVisNodes(1000000);
-
+  geom->SetMaxVisNodes((Int_t)1e6);
   init = true;
 }
 
@@ -107,52 +105,57 @@ EColor GUI::translateColor(Color color) {
   }
 }
 
-void GUI::addBranch(TGeoVolume *container, PhysicalSphere *sphere) {
-  addSphereToVolume(container, sphere);
+void GUI::addBranch(PhysicalSphere *sphere, TGeoVolume *container) {
+  addSphereToVolume(sphere, container);
 
   for (auto cylinder : sphere->getDaughters()) {
-    addCylinderToVolume(container, cylinder);
-    preOrderTraversalCylinder(container, cylinder);
+    addCylinderToVolume(cylinder, container);
+    preOrderTraversalCylinder(cylinder, container);
   }
 }
 
-void GUI::preOrderTraversalCylinder(TGeoVolume *container,
-                                    PhysicalCylinder *cylinder) {
+void GUI::preOrderTraversalCylinder(PhysicalCylinder *cylinder,
+                                    TGeoVolume *container) {
   auto left = cylinder->getDaughterLeft();
   auto right = cylinder->getDaughterRight();
 
   if (left != nullptr && right != nullptr) {
     // current cylinder is bifurcation
-    char name[13];
-    sprintf(name, "AB%d", cylinder->getID());
+    auto newContainer = new TGeoVolumeAssembly("B");
+    addCylinderToVolume(left, newContainer);
+    addCylinderToVolume(right, newContainer);
 
-    auto newContainer = new TGeoVolumeAssembly(name);
-    addCylinderToVolume(newContainer, left);
-    addCylinderToVolume(newContainer, right);
+    preOrderTraversalCylinder(left, newContainer);
+    preOrderTraversalCylinder(right, newContainer);
 
-    preOrderTraversalCylinder(newContainer, left);
-    preOrderTraversalCylinder(newContainer, right);
-
-    container->AddNode(newContainer, cylinder->getID());
+    container->AddNode(newContainer, container->GetNdaughters());
 
     return;
   }
 
   if (left != nullptr) {
-    addCylinderToVolume(container, left);
-    preOrderTraversalCylinder(container, left);
+    addCylinderToVolume(left, container);
+    preOrderTraversalCylinder(left, container);
   }
 
   if (right != nullptr) {
-    addCylinderToVolume(container, right);
-    preOrderTraversalCylinder(container, right);
+    addCylinderToVolume(right, container);
+    preOrderTraversalCylinder(right, container);
   }
 }
 
-void GUI::addCylinderToVolume(TGeoVolume *container,
-                              PhysicalCylinder *cylinder) {
+void GUI::addCylinderToVolume(PhysicalCylinder *cylinder,
+                              TGeoVolume *container) {
   int id = cylinder->getID();
 
+  /**
+   * This is the fastest way to create formatted string, according to my
+   * benchmark:
+   * http://pastebin.com/YRwyECMH
+   *  sprintf:	613151.000000 us
+   *  string: 	733208.000000 us
+   *  sstream:	3179678.000000 us
+   */
   char name[12];
   sprintf(name, "C%d", id);
 
@@ -163,10 +166,10 @@ void GUI::addCylinderToVolume(TGeoVolume *container,
   auto volume = geom->MakeTube(name, medSolid, 0., radius, length / 2);
   volume->SetLineColor(this->translateColor(cylinder->getColor()));
 
-  container->AddNode(volume, id, trans);
+  container->AddNode(volume, container->GetNdaughters(), trans);
 }
 
-void GUI::addSphereToVolume(TGeoVolume *container, PhysicalSphere *sphere) {
+void GUI::addSphereToVolume(PhysicalSphere *sphere, TGeoVolume *container) {
   int id = sphere->getID();
 
   char name[12];
@@ -182,5 +185,6 @@ void GUI::addSphereToVolume(TGeoVolume *container, PhysicalSphere *sphere) {
   auto volume = geom->MakeSphere(name, medSolid, 0., radius);
   volume->SetLineColor(this->translateColor(sphere->getColor()));
 
-  container->AddNode(volume, id, position);
+  container->AddNode(volume, container->GetNdaughters(), position);
 }
+
