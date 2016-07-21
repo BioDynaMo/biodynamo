@@ -18,11 +18,12 @@ using bdm::physics::PhysicalCylinder;
 using bdm::physics::PhysicalSphere;
 
 /**
- * Singleton class, which creates graphical user interface for biodynamo simulation
+ * Singleton class, which creates graphical user interface for biodynamo
+ * simulation
  */
 class GUI {
 private: // members related to animation block
-  // TODO
+  void createAnimationTab();
 
 private: // members related to visualization
   TGeoManager *geom;
@@ -69,10 +70,13 @@ private:
    */
   void addCylinderToVolume(PhysicalCylinder *cylinder, TGeoVolume *container);
 
+  PhysicalCylinder * mergeCylinders(PhysicalCylinder *cyl1, PhysicalCylinder *cyl2,
+                                    double maxAngle = 5);
+
 public: // public interface
-  /**
-   * Creates TEveManager, initializes members
-   */
+        /**
+         * Creates TEveManager, initializes members
+         */
   void Init();
   /**
    * Update objects in the scene

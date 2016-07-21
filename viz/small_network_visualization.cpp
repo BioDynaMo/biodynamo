@@ -94,7 +94,7 @@ int main(int argc, char **argv) {
 
 
   auto scheduler = Scheduler::getInstance();
-  auto max_time = 6;
+  auto max_time = 3;
   auto begin = std::chrono::steady_clock::now();
   while (ecm->getECMtime() < max_time) {
     auto middle = std::chrono::steady_clock::now();

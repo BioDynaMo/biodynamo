@@ -6,10 +6,14 @@
 #include <TView.h>
 #include <TEveManager.h>
 #include <TEveGeoNode.h>
+#include <TEveWindow.h>
+#include <TEveBrowser.h>
+#include <TVector3.h>
 
 #include "visualization/gui.h"
 
 using visualization::GUI;
+using bdm::physics::PhysicalCylinder;
 
 GUI::GUI() : geom(nullptr), top(nullptr), init(false) {}
 
@@ -19,7 +23,6 @@ void GUI::Update() {
     addBranch(sphere, container);
     top->AddNode(container, top->GetNdaughters());
   }
-
   geom->CloseGeometry();
   gEve->Redraw3D(kTRUE);
 }
@@ -57,10 +60,12 @@ void GUI::Init() {
   // ROOT will draw nothing.
   geom->SetMaxVisNodes((Int_t)1e6);
   init = true;
+
+  createAnimationTab();
 }
 
 TGeoCombiTrans *GUI::cylinderTransformation(const PhysicalCylinder *cylinder) {
-  auto length = cylinder->getLength();
+  auto length = cylinder->getActualLength();
   auto springAxis = cylinder->getSpringAxis();
   auto massLocation = cylinder->getMassLocation();
 
@@ -161,7 +166,7 @@ void GUI::addCylinderToVolume(PhysicalCylinder *cylinder,
   char name[12];
   sprintf(name, "C%d", cylinder->getID());
 
-  auto length = cylinder->getLength();
+  auto length = cylinder->getActualLength();
   auto radius = cylinder->getDiameter() / 2;
   auto trans = this->cylinderTransformation(cylinder);
 
@@ -186,4 +191,47 @@ void GUI::addSphereToVolume(PhysicalSphere *sphere, TGeoVolume *container) {
   volume->SetLineColor(this->translateColor(sphere->getColor()));
 
   container->AddNode(volume, container->GetNdaughters(), position);
+}
+
+void GUI::createAnimationTab() {
+
+  auto browser = gEve->GetBrowser();
+  browser->StartEmbedding(TRootBrowser::kLeft);
+
+  TGMainFrame *mainFrame = browser->GetMainFrame();
+  mainFrame->SetWindowName("Biodynamo Visualization");
+
+  browser->StopEmbedding();
+  browser->SetTabTitle("Animation", 0);
+}
+
+PhysicalCylinder *GUI::mergeCylinders(PhysicalCylinder *cyl1,
+                                      PhysicalCylinder *cyl2, double maxAngle) {
+  auto c1loc = cyl1->getSpringAxis();
+  auto c2loc = cyl2->getSpringAxis();
+
+  TVector3 v1(c1loc[0], c1loc[1], c1loc[2]);
+  TVector3 v2(c2loc[0], c2loc[1], c2loc[2]);
+
+  double angle = v1.Angle(v2) * 180. / M_PI;
+
+  if (angle < maxAngle) {
+    auto newCylinder = cyl2->getCopy().get();
+    newCylinder->setColor(bdm::Param::kGreen);
+
+    newCylinder->setMassLocation(cyl2->getMassLocation());
+    auto ml1 = cyl1->getMassLocation();
+    auto ml2 = cyl2->getMassLocation();
+
+    newCylinder->setSpringAxis({ml2[0] + c2loc[0] - ml1[0],
+                                ml2[1] + c2loc[1] - ml1[1],
+                                ml2[2] + c2loc[2] - ml1[2]});
+
+    auto sa = newCylinder->getSpringAxis();
+    newCylinder->setActualLength(sqrt(sa[0] * sa[0] + sa[1] * sa[1] + sa[2] * sa[2]));
+
+    return newCylinder;
+  } else {
+    return nullptr;
+  }
 }
