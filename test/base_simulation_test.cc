@@ -82,7 +82,7 @@ void BaseSimulationTest::assertSimulationState() {
   Json::Reader reader;
   Json::Value actual;
   Json::Value expected;
-  Json::Value::epsilon_ = 1e-6;
+  Json::Value::epsilon_ = 1e-10;
   reader.parse(sb.str(), actual);
   reader.parse(expected_string, expected);
 

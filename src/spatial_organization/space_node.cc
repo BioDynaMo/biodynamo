@@ -1,6 +1,5 @@
 #include "spatial_organization/space_node.h"
 
-#include <cmath>
 #include <limits>
 
 #include "random.h"
@@ -544,7 +543,7 @@ std::array<double, 3> SpaceNode<T>::proposeNewPosition() {
   }
   return Matrix::add(
       position_,
-      Matrix::scalarMult(std::sqrt(min_distance) * 0.5,
+      Matrix::scalarMult(MathUtil::sqrt(min_distance) * 0.5,
                          Matrix::normalize(farthest_away_diff)));
 }
 

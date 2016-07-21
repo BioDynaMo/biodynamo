@@ -84,6 +84,22 @@ endif()
 add_custom_target(copylibgmp DEPENDS libgmp
                   COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_BINARY_DIR}/gmp/src/gmp/.libs/libgmp${CMAKE_SHARED_LIBRARY_SUFFIX}" ${LIBGMP_DEST})
 
+#--------------------- setup crlibm ------------------------------
+# build crlibm
+ExternalProject_Add(
+    external_crlibm
+    URL "${CMAKE_CURRENT_BINARY_DIR}/../external/crlibm-1.0beta5.tgz"
+    PREFIX "${CMAKE_CURRENT_BINARY_DIR}/crlibm"
+    BUILD_IN_SOURCE 1
+    CONFIGURE_COMMAND ./configure CC=${CMAKE_C_COMPILER} CXX=${CMAKE_CXX_COMPILER} CPPFLAGS=-fPIC CFLAGS=-fPIC
+    BUILD_COMMAND make
+    TEST_COMMAND make check
+    INSTALL_COMMAND "" # Disable install step
+)
+
+add_custom_target(copycrlibm DEPENDS external_crlibm
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_BINARY_DIR}/crlibm/src/external_crlibm/libcrlibm.a" "${CMAKE_BINARY_DIR}/libcrlibm.a")
+
 #--------------------- Find ROOT ---------------------------------
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
 find_package(ROOT REQUIRED)
@@ -95,11 +111,14 @@ include(cmake/doxygen.cmake)
 # add the headers into the project
 include_directories(include)
 include_directories("${CMAKE_BINARY_DIR}/gmp/src/gmp")
+include_directories("${CMAKE_BINARY_DIR}/crlibm/src/external_crlibm")
 
 file(GLOB SOURCES "src/**/*.cc" "src/*.cc" "include/**/*.h" "include/*.h")
 add_library(biodynamo SHARED ${SOURCES})
 target_link_libraries(biodynamo libgmp)
 add_dependencies(biodynamo copylibgmp)
+target_link_libraries(biodynamo "${CMAKE_BINARY_DIR}/libcrlibm.a")
+add_dependencies(biodynamo copycrlibm)
 
 # add custom clean target for shared library
 add_custom_target(libbdmclean COMMAND ${CMAKE_COMMAND} -P "${CMAKE_BINARY_DIR}/CMakeFiles/biodynamo.dir/cmake_clean.cmake")

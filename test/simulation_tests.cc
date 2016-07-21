@@ -1,4 +1,3 @@
-#include <cmath>
 #include "random.h"
 
 #include "gtest/gtest.h"
@@ -17,13 +16,6 @@
 #include "figure_9_test.h"
 
 namespace bdm {
-
-TEST (Math, exp) {
-  double x = -0.0028724514195400627;
-  double result = exp(x);
-  double expected = 0.99713167012178527;
-  ASSERT_EQ(expected, result);
-}
 
 TEST (Random, all) {
   Random::setSeed(1L);

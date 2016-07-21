@@ -1,6 +1,5 @@
 #include "spatial_organization/tetrahedron.h"
 
-#include <cmath>
 #include <algorithm>
 
 #include "matrix.h"
@@ -884,7 +883,7 @@ void Tetrahedron<T>::computeCircumsphereCenterAndVolume() {
     if (length > max_length_2) {
       max_length_2 = length;
     }
-    length = std::sqrt(length);
+    length = MathUtil::sqrt(length);
 
     normals[i][0] /= length;
     normals[i][1] /= length;
@@ -920,7 +919,7 @@ void Tetrahedron<T>::computeCircumsphereCenterAndVolume() {
     ddiv_2 = 1 / (det * det) * 3 * dscalar_2 + 324 * pm_2 * ddet_2 / (det * det * det * det);
     auto dummy = Matrix::subtract(circum_center_, adjacent_nodes_[0]->getPosition());
     squared_radius_ = Matrix::dot(dummy, dummy);
-    tolerance_ = std::sqrt(12 * ddiv_2 * squared_radius_) * my_2;
+    tolerance_ = MathUtil::sqrt(12 * ddiv_2 * squared_radius_) * my_2;
   }
   updateCrossSectionAreas();
 }

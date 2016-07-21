@@ -2,7 +2,6 @@
 #define MATRIX_H_
 
 #include <array>
-#include <cmath>
 #include <vector>
 #include <memory>
 
@@ -173,7 +172,7 @@ class Matrix {
     for (size_t i = 0; i < a.size(); i++) {
       norme += a[i] * a[i];
     }
-    norme = std::sqrt(norme);
+    norme = MathUtil::sqrt(norme);
     return norme;
   }
 
@@ -432,7 +431,7 @@ class Matrix {
    * @return the angle between them.
    */
   static double angleRadian(const std::array<double, 3>& a, const std::array<double, 3>& b) {
-    double angle = std::acos(dot(a, b) / (norm(a) * norm(b)));
+    double angle = MathUtil::acos(dot(a, b) / (norm(a) * norm(b)));
     return angle;
   }
 

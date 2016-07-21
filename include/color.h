@@ -1,7 +1,6 @@
 #ifndef COLOR_H_
 #define COLOR_H_
 
-#include <cmath>
 #include "random.h"
 
 namespace bdm {

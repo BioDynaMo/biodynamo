@@ -1,7 +1,7 @@
 #include "random.h"
 
-#include <cmath>
 #include <random>
+#include "math_util.h"
 
 namespace bdm {
 
@@ -59,7 +59,7 @@ double Random::nextGaussian() {
       v2 = 2 * nextDouble() - 1;   // between -1.0 and 1.0
       s = v1 * v1 + v2 * v2;
     } while (s >= 1 || s == 0);
-    double multiplier = std::sqrt(-2 * std::log(s) / s);
+    double multiplier = MathUtil::sqrt(-2 * MathUtil::log(s) / s);
     next_next_gaussian_ = v2 * multiplier;
     have_next_next_gaussian_ = true;
     return v1 * multiplier;

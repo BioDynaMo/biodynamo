@@ -1,6 +1,5 @@
 #include "spatial_organization/triangle_3d.h"
 
-#include <cmath>
 #include <limits>
 
 #include "matrix.h"

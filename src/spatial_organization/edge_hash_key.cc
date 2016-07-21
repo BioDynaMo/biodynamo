@@ -1,6 +1,5 @@
 #include "spatial_organization/edge_hash_key.h"
 
-#include <cmath>
 #include <sstream>
 
 #include "physics/physical_node.h"

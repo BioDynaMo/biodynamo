@@ -3,9 +3,10 @@ sudo: required
 dist: trusty
 os:
   - linux
-#  - osx
+  - osx
 compiler:
   - gcc
+  - clang
 script:
   - travis_wait 30 ./travis.sh
 
