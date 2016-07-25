@@ -40,7 +40,7 @@ int main(int argc, char** argv){
   SpaceNode < PhysicalNode > ::reset();
 
   auto ecm = ECM::getInstance();
-  visualization::GUI::getInstance().Init();
+  bdm::visualization::GUI::getInstance().Init();
 
   Random::setSeed(1L);
   PhysicalObject::setInterObjectForce(DefaultForce::UPtr(new DefaultForce()));
@@ -63,7 +63,7 @@ int main(int argc, char** argv){
     }
 
   }
-  visualization::GUI::getInstance().Update();
+  bdm::visualization::GUI::getInstance().Update();
 
   app.Run();
 }

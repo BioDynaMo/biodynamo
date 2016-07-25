@@ -8,5 +8,6 @@
 
 #pragma link C++ namespace bdm;
 #pragma link C++ class bdm::simulation::ECM+;
+#pragma link C++ class bdm::visualization::GUI+;
 
 #endif

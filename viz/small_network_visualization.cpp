@@ -40,7 +40,7 @@ int main(int argc, char **argv) {
   SpaceNode<PhysicalNode>::reset();
 
   auto ecm = ECM::getInstance();
-  visualization::GUI::getInstance().Init();
+  bdm::visualization::GUI::getInstance().Init();
 
   PhysicalObject::setInterObjectForce(DefaultForce::UPtr(new DefaultForce()));
 
@@ -92,43 +92,49 @@ int main(int argc, char **argv) {
         LocalBiologyModule::UPtr{new NeuriteChemoAttraction("L1", 0.02)});
   }
 
-
   auto scheduler = Scheduler::getInstance();
-  auto max_time = 2;
+  auto max_time = 6;
   auto begin = std::chrono::steady_clock::now();
 
-  std::thread simulation([&](){
+  std::thread simulation([&]() {
     while (ecm->getECMtime() < max_time) {
-      visualization::GUI::getInstance().simulation.lock();
+      /**
+       * For debug purposes. Used for simulation lock for nextStep button.
+       */
+      bdm::visualization::GUI::getInstance().simulation.lock();
+
       auto middle = std::chrono::steady_clock::now();
 
       scheduler->simulateOneStep();
 
       auto end = std::chrono::steady_clock::now();
       double step = std::chrono::duration_cast<std::chrono::microseconds>(
-          end - middle).count() / 1e3;
+                        end - middle).count() /
+                    1e3;
       double elapsed = std::chrono::duration_cast<std::chrono::microseconds>(
-          end - begin).count() / 1e6;
+                           end - begin).count() /
+                       1e6;
       printf("[Status] %2.1f %%, [elapsed] %2.1f s, [step] %3.1f ms\n",
              (ecm->getECMtime() * 100.0 / max_time), elapsed, step);
-
     }
 
-    int objects = ecm->getPhysicalSphereListSize() + ecm->getPhysicalCylinderListSize();
+    int objects =
+        ecm->getPhysicalSphereListSize() + ecm->getPhysicalCylinderListSize();
     printf("[Info] Total objects in simulation: %d\n", objects);
 
     ConnectionMaker::extendExcressencesAndSynapseOnEveryNeuriteElement();
 
     auto beginUpd = std::chrono::steady_clock::now();
-    visualization::GUI::getInstance().Update();
+    bdm::visualization::GUI::getInstance().Update();
     auto endUpd = std::chrono::steady_clock::now();
     double vizTime = std::chrono::duration_cast<std::chrono::microseconds>(
-        endUpd - beginUpd).count() / 1e3;
+                         endUpd - beginUpd).count() /
+                     1e3;
 
-    printf("[Info] Total visualization time for one frame: %2.1f ms\n", vizTime);
+    printf("[Info] Total visualization time for one frame: %2.1f ms\n",
+           vizTime);
   });
 
   simulation.detach();
   app.Run();
-
 }

@@ -8,12 +8,12 @@
 #include <thread>
 #include <mutex>
 
-#include <RQ_OBJECT.h>
 #include <TGeoManager.h>
 #include <TEveGeoNode.h>
 #include "simulation/ecm.h"
 #include "color.h"
 
+namespace bdm {
 namespace visualization {
 
 using bdm::simulation::ECM;
@@ -25,25 +25,12 @@ using bdm::physics::PhysicalSphere;
  * Singleton class, which creates graphical user interface for biodynamo
  * simulation
  */
-class GUI{
-  RQ_OBJECT("GUI")
-private: // members related to animation block
-  unsigned int maxVisualizableID;
-
-  // members related to internal functions
-private:
-  /**
-   * Total number of physical objects in the simulation
-   * objNumber = sphereN + cylinderN
-   */
-  int objNumber;
-
-  int lastVisualizedID;
-
- public:
-
+class GUI {
+public:
   std::mutex simulation;
   std::mutex visualization;
+
+  void nextStep(); // for debug purposes only
 
   // members related to visualization
 private:
@@ -131,6 +118,5 @@ public: // singleton interface
   //       before deleted status
 };
 } // namespace visualization
+} // namespace bdm
 #endif // BIODYNAMO_GUI_H
-
-void func();

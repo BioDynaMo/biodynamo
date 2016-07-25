@@ -13,30 +13,25 @@
 
 #include "visualization/gui.h"
 
-using visualization::GUI;
+using bdm::visualization::GUI;
 
-GUI::GUI()
-    : maxVisualizableID(0), objNumber(0), lastVisualizedID(0), init(false),
-      update(false), animation(false) {}
+GUI::GUI() : init(false), update(false), animation(false) {}
 
 void GUI::Update() {
   if (!init)
     throw std::runtime_error("Call GUI::getInstance().Init() first!");
-
 
   for (auto sphere : ecm->getPhysicalSphereList()) {
     auto container = new TGeoVolumeAssembly("A");
     addBranch(sphere, container);
     top->AddNode(container, top->GetNdaughters());
   }
-  //geom->CloseGeometry();
+  // geom->CloseGeometry();
   gEve->FullRedraw3D(kTRUE);
 
   visualization::GUI::getInstance().simulation.unlock();
 
   update = true;
-
-  Emit("Update()");
 }
 
 void GUI::Init() {
@@ -171,15 +166,6 @@ void GUI::preOrderTraversalCylinder(PhysicalCylinder *cylinder,
 
 void GUI::addCylinderToVolume(PhysicalCylinder *cylinder,
                               TGeoVolume *container) {
-  /*
-  // needed to prevent second visualization of the same objects
-  auto id = cylinder->getID();
-  if (id < lastVisualizedID)
-    return;
-  else
-    lastVisualizedID = id;
-    */
-
   /**
    * This is the fastest way to create formatted string, according to my
    * benchmark:
@@ -202,15 +188,6 @@ void GUI::addCylinderToVolume(PhysicalCylinder *cylinder,
 }
 
 void GUI::addSphereToVolume(PhysicalSphere *sphere, TGeoVolume *container) {
-  /*
-  // needed to prevent second visualization of the same objects
-  auto id = sphere->getID();
-  if (id < lastVisualizedID)
-    return;
-  else
-    lastVisualizedID = id;
-    */
-
   char name[12];
   sprintf(name, "S%d", sphere->getID());
 
@@ -232,9 +209,6 @@ void GUI::ShowAnimationTab() {
   if (!update)
     throw std::runtime_error("Call GUI::getInstance().Update() first!");
 */
-  this->objNumber =
-      ecm->getPhysicalCylinderListSize() + ecm->getPhysicalSphereListSize();
-
   auto browser = gEve->GetBrowser();
   browser->StartEmbedding(TRootBrowser::kLeft);
   TGMainFrame *mainFrame = browser->GetMainFrame();
@@ -245,7 +219,7 @@ void GUI::ShowAnimationTab() {
     auto nextStep = new TGTextButton();
     nextStep->SetText("Next step");
     nextStep->SetToolTipText("Proceed to the next simulation step");
-    nextStep->Connect("Pressed()", 0,0 , "func()");
+    nextStep->Connect("Pressed()", "GUI", this, "nextStep()"); /////////////////////////// PROBLEM IS HERE
     hf->AddFrame(nextStep);
   }
 
@@ -259,7 +233,11 @@ void GUI::ShowAnimationTab() {
   browser->SetTabTitle("Animation", 0);
 }
 
-
-void func(){
-  printf("ASD\n");
+/**
+ * FOR DEBUG PURPOSES ONLY. WILL BE REMOVED
+ */
+void GUI::nextStep() {
+  bdm::visualization::GUI::getInstance().Update();
+  bdm::visualization::GUI::getInstance().simulation.unlock();
+  printf("One step ahead\n");
 }
