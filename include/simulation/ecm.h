@@ -8,6 +8,8 @@
 #include <exception>
 #include <unordered_map>
 
+#include <TObject.h>
+
 #include "color.h"
 #include "sim_state_serializable.h"
 #include "cells/cell.h"
@@ -52,11 +54,12 @@ using spatial_organization::SpatialOrganizationNode;
  * or remove elements. Contains lists of "real" and "artificial" Substances.
  * Possibility to define a cubic region of space where elements are confined.
  */
-class ECM : public SimStateSerializable {
+class ECM : public TObject, public SimStateSerializable {
  public:
   static ECM* getInstance();
 
-  ~ECM();
+  ECM(TRootIOCtor*) { }  // only used for ROOT I/O
+  virtual ~ECM();
   ECM(const ECM&) = delete;
   ECM& operator=(const ECM&) = delete;
 
@@ -457,7 +460,11 @@ class ECM : public SimStateSerializable {
   /** List of all the NeuriteElement instances. */
   std::vector<NeuriteElement*> neurite_elements_;
   /** List of all the Cell instances. */
+#ifdef __ROOTCLING__
+  std::vector<Cell*> cells_;
+#else
   std::vector<Cell::UPtr> cells_;
+#endif
   /** List of all the Chemical reactions instances. */
   //fixme implement std::vector<std::shared_ptr<physics::ECMChemicalReaction>> ecmChemicalReactionList;
   /* Reference time throughout the simulation (in hours) */
@@ -468,11 +475,19 @@ class ECM : public SimStateSerializable {
 
   /* In here we keep a template for each (extra-cellular) Substance in the simulation that have
    * non-standard value for diffusion and degradation constant.*/
+#ifdef __ROOTCLING__
+  std::unordered_map<std::string, Substance*> substance_lib_;
+#else
   std::unordered_map<std::string, Substance::UPtr> substance_lib_;
+#endif
 
   /* In here we keep a template for each (intra-cellular) Substance in the simulation that have
    * non-standard value for diffusion and degradation constant.*/
+#ifdef __ROOTCLING__
+  std::unordered_map<std::string, IntracellularSubstance*> intracellular_substance_lib_;
+#else
   std::unordered_map<std::string, IntracellularSubstance::UPtr> intracellular_substance_lib_;
+#endif
 
   /* In here we store a color attributed to specific cell types.*/
   std::unordered_map<std::string, Color> cell_color_lib_;
@@ -517,7 +532,11 @@ class ECM : public SimStateSerializable {
 
   /* to link the one instance of Substance we have used in the definition of the gradient, with the name of
    * the chemical that can be given as argument in the methods to know the concentration/grad.. */
+#ifdef __ROOTCLING__
+  std::unordered_map<std::string, Substance*> all_artificial_substances_;
+#else
   std::unordered_map<std::string, Substance::UPtr> all_artificial_substances_;
+#endif
 
   ECM();
 
@@ -530,6 +549,8 @@ class ECM : public SimStateSerializable {
 
   /** If as Substance is not already registered, we register it for you. No charges! Order now!*/
   Substance* getRegisteredArtificialSubstance(const std::string& substanceId);
+
+  ClassDefOverride(ECM,1);
 };
 
 }  // namespace simulation
