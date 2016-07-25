@@ -30,12 +30,12 @@ endif()
 
 #--------------------- set rpath options -------------
 # When building, use the RPATH
-set(CMAKE_SKIP_BUILD_RPATH FALSE)         # don't skip the full RPATH for the build tree
-set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE) # use always the build RPATH for the build tree
+set(CMAKE_SKIP_BUILD_RPATH FALSE)           # don't skip the full RPATH for the build tree
+set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)   # use always the build RPATH for the build tree
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE) # point to directories outside the build tree to the install RPATH
 
 if(APPLE)
-  set(CMAKE_MACOSX_RPATH TRUE)              # use RPATH for MacOSX
+  set(CMAKE_MACOSX_RPATH TRUE)                 # use RPATH for MacOSX
   set(CMAKE_INSTALL_NAME_DIR "@rpath")
   set(CMAKE_INSTALL_RPATH "@loader_path/")     # self relative LIBDIR
 else()
@@ -55,12 +55,13 @@ endif()
 # download gmp
 ExternalProject_Add(
     gmp
-    URL "${CMAKE_CURRENT_BINARY_DIR}/../external/gmp-6.1.0.tar.bz2"
+    URL "${CMAKE_SOURCE_DIR}/external/gmp-6.1.0.tar.bz2"
     PREFIX "${CMAKE_CURRENT_BINARY_DIR}/gmp"
     BUILD_IN_SOURCE 1
     CONFIGURE_COMMAND ./configure CC=${CMAKE_C_COMPILER} CXX=${CMAKE_CXX_COMPILER} ${GMP_CONFIG_PARAMETER}
     BUILD_COMMAND make
-    TEST_COMMAND make check
+    #TEST_COMMAND make check
+    TEST_COMMAND "" # Disable check step
     INSTALL_COMMAND "" # Disable install step
 )
 
@@ -88,33 +89,46 @@ add_custom_target(copylibgmp DEPENDS libgmp
 # build crlibm
 ExternalProject_Add(
     external_crlibm
-    URL "${CMAKE_CURRENT_BINARY_DIR}/../external/crlibm-1.0beta5.tgz"
+    URL "${CMAKE_SOURCE_DIR}/external/crlibm-1.0beta5.tgz"
     PREFIX "${CMAKE_CURRENT_BINARY_DIR}/crlibm"
     BUILD_IN_SOURCE 1
     CONFIGURE_COMMAND ./configure CC=${CMAKE_C_COMPILER} CXX=${CMAKE_CXX_COMPILER} CPPFLAGS=-fPIC CFLAGS=-fPIC
     BUILD_COMMAND make
-    TEST_COMMAND make check
+    #TEST_COMMAND make check
+    TEST_COMMAND "" # Disable check step
     INSTALL_COMMAND "" # Disable install step
 )
 
 add_custom_target(copycrlibm DEPENDS external_crlibm
     COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_BINARY_DIR}/crlibm/src/external_crlibm/libcrlibm.a" "${CMAKE_BINARY_DIR}/libcrlibm.a")
 
+#--------------------- Find Threads (for gtest) ------------------
+if (test)
+   # must be before include(${ROOT_USE_FILE}) otherwise test compile fails
+   find_package(Threads REQUIRED)
+endif()
+
 #--------------------- Find ROOT ---------------------------------
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
 find_package(ROOT REQUIRED)
+include(${ROOT_USE_FILE})
 
 #--------------------- Find Doxygen and set doc target -----------
 include(cmake/doxygen.cmake)
 
 #--------------------- build shared library  ----------------
 # add the headers into the project
-include_directories(include)
+include_directories("${CMAKE_SOURCE_DIR}/include")
 include_directories("${CMAKE_BINARY_DIR}/gmp/src/gmp")
 include_directories("${CMAKE_BINARY_DIR}/crlibm/src/external_crlibm")
 
+ROOT_GENERATE_DICTIONARY("${CMAKE_BINARY_DIR}/bdmDict"
+                         simulation/ecm.h
+                         LINKDEF bdmLinkDef.h)
+
 file(GLOB SOURCES "src/**/*.cc" "src/*.cc" "include/**/*.h" "include/*.h")
-add_library(biodynamo SHARED ${SOURCES})
+add_library(biodynamo SHARED ${SOURCES} ${CMAKE_BINARY_DIR}/bdmDict.cxx)
+target_link_libraries(biodynamo ${ROOT_LIBRARIES})
 target_link_libraries(biodynamo libgmp)
 add_dependencies(biodynamo copylibgmp)
 target_link_libraries(biodynamo "${CMAKE_BINARY_DIR}/libcrlibm.a")
@@ -132,10 +146,9 @@ if (test)
   enable_testing()
 
   # setup google test
-  find_package(Threads REQUIRED)
   ExternalProject_Add(
     gtest
-    URL "${CMAKE_CURRENT_BINARY_DIR}/../external/gtest-1.7.0.zip"
+    URL "${CMAKE_SOURCE_DIR}/external/gtest-1.7.0.zip"
     PREFIX "${CMAKE_CURRENT_BINARY_DIR}/gtest"
     CMAKE_CACHE_ARGS
        -DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}
@@ -155,7 +168,7 @@ if (test)
   # setup jsoncpp
   ExternalProject_Add(
     jsoncpp
-    URL "${CMAKE_CURRENT_BINARY_DIR}/../external/jsoncpp.tar.gz"
+    URL "${CMAKE_SOURCE_DIR}/external/jsoncpp.tar.gz"
     PREFIX "${CMAKE_CURRENT_BINARY_DIR}/jsoncpp"
     CMAKE_CACHE_ARGS
        -DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}
