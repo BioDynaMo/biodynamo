@@ -5,6 +5,10 @@
 #ifndef BIODYNAMO_GUI_H
 #define BIODYNAMO_GUI_H
 
+#include <thread>
+#include <mutex>
+
+#include <RQ_OBJECT.h>
 #include <TGeoManager.h>
 #include <TEveGeoNode.h>
 #include "simulation/ecm.h"
@@ -21,11 +25,28 @@ using bdm::physics::PhysicalSphere;
  * Singleton class, which creates graphical user interface for biodynamo
  * simulation
  */
-class GUI {
+class GUI{
+  RQ_OBJECT("GUI")
 private: // members related to animation block
-  void createAnimationTab();
+  unsigned int maxVisualizableID;
 
-private: // members related to visualization
+  // members related to internal functions
+private:
+  /**
+   * Total number of physical objects in the simulation
+   * objNumber = sphereN + cylinderN
+   */
+  int objNumber;
+
+  int lastVisualizedID;
+
+ public:
+
+  std::mutex simulation;
+  std::mutex visualization;
+
+  // members related to visualization
+private:
   TGeoManager *geom;
   TGeoVolume *top;
   TEveGeoTopNode *eveTop;
@@ -37,7 +58,10 @@ private: // members related to visualization
 
   ECM *ecm;
 
+  // just to ensure that methods were called in correct order
   bool init;
+  bool update;
+  bool animation;
 
   // private util functions
 private:
@@ -70,18 +94,21 @@ private:
    */
   void addCylinderToVolume(PhysicalCylinder *cylinder, TGeoVolume *container);
 
-  PhysicalCylinder * mergeCylinders(PhysicalCylinder *cyl1, PhysicalCylinder *cyl2,
-                                    double maxAngle = 5);
-
-public: // public interface
-        /**
-         * Creates TEveManager, initializes members
-         */
+  // public interface
+public:
+  /**
+   * Creates TEveManager, initializes members
+   */
   void Init();
   /**
    * Update objects in the scene
    */
   void Update();
+
+  /**
+   * Show animation tab in the Eve browser
+   */
+  void ShowAnimationTab();
 
 private: // singleton properties
   GUI();
@@ -105,3 +132,5 @@ public: // singleton interface
 };
 } // namespace visualization
 #endif // BIODYNAMO_GUI_H
+
+void func();

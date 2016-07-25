@@ -94,34 +94,41 @@ int main(int argc, char **argv) {
 
 
   auto scheduler = Scheduler::getInstance();
-  auto max_time = 3;
+  auto max_time = 2;
   auto begin = std::chrono::steady_clock::now();
-  while (ecm->getECMtime() < max_time) {
-    auto middle = std::chrono::steady_clock::now();
 
-    scheduler->simulateOneStep();
+  std::thread simulation([&](){
+    while (ecm->getECMtime() < max_time) {
+      visualization::GUI::getInstance().simulation.lock();
+      auto middle = std::chrono::steady_clock::now();
 
-    auto end = std::chrono::steady_clock::now();
-    double step = std::chrono::duration_cast<std::chrono::microseconds>(
-                      end - middle).count() / 1e3;
-    double elapsed = std::chrono::duration_cast<std::chrono::microseconds>(
-                    end - begin).count() / 1e6;
-    printf("[Status] %2.1f %%, [elapsed] %2.1f s, [step] %3.1f ms\n",
-           (ecm->getECMtime() * 100.0 / max_time), elapsed, step);
-  }
+      scheduler->simulateOneStep();
 
-  int objects = ecm->getPhysicalSphereListSize() + ecm->getPhysicalCylinderListSize();
-  printf("[Info] Total objects in simulation: %d\n", objects);
+      auto end = std::chrono::steady_clock::now();
+      double step = std::chrono::duration_cast<std::chrono::microseconds>(
+          end - middle).count() / 1e3;
+      double elapsed = std::chrono::duration_cast<std::chrono::microseconds>(
+          end - begin).count() / 1e6;
+      printf("[Status] %2.1f %%, [elapsed] %2.1f s, [step] %3.1f ms\n",
+             (ecm->getECMtime() * 100.0 / max_time), elapsed, step);
 
-  ConnectionMaker::extendExcressencesAndSynapseOnEveryNeuriteElement();
+    }
 
-  auto beginUpd = std::chrono::steady_clock::now();
-  visualization::GUI::getInstance().Update();
-  auto endUpd = std::chrono::steady_clock::now();
-  double vizTime = std::chrono::duration_cast<std::chrono::microseconds>(
-      endUpd - beginUpd).count() / 1e3;
+    int objects = ecm->getPhysicalSphereListSize() + ecm->getPhysicalCylinderListSize();
+    printf("[Info] Total objects in simulation: %d\n", objects);
 
-  printf("[Info] Total visualization time for one frame: %2.1f ms\n", vizTime);
+    ConnectionMaker::extendExcressencesAndSynapseOnEveryNeuriteElement();
 
+    auto beginUpd = std::chrono::steady_clock::now();
+    visualization::GUI::getInstance().Update();
+    auto endUpd = std::chrono::steady_clock::now();
+    double vizTime = std::chrono::duration_cast<std::chrono::microseconds>(
+        endUpd - beginUpd).count() / 1e3;
+
+    printf("[Info] Total visualization time for one frame: %2.1f ms\n", vizTime);
+  });
+
+  simulation.detach();
   app.Run();
+
 }

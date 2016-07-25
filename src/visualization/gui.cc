@@ -1,6 +1,7 @@
 //
 // Created by bogdan on 7/13/16.
 //
+#include <thread>
 
 #include <TMath.h>
 #include <TView.h>
@@ -8,23 +9,34 @@
 #include <TEveGeoNode.h>
 #include <TEveWindow.h>
 #include <TEveBrowser.h>
-#include <TVector3.h>
+#include <TGComboBox.h>
 
 #include "visualization/gui.h"
 
 using visualization::GUI;
-using bdm::physics::PhysicalCylinder;
 
-GUI::GUI() : geom(nullptr), top(nullptr), init(false) {}
+GUI::GUI()
+    : maxVisualizableID(0), objNumber(0), lastVisualizedID(0), init(false),
+      update(false), animation(false) {}
 
 void GUI::Update() {
+  if (!init)
+    throw std::runtime_error("Call GUI::getInstance().Init() first!");
+
+
   for (auto sphere : ecm->getPhysicalSphereList()) {
     auto container = new TGeoVolumeAssembly("A");
     addBranch(sphere, container);
     top->AddNode(container, top->GetNdaughters());
   }
-  geom->CloseGeometry();
-  gEve->Redraw3D(kTRUE);
+  //geom->CloseGeometry();
+  gEve->FullRedraw3D(kTRUE);
+
+  visualization::GUI::getInstance().simulation.unlock();
+
+  update = true;
+
+  Emit("Update()");
 }
 
 void GUI::Init() {
@@ -59,9 +71,13 @@ void GUI::Init() {
   // number of visualized nodes inside one volume. If you exceed this number,
   // ROOT will draw nothing.
   geom->SetMaxVisNodes((Int_t)1e6);
-  init = true;
 
-  createAnimationTab();
+  gEve->GetBrowser()->GetMainFrame()->SetWindowName("Biodynamo Visualization");
+
+  this->ShowAnimationTab();
+  this->simulation.lock();
+
+  init = true;
 }
 
 TGeoCombiTrans *GUI::cylinderTransformation(const PhysicalCylinder *cylinder) {
@@ -155,6 +171,15 @@ void GUI::preOrderTraversalCylinder(PhysicalCylinder *cylinder,
 
 void GUI::addCylinderToVolume(PhysicalCylinder *cylinder,
                               TGeoVolume *container) {
+  /*
+  // needed to prevent second visualization of the same objects
+  auto id = cylinder->getID();
+  if (id < lastVisualizedID)
+    return;
+  else
+    lastVisualizedID = id;
+    */
+
   /**
    * This is the fastest way to create formatted string, according to my
    * benchmark:
@@ -177,6 +202,15 @@ void GUI::addCylinderToVolume(PhysicalCylinder *cylinder,
 }
 
 void GUI::addSphereToVolume(PhysicalSphere *sphere, TGeoVolume *container) {
+  /*
+  // needed to prevent second visualization of the same objects
+  auto id = sphere->getID();
+  if (id < lastVisualizedID)
+    return;
+  else
+    lastVisualizedID = id;
+    */
+
   char name[12];
   sprintf(name, "S%d", sphere->getID());
 
@@ -193,45 +227,39 @@ void GUI::addSphereToVolume(PhysicalSphere *sphere, TGeoVolume *container) {
   container->AddNode(volume, container->GetNdaughters(), position);
 }
 
-void GUI::createAnimationTab() {
+void GUI::ShowAnimationTab() {
+  /*
+  if (!update)
+    throw std::runtime_error("Call GUI::getInstance().Update() first!");
+*/
+  this->objNumber =
+      ecm->getPhysicalCylinderListSize() + ecm->getPhysicalSphereListSize();
 
   auto browser = gEve->GetBrowser();
   browser->StartEmbedding(TRootBrowser::kLeft);
-
   TGMainFrame *mainFrame = browser->GetMainFrame();
-  mainFrame->SetWindowName("Biodynamo Visualization");
+  mainFrame->SetCleanup(kDeepCleanup);
+
+  TGHorizontalFrame *hf = new TGHorizontalFrame(mainFrame);
+  {
+    auto nextStep = new TGTextButton();
+    nextStep->SetText("Next step");
+    nextStep->SetToolTipText("Proceed to the next simulation step");
+    nextStep->Connect("Pressed()", 0,0 , "func()");
+    hf->AddFrame(nextStep);
+  }
+
+  mainFrame->AddFrame(hf);
+
+  mainFrame->MapSubwindows();
+  mainFrame->Resize();
+  mainFrame->MapWindow();
 
   browser->StopEmbedding();
   browser->SetTabTitle("Animation", 0);
 }
 
-PhysicalCylinder *GUI::mergeCylinders(PhysicalCylinder *cyl1,
-                                      PhysicalCylinder *cyl2, double maxAngle) {
-  auto c1loc = cyl1->getSpringAxis();
-  auto c2loc = cyl2->getSpringAxis();
 
-  TVector3 v1(c1loc[0], c1loc[1], c1loc[2]);
-  TVector3 v2(c2loc[0], c2loc[1], c2loc[2]);
-
-  double angle = v1.Angle(v2) * 180. / M_PI;
-
-  if (angle < maxAngle) {
-    auto newCylinder = cyl2->getCopy().get();
-    newCylinder->setColor(bdm::Param::kGreen);
-
-    newCylinder->setMassLocation(cyl2->getMassLocation());
-    auto ml1 = cyl1->getMassLocation();
-    auto ml2 = cyl2->getMassLocation();
-
-    newCylinder->setSpringAxis({ml2[0] + c2loc[0] - ml1[0],
-                                ml2[1] + c2loc[1] - ml1[1],
-                                ml2[2] + c2loc[2] - ml1[2]});
-
-    auto sa = newCylinder->getSpringAxis();
-    newCylinder->setActualLength(sqrt(sa[0] * sa[0] + sa[1] * sa[1] + sa[2] * sa[2]));
-
-    return newCylinder;
-  } else {
-    return nullptr;
-  }
+void func(){
+  printf("ASD\n");
 }
