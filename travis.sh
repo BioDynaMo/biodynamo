@@ -9,6 +9,7 @@ biod=`pwd`
 if [ "$TRAVIS_OS_NAME" = "osx" ]; then
   brew update
   brew install doxygen
+  brew install valgrind
   #brew outdated gcc || brew upgrade gcc
 fi
 
@@ -22,8 +23,13 @@ fi
 
 # install ROOT
 cd
-wget https://root.cern.ch/download/root_v6.06.04.Linux-ubuntu14-x86_64-gcc4.8.tar.gz 2> /dev/null
-tar zxvf root_v6.06.04.Linux-ubuntu14-x86_64-gcc4.8.tar.gz > /dev/null
+if [ "$TRAVIS_OS_NAME" = "linux" ]; then
+  wget https://root.cern.ch/download/root_v6.06.04.Linux-ubuntu14-x86_64-gcc4.8.tar.gz 2> /dev/null
+  tar zxvf root_v6.06.04.Linux-ubuntu14-x86_64-gcc4.8.tar.gz > /dev/null
+else
+  wget https://root.cern.ch/download/root_v6.06.00.macosx64-10.9-clang60.tar.gz 2> /dev/null
+  tar zxvf root_v6.06.00.macosx64-10.9-clang60.tar.gz > /dev/null
+fi
 cd root
 . bin/thisroot.sh
 

@@ -1,5 +1,7 @@
 #include "color.h"
 
+#include <cmath>
+
 namespace bdm {
 
 Color Color::getRandomColor() {

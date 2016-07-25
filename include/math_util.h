@@ -22,6 +22,8 @@ struct MathUtil {
   static double acos(double d);
 
   static double atan2(double d, double d1);
+
+  static double log(double d);
 };
 
 }  // namespace bdm
