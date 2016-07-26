@@ -93,19 +93,15 @@ int main(int argc, char **argv) {
   }
 
   auto scheduler = Scheduler::getInstance();
-  auto max_time = 6;
+  auto max_time = 10;
   auto begin = std::chrono::steady_clock::now();
 
-  std::thread simulation([&]() {
+  //std::thread simulation([&]() {
     while (ecm->getECMtime() < max_time) {
-      /**
-       * For debug purposes. Used for simulation lock for nextStep button.
-       */
-      bdm::visualization::GUI::getInstance().simulation.lock();
-
       auto middle = std::chrono::steady_clock::now();
 
       scheduler->simulateOneStep();
+      bdm::visualization::GUI::getInstance().DrawStructured();
 
       auto end = std::chrono::steady_clock::now();
       double step = std::chrono::duration_cast<std::chrono::microseconds>(
@@ -125,7 +121,7 @@ int main(int argc, char **argv) {
     ConnectionMaker::extendExcressencesAndSynapseOnEveryNeuriteElement();
 
     auto beginUpd = std::chrono::steady_clock::now();
-    bdm::visualization::GUI::getInstance().Update();
+    //bdm::visualization::GUI::getInstance().DrawStructured();
     auto endUpd = std::chrono::steady_clock::now();
     double vizTime = std::chrono::duration_cast<std::chrono::microseconds>(
                          endUpd - beginUpd).count() /
@@ -133,8 +129,8 @@ int main(int argc, char **argv) {
 
     printf("[Info] Total visualization time for one frame: %2.1f ms\n",
            vizTime);
-  });
+ // });
 
-  simulation.detach();
+  //simulation.detach();
   app.Run();
 }

@@ -26,18 +26,18 @@ using bdm::physics::PhysicalSphere;
  * simulation
  */
 class GUI {
-public:
-  std::mutex simulation;
-  std::mutex visualization;
-
-  void nextStep(); // for debug purposes only
-
-  // members related to visualization
+  // members related to GUI
 private:
   TGeoManager *geom;
+  /**
+   * Top volume (world)
+   */
   TGeoVolume *top;
   TEveGeoTopNode *eveTop;
 
+  /**
+   * Eve materials and medium
+   */
   TGeoMaterial *matEmptySpace;
   TGeoMaterial *matSolid;
   TGeoMedium *medEmptySpace;
@@ -48,17 +48,23 @@ private:
   // just to ensure that methods were called in correct order
   bool init;
   bool update;
-  bool animation;
 
-  // private util functions
+  int lastID;
+  unsigned long lastSphereN;
+  unsigned long lastCylinderN;
+
+  int maxVizNodes;
+
+  // private util functions related to visualization
 private:
   /**
    * Calculates cylinder transformations: position (based on massLocation) and
    * rotation (based on springAxis)
    */
   TGeoCombiTrans *cylinderTransformation(const PhysicalCylinder *cylinder);
+
   /**
-   * Gets ROOT's EColor from bdm::Color
+   * Returns ROOT's EColor from bdm::Color
    */
   EColor translateColor(Color color);
 
@@ -66,16 +72,19 @@ private:
    * Recursively adds sphere and its daughters to the container.
    */
   void addBranch(PhysicalSphere *sphere, TGeoVolume *container);
+
   /**
    * Util function for recursive pre-order traversal of cylinders in one
    * sphere's daughter
    */
   void preOrderTraversalCylinder(PhysicalCylinder *cylinder,
                                  TGeoVolume *container);
+
   /**
    * Adds sphere to the volume, its name will be: "S%d", sphereID
    */
   void addSphereToVolume(PhysicalSphere *sphere, TGeoVolume *container);
+
   /**
    * Adds cylinder to the volume, its name will be: "C%d", cylinderID
    */
@@ -83,19 +92,18 @@ private:
 
   // public interface
 public:
-  /**
-   * Creates TEveManager, initializes members
-   */
-  void Init();
-  /**
-   * Update objects in the scene
-   */
-  void Update();
 
   /**
-   * Show animation tab in the Eve browser
+   * Creates TEveManager window, initializes members
    */
-  void ShowAnimationTab();
+  void Init();
+
+  void DrawStructured();
+
+  void Update(bool fullRedraw = true);
+
+  void setMaxVizNodes(int number);
+
 
 private: // singleton properties
   GUI();

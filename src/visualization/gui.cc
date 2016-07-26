@@ -15,24 +15,9 @@
 
 using bdm::visualization::GUI;
 
-GUI::GUI() : init(false), update(false), animation(false) {}
-
-void GUI::Update() {
-  if (!init)
-    throw std::runtime_error("Call GUI::getInstance().Init() first!");
-
-  for (auto sphere : ecm->getPhysicalSphereList()) {
-    auto container = new TGeoVolumeAssembly("A");
-    addBranch(sphere, container);
-    top->AddNode(container, top->GetNdaughters());
-  }
-  // geom->CloseGeometry();
-  gEve->FullRedraw3D(kTRUE);
-
-  visualization::GUI::getInstance().simulation.unlock();
-
-  update = true;
-}
+GUI::GUI()
+    : init(false), update(false), lastID(0), lastCylinderN(0), lastSphereN(0),
+      maxVizNodes(1e6) {}
 
 void GUI::Init() {
   this->ecm = ECM::getInstance();
@@ -51,9 +36,11 @@ void GUI::Init() {
   medSolid = new TGeoMedium("Solid", 1, matSolid);
 
   // we don't know how to calculate world radius yet
-  double worldRadius = 10000.0;
-  top = geom->MakeBox("World", medEmptySpace, worldRadius, worldRadius,
-                      worldRadius);
+  // double worldRadius = 10000.0;
+  //top = geom->MakeBox("World", medEmptySpace, worldRadius, worldRadius,
+  //                    worldRadius);
+  top = new TGeoVolumeAssembly("WORLD");
+
   geom->SetTopVolume(top);
   geom->SetMultiThread(true);
 
@@ -65,14 +52,84 @@ void GUI::Init() {
 
   // number of visualized nodes inside one volume. If you exceed this number,
   // ROOT will draw nothing.
-  geom->SetMaxVisNodes((Int_t)1e6);
+  geom->SetMaxVisNodes(maxVizNodes);
 
   gEve->GetBrowser()->GetMainFrame()->SetWindowName("Biodynamo Visualization");
 
-  this->ShowAnimationTab();
-  this->simulation.lock();
-
   init = true;
+}
+
+void GUI::DrawStructured() {
+  if (!init)
+    throw std::runtime_error("Call GUI::getInstance().Init() first!");
+
+  top->ClearNodes();
+
+  for (auto sphere : ecm->getPhysicalSphereList()) {
+    auto container = new TGeoVolumeAssembly("A");
+    addBranch(sphere, container);
+    top->AddNode(container, top->GetNdaughters());
+  }
+  //geom->CloseGeometry();
+  gEve->FullRedraw3D(kTRUE);
+
+  update = true;
+}
+
+void GUI::Update(bool fullRedraw) {
+  if (!init)
+    throw std::runtime_error("Call GUI::getInstance().Init() first!");
+
+  unsigned long startSphere = 0;
+  unsigned long startCylinder = 0;
+  if (!fullRedraw) {
+    startSphere = lastSphereN;
+    startCylinder = lastCylinderN;
+  }
+
+  // ADD SPHERES
+  {
+    auto spheres = ecm->getPhysicalSphereList();
+    auto spheresN = spheres.size();
+    for (auto i = startSphere; i < spheresN; i++) {
+      auto sphere = spheres[i];
+
+      if (i < lastSphereN) {
+        // current sphere already created.
+        // TODO: move sphere, maybe resize
+      } else {
+        // we should create new sphere
+        addSphereToVolume(sphere, top);
+      }
+    }
+
+    // remember the size of the vector with spheres
+    lastSphereN = spheresN;
+  }
+
+  // ADD CYLINDERS
+  {
+    auto cylinders = ecm->getPhysicalCylinderList();
+    auto cylindersN = cylinders.size();
+    for (auto i = startCylinder; i < cylindersN; i++) {
+      auto cylinder = cylinders[i];
+
+      if (i < lastCylinderN) {
+        // current sphere already created.
+        // TODO: move cylinder, maybe resize
+      } else {
+        // we should create new cylinder
+        addCylinderToVolume(cylinder, top);
+      }
+    }
+
+    // remember the size of the vector with cylinders
+    lastCylinderN = cylindersN;
+  }
+
+  //geom->CloseGeometry();
+  gEve->FullRedraw3D(kTRUE);
+  update = true;
 }
 
 TGeoCombiTrans *GUI::cylinderTransformation(const PhysicalCylinder *cylinder) {
@@ -166,16 +223,14 @@ void GUI::preOrderTraversalCylinder(PhysicalCylinder *cylinder,
 
 void GUI::addCylinderToVolume(PhysicalCylinder *cylinder,
                               TGeoVolume *container) {
-  /**
-   * This is the fastest way to create formatted string, according to my
-   * benchmark:
-   * http://pastebin.com/YRwyECMH
-   *  sprintf:	613151.000000 us
-   *  string: 	733208.000000 us
-   *  sstream:	3179678.000000 us
-   */
+  auto id = cylinder->getID();
+
+  // remember last visualized id
+  if (lastID < id)
+    lastID = id;
+
   char name[12];
-  sprintf(name, "C%d", cylinder->getID());
+  sprintf(name, "C%d", id);
 
   auto length = cylinder->getActualLength();
   auto radius = cylinder->getDiameter() / 2;
@@ -188,8 +243,14 @@ void GUI::addCylinderToVolume(PhysicalCylinder *cylinder,
 }
 
 void GUI::addSphereToVolume(PhysicalSphere *sphere, TGeoVolume *container) {
+  auto id = sphere->getID();
+
+  // remember last visualized id
+  if (lastID < id)
+    lastID = id;
+
   char name[12];
-  sprintf(name, "S%d", sphere->getID());
+  sprintf(name, "S%d", id);
 
   auto radius = sphere->getDiameter() / 2;
   auto massLocation = sphere->getMassLocation();
@@ -204,40 +265,6 @@ void GUI::addSphereToVolume(PhysicalSphere *sphere, TGeoVolume *container) {
   container->AddNode(volume, container->GetNdaughters(), position);
 }
 
-void GUI::ShowAnimationTab() {
-  /*
-  if (!update)
-    throw std::runtime_error("Call GUI::getInstance().Update() first!");
-*/
-  auto browser = gEve->GetBrowser();
-  browser->StartEmbedding(TRootBrowser::kLeft);
-  TGMainFrame *mainFrame = browser->GetMainFrame();
-  mainFrame->SetCleanup(kDeepCleanup);
-
-  TGHorizontalFrame *hf = new TGHorizontalFrame(mainFrame);
-  {
-    auto nextStep = new TGTextButton();
-    nextStep->SetText("Next step");
-    nextStep->SetToolTipText("Proceed to the next simulation step");
-    nextStep->Connect("Pressed()", "GUI", this, "nextStep()"); /////////////////////////// PROBLEM IS HERE
-    hf->AddFrame(nextStep);
-  }
-
-  mainFrame->AddFrame(hf);
-
-  mainFrame->MapSubwindows();
-  mainFrame->Resize();
-  mainFrame->MapWindow();
-
-  browser->StopEmbedding();
-  browser->SetTabTitle("Animation", 0);
-}
-
-/**
- * FOR DEBUG PURPOSES ONLY. WILL BE REMOVED
- */
-void GUI::nextStep() {
-  bdm::visualization::GUI::getInstance().Update();
-  bdm::visualization::GUI::getInstance().simulation.unlock();
-  printf("One step ahead\n");
+void GUI::setMaxVizNodes(int number) {
+  this->maxVizNodes = number;
 }
