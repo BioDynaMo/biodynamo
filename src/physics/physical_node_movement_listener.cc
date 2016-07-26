@@ -105,7 +105,7 @@ void PhysicalNodeMovementListener::nodeMoved(const SpatialOrganizationNode<Physi
   // For all extracellularSubstances:
   for (size_t i = 0; i < substances_in_n_.size(); i++) {
 
-    // 5) DrawStructured the quantities in every cell that has been affected, and sum it
+    // 5) Update the quantities in every cell that has been affected, and sum it
     // 5.a) in pn itself
     auto s = substances_in_n_[i];
     s->updateQuantityBasedOnConcentration(pn->getSoNode()->getVolume());
@@ -182,7 +182,7 @@ void PhysicalNodeMovementListener::nodeRemoved(const SpatialOrganizationNode<Phy
   // For all extracellularSubstances:
   for (size_t i = 0; i < substances_in_n_.size(); i++) {
 
-    // 2) DrawStructured the quantities in the old neighbors, and sum it
+    // 2) Update the quantities in the old neighbors, and sum it
     auto s = substances_in_n_[i];
     double quantity_after = 0;
     for (auto nn : neighbors_before_) {

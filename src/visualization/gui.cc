@@ -13,11 +13,11 @@
 
 #include "visualization/gui.h"
 
+#include <TGLAutoRotator.h>
+
 using bdm::visualization::GUI;
 
-GUI::GUI()
-    : init(false), update(false), lastID(0), lastCylinderN(0), lastSphereN(0),
-      maxVizNodes(1e6) {}
+GUI::GUI() : init(false), update(false), lastID(0), maxVizNodes(1e6) {}
 
 void GUI::Init() {
   this->ecm = ECM::getInstance();
@@ -37,7 +37,7 @@ void GUI::Init() {
 
   // we don't know how to calculate world radius yet
   // double worldRadius = 10000.0;
-  //top = geom->MakeBox("World", medEmptySpace, worldRadius, worldRadius,
+  // top = geom->MakeBox("World", medEmptySpace, worldRadius, worldRadius,
   //                    worldRadius);
   top = new TGeoVolumeAssembly("WORLD");
 
@@ -59,7 +59,7 @@ void GUI::Init() {
   init = true;
 }
 
-void GUI::DrawStructured() {
+void GUI::Update(bool resetCamera) {
   if (!init)
     throw std::runtime_error("Call GUI::getInstance().Init() first!");
 
@@ -70,65 +70,9 @@ void GUI::DrawStructured() {
     addBranch(sphere, container);
     top->AddNode(container, top->GetNdaughters());
   }
-  //geom->CloseGeometry();
-  gEve->FullRedraw3D(kTRUE);
+  // geom->CloseGeometry();
+  gEve->FullRedraw3D(resetCamera);
 
-  update = true;
-}
-
-void GUI::Update(bool fullRedraw) {
-  if (!init)
-    throw std::runtime_error("Call GUI::getInstance().Init() first!");
-
-  unsigned long startSphere = 0;
-  unsigned long startCylinder = 0;
-  if (!fullRedraw) {
-    startSphere = lastSphereN;
-    startCylinder = lastCylinderN;
-  }
-
-  // ADD SPHERES
-  {
-    auto spheres = ecm->getPhysicalSphereList();
-    auto spheresN = spheres.size();
-    for (auto i = startSphere; i < spheresN; i++) {
-      auto sphere = spheres[i];
-
-      if (i < lastSphereN) {
-        // current sphere already created.
-        // TODO: move sphere, maybe resize
-      } else {
-        // we should create new sphere
-        addSphereToVolume(sphere, top);
-      }
-    }
-
-    // remember the size of the vector with spheres
-    lastSphereN = spheresN;
-  }
-
-  // ADD CYLINDERS
-  {
-    auto cylinders = ecm->getPhysicalCylinderList();
-    auto cylindersN = cylinders.size();
-    for (auto i = startCylinder; i < cylindersN; i++) {
-      auto cylinder = cylinders[i];
-
-      if (i < lastCylinderN) {
-        // current sphere already created.
-        // TODO: move cylinder, maybe resize
-      } else {
-        // we should create new cylinder
-        addCylinderToVolume(cylinder, top);
-      }
-    }
-
-    // remember the size of the vector with cylinders
-    lastCylinderN = cylindersN;
-  }
-
-  //geom->CloseGeometry();
-  gEve->FullRedraw3D(kTRUE);
   update = true;
 }
 
@@ -265,6 +209,4 @@ void GUI::addSphereToVolume(PhysicalSphere *sphere, TGeoVolume *container) {
   container->AddNode(volume, container->GetNdaughters(), position);
 }
 
-void GUI::setMaxVizNodes(int number) {
-  this->maxVizNodes = number;
-}
+void GUI::setMaxVizNodes(int number) { this->maxVizNodes = number; }

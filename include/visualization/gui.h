@@ -10,6 +10,7 @@
 
 #include <TGeoManager.h>
 #include <TEveGeoNode.h>
+#include <TGLAutoRotator.h>
 #include "simulation/ecm.h"
 #include "color.h"
 
@@ -28,9 +29,13 @@ using bdm::physics::PhysicalSphere;
 class GUI {
   // members related to GUI
 private:
-  TGeoManager *geom;
   /**
-   * Top volume (world)
+   * Geometry manager
+   */
+  TGeoManager *geom;
+
+  /**
+   * Top volumes for TGeo and TEve (world)
    */
   TGeoVolume *top;
   TEveGeoTopNode *eveTop;
@@ -43,16 +48,20 @@ private:
   TGeoMedium *medEmptySpace;
   TGeoMedium *medSolid;
 
+  /**
+   * Reference to the ECM.
+   */
   ECM *ecm;
 
   // just to ensure that methods were called in correct order
-  bool init;
-  bool update;
+  bool init;   // true if init was called
+  bool update; // true if update was called
 
-  int lastID;
-  unsigned long lastSphereN;
-  unsigned long lastCylinderN;
+  int lastID;  // last visualized ID
 
+  /**
+   * Max visualized shapes per volume
+   */
   int maxVizNodes;
 
   // private util functions related to visualization
@@ -92,18 +101,22 @@ private:
 
   // public interface
 public:
-
   /**
    * Creates TEveManager window, initializes members
    */
   void Init();
 
-  void DrawStructured();
+  /**
+   * Updates GLViewer of TEveManager according to current state of ECM.
+   * @param resetCamera - if true, camera will move to observe all scene
+   */
+  void Update(bool resetCamera = true);
 
-  void Update(bool fullRedraw = true);
-
+  /**
+   * Setter for this->maxVizNodes
+   * @param number
+   */
   void setMaxVizNodes(int number);
-
 
 private: // singleton properties
   GUI();

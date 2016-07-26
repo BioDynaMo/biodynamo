@@ -13,7 +13,6 @@
 #include <TApplication.h>
 #include <physics/default_force.h>
 #include <synapse/connection_maker.h>
-#include <local_biology/local_biology_module.h>
 
 using namespace bdm;
 using bdm::cells::CellFactory;
@@ -93,44 +92,45 @@ int main(int argc, char **argv) {
   }
 
   auto scheduler = Scheduler::getInstance();
-  auto max_time = 10;
+  auto max_time = 6;
   auto begin = std::chrono::steady_clock::now();
 
-  //std::thread simulation([&]() {
-    while (ecm->getECMtime() < max_time) {
-      auto middle = std::chrono::steady_clock::now();
+  while (ecm->getECMtime() < max_time) {
+    auto middle = std::chrono::steady_clock::now();
 
-      scheduler->simulateOneStep();
-      bdm::visualization::GUI::getInstance().DrawStructured();
+    scheduler->simulateOneStep();
 
-      auto end = std::chrono::steady_clock::now();
-      double step = std::chrono::duration_cast<std::chrono::microseconds>(
-                        end - middle).count() /
-                    1e3;
-      double elapsed = std::chrono::duration_cast<std::chrono::microseconds>(
-                           end - begin).count() /
-                       1e6;
-      printf("[Status] %2.1f %%, [elapsed] %2.1f s, [step] %3.1f ms\n",
-             (ecm->getECMtime() * 100.0 / max_time), elapsed, step);
-    }
+    /**
+     * REMOVE THIS LINE IF YOU WANT TO SEE JUST FINAL SIMULATION
+     */
+    bdm::visualization::GUI::getInstance().Update(true);
 
-    int objects =
-        ecm->getPhysicalSphereListSize() + ecm->getPhysicalCylinderListSize();
-    printf("[Info] Total objects in simulation: %d\n", objects);
 
-    ConnectionMaker::extendExcressencesAndSynapseOnEveryNeuriteElement();
+    auto end = std::chrono::steady_clock::now();
+    double step = std::chrono::duration_cast<std::chrono::microseconds>(
+                      end - middle).count() /
+                  1e3;
+    double elapsed = std::chrono::duration_cast<std::chrono::microseconds>(
+                         end - begin).count() /
+                     1e6;
+    printf("[Status] %2.1f %%, [elapsed] %2.1f s, [step] %3.1f ms\n",
+           (ecm->getECMtime() * 100.0 / max_time), elapsed, step);
+  }
 
-    auto beginUpd = std::chrono::steady_clock::now();
-    //bdm::visualization::GUI::getInstance().DrawStructured();
-    auto endUpd = std::chrono::steady_clock::now();
-    double vizTime = std::chrono::duration_cast<std::chrono::microseconds>(
-                         endUpd - beginUpd).count() /
-                     1e3;
+  int objects =
+      ecm->getPhysicalSphereListSize() + ecm->getPhysicalCylinderListSize();
+  printf("[Info] Total objects in simulation: %d\n", objects);
 
-    printf("[Info] Total visualization time for one frame: %2.1f ms\n",
-           vizTime);
- // });
+  ConnectionMaker::extendExcressencesAndSynapseOnEveryNeuriteElement();
 
-  //simulation.detach();
+  auto beginUpd = std::chrono::steady_clock::now();
+  bdm::visualization::GUI::getInstance().Update(); // VISUALIZE FINAL STATE
+  auto endUpd = std::chrono::steady_clock::now();
+  double vizTime = std::chrono::duration_cast<std::chrono::microseconds>(
+                       endUpd - beginUpd).count() /
+                   1e3;
+
+  printf("[Info] Total visualization time for one frame: %2.1f ms\n", vizTime);
+
   app.Run();
 }
