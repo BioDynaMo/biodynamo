@@ -110,7 +110,7 @@ endif()
 
 #--------------------- Find ROOT ---------------------------------
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
-find_package(ROOT REQUIRED)
+find_package(ROOT REQUIRED COMPONENTS Eve Geom Gui)
 include(${ROOT_USE_FILE})
 
 #--------------------- Find Doxygen and set doc target -----------
@@ -193,8 +193,8 @@ if (test)
   add_executable(${TEST_TARGET} ${TEST_SOURCES})
   target_link_libraries(${TEST_TARGET} libgtest)
   target_link_libraries(${TEST_TARGET} libjsoncpp)
-  target_link_libraries(${TEST_TARGET} ${ROOT_LIBRARIES})
   target_link_libraries(${TEST_TARGET} biodynamo)
+  target_link_libraries(${TEST_TARGET} ${ROOT_LIBRARIES})
 
   # copy test resources to build dir
   file(GLOB TOCOPY "test/resources/*")
@@ -215,3 +215,10 @@ if (test)
   add_dependencies(bdmclean testbdmclean)
 endif()
 
+#--------------------- build visualization projects ----------------------
+# BUILD SMALL NETWORK VISUALIZATION
+set(SMALL_NW_TEST small-network-viz)
+add_executable(${SMALL_NW_TEST} ${SOURCES} viz/small_network_visualization.cpp)
+target_include_directories(${SMALL_NW_TEST} PUBLIC include)
+target_link_libraries(${SMALL_NW_TEST} biodynamo)
+target_link_libraries(${SMALL_NW_TEST} ${ROOT_LIBRARIES})

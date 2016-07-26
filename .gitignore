@@ -56,3 +56,5 @@ Doxyfile
 doc/html
 doc/latex
 
+#------------------- test results --------------------
+/test/resources
