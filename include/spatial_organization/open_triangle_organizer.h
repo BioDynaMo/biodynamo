@@ -14,7 +14,6 @@
 namespace bdm {
 namespace spatial_organization {
 
-class Rational;
 template<class T> class SpaceNode;
 template<class T> class Triangle3D;
 template<class T> class Tetrahedron;
@@ -330,10 +329,10 @@ class OpenTriangleOrganizer : public std::enable_shared_from_this<
    * @param av The coordinate of the first endpoint of the edge.
    * @param bv The coordinate of the second endpoint of the edge.
    * @param thirdPoint The point for which the signed delaunay distance should be calculated.
-   * @return A rational number that contains the squared signed delaunay distance of the
+   * @return A double number that contains the squared signed delaunay distance of the
    * specified edge to the given coordinate.
    */
-  std::shared_ptr<Rational> calc2DSDDistanceExact(const std::array<double, 3>& av, const std::array<double, 3>& bv, const std::array<double, 3>& third_point);
+  double calc2DSDDistanceExact(const std::array<double, 3>& av, const std::array<double, 3>& bv, const std::array<double, 3>& third_point);
 
   /**
    * Creates a triangle that can serve as an initial triangle for a triangulation.

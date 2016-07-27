@@ -7,7 +7,6 @@
 
 #include "spatial_organization/plane_3d.h"
 #include "spatial_organization/exact_vector.h"
-#include "spatial_organization/rational.h"
 
 namespace bdm {
 namespace spatial_organization {
@@ -83,8 +82,8 @@ class Triangle3D : public Plane3D<T>, public std::enable_shared_from_this<Triang
    *         maximum vector possible if not.
    */
   static std::shared_ptr<ExactVector> calculate3PlaneXPoint(const std::array<std::shared_ptr<ExactVector>, 3>& normals,
-                                                            const std::array<std::shared_ptr<Rational>, 3>& offsets,
-                                                            const std::shared_ptr<Rational>& normal_det);
+                                                            const std::array<double, 3>& offsets,
+                                                            double normal_det);
 
   virtual ~Triangle3D() {
   }
@@ -128,7 +127,7 @@ class Triangle3D : public Plane3D<T>, public std::enable_shared_from_this<Triang
    * @return The signed delaunay distance or -1 if it cannot be calculated.
    *
    */
-  std::shared_ptr<Rational> getSDDistanceExact(const std::array<double, 3>& fourth_point) const;
+  double getSDDistanceExact(const std::array<double, 3>& fourth_point) const;
 
   /**
    * Calculates the center of the circumsphere around the three endpoints of this triangle and a
@@ -480,7 +479,7 @@ class Triangle3D : public Plane3D<T>, public std::enable_shared_from_this<Triang
    * @return The signed delaunay distance or {@link Long#MAX_VALUE} if it
    *         cannot be calculated.
    */
-  std::shared_ptr<Rational> calculateSDDistanceExact(const std::array<std::shared_ptr<ExactVector>, 4>& points,
+  double calculateSDDistanceExact(const std::array<std::shared_ptr<ExactVector>, 4>& points,
                                                      const std::shared_ptr<ExactVector>& normal_vector) const;
 
   /**

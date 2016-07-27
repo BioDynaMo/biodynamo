@@ -42,48 +42,9 @@ else()
   set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_FULL_LIBDIR}) # install LIBDIR
 endif()
 
-#--------------------- setup GMP ------------------------------
+#--------------------- add support for external projects -----------------
 # Enable ExternalProject CMake module
 include(ExternalProject)
-
-if (valgrind)
-  set(GMP_CONFIG_PARAMETER "--disable-assembly")
-else()
-  set(GMP_CONFIG_PARAMETER "")
-endif()
-
-# download gmp
-ExternalProject_Add(
-    gmp
-    URL "${CMAKE_SOURCE_DIR}/external/gmp-6.1.0.tar.bz2"
-    PREFIX "${CMAKE_CURRENT_BINARY_DIR}/gmp"
-    BUILD_IN_SOURCE 1
-    CONFIGURE_COMMAND ./configure CC=${CMAKE_C_COMPILER} CXX=${CMAKE_CXX_COMPILER} ${GMP_CONFIG_PARAMETER}
-    BUILD_COMMAND make
-    #TEST_COMMAND make check
-    TEST_COMMAND "" # Disable check step
-    INSTALL_COMMAND "" # Disable install step
-)
-
-if(APPLE)
-ExternalProject_Add_Step(gmp install_name
-                         COMMAND install_name_tool -id @rpath/libgmp.10.dylib "${CMAKE_BINARY_DIR}/gmp/src/gmp/.libs/libgmp${CMAKE_SHARED_LIBRARY_SUFFIX}"
-                         DEPENDEES install)
-endif()
-
-# Create a libgmp target to be used as a dependency by the test program
-add_library(libgmp IMPORTED STATIC GLOBAL)
-set_property(TARGET libgmp PROPERTY IMPORTED_LOCATION "${CMAKE_BINARY_DIR}/gmp/src/gmp/.libs/libgmp${CMAKE_SHARED_LIBRARY_SUFFIX}")
-add_dependencies(libgmp gmp)
-
-# copy shared library from gmp build dir to ${CMAKE_BUILD_DIR}
-if(APPLE)
-  set(LIBGMP_DEST "${CMAKE_BINARY_DIR}/libgmp.10${CMAKE_SHARED_LIBRARY_SUFFIX}")
-elseif(UNIX)
-  set(LIBGMP_DEST "${CMAKE_BINARY_DIR}/libgmp${CMAKE_SHARED_LIBRARY_SUFFIX}.10")
-endif()
-add_custom_target(copylibgmp DEPENDS libgmp
-                  COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_BINARY_DIR}/gmp/src/gmp/.libs/libgmp${CMAKE_SHARED_LIBRARY_SUFFIX}" ${LIBGMP_DEST})
 
 #--------------------- setup crlibm ------------------------------
 # build crlibm
@@ -119,7 +80,6 @@ include(cmake/doxygen.cmake)
 #--------------------- build shared library  ----------------
 # add the headers into the project
 include_directories("${CMAKE_SOURCE_DIR}/include")
-include_directories("${CMAKE_BINARY_DIR}/gmp/src/gmp")
 include_directories("${CMAKE_BINARY_DIR}/crlibm/src/external_crlibm")
 
 ROOT_GENERATE_DICTIONARY("${CMAKE_BINARY_DIR}/bdmDict"
@@ -129,8 +89,6 @@ ROOT_GENERATE_DICTIONARY("${CMAKE_BINARY_DIR}/bdmDict"
 file(GLOB SOURCES "src/**/*.cc" "src/*.cc" "include/**/*.h" "include/*.h")
 add_library(biodynamo SHARED ${SOURCES} ${CMAKE_BINARY_DIR}/bdmDict.cxx)
 target_link_libraries(biodynamo ${ROOT_LIBRARIES})
-target_link_libraries(biodynamo libgmp)
-add_dependencies(biodynamo copylibgmp)
 target_link_libraries(biodynamo "${CMAKE_BINARY_DIR}/libcrlibm.a")
 add_dependencies(biodynamo copycrlibm)
 
