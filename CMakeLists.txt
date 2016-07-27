@@ -54,21 +54,21 @@ endif()
 
 # download gmp
 ExternalProject_Add(
-    gmp
-    URL "${CMAKE_SOURCE_DIR}/external/gmp-6.1.0.tar.bz2"
-    PREFIX "${CMAKE_CURRENT_BINARY_DIR}/gmp"
-    BUILD_IN_SOURCE 1
-    CONFIGURE_COMMAND ./configure CC=${CMAKE_C_COMPILER} CXX=${CMAKE_CXX_COMPILER} ${GMP_CONFIG_PARAMETER}
-    BUILD_COMMAND make
-    #TEST_COMMAND make check
-    TEST_COMMAND "" # Disable check step
-    INSTALL_COMMAND "" # Disable install step
+        gmp
+        URL "${CMAKE_SOURCE_DIR}/external/gmp-6.1.0.tar.bz2"
+        PREFIX "${CMAKE_CURRENT_BINARY_DIR}/gmp"
+        BUILD_IN_SOURCE 1
+        CONFIGURE_COMMAND ./configure CC=${CMAKE_C_COMPILER} CXX=${CMAKE_CXX_COMPILER} ${GMP_CONFIG_PARAMETER}
+        BUILD_COMMAND make
+        #TEST_COMMAND make check
+        TEST_COMMAND "" # Disable check step
+        INSTALL_COMMAND "" # Disable install step
 )
 
 if(APPLE)
-ExternalProject_Add_Step(gmp install_name
-                         COMMAND install_name_tool -id @rpath/libgmp.10.dylib "${CMAKE_BINARY_DIR}/gmp/src/gmp/.libs/libgmp${CMAKE_SHARED_LIBRARY_SUFFIX}"
-                         DEPENDEES install)
+  ExternalProject_Add_Step(gmp install_name
+          COMMAND install_name_tool -id @rpath/libgmp.10.dylib "${CMAKE_BINARY_DIR}/gmp/src/gmp/.libs/libgmp${CMAKE_SHARED_LIBRARY_SUFFIX}"
+          DEPENDEES install)
 endif()
 
 # Create a libgmp target to be used as a dependency by the test program
@@ -83,29 +83,29 @@ elseif(UNIX)
   set(LIBGMP_DEST "${CMAKE_BINARY_DIR}/libgmp${CMAKE_SHARED_LIBRARY_SUFFIX}.10")
 endif()
 add_custom_target(copylibgmp DEPENDS libgmp
-                  COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_BINARY_DIR}/gmp/src/gmp/.libs/libgmp${CMAKE_SHARED_LIBRARY_SUFFIX}" ${LIBGMP_DEST})
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_BINARY_DIR}/gmp/src/gmp/.libs/libgmp${CMAKE_SHARED_LIBRARY_SUFFIX}" ${LIBGMP_DEST})
 
 #--------------------- setup crlibm ------------------------------
 # build crlibm
 ExternalProject_Add(
-    external_crlibm
-    URL "${CMAKE_SOURCE_DIR}/external/crlibm-1.0beta5.tgz"
-    PREFIX "${CMAKE_CURRENT_BINARY_DIR}/crlibm"
-    BUILD_IN_SOURCE 1
-    CONFIGURE_COMMAND ./configure CC=${CMAKE_C_COMPILER} CXX=${CMAKE_CXX_COMPILER} CPPFLAGS=-fPIC CFLAGS=-fPIC
-    BUILD_COMMAND make
-    #TEST_COMMAND make check
-    TEST_COMMAND "" # Disable check step
-    INSTALL_COMMAND "" # Disable install step
+        external_crlibm
+        URL "${CMAKE_SOURCE_DIR}/external/crlibm-1.0beta5.tgz"
+        PREFIX "${CMAKE_CURRENT_BINARY_DIR}/crlibm"
+        BUILD_IN_SOURCE 1
+        CONFIGURE_COMMAND ./configure CC=${CMAKE_C_COMPILER} CXX=${CMAKE_CXX_COMPILER} CPPFLAGS=-fPIC CFLAGS=-fPIC
+        BUILD_COMMAND make
+        #TEST_COMMAND make check
+        TEST_COMMAND "" # Disable check step
+        INSTALL_COMMAND "" # Disable install step
 )
 
 add_custom_target(copycrlibm DEPENDS external_crlibm
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_BINARY_DIR}/crlibm/src/external_crlibm/libcrlibm.a" "${CMAKE_BINARY_DIR}/libcrlibm.a")
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_BINARY_DIR}/crlibm/src/external_crlibm/libcrlibm.a" "${CMAKE_BINARY_DIR}/libcrlibm.a")
 
 #--------------------- Find Threads (for gtest) ------------------
 if (test)
-   # must be before include(${ROOT_USE_FILE}) otherwise test compile fails
-   find_package(Threads REQUIRED)
+  # must be before include(${ROOT_USE_FILE}) otherwise test compile fails
+  find_package(Threads REQUIRED)
 endif()
 
 #--------------------- Find ROOT ---------------------------------
@@ -123,8 +123,8 @@ include_directories("${CMAKE_BINARY_DIR}/gmp/src/gmp")
 include_directories("${CMAKE_BINARY_DIR}/crlibm/src/external_crlibm")
 
 ROOT_GENERATE_DICTIONARY("${CMAKE_BINARY_DIR}/bdmDict"
-                         simulation/ecm.h
-                         LINKDEF bdmLinkDef.h)
+        simulation/ecm.h
+        LINKDEF bdmLinkDef.h)
 
 file(GLOB SOURCES "src/**/*.cc" "src/*.cc" "include/**/*.h" "include/*.h")
 add_library(biodynamo SHARED ${SOURCES} ${CMAKE_BINARY_DIR}/bdmDict.cxx)
@@ -147,13 +147,13 @@ if (test)
 
   # setup google test
   ExternalProject_Add(
-    gtest
-    URL "${CMAKE_SOURCE_DIR}/external/gtest-1.7.0.zip"
-    PREFIX "${CMAKE_CURRENT_BINARY_DIR}/gtest"
-    CMAKE_CACHE_ARGS
-       -DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}
-       -DCMAKE_C_COMPILER:FILEPATH=${CMAKE_C_COMPILER}
-    INSTALL_COMMAND "" # Disable install step
+          gtest
+          URL "${CMAKE_SOURCE_DIR}/external/gtest-1.7.0.zip"
+          PREFIX "${CMAKE_CURRENT_BINARY_DIR}/gtest"
+          CMAKE_CACHE_ARGS
+          -DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}
+          -DCMAKE_C_COMPILER:FILEPATH=${CMAKE_C_COMPILER}
+          INSTALL_COMMAND "" # Disable install step
   )
   ExternalProject_Get_Property(gtest source_dir binary_dir)
 
@@ -161,19 +161,19 @@ if (test)
   add_library(libgtest IMPORTED STATIC GLOBAL)
   add_dependencies(libgtest gtest)
   set_target_properties(libgtest PROPERTIES
-      IMPORTED_LOCATION "${binary_dir}/libgtest.a"
-      IMPORTED_LINK_INTERFACE_LIBRARIES "${CMAKE_THREAD_LIBS_INIT}"
-  )
+          IMPORTED_LOCATION "${binary_dir}/libgtest.a"
+          IMPORTED_LINK_INTERFACE_LIBRARIES "${CMAKE_THREAD_LIBS_INIT}"
+          )
 
   # setup jsoncpp
   ExternalProject_Add(
-    jsoncpp
-    URL "${CMAKE_SOURCE_DIR}/external/jsoncpp.tar.gz"
-    PREFIX "${CMAKE_CURRENT_BINARY_DIR}/jsoncpp"
-    CMAKE_CACHE_ARGS
-       -DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}
-       -DCMAKE_C_COMPILER:FILEPATH=${CMAKE_C_COMPILER}
-    INSTALL_COMMAND ""  # Disable install step
+          jsoncpp
+          URL "${CMAKE_SOURCE_DIR}/external/jsoncpp.tar.gz"
+          PREFIX "${CMAKE_CURRENT_BINARY_DIR}/jsoncpp"
+          CMAKE_CACHE_ARGS
+          -DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}
+          -DCMAKE_C_COMPILER:FILEPATH=${CMAKE_C_COMPILER}
+          INSTALL_COMMAND ""  # Disable install step
   )
   ExternalProject_Get_Property(jsoncpp install_dir)
 
@@ -216,9 +216,16 @@ if (test)
 endif()
 
 #--------------------- build visualization projects ----------------------
-# BUILD SMALL NETWORK VISUALIZATION
-set(SMALL_NW_TEST small-network-viz)
-add_executable(${SMALL_NW_TEST} ${SOURCES} viz/small_network_visualization.cpp)
-target_include_directories(${SMALL_NW_TEST} PUBLIC include)
-target_link_libraries(${SMALL_NW_TEST} biodynamo)
-target_link_libraries(${SMALL_NW_TEST} ${ROOT_LIBRARIES})
+# build viz executable for small network test
+set(SMALL_NW_VIZ small-network-viz)
+add_executable(${SMALL_NW_VIZ} ${SOURCES} viz/small_network_visualization.cpp)
+target_include_directories(${SMALL_NW_VIZ} PUBLIC include)
+target_link_libraries(${SMALL_NW_VIZ} biodynamo)
+target_link_libraries(${SMALL_NW_VIZ} ${ROOT_LIBRARIES})
+
+# build viz executable for dividing cell test
+set(DIVIDING_CELL_VIZ dividing-cell-viz)
+add_executable(${DIVIDING_CELL_VIZ} ${SOURCES} viz/dividing-cell-viz.cpp)
+target_include_directories(${DIVIDING_CELL_VIZ} PUBLIC include)
+target_link_libraries(${DIVIDING_CELL_VIZ} biodynamo)
+target_link_libraries(${DIVIDING_CELL_VIZ} ${ROOT_LIBRARIES})
