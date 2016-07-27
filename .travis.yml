@@ -1,4 +1,4 @@
-language: cpp
+language: c++
 sudo: required
 dist: trusty
 os:
@@ -7,6 +7,11 @@ os:
 compiler:
   - gcc
   - clang
+matrix:
+  exclude:
+    - os: osx
+      compiler: gcc
+
 script:
   - travis_wait 30 ./travis.sh
 
