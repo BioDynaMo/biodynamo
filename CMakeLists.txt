@@ -131,6 +131,9 @@ if (test)
     CMAKE_CACHE_ARGS
        -DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}
        -DCMAKE_C_COMPILER:FILEPATH=${CMAKE_C_COMPILER}
+    CMAKE_ARGS
+       -DJSONCPP_WITH_TESTS=OFF
+       -DJSONCPP_WITH_POST_BUILD_UNITTEST=OFF
     INSTALL_COMMAND ""  # Disable install step
   )
   ExternalProject_Get_Property(jsoncpp install_dir)
