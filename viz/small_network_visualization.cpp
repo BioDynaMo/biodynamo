@@ -124,7 +124,10 @@ int main(int argc, char **argv) {
   ConnectionMaker::extendExcressencesAndSynapseOnEveryNeuriteElement();
 
   auto beginUpd = std::chrono::steady_clock::now();
+
   bdm::visualization::GUI::getInstance().Update(); // VISUALIZE FINAL STATE
+  bdm::visualization::GUI::getInstance().CloseGeometry();
+
   auto endUpd = std::chrono::steady_clock::now();
   double vizTime = std::chrono::duration_cast<std::chrono::microseconds>(
                        endUpd - beginUpd).count() /

@@ -54,10 +54,11 @@ private:
   ECM *ecm;
 
   // just to ensure that methods were called in correct order
-  bool init;   // true if init was called
-  bool update; // true if update was called
+  bool init;       // true if init was called
+  bool update;     // true if update was called
+  bool geomClosed; // true if geometry is already closed
 
-  int lastID;  // last visualized ID
+  int lastID; // last visualized ID
 
   /**
    * Max visualized shapes per volume
@@ -117,6 +118,15 @@ public:
    * @param number
    */
   void setMaxVizNodes(int number);
+
+  /**
+   * After building the full geometry tree, geometry must be closed.
+   * Closing geometry implies checking the geometry validity, fixing shapes with
+   * negative parameters (run-time shapes)building the cache manager, voxelizing
+   * all volumes, counting the total number of physical nodes and registering
+   * the manager class to the browser.
+   */
+  void CloseGeometry();
 
 private: // singleton properties
   GUI();

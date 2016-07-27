@@ -28,7 +28,8 @@ void Scheduler::simulateOneStep() {
   if (run_physics_) {
     // PhysicalNode (diffusion & degradation of Substances)
     if (run_diffusion_) {
-      for (int i = 0; i < ecm_->getPhysicalNodeListSize(); i++) {
+      auto physicalNodeListSize = ecm_->getPhysicalNodeListSize();
+      for (int i = 0; i < physicalNodeListSize; i++) {
         auto pn = ecm_->getPhysicalNode(i);
         if (pn->isOnTheSchedulerListForPhysicalNodes()) {
           pn->runExtracellularDiffusion();
@@ -48,7 +49,8 @@ void Scheduler::simulateOneStep() {
 //    }
 
 // Physical objects : PhysicalCylinders
-    for (int i = 0; i < ecm_->getPhysicalCylinderListSize(); i++) {
+    auto physicalCylinderListSize = ecm_->getPhysicalCylinderListSize();
+    for (int i = 0; i < physicalCylinderListSize; i++) {
       auto pc = ecm_->getPhysicalCylinder(i);
       if (pc->isOnTheSchedulerListForPhysicalObjects()) {
         pc->runPhysics();
@@ -57,7 +59,8 @@ void Scheduler::simulateOneStep() {
     }
 
     // Physical objects : PhysicalSpheres
-    for (int i = 0; i < ecm_->getPhysicalSphereListSize(); i++) {
+    auto physicalSphereListSize = ecm_->getPhysicalSphereListSize();
+    for (int i = 0; i < physicalSphereListSize; i++) {
       auto ps = ecm_->getPhysicalSphere(i);
       if (ps->isOnTheSchedulerListForPhysicalObjects()) {
         ps->runPhysics();
@@ -74,11 +77,13 @@ void Scheduler::simulateOneStep() {
   }
 
   // soma
-  for (auto i = 0; i < ecm_->getSomaElementListSize(); i++) {
+  auto somaElementListSize = ecm_->getSomaElementListSize();
+  for (auto i = 0; i < somaElementListSize; i++) {
     ecm_->getSomaElement(i)->run();
   }
   // neurites
-  for (auto i = 0; i < ecm_->getNeuriteElementListSize(); i++) {
+  auto neuriteElementListSize = ecm_->getNeuriteElementListSize();
+  for (auto i = 0; i < neuriteElementListSize; i++) {
     ecm_->getNeuriteElement(i)->run();
   }
 

@@ -9,11 +9,8 @@
 #include <TEveGeoNode.h>
 #include <TEveWindow.h>
 #include <TEveBrowser.h>
-#include <TGComboBox.h>
 
 #include "visualization/gui.h"
-
-#include <TGLAutoRotator.h>
 
 using bdm::visualization::GUI;
 
@@ -63,9 +60,13 @@ void GUI::Update(bool resetCamera) {
   if (!init)
     throw std::runtime_error("Call GUI::getInstance().Init() first!");
 
+  if(geomClosed)
+    throw std::runtime_error("Geometry is already closed! Don't call GUI::Update() after GUI::CloseGeometry()!");
+
   top->ClearNodes();
 
-  for (auto sphere : ecm->getPhysicalSphereList()) {
+  // ecm->getPhysicalSphereListCPtr() will be called only once
+  for (auto &sphere : *ecm->getPhysicalSphereListCPtr()) {
     auto container = new TGeoVolumeAssembly("A");
     addBranch(sphere, container);
     top->AddNode(container, top->GetNdaughters());
@@ -126,7 +127,7 @@ EColor GUI::translateColor(Color color) {
 void GUI::addBranch(PhysicalSphere *sphere, TGeoVolume *container) {
   addSphereToVolume(sphere, container);
 
-  for (auto cylinder : sphere->getDaughters()) {
+  for (auto &cylinder : sphere->getDaughters()) {
     addCylinderToVolume(cylinder, container);
     preOrderTraversalCylinder(cylinder, container);
   }
@@ -210,3 +211,12 @@ void GUI::addSphereToVolume(PhysicalSphere *sphere, TGeoVolume *container) {
 }
 
 void GUI::setMaxVizNodes(int number) { this->maxVizNodes = number; }
+
+void GUI::CloseGeometry() {
+  if (!update)
+    throw std::runtime_error("Call GUI::getInstance().Update() first!");
+
+  geom->CloseGeometry();
+
+  geomClosed = true;
+}
