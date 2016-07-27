@@ -9,7 +9,6 @@
 
 #include "simulation/scheduler.h"
 #include "visualization/gui.h"
-#include "../test/neurite_chemo_attraction_test.h"
 #include <TApplication.h>
 #include <physics/default_force.h>
 #include <synapse/connection_maker.h>
