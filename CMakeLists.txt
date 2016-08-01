@@ -28,6 +28,13 @@ else()
   message(STATUS "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler.")
 endif()
 
+#--------------------- Special clang flag -------------
+if(${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
+   # silence unsupported -pthread argument at link time
+   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Qunused-arguments")
+   SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Qunused-arguments")
+endif()
+
 #--------------------- set rpath options -------------
 # When building, use the RPATH
 set(CMAKE_SKIP_BUILD_RPATH FALSE)           # don't skip the full RPATH for the build tree
@@ -72,13 +79,13 @@ endif()
 #--------------------- Find ROOT ---------------------------------
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
 find_package(ROOT REQUIRED)
-include(${ROOT_USE_FILE})
 
 #--------------------- Find Doxygen and set doc target -----------
 include(cmake/doxygen.cmake)
 
-#--------------------- build shared library  ----------------
+#--------------------- build shared library libbiodynamo ----------------
 # add the headers into the project
+include(${ROOT_USE_FILE})
 include_directories("${CMAKE_SOURCE_DIR}/include")
 include_directories("${CMAKE_BINARY_DIR}/crlibm/src/external_crlibm")
 
@@ -98,7 +105,7 @@ add_custom_target(libbdmclean COMMAND ${CMAKE_COMMAND} -P "${CMAKE_BINARY_DIR}/C
 add_custom_target(bdmclean)
 add_dependencies(bdmclean libbdmclean)
 
-#--------------------- build test project ----------------------
+#--------------------- build test project runBiodynamoTests ----------------------
 # http://www.kaizou.org/2014/11/gtest-cmake/
 if (test)
   enable_testing()
@@ -146,7 +153,6 @@ if (test)
   # add include directories for gtest and jsoncpp
   include_directories("${CMAKE_BINARY_DIR}/gtest/src/gtest/include")
   include_directories("${CMAKE_BINARY_DIR}/jsoncpp/src/jsoncpp/include")
-  include_directories(${ROOT_INCLUDE_DIRS})
 
   # create test executable
   file(GLOB TEST_SOURCES "test/*.cc" "test/*.h")
@@ -154,7 +160,6 @@ if (test)
   add_executable(${TEST_TARGET} ${TEST_SOURCES})
   target_link_libraries(${TEST_TARGET} libgtest)
   target_link_libraries(${TEST_TARGET} libjsoncpp)
-  target_link_libraries(${TEST_TARGET} ${ROOT_LIBRARIES})
   target_link_libraries(${TEST_TARGET} biodynamo)
 
   # copy test resources to build dir
