@@ -8,7 +8,8 @@
 #include <exception>
 #include <unordered_map>
 
-#include <TObject.h>
+// for ClassDef
+#include <Rtypes.h>
 
 #include "color.h"
 #include "sim_state_serializable.h"
@@ -54,7 +55,7 @@ using spatial_organization::SpatialOrganizationNode;
  * or remove elements. Contains lists of "real" and "artificial" Substances.
  * Possibility to define a cubic region of space where elements are confined.
  */
-class ECM : public TObject, public SimStateSerializable {
+class ECM : public SimStateSerializable {
  public:
   static ECM* getInstance();
 
@@ -550,7 +551,7 @@ class ECM : public TObject, public SimStateSerializable {
   /** If as Substance is not already registered, we register it for you. No charges! Order now!*/
   Substance* getRegisteredArtificialSubstance(const std::string& substanceId);
 
-  ClassDefOverride(ECM,1);
+  ClassDef(ECM,1);
 };
 
 }  // namespace simulation
