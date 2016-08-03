@@ -19,7 +19,7 @@ else
 fi
 
 # run cpplint for all staged source files in dir src/ and include/
-files=$($git_cmd | grep -P "^((src/)|(include/))" | grep "\(\.h\)\|\(\.cc\)$")
+files=$($git_cmd | grep "^\(src\|include\)/.*" | grep "\(\.h\|\.cc\)$")
 num_files=$(echo "$files" | sed '/^$/d' | wc -l)
 if [ $num_files != "0" ]; then
   echo "$files" | xargs housekeeping/cpplint/cpplint.py --root=include --linelength=120 --filter=-build/c++11,-legal/copyright
@@ -28,7 +28,7 @@ else
 fi
 
 # run cpplint for all staged source files in dir test
-files=$($git_cmd | grep -P "^test/" | grep "\(\.h\)\|\(\.cc\)$")
+files=$($git_cmd | grep "^test/.*" | grep "\(\.h\|\.cc\)$")
 num_files=$(echo "$files" | sed '/^$/d' | wc -l)
 if [ $num_files != "0" ]; then
   echo "$files" | xargs housekeeping/cpplint/cpplint.py --linelength=120 --filter=-build/c++11,-legal/copyright
