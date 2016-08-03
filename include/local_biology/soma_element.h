@@ -25,6 +25,8 @@ class SomaElement : public CellElement {
  public:
   using UPtr = std::unique_ptr<SomaElement>;
 
+  SomaElement(TRootIOCtor*) { }  // only used for ROOT I/O
+  
   SomaElement();
 
   virtual ~SomaElement();
@@ -72,7 +74,13 @@ class SomaElement : public CellElement {
   SomaElement(const SomaElement&) = delete;
   SomaElement& operator=(const SomaElement&) = delete;
 
+ #ifdef __ROOTCLING__
+  PhysicalSphere* physical_;
+ #else
   PhysicalSphere::UPtr physical_;
+ #endif
+
+  ClassDefOverride(SomaElement, 1);
 };
 
 }  // namespace local_biology

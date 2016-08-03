@@ -18,6 +18,8 @@ class InterObjectForce : public SimStateSerializable {
  public:
   using UPtr = std::unique_ptr<InterObjectForce>;
 
+  InterObjectForce(TRootIOCtor*) { }  // only used for ROOT I/O
+
   InterObjectForce() {
   }
 
@@ -65,6 +67,10 @@ class InterObjectForce : public SimStateSerializable {
                                                               PhysicalCylinder* cylinder2) const = 0;
 
   virtual StringBuilder& simStateToJson(StringBuilder& sb) const override = 0;
+
+ private:
+  ClassDefOverride(InterObjectForce, 1);
+
 };
 
 }  //namespace physics

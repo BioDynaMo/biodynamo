@@ -1,6 +1,8 @@
 #ifndef SIM_STATE_SERIALIZABLE_H_
 #define SIM_STATE_SERIALIZABLE_H_
 
+#include <Rtypes.h>
+
 #include "string_builder.h"
 
 namespace bdm {
@@ -23,7 +25,9 @@ class SimStateSerializable {
    * @param sb Append Json to this StringBuilder
    * @return The received StringBuilder to enable function concatenation
    */
-  virtual StringBuilder& simStateToJson(StringBuilder& sb) const = 0;  // NOLINT(runtime/references)
+  virtual StringBuilder& simStateToJson(StringBuilder& sb) const = 0;  // NOLINT(runtime/references
+
+  ClassDef(SimStateSerializable, 1);
 };
 
 }  // namespace bdm

@@ -36,6 +36,8 @@ class PhysicalCylinder : public PhysicalObject {
  public:
   using UPtr = std::unique_ptr<PhysicalCylinder>;
 
+  PhysicalCylinder(TRootIOCtor*) { }  // only used for ROOT I/O
+  
   PhysicalCylinder();
 
   virtual ~PhysicalCylinder();
@@ -505,6 +507,8 @@ class PhysicalCylinder : public PhysicalObject {
   void scheduleMeAndAllMyFriends();
 
   UPtr extendSideCylinder(double length, const std::array<double, 3>& direction);
+
+  ClassDefOverride(PhysicalCylinder, 1);
 };
 
 struct PhysicalCylinderHash {

@@ -19,6 +19,8 @@ class IntracellularSubstance : public Substance {
  public:
   using UPtr = std::unique_ptr<IntracellularSubstance>;
 
+  IntracellularSubstance(TRootIOCtor*) { }  // only used for ROOT I/O
+  
   IntracellularSubstance();
 
   IntracellularSubstance(const IntracellularSubstance& other);
@@ -107,6 +109,8 @@ class IntracellularSubstance : public Substance {
    * @param other
    */
   IntracellularSubstance& operator=(const IntracellularSubstance&) = delete;
+
+  ClassDefOverride(IntracellularSubstance, 1);
 };
 
 }  // namespace physics

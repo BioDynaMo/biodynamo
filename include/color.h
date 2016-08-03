@@ -1,6 +1,8 @@
 #ifndef COLOR_H_
 #define COLOR_H_
 
+#include <Rtypes.h>
+
 #include "random.h"
 
 namespace bdm {
@@ -28,6 +30,8 @@ class Color {
 
  private:
   unsigned value_;
+
+  ClassDefNV(Color, 1);
 };
 
 }  // namespace bdm

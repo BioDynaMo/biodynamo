@@ -16,6 +16,8 @@ class BiologicalSpine : public SimStateSerializable {
  public:
   using UPtr = std::unique_ptr<BiologicalSpine>;
 
+  BiologicalSpine(TRootIOCtor*) { }  // only used for ROOT I/O
+
   BiologicalSpine();
 
   ~BiologicalSpine();
@@ -31,6 +33,8 @@ class BiologicalSpine : public SimStateSerializable {
   BiologicalSpine& operator=(const BiologicalSpine&) = delete;
 
   PhysicalSpine* physical_spine_ = nullptr;
+
+  ClassDefOverride(BiologicalSpine, 1);
 };
 
 }  // namespace synapse

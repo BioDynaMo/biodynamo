@@ -16,6 +16,8 @@ class BiologicalBouton : public SimStateSerializable {
  public:
   using UPtr = std::unique_ptr<BiologicalBouton>;
 
+  BiologicalBouton(TRootIOCtor*) { }  // only used for ROOT I/O
+
   BiologicalBouton();
 
   ~BiologicalBouton();
@@ -31,6 +33,8 @@ class BiologicalBouton : public SimStateSerializable {
   BiologicalBouton& operator=(const BiologicalBouton&) = delete;
 
   PhysicalBouton* physical_bouton_ = nullptr;
+
+  ClassDefOverride(BiologicalBouton, 1);
 };
 
 }  // namespace synapse

@@ -17,6 +17,8 @@ class Substance : public SimStateSerializable {
   friend struct SubstanceHash;
   friend struct SubstanceEquals;
 
+  Substance(TRootIOCtor*) { }  // only used for ROOT I/O
+  
   Substance();
 
   Substance(const Substance& other);
@@ -31,7 +33,7 @@ class Substance : public SimStateSerializable {
    * @param sb Append Json to this StringBuilder
    * @return The received StringBuilder to enable function concatenation
    */
-  virtual StringBuilder& simStateToJson(StringBuilder& sb) const;
+  virtual StringBuilder& simStateToJson(StringBuilder& sb) const override;
 
   /**
    * Increases or decreases the quantity. Makes sure the quantity is never negative.
@@ -130,6 +132,8 @@ class Substance : public SimStateSerializable {
 
  private:
   Substance& operator=(const Substance&) = delete;
+
+  ClassDefOverride(Substance, 1);
 };
 
 struct SubstanceHash {

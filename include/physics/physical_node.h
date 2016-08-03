@@ -34,7 +34,7 @@ using spatial_organization::SpatialOrganizationEdge;
  * that is part of the neighboring system (eg triangulation). A <code>PhysicalNode</code> can only diffuse
  * to and receive from the neighbouring <code>PhysicalNode</code>s.
  * <p>
- * The <code>PhysiacalObject</code> sub-classes (<code>PhysicalSphere</code>, <code>PhysicalCylinder</code>)
+ * The <code>PhysicalObject</code> sub-classes (<code>PhysicalSphere</code>, <code>PhysicalCylinder</code>)
  * inherit from this class. This emphasize the fact that they take part in the definition of space and
  * that diffusion of chemical occurs across them.
  * <p>
@@ -76,6 +76,7 @@ class PhysicalNode : public SimStateSerializable, public std::enable_shared_from
   static std::array<double, 4> getBarycentricCoordinates(const std::array<double, 3>& Q,
                                                          const std::array<PhysicalNode*, 4>& vertices);
 
+  PhysicalNode(TRootIOCtor*) { }  // only used for ROOT I/O
   PhysicalNode();
 
   virtual ~PhysicalNode();
@@ -147,7 +148,7 @@ class PhysicalNode : public SimStateSerializable, public std::enable_shared_from
   // *************************************************************************************
 
   /**
-   * Degradate (according to degrad. constant) and diffuse 8according to diff. constant)
+   * Degradate (according to degrad. constant) and diffuse according to diff. constant)
    * all the <code>Substance</code> stored in this <code>PhysicalNode</code>.
    */
   void runExtracellularDiffusion();
@@ -227,7 +228,13 @@ class PhysicalNode : public SimStateSerializable, public std::enable_shared_from
   /**
    *  My anchor point in the neighboring system
    */
-  typename SpatialOrganizationNode<PhysicalNode>::UPtr so_node_;
+  
+#ifdef __ROOTCLING__
+   SpatialOrganizationNode<PhysicalNode>* so_node_;
+#else
+   SpatialOrganizationNode<PhysicalNode>::UPtr so_node_;
+#endif
+  
 
  private:
   static std::size_t id_counter_;
@@ -255,12 +262,18 @@ class PhysicalNode : public SimStateSerializable, public std::enable_shared_from
   /**
    * All the (diffusible) chemicals that are present in the space defined by this physicalNode.
    */
+  #ifdef __ROOTCLING__
+  std::unordered_map<std::string, Substance*> extracellular_substances_;
+#else
   std::unordered_map<std::string, Substance::UPtr> extracellular_substances_;
+#endif
 
   /* Analytic solution of the diffusion process along the edge between two PhysicalNodes.
    * dQA/dt = diffCst*(Area/distance)*(QB/VB-QA/VA)
    */
   void diffuseEdgeAnalytically(SpatialOrganizationEdge<PhysicalNode>* e, double current_ecm_time);
+
+  ClassDefOverride(PhysicalNode, 1);
 };
 
 }  // namespace physics

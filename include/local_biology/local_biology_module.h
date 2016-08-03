@@ -22,6 +22,8 @@ class LocalBiologyModule : public SimStateSerializable {
  public:
   using UPtr = std::unique_ptr<LocalBiologyModule>;
 
+  LocalBiologyModule(TRootIOCtor*) { }  // only used for ROOT I/O
+
   LocalBiologyModule() {
   }
 
@@ -73,6 +75,8 @@ class LocalBiologyModule : public SimStateSerializable {
  private:
   LocalBiologyModule(const LocalBiologyModule&) = delete;
   LocalBiologyModule& operator=(const LocalBiologyModule&) = delete;
+
+  ClassDefOverride(LocalBiologyModule, 1);
 };
 
 }  // namespace local_biology

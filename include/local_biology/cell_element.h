@@ -38,6 +38,8 @@ class CellElement : public SimStateSerializable {
 
   static void reset();
 
+  CellElement(TRootIOCtor*) { }  // only used for ROOT I/O
+
   CellElement();
 
   virtual ~CellElement();
@@ -128,6 +130,8 @@ class CellElement : public SimStateSerializable {
 
   /** Unique identification for this CellElement instance.*/
   std::size_t id_;
+
+  ClassDefOverride(CellElement, 1);
 };
 
 }  // namespace local_biology

@@ -25,6 +25,8 @@ class NeuriteElement : public CellElement {
  public:
   using UPtr = std::unique_ptr<NeuriteElement>;
 
+  NeuriteElement(TRootIOCtor*) { }  // only used for ROOT I/O
+  
   NeuriteElement();
 
   virtual ~NeuriteElement();
@@ -207,6 +209,8 @@ class NeuriteElement : public CellElement {
   PhysicalCylinder::UPtr physical_cylinder_;
 
   bool is_axon_ = false;
+
+  ClassDefOverride(NeuriteElement, 1);
 };
 
 }  // namespace local_biology

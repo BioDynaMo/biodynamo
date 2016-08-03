@@ -48,6 +48,8 @@ class Cell : public SimStateSerializable {
    * Generate <code>Cell</code>. and registers the <code>Cell</code> to <code>ECM<</code>.
    * Every cell is identified by a unique cellID number.
    */
+  Cell(TRootIOCtor*) { }  // only used for ROOT I/O
+  
   Cell();
 
   ~Cell();
@@ -185,12 +187,26 @@ class Cell : public SimStateSerializable {
   static ECM* ecm_;
 
   /* List of all cell modules that are run at each time step*/
+#ifdef __ROOTCLING__
+  std::vector<CellModule*> cell_modules_;
+#else
   std::vector<CellModule::UPtr> cell_modules_;
+#endif
 
   /* List of the SomaElements belonging to the cell */
+#ifdef __ROOTCLING__
+  SomaElement* soma_;
+#else
   SomaElement::UPtr soma_;
+#endif  
 
+
+#ifdef __ROOTCLING__
+  std::vector<NeuriteElement*> neurites_;
+#else
   std::vector<NeuriteElement::UPtr> neurites_;
+#endif
+  
 
   /* List of the first Neurite of all Nurites belonging to the cell */
   std::vector<NeuriteElement*> neurite_root_list_;  // TODO: not working yet
@@ -201,6 +217,8 @@ class Cell : public SimStateSerializable {
   /** Some convenient way to store properties of  for cells.
    * Should not be confused with neuroMLType. */
   std::string type_ = "";
+
+  ClassDefOverride(Cell, 1);
 };
 
 }  // cells

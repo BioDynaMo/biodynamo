@@ -41,6 +41,8 @@ class Excrescence : public SimStateSerializable {
     kShaft = 3
   };
 
+  Excrescence(TRootIOCtor*) { }  // only used for ROOT I/O
+
   Excrescence();
 
   Excrescence(Excrescence::Type type);
@@ -108,6 +110,8 @@ class Excrescence : public SimStateSerializable {
  private:
   Excrescence(const Excrescence&) = delete;
   Excrescence& operator=(const Excrescence&) = delete;
+
+  ClassDefOverride(Excrescence, 1);
 };
 
 }  // namespace synapse

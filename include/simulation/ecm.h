@@ -551,7 +551,7 @@ class ECM : public SimStateSerializable {
   /** If as Substance is not already registered, we register it for you. No charges! Order now!*/
   Substance* getRegisteredArtificialSubstance(const std::string& substanceId);
 
-  ClassDef(ECM,1);
+  ClassDefOverride(ECM, 1);
 };
 
 }  // namespace simulation

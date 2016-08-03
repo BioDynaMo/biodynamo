@@ -34,6 +34,8 @@ class PhysicalBond : public SimStateSerializable, public std::enable_shared_from
                                               PhysicalObject* b, const std::array<double, 2>& position_on_b,
                                               double resting_length, double spring_constant);
 
+  PhysicalBond(TRootIOCtor*) { }  // only used for ROOT I/O
+
   PhysicalBond();
 
   virtual ~PhysicalBond();
@@ -181,6 +183,8 @@ class PhysicalBond : public SimStateSerializable, public std::enable_shared_from
 
   void init(PhysicalObject* a, const std::array<double, 2>& position_on_a, PhysicalObject* b,
             const std::array<double, 2>& position_on_b, double resting_length, double spring_constant);
+
+  ClassDefOverride(PhysicalBond, 1);
 };
 
 }  //namespace physics
