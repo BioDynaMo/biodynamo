@@ -2,10 +2,12 @@
 
 function help {
   echo "runCppLint.py <mode>
-  Executes cpplint on a filtered subset of *.h and *.cc files in directory include, source and test
-  <mode> defines the filter condition: options
+  Executes cpplint on a filtered subset of *.h and *.cc files in directory
+  include, source and test.
+  <mode> defines the filter condition options:
      staged: only files that are staged in git are checked
-     master: all files that have been changed compared to the local master HEAD are checked"
+     master: all files that have been changed compared to the local
+             master HEAD are checked"
   exit
 }
 
