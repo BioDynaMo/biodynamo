@@ -89,9 +89,20 @@ include(${ROOT_USE_FILE})
 include_directories("${CMAKE_SOURCE_DIR}/include")
 include_directories("${CMAKE_BINARY_DIR}/crlibm/src/external_crlibm")
 
-ROOT_GENERATE_DICTIONARY("${CMAKE_BINARY_DIR}/bdmDict"
-                         simulation/ecm.h
-                         LINKDEF bdmLinkDef.h)
+ROOT_GENERATE_DICTIONARY(
+  "${CMAKE_BINARY_DIR}/bdmDict"
+   simulation/ecm.h physics/physical_node.h physics/physical_sphere.h 
+   physics/physical_cylinder.h physics/substance.h
+   physics/intracellular_substance.h physics/inter_object_force.h
+   physics/physical_bond.h physics/physical_object.h
+   local_biology/soma_element.h local_biology/neurite_element.h
+   local_biology/cell_element.h local_biology/local_biology_module.h
+   cells/cell.h cells/cell_module.h
+   synapse/biological_bouton.h synapse/biological_somatic_spine.h 
+   synapse/biological_spine.h synapse/excrescence.h  
+   sim_state_serializable.h color.h
+   LINKDEF bdmLinkDef.h
+   )
 
 file(GLOB SOURCES "src/**/*.cc" "src/*.cc" "include/**/*.h" "include/*.h")
 add_library(biodynamo SHARED ${SOURCES} ${CMAKE_BINARY_DIR}/bdmDict.cxx)
