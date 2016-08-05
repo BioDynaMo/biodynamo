@@ -51,7 +51,7 @@ void BaseSimulationTest::run() {
   simulate();
   long end = timestamp();
   runtime_ = end - start;
-  //std::cout << "RUNTIME " << getTestName() << " " << (end-start) << std::endl;
+  // std::cout << "RUNTIME " << getTestName() << " " << (end-start) << std::endl;
   // ensure correct result
   if (!disable_assertions_) {
     assertSimulationState();
@@ -59,6 +59,22 @@ void BaseSimulationTest::run() {
 }
 
 void BaseSimulationTest::assertSimulationState() {
+  gROOT->ProcessLine(".L libbiodynamo.so");
+
+  const char *root_write_name = (getTestName() + ".root").c_str();
+
+  TFile *f = new TFile(root_write_name, "RECREATE");
+  ECM *obj = ECM::getInstance();
+  f->WriteObjectAny(obj, obj->Class(), "single_test_output_state");
+  f->Close();
+
+  const char *root_read_name = (getTestName() + ".root").c_str();
+
+  TFile *g = TFile::Open(root_read_name);
+  ECM *sim_state_root = (ECM*) g->Get("single_test_output_state");
+  StringBuilder sb_root;
+  sim_state_root->simStateToJson(sb_root);
+
   // create Json string of simulation state
   StringBuilder sb;
   ECM::getInstance()->simStateToJson(sb);
@@ -82,18 +98,23 @@ void BaseSimulationTest::assertSimulationState() {
   Json::Reader reader;
   Json::Value actual;
   Json::Value expected;
+  Json::Value root_output;
   Json::Value::epsilon_ = 1e-10;
   reader.parse(sb.str(), actual);
   reader.parse(expected_string, expected);
+  reader.parse(sb_root.str(), root_output);
 
   // compare Json objects for equality
   bool equal = expected == actual;
+  bool equal_root = expected == root_output;
   EXPECT_TRUE(equal);
+  EXPECT_TRUE(equal_root);
   if (equal) {
     persistRuntime();
   } else {
     writeToFile("failed_" + getTestName() + "_actual", actual);
     writeToFile("failed_" + getTestName() + "_expected", expected);
+    writeToFile("failed_" + getTestName() + "_root_output", root_output);
   }
 }
 

@@ -4,6 +4,10 @@
 #include <string>
 #include <vector>
 
+#include <TROOT.h>
+#include <TFile.h>
+#include <TClass.h>
+
 #include "gtest/gtest.h"
 
 #include "simulation/ecm.h"
