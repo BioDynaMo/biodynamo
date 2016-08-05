@@ -65,10 +65,13 @@ class CellFactory {
    */
   static vector<Cell*> get3DCellGrid(double x_min, double x_max, double y_min, double y_max, double z_min, double z_max,
                                      int n_x, int n_y, int n_z, double noise_xy_std, double noise_z_std);
+
  private:
   CellFactory() = delete;
   CellFactory(const CellFactory&) = delete;
   CellFactory& operator=(const CellFactory&) = delete;
+
+  ClassDefNV(CellFactory, 0);
 };
 
 }  // namespace cells

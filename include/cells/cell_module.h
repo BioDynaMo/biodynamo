@@ -18,8 +18,6 @@ class CellModule : public SimStateSerializable {
  public:
   using UPtr = std::unique_ptr<CellModule>;
 
-  CellModule(TRootIOCtor*) { }  // only used for ROOT I/O)
-
   CellModule() {
   }
 
@@ -47,7 +45,7 @@ class CellModule : public SimStateSerializable {
   CellModule(const CellModule&) = delete;
   CellModule& operator=(const CellModule&) = delete;
 
-  ClassDefOverride(CellModule, 1);
+  ClassDefOverride(CellModule, 0);
 };
 
 }  // namespace cells

@@ -66,6 +66,8 @@ class DefaultForce : public InterObjectForce {
 
   std::array<double, 4> computeForceOfASphereOnASphere(const std::array<double, 3>& c1, double r1,
                                                        const std::array<double, 3>& c2, double r2) const;
+
+  ClassDefOverride(DefaultForce, 1);
 };
 
 }  //namespace physics

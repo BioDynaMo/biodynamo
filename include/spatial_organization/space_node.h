@@ -8,6 +8,8 @@
 #include <vector>
 #include <memory>
 
+#include <Rtypes.h>
+
 #include "spatial_organization/spatial_organization_node_movement_listener.h"
 #include "spatial_organization/spatial_organization_node.h"
 #include "spatial_organization/edge.h"
@@ -34,6 +36,8 @@ class SpaceNode : public SpatialOrganizationNode<T> {
   using UPtr = std::unique_ptr<SpaceNode<T>>;
 
   static void reset();
+
+  SpaceNode(TRootIOCtor*) { }  // only used for ROOT I/O
 
   /**
    * Starting at a given tetrahedron, this function searches the triangulation
@@ -355,6 +359,8 @@ class SpaceNode : public SpatialOrganizationNode<T> {
    * helper function used by function generateTriangleOrder
    */
   static int randomHelper(int i);
+
+  ClassDefOverride(SpaceNode, 1);
 };
 
 }  // namespace spatial_organization

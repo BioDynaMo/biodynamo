@@ -206,7 +206,11 @@ class NeuriteElement : public CellElement {
   NeuriteElement(const NeuriteElement&) = delete;
   NeuriteElement& operator=(const NeuriteElement&) = delete;
 
+#ifdef __ROOTCLING__
+  PhysicalCylinder* physical_cylinder_;
+#else
   PhysicalCylinder::UPtr physical_cylinder_;
+#endif
 
   bool is_axon_ = false;
 

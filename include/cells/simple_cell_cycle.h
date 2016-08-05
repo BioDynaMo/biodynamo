@@ -41,6 +41,8 @@ class SimpleCellCycle : public AbstractCellModule {
 
   /* the minimum size to obtain before being allowed to divide.*/
   double minimum_diameter_ = 20.0;
+
+  ClassDefOverride(SimpleCellCycle, 1);
 };
 
 }  // namespace cells

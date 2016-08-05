@@ -110,7 +110,7 @@ class IntracellularSubstance : public Substance {
    */
   IntracellularSubstance& operator=(const IntracellularSubstance&) = delete;
 
-  ClassDefOverride(IntracellularSubstance, 1);
+  ClassDefOverride(IntracellularSubstance, 0);
 };
 
 }  // namespace physics

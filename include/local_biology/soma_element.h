@@ -74,11 +74,11 @@ class SomaElement : public CellElement {
   SomaElement(const SomaElement&) = delete;
   SomaElement& operator=(const SomaElement&) = delete;
 
- #ifdef __ROOTCLING__
+#ifdef __ROOTCLING__
   PhysicalSphere* physical_;
- #else
+#else
   PhysicalSphere::UPtr physical_;
- #endif
+#endif
 
   ClassDefOverride(SomaElement, 1);
 };

@@ -19,6 +19,8 @@ class SimStateSerializable {
   virtual ~SimStateSerializable() {
   }
 
+  //SimStateSerializable(TRootIOCtor*) { }  // only used for ROOT I/O
+
   /**
    * This function is called after the simulation has finished to serialize the
    * simulation outcome to Json.

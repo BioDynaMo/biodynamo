@@ -77,6 +77,7 @@ class PhysicalNode : public SimStateSerializable, public std::enable_shared_from
                                                          const std::array<PhysicalNode*, 4>& vertices);
 
   PhysicalNode(TRootIOCtor*) { }  // only used for ROOT I/O
+  
   PhysicalNode();
 
   virtual ~PhysicalNode();
@@ -227,14 +228,12 @@ class PhysicalNode : public SimStateSerializable, public std::enable_shared_from
 
   /**
    *  My anchor point in the neighboring system
-   */
-  
+   */  
 #ifdef __ROOTCLING__
    SpatialOrganizationNode<PhysicalNode>* so_node_;
 #else
    SpatialOrganizationNode<PhysicalNode>::UPtr so_node_;
-#endif
-  
+#endif  
 
  private:
   static std::size_t id_counter_;
@@ -262,7 +261,7 @@ class PhysicalNode : public SimStateSerializable, public std::enable_shared_from
   /**
    * All the (diffusible) chemicals that are present in the space defined by this physicalNode.
    */
-  #ifdef __ROOTCLING__
+#ifdef __ROOTCLING__
   std::unordered_map<std::string, Substance*> extracellular_substances_;
 #else
   std::unordered_map<std::string, Substance::UPtr> extracellular_substances_;

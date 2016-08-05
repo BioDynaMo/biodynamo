@@ -37,7 +37,13 @@ class PhysicalSomaticSpine : public Excrescence {
   PhysicalSomaticSpine(const PhysicalSomaticSpine&) = delete;
   PhysicalSomaticSpine& operator=(const PhysicalSomaticSpine&) = delete;
 
+#ifdef __ROOTCLING__
+  BiologicalSomaticSpine* biological_spine_ = nullptr;
+#else
   BiologicalSomaticSpine::UPtr biological_spine_ = nullptr;
+#endif
+
+  ClassDefOverride(PhysicalSomaticSpine, 1);
 };
 
 }  // namespace synapse

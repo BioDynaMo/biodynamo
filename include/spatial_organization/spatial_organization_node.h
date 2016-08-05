@@ -4,6 +4,7 @@
 #include <string>
 #include <array>
 #include <memory>
+#include <vector>
 
 #include "sim_state_serializable.h"
 #include "string_builder.h"
@@ -57,6 +58,9 @@ class SpatialOrganizationNode : public SimStateSerializable {
   virtual void remove() = 0;
 
   virtual std::string toString() const =0;
+
+ private:
+  ClassDefOverride(SpatialOrganizationNode, 1);
 };
 
 }  // namespace spatial_organization

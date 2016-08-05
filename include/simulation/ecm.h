@@ -188,7 +188,6 @@ class ECM : public SimStateSerializable {
 //     void removeECMChemicalReaction(ECMChemicalReaction chemicalReaction);
 
   //  Cells
-
   void addCell(Cell::UPtr cell);
 
   void removeCell(Cell* cell);
@@ -472,7 +471,7 @@ class ECM : public SimStateSerializable {
   double time_ = 0;
 
   /* An SON used to get new SON instances from*/
-  SpatialOrganizationNode<PhysicalNode>* initial_node_ = nullptr;
+  SpatialOrganizationNode<PhysicalNode>* initial_node_;
 
   /* In here we keep a template for each (extra-cellular) Substance in the simulation that have
    * non-standard value for diffusion and degradation constant.*/

@@ -49,7 +49,7 @@ class Cell : public SimStateSerializable {
    * Every cell is identified by a unique cellID number.
    */
   Cell(TRootIOCtor*) { }  // only used for ROOT I/O
-  
+
   Cell();
 
   ~Cell();
@@ -198,17 +198,15 @@ class Cell : public SimStateSerializable {
   SomaElement* soma_;
 #else
   SomaElement::UPtr soma_;
-#endif  
-
+#endif
 
 #ifdef __ROOTCLING__
   std::vector<NeuriteElement*> neurites_;
 #else
   std::vector<NeuriteElement::UPtr> neurites_;
 #endif
-  
 
-  /* List of the first Neurite of all Nurites belonging to the cell */
+  /* List of the first Neurite of all Neurites belonging to the cell */
   std::vector<NeuriteElement*> neurite_root_list_;  // TODO: not working yet
 
   /* The electrophsiology type of this cell */
@@ -221,7 +219,7 @@ class Cell : public SimStateSerializable {
   ClassDefOverride(Cell, 1);
 };
 
-}  // cells
-}  // bdm
+}  // namespace cells
+}  // namespace bdm
 
 #endif  // CELLS_CELL_H_

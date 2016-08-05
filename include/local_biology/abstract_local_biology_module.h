@@ -45,6 +45,8 @@ class AbstractLocalBiologyModule : public LocalBiologyModule {
  private:
   AbstractLocalBiologyModule(const AbstractLocalBiologyModule&) = delete;
   AbstractLocalBiologyModule& operator=(const AbstractLocalBiologyModule&) = delete;
+
+  ClassDefOverride(AbstractLocalBiologyModule, 0);
 };
 
 }  // namespace local_biology

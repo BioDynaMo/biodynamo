@@ -32,6 +32,8 @@ class AbstractCellModule : public CellModule {
  private:
   AbstractCellModule(const AbstractCellModule&) = delete;
   AbstractCellModule& operator=(const AbstractCellModule&) = delete;
+
+  ClassDefOverride(AbstractCellModule, 1);
 };
 
 }  // namespace cells
