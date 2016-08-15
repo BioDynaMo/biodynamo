@@ -4,6 +4,7 @@
 #include <TEveGeoNode.h>
 #include <TEveWindow.h>
 #include <TEveBrowser.h>
+#include <TSystem.h>
 
 #include "visualization/gui.h"
 
@@ -53,7 +54,7 @@ void GUI::Init() {
   init_ = true;
 }
 
-void GUI::Update(bool resetCamera) {
+void GUI::Update() {
   if (!init_)
     throw std::runtime_error("Call GUI::getInstance().Init() first!");
 
@@ -69,7 +70,8 @@ void GUI::Update(bool resetCamera) {
     top_->AddNode(container, top_->GetNdaughters());
   }
 
-  gEve->FullRedraw3D(resetCamera);
+  gEve->FullRedraw3D();
+  gSystem->ProcessEvents();
 
   update_ = true;
 }

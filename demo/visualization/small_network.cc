@@ -103,7 +103,7 @@ int main(int argc, char **argv) {
     /**
      * REMOVE THIS LINE IF YOU WANT TO SEE JUST FINAL SIMULATION
      */
-    bdm::visualization::GUI::getInstance().Update(true);
+    bdm::visualization::GUI::getInstance().Update();
 
 
     auto end = std::chrono::steady_clock::now();

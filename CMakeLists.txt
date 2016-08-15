@@ -79,7 +79,6 @@ endif()
 #--------------------- Find ROOT ---------------------------------
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
 find_package(ROOT REQUIRED COMPONENTS Eve Geom Gui)
-include(${ROOT_USE_FILE})
 
 #--------------------- Find Doxygen and set doc target -----------
 include(cmake/doxygen.cmake)

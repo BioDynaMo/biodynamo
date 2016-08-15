@@ -108,7 +108,7 @@ class GUI {
    * Updates GLViewer of TEveManager according to current state of ECM.
    * @param resetCamera - if true, camera will move to observe all scene
    */
-  void Update(bool resetCamera = true);
+  void Update();
 
   /**
    * Setter for this->MaxVizNodes
