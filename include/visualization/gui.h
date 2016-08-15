@@ -1,5 +1,5 @@
-#ifndef BIODYNAMO_GUI_H
-#define BIODYNAMO_GUI_H
+#ifndef INCLUDE_VISUALIZATION_GUI_H_
+#define INCLUDE_VISUALIZATION_GUI_H_
 
 #include <TGeoManager.h>
 #include <TEveGeoNode.h>
@@ -21,80 +21,84 @@ using bdm::physics::PhysicalSphere;
  */
 class GUI {
   // members related to GUI
-private:
+ private:
   /**
    * Geometry manager
    */
-  TGeoManager *geom;
+  TGeoManager *geom_;
 
   /**
    * Top volumes for TGeo and TEve (world)
    */
-  TGeoVolume *top;
-  TEveGeoTopNode *eveTop;
+  TGeoVolume *top_;
+  TEveGeoTopNode *eve_top_;
 
   /**
    * Eve materials and medium
    */
-  TGeoMaterial *matEmptySpace;
-  TGeoMaterial *matSolid;
-  TGeoMedium *medEmptySpace;
-  TGeoMedium *medSolid;
+  TGeoMaterial *mat_empty_space_;
+  TGeoMaterial *mat_solid_;
+  TGeoMedium *med_empty_space_;
+  TGeoMedium *med_solid_;
 
   /**
    * Reference to the ECM.
    */
-  ECM *ecm;
+  ECM *ecm_;
 
   // just to ensure that methods were called in correct order
-  bool init;       // true if init was called
-  bool update;     // true if update was called
-  bool geomClosed; // true if geometry is already closed
 
-  int lastID; // last visualized ID
+  bool init_;  // true if init_ was called
+  bool update_;  // true if update was called
+  bool is_geometry_closed_;  // true if geometry is already closed
 
   /**
-   * Max visualized shapes per volume
+   * Last visualized node ID.
    */
-  int maxVizNodes;
+  int last_id_;
+
+  /**
+   * Max visualized shapes per volume.
+   */
+  int max_viz_nodes_;
 
   // private util functions related to visualization
-private:
+ private:
   /**
    * Calculates cylinder transformations: position (based on massLocation) and
    * rotation (based on springAxis)
    */
-  TGeoCombiTrans *cylinderTransformation(const PhysicalCylinder *cylinder);
+  TGeoCombiTrans *CylinderTransformation(const PhysicalCylinder *cylinder);
 
   /**
    * Returns ROOT's EColor from bdm::Color
    */
-  EColor translateColor(Color color);
+  EColor TranslateColor(Color color);
 
   /**
    * Recursively adds sphere and its daughters to the container.
    */
-  void addBranch(PhysicalSphere *sphere, TGeoVolume *container);
+  void AddBranch(PhysicalSphere *sphere, TGeoVolume *container);
 
   /**
    * Util function for recursive pre-order traversal of cylinders in one
    * sphere's daughter
    */
-  void preOrderTraversalCylinder(PhysicalCylinder *cylinder,
+  void PreOrderTraversalCylinder(PhysicalCylinder *cylinder,
                                  TGeoVolume *container);
 
   /**
    * Adds sphere to the volume, its name will be: "S%d", sphereID
    */
-  void addSphereToVolume(PhysicalSphere *sphere, TGeoVolume *container);
+  void AddSphereToVolume(PhysicalSphere *sphere, TGeoVolume *container);
 
   /**
    * Adds cylinder to the volume, its name will be: "C%d", cylinderID
    */
-  void addCylinderToVolume(PhysicalCylinder *cylinder, TGeoVolume *container);
+  void AddCylinderToVolume(PhysicalCylinder *cylinder, TGeoVolume *container);
 
   // public interface
-public:
+ public:
   /**
    * Creates TEveManager window, initializes members
    */
@@ -107,10 +111,10 @@ public:
   void Update(bool resetCamera = true);
 
   /**
-   * Setter for this->maxVizNodes
-   * @param number
+   * Setter for this->MaxVizNodes
+   * @param number - number of visualizable nodes per volume
    */
-  void setMaxVizNodes(int number);
+  void SetMaxVizNodes(int number);
 
   /**
    * After building the full geometry tree, geometry must be closed.
@@ -121,12 +125,14 @@ public:
    */
   void CloseGeometry();
 
-private: // singleton properties
+  // singleton properties
+ private:
   GUI();
 
-public: // singleton interface
+  // singleton interface
+ public:
   static GUI &getInstance() {
-    static GUI instance; // Guaranteed to be destroyed.
+    static GUI instance;  // Guaranteed to be destroyed.
     // Instantiated on first use.
     return instance;
   }
@@ -141,6 +147,6 @@ public: // singleton interface
   //       due to the compilers behavior to check accessibility
   //       before deleted status
 };
-} // namespace visualization
-} // namespace bdm
-#endif // BIODYNAMO_GUI_H
+}  // namespace visualization
+}  // namespace bdm
+#endif  // INCLUDE_VISUALIZATION_GUI_H_

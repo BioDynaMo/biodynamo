@@ -9,72 +9,72 @@
 
 using bdm::visualization::GUI;
 
-GUI::GUI() : init(false), update(false), lastID(0), maxVizNodes(1e6) {}
+GUI::GUI() : init_(false), update_(false), last_id_(0), max_viz_nodes_(1e6) {}
 
 void GUI::Init() {
-  this->ecm = ECM::getInstance();
+  this->ecm_ = ECM::getInstance();
 
   TEveManager::Create();
 
-  geom = new TGeoManager("Visualization", "Biodynamo");
+  geom_ = new TGeoManager("Visualization", "Biodynamo");
 
   // Set number of segments for approximating circles in drawing.
   // Keep it low for better performance.
-  geom->SetNsegments(4);
+  geom_->SetNsegments(4);
 
-  matEmptySpace = new TGeoMaterial("EmptySpace", 0, 0, 0);
-  matSolid = new TGeoMaterial("Solid", .938, 1., 10000.);
-  medEmptySpace = new TGeoMedium("Empty", 1, matEmptySpace);
-  medSolid = new TGeoMedium("Solid", 1, matSolid);
+  mat_empty_space_ = new TGeoMaterial("EmptySpace", 0, 0, 0);
+  mat_solid_ = new TGeoMaterial("Solid", .938, 1., 10000.);
+  med_empty_space_ = new TGeoMedium("Empty", 1, mat_empty_space_);
+  med_solid_ = new TGeoMedium("Solid", 1, mat_solid_);
 
   // we don't know how to calculate world radius yet
   // double worldRadius = 10000.0;
-  // top = geom->MakeBox("World", medEmptySpace, worldRadius, worldRadius,
+  // top = geom_->MakeBox("World", med_empty_space_, worldRadius, worldRadius,
   //                    worldRadius);
 
-  // Another way to make top volume for world. This wat it will be unbounded.
-  top = new TGeoVolumeAssembly("WORLD");
+  // Another way to make top volume for world. In this way it will be unbounded.
+  top_ = new TGeoVolumeAssembly("WORLD");
 
-  geom->SetTopVolume(top);
-  geom->SetMultiThread(true);
+  geom_->SetTopVolume(top_);
+  geom_->SetMultiThread(true);
 
-  // connect geom to eve
-  TGeoNode *node = geom->GetTopNode();
-  eveTop = new TEveGeoTopNode(geom, node);
-  gEve->AddGlobalElement(eveTop);
-  gEve->AddElement(eveTop);
+  // connect geom_ to eve
+  TGeoNode *node = geom_->GetTopNode();
+  eve_top_ = new TEveGeoTopNode(geom_, node);
+  gEve->AddGlobalElement(eve_top_);
+  gEve->AddElement(eve_top_);
 
   // number of visualized nodes inside one volume. If you exceed this number,
   // ROOT will draw nothing.
-  geom->SetMaxVisNodes(maxVizNodes);
+  geom_->SetMaxVisNodes(max_viz_nodes_);
 
   gEve->GetBrowser()->GetMainFrame()->SetWindowName("Biodynamo Visualization");
 
-  init = true;
+  init_ = true;
 }
 
 void GUI::Update(bool resetCamera) {
-  if (!init)
+  if (!init_)
     throw std::runtime_error("Call GUI::getInstance().Init() first!");
 
-  if(geomClosed)
+  if(is_geometry_closed_)
     throw std::runtime_error("Geometry is already closed! Don't call GUI::Update() after GUI::CloseGeometry()!");
 
-  top->ClearNodes();
+  top_->ClearNodes();
 
   // ecm->getPhysicalSphereListCPtr() will be called only once
-  for (auto &sphere : *ecm->getPhysicalSphereListCPtr()) {
+  for (auto &sphere : *ecm_->getPhysicalSphereListCPtr()) {
     auto container = new TGeoVolumeAssembly("A");
-    addBranch(sphere, container);
-    top->AddNode(container, top->GetNdaughters());
+    AddBranch(sphere, container);
+    top_->AddNode(container, top_->GetNdaughters());
   }
 
   gEve->FullRedraw3D(resetCamera);
 
-  update = true;
+  update_ = true;
 }
 
-TGeoCombiTrans *GUI::cylinderTransformation(const PhysicalCylinder *cylinder) {
+TGeoCombiTrans *GUI::CylinderTransformation(const PhysicalCylinder *cylinder) {
   auto length = cylinder->getActualLength();
   auto springAxis = cylinder->getSpringAxis();
   auto massLocation = cylinder->getMassLocation();
@@ -102,7 +102,7 @@ TGeoCombiTrans *GUI::cylinderTransformation(const PhysicalCylinder *cylinder) {
   return new TGeoCombiTrans(*position, *rotation);
 }
 
-EColor GUI::translateColor(Color color) {
+EColor GUI::TranslateColor(Color color) {
   if (color == bdm::Param::kYellow) {
     return kYellow;
   } else if (color == bdm::Param::kViolet) {
@@ -121,16 +121,16 @@ EColor GUI::translateColor(Color color) {
   }
 }
 
-void GUI::addBranch(PhysicalSphere *sphere, TGeoVolume *container) {
-  addSphereToVolume(sphere, container);
+void GUI::AddBranch(PhysicalSphere *sphere, TGeoVolume *container) {
+  AddSphereToVolume(sphere, container);
 
   for (auto &cylinder : sphere->getDaughters()) {
-    addCylinderToVolume(cylinder, container);
-    preOrderTraversalCylinder(cylinder, container);
+    AddCylinderToVolume(cylinder, container);
+    PreOrderTraversalCylinder(cylinder, container);
   }
 }
 
-void GUI::preOrderTraversalCylinder(PhysicalCylinder *cylinder,
+void GUI::PreOrderTraversalCylinder(PhysicalCylinder *cylinder,
                                     TGeoVolume *container) {
   auto left = cylinder->getDaughterLeft();
   auto right = cylinder->getDaughterRight();
@@ -139,11 +139,11 @@ void GUI::preOrderTraversalCylinder(PhysicalCylinder *cylinder,
     // current cylinder is bifurcation
     auto newContainer = new TGeoVolumeAssembly("B");
 
-    addCylinderToVolume(left, newContainer);
-    addCylinderToVolume(right, newContainer);
+    AddCylinderToVolume(left, newContainer);
+    AddCylinderToVolume(right, newContainer);
 
-    preOrderTraversalCylinder(left, newContainer);
-    preOrderTraversalCylinder(right, newContainer);
+    PreOrderTraversalCylinder(left, newContainer);
+    PreOrderTraversalCylinder(right, newContainer);
 
     container->AddNode(newContainer, container->GetNdaughters());
 
@@ -152,44 +152,44 @@ void GUI::preOrderTraversalCylinder(PhysicalCylinder *cylinder,
 
   // add left subtree to container
   if (left != nullptr) {
-    addCylinderToVolume(left, container);
-    preOrderTraversalCylinder(left, container);
+    AddCylinderToVolume(left, container);
+    PreOrderTraversalCylinder(left, container);
   }
 
   // add right subtree to container
   if (right != nullptr) {
-    addCylinderToVolume(right, container);
-    preOrderTraversalCylinder(right, container);
+    AddCylinderToVolume(right, container);
+    PreOrderTraversalCylinder(right, container);
   }
 }
 
-void GUI::addCylinderToVolume(PhysicalCylinder *cylinder,
+void GUI::AddCylinderToVolume(PhysicalCylinder *cylinder,
                               TGeoVolume *container) {
   auto id = cylinder->getID();
 
   // remember last visualized id
-  if (lastID < id)
-    lastID = id;
+  if (last_id_ < id)
+    last_id_ = id;
 
   char name[12];
   sprintf(name, "C%d", id);
 
   auto length = cylinder->getActualLength();
   auto radius = cylinder->getDiameter() / 2;
-  auto trans = this->cylinderTransformation(cylinder);
+  auto trans = this->CylinderTransformation(cylinder);
 
-  auto volume = geom->MakeTube(name, medSolid, 0., radius, length / 2);
-  volume->SetLineColor(this->translateColor(cylinder->getColor()));
+  auto volume = geom_->MakeTube(name, med_solid_, 0., radius, length / 2);
+  volume->SetLineColor(this->TranslateColor(cylinder->getColor()));
 
   container->AddNode(volume, container->GetNdaughters(), trans);
 }
 
-void GUI::addSphereToVolume(PhysicalSphere *sphere, TGeoVolume *container) {
+void GUI::AddSphereToVolume(PhysicalSphere *sphere, TGeoVolume *container) {
   auto id = sphere->getID();
 
   // remember last visualized id
-  if (lastID < id)
-    lastID = id;
+  if (last_id_ < id)
+    last_id_ = id;
 
   char name[12];
   sprintf(name, "S%d", id);
@@ -201,19 +201,19 @@ void GUI::addSphereToVolume(PhysicalSphere *sphere, TGeoVolume *container) {
   auto z = massLocation[2];
   auto position = new TGeoTranslation(x, y, z);
 
-  auto volume = geom->MakeSphere(name, medSolid, 0., radius);
-  volume->SetLineColor(this->translateColor(sphere->getColor()));
+  auto volume = geom_->MakeSphere(name, med_solid_, 0., radius);
+  volume->SetLineColor(this->TranslateColor(sphere->getColor()));
 
   container->AddNode(volume, container->GetNdaughters(), position);
 }
 
-void GUI::setMaxVizNodes(int number) { this->maxVizNodes = number; }
+void GUI::SetMaxVizNodes(int number) { this->max_viz_nodes_ = number; }
 
 void GUI::CloseGeometry() {
-  if (!update)
+  if (!update_)
     throw std::runtime_error("Call GUI::getInstance().Update() first!");
 
-  geom->CloseGeometry();
+  geom_->CloseGeometry();
 
-  geomClosed = true;
+  is_geometry_closed_ = true;
 }

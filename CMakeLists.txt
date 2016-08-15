@@ -185,12 +185,12 @@ endif()
 #--------------------- build visualization projects ----------------------
 # build viz executable for small network test
 set(SMALL_NW_VIZ small-network-viz)
-add_executable(${SMALL_NW_VIZ} demo/visualization/dividing_cell.cc)
+add_executable(${SMALL_NW_VIZ} demo/visualization/small_network.cc)
 target_include_directories(${SMALL_NW_VIZ} PUBLIC include)
 target_link_libraries(${SMALL_NW_VIZ} biodynamo)
 
 # build viz executable for dividing cell test
 set(DIVIDING_CELL_VIZ dividing-cell-viz)
-add_executable(${DIVIDING_CELL_VIZ} demo/visualization/small_network.cc)
+add_executable(${DIVIDING_CELL_VIZ} demo/visualization/dividing_cell.cc)
 target_include_directories(${DIVIDING_CELL_VIZ} PUBLIC include)
 target_link_libraries(${DIVIDING_CELL_VIZ} biodynamo)
