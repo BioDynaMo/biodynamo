@@ -24,6 +24,10 @@ struct MathUtil {
   static double atan2(double d, double d1);
 
   static double log(double d);
+
+  static int sgn(double val) {
+    return (0.0 < val) - (val < 0.0);
+  }
 };
 
 }  // namespace bdm

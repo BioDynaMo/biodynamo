@@ -1,9 +1,9 @@
 #include "spatial_organization/plane_3d.h"
 
 #include "matrix.h"
+#include "math_util.h"
 #include "spatial_organization/tetrahedron.h"
 #include "spatial_organization/exact_vector.h"
-#include "spatial_organization/rational.h"
 
 namespace bdm {
 namespace spatial_organization {
@@ -167,10 +167,9 @@ std::array<double, 3> Plane3D<T>::getNormalVector() {
 template<class T>
 int Plane3D<T>::orientationExact(const std::array<double, 3>& point_1, const std::array<double, 3>& point_2) const {
   auto exact_normal_vector = ExactVector::create(normal_vector_);
-  auto offset = Rational::create(offset_);
   auto dot_1 = exact_normal_vector->dotProduct(ExactVector::create(point_1));
   auto dot_2 = exact_normal_vector->dotProduct(ExactVector::create(point_2));
-  return dot_1->compareTo(offset) * dot_2->compareTo(offset);
+  return MathUtil::sgn(dot_1 - offset_) * MathUtil::sgn(dot_2 - offset_);
 }
 
 // define templates that should be compiled

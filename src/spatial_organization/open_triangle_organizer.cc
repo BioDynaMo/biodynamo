@@ -3,8 +3,8 @@
 #include <limits>
 
 #include "matrix.h"
+#include "math_util.h"
 #include "string_util.h"
-#include "spatial_organization/rational.h"
 #include "spatial_organization/exact_vector.h"
 #include "spatial_organization/triangle_3d.h"
 #include "spatial_organization/tetrahedron.h"
@@ -157,7 +157,7 @@ void OpenTriangleOrganizer<T>::triangulate() {
           if (current_distance > lower_bound) {
             auto last_sd_distance = open_triangle->getSDDistanceExact(picked_node->getPosition());
             auto new_sd_distance = open_triangle->getSDDistanceExact(node->getPosition());
-            int comparison = last_sd_distance->compareTo(new_sd_distance);
+            int comparison = MathUtil::sgn(last_sd_distance-new_sd_distance);
             if (comparison == 0) {
               similar_distance_nodes.push_back(node);
             } else if (comparison > 0) {
@@ -521,9 +521,9 @@ void OpenTriangleOrganizer<T>::triangulatePointsOnSphere(std::deque<SpaceNode<T>
 }
 
 template<class T>
-std::shared_ptr<Rational> OpenTriangleOrganizer<T>::calc2DSDDistanceExact(const std::array<double, 3>& av,
-                                                                          const std::array<double, 3>& bv,
-                                                                          const std::array<double, 3>& third_point) {
+double OpenTriangleOrganizer<T>::calc2DSDDistanceExact(const std::array<double, 3>& av,
+                                                       const std::array<double, 3>& bv,
+                                                       const std::array<double, 3>& third_point) {
   auto av_x = ExactVector::create(av);
   auto bv_y = ExactVector::create(bv);
   auto third_point_x = ExactVector::create(third_point);
@@ -531,11 +531,10 @@ std::shared_ptr<Rational> OpenTriangleOrganizer<T>::calc2DSDDistanceExact(const 
   std::array<std::shared_ptr<ExactVector>, 3> normals_x = { bv_y->subtract(av_x), bv_y->subtract(av_x)->crossProduct(
       av_to_third_point_x), av_to_third_point_x };
 
-  std::array<std::shared_ptr<Rational>, 3> offsets_x = { normals_x[0]->dotProduct(av_x->add(bv_y))->multiply(
-      Rational::create(1, 2)), normals_x[1]->dotProduct(av_x), normals_x[2]->dotProduct(av_x->add(third_point_x))
-      ->multiply(Rational::create(1, 2)) };
+  std::array<double, 3> offsets_x = { normals_x[0]->dotProduct(av_x->add(bv_y)) * 0.5,
+      normals_x[1]->dotProduct(av_x), normals_x[2]->dotProduct(av_x->add(third_point_x)) * 0.5 };
   auto circum_center = Triangle3D < T > ::calculate3PlaneXPoint(normals_x, offsets_x, ExactVector::det(normals_x));
-  return circum_center->subtract(av_x->add(bv_y)->multiply(Rational::create(1, 2)))->squaredLength();
+  return circum_center->subtract(av_x->add(bv_y)->multiply(0.5))->squaredLength();
 }
 
 template<class T>
@@ -556,7 +555,7 @@ void OpenTriangleOrganizer<T>::createInitialTriangle() {
             ->squaredLength();
         auto dist_last = (ExactVector::create(a->getPosition()))->subtract(ExactVector::create(b->getPosition()))
             ->squaredLength();
-        if (dist_last->compareTo(dist_new) > 0) {
+        if (MathUtil::sgn(dist_last-dist_new) > 0) {
           b = dummy;
           shortest_distance_ = std::min(shortest_distance_, distance);
         }
@@ -600,7 +599,7 @@ void OpenTriangleOrganizer<T>::createInitialTriangle() {
       if (distance > shortest_distance_ - tolerance) {
         auto dist_1 = calc2DSDDistanceExact(av, bv, dummy_pos);
         auto dist_2 = calc2DSDDistanceExact(av, bv, c->getPosition());
-        int comparison = dist_1->compareTo(dist_2);
+        int comparison = MathUtil::sgn(dist_1-dist_2);
         if ((comparison < 0) || ((comparison == 0) && (dummy->getId() < c->getId()))) {
           c = dummy;
           shortest_distance_ = std::min(shortest_distance_, distance);

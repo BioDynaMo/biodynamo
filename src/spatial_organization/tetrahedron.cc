@@ -3,9 +3,9 @@
 #include <algorithm>
 
 #include "matrix.h"
+#include "math_util.h"
 #include "string_util.h"
 #include "spatial_organization/exact_vector.h"
-#include "spatial_organization/rational.h"
 #include "spatial_organization/triangle_3d.h"
 #include "spatial_organization/open_triangle_organizer.h"
 #include "spatial_organization/flat_tetrahedron.h"
@@ -468,17 +468,16 @@ int Tetrahedron<T>::orientationExact(const std::array<double, 3>& position) cons
 
     auto det = ExactVector::det(normals);
 
-    auto half = Rational::create(1, 2);
-    std::array<std::shared_ptr<Rational>, 3> offsets;
+    std::array<double, 3> offsets;
     for (size_t j = 0; j < offsets.size(); j++) {
-      offsets[j] = points[0]->add(points[j + 1])->dotProduct(normals[j])->multiplyBy(half);
+      offsets[j] = points[0]->add(points[j + 1])->dotProduct(normals[j]) * 0.5;
     }
     auto circum_center = Triangle3D<T>::calculate3PlaneXPoint(normals, offsets, det);
     auto dummy = circum_center->subtract(points[0]);
     auto squared_radius = dummy->dotProduct(dummy);
     dummy = circum_center->subtract(ExactVector::create(position));
     auto distance = dummy->dotProduct(dummy);
-    return squared_radius->compareTo(distance);
+    return MathUtil::sgn(squared_radius-distance);
   }
 }
 

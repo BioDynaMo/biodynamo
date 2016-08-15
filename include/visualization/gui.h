@@ -1,16 +1,9 @@
-//
-// Created by bogdan on 7/13/16.
-//
-
 #ifndef BIODYNAMO_GUI_H
 #define BIODYNAMO_GUI_H
 
-#include <thread>
-#include <mutex>
-
 #include <TGeoManager.h>
 #include <TEveGeoNode.h>
-#include <TGLAutoRotator.h>
+
 #include "simulation/ecm.h"
 #include "color.h"
 

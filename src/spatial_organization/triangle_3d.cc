@@ -47,18 +47,18 @@ std::array<double, 3> Triangle3D<T>::calculate3PlaneXPoint(const std::array<std:
 
 template<class T>
 std::shared_ptr<ExactVector> Triangle3D<T>::calculate3PlaneXPoint(
-    const std::array<std::shared_ptr<ExactVector>, 3>& normals, const std::array<std::shared_ptr<Rational>, 3>& offsets,
-    const std::shared_ptr<Rational>& normal_det) {
-  if (!normal_det->isZero()) {
+    const std::array<std::shared_ptr<ExactVector>, 3>& normals, const std::array<double, 3>& offsets,
+    double normal_det) {
+  if (normal_det != 0) {
     auto ret = normals[1]->crossProduct(normals[2])->multiplyBy(offsets[0])->increaseBy(
         normals[2]->crossProduct(normals[0])->multiplyBy(offsets[1])->increaseBy(
             normals[0]->crossProduct(normals[1])->multiplyBy(offsets[2])))->divideBy(normal_det);
     return ret;
   } else {
     double max_value = std::numeric_limits<double>::max();
-    std::array<std::shared_ptr<Rational>, 3> rationals;
+    std::array<double, 3> rationals;
     for (int i = 0; i < 3; i++) {
-      rationals[i] = Rational::create(max_value, 1);
+      rationals[i] = max_value;
     }
     auto ret = ExactVector::create(rationals);
     return ret;
@@ -108,7 +108,7 @@ double Triangle3D<T>::getSDDistance(const std::array<double, 3>& fourth_point) c
 }
 
 template<class T>
-std::shared_ptr<Rational> Triangle3D<T>::getSDDistanceExact(const std::array<double, 3>& fourth_point) const {
+double Triangle3D<T>::getSDDistanceExact(const std::array<double, 3>& fourth_point) const {
   if (!isInfinite() && onUpperSide(fourth_point)) {
     std::array<std::shared_ptr<ExactVector>, 4> points;
     std::array<std::shared_ptr<ExactVector>, 3> points_3;
@@ -118,16 +118,16 @@ std::shared_ptr<Rational> Triangle3D<T>::getSDDistanceExact(const std::array<dou
     }
     points[3] = ExactVector::create(fourth_point);
     auto normal_vector = calculateExactNormalVector(points_3);
-    if (normal_vector->dotProduct(ExactVector::create(this->normal_vector_))->compareTo(Rational::create(0, 1)) < 0) {
+    if (normal_vector->dotProduct(ExactVector::create(this->normal_vector_)) < 0) {
       normal_vector->negate();
     }
     if (upper_side_positive_) {
       return calculateSDDistanceExact(points, normal_vector);
     } else {
-      return calculateSDDistanceExact(points, normal_vector)->negate();
+      return -calculateSDDistanceExact(points, normal_vector);
     }
   } else {
-    return Rational::create(std::numeric_limits < uint64_t > ::max(), 1);
+    return std::numeric_limits<double>::max();
   }
 }
 
@@ -178,8 +178,8 @@ int Triangle3D<T>::orientationExact(const std::array<double, 3>& point_1, const 
   auto points = getExactPositionVectors();
   auto normal_vector = points[1]->subtract(points[0])->crossProduct(points[2]->subtract(points[0]));
   auto offset = normal_vector->dotProduct(points[0]);
-  return normal_vector->dotProduct(ExactVector::create(point_1))->compareTo(offset)
-      * normal_vector->dotProduct(ExactVector::create(point_2))->compareTo(offset);
+  return MathUtil::sgn(normal_vector->dotProduct(ExactVector::create(point_1))-offset) *
+         MathUtil::sgn(normal_vector->dotProduct(ExactVector::create(point_2))-offset);
 }
 
 template<class T>
@@ -196,7 +196,7 @@ int Triangle3D<T>::circleOrientation(const std::array<double, 3>& point) {
       auto circum_center = calculateCircumCenterExact(points, calculateExactNormalVector(points));
       auto point_distance = circum_center->subtract(ExactVector::create(point))->squaredLength();
       auto squared_radius_x = circum_center->subtract(points[0])->squaredLength();
-      return squared_radius_x->compareTo(point_distance);
+      return MathUtil::sgn(squared_radius_x-point_distance);
     } else {
       return 1;
     }
@@ -264,7 +264,7 @@ void Triangle3D<T>::orientToSide(const std::array<double, 3>& position) {
       auto normal_vector = calculateExactNormalVector(points);
       auto dot_1 = normal_vector->dotProduct(points[0]);
       auto dot_2 = normal_vector->dotProduct(ExactVector::create(position));
-      int comparison = dot_1->compareTo(dot_2);
+      int comparison = MathUtil::sgn(dot_1-dot_2);
       if (comparison == 0) {
         throw std::logic_error("The triangle cannot be oriented to because that point lies in the plane!");
       }
@@ -307,10 +307,10 @@ int Triangle3D<T>::orientationToUpperSide(const std::array<double, 3>& point) co
     auto normal_vector = calculateExactNormalVector(points);
     auto dot_1 = normal_vector->dotProduct(points[0]);
     auto dot_2 = normal_vector->dotProduct(ExactVector::create(point));
-    if (dot_1->compareTo(dot_2) == 0) {
+    if (MathUtil::sgn(dot_1-dot_2) == 0) {
       return 0;
     } else {
-      return ((dot_1->compareTo(dot_2) > 0) ^ upper_side_positive_) ? 1 : -1;
+      return ((MathUtil::sgn(dot_1-dot_2) > 0) ^ upper_side_positive_) ? 1 : -1;
     }
   }
 }
@@ -416,9 +416,8 @@ std::shared_ptr<ExactVector> Triangle3D<T>::calculateCircumCenterExact(
   auto a = points[0];
   // Start by calculating the normal vectors:
   std::array<std::shared_ptr<ExactVector>, 3> n = { points[1]->subtract(a), points[2]->subtract(a), normal_vector };
-  std::array<std::shared_ptr<Rational>, 3> rationals = { points[1]->add(a)->dotProduct(n[0])->divideBy(
-      Rational::create(2, 1)), points[2]->add(a)->dotProduct(n[1])->divideBy(Rational::create(2, 1)), a->dotProduct(
-      n[2]) };
+  std::array<double, 3> rationals = { points[1]->add(a)->dotProduct(n[0]) / 2.0,
+          points[2]->add(a)->dotProduct(n[1]) / 2.0, a->dotProduct(n[2]) };
   return calculate3PlaneXPoint(n, rationals, ExactVector::det(n));
 }
 
@@ -435,17 +434,17 @@ double Triangle3D<T>::calculateSDDistance(const std::array<double, 3>& fourth_po
       auto v2 = n0_vector->subtract(ExactVector::create(nodes_[2]->getPosition()));
       auto normal_vector = v1->crossProduct(v2);
       auto dot = normal_vector->dotProduct(n0_vector->subtract(ExactVector::create(fourth_point)));
-      if (dot->isZero()) {
+      if (dot == 0.0) {
         denominator = 0.0;
       } else {
-        denominator = dot->doubleValue();
+        denominator = dot;
         dot = normal_vector->dotProduct(ExactVector::create(this->normal_vector_));
-        if (dot->compareTo(Rational::create(0, 1)) < 0) {
-          denominator = 0 - denominator;
+        if (dot < 0.0) {
+          denominator = -denominator;
         }
       }
     }
-    if (denominator != 0) {
+    if (denominator != 0.0) {
       double sd_distance = Matrix::dot(
           ad,
           Matrix::subtract(Matrix::scalarMult(0.5, Matrix::add(nodes_[0]->getPosition(), fourth_point)),
@@ -457,7 +456,7 @@ double Triangle3D<T>::calculateSDDistance(const std::array<double, 3>& fourth_po
 }
 
 template<class T>
-std::shared_ptr<Rational> Triangle3D<T>::calculateSDDistanceExact(
+double Triangle3D<T>::calculateSDDistanceExact(
     const std::array<std::shared_ptr<ExactVector>, 4>& points,
     const std::shared_ptr<ExactVector>& normal_vector) const {
   if (!isInfinite()) {
@@ -465,17 +464,16 @@ std::shared_ptr<Rational> Triangle3D<T>::calculateSDDistanceExact(
     // and 9 multiplications. Beat that!
     auto ad = points[0]->subtract(points[3]);
     auto denominator = ad->dotProduct(normal_vector);
-    if (!denominator->isZero()) {
+    if (denominator != 0) {
       std::array<std::shared_ptr<ExactVector>, 3> points_3;
       for (std::size_t i = 0; i < 3; i++) {
         points_3[i] = points[i];
       }
       auto circum_center = calculateCircumCenterExact(points_3, normal_vector);
-      return points[0]->add(points[3])->divideBy(Rational::create(2, 1))->decreaseBy(circum_center)->dotProduct(ad)
-          ->divideBy(denominator);
+      return points[0]->add(points[3])->divideBy(2.0)->decreaseBy(circum_center)->dotProduct(ad) / denominator;
     }
   }
-  return Rational::create(std::numeric_limits < int64_t > ::max());
+  return std::numeric_limits<double>::max();
 }
 
 template<class T>

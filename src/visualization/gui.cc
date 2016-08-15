@@ -1,8 +1,3 @@
-//
-// Created by bogdan on 7/13/16.
-//
-#include <thread>
-
 #include <TMath.h>
 #include <TView.h>
 #include <TEveManager.h>
@@ -36,6 +31,8 @@ void GUI::Init() {
   // double worldRadius = 10000.0;
   // top = geom->MakeBox("World", medEmptySpace, worldRadius, worldRadius,
   //                    worldRadius);
+
+  // Another way to make top volume for world. This wat it will be unbounded.
   top = new TGeoVolumeAssembly("WORLD");
 
   geom->SetTopVolume(top);
@@ -71,7 +68,7 @@ void GUI::Update(bool resetCamera) {
     addBranch(sphere, container);
     top->AddNode(container, top->GetNdaughters());
   }
-  // geom->CloseGeometry();
+
   gEve->FullRedraw3D(resetCamera);
 
   update = true;
