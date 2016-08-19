@@ -51,7 +51,7 @@ void BaseSimulationTest::run() {
   simulate();
   long end = timestamp();
   runtime_ = end - start;
-  // std::cout << "RUNTIME " << getTestName() << " " << (end-start) << std::endl;
+  //std::cout << "RUNTIME " << getTestName() << " " << (end-start) << std::endl;
   // ensure correct result
   if (!disable_assertions_) {
     assertSimulationState();
@@ -63,17 +63,23 @@ void BaseSimulationTest::assertSimulationState() {
 
   const char *root_write_name = (getTestName() + ".root").c_str();
 
+  // serialize simulation state to root file
   TFile *f = new TFile(root_write_name, "RECREATE");
-  ECM *obj = ECM::getInstance();
-  f->WriteObjectAny(obj, obj->Class(), "single_test_output_state");
+  ECM *sim_state_write = ECM::getInstance();
+  f->WriteObject(sim_state_write, "single_test_output_state");
   f->Close();
 
   const char *root_read_name = (getTestName() + ".root").c_str();
-
+  
+  // read back simulation state from root file
   TFile *g = TFile::Open(root_read_name);
-  ECM *sim_state_root = (ECM*) g->Get("single_test_output_state");
+  ECM *sim_state_read;
+  g->GetObject("single_test_output_state", sim_state_read);
+  g->Close();
+
+  // create Json string of simulation state retrieved from root file
   StringBuilder sb_root;
-  sim_state_root->simStateToJson(sb_root);
+  sim_state_read->simStateToJson(sb_root);
 
   // create Json string of simulation state
   StringBuilder sb;
