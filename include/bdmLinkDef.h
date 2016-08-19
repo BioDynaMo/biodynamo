@@ -28,8 +28,8 @@
 #pragma link C++ class bdm::local_biology::LocalBiologyModule+;
 #pragma link C++ class bdm::local_biology::AbstractLocalBiologyModule+;
 
-#pragma link C++ class bdm::spatial_organization::SpatialOrganizationNode<bdm::physics::PhysicalNode>;
-#pragma link C++ class bdm::spatial_organization::SpaceNode<bdm::physics::PhysicalNode>;
+#pragma link C++ class bdm::spatial_organization::SpatialOrganizationNode<bdm::physics::PhysicalNode>+;
+#pragma link C++ class bdm::spatial_organization::SpaceNode<bdm::physics::PhysicalNode>+;
 #pragma link C++ class bdm::spatial_organization::SpatialOrganizationNode+;
 #pragma link C++ class bdm::spatial_organization::SpaceNode+;
 
