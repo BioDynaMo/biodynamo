@@ -37,7 +37,7 @@ class SpaceNode : public SpatialOrganizationNode<T> {
 
   static void reset();
 
-  SpaceNode(TRootIOCtor*) { }  // only used for ROOT I/O
+  SpaceNode(TRootIOCtor*) { } // only used for ROOT I/O
 
   /**
    * Starting at a given tetrahedron, this function searches the triangulation
@@ -273,22 +273,26 @@ class SpaceNode : public SpatialOrganizationNode<T> {
    * A std::list of std::listener objects that are called whenever this node is beeing
    * moved.
    */
-  std::vector<std::unique_ptr<SpatialOrganizationNodeMovementListener<T>>> listeners_;
+  std::vector<std::unique_ptr<SpatialOrganizationNodeMovementListener<T>>> listeners_; //! transient data member (ROOT I/O)
 
   /**
    * The coordinate of this SpaceNode.
    */
-  std::array<double, 3> position_;
+#ifdef __ROOTCLING__
+   double position_[3];
+#else
+   std::array<double, 3> position_;
+#endif
 
   /**
    * A std::list of all edges incident to this node.
    */
-  std::vector<typename Edge<T>::SPtr > adjacent_edges_;
+  std::vector<typename Edge<T>::SPtr > adjacent_edges_; //! no support for shared_ptr (ROOT I/O)
 
   /**
    * A std::list of all tetrahedra incident to this node.
    */
-  std::vector<std::shared_ptr<Tetrahedron<T>> > adjacent_tetrahedra_;
+  std::vector<std::shared_ptr<Tetrahedron<T>> > adjacent_tetrahedra_; //! no support for shared_ptr (ROOT I/O)
 
   /**
    * The volume associated with this SpaceNode.
