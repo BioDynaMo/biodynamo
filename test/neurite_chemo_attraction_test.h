@@ -132,7 +132,7 @@ class NeuriteChemoAttractionTest : public BaseSimulationTest {
     neurite->addLocalBiologyModule( LocalBiologyModule::UPtr { new NeuriteChemoAttraction("A") });
 
     auto scheduler = Scheduler::getInstance();
-    for (int i = 0; i < 1000; i++) {
+    for (int i = 0; i < 1845; i++) {
       scheduler->simulateOneStep();
     }
   }

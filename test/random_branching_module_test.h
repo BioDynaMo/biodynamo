@@ -135,7 +135,7 @@ class RandomBranchingModuleTest : public BaseSimulationTest {
     }
 
     auto scheduler = Scheduler::getInstance();
-    for (int i = 0; i < 500; i++) {
+    for (int i = 0; i < 1239; i++) {
       scheduler->simulateOneStep();
     }
   }

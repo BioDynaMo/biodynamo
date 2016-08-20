@@ -169,7 +169,7 @@ class IntracellularDiffusionTest : public BaseSimulationTest {
     ne->addLocalBiologyModule(LocalBiologyModule::UPtr { new GrowthCone() });
     // run, Forrest, run..
     auto scheduler = Scheduler::getInstance();
-    for (int i = 0; i < 2001; i++) {
+    for (int i = 0; i < 2557; i++) {
       scheduler->simulateOneStep();
     }
   }

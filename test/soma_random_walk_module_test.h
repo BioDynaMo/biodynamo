@@ -69,7 +69,7 @@ class SomaRandomWalkModuleTest : public BaseSimulationTest {
     }
 
     auto scheduler = Scheduler::getInstance();
-    for (int i = 0; i < 1000; i++) {
+    for (int i = 0; i < 4612079; i++) {
       scheduler->simulateOneStep();
     }
   }

@@ -81,7 +81,7 @@ class MembraneContactTest : public BaseSimulationTest {
     }
 
     auto scheduler = Scheduler::getInstance();
-    for (int i = 0; i < 1500; i++) {
+    for (int i = 0; i < 12598362; i++) {
       scheduler->simulateOneStep();
     }
   }

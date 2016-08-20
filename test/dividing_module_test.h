@@ -76,7 +76,7 @@ class DividingModuleTest : public BaseSimulationTest {
     auto scheduler = Scheduler::getInstance();
     scheduler->simulateOneStep();
     scheduler->simulateOneStep();
-    for (int i = 0; i < 5000; i++) {
+    for (int i = 0; i < 8808; i++) {
       scheduler->simulateOneStep();
     }
   }

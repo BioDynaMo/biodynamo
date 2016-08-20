@@ -88,7 +88,8 @@ class SmallNetworkTest : public BaseSimulationTest {
       dendrite->addLocalBiologyModule(LocalBiologyModule::UPtr { new NeuriteChemoAttraction("L1", 0.02) });
     }
     auto scheduler = Scheduler::getInstance();
-    while (ecm->getECMtime() < 6) {
+    //while (ecm->getECMtime() < 6) {
+    for (int i = 0; i < 1343; i++) {
       scheduler->simulateOneStep();
     }
     ConnectionMaker::extendExcressencesAndSynapseOnEveryNeuriteElement();

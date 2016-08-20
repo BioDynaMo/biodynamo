@@ -134,7 +134,7 @@ class Figure9Test : public BaseSimulationTest {
       }
     }
     auto scheduler = Scheduler::getInstance();
-    for (int i = 0; i < 350; i++) {  // 350
+    for (int i = 0; i < 549; i++) {  // 350
       scheduler->simulateOneStep();
     }
 

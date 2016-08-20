@@ -33,7 +33,7 @@ class DividingCellTest : public BaseSimulationTest {
 
     auto scheduler = Scheduler::getInstance();
 
-    for (int i = 0; i < 5000; i++) {
+    for (int i = 0; i < 466032; i++) {
       scheduler->simulateOneStep();     // run the simulation
       if (sphere->getDiameter() < 20) {  // if small..
         sphere->changeVolume(350);      // .. increase volume
