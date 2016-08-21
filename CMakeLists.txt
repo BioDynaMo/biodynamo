@@ -7,9 +7,16 @@ project(BioDynaMo)
 # Options. Turn on with 'cmake -Dmyvarname=ON'.
 option(test "Build all tests." ON) # Makes boolean 'test' available.
 option(valgrind "Enable valgrind tests and make build compatible with valgrind tool." ON)
+option(coverage "Enable test coverage report generation." OFF)
 
 #--------------------- set compiler flags -------------
-set(GCC_COMPILE_FLAGS "-Wall -Wno-missing-braces -O2 -g")
+if (coverage)
+  set(CMAKE_BUILD_TYPE "Debug")
+  SET(GCC_COMPILE_FLAGS "-Wall -Wno-missing-braces -g -O0 -fprofile-arcs -ftest-coverage")
+else()
+  set(GCC_COMPILE_FLAGS "-Wall -Wno-missing-braces -O2")
+endif()
+
 set(GCC_LINK_FLAGS    "")
 # append
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${GCC_COMPILE_FLAGS}")
@@ -194,5 +201,11 @@ if (test)
   # add custom clean target for test project
   add_custom_target(testbdmclean COMMAND ${CMAKE_COMMAND} -P "${CMAKE_BINARY_DIR}/CMakeFiles/${TEST_TARGET}.dir/cmake_clean.cmake")
   add_dependencies(bdmclean testbdmclean)
+
+  if (coverage)
+    include(CodeCoverage)
+    # parameter: make target name, test target, output directory name
+    SETUP_TARGET_FOR_COVERAGE(coverage ${TEST_TARGET} coverage)
+  endif()
 endif()
 

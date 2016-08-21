@@ -51,14 +51,18 @@ make check
 In contrast to `make test`, the target `check` will show the test ouput on failure
 
 ### CMake Options
-
-If you do not want to build the test executable, run CMake with the test switch set to off:
+Our CMake build script uses a few options to influence the build process. They can be set as follows:
 ```
-cmake .. -Dtest=off
+cmake -Doption=value ..
 ```
+The value for binary options is `on` or `off`.
+If you change the value of these switches, you might have to delete `CMakeCache.txt` beforehand.
 
-There is another option to disable memory leak checks: `-Dvalgrind=on/off`
-Default value is `on` for both options. If you change the value of these switches, you might have to delete `CMakeCache.txt` beforehand.
+| Option        | Default Value | Description  |
+| ------------- | ------------- | ------------ |
+| `test`      | `on` | build the test executable; precondition for e.g. `valgrind` and `coverage` |
+| `valgrind`      | `on` | enable memory leak checks |
+| `coverage`      | `off` | creates a make target to generate a html report indicating which parts of the code are tested by automatic tests |
 
 The build type can be specified using the `-DCMAKE_BUILD_TYPE=` command line parameter. Possible values are `Debug|Release|RelWithDebInfo|MinSizeRel`
 
@@ -75,6 +79,9 @@ The build type can be specified using the `-DCMAKE_BUILD_TYPE=` command line par
 
 `make doc` will generate the Doxygen documentation in directory `build/doc`. It contains a html and latex version.
 You can view the html version by opening `build/doc/html/index.html` in your browser.
+
+`make coverage` will execute the test target and generate a coverage report in `build/coverage`. Make sure that `gcov` 
+ and `lcov` are installed and configure cmake with `cmake -Dcoverage=on ..`
 
 ### Automated Tests
 Reference files for the simulation outcome are stored as Json in directory `test/resources/`
