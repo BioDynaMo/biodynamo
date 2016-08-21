@@ -61,18 +61,16 @@ void BaseSimulationTest::run() {
 void BaseSimulationTest::assertSimulationState() {
   gROOT->ProcessLine(".L libbiodynamo.so");
 
-  const char *root_write_name = (getTestName() + ".root").c_str();
+  string root_file_name = getTestName() + ".root";
 
   // serialize simulation state to root file
-  TFile *f = new TFile(root_write_name, "RECREATE");
+  TFile *f = new TFile(root_file_name.c_str(), "RECREATE");
   ECM *sim_state_write = ECM::getInstance();
   f->WriteObject(sim_state_write, "single_test_output_state");
   f->Close();
 
-  const char *root_read_name = (getTestName() + ".root").c_str();
-  
   // read back simulation state from root file
-  TFile *g = TFile::Open(root_read_name);
+  TFile *g = TFile::Open(root_file_name.c_str());
   ECM *sim_state_read;
   g->GetObject("single_test_output_state", sim_state_read);
   g->Close();
