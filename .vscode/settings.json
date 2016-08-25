@@ -7,5 +7,8 @@
     "files.trimTrailingWhitespace": true,
 
     // Control whether a new line is inserted at the end of the file.
-    "files.insertFinalNewline": true
+    "files.insertFinalNewline": true,
+
+    // Compiler options for C++ (e.g. ['-std=c++11'])
+    "clang.cxxflags": ["-std=c++11"]
 }
