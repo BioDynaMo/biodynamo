@@ -10,5 +10,5 @@
     "files.insertFinalNewline": true,
 
     // Compiler options for C++ (e.g. ['-std=c++11'])
-    "clang.cxxflags": ["-std=c++11"]
+    "clang.cxxflags": ["-std=c++11", "-I${env.ROOTSYS}/include"]
 }
