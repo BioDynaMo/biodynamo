@@ -1,4 +1,7 @@
-cmake_minimum_required(VERSION 2.8.9)
+cmake_minimum_required(VERSION 3.2.0)
+
+# With CMAKE >= 3.2 external projects support byproducts, this is needed
+# to support Ninja as generator
 
 project(BioDynaMo)
 
@@ -65,7 +68,7 @@ include(ExternalProject)
 ExternalProject_Add(
     external_crlibm
     URL "${CMAKE_SOURCE_DIR}/external/crlibm-1.0beta5.tgz"
-    PREFIX "${CMAKE_CURRENT_BINARY_DIR}/crlibm"
+    PREFIX "${CMAKE_BINARY_DIR}/crlibm"
     BUILD_IN_SOURCE 1
     CONFIGURE_COMMAND ./configure CC=${CMAKE_C_COMPILER} CXX=${CMAKE_CXX_COMPILER} CPPFLAGS=-fPIC CFLAGS=-fPIC
     BUILD_COMMAND make
@@ -75,6 +78,7 @@ ExternalProject_Add(
 )
 
 add_custom_target(copycrlibm DEPENDS external_crlibm
+    BYPRODUCTS "${CMAKE_BINARY_DIR}/libcrlibm.a"
     COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_BINARY_DIR}/crlibm/src/external_crlibm/libcrlibm.a" "${CMAKE_BINARY_DIR}/libcrlibm.a")
 
 #--------------------- Find Threads (for gtest) ------------------
@@ -121,11 +125,15 @@ if (test)
   ExternalProject_Add(
     gtest
     URL "${CMAKE_SOURCE_DIR}/external/gtest-1.7.0.zip"
-    PREFIX "${CMAKE_CURRENT_BINARY_DIR}/gtest"
+    PREFIX "${CMAKE_BINARY_DIR}/gtest"
     CMAKE_CACHE_ARGS
        -DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}
        -DCMAKE_C_COMPILER:FILEPATH=${CMAKE_C_COMPILER}
     INSTALL_COMMAND "" # Disable install step
+    # Ugly but necessary, in future versions one can use ${binary_dir}
+    # in BUILD_BYPRODUCTS
+    #BUILD_BYPRODUCTS "${binary_dir}/libgtest.a"
+    BUILD_BYPRODUCTS "${CMAKE_BINARY_DIR}/gtest/src/gtest-build/libgtest.a"
   )
   ExternalProject_Get_Property(gtest source_dir binary_dir)
 
@@ -141,7 +149,7 @@ if (test)
   ExternalProject_Add(
     jsoncpp
     URL "${CMAKE_SOURCE_DIR}/external/jsoncpp.tar.gz"
-    PREFIX "${CMAKE_CURRENT_BINARY_DIR}/jsoncpp"
+    PREFIX "${CMAKE_BINARY_DIR}/jsoncpp"
     CMAKE_CACHE_ARGS
        -DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}
        -DCMAKE_C_COMPILER:FILEPATH=${CMAKE_C_COMPILER}
@@ -149,6 +157,10 @@ if (test)
        -DJSONCPP_WITH_TESTS=OFF
        -DJSONCPP_WITH_POST_BUILD_UNITTEST=OFF
     INSTALL_COMMAND ""  # Disable install step
+    # Ugly but necessary, in future versions one can use ${install_dir}
+    # in BUILD_BYPRODUCTS
+    #BUILD_BYPRODUCTS "${install_dir}/src/jsoncpp-build/src/lib_json/libjsoncpp.a"
+    BUILD_BYPRODUCTS "${CMAKE_BINARY_DIR}/jsoncpp/src/jsoncpp-build/src/lib_json/libjsoncpp.a"
   )
   ExternalProject_Get_Property(jsoncpp install_dir)
 
@@ -171,13 +183,13 @@ if (test)
 
   # copy test resources to build dir
   file(GLOB TOCOPY "test/resources/*")
-  file(COPY ${TOCOPY} DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/test_resources/")
+  file(COPY ${TOCOPY} DESTINATION "${CMAKE_BINARY_DIR}/test_resources/")
 
   # execute all tests with command: make test
   add_test(NAME ${TEST_TARGET} COMMAND ${TEST_TARGET})
   # add valgrind test - exclude Figure9Test because it would take too long
   if (valgrind)
-    add_test(NAME valgrind COMMAND valgrind --tool=memcheck --leak-check=full --show-leak-kinds=all --suppressions=${CMAKE_CURRENT_BINARY_DIR}/../valgrind-biod.supp --error-exitcode=1 ./${TEST_TARGET} --disable-assertions --gtest_filter=-DividingModule*:SomaClustering*:Figure9*:Intracellular*:SmallNetwork*)
+    add_test(NAME valgrind COMMAND valgrind --tool=memcheck --leak-check=full --show-leak-kinds=all --suppressions=${CMAKE_BINARY_DIR}/../valgrind-biod.supp --error-exitcode=1 ./${TEST_TARGET} --disable-assertions --gtest_filter=-DividingModule*:SomaClustering*:Figure9*:Intracellular*:SmallNetwork*)
   endif()
 
   # create target that shows the test ouput on failure
