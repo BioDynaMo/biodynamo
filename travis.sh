@@ -12,7 +12,8 @@ if [ "$TRAVIS_OS_NAME" = "osx" ]; then
   brew install valgrind
   #brew outdated gcc || brew upgrade gcc
   # get latest cmake
-  wget https://cmake.org/files/v3.6/cmake-3.6.0-Darwin-x86_64.tar.gz && tar xfz cmake-3.6.0-Darwin-x86_64.tar.gz
+  wget https://cmake.org/files/v3.6/cmake-3.6.1-Darwin-x86_64.tar.gz 2> /dev/null
+  tar zxf cmake-3.6.1-Darwin-x86_64.tar.gz > /dev/null
   export PATH="`pwd`/cmake-3.6.0-Darwin-x86_64/CMake.app/Contents/bin":$PATH:
 fi
 
