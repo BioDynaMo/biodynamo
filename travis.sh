@@ -11,6 +11,9 @@ if [ "$TRAVIS_OS_NAME" = "osx" ]; then
   brew install doxygen
   brew install valgrind
   #brew outdated gcc || brew upgrade gcc
+  # get latest cmake
+  wget https://cmake.org/files/v3.6/cmake-3.6.0-Darwin-x86_64.tar.gz && tar xfz cmake-3.6.0-Darwin-x86_64.tar.gz
+  export PATH="`pwd`/cmake-3.6.0-Darwin-x86_64/CMake.app/Contents/bin":$PATH:
 fi
 
 if [ "$TRAVIS_OS_NAME" = "linux" ]; then
