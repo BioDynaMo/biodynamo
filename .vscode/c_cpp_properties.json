@@ -2,7 +2,7 @@
     "configurations": [
         {
             "name": "Mac",
-            "includePath": ["/usr/include"],
+            "includePath": ["/usr/include", "${env.ROOTSYS}/include"],
             "browse" : {
                 "limitSymbolsToIncludedHeaders" : true,
                 "databaseFilename" : ""
