@@ -27,7 +27,7 @@
     ],
     "clang_format" : {
         "style" : "file",
-        "fallback-style" : "LLVM",
+        "fallback-style" : "Google",
         "sort-includes" : false
     }
 }
