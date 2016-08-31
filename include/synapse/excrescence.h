@@ -97,11 +97,7 @@ class Excrescence : public SimStateSerializable {
   Excrescence* ex_ = nullptr;
 
   /** The position in polar coordinates on the Physical Object where it's origin is.*/
-#ifdef __ROOTCLING__
-  double position_on_po_[2];
-#else
   std::array<double, 2> position_on_po_;
-#endif
 
   double length_ = 1.0;
 
@@ -109,7 +105,7 @@ class Excrescence : public SimStateSerializable {
   Excrescence::Type type_ = Type::kSpine;
 
   /** The neurite Element to which the shaft synapse is made */
-  NeuriteElement* ne_shaft_;
+  NeuriteElement* ne_shaft_ = nullptr;
 
  private:
   Excrescence(const Excrescence&) = delete;
