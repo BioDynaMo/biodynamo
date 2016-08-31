@@ -11,6 +11,7 @@
 #pragma extra_include "physics/physical_node.h";
 
 #pragma link C++ class bdm::simulation::ECM+;
+#pragma link C++ class bdm::simulation::Scheduler+;
 
 #pragma link C++ class bdm::physics::PhysicalNode+;
 #pragma link C++ class bdm::physics::PhysicalCylinder+;
@@ -44,9 +45,21 @@
 #pragma link C++ class bdm::synapse::BiologicalSomaticSpine+;
 #pragma link C++ class bdm::synapse::PhysicalSomaticSpine+;
 #pragma link C++ class bdm::synapse::BiologicalSpine+;
+#pragma link C++ class bdm::synapse::PhysicalSpine+;
 #pragma link C++ class bdm::synapse::Excrescence+;
 
 #pragma link C++ class bdm::SimStateSerializable+;
 #pragma link C++ class bdm::Color+;
+
+#pragma link C++ class bdm::SomaRandomWalkModule+;
+#pragma link C++ class bdm::InternalSecretor+;
+#pragma link C++ class bdm::GrowthCone+;
+#pragma link C++ class bdm::DividingModule+;
+#pragma link C++ class bdm::MembraneContact+;
+#pragma link C++ class bdm::NeuriteChemoAttraction+;
+#pragma link C++ class bdm::RandomBranchingModule+;
+#pragma link C++ class bdm::XAdhesiveForce+;
+#pragma link C++ class bdm::XBifurcationModule+;
+#pragma link C++ class bdm::XMovementModule+;
 
 #endif

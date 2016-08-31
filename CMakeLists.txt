@@ -99,13 +99,14 @@ include(cmake/doxygen.cmake)
 include(${ROOT_USE_FILE})
 include_directories("${CMAKE_SOURCE_DIR}/include")
 include_directories("${CMAKE_BINARY_DIR}/crlibm/src/external_crlibm")
+include_directories("${CMAKE_BINARY_DIR}/gtest/src/gtest/include")
 
 ROOT_GENERATE_DICTIONARY(
   "${CMAKE_BINARY_DIR}/bdmDict"
-   simulation/ecm.h physics/physical_node.h physics/physical_sphere.h 
+   simulation/ecm.h simulation/scheduler.h physics/physical_sphere.h 
    physics/physical_cylinder.h physics/substance.h physics/default_force.h
    physics/intracellular_substance.h physics/inter_object_force.h
-   physics/physical_bond.h physics/physical_object.h
+   physics/physical_bond.h physics/physical_object.h physics/physical_node.h
    local_biology/soma_element.h local_biology/neurite_element.h
    local_biology/cell_element.h local_biology/local_biology_module.h
    local_biology/abstract_local_biology_module.h
@@ -114,8 +115,12 @@ ROOT_GENERATE_DICTIONARY(
    spatial_organization/spatial_organization_node.h spatial_organization/space_node.h
    synapse/biological_bouton.h synapse/biological_somatic_spine.h 
    synapse/biological_spine.h synapse/excrescence.h synapse/physical_bouton.h
-   synapse/physical_somatic_spine.h
-   sim_state_serializable.h color.h
+   synapse/physical_somatic_spine.h synapse/physical_spine.h
+   sim_state_serializable.h color.h ../test/soma_random_walk_module_test.h
+   ../test/intracellular_diffusion_test.h ../test/dividing_module_test.h
+   ../test/membrane_contact_test.h ../test/neurite_chemo_attraction_test.h
+   ../test/random_branching_module_test.h ../test/x_adhesive_force.h
+   ../test/x_bifurcation_module.h ../test/x_movement_module.h
    LINKDEF bdmLinkDef.h
 )
 
