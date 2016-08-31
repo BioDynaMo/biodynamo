@@ -31,8 +31,11 @@ using simulation::Scheduler;
 
 class RandomBranchingModule : public LocalBiologyModule, public std::enable_shared_from_this<RandomBranchingModule> {
  public:
-  RandomBranchingModule() {
+  RandomBranchingModule(TRootIOCtor*) {
+    neurite_ = nullptr;
+    direction_ = {0};
   }
+  RandomBranchingModule() {}
   RandomBranchingModule(const RandomBranchingModule&) = delete;
   RandomBranchingModule& operator=(const RandomBranchingModule&) = delete;
 
@@ -110,6 +113,8 @@ class RandomBranchingModule : public LocalBiologyModule, public std::enable_shar
 
   NeuriteElement* neurite_;
   std::array<double, 3> direction_;
+
+  ClassDefOverride(RandomBranchingModule, 1);
 };
 
 class RandomBranchingModuleTest : public BaseSimulationTest {
