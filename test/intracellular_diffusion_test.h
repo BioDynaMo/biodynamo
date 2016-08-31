@@ -60,6 +60,7 @@ class InternalSecretor : public AbstractLocalBiologyModule {
 
  private:
   static constexpr double kSecretionRate = 60.0;
+  ClassDefOverride(InternalSecretor, 1);
 };
 
 class GrowthCone : public AbstractLocalBiologyModule {
@@ -135,6 +136,8 @@ class GrowthCone : public AbstractLocalBiologyModule {
   static constexpr double kBifurcationProbability = 0.003;
 
   std::array<double, 3> previous_dir_;
+
+  ClassDefOverride(GrowthCone, 1);
 };
 
 class IntracellularDiffusionTest : public BaseSimulationTest {

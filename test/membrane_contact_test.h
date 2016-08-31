@@ -48,6 +48,8 @@ class MembraneContact : public AbstractLocalBiologyModule {
     sb.append("{}");
     return sb;
   }
+
+  ClassDefOverride(MembraneContact, 1);
 };
 
 class MembraneContactTest : public BaseSimulationTest {

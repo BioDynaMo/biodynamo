@@ -35,6 +35,8 @@ using simulation::Scheduler;
 
 class NeuriteChemoAttraction : public AbstractLocalBiologyModule {
  public:
+  NeuriteChemoAttraction(TRootIOCtor*) { } // only used for ROOT I/O
+
   NeuriteChemoAttraction(const std::string& substance_id)
       : direction_ { { 0.0, 0.0, 0.0 } },
         substance_id_ { substance_id } {
@@ -104,6 +106,8 @@ class NeuriteChemoAttraction : public AbstractLocalBiologyModule {
   std::array<double, 3> direction_;
   std::string substance_id_;
   double branching_factor_ = 0.005;
+
+  ClassDefOverride(NeuriteChemoAttraction, 1);
 };
 
 class NeuriteChemoAttractionTest : public BaseSimulationTest {

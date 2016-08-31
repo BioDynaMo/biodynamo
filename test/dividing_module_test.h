@@ -59,6 +59,7 @@ class DividingModule : public CellModule {
 
  private:
   Cell* cell_ = nullptr;
+  ClassDefOverride(DividingModule, 1);
 };
 
 class DividingModuleTest : public BaseSimulationTest {
