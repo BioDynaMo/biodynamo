@@ -19,7 +19,11 @@ class IntracellularSubstance : public Substance {
  public:
   using UPtr = std::unique_ptr<IntracellularSubstance>;
 
-  IntracellularSubstance(TRootIOCtor*) { }  // only used for ROOT I/O
+  IntracellularSubstance(TRootIOCtor*) {  // only used for ROOT I/O
+    asymmetry_constant_ = false;
+    visible_from_outside_ = true;
+    volume_dependant_ = false;
+  }
   
   IntracellularSubstance();
 
