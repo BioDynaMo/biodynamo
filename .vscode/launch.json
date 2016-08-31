@@ -25,15 +25,10 @@
         {
             "name": "C++ Attach",
             "type": "cppdbg",
-            "request": "launch",
+            "request": "attach",
             "targetArchitecture": "x64",
             "program": "${workspaceRoot}/build/runBiodynamoTests",
-            "args": [],
-            "stopAtEntry": false,
-            "cwd": "${workspaceRoot}",
-            "environment": [],
             "processId": "${command.pickProcess}",
-            "externalConsole": false,
             "linux": {
                 "MIMode": "gdb"
             },
