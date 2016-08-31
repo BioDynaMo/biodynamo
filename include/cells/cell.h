@@ -187,11 +187,7 @@ class Cell : public SimStateSerializable {
   static ECM* ecm_;
 
   /* List of all cell modules that are run at each time step*/
-#ifdef __ROOTCLING__
-  std::vector<CellModule*> cell_modules_;
-#else
   std::vector<CellModule::UPtr> cell_modules_;
-#endif
 
   /* List of the SomaElements belonging to the cell */
 #ifdef __ROOTCLING__
@@ -200,11 +196,7 @@ class Cell : public SimStateSerializable {
   SomaElement::UPtr soma_;
 #endif
 
-#ifdef __ROOTCLING__
-  std::vector<NeuriteElement*> neurites_;
-#else
   std::vector<NeuriteElement::UPtr> neurites_;
-#endif
 
   /* List of the first Neurite of all Neurites belonging to the cell */
   std::vector<NeuriteElement*> neurite_root_list_;  // TODO: not working yet

@@ -500,32 +500,16 @@ class PhysicalObject : public PhysicalNode {
   static InterObjectForce::UPtr inter_object_force_;
 
   /** The unique point mass of the objecx_axis_t*/
-#ifdef __ROOTCLING__
-  double mass_location_[3] = { 0.0, 0.0, 0.0 };
-#else
   std::array<double, 3> mass_location_ = std::array<double, 3> { 0.0, 0.0, 0.0 };
-#endif
 
   /** First axis of the local coordinate system.*/
-#ifdef __ROOTCLING__
-  double x_axis_[3] = { 1.0, 0.0, 0.0 };
-#else
   std::array<double, 3> x_axis_ = std::array<double, 3> { 1.0, 0.0, 0.0 };
-#endif
   
   /** Second axis of the local coordinate system.*/
-#ifdef __ROOTCLING__
-  double y_axis_[3] = { 0.0, 1.0, 0.0 };
-#else
   std::array<double, 3> y_axis_ = std::array<double, 3> { 0.0, 1.0, 0.0 };
-#endif  
 
   /** Third axis of the local coordinate system.*/
-#ifdef __ROOTCLING__
-  double z_axis_[3] = { 0.0, 0.0, 1.0 };
-#else
   std::array<double, 3> z_axis_ = std::array<double, 3> { 0.0, 0.0, 1.0 };
-#endif    
 
 
   /** static friction (the minimum force amplitude for triggering a movement). */
@@ -542,29 +526,17 @@ class PhysicalObject : public PhysicalNode {
 
   /** Only for display. Total force on this objects point mass, last time it was computed.
    * 3 first components give the x,y,z coord, and last one if movement was applied (<0 means no)*/
-#ifdef __ROOTCLING__
-  double total_force_last_time_step_[4] = { 0.0, 0.0, 0.0, -1.0 };
-#else
   std::array<double, 4> total_force_last_time_step_ = std::array<double, 4> { 0.0, 0.0, 0.0, -1.0 };
-#endif    
   
   /** All the internal and membrane-bound (diffusible and non-diffusible)
    *  chemicals that are present inside the PhysicalObject.*/
-#ifdef __ROOTCLING__
-  std::unordered_map<std::string, IntracellularSubstance*> intracellular_substances_;
-#else
   std::unordered_map<std::string, IntracellularSubstance::UPtr> intracellular_substances_;
-#endif
 
   /** List of the Physical bonds that this object can do (for cell adhesion where synapse formation occurs)*/
   std::vector<std::shared_ptr<PhysicalBond> > physical_bonds_;  //todo change to vector once porting has been finished
 
   /** List of the Physical bonds that this object can do (for cell adhesion, to restore proper configuration)*/
-#ifdef __ROOTCLING__
-  std::vector<Excrescence*> excrescences_;
-#else
   std::vector<Excrescence::UPtr> excrescences_;
-#endif
 
   /**
    * Tells if a PhysicalObject is still part of the simulation.

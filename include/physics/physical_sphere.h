@@ -257,11 +257,7 @@ class PhysicalSphere : public PhysicalObject {
   double inter_object_force_coefficient_ = Param::kSphereDefaultInterObjectCoefficient;
 
   /** Force applied by the biology. Is taken into account during runPhysics(), and the set to 0.*/
-#ifdef __ROOTCLING__  
- double tractor_force_[3] = { 0, 0, 0 };
-#else
   std::array<double, 3> tractor_force_ = std::array<double, 3> { 0, 0, 0 };
-#endif
 
   /** Move the SpatialOrganizationNode in the center of this PhysicalSphere. If it is
    * only a small distance off (half of the radius), there is no movement.

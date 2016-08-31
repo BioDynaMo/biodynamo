@@ -261,11 +261,7 @@ class PhysicalNode : public SimStateSerializable, public std::enable_shared_from
   /**
    * All the (diffusible) chemicals that are present in the space defined by this physicalNode.
    */
-#ifdef __ROOTCLING__
-  std::unordered_map<std::string, Substance*> extracellular_substances_;
-#else
   std::unordered_map<std::string, Substance::UPtr> extracellular_substances_;
-#endif
 
   /* Analytic solution of the diffusion process along the edge between two PhysicalNodes.
    * dQA/dt = diffCst*(Area/distance)*(QB/VB-QA/VA)

@@ -278,11 +278,7 @@ class SpaceNode : public SpatialOrganizationNode<T> {
   /**
    * The coordinate of this SpaceNode.
    */
-#ifdef __ROOTCLING__
-   double position_[3];
-#else
    std::array<double, 3> position_;
-#endif
 
   /**
    * A std::list of all edges incident to this node.

@@ -38,11 +38,7 @@ class PhysicalBouton : public Excrescence {
   PhysicalBouton(const PhysicalBouton&) = delete;
   PhysicalBouton& operator=(const PhysicalBouton&) = delete;
 
-#ifdef __ROOTCLING__
-  BiologicalBouton* biological_bouton_ = nullptr;
-#else
   BiologicalBouton::UPtr biological_bouton_ = nullptr;
-#endif
 
   ClassDefOverride(PhysicalBouton, 1);
 };

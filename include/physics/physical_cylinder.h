@@ -461,18 +461,10 @@ class PhysicalCylinder : public PhysicalObject {
   int branch_order_ = 0;
 
   /** The part of the inter-object force transmitted to the mother (parent node) -- c.f. runPhysics() */ 
-#ifdef __ROOTCLING__
-  double force_to_transmit_to_proximal_mass_[3] = { 0, 0, 0 };
-#else
   std::array<double, 3> force_to_transmit_to_proximal_mass_ = std::array<double, 3> { 0, 0, 0 };
-#endif
 
   /** Vector from the attachment point to the massLocation (proximal -> distal).  */
-#ifdef __ROOTCLING__
-  double spring_axis_[3] = { 0, 0, 0 };
-#else
   std::array<double, 3> spring_axis_ = std::array<double, 3> { 0, 0, 0 };
-#endif
 
   /** Real length of the PhysicalCylinder (norm of the springAxis). */
   double actual_length_ = Param::kNeuriteDefaultActualLength;
