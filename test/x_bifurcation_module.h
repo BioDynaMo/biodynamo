@@ -189,6 +189,8 @@ class XBifurcationModule : public LocalBiologyModule {
 
   /** minimum interval before branching */
   double free_interval_;
+
+  ClassDefOverride(XBifurcationModule, 1);
 };
 
 }  // namespace bdm

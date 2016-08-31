@@ -311,6 +311,8 @@ class XAdhesiveForce : public InterObjectForce {
       return {module*comp_1, module*comp_2, module*comp_3};
     }
   }
+
+  ClassDefOverride(XAdhesiveForce, 1);
 };
 
 }  //namespace bdm

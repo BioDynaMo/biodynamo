@@ -228,6 +228,8 @@ class XMovementModule : public LocalBiologyModule {
   double direction_weight_ = 0.1;
 
   double speed_ = 100;
+
+  ClassDefOverride(XMovementModule, 1);
 };
 
 }  // namespace bdm
