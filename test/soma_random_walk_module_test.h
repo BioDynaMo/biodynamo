@@ -52,6 +52,8 @@ class SomaRandomWalkModule : public AbstractLocalBiologyModule {
  private:
   static constexpr double kSpeed = 50;
   std::array<double, 3> direction_;
+  
+  ClassDefOverride(SomaRandomWalkModule, 1);
 };
 
 class SomaRandomWalkModuleTest : public BaseSimulationTest {
