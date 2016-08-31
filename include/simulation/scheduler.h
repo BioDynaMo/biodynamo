@@ -17,7 +17,7 @@ class Scheduler {
  public:
   static Scheduler* getInstance();
 
-  ~Scheduler();
+  virtual ~Scheduler();
   Scheduler(const Scheduler&) = delete;
   Scheduler& operator=(const Scheduler&) = delete;
 
@@ -50,6 +50,8 @@ class Scheduler {
 
   bool print_current_ecm_time_ = false;
   bool print_current_step_ = false;
+
+  ClassDef(Scheduler, 1);
 };
 
 }  // namespace simulation
