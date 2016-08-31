@@ -59,6 +59,10 @@ void BaseSimulationTest::run() {
 }
 
 void BaseSimulationTest::assertSimulationState() {
+  // create Json string of simulation state
+  StringBuilder sb;
+  ECM::getInstance()->simStateToJson(sb);
+
   gROOT->ProcessLine(".L libbiodynamo.so");
 
   string root_file_name = getTestName() + ".root";
@@ -69,6 +73,10 @@ void BaseSimulationTest::assertSimulationState() {
   f->WriteObject(sim_state_write, "single_test_output_state");
   f->Close();
 
+  //Cell::reset();
+  CellElement::reset();
+  PhysicalNode::reset();
+
   // read back simulation state from root file
   TFile *g = TFile::Open(root_file_name.c_str());
   ECM *sim_state_read;
@@ -78,10 +86,6 @@ void BaseSimulationTest::assertSimulationState() {
   // create Json string of simulation state retrieved from root file
   StringBuilder sb_root;
   sim_state_read->simStateToJson(sb_root);
-
-  // create Json string of simulation state
-  StringBuilder sb;
-  ECM::getInstance()->simStateToJson(sb);
 
   string reference_file_name = "test_resources/" + getTestName() + ".json";
 
@@ -113,7 +117,7 @@ void BaseSimulationTest::assertSimulationState() {
   bool equal_root = expected == root_output;
   EXPECT_TRUE(equal);
   EXPECT_TRUE(equal_root);
-  if (equal) {
+  if (equal && equal_root) {
     persistRuntime();
   } else {
     writeToFile("failed_" + getTestName() + "_actual", actual);
