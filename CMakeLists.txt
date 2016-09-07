@@ -206,3 +206,9 @@ if (test)
   endif()
 endif()
 
+
+# build validation binary - is used to obtain calculation results that are
+# used in automated tests of the new prototype
+set(VALIDATION_TARGET getValidationTargets)
+add_executable(${VALIDATION_TARGET} validation/validation.cc)
+target_link_libraries(${VALIDATION_TARGET} biodynamo)
