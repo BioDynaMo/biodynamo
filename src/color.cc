@@ -25,6 +25,10 @@ bool Color::operator==(const Color& other) const {
   return value_ == other.value_;
 }
 
+Color::operator int() const {
+  return value_;
+}
+
 unsigned Color::getValue() const {
   return value_;
 }

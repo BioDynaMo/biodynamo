@@ -24,6 +24,8 @@ class Color {
 
   bool operator==(const Color& other) const;
 
+  operator int() const;
+
   unsigned getValue() const;
 
  private:

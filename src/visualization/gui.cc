@@ -5,14 +5,14 @@
 #include <TEveWindow.h>
 #include <TEveBrowser.h>
 #include <TSystem.h>
-
 #include "visualization/gui.h"
 
-using bdm::visualization::GUI;
+using bdm::visualization::Gui;
+using bdm::Color;
 
-GUI::GUI() : init_(false), update_(false), last_id_(0), max_viz_nodes_(1e6) {}
+Gui::Gui() : init_(false), update_(false), last_id_(0), max_viz_nodes_(1e6) {}
 
-void GUI::Init() {
+void Gui::Init() {
   this->ecm_ = ECM::getInstance();
 
   TEveManager::Create();
@@ -27,11 +27,6 @@ void GUI::Init() {
   mat_solid_ = new TGeoMaterial("Solid", .938, 1., 10000.);
   med_empty_space_ = new TGeoMedium("Empty", 1, mat_empty_space_);
   med_solid_ = new TGeoMedium("Solid", 1, mat_solid_);
-
-  // we don't know how to calculate world radius yet
-  // double worldRadius = 10000.0;
-  // top = geom_->MakeBox("World", med_empty_space_, worldRadius, worldRadius,
-  //                    worldRadius);
 
   // Another way to make top volume for world. In this way it will be unbounded.
   top_ = new TGeoVolumeAssembly("WORLD");
@@ -54,7 +49,7 @@ void GUI::Init() {
   init_ = true;
 }
 
-void GUI::Update() {
+void Gui::Update() {
   if (!init_)
     throw std::runtime_error("Call GUI::getInstance().Init() first!");
 
@@ -63,7 +58,6 @@ void GUI::Update() {
 
   top_->ClearNodes();
 
-  // ecm->getPhysicalSphereListCPtr() will be called only once
   for (auto &sphere : *ecm_->getPhysicalSphereListCPtr()) {
     auto container = new TGeoVolumeAssembly("A");
     AddBranch(sphere, container);
@@ -76,7 +70,7 @@ void GUI::Update() {
   update_ = true;
 }
 
-TGeoCombiTrans *GUI::CylinderTransformation(const PhysicalCylinder *cylinder) {
+TGeoCombiTrans *Gui::CylinderTransformation(const PhysicalCylinder *cylinder) {
   auto length = cylinder->getActualLength();
   auto springAxis = cylinder->getSpringAxis();
   auto massLocation = cylinder->getMassLocation();
@@ -89,7 +83,7 @@ TGeoCombiTrans *GUI::CylinderTransformation(const PhysicalCylinder *cylinder) {
   auto dy = springAxis[1];
   auto dz = springAxis[2];
 
-  auto position = new TGeoTranslation(x1 - dx / 2, y1 - dy / 2, z1 - dz / 2);
+  auto position = TGeoTranslation(x1 - dx / 2, y1 - dy / 2, z1 - dz / 2);
 
   auto phiX = 0.0, thetaY = acos(dz / length) * 180. / M_PI, psiZ = 0.0;
 
@@ -99,12 +93,12 @@ TGeoCombiTrans *GUI::CylinderTransformation(const PhysicalCylinder *cylinder) {
     phiX = atan2(dy, dx) * 180. / M_PI + 90.;
   }
 
-  auto rotation = new TGeoRotation("rot", phiX, thetaY, psiZ);
+  auto rotation = TGeoRotation("rot", phiX, thetaY, psiZ);
 
-  return new TGeoCombiTrans(*position, *rotation);
+  return new TGeoCombiTrans(position, rotation);
 }
 
-EColor GUI::TranslateColor(Color color) {
+EColor Gui::TranslateColor(Color color) {
   if (color == bdm::Param::kYellow) {
     return kYellow;
   } else if (color == bdm::Param::kViolet) {
@@ -123,7 +117,7 @@ EColor GUI::TranslateColor(Color color) {
   }
 }
 
-void GUI::AddBranch(PhysicalSphere *sphere, TGeoVolume *container) {
+void Gui::AddBranch(PhysicalSphere *sphere, TGeoVolume *container) {
   AddSphereToVolume(sphere, container);
 
   for (auto &cylinder : sphere->getDaughters()) {
@@ -132,7 +126,7 @@ void GUI::AddBranch(PhysicalSphere *sphere, TGeoVolume *container) {
   }
 }
 
-void GUI::PreOrderTraversalCylinder(PhysicalCylinder *cylinder,
+void Gui::PreOrderTraversalCylinder(PhysicalCylinder *cylinder,
                                     TGeoVolume *container) {
   auto left = cylinder->getDaughterLeft();
   auto right = cylinder->getDaughterRight();
@@ -165,7 +159,7 @@ void GUI::PreOrderTraversalCylinder(PhysicalCylinder *cylinder,
   }
 }
 
-void GUI::AddCylinderToVolume(PhysicalCylinder *cylinder,
+void Gui::AddCylinderToVolume(PhysicalCylinder *cylinder,
                               TGeoVolume *container) {
   auto id = cylinder->getID();
 
@@ -174,7 +168,7 @@ void GUI::AddCylinderToVolume(PhysicalCylinder *cylinder,
     last_id_ = id;
 
   char name[12];
-  sprintf(name, "C%d", id);
+  snprintf(name, 12, "C%d", id);
 
   auto length = cylinder->getActualLength();
   auto radius = cylinder->getDiameter() / 2;
@@ -186,7 +180,7 @@ void GUI::AddCylinderToVolume(PhysicalCylinder *cylinder,
   container->AddNode(volume, container->GetNdaughters(), trans);
 }
 
-void GUI::AddSphereToVolume(PhysicalSphere *sphere, TGeoVolume *container) {
+void Gui::AddSphereToVolume(PhysicalSphere *sphere, TGeoVolume *container) {
   auto id = sphere->getID();
 
   // remember last visualized id
@@ -194,7 +188,7 @@ void GUI::AddSphereToVolume(PhysicalSphere *sphere, TGeoVolume *container) {
     last_id_ = id;
 
   char name[12];
-  sprintf(name, "S%d", id);
+  snprintf(name, 12, "S%d", id);
 
   auto radius = sphere->getDiameter() / 2;
   auto massLocation = sphere->getMassLocation();
@@ -209,9 +203,9 @@ void GUI::AddSphereToVolume(PhysicalSphere *sphere, TGeoVolume *container) {
   container->AddNode(volume, container->GetNdaughters(), position);
 }
 
-void GUI::SetMaxVizNodes(int number) { this->max_viz_nodes_ = number; }
+void Gui::SetMaxVizNodes(int number) { this->max_viz_nodes_ = number; }
 
-void GUI::CloseGeometry() {
+void Gui::CloseGeometry() {
   if (!update_)
     throw std::runtime_error("Call GUI::getInstance().Update() first!");
 
