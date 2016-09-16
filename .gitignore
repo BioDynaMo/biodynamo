@@ -11,6 +11,13 @@ cx3d-cpp.iml
 .cproject
 .settings/
 
+#----------------- VS Code ------------------
+.vscode/.*
+
+#----------------- GNU global ------------------
+GPATH
+GRTAGS
+GTAGS
 
 #------------------- C++ --------------------
 # Compiled Object files

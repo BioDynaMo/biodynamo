@@ -1,0 +1,14 @@
+// Place your settings in this file to overwrite default and user settings.
+{
+    // The number of spaces a tab is equal to.
+    "editor.tabSize": 2,
+
+    // When enabled, will trim trailing whitespace when you save a file.
+    "files.trimTrailingWhitespace": true,
+
+    // Control whether a new line is inserted at the end of the file.
+    "files.insertFinalNewline": true,
+
+    // Compiler options for C++ (e.g. ['-std=c++11'])
+    "clang.cxxflags": ["-std=c++11", "-I${env.ROOTSYS}/include"]
+}
