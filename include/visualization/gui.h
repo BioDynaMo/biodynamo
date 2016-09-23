@@ -19,7 +19,7 @@ using bdm::physics::PhysicalSphere;
  * simulation
  */
 class Gui {
-public:
+ public:
   static Gui &getInstance() {
     static Gui instance;  // Guaranteed to be destroyed.
     // Instantiated on first use.

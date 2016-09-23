@@ -53,7 +53,7 @@ void Gui::Update() {
   if (!init_)
     throw std::runtime_error("Call GUI::getInstance().Init() first!");
 
-  if(is_geometry_closed_)
+  if (is_geometry_closed_)
     throw std::runtime_error("Geometry is already closed! Don't call GUI::Update() after GUI::CloseGeometry()!");
 
   top_->ClearNodes();
@@ -168,7 +168,7 @@ void Gui::AddCylinderToVolume(PhysicalCylinder *cylinder,
     last_id_ = id;
 
   char name[12];
-  snprintf(name, 12, "C%d", id);
+  snprintf(name, sizeof(name), "C%d", id);
 
   auto length = cylinder->getActualLength();
   auto radius = cylinder->getDiameter() / 2;
@@ -188,7 +188,7 @@ void Gui::AddSphereToVolume(PhysicalSphere *sphere, TGeoVolume *container) {
     last_id_ = id;
 
   char name[12];
-  snprintf(name, 12, "S%d", id);
+  snprintf(name, sizeof(name), "S%d", id);
 
   auto radius = sphere->getDiameter() / 2;
   auto massLocation = sphere->getMassLocation();

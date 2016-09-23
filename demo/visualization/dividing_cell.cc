@@ -18,7 +18,7 @@ using bdm::synapse::ConnectionMaker;
 using bdm::local_biology::LocalBiologyModule;
 using bdm::visualization::Gui;
 
-int main(int argc, char** argv){
+int main(int argc, char** argv) {
   TApplication app("App", &argc, argv);
 
   Gui::getInstance().Init();
