@@ -403,6 +403,19 @@ class ECM : public SimStateSerializable {
 
   std::vector<SomaElement*> getSomaElementList() const;
 
+  /**
+   * Getters for according vectors which return const pointers.
+   */
+  const std::vector<PhysicalNode*>* getPhysicalNodeListCPtr() const;
+
+  const std::vector<PhysicalSphere*>* getPhysicalSphereListCPtr() const;
+
+  const std::vector<PhysicalCylinder*>* getPhysicalCylinderListCPtr() const;
+
+  const std::vector<NeuriteElement*>* getNeuriteElementListCPtr() const;
+
+  const std::vector<SomaElement*>* getSomaElementListCPtr() const;
+
   bool isAnyArtificialGradientDefined() const;
 
   std::unordered_map<Substance*, std::array<double, 3>, SubstanceHash, SubstanceEqual> getGaussianArtificialConcentrationZ() const;

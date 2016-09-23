@@ -526,6 +526,26 @@ std::vector<SomaElement*> ECM::getSomaElementList() const {
   return soma_elements_;
 }
 
+const std::vector<PhysicalNode*>* ECM::getPhysicalNodeListCPtr() const {
+  return &physical_nodes_;
+}
+
+const std::vector<PhysicalSphere*>* ECM::getPhysicalSphereListCPtr() const {
+  return &physical_spheres_;
+}
+
+const std::vector<PhysicalCylinder*>* ECM::getPhysicalCylinderListCPtr() const {
+  return &physical_cylinders_;
+}
+
+const std::vector<NeuriteElement*>* ECM::getNeuriteElementListCPtr() const {
+  return &neurite_elements_;
+}
+
+const std::vector<SomaElement*>* ECM::getSomaElementListCPtr() const {
+  return &soma_elements_;
+}
+
 bool ECM::isAnyArtificialGradientDefined() const {
   return any_artificial_gradient_defined_;
 }

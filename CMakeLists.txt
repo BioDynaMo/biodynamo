@@ -89,7 +89,7 @@ endif()
 
 #--------------------- Find ROOT ---------------------------------
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
-find_package(ROOT REQUIRED)
+find_package(ROOT REQUIRED COMPONENTS Eve Geom Gui)
 
 #--------------------- Find Doxygen and set doc target -----------
 include(cmake/doxygen.cmake)
@@ -206,3 +206,15 @@ if (test)
   endif()
 endif()
 
+#--------------------- build visualization projects ----------------------
+# build viz executable for small network test
+set(SMALL_NW_VIZ small-network-viz)
+add_executable(${SMALL_NW_VIZ} demo/visualization/small_network.cc)
+target_include_directories(${SMALL_NW_VIZ} PUBLIC include)
+target_link_libraries(${SMALL_NW_VIZ} biodynamo)
+
+# build viz executable for dividing cell test
+set(DIVIDING_CELL_VIZ dividing-cell-viz)
+add_executable(${DIVIDING_CELL_VIZ} demo/visualization/dividing_cell.cc)
+target_include_directories(${DIVIDING_CELL_VIZ} PUBLIC include)
+target_link_libraries(${DIVIDING_CELL_VIZ} biodynamo)
