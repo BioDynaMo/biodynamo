@@ -10,6 +10,7 @@ if [ "$TRAVIS_OS_NAME" = "osx" ]; then
   brew update
   brew install doxygen
   brew install valgrind
+  brew install clang-omp
   #brew outdated gcc || brew upgrade gcc
   # get latest cmake
   wget https://cmake.org/files/v3.6/cmake-3.6.1-Darwin-x86_64.tar.gz 2> /dev/null

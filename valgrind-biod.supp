@@ -18,7 +18,7 @@
    fun:allocate_stack
    fun:pthread_create@@GLIBC_2.2.5
    obj:*/libgomp.so*
-   fun:GOMP_parallel
+   #fun:GOMP_parallel
 }
 
 ######### Suppress ROOT issues, they are checked by the ROOT team
