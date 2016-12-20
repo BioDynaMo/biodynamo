@@ -7,6 +7,20 @@
 # reports, e.g. due to ROOT's runtime type information that must
 # survive until the end of the process and thus leaks.
 
+######### Suppress OpenMP possible lost warning
+{
+   ignore_openmp_possible_lost_warning
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:calloc
+   fun:allocate_dtv
+   fun:_dl_allocate_tls
+   fun:allocate_stack
+   fun:pthread_create@@GLIBC_2.2.5
+   obj:*/libgomp.so*
+   fun:GOMP_parallel
+}
+
 ######### Suppress ROOT issues, they are checked by the ROOT team
 {
    ignore_root_libs_leak
