@@ -10,12 +10,14 @@ if [ "$TRAVIS_OS_NAME" = "osx" ]; then
   brew update
   brew install doxygen
   brew install valgrind
-  brew install clang-omp
-  #brew outdated gcc || brew upgrade gcc
+  # get clang 3.9
+  wget http://releases.llvm.org/3.9.0/clang+llvm-3.9.0-x86_64-apple-darwin.tar.xz 2> /dev/null
+  tar zxf clang+llvm-3.9.0-x86_64-apple-darwin.tar.xz > /dev/null
   # get latest cmake
   wget https://cmake.org/files/v3.6/cmake-3.6.1-Darwin-x86_64.tar.gz 2> /dev/null
   tar zxf cmake-3.6.1-Darwin-x86_64.tar.gz > /dev/null
-  export PATH="`pwd`/cmake-3.6.1-Darwin-x86_64/CMake.app/Contents/bin":$PATH:
+  # update path
+  export PATH="`pwd`/clang+llvm-3.9.0-x86_64-apple-darwin/bin":"`pwd`/cmake-3.6.1-Darwin-x86_64/CMake.app/Contents/bin":$PATH:
 fi
 
 if [ "$TRAVIS_OS_NAME" = "linux" ]; then
