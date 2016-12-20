@@ -17,7 +17,8 @@ if [ "$TRAVIS_OS_NAME" = "osx" ]; then
   wget https://cmake.org/files/v3.6/cmake-3.6.1-Darwin-x86_64.tar.gz 2> /dev/null
   tar zxf cmake-3.6.1-Darwin-x86_64.tar.gz > /dev/null
   # update path
-  export PATH="`pwd`/clang+llvm-3.9.0-x86_64-apple-darwin/bin":"`pwd`/cmake-3.6.1-Darwin-x86_64/CMake.app/Contents/bin":$PATH:
+  export PATH="`pwd`/clang+llvm-3.9.0-x86_64-apple-darwin/include/c++/v1":"`pwd`/clang+llvm-3.9.0-x86_64-apple-darwin/bin":"`pwd`/cmake-3.6.1-Darwin-x86_64/CMake.app/Contents/bin":$PATH:
+  export DYLD_LIBRARY_PATH="`pwd`/clang+llvm-3.9.0-x86_64-apple-darwin/lib":$DYLD_LIBRARY_PATH
 fi
 
 if [ "$TRAVIS_OS_NAME" = "linux" ]; then
