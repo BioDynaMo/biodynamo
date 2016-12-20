@@ -177,3 +177,9 @@ endif()
 set(SIMULATION_TARGET bdmp)
 add_executable(${SIMULATION_TARGET} ${CMAKE_SOURCE_DIR}/src/main.cc)
 target_link_libraries(${SIMULATION_TARGET} biodynamo)
+
+# --------------------- build backend_arch demo
+set(BACKEND_ARCH backend_arch)
+add_executable(${BACKEND_ARCH} ${CMAKE_SOURCE_DIR}/demo/backend_arch.cc)
+target_link_libraries(${BACKEND_ARCH} biodynamo)
+# target_link_libraries(${BACKEND_ARCH} ${VTUNE_LIBRARIES})
