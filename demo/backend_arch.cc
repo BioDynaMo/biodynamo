@@ -705,7 +705,9 @@ int main(int argc, char** argv) {
   std::cout << cell << std::endl;
 
   // create soa container add and retrieve elements
-  if( argc == 4) {
+  if (argc != 1 && argc != 4) {
+    std::cout << "Usage: ./backend_arch #cells #iterations #threads" << std::endl;
+  } if( argc == 4) {
     std::cout << std::endl;
     std::cout << "-------------------------------------------------" << std::endl;
     size_t cells;
@@ -729,10 +731,11 @@ void benchmarkSoaCell(const size_t num_cells, const size_t iterations,
   const size_t N = num_cells / Vc::double_v::Size;
   Cell<VcSoaBackend> cells;
 
-// #pragma omp parallel for
+  // initialization
   for (size_t i = 0; i < N; i++) {
     Cell<VcBackend> cell;
-
+    cell.SetDiameter(Vc::double_v(30));
+    cell.SetVolume(Vc::double_v(0));
     cells.push_back(cell);
   }
 
@@ -740,7 +743,7 @@ void benchmarkSoaCell(const size_t num_cells, const size_t iterations,
 
   {
     Timing timing("soaCell", statistic);
-// #pragma omp parallel for default(none) shared(cells) firstprivate(iterations)
+#pragma omp parallel for default(none) shared(cells_ref) firstprivate(iterations)
     for (size_t i = 0; i < N; i++) {
         auto& cell = cells_ref[i];
         auto ifresult = cell.GetDiameter() <= 40;
@@ -749,54 +752,45 @@ void benchmarkSoaCell(const size_t num_cells, const size_t iterations,
         cell.ChangeVolume(dv);
     }
   }
+
+  // verify results
+  volatile double volume_sum = 0;
+  for (size_t i = 0; i < N; i++) {
+    volume_sum += cells_ref[i].GetVolume().sum();
+  }
+  assert(std::abs(volume_sum - N * Vc::double_v::Size * 3) < 1e-3);
 }
 
 
 void benchmarkPlainSoa(const size_t num_cells, const size_t iterations,
            TimingAggregator* statistic) {
   const size_t N = num_cells / Vc::double_v::Size;
+
   class SoaCell {
   public:
     using real_v = Vc::double_v;
 
     SoaCell(const size_t elements) {
-      // diameter_ = new Vc::double_v[elements];
-      // volume_ = new Vc::double_v[elements];
       diameter_.resize(elements);
       volume_.resize(elements);
       neurites_.resize(elements);
       for (size_t i = 0; i < elements; i++) {
-        diameter_[i] = real_v(20);
+        diameter_[i] = real_v(30);
         volume_[i] = real_v(0);
       }
     }
 
-    virtual ~SoaCell() {
-      // delete[] diameter_;
-      // delete[] volume_;
-    }
-
-    const real_v& GetDiameter(const size_t idx) const {
-      return diameter_[idx];
-    }
-
-    void ChangeVolume(const size_t idx, const real_v& speed) {
-      volume_[idx] += speed  * 0.01;
-      volume_[idx] = Vc::iif(volume_[idx] < 5.2359877E-7,
-                       Vc::double_v(5.2359877E-7), volume_[idx]);
-
-       // UpdateDiameter();
-       // for (size_t j = 0; j < Vc::double_v::Size; j++) {
-       //   vc_diameter[idx][j] = std::cbrt(vc_volume[idx][j] * 6 / 3.14);
-       // }
-    }
-
-    void SetIndex(const size_t idx) {
+    SoaCell& operator[](const size_t idx) {
       idx_ = idx;
+      return *this;
     }
 
     const real_v& GetDiameter() const {
       return diameter_[idx_];
+    }
+
+    const real_v& GetVolume() const {
+      return volume_[idx_];
     }
 
     void ChangeVolume(const real_v& speed) {
@@ -812,37 +806,32 @@ void benchmarkPlainSoa(const size_t num_cells, const size_t iterations,
 
   private:
     size_t idx_ = 0;
-    // real_v* diameter_;
-    // real_v* volume_;
     std::vector<real_v> diameter_;
     std::vector<real_v> volume_;
     std::vector<std::array<Neurite, real_v::Size> > neurites_;
   };
 
+  // initialization in ctor
   SoaCell cells(N);
-
-// #pragma omp parallel for
-  // for (size_t i = 0; i < N; i++) {
-  //   cells.diameter[i] = Vc::double_v(30);
-  //   cells.volume[i] = Vc::double_v(1);
-  // }
 
   {
     Timing timing("vcSoa", statistic);
-// #pragma omp parallel for default(none) shared(vc_diameter, vc_volume) firstprivate(iterations)
+#pragma omp parallel for default(none) shared(cells) firstprivate(iterations)
     for (size_t i = 0; i < N; i++) {
-      cells.SetIndex(i);
-      auto ifresult = cells.GetDiameter() <= 40;
+      auto& cell = cells[i];
+      auto ifresult = cell.GetDiameter() <= 40;
       Vc::double_v dv(300);
       dv.setZeroInverted(ifresult);
-      cells.ChangeVolume(dv);
-
-      // auto ifresult = cells.GetDiameter(i) <= 40;
-      // Vc::double_v dv(300);
-      // dv.setZeroInverted(ifresult);
-      // cells.ChangeVolume(i, dv);
+      cell.ChangeVolume(dv);
     }
   }
+
+  // verify results
+  volatile double volume_sum = 0;
+  for (size_t i = 0; i < N; i++) {
+    volume_sum += cells[i].GetVolume().sum();
+  }
+  assert(std::abs(volume_sum - N * Vc::double_v::Size * 3) < 1e-3);
 }
 
 void benchmarkAosoaCell(const size_t num_cells, const size_t iterations,
@@ -850,16 +839,17 @@ void benchmarkAosoaCell(const size_t num_cells, const size_t iterations,
   const size_t N = num_cells / Vc::double_v::Size;
   std::vector<Cell<VcBackend>, Vc::Allocator<Cell<VcBackend> > > cells;
 
-// #pragma omp parallel for
+  // initialization
   for (size_t i = 0; i < N; i++) {
     Cell<VcBackend> cell;
-
+    cell.SetDiameter(Vc::double_v(30));
+    cell.SetVolume(Vc::double_v(0));
     cells.push_back(cell);
   }
 
   {
     Timing timing("aosoaCell", statistic);
-// #pragma omp parallel for default(none) shared(cells) firstprivate(iterations)
+#pragma omp parallel for default(none) shared(cells) firstprivate(iterations)
     for (size_t i = 0; i < N; i++) {
         auto& cell = cells[i];
         auto ifresult = cell.GetDiameter() <= 40;
@@ -868,17 +858,31 @@ void benchmarkAosoaCell(const size_t num_cells, const size_t iterations,
         cell.ChangeVolume(dv);
     }
   }
+
+  // verify results
+  volatile double volume_sum = 0;
+  for (size_t i = 0; i < N; i++) {
+    volume_sum += cells[i].GetVolume().sum();
+  }
+  assert(std::abs(volume_sum - N * Vc::double_v::Size * 3) < 1e-3);
 }
 
 void benchmarkPlainAosoa(const size_t num_cells, const size_t iterations,
            TimingAggregator* statistic) {
   const size_t N = num_cells / Vc::double_v::Size;
+
   class AosoaCell {
   public:
     using real_v = Vc::double_v;
 
+    AosoaCell() : diameter_(real_v(30)), volume_(real_v(0)) {}
+
     const real_v& GetDiameter() const {
       return diameter_;
+    }
+
+    const real_v& GetVolume() const {
+      return volume_;
     }
 
     void ChangeVolume(const real_v& speed) {
@@ -898,28 +902,25 @@ void benchmarkPlainAosoa(const size_t num_cells, const size_t iterations,
     std::array<std::vector<Neurite>, real_v::Size> neurites_;
   };
 
+  // initiazation in ctor
   std::vector<AosoaCell, Vc::Allocator<AosoaCell> > cells(N);
-
-// #pragma omp parallel for
-  // for (size_t i = 0; i < N; i++) {
-  //   cells.diameter[i] = Vc::double_v(30);
-  //   cells.volume[i] = Vc::double_v(1);
-  // }
 
   {
     Timing timing("vcAosoa", statistic);
-// #pragma omp parallel for default(none) shared(vc_diameter, vc_volume) firstprivate(iterations)
+#pragma omp parallel for default(none) shared(cells) firstprivate(iterations)
     for (size_t i = 0; i < N; i++) {
       auto& cell = cells[i];
       auto ifresult = cell.GetDiameter() <= 40;
       Vc::double_v dv(300);
       dv.setZeroInverted(ifresult);
       cell.ChangeVolume(dv);
-
-      // auto ifresult = cells.GetDiameter(i) <= 40;
-      // Vc::double_v dv(300);
-      // dv.setZeroInverted(ifresult);
-      // cells.ChangeVolume(i, dv);
     }
   }
+
+  // verify results
+  volatile double volume_sum = 0;
+  for (size_t i = 0; i < N; i++) {
+    volume_sum += cells[i].GetVolume().sum();
+  }
+  assert(std::abs(volume_sum - N * Vc::double_v::Size * 3) < 1e-3);
 }
