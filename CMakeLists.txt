@@ -92,7 +92,7 @@ set(Vc_LIBRARIES "${CMAKE_CURRENT_BINARY_DIR}/Vc/src/Vc-build/libVc.a")
 #include(${ROOT_USE_FILE})
 include_directories("${CMAKE_SOURCE_DIR}/src")
 include_directories("${CMAKE_SOURCE_DIR}/third_party")
-include_directories(${Vc_INCLUDE_DIR})
+include_directories("${Vc_INCLUDE_DIR}")
 # include_directories(${VTUNE_INCLUDE_DIR})
 
 #ROOT_GENERATE_DICTIONARY("${CMAKE_BINARY_DIR}/bdmDict"
@@ -106,6 +106,7 @@ add_library(biodynamo SHARED ${SOURCES} ${HEADERS})
 #target_link_libraries(biodynamo ${ROOT_LIBRARIES})
 target_link_libraries(biodynamo ${Vc_LIBRARIES})
 # target_link_libraries(biodynamo ${VTUNE_LIBRARIES})
+add_dependencies(biodynamo Vc)
 
 # add custom clean target for shared library
 add_custom_target(libbdmclean COMMAND ${CMAKE_COMMAND} -P "${CMAKE_BINARY_DIR}/CMakeFiles/biodynamo.dir/cmake_clean.cmake")
@@ -183,3 +184,4 @@ set(BACKEND_ARCH backend_arch)
 add_executable(${BACKEND_ARCH} ${CMAKE_SOURCE_DIR}/demo/backend_arch.cc)
 target_link_libraries(${BACKEND_ARCH} biodynamo)
 # target_link_libraries(${BACKEND_ARCH} ${VTUNE_LIBRARIES})
+add_dependencies(${BACKEND_ARCH} Vc)
