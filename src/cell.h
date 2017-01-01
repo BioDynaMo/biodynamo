@@ -19,7 +19,7 @@ class Cell {
   using real_t = typename Backend::real_t;
   using bool_v = typename Backend::bool_v;
 
-  template <typename T>
+  template <typename>
   friend class Cell;
 
   Cell() {}
@@ -58,9 +58,9 @@ class Cell {
     return mass_location_;
   }
 
-  Vc_ALWAYS_INLINE std::array<aosoa<Cell, Backend>, Backend::kVecLen>
-  GetNeighbors(const daosoa<Cell, Backend>& all_cells) const {
-    std::array<aosoa<Cell, Backend>, Backend::kVecLen> ret;
+  Vc_ALWAYS_INLINE std::array<aosoa<::bdm::Cell, Backend>, Backend::kVecLen>
+  GetNeighbors(const daosoa<::bdm::Cell, Backend>& all_cells) const {
+    std::array<aosoa<::bdm::Cell, Backend>, Backend::kVecLen> ret;
     const size_t size = size_;
     for (size_t i = 0; i < size; i++) {
       all_cells.Gather(neighbors_[i], &(ret[i]));
