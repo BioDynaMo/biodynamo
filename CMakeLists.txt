@@ -82,6 +82,10 @@ ExternalProject_Add(
     -DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}
     -DCMAKE_C_COMPILER:FILEPATH=${CMAKE_C_COMPILER}
     INSTALL_COMMAND "" # Disable install step
+    # Ugly but necessary, in future versions one can use ${binary_dir}
+    # in BUILD_BYPRODUCTS
+    #BUILD_BYPRODUCTS "${binary_dir}/libVc.a"
+    BUILD_BYPRODUCTS "${CMAKE_CURRENT_BINARY_DIR}/Vc/src/Vc-build/libVc.a"
 )
 set(Vc_INCLUDE_DIR "${CMAKE_CURRENT_BINARY_DIR}/Vc/src/Vc/include"
                    "${CMAKE_CURRENT_BINARY_DIR}/Vc/src/Vc/")
