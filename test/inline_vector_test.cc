@@ -78,12 +78,135 @@ TEST(InlineVectorTest, size) {
   EXPECT_EQ(5u, vector.size());
 }
 
+TEST(InlineVectorTest, reserve) {
+  InlineVector<int, 3> vector;
+  vector.reserve(5);
+  size_t new_calls_before = operator_new_calls_;
+  vector.push_back(0);
+  vector.push_back(1);
+  vector.push_back(2);
+  vector.push_back(3);
+  vector.push_back(4);
+
+  EXPECT_EQ(0u, operator_new_calls_ - new_calls_before);
+  EXPECT_EQ(0, vector[0]);
+  EXPECT_EQ(1, vector[1]);
+  EXPECT_EQ(2, vector[2]);
+  EXPECT_EQ(3, vector[3]);
+  EXPECT_EQ(4, vector[4]);
+}
+
+TEST(InlineVectorTest, reserveRobustnessTest) {
+  // new capacity smaller than current
+  size_t new_calls_before = operator_new_calls_;
+  InlineVector<int, 3> vector;
+  vector.reserve(2);
+
+  EXPECT_EQ(0u, operator_new_calls_ - new_calls_before);
+}
+
+TEST(InlineVectorTest, capacity) {
+  InlineVector<int, 3> vector;
+  EXPECT_EQ(3u, vector.capacity());
+  vector.push_back(0);
+  EXPECT_EQ(3u, vector.capacity());
+  vector.push_back(1);
+  EXPECT_EQ(3u, vector.capacity());
+  vector.push_back(2);
+  EXPECT_EQ(3u, vector.capacity());
+  vector.push_back(3);
+  EXPECT_EQ(4u, vector.capacity());
+  vector.push_back(4);
+  EXPECT_EQ(6u, vector.capacity());
+}
+
+TEST(InlineVectorTest, CopyCtor) {
+  InlineVector<int, 3> vector;
+  vector.push_back(0);
+  vector.push_back(1);
+  vector.push_back(2);
+  vector.push_back(3);
+  vector.push_back(4);
+  InlineVector<int, 3> vector_cpy(vector);
+
+  EXPECT_EQ(vector.size(), vector_cpy.size());
+  EXPECT_EQ(vector.capacity(), vector_cpy.capacity());
+  EXPECT_EQ(0, vector_cpy[0]);
+  EXPECT_EQ(1, vector_cpy[1]);
+  EXPECT_EQ(2, vector_cpy[2]);
+  EXPECT_EQ(3, vector_cpy[3]);
+  EXPECT_EQ(4, vector_cpy[4]);
+}
+
+TEST(InlineVectorTest, MoveCtor) {
+  InlineVector<int, 3> vector;
+  vector.push_back(0);
+  vector.push_back(1);
+  vector.push_back(2);
+  vector.push_back(3);
+  vector.push_back(4);
+
+  size_t new_calls_before = operator_new_calls_;
+  InlineVector<int, 3> moved_vector(std::move(vector));
+
+  EXPECT_EQ(0u, operator_new_calls_ - new_calls_before);
+  EXPECT_EQ(5u, moved_vector.size());
+  EXPECT_EQ(6u, moved_vector.capacity());
+  EXPECT_EQ(0, moved_vector[0]);
+  EXPECT_EQ(1, moved_vector[1]);
+  EXPECT_EQ(2, moved_vector[2]);
+  EXPECT_EQ(3, moved_vector[3]);
+  EXPECT_EQ(4, moved_vector[4]);
+}
+
+TEST(InlineVectorTest, AssignmentOperator) {
+  InlineVector<int, 3> vector_cpy;
+  {
+    InlineVector<int, 3> vector;
+    vector.push_back(0);
+    vector.push_back(1);
+    vector.push_back(2);
+    vector.push_back(3);
+    vector.push_back(4);
+
+    vector_cpy = vector;
+  }
+  EXPECT_EQ(5u, vector_cpy.size());
+  EXPECT_EQ(6u, vector_cpy.capacity());
+  EXPECT_EQ(0, vector_cpy[0]);
+  EXPECT_EQ(1, vector_cpy[1]);
+  EXPECT_EQ(2, vector_cpy[2]);
+  EXPECT_EQ(3, vector_cpy[3]);
+  EXPECT_EQ(4, vector_cpy[4]);
+}
+
+TEST(InlineVectorTest, MoveAssignmentOperator) {
+  InlineVector<int, 3> moved_vector;
+  {
+    InlineVector<int, 3> vector;
+    vector.push_back(0);
+    vector.push_back(1);
+    vector.push_back(2);
+    vector.push_back(3);
+    vector.push_back(4);
+
+    moved_vector = std::move(vector);
+  }
+  EXPECT_EQ(5u, moved_vector.size());
+  EXPECT_EQ(6u, moved_vector.capacity());
+  EXPECT_EQ(0, moved_vector[0]);
+  EXPECT_EQ(1, moved_vector[1]);
+  EXPECT_EQ(2, moved_vector[2]);
+  EXPECT_EQ(3, moved_vector[3]);
+  EXPECT_EQ(4, moved_vector[4]);
+}
+
 TEST(InlineVectorTest, EqualsOperatorNoHeap) {
-  InlineVector<int, 2> lhs;
+  InlineVector<int, 3> lhs;
   lhs.push_back(0);
   lhs.push_back(1);
 
-  InlineVector<int, 2> rhs;
+  InlineVector<int, 3> rhs;
   rhs.push_back(0);
   rhs.push_back(1);
 

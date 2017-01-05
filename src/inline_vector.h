@@ -3,48 +3,110 @@
 
 #include <array>
 #include <algorithm>
+#include <sstream>
 #include <vector>
 
 namespace bdm {
 
 /// This containes stores up to N elements without heap allocations
 /// If further elements are added elements are stored on the heap
-/// grows in a geometric sequence
-/// elements are contiguous in memory exept the transition from internal
+/// Container grows in a geometric sequence
+/// Elements are contiguous in memory exept the transition from internal
 /// to heap allocated memory (between index N-1 and N)
 template <typename T, size_t N>
 class InlineVector {
  public:
   InlineVector() {}
+
+  InlineVector(const InlineVector<T, N>& other) {
+    data_ = std::move(other.data_);
+    size_ = other.size_;
+    capacity_ = other.capacity_;
+    if (other.heap_data_ != nullptr) {
+      heap_data_ = new T[capacity_ - N];
+      std::copy_n(other.heap_data_, capacity_ - N, heap_data_);
+    }
+  }
+
+  InlineVector(InlineVector<T, N>&& other) noexcept {
+    data_ = other.data_;
+    size_ = other.size_;
+    capacity_ = other.capacity_;
+    heap_data_ = other.heap_data_;
+    other.heap_data_ = nullptr;
+  }
+
   virtual ~InlineVector() {
     if (heap_data_ != nullptr) {
       delete[] heap_data_;
     }
   }
 
+  /// Returns the number of elements that the container has currently
+  /// allocated space for.
+  size_t capacity() const { return capacity_; }
+
+  /// Increase the capacity of the container to a value that's greater or equal
+  /// to new_capacity. If new_cap is greater than the current `capacity()`,
+  /// new storage is allocated, otherwise the method does nothing.
+  ///
+  /// If new_cap is greater than `capacity()`, all iterators and references,
+  /// including the past-the-end iterator, are invalidated.
+  /// Otherwise, no iterators or references are invalidated.
+  void reserve(size_t new_capacity) {
+    if (new_capacity > capacity_) {
+      T* new_heap_data = new T[new_capacity];
+      if (heap_data_ != nullptr) {
+        std::copy_n(heap_data_, capacity_ - N, new_heap_data);
+        delete[] heap_data_;
+      }
+      heap_data_ = new_heap_data;
+      capacity_ = new_capacity;
+    }
+  }
+
   /// \brief returns the number of elements in this container
-  size_t size() const { return elements_; }
+  size_t size() const { return size_; }
 
   /// adds elements to this container and allocates additional memory on the
   /// heap if required
   void push_back(const T& element) {
-    if (elements_ < N) {
-      data_[elements_++] = element;
+    if (size_ < N) {
+      data_[size_++] = element;
     } else {
       // allocate heap memory
-      if (elements_ == allocated_elements_) {
-        size_t new_allocated_elements = allocated_elements_ * kGrowFactor;
-        T* new_heap_data = new T[new_allocated_elements];
-        if (heap_data_ != nullptr) {
-          std::copy_n(heap_data_, allocated_elements_ - N, new_heap_data);
-          delete[] heap_data_;
-        }
-        heap_data_ = new_heap_data;
-        allocated_elements_ = new_allocated_elements;
+      if (size_ == capacity_) {
+        size_t new_capacity = capacity_ * kGrowFactor;
+        reserve(new_capacity);
       }
-      heap_data_[elements_ - N] = element;
-      elements_++;
+      heap_data_[size_ - N] = element;
+      size_++;
     }
+  }
+
+  InlineVector<T, N>& operator=(const InlineVector<T, N>& other) {
+    if (this != &other) {
+      data_ = other.data_;
+      size_ = other.size_;
+      capacity_ = other.capacity_;
+      if (other.heap_data_ != nullptr) {
+        if (heap_data_ != nullptr) delete[] heap_data_;
+        heap_data_ = new T[capacity_ - N];
+        std::copy_n(other.heap_data_, capacity_ - N, heap_data_);
+      }
+    }
+    return *this;
+  }
+
+  InlineVector<T, N>& operator=(InlineVector<T, N>&& other) {
+    if (this != &other) {
+      data_ = std::move(other.data_);
+      size_ = other.size_;
+      capacity_ = other.capacity_;
+      heap_data_ = other.heap_data_;
+      other.heap_data_ = nullptr;
+    }
+    return *this;
   }
 
   T& operator[](size_t index) {
@@ -64,27 +126,42 @@ class InlineVector {
   }
 
   bool operator==(const InlineVector<T, N>& other) const {
-    if (elements_ != other.elements_) {
+    if (size_ != other.size_) {
       return false;
     }
-    if (data_ != other.data_) {
-      return false;
-    }
-    for (size_t i = 0; i < elements_ - N; i++) {
-      if (heap_data_[i] != other.heap_data_[i]) {
+    // inline data
+    for (size_t i = 0; i < std::min(size_, N); i++) {
+      if (data_[i] != other.data_[i]) {
         return false;
+      }
+    }
+    // heap data
+    if (size_ > N) {
+      for (size_t i = 0; i < size_ - N; i++) {
+        if (heap_data_[i] != other.heap_data_[i]) {
+          return false;
+        }
       }
     }
     return true;
   }
 
+  friend std::ostream& operator<<(std::ostream& out,
+                                  const InlineVector<T, N>& other) {
+    for (size_t i = 0; i < other.size_; i++) {
+      out << other[i] << ", ";
+    }
+    return out;
+  }
+
   // TODO begin, end, emplace_back, ...
+
  private:
   static constexpr float kGrowFactor = 1.5;
   std::array<T, N> data_;
   T* heap_data_ = nullptr;
-  size_t elements_ = 0;
-  size_t allocated_elements_ = N;
+  size_t size_ = 0;
+  size_t capacity_ = N;
 };
 
 }  // namespace bdm
