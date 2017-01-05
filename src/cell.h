@@ -3,10 +3,10 @@
 
 #include <array>
 #include <cmath>
-#include "array.h"
 #include "backend.h"
 #include "daosoa.h"
 #include "default_force.h"
+#include "inline_vector.h"
 #include "math_util.h"
 #include "param.h"
 
@@ -68,7 +68,7 @@ class Cell {
     return ret;
   }
 
-  Vc_ALWAYS_INLINE const std::array<array<int, 8>, Backend::kVecLen>
+  Vc_ALWAYS_INLINE const std::array<InlineVector<int, 8>, Backend::kVecLen>
   GetNeighbors() const {
     return neighbors_;
   }
@@ -102,7 +102,7 @@ class Cell {
     tractor_force_ = tractor_force;
   }
   Vc_ALWAYS_INLINE void SetNeighbors(
-      const std::array<array<int, 8>, Backend::kVecLen>& neighbors) {
+      const std::array<InlineVector<int, 8>, Backend::kVecLen>& neighbors) {
     neighbors_ = neighbors;
   }
 
@@ -156,7 +156,7 @@ class Cell {
   real_v adherence_;
   real_v mass_;
   // stores a list of neighbor ids for each scalar cell
-  std::array<bdm::array<int, 8>, Backend::kVecLen> neighbors_;
+  std::array<InlineVector<int, 8>, Backend::kVecLen> neighbors_;
 };
 
 // ----------------------------------------------------------------------------

@@ -5,6 +5,7 @@
 #include <type_traits>
 #include "aosoa.h"
 #include "backend.h"
+#include "inline_vector.h"
 
 namespace bdm {
 
@@ -75,7 +76,8 @@ class daosoa {
     last->Append(value);
   }
 
-  void Gather(const bdm::array<int, 8>& indexes, aosoa<T, Backend>* ret) const {
+  void Gather(const InlineVector<int, 8>& indexes,
+              aosoa<T, Backend>* ret) const {
     const size_t scalars = indexes.size();
     std::size_t n_vectors =
         scalars / Backend::kVecLen + (scalars % Backend::kVecLen ? 1 : 0);
