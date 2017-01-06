@@ -26,165 +26,7 @@ void benchmarkPlainAosoa(const size_t num_cells, const size_t iterations,
           TimingAggregator* statistic);
 
 template<typename T>
-class ScalarRefWrapper {
-public:
-  ScalarRefWrapper(T&& data) : data_(std::move(data)) {}
-
-  ScalarRefWrapper(const ScalarRefWrapper<T>& other) : data_(std::move(other.data_)) {}
-    //TODO add all operators
-
-  T&& operator[](std::size_t index) {
-    return std::move(data_);
-  }
-
-  const T&& operator[](std::size_t index) const {
-    return std::move(data_);
-  }
-
-  ScalarRefWrapper<T>& operator=(const ScalarRefWrapper<T>& other) {
-    if (this != &other) {
-      std::move(data_) = other.data_;
-    }
-    return *this;
-  }
-
-  // TODO remove
-  void foo(T&& ref, int idx) {
-    std::move(ref) = idx;
-  }
-
-  T* begin() { return &data_; }
-  T* end() { return &data_+1; }
-
-  const T* begin() const { return &data_; }
-  const T* end() const { return &data_+1; }
-
-private:
-  T&& data_;
-};
-
-// template<typename T>
-// class VcScalarRefWrapper {
-// public:
-//   VcScalarRefWrapper(T& data, size_t index) : data_(data), index_(index) {}
-//
-//     //TODO add all operators
-//
-//   decltype(std::declval<T>()[0])&& operator[](std::size_t index) {
-//     return std::move(data_[index_]);
-//   }
-//
-//   const decltype(std::declval<T>()[0])&& operator[](std::size_t index) const {
-//     return std::move(data_[index_]);
-//   }
-//
-//   VcScalarRefWrapper<T>& operator=(const VcScalarRefWrapper<T>& other) {
-//     if (this != &other) {
-//       std::move(data_[index_]) = other.data_[other.index_];
-//     }
-//     return *this;
-//   }
-//
-//   template<typename U>
-//   Vc_ALWAYS_INLINE auto operator<(const U& u) const -> decltype(std::declval<T>() < u) {
-//     return data_ < u;
-//   }
-//
-//   template<typename U>
-//   Vc_ALWAYS_INLINE auto operator*(const U& u) const -> decltype(std::declval<T>() * u) {
-//     return data_ * u;
-//   }
-//
-//   template<typename U>
-//   Vc_ALWAYS_INLINE VcScalarRefWrapper<T>& operator+=(const U& u) {
-//     std::move(data_[index_]) += u;
-//     return *this;
-//   }
-//
-//   // TODO remove
-//   void foo(T&& ref, int idx) {
-//     std::move(ref) = idx;
-//   }
-//
-// private:
-//   T& data_;
-//   std::size_t index_;
-// };
-
-template<typename T>
-class VcScalarRefWrapper {
-public:
-  VcScalarRefWrapper(Vc::double_v& data, size_t index) : data_(data), index_(index) {}
-
-    //TODO add all operators
-
-  VcScalarRefWrapper<T>& operator[](std::size_t index) {
-    return *this;
-  }
-  //  Vc::SimdArray<double, 1> operator[](std::size_t index) {
-  //    return Vc::SimdArray<double, 1>(data_[index_]);
-  // }
-
-  // const decltype(std::declval<Vc::double_v>()[0])&& operator[](std::size_t index) const {
-  const VcScalarRefWrapper<T>& operator[](std::size_t index) const {
-    return *this;
-  }
-
-  // Vc::SimdArray<double, 1> operator[](std::size_t index) const {
-  //   return Vc::SimdArray<double, 1>(data_[index_]);
-  // }
-
-  VcScalarRefWrapper<T>& operator=(const VcScalarRefWrapper<T>& other) {
-    if (this != &other) {
-      std::move(data_[index_]) = other.data_[other.index_];
-    }
-    return *this;
-  }
-
-  template<typename U> // usage of MySimdArray would lead to circular reference
-  VcScalarRefWrapper<T>& operator=(const U& other) {
-    std::move(data_[index_]) = other[0];
-    return *this;
-  }
-
-  template<typename U>
-  Vc_ALWAYS_INLINE auto operator<(const U& u) const -> decltype(std::declval<T>() < u) {
-    //return data_ < u; // FIXME enable
-    throw "foobar";
-  }
-
-  template<typename U>
-  Vc_ALWAYS_INLINE auto operator*(const U& u) const -> decltype(std::declval<T>() * u) {
-    return data_ * u;
-  }
-
-  // Vc_ALWAYS_INLINE auto operator*(const VcScalarRefWrapper<T>& other) const -> decltype(std::declval<Vc::double_v>() * std::declval<Vc::double_v>()) {
-  //   return data_ * other.data_;
-  // }
-
-  template<typename U>
-  Vc_ALWAYS_INLINE VcScalarRefWrapper<T>& operator+=(const U& u) {
-    std::move(data_[index_]) += u;
-    return *this;
-  }
-
-  friend std::ostream &operator<<( std::ostream &out, const VcScalarRefWrapper<T> &wrapper ) {
-    out << wrapper.data_[wrapper.index_];
-    return out;
-  }
-
-  // TODO remove
-  // void foo(T&& ref, int idx) {
-  //   std::move(ref) = idx;
-  // }
-
-private:
-  Vc::double_v& data_;
-  std::size_t index_;
-};
-
-template<typename T>
-class SoaRefWrapper { // FIXME can we use the same refwrapper for scalar and vector??
+class SoaRefWrapper {
 public:
   SoaRefWrapper(T& data) : data_(data) {}
 
@@ -226,7 +68,6 @@ public:
     return out;
   }
 
-// FIXME
   typename T::iterator begin() { return data_.begin(); }
   typename T::iterator end() { return data_.end(); }
 
@@ -235,106 +76,6 @@ public:
 
 private:
   T& data_;
-};
-
-template<typename T>
-class SoaRefWrapper1 { // FIXME can we use the same refwrapper for scalar and vector??
-public:
-  SoaRefWrapper1(T& data) : data_(data) {}
-
-  //TODO add all operators
-
-  Vc_ALWAYS_INLINE  typename T::value_type& operator[](std::size_t index) {
-    return data_[index];
-  }
-
-  Vc_ALWAYS_INLINE  const typename T::value_type& operator[](std::size_t index) const {
-    return data_[index];
-  }
-
-  template<typename U>
-  Vc_ALWAYS_INLINE  auto operator<=(const U& u) const -> decltype(std::declval<typename T::value_type>() <= u) {
-    return data_ <= u;
-  }
-
-  template<typename U>
-  Vc_ALWAYS_INLINE  auto operator<(const U& u) const -> decltype(std::declval<typename T::value_type>() < u) {
-    return data_ < u;
-  }
-
-  template<typename U>
-  Vc_ALWAYS_INLINE  SoaRefWrapper1<T>& operator+=(const U& u) {
-    data_ += u;
-    return *this;
-  }
-
-  Vc_ALWAYS_INLINE  SoaRefWrapper1<T>& operator=(const SoaRefWrapper1<T>& other) {
-    if (this != &other) {
-      data_ = other.data_;
-    }
-    return *this;
-  }
-
-  friend std::ostream &operator<<( std::ostream &out, const SoaRefWrapper1<T> &wrapper ) {
-    out << wrapper.data_;
-    return out;
-  }
-
-  T* begin() { return &data_; }
-  T* end() { return &data_+1; }
-
-  const T* begin() const { return &data_; }
-  const T* end() const { return &data_+1; }
-
-private:
-  T& data_;
-};
-
-template<typename T>
-class MySimdArray {
-public:
-  MySimdArray() : data_(T()) {}
-  MySimdArray(const T& data) : data_(data) {}
-
-
-  // TODO add all operators
-  T& operator[](size_t index) {
-    return data_;
-  }
-
-  const T& operator[](size_t index) const {
-    return data_;
-  }
-
-  MySimdArray<T>& operator=(const VcScalarRefWrapper<MySimdArray<T> >& other ) {
-
-    return *this;
-  }
-
-  MySimdArray<T>& operator=(const MySimdArray<T>& other) {
-    if(*this != other) {
-
-    }
-    return *this;
-  }
-
-  friend std::ostream operator<<(std::ostream out, const MySimdArray<T> simd_array) {
-    out << simd_array.data_;
-  }
-
-  template<typename U>
-  Vc_ALWAYS_INLINE auto operator*(const U& u) const -> decltype(std::declval<T>() * u) {
-    return data_ * u;
-  }
-
-  // TODO return mask?
-  auto operator<(const MySimdArray<T> other) const -> decltype(std::declval<Vc::SimdArray<double, 1> >() < std::declval<double>()) {
-    // return data_ < other.data_; // FIXME enable
-    throw "foo";
-  }
-
-private:
-  T data_;
 };
 
 /// This class represents an array with exactly one element
@@ -363,36 +104,7 @@ public:
 
   const T* begin() const { return &data_; }
   const T* end() const { return &data_+1; }
-private:
-  T data_;
-};
 
-template<typename T>
-class OneElementArray1 {
-public:
-  OneElementArray1() : data_() {}
-  OneElementArray1(T&& data) : data_(data) {}
-
-  // Vc_ALWAYS_INLINE Vc::SimdArray<double, 1> operator[](const size_t idx) {
-  //   return Vc::SimdArray<double, 1>(data_[idx]);
-  // }
-  //
-  // Vc_ALWAYS_INLINE Vc::SimdArray<double, 1> operator[](const size_t idx) const {
-  //   return Vc::SimdArray<double, 1>(data_[idx]);
-  // }
-  Vc_ALWAYS_INLINE T& operator[](const size_t idx) {
-    return data_;
-  }
-
-  Vc_ALWAYS_INLINE const T& operator[](const size_t idx) const {
-    return data_;
-  }
-
-  T* begin() { return &data_; }
-  T* end() { return &data_+1; }
-
-  const T* begin() const { return &data_; }
-  const T* end() const { return &data_+1; }
 private:
   T data_;
 };
@@ -442,27 +154,14 @@ struct ScalarBackend {
   template<typename T, typename Allocator=std::allocator<T>> using soa = OneElementArray<T>;
 };
 
-struct ScalarRefBackend {  //TODO rename to VcScalarRefBackend
-  typedef double real_t;
-  static const size_t kVecLen = 1;
-  typedef MySimdArray<double> real_v;
-  template<typename T> using container =  T;
-  template<typename T, typename Allocator=std::allocator<T>> using soa = typename type_ternary_operator<std::is_same<T, real_v>::value, OneElementArray1<VcScalarRefWrapper<T> >, OneElementArray<SoaRefWrapper1<T> > >::type;  // TODO replace SoaRefWrapper with container specification
-};
-
 template<typename T, typename U=T>
 T iif(const decltype(std::declval<T>() < 0)& condition, const T& true_value, const U& false_value) {
-  throw "exception"; //FIXME
+  throw "not yet implemented exception";
 }
 
 template<>
 typename VcBackend::real_v iif<typename VcBackend::real_v>(const decltype(std::declval<typename VcBackend::real_v>() < std::declval<typename VcBackend::real_v>())& condition, const typename VcBackend::real_v& true_value, const typename VcBackend::real_v& false_value) {
   return Vc::iif(condition, true_value, false_value);
-}
-
-template<>
-typename ScalarRefBackend::real_v iif<typename ScalarRefBackend::real_v>(const decltype(std::declval<typename ScalarRefBackend::real_v>() < std::declval<typename ScalarRefBackend::real_v>())& condition, const typename ScalarRefBackend::real_v& true_value, const typename ScalarRefBackend::real_v& false_value) {
-  throw "not yet implemented exception";
 }
 
 struct Neurite {
@@ -525,60 +224,6 @@ public:
 private:
   Delegate delegate_;
 };
-
-template<typename Delegate>
-class CellScalarWrapperRef {
-public:
-  // FIXME verify that Delegate is Cell<ScalarRefBackend>
-  explicit CellScalarWrapperRef(const Delegate& delegate) : delegate_{delegate} {}
-
-  double GetDiameter() const {
-    return delegate_.GetDiameter()[0];
-  }
-
-  void SetDiameter(double diameter) {
-    typename VcBackend::real_v vec(diameter); // TODO huge overhead
-    delegate_.SetDiameter(VcScalarRefWrapper<typename VcBackend::real_v>(vec, 0));
-  }
-
-  double GetVolume() const {
-    return delegate_.GetVolume()[0];
-  }
-
-  void SetVolume(double volume) {
-    typename VcBackend::real_v vec(volume);
-    delegate_.SetVolume(VcScalarRefWrapper<typename VcBackend::real_v>(vec, 0));
-  }
-
-  void UpdateVolume() {
-    delegate_.UpdateVolume();
-  }
-
-  void ChangeVolume(double speed) {
-    typename VcBackend::real_v vec(speed);
-    delegate_.ChangeVolume(VcScalarRefWrapper<typename VcBackend::real_v>(vec, 0));
-  }
-
-  const std::vector<Neurite>& GetNeurites() const {
-    return delegate_.GetNeurites()[0];
-  }
-
-  void SetNeurites(std::vector<Neurite>& neurites) {  //FIXME if neurites is defined as const binding to ref doesn't work
-    delegate_.SetNeurites({neurites});
-  }
-
-  void UpdateNeurites() {
-    delegate_.UpdateNeurites();
-  }
-
-  friend std::ostream &operator<<( std::ostream &out, const CellScalarWrapperRef<Delegate> &cell ) {
-    out << cell.delegate_;
-    return out;
-  }
-
-private:
-  Delegate delegate_;
-};
 // </generated>
 
 template<typename Backend>
@@ -595,19 +240,8 @@ public:
   friend class Cell;
 
   // <required interface>
-  static CellScalarWrapper<Cell<ScalarBackend> > NewScalar() { // todo perfect forwarding for ctor arguments
+  static CellScalarWrapper<Cell<ScalarBackend> > NewScalar() { // TODO perfect forwarding for ctor arguments
     return CellScalarWrapper<Cell<ScalarBackend> >(Cell<ScalarBackend>());
-  }
-
-  template<typename T=Backend>
-  Cell(Cell<VcBackend>& other, size_t idx, typename std::enable_if<std::is_same<T, ScalarRefBackend>::value>::type* = 0) :
-    diameter_(VcScalarRefWrapper<MySimdArray<double> >(other.diameter_[idx_], idx)), // TODO fix template param
-    volume_(VcScalarRefWrapper<MySimdArray<double> >(other.volume_[idx_], idx)),  // TODO fix template param
-    neurites_(other.neurites_[idx_][idx]) {
-  }
-
-  CellScalarWrapper<Cell<ScalarRefBackend> > GetScalar(size_t idx) { // TODO VcBackend versino of operator[]
-    return CellScalarWrapper<Cell<ScalarRefBackend> >(Cell<ScalarRefBackend>(*this, idx));
   }
 
   //TODO make protected
@@ -659,8 +293,7 @@ public:
 
   void UpdateVolume() {
     for(size_t i = 0; i < Backend::kVecLen; i++) {
-      // FIXME uncomment
-      //volume_[idx_][i] = diameter_[idx_][i] * diameter_[idx_][i] * diameter_[idx_][i] * 4 / 3 * 3.14;
+      volume_[idx_][i] = diameter_[idx_][i] * diameter_[idx_][i] * diameter_[idx_][i] * 4 / 3 * 3.14;
     }
   }
 
@@ -791,23 +424,6 @@ int main(int argc, char** argv) {
   scalar.UpdateNeurites();
   auto& scalar_neurites = cell.GetNeurites();
   std::cout << "final scalar cell" << std::endl << scalar << std::endl;
-
-  // scalar reference into vector cell
-  std::cout << std::endl << "-----------------------------------" << std::endl;
-  std::cout << "scalar reference" << std::endl;
-  std::cout << "initial VcBackend cell" << std::endl <<  cell << std::endl;
-  auto&& scalar_ref = cell.GetScalar(1);
-  scalar_ref.SetDiameter(98);
-  scalar_ref.SetVolume(76);
-  // scalar_ref.ChangeVolume(3);
-  std::cout << "scalar_ref cell: " << std::endl << scalar_ref << std::endl;
-  scalar_ref.UpdateVolume();
-  std::cout << "scalar_ref cell: " << std::endl << scalar_ref << std::endl;
-  // std::cout << "scalar_ref.GetVolume(): " << scalar_ref.GetVolume() << std::endl;
-  // TODO interact with neurites
-  // std::cout << "scalar reference " << std::endl << scalar_ref << std::endl;
-  std::cout << " final VcBackend cell after modifications with scalar ref" << std::endl;
-  std::cout << cell << std::endl;
 
   // create soa container add and retrieve elements
   if (argc != 1 && argc != 4) {
