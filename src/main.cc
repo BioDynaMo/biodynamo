@@ -95,9 +95,11 @@ void scaling(size_t cells_per_dim, size_t iterations, size_t repititions,
 int main(int args, char** argv) {
   TimingAggregator statistic;
   size_t repititions = 1;
-  if (args == 2 && std::string(argv[1]) == "help") {
+  if (args == 2 &&
+      (std::string(argv[1]) == "help" || std::string(argv[1]) == "--help")) {
+    // clang-format off
     std::cout << "SYNOPSIS\n"
-              << "  ./bdmp help |\n"
+              << "  ./bdmp help | --help |\n"
               << "         [#repititions] | \n"
               << "         [#cells_per_dim #iterations #threads [#repititions] | \n"
               << "         --scaling [#repititions] | \n"
@@ -107,7 +109,7 @@ int main(int args, char** argv) {
               << "  cell growth and calculates displacement based on mechanical forces\n"
               << "  outputs runtime statistic for each operation\n"
               << "\nOPTIONS\n"
-              << "  help\n"
+              << "  help | --help\n"
               << "    Explains usage of this binary and its command line options\n"
               << "\n  [#repititions]\n"
               << "     number of cells per dimension: 8 (-> total number of cells: 8^3 = 512)\n"
@@ -127,6 +129,7 @@ int main(int args, char** argv) {
               << "     number of threads:             1 - logical CPUs on the system - threads incremented += 1\n"
               << "     number of repititions:         according to parameter - 1 if not specified\n"
               << std::endl;
+    // clang-format on
     return 0;
   } else if (args >= 4) {
     size_t cells;
