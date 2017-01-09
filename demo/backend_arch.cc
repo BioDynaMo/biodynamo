@@ -154,13 +154,7 @@ struct ScalarBackend {
   template<typename T, typename Allocator=std::allocator<T>> using soa = OneElementArray<T>;
 };
 
-template<typename T, typename U=T>
-T iif(const decltype(std::declval<T>() < 0)& condition, const T& true_value, const U& false_value) {
-  throw "not yet implemented exception";
-}
-
-template<>
-typename VcBackend::real_v iif<typename VcBackend::real_v>(const decltype(std::declval<typename VcBackend::real_v>() < std::declval<typename VcBackend::real_v>())& condition, const typename VcBackend::real_v& true_value, const typename VcBackend::real_v& false_value) {
+typename VcBackend::real_v iif(const decltype(std::declval<typename VcBackend::real_v>() < std::declval<typename VcBackend::real_v>())& condition, const typename VcBackend::real_v& true_value, const typename VcBackend::real_v& false_value) {
   return Vc::iif(condition, true_value, false_value);
 }
 
