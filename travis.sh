@@ -12,13 +12,17 @@ if [ "$TRAVIS_OS_NAME" = "osx" ]; then
   brew install valgrind
   # get clang 3.9
   wget http://releases.llvm.org/3.9.0/clang+llvm-3.9.0-x86_64-apple-darwin.tar.xz 2> /dev/null
-  tar zxf clang+llvm-3.9.0-x86_64-apple-darwin.tar.xz > /dev/null
+  tar xf clang+llvm-3.9.0-x86_64-apple-darwin.tar.xz > /dev/null
+  export LLVMDIR="`pwd`/clang+llvm-3.9.0-x86_64-apple-darwin"
+  export CC=$LLVMDIR/bin/clang
+  export CXX=$LLVMDIR/bin/clang++
+  export CXXFLAGS=-I$LLVMDIR/include
+  export LDFLAGS=-L$LLVMDIR/lib
+  export DYLD_LIBRARY_PATH=$LLVMDIR/lib:$DYLD_LIBRARY_PATH
   # get latest cmake
   wget https://cmake.org/files/v3.6/cmake-3.6.1-Darwin-x86_64.tar.gz 2> /dev/null
   tar zxf cmake-3.6.1-Darwin-x86_64.tar.gz > /dev/null
-  # update path
-  export PATH="`pwd`/clang+llvm-3.9.0-x86_64-apple-darwin/include/c++/v1":"`pwd`/clang+llvm-3.9.0-x86_64-apple-darwin/bin":"`pwd`/cmake-3.6.1-Darwin-x86_64/CMake.app/Contents/bin":$PATH:
-  export DYLD_LIBRARY_PATH="`pwd`/clang+llvm-3.9.0-x86_64-apple-darwin/lib":$DYLD_LIBRARY_PATH
+  export PATH="`pwd`/cmake-3.6.1-Darwin-x86_64/CMake.app/Contents/bin":$PATH:
 fi
 
 if [ "$TRAVIS_OS_NAME" = "linux" ]; then
