@@ -159,6 +159,11 @@ if (test)
 
   # execute all tests with command: make test
   add_test(NAME ${TEST_TARGET} COMMAND ${TEST_TARGET})
+  if (APPLE)
+    set_tests_properties(${TEST_TARGET} PROPERTIES ENVIRONMENT
+        "DYLD_LIBRARY_PATH=$ENV{DYLD_LIBRARY_PATH}"
+    )
+  endif()
   # add valgrind test
   if (valgrind)
     add_test(NAME valgrind COMMAND valgrind --tool=memcheck --leak-check=full --show-leak-kinds=all --show-reachable=no --suppressions=${CMAKE_BINARY_DIR}/../valgrind-biod.supp --error-exitcode=1 ./${TEST_TARGET})
