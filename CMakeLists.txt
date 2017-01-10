@@ -9,7 +9,12 @@ project(BioDynaMo)
 
 # Options. Turn on with 'cmake -Dmyvarname=ON'.
 option(test "Build all tests." ON) # Makes boolean 'test' available.
-option(valgrind "Enable valgrind tests and make build compatible with valgrind tool." ON)
+if(APPLE)
+   # valgrind currently broken on macOS
+   option(valgrind "Enable valgrind tests and make build compatible with valgrind tool." OFF)
+else()
+   option(valgrind "Enable valgrind tests and make build compatible with valgrind tool." ON)
+endif()
 option(coverage "Enable test coverage report generation." OFF)
 
 #--------------------- find packages -------------
@@ -170,7 +175,7 @@ if (test)
   endif()
 
   # create target that shows the test ouput on failure
-  add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND}  --force-new-ctest-process --output-on-failure)
+  add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} --force-new-ctest-process --output-on-failure)
 
   # add custom clean target for test project
   add_custom_target(testbdmclean COMMAND ${CMAKE_COMMAND} -P "${CMAKE_BINARY_DIR}/CMakeFiles/${TEST_TARGET}.dir/cmake_clean.cmake")
