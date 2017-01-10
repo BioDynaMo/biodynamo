@@ -7,7 +7,8 @@ biod=`pwd`
 
 # update and install packages
 if [ "$TRAVIS_OS_NAME" = "osx" ]; then
-  brew update
+  sw_vers
+  brew update >& /dev/null
   brew install doxygen
   brew install valgrind
   # get clang 3.9
@@ -44,12 +45,6 @@ else
 fi
 cd root
 . bin/thisroot.sh
-
-# link to newest compiler
-# Attention: use system compiler ROOT is compiled with
-#if [ "$TRAVIS_OS_NAME" = "linux" ] && [ "$CXX" = "g++" ]; then export CXX="g++-5" CC="gcc-5"; fi
-#if [ "$TRAVIS_OS_NAME" = "linux" ] && [ "$CXX" = "clang++" ]; then export CXX="clang++-3.7" CC="clang-3.7"; fi
-#if [ "$TRAVIS_OS_NAME" = "osx" ] && [ "$CXX" = "g++" ]; then export CXX="/usr/local/Cellar/gcc/5.3.0/bin/g++-5" CC="/usr/local/Cellar/gcc/5.3.0/bin/gcc-5"; fi
 
 # output compiler information
 echo ${CXX}
