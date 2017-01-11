@@ -10,7 +10,7 @@ project(BioDynaMo)
 # Options. Turn on with 'cmake -Dmyvarname=ON'.
 option(test "Build all tests." ON) # Makes boolean 'test' available.
 if(APPLE)
-   # valgrind currently broken on macOS
+   # valgrind currently broken on macOS 10.12
    option(valgrind "Enable valgrind tests and make build compatible with valgrind tool." OFF)
 else()
    option(valgrind "Enable valgrind tests and make build compatible with valgrind tool." ON)
@@ -172,6 +172,11 @@ if (test)
   # add valgrind test
   if (valgrind)
     add_test(NAME valgrind COMMAND valgrind --tool=memcheck --leak-check=full --show-leak-kinds=all --show-reachable=no --suppressions=${CMAKE_BINARY_DIR}/../valgrind-biod.supp --error-exitcode=1 ./${TEST_TARGET})
+    if (APPLE)
+      set_tests_properties(valgrind PROPERTIES ENVIRONMENT
+        "DYLD_LIBRARY_PATH=$ENV{DYLD_LIBRARY_PATH}"
+      )
+    endif()
   endif()
 
   # create target that shows the test ouput on failure
