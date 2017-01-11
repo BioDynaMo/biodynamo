@@ -14,6 +14,9 @@ cx3d-cpp.iml
 #----------------- VS Code ------------------
 .vscode/.*
 
+#----------------- VS machine- and user-specifc files ------------------
+.vs/
+
 #----------------- GNU global ------------------
 GPATH
 GRTAGS
