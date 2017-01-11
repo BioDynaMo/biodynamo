@@ -1,5 +1,5 @@
-#ifndef DISPLACEMENT_OP_
-#define DISPLACEMENT_OP_
+#ifndef DISPLACEMENT_OP_H_
+#define DISPLACEMENT_OP_H_
 
 #include <cmath>
 #include "backend.h"
@@ -206,4 +206,4 @@ class DisplacementOp {
 
 }  // namespace bdm
 
-#endif  // DISPLACEMENT_OP_
+#endif  // DISPLACEMENT_OP_H_

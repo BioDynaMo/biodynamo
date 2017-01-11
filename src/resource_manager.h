@@ -6,7 +6,7 @@
 
 namespace bdm {
 
-// TODO: cell type should be templated; should also be possible to
+// TODO(lukas): cell type should be templated; should also be possible to
 // hold different cell types
 template <typename Backend>
 class ResourceManager {

@@ -83,7 +83,7 @@ void execute(size_t cells_per_dim, size_t iterations, size_t threads,
 
 void scaling(size_t cells_per_dim, size_t iterations, size_t repititions,
              TimingAggregator* statistic,
-             const std::function<void(int&)> thread_inc = [](int& i) {
+             const std::function<void(int&)> thread_inc = [](int& i) {  // NOLINT(runtime/references)
                i *= 2;
              }, const int max_threads = omp_get_max_threads()) {
   for (int i = 1; i <= max_threads; thread_inc(i)) {

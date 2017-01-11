@@ -1,6 +1,7 @@
 #ifndef DEFAULT_FORCE_H_
 #define DEFAULT_FORCE_H_
 
+#include <algorithm>
 #include <cmath>
 #include <Vc/Vc>
 
