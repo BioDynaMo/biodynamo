@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.2.0)
+﻿cmake_minimum_required(VERSION 3.2.0)
 
 # With CMAKE >= 3.2 external projects support byproducts, this is needed
 # to support Ninja as generator
@@ -45,10 +45,19 @@ endif()
 
 #--------------------- set compiler flags -------------
 if (coverage)
-  set(CMAKE_BUILD_TYPE "Debug")
-  set(GCC_COMPILE_FLAGS "-Wall -Wno-missing-braces -g -O0 -fprofile-arcs -ftest-coverage")
+  if (WIN32)
+    set(CMAKE_BUILD_TYPE "Debug")
+    set(GCC_COMPILE_FLAGS "-Wall -g -O0 /openmp -fprofile-arcs -ftest-coverage")
+  else()
+    set(CMAKE_BUILD_TYPE "Debug")
+    set(GCC_COMPILE_FLAGS "-Wall -Wno-missing-braces -g -O0 -fopenmp -fprofile-arcs -ftest-coverage")
+  endif()
 else()
-  set(GCC_COMPILE_FLAGS "-Wall -Wno-missing-braces")
+  if (WIN32)
+    set(GCC_COMPILE_FLAGS "-Wall /openmp")
+  else()
+    set(GCC_COMPILE_FLAGS "-Wall -Wno-missing-braces -fopenmp -ldl")
+  endif()
 endif()
 set(GCC_LINK_FLAGS "")
 # append
