@@ -8,6 +8,10 @@ biod=`pwd`
 # update and install packages
 if [ "$TRAVIS_OS_NAME" = "osx" ]; then
   sw_vers
+  osx_vers=`sw_vers -productVersion | cut -d . -f1 -f2`
+  if [ "$osx_vers" != "10.12"]; then
+     test_valgrind="-Dvalgrind=ON"
+  fi
   brew update >& /dev/null
   brew install doxygen
   brew install valgrind
@@ -55,5 +59,5 @@ ${CXX} -v
 cd $biod
 mkdir build
 cd build
-cmake .. && make
+cmake $test_valgrind .. && make
 make check
