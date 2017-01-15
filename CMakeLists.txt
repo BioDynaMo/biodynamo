@@ -46,20 +46,25 @@ endif()
 #--------------------- set compiler flags -------------
 if (coverage)
   set(CMAKE_BUILD_TYPE "Debug")
-  set(GCC_COMPILE_FLAGS "-Wall -Wno-missing-braces -g -O0 -fopenmp -fprofile-arcs -ftest-coverage")
+  set(GCC_COMPILE_FLAGS "-Wall -Wno-missing-braces -g -O0 -fprofile-arcs -ftest-coverage")
 else()
-  set(GCC_COMPILE_FLAGS "-Wall -Wno-missing-braces -fopenmp -ldl")
+  set(GCC_COMPILE_FLAGS "-Wall -Wno-missing-braces")
 endif()
-set(GCC_LINK_FLAGS    "")
+set(GCC_LINK_FLAGS "")
 # append
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${GCC_COMPILE_FLAGS}")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GCC_COMPILE_FLAGS}")
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${GCC_LINK_FLAGS}")
+# append OpenMP flags
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 # special clang flag
 if(${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
   # silence unsupported -pthread argument at link time
   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Qunused-arguments")
   SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Qunused-arguments")
+  # silence clang 3.9 warning
+  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-undefined-var-template")
 endif()
 
 #--------------------- set rpath options -------------
