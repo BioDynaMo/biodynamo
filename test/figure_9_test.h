@@ -136,6 +136,9 @@ class Figure9Test : public BaseSimulationTest {
     auto scheduler = Scheduler::getInstance();
     for (int i = 0; i < 350; i++) {  // 350
       scheduler->simulateOneStep();
+      if (i == 300 || i == 301 || i == 310) {
+        checkpoint();
+      }
     }
 
     TestSynapses::extendExcressencesAndSynapseOnEveryNeuriteElement(0.4);

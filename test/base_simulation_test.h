@@ -1,9 +1,12 @@
 #ifndef BASE_SIMULATION_TEST_H_
 #define BASE_SIMULATION_TEST_H_
 
+#include <limits>
 #include <string>
+#include <sstream>
 #include <vector>
 
+#include <TFile.h>
 #include "gtest/gtest.h"
 
 #include "simulation/ecm.h"
@@ -56,6 +59,58 @@ class BaseSimulationTest : public ::testing::Test {
    */
   void run();
 
+  void checkpoint () {
+    auto ecm = ECM::getInstance();
+
+    // initialize
+    auto num_spheres = ecm->getPhysicalSphereListSize();
+    data_s_.resize(num_spheres * 4);
+    last_checkpoint_s_.resize(num_spheres * 4);
+
+    auto num_cylinders = ecm->getPhysicalCylinderListSize();
+    data_c_.resize(num_cylinders * 8);
+    last_checkpoint_c_.resize(num_cylinders * 8);
+
+    // write values initialize
+    for (int i = 0; i < num_spheres; i++) {
+      ecm->getPhysicalSphere(i)->checkpoint(&data_s_, &last_checkpoint_s_, i);
+    }
+    for (int i = 0; i < num_cylinders; i++) {
+      ecm->getPhysicalCylinder(i)->checkpoint(&data_c_, &last_checkpoint_c_, i);
+    }
+
+    // save values for first checkpoint so we can use it for consecutive
+    // invocations to calculate a difference
+    if (save_baseline_) {
+      last_checkpoint_s_ = data_s_;
+      last_checkpoint_c_ = data_c_;
+      save_baseline_ = false;
+    }
+
+    checkpoint_id_++;
+
+    // output
+    // std::cout.precision(std::numeric_limits<double>::max_digits10);
+    // std::cout << "checkpoint " << checkpoint_id_ << std::endl;
+    // for(auto val : data_s_) {
+    //   std::cout << val << std::endl;
+    // }
+    // std::cout << std::endl;
+
+    // write to file
+    std::stringstream filename_s;
+    filename_s << "cp_s_" << getTestName() << "_" << checkpoint_id_ << ".root";
+    TFile f(filename_s.str().c_str(), "RECREATE");
+    f.WriteObject(&data_s_,"data_");
+    f.Close();
+
+    std::stringstream filename_c;
+    filename_c << "cp_c_" << getTestName() << "_" << checkpoint_id_ << ".root";
+    TFile f_c(filename_c.str().c_str(), "RECREATE");
+    f_c.WriteObject(&data_c_,"data_");
+    f_c.Close();
+  }
+
  protected:
   /**
    * holds instances additional instances of PhysicalNode that are created during the simulation
@@ -80,6 +135,13 @@ class BaseSimulationTest : public ::testing::Test {
   void initPhysicalNodeMovementListener();
 
  private:
+  std::vector<double> data_s_;
+  std::vector<double> last_checkpoint_s_;
+  std::vector<double> data_c_;
+  std::vector<double> last_checkpoint_c_;
+  bool save_baseline_ = true;
+  int checkpoint_id_ = -1;
+
   long runtime_ = 0;
 
   /**

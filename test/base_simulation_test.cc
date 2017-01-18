@@ -90,7 +90,7 @@ void BaseSimulationTest::assertSimulationState() {
   bool equal = expected == actual;
   EXPECT_TRUE(equal);
   if (equal) {
-    persistRuntime();
+    // persistRuntime();
   } else {
     writeToFile("failed_" + getTestName() + "_actual", actual);
     writeToFile("failed_" + getTestName() + "_expected", expected);

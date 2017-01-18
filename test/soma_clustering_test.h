@@ -99,6 +99,9 @@ class SomaClusteringTest : public BaseSimulationTest {
     auto scheduler = Scheduler::getInstance();
     for (int i = 0; i < 1000; i++) {
       scheduler->simulateOneStep();
+      if (i == 500 || i == 501 || i == 510) {
+        checkpoint();
+      }
     }
   }
 

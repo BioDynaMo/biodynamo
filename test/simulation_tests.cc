@@ -67,9 +67,9 @@ TEST_F (SmallNetworkTest, simulation) {
   run();
 }
 
-//TEST_F (SomaClusteringTest, simulation) {
-//  run();
-//}
+TEST_F (SomaClusteringTest, simulation) {
+ run();
+}
 
 TEST_F (SomaRandomWalkModuleTest, simulation) {
   run();

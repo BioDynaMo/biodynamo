@@ -171,6 +171,9 @@ class IntracellularDiffusionTest : public BaseSimulationTest {
     auto scheduler = Scheduler::getInstance();
     for (int i = 0; i < 2001; i++) {
       scheduler->simulateOneStep();
+      if (i == 1900 || i == 1901 || i == 1910) {
+        checkpoint();
+      }
     }
   }
 
@@ -182,4 +185,3 @@ class IntracellularDiffusionTest : public BaseSimulationTest {
 }  // namespace bdm
 
 #endif  // TEST_INTRACELLULAR_DIFFUSION_TEST_H_
-

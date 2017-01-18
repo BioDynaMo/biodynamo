@@ -426,6 +426,29 @@ class PhysicalCylinder : public PhysicalObject {
    */
   void updateDependentPhysicalVariables() override;
 
+  void checkpoint(std::vector<double>* data, std::vector<double>* checkpoint, size_t object_number) const {
+    static int c = 8;
+    if (checkpoint != nullptr) {
+      (*data)[object_number * c + 0] = mass_location_[0] - (*checkpoint)[object_number * c + 0];
+      (*data)[object_number * c + 1] = mass_location_[1] - (*checkpoint)[object_number * c + 1];
+      (*data)[object_number * c + 2] = mass_location_[2] - (*checkpoint)[object_number * c + 2];
+      (*data)[object_number * c + 3] = diameter_  - (*checkpoint)[object_number * c + 3];
+      (*data)[object_number * c + 4] = actual_length_  - (*checkpoint)[object_number * c + 4];
+      (*data)[object_number * c + 5] = spring_axis_[0] - (*checkpoint)[object_number * c + 5];
+      (*data)[object_number * c + 6] = spring_axis_[1] - (*checkpoint)[object_number * c + 6];
+      (*data)[object_number * c + 7] = spring_axis_[2] - (*checkpoint)[object_number * c + 7];
+
+      // (*data)[object_number * c + 0] = (double) ((long long) (mass_location_[0]) ^ ( (long long) (*checkpoint)[object_number * c + 0]));
+      // (*data)[object_number * c + 1] = (double) ((long long) (mass_location_[1]) ^ ( (long long) (*checkpoint)[object_number * c + 1]));
+      // (*data)[object_number * c + 2] = (double) ((long long) (mass_location_[2]) ^ ( (long long) (*checkpoint)[object_number * c + 2]));
+      // (*data)[object_number * c + 3] = (double) ((long long) diameter_  ^ ( (long long) (*checkpoint)[object_number * c + 3]));
+      // (*data)[object_number * c + 4] = (double) ((long long) actual_length_  ^ ( (long long)  (*checkpoint)[object_number * c + 4]));
+      // (*data)[object_number * c + 5] = (double) ((long long) spring_axis_[0] ^ ( (long long) (*checkpoint)[object_number * c + 5]));
+      // (*data)[object_number * c + 6] = (double) ((long long) spring_axis_[1] ^ ( (long long) (*checkpoint)[object_number * c + 6]));
+      // (*data)[object_number * c + 7] = (double) ((long long) spring_axis_[2] ^ ( (long long) (*checkpoint)[object_number * c + 7]));
+    }
+  }
+
  protected:
   /**
    * Updates the concentration of substances, based on the volume of the object.

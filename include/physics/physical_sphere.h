@@ -209,6 +209,15 @@ class PhysicalSphere : public PhysicalObject {
 
   double getLength() const override;
 
+  void checkpoint(std::vector<double>* data, std::vector<double>* checkpoint, size_t object_number) const {
+    if (checkpoint != nullptr) {
+      (*data)[object_number * 4 + 0] = mass_location_[0] - (*checkpoint)[object_number * 4 + 0];
+      (*data)[object_number * 4 + 1] = mass_location_[1] - (*checkpoint)[object_number * 4 + 1];
+      (*data)[object_number * 4 + 2] = mass_location_[2] - (*checkpoint)[object_number * 4 + 2];
+      (*data)[object_number * 4 + 3] = diameter_  - (*checkpoint)[object_number * 4 + 3];
+    }
+  }
+
  protected:
   /**
    * A PhysicalSphere has no mother that could call, so this method is not used.

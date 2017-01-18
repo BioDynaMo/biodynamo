@@ -41,6 +41,9 @@ class DividingCellTest : public BaseSimulationTest {
         auto c2 = cell->divide();       // otherwise divide
         c2->setColorForAllPhysicalObjects(Param::kBlue);
       }
+      if (i == 4900 || i == 4901 || i == 4910) {
+        checkpoint();
+      }
     }
   }
 
