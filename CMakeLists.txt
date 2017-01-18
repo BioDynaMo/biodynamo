@@ -92,7 +92,8 @@ endif()
 
 #--------------------- setup Vc ----------------
 # setup Vc
-ExternalProject_Add(
+if (WIN32)
+  ExternalProject_Add(
     Vc
     URL "${CMAKE_SOURCE_DIR}/third_party/Vc-master_2bfce51.zip"
     PREFIX "${CMAKE_CURRENT_BINARY_DIR}/Vc"
@@ -103,12 +104,31 @@ ExternalProject_Add(
     INSTALL_COMMAND "" # Disable install step
     # Ugly but necessary, in future versions one can use ${binary_dir}
     # in BUILD_BYPRODUCTS
-    #BUILD_BYPRODUCTS "${binary_dir}/libVc.a"
-    BUILD_BYPRODUCTS "${CMAKE_CURRENT_BINARY_DIR}/Vc/src/Vc-build/libVc.a"
-)
+    BUILD_BYPRODUCTS "${CMAKE_CURRENT_BINARY_DIR}/Vc/src/Vc-build/Debug/Vc.lib"
+  )
+else()
+  ExternalProject_Add(
+    Vc
+    URL "${CMAKE_SOURCE_DIR}/third_party/Vc-master_2bfce51.zip"
+    PREFIX "${CMAKE_CURRENT_BINARY_DIR}/Vc"
+    CMAKE_ARGS "-DBUILD_TESTING=off"
+    CMAKE_CACHE_ARGS
+    -DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}
+    -DCMAKE_C_COMPILER:FILEPATH=${CMAKE_C_COMPILER}
+    INSTALL_COMMAND "" # Disable install step
+    # Ugly but necessary, in future versions one can use ${binary_dir}
+    # in BUILD_BYPRODUCTS
+    BUILD_BYPRODUCTS "${binary_dir}/libVc.a"
+  )
+endif()
+
 set(Vc_INCLUDE_DIR "${CMAKE_CURRENT_BINARY_DIR}/Vc/src/Vc/include"
                    "${CMAKE_CURRENT_BINARY_DIR}/Vc/src/Vc/")
-set(Vc_LIBRARIES "${CMAKE_CURRENT_BINARY_DIR}/Vc/src/Vc-build/libVc.a")
+if (WIN32)
+  set(Vc_LIBRARIES "${CMAKE_CURRENT_BINARY_DIR}/Vc/src/Vc-build/Debug/Vc.lib")
+else()
+  set(Vc_LIBRARIES "${CMAKE_CURRENT_BINARY_DIR}/Vc/src/Vc-build/libVc.a")
+endif()
 
 #--------------------- build shared library libbiodynamo ----------------
 # add the headers into the project
@@ -143,29 +163,49 @@ if (test)
   enable_testing()
 
   # setup google test
-  ExternalProject_Add(
-    gtest
-    URL "${CMAKE_SOURCE_DIR}/third_party/gtest-1.7.0.zip"
-    PREFIX "${CMAKE_CURRENT_BINARY_DIR}/gtest"
-    CMAKE_CACHE_ARGS
-      -DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}
-      -DCMAKE_C_COMPILER:FILEPATH=${CMAKE_C_COMPILER}
-    INSTALL_COMMAND "" # Disable install step
-    # Ugly but necessary, in future versions one can use ${binary_dir}
-    # in BUILD_BYPRODUCTS
-    #BUILD_BYPRODUCTS "${binary_dir}/libgtest.a"
-    BUILD_BYPRODUCTS "${CMAKE_BINARY_DIR}/gtest/src/gtest-build/libgtest.a"
-  )
+  if (WIN32)
+    ExternalProject_Add(
+      gtest
+      URL "${CMAKE_SOURCE_DIR}/third_party/gtest-1.7.0.zip"
+      PREFIX "${CMAKE_CURRENT_BINARY_DIR}/gtest"
+      CMAKE_CACHE_ARGS
+        -DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}
+        -DCMAKE_C_COMPILER:FILEPATH=${CMAKE_C_COMPILER}
+      INSTALL_COMMAND "" # Disable install step
+      # Ugly but necessary, in future versions one can use ${binary_dir}
+      # in BUILD_BYPRODUCTS
+      BUILD_BYPRODUCTS "${CMAKE_BINARY_DIR}/gtest/src/gtest-build/Debug/gtest.lib"
+    )
+  else()
+    ExternalProject_Add(
+      gtest
+      URL "${CMAKE_SOURCE_DIR}/third_party/gtest-1.7.0.zip"
+      PREFIX "${CMAKE_CURRENT_BINARY_DIR}/gtest"
+      CMAKE_CACHE_ARGS
+        -DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}
+        -DCMAKE_C_COMPILER:FILEPATH=${CMAKE_C_COMPILER}
+      INSTALL_COMMAND "" # Disable install step
+      # Ugly but necessary, in future versions one can use ${binary_dir}
+      # in BUILD_BYPRODUCTS
+      BUILD_BYPRODUCTS "${binary_dir}/libgtest.a"
+    )
+  endif()
   ExternalProject_Get_Property(gtest source_dir binary_dir)
 
   # Create a libgtest target to be used as a dependency by test program
   add_library(libgtest IMPORTED STATIC GLOBAL)
   add_dependencies(libgtest gtest)
-  set_target_properties(libgtest PROPERTIES
-      IMPORTED_LOCATION "${binary_dir}/libgtest.a"
-      IMPORTED_LINK_INTERFACE_LIBRARIES "${CMAKE_THREAD_LIBS_INIT}"
-  )
-
+  if (WIN32)
+    set_target_properties(libgtest PROPERTIES
+        IMPORTED_LOCATION "${binary_dir}/Debug/gtest.lib"
+        IMPORTED_LINK_INTERFACE_LIBRARIES "${CMAKE_THREAD_LIBS_INIT}"
+    )
+  else()
+    set_target_properties(libgtest PROPERTIES
+        IMPORTED_LOCATION "${binary_dir}/libgtest.a"
+        IMPORTED_LINK_INTERFACE_LIBRARIES "${CMAKE_THREAD_LIBS_INIT}"
+    )
+  endif()
   # add include directories for gtest
   include_directories("${CMAKE_BINARY_DIR}/gtest/src/gtest/include")
 

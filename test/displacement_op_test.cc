@@ -1,4 +1,4 @@
-#include <gtest/gtest.h>
+﻿#include <gtest/gtest.h>
 #include "cell.h"
 #include "displacement_op.h"
 #include "test_util.h"
@@ -12,13 +12,25 @@ TEST(DisplacementOpTest, Compute) {
     FAIL() << "Backend must at least support two elements for this test";
   }
   // set up cells
-  real_v diameter((const real_t[]){9, 11});
-  real_v adherence((const real_t[]){0.3, 0.4});
-  real_v mass((const real_t[]){1.4, 1.1});
-
-  std::array<real_v, 3> position = {real_v((const real_t[]){0, 0}),
-                                    real_v((const real_t[]){0, 5}),
-                                    real_v((const real_t[]){0, 0})};
+  real_v diameter;
+  diameter[0] = 9;
+  diameter[1] = 11;
+  real_v adherence;
+  adherence[0] = 0.3;
+  adherence[1] = 0.4;
+  real_v mass;
+  mass[0] = 1.4;
+  mass[1] = 1.1;
+  real_v x;
+  x[0] = 0;
+  x[1] = 0;
+  real_v y;
+  y[0] = 0;
+  y[1] = 5;
+  real_v z;
+  z[0] = 0;
+  z[1] = 0;
+  std::array<real_v, 3> position = {x, y, z};
 
   // todo generate target values with this tf
   // std::array<real_v, 3> tractor_force = {

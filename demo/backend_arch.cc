@@ -1,4 +1,4 @@
-#include <array>
+﻿#include <array>
 #include <cmath>
 #include <iostream>
 #include <vector>
@@ -459,7 +459,7 @@ void benchmarkSoaCell(const size_t num_cells, const size_t iterations,
   {
     Timing timing("soaCell", statistic);
 #pragma omp parallel for default(none) shared(cells_ref) firstprivate(iterations)
-    for (size_t i = 0; i < N; i++) {
+    for (int i = 0; i < N; i++) {
         auto& cell = cells_ref[i];
         auto ifresult = cell.GetDiameter() <= 40;
         Vc::double_v dv(300);
@@ -532,7 +532,7 @@ void benchmarkPlainSoa(const size_t num_cells, const size_t iterations,
   {
     Timing timing("vcSoa", statistic);
 #pragma omp parallel for default(none) shared(cells) firstprivate(iterations)
-    for (size_t i = 0; i < N; i++) {
+    for (int i = 0; i < N; i++) {
       auto& cell = cells[i];
       auto ifresult = cell.GetDiameter() <= 40;
       Vc::double_v dv(300);
@@ -565,7 +565,7 @@ void benchmarkAosoaCell(const size_t num_cells, const size_t iterations,
   {
     Timing timing("aosoaCell", statistic);
 #pragma omp parallel for default(none) shared(cells) firstprivate(iterations)
-    for (size_t i = 0; i < N; i++) {
+    for (int i = 0; i < N; i++) {
         auto& cell = cells[i];
         auto ifresult = cell.GetDiameter() <= 40;
         Vc::double_v dv(300);
@@ -623,7 +623,7 @@ void benchmarkPlainAosoa(const size_t num_cells, const size_t iterations,
   {
     Timing timing("vcAosoa", statistic);
 #pragma omp parallel for default(none) shared(cells) firstprivate(iterations)
-    for (size_t i = 0; i < N; i++) {
+    for (int i = 0; i < N; i++) {
       auto& cell = cells[i];
       auto ifresult = cell.GetDiameter() <= 40;
       Vc::double_v dv(300);

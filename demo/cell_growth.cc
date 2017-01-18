@@ -1,4 +1,4 @@
-#include <cmath>
+﻿#include <cmath>
 #include <functional>
 #include <iostream>
 #include <sstream>
@@ -33,7 +33,7 @@ void execute(size_t cells_per_dim, size_t iterations, size_t threads,
        << cells_per_dim << " cells per dim - " << iterations << " iteration(s)";
     statistic->AddDescription(ss.str());
 
-    const unsigned space = 20;
+    const double space = 20;
     daosoa<Cell> cells(cells_per_dim * cells_per_dim * cells_per_dim);
     {
       Timing timing("Setup", statistic);
