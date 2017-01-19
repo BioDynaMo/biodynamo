@@ -19,6 +19,11 @@ namespace physics {
 using local_biology::CellElement;
 using local_biology::NeuriteElement;
 
+union DL {
+  double d;
+  long long l;
+};
+
 /**
  * A cylinder can be seen as a normal cylinder, with two end points and a diameter. It is oriented;
  * the two points are called proximal and distal. The PhysicalCylinder is be part of a tree-like
@@ -429,25 +434,37 @@ class PhysicalCylinder : public PhysicalObject {
   void checkpoint(std::vector<double>* data, std::vector<double>* checkpoint, size_t object_number) const {
     static int c = 8;
     if (checkpoint != nullptr) {
-      (*data)[object_number * c + 0] = mass_location_[0] - (*checkpoint)[object_number * c + 0];
-      (*data)[object_number * c + 1] = mass_location_[1] - (*checkpoint)[object_number * c + 1];
-      (*data)[object_number * c + 2] = mass_location_[2] - (*checkpoint)[object_number * c + 2];
-      (*data)[object_number * c + 3] = diameter_  - (*checkpoint)[object_number * c + 3];
-      (*data)[object_number * c + 4] = actual_length_  - (*checkpoint)[object_number * c + 4];
-      (*data)[object_number * c + 5] = spring_axis_[0] - (*checkpoint)[object_number * c + 5];
-      (*data)[object_number * c + 6] = spring_axis_[1] - (*checkpoint)[object_number * c + 6];
-      (*data)[object_number * c + 7] = spring_axis_[2] - (*checkpoint)[object_number * c + 7];
+      // (*data)[object_number * c + 0] = mass_location_[0] - (*checkpoint)[object_number * c + 0];
+      // (*data)[object_number * c + 1] = mass_location_[1] - (*checkpoint)[object_number * c + 1];
+      // (*data)[object_number * c + 2] = mass_location_[2] - (*checkpoint)[object_number * c + 2];
+      // (*data)[object_number * c + 3] = diameter_  - (*checkpoint)[object_number * c + 3];
+      // (*data)[object_number * c + 4] = actual_length_  - (*checkpoint)[object_number * c + 4];
+      // (*data)[object_number * c + 5] = spring_axis_[0] - (*checkpoint)[object_number * c + 5];
+      // (*data)[object_number * c + 6] = spring_axis_[1] - (*checkpoint)[object_number * c + 6];
+      // (*data)[object_number * c + 7] = spring_axis_[2] - (*checkpoint)[object_number * c + 7];
 
-      // (*data)[object_number * c + 0] = (double) ((long long) (mass_location_[0]) ^ ( (long long) (*checkpoint)[object_number * c + 0]));
-      // (*data)[object_number * c + 1] = (double) ((long long) (mass_location_[1]) ^ ( (long long) (*checkpoint)[object_number * c + 1]));
-      // (*data)[object_number * c + 2] = (double) ((long long) (mass_location_[2]) ^ ( (long long) (*checkpoint)[object_number * c + 2]));
-      // (*data)[object_number * c + 3] = (double) ((long long) diameter_  ^ ( (long long) (*checkpoint)[object_number * c + 3]));
-      // (*data)[object_number * c + 4] = (double) ((long long) actual_length_  ^ ( (long long)  (*checkpoint)[object_number * c + 4]));
-      // (*data)[object_number * c + 5] = (double) ((long long) spring_axis_[0] ^ ( (long long) (*checkpoint)[object_number * c + 5]));
-      // (*data)[object_number * c + 6] = (double) ((long long) spring_axis_[1] ^ ( (long long) (*checkpoint)[object_number * c + 6]));
-      // (*data)[object_number * c + 7] = (double) ((long long) spring_axis_[2] ^ ( (long long) (*checkpoint)[object_number * c + 7]));
+      (*data)[object_number * c + 0] = Xor(mass_location_[0], (*checkpoint)[object_number * c + 0]);
+      (*data)[object_number * c + 1] = Xor(mass_location_[1], (*checkpoint)[object_number * c + 1]);
+      (*data)[object_number * c + 2] = Xor(mass_location_[2], (*checkpoint)[object_number * c + 2]);
+      (*data)[object_number * c + 3] = Xor(diameter_ , (*checkpoint)[object_number * c + 3]);
+      (*data)[object_number * c + 4] = Xor(actual_length_ , (*checkpoint)[object_number * c + 4]);
+      (*data)[object_number * c + 5] = Xor(spring_axis_[0], (*checkpoint)[object_number * c + 5]);
+      (*data)[object_number * c + 6] = Xor(spring_axis_[1], (*checkpoint)[object_number * c + 6]);
+      (*data)[object_number * c + 7] = Xor(spring_axis_[2], (*checkpoint)[object_number * c + 7]);
     }
   }
+
+ private:
+   double Xor(double a, double b) const {
+     DL dl1;
+     dl1.d = a;
+     DL dl2;
+     dl2.d = b;
+
+     DL ret;
+     ret.l = dl1.l ^ dl2.l;
+     return ret.d;
+   }
 
  protected:
   /**
