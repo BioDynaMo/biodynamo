@@ -99,7 +99,7 @@ int main(int args, char** argv) {
       (std::string(argv[1]) == "help" || std::string(argv[1]) == "--help")) {
     // clang-format off
     std::cout << "SYNOPSIS\n"
-              << "  ./bdmp help | --help |\n"
+              << "  ./cell_growth help | --help |\n"
               << "         [#repititions] | \n"
               << "         [#cells_per_dim #iterations #threads [#repititions] | \n"
               << "         --scaling [#repititions] | \n"

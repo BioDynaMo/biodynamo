@@ -199,8 +199,8 @@ if (test)
 endif()
 
 # --------------------- build division module simulation executable ---------------------
-set(SIMULATION_TARGET bdmp)
-add_executable(${SIMULATION_TARGET} ${CMAKE_SOURCE_DIR}/src/main.cc)
+set(SIMULATION_TARGET cell_growth)
+add_executable(${SIMULATION_TARGET} ${CMAKE_SOURCE_DIR}/demo/cell_growth.cc)
 target_link_libraries(${SIMULATION_TARGET} biodynamo)
 
 # --------------------- build backend_arch demo
