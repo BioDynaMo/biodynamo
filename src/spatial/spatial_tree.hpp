@@ -1,11 +1,3 @@
-//
-//  spatial_tree.hpp
-//  TreeComp
-//
-//  Created by Victor Drobny on 18.10.16.
-//  Copyright © 2016 Victor Drobny. All rights reserved.
-//
-
 #ifndef spatial_tree_hpp
 #define spatial_tree_hpp
 

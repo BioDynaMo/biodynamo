@@ -1,11 +1,3 @@
-//
-//  octree.hpp
-//  TreeComp
-//
-//  Created by Victor Drobny on 18.10.16.
-//  Copyright © 2016 Victor Drobny. All rights reserved.
-//
-
 #ifndef octree_hpp
 #define octree_hpp
 

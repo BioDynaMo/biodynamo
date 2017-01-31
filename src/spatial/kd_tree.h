@@ -1,7 +1,3 @@
-//
-// Created by Ilya Dmitrenok on 19.10.16.
-//
-
 #ifndef kd_tree_hpp
 #define kd_tree_hpp
 
