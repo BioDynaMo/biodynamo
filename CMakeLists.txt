@@ -209,3 +209,15 @@ add_executable(${BACKEND_ARCH} ${CMAKE_SOURCE_DIR}/demo/backend_arch.cc)
 target_link_libraries(${BACKEND_ARCH} biodynamo)
 # target_link_libraries(${BACKEND_ARCH} ${VTUNE_LIBRARIES})
 add_dependencies(${BACKEND_ARCH} Vc)
+
+# --------------------- build benchmark soa_vs_aosoa
+set(SOA_VS_AOSOA soa_vs_aosoa)
+add_executable(${SOA_VS_AOSOA} ${CMAKE_SOURCE_DIR}/benchmark/soa_vs_aosoa.cc)
+
+set(SOA_VS_AOSOA soa_vs_aosoa_rw)
+add_executable(${SOA_VS_AOSOA} ${CMAKE_SOURCE_DIR}/benchmark/soa_vs_aosoa.cc)
+target_compile_options(${SOA_VS_AOSOA} BEFORE PRIVATE "-DMODE=ReadWrite")
+
+set(SOA_VS_AOSOA soa_vs_aosoa_rwa)
+add_executable(${SOA_VS_AOSOA} ${CMAKE_SOURCE_DIR}/benchmark/soa_vs_aosoa.cc)
+target_compile_options(${SOA_VS_AOSOA} BEFORE PRIVATE "-DMODE=ReadWriteAlternating")
