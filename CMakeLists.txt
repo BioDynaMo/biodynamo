@@ -3,6 +3,10 @@ cmake_minimum_required(VERSION 3.2.0)
 # With CMAKE >= 3.2 external projects support byproducts, this is needed
 # to support Ninja as generator
 
+#-------------------- set compilers --------------
+#set(CMAKE_C_COMPILER "/usr/local/bin/gcc-6")
+#set(CMAKE_CXX_COMPILER "/usr/local/bin/g++-6")
+
 project(BioDynaMo)
 
 #set(CMAKE_VERBOSE_MAKEFILE on)
@@ -158,7 +162,7 @@ if (test)
   # create test executable
   file(GLOB_RECURSE TEST_SOURCES ${CMAKE_SOURCE_DIR}/test/*.cc)
   set(TEST_TARGET runBiodynamoTests)
-  add_executable(${TEST_TARGET} ${TEST_SOURCES})
+  add_executable(${TEST_TARGET} ${TEST_SOURCES} test/spatial_tree_test.cc)
   target_link_libraries(${TEST_TARGET} libgtest)
   target_link_libraries(${TEST_TARGET} biodynamo)
 
