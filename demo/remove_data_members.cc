@@ -18,42 +18,62 @@ struct Nulltype {
   int empty[0] = {};
   Nulltype() {}
   template <typename T>
-  Nulltype(T&& d) {}
+  Nulltype(T&& d) {}  // NOLINT(runtime/explicit)
   template <typename T>
-  Nulltype& operator=(const T& other) { return *this; }
+  Nulltype& operator=(const T& other) {
+    return *this;
+  }
   friend ostream& operator<<(ostream& out, const Nulltype& value) {
     return out;
   }
 };
 
-#define MAP1(m, first, second, third, ...) \
-  m(first, second, third)                  \
-      IF(HAS_ARGS(__VA_ARGS__))(DEFER2(_MAP1)()(m, first, __VA_ARGS__))
-#define _MAP1() MAP1
+/// loops over variadic macro arguments and calls the specified operation
+/// removes the first three parameters in each iteration, but adds the first one
+/// again for the next call
+/// e.g. LOOP(OP, a, b, c, d, e) will lead to:
+/// OP(a, b, c)
+/// OP(a, d, e)
+/// For a more detailed explanation see `MAP` macro in `third_party/cpp_magic.h`
+#define LOOP(operation, first, second, third, ...)           \
+  operation(first, second, third)                            \
+  IF(HAS_ARGS(__VA_ARGS__))(                                 \
+    DEFER2(_LOOP)()(operation, first, __VA_ARGS__))
+#define _LOOP() LOOP
 
-#define DATA_MEMBER(TYPE, NAME)                                         \
-  static constexpr int getDataMemberUid##NAME() { return __COUNTER__; } \
-  typename TMemberSelector<TYPE, self, getDataMemberUid##NAME()>::type NAME
-
-// TODO internal - implementation detail - #undef??
-#define MEMBER_ITERATOR(NAME, CLASS, MEMBER)                    \
+/// adds the partial template specialization for one clazz-data-member pair
+/// only for internal usage - will be called inside LOOP
+/// @param name:    selector name
+/// @param clazz:   clazz of the data member
+/// @param member:  data member name
+#define INTERNAL_SELECT_MEMBER(name, clazz, member)             \
   template <typename Type>                                      \
-  struct NAME<Type, CLASS, CLASS::getDataMemberUid##MEMBER()> { \
+  struct name<Type, clazz, clazz::getDataMemberUid##member()> { \
     typedef Type type;                                          \
   };
 
-#define NEW_MEMBER_SELECTOR(NAME, ...)                      \
+/// creates a new selector type
+/// it only enables the specified data members if applied to a simulation object
+/// others will be removed
+#define NEW_MEMBER_SELECTOR(name, ...)                      \
   template <typename Type, typename EnclosingClass, int id> \
-  struct NAME {                                             \
+  struct name {                                             \
     typedef Nulltype type;                                  \
   };                                                        \
-  EVAL(MAP1(MEMBER_ITERATOR, NAME, __VA_ARGS__))
+  EVAL(LOOP(INTERNAL_SELECT_MEMBER, name, __VA_ARGS__))
 
-// TODO define NEW_MEMBER_REMOVE
+// TODO(lukas) define NEW_MEMBER_REMOVE
 
-#define BDM_DEFAULT_TEMPLATE                                              \
+#define BDM_DEFAULT_TEMPLATE                                           \
   template <template <typename, typename, int> class TMemberSelector = \
                 SelectAllMembers>
+
+/// Macro to define data member for a simulation object
+/// Hides complexity needed to conditionally remove the data member
+#define BDM_DATA_MEMBER(type_name, var_name)                                \
+  static constexpr int getDataMemberUid##var_name() { return __COUNTER__; } \
+  typename TMemberSelector<type_name, self,                                 \
+                           getDataMemberUid##var_name()>::type var_name
 
 // -----------------------------------------------------------------------------
 // usage
@@ -65,9 +85,9 @@ struct Foo {
 
   Foo() {}
 
-  DATA_MEMBER(double, member1) = 3.14;
-  DATA_MEMBER(double, member2) = 3.14 * 2;
-  DATA_MEMBER(double, member3) = 3.14 * 3;
+  BDM_DATA_MEMBER(double, member1) = 3.14;
+  BDM_DATA_MEMBER(double, member2) = 3.14 * 2;
+  BDM_DATA_MEMBER(double, member3) = 3.14 * 3;
 
   template <typename T>
   Foo<TMemberSelector>& operator=(const T& src) {
