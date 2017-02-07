@@ -19,10 +19,11 @@ struct Nulltype {
   Nulltype() {}
   template <typename T>
   Nulltype(T&& d) {}
+  template <typename T>
+  Nulltype& operator=(const T& other) { return *this; }
   friend ostream& operator<<(ostream& out, const Nulltype& value) {
     return out;
   }
-  Nulltype& operator=(const Nulltype& other) { return *this; }
 };
 
 #define MAP1(m, first, second, third, ...) \
@@ -51,7 +52,7 @@ struct Nulltype {
 // TODO define NEW_MEMBER_REMOVE
 
 #define BDM_DEFAULT_TEMPLATE                                              \
-  template <template <typename, typename, int> typename TMemberSelector = \
+  template <template <typename, typename, int> class TMemberSelector = \
                 SelectAllMembers>
 
 // -----------------------------------------------------------------------------
@@ -61,6 +62,8 @@ struct Nulltype {
 BDM_DEFAULT_TEMPLATE
 struct Foo {
   using self = Foo<>;
+
+  Foo() {}
 
   DATA_MEMBER(double, member1) = 3.14;
   DATA_MEMBER(double, member2) = 3.14 * 2;
