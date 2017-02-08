@@ -35,13 +35,15 @@ struct Nulltype {
 /// OP(a, b, c)
 /// OP(a, d, e)
 /// For a more detailed explanation see `MAP` macro in `third_party/cpp_magic.h`
+// clang-format off
 #define LOOP(operation, first, second, third, ...)           \
   operation(first, second, third)                            \
   IF(HAS_ARGS(__VA_ARGS__))(                                 \
     DEFER2(_LOOP)()(operation, first, __VA_ARGS__))
 #define _LOOP() LOOP
+// clang-format on
 
-/// adds the partial template specialization for one clazz-data-member pair
+/// adds the partial template specialization to select one clazz-member pair
 /// only for internal usage - will be called inside LOOP
 /// @param name:    selector name
 /// @param clazz:   clazz of the data member
@@ -62,7 +64,26 @@ struct Nulltype {
   };                                                        \
   EVAL(LOOP(INTERNAL_SELECT_MEMBER, name, __VA_ARGS__))
 
-// TODO(lukas) define NEW_MEMBER_REMOVE
+/// adds the partial template specialization to remove one clazz-member pair
+/// only for internal usage - will be called inside LOOP
+/// @param name:    selector name
+/// @param clazz:   clazz of the data member
+/// @param member:  data member name
+#define INTERNAL_MEMBER_REMOVER(name, clazz, member)            \
+  template <typename Type>                                      \
+  struct name<Type, clazz, clazz::getDataMemberUid##member()> { \
+    typedef Nulltype type;                                      \
+  };
+
+/// creates a new selector type
+/// it removes the specified data members if applied to a simulation object
+/// others will be kept -> inverse of NEW_MEMBER_SELECTOR
+#define NEW_MEMBER_REMOVER(name, ...)                       \
+  template <typename Type, typename EnclosingClass, int id> \
+  struct name {                                             \
+    typedef Type type;                                      \
+  };                                                        \
+  EVAL(LOOP(INTERNAL_MEMBER_REMOVER, name, __VA_ARGS__))
 
 #define BDM_DEFAULT_TEMPLATE                                           \
   template <template <typename, typename, int> class TMemberSelector = \
@@ -108,6 +129,7 @@ struct Foo {
 NEW_MEMBER_SELECTOR(SelectMember1, Foo<>, member1);
 NEW_MEMBER_SELECTOR(SelectMember2, Foo<>, member2);
 NEW_MEMBER_SELECTOR(SelectMember1And2, Foo<>, member1, Foo<>, member2);
+NEW_MEMBER_REMOVER(RemoveMember2, Foo<>, member2);
 
 int main() {
   Foo<> foo_full;             // Foo with all data members
@@ -142,4 +164,17 @@ int main() {
   std::cout << foo_m12 << std::endl;
 
   foo_m1 = foo_m12;
+
+  Foo<RemoveMember2> foo_without_m2;
+  std::cout << "Foo<RemoveMember2>: " << foo_without_m2 << std::endl;
+  // won't compile since member2 has been removed
+  // double m2 = foo_without_m2.member2;
+  // CAUTION: this will compile
+  auto auto_m2 = foo_without_m2.member2;
+  // but following statement will throw compile error -> does not go unnoticed
+  // double m2_inc = auto_m2 + 1;
+
+  foo_m1 = foo_without_m2;
+  // won't compile - no member2 in foo_without_m2 but in foo_m12
+  // foo_m12 = foo_without_m2;
 }
