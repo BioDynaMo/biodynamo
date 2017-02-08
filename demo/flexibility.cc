@@ -36,7 +36,7 @@ class Neuron : public Base {
  public:
   template <class... A>
   explicit Neuron(const std::vector<TNeurite>& neurites, const A&... a)
-      : neurites_{neurites}, Base(a...) {}
+      : Base(a...), neurites_{neurites} {}
   Neuron() = default;
   const std::vector<TNeurite>& GetNeurites() const { return neurites_; }
 };
@@ -49,11 +49,12 @@ class NeuronExtension : public Base {
 
  public:
   template <class... A>
-  explicit NeuronExtension(double foo, const A&... a) : foo_{foo}, Base(a...) {}
+  explicit NeuronExtension(double foo, const A&... a) : Base(a...), foo_{foo} {}
   NeuronExtension() = default;
   double GetFoo() const {
     volatile auto& foo = Base::position_;
-    return foo_; }
+    return foo_;
+  }
 };
 
 template <typename Cell>
