@@ -239,9 +239,13 @@ target_link_libraries(${BACKEND_ARCH} biodynamo)
 # target_link_libraries(${BACKEND_ARCH} ${VTUNE_LIBRARIES})
 add_dependencies(${BACKEND_ARCH} Vc)
 
-# --------------------- build backend_arch demo
+# --------------------- build backend_arch remove_data_members
 set(REMOVE_DATA_MEMBERS remove_data_members)
 add_executable(${REMOVE_DATA_MEMBERS} ${CMAKE_SOURCE_DIR}/demo/remove_data_members.cc)
+
+# --------------------- build backend_arch flexibility
+set(FLEXIBILITY flexibility)
+add_executable(${FLEXIBILITY} ${CMAKE_SOURCE_DIR}/demo/flexibility.cc)
 
 # --------------------- build benchmark soa_vs_aosoa
 set(SOA_VS_AOSOA soa_vs_aosoa)
