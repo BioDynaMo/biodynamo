@@ -114,6 +114,7 @@ struct Foo {
   Foo<TMemberSelector>& operator=(const T& src) {
     member1 = src.member1;
     member2 = src.member2;
+    member3 = src.member3;
     return *this;
   }
 
