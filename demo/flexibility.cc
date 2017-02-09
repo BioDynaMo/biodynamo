@@ -97,10 +97,21 @@ struct Nulltype {
 
 /// Macro to define data member for a simulation object
 /// Hides complexity needed to conditionally remove the data member
-#define BDM_DATA_MEMBER(type_name, var_name)                                \
+#define BDM_DATA_MEMBER(access_modifier, type_name, var_name)               \
+ public:                                                                    \
   static constexpr int getDataMemberUid##var_name() { return __COUNTER__; } \
+ access_modifier:                                                           \
   typename TMemberSelector<type_name, self,                                 \
                            getDataMemberUid##var_name()>::type var_name
+
+#define BDM_PUBLIC_MEMBER(type_name, var_name) \
+ BDM_DATA_MEMBER(public, REMOVE_TRAILING_COMMAS(type_name), var_name)
+
+#define BDM_PROTECTED_MEMBER(type_name, var_name) \
+ BDM_DATA_MEMBER(protected, REMOVE_TRAILING_COMMAS(type_name), var_name)
+
+#define BDM_PRIVATE_MEMBER(type_name, var_name) \
+ BDM_DATA_MEMBER(private, REMOVE_TRAILING_COMMAS(type_name), var_name)
 
 class NullBaseClass {};
 
@@ -115,8 +126,8 @@ class BaseCell {
   const std::array<double, 3>& GetPosition() const { return position_; }
 
  protected:
-  BDM_DATA_MEMBER(std::array<double COMMA() 3>, position_);
-  BDM_DATA_MEMBER(double, unused_) = 6.28;
+  BDM_PROTECTED_MEMBER(std::array<double COMMA() 3>, position_);
+  BDM_PROTECTED_MEMBER(double, unused_) = 6.28;
 };
 
 template <typename Cell>
@@ -142,7 +153,7 @@ class Neuron : public Base {
   const std::vector<Neurite>& GetNeurites() const { return neurites_; }
 
  private:
-  BDM_DATA_MEMBER(std::vector<Neurite>, neurites_);
+  BDM_PRIVATE_MEMBER(std::vector<Neurite>, neurites_);
 };
 
 // -----------------------------------------------------------------------------
@@ -162,7 +173,7 @@ class NeuronExtension : public Base {
   }
 
  private:
-  double foo_ = 3.14;
+  BDM_PRIVATE_MEMBER(double, foo_) = 3.14;
 };
 
 template <typename Cell>
