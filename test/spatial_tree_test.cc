@@ -18,6 +18,19 @@ int manual_search_size(point *pos, int size, double distance) {
   return result;
 }
 
+std::vector<std::pair<int, int>> manual_search(point *pos, int size,
+                                               double distance) {
+  std::vector<std::pair<int, int>> result;
+  double sd = distance * distance;
+  for (int i = 0; i < size; i++)
+    for (int j = i + 1; j < size; j++)
+      if (pos[i].distance(pos[j]) <= distance) {
+        result.push_back(std::make_pair(i, j));
+      }
+
+  return result;
+}
+
 void size_test(spatial_tree_node<int> *tree, int amount) {
   point *possitions = new point[amount];
   double gap = 1.0 / (amount + 1);
@@ -55,6 +68,44 @@ void simple_test(spatial_tree_node<int> *tree) {
   ASSERT_EQ(0, result3.size());
 }
 
+bool is_equal(std::vector<std::pair<int, int>> a,
+              std::vector<std::pair<int, int>> b) {
+  if (a.size() != b.size()) {
+    return false;
+  }
+  std::sort(a.begin(), a.end(), std::greater<std::pair<int, int>>());
+  std::sort(b.begin(), b.end(), std::greater<std::pair<int, int>>());
+
+  for (int i = 0; i < a.size(); i++) {
+    if (a[i].first != b[i].first || a[i].second != b[i].second) {
+      return false;
+    }
+  }
+  return true;
+}
+
+bool search_test(spatial_tree_node<int> *tree, int amount) {
+  point *possitions = new point[amount];
+  double gap = 1.0 / (amount + 1);
+  for (int i = 0; i < amount; i++) {
+    possitions[i] = point(gap * i, rand() / RAND_MAX, rand() / RAND_MAX);
+  }
+
+  for (int i = 0; i < amount; i++) {
+    tree->put(possitions[i], i);
+  }
+
+  double search_radious = 0.1;
+  for (int i = 0; i < 2; i++, search_radious /= 10) {
+    std::vector<std::pair<int, int>> manual_result =
+        manual_search(possitions, amount, search_radious);
+    std::vector<std::pair<int, int>> tree_search =
+        tree->get_neighbors(search_radious);
+  }
+
+  delete[] possitions;
+}
+
 TEST(SpatialTreeTest, OctreeTest) {
   spatial_tree_node<int> *tree =
       new octree_node<int>(bound(0.0, 0.0, 0.0, 100.0, 100.0, 100.0), 100, 100);
@@ -77,6 +128,18 @@ TEST(SpatialTreeTest, KdTreeSizeTest) {
   spatial_tree_node<int> *tree =
       new kd_tree_node<int>(bound(0.0, 0.0, 0.0, 1.0, 1.0, 1.0), 100, 100);
   size_test(tree, 1000);
+}
+
+TEST(SpatialTreeTest, OctreeSearchTest) {
+  spatial_tree_node<int> *tree =
+      new octree_node<int>(bound(0.0, 0.0, 0.0, 1.0, 1.0, 1.0), 100, 100);
+  search_test(tree, 1000);
+}
+
+TEST(SpatialTreeTest, KdTreeSearchTest) {
+  spatial_tree_node<int> *tree =
+      new kd_tree_node<int>(bound(0.0, 0.0, 0.0, 1.0, 1.0, 1.0), 100, 100);
+  search_test(tree, 1000);
 }
 
 }  // namespace bdm

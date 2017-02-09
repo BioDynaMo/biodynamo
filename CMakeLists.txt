@@ -167,7 +167,7 @@ if (test)
   # create test executable
   file(GLOB_RECURSE TEST_SOURCES ${CMAKE_SOURCE_DIR}/test/*.cc)
   set(TEST_TARGET runBiodynamoTests)
-  add_executable(${TEST_TARGET} ${TEST_SOURCES} test/spatial_tree_test.cc)
+  add_executable(${TEST_TARGET} ${TEST_SOURCES})
   target_link_libraries(${TEST_TARGET} libgtest)
   target_link_libraries(${TEST_TARGET} biodynamo)
 
@@ -209,7 +209,7 @@ target_link_libraries(${SIMULATION_TARGET} biodynamo)
 
 # --------------------- build backend_arch demo
 set(BACKEND_ARCH backend_arch)
-add_executable(${BACKEND_ARCH} ${CMAKE_SOURCE_DIR}/demo/backend_arch.cc)
+add_executable(${BACKEND_ARCH} ${CMAKE_SOURCE_DIR}/demo/backend_arch.cc src/spatial/point.h)
 target_link_libraries(${BACKEND_ARCH} biodynamo)
 # target_link_libraries(${BACKEND_ARCH} ${VTUNE_LIBRARIES})
 add_dependencies(${BACKEND_ARCH} Vc)
