@@ -31,11 +31,11 @@ void size_test(spatial_tree_node<int> *tree, int amount) {
   }
 
   ASSERT_EQ(manual_search_size(possitions, amount, 10),
-            tree->get_neighbors(10)->size());
+            tree->get_neighbors(10).size());
   ASSERT_EQ(manual_search_size(possitions, amount, 0.1),
-            tree->get_neighbors(0.1)->size());
+            tree->get_neighbors(0.1).size());
   ASSERT_EQ(manual_search_size(possitions, amount, 0.01),
-            tree->get_neighbors(0.01)->size());
+            tree->get_neighbors(0.01).size());
 
   delete[] possitions;
 }
@@ -50,9 +50,9 @@ void simple_test(spatial_tree_node<int> *tree) {
   auto result2 = tree->get_neighbors(30);
   auto result3 = tree->get_neighbors(5);
 
-  ASSERT_EQ(1, result1->size());
-  ASSERT_EQ(3, result2->size());
-  ASSERT_EQ(0, result3->size());
+  ASSERT_EQ(1, result1.size());
+  ASSERT_EQ(3, result2.size());
+  ASSERT_EQ(0, result3.size());
 }
 
 TEST(SpatialTreeTest, OctreeTest) {

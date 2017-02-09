@@ -10,7 +10,7 @@
 #include <stdio.h>
 #include <utility>
 #include <vector>
-#include "utils.h"
+#include "bound.h"
 
 using std::vector;
 using std::pair;
@@ -46,9 +46,9 @@ class spatial_tree_node {
   virtual void put(point p, T obj) = 0;
 
   virtual vector<pair<pair<point, T>, pair<point, T> > >
-      *get_neighbors_with_points(double distance);
+  get_neighbors_with_points(double distance);
 
-  virtual vector<pair<T, T> > *get_neighbors(double distance);
+  virtual vector<pair<T, T> > get_neighbors(double distance);
 };
 
 /**
@@ -63,10 +63,9 @@ bound spatial_tree_node<T>::get_bound() {
 
 template <typename T>
 vector<pair<pair<point, T>, pair<point, T> > >
-    *spatial_tree_node<T>::get_neighbors_with_points(double distance) {
-  vector<pair<pair<point, T>, pair<point, T> > > *result =
-      new vector<pair<pair<point, T>, pair<point, T> > >();
-  get_neighbors_(this, this, distance * distance, result);
+spatial_tree_node<T>::get_neighbors_with_points(double distance) {
+  vector<pair<pair<point, T>, pair<point, T> > > result;
+  get_neighbors_(this, this, distance * distance, &result);
   return result;
 }
 
@@ -77,9 +76,9 @@ vector<pair<pair<point, T>, pair<point, T> > >
  * @return
  */
 template <typename T>
-vector<pair<T, T> > *spatial_tree_node<T>::get_neighbors(double distance) {
-  vector<pair<T, T> > *result = new vector<pair<T, T> >();
-  get_neighbors_(this, this, distance * distance, result);
+vector<pair<T, T> > spatial_tree_node<T>::get_neighbors(double distance) {
+  vector<pair<T, T> > result;
+  get_neighbors_(this, this, distance * distance, &result);
   return result;
 }
 
