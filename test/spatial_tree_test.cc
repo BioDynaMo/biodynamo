@@ -8,30 +8,30 @@
 
 namespace bdm {
 
-int manual_search_size(point *pos, int size, double distance) {
+int ManualSearchSize(point *pos, int size, double distance) {
   int result = 0;
   double sd = distance * distance;
   for (int i = 0; i < size; i++)
     for (int j = i + 1; j < size; j++)
-      if (pos[i].distance(pos[j]) <= distance) result++;
+      if (pos[i].EuclidianDistance(pos[j]) <= distance) result++;
 
   return result;
 }
 
-std::vector<std::pair<int, int>> manual_search(point *pos, int size,
-                                               double distance) {
+std::vector<std::pair<int, int>> ManualSearch(point *pos, int size,
+                                              double distance) {
   std::vector<std::pair<int, int>> result;
   double sd = distance * distance;
   for (int i = 0; i < size; i++)
     for (int j = i + 1; j < size; j++)
-      if (pos[i].distance(pos[j]) <= distance) {
+      if (pos[i].EuclidianDistance(pos[j]) <= distance) {
         result.push_back(std::make_pair(i, j));
       }
 
   return result;
 }
 
-void size_test(spatial_tree_node<int> *tree, int amount) {
+void SizeTest(spatial_tree_node<int> *tree, int amount) {
   point *possitions = new point[amount];
   double gap = 1.0 / (amount + 1);
 
@@ -40,36 +40,36 @@ void size_test(spatial_tree_node<int> *tree, int amount) {
   }
 
   for (int i = 0; i < amount; i++) {
-    tree->put(possitions[i], i);
+      tree->Put(possitions[i], i);
   }
 
-  ASSERT_EQ(manual_search_size(possitions, amount, 10),
-            tree->get_neighbors(10).size());
-  ASSERT_EQ(manual_search_size(possitions, amount, 0.1),
-            tree->get_neighbors(0.1).size());
-  ASSERT_EQ(manual_search_size(possitions, amount, 0.01),
-            tree->get_neighbors(0.01).size());
+  ASSERT_EQ(ManualSearchSize(possitions, amount, 10),
+            tree->GetNeighbors(10).size());
+  ASSERT_EQ(ManualSearchSize(possitions, amount, 0.1),
+            tree->GetNeighbors(0.1).size());
+  ASSERT_EQ(ManualSearchSize(possitions, amount, 0.01),
+            tree->GetNeighbors(0.01).size());
 
   delete[] possitions;
 }
 
-void simple_test(spatial_tree_node<int> *tree) {
+void SimpleTest(spatial_tree_node<int> *tree) {
   std::vector<int> container;
-  tree->put(point(0, 0, 0), 1);
-  tree->put(point(10, 20, 0), 2);
-  tree->put(point(20, 10, 0), 3);
+    tree->Put(point(0, 0, 0), 1);
+    tree->Put(point(10, 20, 0), 2);
+    tree->Put(point(20, 10, 0), 3);
 
-  auto result1 = tree->get_neighbors(15);
-  auto result2 = tree->get_neighbors(30);
-  auto result3 = tree->get_neighbors(5);
+  auto result1 = tree->GetNeighbors(15);
+  auto result2 = tree->GetNeighbors(30);
+  auto result3 = tree->GetNeighbors(5);
 
   ASSERT_EQ(1, result1.size());
   ASSERT_EQ(3, result2.size());
   ASSERT_EQ(0, result3.size());
 }
 
-bool is_equal(std::vector<std::pair<int, int>> a,
-              std::vector<std::pair<int, int>> b) {
+bool IsEqual(std::vector<std::pair<int, int>> a,
+             std::vector<std::pair<int, int>> b) {
   if (a.size() != b.size()) {
     return false;
   }
@@ -84,7 +84,7 @@ bool is_equal(std::vector<std::pair<int, int>> a,
   return true;
 }
 
-bool search_test(spatial_tree_node<int> *tree, int amount) {
+bool SearchTest(spatial_tree_node<int> *tree, int amount) {
   point *possitions = new point[amount];
   double gap = 1.0 / (amount + 1);
   for (int i = 0; i < amount; i++) {
@@ -92,15 +92,15 @@ bool search_test(spatial_tree_node<int> *tree, int amount) {
   }
 
   for (int i = 0; i < amount; i++) {
-    tree->put(possitions[i], i);
+      tree->Put(possitions[i], i);
   }
 
   double search_radious = 0.1;
   for (int i = 0; i < 2; i++, search_radious /= 10) {
     std::vector<std::pair<int, int>> manual_result =
-        manual_search(possitions, amount, search_radious);
+            ManualSearch(possitions, amount, search_radious);
     std::vector<std::pair<int, int>> tree_search =
-        tree->get_neighbors(search_radious);
+            tree->GetNeighbors(search_radious);
   }
 
   delete[] possitions;

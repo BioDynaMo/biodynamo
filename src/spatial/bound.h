@@ -11,7 +11,7 @@ using std::make_pair;
 // Class 'bound' represents rectangular bound of the node of the tree
 struct bound {
   // Bounds
-  // far left bottom, near right top
+  // far left Bottom, Near Right Top
   point flb, nrt;
 
   // Default constructior
@@ -27,43 +27,43 @@ struct bound {
 
   bound(point p1, point p2) : flb(p1), nrt(p2) {}
 
-  // The volume of the rectangle
-  double volume() {
-    return (near() - far()) * (right() - left()) * (top() - bottom());
+  // The Volume of the rectangle
+  double Volume() {
+    return (Near() - Far()) * (Right() - Left()) * (Top() - Bottom());
   }
 
   // Checks if point 'p' lies inside the bound or on its boundary
-  bool has(point p) {
-    return is_between(p.x, far(), near()) && is_between(p.y, left(), right()) &&
-           is_between(p.z, bottom(), top());
+  bool Has(point p) {
+    return IsOnLine(p.x, Far(), Near()) && IsOnLine(p.y, Left(), Right()) &&
+            IsOnLine(p.z, Bottom(), Top());
   }
 
   // Extends boundary so it contains point 'p'
-  bound add_point(point p) {
-    bound new_bnd(fmin(p.x, far()), fmin(p.y, left()), fmin(p.z, bottom()),
-                  fmax(p.x, near()), fmax(p.y, right()), fmax(p.z, top()));
+  bound AddPoint(point p) {
+    bound new_bnd(fmin(p.x, Far()), fmin(p.y, Left()), fmin(p.z, Bottom()),
+                  fmax(p.x, Near()), fmax(p.y, Right()), fmax(p.z, Top()));
     return new_bnd;
   }
 
   // Extends boundary so it contains bound 'b'
-  bound add_bound(bound b) {
-    return bound(fmin(far(), b.far()), fmin(left(), b.left()),
-                 fmin(bottom(), b.bottom()), fmax(near(), b.near()),
-                 fmax(right(), b.right()), fmax(top(), b.top()));
+  bound AddBound(bound b) {
+    return bound(fmin(Far(), b.Far()), fmin(Left(), b.Left()),
+                 fmin(Bottom(), b.Bottom()), fmax(Near(), b.Near()),
+                 fmax(Right(), b.Right()), fmax(Top(), b.Top()));
   }
 
-  // Calculate volume difference between original
-  double diff_if_add_point(point p) { return add_point(p).volume() - volume(); }
+  // Calculate Volume difference between original
+  double DifferenceOnBoundExtension(point p) { return AddPoint(p).Volume() - Volume(); }
 
   // Squared distance between two points on a plane
-  double sqdist(pair<double, double> p1, pair<double, double> p2) {
+  double SquaredDistance(pair<double, double> p1, pair<double, double> p2) {
     double dx = p1.first - p2.first;
     double dy = p1.second - p2.second;
     return dx * dx + dy * dy;
   }
 
   // Check if 'x' is between 'a' and 'b' on the line
-  bool is_between(double x, double a, double b) {
+  bool IsOnLine(double x, double a, double b) {
     double min = fmin(a, b);
     double max = fmax(a, b);
     return (x >= min && x <= max);
@@ -71,7 +71,7 @@ struct bound {
 
   // Calculate distance between two line segments on the line.
   // This method assumed that segments are not overlaped.
-  double distance_segments(double x, double y, double a, double b) {
+  double DistanceBetweenSegments(double x, double y, double a, double b) {
     double minxy = fmin(x, y);
     double maxxy = fmax(x, y);
     double minab = fmin(a, b);
@@ -82,65 +82,65 @@ struct bound {
   }
 
   // Calculate squared distance between two boundaries in 3-d space.
-  double distance(bound b) {
+  double Distance(bound b) {
     bool is_overlap_x;
     bool is_overlap_y;
     bool is_overlap_z;
 
-    double bx[2][2] = {{far(), near()}, {b.far(), b.near()}};
-    double by[2][2] = {{left(), right()}, {b.left(), b.right()}};
-    double bz[2][2] = {{bottom(), top()}, {b.bottom(), b.top()}};
+    double bx[2][2] = {{Far(), Near()}, {b.Far(), b.Near()}};
+    double by[2][2] = {{Left(), Right()}, {b.Left(), b.Right()}};
+    double bz[2][2] = {{Bottom(), Top()}, {b.Bottom(), b.Top()}};
 
-    // check axis that have overlaped projections
-    is_overlap_x = (is_between(bx[0][0], bx[1][0], bx[1][1])) ||
-                   (is_between(bx[0][1], bx[1][0], bx[1][1])) ||
-                   (is_between(bx[1][0], bx[0][0], bx[0][1])) ||
-                   (is_between(bx[1][1], bx[0][0], bx[0][1]));
-    is_overlap_y = (is_between(by[0][0], by[1][0], by[1][1])) ||
-                   (is_between(by[0][1], by[1][0], by[1][1])) ||
-                   (is_between(by[1][0], by[0][0], by[0][1])) ||
-                   (is_between(by[1][1], by[0][0], by[0][1]));
-    is_overlap_z = (is_between(bz[0][0], bz[1][0], bz[1][1])) ||
-                   (is_between(bz[0][1], bz[1][0], bz[1][1])) ||
-                   (is_between(bz[1][0], bz[0][0], bz[0][1])) ||
-                   (is_between(bz[1][1], bz[0][0], bz[0][1]));
+    // check axis_ that have overlaped projections
+    is_overlap_x = (IsOnLine(bx[0][0], bx[1][0], bx[1][1])) ||
+                   (IsOnLine(bx[0][1], bx[1][0], bx[1][1])) ||
+                   (IsOnLine(bx[1][0], bx[0][0], bx[0][1])) ||
+                   (IsOnLine(bx[1][1], bx[0][0], bx[0][1]));
+    is_overlap_y = (IsOnLine(by[0][0], by[1][0], by[1][1])) ||
+                   (IsOnLine(by[0][1], by[1][0], by[1][1])) ||
+                   (IsOnLine(by[1][0], by[0][0], by[0][1])) ||
+                   (IsOnLine(by[1][1], by[0][0], by[0][1]));
+    is_overlap_z = (IsOnLine(bz[0][0], bz[1][0], bz[1][1])) ||
+                   (IsOnLine(bz[0][1], bz[1][0], bz[1][1])) ||
+                   (IsOnLine(bz[1][0], bz[0][0], bz[0][1])) ||
+                   (IsOnLine(bz[1][1], bz[0][0], bz[0][1]));
 
     double dx = 0, dy = 0, dz = 0;
 
     // calculate distance only if there is no overlaping
     if (!is_overlap_x)
-      dx = distance_segments(bx[0][0], bx[0][1], bx[1][0], bx[1][1]);
+      dx = DistanceBetweenSegments(bx[0][0], bx[0][1], bx[1][0], bx[1][1]);
 
     if (!is_overlap_y)
-      dy = distance_segments(by[0][0], by[0][1], by[1][0], by[1][1]);
+      dy = DistanceBetweenSegments(by[0][0], by[0][1], by[1][0], by[1][1]);
 
     if (!is_overlap_z)
-      dz = distance_segments(bz[0][0], bz[0][1], bz[1][0], bz[1][1]);
+      dz = DistanceBetweenSegments(bz[0][0], bz[0][1], bz[1][0], bz[1][1]);
     return dx * dx + dy * dy + dz * dz;
   }
 
-  point center() { return (flb + nrt) * 0.5; }
+  point Center() { return (flb + nrt) * 0.5; }
 
-  double near() { return nrt.x; }
+  double Near() { return nrt.x; }
 
-  double far() { return flb.x; }
+  double Far() { return flb.x; }
 
-  double left() { return flb.y; }
+  double Left() { return flb.y; }
 
-  double right() { return nrt.y; }
+  double Right() { return nrt.y; }
 
-  double top() { return nrt.z; }
+  double Top() { return nrt.z; }
 
-  double bottom() { return flb.z; }
+  double Bottom() { return flb.z; }
 
-  double length() { return nrt.x - flb.x; }
+  double Length() { return nrt.x - flb.x; }
 
-  double width() { return nrt.y - flb.y; }
+  double Width() { return nrt.y - flb.y; }
 
-  double height() { return nrt.z - flb.z; }
+  double Height() { return nrt.z - flb.z; }
 
-  double half_surface_area() {
-    return width() * length() + height() * length() + width() * height();
+  double HalfSurfaceArea() {
+    return Width() * Length() + Height() * Length() + Width() * Height();
   }
 };
 

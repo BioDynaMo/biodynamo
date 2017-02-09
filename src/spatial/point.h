@@ -19,19 +19,19 @@ class point {
 
   point(double x, double y, double z) : x(x), y(y), z(z) {}
 
-  double length() { return sqrt(x * x + y * y + z * z); }
+  double Length() { return sqrt(x * x + y * y + z * z); }
 
-  void set(double x, double y, double z) {
+  void Set(double x, double y, double z) {
     this->x = x;
     this->y = y;
     this->z = z;
   }
 
   // Euclidian distance from 'this' to point 'p'
-  double distance(point p) { return (p + *this * (-1)).length(); }
+  double EuclidianDistance(point p) { return (p + *this * (-1)).Length(); }
 
   // Squared euclidian distance from 'this' to point 'p'
-  double sqdist(point p) {
+  double SquaredEuclidianDistance(point p) {
     double dx = x - p.x;
     double dy = y - p.y;
     double dz = z - p.z;
