@@ -154,7 +154,7 @@ class InlineVector {
     return out;
   }
 
-  // TODO begin, end, emplace_back, ...
+  // TODO(lukas) begin, end, emplace_back, ...
 
  private:
   static constexpr float kGrowFactor = 1.5;

@@ -23,8 +23,8 @@ class Cell {
   friend class Cell;
 
   Cell() {}
-  Cell(real_v diameter) : diameter_{diameter} { UpdateVolume(); }
-  Cell(const std::array<real_v, 3>& position)
+  explicit Cell(real_v diameter) : diameter_{diameter} { UpdateVolume(); }
+  explicit Cell(const std::array<real_v, 3>& position)
       : position_(position), mass_location_(position) {}
 
   virtual ~Cell() {}

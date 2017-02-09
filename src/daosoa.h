@@ -18,7 +18,7 @@ class daosoa {
   using const_iterator = typename std::vector<value_type>::const_iterator;
 
   daosoa() {}
-  daosoa(size_t scalar_elements) {
+  explicit daosoa(size_t scalar_elements) {
     data_.reserve(scalar_elements / Backend::kVecLen +
                   (scalar_elements % Backend::kVecLen ? 1 : 0));
   }

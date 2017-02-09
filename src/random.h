@@ -10,9 +10,9 @@ namespace bdm {
 /// (java.util.Random)
 class Random {
  public:
-  Random(){};
+  Random() {}
 
-  void setSeed(long seed);
+  void setSeed(int64_t seed);
 
   int nextInt();
 
@@ -36,7 +36,7 @@ class Random {
   }
 
  private:
-  long seed_ = 0;
+  int64_t seed_ = 0;
   double next_next_gaussian_ = 0.0;
   bool have_next_next_gaussian_ = false;
 
@@ -44,7 +44,7 @@ class Random {
 
   double nextGaussian();
 
-  bool compareAndSet(long& current, long expected, long update);
+  bool compareAndSet(int64_t* current, int64_t expected, int64_t update);
 };
 
 }  // namespace bdm
