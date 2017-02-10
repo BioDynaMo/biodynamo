@@ -60,10 +60,10 @@ struct Nulltype {
 /// @param name:    selector name
 /// @param clazz:   clazz of the data member
 /// @param member:  data member name
-#define INTERNAL_SELECT_MEMBER(name, clazz, member)             \
-  template <typename Type>                                      \
-  struct name<Type, clazz, clazz::getDataMemberUid##member()> { \
-    typedef Type type;                                          \
+#define INTERNAL_SELECT_MEMBER(name, clazz, member)         \
+  template <typename Type>                                  \
+  struct name<Type, clazz, clazz::kDataMemberUid##member> { \
+    typedef Type type;                                      \
   };
 
 /// creates a new selector type
@@ -81,10 +81,10 @@ struct Nulltype {
 /// @param name:    selector name
 /// @param clazz:   clazz of the data member
 /// @param member:  data member name
-#define INTERNAL_MEMBER_REMOVER(name, clazz, member)            \
-  template <typename Type>                                      \
-  struct name<Type, clazz, clazz::getDataMemberUid##member()> { \
-    typedef Nulltype type;                                      \
+#define INTERNAL_MEMBER_REMOVER(name, clazz, member)        \
+  template <typename Type>                                  \
+  struct name<Type, clazz, clazz::kDataMemberUid##member> { \
+    typedef Nulltype type;                                  \
   };
 
 /// creates a new selector type
@@ -105,10 +105,10 @@ struct Nulltype {
 /// Hides complexity needed to conditionally remove the data member
 #define BDM_DATA_MEMBER(access_modifier, type_name, var_name)               \
  public:                                                                    \
-  static constexpr int getDataMemberUid##var_name() { return __COUNTER__; } \
+  static const int kDataMemberUid##var_name = __COUNTER__;                  \
   access_modifier:                                                          \
-  typename TMemberSelector<type_name, self,                                 \
-                           getDataMemberUid##var_name()>::type var_name
+  typename TMemberSelector<type_name, self, kDataMemberUid##var_name>::type \
+      var_name
 
 #define BDM_PUBLIC_MEMBER(type_name, var_name) \
   BDM_DATA_MEMBER(public, REMOVE_TRAILING_COMMAS(type_name), var_name)
