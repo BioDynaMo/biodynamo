@@ -8,12 +8,14 @@
 #include <typeinfo>
 #include <utility>
 #include <vector>
+#include <stdexcept>
 
 #include "cpp_magic.h"
 #include "timing.h"
 
 using std::ostream;
 
+/// default data member selector which does not remove any data members
 template <typename Type, typename EnclosingClass, int id>
 struct SelectAllMembers {
   typedef Type type;
@@ -29,6 +31,10 @@ struct Nulltype {
   Nulltype& operator=(const T& other) {
     return *this;
   }
+
+  template <typename T>
+  Nulltype(std::initializer_list<T>) {}
+
   friend ostream& operator<<(ostream& out, const Nulltype& value) {
     return out;
   }
@@ -91,8 +97,8 @@ struct Nulltype {
   };                                                        \
   EVAL(LOOP(INTERNAL_MEMBER_REMOVER, name, __VA_ARGS__))
 
-#define BDM_DEFAULT_TEMPLATE                                           \
-  template <template <typename, typename, int> class TMemberSelector = \
+#define BDM_DEFAULT_TEMPLATE(template_param_name)                          \
+  template <template <typename, typename, int> class template_param_name = \
                 SelectAllMembers>
 
 /// Macro to define data member for a simulation object
@@ -100,27 +106,77 @@ struct Nulltype {
 #define BDM_DATA_MEMBER(access_modifier, type_name, var_name)               \
  public:                                                                    \
   static constexpr int getDataMemberUid##var_name() { return __COUNTER__; } \
- access_modifier:                                                           \
+  access_modifier:                                                          \
   typename TMemberSelector<type_name, self,                                 \
                            getDataMemberUid##var_name()>::type var_name
 
 #define BDM_PUBLIC_MEMBER(type_name, var_name) \
- BDM_DATA_MEMBER(public, REMOVE_TRAILING_COMMAS(type_name), var_name)
+  BDM_DATA_MEMBER(public, REMOVE_TRAILING_COMMAS(type_name), var_name)
 
 #define BDM_PROTECTED_MEMBER(type_name, var_name) \
- BDM_DATA_MEMBER(protected, REMOVE_TRAILING_COMMAS(type_name), var_name)
+  BDM_DATA_MEMBER(protected, REMOVE_TRAILING_COMMAS(type_name), var_name)
 
 #define BDM_PRIVATE_MEMBER(type_name, var_name) \
- BDM_DATA_MEMBER(private, REMOVE_TRAILING_COMMAS(type_name), var_name)
+  BDM_DATA_MEMBER(private, REMOVE_TRAILING_COMMAS(type_name), var_name)
 
-class NullBaseClass {};
+/// Macro to insert required boilerplate code into classes
+/// @param: self_specifier: used to point to static members / functions of this
+///         class - use PlaceholderType for template parameters without default
+///         parameter - e.g.
+///         `class A {};`
+///           -> self_specifier: A
+///         `template<typename T=DefaultValue> class B {};`
+///           -> self_specifier: B<>
+///         `template<typename T, typename U> class C {};`
+///           -> self_specifier: C<PlaceholderType COMMA() PlaceholderType>
+#define BDM_CLASS_HEADER(self_specifier)                                 \
+ public:                                                                 \
+  using self = self_specifier;                                           \
+  template <typename Type, typename EnclosingClass, int id>              \
+  using TMemberSelector =                                                \
+      typename Base::template TMemberSelector<Type, EnclosingClass, id>; \
+                                                                         \
+ private:
 
 // -----------------------------------------------------------------------------
-// core library only defines minimal cell
-BDM_DEFAULT_TEMPLATE
-class BaseCell {
+// core library
+BDM_DEFAULT_TEMPLATE(TTMemberSelector)
+struct BdmSimObject {
+  template <typename Type, typename EnclosingClass, int id>
+  using TMemberSelector = TTMemberSelector<Type, EnclosingClass, id>;
+};
+
+/// This struct is used to access static functions / members of a class that
+/// has template parameter(s) without a default value.
+/// e.g.
+/// ```
+/// template <typename T> class Foo { static const int kBar = 3; };
+/// Foo<PlaceholderType>::kBar
+/// ```
+/// The definition of the static function / member must be invariant of the
+/// template parameter(s)
+/// e.g. `Foo<PlaceholderType>::kBar == Foo<AnyOtherType>::kBar`
+/// Usage solely to create a valid id for the scope operator. It is not allowed
+/// to instantiate an object with template parameter PlaceholderType. The
+/// following statement is invalid and will throw an exception at runtime:
+/// `Foo<PlaceholderType> foo;`
+struct PlaceholderType : public BdmSimObject<> {
+  PlaceholderType() {
+    throw std::logic_error(
+        "Creating an instance of type PlaceholderType is not allowed. "
+        "PlaceholderType should solely be used for creating a valid id "
+        "for the scope operator");
+  }
+  template <class... A>
+  PlaceholderType(const A&... a)
+      : PlaceholderType() {}
+};
+
+template <typename Base = BdmSimObject<> >
+class BaseCell : public Base {
+  BDM_CLASS_HEADER(BaseCell<>);
+
  public:
-  using self = BaseCell<>;
   explicit BaseCell(const std::array<double, 3>& pos) : position_(pos) {}
   BaseCell() : position_{0, 0, 0} {}
   const std::array<double, 3>& GetPosition() const { return position_; }
@@ -132,20 +188,20 @@ class BaseCell {
 
 template <typename Cell>
 void CoreOp(Cell* cell) {
-  std::cout << cell->GetPosition()[2] << std::endl;
+  std::cout << "[CoreOp] cell z-position: " << cell->GetPosition()[2]
+            << std::endl;
 }
 
 // -----------------------------------------------------------------------------
 // libraries for specific specialities add functionality - e.g. Neuroscience
 class Neurite {};
 
-// adds Neurites to BaseCell
-// typename TNeurite = Neurite,
-template <typename Base, template <typename, typename, int>
-                         class TMemberSelector = SelectAllMembers>
+// add Neurites to BaseCell
+template <typename Base = BaseCell<> >
 class Neuron : public Base {
+  BDM_CLASS_HEADER(Neuron<>);
+
  public:
-  using self = Neuron<Base>;
   template <class... A>
   explicit Neuron(const std::vector<Neurite>& neurites, const A&... a)
       : Base(a...), neurites_{neurites} {}
@@ -156,13 +212,18 @@ class Neuron : public Base {
   BDM_PRIVATE_MEMBER(std::vector<Neurite>, neurites_);
 };
 
+// define easy to use templated type alias
+BDM_DEFAULT_TEMPLATE(MemberSelector)
+using BdmNeuron = Neuron<BaseCell<BdmSimObject<MemberSelector> > >;
+
 // -----------------------------------------------------------------------------
 // code written by life scientists using package core and Neuroscience extension
-template <typename Base, template <typename, typename, int>
-                         class TMemberSelector = SelectAllMembers>
+// extend Neuron definition provided by extension
+template <typename Base>
 class NeuronExtension : public Base {
+  BDM_CLASS_HEADER(NeuronExtension<PlaceholderType>);
+
  public:
-  using self = NeuronExtension<Base>;
   template <class... A>
   explicit NeuronExtension(double foo, const A&... a)
       : Base(a...), foo_{foo} {}
@@ -176,46 +237,65 @@ class NeuronExtension : public Base {
   BDM_PRIVATE_MEMBER(double, foo_) = 3.14;
 };
 
+// define easy to use templated type alias
+BDM_DEFAULT_TEMPLATE(MemberSelector)
+using MyExtendedNeuron =
+    NeuronExtension<Neuron<BaseCell<BdmSimObject<MemberSelector> > > >;
+
+// define some client code that processes extended neurons
 template <typename Cell>
 void CustomOp(const Cell& cell) {
-  std::cout << cell->GetNeurites().size() << " - " << cell->GetFoo()
-            << std::endl;
+  std::cout << "[CustomOp] cell #neurites " << cell->GetNeurites().size()
+            << std::endl
+            << "           cell.foo_      " << cell->GetFoo() << std::endl;
 }
 
+// define member selectors to remove data members that won't be used in the
+// simulation
 NEW_MEMBER_REMOVER(RemoveUnused, BaseCell<>, unused_);
-
-BDM_DEFAULT_TEMPLATE
-using MyNeuron = Neuron<BaseCell<TMemberSelector>, TMemberSelector>;
-
-BDM_DEFAULT_TEMPLATE
-using MyExtendedNeuron =
-    NeuronExtension<Neuron<BaseCell<TMemberSelector>, TMemberSelector>,
-                    TMemberSelector>;
+NEW_MEMBER_SELECTOR(FooSelector, NeuronExtension<PlaceholderType>, foo_);
 
 int main() {
+  // --------------------------
+  // use only classes from core
   BaseCell<> base;
   CoreOp(&base);
 
-  Neuron<BaseCell<> > neuron;
-  CoreOp(&base);
-  std::cout << neuron.GetNeurites().size() << std::endl;
+  // -------------------------------------
+  // use class from neuroscience extension
+  Neuron<> neuron;
+  CoreOp(&neuron);
 
-  MyNeuron<> my_neuron;
-  MyNeuron<RemoveUnused> my_neuron_wo_unused;
+  BdmNeuron<> neuron1;
+  // following statement is equivalent to:
+  // Neuron<BaseCell<BdmSimObject<RemoveUnused> > >
+  BdmNeuron<RemoveUnused> neuron_wo_unused;
 
-  std::cout << sizeof(my_neuron) << " - " << sizeof(my_neuron_wo_unused)
+  std::cout << "sizeof(neuron1)          " << sizeof(neuron1) << std::endl
+            << "sizeof(neuron_wo_unused) " << sizeof(neuron_wo_unused)
             << std::endl;
 
-  NeuronExtension<Neuron<BaseCell<> > > extended_neuron;
+  // ---------------------
+  // use customized neuron
+  NeuronExtension<Neuron<> > extended_neuron;
+  CoreOp(&extended_neuron);
   CustomOp(&extended_neuron);
 
-  MyExtendedNeuron<> my_extended_neuron(1.2, std::vector<Neurite>{Neurite()},
-                                        std::array<double, 3>{1, 2, 3});
-  MyExtendedNeuron<RemoveUnused> my_extended_neuron_wo_unused;
-  std::cout << sizeof(my_extended_neuron) << " - "
-            << sizeof(my_extended_neuron_wo_unused) << std::endl;
-  CoreOp(&my_extended_neuron);
-  CustomOp(&my_extended_neuron);
+  // equivalent but with easier interface
+  MyExtendedNeuron<> extended_neuron1(1.2, std::vector<Neurite>{Neurite()},
+                                      std::array<double, 3>{1, 2, 3});
+  CoreOp(&extended_neuron1);
+  CustomOp(&extended_neuron1);
+
+  // easier customizeble interface to
+  MyExtendedNeuron<RemoveUnused> extended_neuron_wo_unused;
+  MyExtendedNeuron<FooSelector> extended_neuron_only_foo;
+  std::cout << "sizeof(extended_neuron1)          " << sizeof(extended_neuron1)
+            << std::endl
+            << "sizeof(extended_neuron_wo_unused) "
+            << sizeof(extended_neuron_wo_unused) << std::endl
+            << "sizeof(extended_neuron_only_foo)  "
+            << sizeof(extended_neuron_only_foo) << std::endl;
 
   return 0;
 }
