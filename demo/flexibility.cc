@@ -168,7 +168,7 @@ struct PlaceholderType : public BdmSimObject<> {
         "for the scope operator");
   }
   template <class... A>
-  PlaceholderType(const A&... a)
+  explicit PlaceholderType(const A&... a)
       : PlaceholderType() {}
 };
 
