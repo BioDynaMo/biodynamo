@@ -107,7 +107,7 @@ class kd_tree_node : public spatial_tree_node<T> {
  */
 template <typename T>
 kd_tree_node<T>::kd_tree_node() {
-  kd_tree_node<T>(bound(0, 0, 0, 1, 1, 1), 10, 1000);
+  kd_tree_node<T>(bound(0, 0, 0, 1, 1, 1), 10, 1000, 0);
 }
 
 /**
@@ -132,6 +132,7 @@ kd_tree_node<T>::kd_tree_node(bound bnd, int max_depth,
   is_leaf_node = true;
   this->node_area = bnd.HalfSurfaceArea();
   this->axis_ = 0;
+  this->split_parameter_ = 0;
 }
 
 /**

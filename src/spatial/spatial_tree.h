@@ -21,7 +21,7 @@ class spatial_tree_node {
   bound bnd;
 
  private:
-  virtual spatial_tree_node<T> **GetChildren() = 0;
+  virtual spatial_tree_node<T> **GetChildrenNodes() = 0;
 
   virtual int GetChildrenSize() = 0;
 
@@ -136,25 +136,25 @@ void spatial_tree_node<T>::GetNeighbors(
 
     for (int i = 0; i < a_objs->size(); i++)
       for (int j = is_same ? (i + 1) : 0; j < b_objs->size(); j++)
-        if ((a_objs->at(i).first).sqdist(b_objs->at(j).first) <= distance)
+        if ((a_objs->at(i).first).SquaredEuclidianDistance(b_objs->at(j).first) <= distance)
           result->push_back(MakeNeighborPair(a_objs->at(i), b_objs->at(j)));
   } else {
     spatial_tree_node<T> **a_nodes, **b_nodes;
     int a_size = 0, b_size = 0;
     // If A is a leaf node than call with A and child of B
     if (A->IsLeaf()) {
-      b_nodes = B->GetChildren();
+      b_nodes = B->GetChildrenNodes();
       for (int i = 0; i < B->GetChildrenSize(); i++)
         if (A->GetBound().Distance(b_nodes[i]->GetBound()) <= distance)
             GetNeighbors(A, b_nodes[i], distance, result);
     } else if (B->IsLeaf()) {
-      a_nodes = A->GetChildren();
+      a_nodes = A->GetChildrenNodes();
       for (int i = 0; i < A->GetChildrenSize(); i++)
         if (a_nodes[i]->GetBound().Distance(B->GetBound()) <= distance)
             GetNeighbors(a_nodes[i], B, distance, result);
     } else {
-      a_nodes = A->GetChildren();
-      b_nodes = B->GetChildren();
+      a_nodes = A->GetChildrenNodes();
+      b_nodes = B->GetChildrenNodes();
       a_size = A->GetChildrenSize();
       b_size = B->GetChildrenSize();
       bool is_same = A == B;
@@ -191,25 +191,25 @@ void spatial_tree_node<T>::GetNeighbors(spatial_tree_node<T> *A,
 
     for (int i = 0; i < a_objs->size(); i++)
       for (int j = is_same ? (i + 1) : 0; j < b_objs->size(); j++)
-        if ((a_objs->at(i).first).sqdist(b_objs->at(j).first) <= distance)
+        if ((a_objs->at(i).first).SquaredEuclidianDistance(b_objs->at(j).first) <= distance)
           result->push_back(
               make_pair(a_objs->at(i).second, b_objs->at(j).second));
   } else {
     spatial_tree_node<T> **a_nodes, **b_nodes;
     int a_size = 0, b_size = 0;
     if (A->IsLeaf()) {
-      b_nodes = B->GetChildren();
+      b_nodes = B->GetChildrenNodes();
       for (int i = 0; i < B->GetChildrenSize(); i++)
         if (A->GetBound().Distance(b_nodes[i]->GetBound()) <= distance)
             GetNeighbors(A, b_nodes[i], distance, result);
     } else if (B->IsLeaf()) {
-      a_nodes = A->GetChildren();
+      a_nodes = A->GetChildrenNodes();
       for (int i = 0; i < A->GetChildrenSize(); i++)
         if (a_nodes[i]->GetBound().Distance(B->GetBound()) <= distance)
             GetNeighbors(a_nodes[i], B, distance, result);
     } else {
-      a_nodes = A->GetChildren();
-      b_nodes = B->GetChildren();
+      a_nodes = A->GetChildrenNodes();
+      b_nodes = B->GetChildrenNodes();
       a_size = A->GetChildrenSize();
       b_size = B->GetChildrenSize();
       bool is_same = A == B;

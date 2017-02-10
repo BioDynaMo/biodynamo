@@ -109,37 +109,43 @@ bool SearchTest(spatial_tree_node<int> *tree, int amount) {
 TEST(SpatialTreeTest, OctreeTest) {
   spatial_tree_node<int> *tree =
       new octree_node<int>(bound(0.0, 0.0, 0.0, 100.0, 100.0, 100.0), 100, 100);
-  simple_test(tree);
+  SimpleTest(tree);
+  delete tree;
 }
 
 TEST(SpatialTreeTest, KdTest) {
   spatial_tree_node<int> *tree = new kd_tree_node<int>(
       bound(0.0, 0.0, 0.0, 100.0, 100.0, 100.0), 100, 100);
-  simple_test(tree);
+  SimpleTest(tree);
+  delete tree;
 }
 
 TEST(SpatialTreeTest, OctreeSizeTest) {
   spatial_tree_node<int> *tree =
       new octree_node<int>(bound(0.0, 0.0, 0.0, 1.0, 1.0, 1.0), 100, 100);
-  size_test(tree, 1000);
+  SizeTest(tree, 1000);
+  delete tree;
 }
 
 TEST(SpatialTreeTest, KdTreeSizeTest) {
   spatial_tree_node<int> *tree =
       new kd_tree_node<int>(bound(0.0, 0.0, 0.0, 1.0, 1.0, 1.0), 100, 100);
-  size_test(tree, 1000);
+  SizeTest(tree, 1000);
+  delete tree;
 }
 
 TEST(SpatialTreeTest, OctreeSearchTest) {
   spatial_tree_node<int> *tree =
       new octree_node<int>(bound(0.0, 0.0, 0.0, 1.0, 1.0, 1.0), 100, 100);
-  search_test(tree, 1000);
+  SearchTest(tree, 1000);
+  delete tree;
 }
 
 TEST(SpatialTreeTest, KdTreeSearchTest) {
   spatial_tree_node<int> *tree =
       new kd_tree_node<int>(bound(0.0, 0.0, 0.0, 1.0, 1.0, 1.0), 100, 100);
-  search_test(tree, 1000);
+  SearchTest(tree, 1000);
+  delete tree;
 }
 
 }  // namespace bdm

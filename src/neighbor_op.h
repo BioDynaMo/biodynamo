@@ -24,14 +24,15 @@ class NeighborOp {
 
     // Tree search
     // Creating a spatial tree (max_depth, capacity_of_leaf_node)
-    spatial_tree_node<size_t>* tree = new octree_node<size_t>(100, 10);
+    spatial_tree_node<size_t>* tree = new octree_node<size_t>
+            (bound(0.0, 0.0, 0.0, 1000.0, 1000.0, 1000.0), 100, 10);
 
     // Initializing tree with a objects
     for (size_t i = 0; i < cells->elements(); i++) {
       auto cell = cells->GetScalar(i);
       const auto& position = cell.GetPosition();
       point pos(position[0][0], position[1][0], position[2][0]);
-      tree->put(pos, i);
+        tree->Put(pos, i);
     }
     const VcBackend::real_t search_radius =
         sqrt(static_cast<VcBackend::real_t>(distance_));
@@ -42,7 +43,7 @@ class NeighborOp {
 
     // std::cout << "Neighbor search. Distance " << search_radius << std::endl;
     // Getting all pairs within the 'search_radius distance'
-    auto tree_neighbors = tree->get_neighbors(search_radius);
+    auto tree_neighbors = tree->GetNeighbors(search_radius);
     int amount_of_pairs = tree_neighbors.size();
 
     // Filling container for neighbors for every object

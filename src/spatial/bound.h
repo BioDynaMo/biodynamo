@@ -34,8 +34,8 @@ struct bound {
 
   // Checks if point 'p' lies inside the bound or on its boundary
   bool Has(point p) {
-    return IsOnLine(p.x, Far(), Near()) && IsOnLine(p.y, Left(), Right()) &&
-            IsOnLine(p.z, Bottom(), Top());
+    return IsBetween(p.x, Far(), Near()) && IsBetween(p.y, Left(), Right()) &&
+            IsBetween(p.z, Bottom(), Top());
   }
 
   // Extends boundary so it contains point 'p'
@@ -63,7 +63,7 @@ struct bound {
   }
 
   // Check if 'x' is between 'a' and 'b' on the line
-  bool IsOnLine(double x, double a, double b) {
+  bool IsBetween(double x, double a, double b) {
     double min = fmin(a, b);
     double max = fmax(a, b);
     return (x >= min && x <= max);
@@ -92,18 +92,18 @@ struct bound {
     double bz[2][2] = {{Bottom(), Top()}, {b.Bottom(), b.Top()}};
 
     // check axis_ that have overlaped projections
-    is_overlap_x = (IsOnLine(bx[0][0], bx[1][0], bx[1][1])) ||
-                   (IsOnLine(bx[0][1], bx[1][0], bx[1][1])) ||
-                   (IsOnLine(bx[1][0], bx[0][0], bx[0][1])) ||
-                   (IsOnLine(bx[1][1], bx[0][0], bx[0][1]));
-    is_overlap_y = (IsOnLine(by[0][0], by[1][0], by[1][1])) ||
-                   (IsOnLine(by[0][1], by[1][0], by[1][1])) ||
-                   (IsOnLine(by[1][0], by[0][0], by[0][1])) ||
-                   (IsOnLine(by[1][1], by[0][0], by[0][1]));
-    is_overlap_z = (IsOnLine(bz[0][0], bz[1][0], bz[1][1])) ||
-                   (IsOnLine(bz[0][1], bz[1][0], bz[1][1])) ||
-                   (IsOnLine(bz[1][0], bz[0][0], bz[0][1])) ||
-                   (IsOnLine(bz[1][1], bz[0][0], bz[0][1]));
+    is_overlap_x = (IsBetween(bx[0][0], bx[1][0], bx[1][1])) ||
+                   (IsBetween(bx[0][1], bx[1][0], bx[1][1])) ||
+                   (IsBetween(bx[1][0], bx[0][0], bx[0][1])) ||
+                   (IsBetween(bx[1][1], bx[0][0], bx[0][1]));
+    is_overlap_y = (IsBetween(by[0][0], by[1][0], by[1][1])) ||
+                   (IsBetween(by[0][1], by[1][0], by[1][1])) ||
+                   (IsBetween(by[1][0], by[0][0], by[0][1])) ||
+                   (IsBetween(by[1][1], by[0][0], by[0][1]));
+    is_overlap_z = (IsBetween(bz[0][0], bz[1][0], bz[1][1])) ||
+                   (IsBetween(bz[0][1], bz[1][0], bz[1][1])) ||
+                   (IsBetween(bz[1][0], bz[0][0], bz[0][1])) ||
+                   (IsBetween(bz[1][1], bz[0][0], bz[0][1]));
 
     double dx = 0, dy = 0, dz = 0;
 
