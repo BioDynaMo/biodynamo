@@ -164,6 +164,9 @@ struct Neurite {
   size_t id = 0;
 };
 
+template<typename Backend>
+class Cell;
+
 // <generated>
 // makes it more convenient to use
 template<typename Delegate>
