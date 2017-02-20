@@ -9,6 +9,7 @@
 #include <Vc/Vc>
 #include <omp.h>
 
+#include "cpp_magic.h"
 #include "timing.h"
 #include "timing_aggregator.h"
 
@@ -177,49 +178,6 @@ struct Neurite {
   size_t id = 0;
 };
 
-// <generated>
-// makes it more convenient to use
-template <typename Delegate>
-class CellScalarWrapper {
- public:
-  // FIXME verify that Delegate is Cell<ScalarRefBackend>
-  explicit CellScalarWrapper(const Delegate& delegate) : delegate_{delegate} {}
-
-  double GetDiameter() const { return delegate_.GetDiameter()[0]; }
-
-  void SetDiameter(double diameter) { delegate_.SetDiameter({diameter}); }
-
-  double GetVolume() const { return delegate_.GetVolume()[0]; }
-
-  void SetVolume(double volume) { delegate_.SetVolume({volume}); }
-
-  void UpdateVolume() { delegate_.UpdateVolume(); }
-
-  void ChangeVolume(double speed) { delegate_.ChangeVolume({speed}); }
-
-  const std::vector<Neurite>& GetNeurites() const {
-    return delegate_.GetNeurites()[0];
-  }
-
-  void SetNeurites(const std::vector<Neurite>& neurites) {
-    delegate_.SetNeurites({neurites});
-  }
-
-  void UpdateNeurites() { delegate_.UpdateNeurites(); }
-
-  friend std::ostream& operator<<(std::ostream& out,
-                                  const CellScalarWrapper<Delegate>& cell) {
-    out << cell.delegate_;
-    return out;
-  }
-
-  // TODO begin and end needed?
-
- private:
-  Delegate delegate_;
-};
-// </generated>
-
 template <typename Backend>
 class Cell {
  public:
@@ -234,9 +192,9 @@ class Cell {
   friend class Cell;
 
   // <required interface>
-  static CellScalarWrapper<Cell<ScalarBackend>>
+  static Cell<ScalarBackend>
   NewScalar() {  // TODO perfect forwarding for ctor arguments
-    return CellScalarWrapper<Cell<ScalarBackend>>(Cell<ScalarBackend>());
+    return Cell<ScalarBackend>();
   }
 
   // TODO make protected
@@ -413,6 +371,8 @@ int main(int argc, char** argv) {
   std::cout << "scalar cell" << std::endl << scalar << std::endl;
   scalar.UpdateVolume();
   std::cout << "scalar_cell.GetVolume(): " << scalar.GetVolume() << std::endl;
+  // TODO add assignment operator that allows: double v = s.GetVolume();
+  double scalar_volume = scalar.GetVolume()[0];
   std::vector<Neurite> neurites_scalar_cell;
   neurites_scalar_cell.push_back(Neurite(123));
   neurites_scalar_cell.push_back(Neurite(456));
