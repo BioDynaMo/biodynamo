@@ -123,8 +123,6 @@ struct type_ternary_operator<false, T, U> {
   typedef U type;
 };
 
-enum BackendLib { VC };
-
 struct VcBackend {
   typedef const std::size_t index_t;
   typedef double real_t;
@@ -179,6 +177,118 @@ typename VcBackend::real_v iif(
   return Vc::iif(condition, true_value, false_value);
 }
 
+/// loops over variadic macro arguments and calls the specified operation
+/// processes one argument in each iteration
+/// e.g. LOOP(OP, a, b) will lead to:
+/// OP(a)
+/// OP(b)
+/// For a more detailed explanation see `MAP` macro in `third_party/cpp_magic.h`
+// clang-format off
+#define LOOP(operation, first, ...)                          \
+  operation(first)                                           \
+  IF(HAS_ARGS(__VA_ARGS__))(                                 \
+    DEFER2(_LOOP)()(operation, __VA_ARGS__))
+#define _LOOP() LOOP
+// clang-format on
+
+#define BDM_CLASS_HEADER_PUSH_BACK_BODY(...) \
+  EVAL(LOOP(BDM_CLASS_HEADER_PUSH_BACK_BODY_ITERATOR, __VA_ARGS__))
+
+#define BDM_CLASS_HEADER_PUSH_BACK_BODY_ITERATOR(data_member) \
+  data_member.push_back(other.data_member[0]);
+
+#define BDM_CLASS_HEADER_CPY_CTOR_INIT(...) \
+  EVAL(LOOP(BDM_CLASS_HEADER_CPY_CTOR_INIT_ITERATOR, __VA_ARGS__))
+
+#define BDM_CLASS_HEADER_CPY_CTOR_INIT_ITERATOR(data_member) \
+  data_member(other.data_member),
+
+#define BDM_CLASS_HEADER(class_name, self_specifier, ...)                      \
+ public:                                                                       \
+  /* reduce verbosity of some types and variables by defining a local alias */ \
+  using Base::idx_;                                                            \
+                                                                               \
+  using Backend = typename Base::Backend;                                      \
+  using real_v = typename Backend::real_v;                                     \
+                                                                               \
+  template <typename T>                                                        \
+  using SimdArray = typename Backend::template SimdArray<T>;                   \
+                                                                               \
+  template <typename T, typename Allocator = std::allocator<T>>                \
+  using Container = typename Backend::template Container<T, Allocator>;        \
+                                                                               \
+  template <typename Backend>                                                  \
+  using Self = self_specifier;                                                 \
+                                                                               \
+  /* all template versions of this class are friends of each other */          \
+  /* so they can access each others data members */                            \
+  template <typename T>                                                        \
+  friend class class_name;                                                     \
+                                                                               \
+  template <class... A>                                                        \
+  static Self<ScalarBackend> NewScalar(const A&... a) {                        \
+    return Self<ScalarBackend>(a...);                                          \
+  }                                                                            \
+                                                                               \
+ protected:                                                                    \
+  /* TODO call Base class cpy ctor */                                          \
+  /* Ctor to create SoaRefBackend */                                           \
+  /* only compiled if T == VcSoaRefBackend */                                  \
+  /* template parameter required for enable_if - otherwise compile error */    \
+  template <typename T = Backend>                                              \
+  class_name(Self<VcSoaBackend>& other,                                        \
+             typename std::enable_if<                                          \
+                 std::is_same<T, VcSoaRefBackend>::value>::type* = 0)          \
+      : REMOVE_TRAILING_COMMAS(BDM_CLASS_HEADER_CPY_CTOR_INIT(__VA_ARGS__)) {} \
+                                                                               \
+ public:                                                                       \
+  /* TODO only for SoaBackends */                                              \
+  /* needed because operator[] is not thread safe - index is shared among  */  \
+  /* all threads */                                                            \
+  Vc_ALWAYS_INLINE Self<VcSoaRefBackend> GetSoaRef() {                         \
+    return Self<VcSoaRefBackend>(*this);                                       \
+  }                                                                            \
+                                                                               \
+  /* TODO call base class */                                                   \
+  /* only compiled if Backend == Soa(Ref)Backend */                            \
+  /* template parameter required for enable_if - otherwise compile error */    \
+  template <typename T = Backend>                                              \
+  void push_back(                                                              \
+      const Self<VcBackend>& other,                                            \
+      typename std::enable_if<std::is_same<T, VcSoaRefBackend>::value ||       \
+                              std::is_same<T, VcSoaBackend>::value>::type* =   \
+          0) {                                                                 \
+    BDM_CLASS_HEADER_PUSH_BACK_BODY(__VA_ARGS__);                              \
+  }                                                                            \
+                                                                               \
+  /* only compiled if Backend == Soa(Ref)Backend */                            \
+  /* template parameter required for enable_if - otherwise compile error */    \
+  template <typename T = Backend>                                              \
+  void push_back(                                                              \
+      const Self<VcBackend>& other,                                            \
+      typename std::enable_if<std::is_same<T, ScalarBackend>::value>::type* =  \
+          0) {                                                                 \
+    throw std::runtime_error("TODO implement: see src/cell.h:Append");         \
+  }                                                                            \
+                                                                               \
+  /* This operator is not thread safe! all threads modify the same index. */   \
+  /* For parallel execution create a reference object for each thread -- */    \
+  /* see GetSoaRef */                                                          \
+  /* only compiled if Backend == Soa(Ref)Backend */                            \
+  /* no version if Backend == VcBackend that returns a Self<ScalarBackend> */  \
+  /* since this would involves copying of elements and would therefore */      \
+  /* degrade performance -> it is therefore discouraged */                     \
+  template <typename T = Backend>                                              \
+  typename std::enable_if<std::is_same<T, VcSoaRefBackend>::value ||           \
+                              std::is_same<T, VcSoaBackend>::value,            \
+                          Self<Backend>&>::type                                \
+  operator[](int index) {                                                      \
+    idx_ = index;                                                              \
+    return *this;                                                              \
+  }                                                                            \
+                                                                               \
+ private:
+
 struct Neurite {
   Neurite() : id(0) {}
   Neurite(size_t id) : id(id) {}
@@ -201,96 +311,8 @@ struct BaseCell {
 
 template <typename Base>
 class Cell : public Base {
- public:
-  // reduce verbosity of some types and variables by defining a local alias
-  using Base::idx_;
-
-  using Backend = typename Base::Backend;
-  using real_v = typename Backend::real_v;
-
-  template <typename T>
-  using SimdArray = typename Backend::template SimdArray<T>;
-
-  template <typename T, typename Allocator = std::allocator<T>>
-  using Container = typename Backend::template Container<T, Allocator>;
-
-  template <typename Backend>
-  using Self = Cell<typename Base::template Self<Backend>>;
-
-  // all template versions of this class are friends of each other
-  // so they can access each others data members
-  template <typename T>
-  friend class Cell;
-
-  // <required interface>
-  template <class... A>
-  static Self<ScalarBackend> NewScalar(const A&... a) {
-    return Self<ScalarBackend>(a...);
-  }
-
- protected:
-  // TODO call Base class cpy ctor
-  // Ctor to create SoaRefBackend
-  // only compiled if T == VcSoaRefBackend
-  // template parameter required for enable_if - otherwise compile error
-  template <typename T = Backend>
-  Cell(Self<VcSoaBackend>& other,
-       typename std::enable_if<std::is_same<T, VcSoaRefBackend>::value>::type* =
-           0)
-      : diameter_(other.diameter_),
-        volume_(other.volume_),
-        neurites_(other.neurites_) {}
-        
- public:
-  // TODO only for SoaBackends
-  // needed because operator[] is not thread safe - index is shared among all
-  // threads
-  Vc_ALWAYS_INLINE Self<VcSoaRefBackend> GetSoaRef() {
-    return Self<VcSoaRefBackend>(*this);
-  }
-
-  // TODO call base class
-  // only compiled if Backend == Soa(Ref)Backend
-  // template parameter required for enable_if - otherwise compile error
-  template <typename T = Backend>
-  void push_back(
-      const Self<VcBackend>& other,
-      typename std::enable_if<std::is_same<T, VcSoaRefBackend>::value ||
-                              std::is_same<T, VcSoaBackend>::value>::type* =
-          0) {
-    diameter_.push_back(other.diameter_[0]);
-    volume_.push_back(other.volume_[0]);
-    neurites_.push_back(other.neurites_[0]);
-  }
-
-  // only compiled if Backend == Soa(Ref)Backend
-  // template parameter required for enable_if - otherwise compile error
-  template <typename T = Backend>
-  void push_back(
-      const Self<VcBackend>& other,
-      typename std::enable_if<std::is_same<T, ScalarBackend>::value>::type* =
-          0) {
-    throw std::runtime_error("TODO implement: see src/cell.h:Append");
-  }
-
-  // This operator is not thread safe! all threads modify the same index.
-  // For parallel execution create a reference object for each thread --
-  // see GetSoaRef
-  // only compiled if Backend == Soa(Ref)Backend
-  // no version if Backend == VcBackend that returns a Self<ScalarBackend>
-  // since this would involves copying of elements and would therefore degrade
-  // performance -> it is therefore discouraged
-  template <typename T = Backend>
-  typename std::enable_if<std::is_same<T, VcSoaRefBackend>::value ||
-                              std::is_same<T, VcSoaBackend>::value,
-                          Self<Backend>&>::type
-  operator[](int index) {
-    idx_ = index;
-    return *this;
-  }
-
- private:
-  // </required interface>
+  BDM_CLASS_HEADER(Cell, Cell<typename Base::template Self<Backend>>, diameter_,
+                   volume_, neurites_);
 
  public:
   Cell() {}
@@ -355,11 +377,9 @@ class Cell : public Base {
   }
 
  private:
-  Container<real_v, Vc::Allocator<real_v>>
-      diameter_;  // TODO change backend so Container
-                  // takes Vc::Allocator if a
-                  // real_v is passed as template
-                  // parameter
+  // TODO change backend so Container takes Vc::Allocator if a
+  // real_v is passed as template parameter
+  Container<real_v, Vc::Allocator<real_v>> diameter_;
   Container<real_v, Vc::Allocator<real_v>> volume_;
   Container<SimdArray<std::vector<Neurite>>> neurites_;
 };
