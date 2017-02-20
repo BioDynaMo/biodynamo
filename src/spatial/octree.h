@@ -1,10 +1,12 @@
-#ifndef SRC_SPATIAL_OCTREE_H_
-#define SRC_SPATIAL_OCTREE_H_
+#ifndef SPATIAL_OCTREE_H_
+#define SPATIAL_OCTREE_H_
 
 #include <cstdio>
 #include <vector>
 
 #include "spatial_tree.h"
+
+namespace bdm {
 
 using std::vector;
 using std::make_pair;
@@ -15,30 +17,40 @@ using std::make_pair;
  * @tparam T - type of the object to be stored in the tree
  */
 template <typename T>
-class octree_node : public spatial_tree_node<T> {
+class OctreeNode : public SpatialTreeNode<T> {
+ public:
+  OctreeNode();
+
+  OctreeNode(Bound bnd, int max_depth, int max_amount_of_objects);
+
+  OctreeNode(int max_depth, int max_amount_of_objects);
+
+  ~OctreeNode();
+
+  virtual bool IsLeaf() const;
+
+  virtual void Put(Point const &p, T obj);
+
+  T At(Point const &p) const;
+
+  int Size() const;
+
  private:
   bool is_leaf_node;
-  octree_node<T> *children[8];
-  vector<pair<point, T> > *objects;
+  OctreeNode<T> *children[8];
+  vector<pair<Point, T> > *objects;
   int max_depth;
   int max_amount_of_objects_in_node;
 
   void Split();
-  int GetChildID(point p);
 
-  virtual spatial_tree_node<T> **GetChildrenNodes();
-  virtual vector<pair<point, T> > *GetObjects();
-  virtual int GetChildrenSize();
+  int GetChildID(Point const &p) const;
 
- public:
-  octree_node();
-  octree_node(bound bnd, int max_depth, int max_amount_of_objects);
-  octree_node(int max_depth, int max_amount_of_objects);
-  ~octree_node();
-  virtual bool IsLeaf();
-  virtual void Put(point p, T obj);
-  T At(point p);
-  int Size();
+  virtual SpatialTreeNode<T> **GetChildrenNodes() const;
+
+  virtual vector<pair<Point, T> > *GetObjects() const;
+
+  virtual int GetChildrenSize() const;
 };
 
 /**
@@ -48,8 +60,8 @@ class octree_node : public spatial_tree_node<T> {
  * @tparam T - type of the object to be stored in the tree
  */
 template <typename T>
-octree_node<T>::octree_node() {
-  octree_node<T>(bound(0, 0, 0, 1, 1, 1), 10, 1000);
+OctreeNode<T>::OctreeNode() {
+  OctreeNode<T>(Bound(0, 0, 0, 1, 1, 1), 10, 1000);
 }
 
 /**
@@ -62,20 +74,20 @@ octree_node<T>::octree_node() {
  * In our case, amount of object acts as splitting criteria
  */
 template <typename T>
-octree_node<T>::octree_node(int max_depth, int max_amount_of_objects) {
-  this->bnd = bound(-inf, -inf, -inf, inf, inf, inf);
+OctreeNode<T>::OctreeNode(int max_depth, int max_amount_of_objects) {
+  this->bnd = Bound(-inf, -inf, -inf, inf, inf, inf);
   this->is_leaf_node = true;
   this->max_depth = max_depth;
   this->max_amount_of_objects_in_node = max_amount_of_objects;
   for (int i = 0; i < 8; i++) children[i] = nullptr;
-  objects = new vector<pair<point, T> >();
+  objects = new vector<pair<Point, T> >();
   is_leaf_node = true;
 }
 
 /**
  * Constructor
  * @tparam T  - type of the object to be stored in the tree
- * @param bnd - bound of the node
+ * @param bnd - Bound of the node
  * @param max_depth - maximum possible depth of the tree. After reaching that
  * point, nodes won't split
  * @param max_amount_of_objects - maximum number of object which can be stored
@@ -83,14 +95,13 @@ octree_node<T>::octree_node(int max_depth, int max_amount_of_objects) {
  * In our case, amount of object acts as splitting criteria
  */
 template <typename T>
-octree_node<T>::octree_node(bound bnd, int max_depth,
-                            int max_amount_of_objects) {
+OctreeNode<T>::OctreeNode(Bound bnd, int max_depth, int max_amount_of_objects) {
   this->bnd = bnd;
   this->is_leaf_node = true;
   this->max_depth = max_depth;
   this->max_amount_of_objects_in_node = max_amount_of_objects;
   for (int i = 0; i < 8; i++) children[i] = nullptr;
-  objects = new vector<pair<point, T> >();
+  objects = new vector<pair<Point, T> >();
   is_leaf_node = true;
 }
 
@@ -99,7 +110,7 @@ octree_node<T>::octree_node(bound bnd, int max_depth,
  * @tparam T - type of the object to be stored in the tree
  */
 template <typename T>
-octree_node<T>::~octree_node() {
+OctreeNode<T>::~OctreeNode() {
   if (!IsLeaf()) {
     for (int i = 0; i < 8; i++)
       if (children[i] != nullptr) {
@@ -114,7 +125,7 @@ octree_node<T>::~octree_node() {
 }
 
 template <typename T>
-bool octree_node<T>::IsLeaf() {
+bool OctreeNode<T>::IsLeaf() const {
   return is_leaf_node;
 }
 
@@ -124,7 +135,7 @@ bool octree_node<T>::IsLeaf() {
  * @param obj - object itself
  */
 template <typename T>
-void octree_node<T>::Put(point p, T obj) {
+void OctreeNode<T>::Put(Point const &p, T obj) {
   if (is_leaf_node) {
     // Insert
     if (objects->size() < max_amount_of_objects_in_node || (max_depth == 0)) {
@@ -145,30 +156,30 @@ void octree_node<T>::Put(point p, T obj) {
  * @tparam T - type of objects
  */
 template <typename T>
-void octree_node<T>::Split() {
+void OctreeNode<T>::Split() {
   if (!this->is_leaf_node) return;
-  point center = this->bnd.Center();
-  bound bnd = this->bnd;
-  point p[8] = {point(center.x, center.y, center.z),
-                point(center.x, bnd.Left(), center.z),
-                point(center.x, bnd.Left(), bnd.Bottom()),
-                point(center.x, center.y, bnd.Bottom()),
-                point(bnd.Far(), center.y, center.z),
-                point(bnd.Far(), bnd.Left(), center.z),
-                point(bnd.Far(), bnd.Left(), bnd.Bottom()),
-                point(bnd.Far(), center.y, bnd.Bottom())};
-  point e[8] = {point(bnd.Near(), bnd.Right(), bnd.Top()),
-                point(bnd.Near(), center.y, bnd.Top()),
-                point(bnd.Near(), center.y, center.z),
-                point(bnd.Near(), bnd.Right(), center.z),
-                point(center.x, bnd.Right(), bnd.Top()),
-                point(center.x, center.y, bnd.Top()),
-                point(center.x, center.y, center.z),
-                point(center.x, bnd.Right(), center.z)};
+  Point center = this->bnd.Center();
+  Bound bnd = this->bnd;
+  Point p[8] = {Point(center.x, center.y, center.z),
+                Point(center.x, bnd.Left(), center.z),
+                Point(center.x, bnd.Left(), bnd.Bottom()),
+                Point(center.x, center.y, bnd.Bottom()),
+                Point(bnd.Far(), center.y, center.z),
+                Point(bnd.Far(), bnd.Left(), center.z),
+                Point(bnd.Far(), bnd.Left(), bnd.Bottom()),
+                Point(bnd.Far(), center.y, bnd.Bottom())};
+  Point e[8] = {Point(bnd.Near(), bnd.Right(), bnd.Top()),
+                Point(bnd.Near(), center.y, bnd.Top()),
+                Point(bnd.Near(), center.y, center.z),
+                Point(bnd.Near(), bnd.Right(), center.z),
+                Point(center.x, bnd.Right(), bnd.Top()),
+                Point(center.x, center.y, bnd.Top()),
+                Point(center.x, center.y, center.z),
+                Point(center.x, bnd.Right(), center.z)};
 
   for (int i = 0; i < 8; i++) {
-    children[i] = new octree_node<T>(bound(p[i], e[i]), max_depth - 1,
-                                     max_amount_of_objects_in_node);
+    children[i] = new OctreeNode<T>(Bound(p[i], e[i]), max_depth - 1,
+                                    max_amount_of_objects_in_node);
   }
 
   for (int i = 0; i < objects->size(); i++) {
@@ -187,8 +198,8 @@ void octree_node<T>::Split() {
  * @return number of subspace
  */
 template <typename T>
-int octree_node<T>::GetChildID(point p) {
-  point center = this->bnd.Center();
+int OctreeNode<T>::GetChildID(Point const &p) const {
+  Point center = this->bnd.Center();
   int result = 0;
   if (p.y >= center.y) {
     if (p.z >= center.z) {
@@ -210,7 +221,7 @@ int octree_node<T>::GetChildID(point p) {
 }
 
 template <typename T>
-T octree_node<T>::At(point p) {
+T OctreeNode<T>::At(Point const &p) const {
   if (this->is_leaf_node) {
     for (int i = 0; i < objects->size(); i++)
       if (p.equals(objects->at(i).first)) return objects->at(i).second;
@@ -222,7 +233,7 @@ T octree_node<T>::At(point p) {
 }
 
 template <typename T>
-int octree_node<T>::Size() {
+int OctreeNode<T>::Size() const {
   if (this->is_leaf_node) {
     return static_cast<int>(objects->size());
   } else {
@@ -235,19 +246,19 @@ int octree_node<T>::Size() {
 }
 
 template <typename T>
-spatial_tree_node<T> **octree_node<T>::GetChildrenNodes() {
-  return (spatial_tree_node<T> **)children;
+SpatialTreeNode<T> **OctreeNode<T>::GetChildrenNodes() const {
+  return (SpatialTreeNode<T> **)children;
 }
 
 template <typename T>
-vector<pair<point, T> > *octree_node<T>::GetObjects() {
+vector<pair<Point, T> > *OctreeNode<T>::GetObjects() const {
   return this->objects;
 }
 
 template <typename T>
-int octree_node<T>::GetChildrenSize() {
+int OctreeNode<T>::GetChildrenSize() const {
   if (!IsLeaf()) return 8;
   return 0;
 }
-
-#endif /* SRC_SPATIAL_OCTREE_H_ */
+}
+#endif /* SPATIAL_OCTREE_H_ */

@@ -1,5 +1,5 @@
-#ifndef kd_tree_hpp
-#define kd_tree_hpp
+#ifndef SPATIAL_KDTREE_H_
+#define SPATIAL_KDTREE_H_
 
 #include <algorithm>
 #include <functional>
@@ -8,12 +8,16 @@
 #include <vector>
 #include "spatial_tree.h"
 
+namespace bdm {
 /**
  * Next 3 vaiables are used for purposes of Surface Area Heuristics
  */
 const int kNumerOfSpaces = 32;
 const int kCt = 1;
 const int kCi = 1;
+
+using std::vector;
+using std::pair;
 
 /**
  * Spatial tree descendant.
@@ -23,80 +27,80 @@ const int kCi = 1;
  * @tparam T - type of the object to be stored in the tree
  */
 template <typename T>
-class kd_tree_node : public spatial_tree_node<T> {
+class KdTreeNode : public SpatialTreeNode<T> {
+ public:
+  KdTreeNode();
+
+  KdTreeNode(Bound bnd, int max_depth, int max_amount_of_objects);
+
+  KdTreeNode(Bound bnd, int max_depth, int max_amount_of_objects,
+             int split);  // 0-mediana xyz, 1-mediana x, 2 - Center, 3-sah
+
+  ~KdTreeNode();
+
+  T At(Point p) const;
+
+  int Size() const;
+
+  virtual bool IsLeaf() const;
+
+  virtual void Put(Point const &p, T obj);
+
+  // little comparator for points
+  static bool PointCompareX(const pair<Point, T> x, const pair<Point, T> y) {
+    return (x.first.x < y.first.x);
+  }
+
+  static bool PointCompareY(const pair<Point, T> x, const pair<Point, T> y) {
+    return (x.first.y < y.first.y);
+  }
+
+  static bool PointCompareZ(const pair<Point, T> x, const pair<Point, T> y) {
+    return (x.first.z < y.first.z);
+  }
+
  private:
+  int axis_;
+  Point median_;
+
+  int split_parameter_;
+
   bool is_leaf_node;
 
-  kd_tree_node<T> *children[2];
+  KdTreeNode<T> *children[2];
 
-  vector<pair<point, T> > *objects;
+  vector<pair<Point, T>> *objects;
 
   int max_amount_of_objects_in_node;
 
-  void SplitUsingVaryingMedian();  // splits on median_, changing axis_ every function call in order: 0-x, 1-y, 2-z
+  void SplitUsingVaryingMedian();  // splits on median_, changing axis_ every
+  // function call in order: 0-x, 1-y, 2-z
 
-  int GetChildID(point p);
+  int GetChildID(Point p) const;
 
-  virtual int GetChildrenSize();
+  virtual int GetChildrenSize() const;
 
-  virtual spatial_tree_node<T> **GetChildrenNodes();
+  virtual SpatialTreeNode<T> **GetChildrenNodes() const;
 
-  virtual vector<pair<point, T> > *GetObjects();
+  virtual vector<pair<Point, T>> *GetObjects() const;
 
   double node_area;
 
   int max_depth;
 
-  point GetMedian();
+  Point GetMedian();
 
   double AreaOfKthPartOfSpaceNode(int k, int axis);
 
-  point GetSAHSplitPoint();
+  Point GetSAHSplitPoint();
 
-  point GetMedianOnXAxis();
+  Point GetMedianOnXAxis();
 
   void SplitUsingSingleXMedian();
 
   void SplitUsingSAH();
 
   void SplitUsingCenterOfSpaceNode();
-
-  virtual bool IsLeaf();
-
- public:
-  kd_tree_node();
-
-  kd_tree_node(bound bnd, int max_depth, int max_amount_of_objects);
-
-  kd_tree_node(bound bnd, int max_depth, int max_amount_of_objects,
-               int split);  // 0-mediana xyz, 1-mediana x, 2 - Center, 3-sah
-
-  ~kd_tree_node();
-
-  point median_;
-
-  int split_parameter_;
-
-  T At(point p);
-
-  int Size();
-
-  int axis_;
-
-  virtual void Put(point p, T obj);
-
-  // little comparator for points
-  static bool PointCompareX(const pair<point, T> x, const pair<point, T> y) {
-    return (x.first.x < y.first.x);
-  }
-
-  static bool PointCompareY(const pair<point, T> x, const pair<point, T> y) {
-    return (x.first.y < y.first.y);
-  }
-
-  static bool PointCompareZ(const pair<point, T> x, const pair<point, T> y) {
-    return (x.first.z < y.first.z);
-  }
 };
 
 /**
@@ -106,14 +110,14 @@ class kd_tree_node : public spatial_tree_node<T> {
  * @tparam T - type of the object to be stored in the tree
  */
 template <typename T>
-kd_tree_node<T>::kd_tree_node() {
-  kd_tree_node<T>(bound(0, 0, 0, 1, 1, 1), 10, 1000, 0);
+KdTreeNode<T>::KdTreeNode() {
+  KdTreeNode<T>(Bound(0, 0, 0, 1, 1, 1), 10, 1000, 0);
 }
 
 /**
  * Constructor
  * @tparam T  - type of the object to be stored in the tree
- * @param bnd - bound of the node
+ * @param bnd - Bound of the node
  * @param max_depth - maximum possible depth of the tree. After reaching that
  * point, nodes won't split
  * @param max_amount_of_objects - maximum number of object which can be stored
@@ -121,14 +125,13 @@ kd_tree_node<T>::kd_tree_node() {
  * In our case, amount of object acts as splitting criteria
  */
 template <typename T>
-kd_tree_node<T>::kd_tree_node(bound bnd, int max_depth,
-                              int max_amount_of_objects) {
+KdTreeNode<T>::KdTreeNode(Bound bnd, int max_depth, int max_amount_of_objects) {
   this->bnd = bnd;
   this->is_leaf_node = true;
   this->max_depth = max_depth;
   this->max_amount_of_objects_in_node = max_amount_of_objects;
   for (int i = 0; i < 2; i++) children[i] = nullptr;
-  objects = new vector<pair<point, T> >();
+  objects = new vector<pair<Point, T>>();
   is_leaf_node = true;
   this->node_area = bnd.HalfSurfaceArea();
   this->axis_ = 0;
@@ -138,7 +141,7 @@ kd_tree_node<T>::kd_tree_node(bound bnd, int max_depth,
 /**
  * Constructor
  * @tparam T  - type of the object to be stored in the tree
- * @param bnd - bound of the node
+ * @param bnd - Bound of the node
  * @param max_depth - maximum possible depth of the tree. After reaching that
  * point, nodes won't split
  * @param max_amount_of_objects - maximum number of object which can be stored
@@ -151,14 +154,14 @@ kd_tree_node<T>::kd_tree_node(bound bnd, int max_depth,
  * usful with bulk loading).
  */
 template <typename T>
-kd_tree_node<T>::kd_tree_node(bound bnd, int max_depth,
-                              int max_amount_of_objects, int split) {
+KdTreeNode<T>::KdTreeNode(Bound bnd, int max_depth, int max_amount_of_objects,
+                          int split) {
   this->bnd = bnd;
   this->is_leaf_node = true;
   this->max_depth = max_depth;
   this->max_amount_of_objects_in_node = max_amount_of_objects;
   for (int i = 0; i < 2; i++) children[i] = nullptr;
-  objects = new vector<pair<point, T> >();
+  objects = new vector<pair<Point, T>>();
   is_leaf_node = true;
   this->node_area = bnd.HalfSurfaceArea();
   this->axis_ = 0;
@@ -170,7 +173,7 @@ kd_tree_node<T>::kd_tree_node(bound bnd, int max_depth,
  * @tparam T
  */
 template <typename T>
-kd_tree_node<T>::~kd_tree_node() {
+KdTreeNode<T>::~KdTreeNode() {
   for (int i = 0; i < 2; i++)
     if (children[i] != nullptr) {
       delete children[i];
@@ -189,8 +192,9 @@ kd_tree_node<T>::~kd_tree_node() {
  * @param obj - object itself
  */
 template <typename T>
-void kd_tree_node<T>::Put(point p, T obj) {
-  // If a leaf node - Put there or SplitUsingVaryingMedian, else - proceed to according child node
+void KdTreeNode<T>::Put(Point const &p, T obj) {
+  // If a leaf node - Put there or SplitUsingVaryingMedian, else - proceed to
+  // according child node
   if (is_leaf_node) {
     /** Put if maximum number of objects in a node don't exceed threshold
      * OR
@@ -206,26 +210,26 @@ void kd_tree_node<T>::Put(point p, T obj) {
       //  SplitUsingVaryingMedian
       switch (split_parameter_) {
         case 0:
-            SplitUsingVaryingMedian();
+          SplitUsingVaryingMedian();
           break;
         case 1:
-            SplitUsingSingleXMedian();
+          SplitUsingSingleXMedian();
           break;
         case 2:
-            SplitUsingCenterOfSpaceNode();
+          SplitUsingCenterOfSpaceNode();
           break;
         case 3:
-            SplitUsingSAH();
+          SplitUsingSAH();
           break;
         default:
-            SplitUsingVaryingMedian();
+          SplitUsingVaryingMedian();
           break;
       }
-        Put(p, obj);
+      Put(p, obj);
     }
   } else {
     int idx = GetChildID(p);
-      children[idx]->Put(p, obj);
+    children[idx]->Put(p, obj);
   }
 }
 
@@ -234,11 +238,11 @@ void kd_tree_node<T>::Put(point p, T obj) {
  * Split point is median between all points on the axis
  */
 template <typename T>
-void kd_tree_node<T>::SplitUsingVaryingMedian() {
+void KdTreeNode<T>::SplitUsingVaryingMedian() {
   double x_left, y_left, z_left, x_right, y_right, z_right;
-  bound bnd = this->bnd;
+  Bound bnd = this->bnd;
   if (!this->is_leaf_node) return;
-  point split_point = GetMedian();
+  Point split_point = GetMedian();
 
   if (axis_ == 0) {
     x_left = split_point.x;
@@ -263,22 +267,23 @@ void kd_tree_node<T>::SplitUsingVaryingMedian() {
     z_right = split_point.z;
   }
 
-  point p[2] = {point(bnd.flb.x, bnd.flb.y, bnd.flb.z),
-                point(x_right, y_right, z_right)};
-  point e[2] = {
-      point(x_left, y_left, z_left), point(bnd.nrt.x, bnd.nrt.y, bnd.nrt.z)
+  Point p[2] = {Point(bnd.flb.x, bnd.flb.y, bnd.flb.z),
+                Point(x_right, y_right, z_right)};
+  Point e[2] = {
+      Point(x_left, y_left, z_left), Point(bnd.nrt.x, bnd.nrt.y, bnd.nrt.z)
 
   };
 
   for (int i = 0; i < 2; i++) {
-    children[i] = new kd_tree_node<T>(bound(p[i], e[i]), max_depth - 1,
-                                      max_amount_of_objects_in_node, split_parameter_);
+    children[i] =
+        new KdTreeNode<T>(Bound(p[i], e[i]), max_depth - 1,
+                          max_amount_of_objects_in_node, split_parameter_);
     children[i]->axis_ = (axis_ + 1) % 3;
   }
 
   for (int i = 0; i < objects->size(); i++) {
     int idx = GetChildID(objects->at(i).first);
-      children[idx]->Put(objects->at(i).first, objects->at(i).second);
+    children[idx]->Put(objects->at(i).first, objects->at(i).second);
   }
   delete objects;
   objects = nullptr;
@@ -290,28 +295,29 @@ void kd_tree_node<T>::SplitUsingVaryingMedian() {
  * Split point is median between all points on the axis
  */
 template <typename T>
-void kd_tree_node<T>::SplitUsingSingleXMedian() {
-  bound bnd = this->bnd;
+void KdTreeNode<T>::SplitUsingSingleXMedian() {
+  Bound bnd = this->bnd;
   if (!this->is_leaf_node) return;
-  point split_point = GetMedianOnXAxis();
+  Point split_point = GetMedianOnXAxis();
 
-  point p[2] = {
-      point(bnd.flb.x, bnd.flb.y, bnd.flb.z),
-      point(split_point.x, bnd.flb.y, bnd.flb.z),
+  Point p[2] = {
+      Point(bnd.flb.x, bnd.flb.y, bnd.flb.z),
+      Point(split_point.x, bnd.flb.y, bnd.flb.z),
   };
-  point e[2] = {point(split_point.x, bnd.nrt.y, bnd.nrt.z),
-                point(bnd.nrt.x, bnd.nrt.y, bnd.nrt.z)
+  Point e[2] = {Point(split_point.x, bnd.nrt.y, bnd.nrt.z),
+                Point(bnd.nrt.x, bnd.nrt.y, bnd.nrt.z)
 
   };
 
   for (int i = 0; i < 2; i++) {
-    children[i] = new kd_tree_node<T>(bound(p[i], e[i]), max_depth - 1,
-                                      max_amount_of_objects_in_node, split_parameter_);
+    children[i] =
+        new KdTreeNode<T>(Bound(p[i], e[i]), max_depth - 1,
+                          max_amount_of_objects_in_node, split_parameter_);
   }
 
   for (int i = 0; i < objects->size(); i++) {
     int idx = GetChildID(objects->at(i).first);
-      children[idx]->Put(objects->at(i).first, objects->at(i).second);
+    children[idx]->Put(objects->at(i).first, objects->at(i).second);
   }
   delete objects;
   objects = nullptr;
@@ -323,11 +329,11 @@ void kd_tree_node<T>::SplitUsingSingleXMedian() {
  * Not useful at the moment as its main purpose is bulk loading
  */
 template <typename T>
-void kd_tree_node<T>::SplitUsingSAH() {
+void KdTreeNode<T>::SplitUsingSAH() {
   double x_left, y_left, z_left, x_right, y_right, z_right;
-  bound bnd = this->bnd;
+  Bound bnd = this->bnd;
   if (!this->is_leaf_node) return;
-  point split_point = GetSAHSplitPoint();
+  Point split_point = GetSAHSplitPoint();
 
   if (axis_ == 0) {
     x_left = split_point.x;
@@ -351,21 +357,22 @@ void kd_tree_node<T>::SplitUsingSAH() {
     y_right = bnd.flb.y;
     z_right = split_point.z;
   }
-  point p[2] = {point(bnd.flb.x, bnd.flb.y, bnd.flb.z),
-                point(x_right, y_right, z_right)};
-  point e[2] = {
-      point(x_left, y_left, z_left), point(bnd.nrt.x, bnd.nrt.y, bnd.nrt.z)
+  Point p[2] = {Point(bnd.flb.x, bnd.flb.y, bnd.flb.z),
+                Point(x_right, y_right, z_right)};
+  Point e[2] = {
+      Point(x_left, y_left, z_left), Point(bnd.nrt.x, bnd.nrt.y, bnd.nrt.z)
 
   };
 
   for (int i = 0; i < 2; i++) {
-    children[i] = new kd_tree_node<T>(bound(p[i], e[i]), max_depth - 1,
-                                      max_amount_of_objects_in_node, split_parameter_);
+    children[i] =
+        new KdTreeNode<T>(Bound(p[i], e[i]), max_depth - 1,
+                          max_amount_of_objects_in_node, split_parameter_);
   }
 
   for (int i = 0; i < objects->size(); i++) {
     int idx = GetChildID(objects->at(i).first);
-      children[idx]->Put(objects->at(i).first, objects->at(i).second);
+    children[idx]->Put(objects->at(i).first, objects->at(i).second);
   }
   delete objects;
   objects = nullptr;
@@ -377,9 +384,9 @@ void kd_tree_node<T>::SplitUsingSAH() {
  * Coordinate differs each partition in order XYZ
  */
 template <typename T>
-void kd_tree_node<T>::SplitUsingCenterOfSpaceNode() {
+void KdTreeNode<T>::SplitUsingCenterOfSpaceNode() {
   double x_left, y_left, z_left, x_right, y_right, z_right;
-  bound bnd = this->bnd;
+  Bound bnd = this->bnd;
   if (!this->is_leaf_node) return;
 
   if (axis_ == 0) {
@@ -405,22 +412,23 @@ void kd_tree_node<T>::SplitUsingCenterOfSpaceNode() {
     z_right = bnd.Center().z;
   }
 
-  point p[2] = {point(bnd.flb.x, bnd.flb.y, bnd.flb.z),
-                point(x_right, y_right, z_right)};
-  point e[2] = {
-      point(x_left, y_left, z_left), point(bnd.nrt.x, bnd.nrt.y, bnd.nrt.z)
+  Point p[2] = {Point(bnd.flb.x, bnd.flb.y, bnd.flb.z),
+                Point(x_right, y_right, z_right)};
+  Point e[2] = {
+      Point(x_left, y_left, z_left), Point(bnd.nrt.x, bnd.nrt.y, bnd.nrt.z)
 
   };
 
   for (int i = 0; i < 2; i++) {
-    children[i] = new kd_tree_node<T>(bound(p[i], e[i]), max_depth - 1,
-                                      max_amount_of_objects_in_node, split_parameter_);
+    children[i] =
+        new KdTreeNode<T>(Bound(p[i], e[i]), max_depth - 1,
+                          max_amount_of_objects_in_node, split_parameter_);
     children[i]->axis_ = (axis_ + 1) % 3;
   }
 
   for (int i = 0; i < objects->size(); i++) {
     int idx = GetChildID(objects->at(i).first);
-      children[idx]->Put(objects->at(i).first, objects->at(i).second);
+    children[idx]->Put(objects->at(i).first, objects->at(i).second);
   }
   delete objects;
   objects = nullptr;
@@ -433,23 +441,23 @@ void kd_tree_node<T>::SplitUsingCenterOfSpaceNode() {
  * @return
  */
 template <typename T>
-spatial_tree_node<T> **kd_tree_node<T>::GetChildrenNodes() {
-  return (spatial_tree_node<T> **)children;
+SpatialTreeNode<T> **KdTreeNode<T>::GetChildrenNodes() const {
+  return (SpatialTreeNode<T> **)children;
 }
 
 template <typename T>
-vector<pair<point, T> > *kd_tree_node<T>::GetObjects() {
+vector<pair<Point, T>> *KdTreeNode<T>::GetObjects() const {
   return this->objects;
 }
 
 template <typename T>
-int kd_tree_node<T>::GetChildrenSize() {
+int KdTreeNode<T>::GetChildrenSize() const {
   if (!IsLeaf()) return 2;
   return 0;
 }
 
 template <typename T>
-int kd_tree_node<T>::GetChildID(point p) {
+int KdTreeNode<T>::GetChildID(Point p) const {
   if (axis_ == 0) {
     if (p.x > this->median_.x)
       return 1;
@@ -469,7 +477,7 @@ int kd_tree_node<T>::GetChildID(point p) {
 }
 
 template <typename T>
-bool kd_tree_node<T>::IsLeaf() {
+bool KdTreeNode<T>::IsLeaf() const {
   return is_leaf_node;
 }
 
@@ -480,15 +488,16 @@ bool kd_tree_node<T>::IsLeaf() {
  * @return sah rating
  */
 template <typename T>
-point kd_tree_node<T>::GetSAHSplitPoint() {
-  double objects_count[kNumerOfSpaces], leftside_count[kNumerOfSpaces - 1], rightside_count[kNumerOfSpaces - 1];
+Point KdTreeNode<T>::GetSAHSplitPoint() {
+  double objects_count[kNumerOfSpaces], leftside_count[kNumerOfSpaces - 1],
+      rightside_count[kNumerOfSpaces - 1];
   double sah, temp;
-  point split_point;
+  Point split_point;
   int axis = 0;
 
-  bound bnd = this->bnd;
+  Bound bnd = this->bnd;
 
-  for (pair<point, T> &i : *objects) {
+  for (pair<Point, T> &i : *objects) {
     objects_count[(int)fmod(i.first.x, kNumerOfSpaces)];
   }
 
@@ -508,25 +517,26 @@ point kd_tree_node<T>::GetSAHSplitPoint() {
   sah = kCt +
         kCi * ((AreaOfKthPartOfSpaceNode(1, axis) * leftside_count[0] +
                 AreaOfKthPartOfSpaceNode(31, axis)) /
-              node_area);
-    split_point.Set(bnd.flb.x + ((bnd.nrt.x - bnd.flb.x) * 1 / kNumerOfSpaces), bnd.flb.y,
-                    bnd.flb.z);
+               node_area);
+  split_point.Set(bnd.flb.x + ((bnd.nrt.x - bnd.flb.x) * 1 / kNumerOfSpaces),
+                  bnd.flb.y, bnd.flb.z);
   for (int i = 1; i < kNumerOfSpaces - 1; i++) {
     temp = kCt +
            kCi * ((AreaOfKthPartOfSpaceNode(i + 1, axis) * leftside_count[0] +
                    AreaOfKthPartOfSpaceNode(kNumerOfSpaces - i - 1, axis)) /
-                 node_area);
+                  node_area);
     if (temp < sah) {
       sah = temp;
-        split_point.Set(bnd.flb.x + ((bnd.nrt.x - bnd.flb.x) * (i + 1) / kNumerOfSpaces),
-                        bnd.flb.y, bnd.flb.z);
+      split_point.Set(
+          bnd.flb.x + ((bnd.nrt.x - bnd.flb.x) * (i + 1) / kNumerOfSpaces),
+          bnd.flb.y, bnd.flb.z);
       this->axis_ = 0;
     }
   }
 
   axis = 1;
 
-  for (pair<point, T> &i : *objects) {
+  for (pair<Point, T> &i : *objects) {
     objects_count[(int)fmod(i.first.y, kNumerOfSpaces)];
   }
 
@@ -545,25 +555,26 @@ point kd_tree_node<T>::GetSAHSplitPoint() {
   sah = kCt +
         kCi * ((AreaOfKthPartOfSpaceNode(1, axis) * leftside_count[0] +
                 AreaOfKthPartOfSpaceNode(31, axis)) /
-              node_area);
-    split_point.Set(bnd.flb.x, bnd.flb.y + ((bnd.nrt.y - bnd.flb.y) * 1 / kNumerOfSpaces),
-                    bnd.flb.z);
+               node_area);
+  split_point.Set(bnd.flb.x,
+                  bnd.flb.y + ((bnd.nrt.y - bnd.flb.y) * 1 / kNumerOfSpaces),
+                  bnd.flb.z);
   for (int i = 1; i < kNumerOfSpaces - 1; i++) {
     temp = kCt +
            kCi * ((AreaOfKthPartOfSpaceNode(i + 1, axis) * leftside_count[0] +
                    AreaOfKthPartOfSpaceNode(kNumerOfSpaces - i - 1, axis)) /
-                 node_area);
+                  node_area);
     if (temp < sah) {
       sah = temp;
-        split_point.Set(bnd.flb.x,
-                        bnd.flb.y + ((bnd.nrt.y - bnd.flb.y) * (i + 1) / kNumerOfSpaces),
-                        bnd.flb.z);
+      split_point.Set(bnd.flb.x, bnd.flb.y + ((bnd.nrt.y - bnd.flb.y) *
+                                              (i + 1) / kNumerOfSpaces),
+                      bnd.flb.z);
       this->axis_ = 1;
     }
   }
 
   axis = 2;
-  for (pair<point, T> &i : *objects) {
+  for (pair<Point, T> &i : *objects) {
     objects_count[(int)fmod(i.first.z, kNumerOfSpaces)];
   }
 
@@ -582,18 +593,19 @@ point kd_tree_node<T>::GetSAHSplitPoint() {
   sah = kCt +
         kCi * ((AreaOfKthPartOfSpaceNode(1, axis) * leftside_count[0] +
                 AreaOfKthPartOfSpaceNode(31, axis)) /
-              node_area);
-    split_point.Set(bnd.flb.x, bnd.flb.y,
-                    bnd.flb.z + ((bnd.nrt.z - bnd.flb.z) * 1 / kNumerOfSpaces));
+               node_area);
+  split_point.Set(bnd.flb.x, bnd.flb.y,
+                  bnd.flb.z + ((bnd.nrt.z - bnd.flb.z) * 1 / kNumerOfSpaces));
   for (int i = 1; i < kNumerOfSpaces - 1; i++) {
     temp = kCt +
            kCi * ((AreaOfKthPartOfSpaceNode(i + 1, axis) * leftside_count[0] +
                    AreaOfKthPartOfSpaceNode(kNumerOfSpaces - i - 1, axis)) /
-                 node_area);
+                  node_area);
     if (temp < sah) {
       sah = temp;
-        split_point.Set(bnd.flb.x, bnd.flb.y,
-                        bnd.flb.z + ((bnd.nrt.z - bnd.flb.z) * (i + 1) / kNumerOfSpaces));
+      split_point.Set(
+          bnd.flb.x, bnd.flb.y,
+          bnd.flb.z + ((bnd.nrt.z - bnd.flb.z) * (i + 1) / kNumerOfSpaces));
       this->axis_ = 2;
     }
   }
@@ -606,57 +618,62 @@ point kd_tree_node<T>::GetSAHSplitPoint() {
  * @return median on certain axis
  */
 template <typename T>
-point kd_tree_node<T>::GetMedian() {
-  vector<pair<point, T> > *sorted = this->objects;
+Point KdTreeNode<T>::GetMedian() {
+  vector<pair<Point, T>> *sorted = this->objects;
   if (axis_ == 0) {
     // std::sort(sorted->begin(), sorted->end(), PointCompareX);
-      std::nth_element(sorted->begin(), sorted->begin() + sorted->size() / 2,
-                       sorted->end(), PointCompareX);
+    std::nth_element(sorted->begin(), sorted->begin() + sorted->size() / 2,
+                     sorted->end(), PointCompareX);
 
   } else if (axis_ == 1) {
     // std::sort(sorted->begin(), sorted->end(), PointCompareY);
-      std::nth_element(sorted->begin(), sorted->begin() + sorted->size() / 2,
-                       sorted->end(), PointCompareY);
+    std::nth_element(sorted->begin(), sorted->begin() + sorted->size() / 2,
+                     sorted->end(), PointCompareY);
   } else {
     // std::sort(sorted->begin(), sorted->end(), PointCompareZ);
-      std::nth_element(sorted->begin(), sorted->begin() + sorted->size() / 2,
-                       sorted->end(), PointCompareZ);
+    std::nth_element(sorted->begin(), sorted->begin() + sorted->size() / 2,
+                     sorted->end(), PointCompareZ);
   }
   this->median_ = sorted->at(sorted->size() / 2).first;
   return sorted->at(sorted->size() / 2).first;
 }
 
 template <typename T>
-point kd_tree_node<T>::GetMedianOnXAxis() {
-  vector<pair<point, T> > *sorted = this->objects;
+Point KdTreeNode<T>::GetMedianOnXAxis() {
+  vector<pair<Point, T>> *sorted = this->objects;
 
   //  std::sort(sorted->begin(), sorted->end(), PointCompareX);
-    std::nth_element(sorted->begin(), sorted->begin() + sorted->size() / 2,
-                     sorted->end(), PointCompareX);
+  std::nth_element(sorted->begin(), sorted->begin() + sorted->size() / 2,
+                   sorted->end(), PointCompareX);
   this->median_ = sorted->at(sorted->size() / 2).first;
   return sorted->at(sorted->size() / 2).first;
 }
 
 /**
- * Returns area of the surface, obtained after splitting original space node on a certain axis
+ * Returns area of the surface, obtained after splitting original space node on
+ * a certain axis
  * @tparam T - type of the object
  * @param k - part of the surface, which is wanted to be found
  * @param axis - what axis should be used to split
  * @return - area value
  */
 template <typename T>
-double kd_tree_node<T>::AreaOfKthPartOfSpaceNode(int k, int axis) {
+double KdTreeNode<T>::AreaOfKthPartOfSpaceNode(int k, int axis) {
   if (axis == 0) {
-    return this->node_area - k / kNumerOfSpaces * (this->bnd.Height() * this->bnd.Length()) -
+    return this->node_area -
+           k / kNumerOfSpaces * (this->bnd.Height() * this->bnd.Length()) -
            k / kNumerOfSpaces * (this->bnd.Width() * this->bnd.Length());
   } else if (axis == 1) {
-    return this->node_area - k / kNumerOfSpaces * (this->bnd.Height() * this->bnd.Width()) -
+    return this->node_area -
+           k / kNumerOfSpaces * (this->bnd.Height() * this->bnd.Width()) -
            k / kNumerOfSpaces * (this->bnd.Width() * this->bnd.Length());
   } else if (axis == 2) {
-    return this->node_area - (k / kNumerOfSpaces * (this->bnd.Height() * this->bnd.Width()) +
-                            k / kNumerOfSpaces * (this->bnd.Height() * this->bnd.Length()));
+    return this->node_area -
+           (k / kNumerOfSpaces * (this->bnd.Height() * this->bnd.Width()) +
+            k / kNumerOfSpaces * (this->bnd.Height() * this->bnd.Length()));
   } else
     return -1;
 }
+}
 
-#endif  //  SPATIAL_TREE_COMPARISON_KD_TREE_H
+#endif  //  SPATIAL_KDTREE_H_

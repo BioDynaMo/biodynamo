@@ -1,69 +1,74 @@
-#ifndef SRC_SPATIAL_UTILS_H_
-#define SRC_SPATIAL_UTILS_H_
+#ifndef SPATIAL_BOUND_H_
+#define SPATIAL_BOUND_H_
 
 #include <cmath>
 #include <utility>
-#include "point.h"
+#include "Point.h"
 
+namespace bdm {
 using std::pair;
 using std::make_pair;
 
-// Class 'bound' represents rectangular bound of the node of the tree
-struct bound {
+// Class 'Bound' represents rectangular Bound of the node of the tree
+class Bound {
+ public:
   // Bounds
   // far left Bottom, Near Right Top
-  point flb, nrt;
+  Point flb, nrt;
 
   // Default constructior
-  bound() {
-    flb = point(0, 0, 0);
-    nrt = point(1, 1, 1);
+  Bound() {
+    flb = Point(0, 0, 0);
+    nrt = Point(1, 1, 1);
   }
 
-  bound(double x1, double y1, double z1, double x2, double y2, double z2) {
-    flb = point(x1, y1, z1);
-    nrt = point(x2, y2, z2);
+  Bound(double x1, double y1, double z1, double x2, double y2, double z2) {
+    flb = Point(x1, y1, z1);
+    nrt = Point(x2, y2, z2);
   }
 
-  bound(point p1, point p2) : flb(p1), nrt(p2) {}
+  Bound(Point p1, Point p2) : flb(p1), nrt(p2) {}
 
   // The Volume of the rectangle
-  double Volume() {
+  double Volume() const {
     return (Near() - Far()) * (Right() - Left()) * (Top() - Bottom());
   }
 
-  // Checks if point 'p' lies inside the bound or on its boundary
-  bool Has(point p) {
+  // Checks if point 'p' lies inside the Bound or on its boundary
+  bool Has(Point const &p) const {
     return IsBetween(p.x, Far(), Near()) && IsBetween(p.y, Left(), Right()) &&
-            IsBetween(p.z, Bottom(), Top());
+           IsBetween(p.z, Bottom(), Top());
   }
 
   // Extends boundary so it contains point 'p'
-  bound AddPoint(point p) {
-    bound new_bnd(fmin(p.x, Far()), fmin(p.y, Left()), fmin(p.z, Bottom()),
+  Bound AddPoint(Point const &p) const {
+    Bound new_bnd(fmin(p.x, Far()), fmin(p.y, Left()), fmin(p.z, Bottom()),
                   fmax(p.x, Near()), fmax(p.y, Right()), fmax(p.z, Top()));
     return new_bnd;
   }
 
-  // Extends boundary so it contains bound 'b'
-  bound AddBound(bound b) {
-    return bound(fmin(Far(), b.Far()), fmin(Left(), b.Left()),
+  // Extends boundary so it contains Bound 'b'
+  Bound AddBound(Bound const &b) const {
+    return Bound(fmin(Far(), b.Far()), fmin(Left(), b.Left()),
                  fmin(Bottom(), b.Bottom()), fmax(Near(), b.Near()),
                  fmax(Right(), b.Right()), fmax(Top(), b.Top()));
   }
 
   // Calculate Volume difference between original
-  double DifferenceOnBoundExtension(point p) { return AddPoint(p).Volume() - Volume(); }
+  double DifferenceOnBoundExtension(Point const &p) const {
+    return AddPoint(p).Volume() - Volume();
+  }
 
   // Squared distance between two points on a plane
-  double SquaredDistance(pair<double, double> p1, pair<double, double> p2) {
+  double SquaredDistance(pair<double, double> const &p1,
+                         pair<double, double> const &p2) const {
     double dx = p1.first - p2.first;
     double dy = p1.second - p2.second;
     return dx * dx + dy * dy;
   }
 
   // Check if 'x' is between 'a' and 'b' on the line
-  bool IsBetween(double x, double a, double b) {
+  bool IsBetween(double x, double a, double b) const {
     double min = fmin(a, b);
     double max = fmax(a, b);
     return (x >= min && x <= max);
@@ -71,7 +76,7 @@ struct bound {
 
   // Calculate distance between two line segments on the line.
   // This method assumed that segments are not overlaped.
-  double DistanceBetweenSegments(double x, double y, double a, double b) {
+  double DistanceBetweenSegments(double x, double y, double a, double b) const {
     double minxy = fmin(x, y);
     double maxxy = fmax(x, y);
     double minab = fmin(a, b);
@@ -82,7 +87,7 @@ struct bound {
   }
 
   // Calculate squared distance between two boundaries in 3-d space.
-  double Distance(bound b) {
+  double SquaredDistance(Bound const &b) const {
     bool is_overlap_x;
     bool is_overlap_y;
     bool is_overlap_z;
@@ -119,29 +124,30 @@ struct bound {
     return dx * dx + dy * dy + dz * dz;
   }
 
-  point Center() { return (flb + nrt) * 0.5; }
+  Point Center() const { return (flb + nrt) * 0.5; }
 
-  double Near() { return nrt.x; }
+  double Near() const { return nrt.x; }
 
-  double Far() { return flb.x; }
+  double Far() const { return flb.x; }
 
-  double Left() { return flb.y; }
+  double Left() const { return flb.y; }
 
-  double Right() { return nrt.y; }
+  double Right() const { return nrt.y; }
 
-  double Top() { return nrt.z; }
+  double Top() const { return nrt.z; }
 
-  double Bottom() { return flb.z; }
+  double Bottom() const { return flb.z; }
 
-  double Length() { return nrt.x - flb.x; }
+  double Length() const { return nrt.x - flb.x; }
 
-  double Width() { return nrt.y - flb.y; }
+  double Width() const { return nrt.y - flb.y; }
 
-  double Height() { return nrt.z - flb.z; }
+  double Height() const { return nrt.z - flb.z; }
 
-  double HalfSurfaceArea() {
+  double HalfSurfaceArea() const {
     return Width() * Length() + Height() * Length() + Width() * Height();
   }
 };
+}
 
-#endif /* SRC_SPATIAL_UTILS_H_ */
+#endif /* SPATIAL_BOUND_H_ */

@@ -1,16 +1,12 @@
 #include "spatial/spatial_tree.h"
 #include <gtest/gtest.h>
-#include <stdlib.h>
-#include <stdlib.h>
 #include "spatial/kd_tree.h"
 #include "spatial/octree.h"
-#include "test_util.h"
 
 namespace bdm {
 
-int ManualSearchSize(point *pos, int size, double distance) {
+int ManualSearchSize(Point *pos, int size, double distance) {
   int result = 0;
-  double sd = distance * distance;
   for (int i = 0; i < size; i++)
     for (int j = i + 1; j < size; j++)
       if (pos[i].EuclidianDistance(pos[j]) <= distance) result++;
@@ -18,10 +14,9 @@ int ManualSearchSize(point *pos, int size, double distance) {
   return result;
 }
 
-std::vector<std::pair<int, int>> ManualSearch(point *pos, int size,
+std::vector<std::pair<int, int>> ManualSearch(Point *pos, int size,
                                               double distance) {
   std::vector<std::pair<int, int>> result;
-  double sd = distance * distance;
   for (int i = 0; i < size; i++)
     for (int j = i + 1; j < size; j++)
       if (pos[i].EuclidianDistance(pos[j]) <= distance) {
@@ -31,16 +26,16 @@ std::vector<std::pair<int, int>> ManualSearch(point *pos, int size,
   return result;
 }
 
-void SizeTest(spatial_tree_node<int> *tree, int amount) {
-  point *possitions = new point[amount];
+void SizeTest(SpatialTreeNode<int> *tree, int amount) {
+  Point *possitions = new Point[amount];
   double gap = 1.0 / (amount + 1);
 
   for (int i = 0; i < amount; i++) {
-    possitions[i] = point(gap * i, rand() / RAND_MAX, rand() / RAND_MAX);
+    possitions[i] = Point(gap * i, rand() / RAND_MAX, rand() / RAND_MAX);
   }
 
   for (int i = 0; i < amount; i++) {
-      tree->Put(possitions[i], i);
+    tree->Put(possitions[i], i);
   }
 
   ASSERT_EQ(ManualSearchSize(possitions, amount, 10),
@@ -53,11 +48,11 @@ void SizeTest(spatial_tree_node<int> *tree, int amount) {
   delete[] possitions;
 }
 
-void SimpleTest(spatial_tree_node<int> *tree) {
+void SimpleTest(SpatialTreeNode<int> *tree) {
   std::vector<int> container;
-    tree->Put(point(0, 0, 0), 1);
-    tree->Put(point(10, 20, 0), 2);
-    tree->Put(point(20, 10, 0), 3);
+  tree->Put(Point(0, 0, 0), 1);
+  tree->Put(Point(10, 20, 0), 2);
+  tree->Put(Point(20, 10, 0), 3);
 
   auto result1 = tree->GetNeighbors(15);
   auto result2 = tree->GetNeighbors(30);
@@ -76,7 +71,7 @@ bool IsEqual(std::vector<std::pair<int, int>> a,
   std::sort(a.begin(), a.end(), std::greater<std::pair<int, int>>());
   std::sort(b.begin(), b.end(), std::greater<std::pair<int, int>>());
 
-  for (int i = 0; i < a.size(); i++) {
+  for (unsigned int i = 0; i < a.size(); i++) {
     if (a[i].first != b[i].first || a[i].second != b[i].second) {
       return false;
     }
@@ -84,66 +79,66 @@ bool IsEqual(std::vector<std::pair<int, int>> a,
   return true;
 }
 
-bool SearchTest(spatial_tree_node<int> *tree, int amount) {
-  point *possitions = new point[amount];
+bool SearchTest(SpatialTreeNode<int> *tree, int amount) {
+  Point *possitions = new Point[amount];
   double gap = 1.0 / (amount + 1);
   for (int i = 0; i < amount; i++) {
-    possitions[i] = point(gap * i, rand() / RAND_MAX, rand() / RAND_MAX);
+    possitions[i] = Point(gap * i, rand() / RAND_MAX, rand() / RAND_MAX);
   }
 
   for (int i = 0; i < amount; i++) {
-      tree->Put(possitions[i], i);
+    tree->Put(possitions[i], i);
   }
 
   double search_radious = 0.1;
   for (int i = 0; i < 2; i++, search_radious /= 10) {
     std::vector<std::pair<int, int>> manual_result =
-            ManualSearch(possitions, amount, search_radious);
+        ManualSearch(possitions, amount, search_radious);
     std::vector<std::pair<int, int>> tree_search =
-            tree->GetNeighbors(search_radious);
+        tree->GetNeighbors(search_radious);
   }
 
   delete[] possitions;
 }
 
 TEST(SpatialTreeTest, OctreeTest) {
-  spatial_tree_node<int> *tree =
-      new octree_node<int>(bound(0.0, 0.0, 0.0, 100.0, 100.0, 100.0), 100, 100);
+  SpatialTreeNode<int> *tree =
+      new OctreeNode<int>(Bound(0.0, 0.0, 0.0, 100.0, 100.0, 100.0), 100, 100);
   SimpleTest(tree);
   delete tree;
 }
 
 TEST(SpatialTreeTest, KdTest) {
-  spatial_tree_node<int> *tree = new kd_tree_node<int>(
-      bound(0.0, 0.0, 0.0, 100.0, 100.0, 100.0), 100, 100);
+  SpatialTreeNode<int> *tree =
+      new KdTreeNode<int>(Bound(0.0, 0.0, 0.0, 100.0, 100.0, 100.0), 100, 100);
   SimpleTest(tree);
   delete tree;
 }
 
 TEST(SpatialTreeTest, OctreeSizeTest) {
-  spatial_tree_node<int> *tree =
-      new octree_node<int>(bound(0.0, 0.0, 0.0, 1.0, 1.0, 1.0), 100, 100);
+  SpatialTreeNode<int> *tree =
+      new OctreeNode<int>(Bound(0.0, 0.0, 0.0, 1.0, 1.0, 1.0), 100, 100);
   SizeTest(tree, 1000);
   delete tree;
 }
 
 TEST(SpatialTreeTest, KdTreeSizeTest) {
-  spatial_tree_node<int> *tree =
-      new kd_tree_node<int>(bound(0.0, 0.0, 0.0, 1.0, 1.0, 1.0), 100, 100);
+  SpatialTreeNode<int> *tree =
+      new KdTreeNode<int>(Bound(0.0, 0.0, 0.0, 1.0, 1.0, 1.0), 100, 100);
   SizeTest(tree, 1000);
   delete tree;
 }
 
 TEST(SpatialTreeTest, OctreeSearchTest) {
-  spatial_tree_node<int> *tree =
-      new octree_node<int>(bound(0.0, 0.0, 0.0, 1.0, 1.0, 1.0), 100, 100);
+  SpatialTreeNode<int> *tree =
+      new OctreeNode<int>(Bound(0.0, 0.0, 0.0, 1.0, 1.0, 1.0), 100, 100);
   SearchTest(tree, 1000);
   delete tree;
 }
 
 TEST(SpatialTreeTest, KdTreeSearchTest) {
-  spatial_tree_node<int> *tree =
-      new kd_tree_node<int>(bound(0.0, 0.0, 0.0, 1.0, 1.0, 1.0), 100, 100);
+  SpatialTreeNode<int> *tree =
+      new KdTreeNode<int>(Bound(0.0, 0.0, 0.0, 1.0, 1.0, 1.0), 100, 100);
   SearchTest(tree, 1000);
   delete tree;
 }

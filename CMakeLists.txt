@@ -3,10 +3,6 @@ cmake_minimum_required(VERSION 3.2.0)
 # With CMAKE >= 3.2 external projects support byproducts, this is needed
 # to support Ninja as generator
 
-#-------------------- set compilers --------------
-#set(CMAKE_C_COMPILER "/usr/local/bin/gcc-6")
-#set(CMAKE_CXX_COMPILER "/usr/local/bin/g++-6")
-
 project(BioDynaMo)
 
 #set(CMAKE_VERBOSE_MAKEFILE on)
@@ -209,7 +205,7 @@ target_link_libraries(${SIMULATION_TARGET} biodynamo)
 
 # --------------------- build backend_arch demo
 set(BACKEND_ARCH backend_arch)
-add_executable(${BACKEND_ARCH} ${CMAKE_SOURCE_DIR}/demo/backend_arch.cc src/spatial/point.h)
+add_executable(${BACKEND_ARCH} ${CMAKE_SOURCE_DIR}/demo/backend_arch.cc)
 target_link_libraries(${BACKEND_ARCH} biodynamo)
 # target_link_libraries(${BACKEND_ARCH} ${VTUNE_LIBRARIES})
 add_dependencies(${BACKEND_ARCH} Vc)

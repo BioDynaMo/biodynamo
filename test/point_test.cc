@@ -1,14 +1,14 @@
 #include <gtest/gtest.h>
 #include <stdlib.h>
 
-#include "spatial/point.h"
+#include "spatial/Point.h"
 
 namespace bdm {
 
 TEST(PointTest, LengthTest) {
-  point point1(0, 0, 0);
-  point point2(1, 1, 1);
-  point point3(2, 0, 2);
+  Point point1(0, 0, 0);
+  Point point2(1, 1, 1);
+  Point point3(2, 0, 2);
 
   ASSERT_DOUBLE_EQ(0, point1.Length());
   ASSERT_DOUBLE_EQ(sqrt(3), point2.Length());
@@ -16,9 +16,9 @@ TEST(PointTest, LengthTest) {
 }
 
 TEST(PointTest, DistanceTest) {
-  point point1(0, 0, 0);
-  point point2(1, 1, 1);
-  point point3(2, 0, 2);
+  Point point1(0, 0, 0);
+  Point point2(1, 1, 1);
+  Point point3(2, 0, 2);
 
   ASSERT_DOUBLE_EQ(sqrt(3), point1.EuclidianDistance(point2));
   ASSERT_DOUBLE_EQ(2 * sqrt(2), point1.EuclidianDistance(point3));
@@ -26,9 +26,9 @@ TEST(PointTest, DistanceTest) {
 }
 
 TEST(PointTest, SqDistanceTest) {
-  point point1(0, 0, 0);
-  point point2(1, 1, 1);
-  point point3(2, 0, 2);
+  Point point1(0, 0, 0);
+  Point point2(1, 1, 1);
+  Point point3(2, 0, 2);
 
   ASSERT_DOUBLE_EQ(3, point1.SquaredEuclidianDistance(point2));
   ASSERT_DOUBLE_EQ(8, point1.SquaredEuclidianDistance(point3));
@@ -36,9 +36,9 @@ TEST(PointTest, SqDistanceTest) {
 }
 
 TEST(PointTest, ScolarMultiplicationTest) {
-  point point1(0, 0, 0);
-  point point2(1, 1, 1);
-  point point3(2, 0, 2);
+  Point point1(0, 0, 0);
+  Point point2(1, 1, 1);
+  Point point3(2, 0, 2);
 
   ASSERT_DOUBLE_EQ(0, point1 * point2);
   ASSERT_DOUBLE_EQ(0, point1 * point3);
@@ -47,9 +47,9 @@ TEST(PointTest, ScolarMultiplicationTest) {
 }
 
 TEST(PointTest, MultiplicationOnScolarTest) {
-  point point1(0, 0, 0);
-  point point2(1, 1, 1);
-  point point3(2, 0, 2);
+  Point point1(0, 0, 0);
+  Point point2(1, 1, 1);
+  Point point3(2, 0, 2);
 
   ASSERT_DOUBLE_EQ(0, (point1 * 5.5).x);
   ASSERT_DOUBLE_EQ(0, (point1 * 5.5).y);
@@ -63,9 +63,9 @@ TEST(PointTest, MultiplicationOnScolarTest) {
 }
 
 TEST(PointTest, AdditionTest) {
-  point point1(0, 0, 0);
-  point point2(1, 1, 1);
-  point point3(2, 0, 2);
+  Point point1(0, 0, 0);
+  Point point2(1, 1, 1);
+  Point point3(2, 0, 2);
 
   ASSERT_DOUBLE_EQ(1, (point1 + point2).x);
   ASSERT_DOUBLE_EQ(1, (point1 + point2).y);
@@ -79,8 +79,8 @@ TEST(PointTest, AdditionTest) {
 }
 
 TEST(PointTest, EqualTest) {
-  point point1(0.5, 0.7, 0.9);
-  point point2(0.5, 0.7, 0.9);
+  Point point1(0.5, 0.7, 0.9);
+  Point point2(0.5, 0.7, 0.9);
 
   ASSERT_TRUE(point1.equals(point2));
 }

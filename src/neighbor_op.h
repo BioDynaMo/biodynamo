@@ -1,7 +1,7 @@
 #ifndef NEIGHBOR_OP_H_
 #define NEIGHBOR_OP_H_
 
-#include <math.h>
+#include <cmath>
 #include <iostream>
 #include "spatial/octree.h"
 
@@ -23,16 +23,19 @@ class NeighborOp {
     // calc neighbors
 
     // Tree search
-    // Creating a spatial tree (max_depth, capacity_of_leaf_node)
-    spatial_tree_node<size_t>* tree = new octree_node<size_t>
-            (bound(0.0, 0.0, 0.0, 1000.0, 1000.0, 1000.0), 100, 10);
+    // Creating a spatial tree (Bound, max_depth, capacity_of_leaf_node)
+    // IMPORTANT! Ensure that your bound is big enough and enclose all parts of
+    // simulation
+    SpatialTreeNode<size_t>* tree = new OctreeNode<size_t>(
+        Bound(-10000.0, -10000.0, -10000.0, 10000.0, 10000.0, 10000.0), 100,
+        10);
 
     // Initializing tree with a objects
     for (size_t i = 0; i < cells->elements(); i++) {
       auto cell = cells->GetScalar(i);
       const auto& position = cell.GetPosition();
-      point pos(position[0][0], position[1][0], position[2][0]);
-        tree->Put(pos, i);
+      Point pos(position[0][0], position[1][0], position[2][0]);
+      tree->Put(pos, i);
     }
     const VcBackend::real_t search_radius =
         sqrt(static_cast<VcBackend::real_t>(distance_));
