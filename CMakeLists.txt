@@ -246,6 +246,8 @@ add_executable(${REMOVE_DATA_MEMBERS} ${CMAKE_SOURCE_DIR}/demo/remove_data_membe
 # --------------------- build backend_arch flexibility
 set(FLEXIBILITY flexibility)
 add_executable(${FLEXIBILITY} ${CMAKE_SOURCE_DIR}/demo/flexibility.cc)
+target_link_libraries(${FLEXIBILITY} biodynamo)
+add_dependencies(${FLEXIBILITY} Vc)
 
 # --------------------- build benchmark soa_vs_aosoa
 set(SOA_VS_AOSOA soa_vs_aosoa)
