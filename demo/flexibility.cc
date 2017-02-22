@@ -19,6 +19,8 @@
 #include "timing.h"
 
 using std::ostream;
+using std::enable_if;
+using std::is_same;
 
 // -----------------------------------------------------------------------------
 // infrastructure required for multiform objects
@@ -56,7 +58,7 @@ struct Nulltype {
 /// OP(a, d, e)
 /// For a more detailed explanation see `MAP` macro in `third_party/cpp_magic.h`
 // clang-format off
-#define LOOP_3_1(operation, first, second, third, ...)           \
+#define LOOP_3_1(operation, first, second, third, ...)       \
   operation(first, second, third)                            \
   IF(HAS_ARGS(__VA_ARGS__))(                                 \
     DEFER2(_LOOP_3_1)()(operation, first, __VA_ARGS__))
@@ -199,6 +201,7 @@ class OneElementArray {
   OneElementArray() : data_() {}
   OneElementArray(const T& data) : data_(data) {}
   OneElementArray(T&& data) : data_(data) {}
+  OneElementArray(std::initializer_list<T> list) : data_(*list.begin()) {}
 
   Vc_ALWAYS_INLINE T& operator[](const size_t idx) { return data_; }
 
@@ -295,6 +298,21 @@ typename VcBackend::real_v iif(
 #define _LOOP() LOOP
 // clang-format on
 
+/// loops over variadic macro arguments and calls the specified operation
+/// removes the first two parameters in each iteration, but adds the first one
+/// again for the next call
+/// e.g. LOOP_3_1(OP, a, b, c) will lead to:
+/// OP(a, b)
+/// OP(a, c)
+/// For a more detailed explanation see `MAP` macro in `third_party/cpp_magic.h`
+// clang-format off
+#define LOOP_2_1(operation, first, second, ...)           \
+  operation(first, second)                                \
+  IF(HAS_ARGS(__VA_ARGS__))(                              \
+    DEFER2(_LOOP_2_1)()(operation, first, __VA_ARGS__))
+#define _LOOP_2_1() LOOP_2_1
+// clang-format on
+
 #define BDM_CLASS_HEADER_PUSH_BACK_BODY(...) \
   EVAL(LOOP(BDM_CLASS_HEADER_PUSH_BACK_BODY_ITERATOR, __VA_ARGS__))
 
@@ -306,6 +324,23 @@ typename VcBackend::real_v iif(
 
 #define BDM_CLASS_HEADER_CPY_CTOR_INIT_ITERATOR(data_member) \
   data_member(other.data_member),
+
+#define BDM_CLASS_HEADER_CLEAR_BODY(...) \
+  EVAL(LOOP(BDM_CLASS_HEADER_CLEAR_BODY_ITERATOR, __VA_ARGS__))
+
+#define BDM_CLASS_HEADER_CLEAR_BODY_ITERATOR(data_member) data_member.clear();
+
+#define BDM_CLASS_HEADER_RESERVE_BODY(...) \
+  EVAL(LOOP_2_1(BDM_CLASS_HEADER_RESERVE_BODY_ITERATOR, __VA_ARGS__))
+
+#define BDM_CLASS_HEADER_RESERVE_BODY_ITERATOR(new_cap, data_member) \
+  data_member.reserve(new_cap);
+
+#define BDM_CLASS_HEADER_ASSIGNMENT_OP_BODY(...) \
+  EVAL(LOOP(BDM_CLASS_HEADER_ASSIGNMENT_OP_BODY_ITERATOR, __VA_ARGS__))
+
+#define BDM_CLASS_HEADER_ASSIGNMENT_OP_BODY_ITERATOR(data_member) \
+  data_member = other.data_member;
 
 /// Macro to insert required boilerplate code into class
 /// @param: class_name: class name witout template specifier e.g.
@@ -371,14 +406,27 @@ typename VcBackend::real_v iif(
     return Self<ScalarBackend>(a...);                                          \
   }                                                                            \
                                                                                \
+  /* Creates new empty object with VcSoaBackend. */                            \
+  /* Calling Self<VcSoaBackend> soa; will have already one instance inside */  \
+  /* the one with default parameters */                                        \
+  /* Therefore that one has to be removed */                                   \
+  static Self<VcSoaBackend> NewEmptySoa(std::size_t reserve_capacity = 0) {    \
+    Self<VcSoaBackend> ret_value;                                              \
+    ret_value.clear();                                                         \
+    if (reserve_capacity != 0) {                                               \
+      ret_value.reserve(reserve_capacity);                                     \
+    }                                                                          \
+    return ret_value;                                                          \
+  }                                                                            \
+                                                                               \
  protected:                                                                    \
   /* Ctor to create SoaRefBackend */                                           \
   /* only compiled if T == VcSoaRefBackend */                                  \
   /* template parameter required for enable_if - otherwise compile error */    \
   template <typename T = Backend>                                              \
-  class_name(Self<VcSoaBackend>& other,                                        \
-             typename std::enable_if<                                          \
-                 std::is_same<T, VcSoaRefBackend>::value>::type* = 0)          \
+  class_name(                                                                  \
+      Self<VcSoaBackend>& other,                                               \
+      typename enable_if<is_same<T, VcSoaRefBackend>::value>::type* = 0)       \
       : Base(other),                                                           \
         REMOVE_TRAILING_COMMAS(BDM_CLASS_HEADER_CPY_CTOR_INIT(__VA_ARGS__)) {} \
                                                                                \
@@ -393,11 +441,9 @@ typename VcBackend::real_v iif(
   /* only compiled if Backend == Soa(Ref)Backend */                            \
   /* template parameter required for enable_if - otherwise compile error */    \
   template <typename T = Backend>                                              \
-  void push_back(                                                              \
-      const Self<VcBackend>& other,                                            \
-      typename std::enable_if<std::is_same<T, VcSoaRefBackend>::value ||       \
-                              std::is_same<T, VcSoaBackend>::value>::type* =   \
-          0) {                                                                 \
+  typename enable_if<is_same<T, VcSoaRefBackend>::value ||                     \
+                     is_same<T, VcSoaBackend>::value>::type                    \
+  push_back(const Self<VcBackend>& other) {                                    \
     Base::push_back(other);                                                    \
     BDM_CLASS_HEADER_PUSH_BACK_BODY(__VA_ARGS__);                              \
   }                                                                            \
@@ -405,10 +451,8 @@ typename VcBackend::real_v iif(
   /* only compiled if Backend == Soa(Ref)Backend */                            \
   /* template parameter required for enable_if - otherwise compile error */    \
   template <typename T = Backend>                                              \
-  void push_back(                                                              \
-      const Self<VcBackend>& other,                                            \
-      typename std::enable_if<std::is_same<T, ScalarBackend>::value>::type* =  \
-          0) {                                                                 \
+  typename enable_if<is_same<T, ScalarBackend>::value>::type push_back(        \
+      const Self<VcBackend>& other) {                                          \
     throw std::runtime_error("TODO implement: see src/cell.h:Append");         \
   }                                                                            \
                                                                                \
@@ -420,12 +464,41 @@ typename VcBackend::real_v iif(
   /* since this would involves copying of elements and would therefore */      \
   /* degrade performance -> it is therefore discouraged */                     \
   template <typename T = Backend>                                              \
-  typename std::enable_if<std::is_same<T, VcSoaRefBackend>::value ||           \
-                              std::is_same<T, VcSoaBackend>::value,            \
-                          Self<Backend>&>::type                                \
+  typename enable_if<is_same<T, VcSoaRefBackend>::value ||                     \
+                         is_same<T, VcSoaBackend>::value,                      \
+                     Self<Backend>&>::type                                     \
   operator[](int index) {                                                      \
     idx_ = index;                                                              \
     return *this;                                                              \
+  }                                                                            \
+                                                                               \
+  /* assigment operator if two objects are of the exact same type */           \
+  Self<Backend>& operator=(const Self<Backend>& other) const {                 \
+    Base::operator=(other);                                                    \
+    BDM_CLASS_HEADER_ASSIGNMENT_OP_BODY(__VA_ARGS__)                           \
+    return *this;                                                              \
+  }                                                                            \
+                                                                               \
+  /* only compiled for VcSOA and VcSOARef backends */                          \
+  /* equivalent to std::vector<> clear - it removes all all elements from */   \
+  /* all data members */                                                       \
+  template <typename T = Backend>                                              \
+  typename enable_if<is_same<T, VcSoaRefBackend>::value ||                     \
+                     is_same<T, VcSoaBackend>::value>::type                    \
+  clear() {                                                                    \
+    Base::clear();                                                             \
+    BDM_CLASS_HEADER_CLEAR_BODY(__VA_ARGS__)                                   \
+  }                                                                            \
+                                                                               \
+  /* only compiled for VcSOA and VcSOARef backends */                          \
+  /* equivalent to std::vector<> reserve - it increases the capacity */        \
+  /* of all data member containers */                                          \
+  template <typename T = Backend>                                              \
+  typename enable_if<is_same<T, VcSoaRefBackend>::value ||                     \
+                     is_same<T, VcSoaBackend>::value>::type                    \
+  reserve(std::size_t new_capacity) {                                          \
+    Base::reserve(new_capacity);                                               \
+    BDM_CLASS_HEADER_RESERVE_BODY(new_capacity, __VA_ARGS__)                   \
   }                                                                            \
                                                                                \
  private:
@@ -456,17 +529,36 @@ struct BdmSimObject {
   template <typename T = Backend>
   BdmSimObject(
       Self<VcSoaBackend>& other,
-      typename std::enable_if<std::is_same<T, VcSoaRefBackend>::value>::type* =
-          0) {}
+      typename enable_if<is_same<T, VcSoaRefBackend>::value>::type* = 0) {}
 
   // only compiled if Backend == Soa(Ref)Backend
   // template parameter required for enable_if - otherwise compile error
   template <typename T = Backend>
-  void push_back(
-      const Self<VcBackend>& other,
-      typename std::enable_if<std::is_same<T, VcSoaRefBackend>::value ||
-                              std::is_same<T, VcSoaBackend>::value>::type* =
-          0) {}
+  typename enable_if<is_same<T, VcSoaRefBackend>::value ||
+                     is_same<T, VcSoaBackend>::value>::type
+  push_back(const Self<VcBackend>& other) {}
+
+  // only compiled for VcSOA and VcSOARef backends
+  // equivalent to std::vector<> clear - it removes all all elements from all
+  // data members
+  template <typename T = Backend>
+  typename enable_if<is_same<T, VcSoaRefBackend>::value ||
+                     is_same<T, VcSoaBackend>::value>::type
+  clear() {}
+
+  // only compiled for VcSOA and VcSOARef backends
+  // equivalent to std::vector<> reserve - it increases the capacity
+  // of all data member containers
+  template <typename T = Backend>
+  typename enable_if<is_same<T, VcSoaRefBackend>::value ||
+                     is_same<T, VcSoaBackend>::value>::type
+  reserve(std::size_t new_capacity) {}
+
+  // assigment operator if two objects are of the exact same type
+  BdmSimObject<TTMemberSelector, TBackend>& operator=(
+      const BdmSimObject<TTMemberSelector, TBackend>& other) const {
+    return *this;
+  }
 };
 
 /// This struct is used to access static functions / members of a class that
@@ -646,9 +738,17 @@ void TestDifferentBackends() {
   foo[0] = 1.1;
   foo[1] = 2.2;
   vc_simd_neuron.SetFoo(foo);
+  MyExtendedNeuron<SelectAllMembers, VcBackend> vc_simd_neuron_2 =
+      vc_simd_neuron;
   std::cout << "simd   foo " << vc_simd_neuron.GetFoo() << std::endl;
 
   MyExtendedNeuron<SelectAllMembers, VcSoaBackend> vc_soa_neuron;
+  vc_soa_neuron.clear();
+  // alternative to the last two lines:
+  auto vc_soa_neuron_1 =
+      MyExtendedNeuron<SelectAllMembers, VcSoaBackend>::NewEmptySoa();
+  // vc_soa_neuron[0] = vc_simd_neuron; // FIXME
+
   vc_soa_neuron.push_back(vc_simd_neuron);
   std::cout << "soa[0] foo " << vc_soa_neuron[0].GetFoo() << std::endl;
 
