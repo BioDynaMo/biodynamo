@@ -33,7 +33,7 @@ class Object {
     id_[idx] = object.id_[0];
   }
 
-  void Append(const Object<ScalarBackend>& object) { Set(size_++, object); }
+  void push_back(const Object<ScalarBackend>& object) { Set(size_++, object); }
 
   bool is_full() const { return Size() == Backend::kVecLen; }
 
@@ -84,7 +84,9 @@ TEST(daosoaTest, PushBackAndGetScalars) {
 
   // check if it returns the correct objects
   for (size_t i = 0; i < elements; i++) {
-    EXPECT_EQ(i, objects.GetScalar(i).GetId()[0]);
+    const auto vector_idx = i / VcBackend::kVecLen;
+    const auto scalar_idx = i % VcBackend::kVecLen;
+    EXPECT_EQ(i, objects[vector_idx].GetId()[scalar_idx]);
   }
 }
 
@@ -102,7 +104,9 @@ TEST(daosoaTest, ReserveElementsSetScalar) {
 
   // check if it returns the correct objects
   for (size_t i = 0; i < elements; i++) {
-    EXPECT_EQ(i, objects.GetScalar(i).GetId()[0]);
+    const auto vector_idx = i / VcBackend::kVecLen;
+    const auto scalar_idx = i % VcBackend::kVecLen;
+    EXPECT_EQ(i, objects[vector_idx].GetId()[scalar_idx]);
   }
 }
 
@@ -114,7 +118,7 @@ TEST(daosoaTest, Gather) {
     objects.push_back(Object<ScalarBackend>(i));
   }
 
-  aosoa<Object> gathered;
+  aosoa<Object<VcBackend>, VcBackend> gathered;
   InlineVector<int, 8> indexes;
   indexes.push_back(5);
   indexes.push_back(3);

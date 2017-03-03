@@ -30,13 +30,13 @@ class Cell {
   virtual ~Cell() {}
 
   // code related to SOA
-  Vc_ALWAYS_INLINE void Append(const Cell<ScalarBackend>& cell);
+  Vc_ALWAYS_INLINE void push_back(const Cell<ScalarBackend>& cell);
 
   Vc_ALWAYS_INLINE bool is_full() const { return size_ == Backend::kVecLen; }
 
   Vc_ALWAYS_INLINE size_t Size() const { return size_; }
 
-  Vc_ALWAYS_INLINE void SetUninitialized() { size_ = 0; }
+  // Vc_ALWAYS_INLINE void SetUninitialized() { size_ = 0; }
 
   Vc_ALWAYS_INLINE void SetSize(std::size_t size) { size_ = size; }
 
@@ -58,9 +58,9 @@ class Cell {
     return mass_location_;
   }
 
-  Vc_ALWAYS_INLINE std::array<aosoa<::bdm::Cell, Backend>, Backend::kVecLen>
+  Vc_ALWAYS_INLINE std::array<aosoa<::bdm::Cell<Backend>, Backend>, Backend::kVecLen>
   GetNeighbors(const daosoa<::bdm::Cell, Backend>& all_cells) const {
-    std::array<aosoa<::bdm::Cell, Backend>, Backend::kVecLen> ret;
+    std::array<aosoa<::bdm::Cell<Backend>, Backend>, Backend::kVecLen> ret;
     const size_t size = size_;
     for (size_t i = 0; i < size; i++) {
       all_cells.Gather(neighbors_[i], &(ret[i]));
@@ -164,7 +164,7 @@ class Cell {
 // ----------------------------------------------------------------------------
 
 template <typename Backend>
-void Cell<Backend>::Append(const Cell<ScalarBackend>& cell) {
+void Cell<Backend>::push_back(const Cell<ScalarBackend>& cell) {
   Set(size_++, cell);
 }
 

@@ -231,7 +231,6 @@ typename VcBackend::real_v iif(
   }                                                                            \
                                                                                \
  protected:                                                                    \
-  /* TODO call Base class cpy ctor */                                          \
   /* Ctor to create SoaRefBackend */                                           \
   /* only compiled if T == VcSoaRefBackend */                                  \
   /* template parameter required for enable_if - otherwise compile error */    \
@@ -239,7 +238,8 @@ typename VcBackend::real_v iif(
   class_name(Self<VcSoaBackend>& other,                                        \
              typename std::enable_if<                                          \
                  std::is_same<T, VcSoaRefBackend>::value>::type* = 0)          \
-      : REMOVE_TRAILING_COMMAS(BDM_CLASS_HEADER_CPY_CTOR_INIT(__VA_ARGS__)) {} \
+      : Base(other),                                                           \
+        REMOVE_TRAILING_COMMAS(BDM_CLASS_HEADER_CPY_CTOR_INIT(__VA_ARGS__)) {} \
                                                                                \
  public:                                                                       \
   /* TODO only for SoaBackends */                                              \
@@ -249,7 +249,6 @@ typename VcBackend::real_v iif(
     return Self<VcSoaRefBackend>(*this);                                       \
   }                                                                            \
                                                                                \
-  /* TODO call base class */                                                   \
   /* only compiled if Backend == Soa(Ref)Backend */                            \
   /* template parameter required for enable_if - otherwise compile error */    \
   template <typename T = Backend>                                              \
@@ -258,6 +257,7 @@ typename VcBackend::real_v iif(
       typename std::enable_if<std::is_same<T, VcSoaRefBackend>::value ||       \
                               std::is_same<T, VcSoaBackend>::value>::type* =   \
           0) {                                                                 \
+    Base::push_back(other);                                                    \
     BDM_CLASS_HEADER_PUSH_BACK_BODY(__VA_ARGS__);                              \
   }                                                                            \
                                                                                \
@@ -307,6 +307,25 @@ struct BaseCell {
   // for non Soa Backends index_t will be const so it can be optimized out
   // by the compiler
   typename Backend::index_t idx_ = 0;
+
+  BaseCell() {}
+
+  // Ctor to create SoaRefBackend
+  // only compiled if T == VcSoaRefBackend 
+  // template parameter required for enable_if - otherwise compile error
+  template <typename T = Backend>
+  BaseCell(Self<VcSoaBackend>& other,
+             typename std::enable_if<
+                 std::is_same<T, VcSoaRefBackend>::value>::type* = 0) {}
+
+  // only compiled if Backend == Soa(Ref)Backend
+  // template parameter required for enable_if - otherwise compile error
+  template <typename T = Backend>
+  void push_back(
+      const Self<VcBackend>& other,
+      typename std::enable_if<std::is_same<T, VcSoaRefBackend>::value ||
+                              std::is_same<T, VcSoaBackend>::value>::type* =
+          0) {}
 };
 
 template <typename Base>

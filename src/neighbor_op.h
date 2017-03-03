@@ -31,10 +31,11 @@ struct NanoFlannDaosoaAdapter {
   /// with index "idx_p2" stored in the class:
   inline coord_t kdtree_distance(const coord_t* p1, const size_t idx_p2,
                                  size_t /*size*/) const {
-    // fixme makes a lot of copies (GetScalar)
-    const coord_t d0 = p1[0] - derived().GetScalar(idx_p2).GetPosition()[0][0];
-    const coord_t d1 = p1[1] - derived().GetScalar(idx_p2).GetPosition()[1][0];
-    const coord_t d2 = p1[2] - derived().GetScalar(idx_p2).GetPosition()[2][0];
+    const auto vector_idx = idx_p2 / VcBackend::kVecLen;
+    const auto scalar_idx = idx_p2 % VcBackend::kVecLen;
+    const coord_t d0 = p1[0] - derived()[vector_idx].GetPosition()[0][scalar_idx];
+    const coord_t d1 = p1[1] - derived()[vector_idx].GetPosition()[1][scalar_idx];
+    const coord_t d2 = p1[2] - derived()[vector_idx].GetPosition()[2][scalar_idx];
     return d0 * d0 + d1 * d1 + d2 * d2;
   }
 
@@ -42,8 +43,9 @@ struct NanoFlannDaosoaAdapter {
   /// Since this is inlined and the "dim" argument is typically an immediate
   /// value, the "if/else's" are actually solved at compile time.
   inline coord_t kdtree_get_pt(const size_t idx, int dim) const {
-    // fixme makes a lot of copies (GetScalar)
-    return derived().GetScalar(idx).GetPosition()[dim][0];
+    const auto vector_idx = idx / VcBackend::kVecLen;
+    const auto scalar_idx = idx % VcBackend::kVecLen;
+    return derived()[vector_idx].GetPosition()[dim][scalar_idx];
   }
 
   /// Optional bounding-box computation: return false to default to a standard
@@ -103,10 +105,9 @@ class NeighborOp {
       nanoflann::SearchParams params;
       params.sorted = false;
 
-      auto cell = cells->GetScalar(i);
-      const auto& position = cell.GetPosition();
-      const VcBackend::real_t query_pt[3] = {position[0][0], position[1][0],
-                                             position[2][0]};
+      const auto& position = (*cells)[vector_idx].GetPosition();
+      const VcBackend::real_t query_pt[3] = {position[0][scalar_idx], position[1][scalar_idx],
+                                             position[2][scalar_idx]};
 
       // calculate neighbors
       const size_t n_matches =

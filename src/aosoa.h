@@ -8,12 +8,12 @@
 namespace bdm {
 
 // FIXME code duplication with daosoa
-template <template <typename> class T, typename Backend = VcBackend>
+template <typename T, typename Backend>
 class aosoa {
  public:
   // soa of type T
   static constexpr size_t kMaxSize = 8 / Backend::kVecLen;
-  using value_type = T<Backend>;
+  using value_type = T;
   using iterator = typename std::array<value_type, kMaxSize>::iterator;
   using const_iterator =
       typename std::array<value_type, kMaxSize>::const_iterator;

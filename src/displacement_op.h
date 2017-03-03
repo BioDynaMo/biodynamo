@@ -71,7 +71,6 @@ class DisplacementOp {
         for (size_t k = 0; k < neighbors.at(j).vectors(); k++) {
           auto& neighbor = neighbors.at(j)[k];
           std::array<real_v, 3> neighbor_force;
-          Cell<ScalarBackend> cell_scalar = cell.Get(j);
 
           const auto& cell_mass_location = cell.GetMassLocation();
           std::array<real_v, 3> scalar_mass_location = {

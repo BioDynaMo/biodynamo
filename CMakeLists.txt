@@ -114,6 +114,7 @@ set(Vc_LIBRARIES "${CMAKE_CURRENT_BINARY_DIR}/Vc/src/Vc-build/libVc.a")
 # add the headers into the project
 #include(${ROOT_USE_FILE})
 include_directories("${CMAKE_SOURCE_DIR}/src")
+include_directories("${CMAKE_SOURCE_DIR}/src_tmp") #FIXME remove
 include_directories("${CMAKE_SOURCE_DIR}/third_party")
 include_directories("${Vc_INCLUDE_DIR}")
 # include_directories(${VTUNE_INCLUDE_DIR})

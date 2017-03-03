@@ -63,21 +63,21 @@ class daosoa {
         "push_back of a non scalar type on a scalar type is not supported");
     if (data_.size() == 0) {
       value_type v;
-      v.SetUninitialized();
+      v.SetSize(0);
       data_.emplace_back(std::move(v));
     }
     auto last = &data_[data_.size() - 1];
     if (last->is_full()) {
       value_type v1;
-      v1.SetUninitialized();
+      v1.SetSize(0);
       data_.emplace_back(std::move(v1));
       last = &data_[data_.size() - 1];
     }
-    last->Append(value);
+    last->push_back(value);
   }
 
   void Gather(const InlineVector<int, 8>& indexes,
-              aosoa<T, Backend>* ret) const {
+              aosoa<T<Backend>, Backend>* ret) const {
     const size_t scalars = indexes.size();
     std::size_t n_vectors =
         scalars / Backend::kVecLen + (scalars % Backend::kVecLen ? 1 : 0);
@@ -108,19 +108,19 @@ class daosoa {
   }
 
   /// \brief returns scalar representation of element at index
-  T<ScalarBackend> GetScalar(size_t index) const {
-    // fixme if this is ScalarBackend
-    size_t vector_idx = index / Backend::kVecLen;
-    size_t vec_el_idx = index % Backend::kVecLen;
-    return data_[vector_idx].Get(vec_el_idx);
-  }
-
-  void SetScalar(size_t index, const T<ScalarBackend>& value) {
-    // fixme if this is ScalarBackend
-    size_t vector_idx = index / Backend::kVecLen;
-    size_t vec_el_idx = index % Backend::kVecLen;
-    return data_[vector_idx].Set(vec_el_idx, value);
-  }
+  // T<ScalarBackend> GetScalar(size_t index) const {
+  //   // fixme if this is ScalarBackend
+  //   size_t vector_idx = index / Backend::kVecLen;
+  //   size_t vec_el_idx = index % Backend::kVecLen;
+  //   return data_[vector_idx].Get(vec_el_idx);
+  // }
+  //
+  // void SetScalar(size_t index, const T<ScalarBackend>& value) {
+  //   // fixme if this is ScalarBackend
+  //   size_t vector_idx = index / Backend::kVecLen;
+  //   size_t vec_el_idx = index % Backend::kVecLen;
+  //   return data_[vector_idx].Set(vec_el_idx, value);
+  // }
 
   Vc_ALWAYS_INLINE value_type& operator[](std::size_t index) {
     return data_[index];
@@ -129,11 +129,11 @@ class daosoa {
     return data_[index];
   }
 
-  iterator begin() { return data_.begin(); }
-  iterator end() { return data_.end(); }
-
-  const_iterator begin() const { return data_.cbegin(); }
-  const_iterator end() const { return data_.cend(); }
+  // iterator begin() { return data_.begin(); }
+  // iterator end() { return data_.end(); }
+  //
+  // const_iterator begin() const { return data_.cbegin(); }
+  // const_iterator end() const { return data_.cend(); }
 
  private:
   std::vector<value_type, Vc::Allocator<value_type> > data_;
