@@ -32,7 +32,7 @@
         <setting id="org.eclipse.cdt.core.formatter.insert_space_before_opening_bracket" value="do not insert"/>
         <setting id="org.eclipse.cdt.core.formatter.insert_space_before_closing_paren_in_for" value="do not insert"/>
         <setting id="org.eclipse.cdt.core.formatter.insert_space_before_prefix_operator" value="do not insert"/>
-        <setting id="org.eclipse.cdt.core.formatter.tabulation.size" value="2"/>
+        <setting id="org.eclipse.cdt.core.formatter.tabulation.Size" value="2"/>
         <setting id="org.eclipse.cdt.core.formatter.insert_new_line_before_else_in_if_statement" value="do not insert"/>
         <setting id="org.eclipse.cdt.core.formatter.alignment_for_enumerator_list" value="51"/>
         <setting id="org.eclipse.cdt.core.formatter.insert_space_after_opening_paren_in_parenthesized_expression" value="do not insert"/>
@@ -147,7 +147,7 @@
         <setting id="org.eclipse.cdt.core.formatter.insert_space_after_opening_paren_in_switch" value="do not insert"/>
         <setting id="org.eclipse.cdt.core.formatter.keep_imple_if_on_one_line" value="false"/>
         <setting id="org.eclipse.cdt.core.formatter.insert_new_line_after_opening_brace_in_array_initializer" value="do not insert"/>
-        <setting id="org.eclipse.cdt.core.formatter.indentation.size" value="2"/>
+        <setting id="org.eclipse.cdt.core.formatter.indentation.Size" value="2"/>
         <setting id="org.eclipse.cdt.core.formatter.brace_position_for_namespace_declaration" value="end_of_line"/>
         <setting id="org.eclipse.cdt.core.formatter.insert_space_after_colon_in_conditional" value="insert"/>
         <setting id="org.eclipse.cdt.core.formatter.insert_space_before_comma_in_enum_declarations" value="do not insert"/>

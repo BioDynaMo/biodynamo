@@ -9,7 +9,7 @@ TEST(DisplacementOpTest, Compute) {
   using real_v = VcBackend::real_v;
   using real_t = real_v::value_type;
   if (real_v::Size < 2) {
-    FAIL() << "Backend must at least support two elements for this test";
+    FAIL() << "Backend must At least support two elements for this test";
   }
   // set up cells
   real_v diameter((const real_t[]){9, 11});
