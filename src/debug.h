@@ -1,6 +1,7 @@
 #ifndef DEBUG_H_
 #define DEBUG_H_
 
+#include <algorithm>
 #include <array>
 #include <iostream>
 #include <Eigen/CXX11/Tensor>
@@ -23,7 +24,7 @@ void print2(const Eigen::Tensor<float, 2>& tensor) {
   std::cout << std::endl;
 }
 
-template <long N>
+template <int64_t N>
 void print(const Eigen::TensorFixedSize<float, Eigen::Sizes<N>>& tensor) {
   for (size_t i = 0; i < N; i++) {
     std::cout << tensor(i) << ", ";
@@ -31,7 +32,7 @@ void print(const Eigen::TensorFixedSize<float, Eigen::Sizes<N>>& tensor) {
   std::cout << std::endl << std::endl;
 }
 
-template <long R, long C>
+template <int64_t R, int64_t C>
 void print(const Eigen::TensorFixedSize<float, Eigen::Sizes<R, C>>& tensor) {
   for (size_t i = 0; i < R; i++) {
     for (size_t j = 0; j < C; j++) {
@@ -42,7 +43,7 @@ void print(const Eigen::TensorFixedSize<float, Eigen::Sizes<R, C>>& tensor) {
   std::cout << std::endl;
 }
 
-template <long N>
+template <int64_t N>
 void print(const std::array<Eigen::TensorFixedSize<float, Eigen::Sizes<N>>, 3>&
                matrix) {
   for (size_t i = 0; i < 3; i++) {
@@ -69,4 +70,4 @@ void print(const std::array<Vc::float_v, 3>& matrix) {
   std::cout << std::endl;
 }
 
-#endif  // DEGUG_H_
+#endif  // DEBUG_H_

@@ -3,10 +3,10 @@
 
 #include <array>
 #include <cmath>
-#include "array.h"
 #include "backend.h"
 #include "daosoa.h"
 #include "default_force.h"
+#include "inline_vector.h"
 #include "math_util.h"
 #include "param.h"
 
@@ -19,12 +19,12 @@ class Cell {
   using real_t = typename Backend::real_t;
   using bool_v = typename Backend::bool_v;
 
-  template <typename T>
+  template <typename>
   friend class Cell;
 
   Cell() {}
-  Cell(real_v diameter) : diameter_{diameter} { UpdateVolume(); }
-  Cell(const std::array<real_v, 3>& position)
+  explicit Cell(real_v diameter) : diameter_{diameter} { UpdateVolume(); }
+  explicit Cell(const std::array<real_v, 3>& position)
       : position_(position), mass_location_(position) {}
 
   virtual ~Cell() {}
@@ -58,9 +58,9 @@ class Cell {
     return mass_location_;
   }
 
-  Vc_ALWAYS_INLINE std::array<aosoa<Cell, Backend>, Backend::kVecLen>
-  GetNeighbors(const daosoa<Cell, Backend>& all_cells) const {
-    std::array<aosoa<Cell, Backend>, Backend::kVecLen> ret;
+  Vc_ALWAYS_INLINE std::array<aosoa<::bdm::Cell, Backend>, Backend::kVecLen>
+  GetNeighbors(const daosoa<::bdm::Cell, Backend>& all_cells) const {
+    std::array<aosoa<::bdm::Cell, Backend>, Backend::kVecLen> ret;
     const size_t size = size_;
     for (size_t i = 0; i < size; i++) {
       all_cells.Gather(neighbors_[i], &(ret[i]));
@@ -68,7 +68,7 @@ class Cell {
     return ret;
   }
 
-  Vc_ALWAYS_INLINE const std::array<array<int, 8>, Backend::kVecLen>
+  Vc_ALWAYS_INLINE const std::array<InlineVector<int, 8>, Backend::kVecLen>
   GetNeighbors() const {
     return neighbors_;
   }
@@ -102,7 +102,7 @@ class Cell {
     tractor_force_ = tractor_force;
   }
   Vc_ALWAYS_INLINE void SetNeighbors(
-      const std::array<array<int, 8>, Backend::kVecLen>& neighbors) {
+      const std::array<InlineVector<int, 8>, Backend::kVecLen>& neighbors) {
     neighbors_ = neighbors;
   }
 
@@ -156,7 +156,7 @@ class Cell {
   real_v adherence_;
   real_v mass_;
   // stores a list of neighbor ids for each scalar cell
-  std::array<bdm::array<int, 8>, Backend::kVecLen> neighbors_;
+  std::array<InlineVector<int, 8>, Backend::kVecLen> neighbors_;
 };
 
 // ----------------------------------------------------------------------------

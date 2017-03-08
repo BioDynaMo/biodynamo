@@ -1,0 +1,3 @@
+export CC=icc
+export CXX=icpc
+cmake -GNinja ..

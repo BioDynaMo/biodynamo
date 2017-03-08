@@ -5,6 +5,7 @@
 #include <type_traits>
 #include "aosoa.h"
 #include "backend.h"
+#include "inline_vector.h"
 
 namespace bdm {
 
@@ -17,7 +18,7 @@ class daosoa {
   using const_iterator = typename std::vector<value_type>::const_iterator;
 
   daosoa() {}
-  daosoa(size_t scalar_elements) {
+  explicit daosoa(size_t scalar_elements) {
     data_.reserve(scalar_elements / Backend::kVecLen +
                   (scalar_elements % Backend::kVecLen ? 1 : 0));
   }
@@ -75,7 +76,8 @@ class daosoa {
     last->Append(value);
   }
 
-  void Gather(const bdm::array<int, 8>& indexes, aosoa<T, Backend>* ret) const {
+  void Gather(const InlineVector<int, 8>& indexes,
+              aosoa<T, Backend>* ret) const {
     const size_t scalars = indexes.size();
     std::size_t n_vectors =
         scalars / Backend::kVecLen + (scalars % Backend::kVecLen ? 1 : 0);

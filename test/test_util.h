@@ -1,3 +1,5 @@
+#ifndef TEST_UTIL_H_
+#define TEST_UTIL_H_
 
 namespace bdm {
 
@@ -19,3 +21,5 @@ struct abs_error<double> {
 };
 
 }  // namespace bdm
+
+#endif  // TEST_UTIL_H_

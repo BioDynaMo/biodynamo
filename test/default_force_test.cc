@@ -1,4 +1,4 @@
-#include <gtest/gtest.h>
+﻿#include <gtest/gtest.h>
 #include "backend.h"
 #include "default_force.h"
 #include "test_util.h"
@@ -17,12 +17,22 @@ TEST(DefaultForce, General) {
   std::array<real_v, 3> ref_mass_location = {1.1, 1.0, 0.9};
   real_v ref_diameter = 8;
   real_v ref_iof_coefficient = 0.15;
-  real_v nb_x((const real_t[]){0, 5});
-  real_v nb_y((const real_t[]){0, 5});
-  real_v nb_z((const real_t[]){0, 0});
+  real_v nb_x;
+  nb_x[0] = 0;
+  nb_x[1] = 5;
+  real_v nb_y;
+  nb_y[0] = 0;
+  nb_y[1] = 5;
+  real_v nb_z;
+  nb_z[0] = 0;
+  nb_z[1] = 0;
   std::array<real_v, 3> nb_mass_location = {nb_x, nb_y, nb_z};
-  real_v nb_diameter((const real_t[]){5, 10});
-  real_v nb_iof_coefficient((const real_t[]){0.15, 0.15});
+  real_v nb_diameter;
+  nb_diameter[0] = 5;
+  nb_diameter[1] = 10;
+  real_v nb_iof_coefficient;
+  nb_iof_coefficient[0] = 0.15;
+  nb_iof_coefficient[1] = 0.15;
   std::array<real_v, 3> result;
 
   DefaultForce<VcBackend> force;
@@ -81,12 +91,22 @@ TEST(DefaultForce, OneNonOverlapping) {
   std::array<real_v, 3> ref_mass_location = {0, 0, 0};
   real_v ref_diameter = 8;
   real_v ref_iof_coefficient = 0.15;
-  real_v nb_x((const real_t[]){11.01, 8});
-  real_v nb_y((const real_t[]){0, 0});
-  real_v nb_z((const real_t[]){0, 0});
+  real_v nb_x;
+  nb_x[0] = 11.01;
+  nb_x[1] = 8;
+  real_v nb_y;
+  nb_y[0] = 0;
+  nb_y[1] = 0;
+  real_v nb_z;
+  nb_z[0] = 0;
+  nb_z[1] = 0;
   std::array<real_v, 3> nb_mass_location = {nb_x, nb_y, nb_z};
-  real_v nb_diameter((const real_t[]){8, 8});
-  real_v nb_iof_coefficient((const real_t[]){0.15, 0.15});
+  real_v nb_diameter;
+  nb_diameter[0] = 8;
+  nb_diameter[1] = 8;
+  real_v nb_iof_coefficient;
+  nb_iof_coefficient[0] = 0.15;
+  nb_iof_coefficient[1] = 0.15;
   std::array<real_v, 3> result;
 
   DefaultForce<VcBackend> force;

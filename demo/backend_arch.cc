@@ -1,4 +1,4 @@
-#include <array>
+﻿#include <array>
 #include <cmath>
 #include <iostream>
 #include <vector>
@@ -26,163 +26,7 @@ void benchmarkPlainAosoa(const size_t num_cells, const size_t iterations,
           TimingAggregator* statistic);
 
 template<typename T>
-class ScalarRefWrapper {
-public:
-  ScalarRefWrapper(T&& data) : data_(std::move(data)) {}
-
-  ScalarRefWrapper(const ScalarRefWrapper<T>& other) : data_(std::move(other.data_)) {}
-    //TODO add all operators
-
-  T&& operator[](std::size_t index) {
-    return std::move(data_);
-  }
-
-  const T&& operator[](std::size_t index) const {
-    return std::move(data_);
-  }
-
-  ScalarRefWrapper<T>& operator=(const ScalarRefWrapper<T>& other) {
-    if (this != &other) {
-      std::move(data_) = other.data_;
-    }
-    return *this;
-  }
-
-  // TODO remove
-  void foo(T&& ref, int idx) {
-    std::move(ref) = idx;
-  }
-
-  T* begin() { return &data_; }
-  T* end() { return &data_+1; }
-
-  const T* begin() const { return &data_; }
-  const T* end() const { return &data_+1; }
-
-private:
-  T&& data_;
-};
-
-// template<typename T>
-// class VcScalarRefWrapper {
-// public:
-//   VcScalarRefWrapper(T& data, size_t index) : data_(data), index_(index) {}
-//
-//     //TODO add all operators
-//
-//   decltype(std::declval<T>()[0])&& operator[](std::size_t index) {
-//     return std::move(data_[index_]);
-//   }
-//
-//   const decltype(std::declval<T>()[0])&& operator[](std::size_t index) const {
-//     return std::move(data_[index_]);
-//   }
-//
-//   VcScalarRefWrapper<T>& operator=(const VcScalarRefWrapper<T>& other) {
-//     if (this != &other) {
-//       std::move(data_[index_]) = other.data_[other.index_];
-//     }
-//     return *this;
-//   }
-//
-//   template<typename U>
-//   Vc_ALWAYS_INLINE auto operator<(const U& u) const -> decltype(std::declval<T>() < u) {
-//     return data_ < u;
-//   }
-//
-//   template<typename U>
-//   Vc_ALWAYS_INLINE auto operator*(const U& u) const -> decltype(std::declval<T>() * u) {
-//     return data_ * u;
-//   }
-//
-//   template<typename U>
-//   Vc_ALWAYS_INLINE VcScalarRefWrapper<T>& operator+=(const U& u) {
-//     std::move(data_[index_]) += u;
-//     return *this;
-//   }
-//
-//   // TODO remove
-//   void foo(T&& ref, int idx) {
-//     std::move(ref) = idx;
-//   }
-//
-// private:
-//   T& data_;
-//   std::size_t index_;
-// };
-
-template<typename T>
-class VcScalarRefWrapper {
-public:
-  VcScalarRefWrapper(Vc::double_v& data, size_t index) : data_(data), index_(index) {}
-
-    //TODO add all operators
-
-  VcScalarRefWrapper<T>& operator[](std::size_t index) {
-    return *this;
-  }
-  //  Vc::SimdArray<double, 1> operator[](std::size_t index) {
-  //    return Vc::SimdArray<double, 1>(data_[index_]);
-  // }
-
-  // const decltype(std::declval<Vc::double_v>()[0])&& operator[](std::size_t index) const {
-  const VcScalarRefWrapper<T>& operator[](std::size_t index) const {
-    return *this;
-  }
-
-  // Vc::SimdArray<double, 1> operator[](std::size_t index) const {
-  //   return Vc::SimdArray<double, 1>(data_[index_]);
-  // }
-
-  VcScalarRefWrapper<T>& operator=(const VcScalarRefWrapper<T>& other) {
-    if (this != &other) {
-      std::move(data_[index_]) = other.data_[other.index_];
-    }
-    return *this;
-  }
-
-  VcScalarRefWrapper<T>& operator=(const Vc::SimdArray<double, 1>& other) {
-    std::move(data_[index_]) = other[0];
-    return *this;
-  }
-
-  template<typename U>
-  Vc_ALWAYS_INLINE auto operator<(const U& u) const -> decltype(std::declval<T>() < u) {
-    return data_ < u;
-  }
-
-  template<typename U>
-  Vc_ALWAYS_INLINE auto operator*(const U& u) const -> decltype(std::declval<T>() * u) {
-    return data_ * u;
-  }
-
-  // Vc_ALWAYS_INLINE auto operator*(const VcScalarRefWrapper<T>& other) const -> decltype(std::declval<Vc::double_v>() * std::declval<Vc::double_v>()) {
-  //   return data_ * other.data_;
-  // }
-
-  template<typename U>
-  Vc_ALWAYS_INLINE VcScalarRefWrapper<T>& operator+=(const U& u) {
-    std::move(data_[index_]) += u;
-    return *this;
-  }
-
-  friend std::ostream &operator<<( std::ostream &out, const VcScalarRefWrapper<T> &wrapper ) {
-    out << wrapper.data_[wrapper.index_];
-    return out;
-  }
-
-  // TODO remove
-  // void foo(T&& ref, int idx) {
-  //   std::move(ref) = idx;
-  // }
-
-private:
-  Vc::double_v& data_;
-  std::size_t index_;
-};
-
-template<typename T>
-class SoaRefWrapper { // FIXME can we use the same refwrapper for scalar and vector??
+class SoaRefWrapper {
 public:
   SoaRefWrapper(T& data) : data_(data) {}
 
@@ -224,7 +68,6 @@ public:
     return out;
   }
 
-// FIXME
   typename T::iterator begin() { return data_.begin(); }
   typename T::iterator end() { return data_.end(); }
 
@@ -261,36 +104,7 @@ public:
 
   const T* begin() const { return &data_; }
   const T* end() const { return &data_+1; }
-private:
-  T data_;
-};
 
-template<typename T>
-class OneElementArray1 {
-public:
-  OneElementArray1() : data_() {}
-  OneElementArray1(T&& data) : data_(data) {}
-
-  // Vc_ALWAYS_INLINE Vc::SimdArray<double, 1> operator[](const size_t idx) {
-  //   return Vc::SimdArray<double, 1>(data_[idx]);
-  // }
-  //
-  // Vc_ALWAYS_INLINE Vc::SimdArray<double, 1> operator[](const size_t idx) const {
-  //   return Vc::SimdArray<double, 1>(data_[idx]);
-  // }
-  Vc_ALWAYS_INLINE T& operator[](const size_t idx) {
-    return data_;
-  }
-
-  Vc_ALWAYS_INLINE const T& operator[](const size_t idx) const {
-    return data_;
-  }
-
-  T* begin() { return &data_; }
-  T* end() { return &data_+1; }
-
-  const T* begin() const { return &data_; }
-  const T* end() const { return &data_+1; }
 private:
   T data_;
 };
@@ -340,25 +154,8 @@ struct ScalarBackend {
   template<typename T, typename Allocator=std::allocator<T>> using soa = OneElementArray<T>;
 };
 
-struct ScalarRefBackend {  //TODO rename to VcScalarRefBackend
-  typedef double real_t;
-  static const size_t kVecLen = 1;
-  typedef Vc::SimdArray<double, 1> real_v;
-  template<typename T> using container =  T;
-  template<typename T, typename Allocator=std::allocator<T>> using soa = typename type_ternary_operator<std::is_same<T, real_v>::value, OneElementArray1<VcScalarRefWrapper<T> >, OneElementArray<SoaRefWrapper<T> > >::type;  // TODO replace SoaRefWrapper with container specification
-};
-
-template<typename T, typename U=T>
-T iif(const decltype(std::declval<T>() < 0)& condition, const T& true_value, const U& false_value) {}
-
-template<>
-typename VcBackend::real_v iif<typename VcBackend::real_v>(const decltype(std::declval<typename VcBackend::real_v>() < std::declval<typename VcBackend::real_v>())& condition, const typename VcBackend::real_v& true_value, const typename VcBackend::real_v& false_value) {
+typename VcBackend::real_v iif(const decltype(std::declval<typename VcBackend::real_v>() < std::declval<typename VcBackend::real_v>())& condition, const typename VcBackend::real_v& true_value, const typename VcBackend::real_v& false_value) {
   return Vc::iif(condition, true_value, false_value);
-}
-
-template<>
-typename ScalarRefBackend::real_v iif<typename ScalarRefBackend::real_v>(const decltype(std::declval<typename ScalarRefBackend::real_v>() < std::declval<typename ScalarRefBackend::real_v>())& condition, const typename ScalarRefBackend::real_v& true_value, const typename ScalarRefBackend::real_v& false_value) {
-  throw "not yet implemented exception";
 }
 
 struct Neurite {
@@ -366,6 +163,9 @@ struct Neurite {
   Neurite(size_t id) : id(id) {}
   size_t id = 0;
 };
+
+template<typename Backend>
+class Cell;
 
 // <generated>
 // makes it more convenient to use
@@ -421,60 +221,6 @@ public:
 private:
   Delegate delegate_;
 };
-
-template<typename Delegate>
-class CellScalarWrapperRef {
-public:
-  // FIXME verify that Delegate is Cell<ScalarRefBackend>
-  explicit CellScalarWrapperRef(const Delegate& delegate) : delegate_{delegate} {}
-
-  double GetDiameter() const {
-    return delegate_.GetDiameter()[0];
-  }
-
-  void SetDiameter(double diameter) {
-    typename VcBackend::real_v vec(diameter); // TODO huge overhead
-    delegate_.SetDiameter(VcScalarRefWrapper<typename VcBackend::real_v>(vec, 0));
-  }
-
-  double GetVolume() const {
-    return delegate_.GetVolume()[0];
-  }
-
-  void SetVolume(double volume) {
-    typename VcBackend::real_v vec(volume);
-    delegate_.SetVolume(VcScalarRefWrapper<typename VcBackend::real_v>(vec, 0));
-  }
-
-  void UpdateVolume() {
-    delegate_.UpdateVolume();
-  }
-
-  void ChangeVolume(double speed) {
-    typename VcBackend::real_v vec(speed);
-    delegate_.ChangeVolume(VcScalarRefWrapper<typename VcBackend::real_v>(vec, 0));
-  }
-
-  const std::vector<Neurite>& GetNeurites() const {
-    return delegate_.GetNeurites()[0];
-  }
-
-  void SetNeurites(std::vector<Neurite>& neurites) {  //FIXME if neurites is defined as const binding to ref doesn't work
-    delegate_.SetNeurites({neurites});
-  }
-
-  void UpdateNeurites() {
-    delegate_.UpdateNeurites();
-  }
-
-  friend std::ostream &operator<<( std::ostream &out, const CellScalarWrapperRef<Delegate> &cell ) {
-    out << cell.delegate_;
-    return out;
-  }
-
-private:
-  Delegate delegate_;
-};
 // </generated>
 
 template<typename Backend>
@@ -491,19 +237,8 @@ public:
   friend class Cell;
 
   // <required interface>
-  static CellScalarWrapper<Cell<ScalarBackend> > NewScalar() { // todo perfect forwarding for ctor arguments
+  static CellScalarWrapper<Cell<ScalarBackend> > NewScalar() { // TODO perfect forwarding for ctor arguments
     return CellScalarWrapper<Cell<ScalarBackend> >(Cell<ScalarBackend>());
-  }
-
-  template<typename T=Backend>
-  Cell(Cell<VcBackend>& other, size_t idx, typename std::enable_if<std::is_same<T, ScalarRefBackend>::value>::type* = 0) :
-    diameter_(VcScalarRefWrapper<Vc::SimdArray<double, 1> >(other.diameter_[idx_], idx)), // TODO fix template param
-    volume_(VcScalarRefWrapper<Vc::SimdArray<double, 1> >(other.volume_[idx_], idx)),  // TODO fix template param
-    neurites_(other.neurites_[idx_][idx]) {
-  }
-
-  CellScalarWrapper<Cell<ScalarRefBackend> > GetScalar(size_t idx) { // TODO VcBackend versino of operator[]
-    return CellScalarWrapper<Cell<ScalarRefBackend> >(Cell<ScalarRefBackend>(*this, idx));
   }
 
   //TODO make protected
@@ -555,7 +290,7 @@ public:
 
   void UpdateVolume() {
     for(size_t i = 0; i < Backend::kVecLen; i++) {
-      //volume_[idx_][i] = diameter_[idx_][i] * diameter_[idx_][i] * diameter_[idx_][i] * 4 / 3 * 3.14;
+      volume_[idx_][i] = diameter_[idx_][i] * diameter_[idx_][i] * diameter_[idx_][i] * 4 / 3 * 3.14;
     }
   }
 
@@ -687,25 +422,10 @@ int main(int argc, char** argv) {
   auto& scalar_neurites = cell.GetNeurites();
   std::cout << "final scalar cell" << std::endl << scalar << std::endl;
 
-  // scalar reference into vector cell
-  std::cout << std::endl << "-----------------------------------" << std::endl;
-  std::cout << "scalar reference" << std::endl;
-  std::cout << "initial VcBackend cell" << std::endl <<  cell << std::endl;
-  auto&& scalar_ref = cell.GetScalar(1);
-  scalar_ref.SetDiameter(98);
-  scalar_ref.SetVolume(76);
-  // scalar_ref.ChangeVolume(3);
-  // std::cout << "scalar_ref cell: " << std::endl << scalar_ref << std::endl;
-  scalar_ref.UpdateVolume();
-  // std::cout << "scalar_ref cell: " << std::endl << scalar_ref << std::endl;
-  // std::cout << "scalar_ref.GetVolume(): " << scalar_ref.GetVolume() << std::endl;
-  // TODO interact with neurites
-  // std::cout << "scalar reference " << std::endl << scalar_ref << std::endl;
-  std::cout << " final VcBackend cell after modifications with scalar ref" << std::endl;
-  std::cout << cell << std::endl;
-
   // create soa container add and retrieve elements
-  if( argc == 4) {
+  if (argc != 1 && argc != 4) {
+    std::cout << "Usage: ./backend_arch #cells #iterations #threads" << std::endl;
+  } if( argc == 4) {
     std::cout << std::endl;
     std::cout << "-------------------------------------------------" << std::endl;
     size_t cells;
@@ -729,10 +449,11 @@ void benchmarkSoaCell(const size_t num_cells, const size_t iterations,
   const size_t N = num_cells / Vc::double_v::Size;
   Cell<VcSoaBackend> cells;
 
-// #pragma omp parallel for
+  // initialization
   for (size_t i = 0; i < N; i++) {
     Cell<VcBackend> cell;
-
+    cell.SetDiameter(Vc::double_v(30));
+    cell.SetVolume(Vc::double_v(0));
     cells.push_back(cell);
   }
 
@@ -740,8 +461,8 @@ void benchmarkSoaCell(const size_t num_cells, const size_t iterations,
 
   {
     Timing timing("soaCell", statistic);
-// #pragma omp parallel for default(none) shared(cells) firstprivate(iterations)
-    for (size_t i = 0; i < N; i++) {
+#pragma omp parallel for default(none) shared(cells_ref) firstprivate(iterations)
+    for (int i = 0; i < N; i++) {
         auto& cell = cells_ref[i];
         auto ifresult = cell.GetDiameter() <= 40;
         Vc::double_v dv(300);
@@ -749,54 +470,45 @@ void benchmarkSoaCell(const size_t num_cells, const size_t iterations,
         cell.ChangeVolume(dv);
     }
   }
+
+  // verify results
+  volatile double volume_sum = 0;
+  for (size_t i = 0; i < N; i++) {
+    volume_sum += cells_ref[i].GetVolume().sum();
+  }
+  assert(std::abs(volume_sum - N * Vc::double_v::Size * 3) < 1e-3);
 }
 
 
 void benchmarkPlainSoa(const size_t num_cells, const size_t iterations,
            TimingAggregator* statistic) {
   const size_t N = num_cells / Vc::double_v::Size;
+
   class SoaCell {
   public:
     using real_v = Vc::double_v;
 
     SoaCell(const size_t elements) {
-      // diameter_ = new Vc::double_v[elements];
-      // volume_ = new Vc::double_v[elements];
       diameter_.resize(elements);
       volume_.resize(elements);
       neurites_.resize(elements);
       for (size_t i = 0; i < elements; i++) {
-        diameter_[i] = real_v(20);
+        diameter_[i] = real_v(30);
         volume_[i] = real_v(0);
       }
     }
 
-    virtual ~SoaCell() {
-      // delete[] diameter_;
-      // delete[] volume_;
-    }
-
-    const real_v& GetDiameter(const size_t idx) const {
-      return diameter_[idx];
-    }
-
-    void ChangeVolume(const size_t idx, const real_v& speed) {
-      volume_[idx] += speed  * 0.01;
-      volume_[idx] = Vc::iif(volume_[idx] < 5.2359877E-7,
-                       Vc::double_v(5.2359877E-7), volume_[idx]);
-
-       // UpdateDiameter();
-       // for (size_t j = 0; j < Vc::double_v::Size; j++) {
-       //   vc_diameter[idx][j] = std::cbrt(vc_volume[idx][j] * 6 / 3.14);
-       // }
-    }
-
-    void SetIndex(const size_t idx) {
+    SoaCell& operator[](const size_t idx) {
       idx_ = idx;
+      return *this;
     }
 
     const real_v& GetDiameter() const {
       return diameter_[idx_];
+    }
+
+    const real_v& GetVolume() const {
+      return volume_[idx_];
     }
 
     void ChangeVolume(const real_v& speed) {
@@ -812,37 +524,32 @@ void benchmarkPlainSoa(const size_t num_cells, const size_t iterations,
 
   private:
     size_t idx_ = 0;
-    // real_v* diameter_;
-    // real_v* volume_;
     std::vector<real_v> diameter_;
     std::vector<real_v> volume_;
     std::vector<std::array<Neurite, real_v::Size> > neurites_;
   };
 
+  // initialization in ctor
   SoaCell cells(N);
-
-// #pragma omp parallel for
-  // for (size_t i = 0; i < N; i++) {
-  //   cells.diameter[i] = Vc::double_v(30);
-  //   cells.volume[i] = Vc::double_v(1);
-  // }
 
   {
     Timing timing("vcSoa", statistic);
-// #pragma omp parallel for default(none) shared(vc_diameter, vc_volume) firstprivate(iterations)
-    for (size_t i = 0; i < N; i++) {
-      cells.SetIndex(i);
-      auto ifresult = cells.GetDiameter() <= 40;
+#pragma omp parallel for default(none) shared(cells) firstprivate(iterations)
+    for (int i = 0; i < N; i++) {
+      auto& cell = cells[i];
+      auto ifresult = cell.GetDiameter() <= 40;
       Vc::double_v dv(300);
       dv.setZeroInverted(ifresult);
-      cells.ChangeVolume(dv);
-
-      // auto ifresult = cells.GetDiameter(i) <= 40;
-      // Vc::double_v dv(300);
-      // dv.setZeroInverted(ifresult);
-      // cells.ChangeVolume(i, dv);
+      cell.ChangeVolume(dv);
     }
   }
+
+  // verify results
+  volatile double volume_sum = 0;
+  for (size_t i = 0; i < N; i++) {
+    volume_sum += cells[i].GetVolume().sum();
+  }
+  assert(std::abs(volume_sum - N * Vc::double_v::Size * 3) < 1e-3);
 }
 
 void benchmarkAosoaCell(const size_t num_cells, const size_t iterations,
@@ -850,17 +557,18 @@ void benchmarkAosoaCell(const size_t num_cells, const size_t iterations,
   const size_t N = num_cells / Vc::double_v::Size;
   std::vector<Cell<VcBackend>, Vc::Allocator<Cell<VcBackend> > > cells;
 
-// #pragma omp parallel for
+  // initialization
   for (size_t i = 0; i < N; i++) {
     Cell<VcBackend> cell;
-
+    cell.SetDiameter(Vc::double_v(30));
+    cell.SetVolume(Vc::double_v(0));
     cells.push_back(cell);
   }
 
   {
     Timing timing("aosoaCell", statistic);
-// #pragma omp parallel for default(none) shared(cells) firstprivate(iterations)
-    for (size_t i = 0; i < N; i++) {
+#pragma omp parallel for default(none) shared(cells) firstprivate(iterations)
+    for (int i = 0; i < N; i++) {
         auto& cell = cells[i];
         auto ifresult = cell.GetDiameter() <= 40;
         Vc::double_v dv(300);
@@ -868,17 +576,31 @@ void benchmarkAosoaCell(const size_t num_cells, const size_t iterations,
         cell.ChangeVolume(dv);
     }
   }
+
+  // verify results
+  volatile double volume_sum = 0;
+  for (size_t i = 0; i < N; i++) {
+    volume_sum += cells[i].GetVolume().sum();
+  }
+  assert(std::abs(volume_sum - N * Vc::double_v::Size * 3) < 1e-3);
 }
 
 void benchmarkPlainAosoa(const size_t num_cells, const size_t iterations,
            TimingAggregator* statistic) {
   const size_t N = num_cells / Vc::double_v::Size;
+
   class AosoaCell {
   public:
     using real_v = Vc::double_v;
 
+    AosoaCell() : diameter_(real_v(30)), volume_(real_v(0)) {}
+
     const real_v& GetDiameter() const {
       return diameter_;
+    }
+
+    const real_v& GetVolume() const {
+      return volume_;
     }
 
     void ChangeVolume(const real_v& speed) {
@@ -898,28 +620,25 @@ void benchmarkPlainAosoa(const size_t num_cells, const size_t iterations,
     std::array<std::vector<Neurite>, real_v::Size> neurites_;
   };
 
+  // initiazation in ctor
   std::vector<AosoaCell, Vc::Allocator<AosoaCell> > cells(N);
-
-// #pragma omp parallel for
-  // for (size_t i = 0; i < N; i++) {
-  //   cells.diameter[i] = Vc::double_v(30);
-  //   cells.volume[i] = Vc::double_v(1);
-  // }
 
   {
     Timing timing("vcAosoa", statistic);
-// #pragma omp parallel for default(none) shared(vc_diameter, vc_volume) firstprivate(iterations)
-    for (size_t i = 0; i < N; i++) {
+#pragma omp parallel for default(none) shared(cells) firstprivate(iterations)
+    for (int i = 0; i < N; i++) {
       auto& cell = cells[i];
       auto ifresult = cell.GetDiameter() <= 40;
       Vc::double_v dv(300);
       dv.setZeroInverted(ifresult);
       cell.ChangeVolume(dv);
-
-      // auto ifresult = cells.GetDiameter(i) <= 40;
-      // Vc::double_v dv(300);
-      // dv.setZeroInverted(ifresult);
-      // cells.ChangeVolume(i, dv);
     }
   }
+
+  // verify results
+  volatile double volume_sum = 0;
+  for (size_t i = 0; i < N; i++) {
+    volume_sum += cells[i].GetVolume().sum();
+  }
+  assert(std::abs(volume_sum - N * Vc::double_v::Size * 3) < 1e-3);
 }

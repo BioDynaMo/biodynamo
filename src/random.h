@@ -1,18 +1,20 @@
-#ifndef RANDOM_H_
+﻿#ifndef RANDOM_H_
 #define RANDOM_H_
 
 #include <array>
 #include <cstdio>
 
+#include <shared_export.h>
+
 namespace bdm {
 
 /// C++ implementation of the Java default random number generator
 /// (java.util.Random)
-class Random {
+class SHARED_EXPORT Random {
  public:
-  Random(){};
+  Random() {}
 
-  void setSeed(long seed);
+  void setSeed(int64_t seed);
 
   int nextInt();
 
@@ -36,7 +38,7 @@ class Random {
   }
 
  private:
-  long seed_ = 0;
+  int64_t seed_ = 0;
   double next_next_gaussian_ = 0.0;
   bool have_next_next_gaussian_ = false;
 
@@ -44,7 +46,7 @@ class Random {
 
   double nextGaussian();
 
-  bool compareAndSet(long& current, long expected, long update);
+  bool compareAndSet(int64_t* current, int64_t expected, int64_t update);
 };
 
 }  // namespace bdm

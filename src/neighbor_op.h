@@ -1,4 +1,4 @@
-#ifndef NEIGHBOR_OP_H_
+﻿#ifndef NEIGHBOR_OP_H_
 #define NEIGHBOR_OP_H_
 
 #include <iostream>
@@ -82,13 +82,13 @@ class NeighborOp {
     my_kd_tree_t index(3, nf_cells, KDTreeSingleIndexAdaptorParams(10));
     index.buildIndex();
 
-    std::vector<std::array<bdm::array<int, 8>, VcBackend::kVecLen> > neighbors(
-        cells->vectors());
+    std::vector<std::array<InlineVector<int, 8>, VcBackend::kVecLen> >
+        neighbors(cells->vectors());
 
 // calc neighbors
 // std::cout << "number of elements " << cells->elements() << std::endl;
 #pragma omp parallel for
-    for (size_t i = 0; i < cells->elements(); i++) {
+    for (int i = 0; i < cells->elements(); i++) {
       const auto vector_idx = i / VcBackend::kVecLen;
       const auto scalar_idx = i % VcBackend::kVecLen;
 
@@ -112,20 +112,19 @@ class NeighborOp {
           index.radiusSearch(&query_pt[0], search_radius, ret_matches, params);
 
       // transform result (change data structure - remove self from list)
-      bdm::array<int, 8> i_neighbors;
-      i_neighbors.SetSize(n_matches - 1);
-      size_t counter = 0;
+      InlineVector<int, 8> i_neighbors;
+      i_neighbors.reserve(n_matches - 1);
       for (size_t j = 0; j < n_matches; j++) {
         if (ret_matches[j].first != i) {
-          i_neighbors[counter++] = ret_matches[j].first;
+          i_neighbors.push_back(ret_matches[j].first);
         }
       }
       neighbors[vector_idx][scalar_idx] = std::move(i_neighbors);
     }
 
-    // update neighbors
+// update neighbors
 #pragma omp parallel for
-    for (size_t i = 0; i < cells->vectors(); i++) {
+    for (int i = 0; i < cells->vectors(); i++) {
       (*cells)[i].SetNeighbors(neighbors[i]);
     }
   }

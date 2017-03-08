@@ -1,4 +1,4 @@
-#ifndef DIVIDING_CELL_OP_H_
+﻿#ifndef DIVIDING_CELL_OP_H_
 #define DIVIDING_CELL_OP_H_
 
 #include "backend.h"
@@ -18,7 +18,7 @@ class DividingCellOp {
   Vc_ALWAYS_INLINE void Compute(daosoa* cells) const {
     const size_t n_vectors = cells->vectors();
 #pragma omp parallel for
-    for (size_t i = 0; i < n_vectors; i++) {
+    for (int i = 0; i < n_vectors; i++) {
       // if diameter <= 20 then changeVolume(300) else do nothing
       auto ifresult = (*cells)[i].GetDiameter() <= 40;
       VcBackend::real_v dv(300);

@@ -2,6 +2,7 @@
 #include "backend.h"
 #include "cell.h"
 #include "daosoa.h"
+#include "inline_vector.h"
 
 namespace bdm {
 
@@ -114,12 +115,11 @@ TEST(daosoaTest, Gather) {
   }
 
   aosoa<Object> gathered;
-  bdm::array<int, 8> indexes;
-  indexes[0] = 5;
-  indexes[1] = 3;
-  indexes[2] = 9;
-  indexes[3] = 2;
-  indexes.SetSize(4);
+  InlineVector<int, 8> indexes;
+  indexes.push_back(5);
+  indexes.push_back(3);
+  indexes.push_back(9);
+  indexes.push_back(2);
   objects.Gather(indexes, &gathered);
   // check if it returns the correct objects
   size_t target_n_vectors =

@@ -1,7 +1,12 @@
 ﻿cmake_minimum_required(VERSION 3.2.0)
 
 # With CMAKE >= 3.2 external projects support byproducts, this is needed
-# to support Ninja as generator
+# to support Ninja as generators
+set(CMAKE_USER_MAKE_RULES_OVERRIDE
+   ${CMAKE_CURRENT_SOURCE_DIR}/c_flag_overrides.cmake)
+set(CMAKE_USER_MAKE_RULES_OVERRIDE_CXX
+   ${CMAKE_CURRENT_SOURCE_DIR}/cxx_flag_overrides.cmake)
+
 
 project(BioDynaMo)
 
@@ -9,7 +14,12 @@ project(BioDynaMo)
 
 # Options. Turn on with 'cmake -Dmyvarname=ON'.
 option(test "Build all tests." ON) # Makes boolean 'test' available.
-option(valgrind "Enable valgrind tests and make build compatible with valgrind tool." ON)
+if(APPLE)
+   # valgrind currently broken on macOS 10.12
+   option(valgrind "Enable valgrind tests and make build compatible with valgrind tool." OFF)
+else()
+   option(valgrind "Enable valgrind tests and make build compatible with valgrind tool." ON)
+endif()
 option(coverage "Enable test coverage report generation." OFF)
 
 #--------------------- find packages -------------
@@ -31,9 +41,9 @@ include(cmake/doxygen.cmake)
 include(CheckCXXCompilerFlag)
 check_cxx_compiler_flag("-std=c++11" COMPILER_SUPPORTS_CXX11)
 if(COMPILER_SUPPORTS_CXX11)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+#  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 elseif(COMPILER_SUPPORTS_CXX0X)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+#  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
 else()
   message(STATUS "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler.")
 endif()
@@ -49,21 +59,26 @@ if (coverage)
   endif()
 else()
   if (WIN32)
-    set(GCC_COMPILE_FLAGS "-Wall /openmp")
+    set(GCC_COMPILE_FLAGS "/MTd")
   else()
     set(GCC_COMPILE_FLAGS "-Wall -Wno-missing-braces -fopenmp -ldl")
   endif()
 endif()
-set(GCC_LINK_FLAGS    "")
+set(GCC_LINK_FLAGS "")
 # append
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${GCC_COMPILE_FLAGS}")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GCC_COMPILE_FLAGS}")
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${GCC_LINK_FLAGS}")
+# append OpenMP flags
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 # special clang flag
 if(${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
   # silence unsupported -pthread argument at link time
   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Qunused-arguments")
   SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Qunused-arguments")
+  # silence clang 3.9 warning
+  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-undefined-var-template")
 endif()
 
 #--------------------- set rpath options -------------
@@ -82,7 +97,8 @@ endif()
 
 #--------------------- setup Vc ----------------
 # setup Vc
-ExternalProject_Add(
+if (WIN32)
+  ExternalProject_Add(
     Vc
     URL "${CMAKE_SOURCE_DIR}/third_party/Vc-master_2bfce51.zip"
     PREFIX "${CMAKE_CURRENT_BINARY_DIR}/Vc"
@@ -91,17 +107,40 @@ ExternalProject_Add(
     -DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}
     -DCMAKE_C_COMPILER:FILEPATH=${CMAKE_C_COMPILER}
     INSTALL_COMMAND "" # Disable install step
-)
+    # Ugly but necessary, in future versions one can use ${binary_dir}
+    # in BUILD_BYPRODUCTS
+    BUILD_BYPRODUCTS "${CMAKE_CURRENT_BINARY_DIR}/Vc/src/Vc-build/Debug/Vc.lib"
+  )
+else()
+  ExternalProject_Add(
+    Vc
+    URL "${CMAKE_SOURCE_DIR}/third_party/Vc-master_2bfce51.zip"
+    PREFIX "${CMAKE_CURRENT_BINARY_DIR}/Vc"
+    CMAKE_ARGS "-DBUILD_TESTING=off"
+    CMAKE_CACHE_ARGS
+    -DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}
+    -DCMAKE_C_COMPILER:FILEPATH=${CMAKE_C_COMPILER}
+    INSTALL_COMMAND "" # Disable install step
+    # Ugly but necessary, in future versions one can use ${binary_dir}
+    # in BUILD_BYPRODUCTS
+    BUILD_BYPRODUCTS "${binary_dir}/libVc.a"
+  )
+endif()
+
 set(Vc_INCLUDE_DIR "${CMAKE_CURRENT_BINARY_DIR}/Vc/src/Vc/include"
                    "${CMAKE_CURRENT_BINARY_DIR}/Vc/src/Vc/")
-set(Vc_LIBRARIES "${CMAKE_CURRENT_BINARY_DIR}/Vc/src/Vc-build/libVc.a")
+if (WIN32)
+  set(Vc_LIBRARIES "${CMAKE_CURRENT_BINARY_DIR}/Vc/src/Vc-build/Debug/Vc.lib")
+else()
+  set(Vc_LIBRARIES "${CMAKE_CURRENT_BINARY_DIR}/Vc/src/Vc-build/libVc.a")
+endif()
 
 #--------------------- build shared library libbiodynamo ----------------
 # add the headers into the project
 #include(${ROOT_USE_FILE})
 include_directories("${CMAKE_SOURCE_DIR}/src")
 include_directories("${CMAKE_SOURCE_DIR}/third_party")
-include_directories(${Vc_INCLUDE_DIR})
+include_directories("${Vc_INCLUDE_DIR}")
 # include_directories(${VTUNE_INCLUDE_DIR})
 
 #ROOT_GENERATE_DICTIONARY("${CMAKE_BINARY_DIR}/bdmDict"
@@ -111,10 +150,21 @@ include_directories(${Vc_INCLUDE_DIR})
 file(GLOB_RECURSE SOURCES "${CMAKE_SOURCE_DIR}/src/*.cc")
 file(GLOB_RECURSE HEADERS "${CMAKE_SOURCE_DIR}/src/*.h")
 #${CMAKE_BINARY_DIR}/bdmDict.cxx)
-add_library(biodynamo SHARED ${SOURCES} ${HEADERS})
+message(FOO "${CMAKE_CURRENT_BINARY_DIR}/shared_export.h")
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+add_library(biodynamo SHARED ${SOURCES} ${HEADERS})# "${CMAKE_CURRENT_BINARY_DIR}/shared_export.h")
 #target_link_libraries(biodynamo ${ROOT_LIBRARIES})
 target_link_libraries(biodynamo ${Vc_LIBRARIES})
 # target_link_libraries(biodynamo ${VTUNE_LIBRARIES})
+add_dependencies(biodynamo Vc)
+
+include (GenerateExportHeader)          
+GENERATE_EXPORT_HEADER(biodynamo 
+    BASE_NAME biodynamo
+    EXPORT_MACRO_NAME SHARED_EXPORT
+    EXPORT_FILE_NAME shared_export.h
+    STATIC_DEFINE SHARED_EXPORTS_BUILT_AS_STATIC)
+
 
 # add custom clean target for shared library
 add_custom_target(libbdmclean COMMAND ${CMAKE_COMMAND} -P "${CMAKE_BINARY_DIR}/CMakeFiles/biodynamo.dir/cmake_clean.cmake")
@@ -128,29 +178,51 @@ if (test)
   enable_testing()
 
   # setup google test
-  ExternalProject_Add(
-    gtest
-    URL "${CMAKE_SOURCE_DIR}/third_party/gtest-1.7.0.zip"
-    PREFIX "${CMAKE_CURRENT_BINARY_DIR}/gtest"
-    CMAKE_CACHE_ARGS
-      -DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}
-      -DCMAKE_C_COMPILER:FILEPATH=${CMAKE_C_COMPILER}
-    INSTALL_COMMAND "" # Disable install step
-    # Ugly but necessary, in future versions one can use ${binary_dir}
-    # in BUILD_BYPRODUCTS
-    #BUILD_BYPRODUCTS "${binary_dir}/libgtest.a"
-    BUILD_BYPRODUCTS "${CMAKE_BINARY_DIR}/gtest/src/gtest-build/libgtest.a"
-  )
+  if (WIN32)
+    message("compiler flags " ${CMAKE_CXX_FLAGS} )
+    ExternalProject_Add(
+      gtest
+      URL "${CMAKE_SOURCE_DIR}/third_party/gtest-1.7.0.zip"
+      PREFIX "${CMAKE_CURRENT_BINARY_DIR}/gtest"
+      CMAKE_CACHE_ARGS
+        -DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}
+        -DCMAKE_C_COMPILER:FILEPATH=${CMAKE_C_COMPILER}
+        #-DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
+      INSTALL_COMMAND "" # Disable install step
+      # Ugly but necessary, in future versions one can use ${binary_dir}
+      # in BUILD_BYPRODUCTS
+      BUILD_BYPRODUCTS "${CMAKE_BINARY_DIR}/gtest/src/gtest-build/Debug/gtest.lib"
+    )
+  else()
+    ExternalProject_Add(
+      gtest
+      URL "${CMAKE_SOURCE_DIR}/third_party/gtest-1.7.0.zip"
+      PREFIX "${CMAKE_CURRENT_BINARY_DIR}/gtest"
+      CMAKE_CACHE_ARGS
+        -DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}
+        -DCMAKE_C_COMPILER:FILEPATH=${CMAKE_C_COMPILER}
+      INSTALL_COMMAND "" # Disable install step
+      # Ugly but necessary, in future versions one can use ${binary_dir}
+      # in BUILD_BYPRODUCTS
+      BUILD_BYPRODUCTS "${binary_dir}/libgtest.a"
+    )
+  endif()
   ExternalProject_Get_Property(gtest source_dir binary_dir)
 
   # Create a libgtest target to be used as a dependency by test program
   add_library(libgtest IMPORTED STATIC GLOBAL)
   add_dependencies(libgtest gtest)
-  set_target_properties(libgtest PROPERTIES
-      IMPORTED_LOCATION "${binary_dir}/libgtest.a"
-      IMPORTED_LINK_INTERFACE_LIBRARIES "${CMAKE_THREAD_LIBS_INIT}"
-  )
-
+  if (WIN32)
+    set_target_properties(libgtest PROPERTIES
+        IMPORTED_LOCATION "${binary_dir}/Debug/gtest.lib"
+        IMPORTED_LINK_INTERFACE_LIBRARIES "${CMAKE_THREAD_LIBS_INIT}"
+    )
+  else()
+    set_target_properties(libgtest PROPERTIES
+        IMPORTED_LOCATION "${binary_dir}/libgtest.a"
+        IMPORTED_LINK_INTERFACE_LIBRARIES "${CMAKE_THREAD_LIBS_INIT}"
+    )
+  endif()
   # add include directories for gtest
   include_directories("${CMAKE_BINARY_DIR}/gtest/src/gtest/include")
 
@@ -163,13 +235,23 @@ if (test)
 
   # execute all tests with command: make test
   add_test(NAME ${TEST_TARGET} COMMAND ${TEST_TARGET})
+  if (APPLE)
+    set_tests_properties(${TEST_TARGET} PROPERTIES ENVIRONMENT
+        "DYLD_LIBRARY_PATH=$ENV{DYLD_LIBRARY_PATH}"
+    )
+  endif()
   # add valgrind test
   if (valgrind)
     add_test(NAME valgrind COMMAND valgrind --tool=memcheck --leak-check=full --show-leak-kinds=all --show-reachable=no --suppressions=${CMAKE_BINARY_DIR}/../valgrind-biod.supp --error-exitcode=1 ./${TEST_TARGET})
+    if (APPLE)
+      set_tests_properties(valgrind PROPERTIES ENVIRONMENT
+        "DYLD_LIBRARY_PATH=$ENV{DYLD_LIBRARY_PATH}"
+      )
+    endif()
   endif()
 
   # create target that shows the test ouput on failure
-  add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND}  --force-new-ctest-process --output-on-failure)
+  add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} --force-new-ctest-process --output-on-failure)
 
   # add custom clean target for test project
   add_custom_target(testbdmclean COMMAND ${CMAKE_COMMAND} -P "${CMAKE_BINARY_DIR}/CMakeFiles/${TEST_TARGET}.dir/cmake_clean.cmake")
@@ -183,8 +265,8 @@ if (test)
 endif()
 
 # --------------------- build division module simulation executable ---------------------
-set(SIMULATION_TARGET bdmp)
-add_executable(${SIMULATION_TARGET} ${CMAKE_SOURCE_DIR}/src/main.cc)
+set(SIMULATION_TARGET cell_growth)
+add_executable(${SIMULATION_TARGET} ${CMAKE_SOURCE_DIR}/demo/cell_growth.cc)
 target_link_libraries(${SIMULATION_TARGET} biodynamo)
 
 # --------------------- build backend_arch demo
@@ -192,3 +274,16 @@ set(BACKEND_ARCH backend_arch)
 add_executable(${BACKEND_ARCH} ${CMAKE_SOURCE_DIR}/demo/backend_arch.cc)
 target_link_libraries(${BACKEND_ARCH} biodynamo)
 # target_link_libraries(${BACKEND_ARCH} ${VTUNE_LIBRARIES})
+add_dependencies(${BACKEND_ARCH} Vc)
+
+# --------------------- build benchmark soa_vs_aosoa
+set(SOA_VS_AOSOA soa_vs_aosoa)
+add_executable(${SOA_VS_AOSOA} ${CMAKE_SOURCE_DIR}/benchmark/soa_vs_aosoa.cc)
+
+set(SOA_VS_AOSOA soa_vs_aosoa_rw)
+add_executable(${SOA_VS_AOSOA} ${CMAKE_SOURCE_DIR}/benchmark/soa_vs_aosoa.cc)
+target_compile_options(${SOA_VS_AOSOA} BEFORE PRIVATE "-DMODE=ReadWrite")
+
+set(SOA_VS_AOSOA soa_vs_aosoa_rwa)
+add_executable(${SOA_VS_AOSOA} ${CMAKE_SOURCE_DIR}/benchmark/soa_vs_aosoa.cc)
+target_compile_options(${SOA_VS_AOSOA} BEFORE PRIVATE "-DMODE=ReadWriteAlternating")

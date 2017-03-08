@@ -1,5 +1,5 @@
-#ifndef DISPLACEMENT_OP_
-#define DISPLACEMENT_OP_
+﻿#ifndef DISPLACEMENT_OP_H_
+#define DISPLACEMENT_OP_H_
 
 #include <cmath>
 #include "backend.h"
@@ -26,7 +26,7 @@ class DisplacementOp {
   void Compute(daosoa* cells) const {
     const size_t n_vectors = cells->vectors();
 #pragma omp parallel for
-    for (size_t i = 0; i < n_vectors; i++) {
+    for (int i = 0; i < n_vectors; i++) {
       auto& cell = (*cells)[i];
       // Basically, the idea is to make the sum of all the forces acting
       // on the Point mass. It is stored in translationForceOnPointMass.
@@ -206,4 +206,4 @@ class DisplacementOp {
 
 }  // namespace bdm
 
-#endif  // DISPLACEMENT_OP_
+#endif  // DISPLACEMENT_OP_H_

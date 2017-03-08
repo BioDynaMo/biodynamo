@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include "cell.h"
+#include "inline_vector.h"
 #include "neighbor_op.h"
 #include "test_util.h"
 
@@ -22,22 +23,21 @@ TEST(NeighborOpTest, Compute) {
   // check results
   // cell 1
   auto& neighbors_1 = cells[0].GetNeighbors();
-  bdm::array<int, 8> expected;
-  expected[0] = 1;
-  expected.SetSize(1);
-  EXPECT_EQ(expected, neighbors_1[0]);
+  InlineVector<int, 8> expected_1;
+  expected_1.push_back(1);
+  EXPECT_TRUE(expected_1 == neighbors_1[0]);
   // cell 2
-  expected[0] = 0;
-  expected[1] = 2;
-  expected.SetSize(2);
-  EXPECT_EQ(expected, neighbors_1[1]);
+  InlineVector<int, 8> expected_2;
+  expected_2.push_back(0);
+  expected_2.push_back(2);
+  EXPECT_EQ(expected_2, neighbors_1[1]);
   // cell 3
-  expected[0] = 1;
-  expected.SetSize(1);
+  InlineVector<int, 8> expected_3;
+  expected_3.push_back(1);
   if (VcBackend::kVecLen > 2) {
-    EXPECT_EQ(expected, neighbors_1[2]);
+    EXPECT_EQ(expected_3, neighbors_1[2]);
   } else {
-    EXPECT_EQ(expected, cells[1].GetNeighbors()[0]);
+    EXPECT_EQ(expected_3, cells[1].GetNeighbors()[0]);
   }
 }
 

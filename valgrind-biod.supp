@@ -16,10 +16,58 @@
    fun:allocate_dtv
    fun:_dl_allocate_tls
    fun:allocate_stack
-   fun:pthread_create@@GLIBC_2.2.5
+   fun:pthread_create@@GLIBC_*
    obj:*/libgomp.so*
    #fun:GOMP_parallel
 }
+
+{
+   ignore_openmp_possible_lost_warning_icc
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:calloc
+   fun:allocate_dtv
+   fun:_dl_allocate_tls
+   fun:allocate_stack
+   fun:pthread_create@@GLIBC_*
+   fun:*
+   fun:__kmp_allocate_thread
+   fun:__kmp_allocate_team
+   fun:__kmp_fork_call
+   fun:__kmpc_fork_call
+}
+
+{
+   ignore_openmp_initialization_warnings_icc
+   Memcheck:Cond
+   fun:__intel_sse2_*
+   fun:__kmp_query_cpuid
+   fun:__kmp_runtime_initialize
+   fun:_Z26__kmp_do_serial_initializev
+   fun:__kmp_get_global_thread_id_reg
+}
+
+{
+   ignore_openmp_initialization_warnings_icc_2
+   Memcheck:Param
+   sched_setaffinity(mask)
+   fun:syscall
+   fun:__kmp_affinity_determine_capable
+   fun:_Z20__kmp_env_initializePKc
+   fun:_Z26__kmp_do_serial_initializev
+   fun:__kmp_get_global_thread_id_reg
+}
+
+######### Suppress ICC false positives
+{
+   gtest_uninitialized_value_icc
+   Memcheck:Cond
+   fun:_ZN7testing8internal12UnitTestImpl11FilterTestsENS1_18ReactionToShardingE
+   fun:_ZN7testing8internal12UnitTestImpl11RunAllTestsEv
+   fun:_ZN7testing8UnitTest3RunEv
+   fun:main
+}
+
 
 ######### Suppress ROOT issues, they are checked by the ROOT team
 {

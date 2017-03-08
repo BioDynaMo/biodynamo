@@ -12,9 +12,9 @@ class TimingAggregator {
   TimingAggregator() {}
   ~TimingAggregator() {}
 
-  void AddEntry(const std::string& key, long value) {
+  void AddEntry(const std::string& key, int64_t value) {
     if (!timings_.count(key)) {
-      std::vector<long> data;
+      std::vector<int64_t> data;
       data.push_back(value);
       timings_[key] = data;
     } else {
@@ -25,7 +25,7 @@ class TimingAggregator {
   void AddDescription(const std::string text) { descriptions_.push_back(text); }
 
  private:
-  std::map<std::string, std::vector<long>> timings_;
+  std::map<std::string, std::vector<int64_t>> timings_;
   std::vector<std::string> descriptions_;
 
   friend std::ostream& operator<<(std::ostream& os, const TimingAggregator& p);
@@ -34,7 +34,7 @@ class TimingAggregator {
 std::ostream& operator<<(std::ostream& os, const TimingAggregator& ta) {
   if (ta.timings_.size() != 0) {
     std::vector<std::string> keys(ta.timings_.size());
-    std::vector<std::vector<long>> values(ta.timings_.size());
+    std::vector<std::vector<int64_t>> values(ta.timings_.size());
     size_t counter = 0;
     for (auto& timing : ta.timings_) {
       keys[counter] = timing.first;
