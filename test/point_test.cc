@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include <stdlib.h>
 
-#include "spatial/Point.h"
+#include "spatial/point.h"
 
 namespace bdm {
 

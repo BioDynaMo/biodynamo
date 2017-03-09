@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "spatial/Bound.h"
+#include "spatial/bound.h"
 
 namespace bdm {
 
