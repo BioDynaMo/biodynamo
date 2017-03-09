@@ -3,7 +3,7 @@
 
 #include <utility>
 #include <vector>
-#include "spatial/Bound.h"
+#include "spatial/bound.h"
 
 namespace bdm {
 using std::vector;

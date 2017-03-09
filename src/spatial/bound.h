@@ -3,7 +3,7 @@
 
 #include <cmath>
 #include <utility>
-#include "Point.h"
+#include "point.h"
 
 namespace bdm {
 using std::pair;
