@@ -9,6 +9,13 @@ struct is_std_array {
   static const bool value = false;
 };
 
+// exclude type aliases of std::array
+// define that type alias VcBackend::SimdArray is not std::array
+template <typename T>
+struct is_std_array<VcBackend::SimdArray<T>> {
+  static const bool value = false;
+};
+
 template <typename T, std::size_t N>
 struct is_std_array<std::array<T, N>> {
   static const bool value = true;
@@ -178,9 +185,9 @@ class NeuronExt : public Base {
 
     } else {
       // data_member[size_][size_last_vector_] = other.data_member[0][0];
-      neurites_[Base::size_- 1][Base::size_last_vector_] = other.neurites_[0][0];
+      // neurites_[Base::size_- 1][Base::size_last_vector_] = other.neurites_[0][0];
       // FIXME SimdArray is std::array -> wrong CopyUtil version gets chosen
-      // CopyUtil(&neurites_, Base::size_ - 1, Base::size_last_vector_, other.neurites_, 0, 0);
+      CopyUtil(&neurites_, Base::size_ - 1, Base::size_last_vector_, other.neurites_, 0, 0);
     }
     Base::push_back(other);
   }
@@ -200,7 +207,8 @@ class NeuronExt : public Base {
               BdmSimObjectVectorBackend* destination) const override {
     Self<VcBackend>* dest = static_cast<Self<VcBackend>*>(destination);
 
-    dest->neurites_[0][dest_idx] = neurites_[src_v_idx][src_idx];
+    // dest->neurites_[0][dest_idx] = neurites_[src_v_idx][src_idx];
+    CopyUtil(&dest->neurites_, 0, dest_idx, neurites_, src_v_idx, src_idx);
 
     Base::CopyTo(src_v_idx, src_idx,
                  dest_v_idx,
@@ -442,7 +450,7 @@ TEST(SimulationObjectUtilTest, SoaBackend_Gather) {
       EXPECT_EQ(indexes[counter], gathered[i].GetPosition()[0][j]);
       EXPECT_EQ(indexes[counter], gathered[i].GetPosition()[1][j]);
       EXPECT_EQ(indexes[counter], gathered[i].GetPosition()[2][j]);
-      EXPECT_EQ(indexes[counter], gathered[i].GetNeurites()[j][0].id_);
+      EXPECT_EQ((unsigned) indexes[counter], gathered[i].GetNeurites()[j][0].id_);
       counter++;
     }
   }
@@ -451,8 +459,8 @@ TEST(SimulationObjectUtilTest, SoaBackend_Gather) {
 TEST(SimulationObjectUtilTest, VectorBackend_push_backScalar) {
   Neuron<VcBackend> neurons; // stores one vector neuron with default values
   EXPECT_EQ(4u, neurons.size());  // replace with VcBackend::kVecLen
-  // EXPECT_EQ(1u, neurons.vectors());
-  // EXPECT_EQ(4u, neurons.elements());  // FIXME replace 4 with VcBackend::kVecLen
+  EXPECT_EQ(1u, neurons.vectors());
+  EXPECT_EQ(4u, neurons.elements());  // FIXME replace 4 with VcBackend::kVecLen
 
   // simulate that the vector only holds one scalar - remaining slots are free
   neurons.SetSize(1);
@@ -465,9 +473,9 @@ TEST(SimulationObjectUtilTest, VectorBackend_push_backScalar) {
   single_neuron.SetDiameter({1.2345});
 
   neurons.push_back(single_neuron);
-  // EXPECT_EQ(1u, neurons.size());
-  // EXPECT_EQ(1u, neurons.vectors());
-  // EXPECT_EQ(2u, neurons.elements());
+  EXPECT_EQ(2u, neurons.size());
+  EXPECT_EQ(1u, neurons.vectors());
+  EXPECT_EQ(2u, neurons.elements());
 
   // check if scalar data members have been copied correctly
   EXPECT_EQ(1.2345, neurons.GetDiameter()[1]);

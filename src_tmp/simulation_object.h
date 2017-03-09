@@ -51,6 +51,8 @@ public:
     return size_;
   }
 
+  std::size_t vectors() const { return 1; }
+
   bool is_full() const {
     return size_ == Backend::kVecLen;
   }
