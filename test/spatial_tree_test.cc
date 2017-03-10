@@ -1,9 +1,10 @@
-#include <random>
 #include <gtest/gtest.h>
+#include <stdlib.h>
+#include <random>
 
-#include "spatial/spatial_tree.h"
 #include "spatial/kd_tree.h"
 #include "spatial/octree.h"
+#include "spatial/spatial_tree.h"
 
 namespace bdm {
 
@@ -74,11 +75,28 @@ bool IsEqual(std::vector<std::pair<int, int>> a,
   if (a.size() != b.size()) {
     return false;
   }
-  std::sort(a.begin(), a.end(), std::greater<std::pair<int, int>>());
-  std::sort(b.begin(), b.end(), std::greater<std::pair<int, int>>());
+  std::vector<std::pair<int, int>> a_copy, b_copy;
+
+  for (int i = 0; i < a.size(); i++) {
+    if (a[i].first > a[i].second) {
+      a_copy.push_back(a[i]);
+    } else {
+      a_copy.push_back(make_pair(a[i].second, a[i].first));
+    }
+    if (b[i].first > b[i].second) {
+      b_copy.push_back(b[i]);
+    } else {
+      b_copy.push_back(make_pair(b[i].second, b[i].first));
+    }
+  }
+
+  auto comparator = std::greater<std::pair<int, int>>();
+  std::sort(a_copy.begin(), a_copy.end(), comparator);
+  std::sort(b_copy.begin(), b_copy.end(), comparator);
 
   for (unsigned int i = 0; i < a.size(); i++) {
-    if (a[i].first != b[i].first || a[i].second != b[i].second) {
+    if (a_copy[i].first != b_copy[i].first ||
+        a_copy[i].second != b_copy[i].second) {
       return false;
     }
   }
@@ -92,8 +110,7 @@ bool SearchTest(SpatialTreeNode<int> *tree, int amount) {
   simple_rand.seed(42);
 
   for (int i = 0; i < amount; i++) {
-    possitions[i] = Point(gap * i, simple_rand() / simple_rand.max(),
-                          simple_rand() / simple_rand.max());
+    possitions[i] = Point(gap * i, rand() / RAND_MAX, rand() / RAND_MAX);
   }
 
   for (int i = 0; i < amount; i++) {
@@ -107,15 +124,7 @@ bool SearchTest(SpatialTreeNode<int> *tree, int amount) {
     std::vector<std::pair<int, int>> tree_search =
         tree->GetNeighbors(search_radious);
 
-    std::sort(manual_result.begin(), manual_result.end());
-    std::sort(tree_search.begin(), tree_search.end());
-
-    if (manual_result.size() != tree_search.size()) {
-      delete[] possitions;
-      return false;
-    }
-
-    if (!std::equal(manual_result.begin(), manual_result.end(), tree_search.begin())) {
+    if (!IsEqual(manual_result, tree_search)) {
       delete[] possitions;
       return false;
     }
@@ -156,14 +165,14 @@ TEST(SpatialTreeTest, KdTreeSizeTest) {
 TEST(SpatialTreeTest, OctreeSearchTest) {
   SpatialTreeNode<int> *tree =
       new OctreeNode<int>(Bound(0.0, 0.0, 0.0, 1.0, 1.0, 1.0), 100, 100);
-  SearchTest(tree, 100);
+  ASSERT_TRUE(SearchTest(tree, 1000));
   delete tree;
 }
 
 TEST(SpatialTreeTest, KdTreeSearchTest) {
   SpatialTreeNode<int> *tree =
       new KdTreeNode<int>(Bound(0.0, 0.0, 0.0, 1.0, 1.0, 1.0), 100, 100);
-  SearchTest(tree, 100);
+  ASSERT_TRUE(SearchTest(tree, 1000));
   delete tree;
 }
 
