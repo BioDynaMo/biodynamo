@@ -41,7 +41,7 @@
   EVAL(LOOP(BDM_CLASS_HEADER_CPY_CTOR_INIT_ITERATOR, __VA_ARGS__))
 
 #define BDM_CLASS_HEADER_CPY_CTOR_INIT_ITERATOR(data_member) \
-  data_member(other.data_member),
+  data_member(other->data_member),
 
 #define BDM_CLASS_HEADER_CLEAR_BODY(...) \
   EVAL(LOOP(BDM_CLASS_HEADER_CLEAR_BODY_ITERATOR, __VA_ARGS__))
@@ -59,6 +59,36 @@
 
 #define BDM_CLASS_HEADER_ASSIGNMENT_OP_BODY_ITERATOR(data_member) \
   data_member = other.data_member;
+
+#define BDM_CLASS_HEADER_SOA_PUSH_BACK_OP_IF_BODY(...) \
+  EVAL(LOOP(BDM_CLASS_HEADER_SOA_PUSH_BACK_OP_IF_BODY_ITERATOR, __VA_ARGS__))
+
+#define BDM_CLASS_HEADER_SOA_PUSH_BACK_OP_IF_BODY_ITERATOR(data_member) \
+  {                                                                     \
+    typename decltype(data_member)::value_type tmp;                     \
+    Base::CopyUtil(&tmp, 0, other.data_member, 0, 0);                   \
+    data_member.push_back(tmp);                                         \
+  }
+
+#define BDM_CLASS_HEADER_SOA_PUSH_BACK_OP_ELSE_BODY(...) \
+  EVAL(LOOP(BDM_CLASS_HEADER_SOA_PUSH_BACK_OP_ELSE_BODY_ITERATOR, __VA_ARGS__))
+
+#define BDM_CLASS_HEADER_SOA_PUSH_BACK_OP_ELSE_BODY_ITERATOR(data_member) \
+  Base::CopyUtil(&data_member, Base::size_ - 1, Base::size_last_vector_,  \
+                 other.data_member, 0, 0);
+
+#define BDM_CLASS_HEADER_VECTOR_PUSH_BACK_OP_BODY(...) \
+  EVAL(LOOP(BDM_CLASS_HEADER_VECTOR_PUSH_BACK_OP_BODY_ITERATOR, __VA_ARGS__))
+
+#define BDM_CLASS_HEADER_VECTOR_PUSH_BACK_OP_BODY_ITERATOR(data_member) \
+  Base::CopyUtil(&data_member, 0, Base::size_, other.data_member, 0, 0);
+
+#define BDM_CLASS_HEADER_COPYTO_OP_BODY(...) \
+  EVAL(LOOP(BDM_CLASS_HEADER_COPYTO_OP_BODY_ITERATOR, __VA_ARGS__))
+
+#define BDM_CLASS_HEADER_COPYTO_OP_BODY_ITERATOR(data_member)             \
+  Base::CopyUtil(&dest->data_member, 0, dest_idx, data_member, src_v_idx, \
+                 src_idx);
 
 /// Macro to insert required boilerplate code into class
 /// @param: class_name: class name witout template specifier e.g.
@@ -143,7 +173,7 @@
   /* template parameter required for enable_if - otherwise compile error */    \
   template <typename T = Backend>                                              \
   class_name(                                                                  \
-      Self<VcSoaBackend>& other,                                               \
+      Self<VcSoaBackend>* other,                                               \
       typename enable_if<is_same<T, VcSoaRefBackend>::value>::type* = 0)       \
       : Base(other),                                                           \
         REMOVE_TRAILING_COMMAS(BDM_CLASS_HEADER_CPY_CTOR_INIT(__VA_ARGS__)) {} \
@@ -153,7 +183,7 @@
   /* needed because operator[] is not thread safe - index is shared among  */  \
   /* all threads */                                                            \
   Vc_ALWAYS_INLINE Self<VcSoaRefBackend> GetSoaRef() {                         \
-    return Self<VcSoaRefBackend>(*this);                                       \
+    return Self<VcSoaRefBackend>(this);                                        \
   }                                                                            \
                                                                                \
   /* only compiled if Backend == Soa(Ref)Backend */                            \
@@ -165,7 +195,6 @@
     Base::push_back(other);                                                    \
     BDM_CLASS_HEADER_PUSH_BACK_BODY(__VA_ARGS__);                              \
   }                                                                            \
-                                                                               \
                                                                                \
   /* only compiled if Backend == Soa(Ref)Backend */                            \
   /* template parameter required for enable_if - otherwise compile error */    \
@@ -220,6 +249,37 @@
     BDM_CLASS_HEADER_RESERVE_BODY(new_capacity, __VA_ARGS__)                   \
   }                                                                            \
                                                                                \
+  /* only compiled if Backend == Soa(Ref)Backend */                            \
+  /* template parameter required for enable_if - otherwise compile error */    \
+  template <typename T = Backend>                                              \
+  typename enable_if<is_same<T, VcSoaRefBackend>::value ||                     \
+                     is_same<T, VcSoaBackend>::value>::type                    \
+  push_back(const Self<ScalarBackend>& other) {                                \
+    if (Base::elements() == 0 || Base::is_full()) {                            \
+      BDM_CLASS_HEADER_SOA_PUSH_BACK_OP_IF_BODY(__VA_ARGS__);                  \
+    } else {                                                                   \
+      BDM_CLASS_HEADER_SOA_PUSH_BACK_OP_ELSE_BODY(__VA_ARGS__);                \
+    }                                                                          \
+    Base::push_back(other);                                                    \
+  }                                                                            \
+                                                                               \
+  /* only compiled if Backend == VcBackend */                                  \
+  /* template parameter required for enable_if - otherwise compile error */    \
+  template <typename T = Backend>                                              \
+  typename enable_if<is_same<T, VcBackend>::value>::type push_back(            \
+      const Self<ScalarBackend>& other) {                                      \
+    BDM_CLASS_HEADER_VECTOR_PUSH_BACK_OP_BODY(__VA_ARGS__);                    \
+    Base::push_back(other);                                                    \
+  }                                                                            \
+                                                                               \
+  void CopyTo(std::size_t src_v_idx, std::size_t src_idx,                      \
+              std::size_t dest_v_idx, std::size_t dest_idx,                    \
+              BdmSimObjectVectorBackend* destination) const override {         \
+    Self<VcBackend>* dest = static_cast<Self<VcBackend>*>(destination);        \
+    BDM_CLASS_HEADER_COPYTO_OP_BODY(__VA_ARGS__);                              \
+    Base::CopyTo(src_v_idx, src_idx, dest_v_idx, dest_idx, destination);       \
+  }                                                                            \
+                                                                               \
  private:
 
-#endif // SIMULATION_OBJECT_UTIL_H_
+#endif  // SIMULATION_OBJECT_UTIL_H_

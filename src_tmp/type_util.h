@@ -1,6 +1,8 @@
 #ifndef TYPE_UTIL_H_
 #define TYPE_UTIL_H_
 
+#include "backend.h"
+
 namespace bdm {
 
 struct EmptyType {};
@@ -16,6 +18,25 @@ struct type_ternary_operator<true, T, U> {
 template <typename T, typename U>
 struct type_ternary_operator<false, T, U> {
   typedef U type;
+};
+
+// -----------------------------------------------------------------------------
+
+template <typename T>
+struct is_std_array {
+  static const bool value = false;
+};
+
+// exclude type aliases of std::array
+// define that type alias VcBackend::SimdArray is not std::array
+template <typename T>
+struct is_std_array<VcBackend::SimdArray<T>> {
+  static const bool value = false;
+};
+
+template <typename T, std::size_t N>
+struct is_std_array<std::array<T, N>> {
+  static const bool value = true;
 };
 
 }  // namespace bdm

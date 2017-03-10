@@ -12,20 +12,38 @@ namespace bdm {
 using std::ostream;
 
 /// Type for removed data members - which can be optimized out by the compiler
+template <typename T>
 struct Nulltype {
   int empty[0] = {};
+
   Nulltype() {}
-  template <typename T>
-  Nulltype(T&& d) {}  // NOLINT(runtime/explicit)
-  template <typename T>
-  Nulltype& operator=(const T& other) {
+
+  template <typename TT>
+  Nulltype(TT&& d) {}  // NOLINT(runtime/explicit)
+
+  template <typename TT>
+  Nulltype& operator=(const TT& other) {
     return *this;
   }
 
-  template <typename T>
+  /// required to mimic correct type if subscript operator is used on
+  /// Nulltype data_member. Must be the same as decltype(T[0])
+  /// SFINAE - if T doesnot have a subscript operator than this function is
+  /// removed from the candidate set
+  /// FIXME(lukas) invalidates robustness -> no compile errors if removed member
+  /// is accessed
+  template <typename TT = T>
+  decltype(std::declval<TT>()[0]) operator[](std::size_t idx) const {
+    return T()[0];
+  }
+
   Nulltype(std::initializer_list<T>) {}
 
-  friend ostream& operator<<(ostream& out, const Nulltype& value) {
+  /// required to accept initialization like `...) : position_{{0, 0, 0}}`
+  template <typename TT>
+  Nulltype(std::initializer_list<std::initializer_list<TT>>) {}
+
+  friend ostream& operator<<(ostream& out, const Nulltype<T>& value) {
     return out;
   }
 };
@@ -47,7 +65,7 @@ struct Nulltype {
 #define NEW_MEMBER_SELECTOR(name, ...)                      \
   template <typename Type, typename EnclosingClass, int id> \
   struct name {                                             \
-    typedef Nulltype type;                                  \
+    typedef Nulltype<Type> type;                            \
   };                                                        \
   EVAL(LOOP_3_1(INTERNAL_SELECT_MEMBER, name, __VA_ARGS__))
 
@@ -59,7 +77,7 @@ struct Nulltype {
 #define INTERNAL_MEMBER_REMOVER(name, clazz, member)        \
   template <typename Type>                                  \
   struct name<Type, clazz, clazz::kDataMemberUid##member> { \
-    typedef Nulltype type;                                  \
+    typedef Nulltype<Type> type;                            \
   };
 
 /// creates a new selector type

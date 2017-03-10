@@ -8,26 +8,14 @@
 #include <array>
 #include <iostream>
 #include <string>
-// #include <typeinfo>
-// #include <utility>
 #include <vector>
-// #include <stdexcept>
 
-// #include <Vc/Vc>
-//
-// #include "cpp_magic.h"
 #include "timing.h"
-
-// using std::ostream;
-// using std::enable_if;
-// using std::is_same;
-
 #include "multiform_object.h"
 #include "simulation_object.h"
 #include "simulation_object_util.h"
 
-//TODO remove
-using namespace bdm;
+namespace bdm {
 
 template <typename Base = BdmSimObject<>>
 class BaseCell : public Base {
@@ -77,7 +65,8 @@ class Neuron : public Base {
   }
 
  private:
-  BDM_PRIVATE_MEMBER(Container<SimdArray<std::vector<Neurite>>>, neurites_);
+  BDM_PRIVATE_MEMBER(Container<SimdArray<std::vector<Neurite>>>,
+                     neurites_) = {{}};
 };
 
 // define easy to use templated type alias
@@ -105,8 +94,7 @@ class NeuronExtension : public Base {
   void SetFoo(const real_v& foo) { foo_[idx_] = foo; }
 
  private:
-  BDM_PRIVATE_MEMBER(Container<real_v COMMA() Vc::Allocator<real_v>>,
-                     foo_) = {real_v(3.14)};
+  BDM_PRIVATE_MEMBER(Container<real_v>, foo_) = {real_v(3.14)};
 };
 
 // define easy to use templated type alias
@@ -200,9 +188,10 @@ void TestDifferentBackends() {
   std::cout << "soa[0] foo " << vc_soa_neuron[0].GetFoo() << std::endl;
 }
 
-int main() {
-  TestDataMemberSelectors();
-  TestDifferentBackends();
+}  // namespace bdm
 
+int main() {
+  bdm::TestDataMemberSelectors();
+  bdm::TestDifferentBackends();
   return 0;
 }

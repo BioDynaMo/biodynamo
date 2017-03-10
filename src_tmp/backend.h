@@ -6,16 +6,16 @@
 #include <utility>
 #include <vector>
 
-#include <Vc/Vc>
+#include "Vc/Vc"
 
 namespace bdm {
 
 template <typename T>
 class SoaRefWrapper {
  public:
-  SoaRefWrapper(T& data) : data_(data) {}
+  explicit SoaRefWrapper(T& data) : data_(data) {}
 
-  // TODO add all operators
+  // TODO(lukas) add all operators
 
   Vc_ALWAYS_INLINE typename T::value_type& operator[](std::size_t index) {
     return data_[index];
@@ -78,9 +78,11 @@ class OneElementArray {
  public:
   using value_type = T;
   OneElementArray() : data_() {}
-  OneElementArray(const T& data) : data_(data) {}
-  OneElementArray(T&& data) : data_(data) {}
+  explicit OneElementArray(const T& data) : data_(data) {}
+  explicit OneElementArray(T&& data) : data_(data) {}
   OneElementArray(std::initializer_list<T> list) : data_(*list.begin()) {}
+
+  std::size_t size() const { return 1; }
 
   Vc_ALWAYS_INLINE T& operator[](const size_t idx) { return data_; }
 
@@ -134,7 +136,6 @@ struct ScalarBackend {
   typedef const std::size_t index_t;
   typedef double real_t;
   static const size_t kVecLen = 1;
-  // TODO change to OneElementArray?
   typedef Vc::SimdArray<double, kVecLen> real_v;
   template <typename T>
   using SimdArray = OneElementArray<T>;
@@ -158,7 +159,7 @@ struct is_scalar {
 };
 
 template <template <typename> class Container>
-struct is_scalar<Container<ScalarBackend> > {
+struct is_scalar<Container<ScalarBackend>> {
   static const bool value = true;
 };
 

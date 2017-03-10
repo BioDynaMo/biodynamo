@@ -23,20 +23,16 @@ struct SelectAllMembers {
 };
 
 class BdmSimObjectScalarBackend {
-public:
+ public:
   virtual ~BdmSimObjectScalarBackend() {}
 
-  std::size_t size() const {
-    return 1;
-  }
+  std::size_t size() const { return 1; }
 
-  bool is_full() const {
-    return true;
-  }
+  bool is_full() const { return true; }
 };
 
 class BdmSimObjectVectorBackend {
-public:
+ public:
   using Backend = VcBackend;
 
   virtual ~BdmSimObjectVectorBackend() {}
@@ -47,48 +43,31 @@ public:
     return size_;
   }
 
-  std::size_t elements() const {
-    return size_;
-  }
+  std::size_t elements() const { return size_; }
 
   std::size_t vectors() const { return 1; }
 
-  bool is_full() const {
-    return size_ == Backend::kVecLen;
-  }
+  bool is_full() const { return size_ == Backend::kVecLen; }
 
-  void push_back(const BdmSimObjectScalarBackend& other) {
-    size_++;
-  }
+  void push_back(const BdmSimObjectScalarBackend& other) { size_++; }
 
-
-protected:
- std::size_t size_ = Backend::kVecLen;
+ protected:
+  std::size_t size_ = Backend::kVecLen;
 };
 
 class BdmSimObjectSoaTypeBackend {
-  // TODO  order
-  // template <typename Type, typename EnclosingClass, int id>
-  // using TMemberSelector = TTMemberSelector<Type, EnclosingClass, id>;
-
-  // template <typename TTBackend>
-  // using Self = BdmSimObjectSoaTypeBackend<TTMemberSelector, TTBackend>;
-
   using Backend = VcSoaBackend;
 
  public:
+  virtual ~BdmSimObjectSoaTypeBackend() {}
 
- virtual ~BdmSimObjectSoaTypeBackend() {}
-
- void SetSize(std::size_t size) { size_last_vector_ = size; }
+  void SetSize(std::size_t size) { size_last_vector_ = size; }
 
   size_t size() const {
     return size_;  // FIXME which size should be returned??
   }
 
-  bool is_full() const {
-    return size_last_vector_ == VcBackend::kVecLen;
-  }
+  bool is_full() const { return size_last_vector_ == VcBackend::kVecLen; }
 
   // void push_back(const Self<VcBackend>& other) {
   // template <typename T = Backend, typename T1>
@@ -122,10 +101,11 @@ class BdmSimObjectSoaTypeBackend {
     }
   }
 
-  // TODO add documentation
-  //push_back scalar on soa
+  // TODO(lukas) add documentation
+  // push_back scalar on soa
   void push_back(const BdmSimObjectScalarBackend& other) {
-    // if it was empty or last vector was full, a vector has been added -> update size_ and
+    // if it was empty or last vector was full, a vector has been added ->
+    // update size_ and
     // size_last_vector_
     if (elements() == 0 || is_full()) {
       size_++;
@@ -137,13 +117,12 @@ class BdmSimObjectSoaTypeBackend {
 
   // template <typename T>
   virtual void CopyTo(std::size_t src_v_idx, std::size_t src_idx,
-              std::size_t dest_v_idx,
-              std::size_t dest_idx,
-              BdmSimObjectVectorBackend* dest) const {}
+                      std::size_t dest_v_idx, std::size_t dest_idx,
+                      BdmSimObjectVectorBackend* dest) const {}
 
   template <typename T>
   void Gather(const InlineVector<int, 8>& indexes,
-         aosoa<T, VcBackend>* ret) const {
+              aosoa<T, VcBackend>* ret) const {
     const size_t scalars = indexes.size();
     std::size_t n_vectors =
         scalars / Backend::kVecLen + (scalars % Backend::kVecLen ? 1 : 0);
@@ -173,7 +152,8 @@ class BdmSimObjectSoaTypeBackend {
       counter++;
     }
   }
-protected:
+
+ protected:
   std::size_t size_ = 1;
   std::size_t size_last_vector_ = VcBackend::kVecLen;
 };
@@ -211,9 +191,8 @@ struct BdmSimObject : public BdmSimObjectImpl<TBackend>::type {
 
   // FIXME add for all types of backends??
   virtual void CopyTo(std::size_t src_v_idx, std::size_t src_idx,
-              std::size_t dest_v_idx,
-              std::size_t dest_idx,
-              BdmSimObjectVectorBackend* dest) const {}
+                      std::size_t dest_v_idx, std::size_t dest_idx,
+                      BdmSimObjectVectorBackend* dest) const {}
 
  protected:
   template <typename Type, typename EnclosingClass, int id>
@@ -236,13 +215,49 @@ struct BdmSimObject : public BdmSimObjectImpl<TBackend>::type {
   // template parameter required for enable_if - otherwise compile error
   template <typename T = Backend>
   BdmSimObject(
-      Self<VcSoaBackend>& other,
+      Self<VcSoaBackend>* other,
       typename enable_if<is_same<T, VcSoaRefBackend>::value>::type* = 0) {}
 
   // assigment operator if two objects are of the exact same type
   BdmSimObject<TTMemberSelector, TBackend>& operator=(
       const BdmSimObject<TTMemberSelector, TBackend>& other) const {
     return *this;
+  }
+
+  template <typename T, typename U>
+  static typename std::enable_if<!is_std_array<typename std::remove_reference<
+      decltype(std::declval<T>()[0])>::type>::value>::type
+  CopyUtil(T* dest, std::size_t dest_v_idx, std::size_t dest_idx, const U& src,
+           std::size_t src_v_idx, std::size_t src_idx) {
+    (*dest)[dest_v_idx][dest_idx] = src[src_v_idx][src_idx];
+  }
+
+  template <typename T, typename U>
+  static typename std::enable_if<is_std_array<typename std::remove_reference<
+      decltype(std::declval<T>()[0])>::type>::value>::type
+  CopyUtil(T* dest, std::size_t dest_v_idx, std::size_t dest_idx, const U& src,
+           std::size_t src_v_idx, std::size_t src_idx) {
+    for (std::size_t i = 0; i < (*dest)[0].size(); i++) {
+      (*dest)[dest_v_idx][i][dest_idx] = src[src_v_idx][i][src_idx];
+    }
+  }
+
+  template <typename T, typename U>
+  static typename std::enable_if<!is_std_array<typename std::remove_reference<
+      decltype(std::declval<U>()[0])>::type>::value>::type
+  CopyUtil(T* dest, std::size_t dest_idx, const U& src, std::size_t src_v_idx,
+           std::size_t src_idx) {
+    (*dest)[dest_idx] = src[src_v_idx][src_idx];
+  }
+
+  template <typename T, typename U>
+  static typename std::enable_if<is_std_array<typename std::remove_reference<
+      decltype(std::declval<U>()[0])>::type>::value>::type
+  CopyUtil(T* dest, std::size_t dest_idx, const U& src, std::size_t src_v_idx,
+           std::size_t src_idx) {
+    for (std::size_t i = 0; i < (*dest)[0].size(); i++) {
+      (*dest)[i][dest_idx] = src[src_v_idx][i][src_idx];
+    }
   }
 };
 

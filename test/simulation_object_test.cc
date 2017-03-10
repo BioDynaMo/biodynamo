@@ -1,7 +1,6 @@
-#include <gtest/gtest.h>
+#include "gtest/gtest.h"
 #include "simulation_object.h"
 #include "simulation_object_util.h"
-// #include "backend.h"
 
 namespace bdm {
 
@@ -17,7 +16,7 @@ TEST(BdmSimObjectTest, is_fullScalarBackend) {
   EXPECT_TRUE(object.is_full());
 }
 
-// TODO decide how vector backend should be called
+// TODO(lukas) decide how vector backend should be called
 // simd, vector ... in comparison to soa
 TEST(BdmSimObjectTest, is_fullVectorBackend) {
   ConcreteSimObject<VcBackend> object;
@@ -43,7 +42,7 @@ TEST(BdmSimObjectTest, sizeScalarBackend) {
 
 TEST(BdmSimObjectTest, sizeVectorBackend) {
   ConcreteSimObject<VcBackend> object;
-  EXPECT_EQ(4u, object.size()); // FIXME VcBackend::kVecLen
+  EXPECT_EQ(4u, object.size());  // FIXME VcBackend::kVecLen
 }
 
 TEST(BdmSimObjectTest, sizeSoaBackend) {
