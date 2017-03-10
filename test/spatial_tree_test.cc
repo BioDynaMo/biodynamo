@@ -106,9 +106,23 @@ bool SearchTest(SpatialTreeNode<int> *tree, int amount) {
         ManualSearch(possitions, amount, search_radious);
     std::vector<std::pair<int, int>> tree_search =
         tree->GetNeighbors(search_radious);
+
+    std::sort(manual_result.begin(), manual_result.end());
+    std::sort(tree_search.begin(), tree_search.end());
+
+    if (manual_result.size() != tree_search.size()) {
+      delete[] possitions;
+      return false;
+    }
+
+    if (!std::equal(manual_result.begin(), manual_result.end(), tree_search.begin())) {
+      delete[] possitions;
+      return false;
+    }
   }
 
   delete[] possitions;
+  return true;
 }
 
 TEST(SpatialTreeTest, OctreeTest) {
@@ -142,14 +156,14 @@ TEST(SpatialTreeTest, KdTreeSizeTest) {
 TEST(SpatialTreeTest, OctreeSearchTest) {
   SpatialTreeNode<int> *tree =
       new OctreeNode<int>(Bound(0.0, 0.0, 0.0, 1.0, 1.0, 1.0), 100, 100);
-  SearchTest(tree, 1000);
+  SearchTest(tree, 100);
   delete tree;
 }
 
 TEST(SpatialTreeTest, KdTreeSearchTest) {
   SpatialTreeNode<int> *tree =
       new KdTreeNode<int>(Bound(0.0, 0.0, 0.0, 1.0, 1.0, 1.0), 100, 100);
-  SearchTest(tree, 1000);
+  SearchTest(tree, 100);
   delete tree;
 }
 
