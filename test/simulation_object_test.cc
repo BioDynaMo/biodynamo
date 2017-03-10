@@ -42,7 +42,8 @@ TEST(BdmSimObjectTest, sizeScalarBackend) {
 
 TEST(BdmSimObjectTest, sizeVectorBackend) {
   ConcreteSimObject<VcBackend> object;
-  EXPECT_EQ(VcBackend::kVecLen, object.size());
+  auto expected_size = VcBackend::kVecLen;
+  EXPECT_EQ(expected_size, object.size());
 }
 
 TEST(BdmSimObjectTest, sizeSoaBackend) {

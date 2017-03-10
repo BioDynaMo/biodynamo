@@ -11,6 +11,8 @@ class Simple {
  public:
   BDM_PUBLIC_MEMBER(double, a_) = 1.23;
 
+  Simple() {}
+
   double GetA() { return a_; }
   double GetB() { return b_; }
   double GetC() { return c_; }

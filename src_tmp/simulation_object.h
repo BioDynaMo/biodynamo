@@ -255,7 +255,7 @@ struct BdmSimObject : public BdmSimObjectImpl<TBackend>::type {
       decltype(std::declval<U>()[0])>::type>::value>::type
   CopyUtil(T* dest, std::size_t dest_idx, const U& src, std::size_t src_v_idx,
            std::size_t src_idx) {
-    for (std::size_t i = 0; i < (*dest)[0].size(); i++) {
+    for (std::size_t i = 0; i < (*dest).size(); i++) {
       (*dest)[i][dest_idx] = src[src_v_idx][i][src_idx];
     }
   }

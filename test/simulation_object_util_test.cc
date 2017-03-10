@@ -169,7 +169,6 @@ TEST(SimulationObjectUtilTest,
 
   // switch to neuron_v2
   auto& result1 = neurons[1];
-  std::cout << typeid(result1).name() << std::endl;
 
   // operator[] returns reference to *this
   EXPECT_TRUE(&result1 == &neurons);
@@ -309,10 +308,10 @@ TEST(SimulationObjectUtilTest, SoaBackend_Gather) {
 
 TEST(SimulationObjectUtilTest, VectorBackend_push_backScalar) {
   Neuron<VcBackend> neurons;  // stores one vector neuron with default values
-  EXPECT_EQ(4u, neurons.size());  // replace with VcBackend::kVecLen
+  auto backend_vec_len = VcBackend::kVecLen;
+  EXPECT_EQ(backend_vec_len, neurons.size());  // replace with VcBackend::kVecLen
   EXPECT_EQ(1u, neurons.vectors());
-  auto expected_elements = VcBackend::kVecLen;
-  EXPECT_EQ(expected_elements, neurons.elements());
+  EXPECT_EQ(backend_vec_len, neurons.elements());
 
   // simulate that the vector only holds one scalar - remaining slots are free
   neurons.SetSize(1);
