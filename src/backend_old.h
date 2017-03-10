@@ -1,5 +1,5 @@
-#ifndef BACKEND_H_
-#define BACKEND_H_
+#ifndef BACKEND_OLD_H_
+#define BACKEND_OLD_H_
 
 #include <Vc/Vc>
 
@@ -35,4 +35,4 @@ struct is_scalar<Container<ScalarBackend> > {
 
 }  // namespace bdm
 
-#endif  // BACKEND_H_
+#endif  // BACKEND_OLD_H_

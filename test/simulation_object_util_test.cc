@@ -1,5 +1,5 @@
-#include <typeinfo>
 #include "gtest/gtest.h"
+#include "backend.h"
 #include "simulation_object.h"
 
 namespace bdm {
@@ -219,7 +219,8 @@ TEST(SimulationObjectUtilTest, SoaBackend_push_backScalarOnNonEmptySoa) {
   Neuron<VcSoaBackend> neurons;  // stores one vector neuron with default values
   EXPECT_EQ(1u, neurons.size());
   EXPECT_EQ(1u, neurons.vectors());
-  EXPECT_EQ(4u, neurons.elements());  // FIXME replace 4 with VcBackend::kVecLen
+  auto expected_elements = VcBackend::kVecLen;
+  EXPECT_EQ(expected_elements, neurons.elements());
 
   // simulate that the first vector only holds one scalar
   neurons.size_last_vector_ = 1;
@@ -310,7 +311,8 @@ TEST(SimulationObjectUtilTest, VectorBackend_push_backScalar) {
   Neuron<VcBackend> neurons;  // stores one vector neuron with default values
   EXPECT_EQ(4u, neurons.size());  // replace with VcBackend::kVecLen
   EXPECT_EQ(1u, neurons.vectors());
-  EXPECT_EQ(4u, neurons.elements());  // FIXME replace 4 with VcBackend::kVecLen
+  auto expected_elements = VcBackend::kVecLen;
+  EXPECT_EQ(expected_elements, neurons.elements());
 
   // simulate that the vector only holds one scalar - remaining slots are free
   neurons.SetSize(1);
