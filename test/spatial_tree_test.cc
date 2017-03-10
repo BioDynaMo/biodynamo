@@ -1,5 +1,7 @@
-#include "spatial/spatial_tree.h"
+#include <random>
 #include <gtest/gtest.h>
+
+#include "spatial/spatial_tree.h"
 #include "spatial/kd_tree.h"
 #include "spatial/octree.h"
 
@@ -30,8 +32,12 @@ void SizeTest(SpatialTreeNode<int> *tree, int amount) {
   Point *possitions = new Point[amount];
   double gap = 1.0 / (amount + 1);
 
+  std::minstd_rand simple_rand;
+  simple_rand.seed(42);
+
   for (int i = 0; i < amount; i++) {
-    possitions[i] = Point(gap * i, rand() / RAND_MAX, rand() / RAND_MAX);
+    possitions[i] = Point(gap * i, simple_rand() / simple_rand.max(),
+                          simple_rand() / simple_rand.max());
   }
 
   for (int i = 0; i < amount; i++) {
