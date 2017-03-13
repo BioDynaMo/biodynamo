@@ -2,11 +2,6 @@
 
 # With CMAKE >= 3.2 external projects support byproducts, this is needed
 # to support Ninja as generators
-set(CMAKE_USER_MAKE_RULES_OVERRIDE
-   ${CMAKE_CURRENT_SOURCE_DIR}/c_flag_overrides.cmake)
-set(CMAKE_USER_MAKE_RULES_OVERRIDE_CXX
-   ${CMAKE_CURRENT_SOURCE_DIR}/cxx_flag_overrides.cmake)
-
 
 project(BioDynaMo)
 
@@ -41,9 +36,9 @@ include(cmake/doxygen.cmake)
 include(CheckCXXCompilerFlag)
 check_cxx_compiler_flag("-std=c++11" COMPILER_SUPPORTS_CXX11)
 if(COMPILER_SUPPORTS_CXX11)
-#  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 elseif(COMPILER_SUPPORTS_CXX0X)
-#  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
 else()
   message(STATUS "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler.")
 endif()
@@ -59,7 +54,7 @@ if (coverage)
   endif()
 else()
   if (WIN32)
-    set(GCC_COMPILE_FLAGS "/MTd")
+    set(GCC_COMPILE_FLAGS "/openmp /MTd")
   else()
     set(GCC_COMPILE_FLAGS "-Wall -Wno-missing-braces -fopenmp -ldl")
   endif()
@@ -123,7 +118,8 @@ else()
     INSTALL_COMMAND "" # Disable install step
     # Ugly but necessary, in future versions one can use ${binary_dir}
     # in BUILD_BYPRODUCTS
-    BUILD_BYPRODUCTS "${binary_dir}/libVc.a"
+    #BUILD_BYPRODUCTS "${binary_dir}/libVc.a"
+    BUILD_BYPRODUCTS "${CMAKE_CURRENT_BINARY_DIR}/Vc/src/Vc-build/libVc.a"
   )
 endif()
 
@@ -150,21 +146,20 @@ include_directories("${Vc_INCLUDE_DIR}")
 file(GLOB_RECURSE SOURCES "${CMAKE_SOURCE_DIR}/src/*.cc")
 file(GLOB_RECURSE HEADERS "${CMAKE_SOURCE_DIR}/src/*.h")
 #${CMAKE_BINARY_DIR}/bdmDict.cxx)
-message(FOO "${CMAKE_CURRENT_BINARY_DIR}/shared_export.h")
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
-add_library(biodynamo SHARED ${SOURCES} ${HEADERS})# "${CMAKE_CURRENT_BINARY_DIR}/shared_export.h")
+add_library(biodynamo SHARED ${SOURCES} ${HEADERS})
 #target_link_libraries(biodynamo ${ROOT_LIBRARIES})
 target_link_libraries(biodynamo ${Vc_LIBRARIES})
 # target_link_libraries(biodynamo ${VTUNE_LIBRARIES})
 add_dependencies(biodynamo Vc)
 
-include (GenerateExportHeader)          
-GENERATE_EXPORT_HEADER(biodynamo 
-    BASE_NAME biodynamo
-    EXPORT_MACRO_NAME SHARED_EXPORT
-    EXPORT_FILE_NAME shared_export.h
-    STATIC_DEFINE SHARED_EXPORTS_BUILT_AS_STATIC)
-
+if (WIN32)
+  include (GenerateExportHeader)          
+  GENERATE_EXPORT_HEADER(biodynamo 
+      BASE_NAME biodynamo
+      EXPORT_MACRO_NAME SHARED_EXPORT
+      EXPORT_FILE_NAME shared_export.h
+      STATIC_DEFINE SHARED_EXPORTS_BUILT_AS_STATIC)
+endif()
 
 # add custom clean target for shared library
 add_custom_target(libbdmclean COMMAND ${CMAKE_COMMAND} -P "${CMAKE_BINARY_DIR}/CMakeFiles/biodynamo.dir/cmake_clean.cmake")
@@ -179,7 +174,6 @@ if (test)
 
   # setup google test
   if (WIN32)
-    message("compiler flags " ${CMAKE_CXX_FLAGS} )
     ExternalProject_Add(
       gtest
       URL "${CMAKE_SOURCE_DIR}/third_party/gtest-1.7.0.zip"
@@ -187,7 +181,6 @@ if (test)
       CMAKE_CACHE_ARGS
         -DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}
         -DCMAKE_C_COMPILER:FILEPATH=${CMAKE_C_COMPILER}
-        #-DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
       INSTALL_COMMAND "" # Disable install step
       # Ugly but necessary, in future versions one can use ${binary_dir}
       # in BUILD_BYPRODUCTS
@@ -204,7 +197,8 @@ if (test)
       INSTALL_COMMAND "" # Disable install step
       # Ugly but necessary, in future versions one can use ${binary_dir}
       # in BUILD_BYPRODUCTS
-      BUILD_BYPRODUCTS "${binary_dir}/libgtest.a"
+      #BUILD_BYPRODUCTS "${binary_dir}/libgtest.a"
+      BUILD_BYPRODUCTS "${CMAKE_BINARY_DIR}/gtest/src/gtest-build/libgtest.a"
     )
   endif()
   ExternalProject_Get_Property(gtest source_dir binary_dir)
@@ -223,6 +217,7 @@ if (test)
         IMPORTED_LINK_INTERFACE_LIBRARIES "${CMAKE_THREAD_LIBS_INIT}"
     )
   endif()
+
   # add include directories for gtest
   include_directories("${CMAKE_BINARY_DIR}/gtest/src/gtest/include")
 
