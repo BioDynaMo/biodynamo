@@ -15,6 +15,7 @@ if [ "$TRAVIS_OS_NAME" = "osx" ]; then
   brew update >& /dev/null
   brew install doxygen
   brew install valgrind
+  #brew install cloc
   # get clang 3.9
   wget http://releases.llvm.org/3.9.0/clang+llvm-3.9.0-x86_64-apple-darwin.tar.xz 2> /dev/null
   tar xf clang+llvm-3.9.0-x86_64-apple-darwin.tar.xz > /dev/null
@@ -36,6 +37,8 @@ if [ "$TRAVIS_OS_NAME" = "linux" ]; then
   #sudo apt-get update
   #sudo apt-get -y install gcc-5 g++-5 cmake cmake-data valgrind
   sudo apt-get -y install valgrind
+  sudo apt-get -y install cloc
+  sudo apt-get -y install clang-format-3.9
 fi
 
 # install ROOT
@@ -55,8 +58,28 @@ echo ${CXX}
 ${CXX} --version
 ${CXX} -v
 
-# build biodynamo and run tests
 cd $biod
+
+# run following commands (cloc and clang-format) only on Linux
+if [ "$TRAVIS_OS_NAME" = "linux" ]; then
+  #cloc --vcs=git .
+  cloc .
+  if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
+    BASE_COMMIT=$(git rev-parse $TRAVIS_BRANCH)
+    echo "Running clang-format-3.9 against branch $TRAVIS_BRANCH, with hash $BASE_COMMIT"
+    RESULT_OUTPUT="$(git-clang-format-3.9 --commit $BASE_COMMIT --diff --binary `which clang-format-3.9`)"
+    if [ "$RESULT_OUTPUT" == "no modified files to format" ] || \
+       [ "$RESULT_OUTPUT" == "clang-format did not modify any files" ] ; then
+      echo "clang-format passed."
+    else
+      echo "###### Code formatting failure ######"
+      echo "clang-format failed."
+      echo "To reproduce it locally please run git-clang-format-3.9 --commit $BASE_COMMIT --diff --binary \`which clang-format-3.9\`"
+      echo "$RESULT_OUTPUT"
+    fi
+fi
+
+# build biodynamo and run tests
 mkdir build
 cd build
 cmake $test_valgrind .. && make
