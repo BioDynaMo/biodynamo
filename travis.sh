@@ -33,8 +33,10 @@ fi
 
 if [ "$TRAVIS_OS_NAME" = "linux" ]; then
   #sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
-  #sudo add-apt-repository -y ppa:george-edison55/precise-backports
-  #sudo apt-get update
+  #sudo add-apt-repository -y ppa:george-edison55/trusty-backports
+  wget -O - http://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
+  sudo apt-add-repository -y "deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-3.9 main"
+  sudo apt-get update
   #sudo apt-get -y install gcc-5 g++-5 cmake cmake-data valgrind
   sudo apt-get -y install valgrind
   sudo apt-get -y install cloc
@@ -69,7 +71,7 @@ if [ "$TRAVIS_OS_NAME" = "linux" ]; then
     echo "Running clang-format-3.9 against branch $TRAVIS_BRANCH, with hash $BASE_COMMIT"
     RESULT_OUTPUT="$(git-clang-format-3.9 --commit $BASE_COMMIT --diff --binary `which clang-format-3.9`)"
     if [ "$RESULT_OUTPUT" == "no modified files to format" ] || \
-       [ "$RESULT_OUTPUT" == "clang-format did not modify any files" ] ; then
+       [ "$RESULT_OUTPUT" == "clang-format did not modify any files" ]; then
       echo "clang-format passed."
     else
       echo "###### Code formatting failure ######"
@@ -77,6 +79,7 @@ if [ "$TRAVIS_OS_NAME" = "linux" ]; then
       echo "To reproduce it locally please run git-clang-format-3.9 --commit $BASE_COMMIT --diff --binary \`which clang-format-3.9\`"
       echo "$RESULT_OUTPUT"
     fi
+  fi
 fi
 
 # build biodynamo and run tests
