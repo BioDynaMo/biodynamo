@@ -2,9 +2,9 @@
 #include <stdlib.h>
 #include <random>
 
-#include "spatial/kd_tree.h"
-#include "spatial/octree.h"
-#include "spatial/spatial_tree.h"
+#include "spatial/kd_tree_node.h"
+#include "spatial/octree_node.h"
+#include "spatial/spatial_tree_node.h"
 
 namespace bdm {
 

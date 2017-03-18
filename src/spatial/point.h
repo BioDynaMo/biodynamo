@@ -9,55 +9,63 @@ namespace bdm {
 class Point {
  public:
   // Coordinates of the point
-  double x, y, z;
+  double x_, y_, z_;
 
   // Default constructior
-  Point() : x(0), y(0), z(0) {}
+  Point() : x_(0), y_(0), z_(0) {}
 
-  Point(double x, double y, double z) : x(x), y(y), z(z) {}
+  Point(double x, double y, double z) : x_(x), y_(y), z_(z) {}
 
-  double Length() { return sqrt(x * x + y * y + z * z); }
+  double Length() { return sqrt(x_ * x_ + y_ * y_ + z_ * z_); }
 
   void Set(double x, double y, double z) {
-    this->x = x;
-    this->y = y;
-    this->z = z;
+    this->x_ = x;
+    this->y_ = y;
+    this->z_ = z;
   }
 
+  // Squared euclidian distance from 'this' to point 'p'
+  double SquaredEuclidianDistance(Point const &p) const {
+    double dx = x_ - p.x_;
+    double dy = y_ - p.y_;
+    double dz = z_ - p.z_;
+
+    return dx * dx + dy * dy + dz * dz;
+  }
   // Euclidian distance from 'this' to point 'p'
   double EuclidianDistance(Point const &p) const {
     return (p + *this * (-1)).Length();
   }
 
-  // Squared euclidian distance from 'this' to point 'p'
-  double SquaredEuclidianDistance(Point const &p) const {
-    double dx = x - p.x;
-    double dy = y - p.y;
-    double dz = z - p.z;
-
-    return dx * dx + dy * dy + dz * dz;
+  // Scalar multiplication of the points
+  double operator*(Point const &p) const {
+    return x_ * p.x_ + y_ * p.y_ + z_ * p.z_;
   }
 
-  // Scolar multiplication of the points
-  double operator*(Point const &p) const { return x * p.x + y * p.y + z * p.z; }
-
   // Point to scolar multiplication
-  Point operator*(double a) const { return Point(x * a, y * a, z * a); }
+  Point operator*(double a) const { return Point(x_ * a, y_ * a, z_ * a); }
 
   // Addition of the points
   Point operator+(Point const &b) const {
-    return Point(x + b.x, y + b.y, z + b.z);
+    return Point(x_ + b.x_, y_ + b.y_, z_ + b.z_);
   }
 
+  // Comparison of the points
+  bool operator==(Point const &b) const { return equals(b); }
+
+  // Comparison of the points
+  bool operator!=(Point const &b) const { return !equals(b); }
+
   void operator=(Point const &b) {
-    x = b.x;
-    y = b.y;
-    z = b.z;
+    x_ = b.x_;
+    y_ = b.y_;
+    z_ = b.z_;
   }
 
   // Check if two points is equal or not
   bool equals(Point const &b) const {
-    return fabs(x - b.x) < eps && fabs(y - b.y) < eps && fabs(z - b.z) < eps;
+    return fabs(x_ - b.x_) < kEpsilon && fabs(y_ - b.y_) < kEpsilon &&
+           fabs(z_ - b.z_) < kEpsilon;
   }
 };
 }

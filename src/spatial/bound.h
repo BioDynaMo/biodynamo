@@ -9,63 +9,29 @@ namespace bdm {
 using std::pair;
 using std::make_pair;
 
-// Class 'Bound' represents rectangular Bound of the node of the tree
+/**
+ * Class 'Bound' represents rectangular Bound of the node of the tree
+ **/
+
 class Bound {
  public:
   // Bounds
   // far left Bottom, Near Right Top
-  Point flb, nrt;
+  Point far_left_bottom_point_, near_right_top_point_;
 
   // Default constructior
   Bound() {
-    flb = Point(0, 0, 0);
-    nrt = Point(1, 1, 1);
+    far_left_bottom_point_ = Point(0, 0, 0);
+    near_right_top_point_ = Point(1, 1, 1);
   }
 
   Bound(double x1, double y1, double z1, double x2, double y2, double z2) {
-    flb = Point(x1, y1, z1);
-    nrt = Point(x2, y2, z2);
+    far_left_bottom_point_ = Point(x1, y1, z1);
+    near_right_top_point_ = Point(x2, y2, z2);
   }
 
-  Bound(Point p1, Point p2) : flb(p1), nrt(p2) {}
-
-  // The Volume of the rectangle
-  double Volume() const {
-    return (Near() - Far()) * (Right() - Left()) * (Top() - Bottom());
-  }
-
-  // Checks if point 'p' lies inside the Bound or on its boundary
-  bool Has(Point const &p) const {
-    return IsBetween(p.x, Far(), Near()) && IsBetween(p.y, Left(), Right()) &&
-           IsBetween(p.z, Bottom(), Top());
-  }
-
-  // Extends boundary so it contains point 'p'
-  Bound AddPoint(Point const &p) const {
-    Bound new_bnd(fmin(p.x, Far()), fmin(p.y, Left()), fmin(p.z, Bottom()),
-                  fmax(p.x, Near()), fmax(p.y, Right()), fmax(p.z, Top()));
-    return new_bnd;
-  }
-
-  // Extends boundary so it contains Bound 'b'
-  Bound AddBound(Bound const &b) const {
-    return Bound(fmin(Far(), b.Far()), fmin(Left(), b.Left()),
-                 fmin(Bottom(), b.Bottom()), fmax(Near(), b.Near()),
-                 fmax(Right(), b.Right()), fmax(Top(), b.Top()));
-  }
-
-  // Calculate Volume difference between original
-  double DifferenceOnBoundExtension(Point const &p) const {
-    return AddPoint(p).Volume() - Volume();
-  }
-
-  // Squared distance between two points on a plane
-  double SquaredDistance(pair<double, double> const &p1,
-                         pair<double, double> const &p2) const {
-    double dx = p1.first - p2.first;
-    double dy = p1.second - p2.second;
-    return dx * dx + dy * dy;
-  }
+  Bound(Point p1, Point p2)
+      : far_left_bottom_point_(p1), near_right_top_point_(p2) {}
 
   // Check if 'x' is between 'a' and 'b' on the line
   bool IsBetween(double x, double a, double b) const {
@@ -77,13 +43,13 @@ class Bound {
   // Calculate distance between two line segments on the line.
   // This method assumed that segments are not overlaped.
   double DistanceBetweenSegments(double x, double y, double a, double b) const {
-    double minxy = fmin(x, y);
-    double maxxy = fmax(x, y);
-    double minab = fmin(a, b);
-    double maxab = fmax(a, b);
+    double min_xy = fmin(x, y);
+    double max_xy = fmax(x, y);
+    double min_ab = fmin(a, b);
+    double max_ab = fmax(a, b);
 
-    if (minxy >= maxab) return minxy - maxab;
-    return minab - maxxy;
+    if (min_xy >= max_ab) return min_xy - max_ab;
+    return min_ab - max_xy;
   }
 
   // Calculate squared distance between two boundaries in 3-d space.
@@ -124,25 +90,33 @@ class Bound {
     return dx * dx + dy * dy + dz * dz;
   }
 
-  Point Center() const { return (flb + nrt) * 0.5; }
+  Point Center() const {
+    return (far_left_bottom_point_ + near_right_top_point_) * 0.5;
+  }
 
-  double Near() const { return nrt.x; }
+  double Near() const { return near_right_top_point_.x_; }
 
-  double Far() const { return flb.x; }
+  double Far() const { return far_left_bottom_point_.x_; }
 
-  double Left() const { return flb.y; }
+  double Left() const { return far_left_bottom_point_.y_; }
 
-  double Right() const { return nrt.y; }
+  double Right() const { return near_right_top_point_.y_; }
 
-  double Top() const { return nrt.z; }
+  double Top() const { return near_right_top_point_.z_; }
 
-  double Bottom() const { return flb.z; }
+  double Bottom() const { return far_left_bottom_point_.z_; }
 
-  double Length() const { return nrt.x - flb.x; }
+  double Length() const {
+    return near_right_top_point_.x_ - far_left_bottom_point_.x_;
+  }
 
-  double Width() const { return nrt.y - flb.y; }
+  double Width() const {
+    return near_right_top_point_.y_ - far_left_bottom_point_.y_;
+  }
 
-  double Height() const { return nrt.z - flb.z; }
+  double Height() const {
+    return near_right_top_point_.z_ - far_left_bottom_point_.z_;
+  }
 
   double HalfSurfaceArea() const {
     return Width() * Length() + Height() * Length() + Width() * Height();

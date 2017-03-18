@@ -3,7 +3,7 @@
 
 #include <cmath>
 #include <iostream>
-#include "spatial/octree.h"
+#include "spatial/octree_node.h"
 
 namespace bdm {
 
@@ -23,7 +23,7 @@ class NeighborOp {
     // calc neighbors
 
     // Tree search
-    // Creating a spatial tree (Bound, max_depth, capacity_of_leaf_node)
+    // Creating a spatial tree (Bound, max_depth_, capacity_of_leaf_node)
     // IMPORTANT! Ensure that your bound is big enough and enclose all parts of
     // simulation
     SpatialTreeNode<size_t>* tree = new OctreeNode<size_t>(
