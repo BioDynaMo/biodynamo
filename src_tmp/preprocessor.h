@@ -47,4 +47,7 @@
 #define _LOOP_3_1() LOOP_3_1
 // clang-format on
 
+#define BDM_FORCE_INLINE inline __attribute__ ((always_inline))
+// #define BDM_FORCE_INLINE
+
 #endif  // PREPROCESSOR_H_

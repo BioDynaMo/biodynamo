@@ -19,14 +19,14 @@ class ResourceManager {
   }
 
   // todo change to return const and const method
-  const daosoa<Cell, Backend>& GetCells() const { return cells_; }
+  const daosoa<Cell<Backend>>& GetCells() const { return cells_; }
 
-  void SetCells(const daosoa<Cell, Backend>& cells) { cells_ = cells; }
+  void SetCells(const daosoa<Cell<Backend>>& cells) { cells_ = cells; }
 
  private:
   ResourceManager() {}
 
-  daosoa<Cell, Backend> cells_;
+  daosoa<Cell<Backend>> cells_;
 };
 
 }  // namespace bdm

@@ -29,6 +29,9 @@ class BdmSimObjectScalarBackend {
   std::size_t size() const { return 1; }
 
   bool is_full() const { return true; }
+
+ protected:
+  static const std::size_t idx_ = 0;
 };
 
 class BdmSimObjectVectorBackend {
@@ -45,6 +48,12 @@ class BdmSimObjectVectorBackend {
 
   std::size_t elements() const { return size_; }
 
+  // TODO documentaiton
+  /// \brief returns the number of scalar elements in the current vector
+  /// Required to have a consistent way to obtain this information between
+  /// vector and soa backends
+  std::size_t ElementsCurrentVector() const { return size_; }
+
   std::size_t vectors() const { return 1; }
 
   bool is_full() const { return size_ == Backend::kVecLen; }
@@ -52,6 +61,7 @@ class BdmSimObjectVectorBackend {
   void push_back(const BdmSimObjectScalarBackend& other) { size_++; }
 
  protected:
+  static const std::size_t idx_ = 0;
   std::size_t size_ = Backend::kVecLen;
 };
 
@@ -101,6 +111,8 @@ class BdmSimObjectSoaTypeBackend {
     }
   }
 
+  std::size_t ElementsCurrentVector() const { return size_last_vector_; }
+
   // TODO(lukas) add documentation
   // push_back scalar on soa
   void push_back(const BdmSimObjectScalarBackend& other) {
@@ -123,37 +135,44 @@ class BdmSimObjectSoaTypeBackend {
   template <typename T>
   void Gather(const InlineVector<int, 8>& indexes,
               aosoa<T, VcBackend>* ret) const {
+    //std::cout << "gather " << (ret == nullptr) << std::endl;
     const size_t scalars = indexes.size();
     std::size_t n_vectors =
-        scalars / Backend::kVecLen + (scalars % Backend::kVecLen ? 1 : 0);
-    std::size_t remaining = scalars % Backend::kVecLen;
-
+        scalars / VcBackend::kVecLen + (scalars % VcBackend::kVecLen ? 1 : 0);
+    std::size_t remaining = scalars % VcBackend::kVecLen;
+    // std::cout << typeid(ret).name() << std::endl;
+    // std::cout << static_cast<void*>(ret) << std::endl;
+    //std::cout << "nvectors " << n_vectors << std::endl;
     ret->SetSize(n_vectors);
+    //std::cout << "after setsize" << std::endl;
     for (std::size_t i = 0; i < n_vectors; i++) {
       if (i != n_vectors - 1 || remaining == 0) {
-        (*ret)[i].SetSize(Backend::kVecLen);
+        (*ret)[i].SetSize(VcBackend::kVecLen);
       } else {
         (*ret)[i].SetSize(remaining);
       }
     }
+    //std::cout << "2" << std::endl;
 
     size_t counter = 0;
     BdmSimObjectVectorBackend* dest = nullptr;
     for (size_t i = 0; i < scalars; i++) {
       int idx = indexes[i];
-      size_t src_v_idx = idx / Backend::kVecLen;
-      size_t src_idx = idx % Backend::kVecLen;
-      size_t dest_v_idx = counter / Backend::kVecLen;
-      size_t dest_idx = counter % Backend::kVecLen;
+      size_t src_v_idx = idx / VcBackend::kVecLen;
+      size_t src_idx = idx % VcBackend::kVecLen;
+      size_t dest_v_idx = counter / VcBackend::kVecLen;
+      size_t dest_idx = counter % VcBackend::kVecLen;
       if (dest_idx == 0) {
         dest = &((*ret)[dest_v_idx]);
       }
+      //std::cout << src_v_idx << " " <<  src_idx << " " << dest_v_idx << " " <<  dest_idx << " - " << (dest == nullptr) << std::endl;
       CopyTo(src_v_idx, src_idx, dest_v_idx, dest_idx, dest);
       counter++;
     }
   }
 
  protected:
+  mutable std::size_t idx_ = 0;
   std::size_t size_ = 1;
   std::size_t size_last_vector_ = VcBackend::kVecLen;
 };
@@ -206,8 +225,14 @@ struct BdmSimObject : public BdmSimObjectImpl<TBackend>::type {
   // used to access the SIMD array in a soa container
   // for non Soa Backends index_t will be const so it can be optimized out
   // by the compiler
-  typename Backend::index_t idx_ = 0;
+  // typename Backend::index_t idx_ = 0; // TODO
+  // typename Backend::index_t idx_ = 0;
+  // TODO document why pointer (otherwise const subscript operator not realiseable)
+  // would have different API than AOSOA
+  // std::size_t* const idx_ = new std::size_t;   // TODO memleak
 
+
+  // BdmSimObject() { *idx_ = 0; }
   BdmSimObject() {}
 
   // Ctor to create SoaRefBackend
@@ -216,7 +241,7 @@ struct BdmSimObject : public BdmSimObjectImpl<TBackend>::type {
   template <typename T = Backend>
   BdmSimObject(
       Self<VcSoaBackend>* other,
-      typename enable_if<is_same<T, VcSoaRefBackend>::value>::type* = 0) {}
+      typename enable_if<is_same<T, VcSoaRefBackend>::value>::type* = 0) { } // TODO *idx_ = 0; }
 
   // assigment operator if two objects are of the exact same type
   BdmSimObject<TTMemberSelector, TBackend>& operator=(

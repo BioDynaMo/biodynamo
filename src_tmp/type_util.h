@@ -39,6 +39,13 @@ struct is_std_array<std::array<T, N>> {
   static const bool value = true;
 };
 
+// -----------------------------------------------------------------------------
+
+template <typename T>
+struct is_scalar {
+  static const bool value = std::is_same<typename T::Backend, ScalarBackend>::value;
+};
+
 }  // namespace bdm
 
 #endif  // TYPE_UTIL_H_

@@ -132,12 +132,13 @@
                                                                                \
   using Backend = typename Base::Backend;                                      \
   using real_v = typename Backend::real_v;                                     \
+  using real_t = typename Backend::real_t;                                     \
                                                                                \
   template <typename T>                                                        \
   using SimdArray = typename Backend::template SimdArray<T>;                   \
                                                                                \
-  template <typename T, typename Allocator = std::allocator<T>>                \
-  using Container = typename Backend::template Container<T, Allocator>;        \
+  template <typename T>                \
+  using Container = typename Backend::template Container<T>;                   \
                                                                                \
   using SelfUnique = self_unique_specifier;                                    \
                                                                                \
@@ -214,9 +215,18 @@
   template <typename T = Backend>                                              \
   typename enable_if<is_same<T, VcSoaRefBackend>::value ||                     \
                          is_same<T, VcSoaBackend>::value,                      \
-                     Self<Backend>&>::type                                     \
+                     Self<Backend>&>::type&                                     \
   operator[](int index) {                                                      \
     idx_ = index;                                                              \
+    return *this;                                                              \
+  }                                                                            \
+                                                                               \
+  template <typename T = Backend>                                              \
+  typename enable_if<is_same<T, VcSoaRefBackend>::value ||                     \
+                     is_same<T, VcSoaBackend>::value,                          \
+                     const Self<Backend>>::type&                              \
+  operator[](int index) const {                                                \
+    idx_ = index; \
     return *this;                                                              \
   }                                                                            \
                                                                                \

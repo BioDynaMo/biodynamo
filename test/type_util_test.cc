@@ -2,6 +2,7 @@
 #include <string>
 #include "gtest/gtest.h"
 #include "type_util.h"
+#include "cell.h"
 
 namespace bdm {
 
@@ -26,6 +27,16 @@ TEST(is_std_arrayTest, FalseForVcBackendSimdArray) {
 
 TEST(is_std_arrayTest, False) {
   EXPECT_FALSE(is_std_array<std::vector<double>>::value);
+}
+
+template <typename TBackend>
+struct Widget {
+  using Backend = TBackend;
+};
+
+TEST(is_scalarTest, All) {
+  EXPECT_FALSE(is_scalar<Widget<VcBackend>>::value);
+  EXPECT_TRUE(is_scalar<Widget<ScalarBackend>>::value);
 }
 
 }  // namespace bdm

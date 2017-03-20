@@ -3,17 +3,21 @@
 
 #include <type_traits>
 #include <vector>
+
 #include "aosoa.h"
-#include "backend_old.h"
+#include "backend.h"
 #include "inline_vector.h"
+#include "preprocessor.h"
+#include "type_util.h"
 
 namespace bdm {
 
-template <template <typename> class T, typename Backend = VcBackend>
+template <typename T>
 class daosoa {
  public:
-  // soa of type T
-  using value_type = T<Backend>;
+  // vector of type T
+  using value_type = T;
+  using Backend = typename T::Backend;
   using iterator = typename std::vector<value_type>::iterator;
   using const_iterator = typename std::vector<value_type>::const_iterator;
 
@@ -33,7 +37,7 @@ class daosoa {
   size_t elements() const {
     if (vectors() != 0) {
       return (vectors() - 1) * Backend::kVecLen +
-             data_[vectors() - 1].Size();  // fixme Size vectors
+             data_[vectors() - 1].size();  // fixme Size vectors
     } else {
       return 0;
     }
@@ -77,7 +81,7 @@ class daosoa {
   }
 
   void Gather(const InlineVector<int, 8>& indexes,
-              aosoa<T<Backend>, Backend>* ret) const {
+              aosoa<T, Backend>* ret) const {
     const size_t scalars = indexes.size();
     std::size_t n_vectors =
         scalars / Backend::kVecLen + (scalars % Backend::kVecLen ? 1 : 0);
@@ -102,38 +106,23 @@ class daosoa {
       if (dest_idx == 0) {
         dest = &((*ret)[counter / Backend::kVecLen]);
       }
-      data_[vector_idx].CopyTo(vec_el_idx, dest_idx, dest);
+      data_[vector_idx].CopyTo(0, vec_el_idx, 0, dest_idx, dest);
       counter++;
     }
   }
 
-  /// \brief returns scalar representation of element at index
-  // T<ScalarBackend> GetScalar(size_t index) const {
-  //   // fixme if this is ScalarBackend
-  //   size_t vector_idx = index / Backend::kVecLen;
-  //   size_t vec_el_idx = index % Backend::kVecLen;
-  //   return data_[vector_idx].Get(vec_el_idx);
-  // }
-  //
-  // void SetScalar(size_t index, const T<ScalarBackend>& value) {
-  //   // fixme if this is ScalarBackend
-  //   size_t vector_idx = index / Backend::kVecLen;
-  //   size_t vec_el_idx = index % Backend::kVecLen;
-  //   return data_[vector_idx].Set(vec_el_idx, value);
-  // }
-
-  Vc_ALWAYS_INLINE value_type& operator[](std::size_t index) {
+  BDM_FORCE_INLINE value_type& operator[](std::size_t index) {
     return data_[index];
   }
-  Vc_ALWAYS_INLINE const value_type& operator[](std::size_t index) const {
+  BDM_FORCE_INLINE const value_type& operator[](std::size_t index) const {
     return data_[index];
   }
 
-  // iterator begin() { return data_.begin(); }
-  // iterator end() { return data_.end(); }
-  //
-  // const_iterator begin() const { return data_.cbegin(); }
-  // const_iterator end() const { return data_.cend(); }
+  iterator begin() { return data_.begin(); }
+  iterator end() { return data_.end(); }
+
+  const_iterator begin() const { return data_.cbegin(); }
+  const_iterator end() const { return data_.cend(); }
 
  private:
   std::vector<value_type, Vc::Allocator<value_type> > data_;

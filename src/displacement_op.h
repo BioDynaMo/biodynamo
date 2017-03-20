@@ -1,17 +1,18 @@
 #ifndef DISPLACEMENT_OP_H_
 #define DISPLACEMENT_OP_H_
 
+#include <array>
 #include <cmath>
-#include "backend_old.h"
+#include "backend.h"
 #include "cell.h"
 #include "math_util.h"
 #include "param.h"
 
 namespace bdm {
 
-using real_v = VcBackend::real_v;
-using real_t = VcBackend::real_t;
-using bool_v = VcBackend::bool_v;
+using real_v = VcSoaBackend::real_v;
+using real_t = VcSoaBackend::real_t;
+using bool_v = VcSoaBackend::bool_v;
 
 /// Defines the 3D physical interactions between physical objects (cylinders and
 /// spheres).
@@ -36,7 +37,9 @@ class DisplacementOp {
       // If we detect enough forces to make us  move, we will re-schedule us
       // cell.setOnTheSchedulerListForPhysicalObjects(false);
 
-      const auto& tf = cell.GetTractorForce();
+      // const auto& tf = cell.GetTractorForce();
+      const std::array<real_v, 3>& tf = cell.GetTractorForce();
+      // const std::array<real_v, 3> tf{0, 0, 0};
 
       // the 3 types of movement that can occurq
       // bool_v biological_translation(false);
@@ -44,8 +47,7 @@ class DisplacementOp {
       //      bool_v physical_rotation(false);
 
       real_v h(Param::kSimulationTimeStep);
-      std::array<real_v, 3> movement_at_next_step{
-          real_v::Zero(), real_v::Zero(), real_v::Zero()};
+      std::array<real_v, 3> movement_at_next_step{0, 0, 0};
 
       // BIOLOGY :
       // 0) Start with tractor force : What the biology defined as active
@@ -86,7 +88,7 @@ class DisplacementOp {
             translation_force_on_point_mass[2][j] += neighbor_force[2].sum();
           } else {
             // if vector is not full manually add up forces
-            for (size_t l = 0; l < neighbor.Size(); l++) {
+            for (size_t l = 0; l < neighbor.elements(); l++) {
               translation_force_on_point_mass[0][j] += neighbor_force[0][l];
               translation_force_on_point_mass[1][j] += neighbor_force[1][l];
               translation_force_on_point_mass[2][j] += neighbor_force[2][l];
@@ -169,7 +171,7 @@ class DisplacementOp {
 
       // Reset biological movement to 0.
       // (Will need new instruction from SomaElement in order to move again)
-      cell.SetTractorForce({real_v::Zero(), real_v::Zero(), real_v::Zero()});
+      cell.SetTractorForce({0, 0, 0});
     }
   }
 

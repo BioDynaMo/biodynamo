@@ -1,9 +1,7 @@
 #ifndef DIVIDING_CELL_OP_H_
 #define DIVIDING_CELL_OP_H_
 
-#include "backend_old.h"
-#include "cell.h"
-#include "daosoa.h"
+#include "backend.h"
 
 namespace bdm {
 

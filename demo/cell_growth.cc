@@ -6,7 +6,7 @@
 #include <omp.h>
 // #include <ittnotify.h>
 
-#include "backend_old.h"
+#include "backend.h"
 #include "cell.h"
 #include "daosoa.h"
 #include "resource_manager.h"
@@ -34,7 +34,8 @@ void execute(size_t cells_per_dim, size_t iterations, size_t threads,
     statistic->AddDescription(ss.str());
 
     const unsigned space = 20;
-    daosoa<Cell> cells(cells_per_dim * cells_per_dim * cells_per_dim);
+    // daosoa<Cell<>> cells(cells_per_dim * cells_per_dim * cells_per_dim);
+    auto cells = Cell<>::NewEmptySoa(cells_per_dim * cells_per_dim * cells_per_dim);
     {
       Timing timing("Setup", statistic);
       for (size_t i = 0; i < cells_per_dim; i++) {

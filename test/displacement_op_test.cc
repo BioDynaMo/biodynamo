@@ -5,7 +5,8 @@
 
 namespace bdm {
 
-TEST(DisplacementOpTest, Compute) {
+template <typename T>
+void RunTest(T* cells) {
   using real_v = VcBackend::real_v;
   using real_t = real_v::value_type;
   if (real_v::Size < 2) {
@@ -20,7 +21,7 @@ TEST(DisplacementOpTest, Compute) {
                                     real_v((const real_t[]){0, 5}),
                                     real_v((const real_t[]){0, 0})};
 
-  // todo generate target values with this tf
+  // TODO(lukas) generate target values with this tf
   // std::array<real_v, 3> tractor_force = {
   //     real_v((const real_t[]){0.99, 1.01}),
   //     real_v((const real_t[]){0.98, 1.02}),
@@ -42,15 +43,14 @@ TEST(DisplacementOpTest, Compute) {
   cell.SetAdherence(adherence);
   cell.SetMass(mass);
   cell.SetNeighbors(neighbors);
-  daosoa<Cell, VcBackend> cells;
-  cells.push_back(cell);
+  cells->push_back(cell);
 
   // execute operation
   DisplacementOp op;
-  op.Compute(&cells);
+  op.Compute(cells);
 
   // check results
-  auto& final_position = cells[0].GetPosition();
+  auto& final_position = (*cells)[0].GetPosition();
   // cell 1
   EXPECT_NEAR(0, final_position[0][0], abs_error<real_t>::value);
   EXPECT_NEAR(-0.07797206232558615, final_position[1][0],
@@ -63,15 +63,27 @@ TEST(DisplacementOpTest, Compute) {
   EXPECT_NEAR(0, final_position[2][1], abs_error<real_t>::value);
 
   // check if tractor_force has been reset to zero
-  auto& final_tf = cells[0].GetTractorForce();
+  auto& final_tf = (*cells)[0].GetTractorForce();
   EXPECT_NEAR(0, final_tf[0].sum(), abs_error<real_t>::value);
   EXPECT_NEAR(0, final_tf[1].sum(), abs_error<real_t>::value);
   EXPECT_NEAR(0, final_tf[2].sum(), abs_error<real_t>::value);
 
   // remaining fields should remain unchanged
-  EXPECT_TRUE((diameter == cells[0].GetDiameter()).isFull());
-  EXPECT_TRUE((adherence == cells[0].GetAdherence()).isFull());
-  EXPECT_TRUE((mass == cells[0].GetMass()).isFull());
+  EXPECT_TRUE((diameter == (*cells)[0].GetDiameter()).isFull());
+  EXPECT_TRUE((adherence == (*cells)[0].GetAdherence()).isFull());
+  EXPECT_TRUE((mass == (*cells)[0].GetMass()).isFull());
 }
+
+TEST(DisplacementOpTest, ComputeAosoa) {
+  daosoa<Cell<VcBackend>> cells;
+  RunTest(&cells);
+}
+
+TEST(DisplacementOpTest, ComputeSoa) {
+  auto cells = Cell<>::NewEmptySoa();
+  RunTest(&cells);
+}
+
+
 
 }  // namespace bdm

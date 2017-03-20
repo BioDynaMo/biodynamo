@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "Vc/Vc"
+#include "preprocessor.h"
 
 namespace bdm {
 
@@ -17,34 +18,34 @@ class SoaRefWrapper {
 
   // TODO(lukas) add all operators
 
-  Vc_ALWAYS_INLINE typename T::value_type& operator[](std::size_t index) {
+  BDM_FORCE_INLINE typename T::value_type& operator[](std::size_t index) {
     return data_[index];
   }
 
-  Vc_ALWAYS_INLINE const typename T::value_type& operator[](
+  BDM_FORCE_INLINE const typename T::value_type& operator[](
       std::size_t index) const {
     return data_[index];
   }
 
   template <typename U>
-  Vc_ALWAYS_INLINE auto operator<=(const U& u) const
+  BDM_FORCE_INLINE auto operator<=(const U& u) const
       -> decltype(std::declval<typename T::value_type>() <= u) {
     return data_ <= u;
   }
 
   template <typename U>
-  Vc_ALWAYS_INLINE auto operator<(const U& u) const
+  BDM_FORCE_INLINE auto operator<(const U& u) const
       -> decltype(std::declval<typename T::value_type>() < u) {
     return data_ < u;
   }
 
   template <typename U>
-  Vc_ALWAYS_INLINE SoaRefWrapper<T>& operator+=(const U& u) {
+  BDM_FORCE_INLINE SoaRefWrapper<T>& operator+=(const U& u) {
     data_ += u;
     return *this;
   }
 
-  Vc_ALWAYS_INLINE SoaRefWrapper<T>& operator=(const SoaRefWrapper<T>& other) {
+  BDM_FORCE_INLINE SoaRefWrapper<T>& operator=(const SoaRefWrapper<T>& other) {
     if (this != &other) {
       data_ = other.data_;
     }
@@ -84,9 +85,9 @@ class OneElementArray {
 
   std::size_t size() const { return 1; }
 
-  Vc_ALWAYS_INLINE T& operator[](const size_t idx) { return data_; }
+  BDM_FORCE_INLINE T& operator[](const size_t idx) { return data_; }
 
-  Vc_ALWAYS_INLINE const T& operator[](const size_t idx) const { return data_; }
+  BDM_FORCE_INLINE const T& operator[](const size_t idx) const { return data_; }
 
   T* begin() { return &data_; }
   T* end() { return &data_ + 1; }
@@ -99,47 +100,48 @@ class OneElementArray {
 };
 
 struct VcBackend {
-  typedef const std::size_t index_t;
-  typedef double real_t;
+  typedef Vc::double_v::value_type real_t;
   static const size_t kVecLen = Vc::double_v::Size;
   typedef Vc::double_v real_v;
+  typedef Vc::double_v::Mask bool_v;
   template <typename T>
   using SimdArray = std::array<T, kVecLen>;
-  template <typename T, typename Allocator = std::allocator<T>>
+  template <typename T>
   using Container = OneElementArray<T>;
 };
 
 struct VcSoaBackend {
-  typedef std::size_t index_t;
-  typedef double real_t;
   static const size_t kVecLen = VcBackend::kVecLen;
   typedef VcBackend::real_v real_v;
+  typedef VcBackend::real_t real_t;
+  typedef VcBackend::bool_v bool_v;
   template <typename T>
   using SimdArray = typename VcBackend::template SimdArray<T>;
-  template <typename T, typename Allocator = std::allocator<T>>
-  using Container = std::vector<T, Allocator>;
+  template <typename T>
+  using Container = std::vector<T, Vc::Allocator<T>>;
 };
 
 struct VcSoaRefBackend {
-  typedef std::size_t index_t;
-  typedef double real_t;
   static const size_t kVecLen = VcBackend::kVecLen;
   typedef VcBackend::real_v real_v;
+  typedef VcBackend::real_t real_t;
+  typedef VcBackend::bool_v bool_v;
   template <typename T>
   using SimdArray = typename VcSoaBackend::template SimdArray<T>;
-  template <typename T, typename Allocator = std::allocator<T>>
+  template <typename T>
   using Container =
-      SoaRefWrapper<typename VcSoaBackend::template Container<T, Allocator>>;
+      SoaRefWrapper<typename VcSoaBackend::template Container<T>>;
 };
 
 struct ScalarBackend {
   typedef const std::size_t index_t;
-  typedef double real_t;
   static const size_t kVecLen = 1;
   typedef Vc::SimdArray<double, kVecLen> real_v;
+  typedef double real_t;
+  typedef std::array<bool, 1> bool_v;
   template <typename T>
   using SimdArray = OneElementArray<T>;
-  template <typename T, typename Allocator = std::allocator<T>>
+  template <typename T>
   using Container = OneElementArray<T>;
 };
 
@@ -152,16 +154,6 @@ inline typename VcBackend::real_v iif(
 }
 
 using DefaultBackend = VcBackend;
-
-template <typename T>
-struct is_scalar {
-  static const bool value = false;
-};
-
-template <template <typename> class Container>
-struct is_scalar<Container<ScalarBackend>> {
-  static const bool value = true;
-};
 
 }  // namespace bdm
 

@@ -6,23 +6,23 @@
 
 namespace bdm {
 
-TEST(NeighborOpTest, Compute) {
-  daosoa<Cell, VcBackend> cells;
+template <typename T>
+void RunTest(T* cells) {
   // fixme ugly
-  cells.push_back(
+  cells->push_back(
       Cell<ScalarBackend>(std::array<ScalarBackend::real_v, 3>{0, 0, 0}));
-  cells.push_back(
+  cells->push_back(
       Cell<ScalarBackend>(std::array<ScalarBackend::real_v, 3>{30, 30, 30}));
-  cells.push_back(
+  cells->push_back(
       Cell<ScalarBackend>(std::array<ScalarBackend::real_v, 3>{60, 60, 60}));
 
   // execute operation
   NeighborOp op;
-  op.Compute(&cells);
+  op.Compute(cells);
 
   // check results
   // cell 1
-  auto& neighbors_1 = cells[0].GetNeighbors();
+  auto& neighbors_1 = (*cells)[0].GetNeighbors();
   InlineVector<int, 8> expected_1;
   expected_1.push_back(1);
   EXPECT_TRUE(expected_1 == neighbors_1[0]);
@@ -37,8 +37,18 @@ TEST(NeighborOpTest, Compute) {
   if (VcBackend::kVecLen > 2) {
     EXPECT_EQ(expected_3, neighbors_1[2]);
   } else {
-    EXPECT_EQ(expected_3, cells[1].GetNeighbors()[0]);
+    EXPECT_EQ(expected_3, (*cells)[1].GetNeighbors()[0]);
   }
+}
+
+TEST(NeighborOpTest, ComputeAosoa) {
+  daosoa<Cell<VcBackend>> cells;
+  RunTest(&cells);
+}
+
+TEST(NeighborOpTest, ComputeSoa) {
+  auto cells = Cell<>::NewEmptySoa();
+  RunTest(&cells);
 }
 
 }  // namespace bdm

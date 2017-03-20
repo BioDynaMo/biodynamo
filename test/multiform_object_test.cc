@@ -70,15 +70,15 @@ TEST(MultiformObjectSimple, RemoveAC) {
 // more complex example with two level class hierarchy
 
 template <typename Base = BdmSimObject<>>
-class CellExt : public Base {
-  BDM_CLASS_HEADER(CellExt, CellExt<>,
-                   CellExt<typename Base::template Self<Backend>>, position_,
+class CellExt1 : public Base {
+  BDM_CLASS_HEADER(CellExt1, CellExt1<>,
+                   CellExt1<typename Base::template Self<Backend>>, position_,
                    diameter_);
 
  public:
-  explicit CellExt(const std::array<real_v, 3>& pos) : position_{{pos}} {}
+  explicit CellExt1(const std::array<real_v, 3>& pos) : position_{{pos}} {}
 
-  CellExt() : position_{{1, 2, 3}} {}
+  CellExt1() : position_{{1, 2, 3}} {}
 
   const std::array<real_v, 3>& GetPosition() const { return position_[idx_]; }
   const real_v& GetDiameter() const { return diameter_[idx_]; }
@@ -98,20 +98,20 @@ class Neurite {
 };
 
 // add Neurites to BaseCell
-template <typename Base = CellExt<>>
-class NeuronExt : public Base {
-  BDM_CLASS_HEADER(NeuronExt, NeuronExt<>,
-                   NeuronExt<typename Base::template Self<Backend>>, neurites_);
+template <typename Base = CellExt1<>>
+class NeuronExt1 : public Base {
+  BDM_CLASS_HEADER(NeuronExt1, NeuronExt1<>,
+                   NeuronExt1<typename Base::template Self<Backend>>, neurites_);
 
  public:
   template <class... A>
-  explicit NeuronExt(const SimdArray<std::vector<Neurite>>& neurites,
+  explicit NeuronExt1(const SimdArray<std::vector<Neurite>>& neurites,
                      const A&... a)
       : Base(a...) {
     neurites_[idx_] = neurites;
   }
 
-  NeuronExt() = default;
+  NeuronExt1() = default;
 
   const SimdArray<std::vector<Neurite>>& GetNeurites() const {
     return neurites_[idx_];
@@ -125,27 +125,27 @@ class NeuronExt : public Base {
 // define easy to use templated type alias
 template <template <typename, typename, int> class TMemberSelector =
               SelectAllMembers>
-using Neuron = NeuronExt<CellExt<BdmSimObject<TMemberSelector, ScalarBackend>>>;
+using Neuron1 = NeuronExt1<CellExt1<BdmSimObject<TMemberSelector, ScalarBackend>>>;
 
 TEST(MultiformObjectComplex, SelectAll1) {
-  Neuron<> all_members;
-  EXPECT_EQ(72u, sizeof(all_members));
+  Neuron1<> all_members;
+  EXPECT_EQ(64u, sizeof(all_members));
 }
 
-NEW_MEMBER_SELECTOR(SelectDiameter, CellExt<>, diameter_);
+NEW_MEMBER_SELECTOR(SelectDiameter, CellExt1<>, diameter_);
 
 TEST(MultiformObjectComplex, SelectDiameter) {
-  Neuron<SelectDiameter> only_diameter;
-  EXPECT_EQ(24u, sizeof(only_diameter));
+  Neuron1<SelectDiameter> only_diameter;
+  EXPECT_EQ(16u, sizeof(only_diameter));
   EXPECT_EQ(6.28, only_diameter.GetDiameter()[0]);
 }
 
-NEW_MEMBER_SELECTOR(SelectPositionNeurites, CellExt<>, position_, NeuronExt<>,
+NEW_MEMBER_SELECTOR(SelectPositionNeurites, CellExt1<>, position_, NeuronExt1<>,
                     neurites_);
 
 TEST(MultiformObjectComplex, SelectPositionNeurites) {
-  Neuron<SelectPositionNeurites> neuron;
-  EXPECT_EQ(64u, sizeof(neuron));
+  Neuron1<SelectPositionNeurites> neuron;
+  EXPECT_EQ(56u, sizeof(neuron));
   auto& position = neuron.GetPosition();
   EXPECT_EQ(1, position[0][0]);
   EXPECT_EQ(2, position[1][0]);
@@ -153,20 +153,20 @@ TEST(MultiformObjectComplex, SelectPositionNeurites) {
   EXPECT_EQ(0u, neuron.GetNeurites()[0].size());
 }
 
-NEW_MEMBER_REMOVER(RemovePositionNeurites, CellExt<>, position_, NeuronExt<>,
+NEW_MEMBER_REMOVER(RemovePositionNeurites, CellExt1<>, position_, NeuronExt1<>,
                    neurites_);
 
 TEST(MultiformObjectComplex, RemovePositionNeurites) {
-  Neuron<RemovePositionNeurites> only_diameter;
-  EXPECT_EQ(24u, sizeof(only_diameter));
+  Neuron1<RemovePositionNeurites> only_diameter;
+  EXPECT_EQ(16u, sizeof(only_diameter));
   EXPECT_EQ(6.28, only_diameter.GetDiameter()[0]);
 }
 
-NEW_MEMBER_REMOVER(RemoveDiameter, CellExt<>, diameter_);
+NEW_MEMBER_REMOVER(RemoveDiameter, CellExt1<>, diameter_);
 
 TEST(MultiformObjectComplex, RemoveDiameter) {
-  Neuron<RemoveDiameter> neuron;
-  EXPECT_EQ(64u, sizeof(neuron));
+  Neuron1<RemoveDiameter> neuron;
+  EXPECT_EQ(56u, sizeof(neuron));
   auto& position = neuron.GetPosition();
   EXPECT_EQ(1, position[0][0]);
   EXPECT_EQ(2, position[1][0]);

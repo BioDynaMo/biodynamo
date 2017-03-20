@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+#include "backend.h"
 #include "math_util.h"
 #include "test_util.h"
 

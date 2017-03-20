@@ -5,19 +5,19 @@
 namespace bdm {
 
 // The following tests check if code insertion in new classes works as intended
-// Therefore BdmSimObject is extended in two stages: first by CellExt and
-// then by NeuronExt
+// Therefore BdmSimObject is extended in two stages: first by CellExt2 and
+// then by NeuronExt2
 
 template <typename Base = BdmSimObject<>>
-class CellExt : public Base {
-  BDM_CLASS_HEADER(CellExt, CellExt<>,
-                   CellExt<typename Base::template Self<Backend>>, position_,
+class CellExt2 : public Base {
+  BDM_CLASS_HEADER(CellExt2, CellExt2<>,
+                   CellExt2<typename Base::template Self<Backend>>, position_,
                    diameter_);
 
  public:
-  explicit CellExt(const std::array<real_v, 3>& pos) : position_{{pos}} {}
+  explicit CellExt2(const std::array<real_v, 3>& pos) : position_{{pos}} {}
 
-  CellExt() : position_{{1, 2, 3}} {}
+  CellExt2() : position_{{1, 2, 3}} {}
 
   const std::array<real_v, 3>& GetPosition() const { return position_[idx_]; }
   const real_v& GetDiameter() const { return diameter_[idx_]; }
@@ -39,20 +39,20 @@ class Neurite {
 };
 
 // add Neurites to BaseCell
-template <typename Base = CellExt<>>
-class NeuronExt : public Base {
-  BDM_CLASS_HEADER(NeuronExt, NeuronExt<>,
-                   NeuronExt<typename Base::template Self<Backend>>, neurites_);
+template <typename Base = CellExt2<>>
+class NeuronExt2 : public Base {
+  BDM_CLASS_HEADER(NeuronExt2, NeuronExt2<>,
+                   NeuronExt2<typename Base::template Self<Backend>>, neurites_);
 
  public:
   template <class... A>
-  explicit NeuronExt(const SimdArray<std::vector<Neurite>>& neurites,
+  explicit NeuronExt2(const SimdArray<std::vector<Neurite>>& neurites,
                      const A&... a)
       : Base(a...) {
     neurites_[idx_] = neurites;
   }
 
-  NeuronExt() = default;
+  NeuronExt2() = default;
 
   const SimdArray<std::vector<Neurite>>& GetNeurites() const {
     return neurites_[idx_];
@@ -70,14 +70,14 @@ class NeuronExt : public Base {
 
 // define easy to use templated type alias
 template <typename Backend = VcBackend>
-using Neuron = NeuronExt<CellExt<BdmSimObject<SelectAllMembers, Backend>>>;
+using Neuron2 = NeuronExt2<CellExt2<BdmSimObject<SelectAllMembers, Backend>>>;
 
 TEST(SimulationObjectUtilTest, DefaultConstructor) {
   // are data members in all extensions correctly initialized?
-  Neuron<VcBackend> neuron;
+  Neuron2<VcBackend> neuron;
 
   EXPECT_TRUE((VcBackend::real_v(6.28) == neuron.GetDiameter()).isFull());
-  auto positions = neuron.GetPosition();
+  auto& positions = neuron.GetPosition();
   EXPECT_TRUE((VcBackend::real_v(1) == positions[0]).isFull());
   EXPECT_TRUE((VcBackend::real_v(2) == positions[1]).isFull());
   EXPECT_TRUE((VcBackend::real_v(3) == positions[2]).isFull());
@@ -98,11 +98,11 @@ TEST(SimulationObjectUtilTest, NonDefaultConstructor) {
   VcBackend::SimdArray<std::vector<Neurite>> neurite_v;
   for (std::size_t i = 0; i < neurite_v.size(); i++) neurite_v[i] = neurites;
 
-  Neuron<VcBackend> neuron(
+  Neuron2<VcBackend> neuron(
       neurite_v, std::array<real_v, 3>{real_v(4), real_v(5), real_v(6)});
 
   EXPECT_TRUE((VcBackend::real_v(6.28) == neuron.GetDiameter()).isFull());
-  auto positions = neuron.GetPosition();
+  auto& positions = neuron.GetPosition();
   EXPECT_TRUE((VcBackend::real_v(4) == positions[0]).isFull());
   EXPECT_TRUE((VcBackend::real_v(5) == positions[1]).isFull());
   EXPECT_TRUE((VcBackend::real_v(6) == positions[2]).isFull());
@@ -115,10 +115,10 @@ TEST(SimulationObjectUtilTest, NonDefaultConstructor) {
 
 TEST(SimulationObjectUtilTest, NewScalar) {
   using real_v = ScalarBackend::real_v;
-  auto neuron = Neuron<VcBackend>::NewScalar();
+  auto neuron = Neuron2<VcBackend>::NewScalar();
 
   EXPECT_TRUE((real_v(6.28) == neuron.GetDiameter()).isFull());
-  auto positions = neuron.GetPosition();
+  auto& positions = neuron.GetPosition();
   EXPECT_TRUE((real_v(1) == positions[0]).isFull());
   EXPECT_TRUE((real_v(2) == positions[1]).isFull());
   EXPECT_TRUE((real_v(3) == positions[2]).isFull());
@@ -130,7 +130,7 @@ TEST(SimulationObjectUtilTest, NewScalar) {
 }
 
 TEST(SimulationObjectUtilTest, NewEmptySoa) {
-  auto neurons = Neuron<>::NewEmptySoa();
+  auto neurons = Neuron2<>::NewEmptySoa();
   neurons.size();
   EXPECT_EQ(0u, neurons.size());
   EXPECT_EQ(0u, neurons.vectors());
@@ -139,7 +139,7 @@ TEST(SimulationObjectUtilTest, NewEmptySoa) {
 
 TEST(SimulationObjectUtilTest, GetSoaRef) {
   using real_v = VcBackend::real_v;
-  Neuron<VcSoaBackend> neurons;
+  Neuron2<VcSoaBackend> neurons;
   auto neurons_ref = neurons.GetSoaRef();
   neurons_ref.SetDiameter(real_v(12.34));
   EXPECT_TRUE((real_v(12.34) == neurons.GetDiameter()).isFull());
@@ -155,15 +155,15 @@ TEST(SimulationObjectUtilTest,
   VcBackend::SimdArray<std::vector<Neurite>> neurite_v;
   for (std::size_t i = 0; i < neurite_v.size(); i++) neurite_v[i] = neurites;
 
-  Neuron<VcBackend> neuron_v1(
+  Neuron2<VcBackend> neuron_v1(
       neurite_v, std::array<real_v, 3>{real_v(4), real_v(5), real_v(6)});
 
   neurites.push_back(Neurite(4));
   for (std::size_t i = 0; i < neurite_v.size(); i++) neurite_v[i] = neurites;
-  Neuron<VcBackend> neuron_v2(
+  Neuron2<VcBackend> neuron_v2(
       neurite_v, std::array<real_v, 3>{real_v(9), real_v(8), real_v(7)});
 
-  auto neurons = Neuron<>::NewEmptySoa();
+  auto neurons = Neuron2<>::NewEmptySoa();
   neurons.push_back(neuron_v1);
   neurons.push_back(neuron_v2);
 
@@ -186,14 +186,14 @@ TEST(SimulationObjectUtilTest,
 }
 
 TEST(SimulationObjectUtilTest, SoaBackend_push_backScalarOnEmptySoa) {
-  auto neurons = Neuron<>::NewEmptySoa();
+  auto neurons = Neuron2<>::NewEmptySoa();
   EXPECT_EQ(0u, neurons.size());
 
   using real_v = ScalarBackend::real_v;
   std::vector<Neurite> neurites;
   neurites.push_back(Neurite(22));
   neurites.push_back(Neurite(33));
-  Neuron<ScalarBackend> single_neuron(
+  Neuron2<ScalarBackend> single_neuron(
       {neurites}, std::array<real_v, 3>{real_v(6), real_v(3), real_v(9)});
   single_neuron.SetDiameter({1.2345});
 
@@ -215,7 +215,7 @@ TEST(SimulationObjectUtilTest, SoaBackend_push_backScalarOnEmptySoa) {
 }
 
 TEST(SimulationObjectUtilTest, SoaBackend_push_backScalarOnNonEmptySoa) {
-  Neuron<VcSoaBackend> neurons;  // stores one vector neuron with default values
+  Neuron2<VcSoaBackend> neurons;  // stores one vector neuron with default values
   EXPECT_EQ(1u, neurons.size());
   EXPECT_EQ(1u, neurons.vectors());
   auto expected_elements = VcBackend::kVecLen;
@@ -228,7 +228,7 @@ TEST(SimulationObjectUtilTest, SoaBackend_push_backScalarOnNonEmptySoa) {
   std::vector<Neurite> neurites;
   neurites.push_back(Neurite(22));
   neurites.push_back(Neurite(33));
-  Neuron<ScalarBackend> single_neuron(
+  Neuron2<ScalarBackend> single_neuron(
       {neurites}, std::array<real_v, 3>{real_v(6), real_v(3), real_v(9)});
   single_neuron.SetDiameter({1.2345});
 
@@ -250,7 +250,7 @@ TEST(SimulationObjectUtilTest, SoaBackend_push_backScalarOnNonEmptySoa) {
 }
 
 TEST(SimulationObjectUtilTest, SoaBackend_clear) {
-  Neuron<VcSoaBackend> neurons;
+  Neuron2<VcSoaBackend> neurons;
   EXPECT_EQ(1u, neurons.size());
   neurons.clear();
   EXPECT_EQ(0u, neurons.size());
@@ -260,7 +260,7 @@ TEST(SimulationObjectUtilTest, SoaBackend_clear) {
 }
 
 TEST(SimulationObjectUtilTest, SoaBackend_reserve) {
-  Neuron<VcSoaBackend> neurons;
+  Neuron2<VcSoaBackend> neurons;
   neurons.reserve(10);
   EXPECT_EQ(10u, neurons.neurites_.capacity());
   EXPECT_EQ(10u, neurons.diameter_.capacity());
@@ -268,20 +268,20 @@ TEST(SimulationObjectUtilTest, SoaBackend_reserve) {
 }
 
 TEST(SimulationObjectUtilTest, SoaBackend_Gather) {
-  auto objects = Neuron<>::NewEmptySoa();
+  auto objects = Neuron2<>::NewEmptySoa();
 
   // create objects
   for (size_t i = 0; i < 10; i++) {
     using real_v = ScalarBackend::real_v;
     std::vector<Neurite> neurites;
     neurites.push_back(Neurite(i));
-    Neuron<ScalarBackend> scalar(
+    Neuron2<ScalarBackend> scalar(
         {neurites}, std::array<real_v, 3>{real_v(i), real_v(i), real_v(i)});
     scalar.SetDiameter(i);
     objects.push_back(scalar);
   }
 
-  aosoa<Neuron<VcBackend>, VcBackend> gathered;
+  aosoa<Neuron2<VcBackend>, VcBackend> gathered;
   InlineVector<int, 8> indexes;
   indexes.push_back(5);
   indexes.push_back(3);
@@ -307,7 +307,7 @@ TEST(SimulationObjectUtilTest, SoaBackend_Gather) {
 }
 
 TEST(SimulationObjectUtilTest, VectorBackend_push_backScalar) {
-  Neuron<VcBackend> neurons;  // stores one vector neuron with default values
+  Neuron2<VcBackend> neurons;  // stores one vector neuron with default values
   auto backend_vec_len = VcBackend::kVecLen;
   EXPECT_EQ(backend_vec_len, neurons.size());  // replace with VcBackend::kVecLen
   EXPECT_EQ(1u, neurons.vectors());
@@ -320,7 +320,7 @@ TEST(SimulationObjectUtilTest, VectorBackend_push_backScalar) {
   std::vector<Neurite> neurites;
   neurites.push_back(Neurite(22));
   neurites.push_back(Neurite(33));
-  Neuron<ScalarBackend> single_neuron(
+  Neuron2<ScalarBackend> single_neuron(
       {neurites}, std::array<real_v, 3>{real_v(6), real_v(3), real_v(9)});
   single_neuron.SetDiameter({1.2345});
 

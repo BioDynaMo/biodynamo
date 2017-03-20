@@ -1,8 +1,10 @@
 #ifndef AOSOA_H_
 #define AOSOA_H_
 
+#include <array>
 #include <type_traits>
-#include <vector>
+
+#include "preprocessor.h"
 
 namespace bdm {
 
@@ -10,7 +12,7 @@ namespace bdm {
 template <typename T, typename Backend>
 class aosoa {
  public:
-  // soa of type T
+  // vector of type T
   static constexpr size_t kMaxSize = 8 / Backend::kVecLen;
   using value_type = T;
   using iterator = typename std::array<value_type, kMaxSize>::iterator;
@@ -24,10 +26,10 @@ class aosoa {
   /// \brief returns the number of SOA elements in this container
   size_t vectors() const { return size_; }
 
-  Vc_ALWAYS_INLINE value_type& operator[](std::size_t index) {
+  BDM_FORCE_INLINE value_type& operator[](std::size_t index) {
     return data_[index];
   }
-  Vc_ALWAYS_INLINE const value_type& operator[](std::size_t index) const {
+  BDM_FORCE_INLINE const value_type& operator[](std::size_t index) const {
     return data_[index];
   }
 
