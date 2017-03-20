@@ -8,7 +8,7 @@ namespace bdm {
 TEST(DividingCellOpTest, Compute) {
   using real_v = VcBackend::real_v;
   if (VcBackend::real_v::Size < 2) {
-    FAIL() << "Backend must At least support two elements for this test";
+    FAIL() << "Backend must at least support two elements for this test";
   }
   real_v diameter;
   diameter[0] = 19;

@@ -262,8 +262,8 @@ public:
     return *this;
   }
 
-  // std::enable_if<std::is_same<Backend, SoaBackend>::value || std::is_same<Backend, VcSoaRefBackend>::value, size_t> Size() const {
-  //   return diameter_.Size();
+  // std::enable_if<std::is_same<Backend, SoaBackend>::value || std::is_same<Backend, VcSoaRefBackend>::value, size_t> size() const {
+  //   return diameter_.size();
   // }
   // </required interface>
 
@@ -320,7 +320,7 @@ public:
   friend std::ostream &operator<<( std::ostream &out, const Cell<Backend> &cell ) {
     out << "  cell : " << std::endl;
     out << "    diameter: \t" << cell.diameter_[cell.idx_] << std::endl;
-    out << "    Volume: \t" << cell.volume_[cell.idx_] << std::endl;
+    out << "    volume: \t" << cell.volume_[cell.idx_] << std::endl;
 
     out << "    neurites: \t";
     for (auto& neurites : cell.neurites_[cell.idx_]) {

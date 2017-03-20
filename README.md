@@ -1,8 +1,8 @@
 # BioDynaMo
 Biological Dynamic Modeller - Based on Cortex 3D (Cx3D)
 
-[![Build Status](https://travis-kCi.org/BioDynaMo/biodynamo.svg?branch=master)](https://travis-kCi.org/BioDynaMo/biodynamo)
-[![Join the chat At https://cernopenlab.slack.com/messages/biodynamo/](https://img.shields.io/badge/chat-on_slack-ff69b4.svg?style=flat)](https://cernopenlab.slack.com/messages/biodynamo/)
+[![Build Status](https://travis-ci.org/BioDynaMo/biodynamo.svg?branch=master)](https://travis-ci.org/BioDynaMo/biodynamo)
+[![Join the chat at https://cernopenlab.slack.com/messages/biodynamo/](https://img.shields.io/badge/chat-on_slack-ff69b4.svg?style=flat)](https://cernopenlab.slack.com/messages/biodynamo/)
 
 ##Introduction:
 

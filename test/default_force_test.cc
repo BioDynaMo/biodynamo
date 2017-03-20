@@ -12,7 +12,7 @@ TEST(DefaultForce, General) {
   using real_v = VcBackend::real_v;
   using real_t = real_v::value_type;
   if (real_v::Size < 2) {
-    FAIL() << "Backend must At least support two elements for this test";
+    FAIL() << "Backend must at least support two elements for this test";
   }
   std::array<real_v, 3> ref_mass_location = {1.1, 1.0, 0.9};
   real_v ref_diameter = 8;
@@ -76,7 +76,7 @@ TEST(DefaultForce, OneNonOverlapping) {
   using real_v = VcBackend::real_v;
   using real_t = real_v::value_type;
   if (real_v::Size < 2) {
-    FAIL() << "Backend must At least support two elements for this test";
+    FAIL() << "Backend must at least support two elements for this test";
   }
   std::array<real_v, 3> ref_mass_location = {0, 0, 0};
   real_v ref_diameter = 8;

@@ -1,7 +1,7 @@
 # "Calling Doxygen from cmake" from Thomas Pircher
 # used under a Creative Commons Attribution-Share Alike 3.0 Unported License
 # https://creativecommons.org/licenses/by-sa/3.0/
-# Changes where made; original article can be found At:
+# Changes where made; original article can be found at:
 # https://www.tty1.net/blog/2014/cmake-doxygen_en.html
 
 # add a target to generate API documentation with Doxygen
