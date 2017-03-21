@@ -5,9 +5,10 @@
 #include "test_util.h"
 
 namespace bdm {
+namespace neighbor_op_test_internal {
 
 template <typename T>
-void RunTest2(T* cells) {
+void RunTest(T* cells) {
   // fixme ugly
   cells->push_back(
       Cell<ScalarBackend>(std::array<ScalarBackend::real_v, 3>{0, 0, 0}));
@@ -43,12 +44,13 @@ void RunTest2(T* cells) {
 
 TEST(NeighborOpTest, ComputeAosoa) {
   daosoa<Cell<VcBackend>> cells;
-  RunTest2(&cells);
+  RunTest(&cells);
 }
 
 TEST(NeighborOpTest, ComputeSoa) {
   auto cells = Cell<>::NewEmptySoa();
-  RunTest2(&cells);
+  RunTest(&cells);
 }
 
+}  // namespace neighbor_op_test_internal
 }  // namespace bdm

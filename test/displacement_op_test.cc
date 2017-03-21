@@ -4,6 +4,7 @@
 #include "test_util.h"
 
 namespace bdm {
+namespace displacement_op_test_internal {
 
 template <typename T>
 void RunTest(T* cells) {
@@ -84,6 +85,5 @@ TEST(DisplacementOpTest, ComputeSoa) {
   RunTest(&cells);
 }
 
-
-
+}  // namespace displacement_op_test_internal
 }  // namespace bdm

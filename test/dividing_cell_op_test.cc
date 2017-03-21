@@ -4,9 +4,10 @@
 #include "test_util.h"
 
 namespace bdm {
+namespace dividing_cell_op_test_internal {
 
 template <typename T>
-void RunTest1(T* cells) {
+void RunTest(T* cells) {
   using real_v = VcBackend::real_v;
   if (VcBackend::real_v::Size < 2) {
     FAIL() << "Backend must at least support two elements for this test";
@@ -34,12 +35,13 @@ void RunTest1(T* cells) {
 
 TEST(DividingCellOpTest, ComputeAosoa) {
   daosoa<Cell<VcBackend>> cells;
-  RunTest1(&cells);
+  RunTest(&cells);
 }
 
 TEST(DividingCellOpTest, ComputeSoa) {
   auto cells = Cell<>::NewEmptySoa();
-  RunTest1(&cells);
+  RunTest(&cells);
 }
 
+}  // namespace dividing_cell_op_test_internal
 }  // namespace bdm
