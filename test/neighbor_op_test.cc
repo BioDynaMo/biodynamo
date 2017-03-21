@@ -7,7 +7,7 @@
 namespace bdm {
 
 template <typename T>
-void RunTest(T* cells) {
+void RunTest2(T* cells) {
   // fixme ugly
   cells->push_back(
       Cell<ScalarBackend>(std::array<ScalarBackend::real_v, 3>{0, 0, 0}));
@@ -43,12 +43,12 @@ void RunTest(T* cells) {
 
 TEST(NeighborOpTest, ComputeAosoa) {
   daosoa<Cell<VcBackend>> cells;
-  RunTest(&cells);
+  RunTest2(&cells);
 }
 
 TEST(NeighborOpTest, ComputeSoa) {
   auto cells = Cell<>::NewEmptySoa();
-  RunTest(&cells);
+  RunTest2(&cells);
 }
 
 }  // namespace bdm

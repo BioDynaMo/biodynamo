@@ -14,7 +14,7 @@ git clone https://github.com/BioDynaMo/biodynamo.git
 cd biodynamo
 git checkout backend-arch
 mkdir build && cd build
-cmake ..
+cmake -DCMAKE_C_COMPILER=gcc-4.8 -DCMAKE_CXX_COMPILER=g++-4.8 ..
 make
 make check
 ```

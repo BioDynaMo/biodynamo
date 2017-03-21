@@ -6,7 +6,7 @@
 namespace bdm {
 
 template <typename T>
-void RunTest(T* cells) {
+void RunTest1(T* cells) {
   using real_v = VcBackend::real_v;
   if (VcBackend::real_v::Size < 2) {
     FAIL() << "Backend must at least support two elements for this test";
@@ -34,12 +34,12 @@ void RunTest(T* cells) {
 
 TEST(DividingCellOpTest, ComputeAosoa) {
   daosoa<Cell<VcBackend>> cells;
-  RunTest(&cells);
+  RunTest1(&cells);
 }
 
 TEST(DividingCellOpTest, ComputeSoa) {
   auto cells = Cell<>::NewEmptySoa();
-  RunTest(&cells);
+  RunTest1(&cells);
 }
 
 }  // namespace bdm

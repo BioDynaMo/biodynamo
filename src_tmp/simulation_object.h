@@ -85,6 +85,7 @@ class BdmSimObjectSoaTypeBackend {
   // template <typename T>
   void push_back(const BdmSimObjectVectorBackend& other) {  // FIXME
     size_++;
+    size_last_vector_ = other.ElementsCurrentVector();
   }
 
   // equivalent to std::vector<> clear - it removes all all elements from all
@@ -111,9 +112,13 @@ class BdmSimObjectSoaTypeBackend {
     }
   }
 
-  std::size_t ElementsCurrentVector() const { return size_last_vector_; }
+  /// \brief return the number of scalar elements in the current vector
+  /// only the last vector might have empty elements
+  std::size_t ElementsCurrentVector() const {
+    return idx_ == size_ - 1 ? size_last_vector_ : VcBackend::kVecLen;
+  }
 
-  // TODO(lukas) add documentation
+  // TODO(lukas) add documentation and move next to other push_back
   // push_back scalar on soa
   void push_back(const BdmSimObjectScalarBackend& other) {
     // if it was empty or last vector was full, a vector has been added ->
@@ -135,6 +140,7 @@ class BdmSimObjectSoaTypeBackend {
   template <typename T>
   void Gather(const InlineVector<int, 8>& indexes,
               aosoa<T, VcBackend>* ret) const {
+    // TODO remove commented code
     //std::cout << "gather " << (ret == nullptr) << std::endl;
     const size_t scalars = indexes.size();
     std::size_t n_vectors =

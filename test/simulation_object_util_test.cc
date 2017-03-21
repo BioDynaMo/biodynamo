@@ -148,6 +148,7 @@ TEST(SimulationObjectUtilTest, GetSoaRef) {
 TEST(SimulationObjectUtilTest,
      SoaBackend_push_backVector_AndSubscriptOperator) {
   using real_v = VcBackend::real_v;
+  const std::size_t vector_length = VcBackend::kVecLen;
 
   std::vector<Neurite> neurites;
   neurites.push_back(Neurite(2));
@@ -162,13 +163,22 @@ TEST(SimulationObjectUtilTest,
   for (std::size_t i = 0; i < neurite_v.size(); i++) neurite_v[i] = neurites;
   Neuron2<VcBackend> neuron_v2(
       neurite_v, std::array<real_v, 3>{real_v(9), real_v(8), real_v(7)});
+  // simulate that this neuron vector is not full
+  neuron_v2.SetSize(1);
 
   auto neurons = Neuron2<>::NewEmptySoa();
   neurons.push_back(neuron_v1);
   neurons.push_back(neuron_v2);
 
+  EXPECT_EQ(2u, neurons.size());
+  EXPECT_EQ(2u, neurons.vectors());
+  EXPECT_EQ(vector_length + 1, neurons.elements());
+
+  EXPECT_EQ(vector_length, neurons[0].ElementsCurrentVector());
+
   // switch to neuron_v2
   auto& result1 = neurons[1];
+  EXPECT_EQ(1u, result1.ElementsCurrentVector());
 
   // operator[] returns reference to *this
   EXPECT_TRUE(&result1 == &neurons);
@@ -315,6 +325,7 @@ TEST(SimulationObjectUtilTest, VectorBackend_push_backScalar) {
 
   // simulate that the vector only holds one scalar - remaining slots are free
   neurons.SetSize(1);
+  EXPECT_EQ(1u, neurons.ElementsCurrentVector());
 
   using real_v = ScalarBackend::real_v;
   std::vector<Neurite> neurites;
@@ -328,6 +339,7 @@ TEST(SimulationObjectUtilTest, VectorBackend_push_backScalar) {
   EXPECT_EQ(2u, neurons.size());
   EXPECT_EQ(1u, neurons.vectors());
   EXPECT_EQ(2u, neurons.elements());
+  EXPECT_EQ(2u, neurons.ElementsCurrentVector());
 
   // check if scalar data members have been copied correctly
   EXPECT_EQ(1.2345, neurons.GetDiameter()[1]);
