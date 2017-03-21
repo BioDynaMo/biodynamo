@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 #include <Vc/Vc>
-#include "backend_old.h"
+#include "backend.h"
 
 namespace bdm {
 
