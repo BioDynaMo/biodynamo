@@ -15,34 +15,36 @@
 #include "math_util.h"
 #include "param.h"
 
-
+using std::cout;
+using std::endl;
+using std::string;
 using std::fstream;
-using namespace std;
+using std::ofstream;
 
 namespace bdm {
 
 class Exporter {
  public:
+  /// This function exports the cell positions into a file,
+  /// where each line contains the 3D position of a cell in square brackets.
   template <typename daosoa>
   void ToFile(daosoa* cells, string filename) const {
-    // This function exports the cell positions into a file,
-    // where each line contains the 3D position of a cell in square brackets.
-    const size_t n_vectors = cells->vectors();
+    const size_t num_vectors = cells->vectors();
 
     ofstream outfile;
-    outfile.open("../demo/" + filename);
+    outfile.open(filename);
 
-    double currPosX, currPosY, currPosZ;
+    double curr_pos_x, curr_pos_y, curr_pos_z;
 
-    for (size_t j = 0; j < VcBackend::kVecLen; j++) {
-      for (size_t i = 0; i < n_vectors; i++) {
+    for (size_t i = 0; i < num_vectors; i++) {
+      for (size_t j = 0; j < (*cells)[i].Size(); j++) {
         auto& cell = (*cells)[i];
-        auto& currPos = cell.GetPosition();
-        currPosX = currPos[0][j];
-        currPosY = currPos[1][j];
-        currPosZ = currPos[2][j];
-        outfile << "[" << currPosX << "," << currPosY << "," << currPosZ << "]"
-                << endl;
+        auto& curr_pos = cell.GetPosition();
+        curr_pos_x = curr_pos[0][j];
+        curr_pos_y = curr_pos[1][j];
+        curr_pos_z = curr_pos[2][j];
+        outfile << "[" << curr_pos_x << "," << curr_pos_y << "," << curr_pos_z
+                << "]" << endl;
       }
     }
 
@@ -51,35 +53,35 @@ class Exporter {
     std::cout << "created ExportFile with positions" << std::endl;
   }
 
+  /// This function exports the cell positions into a file in Matlab format,
+  /// where each line contains the 3D position of a cell. An array called
+  /// CellPos
+  /// is initialized with the correct size corresponding to the number of
+  /// cells.
   template <typename daosoa>
   void ToMatlabFile(daosoa* cells, string filename) const {
-    // This function exports the cell positions into a file in Matlab format,
-    // where each line contains the 3D position of a cell. An array called
-    // CellPos
-    // is initialized with the correct size corresponding to the number of
-    // cells.
-    const size_t n_vectors = cells->vectors();
+    const size_t num_vectors = cells->vectors();
 
     ofstream outfile;
-    outfile.open("../demo/" + filename);
+    outfile.open(filename);
 
-    double currPosX, currPosY, currPosZ;
+    double curr_pos_x, curr_pos_y, curr_pos_z;
 
-    int nrCells = VcBackend::kVecLen * n_vectors;
-    int cellID = 0;
+    int num_cells = VcBackend::kVecLen * num_vectors;
+    int cell_id = 0;
 
-    outfile << "CellPos = zeros(" << nrCells << "," << 3 << ");" << endl;
+    outfile << "CellPos = zeros(" << num_cells << "," << 3 << ");" << endl;
 
-    for (size_t j = 0; j < VcBackend::kVecLen; j++) {
-      for (size_t i = 0; i < n_vectors; i++) {
-        cellID++;
+    for (size_t i = 0; i < num_vectors; i++) {
+      for (size_t j = 0; j < (*cells)[i].Size(); j++) {
+        cell_id++;
         auto& cell = (*cells)[i];
-        auto& currPos = cell.GetPosition();
-        currPosX = currPos[0][j];
-        currPosY = currPos[1][j];
-        currPosZ = currPos[2][j];
-        outfile << "CellPos(" << cellID << ",1:3) = [" << currPosX << ","
-                << currPosY << "," << currPosZ << "];" << endl;
+        auto& curr_pos = cell.GetPosition();
+        curr_pos_x = curr_pos[0][j];
+        curr_pos_y = curr_pos[1][j];
+        curr_pos_z = curr_pos[2][j];
+        outfile << "CellPos(" << cell_id << ",1:3) = [" << curr_pos_x << ","
+                << curr_pos_y << "," << curr_pos_z << "];" << endl;
       }
     }
 
@@ -88,16 +90,15 @@ class Exporter {
     std::cout << "created ExportFile with positions" << std::endl;
   }
 
+  /// a preliminary exporter according to the NeuroML Level 3 format.
+  /// Currently, no axons or connectivity is present, so these information
+  /// will be added in the future.
   template <typename daosoa>
   void ToNeuroMLFile(daosoa* cells, string filename) const {
-    // a preliminary exporter according to the NeuroML Level 3 format.
-    // Currently, no axons or connectivity is present, so these information
-    // will be added in the future.
-
-    const size_t n_vectors = cells->vectors();
+    const size_t num_vectors = cells->vectors();
 
     ofstream outfile;
-    outfile.open("../demo/" + filename);
+    outfile.open(filename);
 
     string space1 = "   ";
     string space2 = "      ";
@@ -172,10 +173,11 @@ class Exporter {
     outfile << space2 << "</cell>" << endl;
     outfile << space1 << "</cells>" << endl;
 
-    // here, the cell populations and connectivity will be
-    // specified and exported
-    for (size_t j = 0; j < VcBackend::kVecLen; j++) {
-      for (size_t i = 0; i < n_vectors; i++) {
+    // TODO(roman) here, the cell populations and connectivity will be
+    // specified and exported, onece these are included in the model
+
+    for (size_t i = 0; i < num_vectors; i++) {
+      for (size_t j = 0; j < (*cells)[i].Size(); j++) {
       }
     }
 
@@ -187,5 +189,5 @@ class Exporter {
     std::cout << "created NeuroML file" << std::endl;
   }
 };
-}   // namespace bdm
+}  // namespace bdm
 #endif  // EXPORTER_H_

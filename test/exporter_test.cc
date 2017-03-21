@@ -1,5 +1,5 @@
-#include "cell.h"
 #include "exporter.h"
+#include "cell.h"
 #include "gtest/gtest.h"
 
 namespace bdm {
@@ -30,11 +30,11 @@ TEST(ExportTest, ConductExportToFile) {
   t.open("../demo/TestExporter.dat");
   std::string line;
   std::getline(t, line);
-  EXPECT_EQ("[0.5,1,0]",line);
+  EXPECT_EQ("[0.5,1,0]", line);
   std::getline(t, line);
-  EXPECT_EQ("[-5,5,0.9]",line);
+  EXPECT_EQ("[-5,5,0.9]", line);
   std::getline(t, line);
-  EXPECT_EQ("",line);
+  EXPECT_EQ("", line);
   t.close();
   remove("../demo/TestExporter.dat");
 
@@ -42,15 +42,14 @@ TEST(ExportTest, ConductExportToFile) {
   exporter.ToMatlabFile(&cells, "../demo/TestMatlabExporter.m");
   t.open("../demo/TestMatlabExporter.m");
   std::getline(t, line);
-  EXPECT_EQ("CellPos = zeros(2,3);",line);
+  EXPECT_EQ("CellPos = zeros(2,3);", line);
   std::getline(t, line);
-  EXPECT_EQ("CellPos(1,1:3) = [0.5,1,0];",line);
+  EXPECT_EQ("CellPos(1,1:3) = [0.5,1,0];", line);
   std::getline(t, line);
-  EXPECT_EQ("CellPos(2,1:3) = [-5,5,0.9];",line);
+  EXPECT_EQ("CellPos(2,1:3) = [-5,5,0.9];", line);
   std::getline(t, line);
-  EXPECT_EQ("",line);
+  EXPECT_EQ("", line);
   t.close();
   remove("../demo/TestMatlabExporter.m");
-
 }
 }
