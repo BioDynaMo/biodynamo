@@ -142,7 +142,6 @@ if (${CLANG_FORMAT_FOUND})
   # runs clang-format and updates files in place.
   add_custom_target(format ${BUILD_SUPPORT_DIR}/run-clang-format.sh ${CMAKE_CURRENT_SOURCE_DIR} ${CLANG_FORMAT_BIN} 1
   `find ${CMAKE_CURRENT_SOURCE_DIR}/src -name \\*.cc -or -name \\*.h`)
-
   # runs clang format and exits with a non-zero exit code if any files need to be reformatted
   add_custom_target(check-format ${BUILD_SUPPORT_DIR}/run-clang-format.sh ${CMAKE_CURRENT_SOURCE_DIR} ${CLANG_FORMAT_BIN} 0
   `find ${CMAKE_CURRENT_SOURCE_DIR}/src -name \\*.cc -or -name \\*.h`)
@@ -152,7 +151,7 @@ endif()
 if (${CLANG_TIDY_FOUND})
   # runs clang-tidy and attempts to fix any warning automatically
   add_custom_target(clang-tidy ${BUILD_SUPPORT_DIR}/run-clang-tidy.sh ${CLANG_TIDY_BIN} ${CMAKE_BINARY_DIR}/compile_commands.json 1
-  `find ${CMAKE_CURRENT_SOURCE_DIR}/src -name \\*.cc`)
+  `find ${CMAKE_CURRENT_SOURCE_DIR}/src -name \\*.cc | grep -v -F -f ${CMAKE_CURRENT_SOURCE_DIR}/.clang-tidy-ignore`)
   # runs clang-tidy and exits with a non-zero exit code if any errors are found.
   add_custom_target(check-clang-tidy ${BUILD_SUPPORT_DIR}/run-clang-tidy.sh ${CLANG_TIDY_BIN} ${CMAKE_BINARY_DIR}/compile_commands.json 0
   `find ${CMAKE_CURRENT_SOURCE_DIR}/src -name \\*.cc | grep -v -F -f ${CMAKE_CURRENT_SOURCE_DIR}/.clang-tidy-ignore`)
