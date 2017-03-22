@@ -39,4 +39,11 @@ TEST(is_scalarTest, All) {
   EXPECT_TRUE(is_scalar<Widget<ScalarBackend>>::value);
 }
 
+TEST(is_soaTest, All) {
+  EXPECT_FALSE(is_soa<VcBackend>::value);
+  EXPECT_FALSE(is_soa<ScalarBackend>::value);
+  EXPECT_TRUE(is_soa<VcSoaBackend>::value);
+  EXPECT_TRUE(is_soa<VcSoaRefBackend>::value);
+}
+
 }  // namespace bdm

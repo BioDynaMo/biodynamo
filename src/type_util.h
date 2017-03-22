@@ -3,6 +3,8 @@
 
 #include "backend.h"
 
+using std::is_same;
+
 namespace bdm {
 
 struct EmptyType {};
@@ -41,9 +43,16 @@ struct is_std_array<std::array<T, N>> {
 
 // -----------------------------------------------------------------------------
 
+// TODO rename has_scalar_backend
 template <typename T>
 struct is_scalar {
-  static const bool value = std::is_same<typename T::Backend, ScalarBackend>::value;
+  static const bool value = is_same<typename T::Backend, ScalarBackend>::value;
+};
+
+
+template <typename Backend>
+struct is_soa {
+  static const bool value = is_same<Backend, VcSoaBackend>::value || is_same<Backend, VcSoaRefBackend>::value ;
 };
 
 }  // namespace bdm
