@@ -13,9 +13,9 @@
 # limitations under the License.
 #
 #
-# Runs clang format in the given directory
+# Runs clang-tidy in the given directory
 # Arguments:
-#   $1 - Path to the clang tidy binary
+#   $1 - Path to the clang-tidy binary
 #   $2 - Path to the compile_commands.json to use
 #   $3 - Apply fixes (will raise an error if false and there were changes)
 #   $ARGN - Files to run clang-tidy on
@@ -27,14 +27,14 @@ shift
 APPLY_FIXES=$1
 shift
 
-# clang format will only find its configuration if we are in
+# clang-tidy will only find its configuration if we are in
 # the source tree or in a path relative to the source tree
 if [ "$APPLY_FIXES" == "1" ]; then
-  $CLANG_TIDY -p $COMPILE_COMMANDS -fix  $@
+  $CLANG_TIDY -p $COMPILE_COMMANDS -fix $@
 else
   NUM_CORRECTIONS=`$CLANG_TIDY -p $COMPILE_COMMANDS $@ 2>&1 | grep -v Skipping | grep "warnings* generated" | wc -l`
   if [ "$NUM_CORRECTIONS" -gt "0" ]; then
-    echo "clang-tidy had suggested fixes, please fix these!!!"
+    echo "clang-tidy suggested fixes, please fix these!!!"
     exit 1
   fi
 fi
