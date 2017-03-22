@@ -1,11 +1,11 @@
 #ifndef DEBUG_H_
 #define DEBUG_H_
 
+#include <Eigen/CXX11/Tensor>
+#include <Vc/Vc>
 #include <algorithm>
 #include <array>
 #include <iostream>
-#include <Eigen/CXX11/Tensor>
-#include <Vc/Vc>
 
 void print(const Eigen::Tensor<float, 1>& tensor) {
   for (size_t i = 0; i < tensor.dimension(0); i++) {

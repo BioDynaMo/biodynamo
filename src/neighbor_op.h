@@ -76,7 +76,8 @@ class NeighborOp {
     typedef KDTreeSingleIndexAdaptor<
         L2_Simple_Adaptor<VcBackend::real_t, NanoFlann2Daosoa>,
         NanoFlann2Daosoa, 3 /* dim */
-        > my_kd_tree_t;
+        >
+        my_kd_tree_t;
 
     // three dimensions; max leafs: 10
     my_kd_tree_t index(3, nf_cells, KDTreeSingleIndexAdaptorParams(10));

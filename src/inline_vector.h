@@ -1,8 +1,8 @@
 #ifndef INLINE_VECTOR_H_
 #define INLINE_VECTOR_H_
 
-#include <array>
 #include <algorithm>
+#include <array>
 #include <sstream>
 #include <vector>
 

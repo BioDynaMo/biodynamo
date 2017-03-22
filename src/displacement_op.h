@@ -1,11 +1,11 @@
 #ifndef DISPLACEMENT_OP_H_
 #define DISPLACEMENT_OP_H_
 
-#include <cmath>
 #include "backend.h"
 #include "cell.h"
 #include "math_util.h"
 #include "param.h"
+#include <cmath>
 
 namespace bdm {
 
