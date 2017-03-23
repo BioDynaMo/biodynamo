@@ -28,8 +28,8 @@ class Exporter {
   /// This function exports the cell positions into a file,
   /// where each line contains the 3D position of a cell in square brackets.
   template <typename daosoa>
-  void ToFile(daosoa* cells, string filename) const {
-    const size_t num_vectors = cells->vectors();
+  void ToFile(const daosoa& cells, string filename) const {
+    const size_t num_vectors = cells.vectors();
 
     ofstream outfile;
     outfile.open(filename);
@@ -37,8 +37,8 @@ class Exporter {
     double curr_pos_x, curr_pos_y, curr_pos_z;
 
     for (size_t i = 0; i < num_vectors; i++) {
-      for (size_t j = 0; j < (*cells)[i].Size(); j++) {
-        auto& cell = (*cells)[i];
+      for (size_t j = 0; j < cells[i].Size(); j++) {
+        auto& cell = cells[i];
         auto& curr_pos = cell.GetPosition();
         curr_pos_x = curr_pos[0][j];
         curr_pos_y = curr_pos[1][j];
@@ -59,8 +59,8 @@ class Exporter {
   /// is initialized with the correct size corresponding to the number of
   /// cells.
   template <typename daosoa>
-  void ToMatlabFile(daosoa* cells, string filename) const {
-    const size_t num_vectors = cells->vectors();
+  void ToMatlabFile(const daosoa& cells, string filename) const {
+    const size_t num_vectors = cells.vectors();
 
     ofstream outfile;
     outfile.open(filename);
@@ -73,9 +73,9 @@ class Exporter {
     outfile << "CellPos = zeros(" << num_cells << "," << 3 << ");" << endl;
 
     for (size_t i = 0; i < num_vectors; i++) {
-      for (size_t j = 0; j < (*cells)[i].Size(); j++) {
+      for (size_t j = 0; j < cells[i].Size(); j++) {
         cell_id++;
-        auto& cell = (*cells)[i];
+        auto& cell = cells[i];
         auto& curr_pos = cell.GetPosition();
         curr_pos_x = curr_pos[0][j];
         curr_pos_y = curr_pos[1][j];
@@ -94,8 +94,8 @@ class Exporter {
   /// Currently, no axons or connectivity is present, so these information
   /// will be added in the future.
   template <typename daosoa>
-  void ToNeuroMLFile(daosoa* cells, string filename) const {
-    const size_t num_vectors = cells->vectors();
+  void ToNeuroMLFile(const daosoa& cells, string filename) const {
+    const size_t num_vectors = cells.vectors();
 
     ofstream outfile;
     outfile.open(filename);
@@ -173,11 +173,11 @@ class Exporter {
     outfile << space2 << "</cell>" << endl;
     outfile << space1 << "</cells>" << endl;
 
-    // TODO(roman) here, the cell populations and connectivity will be
+    // TODO(roman): here, the cell populations and connectivity will be
     // specified and exported, onece these are included in the model
 
     for (size_t i = 0; i < num_vectors; i++) {
-      for (size_t j = 0; j < (*cells)[i].Size(); j++) {
+      for (size_t j = 0; j < cells[i].Size(); j++) {
       }
     }
 

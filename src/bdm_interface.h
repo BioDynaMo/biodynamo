@@ -1,13 +1,15 @@
 //=================================================================================================
 #ifndef BDM_INTERFACE_H_
 #define BDM_INTERFACE_H_
+
+#include <vector>
 #include "backend.h"
 #include "cell.h"
 #include "daosoa.h"
 #include "resource_manager.h"
 #include "scheduler.h"
 #include "timing.h"
-#include <vector>
+
 
 namespace bdm {
 // The following classes will enable an interface between BioDynaMo and

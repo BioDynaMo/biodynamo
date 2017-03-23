@@ -24,10 +24,10 @@ TEST(ExportTest, ConductExportToFile) {
   Exporter exporter;
 
   // Test the standard file exporter
-  exporter.ToFile(&cells, "../demo/TestExporter.dat");
+  exporter.ToFile(cells, "TestExporter.dat");
   std::ifstream t;
   std::stringstream buffer;
-  t.open("../demo/TestExporter.dat");
+  t.open("TestExporter.dat");
   std::string line;
   std::getline(t, line);
   EXPECT_EQ("[0.5,1,0]", line);
@@ -36,11 +36,11 @@ TEST(ExportTest, ConductExportToFile) {
   std::getline(t, line);
   EXPECT_EQ("", line);
   t.close();
-  remove("../demo/TestExporter.dat");
+  remove("TestExporter.dat");
 
   // Test the Matlab file exporter
-  exporter.ToMatlabFile(&cells, "../demo/TestMatlabExporter.m");
-  t.open("../demo/TestMatlabExporter.m");
+  exporter.ToMatlabFile(cells, "TestMatlabExporter.m");
+  t.open("TestMatlabExporter.m");
   std::getline(t, line);
   EXPECT_EQ("CellPos = zeros(2,3);", line);
   std::getline(t, line);
@@ -50,6 +50,6 @@ TEST(ExportTest, ConductExportToFile) {
   std::getline(t, line);
   EXPECT_EQ("", line);
   t.close();
-  remove("../demo/TestMatlabExporter.m");
+  remove("TestMatlabExporter.m");
 }
-}
+}  // namespace bdm

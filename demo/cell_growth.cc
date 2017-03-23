@@ -1,10 +1,8 @@
+#include <omp.h>
 #include <cmath>
 #include <functional>
 #include <iostream>
 #include <sstream>
-
-#include <omp.h>
-// #include <ittnotify.h>
 
 #include "backend.h"
 #include "cell.h"
@@ -86,9 +84,9 @@ void execute(size_t cells_per_dim, size_t iterations, size_t threads,
       Timing timing("Export", statistic);
       std::cout << "exporting now..." << std::endl;
       Exporter exporter;
-      exporter.ToFile(&cells, "FinalPositions.dat");
-      exporter.ToMatlabFile(&cells, "FinalPositions.m");
-      exporter.ToNeuroMLFile(&cells, "FinalPositions.xml");
+      exporter.ToFile(cells, "FinalPositions.dat");
+      exporter.ToMatlabFile(cells, "FinalPositions.m");
+      exporter.ToNeuroMLFile(cells, "FinalPositions.xml");
     }
   }
 }
