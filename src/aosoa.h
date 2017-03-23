@@ -1,9 +1,9 @@
 #ifndef AOSOA_H_
 #define AOSOA_H_
 
-#include "backend.h"
 #include <type_traits>
 #include <vector>
+#include "backend.h"
 
 namespace bdm {
 

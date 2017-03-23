@@ -1,8 +1,8 @@
 #ifndef NEIGHBOR_OP_H_
 #define NEIGHBOR_OP_H_
 
-#include <iostream>
 #include <nanoflann.h>
+#include <iostream>
 
 namespace bdm {
 

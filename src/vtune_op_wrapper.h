@@ -1,8 +1,8 @@
 #ifndef VTUNE_OP_WRAPPER_H_
 #define VTUNE_OP_WRAPPER_H_
 
-#include <iostream>
 #include <ittnotify.h>
+#include <iostream>
 
 namespace bdm {
 

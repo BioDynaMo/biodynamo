@@ -1,14 +1,14 @@
 #ifndef CELL_H_
 #define CELL_H_
 
+#include <array>
+#include <cmath>
 #include "backend.h"
 #include "daosoa.h"
 #include "default_force.h"
 #include "inline_vector.h"
 #include "math_util.h"
 #include "param.h"
-#include <array>
-#include <cmath>
 
 namespace bdm {
 
