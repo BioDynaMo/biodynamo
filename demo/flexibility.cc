@@ -184,8 +184,8 @@ void TestDifferentBackends() {
   auto vc_soa_ref_neuron = vc_soa_neuron.GetSoaRef();
   foo[0] = 3.3;
   foo[1] = 4.4;
-  vc_soa_ref_neuron[0].SetFoo(foo);
-  std::cout << "soa[0] foo " << vc_soa_neuron[0].GetFoo() << std::endl;
+  (*vc_soa_ref_neuron)[0].SetFoo(foo);
+  std::cout << "soa[0] foo " << (*vc_soa_ref_neuron)[0].GetFoo() << std::endl;
 }
 
 }  // namespace bdm

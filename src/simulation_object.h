@@ -65,10 +65,27 @@ class BdmSimObjectVectorBackend {
   std::size_t size_ = Backend::kVecLen;
 };
 
+template <typename TTBackend>
 class BdmSimObjectSoaTypeBackend {
-  using Backend = VcSoaBackend;
+public:
+  using Backend = TTBackend;
 
- public:
+   template <typename TBackend>
+   friend class BdmSimObjectSoaTypeBackend;
+
+   template <typename T = Backend>
+   BdmSimObjectSoaTypeBackend(typename enable_if<is_same<T, VcSoaBackend>::value>::type* = 0) :
+     size_(1), size_last_vector_(VcBackend::kVecLen) {}
+
+   // Ctor to create SoaRefBackend
+   // only compiled if T == VcSoaRefBackend
+   // template parameter required for enable_if - otherwise compile error
+   template <typename T = Backend>
+   BdmSimObjectSoaTypeBackend(
+       BdmSimObjectSoaTypeBackend<VcSoaBackend>* other,
+       typename enable_if<is_same<T, VcSoaRefBackend>::value>::type* = 0) :
+       size_(other->size_), size_last_vector_(other->size_last_vector_) { }
+
   virtual ~BdmSimObjectSoaTypeBackend() {}
 
   void SetSize(std::size_t size) { size_last_vector_ = size; }
@@ -179,8 +196,8 @@ class BdmSimObjectSoaTypeBackend {
 
  protected:
   mutable std::size_t idx_ = 0;
-  std::size_t size_ = 1;
-  std::size_t size_last_vector_ = VcBackend::kVecLen;
+  typename type_ternary_operator<is_same<Backend, VcSoaBackend>::value, std::size_t, std::size_t&>::type size_;
+  typename type_ternary_operator<is_same<Backend, VcSoaBackend>::value, std::size_t, std::size_t&>::type size_last_vector_;
 };
 
 template <typename TBackend>
@@ -188,12 +205,12 @@ struct BdmSimObjectImpl {};
 
 template <>
 struct BdmSimObjectImpl<VcSoaBackend> {
-  typedef BdmSimObjectSoaTypeBackend type;
+  typedef BdmSimObjectSoaTypeBackend<VcSoaBackend> type;
 };
 
 template <>
 struct BdmSimObjectImpl<VcSoaRefBackend> {
-  typedef BdmSimObjectSoaTypeBackend type;
+  typedef BdmSimObjectSoaTypeBackend<VcSoaRefBackend> type;
 };
 
 template <>
@@ -247,7 +264,7 @@ struct BdmSimObject : public BdmSimObjectImpl<TBackend>::type {
   template <typename T = Backend>
   BdmSimObject(
       Self<VcSoaBackend>* other,
-      typename enable_if<is_same<T, VcSoaRefBackend>::value>::type* = 0) { } // TODO *idx_ = 0; }
+      typename enable_if<is_same<T, VcSoaRefBackend>::value>::type* = 0) : Base(other) { }
 
   // assigment operator if two objects are of the exact same type
   BdmSimObject<TTMemberSelector, TBackend>& operator=(

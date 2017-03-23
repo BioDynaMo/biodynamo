@@ -1,8 +1,8 @@
 #ifndef SIMULATION_OBJECT_UTIL_H_
 #define SIMULATION_OBJECT_UTIL_H_
 
+#include <exception>
 #include <memory>
-
 #include "backend.h"
 #include "preprocessor.h"
 
@@ -174,8 +174,7 @@
   /* template parameter required for enable_if - otherwise compile error */    \
   template <typename T = Backend>                                              \
   class_name(                                                                  \
-      Self<VcSoaBackend>* other,                                               \
-      typename enable_if<is_same<T, VcSoaRefBackend>::value>::type* = 0)       \
+      Self<VcSoaBackend>* other)       \
       : Base(other),                                                           \
         REMOVE_TRAILING_COMMAS(BDM_CLASS_HEADER_CPY_CTOR_INIT(__VA_ARGS__)) {} \
                                                                                \
@@ -183,9 +182,13 @@
   /* TODO only for SoaBackends */                                              \
   /* needed because operator[] is not thread safe - index is shared among  */  \
   /* all threads */                                                            \
-  Vc_ALWAYS_INLINE Self<VcSoaRefBackend> GetSoaRef() {                         \
-    return Self<VcSoaRefBackend>(this);                                        \
+  Vc_ALWAYS_INLINE std::unique_ptr<Self<VcSoaRefBackend>> GetSoaRef() {        \
+    return std::unique_ptr<Self<VcSoaRefBackend>>(new Self<VcSoaRefBackend>(this));\
   }                                                                            \
+                                                                               \
+ Vc_ALWAYS_INLINE Self<VcSoaRefBackend> GetSoaRef() const {                    \
+    throw std::logic_error("Function not implemented yet");                    \
+ }                                                                             \
                                                                                \
   /* only compiled if Backend == Soa(Ref)Backend */                            \
   /* template parameter required for enable_if - otherwise compile error */    \

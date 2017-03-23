@@ -1,8 +1,9 @@
 #ifndef NEIGHBOR_OP_H_
 #define NEIGHBOR_OP_H_
 
-#include <nanoflann.h>
 #include <iostream>
+#include "nanoflann.h"
+#include "make_thread_safe.h"
 
 namespace bdm {
 
@@ -33,9 +34,12 @@ struct NanoFlannDaosoaAdapter {
                                  size_t /*size*/) const {
     const auto vector_idx = idx_p2 / VcBackend::kVecLen;
     const auto scalar_idx = idx_p2 % VcBackend::kVecLen;
-    const coord_t d0 = p1[0] - derived()[vector_idx].GetPosition()[0][scalar_idx];
-    const coord_t d1 = p1[1] - derived()[vector_idx].GetPosition()[1][scalar_idx];
-    const coord_t d2 = p1[2] - derived()[vector_idx].GetPosition()[2][scalar_idx];
+    const coord_t d0 =
+        p1[0] - derived()[vector_idx].GetPosition()[0][scalar_idx];
+    const coord_t d1 =
+        p1[1] - derived()[vector_idx].GetPosition()[1][scalar_idx];
+    const coord_t d2 =
+        p1[2] - derived()[vector_idx].GetPosition()[2][scalar_idx];
     return d0 * d0 + d1 * d1 + d2 * d2;
   }
 
@@ -69,9 +73,9 @@ class NeighborOp {
   NeighborOp(const NeighborOp&) = delete;
   NeighborOp& operator=(const NeighborOp&) = delete;
 
-  template <typename daosoa>
-  Vc_ALWAYS_INLINE void Compute(daosoa* cells) const {
-    typedef NanoFlannDaosoaAdapter<daosoa> NanoFlann2Daosoa;
+  template <typename TContainer>
+  Vc_ALWAYS_INLINE void Compute(TContainer* cells) const {
+    typedef NanoFlannDaosoaAdapter<TContainer> NanoFlann2Daosoa;
     const NanoFlann2Daosoa nf_cells(*cells);  // The adaptor
 
     // construct a kd-tree index:
@@ -89,45 +93,49 @@ class NeighborOp {
         neighbors(cells->vectors());
 
 // calc neighbors
-// std::cout << "number of elements " << cells->elements() << std::endl;
-#pragma omp parallel for
-    for (size_t i = 0; i < cells->elements(); i++) {
-      const auto vector_idx = i / VcBackend::kVecLen;
-      const auto scalar_idx = i % VcBackend::kVecLen;
+#pragma omp parallel
+    {
+      auto thread_safe_cells = make_thread_safe(cells);
+#pragma omp for
+      for (size_t i = 0; i < thread_safe_cells->elements(); i++) {
+        const auto vector_idx = i / VcBackend::kVecLen;
+        const auto scalar_idx = i % VcBackend::kVecLen;
 
-      // fixme make param
-      // according to roman 50 - 100 micron
-      const VcBackend::real_t search_radius =
-          static_cast<VcBackend::real_t>(distance_);
+        // fixme make param
+        // according to roman 50 - 100 micron
+        const VcBackend::real_t search_radius =
+            static_cast<VcBackend::real_t>(distance_);
 
-      std::vector<std::pair<size_t, VcBackend::real_t> > ret_matches;
+        std::vector<std::pair<size_t, VcBackend::real_t> > ret_matches;
 
-      nanoflann::SearchParams params;
-      params.sorted = false;
+        nanoflann::SearchParams params;
+        params.sorted = false;
 
-      const auto& position = (*cells)[vector_idx].GetPosition();
-      const VcBackend::real_t query_pt[3] = {position[0][scalar_idx], position[1][scalar_idx],
-                                             position[2][scalar_idx]};
+        const auto& position = (*thread_safe_cells)[vector_idx].GetPosition();
+        const VcBackend::real_t query_pt[3] = {position[0][scalar_idx],
+                                               position[1][scalar_idx],
+                                               position[2][scalar_idx]};
 
-      // calculate neighbors
-      const size_t n_matches =
-          index.radiusSearch(&query_pt[0], search_radius, ret_matches, params);
+        // calculate neighbors
+        const size_t n_matches = index.radiusSearch(&query_pt[0], search_radius,
+                                                    ret_matches, params);
 
-      // transform result (change data structure - remove self from list)
-      InlineVector<int, 8> i_neighbors;
-      i_neighbors.reserve(n_matches - 1);
-      for (size_t j = 0; j < n_matches; j++) {
-        if (ret_matches[j].first != i) {
-          i_neighbors.push_back(ret_matches[j].first);
+        // transform result (change data structure - remove self from list)
+        InlineVector<int, 8> i_neighbors;
+        i_neighbors.reserve(n_matches - 1);
+        for (size_t j = 0; j < n_matches; j++) {
+          if (ret_matches[j].first != i) {
+            i_neighbors.push_back(ret_matches[j].first);
+          }
         }
+        neighbors[vector_idx][scalar_idx] = std::move(i_neighbors);
       }
-      neighbors[vector_idx][scalar_idx] = std::move(i_neighbors);
-    }
 
 // update neighbors
-#pragma omp parallel for
-    for (size_t i = 0; i < cells->vectors(); i++) {
-      (*cells)[i].SetNeighbors(neighbors[i]);
+#pragma omp for
+      for (size_t i = 0; i < thread_safe_cells->vectors(); i++) {
+        (*thread_safe_cells)[i].SetNeighbors(neighbors[i]);
+      }
     }
   }
 

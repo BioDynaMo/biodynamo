@@ -1,5 +1,5 @@
-#include <typeinfo>
 #include <string>
+#include <typeinfo>
 #include "gtest/gtest.h"
 #include "type_util.h"
 #include "cell.h"

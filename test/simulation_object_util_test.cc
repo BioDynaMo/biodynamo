@@ -65,6 +65,7 @@ class NeuronExt : public Base {
 
   FRIEND_TEST(SimulationObjectUtilTest, SoaBackend_clear);
   FRIEND_TEST(SimulationObjectUtilTest, SoaBackend_reserve);
+  FRIEND_TEST(SimulationObjectUtilTest, GetSoaRef);
   FRIEND_TEST(SimulationObjectUtilTest,
               SoaBackend_push_backScalarOnNonEmptySoa);
 };
@@ -141,9 +142,20 @@ TEST(SimulationObjectUtilTest, NewEmptySoa) {
 TEST(SimulationObjectUtilTest, GetSoaRef) {
   using real_v = VcBackend::real_v;
   Neuron<VcSoaBackend> neurons;
+  neurons.size_ = 1234;
+  neurons.size_last_vector_ = 3;
+
   auto neurons_ref = neurons.GetSoaRef();
-  neurons_ref.SetDiameter(real_v(12.34));
+  EXPECT_EQ(1234u, neurons_ref->size_);
+  EXPECT_EQ(3u, neurons_ref->size_last_vector_);
+
+  // check if changes are visible for the referenced object
+  neurons_ref->SetDiameter(real_v(12.34));
   EXPECT_TRUE((real_v(12.34) == neurons.GetDiameter()).isFull());
+  neurons_ref->size_ = 4321;
+  neurons_ref->size_last_vector_ = 9;
+  EXPECT_EQ(4321u, neurons.size_);
+  EXPECT_EQ(9u, neurons.size_last_vector_);
 }
 
 TEST(SimulationObjectUtilTest,
