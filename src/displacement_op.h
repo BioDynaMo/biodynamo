@@ -30,9 +30,25 @@ class DisplacementOp {
     {
       auto thread_safe_cells = make_thread_safe(cells);
       const size_t n_vectors = thread_safe_cells->vectors();
+      // prefetch neighbors for number of iterations to tolerate latency
+      const size_t neighbor_batch_size = 2;
+      std::array<std::array<aosoa<Cell<>::Self<VcBackend>, VcBackend>, VcBackend::kVecLen>, neighbor_batch_size> neighbor_array;
 #pragma omp for
       for (size_t i = 0; i < n_vectors; i++) {
         auto& cell = (*thread_safe_cells)[i];
+
+        if (i % neighbor_batch_size == 0) {
+          for (size_t j = 0; j < neighbor_batch_size; j++) {
+            size_t idx = j + i;
+            if (idx < n_vectors) {
+              (*thread_safe_cells)[idx].GetNeighborsFoo(*cells, &(neighbor_array[j]));
+            }
+          }
+        }
+
+        const auto& neighbors = neighbor_array[i % neighbor_batch_size];
+        // const auto& neighbors = cell.GetNeighbors(*cells);
+        // const auto& neighbors = neighbor_array[i / neighbor_batch_size];
         // Basically, the idea is to make the sum of all the forces acting
         // on the Point mass. It is stored in translationForceOnPointMass.
         // There is also a computation of the torque (only applied
@@ -73,7 +89,7 @@ class DisplacementOp {
         // --------------------------------------------
         //  (We check for every neighbor object if they touch us, i.e. push us
         //  away)
-        const auto& neighbors = cell.GetNeighbors(*cells);
+
         // todo remove VcBackend with impl.
         for (size_t j = 0; j < VcBackend::kVecLen; j++) {
           for (size_t k = 0; k < neighbors.at(j).vectors(); k++) {
