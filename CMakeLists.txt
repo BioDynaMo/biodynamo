@@ -260,3 +260,7 @@ target_compile_options(${SOA_VS_AOSOA} BEFORE PRIVATE "-DMODE=ReadWrite")
 set(SOA_VS_AOSOA soa_vs_aosoa_rwa)
 add_executable(${SOA_VS_AOSOA} ${CMAKE_SOURCE_DIR}/benchmark/soa_vs_aosoa.cc)
 target_compile_options(${SOA_VS_AOSOA} BEFORE PRIVATE "-DMODE=ReadWriteAlternating")
+
+
+set(CACHE_AWARE cache_aware)
+add_executable(${CACHE_AWARE} ${CMAKE_SOURCE_DIR}/benchmark/cache_aware.cc)
