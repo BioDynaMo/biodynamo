@@ -12,6 +12,14 @@
 
 namespace bdm {
 
+/// \brief The purpose of this class is to store simulation objects with a
+/// vector backend resulting in a AOSOA memory layout.
+///
+/// Can be used as a `std::vector`, but has added functionality to push back
+/// scalar versions of the simulation object and to gather simulation objects
+/// based on a collection of indices.
+/// The 'd' in daosoa stands for dynamic, since elements can be added to this
+/// collection.
 template <typename T>
 class daosoa {
  public:
@@ -29,11 +37,12 @@ class daosoa {
 
   explicit daosoa(const value_type& cell) { data_.push_back(cell); }
 
-  /// \brief returns the number of SOA elements in this container
+  /// Returns the number of vector elements in this container
   size_t Vectors() const { return data_.size(); }
 
-  /// this function assumes that only the last vector may not be fully
-  /// initialized
+  /// This function returns the number of scalar simulation objects in this
+  /// container. Assumes that only the last vector may not be fully
+  /// initialized.
   size_t Elements() const {
     if (Vectors() != 0) {
       return (Vectors() - 1) * Backend::kVecLen +
@@ -43,9 +52,8 @@ class daosoa {
     }
   }
 
-  // todo improve this comment
-  /// \brief adds `value` to the vector
-  /// only gets compiled if T == T1
+  /// Adds an element at the back of this collection.
+  /// Type of value and `value_type` of this class must be the same.
   template <typename T1>
   typename std::enable_if<std::is_same<value_type, T1>::value>::type push_back(
       const T1& value) {
@@ -54,9 +62,11 @@ class daosoa {
     // a vector one??
   }
 
-  // todo improve this comment
-  /// \brief adds `scalar value` to the vector
-  /// only gets compiled if T != T1 && T1 == ScalarBackend
+  /// Adds a scalar element at the back of this collection.
+  /// If the last vector in the collection is not full, the scalar instance will
+  /// be copied into the free vector slot. Otherwise, an empty vector will
+  /// be appended.
+  /// Type of value and `value_type` of this class must NOT be the same.
   template <typename T1>
   typename std::enable_if<is_scalar<T1>::value &&
                           !std::is_same<value_type, T1>::value>::type
@@ -80,6 +90,10 @@ class daosoa {
     last->push_back(value);
   }
 
+  /// Gathers scalar elements specified in indexes and stores them in
+  /// container `ret`
+  /// @param indexes: collection of indexes
+  /// @param ret:     scalars are copied to this container
   void Gather(const InlineVector<int, 8>& indexes,
               aosoa<T, Backend>* ret) const {
     const size_t scalars = indexes.size();

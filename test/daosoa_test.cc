@@ -24,25 +24,13 @@ class Object {
   // --------------------------------------------------------------------------
   // required interface for usage in daosoa
 
-  Object<ScalarBackend> Get(size_t idx) const {
-    Object<ScalarBackend> o;
-    o.id_ = {id_[idx]};
-    return o;
+  void push_back(const Object<ScalarBackend>& object) {
+    id_[size_++] = object.id_[0];
   }
-
-  void Set(size_t idx, const Object<ScalarBackend>& object) {
-    id_[idx] = object.id_[0];
-  }
-
-  void push_back(const Object<ScalarBackend>& object) { Set(size_++, object); }
 
   bool is_full() const { return size() == Backend::kVecLen; }
 
-  constexpr size_t VecLength() { return Backend::kVecLen; }
-
   size_t size() const { return size_; }
-
-  void SetUninitialized() { size_ = 0; }
 
   void SetSize(std::size_t size) { size_ = size; }
 

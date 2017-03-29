@@ -11,6 +11,8 @@
 
 namespace bdm {
 
+/// \brief Holds a reference to a data member of a SOA simulation objects
+/// and forwards all its operator calls
 template <typename T>
 class SoaRefWrapper {
  public:
@@ -68,7 +70,8 @@ class SoaRefWrapper {
   T& data_;
 };
 
-/// This class represents an array with exactly one element
+/// \brief This class represents an array with exactly one element
+///
 /// Needed for AOSOA: Objects will store a single e.g. real_v instead of N
 /// instances. However code was written for SOA and expects an array interface
 /// which is exposed with this class.
@@ -99,6 +102,8 @@ class OneElementArray {
   T data_;
 };
 
+/// \brief Defines types and constants for using Vc SIMD vectors in simulation
+/// objects
 struct VcVectorBackend {
   typedef Vc::double_v::value_type real_t;
   static const size_t kVecLen = Vc::double_v::Size;
@@ -110,6 +115,8 @@ struct VcVectorBackend {
   using Container = OneElementArray<T>;
 };
 
+/// \brief Defines types and constants for using Vc SIMD vectors in simulation
+/// objects and storing them in a SOA memory layout
 struct VcSoaBackend {
   static const size_t kVecLen = VcVectorBackend::kVecLen;
   typedef VcVectorBackend::real_v real_v;
@@ -121,6 +128,8 @@ struct VcSoaBackend {
   using Container = std::vector<T, Vc::Allocator<T>>;
 };
 
+/// \brief Defines types and constants used to create a reference to a
+/// simulation object using a VcSoaBackend
 struct VcSoaRefBackend {
   static const size_t kVecLen = VcVectorBackend::kVecLen;
   typedef VcVectorBackend::real_v real_v;
@@ -133,6 +142,10 @@ struct VcSoaRefBackend {
       SoaRefWrapper<typename VcSoaBackend::template Container<T>>;
 };
 
+/// \brief Defines types and constants for using scalar data types
+///
+/// Since client code uses the subscript operator ([]) double can't be used
+/// directly. Therefore it is wrapped in a Vc::SimdArray of lenght 1
 struct ScalarBackend {
   typedef const std::size_t index_t;
   static const size_t kVecLen = 1;

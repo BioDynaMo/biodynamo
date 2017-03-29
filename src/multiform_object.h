@@ -90,13 +90,14 @@ struct Nulltype {
   };                                                        \
   EVAL(LOOP_3_1(INTERNAL_MEMBER_REMOVER, name, __VA_ARGS__))
 
-/// This struct is used to access static functions / members of a class that
+/// \brief This struct is used to access static functions / members of a class that
 /// has template parameter(s) without a default value.
-/// e.g.
-/// ```
-/// template <typename T> class Foo { static const int kBar = 3; };
-/// Foo<PlaceholderType>::kBar
-/// ```
+///
+/// For example:
+///
+///     template <typename T> class Foo { static const int kBar = 3; };
+///     Foo<PlaceholderType>::kBar
+///
 /// The definition of the static function / member must be invariant of the
 /// template parameter(s)
 /// e.g. `Foo<PlaceholderType>::kBar == Foo<AnyOtherType>::kBar`

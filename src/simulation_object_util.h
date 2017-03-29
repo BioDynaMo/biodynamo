@@ -6,6 +6,13 @@
 #include "backend.h"
 #include "macros.h"
 
+/// Macro to make default template definition for classes, structs and
+/// using statement seasier. Defines two template parameters: A data member
+/// selector and a backend. Names of template parameters are specified using
+/// the corresponding parameter. Uses default parameter SelectAllMembers and
+/// VcVectorBackend.
+/// @param selector_name: template paramter name of the data member selector
+/// @param backend_name: template parameter name for the backend
 #define BDM_DEFAULT_TEMPLATE(selector_name, backend_name)            \
   template <template <typename, typename, int> class selector_name = \
                 SelectAllMembers,                                    \
@@ -30,6 +37,7 @@
   BDM_DATA_MEMBER(private, REMOVE_TRAILING_COMMAS(type_name), var_name)
 
 // -----------------------------------------------------------------------------
+// Helper macros used to generate code for all data members of a class
 
 #define BDM_CLASS_HEADER_PUSH_BACK_BODY(...) \
   EVAL(LOOP(BDM_CLASS_HEADER_PUSH_BACK_BODY_ITERATOR, __VA_ARGS__))
@@ -90,36 +98,36 @@
   Base::CopyUtil(&dest->data_member, 0, dest_idx, data_member, src_v_idx, \
                  src_idx);
 
-/// Macro to insert required boilerplate code into class
-/// @param: class_name: class name witout template specifier e.g.
-///         class Foo {};
-///          -> class_name: Foo
-///         template <typename T> class Foo {};
-///          -> class_name: Foo
-/// @param: self_unique_specifier: used to point to static members / functions
+/// Macro to insert required boilerplate code into simulation object
+/// @param  class_name: class name witout template specifier e.g. \n
+///         `class Foo {};` \n
+///          -> class_name: `Foo` \n
+///         `template <typename T> class Foo {};` \n
+///          -> class_name: `Foo` \n
+/// @param self_unique_specifier: used to point to static members / functions
 ///         of this class - use PlaceholderType for template parameters without
-///         default parameter - e.g.
-///         `class A {};`
-///           -> self_specifier: A
-///         `template<typename T=DefaultValue> class B {};`
-///           -> self_specifier: B<>
-///         `template<typename T, typename U> class C {};`
+///         default parameter - e.g. \n
+///         `class A {};` \n
+///           -> self_specifier: A \n
+///         `template<typename T=DefaultValue> class B {};` \n
+///           -> self_specifier: B<> \n
+///         `template<typename T, typename U> class C {};` \n
 ///           -> self_specifier: C<PlaceholderType COMMA() PlaceholderType>
-/// @param   self_specifier: used internally to create the same object, but with
+/// @param   self_specifier: Used internally to create the same object, but with
 ///          different backend - required since inheritance chain is not known
-///          inside a mixin.
-///          Value: type Id, but template parameter Base must be replaced with:
-///          typename Base::template Self<Backend>
-///          Example: original class:
-///          template<class Base, class Neurite> class Neuron : public Base {};
-///          type Id:
-///          Neuron<Base, Neurite>
+///          inside a mixin. \n
+///          Value: Type Id, but template parameter Base must be replaced with:
+///          `typename Base::template Self<Backend>` \n\n
+///          Example: original class: \n
+///          `template<class Base, class Neurite> class Neuron : public Base {};` \n
+///          Type Id: `Neuron<Base, Neurite>`
 ///          replace Base:
-///          Neuron<typename Base::template Self<Backend>, Neurite>
+///          `Neuron<typename Base::template Self<Backend>, Neurite>` \n\n
 ///          "," are not allowed as part of preprocessor parameter -> replace
-///          with COMMA()
-///           -> self_specifier: Neuron<typename Base::template Self<Backend>
-///           COMMA() Neurite>
+///          with COMMA() \n
+///           -> self_specifier: `Neuron<typename Base::template Self<Backend>
+///           COMMA() Neurite>`
+/// @param  ...: List of all data members of this class
 #define BDM_CLASS_HEADER(class_name, self_unique_specifier, self_specifier,    \
                          ...)                                                  \
  public:                                                                       \
@@ -137,11 +145,15 @@
   template <typename T>                                                        \
   using SimdArray = typename Backend::template SimdArray<T>;                   \
                                                                                \
-  template <typename T>                \
+  template <typename T>                                                        \
   using Container = typename Backend::template Container<T>;                   \
                                                                                \
+  /* Used to point to static members / functions in a unique way */            \
   using SelfUnique = self_unique_specifier;                                    \
                                                                                \
+  /* Used internally to create the same object, but with */                    \
+  /* different backend - required since inheritance chain is not known */      \
+  /* inside a mixin. */                                                        \
   template <typename Backend>                                                  \
   using Self = self_specifier;                                                 \
                                                                                \
@@ -179,7 +191,7 @@
         REMOVE_TRAILING_COMMAS(BDM_CLASS_HEADER_CPY_CTOR_INIT(__VA_ARGS__)) {} \
                                                                                \
  public:                                                                       \
-  /* TODO only for SoaBackends */                                              \
+  /* TODO(lukas) only for SoaBackends */                                              \
   /* needed because operator[] is not thread safe - index is shared among  */  \
   /* all threads */                                                            \
   Vc_ALWAYS_INLINE std::unique_ptr<Self<VcSoaRefBackend>> GetSoaRef() {        \
@@ -213,7 +225,7 @@
   /* see GetSoaRef */                                                          \
   /* only compiled if Backend == Soa(Ref)Backend */                            \
   /* no version if Backend == VcVectorBackend that returns a Self<ScalarBackend> */  \
-  /* since this would involves copying of elements and would therefore */      \
+  /* since this would involve copying of elements and would therefore */      \
   /* degrade performance -> it is therefore discouraged */                     \
   template <typename T = Backend>                                              \
   typename enable_if<is_same<T, VcSoaRefBackend>::value ||                     \

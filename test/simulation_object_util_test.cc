@@ -330,9 +330,10 @@ TEST(SimulationObjectUtilTest, SoaBackend_Gather) {
 }
 
 TEST(SimulationObjectUtilTest, VectorBackend_push_backScalar) {
-  Neuron<VcVectorBackend> neurons;  // stores one vector neuron with default values
+  // stores one vector neuron with default values
+  Neuron<VcVectorBackend> neurons;
   auto backend_vec_len = VcVectorBackend::kVecLen;
-  EXPECT_EQ(backend_vec_len, neurons.size());  // replace with VcVectorBackend::kVecLen
+  EXPECT_EQ(backend_vec_len, neurons.size());
   EXPECT_EQ(1u, neurons.Vectors());
   EXPECT_EQ(backend_vec_len, neurons.Elements());
 

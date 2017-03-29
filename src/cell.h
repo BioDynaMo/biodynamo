@@ -14,6 +14,8 @@
 
 namespace bdm {
 
+/// \brief This class defines an extension to simulation object that contains
+/// fundamental data types and methods.
 template <typename Base = SimulationObject<>>
 class CellExt : public Base {
   BDM_CLASS_HEADER(CellExt, CellExt<>,
@@ -104,7 +106,6 @@ class CellExt : public Base {
     volume_[idx_] = Vc::iif(volume_[idx_] < real_t(5.2359877E-7),
                             real_v(5.2359877E-7), volume_[idx_]);
     UpdateDiameter();
-    //    scheduleMeAndAllMyFriends();
   }
 
   BDM_FORCE_INLINE void UpdateDiameter() {
