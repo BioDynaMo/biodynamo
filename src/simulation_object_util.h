@@ -4,12 +4,12 @@
 #include <exception>
 #include <memory>
 #include "backend.h"
-#include "preprocessor.h"
+#include "macros.h"
 
 #define BDM_DEFAULT_TEMPLATE(selector_name, backend_name)            \
   template <template <typename, typename, int> class selector_name = \
                 SelectAllMembers,                                    \
-            typename backend_name = VcBackend>
+            typename backend_name = VcVectorBackend>
 
 /// Macro to define data member for a simulation object
 /// Hides complexity needed to conditionally remove the data member
@@ -195,7 +195,7 @@
   template <typename T = Backend>                                              \
   typename enable_if<is_same<T, VcSoaRefBackend>::value ||                     \
                      is_same<T, VcSoaBackend>::value>::type                    \
-  push_back(const Self<VcBackend>& other) {                                    \
+  push_back(const Self<VcVectorBackend>& other) {                                    \
     Base::push_back(other);                                                    \
     BDM_CLASS_HEADER_PUSH_BACK_BODY(__VA_ARGS__);                              \
   }                                                                            \
@@ -204,7 +204,7 @@
   /* template parameter required for enable_if - otherwise compile error */    \
   template <typename T = Backend>                                              \
   typename enable_if<is_same<T, ScalarBackend>::value>::type push_back(        \
-      const Self<VcBackend>& other) {                                          \
+      const Self<VcVectorBackend>& other) {                                          \
     throw std::runtime_error("TODO implement: see src/cell.h:Append");         \
   }                                                                            \
                                                                                \
@@ -212,7 +212,7 @@
   /* For parallel execution create a reference object for each thread -- */    \
   /* see GetSoaRef */                                                          \
   /* only compiled if Backend == Soa(Ref)Backend */                            \
-  /* no version if Backend == VcBackend that returns a Self<ScalarBackend> */  \
+  /* no version if Backend == VcVectorBackend that returns a Self<ScalarBackend> */  \
   /* since this would involves copying of elements and would therefore */      \
   /* degrade performance -> it is therefore discouraged */                     \
   template <typename T = Backend>                                              \
@@ -268,7 +268,7 @@
   typename enable_if<is_same<T, VcSoaRefBackend>::value ||                     \
                      is_same<T, VcSoaBackend>::value>::type                    \
   push_back(const Self<ScalarBackend>& other) {                                \
-    if (Base::elements() == 0 || Base::is_full()) {                            \
+    if (Base::Elements() == 0 || Base::is_full()) {                            \
       BDM_CLASS_HEADER_SOA_PUSH_BACK_OP_IF_BODY(__VA_ARGS__);                  \
     } else {                                                                   \
       BDM_CLASS_HEADER_SOA_PUSH_BACK_OP_ELSE_BODY(__VA_ARGS__);                \
@@ -276,10 +276,10 @@
     Base::push_back(other);                                                    \
   }                                                                            \
                                                                                \
-  /* only compiled if Backend == VcBackend */                                  \
+  /* only compiled if Backend == VcVectorBackend */                                  \
   /* template parameter required for enable_if - otherwise compile error */    \
   template <typename T = Backend>                                              \
-  typename enable_if<is_same<T, VcBackend>::value>::type push_back(            \
+  typename enable_if<is_same<T, VcVectorBackend>::value>::type push_back(            \
       const Self<ScalarBackend>& other) {                                      \
     BDM_CLASS_HEADER_VECTOR_PUSH_BACK_OP_BODY(__VA_ARGS__);                    \
     Base::push_back(other);                                                    \
@@ -287,8 +287,8 @@
                                                                                \
   void CopyTo(std::size_t src_v_idx, std::size_t src_idx,                      \
               std::size_t dest_v_idx, std::size_t dest_idx,                    \
-              BdmSimObjectVectorBackend* destination) const override {         \
-    Self<VcBackend>* dest = static_cast<Self<VcBackend>*>(destination);        \
+              VectorSimulationObject* destination) const override {         \
+    Self<VcVectorBackend>* dest = static_cast<Self<VcVectorBackend>*>(destination);        \
     BDM_CLASS_HEADER_COPYTO_OP_BODY(__VA_ARGS__);                              \
     Base::CopyTo(src_v_idx, src_idx, dest_v_idx, dest_idx, destination);       \
   }                                                                            \

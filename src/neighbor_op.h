@@ -15,7 +15,7 @@ using nanoflann::KDTreeSingleIndexAdaptor;
 // And this is the "dataset to kd-tree" adaptor class:
 template <typename Derived>
 struct NanoFlannDaosoaAdapter {
-  using coord_t = VcBackend::real_t;
+  using coord_t = VcVectorBackend::real_t;
 
   const Derived& obj;  //!< A const ref to the data set origin
 
@@ -26,14 +26,14 @@ struct NanoFlannDaosoaAdapter {
   inline const Derived& derived() const { return obj; }
 
   /// Must return the number of data points
-  inline size_t kdtree_get_point_count() const { return derived().elements(); }
+  inline size_t kdtree_get_point_count() const { return derived().Elements(); }
 
   /// Returns the distance between the vector "p1[0:size-1]" and the data point
   /// with index "idx_p2" stored in the class:
   inline coord_t kdtree_distance(const coord_t* p1, const size_t idx_p2,
                                  size_t /*size*/) const {
-    const auto vector_idx = idx_p2 / VcBackend::kVecLen;
-    const auto scalar_idx = idx_p2 % VcBackend::kVecLen;
+    const auto vector_idx = idx_p2 / VcVectorBackend::kVecLen;
+    const auto scalar_idx = idx_p2 % VcVectorBackend::kVecLen;
     const coord_t d0 =
         p1[0] - derived()[vector_idx].GetPosition()[0][scalar_idx];
     const coord_t d1 =
@@ -47,8 +47,8 @@ struct NanoFlannDaosoaAdapter {
   /// Since this is inlined and the "dim" argument is typically an immediate
   /// value, the "if/else's" are actually solved at compile time.
   inline coord_t kdtree_get_pt(const size_t idx, int dim) const {
-    const auto vector_idx = idx / VcBackend::kVecLen;
-    const auto scalar_idx = idx % VcBackend::kVecLen;
+    const auto vector_idx = idx / VcVectorBackend::kVecLen;
+    const auto scalar_idx = idx % VcVectorBackend::kVecLen;
     return derived()[vector_idx].GetPosition()[dim][scalar_idx];
   }
 
@@ -80,7 +80,7 @@ class NeighborOp {
 
     // construct a kd-tree index:
     typedef KDTreeSingleIndexAdaptor<
-        L2_Simple_Adaptor<VcBackend::real_t, NanoFlann2Daosoa>,
+        L2_Simple_Adaptor<VcVectorBackend::real_t, NanoFlann2Daosoa>,
         NanoFlann2Daosoa, 3 /* dim */
         >
         my_kd_tree_t;
@@ -89,30 +89,30 @@ class NeighborOp {
     my_kd_tree_t index(3, nf_cells, KDTreeSingleIndexAdaptorParams(10));
     index.buildIndex();
 
-    std::vector<std::array<InlineVector<int, 8>, VcBackend::kVecLen> >
-        neighbors(cells->vectors());
+    std::vector<std::array<InlineVector<int, 8>, VcVectorBackend::kVecLen> >
+        neighbors(cells->Vectors());
 
 // calc neighbors
 #pragma omp parallel
     {
       auto thread_safe_cells = make_thread_safe(cells);
 #pragma omp for
-      for (size_t i = 0; i < thread_safe_cells->elements(); i++) {
-        const auto vector_idx = i / VcBackend::kVecLen;
-        const auto scalar_idx = i % VcBackend::kVecLen;
+      for (size_t i = 0; i < thread_safe_cells->Elements(); i++) {
+        const auto vector_idx = i / VcVectorBackend::kVecLen;
+        const auto scalar_idx = i % VcVectorBackend::kVecLen;
 
         // fixme make param
         // according to roman 50 - 100 micron
-        const VcBackend::real_t search_radius =
-            static_cast<VcBackend::real_t>(distance_);
+        const VcVectorBackend::real_t search_radius =
+            static_cast<VcVectorBackend::real_t>(distance_);
 
-        std::vector<std::pair<size_t, VcBackend::real_t> > ret_matches;
+        std::vector<std::pair<size_t, VcVectorBackend::real_t> > ret_matches;
 
         nanoflann::SearchParams params;
         params.sorted = false;
 
         const auto& position = (*thread_safe_cells)[vector_idx].GetPosition();
-        const VcBackend::real_t query_pt[3] = {position[0][scalar_idx],
+        const VcVectorBackend::real_t query_pt[3] = {position[0][scalar_idx],
                                                position[1][scalar_idx],
                                                position[2][scalar_idx]};
 
@@ -133,7 +133,7 @@ class NeighborOp {
 
 // update neighbors
 #pragma omp for
-      for (size_t i = 0; i < thread_safe_cells->vectors(); i++) {
+      for (size_t i = 0; i < thread_safe_cells->Vectors(); i++) {
         (*thread_safe_cells)[i].SetNeighbors(neighbors[i]);
       }
     }

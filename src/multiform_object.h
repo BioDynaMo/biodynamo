@@ -4,7 +4,7 @@
 #include <ostream>
 #include <stdexcept>
 
-#include "preprocessor.h"
+#include "macros.h"
 #include "simulation_object.h"
 
 namespace bdm {
@@ -104,7 +104,7 @@ struct Nulltype {
 /// to instantiate an object with template parameter PlaceholderType. The
 /// following statement is invalid and will throw an exception at runtime:
 /// `Foo<PlaceholderType> foo;`
-struct PlaceholderType : public BdmSimObject<> {
+struct PlaceholderType : public SimulationObject<> {
   PlaceholderType() {
     throw std::logic_error(
         "Creating an instance of type PlaceholderType is not allowed. "

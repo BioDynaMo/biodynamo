@@ -4,49 +4,49 @@
 
 namespace bdm {
 
-// Constructors in BdmSimObject are protected.
+// Constructors in SimulationObject are protected.
 // Therefore create subclass
 template <typename Backend>
-struct ConcreteSimObject : public BdmSimObject<SelectAllMembers, Backend> {
-  FRIEND_TEST(BdmSimObjectTest, is_fullSoaBackend);
+struct ConcreteSimObject : public SimulationObject<SelectAllMembers, Backend> {
+  FRIEND_TEST(SimulationObjectTest, is_fullSoaBackend);
 };
 
-TEST(BdmSimObjectTest, is_fullScalarBackend) {
+TEST(SimulationObjectTest, is_fullScalarBackend) {
   ConcreteSimObject<ScalarBackend> object;
   EXPECT_TRUE(object.is_full());
 }
 
 // TODO(lukas) decide how vector backend should be called
 // simd, vector ... in comparison to soa
-TEST(BdmSimObjectTest, is_fullVectorBackend) {
-  ConcreteSimObject<VcBackend> object;
+TEST(SimulationObjectTest, is_fullVectorBackend) {
+  ConcreteSimObject<VcVectorBackend> object;
   EXPECT_TRUE(object.is_full());
-  object.SetSize(VcBackend::kVecLen - 1);
+  object.SetSize(VcVectorBackend::kVecLen - 1);
   EXPECT_FALSE(object.is_full());
 }
 
-TEST(BdmSimObjectTest, is_fullSoaBackend) {
+TEST(SimulationObjectTest, is_fullSoaBackend) {
   // SOA with one vector element
   ConcreteSimObject<VcSoaBackend> object;
   EXPECT_TRUE(object.is_full());
   object.clear();
   EXPECT_FALSE(object.is_full());
-  object.size_last_vector_ = VcBackend::kVecLen;
+  object.size_last_vector_ = VcVectorBackend::kVecLen;
   EXPECT_TRUE(object.is_full());
 }
 
-TEST(BdmSimObjectTest, sizeScalarBackend) {
+TEST(SimulationObjectTest, sizeScalarBackend) {
   ConcreteSimObject<ScalarBackend> object;
   EXPECT_EQ(1u, object.size());
 }
 
-TEST(BdmSimObjectTest, sizeVectorBackend) {
-  ConcreteSimObject<VcBackend> object;
-  auto expected_size = VcBackend::kVecLen;
+TEST(SimulationObjectTest, sizeVectorBackend) {
+  ConcreteSimObject<VcVectorBackend> object;
+  auto expected_size = VcVectorBackend::kVecLen;
   EXPECT_EQ(expected_size, object.size());
 }
 
-TEST(BdmSimObjectTest, sizeSoaBackend) {
+TEST(SimulationObjectTest, sizeSoaBackend) {
   ConcreteSimObject<VcSoaBackend> object;
   EXPECT_EQ(1u, object.size());
 }

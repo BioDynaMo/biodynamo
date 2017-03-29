@@ -57,7 +57,7 @@ class DefaultForce {
     // fixme no magic number -> move to param
     auto distance_lt_min = distance_between_centers < real_v(0.00000001);
     if (distance_lt_min.isFull()) {
-      *result = random_.NextNoise<VcBackend>(VcBackend::real_v(3.0));
+      *result = random_.NextNoise<VcVectorBackend>(VcVectorBackend::real_v(3.0));
       return;
     }
 
@@ -75,7 +75,7 @@ class DefaultForce {
       (*result)[1].setZero(delta_lt_0);
       (*result)[2].setZero(delta_lt_0);
     } else if (!distance_lt_min.isEmpty()) {
-      auto random_force = random_.NextNoise<VcBackend>(VcBackend::real_v(3.0));
+      auto random_force = random_.NextNoise<VcVectorBackend>(VcVectorBackend::real_v(3.0));
       (*result)[0] = Vc::iif(distance_lt_min, random_force[0], (*result)[0]);
       (*result)[1] = Vc::iif(distance_lt_min, random_force[1], (*result)[1]);
       (*result)[2] = Vc::iif(distance_lt_min, random_force[2], (*result)[2]);

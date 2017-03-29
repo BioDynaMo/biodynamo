@@ -9,7 +9,7 @@ namespace bdm {
 /// overlapping neighbors
 /// implementation uses virual bigger radii to have distant interaction
 TEST(DefaultForce, General) {
-  using real_v = VcBackend::real_v;
+  using real_v = VcVectorBackend::real_v;
   using real_t = real_v::value_type;
   if (real_v::Size < 2) {
     FAIL() << "Backend must at least support two elements for this test";
@@ -25,7 +25,7 @@ TEST(DefaultForce, General) {
   real_v nb_iof_coefficient((const real_t[]){0.15, 0.15});
   std::array<real_v, 3> result;
 
-  DefaultForce<VcBackend> force;
+  DefaultForce<VcVectorBackend> force;
   force.forceBetweenSpheres(ref_mass_location, ref_diameter,
                             ref_iof_coefficient, nb_mass_location, nb_diameter,
                             nb_iof_coefficient, &result);
@@ -44,7 +44,7 @@ TEST(DefaultForce, General) {
 /// Tests the special case that non of the neighbors overlap
 /// with the reference cell
 TEST(DefaultForce, AllNonOverlapping) {
-  using real_v = VcBackend::real_v;
+  using real_v = VcVectorBackend::real_v;
   using real_t = real_v::value_type;
   std::array<real_v, 3> ref_mass_location = {0, 0, 0};
   real_v ref_diameter = 8;
@@ -57,7 +57,7 @@ TEST(DefaultForce, AllNonOverlapping) {
   real_v nb_iof_coefficient(0.15);
   std::array<real_v, 3> result;
 
-  DefaultForce<VcBackend> force;
+  DefaultForce<VcVectorBackend> force;
   force.forceBetweenSpheres(ref_mass_location, ref_diameter,
                             ref_iof_coefficient, nb_mass_location, nb_diameter,
                             nb_iof_coefficient, &result);
@@ -73,7 +73,7 @@ TEST(DefaultForce, AllNonOverlapping) {
 /// Tests the case that one neighbor does not overlap and the other
 /// does
 TEST(DefaultForce, OneNonOverlapping) {
-  using real_v = VcBackend::real_v;
+  using real_v = VcVectorBackend::real_v;
   using real_t = real_v::value_type;
   if (real_v::Size < 2) {
     FAIL() << "Backend must at least support two elements for this test";
@@ -89,7 +89,7 @@ TEST(DefaultForce, OneNonOverlapping) {
   real_v nb_iof_coefficient((const real_t[]){0.15, 0.15});
   std::array<real_v, 3> result;
 
-  DefaultForce<VcBackend> force;
+  DefaultForce<VcVectorBackend> force;
   force.forceBetweenSpheres(ref_mass_location, ref_diameter,
                             ref_iof_coefficient, nb_mass_location, nb_diameter,
                             nb_iof_coefficient, &result);
@@ -105,7 +105,7 @@ TEST(DefaultForce, OneNonOverlapping) {
 /// Tests the special case that neighbor and reference cell
 /// are at the same position -> should return random force
 TEST(DefaultForce, AllAtSamePosition) {
-  using real_v = VcBackend::real_v;
+  using real_v = VcVectorBackend::real_v;
   std::array<real_v, 3> ref_mass_location = {0, 0, 0};
   real_v ref_diameter = 8;
   real_v ref_iof_coefficient = 0.15;
@@ -117,7 +117,7 @@ TEST(DefaultForce, AllAtSamePosition) {
   real_v nb_iof_coefficient(0.15);
   std::array<real_v, 3> result;
 
-  DefaultForce<VcBackend> force;
+  DefaultForce<VcVectorBackend> force;
   force.forceBetweenSpheres(ref_mass_location, ref_diameter,
                             ref_iof_coefficient, nb_mass_location, nb_diameter,
                             nb_iof_coefficient, &result);

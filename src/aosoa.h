@@ -4,7 +4,7 @@
 #include <array>
 #include <type_traits>
 
-#include "preprocessor.h"
+#include "macros.h"
 
 namespace bdm {
 
@@ -24,7 +24,7 @@ class aosoa {
   void SetSize(std::size_t size) { size_ = size; }
 
   /// \brief returns the number of SOA elements in this container
-  size_t vectors() const { return size_; }
+  size_t Vectors() const { return size_; }
 
   BDM_FORCE_INLINE value_type& operator[](std::size_t index) {
     return data_[index];

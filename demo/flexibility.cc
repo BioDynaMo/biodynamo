@@ -17,7 +17,7 @@
 
 namespace bdm {
 
-template <typename Base = BdmSimObject<>>
+template <typename Base = SimulationObject<>>
 class BaseCell : public Base {
   BDM_CLASS_HEADER(BaseCell, BaseCell<>,
                    BaseCell<typename Base::template Self<Backend>>, position_,
@@ -71,7 +71,7 @@ class Neuron : public Base {
 
 // define easy to use templated type alias
 BDM_DEFAULT_TEMPLATE(MemberSelector, Backend)
-using BdmNeuron = Neuron<BaseCell<BdmSimObject<MemberSelector, Backend>>>;
+using BdmNeuron = Neuron<BaseCell<SimulationObject<MemberSelector, Backend>>>;
 
 // -----------------------------------------------------------------------------
 // code written by life scientists using package core and Neuroscience extension
@@ -100,7 +100,7 @@ class NeuronExtension : public Base {
 // define easy to use templated type alias
 BDM_DEFAULT_TEMPLATE(MemberSelector, Backend)
 using MyExtendedNeuron =
-    NeuronExtension<Neuron<BaseCell<BdmSimObject<MemberSelector, Backend>>>>;
+    NeuronExtension<Neuron<BaseCell<SimulationObject<MemberSelector, Backend>>>>;
 
 // define some client code that processes extended neurons
 template <typename Cell>
@@ -128,7 +128,7 @@ void TestDataMemberSelectors() {
 
   BdmNeuron<> neuron1;
   // following statement is equivalent to:
-  // Neuron<BaseCell<BdmSimObject<RemoveUnused> > >
+  // Neuron<BaseCell<SimulationObject<RemoveUnused> > >
   BdmNeuron<RemoveUnused> neuron_wo_unused;
 
   std::cout << "sizeof(neuron1)          " << sizeof(neuron1) << std::endl
@@ -161,13 +161,13 @@ void TestDataMemberSelectors() {
 }
 
 void TestDifferentBackends() {
-  MyExtendedNeuron<SelectAllMembers, VcBackend> vc_simd_neuron;
+  MyExtendedNeuron<SelectAllMembers, VcVectorBackend> vc_simd_neuron;
   std::cout << "simd   foo " << vc_simd_neuron.GetFoo() << std::endl;
-  VcBackend::real_v foo;
+  VcVectorBackend::real_v foo;
   foo[0] = 1.1;
   foo[1] = 2.2;
   vc_simd_neuron.SetFoo(foo);
-  MyExtendedNeuron<SelectAllMembers, VcBackend> vc_simd_neuron_2 =
+  MyExtendedNeuron<SelectAllMembers, VcVectorBackend> vc_simd_neuron_2 =
       vc_simd_neuron;
   std::cout << "simd   foo " << vc_simd_neuron.GetFoo() << std::endl;
 

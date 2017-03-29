@@ -7,14 +7,14 @@
 #include "daosoa.h"
 #include "default_force.h"
 #include "inline_vector.h"
-#include "param.h"
 #include "math_util.h"
+#include "param.h"
 #include "simulation_object.h"
 #include "simulation_object_util.h"
 
 namespace bdm {
 
-template <typename Base = BdmSimObject<>>
+template <typename Base = SimulationObject<>>
 class CellExt : public Base {
   BDM_CLASS_HEADER(CellExt, CellExt<>,
                    CellExt<typename Base::template Self<Backend>>, position_,
@@ -29,7 +29,6 @@ class CellExt : public Base {
 
   virtual ~CellExt() {}
 
-  // remaining functions
   BDM_FORCE_INLINE const real_v& GetAdherence() const {
     return adherence_[idx_];
   }
@@ -44,9 +43,9 @@ class CellExt : public Base {
 
   template <typename T>
   BDM_FORCE_INLINE
-  std::array<aosoa<Self<VcBackend>, VcBackend>, VcBackend::kVecLen>
-  GetNeighbors(const T& all_cells) const {
-    std::array<aosoa<Self<VcBackend>, VcBackend>, VcBackend::kVecLen> ret;
+      std::array<aosoa<Self<VcVectorBackend>, VcVectorBackend>, VcVectorBackend::kVecLen>
+      GetNeighbors(const T& all_cells) const {
+    std::array<aosoa<Self<VcVectorBackend>, VcVectorBackend>, VcVectorBackend::kVecLen> ret;
     const size_t size = Base::ElementsCurrentVector();
     for (size_t i = 0; i < size; i++) {
       all_cells.Gather(neighbors_[idx_][i], &(ret[i]));
@@ -138,21 +137,21 @@ class CellExt : public Base {
   }
 
  private:
-  BDM_PRIVATE_MEMBER(Container<std::array<real_v COMMA() 3>>, position_) = {{real_v(0), real_v(0), real_v(0)}};
-  BDM_PRIVATE_MEMBER(Container<std::array<real_v COMMA() 3>>, mass_location_) = {{real_v(0), real_v(0), real_v(0)}};
-  BDM_PRIVATE_MEMBER(Container<std::array<real_v COMMA() 3>>, tractor_force_) = {{real_v(0), real_v(0), real_v(0)}};
-  BDM_PRIVATE_MEMBER(Container<real_v>, diameter_) = {real_v(0)};
-  BDM_PRIVATE_MEMBER(Container<real_v>, volume_) = {real_v(0)};
-  BDM_PRIVATE_MEMBER(Container<real_v>, adherence_) = {real_v(0)};
-  BDM_PRIVATE_MEMBER(Container<real_v>, mass_) = {real_v(0)};
+  BDM_PRIVATE_MEMBER(Container<std::array<real_v COMMA() 3>>, position_);
+  BDM_PRIVATE_MEMBER(Container<std::array<real_v COMMA() 3>>, mass_location_);
+  BDM_PRIVATE_MEMBER(Container<std::array<real_v COMMA() 3>>, tractor_force_);
+  BDM_PRIVATE_MEMBER(Container<real_v>, diameter_);
+  BDM_PRIVATE_MEMBER(Container<real_v>, volume_);
+  BDM_PRIVATE_MEMBER(Container<real_v>, adherence_);
+  BDM_PRIVATE_MEMBER(Container<real_v>, mass_);
 
   // stores a list of neighbor ids for each scalar cell
   BDM_PRIVATE_MEMBER(Container<SimdArray<InlineVector<int COMMA() 8>>>,
                      neighbors_) = {{}};
 };
 
-template <typename Backend = VcBackend>
-using Cell = CellExt<BdmSimObject<SelectAllMembers, Backend>>;
+template <typename Backend = VcVectorBackend>
+using Cell = CellExt<SimulationObject<SelectAllMembers, Backend>>;
 
 }  // namespace bdm
 

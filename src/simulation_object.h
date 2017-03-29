@@ -22,9 +22,9 @@ struct SelectAllMembers {
   typedef Type type;
 };
 
-class BdmSimObjectScalarBackend {
+class ScalarSimulationObject {
  public:
-  virtual ~BdmSimObjectScalarBackend() {}
+  virtual ~ScalarSimulationObject() {}
 
   std::size_t size() const { return 1; }
 
@@ -34,11 +34,11 @@ class BdmSimObjectScalarBackend {
   static const std::size_t idx_ = 0;
 };
 
-class BdmSimObjectVectorBackend {
+class VectorSimulationObject {
  public:
-  using Backend = VcBackend;
+  using Backend = VcVectorBackend;
 
-  virtual ~BdmSimObjectVectorBackend() {}
+  virtual ~VectorSimulationObject() {}
 
   void SetSize(std::size_t size) { size_ = size; }
 
@@ -46,7 +46,7 @@ class BdmSimObjectVectorBackend {
     return size_;
   }
 
-  std::size_t elements() const { return size_; }
+  std::size_t Elements() const { return size_; }
 
   // TODO documentaiton
   /// \brief returns the number of scalar elements in the current vector
@@ -54,11 +54,11 @@ class BdmSimObjectVectorBackend {
   /// vector and soa backends
   std::size_t ElementsCurrentVector() const { return size_; }
 
-  std::size_t vectors() const { return 1; }
+  std::size_t Vectors() const { return 1; }
 
   bool is_full() const { return size_ == Backend::kVecLen; }
 
-  void push_back(const BdmSimObjectScalarBackend& other) { size_++; }
+  void push_back(const ScalarSimulationObject& other) { size_++; }
 
  protected:
   static const std::size_t idx_ = 0;
@@ -66,27 +66,27 @@ class BdmSimObjectVectorBackend {
 };
 
 template <typename TTBackend>
-class BdmSimObjectSoaTypeBackend {
+class SoaSimulationObject {
 public:
   using Backend = TTBackend;
 
    template <typename TBackend>
-   friend class BdmSimObjectSoaTypeBackend;
+   friend class SoaSimulationObject;
 
    template <typename T = Backend>
-   BdmSimObjectSoaTypeBackend(typename enable_if<is_same<T, VcSoaBackend>::value>::type* = 0) :
-     size_(1), size_last_vector_(VcBackend::kVecLen) {}
+   SoaSimulationObject(typename enable_if<is_same<T, VcSoaBackend>::value>::type* = 0) :
+     size_(1), size_last_vector_(VcVectorBackend::kVecLen) {}
 
    // Ctor to create SoaRefBackend
    // only compiled if T == VcSoaRefBackend
    // template parameter required for enable_if - otherwise compile error
    template <typename T = Backend>
-   BdmSimObjectSoaTypeBackend(
-       BdmSimObjectSoaTypeBackend<VcSoaBackend>* other,
+   SoaSimulationObject(
+       SoaSimulationObject<VcSoaBackend>* other,
        typename enable_if<is_same<T, VcSoaRefBackend>::value>::type* = 0) :
        size_(other->size_), size_last_vector_(other->size_last_vector_) { }
 
-  virtual ~BdmSimObjectSoaTypeBackend() {}
+  virtual ~SoaSimulationObject() {}
 
   void SetSize(std::size_t size) { size_last_vector_ = size; }
 
@@ -94,13 +94,13 @@ public:
     return size_;  // FIXME which size should be returned??
   }
 
-  bool is_full() const { return size_last_vector_ == VcBackend::kVecLen; }
+  bool is_full() const { return size_last_vector_ == VcVectorBackend::kVecLen; }
 
-  // void push_back(const Self<VcBackend>& other) {
+  // void push_back(const Self<VcVectorBackend>& other) {
   // template <typename T = Backend, typename T1>
-  // typename std::enable_if<is_same<T1, VcBackend>::value>::type
+  // typename std::enable_if<is_same<T1, VcVectorBackend>::value>::type
   // template <typename T>
-  void push_back(const BdmSimObjectVectorBackend& other) {  // FIXME
+  void push_back(const VectorSimulationObject& other) {  // FIXME
     size_++;
     size_last_vector_ = other.ElementsCurrentVector();
   }
@@ -117,13 +117,13 @@ public:
   void reserve(std::size_t new_capacity) {}
 
   /// \brief returns the number of SOA elements in this container
-  std::size_t vectors() const { return size(); }
+  std::size_t Vectors() const { return size(); }
 
   /// this function assumes that only the last vector may not be fully
   /// initialized
-  std::size_t elements() const {
-    if (vectors() != 0) {
-      return (vectors() - 1) * Backend::kVecLen + size_last_vector_;
+  std::size_t Elements() const {
+    if (Vectors() != 0) {
+      return (Vectors() - 1) * Backend::kVecLen + size_last_vector_;
     } else {
       return 0;
     }
@@ -132,16 +132,16 @@ public:
   /// \brief return the number of scalar elements in the current vector
   /// only the last vector might have empty elements
   std::size_t ElementsCurrentVector() const {
-    return idx_ == size_ - 1 ? size_last_vector_ : VcBackend::kVecLen;
+    return idx_ == size_ - 1 ? size_last_vector_ : VcVectorBackend::kVecLen;
   }
 
   // TODO(lukas) add documentation and move next to other push_back
   // push_back scalar on soa
-  void push_back(const BdmSimObjectScalarBackend& other) {
+  void push_back(const ScalarSimulationObject& other) {
     // if it was empty or last vector was full, a vector has been added ->
     // update size_ and
     // size_last_vector_
-    if (elements() == 0 || is_full()) {
+    if (Elements() == 0 || is_full()) {
       size_++;
       size_last_vector_ = 1;
     } else {
@@ -152,17 +152,17 @@ public:
   // template <typename T>
   virtual void CopyTo(std::size_t src_v_idx, std::size_t src_idx,
                       std::size_t dest_v_idx, std::size_t dest_idx,
-                      BdmSimObjectVectorBackend* dest) const {}
+                      VectorSimulationObject* dest) const {}
 
   template <typename T>
   void Gather(const InlineVector<int, 8>& indexes,
-              aosoa<T, VcBackend>* ret) const {
+              aosoa<T, VcVectorBackend>* ret) const {
     // TODO remove commented code
     //std::cout << "gather " << (ret == nullptr) << std::endl;
     const size_t scalars = indexes.size();
     std::size_t n_vectors =
-        scalars / VcBackend::kVecLen + (scalars % VcBackend::kVecLen ? 1 : 0);
-    std::size_t remaining = scalars % VcBackend::kVecLen;
+        scalars / VcVectorBackend::kVecLen + (scalars % VcVectorBackend::kVecLen ? 1 : 0);
+    std::size_t remaining = scalars % VcVectorBackend::kVecLen;
     // std::cout << typeid(ret).name() << std::endl;
     // std::cout << static_cast<void*>(ret) << std::endl;
     //std::cout << "nvectors " << n_vectors << std::endl;
@@ -170,7 +170,7 @@ public:
     //std::cout << "after setsize" << std::endl;
     for (std::size_t i = 0; i < n_vectors; i++) {
       if (i != n_vectors - 1 || remaining == 0) {
-        (*ret)[i].SetSize(VcBackend::kVecLen);
+        (*ret)[i].SetSize(VcVectorBackend::kVecLen);
       } else {
         (*ret)[i].SetSize(remaining);
       }
@@ -178,13 +178,13 @@ public:
     //std::cout << "2" << std::endl;
 
     size_t counter = 0;
-    BdmSimObjectVectorBackend* dest = nullptr;
+    VectorSimulationObject* dest = nullptr;
     for (size_t i = 0; i < scalars; i++) {
       int idx = indexes[i];
-      size_t src_v_idx = idx / VcBackend::kVecLen;
-      size_t src_idx = idx % VcBackend::kVecLen;
-      size_t dest_v_idx = counter / VcBackend::kVecLen;
-      size_t dest_idx = counter % VcBackend::kVecLen;
+      size_t src_v_idx = idx / VcVectorBackend::kVecLen;
+      size_t src_idx = idx % VcVectorBackend::kVecLen;
+      size_t dest_v_idx = counter / VcVectorBackend::kVecLen;
+      size_t dest_idx = counter % VcVectorBackend::kVecLen;
       if (dest_idx == 0) {
         dest = &((*ret)[dest_v_idx]);
       }
@@ -201,47 +201,46 @@ public:
 };
 
 template <typename TBackend>
-struct BdmSimObjectImpl {};
+struct SimulationObjectImpl {};
 
 template <>
-struct BdmSimObjectImpl<VcSoaBackend> {
-  typedef BdmSimObjectSoaTypeBackend<VcSoaBackend> type;
+struct SimulationObjectImpl<VcSoaBackend> {
+  typedef SoaSimulationObject<VcSoaBackend> type;
 };
 
 template <>
-struct BdmSimObjectImpl<VcSoaRefBackend> {
-  typedef BdmSimObjectSoaTypeBackend<VcSoaRefBackend> type;
+struct SimulationObjectImpl<VcSoaRefBackend> {
+  typedef SoaSimulationObject<VcSoaRefBackend> type;
 };
 
 template <>
-struct BdmSimObjectImpl<VcBackend> {
-  typedef BdmSimObjectVectorBackend type;
+struct SimulationObjectImpl<VcVectorBackend> {
+  typedef VectorSimulationObject type;
 };
 
 template <>
-struct BdmSimObjectImpl<ScalarBackend> {
-  typedef BdmSimObjectScalarBackend type;
+struct SimulationObjectImpl<ScalarBackend> {
+  typedef ScalarSimulationObject type;
 };
 
-// FIXME rename
 BDM_DEFAULT_TEMPLATE(TTMemberSelector, TBackend)
-struct BdmSimObject : public BdmSimObjectImpl<TBackend>::type {
+struct SimulationObject : public SimulationObjectImpl<TBackend>::type {
  public:
-  using Base = typename BdmSimObjectImpl<TBackend>::type;
+  using Base = typename SimulationObjectImpl<TBackend>::type;
 
-  virtual ~BdmSimObject() {}
+  virtual ~SimulationObject() {}
 
   // FIXME add for all types of backends??
   virtual void CopyTo(std::size_t src_v_idx, std::size_t src_idx,
                       std::size_t dest_v_idx, std::size_t dest_idx,
-                      BdmSimObjectVectorBackend* dest) const {}
+                      VectorSimulationObject* dest) const {}
 
  protected:
   template <typename Type, typename EnclosingClass, int id>
   using TMemberSelector = TTMemberSelector<Type, EnclosingClass, id>;
 
   template <typename TTBackend>
-  using Self = BdmSimObject<TTMemberSelector, TTBackend>;
+  using Self = SimulationObject<TTMemberSelector, TTBackend>;
 
   using Backend = TBackend;
 
@@ -255,20 +254,20 @@ struct BdmSimObject : public BdmSimObjectImpl<TBackend>::type {
   // std::size_t* const idx_ = new std::size_t;   // TODO memleak
 
 
-  // BdmSimObject() { *idx_ = 0; }
-  BdmSimObject() {}
+  // SimulationObject() { *idx_ = 0; }
+  SimulationObject() {}
 
   // Ctor to create SoaRefBackend
   // only compiled if T == VcSoaRefBackend
   // template parameter required for enable_if - otherwise compile error
   template <typename T = Backend>
-  BdmSimObject(
+  SimulationObject(
       Self<VcSoaBackend>* other,
       typename enable_if<is_same<T, VcSoaRefBackend>::value>::type* = 0) : Base(other) { }
 
   // assigment operator if two objects are of the exact same type
-  BdmSimObject<TTMemberSelector, TBackend>& operator=(
-      const BdmSimObject<TTMemberSelector, TBackend>& other) const {
+  SimulationObject<TTMemberSelector, TBackend>& operator=(
+      const SimulationObject<TTMemberSelector, TBackend>& other) const {
     return *this;
   }
 

@@ -8,14 +8,14 @@ namespace dividing_cell_op_test_internal {
 
 template <typename T>
 void RunTest(T* cells) {
-  using real_v = VcBackend::real_v;
-  if (VcBackend::real_v::Size < 2) {
+  using real_v = VcVectorBackend::real_v;
+  if (VcVectorBackend::real_v::Size < 2) {
     FAIL() << "Backend must at least support two elements for this test";
   }
   real_v diameter;
   diameter[0] = 19;
   diameter[1] = 41;
-  Cell<VcBackend> cell(diameter);
+  Cell<VcVectorBackend> cell(diameter);
   cells->push_back(cell);
 
   DividingCellOp op;
@@ -34,7 +34,7 @@ void RunTest(T* cells) {
 }
 
 TEST(DividingCellOpTest, ComputeAosoa) {
-  daosoa<Cell<VcBackend>> cells;
+  daosoa<Cell<VcVectorBackend>> cells;
   RunTest(&cells);
 }
 

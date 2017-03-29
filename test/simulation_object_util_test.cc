@@ -6,10 +6,10 @@ namespace bdm {
 namespace simulation_object_util_test_internal {
 
 // The following tests check if code insertion in new classes works as intended
-// Therefore BdmSimObject is extended in two stages: first by CellExt and
+// Therefore SimulationObject is extended in two stages: first by CellExt and
 // then by NeuronExt
 
-template <typename Base = BdmSimObject<>>
+template <typename Base = SimulationObject<>>
 class CellExt : public Base {
   BDM_CLASS_HEADER(CellExt, CellExt<>,
                    CellExt<typename Base::template Self<Backend>>, position_,
@@ -71,18 +71,18 @@ class NeuronExt : public Base {
 };
 
 // define easy to use templated type alias
-template <typename Backend = VcBackend>
-using Neuron = NeuronExt<CellExt<BdmSimObject<SelectAllMembers, Backend>>>;
+template <typename Backend = VcVectorBackend>
+using Neuron = NeuronExt<CellExt<SimulationObject<SelectAllMembers, Backend>>>;
 
 TEST(SimulationObjectUtilTest, DefaultConstructor) {
   // are data members in all extensions correctly initialized?
-  Neuron<VcBackend> neuron;
+  Neuron<VcVectorBackend> neuron;
 
-  EXPECT_TRUE((VcBackend::real_v(6.28) == neuron.GetDiameter()).isFull());
+  EXPECT_TRUE((VcVectorBackend::real_v(6.28) == neuron.GetDiameter()).isFull());
   auto& positions = neuron.GetPosition();
-  EXPECT_TRUE((VcBackend::real_v(1) == positions[0]).isFull());
-  EXPECT_TRUE((VcBackend::real_v(2) == positions[1]).isFull());
-  EXPECT_TRUE((VcBackend::real_v(3) == positions[2]).isFull());
+  EXPECT_TRUE((VcVectorBackend::real_v(1) == positions[0]).isFull());
+  EXPECT_TRUE((VcVectorBackend::real_v(2) == positions[1]).isFull());
+  EXPECT_TRUE((VcVectorBackend::real_v(3) == positions[2]).isFull());
 
   auto neurites_array = neuron.GetNeurites();
   for (auto& neurites : neurites_array) {
@@ -92,22 +92,22 @@ TEST(SimulationObjectUtilTest, DefaultConstructor) {
 
 TEST(SimulationObjectUtilTest, NonDefaultConstructor) {
   // are data members in all extensions correctly initialized?
-  using real_v = VcBackend::real_v;
+  using real_v = VcVectorBackend::real_v;
 
   std::vector<Neurite> neurites;
   neurites.push_back(Neurite(2));
   neurites.push_back(Neurite(3));
-  VcBackend::SimdArray<std::vector<Neurite>> neurite_v;
+  VcVectorBackend::SimdArray<std::vector<Neurite>> neurite_v;
   for (std::size_t i = 0; i < neurite_v.size(); i++) neurite_v[i] = neurites;
 
-  Neuron<VcBackend> neuron(
+  Neuron<VcVectorBackend> neuron(
       neurite_v, std::array<real_v, 3>{real_v(4), real_v(5), real_v(6)});
 
-  EXPECT_TRUE((VcBackend::real_v(6.28) == neuron.GetDiameter()).isFull());
+  EXPECT_TRUE((VcVectorBackend::real_v(6.28) == neuron.GetDiameter()).isFull());
   auto& positions = neuron.GetPosition();
-  EXPECT_TRUE((VcBackend::real_v(4) == positions[0]).isFull());
-  EXPECT_TRUE((VcBackend::real_v(5) == positions[1]).isFull());
-  EXPECT_TRUE((VcBackend::real_v(6) == positions[2]).isFull());
+  EXPECT_TRUE((VcVectorBackend::real_v(4) == positions[0]).isFull());
+  EXPECT_TRUE((VcVectorBackend::real_v(5) == positions[1]).isFull());
+  EXPECT_TRUE((VcVectorBackend::real_v(6) == positions[2]).isFull());
 
   auto& neurites_array = neuron.GetNeurites();
   for (auto& neurites : neurites_array) {
@@ -117,7 +117,7 @@ TEST(SimulationObjectUtilTest, NonDefaultConstructor) {
 
 TEST(SimulationObjectUtilTest, NewScalar) {
   using real_v = ScalarBackend::real_v;
-  auto neuron = Neuron<VcBackend>::NewScalar();
+  auto neuron = Neuron<VcVectorBackend>::NewScalar();
 
   EXPECT_TRUE((real_v(6.28) == neuron.GetDiameter()).isFull());
   auto& positions = neuron.GetPosition();
@@ -135,12 +135,12 @@ TEST(SimulationObjectUtilTest, NewEmptySoa) {
   auto neurons = Neuron<>::NewEmptySoa();
   neurons.size();
   EXPECT_EQ(0u, neurons.size());
-  EXPECT_EQ(0u, neurons.vectors());
-  EXPECT_EQ(0u, neurons.elements());
+  EXPECT_EQ(0u, neurons.Vectors());
+  EXPECT_EQ(0u, neurons.Elements());
 }
 
 TEST(SimulationObjectUtilTest, GetSoaRef) {
-  using real_v = VcBackend::real_v;
+  using real_v = VcVectorBackend::real_v;
   Neuron<VcSoaBackend> neurons;
   neurons.size_ = 1234;
   neurons.size_last_vector_ = 3;
@@ -160,21 +160,21 @@ TEST(SimulationObjectUtilTest, GetSoaRef) {
 
 TEST(SimulationObjectUtilTest,
      SoaBackend_push_backVector_AndSubscriptOperator) {
-  using real_v = VcBackend::real_v;
-  const std::size_t vector_length = VcBackend::kVecLen;
+  using real_v = VcVectorBackend::real_v;
+  const std::size_t vector_length = VcVectorBackend::kVecLen;
 
   std::vector<Neurite> neurites;
   neurites.push_back(Neurite(2));
   neurites.push_back(Neurite(3));
-  VcBackend::SimdArray<std::vector<Neurite>> neurite_v;
+  VcVectorBackend::SimdArray<std::vector<Neurite>> neurite_v;
   for (std::size_t i = 0; i < neurite_v.size(); i++) neurite_v[i] = neurites;
 
-  Neuron<VcBackend> neuron_v1(
+  Neuron<VcVectorBackend> neuron_v1(
       neurite_v, std::array<real_v, 3>{real_v(4), real_v(5), real_v(6)});
 
   neurites.push_back(Neurite(4));
   for (std::size_t i = 0; i < neurite_v.size(); i++) neurite_v[i] = neurites;
-  Neuron<VcBackend> neuron_v2(
+  Neuron<VcVectorBackend> neuron_v2(
       neurite_v, std::array<real_v, 3>{real_v(9), real_v(8), real_v(7)});
   // simulate that this neuron vector is not full
   neuron_v2.SetSize(1);
@@ -184,8 +184,8 @@ TEST(SimulationObjectUtilTest,
   neurons.push_back(neuron_v2);
 
   EXPECT_EQ(2u, neurons.size());
-  EXPECT_EQ(2u, neurons.vectors());
-  EXPECT_EQ(vector_length + 1, neurons.elements());
+  EXPECT_EQ(2u, neurons.Vectors());
+  EXPECT_EQ(vector_length + 1, neurons.Elements());
 
   EXPECT_EQ(vector_length, neurons[0].ElementsCurrentVector());
 
@@ -196,11 +196,11 @@ TEST(SimulationObjectUtilTest,
   // operator[] returns reference to *this
   EXPECT_TRUE(&result1 == &neurons);
 
-  EXPECT_TRUE((VcBackend::real_v(6.28) == result1.GetDiameter()).isFull());
+  EXPECT_TRUE((VcVectorBackend::real_v(6.28) == result1.GetDiameter()).isFull());
   auto& positions = result1.GetPosition();
-  EXPECT_TRUE((VcBackend::real_v(9) == positions[0]).isFull());
-  EXPECT_TRUE((VcBackend::real_v(8) == positions[1]).isFull());
-  EXPECT_TRUE((VcBackend::real_v(7) == positions[2]).isFull());
+  EXPECT_TRUE((VcVectorBackend::real_v(9) == positions[0]).isFull());
+  EXPECT_TRUE((VcVectorBackend::real_v(8) == positions[1]).isFull());
+  EXPECT_TRUE((VcVectorBackend::real_v(7) == positions[2]).isFull());
 
   auto neurite_v_actual = result1.GetNeurites();
   for (auto& neurites_s : neurite_v_actual) {
@@ -222,8 +222,8 @@ TEST(SimulationObjectUtilTest, SoaBackend_push_backScalarOnEmptySoa) {
 
   neurons.push_back(single_neuron);
   EXPECT_EQ(1u, neurons.size());
-  EXPECT_EQ(1u, neurons.vectors());
-  EXPECT_EQ(1u, neurons.elements());
+  EXPECT_EQ(1u, neurons.Vectors());
+  EXPECT_EQ(1u, neurons.Elements());
 
   // check if scalar data members have been copied correctly
   EXPECT_EQ(1.2345, neurons.GetDiameter()[0]);
@@ -240,9 +240,9 @@ TEST(SimulationObjectUtilTest, SoaBackend_push_backScalarOnEmptySoa) {
 TEST(SimulationObjectUtilTest, SoaBackend_push_backScalarOnNonEmptySoa) {
   Neuron<VcSoaBackend> neurons;  // stores one vector neuron with default values
   EXPECT_EQ(1u, neurons.size());
-  EXPECT_EQ(1u, neurons.vectors());
-  auto expected_elements = VcBackend::kVecLen;
-  EXPECT_EQ(expected_elements, neurons.elements());
+  EXPECT_EQ(1u, neurons.Vectors());
+  auto expected_elements = VcVectorBackend::kVecLen;
+  EXPECT_EQ(expected_elements, neurons.Elements());
 
   // simulate that the first vector only holds one scalar
   neurons.size_last_vector_ = 1;
@@ -257,8 +257,8 @@ TEST(SimulationObjectUtilTest, SoaBackend_push_backScalarOnNonEmptySoa) {
 
   neurons.push_back(single_neuron);
   EXPECT_EQ(1u, neurons.size());
-  EXPECT_EQ(1u, neurons.vectors());
-  EXPECT_EQ(2u, neurons.elements());
+  EXPECT_EQ(1u, neurons.Vectors());
+  EXPECT_EQ(2u, neurons.Elements());
 
   // check if scalar data members have been copied correctly
   EXPECT_EQ(1.2345, neurons.GetDiameter()[1]);
@@ -304,7 +304,7 @@ TEST(SimulationObjectUtilTest, SoaBackend_Gather) {
     objects.push_back(scalar);
   }
 
-  aosoa<Neuron<VcBackend>, VcBackend> gathered;
+  aosoa<Neuron<VcVectorBackend>, VcVectorBackend> gathered;
   InlineVector<int, 8> indexes;
   indexes.push_back(5);
   indexes.push_back(3);
@@ -313,11 +313,11 @@ TEST(SimulationObjectUtilTest, SoaBackend_Gather) {
   objects.Gather(indexes, &gathered);
   // check if it returns the correct objects
   size_t target_n_vectors =
-      4 / VcBackend::kVecLen + (4 % VcBackend::kVecLen ? 1 : 0);
-  EXPECT_EQ(target_n_vectors, gathered.vectors());
+      4 / VcVectorBackend::kVecLen + (4 % VcVectorBackend::kVecLen ? 1 : 0);
+  EXPECT_EQ(target_n_vectors, gathered.Vectors());
   size_t counter = 0;
-  for (size_t i = 0; i < gathered.vectors(); i++) {
-    for (size_t j = 0; j < VcBackend::kVecLen; j++) {
+  for (size_t i = 0; i < gathered.Vectors(); i++) {
+    for (size_t j = 0; j < VcVectorBackend::kVecLen; j++) {
       EXPECT_EQ(indexes[counter], gathered[i].GetDiameter()[j]);
       EXPECT_EQ(indexes[counter], gathered[i].GetPosition()[0][j]);
       EXPECT_EQ(indexes[counter], gathered[i].GetPosition()[1][j]);
@@ -330,11 +330,11 @@ TEST(SimulationObjectUtilTest, SoaBackend_Gather) {
 }
 
 TEST(SimulationObjectUtilTest, VectorBackend_push_backScalar) {
-  Neuron<VcBackend> neurons;  // stores one vector neuron with default values
-  auto backend_vec_len = VcBackend::kVecLen;
-  EXPECT_EQ(backend_vec_len, neurons.size());  // replace with VcBackend::kVecLen
-  EXPECT_EQ(1u, neurons.vectors());
-  EXPECT_EQ(backend_vec_len, neurons.elements());
+  Neuron<VcVectorBackend> neurons;  // stores one vector neuron with default values
+  auto backend_vec_len = VcVectorBackend::kVecLen;
+  EXPECT_EQ(backend_vec_len, neurons.size());  // replace with VcVectorBackend::kVecLen
+  EXPECT_EQ(1u, neurons.Vectors());
+  EXPECT_EQ(backend_vec_len, neurons.Elements());
 
   // simulate that the vector only holds one scalar - remaining slots are free
   neurons.SetSize(1);
@@ -350,8 +350,8 @@ TEST(SimulationObjectUtilTest, VectorBackend_push_backScalar) {
 
   neurons.push_back(single_neuron);
   EXPECT_EQ(2u, neurons.size());
-  EXPECT_EQ(1u, neurons.vectors());
-  EXPECT_EQ(2u, neurons.elements());
+  EXPECT_EQ(1u, neurons.Vectors());
+  EXPECT_EQ(2u, neurons.Elements());
   EXPECT_EQ(2u, neurons.ElementsCurrentVector());
 
   // check if scalar data members have been copied correctly

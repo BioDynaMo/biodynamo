@@ -7,7 +7,7 @@
 namespace bdm {
 
 /// this class is used as payload for daosoa tests
-template <typename TBackend=VcBackend>
+template <typename TBackend=VcVectorBackend>
 class Object {
  public:
   using Backend = TBackend;
@@ -48,7 +48,7 @@ class Object {
 
   void CopyTo(std::size_t src_v_idx, std::size_t src_idx,
               std::size_t dest_v_idx, std::size_t dest_idx,
-              Object<VcBackend>* dest) const {
+              Object<VcVectorBackend>* dest) const {
     dest->id_[dest_idx] = id_[src_idx];
   }
 
@@ -59,10 +59,10 @@ class Object {
 
 TEST(daosoaTest, PushBackOfScalarAndVectorCell) {
   // push_back
-  Cell<VcBackend> vc_cells;
+  Cell<VcVectorBackend> vc_cells;
   Cell<ScalarBackend> scalar_cell;
 
-  daosoa<Cell<VcBackend>> vc_daosoa;
+  daosoa<Cell<VcVectorBackend>> vc_daosoa;
   vc_daosoa.push_back(vc_cells);
   vc_daosoa.push_back(scalar_cell);
 
@@ -76,24 +76,24 @@ TEST(daosoaTest, PushBackAndGetScalars) {
   daosoa<Object<>> objects;
 
   // create objects
-  const size_t elements = VcBackend::kVecLen * 2 + 2;
+  const size_t elements = VcVectorBackend::kVecLen * 2 + 2;
   for (size_t i = 0; i < elements; i++) {
     objects.push_back(Object<ScalarBackend>(i));
   }
 
-  EXPECT_EQ(elements, objects.elements());
-  EXPECT_EQ(size_t(3), objects.vectors());
+  EXPECT_EQ(elements, objects.Elements());
+  EXPECT_EQ(size_t(3), objects.Vectors());
 
   // check if it returns the correct objects
   for (size_t i = 0; i < elements; i++) {
-    const auto vector_idx = i / VcBackend::kVecLen;
-    const auto scalar_idx = i % VcBackend::kVecLen;
+    const auto vector_idx = i / VcVectorBackend::kVecLen;
+    const auto scalar_idx = i % VcVectorBackend::kVecLen;
     EXPECT_EQ(i, objects[vector_idx].GetId()[scalar_idx]);
   }
 }
 
 TEST(daosoaTest, ReserveElementsSetScalar) {
-  const size_t elements = VcBackend::kVecLen * 2 + 2;
+  const size_t elements = VcVectorBackend::kVecLen * 2 + 2;
   daosoa<Object<>> objects(elements);
 
   // create objects
@@ -101,13 +101,13 @@ TEST(daosoaTest, ReserveElementsSetScalar) {
     objects.push_back(Object<ScalarBackend>(i));
   }
 
-  EXPECT_EQ(elements, objects.elements());
-  EXPECT_EQ(size_t(3), objects.vectors());
+  EXPECT_EQ(elements, objects.Elements());
+  EXPECT_EQ(size_t(3), objects.Vectors());
 
   // check if it returns the correct objects
   for (size_t i = 0; i < elements; i++) {
-    const auto vector_idx = i / VcBackend::kVecLen;
-    const auto scalar_idx = i % VcBackend::kVecLen;
+    const auto vector_idx = i / VcVectorBackend::kVecLen;
+    const auto scalar_idx = i % VcVectorBackend::kVecLen;
     EXPECT_EQ(i, objects[vector_idx].GetId()[scalar_idx]);
   }
 }
@@ -120,7 +120,7 @@ TEST(daosoaTest, Gather) {
     objects.push_back(Object<ScalarBackend>(i));
   }
 
-  aosoa<Object<VcBackend>, VcBackend> gathered;
+  aosoa<Object<VcVectorBackend>, VcVectorBackend> gathered;
   InlineVector<int, 8> indexes;
   indexes.push_back(5);
   indexes.push_back(3);
@@ -129,11 +129,11 @@ TEST(daosoaTest, Gather) {
   objects.Gather(indexes, &gathered);
   // check if it returns the correct objects
   size_t target_n_vectors =
-      4 / VcBackend::kVecLen + (4 % VcBackend::kVecLen ? 1 : 0);
-  EXPECT_EQ(target_n_vectors, gathered.vectors());
+      4 / VcVectorBackend::kVecLen + (4 % VcVectorBackend::kVecLen ? 1 : 0);
+  EXPECT_EQ(target_n_vectors, gathered.Vectors());
   size_t counter = 0;
-  for (size_t i = 0; i < gathered.vectors(); i++) {
-    for (size_t j = 0; j < VcBackend::kVecLen; j++) {
+  for (size_t i = 0; i < gathered.Vectors(); i++) {
+    for (size_t j = 0; j < VcVectorBackend::kVecLen; j++) {
       EXPECT_EQ(indexes[counter++], gathered[i].GetId()[j]);
     }
   }
@@ -142,15 +142,15 @@ TEST(daosoaTest, Gather) {
 TEST(daosoaTest, SizeAndElements) {
   daosoa<Object<>> objects;
 
-  EXPECT_EQ(size_t(0), objects.vectors());
-  EXPECT_EQ(size_t(0), objects.elements());
-  objects.push_back(Object<VcBackend>());
-  EXPECT_EQ(size_t(1), objects.vectors());
+  EXPECT_EQ(size_t(0), objects.Vectors());
+  EXPECT_EQ(size_t(0), objects.Elements());
+  objects.push_back(Object<VcVectorBackend>());
+  EXPECT_EQ(size_t(1), objects.Vectors());
   EXPECT_EQ(Vc::double_v::Size,
-            objects.elements());  // fixme replace with VcBackend
+            objects.Elements());  // fixme replace with VcVectorBackend
   objects.push_back(Object<ScalarBackend>());
-  EXPECT_EQ(size_t(2), objects.vectors());
-  EXPECT_EQ(VcBackend::kVecLen + 1, objects.elements());
+  EXPECT_EQ(size_t(2), objects.Vectors());
+  EXPECT_EQ(VcVectorBackend::kVecLen + 1, objects.Elements());
 }
 
 }  // namespace bdm

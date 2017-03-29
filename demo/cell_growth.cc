@@ -23,7 +23,7 @@ using bdm::Scheduler;
 using bdm::ScalarBackend;
 using bdm::Timing;
 using bdm::TimingAggregator;
-using bdm::VcBackend;
+using bdm::VcVectorBackend;
 
 void execute(size_t cells_per_dim, size_t iterations, size_t threads,
              size_t repititions, TimingAggregator* statistic) {

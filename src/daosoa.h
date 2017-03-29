@@ -7,7 +7,7 @@
 #include "aosoa.h"
 #include "backend.h"
 #include "inline_vector.h"
-#include "preprocessor.h"
+#include "macros.h"
 #include "type_util.h"
 
 namespace bdm {
@@ -30,14 +30,14 @@ class daosoa {
   explicit daosoa(const value_type& cell) { data_.push_back(cell); }
 
   /// \brief returns the number of SOA elements in this container
-  size_t vectors() const { return data_.size(); }
+  size_t Vectors() const { return data_.size(); }
 
   /// this function assumes that only the last vector may not be fully
   /// initialized
-  size_t elements() const {
-    if (vectors() != 0) {
-      return (vectors() - 1) * Backend::kVecLen +
-             data_[vectors() - 1].size();  // fixme Size vectors
+  size_t Elements() const {
+    if (Vectors() != 0) {
+      return (Vectors() - 1) * Backend::kVecLen +
+             data_[Vectors() - 1].size();  // fixme Size vectors
     } else {
       return 0;
     }

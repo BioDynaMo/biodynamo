@@ -21,8 +21,8 @@ TEST(is_std_arrayTest, True) {
   EXPECT_TRUE(type::value);
 }
 
-TEST(is_std_arrayTest, FalseForVcBackendSimdArray) {
-  EXPECT_FALSE(is_std_array<VcBackend::SimdArray<double>>::value);
+TEST(is_std_arrayTest, FalseForVcVectorBackendSimdArray) {
+  EXPECT_FALSE(is_std_array<VcVectorBackend::SimdArray<double>>::value);
 }
 
 TEST(is_std_arrayTest, False) {
@@ -35,12 +35,12 @@ struct Widget {
 };
 
 TEST(is_scalarTest, All) {
-  EXPECT_FALSE(is_scalar<Widget<VcBackend>>::value);
+  EXPECT_FALSE(is_scalar<Widget<VcVectorBackend>>::value);
   EXPECT_TRUE(is_scalar<Widget<ScalarBackend>>::value);
 }
 
 TEST(is_soaTest, All) {
-  EXPECT_FALSE(is_soa<VcBackend>::value);
+  EXPECT_FALSE(is_soa<VcVectorBackend>::value);
   EXPECT_FALSE(is_soa<ScalarBackend>::value);
   EXPECT_TRUE(is_soa<VcSoaBackend>::value);
   EXPECT_TRUE(is_soa<VcSoaRefBackend>::value);

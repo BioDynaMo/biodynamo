@@ -29,7 +29,7 @@ class DisplacementOp {
 #pragma omp parallel
     {
       auto thread_safe_cells = make_thread_safe(cells);
-      const size_t n_vectors = thread_safe_cells->vectors();
+      const size_t n_vectors = thread_safe_cells->Vectors();
 #pragma omp for
       for (size_t i = 0; i < n_vectors; i++) {
         auto& cell = (*thread_safe_cells)[i];
@@ -74,9 +74,9 @@ class DisplacementOp {
         //  (We check for every neighbor object if they touch us, i.e. push us
         //  away)
         const auto& neighbors = cell.GetNeighbors(*cells);
-        // todo remove VcBackend with impl.
-        for (size_t j = 0; j < VcBackend::kVecLen; j++) {
-          for (size_t k = 0; k < neighbors.at(j).vectors(); k++) {
+        // todo remove VcVectorBackend with impl.
+        for (size_t j = 0; j < VcVectorBackend::kVecLen; j++) {
+          for (size_t k = 0; k < neighbors.at(j).Vectors(); k++) {
             auto& neighbor = neighbors.at(j)[k];
             std::array<real_v, 3> neighbor_force;
 
@@ -88,13 +88,13 @@ class DisplacementOp {
             real_v scalar_diameter(cell.GetDiameter()[j]);
             neighbor.GetForceOn(scalar_mass_location, scalar_diameter,
                                 &neighbor_force);
-            if (k != neighbors.at(j).vectors() - 1) {
+            if (k != neighbors.at(j).Vectors() - 1) {
               translation_force_on_point_mass[0][j] += neighbor_force[0].sum();
               translation_force_on_point_mass[1][j] += neighbor_force[1].sum();
               translation_force_on_point_mass[2][j] += neighbor_force[2].sum();
             } else {
               // if vector is not full manually add up forces
-              for (size_t l = 0; l < neighbor.elements(); l++) {
+              for (size_t l = 0; l < neighbor.Elements(); l++) {
                 translation_force_on_point_mass[0][j] += neighbor_force[0][l];
                 translation_force_on_point_mass[1][j] += neighbor_force[1][l];
                 translation_force_on_point_mass[2][j] += neighbor_force[2][l];
@@ -152,7 +152,7 @@ class DisplacementOp {
         auto gt_max_displacement =
             norm_of_force * mh > real_t(Param::kSimulationMaximalDisplacement);
         auto max_displacement =
-            Math::Normalize<VcBackend>(movement_at_next_step);
+            Math::Normalize<VcVectorBackend>(movement_at_next_step);
         max_displacement[0] *= real_v(Param::kSimulationMaximalDisplacement);
         max_displacement[1] *= real_v(Param::kSimulationMaximalDisplacement);
         max_displacement[2] *= real_v(Param::kSimulationMaximalDisplacement);
@@ -186,27 +186,27 @@ class DisplacementOp {
   }
 
  private:
-  void UpdateSpatialOrganizationNodePosition(Cell<VcBackend>* cell) const {
+  void UpdateSpatialOrganizationNodePosition(Cell<VcVectorBackend>* cell) const {
     auto& current_center = cell->GetPosition();
     auto& mass_location = cell->GetMassLocation();
     // fixme can't we pass that as parameter - should be known at call site
-    std::array<VcBackend::real_v, 3> displacement = {
+    std::array<VcVectorBackend::real_v, 3> displacement = {
         mass_location[0] - current_center[0],
         mass_location[1] - current_center[1],
         mass_location[2] - current_center[2]};
-    //    auto offset = Math::Norm<VcBackend>(displacement);
+    //    auto offset = Math::Norm<VcVectorBackend>(displacement);
     //    auto& diameter = cell->GetDiameter();
     // todo what is the purpose of this conditional?
     //    auto ifmask = offset > diameter * 0.25 || offset > 5; //fixme magic
     //    numbers 0.25 & 0.0025
-    //    auto noise = Random::NextNoise<VcBackend>(diameter * 0.025);
+    //    auto noise = Random::NextNoise<VcVectorBackend>(diameter * 0.025);
     //    displacement[0] += noise[0];
     //    displacement[1] += noise[1];
     //    displacement[2] += noise[2];
     //    displacement[0].setZeroInverted(ifmask);
     //    displacement[1].setZeroInverted(ifmask);
     //    displacement[2].setZeroInverted(ifmask);
-    std::array<VcBackend::real_v, 3> new_position{
+    std::array<VcVectorBackend::real_v, 3> new_position{
         current_center[0] + displacement[0],
         current_center[1] + displacement[1],
         current_center[2] + displacement[2],

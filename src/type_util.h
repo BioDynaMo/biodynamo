@@ -30,9 +30,9 @@ struct is_std_array {
 };
 
 // exclude type aliases of std::array
-// define that type alias VcBackend::SimdArray is not std::array
+// define that type alias VcVectorBackend::SimdArray is not std::array
 template <typename T>
-struct is_std_array<VcBackend::SimdArray<T>> {
+struct is_std_array<VcVectorBackend::SimdArray<T>> {
   static const bool value = false;
 };
 

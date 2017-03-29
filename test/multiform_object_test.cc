@@ -70,7 +70,7 @@ TEST(MultiformObjectSimple, RemoveAC) {
 // -----------------------------------------------------------------------------
 // more complex example with two level class hierarchy
 
-template <typename Base = BdmSimObject<>>
+template <typename Base = SimulationObject<>>
 class CellExt : public Base {
   BDM_CLASS_HEADER(CellExt, CellExt<>,
                    CellExt<typename Base::template Self<Backend>>, position_,
@@ -126,7 +126,7 @@ class NeuronExt : public Base {
 // define easy to use templated type alias
 template <template <typename, typename, int> class TMemberSelector =
               SelectAllMembers>
-using Neuron = NeuronExt<CellExt<BdmSimObject<TMemberSelector, ScalarBackend>>>;
+using Neuron = NeuronExt<CellExt<SimulationObject<TMemberSelector, ScalarBackend>>>;
 
 TEST(MultiformObjectComplex, SelectAll1) {
   Neuron<> all_members;

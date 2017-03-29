@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "Vc/Vc"
-#include "preprocessor.h"
+#include "macros.h"
 
 namespace bdm {
 
@@ -99,7 +99,7 @@ class OneElementArray {
   T data_;
 };
 
-struct VcBackend {
+struct VcVectorBackend {
   typedef Vc::double_v::value_type real_t;
   static const size_t kVecLen = Vc::double_v::Size;
   typedef Vc::double_v real_v;
@@ -111,21 +111,21 @@ struct VcBackend {
 };
 
 struct VcSoaBackend {
-  static const size_t kVecLen = VcBackend::kVecLen;
-  typedef VcBackend::real_v real_v;
-  typedef VcBackend::real_t real_t;
-  typedef VcBackend::bool_v bool_v;
+  static const size_t kVecLen = VcVectorBackend::kVecLen;
+  typedef VcVectorBackend::real_v real_v;
+  typedef VcVectorBackend::real_t real_t;
+  typedef VcVectorBackend::bool_v bool_v;
   template <typename T>
-  using SimdArray = typename VcBackend::template SimdArray<T>;
+  using SimdArray = typename VcVectorBackend::template SimdArray<T>;
   template <typename T>
   using Container = std::vector<T, Vc::Allocator<T>>;
 };
 
 struct VcSoaRefBackend {
-  static const size_t kVecLen = VcBackend::kVecLen;
-  typedef VcBackend::real_v real_v;
-  typedef VcBackend::real_t real_t;
-  typedef VcBackend::bool_v bool_v;
+  static const size_t kVecLen = VcVectorBackend::kVecLen;
+  typedef VcVectorBackend::real_v real_v;
+  typedef VcVectorBackend::real_t real_t;
+  typedef VcVectorBackend::bool_v bool_v;
   template <typename T>
   using SimdArray = typename VcSoaBackend::template SimdArray<T>;
   template <typename T>
@@ -145,15 +145,15 @@ struct ScalarBackend {
   using Container = OneElementArray<T>;
 };
 
-inline typename VcBackend::real_v iif(
-    const decltype(std::declval<typename VcBackend::real_v>() <
-                   std::declval<typename VcBackend::real_v>())& condition,
-    const typename VcBackend::real_v& true_value,
-    const typename VcBackend::real_v& false_value) {
+inline typename VcVectorBackend::real_v iif(
+    const decltype(std::declval<typename VcVectorBackend::real_v>() <
+                   std::declval<typename VcVectorBackend::real_v>())& condition,
+    const typename VcVectorBackend::real_v& true_value,
+    const typename VcVectorBackend::real_v& false_value) {
   return Vc::iif(condition, true_value, false_value);
 }
 
-using DefaultBackend = VcBackend;
+using DefaultBackend = VcVectorBackend;
 
 }  // namespace bdm
 

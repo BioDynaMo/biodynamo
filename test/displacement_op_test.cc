@@ -8,7 +8,7 @@ namespace displacement_op_test_internal {
 
 template <typename T>
 void RunTest(T* cells) {
-  using real_v = VcBackend::real_v;
+  using real_v = VcVectorBackend::real_v;
   using real_t = real_v::value_type;
   if (real_v::Size < 2) {
     FAIL() << "Backend must at least support two elements for this test";
@@ -33,10 +33,10 @@ void RunTest(T* cells) {
   neighbor_1.push_back(1);
   InlineVector<int, 8> neighbor_2;
   neighbor_2.push_back(0);
-  std::array<InlineVector<int, 8>, VcBackend::kVecLen> neighbors = {neighbor_1,
+  std::array<InlineVector<int, 8>, VcVectorBackend::kVecLen> neighbors = {neighbor_1,
                                                                     neighbor_2};
 
-  Cell<VcBackend> cell(diameter);
+  Cell<VcVectorBackend> cell(diameter);
   cell.SetDiameter(diameter);
   cell.SetPosition(position);
   cell.SetMassLocation(position);
@@ -76,7 +76,7 @@ void RunTest(T* cells) {
 }
 
 TEST(DisplacementOpTest, ComputeAosoa) {
-  daosoa<Cell<VcBackend>> cells;
+  daosoa<Cell<VcVectorBackend>> cells;
   RunTest(&cells);
 }
 

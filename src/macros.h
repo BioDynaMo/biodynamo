@@ -1,5 +1,5 @@
-#ifndef PREPROCESSOR_H_
-#define PREPROCESSOR_H_
+#ifndef MACROS_H_
+#define MACROS_H_
 
 #include "cpp_magic.h"
 
@@ -48,6 +48,5 @@
 // clang-format on
 
 #define BDM_FORCE_INLINE inline __attribute__ ((always_inline))
-// #define BDM_FORCE_INLINE
 
-#endif  // PREPROCESSOR_H_
+#endif  // MACROS_H_

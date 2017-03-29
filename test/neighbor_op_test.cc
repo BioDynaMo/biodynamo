@@ -35,7 +35,7 @@ void RunTest(T* cells) {
   // cell 3
   InlineVector<int, 8> expected_3;
   expected_3.push_back(1);
-  if (VcBackend::kVecLen > 2) {
+  if (VcVectorBackend::kVecLen > 2) {
     EXPECT_EQ(expected_3, neighbors_1[2]);
   } else {
     EXPECT_EQ(expected_3, (*cells)[1].GetNeighbors()[0]);
@@ -43,7 +43,7 @@ void RunTest(T* cells) {
 }
 
 TEST(NeighborOpTest, ComputeAosoa) {
-  daosoa<Cell<VcBackend>> cells;
+  daosoa<Cell<VcVectorBackend>> cells;
   RunTest(&cells);
 }
 

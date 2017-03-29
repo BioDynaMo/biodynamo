@@ -18,12 +18,12 @@ class DividingCellOp {
 #pragma omp parallel
     {
       auto thread_safe_cells = make_thread_safe(cells);
-      const size_t n_vectors = thread_safe_cells->vectors();
+      const size_t n_vectors = thread_safe_cells->Vectors();
 #pragma omp for
       for (size_t i = 0; i < n_vectors; i++) {
         // if diameter <= 20 then changeVolume(300) else do nothing
         auto ifresult = (*thread_safe_cells)[i].GetDiameter() <= 40;
-        VcBackend::real_v dv(300);
+        VcVectorBackend::real_v dv(300);
         dv.setZeroInverted(ifresult);
         (*thread_safe_cells)[i].ChangeVolume(dv);
         // todo(lukas) division if diameter > 20;
