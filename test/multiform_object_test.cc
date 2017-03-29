@@ -1,10 +1,10 @@
-#include <gtest/gtest.h>
 #include "multiform_object.h"
+#include "gtest/gtest.h"
 
 namespace bdm {
 namespace multiform_object_test_internal {
 
-template <template <typename, typename, int> class TMemberSelector =
+template <template <typename, typename, int> class MemberSelector =
               SelectAllMembers>
 class Simple {
   using SelfUnique = Simple<>;
@@ -126,7 +126,8 @@ class NeuronExt : public Base {
 // define easy to use templated type alias
 template <template <typename, typename, int> class TMemberSelector =
               SelectAllMembers>
-using Neuron = NeuronExt<CellExt<SimulationObject<TMemberSelector, ScalarBackend>>>;
+using Neuron =
+    NeuronExt<CellExt<SimulationObject<TMemberSelector, ScalarBackend>>>;
 
 TEST(MultiformObjectComplex, SelectAll1) {
   Neuron<> all_members;

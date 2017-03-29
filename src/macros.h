@@ -48,6 +48,6 @@
 // clang-format on
 
 /// Macro to force compiler to inline a function
-#define BDM_FORCE_INLINE inline __attribute__ ((always_inline))
+#define BDM_FORCE_INLINE inline __attribute__((always_inline))
 
 #endif  // MACROS_H_

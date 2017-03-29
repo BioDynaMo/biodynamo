@@ -24,8 +24,8 @@
  public:                                                      \
   static const int kDataMemberUid##var_name = __COUNTER__;    \
   access_modifier:                                            \
-  typename TMemberSelector<type_name, SelfUnique,             \
-                           kDataMemberUid##var_name>::type var_name
+  typename MemberSelector<type_name, SelfUnique,              \
+                          kDataMemberUid##var_name>::type var_name
 
 #define BDM_PUBLIC_MEMBER(type_name, var_name) \
   BDM_DATA_MEMBER(public, REMOVE_TRAILING_COMMAS(type_name), var_name)
@@ -119,7 +119,8 @@
 ///          Value: Type Id, but template parameter Base must be replaced with:
 ///          `typename Base::template Self<Backend>` \n\n
 ///          Example: original class: \n
-///          `template<class Base, class Neurite> class Neuron : public Base {};` \n
+///          `template<class Base, class Neurite> class Neuron : public Base
+///          {};` \n
 ///          Type Id: `Neuron<Base, Neurite>`
 ///          replace Base:
 ///          `Neuron<typename Base::template Self<Backend>, Neurite>` \n\n
@@ -135,8 +136,8 @@
   using Base::idx_;                                                            \
                                                                                \
   template <typename Type, typename EnclosingClass, int id>                    \
-  using TMemberSelector =                                                      \
-      typename Base::template TMemberSelector<Type, EnclosingClass, id>;       \
+  using MemberSelector =                                                       \
+      typename Base::template MemberSelector<Type, EnclosingClass, id>;        \
                                                                                \
   using Backend = typename Base::Backend;                                      \
   using real_v = typename Backend::real_v;                                     \
@@ -180,106 +181,32 @@
     return ret_value;                                                          \
   }                                                                            \
                                                                                \
- protected:                                                                    \
-  /* Ctor to create SoaRefBackend */                                           \
-  /* only compiled if T == VcSoaRefBackend */                                  \
-  /* template parameter required for enable_if - otherwise compile error */    \
-  template <typename T = Backend>                                              \
-  class_name(                                                                  \
-      Self<VcSoaBackend>* other)       \
-      : Base(other),                                                           \
-        REMOVE_TRAILING_COMMAS(BDM_CLASS_HEADER_CPY_CTOR_INIT(__VA_ARGS__)) {} \
-                                                                               \
- public:                                                                       \
-  /* TODO(lukas) only for SoaBackends */                                              \
-  /* needed because operator[] is not thread safe - index is shared among  */  \
-  /* all threads */                                                            \
-  Vc_ALWAYS_INLINE std::unique_ptr<Self<VcSoaRefBackend>> GetSoaRef() {        \
-    return std::unique_ptr<Self<VcSoaRefBackend>>(new Self<VcSoaRefBackend>(this));\
+  /* Returns a new reference object to `this`  */                              \
+  /* The main application is thread safety.  */                                \
+  /* By default SOA container are not thread safe. They all share the same  */ \
+  /* `idx_` data member. The new reference object has its own `idx_`  */       \
+  std::unique_ptr<Self<VcSoaRefBackend>> GetSoaRef() {                         \
+    return std::unique_ptr<Self<VcSoaRefBackend>>(                             \
+        new Self<VcSoaRefBackend>(this));                                      \
   }                                                                            \
                                                                                \
- Vc_ALWAYS_INLINE Self<VcSoaRefBackend> GetSoaRef() const {                    \
+  /* const version of GetSoaRef */                                             \
+  Vc_ALWAYS_INLINE Self<VcSoaRefBackend> GetSoaRef() const {                   \
     throw std::logic_error("Function not implemented yet");                    \
- }                                                                             \
+  }                                                                            \
                                                                                \
-  /* only compiled if Backend == Soa(Ref)Backend */                            \
-  /* template parameter required for enable_if - otherwise compile error */    \
+  /* Append scalar on a vector simulation object */                            \
   template <typename T = Backend>                                              \
-  typename enable_if<is_same<T, VcSoaRefBackend>::value ||                     \
-                     is_same<T, VcSoaBackend>::value>::type                    \
-  push_back(const Self<VcVectorBackend>& other) {                                    \
+  typename enable_if<is_same<T, VcVectorBackend>::value>::type push_back(      \
+      const Self<ScalarBackend>& other) {                                      \
+    BDM_CLASS_HEADER_VECTOR_PUSH_BACK_OP_BODY(__VA_ARGS__);                    \
     Base::push_back(other);                                                    \
-    BDM_CLASS_HEADER_PUSH_BACK_BODY(__VA_ARGS__);                              \
   }                                                                            \
                                                                                \
-  /* only compiled if Backend == Soa(Ref)Backend */                            \
-  /* template parameter required for enable_if - otherwise compile error */    \
+  /* Append scalar on a soa simulation object */                               \
   template <typename T = Backend>                                              \
-  typename enable_if<is_same<T, ScalarBackend>::value>::type push_back(        \
-      const Self<VcVectorBackend>& other) {                                          \
-    throw std::runtime_error("TODO implement: see src/cell.h:Append");         \
-  }                                                                            \
-                                                                               \
-  /* This operator is not thread safe! all threads modify the same index. */   \
-  /* For parallel execution create a reference object for each thread -- */    \
-  /* see GetSoaRef */                                                          \
-  /* only compiled if Backend == Soa(Ref)Backend */                            \
-  /* no version if Backend == VcVectorBackend that returns a Self<ScalarBackend> */  \
-  /* since this would involve copying of elements and would therefore */      \
-  /* degrade performance -> it is therefore discouraged */                     \
-  template <typename T = Backend>                                              \
-  typename enable_if<is_same<T, VcSoaRefBackend>::value ||                     \
-                         is_same<T, VcSoaBackend>::value,                      \
-                     Self<Backend>&>::type&                                     \
-  operator[](int index) {                                                      \
-    idx_ = index;                                                              \
-    return *this;                                                              \
-  }                                                                            \
-                                                                               \
-  template <typename T = Backend>                                              \
-  typename enable_if<is_same<T, VcSoaRefBackend>::value ||                     \
-                     is_same<T, VcSoaBackend>::value,                          \
-                     const Self<Backend>>::type&                              \
-  operator[](int index) const {                                                \
-    idx_ = index; \
-    return *this;                                                              \
-  }                                                                            \
-                                                                               \
-  /* assigment operator if two objects are of the exact same type */           \
-  Self<Backend>& operator=(const Self<Backend>& other) const {                 \
-    Base::operator=(other);                                                    \
-    BDM_CLASS_HEADER_ASSIGNMENT_OP_BODY(__VA_ARGS__)                           \
-    return *this;                                                              \
-  }                                                                            \
-                                                                               \
-  /* only compiled for VcSOA and VcSOARef backends */                          \
-  /* equivalent to std::vector<> clear - it removes all all elements from */   \
-  /* all data members */                                                       \
-  template <typename T = Backend>                                              \
-  typename enable_if<is_same<T, VcSoaRefBackend>::value ||                     \
-                     is_same<T, VcSoaBackend>::value>::type                    \
-  clear() {                                                                    \
-    Base::clear();                                                             \
-    BDM_CLASS_HEADER_CLEAR_BODY(__VA_ARGS__)                                   \
-  }                                                                            \
-                                                                               \
-  /* only compiled for VcSOA and VcSOARef backends */                          \
-  /* equivalent to std::vector<> reserve - it increases the capacity */        \
-  /* of all data member containers */                                          \
-  template <typename T = Backend>                                              \
-  typename enable_if<is_same<T, VcSoaRefBackend>::value ||                     \
-                     is_same<T, VcSoaBackend>::value>::type                    \
-  reserve(std::size_t new_capacity) {                                          \
-    Base::reserve(new_capacity);                                               \
-    BDM_CLASS_HEADER_RESERVE_BODY(new_capacity, __VA_ARGS__)                   \
-  }                                                                            \
-                                                                               \
-  /* only compiled if Backend == Soa(Ref)Backend */                            \
-  /* template parameter required for enable_if - otherwise compile error */    \
-  template <typename T = Backend>                                              \
-  typename enable_if<is_same<T, VcSoaRefBackend>::value ||                     \
-                     is_same<T, VcSoaBackend>::value>::type                    \
-  push_back(const Self<ScalarBackend>& other) {                                \
+  typename enable_if<is_soa<T>::value>::type push_back(                        \
+      const Self<ScalarBackend>& other) {                                      \
     if (Base::Elements() == 0 || Base::is_full()) {                            \
       BDM_CLASS_HEADER_SOA_PUSH_BACK_OP_IF_BODY(__VA_ARGS__);                  \
     } else {                                                                   \
@@ -288,22 +215,70 @@
     Base::push_back(other);                                                    \
   }                                                                            \
                                                                                \
-  /* only compiled if Backend == VcVectorBackend */                                  \
-  /* template parameter required for enable_if - otherwise compile error */    \
+  /* Append vector on a soa simulation object */                               \
   template <typename T = Backend>                                              \
-  typename enable_if<is_same<T, VcVectorBackend>::value>::type push_back(            \
-      const Self<ScalarBackend>& other) {                                      \
-    BDM_CLASS_HEADER_VECTOR_PUSH_BACK_OP_BODY(__VA_ARGS__);                    \
+  typename enable_if<is_soa<T>::value>::type push_back(                        \
+      const Self<VcVectorBackend>& other) {                                    \
     Base::push_back(other);                                                    \
+    BDM_CLASS_HEADER_PUSH_BACK_BODY(__VA_ARGS__);                              \
+  }                                                                            \
+                                                                               \
+  /* Equivalent to std::vector<> clear - it removes all elements from */       \
+  /* all data members */                                                       \
+  template <typename T = Backend>                                              \
+  typename enable_if<is_soa<T>::value>::type clear() {                         \
+    Base::clear();                                                             \
+    BDM_CLASS_HEADER_CLEAR_BODY(__VA_ARGS__)                                   \
+  }                                                                            \
+                                                                               \
+  /* Equivalent to std::vector<> reserve - it increases the capacity */        \
+  /* of all data member containers */                                          \
+  template <typename T = Backend>                                              \
+  typename enable_if<is_soa<T>::value>::type reserve(                          \
+      std::size_t new_capacity) {                                              \
+    Base::reserve(new_capacity);                                               \
+    BDM_CLASS_HEADER_RESERVE_BODY(new_capacity, __VA_ARGS__)                   \
+  }                                                                            \
+                                                                               \
+  /* This operator is not thread safe! All threads modify the same index. */   \
+  /* For parallel execution create a reference object for each thread -- */    \
+  /* see GetSoaRef */                                                          \
+  template <typename T = Backend>                                              \
+  typename enable_if<is_soa<T>::value, Self<Backend>&>::type& operator[](      \
+      int index) {                                                             \
+    idx_ = index;                                                              \
+    return *this;                                                              \
+  }                                                                            \
+                                                                               \
+  template <typename T = Backend>                                              \
+  typename enable_if<is_soa<T>::value, const Self<Backend>>::type& operator[]( \
+      int index) const {                                                       \
+    idx_ = index;                                                              \
+    return *this;                                                              \
+  }                                                                            \
+                                                                               \
+  /* Assigment operator if two objects are of the exact same type */           \
+  Self<Backend>& operator=(const Self<Backend>& other) const {                 \
+    Base::operator=(other);                                                    \
+    BDM_CLASS_HEADER_ASSIGNMENT_OP_BODY(__VA_ARGS__)                           \
+    return *this;                                                              \
   }                                                                            \
                                                                                \
   void CopyTo(std::size_t src_v_idx, std::size_t src_idx,                      \
               std::size_t dest_v_idx, std::size_t dest_idx,                    \
-              VectorSimulationObject* destination) const override {         \
-    Self<VcVectorBackend>* dest = static_cast<Self<VcVectorBackend>*>(destination);        \
+              VectorSimulationObject* destination) const override {            \
+    Self<VcVectorBackend>* dest =                                              \
+        static_cast<Self<VcVectorBackend>*>(destination);                      \
     BDM_CLASS_HEADER_COPYTO_OP_BODY(__VA_ARGS__);                              \
     Base::CopyTo(src_v_idx, src_idx, dest_v_idx, dest_idx, destination);       \
   }                                                                            \
+                                                                               \
+ protected:                                                                    \
+  /* Constructor to create SoaRefBackend */                                    \
+  template <typename T = Backend>                                              \
+  class_name(Self<VcSoaBackend>* other)                                        \
+      : Base(other),                                                           \
+        REMOVE_TRAILING_COMMAS(BDM_CLASS_HEADER_CPY_CTOR_INIT(__VA_ARGS__)) {} \
                                                                                \
  private:
 

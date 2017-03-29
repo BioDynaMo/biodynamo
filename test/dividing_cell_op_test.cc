@@ -1,6 +1,6 @@
-#include <gtest/gtest.h>
-#include "cell.h"
 #include "dividing_cell_op.h"
+#include "cell.h"
+#include "gtest/gtest.h"
 #include "test_util.h"
 
 namespace bdm {

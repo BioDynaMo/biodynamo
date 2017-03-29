@@ -1,6 +1,8 @@
 #ifndef MATH_UTIL_H_
 #define MATH_UTIL_H_
 
+#include <array>
+
 namespace bdm {
 
 struct Math {

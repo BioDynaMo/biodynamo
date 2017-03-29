@@ -1,6 +1,7 @@
 #ifndef TYPE_UTIL_H_
 #define TYPE_UTIL_H_
 
+#include <type_traits>
 #include "backend.h"
 
 using std::is_same;
@@ -43,7 +44,6 @@ struct is_std_array<std::array<T, N>> {
   static const bool value = true;
 };
 
-
 /// Type trait to determine whether a simulation object is using a scalar
 /// backend
 template <typename T>
@@ -53,7 +53,8 @@ struct is_scalar {
 
 template <typename Backend>
 struct is_soa {
-  static const bool value = is_same<Backend, VcSoaBackend>::value || is_same<Backend, VcSoaRefBackend>::value ;
+  static const bool value = is_same<Backend, VcSoaBackend>::value ||
+                            is_same<Backend, VcSoaRefBackend>::value;
 };
 
 }  // namespace bdm

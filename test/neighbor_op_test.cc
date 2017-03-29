@@ -1,7 +1,7 @@
-#include <gtest/gtest.h>
-#include "cell.h"
-#include "inline_vector.h"
 #include "neighbor_op.h"
+#include "cell.h"
+#include "gtest/gtest.h"
+#include "inline_vector.h"
 #include "test_util.h"
 
 namespace bdm {

@@ -1,13 +1,13 @@
-#include <gtest/gtest.h>
+#include "daosoa.h"
 #include "backend.h"
 #include "cell.h"
-#include "daosoa.h"
+#include "gtest/gtest.h"
 #include "inline_vector.h"
 
 namespace bdm {
 
 /// this class is used as payload for daosoa tests
-template <typename TBackend=VcVectorBackend>
+template <typename TBackend = VcVectorBackend>
 class Object {
  public:
   using Backend = TBackend;

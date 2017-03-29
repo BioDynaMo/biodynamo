@@ -10,10 +10,10 @@
 #include <string>
 #include <vector>
 
-#include "timing.h"
 #include "multiform_object.h"
 #include "simulation_object.h"
 #include "simulation_object_util.h"
+#include "timing.h"
 
 namespace bdm {
 
@@ -99,8 +99,8 @@ class NeuronExtension : public Base {
 
 // define easy to use templated type alias
 BDM_DEFAULT_TEMPLATE(MemberSelector, Backend)
-using MyExtendedNeuron =
-    NeuronExtension<Neuron<BaseCell<SimulationObject<MemberSelector, Backend>>>>;
+using MyExtendedNeuron = NeuronExtension<
+    Neuron<BaseCell<SimulationObject<MemberSelector, Backend>>>>;
 
 // define some client code that processes extended neurons
 template <typename Cell>

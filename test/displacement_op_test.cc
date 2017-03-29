@@ -1,6 +1,6 @@
-#include <gtest/gtest.h>
-#include "cell.h"
 #include "displacement_op.h"
+#include "cell.h"
+#include "gtest/gtest.h"
 #include "test_util.h"
 
 namespace bdm {
@@ -33,8 +33,8 @@ void RunTest(T* cells) {
   neighbor_1.push_back(1);
   InlineVector<int, 8> neighbor_2;
   neighbor_2.push_back(0);
-  std::array<InlineVector<int, 8>, VcVectorBackend::kVecLen> neighbors = {neighbor_1,
-                                                                    neighbor_2};
+  std::array<InlineVector<int, 8>, VcVectorBackend::kVecLen> neighbors = {
+      neighbor_1, neighbor_2};
 
   Cell<VcVectorBackend> cell(diameter);
   cell.SetDiameter(diameter);

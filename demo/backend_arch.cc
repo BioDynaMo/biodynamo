@@ -1,13 +1,13 @@
 #include <array>
 #include <cmath>
 #include <iostream>
-#include <vector>
 #include <sstream>
-#include <utility>
 #include <typeinfo>
+#include <utility>
+#include <vector>
 
-#include <Vc/Vc>
 #include <omp.h>
+#include "Vc/Vc"
 
 #include "cpp_magic.h"
 #include "timing.h"
@@ -170,8 +170,9 @@ struct ScalarBackend {
 };
 
 typename VcVectorBackend::real_v iif(
-    const decltype(std::declval<typename VcVectorBackend::real_v>() <
-                   std::declval<typename VcVectorBackend::real_v>())& condition,
+    const decltype(
+        std::declval<typename VcVectorBackend::real_v>() <
+        std::declval<typename VcVectorBackend::real_v>()) & condition,
     const typename VcVectorBackend::real_v& true_value,
     const typename VcVectorBackend::real_v& false_value) {
   return Vc::iif(condition, true_value, false_value);
@@ -253,7 +254,7 @@ typename VcVectorBackend::real_v iif(
   /* template parameter required for enable_if - otherwise compile error */    \
   template <typename T = Backend>                                              \
   void push_back(                                                              \
-      const Self<VcVectorBackend>& other,                                            \
+      const Self<VcVectorBackend>& other,                                      \
       typename std::enable_if<std::is_same<T, VcSoaRefBackend>::value ||       \
                               std::is_same<T, VcSoaBackend>::value>::type* =   \
           0) {                                                                 \
@@ -265,7 +266,7 @@ typename VcVectorBackend::real_v iif(
   /* template parameter required for enable_if - otherwise compile error */    \
   template <typename T = Backend>                                              \
   void push_back(                                                              \
-      const Self<VcVectorBackend>& other,                                            \
+      const Self<VcVectorBackend>& other,                                      \
       typename std::enable_if<std::is_same<T, ScalarBackend>::value>::type* =  \
           0) {                                                                 \
     throw std::runtime_error("TODO implement: see src/cell.h:Append");         \
@@ -275,7 +276,8 @@ typename VcVectorBackend::real_v iif(
   /* For parallel execution create a reference object for each thread -- */    \
   /* see GetSoaRef */                                                          \
   /* only compiled if Backend == Soa(Ref)Backend */                            \
-  /* no version if Backend == VcVectorBackend that returns a Self<ScalarBackend> */  \
+  /* no version if Backend == VcVectorBackend that returns a                   \
+   * Self<ScalarBackend> */                                                    \
   /* since this would involves copying of elements and would therefore */      \
   /* degrade performance -> it is therefore discouraged */                     \
   template <typename T = Backend>                                              \
@@ -311,12 +313,13 @@ struct BaseCell {
   BaseCell() {}
 
   // Ctor to create SoaRefBackend
-  // only compiled if T == VcSoaRefBackend 
+  // only compiled if T == VcSoaRefBackend
   // template parameter required for enable_if - otherwise compile error
   template <typename T = Backend>
-  BaseCell(Self<VcSoaBackend>& other,
-             typename std::enable_if<
-                 std::is_same<T, VcSoaRefBackend>::value>::type* = 0) {}
+  BaseCell(
+      Self<VcSoaBackend>& other,
+      typename std::enable_if<std::is_same<T, VcSoaRefBackend>::value>::type* =
+          0) {}
 
   // only compiled if Backend == Soa(Ref)Backend
   // template parameter required for enable_if - otherwise compile error
@@ -443,12 +446,14 @@ int main(int argc, char** argv) {
   cell.SetNeurites(neurites);
   cell.UpdateNeurites();
   auto& cell_neurites = cell.GetNeurites();
-  std::cout << "VcVectorBackend after operations " << std::endl << cell << std::endl;
+  std::cout << "VcVectorBackend after operations " << std::endl
+            << cell << std::endl;
 
   // different memory layout and client code
   std::cout << std::endl << "-----------------------------------" << std::endl;
   std::cout << "different memory layout and client code" << std::endl;
-  std::cout << "Original VcVectorBackend cell" << std::endl << cell << std::endl;
+  std::cout << "Original VcVectorBackend cell" << std::endl
+            << cell << std::endl;
   MyCell<VcSoaBackend> soa_cells;
   soa_cells.push_back(cell);
   std::cout << "Vector cell stored in SOA memory layout" << std::endl;
@@ -457,7 +462,8 @@ int main(int argc, char** argv) {
   std::cout << "after client code invocation" << std::endl;
   std::cout << soa_cells[0] << std::endl;
 
-  std::vector<MyCell<VcVectorBackend>, Vc::Allocator<MyCell<VcVectorBackend>>> aosoa_cells;
+  std::vector<MyCell<VcVectorBackend>, Vc::Allocator<MyCell<VcVectorBackend>>>
+      aosoa_cells;
   aosoa_cells.push_back(cell);
   std::cout << "Vector cell stored in AOSOA memory layout" << std::endl;
   std::cout << aosoa_cells[0] << std::endl;
@@ -618,7 +624,8 @@ void benchmarkPlainSoa(const size_t num_cells, const size_t iterations,
 void benchmarkAosoaCell(const size_t num_cells, const size_t iterations,
                         TimingAggregator* statistic) {
   const size_t N = num_cells / Vc::double_v::Size;
-  std::vector<MyCell<VcVectorBackend>, Vc::Allocator<MyCell<VcVectorBackend>>> cells;
+  std::vector<MyCell<VcVectorBackend>, Vc::Allocator<MyCell<VcVectorBackend>>>
+      cells;
 
   // initialization
   for (size_t i = 0; i < N; i++) {

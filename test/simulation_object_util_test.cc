@@ -1,5 +1,5 @@
-#include "gtest/gtest.h"
 #include "backend.h"
+#include "gtest/gtest.h"
 #include "simulation_object.h"
 
 namespace bdm {
@@ -98,7 +98,8 @@ TEST(SimulationObjectUtilTest, NonDefaultConstructor) {
   neurites.push_back(Neurite(2));
   neurites.push_back(Neurite(3));
   VcVectorBackend::SimdArray<std::vector<Neurite>> neurite_v;
-  for (std::size_t i = 0; i < neurite_v.size(); i++) neurite_v[i] = neurites;
+  for (std::size_t i = 0; i < neurite_v.size(); i++)
+    neurite_v[i] = neurites;
 
   Neuron<VcVectorBackend> neuron(
       neurite_v, std::array<real_v, 3>{real_v(4), real_v(5), real_v(6)});
@@ -167,13 +168,15 @@ TEST(SimulationObjectUtilTest,
   neurites.push_back(Neurite(2));
   neurites.push_back(Neurite(3));
   VcVectorBackend::SimdArray<std::vector<Neurite>> neurite_v;
-  for (std::size_t i = 0; i < neurite_v.size(); i++) neurite_v[i] = neurites;
+  for (std::size_t i = 0; i < neurite_v.size(); i++)
+    neurite_v[i] = neurites;
 
   Neuron<VcVectorBackend> neuron_v1(
       neurite_v, std::array<real_v, 3>{real_v(4), real_v(5), real_v(6)});
 
   neurites.push_back(Neurite(4));
-  for (std::size_t i = 0; i < neurite_v.size(); i++) neurite_v[i] = neurites;
+  for (std::size_t i = 0; i < neurite_v.size(); i++)
+    neurite_v[i] = neurites;
   Neuron<VcVectorBackend> neuron_v2(
       neurite_v, std::array<real_v, 3>{real_v(9), real_v(8), real_v(7)});
   // simulate that this neuron vector is not full
@@ -196,7 +199,8 @@ TEST(SimulationObjectUtilTest,
   // operator[] returns reference to *this
   EXPECT_TRUE(&result1 == &neurons);
 
-  EXPECT_TRUE((VcVectorBackend::real_v(6.28) == result1.GetDiameter()).isFull());
+  EXPECT_TRUE(
+      (VcVectorBackend::real_v(6.28) == result1.GetDiameter()).isFull());
   auto& positions = result1.GetPosition();
   EXPECT_TRUE((VcVectorBackend::real_v(9) == positions[0]).isFull());
   EXPECT_TRUE((VcVectorBackend::real_v(8) == positions[1]).isFull());

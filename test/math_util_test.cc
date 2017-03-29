@@ -1,6 +1,6 @@
-#include <gtest/gtest.h>
-#include "backend.h"
 #include "math_util.h"
+#include "backend.h"
+#include "gtest/gtest.h"
 #include "test_util.h"
 
 namespace bdm {

@@ -1,8 +1,8 @@
+#include "type_util.h"
 #include <string>
 #include <typeinfo>
-#include "gtest/gtest.h"
-#include "type_util.h"
 #include "cell.h"
+#include "gtest/gtest.h"
 
 namespace bdm {
 

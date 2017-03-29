@@ -1,6 +1,6 @@
-#include <gtest/gtest.h>
-#include "backend.h"
 #include "default_force.h"
+#include "backend.h"
+#include "gtest/gtest.h"
 #include "test_util.h"
 
 namespace bdm {

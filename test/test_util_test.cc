@@ -1,5 +1,5 @@
-#include <gtest/gtest.h>
 #include "test_util.h"
+#include "gtest/gtest.h"
 
 namespace bdm {
 

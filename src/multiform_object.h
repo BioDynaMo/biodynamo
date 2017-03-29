@@ -90,7 +90,8 @@ struct Nulltype {
   };                                                        \
   EVAL(LOOP_3_1(INTERNAL_MEMBER_REMOVER, name, __VA_ARGS__))
 
-/// \brief This struct is used to access static functions / members of a class that
+/// \brief This struct is used to access static functions / members of a class
+/// that
 /// has template parameter(s) without a default value.
 ///
 /// For example:
@@ -113,8 +114,7 @@ struct PlaceholderType : public SimulationObject<> {
         "for the scope operator");
   }
   template <class... A>
-  explicit PlaceholderType(const A&... a)
-      : PlaceholderType() {}
+  explicit PlaceholderType(const A&... a) : PlaceholderType() {}
 };
 
 }  // namespace bdm

@@ -1,5 +1,5 @@
-#ifndef MAKE_THREAD_SAFE_H
-#define MAKE_THREAD_SAFE_H
+#ifndef MAKE_THREAD_SAFE_H_
+#define MAKE_THREAD_SAFE_H_
 
 #include <memory>
 #include "daosoa.h"
@@ -41,4 +41,4 @@ const bdm::daosoa<T>& make_thread_safe(const bdm::daosoa<T>& container) {
 
 }  // namespace bdm
 
-#endif  // namespace MAKE_THREAD_SAFE_H
+#endif  // MAKE_THREAD_SAFE_H_

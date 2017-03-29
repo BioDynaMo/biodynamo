@@ -3,9 +3,9 @@
 #include <memory>
 #include <typeinfo>
 
-#include "gtest/gtest.h"
 #include "backend.h"
 #include "daosoa.h"
+#include "gtest/gtest.h"
 
 namespace bdm {
 namespace make_thread_safe_test_internal {
@@ -19,7 +19,7 @@ struct Widget {
 
   Widget() {}
 
-  Widget(short i) : id(i) {}
+  explicit Widget(int16_t i) : id(i) {}
 
   std::unique_ptr<Self<VcSoaRefBackend>> GetSoaRef() {
     auto ptr = new Widget<VcSoaRefBackend>(123);
@@ -30,7 +30,7 @@ struct Widget {
     return Widget<VcSoaRefBackend>(123);
   }
 
-  mutable short id = 1;
+  mutable int16_t id = 1;
 };
 
 TEST(MakeThreadSafeTest, NonConstSoaContainer) {

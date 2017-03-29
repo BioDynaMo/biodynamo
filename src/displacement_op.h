@@ -5,8 +5,8 @@
 #include <cmath>
 #include "backend.h"
 #include "cell.h"
-#include "math_util.h"
 #include "make_thread_safe.h"
+#include "math_util.h"
 #include "param.h"
 
 namespace bdm {
@@ -186,7 +186,8 @@ class DisplacementOp {
   }
 
  private:
-  void UpdateSpatialOrganizationNodePosition(Cell<VcVectorBackend>* cell) const {
+  void UpdateSpatialOrganizationNodePosition(
+      Cell<VcVectorBackend>* cell) const {
     auto& current_center = cell->GetPosition();
     auto& mass_location = cell->GetMassLocation();
     // fixme can't we pass that as parameter - should be known at call site

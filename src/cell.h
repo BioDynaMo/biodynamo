@@ -44,10 +44,12 @@ class CellExt : public Base {
   }
 
   template <typename T>
-  BDM_FORCE_INLINE
-      std::array<aosoa<Self<VcVectorBackend>, VcVectorBackend>, VcVectorBackend::kVecLen>
-      GetNeighbors(const T& all_cells) const {
-    std::array<aosoa<Self<VcVectorBackend>, VcVectorBackend>, VcVectorBackend::kVecLen> ret;
+  BDM_FORCE_INLINE std::array<aosoa<Self<VcVectorBackend>, VcVectorBackend>,
+                              VcVectorBackend::kVecLen>
+  GetNeighbors(const T& all_cells) const {
+    std::array<aosoa<Self<VcVectorBackend>, VcVectorBackend>,
+               VcVectorBackend::kVecLen>
+        ret;
     const size_t size = Base::ElementsCurrentVector();
     for (size_t i = 0; i < size; i++) {
       all_cells.Gather(neighbors_[idx_][i], &(ret[i]));

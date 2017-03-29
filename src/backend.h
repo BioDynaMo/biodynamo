@@ -138,8 +138,7 @@ struct VcSoaRefBackend {
   template <typename T>
   using SimdArray = typename VcSoaBackend::template SimdArray<T>;
   template <typename T>
-  using Container =
-      SoaRefWrapper<typename VcSoaBackend::template Container<T>>;
+  using Container = SoaRefWrapper<typename VcSoaBackend::template Container<T>>;
 };
 
 /// \brief Defines types and constants for using scalar data types
@@ -159,8 +158,9 @@ struct ScalarBackend {
 };
 
 inline typename VcVectorBackend::real_v iif(
-    const decltype(std::declval<typename VcVectorBackend::real_v>() <
-                   std::declval<typename VcVectorBackend::real_v>())& condition,
+    const decltype(
+        std::declval<typename VcVectorBackend::real_v>() <
+        std::declval<typename VcVectorBackend::real_v>()) & condition,
     const typename VcVectorBackend::real_v& true_value,
     const typename VcVectorBackend::real_v& false_value) {
   return Vc::iif(condition, true_value, false_value);

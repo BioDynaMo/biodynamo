@@ -3,9 +3,9 @@
 
 #include <type_traits>
 
+#include "aosoa.h"
 #include "backend.h"
 #include "inline_vector.h"
-#include "aosoa.h"
 #include "simulation_object_util.h"
 #include "type_util.h"
 
@@ -22,7 +22,8 @@ struct SelectAllMembers {
   typedef Type type;
 };
 
-/// Contains implementations for SimulationObject that are specific to scalar backends
+/// Contains implementations for SimulationObject that are specific to scalar
+/// backends
 class ScalarSimulationObject {
  public:
   virtual ~ScalarSimulationObject() {}
@@ -35,7 +36,8 @@ class ScalarSimulationObject {
   static const std::size_t idx_ = 0;
 };
 
-/// Contains implementations for SimulationObject that are specific to vector backends
+/// Contains implementations for SimulationObject that are specific to vector
+/// backends
 class VectorSimulationObject {
  public:
   using Backend = VcVectorBackend;
@@ -46,9 +48,7 @@ class VectorSimulationObject {
   void SetSize(std::size_t size) { size_ = size; }
 
   /// Returns number of scalar element inside this vector
-  std::size_t size() const {
-    return size_;
-  }
+  std::size_t size() const { return size_; }
 
   /// This function returns the number of scalar elements in this container
   /// container. In this context the same as size() and ElementsCurrentVector()
@@ -80,37 +80,37 @@ class VectorSimulationObject {
   std::size_t size_ = Backend::kVecLen;
 };
 
-/// Contains implementations for SimulationObject that are specific to soa backends
-template <typename TTBackend>
+/// Contains implementations for SimulationObject that are specific to soa
+/// backends
+template <typename TBackend>
 class SoaSimulationObject {
-public:
-  using Backend = TTBackend;
+ public:
+  using Backend = TBackend;
 
-   template <typename TBackend>
-   friend class SoaSimulationObject;
+  template <typename T>
+  friend class SoaSimulationObject;
 
-   template <typename T = Backend>
-   SoaSimulationObject(typename enable_if<is_same<T, VcSoaBackend>::value>::type* = 0) :
-     size_(1), size_last_vector_(VcVectorBackend::kVecLen) {}
+  template <typename T = Backend>
+  SoaSimulationObject(
+      typename enable_if<is_same<T, VcSoaBackend>::value>::type* = 0)
+      : size_(1), size_last_vector_(VcVectorBackend::kVecLen) {}
 
-   // Ctor to create SoaRefBackend
-   // only compiled if T == VcSoaRefBackend
-   // template parameter required for enable_if - otherwise compile error
-   template <typename T = Backend>
-   SoaSimulationObject(
-       SoaSimulationObject<VcSoaBackend>* other,
-       typename enable_if<is_same<T, VcSoaRefBackend>::value>::type* = 0) :
-       size_(other->size_), size_last_vector_(other->size_last_vector_) { }
+  /// Constructor to create SoaRefBackend.
+  /// Only compiled if T == VcSoaRefBackend
+  /// Template parameter required for enable_if
+  template <typename T = Backend>
+  SoaSimulationObject(
+      SoaSimulationObject<VcSoaBackend>* other,
+      typename enable_if<is_same<T, VcSoaRefBackend>::value>::type* = 0)
+      : size_(other->size_), size_last_vector_(other->size_last_vector_) {}
 
   virtual ~SoaSimulationObject() {}
 
   /// Returns the number of vector elements in this object
-  size_t size() const {
-    return size_;
-  }
+  size_t size() const { return size_; }
 
   /// Returns true if the last vector does not have free scalar slots
-  bool is_full() const { return size_last_vector_ == VcVectorBackend::kVecLen;}
+  bool is_full() const { return size_last_vector_ == VcVectorBackend::kVecLen; }
 
   /// Appends a vector element
   void push_back(const VectorSimulationObject& other) {  // FIXME
@@ -118,8 +118,8 @@ public:
     size_last_vector_ = other.ElementsCurrentVector();
   }
 
-  // Equivalent to std::vector<> clear - it removes all elements from all
-  // data members
+  /// Equivalent to std::vector<> clear - it removes all elements from all
+  /// data members
   void clear() {
     size_ = 0;
     size_last_vector_ = 0;
@@ -178,8 +178,8 @@ public:
   void Gather(const InlineVector<int, 8>& indexes,
               aosoa<T, VcVectorBackend>* ret) const {
     const size_t scalars = indexes.size();
-    std::size_t n_vectors =
-        scalars / VcVectorBackend::kVecLen + (scalars % VcVectorBackend::kVecLen ? 1 : 0);
+    std::size_t n_vectors = scalars / VcVectorBackend::kVecLen +
+                            (scalars % VcVectorBackend::kVecLen ? 1 : 0);
     std::size_t remaining = scalars % VcVectorBackend::kVecLen;
     ret->SetSize(n_vectors);
     for (std::size_t i = 0; i < n_vectors; i++) {
@@ -210,9 +210,12 @@ public:
   mutable std::size_t idx_ = 0;
   // If Backend is VcSoaBackend use std::size_t, oterwise std::size_t&
   /// Number of vector elements
-  typename type_ternary_operator<is_same<Backend, VcSoaBackend>::value, std::size_t, std::size_t&>::type size_;
+  typename type_ternary_operator<is_same<Backend, VcSoaBackend>::value,
+                                 std::size_t, std::size_t&>::type size_;
   /// Number of scalar elements in the last vector
-  typename type_ternary_operator<is_same<Backend, VcSoaBackend>::value, std::size_t, std::size_t&>::type size_last_vector_;
+  typename type_ternary_operator<is_same<Backend, VcSoaBackend>::value,
+                                 std::size_t, std::size_t&>::type
+      size_last_vector_;
 };
 
 /// Helper type trait to map backends to simulation object implementation
@@ -239,11 +242,12 @@ struct SimulationObjectImpl<ScalarBackend> {
   typedef ScalarSimulationObject type;
 };
 
-/// Base simulation object containing methods that are common to all different backends
+/// Base simulation object containing methods that are common to all different
+/// backends
 /// Based on the specified backend, it subclasses the specific implemention
-/// (ScalarSimulationObject, VectorSimulationObject or SoaSimulationObject) with the help
-/// of type trait SimulationObjectImpl.
-BDM_DEFAULT_TEMPLATE(TTMemberSelector, TBackend)
+/// (ScalarSimulationObject, VectorSimulationObject or SoaSimulationObject) with
+/// the help of type trait SimulationObjectImpl.
+BDM_DEFAULT_TEMPLATE(TMemberSelector, TBackend)
 struct SimulationObject : public SimulationObjectImpl<TBackend>::type {
  public:
   using Base = typename SimulationObjectImpl<TBackend>::type;
@@ -257,31 +261,30 @@ struct SimulationObject : public SimulationObjectImpl<TBackend>::type {
 
  protected:
   template <typename Type, typename EnclosingClass, int id>
-  using TMemberSelector = TTMemberSelector<Type, EnclosingClass, id>;
+  using MemberSelector = TMemberSelector<Type, EnclosingClass, id>;
 
   template <typename TTBackend>
-  using Self = SimulationObject<TTMemberSelector, TTBackend>;
+  using Self = SimulationObject<TMemberSelector, TTBackend>;
 
   using Backend = TBackend;
 
   SimulationObject() {}
 
-  // Ctor to create SoaRefBackend
-  // only compiled if T == VcSoaRefBackend
-  // template parameter required for enable_if - otherwise compile error
+  /// Constructor to create SoaRefBackend
   template <typename T = Backend>
   SimulationObject(
       Self<VcSoaBackend>* other,
-      typename enable_if<is_same<T, VcSoaRefBackend>::value>::type* = 0) : Base(other) { }
+      typename enable_if<is_same<T, VcSoaRefBackend>::value>::type* = 0)
+      : Base(other) {}
 
-  // assigment operator if two objects are of the exact same type
-  SimulationObject<TTMemberSelector, TBackend>& operator=(
-      const SimulationObject<TTMemberSelector, TBackend>& other) const {
+  /// assigment operator if two objects are of the exact same type
+  SimulationObject<TMemberSelector, TBackend>& operator=(
+      const SimulationObject<TMemberSelector, TBackend>& other) const {
     return *this;
   }
 
-  /// Helper function needed to form a uniform interface to copy scalar values of data
-  /// members with different types
+  /// Helper function needed to form a uniform interface to copy scalar values
+  /// of data members with different types
   /// destination is NOT a `Container<std::array<vector, ...>>`
   template <typename T, typename U>
   static typename std::enable_if<!is_std_array<typename std::remove_reference<
@@ -291,8 +294,8 @@ struct SimulationObject : public SimulationObjectImpl<TBackend>::type {
     (*dest)[dest_v_idx][dest_idx] = src[src_v_idx][src_idx];
   }
 
-  /// Helper function needed to form a uniform interface to copy scalar values of data
-  /// members with different types
+  /// Helper function needed to form a uniform interface to copy scalar values
+  /// of data members with different types
   /// destination is a `Container<std::array<vector, ...>>`
   template <typename T, typename U>
   static typename std::enable_if<is_std_array<typename std::remove_reference<
@@ -304,8 +307,8 @@ struct SimulationObject : public SimulationObjectImpl<TBackend>::type {
     }
   }
 
-  /// Helper function needed to form a uniform interface to copy scalar values of data
-  /// members with different types
+  /// Helper function needed to form a uniform interface to copy scalar values
+  /// of data members with different types
   /// destination is NOT a `std::array<vector, ...>`
   template <typename T, typename U>
   static typename std::enable_if<!is_std_array<typename std::remove_reference<
@@ -315,8 +318,8 @@ struct SimulationObject : public SimulationObjectImpl<TBackend>::type {
     (*dest)[dest_idx] = src[src_v_idx][src_idx];
   }
 
-  /// Helper function needed to form a uniform interface to copy scalar values of data
-  /// members with different types
+  /// Helper function needed to form a uniform interface to copy scalar values
+  /// of data members with different types
   /// destination is a `std::array<vector, ...>`
   template <typename T, typename U>
   static typename std::enable_if<is_std_array<typename std::remove_reference<
