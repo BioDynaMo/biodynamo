@@ -1,9 +1,9 @@
 #ifndef DEFAULT_FORCE_H_
 #define DEFAULT_FORCE_H_
 
+#include <Vc/Vc>
 #include <algorithm>
 #include <cmath>
-#include <Vc/Vc>
 
 #include "random.h"
 

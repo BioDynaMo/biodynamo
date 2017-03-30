@@ -1,8 +1,8 @@
 #ifndef VTUNE_OP_WRAPPER_H_
 #define VTUNE_OP_WRAPPER_H_
 
-#include <iostream>
 #include <ittnotify.h>
+#include <iostream>
 
 namespace bdm {
 
@@ -11,8 +11,7 @@ class VTuneOpWrapper : public Op {
  public:
   /// perfect forwarding ctor
   template <typename... Args>
-  explicit VTuneOpWrapper(Args&&... args)
-      : Op{std::forward<Args>(args)...} {
+  explicit VTuneOpWrapper(Args&&... args) : Op{std::forward<Args>(args)...} {
     domain_ = __itt_domain_create("MyTraces.MyDomain");
     task_ = __itt_string_handle_create(typeid(Op).name());
   }
