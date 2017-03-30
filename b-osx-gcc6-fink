@@ -1,3 +1,4 @@
+export CLANG_TOOLS_PATH=/sw/opt/llvm-3.9/bin
 export CC=gcc-6
 export CXX=g++-6
 cmake -GNinja ..

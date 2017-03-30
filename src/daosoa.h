@@ -1,8 +1,8 @@
 #ifndef DAOSOA_H_
 #define DAOSOA_H_
 
-#include <vector>
 #include <type_traits>
+#include <vector>
 #include "aosoa.h"
 #include "backend.h"
 #include "inline_vector.h"

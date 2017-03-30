@@ -1,8 +1,8 @@
 #ifndef INLINE_VECTOR_H_
 #define INLINE_VECTOR_H_
 
-#include <array>
 #include <algorithm>
+#include <array>
 #include <sstream>
 #include <vector>
 
@@ -90,7 +90,8 @@ class InlineVector {
       size_ = other.size_;
       capacity_ = other.capacity_;
       if (other.heap_data_ != nullptr) {
-        if (heap_data_ != nullptr) delete[] heap_data_;
+        if (heap_data_ != nullptr)
+          delete[] heap_data_;
         heap_data_ = new T[capacity_ - N];
         std::copy_n(other.heap_data_, capacity_ - N, heap_data_);
       }
