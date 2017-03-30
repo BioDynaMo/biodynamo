@@ -122,6 +122,5 @@ class Bound {
     return Width() * Length() + Height() * Length() + Width() * Height();
   }
 };
-}
-
-#endif /* SPATIAL_BOUND_H_ */
+}  // namespace bdm
+#endif  // SPATIAL_BOUND_H_

@@ -1,7 +1,8 @@
-#ifndef SPATIAL_OCTREE_H_
-#define SPATIAL_OCTREE_H_
+#ifndef SPATIAL_OCTREE_NODE_H_
+#define SPATIAL_OCTREE_NODE_H_
 
 #include <vector>
+#include <utility>
 #include "spatial_tree_node.h"
 
 namespace bdm {
@@ -261,5 +262,5 @@ int OctreeNode<T>::GetChildrenSize() const {
   if (!IsLeaf()) return 8;
   return 0;
 }
-}
-#endif /* SPATIAL_OCTREE_H_ */
+}  //  namespace bdm
+#endif  // SPATIAL_OCTREE_NODE_H_

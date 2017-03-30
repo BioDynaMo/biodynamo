@@ -1,5 +1,5 @@
-#ifndef SPATIAL_SPATIAL_TREE_H_
-#define SPATIAL_SPATIAL_TREE_H_
+#ifndef SPATIAL_SPATIAL_TREE_NODE_H_
+#define SPATIAL_SPATIAL_TREE_NODE_H_
 
 #include <utility>
 #include <vector>
@@ -123,5 +123,5 @@ void SpatialTreeNode<T>::GetNeighbors(SpatialTreeNode<T> const *A,
     }
   }
 }
-}
-#endif /* SPATIAL_SPATIAL_TREE_H_ */
+}  // namespace bdm
+#endif  // SPATIAL_SPATIAL_TREE_NODE_H_

@@ -1,9 +1,10 @@
-#ifndef SPATIAL_KDTREE_H_
-#define SPATIAL_KDTREE_H_
+#ifndef SPATIAL_KD_TREE_NODE_H_
+#define SPATIAL_KD_TREE_NODE_H_
 
 #include <algorithm>
 #include <functional>
 #include <iterator>
+#include <utility>
 #include <numeric>
 #include <vector>
 #include "spatial_tree_node.h"
@@ -304,7 +305,6 @@ void KdTreeNode<T>::SplitUsingVaryingMedian() {
       Point(x_left, y_left, z_left),
       Point(bnd.near_right_top_point_.x_, bnd.near_right_top_point_.y_,
             bnd.near_right_top_point_.z_)
-
   };
 
   for (int i = 0; i < 2; i++) {
@@ -340,7 +340,6 @@ void KdTreeNode<T>::SplitUsingSingleXMedian() {
             bnd.near_right_top_point_.z_),
       Point(bnd.near_right_top_point_.x_, bnd.near_right_top_point_.y_,
             bnd.near_right_top_point_.z_)
-
   };
 
   for (int i = 0; i < 2; i++) {
@@ -395,7 +394,6 @@ void KdTreeNode<T>::SplitUsingSAH() {
       Point(x_left, y_left, z_left),
       Point(bnd.near_right_top_point_.x_, bnd.near_right_top_point_.y_,
             bnd.near_right_top_point_.z_)
-
   };
 
   for (int i = 0; i < 2; i++) {
@@ -450,7 +448,6 @@ void KdTreeNode<T>::SplitUsingCenterOfSpaceNode() {
       Point(x_left, y_left, z_left),
       Point(bnd.near_right_top_point_.x_, bnd.near_right_top_point_.y_,
             bnd.near_right_top_point_.z_)
-
   };
 
   for (int i = 0; i < 2; i++) {
@@ -521,7 +518,7 @@ Point KdTreeNode<T>::GetSAHSplitPoint() {
   Bound bnd = this->bound_;
 
   for (pair<Point, T> &i : *objects_) {
-    objects_count[(int)fmod(i.first.x_, kNumerOfSpaces)];
+    objects_count[static_cast<int>(fmod(i.first.x_, kNumerOfSpaces))];
   }
 
   for (int i = 0; i < kNumerOfSpaces; i++) {
@@ -565,7 +562,7 @@ Point KdTreeNode<T>::GetSAHSplitPoint() {
   axis = 1;
 
   for (pair<Point, T> &i : *objects_) {
-    objects_count[(int)fmod(i.first.y_, kNumerOfSpaces)];
+    objects_count[static_cast<int>(fmod(i.first.y_, kNumerOfSpaces))];
   }
 
   for (int i = 0; i < kNumerOfSpaces; i++) {
@@ -609,7 +606,7 @@ Point KdTreeNode<T>::GetSAHSplitPoint() {
 
   axis = 2;
   for (pair<Point, T> &i : *objects_) {
-    objects_count[(int)fmod(i.first.z_, kNumerOfSpaces)];
+    objects_count[static_cast<int>(fmod(i.first.z_, kNumerOfSpaces))];
   }
 
   for (int i = 0; i < kNumerOfSpaces; i++) {
@@ -700,9 +697,9 @@ double KdTreeNode<T>::AreaOfKthPartOfSpaceNode(int k, int axis) {
                                                      this->bound_.Width()) +
                                k / kNumerOfSpaces * (this->bound_.Height() *
                                                      this->bound_.Length()));
-  } else
-    return -1;
+  } else {
+      return -1;
+  }
 }
-}
-
-#endif  //  SPATIAL_KDTREE_H_
+}  // namespace bdm
+#endif  // SPATIAL_KD_TREE_NODE_H_

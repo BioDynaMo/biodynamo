@@ -68,5 +68,5 @@ class Point {
            fabs(z_ - b.z_) < kEpsilon;
   }
 };
-}
+}  // namespace bdm
 #endif  // SPATIAL_POINT_H_
