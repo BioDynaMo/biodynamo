@@ -111,7 +111,9 @@ class InlineVector {
   }
 
   T& operator[](size_t index) {
-    if (index < N) {
+    if (heap_data_ == nullptr) {
+      return data_[index];
+    } else if (index < N) {
       return data_[index];
     } else {
       return heap_data_[index - N];
@@ -119,7 +121,9 @@ class InlineVector {
   }
 
   const T& operator[](size_t index) const {
-    if (index < N) {
+    if (heap_data_ == nullptr) {
+      return data_[index];
+    } else if (index < N) {
       return data_[index];
     } else {
       return heap_data_[index - N];

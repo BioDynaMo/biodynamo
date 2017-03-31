@@ -98,6 +98,13 @@
   Base::CopyUtil(&dest->data_member, 0, dest_idx, data_member, src_v_idx, \
                  src_idx);
 
+#define BDM_CLASS_HEADER_COPYFROM_OP_BODY(...) \
+  EVAL(LOOP(BDM_CLASS_HEADER_COPYFROM_OP_BODY_ITERATOR, __VA_ARGS__))
+
+#define BDM_CLASS_HEADER_COPYFROM_OP_BODY_ITERATOR(data_member)           \
+  Base::CopyUtil(&data_member, 0u, dest_idx, src->data_member, src_v_idx, \
+                 src_idx);
+
 /// Macro to insert required boilerplate code into simulation object
 /// @param  class_name: class name witout template specifier e.g. \n
 ///         `class Foo {};` \n
@@ -130,7 +137,7 @@
 ///           COMMA() Neurite>`
 /// @param  ...: List of all data members of this class
 #define BDM_CLASS_HEADER(class_name, self_unique_specifier, self_specifier,    \
-                         ...)                                                  \
+                         self_specifier1, ...)                                 \
  public:                                                                       \
   /* reduce verbosity of some types and variables by defining a local alias */ \
   using Base::idx_;                                                            \
@@ -157,6 +164,9 @@
   /* inside a mixin. */                                                        \
   template <typename Backend>                                                  \
   using Self = self_specifier;                                                 \
+  template <typename TTBackend,                                                \
+            template <typename, typename, int> class TTMemberSelector = MemberSelector>         \
+  using Self1 = self_specifier1;                                               \
                                                                                \
   /* all template versions of this class are friends of each other */          \
   /* so they can access each others data members */                            \
@@ -264,13 +274,20 @@
     return *this;                                                              \
   }                                                                            \
                                                                                \
+  template <typename T>                                                        \
   void CopyTo(std::size_t src_v_idx, std::size_t src_idx,                      \
-              std::size_t dest_v_idx, std::size_t dest_idx,                    \
-              VectorSimulationObject* destination) const override {            \
-    Self<VcVectorBackend>* dest =                                              \
-        static_cast<Self<VcVectorBackend>*>(destination);                      \
+              std::size_t dest_v_idx, std::size_t dest_idx, T* dest) const {   \
     BDM_CLASS_HEADER_COPYTO_OP_BODY(__VA_ARGS__);                              \
-    Base::CopyTo(src_v_idx, src_idx, dest_v_idx, dest_idx, destination);       \
+    Base::CopyTo(src_v_idx, src_idx, dest_v_idx, dest_idx, dest);              \
+  }                                                                            \
+                                                                               \
+  template <typename T>                                                        \
+  void CopyFrom(const T& source, std::size_t src_v_idx, std::size_t src_idx,   \
+                std::size_t dest_v_idx, std::size_t dest_idx) {                \
+    auto src =                                                                 \
+        static_cast<const Self1<VcSoaBackend, SelectAllMembers>*>(&source);    \
+    BDM_CLASS_HEADER_COPYFROM_OP_BODY(__VA_ARGS__);                            \
+    Base::CopyFrom(source, src_v_idx, src_idx, dest_v_idx, dest_idx);          \
   }                                                                            \
                                                                                \
  protected:                                                                    \

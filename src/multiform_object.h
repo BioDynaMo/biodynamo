@@ -31,10 +31,9 @@ struct Nulltype {
   /// SFINAE - if T doesnot have a subscript operator than this function is
   /// removed from the candidate set
   /// FIXME(lukas) invalidates robustness -> no compile errors if removed member
-  /// is accessed
-  template <typename TT = T>
-  decltype(std::declval<TT>()[0]) operator[](std::size_t idx) const {
-    return T()[0];
+  /// is accessed, but required for CopyUtil
+  Nulltype<T>& operator[](std::size_t idx) {
+    return *this;
   }
 
   Nulltype(std::initializer_list<T>) {}

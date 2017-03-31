@@ -7,6 +7,7 @@
 #include "cell.h"
 #include "make_thread_safe.h"
 #include "math_util.h"
+#include "multiform_object.h"
 #include "param.h"
 
 namespace bdm {
@@ -14,6 +15,10 @@ namespace bdm {
 using real_v = VcSoaBackend::real_v;
 using real_t = VcSoaBackend::real_t;
 using bool_v = VcSoaBackend::bool_v;
+
+NEW_MEMBER_SELECTOR(DisplacementOpMemberSelector,
+                    CellExt<>, mass_location_,
+                    CellExt<>, diameter_);
 
 /// Defines the 3D physical interactions between physical objects (cylinders and
 /// spheres).
@@ -73,7 +78,9 @@ class DisplacementOp {
         // --------------------------------------------
         //  (We check for every neighbor object if they touch us, i.e. push us
         //  away)
-        const auto& neighbors = cell.GetNeighbors(*cells);
+        std::array<aosoa<Cell<>::Self1<VcVectorBackend, DisplacementOpMemberSelector>, VcVectorBackend>, VcVectorBackend::kVecLen> neighbors;
+        cell.GetNeighbors(*cells, &neighbors);
+
         // todo remove VcVectorBackend with impl.
         for (size_t j = 0; j < VcVectorBackend::kVecLen; j++) {
           for (size_t k = 0; k < neighbors.at(j).Vectors(); k++) {

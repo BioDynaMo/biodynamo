@@ -19,7 +19,8 @@ namespace bdm {
 template <typename Base = SimulationObject<>>
 class CellExt : public Base {
   BDM_CLASS_HEADER(CellExt, CellExt<>,
-                   CellExt<typename Base::template Self<Backend>>, position_,
+                   CellExt<typename Base::template Self<Backend>>,
+                   CellExt<typename Base::template Self1<TTBackend COMMA() TTMemberSelector>>, position_,
                    mass_location_, tractor_force_, diameter_, volume_,
                    adherence_, mass_, neighbors_);
 
@@ -43,18 +44,14 @@ class CellExt : public Base {
     return mass_location_[idx_];
   }
 
-  template <typename T>
-  BDM_FORCE_INLINE std::array<aosoa<Self<VcVectorBackend>, VcVectorBackend>,
-                              VcVectorBackend::kVecLen>
-  GetNeighbors(const T& all_cells) const {
-    std::array<aosoa<Self<VcVectorBackend>, VcVectorBackend>,
-               VcVectorBackend::kVecLen>
-        ret;
+  template <typename T, typename U>
+  BDM_FORCE_INLINE
+  void GetNeighbors(T& all_cells,
+    std::array<aosoa<U, VcVectorBackend>, VcVectorBackend::kVecLen>* ret) const {
     const size_t size = Base::ElementsCurrentVector();
     for (size_t i = 0; i < size; i++) {
-      all_cells.Gather(neighbors_[idx_][i], &(ret[i]));
+      all_cells.Gather(neighbors_[idx_][i], &((*ret)[i]));
     }
-    return ret;
   }
 
   BDM_FORCE_INLINE const std::array<InlineVector<int, 8>, Backend::kVecLen>

@@ -86,6 +86,8 @@ template <typename TBackend>
 class SoaSimulationObject {
  public:
   using Backend = TBackend;
+  template <typename Type, typename EnclosingClass, int id>
+  using MemberSelector = SelectAllMembers<Type, EnclosingClass, id>;
 
   template <typename T>
   friend class SoaSimulationObject;
@@ -166,10 +168,6 @@ class SoaSimulationObject {
     }
   }
 
-  virtual void CopyTo(std::size_t src_v_idx, std::size_t src_idx,
-                      std::size_t dest_v_idx, std::size_t dest_idx,
-                      VectorSimulationObject* dest) const {}
-
   /// Gathers scalar elements specified in indexes and stores them in
   /// container `ret`
   /// @param indexes: collection of indexes
@@ -191,8 +189,9 @@ class SoaSimulationObject {
     }
 
     size_t counter = 0;
-    VectorSimulationObject* dest = nullptr;
+    T* dest = nullptr;
     for (size_t i = 0; i < scalars; i++) {
+      // TODO(lukas) vectorize the following statements
       int idx = indexes[i];
       size_t src_v_idx = idx / VcVectorBackend::kVecLen;
       size_t src_idx = idx % VcVectorBackend::kVecLen;
@@ -201,7 +200,7 @@ class SoaSimulationObject {
       if (dest_idx == 0) {
         dest = &((*ret)[dest_v_idx]);
       }
-      CopyTo(src_v_idx, src_idx, dest_v_idx, dest_idx, dest);
+      dest->CopyFrom(*this, src_v_idx, src_idx, dest_v_idx, dest_idx);
       counter++;
     }
   }
@@ -255,9 +254,14 @@ struct SimulationObject : public SimulationObjectImpl<TBackend>::type {
   virtual ~SimulationObject() {}
 
   // FIXME add for all types of backends??
-  virtual void CopyTo(std::size_t src_v_idx, std::size_t src_idx,
+  template <typename T>
+  void CopyTo(std::size_t src_v_idx, std::size_t src_idx,
                       std::size_t dest_v_idx, std::size_t dest_idx,
-                      VectorSimulationObject* dest) const {}
+                      T* dest) const {}
+
+  template <typename T>
+  void CopyFrom(const T& src, std::size_t src_v_idx, std::size_t src_idx,
+                      std::size_t dest_v_idx, std::size_t dest_idx) {}
 
  protected:
   template <typename Type, typename EnclosingClass, int id>
@@ -265,6 +269,9 @@ struct SimulationObject : public SimulationObjectImpl<TBackend>::type {
 
   template <typename TTBackend>
   using Self = SimulationObject<TMemberSelector, TTBackend>;
+
+  template <typename TTBackend, template <typename, typename, int> class TTMemberSelector = TMemberSelector>
+  using Self1 = SimulationObject<TTMemberSelector, TTBackend>;
 
   using Backend = TBackend;
 

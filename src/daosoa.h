@@ -94,8 +94,9 @@ class daosoa {
   /// container `ret`
   /// @param indexes: collection of indexes
   /// @param ret:     scalars are copied to this container
+  template <typename T1>
   void Gather(const InlineVector<int, 8>& indexes,
-              aosoa<T, Backend>* ret) const {
+              aosoa<T1, VcVectorBackend>* ret) const {
     const size_t scalars = indexes.size();
     std::size_t n_vectors =
         scalars / Backend::kVecLen + (scalars % Backend::kVecLen ? 1 : 0);
@@ -111,7 +112,7 @@ class daosoa {
     }
 
     size_t counter = 0;
-    value_type* dest = nullptr;
+    T1* dest = nullptr;
     for (size_t i = 0; i < scalars; i++) {
       int idx = indexes[i];
       size_t vector_idx = idx / Backend::kVecLen;
