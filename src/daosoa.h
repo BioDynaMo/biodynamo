@@ -3,6 +3,9 @@
 
 #include <type_traits>
 #include <vector>
+
+#include <Rtypes.h>
+
 #include "aosoa.h"
 #include "backend.h"
 #include "inline_vector.h"
@@ -17,6 +20,7 @@ class daosoa {
   using iterator = typename std::vector<value_type>::iterator;
   using const_iterator = typename std::vector<value_type>::const_iterator;
 
+  explicit daosoa(TRootIOCtor*) {}  // ROOT I/O constructor
   daosoa() {}
   explicit daosoa(size_t scalar_elements) {
     data_.reserve(scalar_elements / Backend::kVecLen +
@@ -24,6 +28,8 @@ class daosoa {
   }
 
   explicit daosoa(const value_type& cell) { data_.push_back(cell); }
+
+  virtual ~daosoa() {}
 
   /// \brief returns the number of SOA elements in this container
   size_t vectors() const { return data_.size(); }
@@ -135,8 +141,29 @@ class daosoa {
   const_iterator begin() const { return data_.cbegin(); }
   const_iterator end() const { return data_.cend(); }
 
+  /// \brief Copies `data_` to the persistent backing vector `data_pst_`
+  /// and persists the Vc::Vectors of each element it contains
+  void PersistData() {
+    data_pst_.clear();
+    for (size_t i = 0; i < data_.size(); i++) {
+      data_[i].PersistVc();
+      data_pst_.push_back(data_[i]);
+    }
+  }
+
+  /// \brief Copies back from the persistent backing vector `data_pst_`
+  /// to `data_` as well as for Vc::Vectors in each of its elements
+  void LoadData() {
+    for (size_t i = 0; i < data_pst_.size(); i++) {
+      data_.push_back(data_pst_[i]);
+      data_[i].LoadVc();
+    }
+  }
+
  private:
-  std::vector<value_type, Vc::Allocator<value_type> > data_;
+  std::vector<value_type, Vc::Allocator<value_type> > data_;  //!
+  std::vector<value_type> data_pst_;  // persistent backing vector
+  ClassDef(daosoa, 1);
 };
 
 }  // namespace bdm

@@ -6,6 +6,8 @@
 #include <sstream>
 #include <vector>
 
+#include <Rtypes.h>
+
 namespace bdm {
 
 /// This containes stores up to N elements without heap allocations
@@ -16,6 +18,7 @@ namespace bdm {
 template <typename T, size_t N>
 class InlineVector {
  public:
+  explicit InlineVector(TRootIOCtor*) {}  // Constructor for ROOT I/O
   InlineVector() {}
 
   InlineVector(const InlineVector<T, N>& other) {
@@ -23,7 +26,8 @@ class InlineVector {
     size_ = other.size_;
     capacity_ = other.capacity_;
     if (other.heap_data_ != nullptr) {
-      heap_data_ = new T[capacity_ - N];
+      heap_size_ = capacity_ - N;
+      heap_data_ = new T[heap_size_];
       std::copy_n(other.heap_data_, capacity_ - N, heap_data_);
     }
   }
@@ -32,12 +36,14 @@ class InlineVector {
     data_ = other.data_;
     size_ = other.size_;
     capacity_ = other.capacity_;
+    heap_size_ = other.heap_size_;
     heap_data_ = other.heap_data_;
     other.heap_data_ = nullptr;
   }
 
   virtual ~InlineVector() {
     if (heap_data_ != nullptr) {
+      heap_size_ = 0;
       delete[] heap_data_;
     }
   }
@@ -60,6 +66,7 @@ class InlineVector {
         std::copy_n(heap_data_, capacity_ - N, new_heap_data);
         delete[] heap_data_;
       }
+      heap_size_ = new_capacity;
       heap_data_ = new_heap_data;
       capacity_ = new_capacity;
     }
@@ -160,9 +167,11 @@ class InlineVector {
  private:
   static constexpr float kGrowFactor = 1.5;
   std::array<T, N> data_;
-  T* heap_data_ = nullptr;
+  Int_t heap_size_;         // needed to help ROOT with array size
+  T* heap_data_ = nullptr;  //[heap_size_]
   size_t size_ = 0;
   size_t capacity_ = N;
+  ClassDef(InlineVector, 1);
 };
 
 }  // namespace bdm

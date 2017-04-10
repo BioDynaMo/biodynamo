@@ -3,6 +3,8 @@
 
 #include <array>
 #include <cmath>
+#include <vector>
+
 #include "backend.h"
 #include "daosoa.h"
 #include "default_force.h"
@@ -22,6 +24,7 @@ class Cell {
   template <typename>
   friend class Cell;
 
+  explicit Cell(TRootIOCtor*) {}  // ROOT I/O constructor
   Cell() {}
   explicit Cell(real_v diameter) : diameter_{diameter} { UpdateVolume(); }
   explicit Cell(const std::array<real_v, 3>& position)
@@ -145,18 +148,77 @@ class Cell {
                                       diameter_, iof_coefficient, force);
   }
 
+  /// \brief Copies all members containing Vc data types to persistent
+  /// `std::vector`s of the same primitive type
+  void PersistVc() {
+    for (size_t j = 0; j < 3; j++) {
+      position_pst_[j].clear();
+      mass_location_pst_[j].clear();
+      tractor_force_pst_[j].clear();
+    }
+    diameter_pst_.clear();
+    volume_pst_.clear();
+    adherence_pst_.clear();
+    mass_pst_.clear();
+
+    // todo make this portable
+    for (size_t i = 0; i < Backend::kVecLen; i++) {
+      for (size_t j = 0; j < 3; j++) {
+        position_pst_[j].push_back(position_[j][i]);
+        mass_location_pst_[j].push_back(mass_location_[j][i]);
+        tractor_force_pst_[j].push_back(tractor_force_[j][i]);
+      }
+
+      diameter_pst_.push_back(diameter_[i]);
+      volume_pst_.push_back(volume_[i]);
+      adherence_pst_.push_back(adherence_[i]);
+      mass_pst_.push_back(mass_[i]);
+    }
+  }
+
+  /// \brief Loads back all members containing Vc data types from
+  /// the persistent `std::vector`s
+  void LoadVc() {
+    // todo make this portable
+    for (size_t i = 0; i < Backend::kVecLen; i++) {
+      for (size_t j = 0; j < 3; j++) {
+        position_[j][i] = position_pst_[j][i];
+        mass_location_[j][i] = mass_location_pst_[j][i];
+        tractor_force_[j][i] = tractor_force_pst_[j][i];
+      }
+      diameter_[i] = diameter_pst_[i];
+      volume_[i] = volume_pst_[i];
+      adherence_[i] = adherence_pst_[i];
+      mass_[i] = mass_pst_[i];
+    }
+  }
+
  private:
   std::size_t size_ = Backend::kVecLen;
-
-  std::array<real_v, 3> position_;
-  std::array<real_v, 3> mass_location_;
-  real_v diameter_;
-  real_v volume_;
-  std::array<real_v, 3> tractor_force_;
-  real_v adherence_;
-  real_v mass_;
   // stores a list of neighbor ids for each scalar cell
   std::array<InlineVector<int, 8>, Backend::kVecLen> neighbors_;
+
+  std::array<real_v, 3> position_;       //!
+  std::array<real_v, 3> mass_location_;  //!
+  std::array<real_v, 3> tractor_force_;  //!
+  real_v diameter_;                      //!
+  real_v volume_;                        //!
+  real_v adherence_;                     //!
+  real_v mass_;                          //!
+
+  using pst_vector = std::vector<real_t>;
+
+  // Since ROOT does not natively supports I/O of Vc data types
+  // we need these intermediate members to enforce persistency
+  std::array<pst_vector, 3> position_pst_;
+  std::array<pst_vector, 3> mass_location_pst_;
+  std::array<pst_vector, 3> tractor_force_pst_;
+  pst_vector diameter_pst_;
+  pst_vector volume_pst_;
+  pst_vector adherence_pst_;
+  pst_vector mass_pst_;
+
+  ClassDef(Cell, 1);
 };
 
 // ----------------------------------------------------------------------------
