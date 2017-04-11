@@ -11,10 +11,10 @@ namespace simulation_object_util_test_internal {
 
 template <typename Base = SimulationObject<>>
 class CellExt : public Base {
-  BDM_CLASS_HEADER(CellExt, CellExt<>,
-                   CellExt<typename Base::template Self<Backend>>,
-                   CellExt<typename Base::template Self1<TTBackend COMMA() TTMemberSelector>>, position_,
-                   diameter_);
+  BDM_CLASS_HEADER(
+      CellExt, CellExt<>,
+      CellExt<typename Base::template Self<TTBackend COMMA() TTMemberSelector>>,
+      position_, diameter_);
 
  public:
   explicit CellExt(const std::array<real_v, 3>& pos) : position_{{pos}} {}
@@ -43,9 +43,11 @@ class Neurite {
 // add Neurites to BaseCell
 template <typename Base = CellExt<>>
 class NeuronExt : public Base {
-  BDM_CLASS_HEADER(NeuronExt, NeuronExt<>,
-                   NeuronExt<typename Base::template Self<Backend>>,
-                   NeuronExt<typename Base::template Self1<TTBackend COMMA() TTMemberSelector>>, neurites_);
+  BDM_CLASS_HEADER(
+      NeuronExt, NeuronExt<>,
+      NeuronExt<
+          typename Base::template Self<TTBackend COMMA() TTMemberSelector>>,
+      neurites_);
 
  public:
   template <class... A>

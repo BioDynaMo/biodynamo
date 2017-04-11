@@ -16,8 +16,7 @@ using real_v = VcSoaBackend::real_v;
 using real_t = VcSoaBackend::real_t;
 using bool_v = VcSoaBackend::bool_v;
 
-NEW_MEMBER_SELECTOR(DisplacementOpMemberSelector,
-                    CellExt<>, mass_location_,
+NEW_MEMBER_SELECTOR(DisplacementOpMemberSelector, CellExt<>, mass_location_,
                     CellExt<>, diameter_);
 
 /// Defines the 3D physical interactions between physical objects (cylinders and
@@ -35,6 +34,10 @@ class DisplacementOp {
     {
       auto thread_safe_cells = make_thread_safe(cells);
       const size_t n_vectors = thread_safe_cells->Vectors();
+      std::array<aosoa<Cell<VcVectorBackend, DisplacementOpMemberSelector>,
+                       VcVectorBackend>,
+                 VcVectorBackend::kVecLen>
+          neighbors;
 #pragma omp for
       for (size_t i = 0; i < n_vectors; i++) {
         auto& cell = (*thread_safe_cells)[i];
@@ -78,7 +81,6 @@ class DisplacementOp {
         // --------------------------------------------
         //  (We check for every neighbor object if they touch us, i.e. push us
         //  away)
-        std::array<aosoa<Cell<>::Self1<VcVectorBackend, DisplacementOpMemberSelector>, VcVectorBackend>, VcVectorBackend::kVecLen> neighbors;
         cell.GetNeighbors(*cells, &neighbors);
 
         // todo remove VcVectorBackend with impl.

@@ -256,22 +256,19 @@ struct SimulationObject : public SimulationObjectImpl<TBackend>::type {
   // FIXME add for all types of backends??
   template <typename T>
   void CopyTo(std::size_t src_v_idx, std::size_t src_idx,
-                      std::size_t dest_v_idx, std::size_t dest_idx,
-                      T* dest) const {}
+              std::size_t dest_v_idx, std::size_t dest_idx, T* dest) const {}
 
   template <typename T>
   void CopyFrom(const T& src, std::size_t src_v_idx, std::size_t src_idx,
-                      std::size_t dest_v_idx, std::size_t dest_idx) {}
+                std::size_t dest_v_idx, std::size_t dest_idx) {}
 
- protected:
   template <typename Type, typename EnclosingClass, int id>
   using MemberSelector = TMemberSelector<Type, EnclosingClass, id>;
 
-  template <typename TTBackend>
-  using Self = SimulationObject<TMemberSelector, TTBackend>;
-
-  template <typename TTBackend, template <typename, typename, int> class TTMemberSelector = TMemberSelector>
-  using Self1 = SimulationObject<TTMemberSelector, TTBackend>;
+ protected:
+  template <typename TTBackend, template <typename, typename, int>
+                                class TTMemberSelector = TMemberSelector>
+  using Self = SimulationObject<TTMemberSelector, TTBackend>;
 
   using Backend = TBackend;
 

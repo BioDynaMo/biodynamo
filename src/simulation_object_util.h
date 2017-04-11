@@ -24,8 +24,8 @@
  public:                                                      \
   static const int kDataMemberUid##var_name = __COUNTER__;    \
   access_modifier:                                            \
-  typename MemberSelector<type_name, SelfUnique,              \
-                          kDataMemberUid##var_name>::type var_name
+  typename Base::template MemberSelector<                     \
+      type_name, SelfUnique, kDataMemberUid##var_name>::type var_name
 
 #define BDM_PUBLIC_MEMBER(type_name, var_name) \
   BDM_DATA_MEMBER(public, REMOVE_TRAILING_COMMAS(type_name), var_name)
@@ -121,30 +121,30 @@
 ///         `template<typename T, typename U> class C {};` \n
 ///           -> self_specifier: C<PlaceholderType COMMA() PlaceholderType>
 /// @param   self_specifier: Used internally to create the same object, but with
-///          different backend - required since inheritance chain is not known
-///          inside a mixin. \n
+///          different backend or MemberSelector - required since inheritance
+///          chain
+///          is not known inside a mixin. \n
 ///          Value: Type Id, but template parameter Base must be replaced with:
-///          `typename Base::template Self<Backend>` \n\n
+///          `typename Base::template Self<TTBackend COMMA() TTMemberSelector>`
+///          \n\n
 ///          Example: original class: \n
 ///          `template<class Base, class Neurite> class Neuron : public Base
 ///          {};` \n
 ///          Type Id: `Neuron<Base, Neurite>`
 ///          replace Base:
-///          `Neuron<typename Base::template Self<Backend>, Neurite>` \n\n
+///          `Neuron<typename Base::template Self<TTBackend COMMA()
+///          TTMemberSelector>, Neurite>` \n\n
 ///          "," are not allowed as part of preprocessor parameter -> replace
 ///          with COMMA() \n
-///           -> self_specifier: `Neuron<typename Base::template Self<Backend>
+///           -> self_specifier: `Neuron<typename Base::template Self<TTBackend
+///           COMMA() TTMemberSelector>
 ///           COMMA() Neurite>`
 /// @param  ...: List of all data members of this class
 #define BDM_CLASS_HEADER(class_name, self_unique_specifier, self_specifier,    \
-                         self_specifier1, ...)                                 \
+                         ...)                                                  \
  public:                                                                       \
   /* reduce verbosity of some types and variables by defining a local alias */ \
   using Base::idx_;                                                            \
-                                                                               \
-  template <typename Type, typename EnclosingClass, int id>                    \
-  using MemberSelector =                                                       \
-      typename Base::template MemberSelector<Type, EnclosingClass, id>;        \
                                                                                \
   using Backend = typename Base::Backend;                                      \
   using real_v = typename Backend::real_v;                                     \
@@ -162,11 +162,10 @@
   /* Used internally to create the same object, but with */                    \
   /* different backend - required since inheritance chain is not known */      \
   /* inside a mixin. */                                                        \
-  template <typename Backend>                                                  \
+  template <typename TTBackend = Backend, template <typename, typename, int>   \
+                                          class TTMemberSelector =             \
+                                              Base::template MemberSelector>   \
   using Self = self_specifier;                                                 \
-  template <typename TTBackend,                                                \
-            template <typename, typename, int> class TTMemberSelector = MemberSelector>         \
-  using Self1 = self_specifier1;                                               \
                                                                                \
   /* all template versions of this class are friends of each other */          \
   /* so they can access each others data members */                            \
@@ -285,7 +284,8 @@
   void CopyFrom(const T& source, std::size_t src_v_idx, std::size_t src_idx,   \
                 std::size_t dest_v_idx, std::size_t dest_idx) {                \
     auto src =                                                                 \
-        static_cast<const Self1<VcSoaBackend, SelectAllMembers>*>(&source);    \
+        static_cast<const Self<VcSoaBackend, T::template MemberSelector>*>(    \
+            &source);                                                          \
     BDM_CLASS_HEADER_COPYFROM_OP_BODY(__VA_ARGS__);                            \
     Base::CopyFrom(source, src_v_idx, src_idx, dest_v_idx, dest_idx);          \
   }                                                                            \

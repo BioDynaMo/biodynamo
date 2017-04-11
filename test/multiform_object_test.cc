@@ -4,15 +4,21 @@
 namespace bdm {
 namespace multiform_object_test_internal {
 
-template <template <typename, typename, int> class MemberSelector =
+template <template <typename, typename, int> class TMemberSelector =
               SelectAllMembers>
-class Simple {
-  using SelfUnique = Simple<>;
+struct Bar {
+  template <typename Type, typename EnclosingClass, int id>
+  using MemberSelector = TMemberSelector<Type, EnclosingClass, id>;
+};
+
+template <typename Base = Bar<>>
+class SimpleExt : public Base {
+  using SelfUnique = SimpleExt<>;
 
  public:
   BDM_PUBLIC_MEMBER(double, a_) = 1.23;
 
-  Simple() {}
+  SimpleExt() {}
 
   double GetA() { return a_; }
   double GetB() { return b_; }
@@ -25,6 +31,10 @@ class Simple {
   BDM_PRIVATE_MEMBER(double, c_) = 7.89;
 };
 
+template <template <typename, typename, int> class MemberSelector =
+              SelectAllMembers>
+using Simple = SimpleExt<Bar<MemberSelector>>;
+
 TEST(MultiformObjectSimple, SelectAllMembers) {
   Simple<> simple;
   EXPECT_EQ(24u, sizeof(simple));
@@ -33,7 +43,7 @@ TEST(MultiformObjectSimple, SelectAllMembers) {
   EXPECT_EQ(24u, sizeof(simple1));
 }
 
-NEW_MEMBER_SELECTOR(SelectB, Simple<>, b_);
+NEW_MEMBER_SELECTOR(SelectB, SimpleExt<>, b_);
 
 TEST(MultiformObjectSimple, SelectB) {
   Simple<SelectB> only_b;
@@ -41,7 +51,7 @@ TEST(MultiformObjectSimple, SelectB) {
   EXPECT_EQ(4.56, only_b.GetB());
 }
 
-NEW_MEMBER_SELECTOR(SelectAC, Simple<>, a_, Simple<>, c_);
+NEW_MEMBER_SELECTOR(SelectAC, SimpleExt<>, a_, SimpleExt<>, c_);
 
 TEST(MultiformObjectSimple, SelectAC) {
   Simple<SelectAC> a_and_c;
@@ -50,7 +60,7 @@ TEST(MultiformObjectSimple, SelectAC) {
   EXPECT_EQ(7.89, a_and_c.GetC());
 }
 
-NEW_MEMBER_REMOVER(RemoveB, Simple<>, b_);
+NEW_MEMBER_REMOVER(RemoveB, SimpleExt<>, b_);
 
 TEST(MultiformObjectSimple, RemoveB) {
   Simple<RemoveB> a_and_c;
@@ -59,7 +69,7 @@ TEST(MultiformObjectSimple, RemoveB) {
   EXPECT_EQ(7.89, a_and_c.GetC());
 }
 
-NEW_MEMBER_REMOVER(RemoveAC, Simple<>, a_, Simple<>, c_);
+NEW_MEMBER_REMOVER(RemoveAC, SimpleExt<>, a_, SimpleExt<>, c_);
 
 TEST(MultiformObjectSimple, RemoveAC) {
   Simple<RemoveAC> only_b;
@@ -72,10 +82,10 @@ TEST(MultiformObjectSimple, RemoveAC) {
 
 template <typename Base = SimulationObject<>>
 class CellExt : public Base {
-  BDM_CLASS_HEADER(CellExt, CellExt<>,
-                   CellExt<typename Base::template Self<Backend>>,
-                   CellExt<typename Base::template Self1<TTBackend COMMA() TTMemberSelector>>, position_,
-                   diameter_);
+  BDM_CLASS_HEADER(
+      CellExt, CellExt<>,
+      CellExt<typename Base::template Self<TTBackend COMMA() TTMemberSelector>>,
+      position_, diameter_);
 
  public:
   explicit CellExt(const std::array<real_v, 3>& pos) : position_{{pos}} {}
@@ -102,9 +112,11 @@ class Neurite {
 // add Neurites to BaseCell
 template <typename Base = CellExt<>>
 class NeuronExt : public Base {
-  BDM_CLASS_HEADER(NeuronExt, NeuronExt<>,
-                   NeuronExt<typename Base::template Self<Backend>>,
-                   NeuronExt<typename Base::template Self1<TTBackend COMMA() TTMemberSelector>>, neurites_);
+  BDM_CLASS_HEADER(
+      NeuronExt, NeuronExt<>,
+      NeuronExt<
+          typename Base::template Self<TTBackend COMMA() TTMemberSelector>>,
+      neurites_);
 
  public:
   template <class... A>

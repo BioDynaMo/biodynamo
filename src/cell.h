@@ -18,11 +18,11 @@ namespace bdm {
 /// fundamental data types and methods.
 template <typename Base = SimulationObject<>>
 class CellExt : public Base {
-  BDM_CLASS_HEADER(CellExt, CellExt<>,
-                   CellExt<typename Base::template Self<Backend>>,
-                   CellExt<typename Base::template Self1<TTBackend COMMA() TTMemberSelector>>, position_,
-                   mass_location_, tractor_force_, diameter_, volume_,
-                   adherence_, mass_, neighbors_);
+  BDM_CLASS_HEADER(
+      CellExt, CellExt<>,
+      CellExt<typename Base::template Self<TTBackend COMMA() TTMemberSelector>>,
+      position_, mass_location_, tractor_force_, diameter_, volume_, adherence_,
+      mass_, neighbors_);
 
  public:
   CellExt() {}
@@ -45,9 +45,10 @@ class CellExt : public Base {
   }
 
   template <typename T, typename U>
-  BDM_FORCE_INLINE
-  void GetNeighbors(T& all_cells,
-    std::array<aosoa<U, VcVectorBackend>, VcVectorBackend::kVecLen>* ret) const {
+  BDM_FORCE_INLINE void GetNeighbors(
+      const T& all_cells,
+      std::array<aosoa<U, VcVectorBackend>, VcVectorBackend::kVecLen>* ret)
+      const {
     const size_t size = Base::ElementsCurrentVector();
     for (size_t i = 0; i < size; i++) {
       all_cells.Gather(neighbors_[idx_][i], &((*ret)[i]));
@@ -150,8 +151,10 @@ class CellExt : public Base {
                      neighbors_) = {{}};
 };
 
-template <typename Backend = VcVectorBackend>
-using Cell = CellExt<SimulationObject<SelectAllMembers, Backend>>;
+template <typename Backend = VcVectorBackend, template <typename, typename, int>
+                                              class MemberSelector =
+                                                  SelectAllMembers>
+using Cell = CellExt<SimulationObject<MemberSelector, Backend>>;
 
 }  // namespace bdm
 

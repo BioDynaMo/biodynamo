@@ -20,8 +20,7 @@ namespace bdm {
 template <typename Base = SimulationObject<>>
 class BaseCell : public Base {
   BDM_CLASS_HEADER(BaseCell, BaseCell<>,
-                   BaseCell<typename Base::template Self<Backend>>,
-                   BaseCell<typename Base::template Self1<TTBackend COMMA() TTMemberSelector>>, position_,
+                   BaseCell<typename Base::template Self<TTBackend COMMA() TTMemberSelector>>, position_,
                    unused_);
 
  public:
@@ -50,8 +49,7 @@ class Neurite {};
 template <typename Base = BaseCell<>>
 class Neuron : public Base {
   BDM_CLASS_HEADER(Neuron, Neuron<>,
-                   Neuron<typename Base::template Self<Backend>>,
-                   Neuron<typename Base::template Self1<TTBackend COMMA() TTMemberSelector>>, neurites_);
+                   Neuron<typename Base::template Self<TTBackend COMMA() TTMemberSelector>>, neurites_);
 
  public:
   template <class... A>
@@ -81,8 +79,7 @@ using BdmNeuron = Neuron<BaseCell<SimulationObject<MemberSelector, Backend>>>;
 template <typename Base>
 class NeuronExtension : public Base {
   BDM_CLASS_HEADER(NeuronExtension, NeuronExtension<PlaceholderType>,
-                   NeuronExtension<typename Base::template Self<Backend>>,
-                   NeuronExtension<typename Base::template Self1<TTBackend COMMA() TTMemberSelector>>,
+                   NeuronExtension<typename Base::template Self<TTBackend COMMA() TTMemberSelector>>,
                    foo_);
 
  public:

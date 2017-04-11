@@ -32,9 +32,7 @@ struct Nulltype {
   /// removed from the candidate set
   /// FIXME(lukas) invalidates robustness -> no compile errors if removed member
   /// is accessed, but required for CopyUtil
-  Nulltype<T>& operator[](std::size_t idx) {
-    return *this;
-  }
+  Nulltype<T>& operator[](std::size_t idx) { return *this; }
 
   Nulltype(std::initializer_list<T>) {}
 
