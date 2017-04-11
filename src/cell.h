@@ -18,11 +18,8 @@ namespace bdm {
 /// fundamental data types and methods.
 template <typename Base = SimulationObject<>>
 class CellExt : public Base {
-  BDM_CLASS_HEADER(
-      CellExt, CellExt<>,
-      CellExt<typename Base::template Self<TTBackend COMMA() TTMemberSelector>>,
-      position_, mass_location_, tractor_force_, diameter_, volume_, adherence_,
-      mass_, neighbors_);
+  BDM_CLASS_HEADER(CellExt, position_, mass_location_, tractor_force_,
+                   diameter_, volume_, adherence_, mass_, neighbors_);
 
  public:
   CellExt() {}

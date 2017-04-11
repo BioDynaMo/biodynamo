@@ -140,8 +140,8 @@
 ///           COMMA() TTMemberSelector>
 ///           COMMA() Neurite>`
 /// @param  ...: List of all data members of this class
-#define BDM_CLASS_HEADER(class_name, self_unique_specifier, self_specifier,    \
-                         ...)                                                  \
+#define BDM_CLASS_HEADER_ADV(class_name, self_unique_specifier,                \
+                             self_specifier, ...)                              \
  public:                                                                       \
   /* reduce verbosity of some types and variables by defining a local alias */ \
   using Base::idx_;                                                            \
@@ -298,5 +298,16 @@
         REMOVE_TRAILING_COMMAS(BDM_CLASS_HEADER_CPY_CTOR_INIT(__VA_ARGS__)) {} \
                                                                                \
  private:
+
+/// simpflified interface for standard simulation object with one template
+/// parameter named
+/// Base
+/// documentation see BDM_CLASS_HEADER_ADV
+#define BDM_CLASS_HEADER(class_name, ...)                                    \
+  BDM_CLASS_HEADER_ADV(                                                      \
+      class_name, class_name<>,                                              \
+      class_name<                                                            \
+          typename Base::template Self<TTBackend COMMA() TTMemberSelector>>, \
+      __VA_ARGS__)
 
 #endif  // SIMULATION_OBJECT_UTIL_H_
