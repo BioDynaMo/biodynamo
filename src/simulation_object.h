@@ -266,9 +266,25 @@ struct SimulationObject : public SimulationObjectImpl<TBackend>::type {
   using MemberSelector = TMemberSelector<Type, EnclosingClass, id>;
 
  protected:
-  template <typename TTBackend, template <typename, typename, int>
-                                class TTMemberSelector = TMemberSelector>
-  using Self = SimulationObject<TTMemberSelector, TTBackend>;
+  /// Used internally to create the same object, but with
+  /// different backend - required since inheritance chain is not known
+  /// inside a mixin.
+  template <typename TTBackend>
+  using Self = SimulationObject<TMemberSelector, TTBackend>;
+
+  /// Used internally to create the same object, but with
+  /// different Backend and MemberSelector.
+  /// Required since inheritance chain is not known inside a mixin.
+  /// Duplication, because compiler g++-4.8 and clang-3.9 did not
+  /// accept default value for template template parameter like:
+  ///
+  ///      template <typename TTBackend = Backend,
+  ///                template <typename, typename, int>
+  ///                  class TTMemberSelector =
+  ///                    Base::template MemberSelector>
+  template <typename TTBackend,
+            template <typename, typename, int> class TTMemberSelector>
+  using Self1 = SimulationObject<TTMemberSelector, TTBackend>;
 
   using Backend = TBackend;
 

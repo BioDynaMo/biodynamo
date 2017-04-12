@@ -141,7 +141,7 @@
 ///           COMMA() Neurite>`
 /// @param  ...: List of all data members of this class
 #define BDM_CLASS_HEADER_ADV(class_name, self_unique_specifier,                \
-                             self_specifier, ...)                              \
+                             self_specifier, self_specifier1, ...)             \
  public:                                                                       \
   /* reduce verbosity of some types and variables by defining a local alias */ \
   using Base::idx_;                                                            \
@@ -162,10 +162,15 @@
   /* Used internally to create the same object, but with */                    \
   /* different backend - required since inheritance chain is not known */      \
   /* inside a mixin. */                                                        \
-  template <typename TTBackend = Backend, template <typename, typename, int>   \
-                                          class TTMemberSelector =             \
-                                              Base::template MemberSelector>   \
+  template <typename TTBackend = Backend>                                      \
   using Self = self_specifier;                                                 \
+                                                                               \
+  /* Used internally to create the same object, but with */                    \
+  /* different backend and MemberSelector.  */                                 \
+  /* Required since inheritance chain is not known inside a mixin. */          \
+  template <typename TTBackend,                                                \
+            template <typename, typename, int> class TTMemberSelector>         \
+  using Self1 = self_specifier1;                                               \
                                                                                \
   /* all template versions of this class are friends of each other */          \
   /* so they can access each others data members */                            \
@@ -284,7 +289,7 @@
   void CopyFrom(const T& source, std::size_t src_v_idx, std::size_t src_idx,   \
                 std::size_t dest_v_idx, std::size_t dest_idx) {                \
     auto src =                                                                 \
-        static_cast<const Self<VcSoaBackend, T::template MemberSelector>*>(    \
+        static_cast<const Self1<VcSoaBackend, T::template MemberSelector>*>(   \
             &source);                                                          \
     BDM_CLASS_HEADER_COPYFROM_OP_BODY(__VA_ARGS__);                            \
     Base::CopyFrom(source, src_v_idx, src_idx, dest_v_idx, dest_idx);          \
@@ -300,14 +305,14 @@
  private:
 
 /// simpflified interface for standard simulation object with one template
-/// parameter named
-/// Base
+/// parameter named Base
 /// documentation see BDM_CLASS_HEADER_ADV
-#define BDM_CLASS_HEADER(class_name, ...)                                    \
-  BDM_CLASS_HEADER_ADV(                                                      \
-      class_name, class_name<>,                                              \
-      class_name<                                                            \
-          typename Base::template Self<TTBackend COMMA() TTMemberSelector>>, \
+#define BDM_CLASS_HEADER(class_name, ...)                                     \
+  BDM_CLASS_HEADER_ADV(                                                       \
+      class_name, class_name<>,                                               \
+      class_name<typename Base::template Self<TTBackend>>,                    \
+      class_name<                                                             \
+          typename Base::template Self1<TTBackend COMMA() TTMemberSelector>>, \
       __VA_ARGS__)
 
 #endif  // SIMULATION_OBJECT_UTIL_H_

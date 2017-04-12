@@ -77,8 +77,9 @@ template <typename Base>
 class NeuronExtension : public Base {
   BDM_CLASS_HEADER_ADV(
       NeuronExtension, NeuronExtension<PlaceholderType>,
+      NeuronExtension<typename Base::template Self<TTBackend>>,
       NeuronExtension<
-          typename Base::template Self<TTBackend COMMA() TTMemberSelector>>,
+          typename Base::template Self1<TTBackend COMMA() TTMemberSelector>>,
       foo_);
 
  public:
