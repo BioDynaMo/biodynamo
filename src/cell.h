@@ -14,144 +14,242 @@
 
 namespace bdm {
 
+class SoaCell;
+
 /// \brief This class defines an extension to simulation object that contains
 /// fundamental data types and methods.
-template <typename Base = SimulationObject<>>
-class CellExt : public Base {
-  BDM_CLASS_HEADER(CellExt, position_, mass_location_, tractor_force_,
-                   diameter_, volume_, adherence_, mass_, neighbors_);
-
+class Cell {
  public:
-  CellExt() {}
-  explicit CellExt(real_v diameter) : diameter_{diameter} { UpdateVolume(); }
-  explicit CellExt(const std::array<real_v, 3>& position)
+  friend SoaCell;
+
+  Cell() {}
+  explicit Cell(double diameter) : diameter_{diameter} { UpdateVolume(); }
+  explicit Cell(const std::array<double, 3>& position)
       : position_(position), mass_location_(position) {}
 
-  virtual ~CellExt() {}
+  virtual ~Cell() {}
 
-  BDM_FORCE_INLINE const real_v& GetAdherence() const {
-    return adherence_[idx_];
+  double GetAdherence() const { return adherence_; }
+
+  double GetDiameter() const { return diameter_; }
+
+  double GetMass() const { return mass_; }
+
+  const std::array<double, 3>& GetMassLocation() const {
+    return mass_location_;
   }
 
-  BDM_FORCE_INLINE const real_v& GetDiameter() const { return diameter_[idx_]; }
+  const std::array<double, 3>& GetPosition() const { return position_; }
 
-  BDM_FORCE_INLINE const real_v& GetMass() const { return mass_[idx_]; }
-
-  BDM_FORCE_INLINE const std::array<real_v, 3>& GetMassLocation() const {
-    return mass_location_[idx_];
+  const std::array<double, 3>& GetTractorForce() const {
+    return tractor_force_;
   }
 
-  template <typename T, typename U>
-  BDM_FORCE_INLINE void GetNeighbors(
-      const T& all_cells,
-      std::array<aosoa<U, VcVectorBackend>, VcVectorBackend::kVecLen>* ret)
-      const {
-    const size_t size = Base::ElementsCurrentVector();
-    for (size_t i = 0; i < size; i++) {
-      all_cells.Gather(neighbors_[idx_][i], &((*ret)[i]));
-    }
+  double GetVolume() const { return volume_; }
+
+  const InlineVector<int, 8>& GetNeighbors() const { return neighbors_; }
+
+  void SetAdherence(double adherence) { adherence_ = adherence; }
+
+  void SetDiameter(double diameter) { diameter_ = diameter; }
+
+  void SetMass(double mass) { mass_ = mass; }
+
+  void SetMassLocation(const std::array<double, 3>& mass_location) {
+    mass_location_ = mass_location;
   }
 
-  BDM_FORCE_INLINE const std::array<InlineVector<int, 8>, Backend::kVecLen>
-  GetNeighbors() const {
-    return neighbors_[idx_];
+  void SetPosition(const std::array<double, 3>& position) {
+    position_ = position;
   }
 
-  BDM_FORCE_INLINE const std::array<real_v, 3>& GetPosition() const {
-    return position_[idx_];
+  void SetTractorForce(const std::array<double, 3>& tractor_force) {
+    tractor_force_ = tractor_force;
   }
 
-  const std::array<real_v, 3>& GetTractorForce() const {
-    return tractor_force_[idx_];
+  void SetNeighbors(const InlineVector<int, 8>& neighbors) {
+    neighbors_ = neighbors;
   }
 
-  BDM_FORCE_INLINE const real_v& GetVolume() const { return volume_[idx_]; }
-
-  BDM_FORCE_INLINE void SetAdherence(const real_v& adherence) {
-    adherence_[idx_] = adherence;
-  }
-
-  BDM_FORCE_INLINE void SetDiameter(const real_v& diameter) {
-    diameter_[idx_] = diameter;
-  }
-
-  BDM_FORCE_INLINE void SetMass(const real_v& mass) { mass_[idx_] = mass; }
-
-  BDM_FORCE_INLINE void SetMassLocation(
-      const std::array<real_v, 3>& mass_location) {
-    mass_location_[idx_] = mass_location;
-  }
-
-  BDM_FORCE_INLINE void SetPosition(const std::array<real_v, 3>& position) {
-    position_[idx_] = position;
-  }
-
-  BDM_FORCE_INLINE void SetTractorForce(
-      const std::array<real_v, 3>& tractor_force) {
-    tractor_force_[idx_] = tractor_force;
-  }
-
-  BDM_FORCE_INLINE void SetNeighbors(
-      const std::array<InlineVector<int, 8>, Backend::kVecLen>& neighbors) {
-    neighbors_[idx_] = neighbors;
-  }
-
-  BDM_FORCE_INLINE void ChangeVolume(const real_v& speed) {
+  void ChangeVolume(double speed) {
     // scaling for integration step
-    real_v dV = speed * real_t(Param::kSimulationTimeStep);
-    volume_[idx_] += dV;
-    volume_[idx_] = Vc::iif(volume_[idx_] < real_t(5.2359877E-7),
-                            real_v(5.2359877E-7), volume_[idx_]);
+    double dV = speed * Param::kSimulationTimeStep;
+    volume_ += dV;
+    if (volume_ < 5.2359877E-7) {
+      volume_ = 5.2359877E-7;
+    }
     UpdateDiameter();
   }
 
-  BDM_FORCE_INLINE void UpdateDiameter() {
+  void UpdateDiameter() {
     // V = (4/3)*pi*r^3 = (pi/6)*diameter^3
-    for (size_t i = 0; i < real_v::Size; i++) {  // fixme vectorize that
-      diameter_[idx_][i] = std::cbrt(volume_[idx_][i] * 6 / Math::kPi);
+    diameter_ = std::cbrt(volume_ * 6 / Math::kPi);
+  }
+
+  void UpdateVolume() {
+    volume_ = Math::kPi / 6 * diameter_ * diameter_ * diameter_;
+  }
+
+  void UpdateMassLocation(const std::array<double, 3>& delta) {
+    mass_location_[0] += delta[0];
+    mass_location_[1] += delta[1];
+    mass_location_[2] += delta[2];
+  }
+
+  void GetForceOn(const std::array<double, 3>& ref_mass_location,
+                  double ref_diameter, std::array<double, 3>* force) const {
+    DefaultForce default_force;
+    double iof_coefficient = Param::kSphereDefaultInterObjectCoefficient;
+
+    default_force.forceBetweenSpheres(ref_mass_location, ref_diameter,
+                                      iof_coefficient, mass_location_,
+                                      diameter_, iof_coefficient, force);
+  }
+
+ private:
+  std::array<double, 3> position_ = std::array<double, 3>{0, 0, 0};
+  std::array<double, 3> mass_location_ = std::array<double, 3>{0, 0, 0};
+  std::array<double, 3> tractor_force_ = std::array<double, 3>{0, 0, 0};
+  double diameter_;
+  double volume_;
+  double adherence_;
+  double mass_;
+
+  // stores a list of neighbor ids for each scalar cell
+  InlineVector<int, 8> neighbors_;
+};
+
+class SoaCell {
+ public:
+  SoaCell() {}
+  explicit SoaCell(double capacity) { reserve(capacity); }
+  virtual ~SoaCell() {}
+
+  double GetAdherence() const { return adherence_[idx_]; }
+
+  double GetDiameter() const { return diameter_[idx_]; }
+
+  double GetMass() const { return mass_[idx_]; }
+
+  const std::array<double, 3>& GetMassLocation() const {
+    return mass_location_[idx_];
+  }
+
+  const std::array<double, 3>& GetPosition() const { return position_[idx_]; }
+
+  const std::array<double, 3>& GetTractorForce() const {
+    return tractor_force_[idx_];
+  }
+
+  double GetVolume() const { return volume_[idx_]; }
+
+  const InlineVector<int, 8>& GetNeighbors() const { return neighbors_[idx_]; }
+
+  void SetAdherence(double adherence) { adherence_[idx_] = adherence; }
+
+  void SetDiameter(double diameter) { diameter_[idx_] = diameter; }
+
+  void SetMass(double mass) { mass_[idx_] = mass; }
+
+  void SetMassLocation(const std::array<double, 3>& mass_location) {
+    mass_location_[idx_] = mass_location;
+  }
+
+  void SetPosition(const std::array<double, 3>& position) {
+    position_[idx_] = position;
+  }
+
+  void SetTractorForce(const std::array<double, 3>& tractor_force) {
+    tractor_force_[idx_] = tractor_force;
+  }
+
+  void SetNeighbors(const InlineVector<int, 8>& neighbors) {
+    neighbors_[idx_] = neighbors;
+  }
+
+  void ChangeVolume(double speed) {
+    // scaling for integration step
+    double dV = speed * Param::kSimulationTimeStep;
+    volume_[idx_] += dV;
+    if (volume_[idx_] < 5.2359877E-7) {
+      volume_[idx_] = 5.2359877E-7;
     }
+    UpdateDiameter();
   }
 
-  BDM_FORCE_INLINE void UpdateVolume() {
-    volume_[idx_] = real_t(Math::kPi) / 6 * diameter_[idx_] * diameter_[idx_] *
-                    diameter_[idx_];
+  void UpdateDiameter() {
+    // V = (4/3)*pi*r^3 = (pi/6)*diameter^3
+    diameter_[idx_] = std::cbrt(volume_[idx_] * 6 / Math::kPi);
   }
 
-  BDM_FORCE_INLINE void UpdateMassLocation(const std::array<real_v, 3>& delta) {
+  void UpdateVolume() {
+    volume_[idx_] =
+        Math::kPi / 6 * diameter_[idx_] * diameter_[idx_] * diameter_[idx_];
+  }
+
+  void UpdateMassLocation(const std::array<double, 3>& delta) {
     mass_location_[idx_][0] += delta[0];
     mass_location_[idx_][1] += delta[1];
     mass_location_[idx_][2] += delta[2];
   }
 
-  BDM_FORCE_INLINE void GetForceOn(
-      const std::array<real_v, 3>& ref_mass_location,
-      const real_v& ref_diameter, std::array<real_v, 3>* force) const {
-    DefaultForce<Backend> default_force;  // todo inefficient -> make member
-    real_v iof_coefficient(Param::kSphereDefaultInterObjectCoefficient);
+  void GetForceOn(const std::array<double, 3>& ref_mass_location,
+                  double ref_diameter, std::array<double, 3>* force) const {
+    DefaultForce default_force;
+    double iof_coefficient = Param::kSphereDefaultInterObjectCoefficient;
 
     default_force.forceBetweenSpheres(ref_mass_location, ref_diameter,
                                       iof_coefficient, mass_location_[idx_],
                                       diameter_[idx_], iof_coefficient, force);
   }
 
+  void push_back(const Cell& cell) {
+    position_.push_back(cell.position_);
+    mass_location_.push_back(cell.mass_location_);
+    tractor_force_.push_back(cell.tractor_force_);
+    diameter_.push_back(cell.diameter_);
+    volume_.push_back(cell.volume_);
+    adherence_.push_back(cell.adherence_);
+    mass_.push_back(cell.mass_);
+    neighbors_.push_back(cell.neighbors_);
+  }
+
+  void reserve(size_t capacity) {
+    position_.reserve(capacity);
+    mass_location_.reserve(capacity);
+    tractor_force_.reserve(capacity);
+    diameter_.reserve(capacity);
+    volume_.reserve(capacity);
+    adherence_.reserve(capacity);
+    mass_.reserve(capacity);
+    neighbors_.reserve(capacity);
+  }
+
+  size_t size() const { return position_.size(); }
+
+  SoaCell& operator[](size_t idx) {
+    idx_ = idx;
+    return *this;
+  }
+
+  const SoaCell& operator[](size_t idx) const {
+    idx_ = idx;
+    return *this;
+  }
+
  private:
-  BDM_PRIVATE_MEMBER(Container<std::array<real_v COMMA() 3>>, position_);
-  BDM_PRIVATE_MEMBER(Container<std::array<real_v COMMA() 3>>, mass_location_);
-  BDM_PRIVATE_MEMBER(Container<std::array<real_v COMMA() 3>>, tractor_force_);
-  BDM_PRIVATE_MEMBER(Container<real_v>, diameter_);
-  BDM_PRIVATE_MEMBER(Container<real_v>, volume_);
-  BDM_PRIVATE_MEMBER(Container<real_v>, adherence_);
-  BDM_PRIVATE_MEMBER(Container<real_v>, mass_);
+  mutable size_t idx_ = 0;
+  std::vector<std::array<double, 3>> position_;
+  std::vector<std::array<double, 3>> mass_location_;
+  std::vector<std::array<double, 3>> tractor_force_;
+  std::vector<double> diameter_;
+  std::vector<double> volume_;
+  std::vector<double> adherence_;
+  std::vector<double> mass_;
 
   // stores a list of neighbor ids for each scalar cell
-  BDM_PRIVATE_MEMBER(Container<SimdArray<InlineVector<int COMMA() 8>>>,
-                     neighbors_) = {{}};
+  std::vector<InlineVector<int, 8>> neighbors_;
 };
-
-template <typename Backend = VcVectorBackend, template <typename, typename, int>
-                                              class MemberSelector =
-                                                  SelectAllMembers>
-using Cell = CellExt<SimulationObject<MemberSelector, Backend>>;
 
 }  // namespace bdm
 

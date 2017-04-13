@@ -8,42 +8,29 @@ namespace displacement_op_test_internal {
 
 template <typename T>
 void RunTest(T* cells) {
-  using real_v = VcVectorBackend::real_v;
-  using real_t = real_v::value_type;
-  if (real_v::Size < 2) {
-    FAIL() << "Backend must at least support two elements for this test";
-  }
-  // set up cells
-  real_v diameter((const real_t[]){9, 11});
-  real_v adherence((const real_t[]){0.3, 0.4});
-  real_v mass((const real_t[]){1.4, 1.1});
-
-  std::array<real_v, 3> position = {real_v((const real_t[]){0, 0}),
-                                    real_v((const real_t[]){0, 5}),
-                                    real_v((const real_t[]){0, 0})};
-
-  // TODO(lukas) generate target values with this tf
-  // std::array<real_v, 3> tractor_force = {
-  //     real_v((const real_t[]){0.99, 1.01}),
-  //     real_v((const real_t[]){0.98, 1.02}),
-  //     real_v((const real_t[]){0.97, 1.03})
-  // };
-
+  // Cell 1
+  Cell cell;
+  cell.SetAdherence(0.3);
+  cell.SetDiameter(9);
+  cell.SetMass(1.4);
+  cell.SetPosition({0, 0, 0});
+  cell.SetMassLocation({0, 0, 0});
+  // cell.SetTractorForce(tractor_force);
   InlineVector<int, 8> neighbor_1;
   neighbor_1.push_back(1);
+  cell.SetNeighbors(neighbor_1);
+  cells->push_back(cell);
+
+  // Cell 2
+  cell.SetAdherence(0.4);
+  cell.SetDiameter(11);
+  cell.SetMass(1.1);
+  cell.SetPosition({0, 5, 0});
+  cell.SetMassLocation({0, 5, 0});
+  // cell.SetTractorForce(tractor_force);
   InlineVector<int, 8> neighbor_2;
   neighbor_2.push_back(0);
-  std::array<InlineVector<int, 8>, VcVectorBackend::kVecLen> neighbors = {
-      neighbor_1, neighbor_2};
-
-  Cell<VcVectorBackend> cell(diameter);
-  cell.SetDiameter(diameter);
-  cell.SetPosition(position);
-  cell.SetMassLocation(position);
-  // cell.SetTractorForce(tractor_force);
-  cell.SetAdherence(adherence);
-  cell.SetMass(mass);
-  cell.SetNeighbors(neighbors);
+  cell.SetNeighbors(neighbor_2);
   cells->push_back(cell);
 
   // execute operation
@@ -51,37 +38,48 @@ void RunTest(T* cells) {
   op.Compute(cells);
 
   // check results
-  auto& final_position = (*cells)[0].GetPosition();
   // cell 1
-  EXPECT_NEAR(0, final_position[0][0], abs_error<real_t>::value);
-  EXPECT_NEAR(-0.07797206232558615, final_position[1][0],
-              abs_error<real_t>::value);
-  EXPECT_NEAR(0, final_position[2][0], abs_error<real_t>::value);
+  auto final_position = (*cells)[0].GetPosition();
+  EXPECT_NEAR(0, final_position[0], abs_error<double>::value);
+  EXPECT_NEAR(-0.07797206232558615, final_position[1],
+              abs_error<double>::value);
+  EXPECT_NEAR(0, final_position[2], abs_error<double>::value);
   // cell 2
-  EXPECT_NEAR(0, final_position[0][1], abs_error<real_t>::value);
-  EXPECT_NEAR(5.0992371702325645, final_position[1][1],
-              abs_error<real_t>::value);
-  EXPECT_NEAR(0, final_position[2][1], abs_error<real_t>::value);
+  final_position = (*cells)[1].GetPosition();
+  EXPECT_NEAR(0, final_position[0], abs_error<double>::value);
+  EXPECT_NEAR(5.0992371702325645, final_position[1], abs_error<double>::value);
+  EXPECT_NEAR(0, final_position[2], abs_error<double>::value);
 
   // check if tractor_force has been reset to zero
-  auto& final_tf = (*cells)[0].GetTractorForce();
-  EXPECT_NEAR(0, final_tf[0].sum(), abs_error<real_t>::value);
-  EXPECT_NEAR(0, final_tf[1].sum(), abs_error<real_t>::value);
-  EXPECT_NEAR(0, final_tf[2].sum(), abs_error<real_t>::value);
+  // cell 1
+  auto final_tf = (*cells)[0].GetTractorForce();
+  EXPECT_NEAR(0, final_tf[0], abs_error<double>::value);
+  EXPECT_NEAR(0, final_tf[1], abs_error<double>::value);
+  EXPECT_NEAR(0, final_tf[2], abs_error<double>::value);
+  // cell 2
+  final_tf = (*cells)[1].GetTractorForce();
+  EXPECT_NEAR(0, final_tf[0], abs_error<double>::value);
+  EXPECT_NEAR(0, final_tf[1], abs_error<double>::value);
+  EXPECT_NEAR(0, final_tf[2], abs_error<double>::value);
 
   // remaining fields should remain unchanged
-  EXPECT_TRUE((diameter == (*cells)[0].GetDiameter()).isFull());
-  EXPECT_TRUE((adherence == (*cells)[0].GetAdherence()).isFull());
-  EXPECT_TRUE((mass == (*cells)[0].GetMass()).isFull());
+  // cell 1
+  EXPECT_NEAR(0.3, (*cells)[0].GetAdherence(), abs_error<double>::value);
+  EXPECT_NEAR(9, (*cells)[0].GetDiameter(), abs_error<double>::value);
+  EXPECT_NEAR(1.4, (*cells)[0].GetMass(), abs_error<double>::value);
+  // cell 2
+  EXPECT_NEAR(0.4, (*cells)[1].GetAdherence(), abs_error<double>::value);
+  EXPECT_NEAR(11, (*cells)[1].GetDiameter(), abs_error<double>::value);
+  EXPECT_NEAR(1.1, (*cells)[1].GetMass(), abs_error<double>::value);
 }
 
 TEST(DisplacementOpTest, ComputeAosoa) {
-  daosoa<Cell<VcVectorBackend>> cells;
+  std::vector<Cell> cells;
   RunTest(&cells);
 }
 
 TEST(DisplacementOpTest, ComputeSoa) {
-  auto cells = Cell<>::NewEmptySoa();
+  SoaCell cells;
   RunTest(&cells);
 }
 

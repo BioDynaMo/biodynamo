@@ -6,24 +6,18 @@
 #include <omp.h>
 // #include <ittnotify.h>
 
-#include "backend.h"
 #include "cell.h"
-#include "daosoa.h"
-#include "resource_manager.h"
-#include "scheduler.h"
 #include "timing.h"
 #include "timing_aggregator.h"
 #include "displacement_op.h"
 #include "dividing_cell_op.h"
+#include "neighbor_op.h"
 
 using bdm::Cell;
-using bdm::daosoa;
-using bdm::ResourceManager;
-using bdm::Scheduler;
 using bdm::ScalarBackend;
+using bdm::SoaCell;
 using bdm::Timing;
 using bdm::TimingAggregator;
-using bdm::VcVectorBackend;
 
 void execute(size_t cells_per_dim, size_t iterations, size_t threads,
              size_t repititions, TimingAggregator* statistic) {
@@ -33,17 +27,16 @@ void execute(size_t cells_per_dim, size_t iterations, size_t threads,
        << cells_per_dim << " cells per dim - " << iterations << " iteration(s)";
     statistic->AddDescription(ss.str());
 
-    const unsigned space = 20;
-    // daosoa<Cell<>> cells(cells_per_dim * cells_per_dim * cells_per_dim);
-    auto cells = Cell<>::NewEmptySoa(cells_per_dim * cells_per_dim * cells_per_dim);
+    const double space = 20;
+    // std::vector<Cell> cells;
+    // cells.reserve(cells_per_dim * cells_per_dim * cells_per_dim);
+    SoaCell cells(cells_per_dim * cells_per_dim * cells_per_dim);
     {
       Timing timing("Setup", statistic);
       for (size_t i = 0; i < cells_per_dim; i++) {
         for (size_t j = 0; j < cells_per_dim; j++) {
           for (size_t k = 0; k < cells_per_dim; k++) {
-            // todo improve syntax
-            Cell<ScalarBackend> cell(std::array<ScalarBackend::real_v, 3>{
-                i * space, j * space, k * space});
+            Cell cell({i * space, j * space, k * space});
             cell.SetDiameter(30);
             cell.SetAdherence(0.4);
             cell.SetMass(1.0);

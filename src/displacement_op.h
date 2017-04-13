@@ -12,13 +12,6 @@
 
 namespace bdm {
 
-using real_v = VcSoaBackend::real_v;
-using real_t = VcSoaBackend::real_t;
-using bool_v = VcSoaBackend::bool_v;
-
-NEW_MEMBER_SELECTOR(DisplacementOpMemberSelector, CellExt<>, mass_location_,
-                    CellExt<>, diameter_);
-
 /// Defines the 3D physical interactions between physical objects (cylinders and
 /// spheres).
 class DisplacementOp {
@@ -32,53 +25,33 @@ class DisplacementOp {
   void Compute(TContainer* cells) const {
 #pragma omp parallel
     {
-      auto thread_safe_cells = make_thread_safe(cells);
-      const size_t n_vectors = thread_safe_cells->Vectors();
-
-      // define data structure for neigbors for neighbor_batch_size iterations
-      const size_t neighbor_batch_size = 2;
-      std::array<
-          std::array<aosoa<Cell<VcVectorBackend, DisplacementOpMemberSelector>,
-                           VcVectorBackend>,
-                     VcVectorBackend::kVecLen>,
-          neighbor_batch_size>
-          neighbor_array;
+      std::vector<std::array<double, 3>> movement(cells->size());
 #pragma omp for
-      for (size_t i = 0; i < n_vectors; i++) {
-        auto& cell = (*thread_safe_cells)[i];
-
-        // prefetch neighbors
-        if (i % neighbor_batch_size == 0) {
-          for (size_t j = 0; j < neighbor_batch_size; j++) {
-            size_t idx = j + i;
-            if (idx < n_vectors) {
-              (*thread_safe_cells)[idx].GetNeighbors(*cells,
-                                                     &(neighbor_array[j]));
-            }
-          }
-        }
-        // get neighbors for current loop iteration
-        const auto& neighbors = neighbor_array[i % neighbor_batch_size];
-
+      for (size_t i = 0; i < cells->size(); i++) {
+        // auto& cell = (*cells)[i];
         // Basically, the idea is to make the sum of all the forces acting
         // on the Point mass. It is stored in translationForceOnPointMass.
         // There is also a computation of the torque (only applied
         // by the daughter neurites), stored in rotationForce.
 
+        // TODO : There might be a problem, in the sense that the biology is not
+        // applied
+        // if the total Force is smaller than adherence. Once, I should look at
+        // this more carefully.
+
         // If we detect enough forces to make us  move, we will re-schedule us
-        // cell.setOnTheSchedulerListForPhysicalObjects(false);
+        // setOnTheSchedulerListForPhysicalObjects(false);
 
-        // const auto& tf = cell.GetTractorForce();
-        const std::array<real_v, 3>& tf = cell.GetTractorForce();
-        // const std::array<real_v, 3> tf{0, 0, 0};
+        // fixme why? copying
+        const auto& tf = (*cells)[i].GetTractorForce();
 
-        // the 3 types of movement that can occurq
-        // bool_v biological_translation(false);
-        bool_v physical_translation(false);
-        //      bool_v physical_rotation(false);
+        // the 3 types of movement that can occur
+        // bool biological_translation = false;
+        bool physical_translation = false;
+        // bool physical_rotation = false;
 
-        real_v h(Param::kSimulationTimeStep);
-        std::array<real_v, 3> movement_at_next_step{0, 0, 0};
+        double h = Param::kSimulationTimeStep;
+        std::array<double, 3> movement_at_next_step{0, 0, 0};
 
         // BIOLOGY :
         // 0) Start with tractor force : What the biology defined as active
@@ -89,157 +62,98 @@ class DisplacementOp {
 
         // PHYSICS
         // the physics force to move the point mass
-        std::array<real_v, 3> translation_force_on_point_mass{0, 0, 0};
+        std::array<double, 3> translation_force_on_point_mass{0, 0, 0};
+        // the physics force to rotate the cell
+        // std::array<double, 3> rotation_force { 0, 0, 0 };
+
         // 1) "artificial force" to maintain the sphere in the ecm simulation
-        //    boundaries
-        // todo add again
+        // boundaries--------
         // 2) Spring force from my neurites (translation and
-        // rotation)-----------
-        // todo add again
+        // rotation)--------------------------
         // 3) Object avoidance force
-        // --------------------------------------------
+        // -----------------------------------------------------------
         //  (We check for every neighbor object if they touch us, i.e. push us
         //  away)
-
-        // todo remove VcVectorBackend with impl.
-        for (size_t j = 0; j < VcVectorBackend::kVecLen; j++) {
-          for (size_t k = 0; k < neighbors.at(j).Vectors(); k++) {
-            auto& neighbor = neighbors.at(j)[k];
-            std::array<real_v, 3> neighbor_force;
-
-            const auto& cell_mass_location = cell.GetMassLocation();
-            std::array<real_v, 3> scalar_mass_location = {
-                real_v(cell_mass_location[0][j]),
-                real_v(cell_mass_location[1][j]),
-                real_v(cell_mass_location[2][j])};
-            real_v scalar_diameter(cell.GetDiameter()[j]);
-            neighbor.GetForceOn(scalar_mass_location, scalar_diameter,
-                                &neighbor_force);
-            if (k != neighbors.at(j).Vectors() - 1) {
-              translation_force_on_point_mass[0][j] += neighbor_force[0].sum();
-              translation_force_on_point_mass[1][j] += neighbor_force[1].sum();
-              translation_force_on_point_mass[2][j] += neighbor_force[2].sum();
-            } else {
-              // if vector is not full manually add up forces
-              for (size_t l = 0; l < neighbor.Elements(); l++) {
-                translation_force_on_point_mass[0][j] += neighbor_force[0][l];
-                translation_force_on_point_mass[1][j] += neighbor_force[1][l];
-                translation_force_on_point_mass[2][j] += neighbor_force[2][l];
-              }
-            }
-          }
+        const auto& neighbor_ids = (*cells)[i].GetNeighbors();
+        for (size_t j = 0; j < neighbor_ids.size(); j++) {
+          // const auto& neighbor = (*cells)[neighbor_ids[j]];
+          std::array<double, 3> neighbor_force;
+          // (*cells)[i].GetForceOn(
+          // (*cells)[neighbor_ids[j]].GetMassLocation(),
+          // (*cells)[neighbor_ids[j]].GetDiameter(), &neighbor_force);
+          (*cells)[neighbor_ids[j]].GetForceOn((*cells)[i].GetMassLocation(),
+                                               (*cells)[i].GetDiameter(),
+                                               &neighbor_force);
+          translation_force_on_point_mass[0] += neighbor_force[0];
+          translation_force_on_point_mass[1] += neighbor_force[1];
+          translation_force_on_point_mass[2] += neighbor_force[2];
+          // }
         }
-        //      for (const auto& neighbor : cell.GetNeighbors()) {
-        //        auto force_from_this_neighbor = neighbor->getForceOn(cell);
-        //        translation_force_on_point_mass[0] +=
-        //        force_from_this_neighbor[0];
-        //        translation_force_on_point_mass[1] +=
-        //        force_from_this_neighbor[1];
-        //        translation_force_on_point_mass[2] +=
-        //        force_from_this_neighbor[2];
-        //      }
+
         // 4)
-        // PhysicalBonds------------------------------------------------------
-        // todo add again
-
+        // PhysicalBonds--------------------------------------------------------------------
         // How the physics influences the next
-        // displacement----------------------
-        // todo removed only used in view
-
-        real_v norm_of_force = Vc::sqrt(translation_force_on_point_mass[0] *
-                                            translation_force_on_point_mass[0] +
-                                        translation_force_on_point_mass[1] *
-                                            translation_force_on_point_mass[1] +
-                                        translation_force_on_point_mass[2] *
-                                            translation_force_on_point_mass[2]);
+        // displacement--------------------------------------------------------
+        double norm_of_force =
+            std::sqrt(translation_force_on_point_mass[0] *
+                          translation_force_on_point_mass[0] +
+                      translation_force_on_point_mass[1] *
+                          translation_force_on_point_mass[1] +
+                      translation_force_on_point_mass[2] *
+                          translation_force_on_point_mass[2]);
 
         // is there enough force to :
         //  - make us biologically move (Tractor) :
-        // todo add again biological_translation = norm(tf) > 0.01;
         //  - break adherence and make us translate ?
-        physical_translation = norm_of_force > cell.GetAdherence();
-        //  - make us rotate ?
-        // todo add again
+        physical_translation = norm_of_force > (*cells)[i].GetAdherence();
 
-        auto mh = h / cell.GetMass();
+        double mh = h / (*cells)[i].GetMass();
         // adding the physics translation (scale by weight) if important enough
-        movement_at_next_step[0] +=
-            Vc::iif(physical_translation,
-                    translation_force_on_point_mass[0] * mh, real_v::Zero());
-        movement_at_next_step[1] +=
-            Vc::iif(physical_translation,
-                    translation_force_on_point_mass[1] * mh, real_v::Zero());
-        movement_at_next_step[2] +=
-            Vc::iif(physical_translation,
-                    translation_force_on_point_mass[2] * mh, real_v::Zero());
+        if (physical_translation) {
+          // We scale the move with mass and time step
+          movement_at_next_step[0] += translation_force_on_point_mass[0] * mh;
+          movement_at_next_step[1] += translation_force_on_point_mass[1] * mh;
+          movement_at_next_step[2] += translation_force_on_point_mass[2] * mh;
 
-        // Performing the translation itself :
-        // but we want to avoid huge jumps in the simulation, so there are
-        // maximum distances possible
-        auto gt_max_displacement =
-            norm_of_force * mh > real_t(Param::kSimulationMaximalDisplacement);
-        auto max_displacement =
-            Math::Normalize<VcVectorBackend>(movement_at_next_step);
-        max_displacement[0] *= real_v(Param::kSimulationMaximalDisplacement);
-        max_displacement[1] *= real_v(Param::kSimulationMaximalDisplacement);
-        max_displacement[2] *= real_v(Param::kSimulationMaximalDisplacement);
+          // Performing the translation itself :
 
-        movement_at_next_step[0] = Vc::iif(
-            gt_max_displacement, max_displacement[0], movement_at_next_step[0]);
-        movement_at_next_step[1] = Vc::iif(
-            gt_max_displacement, max_displacement[1], movement_at_next_step[1]);
-        movement_at_next_step[2] = Vc::iif(
-            gt_max_displacement, max_displacement[2], movement_at_next_step[2]);
+          // but we want to avoid huge jumps in the simulation, so there are
+          // maximum distances possible
+          if (norm_of_force * mh > Param::kSimulationMaximalDisplacement) {
+            // movement_at_next_step =
+            // Matrix::scalarMult(Param::kSimulationMaximalDisplacement,
+            //                                            Matrix::normalize(movement_at_next_step));
+            const auto& norm = Math::Normalize(movement_at_next_step);
+            movement_at_next_step[0] =
+                norm[0] * Param::kSimulationMaximalDisplacement;
+            movement_at_next_step[1] =
+                norm[1] * Param::kSimulationMaximalDisplacement;
+            movement_at_next_step[2] =
+                norm[2] * Param::kSimulationMaximalDisplacement;
+          }
 
-        cell.UpdateMassLocation(movement_at_next_step);
-        // FIXME removed rotation
+          // // The translational movement itself
+          // mass_location_[0] += movement_at_next_step[0];
+          // mass_location_[1] += movement_at_next_step[1];
+          // mass_location_[2] += movement_at_next_step[2];
+        }
+        // Performing the rotation
         // updating some values :
-        //      UpdateSpatialOrganizationNodePosition(&cell);
-        cell.SetPosition(cell.GetMassLocation());
-        // Re-schedule me and every one that has something to do with me :
-        // cells->setOnTheSchedulerListForPhysicalObjects(true);
-        // neighbors :
-        //        for (auto neighbor : so_node_->getNeighbors()) {
-        //          if (neighbor->isAPhysicalObject()) {
-        //            static_cast<PhysicalObject*>(neighbor)->setOnTheSchedulerListForPhysicalObjects(true);
-        //          }
-        //        }
+        movement[i] = movement_at_next_step;
+      }
+
+// set new values after all movements have been calculated
+// otherwise neighbors would already contain updated values
+#pragma omp for
+      for (size_t i = 0; i < cells->size(); i++) {
+        (*cells)[i].UpdateMassLocation(movement[i]);
+        (*cells)[i].SetPosition((*cells)[i].GetMassLocation());
 
         // Reset biological movement to 0.
         // (Will need new instruction from SomaElement in order to move again)
-        cell.SetTractorForce({0, 0, 0});
+        (*cells)[i].SetTractorForce({0, 0, 0});
       }
     }
-  }
-
- private:
-  void UpdateSpatialOrganizationNodePosition(
-      Cell<VcVectorBackend>* cell) const {
-    auto& current_center = cell->GetPosition();
-    auto& mass_location = cell->GetMassLocation();
-    // fixme can't we pass that as parameter - should be known at call site
-    std::array<VcVectorBackend::real_v, 3> displacement = {
-        mass_location[0] - current_center[0],
-        mass_location[1] - current_center[1],
-        mass_location[2] - current_center[2]};
-    //    auto offset = Math::Norm<VcVectorBackend>(displacement);
-    //    auto& diameter = cell->GetDiameter();
-    // todo what is the purpose of this conditional?
-    //    auto ifmask = offset > diameter * 0.25 || offset > 5; //fixme magic
-    //    numbers 0.25 & 0.0025
-    //    auto noise = Random::NextNoise<VcVectorBackend>(diameter * 0.025);
-    //    displacement[0] += noise[0];
-    //    displacement[1] += noise[1];
-    //    displacement[2] += noise[2];
-    //    displacement[0].setZeroInverted(ifmask);
-    //    displacement[1].setZeroInverted(ifmask);
-    //    displacement[2].setZeroInverted(ifmask);
-    std::array<VcVectorBackend::real_v, 3> new_position{
-        current_center[0] + displacement[0],
-        current_center[1] + displacement[1],
-        current_center[2] + displacement[2],
-    };
-    cell->SetPosition(new_position);
   }
 };
 

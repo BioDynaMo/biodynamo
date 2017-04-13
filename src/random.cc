@@ -62,4 +62,12 @@ double Random::nextGaussian() {
   }
 }
 
+std::array<double, 3> Random::nextNoise(double k) {
+  std::array<double, 3> ret;
+  ret[0] = -k + 2 * k * nextDouble();
+  ret[1] = -k + 2 * k * nextDouble();
+  ret[2] = -k + 2 * k * nextDouble();
+  return ret;
+}
+
 }  // namespace bdm

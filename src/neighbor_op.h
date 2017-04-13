@@ -2,8 +2,8 @@
 #define NEIGHBOR_OP_H_
 
 #include <iostream>
-#include "nanoflann.h"
 #include "make_thread_safe.h"
+#include "nanoflann.h"
 
 namespace bdm {
 
@@ -15,7 +15,7 @@ using nanoflann::KDTreeSingleIndexAdaptor;
 // And this is the "dataset to kd-tree" adaptor class:
 template <typename Derived>
 struct NanoFlannDaosoaAdapter {
-  using coord_t = VcVectorBackend::real_t;
+  using coord_t = double;
 
   const Derived& obj;  //!< A const ref to the data set origin
 
@@ -26,20 +26,15 @@ struct NanoFlannDaosoaAdapter {
   inline const Derived& derived() const { return obj; }
 
   /// Must return the number of data points
-  inline size_t kdtree_get_point_count() const { return derived().Elements(); }
+  inline size_t kdtree_get_point_count() const { return derived().size(); }
 
   /// Returns the distance between the vector "p1[0:size-1]" and the data point
   /// with index "idx_p2" stored in the class:
   inline coord_t kdtree_distance(const coord_t* p1, const size_t idx_p2,
                                  size_t /*size*/) const {
-    const auto vector_idx = idx_p2 / VcVectorBackend::kVecLen;
-    const auto scalar_idx = idx_p2 % VcVectorBackend::kVecLen;
-    const coord_t d0 =
-        p1[0] - derived()[vector_idx].GetPosition()[0][scalar_idx];
-    const coord_t d1 =
-        p1[1] - derived()[vector_idx].GetPosition()[1][scalar_idx];
-    const coord_t d2 =
-        p1[2] - derived()[vector_idx].GetPosition()[2][scalar_idx];
+    const coord_t d0 = p1[0] - derived()[idx_p2].GetPosition()[0];
+    const coord_t d1 = p1[1] - derived()[idx_p2].GetPosition()[1];
+    const coord_t d2 = p1[2] - derived()[idx_p2].GetPosition()[2];
     return d0 * d0 + d1 * d1 + d2 * d2;
   }
 
@@ -47,9 +42,7 @@ struct NanoFlannDaosoaAdapter {
   /// Since this is inlined and the "dim" argument is typically an immediate
   /// value, the "if/else's" are actually solved at compile time.
   inline coord_t kdtree_get_pt(const size_t idx, int dim) const {
-    const auto vector_idx = idx / VcVectorBackend::kVecLen;
-    const auto scalar_idx = idx % VcVectorBackend::kVecLen;
-    return derived()[vector_idx].GetPosition()[dim][scalar_idx];
+    return derived()[idx].GetPosition()[dim];
   }
 
   /// Optional bounding-box computation: return false to default to a standard
@@ -74,50 +67,41 @@ class NeighborOp {
   NeighborOp& operator=(const NeighborOp&) = delete;
 
   template <typename TContainer>
-  Vc_ALWAYS_INLINE void Compute(TContainer* cells) const {
+  void Compute(TContainer* cells) const {
     typedef NanoFlannDaosoaAdapter<TContainer> NanoFlann2Daosoa;
     const NanoFlann2Daosoa nf_cells(*cells);  // The adaptor
 
     // construct a kd-tree index:
     typedef KDTreeSingleIndexAdaptor<
-        L2_Simple_Adaptor<VcVectorBackend::real_t, NanoFlann2Daosoa>,
-        NanoFlann2Daosoa, 3 /* dim */
-        >
+        L2_Simple_Adaptor<double, NanoFlann2Daosoa>, NanoFlann2Daosoa,
+        3 /* dim */>
         my_kd_tree_t;
 
     // three dimensions; max leafs: 10
     my_kd_tree_t index(3, nf_cells, KDTreeSingleIndexAdaptorParams(10));
     index.buildIndex();
 
-    std::vector<std::array<InlineVector<int, 8>, VcVectorBackend::kVecLen> >
-        neighbors(cells->Vectors());
+    std::vector<InlineVector<int, 8>> neighbors(cells->size());
 
 // calc neighbors
 #pragma omp parallel
     {
-      auto thread_safe_cells = make_thread_safe(cells);
 #pragma omp for
-      for (size_t i = 0; i < thread_safe_cells->Elements(); i++) {
-        const auto vector_idx = i / VcVectorBackend::kVecLen;
-        const auto scalar_idx = i % VcVectorBackend::kVecLen;
-
+      for (size_t i = 0; i < cells->size(); i++) {
         // fixme make param
         // according to roman 50 - 100 micron
-        const VcVectorBackend::real_t search_radius =
-            static_cast<VcVectorBackend::real_t>(distance_);
+        double search_radius = distance_;
 
-        std::vector<std::pair<size_t, VcVectorBackend::real_t> > ret_matches;
+        std::vector<std::pair<size_t, double>> ret_matches;
 
         nanoflann::SearchParams params;
         params.sorted = false;
 
-        const auto& position = (*thread_safe_cells)[vector_idx].GetPosition();
-        const VcVectorBackend::real_t query_pt[3] = {position[0][scalar_idx],
-                                               position[1][scalar_idx],
-                                               position[2][scalar_idx]};
+        const auto& position = (*cells)[i].GetPosition();
+        // const double query_pt[3] = {position[0], position[1], position[2]};
 
         // calculate neighbors
-        const size_t n_matches = index.radiusSearch(&query_pt[0], search_radius,
+        const size_t n_matches = index.radiusSearch(&position[0], search_radius,
                                                     ret_matches, params);
 
         // transform result (change data structure - remove self from list)
@@ -128,13 +112,13 @@ class NeighborOp {
             i_neighbors.push_back(ret_matches[j].first);
           }
         }
-        neighbors[vector_idx][scalar_idx] = std::move(i_neighbors);
+        neighbors[i] = std::move(i_neighbors);
       }
 
 // update neighbors
 #pragma omp for
-      for (size_t i = 0; i < thread_safe_cells->Vectors(); i++) {
-        (*thread_safe_cells)[i].SetNeighbors(neighbors[i]);
+      for (size_t i = 0; i < cells->size(); i++) {
+        (*cells)[i].SetNeighbors(neighbors[i]);
       }
     }
   }

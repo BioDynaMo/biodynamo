@@ -17,15 +17,13 @@ class DividingCellOp {
   void Compute(TContainer* cells) const {
 #pragma omp parallel
     {
-      auto thread_safe_cells = make_thread_safe(cells);
-      const size_t n_vectors = thread_safe_cells->Vectors();
 #pragma omp for
-      for (size_t i = 0; i < n_vectors; i++) {
-        // if diameter <= 20 then changeVolume(300) else do nothing
-        auto ifresult = (*thread_safe_cells)[i].GetDiameter() <= 40;
-        VcVectorBackend::real_v dv(300);
-        dv.setZeroInverted(ifresult);
-        (*thread_safe_cells)[i].ChangeVolume(dv);
+      for (size_t i = 0; i < cells->size(); i++) {
+        // if diameter <= 40 then changeVolume(300) else do nothing
+        auto& cell = (*cells)[i];
+        if (cell.GetDiameter() <= 40) {
+           cell.ChangeVolume(300);
+        }
         // todo(lukas) division if diameter > 20;
       }
     }

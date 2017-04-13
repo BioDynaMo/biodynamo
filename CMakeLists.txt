@@ -231,32 +231,3 @@ endif()
 set(SIMULATION_TARGET cell_growth)
 add_executable(${SIMULATION_TARGET} ${CMAKE_SOURCE_DIR}/demo/cell_growth.cc)
 target_link_libraries(${SIMULATION_TARGET} biodynamo)
-
-# --------------------- build backend_arch demo
-set(BACKEND_ARCH backend_arch)
-add_executable(${BACKEND_ARCH} ${CMAKE_SOURCE_DIR}/demo/backend_arch.cc)
-target_link_libraries(${BACKEND_ARCH} biodynamo)
-# target_link_libraries(${BACKEND_ARCH} ${VTUNE_LIBRARIES})
-add_dependencies(${BACKEND_ARCH} Vc)
-
-# --------------------- build backend_arch remove_data_members
-set(REMOVE_DATA_MEMBERS remove_data_members)
-add_executable(${REMOVE_DATA_MEMBERS} ${CMAKE_SOURCE_DIR}/demo/remove_data_members.cc)
-
-# --------------------- build backend_arch flexibility
-set(FLEXIBILITY flexibility)
-add_executable(${FLEXIBILITY} ${CMAKE_SOURCE_DIR}/demo/flexibility.cc)
-target_link_libraries(${FLEXIBILITY} biodynamo)
-add_dependencies(${FLEXIBILITY} Vc)
-
-# --------------------- build benchmark soa_vs_aosoa
-set(SOA_VS_AOSOA soa_vs_aosoa)
-add_executable(${SOA_VS_AOSOA} ${CMAKE_SOURCE_DIR}/benchmark/soa_vs_aosoa.cc)
-
-set(SOA_VS_AOSOA soa_vs_aosoa_rw)
-add_executable(${SOA_VS_AOSOA} ${CMAKE_SOURCE_DIR}/benchmark/soa_vs_aosoa.cc)
-target_compile_options(${SOA_VS_AOSOA} BEFORE PRIVATE "-DMODE=ReadWrite")
-
-set(SOA_VS_AOSOA soa_vs_aosoa_rwa)
-add_executable(${SOA_VS_AOSOA} ${CMAKE_SOURCE_DIR}/benchmark/soa_vs_aosoa.cc)
-target_compile_options(${SOA_VS_AOSOA} BEFORE PRIVATE "-DMODE=ReadWriteAlternating")
