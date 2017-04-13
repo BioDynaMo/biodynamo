@@ -7,11 +7,11 @@
 // #include <ittnotify.h>
 
 #include "cell.h"
-#include "timing.h"
-#include "timing_aggregator.h"
 #include "displacement_op.h"
 #include "dividing_cell_op.h"
 #include "neighbor_op.h"
+#include "timing.h"
+#include "timing_aggregator.h"
 
 using bdm::Cell;
 using bdm::ScalarBackend;
@@ -28,9 +28,9 @@ void execute(size_t cells_per_dim, size_t iterations, size_t threads,
     statistic->AddDescription(ss.str());
 
     const double space = 20;
-    std::vector<Cell> cells;
-    cells.reserve(cells_per_dim * cells_per_dim * cells_per_dim);
-    // SoaCell cells(cells_per_dim * cells_per_dim * cells_per_dim);
+    // std::vector<Cell> cells;
+    // cells.reserve(cells_per_dim * cells_per_dim * cells_per_dim);
+    SoaCell cells(cells_per_dim * cells_per_dim * cells_per_dim);
     {
       Timing timing("Setup", statistic);
       for (size_t i = 0; i < cells_per_dim; i++) {
@@ -77,9 +77,11 @@ void execute(size_t cells_per_dim, size_t iterations, size_t threads,
 
 void scaling(size_t cells_per_dim, size_t iterations, size_t repititions,
              TimingAggregator* statistic,
-             const std::function<void(int&)> thread_inc = [](int& i) {  // NOLINT(runtime/references)
-               i *= 2;
-             }, const int max_threads = omp_get_max_threads()) {
+             const std::function<void(int&)> thread_inc =
+                 [](int& i) {  // NOLINT(runtime/references)
+                   i *= 2;
+                 },
+             const int max_threads = omp_get_max_threads()) {
   for (int i = 1; i <= max_threads; thread_inc(i)) {
     omp_set_num_threads(i);
     execute(cells_per_dim, iterations, i, repititions, statistic);
