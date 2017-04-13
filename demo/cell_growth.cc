@@ -28,9 +28,9 @@ void execute(size_t cells_per_dim, size_t iterations, size_t threads,
     statistic->AddDescription(ss.str());
 
     const double space = 20;
-    // std::vector<Cell> cells;
-    // cells.reserve(cells_per_dim * cells_per_dim * cells_per_dim);
-    SoaCell cells(cells_per_dim * cells_per_dim * cells_per_dim);
+    std::vector<Cell> cells;
+    cells.reserve(cells_per_dim * cells_per_dim * cells_per_dim);
+    // SoaCell cells(cells_per_dim * cells_per_dim * cells_per_dim);
     {
       Timing timing("Setup", statistic);
       for (size_t i = 0; i < cells_per_dim; i++) {

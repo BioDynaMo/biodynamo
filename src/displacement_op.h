@@ -25,7 +25,6 @@ class DisplacementOp {
   void Compute(TContainer* cells) const {
 #pragma omp parallel
     {
-      std::vector<std::array<double, 3>> movement(cells->size());
 #pragma omp for
       for (size_t i = 0; i < cells->size(); i++) {
         // auto& cell = (*cells)[i];
@@ -139,14 +138,7 @@ class DisplacementOp {
         }
         // Performing the rotation
         // updating some values :
-        movement[i] = movement_at_next_step;
-      }
-
-// set new values after all movements have been calculated
-// otherwise neighbors would already contain updated values
-#pragma omp for
-      for (size_t i = 0; i < cells->size(); i++) {
-        (*cells)[i].UpdateMassLocation(movement[i]);
+        (*cells)[i].UpdateMassLocation(movement_at_next_step);
         (*cells)[i].SetPosition((*cells)[i].GetMassLocation());
 
         // Reset biological movement to 0.
