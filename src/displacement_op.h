@@ -5,7 +5,6 @@
 #include <cmath>
 #include "backend.h"
 #include "cell.h"
-#include "make_thread_safe.h"
 #include "math_util.h"
 #include "multiform_object.h"
 #include "param.h"
@@ -23,12 +22,9 @@ class DisplacementOp {
 
   template <typename TContainer>
   void Compute(TContainer* cells) const {
-#pragma omp parallel
-    {
-      auto thread_safe_cells = make_thread_safe(cells);
-#pragma omp for
+#pragma omp parallel for
       for (size_t i = 0; i < cells->size(); i++) {
-        // auto& cell = (*thread_safe_cells)[i];
+        auto&& cell = (*cells)[i];
         // Basically, the idea is to make the sum of all the forces acting
         // on the Point mass. It is stored in translationForceOnPointMass.
         // There is also a computation of the torque (only applied
@@ -43,7 +39,7 @@ class DisplacementOp {
         // setOnTheSchedulerListForPhysicalObjects(false);
 
         // fixme why? copying
-        const auto& tf = (*thread_safe_cells)[i].GetTractorForce();
+        const auto& tf = cell.GetTractorForce();
 
         // the 3 types of movement that can occur
         // bool biological_translation = false;
@@ -74,17 +70,17 @@ class DisplacementOp {
         // -----------------------------------------------------------
         //  (We check for every neighbor object if they touch us, i.e. push us
         //  away)
-        const auto& neighbor_ids = (*thread_safe_cells)[i].GetNeighbors();
+        const auto& neighbor_ids = cell.GetNeighbors();
         for (size_t j = 0; j < neighbor_ids.size(); j++) {
-          // const auto& neighbor = (*thread_safe_cells)[neighbor_ids[j]];
+          const auto& neighbor = (*cells)[neighbor_ids[j]];
           std::array<double, 3> neighbor_force;
-          // (*thread_safe_cells)[i].GetForceOn(
+          // cell.GetForceOn(
           // (*thread_safe_cells)[neighbor_ids[j]].GetMassLocation(),
           // (*thread_safe_cells)[neighbor_ids[j]].GetDiameter(),
           // &neighbor_force);
-          (*thread_safe_cells)[neighbor_ids[j]].GetForceOn(
-              (*thread_safe_cells)[i].GetMassLocation(),
-              (*thread_safe_cells)[i].GetDiameter(), &neighbor_force);
+          neighbor.GetForceOn(
+              cell.GetMassLocation(),
+              cell.GetDiameter(), &neighbor_force);
           translation_force_on_point_mass[0] += neighbor_force[0];
           translation_force_on_point_mass[1] += neighbor_force[1];
           translation_force_on_point_mass[2] += neighbor_force[2];
@@ -107,9 +103,9 @@ class DisplacementOp {
         //  - make us biologically move (Tractor) :
         //  - break adherence and make us translate ?
         physical_translation =
-            norm_of_force > (*thread_safe_cells)[i].GetAdherence();
+            norm_of_force > cell.GetAdherence();
 
-        double mh = h / (*thread_safe_cells)[i].GetMass();
+        double mh = h / cell.GetMass();
         // adding the physics translation (scale by weight) if important enough
         if (physical_translation) {
           // We scale the move with mass and time step
@@ -141,15 +137,14 @@ class DisplacementOp {
         }
         // Performing the rotation
         // updating some values :
-        (*thread_safe_cells)[i].UpdateMassLocation(movement_at_next_step);
-        (*thread_safe_cells)[i].SetPosition(
-            (*thread_safe_cells)[i].GetMassLocation());
+        cell.UpdateMassLocation(movement_at_next_step);
+        cell.SetPosition(
+            cell.GetMassLocation());
 
         // Reset biological movement to 0.
         // (Will need new instruction from SomaElement in order to move again)
-        (*thread_safe_cells)[i].SetTractorForce({0, 0, 0});
+        cell.SetTractorForce({0, 0, 0});
       }
-    }
   }
 };
 

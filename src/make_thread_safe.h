@@ -14,7 +14,7 @@ namespace bdm {
 /// data member. `make_thread_safe` creates a reference object with its own
 /// `idx_`.
 inline std::unique_ptr<SoaCellRef> make_thread_safe(SoaCell* container) {
-  return std::unique_ptr<SoaCellRef>(new SoaCellRef(container));
+  return std::unique_ptr<SoaCellRef>(new SoaCellRef(container, 0));
 }
 
 /// Accesses to AOS containers are by default thread safe.

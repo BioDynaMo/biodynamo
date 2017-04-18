@@ -3,7 +3,6 @@
 
 #include <iostream>
 #include "inline_vector.h"
-#include "make_thread_safe.h"
 #include "nanoflann.h"
 
 namespace bdm {
@@ -87,7 +86,6 @@ class NeighborOp {
 // calc neighbors
 #pragma omp parallel
     {
-      auto thread_safe_cells = make_thread_safe(cells);
 #pragma omp for
       for (size_t i = 0; i < cells->size(); i++) {
         // fixme make param
@@ -99,7 +97,7 @@ class NeighborOp {
         nanoflann::SearchParams params;
         params.sorted = false;
 
-        const auto& position = (*thread_safe_cells)[i].GetPosition();
+        const auto& position = (*cells)[i].GetPosition();
         // const double query_pt[3] = {position[0], position[1], position[2]};
 
         // calculate neighbors
@@ -120,7 +118,7 @@ class NeighborOp {
 // update neighbors
 #pragma omp for
       for (size_t i = 0; i < cells->size(); i++) {
-        (*thread_safe_cells)[i].SetNeighbors(neighbors[i]);
+        (*cells)[i].SetNeighbors(neighbors[i]);
       }
     }
   }

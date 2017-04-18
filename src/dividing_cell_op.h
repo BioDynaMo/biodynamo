@@ -2,7 +2,6 @@
 #define DIVIDING_CELL_OP_H_
 
 #include "backend.h"
-#include "make_thread_safe.h"
 
 namespace bdm {
 
@@ -15,19 +14,15 @@ class DividingCellOp {
 
   template <typename TContainer>
   void Compute(TContainer* cells) const {
-#pragma omp parallel
-    {
-      auto thread_safe_cells = make_thread_safe(cells);
-#pragma omp for
+#pragma omp parallel for
       for (size_t i = 0; i < cells->size(); i++) {
         // if diameter <= 40 then changeVolume(300) else do nothing
-        auto& cell = (*thread_safe_cells)[i];
+        auto&& cell = (*cells)[i];
         if (cell.GetDiameter() <= 40) {
           cell.ChangeVolume(300);
         }
         // todo(lukas) division if diameter > 20;
       }
-    }
   }
 };
 
