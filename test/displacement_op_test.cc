@@ -9,7 +9,7 @@ namespace displacement_op_test_internal {
 template <typename T>
 void RunTest(T* cells) {
   // Cell 1
-  Cell cell;
+  Cell<> cell;
   cell.SetAdherence(0.3);
   cell.SetDiameter(9);
   cell.SetMass(1.4);
@@ -74,12 +74,12 @@ void RunTest(T* cells) {
 }
 
 TEST(DisplacementOpTest, ComputeAosoa) {
-  std::vector<Cell> cells;
+  std::vector<Cell<Scalar>> cells;
   RunTest(&cells);
 }
 
 TEST(DisplacementOpTest, ComputeSoa) {
-  SoaCell cells;
+  Cell<Soa> cells;
   RunTest(&cells);
 }
 

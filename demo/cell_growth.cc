@@ -14,8 +14,8 @@
 #include "timing_aggregator.h"
 
 using bdm::Cell;
-using bdm::ScalarBackend;
-using bdm::SoaCell;
+using bdm::Scalar;
+using bdm::Soa;
 using bdm::Timing;
 using bdm::TimingAggregator;
 
@@ -28,15 +28,17 @@ void execute(size_t cells_per_dim, size_t iterations, size_t threads,
     statistic->AddDescription(ss.str());
 
     const double space = 20;
-    // std::vector<Cell> cells;
-    // cells.reserve(cells_per_dim * cells_per_dim * cells_per_dim);
-    SoaCell cells(cells_per_dim * cells_per_dim * cells_per_dim);
+
+    // Cell<Soa> cells(cells_per_dim * cells_per_dim * cells_per_dim);
+    // std::vector<Cell<Scalar>> cells;
+    Cell<Soa> cells;
+    cells.reserve(cells_per_dim * cells_per_dim * cells_per_dim);
     {
       Timing timing("Setup", statistic);
       for (size_t i = 0; i < cells_per_dim; i++) {
         for (size_t j = 0; j < cells_per_dim; j++) {
           for (size_t k = 0; k < cells_per_dim; k++) {
-            Cell cell({i * space, j * space, k * space});
+            Cell<Scalar> cell({i * space, j * space, k * space});
             cell.SetDiameter(30);
             cell.SetAdherence(0.4);
             cell.SetMass(1.0);

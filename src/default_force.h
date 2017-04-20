@@ -12,8 +12,6 @@ namespace bdm {
 
 class DefaultForce {
  public:
-  using real_v = typename VcVectorBackend::real_v;
-  using real_t = typename VcVectorBackend::real_t;
 
   DefaultForce() {}
   ~DefaultForce() {}

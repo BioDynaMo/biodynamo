@@ -8,8 +8,8 @@ namespace dividing_cell_op_test_internal {
 
 template <typename T>
 void RunTest(T* cells) {
-  cells->push_back(Cell(19));
-  cells->push_back(Cell(41));
+  cells->push_back(Cell<>(19.0));
+  cells->push_back(Cell<>(41.0));
 
   DividingCellOp op;
   op.Compute(cells);
@@ -25,12 +25,12 @@ void RunTest(T* cells) {
 }
 
 TEST(DividingCellOpTest, ComputeAos) {
-  std::vector<Cell> cells;
+  std::vector<Cell<Scalar>> cells;
   RunTest(&cells);
 }
 
 TEST(DividingCellOpTest, ComputeSoa) {
-  SoaCell cells;
+  Cell<Soa> cells;
   RunTest(&cells);
 }
 

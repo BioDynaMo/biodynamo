@@ -9,9 +9,9 @@ namespace neighbor_op_test_internal {
 
 template <typename T>
 void RunTest(T* cells) {
-  cells->push_back(Cell({0, 0, 0}));
-  cells->push_back(Cell({30, 30, 30}));
-  cells->push_back(Cell({60, 60, 60}));
+  cells->push_back(Cell<>({0, 0, 0}));
+  cells->push_back(Cell<>({30, 30, 30}));
+  cells->push_back(Cell<>({60, 60, 60}));
 
   // execute operation
   NeighborOp op;
@@ -34,12 +34,12 @@ void RunTest(T* cells) {
 }
 
 TEST(NeighborOpTest, ComputeAosoa) {
-  std::vector<Cell> cells;
+  std::vector<Cell<Scalar>> cells;
   RunTest(&cells);
 }
 
 TEST(NeighborOpTest, ComputeSoa) {
-  SoaCell cells;
+  Cell<Soa> cells;
   RunTest(&cells);
 }
 

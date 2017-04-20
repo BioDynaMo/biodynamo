@@ -3,10 +3,7 @@
 
 #include <array>
 #include <cmath>
-#include "backend.h"
-#include "cell.h"
 #include "math_util.h"
-#include "multiform_object.h"
 #include "param.h"
 
 namespace bdm {
