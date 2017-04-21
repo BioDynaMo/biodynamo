@@ -188,6 +188,179 @@ class Exporter {
 
     std::cout << "created NeuroML file" << std::endl;
   }
+
+  /// This function creates a .pvd file that lists the individual files across
+  /// the different times.
+  /// This .pvd can be read by Paraview for visualization.
+  void CreatePVDFile(string filename, int iterations, double increment) {
+    std::ofstream pvd(filename + ".pvd");
+
+    pvd << "<?xml version=\"1.0\"?>" << std::endl;
+    pvd << "<VTKFile type=\"Collection\" version=\"0.1\" "
+           "byte_order=\"LittleEndian\">"
+        << std::endl;
+    pvd << "<Collection>" << std::endl;
+    // iterate for all (time) steps
+    for (int i = 0; i < iterations; i++) {
+      pvd << "<DataSet timestep=\"" << (i * increment)
+          << "\" group=\"\" part=\"0\" file=\"" << filename << '-' << i
+          << ".vtu\">";
+      pvd << std::endl;
+      // end of (time) iterations loop...
+    }
+    pvd << "</Collection>" << std::endl;
+    pvd << "</VTKFile>" << std::endl;
+  }
+
+  /// This function exports the cell positions as well as properties into a .vtu
+  /// file,
+  /// which can be read by Paraview for visualization.
+  template <typename daosoa>
+  void ToVTUFile(const daosoa& cells, string filename,
+                 size_t iteration_index) const {
+    const size_t num_vectors = cells.vectors();
+    const size_t num_cells = VcBackend::kVecLen * num_vectors;
+    size_t index = 0;
+    std::ofstream vtu(filename + "-" + std::to_string(iteration_index) +
+                      ".vtu");
+
+    vtu << "<VTKFile type=\"UnstructuredGrid\" version=\"0.1\" "
+           "byte_order=\"LittleEndian\">"
+        << std::endl;
+    vtu << "   <UnstructuredGrid>" << std::endl;
+    vtu << "      <Piece  NumberOfPoints=\"" << num_cells
+        << "\" NumberOfCells=\"" << num_cells << "\">" << std::endl;
+    vtu << "         <Points>" << std::endl;
+    vtu << "            <DataArray type=\"Float64\" NumberOfComponents=\"3\" "
+           "format=\"ascii\">"
+        << std::endl;
+    for (size_t i = 0; i < num_vectors; i++) {
+      auto& cell = cells[i];
+      auto& coord = cell.GetPosition();
+      for (size_t j = 0; j < cell.Size(); j++) {
+        vtu << ' ' << coord[0][j] << ' ' << coord[1][j] << ' ' << coord[2][j]
+            << std::flush;
+      }
+    }
+    vtu << std::endl;
+    vtu << "            </DataArray>" << std::endl;
+    vtu << "         </Points>" << std::endl;
+    vtu << "         <PointData>" << std::endl;
+    vtu << "            <DataArray type=\"Float64\" Name=\"Cell_ID\" "
+           "NumberOfComponents=\"1\" format=\"ascii\">"
+        << std::endl;
+    index = 0;
+    for (size_t i = 0; i < num_vectors; i++) {
+      auto& cell = cells[i];
+      for (size_t j = 0; j < cell.Size(); j++)
+        vtu << ' ' << index++ << std::flush;
+    }
+    vtu << std::endl;
+    vtu << "            </DataArray>" << std::endl;
+    vtu << "            <DataArray type=\"Float64\" Name=\"Adherence\" "
+           "NumberOfComponents=\"1\" format=\"ascii\">"
+        << std::endl;
+    for (size_t i = 0; i < num_vectors; i++) {
+      auto& cell = cells[i];
+      auto& adhr = cell.GetAdherence();
+      for (size_t j = 0; j < cell.Size(); j++)
+        vtu << ' ' << adhr[j] << std::flush;
+    }
+    vtu << std::endl;
+    vtu << "            </DataArray>" << std::endl;
+    vtu << "            <DataArray type=\"Float64\" Name=\"Diameter\" "
+           "NumberOfComponents=\"1\" format=\"ascii\">"
+        << std::endl;
+    for (size_t i = 0; i < num_vectors; i++) {
+      auto& cell = cells[i];
+      auto& diam = cell.GetDiameter();
+      for (size_t j = 0; j < cell.Size(); j++)
+        vtu << ' ' << diam[j] << std::flush;
+    }
+    vtu << std::endl;
+    vtu << "            </DataArray>" << std::endl;
+    vtu << "            <DataArray type=\"Float64\" Name=\"Mass\" "
+           "NumberOfComponents=\"1\" format=\"ascii\">"
+        << std::endl;
+    for (size_t i = 0; i < num_vectors; i++) {
+      auto& cell = cells[i];
+      auto& mass = cell.GetMass();
+      for (size_t j = 0; j < cell.Size(); j++)
+        vtu << ' ' << mass[j] << std::flush;
+    }
+    vtu << std::endl;
+    vtu << "            </DataArray>" << std::endl;
+    vtu << "            <DataArray type=\"Float64\" Name=\"Volume\" "
+           "NumberOfComponents=\"1\" format=\"ascii\">"
+        << std::endl;
+    for (size_t i = 0; i < num_vectors; i++) {
+      auto& cell = cells[i];
+      auto& volm = cell.GetVolume();
+      for (size_t j = 0; j < cell.Size(); j++)
+        vtu << ' ' << volm[j] << std::flush;
+    }
+    vtu << std::endl;
+    vtu << "            </DataArray>" << std::endl;
+    vtu << "            <DataArray type=\"Float64\" Name=\"TractionForce\" "
+           "NumberOfComponents=\"3\" format=\"ascii\">"
+        << std::endl;
+    for (size_t i = 0; i < num_vectors; i++) {
+      auto& cell = cells[i];
+      auto& tracf = cell.GetTractorForce();
+      for (size_t j = 0; j < cell.Size(); j++)
+        vtu << ' ' << tracf[0][j] << ' ' << tracf[1][j] << ' ' << tracf[2][j]
+            << std::flush;
+    }
+    vtu << std::endl;
+    vtu << "            </DataArray>" << std::endl;
+    vtu << "         </PointData>" << std::endl;
+    // vtu << "         <CellData>" << std::endl;
+    // vtu << "            <DataArray type=\"Int32\" Name=\"cell_ID\"
+    // NumberOfComponents=\"1\" format=\"ascii\">" << std::endl;
+    // index = 0;
+    // for (size_t i=0; i<num_vectors; i++) {
+    //   auto& cell = cells[i];
+    //   for (size_t j=0; j<cell.Size(); j++)
+    //     vtu << ' ' << index++ << std::flush;
+    // }
+    // vtu << std::endl;
+    // vtu << "            </DataArray>" << std::endl;
+    // vtu << "         </CellData>" << std::endl;
+    vtu << "         <Cells>" << std::endl;
+    vtu << "            <DataArray type=\"Int32\" Name=\"connectivity\" "
+           "format=\"ascii\">"
+        << std::endl;
+    index = 0;
+    for (size_t i = 0; i < num_vectors; i++) {
+      auto& cell = cells[i];
+      for (size_t j = 0; j < cell.Size(); j++)
+        vtu << ' ' << index++ << std::flush;
+    }
+    vtu << std::endl;
+    vtu << "            </DataArray>" << std::endl;
+    vtu << "            <DataArray type=\"Int32\" Name=\"offsets\" "
+           "format=\"ascii\">"
+        << std::endl;
+    for (size_t i = 0; i < num_vectors; i++) {
+      auto& cell = cells[i];
+      for (size_t j = 0; j < cell.Size(); j++) vtu << ' ' << 1 << std::flush;
+    }
+    vtu << std::endl;
+    vtu << "            </DataArray>" << std::endl;
+    vtu << "            <DataArray type=\"Int32\" Name=\"types\" "
+           "format=\"ascii\">"
+        << std::endl;
+    for (size_t i = 0; i < num_vectors; i++) {
+      auto& cell = cells[i];
+      for (size_t j = 0; j < cell.Size(); j++) vtu << ' ' << 1 << std::flush;
+    }
+    vtu << std::endl;
+    vtu << "            </DataArray>" << std::endl;
+    vtu << "         </Cells>" << std::endl;
+    vtu << "      </Piece>" << std::endl;
+    vtu << "   </UnstructuredGrid>" << std::endl;
+    vtu << "</VTKFile>" << std::endl;
+  }
 };
 }  // namespace bdm
 #endif  // EXPORTER_H_

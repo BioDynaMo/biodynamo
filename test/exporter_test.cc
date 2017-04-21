@@ -51,5 +51,34 @@ TEST(ExportTest, ConductExportToFile) {
   EXPECT_EQ("", line);
   t.close();
   remove("TestMatlabExporter.m");
+
+  // Test the Paraview exporter
+  exporter.CreatePVDFile("TestResultsParaview", 1, 1.0);
+  exporter.ToVTUFile(cells, "TestResultsParaview", 1);
+  t.open("TestResultsParaview.pvd");
+  std::getline(t, line);
+  EXPECT_EQ("<?xml version=\"1.0\"?>", line);
+  std::getline(t, line);
+  EXPECT_EQ(
+      "<VTKFile type=\"Collection\" version=\"0.1\" "
+      "byte_order=\"LittleEndian\">",
+      line);
+  t.close();
+
+  t.open("TestResultsParaview-1.vtu");
+  std::getline(t, line);
+  EXPECT_EQ(
+      "<VTKFile type=\"UnstructuredGrid\" version=\"0.1\" "
+      "byte_order=\"LittleEndian\">",
+      line);
+  std::getline(t, line);
+  EXPECT_EQ("   <UnstructuredGrid>", line);
+  std::getline(t, line);
+  EXPECT_EQ("      <Piece  NumberOfPoints=\"2\" NumberOfCells=\"2\">", line);
+  std::getline(t, line);
+  std::getline(t, line);
+  std::getline(t, line);
+  EXPECT_EQ(" 0.5 1 0 -5 5 0.9", line);
+  t.close();
 }
 }  // namespace bdm
