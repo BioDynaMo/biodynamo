@@ -12,12 +12,15 @@ TEST(IOTest, PersistAndLoadVc) {
   daosoa<Cell> cells;
   daosoa<Cell> *cells_r;
 
-  Cell<VcBackend> cell(std::array<VcBackend::real_v, 3>{0, 0, 0});
+  Cell<VcBackend> cell(std::array<VcBackend::real_v, 3> {
+    Vc::double_v::Zero(),
+    Vc::double_v::Zero(),
+    Vc::double_v::Zero()});
   cells.push_back(cell);
 
   for (size_t d = 0; d < 3; d++) {
     std::array<VcBackend::real_v, 3> current_pos = cells[0].GetPosition();
-    std::array<VcBackend::real_v, 3> new_pos{(current_pos[0] + 1.0),
+    std::array<VcBackend::real_v, 3> new_pos{(current_pos[0] + VcBackend::real_v(1)),
                                              current_pos[1], current_pos[2]};
     cells[0].SetPosition(new_pos);
 

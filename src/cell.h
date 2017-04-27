@@ -15,7 +15,7 @@
 namespace bdm {
 
 template <typename Backend>
-class Cell {
+class Cell : public Vc::VectorAlignedBase {
  public:
   using real_v = typename Backend::real_v;
   using real_t = typename Backend::real_t;
@@ -194,9 +194,22 @@ class Cell {
   }
 
  private:
-  std::size_t size_ = Backend::kVecLen;
+  using pst_vector = std::vector<real_t>;
+
+  // Since ROOT does not natively supports I/O of Vc data types
+  // we need these intermediate members to enforce persistency
+  // (keep these members on top to avoid ROOT to break...)
+  std::array<pst_vector, 3> position_pst_;
+  std::array<pst_vector, 3> mass_location_pst_;
+  std::array<pst_vector, 3> tractor_force_pst_;
+  pst_vector diameter_pst_;
+  pst_vector volume_pst_;
+  pst_vector adherence_pst_;
+  pst_vector mass_pst_;
+
   // stores a list of neighbor ids for each scalar cell
   std::array<InlineVector<int, 8>, Backend::kVecLen> neighbors_;
+  std::size_t size_ = Backend::kVecLen;
 
   std::array<real_v, 3> position_;       //!
   std::array<real_v, 3> mass_location_;  //!
@@ -205,18 +218,6 @@ class Cell {
   real_v volume_;                        //!
   real_v adherence_;                     //!
   real_v mass_;                          //!
-
-  using pst_vector = std::vector<real_t>;
-
-  // Since ROOT does not natively supports I/O of Vc data types
-  // we need these intermediate members to enforce persistency
-  std::array<pst_vector, 3> position_pst_;
-  std::array<pst_vector, 3> mass_location_pst_;
-  std::array<pst_vector, 3> tractor_force_pst_;
-  pst_vector diameter_pst_;
-  pst_vector volume_pst_;
-  pst_vector adherence_pst_;
-  pst_vector mass_pst_;
 
   ClassDef(Cell, 1);
 };
@@ -302,5 +303,8 @@ inline void Cell<Backend>::CopyTo(std::size_t src_idx, std::size_t dest_idx,
 }
 
 }  // namespace bdm
+
+Vc_DECLARE_ALLOCATOR(bdm::Cell<bdm::VcBackend>);
+Vc_DECLARE_ALLOCATOR(bdm::Cell<bdm::ScalarBackend>);
 
 #endif  // CELL_H_

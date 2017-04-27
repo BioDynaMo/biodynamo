@@ -27,6 +27,9 @@
 #pragma link C++ class bdm::InlineVector<int, 3ul>+;
 #pragma link C++ class bdm::InlineVector<int, 8ul>+;
 
+#pragma link C++ class Vc::AlignedBase<16ul>+;
+#pragma link C++ class Vc::AlignedBase<32ul>+;
+
 #endif
 
 #endif  // BDMLINKDEF_H_
