@@ -2,7 +2,6 @@
 #define RESOURCE_MANAGER_H_
 
 #include "cell.h"
-#include "daosoa.h"
 
 namespace bdm {
 
@@ -11,6 +10,9 @@ namespace bdm {
 template <typename Backend>
 class ResourceManager {
  public:
+  template <typename T>
+  using Container = typename Backend::template Container<T>;
+
   virtual ~ResourceManager() {}
 
   static ResourceManager<Backend>* Get() {
@@ -19,14 +21,14 @@ class ResourceManager {
   }
 
   // todo change to return const and const method
-  const daosoa<Cell<Backend>>& GetCells() const { return cells_; }
+  const Container<Cell<Backend>>& GetCells() const { return cells_; }
 
-  void SetCells(const daosoa<Cell<Backend>>& cells) { cells_ = cells; }
+  void SetCells(const Container<Cell<Backend>>& cells) { cells_ = cells; }
 
  private:
   ResourceManager() {}
 
-  daosoa<Cell<Backend>> cells_;
+  Container<Cell<Backend>> cells_;
 };
 
 }  // namespace bdm

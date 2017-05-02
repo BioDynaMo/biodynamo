@@ -18,7 +18,7 @@ TEST(DefaultForce, General) {
   std::array<double, 3> result;
 
   DefaultForce force;
-  force.forceBetweenSpheres(ref_mass_location, ref_diameter,
+  force.ForceBetweenSpheres(ref_mass_location, ref_diameter,
                             ref_iof_coefficient, nb_mass_location, nb_diameter,
                             nb_iof_coefficient, &result);
 
@@ -28,7 +28,7 @@ TEST(DefaultForce, General) {
 
   nb_diameter = 10;
   nb_mass_location = {5, 5, 0};
-  force.forceBetweenSpheres(ref_mass_location, ref_diameter,
+  force.ForceBetweenSpheres(ref_mass_location, ref_diameter,
                             ref_iof_coefficient, nb_mass_location, nb_diameter,
                             nb_iof_coefficient, &result);
 
@@ -49,7 +49,7 @@ TEST(DefaultForce, AllNonOverlapping) {
   std::array<double, 3> result;
 
   DefaultForce force;
-  force.forceBetweenSpheres(ref_mass_location, ref_diameter,
+  force.ForceBetweenSpheres(ref_mass_location, ref_diameter,
                             ref_iof_coefficient, nb_mass_location, nb_diameter,
                             nb_iof_coefficient, &result);
 
@@ -70,14 +70,14 @@ TEST(DefaultForce, AllAtSamePosition) {
   std::array<double, 3> result;
 
   DefaultForce force;
-  force.forceBetweenSpheres(ref_mass_location, ref_diameter,
+  force.ForceBetweenSpheres(ref_mass_location, ref_diameter,
                             ref_iof_coefficient, nb_mass_location, nb_diameter,
                             nb_iof_coefficient, &result);
 
   // random number must be in interval [-3.0, 3.0]
-  EXPECT_NEAR(result[0], 0, 3);
-  EXPECT_NEAR(result[1], 0, 3);
-  EXPECT_NEAR(result[2], 0, 3);
+  EXPECT_NEAR(0, result[0], 3);
+  EXPECT_NEAR(0, result[1], 3);
+  EXPECT_NEAR(0, result[2], 3);
 }
 
 }  // namespace bdm

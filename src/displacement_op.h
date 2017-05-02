@@ -84,10 +84,8 @@ class DisplacementOp {
           // }
         }
 
-        // 4)
-        // PhysicalBonds--------------------------------------------------------------------
-        // How the physics influences the next
-        // displacement--------------------------------------------------------
+        // 4) PhysicalBonds
+        // How the physics influences the next displacement
         double norm_of_force =
             std::sqrt(translation_force_on_point_mass[0] *
                           translation_force_on_point_mass[0] +
@@ -115,9 +113,6 @@ class DisplacementOp {
           // but we want to avoid huge jumps in the simulation, so there are
           // maximum distances possible
           if (norm_of_force * mh > Param::kSimulationMaximalDisplacement) {
-            // movement_at_next_step =
-            // Matrix::scalarMult(Param::kSimulationMaximalDisplacement,
-            //                                            Matrix::normalize(movement_at_next_step));
             const auto& norm = Math::Normalize(movement_at_next_step);
             movement_at_next_step[0] =
                 norm[0] * Param::kSimulationMaximalDisplacement;

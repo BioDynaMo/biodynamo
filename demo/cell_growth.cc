@@ -29,7 +29,6 @@ void execute(size_t cells_per_dim, size_t iterations, size_t threads,
 
     const double space = 20;
 
-    // Cell<Soa> cells(cells_per_dim * cells_per_dim * cells_per_dim);
     // std::vector<Cell<Scalar>> cells;
     Cell<Soa> cells;
     cells.reserve(cells_per_dim * cells_per_dim * cells_per_dim);

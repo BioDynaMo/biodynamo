@@ -6,7 +6,6 @@
 #include <utility>
 #include <vector>
 
-#include "Vc/Vc"
 #include "macros.h"
 
 namespace bdm {
@@ -44,24 +43,34 @@ class OneElementArray {
 };
 
 struct Scalar {
+  /// Data type used to store data members of a class
   template <typename T>
   using vec = OneElementArray<T>;
+
+  /// Data type to store a collection of simulation objects with this backend
+  template <typename T>
+  using Container = std::vector<T>;
 };
 
 struct Soa {
+  /// Data type used to store data members of a class
   template <typename T>
   using vec = std::vector<T>;
+
+  // Data type to store a collection of simulation objects with this backend
+  template <typename T>
+  using Container = T;
 };
 
 struct SoaRef {
+  /// Data type used to store data members of a class
   template <typename T>
   using vec = std::vector<T>&;
-};
 
-// struct Cuda {
-//   template <typename T>
-//   using vec = thrust::device_vector<T>;
-// };
+  // Data type to store a collection of simulation objects with this backend
+  template <typename T>
+  using Container = T;
+};
 
 }  // namespace bdm
 
