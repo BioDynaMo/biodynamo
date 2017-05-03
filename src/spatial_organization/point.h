@@ -2,12 +2,12 @@
 #define SPATIAL_ORGANIZATION_POINT_H_
 
 #include <cmath>
-#include "spatial_organization/utils.h"
+#include "param.h"
 
 namespace bdm {
 namespace spatial_organization {
 
-/// Class 'point' represents point in a 3-dementional space
+/// Class 'Point' represents point in a 3-dimensional space
 class Point {
  public:
   /// Coordinates of the point
@@ -66,8 +66,9 @@ class Point {
 
   /// Check if two points is equal or not
   bool equals(Point const &b) const {
-    return fabs(x_ - b.x_) < kEpsilon && fabs(y_ - b.y_) < kEpsilon &&
-           fabs(z_ - b.z_) < kEpsilon;
+    return fabs(x_ - b.x_) < Param::kEpsilon &&
+           fabs(y_ - b.y_) < Param::kEpsilon &&
+           fabs(z_ - b.z_) < Param::kEpsilon;
   }
 };
 }  // namespace spatial_organization
