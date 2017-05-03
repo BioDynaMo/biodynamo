@@ -1,8 +1,9 @@
 #include <gtest/gtest.h>
 
-#include "spatial/bound.h"
+#include "spatial_organization/bound.h"
 
 namespace bdm {
+namespace spatial_organization {
 
 TEST(BoundTest, isBetweenTest) {
   Bound bound1(0, 0, 0, 0, 0, 0);
@@ -35,4 +36,5 @@ TEST(BoundTest, HalfSurfaceTest) {
   ASSERT_DOUBLE_EQ(3 * 5 + 5 * 7 + 3 * 7, bound1.HalfSurfaceArea());
 }
 
+}  // namespace spatial_organization
 }  // namespace bdm

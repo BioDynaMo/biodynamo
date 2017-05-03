@@ -2,11 +2,12 @@
 #include <stdlib.h>
 #include <random>
 
-#include "spatial/kd_tree_node.h"
-#include "spatial/octree_node.h"
-#include "spatial/spatial_tree_node.h"
+#include "spatial_organization/kd_tree_node.h"
+#include "spatial_organization/octree_node.h"
+#include "spatial_organization/spatial_tree_node.h"
 
 namespace bdm {
+namespace spatial_organization {
 
 int ManualSearchSize(Point *pos, int size, double distance) {
   int result = 0;
@@ -176,4 +177,5 @@ TEST(SpatialTreeTest, KdTreeSearchTest) {
   delete tree;
 }
 
+}  // namespace spatial_organization
 }  // namespace bdm

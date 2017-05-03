@@ -1,68 +1,56 @@
-#ifndef SPATIAL_OCTREE_NODE_H_
-#define SPATIAL_OCTREE_NODE_H_
+#ifndef SPATIAL_ORGANIZATION_OCTREE_NODE_H_
+#define SPATIAL_ORGANIZATION_OCTREE_NODE_H_
 
 #include <vector>
 #include <utility>
-#include "spatial_tree_node.h"
+#include "spatial_organization/spatial_tree_node.h"
 
 namespace bdm {
+namespace spatial_organization {
 
 using std::vector;
 using std::make_pair;
 
-/**
- * Spatial tree descendant.
- * Implements octree. It organizes number of points in space with 8 dimensions.
- * @tparam T - type of the object to be stored in the tree
- */
+/// Spatial tree descendant.
+/// Implements octree. It organizes number of points in space with 8 dimensions.
+/// @tparam T - type of the object to be stored in the tree
 template <typename T>
 class OctreeNode : public SpatialTreeNode<T> {
  public:
-  /**
-*Empty constructor, initializes with bounds (0, 0, 0, 1, 1, 1),
-*maximum depth 10,
-*maximum amount of objects within 1 node 1000
-*@tparam T - type of the object to be stored in the tree
-*/
+  /// Empty constructor, initializes with bounds (0, 0, 0, 1, 1, 1),
+  /// maximum depth 10,
+  /// maximum amount of objects within 1 node 1000
+  /// @tparam T - type of the object to be stored in the tree
   OctreeNode();
 
-  /**
-   * Constructor
-   * @tparam T  - type of the object to be stored in the tree
-   * @param bnd - Bound of the node
-   * @param max_depth - maximum possible depth of the tree. After reaching that
-   * point, nodes won't split
-   * @param max_amount_of_objects - maximum number of object which can be stored
-   * in 1 node.
-   * In our case, amount of object acts as splitting criteria
-   */
-
+  /// Constructor
+  /// @tparam T  - type of the object to be stored in the tree
+  /// @param bnd - Bound of the node
+  /// @param max_depth - maximum possible depth of the tree. After reaching that
+  /// point, nodes won't split
+  /// @param max_amount_of_objects - maximum number of object which can be stored
+  /// in 1 node.
+  /// In our case, amount of object acts as splitting criteria
   OctreeNode(Bound bnd, int max_depth, int max_amount_of_objects);
-  /**
-   * Constructor
-   * @tparam T  - type of the object to be stored in the tree
-   * @param max_depth - maximum possible depth of the tree. After reaching that
-   * point, nodes won't split
-   * @param max_amount_of_objects - maximum number of object which can be stored
-   * in 1 node.
-   * In our case, amount of object acts as splitting criteria
-   */
 
+  /// Constructor
+  /// @tparam T  - type of the object to be stored in the tree
+  /// @param max_depth - maximum possible depth of the tree. After reaching that
+  /// point, nodes won't split
+  /// @param max_amount_of_objects - maximum number of object which can be stored
+  /// in 1 node.
+  /// In our case, amount of object acts as splitting criteria
   OctreeNode(int max_depth, int max_amount_of_objects);
 
-  /**
-   * destructor
-   * @tparam T - type of the object to be stored in the tree
-   */
+  /// destructor
+  /// @tparam T - type of the object to be stored in the tree
   ~OctreeNode();
 
   virtual bool IsLeaf() const;
 
-  /**
-   * Adds new object to the tree
-   * @param p - position of the new object
-   * @param obj - object itself
-   */
+  /// Adds new object to the tree
+  /// @param p - position of the new object
+  /// @param obj - object itself
   virtual void Put(Point const &p, T obj);
 
   T At(Point const &p) const;
@@ -76,18 +64,14 @@ class OctreeNode : public SpatialTreeNode<T> {
   int max_depth_;
   int max_amount_of_objects_in_node_;
 
-  /**
-   * Splits node to 8 equal subspaces
-   * @tparam T - type of objects
-   */
+  /// Splits node to 8 equal subspaces
+  /// @tparam T - type of objects
   void Split();
 
-  /**
-   * returns in what octa subspace point p is located
-   * @tparam T - type of the object
-   * @param p - point in space
-   * @return number of subspace
-   */
+  /// returns in what octa subspace point p is located
+  /// @tparam T - type of the object
+  /// @param p - point in space
+  /// @return number of subspace
   int GetChildID(Point const &p) const;
 
   virtual SpatialTreeNode<T> **GetChildrenNodes() const;
@@ -262,5 +246,6 @@ int OctreeNode<T>::GetChildrenSize() const {
   if (!IsLeaf()) return 8;
   return 0;
 }
+}  //  namespace spatial_organization
 }  //  namespace bdm
-#endif  // SPATIAL_OCTREE_NODE_H_
+#endif  // SPATIAL_ORGANIZATION_OCTREE_NODE_H_

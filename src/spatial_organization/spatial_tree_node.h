@@ -1,11 +1,13 @@
-#ifndef SPATIAL_SPATIAL_TREE_NODE_H_
-#define SPATIAL_SPATIAL_TREE_NODE_H_
+#ifndef SPATIAL_ORGANIZATION_SPATIAL_TREE_NODE_H_
+#define SPATIAL_ORGANIZATION_SPATIAL_TREE_NODE_H_
 
 #include <utility>
 #include <vector>
-#include "spatial/bound.h"
+#include "spatial_organization/bound.h"
 
 namespace bdm {
+namespace spatial_organization {
+
 using std::vector;
 using std::pair;
 
@@ -123,5 +125,6 @@ void SpatialTreeNode<T>::GetNeighbors(SpatialTreeNode<T> const *A,
     }
   }
 }
+}  // namespace spatial_organization
 }  // namespace bdm
-#endif  // SPATIAL_SPATIAL_TREE_NODE_H_
+#endif  // SPATIAL_ORGANIZATION_SPATIAL_TREE_NODE_H_

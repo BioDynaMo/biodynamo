@@ -1,25 +1,22 @@
-#ifndef SPATIAL_BOUND_H_
-#define SPATIAL_BOUND_H_
+#ifndef SPATIAL_ORGANIZATION_BOUND_H_
+#define SPATIAL_ORGANIZATION_BOUND_H_
 
 #include <cmath>
 #include <utility>
-#include "point.h"
+#include "spatial_organization/point.h"
 
 namespace bdm {
+namespace spatial_organization {
+
 using std::pair;
 using std::make_pair;
 
-/**
- * Class 'Bound' represents rectangular Bound of the node of the tree
- **/
-
+/// Class 'Bound' represents rectangular Bound of the node of the tree
 class Bound {
  public:
-  // Bounds
-  // far left Bottom, Near Right Top
+  /// far left Bottom, Near Right Top
   Point far_left_bottom_point_, near_right_top_point_;
 
-  // Default constructior
   Bound() {
     far_left_bottom_point_ = Point(0, 0, 0);
     near_right_top_point_ = Point(1, 1, 1);
@@ -33,15 +30,15 @@ class Bound {
   Bound(Point p1, Point p2)
       : far_left_bottom_point_(p1), near_right_top_point_(p2) {}
 
-  // Check if 'x' is between 'a' and 'b' on the line
+  /// Check if 'x' is between 'a' and 'b' on the line
   bool IsBetween(double x, double a, double b) const {
     double min = fmin(a, b);
     double max = fmax(a, b);
     return (x >= min && x <= max);
   }
 
-  // Calculate distance between two line segments on the line.
-  // This method assumed that segments are not overlaped.
+  /// Calculate distance between two line segments on the line.
+  /// This method assumed that segments are not overlaped.
   double DistanceBetweenSegments(double x, double y, double a, double b) const {
     double min_xy = fmin(x, y);
     double max_xy = fmax(x, y);
@@ -52,7 +49,7 @@ class Bound {
     return min_ab - max_xy;
   }
 
-  // Calculate squared distance between two boundaries in 3-d space.
+  /// Calculate squared distance between two boundaries in 3-d space.
   double SquaredDistance(Bound const &b) const {
     bool is_overlap_x;
     bool is_overlap_y;
@@ -122,5 +119,6 @@ class Bound {
     return Width() * Length() + Height() * Length() + Width() * Height();
   }
 };
+}  // namespace spatial_organization
 }  // namespace bdm
-#endif  // SPATIAL_BOUND_H_
+#endif  // SPATIAL_ORGANIZATION_BOUND_H_

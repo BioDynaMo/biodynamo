@@ -3,9 +3,14 @@
 
 #include <cmath>
 #include <iostream>
-#include "spatial/octree_node.h"
+#include "spatial_organization/octree_node.h"
 
 namespace bdm {
+
+using spatial_organization::SpatialTreeNode;
+using spatial_organization::OctreeNode;
+using spatial_organization::Bound;
+using spatial_organization::Point;
 
 class NeighborOp {
  public:

@@ -1,9 +1,10 @@
 #include <gtest/gtest.h>
 #include <stdlib.h>
 
-#include "spatial/point.h"
+#include "spatial_organization/point.h"
 
 namespace bdm {
+namespace spatial_organization {
 
 TEST(PointTest, LengthTest) {
   Point point1(0, 0, 0);
@@ -75,4 +76,5 @@ TEST(PointTest, EqualTest) {
   ASSERT_TRUE(point1.equals(point2));
 }
 
+}  // namespace spatial_organization
 }  // namespace bdm

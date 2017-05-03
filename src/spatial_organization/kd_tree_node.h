@@ -1,5 +1,5 @@
-#ifndef SPATIAL_KD_TREE_NODE_H_
-#define SPATIAL_KD_TREE_NODE_H_
+#ifndef SPATIAL_ORGANIZATION_KD_TREE_NODE_H_
+#define SPATIAL_ORGANIZATION_KD_TREE_NODE_H_
 
 #include <algorithm>
 #include <functional>
@@ -7,12 +7,12 @@
 #include <utility>
 #include <numeric>
 #include <vector>
-#include "spatial_tree_node.h"
+#include "spatial_organization/spatial_tree_node.h"
 
 namespace bdm {
-/**
- * Next 3 vaiables are used for purposes of Surface Area Heuristics
- */
+namespace spatial_organization {
+
+/// Next 3 vaiables are used for purposes of Surface Area Heuristics
 const int kNumerOfSpaces = 32;
 const int kCt = 1;
 const int kCi = 1;
@@ -20,58 +20,48 @@ const int kCi = 1;
 using std::vector;
 using std::pair;
 
-/**
- * Spatial tree descendant.
- * Implements k-d tree. It organizes number of points in space with k
- * dimensions.
- * Provides different types of splitting space criterias
- * @tparam T - type of the object to be stored in the tree
- */
+/// Spatial tree descendant.
+/// Implements k-d tree. It organizes number of points in space with k
+/// dimensions.
+/// Provides different types of splitting space criterias
+/// @tparam T - type of the object to be stored in the tree
 template <typename T>
 class KdTreeNode : public SpatialTreeNode<T> {
  public:
-  /**
-   * Empty constructor, initializes with bounds (0, 0, 0, 1, 1, 1),
-   * maximum depth 10,
-   * maximum amount of objects within 1 node 1000
-   * @tparam T - type of the object to be stored in the tree
-   */
+  /// Empty constructor, initializes with bounds (0, 0, 0, 1, 1, 1),
+  /// maximum depth 10,
+  /// maximum amount of objects within 1 node 1000
+  /// @tparam T - type of the object to be stored in the tree
   KdTreeNode();
 
-  /**
-   * Constructor
-   * @tparam T  - type of the object to be stored in the tree
-   * @param bnd - Bound of the node
-   * @param max_depth - maximum possible depth of the tree. After reaching that
-   * point, nodes won't split
-   * @param max_amount_of_objects - maximum number of object which can be stored
-   * in 1 node.
-   * In our case, amount of object acts as splitting criteria
-   */
+  /// Constructor
+  /// @tparam T  - type of the object to be stored in the tree
+  /// @param bnd - Bound of the node
+  /// @param max_depth - maximum possible depth of the tree. After reaching that
+  /// point, nodes won't split
+  /// @param max_amount_of_objects - maximum number of object which can be stored
+  /// in 1 node.
+  /// In our case, amount of object acts as splitting criteria
   KdTreeNode(Bound bnd, int max_depth, int max_amount_of_objects);
 
-  /**
-   * Constructor
-   * @tparam T  - type of the object to be stored in the tree
-   * @param bnd - Bound of the node
-   * @param max_depth - maximum possible depth of the tree. After reaching that
-   * point, nodes won't split
-   * @param max_amount_of_objects - maximum number of object which can be stored
-   * in 1 node.
-   * @param split - indicates what type of split will we use to split the space
-   * 0 - mediana split on varying axis, in order x, y, z;
-   * 1 - mediana split on a single x axis;
-   * 2 - center split on varying axis, in order x, y, z;
-   * 3- split with surfce area heuristics(not useful at the moment, but may be
-   * usful with bulk loading).
-   */
+  /// Constructor
+  /// @tparam T  - type of the object to be stored in the tree
+  /// @param bnd - Bound of the node
+  /// @param max_depth - maximum possible depth of the tree. After reaching that
+  /// point, nodes won't split
+  /// @param max_amount_of_objects - maximum number of object which can be stored
+  /// in 1 node.
+  /// @param split - indicates what type of split will we use to split the space
+  /// 0 - mediana split on varying axis, in order x, y, z;
+  /// 1 - mediana split on a single x axis;
+  /// 2 - center split on varying axis, in order x, y, z;
+  /// 3- split with surfce area heuristics(not useful at the moment, but may be
+  /// usful with bulk loading).
   KdTreeNode(Bound bnd, int max_depth, int max_amount_of_objects,
              int split);  // 0-mediana xyz, 1-mediana x, 2 - Center, 3-sah
 
-  /**
-   * destructor
-   * @tparam T
-   */
+  /// destructor
+  /// @tparam T
   ~KdTreeNode();
 
   T At(Point p) const;
@@ -80,14 +70,12 @@ class KdTreeNode : public SpatialTreeNode<T> {
 
   virtual bool IsLeaf() const;
 
-  /**
-   * Adds new object to the tree
-   * @param p - position of the new object
-   * @param obj - object itself
-   */
+  /// Adds new object to the tree
+  /// @param p - position of the new object
+  /// @param obj - object itself
   virtual void Put(Point const &p, T obj);
 
-  // little comparator for points
+  /// little comparator for points
   static bool PointCompareX(const pair<Point, T> x, const pair<Point, T> y) {
     return (x.first.x_ < y.first.x_);
   }
@@ -109,10 +97,8 @@ class KdTreeNode : public SpatialTreeNode<T> {
   vector<pair<Point, T>> *objects_;
   int max_amount_of_objects_in_node_;
 
-  /**
-   * Split point differs each partition in order XYZ
-   * Split point is median between all points on the axis
-   */
+  /// Split point differs each partition in order XYZ
+  /// Split point is median between all points on the axis
   void SplitUsingVaryingMedian();  // splits on median_, changing axis_ every
   // function call in order: 0-x, 1-y, 2-z
 
@@ -120,11 +106,9 @@ class KdTreeNode : public SpatialTreeNode<T> {
 
   virtual int GetChildrenSize() const;
 
-  /**
-   * Returns children nodes
-   * @tparam T
-   * @return
-   */
+  /// Returns children nodes
+  /// @tparam T
+  /// @return
   virtual SpatialTreeNode<T> **GetChildrenNodes() const;
 
   virtual vector<pair<Point, T>> *GetObjects() const;
@@ -133,48 +117,37 @@ class KdTreeNode : public SpatialTreeNode<T> {
 
   int max_depth_;
 
-  /**
-   * Calculates median point for a certain axis
-   * @return median on certain axis
-   */
+  /// Calculates median point for a certain axis
+  /// @return median on certain axis
   Point GetMedian();
 
-  /**
-   * Returns area of the surface, obtained after splitting original space node
-   * on
-   * a certain axis
-   * @tparam T - type of the object
-   * @param k - part of the surface, which is wanted to be found
-   * @param axis - what axis should be used to split
-   * @return - area value
-   */
+  /// Returns area of the surface, obtained after splitting original space node
+  /// on
+  /// a certain axis
+  /// @tparam T - type of the object
+  /// @param k - part of the surface, which is wanted to be found
+  /// @param axis - what axis should be used to split
+  /// @return - area value
   double AreaOfKthPartOfSpaceNode(int k, int axis);
 
-  /**
-   * Gets point, which we use for surface area heuristics
-   * @param axis - on what axis are we separating: x=0,y=1,z=2
-   * @param num - what parttion are we on (1;N)
-   * @return sah rating
-   */
+  /// Gets point, which we use for surface area heuristics
+  /// @param axis - on what axis are we separating: x=0,y=1,z=2
+  /// @param num - what parttion are we on (1;N)
+  /// @return sah rating
   Point GetSAHSplitPoint();
 
   Point GetMedianOnXAxis();
 
-  /**
-   * Split point only on X axis
-   * Split point is median between all points on the axis
-   */
+  /// Split point only on X axis
+  /// Split point is median between all points on the axis
   void SplitUsingSingleXMedian();
 
-  /**
-   * Split point calculated using surface area heuristics
-   * Not useful at the moment as its main purpose is bulk loading
-   */
+  /// Split point calculated using surface area heuristics
+  /// Not useful at the moment as its main purpose is bulk loading
   void SplitUsingSAH();
-  /**
-   * Split point is center of box.
-   * Coordinate differs each partition in order XYZ
-   */
+
+  /// Split point is center of box.
+  /// Coordinate differs each partition in order XYZ
   void SplitUsingCenterOfSpaceNode();
 };
 
@@ -229,12 +202,11 @@ KdTreeNode<T>::~KdTreeNode() {
 template <typename T>
 void KdTreeNode<T>::Put(Point const &p, T obj) {
   if (is_leaf_node_) {
-    /** Put if maximum number of objects in a node don't exceed threshold
-     * OR
-     * if maximum depth was reached
-     * ELSE
-     * split node with, according to split parameter
-     */
+    // Put if maximum number of objects in a node don't exceed threshold
+    // OR
+    // if maximum depth was reached
+    // ELSE
+    // split node with, according to split parameter
 
     if (objects_->size() < max_amount_of_objects_in_node_ ||
         (max_depth_ == 0)) {
@@ -701,5 +673,6 @@ double KdTreeNode<T>::AreaOfKthPartOfSpaceNode(int k, int axis) {
       return -1;
   }
 }
+}  // namespace spatial_organization
 }  // namespace bdm
-#endif  // SPATIAL_KD_TREE_NODE_H_
+#endif  // SPATIAL_ORGANIZATION_KD_TREE_NODE_H_
