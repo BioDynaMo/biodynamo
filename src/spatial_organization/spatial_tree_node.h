@@ -11,12 +11,10 @@ namespace spatial_organization {
 using std::vector;
 using std::pair;
 
-/**
-* Is a core class, which provides with variety of virtual
-* functions for children-type trees and an implemented search neighbours
-* function,
-* which is common for all the trees.
-*/
+/// Is a core class, which provides with variety of virtual
+/// functions for children-type trees and an implemented search neighbours
+/// function,
+/// which is common for all the trees.
 template <typename T>
 class SpatialTreeNode {
  public:
@@ -24,23 +22,17 @@ class SpatialTreeNode {
 
   virtual ~SpatialTreeNode() {}
 
-  /**
-   *
-   * @tparam T - type of the object
-   * @return bounds of the node
-   */
+  ///  @tparam T - type of the object
+  ///  @return bounds of the node
   Bound GetBound() const;
 
   virtual bool IsLeaf() const = 0;
 
   virtual void Put(Point const &p, T obj) = 0;
 
-  /**
-   *
-   * @tparam T - type of the object
-   * @param distance - distance to search within
-   * @return
-   */
+  ///  @tparam T - type of the object
+  ///  @param distance - distance to search within
+  ///  @return
   virtual vector<pair<T, T> > GetNeighbors(double distance) const;
 
  protected:
@@ -53,17 +45,15 @@ class SpatialTreeNode {
 
   virtual vector<pair<Point, T> > *GetObjects() const = 0;
 
-  /**
-   * Neighbour search function
-   * Search pairs (a, b) where a from A and b from B
-   * Absolutelly the same method. The only difference is result type
-   * @tparam T
-   * @param A - node of the tree
-   * @param B - node of the tree
-   * @param distance - finding neighbors within that distance
-   * @param result - container, where we save retrieved data (all neighbor pairs
-   * without its points)
-   */
+  ///  Neighbour search function
+  ///  Search pairs (a, b) where a from A and b from B
+  ///  Absolutelly the same method. The only difference is result type
+  ///  @tparam T
+  ///  @param A - node of the tree
+  ///  @param B - node of the tree
+  ///  @param distance - finding neighbors within that distance
+  ///  @param result - container, where we save retrieved data (all neighbor pairs
+  ///  without its points)
   static void GetNeighbors(SpatialTreeNode<T> const *A,
                            SpatialTreeNode<T> const *B, double distance,
                            vector<pair<T, T> > *result);
