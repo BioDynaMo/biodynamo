@@ -48,12 +48,12 @@ class OctreeNode : public SpatialTreeNode<T> {
   /// @tparam T - type of the object to be stored in the tree
   ~OctreeNode();
 
-  virtual bool IsLeaf() const;
+  bool IsLeaf() const override;
 
   /// Adds new object to the tree
   /// @param p - position of the new object
   /// @param obj - object itself
-  virtual void Put(Point const &p, T obj);
+  void Put(Point const &p, T obj) override;
 
   T At(Point const &p) const;
 
@@ -76,11 +76,11 @@ class OctreeNode : public SpatialTreeNode<T> {
   /// @return number of subspace
   int GetChildID(Point const &p) const;
 
-  virtual SpatialTreeNode<T> **GetChildrenNodes() const;
+  SpatialTreeNode<T> **GetChildrenNodes() const override;
 
   const vector<pair<Point, T> > &GetObjects() const override;
 
-  virtual size_t GetChildrenSize() const;
+  size_t GetChildrenSize() const override;
 };
 
 template <typename T>

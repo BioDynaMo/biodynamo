@@ -75,7 +75,7 @@ class KdTreeNode : public SpatialTreeNode<T> {
   /// Adds new object to the tree
   /// @param p - position of the new object
   /// @param obj - object itself
-  virtual void Put(Point const &p, T obj);
+  void Put(Point const &p, T obj) override;
 
   /// little comparator for points
   static bool PointCompareX(const pair<Point, T> x, const pair<Point, T> y) {
@@ -108,14 +108,14 @@ class KdTreeNode : public SpatialTreeNode<T> {
 
   int GetChildID(Point p) const;
 
-  virtual size_t GetChildrenSize() const;
+  size_t GetChildrenSize() const override;
 
   /// Returns children nodes
   /// @tparam T
   /// @return
-  virtual SpatialTreeNode<T> **GetChildrenNodes() const;
+  SpatialTreeNode<T> **GetChildrenNodes() const override;
 
-  virtual const vector<pair<Point, T>> &GetObjects() const;
+  const vector<pair<Point, T>> &GetObjects() const override;
 
   /// Calculates median point for a certain axis
   /// @return median on certain axis
