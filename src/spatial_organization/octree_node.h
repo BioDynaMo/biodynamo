@@ -32,7 +32,7 @@ class OctreeNode : public SpatialTreeNode<T> {
   /// stored
   /// in 1 node.
   /// In our case, amount of object acts as splitting criteria
-  OctreeNode(Bound bnd, int max_depth, int max_amount_of_objects);
+  OctreeNode(const Bound &bnd, int max_depth, int max_amount_of_objects);
 
   /// Constructor
   /// @tparam T  - type of the object to be stored in the tree
@@ -62,7 +62,7 @@ class OctreeNode : public SpatialTreeNode<T> {
  private:
   bool is_leaf_node_;
   OctreeNode<T> *children_[8];
-  vector<pair<Point, T> > *objects_;
+  vector<pair<Point, T> > objects_;
   int max_depth_;
   int max_amount_of_objects_in_node_;
 
@@ -78,7 +78,7 @@ class OctreeNode : public SpatialTreeNode<T> {
 
   virtual SpatialTreeNode<T> **GetChildrenNodes() const;
 
-  virtual vector<pair<Point, T> > *GetObjects() const;
+  const vector<pair<Point, T> > &GetObjects() const override;
 
   virtual int GetChildrenSize() const;
 };
@@ -89,29 +89,21 @@ OctreeNode<T>::OctreeNode() {
 }
 
 template <typename T>
-OctreeNode<T>::OctreeNode(int max_depth, int max_amount_of_objects) {
-  this->bound_ = Bound(-Param::kInfinity, -Param::kInfinity, -Param::kInfinity,
-                       Param::kInfinity, Param::kInfinity, Param::kInfinity);
-  this->is_leaf_node_ = true;
-  this->max_depth_ = max_depth;
-  this->max_amount_of_objects_in_node_ = max_amount_of_objects;
-  for (int i = 0; i < 8; i++)
-    children_[i] = nullptr;
-  objects_ = new vector<pair<Point, T> >();
-  is_leaf_node_ = true;
-}
+OctreeNode<T>::OctreeNode(int max_depth, int max_amount_of_objects)
+    : SpatialTreeNode<T>(Bound(-Param::kInfinity, -Param::kInfinity,
+                               -Param::kInfinity, Param::kInfinity,
+                               Param::kInfinity, Param::kInfinity)),
+      is_leaf_node_(true),
+      max_depth_(max_depth),
+      max_amount_of_objects_in_node_(max_amount_of_objects) {}
 
 template <typename T>
-OctreeNode<T>::OctreeNode(Bound bnd, int max_depth, int max_amount_of_objects) {
-  this->bound_ = bnd;
-  this->is_leaf_node_ = true;
-  this->max_depth_ = max_depth;
-  this->max_amount_of_objects_in_node_ = max_amount_of_objects;
-  for (int i = 0; i < 8; i++)
-    children_[i] = nullptr;
-  objects_ = new vector<pair<Point, T> >();
-  is_leaf_node_ = true;
-}
+OctreeNode<T>::OctreeNode(const Bound &bnd, int max_depth,
+                          int max_amount_of_objects)
+    : SpatialTreeNode<T>(bnd),
+      is_leaf_node_(true),
+      max_depth_(max_depth),
+      max_amount_of_objects_in_node_(max_amount_of_objects) {}
 
 template <typename T>
 OctreeNode<T>::~OctreeNode() {
@@ -121,10 +113,6 @@ OctreeNode<T>::~OctreeNode() {
         delete children_[i];
         children_[i] = nullptr;
       }
-  }
-  if (objects_ != nullptr) {
-    delete objects_;
-    objects_ = nullptr;
   }
 }
 
@@ -137,9 +125,8 @@ template <typename T>
 void OctreeNode<T>::Put(Point const &p, T obj) {
   if (is_leaf_node_) {
     // Insert
-    if (objects_->size() < max_amount_of_objects_in_node_ ||
-        (max_depth_ == 0)) {
-      objects_->push_back(make_pair(p, obj));
+    if (objects_.size() < max_amount_of_objects_in_node_ || (max_depth_ == 0)) {
+      objects_.push_back(make_pair(p, obj));
     } else {
       // SplitUsingVaryingMedian
       Split();
@@ -156,7 +143,7 @@ void OctreeNode<T>::Split() {
   if (!this->is_leaf_node_)
     return;
   Point center = this->bound_.Center();
-  Bound bnd = this->bound_;
+  const Bound &bnd = this->bound_;
   Point p[8] = {Point(center.x_, center.y_, center.z_),
                 Point(center.x_, bnd.Left(), center.z_),
                 Point(center.x_, bnd.Left(), bnd.Bottom()),
@@ -179,12 +166,10 @@ void OctreeNode<T>::Split() {
                                      max_amount_of_objects_in_node_);
   }
 
-  for (int i = 0; i < objects_->size(); i++) {
-    int idx = GetChildID(objects_->at(i).first);
-    children_[idx]->Put(objects_->at(i).first, objects_->at(i).second);
+  for (int i = 0; i < objects_.size(); i++) {
+    int idx = GetChildID(objects_.at(i).first);
+    children_[idx]->Put(objects_.at(i).first, objects_.at(i).second);
   }
-  delete objects_;
-  objects_ = nullptr;
   this->is_leaf_node_ = false;
 }
 
@@ -214,9 +199,9 @@ int OctreeNode<T>::GetChildID(Point const &p) const {
 template <typename T>
 T OctreeNode<T>::At(Point const &p) const {
   if (this->is_leaf_node_) {
-    for (int i = 0; i < objects_->size(); i++)
-      if (p.equals(objects_->at(i).first))
-        return objects_->at(i).second;
+    for (int i = 0; i < objects_.size(); i++)
+      if (p.equals(objects_.at(i).first))
+        return objects_.at(i).second;
   } else {
     int idx = GetChildID(p);
     return children_[idx]->At(p);
@@ -227,7 +212,7 @@ T OctreeNode<T>::At(Point const &p) const {
 template <typename T>
 int OctreeNode<T>::Size() const {
   if (this->is_leaf_node_) {
-    return static_cast<int>(objects_->size());
+    return static_cast<int>(objects_.size());
   } else {
     int sum = 0;
     for (int i = 0; i < 8; i++) {
@@ -243,8 +228,8 @@ SpatialTreeNode<T> **OctreeNode<T>::GetChildrenNodes() const {
 }
 
 template <typename T>
-vector<pair<Point, T> > *OctreeNode<T>::GetObjects() const {
-  return this->objects_;
+const vector<pair<Point, T> > &OctreeNode<T>::GetObjects() const {
+  return objects_;
 }
 
 template <typename T>

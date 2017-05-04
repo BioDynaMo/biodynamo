@@ -18,13 +18,13 @@ using std::pair;
 template <typename T>
 class SpatialTreeNode {
  public:
-  SpatialTreeNode() {}
+  SpatialTreeNode(const Bound &bound) : bound_(bound) {}
 
   virtual ~SpatialTreeNode() {}
 
   ///  @tparam T - type of the object
   ///  @return bounds of the node
-  Bound GetBound() const;
+  const Bound &GetBound() const;
 
   virtual bool IsLeaf() const = 0;
 
@@ -43,7 +43,7 @@ class SpatialTreeNode {
 
   virtual int GetChildrenSize() const = 0;
 
-  virtual vector<pair<Point, T> > *GetObjects() const = 0;
+  virtual const vector<pair<Point, T> > &GetObjects() const = 0;
 
   ///  Neighbour search function
   ///  Search pairs (a, b) where a from A and b from B
@@ -52,7 +52,8 @@ class SpatialTreeNode {
   ///  @param A - node of the tree
   ///  @param B - node of the tree
   ///  @param distance - finding neighbors within that distance
-  ///  @param result - container, where we save retrieved data (all neighbor pairs
+  ///  @param result - container, where we save retrieved data (all neighbor
+  ///  pairs
   ///  without its points)
   static void GetNeighbors(SpatialTreeNode<T> const *A,
                            SpatialTreeNode<T> const *B, double distance,
@@ -60,7 +61,7 @@ class SpatialTreeNode {
 };
 
 template <typename T>
-Bound SpatialTreeNode<T>::GetBound() const {
+const Bound &SpatialTreeNode<T>::GetBound() const {
   return bound_;
 }
 
@@ -77,17 +78,17 @@ void SpatialTreeNode<T>::GetNeighbors(SpatialTreeNode<T> const *A,
                                       double distance,
                                       vector<pair<T, T> > *result) {
   if (A->IsLeaf() && B->IsLeaf()) {
-    auto a_objs = A->GetObjects();
-    auto b_objs = B->GetObjects();
+    const auto &a_objs = A->GetObjects();
+    const auto &b_objs = B->GetObjects();
 
     bool is_same = A == B;
 
-    for (int i = 0; i < a_objs->size(); i++)
-      for (int j = is_same ? (i + 1) : 0; j < b_objs->size(); j++)
-        if ((a_objs->at(i).first)
-                .SquaredEuclidianDistance(b_objs->at(j).first) <= distance)
+    for (int i = 0; i < a_objs.size(); i++)
+      for (int j = is_same ? (i + 1) : 0; j < b_objs.size(); j++)
+        if ((a_objs.at(i).first).SquaredEuclidianDistance(b_objs.at(j).first) <=
+            distance)
           result->push_back(
-              make_pair(a_objs->at(i).second, b_objs->at(j).second));
+              make_pair(a_objs.at(i).second, b_objs.at(j).second));
   } else {
     SpatialTreeNode<T> **a_nodes, **b_nodes;
     int a_size = 0, b_size = 0;

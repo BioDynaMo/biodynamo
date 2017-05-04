@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include <stdlib.h>
+#include <algorithm>
 #include <random>
 
 #include "spatial_organization/kd_tree_node.h"
@@ -13,7 +13,8 @@ int ManualSearchSize(Point *pos, int size, double distance) {
   int result = 0;
   for (int i = 0; i < size; i++)
     for (int j = i + 1; j < size; j++)
-      if (pos[i].EuclidianDistance(pos[j]) <= distance) result++;
+      if (pos[i].EuclidianDistance(pos[j]) <= distance)
+        result++;
 
   return result;
 }

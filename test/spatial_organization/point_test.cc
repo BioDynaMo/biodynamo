@@ -1,5 +1,4 @@
 #include <gtest/gtest.h>
-#include <stdlib.h>
 
 #include "spatial_organization/point.h"
 
