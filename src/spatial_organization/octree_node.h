@@ -57,14 +57,14 @@ class OctreeNode : public SpatialTreeNode<T> {
 
   T At(Point const &p) const;
 
-  int Size() const;
+  size_t Size() const;
 
  private:
   bool is_leaf_node_;
   OctreeNode<T> *children_[8];
   vector<pair<Point, T> > objects_;
-  int max_depth_;
-  int max_amount_of_objects_in_node_;
+  size_t max_depth_;
+  size_t max_amount_of_objects_in_node_;
 
   /// Splits node to 8 equal subspaces
   /// @tparam T - type of objects
@@ -80,7 +80,7 @@ class OctreeNode : public SpatialTreeNode<T> {
 
   const vector<pair<Point, T> > &GetObjects() const override;
 
-  virtual int GetChildrenSize() const;
+  virtual size_t GetChildrenSize() const;
 };
 
 template <typename T>
@@ -166,7 +166,7 @@ void OctreeNode<T>::Split() {
                                      max_amount_of_objects_in_node_);
   }
 
-  for (int i = 0; i < objects_.size(); i++) {
+  for (size_t i = 0; i < objects_.size(); i++) {
     int idx = GetChildID(objects_.at(i).first);
     children_[idx]->Put(objects_.at(i).first, objects_.at(i).second);
   }
@@ -210,11 +210,11 @@ T OctreeNode<T>::At(Point const &p) const {
 }
 
 template <typename T>
-int OctreeNode<T>::Size() const {
+size_t OctreeNode<T>::Size() const {
   if (this->is_leaf_node_) {
-    return static_cast<int>(objects_.size());
+    return objects_.size();
   } else {
-    int sum = 0;
+    size_t sum = 0;
     for (int i = 0; i < 8; i++) {
       sum += children_[i]->Size();
     }
@@ -233,10 +233,8 @@ const vector<pair<Point, T> > &OctreeNode<T>::GetObjects() const {
 }
 
 template <typename T>
-int OctreeNode<T>::GetChildrenSize() const {
-  if (!IsLeaf())
-    return 8;
-  return 0;
+size_t OctreeNode<T>::GetChildrenSize() const {
+  return !IsLeaf() ? 8u : 0u;
 }
 }  //  namespace spatial_organization
 }  //  namespace bdm

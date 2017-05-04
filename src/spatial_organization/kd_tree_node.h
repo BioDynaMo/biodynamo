@@ -68,7 +68,7 @@ class KdTreeNode : public SpatialTreeNode<T> {
 
   T At(Point p) const;
 
-  int Size() const;
+  size_t Size() const;
 
   virtual bool IsLeaf() const;
 
@@ -97,9 +97,9 @@ class KdTreeNode : public SpatialTreeNode<T> {
   bool is_leaf_node_;
   KdTreeNode<T> *children_[2];
   vector<pair<Point, T>> objects_;
-  int max_amount_of_objects_in_node_;
+  size_t max_amount_of_objects_in_node_;
   double node_area_;
-  int max_depth_;
+  size_t max_depth_;
 
   /// Split point differs each partition in order XYZ
   /// Split point is median between all points on the axis
@@ -108,7 +108,7 @@ class KdTreeNode : public SpatialTreeNode<T> {
 
   int GetChildID(Point p) const;
 
-  virtual int GetChildrenSize() const;
+  virtual size_t GetChildrenSize() const;
 
   /// Returns children nodes
   /// @tparam T
@@ -281,7 +281,7 @@ void KdTreeNode<T>::SplitUsingVaryingMedian() {
     children_[i]->axis_ = (axis_ + 1) % 3;
   }
 
-  for (int i = 0; i < objects_.size(); i++) {
+  for (size_t i = 0; i < objects_.size(); i++) {
     int idx = GetChildID(objects_.at(i).first);
     children_[idx]->Put(objects_.at(i).first, objects_.at(i).second);
   }
@@ -314,7 +314,7 @@ void KdTreeNode<T>::SplitUsingSingleXMedian() {
                           max_amount_of_objects_in_node_, split_parameter_);
   }
 
-  for (int i = 0; i < objects_.size(); i++) {
+  for (size_t i = 0; i < objects_.size(); i++) {
     int idx = GetChildID(objects_.at(i).first);
     children_[idx]->Put(objects_.at(i).first, objects_.at(i).second);
   }
@@ -367,7 +367,7 @@ void KdTreeNode<T>::SplitUsingSAH() {
                           max_amount_of_objects_in_node_, split_parameter_);
   }
 
-  for (int i = 0; i < objects_.size(); i++) {
+  for (size_t i = 0; i < objects_.size(); i++) {
     int idx = GetChildID(objects_.at(i).first);
     children_[idx]->Put(objects_.at(i).first, objects_.at(i).second);
   }
@@ -421,7 +421,7 @@ void KdTreeNode<T>::SplitUsingCenterOfSpaceNode() {
     children_[i]->axis_ = (axis_ + 1) % 3;
   }
 
-  for (int i = 0; i < objects_.size(); i++) {
+  for (size_t i = 0; i < objects_.size(); i++) {
     int idx = GetChildID(objects_.at(i).first);
     children_[idx]->Put(objects_.at(i).first, objects_.at(i).second);
   }
@@ -440,10 +440,10 @@ const vector<pair<Point, T>> &KdTreeNode<T>::GetObjects() const {
 }
 
 template <typename T>
-int KdTreeNode<T>::GetChildrenSize() const {
+size_t KdTreeNode<T>::GetChildrenSize() const {
   if (!IsLeaf())
-    return 2;
-  return 0;
+    return 2u;
+  return 0u;
 }
 
 template <typename T>

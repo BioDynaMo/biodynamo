@@ -41,7 +41,7 @@ class SpatialTreeNode {
  private:
   virtual SpatialTreeNode<T> **GetChildrenNodes() const = 0;
 
-  virtual int GetChildrenSize() const = 0;
+  virtual size_t GetChildrenSize() const = 0;
 
   virtual const vector<pair<Point, T> > &GetObjects() const = 0;
 
@@ -83,8 +83,8 @@ void SpatialTreeNode<T>::GetNeighbors(SpatialTreeNode<T> const *A,
 
     bool is_same = A == B;
 
-    for (int i = 0; i < a_objs.size(); i++)
-      for (int j = is_same ? (i + 1) : 0; j < b_objs.size(); j++)
+    for (size_t i = 0; i < a_objs.size(); i++)
+      for (size_t j = is_same ? (i + 1) : 0; j < b_objs.size(); j++)
         if ((a_objs.at(i).first).SquaredEuclidianDistance(b_objs.at(j).first) <=
             distance)
           result->push_back(
@@ -94,12 +94,12 @@ void SpatialTreeNode<T>::GetNeighbors(SpatialTreeNode<T> const *A,
     int a_size = 0, b_size = 0;
     if (A->IsLeaf()) {
       b_nodes = B->GetChildrenNodes();
-      for (int i = 0; i < B->GetChildrenSize(); i++)
+      for (size_t i = 0; i < B->GetChildrenSize(); i++)
         if (A->GetBound().SquaredDistance(b_nodes[i]->GetBound()) <= distance)
           GetNeighbors(A, b_nodes[i], distance, result);
     } else if (B->IsLeaf()) {
       a_nodes = A->GetChildrenNodes();
-      for (int i = 0; i < A->GetChildrenSize(); i++)
+      for (size_t i = 0; i < A->GetChildrenSize(); i++)
         if (a_nodes[i]->GetBound().SquaredDistance(B->GetBound()) <= distance)
           GetNeighbors(a_nodes[i], B, distance, result);
     } else {
