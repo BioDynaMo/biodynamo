@@ -25,7 +25,7 @@ if (test)
   # must be before include(${ROOT_USE_FILE}) otherwise test compile fails
   find_package(Threads REQUIRED)
 endif()
-#find_package(ROOT REQUIRED COMPONENTS Eve Geom Gui)
+find_package(ROOT REQUIRED COMPONENTS Eve Geom Gui)
 
 set(BUILD_SUPPORT_DIR "${CMAKE_SOURCE_DIR}/housekeeping")
 find_package(ClangTools)
@@ -112,21 +112,22 @@ endif()
 
 #--------------------- build shared library libbiodynamo ----------------
 # add the headers into the project
-#include(${ROOT_USE_FILE})
+include(${ROOT_USE_FILE})
 include_directories("${CMAKE_SOURCE_DIR}/src")
 include_directories("${CMAKE_SOURCE_DIR}/third_party")
 # include_directories("${Vc_INCLUDE_DIR}")
 # include_directories(${VTUNE_INCLUDE_DIR})
 
-#ROOT_GENERATE_DICTIONARY("${CMAKE_BINARY_DIR}/bdmDict"
-#    simulation/ecm.h
-#    LINKDEF bdmLinkDef.h)
+ROOT_GENERATE_DICTIONARY(
+  "${CMAKE_BINARY_DIR}/bdmDict"
+  cell.h inline_vector.h
+  LINKDEF bdmLinkDef.h
+)
 
 file(GLOB_RECURSE SOURCES "${CMAKE_SOURCE_DIR}/src/*.cc")
 file(GLOB_RECURSE HEADERS "${CMAKE_SOURCE_DIR}/src/*.h")
-#${CMAKE_BINARY_DIR}/bdmDict.cxx)
-add_library(biodynamo SHARED ${SOURCES} ${HEADERS})
-#target_link_libraries(biodynamo ${ROOT_LIBRARIES})
+add_library(biodynamo STATIC ${SOURCES} ${HEADERS} ${CMAKE_BINARY_DIR}/bdmDict.cxx)
+target_link_libraries(biodynamo ${ROOT_LIBRARIES})
 target_link_libraries(biodynamo ${Vc_LIBRARIES})
 # target_link_libraries(biodynamo ${VTUNE_LIBRARIES})
 # add_dependencies(biodynamo Vc)
@@ -205,7 +206,7 @@ if (test)
   endif()
   # add valgrind test
   if (valgrind)
-    add_test(NAME valgrind COMMAND valgrind --tool=memcheck --leak-check=full --show-leak-kinds=all --show-reachable=no --suppressions=${CMAKE_BINARY_DIR}/../valgrind-biod.supp --error-exitcode=1 ./${TEST_TARGET})
+    add_test(NAME valgrind COMMAND valgrind --tool=memcheck --leak-check=full --show-leak-kinds=all --show-reachable=no --suppressions=${CMAKE_BINARY_DIR}/../valgrind-root.supp --suppressions=${CMAKE_BINARY_DIR}/../valgrind-biod.supp --error-exitcode=1 ./${TEST_TARGET})
     if (APPLE)
       set_tests_properties(valgrind PROPERTIES ENVIRONMENT
         "DYLD_LIBRARY_PATH=$ENV{DYLD_LIBRARY_PATH}"
@@ -231,3 +232,8 @@ endif()
 set(SIMULATION_TARGET cell_growth)
 add_executable(${SIMULATION_TARGET} ${CMAKE_SOURCE_DIR}/demo/cell_growth.cc)
 target_link_libraries(${SIMULATION_TARGET} biodynamo)
+
+# --------------------- build persistent simulation demo ---------------------
+set(PERSISTENT_TARGET persistent_sim)
+add_executable(${PERSISTENT_TARGET} ${CMAKE_SOURCE_DIR}/demo/persistent_sim.cc)
+target_link_libraries(${PERSISTENT_TARGET} biodynamo)

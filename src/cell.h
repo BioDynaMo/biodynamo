@@ -5,6 +5,8 @@
 #include <cmath>
 #include <type_traits>
 
+#include <Rtypes.h>
+
 #include "backend.h"
 #include "cell.h"
 #include "default_force.h"
@@ -22,9 +24,32 @@ template <typename Base = SimulationObject<>>
 class CellExt : public Base {
   BDM_CLASS_HEADER(CellExt, position_, mass_location_, tractor_force_,
                    diameter_, volume_, adherence_, mass_, neighbors_)
-                   
+
+ private:
+  static atomic_TClass_ptr fgIsA;
+
+ public:
+  static TClass* Class() { throw "foo"; }
+  static const char* Class_Name();
+  static Version_t Class_Version() { return 1; }
+  static TClass* Dictionary();
+  virtual TClass* IsA() const { return CellExt::Class(); }
+  virtual void ShowMembers(TMemberInspector& insp) const {
+    ::ROOT::Class_ShowMembers(CellExt::Class(), this, insp);
+  }
+  virtual void Streamer(TBuffer&) { throw "foo1"; }
+
+  void StreamerNVirtual(TBuffer& ClassDef_StreamerNVirtual_b) {
+    CellExt::Streamer(ClassDef_StreamerNVirtual_b);
+  }
+  static const char* DeclFileName() { return __FILE__; }
+  static int ImplFileLine();
+  static const char* ImplFileName();
+  static int DeclFileLine() { return __LINE__; }
+
  public:
   CellExt() {}
+  explicit CellExt(TRootIOCtor*) {}  // constructor for ROOT I/O
   explicit CellExt(double diameter) : diameter_(diameter) { UpdateVolume(); }
   explicit CellExt(const array<double, 3>& position)
       : position_(position), mass_location_(position) {}
@@ -119,6 +144,7 @@ class CellExt : public Base {
 
   // stores a list of neighbor ids for each scalar cell
   vec<InlineVector<int, 8>> neighbors_;
+  // ClassDef(CellExt, 1);  // custom one on top
 };
 
 template <typename Backend = Scalar>

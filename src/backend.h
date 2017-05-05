@@ -6,6 +6,8 @@
 #include <utility>
 #include <vector>
 
+#include <Rtypes.h>
+
 #include "macros.h"
 
 namespace bdm {
@@ -22,9 +24,11 @@ class OneElementArray {
  public:
   using value_type = T;
   OneElementArray() : data_() {}
+  explicit OneElementArray(TRootIOCtor*) {}  // Constructor for ROOT I/O
   explicit OneElementArray(const T& data) : data_(data) {}
   explicit OneElementArray(T&& data) : data_(data) {}
   OneElementArray(std::initializer_list<T> list) : data_(*list.begin()) {}
+  virtual ~OneElementArray() {}
 
   std::size_t size() const { return 1; }
 
@@ -40,6 +44,7 @@ class OneElementArray {
 
  private:
   T data_;
+  ClassDef(OneElementArray, 1)
 };
 
 struct Scalar {
