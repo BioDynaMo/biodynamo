@@ -2,19 +2,19 @@
 #include "cell.h"
 #include "gtest/gtest.h"
 #include "inline_vector.h"
+#include "neighbor_nanoflann_op.h"
 #include "test_util.h"
 
 namespace bdm {
 namespace neighbor_op_test_internal {
 
-template <typename T>
-void RunTest(T* cells) {
+template <typename T, typename Op>
+void RunTest(T* cells, const Op& op) {
   cells->push_back(Cell<>({0, 0, 0}));
   cells->push_back(Cell<>({30, 30, 30}));
   cells->push_back(Cell<>({60, 60, 60}));
 
   // execute operation
-  NeighborOp op;
   op.Compute(cells);
 
   // check results
@@ -35,12 +35,22 @@ void RunTest(T* cells) {
 
 TEST(NeighborOpTest, ComputeAosoa) {
   std::vector<Cell<Scalar>> cells;
-  RunTest(&cells);
+  RunTest(&cells, NeighborOp());
 }
 
 TEST(NeighborOpTest, ComputeSoa) {
   Cell<Soa> cells;
-  RunTest(&cells);
+  RunTest(&cells, NeighborOp());
+}
+
+TEST(NeighborNanoflannOpTest, ComputeAosoa) {
+  std::vector<Cell<Scalar>> cells;
+  RunTest(&cells, NeighborNanoflannOp());
+}
+
+TEST(NeighborNanoflannOpTest, ComputeSoa) {
+  Cell<Soa> cells;
+  RunTest(&cells, NeighborNanoflannOp());
 }
 
 }  // namespace neighbor_op_test_internal

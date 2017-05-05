@@ -10,6 +10,7 @@
 #include "dividing_cell_op.h"
 #include "exporter.h"
 #include "neighbor_op.h"
+#include "neighbor_nanoflann_op.h"
 #include "resource_manager.h"
 #include "scheduler.h"
 #include "timing.h"
@@ -55,7 +56,8 @@ void execute(size_t cells_per_dim, size_t iterations, size_t threads,
 
     {
       Timing timing("Find Neighbors", statistic);
-      bdm::NeighborOp op(700);
+      // bdm::NeighborOp op(700);
+      bdm::NeighborNanoflannOp op(700);
       op.Compute(&cells);
     }
 
