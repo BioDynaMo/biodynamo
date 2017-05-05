@@ -29,7 +29,7 @@ class CellExt : public Base {
   static atomic_TClass_ptr fgIsA;
 
  public:
-  static TClass* Class() { throw "This method should not be called." 
+  static TClass* Class() { throw "This method should not be called."
   " It should rather have been overriden by the ROOT dictionary"; }
   static const char* Class_Name();
   static Version_t Class_Version() { return 1; }
