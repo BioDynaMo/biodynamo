@@ -4,7 +4,7 @@
 namespace bdm {
 
 TEST(BDMInterfaceTest, Vector3DInterface) {
-  static Vector3DInterface v3Dinterf;
+  Vector3DInterface v3Dinterf;
 
   EXPECT_EQ(0, v3Dinterf.coord_[0]);
   v3Dinterf.coord_[1] = 1.2;

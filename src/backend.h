@@ -1,36 +1,75 @@
 #ifndef BACKEND_H_
 #define BACKEND_H_
 
-#include <Vc/Vc>
+#include <iostream>
+#include <memory>
+#include <utility>
+#include <vector>
+
+#include "macros.h"
 
 namespace bdm {
 
-struct VcBackend {
-  typedef Vc::int_v int_v;
-  typedef Vc::double_v real_v;
-  typedef Vc::double_v::value_type real_t;
-  static const size_t kVecLen = real_v::Size;
-  typedef Vc::double_v::Mask bool_v;
-};
-
-struct ScalarBackend {
-  typedef Vc::SimdArray<int, 1> int_v;
-  typedef Vc::SimdArray<double, 1> real_v;
-  typedef double real_t;
-  typedef std::array<bool, 1> bool_v;
-  static const size_t kVecLen = 1;
-};
-
-using DefaultBackend = VcBackend;
-
+/// \brief This class represents an array with exactly one element
+///
+/// Needed for AOSOA: Objects will store a single e.g. real_v instead of N
+/// instances. However code was written for SOA and expects an array interface
+/// which is exposed with this class.
+/// Makes it easy for the compiler to optimize out the extra call to operator[]
+/// Didn't work with std::array<T, 1>
 template <typename T>
-struct is_scalar {
-  static const bool value = false;
+class OneElementArray {
+ public:
+  using value_type = T;
+  OneElementArray() : data_() {}
+  explicit OneElementArray(const T& data) : data_(data) {}
+  explicit OneElementArray(T&& data) : data_(data) {}
+  OneElementArray(std::initializer_list<T> list) : data_(*list.begin()) {}
+
+  std::size_t size() const { return 1; }
+
+  BDM_FORCE_INLINE T& operator[](const size_t idx) { return data_; }
+
+  BDM_FORCE_INLINE const T& operator[](const size_t idx) const { return data_; }
+
+  T* begin() { return &data_; }
+  T* end() { return &data_ + 1; }
+
+  const T* begin() const { return &data_; }
+  const T* end() const { return &data_ + 1; }
+
+ private:
+  T data_;
 };
 
-template <template <typename> class Container>
-struct is_scalar<Container<ScalarBackend> > {
-  static const bool value = true;
+struct Scalar {
+  /// Data type used to store data members of a class
+  template <typename T>
+  using vec = OneElementArray<T>;
+
+  /// Data type to store a collection of simulation objects with this backend
+  template <typename T>
+  using Container = std::vector<T>;
+};
+
+struct Soa {
+  /// Data type used to store data members of a class
+  template <typename T>
+  using vec = std::vector<T>;
+
+  // Data type to store a collection of simulation objects with this backend
+  template <typename T>
+  using Container = T;
+};
+
+struct SoaRef {
+  /// Data type used to store data members of a class
+  template <typename T>
+  using vec = std::vector<T>&;
+
+  // Data type to store a collection of simulation objects with this backend
+  template <typename T>
+  using Container = T;
 };
 
 }  // namespace bdm

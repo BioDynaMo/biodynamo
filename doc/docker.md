@@ -8,13 +8,13 @@
 docker run -it --net=host ubuntu:16.04 /bin/bash
 # execute the following commands inside the image
 apt-get update
-apt-get install -y g++ cmake valgrind git
+apt-get install -y g++-4.8 cmake valgrind git
 cd home
 git clone https://github.com/BioDynaMo/biodynamo.git
 cd biodynamo
-git checkout bdm-parallel
+git checkout backend-arch
 mkdir build && cd build
-cmake ..
+cmake -DCMAKE_C_COMPILER=gcc-4.8 -DCMAKE_CXX_COMPILER=g++-4.8 ..
 make
 make check
 ```

@@ -92,30 +92,30 @@ endif()
 
 #--------------------- setup Vc ----------------
 # setup Vc
-ExternalProject_Add(
-    Vc
-    URL "${CMAKE_SOURCE_DIR}/third_party/Vc-master_2bfce51.zip"
-    PREFIX "${CMAKE_CURRENT_BINARY_DIR}/Vc"
-    CMAKE_ARGS "-DBUILD_TESTING=off"
-    CMAKE_CACHE_ARGS
-    -DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}
-    -DCMAKE_C_COMPILER:FILEPATH=${CMAKE_C_COMPILER}
-    INSTALL_COMMAND "" # Disable install step
-    # Ugly but necessary, in future versions one can use ${binary_dir}
-    # in BUILD_BYPRODUCTS
-    #BUILD_BYPRODUCTS "${binary_dir}/libVc.a"
-    BUILD_BYPRODUCTS "${CMAKE_CURRENT_BINARY_DIR}/Vc/src/Vc-build/libVc.a"
-)
-set(Vc_INCLUDE_DIR "${CMAKE_CURRENT_BINARY_DIR}/Vc/src/Vc/include"
-                   "${CMAKE_CURRENT_BINARY_DIR}/Vc/src/Vc/")
-set(Vc_LIBRARIES "${CMAKE_CURRENT_BINARY_DIR}/Vc/src/Vc-build/libVc.a")
+# ExternalProject_Add(
+#     Vc
+#     URL "${CMAKE_SOURCE_DIR}/third_party/Vc-master_2bfce51.zip"
+#     PREFIX "${CMAKE_CURRENT_BINARY_DIR}/Vc"
+#     CMAKE_ARGS "-DBUILD_TESTING=off"
+#     CMAKE_CACHE_ARGS
+#     -DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}
+#     -DCMAKE_C_COMPILER:FILEPATH=${CMAKE_C_COMPILER}
+#     INSTALL_COMMAND "" # Disable install step
+#     # Ugly but necessary, in future versions one can use ${binary_dir}
+#     # in BUILD_BYPRODUCTS
+#     #BUILD_BYPRODUCTS "${binary_dir}/libVc.a"
+#     BUILD_BYPRODUCTS "${CMAKE_CURRENT_BINARY_DIR}/Vc/src/Vc-build/libVc.a"
+# )
+# set(Vc_INCLUDE_DIR "${CMAKE_CURRENT_BINARY_DIR}/Vc/src/Vc/include"
+#                    "${CMAKE_CURRENT_BINARY_DIR}/Vc/src/Vc/")
+# set(Vc_LIBRARIES "${CMAKE_CURRENT_BINARY_DIR}/Vc/src/Vc-build/libVc.a")
 
 #--------------------- build shared library libbiodynamo ----------------
 # add the headers into the project
 #include(${ROOT_USE_FILE})
 include_directories("${CMAKE_SOURCE_DIR}/src")
 include_directories("${CMAKE_SOURCE_DIR}/third_party")
-include_directories("${Vc_INCLUDE_DIR}")
+# include_directories("${Vc_INCLUDE_DIR}")
 # include_directories(${VTUNE_INCLUDE_DIR})
 
 #ROOT_GENERATE_DICTIONARY("${CMAKE_BINARY_DIR}/bdmDict"
@@ -129,7 +129,7 @@ add_library(biodynamo SHARED ${SOURCES} ${HEADERS})
 #target_link_libraries(biodynamo ${ROOT_LIBRARIES})
 target_link_libraries(biodynamo ${Vc_LIBRARIES})
 # target_link_libraries(biodynamo ${VTUNE_LIBRARIES})
-add_dependencies(biodynamo Vc)
+# add_dependencies(biodynamo Vc)
 
 # add custom clean target for shared library
 add_custom_target(libbdmclean COMMAND ${CMAKE_COMMAND} -P "${CMAKE_BINARY_DIR}/CMakeFiles/biodynamo.dir/cmake_clean.cmake")
@@ -231,22 +231,3 @@ endif()
 set(SIMULATION_TARGET cell_growth)
 add_executable(${SIMULATION_TARGET} ${CMAKE_SOURCE_DIR}/demo/cell_growth.cc)
 target_link_libraries(${SIMULATION_TARGET} biodynamo)
-
-# --------------------- build backend_arch demo
-set(BACKEND_ARCH backend_arch)
-add_executable(${BACKEND_ARCH} ${CMAKE_SOURCE_DIR}/demo/backend_arch.cc)
-target_link_libraries(${BACKEND_ARCH} biodynamo)
-# target_link_libraries(${BACKEND_ARCH} ${VTUNE_LIBRARIES})
-add_dependencies(${BACKEND_ARCH} Vc)
-
-# --------------------- build benchmark soa_vs_aosoa
-set(SOA_VS_AOSOA soa_vs_aosoa)
-add_executable(${SOA_VS_AOSOA} ${CMAKE_SOURCE_DIR}/benchmark/soa_vs_aosoa.cc)
-
-set(SOA_VS_AOSOA soa_vs_aosoa_rw)
-add_executable(${SOA_VS_AOSOA} ${CMAKE_SOURCE_DIR}/benchmark/soa_vs_aosoa.cc)
-target_compile_options(${SOA_VS_AOSOA} BEFORE PRIVATE "-DMODE=ReadWrite")
-
-set(SOA_VS_AOSOA soa_vs_aosoa_rwa)
-add_executable(${SOA_VS_AOSOA} ${CMAKE_SOURCE_DIR}/benchmark/soa_vs_aosoa.cc)
-target_compile_options(${SOA_VS_AOSOA} BEFORE PRIVATE "-DMODE=ReadWriteAlternating")

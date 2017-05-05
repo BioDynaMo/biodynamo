@@ -31,7 +31,7 @@ elif [[ "$#" -ne 0 ]]; then
       if [[ $f == *"test/"* ]]; then
         root_dir=test
       fi
-      $SCRIPTPATH/cpplint.py --root=$root_dir --linelength=120 --filter=-build/c++11,-legal/copyright $f
+      $SCRIPTPATH/cpplint.py --root=$root_dir --linelength=80 --filter=-build/c++11,-legal/copyright $f
    done
    exit 0
 else
@@ -42,7 +42,7 @@ fi
 files=$($git_cmd | grep "^\(src\|include\)/.*" | grep "\(\.h\|\.cc\)$")
 num_files=$(echo "$files" | sed '/^$/d' | wc -l)
 if [ $num_files != "0" ]; then
-  echo "$files" | xargs $SCRIPTPATH/cpplint.py --root=src --linelength=120 --filter=-build/c++11,-legal/copyright
+  echo "$files" | xargs $SCRIPTPATH/cpplint.py --root=src --linelength=80 --filter=-build/c++11,-legal/copyright
 else
   echo "Nothing to be checked for directory src"
 fi
@@ -51,7 +51,7 @@ fi
 files=$($git_cmd | grep "^test/.*" | grep "\(\.h\|\.cc\)$")
 num_files=$(echo "$files" | sed '/^$/d' | wc -l)
 if [ $num_files != "0" ]; then
-  echo "$files" | xargs $SCRIPTPATH/cpplint.py --root=test --linelength=120 --filter=-build/c++11,-legal/copyright
+  echo "$files" | xargs $SCRIPTPATH/cpplint.py --root=test --linelength=80 --filter=-build/c++11,-legal/copyright
 else
   echo "Nothing to be checked for directory test"
 fi

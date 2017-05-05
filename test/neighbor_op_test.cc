@@ -1,44 +1,47 @@
-#include <gtest/gtest.h>
-#include "cell.h"
-#include "inline_vector.h"
 #include "neighbor_op.h"
+#include "cell.h"
+#include "gtest/gtest.h"
+#include "inline_vector.h"
 #include "test_util.h"
 
 namespace bdm {
+namespace neighbor_op_test_internal {
 
-TEST(NeighborOpTest, Compute) {
-  daosoa<Cell, VcBackend> cells;
-  // fixme ugly
-  cells.push_back(
-      Cell<ScalarBackend>(std::array<ScalarBackend::real_v, 3>{0, 0, 0}));
-  cells.push_back(
-      Cell<ScalarBackend>(std::array<ScalarBackend::real_v, 3>{30, 30, 30}));
-  cells.push_back(
-      Cell<ScalarBackend>(std::array<ScalarBackend::real_v, 3>{60, 60, 60}));
+template <typename T>
+void RunTest(T* cells) {
+  cells->push_back(Cell<>({0, 0, 0}));
+  cells->push_back(Cell<>({30, 30, 30}));
+  cells->push_back(Cell<>({60, 60, 60}));
 
   // execute operation
   NeighborOp op;
-  op.Compute(&cells);
+  op.Compute(cells);
 
   // check results
   // cell 1
-  auto& neighbors_1 = cells[0].GetNeighbors();
   InlineVector<int, 8> expected_1;
   expected_1.push_back(1);
-  EXPECT_TRUE(expected_1 == neighbors_1[0]);
+  EXPECT_TRUE(expected_1 == (*cells)[0].GetNeighbors());
   // cell 2
   InlineVector<int, 8> expected_2;
   expected_2.push_back(0);
   expected_2.push_back(2);
-  EXPECT_EQ(expected_2, neighbors_1[1]);
+  EXPECT_EQ(expected_2, (*cells)[1].GetNeighbors());
   // cell 3
   InlineVector<int, 8> expected_3;
   expected_3.push_back(1);
-  if (VcBackend::kVecLen > 2) {
-    EXPECT_EQ(expected_3, neighbors_1[2]);
-  } else {
-    EXPECT_EQ(expected_3, cells[1].GetNeighbors()[0]);
-  }
+  EXPECT_EQ(expected_3, (*cells)[2].GetNeighbors());
 }
 
+TEST(NeighborOpTest, ComputeAosoa) {
+  std::vector<Cell<Scalar>> cells;
+  RunTest(&cells);
+}
+
+TEST(NeighborOpTest, ComputeSoa) {
+  Cell<Soa> cells;
+  RunTest(&cells);
+}
+
+}  // namespace neighbor_op_test_internal
 }  // namespace bdm

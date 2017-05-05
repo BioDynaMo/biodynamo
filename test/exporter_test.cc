@@ -5,21 +5,17 @@
 namespace bdm {
 
 TEST(ExportTest, ConductExportToFile) {
-  using real_v = VcBackend::real_v;
-  using real_t = real_v::value_type;
-  if (real_v::Size < 2) {
-    FAIL() << "Backend must at least support two elements for this test";
-  }
-
   // set up cells and their positions
-  real_v diameter((const real_t[]){10, 10});
-  std::array<real_v, 3> position = {real_v((const real_t[]){0.5, -5}),
-                                    real_v((const real_t[]){1, 5}),
-                                    real_v((const real_t[]){0, 0.9})};
-  Cell<VcBackend> cell(diameter);
-  cell.SetPosition(position);
-  daosoa<Cell, VcBackend> cells;
-  cells.push_back(cell);
+  Cell<> cell1;
+  cell1.SetPosition({0.5, 1, 0});
+  cell1.SetDiameter(10);
+  Cell<> cell2;
+  cell2.SetPosition({-5, 5, 0.9});
+  cell2.SetDiameter(10);
+
+  std::vector<Cell<>> cells;
+  cells.push_back(cell1);
+  cells.push_back(cell2);
 
   Exporter exporter;
 
