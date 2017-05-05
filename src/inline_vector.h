@@ -46,6 +46,15 @@ class InlineVector {
   /// allocated space for.
   size_t capacity() const { return capacity_; }
 
+  /// Removes all elements from the container.
+  /// Leaves capacity() unchanged.
+  void clear() {
+    for (size_t i = 0; i < size_; i++) {
+      (*this)[i].~T();
+    }
+    size_ = 0;
+  }
+
   /// Increase the capacity of the container to a value that's greater or equal
   /// to new_capacity. If new_cap is greater than the current `capacity()`,
   /// new storage is allocated, otherwise the method does nothing.
