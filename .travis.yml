@@ -14,6 +14,8 @@ matrix:
     - os: linux
       compiler: clang
 
+install: travis_wait mvn install
+
 script:
   - ./travis.sh
 
