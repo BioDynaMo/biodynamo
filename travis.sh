@@ -47,7 +47,7 @@ fi
 cd
 if [ "$TRAVIS_OS_NAME" = "linux" ]; then
   wget "https://cernbox.cern.ch/index.php/s/BbFptgxo2K565IS/download?path=%2F&files=root_v6.08.00-patches.Linux-ubuntu14-x86_64-gcc4.8.tar.gz" 2> /dev/null
-  tar zxf "download?path=%2F&files=root_v6.08.00-patches.Linux-ubuntu14-x86_64-gcc4.8.tar.gz.tar.gz" > /dev/null
+  tar zxf "download?path=%2F&files=root_v6.08.00-patches.Linux-ubuntu14-x86_64-gcc4.8.tar.gz" > /dev/null
 else
   wget "https://cernbox.cern.ch/index.php/s/BbFptgxo2K565IS/download?path=%2F&files=root_v6.08.00-patches.macosx64-10.12-clang80.tar.gz" 2> /dev/null
   tar zxf "download?path=%2F&files=root_v6.08.00-patches.macosx64-10.12-clang80.tar.gz" > /dev/null
