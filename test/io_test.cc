@@ -156,12 +156,12 @@ void RunTestDispCell(T* cells) {
   EXPECT_NEAR(1.1, (*cells_r)[1].GetMass(), abs_error<double>::value);
 }
 
-TEST(DisplacementOpTest, ComputeAosoa) {
+TEST(IOTest, ComputeAosoa) {
   std::vector<Cell<Scalar>> cells;
   RunTestDispCell(&cells);
 }
 
-TEST(DisplacementOpTest, ComputeSoa) {
+TEST(IOTest, ComputeSoa) {
   Cell<Soa> cells;
   RunTestDispCell(&cells);
 }

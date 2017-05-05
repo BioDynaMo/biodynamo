@@ -29,15 +29,16 @@ class CellExt : public Base {
   static atomic_TClass_ptr fgIsA;
 
  public:
-  static TClass* Class() { throw "foo"; }
+  static TClass* Class() { throw "This method should not be called." 
+  " It should rather have been overriden by the ROOT dictionary"; }
   static const char* Class_Name();
   static Version_t Class_Version() { return 1; }
   static TClass* Dictionary();
   virtual TClass* IsA() const { return CellExt::Class(); }
   virtual void ShowMembers(TMemberInspector& insp) const {
-    ::ROOT::Class_ShowMembers(CellExt::Class(), this, insp);
-  }
-  virtual void Streamer(TBuffer&) { throw "foo1"; }
+    ::ROOT::Class_ShowMembers(CellExt::Class(), this, insp); }
+  virtual void Streamer(TBuffer&) { throw "This method should not be called."
+  " It should rather have been overriden by the ROOT dictionary"; }
 
   void StreamerNVirtual(TBuffer& ClassDef_StreamerNVirtual_b) {
     CellExt::Streamer(ClassDef_StreamerNVirtual_b);
