@@ -30,7 +30,7 @@ TEST(DividingCellOpTest, ComputeAos) {
 }
 
 TEST(DividingCellOpTest, ComputeSoa) {
-  Cell<Soa> cells;
+  auto cells = Cell<>::NewEmptySoa();
   RunTest(&cells);
 }
 

@@ -9,8 +9,8 @@
 #include "displacement_op.h"
 #include "dividing_cell_op.h"
 #include "exporter.h"
-#include "neighbor_op.h"
 #include "neighbor_nanoflann_op.h"
+#include "neighbor_op.h"
 #include "resource_manager.h"
 #include "scheduler.h"
 #include "timing.h"
@@ -36,7 +36,7 @@ void execute(size_t cells_per_dim, size_t iterations, size_t threads,
     const double space = 20;
 
     // std::vector<Cell<Scalar>> cells;
-    Cell<Soa> cells;
+    auto cells = Cell<>::NewEmptySoa();
     cells.reserve(cells_per_dim * cells_per_dim * cells_per_dim);
     {
       Timing timing("Setup", statistic);

@@ -1,6 +1,8 @@
 #ifndef SIMULATION_OBJECT_H_
 #define SIMULATION_OBJECT_H_
 
+#include <type_traits>
+
 #include "backend.h"
 #include "type_util.h"
 
@@ -11,7 +13,10 @@ template <typename TBackend = Scalar>
 struct SimulationObject {
   using Backend = TBackend;
 
-  SimulationObject() {}
+  template <typename T>
+  friend class SimulationObject;
+
+  SimulationObject() : size_(1) {}
 
   virtual ~SimulationObject() {}
 
@@ -29,6 +34,13 @@ struct SimulationObject {
   /// of all data member containers
   void reserve(size_t new_capacity) {}
 
+  template <typename T = Backend>
+  typename std::enable_if<std::is_same<T, SoaRef>::value,
+                          SimulationObject<SoaRef>>::type
+  operator=(const SimulationObject<Scalar>&) {
+    return *this;
+  }
+
  protected:
   /// Used internally to create the same object, but with
   /// different backend - required since inheritance chain is not known
@@ -37,12 +49,14 @@ struct SimulationObject {
   using Self = SimulationObject<TTBackend>;
 
   template <typename T>
-  SimulationObject(T* other, size_t idx) : idx_(idx) {}
+  SimulationObject(T* other, size_t idx) : idx_(idx), size_(other->size_) {}
 
   const size_t idx_ = 0;
 
  private:
-  size_t size_ = 0;
+  /// size_ is of type size_t& if TBackend == SoaRef; otherwise size_t
+  typename type_ternary_operator<std::is_same<TBackend, SoaRef>::value, size_t&,
+                                 size_t>::type size_;
 };
 
 }  // namespace bdm

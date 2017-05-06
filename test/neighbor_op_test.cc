@@ -39,7 +39,7 @@ TEST(NeighborOpTest, ComputeAosoa) {
 }
 
 TEST(NeighborOpTest, ComputeSoa) {
-  Cell<Soa> cells;
+  auto cells = Cell<>::NewEmptySoa();
   RunTest(&cells, NeighborOp());
 }
 
@@ -49,7 +49,7 @@ TEST(NeighborNanoflannOpTest, ComputeAosoa) {
 }
 
 TEST(NeighborNanoflannOpTest, ComputeSoa) {
-  Cell<Soa> cells;
+  auto cells = Cell<>::NewEmptySoa();
   RunTest(&cells, NeighborNanoflannOp());
 }
 

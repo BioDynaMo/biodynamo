@@ -37,6 +37,12 @@ using std::is_same;
 #define BDM_CLASS_HEADER_RESERVE_BODY_ITERATOR(new_cap, data_member) \
   data_member.reserve(new_cap);
 
+#define BDM_CLASS_HEADER_ASSIGNMENT_OP_BODY(...) \
+  EVAL(LOOP(BDM_CLASS_HEADER_ASSIGNMENT_OP_BODY_ITERATOR, __VA_ARGS__))
+
+#define BDM_CLASS_HEADER_ASSIGNMENT_OP_BODY_ITERATOR(data_member) \
+  data_member[idx_] = rhs.data_member[0];
+
 /// Macro to insert required boilerplate code into simulation object
 /// @param  class_name: class name witout template specifier e.g. \n
 ///         `class Foo {};` \n
@@ -80,6 +86,19 @@ using std::is_same;
   template <typename T>                                                        \
   friend class class_name;                                                     \
                                                                                \
+  /* Creates new empty object with SOA memory layout. */                       \
+  /* Calling Self<Soa> soa; will have already one instance inside */           \
+  /* the one with default parameters */                                        \
+  /* Therefore that one has to be removed */                                   \
+  static Self<Soa> NewEmptySoa(std::size_t reserve_capacity = 0) {             \
+    Self<Soa> ret_value;                                                       \
+    ret_value.clear();                                                         \
+    if (reserve_capacity != 0) {                                               \
+      ret_value.reserve(reserve_capacity);                                     \
+    }                                                                          \
+    return ret_value;                                                          \
+  }                                                                            \
+                                                                               \
   /* Equivalent to std::vector<> push_back - it adds the scalar values to */   \
   /* all data members */                                                       \
   template <typename T = Backend>                                              \
@@ -110,6 +129,14 @@ using std::is_same;
                                                                                \
   const Self<SoaRef> operator[](size_t idx) const {                            \
     return Self<SoaRef>(const_cast<Self<Backend>*>(this), idx);                \
+  }                                                                            \
+  template <typename T = Backend>                                              \
+  typename enable_if<is_same<T, SoaRef>::value, Self<SoaRef>&>::type           \
+  operator=(const Self<Scalar>& rhs) {                                         \
+    std::cout << "foo" << std::endl;                                           \
+    BDM_CLASS_HEADER_ASSIGNMENT_OP_BODY(__VA_ARGS__)                           \
+    Base::operator=(rhs);                                                      \
+    return *this;                                                              \
   }                                                                            \
                                                                                \
  protected:                                                                    \

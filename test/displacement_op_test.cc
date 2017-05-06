@@ -79,7 +79,7 @@ TEST(DisplacementOpTest, ComputeAosoa) {
 }
 
 TEST(DisplacementOpTest, ComputeSoa) {
-  Cell<Soa> cells;
+  auto cells = Cell<>::NewEmptySoa();
   RunTest(&cells);
 }
 
