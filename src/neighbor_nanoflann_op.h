@@ -1,7 +1,8 @@
 #ifndef NEIGHBOR_NANOFLANN_OP_H_
 #define NEIGHBOR_NANOFLANN_OP_H_
 
-#include <iostream>
+#include <utility>
+#include <vector>
 #include "inline_vector.h"
 #include "nanoflann.h"
 
@@ -19,7 +20,7 @@ struct NanoFlannAdapter {
   const Derived& obj;  //!< A const ref to the data set origin
 
   /// The constructor that sets the data set source
-  NanoFlannAdapter(const Derived& obj_) : obj(obj_) {}
+  explicit NanoFlannAdapter(const Derived& obj_) : obj(obj_) {}
 
   /// CRTP helper method
   inline const Derived& derived() const { return obj; }
