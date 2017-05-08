@@ -1,5 +1,6 @@
 #include "simulation_object_util.h"
 
+#include <array>
 #include "gtest/gtest.h"
 
 #include "simulation_object.h"

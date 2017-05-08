@@ -20,7 +20,6 @@ class Scheduler {
     DisplacementOp physics;
     DividingCellOp biology;
     NeighborOp neighbor;
-    bool n = true;
     while (steps-- > 0) {
       auto cells = rm->GetCells();  // todo why does this compile GetCells
                                     // returns const?!?

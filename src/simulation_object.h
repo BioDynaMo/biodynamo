@@ -14,7 +14,7 @@ struct SimulationObject {
   using Backend = TBackend;
 
   template <typename T>
-  friend class SimulationObject;
+  friend struct SimulationObject;
 
   SimulationObject() : size_(1) {}
 

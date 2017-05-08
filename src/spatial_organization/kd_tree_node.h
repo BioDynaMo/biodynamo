@@ -70,7 +70,7 @@ class KdTreeNode : public SpatialTreeNode<T> {
 
   size_t Size() const;
 
-  virtual bool IsLeaf() const;
+  bool IsLeaf() const override;
 
   /// Adds new object to the tree
   /// @param p - position of the new object

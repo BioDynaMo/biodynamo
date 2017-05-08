@@ -14,7 +14,7 @@ void* operator new[](std::size_t sz) {
 
 /// required for valgrind tests
 /// otherwise "Mismatched free() / delete / delete []" errors
-void operator delete[](void* ptr) { free(ptr); }
+void operator delete[](void* ptr) noexcept { free(ptr); }
 
 namespace bdm {
 
