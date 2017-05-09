@@ -25,6 +25,7 @@ class CellExt : public Base {
   BDM_CLASS_HEADER(CellExt, position_, mass_location_, tractor_force_,
                    diameter_, volume_, adherence_, mass_, neighbors_)
 
+  // Extracted ClassDef for the reason address in ROOT-8784
  private:
   static atomic_TClass_ptr fgIsA;
 
@@ -145,7 +146,8 @@ class CellExt : public Base {
 
   // stores a list of neighbor ids for each scalar cell
   vec<InlineVector<int, 8>> neighbors_;
-  // ClassDef(CellExt, 1);  // custom one on top
+  
+  // ClassDef(CellExt, 1);  // extracted above constructor declaration
 };
 
 template <typename Backend = Scalar>

@@ -60,6 +60,7 @@ void simulate(Cell<Soa>& cells, size_t distance, std::tuple<T...>& ioh) {
   for (size_t d = std::get<1>(ioh); d < distance; d++) {
 #pragma omp parallel for
     for (size_t i = 0; i < cells.size(); i++) {
+      // The simulation operation is just a simple cell displacement and growth
       auto current_pos = cells[i].GetPosition();
       std::array<double, 3> new_pos{(current_pos[0] + 1.0),
                                     current_pos[1] + 1.0, current_pos[2] + 1.0};
@@ -89,10 +90,10 @@ void simulate(Cell<Soa>& cells, size_t distance, std::tuple<T...>& ioh) {
   }
 }
 
-bool check_final_state(Cell<Soa>& cells, size_t distance) {
+bool check_final_state(Cell<Soa>& init_cells, Cell<Soa>& cells, size_t distance) {
   for (size_t i = 0; i < cells.size(); i++) {
     for (int j = 0; j < 3; j++)
-      if (cells[i].GetPosition()[j] != distance)
+      if (cells[i].GetPosition()[j] != (init_cells[i].GetPosition()[j] + distance))
         return false;
     if (cells[i].GetDiameter() != 30 + distance)
       return false;
@@ -109,6 +110,8 @@ int main(int args, char** argv) {
     std::istringstream(std::string(argv[1])) >> cells_per_dim;
     std::istringstream(std::string(argv[2])) >> distance;
 
+    auto new_cells = initialize_cells(cells_per_dim);
+
     // Using std::tuple to persist checkpoint variables (native ROOT support)
     // std::tuple is a variadic data structure, so customizable per simulation
     std::tuple<size_t, size_t>* ioh;
@@ -116,6 +119,7 @@ int main(int args, char** argv) {
     Cell<Soa>* cells;
 
     // Try to find persisted objects from ROOTFILE
+    // NB: these *need* to be pointers
     if ((bdm::GetPersistentObject(ROOTFILE, SOA, cells) &&
          bdm::GetPersistentObject(ROOTFILE, IOHELPER, ioh)) &&
         std::get<0>(*ioh) == cells_per_dim) {
@@ -124,8 +128,10 @@ int main(int args, char** argv) {
 
       // todo make sure that this is necessary
       std::get<1>(*ioh)++;
+
       simulate(*cells, distance, *ioh);
-      bool fin = check_final_state(*cells, distance);
+      bool fin = check_final_state(new_cells, *cells, distance);
+
       if (fin)
         std::cout << GREEN "Resulting final state is correct" RESET
                   << std::endl;
@@ -133,11 +139,11 @@ int main(int args, char** argv) {
         std::cout << RED "Resulting final state is incorrect" RESET
                   << std::endl;
     } else {
-      auto new_cells = initialize_cells(cells_per_dim);
       cells = &new_cells;
-      size_t init = 0;
-      auto empty_ioh = std::make_tuple(cells_per_dim, init);
+
+      auto empty_ioh = std::make_tuple(cells_per_dim, 0ul);
       ioh = &empty_ioh;
+
       std::cout << RED "No persistent state found. Starting anew..." RESET
                 << std::endl;
       simulate(*cells, distance, *ioh);
