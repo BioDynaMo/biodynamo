@@ -146,7 +146,6 @@ int main(int args, char** argv) {
   << "     number of threads:             1 - logical CPUs on the system - threads incremented += 1\n"
   << "     number of repititions:         according to parameter - 1 if not specified\n"
   << std::endl;
-    // clang-format on
     return 0;
   } else if (args >= 4) {
     size_t cells;
