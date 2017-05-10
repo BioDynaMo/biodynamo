@@ -1,4 +1,5 @@
 #include <omp.h>
+#include <unistd.h>
 
 #include <Rtypes.h>
 #include <TFile.h>
