@@ -1,8 +1,8 @@
 #ifndef SCHEDULER_H_
 #define SCHEDULER_H_
 
-#include "dividing_cell_op.h"
 #include "displacement_op.h"
+#include "dividing_cell_op.h"
 #include "neighbor_op.h"
 #include "resource_manager.h"
 
@@ -20,7 +20,6 @@ class Scheduler {
     DisplacementOp physics;
     DividingCellOp biology;
     NeighborOp neighbor;
-    bool n = true;
     while (steps-- > 0) {
       auto cells = rm->GetCells();  // todo why does this compile GetCells
                                     // returns const?!?

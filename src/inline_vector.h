@@ -1,8 +1,8 @@
 #ifndef INLINE_VECTOR_H_
 #define INLINE_VECTOR_H_
 
-#include <array>
 #include <algorithm>
+#include <array>
 #include <sstream>
 #include <vector>
 
@@ -45,6 +45,15 @@ class InlineVector {
   /// Returns the number of elements that the container has currently
   /// allocated space for.
   size_t capacity() const { return capacity_; }
+
+  /// Removes all elements from the container.
+  /// Leaves capacity() unchanged.
+  void clear() {
+    for (size_t i = 0; i < size_; i++) {
+      (*this)[i].~T();
+    }
+    size_ = 0;
+  }
 
   /// Increase the capacity of the container to a value that's greater or equal
   /// to new_capacity. If new_cap is greater than the current `capacity()`,
@@ -90,7 +99,8 @@ class InlineVector {
       size_ = other.size_;
       capacity_ = other.capacity_;
       if (other.heap_data_ != nullptr) {
-        if (heap_data_ != nullptr) delete[] heap_data_;
+        if (heap_data_ != nullptr)
+          delete[] heap_data_;
         heap_data_ = new T[capacity_ - N];
         std::copy_n(other.heap_data_, capacity_ - N, heap_data_);
       }
@@ -110,7 +120,9 @@ class InlineVector {
   }
 
   T& operator[](size_t index) {
-    if (index < N) {
+    if (heap_data_ == nullptr) {
+      return data_[index];
+    } else if (index < N) {
       return data_[index];
     } else {
       return heap_data_[index - N];
@@ -118,7 +130,9 @@ class InlineVector {
   }
 
   const T& operator[](size_t index) const {
-    if (index < N) {
+    if (heap_data_ == nullptr) {
+      return data_[index];
+    } else if (index < N) {
       return data_[index];
     } else {
       return heap_data_[index - N];

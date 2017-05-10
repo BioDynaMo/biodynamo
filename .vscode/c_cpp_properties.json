@@ -2,32 +2,51 @@
     "configurations": [
         {
             "name": "Mac",
-            "includePath": ["/usr/include", "${env.ROOTSYS}/include"],
-            "browse" : {
-                "limitSymbolsToIncludedHeaders" : true,
-                "databaseFilename" : ""
+            "includePath": [
+                "/usr/include",
+                "${env.ROOTSYS}/include"
+            ],
+            "browse": {
+                "limitSymbolsToIncludedHeaders": true,
+                "databaseFilename": "",
+                "path": [
+                    "/usr/include",
+                    "${env.ROOTSYS}/include"
+                ]
             }
         },
         {
             "name": "Linux",
-            "includePath": ["/usr/include", "${env.ROOTSYS}/include"],
-            "browse" : {
-                "limitSymbolsToIncludedHeaders" : true,
-                "databaseFilename" : ""
+            "includePath": [
+                "/usr/include",
+                "${env.ROOTSYS}/include"
+            ],
+            "browse": {
+                "limitSymbolsToIncludedHeaders": true,
+                "databaseFilename": "",
+                "path": [
+                    "/usr/include",
+                    "${env.ROOTSYS}/include"
+                ]
             }
         },
         {
             "name": "Win32",
-            "includePath": ["c:/Program Files (x86)/Microsoft Visual Studio 14.0/VC/include"],
-            "browse" : {
-                "limitSymbolsToIncludedHeaders" : true,
-                "databaseFilename" : ""
+            "includePath": [
+                "c:/Program Files (x86)/Microsoft Visual Studio 14.0/VC/include"
+            ],
+            "browse": {
+                "limitSymbolsToIncludedHeaders": true,
+                "databaseFilename": "",
+                "path": [
+                    "c:/Program Files (x86)/Microsoft Visual Studio 14.0/VC/include"
+                ]
             }
         }
     ],
-    "clang_format" : {
-        "style" : "file",
-        "fallback-style" : "Google",
-        "sort-includes" : false
+    "clang_format": {
+        "style": "file",
+        "fallback-style": "Google",
+        "sort-includes": false
     }
 }

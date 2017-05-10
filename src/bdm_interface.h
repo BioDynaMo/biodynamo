@@ -1,20 +1,15 @@
-//=================================================================================================
+// The following classes will enable an interface between BioDynaMo and
+// Vasileios Vavourakis' cancer modeling
+// framework
+
 #ifndef BDM_INTERFACE_H_
 #define BDM_INTERFACE_H_
 
 #include <vector>
 #include "backend.h"
 #include "cell.h"
-#include "daosoa.h"
-#include "resource_manager.h"
-#include "scheduler.h"
-#include "timing.h"
-
 
 namespace bdm {
-// The following classes will enable an interface between BioDynaMo and
-// Vasileios Vavourakis' cancer modeling
-// framework
 
 class Vector3DInterface {
  public:
@@ -51,8 +46,8 @@ class ContinuousInterfaceData {
 
   std::vector<double> oxygen_level_;
   std::vector<Vector3DInterface> oxygen_level_gradient_;
-  std::vector<std::vector<unsigned int> > normoxic_cells_;
-  std::vector<std::vector<unsigned int> > hypoxic_cells_;
+  std::vector<std::vector<unsigned int>> normoxic_cells_;
+  std::vector<std::vector<unsigned int>> hypoxic_cells_;
 };
 
 class DiscontinuousInterfaceData {
@@ -83,7 +78,6 @@ class DiscontinuousInterfaceData {
 ///      |.       |/
 ///      o--------o
 ///      0        1
-
 class BDMCubicDomain {
  public:
   BDMCubicDomain() : is_init_(false) {}
@@ -93,7 +87,7 @@ class BDMCubicDomain {
   DiscontinuousInterfaceData disc_fd_;
 
   void Init(size_t ncell, std::vector<Vector3DInterface> v) {
-    cells_ = bdm::daosoa<bdm::Cell>(ncell);
+    cells_ = std::vector<bdm::Cell<>>(ncell);
     if (v.size() != 8)
       throw;
     else
@@ -104,7 +98,7 @@ class BDMCubicDomain {
 
  private:
   bool is_init_;
-  bdm::daosoa<bdm::Cell> cells_;
+  std::vector<bdm::Cell<>> cells_;
   std::vector<Vector3DInterface> vertex_;
 };
 }  // namespace bdm

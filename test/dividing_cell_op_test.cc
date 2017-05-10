@@ -1,35 +1,38 @@
-#include <gtest/gtest.h>
-#include "cell.h"
 #include "dividing_cell_op.h"
+#include "cell.h"
+#include "gtest/gtest.h"
 #include "test_util.h"
 
 namespace bdm {
+namespace dividing_cell_op_test_internal {
 
-TEST(DividingCellOpTest, Compute) {
-  using real_v = VcBackend::real_v;
-  if (VcBackend::real_v::Size < 2) {
-    FAIL() << "Backend must at least support two elements for this test";
-  }
-  real_v diameter;
-  diameter[0] = 19;
-  diameter[1] = 41;
-  Cell<VcBackend> cell(diameter);
-  daosoa<Cell, VcBackend> cells;
-  cells.push_back(cell);
+template <typename T>
+void RunTest(T* cells) {
+  cells->push_back(Cell<>(19.0));
+  cells->push_back(Cell<>(41.0));
 
   DividingCellOp op;
-  op.Compute(&cells);
+  op.Compute(cells);
 
-  auto final_diameter = cells[0].GetDiameter();
-  EXPECT_NEAR(19.005288996600001, final_diameter[0],
-              abs_error<real_v::value_type>::value);
-  EXPECT_NEAR(41, final_diameter[1], abs_error<real_v::value_type>::value);
+  EXPECT_NEAR(19.005288996600001, (*cells)[0].GetDiameter(),
+              abs_error<double>::value);
+  EXPECT_NEAR(41, (*cells)[1].GetDiameter(), abs_error<double>::value);
 
-  auto final_volume = cells[0].GetVolume();
-  EXPECT_NEAR(3594.3640018287319, final_volume[0],
-              abs_error<real_v::value_type>::value);
-  EXPECT_NEAR(36086.951213010347, final_volume[1],
-              abs_error<real_v::value_type>::value);
+  EXPECT_NEAR(3594.3640018287319, (*cells)[0].GetVolume(),
+              abs_error<double>::value);
+  EXPECT_NEAR(36086.951213010347, (*cells)[1].GetVolume(),
+              abs_error<double>::value);
 }
 
+TEST(DividingCellOpTest, ComputeAos) {
+  std::vector<Cell<Scalar>> cells;
+  RunTest(&cells);
+}
+
+TEST(DividingCellOpTest, ComputeSoa) {
+  auto cells = Cell<>::NewEmptySoa();
+  RunTest(&cells);
+}
+
+}  // namespace dividing_cell_op_test_internal
 }  // namespace bdm

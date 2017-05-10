@@ -27,6 +27,15 @@ if (test)
 endif()
 #find_package(ROOT REQUIRED COMPONENTS Eve Geom Gui)
 
+set(BUILD_SUPPORT_DIR "${CMAKE_SOURCE_DIR}/housekeeping")
+find_package(ClangTools)
+if ("$ENV{CMAKE_EXPORT_COMPILE_COMMANDS}" STREQUAL "1" OR CLANG_TIDY_FOUND)
+  # Generate a Clang compile_commands.json "compilation database" file for use
+  # with various development tools, such as Vim's YouCompleteMe plugin.
+  # See http://clang.llvm.org/docs/JSONCompilationDatabase.html
+  set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
+endif()
+
 #--------------------- includes -------------
 include(ExternalProject)
 include(cmake/doxygen.cmake)
@@ -83,30 +92,30 @@ endif()
 
 #--------------------- setup Vc ----------------
 # setup Vc
-ExternalProject_Add(
-    Vc
-    URL "${CMAKE_SOURCE_DIR}/third_party/Vc-master_2bfce51.zip"
-    PREFIX "${CMAKE_CURRENT_BINARY_DIR}/Vc"
-    CMAKE_ARGS "-DBUILD_TESTING=off"
-    CMAKE_CACHE_ARGS
-    -DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}
-    -DCMAKE_C_COMPILER:FILEPATH=${CMAKE_C_COMPILER}
-    INSTALL_COMMAND "" # Disable install step
-    # Ugly but necessary, in future versions one can use ${binary_dir}
-    # in BUILD_BYPRODUCTS
-    #BUILD_BYPRODUCTS "${binary_dir}/libVc.a"
-    BUILD_BYPRODUCTS "${CMAKE_CURRENT_BINARY_DIR}/Vc/src/Vc-build/libVc.a"
-)
-set(Vc_INCLUDE_DIR "${CMAKE_CURRENT_BINARY_DIR}/Vc/src/Vc/include"
-                   "${CMAKE_CURRENT_BINARY_DIR}/Vc/src/Vc/")
-set(Vc_LIBRARIES "${CMAKE_CURRENT_BINARY_DIR}/Vc/src/Vc-build/libVc.a")
+# ExternalProject_Add(
+#     Vc
+#     URL "${CMAKE_SOURCE_DIR}/third_party/Vc-master_2bfce51.zip"
+#     PREFIX "${CMAKE_CURRENT_BINARY_DIR}/Vc"
+#     CMAKE_ARGS "-DBUILD_TESTING=off"
+#     CMAKE_CACHE_ARGS
+#     -DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}
+#     -DCMAKE_C_COMPILER:FILEPATH=${CMAKE_C_COMPILER}
+#     INSTALL_COMMAND "" # Disable install step
+#     # Ugly but necessary, in future versions one can use ${binary_dir}
+#     # in BUILD_BYPRODUCTS
+#     #BUILD_BYPRODUCTS "${binary_dir}/libVc.a"
+#     BUILD_BYPRODUCTS "${CMAKE_CURRENT_BINARY_DIR}/Vc/src/Vc-build/libVc.a"
+# )
+# set(Vc_INCLUDE_DIR "${CMAKE_CURRENT_BINARY_DIR}/Vc/src/Vc/include"
+#                    "${CMAKE_CURRENT_BINARY_DIR}/Vc/src/Vc/")
+# set(Vc_LIBRARIES "${CMAKE_CURRENT_BINARY_DIR}/Vc/src/Vc-build/libVc.a")
 
 #--------------------- build shared library libbiodynamo ----------------
 # add the headers into the project
 #include(${ROOT_USE_FILE})
 include_directories("${CMAKE_SOURCE_DIR}/src")
 include_directories("${CMAKE_SOURCE_DIR}/third_party")
-include_directories("${Vc_INCLUDE_DIR}")
+# include_directories("${Vc_INCLUDE_DIR}")
 # include_directories(${VTUNE_INCLUDE_DIR})
 
 #ROOT_GENERATE_DICTIONARY("${CMAKE_BINARY_DIR}/bdmDict"
@@ -120,13 +129,33 @@ add_library(biodynamo SHARED ${SOURCES} ${HEADERS})
 #target_link_libraries(biodynamo ${ROOT_LIBRARIES})
 target_link_libraries(biodynamo ${Vc_LIBRARIES})
 # target_link_libraries(biodynamo ${VTUNE_LIBRARIES})
-add_dependencies(biodynamo Vc)
+# add_dependencies(biodynamo Vc)
 
 # add custom clean target for shared library
 add_custom_target(libbdmclean COMMAND ${CMAKE_COMMAND} -P "${CMAKE_BINARY_DIR}/CMakeFiles/biodynamo.dir/cmake_clean.cmake")
 # custom clean target for biodynamo that excludes ExternalProjects
 add_custom_target(bdmclean)
 add_dependencies(bdmclean libbdmclean)
+
+# -------------------- "make format" and "make check-format" targets ------------
+if (${CLANG_FORMAT_FOUND})
+  # runs clang-format and updates files in place.
+  add_custom_target(format ${BUILD_SUPPORT_DIR}/run-clang-format.sh ${CMAKE_CURRENT_SOURCE_DIR} ${CLANG_FORMAT_BIN} 1
+  `find ${CMAKE_CURRENT_SOURCE_DIR}/src -name \\*.cc -or -name \\*.h`)
+  # runs clang format and exits with a non-zero exit code if any files need to be reformatted
+  add_custom_target(check-format ${BUILD_SUPPORT_DIR}/run-clang-format.sh ${CMAKE_CURRENT_SOURCE_DIR} ${CLANG_FORMAT_BIN} 0
+  `find ${CMAKE_CURRENT_SOURCE_DIR}/src -name \\*.cc -or -name \\*.h`)
+endif()
+
+# -------------------- "make clang-tidy" and "make check-clang-tidy" targets ------------
+if (${CLANG_TIDY_FOUND})
+  # runs clang-tidy and attempts to fix any warning automatically
+  add_custom_target(clang-tidy ${BUILD_SUPPORT_DIR}/run-clang-tidy.sh ${CLANG_TIDY_BIN} ${CMAKE_BINARY_DIR}/compile_commands.json 1
+  `find ${CMAKE_CURRENT_SOURCE_DIR}/src -name \\*.cc | grep -v -F -f ${CMAKE_CURRENT_SOURCE_DIR}/.clang-tidy-ignore`)
+  # runs clang-tidy and exits with a non-zero exit code if any errors are found.
+  add_custom_target(check-clang-tidy ${BUILD_SUPPORT_DIR}/run-clang-tidy.sh ${CLANG_TIDY_BIN} ${CMAKE_BINARY_DIR}/compile_commands.json 0
+  `find ${CMAKE_CURRENT_SOURCE_DIR}/src -name \\*.cc | grep -v -F -f ${CMAKE_CURRENT_SOURCE_DIR}/.clang-tidy-ignore`)
+endif()
 
 # -------------------- build test project runBiodynamoTests ----------------------
 # http://www.kaizou.org/2014/11/gtest-cmake/
@@ -202,22 +231,3 @@ endif()
 set(SIMULATION_TARGET cell_growth)
 add_executable(${SIMULATION_TARGET} ${CMAKE_SOURCE_DIR}/demo/cell_growth.cc)
 target_link_libraries(${SIMULATION_TARGET} biodynamo)
-
-# --------------------- build backend_arch demo
-set(BACKEND_ARCH backend_arch)
-add_executable(${BACKEND_ARCH} ${CMAKE_SOURCE_DIR}/demo/backend_arch.cc)
-target_link_libraries(${BACKEND_ARCH} biodynamo)
-# target_link_libraries(${BACKEND_ARCH} ${VTUNE_LIBRARIES})
-add_dependencies(${BACKEND_ARCH} Vc)
-
-# --------------------- build benchmark soa_vs_aosoa
-set(SOA_VS_AOSOA soa_vs_aosoa)
-add_executable(${SOA_VS_AOSOA} ${CMAKE_SOURCE_DIR}/benchmark/soa_vs_aosoa.cc)
-
-set(SOA_VS_AOSOA soa_vs_aosoa_rw)
-add_executable(${SOA_VS_AOSOA} ${CMAKE_SOURCE_DIR}/benchmark/soa_vs_aosoa.cc)
-target_compile_options(${SOA_VS_AOSOA} BEFORE PRIVATE "-DMODE=ReadWrite")
-
-set(SOA_VS_AOSOA soa_vs_aosoa_rwa)
-add_executable(${SOA_VS_AOSOA} ${CMAKE_SOURCE_DIR}/benchmark/soa_vs_aosoa.cc)
-target_compile_options(${SOA_VS_AOSOA} BEFORE PRIVATE "-DMODE=ReadWriteAlternating")

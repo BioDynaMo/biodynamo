@@ -1,6 +1,8 @@
 #ifndef TEST_UTIL_H_
 #define TEST_UTIL_H_
 
+#include <type_traits>
+
 namespace bdm {
 
 template <typename T>

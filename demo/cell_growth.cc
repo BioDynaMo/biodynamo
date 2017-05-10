@@ -6,23 +6,22 @@
 
 #include "backend.h"
 #include "cell.h"
-#include "daosoa.h"
 #include "displacement_op.h"
 #include "dividing_cell_op.h"
 #include "exporter.h"
+#include "neighbor_nanoflann_op.h"
+#include "neighbor_op.h"
 #include "resource_manager.h"
 #include "scheduler.h"
 #include "timing.h"
 #include "timing_aggregator.h"
+// #include <ittnotify.h>
 
 using bdm::Cell;
-using bdm::daosoa;
-using bdm::ResourceManager;
-using bdm::Scheduler;
-using bdm::ScalarBackend;
+using bdm::Scalar;
+using bdm::Soa;
 using bdm::Timing;
 using bdm::TimingAggregator;
-using bdm::VcBackend;
 using bdm::Exporter;
 
 void execute(size_t cells_per_dim, size_t iterations, size_t threads,
@@ -34,16 +33,17 @@ void execute(size_t cells_per_dim, size_t iterations, size_t threads,
        << cells_per_dim << " cells per dim - " << iterations << " iteration(s)";
     statistic->AddDescription(ss.str());
 
-    const unsigned space = 20;
-    daosoa<Cell> cells(cells_per_dim * cells_per_dim * cells_per_dim);
+    const double space = 20;
+
+    // std::vector<Cell<Scalar>> cells;
+    auto cells = Cell<>::NewEmptySoa();
+    cells.reserve(cells_per_dim * cells_per_dim * cells_per_dim);
     {
       Timing timing("Setup", statistic);
       for (size_t i = 0; i < cells_per_dim; i++) {
         for (size_t j = 0; j < cells_per_dim; j++) {
           for (size_t k = 0; k < cells_per_dim; k++) {
-            // todo improve syntax
-            Cell<ScalarBackend> cell(std::array<ScalarBackend::real_v, 3>{
-                i * space, j * space, k * space});
+            Cell<Scalar> cell({i * space, j * space, k * space});
             cell.SetDiameter(30);
             cell.SetAdherence(0.4);
             cell.SetMass(1.0);
@@ -111,7 +111,7 @@ void scaling(size_t cells_per_dim, size_t iterations, size_t repititions,
 int main(int args, char** argv) {
   TimingAggregator statistic;
   size_t repititions = 1;
-  bool do_export = true;
+  bool do_export = false;
   if (args == 2 &&
       (std::string(argv[1]) == "help" || std::string(argv[1]) == "--help")) {
     // clang-format off
@@ -163,12 +163,12 @@ int main(int args, char** argv) {
     if (args == 3) {
       std::istringstream(std::string(argv[2])) >> repititions;
     }
-    scaling(128, 1, repititions, &statistic, do_export);
+    scaling(256, 1, repititions, &statistic, do_export);
   } else if (args >= 2 && std::string(argv[1]) == "--detailed-scaling") {
     if (args == 3) {
       std::istringstream(std::string(argv[2])) >> repititions;
     }
-    scaling(128, 1, repititions, &statistic, do_export, [](int& i) { i++; });
+    scaling(256, 1, repititions, &statistic, do_export, [](int& i) { i++; });
   } else {
     omp_set_num_threads(1);
     if (args == 2) {
