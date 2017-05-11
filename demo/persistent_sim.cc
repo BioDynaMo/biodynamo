@@ -10,6 +10,7 @@
 #define ROOTFILE "simulation_001.root"
 #define SOA "test_cells"
 #define IOHELPER "test_ioh"
+#define RUNVARS "test_rv"
 
 #define RED "\x1b[31m"
 #define GREEN "\x1b[32m"
@@ -18,6 +19,7 @@
 using bdm::Cell;
 using bdm::Soa;
 using bdm::Scalar;
+using bdm::RuntimeVariables;
 
 void print_usage() {
   std::cout
@@ -83,7 +85,7 @@ void simulate(Cell<Soa>& cells, size_t distance, std::tuple<T...>& ioh) {
     std::get<1>(ioh) = d;
 
     // Write objects to file
-    bdm::WritePersistentObject(ROOTFILE, SOA, cells, "RECREATE");
+    bdm::WritePersistentObject(ROOTFILE, SOA, cells, "UPDATE");
     bdm::WritePersistentObject(ROOTFILE, IOHELPER, ioh, "UPDATE");
 
     // Simulate the simulation overhead
@@ -119,6 +121,8 @@ int main(int args, char** argv) {
 
     Cell<Soa>* cells;
 
+    RuntimeVariables rv;
+
     // Try to find persisted objects from ROOTFILE
     // NB: these *need* to be pointers
     if ((bdm::GetPersistentObject(ROOTFILE, SOA, cells) &&
@@ -126,6 +130,13 @@ int main(int args, char** argv) {
         std::get<0>(*ioh) == cells_per_dim) {
       std::cout << GREEN "Retrieved persistent state. Continuing..." RESET
                 << std::endl;
+
+      RuntimeVariables *rv_comp;
+      bdm::GetPersistentObject(ROOTFILE, RUNVARS, rv_comp);
+      if (!(rv == *rv_comp)) {
+        std::cout << "WARN: Running simulation on a different system!"
+                  << std::endl;
+      }
 
       // todo make sure that this is necessary
       std::get<1>(*ioh)++;
@@ -144,6 +155,8 @@ int main(int args, char** argv) {
 
       auto empty_ioh = std::make_tuple(cells_per_dim, 0ul);
       ioh = &empty_ioh;
+
+      bdm::WritePersistentObject(ROOTFILE, RUNVARS, rv, "RECREATE");
 
       std::cout << RED "No persistent state found. Starting anew..." RESET
                 << std::endl;

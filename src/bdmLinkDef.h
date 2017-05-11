@@ -11,6 +11,8 @@
 
 #pragma link C++ namespace bdm;
 
+#pragma link C++ class bdm::RuntimeVariables+;
+
 #pragma link C++ class bdm::SimulationObject < bdm::Soa > +;
 #pragma link C++ class bdm::SimulationObject < bdm::Scalar > +;
 
