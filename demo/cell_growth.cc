@@ -1,7 +1,7 @@
-#include <omp.h>
 #include <cmath>
 #include <functional>
 #include <iostream>
+#include <omp.h>
 #include <sstream>
 
 #include "backend.h"
@@ -25,7 +25,7 @@ using bdm::TimingAggregator;
 using bdm::Exporter;
 
 void execute(size_t cells_per_dim, size_t iterations, size_t threads,
-             size_t repititions, TimingAggregator* statistic,
+             size_t repititions, TimingAggregator *statistic,
              bool with_export) {
   for (size_t r = 0; r < repititions; r++) {
     std::stringstream ss;
@@ -54,48 +54,51 @@ void execute(size_t cells_per_dim, size_t iterations, size_t threads,
       }
     }
 
-    {
-      Timing timing("Find Neighbors", statistic);
-      // bdm::NeighborOp op(700);
-      bdm::NeighborNanoflannOp op(700);
-      op.Compute(&cells);
+    // iterate for all (time) steps
+    Exporter exporter;
+    if (with_export) {
+      exporter.CreatePVDFile("Results4Paraview", iterations, 1.0);
     }
 
-    // __itt_resume();
-
-    {
-      Timing timing("Cell Growth", statistic);
-      bdm::DividingCellOp biology;
-      for (size_t i = 0; i < iterations; i++) {
-        biology.Compute(&cells);
-      }
-    }
-
-    // __itt_pause();
-
-    {
-      Timing timing("Displacement", statistic);
-      bdm::DisplacementOp op;
-      for (size_t i = 0; i < iterations; i++) {
+    for (size_t i = 0; i < iterations; i++) {
+      {
+        Timing timing("Find Neighbors", statistic);
+        bdm::NeighborOp op(700);
         op.Compute(&cells);
       }
-    }
 
-    if (with_export) {
-      Timing timing("Export", statistic);
-      std::cout << "exporting now..." << std::endl;
-      Exporter exporter;
-      exporter.ToFile(cells, "FinalPositions.dat");
-      exporter.ToMatlabFile(cells, "FinalPositions.m");
-      exporter.ToNeuroMLFile(cells, "FinalPositions.xml");
+      // __itt_resume();
+
+      {
+        Timing timing("Cell Growth", statistic);
+        bdm::DividingCellOp biology;
+        biology.Compute(&cells);
+      }
+
+      // __itt_pause();
+
+      {
+        Timing timing("Displacement", statistic);
+        bdm::DisplacementOp op;
+        op.Compute(&cells);
+      }
+
+      if (with_export) {
+        Timing timing("Export", statistic);
+        std::cout << "exporting now..." << std::endl;
+        exporter.ToFile(&cells, "FinalPositions.dat");
+        exporter.ToMatlabFile(&cells, "FinalPositions.m");
+        exporter.ToNeuroMLFile(&cells, "FinalPositions.xml");
+        exporter.ToVTUFile(&cells, "Results4Paraview", i);
+      }
     }
   }
 }
 
 void scaling(size_t cells_per_dim, size_t iterations, size_t repititions,
-             TimingAggregator* statistic, bool with_export,
-             const std::function<void(int&)> thread_inc =
-                 [](int& i) {  // NOLINT(runtime/references)
+             TimingAggregator *statistic, bool with_export,
+             const std::function<void(int &)> thread_inc =
+                 [](int &i) { // NOLINT(runtime/references)
                    i *= 2;
                  },
              const int max_threads = omp_get_max_threads()) {
@@ -105,7 +108,7 @@ void scaling(size_t cells_per_dim, size_t iterations, size_t repititions,
   }
 }
 
-int main(int args, char** argv) {
+int main(int args, char **argv) {
   TimingAggregator statistic;
   size_t repititions = 1;
   bool do_export = false;
@@ -113,37 +116,36 @@ int main(int args, char** argv) {
       (std::string(argv[1]) == "help" || std::string(argv[1]) == "--help")) {
     // clang-format off
     std::cout << "SYNOPSIS\n"
-              << "  ./cell_growth help | --help |\n"
-              << "         [#repititions] | \n"
-              << "         [#cells_per_dim #iterations #threads [#repititions] | \n"
-              << "         --scaling [#repititions] | \n"
-              << "         --detailed-scaling [#repititions] \n"
-              << "\nDESCRIPTION\n"
-              << "  Creates a three dimensional grid of cells, calculates neighbors, simulates \n"
-              << "  cell growth and calculates displacement based on mechanical forces\n"
-              << "  outputs runtime statistic for each operation\n"
-              << "\nOPTIONS\n"
-              << "  help | --help\n"
-              << "    Explains usage of this binary and its command line options\n"
-              << "\n  [#repititions]\n"
-              << "     number of cells per dimension: 8 (-> total number of cells: 8^3 = 512)\n"
-              << "     number of iterations:          1\n"
-              << "     number of threads:             1\n"
-              << "     number of repititions:         according to parameter - 1 if not specified\n"
-              << "\n  --scaling [#repititions]\n"
-              << "     executes the simulation several times with different number of threads\n"
-              << "     number of cells per dimension: 128 (-> total number of cells: 128^3 =~ 2.1M)\n"
-              << "     number of iterations:          1\n"
-              << "     number of threads:             1 - logical CPUs on the system - incremented *= 2\n"
-              << "     number of repititions:         according to parameter - 1 if not specified\n"
-              << "\n  --detailed-scaling [#repititions]\n"
-              << "     executes the simulation several times with different number of threads\n"
-              << "     number of cells per dimension: 128 (-> total number of cells: 128^3 =~ 2.1M)\n"
-              << "     number of iterations:          1\n"
-              << "     number of threads:             1 - logical CPUs on the system - threads incremented += 1\n"
-              << "     number of repititions:         according to parameter - 1 if not specified\n"
-              << std::endl;
-    // clang-format on
+  << "  ./cell_growth help | --help |\n"
+  << "         [#repititions] | \n"
+  << "         [#cells_per_dim #iterations #threads [#repititions] | \n"
+  << "         --scaling [#repititions] | \n"
+  << "         --detailed-scaling [#repititions] \n"
+  << "\nDESCRIPTION\n"
+  << "  Creates a three dimensional grid of cells, calculates neighbors, simulates \n"
+  << "  cell growth and calculates displacement based on mechanical forces\n"
+  << "  outputs runtime statistic for each operation\n"
+  << "\nOPTIONS\n"
+  << "  help | --help\n"
+  << "    Explains usage of this binary and its command line options\n"
+  << "\n  [#repititions]\n"
+  << "     number of cells per dimension: 8 (-> total number of cells: 8^3 = 512)\n"
+  << "     number of iterations:          1\n"
+  << "     number of threads:             1\n"
+  << "     number of repititions:         according to parameter - 1 if not specified\n"
+  << "\n  --scaling [#repititions]\n"
+  << "     executes the simulation several times with different number of threads\n"
+  << "     number of cells per dimension: 128 (-> total number of cells: 128^3 =~ 2.1M)\n"
+  << "     number of iterations:          1\n"
+  << "     number of threads:             1 - logical CPUs on the system - incremented *= 2\n"
+  << "     number of repititions:         according to parameter - 1 if not specified\n"
+  << "\n  --detailed-scaling [#repititions]\n"
+  << "     executes the simulation several times with different number of threads\n"
+  << "     number of cells per dimension: 128 (-> total number of cells: 128^3 =~ 2.1M)\n"
+  << "     number of iterations:          1\n"
+  << "     number of threads:             1 - logical CPUs on the system - threads incremented += 1\n"
+  << "     number of repititions:         according to parameter - 1 if not specified\n"
+  << std::endl;
     return 0;
   } else if (args >= 4) {
     size_t cells;
