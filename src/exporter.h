@@ -9,16 +9,27 @@
 #include <string>
 
 #include "backend.h"
-#include "default_force.h"
-#include "inline_vector.h"
-#include "math_util.h"
-#include "param.h"
+#include "cell.h"
+#include "displacement_op.h"
+#include "dividing_cell_op.h"
+#include "exporter.h"
+#include "neighbor_nanoflann_op.h"
+#include "neighbor_op.h"
+#include "resource_manager.h"
+#include "scheduler.h"
+#include "timing.h"
+#include "timing_aggregator.h"
 
 using std::cout;
 using std::endl;
 using std::string;
 using std::fstream;
 using std::ofstream;
+using bdm::Cell;
+using bdm::Scalar;
+using bdm::Soa;
+using bdm::Timing;
+using bdm::TimingAggregator;
 
 namespace bdm {
 
@@ -27,13 +38,13 @@ class Exporter {
   /// This function exports the cell positions into a file,
   /// where each line contains the 3D position of a cell in square brackets.
   template <typename TContainer>
-  void ToFile(const TContainer& cells, string filename) const {
+  void ToFile(const TContainer *cells, string filename) const {
     ofstream outfile;
     outfile.open(filename);
 
-    for (size_t i = 0; i < cells.size(); i++) {
-      auto& cell = cells[i];
-      auto& curr_pos = cell.GetPosition();
+    for (size_t i = 0; i < cells->size(); i++) {
+      auto &&cell = (*cells)[i];
+      auto curr_pos = cell.GetPosition();
       outfile << "[" << curr_pos[0] << "," << curr_pos[1] << "," << curr_pos[2]
               << "]" << endl;
     }
@@ -49,17 +60,17 @@ class Exporter {
   /// is initialized with the correct size corresponding to the number of
   /// cells.
   template <typename TContainer>
-  void ToMatlabFile(const TContainer& cells, string filename) const {
+  void ToMatlabFile(const TContainer *cells, string filename) const {
     ofstream outfile;
     outfile.open(filename);
 
-    int num_cells = cells.size();
+    int num_cells = cells->size();
 
     outfile << "CellPos = zeros(" << num_cells << "," << 3 << ");" << endl;
 
-    for (size_t i = 0; i < cells.size(); i++) {
-      auto& cell = cells[i];
-      auto& curr_pos = cell.GetPosition();
+    for (size_t i = 0; i < cells->size(); i++) {
+      auto &&cell = (*cells)[i];
+      auto curr_pos = cell.GetPosition();
       outfile << "CellPos(" << i + 1 << ",1:3) = [" << curr_pos[0] << ","
               << curr_pos[1] << "," << curr_pos[2] << "];" << endl;
     }
@@ -73,7 +84,7 @@ class Exporter {
   /// Currently, no axons or connectivity is present, so these information
   /// will be added in the future.
   template <typename TContainer>
-  void ToNeuroMLFile(const TContainer& cells, string filename) const {
+  void ToNeuroMLFile(const TContainer *cells, string filename) const {
     ofstream outfile;
     outfile.open(filename);
 
@@ -152,7 +163,7 @@ class Exporter {
 
     // TODO(roman): here, the cell populations and connectivity will be
     // specified and exported, once these are included in the model
-    for (size_t i = 0; i < cells.size(); i++) {
+    for (size_t i = 0; i < cells->size(); i++) {
     }
 
     outfile << endl;
@@ -189,11 +200,10 @@ class Exporter {
   /// This function exports the cell positions as well as properties into a .vtu
   /// file,
   /// which can be read by Paraview for visualization.
-  template <typename daosoa>
-  void ToVTUFile(const daosoa& cells, string filename,
+  template <typename TContainer>
+  void ToVTUFile(const TContainer *cells, string filename,
                  size_t iteration_index) const {
-    const size_t num_vectors = cells.vectors();
-    const size_t num_cells = VcBackend::kVecLen * num_vectors;
+    const size_t num_cells = cells->size();
     size_t index = 0;
     std::ofstream vtu(filename + "-" + std::to_string(iteration_index) +
                       ".vtu");
@@ -208,13 +218,12 @@ class Exporter {
     vtu << "            <DataArray type=\"Float64\" NumberOfComponents=\"3\" "
            "format=\"ascii\">"
         << std::endl;
-    for (size_t i = 0; i < num_vectors; i++) {
-      auto& cell = cells[i];
-      auto& coord = cell.GetPosition();
-      for (size_t j = 0; j < cell.Size(); j++) {
-        vtu << ' ' << coord[0][j] << ' ' << coord[1][j] << ' ' << coord[2][j]
-            << std::flush;
-      }
+    for (size_t i = 0; i < num_cells; i++) {
+      auto &&cell = (*cells)[i];
+      auto &coord = cell.GetPosition();
+
+      vtu << ' ' << coord[0] << ' ' << coord[1] << ' ' << coord[2]
+          << std::flush;
     }
     vtu << std::endl;
     vtu << "            </DataArray>" << std::endl;
@@ -224,70 +233,71 @@ class Exporter {
            "NumberOfComponents=\"1\" format=\"ascii\">"
         << std::endl;
     index = 0;
-    for (size_t i = 0; i < num_vectors; i++) {
-      auto& cell = cells[i];
-      for (size_t j = 0; j < cell.Size(); j++)
-        vtu << ' ' << index++ << std::flush;
+    for (size_t i = 0; i < num_cells; i++) {
+      vtu << ' ' << index++ << std::flush;
     }
     vtu << std::endl;
     vtu << "            </DataArray>" << std::endl;
     vtu << "            <DataArray type=\"Float64\" Name=\"Adherence\" "
            "NumberOfComponents=\"1\" format=\"ascii\">"
         << std::endl;
-    for (size_t i = 0; i < num_vectors; i++) {
-      auto& cell = cells[i];
-      auto& adhr = cell.GetAdherence();
-      for (size_t j = 0; j < cell.Size(); j++)
-        vtu << ' ' << adhr[j] << std::flush;
+    for (size_t i = 0; i < num_cells; i++) {
+      auto &&cell = (*cells)[i];
+      auto adhr = cell.GetAdherence();
+
+      vtu << ' ' << adhr << std::flush;
     }
     vtu << std::endl;
     vtu << "            </DataArray>" << std::endl;
     vtu << "            <DataArray type=\"Float64\" Name=\"Diameter\" "
            "NumberOfComponents=\"1\" format=\"ascii\">"
         << std::endl;
-    for (size_t i = 0; i < num_vectors; i++) {
-      auto& cell = cells[i];
-      auto& diam = cell.GetDiameter();
-      for (size_t j = 0; j < cell.Size(); j++)
-        vtu << ' ' << diam[j] << std::flush;
+    for (size_t i = 0; i < num_cells; i++) {
+      auto &&cell = (*cells)[i];
+      auto diam = cell.GetDiameter();
+
+      vtu << ' ' << diam << std::flush;
     }
     vtu << std::endl;
     vtu << "            </DataArray>" << std::endl;
     vtu << "            <DataArray type=\"Float64\" Name=\"Mass\" "
            "NumberOfComponents=\"1\" format=\"ascii\">"
         << std::endl;
-    for (size_t i = 0; i < num_vectors; i++) {
-      auto& cell = cells[i];
-      auto& mass = cell.GetMass();
-      for (size_t j = 0; j < cell.Size(); j++)
-        vtu << ' ' << mass[j] << std::flush;
+    for (size_t i = 0; i < num_cells; i++) {
+      auto &&cell = (*cells)[i];
+      auto mass = cell.GetMass();
+
+      vtu << ' ' << mass << std::flush;
     }
     vtu << std::endl;
     vtu << "            </DataArray>" << std::endl;
     vtu << "            <DataArray type=\"Float64\" Name=\"Volume\" "
            "NumberOfComponents=\"1\" format=\"ascii\">"
         << std::endl;
-    for (size_t i = 0; i < num_vectors; i++) {
-      auto& cell = cells[i];
-      auto& volm = cell.GetVolume();
-      for (size_t j = 0; j < cell.Size(); j++)
-        vtu << ' ' << volm[j] << std::flush;
+    for (size_t i = 0; i < num_cells; i++) {
+      auto &&cell = (*cells)[i];
+      auto volm = cell.GetVolume();
+
+      vtu << ' ' << volm << std::flush;
     }
     vtu << std::endl;
     vtu << "            </DataArray>" << std::endl;
     vtu << "            <DataArray type=\"Float64\" Name=\"TractionForce\" "
            "NumberOfComponents=\"3\" format=\"ascii\">"
         << std::endl;
-    for (size_t i = 0; i < num_vectors; i++) {
-      auto& cell = cells[i];
-      auto& tracf = cell.GetTractorForce();
-      for (size_t j = 0; j < cell.Size(); j++)
-        vtu << ' ' << tracf[0][j] << ' ' << tracf[1][j] << ' ' << tracf[2][j]
-            << std::flush;
+    for (size_t i = 0; i < num_cells; i++) {
+      auto &&cell = (*cells)[i];
+      auto &tracf = cell.GetTractorForce();
+
+      vtu << ' ' << tracf[0] << ' ' << tracf[1] << ' ' << tracf[2]
+          << std::flush;
     }
     vtu << std::endl;
     vtu << "            </DataArray>" << std::endl;
     vtu << "         </PointData>" << std::endl;
+
+    // roman: this is relevant for Int32 format, keeping in case
+    // required in the future
     // vtu << "         <CellData>" << std::endl;
     // vtu << "            <DataArray type=\"Int32\" Name=\"cell_ID\"
     // NumberOfComponents=\"1\" format=\"ascii\">" << std::endl;
@@ -300,33 +310,30 @@ class Exporter {
     // vtu << std::endl;
     // vtu << "            </DataArray>" << std::endl;
     // vtu << "         </CellData>" << std::endl;
+
     vtu << "         <Cells>" << std::endl;
     vtu << "            <DataArray type=\"Int32\" Name=\"connectivity\" "
            "format=\"ascii\">"
         << std::endl;
     index = 0;
-    for (size_t i = 0; i < num_vectors; i++) {
-      auto& cell = cells[i];
-      for (size_t j = 0; j < cell.Size(); j++)
-        vtu << ' ' << index++ << std::flush;
+    for (size_t i = 0; i < num_cells; i++) {
+      vtu << ' ' << index++ << std::flush;
     }
     vtu << std::endl;
     vtu << "            </DataArray>" << std::endl;
     vtu << "            <DataArray type=\"Int32\" Name=\"offsets\" "
            "format=\"ascii\">"
         << std::endl;
-    for (size_t i = 0; i < num_vectors; i++) {
-      auto& cell = cells[i];
-      for (size_t j = 0; j < cell.Size(); j++) vtu << ' ' << 1 << std::flush;
+    for (size_t i = 0; i < num_cells; i++) {
+      vtu << ' ' << 1 << std::flush;
     }
     vtu << std::endl;
     vtu << "            </DataArray>" << std::endl;
     vtu << "            <DataArray type=\"Int32\" Name=\"types\" "
            "format=\"ascii\">"
         << std::endl;
-    for (size_t i = 0; i < num_vectors; i++) {
-      auto& cell = cells[i];
-      for (size_t j = 0; j < cell.Size(); j++) vtu << ' ' << 1 << std::flush;
+    for (size_t i = 0; i < num_cells; i++) {
+      vtu << ' ' << 1 << std::flush;
     }
     vtu << std::endl;
     vtu << "            </DataArray>" << std::endl;
@@ -336,5 +343,5 @@ class Exporter {
     vtu << "</VTKFile>" << std::endl;
   }
 };
-}  // namespace bdm
-#endif  // EXPORTER_H_
+}   // namespace bdm
+#endif   // EXPORTER_H_

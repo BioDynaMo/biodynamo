@@ -20,7 +20,7 @@ TEST(ExportTest, ConductExportToFile) {
   Exporter exporter;
 
   // Test the standard file exporter
-  exporter.ToFile(cells, "TestExporter.dat");
+  exporter.ToFile(&cells, "TestExporter.dat");
   std::ifstream t;
   std::stringstream buffer;
   t.open("TestExporter.dat");
@@ -35,7 +35,7 @@ TEST(ExportTest, ConductExportToFile) {
   remove("TestExporter.dat");
 
   // Test the Matlab file exporter
-  exporter.ToMatlabFile(cells, "TestMatlabExporter.m");
+  exporter.ToMatlabFile(&cells, "TestMatlabExporter.m");
   t.open("TestMatlabExporter.m");
   std::getline(t, line);
   EXPECT_EQ("CellPos = zeros(2,3);", line);
@@ -50,7 +50,7 @@ TEST(ExportTest, ConductExportToFile) {
 
   // Test the Paraview exporter
   exporter.CreatePVDFile("TestResultsParaview", 1, 1.0);
-  exporter.ToVTUFile(cells, "TestResultsParaview", 1);
+  exporter.ToVTUFile(&cells, "TestResultsParaview", 1);
   t.open("TestResultsParaview.pvd");
   std::getline(t, line);
   EXPECT_EQ("<?xml version=\"1.0\"?>", line);

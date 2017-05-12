@@ -1,7 +1,7 @@
-#include <omp.h>
 #include <cmath>
 #include <functional>
 #include <iostream>
+#include <omp.h>
 #include <sstream>
 
 #include "backend.h"
@@ -25,7 +25,7 @@ using bdm::TimingAggregator;
 using bdm::Exporter;
 
 void execute(size_t cells_per_dim, size_t iterations, size_t threads,
-             size_t repititions, TimingAggregator* statistic,
+             size_t repititions, TimingAggregator *statistic,
              bool with_export) {
   for (size_t r = 0; r < repititions; r++) {
     std::stringstream ss;
@@ -86,19 +86,19 @@ void execute(size_t cells_per_dim, size_t iterations, size_t threads,
       if (with_export) {
         Timing timing("Export", statistic);
         std::cout << "exporting now..." << std::endl;
-        exporter.ToFile(cells, "FinalPositions.dat");
-        exporter.ToMatlabFile(cells, "FinalPositions.m");
-        exporter.ToNeuroMLFile(cells, "FinalPositions.xml");
-        exporter.ToVTUFile(cells, "Results4Paraview", i);
+        exporter.ToFile(&cells, "FinalPositions.dat");
+        exporter.ToMatlabFile(&cells, "FinalPositions.m");
+        exporter.ToNeuroMLFile(&cells, "FinalPositions.xml");
+        exporter.ToVTUFile(&cells, "Results4Paraview", i);
       }
     }
   }
 }
 
 void scaling(size_t cells_per_dim, size_t iterations, size_t repititions,
-             TimingAggregator* statistic, bool with_export,
-             const std::function<void(int&)> thread_inc =
-                 [](int& i) {  // NOLINT(runtime/references)
+             TimingAggregator *statistic, bool with_export,
+             const std::function<void(int &)> thread_inc =
+                 [](int &i) { // NOLINT(runtime/references)
                    i *= 2;
                  },
              const int max_threads = omp_get_max_threads()) {
@@ -108,7 +108,7 @@ void scaling(size_t cells_per_dim, size_t iterations, size_t repititions,
   }
 }
 
-int main(int args, char** argv) {
+int main(int args, char **argv) {
   TimingAggregator statistic;
   size_t repititions = 1;
   bool do_export = false;
