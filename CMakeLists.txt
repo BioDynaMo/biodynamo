@@ -34,6 +34,18 @@ if ("$ENV{CMAKE_EXPORT_COMPILE_COMMANDS}" STREQUAL "1" OR CLANG_TIDY_FOUND)
   set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 endif()
 
+set(USE_CATALYST ON CACHE BOOL "Link BioDynaMo with ParaView Catalyst")
+if(USE_CATALYST)
+  find_package(ParaView 5.3 REQUIRED COMPONENTS vtkPVPythonCatalyst)
+  include("${PARAVIEW_USE_FILE}")
+  set(Adaptor_SRCS
+    ${CMAKE_SOURCE_DIR}/demo/bdmAdaptor.cc
+    )
+  add_library(bdmAdaptor ${Adaptor_SRCS})
+  target_link_libraries(bdmAdaptor vtkPVPythonCatalyst)
+  add_definitions("-DUSE_CATALYST")
+endif()
+
 #--------------------- includes -------------
 include(BioDynaMo)
 include(ExternalProject)
