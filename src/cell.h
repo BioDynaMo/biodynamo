@@ -42,6 +42,9 @@ class CellExt : public Base {
 
   const array<double, 3>& GetPosition() const { return position_[idx_]; }
 
+  double* GetPositionPtr() { return &(position_[0][0]); }
+  double* GetDiameterPtr() { return &(diameter_[0]); }
+
   const array<double, 3>& GetTractorForce() const {
     return tractor_force_[idx_];
   }

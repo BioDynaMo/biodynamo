@@ -36,6 +36,18 @@ if ("$ENV{CMAKE_EXPORT_COMPILE_COMMANDS}" STREQUAL "1" OR CLANG_TIDY_FOUND)
   set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 endif()
 
+set(USE_CATALYST ON CACHE BOOL "Link BioDynaMo with ParaView Catalyst")
+if(USE_CATALYST)
+  find_package(ParaView 5.3 REQUIRED COMPONENTS vtkPVPythonCatalyst)
+  include("${PARAVIEW_USE_FILE}")
+  set(Adaptor_SRCS
+    ${CMAKE_SOURCE_DIR}/demo/bdmAdaptor.cc
+    )
+  add_library(bdmAdaptor ${Adaptor_SRCS})
+  target_link_libraries(bdmAdaptor vtkPVPythonCatalyst)
+  add_definitions("-DUSE_CATALYST")
+endif()
+
 #--------------------- includes -------------
 include(ExternalProject)
 include(cmake/doxygen.cmake)
@@ -231,3 +243,9 @@ endif()
 set(SIMULATION_TARGET cell_growth)
 add_executable(${SIMULATION_TARGET} ${CMAKE_SOURCE_DIR}/demo/cell_growth.cc)
 target_link_libraries(${SIMULATION_TARGET} biodynamo)
+
+# --------------------- build division module simulation executable ---------------------
+set(SIMULATION_TARGET2 cell_displacement)
+add_executable(${SIMULATION_TARGET2} ${CMAKE_SOURCE_DIR}/demo/cell_displacement.cc)
+target_link_libraries(${SIMULATION_TARGET2} biodynamo bdmAdaptor)
+include(vtkModuleMacros)
