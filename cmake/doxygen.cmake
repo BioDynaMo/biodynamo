@@ -19,7 +19,8 @@ if(DOXYGEN_FOUND)
   add_custom_target(doc
       COMMAND ${DOXYGEN_EXECUTABLE} ${doxyfile}
       WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
-      COMMENT "Generating API documentation with Doxygen"
+      COMMENT "Generating API documentation with Doxygen.
+       Open the following file in your browser: ${CMAKE_BINARY_DIR}/doc/html/index.html"
       VERBATIM)
 
   install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/doc/html" DESTINATION share/doc)

@@ -19,6 +19,7 @@ function help {
 }
 
 git_cmd=""
+return_value=0
 if [[ "$1" == "help" || "$1" == "--help" || "$1" == "-h" ]] ; then
   help
 elif [ "$1" == "staged" ]; then
@@ -31,18 +32,26 @@ elif [[ "$#" -ne 0 ]]; then
       if [[ $f == *"test/"* ]]; then
         root_dir=test
       fi
-      $SCRIPTPATH/cpplint.py --root=$root_dir --linelength=80 --filter=-build/c++11,-legal/copyright $f
+      $SCRIPTPATH/cpplint.py --root=$root_dir --linelength=80 --filter=-build/c++11,-legal/copyright,-whitespace/line_length $f
+      if [ $? != 0 ]; then
+        # Errors found in last source file
+        return_value=1
+      fi
    done
-   exit 0
+   if [ $return_value != 0 ]; then
+     echo "Error: cpplint suggested changes, please fix them!"
+   fi
+   exit $return_value
 else
-  help
+  echo "Warning: No files to process."
+  exit 0
 fi
 
 # run cpplint for all staged source files in dir src/ and include/
 files=$($git_cmd | grep "^\(src\|include\)/.*" | grep "\(\.h\|\.cc\)$")
 num_files=$(echo "$files" | sed '/^$/d' | wc -l)
 if [ $num_files != "0" ]; then
-  echo "$files" | xargs $SCRIPTPATH/cpplint.py --root=src --linelength=80 --filter=-build/c++11,-legal/copyright
+  echo "$files" | xargs $SCRIPTPATH/cpplint.py --root=src --linelength=80 --filter=-build/c++11,-legal/copyright,-whitespace/line_length
 else
   echo "Nothing to be checked for directory src"
 fi
@@ -51,7 +60,7 @@ fi
 files=$($git_cmd | grep "^test/.*" | grep "\(\.h\|\.cc\)$")
 num_files=$(echo "$files" | sed '/^$/d' | wc -l)
 if [ $num_files != "0" ]; then
-  echo "$files" | xargs $SCRIPTPATH/cpplint.py --root=test --linelength=80 --filter=-build/c++11,-legal/copyright
+  echo "$files" | xargs $SCRIPTPATH/cpplint.py --root=test --linelength=80 --filter=-build/c++11,-legal/copyright,-whitespace/line_length
 else
   echo "Nothing to be checked for directory test"
 fi
