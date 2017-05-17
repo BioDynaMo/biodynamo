@@ -32,7 +32,7 @@ struct SimulationObject {
 
   /// Equivalent to std::vector<> reserve - it increases the capacity
   /// of all data member containers
-  void reserve(size_t new_capacity) {}
+  void reserve(size_t new_capacity) { size_ = 0; }
 
   template <typename T = Backend>
   typename std::enable_if<std::is_same<T, SoaRef>::value,
