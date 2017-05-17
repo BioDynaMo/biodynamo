@@ -53,9 +53,10 @@ void simulate(Cell<Soa>& cells, size_t numberOfTimeSteps) {
     for (size_t i = 0; i < cells.size(); i++) {
       // The simulation operation is just a simple cell displacement and growth
       auto current_pos = cells[i].GetPosition();
-      float r = -1.0 + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(2)));
+      double r = -1.0 + static_cast <double> (rand()) /( static_cast <double> (RAND_MAX/(2)));
       std::array<double, 3> new_pos{(current_pos[0] + r),
                                     current_pos[1] + r, current_pos[2] + r};
+
       cells[i].SetPosition(new_pos);
 
       // auto current_dia = cells[i].GetDiameter();
