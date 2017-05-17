@@ -11,10 +11,13 @@ namespace spatial_organization {
 
 size_t ManualSearchSize(Point *pos, size_t size, double distance) {
   size_t result = 0;
-  for (size_t i = 0; i < size; i++)
-    for (size_t j = i + 1; j < size; j++)
-      if (pos[i].EuclidianDistance(pos[j]) <= distance)
+  for (size_t i = 0; i < size; i++) {
+    for (size_t j = i + 1; j < size; j++) {
+      if (pos[i].EuclidianDistance(pos[j]) <= distance) {
         result++;
+      }
+    }
+  }
 
   return result;
 }
@@ -22,11 +25,13 @@ size_t ManualSearchSize(Point *pos, size_t size, double distance) {
 std::vector<std::pair<int, int>> ManualSearch(Point *pos, int size,
                                               double distance) {
   std::vector<std::pair<int, int>> result;
-  for (int i = 0; i < size; i++)
-    for (int j = i + 1; j < size; j++)
+  for (int i = 0; i < size; i++) {
+    for (int j = i + 1; j < size; j++) {
       if (pos[i].EuclidianDistance(pos[j]) <= distance) {
         result.push_back(std::make_pair(i, j));
       }
+    }
+  }
 
   return result;
 }

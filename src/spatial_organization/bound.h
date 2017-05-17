@@ -45,7 +45,9 @@ class Bound {
     double min_ab = fmin(a, b);
     double max_ab = fmax(a, b);
 
-    if (min_xy >= max_ab) return min_xy - max_ab;
+    if (min_xy >= max_ab) {
+      return min_xy - max_ab;
+    }
     return min_ab - max_xy;
   }
 
@@ -76,14 +78,17 @@ class Bound {
     double dx = 0, dy = 0, dz = 0;
 
     // calculate distance only if there is no overlaping
-    if (!is_overlap_x)
+    if (!is_overlap_x) {
       dx = DistanceBetweenSegments(bx[0][0], bx[0][1], bx[1][0], bx[1][1]);
+    }
 
-    if (!is_overlap_y)
+    if (!is_overlap_y) {
       dy = DistanceBetweenSegments(by[0][0], by[0][1], by[1][0], by[1][1]);
+    }
 
-    if (!is_overlap_z)
+    if (!is_overlap_z) {
       dz = DistanceBetweenSegments(bz[0][0], bz[0][1], bz[1][0], bz[1][1]);
+    }
     return dx * dx + dy * dy + dz * dz;
   }
 

@@ -32,10 +32,9 @@ class DisplacementOp {
       // There is also a computation of the torque (only applied
       // by the daughter neurites), stored in rotationForce.
 
-      // TODO : There might be a problem, in the sense that the biology is not
-      // applied
-      // if the total Force is smaller than adherence. Once, I should look at
-      // this more carefully.
+      // TODO(roman) : There might be a problem, in the sense that the biology
+      // is not applied if the total Force is smaller than adherence.
+      // Once, I should look at this more carefully.
 
       // If we detect enough forces to make us  move, we will re-schedule us
       // setOnTheSchedulerListForPhysicalObjects(false);

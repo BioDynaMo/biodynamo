@@ -16,8 +16,8 @@ class ResourceManager {
   virtual ~ResourceManager() {}
 
   static ResourceManager<Backend>* Get() {
-    static ResourceManager<Backend> instance;
-    return &instance;
+    static ResourceManager<Backend> kInstance;
+    return &kInstance;
   }
 
   // todo change to return const and const method

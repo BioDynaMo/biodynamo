@@ -23,15 +23,17 @@ struct NanoFlannAdapter {
   explicit NanoFlannAdapter(const Derived& obj_) : obj(obj_) {}
 
   /// CRTP helper method
-  inline const Derived& derived() const { return obj; }
+  inline const Derived& derived() const { return obj; }  // NOLINT
 
   /// Must return the number of data points
-  inline size_t kdtree_get_point_count() const { return derived().size(); }
+  inline size_t kdtree_get_point_count() const {  // NOLINT
+    return derived().size();
+  }
 
   /// Returns the distance between the vector "p1[0:size-1]" and the data point
   /// with index "idx_p2" stored in the class:
-  inline coord_t kdtree_distance(const coord_t* p1, const size_t idx_p2,
-                                 size_t /*size*/) const {
+  inline coord_t kdtree_distance(const coord_t* p1,  // NOLINT
+                                 const size_t idx_p2, size_t size) const {
     const coord_t d0 = p1[0] - derived()[idx_p2].GetPosition()[0];
     const coord_t d1 = p1[1] - derived()[idx_p2].GetPosition()[1];
     const coord_t d2 = p1[2] - derived()[idx_p2].GetPosition()[2];
@@ -41,7 +43,7 @@ struct NanoFlannAdapter {
   /// Returns the dim'th component of the idx'th point in the class:
   /// Since this is inlined and the "dim" argument is typically an immediate
   /// value, the "if/else's" are actually solved at compile time.
-  inline coord_t kdtree_get_pt(const size_t idx, int dim) const {
+  inline coord_t kdtree_get_pt(const size_t idx, int dim) const {  // NOLINT
     return derived()[idx].GetPosition()[dim];
   }
 
@@ -53,7 +55,7 @@ struct NanoFlannAdapter {
   ///   Look at bb.size() to find out the expected dimensionality (e.g. 2 or 3
   ///   for point clouds)
   template <class BBOX>
-  bool kdtree_get_bbox(BBOX&) const {
+  bool kdtree_get_bbox(BBOX&) const {  // NOLINT
     return false;
   }
 };
@@ -72,10 +74,10 @@ class NeighborNanoflannOp {
     // construct a 3D kd-tree index:
     typedef KDTreeSingleIndexAdaptor<L2_Simple_Adaptor<double, Adapter>,
                                      Adapter, 3>
-        my_kd_tree_t;
+        MyKdTree;
 
     // three dimensions; max leafs: 10
-    my_kd_tree_t index(3, nf_cells, KDTreeSingleIndexAdaptorParams(10));
+    MyKdTree index(3, nf_cells, KDTreeSingleIndexAdaptorParams(10));
     index.buildIndex();
 
 // calc neighbors

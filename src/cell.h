@@ -74,8 +74,8 @@ class CellExt : public Base {
 
   void ChangeVolume(double speed) {
     // scaling for integration step
-    double dV = speed * Param::kSimulationTimeStep;
-    volume_[idx_] += dV;
+    double delta = speed * Param::kSimulationTimeStep;
+    volume_[idx_] += delta;
     if (volume_[idx_] < 5.2359877E-7) {
       volume_[idx_] = 5.2359877E-7;
     }

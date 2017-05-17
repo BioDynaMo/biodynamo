@@ -52,23 +52,20 @@ class Point {
     return Point(x_ + b.x_, y_ + b.y_, z_ + b.z_);
   }
 
-  /// Comparison of the points
-  bool operator==(Point const &b) const { return equals(b); }
+  /// Check if two points are equal or not
+  bool operator==(Point const &b) const {
+    return fabs(x_ - b.x_) < Param::kEpsilon &&
+           fabs(y_ - b.y_) < Param::kEpsilon &&
+           fabs(z_ - b.z_) < Param::kEpsilon;
+  }
 
   /// Comparison of the points
-  bool operator!=(Point const &b) const { return !equals(b); }
+  bool operator!=(Point const &b) const { return !operator==(b); }
 
   void operator=(Point const &b) {
     x_ = b.x_;
     y_ = b.y_;
     z_ = b.z_;
-  }
-
-  /// Check if two points is equal or not
-  bool equals(Point const &b) const {
-    return fabs(x_ - b.x_) < Param::kEpsilon &&
-           fabs(y_ - b.y_) < Param::kEpsilon &&
-           fabs(z_ - b.z_) < Param::kEpsilon;
   }
 };
 }  // namespace spatial_organization
