@@ -3,7 +3,7 @@
 # Due to issues with 'clang-analyzer-core.UndefinedBinaryOperatorResult'
 # disable all clang-analyzer* checks for now
 Checks:            -*,google-*,readability-identifier-naming
-HeaderFilterRegex: 'src/*.h'
+HeaderFilterRegex: 'src/.*'
 AnalyzeTemporaryDtors: true
 CheckOptions:
   - key:             google-readability-braces-around-statements.ShortStatementLines
@@ -49,12 +49,10 @@ CheckOptions:
     value:           CamelCase
   - key:             readability-identifier-naming.EnumConstantCase
     value:           CamelCase
-  - key:             readability-identifier-naming.EnumConstantCase
-    value:           aNy_Case
   - key:             readability-identifier-naming.EnumConstantPrefix
-    value:           ''
+    value:           'k'
   - key:             readability-identifier-naming.EnumConstantSuffix
-    value:           '_'
+    value:           ''
   - key:             readability-identifier-naming.FunctionCase
     value:           CamelCase
   - key:             readability-identifier-naming.GlobalConstantCase
