@@ -2,8 +2,8 @@
 #include <unistd.h>
 #include <cstdlib>
 
-#include "cell.h"
 #include "bdmAdaptor.h"
+#include "cell.h"
 
 using bdm::Cell;
 using bdm::Soa;
@@ -53,9 +53,11 @@ void simulate(Cell<Soa>& cells, size_t numberOfTimeSteps) {
     for (size_t i = 0; i < cells.size(); i++) {
       // The simulation operation is just a simple cell displacement and growth
       auto current_pos = cells[i].GetPosition();
-      double r = -1.0 + static_cast <double> (rand()) /( static_cast <double> (RAND_MAX/(2)));
-      std::array<double, 3> new_pos{(current_pos[0] + r),
-                                    current_pos[1] + r, current_pos[2] + r};
+      double r =
+          -1.0 +
+          static_cast<double>(rand()) / (static_cast<double>(RAND_MAX / (2)));
+      std::array<double, 3> new_pos{(current_pos[0] + r), current_pos[1] + r,
+                                    current_pos[2] + r};
 
       cells[i].SetPosition(new_pos);
 
@@ -63,8 +65,9 @@ void simulate(Cell<Soa>& cells, size_t numberOfTimeSteps) {
       // cells[i].SetDiameter(current_dia + 1.0);
     }
     // timestep of 0.1
-    double time = 0.1*timeStep;
-    bdmAdaptor::CoProcess(cells, time, timeStep, timeStep == numberOfTimeSteps - 1);
+    double time = 0.1 * timeStep;
+    bdmAdaptor::CoProcess(cells, time, timeStep,
+                          timeStep == numberOfTimeSteps - 1);
 
     // Simulate the simulation overhead
     std::cout << "Simulating..." << std::endl;
@@ -82,8 +85,8 @@ int main(int args, char** argv) {
     std::istringstream(std::string(argv[2])) >> duration;
 
 #ifdef USE_CATALYST
-  // initialize with a single script (for this demo)
-  bdmAdaptor::Initialize(argv[3]);
+    // initialize with a single script (for this demo)
+    bdmAdaptor::Initialize(argv[3]);
 #endif
 
     auto new_cells = initialize_cells(cells_per_dim);
@@ -94,7 +97,7 @@ int main(int args, char** argv) {
     simulate(*cells, duration);
 
 #ifdef USE_CATALYST
-  bdmAdaptor::Finalize();
+    bdmAdaptor::Finalize();
 #endif
   } else {
     print_usage();
