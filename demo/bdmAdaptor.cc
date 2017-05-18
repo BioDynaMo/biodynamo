@@ -13,38 +13,32 @@
 
 #include "bdmAdaptor.h"
 
-namespace
-{
+namespace {
 vtkCPProcessor* Processor = NULL;
 vtkUnstructuredGrid* VTKGrid;
 
-void BuildVTKGrid(Cell<Soa>& cells)
-{
+void BuildVTKGrid(Cell<Soa>& cells) {
   // create the points information
   vtkNew<vtkDoubleArray> positionArray;
   vtkDoubleArray* diameterArray = vtkDoubleArray::New();
   diameterArray->SetName("Diameter");
 
   positionArray->SetNumberOfComponents(3);
-  positionArray->SetArray(
-    cells.GetPositionPtr(), static_cast<vtkIdType>(cells.size() * 3), 1);
-  diameterArray->SetArray(
-    cells.GetDiameterPtr(), static_cast<vtkIdType>(cells.size()), 1);
+  positionArray->SetArray(cells.GetPositionPtr(),
+                          static_cast<vtkIdType>(cells.size() * 3), 1);
+  diameterArray->SetArray(cells.GetDiameterPtr(),
+                          static_cast<vtkIdType>(cells.size()), 1);
 
   vtkNew<vtkPoints> points;
-  // vtkNew<vtkPointData> point_data;
 
   points->SetData(positionArray.GetPointer());
-  // point_data->SetData(diameterArray.GetPointer());
 
   VTKGrid->SetPoints(points.GetPointer());
   VTKGrid->GetPointData()->AddArray(diameterArray);
 }
 
-void BuildVTKDataStructures(Cell<Soa>& cells)
-{
-  if (VTKGrid == NULL)
-  {
+void BuildVTKDataStructures(Cell<Soa>& cells) {
+  if (VTKGrid == NULL) {
     // The grid structure isn't changing so we only build it
     // the first time it's needed. If we needed the memory
     // we could delete it and rebuild as necessary.
@@ -52,20 +46,15 @@ void BuildVTKDataStructures(Cell<Soa>& cells)
     BuildVTKGrid(cells);
   }
 }
-}
+}  // namespace
 
-namespace bdmAdaptor
-{
+namespace bdmAdaptor {
 
-void Initialize(char* script)
-{
-  if (Processor == NULL)
-  {
+void Initialize(char* script) {
+  if (Processor == NULL) {
     Processor = vtkCPProcessor::New();
     Processor->Initialize();
-  }
-  else
-  {
+  } else {
     Processor->RemoveAllPipelines();
   }
   vtkNew<vtkCPPythonScriptPipeline> pipeline;
@@ -73,36 +62,31 @@ void Initialize(char* script)
   Processor->AddPipeline(pipeline.GetPointer());
 }
 
-void Finalize()
-{
-  if (Processor)
-  {
+void Finalize() {
+  if (Processor) {
     Processor->Delete();
     Processor = NULL;
   }
-  if (VTKGrid)
-  {
+  if (VTKGrid) {
     VTKGrid->Delete();
     VTKGrid = NULL;
   }
 }
 
-void CoProcess(Cell<Soa>& cells, double time, size_t timeStep, bool lastTimeStep)
-{
+void CoProcess(Cell<Soa>& cells, double time, size_t timeStep,
+               bool lastTimeStep) {
   vtkNew<vtkCPDataDescription> dataDescription;
   dataDescription->AddInput("input");
   dataDescription->SetTimeData(time, timeStep);
-  if (lastTimeStep == true)
-  {
+  if (lastTimeStep == true) {
     // assume that we want to all the pipelines to execute if it
     // is the last time step.
     dataDescription->ForceOutputOn();
   }
-  if (Processor->RequestDataDescription(dataDescription.GetPointer()) != 0)
-  {
+  if (Processor->RequestDataDescription(dataDescription.GetPointer()) != 0) {
     BuildVTKDataStructures(cells);
     dataDescription->GetInputDescriptionByName("input")->SetGrid(VTKGrid);
     Processor->CoProcess(dataDescription.GetPointer());
   }
 }
-} // end of Catalyst namespace
+}  // namespace bdmAdaptor

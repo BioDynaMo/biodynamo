@@ -1,105 +1,104 @@
 
-from paraview.simple import *
-from paraview import coprocessing
+from paraview
+    .simple import* from paraview import coprocessing
+#-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+#Code generated from cpstate.py to create the CoProcessor.
+#ParaView 5.3.0 64 bits
 
+#-- -- -- -- -- -- -- -- -- -- -- - \
+    CoProcessor definition -- -- -- -- -- -- -- -- -- -- -- -
 
-#--------------------------------------------------------------
-# Code generated from cpstate.py to create the CoProcessor.
-# ParaView 5.3.0 64 bits
+        def
+        CreateCoProcessor()
+    : def _CreatePipeline(coprocessor, datadescription)
+    : class Pipeline :
+#state file generated using paraview version 5.3.0
 
+#-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+#setup the data processing pipelines
+#-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 
-# ----------------------- CoProcessor definition -----------------------
+      ####disable automatic camera reset on
+      'Show' paraview.simple._DisableFirstRenderCameraReset()
 
-def CreateCoProcessor():
-  def _CreatePipeline(coprocessor, datadescription):
-    class Pipeline:
-      # state file generated using paraview version 5.3.0
+#create a new 'XML Unstructured Grid Reader'
+#create a producer from a simulation input
+          results4Paraview0vtu =
+    coprocessor.CreateProducer(datadescription, 'input')
 
-      # ----------------------------------------------------------------
-      # setup the data processing pipelines
-      # ----------------------------------------------------------------
+#create a new 'Calculator'
+        calculator1 =
+        Calculator(Input = results4Paraview0vtu) calculator1.ResultArrayName =
+            'Radius' calculator1.Function = '0.5*Diameter'
 
-      #### disable automatic camera reset on 'Show'
-      paraview.simple._DisableFirstRenderCameraReset()
+#create a new 'Glyph'
+    glyph1 = Glyph(Input = calculator1, GlyphType = 'Sphere') glyph1.Scalars =
+        [ 'POINTS', 'Radius' ] glyph1.Vectors =
+            [ 'POINTS', 'None' ] glyph1.ScaleMode = 'scalar' glyph1.GlyphMode =
+                'All Points' glyph1.GlyphTransform =
+                    'Transform2'
 
-      # create a new 'XML Unstructured Grid Reader'
-      # create a producer from a simulation input
-      results4Paraview0vtu = coprocessor.CreateProducer(datadescription, 'input')
+#-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+#finally, restore active source
+                    SetActiveSource(glyph1)
+#-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+                        return Pipeline()
 
-      # create a new 'Calculator'
-      calculator1 = Calculator(Input=results4Paraview0vtu)
-      calculator1.ResultArrayName = 'Radius'
-      calculator1.Function = '0.5*Diameter'
+                            class CoProcessor(coprocessing.CoProcessor)
+    : def CreatePipeline(self, datadescription)
+    : self.Pipeline = _CreatePipeline(self, datadescription)
 
-      # create a new 'Glyph'
-      glyph1 = Glyph(Input=calculator1,
-          GlyphType='Sphere')
-      glyph1.Scalars = ['POINTS', 'Radius']
-      glyph1.Vectors = ['POINTS', 'None']
-      glyph1.ScaleMode = 'scalar'
-      glyph1.GlyphMode = 'All Points'
-      glyph1.GlyphTransform = 'Transform2'
-
-      # ----------------------------------------------------------------
-      # finally, restore active source
-      SetActiveSource(glyph1)
-      # ----------------------------------------------------------------
-    return Pipeline()
-
-  class CoProcessor(coprocessing.CoProcessor):
-    def CreatePipeline(self, datadescription):
-      self.Pipeline = _CreatePipeline(self, datadescription)
-
-  coprocessor = CoProcessor()
-  # these are the frequencies at which the coprocessor updates.
-  freqs = {'input': []}
+                        coprocessor = CoProcessor()
+#these are the frequencies at which the coprocessor updates.
+                            freqs = {
+  'input' : []}
   coprocessor.SetUpdateFrequencies(freqs)
   return coprocessor
 
-#--------------------------------------------------------------
-# Global variables that will hold the pipeline for each timestep
-# Creating the CoProcessor object, doesn't actually create the ParaView pipeline.
-# It will be automatically setup when coprocessor.UpdateProducers() is called the
-# first time.
+#-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+#Global variables that will hold the pipeline for each timestep
+#Creating the CoProcessor object, doesn't actually create the ParaView pipeline.
+#It will be automatically setup when coprocessor.UpdateProducers() is called the
+#first time.
 coprocessor = CreateCoProcessor()
 
-#--------------------------------------------------------------
-# Enable Live-Visualizaton with ParaView
+#-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+#Enable Live - Visualizaton with ParaView
 coprocessor.EnableLiveVisualization(True, 1)
 
-
-# ---------------------- Data Selection method ----------------------
+#-- -- -- -- -- -- -- -- -- -- -- Data Selection method -- -- -- -- -- -- -- -- -- -- --
 
 def RequestDataDescription(datadescription):
     "Callback to populate the request for current timestep"
     global coprocessor
     if datadescription.GetForceOutput() == True:
-        # We are just going to request all fields and meshes from the simulation
-        # code/adaptor.
+#We are just going to request all fields and meshes from the simulation
+#code / adaptor.
         for i in range(datadescription.GetNumberOfInputDescriptions()):
             datadescription.GetInputDescription(i).AllFieldsOn()
             datadescription.GetInputDescription(i).GenerateMeshOn()
         return
 
-    # setup requests for all inputs based on the requirements of the
-    # pipeline.
+#setup requests for all inputs based on the requirements of the
+#pipeline.
     coprocessor.LoadRequestedData(datadescription)
 
-# ------------------------ Processing method ------------------------
+#-- -- -- -- -- -- -- -- -- -- -- -- Processing method -- -- -- -- -- -- -- -- -- -- -- --
 
 def DoCoProcessing(datadescription):
     "Callback to do co-processing for current timestep"
     global coprocessor
 
-    # Update the coprocessor by providing it the newly generated simulation data.
-    # If the pipeline hasn't been setup yet, this will setup the pipeline.
+#Update the coprocessor by providing it the newly generated simulation data.
+#If the pipeline hasn't been setup yet, this will setup the pipeline.
     coprocessor.UpdateProducers(datadescription)
 
-    # Write output data, if appropriate.
+#Write output data, if appropriate.
     coprocessor.WriteData(datadescription);
 
-    # Write image capture (Last arg: rescale lookup table), if appropriate.
-    coprocessor.WriteImages(datadescription, rescale_lookuptable=False)
+#Write image capture(Last arg : rescale lookup table), if appropriate.
+coprocessor
+    .WriteImages(datadescription, rescale_lookuptable = False)
 
-    # Live Visualization, if enabled.
-    coprocessor.DoLiveVisualization(datadescription, "localhost", 22222)
+#Live Visualization, if enabled.
+        coprocessor.DoLiveVisualization(datadescription, "localhost", 22222)
