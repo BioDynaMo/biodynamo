@@ -8,6 +8,8 @@
 #include "macros.h"
 #include "type_util.h"
 
+namespace bdm {
+
 using std::enable_if;
 using std::is_same;
 
@@ -133,7 +135,6 @@ using std::is_same;
   template <typename T = Backend>                                              \
   typename enable_if<is_same<T, SoaRef>::value, Self<SoaRef>&>::type           \
   operator=(const Self<Scalar>& rhs) {                                         \
-    std::cout << "foo" << std::endl;                                           \
     BDM_CLASS_HEADER_ASSIGNMENT_OP_BODY(__VA_ARGS__)                           \
     Base::operator=(rhs);                                                      \
     return *this;                                                              \
@@ -147,6 +148,7 @@ using std::is_same;
         REMOVE_TRAILING_COMMAS(BDM_CLASS_HEADER_CPY_CTOR_INIT(__VA_ARGS__)) {} \
                                                                                \
  private:
+// NOLINT
 
 /// simpflified interface for standard simulation object with one template
 /// parameter named Base.
@@ -155,5 +157,7 @@ using std::is_same;
   BDM_CLASS_HEADER_ADV(class_name,                                          \
                        class_name<typename Base::template Self<TTBackend>>, \
                        __VA_ARGS__)
+
+}  // namespace bdm
 
 #endif  // SIMULATION_OBJECT_UTIL_H_

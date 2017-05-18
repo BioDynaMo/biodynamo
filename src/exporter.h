@@ -14,13 +14,13 @@
 #include "math_util.h"
 #include "param.h"
 
+namespace bdm {
+
 using std::cout;
 using std::endl;
 using std::string;
 using std::fstream;
 using std::ofstream;
-
-namespace bdm {
 
 class Exporter {
  public:

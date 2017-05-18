@@ -21,18 +21,18 @@ struct SimulationObject {
   virtual ~SimulationObject() {}
 
   /// Returns the number of elements in this object
-  size_t size() const { return size_; }
+  size_t size() const { return size_; }  // NOLINT
 
   /// Equivalent to std::vector<> clear - it removes all elements from all
   /// data members
-  void clear() { size_ = 0; }
+  void clear() { size_ = 0; }  // NOLINT
 
   /// Appends a scalar element
-  void push_back(const SimulationObject<Scalar>& other) { size_++; }
+  void push_back(const SimulationObject<Scalar>& other) { size_++; }  // NOLINT
 
   /// Equivalent to std::vector<> reserve - it increases the capacity
   /// of all data member containers
-  void reserve(size_t new_capacity) {}
+  void reserve(size_t new_capacity) {}  // NOLINT
 
   template <typename T = Backend>
   typename std::enable_if<std::is_same<T, SoaRef>::value,
@@ -51,7 +51,7 @@ struct SimulationObject {
   template <typename T>
   SimulationObject(T* other, size_t idx) : idx_(idx), size_(other->size_) {}
 
-  const size_t idx_ = 0;
+  const size_t idx_ = 0;  // NOLINT
 
  private:
   /// size_ is of type size_t& if TBackend == SoaRef; otherwise size_t

@@ -26,17 +26,17 @@ class OneElementArray {
   explicit OneElementArray(T&& data) : data_(data) {}
   OneElementArray(std::initializer_list<T> list) : data_(*list.begin()) {}
 
-  std::size_t size() const { return 1; }
+  std::size_t size() const { return 1; }  // NOLINT
 
   BDM_FORCE_INLINE T& operator[](const size_t idx) { return data_; }
 
   BDM_FORCE_INLINE const T& operator[](const size_t idx) const { return data_; }
 
-  T* begin() { return &data_; }
-  T* end() { return &data_ + 1; }
+  T* begin() { return &data_; }    // NOLINT
+  T* end() { return &data_ + 1; }  // NOLINT
 
-  const T* begin() const { return &data_; }
-  const T* end() const { return &data_ + 1; }
+  const T* begin() const { return &data_; }    // NOLINT
+  const T* end() const { return &data_ + 1; }  // NOLINT
 
  private:
   T data_;
@@ -45,7 +45,7 @@ class OneElementArray {
 struct Scalar {
   /// Data type used to store data members of a class
   template <typename T>
-  using vec = OneElementArray<T>;
+  using vec = OneElementArray<T>;  // NOLINT
 
   /// Data type to store a collection of simulation objects with this backend
   template <typename T>
@@ -55,7 +55,7 @@ struct Scalar {
 struct Soa {
   /// Data type used to store data members of a class
   template <typename T>
-  using vec = std::vector<T>;
+  using vec = std::vector<T>;  // NOLINT
 
   // Data type to store a collection of simulation objects with this backend
   template <typename T>
@@ -65,7 +65,7 @@ struct Soa {
 struct SoaRef {
   /// Data type used to store data members of a class
   template <typename T>
-  using vec = std::vector<T>&;
+  using vec = std::vector<T>&;  // NOLINT
 
   // Data type to store a collection of simulation objects with this backend
   template <typename T>

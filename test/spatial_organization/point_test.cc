@@ -72,7 +72,7 @@ TEST(PointTest, EqualTest) {
   Point point1(0.5, 0.7, 0.9);
   Point point2(0.5, 0.7, 0.9);
 
-  ASSERT_TRUE(point1.equals(point2));
+  ASSERT_TRUE(point1 == point2);
 }
 
 }  // namespace spatial_organization

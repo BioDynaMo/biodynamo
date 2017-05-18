@@ -18,7 +18,7 @@ using std::pair;
 template <typename T>
 class SpatialTreeNode {
  public:
-  SpatialTreeNode(const Bound &bound) : bound_(bound) {}
+  explicit SpatialTreeNode(const Bound &bound) : bound_(bound) {}
 
   virtual ~SpatialTreeNode() {}
 
@@ -49,14 +49,14 @@ class SpatialTreeNode {
   ///  Search pairs (a, b) where a from A and b from B
   ///  Absolutelly the same method. The only difference is result type
   ///  @tparam T
-  ///  @param A - node of the tree
-  ///  @param B - node of the tree
+  ///  @param a - node of the tree
+  ///  @param b - node of the tree
   ///  @param distance - finding neighbors within that distance
   ///  @param result - container, where we save retrieved data (all neighbor
   ///  pairs
   ///  without its points)
-  static void GetNeighbors(SpatialTreeNode<T> const *A,
-                           SpatialTreeNode<T> const *B, double distance,
+  static void GetNeighbors(SpatialTreeNode<T> const *a,
+                           SpatialTreeNode<T> const *b, double distance,
                            vector<pair<T, T> > *result);
 };
 
@@ -73,46 +73,56 @@ vector<pair<T, T> > SpatialTreeNode<T>::GetNeighbors(double distance) const {
 }
 
 template <typename T>
-void SpatialTreeNode<T>::GetNeighbors(SpatialTreeNode<T> const *A,
-                                      SpatialTreeNode<T> const *B,
+void SpatialTreeNode<T>::GetNeighbors(SpatialTreeNode<T> const *a,
+                                      SpatialTreeNode<T> const *b,
                                       double distance,
                                       vector<pair<T, T> > *result) {
-  if (A->IsLeaf() && B->IsLeaf()) {
-    const auto &a_objs = A->GetObjects();
-    const auto &b_objs = B->GetObjects();
+  if (a->IsLeaf() && b->IsLeaf()) {
+    const auto &a_objs = a->GetObjects();
+    const auto &b_objs = b->GetObjects();
 
-    bool is_same = A == B;
+    bool is_same = a == b;
 
-    for (size_t i = 0; i < a_objs.size(); i++)
-      for (size_t j = is_same ? (i + 1) : 0; j < b_objs.size(); j++)
+    for (size_t i = 0; i < a_objs.size(); i++) {
+      for (size_t j = is_same ? (i + 1) : 0; j < b_objs.size(); j++) {
         if ((a_objs.at(i).first).SquaredEuclidianDistance(b_objs.at(j).first) <=
-            distance)
+            distance) {
           result->push_back(
               make_pair(a_objs.at(i).second, b_objs.at(j).second));
+        }
+      }
+    }
   } else {
     SpatialTreeNode<T> **a_nodes, **b_nodes;
     int a_size = 0, b_size = 0;
-    if (A->IsLeaf()) {
-      b_nodes = B->GetChildrenNodes();
-      for (size_t i = 0; i < B->GetChildrenSize(); i++)
-        if (A->GetBound().SquaredDistance(b_nodes[i]->GetBound()) <= distance)
-          GetNeighbors(A, b_nodes[i], distance, result);
-    } else if (B->IsLeaf()) {
-      a_nodes = A->GetChildrenNodes();
-      for (size_t i = 0; i < A->GetChildrenSize(); i++)
-        if (a_nodes[i]->GetBound().SquaredDistance(B->GetBound()) <= distance)
-          GetNeighbors(a_nodes[i], B, distance, result);
+    if (a->IsLeaf()) {
+      b_nodes = b->GetChildrenNodes();
+      for (size_t i = 0; i < b->GetChildrenSize(); i++) {
+        if (a->GetBound().SquaredDistance(b_nodes[i]->GetBound()) <= distance) {
+          GetNeighbors(a, b_nodes[i], distance, result);
+        }
+      }
+    } else if (b->IsLeaf()) {
+      a_nodes = a->GetChildrenNodes();
+      for (size_t i = 0; i < a->GetChildrenSize(); i++) {
+        if (a_nodes[i]->GetBound().SquaredDistance(b->GetBound()) <= distance) {
+          GetNeighbors(a_nodes[i], b, distance, result);
+        }
+      }
     } else {
-      a_nodes = A->GetChildrenNodes();
-      b_nodes = B->GetChildrenNodes();
-      a_size = A->GetChildrenSize();
-      b_size = B->GetChildrenSize();
-      bool is_same = A == B;
-      for (int i = 0; i < a_size; i++)
-        for (int j = is_same ? (i) : 0; j < b_size; j++)
+      a_nodes = a->GetChildrenNodes();
+      b_nodes = b->GetChildrenNodes();
+      a_size = a->GetChildrenSize();
+      b_size = b->GetChildrenSize();
+      bool is_same = a == b;
+      for (int i = 0; i < a_size; i++) {
+        for (int j = is_same ? (i) : 0; j < b_size; j++) {
           if (a_nodes[i]->GetBound().SquaredDistance(b_nodes[j]->GetBound()) <=
-              distance)
+              distance) {
             GetNeighbors(a_nodes[i], b_nodes[j], distance, result);
+          }
+        }
+      }
     }
   }
 }

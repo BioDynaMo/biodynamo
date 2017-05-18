@@ -25,9 +25,9 @@ if (test)
   # must be before include(${ROOT_USE_FILE}) otherwise test compile fails
   find_package(Threads REQUIRED)
 endif()
+find_package(Git)
 #find_package(ROOT REQUIRED COMPONENTS Eve Geom Gui)
 
-set(BUILD_SUPPORT_DIR "${CMAKE_SOURCE_DIR}/housekeeping")
 find_package(ClangTools)
 if ("$ENV{CMAKE_EXPORT_COMPILE_COMMANDS}" STREQUAL "1" OR CLANG_TIDY_FOUND)
   # Generate a Clang compile_commands.json "compilation database" file for use
@@ -137,26 +137,6 @@ add_custom_target(libbdmclean COMMAND ${CMAKE_COMMAND} -P "${CMAKE_BINARY_DIR}/C
 add_custom_target(bdmclean)
 add_dependencies(bdmclean libbdmclean)
 
-# -------------------- "make format" and "make check-format" targets ------------
-if (${CLANG_FORMAT_FOUND})
-  # runs clang-format and updates files in place.
-  add_custom_target(format ${BUILD_SUPPORT_DIR}/run-clang-format.sh ${CMAKE_CURRENT_SOURCE_DIR} ${CLANG_FORMAT_BIN} 1
-  `find ${CMAKE_CURRENT_SOURCE_DIR}/src -name \\*.cc -or -name \\*.h`)
-  # runs clang format and exits with a non-zero exit code if any files need to be reformatted
-  add_custom_target(check-format ${BUILD_SUPPORT_DIR}/run-clang-format.sh ${CMAKE_CURRENT_SOURCE_DIR} ${CLANG_FORMAT_BIN} 0
-  `find ${CMAKE_CURRENT_SOURCE_DIR}/src -name \\*.cc -or -name \\*.h`)
-endif()
-
-# -------------------- "make clang-tidy" and "make check-clang-tidy" targets ------------
-if (${CLANG_TIDY_FOUND})
-  # runs clang-tidy and attempts to fix any warning automatically
-  add_custom_target(clang-tidy ${BUILD_SUPPORT_DIR}/run-clang-tidy.sh ${CLANG_TIDY_BIN} ${CMAKE_BINARY_DIR}/compile_commands.json 1
-  `find ${CMAKE_CURRENT_SOURCE_DIR}/src -name \\*.cc | grep -v -F -f ${CMAKE_CURRENT_SOURCE_DIR}/.clang-tidy-ignore`)
-  # runs clang-tidy and exits with a non-zero exit code if any errors are found.
-  add_custom_target(check-clang-tidy ${BUILD_SUPPORT_DIR}/run-clang-tidy.sh ${CLANG_TIDY_BIN} ${CMAKE_BINARY_DIR}/compile_commands.json 0
-  `find ${CMAKE_CURRENT_SOURCE_DIR}/src -name \\*.cc | grep -v -F -f ${CMAKE_CURRENT_SOURCE_DIR}/.clang-tidy-ignore`)
-endif()
-
 # -------------------- build test project runBiodynamoTests ----------------------
 # http://www.kaizou.org/2014/11/gtest-cmake/
 if (test)
@@ -215,6 +195,7 @@ if (test)
 
   # create target that shows the test ouput on failure
   add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} --force-new-ctest-process --output-on-failure)
+  add_dependencies(check runBiodynamoTests)
 
   # add custom clean target for test project
   add_custom_target(testbdmclean COMMAND ${CMAKE_COMMAND} -P "${CMAKE_BINARY_DIR}/CMakeFiles/${TEST_TARGET}.dir/cmake_clean.cmake")
@@ -225,7 +206,17 @@ if (test)
     # parameter: make target name, test target, output directory name
     SETUP_TARGET_FOR_COVERAGE(coverage ${TEST_TARGET} coverage)
   endif()
+  # create coverage report in separate directory
+  # since building the coverage report requires different compiler flags building
+  # it in a separate directory keeps the current build directory in good order
+  add_custom_target(coverage-build
+    COMMAND "${CMAKE_SOURCE_DIR}/housekeeping/create-coverage-report.sh" ${PROJECT_SOURCE_DIR} ${CMAKE_BINARY_DIR}
+    COMMENT "Generate coverage report in separate directory
+       Open the following file in your browser: ${CMAKE_BINARY_DIR}/coverage/coverage/index.html")
 endif()
+
+# --------------- add targets for code style and submission checks -------------
+include(cmake/CppStyleGuideChecks.cmake)
 
 # --------------------- build division module simulation executable ---------------------
 set(SIMULATION_TARGET cell_growth)
