@@ -74,22 +74,28 @@ for f in $@; do
   fi
 done
 
+# fix issue with finding omp.h on Travis-CI build on linux with g++
+TRAVIS_LINUX_EXTRA_ARGB=""
+if [ "$TRAVIS_OS_NAME" = "linux" ]; then
+  TRAVIS_LINUX_EXTRA_ARGB="-extra-arg-before=-I/tmp/bdm_omp/"
+fi
+
 if [ "$MODE" == "1" ]; then
   # fix errors one source file at a time
   for f in $SOURCES; do
-    $CLANG_TIDY -line-filter=$LINE_FILTER -p $COMPILE_COMMANDS -fix $f
+    $CLANG_TIDY $TRAVIS_LINUX_EXTRA_ARGB -line-filter=$LINE_FILTER -p $COMPILE_COMMANDS -fix $f
   done
 elif [ "$MODE" == "2" ]; then
   for f in $SOURCES; do
     echo "Start processing: "$f
-    $CLANG_TIDY -line-filter=$LINE_FILTER -p $COMPILE_COMMANDS $f
+    $CLANG_TIDY $TRAVIS_LINUX_EXTRA_ARGB -line-filter=$LINE_FILTER -p $COMPILE_COMMANDS $f
   done
 else
   # create temporary file
   TMP_FILE="/tmp/bdm_"$RANDOM
   for f in $SOURCES; do
     echo "" > $TMP_FILE
-    $CLANG_TIDY -line-filter=$LINE_FILTER -export-fixes=$TMP_FILE -p $COMPILE_COMMANDS $f >/dev/null 2>/dev/null
+    $CLANG_TIDY $TRAVIS_LINUX_EXTRA_ARGB -line-filter=$LINE_FILTER -export-fixes=$TMP_FILE -p $COMPILE_COMMANDS $f >/dev/null 2>/dev/null
     NUM_CORRECTIONS=$(cat $TMP_FILE | wc -l)
     rm $TMP_FILE
     if [ "$NUM_CORRECTIONS" -gt "1" ]; then

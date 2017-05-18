@@ -41,7 +41,7 @@ if [ "$TRAVIS_OS_NAME" = "linux" ]; then
   sudo apt-get -y install valgrind
   sudo apt-get -y install doxygen
   sudo apt-get -y install cloc
-  sudo apt-get -y install clang-format-3.9 clang-tidy-3.9
+  sudo apt-get -y install clang-3.9 clang-format-3.9 clang-tidy-3.9
 fi
 
 # install ROOT
@@ -66,6 +66,10 @@ cd $biod
 # run following commands only on Linux
 if [ "$TRAVIS_OS_NAME" = "linux" ]; then
   cloc .
+  # required by housekeeping/run-clang-tidy.sh due to issues on Linux and g++ builds
+  # clang-tidy did not find omp.h in this configuration
+  mkdir /tmp/bdm_omp
+  cp /usr/lib/gcc/x86_64-linux-gnu/4.8/include/omp.h /tmp/bdm_omp/
 fi
 
 # add master branch
