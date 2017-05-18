@@ -3,6 +3,7 @@
 
 #include <utility>
 #include <vector>
+#include <chrono>
 #include "inline_vector.h"
 #include "nanoflann.h"
 
@@ -79,6 +80,7 @@ class NeighborNanoflannOp {
     index.buildIndex();
 
 // calc neighbors
+std::chrono::microseconds totalTime{0};
 #pragma omp parallel for
     for (size_t i = 0; i < cells->size(); i++) {
       // fixme make param
@@ -93,8 +95,11 @@ class NeighborNanoflannOp {
       const auto& position = (*cells)[i].GetPosition();
 
       // calculate neighbors
+      std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
       const size_t n_matches =
           index.radiusSearch(&position[0], search_radius, ret_matches, params);
+      std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+      totalTime += std::chrono::duration_cast<std::chrono::microseconds>(end - begin);
 
       // transform result (change data structure - remove self from list)
       InlineVector<int, 8> neighbors;
@@ -106,6 +111,8 @@ class NeighborNanoflannOp {
       }
       (*cells)[i].SetNeighbors(neighbors);
     }
+
+    std::cout << "[NanoFlann] Neighbor search time = " << totalTime.count() << "us\n";
   }
 
  private:

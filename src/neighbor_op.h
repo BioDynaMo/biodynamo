@@ -2,6 +2,7 @@
 #define NEIGHBOR_OP_H_
 
 #include <cmath>
+#include <chrono>
 #include <iostream>
 #include "inline_vector.h"
 #include "spatial_organization/octree_node.h"
@@ -45,7 +46,12 @@ class NeighborOp {
         new InlineVector<int, 8>[ cells->size() ];
 
     // Getting all pairs within the 'search_radius distance'
+    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
     auto tree_neighbors = tree->GetNeighbors(search_radius);
+    std::chrono::steady_clock::time_point end= std::chrono::steady_clock::now();
+    std::cout << "[Russian] Neighbor search time = " 
+              << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count()
+              << "us\n";
     int amount_of_pairs = tree_neighbors.size();
 
     // Filling container for neighbors for every object
