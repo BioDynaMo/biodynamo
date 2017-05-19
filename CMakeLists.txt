@@ -174,7 +174,7 @@ if (test)
   include_directories("${CMAKE_BINARY_DIR}/jsoncpp/src/jsoncpp/include")
 
   # create test executable
-  file(GLOB TEST_SOURCES "test/*.cc" "test/*.h")
+  file(GLOB_RECURSE TEST_SOURCES "test/*.cc" "test/*.h")
   set(TEST_TARGET runBiodynamoTests)
   add_executable(${TEST_TARGET} ${TEST_SOURCES})
   target_link_libraries(${TEST_TARGET} libgtest)
@@ -205,10 +205,3 @@ if (test)
     SETUP_TARGET_FOR_COVERAGE(coverage ${TEST_TARGET} coverage)
   endif()
 endif()
-
-
-# build validation binary - is used to obtain calculation results that are
-# used in automated tests of the new prototype
-set(VALIDATION_TARGET getValidationTargets)
-add_executable(${VALIDATION_TARGET} validation/validation.cc)
-target_link_libraries(${VALIDATION_TARGET} biodynamo)
