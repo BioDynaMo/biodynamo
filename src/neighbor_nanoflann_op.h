@@ -112,7 +112,7 @@ std::chrono::microseconds totalTime{0};
       (*cells)[i].SetNeighbors(neighbors);
     }
 
-    std::cout << "[NanoFlann] Neighbor search time = " << totalTime.count() << "us\n";
+    std::cout << "\n[NanoFlann] Neighbor search time = " << totalTime.count() << "us\n";
   }
 
  private:

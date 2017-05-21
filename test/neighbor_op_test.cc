@@ -3,6 +3,7 @@
 #include "gtest/gtest.h"
 #include "inline_vector.h"
 #include "neighbor_nanoflann_op.h"
+#include "neighbor_pcl_op.h"
 #include "test_util.h"
 
 #include <chrono>
@@ -12,8 +13,8 @@ namespace neighbor_op_test_internal {
 
 template <typename T, typename Op>
 void RunTest(T* cells, const Op& op) {
-  for (int i = 0; i < 1000; i++) {
-    cells->push_back(Cell<>({i*10.0, i*10.0, i*10.0}));
+  for (int i = 0; i < 3000; i++) {
+    cells->push_back(Cell<>({i*30.0, i*30.0, i*30.0}));
   }
 
   // execute operation
@@ -22,13 +23,13 @@ void RunTest(T* cells, const Op& op) {
   std::chrono::steady_clock::time_point end= std::chrono::steady_clock::now();
   std::cout << "op.Compute = " 
             << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count()
-            << "us\n";
+            << "us\n\n";
   
   // // check results
   // // cell 1
   // InlineVector<int, 8> expected_1;
   // expected_1.push_back(1);
-  // EXPECT_TRUE(expected_1 == (*cells)[0].GetNeighbors());
+  // EXPECT_EQ(expected_1, (*cells)[0].GetNeighbors());
   // // cell 2
   // InlineVector<int, 8> expected_2;
   // expected_2.push_back(0);
@@ -58,6 +59,16 @@ TEST(NeighborNanoflannOpTest, ComputeAosoa) {
 TEST(NeighborNanoflannOpTest, ComputeSoa) {
   auto cells = Cell<>::NewEmptySoa();
   RunTest(&cells, NeighborNanoflannOp());
+}
+
+TEST(NeighborPclOpTest, ComputeAosoa) {
+  std::vector<Cell<Scalar>> cells;
+  RunTest(&cells, NeighborPclOp());
+}
+
+TEST(NeighborPclOpTest, ComputeSoa) {
+  auto cells = Cell<>::NewEmptySoa();
+  RunTest(&cells, NeighborPclOp());
 }
 
 }  // namespace neighbor_op_test_internal
