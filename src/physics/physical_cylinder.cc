@@ -9,7 +9,7 @@ namespace physics {
 
 PhysicalCylinder::PhysicalCylinder() {
   adherence_ = Param::kNeuriteDefaultAdherence;
-  mass_ = Param::kNeuriteDefaultMass;
+  setMass(Param::kNeuriteDefaultMass);
   diameter_ = Param::kNeuriteDefaultDiameter;
   updateVolume();
 }
@@ -75,7 +75,7 @@ PhysicalCylinder::UPtr PhysicalCylinder::getCopy() const {
 
   // PhysicalObject variables
   new_cylinder->adherence_ = adherence_;
-  new_cylinder->mass_ = mass_;
+  new_cylinder->density_ = density_;
   new_cylinder->setDiameter(diameter_, true);  // re - computes also volumes
   new_cylinder->color_ = color_;
   new_cylinder->still_existing_ = still_existing_;
@@ -528,7 +528,7 @@ void PhysicalCylinder::runPhysics() {
   total_force_last_time_step_[2] = force_on_my_point_mass[2];
   total_force_last_time_step_[3] = 1;
   //  6.1) Define movement scale
-  double h_over_m = h / mass_;
+  double h_over_m = h / getMass();
   double force_norm = Matrix::norm(force_on_my_point_mass);
   //  6.2) If is F not strong enough -> no movements
   if (force_norm < adherence_) {

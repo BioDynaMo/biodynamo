@@ -372,12 +372,14 @@ class PhysicalObject : public PhysicalNode {
    * (the minimum force amplitude needed for triggering a movement). */
   void setAdherence(double adherence);
 
-  /** Returns the mass, i.e. the kinetic friction
-   * (scales the movement amplitude, therefore is considered as the mass).*/
+  /** Calculates the mass based on `density_` and `volume_` */
   double getMass() const;
 
-  /** Sets the mass, i.e. the kinetic friction
-   * (scales the movement amplitude, therefore is considered as the mass).*/
+  void setDensity(double density);
+
+  /**
+   * Since mass is a computed value it adjusts `density_` accordingly
+   */
   void setMass(double mass);
 
   double getDiameter() const;
@@ -509,12 +511,12 @@ class PhysicalObject : public PhysicalNode {
 
   /** static friction (the minimum force amplitude for triggering a movement). */
   double adherence_ = 0.1;
-  /** kinetic friction (scales the movement amplitude, therefore is called "mass")*/
-  double mass_ = 1;
   /** diameter of the object (wheter if sphere or cylinder).*/
   double diameter_ = 1;
   /** volume of this PhysicalObject; updated in updatePhysicalProperties() */
   double volume_ = 1;
+
+  double density_ = 1;
 
   /** Color used when displaying the object*/
   Color color_ = Param::kViolet;

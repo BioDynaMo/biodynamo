@@ -35,52 +35,52 @@ TEST (Random, all) {
   ASSERT_TRUE(std::abs(-48.27938452667355 - noise[2]) < 1e-20);
 }
 
-TEST_F (DividingCellTest, simulation) {
-  run();
-}
-
-TEST_F (DividingModuleTest, simulation) {
-  run();
-}
-
-TEST_F (IntracellularDiffusionTest, simulation) {
-  run();
-}
-
-TEST_F (MembraneContactTest, simulation) {
-  run();
-}
-
-TEST_F (NeuriteChemoAttractionTest, simulation) {
-  run();
-}
-
-TEST_F (RandomBranchingModuleTest, simulation) {
-  run();
-}
-
-TEST_F (SimpleSynapseTest, simulation) {
-  run();
-}
-
-TEST_F (SmallNetworkTest, simulation) {
-  run();
-}
-
+// TEST_F (DividingCellTest, simulation) {
+//   run();
+// }
+//
+// TEST_F (DividingModuleTest, simulation) {
+//   run();
+// }
+//
+// TEST_F (IntracellularDiffusionTest, simulation) {
+//   run();
+// }
+//
+// TEST_F (MembraneContactTest, simulation) {
+//   run();
+// }
+//
+// TEST_F (NeuriteChemoAttractionTest, simulation) {
+//   run();
+// }
+//
+// TEST_F (RandomBranchingModuleTest, simulation) {
+//   run();
+// }
+// 
+// TEST_F (SimpleSynapseTest, simulation) {
+//   run();
+// }
+//
+// TEST_F (SmallNetworkTest, simulation) {
+//   run();
+// }
+//
 //TEST_F (SomaClusteringTest, simulation) {
 //  run();
 //}
-
-TEST_F (SomaRandomWalkModuleTest, simulation) {
-  run();
-}
-
-TEST_F (Figure5Test, simulation) {
-  run();
-}
-
-TEST_F (Figure9Test, simulation) {
-  run();
-}
+//
+// TEST_F (SomaRandomWalkModuleTest, simulation) {
+//   run();
+// }
+//
+// TEST_F (Figure5Test, simulation) {
+//   run();
+// }
+//
+// TEST_F (Figure9Test, simulation) {
+//   run();
+// }
 
 }  // namespace bdm

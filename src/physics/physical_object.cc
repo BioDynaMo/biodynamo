@@ -36,7 +36,7 @@ StringBuilder& PhysicalObject::simStateToJson(StringBuilder& sb) const {
   SimStateSerializationUtil::keyValue(sb, "yAxis", y_axis_);
   SimStateSerializationUtil::keyValue(sb, "zAxis", z_axis_);
   SimStateSerializationUtil::keyValue(sb, "adherence", adherence_);
-  SimStateSerializationUtil::keyValue(sb, "mass", mass_);
+  SimStateSerializationUtil::keyValue(sb, "mass", getMass());
   SimStateSerializationUtil::keyValue(sb, "diameter", diameter_);
   SimStateSerializationUtil::keyValue(sb, "volume", volume_);
   SimStateSerializationUtil::keyValue(sb, "color", SimStateSerializationUtil::colorToHexString(color_.getValue()),
@@ -363,11 +363,15 @@ void PhysicalObject::setAdherence(double a) {
 }
 
 double PhysicalObject::getMass() const {
-  return mass_;
+  return density_ * volume_;
 }
 
 void PhysicalObject::setMass(double m) {
-  mass_ = m;
+  density_ = m / volume_;
+}
+
+void PhysicalObject::setDensity(double density) {
+  density_ = density;
 }
 
 double PhysicalObject::getDiameter() const {

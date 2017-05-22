@@ -8,7 +8,7 @@ namespace bdm {
 namespace physics {
 
 PhysicalSphere::PhysicalSphere() {
-  mass_ = Param::kSphereDefaultMass;
+  setMass(Param::kSphereDefaultMass);
   adherence_ = Param::kSphereDefaultAdherence;
   diameter_ = Param::kSphereDefaultDiameter;
   updateVolume();
@@ -238,7 +238,7 @@ PhysicalSphere::UPtr PhysicalSphere::divide(double vr, double phi, double theta)
   new_sphere->setZAxis(z_axis_);
   new_sphere->setColor(color_);
   new_sphere->setAdherence(adherence_);
-  new_sphere->setMass(mass_);
+  new_sphere->density_ = density_;
   new_sphere->setStillExisting(isStillExisting());
 
   // this class variables (except radius/diameter)
@@ -421,7 +421,7 @@ void PhysicalSphere::runPhysics() {
     physical_rotation = true;
   }
 
-  double mh = h / mass_;
+  double mh = h / getMass();
   // adding the physics translation (scale by weight) if important enough
   if (physical_translation) {
 
