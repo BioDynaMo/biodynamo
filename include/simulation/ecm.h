@@ -9,7 +9,7 @@
 #include <unordered_map>
 
 // for ClassDef
-#include <Rtypes.h>
+// #include <Rtypes.h>
 
 #include "color.h"
 #include "sim_state_serializable.h"
@@ -59,7 +59,7 @@ class ECM : public SimStateSerializable {
  public:
   static ECM* getInstance();
 
-  ECM(TRootIOCtor*) { }  // only used for ROOT I/O
+  // ECM(TRootIOCtor*) { }  // only used for ROOT I/O
   virtual ~ECM();
   ECM(const ECM&) = delete;
   ECM& operator=(const ECM&) = delete;
@@ -551,7 +551,7 @@ class ECM : public SimStateSerializable {
   /** If as Substance is not already registered, we register it for you. No charges! Order now!*/
   Substance* getRegisteredArtificialSubstance(const std::string& substanceId);
 
-  ClassDef(ECM,1);
+  // ClassDef(ECM,1);
 };
 
 }  // namespace simulation

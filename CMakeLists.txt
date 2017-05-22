@@ -17,7 +17,7 @@ if (coverage)
   set(CMAKE_BUILD_TYPE "Debug")
   SET(GCC_COMPILE_FLAGS "-Wall -Wno-missing-braces -g -O0 -fprofile-arcs -ftest-coverage")
 else()
-  set(GCC_COMPILE_FLAGS "-Wall -Wno-missing-braces -O2")
+  set(GCC_COMPILE_FLAGS "-Wall -Wno-missing-braces -g -O2")
 endif()
 
 set(GCC_LINK_FLAGS    "")
@@ -88,25 +88,25 @@ if (test)
 endif()
 
 #--------------------- Find ROOT ---------------------------------
-set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
-find_package(ROOT REQUIRED)
+# set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
+# find_package(ROOT REQUIRED)
 
 #--------------------- Find Doxygen and set doc target -----------
 include(cmake/doxygen.cmake)
 
 #--------------------- build shared library libbiodynamo ----------------
 # add the headers into the project
-include(${ROOT_USE_FILE})
+# include(${ROOT_USE_FILE})
 include_directories("${CMAKE_SOURCE_DIR}/include")
 include_directories("${CMAKE_BINARY_DIR}/crlibm/src/external_crlibm")
 
-ROOT_GENERATE_DICTIONARY("${CMAKE_BINARY_DIR}/bdmDict"
-                         simulation/ecm.h
-                         LINKDEF bdmLinkDef.h)
+# ROOT_GENERATE_DICTIONARY("${CMAKE_BINARY_DIR}/bdmDict"
+#                          simulation/ecm.h
+#                          LINKDEF bdmLinkDef.h)
 
 file(GLOB SOURCES "src/**/*.cc" "src/*.cc" "include/**/*.h" "include/*.h")
-add_library(biodynamo SHARED ${SOURCES} ${CMAKE_BINARY_DIR}/bdmDict.cxx)
-target_link_libraries(biodynamo ${ROOT_LIBRARIES})
+add_library(biodynamo SHARED ${SOURCES})
+# target_link_libraries(biodynamo ${ROOT_LIBRARIES})
 target_link_libraries(biodynamo "${CMAKE_BINARY_DIR}/libcrlibm.a")
 add_dependencies(biodynamo copycrlibm)
 
