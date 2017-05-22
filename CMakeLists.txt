@@ -236,3 +236,8 @@ endif()
 set(SIMULATION_TARGET cell_growth)
 add_executable(${SIMULATION_TARGET} ${CMAKE_SOURCE_DIR}/demo/cell_growth.cc)
 target_link_libraries(${SIMULATION_TARGET} biodynamo)
+
+# --------------------- build octree benchmark executable ---------------------
+set(OCTREE_TARGET octree_bench)
+add_executable(${OCTREE_TARGET} ${CMAKE_SOURCE_DIR}/demo/octree_bench.cc)
+target_link_libraries(${OCTREE_TARGET} biodynamo ${PCL_COMMON_LIBRARIES} ${PCL_IO_LIBRARIES})

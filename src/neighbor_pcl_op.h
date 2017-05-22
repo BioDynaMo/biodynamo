@@ -4,12 +4,15 @@
 #include <pcl/point_cloud.h>
 #include <pcl/octree/octree.h>
 
+#include <fstream>
 #include <cmath>
 #include <utility>
 #include <vector>
 #include <chrono>
 
 #include "inline_vector.h"
+
+using std::ofstream;
 
 namespace bdm {
 
@@ -25,6 +28,9 @@ class NeighborPclOp {
 
   template <typename TContainer>
   void Compute(TContainer* cells) const {
+    ofstream outfile;
+    outfile.open("NeighborPclOp.txt", std::ofstream::out | std::ofstream::app);
+
     PointCloud<PointXYZ>::Ptr cloud(new PointCloud<PointXYZ>);
 
     // set point cloud dimensions
@@ -47,10 +53,17 @@ class NeighborPclOp {
 
     OctreePointCloudSearch<PointXYZ> octree(resolution);
     octree.setInputCloud(cloud);
+
+    std::chrono::steady_clock::time_point begin_build = std::chrono::steady_clock::now();
     octree.addPointsFromInputCloud();
+    std::chrono::steady_clock::time_point end_build = std::chrono::steady_clock::now();
+
+    // std::cout << "\n[PCL] Octree build time = " << std::chrono::duration_cast<std::chrono::microseconds>(end_build - begin_build).count() << "us\n";
+    outfile << cells->size() << ",";
+    outfile << std::chrono::duration_cast<std::chrono::microseconds>(end_build - begin_build).count() << ",";
 
 // calc neighbors
-std::chrono::microseconds totalTime{0};
+std::chrono::microseconds neighbor_search_time{0};
 #pragma omp parallel for
     for (size_t i = 0; i < cells->size(); i++) {
       // fixme make param
@@ -67,7 +80,7 @@ std::chrono::microseconds totalTime{0};
       const int n_matches =
           octree.radiusSearch(cloud->points[i], search_radius, pointIdxRadiusSearch, pointRadiusSquaredDistance);
       std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-      totalTime += std::chrono::duration_cast<std::chrono::microseconds>(end - begin);
+      neighbor_search_time += std::chrono::duration_cast<std::chrono::microseconds>(end - begin);
 
       // transform result
       InlineVector<int, 8> neighbors;
@@ -80,7 +93,9 @@ std::chrono::microseconds totalTime{0};
       (*cells)[i].SetNeighbors(neighbors);
     }
 
-    std::cout << "\n[PCL] Neighbor search time = " << totalTime.count() << "us\n";
+    // std::cout << "\n[PCL] Neighbor search time = " << neighbor_search_time.count() << "us\n";
+    outfile << neighbor_search_time.count() << ",";
+    outfile.close();
   }
 
  private:

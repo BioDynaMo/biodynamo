@@ -42,6 +42,8 @@ class CellExt : public Base {
 
   const array<double, 3>& GetPosition() const { return position_[idx_]; }
 
+  const vec<array<double, 3> >& GetAllPositions() const { return position_; }
+
   const array<double, 3>& GetTractorForce() const {
     return tractor_force_[idx_];
   }

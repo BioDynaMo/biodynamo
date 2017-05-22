@@ -1,11 +1,14 @@
 #ifndef NEIGHBOR_NANOFLANN_OP_H_
 #define NEIGHBOR_NANOFLANN_OP_H_
 
+#include <fstream>
 #include <utility>
 #include <vector>
 #include <chrono>
 #include "inline_vector.h"
 #include "nanoflann.h"
+
+using std::ofstream;
 
 namespace bdm {
 
@@ -67,6 +70,9 @@ class NeighborNanoflannOp {
 
   template <typename TContainer>
   void Compute(TContainer* cells) const {
+    ofstream outfile;
+    outfile.open("NeighborNanoflannOp.txt", std::ofstream::out | std::ofstream::app);
+
     typedef NanoFlannAdapter<TContainer> Adapter;
     const Adapter nf_cells(*cells);  // The adaptor
 
@@ -77,7 +83,14 @@ class NeighborNanoflannOp {
 
     // three dimensions; max leafs: 10
     my_kd_tree_t index(3, nf_cells, KDTreeSingleIndexAdaptorParams(10));
+
+    std::chrono::steady_clock::time_point begin_build = std::chrono::steady_clock::now();
     index.buildIndex();
+    std::chrono::steady_clock::time_point end_build = std::chrono::steady_clock::now();
+
+    // std::cout << "\n[NanoFlann] KD-Tree build time = " << std::chrono::duration_cast<std::chrono::microseconds>(end_build - begin_build).count() << "us\n";
+    outfile << cells->size() << ",";
+    outfile << std::chrono::duration_cast<std::chrono::microseconds>(end_build - begin_build).count() << ",";
 
 // calc neighbors
 std::chrono::microseconds totalTime{0};
@@ -112,7 +125,9 @@ std::chrono::microseconds totalTime{0};
       (*cells)[i].SetNeighbors(neighbors);
     }
 
-    std::cout << "\n[NanoFlann] Neighbor search time = " << totalTime.count() << "us\n";
+    // std::cout << "\n[NanoFlann] Neighbor search time = " << totalTime.count() << "us\n";
+    outfile << totalTime.count() << ",";
+    outfile.close();
   }
 
  private:
