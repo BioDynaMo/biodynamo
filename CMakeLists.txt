@@ -36,7 +36,7 @@ if ("$ENV{CMAKE_EXPORT_COMPILE_COMMANDS}" STREQUAL "1" OR CLANG_TIDY_FOUND)
   set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 endif()
 
-find_package(PCL 1.3 REQUIRED COMPONENTS common io)
+find_package(PCL 1.3 REQUIRED COMPONENTS common octree)
 include_directories(${PCL_INCLUDE_DIRS})
 link_directories(${PCL_LIBRARY_DIRS})
 add_definitions(${PCL_DEFINITIONS})
@@ -199,7 +199,7 @@ if (test)
   set(TEST_TARGET runBiodynamoTests)
   add_executable(${TEST_TARGET} ${TEST_SOURCES})
   target_link_libraries(${TEST_TARGET} libgtest)
-  target_link_libraries(${TEST_TARGET} biodynamo ${PCL_COMMON_LIBRARIES} ${PCL_IO_LIBRARIES})
+  target_link_libraries(${TEST_TARGET} biodynamo ${PCL_COMMON_LIBRARIES} ${PCL_OCTREE_LIBRARIES})
 
   # execute all tests with command: make test
   add_test(NAME ${TEST_TARGET} COMMAND ${TEST_TARGET})
@@ -240,4 +240,4 @@ target_link_libraries(${SIMULATION_TARGET} biodynamo)
 # --------------------- build octree benchmark executable ---------------------
 set(OCTREE_TARGET octree_bench)
 add_executable(${OCTREE_TARGET} ${CMAKE_SOURCE_DIR}/demo/octree_bench.cc)
-target_link_libraries(${OCTREE_TARGET} biodynamo ${PCL_COMMON_LIBRARIES} ${PCL_IO_LIBRARIES})
+target_link_libraries(${OCTREE_TARGET} biodynamo ${PCL_COMMON_LIBRARIES} ${PCL_OCTREE_LIBRARIES})
