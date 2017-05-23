@@ -50,7 +50,7 @@ class Cell : public SimStateSerializable {
    */
   Cell();
 
-  ~Cell();
+  virtual ~Cell();
 
   StringBuilder& simStateToJson(StringBuilder& sb) const override;
 
@@ -73,7 +73,7 @@ class Cell : public SimStateSerializable {
    * the axis of division is random.
    * @return the other daughter cell.
    */
-  Cell* divide();
+  virtual Cell* divide();
 
   /**
    * Divide the cell. Of the two daughter cells, one is this one (but smaller, with half GeneSubstances etc.),
@@ -81,12 +81,12 @@ class Cell : public SimStateSerializable {
    * @param volumeRatio the ratio (Volume daughter 1)/(Volume daughter 2). 1.0 gives equal cells.
    * @return the second daughter cell.
    */
-  Cell* divide(double volume_ratio);
+  virtual Cell* divide(double volume_ratio);
 
   /**
    * @param axis specifies direction of division
    */
-  Cell* divide(const std::array<double, 3>& axis);
+  virtual Cell* divide(const std::array<double, 3>& axis);
 
   /**
    * Divide the cell. Of the two daughter cells, one is this one (but smaller, with half GeneSubstances etc.),
@@ -95,7 +95,7 @@ class Cell : public SimStateSerializable {
    * @param axis specifies direction of division
    * @return the second daughter cell
    */
-  Cell* divide(double volume_ratio, const std::array<double, 3>& axis);
+  virtual Cell* divide(double volume_ratio, const std::array<double, 3>& axis);
 
   /**
    * Divide mother cell in two daughter cells by coping <code>Cell</code>, <code>SomaElement</code>,
@@ -110,7 +110,7 @@ class Cell : public SimStateSerializable {
    *
    * @return the second daughter cell
    */
-  Cell* divide(double volume_ratio, double phi, double theta);
+  virtual Cell* divide(double volume_ratio, double phi, double theta);
 
   void addNeuriteElement(NeuriteElement::UPtr neurite);
 
