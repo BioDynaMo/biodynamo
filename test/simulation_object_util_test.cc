@@ -4,6 +4,7 @@
 #include "gtest/gtest.h"
 
 #include "simulation_object.h"
+#include "transactional_vector.h"
 
 namespace bdm {
 namespace simulation_object_util_test_internal {
@@ -21,10 +22,21 @@ class CellExt : public Base {
 
   CellExt() : position_{{1, 2, 3}} {}
 
-  const std::array<double, 3>& GetPosition() const { return position_[idx_]; }
-  double GetDiameter() const { return diameter_[idx_]; }
+  void Divide(Self<Scalar>* daughter, double volume_ratio, double phi,
+              double theta) {
+    DivideImpl(daughter, volume_ratio, phi, theta);
+  }
 
-  void SetDiameter(double diameter) { diameter_[idx_] = diameter; }
+  virtual void DivideImpl(Self<Scalar>* daughter, double volume_ratio,
+                          double phi, double theta) {
+    daughter->position_[kIdx] = {5, 4, 3};
+    diameter_[kIdx] = 1.123;
+  }
+
+  const std::array<double, 3>& GetPosition() const { return position_[kIdx]; }
+  double GetDiameter() const { return diameter_[kIdx]; }
+
+  void SetDiameter(double diameter) { diameter_[kIdx] = diameter; }
 
  protected:
   vec<std::array<double, 3>> position_;
@@ -52,7 +64,14 @@ class NeuronExt : public Base {
 
   NeuronExt() = default;
 
-  const std::vector<Neurite>& GetNeurites() const { return neurites_[idx_]; }
+  void DivideImpl(typename CellExt<>::template Self<Scalar>* daughter,
+                  double volume_ratio, double phi, double theta) override {
+    auto neuron = static_cast<Self<Scalar>*>(daughter);
+    neuron->neurites_[kIdx].push_back(Neurite(987));
+    Base::DivideImpl(daughter, volume_ratio, phi, theta);
+  }
+
+  const std::vector<Neurite>& GetNeurites() const { return neurites_[kIdx]; }
 
  private:
   vec<std::vector<Neurite>> neurites_ = {{}};
@@ -204,6 +223,62 @@ TEST(SimulationObjectUtilTest, Soa_AssignmentOperator) {
   EXPECT_EQ(8, position[1]);
   EXPECT_EQ(7, position[2]);
   EXPECT_EQ(3u, neurons[0].GetNeurites().size());
+}
+
+template <typename TContainer>
+void RunDivideTest(TContainer* neurons) {
+  Neuron<Scalar> neuron;
+  neurons->push_back(neuron);
+
+  auto&& new_neuron = Divide((*neurons)[0], neurons, 1.0, 2.0, 3.0);
+
+  EXPECT_EQ(987u, new_neuron.GetNeurites()[0].id_);
+  EXPECT_EQ(5, new_neuron.GetPosition()[0]);
+  EXPECT_EQ(4, new_neuron.GetPosition()[1]);
+  EXPECT_EQ(3, new_neuron.GetPosition()[2]);
+
+  // commit invalidates new_neuron
+  neurons->Commit();
+
+  ASSERT_EQ(2u, neurons->size());
+  // new_neuron got invalidated by `Commit()`, but is now accessible in neurons
+  EXPECT_EQ(987u, (*neurons)[1].GetNeurites()[0].id_);
+  EXPECT_EQ(5, (*neurons)[1].GetPosition()[0]);
+  EXPECT_EQ(4, (*neurons)[1].GetPosition()[1]);
+  EXPECT_EQ(3, (*neurons)[1].GetPosition()[2]);
+  EXPECT_EQ(1.123, (*neurons)[0].GetDiameter());
+}
+
+TEST(SimulationObjectUtilTest, Aos_Divide) {
+  TransactionalVector<Neuron<>> neurons;
+  RunDivideTest(&neurons);
+}
+
+TEST(SimulationObjectUtilTest, Soa_Divide) {
+  auto neurons = Neuron<>::NewEmptySoa();
+  RunDivideTest(&neurons);
+}
+
+template <typename TContainer>
+void RunDeleteTest(TContainer* neurons) {
+  Neuron<Scalar> neuron;
+  neurons->push_back(neuron);
+
+  Delete(neurons, 0);
+
+  neurons->Commit();
+
+  EXPECT_EQ(0u, neurons->size());
+}
+
+TEST(SimulationObjectUtilTest, Aos_Delete) {
+  TransactionalVector<Neuron<>> neurons;
+  RunDeleteTest(&neurons);
+}
+
+TEST(SimulationObjectUtilTest, Soa_Delete) {
+  auto neurons = Neuron<>::NewEmptySoa();
+  RunDeleteTest(&neurons);
 }
 
 }  // namespace simulation_object_util_test_internal

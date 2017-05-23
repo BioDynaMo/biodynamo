@@ -1,12 +1,13 @@
 #ifndef BACKEND_H_
 #define BACKEND_H_
 
-#include <iostream>
+#include <exception>
 #include <memory>
 #include <utility>
 #include <vector>
 
 #include "macros.h"
+#include "transactional_vector.h"
 
 namespace bdm {
 
@@ -32,6 +33,30 @@ class OneElementArray {
 
   BDM_FORCE_INLINE const T& operator[](const size_t idx) const { return data_; }
 
+  /// This function is only used to allow compilation of SOA simulation objects,
+  /// but must not be called!
+  /// Some methods required for SOA simulation objects need to be virtual.
+  /// Virtualization and templating cannot be used at the same time.
+  /// Consequently, conditional compilation of those methods only for the SOA
+  /// memory layout is not feasable. This means that operations in these
+  /// functions must also be supported for Scalar backends. Otherwise,
+  /// compilation would fail.
+  void push_back(const T& other) {  // NOLINT
+    throw std::logic_error("Unsupported operation!");
+  }
+
+  /// This function is only used to allow compilation of SOA simulation objects,
+  /// but must not be called!
+  /// Some methods required for SOA simulation objects need to be virtual.
+  /// Virtualization and templating cannot be used at the same time.
+  /// Consequently, conditional compilation of those methods only for the SOA
+  /// memory layout is not feasable. This means that operations in these
+  /// functions must also be supported for Scalar backends. Otherwise,
+  /// compilation would fail.
+  void pop_back() {  // NOLINT
+    throw std::logic_error("Unsupported operation!");
+  }
+
   T* begin() { return &data_; }    // NOLINT
   T* end() { return &data_ + 1; }  // NOLINT
 
@@ -49,7 +74,7 @@ struct Scalar {
 
   /// Data type to store a collection of simulation objects with this backend
   template <typename T>
-  using Container = std::vector<T>;
+  using Container = TransactionalVector<T>;
 };
 
 struct Soa {
@@ -57,7 +82,7 @@ struct Soa {
   template <typename T>
   using vec = std::vector<T>;  // NOLINT
 
-  // Data type to store a collection of simulation objects with this backend
+  /// Data type to store a collection of simulation objects with this backend
   template <typename T>
   using Container = T;
 };
@@ -67,7 +92,7 @@ struct SoaRef {
   template <typename T>
   using vec = std::vector<T>&;  // NOLINT
 
-  // Data type to store a collection of simulation objects with this backend
+  /// Data type to store a collection of simulation objects with this backend
   template <typename T>
   using Container = T;
 };

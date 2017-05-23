@@ -2,6 +2,7 @@
 #define DIVIDING_CELL_OP_H_
 
 #include "backend.h"
+#include "simulation_object_util.h"
 
 namespace bdm {
 
@@ -16,13 +17,14 @@ class DividingCellOp {
   void Compute(TContainer* cells) const {
 #pragma omp parallel for
     for (size_t i = 0; i < cells->size(); i++) {
-      // if diameter <= 40 then changeVolume(300) else do nothing
       auto&& cell = (*cells)[i];
       if (cell.GetDiameter() <= 40) {
         cell.ChangeVolume(300);
+      } else {
+        Divide(cell, cells);
       }
-      // todo(lukas) division if diameter > 20;
     }
+    cells->Commit();
   }
 };
 

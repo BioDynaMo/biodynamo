@@ -15,6 +15,7 @@
 #include "scheduler.h"
 #include "timing.h"
 #include "timing_aggregator.h"
+#include "transactional_vector.h"
 // #include <ittnotify.h>
 
 using bdm::Cell;
@@ -35,7 +36,7 @@ void Execute(size_t cells_per_dim, size_t iterations, size_t threads,
 
     const double space = 20;
 
-    // std::vector<Cell<Scalar>> cells;
+    // TransactionalVector<Cell<Scalar>> cells;
     auto cells = Cell<>::NewEmptySoa();
     cells.reserve(cells_per_dim * cells_per_dim * cells_per_dim);
     {

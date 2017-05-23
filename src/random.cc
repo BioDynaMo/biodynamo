@@ -5,6 +5,8 @@
 
 namespace bdm {
 
+thread_local Random gRandom;
+
 void Random::SetSeed(int64_t seed) {
   seed_ = (seed ^ 25214903917L) & 281474976710655L;
   next_next_gaussian_ = 0.0;

@@ -47,6 +47,8 @@ class Random {
   bool CompareAndSet(int64_t* current, int64_t expected, int64_t update);
 };
 
+extern thread_local Random gRandom;
+
 }  // namespace bdm
 
 #endif  // RANDOM_H_
