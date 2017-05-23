@@ -39,7 +39,7 @@ class NeighborUnibnOp {
     outfile << std::chrono::duration_cast<std::chrono::microseconds>(end_build - begin_build).count() << ",";
 
 // calc neighbors
-std::chrono::microseconds totalTime{0};
+std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 #pragma omp parallel for
     for (size_t i = 0; i < cells->size(); i++) {
       // fixme make param
@@ -52,10 +52,7 @@ std::chrono::microseconds totalTime{0};
       const auto& query = (*cells)[i].GetPosition();
 
       // calculate neighbors
-      std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
       octree.radiusNeighbors<unibn::L2Distance<std::array<double, 3> > >(query, search_radius, found_neighbors);
-      std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-      totalTime += std::chrono::duration_cast<std::chrono::microseconds>(end - begin);
 
       // transform result
       InlineVector<int, 8> neighbors;
@@ -68,8 +65,9 @@ std::chrono::microseconds totalTime{0};
       (*cells)[i].SetNeighbors(neighbors);
     }
 
+    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
     // std::cout << "\n[UNIBN] Neighbor search time = " << totalTime.count() << "us\n";
-    outfile << totalTime.count() << ",";
+    outfile << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << ",";
     outfile.close();
   }
 

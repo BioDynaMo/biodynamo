@@ -1,8 +1,7 @@
 #ifndef NEIGHBOR_PCL_OP_H_
 #define NEIGHBOR_PCL_OP_H_
 
-#include <pcl/point_cloud.h>
-#include <pcl/octree/octree.h>
+#include <pcl/octree/octree_search.h>
 
 #include <fstream>
 #include <cmath>
@@ -30,6 +29,7 @@ class NeighborPclOp {
   void Compute(TContainer* cells) const {
     ofstream outfile;
     outfile.open("NeighborPclOp.txt", std::ofstream::out | std::ofstream::app);
+    outfile << cells->size() << ",";
 
     PointCloud<PointXYZ>::Ptr cloud(new PointCloud<PointXYZ>);
 
@@ -59,11 +59,10 @@ class NeighborPclOp {
     std::chrono::steady_clock::time_point end_build = std::chrono::steady_clock::now();
 
     // std::cout << "\n[PCL] Octree build time = " << std::chrono::duration_cast<std::chrono::microseconds>(end_build - begin_build).count() << "us\n";
-    outfile << cells->size() << ",";
     outfile << std::chrono::duration_cast<std::chrono::microseconds>(end_build - begin_build).count() << ",";
 
 // calc neighbors
-std::chrono::microseconds neighbor_search_time{0};
+std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 #pragma omp parallel for
     for (size_t i = 0; i < cells->size(); i++) {
       // fixme make param
@@ -76,11 +75,8 @@ std::chrono::microseconds neighbor_search_time{0};
       std::vector<float> pointRadiusSquaredDistance;
 
       // calculate neighbors
-      std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
       const int n_matches =
           octree.radiusSearch(cloud->points[i], search_radius, pointIdxRadiusSearch, pointRadiusSquaredDistance);
-      std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-      neighbor_search_time += std::chrono::duration_cast<std::chrono::microseconds>(end - begin);
 
       // transform result
       InlineVector<int, 8> neighbors;
@@ -92,9 +88,10 @@ std::chrono::microseconds neighbor_search_time{0};
       }
       (*cells)[i].SetNeighbors(neighbors);
     }
+    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
 
     // std::cout << "\n[PCL] Neighbor search time = " << neighbor_search_time.count() << "us\n";
-    outfile << neighbor_search_time.count() << ",";
+    outfile << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << ",";
     outfile.close();
   }
 

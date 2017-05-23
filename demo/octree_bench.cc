@@ -34,6 +34,7 @@ void RunTest(T* cells, const Op& op, const char* filename) {
 
 int main(int args, char** argv) {
   if(args == 2) {
+    omp_set_num_threads(omp_get_max_threads());
     srand((unsigned int) time(NULL));
     int num_cells;
 
