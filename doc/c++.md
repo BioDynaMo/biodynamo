@@ -1,3 +1,8 @@
+# C++ Concepts
+
+## Example of Conditional Compilation
+
+```
 #include <iostream>
 
 struct AA {};
@@ -5,7 +10,6 @@ struct BB {};
 
 template <typename T>
 struct Foo {
-
   template <typename TT=T>
   typename std::enable_if<std::is_same<TT, AA>::value>::type
   Bar() {
@@ -20,9 +24,10 @@ struct Foo {
 };
 
 int main() {
-  Foo<AA> foo;
-  Foo<BB> foo_1;
+  Foo<AA> foo_aa;
+  Foo<BB> foo_bb;
 
-  foo.Bar();
-  foo_1.Bar();
+  foo_aa.Bar();  // prints: "version for AA"
+  foo_bb.Bar();  // prints: "version for BB"
 }
+```
