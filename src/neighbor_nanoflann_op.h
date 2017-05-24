@@ -5,6 +5,7 @@
 #include <vector>
 #include "inline_vector.h"
 #include "nanoflann.h"
+#include "timing.h"
 
 namespace bdm {
 
@@ -77,8 +78,12 @@ class NeighborNanoflannOp {
         MyKdTree;
 
     // three dimensions; max leafs: 10
+    auto build_timer = new Timing("build time ");
     MyKdTree index(3, nf_cells, KDTreeSingleIndexAdaptorParams(10));
     index.buildIndex();
+    delete build_timer;
+
+    auto search_timer = new Timing("search time ");
 
 // calc neighbors
 #pragma omp parallel for
@@ -108,6 +113,8 @@ class NeighborNanoflannOp {
       }
       (*cells)[i].SetNeighbors(neighbors);
     }
+
+    delete search_timer;
   }
 
  private:

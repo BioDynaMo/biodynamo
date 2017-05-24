@@ -60,6 +60,7 @@ void Execute(size_t cells_per_dim, size_t iterations, size_t threads,
       bdm::NeighborNanoflannOp op(700);
       op.Compute(&cells);
     }
+    return;
 
     // __itt_resume();
 
