@@ -5,14 +5,17 @@
 
 BINARY_DIR=$1
 RETURN_VALUE=0
+LAST_RET_VAL=0
 
 cmake --build $BINARY_DIR --target all
-if [ $? != 0 ]; then
-  RETURN_VALUE=$?
+LAST_RET_VAL=$?
+if [ $LAST_RET_VAL != 0 ]; then
+  RETURN_VALUE=$LAST_RET_VAL
 fi
 cmake --build $BINARY_DIR --target check
-if [ $? != 0 ]; then
-  RETURN_VALUE=$?
+LAST_RET_VAL=$?
+if [ $LAST_RET_VAL != 0 ]; then
+  RETURN_VALUE=$LAST_RET_VAL
 fi
 cmake --build $BINARY_DIR --target fetch-master
 cmake --build $BINARY_DIR --target check-format
