@@ -3,8 +3,11 @@
 
 #include <cmath>
 #include <iostream>
+#include <vector>
+// #include <pair>
 #include "inline_vector.h"
 #include "spatial_organization/octree_node.h"
+#include "timing.h"
 
 namespace bdm {
 
@@ -27,9 +30,10 @@ class NeighborOp {
     // Creating a spatial tree (Bound, max_depth_, capacity_of_leaf_node)
     // IMPORTANT! Ensure that your bound is big enough and enclose all parts of
     // simulation
-    SpatialTreeNode<size_t>* tree = new OctreeNode<size_t>(
+    auto build_timer = new Timing("build time ");
+    OctreeNode<size_t>* tree = new OctreeNode<size_t>(
         Bound(-10000.0, -10000.0, -10000.0, 10000.0, 10000.0, 10000.0), 100,
-        10);
+        20);
 
     // Initializing tree with a objects
     for (size_t i = 0; i < cells->size(); i++) {
@@ -38,32 +42,56 @@ class NeighborOp {
       Point pos(position[0], position[1], position[2]);
       tree->Put(pos, i);
     }
-    double search_radius = sqrt(distance_);
+    delete build_timer;
 
-    // Container for neighbors
-    InlineVector<int, 8>* i_neighbors =
-        new InlineVector<int, 8>[ cells->size() ];
+    size_t num_neighbors = 0;
+    size_t calls;
 
-    // Getting all pairs within the 'search_radius distance'
-    auto tree_neighbors = tree->GetNeighbors(search_radius);
-    int amount_of_pairs = tree_neighbors.size();
+    tree->Traverse([&](const std::vector<std::pair<Point, size_t> >& elements) {
+      const size_t size = elements.size();
+      num_neighbors += size;
+      calls++;
+      for (size_t i = 0; i < size; i++) {
+        InlineVector<int, 8> neighbors;
+        neighbors.reserve(size-1);
+        for (size_t j = 0; j < size; j++) {
+          if (i != j) {
+            neighbors.push_back(elements[j].second);
+          }
+        }
+        (*cells)[elements[i].second].SetNeighbors(neighbors);
+      }
+    });
 
-    // Filling container for neighbors for every object
-    // ragma omp parallel for
-    for (int i = 0; i < amount_of_pairs; i++) {
-      size_t neighbor_a = tree_neighbors[i].first;
-      size_t neighbor_b = tree_neighbors[i].second;
-      i_neighbors[neighbor_a].push_back(neighbor_b);
-      i_neighbors[neighbor_b].push_back(neighbor_a);
-    }
+    std::cout << (num_neighbors + 1.0) / calls << std::endl;
+    std::cout << calls << std::endl;
 
-// update neighbors
-#pragma omp parallel for
-    for (size_t i = 0; i < cells->size(); i++) {
-      (*cells)[i].SetNeighbors(i_neighbors[i]);
-    }
+//     double search_radius = sqrt(distance_);
+//
+//     // Container for neighbors
+//     InlineVector<int, 8>* i_neighbors =
+//         new InlineVector<int, 8>[ cells->size() ];
+//
+//     // Getting all pairs within the 'search_radius distance'
+//     auto tree_neighbors = tree->GetNeighbors(search_radius);
+//     int amount_of_pairs = tree_neighbors.size();
+//
+//     // Filling container for neighbors for every object
+//     // ragma omp parallel for
+//     for (int i = 0; i < amount_of_pairs; i++) {
+//       size_t neighbor_a = tree_neighbors[i].first;
+//       size_t neighbor_b = tree_neighbors[i].second;
+//       i_neighbors[neighbor_a].push_back(neighbor_b);
+//       i_neighbors[neighbor_b].push_back(neighbor_a);
+//     }
+//
+// // update neighbors
+// #pragma omp parallel for
+//     for (size_t i = 0; i < cells->size(); i++) {
+//       (*cells)[i].SetNeighbors(i_neighbors[i]);
+//     }
     delete tree;
-    delete[] i_neighbors;
+    // delete[] i_neighbors;
   }
 
  private:

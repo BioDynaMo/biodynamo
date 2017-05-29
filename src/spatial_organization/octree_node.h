@@ -1,6 +1,7 @@
 #ifndef SPATIAL_ORGANIZATION_OCTREE_NODE_H_
 #define SPATIAL_ORGANIZATION_OCTREE_NODE_H_
 
+#include <functional>
 #include <utility>
 #include <vector>
 #include "spatial_organization/spatial_tree_node.h"
@@ -58,6 +59,16 @@ class OctreeNode : public SpatialTreeNode<T> {
   T At(Point const &p) const;
 
   size_t Size() const;
+
+  void Traverse(const std::function<void(const vector<pair<Point, T> >&)>& callback) const {
+    if (is_leaf_node_) {
+      callback(objects_);
+    } else {
+        for (size_t i = 0; i < 8; i++) {
+          children_[i]->Traverse(callback);
+        }
+    }
+  }
 
  private:
   bool is_leaf_node_;
