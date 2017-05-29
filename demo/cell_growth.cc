@@ -36,7 +36,7 @@ void Execute(size_t cells_per_dim, size_t iterations, size_t threads,
 
     const double space = 20;
 
-    // TransactionalVector<Cell<Scalar>> cells;
+    // bdm::TransactionalVector<Cell<Scalar>> cells;
     auto cells = Cell<>::NewEmptySoa();
     cells.reserve(cells_per_dim * cells_per_dim * cells_per_dim);
     {

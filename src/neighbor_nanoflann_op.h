@@ -34,9 +34,10 @@ struct NanoFlannAdapter {
   /// with index "idx_p2" stored in the class:
   inline coord_t kdtree_distance(const coord_t* p1,  // NOLINT
                                  const size_t idx_p2, size_t size) const {
-    const coord_t d0 = p1[0] - derived()[idx_p2].GetPosition()[0];
-    const coord_t d1 = p1[1] - derived()[idx_p2].GetPosition()[1];
-    const coord_t d2 = p1[2] - derived()[idx_p2].GetPosition()[2];
+    const auto& position = derived()[idx_p2].GetPosition();
+    const coord_t d0 = p1[0] - position[0];
+    const coord_t d1 = p1[1] - position[1];
+    const coord_t d2 = p1[2] - position[2];
     return d0 * d0 + d1 * d1 + d2 * d2;
   }
 
@@ -80,17 +81,21 @@ class NeighborNanoflannOp {
     MyKdTree index(3, nf_cells, KDTreeSingleIndexAdaptorParams(10));
     index.buildIndex();
 
+    std::vector<std::pair<size_t, double>> ret_matches;
+    ret_matches.reserve(8);
+    nanoflann::SearchParams params;
+    params.sorted = false;
+    double search_radius = distance_;
+    InlineVector<int, 8> neighbors;
+
 // calc neighbors
-#pragma omp parallel for
+#pragma omp parallel for firstprivate(ret_matches, params, search_radius, \
+                                      neighbors)
     for (size_t i = 0; i < cells->size(); i++) {
       // fixme make param
       // according to roman 50 - 100 micron
-      double search_radius = distance_;
-
-      std::vector<std::pair<size_t, double>> ret_matches;
-
-      nanoflann::SearchParams params;
-      params.sorted = false;
+      ret_matches.clear();
+      neighbors.clear();
 
       const auto& position = (*cells)[i].GetPosition();
 
@@ -99,7 +104,6 @@ class NeighborNanoflannOp {
           index.radiusSearch(&position[0], search_radius, ret_matches, params);
 
       // transform result (change data structure - remove self from list)
-      InlineVector<int, 8> neighbors;
       neighbors.reserve(n_matches - 1);
       for (size_t j = 0; j < n_matches; j++) {
         if (ret_matches[j].first != i) {
