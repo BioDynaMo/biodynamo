@@ -28,18 +28,17 @@ class SoaSimulationObject {
 
   SoaSimulationObject() : to_be_removed_(), size_(1) {}
 
-  explicit SoaSimulationObject(const SoaSimulationObject<SoaRef>& other)
-      : mutex_(other.mutex_),
-        to_be_removed_(other.to_be_removed_),
-        size_(other.size_) {}
+  /// Detect failing return value optimization (RVO)
+  /// Copy-ctor declaration to please compiler, but missing implementation.
+  /// Therefore, if it gets called somewhere (failing RVO optimization),
+  /// the linker would throw an error.
+  explicit SoaSimulationObject(const SoaSimulationObject<SoaRef>& other);
 
-  explicit SoaSimulationObject(const SoaSimulationObject<Soa>& other)
-      : to_be_removed_(other.to_be_removed_), size_(other.size_) {}
-
-  SoaSimulationObject(SoaSimulationObject<TBackend>&& other)
-      : mutex_(std::move(other.mutex_)),
-        to_be_removed_(std::move(other.to_be_removed_)),
-        size_(other.size_) {}
+  /// Detect failing return value optimization (RVO)
+  /// Copy-ctor declaration to please compiler, but missing implementation.
+  /// Therefore, if it gets called somewhere (failing RVO optimization),
+  /// the linker would throw an error.
+  explicit SoaSimulationObject(const SoaSimulationObject<Soa>& other);
 
   template <typename T>
   SoaSimulationObject(T* other, size_t idx)
