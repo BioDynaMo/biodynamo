@@ -222,7 +222,9 @@ using std::is_same;
                                                                                \
  private:                                                                      \
   /** Elements that are added using `DelayedPushBack` and not yet commited */  \
-  std::vector<Self<Scalar>> to_be_added_;
+  typename type_ternary_operator<                                              \
+      is_same<Backend, Soa>::value, std::vector<Self<Scalar>>,                 \
+      VectorPlaceholder<Self<Scalar>>>::type to_be_added_;
 
 /// simpflified interface for standard simulation object with one template
 /// parameter named Base.

@@ -11,6 +11,47 @@
 
 namespace bdm {
 
+/// VectorPlaceholder has the same interface as a std::vector
+/// but no data members. Therefore, there is no dynamic memory
+/// allocation and the size of an instance is almost zero.
+/// Use case: In a templated class a std::vector data member is
+/// not used for all template parameters.
+template <typename T>
+class VectorPlaceholder {
+ public:
+  using value_type = T;
+  VectorPlaceholder() {}
+  VectorPlaceholder(std::initializer_list<T> list) {}
+
+  std::size_t size() const { return 0; }  // NOLINT
+
+  T& operator[](const size_t idx) {
+    throw std::logic_error("Unsupported operation!");
+  }
+
+  const T& operator[](const size_t idx) const {
+    throw std::logic_error("Unsupported operation!");
+  }
+
+  void push_back(const T& other) {  // NOLINT
+    throw std::logic_error("Unsupported operation!");
+  }
+
+  void pop_back() {  // NOLINT
+    throw std::logic_error("Unsupported operation!");
+  }
+
+  T* begin() { throw std::logic_error("Unsupported operation!"); }  // NOLINT
+  T* end() { throw std::logic_error("Unsupported operation!"); }    // NOLINT
+
+  const T* begin() const {  // NOLINT
+    throw std::logic_error("Unsupported operation!");
+  }
+  const T* end() const {  // NOLINT
+    throw std::logic_error("Unsupported operation!");
+  }
+};
+
 /// \brief This class represents an array with exactly one element
 ///
 /// Needed for AOSOA: Objects will store a single e.g. real_v instead of N
