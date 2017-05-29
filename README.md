@@ -27,11 +27,16 @@ software that has similar functionalities as Cx3D but is coded in C++ is needed.
  * valgrind
 
 Additionally for developers:
- * doxygen (to build documentation)
- * gcov and lcov (to generate test coverage report)
+ * doxygen graphviz (to build documentation)
+ * lcov (to generate test coverage report)
  * python (to run `cpplint` which checks coding conventions)
  * clang-format (to format code according to our style guide)
  * clang-tidy (which also checks coding conventions -- mostly naming rules which are not covered by `cpplint`)
+
+To install all these packages on Ubuntu 16.04 run:
+```
+sudo script/install_prerequesites_ubuntu_16.04.sh
+```
 
 ## Build Instructions
 
