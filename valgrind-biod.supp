@@ -126,34 +126,26 @@
    Memcheck:Param
    write(buf)
    ...
-   fun:_ZN5TFile8SysWriteEiPKvi
+   obj:/lib/x86_64-linux-gnu/libpthread-2.23.so
    fun:_ZN5TFile11WriteBufferEPKci
    fun:_ZN4TKey9WriteFileEiP5TFile
    fun:_ZN14TDirectoryFile14WriteObjectAnyEPKvPK6TClassPKcS6_i
-   fun:_ZN10TDirectory11WriteObjectIN3bdm15OneElementArrayINS1_12InlineVectorIiLm8EEEEEEEiPKT_PKcSA_i
-   fun:_ZN3bdm21WritePersistentObjectINS_15OneElementArrayINS_12InlineVectorIiLm8EEEEEEEvPKcS6_RT_S6_
-   fun:_ZN3bdm24IOTest_InlineVector_Test8TestBodyEv
-   fun:_ZN7testing8internal38HandleSehExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS4_FS3_vEPKc
-   fun:_ZN7testing8internal35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS4_FS3_vEPKc
-   fun:_ZN7testing4Test3RunEv
-   fun:_ZN7testing8TestInfo3RunEv
+   fun:WriteObject<bdm::OneElementArray<bdm::InlineVector<int, 8ul> > >
+   ...
 }
+
 
 # need to verify the validity of this suppression
 {
    ignore_uninitialzed_stack_io
    Memcheck:Param
    write(buf)
-   obj:/lib/x86_64-linux-gnu/libpthread-2.19.so
+   ...
    fun:_ZN5TFile8SysWriteEiPKvi
    fun:_ZN5TFile11WriteBufferEPKci
    fun:_ZN4TKey9WriteFileEiP5TFile
    fun:_ZN14TDirectoryFile14WriteObjectAnyEPKvPK6TClassPKcS6_i
    fun:_ZN10TDirectory11WriteObjectISt6vectorIN3bdm7CellExtINS2_16SimulationObjectINS2_6ScalarEEEEESaIS7_EEEEiPKT_PKcSE_i
    fun:_ZN3bdm21WritePersistentObjectISt6vectorINS_7CellExtINS_16SimulationObjectINS_6ScalarEEEEESaIS6_EEEEvPKcSA_RT_SA_
-   fun:_ZN3bdm14RunTestDivCellISt6vectorINS_7CellExtINS_16SimulationObjectINS_6ScalarEEEEESaIS6_EEEEvPT_
-   fun:_ZN3bdm27IOTest_DividingCellAos_Test8TestBodyEv
-   fun:_ZN7testing8internal38HandleSehExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS4_FS3_vEPKc
-   fun:_ZN7testing8internal35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS4_FS3_vEPKc
-   fun:_ZN7testing4Test3RunEv
+   ...
 }

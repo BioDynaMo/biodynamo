@@ -25,7 +25,7 @@ class CellExt : public Base {
   BDM_CLASS_HEADER(CellExt, position_, mass_location_, tractor_force_,
                    diameter_, volume_, adherence_, mass_, neighbors_)
 
-  // Extracted ClassDef for the reason address in ROOT-8784
+  // Extracted ClassDef for the reason addressed in ROOT-8784
  private:
   static atomic_TClass_ptr fgIsA;
 
