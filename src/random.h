@@ -12,15 +12,15 @@ class Random {
  public:
   Random() {}
 
-  void setSeed(int64_t seed);
+  void SetSeed(int64_t seed);
 
-  int nextInt();
+  int NextInt();
 
-  double nextDouble();
+  double NextDouble();
 
-  double nextGaussian(double mean, double standard_deviation);
+  double NextGaussian(double mean, double standard_deviation);
 
-  std::array<double, 3> nextNoise(double k);
+  std::array<double, 3> NextNoise(double k);
 
   template <typename Backend>
   std::array<typename Backend::real_v, 3> NextNoise(
@@ -28,9 +28,9 @@ class Random {
     std::array<typename Backend::real_v, 3> ret;
     for (size_t i = 0; i < Backend::kVecLen; i++) {
       // todo not most cache friendly way
-      ret[0][i] = -k[i] + 2 * k[i] * nextDouble();
-      ret[1][i] = -k[i] + 2 * k[i] * nextDouble();
-      ret[2][i] = -k[i] + 2 * k[i] * nextDouble();
+      ret[0][i] = -k[i] + 2 * k[i] * NextDouble();
+      ret[1][i] = -k[i] + 2 * k[i] * NextDouble();
+      ret[2][i] = -k[i] + 2 * k[i] * NextDouble();
     }
     return ret;
   }
@@ -40,12 +40,14 @@ class Random {
   double next_next_gaussian_ = 0.0;
   bool have_next_next_gaussian_ = false;
 
-  int next(int i);
+  int Next(int i);
 
-  double nextGaussian();
+  double NextGaussian();
 
-  bool compareAndSet(int64_t* current, int64_t expected, int64_t update);
+  bool CompareAndSet(int64_t* current, int64_t expected, int64_t update);
 };
+
+extern thread_local Random gRandom;
 
 }  // namespace bdm
 

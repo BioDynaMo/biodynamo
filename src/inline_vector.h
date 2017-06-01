@@ -10,6 +10,8 @@
 
 namespace bdm {
 
+using std::size_t;
+
 /// This containes stores up to N elements without heap allocations
 /// If further elements are added elements are stored on the heap
 /// Container grows in a geometric sequence
@@ -50,7 +52,16 @@ class InlineVector {
 
   /// Returns the number of elements that the container has currently
   /// allocated space for.
-  size_t capacity() const { return capacity_; }
+  size_t capacity() const { return capacity_; }  // NOLINT
+
+  /// Removes all elements from the container.
+  /// Leaves capacity() unchanged.
+  void clear() {  // NOLINT
+    for (size_t i = 0; i < size_; i++) {
+      (*this)[i].~T();
+    }
+    size_ = 0;
+  }
 
   /// Increase the capacity of the container to a value that's greater or equal
   /// to new_capacity. If new_cap is greater than the current `capacity()`,
@@ -59,7 +70,7 @@ class InlineVector {
   /// If new_cap is greater than `capacity()`, all iterators and references,
   /// including the past-the-end iterator, are invalidated.
   /// Otherwise, no iterators or references are invalidated.
-  void reserve(size_t new_capacity) {
+  void reserve(size_t new_capacity) {  // NOLINT
     if (new_capacity > capacity_) {
       T* new_heap_data = new T[new_capacity];
       if (heap_data_ != nullptr) {
@@ -72,11 +83,11 @@ class InlineVector {
   }
 
   /// \brief returns the number of elements in this container
-  size_t size() const { return size_; }
+  size_t size() const { return size_; }  // NOLINT
 
   /// adds elements to this container and allocates additional memory on the
   /// heap if required
-  void push_back(const T& element) {
+  void push_back(const T& element) {  // NOLINT
     if (size_ < N) {
       data_[size_++] = element;
     } else {
@@ -97,8 +108,9 @@ class InlineVector {
       size_ = other.size_;
       capacity_ = other.capacity_;
       if (other.heap_data_ != nullptr) {
-        if (heap_data_ != nullptr)
+        if (heap_data_ != nullptr) {
           delete[] heap_data_;
+        }
         heap_data_ = new T[capacity_ - N];
         std::copy_n(other.heap_data_, capacity_ - N, heap_data_);
       }

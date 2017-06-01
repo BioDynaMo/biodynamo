@@ -47,17 +47,17 @@ class DefaultForce {
     // to avoid a division by 0 if the centers are (almost) at the same
     //  location
     if (center_distance < 0.00000001) {
-      auto force2on1 = random_.nextNoise(3.0);
+      auto force2on1 = random_.NextNoise(3.0);
       *result = force2on1;
       return;
     }
     // the force itself
-    double R = (r1 * r2) / (r1 + r2);
+    double r = (r1 * r2) / (r1 + r2);
     double gamma = 1;  // attraction coeff
     double k = 2;      // repulsion coeff
-    double F = k * delta - gamma * std::sqrt(R * delta);
+    double f = k * delta - gamma * std::sqrt(r * delta);
 
-    double module = F / center_distance;
+    double module = f / center_distance;
     std::array<double, 3> force2on1(
         {module * comp1, module * comp2, module * comp3});
     *result = force2on1;

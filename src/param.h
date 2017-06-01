@@ -14,7 +14,7 @@ class Param {
   static constexpr double kDefaultTolerance = 0.000000001;
 
   /// Maximum length of a discrete segment before it is cut into two parts.
-  static double kNeuriteMaxLength;  // usual value : 20
+  static constexpr double kNeuriteMaxLength = 20;  // usual value : 20
   /// Minimum length of a discrete segment before. If smaller it will try to
   /// fuse with the proximal one
   static constexpr double kNeuriteMinLength = 2.0;  // usual value : 10
@@ -72,6 +72,11 @@ class Param {
   static constexpr double kSphereDefaultRotationalInertia = 0.5;
 
   static constexpr double kSphereDefaultInterObjectCoefficient = 0.15;
+
+  /// Helpful constant to compare with 0
+  static constexpr double kEpsilon = 1e-20;
+  /// Helpful constant to identify 'infinity'
+  static constexpr double kInfinity = 1e20;
 };
 
 }  // namespace bdm

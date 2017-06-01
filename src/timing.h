@@ -13,13 +13,13 @@ class Timing {
   typedef std::chrono::high_resolution_clock Clock;
 
   explicit Timing(const std::string& description = "")
-      : start_{timestamp()}, text_{description} {}
+      : start_{Timestamp()}, text_{description} {}
 
   Timing(const std::string& description, TimingAggregator* aggregator)
-      : start_{timestamp()}, text_{description}, aggregator_{aggregator} {}
+      : start_{Timestamp()}, text_{description}, aggregator_{aggregator} {}
 
   ~Timing() {
-    int64_t duration = (timestamp() - start_);
+    int64_t duration = (Timestamp() - start_);
     if (aggregator_ == nullptr) {
       std::cout << text_ << " " << duration << " ms" << std::endl;
     } else {
@@ -27,7 +27,7 @@ class Timing {
     }
   }
 
-  int64_t timestamp() {
+  int64_t Timestamp() {
     using std::chrono::milliseconds;
     using std::chrono::duration_cast;
     auto time = Clock::now();

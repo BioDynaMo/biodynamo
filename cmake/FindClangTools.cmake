@@ -33,27 +33,27 @@
 find_program(CLANG_TIDY_BIN
   NAMES clang-tidy-4.0 clang-tidy-3.9 clang-tidy-3.8 clang-tidy
   PATHS ${ClangTools_PATH} $ENV{CLANG_TOOLS_PATH} /usr/local/bin /usr/bin
-        NO_DEFAULT_PATH
+  NO_CMAKE_PATH NO_CMAKE_ENVIRONMENT_PATH NO_CMAKE_SYSTEM_PATH
 )
 
 if ( "${CLANG_TIDY_BIN}" STREQUAL "CLANG_TIDY_BIN-NOTFOUND" )
   set(CLANG_TIDY_FOUND 0)
-  message("clang-tidy not found")
+  message(WARNING "clang-tidy not found")
 else()
   set(CLANG_TIDY_FOUND 1)
-  message("clang-tidy found at ${CLANG_TIDY_BIN}")
+  message(STATUS "clang-tidy found at ${CLANG_TIDY_BIN}")
 endif()
 
 find_program(CLANG_FORMAT_BIN
   NAMES clang-format-4.0 clang-format-3.9 clang-format-3.8 clang-format
   PATHS ${ClangTools_PATH} $ENV{CLANG_TOOLS_PATH} /usr/local/bin /usr/bin
-        NO_DEFAULT_PATH
+  NO_CMAKE_PATH NO_CMAKE_ENVIRONMENT_PATH NO_CMAKE_SYSTEM_PATH
 )
 
 if ( "${CLANG_FORMAT_BIN}" STREQUAL "CLANG_FORMAT_BIN-NOTFOUND" )
   set(CLANG_FORMAT_FOUND 0)
-  message("clang-format not found")
+  message(WARNING "clang-format not found")
 else()
   set(CLANG_FORMAT_FOUND 1)
-  message("clang-format found at ${CLANG_FORMAT_BIN}")
+  message(STATUS "clang-format found at ${CLANG_FORMAT_BIN}")
 endif()

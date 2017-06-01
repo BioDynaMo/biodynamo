@@ -1,7 +1,7 @@
 #ifndef BACKEND_H_
 #define BACKEND_H_
 
-#include <iostream>
+#include <exception>
 #include <memory>
 #include <utility>
 #include <vector>
@@ -9,8 +9,50 @@
 #include <Rtypes.h>
 
 #include "macros.h"
+#include "transactional_vector.h"
 
 namespace bdm {
+
+/// VectorPlaceholder has the same interface as a std::vector
+/// but no data members. Therefore, there is no dynamic memory
+/// allocation and the size of an instance is almost zero.
+/// Use case: In a templated class a std::vector data member is
+/// not used for all template parameters.
+template <typename T>
+class VectorPlaceholder {
+ public:
+  using value_type = T;
+  VectorPlaceholder() {}
+  VectorPlaceholder(std::initializer_list<T> list) {}
+
+  std::size_t size() const { return 0; }  // NOLINT
+
+  T& operator[](const size_t idx) {
+    throw std::logic_error("Unsupported operation!");
+  }
+
+  const T& operator[](const size_t idx) const {
+    throw std::logic_error("Unsupported operation!");
+  }
+
+  void push_back(const T& other) {  // NOLINT
+    throw std::logic_error("Unsupported operation!");
+  }
+
+  void pop_back() {  // NOLINT
+    throw std::logic_error("Unsupported operation!");
+  }
+
+  T* begin() { throw std::logic_error("Unsupported operation!"); }  // NOLINT
+  T* end() { throw std::logic_error("Unsupported operation!"); }    // NOLINT
+
+  const T* begin() const {  // NOLINT
+    throw std::logic_error("Unsupported operation!");
+  }
+  const T* end() const {  // NOLINT
+    throw std::logic_error("Unsupported operation!");
+  }
+};
 
 /// \brief This class represents an array with exactly one element
 ///
@@ -30,17 +72,41 @@ class OneElementArray {
   OneElementArray(std::initializer_list<T> list) : data_(*list.begin()) {}
   virtual ~OneElementArray() {}
 
-  std::size_t size() const { return 1; }
+  std::size_t size() const { return 1; }  // NOLINT
 
   BDM_FORCE_INLINE T& operator[](const size_t idx) { return data_; }
 
   BDM_FORCE_INLINE const T& operator[](const size_t idx) const { return data_; }
 
-  T* begin() { return &data_; }
-  T* end() { return &data_ + 1; }
+  /// This function is only used to allow compilation of SOA simulation objects,
+  /// but must not be called!
+  /// Some methods required for SOA simulation objects need to be virtual.
+  /// Virtualization and templating cannot be used at the same time.
+  /// Consequently, conditional compilation of those methods only for the SOA
+  /// memory layout is not feasable. This means that operations in these
+  /// functions must also be supported for Scalar backends. Otherwise,
+  /// compilation would fail.
+  void push_back(const T& other) {  // NOLINT
+    throw std::logic_error("Unsupported operation!");
+  }
 
-  const T* begin() const { return &data_; }
-  const T* end() const { return &data_ + 1; }
+  /// This function is only used to allow compilation of SOA simulation objects,
+  /// but must not be called!
+  /// Some methods required for SOA simulation objects need to be virtual.
+  /// Virtualization and templating cannot be used at the same time.
+  /// Consequently, conditional compilation of those methods only for the SOA
+  /// memory layout is not feasable. This means that operations in these
+  /// functions must also be supported for Scalar backends. Otherwise,
+  /// compilation would fail.
+  void pop_back() {  // NOLINT
+    throw std::logic_error("Unsupported operation!");
+  }
+
+  T* begin() { return &data_; }    // NOLINT
+  T* end() { return &data_ + 1; }  // NOLINT
+
+  const T* begin() const { return &data_; }    // NOLINT
+  const T* end() const { return &data_ + 1; }  // NOLINT
 
  private:
   T data_;
@@ -50,19 +116,19 @@ class OneElementArray {
 struct Scalar {
   /// Data type used to store data members of a class
   template <typename T>
-  using vec = OneElementArray<T>;
+  using vec = OneElementArray<T>;  // NOLINT
 
   /// Data type to store a collection of simulation objects with this backend
   template <typename T>
-  using Container = std::vector<T>;
+  using Container = TransactionalVector<T>;
 };
 
 struct Soa {
   /// Data type used to store data members of a class
   template <typename T>
-  using vec = std::vector<T>;
+  using vec = std::vector<T>;  // NOLINT
 
-  // Data type to store a collection of simulation objects with this backend
+  /// Data type to store a collection of simulation objects with this backend
   template <typename T>
   using Container = T;
 };
@@ -70,9 +136,9 @@ struct Soa {
 struct SoaRef {
   /// Data type used to store data members of a class
   template <typename T>
-  using vec = std::vector<T>&;
+  using vec = std::vector<T>&;  // NOLINT
 
-  // Data type to store a collection of simulation objects with this backend
+  /// Data type to store a collection of simulation objects with this backend
   template <typename T>
   using Container = T;
 };

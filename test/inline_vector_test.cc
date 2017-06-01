@@ -14,7 +14,7 @@ void* operator new[](std::size_t sz) {
 
 /// required for valgrind tests
 /// otherwise "Mismatched free() / delete / delete []" errors
-void operator delete[](void* ptr) { free(ptr); }
+void operator delete[](void* ptr) noexcept { free(ptr); }
 
 namespace bdm {
 
@@ -118,6 +118,17 @@ TEST(InlineVectorTest, capacity) {
   EXPECT_EQ(4u, vector.capacity());
   vector.push_back(4);
   EXPECT_EQ(6u, vector.capacity());
+}
+
+TEST(InlineVectorTest, clear) {
+  InlineVector<int, 3> vector;
+  for (size_t i = 0; i < 8; i++) {
+    vector.push_back(i);
+  }
+  size_t capacity_before_clear = vector.capacity();
+  vector.clear();
+  EXPECT_EQ(capacity_before_clear, vector.capacity());
+  EXPECT_EQ(0u, vector.size());
 }
 
 TEST(InlineVectorTest, CopyCtor) {
