@@ -97,7 +97,7 @@ ideal for high-performance computing (HPC). In order to adapt Cx3D to support HP
 software that has similar functionalities as Cx3D but is coded in C++ is needed.
 
 ## Prerequesites
- * Compiler (g++ >= 4.8.4 or clang >= 3.9.0)
+ * Compiler (g++ >= 5.0 or clang >= 3.9.0)
  * CMake >= 3.2.0
  * git
  * valgrind
