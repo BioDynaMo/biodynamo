@@ -41,7 +41,7 @@ void print_usage() {
 Cell<Soa> initialize_cells(size_t cells_per_dim) {
   const double space = 20;
 
-  Cell<Soa> cells;
+  auto cells = Cell<>::NewEmptySoa();
   cells.reserve(cells_per_dim * cells_per_dim * cells_per_dim);
   for (size_t i = 0; i < cells_per_dim; i++) {
     for (size_t j = 0; j < cells_per_dim; j++) {

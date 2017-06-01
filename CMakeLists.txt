@@ -122,6 +122,7 @@ include_directories("${CMAKE_SOURCE_DIR}/third_party")
 ROOT_GENERATE_DICTIONARY(
   "${CMAKE_BINARY_DIR}/bdmDict"
   cell.h inline_vector.h io_util.h
+  simulation_object_util_test.h
   LINKDEF bdmLinkDef.h
 )
 

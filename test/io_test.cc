@@ -53,8 +53,11 @@ TEST(IOTest, InlineVector) {
 
 template <typename T>
 void RunTestDivCell(T* cells) {
-  cells->push_back(Cell<>(19.0));
+
   cells->push_back(Cell<>(41.0));
+  cells->push_back(Cell<>(19.0));
+
+  double volume_mother = (*cells)[0].GetVolume();
 
   DividingCellOp op;
   op.Compute(cells);
@@ -64,23 +67,28 @@ void RunTestDivCell(T* cells) {
   T* cells_r;
   GetPersistentObject(ROOTFILE, "Cells", cells_r);
 
-  EXPECT_NEAR(19.005288996600001, (*cells_r)[0].GetDiameter(),
+  EXPECT_EQ(3u, cells_r->size());
+  EXPECT_NEAR(19.005288996600001, (*cells_r)[1].GetDiameter(),
               abs_error<double>::value);
-  EXPECT_NEAR(41, (*cells_r)[1].GetDiameter(), abs_error<double>::value);
+  EXPECT_NEAR(3594.3640018287319, (*cells_r)[1].GetVolume(),
+              abs_error<double>::value);
 
-  EXPECT_NEAR(3594.3640018287319, (*cells_r)[0].GetVolume(),
-              abs_error<double>::value);
-  EXPECT_NEAR(36086.951213010347, (*cells_r)[1].GetVolume(),
+  // cell got divided so it must be smaller than before
+  // more detailed division test can be found in `cell_test.h`
+  EXPECT_GT(41, (*cells_r)[0].GetDiameter());
+  EXPECT_GT(41, (*cells_r)[2].GetDiameter());
+  // volume of two daughter cells must be equal to volume of the mother
+  EXPECT_NEAR(volume_mother, (*cells_r)[0].GetVolume() + (*cells_r)[2].GetVolume(),
               abs_error<double>::value);
 }
 
 TEST(IOTest, DividingCellAos) {
-  std::vector<Cell<Scalar>> cells;
+  TransactionalVector<Cell<Scalar>> cells;
   RunTestDivCell(&cells);
 }
 
 TEST(IOTest, DividingCellSoa) {
-  Cell<Soa> cells;
+  auto cells = Cell<>::NewEmptySoa();
   RunTestDivCell(&cells);
 }
 
@@ -162,7 +170,7 @@ TEST(IOTest, ComputeAosoa) {
 }
 
 TEST(IOTest, ComputeSoa) {
-  Cell<Soa> cells;
+  auto cells = Cell<>::NewEmptySoa();
   RunTestDispCell(&cells);
 }
 

@@ -2,6 +2,7 @@
 #define IO_UTIL_H_
 
 #include <fstream>
+#include <iostream>
 
 #include <TFile.h>
 #include <Rtypes.h>

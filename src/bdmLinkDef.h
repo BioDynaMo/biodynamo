@@ -18,19 +18,30 @@
 
 #pragma link C++ class bdm::CellExt < bdm::SimulationObject < bdm::Scalar >> +;
 #pragma link C++ class bdm::CellExt < bdm::SimulationObject < bdm::Soa >> +;
-// #pragma link C++ class bdm::CellExt<bdm::SimulationObject<bdm::SoaRef>>-;
+// #pragma link C++ class bdm::CellExt<bdm::SimulationObject<bdm::SoaRef>>+;
 
 #pragma link C++ class vector < bdm::CellExt < bdm::SimulationObject < \
     bdm::Scalar >>> +;
-
-#pragma link C++ class bdm::OneElementArray < double > +;
-#pragma link C++ class bdm::OneElementArray < std::array < double, 3ul >> +;
-#pragma link C++ class bdm::OneElementArray < bdm::InlineVector < int, 8ul >> +;
 
 // todo make invariant of size parameters
 #pragma link C++ class bdm::InlineVector < int, 2ul > +;
 #pragma link C++ class bdm::InlineVector < int, 3ul > +;
 #pragma link C++ class bdm::InlineVector < int, 8ul > +;
+
+#pragma link C++ class bdm::simulation_object_util_test_internal::Neurite+;
+
+#pragma link C++ class bdm::OneElementArray < double > +;
+#pragma link C++ class bdm::OneElementArray < std::array < double, 3ul >> +;
+#pragma link C++ class bdm::OneElementArray < bdm::InlineVector < int, 8ul >> +;
+#pragma link C++ class bdm::OneElementArray < std::vector < bdm::simulation_object_util_test_internal::Neurite, std::allocator < bdm::simulation_object_util_test_internal::Neurite >>> +;
+
+#pragma link C++ class bdm::ScalarSimulationObject+;
+#pragma link C++ class bdm::SoaSimulationObject<bdm::Soa>+;
+#pragma link C++ class bdm::VectorPlaceholder<bdm::CellExt<bdm::SimulationObject<bdm::Scalar> > >+;
+
+#pragma link C++ class bdm::TransactionalVector<int>+;
+#pragma link C++ class bdm::TransactionalVector<bdm::CellExt<bdm::SimulationObject<bdm::Scalar> > >+;
+#pragma link C++ class bdm::TransactionalVector<bdm::simulation_object_util_test_internal::NeuronExt<bdm::simulation_object_util_test_internal::CellExt<bdm::SimulationObject<bdm::Scalar>>>>+;
 
 #endif
 
