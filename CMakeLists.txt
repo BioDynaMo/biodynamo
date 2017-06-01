@@ -215,10 +215,44 @@ if (test)
        Open the following file in your browser: ${CMAKE_BINARY_DIR}/coverage/coverage/index.html")
 endif()
 
-# --------------- add targets for code style and submission checks -------------
-include(cmake/CppStyleGuideChecks.cmake)
-
-# --------------------- build division module simulation executable ---------------------
+# --------------------- build division module simulation executable ------------
 set(SIMULATION_TARGET cell_growth)
 add_executable(${SIMULATION_TARGET} ${CMAKE_SOURCE_DIR}/demo/cell_growth.cc)
 target_link_libraries(${SIMULATION_TARGET} biodynamo)
+
+# ------- build executables to benchmark biology module implementations --------
+# extract third_party header libraries
+set(VARIANT_LIBS "${CMAKE_CURRENT_BINARY_DIR}/variant_libs/")
+file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/variant_libs/")
+execute_process(COMMAND ${CMAKE_COMMAND} -E tar xf "${CMAKE_SOURCE_DIR}/third_party/boost_variant_1_64_0.zip"
+                WORKING_DIRECTORY "${VARIANT_LIBS}")
+execute_process(COMMAND ${CMAKE_COMMAND} -E tar xf "${CMAKE_SOURCE_DIR}/third_party/mapbox_6247207.zip"
+                WORKING_DIRECTORY "${VARIANT_LIBS}")
+execute_process(COMMAND ${CMAKE_COMMAND} -E tar xf "${CMAKE_SOURCE_DIR}/third_party/mpark_4ee0086.zip"
+                WORKING_DIRECTORY "${VARIANT_LIBS}")
+
+# build executables
+include_directories("${VARIANT_LIBS}")
+add_executable(classic_biology_modules ${CMAKE_SOURCE_DIR}/design_exploration/classic_biology_modules.cc)
+add_executable(boost_variant_biology_modules ${CMAKE_SOURCE_DIR}/design_exploration/boost_variant_biology_modules.cc)
+add_executable(mapbox_variant_biology_modules ${CMAKE_SOURCE_DIR}/design_exploration/mapbox_variant_biology_modules.cc)
+add_executable(mpark_variant_biology_modules ${CMAKE_SOURCE_DIR}/design_exploration/mpark_variant_biology_modules.cc)
+add_custom_target(biology-modules
+  DEPENDS classic_biology_modules boost_variant_biology_modules mapbox_variant_biology_modules mpark_variant_biology_modules
+  COMMAND echo "Run classic_biology_modules"
+  COMMAND ./classic_biology_modules
+  COMMAND echo ""
+  COMMAND sleep 1
+  COMMAND echo "Run boost_variant_biology_modules"
+  COMMAND ./boost_variant_biology_modules
+  COMMAND echo ""
+  COMMAND sleep 1
+  COMMAND echo "Run mapbox_variant_biology_modules"
+  COMMAND ./mapbox_variant_biology_modules
+  COMMAND echo ""
+  COMMAND sleep 1
+  COMMAND echo "Run mpark_variant_biology_modules"
+  COMMAND ./mpark_variant_biology_modules)
+
+# --------------- add targets for code style and submission checks -------------
+include(cmake/CppStyleGuideChecks.cmake)

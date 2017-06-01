@@ -1,3 +1,79 @@
+# Design Exploration Biology Modules
+
+This branch contains different biology module implementations.
+
+Biology modules are used to define behavior of a simulation object. Each simulation
+object has a vector of these modules. Besides the behavior it also defines for which
+events it gets copied -- e.g. if a cell divides is the module from the mother cell
+copied to the daughter? In this example the event would be cell division.
+Since this is a central concept for BioDynaMo, different implementations were benchmarked
+against each other.
+
+In principle there are two different versions which can be found in directory
+`design_exploration`:
+  * A classic one using an abstract base class with virtual functions and heap allocated
+    modules: `classic_biology_modules.cc`
+  * `Variants`, to get rid of heap allocations. `Variants` can be used to store unrelated
+    types in the same container. They can be seen as type-safe unions.
+
+Variants will be part of the C++17 standard, but at the moment we need to resort to library implementations.
+One option is the popular C++ library `boost`. However, it requires a large number of headers from other boost packages.
+Therefore, we have also evaluated other, more light-weight, variant implementations:
+  * mapbox
+  * mpark
+
+The additional benefit of `mpark` is that its API is compatible with coming C++17 implementation.
+Hence, once we switch from c++11 to c++17, we just remove the `mpark` library and do not need to
+perform other code changes.
+
+There are three almost identical implementations for variants:
+  * `boost_variant_biology_modules.cc`
+  * `mapbox_variant_biology_modules.cc`
+  * `mpark_variant_biology_modules.cc`
+
+## Performance Comparison
+
+The performance was measured for cell object creation, copying (including the decision if the module should be copied to the new cell) and execution of all modules for each cell.
+The benchmark can be started with `make biology-modules`, which also builds the required executables.
+These are the results on Ubuntu 16.04, clang 3.9 -O3 on an i7-5500U
+
+```
+Run classic_biology_modules
+create 148 ms
+run    1449 ms
+copy   107 ms
+total  1783 ms
+
+Run boost_variant_biology_modules
+create 113 ms
+run    1243 ms
+copy   74 ms
+total  1481 ms
+
+Run mapbox_variant_biology_modules
+create 109 ms
+run    1653 ms
+copy   74 ms
+total  1884 ms
+
+Run mpark_variant_biology_modules
+create 103 ms
+run    1226 ms
+copy   70 ms
+total  1438 ms
+```
+
+Interpretation:
+  * All variant implementations are faster than the classic for cell creation and copying.
+    Speed-up up to 1.53x
+  * Execution of biology modules (`run`), is also faster with exception of `mapbox` implementation.
+    Speed-up up to 1.18x
+
+Decision: use `mpark` variant:
+  * light-weight
+  * fast
+  * compatible to C++17 standard
+
 # BioDynaMo
 Biological Dynamic Modeller - Based on Cortex 3D (Cx3D)
 
