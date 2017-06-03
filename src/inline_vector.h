@@ -20,7 +20,7 @@ using std::size_t;
 template <typename T, size_t N>
 class InlineVector {
  public:
-  explicit InlineVector(TRootIOCtor*) {}  // Constructor for ROOT I/O
+  explicit InlineVector(TRootIOCtor* io_ctor) {}  // Constructor for ROOT I/O
   InlineVector() {}
 
   InlineVector(const InlineVector<T, N>& other) {
@@ -180,10 +180,10 @@ class InlineVector {
   static constexpr float kGrowFactor = 1.5;
   std::array<T, N> data_;
   Int_t heap_size_ = 0;     // needed to help ROOT with array size
-  T* heap_data_ = nullptr;  //[heap_size_]
+  T* heap_data_ = nullptr;  //[heap_size_]  // NOLINT
   size_t size_ = 0;
   size_t capacity_ = N;
-  ClassDef(InlineVector, 1);
+  ClassDef(InlineVector, 1);  // NOLINT
 };
 
 }  // namespace bdm

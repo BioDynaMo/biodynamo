@@ -1,6 +1,7 @@
 #include "gtest/gtest.h"
 
 #include <TFile.h>
+#include <TSystem.h>
 
 #include "cell.h"
 #include "displacement_op.h"
@@ -11,6 +12,52 @@
 #define ROOTFILE "bdmFile.root"
 
 namespace bdm {
+
+TEST(IOTest, InvalidRead) {
+  Cell<Soa> cells = Cell<>::NewEmptySoa();
+  WritePersistentObject(ROOTFILE, "Cells", cells, "RECREATE");
+
+  Cell<Soa>* cells_r = nullptr;
+
+  // Should return 0 if root file doesn't exist
+  if (GetPersistentObject("non_existing_file.root", "Cells", cells_r)) {
+    FAIL();
+  }
+
+  if (!GetPersistentObject(ROOTFILE, "Cells", cells_r)) {
+    FAIL();
+  }
+
+  remove(ROOTFILE);
+}
+
+TEST(IOTest, RuntimeVars) {
+  RuntimeVariables this_machine;
+
+  SysInfo_t si = this_machine.GetSystemInfo();
+  si.fOS = "Non-Existing_OS";
+  RuntimeVariables different_machine;
+  different_machine.SetSystemInfo(si);
+
+  if (this_machine == different_machine) {
+    FAIL();
+  }
+
+  RuntimeVariables this_machine_copy;
+  if (this_machine != this_machine_copy) {
+    FAIL();
+  }
+
+  WritePersistentObject(ROOTFILE, "RuntimeVars", this_machine, "RECREATE");
+  RuntimeVariables* this_machine_r = nullptr;
+  GetPersistentObject(ROOTFILE, "RuntimeVars", this_machine_r);
+
+  if (this_machine != *this_machine_r) {
+    FAIL();
+  }
+
+  remove(ROOTFILE);
+}
 
 TEST(IOTest, InlineVector) {
   InlineVector<int, 8> neighbor;
@@ -28,10 +75,10 @@ TEST(IOTest, InlineVector) {
   WritePersistentObject(ROOTFILE, "S_InlineVector", aoi_scalar, "UPDATE");
   WritePersistentObject(ROOTFILE, "V_InlineVector", aoi_vector, "UPDATE");
 
-  InlineVector<int, 8>* neighbor_r;
+  InlineVector<int, 8>* neighbor_r = nullptr;
 
-  OneElementArray<InlineVector<int, 8>>* aoi_scalar_r;
-  std::vector<InlineVector<int, 8>>* aoi_vector_r;
+  OneElementArray<InlineVector<int, 8>>* aoi_scalar_r = nullptr;
+  std::vector<InlineVector<int, 8>>* aoi_vector_r = nullptr;
 
   GetPersistentObject(ROOTFILE, "InlineVector", neighbor_r);
   GetPersistentObject(ROOTFILE, "S_InlineVector", aoi_scalar_r);
@@ -39,21 +86,25 @@ TEST(IOTest, InlineVector) {
 
   EXPECT_EQ(neighbor.size(), neighbor_r->size());
 
-  if (!(neighbor == (*neighbor_r)))
+  if (!(neighbor == (*neighbor_r))) {
     FAIL();
+  }
 
-  if (!(aoi_scalar[0] == (*aoi_scalar_r)[0]))
+  if (!(aoi_scalar[0] == (*aoi_scalar_r)[0])) {
     FAIL();
+  }
 
   for (size_t i = 0; i < aoi_vector.size(); i++) {
-    if (!(aoi_vector[i] == (*aoi_vector_r)[i]))
+    if (!(aoi_vector[i] == (*aoi_vector_r)[i])) {
       FAIL();
+    }
   }
+
+  remove(ROOTFILE);
 }
 
 template <typename T>
 void RunTestDivCell(T* cells) {
-
   cells->push_back(Cell<>(41.0));
   cells->push_back(Cell<>(19.0));
 
@@ -64,7 +115,7 @@ void RunTestDivCell(T* cells) {
 
   WritePersistentObject(ROOTFILE, "Cells", *cells, "RECREATE");
 
-  T* cells_r;
+  T* cells_r = nullptr;
   GetPersistentObject(ROOTFILE, "Cells", cells_r);
 
   EXPECT_EQ(3u, cells_r->size());
@@ -78,8 +129,11 @@ void RunTestDivCell(T* cells) {
   EXPECT_GT(41, (*cells_r)[0].GetDiameter());
   EXPECT_GT(41, (*cells_r)[2].GetDiameter());
   // volume of two daughter cells must be equal to volume of the mother
-  EXPECT_NEAR(volume_mother, (*cells_r)[0].GetVolume() + (*cells_r)[2].GetVolume(),
+  EXPECT_NEAR(volume_mother,
+              (*cells_r)[0].GetVolume() + (*cells_r)[2].GetVolume(),
               abs_error<double>::value);
+
+  remove(ROOTFILE);
 }
 
 TEST(IOTest, DividingCellAos) {
@@ -125,7 +179,7 @@ void RunTestDispCell(T* cells) {
 
   WritePersistentObject(ROOTFILE, "Cells", *cells, "RECREATE");
 
-  T* cells_r;
+  T* cells_r = nullptr;
   GetPersistentObject(ROOTFILE, "Cells", cells_r);
 
   // check results
@@ -162,6 +216,8 @@ void RunTestDispCell(T* cells) {
   EXPECT_NEAR(0.4, (*cells_r)[1].GetAdherence(), abs_error<double>::value);
   EXPECT_NEAR(11, (*cells_r)[1].GetDiameter(), abs_error<double>::value);
   EXPECT_NEAR(1.1, (*cells_r)[1].GetMass(), abs_error<double>::value);
+
+  remove(ROOTFILE);
 }
 
 TEST(IOTest, ComputeAosoa) {

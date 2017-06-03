@@ -21,7 +21,7 @@ using bdm::Soa;
 using bdm::Scalar;
 using bdm::RuntimeVariables;
 
-void print_usage() {
+void PrintUsage() {
   std::cout
       << "USAGE\n"
       << "  ./persistent_sim #cells_per_dim #distance |\n"
@@ -38,7 +38,7 @@ void print_usage() {
       << std::endl;
 }
 
-Cell<Soa> initialize_cells(size_t cells_per_dim) {
+Cell<Soa> InitializeCells(size_t cells_per_dim) {
   const double space = 20;
 
   auto cells = Cell<>::NewEmptySoa();
@@ -59,7 +59,8 @@ Cell<Soa> initialize_cells(size_t cells_per_dim) {
 }
 
 template <typename... T>
-void simulate(Cell<Soa>& cells, size_t distance, std::tuple<T...>& ioh) {
+void Simulate(Cell<Soa>& cells, size_t distance,  // NOLINT
+              std::tuple<T...>& ioh) {  // NOLINT
   for (size_t d = std::get<1>(ioh); d < distance; d++) {
 #pragma omp parallel for
     for (size_t i = 0; i < cells.size(); i++) {
@@ -93,10 +94,12 @@ void simulate(Cell<Soa>& cells, size_t distance, std::tuple<T...>& ioh) {
   }
 }
 
-bool check_final_state(Cell<Soa>& init_cells, Cell<Soa>& cells, size_t distance) {
+bool CheckFinalState(Cell<Soa>& init_cells, Cell<Soa>& cells,  // NOLINT
+                     size_t distance) {  // NOLINT
   for (size_t i = 0; i < cells.size(); i++) {
     for (int j = 0; j < 3; j++)
-      if (cells[i].GetPosition()[j] != (init_cells[i].GetPosition()[j] + distance))
+      if (cells[i].GetPosition()[j] !=
+          (init_cells[i].GetPosition()[j] + distance))
         return false;
     if (cells[i].GetDiameter() != 30 + distance)
       return false;
@@ -113,7 +116,7 @@ int main(int args, char** argv) {
     std::istringstream(std::string(argv[1])) >> cells_per_dim;
     std::istringstream(std::string(argv[2])) >> distance;
 
-    auto new_cells = initialize_cells(cells_per_dim);
+    auto new_cells = InitializeCells(cells_per_dim);
 
     // Using std::tuple to persist checkpoint variables (native ROOT support)
     // std::tuple is a variadic data structure, so customizable per simulation
@@ -131,18 +134,17 @@ int main(int args, char** argv) {
       std::cout << GREEN "Retrieved persistent state. Continuing..." RESET
                 << std::endl;
 
-      RuntimeVariables *rv_comp;
+      RuntimeVariables* rv_comp;
       bdm::GetPersistentObject(ROOTFILE, RUNVARS, rv_comp);
       if (!(rv == *rv_comp)) {
         std::cout << "WARN: Running simulation on a different system!"
                   << std::endl;
       }
 
-      // todo make sure that this is necessary
       std::get<1>(*ioh)++;
 
-      simulate(*cells, distance, *ioh);
-      bool fin = check_final_state(new_cells, *cells, distance);
+      Simulate(*cells, distance, *ioh);
+      bool fin = CheckFinalState(new_cells, *cells, distance);
 
       if (fin)
         std::cout << GREEN "Resulting final state is correct" RESET
@@ -160,11 +162,11 @@ int main(int args, char** argv) {
 
       std::cout << RED "No persistent state found. Starting anew..." RESET
                 << std::endl;
-      simulate(*cells, distance, *ioh);
+      Simulate(*cells, distance, *ioh);
     }
     omp_set_num_threads(threads);
   } else {
-    print_usage();
+    PrintUsage();
   }
   return 0;
 }

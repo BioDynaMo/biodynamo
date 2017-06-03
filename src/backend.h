@@ -66,7 +66,7 @@ class OneElementArray {
  public:
   using value_type = T;
   OneElementArray() : data_() {}
-  explicit OneElementArray(TRootIOCtor*) {}  // Constructor for ROOT I/O
+  explicit OneElementArray(TRootIOCtor* io_ctor) {}  // Constructor for ROOT I/O
   explicit OneElementArray(const T& data) : data_(data) {}
   explicit OneElementArray(T&& data) : data_(data) {}
   OneElementArray(std::initializer_list<T> list) : data_(*list.begin()) {}
@@ -110,7 +110,7 @@ class OneElementArray {
 
  private:
   T data_;
-  ClassDef(OneElementArray, 1)
+  ClassDef(OneElementArray, 1)  // NOLINT
 };
 
 struct Scalar {
