@@ -34,24 +34,29 @@ void RunTest(T* cells, const Op& op, const char* filename) {
 }
 
 int main(int args, char** argv) {
-  if(args == 2) {
-    omp_set_num_threads(omp_get_max_threads());
-    // srand((unsigned int) time(NULL));
-    int num_cells;
-    size_t cells_per_dim = 128;
-    const double space = 20;
+  if(args == 3) {
+    int threads;
+    std::istringstream(std::string(argv[2])) >> threads;
+    omp_set_num_threads(threads);
 
-    std::istringstream(std::string(argv[1])) >> num_cells;
+    size_t cells_per_dim;
+    std::istringstream(std::string(argv[1])) >> cells_per_dim;
+
+    srand((unsigned int) time(NULL));
 
     auto cells = Cell<>::NewEmptySoa();
+    cells.reserve(cells_per_dim * cells_per_dim * cells_per_dim);
 
-    // create array of cells
+    // // create array of cells
+    // size_t num_cells = cells_per_dim * cells_per_dim * cells_per_dim;
     // for (int i = 0; i < num_cells; i++) {
-    //   double x = 64.0f * rand () / (RAND_MAX + 1.0f);
-    //   double y = 64.0f * rand () / (RAND_MAX + 1.0f);
-    //   double z = 64.0f * rand () / (RAND_MAX + 1.0f);
+    //   double x = 3000.0f * rand () / (RAND_MAX + 1.0f);
+    //   double y = 3000.0f * rand () / (RAND_MAX + 1.0f);
+    //   double z = 3000.0f * rand () / (RAND_MAX + 1.0f);
     //   cells.push_back(Cell<>({x, y, z}));
     // }
+    
+    const double space = 20;
     for (size_t i = 0; i < cells_per_dim; i++) {
       for (size_t j = 0; j < cells_per_dim; j++) {
         for (size_t k = 0; k < cells_per_dim; k++) {
@@ -65,10 +70,12 @@ int main(int args, char** argv) {
       }
     }
 
-    RunTest(&cells, NeighborOp(), "NeighborOp.txt");
-    RunTest(&cells, NeighborNanoflannOp(), "NeighborNanoflannOp.txt");
-    RunTest(&cells, NeighborPclOp(), "NeighborPclOp.txt");
-    RunTest(&cells, NeighborUnibnOp(), "NeighborUnibnOp.txt");
+    std::cout << "Finished creating array of cells" << std::endl;
+
+    RunTest(&cells, NeighborOp(700), "NeighborOp.txt");
+    RunTest(&cells, NeighborNanoflannOp(700), "NeighborNanoflannOp.txt");
+    RunTest(&cells, NeighborPclOp(700), "NeighborPclOp.txt");
+    RunTest(&cells, NeighborUnibnOp(700), "NeighborUnibnOp.txt");
   } else {
     std::cout << "Error: Specify the number of cells as the argument" << std::endl;
   }

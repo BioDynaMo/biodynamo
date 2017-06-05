@@ -34,12 +34,13 @@ class NeighborUnibnOp {
     octree.initialize(cells->GetAllPositions(), params);
     std::chrono::steady_clock::time_point end_build = std::chrono::steady_clock::now();
 
-    // std::cout << "\n[UNIBN] Octree build time = " << std::chrono::duration_cast<std::chrono::microseconds>(end_build - begin_build).count() << "us\n";
+    std::cout << "\n[UNIBN] Octree build time = " << std::chrono::duration_cast<std::chrono::milliseconds>(end_build - begin_build).count() << "ms\n";
     outfile << cells->size() << ",";
     outfile << std::chrono::duration_cast<std::chrono::microseconds>(end_build - begin_build).count() << ",";
 
 // calc neighbors
 std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+int avg_num_neighbors = 0;
 #pragma omp parallel for
     for (size_t i = 0; i < cells->size(); i++) {
       // fixme make param
@@ -53,6 +54,7 @@ std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 
       // calculate neighbors
       octree.radiusNeighbors<unibn::L2Distance<std::array<double, 3> > >(query, search_radius, found_neighbors);
+      avg_num_neighbors += found_neighbors.size();
 
       // transform result
       InlineVector<int, 8> neighbors;
@@ -66,7 +68,8 @@ std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
     }
 
     std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-    // std::cout << "\n[UNIBN] Neighbor search time = " << totalTime.count() << "us\n";
+    std::cout << "\n[UNIBN] Neighbor search time = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "ms\n";
+    std::cout << "# of neighbors found = " << (avg_num_neighbors/(cells->size())) << std::endl;
     outfile << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << ",";
     outfile.close();
   }
