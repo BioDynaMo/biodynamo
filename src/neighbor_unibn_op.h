@@ -21,9 +21,11 @@ class NeighborUnibnOp {
   ~NeighborUnibnOp() {}
 
   template <typename TContainer>
-  void Compute(TContainer* cells) const {
+  void Compute(TContainer* cells, const char* filename = nullptr) const {
     ofstream outfile;
-    outfile.open("NeighborUnibnOp.txt", std::ofstream::out | std::ofstream::app);
+    if (filename != nullptr) {
+      outfile.open(filename, std::ofstream::out | std::ofstream::app);
+    }
 
     unibn::OctreeParams params;
     params.bucketSize = 16;
@@ -34,9 +36,14 @@ class NeighborUnibnOp {
     octree.initialize(cells->GetAllPositions(), params);
     std::chrono::steady_clock::time_point end_build = std::chrono::steady_clock::now();
 
-    std::cout << "\n[UNIBN] Octree build time = " << std::chrono::duration_cast<std::chrono::milliseconds>(end_build - begin_build).count() << "ms\n";
-    outfile << cells->size() << ",";
-    outfile << std::chrono::duration_cast<std::chrono::microseconds>(end_build - begin_build).count() << ",";
+    if (print_terminal == 1) {
+      std::cout << "==================[UniBn]====================" << std::endl;
+      std::cout << "Octree build time    = " << std::chrono::duration_cast<std::chrono::milliseconds>(end_build - begin_build).count() << "ms\n";
+    }
+    if (filename != nullptr) {
+      outfile << cells->size() << ",";
+      outfile << std::chrono::duration_cast<std::chrono::microseconds>(end_build - begin_build).count() << ",";
+    }
 
 // calc neighbors
 std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
@@ -59,7 +66,7 @@ int avg_num_neighbors = 0;
       // transform result
       InlineVector<int, 8> neighbors;
       neighbors.reserve(found_neighbors.size() - 1);
-      for (int j = 0; j < found_neighbors.size(); j++) {
+      for (size_t j = 0; j < found_neighbors.size(); j++) {
         if (found_neighbors[j] != i) {
           neighbors.push_back(found_neighbors[j]);
         }
@@ -68,10 +75,14 @@ int avg_num_neighbors = 0;
     }
 
     std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-    std::cout << "\n[UNIBN] Neighbor search time = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "ms\n";
-    std::cout << "# of neighbors found = " << (avg_num_neighbors/(cells->size())) << std::endl;
-    outfile << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << ",";
-    outfile.close();
+    if (print_terminal == 1) {
+      std::cout << "Neighbor search time = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "ms\n";
+      // std::cout << "# of neighbors found = " << (avg_num_neighbors/(cells->size())) << std::endl;
+    }
+    if (filename != nullptr) {
+      outfile << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << ",";
+      outfile.close();
+    }
   }
 
  private:

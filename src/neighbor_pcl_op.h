@@ -26,10 +26,12 @@ class NeighborPclOp {
   ~NeighborPclOp() {}
 
   template <typename TContainer>
-  void Compute(TContainer* cells) const {
+  void Compute(TContainer* cells, const char* filename = nullptr) const {
     ofstream outfile;
-    outfile.open("NeighborPclOp.txt", std::ofstream::out | std::ofstream::app);
-    outfile << cells->size() << ",";
+    if (filename != nullptr) {
+      outfile.open(filename, std::ofstream::out | std::ofstream::app);
+      outfile << cells->size() << ",";
+    }
 
     PointCloud<PointXYZ>::Ptr cloud(new PointCloud<PointXYZ>);
 
@@ -58,14 +60,19 @@ class NeighborPclOp {
     octree.addPointsFromInputCloud();
     std::chrono::steady_clock::time_point end_build = std::chrono::steady_clock::now();
 
-    std::cout << "\n[PCL] Octree build time = " << std::chrono::duration_cast<std::chrono::milliseconds>(end_build - begin_build).count() << "ms\n";
-    outfile << std::chrono::duration_cast<std::chrono::microseconds>(end_build - begin_build).count() << ",";
+    if (print_terminal == 1) {
+      std::cout << "===================[PCL]=====================" << std::endl;
+      std::cout << "Octree build time    = " << std::chrono::duration_cast<std::chrono::milliseconds>(end_build - begin_build).count() << "ms\n";
+    }
+    if (filename != nullptr) {
+      outfile << std::chrono::duration_cast<std::chrono::microseconds>(end_build - begin_build).count() << ",";
+    }
 
 // calc neighbors
 std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 int avg_num_neighbors = 0;
 #pragma omp parallel for
-    for (size_t i = 0; i < cells->size(); i++) {
+    for (int i = 0; i < static_cast<int>(cells->size()); i++) {
       // fixme make param
       // according to roman 50 - 100 micron
       double search_radius = sqrt(distance_);
@@ -92,10 +99,14 @@ int avg_num_neighbors = 0;
     }
     std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
 
-    std::cout << "\n[PCL] Neighbor search time = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "ms\n";
-    std::cout << "# of neighbors found = " << (avg_num_neighbors/(cells->size())) << std::endl;
-    outfile << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << ",";
-    outfile.close();
+    if (print_terminal == 1) {
+      std::cout << "Neighbor search time = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "ms\n";
+      // std::cout << "# of neighbors found = " << (avg_num_neighbors/(cells->size())) << std::endl;
+    }
+    if (filename != nullptr) {
+      outfile << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << ",";
+      outfile.close();
+    }
   }
 
  private:

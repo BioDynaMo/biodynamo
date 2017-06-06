@@ -6,6 +6,8 @@
 #include <sstream>
 #include <vector>
 
+#define print_terminal 1
+
 namespace bdm {
 
 /// This containes stores up to N elements without heap allocations

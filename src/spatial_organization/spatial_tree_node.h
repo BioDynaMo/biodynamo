@@ -82,7 +82,6 @@ void SpatialTreeNode<T>::GetNeighbors(SpatialTreeNode<T> const *A,
     const auto &b_objs = B->GetObjects();
 
     bool is_same = A == B;
-
     for (size_t i = 0; i < a_objs.size(); i++)
       for (size_t j = is_same ? (i + 1) : 0; j < b_objs.size(); j++)
         if ((a_objs.at(i).first).SquaredEuclidianDistance(b_objs.at(j).first) <=
