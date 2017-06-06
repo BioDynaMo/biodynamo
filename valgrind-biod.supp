@@ -122,7 +122,7 @@
 
 ######### Suppress uninitialized value complaints for IO of InlineVector
 {
-   ignore_uninitialized_heap_io
+   ignore_uninitialized_heap_io1
    Memcheck:Param
    write(buf)
    ...
@@ -135,18 +135,17 @@
 }
 
 {
-   <insert_a_suppression_name_here>
+   ignore_uninitialized_heap_io2
    Memcheck:Param
    write(buf)
-   obj:/lib/x86_64-linux-gnu/libpthread-2.23.so
+   ...
    fun:_ZN5TFile11WriteBufferEPKci
    fun:_ZN4TKey9WriteFileEiP5TFile
    fun:_ZN14TDirectoryFile14WriteObjectAnyEPKvPK6TClassPKcS6_i
    ...
    fun:_ZN7testing4Test3RunEv
    fun:_ZN7testing8TestInfo3RunEv
-   fun:_ZN7testing8TestCase3RunEv
-   fun:_ZN7testing8internal12UnitTestImpl11RunAllTestsEv
+   ...
 }
 
 ######### Suppress rootcling false positives
