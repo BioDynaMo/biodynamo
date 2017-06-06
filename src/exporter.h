@@ -34,8 +34,9 @@ using bdm::Soa;
 using bdm::Timing;
 using bdm::TimingAggregator;
 
+
 class Exporter {
- public:
+public:
   /// This function exports the cell positions into a file,
   /// where each line contains the 3D position of a cell in square brackets.
   template <typename TContainer>
@@ -344,5 +345,5 @@ class Exporter {
     vtu << "</VTKFile>" << std::endl;
   }
 };
-}  // namespace bdm
-#endif  // EXPORTER_H_
+} // namespace bdm
+#endif // EXPORTER_H_
