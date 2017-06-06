@@ -20,6 +20,9 @@
 #include "timing.h"
 #include "timing_aggregator.h"
 
+
+namespace bdm {
+
 using std::cout;
 using std::endl;
 using std::string;
@@ -31,10 +34,8 @@ using bdm::Soa;
 using bdm::Timing;
 using bdm::TimingAggregator;
 
-namespace bdm {
-
 class Exporter {
-public:
+ public:
   /// This function exports the cell positions into a file,
   /// where each line contains the 3D position of a cell in square brackets.
   template <typename TContainer>
@@ -343,5 +344,5 @@ public:
     vtu << "</VTKFile>" << std::endl;
   }
 };
-} // namespace bdm
-#endif // EXPORTER_H_
+}  // namespace bdm
+#endif  // EXPORTER_H_
