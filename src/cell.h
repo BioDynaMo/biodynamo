@@ -4,8 +4,10 @@
 #include <array>
 #include <cmath>
 #include <type_traits>
+#include <vector>
 
 #include "backend.h"
+#include "biology_module_util.h"
 #include "cell.h"
 #include "default_force.h"
 #include "inline_vector.h"
@@ -18,12 +20,19 @@
 namespace bdm {
 
 using std::array;
+using std::vector;
 
-template <typename Base = SimulationObject<>>
+template <typename Base = SimulationObject<>,
+          typename TBiologyModuleVariant = variant<NullBiologyModule>>
 class CellExt : public Base {
-  BDM_CLASS_HEADER(CellExt, position_, mass_location_, tractor_force_,
-                   diameter_, volume_, adherence_, density_, x_axis_, y_axis_,
-                   z_axis_, neighbors_);
+ public:
+  BDM_CLASS_HEADER_ADV(CellExt,
+                       CellExt<typename Base::template Self<TTBackend> COMMA()
+                                   TBiologyModuleVariant>,
+                       template <typename COMMA() typename>, position_,
+                       mass_location_, tractor_force_, diameter_, volume_,
+                       adherence_, density_, x_axis_, y_axis_, z_axis_,
+                       neighbors_, biology_modules_);
 
  public:
   CellExt() {}
@@ -32,6 +41,15 @@ class CellExt : public Base {
       : position_(position), mass_location_(position) {}
 
   virtual ~CellExt() {}
+
+  /// Add a biology module to this cell
+  /// @tparam TBiologyModule type of the biology module. Must be in the set of
+  ///         types specified in `TBiologyModuleVariant`
+  template <typename TBiologyModule>
+  void AddBiologyModule(TBiologyModule&& module);
+
+  /// Execute all biology modules
+  void RunBiologyModules();
 
   /// Divide the cell. Of the two daughter cells, one is this one (but smaller,
   /// with half GeneSubstances etc.),
@@ -203,20 +221,41 @@ class CellExt : public Base {
   /// Third axis of the local coordinate system.
   vec<array<double, 3>> z_axis_ = {array<double, 3>{0.0, 0.0, 1.0}};
 
-  // stores a list of neighbor ids for each scalar cell
+  /// stores a list of neighbor ids for each scalar cell
   vec<InlineVector<int, 8>> neighbors_;
+
+  /// collection of biology modules which define the internal behavior
+  vec<vector<TBiologyModuleVariant>> biology_modules_;
 };
 
-template <typename Backend = Scalar>
-using Cell = CellExt<SimulationObject<Backend>>;
+template <typename Backend = Scalar,
+          typename TBiologyModuleVariant = variant<NullBiologyModule>>
+using Cell = CellExt<SimulationObject<Backend>, TBiologyModuleVariant>;
 
-template <typename T>
-inline void CellExt<T>::Divide(Self<Scalar>* daughter) {
+// ----------------------------------------------------------------------------
+// Implementation -------------------------------------------------------------
+
+template <typename T, typename U>
+template <typename TBiologyModule>
+inline void CellExt<T, U>::AddBiologyModule(TBiologyModule&& module) {
+  biology_modules_[kIdx].emplace_back(module);
+}
+
+template <typename T, typename U>
+inline void CellExt<T, U>::RunBiologyModules() {
+  RunVisitor<Self<Backend>> visitor(this);
+  for (auto& module : biology_modules_[kIdx]) {
+    visit(visitor, module);
+  }
+}
+
+template <typename T, typename U>
+inline void CellExt<T, U>::Divide(Self<Scalar>* daughter) {
   Divide(daughter, 0.9 + 0.2 * gRandom.NextDouble());
 }
 
-template <typename T>
-inline void CellExt<T>::Divide(Self<Scalar>* daughter, double volume_ratio) {
+template <typename T, typename U>
+inline void CellExt<T, U>::Divide(Self<Scalar>* daughter, double volume_ratio) {
   // find random point on sphere (based on :
   // http://mathworld.wolfram.com/SpherePointPicking.html)
   double theta = 2 * Math::kPi * gRandom.NextDouble();
@@ -224,32 +263,32 @@ inline void CellExt<T>::Divide(Self<Scalar>* daughter, double volume_ratio) {
   DivideImpl(daughter, volume_ratio, phi, theta);
 }
 
-template <typename T>
-inline void CellExt<T>::Divide(Self<Scalar>* daughter,
-                               const array<double, 3>& axis) {
+template <typename T, typename U>
+inline void CellExt<T, U>::Divide(Self<Scalar>* daughter,
+                                  const array<double, 3>& axis) {
   auto polarcoord = TransformCoordinatesGlobalToPolar(
       Matrix::Add(axis, mass_location_[kIdx]));
   DivideImpl(daughter, 0.9 + 0.2 * gRandom.NextDouble(), polarcoord[1],
              polarcoord[2]);
 }
 
-template <typename T>
-inline void CellExt<T>::Divide(Self<Scalar>* daughter, double volume_ratio,
-                               const array<double, 3>& axis) {
+template <typename T, typename U>
+inline void CellExt<T, U>::Divide(Self<Scalar>* daughter, double volume_ratio,
+                                  const array<double, 3>& axis) {
   auto polarcoord = TransformCoordinatesGlobalToPolar(
       Matrix::Add(axis, mass_location_[kIdx]));
   DivideImpl(daughter, volume_ratio, polarcoord[1], polarcoord[2]);
 }
 
-template <typename T>
-inline void CellExt<T>::Divide(Self<Scalar>* daughter, double volume_ratio,
-                               double phi, double theta) {
+template <typename T, typename U>
+inline void CellExt<T, U>::Divide(Self<Scalar>* daughter, double volume_ratio,
+                                  double phi, double theta) {
   DivideImpl(daughter, volume_ratio, phi, theta);
 }
 
-template <typename T>
-inline void CellExt<T>::DivideImpl(Self<Scalar>* daughter, double volume_ratio,
-                                   double phi, double theta) {
+template <typename T, typename TBiologyModuleVariant>
+inline void CellExt<T, TBiologyModuleVariant>::DivideImpl(
+    Self<Scalar>* daughter, double volume_ratio, double phi, double theta) {
   // A) Defining some values
   // ..................................................................
   // defining the two radii s.t total volume is conserved
@@ -298,9 +337,16 @@ inline void CellExt<T>::DivideImpl(Self<Scalar>* daughter, double volume_ratio,
       mass_location_[kIdx][1] + d_2 * axis_of_division[1],
       mass_location_[kIdx][2] + d_2 * axis_of_division[2]};
   daughter->mass_location_[0] = new_mass_location;
+  // TODO(lukas) fix bug, don't use kIdx of mother cell for daughter cell
   daughter->position_[kIdx][0] = daughter->mass_location_[kIdx][0];
   daughter->position_[kIdx][1] = daughter->mass_location_[kIdx][1];
   daughter->position_[kIdx][2] = daughter->mass_location_[kIdx][2];
+
+  CopyVisitor<vector<TBiologyModuleVariant>> visitor(
+      Event::kCellDivision, &(daughter->biology_modules_[0]));
+  for (auto& module : biology_modules_[kIdx]) {
+    visit(visitor, module);
+  }
 
   // E) This sphere becomes the 1st daughter
   // move these cells on opposite direction
@@ -318,8 +364,8 @@ inline void CellExt<T>::DivideImpl(Self<Scalar>* daughter, double volume_ratio,
   // G) TODO(lukas) Copy the intracellular and membrane bound Substances
 }
 
-template <typename T>
-array<double, 3> CellExt<T>::TransformCoordinatesGlobalToPolar(
+template <typename T, typename U>
+array<double, 3> CellExt<T, U>::TransformCoordinatesGlobalToPolar(
     const array<double, 3>& pos) const {
   auto vector_to_point = Matrix::Subtract(pos, mass_location_[kIdx]);
   array<double, 3> local_cartesian{Matrix::Dot(x_axis_[kIdx], vector_to_point),
