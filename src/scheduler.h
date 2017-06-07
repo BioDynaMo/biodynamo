@@ -27,6 +27,7 @@ class Scheduler {
       neighbor.Compute(cells);
       biology.Compute(cells);
       physics.Compute(cells);
+      cells->Commit();
     }
   }
 };
