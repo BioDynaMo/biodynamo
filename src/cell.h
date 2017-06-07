@@ -337,10 +337,9 @@ inline void CellExt<T, TBiologyModuleVariant>::DivideImpl(
       mass_location_[kIdx][1] + d_2 * axis_of_division[1],
       mass_location_[kIdx][2] + d_2 * axis_of_division[2]};
   daughter->mass_location_[0] = new_mass_location;
-  // TODO(lukas) fix bug, don't use kIdx of mother cell for daughter cell
-  daughter->position_[kIdx][0] = daughter->mass_location_[kIdx][0];
-  daughter->position_[kIdx][1] = daughter->mass_location_[kIdx][1];
-  daughter->position_[kIdx][2] = daughter->mass_location_[kIdx][2];
+  daughter->position_[0][0] = daughter->mass_location_[0][0];
+  daughter->position_[0][1] = daughter->mass_location_[0][1];
+  daughter->position_[0][2] = daughter->mass_location_[0][2];
 
   CopyVisitor<vector<TBiologyModuleVariant>> visitor(
       Event::kCellDivision, &(daughter->biology_modules_[0]));
