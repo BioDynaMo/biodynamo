@@ -122,29 +122,13 @@
 
 ######### Suppress uninitialized value complaints for IO of InlineVector
 {
-   ignore_uninitialized_heap_io1
-   Memcheck:Param
-   write(buf)
-   ...
-   obj:/lib/x86_64-linux-gnu/libpthread-2.23.so
-   fun:_ZN5TFile11WriteBufferEPKci
-   fun:_ZN4TKey9WriteFileEiP5TFile
-   fun:_ZN14TDirectoryFile14WriteObjectAnyEPKvPK6TClassPKcS6_i
-   fun:WriteObject<bdm::OneElementArray<bdm::InlineVector<int, 8ul> > >
-   ...
-}
-
-{
-   ignore_uninitialized_heap_io2
+   ignore_uninitialized_heap_io
    Memcheck:Param
    write(buf)
    ...
    fun:_ZN5TFile11WriteBufferEPKci
    fun:_ZN4TKey9WriteFileEiP5TFile
    fun:_ZN14TDirectoryFile14WriteObjectAnyEPKvPK6TClassPKcS6_i
-   ...
-   fun:_ZN7testing4Test3RunEv
-   fun:_ZN7testing8TestInfo3RunEv
    ...
 }
 

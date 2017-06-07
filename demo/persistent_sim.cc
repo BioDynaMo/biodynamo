@@ -60,7 +60,7 @@ Cell<Soa> InitializeCells(size_t cells_per_dim) {
 
 template <typename... T>
 void Simulate(Cell<Soa>& cells, size_t distance,  // NOLINT
-              std::tuple<T...>& ioh) {  // NOLINT
+              std::tuple<T...>& ioh) {            // NOLINT
   for (size_t d = std::get<1>(ioh); d < distance; d++) {
 #pragma omp parallel for
     for (size_t i = 0; i < cells.size(); i++) {
@@ -95,14 +95,16 @@ void Simulate(Cell<Soa>& cells, size_t distance,  // NOLINT
 }
 
 bool CheckFinalState(Cell<Soa>& init_cells, Cell<Soa>& cells,  // NOLINT
-                     size_t distance) {  // NOLINT
+                     size_t distance) {                        // NOLINT
   for (size_t i = 0; i < cells.size(); i++) {
     for (int j = 0; j < 3; j++)
       if (cells[i].GetPosition()[j] !=
-          (init_cells[i].GetPosition()[j] + distance))
+          (init_cells[i].GetPosition()[j] + distance)) {
         return false;
-    if (cells[i].GetDiameter() != 30 + distance)
+      }
+    if (cells[i].GetDiameter() != 30 + distance) {
       return false;
+    }
   }
   return true;
 }
@@ -146,12 +148,13 @@ int main(int args, char** argv) {
       Simulate(*cells, distance, *ioh);
       bool fin = CheckFinalState(new_cells, *cells, distance);
 
-      if (fin)
+      if (fin) {
         std::cout << GREEN "Resulting final state is correct" RESET
                   << std::endl;
-      else
+      } else {
         std::cout << RED "Resulting final state is incorrect" RESET
                   << std::endl;
+      }
     } else {
       cells = &new_cells;
 
