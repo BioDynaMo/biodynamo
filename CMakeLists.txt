@@ -111,11 +111,18 @@ endif()
 #                    "${CMAKE_CURRENT_BINARY_DIR}/Vc/src/Vc/")
 # set(Vc_LIBRARIES "${CMAKE_CURRENT_BINARY_DIR}/Vc/src/Vc-build/libVc.a")
 
+#--------------------- setup mpark variant library ----------------
+set(MPARK_LIB "${CMAKE_CURRENT_BINARY_DIR}/mpark/")
+file(MAKE_DIRECTORY "${MPARK_LIB}/")
+execute_process(COMMAND ${CMAKE_COMMAND} -E tar xf "${CMAKE_SOURCE_DIR}/third_party/mpark_4ee0086.zip"
+                WORKING_DIRECTORY "${MPARK_LIB}")
+
 #--------------------- build shared library libbiodynamo ----------------
 # add the headers into the project
 include(${ROOT_USE_FILE})
 include_directories("${CMAKE_SOURCE_DIR}/src")
 include_directories("${CMAKE_SOURCE_DIR}/third_party")
+include_directories("${MPARK_LIB}")
 # include_directories("${Vc_INCLUDE_DIR}")
 # include_directories(${VTUNE_INCLUDE_DIR})
 
@@ -123,6 +130,8 @@ ROOT_GENERATE_DICTIONARY(
   "${CMAKE_BINARY_DIR}/bdmDict"
   cell.h inline_vector.h io_util.h
   simulation_object_util_test.h
+  ../demo/cell_division_module.h
+  ../test/cell_test.h ../test/biology_module_op_test.h
   LINKDEF bdmLinkDef.h
 )
 
@@ -221,9 +230,14 @@ endif()
 # --------------- add targets for code style and submission checks -------------
 include(cmake/CppStyleGuideChecks.cmake)
 
-# --------------------- build division module simulation executable ---------------------
+# --------------------- build cell_growth executable ---------------------
 set(SIMULATION_TARGET cell_growth)
 add_executable(${SIMULATION_TARGET} ${CMAKE_SOURCE_DIR}/demo/cell_growth.cc)
+target_link_libraries(${SIMULATION_TARGET} biodynamo)
+
+# --------------------- build cell_division_module executable ------------------
+set(SIMULATION_TARGET cell_division_module)
+add_executable(${SIMULATION_TARGET} ${CMAKE_SOURCE_DIR}/demo/cell_division_module.cc)
 target_link_libraries(${SIMULATION_TARGET} biodynamo)
 
 # --------------------- build persistent simulation demo ---------------------

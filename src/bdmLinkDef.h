@@ -45,6 +45,16 @@
 #pragma link C++ class bdm::TransactionalVector < bdm::CellExt < bdm::SimulationObject<bdm::Scalar >>> +;
 #pragma link C++ class bdm::TransactionalVector < bdm::simulation_object_util_test_internal::NeuronExt < bdm::simulation_object_util_test_internal::CellExt < bdm::SimulationObject < bdm::Scalar >>>> +;
 
+#pragma link C++ class bdm::NullBiologyModule+;
+#pragma link C++ class mpark::variant < bdm::NullBiologyModule >+;
+
+#pragma link C++ class bdm::OneElementArray < vector < mpark::variant < bdm::GrowthModule >>>+;
+#pragma link C++ class bdm::OneElementArray < vector < mpark::variant < bdm::NullBiologyModule >>>+;
+#pragma link C++ class bdm::OneElementArray < vector < mpark::variant < bdm::biology_module_op_test_internal::GrowthModule >>>+;
+#pragma link C++ class bdm::OneElementArray < vector < mpark::variant < bdm::cell_test_internal::GrowthModule, bdm::cell_test_internal::MovementModule >>>+;
+
+#pragma link C++ class bdm::CellExt<bdm::SimulationObject<bdm::Soa>, mpark::variant<bdm::NullBiologyModule> > >+;
+
 // clang-format on
 
 #endif

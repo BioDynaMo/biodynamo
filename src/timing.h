@@ -2,6 +2,7 @@
 #define TIMING_H_
 
 #include <chrono>
+#include <iostream>
 #include <string>
 
 #include "timing_aggregator.h"

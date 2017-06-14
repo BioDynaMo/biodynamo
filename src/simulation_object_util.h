@@ -81,8 +81,19 @@ using std::is_same;
 ///          with COMMA() \n
 ///           -> self_specifier:
 ///          `Neuron<typename Base::template Self<TTBackend> COMMA() Neurite>`
+/// @param   friend_template_signature used to "friend" all template versions of
+///          this class. Unfortunately, there is no generic definition for
+///          different numbers of template arguments or types. Therefore, the
+///          class template signature has to be repeated as a parameter to this
+///          macro. Example: \n
+///          1) `template <typename T> class Foo {...};`
+///             -> friend_template_signature: `template <typename>` \n
+///          2) `template <typename T, typename U> class Bar {...};`
+///             -> friend_template_signature:
+///             `template <typename COMMA() typename>`
 /// @param  ...: List of all data members of this class
-#define BDM_CLASS_HEADER_ADV(class_name, self_specifier, ...)                  \
+#define BDM_CLASS_HEADER_ADV(class_name, self_specifier,                       \
+                             friend_template_signature, ...)                   \
  public:                                                                       \
   /* reduce verbosity of some types and variables by defining a local alias */ \
   using Base::kIdx;                                                            \
@@ -100,8 +111,7 @@ using std::is_same;
                                                                                \
   /** all template versions of this class are friends of each other */         \
   /** so they can access each others data members */                           \
-  template <typename T>                                                        \
-  friend class class_name;                                                     \
+  friend_template_signature friend class class_name;                           \
                                                                                \
   /** Create new empty object with SOA memory layout. */                       \
   /** Calling Self<Soa> soa; will have already one instance inside -- */       \
@@ -232,7 +242,7 @@ using std::is_same;
 #define BDM_CLASS_HEADER(class_name, ...)                                   \
   BDM_CLASS_HEADER_ADV(class_name,                                          \
                        class_name<typename Base::template Self<TTBackend>>, \
-                       __VA_ARGS__)
+                       template <typename>, __VA_ARGS__)
 
 /// Helper function to make cell division easier for the programmer.
 /// Creates a new daughter object and passes it together with the given

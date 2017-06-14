@@ -17,7 +17,7 @@ function Install {
 
   # install packages
   apt-get -y install git g++ cmake valgrind python lcov
-  apt-get -y install clang-3.9 clang-format-3.9 clang-tidy-3.9
+  apt-get -y install clang-3.9 clang-format-3.9 clang-tidy-3.9 libomp-dev
   apt-get -y install doxygen graphviz
 
   # # install ROOT

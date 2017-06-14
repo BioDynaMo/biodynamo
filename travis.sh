@@ -9,7 +9,7 @@ biod=`pwd`
 if [ "$TRAVIS_OS_NAME" = "osx" ]; then
   sw_vers
   osx_vers=`sw_vers -productVersion | cut -d . -f1 -f2`
-  if [ "$osx_vers" != "10.12" ] || [ "$osx_vers" != "10.11" ]; then
+  if [ "$osx_vers" != "10.12" ] && [ "$osx_vers" != "10.11" ]; then
      test_valgrind="-Dvalgrind=ON"
   fi
   brew update >& /dev/null
@@ -32,16 +32,17 @@ if [ "$TRAVIS_OS_NAME" = "osx" ]; then
 fi
 
 if [ "$TRAVIS_OS_NAME" = "linux" ]; then
-  #sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
-  #sudo add-apt-repository -y ppa:george-edison55/trusty-backports
+  sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test  # gcc-5
   wget -O - http://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
   sudo apt-add-repository -y "deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-3.9 main"
   sudo apt-get update
-  #sudo apt-get -y install gcc-5 g++-5 cmake cmake-data valgrind
+  sudo apt-get -y install gcc-5 g++-5
   sudo apt-get -y install valgrind
   sudo apt-get -y install doxygen
   sudo apt-get -y install cloc
   sudo apt-get -y install clang-3.9 clang-format-3.9 clang-tidy-3.9
+  export CC=gcc-5
+  export CXX=g++-5
 fi
 
 # install ROOT
@@ -50,8 +51,9 @@ if [ "$TRAVIS_OS_NAME" = "linux" ]; then
   wget "https://root.cern.ch/download/root_v6.08.06.Linux-ubuntu14-x86_64-gcc4.8.tar.gz" 2> /dev/null
   tar zxf "root_v6.08.06.Linux-ubuntu14-x86_64-gcc4.8.tar.gz" > /dev/null
 else
-  wget "https://root.cern.ch/download/root_v6.08.06.macosx64-10.12-clang80.tar.gz" 2> /dev/null
-  tar zxf "root_v6.08.06.macosx64-10.12-clang80.tar.gz" > /dev/null
+  # write progress to terminal to prevent termination by travis if it takes longer than 10 min
+  wget --progress=dot:giga https://root.cern.ch/download/root_v6.06.00.macosx64-10.9-clang60.tar.gz
+  tar zxf root_v6.06.00.macosx64-10.9-clang60.tar.gz > /dev/null
 fi
 cd root
 . bin/thisroot.sh
