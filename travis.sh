@@ -9,9 +9,6 @@ biod=`pwd`
 if [ "$TRAVIS_OS_NAME" = "osx" ]; then
   sw_vers
   osx_vers=`sw_vers -productVersion | cut -d . -f1 -f2`
-  if [ "$osx_vers" != "10.12" ]; then
-     test_valgrind="-Dvalgrind=ON"
-  fi
   brew update >& /dev/null
   brew install doxygen
   brew install valgrind
@@ -81,5 +78,5 @@ git remote set-branches --add origin master
 # build biodynamo and run tests
 mkdir build
 cd build
-cmake $test_valgrind ..
+cmake ..
 make check-submission
