@@ -1,27 +1,17 @@
 language: c++
-sudo: required
-dist: trusty
-os:
-  - linux
-  - osx
-compiler:
-  - gcc
-  - clang
+
 matrix:
-  exclude:
+  include:
     - os: osx
-      compiler: gcc
-    - os: linux
       compiler: clang
+    - os: linux
+      compiler: gcc
+      dist: trusty
+      sudo: required
+      group: edge
 
 script:
   - ./travis.sh
 
 notifications:
-  webhooks:
-    urls:
-      - https://webhooks.gitter.im/e/0facf357c99ed725ef10
-    on_success: change  # options: [always|never|change] default: always
-    on_failure: always  # options: [always|never|change] default: always
-    on_start: never     # options: [always|never|change] default: always
   slack: cernopenlab:2MzX9lwS6W9nU47MuY1qSmk9
