@@ -64,7 +64,10 @@ for f in $@; do
     echo "#include \"${f}\"" >> $TIDY_HEADER_HELPER
   fi
 done
+echo "#include \"biology_module_util.h\""
+echo "namespace bdm { BDM_DEFAULT_BIOLOGY_MODULES(); }" >> $TIDY_HEADER_HELPER
 echo "" >> $TIDY_HEADER_HELPER
+
 
 # extract list of source files from $@ and add $TIDY_HEADER_HELPER
 SOURCES=$TIDY_HEADER_HELPER" "

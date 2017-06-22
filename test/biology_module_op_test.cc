@@ -22,16 +22,18 @@ struct GrowthModule {
   bool IsCopied(Event event) const { return false; }
 };
 
-typedef variant<GrowthModule> BiologyModules;
-template <typename TBackend = Scalar>
-using MyCell = Cell<TBackend, BiologyModules>;
+}  // namespace biology_module_op_test_internal
+
+BDM_DEFINE_BIOLOGY_MODULES(biology_module_op_test_internal::GrowthModule);
+
+namespace biology_module_op_test_internal {
 
 template <typename T>
 void RunTest(T* cells) {
-  MyCell<> cell_1(12);
+  Cell cell_1(12);
   cell_1.AddBiologyModule(GrowthModule(2));
 
-  MyCell<> cell_2(34);
+  Cell cell_2(34);
   cell_2.AddBiologyModule(GrowthModule(3));
 
   cells->push_back(cell_1);
@@ -46,12 +48,12 @@ void RunTest(T* cells) {
 }
 
 TEST(BiologyModuleOpTest, ComputeAos) {
-  TransactionalVector<MyCell<Scalar>> cells;
+  TransactionalVector<Cell> cells;
   RunTest(&cells);
 }
 
 TEST(BiologyModuleOpTest, ComputeSoa) {
-  auto cells = MyCell<>::NewEmptySoa();
+  auto cells = Cell::NewEmptySoa();
   RunTest(&cells);
 }
 

@@ -4,16 +4,18 @@
 
 namespace bdm {
 
+BDM_DEFAULT_BIOLOGY_MODULES();
+
 TEST(ExportTest, ConductExportToFile) {
   // set up cells and their positions
-  Cell<> cell1;
+  Cell cell1;
   cell1.SetPosition({0.5, 1, 0});
   cell1.SetDiameter(10);
-  Cell<> cell2;
+  Cell cell2;
   cell2.SetPosition({-5, 5, 0.9});
   cell2.SetDiameter(10);
 
-  std::vector<Cell<>> cells;
+  std::vector<Cell> cells;
   cells.push_back(cell1);
   cells.push_back(cell2);
 

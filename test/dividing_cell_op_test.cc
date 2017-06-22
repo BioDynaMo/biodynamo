@@ -5,12 +5,15 @@
 #include "transactional_vector.h"
 
 namespace bdm {
+
+BDM_DEFAULT_BIOLOGY_MODULES();
+
 namespace dividing_cell_op_test_internal {
 
 template <typename T>
 void RunTest(T* cells) {
-  cells->push_back(Cell<>(41.0));
-  cells->push_back(Cell<>(19.0));
+  cells->push_back(Cell(41.0));
+  cells->push_back(Cell(19.0));
 
   double volume_mother = (*cells)[0].GetVolume();
 
@@ -33,12 +36,12 @@ void RunTest(T* cells) {
 }
 
 TEST(DividingCellOpTest, ComputeAos) {
-  TransactionalVector<Cell<Scalar>> cells;
+  TransactionalVector<Cell> cells;
   RunTest(&cells);
 }
 
 TEST(DividingCellOpTest, ComputeSoa) {
-  auto cells = Cell<>::NewEmptySoa();
+  auto cells = Cell::NewEmptySoa();
   RunTest(&cells);
 }
 

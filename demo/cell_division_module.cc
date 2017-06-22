@@ -13,8 +13,7 @@ struct GrowthModule {
     if (cell->GetDiameter() <= 40) {
       cell->ChangeVolume(300);
     } else {
-      Divide(*cell, ResourceManager<Cell<Soa, variant<GrowthModule>>>::Get()
-                        ->Get<Cell<Soa, variant<GrowthModule>>>());
+      Divide(*cell, ResourceManager<SoaCell>::Get()->Get<SoaCell>());
     }
   }
 
@@ -22,24 +21,20 @@ struct GrowthModule {
 };
 
 // 2. Define biology modules that should be used in this simulation
-typedef variant<GrowthModule> BiologyModules;
-
-// 3. Use predefined cell class as is and pass biology module definitions
-//    Hence the biology module template parameter can be ommitted later on
-template <typename Backend = Scalar>
-using MyCell = Cell<Backend, BiologyModules>;
+//    Simulation objects automatically pick up this definition
+BDM_DEFINE_BIOLOGY_MODULES(GrowthModule);
 
 void Simulate(size_t cells_per_dim = 128) {
-  // 4. Get cell container
-  auto cells = ResourceManager<MyCell<Soa>>::Get()->Get<MyCell<Soa>>();
+  // 3. Get cell container
+  auto cells = ResourceManager<SoaCell>::Get()->Get<SoaCell>();
   cells->reserve(cells_per_dim * cells_per_dim * cells_per_dim);
 
-  // 5. Define initial model - in this case 3D grid of cells
+  // 4. Define initial model - in this case 3D grid of cells
   double space = 20;
   for (size_t i = 0; i < cells_per_dim; i++) {
     for (size_t j = 0; j < cells_per_dim; j++) {
       for (size_t k = 0; k < cells_per_dim; k++) {
-        MyCell<Scalar> cell({i * space, j * space, k * space});
+        Cell cell({i * space, j * space, k * space});
         cell.SetDiameter(30);
         cell.SetAdherence(0.4);
         cell.SetMass(1.0);
@@ -50,9 +45,9 @@ void Simulate(size_t cells_per_dim = 128) {
     }
   }
 
-  // 6. Run simulation for one timestep
+  // 5. Run simulation for one timestep
   Scheduler scheduler;
-  scheduler.Simulate<MyCell<Soa>>(1);
+  scheduler.Simulate<SoaCell>(1);
 }
 
 }  // namespace bdm

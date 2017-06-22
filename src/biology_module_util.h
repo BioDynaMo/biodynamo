@@ -62,6 +62,23 @@ struct CopyVisitor {
   TVector* vector_;
 };
 
+/// Forward declaration which is used as default template
+/// parameter. Must be defined in the concreate simulation.
+struct BiologyModules;
+
+/// Preprocessor macro to make definition of BiologyModules easier (simplified
+/// syntax) \n
+/// CAUTION: Needs to be called inside namespace `::bdm`, since `BiologyModules`
+/// was forward declared in this namespace. Otherwise compilation will fail.
+#define BDM_DEFINE_BIOLOGY_MODULES(...)                 \
+  struct BiologyModules : public variant<__VA_ARGS__> { \
+    using variant::variant;                             \
+  };
+
+/// Simplified call for `BDM_DEFINE_BIOLOGY_MODULES` for empty BiologyModules
+#define BDM_DEFAULT_BIOLOGY_MODULES() \
+  BDM_DEFINE_BIOLOGY_MODULES(NullBiologyModule)
+
 }  // namespace bdm
 
 #endif  // BIOLOGY_MODULE_UTIL_H_

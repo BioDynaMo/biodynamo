@@ -24,6 +24,10 @@ using bdm::Timing;
 using bdm::TimingAggregator;
 using bdm::Exporter;
 
+namespace bdm {
+BDM_DEFAULT_BIOLOGY_MODULES();
+}  // namespace bdm
+
 void Execute(size_t cells_per_dim, size_t iterations, size_t threads,
              size_t repititions, TimingAggregator *statistic,
              bool with_export) {
@@ -35,14 +39,15 @@ void Execute(size_t cells_per_dim, size_t iterations, size_t threads,
 
     const double space = 20;
 
-    auto cells = Cell<>::NewEmptySoa();
+    // bdm::TransactionalVector<Cell> cells;
+    auto cells = Cell::NewEmptySoa();
     cells.reserve(cells_per_dim * cells_per_dim * cells_per_dim);
     {
       Timing timing("Setup", statistic);
       for (size_t i = 0; i < cells_per_dim; i++) {
         for (size_t j = 0; j < cells_per_dim; j++) {
           for (size_t k = 0; k < cells_per_dim; k++) {
-            Cell<Scalar> cell({i * space, j * space, k * space});
+            Cell cell({i * space, j * space, k * space});
             cell.SetDiameter(30);
             cell.SetAdherence(0.4);
             cell.SetMass(1.0);

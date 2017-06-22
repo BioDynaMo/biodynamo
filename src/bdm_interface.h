@@ -87,7 +87,7 @@ class BDMCubicDomain {
   DiscontinuousInterfaceData disc_fd_;
 
   void Init(size_t ncell, std::vector<Vector3DInterface> v) {
-    cells_ = std::vector<bdm::Cell<>>(ncell);
+    cells_ = std::vector<bdm::Cell>(ncell);
     if (v.size() != 8) {
       throw;
     } else {
@@ -99,7 +99,7 @@ class BDMCubicDomain {
 
  private:
   bool is_init_;
-  std::vector<bdm::Cell<>> cells_;
+  std::vector<bdm::Cell> cells_;
   std::vector<Vector3DInterface> vertex_;
 };
 }  // namespace bdm

@@ -8,7 +8,6 @@
 
 #include "backend.h"
 #include "biology_module_util.h"
-#include "cell.h"
 #include "default_force.h"
 #include "inline_vector.h"
 #include "math_util.h"
@@ -23,7 +22,7 @@ using std::array;
 using std::vector;
 
 template <typename Base = SimulationObject<>,
-          typename TBiologyModuleVariant = variant<NullBiologyModule>>
+          typename TBiologyModuleVariant = BiologyModules>
 class CellExt : public Base {
  public:
   BDM_CLASS_HEADER_ADV(CellExt,
@@ -228,9 +227,8 @@ class CellExt : public Base {
   vec<vector<TBiologyModuleVariant>> biology_modules_;
 };
 
-template <typename Backend = Scalar,
-          typename TBiologyModuleVariant = variant<NullBiologyModule>>
-using Cell = CellExt<SimulationObject<Backend>, TBiologyModuleVariant>;
+using Cell = CellExt<SimulationObject<Scalar>>;
+using SoaCell = CellExt<SimulationObject<Soa>>;
 
 // ----------------------------------------------------------------------------
 // Implementation -------------------------------------------------------------

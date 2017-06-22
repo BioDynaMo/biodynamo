@@ -6,13 +6,16 @@
 #include "test_util.h"
 
 namespace bdm {
+
+BDM_DEFAULT_BIOLOGY_MODULES();
+
 namespace neighbor_op_test_internal {
 
 template <typename T, typename Op>
 void RunTest(T* cells, const Op& op) {
-  cells->push_back(Cell<>({0, 0, 0}));
-  cells->push_back(Cell<>({30, 30, 30}));
-  cells->push_back(Cell<>({60, 60, 60}));
+  cells->push_back(Cell({0, 0, 0}));
+  cells->push_back(Cell({30, 30, 30}));
+  cells->push_back(Cell({60, 60, 60}));
 
   // execute operation
   op.Compute(cells);
@@ -34,22 +37,22 @@ void RunTest(T* cells, const Op& op) {
 }
 
 TEST(NeighborOpTest, ComputeAosoa) {
-  std::vector<Cell<Scalar>> cells;
+  std::vector<Cell> cells;
   RunTest(&cells, NeighborOp());
 }
 
 TEST(NeighborOpTest, ComputeSoa) {
-  auto cells = Cell<>::NewEmptySoa();
+  auto cells = Cell::NewEmptySoa();
   RunTest(&cells, NeighborOp());
 }
 
 TEST(NeighborNanoflannOpTest, ComputeAosoa) {
-  std::vector<Cell<Scalar>> cells;
+  std::vector<Cell> cells;
   RunTest(&cells, NeighborNanoflannOp());
 }
 
 TEST(NeighborNanoflannOpTest, ComputeSoa) {
-  auto cells = Cell<>::NewEmptySoa();
+  auto cells = Cell::NewEmptySoa();
   RunTest(&cells, NeighborNanoflannOp());
 }
 
