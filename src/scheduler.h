@@ -21,7 +21,8 @@ class Scheduler {
     OpTimer<BiologyModuleOp> biology("biology");
     OpTimer<DisplacementOp> physics("physics");
 
-    auto cells = ResourceManager<TCellContainer>::Get()->GetCells();
+    auto rm = ResourceManager<TCellContainer>::Get();
+    auto cells = rm->template Get<TCellContainer>();
 
     while (steps-- > 0) {
       neighbor.Compute(cells);

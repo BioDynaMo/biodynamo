@@ -13,9 +13,8 @@ struct GrowthModule {
     if (cell->GetDiameter() <= 40) {
       cell->ChangeVolume(300);
     } else {
-      Divide(
-          *cell,
-          ResourceManager<Cell<Soa, variant<GrowthModule>>>::Get()->GetCells());
+      Divide(*cell, ResourceManager<Cell<Soa, variant<GrowthModule>>>::Get()
+                        ->Get<Cell<Soa, variant<GrowthModule>>>());
     }
   }
 
@@ -32,7 +31,7 @@ using MyCell = Cell<Backend, BiologyModules>;
 
 void Simulate(size_t cells_per_dim = 128) {
   // 4. Get cell container
-  auto cells = ResourceManager<MyCell<Soa>>::Get()->GetCells();
+  auto cells = ResourceManager<MyCell<Soa>>::Get()->Get<MyCell<Soa>>();
   cells->reserve(cells_per_dim * cells_per_dim * cells_per_dim);
 
   // 5. Define initial model - in this case 3D grid of cells
