@@ -22,9 +22,9 @@ cmake --build $BINARY_DIR --target check-format
 if [ $? != 0 ]; then
   cmake --build $BINARY_DIR --target show-format
 fi
-cmake --build $BINARY_DIR --target check-clang-tidy
+cmake --build $BINARY_DIR --target check-tidy
 if [ $? != 0 ]; then
-  cmake --build $BINARY_DIR --target show-clang-tidy
+  cmake --build $BINARY_DIR --target show-tidy
 fi
 cmake --build $BINARY_DIR --target check-cpplint
 cmake --build $BINARY_DIR --target doc

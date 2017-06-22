@@ -4,7 +4,7 @@ Biological Dynamic Modeller - Based on Cortex 3D (Cx3D)
 [![Build Status](https://travis-ci.org/BioDynaMo/biodynamo.svg?branch=master)](https://travis-ci.org/BioDynaMo/biodynamo)
 [![Join the chat at https://cernopenlab.slack.com/messages/biodynamo/](https://img.shields.io/badge/chat-on_slack-ff69b4.svg?style=flat)](https://cernopenlab.slack.com/messages/biodynamo/)
 
-## Introduction:
+## Introduction
 
 The brain is an extremely complex system, consisting of approximately 100 billion neurons
 that are connected to one another. The way these neurons are structured allows for very
@@ -89,38 +89,37 @@ If you change the value of these switches, you might have to delete `CMakeCache.
 | `CMAKE_C_COMPILER, CMAKE_CXX_COMPILER` | change default compiler |
 | `CMAKE_BUILD_TYPE`  | specify the build type. Possible values are `Debug, Release, RelWithDebInfo, MinSizeRel` |
 
-### Make Targets
+### Build Targets
 | Target          | Description  |
 | --------------- | ------------ |
-| `make test`  | executes all tests |
-| `make check` | executes all tests and shows test output on failure |
-|`make clean` | will clean all targets, also the external projects |
-| `make bdmclean` | will only clean the `biodynamo` and `runBiodynamoTests` targets |
-| `make testbdmclean` | will only clean the `runBiodynamoTests` target |
-| `make doc` | will generate the Doxygen documentation in directory `build/doc`. It contains a html and latex version. You can view the html version by opening `build/doc/html/index.html` in your browser. |
-| `make coverage` | will execute the test target and generate a coverage report in `build/coverage`. Make sure that `gcov` and `lcov` are installed and configure cmake with `cmake -Dcoverage=on ..` |
-| `make coverage-build` | same as `make coverage`, but builds it in a separate directory (`build/coverage`). Since building the coverage report requires different compiler flags, building it in a separate directory keeps the current build directory in good order. |
+| `test`  | executes all tests |
+| `check` | executes all tests and shows test output on failure |
+|`clean` | will clean all targets, also the external projects |
+| `bdmclean` | will only clean the `biodynamo` and `runBiodynamoTests` targets |
+| `testbdmclean` | will only clean the `runBiodynamoTests` target |
+| `doc` | will generate the Doxygen documentation in directory `build/doc`. It contains a html and latex version. You can view the html version by opening `build/doc/html/index.html` in your browser. |
+| `coverage` | will execute the test target and generate a coverage report in `build/coverage`. Make sure that `gcov` and `lcov` are installed and configure cmake with `cmake -Dcoverage=on ..` |
+| `coverage-build` | same as `make coverage`, but builds it in a separate directory (`build/coverage`). Since building the coverage report requires different compiler flags, building it in a separate directory keeps the current build directory in good order. |
 
-#### Make Targets Related to C++ Code Style-guide
+#### Build Targets Related to C++ Code Style-guide
 The following targets are only available if `clang-format`, `clang-tidy` and `git` are installed.
 
-Make targets indicated with `*` always come in three different flavors.
+Build targets indicated with `*` always come in three different flavors.
   * `no-suffix`: executes the target on source files that changed compared to origin/master -- e.g. `make check-format`
   * `-staged`: executes the target on source files that have been staged -- e.g. `make check-format-staged`
   * `-all`: executes the target on all source files in the project -- e.g. `make check-format-all`
 
 | Target          | Description  |
 | --------------- | ------------ |
-| `make check-format*` | run clang-format on selected files. Fails if any file needs to be reformatted |
-| `make format*` | run clang-format on selected files and update them in-place |
-| `make show-format*` | run clang-format on selected files and display differences |
-| `make check-clang-tidy*` | run clang-tidy on selected files. Fails if errors are found |
-| `make clang-tidy*` | run clang-tidy on selected files and attempt to fix any warning automatically |
-| `make show-clang-tidy*` | run clang-tidy on selected files and display errors. |
-| `make check-cpplint*` | run cpplint on selected files. Fails if errors are found and displays them. |
-| `make check-submission` | will build, run all tests, check formatting, code style, and generate documentation and coverage report |
-| `make fix-submission` | will attempt to fix the reported issues using `clang-format` and `clang-tidy`. Failing build, tests, compiler warnings, issues from cpplint and warnings from doxygen must be fixed manually. Also some `clang-tidy` issues cannot be resolved automatically |
-
+| `check-format*` | run clang-format on selected files. Fails if any file needs to be reformatted |
+| `show-format*` | run clang-format on selected files and display differences |
+| `format*` | run clang-format on selected files and update them in-place |
+| `check-tidy*` | run clang-tidy on selected files. Fails if errors are found |
+| `show-tidy*` | run clang-tidy on selected files and display errors. |
+| `tidy*` | run clang-tidy on selected files and attempt to fix any warning automatically |
+| `check-cpplint*` | run cpplint on selected files. Fails if errors are found and displays them. |
+| `check-submission` | will build, run all tests, check formatting, code style, and generate documentation and coverage report |
+| `fix-submission` | will attempt to fix the reported issues using `clang-format` and `clang-tidy`. Failing build, tests, compiler warnings, issues from cpplint and warnings from doxygen must be fixed manually. Also some `clang-tidy` issues cannot be resolved automatically |
 
 ### Contributing Code
 

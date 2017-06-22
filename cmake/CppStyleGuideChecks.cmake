@@ -27,23 +27,23 @@ function(add_clang_format_target make_target_id get_files_cmd)
   endif()
 endfunction(add_clang_format_target)
 
-# -------------------- "make clang-tidy*", "make show-clang-tidy*" and "make check-clang-tidy*" targets ------------
+# -------------------- "make tidy*", "make show-tidy*" and "make check-tidy*" targets ------------
 function(add_clang_tidy_target make_target_id get_files_cmd)
   if (${CLANG_TIDY_FOUND})
     add_custom_target(${make_target_id}
       COMMAND ${BUILD_SUPPORT_DIR}/run-clang-tidy.sh ${CLANG_TIDY_BIN} ${clang_tidy_header_helper}  ${CMAKE_BINARY_DIR}/compile_commands.json 1
-        `${get_files_cmd}  ${PROJECT_SOURCE_DIR} | grep -v -F -f ${PROJECT_SOURCE_DIR}/.clang-tidy-ignore`
+              `${get_files_cmd}  ${PROJECT_SOURCE_DIR} | grep -v -F -f ${PROJECT_SOURCE_DIR}/.clang-tidy-ignore`
       COMMENT "Run clang-tidy on selected files and attempt to fix any warning automatically")
-
-    add_custom_target(check-${make_target_id}
-      COMMAND ${BUILD_SUPPORT_DIR}/run-clang-tidy.sh ${CLANG_TIDY_BIN} ${clang_tidy_header_helper} ${CMAKE_BINARY_DIR}/compile_commands.json 0
-              `${get_files_cmd} ${PROJECT_SOURCE_DIR} | grep -v -F -f ${PROJECT_SOURCE_DIR}/.clang-tidy-ignore`
-      COMMENT "Run clang-tidy on selected files. Fails if errors are found.")
 
     add_custom_target(show-${make_target_id}
       COMMAND ${BUILD_SUPPORT_DIR}/run-clang-tidy.sh ${CLANG_TIDY_BIN} ${clang_tidy_header_helper} ${CMAKE_BINARY_DIR}/compile_commands.json 2
               `${get_files_cmd} ${PROJECT_SOURCE_DIR} | grep -v -F -f ${PROJECT_SOURCE_DIR}/.clang-tidy-ignore`
       COMMENT "Run clang-tidy on selected files and display errors.")
+
+    add_custom_target(check-${make_target_id}
+      COMMAND ${BUILD_SUPPORT_DIR}/run-clang-tidy.sh ${CLANG_TIDY_BIN} ${clang_tidy_header_helper} ${CMAKE_BINARY_DIR}/compile_commands.json 0
+              `${get_files_cmd} ${PROJECT_SOURCE_DIR} | grep -v -F -f ${PROJECT_SOURCE_DIR}/.clang-tidy-ignore`
+      COMMENT "Run clang-tidy on selected files. Fails if errors are found.")
   endif()
 endfunction(add_clang_tidy_target)
 
@@ -60,11 +60,11 @@ if (GIT_FOUND)
        make sure that it is synchronized with the biodynamo repository!")
 
   add_clang_format_target(format "${CHANGED_SRC_FILES_ORIGIN_MASTER}" )
-  add_clang_tidy_target(clang-tidy "${CHANGED_SRC_FILES_ORIGIN_MASTER}" )
+  add_clang_tidy_target(tidy "${CHANGED_SRC_FILES_ORIGIN_MASTER}" )
   add_cpplint_target(check-cpplint "${CHANGED_SRC_FILES_ORIGIN_MASTER}" )
 
   add_clang_format_target(format-staged "${STAGED_SRC_FILES}" )
-  add_clang_tidy_target(clang-tidy-staged "${STAGED_SRC_FILES}" )
+  add_clang_tidy_target(tidy-staged "${STAGED_SRC_FILES}" )
   add_cpplint_target(check-cpplint-staged "${STAGED_SRC_FILES}" )
 
   # check submission
@@ -80,5 +80,5 @@ if (GIT_FOUND)
 endif()
 
 add_clang_format_target(format-all "${ALL_SRC_FILES}" )
-add_clang_tidy_target(clang-tidy-all "${ALL_SRC_FILES}" )
+add_clang_tidy_target(tidy-all "${ALL_SRC_FILES}" )
 add_cpplint_target(check-cpplint-all "${ALL_SRC_FILES}" )
