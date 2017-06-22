@@ -134,7 +134,7 @@ file(GLOB_RECURSE HEADERS "${CMAKE_SOURCE_DIR}/src/*.h")
 #${CMAKE_BINARY_DIR}/bdmDict.cxx)
 add_library(biodynamo SHARED ${SOURCES} ${HEADERS})
 #target_link_libraries(biodynamo ${ROOT_LIBRARIES})
-target_link_libraries(biodynamo ${Vc_LIBRARIES})
+#target_link_libraries(biodynamo ${Vc_LIBRARIES})
 # target_link_libraries(biodynamo ${VTUNE_LIBRARIES})
 # add_dependencies(biodynamo Vc)
 
