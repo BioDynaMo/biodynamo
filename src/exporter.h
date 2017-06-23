@@ -296,21 +296,6 @@ class Exporter {
     vtu << "            </DataArray>" << std::endl;
     vtu << "         </PointData>" << std::endl;
 
-    // roman: this is relevant for Int32 format, keeping in case
-    // required in the future
-    // vtu << "         <CellData>" << std::endl;
-    // vtu << "            <DataArray type=\"Int32\" Name=\"cell_ID\"
-    // NumberOfComponents=\"1\" format=\"ascii\">" << std::endl;
-    // index = 0;
-    // for (size_t i=0; i<num_vectors; i++) {
-    //   auto& cell = cells[i];
-    //   for (size_t j=0; j<cell.Size(); j++)
-    //     vtu << ' ' << index++ << std::flush;
-    // }
-    // vtu << std::endl;
-    // vtu << "            </DataArray>" << std::endl;
-    // vtu << "         </CellData>" << std::endl;
-
     vtu << "         <Cells>" << std::endl;
     vtu << "            <DataArray type=\"Int32\" Name=\"connectivity\" "
            "format=\"ascii\">"
