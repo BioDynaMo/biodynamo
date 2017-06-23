@@ -92,12 +92,12 @@ elif [ "$MODE" == "2" ]; then
   done
 else
   # create temporary file
-  TMP_FILE="/tmp/bdm_"$RANDOM
+  TMP_FILE="/tmp/bdmformat_"$RANDOM
   for f in $SOURCES; do
     echo "" > $TMP_FILE
     $CLANG_TIDY $TRAVIS_LINUX_EXTRA_ARGB -line-filter=$LINE_FILTER -export-fixes=$TMP_FILE -p $COMPILE_COMMANDS $f >/dev/null 2>/dev/null
     NUM_CORRECTIONS=$(cat $TMP_FILE | wc -l)
-    rm $TMP_FILE
+    rm -f $TMP_FILE
     if [ "$NUM_CORRECTIONS" -gt "1" ]; then
       echo "Error: clang-tidy suggested changes, please fix them!"
       echo "       Before running one of the clang-tidy* targets to fix them automatically,"
