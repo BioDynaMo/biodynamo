@@ -15,7 +15,6 @@
 #include "scheduler.h"
 #include "timing.h"
 #include "timing_aggregator.h"
-#include "transactional_vector.h"
 // #include <ittnotify.h>
 
 using bdm::Cell;
@@ -26,7 +25,7 @@ using bdm::TimingAggregator;
 using bdm::Exporter;
 
 void Execute(size_t cells_per_dim, size_t iterations, size_t threads,
-             size_t repititions, TimingAggregator* statistic,
+             size_t repititions, TimingAggregator *statistic,
              bool with_export) {
   for (size_t r = 0; r < repititions; r++) {
     std::stringstream ss;
@@ -36,7 +35,6 @@ void Execute(size_t cells_per_dim, size_t iterations, size_t threads,
 
     const double space = 20;
 
-    // bdm::TransactionalVector<Cell<Scalar>> cells;
     auto cells = Cell<>::NewEmptySoa();
     cells.reserve(cells_per_dim * cells_per_dim * cells_per_dim);
     {
@@ -55,48 +53,51 @@ void Execute(size_t cells_per_dim, size_t iterations, size_t threads,
       }
     }
 
-    {
-      Timing timing("Find Neighbors", statistic);
-      // bdm::NeighborOp op(700);
-      bdm::NeighborNanoflannOp op(700);
-      op.Compute(&cells);
+    // iterate for all (time) steps
+    Exporter exporter;
+    if (with_export) {
+      exporter.CreatePVDFile("Results4Paraview", iterations, 1.0);
     }
 
-    // __itt_resume();
-
-    {
-      Timing timing("Cell Growth", statistic);
-      bdm::DividingCellOp biology;
-      for (size_t i = 0; i < iterations; i++) {
-        biology.Compute(&cells);
-      }
-    }
-
-    // __itt_pause();
-
-    {
-      Timing timing("Displacement", statistic);
-      bdm::DisplacementOp op;
-      for (size_t i = 0; i < iterations; i++) {
+    for (size_t i = 0; i < iterations; i++) {
+      {
+        Timing timing("Find Neighbors", statistic);
+        bdm::NeighborOp op(700);
         op.Compute(&cells);
       }
-    }
 
-    if (with_export) {
-      Timing timing("Export", statistic);
-      std::cout << "exporting now..." << std::endl;
-      Exporter exporter;
-      exporter.ToFile(cells, "FinalPositions.dat");
-      exporter.ToMatlabFile(cells, "FinalPositions.m");
-      exporter.ToNeuroMLFile(cells, "FinalPositions.xml");
+      // __itt_resume();
+
+      {
+        Timing timing("Cell Growth", statistic);
+        bdm::DividingCellOp biology;
+        biology.Compute(&cells);
+      }
+
+      // __itt_pause();
+
+      {
+        Timing timing("Displacement", statistic);
+        bdm::DisplacementOp op;
+        op.Compute(&cells);
+      }
+
+      if (with_export) {
+        Timing timing("Export", statistic);
+        std::cout << "exporting now..." << std::endl;
+        exporter.ToFile(&cells, "FinalPositions.dat");
+        exporter.ToMatlabFile(&cells, "FinalPositions.m");
+        exporter.ToNeuroMLFile(&cells, "FinalPositions.xml");
+        exporter.ToVTUFile(&cells, "Results4Paraview", i);
+      }
     }
   }
 }
 
 void Scaling(size_t cells_per_dim, size_t iterations, size_t repititions,
-             TimingAggregator* statistic, bool with_export,
-             const std::function<void(int&)> thread_inc =
-                 [](int& i) {  // NOLINT(runtime/references)
+             TimingAggregator *statistic, bool with_export,
+             const std::function<void(int &)> thread_inc =
+                 [](int &i) {  // NOLINT(runtime/references)
                    i *= 2;
                  },
              const int max_threads = omp_get_max_threads()) {
@@ -106,7 +107,7 @@ void Scaling(size_t cells_per_dim, size_t iterations, size_t repititions,
   }
 }
 
-int main(int args, char** argv) {
+int main(int args, char **argv) {
   TimingAggregator statistic;
   size_t repititions = 1;
   bool do_export = false;
@@ -167,7 +168,7 @@ int main(int args, char** argv) {
     if (args == 3) {
       std::istringstream(std::string(argv[2])) >> repititions;
     }
-    Scaling(256, 1, repititions, &statistic, do_export, [](int& i) { i++; });
+    Scaling(256, 1, repititions, &statistic, do_export, [](int &i) { i++; });
   } else {
     omp_set_num_threads(1);
     if (args == 2) {
