@@ -3,11 +3,10 @@
 
 #include <iostream> // TODO
 #include <array>
-#include <cmath>
+// #include <cmath>
 #include <vector>
 #include <limits>
 #include "inline_vector.h"
-#include "matrix.h"
 
 namespace bdm {
 
@@ -18,47 +17,83 @@ using std::fmod;
 class Grid {
 public:
   struct Box {
-    // uint64_t start_ = 0;
-    // uint16_t length = 0;
-    size_t cell_id_ = std::numeric_limits<size_t>::max();
+    Grid* grid_;
+    uint64_t start_ = 0;
+    uint16_t length_ = 0;
+
+    Box(Grid* grid) : grid_(grid) {}
 
     bool IsEmpty() const {
-      return cell_id_ == std::numeric_limits<size_t>::max();
+      return length_ == 0;
     }
 
     void AddCell(size_t cell_id) {
       if (IsEmpty()) {
-        cell_id_ = cell_id;
+        start_ = cell_id;
       } else {
-        throw "foo";
+        // add to front
+        grid_->successors_[cell_id] = start_;
+        start_ = cell_id;
       }
+      length_++;
+    }
+
+    struct Iterator {
+      Iterator(Grid* grid, const Box* box) : grid_(grid), box_(box), current_value_(box->start_), countdown_(box_->length_) {
+      }
+
+      bool IsAtEnd() { return countdown_ <= 0; }
+
+      Iterator operator++() {
+        countdown_--;
+        current_value_ = grid_->successors_[current_value_];
+        return *this;
+      }
+
+      size_t operator*() const {
+        return current_value_;
+      }
+
+      Grid* grid_;
+      const Box* box_;
+      size_t current_value_;
+      int countdown_;
+    };
+
+    Iterator begin() const {
+      return Iterator(grid_, this);
     }
   };
 
   struct NeighborIterator {
-    NeighborIterator(InlineVector<const Box*, 27>* neighbor_boxes) : neighbor_boxes_(neighbor_boxes) {}
+    NeighborIterator(InlineVector<const Box*, 27>* neighbor_boxes) : neighbor_boxes_(neighbor_boxes), box_iterator_((*neighbor_boxes_)[0]->begin()) {}
 
     bool IsEnd() const { return is_end_; }
 
     size_t operator*() const {
-      return (*neighbor_boxes_)[box_idx_]->cell_id_;
+      return *box_iterator_;
     }
 
     /// version where empty neighbors in neighbor_boxes_ are allowed
     NeighborIterator& operator++() {
-      while (++box_idx_ < neighbor_boxes_->size()) {
-        if ((*neighbor_boxes_)[box_idx_]->IsEmpty()) {
-          continue;
+      ++box_iterator_;
+      if (box_iterator_.IsAtEnd()) {
+        while (++box_idx_ < neighbor_boxes_->size()) {
+          if ((*neighbor_boxes_)[box_idx_]->IsEmpty()) {
+            continue;
+          }
+          box_iterator_ = (*neighbor_boxes_)[box_idx_]->begin();
+          return *this;
         }
+        is_end_ = true;
         return *this;
       }
-      is_end_ = true;
-      return *this;
     }
 
   private:
     InlineVector<const Box*, 27>* neighbor_boxes_;
     int box_idx_ = 0;
+    Box::Iterator box_iterator_;
     bool is_end_ = false;
   };
 
@@ -76,7 +111,10 @@ public:
     std::cout << "num_boxes z " << num_boxes_axis_[2] << std::endl;
     std::cout << "num_boxes xy " << num_boxes_xy_ << std::endl;
 
-    boxes_.resize(total_num_boxes);
+    boxes_.resize(total_num_boxes, Box(this));
+
+    // initialize successors_;
+    successors_.resize(positions_.size());
 
     // assign simulation objects to boxes
     for (size_t cell_id = 0; cell_id < positions_.size(); cell_id++) {
@@ -95,8 +133,10 @@ public:
 
       InlineVector<const Box*, 27> neighbor_boxes;
       GetMooreBoxes(&neighbor_boxes, idx);
-      GetMooreBoxes(&neighbor_boxes, idx);
-      GetMooreBoxes(&neighbor_boxes, idx);
+      // GetMooreBoxes(&neighbor_boxes, idx);
+      // GetMooreBoxes(&neighbor_boxes, idx);
+
+      // std::cout << "Neighbors of " << i << ": ";
 
       NeighborIterator it(&neighbor_boxes);
       while(!it.IsEnd()) {
@@ -104,9 +144,12 @@ public:
 
         // do something with it
         sum[i] += *it;
+        // std::cout << *it << ", ";
 
         ++it;
       }
+
+      // std::cout << std::endl;
     }
     std::cout << "cell id sum " << sum[4] << std::endl;
   }
@@ -120,6 +163,8 @@ private:
   /// number of boxes in the xy plane (=num_boxes_axis_[0] * num_boxes_axis_[1])
   size_t num_boxes_xy_;
   vector<array<double, 3>>& positions_;
+  /// Implements linked list - array index = key, value: next element
+  vector<size_t> successors_;
 
   void GetMooreBoxes(InlineVector<const Box*, 27>* neighbor_boxes, size_t box_idx) {
     neighbor_boxes->push_back(GetBoxPointer(box_idx));
