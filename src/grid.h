@@ -56,15 +56,6 @@ public:
       return *this;
     }
 
-    /// version with no empty neighbors in neighbor_boxes_
-    // NeighborIterator& operator++() {
-    //   box_idx_++;
-    //   if (box_idx_ == neighbor_boxes_->size()) {
-    //     is_end_ = true;
-    //   }
-    //   return *this;
-    // }
-
   private:
     InlineVector<const Box*, 27>* neighbor_boxes_;
     int box_idx_ = 0;
@@ -112,7 +103,7 @@ public:
         // volatile auto current_val = *it;
 
         // do something with it
-        sum[i] = *it;
+        sum[i] += *it;
 
         ++it;
       }
@@ -134,42 +125,48 @@ private:
     neighbor_boxes->push_back(GetBoxPointer(box_idx));
     auto box_coord = GetBoxCoordinates(box_idx);
 
-    if (box_coord[0] > 0) {
+    // if (box_coord[0] > 0)
+    {
       auto coord = Add(box_coord, {-1, 0, 0});
       auto box = GetBoxPointer(GetBoxIndex(coord));
       // if (!box->IsEmpty())
         neighbor_boxes->push_back(box);
     }
 
-    if (box_coord[0] < num_boxes_axis_[0] - 1) {
+    // if (box_coord[0] < num_boxes_axis_[0] - 1)
+    {
       auto coord = Add(box_coord, {1, 0, 0});
       auto box = GetBoxPointer(GetBoxIndex(coord));
       // if (!box->IsEmpty())
         neighbor_boxes->push_back(box);
     }
 
-    if (box_coord[1] > 0) {
+    // if (box_coord[1] > 0)
+    {
       auto coord = Add(box_coord, {0, -1, 0});
       auto box = GetBoxPointer(GetBoxIndex(coord));
       // if (!box->IsEmpty())
         neighbor_boxes->push_back(box);
     }
 
-    if (box_coord[1] < num_boxes_axis_[1] - 1) {
+    // if (box_coord[1] < num_boxes_axis_[1] - 1)
+    {
       auto coord = Add(box_coord, {0, 1, 0});
       auto box = GetBoxPointer(GetBoxIndex(coord));
       // if (!box->IsEmpty())
         neighbor_boxes->push_back(box);
     }
 
-    if (box_coord[2] > 0) {
+    // if (box_coord[2] > 0)
+    {
       auto coord = Add(box_coord, {0, 0, -1});
       auto box = GetBoxPointer(GetBoxIndex(coord));
       // if (!box->IsEmpty())
         neighbor_boxes->push_back(box);
     }
 
-    if (box_coord[2] < num_boxes_axis_[2] - 1) {
+    // if (box_coord[2] < num_boxes_axis_[2] - 1)
+    {
       auto coord = Add(box_coord, {0, 0, 1});
       auto box = GetBoxPointer(GetBoxIndex(coord));
       // if (!box->IsEmpty())
