@@ -126,6 +126,8 @@ class CellExt : public Base {
 
   const array<double, 3>& GetPosition() const { return position_[kIdx]; }
 
+  vec<array<double, 3>>& GetAllPositions() { return position_; }
+
   const array<double, 3>& GetTractorForce() const {
     return tractor_force_[kIdx];
   }
