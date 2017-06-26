@@ -168,56 +168,38 @@ private:
 
   void GetMooreBoxes(InlineVector<const Box*, 27>* neighbor_boxes, size_t box_idx) {
     neighbor_boxes->push_back(GetBoxPointer(box_idx));
-    auto box_coord = GetBoxCoordinates(box_idx);
 
-    // if (box_coord[0] > 0)
-    {
-      auto coord = Add(box_coord, {-1, 0, 0});
-      auto box = GetBoxPointer(GetBoxIndex(coord));
-      // if (!box->IsEmpty())
-        neighbor_boxes->push_back(box);
-    }
+    // Adjacent 6 (top, down, left, right, front and back)
+    neighbor_boxes->push_back(GetBoxPointer(box_idx - num_boxes_xy_));
+    neighbor_boxes->push_back(GetBoxPointer(box_idx + num_boxes_xy_));
+    neighbor_boxes->push_back(GetBoxPointer(box_idx - num_boxes_axis_[1]));
+    neighbor_boxes->push_back(GetBoxPointer(box_idx + num_boxes_axis_[1]));
+    neighbor_boxes->push_back(GetBoxPointer(box_idx - 1));
+    neighbor_boxes->push_back(GetBoxPointer(box_idx + 1));
 
-    // if (box_coord[0] < num_boxes_axis_[0] - 1)
-    {
-      auto coord = Add(box_coord, {1, 0, 0});
-      auto box = GetBoxPointer(GetBoxIndex(coord));
-      // if (!box->IsEmpty())
-        neighbor_boxes->push_back(box);
-    }
+    // Adjacent 12
+    neighbor_boxes->push_back(GetBoxPointer(box_idx - num_boxes_xy_ - num_boxes_axis_[1]));
+    neighbor_boxes->push_back(GetBoxPointer(box_idx - num_boxes_xy_ - 1));
+    neighbor_boxes->push_back(GetBoxPointer(box_idx - num_boxes_axis_[1] - 1));
+    neighbor_boxes->push_back(GetBoxPointer(box_idx + num_boxes_xy_ - num_boxes_axis_[1]));
+    neighbor_boxes->push_back(GetBoxPointer(box_idx + num_boxes_xy_ - 1));
+    neighbor_boxes->push_back(GetBoxPointer(box_idx + num_boxes_axis_[1] - 1));
+    neighbor_boxes->push_back(GetBoxPointer(box_idx - num_boxes_xy_ + num_boxes_axis_[1]));
+    neighbor_boxes->push_back(GetBoxPointer(box_idx - num_boxes_xy_ + 1));
+    neighbor_boxes->push_back(GetBoxPointer(box_idx - num_boxes_axis_[1] + 1));
+    neighbor_boxes->push_back(GetBoxPointer(box_idx + num_boxes_xy_ + num_boxes_axis_[1]));
+    neighbor_boxes->push_back(GetBoxPointer(box_idx + num_boxes_xy_ + 1));
+    neighbor_boxes->push_back(GetBoxPointer(box_idx + num_boxes_axis_[1] + 1));
 
-    // if (box_coord[1] > 0)
-    {
-      auto coord = Add(box_coord, {0, -1, 0});
-      auto box = GetBoxPointer(GetBoxIndex(coord));
-      // if (!box->IsEmpty())
-        neighbor_boxes->push_back(box);
-    }
-
-    // if (box_coord[1] < num_boxes_axis_[1] - 1)
-    {
-      auto coord = Add(box_coord, {0, 1, 0});
-      auto box = GetBoxPointer(GetBoxIndex(coord));
-      // if (!box->IsEmpty())
-        neighbor_boxes->push_back(box);
-    }
-
-    // if (box_coord[2] > 0)
-    {
-      auto coord = Add(box_coord, {0, 0, -1});
-      auto box = GetBoxPointer(GetBoxIndex(coord));
-      // if (!box->IsEmpty())
-        neighbor_boxes->push_back(box);
-    }
-
-    // if (box_coord[2] < num_boxes_axis_[2] - 1)
-    {
-      auto coord = Add(box_coord, {0, 0, 1});
-      auto box = GetBoxPointer(GetBoxIndex(coord));
-      // if (!box->IsEmpty())
-        neighbor_boxes->push_back(box);
-    }
-
+    // Adjacent 8
+    neighbor_boxes->push_back(GetBoxPointer(box_idx - num_boxes_xy_ - num_boxes_axis_[1] - 1));
+    neighbor_boxes->push_back(GetBoxPointer(box_idx - num_boxes_xy_ - num_boxes_axis_[1] + 1));
+    neighbor_boxes->push_back(GetBoxPointer(box_idx - num_boxes_xy_ + num_boxes_axis_[1] - 1));
+    neighbor_boxes->push_back(GetBoxPointer(box_idx - num_boxes_xy_ + num_boxes_axis_[1] + 1));
+    neighbor_boxes->push_back(GetBoxPointer(box_idx + num_boxes_xy_ - num_boxes_axis_[1] - 1));
+    neighbor_boxes->push_back(GetBoxPointer(box_idx + num_boxes_xy_ + num_boxes_axis_[1] + 1));
+    neighbor_boxes->push_back(GetBoxPointer(box_idx + num_boxes_xy_ + num_boxes_axis_[1] - 1));
+    neighbor_boxes->push_back(GetBoxPointer(box_idx + num_boxes_xy_ + num_boxes_axis_[1] + 1));
   }
 
   const Box* GetBoxPointer(size_t index) const {
