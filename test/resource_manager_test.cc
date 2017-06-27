@@ -4,6 +4,7 @@
 #include "backend.h"
 #include "gtest/gtest.h"
 #include "test_util.h"
+#include "variadic_template_parameter_util.h"
 
 namespace bdm {
 namespace resource_manager_test_internal {
@@ -74,7 +75,8 @@ struct BSoa {
 template <typename A, typename B>
 void RunGetTest() {
   const double kEpsilon = abs_error<double>::value;
-  auto rm = ResourceManager<A, B>::Get();
+  using Types = VariadicTypedefWrapper<A, B>;
+  auto rm = ResourceManager<Types>::Get();
   rm->Clear();
 
   // template specifier needed because A is dependant type
@@ -102,7 +104,8 @@ TEST(ResourceManagerTest, GetSoa) { RunGetTest<ASoa, BSoa>(); }
 template <typename A, typename B>
 void RunApplyOnElementTest() {
   const double kEpsilon = abs_error<double>::value;
-  auto rm = ResourceManager<A, B>::Get();
+  using Types = VariadicTypedefWrapper<A, B>;
+  auto rm = ResourceManager<Types>::Get();
   rm->Clear();
 
   auto a_collection = rm->template Get<A>();
@@ -130,7 +133,8 @@ TEST(ResourceManagerTest, ApplyOnElementSoa) {
 template <typename A, typename B>
 void RunApplyOnAllElementsTest() {
   const double kEpsilon = abs_error<double>::value;
-  auto rm = ResourceManager<A, B>::Get();
+  using Types = VariadicTypedefWrapper<A, B>;
+  auto rm = ResourceManager<Types>::Get();
   rm->Clear();
 
   auto a_collection = rm->template Get<A>();
@@ -173,7 +177,8 @@ TEST(ResourceManagerTest, ApplyOnAllElementsSoa) {
 template <typename A, typename B>
 void RunApplyOnAllTypesTest() {
   const double kEpsilon = abs_error<double>::value;
-  auto rm = ResourceManager<A, B>::Get();
+  using Types = VariadicTypedefWrapper<A, B>;
+  auto rm = ResourceManager<Types>::Get();
   rm->Clear();
 
   auto a_collection = rm->template Get<A>();

@@ -5,6 +5,7 @@
 #include <tuple>
 #include <utility>
 #include "tuple_util.h"
+#include "variadic_template_parameter_util.h"
 
 namespace bdm {
 
@@ -24,19 +25,77 @@ static constexpr uint8_t kTypeIdBits = 4;
 ///     63  type_idx                  element_idx                         0
 using SoHandle = uint64_t;
 
+namespace detail {
+
+/// \see bdm::GetBackendType, VariadicTypedef
 template <typename... Types>
+struct GetBackendType {};
+
+/// \see bdm::GetBackendType, VariadicTypedef
+template <typename... Types>
+struct GetBackendType<VariadicTypedef<Types...>> {
+  // extract first element type and get Backend
+  typedef typename std::tuple_element<0, std::tuple<Types...>>::type::Backend
+      type;  // NOLINT
+};
+
+/// \see bdm::ConvertToContainerTuple, VariadicTypedef
+template <template <typename> class Container, typename... Types>
+struct ConvertToContainerTuple {};
+
+/// \see bdm::ConvertToContainerTuple, VariadicTypedef
+template <template <typename> class Container, typename... Types>
+struct ConvertToContainerTuple<Container, VariadicTypedef<Types...>> {
+  typedef std::tuple<Container<Types>...> type;  // NOLINT
+};
+
+}  // namespace detail
+
+/// Extract the Backend type of the first element in the parameter pack
+/// @tparam TVariadicTypedefWrapper type that wraps a VariadicTypedef
+/// which in turn contains the variadic template parameters
+/// \see VariadicTypedefWrapper
+template <typename TVariadicTypedefWrapper>
+struct GetBackendType {
+  typedef typename detail::GetBackendType<
+      typename TVariadicTypedefWrapper::types>::type type;  // NOLINT
+};
+
+/// Create a tuple of types in the parameter pack and wrap each type witch
+/// container
+/// @tparam: Container container type that wraps each type
+/// @tparam TVariadicTypedefWrapper type that wraps a VariadicTypedef
+/// which in turn contains the variadic template parameters
+/// \see VariadicTypedefWrapper
+template <template <typename> class Container, typename TVariadicTypedefWrapper>
+struct ConvertToContainerTuple {
+  typedef typename detail::ConvertToContainerTuple<
+      Container, typename TVariadicTypedefWrapper::types>::type type;  // NOLINT
+};
+
+/// Forward declaration of atomic types used in the simulation.
+/// Must be specified in the simulation code using the macro
+/// \see BDM_DEFINE_ATOMIC_TYPES
+struct AtomicTypes;
+
+/// ResourceManager holds a container for each atomic type in the simulation.
+/// It provides methods to get a certain container, execute a function on a
+/// a certain element, all elements of a certain type or all elements inside
+/// the ResourceManager. Elements are uniquely identified with its SoHandle.
+/// @tparam Types is a wrapper that contains a VariadicTypedef. Hence, it is
+/// possible to pass a variable number of types into it. \see VariadicTypedef
+template <typename Types = AtomicTypes>
 class ResourceManager {
  public:
   /// TypeBackend is Backend of the first type in Types
-  using TypeBackend =
-      typename std::tuple_element<0, std::tuple<Types...>>::type::Backend;
+  using TypeBackend = typename GetBackendType<Types>::type;
   template <typename T>
   /// Determine Container based on the Backend
   using TypeContainer = typename TypeBackend::template Container<T>;
 
   /// Singleton pattern - return the only instance with this template parameters
-  static ResourceManager<Types...>* Get() {
-    static ResourceManager<Types...> kInstance;
+  static ResourceManager<Types>* Get() {
+    static ResourceManager<Types> kInstance;
     return &kInstance;
   }
 
@@ -129,7 +188,8 @@ class ResourceManager {
 
   /// creates one container for each type in Types.
   /// Container type is determined based on the backend of the types
-  std::tuple<TypeContainer<Types>...> data_;
+  // std::tuple<TypeContainer<Types>...> data_;
+  typename ConvertToContainerTuple<TypeContainer, Types>::type data_;
 };
 
 }  // namespace bdm

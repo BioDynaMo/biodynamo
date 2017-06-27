@@ -15,14 +15,14 @@ class Scheduler {
 
   virtual ~Scheduler() {}
 
-  template <typename TCellContainer>
+  template <typename TResourceManager = ResourceManager<>>
   void Simulate(unsigned steps) {
     OpTimer<NeighborNanoflannOp> neighbor("neighbor", NeighborNanoflannOp(700));
     OpTimer<BiologyModuleOp> biology("biology");
     OpTimer<DisplacementOp> physics("physics");
 
-    auto rm = ResourceManager<TCellContainer>::Get();
-    auto cells = rm->template Get<TCellContainer>();
+    auto rm = TResourceManager::Get();
+    auto cells = rm->template Get<SoaCell>();
 
     while (steps-- > 0) {
       neighbor.Compute(cells);
