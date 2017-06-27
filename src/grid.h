@@ -39,7 +39,7 @@ public:
     }
 
     struct Iterator {
-      Iterator(Grid* grid, const Box* box) : grid_(grid), box_(box), current_value_(box->start_), countdown_(box_->length_) {
+      Iterator(Grid* grid, const Box* box) : grid_(grid), current_value_(box->start_), countdown_(box->length_) {
       }
 
       bool IsAtEnd() { return countdown_ <= 0; }
@@ -55,7 +55,6 @@ public:
       }
 
       Grid* grid_;
-      const Box* box_;
       size_t current_value_;
       int countdown_;
     };
@@ -66,9 +65,14 @@ public:
   };
 
   struct NeighborIterator {
-    NeighborIterator(InlineVector<const Box*, 27>* neighbor_boxes) : neighbor_boxes_(neighbor_boxes), box_iterator_((*neighbor_boxes_)[0]->begin()) {}
+    NeighborIterator(InlineVector<const Box*, 27>* neighbor_boxes) : neighbor_boxes_(neighbor_boxes), box_iterator_((*neighbor_boxes_)[0]->begin()) {
+      // if first box is empty
+      if((*neighbor_boxes_)[0]->IsEmpty()) {
+        ForwardToNonEmptyBox();
+      }
+    }
 
-    bool IsEnd() const { return is_end_; }
+    bool IsAtEnd() const { return is_end_; }
 
     size_t operator*() const {
       return *box_iterator_;
@@ -77,24 +81,36 @@ public:
     /// version where empty neighbors in neighbor_boxes_ are allowed
     NeighborIterator& operator++() {
       ++box_iterator_;
+      // if iterator of current box has come to an end, continue with next box
       if (box_iterator_.IsAtEnd()) {
-        while (++box_idx_ < neighbor_boxes_->size()) {
-          if ((*neighbor_boxes_)[box_idx_]->IsEmpty()) {
-            continue;
-          }
-          box_iterator_ = (*neighbor_boxes_)[box_idx_]->begin();
-          return *this;
-        }
-        is_end_ = true;
-        return *this;
+        return ForwardToNonEmptyBox();
       }
+      return *this;
     }
 
   private:
     InlineVector<const Box*, 27>* neighbor_boxes_;
-    int box_idx_ = 0;
     Box::Iterator box_iterator_;
+    int box_idx_ = 0;
     bool is_end_ = false;
+
+    /// Forwards the iterator to the next non empty box and returns itself
+    /// If there are no non empty boxes is_end_ is set to true
+    NeighborIterator& ForwardToNonEmptyBox() {
+      // increment box id until non empty box has been found
+      while (++box_idx_ < neighbor_boxes_->size()) {
+        // box is empty -> continue
+        if ((*neighbor_boxes_)[box_idx_]->IsEmpty()) {
+          continue;
+        }
+        // no empty box has been found
+        box_iterator_ = (*neighbor_boxes_)[box_idx_]->begin();
+        return *this;
+      }
+      // all remaining boxes have been empty; reached end
+      is_end_ = true;
+      return *this;
+    }
   };
 
   Grid(vector<array<double, 3>>& positions, uint32_t box_length, const std::array<double, 3> max_value) : positions_(positions), box_lenght_(box_length) {
@@ -133,13 +149,11 @@ public:
 
       InlineVector<const Box*, 27> neighbor_boxes;
       GetMooreBoxes(&neighbor_boxes, idx);
-      // GetMooreBoxes(&neighbor_boxes, idx);
-      // GetMooreBoxes(&neighbor_boxes, idx);
 
       // std::cout << "Neighbors of " << i << ": ";
 
       NeighborIterator it(&neighbor_boxes);
-      while(!it.IsEnd()) {
+      while(!it.IsAtEnd()) {
         // volatile auto current_val = *it;
 
         // do something with it
