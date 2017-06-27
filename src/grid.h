@@ -1,9 +1,9 @@
 #ifndef GRID_H_
 #define GRID_H_
 
-#include <iostream> // TODO
+#include <iostream> // TODO remove
 #include <array>
-// #include <cmath>
+#include <cmath>
 #include <vector>
 #include <limits>
 #include "inline_vector.h"
@@ -37,6 +37,8 @@ public:
       }
       length_++;
     }
+
+    // TODO remove cell
 
     struct Iterator {
       Iterator(Grid* grid, const Box* box) : grid_(grid), current_value_(box->start_), countdown_(box->length_) {
@@ -114,6 +116,7 @@ public:
   };
 
   Grid(vector<array<double, 3>>& positions, uint32_t box_length, const std::array<double, 3> max_value) : positions_(positions), box_lenght_(box_length) {
+    // TODO determine max_value based on given positions
     // FIXME for simplicity assumes no negative positions
     num_boxes_axis_[0] = static_cast<size_t>(max_value[0]) / box_length;
     num_boxes_axis_[1] = static_cast<size_t>(max_value[1]) / box_length;
@@ -140,6 +143,7 @@ public:
     }
   }
 
+  // TODO pass lambda as parameter
   void ForEachNeighbor() {
     vector<size_t> sum(positions_.size());
 #pragma omp parallel for
@@ -183,6 +187,7 @@ private:
   void GetMooreBoxes(InlineVector<const Box*, 27>* neighbor_boxes, size_t box_idx) {
     neighbor_boxes->push_back(GetBoxPointer(box_idx));
 
+    // TODO add enumeration to select between different modes
     // Adjacent 6 (top, down, left, right, front and back)
     neighbor_boxes->push_back(GetBoxPointer(box_idx - num_boxes_xy_));
     neighbor_boxes->push_back(GetBoxPointer(box_idx + num_boxes_xy_));
@@ -252,18 +257,7 @@ private:
     box_coord[1] = floor(position[1]) / box_lenght_;
     box_coord[2] = floor(position[2]) / box_lenght_;
 
-    // std::cout << "GetBoxIndex " << position[0] << " - " << position[1] << " - " << position[2] << " || "
-    //           << box_coord[0] << " - " << box_coord[1] << " - " << box_coord[2] << std::endl;
     return GetBoxIndex(box_coord);
-  }
-
-  // TODO move to matrix
-  array<uint32_t, 3> Add(const array<uint32_t, 3>& a, const array<int, 3>&& b) {
-    array<uint32_t, 3> ret;
-    ret[0] = a[0] + b[0];
-    ret[1] = a[1] + b[1];
-    ret[2] = a[2] + b[2];
-    return ret;
   }
 };
 
