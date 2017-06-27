@@ -29,7 +29,7 @@ int Run(size_t cells_per_dim) {
 
   auto build_timer = new Timing("build   ");
   cells_per_dim++;
-  Grid grid(cells.GetAllPositions(), 20, {20 * cells_per_dim, 20 * cells_per_dim, 20 * cells_per_dim});
+  Grid grid(cells.GetAllPositions(), 20, {20.0 * cells_per_dim, 20.0 * cells_per_dim, 20.0 * cells_per_dim});
   delete build_timer;
 
   auto iterate_timer = new Timing("iterate ");

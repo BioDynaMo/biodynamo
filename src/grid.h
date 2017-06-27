@@ -91,7 +91,7 @@ public:
   private:
     InlineVector<const Box*, 27>* neighbor_boxes_;
     Box::Iterator box_iterator_;
-    int box_idx_ = 0;
+    uint16_t box_idx_ = 0;
     bool is_end_ = false;
 
     /// Forwards the iterator to the next non empty box and returns itself
@@ -170,13 +170,13 @@ public:
 
 private:
   vector<Box> boxes_;
+  vector<array<double, 3>>& positions_;
   /// length of a Box
   uint32_t box_lenght_;
   /// stores the number of boxes for each axis
   array<uint32_t, 3> num_boxes_axis_;
   /// number of boxes in the xy plane (=num_boxes_axis_[0] * num_boxes_axis_[1])
   size_t num_boxes_xy_;
-  vector<array<double, 3>>& positions_;
   /// Implements linked list - array index = key, value: next element
   vector<size_t> successors_;
 
