@@ -1,8 +1,8 @@
+#include "grid.h"
+#include <omp.h>
 #include <array>
 #include <sstream>
-#include <omp.h>
 #include "cell.h"
-#include "grid.h"
 #include "timing.h"
 
 namespace bdm {
@@ -29,7 +29,8 @@ int Run(size_t cells_per_dim) {
 
   auto build_timer = new Timing("build   ");
   cells_per_dim++;
-  Grid grid(cells.GetAllPositions(), 20, {20.0 * cells_per_dim, 20.0 * cells_per_dim, 20.0 * cells_per_dim});
+  Grid grid(cells.GetAllPositions(), 20,
+            {20.0 * cells_per_dim, 20.0 * cells_per_dim, 20.0 * cells_per_dim});
   delete build_timer;
 
   auto iterate_timer = new Timing("iterate ");

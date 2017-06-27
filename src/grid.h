@@ -1,11 +1,11 @@
 #ifndef GRID_H_
 #define GRID_H_
 
-#include <iostream> // TODO remove
 #include <array>
 #include <cmath>
-#include <vector>
+#include <iostream>  // TODO remove
 #include <limits>
+#include <vector>
 #include "inline_vector.h"
 
 namespace bdm {
@@ -15,7 +15,7 @@ using std::vector;
 using std::fmod;
 
 class Grid {
-public:
+ public:
   struct Box {
     Grid* grid_;
     uint64_t start_ = 0;
@@ -23,9 +23,7 @@ public:
 
     Box(Grid* grid) : grid_(grid) {}
 
-    bool IsEmpty() const {
-      return length_ == 0;
-    }
+    bool IsEmpty() const { return length_ == 0; }
 
     void AddCell(size_t cell_id) {
       if (IsEmpty()) {
@@ -41,8 +39,10 @@ public:
     // TODO remove cell
 
     struct Iterator {
-      Iterator(Grid* grid, const Box* box) : grid_(grid), current_value_(box->start_), countdown_(box->length_) {
-      }
+      Iterator(Grid* grid, const Box* box)
+          : grid_(grid),
+            current_value_(box->start_),
+            countdown_(box->length_) {}
 
       bool IsAtEnd() { return countdown_ <= 0; }
 
@@ -52,33 +52,29 @@ public:
         return *this;
       }
 
-      size_t operator*() const {
-        return current_value_;
-      }
+      size_t operator*() const { return current_value_; }
 
       Grid* grid_;
       size_t current_value_;
       int countdown_;
     };
 
-    Iterator begin() const {
-      return Iterator(grid_, this);
-    }
+    Iterator begin() const { return Iterator(grid_, this); }
   };
 
   struct NeighborIterator {
-    NeighborIterator(InlineVector<const Box*, 27>* neighbor_boxes) : neighbor_boxes_(neighbor_boxes), box_iterator_((*neighbor_boxes_)[0]->begin()) {
+    NeighborIterator(InlineVector<const Box*, 27>* neighbor_boxes)
+        : neighbor_boxes_(neighbor_boxes),
+          box_iterator_((*neighbor_boxes_)[0]->begin()) {
       // if first box is empty
-      if((*neighbor_boxes_)[0]->IsEmpty()) {
+      if ((*neighbor_boxes_)[0]->IsEmpty()) {
         ForwardToNonEmptyBox();
       }
     }
 
     bool IsAtEnd() const { return is_end_; }
 
-    size_t operator*() const {
-      return *box_iterator_;
-    }
+    size_t operator*() const { return *box_iterator_; }
 
     /// version where empty neighbors in neighbor_boxes_ are allowed
     NeighborIterator& operator++() {
@@ -90,7 +86,7 @@ public:
       return *this;
     }
 
-  private:
+   private:
     InlineVector<const Box*, 27>* neighbor_boxes_;
     Box::Iterator box_iterator_;
     uint16_t box_idx_ = 0;
@@ -115,7 +111,9 @@ public:
     }
   };
 
-  Grid(vector<array<double, 3>>& positions, uint32_t box_length, const std::array<double, 3> max_value) : positions_(positions), box_lenght_(box_length) {
+  Grid(vector<array<double, 3>>& positions, uint32_t box_length,
+       const std::array<double, 3> max_value)
+      : positions_(positions), box_lenght_(box_length) {
     // TODO determine max_value based on given positions
     // FIXME for simplicity assumes no negative positions
     num_boxes_axis_[0] = static_cast<size_t>(max_value[0]) / box_length;
@@ -147,7 +145,7 @@ public:
   void ForEachNeighbor() {
     vector<size_t> sum(positions_.size());
 #pragma omp parallel for
-    for(size_t i = 0; i < positions_.size(); i++) {
+    for (size_t i = 0; i < positions_.size(); i++) {
       auto& position = positions_[i];
       auto idx = GetBoxIndex(position);
 
@@ -157,7 +155,7 @@ public:
       // std::cout << "Neighbors of " << i << ": ";
 
       NeighborIterator it(&neighbor_boxes);
-      while(!it.IsAtEnd()) {
+      while (!it.IsAtEnd()) {
         // volatile auto current_val = *it;
 
         // do something with it
@@ -172,7 +170,7 @@ public:
     std::cout << "cell id sum " << sum[4] << std::endl;
   }
 
-private:
+ private:
   vector<Box> boxes_;
   vector<array<double, 3>>& positions_;
   /// length of a Box
@@ -184,7 +182,8 @@ private:
   /// Implements linked list - array index = key, value: next element
   vector<size_t> successors_;
 
-  void GetMooreBoxes(InlineVector<const Box*, 27>* neighbor_boxes, size_t box_idx) {
+  void GetMooreBoxes(InlineVector<const Box*, 27>* neighbor_boxes,
+                     size_t box_idx) {
     neighbor_boxes->push_back(GetBoxPointer(box_idx));
 
     // TODO add enumeration to select between different modes
@@ -197,37 +196,45 @@ private:
     neighbor_boxes->push_back(GetBoxPointer(box_idx + 1));
 
     // Adjacent 12
-    neighbor_boxes->push_back(GetBoxPointer(box_idx - num_boxes_xy_ - num_boxes_axis_[1]));
+    neighbor_boxes->push_back(
+        GetBoxPointer(box_idx - num_boxes_xy_ - num_boxes_axis_[1]));
     neighbor_boxes->push_back(GetBoxPointer(box_idx - num_boxes_xy_ - 1));
     neighbor_boxes->push_back(GetBoxPointer(box_idx - num_boxes_axis_[1] - 1));
-    neighbor_boxes->push_back(GetBoxPointer(box_idx + num_boxes_xy_ - num_boxes_axis_[1]));
+    neighbor_boxes->push_back(
+        GetBoxPointer(box_idx + num_boxes_xy_ - num_boxes_axis_[1]));
     neighbor_boxes->push_back(GetBoxPointer(box_idx + num_boxes_xy_ - 1));
     neighbor_boxes->push_back(GetBoxPointer(box_idx + num_boxes_axis_[1] - 1));
-    neighbor_boxes->push_back(GetBoxPointer(box_idx - num_boxes_xy_ + num_boxes_axis_[1]));
+    neighbor_boxes->push_back(
+        GetBoxPointer(box_idx - num_boxes_xy_ + num_boxes_axis_[1]));
     neighbor_boxes->push_back(GetBoxPointer(box_idx - num_boxes_xy_ + 1));
     neighbor_boxes->push_back(GetBoxPointer(box_idx - num_boxes_axis_[1] + 1));
-    neighbor_boxes->push_back(GetBoxPointer(box_idx + num_boxes_xy_ + num_boxes_axis_[1]));
+    neighbor_boxes->push_back(
+        GetBoxPointer(box_idx + num_boxes_xy_ + num_boxes_axis_[1]));
     neighbor_boxes->push_back(GetBoxPointer(box_idx + num_boxes_xy_ + 1));
     neighbor_boxes->push_back(GetBoxPointer(box_idx + num_boxes_axis_[1] + 1));
 
     // Adjacent 8
-    neighbor_boxes->push_back(GetBoxPointer(box_idx - num_boxes_xy_ - num_boxes_axis_[1] - 1));
-    neighbor_boxes->push_back(GetBoxPointer(box_idx - num_boxes_xy_ - num_boxes_axis_[1] + 1));
-    neighbor_boxes->push_back(GetBoxPointer(box_idx - num_boxes_xy_ + num_boxes_axis_[1] - 1));
-    neighbor_boxes->push_back(GetBoxPointer(box_idx - num_boxes_xy_ + num_boxes_axis_[1] + 1));
-    neighbor_boxes->push_back(GetBoxPointer(box_idx + num_boxes_xy_ - num_boxes_axis_[1] - 1));
-    neighbor_boxes->push_back(GetBoxPointer(box_idx + num_boxes_xy_ + num_boxes_axis_[1] + 1));
-    neighbor_boxes->push_back(GetBoxPointer(box_idx + num_boxes_xy_ + num_boxes_axis_[1] - 1));
-    neighbor_boxes->push_back(GetBoxPointer(box_idx + num_boxes_xy_ + num_boxes_axis_[1] + 1));
+    neighbor_boxes->push_back(
+        GetBoxPointer(box_idx - num_boxes_xy_ - num_boxes_axis_[1] - 1));
+    neighbor_boxes->push_back(
+        GetBoxPointer(box_idx - num_boxes_xy_ - num_boxes_axis_[1] + 1));
+    neighbor_boxes->push_back(
+        GetBoxPointer(box_idx - num_boxes_xy_ + num_boxes_axis_[1] - 1));
+    neighbor_boxes->push_back(
+        GetBoxPointer(box_idx - num_boxes_xy_ + num_boxes_axis_[1] + 1));
+    neighbor_boxes->push_back(
+        GetBoxPointer(box_idx + num_boxes_xy_ - num_boxes_axis_[1] - 1));
+    neighbor_boxes->push_back(
+        GetBoxPointer(box_idx + num_boxes_xy_ + num_boxes_axis_[1] + 1));
+    neighbor_boxes->push_back(
+        GetBoxPointer(box_idx + num_boxes_xy_ + num_boxes_axis_[1] - 1));
+    neighbor_boxes->push_back(
+        GetBoxPointer(box_idx + num_boxes_xy_ + num_boxes_axis_[1] + 1));
   }
 
-  const Box* GetBoxPointer(size_t index) const {
-    return &(boxes_[index]);
-  }
+  const Box* GetBoxPointer(size_t index) const { return &(boxes_[index]); }
 
-  Box* GetBoxPointer(size_t index) {
-    return &(boxes_[index]);
-  }
+  Box* GetBoxPointer(size_t index) { return &(boxes_[index]); }
 
   /// Returns the box coordinates based on the box index in the one dimensional
   /// array
@@ -246,8 +253,9 @@ private:
   /// @param box_coord - box coordinates in space (x, y, z)
   size_t GetBoxIndex(array<uint32_t, 3>& box_coord) const {
     // z * num_boxes_xy_ + y * num_boxes_x + x
-    return box_coord[2] * num_boxes_xy_ + box_coord[1] * num_boxes_axis_[0] + box_coord[0];
-   }
+    return box_coord[2] * num_boxes_xy_ + box_coord[1] * num_boxes_axis_[0] +
+           box_coord[0];
+  }
 
   /// Return the box index in the one dimensional array of the box that contains
   /// the position
@@ -261,6 +269,6 @@ private:
   }
 };
 
-}   // namespace bdm
+}  // namespace bdm
 
 #endif  // GRID_H_
