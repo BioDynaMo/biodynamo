@@ -63,7 +63,7 @@ struct GetBackendType {
 
 /// Create a tuple of types in the parameter pack and wrap each type witch
 /// container
-/// @tparam: Container container type that wraps each type
+/// @tparam Container container type that wraps each type
 /// @tparam TVariadicTypedefWrapper type that wraps a VariadicTypedef
 /// which in turn contains the variadic template parameters
 /// \see VariadicTypedefWrapper

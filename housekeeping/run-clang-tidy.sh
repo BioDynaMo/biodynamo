@@ -64,7 +64,7 @@ for f in $@; do
     echo "#include \"${f}\"" >> $TIDY_HEADER_HELPER
   fi
 done
-echo "#include \"biology_module_util.h\""
+echo "#include \"biology_module_util.h\"" >> $TIDY_HEADER_HELPER
 echo "namespace bdm { BDM_DEFAULT_BIOLOGY_MODULES(); }" >> $TIDY_HEADER_HELPER
 echo "" >> $TIDY_HEADER_HELPER
 
