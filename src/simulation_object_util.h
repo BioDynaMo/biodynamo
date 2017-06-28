@@ -8,6 +8,7 @@
 #include <vector>
 #include "backend.h"
 #include "macros.h"
+#include "resource_manager.h"
 #include "type_util.h"
 
 namespace bdm {
@@ -260,10 +261,25 @@ using std::is_same;
 template <typename T, typename Container, typename... Params>
 typename std::remove_reference<T>::type::template Self<Scalar>& Divide(
     T&& progenitor, Container* container, Params... parameters) {
-  // create new scalar version of T
-  typename std::remove_reference<T>::type::template Self<Scalar> daughter;
+  // daughter type is scalar version of T
+  using DaughterType =
+      typename std::remove_reference<T>::type::template Self<Scalar>;
+  DaughterType daughter;
   progenitor.Divide(&daughter, parameters...);
   return container->DelayedPushBack(daughter);
+}
+
+/// Overloaded function to use ResourceManager to omit parameter container.
+/// Container is obtained from the ResourceManager
+template <typename T, typename... Params,
+          typename TResourceManager = ResourceManager<>>
+typename std::remove_reference<T>::type::template Self<Scalar>& Divide(
+    T&& progenitor, Params... parameters) {
+  // daughter type is scalar version of T
+  using DaughterType =
+      typename std::remove_reference<T>::type::template Self<Scalar>;
+  auto container = TResourceManager::Get()->template Get<DaughterType>();
+  return Divide(progenitor, container, parameters...);
 }
 
 /// Helper function to make cell death easier for the programmer.

@@ -1,39 +1,36 @@
-#include "biology_module_util.h"
-#include "cell.h"
-#include "resource_manager.h"
-#include "scheduler.h"
-#include "simulation_object_util.h"
-#include "variadic_template_parameter_util.h"
+#include "biodynamo.h"
 
 namespace bdm {
 
 // 1. Define atomic simulation objects which should be used in this simulation
-BDM_DEFINE_ATOMIC_TYPES(SoaCell);
+BDM_DEFINE_ATOMIC_TYPES(Cell);
+// 2. Define backend
+BDM_DEFINE_BACKEND(Soa);
 
-// 2. Define growth behaviour
+// 3. Define growth behaviour
 struct GrowthModule {
   template <typename T>
   void Run(T* cell) {
     if (cell->GetDiameter() <= 40) {
       cell->ChangeVolume(300);
     } else {
-      Divide(*cell, ResourceManager<>::Get()->Get<SoaCell>());
+      Divide(*cell);
     }
   }
 
   bool IsCopied(Event event) const { return true; }
 };
 
-// 3. Define biology modules that should be used in this simulation
+// 5. Define biology modules that should be used in this simulation
 //    Simulation objects automatically pick up this definition
 BDM_DEFINE_BIOLOGY_MODULES(GrowthModule);
 
 void Simulate(size_t cells_per_dim = 128) {
-  // 4. Get cell container
-  auto cells = ResourceManager<>::Get()->Get<SoaCell>();
+  // 5. Get cell container
+  auto cells = ResourceManager<>::Get()->Get<Cell>();
   cells->reserve(cells_per_dim * cells_per_dim * cells_per_dim);
 
-  // 5. Define initial model - in this case 3D grid of cells
+  // 6. Define initial model - in this case 3D grid of cells
   double space = 20;
   for (size_t i = 0; i < cells_per_dim; i++) {
     for (size_t j = 0; j < cells_per_dim; j++) {
@@ -49,7 +46,7 @@ void Simulate(size_t cells_per_dim = 128) {
     }
   }
 
-  // 6. Run simulation for one timestep
+  // 7. Run simulation for one timestep
   Scheduler scheduler;
   scheduler.Simulate(1);
 }

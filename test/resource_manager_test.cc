@@ -4,6 +4,7 @@
 #include "backend.h"
 #include "gtest/gtest.h"
 #include "test_util.h"
+#include "type_util.h"
 #include "variadic_template_parameter_util.h"
 
 namespace bdm {
@@ -11,8 +12,15 @@ namespace resource_manager_test_internal {
 
 using std::vector;
 
+struct ASoa;
+struct BSoa;
+
 struct AScalar {
   using Backend = Scalar;
+  template <typename Backend>
+  using Self = typename type_ternary_operator<std::is_same<Soa, Backend>::value,
+                                              ASoa, AScalar>::type;
+
   explicit AScalar(int data) : data_(data) {}
 
   int GetData() { return data_; }
@@ -22,6 +30,10 @@ struct AScalar {
 
 struct BScalar {
   using Backend = Scalar;
+  template <typename Backend>
+  using Self = typename type_ternary_operator<std::is_same<Soa, Backend>::value,
+                                              BSoa, BScalar>::type;
+
   explicit BScalar(double data) : data_(data) {}
 
   double GetData() { return data_; }
@@ -31,6 +43,10 @@ struct BScalar {
 
 struct ASoa {
   using Backend = Soa;
+  template <typename Backend>
+  using Self = typename type_ternary_operator<std::is_same<Soa, Backend>::value,
+                                              ASoa, AScalar>::type;
+
   vector<int> data_;
   size_t idx_ = 0;
 
@@ -50,6 +66,10 @@ struct ASoa {
 
 struct BSoa {
   using Backend = Soa;
+  template <typename Backend>
+  using Self = typename type_ternary_operator<std::is_same<Soa, Backend>::value,
+                                              BSoa, BScalar>::type;
+
   vector<double> data_;
   size_t idx_ = 0;
 
@@ -72,11 +92,12 @@ struct BSoa {
 /// been added inside the ResourceManager
 /// @tparam A type one: scalar or soa backend
 /// @tparam B type two: scalar or soa backend
-template <typename A, typename B>
+template <typename Backend, typename A, typename B>
 void RunGetTest() {
   const double kEpsilon = abs_error<double>::value;
   using Types = VariadicTypedefWrapper<A, B>;
-  auto rm = ResourceManager<Types>::Get();
+  using BackendWrapper = InlineBackendWrapper<Soa>;
+  auto rm = ResourceManager<BackendWrapper, Types>::Get();
   rm->Clear();
 
   // template specifier needed because A is dependant type
@@ -97,15 +118,22 @@ void RunGetTest() {
   EXPECT_EQ(2u, rm->template Get<B>()->size());
 }
 
-TEST(ResourceManagerTest, GetAos) { RunGetTest<AScalar, BScalar>(); }
+TEST(ResourceManagerTest, GetAos) {
+  RunGetTest<Scalar, AScalar, BScalar>();
+  RunGetTest<Scalar, ASoa, BSoa>();
+}
 
-TEST(ResourceManagerTest, GetSoa) { RunGetTest<ASoa, BSoa>(); }
+TEST(ResourceManagerTest, GetSoa) {
+  RunGetTest<Soa, AScalar, BScalar>();
+  RunGetTest<Soa, ASoa, BSoa>();
+}
 
-template <typename A, typename B>
+template <typename Backend, typename A, typename B>
 void RunApplyOnElementTest() {
   const double kEpsilon = abs_error<double>::value;
   using Types = VariadicTypedefWrapper<A, B>;
-  auto rm = ResourceManager<Types>::Get();
+  using BackendWrapper = InlineBackendWrapper<Soa>;
+  auto rm = ResourceManager<BackendWrapper, Types>::Get();
   rm->Clear();
 
   auto a_collection = rm->template Get<A>();
@@ -123,18 +151,21 @@ void RunApplyOnElementTest() {
 }
 
 TEST(ResourceManagerTest, ApplyOnElementAos) {
-  RunApplyOnElementTest<AScalar, BScalar>();
+  RunApplyOnElementTest<Scalar, AScalar, BScalar>();
+  RunApplyOnElementTest<Scalar, ASoa, BSoa>();
 }
 
 TEST(ResourceManagerTest, ApplyOnElementSoa) {
-  RunApplyOnElementTest<ASoa, BSoa>();
+  RunApplyOnElementTest<Soa, AScalar, BScalar>();
+  RunApplyOnElementTest<Soa, ASoa, BSoa>();
 }
 
-template <typename A, typename B>
+template <typename Backend, typename A, typename B>
 void RunApplyOnAllElementsTest() {
   const double kEpsilon = abs_error<double>::value;
   using Types = VariadicTypedefWrapper<A, B>;
-  auto rm = ResourceManager<Types>::Get();
+  using BackendWrapper = InlineBackendWrapper<Soa>;
+  auto rm = ResourceManager<BackendWrapper, Types>::Get();
   rm->Clear();
 
   auto a_collection = rm->template Get<A>();
@@ -167,18 +198,21 @@ void RunApplyOnAllElementsTest() {
 }
 
 TEST(ResourceManagerTest, ApplyOnAllElementsAos) {
-  RunApplyOnAllElementsTest<AScalar, BScalar>();
+  RunApplyOnAllElementsTest<Scalar, AScalar, BScalar>();
+  RunApplyOnAllElementsTest<Scalar, ASoa, BSoa>();
 }
 
 TEST(ResourceManagerTest, ApplyOnAllElementsSoa) {
-  RunApplyOnAllElementsTest<ASoa, BSoa>();
+  RunApplyOnAllElementsTest<Soa, ASoa, BSoa>();
+  RunApplyOnAllElementsTest<Soa, AScalar, BScalar>();
 }
 
-template <typename A, typename B>
+template <typename Backend, typename A, typename B>
 void RunApplyOnAllTypesTest() {
   const double kEpsilon = abs_error<double>::value;
   using Types = VariadicTypedefWrapper<A, B>;
-  auto rm = ResourceManager<Types>::Get();
+  using BackendWrapper = InlineBackendWrapper<Soa>;
+  auto rm = ResourceManager<BackendWrapper, Types>::Get();
   rm->Clear();
 
   auto a_collection = rm->template Get<A>();
@@ -207,11 +241,13 @@ void RunApplyOnAllTypesTest() {
 }
 
 TEST(ResourceManagerTest, ApplyOnAllTypesAos) {
-  RunApplyOnAllTypesTest<AScalar, BScalar>();
+  RunApplyOnAllTypesTest<Scalar, AScalar, BScalar>();
+  RunApplyOnAllTypesTest<Scalar, ASoa, BSoa>();
 }
 
 TEST(ResourceManagerTest, ApplyOnAllTypesSoa) {
-  RunApplyOnAllTypesTest<ASoa, BSoa>();
+  RunApplyOnAllTypesTest<Soa, AScalar, BScalar>();
+  RunApplyOnAllTypesTest<Soa, ASoa, BSoa>();
 }
 
 }  // namespace resource_manager_test_internal

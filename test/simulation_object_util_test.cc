@@ -1,8 +1,8 @@
 #include "simulation_object_util.h"
 
 #include <array>
+#include "biodynamo.h"
 #include "gtest/gtest.h"
-
 #include "simulation_object.h"
 #include "transactional_vector.h"
 
@@ -257,6 +257,43 @@ TEST(SimulationObjectUtilTest, Aos_Divide) {
 TEST(SimulationObjectUtilTest, Soa_Divide) {
   auto neurons = Neuron<>::NewEmptySoa();
   RunDivideTest(&neurons);
+}
+
+// Define default parameter for ResourceManager
+// must be in namespace bdm
+// since redefinition is not possible only one Backend can be tested
+}  // namespace simulation_object_util_test_internal
+BDM_DEFINE_ATOMIC_TYPES(simulation_object_util_test_internal::Neuron<Scalar>);
+BDM_DEFINE_BACKEND(Soa);
+namespace simulation_object_util_test_internal {
+
+// Tests overloaded Divide function which adds new daughter cell to the
+// container managed by the ResourceManager with default template parameters
+TEST(SimulationObjectUtilTest, Soa_DivideWithResourceManager) {
+  auto rm = ResourceManager<>::Get();
+  rm->Clear();
+
+  auto neurons = rm->Get<Neuron<Scalar>>();
+  Neuron<Scalar> neuron;
+  neurons->push_back(neuron);
+
+  auto&& new_neuron = Divide((*neurons)[0], 1.0, 2.0, 3.0);
+
+  EXPECT_EQ(987u, new_neuron.GetNeurites()[0].id_);
+  EXPECT_EQ(5, new_neuron.GetPosition()[0]);
+  EXPECT_EQ(4, new_neuron.GetPosition()[1]);
+  EXPECT_EQ(3, new_neuron.GetPosition()[2]);
+
+  // commit invalidates new_neuron
+  neurons->Commit();
+
+  ASSERT_EQ(2u, neurons->size());
+  // new_neuron got invalidated by `Commit()`, but is now accessible in neurons
+  EXPECT_EQ(987u, (*neurons)[1].GetNeurites()[0].id_);
+  EXPECT_EQ(5, (*neurons)[1].GetPosition()[0]);
+  EXPECT_EQ(4, (*neurons)[1].GetPosition()[1]);
+  EXPECT_EQ(3, (*neurons)[1].GetPosition()[2]);
+  EXPECT_EQ(1.123, (*neurons)[0].GetDiameter());
 }
 
 template <typename TContainer>

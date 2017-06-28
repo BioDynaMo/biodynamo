@@ -27,50 +27,34 @@ using SoHandle = uint64_t;
 
 namespace detail {
 
-/// \see bdm::GetBackendType, VariadicTypedef
-template <typename... Types>
-struct GetBackendType {};
-
-/// \see bdm::GetBackendType, VariadicTypedef
-template <typename... Types>
-struct GetBackendType<VariadicTypedef<Types...>> {
-  // extract first element type and get Backend
-  typedef typename std::tuple_element<0, std::tuple<Types...>>::type::Backend
-      type;  // NOLINT
-};
-
 /// \see bdm::ConvertToContainerTuple, VariadicTypedef
-template <template <typename> class Container, typename... Types>
+template <typename Backend, typename... Types>
 struct ConvertToContainerTuple {};
 
 /// \see bdm::ConvertToContainerTuple, VariadicTypedef
-template <template <typename> class Container, typename... Types>
-struct ConvertToContainerTuple<Container, VariadicTypedef<Types...>> {
-  typedef std::tuple<Container<Types>...> type;  // NOLINT
+template <typename Backend, typename... Types>
+struct ConvertToContainerTuple<Backend, VariadicTypedef<Types...>> {
+  // Helper alias to get the container type associated with Backend
+  template <typename T>
+  using Container = typename Backend::template Container<T>;
+  // Helper type alias to get a type with certain Backend
+  template <typename T>
+  using ToBackend = typename T::template Self<Backend>;
+  typedef std::tuple<Container<ToBackend<Types>>...> type;  // NOLINT
 };
 
 }  // namespace detail
 
-/// Extract the Backend type of the first element in the parameter pack
-/// @tparam TVariadicTypedefWrapper type that wraps a VariadicTypedef
-/// which in turn contains the variadic template parameters
-/// \see VariadicTypedefWrapper
-template <typename TVariadicTypedefWrapper>
-struct GetBackendType {
-  typedef typename detail::GetBackendType<
-      typename TVariadicTypedefWrapper::types>::type type;  // NOLINT
-};
-
 /// Create a tuple of types in the parameter pack and wrap each type witch
 /// container
-/// @tparam Container container type that wraps each type
+/// @tparam Backend in which the variadic types should be stored in
 /// @tparam TVariadicTypedefWrapper type that wraps a VariadicTypedef
 /// which in turn contains the variadic template parameters
 /// \see VariadicTypedefWrapper
-template <template <typename> class Container, typename TVariadicTypedefWrapper>
+template <typename Backend, typename TVariadicTypedefWrapper>
 struct ConvertToContainerTuple {
   typedef typename detail::ConvertToContainerTuple<
-      Container, typename TVariadicTypedefWrapper::types>::type type;  // NOLINT
+      Backend, typename TVariadicTypedefWrapper::types>::type type;  // NOLINT
 };
 
 /// Forward declaration of atomic types used in the simulation.
@@ -78,31 +62,57 @@ struct ConvertToContainerTuple {
 /// \see BDM_DEFINE_ATOMIC_TYPES
 struct AtomicTypes;
 
+/// This forward declaration wraps the backend in which the atomic types
+/// should be stored in. \see BDM_DEFINE_BACKEND
+struct BackendWrapper;
+
+/// Forward declaration of default backend requires wrapping Backend.
+/// This method makes testing easier since the wrapper does not have to be
+/// defined manually
+template <typename Backend>
+struct InlineBackendWrapper {
+  typedef Backend type;  // NOLINT
+};
+
 /// ResourceManager holds a container for each atomic type in the simulation.
 /// It provides methods to get a certain container, execute a function on a
 /// a certain element, all elements of a certain type or all elements inside
 /// the ResourceManager. Elements are uniquely identified with its SoHandle.
+/// Furthermore, the types specified in AtomicTypes are backend invariant
+/// Hence it doesn't matter which version of the Backend is specified.
+/// ResourceManager internally uses the TBackendWrapper parameter to convert
+/// all atomic types to the desired backend.
+/// This makes user code easier since atomic types can be specified as scalars.
+/// @tparam TBackendWrapper is a wrapper around Backend \see BDM_DEFINE_BACKEND
 /// @tparam Types is a wrapper that contains a VariadicTypedef. Hence, it is
 /// possible to pass a variable number of types into it. \see VariadicTypedef
-template <typename Types = AtomicTypes>
+/// BDM_DEFINE_ATOMIC_TYPES
+template <typename TBackendWrapper = BackendWrapper,
+          typename Types = AtomicTypes>
 class ResourceManager {
  public:
-  /// TypeBackend is Backend of the first type in Types
-  using TypeBackend = typename GetBackendType<Types>::type;
-  template <typename T>
+  using Backend = typename TBackendWrapper::type;
   /// Determine Container based on the Backend
-  using TypeContainer = typename TypeBackend::template Container<T>;
+  template <typename T>
+  using TypeContainer = typename Backend::template Container<T>;
+  /// Helper type alias to get a type with certain Backend
+  template <typename T>
+  using ToBackend = typename T::template Self<Backend>;
 
   /// Singleton pattern - return the only instance with this template parameters
-  static ResourceManager<Types>* Get() {
-    static ResourceManager<Types> kInstance;
+  static ResourceManager<TBackendWrapper, Types>* Get() {
+    static ResourceManager<TBackendWrapper, Types> kInstance;
     return &kInstance;
   }
 
   /// Return the container of this Type
+  /// @tparam Type atomic type whose container should be returned
+  ///         invariant to the Backend. This means that even if ResourceManager
+  ///         stores e.g. `SoaCell`, Type can be `Cell` and still returns the
+  ///         correct container.
   template <typename Type>
-  TypeContainer<Type>* Get() {
-    return &std::get<TypeContainer<Type>>(data_);
+  TypeContainer<ToBackend<Type>>* Get() {
+    return &std::get<ToBackend<ToBackend<Type>>>(data_);
   }
 
   /// Apply a function on a certain element
@@ -188,8 +198,7 @@ class ResourceManager {
 
   /// creates one container for each type in Types.
   /// Container type is determined based on the backend of the types
-  // std::tuple<TypeContainer<Types>...> data_;
-  typename ConvertToContainerTuple<TypeContainer, Types>::type data_;
+  typename ConvertToContainerTuple<Backend, Types>::type data_;
 };
 
 }  // namespace bdm
