@@ -21,9 +21,12 @@ class Grid {
     uint64_t start_ = 0;
     uint16_t length_ = 0;
 
-    Box(Grid* grid) : grid_(grid) {}
+    explicit Box(Grid* grid) : grid_(grid) {}
 
     bool IsEmpty() const { return length_ == 0; }
+
+    // is this consistent?
+    bool IsInitialized() const { return grid_ != nullptr; }
 
     void AddCell(size_t cell_id) {
       if (IsEmpty()) {
@@ -97,11 +100,12 @@ class Grid {
     NeighborIterator& ForwardToNonEmptyBox() {
       // increment box id until non empty box has been found
       while (++box_idx_ < neighbor_boxes_->size()) {
-        // box is empty -> continue
-        if ((*neighbor_boxes_)[box_idx_]->IsEmpty()) {
+        // box is empty or uninitialized (padding box) -> continue
+        if ((*neighbor_boxes_)[box_idx_]->IsEmpty() || 
+                        !((*neighbor_boxes_)[box_idx_]->IsInitialized())) {
           continue;
         }
-        // no empty box has been found
+        // a non-empty box has been found
         box_iterator_ = (*neighbor_boxes_)[box_idx_]->begin();
         return *this;
       }
@@ -111,14 +115,37 @@ class Grid {
     }
   };
 
-  Grid(vector<array<double, 3>>& positions, uint32_t box_length,
-       const std::array<double, 3> max_value)
-      : positions_(positions), box_lenght_(box_length) {
-    // TODO determine max_value based on given positions
-    // FIXME for simplicity assumes no negative positions
-    num_boxes_axis_[0] = static_cast<size_t>(max_value[0]) / box_length;
-    num_boxes_axis_[1] = static_cast<size_t>(max_value[1]) / box_length;
-    num_boxes_axis_[2] = static_cast<size_t>(max_value[2]) / box_length;
+  Grid(vector<array<double, 3>>& positions, uint32_t box_length)
+      : positions_(positions), box_length_(box_length) {
+    auto grid_dimensions = CalculateGridDimensions(positions);
+    for (int i = 0; i < 3; i++) {
+      double dimension_length = grid_dimensions[2*i + 1] - grid_dimensions[2*i];
+      double r = fmod(dimension_length, box_length_);
+      // If the grid is not perfectly divisible along each dimension by the 
+      // resolution, extend the grid so that it is
+      if (r != 0.0) {
+        grid_dimensions[2*i + 1] += dimension_length - box_length_;
+      } else {
+        // Else extend the grid dimension with one row, because the outmost cell
+        // lies exactly on the border
+        grid_dimensions[2*i + 1] += box_length_;
+      }
+    }
+
+    // Pad the grid to avoid out of bounds check when search neighbors
+    for (int i = 0; i < 3; i++) {
+      grid_dimensions[2*i] -= box_length_;
+      grid_dimensions[2*i + 1] += box_length_;
+    }
+
+    // Calculate how many boxes fit along each dimension
+    for (int i = 0; i < 3; i++) {
+      double dimension_length = grid_dimensions[2*i + 1] - grid_dimensions[2*i];
+      while (dimension_length > 0.0) {
+        dimension_length -= box_length_;
+        num_boxes_axis_[i]++;
+      }
+    }
 
     num_boxes_xy_ = num_boxes_axis_[0] * num_boxes_axis_[1];
     auto total_num_boxes = num_boxes_xy_ * num_boxes_axis_[2];
@@ -141,10 +168,28 @@ class Grid {
     }
   }
 
+  /// Calculates what the grid dimensions need to be in order to contain
+  /// all the cells
+  array<double, 6> CalculateGridDimensions(vector<array<double, 3>>& positions) {
+    array<double, 6> grid_dimensions = {{1e15, 0, 1e15, 0, 1e15, 0}};
+    for (size_t i = 0; i < positions.size(); i++) {
+      auto position = positions[i];
+      for (size_t j = 0; j < 3; j++) {
+        if (position[j] < grid_dimensions[2*j]) {
+          grid_dimensions[2*j] = position[j];
+        }
+        if (position[j] > grid_dimensions[2*j + 1]) {
+          grid_dimensions[2*j + 1] = position[j];
+        }
+      }
+    }
+    return grid_dimensions;
+  }
+
   // TODO pass lambda as parameter
   void ForEachNeighbor() {
     vector<size_t> sum(positions_.size());
-#pragma omp parallel for
+// #pragma omp parallel for
     for (size_t i = 0; i < positions_.size(); i++) {
       auto& position = positions_[i];
       auto idx = GetBoxIndex(position);
@@ -164,7 +209,6 @@ class Grid {
 
         ++it;
       }
-
       // std::cout << std::endl;
     }
     std::cout << "cell id sum " << sum[4] << std::endl;
@@ -174,11 +218,11 @@ class Grid {
   vector<Box> boxes_;
   vector<array<double, 3>>& positions_;
   /// length of a Box
-  uint32_t box_lenght_;
+  uint32_t box_length_ = 0;
   /// stores the number of boxes for each axis
-  array<uint32_t, 3> num_boxes_axis_;
+  array<uint32_t, 3> num_boxes_axis_ = {{0}};
   /// number of boxes in the xy plane (=num_boxes_axis_[0] * num_boxes_axis_[1])
-  size_t num_boxes_xy_;
+  size_t num_boxes_xy_ = 0;
   /// Implements linked list - array index = key, value: next element
   vector<size_t> successors_;
 
@@ -261,9 +305,9 @@ class Grid {
   /// the position
   size_t GetBoxIndex(const array<double, 3> position) {
     array<uint32_t, 3> box_coord;
-    box_coord[0] = floor(position[0]) / box_lenght_;
-    box_coord[1] = floor(position[1]) / box_lenght_;
-    box_coord[2] = floor(position[2]) / box_lenght_;
+    box_coord[0] = floor(position[0]) / box_length_;
+    box_coord[1] = floor(position[1]) / box_length_;
+    box_coord[2] = floor(position[2]) / box_length_;
 
     return GetBoxIndex(box_coord);
   }

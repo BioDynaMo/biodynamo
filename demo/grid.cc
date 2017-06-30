@@ -13,13 +13,13 @@ int Run(size_t cells_per_dim) {
   const double space = 20;
 
   // create 3D grid of cells
-  cells_per_dim++;
+  // cells_per_dim++;
 
   auto cells = Cell<>::NewEmptySoa();
   cells.reserve(cells_per_dim * cells_per_dim * cells_per_dim);
-  for (size_t i = 1; i < cells_per_dim; i++) {
-    for (size_t j = 1; j < cells_per_dim; j++) {
-      for (size_t k = 1; k < cells_per_dim; k++) {
+  for (size_t i = 0; i < cells_per_dim; i++) {
+    for (size_t j = 0; j < cells_per_dim; j++) {
+      for (size_t k = 0; k < cells_per_dim; k++) {
         Cell<Scalar> cell({i * space, j * space, k * space});
         cell.SetDiameter(30);
         cells.push_back(cell);
@@ -28,9 +28,8 @@ int Run(size_t cells_per_dim) {
   }
 
   auto build_timer = new Timing("build   ");
-  cells_per_dim++;
-  Grid grid(cells.GetAllPositions(), 20,
-            {20.0 * cells_per_dim, 20.0 * cells_per_dim, 20.0 * cells_per_dim});
+  // cells_per_dim++;
+  Grid grid(cells.GetAllPositions(), 20);
   delete build_timer;
 
   auto iterate_timer = new Timing("iterate ");
