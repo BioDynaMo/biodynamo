@@ -20,7 +20,7 @@ struct GrowthModule {
 struct MovementModule {
   std::array<double, 3> velocity_;
 
-  MovementModule() : velocity_({{0,0,0}}) {}
+  MovementModule() : velocity_({{0, 0, 0}}) {}
   explicit MovementModule(const std::array<double, 3>& velocity)
       : velocity_(velocity) {}
 

@@ -9,9 +9,6 @@ biod=`pwd`
 if [ "$TRAVIS_OS_NAME" = "osx" ]; then
   sw_vers
   osx_vers=`sw_vers -productVersion | cut -d . -f1 -f2`
-  if [ "$osx_vers" != "10.12" ] && [ "$osx_vers" != "10.11" ]; then
-     test_valgrind="-Dvalgrind=ON"
-  fi
   brew update >& /dev/null
   brew install doxygen
   brew install valgrind
@@ -48,12 +45,12 @@ fi
 # install ROOT
 cd
 if [ "$TRAVIS_OS_NAME" = "linux" ]; then
-  wget "https://root.cern.ch/download/root_v6.08.06.Linux-ubuntu14-x86_64-gcc4.8.tar.gz" 2> /dev/null
-  tar zxf "root_v6.08.06.Linux-ubuntu14-x86_64-gcc4.8.tar.gz" > /dev/null
+  wget --progress=dot:giga -O root_v6.10.00.Linux-ubuntu14-x86_64-gcc5.4.tar.gz "https://cernbox.cern.ch/index.php/s/BbFptgxo2K565IS/download?path=%2F&files=root_v6.10.00.Linux-ubuntu14-x86_64-gcc5.4.tar.gz"
+  tar zxf "root_v6.10.00.Linux-ubuntu14-x86_64-gcc5.4.tar.gz" > /dev/null
 else
   # write progress to terminal to prevent termination by travis if it takes longer than 10 min
-  wget --progress=dot:giga https://root.cern.ch/download/root_v6.06.00.macosx64-10.9-clang60.tar.gz
-  tar zxf root_v6.06.00.macosx64-10.9-clang60.tar.gz > /dev/null
+  wget --progress=dot:giga https://root.cern.ch/download/root_v6.10.00.macosx64-10.11-clang80.tar.gz
+  tar zxf root_v6.10.00.macosx64-10.11-clang80.tar.gz > /dev/null
 fi
 cd root
 . bin/thisroot.sh
@@ -81,5 +78,5 @@ git remote set-branches --add origin master
 # build biodynamo and run tests
 mkdir build
 cd build
-cmake $test_valgrind ..
+cmake ..
 make check-submission

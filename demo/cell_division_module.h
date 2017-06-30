@@ -1,5 +1,5 @@
-#ifndef CELL_DIVISION_MODULE_H_
-#define CELL_DIVISION_MODULE_H_
+#ifndef DEMO_CELL_DIVISION_MODULE_H_
+#define DEMO_CELL_DIVISION_MODULE_H_
 
 #include "biology_module_util.h"
 #include "resource_manager.h"
@@ -23,4 +23,4 @@ struct GrowthModule {
 
 }  // namespace bdm
 
-#endif  // CELL_DIVISION_MODULE_H_
+#endif  // DEMO_CELL_DIVISION_MODULE_H_
