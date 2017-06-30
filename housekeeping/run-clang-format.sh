@@ -47,10 +47,11 @@ pushd $SOURCE_DIR >/dev/null
 if [ "$MODE" == "1" ]; then
   $CLANG_FORMAT -i $@
 elif [ "$MODE" == "2" ]; then
-  RAND=$RANDOM
+  TMP_FILE="/tmp/bdmtidy_"$RANDOM
   for f in $@; do
-      $CLANG_FORMAT $f >/tmp/$RAND
-      diff -c $f /tmp/$RAND
+      $CLANG_FORMAT $f > $TMP_FILE
+      diff -c $f $TMP_FILE
+      rm -f $TMP_FILE
   done
 else
   NUM_CORRECTIONS=`$CLANG_FORMAT -output-replacements-xml $@ | grep offset | wc -l`
