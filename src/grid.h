@@ -186,8 +186,8 @@ class Grid {
     return grid_dimensions;
   }
 
-  // TODO pass lambda as parameter
-  void ForEachNeighbor() {
+  template<typename Lambda>
+  void ForEachNeighbor(Lambda lambda) {
     vector<size_t> sum(positions_.size());
 // #pragma omp parallel for
     for (size_t i = 0; i < positions_.size(); i++) {
@@ -197,21 +197,17 @@ class Grid {
       InlineVector<const Box*, 27> neighbor_boxes;
       GetMooreBoxes(&neighbor_boxes, idx);
 
-      // std::cout << "Neighbors of " << i << ": ";
-
       NeighborIterator it(&neighbor_boxes);
       while (!it.IsAtEnd()) {
-        // volatile auto current_val = *it;
 
         // do something with it
-        sum[i] += *it;
-        // std::cout << *it << ", ";
+        lambda(*it, i);
 
         ++it;
       }
-      // std::cout << std::endl;
     }
-    std::cout << "cell id sum " << sum[4] << std::endl;
+    // should be 115637 for 128 cells per dim
+    // std::cout << "cell id sum " << sum[4] << std::endl;
   }
 
  private:

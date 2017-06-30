@@ -33,7 +33,7 @@ int Run(size_t cells_per_dim) {
   delete build_timer;
 
   auto iterate_timer = new Timing("iterate ");
-  grid.ForEachNeighbor();
+  // grid.ForEachNeighbor();
   delete iterate_timer;
 
   return 0;
