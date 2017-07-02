@@ -115,8 +115,14 @@ class Grid {
     }
   };
 
-  Grid(vector<array<double, 3>>& positions, uint32_t box_length)
-      : positions_(positions), box_length_(box_length) {
+  /// Enum that determines the degree of adjacency in search neighbor boxes
+  /// LOW:    The closest 8  neighboring boxes
+  /// MEDIUM: The closest 18 neighboring boxes
+  /// HIGH:   The closest 26 neighboring boxes
+  enum Adjacency {LOW, MEDIUM, HIGH};
+
+  Grid(vector<array<double, 3>>& positions, uint32_t box_length, Adjacency adjacency = HIGH)
+      : positions_(positions), box_length_(box_length), adjacency_(adjacency) {
     auto grid_dimensions = CalculateGridDimensions(positions);
     for (int i = 0; i < 3; i++) {
       double dimension_length = grid_dimensions[2*i + 1] - grid_dimensions[2*i];
@@ -213,63 +219,70 @@ class Grid {
  private:
   vector<Box> boxes_;
   vector<array<double, 3>>& positions_;
-  /// length of a Box
+  /// Length of a Box
   uint32_t box_length_ = 0;
-  /// stores the number of boxes for each axis
+  /// Stores the number of boxes for each axis
   array<uint32_t, 3> num_boxes_axis_ = {{0}};
-  /// number of boxes in the xy plane (=num_boxes_axis_[0] * num_boxes_axis_[1])
+  /// Number of boxes in the xy plane (=num_boxes_axis_[0] * num_boxes_axis_[1])
   size_t num_boxes_xy_ = 0;
   /// Implements linked list - array index = key, value: next element
   vector<size_t> successors_;
+  /// Determines which boxes to search neighbors in (see enum Adjacency)
+  Adjacency adjacency_;
 
   void GetMooreBoxes(InlineVector<const Box*, 27>* neighbor_boxes,
                      size_t box_idx) {
     neighbor_boxes->push_back(GetBoxPointer(box_idx));
 
-    // TODO add enumeration to select between different modes
     // Adjacent 6 (top, down, left, right, front and back)
-    neighbor_boxes->push_back(GetBoxPointer(box_idx - num_boxes_xy_));
-    neighbor_boxes->push_back(GetBoxPointer(box_idx + num_boxes_xy_));
-    neighbor_boxes->push_back(GetBoxPointer(box_idx - num_boxes_axis_[1]));
-    neighbor_boxes->push_back(GetBoxPointer(box_idx + num_boxes_axis_[1]));
-    neighbor_boxes->push_back(GetBoxPointer(box_idx - 1));
-    neighbor_boxes->push_back(GetBoxPointer(box_idx + 1));
+    if (adjacency_ >= LOW) {
+      neighbor_boxes->push_back(GetBoxPointer(box_idx - num_boxes_xy_));
+      neighbor_boxes->push_back(GetBoxPointer(box_idx + num_boxes_xy_));
+      neighbor_boxes->push_back(GetBoxPointer(box_idx - num_boxes_axis_[1]));
+      neighbor_boxes->push_back(GetBoxPointer(box_idx + num_boxes_axis_[1]));
+      neighbor_boxes->push_back(GetBoxPointer(box_idx - 1));
+      neighbor_boxes->push_back(GetBoxPointer(box_idx + 1));
+    }
 
     // Adjacent 12
-    neighbor_boxes->push_back(
-        GetBoxPointer(box_idx - num_boxes_xy_ - num_boxes_axis_[1]));
-    neighbor_boxes->push_back(GetBoxPointer(box_idx - num_boxes_xy_ - 1));
-    neighbor_boxes->push_back(GetBoxPointer(box_idx - num_boxes_axis_[1] - 1));
-    neighbor_boxes->push_back(
-        GetBoxPointer(box_idx + num_boxes_xy_ - num_boxes_axis_[1]));
-    neighbor_boxes->push_back(GetBoxPointer(box_idx + num_boxes_xy_ - 1));
-    neighbor_boxes->push_back(GetBoxPointer(box_idx + num_boxes_axis_[1] - 1));
-    neighbor_boxes->push_back(
-        GetBoxPointer(box_idx - num_boxes_xy_ + num_boxes_axis_[1]));
-    neighbor_boxes->push_back(GetBoxPointer(box_idx - num_boxes_xy_ + 1));
-    neighbor_boxes->push_back(GetBoxPointer(box_idx - num_boxes_axis_[1] + 1));
-    neighbor_boxes->push_back(
-        GetBoxPointer(box_idx + num_boxes_xy_ + num_boxes_axis_[1]));
-    neighbor_boxes->push_back(GetBoxPointer(box_idx + num_boxes_xy_ + 1));
-    neighbor_boxes->push_back(GetBoxPointer(box_idx + num_boxes_axis_[1] + 1));
+    if (adjacency_ >= MEDIUM) {
+      neighbor_boxes->push_back(
+          GetBoxPointer(box_idx - num_boxes_xy_ - num_boxes_axis_[1]));
+      neighbor_boxes->push_back(GetBoxPointer(box_idx - num_boxes_xy_ - 1));
+      neighbor_boxes->push_back(GetBoxPointer(box_idx - num_boxes_axis_[1] - 1));
+      neighbor_boxes->push_back(
+          GetBoxPointer(box_idx + num_boxes_xy_ - num_boxes_axis_[1]));
+      neighbor_boxes->push_back(GetBoxPointer(box_idx + num_boxes_xy_ - 1));
+      neighbor_boxes->push_back(GetBoxPointer(box_idx + num_boxes_axis_[1] - 1));
+      neighbor_boxes->push_back(
+          GetBoxPointer(box_idx - num_boxes_xy_ + num_boxes_axis_[1]));
+      neighbor_boxes->push_back(GetBoxPointer(box_idx - num_boxes_xy_ + 1));
+      neighbor_boxes->push_back(GetBoxPointer(box_idx - num_boxes_axis_[1] + 1));
+      neighbor_boxes->push_back(
+          GetBoxPointer(box_idx + num_boxes_xy_ + num_boxes_axis_[1]));
+      neighbor_boxes->push_back(GetBoxPointer(box_idx + num_boxes_xy_ + 1));
+      neighbor_boxes->push_back(GetBoxPointer(box_idx + num_boxes_axis_[1] + 1));
+    }
 
     // Adjacent 8
-    neighbor_boxes->push_back(
-        GetBoxPointer(box_idx - num_boxes_xy_ - num_boxes_axis_[1] - 1));
-    neighbor_boxes->push_back(
-        GetBoxPointer(box_idx - num_boxes_xy_ - num_boxes_axis_[1] + 1));
-    neighbor_boxes->push_back(
-        GetBoxPointer(box_idx - num_boxes_xy_ + num_boxes_axis_[1] - 1));
-    neighbor_boxes->push_back(
-        GetBoxPointer(box_idx - num_boxes_xy_ + num_boxes_axis_[1] + 1));
-    neighbor_boxes->push_back(
-        GetBoxPointer(box_idx + num_boxes_xy_ - num_boxes_axis_[1] - 1));
-    neighbor_boxes->push_back(
-        GetBoxPointer(box_idx + num_boxes_xy_ - num_boxes_axis_[1] + 1));
-    neighbor_boxes->push_back(
-        GetBoxPointer(box_idx + num_boxes_xy_ + num_boxes_axis_[1] - 1));
-    neighbor_boxes->push_back(
-        GetBoxPointer(box_idx + num_boxes_xy_ + num_boxes_axis_[1] + 1));
+    if (adjacency_ >= HIGH) {
+      neighbor_boxes->push_back(
+          GetBoxPointer(box_idx - num_boxes_xy_ - num_boxes_axis_[1] - 1));
+      neighbor_boxes->push_back(
+          GetBoxPointer(box_idx - num_boxes_xy_ - num_boxes_axis_[1] + 1));
+      neighbor_boxes->push_back(
+          GetBoxPointer(box_idx - num_boxes_xy_ + num_boxes_axis_[1] - 1));
+      neighbor_boxes->push_back(
+          GetBoxPointer(box_idx - num_boxes_xy_ + num_boxes_axis_[1] + 1));
+      neighbor_boxes->push_back(
+          GetBoxPointer(box_idx + num_boxes_xy_ - num_boxes_axis_[1] - 1));
+      neighbor_boxes->push_back(
+          GetBoxPointer(box_idx + num_boxes_xy_ - num_boxes_axis_[1] + 1));
+      neighbor_boxes->push_back(
+          GetBoxPointer(box_idx + num_boxes_xy_ + num_boxes_axis_[1] - 1));
+      neighbor_boxes->push_back(
+          GetBoxPointer(box_idx + num_boxes_xy_ + num_boxes_axis_[1] + 1));
+    }
   }
 
   const Box* GetBoxPointer(size_t index) const { return &(boxes_[index]); }

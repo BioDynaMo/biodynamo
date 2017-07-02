@@ -30,14 +30,20 @@ TEST(GridTest, SetupGrid) {
   Grid grid(cells.GetAllPositions(), 20);
 
   vector<vector<size_t>> neighbors(cells.GetAllPositions().size());
-  auto fill_neighbor_list = [&neighbors] (size_t cell_id, size_t i) { neighbors[i].push_back(cell_id); };
+
+  // Lambda that fills a vector of neighbors for each cell (excluding itself)
+  auto fill_neighbor_list = [&neighbors] (size_t cell_id, size_t i) { 
+    if (cell_id != i) {
+      neighbors[i].push_back(cell_id); 
+    }
+  };
   
   grid.ForEachNeighbor(fill_neighbor_list);
 
-  std::vector<size_t> expected_0 = {0, 1, 4, 5, 16, 17, 20, 21};
-  std::vector<size_t> expected_4 = {0, 1, 4, 5, 8, 9, 16, 17, 20, 21, 24, 25};
-  std::vector<size_t> expected_42 = {21, 22, 23, 25, 26, 27, 29, 30, 31, 37, 38, 39, 41, 42, 43, 45, 46, 47, 53, 54, 55, 57, 58, 59, 61, 62, 63};
-  std::vector<size_t> expected_63 =  {42, 43, 46, 47, 58, 59, 62, 63};
+  std::vector<size_t> expected_0 = {1, 4, 5, 16, 17, 20, 21};
+  std::vector<size_t> expected_4 = {0, 1, 5, 8, 9, 16, 17, 20, 21, 24, 25};
+  std::vector<size_t> expected_42 = {21, 22, 23, 25, 26, 27, 29, 30, 31, 37, 38, 39, 41, 43, 45, 46, 47, 53, 54, 55, 57, 58, 59, 61, 62, 63};
+  std::vector<size_t> expected_63 =  {42, 43, 46, 47, 58, 59, 62};
 
   std::sort(neighbors[0].begin(), neighbors[0].end());
   std::sort(neighbors[4].begin(), neighbors[4].end());
