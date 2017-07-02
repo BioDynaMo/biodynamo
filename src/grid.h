@@ -265,7 +265,7 @@ class Grid {
     neighbor_boxes->push_back(
         GetBoxPointer(box_idx + num_boxes_xy_ - num_boxes_axis_[1] - 1));
     neighbor_boxes->push_back(
-        GetBoxPointer(box_idx + num_boxes_xy_ + num_boxes_axis_[1] + 1));
+        GetBoxPointer(box_idx + num_boxes_xy_ - num_boxes_axis_[1] + 1));
     neighbor_boxes->push_back(
         GetBoxPointer(box_idx + num_boxes_xy_ + num_boxes_axis_[1] - 1));
     neighbor_boxes->push_back(

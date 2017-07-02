@@ -2,6 +2,8 @@
 #include "cell.h"
 #include "grid.h"
 
+#include <vector>
+
 namespace bdm {
 
 Cell<Soa> CellFactory(size_t cells_per_dim) {
@@ -32,11 +34,20 @@ TEST(GridTest, SetupGrid) {
   
   grid.ForEachNeighbor(fill_neighbor_list);
 
-  
-  for (auto i: neighbors[4])
-    std::cout << i << ' ';
-  std::cout << std::endl;
+  std::vector<size_t> expected_0 = {0, 1, 4, 5, 16, 17, 20, 21};
+  std::vector<size_t> expected_4 = {0, 1, 4, 5, 8, 9, 16, 17, 20, 21, 24, 25};
+  std::vector<size_t> expected_42 = {21, 22, 23, 25, 26, 27, 29, 30, 31, 37, 38, 39, 41, 42, 43, 45, 46, 47, 53, 54, 55, 57, 58, 59, 61, 62, 63};
+  std::vector<size_t> expected_63 =  {42, 43, 46, 47, 58, 59, 62, 63};
 
+  std::sort(neighbors[0].begin(), neighbors[0].end());
+  std::sort(neighbors[4].begin(), neighbors[4].end());
+  std::sort(neighbors[42].begin(), neighbors[42].end());
+  std::sort(neighbors[63].begin(), neighbors[63].end());
+
+  if (expected_0 != neighbors[0]) { FAIL(); }
+  if (expected_4 != neighbors[4]) { FAIL(); }
+  if (expected_42 != neighbors[42]) { FAIL(); }
+  if (expected_63 != neighbors[63]) { FAIL(); }
 }
 
 }  // namespace bdm
