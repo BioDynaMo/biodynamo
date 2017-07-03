@@ -20,13 +20,13 @@ class Grid {
     Grid* grid_;
     uint64_t start_ = 0;
     uint16_t length_ = 0;
+    bool is_initialized_ = false;
 
-    explicit Box(Grid* grid) : grid_(grid) {}
+    explicit Box(Grid* grid, bool is_initialized = true) : grid_(grid), is_initialized_(is_initialized) {}
 
     bool IsEmpty() const { return length_ == 0; }
 
-    // is this consistent?
-    bool IsInitialized() const { return grid_ != nullptr; }
+    bool IsInitialized() const { return is_initialized_; }
 
     void AddCell(size_t cell_id) {
       if (IsEmpty()) {
@@ -101,8 +101,8 @@ class Grid {
       // increment box id until non empty box has been found
       while (++box_idx_ < neighbor_boxes_->size()) {
         // box is empty or uninitialized (padding box) -> continue
-        if ((*neighbor_boxes_)[box_idx_]->IsEmpty() || 
-                        !((*neighbor_boxes_)[box_idx_]->IsInitialized())) {
+        if (!((*neighbor_boxes_)[box_idx_]->IsInitialized()) ||
+              (*neighbor_boxes_)[box_idx_]->IsEmpty()) {
           continue;
         }
         // a non-empty box has been found
@@ -162,6 +162,7 @@ class Grid {
     std::cout << "num_boxes xy " << num_boxes_xy_ << std::endl;
 
     boxes_.resize(total_num_boxes, Box(this));
+    empty_box_ = new Box(this, false);
 
     // initialize successors_;
     successors_.resize(positions_.size());
@@ -173,6 +174,8 @@ class Grid {
       box->AddCell(cell_id);
     }
   }
+
+  virtual ~Grid() { delete empty_box_; }
 
   /// Calculates what the grid dimensions need to be in order to contain
   /// all the cells
@@ -195,7 +198,7 @@ class Grid {
   template<typename Lambda>
   void ForEachNeighbor(Lambda lambda) {
     vector<size_t> sum(positions_.size());
-// #pragma omp parallel for
+#pragma omp parallel for
     for (size_t i = 0; i < positions_.size(); i++) {
       auto& position = positions_[i];
       auto idx = GetBoxIndex(position);
@@ -229,6 +232,8 @@ class Grid {
   vector<size_t> successors_;
   /// Determines which boxes to search neighbors in (see enum Adjacency)
   Adjacency adjacency_;
+  /// An empty box that will be used to initialize the pad boxes
+  Box* empty_box_ = nullptr;
 
   void GetMooreBoxes(InlineVector<const Box*, 27>* neighbor_boxes,
                      size_t box_idx) {
@@ -285,9 +290,21 @@ class Grid {
     }
   }
 
-  const Box* GetBoxPointer(size_t index) const { return &(boxes_[index]); }
+  const Box* GetBoxPointer(size_t index) const {
+    if (index < boxes_.size() || index >= 0) {
+      return &(boxes_[index]);
+    } else {
+      return empty_box_;
+    }
+  }
 
-  Box* GetBoxPointer(size_t index) { return &(boxes_[index]); }
+  Box* GetBoxPointer(size_t index) {
+    if (index < boxes_.size() && index >= 0) {
+      return &(boxes_[index]);
+    } else {
+      return empty_box_;
+    }
+  }
 
   /// Returns the box coordinates based on the box index in the one dimensional
   /// array
