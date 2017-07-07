@@ -9,6 +9,7 @@
 #include "displacement_op.h"
 #include "dividing_cell_op.h"
 #include "exporter.h"
+#include "neighbor_grid_op.h"
 #include "neighbor_nanoflann_op.h"
 #include "neighbor_op.h"
 #include "resource_manager.h"
@@ -62,7 +63,8 @@ void Execute(size_t cells_per_dim, size_t iterations, size_t threads,
     for (size_t i = 0; i < iterations; i++) {
       {
         Timing timing("Find Neighbors", statistic);
-        bdm::NeighborOp op(700);
+        bdm::NeighborNanoflannOp op(700);
+//        bdm::NeighborGridOp op(700);
         op.Compute(&cells);
       }
 

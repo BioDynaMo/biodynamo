@@ -1,9 +1,9 @@
 #ifndef GRID_H_
 #define GRID_H_
 
+#include <iostream>
 #include <array>
 #include <cmath>
-#include <iostream>  // TODO remove
 #include <limits>
 #include <vector>
 #include "inline_vector.h"
@@ -123,6 +123,28 @@ class Grid {
 
   Grid(vector<array<double, 3>>& positions, uint32_t box_length, Adjacency adjacency = HIGH)
       : positions_(positions), box_length_(box_length), adjacency_(adjacency) {
+    UpdateGrid(positions);
+  }
+
+  template <typename TContainer>
+  Grid(TContainer* cells, uint32_t box_length, Adjacency adjacency = HIGH)
+          : positions_(cells->GetAllPositions()), box_length_(box_length), adjacency_(adjacency) {
+    UpdateGrid(cells->GetAllPositions());
+  }
+
+  virtual ~Grid() { delete empty_box_; }
+
+  /// Clears the grid 
+  void ClearGrid() {
+    boxes_.clear();
+    num_boxes_axis_ = {{0}};
+    num_boxes_xy_ = 0;
+    successors_.clear();
+  }
+
+  /// Updates the grid, as simulation objects may have moved, added or deleted
+  void UpdateGrid(vector<array<double, 3>>& positions) {
+    ClearGrid();
     auto grid_dimensions = CalculateGridDimensions(positions);
     for (int i = 0; i < 3; i++) {
       double dimension_length = grid_dimensions[2*i + 1] - grid_dimensions[2*i];
@@ -156,11 +178,6 @@ class Grid {
     num_boxes_xy_ = num_boxes_axis_[0] * num_boxes_axis_[1];
     auto total_num_boxes = num_boxes_xy_ * num_boxes_axis_[2];
 
-    std::cout << "num_boxes x " << num_boxes_axis_[0] << std::endl;
-    std::cout << "num_boxes y " << num_boxes_axis_[1] << std::endl;
-    std::cout << "num_boxes z " << num_boxes_axis_[2] << std::endl;
-    std::cout << "num_boxes xy " << num_boxes_xy_ << std::endl;
-
     boxes_.resize(total_num_boxes, Box(this));
     empty_box_ = new Box(this, false);
 
@@ -175,10 +192,8 @@ class Grid {
     }
   }
 
-  virtual ~Grid() { delete empty_box_; }
-
   /// Calculates what the grid dimensions need to be in order to contain
-  /// all the cells
+  /// all the simulation objects
   array<double, 6> CalculateGridDimensions(vector<array<double, 3>>& positions) {
     array<double, 6> grid_dimensions = {{1e15, 0, 1e15, 0, 1e15, 0}};
     for (size_t i = 0; i < positions.size(); i++) {
@@ -199,24 +214,57 @@ class Grid {
   void ForEachNeighbor(Lambda lambda) {
     vector<size_t> sum(positions_.size());
 #pragma omp parallel for
-    for (size_t i = 0; i < positions_.size(); i++) {
-      auto& position = positions_[i];
+    // qc = query cell
+    for (size_t qc = 0; qc < positions_.size(); qc++) {
+      auto& position = positions_[qc];
       auto idx = GetBoxIndex(position);
 
       InlineVector<const Box*, 27> neighbor_boxes;
       GetMooreBoxes(&neighbor_boxes, idx);
 
-      NeighborIterator it(&neighbor_boxes);
-      while (!it.IsAtEnd()) {
-
-        // do something with it
-        lambda(*it, i);
-
-        ++it;
+      NeighborIterator ni(&neighbor_boxes);
+      while (!ni.IsAtEnd()) {
+        // do something with nc
+        std::cout << *ni << " ";
+        lambda(*ni, qc);
+        ++ni;
       }
+      std::cout << std::endl;
     }
-    // should be 115637 for 128 cells per dim
-    // std::cout << "cell id sum " << sum[4] << std::endl;
+  }
+
+  inline double SquaredEuclideanDistance(std::array<double, 3> pos1, std::array<double, 3> pos2) const {
+    const double dx = pos2[0] - pos1[0];
+    const double dy = pos2[1] - pos1[1];
+    const double dz = pos2[2] - pos1[2];
+    return (dx * dx + dy * dy + dz * dz);
+  }
+
+  template<typename TContainer>
+  void SetNeighborsWithinRadius(TContainer* sim_objects, double distance) {
+    vector<size_t> sum(positions_.size());
+    InlineVector<int, 8> neighbors;
+#pragma omp parallel for firstprivate(neighbors)
+    // qc = query cell
+    for (size_t qc = 0; qc < positions_.size(); qc++) {
+      auto& position = positions_[qc];
+      auto idx = GetBoxIndex(position);
+
+      InlineVector<const Box*, 27> neighbor_boxes;
+      GetMooreBoxes(&neighbor_boxes, idx);
+
+      NeighborIterator ni(&neighbor_boxes);
+      neighbors.clear();
+      while (!ni.IsAtEnd()) {
+        if (*ni != qc) {
+          if (SquaredEuclideanDistance(positions_[qc], positions_[*ni]) < distance) {
+            neighbors.push_back(*ni);
+          }
+        }
+        ++ni;
+      }
+      (*sim_objects)[qc].SetNeighbors(neighbors);
+    }
   }
 
  private:
@@ -291,7 +339,7 @@ class Grid {
   }
 
   const Box* GetBoxPointer(size_t index) const {
-    if (index < boxes_.size() || index >= 0) {
+    if (index < boxes_.size()) {
       return &(boxes_[index]);
     } else {
       return empty_box_;
@@ -299,7 +347,7 @@ class Grid {
   }
 
   Box* GetBoxPointer(size_t index) {
-    if (index < boxes_.size() && index >= 0) {
+    if (index < boxes_.size()) {
       return &(boxes_[index]);
     } else {
       return empty_box_;

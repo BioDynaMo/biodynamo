@@ -1,6 +1,7 @@
 #include "neighbor_op.h"
 #include "cell.h"
 #include "gtest/gtest.h"
+#include "neighbor_grid_op.h"
 #include "inline_vector.h"
 #include "neighbor_nanoflann_op.h"
 #include "test_util.h"
@@ -51,6 +52,16 @@ TEST(NeighborNanoflannOpTest, ComputeAosoa) {
 TEST(NeighborNanoflannOpTest, ComputeSoa) {
   auto cells = Cell<>::NewEmptySoa();
   RunTest(&cells, NeighborNanoflannOp());
+}
+
+// TEST(NeighborGridOpTest, ComputeAosoa) {
+//   std::vector<Cell<Scalar>> cells;
+//   RunTest(&cells, NeighborGridOp());
+// }
+
+TEST(NeighborGridOpTest, ComputeSoa) {
+  auto cells = Cell<>::NewEmptySoa();
+  RunTest(&cells, NeighborGridOp());
 }
 
 }  // namespace neighbor_op_test_internal

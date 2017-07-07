@@ -32,17 +32,17 @@ int Run(size_t cells_per_dim) {
   Grid grid(cells.GetAllPositions(), 20);
   delete build_timer;
 
-  // Lambda that does a simple computation on all neighboring cells
-  std::vector<size_t> sum(cells.size());
-  auto add_cell_ids = [&sum] (size_t cell_id, size_t i) { 
-    if (cell_id != i) {
-      sum[i] += cell_id;
-    }
-  };
+  // // Lambda that does a simple computation on all neighboring cells
+  // std::vector<size_t> sum(cells.size());
+  // auto add_cell_ids = [&sum] (size_t cell_id, size_t i) { 
+  //   if (cell_id != i) {
+  //     sum[i] += cell_id;
+  //   }
+  // };
 
-  auto iterate_timer = new Timing("iterate ");
-  grid.ForEachNeighbor(add_cell_ids);
-  delete iterate_timer;
+  // auto iterate_timer = new Timing("iterate ");
+  // grid.ForEachNeighbor(add_cell_ids);
+  // delete iterate_timer;
 
   return 0;
 }
