@@ -4,16 +4,17 @@
 namespace bdm {
 
 TEST(SimulationObjectTest, push_backAndClear) {
-  SimulationObject<Soa> so;
+  SimulationObject<Soa> soa;
   // call clear, because creating a SOA object with default constructor will
   // already have one element inside
-  so.clear();
-  EXPECT_EQ(0u, so.size());
-  so.push_back(SimulationObject<>());
-  so.push_back(SimulationObject<>());
-  EXPECT_EQ(2u, so.size());
-  so.clear();
-  EXPECT_EQ(0u, so.size());
+  soa.clear();
+  EXPECT_EQ(0u, soa.size());
+  SimulationObject<Scalar> so;
+  soa.push_back(so);
+  soa.push_back(so);
+  EXPECT_EQ(2u, soa.size());
+  soa.clear();
+  EXPECT_EQ(0u, soa.size());
 }
 
 }  // namespace bdm

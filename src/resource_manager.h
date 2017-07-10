@@ -5,30 +5,21 @@
 
 namespace bdm {
 
-// TODO(lukas): cell type should be templated; should also be possible to
-// hold different cell types
-template <typename Backend>
+// TODO(lukas) rework and prepare for multi cell simulations
+template <typename TCells>
 class ResourceManager {
  public:
-  template <typename T>
-  using Container = typename Backend::template Container<T>;
-
-  virtual ~ResourceManager() {}
-
-  static ResourceManager<Backend>* Get() {
-    static ResourceManager<Backend> instance;
-    return &instance;
+  static ResourceManager<TCells>* Get() {
+    static ResourceManager<TCells> kInstance;
+    return &kInstance;
   }
 
-  // todo change to return const and const method
-  const Container<Cell<Backend>>& GetCells() const { return cells_; }
-
-  void SetCells(const Container<Cell<Backend>>& cells) { cells_ = cells; }
+  TCells* GetCells() { return &cells_; }
 
  private:
-  ResourceManager() {}
+  ResourceManager() { cells_.clear(); }
 
-  Container<Cell<Backend>> cells_;
+  TCells cells_;
 };
 
 }  // namespace bdm

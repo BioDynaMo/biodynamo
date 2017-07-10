@@ -88,13 +88,14 @@ class BDMCubicDomain {
 
   void Init(size_t ncell, std::vector<Vector3DInterface> v) {
     cells_ = std::vector<bdm::Cell<>>(ncell);
-    if (v.size() != 8)
+    if (v.size() != 8) {
       throw;
-    else
+    } else {
       vertex_ = v;
+    }
     is_init_ = true;
   }
-  inline bool is_init() const { return is_init_; }
+  inline bool is_init() const { return is_init_; }  // NOLINT
 
  private:
   bool is_init_;

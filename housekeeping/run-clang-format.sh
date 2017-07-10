@@ -16,26 +16,50 @@
 # Arguments:
 #   $1 - Path to the source tree
 #   $2 - Path to the clang-format binary
-#   $3 - Apply fixes (will raise an error if false and there were changes)
+#   $3 - Mode (0, 1, or 2)
+#        0: raise an error if there were changes
+#        1: apply fixes
+#        2: display differences
 #   $ARGN - Files to run clang format on
 #
 SOURCE_DIR=$1
 shift
 CLANG_FORMAT=$1
 shift
-APPLY_FIXES=$1
+MODE=$1
 shift
+
+if [ "$#" == "0" ]; then
+  echo "Warning: No files to process"
+  exit 0;
+fi
+
+echo "Process files: "
+for f in $@; do
+    echo $f
+done
+echo ""
 
 # clang-format will only find its configuration if we are in
 # the source tree or in a path relative to the source tree
-pushd $SOURCE_DIR
-if [ "$APPLY_FIXES" == "1" ]; then
+pushd $SOURCE_DIR >/dev/null
+
+if [ "$MODE" == "1" ]; then
   $CLANG_FORMAT -i $@
+elif [ "$MODE" == "2" ]; then
+  TMP_FILE="/tmp/bdmtidy_"$RANDOM
+  for f in $@; do
+      $CLANG_FORMAT $f > $TMP_FILE
+      diff -c $f $TMP_FILE
+      rm -f $TMP_FILE
+  done
 else
   NUM_CORRECTIONS=`$CLANG_FORMAT -output-replacements-xml $@ | grep offset | wc -l`
+
   if [ "$NUM_CORRECTIONS" -gt "0" ]; then
-    echo "clang-format suggested changes, please run 'make format'!!!"
+    echo "Error: clang-format suggested changes, please fix them!"
+    popd >/dev/null
     exit 1
   fi
 fi
-popd
+popd >/dev/null

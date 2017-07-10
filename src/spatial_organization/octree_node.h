@@ -108,11 +108,12 @@ OctreeNode<T>::OctreeNode(const Bound &bnd, int max_depth,
 template <typename T>
 OctreeNode<T>::~OctreeNode() {
   if (!IsLeaf()) {
-    for (int i = 0; i < 8; i++)
+    for (int i = 0; i < 8; i++) {
       if (children_[i] != nullptr) {
         delete children_[i];
         children_[i] = nullptr;
       }
+    }
   }
 }
 
@@ -140,8 +141,9 @@ void OctreeNode<T>::Put(Point const &p, T obj) {
 
 template <typename T>
 void OctreeNode<T>::Split() {
-  if (!this->is_leaf_node_)
+  if (!this->is_leaf_node_) {
     return;
+  }
   Point center = this->bound_.Center();
   const Bound &bnd = this->bound_;
   Point p[8] = {Point(center.x_, center.y_, center.z_),
@@ -199,9 +201,11 @@ int OctreeNode<T>::GetChildID(Point const &p) const {
 template <typename T>
 T OctreeNode<T>::At(Point const &p) const {
   if (this->is_leaf_node_) {
-    for (int i = 0; i < objects_.size(); i++)
-      if (p.equals(objects_.at(i).first))
+    for (int i = 0; i < objects_.size(); i++) {
+      if (p == objects_.at(i).first) {
         return objects_.at(i).second;
+      }
+    }
   } else {
     int idx = GetChildID(p);
     return children_[idx]->At(p);
@@ -224,7 +228,10 @@ size_t OctreeNode<T>::Size() const {
 
 template <typename T>
 SpatialTreeNode<T> **OctreeNode<T>::GetChildrenNodes() const {
-  return (SpatialTreeNode<T> **)children_;
+  // TODO(lukas) fix this - constness casted away - children_ can be modified
+  // ouside although this method is marked const
+  // remove NOLINT - only used to tempoarily silence warning
+  return (SpatialTreeNode<T> **)children_;  // NOLINT
 }
 
 template <typename T>

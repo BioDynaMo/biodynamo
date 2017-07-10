@@ -130,8 +130,6 @@ class KdTreeNode : public SpatialTreeNode<T> {
   double AreaOfKthPartOfSpaceNode(int k, int axis);
 
   /// Gets point, which we use for surface area heuristics
-  /// @param axis - on what axis are we separating: x=0,y=1,z=2
-  /// @param num - what parttion are we on (1;N)
   /// @return sah rating
   Point GetSAHSplitPoint();
 
@@ -238,8 +236,9 @@ template <typename T>
 void KdTreeNode<T>::SplitUsingVaryingMedian() {
   double x_left, y_left, z_left, x_right, y_right, z_right;
   Bound bnd = this->bound_;
-  if (!this->is_leaf_node_)
+  if (!this->is_leaf_node_) {
     return;
+  }
   Point split_point = GetMedian();
 
   if (axis_ == 0) {
@@ -292,8 +291,9 @@ void KdTreeNode<T>::SplitUsingVaryingMedian() {
 template <typename T>
 void KdTreeNode<T>::SplitUsingSingleXMedian() {
   Bound bnd = this->bound_;
-  if (!this->is_leaf_node_)
+  if (!this->is_leaf_node_) {
     return;
+  }
   Point split_point = GetMedianOnXAxis();
 
   Point p[2] = {
@@ -326,8 +326,9 @@ template <typename T>
 void KdTreeNode<T>::SplitUsingSAH() {
   double x_left, y_left, z_left, x_right, y_right, z_right;
   Bound bnd = this->bound_;
-  if (!this->is_leaf_node_)
+  if (!this->is_leaf_node_) {
     return;
+  }
   Point split_point = GetSAHSplitPoint();
 
   if (axis_ == 0) {
@@ -379,8 +380,9 @@ template <typename T>
 void KdTreeNode<T>::SplitUsingCenterOfSpaceNode() {
   double x_left, y_left, z_left, x_right, y_right, z_right;
   Bound bnd = this->bound_;
-  if (!this->is_leaf_node_)
+  if (!this->is_leaf_node_) {
     return;
+  }
 
   if (axis_ == 0) {
     x_left = bnd.Center().x_;
@@ -431,7 +433,10 @@ void KdTreeNode<T>::SplitUsingCenterOfSpaceNode() {
 
 template <typename T>
 SpatialTreeNode<T> **KdTreeNode<T>::GetChildrenNodes() const {
-  return (SpatialTreeNode<T> **)children_;
+  // TODO(lukas) fix this - constness casted away - children_ can be modified
+  // ouside although this method is marked const
+  // remove NOLINT - only used to tempoarily silence warning
+  return (SpatialTreeNode<T> **)children_;  // NOLINT
 }
 
 template <typename T>
@@ -441,28 +446,32 @@ const vector<pair<Point, T>> &KdTreeNode<T>::GetObjects() const {
 
 template <typename T>
 size_t KdTreeNode<T>::GetChildrenSize() const {
-  if (!IsLeaf())
+  if (!IsLeaf()) {
     return 2u;
+  }
   return 0u;
 }
 
 template <typename T>
 int KdTreeNode<T>::GetChildID(Point p) const {
   if (axis_ == 0) {
-    if (p.x_ > this->median_.x_)
+    if (p.x_ > this->median_.x_) {
       return 1;
-    else
+    } else {
       return 0;
+    }
   } else if (axis_ == 1) {
-    if (p.y_ > this->median_.y_)
+    if (p.y_ > this->median_.y_) {
       return 1;
-    else
+    } else {
       return 0;
+    }
   } else {
-    if (p.z_ > this->median_.z_)
+    if (p.z_ > this->median_.z_) {
       return 1;
-    else
+    } else {
       return 0;
+    }
   }
 }
 
