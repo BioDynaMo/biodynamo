@@ -97,11 +97,12 @@ void Simulate(Cell<Soa>& cells, size_t distance,  // NOLINT
 bool CheckFinalState(Cell<Soa>& init_cells, Cell<Soa>& cells,  // NOLINT
                      size_t distance) {                        // NOLINT
   for (size_t i = 0; i < cells.size(); i++) {
-    for (int j = 0; j < 3; j++)
+    for (int j = 0; j < 3; j++) {
       if (cells[i].GetPosition()[j] !=
           (init_cells[i].GetPosition()[j] + distance)) {
         return false;
       }
+    }
     if (cells[i].GetDiameter() != 30 + distance) {
       return false;
     }
