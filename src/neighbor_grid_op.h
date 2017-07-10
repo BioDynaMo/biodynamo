@@ -20,7 +20,7 @@ class NeighborGridOp {
     // Construct a 3D grid with the current positions for the simulation objects
     // NB: the box size needs to be at least as big as the search radius
     const double box_size = 55;
-    Grid grid(cells, box_size, Grid::HIGH);
+    Grid grid(cells, box_size, Grid::kHigh);
 
     // Initiate the operation
     grid.SetNeighborsWithinRadius(cells, distance_);

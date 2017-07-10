@@ -1,9 +1,9 @@
 #ifndef GRID_H_
 #define GRID_H_
 
-#include <iostream>
 #include <array>
 #include <cmath>
+#include <iostream>
 #include <limits>
 #include <vector>
 #include "inline_vector.h"
@@ -22,7 +22,8 @@ class Grid {
     uint16_t length_ = 0;
     bool is_initialized_ = false;
 
-    explicit Box(Grid* grid, bool is_initialized = true) : grid_(grid), is_initialized_(is_initialized) {}
+    explicit Box(Grid* grid, bool is_initialized = true)
+        : grid_(grid), is_initialized_(is_initialized) {}
 
     bool IsEmpty() const { return length_ == 0; }
 
@@ -38,8 +39,6 @@ class Grid {
       }
       length_++;
     }
-
-    // TODO remove cell
 
     struct Iterator {
       Iterator(Grid* grid, const Box* box)
@@ -62,11 +61,11 @@ class Grid {
       int countdown_;
     };
 
-    Iterator begin() const { return Iterator(grid_, this); }
+    Iterator begin() const { return Iterator(grid_, this); }  // NOLINT
   };
 
   struct NeighborIterator {
-    NeighborIterator(InlineVector<const Box*, 27>* neighbor_boxes)
+    explicit NeighborIterator(InlineVector<const Box*, 27>* neighbor_boxes)
         : neighbor_boxes_(neighbor_boxes),
           box_iterator_((*neighbor_boxes_)[0]->begin()) {
       // if first box is empty
@@ -102,7 +101,7 @@ class Grid {
       while (++box_idx_ < neighbor_boxes_->size()) {
         // box is empty or uninitialized (padding box) -> continue
         if (!((*neighbor_boxes_)[box_idx_]->IsInitialized()) ||
-              (*neighbor_boxes_)[box_idx_]->IsEmpty()) {
+            (*neighbor_boxes_)[box_idx_]->IsEmpty()) {
           continue;
         }
         // a non-empty box has been found
@@ -116,25 +115,28 @@ class Grid {
   };
 
   /// Enum that determines the degree of adjacency in search neighbor boxes
-  /// LOW:    The closest 8  neighboring boxes
-  /// MEDIUM: The closest 18 neighboring boxes
-  /// HIGH:   The closest 26 neighboring boxes
-  enum Adjacency {LOW, MEDIUM, HIGH};
+  /// kLow:    The closest 8  neighboring boxes
+  /// kMedium: The closest 18 neighboring boxes
+  /// kHigh:   The closest 26 neighboring boxes
+  enum Adjacency { kLow, kMedium, kHigh };
 
-  Grid(vector<array<double, 3>>& positions, uint32_t box_length, Adjacency adjacency = HIGH)
+  Grid(vector<array<double, 3>>& positions, uint32_t box_length,  // NOLINT
+       Adjacency adjacency = kHigh)
       : positions_(positions), box_length_(box_length), adjacency_(adjacency) {
     UpdateGrid(positions);
   }
 
   template <typename TContainer>
-  Grid(TContainer* cells, uint32_t box_length, Adjacency adjacency = HIGH)
-          : positions_(cells->GetAllPositions()), box_length_(box_length), adjacency_(adjacency) {
+  Grid(TContainer* cells, uint32_t box_length, Adjacency adjacency = kHigh)
+      : positions_(cells->GetAllPositions()),
+        box_length_(box_length),
+        adjacency_(adjacency) {
     UpdateGrid(cells->GetAllPositions());
   }
 
   virtual ~Grid() { delete empty_box_; }
 
-  /// Clears the grid 
+  /// Clears the grid
   void ClearGrid() {
     boxes_.clear();
     num_boxes_axis_ = {{0}};
@@ -144,32 +146,34 @@ class Grid {
   }
 
   /// Updates the grid, as simulation objects may have moved, added or deleted
-  void UpdateGrid(vector<array<double, 3>>& positions) {
+  void UpdateGrid(vector<array<double, 3>>& positions) {  // NOLINT
     ClearGrid();
     auto grid_dimensions = CalculateGridDimensions(positions);
     for (int i = 0; i < 3; i++) {
-      double dimension_length = grid_dimensions[2*i + 1] - grid_dimensions[2*i];
+      double dimension_length =
+          grid_dimensions[2 * i + 1] - grid_dimensions[2 * i];
       double r = fmod(dimension_length, box_length_);
-      // If the grid is not perfectly divisible along each dimension by the 
+      // If the grid is not perfectly divisible along each dimension by the
       // resolution, extend the grid so that it is
       if (r != 0.0) {
-        grid_dimensions[2*i + 1] += dimension_length - box_length_;
+        grid_dimensions[2 * i + 1] += dimension_length - box_length_;
       } else {
         // Else extend the grid dimension with one row, because the outmost cell
         // lies exactly on the border
-        grid_dimensions[2*i + 1] += box_length_;
+        grid_dimensions[2 * i + 1] += box_length_;
       }
     }
 
     // Pad the grid to avoid out of bounds check when search neighbors
     for (int i = 0; i < 3; i++) {
-      grid_dimensions[2*i] -= box_length_;
-      grid_dimensions[2*i + 1] += box_length_;
+      grid_dimensions[2 * i] -= box_length_;
+      grid_dimensions[2 * i + 1] += box_length_;
     }
 
     // Calculate how many boxes fit along each dimension
     for (int i = 0; i < 3; i++) {
-      double dimension_length = grid_dimensions[2*i + 1] - grid_dimensions[2*i];
+      double dimension_length =
+          grid_dimensions[2 * i + 1] - grid_dimensions[2 * i];
       while (dimension_length > 0.0) {
         dimension_length -= box_length_;
         num_boxes_axis_[i]++;
@@ -195,23 +199,24 @@ class Grid {
 
   /// Calculates what the grid dimensions need to be in order to contain
   /// all the simulation objects
-  array<double, 6> CalculateGridDimensions(vector<array<double, 3>>& positions) {
+  array<double, 6> CalculateGridDimensions(
+      vector<array<double, 3>>& positions) {  // NOLINT
     array<double, 6> grid_dimensions = {{1e15, 0, 1e15, 0, 1e15, 0}};
     for (size_t i = 0; i < positions.size(); i++) {
       auto position = positions[i];
       for (size_t j = 0; j < 3; j++) {
-        if (position[j] < grid_dimensions[2*j]) {
-          grid_dimensions[2*j] = position[j];
+        if (position[j] < grid_dimensions[2 * j]) {
+          grid_dimensions[2 * j] = position[j];
         }
-        if (position[j] > grid_dimensions[2*j + 1]) {
-          grid_dimensions[2*j + 1] = position[j];
+        if (position[j] > grid_dimensions[2 * j + 1]) {
+          grid_dimensions[2 * j + 1] = position[j];
         }
       }
     }
     return grid_dimensions;
   }
 
-  template<typename Lambda>
+  template <typename Lambda>
   void ForEachNeighbor(Lambda lambda) {
     vector<size_t> sum(positions_.size());
 #pragma omp parallel for
@@ -234,14 +239,15 @@ class Grid {
     }
   }
 
-  inline double SquaredEuclideanDistance(std::array<double, 3> pos1, std::array<double, 3> pos2) const {
+  inline double SquaredEuclideanDistance(std::array<double, 3> pos1,
+                                         std::array<double, 3> pos2) const {
     const double dx = pos2[0] - pos1[0];
     const double dy = pos2[1] - pos1[1];
     const double dz = pos2[2] - pos1[2];
     return (dx * dx + dy * dy + dz * dz);
   }
 
-  template<typename TContainer>
+  template <typename TContainer>
   void SetNeighborsWithinRadius(TContainer* sim_objects, double distance) {
     vector<size_t> sum(positions_.size());
     InlineVector<int, 8> neighbors;
@@ -258,7 +264,8 @@ class Grid {
       neighbors.clear();
       while (!ni.IsAtEnd()) {
         if (*ni != qc) {
-          if (SquaredEuclideanDistance(positions_[qc], positions_[*ni]) < distance) {
+          if (SquaredEuclideanDistance(positions_[qc], positions_[*ni]) <
+              distance) {
             neighbors.push_back(*ni);
           }
         }
@@ -289,7 +296,7 @@ class Grid {
     neighbor_boxes->push_back(GetBoxPointer(box_idx));
 
     // Adjacent 6 (top, down, left, right, front and back)
-    if (adjacency_ >= LOW) {
+    if (adjacency_ >= kLow) {
       neighbor_boxes->push_back(GetBoxPointer(box_idx - num_boxes_xy_));
       neighbor_boxes->push_back(GetBoxPointer(box_idx + num_boxes_xy_));
       neighbor_boxes->push_back(GetBoxPointer(box_idx - num_boxes_axis_[1]));
@@ -299,27 +306,31 @@ class Grid {
     }
 
     // Adjacent 12
-    if (adjacency_ >= MEDIUM) {
+    if (adjacency_ >= kMedium) {
       neighbor_boxes->push_back(
           GetBoxPointer(box_idx - num_boxes_xy_ - num_boxes_axis_[1]));
       neighbor_boxes->push_back(GetBoxPointer(box_idx - num_boxes_xy_ - 1));
-      neighbor_boxes->push_back(GetBoxPointer(box_idx - num_boxes_axis_[1] - 1));
+      neighbor_boxes->push_back(
+          GetBoxPointer(box_idx - num_boxes_axis_[1] - 1));
       neighbor_boxes->push_back(
           GetBoxPointer(box_idx + num_boxes_xy_ - num_boxes_axis_[1]));
       neighbor_boxes->push_back(GetBoxPointer(box_idx + num_boxes_xy_ - 1));
-      neighbor_boxes->push_back(GetBoxPointer(box_idx + num_boxes_axis_[1] - 1));
+      neighbor_boxes->push_back(
+          GetBoxPointer(box_idx + num_boxes_axis_[1] - 1));
       neighbor_boxes->push_back(
           GetBoxPointer(box_idx - num_boxes_xy_ + num_boxes_axis_[1]));
       neighbor_boxes->push_back(GetBoxPointer(box_idx - num_boxes_xy_ + 1));
-      neighbor_boxes->push_back(GetBoxPointer(box_idx - num_boxes_axis_[1] + 1));
+      neighbor_boxes->push_back(
+          GetBoxPointer(box_idx - num_boxes_axis_[1] + 1));
       neighbor_boxes->push_back(
           GetBoxPointer(box_idx + num_boxes_xy_ + num_boxes_axis_[1]));
       neighbor_boxes->push_back(GetBoxPointer(box_idx + num_boxes_xy_ + 1));
-      neighbor_boxes->push_back(GetBoxPointer(box_idx + num_boxes_axis_[1] + 1));
+      neighbor_boxes->push_back(
+          GetBoxPointer(box_idx + num_boxes_axis_[1] + 1));
     }
 
     // Adjacent 8
-    if (adjacency_ >= HIGH) {
+    if (adjacency_ >= kHigh) {
       neighbor_boxes->push_back(
           GetBoxPointer(box_idx - num_boxes_xy_ - num_boxes_axis_[1] - 1));
       neighbor_boxes->push_back(
@@ -370,7 +381,7 @@ class Grid {
   /// Returns the box index in the one dimensional array based on
   /// box coordinates in space
   /// @param box_coord - box coordinates in space (x, y, z)
-  size_t GetBoxIndex(array<uint32_t, 3>& box_coord) const {
+  size_t GetBoxIndex(array<uint32_t, 3>& box_coord) const {  // NOLINT
     // z * num_boxes_xy_ + y * num_boxes_x + x
     return box_coord[2] * num_boxes_xy_ + box_coord[1] * num_boxes_axis_[0] +
            box_coord[0];

@@ -1,8 +1,8 @@
 #include "neighbor_op.h"
 #include "cell.h"
 #include "gtest/gtest.h"
-#include "neighbor_grid_op.h"
 #include "inline_vector.h"
+#include "neighbor_grid_op.h"
 #include "neighbor_nanoflann_op.h"
 #include "test_util.h"
 
@@ -11,7 +11,6 @@ namespace neighbor_op_test_internal {
 
 template <typename TContainer>
 void CellFactory(TContainer* cells, size_t cells_per_dim) {
-
   const double space = 20;
 
   cells->reserve(cells_per_dim * cells_per_dim * cells_per_dim);
@@ -32,18 +31,17 @@ void RunTest(T* cells, const Op& op) {
   // execute operation
   op.Compute(cells);
 
-  std::vector<int> expected_0 = {1, 2, 4, 5, 6, 8, 9, 16, 17, 18, 20, 21, 22,
-                                24, 25, 32, 33, 36, 37};
-  std::vector<int> expected_4 = {0, 1, 2, 5, 6, 8, 9, 10, 12, 13, 16, 17, 18,
-                                 20, 21, 22, 24, 25, 26, 28, 29, 32, 33, 36, 37,
-                                 40, 41};
-  std::vector<int> expected_42 = {5, 6, 7, 9, 10, 11, 13, 14, 15, 17, 18, 19, 
-                                 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,
-                                 33, 34, 35, 36, 37, 38, 39, 40, 41, 43, 44, 45,
-                                 46, 47, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58,
-                                 59, 60, 61, 62, 63};
-  std::vector<int> expected_63 =  {26, 27, 30, 31, 38, 39, 41, 42, 43, 45, 46,
-                                   47, 54, 55, 57, 58, 59, 61, 62};
+  std::vector<int> expected_0 = {1,  2,  4,  5,  6,  8,  9,  16, 17, 18,
+                                 20, 21, 22, 24, 25, 32, 33, 36, 37};
+  std::vector<int> expected_4 = {0,  1,  2,  5,  6,  8,  9,  10, 12,
+                                 13, 16, 17, 18, 20, 21, 22, 24, 25,
+                                 26, 28, 29, 32, 33, 36, 37, 40, 41};
+  std::vector<int> expected_42 = {
+      5,  6,  7,  9,  10, 11, 13, 14, 15, 17, 18, 19, 20, 21, 22, 23, 24, 25,
+      26, 27, 28, 29, 30, 31, 33, 34, 35, 36, 37, 38, 39, 40, 41, 43, 44, 45,
+      46, 47, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63};
+  std::vector<int> expected_63 = {26, 27, 30, 31, 38, 39, 41, 42, 43, 45,
+                                  46, 47, 54, 55, 57, 58, 59, 61, 62};
 
   auto neighbors_0 = ((*cells)[0].GetNeighbors()).make_std_vector();
   auto neighbors_4 = ((*cells)[4].GetNeighbors()).make_std_vector();

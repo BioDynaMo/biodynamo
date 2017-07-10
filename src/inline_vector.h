@@ -95,7 +95,7 @@ class InlineVector {
     }
   }
 
-  std::vector<T> make_std_vector() const {
+  std::vector<T> make_std_vector() const {  // NOLINT
     std::vector<T> std_vector(size_);
     for (size_t i = 0; i < size_; i++) {
       std_vector[i] = (*this)[i];

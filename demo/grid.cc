@@ -26,7 +26,7 @@ int Run(size_t cells_per_dim) {
   }
 
   auto build_timer = new Timing("build   ");
-  Grid grid(cells.GetAllPositions(), 30, Grid::HIGH);
+  Grid grid(cells.GetAllPositions(), 20, Grid::kHigh);
   delete build_timer;
 
   auto iterate_timer = new Timing("iterate ");
