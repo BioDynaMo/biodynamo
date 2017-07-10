@@ -140,6 +140,7 @@ class Grid {
     num_boxes_axis_ = {{0}};
     num_boxes_xy_ = 0;
     successors_.clear();
+    delete empty_box_;
   }
 
   /// Updates the grid, as simulation objects may have moved, added or deleted
@@ -225,11 +226,11 @@ class Grid {
       NeighborIterator ni(&neighbor_boxes);
       while (!ni.IsAtEnd()) {
         // do something with nc
-        std::cout << *ni << " ";
+        // std::cout << *ni << " ";
         lambda(*ni, qc);
         ++ni;
       }
-      std::cout << std::endl;
+      // std::cout << std::endl;
     }
   }
 

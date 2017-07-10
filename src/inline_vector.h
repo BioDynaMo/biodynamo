@@ -95,6 +95,14 @@ class InlineVector {
     }
   }
 
+  std::vector<T> make_std_vector() const {
+    std::vector<T> std_vector(size_);
+    for (size_t i = 0; i < size_; i++) {
+      std_vector[i] = (*this)[i];
+    }
+    return std_vector;
+  }
+
   InlineVector<T, N>& operator=(const InlineVector<T, N>& other) {
     if (this != &other) {
       data_ = other.data_;

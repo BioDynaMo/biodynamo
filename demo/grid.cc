@@ -13,8 +13,6 @@ int Run(size_t cells_per_dim) {
   const double space = 20;
 
   // create 3D grid of cells
-  // cells_per_dim++;
-
   auto cells = Cell<>::NewEmptySoa();
   cells.reserve(cells_per_dim * cells_per_dim * cells_per_dim);
   for (size_t i = 0; i < cells_per_dim; i++) {
@@ -28,21 +26,12 @@ int Run(size_t cells_per_dim) {
   }
 
   auto build_timer = new Timing("build   ");
-  // cells_per_dim++;
-  Grid grid(cells.GetAllPositions(), 20);
+  Grid grid(cells.GetAllPositions(), 30, Grid::HIGH);
   delete build_timer;
 
-  // // Lambda that does a simple computation on all neighboring cells
-  // std::vector<size_t> sum(cells.size());
-  // auto add_cell_ids = [&sum] (size_t cell_id, size_t i) { 
-  //   if (cell_id != i) {
-  //     sum[i] += cell_id;
-  //   }
-  // };
-
-  // auto iterate_timer = new Timing("iterate ");
-  // grid.ForEachNeighbor(add_cell_ids);
-  // delete iterate_timer;
+  auto iterate_timer = new Timing("iterate ");
+  grid.SetNeighborsWithinRadius(&cells, 700);
+  delete iterate_timer;
 
   return 0;
 }
