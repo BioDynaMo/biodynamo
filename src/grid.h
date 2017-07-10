@@ -231,11 +231,9 @@ class Grid {
       NeighborIterator ni(&neighbor_boxes);
       while (!ni.IsAtEnd()) {
         // do something with nc
-        // std::cout << *ni << " ";
         lambda(*ni, qc);
         ++ni;
       }
-      // std::cout << std::endl;
     }
   }
 

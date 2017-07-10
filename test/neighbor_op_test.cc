@@ -17,7 +17,7 @@ void CellFactory(TContainer* cells, size_t cells_per_dim) {
   for (size_t i = 0; i < cells_per_dim; i++) {
     for (size_t j = 0; j < cells_per_dim; j++) {
       for (size_t k = 0; k < cells_per_dim; k++) {
-        Cell<Scalar> cell({i * space, j * space, k * space});
+        Cell<Scalar> cell({k * space, j * space, i * space});
         cells->push_back(cell);
       }
     }
