@@ -33,10 +33,12 @@ struct MovementModule {
   bool IsCopied(Event event) const { return false; }
 };
 
-typedef variant<GrowthModule, MovementModule> BiologyModules;
+struct CompileTimeParam {
+  using BiologyModules = variant<GrowthModule, MovementModule>;
+};
 
 /// Class used to get access to protected members
-template <typename Base = CellExt<SimulationObject<Scalar>, BiologyModules>>
+template <typename Base = CellExt<SimulationObject<Scalar>, CompileTimeParam>>
 class TestCell : public Base {
  public:
   void TestTransformCoordinatesGlobalToPolar() {
@@ -63,7 +65,8 @@ class TestCell : public Base {
   const array<double, 3>& GetYAxis() { return Base::y_axis_[Base::kIdx]; }
   const array<double, 3>& GetZAxis() { return Base::z_axis_[Base::kIdx]; }
 
-  const vector<BiologyModules>& GetBiologyModules() const {
+  const vector<typename CompileTimeParam::BiologyModules>& GetBiologyModules()
+      const {
     return Base::biology_modules_[0];
   }
 

@@ -6,6 +6,7 @@
 
 #include "backend.h"
 #include "cell.h"
+#include "compile_time_param.h"
 #include "displacement_op.h"
 #include "dividing_cell_op.h"
 #include "exporter.h"
@@ -25,7 +26,7 @@ using bdm::TimingAggregator;
 using bdm::Exporter;
 
 namespace bdm {
-BDM_DEFAULT_BIOLOGY_MODULES();
+BDM_DEFAULT_COMPILE_TIME_PARAM();
 }  // namespace bdm
 
 void Execute(size_t cells_per_dim, size_t iterations, size_t threads,

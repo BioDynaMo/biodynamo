@@ -2,8 +2,11 @@
 #define TEST_UTIL_H_
 
 #include <type_traits>
+#include "compile_time_param.h"
 
 namespace bdm {
+
+class CompileTimeParam : public DefaultCompileTimeParam<> {};
 
 template <typename T>
 struct abs_error {

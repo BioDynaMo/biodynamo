@@ -21,19 +21,24 @@ namespace bdm {
 using std::array;
 using std::vector;
 
+/// Forward declaration for concrete compile time parameter.
+/// Will be used as default template parameter.
+struct CompileTimeParam;
+
 template <typename Base = SimulationObject<>,
-          typename TBiologyModuleVariant = BiologyModules>
+          typename TCompileTimeParam = CompileTimeParam>
 class CellExt : public Base {
  public:
   BDM_CLASS_HEADER_ADV(CellExt,
                        CellExt<typename Base::template Self<TTBackend> COMMA()
-                                   TBiologyModuleVariant>,
+                                   TCompileTimeParam>,
                        template <typename COMMA() typename>, position_,
                        mass_location_, tractor_force_, diameter_, volume_,
                        adherence_, density_, x_axis_, y_axis_, z_axis_,
                        neighbors_, biology_modules_);
 
  public:
+  using TBiologyModuleVariant = typename TCompileTimeParam::BiologyModules;
   CellExt() {}
   explicit CellExt(double diameter) : diameter_(diameter) { UpdateVolume(); }
   explicit CellExt(const array<double, 3>& position)
@@ -229,6 +234,9 @@ class CellExt : public Base {
 
 using Cell = CellExt<SimulationObject<Scalar>>;
 using SoaCell = CellExt<SimulationObject<Soa>>;
+/// Used for testing purposes which require different compile time parameter
+template <typename TCompileTimeParam>
+using TestCell = CellExt<SimulationObject<Scalar>, TCompileTimeParam>;
 
 // ----------------------------------------------------------------------------
 // Implementation -------------------------------------------------------------

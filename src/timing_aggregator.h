@@ -31,7 +31,7 @@ class TimingAggregator {
   friend std::ostream& operator<<(std::ostream& os, const TimingAggregator& p);
 };
 
-std::ostream& operator<<(std::ostream& os, const TimingAggregator& ta) {
+inline std::ostream& operator<<(std::ostream& os, const TimingAggregator& ta) {
   if (ta.timings_.size() != 0) {
     std::vector<std::string> keys(ta.timings_.size());
     std::vector<std::vector<int64_t>> values(ta.timings_.size());

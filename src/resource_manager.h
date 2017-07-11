@@ -45,34 +45,22 @@ struct ConvertToContainerTuple<Backend, VariadicTypedef<Types...>> {
 
 }  // namespace detail
 
-/// Create a tuple of types in the parameter pack and wrap each type witch
-/// container
+/// Create a tuple of types in the parameter pack and wrap each type with
+/// container.
 /// @tparam Backend in which the variadic types should be stored in
 /// @tparam TVariadicTypedefWrapper type that wraps a VariadicTypedef
 /// which in turn contains the variadic template parameters
 /// \see VariadicTypedefWrapper
-template <typename Backend, typename TVariadicTypedefWrapper>
+template <typename Backend, typename TVariadicTypedef>
 struct ConvertToContainerTuple {
-  typedef typename detail::ConvertToContainerTuple<
-      Backend, typename TVariadicTypedefWrapper::types>::type type;  // NOLINT
+  typedef
+      typename detail::ConvertToContainerTuple<Backend, TVariadicTypedef>::type
+          type;  // NOLINT
 };
 
-/// Forward declaration of atomic types used in the simulation.
-/// Must be specified in the simulation code using the macro
-/// \see BDM_DEFINE_ATOMIC_TYPES
-struct AtomicTypes;
-
-/// This forward declaration wraps the backend in which the atomic types
-/// should be stored in. \see BDM_DEFINE_BACKEND
-struct BackendWrapper;
-
-/// Forward declaration of default backend requires wrapping Backend.
-/// This method makes testing easier since the wrapper does not have to be
-/// defined manually
-template <typename Backend>
-struct InlineBackendWrapper {
-  typedef Backend type;  // NOLINT
-};
+/// Forward declaration for concrete compile time parameter.
+/// Will be used as default template parameter.
+struct CompileTimeParam;
 
 /// ResourceManager holds a container for each atomic type in the simulation.
 /// It provides methods to get a certain container, execute a function on a
@@ -83,15 +71,13 @@ struct InlineBackendWrapper {
 /// ResourceManager internally uses the TBackendWrapper parameter to convert
 /// all atomic types to the desired backend.
 /// This makes user code easier since atomic types can be specified as scalars.
-/// @tparam TBackendWrapper is a wrapper around Backend \see BDM_DEFINE_BACKEND
-/// @tparam Types is a wrapper that contains a VariadicTypedef. Hence, it is
-/// possible to pass a variable number of types into it. \see VariadicTypedef
-/// BDM_DEFINE_ATOMIC_TYPES
-template <typename TBackendWrapper = BackendWrapper,
-          typename Types = AtomicTypes>
+/// @tparam TCompileTimeParam type that containes the compile time parameter for
+/// a specific simulation. ResourceManager extracts Backend and AtomicTypes.
+template <typename TCompileTimeParam = CompileTimeParam>
 class ResourceManager {
  public:
-  using Backend = typename TBackendWrapper::type;
+  using Backend = typename TCompileTimeParam::Backend;
+  using Types = typename TCompileTimeParam::AtomicTypes;
   /// Determine Container based on the Backend
   template <typename T>
   using TypeContainer = typename Backend::template Container<T>;
@@ -100,8 +86,8 @@ class ResourceManager {
   using ToBackend = typename T::template Self<Backend>;
 
   /// Singleton pattern - return the only instance with this template parameters
-  static ResourceManager<TBackendWrapper, Types>* Get() {
-    static ResourceManager<TBackendWrapper, Types> kInstance;
+  static ResourceManager<TCompileTimeParam>* Get() {
+    static ResourceManager<TCompileTimeParam> kInstance;
     return &kInstance;
   }
 
@@ -112,13 +98,12 @@ class ResourceManager {
   ///         correct container.
   template <typename Type>
   TypeContainer<ToBackend<Type>>* Get() {
-    return &std::get<ToBackend<ToBackend<Type>>>(data_);
+    return &std::get<TypeContainer<ToBackend<Type>>>(data_);
   }
 
   /// Apply a function on a certain element
   /// @param handle - simulation object id; specifies the tuple index and
-  /// element
-  ///        index \see SoHandle
+  /// element index \see SoHandle
   /// @param function that will be called with the element as a parameter
   ///
   ///     rm->ApplyOnElement(handle, [](auto& element) {
@@ -181,6 +166,11 @@ class ResourceManager {
   }
 
  private:
+  ResourceManager() {
+    // Soa container contain one element upon construction
+    Clear();
+  }
+
   /// Return type index based on SoHandle
   /// \see SoHandle
   static size_t GetTypeIdx(SoHandle handle) {
@@ -197,7 +187,7 @@ class ResourceManager {
   }
 
   /// creates one container for each type in Types.
-  /// Container type is determined based on the backend of the types
+  /// Container type is determined based on the specified Backend
   typename ConvertToContainerTuple<Backend, Types>::type data_;
 };
 

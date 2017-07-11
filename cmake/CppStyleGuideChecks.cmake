@@ -9,6 +9,7 @@ set(CHANGED_SRC_FILES_ORIGIN_MASTER "${BUILD_SUPPORT_DIR}/get-changed-src-files-
 set(clang_tidy_header_helper ${CMAKE_BINARY_DIR}/clang_tidy_header_helper.cc)
 file(WRITE ${clang_tidy_header_helper} "" ) # creates file
 add_executable(clang-tidy-header-helper EXCLUDE_FROM_ALL ${clang_tidy_header_helper})
+target_include_directories(clang-tidy-header-helper PUBLIC "${CMAKE_SOURCE_DIR}/test")
 
 # -------------------- "make format*", "make show-format*" and "make check-format*" targets ------------
 function(add_clang_format_target make_target_id get_files_cmd)

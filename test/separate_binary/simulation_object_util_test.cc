@@ -1,13 +1,11 @@
 #include "simulation_object_util.h"
 
 #include <array>
-#include "biodynamo.h"
 #include "gtest/gtest.h"
 #include "simulation_object.h"
 #include "transactional_vector.h"
 
 namespace bdm {
-namespace simulation_object_util_test_internal {
 
 // The following tests check if code insertion in new classes works as intended
 // Therefore SimulationObject is extended in two stages: first by CellExt and
@@ -259,18 +257,16 @@ TEST(SimulationObjectUtilTest, Soa_Divide) {
   RunDivideTest(&neurons);
 }
 
-// Define default parameter for ResourceManager
-// must be in namespace bdm
-// since redefinition is not possible only one Backend can be tested
-}  // namespace simulation_object_util_test_internal
-BDM_DEFINE_ATOMIC_TYPES(simulation_object_util_test_internal::Neuron<Scalar>);
-BDM_DEFINE_BACKEND(Soa);
-namespace simulation_object_util_test_internal {
+struct CompileTimeParam {
+  using Backend = Soa;
+  using AtomicTypes = VariadicTypedef<Neuron<Scalar>>;
+};
 
 // Tests overloaded Divide function which adds new daughter cell to the
 // container managed by the ResourceManager with default template parameters
 TEST(SimulationObjectUtilTest, Soa_DivideWithResourceManager) {
-  auto rm = ResourceManager<>::Get();
+  using RmType = ResourceManager<CompileTimeParam>;
+  auto rm = RmType::Get();
   rm->Clear();
 
   auto neurons = rm->Get<Neuron<Scalar>>();
@@ -318,5 +314,9 @@ TEST(SimulationObjectUtilTest, Soa_Delete) {
   RunDeleteTest(&neurons);
 }
 
-}  // namespace simulation_object_util_test_internal
 }  // namespace bdm
+
+int main(int argc, char** argv) {
+  ::testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
+}

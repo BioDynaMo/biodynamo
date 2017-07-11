@@ -1,10 +1,9 @@
 #include "exporter.h"
 #include "cell.h"
 #include "gtest/gtest.h"
+#include "test_util.h"
 
 namespace bdm {
-
-BDM_DEFAULT_BIOLOGY_MODULES();
 
 TEST(ExportTest, ConductExportToFile) {
   // set up cells and their positions

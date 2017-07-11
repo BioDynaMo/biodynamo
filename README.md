@@ -95,8 +95,8 @@ If you change the value of these switches, you might have to delete `CMakeCache.
 | `test`  | executes all tests |
 | `check` | executes all tests and shows test output on failure |
 | `clean` | will clean all targets, also the external projects |
-| `bdmclean` | will only clean the `biodynamo` and `runBiodynamoTests` targets |
-| `testbdmclean` | will only clean the `runBiodynamoTests` target |
+| `bdmclean` | will only clean the `biodynamo` and `runBiodynamoTests*` targets |
+| `testbdmclean` | will only clean the `runBiodynamoTests*` target |
 | `doc` | will generate the Doxygen documentation in directory `build/doc`. It contains a html and latex version. You can view the html version by opening `build/doc/html/index.html` in your browser. |
 | `coverage` | will execute the test target and generate a coverage report in `build/coverage`. Make sure that `gcov` and `lcov` are installed and configure cmake with `cmake -Dcoverage=on ..` |
 | `coverage-build` | same as `make coverage`, but builds it in a separate directory (`build/coverage`). Since building the coverage report requires different compiler flags, building it in a separate directory keeps the current build directory in good order. |

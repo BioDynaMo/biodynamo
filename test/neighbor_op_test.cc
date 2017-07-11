@@ -6,9 +6,6 @@
 #include "test_util.h"
 
 namespace bdm {
-
-BDM_DEFAULT_BIOLOGY_MODULES();
-
 namespace neighbor_op_test_internal {
 
 template <typename T, typename Op>

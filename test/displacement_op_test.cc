@@ -4,9 +4,6 @@
 #include "test_util.h"
 
 namespace bdm {
-
-BDM_DEFAULT_BIOLOGY_MODULES();
-
 namespace displacement_op_test_internal {
 
 template <typename T>

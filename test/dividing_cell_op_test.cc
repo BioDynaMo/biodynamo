@@ -5,9 +5,6 @@
 #include "transactional_vector.h"
 
 namespace bdm {
-
-BDM_DEFAULT_BIOLOGY_MODULES();
-
 namespace dividing_cell_op_test_internal {
 
 template <typename T>

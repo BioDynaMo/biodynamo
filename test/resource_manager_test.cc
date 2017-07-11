@@ -87,6 +87,12 @@ struct BSoa {
   }
 };
 
+template <typename TBackend, typename... Types>
+struct CompileTimeParam {
+  using Backend = TBackend;
+  using AtomicTypes = VariadicTypedef<Types...>;
+};
+
 /// Create ResourceManager with two types, use Get function to obtain container
 /// of the specified type, push_back values and check if they have correctly
 /// been added inside the ResourceManager
@@ -95,9 +101,8 @@ struct BSoa {
 template <typename Backend, typename A, typename B>
 void RunGetTest() {
   const double kEpsilon = abs_error<double>::value;
-  using Types = VariadicTypedefWrapper<A, B>;
-  using BackendWrapper = InlineBackendWrapper<Soa>;
-  auto rm = ResourceManager<BackendWrapper, Types>::Get();
+  using CTParam = CompileTimeParam<Backend, A, B>;
+  auto rm = ResourceManager<CTParam>::Get();
   rm->Clear();
 
   // template specifier needed because A is dependant type
@@ -131,9 +136,8 @@ TEST(ResourceManagerTest, GetSoa) {
 template <typename Backend, typename A, typename B>
 void RunApplyOnElementTest() {
   const double kEpsilon = abs_error<double>::value;
-  using Types = VariadicTypedefWrapper<A, B>;
-  using BackendWrapper = InlineBackendWrapper<Soa>;
-  auto rm = ResourceManager<BackendWrapper, Types>::Get();
+  using CTParam = CompileTimeParam<Backend, A, B>;
+  auto rm = ResourceManager<CTParam>::Get();
   rm->Clear();
 
   auto a_collection = rm->template Get<A>();
@@ -163,9 +167,8 @@ TEST(ResourceManagerTest, ApplyOnElementSoa) {
 template <typename Backend, typename A, typename B>
 void RunApplyOnAllElementsTest() {
   const double kEpsilon = abs_error<double>::value;
-  using Types = VariadicTypedefWrapper<A, B>;
-  using BackendWrapper = InlineBackendWrapper<Soa>;
-  auto rm = ResourceManager<BackendWrapper, Types>::Get();
+  using CTParam = CompileTimeParam<Backend, A, B>;
+  auto rm = ResourceManager<CTParam>::Get();
   rm->Clear();
 
   auto a_collection = rm->template Get<A>();
@@ -210,9 +213,8 @@ TEST(ResourceManagerTest, ApplyOnAllElementsSoa) {
 template <typename Backend, typename A, typename B>
 void RunApplyOnAllTypesTest() {
   const double kEpsilon = abs_error<double>::value;
-  using Types = VariadicTypedefWrapper<A, B>;
-  using BackendWrapper = InlineBackendWrapper<Soa>;
-  auto rm = ResourceManager<BackendWrapper, Types>::Get();
+  using CTParam = CompileTimeParam<Backend, A, B>;
+  auto rm = ResourceManager<CTParam>::Get();
   rm->Clear();
 
   auto a_collection = rm->template Get<A>();

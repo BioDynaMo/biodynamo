@@ -59,13 +59,12 @@ LINE_FILTER=$LINE_FILTER"]"
 
 # add header files to clang-tidy header helper
 echo "" > $TIDY_HEADER_HELPER
+echo "#include \"test_util.h\"" >> $TIDY_HEADER_HELPER
 for f in $@; do
   if [ "$(echo $f | grep .h$ | wc -l)" == "1" ]; then
     echo "#include \"${f}\"" >> $TIDY_HEADER_HELPER
   fi
 done
-echo "#include \"biology_module_util.h\"" >> $TIDY_HEADER_HELPER
-echo "namespace bdm { BDM_DEFAULT_BIOLOGY_MODULES(); }" >> $TIDY_HEADER_HELPER
 echo "" >> $TIDY_HEADER_HELPER
 
 

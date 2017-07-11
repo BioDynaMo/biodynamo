@@ -1,10 +1,9 @@
 #include "bdm_interface.h"
 #include <gtest/gtest.h>
 #include "biology_module_util.h"
+#include "test_util.h"
 
 namespace bdm {
-
-BDM_DEFAULT_BIOLOGY_MODULES();
 
 TEST(BDMInterfaceTest, Vector3DInterface) {
   Vector3DInterface v3Dinterf;

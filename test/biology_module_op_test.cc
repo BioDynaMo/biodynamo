@@ -22,18 +22,16 @@ struct GrowthModule {
   bool IsCopied(Event event) const { return false; }
 };
 
-}  // namespace biology_module_op_test_internal
-
-BDM_DEFINE_BIOLOGY_MODULES(biology_module_op_test_internal::GrowthModule);
-
-namespace biology_module_op_test_internal {
+struct CompileTimeParam {
+  using BiologyModules = variant<GrowthModule>;
+};
 
 template <typename T>
 void RunTest(T* cells) {
-  Cell cell_1(12);
+  TestCell<CompileTimeParam> cell_1(12);
   cell_1.AddBiologyModule(GrowthModule(2));
 
-  Cell cell_2(34);
+  TestCell<CompileTimeParam> cell_2(34);
   cell_2.AddBiologyModule(GrowthModule(3));
 
   cells->push_back(cell_1);
@@ -48,12 +46,12 @@ void RunTest(T* cells) {
 }
 
 TEST(BiologyModuleOpTest, ComputeAos) {
-  TransactionalVector<Cell> cells;
+  TransactionalVector<TestCell<CompileTimeParam>> cells;
   RunTest(&cells);
 }
 
 TEST(BiologyModuleOpTest, ComputeSoa) {
-  auto cells = Cell::NewEmptySoa();
+  auto cells = TestCell<CompileTimeParam>::NewEmptySoa();
   RunTest(&cells);
 }
 

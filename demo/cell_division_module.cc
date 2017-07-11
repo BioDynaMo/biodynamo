@@ -2,12 +2,7 @@
 
 namespace bdm {
 
-// 1. Define atomic simulation objects which should be used in this simulation
-BDM_DEFINE_ATOMIC_TYPES(Cell);
-// 2. Define backend
-BDM_DEFINE_BACKEND(Soa);
-
-// 3. Define growth behaviour
+// 1. Define growth behaviour
 struct GrowthModule {
   template <typename T>
   void Run(T* cell) {
@@ -21,16 +16,16 @@ struct GrowthModule {
   bool IsCopied(Event event) const { return true; }
 };
 
-// 5. Define biology modules that should be used in this simulation
-//    Simulation objects automatically pick up this definition
-BDM_DEFINE_BIOLOGY_MODULES(GrowthModule);
+// 2. Define compile time parameter
+struct CompileTimeParam : public DefaultCompileTimeParam<> {
+  using BiologyModules = variant<GrowthModule>;
+  // use default Backend and AtomicTypes
+};
 
-void Simulate(size_t cells_per_dim = 128) {
-  // 5. Get cell container
+void Simulate(size_t cells_per_dim = 32) {
+  // 3. Define initial model - in this example: 3D grid of cells
   auto cells = ResourceManager<>::Get()->Get<Cell>();
   cells->reserve(cells_per_dim * cells_per_dim * cells_per_dim);
-
-  // 6. Define initial model - in this case 3D grid of cells
   double space = 20;
   for (size_t i = 0; i < cells_per_dim; i++) {
     for (size_t j = 0; j < cells_per_dim; j++) {
@@ -46,7 +41,7 @@ void Simulate(size_t cells_per_dim = 128) {
     }
   }
 
-  // 7. Run simulation for one timestep
+  // 4. Run simulation for one timestep
   Scheduler scheduler;
   scheduler.Simulate(1);
 }
