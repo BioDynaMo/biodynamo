@@ -63,8 +63,8 @@ void Execute(size_t cells_per_dim, size_t iterations, size_t threads,
     for (size_t i = 0; i < iterations; i++) {
       {
         Timing timing("Find Neighbors", statistic);
-        bdm::NeighborNanoflannOp op(700);
-        // bdm::NeighborGridOp op(700);
+        // bdm::NeighborNanoflannOp op(700);
+        bdm::NeighborGridOp op(700);
         op.Compute(&cells);
       }
 

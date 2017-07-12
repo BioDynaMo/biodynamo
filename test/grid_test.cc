@@ -22,17 +22,18 @@ Cell<Soa> CellFactory(size_t cells_per_dim) {
 
 TEST(GridTest, SetupGrid) {
   auto cells = CellFactory(4);
-  Grid grid(cells.GetAllPositions(), 20);
+  auto& grid = Grid::GetInstance();
+  grid.Initialize(&cells, 20);
 
-  vector<vector<size_t>> neighbors(cells.GetAllPositions().size());
+  vector<vector<size_t>> neighbors(cells.size());
 
   // Lambda that fills a vector of neighbors for each cell (excluding itself)
-  auto fill_neighbor_list = [&neighbors](size_t qc, size_t nc) {
-    if (qc != nc) {
-      neighbors[nc].push_back(qc);
-    }
+  // q = query cell; n = neighbor cell
+  auto fill_neighbor_list = [&neighbors](size_t q, size_t n) {
+    if (q != n) { neighbors[n].push_back(q); }
   };
 
+  // Apply the neighbor operation on each cell
   grid.ForEachNeighbor(fill_neighbor_list);
 
   std::vector<size_t> expected_0 = {1, 4, 5, 16, 17, 20, 21};
@@ -64,20 +65,21 @@ TEST(GridTest, SetupGrid) {
 TEST(GridTest, UpdateGrid) {
   auto cells = CellFactory(4);
   auto& positions = cells.GetAllPositions();
-  Grid grid(positions, 20);
+  Grid grid;
+  grid.Initialize(&cells, 20);
 
+  // Remove two cells
   positions.erase(positions.begin() + 1);
   positions.erase(positions.begin() + 42);
 
+  // Update the grid
   grid.UpdateGrid(cells.GetAllPositions());
 
-  vector<vector<size_t>> neighbors(cells.GetAllPositions().size());
+  vector<vector<size_t>> neighbors(cells.size());
 
   // Lambda that fills a vector of neighbors for each cell (excluding itself)
-  auto fill_neighbor_list = [&neighbors](size_t qc, size_t nc) {
-    if (qc != nc) {
-      neighbors[nc].push_back(qc);
-    }
+  auto fill_neighbor_list = [&neighbors](size_t q, size_t n) {
+    if (q != n) { neighbors[n].push_back(q); }
   };
 
   grid.ForEachNeighbor(fill_neighbor_list);

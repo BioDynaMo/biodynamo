@@ -14,8 +14,15 @@ using std::array;
 using std::vector;
 using std::fmod;
 
+///
+/// @brief      A class that represents Cartesian 3D grid
+///
 class Grid {
  public:
+
+  ///
+  /// @brief      A single unit cube of the grid
+  ///
   struct Box {
     Grid* grid_;
     uint64_t start_ = 0;
@@ -29,17 +36,25 @@ class Grid {
 
     bool IsInitialized() const { return is_initialized_; }
 
-    void AddCell(size_t cell_id) {
+    ///
+    /// @brief      Adds a simulation object to this box
+    ///
+    /// @param[in]  obj_id  The object's identifier
+    ///
+    void AddObject(size_t obj_id) {
       if (IsEmpty()) {
-        start_ = cell_id;
+        start_ = obj_id;
       } else {
-        // add to front
-        grid_->successors_[cell_id] = start_;
-        start_ = cell_id;
+        // Add to the linked list of successor cells
+        grid_->successors_[obj_id] = start_;
+        start_ = obj_id;
       }
       length_++;
     }
 
+    ///
+    /// @brief      An iterator that iterates over the cells in this box
+    ///
     struct Iterator {
       Iterator(Grid* grid, const Box* box)
           : grid_(grid),
@@ -64,6 +79,9 @@ class Grid {
     Iterator begin() const { return Iterator(grid_, this); }  // NOLINT
   };
 
+  ///
+  /// @brief      An iterator that iterates over the boxes in this grid
+  ///
   struct NeighborIterator {
     explicit NeighborIterator(InlineVector<const Box*, 27>* neighbor_boxes)
         : neighbor_boxes_(neighbor_boxes),
@@ -114,38 +132,86 @@ class Grid {
     }
   };
 
-  /// Enum that determines the degree of adjacency in search neighbor boxes
-  /// kLow:    The closest 8  neighboring boxes
-  /// kMedium: The closest 18 neighboring boxes
-  /// kHigh:   The closest 26 neighboring boxes
-  enum Adjacency { kLow, kMedium, kHigh };
+  ///
+  /// @brief      Enum that determines the degree of adjacency in search neighbor
+  ///             boxes
+  ///
+  enum Adjacency { 
+    kLow, /**< The closest 8  neighboring boxes */
+    kMedium, /**< The closest 18  neighboring boxes */
+    kHigh /**< The closest 26  neighboring boxes */
+  };
 
-  Grid(vector<array<double, 3>>& positions, uint32_t box_length,  // NOLINT
-       Adjacency adjacency = kHigh)
-      : positions_(positions), box_length_(box_length), adjacency_(adjacency) {
-    UpdateGrid(positions);
+  Grid() {}
+
+  Grid(Grid const&) = delete;
+  void operator=(Grid const&) = delete;
+
+  ///
+  /// @brief      Initialize the grid with the given object positions
+  ///
+  /// @param      positions   The positions of the objects
+  /// @param[in]  box_length  The box length
+  /// @param[in]  adjacency   The adjacency (see #Adjacency)
+  ///
+  void Initialize(vector<array<double, 3>>* positions, uint32_t box_length,  // NOLINT
+    Adjacency adjacency = kHigh) {
+    positions_ = positions;
+    box_length_ = box_length;
+    adjacency_ = adjacency;
+
+    UpdateGrid(*positions);
   }
 
+  ///
+  /// @brief      Initialize the grid with the given simulation objects
+  ///
+  /// @param      sim_objects  The simulation objects
+  /// @param[in]  box_length   The box length
+  /// @param[in]  adjacency    The adjacency (see #Adjacency)
+  ///
+  /// @tparam     TContainer   { description }
+  ///
   template <typename TContainer>
-  Grid(TContainer* cells, uint32_t box_length, Adjacency adjacency = kHigh)
-      : positions_(cells->GetAllPositions()),
-        box_length_(box_length),
-        adjacency_(adjacency) {
-    UpdateGrid(cells->GetAllPositions());
+  void Initialize(TContainer* sim_objects, uint32_t box_length,  // NOLINT
+    Adjacency adjacency = kHigh) {
+    positions_ = &(sim_objects->GetAllPositions());
+    box_length_ = box_length;
+    adjacency_ = adjacency;
+
+    UpdateGrid(sim_objects->GetAllPositions());
   }
 
   virtual ~Grid() { delete empty_box_; }
 
-  /// Clears the grid
+  ///
+  /// @brief      Gets the singleton instance
+  ///
+  /// @return     The instance
+  ///
+  static Grid& GetInstance() { 
+    static Grid grid_;
+    return grid_;
+  }
+
+  ///
+  /// @brief      Clears the grid
+  ///
   void ClearGrid() {
     boxes_.clear();
     num_boxes_axis_ = {{0}};
     num_boxes_xy_ = 0;
+
     successors_.clear();
     delete empty_box_;
   }
 
-  /// Updates the grid, as simulation objects may have moved, added or deleted
+  ///
+  /// @brief      Updates the grid, as simulation objects may have moved, added
+  ///             or deleted
+  ///
+  /// @param      positions  The updated positions of the simulation objects
+  ///
   void UpdateGrid(vector<array<double, 3>>& positions) {  // NOLINT
     ClearGrid();
     auto grid_dimensions = CalculateGridDimensions(positions);
@@ -158,7 +224,7 @@ class Grid {
       if (r != 0.0) {
         grid_dimensions[2 * i + 1] += dimension_length - box_length_;
       } else {
-        // Else extend the grid dimension with one row, because the outmost cell
+        // Else extend the grid dimension with one row, because the outmost object
         // lies exactly on the border
         grid_dimensions[2 * i + 1] += box_length_;
       }
@@ -184,21 +250,29 @@ class Grid {
     auto total_num_boxes = num_boxes_xy_ * num_boxes_axis_[2];
 
     boxes_.resize(total_num_boxes, Box(this));
+
+    // Create an empty box to initialize the padding boxes with
     empty_box_ = new Box(this, false);
 
-    // initialize successors_;
-    successors_.resize(positions_.size());
+    // Initialize successors_;
+    successors_.resize(positions.size());
 
-    // assign simulation objects to boxes
-    for (size_t cell_id = 0; cell_id < positions_.size(); cell_id++) {
-      auto& position = positions_[cell_id];
+    // Assign simulation objects to boxes
+    for (size_t obj_id = 0; obj_id < positions.size(); obj_id++) {
+      auto& position = positions[obj_id];
       auto box = GetBoxPointer(GetBoxIndex(position));
-      box->AddCell(cell_id);
+      box->AddObject(obj_id);
     }
   }
 
-  /// Calculates what the grid dimensions need to be in order to contain
+  ///
+  /// Calculates what the grid dimensions need to be in order to contain /
   /// all the simulation objects
+  ///
+  /// @param      positions  The positions of the simulation objects
+  ///
+  /// @return     The grid dimensions
+  ///
   array<double, 6> CalculateGridDimensions(
       vector<array<double, 3>>& positions) {  // NOLINT
     array<double, 6> grid_dimensions = {{1e15, 0, 1e15, 0, 1e15, 0}};
@@ -216,13 +290,18 @@ class Grid {
     return grid_dimensions;
   }
 
+  ///
+  /// @brief      Apply an operation for all the neighbor objects on each
+  ///             simulation object
+  ///
+  /// @param[in]  lambda  The operation as a lambda
+  ///
   template <typename Lambda>
   void ForEachNeighbor(Lambda lambda) {
-    vector<size_t> sum(positions_.size());
 #pragma omp parallel for
-    // qc = query cell
-    for (size_t qc = 0; qc < positions_.size(); qc++) {
-      auto& position = positions_[qc];
+    // q = query object
+    for (size_t q = 0; q < positions_->size(); q++) {
+      auto& position = (*positions_)[q];
       auto idx = GetBoxIndex(position);
 
       InlineVector<const Box*, 27> neighbor_boxes;
@@ -230,13 +309,22 @@ class Grid {
 
       NeighborIterator ni(&neighbor_boxes);
       while (!ni.IsAtEnd()) {
-        // do something with nc
-        lambda(*ni, qc);
+        // do something with neighbor object
+        lambda(*ni, q);
         ++ni;
       }
     }
   }
 
+  ///
+  /// @brief      Calculates the squared euclidian distance between two points
+  ///             in 3D
+  ///
+  /// @param[in]  pos1  Position of the first point
+  /// @param[in]  pos2  Position of the second point
+  ///
+  /// @return     The distance between the two points
+  ///
   inline double SquaredEuclideanDistance(std::array<double, 3> pos1,
                                          std::array<double, 3> pos2) const {
     const double dx = pos2[0] - pos1[0];
@@ -245,14 +333,52 @@ class Grid {
     return (dx * dx + dy * dy + dz * dz);
   }
 
+  ///
+  /// @brief      { function_description }
+  ///
+  /// @param[in]  lambda  The lambda
+  /// @param[in]  radius  The radius
+  ///
+  /// @tparam     Lambda  { description }
+  ///
+  template <typename Lambda, typename SO>
+  void ForEachNeighborWithinRadius(Lambda lambda, SO* query, double radius) {
+    auto& position = query->GetPosition();
+    auto idx = GetBoxIndex(position);
+
+    InlineVector<const Box*, 27> neighbor_boxes;
+    GetMooreBoxes(&neighbor_boxes, idx);
+
+    NeighborIterator ni(&neighbor_boxes);
+    while (!ni.IsAtEnd()) {
+      // do something with neighbor object
+      if (*ni != query->id()) {
+        if (SquaredEuclideanDistance(position, (*positions_)[*ni]) <
+            radius) {
+          lambda(*ni);
+        }
+      }
+      ++ni;
+    }
+  }
+
+  ///
+  /// @brief      Sets the neighbors of each object found within a radius
+  ///
+  /// @param      sim_objects  The simulation objects
+  /// @param[in]  radius       The search radius
+  ///
+  /// @tparam     TContainer   The container type that holds the simulation
+  ///                          objects
+  ///
   template <typename TContainer>
-  void SetNeighborsWithinRadius(TContainer* sim_objects, double distance) {
-    vector<size_t> sum(positions_.size());
+  void SetNeighborsWithinRadius(TContainer* sim_objects, double radius) {
+    vector<size_t> sum(positions_->size());
     InlineVector<int, 8> neighbors;
 #pragma omp parallel for firstprivate(neighbors)
-    // qc = query cell
-    for (size_t qc = 0; qc < positions_.size(); qc++) {
-      auto& position = positions_[qc];
+    // q = query object
+    for (size_t q = 0; q < positions_->size(); q++) {
+      auto& position = (*positions_)[q];
       auto idx = GetBoxIndex(position);
 
       InlineVector<const Box*, 27> neighbor_boxes;
@@ -261,21 +387,21 @@ class Grid {
       NeighborIterator ni(&neighbor_boxes);
       neighbors.clear();
       while (!ni.IsAtEnd()) {
-        if (*ni != qc) {
-          if (SquaredEuclideanDistance(positions_[qc], positions_[*ni]) <
-              distance) {
+        if (*ni != q) {
+          if (SquaredEuclideanDistance((*positions_)[q], (*positions_)[*ni]) <
+              radius) {
             neighbors.push_back(*ni);
           }
         }
         ++ni;
       }
-      (*sim_objects)[qc].SetNeighbors(neighbors);
+      (*sim_objects)[q].SetNeighbors(neighbors);
     }
   }
 
  private:
   vector<Box> boxes_;
-  vector<array<double, 3>>& positions_;
+  vector<array<double, 3>>* positions_ = nullptr;
   /// Length of a Box
   uint32_t box_length_ = 0;
   /// Stores the number of boxes for each axis
@@ -289,6 +415,12 @@ class Grid {
   /// An empty box that will be used to initialize the pad boxes
   Box* empty_box_ = nullptr;
 
+  ///
+  /// @brief      Gets the Moore (i.e adjacent) boxes of the query box
+  ///
+  /// @param      neighbor_boxes  The neighbor boxes
+  /// @param[in]  box_idx         The query box
+  ///
   void GetMooreBoxes(InlineVector<const Box*, 27>* neighbor_boxes,
                      size_t box_idx) {
     neighbor_boxes->push_back(GetBoxPointer(box_idx));
@@ -348,6 +480,13 @@ class Grid {
     }
   }
 
+  ///
+  /// @brief      Gets the pointer to the box with the given index
+  ///
+  /// @param[in]  index  The index of the box
+  ///
+  /// @return     The pointer to the box
+  ///
   const Box* GetBoxPointer(size_t index) const {
     if (index < boxes_.size()) {
       return &(boxes_[index]);
@@ -356,6 +495,13 @@ class Grid {
     }
   }
 
+  ///
+  /// @brief      Gets the pointer to the box with the given index
+  ///
+  /// @param[in]  index  The index of the box
+  ///
+  /// @return     The pointer to the box
+  ///
   Box* GetBoxPointer(size_t index) {
     if (index < boxes_.size()) {
       return &(boxes_[index]);
@@ -364,29 +510,26 @@ class Grid {
     }
   }
 
-  /// Returns the box coordinates based on the box index in the one dimensional
-  /// array
-  /// @param box_idx - index of the box in boxes_
-  array<uint32_t, 3> GetBoxCoordinates(size_t box_idx) const {
-    array<uint32_t, 3> ret;
-    ret[2] = box_idx / num_boxes_xy_;
-    auto xy = box_idx % num_boxes_xy_;
-    ret[1] = xy / num_boxes_axis_[0];
-    ret[0] = xy % num_boxes_axis_[0];
-    return ret;
-  }
-
-  /// Returns the box index in the one dimensional array based on
-  /// box coordinates in space
-  /// @param box_coord - box coordinates in space (x, y, z)
+  /// Returns the box index in the one dimensional array based on box
+  /// coordinates in space
+  ///
+  /// @param      box_coord  box coordinates in space (x, y, z)
+  ///
+  /// @return     The box index.
+  ///
   size_t GetBoxIndex(array<uint32_t, 3>& box_coord) const {  // NOLINT
-    // z * num_boxes_xy_ + y * num_boxes_x + x
     return box_coord[2] * num_boxes_xy_ + box_coord[1] * num_boxes_axis_[0] +
            box_coord[0];
   }
 
-  /// Return the box index in the one dimensional array of the box that contains
-  /// the position
+  ///
+  /// @brief      Return the box index in the one dimensional array of the box
+  ///             that contains the position
+  ///
+  /// @param[in]  position  The position of the object
+  ///
+  /// @return     The box index.
+  ///
   size_t GetBoxIndex(const array<double, 3> position) {
     array<uint32_t, 3> box_coord;
     box_coord[0] = floor(position[0]) / box_length_;

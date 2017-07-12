@@ -80,6 +80,7 @@ TEST(NeighborNanoflannOpTest, ComputeSoa) {
   RunTest(&cells, NeighborNanoflannOp());
 }
 
+// todo: make this work with the grid
 // TEST(NeighborGridOpTest, ComputeAosoa) {
 //   std::vector<Cell<Scalar>> cells;
 //   RunTest(&cells, NeighborGridOp());

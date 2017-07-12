@@ -125,6 +125,8 @@ class CellExt : public Base {
   }
 
   const array<double, 3>& GetPosition() const { return position_[kIdx]; }
+  
+  array<double, 3>& GetPosition() { return position_[kIdx]; }
 
   vec<array<double, 3>>& GetAllPositions() { return position_; }
 

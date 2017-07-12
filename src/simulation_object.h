@@ -54,6 +54,11 @@ class SoaSimulationObject {
     return size_;
   }
 
+  /// Returns the object's id.
+  size_t id() const {  // NOLINT
+    return kIdx;
+  }
+
   /// Thread safe version of std::vector::push_back
   void push_back(const SimulationObject<Scalar>& element) {  // NOLINT
     std::lock_guard<std::recursive_mutex> lock(mutex_);
@@ -114,6 +119,11 @@ class ScalarSimulationObject {
   virtual ~ScalarSimulationObject() {}
 
   std::size_t size() const { return 1; }  // NOLINT
+  
+  /// Returns the object's id.
+  size_t id() const {  // NOLINT
+    return kIdx;
+  }
 
  protected:
   static const std::size_t kIdx = 0;

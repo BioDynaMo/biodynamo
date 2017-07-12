@@ -6,6 +6,7 @@
 #include <vector>
 #include "math_util.h"
 #include "param.h"
+#include "grid.h"
 
 namespace bdm {
 
@@ -71,16 +72,19 @@ class DisplacementOp {
       // -----------------------------------------------------------
       //  (We check for every neighbor object if they touch us, i.e. push us
       //  away)
-      const auto& neighbor_ids = cell.GetNeighbors();
-      for (size_t j = 0; j < neighbor_ids.size(); j++) {
-        const auto& neighbor = (*cells)[neighbor_ids[j]];
+
+      auto calculate_neighbor_forces = [&] (size_t nc) {
+        const auto& neighbor = (*cells)[nc];
         std::array<double, 3> neighbor_force;
         neighbor.GetForceOn(cell.GetMassLocation(), cell.GetDiameter(),
                             &neighbor_force);
         translation_force_on_point_mass[0] += neighbor_force[0];
         translation_force_on_point_mass[1] += neighbor_force[1];
         translation_force_on_point_mass[2] += neighbor_force[2];
-      }
+      };
+
+      auto& grid = Grid::GetInstance();
+      grid.ForEachNeighborWithinRadius(calculate_neighbor_forces, &cell, 3000);
 
       // 4) PhysicalBonds
       // How the physics influences the next displacement
