@@ -4,9 +4,9 @@
 #include <array>
 #include <cmath>
 #include <vector>
+#include "grid.h"
 #include "math_util.h"
 #include "param.h"
-#include "grid.h"
 
 namespace bdm {
 
@@ -73,7 +73,7 @@ class DisplacementOp {
       //  (We check for every neighbor object if they touch us, i.e. push us
       //  away)
 
-      auto calculate_neighbor_forces = [&] (size_t nc) {
+      auto calculate_neighbor_forces = [&](size_t nc) {
         const auto& neighbor = (*cells)[nc];
         std::array<double, 3> neighbor_force;
         neighbor.GetForceOn(cell.GetMassLocation(), cell.GetDiameter(),

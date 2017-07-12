@@ -30,7 +30,9 @@ TEST(GridTest, SetupGrid) {
   // Lambda that fills a vector of neighbors for each cell (excluding itself)
   // q = query cell; n = neighbor cell
   auto fill_neighbor_list = [&neighbors](size_t q, size_t n) {
-    if (q != n) { neighbors[n].push_back(q); }
+    if (q != n) {
+      neighbors[n].push_back(q);
+    }
   };
 
   // Apply the neighbor operation on each cell
@@ -79,7 +81,9 @@ TEST(GridTest, UpdateGrid) {
 
   // Lambda that fills a vector of neighbors for each cell (excluding itself)
   auto fill_neighbor_list = [&neighbors](size_t q, size_t n) {
-    if (q != n) { neighbors[n].push_back(q); }
+    if (q != n) {
+      neighbors[n].push_back(q);
+    }
   };
 
   grid.ForEachNeighbor(fill_neighbor_list);

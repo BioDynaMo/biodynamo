@@ -119,7 +119,7 @@ class ScalarSimulationObject {
   virtual ~ScalarSimulationObject() {}
 
   std::size_t size() const { return 1; }  // NOLINT
-  
+
   /// Returns the object's id.
   size_t id() const {  // NOLINT
     return kIdx;

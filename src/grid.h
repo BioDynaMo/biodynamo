@@ -19,7 +19,6 @@ using std::fmod;
 ///
 class Grid {
  public:
-
   ///
   /// @brief      A single unit cube of the grid
   ///
@@ -133,13 +132,14 @@ class Grid {
   };
 
   ///
-  /// @brief      Enum that determines the degree of adjacency in search neighbor
+  /// @brief      Enum that determines the degree of adjacency in search
+  /// neighbor
   ///             boxes
   ///
-  enum Adjacency { 
-    kLow, /**< The closest 8  neighboring boxes */
+  enum Adjacency {
+    kLow,    /**< The closest 8  neighboring boxes */
     kMedium, /**< The closest 18  neighboring boxes */
-    kHigh /**< The closest 26  neighboring boxes */
+    kHigh    /**< The closest 26  neighboring boxes */
   };
 
   Grid() {}
@@ -154,8 +154,9 @@ class Grid {
   /// @param[in]  box_length  The box length
   /// @param[in]  adjacency   The adjacency (see #Adjacency)
   ///
-  void Initialize(vector<array<double, 3>>* positions, uint32_t box_length,  // NOLINT
-    Adjacency adjacency = kHigh) {
+  void Initialize(vector<array<double, 3>>* positions,
+                  uint32_t box_length,  // NOLINT
+                  Adjacency adjacency = kHigh) {
     positions_ = positions;
     box_length_ = box_length;
     adjacency_ = adjacency;
@@ -174,7 +175,7 @@ class Grid {
   ///
   template <typename TContainer>
   void Initialize(TContainer* sim_objects, uint32_t box_length,  // NOLINT
-    Adjacency adjacency = kHigh) {
+                  Adjacency adjacency = kHigh) {
     positions_ = &(sim_objects->GetAllPositions());
     box_length_ = box_length;
     adjacency_ = adjacency;
@@ -189,9 +190,9 @@ class Grid {
   ///
   /// @return     The instance
   ///
-  static Grid& GetInstance() { 
-    static Grid grid_;
-    return grid_;
+  static Grid& GetInstance() {
+    static Grid kGrid;
+    return kGrid;
   }
 
   ///
@@ -224,7 +225,8 @@ class Grid {
       if (r != 0.0) {
         grid_dimensions[2 * i + 1] += dimension_length - box_length_;
       } else {
-        // Else extend the grid dimension with one row, because the outmost object
+        // Else extend the grid dimension with one row, because the outmost
+        // object
         // lies exactly on the border
         grid_dimensions[2 * i + 1] += box_length_;
       }
@@ -337,9 +339,11 @@ class Grid {
   /// @brief      { function_description }
   ///
   /// @param[in]  lambda  The lambda
+  /// @param      query   The query
   /// @param[in]  radius  The radius
   ///
   /// @tparam     Lambda  { description }
+  /// @tparam     SO      { description }
   ///
   template <typename Lambda, typename SO>
   void ForEachNeighborWithinRadius(Lambda lambda, SO* query, double radius) {
@@ -353,8 +357,7 @@ class Grid {
     while (!ni.IsAtEnd()) {
       // do something with neighbor object
       if (*ni != query->id()) {
-        if (SquaredEuclideanDistance(position, (*positions_)[*ni]) <
-            radius) {
+        if (SquaredEuclideanDistance(position, (*positions_)[*ni]) < radius) {
           lambda(*ni);
         }
       }
