@@ -86,7 +86,31 @@ void CoProcess(Cell<Soa>& cells, double time, size_t timeStep,
   if (Processor->RequestDataDescription(dataDescription.GetPointer()) != 0) {
     BuildVTKDataStructures(cells);
     dataDescription->GetInputDescriptionByName("input")->SetGrid(VTKGrid);
+    
+    std::cout << "[" << timeStep << "] Starting CoProcess..." << endl;
     Processor->CoProcess(dataDescription.GetPointer());
+    std::cout << "[" << timeStep << "] Done!" << endl;
   }
+  
+  vtkFieldData *userData = dataDescription->GetUserData();
+  std::cout << "UserData: " << userData << endl;
+  
+  // Update simulation data?
+  if (userData != nullptr) {
+      std::cout << userData->GetNumberOfArrays() << endl;
+      
+      vtkDoubleArray *radiusArray = (vtkDoubleArray*)userData->GetAbstractArray("Radius");
+      //radiusArray->Print(std::cout);
+      
+      double cellDiameter;
+      for (int i = 0; i < radiusArray->GetSize(); i++) {
+          cellDiameter = radiusArray->GetValue(i);
+          //std::cout << cellDiameter << " ";
+
+          cells[i].SetDiameter(cellDiameter);
+      }
+      std::cout << "\n";
+  }
+
 }
 }  // namespace bdmAdaptor

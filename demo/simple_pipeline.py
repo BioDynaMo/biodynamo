@@ -1,19 +1,18 @@
-from paraview.simple import * 
+from paraview.simple import *
 from paraview import coprocessing
 
 #Code generated from cpstate.py to create the CoProcessor.
 #ParaView 5.3.0 64 bits
 
 #CoProcessor definition
-
-def CreateCoProcessor(): 
-    def _CreatePipeline(coprocessor, datadescription): 
+def CreateCoProcessor():
+    def _CreatePipeline(coprocessor, datadescription):
         class Pipeline :
             #state file generated using paraview version 5.3.0
 
             #setup the data processing pipelines
 
-            #disable automatic camera reset on 'Show' 
+            #disable automatic camera reset on 'Show'
             paraview.simple._DisableFirstRenderCameraReset()
 
             #create a new 'XML Unstructured Grid Reader'
@@ -21,16 +20,18 @@ def CreateCoProcessor():
             results4Paraview0vtu = coprocessor.CreateProducer(datadescription, 'input')
 
             #create a new 'Calculator'
-            calculator1 = Calculator(Input = results4Paraview0vtu) 
-            calculator1.ResultArrayName = 'Radius' 
-            calculator1.Function = '0.5*Diameter'
+            #calculator1 = Calculator(Input = results4Paraview0vtu)
+            #calculator1.ResultArrayName = 'Radius'
+            #calculator1.Function = '0.95*Diameter'
+
+
 
             #create a new 'Glyph'
-            glyph1 = Glyph(Input = calculator1, GlyphType = 'Sphere')
-            glyph1.Scalars = [ 'POINTS', 'Radius' ] 
-            glyph1.Vectors = [ 'POINTS', 'None' ] 
-            glyph1.ScaleMode = 'scalar' 
-            glyph1.GlyphMode = 'All Points' 
+            glyph1 = Glyph(Input = propDiameterFilter, GlyphType = 'Sphere')
+            glyph1.Scalars = [ 'POINTS', 'Radius' ]
+            glyph1.Vectors = [ 'POINTS', 'None' ]
+            glyph1.ScaleMode = 'scalar'
+            glyph1.GlyphMode = 'All Points'
             glyph1.GlyphTransform = 'Transform2'
 
             #finally, restore active source
@@ -38,7 +39,7 @@ def CreateCoProcessor():
 
         return Pipeline()
 
-    class CoProcessor(coprocessing.CoProcessor): 
+    class CoProcessor(coprocessing.CoProcessor):
         def CreatePipeline(self, datadescription):
             self.Pipeline = _CreatePipeline(self, datadescription)
 
@@ -65,6 +66,8 @@ coprocessor.EnableLiveVisualization(True, 1)
 def RequestDataDescription(datadescription):
     "Callback to populate the request for current timestep"
     global coprocessor
+
+
     if datadescription.GetForceOutput() == True:
 #We are just going to request all fields and meshes from the simulation
 #code / adaptor.
@@ -95,3 +98,30 @@ def DoCoProcessing(datadescription):
 
     #Live Visualization, if enabled.
     coprocessor.DoLiveVisualization(datadescription, "localhost", 22222)
+
+    # ---------------------------------------------------------------------------
+    ## Define filter name for data-feedback
+    filterName = "Calculator1"
+    arrayName = "Radius"
+
+    # Fetch filter & result array
+    try:
+        myFilter = FindSource(filterName)
+        if myFilter:
+            realFilter = servermanager.Fetch(myFilter)
+            pointData = realFilter.GetPointData()
+            array = pointData.GetArray(arrayName)
+
+            # Optional: just for debugging
+            resultArray = [ array.GetValue(i) for i in range(array.GetSize()) ]
+            print '[%d] %s' % (len(resultArray), resultArray)
+            # ----------------------------
+
+
+            # Propagate data to UserData
+            datadescription.SetUserData(pointData)
+        else:
+            print 'Warning: Filter "%s" cannot be found in Paraview filters' % filterName
+    except Exception as ex:
+        print "Error: " + ex.message
+
