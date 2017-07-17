@@ -84,7 +84,9 @@ class DisplacementOp {
       };
 
       auto& grid = Grid::GetInstance();
-      grid.ForEachNeighborWithinRadius(calculate_neighbor_forces, &cell, 3000);
+      auto search_radius = grid.GetLargestObjectSize();
+      grid.ForEachNeighborWithinRadius(calculate_neighbor_forces, &cell,
+                                       search_radius * search_radius);
 
       // 4) PhysicalBonds
       // How the physics influences the next displacement

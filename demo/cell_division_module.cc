@@ -40,8 +40,8 @@ void Simulate(size_t cells_per_dim = 128) {
   for (size_t i = 0; i < cells_per_dim; i++) {
     for (size_t j = 0; j < cells_per_dim; j++) {
       for (size_t k = 0; k < cells_per_dim; k++) {
-        MyCell<Scalar> cell({i * space, j * space, k * space});
-        cell.SetDiameter(30);
+        MyCell<Scalar> cell({k * space, j * space, i * space});
+        cell.SetDiameter(10);
         cell.SetAdherence(0.4);
         cell.SetMass(1.0);
         cell.UpdateVolume();

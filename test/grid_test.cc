@@ -13,6 +13,7 @@ Cell<Soa> CellFactory(size_t cells_per_dim) {
     for (size_t j = 0; j < cells_per_dim; j++) {
       for (size_t k = 0; k < cells_per_dim; k++) {
         Cell<Scalar> cell({i * space, j * space, k * space});
+        cell.SetDiameter(10);
         cells.push_back(cell);
       }
     }
@@ -23,20 +24,22 @@ Cell<Soa> CellFactory(size_t cells_per_dim) {
 TEST(GridTest, SetupGrid) {
   auto cells = CellFactory(4);
   auto& grid = Grid::GetInstance();
-  grid.Initialize(&cells, 20);
+  grid.Initialize(&cells);
 
   vector<vector<size_t>> neighbors(cells.size());
 
-  // Lambda that fills a vector of neighbors for each cell (excluding itself)
-  // q = query cell; n = neighbor cell
-  auto fill_neighbor_list = [&neighbors](size_t q, size_t n) {
-    if (q != n) {
-      neighbors[n].push_back(q);
-    }
-  };
+// Lambda that fills a vector of neighbors for each cell (excluding itself)
+#pragma omp parallel for
+  for (size_t i = 0; i < cells.size(); i++) {
+    auto&& cell = cells[i];
+    auto fill_neighbor_list = [&](size_t n) {
+      if (cell.id() != n) {
+        neighbors[cell.id()].push_back(n);
+      }
+    };
 
-  // Apply the neighbor operation on each cell
-  grid.ForEachNeighbor(fill_neighbor_list);
+    grid.ForEachNeighbor(fill_neighbor_list, &cell);
+  }
 
   std::vector<size_t> expected_0 = {1, 4, 5, 16, 17, 20, 21};
   std::vector<size_t> expected_4 = {0, 1, 5, 8, 9, 16, 17, 20, 21, 24, 25};
@@ -67,43 +70,49 @@ TEST(GridTest, SetupGrid) {
 TEST(GridTest, UpdateGrid) {
   auto cells = CellFactory(4);
   auto& positions = cells.GetAllPositions();
-  Grid grid;
-  grid.Initialize(&cells, 20);
+  auto& grid = Grid::GetInstance();
+  grid.Initialize(&cells);
 
-  // Remove two cells
-  positions.erase(positions.begin() + 1);
-  positions.erase(positions.begin() + 42);
+  // Remove cells 1 and 42 (they are swapped with the last two cells)
+  cells.DelayedRemove(1);
+  cells.DelayedRemove(42);
+  cells.Commit();
 
   // Update the grid
-  grid.UpdateGrid(cells.GetAllPositions());
+  grid.UpdateGrid(&cells);
 
-  vector<vector<size_t>> neighbors(cells.size());
+  vector<vector<size_t>> neighbors(positions.size());
 
-  // Lambda that fills a vector of neighbors for each cell (excluding itself)
-  auto fill_neighbor_list = [&neighbors](size_t q, size_t n) {
-    if (q != n) {
-      neighbors[n].push_back(q);
-    }
-  };
+// Lambda that fills a vector of neighbors for each cell (excluding itself)
+#pragma omp parallel for
+  for (size_t i = 0; i < cells.size(); i++) {
+    auto&& cell = cells[i];
+    auto fill_neighbor_list = [&](size_t n) {
+      if (cell.id() != n) {
+        neighbors[cell.id()].push_back(n);
+      }
+    };
 
-  grid.ForEachNeighbor(fill_neighbor_list);
+    grid.ForEachNeighbor(fill_neighbor_list, &cell);
+  }
 
-  std::vector<size_t> expected_0 = {3, 4, 15, 16, 19, 20};
-  std::vector<size_t> expected_3 = {0, 4, 7, 8, 15, 16, 19, 20, 23, 24};
+  std::vector<size_t> expected_0 = {4, 5, 16, 17, 20, 21};
+  std::vector<size_t> expected_5 = {0,  2,  4,  6,  8,  9,  10, 16,
+                                    17, 18, 20, 21, 22, 24, 25, 26};
   std::vector<size_t> expected_41 = {20, 21, 22, 24, 25, 26, 28, 29, 30,
-                                     36, 37, 38, 40, 43, 44, 45, 51, 52,
-                                     53, 55, 56, 57, 59, 60, 61};
-  std::vector<size_t> expected_61 = {41, 44, 45, 56, 57, 60};
+                                     36, 37, 38, 40, 42, 44, 45, 46, 52,
+                                     53, 54, 56, 57, 58, 60, 61};
+  std::vector<size_t> expected_61 = {40, 41, 42, 44, 45, 46, 56, 57, 58, 60};
 
   std::sort(neighbors[0].begin(), neighbors[0].end());
-  std::sort(neighbors[3].begin(), neighbors[3].end());
+  std::sort(neighbors[5].begin(), neighbors[5].end());
   std::sort(neighbors[41].begin(), neighbors[41].end());
   std::sort(neighbors[61].begin(), neighbors[61].end());
 
   if (expected_0 != neighbors[0]) {
     FAIL();
   }
-  if (expected_3 != neighbors[3]) {
+  if (expected_5 != neighbors[5]) {
     FAIL();
   }
   if (expected_41 != neighbors[41]) {

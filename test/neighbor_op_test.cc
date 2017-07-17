@@ -18,6 +18,7 @@ void CellFactory(TContainer* cells, size_t cells_per_dim) {
     for (size_t j = 0; j < cells_per_dim; j++) {
       for (size_t k = 0; k < cells_per_dim; k++) {
         Cell<Scalar> cell({k * space, j * space, i * space});
+        cell.SetDiameter(30);
         cells->push_back(cell);
       }
     }
@@ -88,7 +89,7 @@ TEST(NeighborNanoflannOpTest, ComputeSoa) {
 
 TEST(NeighborGridOpTest, ComputeSoa) {
   auto cells = Cell<>::NewEmptySoa();
-  RunTest(&cells, NeighborGridOp());
+  RunTest(&cells, NeighborGridOp(Grid::kHigh, true));
 }
 
 }  // namespace neighbor_op_test_internal

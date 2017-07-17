@@ -9,26 +9,37 @@
 
 namespace bdm {
 
+/// A class that sets up an uniform grid to perform operations that require
+/// knowledge about neighboring simulation objects
 class NeighborGridOp {
  public:
-  NeighborGridOp() {}
-  explicit NeighborGridOp(double distance) : distance_(distance) {}
-  ~NeighborGridOp() {}
+  explicit NeighborGridOp(Grid::Adjacency adjacency = Grid::kHigh,
+                          bool set_local_neighbors = false,
+                          double radius = 3000)
+      : adjacency_(adjacency),
+        set_local_neighbors_(set_local_neighbors),
+        radius_(radius) {}
+  virtual ~NeighborGridOp() {}
 
   template <typename TContainer>
   void Compute(TContainer* cells) const {
     // Construct a 3D grid with the current positions for the simulation objects
-    // NB: the box size needs to be at least as big as the search radius
-    const double box_size = 55;
     auto& grid = Grid::GetInstance();
-    grid.Initialize(cells, box_size, Grid::kHigh);
+    grid.Initialize(cells, adjacency_);
 
-    // Initiate the operation
-    grid.SetNeighborsWithinRadius(cells, distance_);
+    if (set_local_neighbors_) {
+      // Initiate the operation
+      grid.SetNeighborsWithinRadius(cells, radius_);
+    }
   }
 
  private:
-  double distance_ = 3000;
+  /// Determines how many neighboring boxes to consider for neighbor operations
+  Grid::Adjacency adjacency_;
+  /// Boolean to cache the local neighbors for each simulation object or not
+  bool set_local_neighbors_;
+  /// The searching radius for which to set the local neighbors to
+  double radius_;
 };
 
 }  // namespace bdm

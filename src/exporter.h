@@ -12,7 +12,6 @@
 #include "cell.h"
 #include "displacement_op.h"
 #include "dividing_cell_op.h"
-#include "exporter.h"
 #include "neighbor_nanoflann_op.h"
 #include "neighbor_op.h"
 #include "resource_manager.h"

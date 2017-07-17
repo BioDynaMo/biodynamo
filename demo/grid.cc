@@ -27,26 +27,19 @@ int Run(size_t cells_per_dim) {
     for (size_t j = 0; j < cells_per_dim; j++) {
       for (size_t k = 0; k < cells_per_dim; k++) {
         Cell<Scalar> cell({k * space, j * space, i * space});
-        cell.SetDiameter(30);
+        cell.SetDiameter(10);
         cells.push_back(cell);
       }
     }
   }
 
-  std::vector<double> sum(cells.size());
-  auto simple_calc = [&](size_t nc, size_t qc) {
-    sum[qc] += SquaredEuclideanDistance(cells[nc].GetPosition(),
-                                        cells[qc].GetPosition());
-  };
-
   auto build_timer = new Timing("build    ");
   auto& grid = Grid::GetInstance();
-  grid.Initialize(&cells, 20, Grid::kHigh);
+  grid.Initialize(&cells);
   delete build_timer;
 
   auto iterate_timer = new Timing("iterate ");
-  // grid.SetNeighborsWithinRadius(&cells, 700);
-  grid.ForEachNeighbor(simple_calc);
+  grid.SetNeighborsWithinRadius(&cells, 900);
   delete iterate_timer;
 
   return 0;

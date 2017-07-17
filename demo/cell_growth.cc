@@ -24,17 +24,18 @@ using bdm::Soa;
 using bdm::Timing;
 using bdm::TimingAggregator;
 using bdm::Exporter;
+using bdm::Grid;
 
 void Execute(size_t cells_per_dim, size_t iterations, size_t threads,
              size_t repititions, TimingAggregator *statistic,
              bool with_export) {
+  const double space = 20;
+
   for (size_t r = 0; r < repititions; r++) {
     std::stringstream ss;
     ss << "measurement " << r << " - " << threads << " thread(s) - "
        << cells_per_dim << " cells per dim - " << iterations << " iteration(s)";
     statistic->AddDescription(ss.str());
-
-    const double space = 20;
 
     auto cells = Cell<>::NewEmptySoa();
     cells.reserve(cells_per_dim * cells_per_dim * cells_per_dim);
@@ -44,7 +45,7 @@ void Execute(size_t cells_per_dim, size_t iterations, size_t threads,
         for (size_t j = 0; j < cells_per_dim; j++) {
           for (size_t k = 0; k < cells_per_dim; k++) {
             Cell<Scalar> cell({i * space, j * space, k * space});
-            cell.SetDiameter(30);
+            cell.SetDiameter(10);
             cell.SetAdherence(0.4);
             cell.SetMass(1.0);
             cell.UpdateVolume();
@@ -63,8 +64,7 @@ void Execute(size_t cells_per_dim, size_t iterations, size_t threads,
     for (size_t i = 0; i < iterations; i++) {
       {
         Timing timing("Find Neighbors", statistic);
-        // bdm::NeighborNanoflannOp op(700);
-        bdm::NeighborGridOp op(700);
+        bdm::NeighborGridOp op;
         op.Compute(&cells);
       }
 
