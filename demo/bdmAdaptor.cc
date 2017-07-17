@@ -92,21 +92,18 @@ void CoProcess(Cell<Soa>& cells, double time, size_t timeStep,
     std::cout << "[" << timeStep << "] Done!" << endl;
   }
   
-  vtkFieldData *userData = dataDescription->GetUserData();
-  std::cout << "UserData: " << userData << endl;
-  
   // Update simulation data?
+  vtkFieldData *userData = dataDescription->GetUserData();
   if (userData != nullptr) {
-      std::cout << userData->GetNumberOfArrays() << endl;
-      
-      vtkDoubleArray *radiusArray = (vtkDoubleArray*)userData->GetAbstractArray("Radius");
-      //radiusArray->Print(std::cout);
+      //std::cout << userData->GetNumberOfArrays() << endl;
+
+      vtkDoubleArray *diameterArray = (vtkDoubleArray*)userData->GetAbstractArray("PropDiameter");
+      //diameterArray->Print(std::cout);
       
       double cellDiameter;
-      for (int i = 0; i < radiusArray->GetSize(); i++) {
-          cellDiameter = radiusArray->GetValue(i);
+      for (int i = 0; i < diameterArray->GetSize(); i++) {
+          cellDiameter = diameterArray->GetValue(i);
           //std::cout << cellDiameter << " ";
-
           cells[i].SetDiameter(cellDiameter);
       }
       std::cout << "\n";

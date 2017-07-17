@@ -4,6 +4,10 @@ from paraview import coprocessing
 #Code generated from cpstate.py to create the CoProcessor.
 #ParaView 5.3.0 64 bits
 
+def readFile(filename):
+    with open(filename, 'r') as f:
+        return f.read()
+
 #CoProcessor definition
 def CreateCoProcessor():
     def _CreatePipeline(coprocessor, datadescription):
@@ -19,15 +23,22 @@ def CreateCoProcessor():
             #create a producer from a simulation input
             results4Paraview0vtu = coprocessor.CreateProducer(datadescription, 'input')
 
+            # create new Programmable filter for propagating user changes
+            propDiameterFilter = ProgrammableFilter(Input=results4Paraview0vtu)
+            propDiameterFilter.CopyArrays = True
+            try:
+                propDiameterFilter.Script = readFile("../demo/propDiameterFilter.py")
+            except IOError as err:
+                print 'Error: ' + err.strerror
+
             #create a new 'Calculator'
-            #calculator1 = Calculator(Input = results4Paraview0vtu)
-            #calculator1.ResultArrayName = 'Radius'
-            #calculator1.Function = '0.95*Diameter'
-
-
+            calculator1 = Calculator(Input = propDiameterFilter)
+            calculator1.ResultArrayName = 'Radius'
+            calculator1.Function = '0.5*Diameter'
 
             #create a new 'Glyph'
-            glyph1 = Glyph(Input = propDiameterFilter, GlyphType = 'Sphere')
+            #glyph1 = Glyph(Input = propDiameterFilter, GlyphType = 'Sphere')
+            glyph1 = Glyph(Input = calculator1, GlyphType = 'Sphere')
             glyph1.Scalars = [ 'POINTS', 'Radius' ]
             glyph1.Vectors = [ 'POINTS', 'None' ]
             glyph1.ScaleMode = 'scalar'
@@ -101,8 +112,8 @@ def DoCoProcessing(datadescription):
 
     # ---------------------------------------------------------------------------
     ## Define filter name for data-feedback
-    filterName = "Calculator1"
-    arrayName = "Radius"
+    filterName = "ProgrammableFilter1"
+    arrayName = "Diameter"
 
     # Fetch filter & result array
     try:
@@ -110,13 +121,12 @@ def DoCoProcessing(datadescription):
         if myFilter:
             realFilter = servermanager.Fetch(myFilter)
             pointData = realFilter.GetPointData()
-            array = pointData.GetArray(arrayName)
+            array = pointData.GetArray("Prop" + arrayName)
 
-            # Optional: just for debugging
-            resultArray = [ array.GetValue(i) for i in range(array.GetSize()) ]
-            print '[%d] %s' % (len(resultArray), resultArray)
+            # Debugging...
+            #resultArray = [ array.GetValue(i) for i in range(array.GetSize()) ]
+            #print '[%d] %s' % (len(resultArray), resultArray)
             # ----------------------------
-
 
             # Propagate data to UserData
             datadescription.SetUserData(pointData)
