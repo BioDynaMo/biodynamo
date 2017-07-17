@@ -4,35 +4,36 @@ cell_ids = [ ]
 # Desired cell diameter values
 cells_diameter = [ ]
 
-# Currently 'Diameter' is supported
-arrayName = 'Diameter'
-print(arrayName)
+# Currently only 'Diameter' is supported
+arrays = [ 'Diameter' ]
 
-### DO NOT EDIT HERE ###
+### DO NOT EDIT FROM HERE ###
 from paraview import vtk
 
+pdo = self.GetOutput()
 pdi = self.GetPolyDataInput()
 nPoints = pdi.GetNumberOfPoints()
 
-newArray = vtk.vtkDoubleArray()
-newArray.SetName("Prop" + arrayName)
-oldArray = pdi.GetPointData().GetArray(arrayName)
+for arrayName in arrays:
+    oldArray = pdi.GetPointData().GetArray(arrayName)
+    if not oldArray:
+        print 'Array "%s" does not exists!' % arrayName
+        continue
 
-# Copy array
-# TODO: Make that faster! (pointer's stuff)
-newArray.SetNumberOfValues(nPoints)
-for j in range(nPoints):
-    newArray.SetValue(j, oldArray.GetValue(j))
+    vtkNewArray = vtk.vtkDoubleArray()
+    vtkNewArray.SetName("Prop" + arrayName)
 
-# Change values
-for j in range(len(cell_ids)):
-    id = cell_ids[j]
-    newArray.SetValue(id, cells_diameter[j])
+    # Copy array
+    # TODO: Make that faster! (maybe copy)
+    vtkNewArray.SetNumberOfValues(nPoints)
+    for j in range(nPoints):
+        vtkNewArray.SetValue(j, oldArray.GetValue(j))
 
-# Set new array
-pdo = self.GetOutput()
-pdo.GetPointData().AddArray(newArray)
+    # Update values
+    for j in range(len(cell_ids)):
+        vtkNewArray.SetValue(cell_ids[j], cells_diameter[j])
 
-#del cell_ids[:]
-#del cells_diameter[:]
+    # Set new array
+    pdo.GetPointData().AddArray(vtkNewArray)
 
+################################

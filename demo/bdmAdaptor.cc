@@ -9,6 +9,7 @@
 #include <vtkNew.h>
 #include <vtkPointData.h>
 #include <vtkPoints.h>
+#include <vtkStringArray.h>
 #include <vtkUnstructuredGrid.h>
 
 #include "bdmAdaptor.h"
@@ -94,20 +95,40 @@ void CoProcess(Cell<Soa>& cells, double time, size_t timeStep,
   
   // Update simulation data?
   vtkFieldData *userData = dataDescription->GetUserData();
-  if (userData != nullptr) {
-      //std::cout << userData->GetNumberOfArrays() << endl;
-
-      vtkDoubleArray *diameterArray = (vtkDoubleArray*)userData->GetAbstractArray("PropDiameter");
-      //diameterArray->Print(std::cout);
-      
-      double cellDiameter;
-      for (int i = 0; i < diameterArray->GetSize(); i++) {
-          cellDiameter = diameterArray->GetValue(i);
-          //std::cout << cellDiameter << " ";
-          cells[i].SetDiameter(cellDiameter);
-      }
-      std::cout << "\n";
+  if (!userData) {
+    return;
   }
+
+  vtkStringArray *propArrays = (vtkStringArray *)userData->GetAbstractArray("PropArrays");
+  if (!propArrays) {
+    return;
+  }
+
+  vtkDoubleArray *array;
+  for (int j = 0; j < propArrays->GetSize(); j++) {
+    array = (vtkDoubleArray *)userData->GetAbstractArray(
+            propArrays->GetValue(j)
+    );
+    //array->Print(std::cout);
+    
+    // Maybe copy?
+    for (int i = 0; i < array->GetSize(); i++) {
+      // reflection here
+      cells[i].SetDiameter( array->GetValue(i) );
+      //std::cout << cells[i].GetDiameter()  << " ";
+    }
+    //std::cout << "\n";
+  }
+
+/*
+  vtkDoubleArray *diameterArray = (vtkDoubleArray*)userData->GetAbstractArray("PropDiameter");
+  
+  double cellDiameter;
+  for (int i = 0; i < diameterArray->GetSize(); i++) {
+      cellDiameter = diameterArray->GetValue(i);
+      cells[i].SetDiameter(cellDiameter);
+  }
+  */
 
 }
 }  // namespace bdmAdaptor

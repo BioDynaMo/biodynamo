@@ -1,4 +1,5 @@
 from paraview.simple import *
+from paraview import vtk
 from paraview import coprocessing
 
 #Code generated from cpstate.py to create the CoProcessor.
@@ -22,6 +23,8 @@ def CreateCoProcessor():
             #create a new 'XML Unstructured Grid Reader'
             #create a producer from a simulation input
             results4Paraview0vtu = coprocessor.CreateProducer(datadescription, 'input')
+
+            print results4Paraview0vtu
 
             # create new Programmable filter for propagating user changes
             propDiameterFilter = ProgrammableFilter(Input=results4Paraview0vtu)
@@ -113,25 +116,50 @@ def DoCoProcessing(datadescription):
     # ---------------------------------------------------------------------------
     ## Define filter name for data-feedback
     filterName = "ProgrammableFilter1"
-    arrayName = "Diameter"
 
-    # Fetch filter & result array
+    # Fetch filter object
+    propFilter = FindSource(filterName)
+    if not propFilter:
+        print 'Warning: Filter "%s" cannot be found in Paraview filters' % filterName
+        return
+
     try:
-        myFilter = FindSource(filterName)
-        if myFilter:
-            realFilter = servermanager.Fetch(myFilter)
-            pointData = realFilter.GetPointData()
-            array = pointData.GetArray("Prop" + arrayName)
-
-            # Debugging...
-            #resultArray = [ array.GetValue(i) for i in range(array.GetSize()) ]
-            #print '[%d] %s' % (len(resultArray), resultArray)
-            # ----------------------------
-
-            # Propagate data to UserData
-            datadescription.SetUserData(pointData)
-        else:
-            print 'Warning: Filter "%s" cannot be found in Paraview filters' % filterName
+        realFilter = servermanager.Fetch(propFilter)
     except Exception as ex:
-        print "Error: " + ex.message
+        print "Error: " + ex.strerror
+        return
+
+    if not realFilter:
+        print 'Warning: Filter "%s" cannot be fetched from the Paraview client' % filterName
+        return
+
+    # Fetch all propagation arrays (ArrayName = "Prop*")
+    filterPointData = realFilter.GetPointData()
+    propArrays = filter(
+        lambda array: array.GetName().startswith("Prop"),
+        ( filterPointData.GetArray(i) for i in range(filterPointData.GetNumberOfArrays()) )
+    )
+
+    # Debugging
+    #for array in propArrays:
+    #    resultArray = [ array.GetValue(i) for i in range(array.GetSize()) ]
+    #    print '[%d] %s' % (len(resultArray), resultArray)
+    # ----------------------------
+
+    # Serialize data
+    userData = vtk.vtkFieldData()
+    for array in propArrays:
+        userData.AddArray(array)
+
+    # Create array of propagation array names
+    propArrayNames = vtk.vtkStringArray()
+    propArrayNames.SetName("PropArrays")
+    propArrayNames.SetNumberOfValues(len(propArrays))
+    for j, array in enumerate(propArrays):
+        propArrayNames.SetValue(j, array.GetName())
+
+    userData.AddArray(propArrayNames)
+
+    # Send data to simulator
+    datadescription.SetUserData(userData)
 
