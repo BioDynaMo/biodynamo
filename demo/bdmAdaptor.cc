@@ -6,6 +6,7 @@
 #include <vtkCPPythonScriptPipeline.h>
 #include <vtkDoubleArray.h>
 #include <vtkFieldData.h>
+#include <vtkIdTypeArray.h>
 #include <vtkNew.h>
 #include <vtkPointData.h>
 #include <vtkPoints.h>
@@ -93,31 +94,45 @@ void CoProcess(Cell<Soa>& cells, double time, size_t timeStep,
     std::cout << "[" << timeStep << "] Done!" << endl;
   }
   
-  // Update simulation data?
   vtkFieldData *userData = dataDescription->GetUserData();
   if (!userData) {
+    // no user changes
     return;
   }
-
-  vtkStringArray *propArrays = (vtkStringArray *)userData->GetAbstractArray("PropArrays");
-  if (!propArrays) {
-    return;
-  }
-
-  vtkDoubleArray *array;
-  for (int j = 0; j < propArrays->GetSize(); j++) {
-    array = (vtkDoubleArray *)userData->GetAbstractArray(
-            propArrays->GetValue(j)
-    );
-    //array->Print(std::cout);
     
-    // Maybe copy?
-    for (int i = 0; i < array->GetSize(); i++) {
-      // reflection here
-      cells[i].SetDiameter( array->GetValue(i) );
-      //std::cout << cells[i].GetDiameter()  << " ";
+  // Which properties/attribute the user changed
+  vtkStringArray *propArrays = vtkStringArray::SafeDownCast(
+          userData->GetAbstractArray("PropArrays"));
+  if (!propArrays) {
+    std::cout << "Warning: Cannot find propagated array names" << endl;
+    return;
+  }
+
+  // Get every changed attribute
+  vtkIdTypeArray *idxArray;
+  vtkDoubleArray *valArray;
+  for (int j = 0; j < propArrays->GetSize(); j++) {
+    auto attribute = propArrays->GetValue(j);
+    idxArray = vtkIdTypeArray::SafeDownCast( userData->GetAbstractArray(
+        (std::string("PropIdx") + std::string(attribute)).c_str()
+    ));
+    valArray = vtkDoubleArray::SafeDownCast( userData->GetAbstractArray(
+        (std::string("PropVals") + std::string(attribute)).c_str()
+    ));
+
+    if (!idxArray || !valArray) {
+        std::cerr << "Warning: null pointer returned while fetching '"  
+            << attribute << "' array " << endl;
     }
-    //std::cout << "\n";
+    
+    // Update changed cells
+    for (int i = 0; i < idxArray->GetNumberOfTuples(); i++) {
+      std::cout << "cells[" << idxArray->GetValue(i) << "] = " \
+          << valArray->GetValue(i) << endl;
+      
+      // reflection here!
+      cells[ idxArray->GetValue(i) ].SetDiameter( valArray->GetValue(i) );
+    }
   }
 
 }
