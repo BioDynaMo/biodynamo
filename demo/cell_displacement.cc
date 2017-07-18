@@ -1,6 +1,7 @@
 #include <omp.h>
 #include <unistd.h>
 #include <cstdlib>
+#include <iostream>
 
 #include "bdmAdaptor.h"
 #include "cell.h"
@@ -9,7 +10,7 @@ using bdm::Cell;
 using bdm::Soa;
 using bdm::Scalar;
 
-void print_usage() {
+void PrintUsage() {
   std::cout
       << "USAGE\n"
       << "  ./persistent_sim #cells_per_dim #distance |\n"
@@ -26,7 +27,7 @@ void print_usage() {
       << std::endl;
 }
 
-Cell<Soa> initialize_cells(size_t cells_per_dim) {
+Cell<Soa> InitializeCells(size_t cells_per_dim) {
   const double space = 20;
 
   auto cells = Cell<>::NewEmptySoa();
@@ -46,11 +47,11 @@ Cell<Soa> initialize_cells(size_t cells_per_dim) {
   return cells;
 }
 
-void simulate(Cell<Soa>& cells, size_t numberOfTimeSteps) {
+void Simulate(Cell<Soa>* cells, size_t number_of_time_steps) {
   srand(42);
-  for (size_t timeStep = 0; timeStep < numberOfTimeSteps; timeStep++) {
+  for (size_t time_step = 0; time_step < number_of_time_steps; time_step++) {
 #pragma omp parallel for
-    for (size_t i = 0; i < cells.size(); i++) {
+    for (size_t i = 0; i < cells->size(); i++) {
       // The simulation operation is just a simple cell displacement and growth
       auto current_pos = cells[i].GetPosition();
       double r =
@@ -65,9 +66,12 @@ void simulate(Cell<Soa>& cells, size_t numberOfTimeSteps) {
       // cells[i].SetDiameter(current_dia + 1.0);
     }
     // timestep of 0.1
-    double time = 0.1 * timeStep;
-    bdmAdaptor::CoProcess(cells, time, timeStep,
-                          timeStep == numberOfTimeSteps - 1);
+    double time = 0.1 * time_step;
+
+#ifdef USE_CATALYST
+    bdm_adaptor::CoProcess(cells, time, time_step,
+                           time_step == number_of_time_steps - 1);
+#endif
 
     // Simulate the simulation overhead
     std::cout << "Simulating..." << std::endl;
@@ -86,21 +90,20 @@ int main(int args, char** argv) {
 
 #ifdef USE_CATALYST
     // initialize with a single script (for this demo)
-    bdmAdaptor::Initialize(argv[3]);
+    bdm_adaptor::Initialize(argv[3]);
 #endif
 
-    auto new_cells = initialize_cells(cells_per_dim);
-
+    auto new_cells = InitializeCells(cells_per_dim);
     Cell<Soa>* cells = &new_cells;
 
     omp_set_num_threads(threads);
-    simulate(*cells, duration);
+    Simulate(cells, duration);
 
 #ifdef USE_CATALYST
-    bdmAdaptor::Finalize();
+    bdm_adaptor::Finalize();
 #endif
   } else {
-    print_usage();
+    PrintUsage();
   }
   return 0;
 }

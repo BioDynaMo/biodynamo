@@ -240,6 +240,7 @@ endif()
 include(cmake/CppStyleGuideChecks.cmake)
 
 # --------------------- build cell_division_module executable ------------------
+<<<<<<< 2e899bc195f8596f2606e4dfe29da2f7aeffa08c
 bdm_add_executable(cell_division_module
                    SOURCES demo/cell_division_module.cc
                    HEADERS demo/cell_division_module.h
@@ -250,3 +251,4 @@ bdm_add_executable(backup-restore
                   SOURCES demo/backup_restore.cc
                   HEADERS demo/backup_restore.h
                   LIBRARIES biodynamo)
+
