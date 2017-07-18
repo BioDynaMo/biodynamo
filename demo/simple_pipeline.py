@@ -160,6 +160,6 @@ def DoCoProcessing(datadescription):
 
     userData.AddArray(propArrayNames)
 
-    # Send data to simulator
+    # Send data back to simulator
     datadescription.SetUserData(userData)
 

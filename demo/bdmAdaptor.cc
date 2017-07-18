@@ -120,15 +120,5 @@ void CoProcess(Cell<Soa>& cells, double time, size_t timeStep,
     //std::cout << "\n";
   }
 
-/*
-  vtkDoubleArray *diameterArray = (vtkDoubleArray*)userData->GetAbstractArray("PropDiameter");
-  
-  double cellDiameter;
-  for (int i = 0; i < diameterArray->GetSize(); i++) {
-      cellDiameter = diameterArray->GetValue(i);
-      cells[i].SetDiameter(cellDiameter);
-  }
-  */
-
 }
 }  // namespace bdmAdaptor
