@@ -6,13 +6,13 @@
 using bdm::Cell;
 using bdm::Soa;
 
-namespace bdmAdaptor {
+namespace bdm_adaptor {
 void Initialize(char* script);
 
 void Finalize();
 
-void CoProcess(Cell<Soa>& cells, double time, size_t timeStep,
-               bool lastTimeStep);
+void CoProcess(Cell<Soa>* cells, double time, size_t time_step,
+               bool last_time_step);
 }
 
 #endif  // DEMO_BDMADAPTOR_H_
