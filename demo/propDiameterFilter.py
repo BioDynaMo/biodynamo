@@ -1,11 +1,6 @@
-# Cells indexes
-cell_ids = [ ]
-
-# Desired cell diameter values
-cells_diameter = [ ]
-
-# Currently only 'Diameter' is supported
-arrays = [ 'Diameter' ]
+# Populate idx_values with (idx, value) tuples
+attribute = 'Diameter'
+idx_values = [ ]
 
 ### DO NOT EDIT FROM HERE ###
 from paraview import vtk
@@ -14,24 +9,19 @@ pdo = self.GetOutput()
 pdi = self.GetPolyDataInput()
 nPoints = pdi.GetNumberOfPoints()
 
-for arrayName in arrays:
+for arrayName in [ attribute ]:
     oldArray = pdi.GetPointData().GetArray(arrayName)
     if not oldArray:
         print 'Array "%s" does not exists!' % arrayName
         continue
 
     vtkNewArray = vtk.vtkDoubleArray()
+    vtkNewArray.DeepCopy(oldArray)
     vtkNewArray.SetName("Prop" + arrayName)
 
-    # Copy array
-    # TODO: Make that faster! (maybe copy)
-    vtkNewArray.SetNumberOfValues(nPoints)
-    for j in range(nPoints):
-        vtkNewArray.SetValue(j, oldArray.GetValue(j))
-
     # Update values
-    for j in range(len(cell_ids)):
-        vtkNewArray.SetValue(cell_ids[j], cells_diameter[j])
+    for idx, val in idx_values:
+        vtkNewArray.SetValue(idx, val)
 
     # Set new array
     pdo.GetPointData().AddArray(vtkNewArray)
