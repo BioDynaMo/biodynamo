@@ -1,6 +1,6 @@
-# Populate idx_values with (idx, value) tuples
+# Populate idx_vals_tuples with (idx, value) tuples
 attribute = 'Diameter'
-idx_values = [ ]
+idx_vals_tuples = [ ]
 
 ### DO NOT EDIT FROM HERE ###
 from paraview import vtk
@@ -12,18 +12,35 @@ nPoints = pdi.GetNumberOfPoints()
 for arrayName in [ attribute ]:
     oldArray = pdi.GetPointData().GetArray(arrayName)
     if not oldArray:
-        print 'Array "%s" does not exists!' % arrayName
+        print 'Attribute "%s" does not exists!' % arrayName
         continue
 
-    vtkNewArray = vtk.vtkDoubleArray()
-    vtkNewArray.DeepCopy(oldArray)
-    vtkNewArray.SetName("Prop" + arrayName)
+    valid_tuples = [ ]
+    for idx, val in idx_vals_tuples:
+        if idx < 0 or idx >= nPoints:
+            print 'Skipping invalid tuples (%d, %lf)' % (idx, val)
+            continue
 
-    # Update values
-    for idx, val in idx_values:
-        vtkNewArray.SetValue(idx, val)
+        valid_tuples.append((idx, val))
+
+    if len(valid_tuples) == 0:
+        continue
+
+    vtkPropIdx = vtk.vtkIdTypeArray()
+    vtkPropIdx.SetName("PropIdx" + arrayName)
+    vtkPropIdx.SetNumberOfValues( len(valid_tuples) )
+
+    vtkPropVals = vtk.vtkDoubleArray()
+    vtkPropVals.SetName("PropVals" + arrayName)
+    vtkPropVals.SetNumberOfValues( len(valid_tuples) )
+
+    # Record changes
+    for i, (idx, val) in enumerate(valid_tuples):
+        vtkPropIdx.SetValue(i, idx)
+        vtkPropVals.SetValue(i, val)
 
     # Set new array
-    pdo.GetPointData().AddArray(vtkNewArray)
+    pdo.GetFieldData().AddArray(vtkPropIdx)
+    pdo.GetFieldData().AddArray(vtkPropVals)
 
 ################################
