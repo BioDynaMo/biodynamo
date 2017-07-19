@@ -153,12 +153,12 @@ add_dependencies(bdmclean libbdmclean)
 
 
 if (USE_CATALYST)
-#set(catalyst_adaptor_src
-# ${CMAKE_SOURCE_DIR}/src/visualization/catalyst_adaptor.cc
-#)
-#add_library(catalyst_adaptor ${catalyst_adaptor_src})
-#target_link_libraries(catalyst_adaptor vtkPVPythonCatalyst)
-#target_link_libraries(biodynamo catalyst_adaptor)
+  #set(catalyst_adaptor_src
+  # ${CMAKE_SOURCE_DIR}/src/visualization/catalyst_adaptor.cc
+  #)
+  #add_library(catalyst_adaptor ${catalyst_adaptor_src})
+  #target_link_libraries(catalyst_adaptor vtkPVPythonCatalyst)
+  #target_link_libraries(biodynamo catalyst_adaptor)
   target_link_libraries(biodynamo vtkPVPythonCatalyst)
 endif()
 
@@ -247,12 +247,6 @@ include(cmake/CppStyleGuideChecks.cmake)
 set(SIMULATION_TARGET cell_growth)
 add_executable(${SIMULATION_TARGET} ${CMAKE_SOURCE_DIR}/demo/cell_growth.cc)
 target_link_libraries(${SIMULATION_TARGET} biodynamo)
-
-# --------------------- build division module simulation executable ---------------------
-set(SIMULATION_TARGET cell_displacement)
-add_executable(${SIMULATION_TARGET} ${CMAKE_SOURCE_DIR}/demo/cell_displacement.cc)
-target_link_libraries(${SIMULATION_TARGET} biodynamo)
-include(vtkModuleMacros)
 
 # --------------------- build cell_division_module executable ------------------
 set(SIMULATION_TARGET cell_division_module)

@@ -18,10 +18,8 @@
 
 #include "cell.h"
 
-using bdm::Cell;
-using bdm::Soa;
+namespace catalyst {
 
-namespace {
 vtkCPProcessor* gProcessor = NULL;
 vtkUnstructuredGrid* gVTKGrid;
 
@@ -34,9 +32,9 @@ void BuildVTKGrid(Container* cells) {
 
   position_array->SetNumberOfComponents(3);
   position_array->SetArray(cells->GetPositionPtr(),
-                          static_cast<vtkIdType>(cells->size() * 3), 1);
+                           static_cast<vtkIdType>(cells->size() * 3), 1);
   diameter_array->SetArray(cells->GetDiameterPtr(),
-                          static_cast<vtkIdType>(cells->size()), 1);
+                           static_cast<vtkIdType>(cells->size()), 1);
 
   vtkNew<vtkPoints> points;
 
@@ -56,10 +54,6 @@ void BuildVTKDataStructures(Container* cells) {
     BuildVTKGrid(cells);
   }
 }
-}  // namespace
-
-
-namespace catalyst {
 
 void Initialize(const std::string& script) {
   if (gProcessor == NULL) {
@@ -101,7 +95,7 @@ void CoProcess(Container* cells, double time, size_t time_step,
 
     gProcessor->CoProcess(data_description.GetPointer());
   }
-    
+
   // ----------------- User changes propagation ------------------------------
 
   vtkFieldData* user_data = data_description->GetUserData();

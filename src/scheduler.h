@@ -43,16 +43,16 @@ class Scheduler {
       cells->Commit();
 
 #ifdef USE_CATALYST
-      double time = Param::kSimulationTimeStep * total_steps;
-      catalyst::CoProcess(cells, time, total_steps, step == steps - 1);
+      double time = Param::kSimulationTimeStep * total_steps_;
+      catalyst::CoProcess(cells, time, total_steps_, step == steps - 1);
 #endif
 
-      total_steps++;
+      total_steps_++;
     }
   }
 
  private:
-  unsigned long total_steps = 0;
+  unsigned total_steps_ = 0;
 };
 
 }  // namespace bdm
