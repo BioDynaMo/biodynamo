@@ -153,12 +153,13 @@ add_dependencies(bdmclean libbdmclean)
 
 
 if (USE_CATALYST)
-  set(catalyst_adaptor_src
-    ${CMAKE_SOURCE_DIR}/src/visualization/catalyst_adaptor.cc
-  )
-  add_library(catalyst_adaptor ${catalyst_adaptor_src})
-  target_link_libraries(catalyst_adaptor vtkPVPythonCatalyst)
-  target_link_libraries(biodynamo catalyst_adaptor)
+#set(catalyst_adaptor_src
+# ${CMAKE_SOURCE_DIR}/src/visualization/catalyst_adaptor.cc
+#)
+#add_library(catalyst_adaptor ${catalyst_adaptor_src})
+#target_link_libraries(catalyst_adaptor vtkPVPythonCatalyst)
+#target_link_libraries(biodynamo catalyst_adaptor)
+  target_link_libraries(biodynamo vtkPVPythonCatalyst)
 endif()
 
 # -------------------- build test project runBiodynamoTests ----------------------
