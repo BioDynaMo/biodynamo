@@ -11,6 +11,11 @@
 #include "resource_manager.h"
 #include "simulation_backup.h"
 
+#ifdef USE_CATALYST
+#include "param.h"
+#include "visualization/catalyst_adaptor.h"
+#endif
+
 namespace bdm {
 
 template <typename TCellContainer>
@@ -18,7 +23,11 @@ class Scheduler {
  public:
   using Clock = std::chrono::high_resolution_clock;
 
-  Scheduler() : backup_(SimulationBackup("", "")) {}
+  Scheduler() : backup_(SimulationBackup("", "")) {
+#ifdef USE_CATALYST
+    catalyst::Initialize("../src/visualization/simple_pipeline.py");
+#endif
+  }
 
   Scheduler(const std::string& backup_file, const std::string& restore_file)
       : backup_(SimulationBackup(backup_file, restore_file)) {
@@ -27,7 +36,11 @@ class Scheduler {
     }
   }
 
-  virtual ~Scheduler() {}
+  virtual ~Scheduler() {
+#ifdef USE_CATALYST
+    catalyst::Finalize();
+#endif
+  }
 
   void Simulate(unsigned steps) {
     auto cells = ResourceManager<TCellContainer>::Get()->GetCells();
@@ -44,7 +57,7 @@ class Scheduler {
       total_steps_ = restore_point_;
     }
 
-    while (steps-- > 0) {
+    while (unsigned step = 0; step < steps; step++) {
       Execute();
 
       // Backup
@@ -72,6 +85,11 @@ class Scheduler {
 
     // commit new and removed cells
     cells->Commit();
+
+#ifdef USE_CATALYST
+    double time = Param::kSimulationTimeStep * total_steps_;
+    catalyst::CoProcess(cells, time, total_steps_, step == steps - 1);
+#endif
 
     total_steps_++;
   }

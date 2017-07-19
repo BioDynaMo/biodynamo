@@ -151,12 +151,13 @@ add_dependencies(bdmclean libbdmclean)
 generate_rootlogon()
 
 if (USE_CATALYST)
-  set(catalyst_adaptor_src
-    ${CMAKE_SOURCE_DIR}/src/visualization/catalyst_adaptor.cc
-  )
-  add_library(catalyst_adaptor ${catalyst_adaptor_src})
-  target_link_libraries(catalyst_adaptor vtkPVPythonCatalyst)
-  target_link_libraries(biodynamo catalyst_adaptor)
+#set(catalyst_adaptor_src
+# ${CMAKE_SOURCE_DIR}/src/visualization/catalyst_adaptor.cc
+#)
+#add_library(catalyst_adaptor ${catalyst_adaptor_src})
+#target_link_libraries(catalyst_adaptor vtkPVPythonCatalyst)
+#target_link_libraries(biodynamo catalyst_adaptor)
+  target_link_libraries(biodynamo vtkPVPythonCatalyst)
 endif()
 
 # -------------------- build test project runBiodynamoTests ----------------------
@@ -244,7 +245,6 @@ endif()
 include(cmake/CppStyleGuideChecks.cmake)
 
 # --------------------- build cell_division_module executable ------------------
-<<<<<<< 2e899bc195f8596f2606e4dfe29da2f7aeffa08c
 bdm_add_executable(cell_division_module
                    SOURCES demo/cell_division_module.cc
                    HEADERS demo/cell_division_module.h
