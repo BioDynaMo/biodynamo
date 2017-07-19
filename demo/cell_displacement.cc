@@ -53,17 +53,14 @@ void Simulate(Cell<Soa>* cells, size_t number_of_time_steps) {
 #pragma omp parallel for
     for (size_t i = 0; i < cells->size(); i++) {
       // The simulation operation is just a simple cell displacement and growth
-      auto current_pos = cells[i].GetPosition();
+      auto current_pos = (*cells)[i].GetPosition();
       double r =
           -1.0 +
           static_cast<double>(rand()) / (static_cast<double>(RAND_MAX / (2)));
       std::array<double, 3> new_pos{(current_pos[0] + r), current_pos[1] + r,
                                     current_pos[2] + r};
 
-      cells[i].SetPosition(new_pos);
-
-      // auto current_dia = cells[i].GetDiameter();
-      // cells[i].SetDiameter(current_dia + 1.0);
+      (*cells)[i].SetPosition(new_pos);
     }
     // timestep of 0.1
     double time = 0.1 * time_step;
