@@ -129,7 +129,7 @@ void CoProcess(Cell<Soa>* cells, double time, size_t time_step,
                 << "] = " << val_array->GetValue(i) << endl;
 
       // reflection here!
-      cells[idx_array->GetValue(i)].SetDiameter(val_array->GetValue(i));
+      (*cells)[idx_array->GetValue(i)].SetDiameter(val_array->GetValue(i));
     }
   }
 }
