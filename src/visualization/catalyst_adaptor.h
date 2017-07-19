@@ -7,7 +7,7 @@ using bdm::Cell;
 using bdm::Soa;
 
 namespace bdm_adaptor {
-void Initialize(char* script);
+void Initialize(const std::string& script);
 
 void Finalize();
 

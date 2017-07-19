@@ -13,7 +13,7 @@
 #include <vtkStringArray.h>
 #include <vtkUnstructuredGrid.h>
 
-#include "bdmAdaptor.h"
+#include "catalyst_adaptor.h"
 
 namespace {
 vtkCPProcessor* gProcessor = NULL;
@@ -52,7 +52,7 @@ void BuildVTKDataStructures(Cell<Soa>* cells) {
 
 namespace bdm_adaptor {
 
-void Initialize(char* script) {
+void Initialize(const std::string& script) {
   if (gProcessor == NULL) {
     gProcessor = vtkCPProcessor::New();
     gProcessor->Initialize();
@@ -60,7 +60,7 @@ void Initialize(char* script) {
     gProcessor->RemoveAllPipelines();
   }
   vtkNew<vtkCPPythonScriptPipeline> pipeline;
-  pipeline->Initialize(script);
+  pipeline->Initialize(script.c_str());
   gProcessor->AddPipeline(pipeline.GetPointer());
 }
 
@@ -89,9 +89,7 @@ void CoProcess(Cell<Soa>* cells, double time, size_t time_step,
     BuildVTKDataStructures(cells);
     data_description->GetInputDescriptionByName("input")->SetGrid(gVTKGrid);
 
-    std::cout << "[" << time_step << "] Starting CoProcess..." << endl;
     gProcessor->CoProcess(data_description.GetPointer());
-    std::cout << "[" << time_step << "] Done!" << endl;
   }
 
   vtkFieldData* user_data = data_description->GetUserData();

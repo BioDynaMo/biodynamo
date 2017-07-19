@@ -40,11 +40,6 @@ set(USE_CATALYST ON CACHE BOOL "Link BioDynaMo with ParaView Catalyst")
 if(USE_CATALYST)
   find_package(ParaView 5.3 REQUIRED COMPONENTS vtkPVPythonCatalyst)
   include("${PARAVIEW_USE_FILE}")
-  set(Adaptor_SRCS
-    ${CMAKE_SOURCE_DIR}/demo/bdmAdaptor.cc
-    )
-  add_library(bdmAdaptor ${Adaptor_SRCS})
-  target_link_libraries(bdmAdaptor vtkPVPythonCatalyst)
   add_definitions("-DUSE_CATALYST")
 endif()
 
@@ -156,6 +151,16 @@ add_custom_target(libbdmclean COMMAND ${CMAKE_COMMAND} -P "${CMAKE_BINARY_DIR}/C
 add_custom_target(bdmclean)
 add_dependencies(bdmclean libbdmclean)
 
+
+if (USE_CATALYST)
+  set(catalyst_adaptor_src
+    ${CMAKE_SOURCE_DIR}/src/visualization/catalyst_adaptor.cc
+  )
+  add_library(catalyst_adaptor ${catalyst_adaptor_src})
+  target_link_libraries(catalyst_adaptor vtkPVPythonCatalyst)
+  target_link_libraries(biodynamo catalyst_adaptor)
+endif()
+
 # -------------------- build test project runBiodynamoTests ----------------------
 # http://www.kaizou.org/2014/11/gtest-cmake/
 if (test)
@@ -245,7 +250,7 @@ target_link_libraries(${SIMULATION_TARGET} biodynamo)
 # --------------------- build division module simulation executable ---------------------
 set(SIMULATION_TARGET cell_displacement)
 add_executable(${SIMULATION_TARGET} ${CMAKE_SOURCE_DIR}/demo/cell_displacement.cc)
-target_link_libraries(${SIMULATION_TARGET} biodynamo bdmAdaptor)
+target_link_libraries(${SIMULATION_TARGET} biodynamo)
 include(vtkModuleMacros)
 
 # --------------------- build cell_division_module executable ------------------
