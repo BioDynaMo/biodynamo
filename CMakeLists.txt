@@ -38,11 +38,6 @@ set(USE_CATALYST ON CACHE BOOL "Link BioDynaMo with ParaView Catalyst")
 if(USE_CATALYST)
   find_package(ParaView 5.3 REQUIRED COMPONENTS vtkPVPythonCatalyst)
   include("${PARAVIEW_USE_FILE}")
-  set(Adaptor_SRCS
-    ${CMAKE_SOURCE_DIR}/demo/bdmAdaptor.cc
-    )
-  add_library(bdmAdaptor ${Adaptor_SRCS})
-  target_link_libraries(bdmAdaptor vtkPVPythonCatalyst)
   add_definitions("-DUSE_CATALYST")
 endif()
 
@@ -155,6 +150,15 @@ add_dependencies(bdmclean libbdmclean)
 
 generate_rootlogon()
 
+if (USE_CATALYST)
+  set(catalyst_adaptor_src
+    ${CMAKE_SOURCE_DIR}/src/visualization/catalyst_adaptor.cc
+  )
+  add_library(catalyst_adaptor ${catalyst_adaptor_src})
+  target_link_libraries(catalyst_adaptor vtkPVPythonCatalyst)
+  target_link_libraries(biodynamo catalyst_adaptor)
+endif()
+
 # -------------------- build test project runBiodynamoTests ----------------------
 # http://www.kaizou.org/2014/11/gtest-cmake/
 if (test)
@@ -251,4 +255,3 @@ bdm_add_executable(backup-restore
                   SOURCES demo/backup_restore.cc
                   HEADERS demo/backup_restore.h
                   LIBRARIES biodynamo)
-

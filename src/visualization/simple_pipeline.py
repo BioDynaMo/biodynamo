@@ -5,13 +5,13 @@ from paraview import coprocessing
 #Code generated from cpstate.py to create the CoProcessor.
 #ParaView 5.3.0 64 bits
 
-## Define filter name for data-feedback
+## Default filter name for data-feedback
 propFilterName = "ProgrammableFilter1"
 
 # Read propagation python script
 propDiameterFilterScript = ''
 try:
-    with open('../demo/propDiameterFilter.py', 'r') as f:
+    with open('./prop_diameter_filter.py', 'r') as f:
         propDiameterFilterScript = f.read()
 except IOError as err:
     print 'Error: ' + err.strerror
