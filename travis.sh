@@ -43,6 +43,12 @@ if [ "$TRAVIS_OS_NAME" = "linux" ]; then
   export CC=gcc-5
   export CXX=g++-5
 
+  # Need a CMake version >= 3.3 for VTK (Catalyst)
+  wget https://cmake.org/files/v3.6/cmake-3.6.3-Linux-x86_64.tar.gz
+  tar -xzf cmake-3.6.3-Linux-x86_64.tar.gz
+  sudo rm /usr/bin/cmake
+  sudo ln -s `pwd`/cmake-3.6.3-Linux-x86_64/bin/cmake /usr/bin/cmake
+
   # needed for Catalyst
   sudo ln -s /usr/lib/libmpi.so /usr/local/lib/libmpi.so
   sudo ln -s /usr/lib/libmpi.so /usr/local/lib/libmpi.so.12
