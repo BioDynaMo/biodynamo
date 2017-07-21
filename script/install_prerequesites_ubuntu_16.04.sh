@@ -23,9 +23,9 @@ function Install {
   ln -s `pwd`/cmake-3.6.3-Linux-x86_64/bin/cmake /usr/bin/cmake
 
   # install packages
-  apt-get install mpich
-  apt-get install freeglut3-dev
-  apt-get -y install git valgrind python lcov
+  apt-get -y install libopenmpi-dev openmpi-bin
+  apt-get -y install freeglut3-dev
+  apt-get -y install git valgrind python python2.7-dev lcov
   apt-get -y install gcc-5 g++-5
   apt-get -y install clang-3.9 clang-format-3.9 clang-tidy-3.9 libomp-dev
   apt-get -y install doxygen graphviz
