@@ -2,6 +2,7 @@
 #define VISUALIZATION_CATALYST_ADAPTOR_H_
 
 #include <iostream>
+#include <string>
 
 #include <vtkCPDataDescription.h>
 #include <vtkCPInputDataDescription.h>
