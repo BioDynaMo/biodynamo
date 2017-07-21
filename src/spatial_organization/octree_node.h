@@ -84,9 +84,8 @@ class OctreeNode : public SpatialTreeNode<T> {
 };
 
 template <typename T>
-OctreeNode<T>::OctreeNode() {
-  OctreeNode<T>(Bound(0, 0, 0, 1, 1, 1), 10, 1000);
-}
+OctreeNode<T>::OctreeNode()
+    : OctreeNode<T>(Bound(0, 0, 0, 1, 1, 1), 10, 1000) {}
 
 template <typename T>
 OctreeNode<T>::OctreeNode(int max_depth, int max_amount_of_objects)

@@ -6,7 +6,7 @@
 #include <sstream>
 #include <vector>
 
-#include <Rtypes.h>
+#include "root_util.h"
 
 namespace bdm {
 
@@ -183,7 +183,7 @@ class InlineVector {
   T* heap_data_ = nullptr;  //[heap_size_]  // NOLINT
   size_t size_ = 0;
   size_t capacity_ = N;
-  ClassDef(InlineVector, 1);  // NOLINT
+  BDM_ROOT_CLASS_DEF(InlineVector, 1);  // NOLINT
 };
 
 }  // namespace bdm

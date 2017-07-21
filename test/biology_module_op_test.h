@@ -21,7 +21,13 @@ struct GrowthModule {
   }
 
   bool IsCopied(Event event) const { return false; }
+  ClassDefNV(GrowthModule, 1);
 };
+
+typedef variant<GrowthModule> BiologyModules;
+
+template <typename TBackend = Scalar>
+using MyCell = Cell<TBackend, BiologyModules>;
 
 }  // namespace biology_module_op_test_internal
 }  // namespace bdm

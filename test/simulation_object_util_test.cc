@@ -208,5 +208,7 @@ TEST(SimulationObjectUtilTest, Soa_Delete) {
   RunDeleteTest(&neurons);
 }
 
+TEST(SimulationObjectUtilTest, Soa_IO) { RunSoaIOTest(); }
+
 }  // namespace simulation_object_util_test_internal
 }  // namespace bdm

@@ -1,8 +1,7 @@
 #ifndef IO_UTIL_H_
 #define IO_UTIL_H_
 
-#include <fstream>
-#include <iostream>
+#include <string>
 
 #include <Rtypes.h>
 #include <TFile.h>
@@ -14,59 +13,37 @@ namespace bdm {
 /// check if the same system is used for continuing a simulation for example.
 class RuntimeVariables {
  public:
-  RuntimeVariables() { gSystem->GetSysInfo(&sysinfo_); }  // NOLINT
-  explicit RuntimeVariables(TRootIOCtor *io_ctor) {
-  }  // Constructor for ROOT I/O
-  virtual ~RuntimeVariables() {}
+  RuntimeVariables();
+  // Constructor for ROOT I/O
+  explicit RuntimeVariables(TRootIOCtor *io_ctor);
 
-  SysInfo_t GetSystemInfo() { return sysinfo_; }
-  void SetSystemInfo(SysInfo_t &other) {  // NOLINT
-    sysinfo_ = other;
-  }
-  // clang-format off
-  void PrintSystemInfo() {
-    std::cout << "OS:\t"    << sysinfo_.fOS       << std::endl
-              << "Model:\t" << sysinfo_.fModel    << std::endl
-              << "Arch:\t"  << sysinfo_.fCpuType  << std::endl
-              << "#CPUs:\t" << sysinfo_.fCpus     << std::endl
-              << "RAM:\t"   << sysinfo_.fPhysRam  << "MB"  << std::endl;
-  }
-  // clang-format on
+  SysInfo_t GetSystemInfo() const;
+  void SetSystemInfo(const SysInfo_t &other);
 
-  bool operator==(RuntimeVariables &other) {  // NOLINT
-    if (sysinfo_.fOS != other.GetSystemInfo().fOS) {
-      return false;
-    }
-    if (sysinfo_.fModel != other.GetSystemInfo().fModel) {
-      return false;
-    }
-    if (sysinfo_.fCpuType != other.GetSystemInfo().fCpuType) {
-      return false;
-    }
-    if (sysinfo_.fCpus != other.GetSystemInfo().fCpus) {
-      return false;
-    }
-    if (sysinfo_.fPhysRam != other.GetSystemInfo().fPhysRam) {
-      return false;
-    }
-    return true;
-  }
+  void PrintSystemInfo();
 
-  bool operator!=(RuntimeVariables &other) {  // NOLINT
-    return !(*this == other);
-  }
+  bool operator==(const RuntimeVariables &other) const;
+
+  bool operator!=(const RuntimeVariables &other) const;
 
  private:
   SysInfo_t sysinfo_;
-  ClassDef(RuntimeVariables, 1);  // NOLINT
+  ClassDefNV(RuntimeVariables, 1);  // NOLINT
 };
 
-inline bool FileExists(const char *file_name) {
-  std::ifstream infile(file_name);
-  return infile.good();
-}
+/// Automatically close a TFile object using RAII pattern
+class TFileRaii {
+public:
+  TFileRaii(const std::string& filename, const char* mode);
+  TFileRaii(TFile* file);
+  ~TFileRaii();
+  TFile* Get();
+private:
+  TFile* file_;
+};
 
-///
+bool FileExists(const std::string& file_name);
+
 /// @brief      Gets the persistent object from the specified ROOT file.
 ///
 /// @param[in]  root_file  The root file
@@ -79,11 +56,10 @@ inline bool FileExists(const char *file_name) {
 ///
 template <typename T>
 bool GetPersistentObject(const char *root_file, const char *obj_name,
-                         T &empty_obj) {  // NOLINT
+                         T& empty_obj) {  // NOLINT
   if (FileExists(root_file)) {
-    TFile *f = TFile::Open(root_file);
-    f->GetObject(obj_name, empty_obj);
-    f->Close();
+    TFileRaii file(TFile::Open(root_file));
+    file.Get()->GetObject(obj_name, empty_obj);
     return true;
   }
   return false;
@@ -102,17 +78,16 @@ bool GetPersistentObject(const char *root_file, const char *obj_name,
 ///
 /// Option | Details
 /// -------|--------
-/// new (default) | A new root file `root_file` is created. If file already exist, an error message is printed and the function returns.
+/// new (default) | A new root file `root_file` is created. If file already exists, an error message is printed and the function returns.
 /// recreate      | If file does not exist, it is created (like in "new"). If file already exist, the existing file is deleted before creating the new file.
 /// update        | New classes are added to the existing directory. Existing classes with the same name are replaced by the new definition. If the directory dirname doest not exist, same effect as "new".
 ///
 // clang-format on
 template <typename T>
 void WritePersistentObject(const char *root_file, const char *obj_name,
-                           T &pst_object, const char *mode = "new") {  // NOLINT
-  TFile *f = new TFile(root_file, mode);
-  f->WriteObject(&pst_object, obj_name);
-  f->Close();
+                           const T& pst_object, const char *mode = "new") {
+  TFileRaii file(root_file, mode);
+  file.Get()->WriteObject(&pst_object, obj_name);
 }
 
 }  // namespace bdm

@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "backend.h"
+#include "root_util.h"
 #include "type_util.h"
 
 namespace bdm {
@@ -106,6 +107,9 @@ class SoaSimulationObject {
   /// size_ is of type size_t& if TBackend == SoaRef; otherwise size_t
   typename type_ternary_operator<is_same<TBackend, SoaRef>::value, size_t &,
                                  size_t>::type size_;
+
+  // use modified class def, due to possible SoaRef backend
+  BDM_ROOT_CLASS_DEF(SoaSimulationObject, 1);
 };
 
 /// Contains implementations for SimulationObject that are specific to scalar
@@ -127,6 +131,8 @@ class ScalarSimulationObject {
 
   /// Remove last element
   virtual void PopBack(size_t index, size_t size) {}
+
+  ClassDef(ScalarSimulationObject, 1);
 };
 
 /// Helper type trait to map backends to simulation object implementations
@@ -174,6 +180,8 @@ class SimulationObject : public SimulationObjectImpl<TBackend>::type {
   /// inside a mixin.
   template <typename TTBackend>
   using Self = SimulationObject<TTBackend>;
+
+  BDM_ROOT_CLASS_DEF_OVERRIDE(SimulationObject, 1);
 };
 
 }  // namespace bdm

@@ -6,9 +6,8 @@
 #include <utility>
 #include <vector>
 
-#include <Rtypes.h>
-
 #include "macros.h"
+#include "root_util.h"
 #include "transactional_vector.h"
 
 namespace bdm {
@@ -36,6 +35,9 @@ class VectorPlaceholder {
   }
 
   void push_back(const T& other) {  // NOLINT
+    throw std::logic_error("Unsupported operation!");
+  }
+  void emplace_back(const T& other) {  // NOLINT
     throw std::logic_error("Unsupported operation!");
   }
 
@@ -110,7 +112,7 @@ class OneElementArray {
 
  private:
   T data_;
-  ClassDef(OneElementArray, 1)  // NOLINT
+  BDM_ROOT_CLASS_DEF(OneElementArray, 1)  // NOLINT
 };
 
 struct Scalar {
@@ -136,7 +138,7 @@ struct Soa {
 struct SoaRef {
   /// Data type used to store data members of a class
   template <typename T>
-  using vec = std::vector<T>&;  // NOLINT
+  using vec = typename Soa::template vec<T>&;  // NOLINT
 
   /// Data type to store a collection of simulation objects with this backend
   template <typename T>

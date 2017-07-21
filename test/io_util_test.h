@@ -1,20 +1,23 @@
+#ifndef IO_TEST_H_
+#define IO_TEST_H_
+
 #include "gtest/gtest.h"
 
-#include <TFile.h>
-#include <TSystem.h>
-
+#include "biology_module_util.h"
 #include "cell.h"
 #include "displacement_op.h"
 #include "dividing_cell_op.h"
+#include "inline_vector.h"
 #include "io_util.h"
 #include "test_util.h"
+#include "variant.h"
 
 #define ROOTFILE "bdmFile.root"
 
 namespace bdm {
 
-TEST(IOTest, InvalidRead) {
-  Cell<Soa> cells = Cell<>::NewEmptySoa();
+inline void RunInvalidReadTest() {
+  auto cells = Cell<>::NewEmptySoa();
   WritePersistentObject(ROOTFILE, "Cells", cells, "RECREATE");
 
   Cell<Soa>* cells_r = nullptr;
@@ -26,78 +29,6 @@ TEST(IOTest, InvalidRead) {
 
   if (!GetPersistentObject(ROOTFILE, "Cells", cells_r)) {
     FAIL();
-  }
-
-  remove(ROOTFILE);
-}
-
-TEST(IOTest, RuntimeVars) {
-  RuntimeVariables this_machine;
-
-  SysInfo_t si = this_machine.GetSystemInfo();
-  si.fOS = "Non-Existing_OS";
-  RuntimeVariables different_machine;
-  different_machine.SetSystemInfo(si);
-
-  if (this_machine == different_machine) {
-    FAIL();
-  }
-
-  RuntimeVariables this_machine_copy;
-  if (this_machine != this_machine_copy) {
-    FAIL();
-  }
-
-  WritePersistentObject(ROOTFILE, "RuntimeVars", this_machine, "RECREATE");
-  RuntimeVariables* this_machine_r = nullptr;
-  GetPersistentObject(ROOTFILE, "RuntimeVars", this_machine_r);
-
-  if (this_machine != *this_machine_r) {
-    FAIL();
-  }
-
-  remove(ROOTFILE);
-}
-
-TEST(IOTest, InlineVector) {
-  InlineVector<int, 8> neighbor;
-  for (int i = 0; i < 15; i++) {
-    neighbor.push_back(i);
-  }
-
-  OneElementArray<InlineVector<int, 8>> aoi_scalar(neighbor);
-  std::vector<InlineVector<int, 8>> aoi_vector;
-  for (int i = 0; i < 4; i++) {
-    aoi_vector.push_back(neighbor);
-  }
-
-  WritePersistentObject(ROOTFILE, "InlineVector", neighbor, "RECREATE");
-  WritePersistentObject(ROOTFILE, "S_InlineVector", aoi_scalar, "UPDATE");
-  WritePersistentObject(ROOTFILE, "V_InlineVector", aoi_vector, "UPDATE");
-
-  InlineVector<int, 8>* neighbor_r = nullptr;
-
-  OneElementArray<InlineVector<int, 8>>* aoi_scalar_r = nullptr;
-  std::vector<InlineVector<int, 8>>* aoi_vector_r = nullptr;
-
-  GetPersistentObject(ROOTFILE, "InlineVector", neighbor_r);
-  GetPersistentObject(ROOTFILE, "S_InlineVector", aoi_scalar_r);
-  GetPersistentObject(ROOTFILE, "V_InlineVector", aoi_vector_r);
-
-  EXPECT_EQ(neighbor.size(), neighbor_r->size());
-
-  if (!(neighbor == (*neighbor_r))) {
-    FAIL();
-  }
-
-  if (!(aoi_scalar[0] == (*aoi_scalar_r)[0])) {
-    FAIL();
-  }
-
-  for (size_t i = 0; i < aoi_vector.size(); i++) {
-    if (!(aoi_vector[i] == (*aoi_vector_r)[i])) {
-      FAIL();
-    }
   }
 
   remove(ROOTFILE);
@@ -134,16 +65,6 @@ void RunTestDivCell(T* cells) {
               abs_error<double>::value);
 
   remove(ROOTFILE);
-}
-
-TEST(IOTest, DividingCellAos) {
-  TransactionalVector<Cell<Scalar>> cells;
-  RunTestDivCell(&cells);
-}
-
-TEST(IOTest, DividingCellSoa) {
-  auto cells = Cell<>::NewEmptySoa();
-  RunTestDivCell(&cells);
 }
 
 template <typename T>
@@ -220,14 +141,6 @@ void RunTestDispCell(T* cells) {
   remove(ROOTFILE);
 }
 
-TEST(IOTest, ComputeAosoa) {
-  std::vector<Cell<Scalar>> cells;
-  RunTestDispCell(&cells);
-}
-
-TEST(IOTest, ComputeSoa) {
-  auto cells = Cell<>::NewEmptySoa();
-  RunTestDispCell(&cells);
-}
-
 }  // namespace bdm
+
+#endif  // IO_TEST_H_

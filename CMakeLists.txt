@@ -38,6 +38,7 @@ if ("$ENV{CMAKE_EXPORT_COMPILE_COMMANDS}" STREQUAL "1" OR CLANG_TIDY_FOUND)
 endif()
 
 #--------------------- includes -------------
+include(BioDynaMo)
 include(ExternalProject)
 include(cmake/doxygen.cmake)
 
@@ -121,23 +122,21 @@ execute_process(COMMAND ${CMAKE_COMMAND} -E tar xf "${CMAKE_SOURCE_DIR}/third_pa
 # add the headers into the project
 include(${ROOT_USE_FILE})
 include_directories("${CMAKE_SOURCE_DIR}/src")
+include_directories("${CMAKE_SOURCE_DIR}/test")
 include_directories("${CMAKE_SOURCE_DIR}/third_party")
+include_directories("${CMAKE_SOURCE_DIR}/demo")
 include_directories("${MPARK_LIB}")
 # include_directories("${Vc_INCLUDE_DIR}")
 # include_directories(${VTUNE_INCLUDE_DIR})
 
-ROOT_GENERATE_DICTIONARY(
-  "${CMAKE_BINARY_DIR}/bdmDict"
-  cell.h inline_vector.h io_util.h
-  simulation_object_util_test.h
-  ../demo/cell_division_module.h
-  ../test/cell_test.h ../test/biology_module_op_test.h
-  LINKDEF bdmLinkDef.h
-)
-
-file(GLOB_RECURSE SOURCES "${CMAKE_SOURCE_DIR}/src/*.cc")
+# build libbiodynamo
 file(GLOB_RECURSE HEADERS "${CMAKE_SOURCE_DIR}/src/*.h")
-add_library(biodynamo STATIC ${SOURCES} ${HEADERS} ${CMAKE_BINARY_DIR}/bdmDict.cxx)
+set(LIBBDM_DICT_WE "libbiodynamo_dict")
+REFLEX_GENERATE_DICTIONARY("${LIBBDM_DICT_WE}"
+                           ${HEADERS}
+                           SELECTION cmake/selection-libbiodynamo.xml)
+file(GLOB_RECURSE LIB_SOURCES "${CMAKE_SOURCE_DIR}/src/*.cc")
+add_library(biodynamo SHARED ${LIB_SOURCES} ${LIBBDM_DICT_WE}.cc)
 target_link_libraries(biodynamo ${ROOT_LIBRARIES})
 # target_link_libraries(biodynamo ${Vc_LIBRARIES})
 # target_link_libraries(biodynamo ${VTUNE_LIBRARIES})
@@ -148,6 +147,8 @@ add_custom_target(libbdmclean COMMAND ${CMAKE_COMMAND} -P "${CMAKE_BINARY_DIR}/C
 # custom clean target for biodynamo that excludes ExternalProjects
 add_custom_target(bdmclean)
 add_dependencies(bdmclean libbdmclean)
+
+generate_rootlogon()
 
 # -------------------- build test project runBiodynamoTests ----------------------
 # http://www.kaizou.org/2014/11/gtest-cmake/
@@ -184,9 +185,9 @@ if (test)
   # create test executable
   file(GLOB_RECURSE TEST_SOURCES ${CMAKE_SOURCE_DIR}/test/*.cc)
   set(TEST_TARGET runBiodynamoTests)
-  add_executable(${TEST_TARGET} ${TEST_SOURCES})
-  target_link_libraries(${TEST_TARGET} libgtest)
-  target_link_libraries(${TEST_TARGET} biodynamo)
+  bdm_add_executable(${TEST_TARGET}
+                     SOURCES ${TEST_SOURCES}
+                     LIBRARIES libgtest biodynamo)
 
   # execute all tests with command: make test
   add_test(NAME ${TEST_TARGET} COMMAND ${TEST_TARGET})
@@ -231,16 +232,16 @@ endif()
 include(cmake/CppStyleGuideChecks.cmake)
 
 # --------------------- build cell_growth executable ---------------------
-set(SIMULATION_TARGET cell_growth)
-add_executable(${SIMULATION_TARGET} ${CMAKE_SOURCE_DIR}/demo/cell_growth.cc)
-target_link_libraries(${SIMULATION_TARGET} biodynamo)
+bdm_add_executable(cell_growth
+                   SOURCES demo/cell_growth.cc
+                   LIBRARIES biodynamo)
 
 # --------------------- build cell_division_module executable ------------------
-set(SIMULATION_TARGET cell_division_module)
-add_executable(${SIMULATION_TARGET} ${CMAKE_SOURCE_DIR}/demo/cell_division_module.cc)
-target_link_libraries(${SIMULATION_TARGET} biodynamo)
+bdm_add_executable(cell_division_module
+                   SOURCES demo/cell_division_module.cc
+                   LIBRARIES biodynamo)
 
 # --------------------- build persistent simulation demo ---------------------
-set(PERSISTENT_TARGET persistent_sim)
-add_executable(${PERSISTENT_TARGET} ${CMAKE_SOURCE_DIR}/demo/persistent_sim.cc)
-target_link_libraries(${PERSISTENT_TARGET} biodynamo)
+bdm_add_executable(persistent_sim
+                   SOURCES demo/persistent_sim.cc
+                   LIBRARIES biodynamo)

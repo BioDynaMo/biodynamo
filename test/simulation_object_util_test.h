@@ -10,6 +10,9 @@
 
 #include "simulation_object.h"
 #include "transactional_vector.h"
+#include "io_util.h"
+
+#define ROOTFILE "bdmFile.root"
 
 #define FRIEND_TEST(test_case_name, test_name) \
   friend class test_case_name##_##test_name##_Test
@@ -19,7 +22,7 @@ namespace simulation_object_util_test_internal {
 
 template <typename Base = SimulationObject<>>
 class CellExt : public Base {
-  BDM_CLASS_HEADER(CellExt, position_, diameter_);
+  BDM_CLASS_HEADER(CellExt, 1, position_, diameter_);
 
  public:
   explicit CellExt(const std::array<double, 3>& pos) : position_{{pos}} {}
@@ -64,7 +67,7 @@ class Neurite {
 // add Neurites to BaseCell
 template <typename Base = CellExt<>>
 class NeuronExt : public Base {
-  BDM_CLASS_HEADER(NeuronExt, neurites_);
+  BDM_CLASS_HEADER(NeuronExt, 1, neurites_);
 
  public:
   template <class... A>
@@ -90,6 +93,47 @@ class NeuronExt : public Base {
   FRIEND_TEST(SimulationObjectUtilTest, Soa_clear);
   FRIEND_TEST(SimulationObjectUtilTest, Soa_reserve);
 };
+
+// -----------------------------------------------------------------------------
+// SOA object for IO test
+template <typename Base = SimulationObject<Soa>>
+class TestObject : public Base {
+  BDM_CLASS_HEADER(TestObject, 1, id_);
+public:
+  TestObject() {}
+  TestObject(int id) : id_(id) {}
+  int GetId() const { return id_[kIdx]; }
+
+private:
+  vec<int> id_;
+};
+
+using SoaTestObject = TestObject<>;
+using ScalarTestObject = TestObject<SimulationObject<Scalar>>;
+
+
+inline void RunSoaIOTest() {
+  auto objects = SoaTestObject::NewEmptySoa();
+  for (size_t i = 0; i < 10; i++) {
+    objects.push_back(ScalarTestObject(i));
+  }
+
+  // write to root file
+  WritePersistentObject(ROOTFILE, "objects", objects, "new");
+
+  // read back
+  SoaTestObject *restored_objects = nullptr;
+  GetPersistentObject(ROOTFILE, "objects", restored_objects);
+
+  // validate
+  EXPECT_EQ(10u, restored_objects->size());
+  for (size_t i = 0; i < 10; i++) {
+    EXPECT_EQ(i, (*restored_objects)[i].GetId());
+  }
+
+  // delete root file
+  remove(ROOTFILE);
+}
 
 }  // namespace simulation_object_util_test_internal
 }  // namespace bdm

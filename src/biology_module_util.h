@@ -1,12 +1,9 @@
 #ifndef BIOLOGY_MODULE_UTIL_H_
 #define BIOLOGY_MODULE_UTIL_H_
 
-#include "mpark/variant.hpp"
+#include "variant.h"
 
 namespace bdm {
-
-using mpark::variant;
-using mpark::visit;
 
 /// Events used in biology modules to decide whether it should be copied
 enum Event { kCellDivision, kNeuriteBranching };
@@ -19,6 +16,7 @@ struct NullBiologyModule {
   void Run(T* t) {}
 
   bool IsCopied(Event event) const { return false; }
+  ClassDefNV(NullBiologyModule, 1);
 };
 
 /// \brief Visitor to execute the `Run` method of a biology module

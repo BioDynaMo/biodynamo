@@ -6,11 +6,8 @@
 #include <type_traits>
 #include <vector>
 
-#include <Rtypes.h>
-
 #include "backend.h"
 #include "biology_module_util.h"
-#include "cell.h"
 #include "default_force.h"
 #include "inline_vector.h"
 #include "math_util.h"
@@ -28,7 +25,7 @@ template <typename Base = SimulationObject<>,
           typename TBiologyModuleVariant = variant<NullBiologyModule>>
 class CellExt : public Base {
  public:
-  BDM_CLASS_HEADER_ADV(CellExt,
+  BDM_CLASS_HEADER_ADV(CellExt, 1,
                        CellExt<typename Base::template Self<TTBackend> COMMA()
                                    TBiologyModuleVariant>,
                        template <typename COMMA() typename>, position_,
@@ -36,35 +33,8 @@ class CellExt : public Base {
                        adherence_, density_, x_axis_, y_axis_, z_axis_,
                        neighbors_, biology_modules_);
 
-  // Extracted ClassDef for the reason addressed in ROOT-8784
-  // clang-format off
- private:
-  static atomic_TClass_ptr fgIsA;  // NOLINT
-
- public:
-  static TClass* Class() { throw "This method should not be called."
-  " It should rather have been overriden by the ROOT dictionary"; }
-  static const char* Class_Name();  // NOLINT
-  static Version_t Class_Version() { return 1; }  // NOLINT
-  static TClass* Dictionary();
-  virtual TClass* IsA() const { return CellExt::Class(); }  // NOLINT
-  virtual void ShowMembers(TMemberInspector& insp) const {  // NOLINT
-    ::ROOT::Class_ShowMembers(CellExt::Class(), this, insp); }
-  virtual void Streamer(TBuffer&) { throw "This method should not be called."
-  " It should rather have been overriden by the ROOT dictionary"; }
-
-  void StreamerNVirtual(TBuffer& ClassDef_StreamerNVirtual_b) {  // NOLINT
-    CellExt::Streamer(ClassDef_StreamerNVirtual_b);
-  }
-  static const char* DeclFileName() { return __FILE__; }
-  static int ImplFileLine();
-  static const char* ImplFileName();
-  static int DeclFileLine() { return __LINE__; }
-  // clang-format on
-
  public:
   CellExt() {}
-  explicit CellExt(TRootIOCtor* io_ctor) {}  // constructor for ROOT I/O
   explicit CellExt(double diameter) : diameter_(diameter) { UpdateVolume(); }
   explicit CellExt(const array<double, 3>& position)
       : position_(position), mass_location_(position) {}
@@ -263,7 +233,6 @@ using Cell = CellExt<SimulationObject<Backend>, TBiologyModuleVariant>;
 
 // ----------------------------------------------------------------------------
 // Implementation -------------------------------------------------------------
-
 template <typename T, typename U>
 template <typename TBiologyModule>
 inline void CellExt<T, U>::AddBiologyModule(TBiologyModule&& module) {

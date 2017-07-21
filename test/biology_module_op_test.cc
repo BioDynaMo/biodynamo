@@ -7,11 +7,6 @@
 namespace bdm {
 namespace biology_module_op_test_internal {
 
-typedef variant<GrowthModule> BiologyModules;
-
-template <typename TBackend = Scalar>
-using MyCell = Cell<TBackend, BiologyModules>;
-
 template <typename T>
 void RunTest(T* cells) {
   MyCell<> cell_1(12);

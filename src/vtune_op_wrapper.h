@@ -1,6 +1,8 @@
 #ifndef VTUNE_OP_WRAPPER_H_
 #define VTUNE_OP_WRAPPER_H_
 
+#ifdef USE_VTUNE
+
 #include <ittnotify.h>
 #include <iostream>
 
@@ -29,5 +31,7 @@ class VTuneOpWrapper : public Op {
 };
 
 }  // namespace bdm
+
+#endif  // USE_VTUNE
 
 #endif  // VTUNE_OP_WRAPPER_H_
