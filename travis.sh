@@ -33,7 +33,7 @@ if [ "$TRAVIS_OS_NAME" = "linux" ]; then
   wget -O - http://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
   sudo apt-add-repository -y "deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-3.9 main"
   sudo apt-get update
-  sudo apt-get install mpich
+  sudo apt-get install openmpi-bin libopenmpi-dev
   sudo apt-get install freeglut3-dev
   sudo apt-get -y install gcc-5 g++-5
   sudo apt-get -y install valgrind
