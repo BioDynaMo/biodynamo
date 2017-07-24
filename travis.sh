@@ -33,8 +33,8 @@ if [ "$TRAVIS_OS_NAME" = "linux" ]; then
   wget -O - http://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
   sudo apt-add-repository -y "deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-3.9 main"
   sudo apt-get update
-  sudo apt-get install openmpi-bin libopenmpi-dev
-  sudo apt-get install freeglut3-dev
+  sudo apt-get -y install openmpi-bin libopenmpi-dev
+  sudo apt-get -y install freeglut3-dev
   sudo apt-get -y install gcc-5 g++-5
   sudo apt-get -y install valgrind
   sudo apt-get -y install doxygen
@@ -57,17 +57,25 @@ fi
 # install ROOT
 cd
 if [ "$TRAVIS_OS_NAME" = "linux" ]; then
-  wget https://root.cern.ch/download/root_v6.06.04.Linux-ubuntu14-x86_64-gcc4.8.tar.gz 2> /dev/null
-  tar zxf root_v6.06.04.Linux-ubuntu14-x86_64-gcc4.8.tar.gz > /dev/null
+  wget --progress=dot:giga https://root.cern.ch/download/root_v6.06.04.Linux-ubuntu14-x86_64-gcc4.8.tar.gz
+  sudo tar zxf root_v6.06.04.Linux-ubuntu14-x86_64-gcc4.8.tar.gz > /dev/null
 
-  wget -O paraview-catalyst-5.4.0_ubuntu14_gcc5.4.tar.gz "https://cernbox.cern.ch/index.php/s/BbFptgxo2K565IS/download?path=%2F&files=paraview-catalyst-5.4.0_ubuntu14_gcc5.4.tar.gz"
-  tar zxf paraview-catalyst-5.4.0_ubuntu14_gcc5.4.tar.gz
+  wget -O paraview-5.4_ubuntu14_gcc5.4_openmpi.tar.gz "https://cernbox.cern.ch/index.php/s/BbFptgxo2K565IS/download?path=%2F&files=paraview-5.4_ubuntu14_gcc5.4_openmpi.tar.gz"
+  sudo mkdir -p /opt/biodynamo/paraview
+  sudo tar -xzf paraview-5.4_ubuntu14_gcc5.4_openmpi.tar.gz -C /opt/biodynamo/paraview
 
-  export ParaView_DIR=`pwd`/paraview-catalyst-5.4.0_ubuntu14_gcc5.4/lib/cmake/paraview-5.4
+  wget -O Qt5.6.2_ubuntu16_gcc5.4.tar.gz "https://cernbox.cern.ch/index.php/s/BbFptgxo2K565IS/download?path=%2F&files=Qt5.6.2_ubuntu16_gcc5.4.tar.gz"
+  sudo mkdir -p /opt/biodynamo/qt
+  sudo tar -xzf Qt5.6.2_ubuntu16_gcc5.4.tar.gz -C /opt/biodynamo/qt
+
+  export ParaView_DIR=/opt/biodynamo/paraview/lib/cmake/paraview-5.4
+  export Qt5_DIR=/opt/biodynamo/qt/lib/cmake/Qt5
+
+  export LD_LIBRARY_PATH=/opt/biodynamo/qt/lib
 else
   # write progress to terminal to prevent termination by travis if it takes longer than 10 min
   wget --progress=dot:giga https://root.cern.ch/download/root_v6.06.00.macosx64-10.9-clang60.tar.gz
-  tar zxf root_v6.06.00.macosx64-10.9-clang60.tar.gz > /dev/null
+  sudo tar zxf root_v6.06.00.macosx64-10.9-clang60.tar.gz > /dev/null
 fi
 
 # set the envars for Catalyst
