@@ -118,3 +118,12 @@
    ...
    obj:/usr/lib/system/*.dylib
 }
+
+######### Suppress protobuf library issues (for travis)
+{
+   ignore_protobuf_memleaks
+   Memcheck:Leak
+   ...
+   fun:_ZN6google8protobuf14DescriptorPool24InternalAddGeneratedFileEPKvi
+   ...
+}
