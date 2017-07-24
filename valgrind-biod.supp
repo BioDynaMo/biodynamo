@@ -119,7 +119,6 @@
    obj:/usr/lib/system/*.dylib
 }
 
-
 ######### Suppress uninitialized value complaints for IO of InlineVector
 {
    ignore_uninitialized_heap_io
@@ -159,5 +158,14 @@
    fun:_ZN4llvm4UsernwEmj
    fun:_ZN4llvm8CastInst6CreateENS_11Instruction7CastOpsEPNS_5ValueEPNS_4TypeERKNS_5TwineEPS1_
    fun:_ZN4llvm9IRBuilderINS_14ConstantFolderEN5clang7CodeGen17CGBuilderInserterEE13CreateIntCastEPNS_5ValueEPNS_4TypeEbRKNS_5TwineE
+   ...
+}
+
+######### Suppress protobuf library issues (for travis)
+{
+   ignore_protobuf_memleaks
+   Memcheck:Leak
+   ...
+   fun:_ZN6google8protobuf14DescriptorPool24InternalAddGeneratedFileEPKvi
    ...
 }
