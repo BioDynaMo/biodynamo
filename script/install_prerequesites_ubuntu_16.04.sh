@@ -3,6 +3,8 @@
 # main README.md
 
 function Install {
+  THIRD_PARTY_DIR=$INSTALL_DIR/third_party
+
   echo "Start installation of prerequisites..."
   apt-get update
 
@@ -34,15 +36,27 @@ function Install {
   ln -s /usr/lib/libmpi.so /usr/local/lib/libmpi.so
   ln -s /usr/lib/libmpi.so /usr/local/lib/libmpi.so.12
 
-  wget -O paraview-catalyst-5.4.0_ubuntu14_gcc5.4.tar.gz "https://cernbox.cern.ch/index.php/s/BbFptgxo2K565IS/download?path=%2F&files=paraview-catalyst-5.4.0_ubuntu14_gcc5.4.tar.gz"
-  tar zxf paraview-catalyst-5.4.0_ubuntu14_gcc5.4.tar.gz
+  wget -O paraview-5.4_ubuntu14_gcc5.4_openmpi.tar.gz "https://cernbox.cern.ch/index.php/s/BbFptgxo2K565IS/download?path=%2F&files=paraview-5.4_ubuntu14_gcc5.4_openmpi.tar.gz"
+  mkdir -p $THIRD_PARTY_DIR/paraview
+  tar -xzf paraview-5.4_ubuntu14_gcc5.4_openmpi.tar.gz -C $THIRD_PARTY_DIR/paraview
 
-  echo "================"
-  echo "Set the following environmental variables in your login shell profile file (such as .bashrc):"
-  echo "export ParaView_DIR=`pwd`/paraview-catalyst-5.4.0_ubuntu14_gcc5.4/lib/cmake/paraview-5.4"
-  echo "export PYTHONPATH=$ParaView_DIR/../../paraview-5.4/site-packages"
-  echo "export PYTHONPATH=$PYTHONPATH:$ParaView_DIR/../../paraview-5.4/site-packages/vtk"
-  echo "================"
+  wget -O Qt5.6.2_ubuntu16_gcc5.4.tar.gz "https://cernbox.cern.ch/index.php/s/BbFptgxo2K565IS/download?path=%2F&files=Qt5.6.2_ubuntu16_gcc5.4.tar.gz"
+  mkdir -p $THIRD_PARTY_DIR/qt
+  tar -xzf Qt5.6.2_ubuntu16_gcc5.4.tar.gz -C $THIRD_PARTY_DIR/qt
+
+  touch bdm_dependencies.sh
+
+  echo 'export CC=gcc-5' >> bdm-dependencies.sh
+  echo 'export CXX=g++-5' >> bdm-dependencies.sh
+
+  echo "export ParaView_DIR=$THIRD_PARTY_DIR/paraview/lib/cmake/paraview-5.4" >> ~/.bashrc
+  echo "export Qt5_DIR=$THIRD_PARTY_DIR/qt/lib/cmake/Qt5" >> bdm-dependencies.sh
+  echo "export LD_LIBRARY_PATH=$THIRD_PARTY_DIR/qt/lib" >> bdm-dependencies.sh
+
+  echo "export PYTHONPATH=$THIRD_PARTY_DIR/paraview/lib/paraview-5.4/site-packages:$THIRD_PARTY_DIR/paraview/lib/paraview-5.4/site-packages/vtk" >> bdm-dependencies.sh
+
+  echo "source `pwd`/bdm-dependencies.sh" >> ~/.bashrc
+  exec bash
 
   # # install ROOT
   # mkdir /opt/ROOT
@@ -59,6 +73,19 @@ if [ "$(whoami)" != "root" ]; then
   echo "Error: This script requires root access. Exiting now."
   exit;
 fi
+
+# prompts user for installation directory
+while true; do
+  read -p "The default installation directory is /opt/biodynamo. 
+Do you want to change the installation directory? (y/n) " yn
+  case $yn in
+    [Yy]* ) INSTALL_DIR="$(zenity --file-selection --directory)"; break;;
+    [Nn]* ) INSTALL_DIR=/opt/biodynamo; break;;
+        * ) echo "Please answer yes or no.";;
+  esac
+done
+
+echo ""
 
 # ask user if she really wants to perform this changes
 # https://stackoverflow.com/questions/226703/how-do-i-prompt-for-yes-no-cancel-input-in-a-linux-shell-script
