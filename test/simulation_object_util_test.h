@@ -127,7 +127,7 @@ inline void RunSoaIOTest() {
 
   // validate
   EXPECT_EQ(10u, restored_objects->size());
-  for (size_t i = 0; i < 10; i++) {
+  for (int i = 0; i < 10; i++) {
     EXPECT_EQ(i, (*restored_objects)[i].GetId());
   }
 

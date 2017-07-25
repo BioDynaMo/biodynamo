@@ -1,6 +1,7 @@
 #ifndef SIMULATION_BACKUP_H_
 #define SIMULATION_BACKUP_H_
 
+#include <sstream>
 #include <string>
 #include <TError.h>
 
