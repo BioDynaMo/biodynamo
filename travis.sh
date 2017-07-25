@@ -45,7 +45,7 @@ fi
 # install ROOT
 cd
 if [ "$TRAVIS_OS_NAME" = "linux" ]; then
-  wget --progress=dot:giga -O root_dict_path.Linux-ubuntu14-x86_64-gcc5.4.tar.gz "https://cernbox.cern.ch/index.php/s/BbFptgxo2K565IS/download?path=%2F&files=root_dict_path.Linux-ubuntu14-x86_64-gcc5.4.tar.gz"
+  wget --progress=dot:giga -O root_dict_path.Linux-ubuntu14-x86_64-gcc5.4.tar.gz "https://cernbox.cern.ch/index.php/s/BbFptgxo2K565IS/download?path=%2F&files=root_dict_patch.Linux-ubuntu14-x86_64-gcc5.4.tar.gz"
   tar zxf "root_dict_path.Linux-ubuntu14-x86_64-gcc5.4.tar.gz" > /dev/null
 else
   # write progress to terminal to prevent termination by travis if it takes longer than 10 min
