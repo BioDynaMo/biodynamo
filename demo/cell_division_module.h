@@ -59,8 +59,8 @@ inline int Simulate(const CommandLineOptions& options,
   }
 
   // 6. Run simulation for one timestep
-  Scheduler scheduler(options.backup_file_, options.restore_file_);
-  scheduler.Simulate<MyCell<Soa>>(1);
+  Scheduler<MyCell<Soa>> scheduler(options.backup_file_, options.restore_file_);
+  scheduler.Simulate(1);
   return 0;
 }
 

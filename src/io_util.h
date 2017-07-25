@@ -42,6 +42,19 @@ private:
   TFile* file_;
 };
 
+/// ROOT cannot write a single integral type (int, double, ...). Therefore,
+/// this wrapper is needed
+template <typename T>
+class IntegralTypeWrapper {
+ public:
+   IntegralTypeWrapper(const T& data) : data_(data) {}
+   IntegralTypeWrapper(TRootIOCtor* ) {}
+   const T& Get() const { return data_; }
+ private:
+  T data_;
+  ClassDefNV(IntegralTypeWrapper, 1);
+};
+
 bool FileExists(const std::string& file_name);
 
 /// @brief      Gets the persistent object from the specified ROOT file.
@@ -56,7 +69,7 @@ bool FileExists(const std::string& file_name);
 ///
 template <typename T>
 bool GetPersistentObject(const char *root_file, const char *obj_name,
-                         T& empty_obj) {  // NOLINT
+                         T*& empty_obj) {  // NOLINT
   if (FileExists(root_file)) {
     TFileRaii file(TFile::Open(root_file));
     file.Get()->GetObject(obj_name, empty_obj);

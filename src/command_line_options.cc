@@ -27,12 +27,12 @@ CommandLineOptions DefaultSimulationOptionParser(int& argc, const char**& argv) 
   const char* simulation_usage = simulation_usage_stream.str().c_str();
 
   const char* restore_file_usage =
-      "-r, --restore\tfilename\n"
+      "-r, --restore filename\n"
       "    Restores the simulation from the checkpoint found in filename and\n"
       "    continues simulation from that point.\n";
 
   const char* backup_file_usage =
-      "-b, --backup\tfilename\n"
+      "-b, --backup filename\n"
       "    Periodically create full simulation backup to the specified file\n"
       "    NOTA BENE: File will be overriden if it exists\n";
 

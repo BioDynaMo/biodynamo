@@ -1,11 +1,8 @@
 cmake_minimum_required(VERSION 3.2.0)
-
 # With CMAKE >= 3.2 external projects support byproducts, this is needed
 # to support Ninja as generator
 
 project(BioDynaMo)
-
-#set(CMAKE_VERBOSE_MAKEFILE on)
 
 # Options. Turn on with 'cmake -Dmyvarname=ON'.
 option(test "Build all tests." ON) # Makes boolean 'test' available.
@@ -57,9 +54,9 @@ endif()
 #--------------------- set compiler flags -------------
 if (coverage)
   set(CMAKE_BUILD_TYPE "Debug")
-  set(GCC_COMPILE_FLAGS "-Wall -Wno-missing-braces -g -O0 -fprofile-arcs -ftest-coverage")
+  set(GCC_COMPILE_FLAGS "-Wall -Wno-missing-braces -g -O0 -fprofile-arcs -ftest-coverage -fPIC")
 else()
-  set(GCC_COMPILE_FLAGS "-Wall -Wno-missing-braces")
+  set(GCC_COMPILE_FLAGS "-Wall -Wno-missing-braces -fPIC")
 endif()
 set(GCC_LINK_FLAGS "")
 # append
@@ -131,13 +128,11 @@ include_directories("${MPARK_LIB}")
 
 # build libbiodynamo
 file(GLOB_RECURSE HEADERS "${CMAKE_SOURCE_DIR}/src/*.h")
-set(LIBBDM_DICT_WE "libbiodynamo_dict")
-REFLEX_GENERATE_DICTIONARY("${LIBBDM_DICT_WE}"
-                           ${HEADERS}
-                           SELECTION cmake/selection-libbiodynamo.xml)
 file(GLOB_RECURSE LIB_SOURCES "${CMAKE_SOURCE_DIR}/src/*.cc")
-add_library(biodynamo SHARED ${LIB_SOURCES} ${LIBBDM_DICT_WE}.cc)
-target_link_libraries(biodynamo ${ROOT_LIBRARIES})
+build_libbiodynamo(biodynamo
+                   SOURCES ${LIB_SOURCES}
+                   HEADERS ${HEADERS}
+                   LIBRARIES ${ROOT_LIBRARIES})
 # target_link_libraries(biodynamo ${Vc_LIBRARIES})
 # target_link_libraries(biodynamo ${VTUNE_LIBRARIES})
 # add_dependencies(biodynamo Vc)
@@ -184,10 +179,13 @@ if (test)
 
   # create test executable
   file(GLOB_RECURSE TEST_SOURCES ${CMAKE_SOURCE_DIR}/test/*.cc)
+  file(GLOB_RECURSE TEST_HEADERS ${CMAKE_SOURCE_DIR}/test/*.h)
   set(TEST_TARGET runBiodynamoTests)
   bdm_add_executable(${TEST_TARGET}
                      SOURCES ${TEST_SOURCES}
+                     HEADERS ${TEST_HEADERS}
                      LIBRARIES libgtest biodynamo)
+  add_dependencies(${TEST_TARGET}-objectlib gtest)
 
   # execute all tests with command: make test
   add_test(NAME ${TEST_TARGET} COMMAND ${TEST_TARGET})
@@ -231,17 +229,14 @@ endif()
 # --------------- add targets for code style and submission checks -------------
 include(cmake/CppStyleGuideChecks.cmake)
 
-# --------------------- build cell_growth executable ---------------------
-bdm_add_executable(cell_growth
-                   SOURCES demo/cell_growth.cc
-                   LIBRARIES biodynamo)
-
 # --------------------- build cell_division_module executable ------------------
 bdm_add_executable(cell_division_module
                    SOURCES demo/cell_division_module.cc
+                   HEADERS demo/cell_division_module.h
                    LIBRARIES biodynamo)
 
 # --------------------- build persistent simulation demo ---------------------
 bdm_add_executable(persistent_sim
                    SOURCES demo/persistent_sim.cc
+                   HEADERS demo/persistent_sim.h
                    LIBRARIES biodynamo)

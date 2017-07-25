@@ -21,9 +21,9 @@ SimulationBackup::SimulationBackup(const std::string& backup_file, const std::st
 
 size_t SimulationBackup::GetSimulationStepsFromBackup() {
   if(restore_) {
-    size_t simulation_step = 0;
-    // bdm::GetPersistentObject(restore_file_.c_str(), kSimulationStepName.c_str(), &simulation_step);
-    return simulation_step;
+    IntegralTypeWrapper<size_t>* wrapper = nullptr;
+    bdm::GetPersistentObject(restore_file_.c_str(), kSimulationStepName.c_str(), wrapper);
+    return wrapper->Get();
   } else {
     Fatal("SimulationBackup", "Requested to restore data, but no restore file given.");
     return 0;
