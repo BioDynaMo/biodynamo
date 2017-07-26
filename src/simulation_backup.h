@@ -1,9 +1,9 @@
 #ifndef SIMULATION_BACKUP_H_
 #define SIMULATION_BACKUP_H_
 
+#include <TError.h>
 #include <sstream>
 #include <string>
-#include <TError.h>
 
 #include "io_util.h"
 
@@ -12,18 +12,20 @@ namespace bdm {
 /// SimulationBackup is responsible for backing up and restoring all relevant
 /// simulation information.
 class SimulationBackup {
-public:
+ public:
   // object names for root file
   static const std::string kCellName;
   static const std::string kSimulationStepName;
   static const std::string kRuntimeVariableName;
 
-  SimulationBackup(const std::string& backup_file, const std::string& restore_file);
+  SimulationBackup(const std::string& backup_file,
+                   const std::string& restore_file);
 
   template <typename Container>
   void Backup(Container* cells, size_t completed_simulation_steps) {
     if (!backup_) {
-      Fatal("SimulationBackup", "Requested to backup data, but no backup file given.");
+      Fatal("SimulationBackup",
+            "Requested to backup data, but no backup file given.");
     }
 
     // create temporary file
@@ -49,9 +51,10 @@ public:
   }
 
   template <typename Container>
-  void Restore(Container*& cells) {
-    if(!restore_) {
-      Fatal("SimulationBackup", "Requested to restore data, but no restore file given.");
+  void Restore(Container*& cells) {  // NOLINT
+    if (!restore_) {
+      Fatal("SimulationBackup",
+            "Requested to restore data, but no restore file given.");
     }
 
     TFileRaii file(TFile::Open(restore_file_.c_str()));
@@ -59,7 +62,8 @@ public:
     file.Get()->GetObject(kRuntimeVariableName.c_str(), restored_rv);
     // check if runtime variables are the same
     if (!(RuntimeVariables() == *restored_rv)) {
-      Warning("SimulationBackup", "Restoring simulation executed on a different system!");
+      Warning("SimulationBackup",
+              "Restoring simulation executed on a different system!");
     }
     file.Get()->GetObject(kCellName.c_str(), cells);
     // TODO(lukas) random number generator, statics (e.g. Param)

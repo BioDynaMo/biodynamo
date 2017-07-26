@@ -13,8 +13,9 @@ struct CommandLineOptions {
 
 /// This function parses command line arguments using a default set of options
 /// for simulations
-CommandLineOptions DefaultSimulationOptionParser(int& argc, const char**& argv);
+CommandLineOptions DefaultSimulationOptionParser(int& argc,            // NOLINT
+                                                 const char**& argv);  // NOLINT
 
 }  // namespace bdm
 
-#endif
+#endif  // COMMAND_LINE_OPTIONS_H_

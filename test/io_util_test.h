@@ -1,5 +1,5 @@
-#ifndef IO_TEST_H_
-#define IO_TEST_H_
+#ifndef IO_UTIL_TEST_H_
+#define IO_UTIL_TEST_H_
 
 #include "gtest/gtest.h"
 
@@ -143,4 +143,4 @@ void RunTestDispCell(T* cells) {
 
 }  // namespace bdm
 
-#endif  // IO_TEST_H_
+#endif  // IO_UTIL_TEST_H_

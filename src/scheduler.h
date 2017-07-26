@@ -2,6 +2,7 @@
 #define SCHEDULER_H_
 
 #include <chrono>
+#include <string>
 
 #include "biology_module_op.h"
 #include "displacement_op.h"
@@ -15,12 +16,13 @@ namespace bdm {
 template <typename TCellContainer>
 class Scheduler {
  public:
-   using Clock = std::chrono::high_resolution_clock;
+  using Clock = std::chrono::high_resolution_clock;
 
   Scheduler() : backup_(SimulationBackup("", "")) {}
 
-  Scheduler(const std::string& backup_file, const std::string& restore_file) : backup_(SimulationBackup(backup_file, restore_file)) {
-    if(backup_.RestoreEnabled()) {
+  Scheduler(const std::string& backup_file, const std::string& restore_file)
+      : backup_(SimulationBackup(backup_file, restore_file)) {
+    if (backup_.RestoreEnabled()) {
       restore_point_ = backup_.GetSimulationStepsFromBackup();
     }
   }
@@ -29,10 +31,11 @@ class Scheduler {
 
   void Simulate(unsigned steps) {
     auto cells = ResourceManager<TCellContainer>::Get()->GetCells();
-    if (backup_.RestoreEnabled() && restore_point_ > total_steps_ + steps ) {
+    if (backup_.RestoreEnabled() && restore_point_ > total_steps_ + steps) {
       total_steps_ += steps;
       return;
-    } else if (backup_.RestoreEnabled() && restore_point_ > total_steps_ && restore_point_ < total_steps_ + steps) {
+    } else if (backup_.RestoreEnabled() && restore_point_ > total_steps_ &&
+               restore_point_ < total_steps_ + steps) {
       // restore
       backup_.Restore(cells);
       ResourceManager<TCellContainer>::Get()->SetCells(cells);
@@ -47,7 +50,9 @@ class Scheduler {
       // Backup
       using std::chrono::seconds;
       using std::chrono::duration_cast;
-      if (backup_.BackupEnabled() && duration_cast<seconds>(Clock::now() - last_backup_).count() >= Param::kBackupEveryXSeconds) {
+      if (backup_.BackupEnabled() &&
+          duration_cast<seconds>(Clock::now() - last_backup_).count() >=
+              Param::backup_every_x_seconds_) {
         last_backup_ = Clock::now();
         backup_.Backup(cells, total_steps_);
       }
@@ -55,31 +60,32 @@ class Scheduler {
   }
 
  protected:
-   /// Executes one step.
-   /// This design makes testing more convenient
-   virtual void Execute() {
-     auto cells = ResourceManager<TCellContainer>::Get()->GetCells();
+  /// Executes one step.
+  /// This design makes testing more convenient
+  virtual void Execute() {
+    auto cells = ResourceManager<TCellContainer>::Get()->GetCells();
 
-     // execute all operations
-     neighbor_.Compute(cells);
-     biology_.Compute(cells);
-     physics_.Compute(cells);
+    // execute all operations
+    neighbor_.Compute(cells);
+    biology_.Compute(cells);
+    physics_.Compute(cells);
 
-     // commit new and removed cells
-     cells->Commit();
+    // commit new and removed cells
+    cells->Commit();
 
-     total_steps_++;
-   }
+    total_steps_++;
+  }
 
  private:
-   SimulationBackup backup_;
-   size_t total_steps_ = 0;
-   size_t restore_point_;
-   std::chrono::time_point<Clock> last_backup_ = Clock::now();
+  SimulationBackup backup_;
+  size_t total_steps_ = 0;
+  size_t restore_point_;
+  std::chrono::time_point<Clock> last_backup_ = Clock::now();
 
-   OpTimer<NeighborNanoflannOp> neighbor_ = OpTimer<NeighborNanoflannOp>("neighbor", NeighborNanoflannOp(700));
-   OpTimer<BiologyModuleOp> biology_ = OpTimer<BiologyModuleOp>("biology");
-   OpTimer<DisplacementOp> physics_ = OpTimer<DisplacementOp>("physics");
+  OpTimer<NeighborNanoflannOp> neighbor_ =
+      OpTimer<NeighborNanoflannOp>("neighbor", NeighborNanoflannOp(700));
+  OpTimer<BiologyModuleOp> biology_ = OpTimer<BiologyModuleOp>("biology");
+  OpTimer<DisplacementOp> physics_ = OpTimer<DisplacementOp>("physics");
 };
 
 }  // namespace bdm

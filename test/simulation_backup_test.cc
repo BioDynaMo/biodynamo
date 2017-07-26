@@ -1,8 +1,8 @@
 #include "simulation_backup.h"
 
 #include <string>
-#include "gtest/gtest.h"
 #include "cell.h"
+#include "gtest/gtest.h"
 #include "io_util.h"
 
 #define ROOTFILE "bdmFile.root"
@@ -13,17 +13,20 @@ class SimulationBackupTest : public ::testing::Test {};
 using SimulationBackupDeathTest = SimulationBackupTest;
 
 TEST(SimulationBackupDeathTest, GetSimulationStepsFromBackup) {
-  ASSERT_DEATH({
-    SimulationBackup backup("", "");
-    backup.GetSimulationStepsFromBackup();
-  }, ".*Requested to restore data, but no restore file given..*");
+  ASSERT_DEATH(
+      {
+        SimulationBackup backup("", "");
+        backup.GetSimulationStepsFromBackup();
+      },
+      ".*Requested to restore data, but no restore file given..*");
 }
 
 TEST(SimulationBackupTest, GetSimulationStepsFromBackup) {
   remove(ROOTFILE);
 
   IntegralTypeWrapper<size_t> wrapper(26);
-  WritePersistentObject(ROOTFILE, "completed_simulation_steps", wrapper, "recreate");
+  WritePersistentObject(ROOTFILE, "completed_simulation_steps", wrapper,
+                        "recreate");
 
   SimulationBackup backup("", ROOTFILE);
   auto iteration = backup.GetSimulationStepsFromBackup();
@@ -34,12 +37,14 @@ TEST(SimulationBackupTest, GetSimulationStepsFromBackup) {
 }
 
 TEST(SimulationBackupDeathTest, BackupNoBackupFileSpecified) {
-  ASSERT_DEATH({
-    auto cells = Cell<>::NewEmptySoa();
-    size_t iterations = 1;
-    SimulationBackup backup("", "");
-    backup.Backup(&cells, iterations);
-  }, ".*Requested to backup data, but no backup file given..*");
+  ASSERT_DEATH(
+      {
+        auto cells = Cell<>::NewEmptySoa();
+        size_t iterations = 1;
+        SimulationBackup backup("", "");
+        backup.Backup(&cells, iterations);
+      },
+      ".*Requested to backup data, but no backup file given..*");
 }
 
 TEST(SimulationBackupTest, Backup) {
@@ -58,7 +63,8 @@ TEST(SimulationBackupTest, Backup) {
 
   // RuntimeVariables
   RuntimeVariables* restored_rv;
-  file.Get()->GetObject(SimulationBackup::kRuntimeVariableName.c_str(), restored_rv);
+  file.Get()->GetObject(SimulationBackup::kRuntimeVariableName.c_str(),
+                        restored_rv);
   RuntimeVariables this_system;
   EXPECT_EQ(this_system, *restored_rv);
 
@@ -77,17 +83,18 @@ TEST(SimulationBackupTest, Backup) {
 }
 
 TEST(SimulationBackupDeathTest, RestoreNoRestoreFileSpecified) {
-  ASSERT_DEATH({
-    SimulationBackup backup("", "");
-    Cell<Soa>* restored_cells;
-    backup.Restore(restored_cells);
-  }, ".*Requested to restore data, but no restore file given..*");
+  ASSERT_DEATH(
+      {
+        SimulationBackup backup("", "");
+        Cell<Soa>* restored_cells;
+        backup.Restore(restored_cells);
+      },
+      ".*Requested to restore data, but no restore file given..*");
 }
 
 TEST(SimulationBackupDeathTest, RestoreFileDoesNotExist) {
-  ASSERT_DEATH({
-    SimulationBackup backup("", "file-does-not-exist.root");
-  }, ".*Given restore file does not exist.*");
+  ASSERT_DEATH({ SimulationBackup backup("", "file-does-not-exist.root"); },
+               ".*Given restore file does not exist.*");
 }
 
 TEST(SimulationBackupTest, BackupAndRestore) {
@@ -113,6 +120,5 @@ TEST(SimulationBackupTest, BackupAndRestore) {
 
   remove(ROOTFILE);
 }
-
 
 }  // namespace bdm

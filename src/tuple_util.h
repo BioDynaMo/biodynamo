@@ -32,22 +32,7 @@ void Apply(TTuple* t, size_t index, TFunction&& f,
   kLut[index](t, f);
 }
 
-}  // namespace detail
-
-/// This function applies the given function on tuple element index.
-/// The peculiarity is that index is a runtime parameter.
-/// `std::get<N>(tuple)` however, requires a compile time constant.
-/// Therefore, `Apply` performs the translation to a compile time index.
-/// @param t std::tuple or similar type that supports std::get<N>
-/// @param index runtime index specifying the type within t
-/// @param f function that should be executed on the type
-template <typename TTuple, typename TFunction>
-void Apply(TTuple* t, size_t index, TFunction&& f) {
-  detail::Apply(t, index, f,
-                std::make_index_sequence<std::tuple_size<TTuple>::value>());
-}
-
-// TODO document; move to detail namespace
+// TODO(lukas) document
 template <typename T, size_t Counter, typename... Types>
 struct GetIndexImpl;
 
@@ -69,9 +54,25 @@ struct GetIndexImpl<T, Counter, FirstType, RemainingTypes...> {
   }
 };
 
+}  // namespace detail
+
+/// This function applies the given function on tuple element index.
+/// The peculiarity is that index is a runtime parameter.
+/// `std::get<N>(tuple)` however, requires a compile time constant.
+/// Therefore, `Apply` performs the translation to a compile time index.
+/// @param t std::tuple or similar type that supports std::get<N>
+/// @param index runtime index specifying the type within t
+/// @param f function that should be executed on the type
+template <typename TTuple, typename TFunction>
+void Apply(TTuple* t, size_t index, TFunction&& f) {
+  detail::Apply(t, index, f,
+                std::make_index_sequence<std::tuple_size<TTuple>::value>());
+}
+
+// TODO(lukas) document
 template <typename T, typename... Types>
 inline size_t GetIndex() {
-  return bdm::template GetIndexImpl<T, 0, Types...>::GetValue();
+  return bdm::detail::template GetIndexImpl<T, 0, Types...>::GetValue();
 }
 
 }  // namespace bdm

@@ -1,6 +1,8 @@
 #ifndef CELL_TEST_H_
 #define CELL_TEST_H_
 
+#include <vector>
+
 #include "biology_module_util.h"
 #include "gtest/gtest.h"
 #include "io_util.h"
@@ -113,7 +115,7 @@ inline void RunIOTest() {
   WritePersistentObject(ROOTFILE, "cell", cell, "new");
 
   // read back
-  TestCell<> *restored_cell = nullptr;
+  TestCell<>* restored_cell = nullptr;
   GetPersistentObject(ROOTFILE, "cell", restored_cell);
 
   // validate
@@ -150,8 +152,10 @@ inline void RunIOTest() {
   EXPECT_NEAR(9, restored_cell->GetZAxis()[2], kEpsilon);
 
   EXPECT_EQ(2u, restored_cell->GetBiologyModules().size());
-  EXPECT_TRUE(get_if<GrowthModule>(&restored_cell->GetBiologyModules()[0]) != nullptr);
-  EXPECT_TRUE(get_if<MovementModule>(&restored_cell->GetBiologyModules()[1]) != nullptr);
+  EXPECT_TRUE(get_if<GrowthModule>(&restored_cell->GetBiologyModules()[0]) !=
+              nullptr);
+  EXPECT_TRUE(get_if<MovementModule>(&restored_cell->GetBiologyModules()[1]) !=
+              nullptr);
 
   // delete root file
   remove(ROOTFILE);

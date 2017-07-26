@@ -8,7 +8,7 @@ namespace bdm {
 class Param {
  public:
   ///
-  static uint32_t kBackupEveryXSeconds;
+  static uint32_t backup_every_x_seconds_;
 
   /// Time between two simulation step, in hours.
   static constexpr double kSimulationTimeStep = 0.01;

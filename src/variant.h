@@ -14,17 +14,16 @@ namespace bdm {
 
 /// Wrapper for mpark::visit
 template <typename TFunction, typename TVariant>
-void visit(TFunction&& function, TVariant&& variant_wrapper) {
+void visit(TFunction&& function, TVariant&& variant_wrapper) {  // NOLINT
   mpark::visit(function, variant_wrapper.data_);
 }
 
 /// Wrapper for mpark::get_if
 template <typename T, typename TVariant>
-const T* get_if(TVariant* variant_wrapper) {
+const T* get_if(TVariant* variant_wrapper) {  // NOLINT
   return mpark::get_if<T>(&(variant_wrapper->data_));
 }
 
-// TODO rename
 /// Wrapper for mpark::variant.
 /// Necessary, because mpark::variant canno be written to a ROOT file.
 /// Therefore, it is wrapped in this object that has a custom streamer.
@@ -32,7 +31,7 @@ template <typename... Types>
 class Variant {
  public:
   template <typename T>
-  Variant(const T& value) : data_(value) {}
+  Variant(const T& value) : data_(value) {}  // NOLINT
 
   Variant() {}
 
@@ -49,10 +48,11 @@ class Variant {
 
   // friend visit and get_if
   template <typename TFunction, typename TVariant>
-  friend void visit(TFunction&& function, TVariant&& variant_wrapper);
+  friend void visit(TFunction&& function,  // NOLINT
+                    TVariant&& variant_wrapper);
 
   template <typename T, typename TVariant>
-  friend const T* get_if(TVariant* variant_wrapper);
+  friend const T* get_if(TVariant* variant_wrapper);  // NOLINT
 
   BDM_TEMPLATE_CLASS_DEF_CUSTOM_STREAMER(Variant, 1);
 };
@@ -60,67 +60,67 @@ class Variant {
 /// Helper functor to write the contents of a Variant to a TBuffer
 template <typename... Types>
 struct StreamerWriteFunctor {
-  StreamerWriteFunctor(TBuffer& buffer) : buffer_(buffer) {}
+  explicit StreamerWriteFunctor(TBuffer* buffer) : buffer_(buffer) {}
 
   template <typename T>
   typename std::enable_if<std::is_fundamental<T>::value>::type operator()(
       T& t) {  // NOLINT
     auto type_id = GetIndex<T, Types...>();
-    buffer_ << type_id;
-    buffer_ << t;
+    *buffer_ << type_id;
+    *buffer_ << t;
   }
 
   template <typename T>
   typename std::enable_if<!std::is_fundamental<T>::value>::type operator()(
       T& t) {  // NOLINT
     auto type_id = GetIndex<T, Types...>();
-    buffer_ << type_id;
-    buffer_.WriteClassBuffer(T::Class(), &t);
+    *buffer_ << type_id;
+    buffer_->WriteClassBuffer(T::Class(), &t);
   }
 
  private:
-  TBuffer& buffer_;
+  TBuffer* buffer_;
 };
 
 /// Helper functor to read the contents of a Variant from a TBuffer
 template <typename TVariant>
 struct StreamerReadFunctor {
-  StreamerReadFunctor(TBuffer& buffer, TVariant* variant)
+  StreamerReadFunctor(TBuffer* buffer, TVariant* variant)
       : buffer_(buffer), variant_(variant) {}
 
   // version for fundamental type
   template <typename T>
   typename std::enable_if<std::is_fundamental<T>::value>::type operator()(
-      T& value) {
-    buffer_ >> value;
+      T& value) {  // NOLINT
+    *buffer_ >> value;
     *variant_ = value;
   }
 
   // version for non fundamental types
   template <typename T>
   typename std::enable_if<!std::is_fundamental<T>::value>::type operator()(
-      T& value) {
-    buffer_.WriteClassBuffer(T::Class(), &value);
+      T& value) {  // NOLINT
+    buffer_->WriteClassBuffer(T::Class(), &value);
     *variant_ = value;
   }
 
  private:
-  TBuffer& buffer_;
+  TBuffer* buffer_;
   TVariant* variant_;
 };
 
 // Custom streamer for bdm::Variant<Types...> required for ROOT IO
 template <typename... Types>
-inline void Variant<Types...>::Streamer(TBuffer& R__b) {
+inline void Variant<Types...>::Streamer(TBuffer& R__b) {  // NOLINT
   if (R__b.IsReading()) {
     size_t type_id;
     R__b >> type_id;
 
-    static std::tuple<Types...> tuple;
-    bdm::Apply(&tuple, type_id,
-               StreamerReadFunctor<decltype(data_)>(R__b, &data_));
+    static std::tuple<Types...> kTuple;
+    bdm::Apply(&kTuple, type_id,
+               StreamerReadFunctor<decltype(data_)>(&R__b, &data_));
   } else {
-    mpark::visit(StreamerWriteFunctor<Types...>(R__b), data_);
+    mpark::visit(StreamerWriteFunctor<Types...>(&R__b), data_);
   }
 }
 

@@ -15,16 +15,16 @@ class RuntimeVariables {
  public:
   RuntimeVariables();
   // Constructor for ROOT I/O
-  explicit RuntimeVariables(TRootIOCtor *io_ctor);
+  explicit RuntimeVariables(TRootIOCtor* io_ctor);
 
   SysInfo_t GetSystemInfo() const;
-  void SetSystemInfo(const SysInfo_t &other);
+  void SetSystemInfo(const SysInfo_t& other);
 
   void PrintSystemInfo();
 
-  bool operator==(const RuntimeVariables &other) const;
+  bool operator==(const RuntimeVariables& other) const;
 
-  bool operator!=(const RuntimeVariables &other) const;
+  bool operator!=(const RuntimeVariables& other) const;
 
  private:
   SysInfo_t sysinfo_;
@@ -33,12 +33,13 @@ class RuntimeVariables {
 
 /// Automatically close a TFile object using RAII pattern
 class TFileRaii {
-public:
+ public:
   TFileRaii(const std::string& filename, const char* mode);
-  TFileRaii(TFile* file);
+  explicit TFileRaii(TFile* file);
   ~TFileRaii();
   TFile* Get();
-private:
+
+ private:
   TFile* file_;
 };
 
@@ -47,9 +48,10 @@ private:
 template <typename T>
 class IntegralTypeWrapper {
  public:
-   IntegralTypeWrapper(const T& data) : data_(data) {}
-   IntegralTypeWrapper(TRootIOCtor* ) {}
-   const T& Get() const { return data_; }
+  explicit IntegralTypeWrapper(const T& data) : data_(data) {}
+  explicit IntegralTypeWrapper(TRootIOCtor* io_ctor) {}
+  const T& Get() const { return data_; }
+
  private:
   T data_;
   ClassDefNV(IntegralTypeWrapper, 1);
@@ -68,7 +70,7 @@ bool FileExists(const std::string& file_name);
 /// @return     The persistent object.
 ///
 template <typename T>
-bool GetPersistentObject(const char *root_file, const char *obj_name,
+bool GetPersistentObject(const char* root_file, const char* obj_name,
                          T*& empty_obj) {  // NOLINT
   if (FileExists(root_file)) {
     TFileRaii file(TFile::Open(root_file));
@@ -97,8 +99,8 @@ bool GetPersistentObject(const char *root_file, const char *obj_name,
 ///
 // clang-format on
 template <typename T>
-void WritePersistentObject(const char *root_file, const char *obj_name,
-                           const T& pst_object, const char *mode = "new") {
+void WritePersistentObject(const char* root_file, const char* obj_name,
+                           const T& pst_object, const char* mode = "new") {
   TFileRaii file(root_file, mode);
   file.Get()->WriteObject(&pst_object, obj_name);
 }

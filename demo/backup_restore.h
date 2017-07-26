@@ -1,5 +1,5 @@
-#ifndef BACKUP_RESTORE_H_
-#define BACKUP_RESTORE_H_
+#ifndef DEMO_BACKUP_RESTORE_H_
+#define DEMO_BACKUP_RESTORE_H_
 
 #include <unistd.h>
 
@@ -29,7 +29,7 @@ template <typename Backend = Scalar>
 using MyCell = Cell<Backend, BiologyModules>;
 
 inline int Simulate(const CommandLineOptions& options) {
-  Param::kBackupEveryXSeconds = 1;
+  Param::backup_every_x_seconds_ = 1;
 
   auto& cells = ResourceManager<MyCell<Soa>>::Get()->GetCells();
   for (size_t i = 0; i < 10; i++) {
@@ -63,4 +63,4 @@ inline int Simulate(const CommandLineOptions& options) {
 
 }  // namespace bdm
 
-#endif  // BACKUP_RESTORE_H_
+#endif  // DEMO_BACKUP_RESTORE_H_

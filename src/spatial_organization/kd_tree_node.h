@@ -149,8 +149,8 @@ class KdTreeNode : public SpatialTreeNode<T> {
 };
 
 template <typename T>
-KdTreeNode<T>::KdTreeNode() :
-  KdTreeNode<T>(Bound(0, 0, 0, 1, 1, 1), 10, 1000, 0) {}
+KdTreeNode<T>::KdTreeNode()
+    : KdTreeNode<T>(Bound(0, 0, 0, 1, 1, 1), 10, 1000, 0) {}
 
 template <typename T>
 KdTreeNode<T>::KdTreeNode(const Bound &bnd, int max_depth,

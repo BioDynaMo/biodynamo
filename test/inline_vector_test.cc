@@ -250,8 +250,6 @@ TEST(InlineVectorTest, EqualsOperatorWithHeap) {
   EXPECT_FALSE(lhs == rhs);
 }
 
-TEST(InlineVectorTest, IO) {
-  inline_vector_test_internal::RunIOTest();
-}
+TEST(InlineVectorTest, IO) { inline_vector_test_internal::RunIOTest(); }
 
 }  // namespace bdm

@@ -1,12 +1,10 @@
 #include "io_util.h"
-#include <iostream>
 #include <fstream>
+#include <iostream>
 
 namespace bdm {
 
-RuntimeVariables::RuntimeVariables() {
-  gSystem->GetSysInfo(&sysinfo_);
-}
+RuntimeVariables::RuntimeVariables() { gSystem->GetSysInfo(&sysinfo_); }
 
 RuntimeVariables::RuntimeVariables(TRootIOCtor* io_ctor) {}
 

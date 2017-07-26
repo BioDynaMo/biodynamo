@@ -1,10 +1,11 @@
 #ifndef VARIANT_TEST_H_
 #define VARIANT_TEST_H_
 
+#include <vector>
 #include "gtest/gtest.h"
-#include "variant.h"
 #include "io_util.h"
 #include "test_util.h"
+#include "variant.h"
 
 #define ROOTFILE "bdmFile.root"
 

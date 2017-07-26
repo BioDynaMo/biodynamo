@@ -8,9 +8,9 @@
 
 #include <Rtypes.h>
 
+#include "io_util.h"
 #include "simulation_object.h"
 #include "transactional_vector.h"
-#include "io_util.h"
 
 #define ROOTFILE "bdmFile.root"
 
@@ -99,18 +99,18 @@ class NeuronExt : public Base {
 template <typename Base = SimulationObject<Soa>>
 class TestObject : public Base {
   BDM_CLASS_HEADER(TestObject, 1, id_);
-public:
+
+ public:
   TestObject() {}
-  TestObject(int id) : id_(id) {}
+  explicit TestObject(int id) : id_(id) {}
   int GetId() const { return id_[kIdx]; }
 
-private:
+ private:
   vec<int> id_;
 };
 
 using SoaTestObject = TestObject<>;
 using ScalarTestObject = TestObject<SimulationObject<Scalar>>;
-
 
 inline void RunSoaIOTest() {
   auto objects = SoaTestObject::NewEmptySoa();
@@ -122,7 +122,7 @@ inline void RunSoaIOTest() {
   WritePersistentObject(ROOTFILE, "objects", objects, "new");
 
   // read back
-  SoaTestObject *restored_objects = nullptr;
+  SoaTestObject* restored_objects = nullptr;
   GetPersistentObject(ROOTFILE, "objects", restored_objects);
 
   // validate

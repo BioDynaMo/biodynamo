@@ -1,14 +1,15 @@
 #include "command_line_options.h"
+#include <TError.h>
+#include <stdlib.h>
 #include <iostream>
 #include <sstream>
-#include <stdlib.h>
-#include <TError.h>
 #include "OptionParser.h"
-
 
 namespace bdm {
 
-CommandLineOptions DefaultSimulationOptionParser(int& argc, const char**& argv) {
+CommandLineOptions DefaultSimulationOptionParser(
+    int& argc,             // NOLINT
+    const char**& argv) {  // NOLINT
   auto binary_name = argv[0];
 
   // NB: parser does not work without these statement

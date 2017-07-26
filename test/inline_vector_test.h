@@ -1,6 +1,7 @@
 #ifndef INLINE_VECTOR_TEST_H_
 #define INLINE_VECTOR_TEST_H_
 
+#include <vector>
 #include "gtest/gtest.h"
 
 #include "backend.h"
@@ -60,4 +61,4 @@ inline void RunIOTest() {
 }  // namespace inline_vector_test_internal
 }  // namespace bdm
 
-#endif
+#endif  // INLINE_VECTOR_TEST_H_

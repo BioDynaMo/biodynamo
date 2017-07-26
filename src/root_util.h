@@ -4,7 +4,6 @@
 #include <Rtypes.h>
 #include <TBuffer.h>
 
-// TODO rename to BDM_TEMPLATE_CLASS_DEF and describe why
 /// ROOT's ClassDef macro had to be modified due to an issue with SoaRef
 /// backend. Since all data members are references, they cannot be initialized
 /// from ROOT I/O. As a consequence, classes with a `SoaRef` backend are
@@ -50,6 +49,7 @@
   static int DeclFileLine() { return __LINE__; }                           \
                                                                            \
  private:
+// NOLINT
 
 /// See documentation of BDM_ROOT_CLASS_DEF.
 #define BDM_ROOT_CLASS_DEF_OVERRIDE(class_name, class_version_id)          \
@@ -79,8 +79,9 @@
   static int DeclFileLine() { return __LINE__; }                           \
                                                                            \
  private:
+// NOLINT
 
-// TODO document
+// TODO(lukas) document
 #define BDM_TEMPLATE_CLASS_DEF_CUSTOM_STREAMER(class_name, class_version_id) \
  private:                                                                    \
   static atomic_TClass_ptr fgIsA;                                            \
@@ -106,5 +107,6 @@
   static int DeclFileLine() { return __LINE__; }                             \
                                                                              \
  private:
+// NOLINT
 
 #endif  // ROOT_UTIL_H_
