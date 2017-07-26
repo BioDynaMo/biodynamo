@@ -1,7 +1,5 @@
+#include "inline_vector_test.h"
 #include <new>
-
-#include "gtest/gtest.h"
-#include "inline_vector.h"
 
 size_t operator_new_calls_ = 0;
 
@@ -251,5 +249,7 @@ TEST(InlineVectorTest, EqualsOperatorWithHeap) {
   lhs.push_back(7);
   EXPECT_FALSE(lhs == rhs);
 }
+
+TEST(InlineVectorTest, IO) { inline_vector_test_internal::RunIOTest(); }
 
 }  // namespace bdm

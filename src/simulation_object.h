@@ -5,7 +5,9 @@
 #include <mutex>
 #include <type_traits>
 #include <vector>
+
 #include "backend.h"
+#include "root_util.h"
 #include "type_util.h"
 
 namespace bdm {
@@ -32,16 +34,16 @@ class SoaSimulationObject {
   /// Copy-ctor declaration to please compiler, but missing implementation.
   /// Therefore, if it gets called somewhere (failing RVO optimization),
   /// the linker would throw an error.
-  explicit SoaSimulationObject(const SoaSimulationObject<SoaRef>& other);
+  explicit SoaSimulationObject(const SoaSimulationObject<SoaRef> &other);
 
   /// Detect failing return value optimization (RVO)
   /// Copy-ctor declaration to please compiler, but missing implementation.
   /// Therefore, if it gets called somewhere (failing RVO optimization),
   /// the linker would throw an error.
-  explicit SoaSimulationObject(const SoaSimulationObject<Soa>& other);
+  explicit SoaSimulationObject(const SoaSimulationObject<Soa> &other);
 
   template <typename T>
-  SoaSimulationObject(T* other, size_t idx)
+  SoaSimulationObject(T *other, size_t idx)
       : kIdx(idx),
         mutex_(other->mutex_),
         to_be_removed_(other->to_be_removed_),
@@ -55,7 +57,7 @@ class SoaSimulationObject {
   }
 
   /// Thread safe version of std::vector::push_back
-  void push_back(const SimulationObject<Scalar>& element) {  // NOLINT
+  void push_back(const SimulationObject<Scalar> &element) {  // NOLINT
     std::lock_guard<std::recursive_mutex> lock(mutex_);
     PushBackImpl(element);
   }
@@ -82,18 +84,18 @@ class SoaSimulationObject {
   const size_t kIdx = 0;
 
   typename type_ternary_operator<is_same<TBackend, SoaRef>::value,
-                                 std::recursive_mutex&,
-                                 std::recursive_mutex>::type mutex_;
+                                 std::recursive_mutex &,
+                                 std::recursive_mutex>::type mutex_;  //!
 
   /// vector of indices with elements which should be removed
   /// to_be_removed_ is of type vector<size_t>& if TBackend == SoaRef;
   /// otherwise vector<size_t>
   typename type_ternary_operator<is_same<TBackend, SoaRef>::value,
-                                 std::vector<size_t>&,
+                                 std::vector<size_t> &,
                                  std::vector<size_t>>::type to_be_removed_;
 
   /// Append a scalar element
-  virtual void PushBackImpl(const SimulationObject<Scalar>& other) { size_++; }
+  virtual void PushBackImpl(const SimulationObject<Scalar> &other) { size_++; }
 
   /// Swap element with last element if and remove last element
   virtual void SwapAndPopBack(size_t index, size_t size) { size_--; }
@@ -103,8 +105,11 @@ class SoaSimulationObject {
 
  private:
   /// size_ is of type size_t& if TBackend == SoaRef; otherwise size_t
-  typename type_ternary_operator<is_same<TBackend, SoaRef>::value, size_t&,
+  typename type_ternary_operator<is_same<TBackend, SoaRef>::value, size_t &,
                                  size_t>::type size_;
+
+  // use modified class def, due to possible SoaRef backend
+  BDM_ROOT_CLASS_DEF(SoaSimulationObject, 1);
 };
 
 /// Contains implementations for SimulationObject that are specific to scalar
@@ -119,13 +124,15 @@ class ScalarSimulationObject {
   static const std::size_t kIdx = 0;
 
   /// Append a scalar element
-  virtual void PushBackImpl(const SimulationObject<Scalar>& other) {}
+  virtual void PushBackImpl(const SimulationObject<Scalar> &other) {}
 
   /// Swap element with last element if and remove last element
   virtual void SwapAndPopBack(size_t index, size_t size) {}
 
   /// Remove last element
   virtual void PopBack(size_t index, size_t size) {}
+
+  ClassDef(ScalarSimulationObject, 1);
 };
 
 /// Helper type trait to map backends to simulation object implementations
@@ -160,11 +167,11 @@ class SimulationObject : public SimulationObjectImpl<TBackend>::type {
   SimulationObject() : Base() {}
 
   template <typename T>
-  SimulationObject(T* other, size_t idx) : Base(other, idx) {}
+  SimulationObject(T *other, size_t idx) : Base(other, idx) {}
 
   virtual ~SimulationObject() {}
 
-  SimulationObject<Backend>& operator=(const SimulationObject<Scalar>&) {
+  SimulationObject<Backend> &operator=(const SimulationObject<Scalar> &) {
     return *this;
   }
 
@@ -173,6 +180,8 @@ class SimulationObject : public SimulationObjectImpl<TBackend>::type {
   /// inside a mixin.
   template <typename TTBackend>
   using Self = SimulationObject<TTBackend>;
+
+  BDM_ROOT_CLASS_DEF_OVERRIDE(SimulationObject, 1);
 };
 
 }  // namespace bdm

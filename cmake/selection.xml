@@ -1,0 +1,20 @@
+<lcgdict>
+  <selection>
+    <class pattern="bdm::*"/>
+    <class pattern="std::vector<bdm::*>"/>
+  </selection>
+  <exclusion>
+    <class pattern="std::array<*>" />
+    <class pattern="*bdm::SoaRef*"/>
+    <class name="chrono::system_clock"/>
+    <class pattern="*_Test" />
+    <!-- list of classes with dictionary in libbiodynamo
+         -> all selected classes from libbiodynamo-selection.xml -->
+    <class name="bdm::ScalarSimulationObject"/>
+    <class name="bdm::RuntimeVariables"/>
+    <class name="bdm::NullBiologyModule"/>
+    <class name="bdm::IntegralTypeWrapper<size_t> "/>
+    <!-- list of template classes with custom streamers -->
+    <class pattern="bdm::Variant*" />
+  </exclusion>
+</lcgdict>

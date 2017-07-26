@@ -118,3 +118,46 @@
    ...
    obj:/usr/lib/system/*.dylib
 }
+
+
+######### Suppress uninitialized value complaints for IO of InlineVector
+{
+   ignore_uninitialized_heap_io
+   Memcheck:Param
+   write(buf)
+   ...
+   fun:_ZN5TFile11WriteBufferEPKci
+   fun:_ZN4TKey9WriteFileEiP5TFile
+   fun:_ZN14TDirectoryFile14WriteObjectAnyEPKvPK6TClassPKcS6_i
+   ...
+}
+
+######### Suppress rootcling false positives
+{
+   false_positive_root_1
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:_Znwm
+   fun:_ZN4llvm8FunctionC1EPNS_12FunctionTypeENS_11GlobalValue12LinkageTypesERKNS_5TwineEPNS_6ModuleE
+   fun:_ZN4llvm6Module19getOrInsertFunctionENS_9StringRefEPNS_12FunctionTypeENS_12AttributeSetE
+   fun:_ZN4llvm6Module19getOrInsertFunctionENS_9StringRefEPNS_12FunctionTypeE
+   fun:_ZN4llvm9Intrinsic14getDeclarationEPNS_6ModuleENS0_2IDENS_8ArrayRefIPNS_4TypeEEE
+   fun:_ZN4llvm13IRBuilderBase19CreateLifetimeStartEPNS_5ValueEPNS_11ConstantIntE
+   fun:_ZN4llvm14InlineFunctionENS_8CallSiteERNS_18InlineFunctionInfoEPNS_9AAResultsEb
+   fun:_ZN4llvm7Inliner11inlineCallsERNS_12CallGraphSCCE
+   fun:_ZN12_GLOBAL__N_113CGPassManager11runOnModuleERN4llvm6ModuleE
+   fun:_ZN4llvm6legacy15PassManagerImpl3runERNS_6ModuleE
+   fun:_ZN5cling13BackendPasses11runOnModuleERN4llvm6ModuleE
+   fun:_ZN5cling17IncrementalParser22transformTransactionIREPNS_11TransactionE
+}
+
+{
+   false_positive_root_2
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:_Znwm
+   fun:_ZN4llvm4UsernwEmj
+   fun:_ZN4llvm8CastInst6CreateENS_11Instruction7CastOpsEPNS_5ValueEPNS_4TypeERKNS_5TwineEPS1_
+   fun:_ZN4llvm9IRBuilderINS_14ConstantFolderEN5clang7CodeGen17CGBuilderInserterEE13CreateIntCastEPNS_5ValueEPNS_4TypeEbRKNS_5TwineE
+   ...
+}

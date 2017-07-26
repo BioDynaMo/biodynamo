@@ -17,8 +17,6 @@ class DisplacementOp {
  public:
   DisplacementOp() {}
   ~DisplacementOp() {}
-  DisplacementOp(const DisplacementOp&) = delete;
-  DisplacementOp& operator=(const DisplacementOp&) = delete;
 
   template <typename TContainer>
   void Compute(TContainer* cells) const {

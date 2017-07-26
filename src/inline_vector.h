@@ -6,6 +6,8 @@
 #include <sstream>
 #include <vector>
 
+#include "root_util.h"
+
 namespace bdm {
 
 using std::size_t;
@@ -18,6 +20,7 @@ using std::size_t;
 template <typename T, size_t N>
 class InlineVector {
  public:
+  explicit InlineVector(TRootIOCtor* io_ctor) {}  // Constructor for ROOT I/O
   InlineVector() {}
 
   InlineVector(const InlineVector<T, N>& other) {
@@ -25,7 +28,8 @@ class InlineVector {
     size_ = other.size_;
     capacity_ = other.capacity_;
     if (other.heap_data_ != nullptr) {
-      heap_data_ = new T[capacity_ - N];
+      heap_size_ = capacity_ - N;
+      heap_data_ = new T[heap_size_];
       std::copy_n(other.heap_data_, capacity_ - N, heap_data_);
     }
   }
@@ -34,12 +38,14 @@ class InlineVector {
     data_ = other.data_;
     size_ = other.size_;
     capacity_ = other.capacity_;
+    heap_size_ = other.heap_size_;
     heap_data_ = other.heap_data_;
     other.heap_data_ = nullptr;
   }
 
   virtual ~InlineVector() {
     if (heap_data_ != nullptr) {
+      heap_size_ = 0;
       delete[] heap_data_;
     }
   }
@@ -92,6 +98,7 @@ class InlineVector {
       }
       heap_data_[size_ - N] = element;
       size_++;
+      heap_size_++;
     }
   }
 
@@ -123,9 +130,7 @@ class InlineVector {
   }
 
   T& operator[](size_t index) {
-    if (heap_data_ == nullptr) {
-      return data_[index];
-    } else if (index < N) {
+    if (index < N) {
       return data_[index];
     } else {
       return heap_data_[index - N];
@@ -133,9 +138,7 @@ class InlineVector {
   }
 
   const T& operator[](size_t index) const {
-    if (heap_data_ == nullptr) {
-      return data_[index];
-    } else if (index < N) {
+    if (index < N) {
       return data_[index];
     } else {
       return heap_data_[index - N];
@@ -176,9 +179,11 @@ class InlineVector {
  private:
   static constexpr float kGrowFactor = 1.5;
   std::array<T, N> data_;
-  T* heap_data_ = nullptr;
+  Int_t heap_size_ = 0;     // needed to help ROOT with array size
+  T* heap_data_ = nullptr;  //[heap_size_]  // NOLINT
   size_t size_ = 0;
   size_t capacity_ = N;
+  BDM_ROOT_CLASS_DEF(InlineVector, 1);  // NOLINT
 };
 
 }  // namespace bdm

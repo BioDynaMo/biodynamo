@@ -8,7 +8,6 @@
 
 #include "backend.h"
 #include "biology_module_util.h"
-#include "cell.h"
 #include "default_force.h"
 #include "inline_vector.h"
 #include "math_util.h"
@@ -23,10 +22,10 @@ using std::array;
 using std::vector;
 
 template <typename Base = SimulationObject<>,
-          typename TBiologyModuleVariant = variant<NullBiologyModule>>
+          typename TBiologyModuleVariant = Variant<NullBiologyModule>>
 class CellExt : public Base {
  public:
-  BDM_CLASS_HEADER_ADV(CellExt,
+  BDM_CLASS_HEADER_ADV(CellExt, 1,
                        CellExt<typename Base::template Self<TTBackend> COMMA()
                                    TBiologyModuleVariant>,
                        template <typename COMMA() typename>, position_,
@@ -229,12 +228,11 @@ class CellExt : public Base {
 };
 
 template <typename Backend = Scalar,
-          typename TBiologyModuleVariant = variant<NullBiologyModule>>
+          typename TBiologyModuleVariant = Variant<NullBiologyModule>>
 using Cell = CellExt<SimulationObject<Backend>, TBiologyModuleVariant>;
 
 // ----------------------------------------------------------------------------
 // Implementation -------------------------------------------------------------
-
 template <typename T, typename U>
 template <typename TBiologyModule>
 inline void CellExt<T, U>::AddBiologyModule(TBiologyModule&& module) {

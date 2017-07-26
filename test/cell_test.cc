@@ -1,91 +1,10 @@
 #include "cell.h"
+#include "cell_test.h"
 #include "gtest/gtest.h"
 #include "test_util.h"
 
 namespace bdm {
 namespace cell_test_internal {
-
-using mpark::get_if;
-
-struct GrowthModule {
-  double growth_rate_ = 0.5;
-
-  template <typename T>
-  void Run(T* t) {
-    t->SetDiameter(t->GetDiameter() + growth_rate_);
-  }
-
-  bool IsCopied(Event event) const { return event == Event::kCellDivision; }
-};
-
-struct MovementModule {
-  std::array<double, 3> velocity_;
-
-  explicit MovementModule(const std::array<double, 3>& velocity)
-      : velocity_(velocity) {}
-
-  template <typename T>
-  void Run(T* t) {
-    const auto& position = t->GetPosition();
-    t->SetPosition(Matrix::Add(position, velocity_));
-  }
-
-  bool IsCopied(Event event) const { return false; }
-};
-
-typedef variant<GrowthModule, MovementModule> BiologyModules;
-
-/// Class used to get access to protected members
-template <typename Base = CellExt<SimulationObject<Scalar>, BiologyModules>>
-class TestCell : public Base {
- public:
-  void TestTransformCoordinatesGlobalToPolar() {
-    array<double, 3> coord = {1, 2, 3};
-    Base::SetMassLocation({9, 8, 7});
-    auto result = Base::TransformCoordinatesGlobalToPolar(coord);
-
-    EXPECT_NEAR(10.770329614269007, result[0], abs_error<double>::value);
-    EXPECT_NEAR(1.9513027039072615, result[1], abs_error<double>::value);
-    EXPECT_NEAR(-2.4980915447965089, result[2], abs_error<double>::value);
-  }
-
-  void SetXAxis(const array<double, 3>& axis) {
-    Base::x_axis_[Base::kIdx] = axis;
-  }
-  void SetYAxis(const array<double, 3>& axis) {
-    Base::y_axis_[Base::kIdx] = axis;
-  }
-  void SetZAxis(const array<double, 3>& axis) {
-    Base::z_axis_[Base::kIdx] = axis;
-  }
-
-  const array<double, 3>& GetXAxis() { return Base::x_axis_[Base::kIdx]; }
-  const array<double, 3>& GetYAxis() { return Base::y_axis_[Base::kIdx]; }
-  const array<double, 3>& GetZAxis() { return Base::z_axis_[Base::kIdx]; }
-
-  const vector<BiologyModules>& GetBiologyModules() const {
-    return Base::biology_modules_[0];
-  }
-
-  bool check_input_parameters_ = false;
-  double expected_volume_ratio_;
-  double expected_phi_;
-  double expected_theta_;
-
-  void DivideImpl(typename Base::template Self<Scalar>* daughter,
-                  double volume_ratio, double phi, double theta) override {
-    if (check_input_parameters_) {
-      EXPECT_NEAR(expected_volume_ratio_, volume_ratio, 1e-8);
-      EXPECT_NEAR(expected_phi_, phi, 1e-8);
-      EXPECT_NEAR(expected_theta_, theta, 1e-8);
-    } else {
-      // forward call to implementation in CellExt
-      Base::DivideImpl(daughter, volume_ratio, phi, theta);
-    }
-  }
-
-  FRIEND_TEST(CellTest, DivideVolumeRatioPhiTheta);
-};
 
 TEST(CellTest, TransformCoordinatesGlobalToPolar) {
   TestCell<> cell;
@@ -256,6 +175,8 @@ TEST(CellTest, BiologyModule) {
   EXPECT_NEAR(position[1] + 2, cell.GetPosition()[1], abs_error<double>::value);
   EXPECT_NEAR(position[2] + 3, cell.GetPosition()[2], abs_error<double>::value);
 }
+
+TEST(CellTest, IO) { RunIOTest(); }
 
 }  // namespace cell_test_internal
 }  // namespace bdm

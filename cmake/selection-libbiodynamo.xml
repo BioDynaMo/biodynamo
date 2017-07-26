@@ -1,0 +1,11 @@
+<!-- All types for which the dictionary can be prebuilt (non templated classes)
+     are listed here and included into libbiodynamo.
+     Classes from directory test are not included. -->
+<lcgdict>
+  <selection>
+    <class name="bdm::ScalarSimulationObject"/>
+    <class name="bdm::RuntimeVariables"/>
+    <class name="bdm::NullBiologyModule"/>
+    <class name="bdm::IntegralTypeWrapper<size_t> "/>
+  </selection>
+</lcgdict>

@@ -25,6 +25,7 @@ software that has similar functionalities as Cx3D but is coded in C++ is needed.
  * CMake >= 3.2.0
  * git
  * valgrind
+ * ROOT
 
 Additionally for developers:
  * doxygen graphviz (to build documentation)

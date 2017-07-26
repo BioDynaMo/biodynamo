@@ -8,6 +8,7 @@
 #include <vector>
 #include "backend.h"
 #include "macros.h"
+#include "root_util.h"
 #include "type_util.h"
 
 namespace bdm {
@@ -61,12 +62,16 @@ using std::is_same;
   data_member[kIdx] = rhs.data_member[0];
 
 /// Macro to insert required boilerplate code into simulation object
-/// @param  class_name: class name witout template specifier e.g. \n
+/// @param  class_name class name witout template specifier e.g. \n
 ///         `class Foo {};` \n
 ///          -> class_name: `Foo` \n
 ///         `template <typename T> class Foo {};` \n
 ///          -> class_name: `Foo` \n
-/// @param   self_specifier: Used internally to create the same object, but with
+/// @param   class_version_id required for ROOT I/O (see ROOT ClassDef Macro).
+///          Every time the layout of the class is changed, class_version_id
+///          must be incremented by one. The class_version_id should be greater
+///          or equal to 1.
+/// @param   self_specifier Used internally to create the same object, but with
 ///          different backend - required since inheritance chain is not known
 ///          inside a mixin. \n
 ///          Value: Type Id, but template parameter Base must be replaced with:
@@ -92,7 +97,7 @@ using std::is_same;
 ///             -> friend_template_signature:
 ///             `template <typename COMMA() typename>`
 /// @param  ...: List of all data members of this class
-#define BDM_CLASS_HEADER_ADV(class_name, self_specifier,                       \
+#define BDM_CLASS_HEADER_ADV(class_name, class_version_id, self_specifier,     \
                              friend_template_signature, ...)                   \
  public:                                                                       \
   /* reduce verbosity of some types and variables by defining a local alias */ \
@@ -112,6 +117,8 @@ using std::is_same;
   /** all template versions of this class are friends of each other */         \
   /** so they can access each others data members */                           \
   friend_template_signature friend class class_name;                           \
+                                                                               \
+  explicit class_name(TRootIOCtor* io_ctor) {}                                 \
                                                                                \
   /** Create new empty object with SOA memory layout. */                       \
   /** Calling Self<Soa> soa; will have already one instance inside -- */       \
@@ -234,13 +241,15 @@ using std::is_same;
   /** Elements that are added using `DelayedPushBack` and not yet commited */  \
   typename type_ternary_operator<                                              \
       is_same<Backend, Soa>::value, std::vector<Self<Scalar>>,                 \
-      VectorPlaceholder<Self<Scalar>>>::type to_be_added_;
+      VectorPlaceholder<Self<Scalar>>>::type to_be_added_;                     \
+                                                                               \
+  BDM_ROOT_CLASS_DEF_OVERRIDE(class_name, class_version_id)
 
 /// simpflified interface for standard simulation object with one template
 /// parameter named Base.
 /// Documentation see BDM_CLASS_HEADER_ADV
-#define BDM_CLASS_HEADER(class_name, ...)                                   \
-  BDM_CLASS_HEADER_ADV(class_name,                                          \
+#define BDM_CLASS_HEADER(class_name, class_version_id, ...)                 \
+  BDM_CLASS_HEADER_ADV(class_name, class_version_id,                        \
                        class_name<typename Base::template Self<TTBackend>>, \
                        template <typename>, __VA_ARGS__)
 
