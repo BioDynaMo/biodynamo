@@ -14,7 +14,7 @@ class ResourceManager {
     return &kInstance;
   }
 
-  TCells* GetCells() { return cells_; }
+  TCells*& GetCells() { return cells_; }
   void SetCells(TCells* cells) {
     delete cells_;
     cells_ = cells;

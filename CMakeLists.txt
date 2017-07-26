@@ -233,8 +233,8 @@ bdm_add_executable(cell_division_module
                    HEADERS demo/cell_division_module.h
                    LIBRARIES biodynamo)
 
-# --------------------- build persistent simulation demo ---------------------
-bdm_add_executable(persistent_sim
-                   SOURCES demo/persistent_sim.cc
-                   HEADERS demo/persistent_sim.h
-                   LIBRARIES biodynamo)
+# --------------------- build backup_restore executable ------------------
+bdm_add_executable(backup-restore
+                  SOURCES demo/backup_restore.cc
+                  HEADERS demo/backup_restore.h
+                  LIBRARIES biodynamo)

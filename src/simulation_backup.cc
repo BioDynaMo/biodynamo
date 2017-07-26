@@ -9,7 +9,7 @@ SimulationBackup::SimulationBackup(const std::string& backup_file, const std::st
       backup_ = false;
       Warning("", "No backup file name given. No backups will be made!");
     } else if(backup_file_ == restore_file_) {
-      Warning("", "Backup file is identical to restore file. Will be overriden");
+      Warning("", "Backup file is identical to restore file. Will be overriden after restore.");
     }
 
     if(restore_file_ == "") {
