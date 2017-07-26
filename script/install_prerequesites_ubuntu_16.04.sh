@@ -3,8 +3,18 @@
 # main README.md
 
 function Install {
+  THIRD_PARTY_DIR=$INSTALL_DIR/third_party
+
   echo "Start installation of prerequisites..."
   apt-get update
+
+  # Remove everything in ${THIRD_PARTY_DIR} if it exists already.
+  # Might contain outdated dependencies
+  if [ -d "${THIRD_PARTY_DIR}" ]; then
+    rm -rf "${THIRD_PARTY_DIR}/*"
+  else
+    mkdir -p $THIRD_PARTY_DIR
+  fi
 
   # install `apt-add-repository and wget if not already installed
   # (missing on docker image)
@@ -20,21 +30,40 @@ function Install {
   apt-get -y install clang-3.9 clang-format-3.9 clang-tidy-3.9 libomp-dev
   apt-get -y install doxygen graphviz
 
-  # # install ROOT
-  # mkdir /opt/ROOT
-  # cd /opt/ROOT
-  # wget https://root.cern.ch/download/root_v6.06.04.Linux-ubuntu14-x86_64-gcc4.8.tar.gz 2> /dev/null
-  # tar zxf root_v6.06.04.Linux-ubuntu14-x86_64-gcc4.8.tar.gz > /dev/null
-  # # add this to ~/.bashrc
-  # if [ "$(cat ~/.bashrc | grep ". /opt/ROOT/bin/thisroot.sh" | wc -l)" != "0" ]; then
-  #   echo ". /opt/ROOT/bin/thisroot.sh" >> ~/.bashrc
-  # fi
+  # install ROOT
+  wget -O /tmp/root_dict_patch.Linux-ubuntu16-x86_64-gcc5.4.tar.gz "https://cernbox.cern.ch/index.php/s/BbFptgxo2K565IS/download?path=%2F&files=root_dict_patch.Linux-ubuntu16-x86_64-gcc5.4.tar.gz"
+  tar -xzf /tmp/root_dict_patch.Linux-ubuntu16-x86_64-gcc5.4.tar.gz -C $THIRD_PARTY_DIR
+
+  # create environment script
+  BDM_ENVIRONMENT_FILE=${THIRD_PARTY_DIR}/bdm_environment.sh
+  touch ${BDM_ENVIRONMENT_FILE}
+
+  echo ". ${THIRD_PARTY_DIR}/root/bin/thisroot.sh" >> ${BDM_ENVIRONMENT_FILE}
+
+  # add to ~/.bashrc
+  if [ "$(cat ~/.bashrc | grep ". ${BDM_ENVIRONMENT_FILE}" | wc -l)" == "0" ]; then
+    echo "Adding \". ${BDM_ENVIRONMENT_FILE}\" to .bashrc"
+    echo ". ${BDM_ENVIRONMENT_FILE}" >> ~/.bashrc
+  fi
 }
 
 if [ "$(whoami)" != "root" ]; then
   echo "Error: This script requires root access. Exiting now."
   exit;
 fi
+
+# prompts user for installation directory
+while true; do
+  read -p "The default installation directory is /opt/biodynamo.
+Do you want to change the installation directory? (y/n) " yn
+  case $yn in
+    [Yy]* ) INSTALL_DIR="$(zenity --file-selection --directory)"; break;;
+    [Nn]* ) INSTALL_DIR=/opt/biodynamo; break;;
+        * ) echo "Please answer yes or no.";;
+  esac
+done
+
+echo ""
 
 # ask user if she really wants to perform this changes
 # https://stackoverflow.com/questions/226703/how-do-i-prompt-for-yes-no-cancel-input-in-a-linux-shell-script
