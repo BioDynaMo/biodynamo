@@ -22,7 +22,7 @@ using std::array;
 using std::vector;
 
 template <typename Base = SimulationObject<>,
-          typename TBiologyModuleVariant = variant<NullBiologyModule>>
+          typename TBiologyModuleVariant = Variant<NullBiologyModule>>
 class CellExt : public Base {
  public:
   BDM_CLASS_HEADER_ADV(CellExt, 1,
@@ -228,7 +228,7 @@ class CellExt : public Base {
 };
 
 template <typename Backend = Scalar,
-          typename TBiologyModuleVariant = variant<NullBiologyModule>>
+          typename TBiologyModuleVariant = Variant<NullBiologyModule>>
 using Cell = CellExt<SimulationObject<Backend>, TBiologyModuleVariant>;
 
 // ----------------------------------------------------------------------------

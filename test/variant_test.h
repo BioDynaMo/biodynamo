@@ -13,11 +13,11 @@ namespace variant_test_internal {
 
 inline void RunIOTestInt() {
   // write
-  variant<int, double, char> v = 12;
+  Variant<int, double, char> v = 12;
   WritePersistentObject(ROOTFILE, "variant", v, "RECREATE");
 
   // read
-  variant<int, double, char>* v_r = nullptr;
+  Variant<int, double, char>* v_r = nullptr;
   GetPersistentObject(ROOTFILE, "variant", v_r);
 
   // check
@@ -28,11 +28,11 @@ inline void RunIOTestInt() {
 
 inline void RunIOTestDouble() {
   // write
-  variant<int, double, char> v = 3.14;
+  Variant<int, double, char> v = 3.14;
   WritePersistentObject(ROOTFILE, "variant", v, "RECREATE");
 
   // read
-  variant<int, double, char>* v_r = nullptr;
+  Variant<int, double, char>* v_r = nullptr;
   GetPersistentObject(ROOTFILE, "variant", v_r);
 
   // check
@@ -44,11 +44,11 @@ inline void RunIOTestDouble() {
 
 inline void RunIOTestChar() {
   // write
-  variant<int, double, char> v = 'c';
+  Variant<int, double, char> v = 'c';
   WritePersistentObject(ROOTFILE, "variant", v, "RECREATE");
 
   // read
-  variant<int, double, char>* v_r = nullptr;
+  Variant<int, double, char>* v_r = nullptr;
   GetPersistentObject(ROOTFILE, "variant", v_r);
 
   // check
@@ -59,7 +59,7 @@ inline void RunIOTestChar() {
 
 inline void RunIOVectorTest() {
   // write
-  variant<int, double, char> v = 3.14;
+  Variant<int, double, char> v = 3.14;
   std::vector<decltype(v)> variant_v;
   variant_v.push_back(v);
   WritePersistentObject(ROOTFILE, "variant_v", variant_v, "RECREATE");

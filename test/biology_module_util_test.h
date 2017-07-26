@@ -64,7 +64,7 @@ inline void RunRunVisitor() {
 
   RunTestBiologyModule<TestSimulationObject> module;
   module.expected_run_parameter_ = &sim_object;
-  variant<RunTestBiologyModule<TestSimulationObject>> variant = module;
+  Variant<RunTestBiologyModule<TestSimulationObject>> variant = module;
 
   visit(visitor, variant);
   EXPECT_TRUE(gRunMethodCalled);

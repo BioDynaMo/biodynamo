@@ -24,7 +24,7 @@ struct GrowthModule {
   ClassDefNV(GrowthModule, 1);
 };
 
-typedef variant<GrowthModule> BiologyModules;
+typedef Variant<GrowthModule> BiologyModules;
 
 template <typename TBackend = Scalar>
 using MyCell = Cell<TBackend, BiologyModules>;

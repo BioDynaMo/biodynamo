@@ -29,17 +29,17 @@ const T* get_if(TVariant* variant_wrapper) {
 /// Necessary, because mpark::variant canno be written to a ROOT file.
 /// Therefore, it is wrapped in this object that has a custom streamer.
 template <typename... Types>
-class variant {
+class Variant {
  public:
   template <typename T>
-  variant(const T& value) : data_(value) {}
+  Variant(const T& value) : data_(value) {}
 
-  variant() {}
+  Variant() {}
 
-  virtual ~variant() {}
+  virtual ~Variant() {}
 
   template <typename T>
-  variant<Types...>& operator=(const T& value) {
+  Variant<Types...>& operator=(const T& value) {
     data_ = value;
     return *this;
   }
@@ -54,10 +54,10 @@ class variant {
   template <typename T, typename TVariant>
   friend const T* get_if(TVariant* variant_wrapper);
 
-  BDM_TEMPLATE_CLASS_DEF_CUSTOM_STREAMER(variant, 1);
+  BDM_TEMPLATE_CLASS_DEF_CUSTOM_STREAMER(Variant, 1);
 };
 
-/// Helper functor to write the contents of a variant to a TBuffer
+/// Helper functor to write the contents of a Variant to a TBuffer
 template <typename... Types>
 struct StreamerWriteFunctor {
   StreamerWriteFunctor(TBuffer& buffer) : buffer_(buffer) {}
@@ -82,7 +82,7 @@ struct StreamerWriteFunctor {
   TBuffer& buffer_;
 };
 
-/// Helper functor to read the contents of a variant from a TBuffer
+/// Helper functor to read the contents of a Variant from a TBuffer
 template <typename TVariant>
 struct StreamerReadFunctor {
   StreamerReadFunctor(TBuffer& buffer, TVariant* variant)
@@ -109,9 +109,9 @@ struct StreamerReadFunctor {
   TVariant* variant_;
 };
 
-// Custom streamer for bdm::variant<Types...> required for ROOT IO
+// Custom streamer for bdm::Variant<Types...> required for ROOT IO
 template <typename... Types>
-inline void variant<Types...>::Streamer(TBuffer& R__b) {
+inline void Variant<Types...>::Streamer(TBuffer& R__b) {
   if (R__b.IsReading()) {
     size_t type_id;
     R__b >> type_id;

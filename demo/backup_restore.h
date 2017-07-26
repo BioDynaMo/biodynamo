@@ -23,7 +23,7 @@ struct TestBehaviour {
   ClassDefNV(TestBehaviour, 1);
 };
 
-typedef variant<TestBehaviour> BiologyModules;
+typedef Variant<TestBehaviour> BiologyModules;
 
 template <typename Backend = Scalar>
 using MyCell = Cell<Backend, BiologyModules>;

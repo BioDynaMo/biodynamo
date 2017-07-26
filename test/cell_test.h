@@ -40,7 +40,7 @@ struct MovementModule {
   ClassDefNV(MovementModule, 1);
 };
 
-typedef variant<GrowthModule, MovementModule> BiologyModules;
+typedef Variant<GrowthModule, MovementModule> BiologyModules;
 
 /// Class used to get access to protected members
 template <typename Base = CellExt<SimulationObject<Scalar>, BiologyModules>>

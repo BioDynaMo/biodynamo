@@ -15,6 +15,6 @@
     <class name="bdm::NullBiologyModule"/>
     <class name="bdm::IntegralTypeWrapper<size_t> "/>
     <!-- list of template classes with custom streamers -->
-    <class pattern="bdm::variant*" />
+    <class pattern="bdm::Variant*" />
   </exclusion>
 </lcgdict>

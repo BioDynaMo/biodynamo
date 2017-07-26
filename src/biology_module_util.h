@@ -9,8 +9,8 @@ namespace bdm {
 enum Event { kCellDivision, kNeuriteBranching };
 
 /// \brief Used for simulation objects where biology modules are not used.
-/// variant implementation does not allow `variant<>`
-/// -> `variant<NullBiologyModule>`
+/// Variant implementation does not allow `Variant<>`
+/// -> `Variant<NullBiologyModule>`
 struct NullBiologyModule {
   template <typename T>
   void Run(T* t) {}

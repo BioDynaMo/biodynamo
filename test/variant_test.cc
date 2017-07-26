@@ -4,13 +4,13 @@ namespace bdm {
 namespace variant_test_internal {
 
 TEST(VariantTest, ConstructorAndVisit) {
-  variant<int, double, char> vctor_i(3);
-  variant<int, double, char> vctor_d(3.14);
-  variant<int, double, char> vctor_c('b');
+  Variant<int, double, char> vctor_i(3);
+  Variant<int, double, char> vctor_d(3.14);
+  Variant<int, double, char> vctor_c('b');
 
-  variant<int, double, char> vassignment_op_i = 3;
-  variant<int, double, char> vassignment_op_d = 3.14;
-  variant<int, double, char> vassignment_op_c = 'b';
+  Variant<int, double, char> vassignment_op_i = 3;
+  Variant<int, double, char> vassignment_op_d = 3.14;
+  Variant<int, double, char> vassignment_op_c = 'b';
 
   auto check_int = [](auto value) {
     bool is_int = std::is_same<int, decltype(value)>::value;
@@ -39,7 +39,7 @@ TEST(VariantTest, ConstructorAndVisit) {
 }
 
 TEST(VariantTest, GetIf) {
-  variant<int, double, char> vint(3);
+  Variant<int, double, char> vint(3);
 
   EXPECT_EQ(3, *(get_if<int>(&vint)));
   EXPECT_EQ(nullptr, get_if<double>(&vint));

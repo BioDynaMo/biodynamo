@@ -20,7 +20,7 @@ struct GrowthModule {
     } else {
       Divide(
           *cell,
-          ResourceManager<Cell<Soa, variant<GrowthModule>>>::Get()->GetCells());
+          ResourceManager<Cell<Soa, Variant<GrowthModule>>>::Get()->GetCells());
     }
   }
 
@@ -29,7 +29,7 @@ struct GrowthModule {
 };
 
 // 2. Define biology modules that should be used in this simulation
-typedef variant<GrowthModule> BiologyModules;
+typedef Variant<GrowthModule> BiologyModules;
 
 // 3. Use predefined cell class as is and pass biology module definitions
 //    Hence the biology module template parameter can be ommitted later on
