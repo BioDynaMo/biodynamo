@@ -8,6 +8,13 @@ function AddToBashrc {
   . ~/.bashrc
 }
 
+function InstallCmake {
+  wget https://cmake.org/files/v3.6/cmake-3.6.3-Linux-x86_64.tar.gz
+  mkdir -p $THIRD_PARTY_DIR/cmake-3.6.3
+  tar -xzf cmake-3.6.3-Linux-x86_64.tar.gz --strip 1 -C $THIRD_PARTY_DIR/cmake-3.6.3
+  ln -s $THIRD_PARTY_DIR/cmake-3.6.3/bin/cmake /usr/bin/cmake
+}
+
 function Install {
   echo "Start installation of prerequisites..."
 
@@ -20,12 +27,12 @@ function Install {
     rv=( ${CMAKE_VERSION_R//./ } )
     iv=( ${CMAKE_VERSION_I//./ } )
     if ! ((${iv[0]} >= ${rv[0]} && ${iv[1]} >= ${rv[0]})); then
-      wget https://cmake.org/files/v3.6/cmake-3.6.3-Linux-x86_64.tar.gz
-      mkdir -p $THIRD_PARTY_DIR/cmake-3.6.3
-      tar -xzf cmake-3.6.3-Linux-x86_64.tar.gz --strip 1 -C $THIRD_PARTY_DIR/cmake-3.6.3
+      # disable the current install cmake by renaming it
       mv /usr/bin/cmake /usr/bin/cmake_$CMAKE_VERSION_I
-      ln -s $THIRD_PARTY_DIR/cmake-3.6.3/bin/cmake /usr/bin/cmake
+      InstallCmake
     fi
+  else
+    InstallCmake
   fi
 
   apt-get update
