@@ -2,10 +2,32 @@
 # This script installs the required packages on ubuntu 16.04 as outlined in the
 # main README.md
 
+function AddToBashrc {
+  echo "Adding \"source ${BDM_ENVIRONMENT_FILE}\" to .bashrc"
+  echo "source ${BDM_ENVIRONMENT_FILE}" >> ~/.bashrc
+  . ~/.bashrc
+}
+
 function Install {
+  echo "Start installation of prerequisites..."
+
   THIRD_PARTY_DIR=$INSTALL_DIR/third_party
 
-  echo "Start installation of prerequisites..."
+  # If not installed, install CMake higher than the required version
+  CMAKE_VERSION_R=3.3
+  CMAKE_VERSION_I=`cmake --version | grep -m1 "" | sed -e 's/\<cmake version\>//g' -e "s/ //g"`
+  if hash cmake 2>/dev/null; then
+    rv=( ${CMAKE_VERSION_R//./ } )
+    iv=( ${CMAKE_VERSION_I//./ } )
+    if ! ((${iv[0]} >= ${rv[0]} && ${iv[1]} >= ${rv[0]})); then
+      wget https://cmake.org/files/v3.6/cmake-3.6.3-Linux-x86_64.tar.gz
+      mkdir -p $THIRD_PARTY_DIR/cmake-3.6.3
+      tar -xzf cmake-3.6.3-Linux-x86_64.tar.gz --strip 1 -C $THIRD_PARTY_DIR/cmake-3.6.3
+      mv /usr/bin/cmake /usr/bin/cmake_$CMAKE_VERSION_I
+      ln -s $THIRD_PARTY_DIR/cmake-3.6.3/bin/cmake /usr/bin/cmake
+    fi
+  fi
+
   apt-get update
 
   # Remove everything in ${THIRD_PARTY_DIR} if it exists already.
@@ -43,11 +65,56 @@ function Install {
 
   echo ". ${THIRD_PARTY_DIR}/root/bin/thisroot.sh" >> ${BDM_ENVIRONMENT_FILE}
 
+  # needed for Catalyst
+  ln -s /usr/lib/libmpi.so /usr/local/lib/libmpi.so
+  ln -s /usr/lib/libmpi.so /usr/local/lib/libmpi.so.12
+  ln -s /usr/lib/openmpi/lib/libmpi.so /usr/lib/openmpi/lib/libmpi.so.1
+
+  # install ParaView
+  wget -O paraview-5.4_ubuntu14_gcc5.4_openmpi.tar.gz "https://cernbox.cern.ch/index.php/s/BbFptgxo2K565IS/download?path=%2F&files=paraview-5.4_ubuntu14_gcc5.4_openmpi.tar.gz"
+  mkdir -p $THIRD_PARTY_DIR/paraview
+  tar -xzf paraview-5.4_ubuntu14_gcc5.4_openmpi.tar.gz -C $THIRD_PARTY_DIR/paraview
+
+  # install Qt
+  wget -O Qt5.6.2_ubuntu16_gcc5.4.tar.gz "https://cernbox.cern.ch/index.php/s/BbFptgxo2K565IS/download?path=%2F&files=Qt5.6.2_ubuntu16_gcc5.4.tar.gz"
+  mkdir -p $THIRD_PARTY_DIR/qt
+  tar -xzf Qt5.6.2_ubuntu16_gcc5.4.tar.gz -C $THIRD_PARTY_DIR/qt
+
+  echo 'export CC=gcc-5' >> ${BDM_ENVIRONMENT_FILE}
+  echo 'export CXX=g++-5' >> ${BDM_ENVIRONMENT_FILE}
+
+  # Set environmental variables for ParaView
+  echo "export ParaView_DIR=$THIRD_PARTY_DIR/paraview/lib/cmake/paraview-5.4" >> ${BDM_ENVIRONMENT_FILE}
+  echo "export Qt5_DIR=$THIRD_PARTY_DIR/qt/lib/cmake/Qt5" >> ${BDM_ENVIRONMENT_FILE}
+  echo "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$THIRD_PARTY_DIR/qt/lib" >> ${BDM_ENVIRONMENT_FILE}
+  echo "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib/openmpi/lib" >> ${BDM_ENVIRONMENT_FILE}
+  echo "export PYTHONPATH=$THIRD_PARTY_DIR/paraview/lib/paraview-5.4/site-packages:$THIRD_PARTY_DIR/paraview/lib/paraview-5.4/site-packages/vtk" >> ${BDM_ENVIRONMENT_FILE}
+  echo "QT_QPA_PLATFORM_PLUGIN_PATH=$THIRD_PARTY_DIR/qt/plugins" >> ${BDM_ENVIRONMENT_FILE}
+
+  # Remove the downloaded tar files
+  rm -rf *.tar.gz
+
   # add to ~/.bashrc
-  if [ "$(cat ~/.bashrc | grep ". ${BDM_ENVIRONMENT_FILE}" | wc -l)" == "0" ]; then
-    echo "Adding \". ${BDM_ENVIRONMENT_FILE}\" to .bashrc"
-    echo ". ${BDM_ENVIRONMENT_FILE}" >> ~/.bashrc
-    . ~/.bashrc
+  if [ "$(cat ~/.bashrc | grep "source ${BDM_ENVIRONMENT_FILE}" | wc -l)" == "0" ]; then
+    echo ""
+    echo "+-------------------------------------------------------------------------+"
+    echo "| Complete the installation by appending the following line to your       |"
+    echo "| .bashrc file (e.g. gedit ~/.bashrc):                                    |"
+    echo "|                                                                         |"
+    echo "| source $BDM_DEPS            |"
+    echo "|                                                                         |"
+    echo "| And restart your terminal for the changes to take effect                |"
+    echo "+-------------------------------------------------------------------------+"
+    echo ""
+
+    while true; do
+      read -p "Or do you want to do this automatically? (y/n)" yn
+      case $yn in
+        [Yy]* ) AddToBashrc; exit;;
+        [Nn]* ) exit;;
+            * ) echo "Please answer yes or no.";;
+      esac
+    done
   fi
 }
 
@@ -77,7 +144,7 @@ while true; do
 and installs the packages mentioned in the main README.md.
 Do you want to continue? (y/n) " yn
   case $yn in
-    [Yy]* ) Install; break;;
+    [Yy]* ) Install; exit;;
     [Nn]* ) exit;;
         * ) echo "Please answer yes or no.";;
   esac
