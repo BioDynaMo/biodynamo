@@ -44,6 +44,7 @@ function Install {
   if [ "$(cat ~/.bashrc | grep ". ${BDM_ENVIRONMENT_FILE}" | wc -l)" == "0" ]; then
     echo "Adding \". ${BDM_ENVIRONMENT_FILE}\" to .bashrc"
     echo ". ${BDM_ENVIRONMENT_FILE}" >> ~/.bashrc
+    . ~/.bashrc
   fi
 }
 
