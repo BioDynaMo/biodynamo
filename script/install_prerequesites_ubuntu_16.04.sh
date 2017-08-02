@@ -5,7 +5,26 @@
 function AddToBashrc {
   echo "Adding \"source ${BDM_ENVIRONMENT_FILE}\" to .bashrc"
   echo "source ${BDM_ENVIRONMENT_FILE}" >> ~/.bashrc
-  . ~/.bashrc
+  echo ""
+  echo "Restart your terminal for the changes to take effect!"
+}
+
+function ExplainBashrc {
+  echo ""
+  echo "+---------------------------------------------------------------------------+"
+  echo "| You have chosen not append the environment variables to your .bashrc.     |"
+  echo "| In order to build BioDynaMo properly you can do either of the following:  |"
+  echo "|                                                                           |"
+  echo "| 1. Edit your .bashrc (e.g. gedit ~/.bashrc) to include the following line:|"
+  echo "|                                                                           |"
+  echo "|    source $BDM_ENVIRONMENT_FILE              |"
+  echo "|                                                                           |"
+  echo "| And restart your terminal for the changes to take effect                  |"
+  echo "| 2. In every terminal you want to build BioDynamo execute:                 |"
+  echo "|                                                                           |"
+  echo "|    source $BDM_ENVIRONMENT_FILE              |"
+  echo "+---------------------------------------------------------------------------+"
+  echo ""
 }
 
 function InstallCmake {
@@ -61,6 +80,7 @@ function Install {
   apt-get -y install gcc-5 g++-5
   apt-get -y install clang-3.9 clang-format-3.9 clang-tidy-3.9 libomp-dev
   apt-get -y install doxygen graphviz
+  apt-get -y install zenity
 
   # install ROOT
   wget -O /tmp/root_dict_patch.Linux-ubuntu16-x86_64-gcc5.4.tar.gz "https://cernbox.cern.ch/index.php/s/BbFptgxo2K565IS/download?path=%2F&files=root_dict_patch.Linux-ubuntu16-x86_64-gcc5.4.tar.gz"
@@ -93,32 +113,20 @@ function Install {
   # Set environmental variables for ParaView
   echo "export ParaView_DIR=$THIRD_PARTY_DIR/paraview/lib/cmake/paraview-5.4" >> ${BDM_ENVIRONMENT_FILE}
   echo "export Qt5_DIR=$THIRD_PARTY_DIR/qt/lib/cmake/Qt5" >> ${BDM_ENVIRONMENT_FILE}
-  echo "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$THIRD_PARTY_DIR/qt/lib" >> ${BDM_ENVIRONMENT_FILE}
-  echo "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib/openmpi/lib" >> ${BDM_ENVIRONMENT_FILE}
+  echo "export LD_LIBRARY_PATH=$THIRD_PARTY_DIR/qt/lib:/usr/lib/openmpi/lib:$LD_LIBRARY_PATH" >> ${BDM_ENVIRONMENT_FILE}
   echo "export PYTHONPATH=$THIRD_PARTY_DIR/paraview/lib/paraview-5.4/site-packages:$THIRD_PARTY_DIR/paraview/lib/paraview-5.4/site-packages/vtk" >> ${BDM_ENVIRONMENT_FILE}
-  echo "QT_QPA_PLATFORM_PLUGIN_PATH=$THIRD_PARTY_DIR/qt/plugins" >> ${BDM_ENVIRONMENT_FILE}
+  echo "export QT_QPA_PLATFORM_PLUGIN_PATH=$THIRD_PARTY_DIR/qt/plugins" >> ${BDM_ENVIRONMENT_FILE}
 
   # Remove the downloaded tar files
   rm -rf *.tar.gz
 
   # add to ~/.bashrc
   if [ "$(cat ~/.bashrc | grep "source ${BDM_ENVIRONMENT_FILE}" | wc -l)" == "0" ]; then
-    echo ""
-    echo "+-------------------------------------------------------------------------+"
-    echo "| Complete the installation by appending the following line to your       |"
-    echo "| .bashrc file (e.g. gedit ~/.bashrc):                                    |"
-    echo "|                                                                         |"
-    echo "| source $BDM_DEPS            |"
-    echo "|                                                                         |"
-    echo "| And restart your terminal for the changes to take effect                |"
-    echo "+-------------------------------------------------------------------------+"
-    echo ""
-
     while true; do
-      read -p "Or do you want to do this automatically? (y/n)" yn
+      read -p "Do you want to append the environmental variables to your .bashrc (recommended)? (y/n)" yn
       case $yn in
         [Yy]* ) AddToBashrc; exit;;
-        [Nn]* ) exit;;
+        [Nn]* ) ExplainBashrc; exit;;
             * ) echo "Please answer yes or no.";;
       esac
     done
@@ -135,7 +143,10 @@ while true; do
   read -p "The default installation directory is /opt/biodynamo.
 Do you want to change the installation directory? (y/n) " yn
   case $yn in
-    [Yy]* ) INSTALL_DIR="$(zenity --file-selection --directory)"; break;;
+    [Yy]* ) INSTALL_DIR="$(zenity --file-selection --directory)";
+            if [${INSTALL_DIR} == ""]; then INSTALL_DIR=/opt/biodynamo; fi;
+            echo "You selected ${INSTALL_DIR} as the installation directory";
+            break;;
     [Nn]* ) INSTALL_DIR=/opt/biodynamo; break;;
         * ) echo "Please answer yes or no.";;
   esac

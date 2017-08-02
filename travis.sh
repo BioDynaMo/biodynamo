@@ -57,7 +57,6 @@ fi
 # install ROOT
 cd
 if [ "$TRAVIS_OS_NAME" = "linux" ]; then
-<<<<<<< fc3fae39b66c6002518e4f9370a0e9af00a11d0f
   wget --progress=dot:giga -O root_dict_path.Linux-ubuntu14-x86_64-gcc5.4.tar.gz "https://cernbox.cern.ch/index.php/s/BbFptgxo2K565IS/download?path=%2F&files=root_dict_patch.Linux-ubuntu14-x86_64-gcc5.4.tar.gz"
   tar zxf "root_dict_path.Linux-ubuntu14-x86_64-gcc5.4.tar.gz" > /dev/null
 
@@ -72,14 +71,14 @@ if [ "$TRAVIS_OS_NAME" = "linux" ]; then
   export ParaView_DIR=/opt/biodynamo/paraview/lib/cmake/paraview-5.4
   export Qt5_DIR=/opt/biodynamo/qt/lib/cmake/Qt5
 
-  export LD_LIBRARY_PATH=/opt/biodynamo/qt/lib
+  export LD_LIBRARY_PATH=/opt/biodynamo/qt/lib:/usr/lib/openmpi/lib:$LD_LIBRARY_PATH
 else
   # write progress to terminal to prevent termination by travis if it takes longer than 10 min
-  wget --progress=dot:giga https://root.cern.ch/download/root_v6.06.00.macosx64-10.9-clang60.tar.gz
-  sudo tar zxf root_v6.06.00.macosx64-10.9-clang60.tar.gz > /dev/null
+  wget --progress=dot:giga https://root.cern.ch/download/root_v6.10.00.macosx64-10.11-clang80.tar.gz
+  tar zxf root_v6.10.00.macosx64-10.11-clang80.tar.gz > /dev/null
 fi
 
-# set the envars for Catalyst
+# set the Python envars for Catalyst
 export PYTHONPATH=$ParaView_DIR/../../paraview-5.4/site-packages
 export PYTHONPATH=$PYTHONPATH:$ParaView_DIR/../../paraview-5.4/site-packages/vtk
 
@@ -100,7 +99,6 @@ if [ "$TRAVIS_OS_NAME" = "linux" ]; then
   # clang-tidy did not find omp.h in this configuration
   mkdir /tmp/bdm_omp
   cp /usr/lib/gcc/x86_64-linux-gnu/4.8/include/omp.h /tmp/bdm_omp/
-
 
   # add master branch
   # https://github.com/travis-ci/travis-ci/issues/6069
