@@ -32,7 +32,6 @@ void Apply(TTuple* t, size_t index, TFunction&& f,
   kLut[index](t, f);
 }
 
-// TODO(lukas) document
 template <typename T, size_t Counter, typename... Types>
 struct GetIndexImpl;
 
@@ -69,7 +68,8 @@ void Apply(TTuple* t, size_t index, TFunction&& f) {
                 std::make_index_sequence<std::tuple_size<TTuple>::value>());
 }
 
-// TODO(lukas) document
+/// Return the index of the first occurence of type T within the variadic
+/// template parameter Types.
 template <typename T, typename... Types>
 inline size_t GetIndex() {
   return bdm::detail::template GetIndexImpl<T, 0, Types...>::GetValue();

@@ -8,7 +8,7 @@
 /// backend. Since all data members are references, they cannot be initialized
 /// from ROOT I/O. As a consequence, classes with a `SoaRef` backend are
 /// excluded from dictionary generation. With the default ROOT `ClassDef` macro
-/// this would need to a linking error, because there is no implementation for
+/// this would lead to a linking error, because there is no implementation for
 /// the methods `Class()` and `Streamer()`. To mitigate this problem, this
 /// macro inserts a default implementation of these methods. For other backends,
 /// these implementation is replaced by the dictionary using template
@@ -81,7 +81,10 @@
  private:
 // NOLINT
 
-// TODO(lukas) document
+/// This modification makes it possible to use templated classes with custom
+/// streamers without the generation of a dictionary for template instantiations
+/// that do not require I/O. Using ROOT's ClassDef macro would lead to a linking
+/// error since the function Class would not be defined.
 #define BDM_TEMPLATE_CLASS_DEF_CUSTOM_STREAMER(class_name, class_version_id) \
  private:                                                                    \
   static atomic_TClass_ptr fgIsA;                                            \
