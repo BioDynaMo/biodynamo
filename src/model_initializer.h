@@ -6,7 +6,6 @@
 namespace bdm {
 
 struct ModelInitializer {
-
   /// Creates a 3D grid of simulation objects and adds them to the
   /// ResourceManager. Type of the simulation object is determined by the return
   /// type of parameter function.

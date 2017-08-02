@@ -1,11 +1,11 @@
 #include "model_initializer.h"
-#include "gtest/gtest.h"
 #include "backend.h"
 #include "biology_module_util.h"
 #include "cell.h"
+#include "gtest/gtest.h"
 #include "resource_manager.h"
-#include "variadic_template_parameter_util.h"
 #include "test_util.h"
+#include "variadic_template_parameter_util.h"
 
 namespace bdm {
 namespace model_initializer_test_internal {
@@ -13,7 +13,7 @@ namespace model_initializer_test_internal {
 TEST(ModelInitializerTest, Grid3D) {
   auto rm = ResourceManager<>::Get();
 
-  ModelInitializer::Grid3D(2, 12, [](const std::array<double, 3>& pos){
+  ModelInitializer::Grid3D(2, 12, [](const std::array<double, 3>& pos) {
     Cell cell(pos);
     return cell;
   });
