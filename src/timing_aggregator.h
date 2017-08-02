@@ -2,6 +2,7 @@
 #define TIMING_AGGREGATOR_H_
 
 #include <map>
+#include <ostream>
 #include <string>
 #include <vector>
 

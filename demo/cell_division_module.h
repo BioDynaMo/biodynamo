@@ -37,7 +37,7 @@ template <typename Backend = Scalar>
 using MyCell = Cell<Backend, BiologyModules>;
 
 inline int Simulate(const CommandLineOptions& options,
-                    size_t cells_per_dim = 128) {
+                    size_t cells_per_dim = 8) {
   // 4. Get cell container
   auto cells = ResourceManager<MyCell<Soa>>::Get()->GetCells();
   cells->reserve(cells_per_dim * cells_per_dim * cells_per_dim);

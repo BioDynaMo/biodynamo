@@ -11,10 +11,8 @@
 #include "resource_manager.h"
 #include "simulation_backup.h"
 
-#ifdef USE_CATALYST
 #include "param.h"
 #include "visualization/catalyst_adaptor.h"
-#endif
 
 namespace bdm {
 
@@ -24,9 +22,10 @@ class Scheduler {
   using Clock = std::chrono::high_resolution_clock;
 
   Scheduler() : backup_(SimulationBackup("", "")) {
-#ifdef USE_CATALYST
-    catalyst::Initialize("../src/visualization/simple_pipeline.py");
-#endif
+    if (Param::use_paraview_) {
+      visualization_ = CatalystAdaptor::GetInstance();
+      visualization_->Initialize("../src/visualization/simple_pipeline.py");
+    }
   }
 
   Scheduler(const std::string& backup_file, const std::string& restore_file)
@@ -34,12 +33,16 @@ class Scheduler {
     if (backup_.RestoreEnabled()) {
       restore_point_ = backup_.GetSimulationStepsFromBackup();
     }
+    if (Param::use_paraview_) {
+      visualization_ = CatalystAdaptor::GetInstance();
+      visualization_->Initialize("../src/visualization/simple_pipeline.py");
+    }
   }
 
   virtual ~Scheduler() {
-#ifdef USE_CATALYST
-    catalyst::Finalize();
-#endif
+    if (Param::use_paraview_) {
+      visualization_->Finalize();
+    }
   }
 
   void Simulate(unsigned steps) {
@@ -49,7 +52,7 @@ class Scheduler {
       return;
     } else if (backup_.RestoreEnabled() && restore_point_ > total_steps_ &&
                restore_point_ < total_steps_ + steps) {
-      // restore
+      // Restore
       backup_.Restore(cells);
       ResourceManager<TCellContainer>::Get()->SetCells(cells);
 
@@ -57,8 +60,17 @@ class Scheduler {
       total_steps_ = restore_point_;
     }
 
-    while (unsigned step = 0; step < steps; step++) {
+    for (unsigned step = 0; step < steps; step++) {
+      // Simulate
       Execute();
+
+      // Visualize
+      if (Param::use_paraview_) {
+        double time = Param::kSimulationTimeStep * total_steps_;
+        visualization_->CoProcess(cells, time, total_steps_, step == steps - 1);
+      }
+
+      total_steps_++;
 
       // Backup
       using std::chrono::seconds;
@@ -85,13 +97,6 @@ class Scheduler {
 
     // commit new and removed cells
     cells->Commit();
-
-#ifdef USE_CATALYST
-    double time = Param::kSimulationTimeStep * total_steps_;
-    catalyst::CoProcess(cells, time, total_steps_, step == steps - 1);
-#endif
-
-    total_steps_++;
   }
 
  private:
@@ -99,6 +104,7 @@ class Scheduler {
   size_t total_steps_ = 0;
   size_t restore_point_;
   std::chrono::time_point<Clock> last_backup_ = Clock::now();
+  CatalystAdaptor* visualization_ = nullptr;
 
   OpTimer<NeighborNanoflannOp> neighbor_ =
       OpTimer<NeighborNanoflannOp>("neighbor", NeighborNanoflannOp(700));
