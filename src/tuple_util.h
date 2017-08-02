@@ -5,6 +5,8 @@
 
 namespace bdm {
 
+using std::size_t;
+
 namespace detail {
 // Inspiration taken from:
 // https://stackoverflow.com/questions/21062864/optimal-way-to-access-stdtuple-element-in-runtime-by-index

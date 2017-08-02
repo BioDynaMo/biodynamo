@@ -2,6 +2,7 @@
 #define SCHEDULER_H_
 
 #include "biology_module_op.h"
+#include "cell.h"
 #include "displacement_op.h"
 #include "neighbor_nanoflann_op.h"
 #include "op_timer.h"

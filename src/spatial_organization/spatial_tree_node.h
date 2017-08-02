@@ -10,6 +10,7 @@ namespace spatial_organization {
 
 using std::vector;
 using std::pair;
+using std::size_t;
 
 /// Is a core class, which provides with variety of virtual
 /// functions for children-type trees and an implemented search neighbours
