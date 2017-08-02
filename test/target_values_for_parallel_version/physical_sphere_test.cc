@@ -125,8 +125,8 @@ TEST(TargetValue_PhysicalSphere, divide) {
   EXPECT_NEAR(3, mother.getXAxis()[2], 1e-5);
 
   EXPECT_NEAR(4, mother.getYAxis()[0], 1e-5);
-  EXPECT_NEAR(2, mother.getXAxis()[1], 1e-5);
-  EXPECT_NEAR(3, mother.getXAxis()[2], 1e-5);
+  EXPECT_NEAR(5, mother.getYAxis()[1], 1e-5);
+  EXPECT_NEAR(6, mother.getYAxis()[2], 1e-5);
 
   EXPECT_NEAR(7, mother.getZAxis()[0], 1e-5);
   EXPECT_NEAR(8, mother.getZAxis()[1], 1e-5);
