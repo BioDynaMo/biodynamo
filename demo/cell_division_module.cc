@@ -22,24 +22,18 @@ struct CompileTimeParam : public DefaultCompileTimeParam<> {
   // use default Backend and AtomicTypes
 };
 
-void Simulate(size_t cells_per_dim = 32) {
+void Simulate(size_t cells_per_dim = 128) {
   // 3. Define initial model - in this example: 3D grid of cells
-  auto cells = ResourceManager<>::Get()->Get<Cell>();
-  cells->reserve(cells_per_dim * cells_per_dim * cells_per_dim);
-  double space = 20;
-  for (size_t i = 0; i < cells_per_dim; i++) {
-    for (size_t j = 0; j < cells_per_dim; j++) {
-      for (size_t k = 0; k < cells_per_dim; k++) {
-        Cell cell({i * space, j * space, k * space});
-        cell.SetDiameter(30);
-        cell.SetAdherence(0.4);
-        cell.SetMass(1.0);
-        cell.UpdateVolume();
-        cell.AddBiologyModule(GrowthModule());
-        cells->push_back(cell);
-      }
-    }
-  }
+  auto construct = [](const std::array<double, 3>& position) {
+    Cell cell(position);
+    cell.SetDiameter(30);
+    cell.SetAdherence(0.4);
+    cell.SetMass(1.0);
+    cell.UpdateVolume();
+    cell.AddBiologyModule(GrowthModule());
+    return cell;
+  };
+  ModelInitializer::Grid3D(cells_per_dim, 20, construct);
 
   // 4. Run simulation for one timestep
   Scheduler scheduler;

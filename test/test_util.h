@@ -3,6 +3,7 @@
 
 #include <type_traits>
 #include "compile_time_param.h"
+#include "gtest/gtest.h"
 
 namespace bdm {
 
@@ -24,6 +25,14 @@ template <>
 struct abs_error<double> {
   static constexpr double value = 1e-9;
 };
+
+template <typename T, size_t N>
+void EXPECT_ARR_EQ(const std::array<T, N>& expected,  // NOLINT
+                   const std::array<T, N>& actual) {
+  for (size_t i = 0; i < N; i++) {
+    EXPECT_EQ(expected[i], actual[i]);
+  }
+}
 
 }  // namespace bdm
 
