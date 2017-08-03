@@ -1,3 +1,5 @@
+#include "cell_growth.h"
+
 #include <omp.h>
 #include <cmath>
 #include <functional>
@@ -22,7 +24,7 @@ using bdm::Scalar;
 using bdm::Soa;
 using bdm::Timing;
 using bdm::TimingAggregator;
-using bdm::Exporter;
+using bdm::ExporterFactory;
 
 void Execute(size_t cells_per_dim, size_t iterations, size_t threads,
              size_t repititions, TimingAggregator *statistic,
@@ -54,9 +56,14 @@ void Execute(size_t cells_per_dim, size_t iterations, size_t threads,
     }
 
     // iterate for all (time) steps
-    Exporter exporter;
+    ExporterFactory exp_fac;
+    auto exp_basic = exp_fac.GenerateExporter<Cell<Soa>>("basic");
+    auto exp_matlab = exp_fac.GenerateExporter<Cell<Soa>>("matlab");
+    auto exp_neuroml = exp_fac.GenerateExporter<Cell<Soa>>("neuroml");
+    auto exp_paraview = exp_fac.GenerateExporter<Cell<Soa>>("paraview");
+
     if (with_export) {
-      exporter.CreatePVDFile("Results4Paraview", iterations, 1.0);
+      exp_paraview->CreatePVDFile("Results4Paraview", iterations, 1.0);
     }
 
     for (size_t i = 0; i < iterations; i++) {
@@ -66,15 +73,11 @@ void Execute(size_t cells_per_dim, size_t iterations, size_t threads,
         op.Compute(&cells);
       }
 
-      // __itt_resume();
-
       {
         Timing timing("Cell Growth", statistic);
         bdm::DividingCellOp biology;
         biology.Compute(&cells);
       }
-
-      // __itt_pause();
 
       {
         Timing timing("Displacement", statistic);
@@ -85,10 +88,11 @@ void Execute(size_t cells_per_dim, size_t iterations, size_t threads,
       if (with_export) {
         Timing timing("Export", statistic);
         std::cout << "exporting now..." << std::endl;
-        exporter.ToFile(&cells, "FinalPositions.dat");
-        exporter.ToMatlabFile(&cells, "FinalPositions.m");
-        exporter.ToNeuroMLFile(&cells, "FinalPositions.xml");
-        exporter.ToVTUFile(&cells, "Results4Paraview", i);
+        exp_basic->ToFile(cells, "FinalPositions.dat");
+        exp_matlab->ToFile(cells, "FinalPositions.m");
+        exp_neuroml->ToFile(cells, "FinalPositions.xml");
+        exp_paraview->ToFile(cells, "Results4Paraview");
+        exp_paraview->AddIteration();
       }
     }
   }
@@ -110,7 +114,7 @@ void Scaling(size_t cells_per_dim, size_t iterations, size_t repititions,
 int main(int args, char **argv) {
   TimingAggregator statistic;
   size_t repititions = 1;
-  bool do_export = false;
+  bool do_export = true;
   if (args == 2 &&
       (std::string(argv[1]) == "help" || std::string(argv[1]) == "--help")) {
     // clang-format off
