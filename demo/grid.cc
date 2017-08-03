@@ -9,8 +9,8 @@ namespace bdm {
 
 using std::array;
 
-inline double SquaredEuclideanDistance(std::array<double, 3> pos1,
-                                       std::array<double, 3> pos2) {
+inline double SquaredEuclideanDistance(const std::array<double, 3>& pos1,
+                                       const std::array<double, 3>& pos2) {
   const double dx = pos2[0] - pos1[0];
   const double dy = pos2[1] - pos1[1];
   const double dz = pos2[2] - pos1[2];

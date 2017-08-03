@@ -25,7 +25,12 @@ class DisplacementOp {
   void Compute(TContainer* cells) const {
     vector<array<double, 3>> cell_movements;
     cell_movements.reserve(cells->size());
-#pragma omp parallel for
+
+    auto& grid = Grid::GetInstance();
+    auto search_radius = grid.GetLargestObjectSize();
+    double squared_radius = search_radius * search_radius;
+
+#pragma omp parallel for shared(grid) firstprivate(squared_radius)
     for (size_t i = 0; i < cells->size(); i++) {
       auto&& cell = (*cells)[i];
       // Basically, the idea is to make the sum of all the forces acting
@@ -73,8 +78,8 @@ class DisplacementOp {
       //  (We check for every neighbor object if they touch us, i.e. push us
       //  away)
 
-      auto calculate_neighbor_forces = [&](size_t nc) {
-        const auto& neighbor = (*cells)[nc];
+      auto calculate_neighbor_forces = [&cells,&cell,&translation_force_on_point_mass](size_t nc) {
+        const auto&& neighbor = (*cells)[nc];
         std::array<double, 3> neighbor_force;
         neighbor.GetForceOn(cell.GetMassLocation(), cell.GetDiameter(),
                             &neighbor_force);
@@ -83,10 +88,9 @@ class DisplacementOp {
         translation_force_on_point_mass[2] += neighbor_force[2];
       };
 
-      auto& grid = Grid::GetInstance();
-      auto search_radius = grid.GetLargestObjectSize();
+
       grid.ForEachNeighborWithinRadius(calculate_neighbor_forces, &cell,
-                                       search_radius * search_radius);
+                                       squared_radius);
 
       // 4) PhysicalBonds
       // How the physics influences the next displacement
