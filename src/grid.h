@@ -167,7 +167,6 @@ class Grid {
   template <typename TContainer>
   void Initialize(TContainer* sim_objects,  // NOLINT
                   Adjacency adjacency = kHigh) {
-    positions_ = &(sim_objects->GetAllPositions());
     adjacency_ = adjacency;
 
     UpdateGrid(sim_objects);
@@ -187,7 +186,6 @@ class Grid {
 
   /// Clears the grid
   void ClearGrid() {
-    positions_ = nullptr;
     boxes_.clear();
     box_length_ = 0;
     largest_object_size_ = 0;
@@ -209,7 +207,6 @@ class Grid {
   template <typename TContainer>
   void UpdateGrid(TContainer* sim_objects) {  // NOLINT
     ClearGrid();
-    positions_ = &(sim_objects->GetAllPositions());
     grid_dimensions_ = CalculateGridDimensions(sim_objects);
     // todo: in some cases smaller box length still gives correct simulation
     // results (and is faster). Find out what this should be set to
@@ -352,8 +349,8 @@ class Grid {
   /// @tparam     Lambda  The type of the lambda operation
   /// @tparam     SO      The type of the simulation object
   ///
-  template <typename Lambda, typename SO>
-  void ForEachNeighborWithinRadius(const Lambda& lambda, SO* query, double squared_radius) {
+  template <typename Lambda, typename TContainer, typename SO>
+  void ForEachNeighborWithinRadius(const Lambda& lambda, TContainer* sim_objects, SO* query, double squared_radius) {
     auto& position = query->GetPosition();
     auto idx = GetBoxIndex(position);
 
@@ -365,7 +362,7 @@ class Grid {
       // Do something with neighbor object
       auto neighbor_index = *ni;
       if (neighbor_index != query->id()) {
-        auto& neighbor_position = (*positions_)[neighbor_index];
+        auto& neighbor_position = (*sim_objects)[neighbor_index].GetPosition();
         if (SquaredEuclideanDistance(position, neighbor_position) < squared_radius) {
           lambda(neighbor_index);
         }
@@ -385,13 +382,13 @@ class Grid {
   ///
   template <typename TContainer>
   void SetNeighborsWithinRadius(TContainer* sim_objects, double radius) {
-    vector<size_t> sum(positions_->size());
+    vector<size_t> sum(sim_objects->size());
     InlineVector<int, 8> neighbors;
 #pragma omp parallel for firstprivate(neighbors)
     // q = query object
-    for (size_t i = 0; i < positions_->size(); i++) {
+    for (size_t i = 0; i < sim_objects->size(); i++) {
       auto q = (*sim_objects)[i];
-      auto& position = (*positions_)[i];
+      auto& position = (*sim_objects)[i].GetPosition();
       auto idx = GetBoxIndex(position);
 
       FixedSizeVector<const Box*, 27> neighbor_boxes;
@@ -422,8 +419,6 @@ class Grid {
  private:
   /// The vector containing all the boxes in the grid
   vector<Box> boxes_;
-  /// The vector containing the positions of the simulation objects
-  vector<array<double, 3>>* positions_ = nullptr;
   /// Length of a Box
   uint32_t box_length_ = 0;
   /// Stores the number of boxes for each axis

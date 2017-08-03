@@ -38,7 +38,7 @@ TEST(GridTest, SetupGrid) {
       }
     };
 
-    grid.ForEachNeighborWithinRadius(fill_neighbor_list, &cell, 1201);
+    grid.ForEachNeighborWithinRadius(fill_neighbor_list, &cells, &cell, 1201);
   }
 
   std::vector<size_t> expected_0  = {1, 4, 5, 16, 17, 20, 21};
@@ -61,7 +61,6 @@ TEST(GridTest, SetupGrid) {
 
 TEST(GridTest, UpdateGrid) {
   auto cells = CellFactory(4);
-  auto& positions = cells.GetAllPositions();
   auto& grid = Grid::GetInstance();
   grid.Initialize(&cells);
 
@@ -73,7 +72,7 @@ TEST(GridTest, UpdateGrid) {
   // Update the grid
   grid.UpdateGrid(&cells);
 
-  vector<vector<size_t>> neighbors(positions.size());
+  vector<vector<size_t>> neighbors(cells.size());
 
 // Lambda that fills a vector of neighbors for each cell (excluding itself)
 #pragma omp parallel for
@@ -85,7 +84,7 @@ TEST(GridTest, UpdateGrid) {
       }
     };
 
-    grid.ForEachNeighborWithinRadius(fill_neighbor_list, &cell, 1201);
+    grid.ForEachNeighborWithinRadius(fill_neighbor_list, &cells, &cell, 1201);
   }
 
   std::vector<size_t> expected_0 = {4, 5, 16, 17, 20, 21};

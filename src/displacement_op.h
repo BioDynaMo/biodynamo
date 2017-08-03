@@ -89,7 +89,7 @@ class DisplacementOp {
       };
 
 
-      grid.ForEachNeighborWithinRadius(calculate_neighbor_forces, &cell,
+      grid.ForEachNeighborWithinRadius(calculate_neighbor_forces, cells, &cell,
                                        squared_radius);
 
       // 4) PhysicalBonds
