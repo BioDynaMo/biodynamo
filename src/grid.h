@@ -43,11 +43,10 @@ class Grid {
  public:
   /// A single unit cube of the grid
   struct Box {
-    Grid* grid_;
     uint64_t start_ = 0;
     uint16_t length_ = 0;
 
-    explicit Box(Grid* grid) : grid_(grid) {}
+    Box() {}
 
     bool IsEmpty() const { return length_ == 0; }
 
@@ -61,7 +60,7 @@ class Grid {
         start_ = obj_id;
       } else {
         // Add to the linked list of successor cells
-        grid_->successors_[obj_id] = start_;
+        Grid::GetInstance().successors_[obj_id] = start_;
         start_ = obj_id;
       }
       length_++;
@@ -89,7 +88,9 @@ class Grid {
       int countdown_;
     };
 
-    Iterator begin() const { return Iterator(grid_, this); }  // NOLINT
+    Iterator begin() const { // NOLINT
+      return Iterator(&(Grid::GetInstance()), this);
+    }
   };
 
   /// An iterator that iterates over the boxes in this grid
@@ -172,7 +173,7 @@ class Grid {
     UpdateGrid(sim_objects);
   }
 
-  virtual ~Grid() { delete empty_box_; }
+  virtual ~Grid() {}
 
   ///
   /// @brief      Gets the singleton instance
@@ -194,7 +195,6 @@ class Grid {
     num_boxes_xy_ = 0;
 
     successors_.clear();
-    delete empty_box_;
   }
 
   ///
@@ -249,10 +249,7 @@ class Grid {
     num_boxes_xy_ = num_boxes_axis_[0] * num_boxes_axis_[1];
     auto total_num_boxes = num_boxes_xy_ * num_boxes_axis_[2];
 
-    boxes_.resize(total_num_boxes, Box(this));
-
-    // Create an empty box to initialize the padding boxes with
-    empty_box_ = new Box(this);
+    boxes_.resize(total_num_boxes, Box());
 
     // Initialize successors_;
     successors_.resize(sim_objects->size());
@@ -437,8 +434,6 @@ class Grid {
   vector<size_t> successors_;
   /// Determines which boxes to search neighbors in (see enum Adjacency)
   Adjacency adjacency_;
-  /// An empty box that will be used to initialize the pad boxes
-  Box* empty_box_ = nullptr;
   /// The size of the largest object in the simulation
   double largest_object_size_ = 0;
   // TODO
