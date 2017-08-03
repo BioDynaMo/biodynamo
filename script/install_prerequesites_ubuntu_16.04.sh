@@ -6,7 +6,7 @@ function AddToBashrc {
   echo "Adding \"source ${BDM_ENVIRONMENT_FILE}\" to .bashrc"
   echo "source ${BDM_ENVIRONMENT_FILE}" >> ~/.bashrc
   echo ""
-  echo "Restart your terminal for the changes to take effect!"
+  echo "Restart your terminal for the changes to take effect or source the .bashrc!"
 }
 
 function ExplainBashrc {
@@ -39,23 +39,6 @@ function Install {
 
   THIRD_PARTY_DIR=$INSTALL_DIR/third_party
 
-  # If not installed, install CMake higher than the required version
-  CMAKE_VERSION_R=3.3
-  CMAKE_VERSION_I=`cmake --version | grep -m1 "" | sed -e 's/\<cmake version\>//g' -e "s/ //g"`
-  if hash cmake 2>/dev/null; then
-    rv=( ${CMAKE_VERSION_R//./ } )
-    iv=( ${CMAKE_VERSION_I//./ } )
-    if ! ((${iv[0]} >= ${rv[0]} && ${iv[1]} >= ${rv[0]})); then
-      # disable the current install cmake by renaming it
-      mv /usr/bin/cmake /usr/bin/cmake_$CMAKE_VERSION_I
-      InstallCmake
-    fi
-  else
-    InstallCmake
-  fi
-
-  apt-get update
-
   # Remove everything in ${THIRD_PARTY_DIR} if it exists already.
   # Might contain outdated dependencies
   if [ -d "${THIRD_PARTY_DIR}" ]; then
@@ -74,11 +57,26 @@ function Install {
   apt-add-repository -y "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-3.9 main"
   apt-get update
 
+  # If not installed, install CMake higher than the required version
+  CMAKE_VERSION_R=3.3
+  CMAKE_VERSION_I=`cmake --version | grep -m1 "" | sed -e 's/\<cmake version\>//g' -e "s/ //g"`
+  if hash cmake 2>/dev/null; then
+    rv=( ${CMAKE_VERSION_R//./ } )
+    iv=( ${CMAKE_VERSION_I//./ } )
+    if ! ((${iv[0]} >= ${rv[0]} && ${iv[1]} >= ${rv[0]})); then
+      # disable the current install cmake by renaming it
+      mv /usr/bin/cmake /usr/bin/cmake_$CMAKE_VERSION_I
+      InstallCmake
+    fi
+  else
+    InstallCmake
+  fi
+
   # install packages
   apt-get -y install libopenmpi-dev openmpi-bin
   apt-get -y install freeglut3-dev
   apt-get -y install git valgrind python python2.7-dev lcov
-  apt-get -y install gcc-5 g++-5
+  apt-get -y install gcc-5 g++-5 make
   apt-get -y install clang-3.9 clang-format-3.9 clang-tidy-3.9 libomp-dev
   apt-get -y install doxygen graphviz
   apt-get -y install zenity
@@ -114,7 +112,7 @@ function Install {
   # Set environmental variables for ParaView
   echo "export ParaView_DIR=$THIRD_PARTY_DIR/paraview/lib/cmake/paraview-5.4" >> ${BDM_ENVIRONMENT_FILE}
   echo "export Qt5_DIR=$THIRD_PARTY_DIR/qt/lib/cmake/Qt5" >> ${BDM_ENVIRONMENT_FILE}
-  echo "export LD_LIBRARY_PATH=$THIRD_PARTY_DIR/qt/lib:/usr/lib/openmpi/lib:$LD_LIBRARY_PATH" >> ${BDM_ENVIRONMENT_FILE}
+  echo "export LD_LIBRARY_PATH=$THIRD_PARTY_DIR/qt/lib:/usr/lib/openmpi/lib:\${LD_LIBRARY_PATH}" >> ${BDM_ENVIRONMENT_FILE}
   echo "export PYTHONPATH=$THIRD_PARTY_DIR/paraview/lib/paraview-5.4/site-packages:$THIRD_PARTY_DIR/paraview/lib/paraview-5.4/site-packages/vtk" >> ${BDM_ENVIRONMENT_FILE}
   echo "export QT_QPA_PLATFORM_PLUGIN_PATH=$THIRD_PARTY_DIR/qt/plugins" >> ${BDM_ENVIRONMENT_FILE}
 
