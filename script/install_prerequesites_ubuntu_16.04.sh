@@ -70,6 +70,7 @@ function Install {
 
   # add repository for clang-3.9
   wget -O - http://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add -
+  add-apt-repository -y ppa:ubuntu-toolchain-r/test  # gcc-5
   apt-add-repository -y "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-3.9 main"
   apt-get update
 

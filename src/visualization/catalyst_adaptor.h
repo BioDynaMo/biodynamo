@@ -27,6 +27,7 @@ namespace bdm {
 
 #ifdef USE_CATALYST
 
+/// The class that bridges the simulation code with ParaView
 class CatalystAdaptor {
  public:
   static CatalystAdaptor* GetInstance() {
@@ -34,18 +35,27 @@ class CatalystAdaptor {
     return &kInstance;
   }
 
-  template <typename Container>
-  void BuildVTKGrid(Container* cells) {
+  ///
+  /// @brief      Builds a VTK grid.
+  ///
+  /// @param      sim_objects  The simulation objects
+  ///
+  /// @tparam     TContainer   { The container that holds the simulation objects
+  ///                          }
+  ///
+  template <typename TContainer>
+  void BuildVTKGrid(TContainer* sim_objects) {
     // create the points information
     vtkNew<vtkDoubleArray> position_array;
     vtkDoubleArray* diameter_array = vtkDoubleArray::New();
     diameter_array->SetName("Diameter");
 
     position_array->SetNumberOfComponents(3);
-    position_array->SetArray(cells->GetPositionPtr(),
-                             static_cast<vtkIdType>(cells->size() * 3), 1);
-    diameter_array->SetArray(cells->GetDiameterPtr(),
-                             static_cast<vtkIdType>(cells->size()), 1);
+    position_array->SetArray(sim_objects->GetPositionPtr(),
+                             static_cast<vtkIdType>(sim_objects->size() * 3),
+                             1);
+    diameter_array->SetArray(sim_objects->GetDiameterPtr(),
+                             static_cast<vtkIdType>(sim_objects->size()), 1);
 
     vtkNew<vtkPoints> points;
 
@@ -55,17 +65,30 @@ class CatalystAdaptor {
     g_vtk_grid_->GetPointData()->AddArray(diameter_array);
   }
 
-  template <typename Container>
-  void BuildVTKDataStructures(Container* cells) {
+  ///
+  /// @brief      Wrapper around @ref BuildVTKGRid to define
+  ///
+  /// @param      sim_objects  The simulation objects
+  ///
+  /// @tparam     TContainer   { The container that holds the simulation objects
+  ///                          }
+  ///
+  template <typename TContainer>
+  void BuildVTKDataStructures(TContainer* sim_objects) {
     if (g_vtk_grid_ == NULL) {
       // The grid structure isn't changing so we only build it
       // the first time it's needed. If we needed the memory
       // we could delete it and rebuild as necessary.
       g_vtk_grid_ = vtkUnstructuredGrid::New();
-      BuildVTKGrid(cells);
+      BuildVTKGrid(sim_objects);
     }
   }
 
+  ///
+  /// @brief      Initializes Catalyst with the predefined pipeline
+  ///
+  /// @param[in]  script  The Python script that contains the pipeline
+  ///
   inline void Initialize(const std::string& script) {
     if (g_processor_ == NULL) {
       g_processor_ = vtkCPProcessor::New();
@@ -78,8 +101,10 @@ class CatalystAdaptor {
     g_processor_->AddPipeline(pipeline.GetPointer());
   }
 
+  /// Cleans up allocated memory
   inline void Finalize() {
     if (g_processor_) {
+      // Call made to MPI_FINALIZE
       g_processor_->Delete();
       g_processor_ = NULL;
     }
@@ -89,23 +114,34 @@ class CatalystAdaptor {
     }
   }
 
-  template <typename Container>
-  inline void CoProcess(Container* cells, double time, size_t time_step,
+  ///
+  /// @brief      Applies the pipeline to the data structures in the VTK Grid
+  ///
+  /// @param      sim_objects     The simulation objects
+  /// @param[in]  step            The simulation step
+  /// @param[in]  time_step       The time step duration
+  /// @param[in]  last_time_step  Last time step or not
+  ///
+  /// @tparam     TContainer      { The container that holds the simulation
+  ///                             objects }
+  ///
+  template <typename TContainer>
+  inline void CoProcess(TContainer* sim_objects, double step, size_t time_step,
                         bool last_time_step) {
     vtkNew<vtkCPDataDescription> data_description;
     data_description->AddInput("input");
-    data_description->SetTimeData(time, time_step);
+    data_description->SetTimeData(step, time_step);
     if (last_time_step == true) {
       // assume that we want to all the pipelines to execute if it
       // is the last time step.
       data_description->ForceOutputOn();
     }
 
-    // If we segfault at here it usually means that the pipeline was not
+    // If we segfault at here it probably means that the pipeline was not
     // initialized (with a python script)
     if (g_processor_->RequestDataDescription(data_description.GetPointer()) !=
         0) {
-      BuildVTKDataStructures(cells);
+      BuildVTKDataStructures(sim_objects);
       data_description->GetInputDescriptionByName("input")->SetGrid(
           g_vtk_grid_);
 
@@ -143,13 +179,14 @@ class CatalystAdaptor {
                   << attribute << "' array " << endl;
       }
 
-      // Update changed cells
+      // Update changed sim_objects
       for (int i = 0; i < idx_array->GetNumberOfTuples(); i++) {
-        std::cout << "cells[" << idx_array->GetValue(i)
+        std::cout << "sim_objects[" << idx_array->GetValue(i)
                   << "] = " << val_array->GetValue(i) << endl;
 
         // reflection here!
-        (*cells)[idx_array->GetValue(i)].SetDiameter(val_array->GetValue(i));
+        (*sim_objects)[idx_array->GetValue(i)].SetDiameter(
+            val_array->GetValue(i));
       }
     }
   }
@@ -169,13 +206,13 @@ class CatalystAdaptor {
     return &kInstance;
   }
 
-  template <typename Container>
-  void BuildVTKGrid(Container* cells) {
+  template <typename TContainer>
+  void BuildVTKGrid(TContainer* sim_objects) {
     throw "Should not be called, because target not compiled with Catalyst";
   }
 
-  template <typename Container>
-  void BuildVTKDataStructures(Container* cells) {
+  template <typename TContainer>
+  void BuildVTKDataStructures(TContainer* sim_objects) {
     throw "Should not be called, because target not compiled with Catalyst";
   }
 
@@ -187,8 +224,8 @@ class CatalystAdaptor {
     throw "Should not be called, because target not compiled with Catalyst";
   }
 
-  template <typename Container>
-  void CoProcess(Container* cells, double time, size_t time_step,
+  template <typename TContainer>
+  void CoProcess(TContainer* sim_objects, double time, size_t time_step,
                  bool last_time_step) {
     throw "Should not be called, because target not compiled with Catalyst";
   }
