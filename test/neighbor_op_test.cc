@@ -32,17 +32,10 @@ void RunTest(T* cells, const Op& op) {
   // execute operation
   op.Compute(cells);
 
-  std::vector<int> expected_0 = {1,  2,  4,  5,  6,  8,  9,  16, 17, 18,
-                                 20, 21, 22, 24, 25, 32, 33, 36, 37};
-  std::vector<int> expected_4 = {0,  1,  2,  5,  6,  8,  9,  10, 12,
-                                 13, 16, 17, 18, 20, 21, 22, 24, 25,
-                                 26, 28, 29, 32, 33, 36, 37, 40, 41};
-  std::vector<int> expected_42 = {
-      5,  6,  7,  9,  10, 11, 13, 14, 15, 17, 18, 19, 20, 21, 22, 23, 24, 25,
-      26, 27, 28, 29, 30, 31, 33, 34, 35, 36, 37, 38, 39, 40, 41, 43, 44, 45,
-      46, 47, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63};
-  std::vector<int> expected_63 = {26, 27, 30, 31, 38, 39, 41, 42, 43, 45,
-                                  46, 47, 54, 55, 57, 58, 59, 61, 62};
+  std::vector<int> expected_0 = {1, 4, 5, 16, 17, 20};
+  std::vector<int> expected_4 = {0, 1, 5, 8, 9, 16, 20, 21, 24};
+  std::vector<int> expected_42 = {22, 25, 26, 27, 30, 37, 38, 39, 41, 43, 45, 46, 47, 54, 57, 58, 59, 62};
+  std::vector<int> expected_63 = {43, 46, 47, 58, 59, 62};
 
   auto neighbors_0 = ((*cells)[0].GetNeighbors()).make_std_vector();
   auto neighbors_4 = ((*cells)[4].GetNeighbors()).make_std_vector();
@@ -63,22 +56,22 @@ void RunTest(T* cells, const Op& op) {
 
 TEST(NeighborOpTest, ComputeAosoa) {
   std::vector<Cell<Scalar>> cells;
-  RunTest(&cells, NeighborOp());
+  RunTest(&cells, NeighborOp(900));
 }
 
 TEST(NeighborOpTest, ComputeSoa) {
   auto cells = Cell<>::NewEmptySoa();
-  RunTest(&cells, NeighborOp());
+  RunTest(&cells, NeighborOp(900));
 }
 
 TEST(NeighborNanoflannOpTest, ComputeAosoa) {
   std::vector<Cell<Scalar>> cells;
-  RunTest(&cells, NeighborNanoflannOp());
+  RunTest(&cells, NeighborNanoflannOp(900));
 }
 
 TEST(NeighborNanoflannOpTest, ComputeSoa) {
   auto cells = Cell<>::NewEmptySoa();
-  RunTest(&cells, NeighborNanoflannOp());
+  RunTest(&cells, NeighborNanoflannOp(900));
 }
 
 // todo: make this work with the grid
@@ -89,7 +82,7 @@ TEST(NeighborNanoflannOpTest, ComputeSoa) {
 
 TEST(NeighborGridOpTest, ComputeSoa) {
   auto cells = Cell<>::NewEmptySoa();
-  RunTest(&cells, NeighborGridOp(Grid::kHigh, true));
+  RunTest(&cells, NeighborGridOp(Grid::kHigh, true, 900));
 }
 
 }  // namespace neighbor_op_test_internal

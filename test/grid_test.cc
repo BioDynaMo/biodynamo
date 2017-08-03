@@ -12,8 +12,8 @@ Cell<Soa> CellFactory(size_t cells_per_dim) {
   for (size_t i = 0; i < cells_per_dim; i++) {
     for (size_t j = 0; j < cells_per_dim; j++) {
       for (size_t k = 0; k < cells_per_dim; k++) {
-        Cell<Scalar> cell({i * space, j * space, k * space});
-        cell.SetDiameter(10);
+        Cell<Scalar> cell({k * space, j * space, i * space});
+        cell.SetDiameter(30);
         cells.push_back(cell);
       }
     }
@@ -38,11 +38,11 @@ TEST(GridTest, SetupGrid) {
       }
     };
 
-    grid.ForEachNeighbor(fill_neighbor_list, &cell);
+    grid.ForEachNeighborWithinRadius(fill_neighbor_list, &cell, 1201);
   }
 
-  std::vector<size_t> expected_0 = {1, 4, 5, 16, 17, 20, 21};
-  std::vector<size_t> expected_4 = {0, 1, 5, 8, 9, 16, 17, 20, 21, 24, 25};
+  std::vector<size_t> expected_0  = {1, 4, 5, 16, 17, 20, 21};
+  std::vector<size_t> expected_4  = {0, 1, 5, 8, 9, 16, 17, 20, 21, 24, 25};
   std::vector<size_t> expected_42 = {21, 22, 23, 25, 26, 27, 29, 30, 31,
                                      37, 38, 39, 41, 43, 45, 46, 47, 53,
                                      54, 55, 57, 58, 59, 61, 62, 63};
@@ -53,18 +53,10 @@ TEST(GridTest, SetupGrid) {
   std::sort(neighbors[42].begin(), neighbors[42].end());
   std::sort(neighbors[63].begin(), neighbors[63].end());
 
-  if (expected_0 != neighbors[0]) {
-    FAIL();
-  }
-  if (expected_4 != neighbors[4]) {
-    FAIL();
-  }
-  if (expected_42 != neighbors[42]) {
-    FAIL();
-  }
-  if (expected_63 != neighbors[63]) {
-    FAIL();
-  }
+  EXPECT_EQ(expected_0, neighbors[0]);
+  EXPECT_EQ(expected_4, neighbors[4]);
+  EXPECT_EQ(expected_42, neighbors[42]);
+  EXPECT_EQ(expected_63, neighbors[63]);
 }
 
 TEST(GridTest, UpdateGrid) {
@@ -93,7 +85,7 @@ TEST(GridTest, UpdateGrid) {
       }
     };
 
-    grid.ForEachNeighbor(fill_neighbor_list, &cell);
+    grid.ForEachNeighborWithinRadius(fill_neighbor_list, &cell, 1201);
   }
 
   std::vector<size_t> expected_0 = {4, 5, 16, 17, 20, 21};
@@ -109,18 +101,10 @@ TEST(GridTest, UpdateGrid) {
   std::sort(neighbors[41].begin(), neighbors[41].end());
   std::sort(neighbors[61].begin(), neighbors[61].end());
 
-  if (expected_0 != neighbors[0]) {
-    FAIL();
-  }
-  if (expected_5 != neighbors[5]) {
-    FAIL();
-  }
-  if (expected_41 != neighbors[41]) {
-    FAIL();
-  }
-  if (expected_61 != neighbors[61]) {
-    FAIL();
-  }
+  EXPECT_EQ(expected_0, neighbors[0]);
+  EXPECT_EQ(expected_5, neighbors[5]);
+  EXPECT_EQ(expected_41, neighbors[41]);
+  EXPECT_EQ(expected_61, neighbors[61]);
 }
 
 }  // namespace bdm
