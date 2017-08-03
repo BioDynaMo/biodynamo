@@ -21,20 +21,8 @@ ideal for high-performance computing (HPC). In order to adapt Cx3D to support HP
 software that has similar functionalities as Cx3D but is coded in C++ is needed.
 
 ## Prerequesites
- * Compiler (g++ >= 5.0 or clang >= 3.9.0)
- * CMake >= 3.2.0
- * git
- * valgrind
- * ROOT
 
-Additionally for developers:
- * doxygen graphviz (to build documentation)
- * lcov (to generate test coverage report)
- * python (to run `cpplint` which checks coding conventions)
- * clang-format (to format code according to our style guide)
- * clang-tidy (which also checks coding conventions -- mostly naming rules which are not covered by `cpplint`)
-
-To install all these packages on Ubuntu 16.04 run:
+To install all required packages on Ubuntu 16.04 run:
 ```
 sudo script/install_prerequesites_ubuntu_16.04.sh
 ```

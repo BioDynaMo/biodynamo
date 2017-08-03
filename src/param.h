@@ -82,6 +82,8 @@ class Param {
   static constexpr double kEpsilon = 1e-20;
   /// Helpful constant to identify 'infinity'
   static constexpr double kInfinity = 1e20;
+
+  static bool use_paraview_;
 };
 
 }  // namespace bdm

@@ -34,6 +34,13 @@ if ("$ENV{CMAKE_EXPORT_COMPILE_COMMANDS}" STREQUAL "1" OR CLANG_TIDY_FOUND)
   set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 endif()
 
+set(USE_CATALYST ON CACHE BOOL "Link BioDynaMo with ParaView Catalyst")
+if(USE_CATALYST)
+  find_package(ParaView 5.3 REQUIRED COMPONENTS vtkPVPythonCatalyst)
+  include("${PARAVIEW_USE_FILE}")
+  add_definitions("-DUSE_CATALYST")
+endif()
+
 #--------------------- includes -------------
 include(BioDynaMo)
 include(ExternalProject)
@@ -45,6 +52,8 @@ include(CheckCXXCompilerFlag)
 check_cxx_compiler_flag("-std=c++14" COMPILER_SUPPORTS_CXX14)
 if(COMPILER_SUPPORTS_CXX14)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
+  set(CMAKE_CXX_STANDARD 14)
+  set(CMAKE_CXX_STANDARD_REQUIRED ON)
 else()
   message(ERROR "The compiler ${CMAKE_CXX_COMPILER} has no C++14 support. Please use a different C++ compiler.")
 endif()
@@ -142,6 +151,10 @@ add_custom_target(bdmclean)
 add_dependencies(bdmclean libbdmclean)
 
 generate_rootlogon()
+
+if (USE_CATALYST)
+  target_link_libraries(biodynamo vtkPVPythonCatalyst)
+endif()
 
 # -------------------- build test project runBiodynamoTests ----------------------
 # http://www.kaizou.org/2014/11/gtest-cmake/
