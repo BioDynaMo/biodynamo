@@ -50,7 +50,6 @@ class Grid {
 
     bool IsEmpty() const { return length_ == 0; }
 
-    ///
     /// @brief      Adds a simulation object to this box
     ///
     /// @param[in]  obj_id  The object's identifier
@@ -155,7 +154,6 @@ class Grid {
   Grid(Grid const&) = delete;
   void operator=(Grid const&) = delete;
 
-  ///
   /// @brief      Initialize the grid with the given simulation objects
   ///
   /// @param      sim_objects  The simulation objects
@@ -174,7 +172,6 @@ class Grid {
 
   virtual ~Grid() {}
 
-  ///
   /// @brief      Gets the singleton instance
   ///
   /// @return     The instance
@@ -195,7 +192,6 @@ class Grid {
     successors_.clear();
   }
 
-  ///
   /// @brief      Updates the grid, as simulation objects may have moved, added
   ///             or deleted
   ///
@@ -256,11 +252,10 @@ class Grid {
       auto object = (*sim_objects)[i];
       const auto& position = object.GetPosition();
       auto box = GetBoxPointer(GetBoxIndex(position));
-      box->AddObject(object.id());
+      box->AddObject(i); // i = simulation object id
     }
   }
 
-  ///
   /// Calculates what the grid dimensions need to be in order to contain all the
   /// simulation objects
   ///
@@ -293,7 +288,6 @@ class Grid {
     return grid_dimensions;
   }
 
-  ///
   /// @brief      Calculates the squared euclidian distance between two points
   ///             in 3D
   ///
@@ -310,17 +304,17 @@ class Grid {
     return (dx * dx + dy * dy + dz * dz);
   }
 
-  ///
   /// @brief      Applies the given lambda to each neighbor
   ///
   /// @param[in]  lambda  The operation as a lambda
   /// @param      query   The query object
+  /// @param      simulation_object_id
   ///
   /// @tparam     Lambda  The type of the lambda operation
   /// @tparam     SO      The type of the simulation object
   ///
   template <typename Lambda, typename SO>
-  void ForEachNeighbor(const Lambda& lambda, const SO& query) const {
+  void ForEachNeighbor(const Lambda& lambda, const SO& query, size_t simulation_object_id) const {
     auto& position = query.GetPosition();
     auto idx = GetBoxIndex(position);
 
@@ -330,26 +324,28 @@ class Grid {
     NeighborIterator ni(&neighbor_boxes);
     while (!ni.IsAtEnd()) {
       // Do something with neighbor object
-      if (*ni != query.id()) {
+      if (*ni != simulation_object_id) {
         lambda(*ni);
       }
       ++ni;
     }
   }
 
-  ///
   /// @brief      Applies the given lambda to each neighbor or the specified
   ///             simulation object
   ///
   /// @param[in]  lambda  The operation as a lambda
+  /// @param      sim_objects All simulation objects
   /// @param      query   The query object
-  /// @param[in]  radius  The search radius
+  /// @param      simulation_object_id
+  /// @param[in]  squared_radius  The search radius squared
   ///
-  /// @tparam     Lambda  The type of the lambda operation
-  /// @tparam     SO      The type of the simulation object
+  /// @tparam     Lambda      The type of the lambda operation
+  /// @tparam     TContainer  The type of the simulation object container
+  /// @tparam     SO          The type of the simulation object
   ///
   template <typename Lambda, typename TContainer, typename SO>
-  void ForEachNeighborWithinRadius(const Lambda& lambda, TContainer* sim_objects, const SO& query, double squared_radius) {
+  void ForEachNeighborWithinRadius(const Lambda& lambda, TContainer* sim_objects, const SO& query, size_t simulation_object_id, double squared_radius) {
     const auto& position = query.GetPosition();
     auto idx = GetBoxIndex(position);
 
@@ -360,7 +356,7 @@ class Grid {
     while (!ni.IsAtEnd()) {
       // Do something with neighbor object
       auto neighbor_index = *ni;
-      if (neighbor_index != query.id()) {
+      if (neighbor_index != simulation_object_id) {
         const auto& neighbor_position = (*sim_objects)[neighbor_index].GetPosition();
         if (SquaredEuclideanDistance(position, neighbor_position) < squared_radius) {
           lambda(neighbor_index);
@@ -370,7 +366,6 @@ class Grid {
     }
   }
 
-  ///
   /// @brief      Gets the size of the largest object in the grid
   ///
   /// @return     The size of the largest object
@@ -396,7 +391,6 @@ class Grid {
   /// {x_min, x_max, y_min, y_max, z_min, z_max}
   std::array<double, 6> grid_dimensions_;
 
-  ///
   /// @brief      Gets the Moore (i.e adjacent) boxes of the query box
   ///
   /// @param      neighbor_boxes  The neighbor boxes
@@ -461,7 +455,6 @@ class Grid {
     }
   }
 
-  ///
   /// @brief      Gets the pointer to the box with the given index
   ///
   /// @param[in]  index  The index of the box
@@ -470,7 +463,6 @@ class Grid {
   ///
   const Box* GetBoxPointer(size_t index) const { return &(boxes_[index]); }
 
-  ///
   /// @brief      Gets the pointer to the box with the given index
   ///
   /// @param[in]  index  The index of the box
@@ -479,7 +471,6 @@ class Grid {
   ///
   Box* GetBoxPointer(size_t index) { return &(boxes_[index]); }
 
-  ///
   /// Returns the box index in the one dimensional array based on box
   /// coordinates in space
   ///
@@ -492,7 +483,6 @@ class Grid {
            box_coord[0];
   }
 
-  ///
   /// @brief      Return the box index in the one dimensional array of the box
   ///             that contains the position
   ///

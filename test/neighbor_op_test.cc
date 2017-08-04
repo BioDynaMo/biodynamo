@@ -38,22 +38,22 @@ void RunTest(T* cells, const Op& op) {
   std::vector<int> neighbors_0;
   Grid::GetInstance().ForEachNeighborWithinRadius([&neighbors_0](int neighbor){
     neighbors_0.push_back(neighbor);
-  }, cells, (*cells)[0], 900);
+  }, cells, (*cells)[0], 0, 900);
 
   std::vector<int> neighbors_4;
   Grid::GetInstance().ForEachNeighborWithinRadius([&neighbors_4](int neighbor){
     neighbors_4.push_back(neighbor);
-  }, cells, (*cells)[4], 900);
+  }, cells, (*cells)[4], 4, 900);
 
   std::vector<int> neighbors_42;
   Grid::GetInstance().ForEachNeighborWithinRadius([&neighbors_42](int neighbor){
     neighbors_42.push_back(neighbor);
-  }, cells, (*cells)[42], 900);
+  }, cells, (*cells)[42], 42, 900);
 
   std::vector<int> neighbors_63;
   Grid::GetInstance().ForEachNeighborWithinRadius([&neighbors_63](int neighbor){
     neighbors_63.push_back(neighbor);
-  }, cells, (*cells)[63], 900);
+  }, cells, (*cells)[63], 63, 900);
 
   std::sort(neighbors_0.begin(), neighbors_0.end());
   std::sort(neighbors_4.begin(), neighbors_4.end());
@@ -67,11 +67,10 @@ void RunTest(T* cells, const Op& op) {
   EXPECT_EQ(expected_63, neighbors_63);
 }
 
-// TODO make this work with the grid
-// TEST(NeighborGridOpTest, ComputeAosoa) {
-//   std::vector<Cell<Scalar>> cells;
-//   RunTest(&cells, NeighborGridOp());
-// }
+TEST(NeighborGridOpTest, ComputeAosoa) {
+  std::vector<Cell<Scalar>> cells;
+  RunTest(&cells, NeighborGridOp());
+}
 
 TEST(NeighborGridOpTest, ComputeSoa) {
   auto cells = Cell<>::NewEmptySoa();

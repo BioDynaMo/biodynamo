@@ -33,12 +33,12 @@ TEST(GridTest, SetupGrid) {
   for (size_t i = 0; i < cells.size(); i++) {
     auto&& cell = cells[i];
     auto fill_neighbor_list = [&](size_t n) {
-      if (cell.id() != n) {
-        neighbors[cell.id()].push_back(n);
+      if (i != n) {
+        neighbors[i].push_back(n);
       }
     };
 
-    grid.ForEachNeighborWithinRadius(fill_neighbor_list, &cells, cell, 1201);
+    grid.ForEachNeighborWithinRadius(fill_neighbor_list, &cells, cell, i, 1201);
   }
 
   std::vector<size_t> expected_0  = {1, 4, 5, 16, 17, 20, 21};
@@ -79,12 +79,12 @@ TEST(GridTest, UpdateGrid) {
   for (size_t i = 0; i < cells.size(); i++) {
     auto&& cell = cells[i];
     auto fill_neighbor_list = [&](size_t n) {
-      if (cell.id() != n) {
-        neighbors[cell.id()].push_back(n);
+      if (i != n) {
+        neighbors[i].push_back(n);
       }
     };
 
-    grid.ForEachNeighborWithinRadius(fill_neighbor_list, &cells, cell, 1201);
+    grid.ForEachNeighborWithinRadius(fill_neighbor_list, &cells, cell, i, 1201);
   }
 
   std::vector<size_t> expected_0 = {4, 5, 16, 17, 20, 21};
