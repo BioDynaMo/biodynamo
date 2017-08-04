@@ -55,6 +55,16 @@ static std::string mdpw_commands [] = {
     "INVALID_CMD", "READY", "REQUEST", "REPORT", "HEARTBEAT", "DISCONNECT"
 };
 
+struct DistSharedInfo {
+    zmqpp::reactor *reactor_;            //  Polling handler
+    zmqpp::context *ctx_;
+    zmqpp::socket *app_socket_;
+    std::string app_endpoint_;
+    std::string identity_;
+    bool verbose_;
+    bool zctx_interrupted_ = false;  // ZMQ interrupted by signal
+};
+
 }
 
 #endif // __MDP_COMMON_H__
