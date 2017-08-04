@@ -18,9 +18,16 @@ typedef std::chrono::milliseconds duration_ms_t;
 std::ostream& operator<< (std::ostream& out, const zmqpp::message& msg);
 std::string toHex(const std::string& in);
 
+// Heartbeat
 const size_t HEARTBEAT_LIVENESS = 3;            //  3-5 is reasonable
 const duration_ms_t HEARTBEAT_INTERVAL (2500);  //  msecs
 const duration_ms_t HEARTBEAT_EXPIRY = HEARTBEAT_INTERVAL * HEARTBEAT_LIVENESS;
+
+// Socket identifiers, as integers
+const std::uint8_t SOCKET_BROKER = 1;
+const std::uint8_t SOCKET_APPLICATION = 2;
+const std::uint8_t SOCKET_L_NEIGHBOUR = 3;
+const std::uint8_t SOCKET_R_NEIGHBOUR = 4;
 
 //  This is the version of MDP/Client we implement
 const std::string MDPC_CLIENT = "MDPC0X";
