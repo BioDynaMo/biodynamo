@@ -13,11 +13,8 @@ namespace bdm {
 /// knowledge about neighboring simulation objects
 class NeighborGridOp {
  public:
-  explicit NeighborGridOp(Grid::Adjacency adjacency = Grid::kHigh,
-                          bool set_local_neighbors = false,
-                          double radius = 3000)
-      : adjacency_(adjacency),
-        radius_(radius) {}
+  explicit NeighborGridOp(Grid::Adjacency adjacency = Grid::kHigh)
+      : adjacency_(adjacency) {}
   virtual ~NeighborGridOp() {}
 
   template <typename TContainer>
@@ -30,8 +27,6 @@ class NeighborGridOp {
  private:
   /// Determines how many neighboring boxes to consider for neighbor operations
   Grid::Adjacency adjacency_;
-  /// The searching radius for which to set the local neighbors to
-  double radius_;
 };
 
 }  // namespace bdm

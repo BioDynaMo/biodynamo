@@ -69,12 +69,12 @@ void RunTest(T* cells, const Op& op) {
 
 TEST(NeighborGridOpTest, ComputeAosoa) {
   std::vector<Cell<Scalar>> cells;
-  RunTest(&cells, NeighborGridOp());
+  RunTest(&cells, NeighborGridOp(Grid::kHigh));
 }
 
 TEST(NeighborGridOpTest, ComputeSoa) {
   auto cells = Cell<>::NewEmptySoa();
-  RunTest(&cells, NeighborGridOp(Grid::kHigh, true, 900));
+  RunTest(&cells, NeighborGridOp(Grid::kHigh));
 }
 
 }  // namespace neighbor_op_test_internal
