@@ -13,18 +13,21 @@ Worker::Worker (zmqpp::context *ctx, const std::string& broker_addr,
     this->ctx = ctx;
     this->broker_addr = broker_addr;
     this->identity = identity;
-    this->hb_delay = duration_ms_t(2500);
-    this->hb_rec_delay = duration_ms_t(2500);
+    this->hb_delay = duration_ms_t(HEARTBEAT_INTERVAL);
+    this->hb_rec_delay = duration_ms_t(HEARTBEAT_INTERVAL);
     this->verbose = verbose;
 }
 
+
 Worker::~Worker() {
     SendToBroker(MDPW_DISCONNECT);
+
     if (broker_sock) {
         broker_sock->close();
         delete broker_sock;
     }
 }
+
 
 void Worker::StartThread(const std::string& app_addr) {
     this->app_addr = app_addr;
@@ -32,6 +35,7 @@ void Worker::StartThread(const std::string& app_addr) {
     worker_thread = new std::thread(&Worker::HandleNetwork, this);
     std::cout << "I: started thread with id " << worker_thread->get_id() << std::endl;
 }
+
 
 void Worker::HandleNetwork() {
     // Create local/application socket
@@ -73,6 +77,7 @@ void Worker::HandleNetwork() {
     }
 }
 
+
 void Worker::HandleAppMessage() {
 
     zmqpp::message msg;
@@ -96,6 +101,7 @@ void Worker::HandleAppMessage() {
     }
     SendToBroker(MDPW_REPORT, &msg);
 }
+
 
 void Worker::HandleBrokerMessage() {
 
@@ -201,22 +207,46 @@ void Worker::SetHeartbeatReconnect(const duration_ms_t& hb_rec_delay) {
 
 
 template<typename T>
-void Worker::SetSocketOption(const zmqpp::socket_option& option, const T& value) {
-    broker_sock->set(option, value);
+void Worker::SetSocketOption(const std::uint8_t socket_id, const zmqpp::socket_option& option, const T& value) {
+    auto socket = GetSocketObj(socket_id);
+    if (socket == nullptr) {
+        std::cout << "E: invalid socket id " << socket_id << std::endl;
+        return;
+    }
+    socket->set(option, value);
 }
 
 
 template<typename T>
-T Worker::GetSocketOption(const zmqpp::socket_option& option) {
+T Worker::GetSocketOption(const std::uint8_t socket_id, const zmqpp::socket_option& option) {
     T value;
-    GetSocketOption(option, &value);
+    GetSocketOption(socket_id, option, &value);
     return value;
 }
 
 
 template<typename T>
-void Worker::GetSocketOption(const zmqpp::socket_option& option, T *value) {
-    broker_sock->get(option, *value);
+void Worker::GetSocketOption(const std::uint8_t socket_id, const zmqpp::socket_option& option, T *value) {
+    auto socket = GetSocketObj(socket_id);
+    if (socket == nullptr) {
+        std::cout << "E: invalid socket id " << socket_id << std::endl;
+        value = T();
+        return;
+    }
+
+    socket->get(option, *value);
+}
+
+zmqpp::socket*
+Worker::GetSocketObj (const std::uint8_t socket) {
+    switch (socket) {
+        case SOCKET_BROKER:
+            return broker_sock;
+        case SOCKET_APPLICATION:
+            return app_sock;
+        default:
+            return nullptr;
+    }
 }
 
 }

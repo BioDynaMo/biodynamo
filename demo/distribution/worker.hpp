@@ -22,12 +22,12 @@ class Worker {
     void SetHeartbeatReconnect(const duration_ms_t& hb_rec_delay);
 
     template<typename T>
-    void SetSocketOption(const zmqpp::socket_option& option, const T& value);
+    void SetSocketOption(const std::uint8_t socket, const zmqpp::socket_option& option, const T& value);
 
     template<typename T>
-    T GetSocketOption(const zmqpp::socket_option& option);
+    T GetSocketOption(const std::uint8_t socket, const zmqpp::socket_option& option);
     template<typename T>
-    void GetSocketOption(const zmqpp::socket_option& option, T *value);
+    void GetSocketOption(const std::uint8_t socket, const zmqpp::socket_option& option, T *value);
 
 
   private:
@@ -38,6 +38,8 @@ class Worker {
     void ConnectToBroker();
     void SendToBroker(const std::string& command, zmqpp::message *message = nullptr,
             const std::string& option = "");
+
+    zmqpp::socket* GetSocketObj (const std::uint8_t socket);
 
     zmqpp::reactor reactor;                 //  Polling handler
     zmqpp::context *ctx = nullptr;          //  ZMQ context
