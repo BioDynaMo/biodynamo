@@ -4,6 +4,7 @@
 #include <array>
 #include <cmath>
 #include <vector>
+#include "grid.h"
 #include "math_util.h"
 #include "param.h"
 
@@ -24,7 +25,12 @@ class DisplacementOp {
   void Compute(TContainer* cells) const {
     vector<array<double, 3>> cell_movements;
     cell_movements.reserve(cells->size());
-#pragma omp parallel for
+
+    auto& grid = Grid::GetInstance();
+    auto search_radius = grid.GetLargestObjectSize();
+    double squared_radius = search_radius * search_radius;
+
+#pragma omp parallel for shared(grid) firstprivate(squared_radius)
     for (size_t i = 0; i < cells->size(); i++) {
       auto&& cell = (*cells)[i];
       // Basically, the idea is to make the sum of all the forces acting
@@ -71,16 +77,20 @@ class DisplacementOp {
       // -----------------------------------------------------------
       //  (We check for every neighbor object if they touch us, i.e. push us
       //  away)
-      const auto& neighbor_ids = cell.GetNeighbors();
-      for (size_t j = 0; j < neighbor_ids.size(); j++) {
-        const auto& neighbor = (*cells)[neighbor_ids[j]];
-        std::array<double, 3> neighbor_force;
-        neighbor.GetForceOn(cell.GetMassLocation(), cell.GetDiameter(),
-                            &neighbor_force);
-        translation_force_on_point_mass[0] += neighbor_force[0];
-        translation_force_on_point_mass[1] += neighbor_force[1];
-        translation_force_on_point_mass[2] += neighbor_force[2];
-      }
+
+      auto calculate_neighbor_forces =
+          [&cells, &cell, &translation_force_on_point_mass](size_t nc) {
+            auto&& neighbor = (*cells)[nc];
+            std::array<double, 3> neighbor_force;
+            neighbor.GetForceOn(cell.GetMassLocation(), cell.GetDiameter(),
+                                &neighbor_force);
+            translation_force_on_point_mass[0] += neighbor_force[0];
+            translation_force_on_point_mass[1] += neighbor_force[1];
+            translation_force_on_point_mass[2] += neighbor_force[2];
+          };
+
+      grid.ForEachNeighborWithinRadius(calculate_neighbor_forces, *cells, cell,
+                                       i, squared_radius);
 
       // 4) PhysicalBonds
       // How the physics influences the next displacement

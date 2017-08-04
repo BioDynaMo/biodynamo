@@ -4,7 +4,7 @@
 #include "biology_module_op.h"
 #include "cell.h"
 #include "displacement_op.h"
-#include "neighbor_nanoflann_op.h"
+#include "neighbor_grid_op.h"
 #include "op_timer.h"
 #include "resource_manager.h"
 
@@ -18,7 +18,7 @@ class Scheduler {
 
   template <typename TResourceManager = ResourceManager<>>
   void Simulate(unsigned steps) {
-    OpTimer<NeighborNanoflannOp> neighbor("neighbor", NeighborNanoflannOp(700));
+    OpTimer<NeighborGridOp> neighbor("neighbor", NeighborGridOp());
     OpTimer<BiologyModuleOp> biology("biology");
     OpTimer<DisplacementOp> physics("physics");
 

@@ -10,8 +10,7 @@
 #include "displacement_op.h"
 #include "dividing_cell_op.h"
 #include "exporter.h"
-#include "neighbor_nanoflann_op.h"
-#include "neighbor_op.h"
+#include "neighbor_grid_op.h"
 #include "resource_manager.h"
 #include "scheduler.h"
 #include "timing.h"
@@ -24,6 +23,7 @@ using bdm::Soa;
 using bdm::Timing;
 using bdm::TimingAggregator;
 using bdm::Exporter;
+using bdm::Grid;
 
 namespace bdm {
 BDM_DEFAULT_COMPILE_TIME_PARAM();
@@ -32,13 +32,13 @@ BDM_DEFAULT_COMPILE_TIME_PARAM();
 void Execute(size_t cells_per_dim, size_t iterations, size_t threads,
              size_t repititions, TimingAggregator *statistic,
              bool with_export) {
+  const double space = 20;
+
   for (size_t r = 0; r < repititions; r++) {
     std::stringstream ss;
     ss << "measurement " << r << " - " << threads << " thread(s) - "
        << cells_per_dim << " cells per dim - " << iterations << " iteration(s)";
     statistic->AddDescription(ss.str());
-
-    const double space = 20;
 
     // bdm::TransactionalVector<Cell> cells;
     auto cells = Cell::NewEmptySoa();
@@ -68,7 +68,7 @@ void Execute(size_t cells_per_dim, size_t iterations, size_t threads,
     for (size_t i = 0; i < iterations; i++) {
       {
         Timing timing("Find Neighbors", statistic);
-        bdm::NeighborOp op(700);
+        bdm::NeighborGridOp op;
         op.Compute(&cells);
       }
 
