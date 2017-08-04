@@ -33,7 +33,7 @@ void RunTest(T* cells) {
   cells->push_back(cell);
 
   auto& grid = Grid::GetInstance();
-  grid.Initialize(cells);
+  grid.Initialize(*cells);
 
   // execute operation
   DisplacementOp op;

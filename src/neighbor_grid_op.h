@@ -21,7 +21,7 @@ class NeighborGridOp {
   void Compute(TContainer* cells) const {
     // Construct a 3D grid with the current positions for the simulation objects
     auto& grid = Grid::GetInstance();
-    grid.Initialize(cells, adjacency_);
+    grid.Initialize(*cells, adjacency_);
   }
 
  private:
