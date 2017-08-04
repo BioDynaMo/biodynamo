@@ -10,8 +10,6 @@
 #include "dividing_cell_op.h"
 #include "exporter.h"
 #include "neighbor_grid_op.h"
-#include "neighbor_nanoflann_op.h"
-#include "neighbor_op.h"
 #include "resource_manager.h"
 #include "scheduler.h"
 #include "timing.h"
@@ -45,7 +43,7 @@ void Execute(size_t cells_per_dim, size_t iterations, size_t threads,
         for (size_t j = 0; j < cells_per_dim; j++) {
           for (size_t k = 0; k < cells_per_dim; k++) {
             Cell<Scalar> cell({i * space, j * space, k * space});
-            cell.SetDiameter(10);
+            cell.SetDiameter(30);
             cell.SetAdherence(0.4);
             cell.SetMass(1.0);
             cell.UpdateVolume();

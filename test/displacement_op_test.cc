@@ -19,7 +19,6 @@ void RunTest(T* cells) {
   // cell.SetTractorForce(tractor_force);
   InlineVector<int, 8> neighbor_1;
   neighbor_1.push_back(1);
-  cell.SetNeighbors(neighbor_1);
   cells->push_back(cell);
 
   // Cell 2
@@ -31,7 +30,6 @@ void RunTest(T* cells) {
   // cell.SetTractorForce(tractor_force);
   InlineVector<int, 8> neighbor_2;
   neighbor_2.push_back(0);
-  cell.SetNeighbors(neighbor_2);
   cells->push_back(cell);
 
   auto& grid = Grid::GetInstance();

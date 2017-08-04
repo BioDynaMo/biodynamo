@@ -32,7 +32,7 @@ class CellExt : public Base {
                        template <typename COMMA() typename>, position_,
                        mass_location_, tractor_force_, diameter_, volume_,
                        adherence_, density_, x_axis_, y_axis_, z_axis_,
-                       neighbors_, biology_modules_);
+                       biology_modules_);
 
  public:
   CellExt() {}
@@ -132,8 +132,6 @@ class CellExt : public Base {
 
   double GetVolume() const { return volume_[kIdx]; }
 
-  const InlineVector<int, 8>& GetNeighbors() const { return neighbors_[kIdx]; }
-
   void SetAdherence(double adherence) { adherence_[kIdx] = adherence; }
 
   void SetDiameter(double diameter) {
@@ -155,10 +153,6 @@ class CellExt : public Base {
 
   void SetTractorForce(const array<double, 3>& tractor_force) {
     tractor_force_[kIdx] = tractor_force;
-  }
-
-  void SetNeighbors(const InlineVector<int, 8>& neighbors) {
-    neighbors_[kIdx] = neighbors;
   }
 
   void ChangeVolume(double speed) {
@@ -220,9 +214,6 @@ class CellExt : public Base {
   vec<array<double, 3>> y_axis_ = {array<double, 3>{0.0, 1.0, 0.0}};
   /// Third axis of the local coordinate system.
   vec<array<double, 3>> z_axis_ = {array<double, 3>{0.0, 0.0, 1.0}};
-
-  /// stores a list of neighbor ids for each scalar cell
-  vec<InlineVector<int, 8>> neighbors_;
 
   /// collection of biology modules which define the internal behavior
   vec<vector<TBiologyModuleVariant>> biology_modules_;

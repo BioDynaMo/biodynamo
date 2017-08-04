@@ -4,7 +4,6 @@
 #include "biology_module_op.h"
 #include "displacement_op.h"
 #include "neighbor_grid_op.h"
-#include "neighbor_nanoflann_op.h"
 #include "op_timer.h"
 #include "resource_manager.h"
 

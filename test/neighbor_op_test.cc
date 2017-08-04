@@ -1,9 +1,7 @@
-#include "neighbor_op.h"
 #include "cell.h"
 #include "gtest/gtest.h"
 #include "inline_vector.h"
 #include "neighbor_grid_op.h"
-#include "neighbor_nanoflann_op.h"
 #include "test_util.h"
 
 namespace bdm {
@@ -37,10 +35,25 @@ void RunTest(T* cells, const Op& op) {
   std::vector<int> expected_42 = {22, 25, 26, 27, 30, 37, 38, 39, 41, 43, 45, 46, 47, 54, 57, 58, 59, 62};
   std::vector<int> expected_63 = {43, 46, 47, 58, 59, 62};
 
-  auto neighbors_0 = ((*cells)[0].GetNeighbors()).make_std_vector();
-  auto neighbors_4 = ((*cells)[4].GetNeighbors()).make_std_vector();
-  auto neighbors_42 = ((*cells)[42].GetNeighbors()).make_std_vector();
-  auto neighbors_63 = ((*cells)[63].GetNeighbors()).make_std_vector();
+  std::vector<int> neighbors_0;
+  Grid::GetInstance().ForEachNeighborWithinRadius([&neighbors_0](int neighbor){
+    neighbors_0.push_back(neighbor);
+  }, cells, (*cells)[0], 900);
+
+  std::vector<int> neighbors_4;
+  Grid::GetInstance().ForEachNeighborWithinRadius([&neighbors_4](int neighbor){
+    neighbors_4.push_back(neighbor);
+  }, cells, (*cells)[4], 900);
+
+  std::vector<int> neighbors_42;
+  Grid::GetInstance().ForEachNeighborWithinRadius([&neighbors_42](int neighbor){
+    neighbors_42.push_back(neighbor);
+  }, cells, (*cells)[42], 900);
+
+  std::vector<int> neighbors_63;
+  Grid::GetInstance().ForEachNeighborWithinRadius([&neighbors_63](int neighbor){
+    neighbors_63.push_back(neighbor);
+  }, cells, (*cells)[63], 900);
 
   std::sort(neighbors_0.begin(), neighbors_0.end());
   std::sort(neighbors_4.begin(), neighbors_4.end());
@@ -54,27 +67,7 @@ void RunTest(T* cells, const Op& op) {
   EXPECT_EQ(expected_63, neighbors_63);
 }
 
-TEST(NeighborOpTest, ComputeAosoa) {
-  std::vector<Cell<Scalar>> cells;
-  RunTest(&cells, NeighborOp(900));
-}
-
-TEST(NeighborOpTest, ComputeSoa) {
-  auto cells = Cell<>::NewEmptySoa();
-  RunTest(&cells, NeighborOp(900));
-}
-
-TEST(NeighborNanoflannOpTest, ComputeAosoa) {
-  std::vector<Cell<Scalar>> cells;
-  RunTest(&cells, NeighborNanoflannOp(900));
-}
-
-TEST(NeighborNanoflannOpTest, ComputeSoa) {
-  auto cells = Cell<>::NewEmptySoa();
-  RunTest(&cells, NeighborNanoflannOp(900));
-}
-
-// todo: make this work with the grid
+// TODO make this work with the grid
 // TEST(NeighborGridOpTest, ComputeAosoa) {
 //   std::vector<Cell<Scalar>> cells;
 //   RunTest(&cells, NeighborGridOp());

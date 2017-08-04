@@ -234,8 +234,3 @@ target_link_libraries(${SIMULATION_TARGET} biodynamo)
 set(SIMULATION_TARGET cell_division_module)
 add_executable(${SIMULATION_TARGET} ${CMAKE_SOURCE_DIR}/demo/cell_division_module.cc)
 target_link_libraries(${SIMULATION_TARGET} biodynamo)
-
-
-set(SIMULATION_TARGET grid)
-add_executable(${SIMULATION_TARGET} ${CMAKE_SOURCE_DIR}/demo/grid.cc)
-target_link_libraries(${SIMULATION_TARGET} biodynamo)

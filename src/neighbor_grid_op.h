@@ -17,7 +17,6 @@ class NeighborGridOp {
                           bool set_local_neighbors = false,
                           double radius = 3000)
       : adjacency_(adjacency),
-        set_local_neighbors_(set_local_neighbors),
         radius_(radius) {}
   virtual ~NeighborGridOp() {}
 
@@ -26,18 +25,11 @@ class NeighborGridOp {
     // Construct a 3D grid with the current positions for the simulation objects
     auto& grid = Grid::GetInstance();
     grid.Initialize(cells, adjacency_);
-
-    if (set_local_neighbors_) {
-      // Initiate the operation
-      grid.SetNeighborsWithinRadius(cells, radius_);
-    }
   }
 
  private:
   /// Determines how many neighboring boxes to consider for neighbor operations
   Grid::Adjacency adjacency_;
-  /// Boolean to cache the local neighbors for each simulation object or not
-  bool set_local_neighbors_;
   /// The searching radius for which to set the local neighbors to
   double radius_;
 };
