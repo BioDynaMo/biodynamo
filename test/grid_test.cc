@@ -41,8 +41,8 @@ TEST(GridTest, SetupGrid) {
     grid.ForEachNeighborWithinRadius(fill_neighbor_list, cells, cell, i, 1201);
   }
 
-  std::vector<size_t> expected_0  = {1, 4, 5, 16, 17, 20, 21};
-  std::vector<size_t> expected_4  = {0, 1, 5, 8, 9, 16, 17, 20, 21, 24, 25};
+  std::vector<size_t> expected_0 = {1, 4, 5, 16, 17, 20, 21};
+  std::vector<size_t> expected_4 = {0, 1, 5, 8, 9, 16, 17, 20, 21, 24, 25};
   std::vector<size_t> expected_42 = {21, 22, 23, 25, 26, 27, 29, 30, 31,
                                      37, 38, 39, 41, 43, 45, 46, 47, 53,
                                      54, 55, 57, 58, 59, 61, 62, 63};

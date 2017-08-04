@@ -22,18 +22,16 @@ using std::fmod;
 /// maximum elements given by the template parameter N
 template <typename T, std::size_t N>
 class FixedSizeVector {
-public:
-  size_t size() const { return size_; }
+ public:
+  size_t size() const { return size_; }  // NOLINT
 
   const T& operator[](size_t idx) const { return data_[idx]; }
 
   T& operator[](size_t idx) { return data_[idx]; }
 
-  void push_back(const T& value) {
-    data_[size_++] = value;
-  }
+  void push_back(const T& value) { data_[size_++] = value; }  // NOLINT
 
-private:
+ private:
   T data_[N];
   std::size_t size_ = 0;
 };
@@ -74,7 +72,7 @@ class Grid {
 
       bool IsAtEnd() { return countdown_ <= 0; }
 
-      Iterator operator++() {
+      Iterator& operator++() {
         countdown_--;
         current_value_ = grid_->successors_[current_value_];
         return *this;
@@ -87,14 +85,15 @@ class Grid {
       int countdown_;
     };
 
-    Iterator begin() const { // NOLINT
+    Iterator begin() const {  // NOLINT
       return Iterator(&(Grid::GetInstance()), this);
     }
   };
 
   /// An iterator that iterates over the boxes in this grid
   struct NeighborIterator {
-    explicit NeighborIterator(const FixedSizeVector<const Box*, 27>& neighbor_boxes)
+    explicit NeighborIterator(
+        const FixedSizeVector<const Box*, 27>& neighbor_boxes)
         : neighbor_boxes_(neighbor_boxes),
           box_iterator_(neighbor_boxes_[0]->begin()) {
       // if first box is empty
@@ -163,8 +162,7 @@ class Grid {
   ///                          objects
   ///
   template <typename TContainer>
-  void Initialize(const TContainer& sim_objects,
-                  Adjacency adjacency = kHigh) {
+  void Initialize(const TContainer& sim_objects, Adjacency adjacency = kHigh) {
     adjacency_ = adjacency;
 
     UpdateGrid(sim_objects);
@@ -189,7 +187,7 @@ class Grid {
     num_boxes_axis_ = {{0}};
     num_boxes_xy_ = 0;
     auto inf = Param::kInfinity;
-    grid_dimensions_ =  {inf, -inf, inf, -inf, inf, -inf};
+    grid_dimensions_ = {inf, -inf, inf, -inf, inf, -inf};
     successors_.clear();
   }
 
@@ -252,7 +250,7 @@ class Grid {
     for (size_t i = 0; i < sim_objects.size(); i++) {
       const auto& position = sim_objects[i].GetPosition();
       auto box = GetBoxPointer(GetBoxIndex(position));
-      box->AddObject(i); // i = simulation object id
+      box->AddObject(i);  // i = simulation object id
     }
   }
 
@@ -293,8 +291,9 @@ class Grid {
   ///
   /// @return     The distance between the two points
   ///
-  inline double SquaredEuclideanDistance(const std::array<double, 3>& pos1,
-                                         const std::array<double, 3>& pos2) const {
+  inline double SquaredEuclideanDistance(
+      const std::array<double, 3>& pos1,
+      const std::array<double, 3>& pos2) const {
     const double dx = pos2[0] - pos1[0];
     const double dy = pos2[1] - pos1[1];
     const double dz = pos2[2] - pos1[2];
@@ -311,7 +310,8 @@ class Grid {
   /// @tparam     SO      The type of the simulation object
   ///
   template <typename Lambda, typename SO>
-  void ForEachNeighbor(const Lambda& lambda, const SO& query, size_t simulation_object_id) const {
+  void ForEachNeighbor(const Lambda& lambda, const SO& query,
+                       size_t simulation_object_id) const {
     const auto& position = query.GetPosition();
     auto idx = GetBoxIndex(position);
 
@@ -342,7 +342,10 @@ class Grid {
   /// @tparam     SO          The type of the simulation object
   ///
   template <typename Lambda, typename TContainer, typename SO>
-  void ForEachNeighborWithinRadius(const Lambda& lambda, const TContainer& sim_objects, const SO& query, size_t simulation_object_id, double squared_radius) {
+  void ForEachNeighborWithinRadius(const Lambda& lambda,
+                                   const TContainer& sim_objects,
+                                   const SO& query, size_t simulation_object_id,
+                                   double squared_radius) {
     const auto& position = query.GetPosition();
     auto idx = GetBoxIndex(position);
 
@@ -354,8 +357,10 @@ class Grid {
       // Do something with neighbor object
       auto neighbor_index = *ni;
       if (neighbor_index != simulation_object_id) {
-        const auto& neighbor_position = sim_objects[neighbor_index].GetPosition();
-        if (SquaredEuclideanDistance(position, neighbor_position) < squared_radius) {
+        const auto& neighbor_position =
+            sim_objects[neighbor_index].GetPosition();
+        if (SquaredEuclideanDistance(position, neighbor_position) <
+            squared_radius) {
           lambda(neighbor_index);
         }
       }
@@ -386,7 +391,9 @@ class Grid {
   double largest_object_size_ = 0;
   /// Cube which contains all simulation objects
   /// {x_min, x_max, y_min, y_max, z_min, z_max}
-  std::array<double, 6> grid_dimensions_ = {{Param::kInfinity, -Param::kInfinity, Param::kInfinity, -Param::kInfinity, Param::kInfinity, -Param::kInfinity}};
+  std::array<double, 6> grid_dimensions_ = {
+      {Param::kInfinity, -Param::kInfinity, Param::kInfinity, -Param::kInfinity,
+       Param::kInfinity, -Param::kInfinity}};
 
   /// @brief      Gets the Moore (i.e adjacent) boxes of the query box
   ///

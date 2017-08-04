@@ -32,28 +32,29 @@ void RunTest(T* cells, const Op& op) {
 
   std::vector<int> expected_0 = {1, 4, 5, 16, 17, 20};
   std::vector<int> expected_4 = {0, 1, 5, 8, 9, 16, 20, 21, 24};
-  std::vector<int> expected_42 = {22, 25, 26, 27, 30, 37, 38, 39, 41, 43, 45, 46, 47, 54, 57, 58, 59, 62};
+  std::vector<int> expected_42 = {22, 25, 26, 27, 30, 37, 38, 39, 41,
+                                  43, 45, 46, 47, 54, 57, 58, 59, 62};
   std::vector<int> expected_63 = {43, 46, 47, 58, 59, 62};
 
   std::vector<int> neighbors_0;
-  Grid::GetInstance().ForEachNeighborWithinRadius([&neighbors_0](int neighbor){
-    neighbors_0.push_back(neighbor);
-  }, *cells, (*cells)[0], 0, 900);
+  Grid::GetInstance().ForEachNeighborWithinRadius(
+      [&neighbors_0](int neighbor) { neighbors_0.push_back(neighbor); }, *cells,
+      (*cells)[0], 0, 900);
 
   std::vector<int> neighbors_4;
-  Grid::GetInstance().ForEachNeighborWithinRadius([&neighbors_4](int neighbor){
-    neighbors_4.push_back(neighbor);
-  }, *cells, (*cells)[4], 4, 900);
+  Grid::GetInstance().ForEachNeighborWithinRadius(
+      [&neighbors_4](int neighbor) { neighbors_4.push_back(neighbor); }, *cells,
+      (*cells)[4], 4, 900);
 
   std::vector<int> neighbors_42;
-  Grid::GetInstance().ForEachNeighborWithinRadius([&neighbors_42](int neighbor){
-    neighbors_42.push_back(neighbor);
-  }, *cells, (*cells)[42], 42, 900);
+  Grid::GetInstance().ForEachNeighborWithinRadius(
+      [&neighbors_42](int neighbor) { neighbors_42.push_back(neighbor); },
+      *cells, (*cells)[42], 42, 900);
 
   std::vector<int> neighbors_63;
-  Grid::GetInstance().ForEachNeighborWithinRadius([&neighbors_63](int neighbor){
-    neighbors_63.push_back(neighbor);
-  }, *cells, (*cells)[63], 63, 900);
+  Grid::GetInstance().ForEachNeighborWithinRadius(
+      [&neighbors_63](int neighbor) { neighbors_63.push_back(neighbor); },
+      *cells, (*cells)[63], 63, 900);
 
   std::sort(neighbors_0.begin(), neighbors_0.end());
   std::sort(neighbors_4.begin(), neighbors_4.end());
