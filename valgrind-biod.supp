@@ -58,6 +58,18 @@
    fun:__kmp_get_global_thread_id_reg
 }
 
+{
+  ignore_Syscall_param_sched_setaffinity_mask__points_to_unaddressable_bytes
+  Memcheck:Param
+  sched_setaffinity(mask)
+  fun:syscall
+  fun:__kmp_affinity_determine_capable
+  fun:_Z20__kmp_env_initializePKc
+  fun:_ZL26__kmp_do_serial_initializev
+  fun:__kmp_get_global_thread_id_reg
+  fun:GOMP_parallel@@VERSION
+}
+
 ######### Suppress ICC false positives
 {
    gtest_uninitialized_value_icc
