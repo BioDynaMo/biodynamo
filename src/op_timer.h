@@ -16,10 +16,10 @@ struct OpTimer {
       : timer_msg_(timer_msg), operation_(op) {}
 
   template <typename Container>
-  void Compute(Container* cells) {
+  void operator()(Container* cells) {
     {
       Timing timer(timer_msg_);
-      operation_.Compute(cells);
+      operation_(cells);
     }
   }
 

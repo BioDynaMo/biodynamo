@@ -17,7 +17,7 @@ namespace detail {
 /// The obtained type is then passed to `function`.
 template <typename TTuple, typename TFunction, size_t TIndex>
 void ApplyImpl(TTuple* t, TFunction&& function) {
-  function(std::get<TIndex>(*t));
+  function(&std::get<TIndex>(*t));
 }
 
 /// Does the translation of runtime index to compile time index by using

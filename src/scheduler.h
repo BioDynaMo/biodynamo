@@ -23,13 +23,15 @@ class Scheduler {
     OpTimer<DisplacementOp> physics("physics");
 
     auto rm = TResourceManager::Get();
-    auto cells = rm->template Get<SoaCell>();
+    auto commit = [](auto* sim_objects) {
+      sim_objects->Commit();
+    };
 
     while (steps-- > 0) {
-      neighbor.Compute(cells);
-      biology.Compute(cells);
-      physics.Compute(cells);
-      cells->Commit();
+      rm->ApplyOnAllTypes(neighbor);
+      rm->ApplyOnAllTypes(biology);
+      rm->ApplyOnAllTypes(physics);
+      rm->ApplyOnAllTypes(commit);
     }
   }
 };

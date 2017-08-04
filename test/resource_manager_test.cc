@@ -224,17 +224,17 @@ void RunApplyOnAllTypesTest() {
   b_collection->push_back(BScalar(3.14));
   b_collection->push_back(BScalar(6.28));
   size_t counter = 0;
-  rm->ApplyOnAllTypes([&](auto& container) {
+  rm->ApplyOnAllTypes([&](auto* container) {
     counter++;
     switch (counter) {
       case 1:
-        EXPECT_EQ(1u, container.size());
-        EXPECT_EQ(12, container[0].GetData());
+        EXPECT_EQ(1u, container->size());
+        EXPECT_EQ(12, (*container)[0].GetData());
         break;
       case 2:
-        EXPECT_EQ(2u, container.size());
-        EXPECT_NEAR(3.14, container[0].GetData(), kEpsilon);
-        EXPECT_NEAR(6.28, container[1].GetData(), kEpsilon);
+        EXPECT_EQ(2u, container->size());
+        EXPECT_NEAR(3.14, (*container)[0].GetData(), kEpsilon);
+        EXPECT_NEAR(6.28, (*container)[1].GetData(), kEpsilon);
         break;
     }
   });

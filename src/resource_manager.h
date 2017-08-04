@@ -114,15 +114,15 @@ class ResourceManager {
     // auto type_idx = index >> 63;
     auto type_idx = GetTypeIdx(handle);
     auto element_idx = GetElementIdx(handle);
-    ::bdm::Apply(&data_, type_idx, [&element_idx, &function](auto& element) {
-      function(element[element_idx]);
+    ::bdm::Apply(&data_, type_idx, [&element_idx, &function](auto* container) {
+      function((*container)[element_idx]);
     });
   }
 
   /// Apply a function on all container types
   /// @param function that will be called with each container as a parameter
   ///
-  ///     rm->ApplyOnAllTypes(handle, [](auto& container) {
+  ///     rm->ApplyOnAllTypes(handle, [](auto* container) {
   ///                          std::cout << container.size() << std::endl;
   ///                       });
   template <typename TFunction>
@@ -143,9 +143,9 @@ class ResourceManager {
   void ApplyOnAllElements(TFunction&& function) {
     // runtime dispatch - TODO(lukas) replace with c++17 std::apply
     for (size_t i = 0; i < std::tuple_size<decltype(data_)>::value; i++) {
-      ::bdm::Apply(&data_, i, [&function](auto& container) {
-        for (size_t e = 0; e < container.size(); e++) {
-          function(container[e]);
+      ::bdm::Apply(&data_, i, [&function](auto* container) {
+        for (size_t e = 0; e < container->size(); e++) {
+          function((*container)[e]);
         }
       });
     }
@@ -153,7 +153,7 @@ class ResourceManager {
 
   /// Remove elements from each type
   void Clear() {
-    ApplyOnAllTypes([](auto& container) { container.clear(); });
+    ApplyOnAllTypes([](auto* container) { container->clear(); });
   }
 
   /// Generate a SoHandle

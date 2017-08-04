@@ -28,7 +28,7 @@ void RunTest(T* cells, const Op& op) {
   CellFactory(cells, 4);
 
   // execute operation
-  op.Compute(cells);
+  op(cells);
 
   std::vector<int> expected_0 = {1, 4, 5, 16, 17, 20};
   std::vector<int> expected_4 = {0, 1, 5, 8, 9, 16, 20, 21, 24};

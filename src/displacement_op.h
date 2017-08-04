@@ -22,7 +22,7 @@ class DisplacementOp {
   DisplacementOp& operator=(const DisplacementOp&) = delete;
 
   template <typename TContainer>
-  void Compute(TContainer* cells) const {
+  void operator()(TContainer* cells) const {
     vector<array<double, 3>> cell_movements;
     cell_movements.reserve(cells->size());
 

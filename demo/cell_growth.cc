@@ -69,7 +69,7 @@ void Execute(size_t cells_per_dim, size_t iterations, size_t threads,
       {
         Timing timing("Find Neighbors", statistic);
         bdm::NeighborGridOp op;
-        op.Compute(&cells);
+        op(&cells);
       }
 
       // __itt_resume();
@@ -77,7 +77,7 @@ void Execute(size_t cells_per_dim, size_t iterations, size_t threads,
       {
         Timing timing("Cell Growth", statistic);
         bdm::DividingCellOp biology;
-        biology.Compute(&cells);
+        biology(&cells);
       }
 
       // __itt_pause();
@@ -85,7 +85,7 @@ void Execute(size_t cells_per_dim, size_t iterations, size_t threads,
       {
         Timing timing("Displacement", statistic);
         bdm::DisplacementOp op;
-        op.Compute(&cells);
+        op(&cells);
       }
 
       if (with_export) {

@@ -9,7 +9,7 @@ using std::size_t;
 
 struct BiologyModuleOp {
   template <typename TContainer>
-  void Compute(TContainer* cells) const {
+  void operator()(TContainer* cells) const {
 #pragma omp parallel for
     for (size_t i = 0; i < cells->size(); i++) {
       (*cells)[i].RunBiologyModules();

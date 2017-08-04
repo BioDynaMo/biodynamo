@@ -18,7 +18,7 @@ class NeighborGridOp {
   virtual ~NeighborGridOp() {}
 
   template <typename TContainer>
-  void Compute(TContainer* cells) const {
+  void operator()(TContainer* cells) const {
     // Construct a 3D grid with the current positions for the simulation objects
     auto& grid = Grid::GetInstance();
     grid.Initialize(*cells, adjacency_);

@@ -15,7 +15,7 @@ void RunTest(T* cells) {
   double volume_mother = (*cells)[0].GetVolume();
 
   DividingCellOp op;
-  op.Compute(cells);
+  op(cells);
 
   EXPECT_EQ(3u, cells->size());
   EXPECT_NEAR(19.005288996600001, (*cells)[1].GetDiameter(),

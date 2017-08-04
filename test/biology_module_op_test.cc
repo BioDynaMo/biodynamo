@@ -38,7 +38,7 @@ void RunTest(T* cells) {
   cells->push_back(cell_2);
 
   BiologyModuleOp op;
-  op.Compute(cells);
+  op(cells);
 
   EXPECT_EQ(2u, cells->size());
   EXPECT_NEAR(14, (*cells)[0].GetDiameter(), abs_error<double>::value);

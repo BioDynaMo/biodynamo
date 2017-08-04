@@ -37,7 +37,7 @@ void RunTest(T* cells) {
 
   // execute operation
   DisplacementOp op;
-  op.Compute(cells);
+  op(cells);
 
   // check results
   // cell 1
