@@ -2,6 +2,8 @@
 #define __MDP_WORKER__
 
 #include <string>
+#include <vector>
+
 #include <zmqpp/zmqpp.hpp>
 
 #include "common.hpp"
@@ -10,43 +12,52 @@ namespace mdp {
 
 class Worker {
   public:
-    Worker (zmqpp::context *ctx, const std::string& broker,
+    Worker (zmqpp::context *ctx, const std::string& broker_addr,
                                 const std::string& identity, bool verbose);
     ~Worker();
 
-    bool Recv (zmqpp::message& msg, std::string **reply_to);
-    void Send (const zmqpp::message& msg, const std::string& reply_to);
+    void StartThread(const std::string& app_addr);
 
-    void SetHeartbeatDelay(std::chrono::milliseconds hb_delay);
-    void SetHeartbeatReconnect(std::chrono::milliseconds hb_rec_delay);
-    
-    template<typename T>
-    void SetSocketOption(zmqpp::socket_option option, const T& value);
+    void SetHeartbeatDelay(const duration_ms_t& hb_delay);
+    void SetHeartbeatReconnect(const duration_ms_t& hb_rec_delay);
 
     template<typename T>
-    T GetSocketOption(zmqpp::socket_option option);
+    void SetSocketOption(const zmqpp::socket_option& option, const T& value);
+
     template<typename T>
-    void GetSocketOption(zmqpp::socket_option option, T *value);
+    T GetSocketOption(const zmqpp::socket_option& option);
+    template<typename T>
+    void GetSocketOption(const zmqpp::socket_option& option, T *value);
 
 
   private:
+    void HandleNetwork();
+    void HandleAppMessage();
+    void HandleBrokerMessage();
+
     void ConnectToBroker();
     void SendToBroker(const std::string& command, zmqpp::message *message = nullptr,
             const std::string& option = "");
 
+    zmqpp::reactor reactor;                 //  Polling handler
+    zmqpp::context *ctx = nullptr;          //  ZMQ context
+    zmqpp::socket *broker_sock = nullptr;   //  Socket to broker
+    zmqpp::socket *app_sock = nullptr;      //  Socket to app
 
-    zmqpp::context *ctx = nullptr;          //  Our context
-    zmqpp::socket *sock = nullptr;          //  Socket to broker
-    zmqpp::poller poller;
-    std::string broker;                     //  Broker address
+    std::vector<zmqpp::socket*> purge_later;
+    std::thread *worker_thread = nullptr;   //  Background/Network thread
+    std::string broker_addr;                //  Broker address
+    std::string app_addr;                   //  Application address
     std::string identity;                   //  UID of worker
     bool verbose;                           //  Print activity to stdout
 
-    //  Heartbeat management (maybe change to ping-pong?)
+    //  Heartbeat management
     time_point_t hb_at;             //  When to send HEARTBEAT
     duration_ms_t hb_delay;         //  Heartbeat delay, msecs
     duration_ms_t hb_rec_delay;     //  Reconnect delay, msecs
     size_t hb_liveness;             //  How many attempts left
+
+    bool zctx_interrupted = false;  // ZMQ interrupted by signal
 
 };
 

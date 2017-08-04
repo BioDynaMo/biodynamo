@@ -7,30 +7,170 @@
 
 namespace mdp {
 
-Worker::Worker (zmqpp::context *ctx, const std::string& broker,
+Worker::Worker (zmqpp::context *ctx, const std::string& broker_addr,
             const std::string& identity, bool verbose) {
 
     this->ctx = ctx;
-    this->broker = broker;
+    this->broker_addr = broker_addr;
     this->identity = identity;
-    this->hb_delay = duration_ms_t(2500);       // msecs
-    this->hb_rec_delay = duration_ms_t(2500);   // msecs
+    this->hb_delay = duration_ms_t(2500);
+    this->hb_rec_delay = duration_ms_t(2500);
     this->verbose = verbose;
-    
-    ConnectToBroker();
 }
 
 Worker::~Worker() {
     SendToBroker(MDPW_DISCONNECT);
-    if (sock) {
-        sock->close();
-        delete sock;
+    if (broker_sock) {
+        broker_sock->close();
+        delete broker_sock;
+    }
+}
+
+void Worker::StartThread(const std::string& app_addr) {
+    this->app_addr = app_addr;
+
+    worker_thread = new std::thread(&Worker::HandleNetwork, this);
+    std::cout << "I: started thread with id " << worker_thread->get_id() << std::endl;
+}
+
+void Worker::HandleNetwork() {
+    // Create local/application socket
+    app_sock = new zmqpp::socket(*ctx, zmqpp::socket_type::pair);
+    app_sock->connect(app_addr);
+
+    std::cout << "I: connecting to app at " << app_addr << std::endl;
+
+    ConnectToBroker();
+
+    // Add app_sock to reactor
+    // NOTE: broker_sock has been added already
+    reactor.add(*app_sock, std::bind(&Worker::HandleAppMessage, this),
+            zmqpp::poller::poll_in);
+
+    while ( !zctx_interrupted ) {
+        if ( !reactor.poll (hb_delay.count()) ) {
+            // Timeout
+            if (--hb_liveness == 0 ) {
+                std::cout << "W: disconnected from broker - retrying..." << std::endl;
+                std::this_thread::sleep_for(hb_rec_delay);
+                ConnectToBroker();
+            }
+        }
+
+        //  Send HEARTBEAT if it's time
+        if (std::chrono::system_clock::now() > hb_at) {
+            SendToBroker(MDPW_HEARTBEAT);
+            hb_at = std::chrono::system_clock::now() + hb_delay;
+        }
+
+        // Purge old sockets
+        for (auto socket_p : purge_later) {
+            socket_p->close();
+            delete socket_p;
+        }
+        purge_later.clear();
+
+    }
+}
+
+void Worker::HandleAppMessage() {
+
+    zmqpp::message msg;
+    if ( !app_sock->receive(msg) ) {
+        // Interrupted
+        zctx_interrupted = true;
+        return;
+    }
+
+    // The message received must have the following format
+    // Frame 1: sender id
+    // Frame 2: application frame(s)
+
+    // Check recepient address
+    std::string recepient;
+    msg.get(recepient, 0);
+    assert( !recepient.empty() );
+
+    if (verbose) {
+        std::cout << "I: sending message to broker: " << msg << std::endl;
+    }
+    SendToBroker(MDPW_REPORT, &msg);
+}
+
+void Worker::HandleBrokerMessage() {
+
+    zmqpp::message msg;
+    if ( !broker_sock->receive(msg) ) {
+        // Interrupted
+        zctx_interrupted = true;
+        return;
+    }
+
+    if (verbose) {
+        std::cout << "I: received message from broker: " << msg << std::endl;
+    }
+    hb_liveness = HEARTBEAT_LIVENESS;
+
+    std::string empty, header, command;
+    assert (msg.parts() >= 3);
+
+    msg.get(empty, 0);
+    assert(empty == "");
+    msg.pop_front();
+
+    msg.get(header, 0);
+    assert(header == MDPW_WORKER);
+    msg.pop_front();
+
+    msg.get(command, 0);
+    msg.pop_front();
+
+    if (command == MDPW_REQUEST) {
+        // Delive message to application
+        app_sock->send(msg);
+    }
+    else if (command == MDPW_HEARTBEAT) {
+        // Do nothing
+    }
+    else if (command == MDPW_DISCONNECT) {
+        // Reconnect to broker
+        ConnectToBroker();
+    }
+    else {
+        std::cout << "E: invalid input message" << msg << std::endl;
     }
 }
 
 
-void 
-Worker::SendToBroker(const std::string& command, zmqpp::message *message /* = nullptr */, 
+void
+Worker::ConnectToBroker() {
+    if (broker_sock) {
+        // Delete socket
+        reactor.remove(*broker_sock);
+        // Purge socket later
+        purge_later.push_back(broker_sock);
+    }
+
+    // Create new socket
+    broker_sock = new zmqpp::socket(*ctx, zmqpp::socket_type::dealer);
+    broker_sock->set(zmqpp::socket_option::identity, identity);
+    broker_sock->connect(broker_addr);
+
+    // Add newly created broker socket to reactor
+    reactor.add(*broker_sock, std::bind(&Worker::HandleBrokerMessage, this));
+
+    // Register service with broker
+    std::cout << "I: connecting to broker at " << broker_addr << std::endl;
+    SendToBroker (MDPW_READY, nullptr, identity);
+
+    // Heartbeat
+    hb_liveness = HEARTBEAT_LIVENESS;
+    hb_at = std::chrono::system_clock::now() + hb_delay;
+}
+
+
+void
+Worker::SendToBroker(const std::string& command, zmqpp::message *message /* = nullptr */,
         const std::string& option /* = "" */) {
 
     auto msg = message ? message->copy() : zmqpp::message ();
@@ -46,144 +186,37 @@ Worker::SendToBroker(const std::string& command, zmqpp::message *message /* = nu
     if (verbose) {
         std::cout << "I: sending " << command << " to broker: " << msg << std::endl;
     }
-    sock->send(msg);
-}
-
-void
-Worker::ConnectToBroker() {
-    if (sock) {
-        // Delete socket
-        poller.remove(*sock);
-        sock->close();
-        delete sock;
-    }
-    sock = new zmqpp::socket(*ctx, zmqpp::socket_type::dealer);
-    sock->set(zmqpp::socket_option::identity, identity);
-    sock->connect(broker);
-
-    std::cout << "I: connecting to broker at " << broker << std::endl;
-    
-    // Register service with broker
-    SendToBroker (MDPW_READY, nullptr, identity);
-
-    // Add socket to poller
-    poller.add(*sock, zmqpp::poller::poll_in);
-    
-    hb_liveness = HEARTBEAT_LIVENESS;
-    hb_at = std::chrono::system_clock::now() + hb_delay;
+    broker_sock->send(msg);
 }
 
 
-bool 
-Worker::Recv(zmqpp::message& msg, std::string **reply_to) { 
-    //TODO: check if interrupted
-    
-    std::string empty, header, command;
-    while (true) {
-        // Wait till heartbeat duration
-        poller.poll( hb_delay.count() );  
-        
-        if (poller.events(*sock) & zmqpp::poller::poll_in) {
-            if ( !sock->receive(msg) ) {
-                break; // Interrupted
-            }
-            if (verbose) {
-                std::cout << "I: received message from broker: " << msg << std::endl;
-            }
-            hb_liveness = HEARTBEAT_LIVENESS;
-
-            assert (msg.parts() >= 3);
-            
-            msg.get(empty, 0);
-            assert(empty == "");
-            msg.pop_front();
-
-            msg.get(header, 0);
-            assert(header == MDPW_WORKER);
-            msg.pop_front();
-
-            msg.get(command, 0);
-            msg.pop_front();
-
-            if (command == MDPW_REQUEST) {
-                std::string *rep_to = new std::string();
-                msg.get(*rep_to, 0);
-
-                if ( !rep_to->empty() ) {
-                    *reply_to = rep_to;
-                    msg.pop_front();
-                }
-                else {
-                    delete rep_to;
-                }
-
-                return true;
-            }
-            else if (command == MDPW_HEARTBEAT) {
-                // Do nothing
-            }
-            else if (command == MDPW_DISCONNECT) {
-                // Reconnect to broker
-                ConnectToBroker();
-            }
-            else {
-                std::cout << "E: invalid input message" << msg << std::endl;
-            }
-
-        }
-        else if (--hb_liveness == 0 ) {
-            std::cout << "W: disconnected from broker - retrying..." << std::endl; 
-            std::this_thread::sleep_for(hb_rec_delay); 
-            ConnectToBroker();
-        }
-
-        //  Send HEARTBEAT if it's time
-        if (std::chrono::system_clock::now() > hb_at) {
-            SendToBroker(MDPW_HEARTBEAT);
-            hb_at = std::chrono::system_clock::now() + hb_delay;
-        }
-    
-    }
-
-    return false;
-}
-
-void Worker::Send (const zmqpp::message& msg, const std::string& reply_to) {
-    assert( !reply_to.empty() );
-
-    // Add client address
-    zmqpp::message report = msg.copy(); 
-    report.push_front(reply_to);
-
-    SendToBroker(MDPW_REPORT, &report);
-}
-
-void Worker::SetHeartbeatDelay(std::chrono::milliseconds hb_delay) {
+void Worker::SetHeartbeatDelay(const duration_ms_t& hb_delay) {
     this->hb_delay = hb_delay;
 }
 
 
-void Worker::SetHeartbeatReconnect(std::chrono::milliseconds hb_rec_delay) {
+void Worker::SetHeartbeatReconnect(const duration_ms_t& hb_rec_delay) {
     this->hb_rec_delay = hb_rec_delay;
 }
 
 
 template<typename T>
-void Worker::SetSocketOption(zmqpp::socket_option option, const T& value) {
-    sock->set(option, value);
+void Worker::SetSocketOption(const zmqpp::socket_option& option, const T& value) {
+    broker_sock->set(option, value);
 }
 
+
 template<typename T>
-T Worker::GetSocketOption(zmqpp::socket_option option) {
+T Worker::GetSocketOption(const zmqpp::socket_option& option) {
     T value;
     GetSocketOption(option, &value);
     return value;
 }
 
+
 template<typename T>
-void Worker::GetSocketOption(zmqpp::socket_option option, T *value) {
-    sock->get(option, *value);
+void Worker::GetSocketOption(const zmqpp::socket_option& option, T *value) {
+    broker_sock->get(option, *value);
 }
 
 }
-
