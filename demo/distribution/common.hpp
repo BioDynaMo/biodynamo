@@ -4,6 +4,7 @@
 #include <chrono>
 #include <iostream>
 #include <iomanip>
+#include <memory>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -18,16 +19,27 @@ typedef std::chrono::milliseconds duration_ms_t;
 std::ostream& operator<< (std::ostream& out, const zmqpp::message& msg);
 std::string toHex(const std::string& in);
 
-// Heartbeat
-const size_t HEARTBEAT_LIVENESS = 3;            //  3-5 is reasonable
-const duration_ms_t HEARTBEAT_INTERVAL (2500);  //  msecs
-const duration_ms_t HEARTBEAT_EXPIRY = HEARTBEAT_INTERVAL * HEARTBEAT_LIVENESS;
+struct DistSharedInfo {
+    std::vector< std::unique_ptr<zmqpp::message> >* pending_;
+    zmqpp::reactor *reactor_;           // Polling handler
+    zmqpp::context *ctx_;               // ZMQ context
+    zmqpp::socket *app_socket_;         // Application socket
+    std::string app_endpoint_;          // Application endpoint
+    std::string identity_;              // Current node identity
+    bool verbose_;                      // Print to stdout
+    bool zctx_interrupted_ = false;     // ZMQ interrupted by signal
+};
 
-// Socket identifiers, as integers
-const std::uint8_t SOCKET_BROKER = 1;
-const std::uint8_t SOCKET_APPLICATION = 2;
-const std::uint8_t SOCKET_L_NEIGHBOUR = 3;
-const std::uint8_t SOCKET_R_NEIGHBOUR = 4;
+// Communicator identifiers, as integers
+const std::uint8_t BROKER_COMM = 1;
+const std::uint8_t LEFT_NEIGHBOUR_COMM = 2;
+const std::uint8_t RIGHT_NEIGHBOUR_COMM = 3;
+
+// Distributed API commands
+const std::string DEBUG_MSG = "\001";
+
+// -------- Majordomo pattern constants --------
+// ---------------------------------------------
 
 //  This is the version of MDP/Client we implement
 const std::string MDPC_CLIENT = "MDPC0X";
@@ -55,15 +67,12 @@ static std::string mdpw_commands [] = {
     "INVALID_CMD", "READY", "REQUEST", "REPORT", "HEARTBEAT", "DISCONNECT"
 };
 
-struct DistSharedInfo {
-    zmqpp::reactor *reactor_;            //  Polling handler
-    zmqpp::context *ctx_;
-    zmqpp::socket *app_socket_;
-    std::string app_endpoint_;
-    std::string identity_;
-    bool verbose_;
-    bool zctx_interrupted_ = false;  // ZMQ interrupted by signal
-};
+// Heartbeat
+const size_t HEARTBEAT_LIVENESS = 3;            //  3-5 is reasonable
+const duration_ms_t HEARTBEAT_INTERVAL (2500);  //  msecs
+const duration_ms_t HEARTBEAT_EXPIRY = HEARTBEAT_INTERVAL * HEARTBEAT_LIVENESS;
+
+// ---------------------------------------------
 
 }
 
