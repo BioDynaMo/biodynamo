@@ -45,7 +45,7 @@ void BrokerCommunicator::RequestCompleted() {
     }
     
     // Purge old sockets
-    for (auto socket_p : purge_later_) {
+    for (auto& socket_p : purge_later_) {
         socket_p->close();
         delete socket_p;
     }
@@ -53,7 +53,7 @@ void BrokerCommunicator::RequestCompleted() {
 }
 
 
-void BrokerCommunicator::HandleAppMessage(zmqpp::message& msg) {
+void BrokerCommunicator::HandleOutgoingMessage(zmqpp::message& msg) {
     if (info_->verbose_) {
         std::cout << "I: sending message to broker: " << msg << std::endl;
     }
@@ -61,37 +61,40 @@ void BrokerCommunicator::HandleAppMessage(zmqpp::message& msg) {
 }
 
 
-void BrokerCommunicator::HandleBrokerMessage() {
+void BrokerCommunicator::HandleIncomingMessage() {
 
-    zmqpp::message msg;
-    if ( !socket_->receive(msg) ) {
+    auto msg_p = new zmqpp::message();
+    if ( !socket_->receive(*msg_p) ) {
         // Interrupted
         info_->zctx_interrupted_ = true;
         return;
     }
 
     if (info_->verbose_) {
-        std::cout << "I: received message from broker: " << msg << std::endl;
+        std::cout << "I: received message from broker: " << *msg_p << std::endl;
     }
     hb_liveness_ = HEARTBEAT_LIVENESS;
 
     std::string empty, header, command;
-    assert (msg.parts() >= 3);
+    assert (msg_p->parts() >= 3);
 
-    msg.get(empty, 0);
+    msg_p->get(empty, 0);
     assert(empty == "");
-    msg.pop_front();
+    msg_p->pop_front();
 
-    msg.get(header, 0);
+    msg_p->get(header, 0);
     assert(header == MDPW_WORKER);
-    msg.pop_front();
+    msg_p->pop_front();
 
-    msg.get(command, 0);
-    msg.pop_front();
+    msg_p->get(command, 0);
+    msg_p->pop_front();
 
     if (command == MDPW_REQUEST) {
-        // Delive message to application
-        info_->app_socket_->send(msg);
+        // Process message from broker
+        msg_p->push_front(BROKER_COMM);
+        info_->pending_->push_back(
+            std::unique_ptr<zmqpp::message>(msg_p)
+        );
     }
     else if (command == MDPW_HEARTBEAT) {
         // Do nothing
@@ -101,7 +104,7 @@ void BrokerCommunicator::HandleBrokerMessage() {
         ConnectToBroker();
     }
     else {
-        std::cout << "E: invalid input message" << msg << std::endl;
+        std::cout << "E: invalid input message" << *msg_p << std::endl;
     }
 }
 
@@ -120,7 +123,7 @@ BrokerCommunicator::ConnectToBroker() {
     socket_->connect(endpoint_);
 
     // Add newly created broker socket to reactor
-    info_->reactor_->add(*socket_, std::bind(&BrokerCommunicator::HandleBrokerMessage, this));
+    info_->reactor_->add(*socket_, std::bind(&BrokerCommunicator::HandleIncomingMessage, this));
 
     // Register service with broker
     std::cout << "I: connecting to broker at " << endpoint_ << std::endl;
