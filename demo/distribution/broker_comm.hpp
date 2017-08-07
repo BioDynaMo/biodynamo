@@ -1,5 +1,5 @@
-#ifndef __MDP_WORKER__
-#define __MDP_WORKER__
+#ifndef __BROKER_COMM__
+#define __BROKER_COMM__
 
 #include <string>
 #include <vector>
@@ -18,8 +18,8 @@ class BrokerCommunicator {
     void RequestTimedOut();
     void RequestCompleted();
 
-    void HandleAppMessage(zmqpp::message& msg);
-    void HandleBrokerMessage();
+    void HandleOutgoingMessage(zmqpp::message& msg);
+    void HandleIncomingMessage();
 
     void SetHeartbeatDelay(const duration_ms_t& hb_delay);
     void SetHeartbeatReconnect(const duration_ms_t& hb_rec_delay);
@@ -38,7 +38,7 @@ class BrokerCommunicator {
     void SendToBroker(const std::string& command, zmqpp::message *message = nullptr,
             const std::string& option = "");
 
-    zmqpp::socket* GetSocketObj (const std::uint8_t socket);
+    //zmqpp::socket* GetSocket (const std::uint8_t socket);
 
     DistSharedInfo* info_;
 
@@ -57,4 +57,4 @@ class BrokerCommunicator {
 
 }
 
-#endif //__MDP_WORKER__
+#endif //__BROKER_COMM__
