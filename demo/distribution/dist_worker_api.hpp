@@ -22,10 +22,12 @@ class DistWorkerAPI {
     void SetLeftNeighbourEndpoint(const std::string& endpoint);
     void SetRightNeighbourEndpoint(const std::string& endpoint);
 
+    void WaitForTermination();
   private:
     void HandleNetwork();
     void HandleAppMessage();
     void HandleNetworkMessages();
+    void Terminate();
 
     DistSharedInfo *info_;
 

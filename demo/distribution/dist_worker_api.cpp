@@ -37,6 +37,10 @@ void DistWorkerAPI::SetRightNeighbourEndpoint(const std::string& endpoint) {
     this->rworker_endpoint_ = endpoint;
 }
 
+void DistWorkerAPI::WaitForTermination() {
+   thread_->join();
+   thread_ = nullptr;
+}
 
 void DistWorkerAPI::HandleNetwork() {
     // Create local/application socket
@@ -78,6 +82,7 @@ void DistWorkerAPI::HandleNetwork() {
         }
     }
 
+    Terminate();
     std::cout << "I: Terminated!" << std::endl;
 }
 
@@ -150,6 +155,23 @@ void DistWorkerAPI::HandleNetworkMessages() {
     info_->pending_->clear();
 }
 
+void DistWorkerAPI::Terminate() {
+    if (broker_comm_) {
+        delete broker_comm_;
+    }
+    if (lworker_comm_) {
+        delete lworker_comm_;
+    }
+    if (rworker_comm_) {
+        delete rworker_comm_;
+    }
+
+    info_->reactor_->remove( *(info_->app_socket_) );
+    info_->app_socket_->close();
+    delete info_->app_socket_;
+
+    delete info_->reactor_;
+}
 
 
 }
