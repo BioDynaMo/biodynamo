@@ -17,7 +17,6 @@
 #include "scheduler.h"
 #include "timing.h"
 #include "timing_aggregator.h"
-// #include <ittnotify.h>
 
 using bdm::Cell;
 using bdm::Scalar;
@@ -25,6 +24,7 @@ using bdm::Soa;
 using bdm::Timing;
 using bdm::TimingAggregator;
 using bdm::ExporterFactory;
+using bdm::Exporter;
 
 void Execute(size_t cells_per_dim, size_t iterations, size_t threads,
              size_t repititions, TimingAggregator *statistic,
@@ -57,6 +57,7 @@ void Execute(size_t cells_per_dim, size_t iterations, size_t threads,
 
     // iterate for all (time) steps
     ExporterFactory exp_fac;
+
     auto exp_basic = exp_fac.GenerateExporter<Cell<Soa>>("basic");
     auto exp_matlab = exp_fac.GenerateExporter<Cell<Soa>>("matlab");
     auto exp_neuroml = exp_fac.GenerateExporter<Cell<Soa>>("neuroml");
