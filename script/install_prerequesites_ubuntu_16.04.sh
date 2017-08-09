@@ -115,6 +115,7 @@ function Install {
   echo "export LD_LIBRARY_PATH=$THIRD_PARTY_DIR/qt/lib:/usr/lib/openmpi/lib:\${LD_LIBRARY_PATH}" >> ${BDM_ENVIRONMENT_FILE}
   echo "export PYTHONPATH=$THIRD_PARTY_DIR/paraview/lib/paraview-5.4/site-packages:$THIRD_PARTY_DIR/paraview/lib/paraview-5.4/site-packages/vtk" >> ${BDM_ENVIRONMENT_FILE}
   echo "export QT_QPA_PLATFORM_PLUGIN_PATH=$THIRD_PARTY_DIR/qt/plugins" >> ${BDM_ENVIRONMENT_FILE}
+  echo "export PATH=$THIRD_PARTY_DIR/paraview/bin:\${PATH}" >> ${BDM_ENVIRONMENT_FILE}
 
   # Remove the downloaded tar files
   rm -rf *.tar.gz
