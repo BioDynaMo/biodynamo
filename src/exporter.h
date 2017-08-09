@@ -140,8 +140,8 @@ class NeuroMLExporter : public Exporter<TContainer> {
 
     outfile << space1 << "<cells>" << endl;
 
-    // In the future, the electrophysiological properties of neurons can be
-    // inserted instead of these prespecified values
+    /// In the future, the electrophysiological properties of neurons can be
+    /// inserted instead of these prespecified values
     outfile << space2 << "<cell name=\"exz_lif\"> " << endl;
     outfile << space3 << "<meta:properties>" << endl;
     outfile << space4
@@ -193,8 +193,8 @@ class NeuroMLExporter : public Exporter<TContainer> {
     outfile << space2 << "</cell>" << endl;
     outfile << space1 << "</cells>" << endl;
 
-    // TODO(roman): here, the cell populations and connectivity will be
-    // specified and exported, once these are included in the model
+    /// TODO(roman): here, the cell populations and connectivity will be
+    /// specified and exported, once these are included in the model
     for (size_t i = 0; i < num_cells; i++) {
     }
 
@@ -226,13 +226,13 @@ class ParaviewExporter : public Exporter<TContainer> {
            "byte_order=\"LittleEndian\">"
         << std::endl;
     pvd << "<Collection>" << std::endl;
-    // iterate for all (time) steps
+    /// iterate for all (time) steps
     for (int i = 0; i < iterations; i++) {
       pvd << "<DataSet timestep=\"" << (i * increment)
           << "\" group=\"\" part=\"0\" file=\"" << filename << '-' << i
           << ".vtu\">";
       pvd << std::endl;
-      // end of (time) iterations loop...
+      /// end of (time) iterations loop...
     }
     pvd << "</Collection>" << std::endl;
     pvd << "</VTKFile>" << std::endl;
@@ -368,20 +368,23 @@ class ParaviewExporter : public Exporter<TContainer> {
 class ExporterFactory {
  public:
   template <typename TContainer>
-  Exporter<TContainer> *GenerateExporter(string format) {
+  std::unique_ptr<Exporter<TContainer>> GenerateExporter(string format) {
     if (format.compare("basic") == 0) {
-      return new BasicExporter<TContainer>;
+      return std::unique_ptr<Exporter<TContainer>>(
+          new BasicExporter<TContainer>);
     } else if (format.compare("matlab") == 0) {
-      return new MatlabExporter<TContainer>;
+      return std::unique_ptr<Exporter<TContainer>>(
+          new MatlabExporter<TContainer>);
     } else if (format.compare("neuroml") == 0) {
-      return new NeuroMLExporter<TContainer>;
+      return std::unique_ptr<Exporter<TContainer>>(
+          new NeuroMLExporter<TContainer>);
     } else if (format.compare("paraview") == 0) {
-      return new ParaviewExporter<TContainer>;
+      return std::unique_ptr<Exporter<TContainer>>(
+          new ParaviewExporter<TContainer>);
     } else {
       throw std::invalid_argument("export format not recognized");
     }
   }
 };
-
 }  // namespace bdm
 #endif  // EXPORTER_H_
