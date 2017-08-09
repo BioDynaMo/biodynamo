@@ -24,6 +24,7 @@ using bdm::Soa;
 using bdm::Timing;
 using bdm::TimingAggregator;
 using bdm::ExporterFactory;
+using bdm::Exporter;
 
 void Execute(size_t cells_per_dim, size_t iterations, size_t threads,
              size_t repititions, TimingAggregator *statistic,

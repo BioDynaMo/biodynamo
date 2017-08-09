@@ -193,8 +193,8 @@ class NeuroMLExporter : public Exporter<TContainer> {
     outfile << space2 << "</cell>" << endl;
     outfile << space1 << "</cells>" << endl;
 
-    // TODO(roman): here, the cell populations and connectivity will be
-    // specified and exported, once these are included in the model
+    /// TODO(roman): here, the cell populations and connectivity will be
+    /// specified and exported, once these are included in the model
     for (size_t i = 0; i < num_cells; i++) {
     }
 
@@ -368,7 +368,7 @@ class ParaviewExporter : public Exporter<TContainer> {
 class ExporterFactory {
  public:
   template <typename TContainer>
-<<<<<<< 0185ab68ad6d8431bcaa02db2f68d0cbee94e8f5
+  
   std::unique_ptr<Exporter<TContainer>> GenerateExporter(string format) {
     if (format.compare("basic") == 0) {
       return std::unique_ptr<Exporter<TContainer>>(
