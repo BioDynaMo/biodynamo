@@ -98,12 +98,12 @@ void DistWorkerAPI::HandleNetwork() {
 
         // Create left communicator
         if (!lworker_endpoint_.empty()) {
-            lworker_comm_ = new WorkerCommunicator(info_, lworker_endpoint_, true);
+            lworker_comm_ = new WorkerCommunicator(info_, lworker_endpoint_, CommunicatorId::kLeftNeighbour);
         }
 
         // Create right communicator
         if (!rworker_endpoint_.empty()) {
-            rworker_comm_ = new WorkerCommunicator(info_, rworker_endpoint_, false);
+            rworker_comm_ = new WorkerCommunicator(info_, rworker_endpoint_, CommunicatorId::kRightNeighbour);
         }
     }
     catch (...) {

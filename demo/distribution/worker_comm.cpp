@@ -6,13 +6,13 @@
 
 namespace mdp {
 
-WorkerCommunicator::WorkerCommunicator (DistSharedInfo *info, const std::string& endpoint, bool client)
-    : Communicator(info, endpoint, client ? CommunicatorId::kLeftNeighbour: CommunicatorId::kRightNeighbour)
-    , client_ (client) {
+WorkerCommunicator::WorkerCommunicator (DistSharedInfo *info, const std::string& endpoint, CommunicatorId comm_id)
+    : Communicator(info, endpoint, comm_id) {
 
     // By convention we define that we act as client if
     // we initiate the communication with the left worker
 
+    this->client_ = (comm_id == CommunicatorId::kLeftNeighbour ? true : false );
     this->worker_str_ = (client_ ? "right (client/dealer)" : "left (server/router)");
     this->coworker_str_ = (!client_ ? "right (client/dealer)" : "left (server/router)");
 
@@ -22,7 +22,7 @@ WorkerCommunicator::WorkerCommunicator (DistSharedInfo *info, const std::string&
 WorkerCommunicator::~WorkerCommunicator() {
     if (socket_) {
         info_->reactor_->remove(*socket_);
-        socket_->close();
+        socket_->disconnect(endpoint_);
     }
 
 }
