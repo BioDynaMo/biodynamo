@@ -16,10 +16,10 @@ int main(int argc, char *argv[])
     Client client = Client(&ctx, "tcp://localhost:5555", verbose);
 
     std::string command, worker = "W1";
-    
+
     size_t remaining = n_msg;
     while (remaining > 0) {
-        zmqpp::message msg; 
+        zmqpp::message msg;
         msg.push_back("Hello world");
 
         client.Send(worker, msg);

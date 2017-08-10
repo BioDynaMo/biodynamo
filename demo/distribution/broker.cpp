@@ -11,7 +11,7 @@ Broker::Broker (zmqpp::context *ctx, const std::string& endpoint, const bool ver
     this->ctx = ctx;
     this->endpoint = endpoint;
     this->verbose = verbose;
-    
+
     this->sock = new zmqpp::socket(*ctx, zmqpp::socket_type::router);
     this->hb_at = std::chrono::system_clock::now() + \
                     duration_ms_t(HEARTBEAT_INTERVAL);
@@ -40,7 +40,7 @@ Broker::HandleMessageWorker(const std::string& identity, zmqpp::message& msg) {
     std::string command;
     msg.get(command, 0);
     msg.pop_front();
-    
+
     bool worker_ready = (workers.find(identity) != workers.end());
     WorkerEntry* worker = GetOrCreateWorker(identity);
 
@@ -50,18 +50,16 @@ Broker::HandleMessageWorker(const std::string& identity, zmqpp::message& msg) {
         }
         // else if ( MMI stuff )
         else {
-            // attach worker and mark as idle
             std::string sent_id;
             msg.get(sent_id, 0);
             msg.pop_front();
 
             assert(sent_id == identity);
 
+            // monitor worker using heartbeats
             worker->expiry = std::chrono::system_clock::now() + HEARTBEAT_EXPIRY;
             waiting.insert(worker);
 
-            //s_service_dispatch (worker->service);
-            
             std::cout << "I: worker " << identity << " created" << std::endl;
         }
     }
@@ -88,8 +86,8 @@ Broker::HandleMessageWorker(const std::string& identity, zmqpp::message& msg) {
     }
     else if (command == MDPW_HEARTBEAT) {
         if (worker_ready) {
-            // Remove and reinsert worker to the waiting queue
-            // after updating `expiry` field
+            // Remove and reinsert worker to the waiting
+            // queue after updating his expiration time
             waiting.erase( waiting.find(worker) );
             worker->expiry = std::chrono::system_clock::now() + HEARTBEAT_EXPIRY;
             waiting.insert(worker);
@@ -116,7 +114,7 @@ Broker::HandleMessageClient(const std::string& sender, zmqpp::message& msg) {
     // Get worker
     std::string worker_identity;
     msg.get(worker_identity, 0);
-    
+
     if ( workers.find(worker_identity) == workers.end() ) {
         // no such worker exist
         std::cout << "E: invalid worker " << worker_identity \
@@ -137,11 +135,11 @@ Broker::HandleMessageClient(const std::string& sender, zmqpp::message& msg) {
     // NOTE NOTE NOTE
     // ignore MMI service for now
 
-    // Forward the pending messages to the worker 
+    // Forward the pending messages to the worker
     msg.push_front("");
     msg.push_front(sender);
     worker->requests.push_back(msg.copy());
-    
+
     while ( !worker->requests.empty() ) {
         zmqpp::message& pending = worker->requests.front();
         worker->Send(sock, MDPW_REQUEST, &pending, verbose);
@@ -191,7 +189,7 @@ Broker::DeleteWorker(WorkerEntry *worker, bool disconnect /* = true */) {
     if (disconnect) {
         worker->Send(sock, MDPW_DISCONNECT, nullptr, verbose);
     }
-    
+
     // Remove from waiting & workers list
     waiting.erase (worker);
     workers.erase (worker->identity);
@@ -210,7 +208,7 @@ Broker::Run() {
     zmqpp::message msg;
     while (true) {
         // Wait till heartbeat duration
-        poller.poll(HEARTBEAT_INTERVAL.count());  
+        poller.poll(HEARTBEAT_INTERVAL.count());
 
         if (poller.events(*sock) & zmqpp::poller::poll_in) {
             if ( !sock->receive(msg) ) {
@@ -249,7 +247,7 @@ Broker::Run() {
             Purge();
             for (auto worker : waiting) {
                 worker->Send(sock, MDPW_HEARTBEAT, nullptr, verbose);
-            } 
+            }
             hb_at = std::chrono::system_clock::now() + HEARTBEAT_INTERVAL;
         }
 

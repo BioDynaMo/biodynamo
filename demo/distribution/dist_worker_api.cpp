@@ -166,7 +166,7 @@ void DistWorkerAPI::HandleAppMessage () {
         assert(broker_comm_);
 
         // Check recipient address
-        msg.get(recipient, 1);
+        msg.get(recipient, 0);
         assert( !recipient.empty() );
 
         broker_comm_->HandleOutgoingMessage(msg);
