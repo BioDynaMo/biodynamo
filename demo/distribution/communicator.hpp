@@ -12,8 +12,10 @@ namespace mdp {
 
 class Communicator {
   public:
-    Communicator () { };
-    Communicator (std::uint8_t comm_id) : comm_id_(comm_id) { }
+    Communicator (DistSharedInfo *info, std::string endpoint, std::uint8_t comm_id)
+        : info_(info)
+        , endpoint_(endpoint)
+        , comm_id_(comm_id) { }
 
     virtual ~Communicator() {
         if (socket_) {
