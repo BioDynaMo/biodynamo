@@ -7,12 +7,10 @@
 
 namespace mdp {
 
-BrokerCommunicator::BrokerCommunicator (DistSharedInfo *info, const std::string& endpoint) {
-
-    this->info_ = info;
-    this->endpoint_ = endpoint;
-    this->hb_delay_ = duration_ms_t(HEARTBEAT_INTERVAL);
-    this->hb_rec_delay_ = duration_ms_t(HEARTBEAT_INTERVAL);
+BrokerCommunicator::BrokerCommunicator (DistSharedInfo *info, const std::string& endpoint)
+    : Communicator(info, endpoint, BROKER_COMM)
+    , hb_delay_(duration_ms_t(HEARTBEAT_INTERVAL))
+    , hb_rec_delay_(duration_ms_t(HEARTBEAT_INTERVAL)) {
 
     ConnectToBroker();
 }
@@ -43,7 +41,7 @@ void BrokerCommunicator::RequestCompleted() {
         SendToBroker(MDPW_HEARTBEAT);
         hb_at_ = std::chrono::system_clock::now() + hb_delay_;
     }
-    
+
     // Purge old sockets
     for (auto& socket_p : purge_later_) {
         socket_p->close();
@@ -163,26 +161,6 @@ void BrokerCommunicator::SetHeartbeatDelay(const duration_ms_t& hb_delay) {
 
 void BrokerCommunicator::SetHeartbeatReconnect(const duration_ms_t& hb_rec_delay) {
     this->hb_rec_delay_ = hb_rec_delay_;
-}
-
-
-template<typename T>
-void BrokerCommunicator::SetSocketOption(const zmqpp::socket_option& option, const T& value) {
-    socket_->set(option, value);
-}
-
-
-template<typename T>
-T BrokerCommunicator::GetSocketOption(const zmqpp::socket_option& option) {
-    T value;
-    GetSocketOption(option, &value);
-    return value;
-}
-
-
-template<typename T>
-void BrokerCommunicator::GetSocketOption(const zmqpp::socket_option& option, T *value) {
-    socket_->get(option, *value);
 }
 
 }

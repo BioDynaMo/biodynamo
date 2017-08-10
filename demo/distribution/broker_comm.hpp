@@ -7,16 +7,17 @@
 #include <zmqpp/zmqpp.hpp>
 
 #include "common.hpp"
+#include "communicator.hpp"
 
 namespace mdp {
 
-class BrokerCommunicator {
+class BrokerCommunicator : public Communicator {
   public:
     BrokerCommunicator (DistSharedInfo *info, const std::string& endpoint);
     ~BrokerCommunicator ();
 
-    void RequestTimedOut();
-    void RequestCompleted();
+    void RequestTimedOut() override;
+    void RequestCompleted() override;
 
     void HandleOutgoingMessage(zmqpp::message& msg);
     void HandleIncomingMessage();
@@ -24,26 +25,10 @@ class BrokerCommunicator {
     void SetHeartbeatDelay(const duration_ms_t& hb_delay);
     void SetHeartbeatReconnect(const duration_ms_t& hb_rec_delay);
 
-    template<typename T>
-    void SetSocketOption(const zmqpp::socket_option& option, const T& value);
-
-    template<typename T>
-    T GetSocketOption(const zmqpp::socket_option& option);
-    template<typename T>
-    void GetSocketOption(const zmqpp::socket_option& option, T *value);
-
-
   private:
     void ConnectToBroker();
     void SendToBroker(const std::string& command, zmqpp::message *message = nullptr,
             const std::string& option = "");
-
-    //zmqpp::socket* GetSocket (const std::uint8_t socket);
-
-    DistSharedInfo* info_;
-
-    zmqpp::socket *socket_ = nullptr;    //  Socket reference
-    std::string endpoint_;             // 
 
     std::vector<zmqpp::socket*> purge_later_;
 

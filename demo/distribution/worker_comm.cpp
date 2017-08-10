@@ -6,17 +6,15 @@
 
 namespace mdp {
 
-WorkerCommunicator::WorkerCommunicator (DistSharedInfo *info, const std::string& endpoint, bool client) {
-    this->info_ = info;
-    this->endpoint_ = endpoint;
-    this->client_ = client;
-
-    this->worker_str_ = (client_ ? "right (client/dealer)" : "left (server/router)");
-    this->coworker_str_ = (!client_ ? "right (client/dealer)" : "left (server/router)");
+WorkerCommunicator::WorkerCommunicator (DistSharedInfo *info, const std::string& endpoint, bool client)
+    : Communicator(info, endpoint, client ? LEFT_NEIGHBOUR_COMM : RIGHT_NEIGHBOUR_COMM)
+    , client_ (client) {
 
     // By convention we define that we act as client if
     // we initiate the communication with the left worker
-    this->comm_id_ = (client_ ? LEFT_NEIGHBOUR_COMM : RIGHT_NEIGHBOUR_COMM);
+
+    this->worker_str_ = (client_ ? "right (client/dealer)" : "left (server/router)");
+    this->coworker_str_ = (!client_ ? "right (client/dealer)" : "left (server/router)");
 
     ConnectToCoWorker();
 }
@@ -100,7 +98,6 @@ void WorkerCommunicator::HandleIncomingMessage() {
 
 }
 
-
 void WorkerCommunicator::ConnectToCoWorker() {
     ///  W2        W3           W4         W5
     /// ... ||  L ---- R  || L ---- R  || ...
@@ -151,25 +148,6 @@ void WorkerCommunicator::SendToCoWorker(const std::string& command, zmqpp::messa
     socket_->send(msg);
 }
 
-
-template<typename T>
-void WorkerCommunicator::SetSocketOption(const zmqpp::socket_option& option, const T& value) {
-    socket_->set(option, value);
-}
-
-
-template<typename T>
-T WorkerCommunicator::GetSocketOption(const zmqpp::socket_option& option) {
-    T value;
-    GetSocketOption(option, &value);
-    return value;
-}
-
-
-template<typename T>
-void WorkerCommunicator::GetSocketOption(const zmqpp::socket_option& option, T *value) {
-    socket_->get(option, *value);
-}
 
 }
 
