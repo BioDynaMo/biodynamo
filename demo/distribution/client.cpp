@@ -31,6 +31,7 @@ void Client::ConnectToBroker() {
     }
     
     sock = new zmqpp::socket(*ctx, zmqpp::socket_type::dealer);
+    sock->set(zmqpp::socket_option::identity, "client");
     sock->connect(broker);
     
     std::cout << "I: connecting to broker at " << broker << std::endl;
