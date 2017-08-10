@@ -23,17 +23,27 @@ struct DistSharedInfo {
     std::vector< std::unique_ptr<zmqpp::message> >* pending_;
     zmqpp::reactor *reactor_;           // Polling handler
     zmqpp::context *ctx_;               // ZMQ context
-    zmqpp::socket *app_socket_;         // Application socket
-    std::string app_endpoint_;          // Application endpoint
     std::string identity_;              // Current node identity
     bool verbose_;                      // Print to stdout
     bool zctx_interrupted_ = false;     // ZMQ interrupted by signal
 };
 
-// Communicator identifiers, as integers
-const std::uint8_t BROKER_COMM = 1;
-const std::uint8_t LEFT_NEIGHBOUR_COMM = 2;
-const std::uint8_t RIGHT_NEIGHBOUR_COMM = 3;
+
+template<typename E>
+constexpr typename std::underlying_type<E>::type ToUnderlying (E e) {
+    return static_cast<typename std::underlying_type<E>::type>(e);
+}
+
+// Communicator identifiers
+enum class CommunicatorId : std::uint8_t {
+    kUndefined = 0,
+    kBroker,
+    kLeftNeighbour,
+    kRightNeighbour,
+
+    kMinValue = kBroker,
+    kMaxValue = kRightNeighbour
+};
 
 // Distributed API commands
 const std::string DEBUG_MSG = "\001";

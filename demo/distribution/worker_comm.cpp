@@ -7,7 +7,7 @@
 namespace mdp {
 
 WorkerCommunicator::WorkerCommunicator (DistSharedInfo *info, const std::string& endpoint, bool client)
-    : Communicator(info, endpoint, client ? LEFT_NEIGHBOUR_COMM : RIGHT_NEIGHBOUR_COMM)
+    : Communicator(info, endpoint, client ? CommunicatorId::kLeftNeighbour: CommunicatorId::kRightNeighbour)
     , client_ (client) {
 
     // By convention we define that we act as client if
@@ -87,7 +87,9 @@ void WorkerCommunicator::HandleIncomingMessage() {
     else if (command == MDPW_REQUEST || command == MDPW_REPORT) {
         // Proccess request/report from coworker
         // This should be halo-region cells request/report
-        msg_p->push_front(comm_id_);
+        msg_p->push_front(
+            ToUnderlying(comm_id_)
+        );
         info_->pending_->push_back(
             std::unique_ptr<zmqpp::message>(msg_p)
         );

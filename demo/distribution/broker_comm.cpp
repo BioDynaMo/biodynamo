@@ -8,7 +8,7 @@
 namespace mdp {
 
 BrokerCommunicator::BrokerCommunicator (DistSharedInfo *info, const std::string& endpoint)
-    : Communicator(info, endpoint, BROKER_COMM)
+    : Communicator(info, endpoint, CommunicatorId::kBroker)
     , hb_delay_(duration_ms_t(HEARTBEAT_INTERVAL))
     , hb_rec_delay_(duration_ms_t(HEARTBEAT_INTERVAL)) {
 
@@ -55,6 +55,12 @@ void BrokerCommunicator::HandleOutgoingMessage(zmqpp::message& msg) {
     if (info_->verbose_) {
         std::cout << "I: sending message to broker: " << msg << std::endl;
     }
+
+    // Check recipient address
+    std::string recipient;
+    msg.get(recipient, 0);
+    assert( !recipient.empty() );
+
     SendToBroker(MDPW_REPORT, &msg);
 }
 
@@ -89,7 +95,9 @@ void BrokerCommunicator::HandleIncomingMessage() {
 
     if (command == MDPW_REQUEST) {
         // Process message from broker
-        msg_p->push_front(BROKER_COMM);
+        msg_p->push_front(
+            ToUnderlying(comm_id_)
+        );
         info_->pending_->push_back(
             std::unique_ptr<zmqpp::message>(msg_p)
         );

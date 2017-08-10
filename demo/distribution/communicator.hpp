@@ -12,7 +12,7 @@ namespace mdp {
 
 class Communicator {
   public:
-    Communicator (DistSharedInfo *info, std::string endpoint, std::uint8_t comm_id)
+    Communicator (DistSharedInfo *info, std::string endpoint, CommunicatorId comm_id)
         : info_(info)
         , endpoint_(endpoint)
         , comm_id_(comm_id) { }
@@ -30,8 +30,8 @@ class Communicator {
     virtual void HandleIncomingMessage() = 0;
 
 
-    virtual std::uint8_t GetCommunicationId() {
-        assert(comm_id_);
+    virtual CommunicatorId GetCommunicationId() {
+        assert(comm_id_ != CommunicatorId::kUndefined);
         return comm_id_;
     }
 
@@ -66,7 +66,7 @@ class Communicator {
     zmqpp::socket *socket_ = nullptr;
     std::string endpoint_;
 
-    std::uint8_t comm_id_;              // Type of communicator
+    CommunicatorId comm_id_;
     bool is_connected_;
 };
 
