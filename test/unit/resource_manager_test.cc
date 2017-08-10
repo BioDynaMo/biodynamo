@@ -122,6 +122,43 @@ TEST(ResourceManagerTest, ApplyOnAllElementsSoa) {
 }
 
 template <typename Backend, typename A, typename B>
+void RunApplyOnAllElementsParallelTest() {
+  using CTParam = CompileTimeParam<Backend, A, B>;
+  auto rm = ResourceManager<CTParam>::Get();
+  rm->Clear();
+
+  auto a_collection = rm->template Get<A>();
+  a_collection->push_back(AScalar(12));
+  a_collection->push_back(AScalar(34));
+
+  auto b_collection = rm->template Get<B>();
+  b_collection->push_back(BScalar(3.14));
+  b_collection->push_back(BScalar(6.28));
+  rm->ApplyOnAllElementsParallel([](auto& element, SoHandle handle) {  // NOLINT
+    const double kEpsilon = abs_error<double>::value;
+    if (handle == SoHandle(0, 0)) {
+      EXPECT_EQ(12, element.GetData());
+    } else if (handle == SoHandle(0, 1)) {
+      EXPECT_EQ(34, element.GetData());
+    } else if (handle == SoHandle(1, 0)) {
+      EXPECT_NEAR(3.14, element.GetData(), kEpsilon);
+    } else if (handle == SoHandle(1, 1)) {
+      EXPECT_NEAR(6.28, element.GetData(), kEpsilon);
+    }
+  });
+}
+
+TEST(ResourceManagerTest, ApplyOnAllElementsParallelAos) {
+  RunApplyOnAllElementsParallelTest<Scalar, AScalar, BScalar>();
+  RunApplyOnAllElementsParallelTest<Scalar, ASoa, BSoa>();
+}
+
+TEST(ResourceManagerTest, ApplyOnAllElementsParallelSoa) {
+  RunApplyOnAllElementsParallelTest<Soa, ASoa, BSoa>();
+  RunApplyOnAllElementsParallelTest<Soa, AScalar, BScalar>();
+}
+
+template <typename Backend, typename A, typename B>
 void RunApplyOnAllTypesTest() {
   const double kEpsilon = abs_error<double>::value;
   using CTParam = CompileTimeParam<Backend, A, B>;
