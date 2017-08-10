@@ -18,11 +18,6 @@ BrokerCommunicator::BrokerCommunicator (DistSharedInfo *info, const std::string&
 
 BrokerCommunicator::~BrokerCommunicator() {
     SendToBroker(MDPW_DISCONNECT);
-
-    if (socket_) {
-        socket_->close();
-        delete socket_;
-    }
 }
 
 void BrokerCommunicator::RequestTimedOut () {

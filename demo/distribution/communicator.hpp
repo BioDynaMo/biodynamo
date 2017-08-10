@@ -14,8 +14,11 @@ class Communicator {
   public:
     Communicator (DistSharedInfo *info, std::string endpoint, CommunicatorId comm_id)
         : info_(info)
+        , socket_(nullptr)
         , endpoint_(endpoint)
-        , comm_id_(comm_id) { }
+        , comm_id_(comm_id)
+        , is_connected_(false) { }
+
 
     virtual ~Communicator() {
         if (socket_) {
@@ -63,7 +66,7 @@ class Communicator {
   protected:
     DistSharedInfo* info_;
 
-    zmqpp::socket *socket_ = nullptr;
+    zmqpp::socket *socket_;
     std::string endpoint_;
 
     CommunicatorId comm_id_;
