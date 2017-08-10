@@ -39,14 +39,14 @@ class Broker {
     WorkerEntry* GetOrCreateWorker (const std::string& identity);
     void DeleteWorker (WorkerEntry *worker, bool disconnect = true);
 
-    zmqpp::context *ctx = nullptr;
-    zmqpp::socket *sock = nullptr;
-    std::string endpoint;
-    std::map <std::string, WorkerEntry*> workers;
-    std::set<WorkerEntry*, LRU> waiting;
+    zmqpp::context *ctx_ = nullptr;
+    zmqpp::socket *socket_ = nullptr;
+    std::string endpoint_;
+    std::map <std::string, WorkerEntry*> workers_;
+    std::set<WorkerEntry*, LRU> waiting_;
 
-    time_point_t hb_at;                         //  When to send HEARTBEAT
-    bool verbose;                               //  Print activity to stdout
+    time_point_t hb_at_;                         //  When to send HEARTBEAT
+    bool verbose_;                               //  Print activity to stdout
 
 };
 
