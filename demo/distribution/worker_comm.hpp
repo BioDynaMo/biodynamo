@@ -13,7 +13,7 @@ namespace mdp {
 
 class WorkerCommunicator : public Communicator {
   public:
-    WorkerCommunicator (DistSharedInfo *info, const std::string& endpoint, bool client_);
+    WorkerCommunicator (DistSharedInfo *info, const std::string& endpoint, CommunicatorId comm_id);
     ~WorkerCommunicator ();
 
     void HandleOutgoingMessage(zmqpp::message& msg);
