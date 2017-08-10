@@ -155,32 +155,26 @@ void DistWorkerAPI::HandleAppMessage () {
         return;
     }
 
+    // Find out where to forward the message
     std::uint8_t comm_id;
-    std::string recipient;
-
-    // Find out where to send the message
     msg.get(comm_id, 0);
     msg.pop_front();
 
-    if (comm_id == BROKER_COMM) {
-        assert(broker_comm_);
-
-        // Check recipient address
-        msg.get(recipient, 0);
-        assert( !recipient.empty() );
-
-        broker_comm_->HandleOutgoingMessage(msg);
-    }
-    else if (comm_id == LEFT_NEIGHBOUR_COMM) {
-        assert(lworker_comm_);
-        lworker_comm_->HandleOutgoingMessage(msg);
-    }
-    else if (comm_id == RIGHT_NEIGHBOUR_COMM) {
-        assert(rworker_comm_);
-        rworker_comm_->HandleOutgoingMessage(msg);
-    }
-    else {
-        std::cout << "E: Invalid communicator id: " << comm_id << std::endl;
+    switch ( static_cast<CommunicatorId>(comm_id) ) {
+        case CommunicatorId::kBroker:
+            assert(broker_comm_);
+            broker_comm_->HandleOutgoingMessage(msg);
+            break;
+        case CommunicatorId::kLeftNeighbour:
+            assert(lworker_comm_);
+            lworker_comm_->HandleOutgoingMessage(msg);
+            break;
+        case CommunicatorId::kRightNeighbour:
+            assert(rworker_comm_);
+            rworker_comm_->HandleOutgoingMessage(msg);
+            break;
+        default:
+            std::cout << "E: Invalid communicator id: " << comm_id << std::endl;
     }
 }
 
@@ -190,20 +184,21 @@ void DistWorkerAPI::HandleNetworkMessages() {
         // Retrieve the source of the message
         msg_p->get(comm_id, 0);
 
-        if (comm_id == BROKER_COMM) {
-            assert(broker_comm_);
-            child_pipe_->send(*msg_p);
-        }
-        else if (comm_id == LEFT_NEIGHBOUR_COMM) {
-            assert(lworker_comm_);
-            child_pipe_->send(*msg_p);
-        }
-        else if (comm_id == RIGHT_NEIGHBOUR_COMM) {
-            assert(rworker_comm_);
-            child_pipe_->send(*msg_p);
-        }
-        else {
-            std::cout << "E: Invalid communicator id: " << comm_id << std::endl;
+        switch ( static_cast<CommunicatorId>(comm_id) ) {
+            case CommunicatorId::kBroker:
+                assert(broker_comm_);
+                child_pipe_->send(*msg_p);
+                break;
+            case CommunicatorId::kLeftNeighbour:
+                assert(lworker_comm_);
+                child_pipe_->send(*msg_p);
+                break;
+            case CommunicatorId::kRightNeighbour:
+                assert(rworker_comm_);
+                child_pipe_->send(*msg_p);
+                break;
+            default:
+                std::cout << "E: Invalid communicator id: " << comm_id << std::endl;
         }
 
     }
