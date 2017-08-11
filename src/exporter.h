@@ -368,7 +368,7 @@ class ParaviewExporter : public Exporter<TContainer> {
 class ExporterFactory {
  public:
   template <typename TContainer>
-  
+
   std::unique_ptr<Exporter<TContainer>> GenerateExporter(string format) {
     if (format.compare("basic") == 0) {
       return std::unique_ptr<Exporter<TContainer>>(
