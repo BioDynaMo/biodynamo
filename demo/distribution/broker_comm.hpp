@@ -16,8 +16,8 @@ class BrokerCommunicator : public Communicator {
     BrokerCommunicator (DistSharedInfo *info, const std::string& endpoint);
     ~BrokerCommunicator ();
 
-    void RequestTimedOut() override;
-    void RequestCompleted() override;
+    void ReactorTimedOut() override;
+    void ReactorServedRequests() override;
 
     void Connect();
     void HandleOutgoingMessage(zmqpp::message& msg);

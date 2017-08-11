@@ -26,8 +26,8 @@ class Communicator {
         }
     }
 
-    virtual void RequestTimedOut() { }
-    virtual void RequestCompleted() { }
+    virtual void ReactorTimedOut() { }
+    virtual void ReactorServedRequests() { }
 
     virtual void Connect() = 0;
     virtual void HandleOutgoingMessage(zmqpp::message& msg) = 0;
