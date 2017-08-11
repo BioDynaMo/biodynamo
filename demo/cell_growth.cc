@@ -5,6 +5,7 @@
 #include <functional>
 #include <iostream>
 #include <sstream>
+#include <string>
 
 #include "backend.h"
 #include "cell.h"
