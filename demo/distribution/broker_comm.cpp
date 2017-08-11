@@ -19,7 +19,7 @@ BrokerCommunicator::~BrokerCommunicator() {
     SendToBroker(MDPW_DISCONNECT);
 }
 
-void BrokerCommunicator::RequestTimedOut () {
+void BrokerCommunicator::ReactorTimedOut() {
     // Timeout
     if (--hb_liveness_ == 0 ) {
         std::cout << "W: disconnected from broker - retrying..." << std::endl;
@@ -28,8 +28,7 @@ void BrokerCommunicator::RequestTimedOut () {
     }
 }
 
-
-void BrokerCommunicator::RequestCompleted() {
+void BrokerCommunicator::ReactorServedRequests() {
     //  Send HEARTBEAT if it's time
     if (std::chrono::system_clock::now() > hb_at_) {
         SendToBroker(MDPW_HEARTBEAT);
