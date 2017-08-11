@@ -9,7 +9,6 @@
 #include <string>
 
 #include "backend.h"
-#include "cell.h"
 
 namespace bdm {
 
@@ -18,64 +17,96 @@ using std::endl;
 using std::string;
 using std::fstream;
 using std::ofstream;
-using bdm::Cell;
 using bdm::Scalar;
 using bdm::Soa;
 
+template <typename TContainer>
 class Exporter {
  public:
-  /// This function exports the cell positions into a file,
-  /// where each line contains the 3D position of a cell in square brackets.
-  template <typename TContainer>
-  void ToFile(const TContainer *cells, string filename) const {
+  static Exporter *GenerateExporter(string format);
+  virtual void ToFile(const TContainer &cells, string filename) = 0;
+  virtual void CreatePVDFile(string filename, int iterations,
+                             double increment) = 0;
+  virtual void AddIteration() = 0;
+};
+
+template <typename TContainer>
+class BasicExporter : public Exporter<TContainer> {
+ public:
+  void CreatePVDFile(string filename, int iterations,
+                     double increment) override {
+    throw std::invalid_argument(
+        "this exporter type does not support PVD format");
+  }
+
+  void AddIteration() override {
+    throw std::invalid_argument("this exporter does not support iteration");
+  }
+
+  void ToFile(const TContainer &cells, string filename) override {
     ofstream outfile;
     outfile.open(filename);
-
-    for (size_t i = 0; i < cells->size(); i++) {
-      auto &&cell = (*cells)[i];
+    uint num_cells = cells.size();
+    for (size_t i = 0; i < num_cells; i++) {
+      auto &&cell = (cells)[i];
       auto curr_pos = cell.GetPosition();
       outfile << "[" << curr_pos[0] << "," << curr_pos[1] << "," << curr_pos[2]
               << "]" << endl;
     }
 
     outfile.close();
+  }
+};
 
-    std::cout << "created ExportFile with positions" << std::endl;
+template <typename TContainer>
+class MatlabExporter : public Exporter<TContainer> {
+ public:
+  void CreatePVDFile(string filename, int iterations,
+                     double increment) override {
+    throw std::invalid_argument(
+        "this exporter type does not support PVD format");
   }
 
-  /// This function exports the cell positions into a file in Matlab format,
-  /// where each line contains the 3D position of a cell. An array called
-  /// CellPos
-  /// is initialized with the correct size corresponding to the number of
-  /// cells.
-  template <typename TContainer>
-  void ToMatlabFile(const TContainer *cells, string filename) const {
+  void AddIteration() override {
+    throw std::invalid_argument("this exporter does not support iteration");
+  }
+
+  void ToFile(const TContainer &cells, string filename) override {
     ofstream outfile;
     outfile.open(filename);
-
-    int num_cells = cells->size();
+    uint num_cells = cells.size();
 
     outfile << "CellPos = zeros(" << num_cells << "," << 3 << ");" << endl;
 
-    for (size_t i = 0; i < cells->size(); i++) {
-      auto &&cell = (*cells)[i];
+    for (size_t i = 0; i < num_cells; i++) {
+      auto &&cell = (cells)[i];
       auto curr_pos = cell.GetPosition();
       outfile << "CellPos(" << i + 1 << ",1:3) = [" << curr_pos[0] << ","
               << curr_pos[1] << "," << curr_pos[2] << "];" << endl;
     }
 
     outfile.close();
+  }
+};
 
-    std::cout << "created ExportFile with positions" << std::endl;
+template <typename TContainer>
+class NeuroMLExporter : public Exporter<TContainer> {
+ public:
+  void CreatePVDFile(string filename, int iterations,
+                     double increment) override {
+    throw std::invalid_argument(
+        "this exporter type does not support PVD format");
   }
 
-  /// a preliminary exporter according to the NeuroML Level 3 format.
-  /// Currently, no axons or connectivity is present, so these information
-  /// will be added in the future.
-  template <typename TContainer>
-  void ToNeuroMLFile(const TContainer *cells, string filename) const {
+  void AddIteration() override {
+    throw std::invalid_argument("this exporter does not support iteration");
+  }
+
+  void ToFile(const TContainer &cells, string filename) override {
     ofstream outfile;
     outfile.open(filename);
+
+    const size_t num_cells = cells.size();
 
     string space1 = "   ";
     string space2 = "      ";
@@ -97,8 +128,8 @@ class Exporter {
 
     outfile << space1 << "<cells>" << endl;
 
-    // In the future, the electrophysiological properties of neurons can be
-    // inserted instead of these prespecified values
+    /// In the future, the electrophysiological properties of neurons can be
+    /// inserted instead of these prespecified values
     outfile << space2 << "<cell name=\"exz_lif\"> " << endl;
     outfile << space3 << "<meta:properties>" << endl;
     outfile << space4
@@ -150,9 +181,9 @@ class Exporter {
     outfile << space2 << "</cell>" << endl;
     outfile << space1 << "</cells>" << endl;
 
-    // TODO(roman): here, the cell populations and connectivity will be
-    // specified and exported, once these are included in the model
-    for (size_t i = 0; i < cells->size(); i++) {
+    /// TODO(roman): here, the cell populations and connectivity will be
+    /// specified and exported, once these are included in the model
+    for (size_t i = 0; i < num_cells; i++) {
     }
 
     outfile << endl;
@@ -162,7 +193,16 @@ class Exporter {
 
     std::cout << "created NeuroML file" << std::endl;
   }
+};
 
+template <typename TContainer>
+class ParaviewExporter : public Exporter<TContainer> {
+ public:
+  /// This index refers to the current export iteration, and so needs to be
+  /// updated in case multiple iterations are conducted.
+  size_t iteration_index = 1;
+
+  void AddIteration() override { iteration_index++; }
   /// This function creates a .pvd file that lists the individual files across
   /// the different times.
   /// This .pvd can be read by Paraview for visualization.
@@ -174,25 +214,20 @@ class Exporter {
            "byte_order=\"LittleEndian\">"
         << std::endl;
     pvd << "<Collection>" << std::endl;
-    // iterate for all (time) steps
+    /// iterate for all (time) steps
     for (int i = 0; i < iterations; i++) {
       pvd << "<DataSet timestep=\"" << (i * increment)
           << "\" group=\"\" part=\"0\" file=\"" << filename << '-' << i
           << ".vtu\">";
       pvd << std::endl;
-      // end of (time) iterations loop...
+      /// end of (time) iterations loop...
     }
     pvd << "</Collection>" << std::endl;
     pvd << "</VTKFile>" << std::endl;
   }
 
-  /// This function exports the cell positions as well as properties into a .vtu
-  /// file,
-  /// which can be read by Paraview for visualization.
-  template <typename TContainer>
-  void ToVTUFile(const TContainer *cells, string filename,
-                 size_t iteration_index) const {
-    const size_t num_cells = cells->size();
+  void ToFile(const TContainer &cells, string filename) override {
+    const size_t num_cells = cells.size();
     size_t index = 0;
     std::ofstream vtu(filename + "-" + std::to_string(iteration_index) +
                       ".vtu");
@@ -208,7 +243,7 @@ class Exporter {
            "format=\"ascii\">"
         << std::endl;
     for (size_t i = 0; i < num_cells; i++) {
-      auto &&cell = (*cells)[i];
+      auto &&cell = (cells)[i];
       auto &coord = cell.GetPosition();
 
       vtu << ' ' << coord[0] << ' ' << coord[1] << ' ' << coord[2]
@@ -231,7 +266,7 @@ class Exporter {
            "NumberOfComponents=\"1\" format=\"ascii\">"
         << std::endl;
     for (size_t i = 0; i < num_cells; i++) {
-      auto &&cell = (*cells)[i];
+      auto &&cell = (cells)[i];
       auto adhr = cell.GetAdherence();
 
       vtu << ' ' << adhr << std::flush;
@@ -242,7 +277,7 @@ class Exporter {
            "NumberOfComponents=\"1\" format=\"ascii\">"
         << std::endl;
     for (size_t i = 0; i < num_cells; i++) {
-      auto &&cell = (*cells)[i];
+      auto &&cell = (cells)[i];
       auto diam = cell.GetDiameter();
 
       vtu << ' ' << diam << std::flush;
@@ -253,7 +288,7 @@ class Exporter {
            "NumberOfComponents=\"1\" format=\"ascii\">"
         << std::endl;
     for (size_t i = 0; i < num_cells; i++) {
-      auto &&cell = (*cells)[i];
+      auto &&cell = (cells)[i];
       auto mass = cell.GetMass();
 
       vtu << ' ' << mass << std::flush;
@@ -264,7 +299,7 @@ class Exporter {
            "NumberOfComponents=\"1\" format=\"ascii\">"
         << std::endl;
     for (size_t i = 0; i < num_cells; i++) {
-      auto &&cell = (*cells)[i];
+      auto &&cell = (cells)[i];
       auto volm = cell.GetVolume();
 
       vtu << ' ' << volm << std::flush;
@@ -275,7 +310,7 @@ class Exporter {
            "NumberOfComponents=\"3\" format=\"ascii\">"
         << std::endl;
     for (size_t i = 0; i < num_cells; i++) {
-      auto &&cell = (*cells)[i];
+      auto &&cell = (cells)[i];
       auto &tracf = cell.GetTractorForce();
 
       vtu << ' ' << tracf[0] << ' ' << tracf[1] << ' ' << tracf[2]
@@ -315,6 +350,28 @@ class Exporter {
     vtu << "      </Piece>" << std::endl;
     vtu << "   </UnstructuredGrid>" << std::endl;
     vtu << "</VTKFile>" << std::endl;
+  }
+};
+
+class ExporterFactory {
+ public:
+  template <typename TContainer>
+  std::unique_ptr<Exporter<TContainer>> GenerateExporter(string format) {
+    if (format.compare("basic") == 0) {
+      return std::unique_ptr<Exporter<TContainer>>(
+          new BasicExporter<TContainer>);
+    } else if (format.compare("matlab") == 0) {
+      return std::unique_ptr<Exporter<TContainer>>(
+          new MatlabExporter<TContainer>);
+    } else if (format.compare("neuroml") == 0) {
+      return std::unique_ptr<Exporter<TContainer>>(
+          new NeuroMLExporter<TContainer>);
+    } else if (format.compare("paraview") == 0) {
+      return std::unique_ptr<Exporter<TContainer>>(
+          new ParaviewExporter<TContainer>);
+    } else {
+      throw std::invalid_argument("export format not recognized");
+    }
   }
 };
 }  // namespace bdm
