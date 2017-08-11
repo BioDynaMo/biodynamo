@@ -16,7 +16,6 @@ WorkerCommunicator::WorkerCommunicator (DistSharedInfo *info, const std::string&
     this->worker_str_ = (client_ ? "right (client/dealer)" : "left (server/router)");
     this->coworker_str_ = (!client_ ? "right (client/dealer)" : "left (server/router)");
 
-    ConnectToCoWorker();
 }
 
 WorkerCommunicator::~WorkerCommunicator() {
@@ -100,7 +99,7 @@ void WorkerCommunicator::HandleIncomingMessage() {
 
 }
 
-void WorkerCommunicator::ConnectToCoWorker() {
+void WorkerCommunicator::Connect() {
     ///  W2        W3           W4         W5
     /// ... ||  L ---- R  || L ---- R  || ...
     ///  ^------^      ^-----^      ^------^

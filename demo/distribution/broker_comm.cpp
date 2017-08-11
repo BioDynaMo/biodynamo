@@ -12,7 +12,6 @@ BrokerCommunicator::BrokerCommunicator (DistSharedInfo *info, const std::string&
     , hb_delay_(duration_ms_t(HEARTBEAT_INTERVAL))
     , hb_rec_delay_(duration_ms_t(HEARTBEAT_INTERVAL)) {
 
-    ConnectToBroker();
 }
 
 
@@ -25,7 +24,7 @@ void BrokerCommunicator::RequestTimedOut () {
     if (--hb_liveness_ == 0 ) {
         std::cout << "W: disconnected from broker - retrying..." << std::endl;
         std::this_thread::sleep_for(hb_rec_delay_);
-        ConnectToBroker();
+        Connect();
     }
 }
 
@@ -102,7 +101,7 @@ void BrokerCommunicator::HandleIncomingMessage() {
     }
     else if (command == MDPW_DISCONNECT) {
         // Reconnect to broker
-        ConnectToBroker();
+        Connect();
     }
     else {
         std::cout << "E: invalid input message" << *msg_p << std::endl;
@@ -111,7 +110,7 @@ void BrokerCommunicator::HandleIncomingMessage() {
 
 
 void
-BrokerCommunicator::ConnectToBroker() {
+BrokerCommunicator::Connect() {
     if (socket_) {
         // Lazy remove socket
         info_->reactor_->remove(*socket_);

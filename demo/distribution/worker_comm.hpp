@@ -16,11 +16,11 @@ class WorkerCommunicator : public Communicator {
     WorkerCommunicator (DistSharedInfo *info, const std::string& endpoint, CommunicatorId comm_id);
     ~WorkerCommunicator ();
 
+    void Connect();
     void HandleOutgoingMessage(zmqpp::message& msg);
     void HandleIncomingMessage();
 
   private:
-    void ConnectToCoWorker();
     void SendToCoWorker(const std::string& command, zmqpp::message *message = nullptr,
             const std::string& option = "");
 

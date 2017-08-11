@@ -29,6 +29,7 @@ class Communicator {
     virtual void RequestTimedOut() { }
     virtual void RequestCompleted() { }
 
+    virtual void Connect() = 0;
     virtual void HandleOutgoingMessage(zmqpp::message& msg) = 0;
     virtual void HandleIncomingMessage() = 0;
 
