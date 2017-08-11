@@ -2,7 +2,7 @@
 
 namespace mdp {
 
-DistWorkerAPI::DistWorkerAPI(zmqpp::context *ctx, const std::string identity, bool verbose) {
+DistWorkerAPI::DistWorkerAPI(zmqpp::context *ctx, const std::string identity, bool verbose) : comms_() {
     info_ = new DistSharedInfo();
 
     info_->reactor_ = new zmqpp::reactor();
@@ -10,6 +10,11 @@ DistWorkerAPI::DistWorkerAPI(zmqpp::context *ctx, const std::string identity, bo
     info_->pending_ = new std::vector< std::unique_ptr<zmqpp::message> >();
     info_->identity_ = identity;
     info_->verbose_ = verbose;
+
+    // Invalid communicators
+    comms_.resize(
+        ToUnderlying(CommunicatorId::kCount)
+    );
 }
 
 DistWorkerAPI::~DistWorkerAPI () {
@@ -44,16 +49,31 @@ bool DistWorkerAPI::Start() {
     return (sig == zmqpp::signal::ok);
 }
 
-void DistWorkerAPI::SetBrokerEndpoint(const std::string& endpoint) {
-    this->broker_endpoint_ = endpoint;
+void DistWorkerAPI::AddBrokerCommunicator(const std::string& endpoint) {
+    auto& comm = comms_[ToUnderlying(CommunicatorId::kBroker)];
+    assert( !comm );
+
+    comm = std::unique_ptr<Communicator>(
+        new BrokerCommunicator(info_, endpoint)
+    );
 }
 
-void DistWorkerAPI::SetLeftNeighbourEndpoint(const std::string& endpoint) {
-    this->lworker_endpoint_ = endpoint;
+void DistWorkerAPI::AddLeftNeighbourCommunicator(const std::string& endpoint) {
+    auto& comm = comms_[ToUnderlying(CommunicatorId::kLeftNeighbour)];
+    assert( !comm );
+
+    comm = std::unique_ptr<Communicator>(
+        new WorkerCommunicator(info_, endpoint, CommunicatorId::kLeftNeighbour)
+    );
 }
 
-void DistWorkerAPI::SetRightNeighbourEndpoint(const std::string& endpoint) {
-    this->rworker_endpoint_ = endpoint;
+void DistWorkerAPI::AddRightNeighbourCommunicator(const std::string& endpoint) {
+    auto& comm = comms_[ToUnderlying(CommunicatorId::kRightNeighbour)];
+    assert( !comm );
+
+    comm = std::unique_ptr<Communicator>(
+        new WorkerCommunicator(info_, endpoint, CommunicatorId::kRightNeighbour)
+    );
 }
 
 void DistWorkerAPI::SendMessage(zmqpp::message& msg) {
@@ -89,22 +109,10 @@ bool DistWorkerAPI::Stop(bool wait /* = true */, bool force /* = false */) {
 }
 
 void DistWorkerAPI::HandleNetwork() {
-
     try {
-        // Create broker communicator
-        if (!broker_endpoint_.empty()) {
-            broker_comm_ = new BrokerCommunicator(info_, broker_endpoint_);
-        }
-
-        // Create left communicator
-        if (!lworker_endpoint_.empty()) {
-            lworker_comm_ = new WorkerCommunicator(info_, lworker_endpoint_, CommunicatorId::kLeftNeighbour);
-        }
-
-        // Create right communicator
-        if (!rworker_endpoint_.empty()) {
-            rworker_comm_ = new WorkerCommunicator(info_, rworker_endpoint_, CommunicatorId::kRightNeighbour);
-        }
+        ForEachValidCommunicator([](std::unique_ptr<Communicator>& comm) {
+            comm->Connect();
+        });
     }
     catch (...) {
         eptr_ = std::current_exception();
@@ -121,9 +129,9 @@ void DistWorkerAPI::HandleNetwork() {
     std::cout << "I: listening to network..." << std::endl;
     while ( !info_->zctx_interrupted_ ) {
         if ( !info_->reactor_->poll ( HEARTBEAT_INTERVAL.count() ) ) {
-            if (broker_comm_) {
-                broker_comm_->RequestTimedOut();
-            }
+            ForEachValidCommunicator([](std::unique_ptr<Communicator>& comm) {
+                comm->ReactorTimedOut();
+            });
         }
 
         if (!info_->pending_->empty()) {
@@ -131,9 +139,9 @@ void DistWorkerAPI::HandleNetwork() {
             HandleNetworkMessages();
         }
 
-        if (broker_comm_) {
-            broker_comm_->RequestCompleted();
-        }
+        ForEachValidCommunicator([](std::unique_ptr<Communicator>& comm) {
+            comm->ReactorServedRequests();
+        });
     }
 
 cleanup:
@@ -160,62 +168,28 @@ void DistWorkerAPI::HandleAppMessage () {
     msg.get(comm_id, 0);
     msg.pop_front();
 
-    switch ( static_cast<CommunicatorId>(comm_id) ) {
-        case CommunicatorId::kBroker:
-            assert(broker_comm_);
-            broker_comm_->HandleOutgoingMessage(msg);
-            break;
-        case CommunicatorId::kLeftNeighbour:
-            assert(lworker_comm_);
-            lworker_comm_->HandleOutgoingMessage(msg);
-            break;
-        case CommunicatorId::kRightNeighbour:
-            assert(rworker_comm_);
-            rworker_comm_->HandleOutgoingMessage(msg);
-            break;
-        default:
-            std::cout << "E: Invalid communicator id: " << comm_id << std::endl;
-    }
+    auto& comm = GetValidCommunicator(comm_id);
+    comm.HandleOutgoingMessage(msg);
 }
 
 void DistWorkerAPI::HandleNetworkMessages() {
     std::uint8_t comm_id;
     for (auto& msg_p : *(info_->pending_)) {
-        // Retrieve the source of the message
+        // Verify that sender exists
         msg_p->get(comm_id, 0);
+        GetValidCommunicator(comm_id);
 
-        switch ( static_cast<CommunicatorId>(comm_id) ) {
-            case CommunicatorId::kBroker:
-                assert(broker_comm_);
-                child_pipe_->send(*msg_p);
-                break;
-            case CommunicatorId::kLeftNeighbour:
-                assert(lworker_comm_);
-                child_pipe_->send(*msg_p);
-                break;
-            case CommunicatorId::kRightNeighbour:
-                assert(rworker_comm_);
-                child_pipe_->send(*msg_p);
-                break;
-            default:
-                std::cout << "E: Invalid communicator id: " << comm_id << std::endl;
-        }
-
+        child_pipe_->send(*msg_p);
     }
     info_->pending_->clear();
 }
 
 void DistWorkerAPI::Cleanup() {
     try {
-        if (broker_comm_) {
-            delete broker_comm_;
-        }
-        if (lworker_comm_) {
-            delete lworker_comm_;
-        }
-        if (rworker_comm_) {
-            delete rworker_comm_;
-        }
+        // Explicitly delete communicators
+        ForEachValidCommunicator([](std::unique_ptr<Communicator>& comm) {
+            comm.reset();
+        });
         info_->reactor_->remove( *child_pipe_ );
 
         // Everything cleaned!
@@ -230,5 +204,21 @@ void DistWorkerAPI::Cleanup() {
     delete info_->reactor_;
 }
 
+Communicator& DistWorkerAPI::GetValidCommunicator (std::uint8_t comm_id) {
+    if (comm_id == 0 || comm_id >= comms_.size()) {
+        std::cout << "E: Invalid communicator id: " << comm_id << std::endl;
+        assert(false);
+    }
+    assert( comms_[comm_id] );
+    return *comms_[comm_id];
+}
+
+void DistWorkerAPI::ForEachValidCommunicator(std::function<void(std::unique_ptr<Communicator>&)> f) {
+    for (auto& comm : comms_) {
+        if (comm) {
+            f(comm);
+        }
+    }
+}
 
 }
