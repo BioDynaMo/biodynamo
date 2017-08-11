@@ -19,6 +19,7 @@ class BrokerCommunicator : public Communicator {
     void RequestTimedOut() override;
     void RequestCompleted() override;
 
+    void Connect();
     void HandleOutgoingMessage(zmqpp::message& msg);
     void HandleIncomingMessage();
 
@@ -26,7 +27,6 @@ class BrokerCommunicator : public Communicator {
     void SetHeartbeatReconnect(const duration_ms_t& hb_rec_delay);
 
   private:
-    void ConnectToBroker();
     void SendToBroker(const std::string& command, zmqpp::message *message = nullptr,
             const std::string& option = "");
 
