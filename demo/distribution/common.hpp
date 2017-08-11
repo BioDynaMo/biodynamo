@@ -40,9 +40,10 @@ enum class CommunicatorId : std::uint8_t {
     kBroker,
     kLeftNeighbour,
     kRightNeighbour,
+    kCount,
 
     kMinValue = kBroker,
-    kMaxValue = kRightNeighbour
+    kMaxValue = kRightNeighbour,
 };
 
 // Distributed API commands
