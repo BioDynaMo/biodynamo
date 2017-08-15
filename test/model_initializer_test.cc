@@ -12,6 +12,7 @@ namespace model_initializer_test_internal {
 
 TEST(ModelInitializerTest, Grid3D) {
   auto rm = ResourceManager<>::Get();
+  rm->Clear();
 
   ModelInitializer::Grid3D(2, 12, [](const std::array<double, 3>& pos) {
     Cell cell(pos);
