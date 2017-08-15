@@ -5,49 +5,64 @@
 
 namespace bdm {
 
-SoaCell CellFactory(size_t cells_per_dim) {
+template <typename TContainer>
+void CellFactory(TContainer* cells, size_t cells_per_dim) {
   const double space = 20;
-
-  auto cells = Cell::NewEmptySoa();
-  cells.reserve(cells_per_dim * cells_per_dim * cells_per_dim);
+  cells->reserve(cells_per_dim * cells_per_dim * cells_per_dim);
   for (size_t i = 0; i < cells_per_dim; i++) {
     for (size_t j = 0; j < cells_per_dim; j++) {
       for (size_t k = 0; k < cells_per_dim; k++) {
         Cell cell({k * space, j * space, i * space});
         cell.SetDiameter(30);
-        cells.push_back(cell);
+        cells->push_back(cell);
       }
     }
   }
-  return cells;
 }
 
 TEST(GridTest, SetupGrid) {
-  auto cells = CellFactory(4);
-  auto& grid = Grid::GetInstance();
-  grid.Initialize(cells);
+  auto rm = ResourceManager<>::Get();
+  rm->Clear();
+  auto cells = rm->Get<Cell>();
+  CellFactory(cells, 4);
 
-  vector<vector<size_t>> neighbors(cells.size());
+  auto& grid = Grid<>::GetInstance();
+  grid.Initialize();
+
+  vector<vector<SoHandle>> neighbors(cells->size());
 
 // Lambda that fills a vector of neighbors for each cell (excluding itself)
 #pragma omp parallel for
-  for (size_t i = 0; i < cells.size(); i++) {
-    auto&& cell = cells[i];
-    auto fill_neighbor_list = [&](size_t n) {
-      if (i != n) {
-        neighbors[i].push_back(n);
+  for (size_t i = 0; i < cells->size(); i++) {
+    auto&& cell = (*cells)[i];
+    auto fill_neighbor_list = [&](auto&& neighbor, SoHandle handle) {
+      if (i != handle.GetElementIdx()) {
+        neighbors[i].push_back(handle);
       }
     };
 
-    grid.ForEachNeighborWithinRadius(fill_neighbor_list, cells, cell, i, 1201);
+    grid.ForEachNeighborWithinRadius(fill_neighbor_list, cell, SoHandle(0, i),
+                                     1201);
   }
 
-  std::vector<size_t> expected_0 = {1, 4, 5, 16, 17, 20, 21};
-  std::vector<size_t> expected_4 = {0, 1, 5, 8, 9, 16, 17, 20, 21, 24, 25};
-  std::vector<size_t> expected_42 = {21, 22, 23, 25, 26, 27, 29, 30, 31,
-                                     37, 38, 39, 41, 43, 45, 46, 47, 53,
-                                     54, 55, 57, 58, 59, 61, 62, 63};
-  std::vector<size_t> expected_63 = {42, 43, 46, 47, 58, 59, 62};
+  std::vector<SoHandle> expected_0 = {
+      SoHandle(0, 1),  SoHandle(0, 4),  SoHandle(0, 5), SoHandle(0, 16),
+      SoHandle(0, 17), SoHandle(0, 20), SoHandle(0, 21)};
+  std::vector<SoHandle> expected_4 = {
+      SoHandle(0, 0),  SoHandle(0, 1),  SoHandle(0, 5),  SoHandle(0, 8),
+      SoHandle(0, 9),  SoHandle(0, 16), SoHandle(0, 17), SoHandle(0, 20),
+      SoHandle(0, 21), SoHandle(0, 24), SoHandle(0, 25)};
+  std::vector<SoHandle> expected_42 = {
+      SoHandle(0, 21), SoHandle(0, 22), SoHandle(0, 23), SoHandle(0, 25),
+      SoHandle(0, 26), SoHandle(0, 27), SoHandle(0, 29), SoHandle(0, 30),
+      SoHandle(0, 31), SoHandle(0, 37), SoHandle(0, 38), SoHandle(0, 39),
+      SoHandle(0, 41), SoHandle(0, 43), SoHandle(0, 45), SoHandle(0, 46),
+      SoHandle(0, 47), SoHandle(0, 53), SoHandle(0, 54), SoHandle(0, 55),
+      SoHandle(0, 57), SoHandle(0, 58), SoHandle(0, 59), SoHandle(0, 61),
+      SoHandle(0, 62), SoHandle(0, 63)};
+  std::vector<SoHandle> expected_63 = {
+      SoHandle(0, 42), SoHandle(0, 43), SoHandle(0, 46), SoHandle(0, 47),
+      SoHandle(0, 58), SoHandle(0, 59), SoHandle(0, 62)};
 
   std::sort(neighbors[0].begin(), neighbors[0].end());
   std::sort(neighbors[4].begin(), neighbors[4].end());
@@ -61,40 +76,58 @@ TEST(GridTest, SetupGrid) {
 }
 
 TEST(GridTest, UpdateGrid) {
-  auto cells = CellFactory(4);
-  auto& grid = Grid::GetInstance();
-  grid.Initialize(cells);
+  auto rm = ResourceManager<>::Get();
+  rm->Clear();
+  auto cells = rm->Get<Cell>();
+  CellFactory(cells, 4);
+
+  auto& grid = Grid<>::GetInstance();
+  grid.Initialize();
 
   // Remove cells 1 and 42 (they are swapped with the last two cells)
-  cells.DelayedRemove(1);
-  cells.DelayedRemove(42);
-  cells.Commit();
+  cells->DelayedRemove(1);
+  cells->DelayedRemove(42);
+  cells->Commit();
 
   // Update the grid
-  grid.UpdateGrid(cells);
+  grid.UpdateGrid();
 
-  vector<vector<size_t>> neighbors(cells.size());
+  vector<vector<SoHandle>> neighbors(cells->size());
 
 // Lambda that fills a vector of neighbors for each cell (excluding itself)
 #pragma omp parallel for
-  for (size_t i = 0; i < cells.size(); i++) {
-    auto&& cell = cells[i];
-    auto fill_neighbor_list = [&](size_t n) {
-      if (i != n) {
-        neighbors[i].push_back(n);
+  for (size_t i = 0; i < cells->size(); i++) {
+    auto&& cell = (*cells)[i];
+    auto fill_neighbor_list = [&](auto&& neighbor, SoHandle handle) {
+      if (i != handle.GetElementIdx()) {
+        neighbors[i].push_back(handle);
       }
     };
 
-    grid.ForEachNeighborWithinRadius(fill_neighbor_list, cells, cell, i, 1201);
+    grid.ForEachNeighborWithinRadius(fill_neighbor_list, cell, SoHandle(0, i),
+                                     1201);
   }
 
-  std::vector<size_t> expected_0 = {4, 5, 16, 17, 20, 21};
-  std::vector<size_t> expected_5 = {0,  2,  4,  6,  8,  9,  10, 16,
-                                    17, 18, 20, 21, 22, 24, 25, 26};
-  std::vector<size_t> expected_41 = {20, 21, 22, 24, 25, 26, 28, 29, 30,
-                                     36, 37, 38, 40, 42, 44, 45, 46, 52,
-                                     53, 54, 56, 57, 58, 60, 61};
-  std::vector<size_t> expected_61 = {40, 41, 42, 44, 45, 46, 56, 57, 58, 60};
+  std::vector<SoHandle> expected_0 = {SoHandle(0, 4),  SoHandle(0, 5),
+                                      SoHandle(0, 16), SoHandle(0, 17),
+                                      SoHandle(0, 20), SoHandle(0, 21)};
+  std::vector<SoHandle> expected_5 = {
+      SoHandle(0, 0),  SoHandle(0, 2),  SoHandle(0, 4),  SoHandle(0, 6),
+      SoHandle(0, 8),  SoHandle(0, 9),  SoHandle(0, 10), SoHandle(0, 16),
+      SoHandle(0, 17), SoHandle(0, 18), SoHandle(0, 20), SoHandle(0, 21),
+      SoHandle(0, 22), SoHandle(0, 24), SoHandle(0, 25), SoHandle(0, 26)};
+  std::vector<SoHandle> expected_41 = {
+      SoHandle(0, 20), SoHandle(0, 21), SoHandle(0, 22), SoHandle(0, 24),
+      SoHandle(0, 25), SoHandle(0, 26), SoHandle(0, 28), SoHandle(0, 29),
+      SoHandle(0, 30), SoHandle(0, 36), SoHandle(0, 37), SoHandle(0, 38),
+      SoHandle(0, 40), SoHandle(0, 42), SoHandle(0, 44), SoHandle(0, 45),
+      SoHandle(0, 46), SoHandle(0, 52), SoHandle(0, 53), SoHandle(0, 54),
+      SoHandle(0, 56), SoHandle(0, 57), SoHandle(0, 58), SoHandle(0, 60),
+      SoHandle(0, 61)};
+  std::vector<SoHandle> expected_61 = {
+      SoHandle(0, 40), SoHandle(0, 41), SoHandle(0, 42), SoHandle(0, 44),
+      SoHandle(0, 45), SoHandle(0, 46), SoHandle(0, 56), SoHandle(0, 57),
+      SoHandle(0, 58), SoHandle(0, 60)};
 
   std::sort(neighbors[0].begin(), neighbors[0].end());
   std::sort(neighbors[5].begin(), neighbors[5].end());
@@ -106,5 +139,7 @@ TEST(GridTest, UpdateGrid) {
   EXPECT_EQ(expected_41, neighbors[41]);
   EXPECT_EQ(expected_61, neighbors[61]);
 }
+
+// TODO(lukas) test with different kind of cells
 
 }  // namespace bdm

@@ -16,10 +16,10 @@ struct OpTimer {
       : timer_msg_(timer_msg), operation_(op) {}
 
   template <typename Container>
-  void operator()(Container* cells) {
+  void operator()(Container* cells, uint16_t type_idx) {
     {
       Timing timer(timer_msg_);
-      operation_(cells);
+      operation_(cells, type_idx);
     }
   }
 

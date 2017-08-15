@@ -143,13 +143,13 @@ void RunApplyOnElementTest() {
   auto a_collection = rm->template Get<A>();
   a_collection->push_back(AScalar(12));
   a_collection->push_back(AScalar(34));
-  rm->ApplyOnElement(rm->GenSoHandle(1, 0),
+  rm->ApplyOnElement(SoHandle(0, 1),
                      [](auto& element) { EXPECT_EQ(34, element.GetData()); });
 
   auto b_collection = rm->template Get<B>();
   b_collection->push_back(BScalar(3.14));
   b_collection->push_back(BScalar(6.28));
-  rm->ApplyOnElement(rm->GenSoHandle(0, 1), [&](auto& element) {
+  rm->ApplyOnElement(SoHandle(1, 0), [&](auto& element) {
     EXPECT_NEAR(3.14, element.GetData(), kEpsilon);
   });
 }
@@ -179,7 +179,7 @@ void RunApplyOnAllElementsTest() {
   b_collection->push_back(BScalar(3.14));
   b_collection->push_back(BScalar(6.28));
   size_t counter = 0;
-  rm->ApplyOnAllElements([&](auto& element) {
+  rm->ApplyOnAllElements([&](auto& element, SoHandle&& handle) {  // NOLINT
     counter++;
     switch (counter) {
       case 1:
@@ -224,7 +224,7 @@ void RunApplyOnAllTypesTest() {
   b_collection->push_back(BScalar(3.14));
   b_collection->push_back(BScalar(6.28));
   size_t counter = 0;
-  rm->ApplyOnAllTypes([&](auto* container) {
+  rm->ApplyOnAllTypes([&](auto* container, uint16_t type_idx) {
     counter++;
     switch (counter) {
       case 1:

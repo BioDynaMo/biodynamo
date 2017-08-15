@@ -2,6 +2,7 @@
 #define RESOURCE_MANAGER_H_
 
 #include <limits>
+#include <ostream>
 #include <tuple>
 #include <utility>
 #include "tuple_util.h"
@@ -9,21 +10,44 @@
 
 namespace bdm {
 
-/// Specifies the number of bits that are used in a SoHandle to adress the
-/// type. Maximum number of types in the ResourceManager is `2^kTypeIdBits`
-/// e.g.: kTypeIdBits = 4; maximum number of Types = 16
-static constexpr uint8_t kTypeIdBits = 4;
-
 /// Unique identifier of a simulation object. Acts as a type erased pointer.
 /// Has the same type for every simulation object.
 /// The id is split into two parts: Type index and element index.
 /// The first one is used to obtain the container in the ResourceManager, the
 /// second specifies the element within this vector.
-/// The number of bits used for the type index is specified in `kTypeIdBits`.
-///
-///      |___________|____________________________________________________|
-///     63  type_idx                  element_idx                         0
-using SoHandle = uint64_t;
+class SoHandle {
+ public:
+  SoHandle() : type_idx_(0), element_idx_(0) {}
+  SoHandle(uint16_t type_idx, uint64_t element_idx)
+      : type_idx_(type_idx), element_idx_(element_idx) {}
+  uint16_t GetTypeIdx() const { return type_idx_; }
+  uint64_t GetElementIdx() const { return element_idx_; }
+
+  bool operator==(const SoHandle& other) const {
+    return type_idx_ == other.type_idx_ && element_idx_ == other.element_idx_;
+  }
+
+  bool operator!=(const SoHandle& other) const { return !(*this == other); }
+
+  bool operator<(const SoHandle& other) const {
+    if (type_idx_ == other.type_idx_) {
+      return element_idx_ < other.element_idx_;
+    } else {
+      return type_idx_ < other.type_idx_;
+    }
+  }
+
+  friend std::ostream& operator<<(std::ostream& stream,
+                                  const SoHandle& handle) {
+    stream << "Type idx: " << handle.type_idx_
+           << " element idx: " << handle.element_idx_;
+    return stream;
+  }
+
+ private:
+  uint16_t type_idx_;
+  uint64_t element_idx_;
+};
 
 namespace detail {
 
@@ -111,41 +135,39 @@ class ResourceManager {
   ///                       });
   template <typename TFunction>
   void ApplyOnElement(SoHandle handle, TFunction&& function) {
-    // auto type_idx = index >> 63;
-    auto type_idx = GetTypeIdx(handle);
-    auto element_idx = GetElementIdx(handle);
-    ::bdm::Apply(&data_, type_idx, [&element_idx, &function](auto* container) {
-      function((*container)[element_idx]);
-    });
+    auto type_idx = handle.GetTypeIdx();
+    auto element_idx = handle.GetElementIdx();
+    ::bdm::Apply(&data_, type_idx,
+                 [&](auto* container) { function((*container)[element_idx]); });
   }
 
   /// Apply a function on all container types
   /// @param function that will be called with each container as a parameter
   ///
-  ///     rm->ApplyOnAllTypes(handle, [](auto* container) {
-  ///                          std::cout << container.size() << std::endl;
-  ///                       });
+  ///     rm->ApplyOnAllTypes([](auto* container, uint16_t type_idx) {
+  ///                          std::cout << container->size() << std::endl;
+  ///                        });
   template <typename TFunction>
   void ApplyOnAllTypes(TFunction&& function) {
     // runtime dispatch - TODO(lukas) replace with c++17 std::apply
-    for (size_t i = 0; i < std::tuple_size<decltype(data_)>::value; i++) {
-      ::bdm::Apply(&data_, i, function);
+    for (uint16_t i = 0; i < std::tuple_size<decltype(data_)>::value; i++) {
+      ::bdm::Apply(&data_, i, [&](auto* container) { function(container, i); });
     }
   }
 
   /// Apply a function on all elements in every container
   /// @param function that will be called with each container as a parameter
   ///
-  ///     rm->ApplyOnAllElements(handle, [](auto& element) {
+  ///     rm->ApplyOnAllElements([](auto& element, const SoHandle&& handle) {
   ///                              std::cout << element << std::endl;
   ///                          });
   template <typename TFunction>
   void ApplyOnAllElements(TFunction&& function) {
     // runtime dispatch - TODO(lukas) replace with c++17 std::apply
-    for (size_t i = 0; i < std::tuple_size<decltype(data_)>::value; i++) {
-      ::bdm::Apply(&data_, i, [&function](auto* container) {
+    for (uint16_t i = 0; i < std::tuple_size<decltype(data_)>::value; i++) {
+      ::bdm::Apply(&data_, i, [&](auto* container) {
         for (size_t e = 0; e < container->size(); e++) {
-          function((*container)[e]);
+          function((*container)[e], SoHandle(i, e));
         }
       });
     }
@@ -153,37 +175,19 @@ class ResourceManager {
 
   /// Remove elements from each type
   void Clear() {
-    ApplyOnAllTypes([](auto* container) { container->clear(); });
+    ApplyOnAllTypes(
+        [](auto* container, uint16_t type_idx) { container->clear(); });
   }
 
-  /// Generate a SoHandle
-  /// @param element_idx index of the element within the container
-  /// @param type_idx index of the container within the std::tuple
-  static SoHandle GenSoHandle(size_t element_idx, size_t type_idx) {
-    using Limit = std::numeric_limits<size_t>;
-    size_t mask = type_idx << (Limit::digits - kTypeIdBits);
-    return element_idx |= mask;
+  /// Returns the number of simulation object types
+  static constexpr size_t NumberOfTypes() {
+    return std::tuple_size<decltype(data_)>::value;
   }
 
  private:
   ResourceManager() {
     // Soa container contain one element upon construction
     Clear();
-  }
-
-  /// Return type index based on SoHandle
-  /// \see SoHandle
-  static size_t GetTypeIdx(SoHandle handle) {
-    using Limit = std::numeric_limits<size_t>;
-    return handle >> (Limit::digits - kTypeIdBits);
-  }
-
-  /// Return element index based on SoHandle
-  /// \see SoHandle
-  static size_t GetElementIdx(SoHandle handle) {
-    using Limit = std::numeric_limits<size_t>;
-    const size_t mask = Limit::max() >> kTypeIdBits;
-    return handle & mask;
   }
 
   /// creates one container for each type in Types.

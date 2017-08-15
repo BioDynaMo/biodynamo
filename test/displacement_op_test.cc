@@ -7,8 +7,11 @@
 namespace bdm {
 namespace displacement_op_test_internal {
 
-template <typename T>
-void RunTest(T* cells) {
+template <typename TCompileTimeParam>
+void RunTest() {
+  auto rm = ResourceManager<TCompileTimeParam>::Get();
+  auto cells = rm->template Get<Cell>();
+
   // Cell 1
   Cell cell;
   cell.SetAdherence(0.3);
@@ -32,12 +35,12 @@ void RunTest(T* cells) {
   neighbor_2.push_back(0);
   cells->push_back(cell);
 
-  auto& grid = Grid::GetInstance();
-  grid.Initialize(*cells);
+  auto& grid = Grid<ResourceManager<TCompileTimeParam>>::GetInstance();
+  grid.Initialize();
 
   // execute operation
-  DisplacementOp op;
-  op(cells);
+  DisplacementOp<Grid<ResourceManager<TCompileTimeParam>>> op;
+  op(cells, 0);
 
   // check results
   // cell 1
@@ -75,15 +78,21 @@ void RunTest(T* cells) {
   EXPECT_NEAR(1.1, (*cells)[1].GetMass(), abs_error<double>::value);
 }
 
-TEST(DisplacementOpTest, ComputeAosoa) {
-  std::vector<Cell> cells;
-  RunTest(&cells);
-}
+struct AosCompileTimeParam {
+  using Backend = Scalar;
+  using BiologyModules = variant<NullBiologyModule>;
+  using AtomicTypes = VariadicTypedef<Cell>;
+};
 
-TEST(DisplacementOpTest, ComputeSoa) {
-  auto cells = Cell::NewEmptySoa();
-  RunTest(&cells);
-}
+TEST(DisplacementOpTest, ComputeAos) { RunTest<AosCompileTimeParam>(); }
+
+struct SoaCompileTimeParam {
+  using Backend = Soa;
+  using BiologyModules = variant<NullBiologyModule>;
+  using AtomicTypes = VariadicTypedef<Cell>;
+};
+
+TEST(DisplacementOpTest, ComputeSoa) { RunTest<SoaCompileTimeParam>(); }
 
 }  // namespace displacement_op_test_internal
 }  // namespace bdm

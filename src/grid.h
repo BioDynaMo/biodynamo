@@ -3,12 +3,11 @@
 
 #include <array>
 #include <cmath>
-#include <iostream>
 #include <limits>
 #include <vector>
-#include "cell.h"
 #include "inline_vector.h"
 #include "param.h"
+#include "resource_manager.h"
 
 namespace bdm {
 
@@ -31,17 +30,62 @@ class FixedSizeVector {
 
   void push_back(const T& value) { data_[size_++] = value; }  // NOLINT
 
+  const T* begin() const { return &(data_[0]); }    // NOLINT
+  const T* end() const { return &(data_[size_]); }  // NOLINT
+  T* begin() { return &(data_[0]); }                // NOLINT
+  T* end() { return &(data_[size_]); }              // NOLINT
+
  private:
   T data_[N];
   std::size_t size_ = 0;
 };
 
+/// Two dimensional array to build linked list of SoHandles
+///
+///     // Usage
+///     Successors<> successors;
+///     SoHandle current_element = ...;
+///     SoHandle next_element = successors_[current_element];
+template <typename TResourceManager = ResourceManager<>>
+class Successors {
+ public:
+  Successors() { Initialize(); }
+
+  void Initialize() {
+    clear();
+    auto rm = TResourceManager::Get();
+    rm->ApplyOnAllTypes([&](auto* sim_objects, uint16_t type_idx) {
+      data_[type_idx].resize(sim_objects->size());
+    });
+  }
+
+  void clear() {  // NOLINT
+    for (auto& vec : data_) {
+      vec.clear();
+    }
+  }
+
+  const SoHandle& operator[](const SoHandle& handle) const {
+    return data_[handle.GetTypeIdx()][handle.GetElementIdx()];
+  }
+
+  SoHandle& operator[](const SoHandle& handle) {
+    return data_[handle.GetTypeIdx()][handle.GetElementIdx()];
+  }
+
+ private:
+  /// one std::vector<SoHandle> for each type in ResourceManager
+  FixedSizeVector<std::vector<SoHandle>, TResourceManager::NumberOfTypes()>
+      data_;
+};
+
 /// A class that represents Cartesian 3D grid
+template <typename TResourceManager = ResourceManager<>>
 class Grid {
  public:
   /// A single unit cube of the grid
   struct Box {
-    uint64_t start_ = 0;
+    SoHandle start_ = SoHandle(0, 0);
     uint16_t length_ = 0;
 
     Box() {}
@@ -52,12 +96,13 @@ class Grid {
     ///
     /// @param[in]  obj_id  The object's identifier
     ///
-    void AddObject(size_t obj_id) {
+    template <typename TGrid = Grid<TResourceManager>>
+    void AddObject(SoHandle obj_id) {
       if (IsEmpty()) {
         start_ = obj_id;
       } else {
         // Add to the linked list of successor cells
-        Grid::GetInstance().successors_[obj_id] = start_;
+        TGrid::GetInstance().successors_[obj_id] = start_;
         start_ = obj_id;
       }
       length_++;
@@ -78,15 +123,16 @@ class Grid {
         return *this;
       }
 
-      size_t operator*() const { return current_value_; }
+      const SoHandle& operator*() const { return current_value_; }
 
-      Grid* grid_;
-      size_t current_value_;
+      Grid<TResourceManager>* grid_;
+      SoHandle current_value_;
       int countdown_;
     };
 
+    template <typename TGrid = Grid<TResourceManager>>
     Iterator begin() const {  // NOLINT
-      return Iterator(&(Grid::GetInstance()), this);
+      return Iterator(&(TGrid::GetInstance()), this);
     }
   };
 
@@ -104,7 +150,7 @@ class Grid {
 
     bool IsAtEnd() const { return is_end_; }
 
-    size_t operator*() const { return *box_iterator_; }
+    const SoHandle& operator*() const { return *box_iterator_; }
 
     /// version where empty neighbors in neighbor_boxes_ are allowed
     NeighborIterator& operator++() {
@@ -118,7 +164,7 @@ class Grid {
 
    private:
     const FixedSizeVector<const Box*, 27>& neighbor_boxes_;
-    Box::Iterator box_iterator_;
+    typename Box::Iterator box_iterator_;
     uint16_t box_idx_ = 0;
     bool is_end_ = false;
 
@@ -154,18 +200,11 @@ class Grid {
   void operator=(Grid const&) = delete;
 
   /// @brief      Initialize the grid with the given simulation objects
-  ///
-  /// @param      sim_objects  The simulation objects
   /// @param[in]  adjacency    The adjacency (see #Adjacency)
-  ///
-  /// @tparam     TContainer   The container type that holds the simulation
-  ///                          objects
-  ///
-  template <typename TContainer>
-  void Initialize(const TContainer& sim_objects, Adjacency adjacency = kHigh) {
+  void Initialize(Adjacency adjacency = kHigh) {
     adjacency_ = adjacency;
 
-    UpdateGrid(sim_objects);
+    UpdateGrid();
   }
 
   virtual ~Grid() {}
@@ -174,8 +213,8 @@ class Grid {
   ///
   /// @return     The instance
   ///
-  static Grid& GetInstance() {
-    static Grid kGrid;
+  static Grid<TResourceManager>& GetInstance() {
+    static Grid<TResourceManager> kGrid;
     return kGrid;
   }
 
@@ -193,16 +232,10 @@ class Grid {
 
   /// @brief      Updates the grid, as simulation objects may have moved, added
   ///             or deleted
-  ///
-  /// @param      sim_objects  The simulation objects
-  ///
-  /// @tparam     TContainer   The container type that holds the simulation
-  ///                          objects
-  ///
-  template <typename TContainer>
-  void UpdateGrid(const TContainer& sim_objects) {
+  void UpdateGrid() {
     ClearGrid();
-    CalculateGridDimensions(sim_objects);
+    CalculateGridDimensions();
+
     // todo: in some cases smaller box length still gives correct simulation
     // results (and is faster). Find out what this should be set to
     box_length_ = ceil(largest_object_size_);
@@ -213,7 +246,8 @@ class Grid {
       // If the grid is not perfectly divisible along each dimension by the
       // resolution, extend the grid so that it is
       if (r != 0.0) {
-        grid_dimensions_[2 * i + 1] += dimension_length - box_length_;
+        // std::abs for the case that box_length_ > dimension_length
+        grid_dimensions_[2 * i + 1] += std::abs(dimension_length - box_length_);
       } else {
         // Else extend the grid dimension with one row, because the outmost
         // object
@@ -241,34 +275,30 @@ class Grid {
     num_boxes_xy_ = num_boxes_axis_[0] * num_boxes_axis_[1];
     auto total_num_boxes = num_boxes_xy_ * num_boxes_axis_[2];
 
-    boxes_.resize(total_num_boxes, Box());
+    if (boxes_.size() != total_num_boxes) {
+      boxes_.resize(total_num_boxes, Box());
+    }
 
-    // Initialize successors_;
-    successors_.resize(sim_objects.size());
+    successors_.Initialize();
 
     // Assign simulation objects to boxes
-    for (size_t i = 0; i < sim_objects.size(); i++) {
-      const auto& position = sim_objects[i].GetPosition();
-      auto box = GetBoxPointer(GetBoxIndex(position));
-      box->AddObject(i);  // i = simulation object id
-    }
+    auto rm = TResourceManager::Get();
+    rm->ApplyOnAllElements([this](auto&& sim_object, SoHandle id) {
+      const auto& position = sim_object.GetPosition();
+      auto box = this->GetBoxPointer(this->GetBoxIndex(position));
+      box->AddObject(id);
+    });
   }
 
   /// Calculates what the grid dimensions need to be in order to contain all the
   /// simulation objects
   ///
-  /// @param      sim_objects  The simulation objects
-  ///
-  /// @tparam     TContainer   The container type that holds the simulation
-  ///                          objects
-  ///
   /// @return     The grid dimensions
-  ///
-  template <typename TContainer>
-  void CalculateGridDimensions(const TContainer& sim_objects) {
-    for (size_t i = 0; i < sim_objects.size(); i++) {
-      const auto& position = sim_objects[i].GetPosition();
-      auto diameter = sim_objects[i].GetDiameter();
+  void CalculateGridDimensions() {
+    auto rm = TResourceManager::Get();
+    rm->ApplyOnAllElements([&](auto&& sim_object, SoHandle handle) {
+      const auto& position = sim_object.GetPosition();
+      auto diameter = sim_object.GetDiameter();
       for (size_t j = 0; j < 3; j++) {
         if (position[j] < grid_dimensions_[2 * j]) {
           grid_dimensions_[2 * j] = position[j];
@@ -280,7 +310,7 @@ class Grid {
           largest_object_size_ = diameter;
         }
       }
-    }
+    });
   }
 
   /// @brief      Calculates the squared euclidian distance between two points
@@ -311,7 +341,7 @@ class Grid {
   ///
   template <typename Lambda, typename SO>
   void ForEachNeighbor(const Lambda& lambda, const SO& query,
-                       size_t simulation_object_id) const {
+                       const SoHandle& simulation_object_id) const {
     const auto& position = query.GetPosition();
     auto idx = GetBoxIndex(position);
 
@@ -332,19 +362,16 @@ class Grid {
   ///             simulation object
   ///
   /// @param[in]  lambda  The operation as a lambda
-  /// @param      sim_objects All simulation objects
   /// @param      query   The query object
   /// @param      simulation_object_id
   /// @param[in]  squared_radius  The search radius squared
   ///
   /// @tparam     Lambda      The type of the lambda operation
-  /// @tparam     TContainer  The type of the simulation object container
   /// @tparam     SO          The type of the simulation object
   ///
-  template <typename Lambda, typename TContainer, typename SO>
-  void ForEachNeighborWithinRadius(const Lambda& lambda,
-                                   const TContainer& sim_objects,
-                                   const SO& query, size_t simulation_object_id,
+  template <typename Lambda, typename SO>
+  void ForEachNeighborWithinRadius(const Lambda& lambda, const SO& query,
+                                   const SoHandle& simulation_object_id,
                                    double squared_radius) {
     const auto& position = query.GetPosition();
     auto idx = GetBoxIndex(position);
@@ -355,14 +382,16 @@ class Grid {
     NeighborIterator ni(neighbor_boxes);
     while (!ni.IsAtEnd()) {
       // Do something with neighbor object
-      auto neighbor_index = *ni;
-      if (neighbor_index != simulation_object_id) {
-        const auto& neighbor_position =
-            sim_objects[neighbor_index].GetPosition();
-        if (SquaredEuclideanDistance(position, neighbor_position) <
-            squared_radius) {
-          lambda(neighbor_index);
-        }
+      SoHandle neighbor_handle = *ni;
+      if (neighbor_handle != simulation_object_id) {
+        auto rm = TResourceManager::Get();
+        rm->ApplyOnElement(neighbor_handle, [&](auto&& sim_object) {
+          const auto& neighbor_position = sim_object.GetPosition();
+          if (this->SquaredEuclideanDistance(position, neighbor_position) <
+              squared_radius) {
+            lambda(sim_object, neighbor_handle);
+          }
+        });
       }
       ++ni;
     }
@@ -384,7 +413,7 @@ class Grid {
   /// Number of boxes in the xy plane (=num_boxes_axis_[0] * num_boxes_axis_[1])
   size_t num_boxes_xy_ = 0;
   /// Implements linked list - array index = key, value: next element
-  vector<size_t> successors_;
+  Successors<TResourceManager> successors_;
   /// Determines which boxes to search neighbors in (see enum Adjacency)
   Adjacency adjacency_;
   /// The size of the largest object in the simulation

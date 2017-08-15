@@ -10,7 +10,6 @@
 #include "displacement_op.h"
 #include "dividing_cell_op.h"
 #include "exporter.h"
-#include "neighbor_grid_op.h"
 #include "resource_manager.h"
 #include "scheduler.h"
 #include "timing.h"
@@ -68,8 +67,7 @@ void Execute(size_t cells_per_dim, size_t iterations, size_t threads,
     for (size_t i = 0; i < iterations; i++) {
       {
         Timing timing("Find Neighbors", statistic);
-        bdm::NeighborGridOp op;
-        op(&cells);
+        Grid<>::GetInstance().UpdateGrid();
       }
 
       // __itt_resume();
@@ -77,15 +75,15 @@ void Execute(size_t cells_per_dim, size_t iterations, size_t threads,
       {
         Timing timing("Cell Growth", statistic);
         bdm::DividingCellOp biology;
-        biology(&cells);
+        biology(&cells, 0);
       }
 
       // __itt_pause();
 
       {
         Timing timing("Displacement", statistic);
-        bdm::DisplacementOp op;
-        op(&cells);
+        bdm::DisplacementOp<> op;
+        op(&cells, 0);
       }
 
       if (with_export) {

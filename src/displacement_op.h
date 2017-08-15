@@ -14,6 +14,7 @@ using std::vector;
 using std::array;
 
 /// Defines the 3D physical interactions between physical objects
+template <typename TGrid = Grid<>>
 class DisplacementOp {
  public:
   DisplacementOp() {}
@@ -22,11 +23,11 @@ class DisplacementOp {
   DisplacementOp& operator=(const DisplacementOp&) = delete;
 
   template <typename TContainer>
-  void operator()(TContainer* cells) const {
+  void operator()(TContainer* cells, uint16_t type_idx) const {
     vector<array<double, 3>> cell_movements;
     cell_movements.reserve(cells->size());
 
-    auto& grid = Grid::GetInstance();
+    auto& grid = TGrid::GetInstance();
     auto search_radius = grid.GetLargestObjectSize();
     double squared_radius = search_radius * search_radius;
 
@@ -78,19 +79,18 @@ class DisplacementOp {
       //  (We check for every neighbor object if they touch us, i.e. push us
       //  away)
 
-      auto calculate_neighbor_forces =
-          [&cells, &cell, &translation_force_on_point_mass](size_t nc) {
-            auto&& neighbor = (*cells)[nc];
-            std::array<double, 3> neighbor_force;
-            neighbor.GetForceOn(cell.GetMassLocation(), cell.GetDiameter(),
-                                &neighbor_force);
-            translation_force_on_point_mass[0] += neighbor_force[0];
-            translation_force_on_point_mass[1] += neighbor_force[1];
-            translation_force_on_point_mass[2] += neighbor_force[2];
-          };
+      auto calculate_neighbor_forces = [&](auto&& neighbor,
+                                           auto&& neighbor_handle) {
+        std::array<double, 3> neighbor_force;
+        neighbor.GetForceOn(cell.GetMassLocation(), cell.GetDiameter(),
+                            &neighbor_force);
+        translation_force_on_point_mass[0] += neighbor_force[0];
+        translation_force_on_point_mass[1] += neighbor_force[1];
+        translation_force_on_point_mass[2] += neighbor_force[2];
+      };
 
-      grid.ForEachNeighborWithinRadius(calculate_neighbor_forces, *cells, cell,
-                                       i, squared_radius);
+      grid.ForEachNeighborWithinRadius(calculate_neighbor_forces, cell,
+                                       SoHandle(type_idx, i), squared_radius);
 
       // 4) PhysicalBonds
       // How the physics influences the next displacement
