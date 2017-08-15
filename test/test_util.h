@@ -7,7 +7,7 @@
 
 namespace bdm {
 
-class CompileTimeParam : public DefaultCompileTimeParam<> {};
+struct CompileTimeParam : public DefaultCompileTimeParam<> {};
 
 template <typename T>
 struct abs_error {
