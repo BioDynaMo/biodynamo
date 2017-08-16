@@ -315,10 +315,20 @@ if(demo)
                      LIBRARIES biodynamo)
 
   # --------------------- build distribution benchmarks ------------------
-  file(GLOB WW_BENCHMARK_SOURCES demo/distribution/*.cc)
+  file(GLOB DISTR_BENCHMARK_SOURCES demo/distribution/*.cc)
+  set(DISTR_BENCHMARK_PATH "demo/distribution/benchmarks")
+
   bdm_add_executable(ww_benchmark
-                     SOURCES ${WW_BENCHMARK_SOURCES}
-                     HEADERS demo/distribution/ww_benchmark.h
+                     SOURCES ${DISTR_BENCHMARK_SOURCES} ${DISTR_BENCHMARK_PATH}/ww_benchmark.cc
+                     HEADERS ${DISTR_BENCHMARK_PATH}/ww_benchmark.h
+                     LIBRARIES biodynamo zmq zmqpp)
+  bdm_add_executable(cbw_benchmark
+                     SOURCES ${DISTR_BENCHMARK_SOURCES} ${DISTR_BENCHMARK_PATH}/cbw_benchmark.cc
+                     HEADERS ${DISTR_BENCHMARK_PATH}/cbw_benchmark.h
+                     LIBRARIES biodynamo zmq zmqpp)
+  bdm_add_executable(bww_benchmark
+                     SOURCES ${DISTR_BENCHMARK_SOURCES} ${DISTR_BENCHMARK_PATH}/bww_benchmark.cc
+                     HEADERS ${DISTR_BENCHMARK_PATH}/bww_benchmark.h
                      LIBRARIES biodynamo zmq zmqpp)
 
 endif()
