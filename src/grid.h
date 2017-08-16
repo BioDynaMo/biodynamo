@@ -84,7 +84,8 @@ template <typename TResourceManager = ResourceManager<>>
 class Grid {
  public:
   /// A single unit cube of the grid
-  struct Box {
+  class Box {
+   public:
     SoHandle start_ = SoHandle(0, 0);
     uint16_t length_ = 0;
 

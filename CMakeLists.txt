@@ -1,11 +1,8 @@
 cmake_minimum_required(VERSION 3.2.0)
-
 # With CMAKE >= 3.2 external projects support byproducts, this is needed
 # to support Ninja as generator
 
 project(BioDynaMo)
-
-#set(CMAKE_VERBOSE_MAKEFILE on)
 
 # Options. Turn on with 'cmake -Dmyvarname=ON'.
 option(test "Build all tests." ON) # Makes boolean 'test' available.
@@ -25,8 +22,9 @@ if (test)
   # must be before include(${ROOT_USE_FILE}) otherwise test compile fails
   find_package(Threads REQUIRED)
 endif()
+
 find_package(Git)
-#find_package(ROOT REQUIRED COMPONENTS Eve Geom Gui)
+find_package(ROOT REQUIRED COMPONENTS Eve Geom Gui)
 
 find_package(ClangTools)
 if ("$ENV{CMAKE_EXPORT_COMPILE_COMMANDS}" STREQUAL "1" OR CLANG_TIDY_FOUND)
@@ -36,7 +34,15 @@ if ("$ENV{CMAKE_EXPORT_COMPILE_COMMANDS}" STREQUAL "1" OR CLANG_TIDY_FOUND)
   set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 endif()
 
+set(USE_CATALYST ON CACHE BOOL "Link BioDynaMo with ParaView Catalyst")
+if(USE_CATALYST)
+  find_package(ParaView 5.3 REQUIRED COMPONENTS vtkPVPythonCatalyst)
+  include("${PARAVIEW_USE_FILE}")
+  add_definitions("-DUSE_CATALYST")
+endif()
+
 #--------------------- includes -------------
+include(BioDynaMo)
 include(ExternalProject)
 include(cmake/doxygen.cmake)
 
@@ -46,16 +52,18 @@ include(CheckCXXCompilerFlag)
 check_cxx_compiler_flag("-std=c++14" COMPILER_SUPPORTS_CXX14)
 if(COMPILER_SUPPORTS_CXX14)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
+  set(CMAKE_CXX_STANDARD 14)
+  set(CMAKE_CXX_STANDARD_REQUIRED ON)
 else()
-  message(STATUS "The compiler ${CMAKE_CXX_COMPILER} has no C++14 support. Please use a different C++ compiler.")
+  message(ERROR "The compiler ${CMAKE_CXX_COMPILER} has no C++14 support. Please use a different C++ compiler.")
 endif()
 
 #--------------------- set compiler flags -------------
 if (coverage)
   set(CMAKE_BUILD_TYPE "Debug")
-  set(GCC_COMPILE_FLAGS "-Wall -Wno-missing-braces -g -O0 -fprofile-arcs -ftest-coverage")
+  set(GCC_COMPILE_FLAGS "-Wall -Wno-missing-braces -g -O0 -fprofile-arcs -ftest-coverage -fPIC")
 else()
-  set(GCC_COMPILE_FLAGS "-Wall -Wno-missing-braces")
+  set(GCC_COMPILE_FLAGS "-Wall -Wno-missing-braces -fPIC")
 endif()
 set(GCC_LINK_FLAGS "")
 # append
@@ -116,23 +124,23 @@ execute_process(COMMAND ${CMAKE_COMMAND} -E tar xf "${CMAKE_SOURCE_DIR}/third_pa
 
 #--------------------- build shared library libbiodynamo ----------------
 # add the headers into the project
-#include(${ROOT_USE_FILE})
+include(${ROOT_USE_FILE})
 include_directories("${CMAKE_SOURCE_DIR}/src")
+include_directories("${CMAKE_SOURCE_DIR}/test")
 include_directories("${CMAKE_SOURCE_DIR}/third_party")
+include_directories("${CMAKE_SOURCE_DIR}/demo")
 include_directories("${MPARK_LIB}")
 # include_directories("${Vc_INCLUDE_DIR}")
 # include_directories(${VTUNE_INCLUDE_DIR})
 
-#ROOT_GENERATE_DICTIONARY("${CMAKE_BINARY_DIR}/bdmDict"
-#    simulation/ecm.h
-#    LINKDEF bdmLinkDef.h)
-
-file(GLOB_RECURSE SOURCES "${CMAKE_SOURCE_DIR}/src/*.cc")
+# build libbiodynamo
 file(GLOB_RECURSE HEADERS "${CMAKE_SOURCE_DIR}/src/*.h")
-#${CMAKE_BINARY_DIR}/bdmDict.cxx)
-add_library(biodynamo SHARED ${SOURCES} ${HEADERS})
-#target_link_libraries(biodynamo ${ROOT_LIBRARIES})
-#target_link_libraries(biodynamo ${Vc_LIBRARIES})
+file(GLOB_RECURSE LIB_SOURCES "${CMAKE_SOURCE_DIR}/src/*.cc")
+build_libbiodynamo(biodynamo
+                   SOURCES ${LIB_SOURCES}
+                   HEADERS ${HEADERS}
+                   LIBRARIES ${ROOT_LIBRARIES})
+# target_link_libraries(biodynamo ${Vc_LIBRARIES})
 # target_link_libraries(biodynamo ${VTUNE_LIBRARIES})
 # add_dependencies(biodynamo Vc)
 
@@ -142,6 +150,12 @@ add_custom_target(libbdmclean COMMAND ${CMAKE_COMMAND} -P "${CMAKE_BINARY_DIR}/C
 add_custom_target(bdmclean)
 add_dependencies(bdmclean libbdmclean)
 
+generate_rootlogon()
+
+if (USE_CATALYST)
+  target_link_libraries(biodynamo vtkPVPythonCatalyst)
+endif()
+
 # -------------------- build test project  ----------------------
 if (test)
   enable_testing()
@@ -149,27 +163,38 @@ if (test)
   include(cmake/Testing.cmake)
 
   # main test executable
-  file(GLOB TEST_SOURCES ${CMAKE_SOURCE_DIR}/test/*.cc
-                         ${CMAKE_SOURCE_DIR}/test/spatial_organization/*.cc)
-  create_test_executable(runBiodynamoTestsMain "${TEST_SOURCES}")
+  file(GLOB TEST_SOURCES ${CMAKE_SOURCE_DIR}/test/*.cc)
+  file(GLOB TEST_HEADERS ${CMAKE_SOURCE_DIR}/test/*.h)
+  bdm_add_test_executable(runBiodynamoTestsMain
+                          SOURCES ${TEST_SOURCES}
+                          HEADERS ${TEST_HEADERS})
 
   # separate test binaries - each source file is compiled into a separate binary
   file(GLOB TEST_SOURCES ${CMAKE_SOURCE_DIR}/test/separate_binary/*.cc)
+  file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/empty_header.h "")
   foreach(file ${TEST_SOURCES})
     get_filename_component(filename ${file} NAME_WE)
-    create_test_executable("runBiodynamoTests_${filename}" ${file})
+    set(TEST_HEADER ${CMAKE_SOURCE_DIR}/test/separate_binary/${filename}.h)
+    if (NOT EXISTS ${TEST_HEADER})
+      set(TEST_HEADER ${CMAKE_CURRENT_BINARY_DIR}/empty_header.h)
+    endif()
+    bdm_add_test_executable("runBiodynamoTests_${filename}"
+                            SOURCES ${file}
+                            HEADERS ${TEST_HEADER})
   endforeach()
 endif()
 
 # --------------- add targets for code style and submission checks -------------
 include(cmake/CppStyleGuideChecks.cmake)
 
-# --------------------- build cell_growth executable ---------------------
-set(SIMULATION_TARGET cell_growth)
-add_executable(${SIMULATION_TARGET} ${CMAKE_SOURCE_DIR}/demo/cell_growth.cc)
-target_link_libraries(${SIMULATION_TARGET} biodynamo)
-
 # --------------------- build cell_division_module executable ------------------
-set(SIMULATION_TARGET cell_division_module)
-add_executable(${SIMULATION_TARGET} ${CMAKE_SOURCE_DIR}/demo/cell_division_module.cc)
-target_link_libraries(${SIMULATION_TARGET} biodynamo)
+bdm_add_executable(cell_division_module
+                   SOURCES demo/cell_division_module.cc
+                   HEADERS demo/cell_division_module.h
+                   LIBRARIES biodynamo)
+
+# --------------------- build backup_restore executable ------------------
+bdm_add_executable(backup-restore
+                  SOURCES demo/backup_restore.cc
+                  HEADERS demo/backup_restore.h
+                  LIBRARIES biodynamo)

@@ -7,7 +7,8 @@
 PROJECT_ROOT_DIR=$1
 
 FILES=$(git diff --name-only --cached | grep ".*\.\(cc\|h\)$")
-# filter files that have been deleted
+# filter files that have been deleted or are in directory third_party
 for f in $FILES; do
-    [ -e "${PROJECT_ROOT_DIR}/${f}" ] && echo ${PROJECT_ROOT_DIR}/${f}
+    [ -e "${PROJECT_ROOT_DIR}/${f}" ] && echo ${PROJECT_ROOT_DIR}/${f} | \
+    grep -E -v "^${PROJECT_ROOT_DIR}/third_party"
 done

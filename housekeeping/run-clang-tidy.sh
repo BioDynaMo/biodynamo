@@ -103,7 +103,7 @@ if [ "$MODE" == "1" ]; then
   # fix errors one header file at a time
   for f in $HEADERS; do
     echo "" > $TIDY_HEADER_HELPER
-    echo "#include \"test_util.h\"" >> $TIDY_HEADER_HELPER
+    # echo "#include \"test_util.h\"" >> $TIDY_HEADER_HELPER
     echo "#include \"${f}\"" >> $TIDY_HEADER_HELPER
     $CLANG_TIDY $TRAVIS_LINUX_EXTRA_ARGB -line-filter=$LINE_FILTER -p $COMPILE_COMMANDS -fix $TIDY_HEADER_HELPER
   done
@@ -117,7 +117,7 @@ elif [ "$MODE" == "2" ]; then
   for f in $HEADERS; do
     echo "Start processing: "$f
     echo "" > $TIDY_HEADER_HELPER
-    echo "#include \"test_util.h\"" >> $TIDY_HEADER_HELPER
+    # echo "#include \"test_util.h\"" >> $TIDY_HEADER_HELPER
     echo "#include \"${f}\"" >> $TIDY_HEADER_HELPER
     $CLANG_TIDY $TRAVIS_LINUX_EXTRA_ARGB -line-filter=$LINE_FILTER -p $COMPILE_COMMANDS $TIDY_HEADER_HELPER
   done
@@ -140,7 +140,7 @@ else
     echo "Start processing: "$f
     echo "" > $TMP_FILE
     echo "" > $TIDY_HEADER_HELPER
-    echo "#include \"test_util.h\"" >> $TIDY_HEADER_HELPER
+    # echo "#include \"test_util.h\"" >> $TIDY_HEADER_HELPER
     echo "#include \"${f}\"" >> $TIDY_HEADER_HELPER
     $CLANG_TIDY $TRAVIS_LINUX_EXTRA_ARGB -line-filter=$LINE_FILTER -export-fixes=$TMP_FILE -p $COMPILE_COMMANDS $TIDY_HEADER_HELPER >/dev/null 2>/dev/null
     NUM_CORRECTIONS=$(cat $TMP_FILE | wc -l)

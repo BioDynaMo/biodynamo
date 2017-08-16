@@ -46,11 +46,14 @@ add_custom_target(coverage-build
      Open the following file in your browser: ${CMAKE_BINARY_DIR}/coverage/coverage/index.html")
 
 
-function(create_test_executable TEST_TARGET TEST_SOURCES)
+function(bdm_add_test_executable TEST_TARGET)
+  cmake_parse_arguments(ARG "" "" "SOURCES;HEADERS" ${ARGN} )
   # create test executable
-  add_executable(${TEST_TARGET} ${TEST_SOURCES})
-  target_link_libraries(${TEST_TARGET} libgtest)
-  target_link_libraries(${TEST_TARGET} biodynamo)
+  bdm_add_executable(${TEST_TARGET}
+                     SOURCES ${ARG_SOURCES}
+                     HEADERS ${ARG_HEADERS}
+                     LIBRARIES libgtest biodynamo)
+  add_dependencies(${TEST_TARGET}-objectlib gtest)
 
   # execute all tests with command: make test
   add_test(NAME ${TEST_TARGET} COMMAND ${TEST_TARGET})
@@ -61,7 +64,7 @@ function(create_test_executable TEST_TARGET TEST_SOURCES)
   endif()
   # add valgrind test
   if (valgrind AND NOT coverage)
-    add_test(NAME "valgrind_${TEST_TARGET}" COMMAND valgrind --tool=memcheck --leak-check=full --show-leak-kinds=all --show-reachable=no --suppressions=${CMAKE_BINARY_DIR}/../valgrind-biod.supp --error-exitcode=1 ./${TEST_TARGET})
+    add_test(NAME "valgrind_${TEST_TARGET}" COMMAND valgrind --leak-resolution=high --tool=memcheck --leak-check=full --show-leak-kinds=all --show-reachable=no --suppressions=${CMAKE_BINARY_DIR}/../valgrind-biod.supp --error-exitcode=1 ./${TEST_TARGET} --gtest_filter=-*DeathTest.*:IOTest.InvalidRead)
     if (APPLE)
       set_tests_properties(valgrind PROPERTIES ENVIRONMENT
         "DYLD_LIBRARY_PATH=$ENV{DYLD_LIBRARY_PATH}"
@@ -74,4 +77,4 @@ function(create_test_executable TEST_TARGET TEST_SOURCES)
   add_custom_target("testbdmclean_${TEST_TARGET}" COMMAND ${CMAKE_COMMAND} -P "${CMAKE_BINARY_DIR}/CMakeFiles/${TEST_TARGET}.dir/cmake_clean.cmake")
   add_dependencies(testbdmclean "testbdmclean_${TEST_TARGET}")
 
-endfunction(create_test_executable)
+endfunction(bdm_add_test_executable)

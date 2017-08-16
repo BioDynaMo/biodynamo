@@ -1,10 +1,15 @@
 #ifndef PARAM_H_
 #define PARAM_H_
 
+#include <cinttypes>
+
 namespace bdm {
 
 class Param {
  public:
+  ///
+  static uint32_t backup_every_x_seconds_;
+
   /// Time between two simulation step, in hours.
   static constexpr double kSimulationTimeStep = 0.01;
   /// Maximum jump that a point mass can do in one time step. Useful to
@@ -77,6 +82,8 @@ class Param {
   static constexpr double kEpsilon = 1e-20;
   /// Helpful constant to identify 'infinity'
   static constexpr double kInfinity = 1e20;
+
+  static bool use_paraview_;
 };
 
 }  // namespace bdm

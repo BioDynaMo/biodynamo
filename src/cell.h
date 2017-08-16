@@ -29,7 +29,7 @@ template <typename Base = SimulationObject<>,
           typename TCompileTimeParam = CompileTimeParam>
 class CellExt : public Base {
  public:
-  BDM_CLASS_HEADER_ADV(CellExt,
+  BDM_CLASS_HEADER_ADV(CellExt, 1,
                        CellExt<typename Base::template Self<TTBackend> COMMA()
                                    TCompileTimeParam>,
                        template <typename COMMA() typename>, position_,
@@ -129,6 +129,9 @@ class CellExt : public Base {
   }
 
   const array<double, 3>& GetPosition() const { return position_[kIdx]; }
+
+  double* GetPositionPtr() { return &(position_[0][0]); }
+  double* GetDiameterPtr() { return &(diameter_[0]); }
 
   const array<double, 3>& GetTractorForce() const {
     return tractor_force_[kIdx];
@@ -231,7 +234,6 @@ using TestCell = CellExt<SimulationObject<Scalar>, TCompileTimeParam>;
 
 // ----------------------------------------------------------------------------
 // Implementation -------------------------------------------------------------
-
 template <typename T, typename U>
 template <typename TBiologyModule>
 inline void CellExt<T, U>::AddBiologyModule(TBiologyModule&& module) {

@@ -1,30 +1,10 @@
 #include "biology_module_op.h"
-#include "cell.h"
+#include "biology_module_op_test.h"
 #include "gtest/gtest.h"
-#include "test_util.h"
 #include "transactional_vector.h"
 
 namespace bdm {
 namespace biology_module_op_test_internal {
-
-using std::size_t;
-
-struct GrowthModule {
-  double growth_rate_;
-
-  explicit GrowthModule(double growth_rate) : growth_rate_(growth_rate) {}
-
-  template <typename T>
-  void Run(T* t) {
-    t->SetDiameter(t->GetDiameter() + growth_rate_);
-  }
-
-  bool IsCopied(Event event) const { return false; }
-};
-
-struct CompileTimeParam {
-  using BiologyModules = variant<GrowthModule>;
-};
 
 template <typename T>
 void RunTest(T* cells) {

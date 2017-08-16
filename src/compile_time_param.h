@@ -22,7 +22,7 @@ using mpark::variant;
 template <size_t TOptional = 1>
 struct DefaultCompileTimeParam {
   using Backend = Soa;
-  using BiologyModules = variant<NullBiologyModule>;
+  using BiologyModules = Variant<NullBiologyModule>;
   using AtomicTypes = VariadicTypedef<Cell>;
 };
 

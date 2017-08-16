@@ -78,6 +78,7 @@ class DiscontinuousInterfaceData {
 ///      |.       |/
 ///      o--------o
 ///      0        1
+template <int TOptional = 1>
 class BDMCubicDomain {
  public:
   BDMCubicDomain() : is_init_(false) {}

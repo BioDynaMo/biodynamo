@@ -106,7 +106,7 @@ class TransactionalVector {
   const_iterator cend() { return data_.cend(); }  // NOLINT
 
  private:
-  std::recursive_mutex mutex_;
+  std::recursive_mutex mutex_;  //!
   std::vector<T> data_;
   /// vector of indices with elements which should be removed
   std::vector<size_t> to_be_removed_;

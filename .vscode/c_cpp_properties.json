@@ -11,9 +11,11 @@
                 "databaseFilename": "",
                 "path": [
                     "/usr/include",
-                    "${env.ROOTSYS}/include"
+                    "${env.ROOTSYS}/include",
+                    "${workspaceRoot}"
                 ]
-            }
+            },
+            "intelliSenseMode": "clang-x64"
         },
         {
             "name": "Linux",
@@ -26,9 +28,11 @@
                 "databaseFilename": "",
                 "path": [
                     "/usr/include",
-                    "${env.ROOTSYS}/include"
+                    "${env.ROOTSYS}/include",
+                    "${workspaceRoot}"
                 ]
-            }
+            },
+            "intelliSenseMode": "clang-x64"
         },
         {
             "name": "Win32",
@@ -39,14 +43,17 @@
                 "limitSymbolsToIncludedHeaders": true,
                 "databaseFilename": "",
                 "path": [
-                    "c:/Program Files (x86)/Microsoft Visual Studio 14.0/VC/include"
+                    "c:/Program Files (x86)/Microsoft Visual Studio 14.0/VC/include",
+                    "${workspaceRoot}"
                 ]
-            }
+            },
+            "intelliSenseMode": "msvc-x64"
         }
     ],
     "clang_format": {
         "style": "file",
         "fallback-style": "Google",
         "sort-includes": false
-    }
+    },
+    "version": 2
 }

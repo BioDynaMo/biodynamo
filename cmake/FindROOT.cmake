@@ -137,6 +137,7 @@ function(ROOT_GENERATE_DICTIONARY dictionary)
   endforeach()
   #---call rootcling------------------------------------------
   add_custom_command(OUTPUT ${dictionary}.cxx
+                     OUTPUT ${dictionary}_rdict.pcm
                      COMMAND ${ROOTCLING_EXECUTABLE} -f ${dictionary}.cxx
                                           -c ${ARG_OPTIONS} ${includedirs} ${headerfiles} ${linkdefs}
                      DEPENDS ${headerfiles} ${linkdefs} VERBATIM)
@@ -179,7 +180,7 @@ function(REFLEX_GENERATE_DICTIONARY dictionary)
    set(definitions ${definitions} -D${d})
   endforeach()
   #---Nanes and others---------------------------------------
-  set(gensrcdict ${dictionary}.cpp)
+  set(gensrcdict ${dictionary}.cc)
   if(MSVC)
     set(gccxmlopts "--gccxmlopt=\"--gccxml-compiler cl\"")
   else()
@@ -188,16 +189,9 @@ function(REFLEX_GENERATE_DICTIONARY dictionary)
   endif()
   #set(rootmapname ${dictionary}Dict.rootmap)
   #set(rootmapopts --rootmap=${rootmapname} --rootmap-lib=${libprefix}${dictionary}Dict)
-  #---Check GCCXML and get path-----------------------------
-  if(GCCXML)
-    get_filename_component(gccxmlpath ${GCCXML} PATH)
-  else()
-    message(WARNING "GCCXML not found. Install and setup your environment to find 'gccxml' executable")
-  endif()
   #---Actual command----------------------------------------
-  add_custom_command(OUTPUT ${gensrcdict} ${rootmapname}
-                     COMMAND ${GENREFLEX_EXECUTABLE} ${headerfiles} -o ${gensrcdict} ${gccxmlopts} ${rootmapopts} --select=${selectionfile}
-                             --gccxmlpath=${gccxmlpath} ${ARG_OPTIONS} ${includedirs} ${definitions}
+  add_custom_command(OUTPUT ${gensrcdict} ${rootmapname} ${dictionary}_rdict.pcm
+                     COMMAND ${GENREFLEX_EXECUTABLE} ${headerfiles} -o ${gensrcdict} ${rootmapopts} --select=${selectionfile}
+                            ${ARG_OPTIONS} ${includedirs} ${definitions}
                      DEPENDS ${headerfiles} ${selectionfile})
 endfunction()
-
