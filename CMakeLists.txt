@@ -80,27 +80,27 @@ else()
   message(WARNING "ParaView not found")
 endif()
 
-find_package(VTune)
-if(${VTune_FOUND})
-  include_directories(${VTUNE_INCLUDE_DIR})
-  add_definitions("-DUSE_VTUNE")
-else()
-  message(WARNING "VTune not found")
-endif()
+	find_package(VTune)
+	if(${VTune_FOUND})
+	  include_directories(${VTUNE_INCLUDE_DIR})
+	  add_definitions("-DUSE_VTUNE")
+	else()
+	  message(WARNING "VTune not found")
+	endif()
 
-# -------------------- includes -----------------------------------------------
-include(BioDynaMo)
-include(ExternalProject)
-include(Documentation)
-include(Versioning)
+	# -------------------- includes -----------------------------------------------
+	include(BioDynaMo)
+	include(ExternalProject)
+	include(Documentation)
+	include(Versioning)
 
-# -------------------- set default build type and compiler flags ---------------
-if(coverage)
-  set(CMAKE_BUILD_TYPE Coverage)
-elseif(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE RelWithDebInfo)
-endif()
-include(SetCompilerFlags)
+	# -------------------- set default build type and compiler flags ---------------
+	if(coverage)
+	  set(CMAKE_BUILD_TYPE Coverage)
+	elseif(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
+	  set(CMAKE_BUILD_TYPE RelWithDebInfo)
+	endif()
+	include(SetCompilerFlags)
 
 # -------------------- set rpath options ---------------------------------------
 # When building, use the RPATH
@@ -313,4 +313,12 @@ if(demo)
                      SOURCES demo/multiple_simulations.cc
                      HEADERS demo/multiple_simulations.h
                      LIBRARIES biodynamo)
+
+  # --------------------- build distribution benchmarks ------------------
+  file(GLOB WW_BENCHMARK_SOURCES demo/distribution/*.cc)
+  bdm_add_executable(ww_benchmark
+                     SOURCES ${WW_BENCHMARK_SOURCES}
+                     HEADERS demo/distribution/ww_benchmark.h
+                     LIBRARIES biodynamo zmq zmqpp)
+
 endif()

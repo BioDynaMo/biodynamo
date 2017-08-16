@@ -2,8 +2,8 @@
 
 #include <zmqpp/zmqpp.hpp>
 
-#include "broker.hpp"
-#include "worker_entry.hpp"
+#include "broker.h"
+#include "worker_entry.h"
 
 namespace mdp {
 

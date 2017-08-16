@@ -2,8 +2,8 @@
 
 #include <zmqpp/zmqpp.hpp>
 
-#include "client.hpp"
-#include "common.hpp"
+#include "client.h"
+#include "common.h"
 
 
 namespace mdp {
