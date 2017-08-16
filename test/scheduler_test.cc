@@ -40,6 +40,7 @@ class TestSchedulerBackup : public Scheduler<> {
 };
 
 TEST(SchedulerTest, NoRestoreFile) {
+  ResourceManager<>::Get()->Clear();
   remove(ROOTFILE);
 
   // start restore validation
@@ -58,6 +59,7 @@ TEST(SchedulerTest, NoRestoreFile) {
 }
 
 TEST(DISABLED_SchedulerTest, Restore) {
+  ResourceManager<>::Get()->Clear();
   remove(ROOTFILE);
 
   // create backup that will be restored later on
@@ -93,6 +95,7 @@ TEST(DISABLED_SchedulerTest, Restore) {
 }
 
 TEST(SchedulerTest, Backup) {
+  ResourceManager<>::Get()->Clear();
   remove(ROOTFILE);
 
   TestSchedulerBackup scheduler(ROOTFILE);
