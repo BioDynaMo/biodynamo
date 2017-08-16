@@ -1,4 +1,4 @@
-#include "dist_worker_api.hpp"
+#include "dist_worker_api.h"
 
 namespace mdp {
 

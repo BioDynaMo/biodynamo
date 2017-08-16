@@ -6,8 +6,8 @@
 
 #include <zmqpp/zmqpp.hpp>
 
-#include "common.hpp"
-#include "communicator.hpp"
+#include "common.h"
+#include "communicator.h"
 
 namespace mdp {
 

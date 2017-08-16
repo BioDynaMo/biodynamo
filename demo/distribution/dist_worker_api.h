@@ -6,9 +6,9 @@
 
 #include <zmqpp/zmqpp.hpp>
 
-#include "common.hpp"
-#include "broker_comm.hpp"
-#include "worker_comm.hpp"
+#include "common.h"
+#include "broker_comm.h"
+#include "worker_comm.h"
 
 namespace mdp {
 

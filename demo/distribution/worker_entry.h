@@ -7,7 +7,7 @@
 
 #include <zmqpp/zmqpp.hpp>
 
-#include "common.hpp"
+#include "common.h"
 
 namespace mdp {
 

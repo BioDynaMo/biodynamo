@@ -8,8 +8,8 @@
 
 #include <zmqpp/zmqpp.hpp>
 
-#include "common.hpp"
-#include "worker_entry.hpp"
+#include "common.h"
+#include "worker_entry.h"
 
 namespace mdp {
 

@@ -4,7 +4,7 @@
 #include <chrono>
 #include <string>
 
-#include "common.hpp"
+#include "common.h"
 
 namespace mdp {
 

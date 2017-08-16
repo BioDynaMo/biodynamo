@@ -251,3 +251,10 @@ bdm_add_executable(backup-restore
                   SOURCES demo/backup_restore.cc
                   HEADERS demo/backup_restore.h
                   LIBRARIES biodynamo)
+
+# --------------------- build distribution benchmarks ------------------
+file(GLOB WW_BENCHMARK_SOURCES demo/distribution/*.cc)
+bdm_add_executable(ww_benchmark
+                  SOURCES ${WW_BENCHMARK_SOURCES}
+                  HEADERS demo/distribution/ww_benchmark.h
+                  LIBRARIES biodynamo zmq zmqpp)

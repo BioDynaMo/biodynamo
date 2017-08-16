@@ -3,7 +3,7 @@
 
 #include <zmqpp/zmqpp.hpp>
 
-#include "broker_comm.hpp"
+#include "broker_comm.h"
 
 namespace mdp {
 
