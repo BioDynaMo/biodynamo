@@ -5,7 +5,7 @@
 
 #include "broker_comm.h"
 
-namespace mdp {
+namespace bdm {
 
 BrokerCommunicator::BrokerCommunicator (DistSharedInfo *info, const std::string& endpoint)
     : Communicator(info, endpoint, CommunicatorId::kBroker)

@@ -9,7 +9,7 @@
 #include "common.h"
 #include "communicator.h"
 
-namespace mdp {
+namespace bdm {
 
 class WorkerCommunicator : public Communicator {
   public:

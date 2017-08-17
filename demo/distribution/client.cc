@@ -5,8 +5,7 @@
 #include "client.h"
 #include "common.h"
 
-
-namespace mdp {
+namespace bdm {
 
 Client::Client(zmqpp::context *ctx, const std::string& broker, bool verbose) {
     assert( !broker.empty() );
@@ -29,11 +28,11 @@ void Client::ConnectToBroker() {
         sock->close();
         delete sock;
     }
-    
+
     sock = new zmqpp::socket(*ctx, zmqpp::socket_type::dealer);
     sock->set(zmqpp::socket_option::identity, "client");
     sock->connect(broker);
-    
+
     std::cout << "I: connecting to broker at " << broker << std::endl;
 }
 
@@ -87,7 +86,7 @@ Client::Recv (std::string *command_out, std::string *identity_out, zmqpp::messag
     if (verbose) {
         std::cout << "I: received reply: " << msg << std::endl;
     }
-    
+
     //  Message format:
     //  Frame 1: empty frame (delimiter)
     //  Frame 2: "MDPCxy" (six bytes, MDP/Client x.y)
@@ -123,7 +122,7 @@ Client::Recv (std::string *command_out, std::string *identity_out, zmqpp::messag
         *identity_out = identity;
     }
 
-    // Success only when not received NAK 
+    // Success only when not received NAK
     return (command != MDPC_NAK);
 }
 

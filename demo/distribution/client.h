@@ -6,11 +6,11 @@
 
 #include "common.h"
 
-namespace mdp {
+namespace bdm {
 
 class Client {
   public:
-    Client(zmqpp::context *ctx, const std::string& broker, bool verbose); 
+    Client(zmqpp::context *ctx, const std::string& broker, bool verbose);
     ~Client();
 
     void SetTimeout(duration_ms_t timeout);
@@ -32,7 +32,7 @@ class Client {
     zmqpp::context *ctx = nullptr;      //  Our context
     zmqpp::socket *sock = nullptr;      //  Socket to broker
     std::string broker;                 //  Broker address
-    duration_ms_t timeout;              //  Request timeout                       
+    duration_ms_t timeout;              //  Request timeout
     bool verbose;                       //  Print activity to stdout
 
 };

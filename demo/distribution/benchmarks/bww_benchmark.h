@@ -15,7 +15,7 @@
 #include "distribution/client.h"
 #include "distribution/dist_worker_api.h"
 
-namespace mdp {
+namespace bdm {
 
 struct Info {
     static zmqpp::context ctx;
@@ -81,7 +81,7 @@ inline void Worker1Task() {
     assert( api.Start() );
 
     zmqpp::message msg;
-    std::uint8_t from; 
+    std::uint8_t from;
     for (size_t i = 0; i < Info::n_messages; i++) {
         // wait for message
         api.ReceiveMessage(&msg);
@@ -121,7 +121,7 @@ inline void Worker2Task() {
     assert( api.Start() );
 
     zmqpp::message msg;
-    std::uint8_t from; 
+    std::uint8_t from;
     for (size_t i = 0; i < Info::n_messages; i++) {
         // wait for message
         api.ReceiveMessage(&msg);
