@@ -12,34 +12,33 @@
 namespace bdm {
 
 class BrokerCommunicator : public Communicator {
-  public:
-    BrokerCommunicator (DistSharedInfo *info, const std::string& endpoint);
-    ~BrokerCommunicator ();
+ public:
+  BrokerCommunicator(DistSharedInfo* info, const std::string& endpoint);
+  ~BrokerCommunicator();
 
-    void ReactorTimedOut() override;
-    void ReactorServedRequests() override;
+  void ReactorTimedOut() override;
+  void ReactorServedRequests() override;
 
-    void Connect();
-    void HandleOutgoingMessage(zmqpp::message& msg);
-    void HandleIncomingMessage();
+  void Connect();
+  void HandleOutgoingMessage(zmqpp::message& msg);
+  void HandleIncomingMessage();
 
-    void SetHeartbeatDelay(const duration_ms_t& hb_delay);
-    void SetHeartbeatReconnect(const duration_ms_t& hb_rec_delay);
+  void SetHeartbeatDelay(const duration_ms_t& hb_delay);
+  void SetHeartbeatReconnect(const duration_ms_t& hb_rec_delay);
 
-  private:
-    void SendToBroker(const std::string& command, zmqpp::message *message = nullptr,
-            const std::string& option = "");
+ private:
+  void SendToBroker(const std::string& command,
+                    zmqpp::message* message = nullptr,
+                    const std::string& option = "");
 
-    std::vector<zmqpp::socket*> purge_later_;
+  std::vector<zmqpp::socket*> purge_later_;
 
-    //  Heartbeat management
-    time_point_t hb_at_;             //  When to send HEARTBEAT
-    duration_ms_t hb_delay_;         //  Heartbeat delay, msecs
-    duration_ms_t hb_rec_delay_;     //  Reconnect delay, msecs
-    size_t hb_liveness_;             //  How many attempts left
-
+  //  Heartbeat management
+  time_point_t hb_at_;          //  When to send HEARTBEAT
+  duration_ms_t hb_delay_;      //  Heartbeat delay, msecs
+  duration_ms_t hb_rec_delay_;  //  Reconnect delay, msecs
+  size_t hb_liveness_;          //  How many attempts left
 };
-
 }
 
-#endif //__BROKER_COMM__
+#endif  //__BROKER_COMM__
