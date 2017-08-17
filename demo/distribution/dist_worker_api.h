@@ -1,7 +1,13 @@
 #ifndef __DIST_WORKER_API_H
 #define __DIST_WORKER_API_H
 
+#include <algorithm>
+#include <array>
+#include <condition_variable>
+#include <mutex>
+#include <deque>
 #include <string>
+#include <thread>
 #include <vector>
 
 #include <zmqpp/zmqpp.hpp>
@@ -22,8 +28,9 @@ class DistWorkerAPI {
     void AddLeftNeighbourCommunicator(const std::string& endpoint);
     void AddRightNeighbourCommunicator(const std::string& endpoint);
 
-    void SendMessage(zmqpp::message& msg);
-    void ReceiveMessage(zmqpp::message *msg);
+    void SendMessage(std::unique_ptr<zmqpp::message>& msg, CommunicatorId to);
+    bool ReceiveMessage(std::unique_ptr<zmqpp::message>& msg, duration_ms_t timeout = std::chrono::milliseconds(5000));
+    bool ReceiveMessage(std::unique_ptr<zmqpp::message>& msg, CommunicatorId from ,duration_ms_t timeout = std::chrono::milliseconds(5000));
 
     bool Stop(bool wait = true, bool force = false);
 
@@ -34,15 +41,23 @@ class DistWorkerAPI {
   private:
     void HandleNetwork();
     void HandleAppMessage();
+
     void HandleNetworkMessages();
+    void ReceiveAllMessages();
+
     void Cleanup();
 
+    bool IsValidCommunicator(std::uint8_t comm_id);
     Communicator& GetValidCommunicator(std::uint8_t comm__id);
     void ForEachValidCommunicator(std::function<void(std::unique_ptr<Communicator>&)> f);
 
     DistSharedInfo *info_;
 
-    std::vector< std::unique_ptr<Communicator> > comms_;
+    std::array< std::unique_ptr<Communicator>, ToUnderlying(CommunicatorId::kCount) > comms_;
+
+    std::array< std::deque< std::unique_ptr<zmqpp::message> >, ToUnderlying(CommunicatorId::kCount) >  msg_queues_;
+    std::condition_variable msgs_cv_;
+    std::mutex msgs_cv_m;
 
     zmqpp::socket *parent_pipe_;            // Used by computation thread
     zmqpp::socket *child_pipe_;             // Used by background thread

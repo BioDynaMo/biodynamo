@@ -10,11 +10,6 @@ DistWorkerAPI::DistWorkerAPI(zmqpp::context *ctx, const std::string identity, bo
     info_->pending_ = new std::vector< std::unique_ptr<zmqpp::message> >();
     info_->identity_ = identity;
     info_->verbose_ = verbose;
-
-    // Invalid communicators
-    comms_.resize(
-        ToUnderlying(CommunicatorId::kCount)
-    );
 }
 
 DistWorkerAPI::~DistWorkerAPI () {
@@ -76,13 +71,68 @@ void DistWorkerAPI::AddRightNeighbourCommunicator(const std::string& endpoint) {
     );
 }
 
-void DistWorkerAPI::SendMessage(zmqpp::message& msg) {
-    parent_pipe_->send(msg);
+void DistWorkerAPI::SendMessage(std::unique_ptr<zmqpp::message>& msg, CommunicatorId to) {
+    msg->push_front( ToUnderlying(to) );
+    parent_pipe_->send(*msg);
 }
 
 
-void DistWorkerAPI::ReceiveMessage(zmqpp::message *msg) {
-    parent_pipe_->receive( *msg);
+bool DistWorkerAPI::ReceiveMessage(std::unique_ptr<zmqpp::message>& msg, CommunicatorId from, duration_ms_t timeout) {
+    assert(from > CommunicatorId::kUndefined);
+
+    // Read all pending messages from the pipe
+    ReceiveAllMessages();
+
+    auto& queue = msg_queues_[ToUnderlying(from)];
+    if (queue.empty()) {
+
+        // Wait for message until timeout
+        // NOTE: we use the predicate to avoid spurious wakeup
+        std::unique_lock<std::mutex> lk(msgs_cv_m);
+        msgs_cv_.wait_for(lk, timeout, [this, &queue] {
+            ReceiveAllMessages();
+            return !queue.empty();
+        });
+    }
+
+    // Receive message from specific sender
+    ReceiveAllMessages();
+
+    bool empty_queue = queue.empty();
+    if (!empty_queue) {
+        msg = std::move( *(queue.begin()) );
+        queue.pop_front();
+    }
+
+    return !empty_queue;
+}
+
+
+bool DistWorkerAPI::ReceiveMessage(std::unique_ptr<zmqpp::message>& msg, duration_ms_t timeout) {
+    // Read all pending messages from the pipe
+    ReceiveAllMessages();
+
+    auto predicate = [] (auto& queue) { return !queue.empty(); };
+    if (!std::any_of(msg_queues_.begin(), msg_queues_.end(), predicate)) {
+        // Wait for message until timeout
+        // NOTE: we use the predicate to avoid spurious wakeup
+        std::unique_lock<std::mutex> lk(msgs_cv_m);
+        msgs_cv_.wait_for(lk, timeout, [this, &predicate] {
+            ReceiveAllMessages();
+            return std::any_of(msg_queues_.begin(), msg_queues_.end(), predicate);
+        });
+    }
+
+    // Return message from anyone
+    for (auto& c : msg_queues_) {
+        if (!c.empty()) {
+            msg = std::move( *(c.begin()) );
+            c.pop_front();
+            return true;
+        }
+    }
+
+    return false;
 }
 
 bool DistWorkerAPI::Stop(bool wait /* = true */, bool force /* = false */) {
@@ -177,11 +227,29 @@ void DistWorkerAPI::HandleNetworkMessages() {
     for (auto& msg_p : *(info_->pending_)) {
         // Verify that sender exists
         msg_p->get(comm_id, 0);
-        GetValidCommunicator(comm_id);
+        assert( IsValidCommunicator(comm_id) );
 
         child_pipe_->send(*msg_p);
+        msgs_cv_.notify_one();
     }
     info_->pending_->clear();
+}
+
+void DistWorkerAPI::ReceiveAllMessages() {
+    std::uint8_t comm_id;
+
+    auto msg = std::make_unique<zmqpp::message>();
+    while( parent_pipe_->receive(*msg, true) ) {
+        // Push to the proper container
+        msg->get(comm_id, 0);
+        msg->pop_front();
+        assert( IsValidCommunicator(comm_id) );
+
+        msg_queues_[comm_id].push_back(std::move(msg));
+
+        // Next message?
+        msg = std::make_unique<zmqpp::message>();
+    }
 }
 
 void DistWorkerAPI::Cleanup() {
@@ -204,12 +272,16 @@ void DistWorkerAPI::Cleanup() {
     delete info_->reactor_;
 }
 
-Communicator& DistWorkerAPI::GetValidCommunicator (std::uint8_t comm_id) {
+bool DistWorkerAPI::IsValidCommunicator(std::uint8_t comm_id) {
     if (comm_id == 0 || comm_id >= comms_.size()) {
         std::cout << "E: Invalid communicator id: " << comm_id << std::endl;
         assert(false);
     }
-    assert( comms_[comm_id] );
+    return (comms_[comm_id] != nullptr);
+}
+
+Communicator& DistWorkerAPI::GetValidCommunicator (std::uint8_t comm_id) {
+    assert( IsValidCommunicator(comm_id) );
     return *comms_[comm_id];
 }
 
