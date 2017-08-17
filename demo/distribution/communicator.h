@@ -8,7 +8,7 @@
 
 #include "common.h"
 
-namespace mdp {
+namespace bdm {
 
 class Communicator {
   public:
@@ -43,7 +43,7 @@ class Communicator {
         return socket_;
     }
 
-    virtual bool isConnected() {
+    virtual bool IsConnected() {
         return is_connected_;
     }
 

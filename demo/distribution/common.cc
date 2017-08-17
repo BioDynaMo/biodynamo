@@ -1,6 +1,6 @@
 #include "common.h"
 
-namespace mdp {
+namespace bdm {
 
 // Converts a string to its hex representation
 std::string toHex(const std::string& in) {
@@ -35,7 +35,7 @@ std::ostream& operator<< (std::ostream& out, const zmqpp::message& msg) {
                 break;
             }
         }
-        
+
         size_t max_size = is_binary ? 35 : 70;
         std::string ellipses = "";
 

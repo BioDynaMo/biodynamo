@@ -11,7 +11,7 @@
 #include "common.h"
 #include "worker_entry.h"
 
-namespace mdp {
+namespace bdm {
 
 // LRU worker comparator
 struct LRU {

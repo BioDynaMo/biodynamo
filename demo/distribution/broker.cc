@@ -5,7 +5,7 @@
 #include "broker.h"
 #include "worker_entry.h"
 
-namespace mdp {
+namespace bdm {
 
 Broker::Broker (zmqpp::context *ctx, const std::string& endpoint, const bool verbose_)
     : ctx_ (ctx)

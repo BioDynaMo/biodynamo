@@ -135,6 +135,16 @@ bool DistWorkerAPI::ReceiveMessage(std::unique_ptr<zmqpp::message>& msg, duratio
     return false;
 }
 
+bool DistWorkerAPI::IsConnected(const CommunicatorId comm) {
+    auto id = ToUnderlying(comm);
+    if (!IsValidCommunicator(id)) {
+        return false;
+    }
+
+    return GetValidCommunicator(id).IsConnected();
+
+}
+
 bool DistWorkerAPI::Stop(bool wait /* = true */, bool force /* = false */) {
     if (!parent_pipe_) {
         return false;

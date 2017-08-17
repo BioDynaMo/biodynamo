@@ -16,7 +16,7 @@
 #include "broker_comm.h"
 #include "worker_comm.h"
 
-namespace mdp {
+namespace bdm {
 
 class DistWorkerAPI {
   public:
@@ -31,6 +31,8 @@ class DistWorkerAPI {
     void SendMessage(std::unique_ptr<zmqpp::message>& msg, CommunicatorId to);
     bool ReceiveMessage(std::unique_ptr<zmqpp::message>& msg, duration_ms_t timeout = std::chrono::milliseconds(5000));
     bool ReceiveMessage(std::unique_ptr<zmqpp::message>& msg, CommunicatorId from ,duration_ms_t timeout = std::chrono::milliseconds(5000));
+
+    bool IsConnected (const CommunicatorId comm);
 
     bool Stop(bool wait = true, bool force = false);
 

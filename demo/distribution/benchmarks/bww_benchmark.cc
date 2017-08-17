@@ -1,6 +1,6 @@
 #include "bww_benchmark.h"
 
-using namespace mdp;
+using namespace bdm;
 
 zmqpp::context Info::ctx {};
 std::string Info::worker1 ("W1");

@@ -4,18 +4,16 @@
 
 #include "worker_comm.h"
 
-namespace mdp {
+namespace bdm {
 
 WorkerCommunicator::WorkerCommunicator (DistSharedInfo *info, const std::string& endpoint, CommunicatorId comm_id)
     : Communicator(info, endpoint, comm_id) {
 
     // By convention we define that we act as client if
     // we initiate the communication with the left worker
-
     this->client_ = (comm_id == CommunicatorId::kLeftNeighbour ? true : false );
     this->worker_str_ = (client_ ? "right (client/dealer)" : "left (server/router)");
     this->coworker_str_ = (!client_ ? "right (client/dealer)" : "left (server/router)");
-
 }
 
 WorkerCommunicator::~WorkerCommunicator() {

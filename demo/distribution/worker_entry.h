@@ -9,7 +9,7 @@
 
 #include "common.h"
 
-namespace mdp {
+namespace bdm {
 
 class WorkerEntry {
   public:
@@ -36,7 +36,7 @@ class WorkerEntry {
         if (verbose) {
             std::cout << "I: sending " << command << " to worker: " << msg << std::endl;
         }
-        
+
         sock->send(msg);
     }
 
