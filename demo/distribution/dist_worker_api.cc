@@ -89,9 +89,7 @@ bool DistWorkerAPI::ReceiveMessage(std::unique_ptr<zmqpp::message>& msg,
     });
   }
 
-  // Receive message from specific sender
   ReceiveAllMessages();
-
   bool empty_queue = queue.empty();
   if (!empty_queue) {
     msg = std::move(*(queue.begin()));
@@ -118,6 +116,7 @@ bool DistWorkerAPI::ReceiveMessage(std::unique_ptr<zmqpp::message>& msg,
   }
 
   // Return message from anyone
+  ReceiveAllMessages();
   for (auto& c : msg_queues_) {
     if (!c.empty()) {
       msg = std::move(*(c.begin()));
@@ -291,4 +290,4 @@ void DistWorkerAPI::ForEachValidCommunicator(
     }
   }
 }
-} // namespace bdm
+}  // namespace bdm

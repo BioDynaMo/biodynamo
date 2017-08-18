@@ -1,5 +1,5 @@
-#ifndef __DEMO_CBW_BENCHMARK__
-#define __DEMO_CBW_BENCHMARK__
+#ifndef DEMO_DISTRIBUTION_BENCHMARKS_CBW_BENCHMARK_H_
+#define DEMO_DISTRIBUTION_BENCHMARKS_CBW_BENCHMARK_H_
 
 #include <chrono>
 #include <iostream>
@@ -98,4 +98,4 @@ inline void WorkerTask() {
 }
 }  // namespace bdm
 
-#endif  // __DEMO_CBW_BENCHMARK__
+#endif  // DEMO_DISTRIBUTION_BENCHMARKS_CBW_BENCHMARK_H_

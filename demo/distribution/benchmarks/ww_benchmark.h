@@ -1,5 +1,5 @@
-#ifndef __WW_BENCHMARK__
-#define __WW_BENCHMARK__
+#ifndef DEMO_DISTRIBUTION_BENCHMARKS_WW_BENCHMARK_H_
+#define DEMO_DISTRIBUTION_BENCHMARKS_WW_BENCHMARK_H_
 
 #include <chrono>
 #include <iostream>
@@ -87,4 +87,4 @@ inline void LWorker() {
 }
 }
 
-#endif  //__WW_BENCHMARK__
+#endif  // DEMO_DISTRIBUTION_BENCHMARKS_WW_BENCHMARK_H_
