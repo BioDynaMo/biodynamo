@@ -17,21 +17,23 @@
 
 namespace bdm {
 
-struct Info {
-  static zmqpp::context ctx;
-  static std::string worker1;
-  static std::string worker2;
-  static size_t n_messages;
-  static bool verbose;
+struct TestBWWData {
+  static zmqpp::context ctx_;
+  static std::string worker1_;
+  static std::string worker2_;
+  static size_t n_messages_;
+  static bool verbose_;
 };
 
-inline void ClientTask() {
-  Client client(&Info::ctx, "tcp://127.0.0.1:5555", Info::verbose);
+inline void TestBWWClientTask() {
+  Client client(&TestBWWData::ctx_, "tcp://127.0.0.1:5555",
+                TestBWWData::verbose_);
 
-  std::cout << "I: Sending " << Info::n_messages << " messages..." << std::endl;
+  std::cout << "I: Sending " << TestBWWData::n_messages_ << " messages..."
+            << std::endl;
 
   auto start = std::chrono::high_resolution_clock::now();
-  size_t remaining = Info::n_messages;
+  size_t remaining = TestBWWData::n_messages_;
 
   std::string command, worker;
   zmqpp::message msg;
@@ -39,7 +41,8 @@ inline void ClientTask() {
     msg.push_back("Hello world");
 
     // Round robin
-    worker = (remaining % 2 == 0 ? Info::worker1 : Info::worker2);
+    worker =
+        (remaining % 2 == 0 ? TestBWWData::worker1_ : TestBWWData::worker2_);
     client.Send(worker, msg);
 
     if (!client.Recv(&command, nullptr, msg)) {
@@ -60,94 +63,93 @@ inline void ClientTask() {
                       std::chrono::high_resolution_clock::now() - start)
                       .count()) /
                  1000.0;
-  std::cout << "I: Received " << Info::n_messages - remaining << " replies in "
-            << elapsed << " ms" << std::endl;
+  std::cout << "I: Received " << TestBWWData::n_messages_ - remaining
+            << " replies in " << elapsed << " ms" << std::endl;
   std::cout << "I: Time per message: "
-            << elapsed / (Info::n_messages - remaining) << " ms" << std::endl;
+            << elapsed / (TestBWWData::n_messages_ - remaining) << " ms"
+            << std::endl;
 
   // Send stop signal
   // assert( api.Stop() );
 }
 
-inline void BrokerTask() {
-  Broker broker(&Info::ctx, "tcp://*:5555", Info::verbose);
+inline void TestBWWBrokerTask() {
+  Broker broker(&TestBWWData::ctx_, "tcp://*:5555", TestBWWData::verbose_);
   broker.Run();
 }
 
-inline void Worker1Task() {
-  DistWorkerAPI api(&Info::ctx, Info::worker1, Info::verbose);
+inline void TestBWWWorker1Task() {
+  DistWorkerAPI api(&TestBWWData::ctx_, TestBWWData::worker1_,
+                    TestBWWData::verbose_);
 
   api.AddBrokerCommunicator("tcp://127.0.0.1:5555");
   api.AddRightNeighbourCommunicator("tcp://127.0.0.1:5556");
   assert(api.Start());
 
-  zmqpp::message msg;
+  std::unique_ptr<zmqpp::message> msg;
   std::uint8_t from;
-  for (size_t i = 0; i < Info::n_messages; i++) {
+  for (size_t i = 0; i < TestBWWData::n_messages_; i++) {
     // wait for message
-    api.ReceiveMessage(&msg);
+    api.ReceiveMessage(msg);
 
-    if (Info::verbose) {
-      std::cout << "WORKER 1: received message: " << msg << std::endl;
+    if (TestBWWData::verbose_) {
+      std::cout << "WORKER 1: received message: " << *msg << std::endl;
     }
 
-    msg.get(from, 0);
-    msg.pop_front();
+    msg->get(from, 0);
+    msg->pop_front();
 
     switch (static_cast<CommunicatorId>(from)) {
       case CommunicatorId::kBroker:
-        msg.push_front(ToUnderlying(CommunicatorId::kRightNeighbour));
+        api.SendMessage(msg, CommunicatorId::kRightNeighbour);
         break;
       case CommunicatorId::kRightNeighbour:
-        msg.push_front(ToUnderlying(CommunicatorId::kBroker));
+        api.SendMessage(msg, CommunicatorId::kBroker);
         break;
       default:
         std::cout << "Error: wrong communicator id" << std::endl;
         assert(api.Stop());
         return;
     }
-
-    api.SendMessage(msg);
   }
 
   // Send stop signal
   assert(api.Stop());
 }
 
-inline void Worker2Task() {
-  DistWorkerAPI api(&Info::ctx, Info::worker2, Info::verbose);
+inline void TestBWWWorker2Task() {
+  DistWorkerAPI api(&TestBWWData::ctx_, TestBWWData::worker2_,
+                    TestBWWData::verbose_);
 
   api.AddBrokerCommunicator("tcp://127.0.0.1:5555");
   api.AddLeftNeighbourCommunicator("tcp://127.0.0.1:5556");
   assert(api.Start());
 
-  zmqpp::message msg;
+  std::unique_ptr<zmqpp::message> msg;
   std::uint8_t from;
-  for (size_t i = 0; i < Info::n_messages; i++) {
+  for (size_t i = 0; i < TestBWWData::n_messages_; i++) {
     // wait for message
-    api.ReceiveMessage(&msg);
+    api.ReceiveMessage(msg);
 
-    if (Info::verbose) {
-      std::cout << "WORKER 2: received message: " << msg << std::endl;
+    if (TestBWWData::verbose_) {
+      std::cout << "WORKER 2: received message: " << *msg << std::endl;
     }
 
-    msg.get(from, 0);
-    msg.pop_front();
+    msg->get(from, 0);
+    msg->pop_front();
 
     switch (static_cast<CommunicatorId>(from)) {
       case CommunicatorId::kBroker:
-        msg.push_front(ToUnderlying(CommunicatorId::kLeftNeighbour));
+        api.SendMessage(msg, CommunicatorId::kLeftNeighbour);
         break;
       case CommunicatorId::kLeftNeighbour:
-        msg.push_front(ToUnderlying(CommunicatorId::kBroker));
+        api.SendMessage(msg, CommunicatorId::kBroker);
         break;
       default:
         std::cout << "Error: wrong communicator id" << std::endl;
         assert(api.Stop());
         return;
     }
-
-    api.SendMessage(msg);
   }
 
   // Send stop signal

@@ -14,24 +14,24 @@
 
 namespace bdm {
 
-struct Info {
-  static zmqpp::context ctx;
-  static size_t n_messages;
-  static bool verbose;
+struct TestWWData {
+  static zmqpp::context ctx_;
+  static size_t n_messages_;
+  static bool verbose_;
 };
 
 inline void RWorker() {
-  DistWorkerAPI api(&Info::ctx, "W1", Info::verbose);
+  DistWorkerAPI api(&TestWWData::ctx_, "W1", TestWWData::verbose_);
 
   api.AddRightNeighbourCommunicator("tcp://127.0.0.1:5500");
   assert(api.Start());
 
   std::unique_ptr<zmqpp::message> msg;
-  for (size_t i = 0; i < Info::n_messages; i++) {
+  for (size_t i = 0; i < TestWWData::n_messages_; i++) {
     // wait for message
     assert(api.ReceiveMessage(msg, CommunicatorId::kRightNeighbour));
 
-    if (Info::verbose) {
+    if (TestWWData::verbose_) {
       std::cout << "R-APP: received message: " << *msg << std::endl;
     }
 
@@ -44,21 +44,22 @@ inline void RWorker() {
 }
 
 inline void LWorker() {
-  DistWorkerAPI api(&Info::ctx, "W2", Info::verbose);
+  DistWorkerAPI api(&TestWWData::ctx_, "W2", TestWWData::verbose_);
 
   api.AddLeftNeighbourCommunicator("tcp://127.0.0.1:5500");
   assert(api.Start());
 
   auto start = std::chrono::high_resolution_clock::now();
 
-  std::cout << "I: Sending " << Info::n_messages << " messages..." << std::endl;
+  std::cout << "I: Sending " << TestWWData::n_messages_ << " messages..."
+            << std::endl;
 
   // Send first must send the message
   auto msg = std::make_unique<zmqpp::message>();
   msg->push_front("Hello world");
   msg->push_front("");
 
-  for (size_t i = 0; i < Info::n_messages; i++) {
+  for (size_t i = 0; i < TestWWData::n_messages_; i++) {
     api.SendMessage(msg, CommunicatorId::kLeftNeighbour);
 
     // echo that message
@@ -67,7 +68,7 @@ inline void LWorker() {
     // TODO: define some kind of equality
     // assert(initial_msg == msg);
 
-    if (Info::verbose) {
+    if (TestWWData::verbose_) {
       std::cout << "L-APP: received message: " << *msg << std::endl;
     }
   }
@@ -76,10 +77,10 @@ inline void LWorker() {
                       std::chrono::high_resolution_clock::now() - start)
                       .count()) /
                  1000.0;
-  std::cout << "I: Sent " << Info::n_messages << " messages in " << elapsed
+  std::cout << "I: Sent " << TestWWData::n_messages_ << " messages in "
+            << elapsed << " ms" << std::endl;
+  std::cout << "I: Time per message: " << elapsed / TestWWData::n_messages_
             << " ms" << std::endl;
-  std::cout << "I: Time per message: " << elapsed / Info::n_messages << " ms"
-            << std::endl;
 
   // Send stop signal
   assert(api.Stop());
