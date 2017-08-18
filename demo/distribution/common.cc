@@ -3,12 +3,12 @@
 namespace bdm {
 
 // Converts a string to its hex representation
-std::string toHex(const std::string& in) {
+std::string ToHex(const std::string& in) {
   std::stringstream ss;
   std::cout << in.length() << std::endl;
   for (size_t i = 0; i < in.length(); i++) {
     ss << std::hex << std::setfill('0') << std::setw(2) << std::uppercase
-       << ((int)in[i]);
+       << (static_cast<int>(in[i]));
   }
   return ss.str();
 }
@@ -46,7 +46,7 @@ std::ostream& operator<<(std::ostream& out, const zmqpp::message& msg) {
     ss << "[" << std::setfill('0') << std::setw(3) << part.size() << "] ";
 
     if (is_binary) {
-      ss << "0x" << toHex(part);
+      ss << "0x" << ToHex(part);
     } else {
       ss << part;
     }
@@ -56,4 +56,4 @@ std::ostream& operator<<(std::ostream& out, const zmqpp::message& msg) {
   out << std::endl << ss.str();
   return out;
 }
-}
+} // namespace bdm

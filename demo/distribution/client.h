@@ -36,6 +36,6 @@ class Client {
   duration_ms_t timeout;          //  Request timeout
   bool verbose;                   //  Print activity to stdout
 };
-}
+} // namespace bdm
 
 #endif  // __MDP_CLIENT_H__

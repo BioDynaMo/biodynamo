@@ -32,6 +32,6 @@ class WorkerCommunicator : public Communicator {
   std::string coworker_str_;
   std::string worker_str_;
 };
-}
+} // namespace bdm
 
 #endif  //__WORKER_COMM__

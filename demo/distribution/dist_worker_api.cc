@@ -145,7 +145,7 @@ bool DistWorkerAPI::Stop(bool wait /* = true */, bool force /* = false */) {
 
   if (!parent_pipe_->send(zmqpp::signal::stop, true)) {
     // Cannot deliver signal. Maybe force kill?
-    // TODO: handle force kill
+    // TODO(kkanellis): handle force kill
     return false;
   }
 
@@ -291,4 +291,4 @@ void DistWorkerAPI::ForEachValidCommunicator(
     }
   }
 }
-}
+} // namespace bdm
