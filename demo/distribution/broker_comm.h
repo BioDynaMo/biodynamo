@@ -19,9 +19,9 @@ class BrokerCommunicator : public Communicator {
   void ReactorTimedOut() override;
   void ReactorServedRequests() override;
 
-  void Connect();
-  void HandleOutgoingMessage(zmqpp::message& msg);
-  void HandleIncomingMessage();
+  void Connect() override;
+  void HandleOutgoingMessage(zmqpp::message& msg) override;
+  void HandleIncomingMessage() override;
 
   void SetHeartbeatDelay(const duration_ms_t& hb_delay);
   void SetHeartbeatReconnect(const duration_ms_t& hb_rec_delay);
@@ -39,6 +39,6 @@ class BrokerCommunicator : public Communicator {
   duration_ms_t hb_rec_delay_;  //  Reconnect delay, msecs
   size_t hb_liveness_;          //  How many attempts left
 };
-}
+} // namespace bdm
 
 #endif  //__BROKER_COMM__

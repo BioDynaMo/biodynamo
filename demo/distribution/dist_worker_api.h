@@ -73,6 +73,6 @@ class DistWorkerAPI {
   std::thread* thread_ = nullptr;      //  Background/Network thread
   std::exception_ptr eptr_ = nullptr;  //  Holds the last exception
 };
-}
+} // namespace bdm
 
 #endif  // __DIST_WORKER_API_H

@@ -68,6 +68,6 @@ class Communicator {
   CommunicatorId comm_id_;
   bool is_connected_;
 };
-}
+} // namespace bdm
 
 #endif  //__COMMUNICATOR__

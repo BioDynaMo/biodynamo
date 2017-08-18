@@ -144,4 +144,4 @@ void WorkerCommunicator::SendToCoWorker(const std::string& command,
   }
   socket_->send(msg);
 }
-}
+} // namespace bdm
