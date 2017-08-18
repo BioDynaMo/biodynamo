@@ -234,4 +234,4 @@ void Broker::Run() {
     }
   }
 }
-} // namespace bdm
+}  // namespace bdm

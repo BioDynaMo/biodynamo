@@ -145,4 +145,4 @@ void BrokerCommunicator::SetHeartbeatReconnect(
     const duration_ms_t& hb_rec_delay) {
   this->hb_rec_delay_ = hb_rec_delay_;
 }
-} // namespace bdm
+}  // namespace bdm

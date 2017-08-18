@@ -123,4 +123,4 @@ bool Client::Recv(std::string* command_out, std::string* identity_out,
   // Success only when not received NAK
   return (command != MDPC_NAK);
 }
-} // namespace bdm
+}  // namespace bdm

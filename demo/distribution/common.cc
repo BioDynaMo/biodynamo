@@ -56,4 +56,4 @@ std::ostream& operator<<(std::ostream& out, const zmqpp::message& msg) {
   out << std::endl << ss.str();
   return out;
 }
-} // namespace bdm
+}  // namespace bdm

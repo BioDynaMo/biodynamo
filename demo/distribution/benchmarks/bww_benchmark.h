@@ -1,12 +1,10 @@
-#ifndef __BWW_BENCHMARK__
-#define __BWW_BENCHMARK__
+#ifndef DEMO_DISTRIBUTION_BENCHMARKS_BWW_BENCHMARK_H_
+#define DEMO_DISTRIBUTION_BENCHMARKS_BWW_BENCHMARK_H_
 
 #include <chrono>
 #include <iostream>
 #include <string>
 #include <thread>
-
-#include <stdlib.h>
 
 #include <zmqpp/zmqpp.hpp>
 
@@ -157,4 +155,4 @@ inline void TestBWWWorker2Task() {
 }
 }
 
-#endif  // __BWW_BENCHMARK__
+#endif  // DEMO_DISTRIBUTION_BENCHMARKS_BWW_BENCHMARK_H_

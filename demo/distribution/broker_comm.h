@@ -39,6 +39,6 @@ class BrokerCommunicator : public Communicator {
   duration_ms_t hb_rec_delay_;  //  Reconnect delay, msecs
   size_t hb_liveness_;          //  How many attempts left
 };
-} // namespace bdm
+}  // namespace bdm
 
 #endif  //__BROKER_COMM__

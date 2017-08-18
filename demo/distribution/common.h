@@ -100,6 +100,6 @@ const duration_ms_t HEARTBEAT_INTERVAL(2500);  //  msecs
 const duration_ms_t HEARTBEAT_EXPIRY = HEARTBEAT_INTERVAL * HEARTBEAT_LIVENESS;
 
 // ---------------------------------------------
-} // namespace bdm
+}  // namespace bdm
 
 #endif  // __MDP_COMMON_H__

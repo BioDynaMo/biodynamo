@@ -48,6 +48,6 @@ class Broker {
   time_point_t hb_at_;  //  When to send HEARTBEAT
   bool verbose_;        //  Print activity to stdout
 };
-} // namespace bdm
+}  // namespace bdm
 
 #endif  // __MDP_BROKER_H__
