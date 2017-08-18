@@ -1,5 +1,5 @@
-#ifndef __CBW_BENCHMARK__
-#define __CBW_BENCHMARK__
+#ifndef __DEMO_CBW_BENCHMARK__
+#define __DEMO_CBW_BENCHMARK__
 
 #include <chrono>
 #include <iostream>
@@ -16,27 +16,29 @@
 
 namespace bdm {
 
-struct Info {
-  static zmqpp::context ctx;
-  static std::string worker;
-  static size_t n_messages;
-  static bool verbose;
+struct TestCBWData {
+  static zmqpp::context ctx_;
+  static std::string worker_;
+  static size_t n_messages_;
+  static bool verbose_;
 };
 
 inline void ClientTask() {
-  Client client(&Info::ctx, "tcp://127.0.0.1:5555", Info::verbose);
+  Client client(&TestCBWData::ctx_, "tcp://127.0.0.1:5555",
+                TestCBWData::verbose_);
 
-  std::cout << "I: Sending " << Info::n_messages << " messages..." << std::endl;
+  std::cout << "I: Sending " << TestCBWData::n_messages_ << " messages..."
+            << std::endl;
 
   auto start = std::chrono::high_resolution_clock::now();
-  size_t remaining = Info::n_messages;
+  size_t remaining = TestCBWData::n_messages_;
 
   std::string command;
   zmqpp::message msg;
   while (remaining > 0) {
     msg.push_back("Hello world");
 
-    client.Send(Info::worker, msg);
+    client.Send(TestCBWData::worker_, msg);
 
     if (!client.Recv(&command, nullptr, msg)) {
       std::cout << "Interrupted..." << std::endl;
@@ -44,7 +46,7 @@ inline void ClientTask() {
     }
 
     if (command == MDPC_NAK) {
-      std::cout << "E: invalid worker " << Info::worker << std::endl;
+      std::cout << "E: invalid worker_ " << TestCBWData::worker_ << std::endl;
       std::this_thread::sleep_for(HEARTBEAT_INTERVAL);
       continue;
     }
@@ -56,33 +58,35 @@ inline void ClientTask() {
                       std::chrono::high_resolution_clock::now() - start)
                       .count()) /
                  1000.0;
-  std::cout << "I: Received " << Info::n_messages - remaining << " replies in "
-            << elapsed << " ms" << std::endl;
+  std::cout << "I: Received " << TestCBWData::n_messages_ - remaining
+            << " replies in " << elapsed << " ms" << std::endl;
   std::cout << "I: Time per message: "
-            << elapsed / (Info::n_messages - remaining) << " ms" << std::endl;
+            << elapsed / (TestCBWData::n_messages_ - remaining) << " ms"
+            << std::endl;
 
   // Send stop signal
   // assert( api.Stop() );
 }
 
 inline void BrokerTask() {
-  Broker broker(&Info::ctx, "tcp://*:5555", Info::verbose);
+  Broker broker(&TestCBWData::ctx_, "tcp://*:5555", TestCBWData::verbose_);
   broker.Run();
 }
 
 inline void WorkerTask() {
-  DistWorkerAPI api(&Info::ctx, Info::worker, Info::verbose);
+  DistWorkerAPI api(&TestCBWData::ctx_, TestCBWData::worker_,
+                    TestCBWData::verbose_);
 
   api.AddBrokerCommunicator("tcp://127.0.0.1:5555");
   assert(api.Start());
 
   std::unique_ptr<zmqpp::message> msg;
-  for (size_t i = 0; i < Info::n_messages; i++) {
+  for (size_t i = 0; i < TestCBWData::n_messages_; i++) {
     // wait for message
     api.ReceiveMessage(msg);
 
-    if (Info::verbose) {
-      std::cout << "WORKER: received message: " << *msg << std::endl;
+    if (TestCBWData::verbose_) {
+      std::cout << "worker_: received message: " << *msg << std::endl;
     }
 
     // echo that message
@@ -92,6 +96,6 @@ inline void WorkerTask() {
   // Send stop signal
   assert(api.Stop());
 }
-}
+}  // namespace bdm
 
-#endif  // __CBW_BENCHMARK__
+#endif  // __DEMO_CBW_BENCHMARK__

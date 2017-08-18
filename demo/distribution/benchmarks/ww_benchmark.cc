@@ -1,15 +1,16 @@
 #include "ww_benchmark.h"
 
-using namespace bdm;
+namespace bdm {
 
-zmqpp::context Info::ctx{};
-size_t Info::n_messages(10000);
-bool Info::verbose(false);
+zmqpp::context TestWWData::ctx_{};
+size_t TestWWData::n_messages_(10000);
+bool TestWWData::verbose_(false);
 
 int main(int argc, char *argv[]) {
-  Info::n_messages = (argc >= 2 ? atoi(argv[1]) : Info::n_messages);
-  Info::verbose = (argc == 2 && strcmp(argv[1], "-v") == 0) ||
-                  (argc == 3 && strcmp(argv[2], "-v") == 0);
+  TestWWData::n_messages_ =
+      (argc >= 2 ? atoi(argv[1]) : TestWWData::n_messages_);
+  TestWWData::verbose_ = (argc == 2 && strcmp(argv[1], "-v") == 0) ||
+                         (argc == 3 && strcmp(argv[2], "-v") == 0);
 
   std::thread rworker(RWorker);
   std::thread lworker(LWorker);
@@ -19,3 +20,4 @@ int main(int argc, char *argv[]) {
 
   return 0;
 }
+}  // namespace bdm

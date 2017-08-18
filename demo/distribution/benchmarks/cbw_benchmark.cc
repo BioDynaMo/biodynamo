@@ -1,16 +1,17 @@
 #include "cbw_benchmark.h"
 
-using namespace bdm;
+namespace bdm {
 
-zmqpp::context Info::ctx{};
-std::string Info::worker("W1");
-size_t Info::n_messages(1000);
-bool Info::verbose(false);
+zmqpp::context TestCBWData::ctx_{};
+std::string TestCBWData::worker_("W1");
+size_t TestCBWData::n_messages_(1000);
+bool TestCBWData::verbose_(false);
 
 int main(int argc, char *argv[]) {
-  Info::n_messages = (argc >= 2 ? atoi(argv[1]) : Info::n_messages);
-  Info::verbose = (argc == 2 && strcmp(argv[1], "-v") == 0) ||
-                  (argc == 3 && strcmp(argv[2], "-v") == 0);
+  TestCBWData::n_messages_ =
+      (argc >= 2 ? atoi(argv[1]) : TestCBWData::n_messages_);
+  TestCBWData::verbose_ = (argc == 2 && strcmp(argv[1], "-v") == 0) ||
+                          (argc == 3 && strcmp(argv[2], "-v") == 0);
 
   std::thread broker_t(BrokerTask);
   std::thread worker_t(WorkerTask);
@@ -23,3 +24,5 @@ int main(int argc, char *argv[]) {
 
   return 0;
 }
+
+}  // namespace bdm
