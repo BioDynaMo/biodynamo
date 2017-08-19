@@ -1,14 +1,12 @@
 #ifndef DEMO_DISTRIBUTION_BENCHMARKS_WW_BENCHMARK_H_
 #define DEMO_DISTRIBUTION_BENCHMARKS_WW_BENCHMARK_H_
 
+#include <zmqpp/zmqpp.hpp>
+
 #include <chrono>
 #include <iostream>
 #include <string>
 #include <thread>
-
-#include <stdlib.h>
-
-#include <zmqpp/zmqpp.hpp>
 
 #include "distribution/dist_worker_api.h"
 
@@ -65,7 +63,7 @@ inline void LWorker() {
     // echo that message
     assert(api.ReceiveMessage(msg, CommunicatorId::kLeftNeighbour));
 
-    // TODO: define some kind of equality
+    // TODO(kkanellis): define some kind of equality
     // assert(initial_msg == msg);
 
     if (TestWWData::verbose_) {
@@ -73,7 +71,7 @@ inline void LWorker() {
     }
   }
 
-  auto elapsed = ((double)std::chrono::duration_cast<std::chrono::microseconds>(
+  auto elapsed = static_cast<double>(std::chrono::duration_cast<std::chrono::microseconds>(
                       std::chrono::high_resolution_clock::now() - start)
                       .count()) /
                  1000.0;
@@ -85,6 +83,6 @@ inline void LWorker() {
   // Send stop signal
   assert(api.Stop());
 }
-}
+}  // namespace bdm
 
 #endif  // DEMO_DISTRIBUTION_BENCHMARKS_WW_BENCHMARK_H_

@@ -1,12 +1,9 @@
-#ifndef __MDP_BROKER_H__
-#define __MDP_BROKER_H__
+#ifndef DEMO_DISTRIBUTION_BROKER_H__
+#define DEMO_DISTRIBUTION_BROKER_H__
 
-#include <chrono>
 #include <map>
 #include <set>
-#include <vector>
-
-#include <zmqpp/zmqpp.hpp>
+#include <string>
 
 #include "common.h"
 #include "worker_entry.h"
@@ -50,4 +47,4 @@ class Broker {
 };
 }  // namespace bdm
 
-#endif  // __MDP_BROKER_H__
+#endif  // DEMO_DISTRIBUTION_BROKER_H__

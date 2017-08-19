@@ -1,11 +1,9 @@
-#ifndef __WORKER_ENTRY_H__
-#define __WORKER_ENTRY_H__
+#ifndef DEMO_DISTRIBUTION_WORKER_ENTRY_H__
+#define DEMO_DISTRIBUTION_WORKER_ENTRY_H__
 
 #include <chrono>
 #include <list>
 #include <string>
-
-#include <zmqpp/zmqpp.hpp>
 
 #include "common.h"
 
@@ -13,7 +11,7 @@ namespace bdm {
 
 class WorkerEntry {
  public:
-  WorkerEntry(const std::string& identity) {
+  explicit WorkerEntry(const std::string& identity) {
     this->identity = identity;
     this->expiry = std::chrono::system_clock::now() + HEARTBEAT_EXPIRY;
   }
@@ -47,6 +45,6 @@ class WorkerEntry {
   std::string identity;                // Worker (printable) identity
   time_point_t expiry;                 // When to send HEARTBEAT
 };
-}
+}  // namespace bdm
 
-#endif  // __WORKER_ENTRY_H__
+#endif  // DEMO_DISTRIBUTION_WORKER_ENTRY_H__

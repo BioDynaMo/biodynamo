@@ -1,7 +1,6 @@
-#ifndef __MDP_CLIENT_H__
-#define __MDP_CLIENT_H__
+#ifndef DEMO_DISTRIBUTION_CLIENT_H_
+#define DEMO_DISTRIBUTION_CLIENT_H_
 
-#include <chrono>
 #include <string>
 
 #include "common.h"
@@ -38,4 +37,4 @@ class Client {
 };
 }  // namespace bdm
 
-#endif  // __MDP_CLIENT_H__
+#endif  // DEMO_DISTRIBUTION_CLIENT_H_

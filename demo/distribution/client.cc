@@ -1,9 +1,4 @@
-#include <iostream>
-
-#include <zmqpp/zmqpp.hpp>
-
 #include "client.h"
-#include "common.h"
 
 namespace bdm {
 

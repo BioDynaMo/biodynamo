@@ -1,7 +1,3 @@
-#include <iostream>
-
-#include <zmqpp/zmqpp.hpp>
-
 #include "worker_comm.h"
 
 namespace bdm {

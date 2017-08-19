@@ -1,10 +1,7 @@
-#ifndef __COMMUNICATOR__
-#define __COMMUNICATOR__
+#ifndef DEMO_DISTRIBUTION_COMMUNICATOR_H_
+#define DEMO_DISTRIBUTION_COMMUNICATOR_H_
 
 #include <string>
-#include <vector>
-
-#include <zmqpp/zmqpp.hpp>
 
 #include "common.h"
 
@@ -70,4 +67,4 @@ class Communicator {
 };
 }  // namespace bdm
 
-#endif  //__COMMUNICATOR__
+#endif  // DEMO_DISTRIBUTION_COMMUNICATOR_H_

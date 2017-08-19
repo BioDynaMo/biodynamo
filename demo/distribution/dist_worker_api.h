@@ -1,5 +1,5 @@
-#ifndef __DIST_WORKER_API_H
-#define __DIST_WORKER_API_H
+#ifndef DEMO_DISTRIBUTION_DIST_WORKER_API_H_
+#define DEMO_DISTRIBUTION_DIST_WORKER_API_H_
 
 #include <algorithm>
 #include <array>
@@ -9,8 +9,6 @@
 #include <string>
 #include <thread>
 #include <vector>
-
-#include <zmqpp/zmqpp.hpp>
 
 #include "broker_comm.h"
 #include "common.h"
@@ -75,4 +73,4 @@ class DistWorkerAPI {
 };
 }  // namespace bdm
 
-#endif  // __DIST_WORKER_API_H
+#endif  // DEMO_DISTRIBUTION_DIST_WORKER_API_H_

@@ -1,10 +1,7 @@
-#ifndef __WORKER_COMM__
-#define __WORKER_COMM__
+#ifndef DEMO_DISTRIBUTION_WORKER_COMM_H_
+#define DEMO_DISTRIBUTION_WORKER_COMM_H_
 
 #include <string>
-#include <vector>
-
-#include <zmqpp/zmqpp.hpp>
 
 #include "common.h"
 #include "communicator.h"
@@ -34,4 +31,4 @@ class WorkerCommunicator : public Communicator {
 };
 }  // namespace bdm
 
-#endif  //__WORKER_COMM__
+#endif  // DEMO_DISTRIBUTION_WORKER_COMM_H_

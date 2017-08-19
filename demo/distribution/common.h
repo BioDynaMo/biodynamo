@@ -1,17 +1,18 @@
-#ifndef __MDP_COMMON_H__
-#define __MDP_COMMON_H__
+#ifndef DEMO_DISTRIBUTION_COMMON_H__
+#define DEMO_DISTRIBUTION_COMMON_H__
+
+#include <Rtypes.h>
+#include <zmqpp/zmqpp.hpp>
 
 #include <chrono>
 #include <iomanip>
 #include <iostream>
+#include <map>
 #include <memory>
+#include <set>
 #include <sstream>
 #include <string>
 #include <vector>
-
-#include <zmqpp/zmqpp.hpp>
-
-#include <Rtypes.h>
 
 namespace bdm {
 
@@ -102,4 +103,4 @@ const duration_ms_t HEARTBEAT_EXPIRY = HEARTBEAT_INTERVAL * HEARTBEAT_LIVENESS;
 // ---------------------------------------------
 }  // namespace bdm
 
-#endif  // __MDP_COMMON_H__
+#endif  // DEMO_DISTRIBUTION_COMMON_H__
