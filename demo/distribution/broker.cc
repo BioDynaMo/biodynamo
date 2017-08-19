@@ -25,12 +25,12 @@ void Broker::Bind() {
 //  DISCONNECT message sent to the broker by a worker
 
 void Broker::HandleMessageWorker(const std::string& identity,
-                                 zmqpp::message& msg) {
-  assert(msg.parts() >= 1);  //  At least, command
+                                 std::unique_ptr<zmqpp::message> msg) {
+  assert(msg->parts() >= 1);  //  At least, command
 
   std::string command;
-  msg.get(command, 0);
-  msg.pop_front();
+  msg->get(command, 0);
+  msg->pop_front();
 
   bool worker_ready = (workers_.find(identity) != workers_.end());
   WorkerEntry* worker = GetOrCreateWorker(identity);
@@ -40,8 +40,8 @@ void Broker::HandleMessageWorker(const std::string& identity,
       DeleteWorker(worker);
     } else {
       std::string sent_id;
-      msg.get(sent_id, 0);
-      msg.pop_front();
+      msg->get(sent_id, 0);
+      msg->pop_front();
 
       assert(sent_id == identity);
 
@@ -56,16 +56,16 @@ void Broker::HandleMessageWorker(const std::string& identity,
       //  Remove & save client return envelope and insert the
       //  protocol header and service name, then rewrap envelope.
       std::string client;
-      msg.get(client, 0);
-      msg.pop_front();
+      msg->get(client, 0);
+      msg->pop_front();
 
-      msg.push_front(worker->identity);
-      msg.push_front(MDPC_REPORT);
-      msg.push_front(MDPC_CLIENT);
-      msg.push_front("");
-      msg.push_front(client);
+      msg->push_front(worker->identity);
+      msg->push_front(MDPC_REPORT);
+      msg->push_front(MDPC_CLIENT);
+      msg->push_front("");
+      msg->push_front(client);
 
-      socket_->send(msg);
+      socket_->send(*msg);
 
     } else {
       DeleteWorker(worker);
@@ -83,7 +83,7 @@ void Broker::HandleMessageWorker(const std::string& identity,
   } else if (command == MDPW_DISCONNECT) {
     DeleteWorker(worker, false);
   } else {
-    std::cout << "E: invalid input message" << msg << std::endl;
+    std::cout << "E: invalid input message" << *msg << std::endl;
   }
 }
 
@@ -91,12 +91,12 @@ void Broker::HandleMessageWorker(const std::string& identity,
 //  directly here (at present, we implement only the mmi.service request)
 
 void Broker::HandleMessageClient(const std::string& sender,
-                                 zmqpp::message& msg) {
-  assert(msg.parts() >= 2);  // service/identity name + body
+                                 std::unique_ptr<zmqpp::message> msg) {
+  assert(msg->parts() >= 2);  // service/identity name + body
 
   // Get worker
   std::string worker_identity;
-  msg.get(worker_identity, 0);
+  msg->get(worker_identity, 0);
 
   if (workers_.find(worker_identity) == workers_.end()) {
     // no such worker exist
@@ -104,12 +104,12 @@ void Broker::HandleMessageClient(const std::string& sender,
               << ". Droping message..." << std::endl;
 
     // send NAK to client
-    msg.push_front(MDPC_NAK);
-    msg.push_front(MDPC_CLIENT);
-    msg.push_front("");
-    msg.push_front(sender);
+    msg->push_front(MDPC_NAK);
+    msg->push_front(MDPC_CLIENT);
+    msg->push_front("");
+    msg->push_front(sender);
 
-    socket_->send(msg);
+    socket_->send(*msg);
     return;
   }
 
@@ -119,9 +119,9 @@ void Broker::HandleMessageClient(const std::string& sender,
   // ignore MMI service for now
 
   // Forward the pending messages to the worker
-  msg.push_front("");
-  msg.push_front(sender);
-  worker->requests.push_back(msg.copy());
+  msg->push_front("");
+  msg->push_front(sender);
+  worker->requests.push_back(msg->copy());
 
   while (!worker->requests.empty()) {
     zmqpp::message& pending = worker->requests.front();
@@ -182,37 +182,37 @@ void Broker::Run() {
   zmqpp::poller poller;
   poller.add(*socket_, zmqpp::poller::poll_in);
 
-  zmqpp::message msg;
   while (true) {
     // Wait till heartbeat duration
     poller.poll(HEARTBEAT_INTERVAL.count());
 
     if (poller.events(*socket_) & zmqpp::poller::poll_in) {
-      if (!socket_->receive(msg)) {
+      auto msg = std::make_unique<zmqpp::message>();
+      if (!socket_->receive(*msg)) {
         break;  // Interrupted
       }
 
       if (verbose_) {
-        std::cout << "I: received message: " << msg << std::endl;
+        std::cout << "I: received message: " << *msg << std::endl;
       }
 
       std::string sender, empty, header;
 
-      msg.get(sender, 0);
-      msg.pop_front();
+      msg->get(sender, 0);
+      msg->pop_front();
 
-      msg.get(empty, 0);
-      msg.pop_front();
+      msg->get(empty, 0);
+      msg->pop_front();
 
-      msg.get(header, 0);
-      msg.pop_front();
+      msg->get(header, 0);
+      msg->pop_front();
 
       if (header == MDPC_CLIENT) {
-        HandleMessageClient(sender, msg);
+        HandleMessageClient(sender, std::move(msg));
       } else if (header == MDPW_WORKER) {
-        HandleMessageWorker(sender, msg);
+        HandleMessageWorker(sender, std::move(msg));
       } else {
-        std::cout << "E: invalid message: " << msg << std::endl;
+        std::cout << "E: invalid message: " << *msg << std::endl;
       }
     }
 
