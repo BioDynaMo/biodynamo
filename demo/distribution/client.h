@@ -22,9 +22,10 @@ class Client {
   template <typename T>
   void GetSocketOption(zmqpp::socket_option option, T *value);
 
-  void Send(const std::string &identity, zmqpp::message &msg);
-  bool Recv(std::string *command_out, std::string *identity_out,
-            zmqpp::message &msg);
+  void Send(const std::string &identity, std::unique_ptr<zmqpp::message> msg);
+  bool Recv(std::unique_ptr<zmqpp::message> *msg_out,
+            std::string *command_out = nullptr,
+            std::string *identity_out = nullptr);
 
  private:
   void ConnectToBroker();

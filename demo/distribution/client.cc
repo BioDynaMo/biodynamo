@@ -53,31 +53,34 @@ void Client::GetSocketOption(zmqpp::socket_option option, T* value) {
 //  Here is the send method. It sends a request to the broker.
 //  It takes ownership of the request message, and destroys it when sent.
 
-void Client::Send(const std::string& identity, zmqpp::message& msg) {
+void Client::Send(const std::string& identity,
+                  std::unique_ptr<zmqpp::message> msg) {
   //  Prefix request with protocol frames
   //  Frame 1: empty frame (delimiter)
   //  Frame 2: "MDPCxy" (six bytes, MDP/Client x.y)
   //  Frame 3: Worker identity (printable string)
-  msg.push_front(identity);
-  msg.push_front(MDPC_CLIENT);
-  msg.push_front("");
+  msg->push_front(identity);
+  msg->push_front(MDPC_CLIENT);
+  msg->push_front("");
 
   if (verbose) {
-    std::cout << "I: send request to '" << identity << "' identity: " << msg
+    std::cout << "I: send request to '" << identity << "' identity: " << *msg
               << std::endl;
   }
 
-  sock->send(msg);
+  sock->send(*msg);
 }
 
-bool Client::Recv(std::string* command_out, std::string* identity_out,
-                  zmqpp::message& msg) {
-  if (!sock->receive(msg)) {
+bool Client::Recv(std::unique_ptr<zmqpp::message>* msg_out,
+                  std::string* command_out /* = nullptr */,
+                  std::string* identity_out /* = nullptr */) {
+  auto msg = std::make_unique<zmqpp::message>();
+  if (!sock->receive(*msg)) {
     return false;
   }
 
   if (verbose) {
-    std::cout << "I: received reply: " << msg << std::endl;
+    std::cout << "I: received reply: " << *msg << std::endl;
   }
 
   //  Message format:
@@ -88,34 +91,35 @@ bool Client::Recv(std::string* command_out, std::string* identity_out,
   //  Frame 5..n: Application frames
 
   //  We would handle malformed replies better in real code
-  assert(msg.parts() >= 5);
+  assert(msg->parts() >= 5);
 
   std::string empty, header, command, identity;
 
-  msg.get(empty, 0);
-  msg.pop_front();
+  msg->get(empty, 0);
+  msg->pop_front();
   assert(empty == "");
 
-  msg.get(header, 0);
-  msg.pop_front();
+  msg->get(header, 0);
+  msg->pop_front();
   assert(header == MDPC_CLIENT);
 
-  msg.get(command, 0);
-  msg.pop_front();
+  msg->get(command, 0);
+  msg->pop_front();
   assert(command == MDPC_REPORT || command == MDPC_NAK);
 
   if (command_out != nullptr) {
     *command_out = command;
   }
 
-  msg.get(identity, 0);
-  msg.pop_front();
+  msg->get(identity, 0);
+  msg->pop_front();
 
   if (identity_out != nullptr) {
     *identity_out = identity;
   }
 
-  // Success only when not received NAK
+  // Success only when not received NA
+  *msg_out = std::move(msg);
   return (command != MDPC_NAK);
 }
 }  // namespace bdm

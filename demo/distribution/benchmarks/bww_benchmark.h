@@ -33,17 +33,21 @@ inline void TestBWWClientTask() {
   auto start = std::chrono::high_resolution_clock::now();
   size_t remaining = TestBWWData::n_messages_;
 
-  std::string command, worker;
-  zmqpp::message msg;
-  while (remaining > 0) {
-    msg.push_back("Hello world");
+  zmqpp::message hello_msg;
+  hello_msg.push_back("Hello world");
 
+  std::unique_ptr<zmqpp::message> msg;
+  std::string command, worker;
+  while (remaining > 0) {
     // Round robin
     worker =
         (remaining % 2 == 0 ? TestBWWData::worker1_ : TestBWWData::worker2_);
-    client.Send(worker, msg);
 
-    if (!client.Recv(&command, nullptr, msg)) {
+    msg = std::make_unique<zmqpp::message>(hello_msg.copy());
+    client.Send(worker, std::move(msg));
+
+    msg = std::make_unique<zmqpp::message>(hello_msg.copy());
+    if (!client.Recv(msg.get(), &command)) {
       std::cout << "Interrupted..." << std::endl;
       break;
     }
