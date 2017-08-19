@@ -1,10 +1,12 @@
-#ifndef __BROKER_COMM__
-#define __BROKER_COMM__
-
-#include <string>
-#include <vector>
+#ifndef DEMO_DISTRIBUTION_BROKER_COMM_H_
+#define DEMO_DISTRIBUTION_BROKER_COMM_H_
 
 #include <zmqpp/zmqpp.hpp>
+
+#include <chrono>
+#include <iostream>
+#include <string>
+#include <vector>
 
 #include "common.h"
 #include "communicator.h"
@@ -41,4 +43,4 @@ class BrokerCommunicator : public Communicator {
 };
 }  // namespace bdm
 
-#endif  //__BROKER_COMM__
+#endif  // DEMO_DISTRIBUTION_BROKER_COMM_H_

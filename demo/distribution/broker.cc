@@ -1,15 +1,10 @@
-#include <iostream>
-
-#include <zmqpp/zmqpp.hpp>
-
 #include "broker.h"
-#include "worker_entry.h"
 
 namespace bdm {
 
 Broker::Broker(zmqpp::context* ctx, const std::string& endpoint,
-               const bool verbose_)
-    : ctx_(ctx), endpoint_(endpoint), verbose_(verbose_) {
+               const bool verbose)
+    : ctx_(ctx), endpoint_(endpoint), verbose_(verbose) {
   this->socket_ = new zmqpp::socket(*ctx_, zmqpp::socket_type::router);
   this->hb_at_ =
       std::chrono::system_clock::now() + duration_ms_t(HEARTBEAT_INTERVAL);
@@ -43,9 +38,7 @@ void Broker::HandleMessageWorker(const std::string& identity,
   if (command == MDPW_READY) {
     if (worker_ready) {
       DeleteWorker(worker);
-    }
-    // else if ( MMI stuff )
-    else {
+    } else {
       std::string sent_id;
       msg.get(sent_id, 0);
       msg.pop_front();

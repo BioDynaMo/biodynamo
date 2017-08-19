@@ -1,12 +1,12 @@
 #ifndef DEMO_DISTRIBUTION_BENCHMARKS_BWW_BENCHMARK_H_
 #define DEMO_DISTRIBUTION_BENCHMARKS_BWW_BENCHMARK_H_
 
+#include <zmqpp/zmqpp.hpp>
+
 #include <chrono>
 #include <iostream>
 #include <string>
 #include <thread>
-
-#include <zmqpp/zmqpp.hpp>
 
 #include "distribution/broker.h"
 #include "distribution/client.h"
@@ -57,10 +57,11 @@ inline void TestBWWClientTask() {
     remaining--;
   }
 
-  auto elapsed = ((double)std::chrono::duration_cast<std::chrono::microseconds>(
-                      std::chrono::high_resolution_clock::now() - start)
-                      .count()) /
-                 1000.0;
+  auto elapsed =
+      static_cast<double>(std::chrono::duration_cast<std::chrono::microseconds>(
+                              std::chrono::high_resolution_clock::now() - start)
+                              .count()) /
+      1000.0;
   std::cout << "I: Received " << TestBWWData::n_messages_ - remaining
             << " replies in " << elapsed << " ms" << std::endl;
   std::cout << "I: Time per message: "
@@ -153,6 +154,6 @@ inline void TestBWWWorker2Task() {
   // Send stop signal
   assert(api.Stop());
 }
-}
+}  // namespace bdm
 
 #endif  // DEMO_DISTRIBUTION_BENCHMARKS_BWW_BENCHMARK_H_
