@@ -31,14 +31,17 @@ inline void ClientTask() {
   auto start = std::chrono::high_resolution_clock::now();
   size_t remaining = TestCBWData::n_messages_;
 
+  zmqpp::message hello_msg;
+  hello_msg.push_back("Hello world");
+
   std::string command;
-  zmqpp::message msg;
+  std::unique_ptr<zmqpp::message> msg;
   while (remaining > 0) {
-    msg.push_back("Hello world");
+    msg = std::make_unique<zmqpp::message>(hello_msg.copy());
+    client.Send(TestCBWData::worker_, std::move(msg));
 
-    client.Send(TestCBWData::worker_, msg);
-
-    if (!client.Recv(&command, nullptr, msg)) {
+    msg = std::make_unique<zmqpp::message>();
+    if (!client.Recv(&msg, &command)) {
       std::cout << "Interrupted..." << std::endl;
       break;
     }
