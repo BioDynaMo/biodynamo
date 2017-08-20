@@ -27,7 +27,7 @@ class Communicator {
   virtual void ReactorServedRequests() {}
 
   virtual void Connect() = 0;
-  virtual void HandleOutgoingMessage(zmqpp::message& msg) = 0;
+  virtual void HandleOutgoingMessage(std::unique_ptr<zmqpp::message> msg) = 0;
   virtual void HandleIncomingMessage() = 0;
 
   virtual CommunicatorId GetCommunicationId() {

@@ -14,8 +14,8 @@ class WorkerCommunicator : public Communicator {
                      CommunicatorId comm_id);
   ~WorkerCommunicator();
 
-  void Connect();
-  void HandleOutgoingMessage(zmqpp::message& msg);
+  void Connect() override;
+  void HandleOutgoingMessage(std::unique_ptr<zmqpp::message> msg) override;
   void HandleIncomingMessage();
 
  private:
