@@ -65,13 +65,13 @@ void DistWorkerAPI::AddRightNeighbourCommunicator(const std::string& endpoint) {
       new WorkerCommunicator(info_, endpoint, CommunicatorId::kRightNeighbour));
 }
 
-void DistWorkerAPI::SendMessage(std::unique_ptr<zmqpp::message>& msg,
+void DistWorkerAPI::SendMessage(std::unique_ptr<zmqpp::message> msg,
                                 CommunicatorId to) {
   msg->push_front(ToUnderlying(to));
   parent_pipe_->send(*msg);
 }
 
-bool DistWorkerAPI::ReceiveMessage(std::unique_ptr<zmqpp::message>& msg,
+bool DistWorkerAPI::ReceiveMessage(std::unique_ptr<zmqpp::message>* msg,
                                    CommunicatorId from, duration_ms_t timeout) {
   assert(from > CommunicatorId::kUndefined);
 
@@ -92,14 +92,14 @@ bool DistWorkerAPI::ReceiveMessage(std::unique_ptr<zmqpp::message>& msg,
   ReceiveAllMessages();
   bool empty_queue = queue.empty();
   if (!empty_queue) {
-    msg = std::move(*(queue.begin()));
+    *msg = std::move(*(queue.begin()));
     queue.pop_front();
   }
 
   return !empty_queue;
 }
 
-bool DistWorkerAPI::ReceiveMessage(std::unique_ptr<zmqpp::message>& msg,
+bool DistWorkerAPI::ReceiveMessage(std::unique_ptr<zmqpp::message>* msg,
                                    duration_ms_t timeout) {
   // Read all pending messages from the pipe
   ReceiveAllMessages();
@@ -119,7 +119,7 @@ bool DistWorkerAPI::ReceiveMessage(std::unique_ptr<zmqpp::message>& msg,
   ReceiveAllMessages();
   for (auto& c : msg_queues_) {
     if (!c.empty()) {
-      msg = std::move(*(c.begin()));
+      *msg = std::move(*(c.begin()));
       c.pop_front();
       return true;
     }

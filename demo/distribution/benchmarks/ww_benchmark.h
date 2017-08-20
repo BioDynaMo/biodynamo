@@ -27,14 +27,15 @@ inline void RWorker() {
   std::unique_ptr<zmqpp::message> msg;
   for (size_t i = 0; i < TestWWData::n_messages_; i++) {
     // wait for message
-    assert(api.ReceiveMessage(msg, CommunicatorId::kRightNeighbour));
+    msg = std::make_unique<zmqpp::message>();
+    assert(api.ReceiveMessage(&msg, CommunicatorId::kRightNeighbour));
 
     if (TestWWData::verbose_) {
       std::cout << "R-APP: received message: " << *msg << std::endl;
     }
 
     // echo that message
-    api.SendMessage(msg, CommunicatorId::kRightNeighbour);
+    api.SendMessage(std::move(msg), CommunicatorId::kRightNeighbour);
   }
 
   // Send stop signal
@@ -52,29 +53,28 @@ inline void LWorker() {
   std::cout << "I: Sending " << TestWWData::n_messages_ << " messages..."
             << std::endl;
 
-  // Send first must send the message
-  auto msg = std::make_unique<zmqpp::message>();
-  msg->push_front("Hello world");
-  msg->push_front("");
+  zmqpp::message hello_msg;
+  hello_msg.push_front("Hello world");
 
+  std::unique_ptr<zmqpp::message> msg;
   for (size_t i = 0; i < TestWWData::n_messages_; i++) {
-    api.SendMessage(msg, CommunicatorId::kLeftNeighbour);
+    // Send first must send the message
+    msg = std::make_unique<zmqpp::message>(hello_msg.copy());
+    api.SendMessage(std::move(msg), CommunicatorId::kLeftNeighbour);
 
-    // echo that message
-    assert(api.ReceiveMessage(msg, CommunicatorId::kLeftNeighbour));
-
-    // TODO(kkanellis): define some kind of equality
-    // assert(initial_msg == msg);
+    msg = std::make_unique<zmqpp::message>();
+    assert(api.ReceiveMessage(&msg, CommunicatorId::kLeftNeighbour));
 
     if (TestWWData::verbose_) {
       std::cout << "L-APP: received message: " << *msg << std::endl;
     }
   }
 
-  auto elapsed = static_cast<double>(std::chrono::duration_cast<std::chrono::microseconds>(
-                      std::chrono::high_resolution_clock::now() - start)
-                      .count()) /
-                 1000.0;
+  auto elapsed =
+      static_cast<double>(std::chrono::duration_cast<std::chrono::microseconds>(
+                              std::chrono::high_resolution_clock::now() - start)
+                              .count()) /
+      1000.0;
   std::cout << "I: Sent " << TestWWData::n_messages_ << " messages in "
             << elapsed << " ms" << std::endl;
   std::cout << "I: Time per message: " << elapsed / TestWWData::n_messages_

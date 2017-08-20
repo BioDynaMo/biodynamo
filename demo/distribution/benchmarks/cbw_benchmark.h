@@ -85,14 +85,14 @@ inline void WorkerTask() {
   std::unique_ptr<zmqpp::message> msg;
   for (size_t i = 0; i < TestCBWData::n_messages_; i++) {
     // wait for message
-    api.ReceiveMessage(msg);
+    api.ReceiveMessage(&msg);
 
     if (TestCBWData::verbose_) {
       std::cout << "worker_: received message: " << *msg << std::endl;
     }
 
     // echo that message
-    api.SendMessage(msg, CommunicatorId::kBroker);
+    api.SendMessage(std::move(msg), CommunicatorId::kBroker);
   }
 
   // Send stop signal
