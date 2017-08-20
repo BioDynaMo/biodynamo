@@ -47,7 +47,7 @@ inline void TestBWWClientTask() {
     client.Send(worker, std::move(msg));
 
     msg = std::make_unique<zmqpp::message>(hello_msg.copy());
-    if (!client.Recv(msg.get(), &command)) {
+    if (!client.Recv(&msg, &command)) {
       std::cout << "Interrupted..." << std::endl;
       break;
     }
@@ -93,7 +93,7 @@ inline void TestBWWWorker1Task() {
   std::uint8_t from;
   for (size_t i = 0; i < TestBWWData::n_messages_; i++) {
     // wait for message
-    api.ReceiveMessage(msg);
+    api.ReceiveMessage(&msg);
 
     if (TestBWWData::verbose_) {
       std::cout << "WORKER 1: received message: " << *msg << std::endl;
@@ -104,10 +104,10 @@ inline void TestBWWWorker1Task() {
 
     switch (static_cast<CommunicatorId>(from)) {
       case CommunicatorId::kBroker:
-        api.SendMessage(msg, CommunicatorId::kRightNeighbour);
+        api.SendMessage(std::move(msg), CommunicatorId::kRightNeighbour);
         break;
       case CommunicatorId::kRightNeighbour:
-        api.SendMessage(msg, CommunicatorId::kBroker);
+        api.SendMessage(std::move(msg), CommunicatorId::kBroker);
         break;
       default:
         std::cout << "Error: wrong communicator id" << std::endl;
@@ -132,7 +132,7 @@ inline void TestBWWWorker2Task() {
   std::uint8_t from;
   for (size_t i = 0; i < TestBWWData::n_messages_; i++) {
     // wait for message
-    api.ReceiveMessage(msg);
+    api.ReceiveMessage(&msg);
 
     if (TestBWWData::verbose_) {
       std::cout << "WORKER 2: received message: " << *msg << std::endl;
@@ -143,10 +143,10 @@ inline void TestBWWWorker2Task() {
 
     switch (static_cast<CommunicatorId>(from)) {
       case CommunicatorId::kBroker:
-        api.SendMessage(msg, CommunicatorId::kLeftNeighbour);
+        api.SendMessage(std::move(msg), CommunicatorId::kLeftNeighbour);
         break;
       case CommunicatorId::kLeftNeighbour:
-        api.SendMessage(msg, CommunicatorId::kBroker);
+        api.SendMessage(std::move(msg), CommunicatorId::kBroker);
         break;
       default:
         std::cout << "Error: wrong communicator id" << std::endl;

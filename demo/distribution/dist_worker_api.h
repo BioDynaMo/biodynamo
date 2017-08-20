@@ -26,10 +26,10 @@ class DistWorkerAPI {
   void AddLeftNeighbourCommunicator(const std::string& endpoint);
   void AddRightNeighbourCommunicator(const std::string& endpoint);
 
-  void SendMessage(std::unique_ptr<zmqpp::message>& msg, CommunicatorId to);
-  bool ReceiveMessage(std::unique_ptr<zmqpp::message>& msg,
+  void SendMessage(std::unique_ptr<zmqpp::message> msg, CommunicatorId to);
+  bool ReceiveMessage(std::unique_ptr<zmqpp::message>* msg,
                       duration_ms_t timeout = std::chrono::milliseconds(5000));
-  bool ReceiveMessage(std::unique_ptr<zmqpp::message>& msg, CommunicatorId from,
+  bool ReceiveMessage(std::unique_ptr<zmqpp::message>* msg, CommunicatorId from,
                       duration_ms_t timeout = std::chrono::milliseconds(5000));
 
   bool IsConnected(const CommunicatorId comm);
