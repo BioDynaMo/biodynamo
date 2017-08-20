@@ -205,8 +205,8 @@ void DistWorkerAPI::HandleAppMessage() {
   // Frame 2: recipient id
   // Frame 3: application frame(s)
 
-  zmqpp::message msg;
-  if (!child_pipe_->receive(msg) || msg.is_signal()) {
+  auto msg = std::make_unique<zmqpp::message>();
+  if (!child_pipe_->receive(*msg) || msg->is_signal()) {
     // Interrupted
     info_->zctx_interrupted_ = true;
     return;
@@ -214,11 +214,11 @@ void DistWorkerAPI::HandleAppMessage() {
 
   // Find out where to forward the message
   std::uint8_t comm_id;
-  msg.get(comm_id, 0);
-  msg.pop_front();
+  msg->get(comm_id, 0);
+  msg->pop_front();
 
   auto& comm = GetValidCommunicator(comm_id);
-  comm.HandleOutgoingMessage(msg);
+  comm.HandleOutgoingMessage(std::move(msg));
 }
 
 void DistWorkerAPI::HandleNetworkMessages() {

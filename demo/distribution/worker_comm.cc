@@ -22,12 +22,13 @@ WorkerCommunicator::~WorkerCommunicator() {
   }
 }
 
-void WorkerCommunicator::HandleOutgoingMessage(zmqpp::message& msg) {
+void WorkerCommunicator::HandleOutgoingMessage(
+    std::unique_ptr<zmqpp::message> msg) {
   if (info_->verbose_) {
-    std::cout << "I: sending message to " << worker_str_ << " worker: " << msg
+    std::cout << "I: sending message to " << worker_str_ << " worker: " << *msg
               << std::endl;
   }
-  SendToCoWorker(MDPW_REPORT, &msg);
+  SendToCoWorker(MDPW_REPORT, msg.get());
 }
 
 void WorkerCommunicator::HandleIncomingMessage() {

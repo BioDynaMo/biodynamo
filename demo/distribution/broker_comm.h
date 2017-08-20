@@ -22,7 +22,7 @@ class BrokerCommunicator : public Communicator {
   void ReactorServedRequests() override;
 
   void Connect() override;
-  void HandleOutgoingMessage(zmqpp::message& msg) override;
+  void HandleOutgoingMessage(std::unique_ptr<zmqpp::message> msg) override;
   void HandleIncomingMessage() override;
 
   void SetHeartbeatDelay(const duration_ms_t& hb_delay);

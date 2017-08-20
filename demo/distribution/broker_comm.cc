@@ -34,17 +34,18 @@ void BrokerCommunicator::ReactorServedRequests() {
   purge_later_.clear();
 }
 
-void BrokerCommunicator::HandleOutgoingMessage(zmqpp::message& msg) {
+void BrokerCommunicator::HandleOutgoingMessage(
+    std::unique_ptr<zmqpp::message> msg) {
   if (info_->verbose_) {
-    std::cout << "I: sending message to broker: " << msg << std::endl;
+    std::cout << "I: sending message to broker: " << *msg << std::endl;
   }
 
   // Check recipient address
   std::string recipient;
-  msg.get(recipient, 0);
+  msg->get(recipient, 0);
   assert(!recipient.empty());
 
-  SendToBroker(MDPW_REPORT, &msg);
+  SendToBroker(MDPW_REPORT, msg.get());
 }
 
 void BrokerCommunicator::HandleIncomingMessage() {
