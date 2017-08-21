@@ -80,7 +80,7 @@ void RunTest() {
 
 struct AosCompileTimeParam {
   using Backend = Scalar;
-  using BiologyModules = variant<NullBiologyModule>;
+  using BiologyModules = Variant<NullBiologyModule>;
   using AtomicTypes = VariadicTypedef<Cell>;
 };
 
@@ -88,7 +88,7 @@ TEST(DisplacementOpTest, ComputeAos) { RunTest<AosCompileTimeParam>(); }
 
 struct SoaCompileTimeParam {
   using Backend = Soa;
-  using BiologyModules = variant<NullBiologyModule>;
+  using BiologyModules = Variant<NullBiologyModule>;
   using AtomicTypes = VariadicTypedef<Cell>;
 };
 

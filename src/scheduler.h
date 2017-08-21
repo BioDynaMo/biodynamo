@@ -24,9 +24,7 @@ class Scheduler {
   using Clock = std::chrono::high_resolution_clock;
 
   Scheduler()
-      : backup_(SimulationBackup("", "")),
-        rm_(TResourceManager::Get()),
-        grid_(&TGrid::GetInstance()) {
+      : backup_(SimulationBackup("", "")), grid_(&TGrid::GetInstance()) {
     if (Param::use_paraview_) {
       visualization_ = CatalystAdaptor::GetInstance();
       visualization_->Initialize("../src/visualization/simple_pipeline.py");
@@ -35,7 +33,6 @@ class Scheduler {
 
   Scheduler(const std::string& backup_file, const std::string& restore_file)
       : backup_(SimulationBackup(backup_file, restore_file)),
-        rm_(TResourceManager::Get()),
         grid_(&TGrid::GetInstance()) {
     if (backup_.RestoreEnabled()) {
       restore_point_ = backup_.GetSimulationStepsFromBackup();
@@ -55,16 +52,13 @@ class Scheduler {
   void Simulate(unsigned steps) {
     // TODO(lukas) backup and restore should work for every simulation object in
     // ResourceManager
-    auto rm = TResourceManager::Get();
-    auto cells = rm->template Get<Cell>();
     if (backup_.RestoreEnabled() && restore_point_ > total_steps_ + steps) {
       total_steps_ += steps;
       return;
     } else if (backup_.RestoreEnabled() && restore_point_ > total_steps_ &&
                restore_point_ < total_steps_ + steps) {
       // Restore
-      backup_.Restore(cells);
-      // FIXME need to update ResourceManager with cells
+      backup_.Restore();
 
       steps = total_steps_ + steps - restore_point_;
       total_steps_ = restore_point_;
@@ -77,6 +71,8 @@ class Scheduler {
       Execute();
 
       // Visualize
+      auto rm = TResourceManager::Get();
+      auto cells = rm->template Get<Cell>();
       if (Param::use_paraview_) {
         double time = Param::kSimulationTimeStep * total_steps_;
         visualization_->CoProcess(cells, time, total_steps_, step == steps - 1);
@@ -91,7 +87,7 @@ class Scheduler {
           duration_cast<seconds>(Clock::now() - last_backup_).count() >=
               Param::backup_every_x_seconds_) {
         last_backup_ = Clock::now();
-        backup_.Backup(cells, total_steps_);
+        backup_.Backup(total_steps_);
       }
     }
   }
@@ -100,6 +96,7 @@ class Scheduler {
   /// Executes one step.
   /// This design makes testing more convenient
   virtual void Execute() {
+    auto rm = TResourceManager::Get();
     static const auto commit = [](auto* sim_objects, uint16_t type_idx) {
       sim_objects->Commit();
     };
@@ -108,9 +105,9 @@ class Scheduler {
       Timing timing("neighbors");
       grid_->UpdateGrid();
     }
-    rm_->ApplyOnAllTypes(biology_);
-    rm_->ApplyOnAllTypes(physics_);
-    rm_->ApplyOnAllTypes(commit);
+    rm->ApplyOnAllTypes(biology_);
+    rm->ApplyOnAllTypes(physics_);
+    rm->ApplyOnAllTypes(commit);
   }
 
  private:
@@ -123,7 +120,6 @@ class Scheduler {
   OpTimer<BiologyModuleOp> biology_ = OpTimer<BiologyModuleOp>("biology");
   OpTimer<DisplacementOp<>> physics_ = OpTimer<DisplacementOp<>>("physics");
 
-  TResourceManager* rm_;
   TGrid* grid_;
 };
 

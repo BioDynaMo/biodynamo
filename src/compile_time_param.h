@@ -4,12 +4,10 @@
 #include "backend.h"
 #include "biology_module_util.h"
 #include "cell.h"
-#include "mpark/variant.hpp"
 #include "variadic_template_parameter_util.h"
+#include "variant.h"
 
 namespace bdm {
-
-using mpark::variant;
 
 /// \brief Defines default compile time parameters
 /// Values can be overwritten by subclassing it.

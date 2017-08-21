@@ -157,6 +157,9 @@ inline void RunIOTest() {
   EXPECT_EQ(2u, restored_cell->GetBiologyModules().size());
   EXPECT_TRUE(get_if<GrowthModule>(&restored_cell->GetBiologyModules()[0]) !=
               nullptr);
+  EXPECT_NEAR(0.5, get_if<GrowthModule>(&restored_cell->GetBiologyModules()[0])
+                       ->growth_rate_,
+              kEpsilon);
   EXPECT_TRUE(get_if<MovementModule>(&restored_cell->GetBiologyModules()[1]) !=
               nullptr);
 

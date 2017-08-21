@@ -43,20 +43,22 @@ TEST(SimulationBackupDeathTest, BackupNoBackupFileSpecified) {
         auto cells = Cell::NewEmptySoa();
         size_t iterations = 1;
         SimulationBackup backup("", "");
-        backup.Backup(&cells, iterations);
+        backup.Backup(iterations);
       },
       ".*Requested to backup data, but no backup file given..*");
 }
 
 TEST(SimulationBackupTest, Backup) {
   remove(ROOTFILE);
+  auto rm = ResourceManager<>::Get();
+  rm->Clear();
 
-  auto cells = Cell::NewEmptySoa();
-  cells.push_back(Cell());
+  auto cells = rm->template Get<Cell>();
+  cells->push_back(Cell());
   size_t iterations = 26;
 
   SimulationBackup backup(ROOTFILE, "");
-  backup.Backup(&cells, iterations);
+  backup.Backup(iterations);
 
   ASSERT_TRUE(FileExists(ROOTFILE));
 
@@ -74,11 +76,12 @@ TEST(SimulationBackupTest, Backup) {
   file.Get()->GetObject(SimulationBackup::kSimulationStepName.c_str(), wrapper);
   EXPECT_EQ(26u, wrapper->Get());
 
-  // cells
-  decltype(cells)* restored_cells = nullptr;
-  file.Get()->GetObject(SimulationBackup::kCellName.c_str(), restored_cells);
-  EXPECT_EQ(1u, restored_cells->size());
-  // Writing and reading cells is tested in cell_test.h/cc
+  // ResourceManager
+  ResourceManager<>* restored_rm = nullptr;
+  file.Get()->GetObject(SimulationBackup::kResouceManagerName.c_str(),
+                        restored_rm);
+  EXPECT_EQ(1u, restored_rm->Get<Cell>()->size());
+  // Writing and reading ResourceManager is tested in resource_manager_test.cc
 
   remove(ROOTFILE);
 }
@@ -87,8 +90,7 @@ TEST(SimulationBackupDeathTest, RestoreNoRestoreFileSpecified) {
   ASSERT_DEATH(
       {
         SimulationBackup backup("", "");
-        SoaCell* restored_cells;
-        backup.Restore(restored_cells);
+        backup.Restore();
       },
       ".*Requested to restore data, but no restore file given..*");
 }
@@ -100,13 +102,17 @@ TEST(SimulationBackupDeathTest, RestoreFileDoesNotExist) {
 
 TEST(SimulationBackupTest, BackupAndRestore) {
   remove(ROOTFILE);
+  auto rm = ResourceManager<>::Get();
+  rm->Clear();
 
-  auto cells = Cell::NewEmptySoa();
-  cells.push_back(Cell());
+  auto cells = rm->Get<Cell>();
+  cells->push_back(Cell());
   size_t iterations = 26;
 
   SimulationBackup backup(ROOTFILE, "");
-  backup.Backup(&cells, iterations);
+  backup.Backup(iterations);
+
+  rm->Clear();
 
   // restore
   SimulationBackup restore("", ROOTFILE);
@@ -114,10 +120,9 @@ TEST(SimulationBackupTest, BackupAndRestore) {
   auto restored_iterationa = restore.GetSimulationStepsFromBackup();
   EXPECT_EQ(26u, restored_iterationa);
 
-  //   cells
-  decltype(cells)* restored_cells = nullptr;
-  restore.Restore(restored_cells);
-  EXPECT_EQ(1u, restored_cells->size());
+  //   ResourceManager
+  restore.Restore();
+  EXPECT_EQ(1u, ResourceManager<>::Get()->Get<Cell>()->size());
 
   remove(ROOTFILE);
 }

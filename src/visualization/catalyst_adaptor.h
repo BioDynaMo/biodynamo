@@ -4,8 +4,9 @@
 #include <iostream>
 #include <string>
 
-#ifdef USE_CATALYST
-
+// check for ROOTCLING was necessary, due to ambigous reference to namespace
+// detail when using ROOT I/O
+#if defined(USE_CATALYST) && !defined(__ROOTCLING__)
 #include <vtkCPDataDescription.h>
 #include <vtkCPInputDataDescription.h>
 #include <vtkCPProcessor.h>
@@ -19,11 +20,11 @@
 #include <vtkStringArray.h>
 #include <vtkUnstructuredGrid.h>
 
-#endif  // USE_CATALYST
+#endif  // defined(USE_CATALYST) && !defined(__ROOTCLING__)
 
 namespace bdm {
 
-#ifdef USE_CATALYST
+#if defined(USE_CATALYST) && !defined(__ROOTCLING__)
 
 /// The class that bridges the simulation code with ParaView
 class CatalystAdaptor {
@@ -229,7 +230,7 @@ class CatalystAdaptor {
   }
 };
 
-#endif  // USE_CATALYST
+#endif  // defined(USE_CATALYST) && !defined(__ROOTCLING__)
 
 }  // namespace bdm
 

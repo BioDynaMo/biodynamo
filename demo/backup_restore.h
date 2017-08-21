@@ -44,9 +44,14 @@ inline int Simulate(const CommandLineOptions& options) {
   scheduler.Simulate(2);
 
   // check result
+  // NB: original cells pointer has been invalidated due to restore
+  cells = ResourceManager<>::Get()->Get<Cell>();
   for (size_t i = 0; i < 10; i++) {
     if ((*cells)[i].GetDiameter() != 16 + i) {
       std::cerr << "Test failure: result incorrect" << std::endl;
+      std::cerr << "   Diameter of cell " << i << " is "
+                << (*cells)[i].GetDiameter() << " but should be 16"
+                << std::endl;
       return 1;
     }
   }

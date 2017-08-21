@@ -1,97 +1,8 @@
-#include "resource_manager.h"
-
-#include <vector>
-#include "backend.h"
-#include "gtest/gtest.h"
-#include "test_util.h"
-#include "type_util.h"
-#include "variadic_template_parameter_util.h"
+// I/O related code must be in header file
+#include "resource_manager_test.h"
 
 namespace bdm {
 namespace resource_manager_test_internal {
-
-using std::vector;
-
-struct ASoa;
-struct BSoa;
-
-struct AScalar {
-  using Backend = Scalar;
-  template <typename Backend>
-  using Self = typename type_ternary_operator<std::is_same<Soa, Backend>::value,
-                                              ASoa, AScalar>::type;
-
-  explicit AScalar(int data) : data_(data) {}
-
-  int GetData() { return data_; }
-
-  int data_;
-};
-
-struct BScalar {
-  using Backend = Scalar;
-  template <typename Backend>
-  using Self = typename type_ternary_operator<std::is_same<Soa, Backend>::value,
-                                              BSoa, BScalar>::type;
-
-  explicit BScalar(double data) : data_(data) {}
-
-  double GetData() { return data_; }
-
-  double data_;
-};
-
-struct ASoa {
-  using Backend = Soa;
-  template <typename Backend>
-  using Self = typename type_ternary_operator<std::is_same<Soa, Backend>::value,
-                                              ASoa, AScalar>::type;
-
-  vector<int> data_;
-  size_t idx_ = 0;
-
-  int GetData() { return data_[idx_]; }
-
-  size_t size() const { return data_.size(); }  // NOLINT
-
-  void clear() { data_.clear(); }  // NOLINT
-
-  void push_back(const AScalar& a) { data_.push_back(a.data_); }  // NOLINT
-
-  ASoa& operator[](size_t idx) {
-    idx_ = idx;
-    return *this;
-  }
-};
-
-struct BSoa {
-  using Backend = Soa;
-  template <typename Backend>
-  using Self = typename type_ternary_operator<std::is_same<Soa, Backend>::value,
-                                              BSoa, BScalar>::type;
-
-  vector<double> data_;
-  size_t idx_ = 0;
-
-  double GetData() { return data_[idx_]; }
-
-  size_t size() const { return data_.size(); }  // NOLINT
-
-  void clear() { data_.clear(); }  // NOLINT
-
-  void push_back(const BScalar& b) { data_.push_back(b.data_); }  // NOLINT
-
-  BSoa& operator[](size_t idx) {
-    idx_ = idx;
-    return *this;
-  }
-};
-
-template <typename TBackend, typename... Types>
-struct CompileTimeParam {
-  using Backend = TBackend;
-  using AtomicTypes = VariadicTypedef<Types...>;
-};
 
 /// Create ResourceManager with two types, use Get function to obtain container
 /// of the specified type, push_back values and check if they have correctly
@@ -99,7 +10,7 @@ struct CompileTimeParam {
 /// @tparam A type one: scalar or soa backend
 /// @tparam B type two: scalar or soa backend
 template <typename Backend, typename A, typename B>
-void RunGetTest() {
+inline void RunGetTest() {
   const double kEpsilon = abs_error<double>::value;
   using CTParam = CompileTimeParam<Backend, A, B>;
   auto rm = ResourceManager<CTParam>::Get();
@@ -134,7 +45,7 @@ TEST(ResourceManagerTest, GetSoa) {
 }
 
 template <typename Backend, typename A, typename B>
-void RunApplyOnElementTest() {
+inline void RunApplyOnElementTest() {
   const double kEpsilon = abs_error<double>::value;
   using CTParam = CompileTimeParam<Backend, A, B>;
   auto rm = ResourceManager<CTParam>::Get();
@@ -251,6 +162,10 @@ TEST(ResourceManagerTest, ApplyOnAllTypesSoa) {
   RunApplyOnAllTypesTest<Soa, AScalar, BScalar>();
   RunApplyOnAllTypesTest<Soa, ASoa, BSoa>();
 }
+
+TEST(ResourceManagerTest, IOAos) { RunIOAosTest(); }
+
+TEST(ResourceManagerTest, IOSoa) { RunSoaTest(); }
 
 }  // namespace resource_manager_test_internal
 }  // namespace bdm
