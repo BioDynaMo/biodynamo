@@ -4,6 +4,7 @@
 #include <string>
 
 #include "common.h"
+#include "protocol.h"
 
 namespace bdm {
 
@@ -24,7 +25,7 @@ class Client {
 
   void Send(const std::string &identity, std::unique_ptr<zmqpp::message> msg);
   bool Recv(std::unique_ptr<zmqpp::message> *msg_out,
-            std::string *command_out = nullptr,
+            ClientProtocolCmd *command_out = nullptr,
             std::string *identity_out = nullptr);
 
  private:

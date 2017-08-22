@@ -55,24 +55,33 @@ void Client::GetSocketOption(zmqpp::socket_option option, T* value) {
 
 void Client::Send(const std::string& identity,
                   std::unique_ptr<zmqpp::message> msg) {
-  //  Prefix request with protocol frames
-  //  Frame 1: empty frame (delimiter)
-  //  Frame 2: "MDPCxy" (six bytes, MDP/Client x.y)
-  //  Frame 3: Worker identity (printable string)
-  msg->push_front(identity);
+  //  Message format:
+  //  Frame 1:    "BDM/0.1C"
+  //  Frame 2:    ClientCommandHeader class (serialized)
+  //  Frame 3..n: Application frames
+
+  // TODO(kkanellis): add identity to client
+  std::unique_ptr<std::string> header =
+      ClientCommandHeader(ClientProtocolCmd::kRequest, CommunicatorId::kClient,
+                          CommunicatorId::kSomeWorker)
+          .worker_id(identity)
+          .ToString();
+
+  // Frame 2
+  msg->push_front(*header);
+  // Frame 1
   msg->push_front(MDPC_CLIENT);
-  msg->push_front("");
 
   if (verbose) {
     std::cout << "I: send request to '" << identity << "' identity: " << *msg
               << std::endl;
   }
-
   sock->send(*msg);
 }
 
+// TODO(kkanellis): change name of arguments
 bool Client::Recv(std::unique_ptr<zmqpp::message>* msg_out,
-                  std::string* command_out /* = nullptr */,
+                  ClientProtocolCmd* command_out /* = nullptr */,
                   std::string* identity_out /* = nullptr */) {
   auto msg = std::make_unique<zmqpp::message>();
   if (!sock->receive(*msg)) {
@@ -84,42 +93,34 @@ bool Client::Recv(std::unique_ptr<zmqpp::message>* msg_out,
   }
 
   //  Message format:
-  //  Frame 1: empty frame (delimiter)
-  //  Frame 2: "MDPCxy" (six bytes, MDP/Client x.y)
-  //  Frame 3: REPORT|NAK
-  //  Frame 4: Worker identity (printable string)
-  //  Frame 5..n: Application frames
+  //  Frame 1:    "BDM/0.1C"
+  //  Frame 2:    ClientCommandHeader class (serialized)
+  //  Frame 3..n: Application frames
+  assert(msg->parts() >= 2);
 
-  //  We would handle malformed replies better in real code
-  assert(msg->parts() >= 5);
-
-  std::string empty, header, command, identity;
-
-  msg->get(empty, 0);
+  // Read protocol version
+  std::string protocol = msg->get(0);
   msg->pop_front();
-  assert(empty == "");
+  assert(protocol == MDPC_CLIENT);
 
-  msg->get(header, 0);
+  std::string* header_str = new std::string(msg->get(0));
   msg->pop_front();
-  assert(header == MDPC_CLIENT);
 
-  msg->get(command, 0);
-  msg->pop_front();
-  assert(command == MDPC_REPORT || command == MDPC_NAK);
+  std::unique_ptr<ClientCommandHeader> header =
+      ClientCommandHeader::FromString<ClientCommandHeader>(header_str);
+  assert(header->cmd_ == ClientProtocolCmd::kReport ||
+         header->cmd_ == ClientProtocolCmd::kNak);
 
   if (command_out != nullptr) {
-    *command_out = command;
+    *command_out = header->cmd_;
   }
 
-  msg->get(identity, 0);
-  msg->pop_front();
-
   if (identity_out != nullptr) {
-    *identity_out = identity;
+    *identity_out = header->worker_id_;
   }
 
   // Success only when not received NA
   *msg_out = std::move(msg);
-  return (command != MDPC_NAK);
+  return (header->cmd_ != ClientProtocolCmd::kNak);
 }
 }  // namespace bdm

@@ -6,6 +6,7 @@
 #include <string>
 
 #include "common.h"
+#include "protocol.h"
 #include "worker_entry.h"
 
 namespace bdm {

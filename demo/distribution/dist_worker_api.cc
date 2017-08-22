@@ -201,9 +201,9 @@ cleanup:
 
 void DistWorkerAPI::HandleAppMessage() {
   // The message must have the following format
-  // Frame 1: communicator identifier (where to send message?)
-  // Frame 2: recipient id
-  // Frame 3: application frame(s)
+  // Frame 1:    communicator identifier (where to send message?)
+  // Frame 2:    recipient id
+  // Frame 3..n: application frame(s)
 
   auto msg = std::make_unique<zmqpp::message>();
   if (!child_pipe_->receive(*msg) || msg->is_signal()) {
@@ -211,6 +211,9 @@ void DistWorkerAPI::HandleAppMessage() {
     info_->zctx_interrupted_ = true;
     return;
   }
+
+  // TODO(kkanellis): w->w don't need receipient id
+  // assert(msg->parts() >= 3);
 
   // Find out where to forward the message
   std::uint8_t comm_id;

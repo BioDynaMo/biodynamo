@@ -26,53 +26,70 @@ void Broker::Bind() {
 
 void Broker::HandleMessageWorker(const std::string& identity,
                                  std::unique_ptr<zmqpp::message> msg) {
+  // Message format:
+  // Frame 1:     WorkerCommandHeader class (serialized)
+  // Frame 2..n:  Application frames
   assert(msg->parts() >= 1);  //  At least, command
 
-  std::string command;
-  msg->get(command, 0);
+  // Frame 1
+  std::string* header_str = new std::string(msg->get(0));
   msg->pop_front();
+
+  std::unique_ptr<WorkerCommandHeader> header =
+      CommandHeader::FromString<WorkerCommandHeader>(header_str);
 
   bool worker_ready = (workers_.find(identity) != workers_.end());
   WorkerEntry* worker = GetOrCreateWorker(identity);
 
-  if (command == MDPW_READY) {
+  if (header->cmd_ == WorkerProtocolCmd::kReady) {
     if (worker_ready) {
       DeleteWorker(worker);
     } else {
-      std::string sent_id;
-      msg->get(sent_id, 0);
-      msg->pop_front();
+      // Cross-check worker identity
+      assert(header->worker_id_ == identity);
 
-      assert(sent_id == identity);
-
-      // monitor worker using heartbeats
+      // Monitor worker using heartbeats
       worker->expiry = std::chrono::system_clock::now() + HEARTBEAT_EXPIRY;
       waiting_.insert(worker);
 
       std::cout << "I: worker " << identity << " created" << std::endl;
     }
-  } else if (command == MDPW_REPORT) {
+  } else if (header->cmd_ == WorkerProtocolCmd::kReport) {
     if (worker_ready) {
-      //  Remove & save client return envelope and insert the
-      //  protocol header and service name, then rewrap envelope.
-      std::string client;
-      msg->get(client, 0);
-      msg->pop_front();
+      //  Forward worker report message to appropriate client
 
-      msg->push_front(worker->identity);
-      msg->push_front(MDPC_REPORT);
+      // Message format:
+      // Frame 1:     client_id (manually; ROUTER socket)
+      // Frame 2:     "BDM/0.1C"
+      // Frame 3:     ClientCommandHeader class (serialized)
+      // Frame 4..n:  Application frames
+
+      // Frame 3
+      std::unique_ptr<std::string> c_header =
+          ClientCommandHeader(ClientProtocolCmd::kReport,
+                              CommunicatorId::kSomeWorker,
+                              CommunicatorId::kClient)
+              .worker_id(worker->identity)
+              .client_id(header->client_id_)
+              .ToString();
+      msg->push_front(*c_header);
+
+      // Frame 2
       msg->push_front(MDPC_CLIENT);
-      msg->push_front("");
-      msg->push_front(client);
+      // Frame 1
+      msg->push_front(header->client_id_);
 
+      if (verbose_) {
+        std::cout << "I: broker sends message: " << *msg << std::endl;
+      }
       socket_->send(*msg);
 
     } else {
       DeleteWorker(worker);
     }
-  } else if (command == MDPW_HEARTBEAT) {
+  } else if (header->cmd_ == WorkerProtocolCmd::kHeartbeat) {
     if (worker_ready) {
-      // Remove and reinsert worker to the waiting_
+      // Remove and reinsert worker to the waiting
       // queue after updating his expiration time
       waiting_.erase(waiting_.find(worker));
       worker->expiry = std::chrono::system_clock::now() + HEARTBEAT_EXPIRY;
@@ -80,53 +97,77 @@ void Broker::HandleMessageWorker(const std::string& identity,
     } else {
       DeleteWorker(worker);
     }
-  } else if (command == MDPW_DISCONNECT) {
+  } else if (header->cmd_ == WorkerProtocolCmd::kDisconnect) {
+    // Delete worker without sending DISCONNECT message
     DeleteWorker(worker, false);
   } else {
     std::cout << "E: invalid input message" << *msg << std::endl;
   }
 }
 
-//  Process a request coming from a client. We implement MMI requests
-//  directly here (at present, we implement only the mmi.service request)
-
+//  Process a request coming from a client.
 void Broker::HandleMessageClient(const std::string& sender,
                                  std::unique_ptr<zmqpp::message> msg) {
-  assert(msg->parts() >= 2);  // service/identity name + body
+  // Message format:
+  // Frame 1:     ClientCommandHeader class (serialized)
+  // Frame 2..n:  Application frames
+  assert(msg->parts() >= 1);
 
-  // Get worker
-  std::string worker_identity;
-  msg->get(worker_identity, 0);
+  // Frame 1
+  std::string* header_str = new std::string(msg->get(0));
+  msg->pop_front();
 
-  if (workers_.find(worker_identity) == workers_.end()) {
+  std::unique_ptr<ClientCommandHeader> header =
+      CommandHeader::FromString<ClientCommandHeader>(header_str);
+
+  // Ignore MMI service for now
+  // When MMI service is implemented, header->receiver_
+  // will point to CommunicatorId::kBroker
+  assert(header->receiver_ == CommunicatorId::kSomeWorker);
+
+  if (workers_.find(header->worker_id_) == workers_.end()) {
     // no such worker exist
-    std::cout << "E: invalid worker " << worker_identity
+    std::cout << "E: invalid worker " << header->worker_id_
               << ". Droping message..." << std::endl;
 
-    // send NAK to client
-    msg->push_front(MDPC_NAK);
+    // Message format:
+    // Frame 1:     client_id (manually; ROUTER socket)
+    // Frame 2:     "BDM/0.1C"
+    // Frame 3:     ClientCommandHeader class (serialized)
+    // Frame 4..n:  Application frames
+
+    // Frame 3
+    std::unique_ptr<std::string> header =
+        ClientCommandHeader(ClientProtocolCmd::kNak, CommunicatorId::kBroker,
+                            CommunicatorId::kClient)
+            .client_id(sender)
+            .ToString();
+    msg->push_front(*header);
+
+    // Frame 2
     msg->push_front(MDPC_CLIENT);
-    msg->push_front("");
+    // Frame 1
     msg->push_front(sender);
 
+    if (verbose_) {
+      std::cout << "I: sending NAK reply to client: " << *msg << std::endl;
+    }
+
+    // send NAK to client
     socket_->send(*msg);
-    return;
-  }
+  } else {
+    WorkerEntry* worker = workers_[header->worker_id_];
 
-  WorkerEntry* worker = workers_[worker_identity];
+    // Forward the pending messages to the worker
+    worker->requests.push_back(msg->copy());
 
-  // NOTE NOTE NOTE
-  // ignore MMI service for now
+    while (!worker->requests.empty()) {
+      zmqpp::message& pending = worker->requests.front();
 
-  // Forward the pending messages to the worker
-  msg->push_front("");
-  msg->push_front(sender);
-  worker->requests.push_back(msg->copy());
-
-  while (!worker->requests.empty()) {
-    zmqpp::message& pending = worker->requests.front();
-    worker->Send(socket_, MDPW_REQUEST, &pending, verbose_);
-    worker->requests.pop_front();
+      // TODO(kkanellis): fix client (what if client is different?)
+      worker->Send(socket_, WorkerProtocolCmd::kRequest, &pending, sender);
+      worker->requests.pop_front();
+    }
   }
 }
 
@@ -155,7 +196,7 @@ WorkerEntry* Broker::GetOrCreateWorker(const std::string& identity) {
 
   if (workers_.find(identity) == workers_.end()) {
     // Create worker and add him to workers
-    WorkerEntry* worker = new WorkerEntry(identity);
+    WorkerEntry* worker = new WorkerEntry(identity, verbose_);
     workers_[identity] = worker;
 
     std::cout << "I: registering new worker: " << identity << std::endl;
@@ -165,7 +206,7 @@ WorkerEntry* Broker::GetOrCreateWorker(const std::string& identity) {
 
 void Broker::DeleteWorker(WorkerEntry* worker, bool disconnect /* = true */) {
   if (disconnect) {
-    worker->Send(socket_, MDPW_DISCONNECT, nullptr, verbose_);
+    worker->Send(socket_, WorkerProtocolCmd::kDisconnect);
   }
 
   // Remove from waiting & workers list
@@ -192,24 +233,28 @@ void Broker::Run() {
         break;  // Interrupted
       }
 
+      // Message format received (expected)
+      // Frame 1:     sender id (auto; DEALER socket)
+      // Frame 2:     "BDM/0.1C" || "BDM/0.1W"
+      // Frame 3:     *CommandHeader class (serialized)
+      // Frame 4..n:  Application frames
+      assert(msg->parts() >= 3);
+
       if (verbose_) {
-        std::cout << "I: received message: " << *msg << std::endl;
+        std::cout << "I: broker received message: " << *msg << std::endl;
       }
 
-      std::string sender, empty, header;
-
-      msg->get(sender, 0);
+      // Frame 1
+      std::string sender = msg->get(0);
       msg->pop_front();
 
-      msg->get(empty, 0);
+      // Frame 2
+      std::string protocol = msg->get(0);
       msg->pop_front();
 
-      msg->get(header, 0);
-      msg->pop_front();
-
-      if (header == MDPC_CLIENT) {
+      if (protocol == MDPC_CLIENT) {
         HandleMessageClient(sender, std::move(msg));
-      } else if (header == MDPW_WORKER) {
+      } else if (protocol == MDPW_WORKER) {
         HandleMessageWorker(sender, std::move(msg));
       } else {
         std::cout << "E: invalid message: " << *msg << std::endl;
@@ -221,7 +266,7 @@ void Broker::Run() {
     if (std::chrono::system_clock::now() > hb_at_) {
       Purge();
       for (auto worker : waiting_) {
-        worker->Send(socket_, MDPW_HEARTBEAT, nullptr, verbose_);
+        worker->Send(socket_, WorkerProtocolCmd::kHeartbeat);
       }
       hb_at_ = std::chrono::system_clock::now() + HEARTBEAT_INTERVAL;
     }

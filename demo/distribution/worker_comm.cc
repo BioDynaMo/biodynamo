@@ -28,16 +28,23 @@ void WorkerCommunicator::HandleOutgoingMessage(
     std::cout << "I: sending message to " << worker_str_ << " worker: " << *msg
               << std::endl;
   }
-  SendToCoWorker(MDPW_REPORT, msg.get());
+  SendToCoWorker(WorkerProtocolCmd::kReport, std::move(msg));
 }
 
 void WorkerCommunicator::HandleIncomingMessage() {
+  // Expected message format
+  // Frame *:     coworker_id (if client)
+  // Frame 1:     "BDM/0.1W"
+  // Frame 2:     WorkerCommandHeader (serialized)
+  // Frame 3..n:  application frames
+
   auto msg_p = new zmqpp::message();
   if (!socket_->receive(*msg_p)) {
     // Interrupted
     info_->zctx_interrupted_ = true;
     return;
   }
+  assert(msg_p->parts() >= (2 + ((unsigned)!client_)));
 
   if (info_->verbose_) {
     std::cout << "I: received message from " << coworker_identity_
@@ -46,47 +53,45 @@ void WorkerCommunicator::HandleIncomingMessage() {
 
   if (!client_) {
     // Check message origin
-    std::string coworker;
-    msg_p->get(coworker, 0);
+    std::string coworker = msg_p->get(0);
     msg_p->pop_front();
     assert(coworker == coworker_identity_ || coworker_identity_.empty());
   }
 
-  std::string empty, header, command;
-  assert(msg_p->parts() >= 3);
-
-  msg_p->get(empty, 0);
-  assert(empty == "");
+  // Frame 1
+  std::string protocol = msg_p->get(0);
   msg_p->pop_front();
+  assert(protocol == MDPW_WORKER);
 
-  msg_p->get(header, 0);
-  assert(header == MDPW_WORKER);
+  // Frame 2
+  std::string* header_str = new std::string(msg_p->get(0));
   msg_p->pop_front();
+  std::unique_ptr<WorkerCommandHeader> header =
+      ClientCommandHeader::FromString<WorkerCommandHeader>(header_str);
 
-  msg_p->get(command, 0);
-  msg_p->pop_front();
+  switch (header->cmd_) {
+    case WorkerProtocolCmd::kReady:
+      // Save coworker info
+      assert(!header->client_id_.empty());
+      coworker_identity_ = header->client_id_;
 
-  if (command == MDPW_READY) {
-    // Save coworker info
-    msg_p->get(coworker_identity_, 0);
-    assert(!coworker_identity_.empty());
-    msg_p->pop_front();
-
-    if (!client_ && !is_connected_) {
-      std::cout << "I: connection request from " << coworker_identity_
-                << std::endl;
-
-      // Reply with MDPW_READY to co-worker
-      SendToCoWorker(MDPW_READY, nullptr, info_->identity_);
-    }
-    is_connected_ = true;
-  } else if (command == MDPW_REQUEST || command == MDPW_REPORT) {
-    // Proccess request/report from coworker
-    // This should be halo-region cells request/report
-    msg_p->push_front(ToUnderlying(comm_id_));
-    info_->pending_->push_back(std::unique_ptr<zmqpp::message>(msg_p));
-  } else {
-    std::cout << "E: invalid input message" << *msg_p << std::endl;
+      if (!client_ && !is_connected_) {
+        // Reply with MDPW_READY to co-worker
+        std::cout << "I: connection request from " << coworker_identity_
+                  << std::endl;
+        SendToCoWorker(WorkerProtocolCmd::kReady, nullptr, coworker_identity_);
+      }
+      is_connected_ = true;
+      break;
+    case WorkerProtocolCmd::kRequest:
+    case WorkerProtocolCmd::kReport:
+      // Proccess request/report from coworker
+      // This should be halo-region cells request/report
+      msg_p->push_front(ToUnderlying(comm_id_));
+      info_->pending_->push_back(std::unique_ptr<zmqpp::message>(msg_p));
+      break;
+    default:
+      std::cout << "E: invalid input message" << *msg_p << std::endl;
   }
 }
 
@@ -105,7 +110,7 @@ void WorkerCommunicator::Connect() {
     // Connect to coworker
     std::cout << "I: connecting to " << coworker_str_ << " worker at "
               << endpoint_ << std::endl;
-    SendToCoWorker(MDPW_READY, nullptr, info_->identity_);
+    SendToCoWorker(WorkerProtocolCmd::kReady, nullptr, info_->identity_);
   } else {
     socket_ = new zmqpp::socket(*(info_->ctx_), zmqpp::socket_type::router);
     socket_->bind(endpoint_);
@@ -116,18 +121,32 @@ void WorkerCommunicator::Connect() {
       *socket_, std::bind(&WorkerCommunicator::HandleIncomingMessage, this));
 }
 
-void WorkerCommunicator::SendToCoWorker(const std::string& command,
-                                        zmqpp::message* message /* = nullptr */,
-                                        const std::string& option /* = "" */) {
+void WorkerCommunicator::SendToCoWorker(
+    const WorkerProtocolCmd command,
+    std::unique_ptr<zmqpp::message> message /* = nullptr */,
+    const std::string& client_id /* = "" */) {
+  // Message format sent
+  // Frame 1:    BDM/0.1W
+  // Frame 2:    WorkerCommandHeader class (serialized)
+  // Frame 3..n: Application frames
+
   auto msg = message ? message->copy() : zmqpp::message();
 
-  //  Stack protocol envelope to start of message
-  if (!option.empty()) {
-    msg.push_front(option);
-  }
-  msg.push_front(command);
+  auto sender = (client_ ? CommunicatorId::kLeftNeighbour
+                         : CommunicatorId::kRightNeighbour);
+  auto receiver = (client_ ? CommunicatorId::kRightNeighbour
+                           : CommunicatorId::kLeftNeighbour);
+
+  // Frame 2
+  std::unique_ptr<std::string> header =
+      WorkerCommandHeader(command, sender, receiver)
+          .worker_id(info_->identity_)
+          .client_id(client_id)
+          .ToString();
+  msg.push_front(*header);
+
+  // Frame 1
   msg.push_front(MDPW_WORKER);
-  msg.push_front("");
 
   if (!client_) {
     // Need to add the coworker identity
@@ -136,8 +155,8 @@ void WorkerCommunicator::SendToCoWorker(const std::string& command,
   }
 
   if (info_->verbose_) {
-    std::cout << "I: sending " << command << " to " << coworker_identity_
-              << " worker: " << msg << std::endl;
+    std::cout << "I: sending " << +ToUnderlying(command) << " to "
+              << coworker_identity_ << " worker: " << msg << std::endl;
   }
   socket_->send(msg);
 }
