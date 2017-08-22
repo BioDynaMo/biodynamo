@@ -5,6 +5,7 @@
 
 #include "common.h"
 #include "communicator.h"
+#include "protocol.h"
 
 namespace bdm {
 
@@ -19,9 +20,9 @@ class WorkerCommunicator : public Communicator {
   void HandleIncomingMessage();
 
  private:
-  void SendToCoWorker(const std::string& command,
-                      zmqpp::message* message = nullptr,
-                      const std::string& option = "");
+  void SendToCoWorker(const WorkerProtocolCmd command,
+                      std::unique_ptr<zmqpp::message> message = nullptr,
+                      const std::string& client_id = "");
 
   bool client_;  // Act as client? (aka initiate communication)
   std::string coworker_identity_;

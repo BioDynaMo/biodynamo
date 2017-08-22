@@ -8,7 +8,9 @@ BrokerCommunicator::BrokerCommunicator(DistSharedInfo* info,
       hb_delay_(duration_ms_t(HEARTBEAT_INTERVAL)),
       hb_rec_delay_(duration_ms_t(HEARTBEAT_INTERVAL)) {}
 
-BrokerCommunicator::~BrokerCommunicator() { SendToBroker(MDPW_DISCONNECT); }
+BrokerCommunicator::~BrokerCommunicator() {
+  SendToBroker(WorkerProtocolCmd::kDisconnect);
+}
 
 void BrokerCommunicator::ReactorTimedOut() {
   // Timeout
@@ -22,7 +24,7 @@ void BrokerCommunicator::ReactorTimedOut() {
 void BrokerCommunicator::ReactorServedRequests() {
   //  Send HEARTBEAT if it's time
   if (std::chrono::system_clock::now() > hb_at_) {
-    SendToBroker(MDPW_HEARTBEAT);
+    SendToBroker(WorkerProtocolCmd::kHeartbeat);
     hb_at_ = std::chrono::system_clock::now() + hb_delay_;
   }
 
@@ -36,56 +38,69 @@ void BrokerCommunicator::ReactorServedRequests() {
 
 void BrokerCommunicator::HandleOutgoingMessage(
     std::unique_ptr<zmqpp::message> msg) {
+  // Message Format
+  // Frame 1:     client_id
+  // Frame 2..n:  application frames
+
   if (info_->verbose_) {
     std::cout << "I: sending message to broker: " << *msg << std::endl;
   }
 
-  // Check recipient address
-  std::string recipient;
-  msg->get(recipient, 0);
-  assert(!recipient.empty());
+  assert(msg->parts() >= 1);
 
-  SendToBroker(MDPW_REPORT, msg.get());
+  // Verify client id exists
+  std::string client_id = msg->get(0);
+  msg->pop_front();
+  assert(!client_id.empty());
+
+  SendToBroker(WorkerProtocolCmd::kReport, std::move(msg), client_id);
 }
 
 void BrokerCommunicator::HandleIncomingMessage() {
+  // Expected message format
+  // Frame 1:     "BDM/0.1W"
+  // Frame 2:     WorkerCommandHeader (serialized)
+  // Frame 3..n:  application frames
+
   auto msg_p = new zmqpp::message();
   if (!socket_->receive(*msg_p)) {
     // Interrupted
     info_->zctx_interrupted_ = true;
     return;
   }
+  assert(msg_p->parts() >= 2);
 
   if (info_->verbose_) {
     std::cout << "I: received message from broker: " << *msg_p << std::endl;
   }
   hb_liveness_ = HEARTBEAT_LIVENESS;
 
-  std::string empty, header, command;
-  assert(msg_p->parts() >= 3);
-
-  msg_p->get(empty, 0);
-  assert(empty == "");
+  // Frame 1
+  std::string protocol = msg_p->get(0);
   msg_p->pop_front();
+  assert(protocol == MDPW_WORKER);
 
-  msg_p->get(header, 0);
-  assert(header == MDPW_WORKER);
+  // Frame 2
+  std::string* header_str = new std::string(msg_p->get(0));
   msg_p->pop_front();
+  std::unique_ptr<WorkerCommandHeader> header =
+      ClientCommandHeader::FromString<WorkerCommandHeader>(header_str);
 
-  msg_p->get(command, 0);
-  msg_p->pop_front();
-
-  if (command == MDPW_REQUEST) {
-    // Process message from broker
-    msg_p->push_front(ToUnderlying(comm_id_));
-    info_->pending_->push_back(std::unique_ptr<zmqpp::message>(msg_p));
-  } else if (command == MDPW_HEARTBEAT) {
-    // Do nothing
-  } else if (command == MDPW_DISCONNECT) {
-    // Reconnect to broker
-    Connect();
-  } else {
-    std::cout << "E: invalid input message" << *msg_p << std::endl;
+  switch (header->cmd_) {
+    case WorkerProtocolCmd::kRequest:
+      // Process message from broker
+      msg_p->push_front(ToUnderlying(comm_id_));
+      info_->pending_->push_back(std::unique_ptr<zmqpp::message>(msg_p));
+      break;
+    case WorkerProtocolCmd::kHeartbeat:
+      // Do nothing
+      break;
+    case WorkerProtocolCmd::kDisconnect:
+      // Reconnect to broker
+      Connect();
+      break;
+    default:
+      std::cout << "E: invalid input message" << *msg_p << std::endl;
   }
 }
 
@@ -107,28 +122,40 @@ void BrokerCommunicator::Connect() {
 
   // Register service with broker
   std::cout << "I: connecting to broker at " << endpoint_ << std::endl;
-  SendToBroker(MDPW_READY, nullptr, info_->identity_);
+  SendToBroker(WorkerProtocolCmd::kReady);
 
   // Heartbeat
   hb_liveness_ = HEARTBEAT_LIVENESS;
   hb_at_ = std::chrono::system_clock::now() + hb_delay_;
 }
 
-void BrokerCommunicator::SendToBroker(const std::string& command,
-                                      zmqpp::message* message /* = nullptr */,
-                                      const std::string& option /* = "" */) {
+void BrokerCommunicator::SendToBroker(
+    const WorkerProtocolCmd command,
+    std::unique_ptr<zmqpp::message> message /* = nullptr */,
+    const std::string client_id /* = "" */) {
+  // Message format sent
+  // Frame 1:    BDM/0.1W
+  // Frame 2:    WorkerCommandHeader class (serialized)
+  // Frame 3..n: Application frames
+
   auto msg = message ? message->copy() : zmqpp::message();
 
-  //  Stack protocol envelope to start of message
-  if (!option.empty()) {
-    msg.push_front(option);
-  }
-  msg.push_front(command);
+  // Frame 2
+  std::unique_ptr<std::string> header =
+      WorkerCommandHeader(command, CommunicatorId::kSomeWorker,
+                          CommunicatorId::kBroker)
+          .worker_id(info_->identity_)
+          .client_id(client_id)
+          .ToString();
+  msg.push_front(*header);
+
+  // Frame 1
   msg.push_front(MDPW_WORKER);
-  msg.push_front("");
 
   if (info_->verbose_) {
-    std::cout << "I: sending " << command << " to broker: " << msg << std::endl;
+    // TODO(kkanellis): change to strings
+    std::cout << "I: sending " << +ToUnderlying(command)
+              << " to broker: " << msg << std::endl;
   }
   socket_->send(msg);
 }

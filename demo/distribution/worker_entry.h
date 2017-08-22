@@ -6,36 +6,48 @@
 #include <string>
 
 #include "common.h"
+#include "protocol.h"
 
 namespace bdm {
 
 class WorkerEntry {
  public:
-  explicit WorkerEntry(const std::string& identity) {
+  explicit WorkerEntry(const std::string& identity, bool verbose)
+      : verbose_(verbose) {
     this->identity = identity;
     this->expiry = std::chrono::system_clock::now() + HEARTBEAT_EXPIRY;
   }
   ~WorkerEntry() {}
 
-  void Send(zmqpp::socket* sock, const std::string& command,
-            zmqpp::message* message, bool verbose,
-            const std::string& option = "") const {
+  void Send(zmqpp::socket* sock, WorkerProtocolCmd command,
+            zmqpp::message* message = nullptr,
+            std::string client_id = "") const {
     auto msg = message ? message->copy() : zmqpp::message();
 
-    //  Stack protocol envelope to start of message
-    if (!option.empty()) {
-      msg.push_front(option);
-    }
-    msg.push_front(command);
+    // Message format:
+    // Frame 1:     worker_id (manually; ROUTER socket)
+    // Frame 2:     "BDM/0.1W"
+    // Frame 3:     WorkerCommandHeader class (serialized)
+    // Frame 4..n:  Application frames
+
+    // Frame 3
+    std::unique_ptr<std::string> header =
+        WorkerCommandHeader(command, CommunicatorId::kClient,
+                            CommunicatorId::kSomeWorker)
+            .worker_id(identity)
+            .client_id(client_id)
+            .ToString();
+    msg.push_front(*header);
+
+    // Frame 2
     msg.push_front(MDPW_WORKER);
 
-    //  Stack routing envelope to start of message
-    msg.push_front("");
+    // Frame 1: Deliver to correct worker
     msg.push_front(identity);
 
-    if (verbose) {
-      std::cout << "I: sending " << command << " to worker: " << msg
-                << std::endl;
+    if (verbose_) {
+      std::cout << "I: sending " << +ToUnderlying(command)
+                << " to worker: " << msg << std::endl;
     }
 
     sock->send(msg);
@@ -44,6 +56,9 @@ class WorkerEntry {
   std::list<zmqpp::message> requests;  // Pending requests
   std::string identity;                // Worker (printable) identity
   time_point_t expiry;                 // When to send HEARTBEAT
+
+ private:
+  bool verbose_;
 };
 }  // namespace bdm
 

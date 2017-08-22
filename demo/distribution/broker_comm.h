@@ -10,6 +10,7 @@
 
 #include "common.h"
 #include "communicator.h"
+#include "protocol.h"
 
 namespace bdm {
 
@@ -29,9 +30,9 @@ class BrokerCommunicator : public Communicator {
   void SetHeartbeatReconnect(const duration_ms_t& hb_rec_delay);
 
  private:
-  void SendToBroker(const std::string& command,
-                    zmqpp::message* message = nullptr,
-                    const std::string& option = "");
+  void SendToBroker(const WorkerProtocolCmd command,
+                    std::unique_ptr<zmqpp::message> message = nullptr,
+                    const std::string client_id = "");
 
   std::vector<zmqpp::socket*> purge_later_;
 
