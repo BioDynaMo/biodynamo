@@ -18,10 +18,8 @@ TEST(ExportTest, ConductExportToFile) {
   cells.push_back(cell1);
   cells.push_back(cell2);
 
-  ExporterFactory exp_fac;
-
   /// Test the standard file exporter
-  auto exp_basic = exp_fac.GenerateExporter<SoaCell>("basic");
+  auto exp_basic = ExporterFactory::GenerateExporter<SoaCell>(kBasic);
   exp_basic->ToFile(cells, "TestBasicExporter.dat");
   std::ifstream t;
   std::stringstream buffer;
@@ -37,7 +35,7 @@ TEST(ExportTest, ConductExportToFile) {
   remove("TestBasicExporter.dat");
 
   /// Test the Matlab file exporter
-  auto exp_matlab = exp_fac.GenerateExporter<SoaCell>("matlab");
+  auto exp_matlab = ExporterFactory::GenerateExporter<SoaCell>(kMatlab);
   exp_matlab->ToFile(cells, "TestMatlabExporter.m");
   t.open("TestMatlabExporter.m");
   std::getline(t, line);
@@ -52,7 +50,7 @@ TEST(ExportTest, ConductExportToFile) {
   remove("TestMatlabExporter.m");
 
   /// Test the NeuroML file exporter
-  auto exp_neuroml = exp_fac.GenerateExporter<SoaCell>("neuroml");
+  auto exp_neuroml = ExporterFactory::GenerateExporter<SoaCell>(kNeuroML);
   exp_neuroml->ToFile(cells, "TestNeuroMLExporter.m");
   t.open("TestNeuroMLExporter.m");
   std::getline(t, line);
@@ -69,7 +67,7 @@ TEST(ExportTest, ConductExportToFile) {
   remove("TestNeuroMLExporter.m");
 
   /// Test the Paraview exporter
-  auto exp_paraview = exp_fac.GenerateExporter<SoaCell>("paraview");
+  auto exp_paraview = ExporterFactory::GenerateExporter<SoaCell>(kParaview);
   exp_paraview->CreatePVDFile("TestResultsParaview", 1, 1.0);
   exp_paraview->ToFile(cells, "TestResultsParaview");
   t.open("TestResultsParaview.pvd");

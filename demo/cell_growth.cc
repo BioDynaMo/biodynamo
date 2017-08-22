@@ -27,6 +27,7 @@ using bdm::TimingAggregator;
 using bdm::ExporterFactory;
 using bdm::Exporter;
 using bdm::Grid;
+using bdm::ExporterType;
 
 void Execute(size_t cells_per_dim, size_t iterations, size_t threads,
              size_t repititions, TimingAggregator *statistic,
@@ -59,12 +60,14 @@ void Execute(size_t cells_per_dim, size_t iterations, size_t threads,
     }
 
     // iterate for all (time) steps
-    ExporterFactory exp_fac;
-
-    auto exp_basic = exp_fac.GenerateExporter<SoaCell>("basic");
-    auto exp_matlab = exp_fac.GenerateExporter<SoaCell>("matlab");
-    auto exp_neuroml = exp_fac.GenerateExporter<SoaCell>("neuroml");
-    auto exp_paraview = exp_fac.GenerateExporter<SoaCell>("paraview");
+    auto exp_basic =
+        ExporterFactory::GenerateExporter<SoaCell>(ExporterType::kBasic);
+    auto exp_matlab =
+        ExporterFactory::GenerateExporter<SoaCell>(ExporterType::kMatlab);
+    auto exp_neuroml =
+        ExporterFactory::GenerateExporter<SoaCell>(ExporterType::kNeuroML);
+    auto exp_paraview =
+        ExporterFactory::GenerateExporter<SoaCell>(ExporterType::kParaview);
 
     if (with_export) {
       exp_paraview->CreatePVDFile("Results4Paraview", iterations, 1.0);

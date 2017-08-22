@@ -23,7 +23,6 @@ using bdm::Soa;
 template <typename TContainer>
 class Exporter {
  public:
-  static Exporter *GenerateExporter(string format);
   virtual void ToFile(const TContainer &cells, string filename) = 0;
   virtual void CreatePVDFile(string filename, int iterations,
                              double increment) = 0;
@@ -353,24 +352,28 @@ class ParaviewExporter : public Exporter<TContainer> {
   }
 };
 
+enum ExporterType { kBasic, kMatlab, kNeuroML, kParaview };
+
 class ExporterFactory {
  public:
   template <typename TContainer>
-  std::unique_ptr<Exporter<TContainer>> GenerateExporter(string format) {
-    if (format.compare("basic") == 0) {
-      return std::unique_ptr<Exporter<TContainer>>(
-          new BasicExporter<TContainer>);
-    } else if (format.compare("matlab") == 0) {
-      return std::unique_ptr<Exporter<TContainer>>(
-          new MatlabExporter<TContainer>);
-    } else if (format.compare("neuroml") == 0) {
-      return std::unique_ptr<Exporter<TContainer>>(
-          new NeuroMLExporter<TContainer>);
-    } else if (format.compare("paraview") == 0) {
-      return std::unique_ptr<Exporter<TContainer>>(
-          new ParaviewExporter<TContainer>);
-    } else {
-      throw std::invalid_argument("export format not recognized");
+  static std::unique_ptr<Exporter<TContainer>> GenerateExporter(
+      ExporterType type) {
+    switch (type) {
+      case kBasic:
+        return std::unique_ptr<Exporter<TContainer>>(
+            new BasicExporter<TContainer>);
+      case kMatlab:
+        return std::unique_ptr<Exporter<TContainer>>(
+            new MatlabExporter<TContainer>);
+      case kNeuroML:
+        return std::unique_ptr<Exporter<TContainer>>(
+            new NeuroMLExporter<TContainer>);
+      case kParaview:
+        return std::unique_ptr<Exporter<TContainer>>(
+            new ParaviewExporter<TContainer>);
+      default:
+        throw std::invalid_argument("export format not recognized");
     }
   }
 };
