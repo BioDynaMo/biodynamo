@@ -21,94 +21,101 @@ TEST(ExportTest, ConductExportToFile) {
   /// Test the standard file exporter
   auto exp_basic = ExporterFactory::GenerateExporter<SoaCell>(kBasic);
   exp_basic->ToFile(cells, "TestBasicExporter.dat");
-  std::ifstream t;
-  std::stringstream buffer;
-  t.open("TestBasicExporter.dat");
+  std::ifstream ifs;
+  ifs.open("TestBasicExporter.dat");
   std::string line;
-  std::getline(t, line);
+  std::getline(ifs, line);
   EXPECT_EQ("[0.5,1,0]", line);
-  std::getline(t, line);
+  std::getline(ifs, line);
   EXPECT_EQ("[-5,5,0.9]", line);
-  std::getline(t, line);
+  EXPECT_FALSE(std::getline(ifs, line));
   EXPECT_EQ("", line);
-  t.close();
+  ifs.close();
   remove("TestBasicExporter.dat");
 
   /// Test the Matlab file exporter
   auto exp_matlab = ExporterFactory::GenerateExporter<SoaCell>(kMatlab);
   exp_matlab->ToFile(cells, "TestMatlabExporter.m");
-  t.open("TestMatlabExporter.m");
-  std::getline(t, line);
+  ifs.open("TestMatlabExporter.m");
+  std::getline(ifs, line);
   EXPECT_EQ("CellPos = zeros(2,3);", line);
-  std::getline(t, line);
+  std::getline(ifs, line);
   EXPECT_EQ("CellPos(1,1:3) = [0.5,1,0];", line);
-  std::getline(t, line);
+  std::getline(ifs, line);
   EXPECT_EQ("CellPos(2,1:3) = [-5,5,0.9];", line);
-  std::getline(t, line);
+  EXPECT_FALSE(std::getline(ifs, line));
   EXPECT_EQ("", line);
-  t.close();
+  ifs.close();
   remove("TestMatlabExporter.m");
 
   /// Test the NeuroML file exporter
   auto exp_neuroml = ExporterFactory::GenerateExporter<SoaCell>(kNeuroML);
   exp_neuroml->ToFile(cells, "TestNeuroMLExporter.m");
-  t.open("TestNeuroMLExporter.m");
-  std::getline(t, line);
+  ifs.open("TestNeuroMLExporter.m");
+  std::getline(ifs, line);
   EXPECT_EQ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>", line);
   for (int i = 0; i < 5; ++i) {
-    std::getline(t, line);
+    std::getline(ifs, line);
   }
   EXPECT_EQ("   lengthUnits=\"micrometer\" ", line);
   for (int i = 0; i < 30; ++i) {
-    std::getline(t, line);
+    std::getline(ifs, line);
   }
   EXPECT_EQ("</neuroml>", line);
-  t.close();
+  EXPECT_FALSE(std::getline(ifs, line));
+  EXPECT_EQ("", line);
+  ifs.close();
   remove("TestNeuroMLExporter.m");
 
   /// Test the Paraview exporter
   auto exp_paraview = ExporterFactory::GenerateExporter<SoaCell>(kParaview);
   exp_paraview->CreatePVDFile("TestResultsParaview", 1, 1.0);
   exp_paraview->ToFile(cells, "TestResultsParaview");
-  t.open("TestResultsParaview.pvd");
-  std::getline(t, line);
+  ifs.open("TestResultsParaview.pvd");
+  std::getline(ifs, line);
   EXPECT_EQ("<?xml version=\"1.0\"?>", line);
-  std::getline(t, line);
+  std::getline(ifs, line);
   EXPECT_EQ(
       "<VTKFile type=\"Collection\" version=\"0.1\" "
       "byte_order=\"LittleEndian\">",
       line);
-  std::getline(t, line);
+  std::getline(ifs, line);
   EXPECT_EQ("<Collection>", line);
-  std::getline(t, line);
+  std::getline(ifs, line);
   EXPECT_EQ(
       "<DataSet timestep=\"0\" group=\"\" part=\"0\" "
       "file=\"TestResultsParaview-0.vtu\">",
       line);
-  std::getline(t, line);
+  std::getline(ifs, line);
   EXPECT_EQ("</Collection>", line);
-  remove("TestResultsParaview.pvd");
-  t.close();
+  std::getline(ifs, line);
+  EXPECT_EQ("</VTKFile>", line);
+  EXPECT_FALSE(std::getline(ifs, line));
+  EXPECT_EQ("", line);
+  ifs.close();
   remove("TestResultsParaview.pvd");
 
-  t.open("TestResultsParaview-1.vtu");
-  std::getline(t, line);
+  ifs.open("TestResultsParaview-1.vtu");
+  std::getline(ifs, line);
   EXPECT_EQ(
       "<VTKFile type=\"UnstructuredGrid\" version=\"0.1\" "
       "byte_order=\"LittleEndian\">",
       line);
   for (int i = 0; i < 5; ++i) {
-    std::getline(t, line);
+    std::getline(ifs, line);
   }
   EXPECT_EQ(" 0.5 1 0 -5 5 0.9", line);
   for (int i = 0; i < 20; ++i) {
-    std::getline(t, line);
+    std::getline(ifs, line);
   }
   EXPECT_EQ(" 0 0 0 0 0 0", line);
   for (int i = 0; i < 16; ++i) {
-    std::getline(t, line);
+    std::getline(ifs, line);
   }
   EXPECT_EQ("</VTKFile>", line);
+  EXPECT_FALSE(std::getline(ifs, line));
+  EXPECT_EQ("", line);
+  ifs.close();
   remove("TestResultsParaview-1.vtu");
 }
 }  // namespace bdm
