@@ -1,5 +1,5 @@
-#ifndef DEMO_DISTRIBUTION_COMMON_H__
-#define DEMO_DISTRIBUTION_COMMON_H__
+#ifndef DEMO_DISTRIBUTION_COMMON_H_
+#define DEMO_DISTRIBUTION_COMMON_H_
 
 #include <Rtypes.h>
 #include <zmqpp/zmqpp.hpp>
@@ -42,29 +42,15 @@ constexpr typename std::underlying_type<E>::type ToUnderlying(E e) {
 // Communicator identifiers
 enum class CommunicatorId : std::uint8_t {
   kUndefined = 0,
+  kClient,
   kBroker,
   kLeftNeighbour,
   kRightNeighbour,
-  kCount,
+  kSomeWorker,
 
-  kMinValue = kBroker,
-  kMaxValue = kRightNeighbour,
-};
-
-// Distributed API commands
-enum class AppProtocolCommand : std::uint8_t {
-  kDebug = 0,
-
-  kCount,
-  kMinValue = kDebug,
-  kMaxValue = kDebug,
-};
-
-class AppMessageHeader {
-  AppProtocolCommand cmd;
-  CommunicatorId sender;
-
-  // ClassDef(AppMessageHeader, 1);
+  kMinValue = kClient,
+  kMaxValue = kSomeWorker,
+  kCount = kSomeWorker
 };
 
 // -------- Majordomo pattern constants --------
