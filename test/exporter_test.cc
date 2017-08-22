@@ -5,7 +5,7 @@
 
 namespace bdm {
 
-TEST(ExportTest, ConductExportToFile) {
+TEST(ExportTest, ExportToFile) {
   // set up cells and their positions
   Cell cell1;
   cell1.SetPosition({0.5, 1, 0});
@@ -20,7 +20,7 @@ TEST(ExportTest, ConductExportToFile) {
 
   /// Test the standard file exporter
   auto exp_basic = ExporterFactory::GenerateExporter<SoaCell>(kBasic);
-  exp_basic->ToFile(cells, "TestBasicExporter.dat");
+  exp_basic->ExportIteration(cells, "TestBasicExporter.dat", 0);
   std::ifstream ifs;
   ifs.open("TestBasicExporter.dat");
   std::string line;
@@ -35,7 +35,7 @@ TEST(ExportTest, ConductExportToFile) {
 
   /// Test the Matlab file exporter
   auto exp_matlab = ExporterFactory::GenerateExporter<SoaCell>(kMatlab);
-  exp_matlab->ToFile(cells, "TestMatlabExporter.m");
+  exp_matlab->ExportIteration(cells, "TestMatlabExporter.m", 0);
   ifs.open("TestMatlabExporter.m");
   std::getline(ifs, line);
   EXPECT_EQ("CellPos = zeros(2,3);", line);
@@ -50,8 +50,8 @@ TEST(ExportTest, ConductExportToFile) {
 
   /// Test the NeuroML file exporter
   auto exp_neuroml = ExporterFactory::GenerateExporter<SoaCell>(kNeuroML);
-  exp_neuroml->ToFile(cells, "TestNeuroMLExporter.m");
-  ifs.open("TestNeuroMLExporter.m");
+  exp_neuroml->ExportIteration(cells, "TestNeuroMLExporter.xml", 0);
+  ifs.open("TestNeuroMLExporter.xml");
   std::getline(ifs, line);
   EXPECT_EQ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>", line);
   for (int i = 0; i < 5; ++i) {
@@ -65,12 +65,12 @@ TEST(ExportTest, ConductExportToFile) {
   EXPECT_FALSE(std::getline(ifs, line));
   EXPECT_EQ("", line);
   ifs.close();
-  remove("TestNeuroMLExporter.m");
+  remove("TestNeuroMLExporter.xml");
 
   /// Test the Paraview exporter
   auto exp_paraview = ExporterFactory::GenerateExporter<SoaCell>(kParaview);
-  exp_paraview->CreatePVDFile("TestResultsParaview", 1, 1.0);
-  exp_paraview->ToFile(cells, "TestResultsParaview");
+  exp_paraview->ExportIteration(cells, "TestResultsParaview", 0);
+  exp_paraview->ExportSummary("TestResultsParaview", 1);
   ifs.open("TestResultsParaview.pvd");
   std::getline(ifs, line);
   EXPECT_EQ("<?xml version=\"1.0\"?>", line);
@@ -95,7 +95,7 @@ TEST(ExportTest, ConductExportToFile) {
   ifs.close();
   remove("TestResultsParaview.pvd");
 
-  ifs.open("TestResultsParaview-1.vtu");
+  ifs.open("TestResultsParaview-0.vtu");
   std::getline(ifs, line);
   EXPECT_EQ(
       "<VTKFile type=\"UnstructuredGrid\" version=\"0.1\" "
@@ -116,6 +116,6 @@ TEST(ExportTest, ConductExportToFile) {
   EXPECT_FALSE(std::getline(ifs, line));
   EXPECT_EQ("", line);
   ifs.close();
-  remove("TestResultsParaview-1.vtu");
+  remove("TestResultsParaview-0.vtu");
 }
 }  // namespace bdm

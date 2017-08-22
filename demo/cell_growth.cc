@@ -69,10 +69,6 @@ void Execute(size_t cells_per_dim, size_t iterations, size_t threads,
     auto exp_paraview =
         ExporterFactory::GenerateExporter<SoaCell>(ExporterType::kParaview);
 
-    if (with_export) {
-      exp_paraview->CreatePVDFile("Results4Paraview", iterations, 1.0);
-    }
-
     for (size_t i = 0; i < iterations; i++) {
       {
         Timing timing("Find Neighbors", statistic);
@@ -94,12 +90,14 @@ void Execute(size_t cells_per_dim, size_t iterations, size_t threads,
       if (with_export) {
         Timing timing("Export", statistic);
         std::cout << "exporting now..." << std::endl;
-        exp_basic->ToFile(cells, "FinalPositions.dat");
-        exp_matlab->ToFile(cells, "FinalPositions.m");
-        exp_neuroml->ToFile(cells, "FinalPositions.xml");
-        exp_paraview->ToFile(cells, "Results4Paraview");
-        exp_paraview->AddIteration();
+        exp_basic->ExportIteration(cells, "FinalPositions.dat", i);
+        exp_matlab->ExportIteration(cells, "FinalPositions.m", i);
+        exp_neuroml->ExportIteration(cells, "FinalPositions.xml", i);
+        exp_paraview->ExportIteration(cells, "Results4Paraview", i);
       }
+    }
+    if (with_export) {
+      exp_paraview->ExportSummary("Results4Paraview", iterations);
     }
   }
 }

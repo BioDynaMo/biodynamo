@@ -9,6 +9,7 @@
 #include <string>
 
 #include "backend.h"
+#include "param.h"
 
 namespace bdm {
 
@@ -23,26 +24,24 @@ using bdm::Soa;
 template <typename TContainer>
 class Exporter {
  public:
-  virtual void ToFile(const TContainer &cells, string filename) = 0;
-  virtual void CreatePVDFile(string filename, int iterations,
-                             double increment) = 0;
-  virtual void AddIteration() = 0;
+  /// Export the simulation state of one iteration
+  /// \param cells - simulation object which should be exported
+  /// \param filename
+  /// \param iteration - current iteration number (=time step)
+  virtual void ExportIteration(const TContainer &cells, string filename,
+                               uint64_t iteration) = 0;
+
+  /// Export the simulation summary
+  /// \param filename
+  /// \param num_iterations - total number of iterations
+  virtual void ExportSummary(string filename, uint64_t num_iterations) = 0;
 };
 
 template <typename TContainer>
 class BasicExporter : public Exporter<TContainer> {
  public:
-  void CreatePVDFile(string filename, int iterations,
-                     double increment) override {
-    throw std::invalid_argument(
-        "this exporter type does not support PVD format");
-  }
-
-  void AddIteration() override {
-    throw std::invalid_argument("this exporter does not support iteration");
-  }
-
-  void ToFile(const TContainer &cells, string filename) override {
+  void ExportIteration(const TContainer &cells, string filename,
+                       uint64_t iteration) override {
     ofstream outfile;
     outfile.open(filename);
     uint num_cells = cells.size();
@@ -55,22 +54,15 @@ class BasicExporter : public Exporter<TContainer> {
 
     outfile.close();
   }
+
+  void ExportSummary(string filename, uint64_t num_iterations) override {}
 };
 
 template <typename TContainer>
 class MatlabExporter : public Exporter<TContainer> {
  public:
-  void CreatePVDFile(string filename, int iterations,
-                     double increment) override {
-    throw std::invalid_argument(
-        "this exporter type does not support PVD format");
-  }
-
-  void AddIteration() override {
-    throw std::invalid_argument("this exporter does not support iteration");
-  }
-
-  void ToFile(const TContainer &cells, string filename) override {
+  void ExportIteration(const TContainer &cells, string filename,
+                       uint64_t iteration) override {
     ofstream outfile;
     outfile.open(filename);
     uint num_cells = cells.size();
@@ -86,22 +78,15 @@ class MatlabExporter : public Exporter<TContainer> {
 
     outfile.close();
   }
+
+  void ExportSummary(string filename, uint64_t num_iterations) override {}
 };
 
 template <typename TContainer>
 class NeuroMLExporter : public Exporter<TContainer> {
  public:
-  void CreatePVDFile(string filename, int iterations,
-                     double increment) override {
-    throw std::invalid_argument(
-        "this exporter type does not support PVD format");
-  }
-
-  void AddIteration() override {
-    throw std::invalid_argument("this exporter does not support iteration");
-  }
-
-  void ToFile(const TContainer &cells, string filename) override {
+  void ExportIteration(const TContainer &cells, string filename,
+                       uint64_t iteration) override {
     ofstream outfile;
     outfile.open(filename);
 
@@ -192,44 +177,18 @@ class NeuroMLExporter : public Exporter<TContainer> {
 
     std::cout << "created NeuroML file" << std::endl;
   }
+
+  void ExportSummary(string filename, uint64_t num_iterations) override {}
 };
 
 template <typename TContainer>
 class ParaviewExporter : public Exporter<TContainer> {
  public:
-  /// This index refers to the current export iteration, and so needs to be
-  /// updated in case multiple iterations are conducted.
-  size_t iteration_index = 1;
-
-  void AddIteration() override { iteration_index++; }
-  /// This function creates a .pvd file that lists the individual files across
-  /// the different times.
-  /// This .pvd can be read by Paraview for visualization.
-  void CreatePVDFile(string filename, int iterations, double increment) {
-    std::ofstream pvd(filename + ".pvd");
-
-    pvd << "<?xml version=\"1.0\"?>" << std::endl;
-    pvd << "<VTKFile type=\"Collection\" version=\"0.1\" "
-           "byte_order=\"LittleEndian\">"
-        << std::endl;
-    pvd << "<Collection>" << std::endl;
-    /// iterate for all (time) steps
-    for (int i = 0; i < iterations; i++) {
-      pvd << "<DataSet timestep=\"" << (i * increment)
-          << "\" group=\"\" part=\"0\" file=\"" << filename << '-' << i
-          << ".vtu\">";
-      pvd << std::endl;
-      /// end of (time) iterations loop...
-    }
-    pvd << "</Collection>" << std::endl;
-    pvd << "</VTKFile>" << std::endl;
-  }
-
-  void ToFile(const TContainer &cells, string filename) override {
+  void ExportIteration(const TContainer &cells, string filename,
+                       uint64_t iteration) override {
     const size_t num_cells = cells.size();
     size_t index = 0;
-    std::ofstream vtu(filename + "-" + std::to_string(iteration_index) +
-                      ".vtu");
+    std::ofstream vtu(filename + "-" + std::to_string(iteration) + ".vtu");
 
     vtu << "<VTKFile type=\"UnstructuredGrid\" version=\"0.1\" "
            "byte_order=\"LittleEndian\">"
@@ -349,6 +308,29 @@ class ParaviewExporter : public Exporter<TContainer> {
     vtu << "      </Piece>" << std::endl;
     vtu << "   </UnstructuredGrid>" << std::endl;
     vtu << "</VTKFile>" << std::endl;
+  }
+
+  /// This function creates a .pvd file that lists the individual files across
+  /// the different times.
+  /// This .pvd can be read by Paraview for visualization.
+  void ExportSummary(string filename, uint64_t num_iterations) override {
+    std::ofstream pvd(filename + ".pvd");
+
+    pvd << "<?xml version=\"1.0\"?>" << std::endl;
+    pvd << "<VTKFile type=\"Collection\" version=\"0.1\" "
+           "byte_order=\"LittleEndian\">"
+        << std::endl;
+    pvd << "<Collection>" << std::endl;
+    /// iterate for all (time) steps
+    for (uint64_t i = 0; i < num_iterations; i++) {
+      pvd << "<DataSet timestep=\"" << (i * Param::kSimulationTimeStep)
+          << "\" group=\"\" part=\"0\" file=\"" << filename << '-' << i
+          << ".vtu\">";
+      pvd << std::endl;
+      /// end of (time) iterations loop...
+    }
+    pvd << "</Collection>" << std::endl;
+    pvd << "</VTKFile>" << std::endl;
   }
 };
 
