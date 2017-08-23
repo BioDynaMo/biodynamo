@@ -29,7 +29,7 @@ class AppMessageHeader {
   // ClassDef(AppMessageHeader, 1);
 };
 
-// Low-level API Commands
+// -------------------------------------------------------- //
 enum class ClientProtocolCmd : std::uint8_t {
   kInvalid = 0,
   kRequest,
@@ -40,6 +40,16 @@ enum class ClientProtocolCmd : std::uint8_t {
   kMaxValue = kNak,
   kCount = kMaxValue
 };
+const std::string ClientProtocolCmdStr[] = {"Invalid", "Request", "Report",
+                                            "Nak"};
+
+inline std::ostream& operator<<(std::ostream& stream,
+                                const ClientProtocolCmd& cmd) {
+  stream << ClientProtocolCmdStr[ToUnderlying(cmd)];
+  return stream;
+}
+
+// -------------------------------------------------------- //
 
 enum class WorkerProtocolCmd : std::uint8_t {
   kInvalid = 0,
@@ -53,6 +63,14 @@ enum class WorkerProtocolCmd : std::uint8_t {
   kMaxValue = kDisconnect,
   kCount = kMaxValue
 };
+const std::string WorkerProtocolCmdStr[] = {
+    "Invalid", "Ready", "Request", "Report", "Heartbeat", "Disconnect"};
+
+inline std::ostream& operator<<(std::ostream& stream,
+                                const WorkerProtocolCmd& cmd) {
+  stream << WorkerProtocolCmdStr[ToUnderlying(cmd)];
+  return stream;
+}
 
 class CommandHeader {
  public:
@@ -73,6 +91,13 @@ class CommandHeader {
 
     return std::unique_ptr<T>(
         reinterpret_cast<T*>(buf.ReadObjectAny(T::Class())));
+  }
+
+  inline friend std::ostream& operator<<(std::ostream& stream,
+                                         const CommandHeader& header) {
+    stream << "[Sender    ]: " << header.sender_ << std::endl
+           << "[Receiver  ]: " << header.receiver_ << std::endl;
+    return stream;
   }
 
   ClassDef(CommandHeader, 1);
@@ -110,6 +135,19 @@ class ClientCommandHeader : public CommandHeader {
         std::string(buf.Buffer(), buf.Length()));
   }
 
+  inline friend std::ostream& operator<<(std::ostream& stream,
+                                         const ClientCommandHeader& header) {
+    stream << std::endl << "{ClientCommandHeader}" << std::endl;
+
+    stream << "[Command   ]: " << header.cmd_ << std::endl;
+    stream << static_cast<CommandHeader>(header);
+    stream << "[Client id ]: " << header.client_id_ << std::endl
+           << "[Worker id ]: " << header.worker_id_ << std::endl
+           << "[App frames]: " << header.app_frames_ << std::endl;
+
+    return stream;
+  }
+
   ClassDef(ClientCommandHeader, 1);
 };
 
@@ -133,8 +171,23 @@ class WorkerCommandHeader : public CommandHeader {
     assert(buf.WriteObjectAny(this, WorkerCommandHeader::Class()) == 1);
     assert(buf.CheckObject(this, WorkerCommandHeader::Class()));
 
+    std::cout << *this << std::endl;
+
     return std::make_unique<std::string>(
         std::string(buf.Buffer(), buf.Length()));
+  }
+
+  inline friend std::ostream& operator<<(std::ostream& stream,
+                                         const WorkerCommandHeader& header) {
+    stream << std::endl << "{WorkerCommandHeader}" << std::endl;
+
+    stream << "[Command   ]: " << header.cmd_ << std::endl;
+    stream << static_cast<CommandHeader>(header);
+    stream << "[Client id ]: " << header.client_id_ << std::endl
+           << "[Worker id ]: " << header.worker_id_ << std::endl
+           << "[App frames]: " << header.app_frames_ << std::endl;
+
+    return stream;
   }
 
   ClassDef(WorkerCommandHeader, 1);
