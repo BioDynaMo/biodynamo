@@ -28,6 +28,7 @@ void WorkerCommunicator::HandleOutgoingMessage(
     std::cout << "I: sending message to " << worker_str_ << " worker: " << *msg
               << std::endl;
   }
+  // TODO(kkanellis): fix this! It can be report or request
   SendToCoWorker(WorkerProtocolCmd::kReport, std::move(msg));
 }
 
@@ -55,7 +56,8 @@ void WorkerCommunicator::HandleIncomingMessage() {
     // Check message origin
     std::string coworker = msg_p->get(0);
     msg_p->pop_front();
-    assert(coworker == coworker_identity_ || coworker_identity_.empty());
+    assert(coworker == coworker_identity_   // After handshake
+           || coworker_identity_.empty());  // At handshake
   }
 
   // Frame 1
@@ -87,6 +89,8 @@ void WorkerCommunicator::HandleIncomingMessage() {
     case WorkerProtocolCmd::kReport:
       // Proccess request/report from coworker
       // This should be halo-region cells request/report
+      assert(coworker_identity_ == header->client_id_);
+
       msg_p->push_front(ToUnderlying(comm_id_));
       info_->pending_->push_back(std::unique_ptr<zmqpp::message>(msg_p));
       break;
@@ -140,8 +144,8 @@ void WorkerCommunicator::SendToCoWorker(
   // Frame 2
   std::unique_ptr<std::string> header =
       WorkerCommandHeader(command, sender, receiver)
-          .worker_id(info_->identity_)
-          .client_id(client_id)
+          .client_id(info_->identity_)
+          .worker_id(coworker_identity_)
           .ToString();
   msg.push_front(*header);
 
@@ -150,13 +154,13 @@ void WorkerCommunicator::SendToCoWorker(
 
   if (!client_) {
     // Need to add the coworker identity
-    // DEALER -> ROUTER socket
+    // ROUTER -> DEALER socket
     msg.push_front(coworker_identity_);
   }
 
   if (info_->verbose_) {
-    std::cout << "I: sending " << +ToUnderlying(command) << " to "
-              << coworker_identity_ << " worker: " << msg << std::endl;
+    std::cout << "I: sending " << command << " to " << coworker_identity_
+              << " worker: " << msg << std::endl;
   }
   socket_->send(msg);
 }
