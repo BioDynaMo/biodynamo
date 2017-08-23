@@ -51,6 +51,15 @@ enum class CommunicatorId : std::uint8_t {
   kMaxValue = kSomeWorker,
   kCount = kSomeWorker
 };
+const std::string CommunicatorIdStr[] = {"Undefined",      "Client",
+                                         "Broker",         "LeftNeighbour",
+                                         "RightNeighbour", "SomeWorker"};
+
+inline std::ostream& operator<<(std::ostream& stream,
+                                const CommunicatorId& comm_id) {
+  stream << CommunicatorIdStr[ToUnderlying(comm_id)];
+  return stream;
+}
 
 // -------- Majordomo pattern constants --------
 // ---------------------------------------------
