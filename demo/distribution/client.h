@@ -4,6 +4,7 @@
 #include <string>
 
 #include "common.h"
+#include "logger.h"
 #include "protocol.h"
 
 namespace bdm {
@@ -36,6 +37,8 @@ class Client {
   std::string broker;             //  Broker address
   duration_ms_t timeout;          //  Request timeout
   bool verbose;                   //  Print activity to stdout
+
+  Logger logger_;
 };
 }  // namespace bdm
 

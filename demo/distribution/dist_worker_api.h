@@ -12,6 +12,7 @@
 
 #include "broker_comm.h"
 #include "common.h"
+#include "logger.h"
 #include "worker_comm.h"
 
 namespace bdm {
@@ -70,6 +71,8 @@ class DistWorkerAPI {
 
   std::thread* thread_ = nullptr;      //  Background/Network thread
   std::exception_ptr eptr_ = nullptr;  //  Holds the last exception
+
+  Logger logger_;
 };
 }  // namespace bdm
 

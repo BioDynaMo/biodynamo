@@ -4,7 +4,7 @@ namespace bdm {
 
 Broker::Broker(zmqpp::context* ctx, const std::string& endpoint,
                const bool verbose)
-    : ctx_(ctx), endpoint_(endpoint), verbose_(verbose) {
+    : ctx_(ctx), endpoint_(endpoint), verbose_(verbose), logger_("Broker") {
   this->socket_ = new zmqpp::socket(*ctx_, zmqpp::socket_type::router);
   this->hb_at_ =
       std::chrono::system_clock::now() + duration_ms_t(HEARTBEAT_INTERVAL);
@@ -18,7 +18,7 @@ Broker::~Broker() {
 
 void Broker::Bind() {
   socket_->bind(endpoint_);
-  std::cout << "I: MDP broker/0.2.0 is active at " << endpoint_ << std::endl;
+  logger_.Info("MDP broker/0.2.0 is active at ", endpoint_);
 }
 
 //  This method processes one READY, REPORT, HEARTBEAT or
@@ -52,7 +52,7 @@ void Broker::HandleMessageWorker(const std::string& identity,
       worker->expiry = std::chrono::system_clock::now() + HEARTBEAT_EXPIRY;
       waiting_.insert(worker);
 
-      std::cout << "I: worker " << identity << " created" << std::endl;
+      logger_.Info("Worker ", identity, " created");
     }
   } else if (header->cmd_ == WorkerProtocolCmd::kReport) {
     if (worker_ready) {
@@ -79,9 +79,7 @@ void Broker::HandleMessageWorker(const std::string& identity,
       // Frame 1
       msg->push_front(header->client_id_);
 
-      if (verbose_) {
-        std::cout << "I: broker sends message: " << *msg << std::endl;
-      }
+      logger_.Debug("Broker sends message: ", *msg);
       socket_->send(*msg);
 
     } else {
@@ -101,7 +99,7 @@ void Broker::HandleMessageWorker(const std::string& identity,
     // Delete worker without sending DISCONNECT message
     DeleteWorker(worker, false);
   } else {
-    std::cout << "E: invalid input message" << *msg << std::endl;
+    logger_.Error("Invalid input message", *msg);
   }
 }
 
@@ -127,8 +125,7 @@ void Broker::HandleMessageClient(const std::string& sender,
 
   if (workers_.find(header->worker_id_) == workers_.end()) {
     // no such worker exist
-    std::cout << "E: invalid worker " << header->worker_id_
-              << ". Droping message..." << std::endl;
+    logger_.Warning("Invalid worker ", header->worker_id_, "! Droping message");
 
     // Message format:
     // Frame 1:     client_id (manually; ROUTER socket)
@@ -149,9 +146,7 @@ void Broker::HandleMessageClient(const std::string& sender,
     // Frame 1
     msg->push_front(sender);
 
-    if (verbose_) {
-      std::cout << "I: sending NAK reply to client: " << *msg << std::endl;
-    }
+    logger_.Debug("Sending NAK reply to client: ", *msg);
 
     // send NAK to client
     socket_->send(*msg);
@@ -196,10 +191,10 @@ WorkerEntry* Broker::GetOrCreateWorker(const std::string& identity) {
 
   if (workers_.find(identity) == workers_.end()) {
     // Create worker and add him to workers
-    WorkerEntry* worker = new WorkerEntry(identity, verbose_);
+    WorkerEntry* worker = new WorkerEntry(identity, logger_);
     workers_[identity] = worker;
 
-    std::cout << "I: registering new worker: " << identity << std::endl;
+    logger_.Info("Registering new worker: ", identity);
   }
   return workers_[identity];
 }
@@ -214,7 +209,7 @@ void Broker::DeleteWorker(WorkerEntry* worker, bool disconnect /* = true */) {
   workers_.erase(worker->identity);
   delete worker;
 
-  std::cout << "I: delete expired worker " << worker->identity << std::endl;
+  logger_.Info("Delete expired worker ", worker->identity);
 }
 
 void Broker::Run() {
@@ -240,9 +235,7 @@ void Broker::Run() {
       // Frame 4..n:  Application frames
       assert(msg->parts() >= 3);
 
-      if (verbose_) {
-        std::cout << "I: broker received message: " << *msg << std::endl;
-      }
+      logger_.Debug("Broker received message: ", *msg);
 
       // Frame 1
       std::string sender = msg->get(0);
@@ -257,7 +250,7 @@ void Broker::Run() {
       } else if (protocol == MDPW_WORKER) {
         HandleMessageWorker(sender, std::move(msg));
       } else {
-        std::cout << "E: invalid message: " << *msg << std::endl;
+        logger_.Error("Invalid message: ", *msg);
       }
     }
 

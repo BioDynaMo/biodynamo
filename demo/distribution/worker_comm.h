@@ -5,6 +5,7 @@
 
 #include "common.h"
 #include "communicator.h"
+#include "logger.h"
 #include "protocol.h"
 
 namespace bdm {
@@ -29,6 +30,8 @@ class WorkerCommunicator : public Communicator {
 
   std::string coworker_str_;
   std::string worker_str_;
+
+  Logger logger_;
 };
 }  // namespace bdm
 

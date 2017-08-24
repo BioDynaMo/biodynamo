@@ -5,7 +5,8 @@ namespace bdm {
 WorkerCommunicator::WorkerCommunicator(DistSharedInfo* info,
                                        const std::string& endpoint,
                                        CommunicatorId comm_id)
-    : Communicator(info, endpoint, comm_id) {
+    : Communicator(info, endpoint, comm_id),
+      logger_("WComm_[" + info_->identity_ + "]") {
   // By convention we define that we act as client if
   // we initiate the communication with the left worker
   this->client_ = (comm_id == CommunicatorId::kLeftNeighbour ? true : false);
@@ -24,10 +25,7 @@ WorkerCommunicator::~WorkerCommunicator() {
 
 void WorkerCommunicator::HandleOutgoingMessage(
     std::unique_ptr<zmqpp::message> msg) {
-  if (info_->verbose_) {
-    std::cout << "I: sending message to " << worker_str_ << " worker: " << *msg
-              << std::endl;
-  }
+  logger_.Debug("Sending message to ", worker_str_, " worker: ", *msg);
   // TODO(kkanellis): fix this! It can be report or request
   SendToCoWorker(WorkerProtocolCmd::kReport, std::move(msg));
 }
@@ -47,10 +45,8 @@ void WorkerCommunicator::HandleIncomingMessage() {
   }
   assert(msg_p->parts() >= (2 + ((unsigned)!client_)));
 
-  if (info_->verbose_) {
-    std::cout << "I: received message from " << coworker_identity_
-              << " worker: " << *msg_p << std::endl;
-  }
+  logger_.Debug("Received message from ", coworker_identity_, " worker: ",
+                *msg_p);
 
   if (!client_) {
     // Check message origin
@@ -79,8 +75,7 @@ void WorkerCommunicator::HandleIncomingMessage() {
 
       if (!client_ && !is_connected_) {
         // Reply with MDPW_READY to co-worker
-        std::cout << "I: connection request from " << coworker_identity_
-                  << std::endl;
+        logger_.Info("Connection request from ", coworker_identity_);
         SendToCoWorker(WorkerProtocolCmd::kReady, nullptr, coworker_identity_);
       }
       is_connected_ = true;
@@ -95,7 +90,7 @@ void WorkerCommunicator::HandleIncomingMessage() {
       info_->pending_->push_back(std::unique_ptr<zmqpp::message>(msg_p));
       break;
     default:
-      std::cout << "E: invalid input message" << *msg_p << std::endl;
+      logger_.Error("Invalid input message", *msg_p);
   }
 }
 
@@ -112,9 +107,9 @@ void WorkerCommunicator::Connect() {
     socket_->connect(endpoint_);
 
     // Connect to coworker
-    std::cout << "I: connecting to " << coworker_str_ << " worker at "
-              << endpoint_ << std::endl;
+    logger_.Info("Connecting to ", coworker_str_, " worker at ", endpoint_);
     SendToCoWorker(WorkerProtocolCmd::kReady, nullptr, info_->identity_);
+
   } else {
     socket_ = new zmqpp::socket(*(info_->ctx_), zmqpp::socket_type::router);
     socket_->bind(endpoint_);
@@ -158,10 +153,8 @@ void WorkerCommunicator::SendToCoWorker(
     msg.push_front(coworker_identity_);
   }
 
-  if (info_->verbose_) {
-    std::cout << "I: sending " << command << " to " << coworker_identity_
-              << " worker: " << msg << std::endl;
-  }
+  logger_.Debug("Sending ", command, " to ", coworker_identity_, " worker: ",
+                msg);
   socket_->send(msg);
 }
 }  // namespace bdm
