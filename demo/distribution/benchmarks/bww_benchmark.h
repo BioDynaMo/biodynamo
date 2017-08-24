@@ -24,11 +24,11 @@ struct TestBWWData {
 };
 
 inline void TestBWWClientTask() {
+  Logger logger("Task[Client]");
   Client client(&TestBWWData::ctx_, "tcp://127.0.0.1:5555",
                 TestBWWData::verbose_);
 
-  std::cout << "I: Sending " << TestBWWData::n_messages_ << " messages..."
-            << std::endl;
+  logger.Info("Sending ", TestBWWData::n_messages_, " messages...");
 
   auto start = std::chrono::high_resolution_clock::now();
   size_t remaining = TestBWWData::n_messages_;
@@ -36,8 +36,9 @@ inline void TestBWWClientTask() {
   zmqpp::message hello_msg;
   hello_msg.push_back("Hello world");
 
+  ClientProtocolCmd command;
   std::unique_ptr<zmqpp::message> msg;
-  std::string command, worker;
+  std::string worker;
   while (remaining > 0) {
     // Round robin
     worker =
@@ -48,12 +49,12 @@ inline void TestBWWClientTask() {
 
     msg = std::make_unique<zmqpp::message>(hello_msg.copy());
     if (!client.Recv(&msg, &command)) {
-      std::cout << "Interrupted..." << std::endl;
+      logger.Error("Interrupted...");
       break;
     }
 
-    if (command == MDPC_NAK) {
-      std::cout << "E: invalid worker " << worker << std::endl;
+    if (command == ClientProtocolCmd::kNak) {
+      logger.Warning("Invalid worker ", worker);
       std::this_thread::sleep_for(HEARTBEAT_INTERVAL);
       continue;
     }
@@ -66,11 +67,10 @@ inline void TestBWWClientTask() {
                               std::chrono::high_resolution_clock::now() - start)
                               .count()) /
       1000.0;
-  std::cout << "I: Received " << TestBWWData::n_messages_ - remaining
-            << " replies in " << elapsed << " ms" << std::endl;
-  std::cout << "I: Time per message: "
-            << elapsed / (TestBWWData::n_messages_ - remaining) << " ms"
-            << std::endl;
+  logger.Info("Received ", TestBWWData::n_messages_ - remaining, " replies in ",
+              elapsed, " ms");
+  logger.Info("Time per message: ",
+              elapsed / (TestBWWData::n_messages_ - remaining), " ms");
 
   // Send stop signal
   // assert( api.Stop() );
@@ -82,6 +82,7 @@ inline void TestBWWBrokerTask() {
 }
 
 inline void TestBWWWorker1Task() {
+  Logger logger("Task[W1]");
   DistWorkerAPI api(&TestBWWData::ctx_, TestBWWData::worker1_,
                     TestBWWData::verbose_);
 
@@ -95,9 +96,7 @@ inline void TestBWWWorker1Task() {
     // wait for message
     api.ReceiveMessage(&msg);
 
-    if (TestBWWData::verbose_) {
-      std::cout << "WORKER 1: received message: " << *msg << std::endl;
-    }
+    logger.Debug("Received message: ", *msg);
 
     msg->get(from, 0);
     msg->pop_front();
@@ -110,7 +109,7 @@ inline void TestBWWWorker1Task() {
         api.SendMessage(std::move(msg), CommunicatorId::kBroker);
         break;
       default:
-        std::cout << "Error: wrong communicator id" << std::endl;
+        logger.Error("Wrong communicator id");
         assert(api.Stop());
         return;
     }
@@ -121,6 +120,7 @@ inline void TestBWWWorker1Task() {
 }
 
 inline void TestBWWWorker2Task() {
+  Logger logger("Task[W2]");
   DistWorkerAPI api(&TestBWWData::ctx_, TestBWWData::worker2_,
                     TestBWWData::verbose_);
 
@@ -134,9 +134,7 @@ inline void TestBWWWorker2Task() {
     // wait for message
     api.ReceiveMessage(&msg);
 
-    if (TestBWWData::verbose_) {
-      std::cout << "WORKER 2: received message: " << *msg << std::endl;
-    }
+    logger.Debug("Received message: ", *msg);
 
     msg->get(from, 0);
     msg->pop_front();
@@ -149,7 +147,7 @@ inline void TestBWWWorker2Task() {
         api.SendMessage(std::move(msg), CommunicatorId::kBroker);
         break;
       default:
-        std::cout << "Error: wrong communicator id" << std::endl;
+        logger.Error("Wrong communicator id");
         assert(api.Stop());
         return;
     }

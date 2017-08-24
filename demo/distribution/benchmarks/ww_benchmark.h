@@ -19,6 +19,7 @@ struct TestWWData {
 };
 
 inline void RWorker() {
+  Logger logger("APP-W1");
   DistWorkerAPI api(&TestWWData::ctx_, "W1", TestWWData::verbose_);
 
   api.AddRightNeighbourCommunicator("tcp://127.0.0.1:5500");
@@ -31,7 +32,7 @@ inline void RWorker() {
     assert(api.ReceiveMessage(&msg, CommunicatorId::kRightNeighbour));
 
     if (TestWWData::verbose_) {
-      std::cout << "R-APP: received message: " << *msg << std::endl;
+      logger.Info("Received message: ", *msg);
     }
 
     // echo that message
@@ -43,6 +44,7 @@ inline void RWorker() {
 }
 
 inline void LWorker() {
+  Logger logger("APP-W2");
   DistWorkerAPI api(&TestWWData::ctx_, "W2", TestWWData::verbose_);
 
   api.AddLeftNeighbourCommunicator("tcp://127.0.0.1:5500");
@@ -50,8 +52,7 @@ inline void LWorker() {
 
   auto start = std::chrono::high_resolution_clock::now();
 
-  std::cout << "I: Sending " << TestWWData::n_messages_ << " messages..."
-            << std::endl;
+  logger.Info("I: Sending ", TestWWData::n_messages_, " messages...");
 
   zmqpp::message hello_msg;
   hello_msg.push_front("Hello world");
@@ -66,7 +67,7 @@ inline void LWorker() {
     assert(api.ReceiveMessage(&msg, CommunicatorId::kLeftNeighbour));
 
     if (TestWWData::verbose_) {
-      std::cout << "L-APP: received message: " << *msg << std::endl;
+      logger.Info("Received message: ", *msg);
     }
   }
 
