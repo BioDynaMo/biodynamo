@@ -2,7 +2,8 @@
 
 namespace bdm {
 
-Client::Client(zmqpp::context* ctx, const std::string& broker, bool verbose) {
+Client::Client(zmqpp::context* ctx, const std::string& broker, bool verbose)
+    : logger_("Client") {
   assert(!broker.empty());
 
   this->ctx = ctx;
@@ -28,7 +29,7 @@ void Client::ConnectToBroker() {
   sock->set(zmqpp::socket_option::identity, "client");
   sock->connect(broker);
 
-  std::cout << "I: connecting to broker at " << broker << std::endl;
+  logger_.Info("Connecting to broker at ", broker);
 }
 
 void Client::SetTimeout(duration_ms_t timeout) { this->timeout = timeout; }
@@ -72,10 +73,7 @@ void Client::Send(const std::string& identity,
   // Frame 1
   msg->push_front(MDPC_CLIENT);
 
-  if (verbose) {
-    std::cout << "I: send request to '" << identity << "' identity: " << *msg
-              << std::endl;
-  }
+  logger_.Debug("Send request to '", identity, "' identity: ", *msg);
   sock->send(*msg);
 }
 
@@ -88,9 +86,7 @@ bool Client::Recv(std::unique_ptr<zmqpp::message>* msg_out,
     return false;
   }
 
-  if (verbose) {
-    std::cout << "I: received reply: " << *msg << std::endl;
-  }
+  logger_.Debug("Received reply: ", *msg);
 
   //  Message format:
   //  Frame 1:    "BDM/0.1C"

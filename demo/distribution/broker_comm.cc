@@ -6,7 +6,8 @@ BrokerCommunicator::BrokerCommunicator(DistSharedInfo* info,
                                        const std::string& endpoint)
     : Communicator(info, endpoint, CommunicatorId::kBroker),
       hb_delay_(duration_ms_t(HEARTBEAT_INTERVAL)),
-      hb_rec_delay_(duration_ms_t(HEARTBEAT_INTERVAL)) {}
+      hb_rec_delay_(duration_ms_t(HEARTBEAT_INTERVAL)),
+      logger_("BComm_[" + info_->identity_ + "]") {}
 
 BrokerCommunicator::~BrokerCommunicator() {
   SendToBroker(WorkerProtocolCmd::kDisconnect);
@@ -15,7 +16,7 @@ BrokerCommunicator::~BrokerCommunicator() {
 void BrokerCommunicator::ReactorTimedOut() {
   // Timeout
   if (--hb_liveness_ == 0) {
-    std::cout << "W: disconnected from broker - retrying..." << std::endl;
+    logger_.Warning("Disconnected from broker - retrying...");
     std::this_thread::sleep_for(hb_rec_delay_);
     Connect();
   }
@@ -42,9 +43,7 @@ void BrokerCommunicator::HandleOutgoingMessage(
   // Frame 1:     client_id
   // Frame 2..n:  application frames
 
-  if (info_->verbose_) {
-    std::cout << "I: sending message to broker: " << *msg << std::endl;
-  }
+  logger_.Debug("Sending message to broker: ", *msg);
 
   assert(msg->parts() >= 1);
 
@@ -69,10 +68,8 @@ void BrokerCommunicator::HandleIncomingMessage() {
     return;
   }
   assert(msg_p->parts() >= 2);
+  logger_.Debug("Received message from broker: ", *msg_p);
 
-  if (info_->verbose_) {
-    std::cout << "I: received message from broker: " << *msg_p << std::endl;
-  }
   hb_liveness_ = HEARTBEAT_LIVENESS;
 
   // Frame 1
@@ -100,7 +97,7 @@ void BrokerCommunicator::HandleIncomingMessage() {
       Connect();
       break;
     default:
-      std::cout << "E: invalid input message" << *msg_p << std::endl;
+      logger_.Error("Invalid input message", *msg_p);
   }
 }
 
@@ -121,7 +118,7 @@ void BrokerCommunicator::Connect() {
       *socket_, std::bind(&BrokerCommunicator::HandleIncomingMessage, this));
 
   // Register service with broker
-  std::cout << "I: connecting to broker at " << endpoint_ << std::endl;
+  logger_.Info("Connecting to broker at ", endpoint_);
   SendToBroker(WorkerProtocolCmd::kReady);
 
   // Heartbeat
@@ -152,11 +149,7 @@ void BrokerCommunicator::SendToBroker(
   // Frame 1
   msg.push_front(MDPW_WORKER);
 
-  if (info_->verbose_) {
-    // TODO(kkanellis): change to strings
-    std::cout << "I: sending " << +ToUnderlying(command)
-              << " to broker: " << msg << std::endl;
-  }
+  logger_.Debug("Sending ", command, " to broker: ", msg);
   socket_->send(msg);
 }
 

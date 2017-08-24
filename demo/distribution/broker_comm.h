@@ -10,6 +10,7 @@
 
 #include "common.h"
 #include "communicator.h"
+#include "logger.h"
 #include "protocol.h"
 
 namespace bdm {
@@ -41,6 +42,8 @@ class BrokerCommunicator : public Communicator {
   duration_ms_t hb_delay_;      //  Heartbeat delay, msecs
   duration_ms_t hb_rec_delay_;  //  Reconnect delay, msecs
   size_t hb_liveness_;          //  How many attempts left
+
+  Logger logger_;
 };
 }  // namespace bdm
 

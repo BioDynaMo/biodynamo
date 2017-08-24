@@ -6,6 +6,7 @@
 #include <string>
 
 #include "common.h"
+#include "logger.h"
 #include "protocol.h"
 #include "worker_entry.h"
 
@@ -47,6 +48,8 @@ class Broker {
 
   time_point_t hb_at_;  //  When to send HEARTBEAT
   bool verbose_;        //  Print activity to stdout
+
+  Logger logger_;
 };
 }  // namespace bdm
 

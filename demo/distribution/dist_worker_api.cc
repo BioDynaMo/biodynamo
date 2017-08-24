@@ -4,7 +4,7 @@ namespace bdm {
 
 DistWorkerAPI::DistWorkerAPI(zmqpp::context* ctx, const std::string identity,
                              bool verbose)
-    : comms_() {
+    : comms_(), logger_("WAPI_[" + identity + "]") {
   info_ = new DistSharedInfo();
 
   info_->reactor_ = new zmqpp::reactor();
@@ -24,8 +24,7 @@ bool DistWorkerAPI::Start() {
   try {
     parent_pipe_->bind(endpoint_);
   } catch (const zmqpp::zmq_internal_exception&) {
-    std::cout << "E: Endpoint '" << info_->identity_ << "' already taken"
-              << std::endl;
+    logger_.Error("Endpoint '", info_->identity_, "' already taken");
     return false;
   }
 
@@ -35,7 +34,7 @@ bool DistWorkerAPI::Start() {
 
   // Create background thread
   thread_ = new std::thread(std::bind(&DistWorkerAPI::HandleNetwork, this));
-  std::cout << "I: started thread with id " << thread_->get_id() << std::endl;
+  logger_.Info("Started thread with id ", thread_->get_id());
 
   auto sig = parent_pipe_->wait();
   assert(sig == zmqpp::signal::ok || sig == zmqpp::signal::ko);
@@ -168,7 +167,7 @@ void DistWorkerAPI::HandleNetwork() {
     eptr_ = std::current_exception();
     child_pipe_->send(zmqpp::signal::ko);
 
-    std::cout << "E: exception thrown!" << std::endl;
+    logger_.Error("Exception thrown!");
     goto cleanup;
   }
   child_pipe_->send(zmqpp::signal::ok);
@@ -177,7 +176,7 @@ void DistWorkerAPI::HandleNetwork() {
   info_->reactor_->add(*child_pipe_,
                        std::bind(&DistWorkerAPI::HandleAppMessage, this));
 
-  std::cout << "I: listening to network..." << std::endl;
+  logger_.Info("Listening to network...");
   while (!info_->zctx_interrupted_) {
     if (!info_->reactor_->poll(HEARTBEAT_INTERVAL.count())) {
       ForEachValidCommunicator(
@@ -196,7 +195,7 @@ void DistWorkerAPI::HandleNetwork() {
 
 cleanup:
   Cleanup();
-  std::cout << "I: Terminated!" << std::endl;
+  logger_.Info("Terminated!");
 }
 
 void DistWorkerAPI::HandleAppMessage() {
@@ -274,7 +273,7 @@ void DistWorkerAPI::Cleanup() {
 
 bool DistWorkerAPI::IsValidCommunicator(std::uint8_t comm_id) {
   if (comm_id == 0 || comm_id >= comms_.size()) {
-    std::cout << "E: Invalid communicator id: " << comm_id << std::endl;
+    logger_.Error("Invalid communicator id: ", comm_id);
     assert(false);
   }
   return (comms_[comm_id] != nullptr);

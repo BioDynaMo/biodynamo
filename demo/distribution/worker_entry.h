@@ -6,14 +6,15 @@
 #include <string>
 
 #include "common.h"
+#include "logger.h"
 #include "protocol.h"
 
 namespace bdm {
 
 class WorkerEntry {
  public:
-  explicit WorkerEntry(const std::string& identity, bool verbose)
-      : verbose_(verbose) {
+  explicit WorkerEntry(const std::string& identity, const Logger& logger)
+      : logger_(logger) {
     this->identity = identity;
     this->expiry = std::chrono::system_clock::now() + HEARTBEAT_EXPIRY;
   }
@@ -45,11 +46,7 @@ class WorkerEntry {
     // Frame 1: Deliver to correct worker
     msg.push_front(identity);
 
-    if (verbose_) {
-      std::cout << "I: sending " << +ToUnderlying(command)
-                << " to worker: " << msg << std::endl;
-    }
-
+    logger_.Debug("Sending ", command, " to worker: ", msg);
     sock->send(msg);
   }
 
@@ -59,6 +56,7 @@ class WorkerEntry {
 
  private:
   bool verbose_;
+  const Logger& logger_;
 };
 }  // namespace bdm
 
