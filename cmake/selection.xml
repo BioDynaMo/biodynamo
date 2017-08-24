@@ -25,7 +25,8 @@
     <class pattern="std::array<*>" />
 
     <class pattern="*bdm::SoaRef*"/>
-    <class name="chrono::system_clock"/>
+    <class name="std::chrono::system_clock"/>
+    <class pattern="std::chrono*" />
     <class pattern="*_Test" />
     <!-- genreflex generates wrong code:
          SimulationObjectVector<ResourceManager...> -->
