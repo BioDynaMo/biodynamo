@@ -1,5 +1,5 @@
-#ifndef SIMULATION_OBJECT_UTIL_TEST_H_
-#define SIMULATION_OBJECT_UTIL_TEST_H_
+#ifndef SEPARATE_BINARY_SIMULATION_OBJECT_UTIL_TEST_H_
+#define SEPARATE_BINARY_SIMULATION_OBJECT_UTIL_TEST_H_
 
 #include "simulation_object_util.h"
 
@@ -7,7 +7,7 @@
 #include <vector>
 
 #include <Rtypes.h>
-
+#include "gtest/gtest.h"
 #include "io_util.h"
 #include "simulation_object.h"
 #include "transactional_vector.h"
@@ -138,4 +138,4 @@ inline void RunSoaIOTest() {
 }  // namespace simulation_object_util_test_internal
 }  // namespace bdm
 
-#endif  // SIMULATION_OBJECT_UTIL_TEST_H_
+#endif  // SEPARATE_BINARY_SIMULATION_OBJECT_UTIL_TEST_H_

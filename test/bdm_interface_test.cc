@@ -1,5 +1,7 @@
 #include "bdm_interface.h"
 #include <gtest/gtest.h>
+#include "biology_module_util.h"
+#include "test_util.h"
 
 namespace bdm {
 
@@ -20,7 +22,7 @@ TEST(BDMInterfaceTest, Vector3DInterface) {
   disc_interf_data.ecm_density_gradient_ = v3Dinterf;
   EXPECT_EQ(1.2, disc_interf_data.ecm_density_gradient_.coord_[1]);
 
-  BDMCubicDomain bdm_cubdom;
+  BDMCubicDomain<> bdm_cubdom;
   bdm_cubdom.disc_fd_ = disc_interf_data;
   EXPECT_FALSE(bdm_cubdom.is_init());
   EXPECT_EQ(0, bdm_cubdom.disc_fd_.ecm_density_gradient_.coord_[0]);

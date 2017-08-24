@@ -1,15 +1,19 @@
 #include "displacement_op.h"
 #include "cell.h"
+#include "grid.h"
 #include "gtest/gtest.h"
 #include "test_util.h"
 
 namespace bdm {
 namespace displacement_op_test_internal {
 
-template <typename T>
-void RunTest(T* cells) {
+template <typename TCompileTimeParam>
+void RunTest() {
+  auto rm = ResourceManager<TCompileTimeParam>::Get();
+  auto cells = rm->template Get<Cell>();
+
   // Cell 1
-  Cell<> cell;
+  Cell cell;
   cell.SetAdherence(0.3);
   cell.SetDiameter(9);
   cell.SetMass(1.4);
@@ -18,7 +22,6 @@ void RunTest(T* cells) {
   // cell.SetTractorForce(tractor_force);
   InlineVector<int, 8> neighbor_1;
   neighbor_1.push_back(1);
-  cell.SetNeighbors(neighbor_1);
   cells->push_back(cell);
 
   // Cell 2
@@ -30,12 +33,14 @@ void RunTest(T* cells) {
   // cell.SetTractorForce(tractor_force);
   InlineVector<int, 8> neighbor_2;
   neighbor_2.push_back(0);
-  cell.SetNeighbors(neighbor_2);
   cells->push_back(cell);
 
+  auto& grid = Grid<ResourceManager<TCompileTimeParam>>::GetInstance();
+  grid.Initialize();
+
   // execute operation
-  DisplacementOp op;
-  op.Compute(cells);
+  DisplacementOp<Grid<ResourceManager<TCompileTimeParam>>> op;
+  op(cells, 0);
 
   // check results
   // cell 1
@@ -73,15 +78,21 @@ void RunTest(T* cells) {
   EXPECT_NEAR(1.1, (*cells)[1].GetMass(), abs_error<double>::value);
 }
 
-TEST(DisplacementOpTest, ComputeAosoa) {
-  std::vector<Cell<Scalar>> cells;
-  RunTest(&cells);
-}
+struct AosCompileTimeParam {
+  using Backend = Scalar;
+  using BiologyModules = Variant<NullBiologyModule>;
+  using AtomicTypes = VariadicTypedef<Cell>;
+};
 
-TEST(DisplacementOpTest, ComputeSoa) {
-  auto cells = Cell<>::NewEmptySoa();
-  RunTest(&cells);
-}
+TEST(DisplacementOpTest, ComputeAos) { RunTest<AosCompileTimeParam>(); }
+
+struct SoaCompileTimeParam {
+  using Backend = Soa;
+  using BiologyModules = Variant<NullBiologyModule>;
+  using AtomicTypes = VariadicTypedef<Cell>;
+};
+
+TEST(DisplacementOpTest, ComputeSoa) { RunTest<SoaCompileTimeParam>(); }
 
 }  // namespace displacement_op_test_internal
 }  // namespace bdm

@@ -87,6 +87,12 @@ class TransactionalVector {
     data_.reserve(new_capacity);
   }
 
+  /// Thread-safe version of std::vector::clear
+  void clear() {  // NOLINT
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
+    data_.clear();
+  }
+
   T& operator[](size_t index) { return data_[index]; }
 
   const T& operator[](size_t index) const { return data_[index]; }

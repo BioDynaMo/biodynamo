@@ -156,85 +156,32 @@ if (USE_CATALYST)
   target_link_libraries(biodynamo vtkPVPythonCatalyst)
 endif()
 
-# -------------------- build test project runBiodynamoTests ----------------------
-# http://www.kaizou.org/2014/11/gtest-cmake/
+# -------------------- build test project  ----------------------
 if (test)
   enable_testing()
 
-  # setup google test
-  ExternalProject_Add(
-    gtest
-    URL "${CMAKE_SOURCE_DIR}/third_party/gtest-1.7.0.zip"
-    PREFIX "${CMAKE_CURRENT_BINARY_DIR}/gtest"
-    CMAKE_CACHE_ARGS
-      -DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}
-      -DCMAKE_C_COMPILER:FILEPATH=${CMAKE_C_COMPILER}
-    INSTALL_COMMAND "" # Disable install step
-    # Ugly but necessary, in future versions one can use ${binary_dir}
-    # in BUILD_BYPRODUCTS
-    #BUILD_BYPRODUCTS "${binary_dir}/libgtest.a"
-    BUILD_BYPRODUCTS "${CMAKE_BINARY_DIR}/gtest/src/gtest-build/libgtest.a"
-  )
-  ExternalProject_Get_Property(gtest source_dir binary_dir)
+  include(cmake/Testing.cmake)
 
-  # Create a libgtest target to be used as a dependency by test program
-  add_library(libgtest IMPORTED STATIC GLOBAL)
-  add_dependencies(libgtest gtest)
-  set_target_properties(libgtest PROPERTIES
-      IMPORTED_LOCATION "${binary_dir}/libgtest.a"
-      IMPORTED_LINK_INTERFACE_LIBRARIES "${CMAKE_THREAD_LIBS_INIT}"
-  )
+  # main test executable
+  file(GLOB TEST_SOURCES ${CMAKE_SOURCE_DIR}/test/*.cc)
+  file(GLOB TEST_HEADERS ${CMAKE_SOURCE_DIR}/test/*.h)
+  bdm_add_test_executable(runBiodynamoTestsMain
+                          SOURCES ${TEST_SOURCES}
+                          HEADERS ${TEST_HEADERS})
 
-  # add include directories for gtest
-  include_directories("${CMAKE_BINARY_DIR}/gtest/src/gtest/include")
-
-  # create test executable
-  file(GLOB_RECURSE TEST_SOURCES ${CMAKE_SOURCE_DIR}/test/*.cc)
-  file(GLOB_RECURSE TEST_HEADERS ${CMAKE_SOURCE_DIR}/test/*.h)
-  set(TEST_TARGET runBiodynamoTests)
-  bdm_add_executable(${TEST_TARGET}
-                     SOURCES ${TEST_SOURCES}
-                     HEADERS ${TEST_HEADERS}
-                     LIBRARIES libgtest biodynamo)
-  add_dependencies(${TEST_TARGET}-objectlib gtest)
-
-  # execute all tests with command: make test
-  add_test(NAME ${TEST_TARGET} COMMAND ${TEST_TARGET})
-  if (APPLE)
-    set_tests_properties(${TEST_TARGET} PROPERTIES ENVIRONMENT
-        "DYLD_LIBRARY_PATH=$ENV{DYLD_LIBRARY_PATH}"
-    )
-  endif()
-  # add valgrind test
-  if (valgrind)
-    add_test(NAME valgrind COMMAND valgrind --tool=memcheck --leak-check=full --show-leak-kinds=all --show-reachable=no --suppressions=${CMAKE_BINARY_DIR}/../valgrind-root.supp --suppressions=${CMAKE_BINARY_DIR}/../valgrind-biod.supp --error-exitcode=1 ./${TEST_TARGET})
-    if (APPLE)
-      set_tests_properties(valgrind PROPERTIES ENVIRONMENT
-        "DYLD_LIBRARY_PATH=$ENV{DYLD_LIBRARY_PATH}"
-      )
+  # separate test binaries - each source file is compiled into a separate binary
+  file(GLOB TEST_SOURCES ${CMAKE_SOURCE_DIR}/test/separate_binary/*.cc)
+  file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/empty_header.h "")
+  foreach(file ${TEST_SOURCES})
+    get_filename_component(filename ${file} NAME_WE)
+    set(TEST_HEADER ${CMAKE_SOURCE_DIR}/test/separate_binary/${filename}.h)
+    if (NOT EXISTS ${TEST_HEADER})
+      set(TEST_HEADER ${CMAKE_CURRENT_BINARY_DIR}/empty_header.h)
     endif()
-  endif()
-
-  # create target that shows the test ouput on failure
-  add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} --force-new-ctest-process --output-on-failure)
-  add_dependencies(check runBiodynamoTests)
-
-  # add custom clean target for test project
-  add_custom_target(testbdmclean COMMAND ${CMAKE_COMMAND} -P "${CMAKE_BINARY_DIR}/CMakeFiles/${TEST_TARGET}.dir/cmake_clean.cmake")
-  add_dependencies(bdmclean testbdmclean)
-
-  if (coverage)
-    include(CodeCoverage)
-    # parameter: make target name, test target, output directory name
-    SETUP_TARGET_FOR_COVERAGE(coverage ${TEST_TARGET} coverage)
-  endif()
-  # create coverage report in separate directory
-  # since building the coverage report requires different compiler flags building
-  # it in a separate directory keeps the current build directory in good order
-  add_custom_target(coverage-build
-    COMMAND "${CMAKE_SOURCE_DIR}/housekeeping/create-coverage-report.sh" ${PROJECT_SOURCE_DIR} ${CMAKE_BINARY_DIR}
-    COMMENT "Generate coverage report in separate directory
-       Open the following file in your browser: ${CMAKE_BINARY_DIR}/coverage/coverage/index.html")
+    bdm_add_test_executable("runBiodynamoTests_${filename}"
+                            SOURCES ${file}
+                            HEADERS ${TEST_HEADER})
+  endforeach()
 endif()
 
 # --------------- add targets for code style and submission checks -------------

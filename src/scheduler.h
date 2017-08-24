@@ -5,8 +5,9 @@
 #include <string>
 
 #include "biology_module_op.h"
+// TODO(lukas) remove once backup and visualization are multicell enabled
+#include "cell.h"
 #include "displacement_op.h"
-#include "neighbor_nanoflann_op.h"
 #include "op_timer.h"
 #include "resource_manager.h"
 #include "simulation_backup.h"
@@ -16,12 +17,14 @@
 
 namespace bdm {
 
-template <typename TCellContainer>
+template <typename TResourceManager = ResourceManager<>,
+          typename TGrid = Grid<>>
 class Scheduler {
  public:
   using Clock = std::chrono::high_resolution_clock;
 
-  Scheduler() : backup_(SimulationBackup("", "")) {
+  Scheduler()
+      : backup_(SimulationBackup("", "")), grid_(&TGrid::GetInstance()) {
     if (Param::use_paraview_) {
       visualization_ = CatalystAdaptor::GetInstance();
       visualization_->Initialize("../src/visualization/simple_pipeline.py");
@@ -29,7 +32,8 @@ class Scheduler {
   }
 
   Scheduler(const std::string& backup_file, const std::string& restore_file)
-      : backup_(SimulationBackup(backup_file, restore_file)) {
+      : backup_(SimulationBackup(backup_file, restore_file)),
+        grid_(&TGrid::GetInstance()) {
     if (backup_.RestoreEnabled()) {
       restore_point_ = backup_.GetSimulationStepsFromBackup();
     }
@@ -46,25 +50,29 @@ class Scheduler {
   }
 
   void Simulate(unsigned steps) {
-    auto cells = ResourceManager<TCellContainer>::Get()->GetCells();
+    // TODO(lukas) backup and restore should work for every simulation object in
+    // ResourceManager
     if (backup_.RestoreEnabled() && restore_point_ > total_steps_ + steps) {
       total_steps_ += steps;
       return;
     } else if (backup_.RestoreEnabled() && restore_point_ > total_steps_ &&
                restore_point_ < total_steps_ + steps) {
       // Restore
-      backup_.Restore(cells);
-      ResourceManager<TCellContainer>::Get()->SetCells(cells);
+      backup_.Restore();
 
       steps = total_steps_ + steps - restore_point_;
       total_steps_ = restore_point_;
     }
+
+    grid_->Initialize();
 
     for (unsigned step = 0; step < steps; step++) {
       // Simulate
       Execute();
 
       // Visualize
+      auto rm = TResourceManager::Get();
+      auto cells = rm->template Get<Cell>();
       if (Param::use_paraview_) {
         double time = Param::kSimulationTimeStep * total_steps_;
         visualization_->CoProcess(cells, time, total_steps_, step == steps - 1);
@@ -79,7 +87,7 @@ class Scheduler {
           duration_cast<seconds>(Clock::now() - last_backup_).count() >=
               Param::backup_every_x_seconds_) {
         last_backup_ = Clock::now();
-        backup_.Backup(cells, total_steps_);
+        backup_.Backup(total_steps_);
       }
     }
   }
@@ -88,15 +96,18 @@ class Scheduler {
   /// Executes one step.
   /// This design makes testing more convenient
   virtual void Execute() {
-    auto cells = ResourceManager<TCellContainer>::Get()->GetCells();
+    auto rm = TResourceManager::Get();
+    static const auto commit = [](auto* sim_objects, uint16_t type_idx) {
+      sim_objects->Commit();
+    };
 
-    // execute all operations
-    neighbor_.Compute(cells);
-    biology_.Compute(cells);
-    physics_.Compute(cells);
-
-    // commit new and removed cells
-    cells->Commit();
+    {
+      Timing timing("neighbors");
+      grid_->UpdateGrid();
+    }
+    rm->ApplyOnAllTypes(biology_);
+    rm->ApplyOnAllTypes(physics_);
+    rm->ApplyOnAllTypes(commit);
   }
 
  private:
@@ -106,10 +117,10 @@ class Scheduler {
   std::chrono::time_point<Clock> last_backup_ = Clock::now();
   CatalystAdaptor* visualization_ = nullptr;
 
-  OpTimer<NeighborNanoflannOp> neighbor_ =
-      OpTimer<NeighborNanoflannOp>("neighbor", NeighborNanoflannOp(700));
   OpTimer<BiologyModuleOp> biology_ = OpTimer<BiologyModuleOp>("biology");
-  OpTimer<DisplacementOp> physics_ = OpTimer<DisplacementOp>("physics");
+  OpTimer<DisplacementOp<>> physics_ = OpTimer<DisplacementOp<>>("physics");
+
+  TGrid* grid_;
 };
 
 }  // namespace bdm

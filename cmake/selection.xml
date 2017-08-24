@@ -5,6 +5,17 @@
   </selection>
   <exclusion>
     <class pattern="std::array<*>" />
+    <!-- Resolving: Error in <CloseStreamerInfoROOTFile>: Cannot find class
+         bdm::Grid<TResourceManager>::Box. and:
+         Error in <CloseStreamerInfoROOTFile>: Cannot find class
+              bdm::Grid<TResourceManager>::Box::Iterator -->
+    <class pattern="*Box*" />
+    <!-- Resolving: Error in <CloseStreamerInfoROOTFile>: Cannot find class
+         bdm::Grid<TResourceManager>::NeighborIterator. -->
+    <class pattern="*NeighborIterator*" />
+    <!-- Resolving: Error in <CloseStreamerInfoROOTFile>: Cannot find typedef
+         bdm::DefaultCompileTimeParam::Backend -->
+    <class pattern="*Backend*" />
     <class pattern="*bdm::SoaRef*"/>
     <class name="chrono::system_clock"/>
     <class pattern="*_Test" />

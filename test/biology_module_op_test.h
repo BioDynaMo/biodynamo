@@ -3,6 +3,7 @@
 
 #include "biology_module_util.h"
 #include "cell.h"
+#include "test_util.h"
 
 namespace bdm {
 namespace biology_module_op_test_internal {
@@ -24,10 +25,9 @@ struct GrowthModule {
   ClassDefNV(GrowthModule, 1);
 };
 
-typedef Variant<GrowthModule> BiologyModules;
-
-template <typename TBackend = Scalar>
-using MyCell = Cell<TBackend, BiologyModules>;
+struct CompileTimeParam {
+  using BiologyModules = Variant<GrowthModule>;
+};
 
 }  // namespace biology_module_op_test_internal
 }  // namespace bdm

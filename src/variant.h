@@ -91,17 +91,17 @@ struct StreamerReadFunctor {
   // version for fundamental type
   template <typename T>
   typename std::enable_if<std::is_fundamental<T>::value>::type operator()(
-      T& value) {  // NOLINT
-    *buffer_ >> value;
-    *variant_ = value;
+      T* value) {
+    *buffer_ >> *value;
+    *variant_ = *value;
   }
 
   // version for non fundamental types
   template <typename T>
   typename std::enable_if<!std::is_fundamental<T>::value>::type operator()(
-      T& value) {  // NOLINT
-    buffer_->WriteClassBuffer(T::Class(), &value);
-    *variant_ = value;
+      T* value) {
+    buffer_->WriteClassBuffer(T::Class(), value);
+    *variant_ = *value;
   }
 
  private:

@@ -6,6 +6,8 @@
 
 namespace bdm {
 
+using std::size_t;
+
 namespace detail {
 // Inspiration taken from:
 // https://stackoverflow.com/questions/21062864/optimal-way-to-access-stdtuple-element-in-runtime-by-index
@@ -16,7 +18,7 @@ namespace detail {
 /// The obtained type is then passed to `function`.
 template <typename TTuple, typename TFunction, size_t TIndex>
 void ApplyImpl(TTuple* t, TFunction&& function) {
-  function(std::get<TIndex>(*t));
+  function(&std::get<TIndex>(*t));
 }
 
 /// Does the translation of runtime index to compile time index by using

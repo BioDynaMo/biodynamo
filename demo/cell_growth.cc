@@ -6,11 +6,10 @@
 
 #include "backend.h"
 #include "cell.h"
+#include "compile_time_param.h"
 #include "displacement_op.h"
 #include "dividing_cell_op.h"
 #include "exporter.h"
-#include "neighbor_nanoflann_op.h"
-#include "neighbor_op.h"
 #include "resource_manager.h"
 #include "scheduler.h"
 #include "timing.h"
@@ -23,26 +22,32 @@ using bdm::Soa;
 using bdm::Timing;
 using bdm::TimingAggregator;
 using bdm::Exporter;
+using bdm::Grid;
+
+namespace bdm {
+BDM_DEFAULT_COMPILE_TIME_PARAM();
+}  // namespace bdm
 
 void Execute(size_t cells_per_dim, size_t iterations, size_t threads,
              size_t repititions, TimingAggregator *statistic,
              bool with_export) {
+  const double space = 20;
+
   for (size_t r = 0; r < repititions; r++) {
     std::stringstream ss;
     ss << "measurement " << r << " - " << threads << " thread(s) - "
        << cells_per_dim << " cells per dim - " << iterations << " iteration(s)";
     statistic->AddDescription(ss.str());
 
-    const double space = 20;
-
-    auto cells = Cell<>::NewEmptySoa();
+    // bdm::TransactionalVector<Cell> cells;
+    auto cells = Cell::NewEmptySoa();
     cells.reserve(cells_per_dim * cells_per_dim * cells_per_dim);
     {
       Timing timing("Setup", statistic);
       for (size_t i = 0; i < cells_per_dim; i++) {
         for (size_t j = 0; j < cells_per_dim; j++) {
           for (size_t k = 0; k < cells_per_dim; k++) {
-            Cell<Scalar> cell({i * space, j * space, k * space});
+            Cell cell({i * space, j * space, k * space});
             cell.SetDiameter(30);
             cell.SetAdherence(0.4);
             cell.SetMass(1.0);
@@ -62,8 +67,7 @@ void Execute(size_t cells_per_dim, size_t iterations, size_t threads,
     for (size_t i = 0; i < iterations; i++) {
       {
         Timing timing("Find Neighbors", statistic);
-        bdm::NeighborOp op(700);
-        op.Compute(&cells);
+        Grid<>::GetInstance().UpdateGrid();
       }
 
       // __itt_resume();
@@ -71,15 +75,15 @@ void Execute(size_t cells_per_dim, size_t iterations, size_t threads,
       {
         Timing timing("Cell Growth", statistic);
         bdm::DividingCellOp biology;
-        biology.Compute(&cells);
+        biology(&cells, 0);
       }
 
       // __itt_pause();
 
       {
         Timing timing("Displacement", statistic);
-        bdm::DisplacementOp op;
-        op.Compute(&cells);
+        bdm::DisplacementOp<> op;
+        op(&cells, 0);
       }
 
       if (with_export) {

@@ -57,20 +57,18 @@ done
 LINE_FILTER=${LINE_FILTER%?}
 LINE_FILTER=$LINE_FILTER"]"
 
-# add header files to clang-tidy header helper
-echo "" > $TIDY_HEADER_HELPER
-for f in $@; do
-  if [ "$(echo $f | grep .h$ | wc -l)" == "1" ]; then
-    echo "#include \"${f}\"" >> $TIDY_HEADER_HELPER
-  fi
-done
-echo "" >> $TIDY_HEADER_HELPER
-
-# extract list of source files from $@ and add $TIDY_HEADER_HELPER
-SOURCES=$TIDY_HEADER_HELPER" "
+# extract list of source files from $@
+SOURCES=" "
 for f in $@; do
   if [ "$(echo $f | grep .cc$ | wc -l)" == "1" ]; then
     SOURCES=$SOURCES" "$f
+  fi
+done
+
+HEADERS=" "
+for f in $@; do
+  if [ "$(echo $f | grep .h$ | wc -l)" == "1" ]; then
+    HEADERS=$HEADERS" "$f
   fi
 done
 
@@ -80,29 +78,62 @@ if [ "$TRAVIS_OS_NAME" = "linux" ]; then
   TRAVIS_LINUX_EXTRA_ARGB="-extra-arg-before=-I/tmp/bdm_omp/"
 fi
 
+function EchoError {
+  echo "Error: clang-tidy suggested changes, please fix them!"
+  echo "       Before running one of the clang-tidy* targets to fix them automatically,"
+  echo "       it is recommended to have a look at the warnings first."
+  echo "       Use the corresponding 'make show-clang-tidy*' target"
+}
+
 if [ "$MODE" == "1" ]; then
   # fix errors one source file at a time
   for f in $SOURCES; do
     $CLANG_TIDY $TRAVIS_LINUX_EXTRA_ARGB -line-filter=$LINE_FILTER -p $COMPILE_COMMANDS -fix $f
   done
+  # fix errors one header file at a time
+  for f in $HEADERS; do
+    echo "" > $TIDY_HEADER_HELPER
+    echo "#include \"${f}\"" >> $TIDY_HEADER_HELPER
+    $CLANG_TIDY $TRAVIS_LINUX_EXTRA_ARGB -line-filter=$LINE_FILTER -p $COMPILE_COMMANDS -fix $TIDY_HEADER_HELPER
+  done
 elif [ "$MODE" == "2" ]; then
+  # process source files one at a time
   for f in $SOURCES; do
     echo "Start processing: "$f
     $CLANG_TIDY $TRAVIS_LINUX_EXTRA_ARGB -line-filter=$LINE_FILTER -p $COMPILE_COMMANDS $f
   done
+  # process header files one at a time
+  for f in $HEADERS; do
+    echo "Start processing: "$f
+    echo "" > $TIDY_HEADER_HELPER
+    echo "#include \"${f}\"" >> $TIDY_HEADER_HELPER
+    $CLANG_TIDY $TRAVIS_LINUX_EXTRA_ARGB -line-filter=$LINE_FILTER -p $COMPILE_COMMANDS $TIDY_HEADER_HELPER
+  done
 else
-  # create temporary file
+  # process source files one at a time
   TMP_FILE="/tmp/bdmformat_"$RANDOM
   for f in $SOURCES; do
+    echo "Start processing: "$f
     echo "" > $TMP_FILE
     $CLANG_TIDY $TRAVIS_LINUX_EXTRA_ARGB -line-filter=$LINE_FILTER -export-fixes=$TMP_FILE -p $COMPILE_COMMANDS $f >/dev/null 2>/dev/null
     NUM_CORRECTIONS=$(cat $TMP_FILE | wc -l)
     rm -f $TMP_FILE
     if [ "$NUM_CORRECTIONS" -gt "1" ]; then
-      echo "Error: clang-tidy suggested changes, please fix them!"
-      echo "       Before running one of the clang-tidy* targets to fix them automatically,"
-      echo "       it is recommended to have a look at the warnings first."
-      echo "       Use the corresponding 'make show-clang-tidy*' target"
+      EchoError
+      exit 1
+    fi
+  done
+  # process header files one at a time
+  for f in $HEADERS; do
+    echo "Start processing: "$f
+    echo "" > $TMP_FILE
+    echo "" > $TIDY_HEADER_HELPER
+    echo "#include \"${f}\"" >> $TIDY_HEADER_HELPER
+    $CLANG_TIDY $TRAVIS_LINUX_EXTRA_ARGB -line-filter=$LINE_FILTER -export-fixes=$TMP_FILE -p $COMPILE_COMMANDS $TIDY_HEADER_HELPER >/dev/null 2>/dev/null
+    NUM_CORRECTIONS=$(cat $TMP_FILE | wc -l)
+    rm -f $TMP_FILE
+    if [ "$NUM_CORRECTIONS" -gt "1" ]; then
+      EchoError
       exit 1
     fi
   done

@@ -1,5 +1,6 @@
 #include "gtest/gtest.h"
 
+#include "compile_time_param.h"
 #include "simulation_object_util_test.h"
 
 namespace bdm {
@@ -12,6 +13,16 @@ namespace simulation_object_util_test_internal {
 // define easy to use templated type alias
 template <typename Backend = Scalar>
 using Neuron = NeuronExt<CellExt<SimulationObject<Backend>>>;
+
+}  // namespace simulation_object_util_test_internal
+
+// has to be defined in namespace bdm
+struct CompileTimeParam : public DefaultCompileTimeParam<> {
+  using AtomicTypes =
+      VariadicTypedef<simulation_object_util_test_internal::Neuron<>>;
+};
+
+namespace simulation_object_util_test_internal {
 
 template <typename T>
 void RunDefaultConstructorTest(const T& neuron) {
@@ -144,7 +155,7 @@ TEST(SimulationObjectUtilTest, Soa_AssignmentOperator) {
   EXPECT_EQ(1u, neurons.size());
 
   neurons[0] = new_neuron1;
-  EXPECT_EQ(123, neurons[0].GetDiameter());
+  EXPECT_EQ(123u, neurons[0].GetDiameter());
   auto& position = neurons[0].GetPosition();
   EXPECT_EQ(9, position[0]);
   EXPECT_EQ(8, position[1]);
@@ -186,6 +197,35 @@ TEST(SimulationObjectUtilTest, Soa_Divide) {
   RunDivideTest(&neurons);
 }
 
+// Tests overloaded Divide function which adds new daughter cell to the
+// container managed by the ResourceManager with default template parameters
+TEST(SimulationObjectUtilTest, Soa_DivideWithResourceManager) {
+  auto rm = ResourceManager<>::Get();
+  rm->Clear();
+
+  auto neurons = rm->Get<Neuron<Scalar>>();
+  Neuron<Scalar> neuron;
+  neurons->push_back(neuron);
+
+  auto&& new_neuron = Divide((*neurons)[0], 1.0, 2.0, 3.0);
+
+  EXPECT_EQ(987u, new_neuron.GetNeurites()[0].id_);
+  EXPECT_EQ(5, new_neuron.GetPosition()[0]);
+  EXPECT_EQ(4, new_neuron.GetPosition()[1]);
+  EXPECT_EQ(3, new_neuron.GetPosition()[2]);
+
+  // commit invalidates new_neuron
+  neurons->Commit();
+
+  ASSERT_EQ(2u, neurons->size());
+  // new_neuron got invalidated by `Commit()`, but is now accessible in neurons
+  EXPECT_EQ(987u, (*neurons)[1].GetNeurites()[0].id_);
+  EXPECT_EQ(5, (*neurons)[1].GetPosition()[0]);
+  EXPECT_EQ(4, (*neurons)[1].GetPosition()[1]);
+  EXPECT_EQ(3, (*neurons)[1].GetPosition()[2]);
+  EXPECT_EQ(1.123, (*neurons)[0].GetDiameter());
+}
+
 template <typename TContainer>
 void RunDeleteTest(TContainer* neurons) {
   Neuron<Scalar> neuron;
@@ -212,3 +252,8 @@ TEST(SimulationObjectUtilTest, Soa_IO) { RunSoaIOTest(); }
 
 }  // namespace simulation_object_util_test_internal
 }  // namespace bdm
+
+int main(int argc, char** argv) {
+  ::testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
+}

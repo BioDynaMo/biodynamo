@@ -9,13 +9,13 @@ namespace dividing_cell_op_test_internal {
 
 template <typename T>
 void RunTest(T* cells) {
-  cells->push_back(Cell<>(41.0));
-  cells->push_back(Cell<>(19.0));
+  cells->push_back(Cell(41.0));
+  cells->push_back(Cell(19.0));
 
   double volume_mother = (*cells)[0].GetVolume();
 
   DividingCellOp op;
-  op.Compute(cells);
+  op(cells, 0);
 
   EXPECT_EQ(3u, cells->size());
   EXPECT_NEAR(19.005288996600001, (*cells)[1].GetDiameter(),
@@ -33,12 +33,12 @@ void RunTest(T* cells) {
 }
 
 TEST(DividingCellOpTest, ComputeAos) {
-  TransactionalVector<Cell<Scalar>> cells;
+  TransactionalVector<Cell> cells;
   RunTest(&cells);
 }
 
 TEST(DividingCellOpTest, ComputeSoa) {
-  auto cells = Cell<>::NewEmptySoa();
+  auto cells = Cell::NewEmptySoa();
   RunTest(&cells);
 }
 

@@ -33,23 +33,13 @@ TEST(IOTest, RuntimeVars) {
 }
 
 TEST(IOTest, DividingCellAos) {
-  TransactionalVector<Cell<Scalar>> cells;
+  TransactionalVector<Cell> cells;
   RunTestDivCell(&cells);
 }
 
 TEST(IOTest, DividingCellSoa) {
-  auto cells = Cell<>::NewEmptySoa();
+  auto cells = Cell::NewEmptySoa();
   RunTestDivCell(&cells);
-}
-
-TEST(IOTest, ComputeAosoa) {
-  TransactionalVector<Cell<Scalar>> cells;
-  RunTestDispCell(&cells);
-}
-
-TEST(IOTest, ComputeSoa) {
-  auto cells = Cell<>::NewEmptySoa();
-  RunTestDispCell(&cells);
 }
 
 }  // namespace bdm

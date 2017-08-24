@@ -58,6 +58,18 @@
    fun:__kmp_get_global_thread_id_reg
 }
 
+{
+  ignore_Syscall_param_sched_setaffinity_mask__points_to_unaddressable_bytes
+  Memcheck:Param
+  sched_setaffinity(mask)
+  fun:syscall
+  fun:__kmp_affinity_determine_capable
+  fun:_Z20__kmp_env_initializePKc
+  fun:_ZL26__kmp_do_serial_initializev
+  fun:__kmp_get_global_thread_id_reg
+  fun:GOMP_parallel@@VERSION
+}
+
 ######### Suppress ICC false positives
 {
    gtest_uninitialized_value_icc
@@ -168,4 +180,24 @@
    ...
    fun:_ZN6google8protobuf14DescriptorPool24InternalAddGeneratedFileEPKvi
    ...
+}
+
+######### Suppress glibc issues
+{
+   glibc_issue_1
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   fun:_dl_map_object_deps
+   fun:dl_open_worker
+   fun:_dl_catch_error
+   fun:_dl_open
+   fun:do_dlopen
+   fun:_dl_catch_error
+   fun:dlerror_run
+   fun:__libc_dlopen_mode
+   fun:nss_load_library
+   fun:__nss_lookup_function
+   fun:__nss_lookup
+   fun:getpwuid_r@@GLIBC_2.2.5
 }

@@ -4,6 +4,7 @@
 #include <TError.h>
 #include <sstream>
 #include <string>
+#include "resource_manager.h"
 
 #include "io_util.h"
 
@@ -14,15 +15,15 @@ namespace bdm {
 class SimulationBackup {
  public:
   // object names for root file
-  static const std::string kCellName;
+  static const std::string kResouceManagerName;
   static const std::string kSimulationStepName;
   static const std::string kRuntimeVariableName;
 
   SimulationBackup(const std::string& backup_file,
                    const std::string& restore_file);
 
-  template <typename Container>
-  void Backup(Container* cells, size_t completed_simulation_steps) {
+  template <typename TResourceManager = ResourceManager<>>
+  void Backup(size_t completed_simulation_steps) {
     if (!backup_) {
       Fatal("SimulationBackup",
             "Requested to backup data, but no backup file given.");
@@ -36,7 +37,8 @@ class SimulationBackup {
     // Backup
     {
       TFileRaii f(tmp_file.str(), "UPDATE");
-      f.Get()->WriteObject(cells, kCellName.c_str());
+      f.Get()->WriteObject(TResourceManager::Get(),
+                           kResouceManagerName.c_str());
       IntegralTypeWrapper<size_t> wrapper(completed_simulation_steps);
       f.Get()->WriteObject(&wrapper, kSimulationStepName.c_str());
       RuntimeVariables rv;
@@ -50,8 +52,8 @@ class SimulationBackup {
     rename(tmp_file.str().c_str(), backup_file_.c_str());
   }
 
-  template <typename Container>
-  void Restore(Container*& cells) {  // NOLINT
+  template <typename TResourceManager = ResourceManager<>>
+  void Restore() {
     if (!restore_) {
       Fatal("SimulationBackup",
             "Requested to restore data, but no restore file given.");
@@ -65,7 +67,10 @@ class SimulationBackup {
       Warning("SimulationBackup",
               "Restoring simulation executed on a different system!");
     }
-    file.Get()->GetObject(kCellName.c_str(), cells);
+    TResourceManager* restored_rm = nullptr;
+    file.Get()->GetObject(kResouceManagerName.c_str(), restored_rm);
+    TResourceManager::instance_ =
+        std::unique_ptr<TResourceManager>(restored_rm);
     // TODO(lukas) random number generator, statics (e.g. Param)
   }
 

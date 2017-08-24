@@ -1,6 +1,7 @@
 #!/bin/bash
 
 BACKUP_RESTORE_FILE="backup_restore.root"
+rm $BACKUP_RESTORE_FILE
 
 # start simulation
 ./backup-restore -b $BACKUP_RESTORE_FILE &

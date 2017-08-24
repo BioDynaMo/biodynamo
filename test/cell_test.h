@@ -42,10 +42,12 @@ struct MovementModule {
   ClassDefNV(MovementModule, 1);
 };
 
-typedef Variant<GrowthModule, MovementModule> BiologyModules;
+struct CompileTimeParam {
+  using BiologyModules = Variant<GrowthModule, MovementModule>;
+};
 
 /// Class used to get access to protected members
-template <typename Base = CellExt<SimulationObject<Scalar>, BiologyModules>>
+template <typename Base = CellExt<SimulationObject<Scalar>, CompileTimeParam>>
 class TestCell : public Base {
  public:
   void TestTransformCoordinatesGlobalToPolar() {
@@ -72,7 +74,8 @@ class TestCell : public Base {
   const array<double, 3>& GetYAxis() { return Base::y_axis_[Base::kIdx]; }
   const array<double, 3>& GetZAxis() { return Base::z_axis_[Base::kIdx]; }
 
-  const vector<BiologyModules>& GetBiologyModules() const {
+  const vector<typename CompileTimeParam::BiologyModules>& GetBiologyModules()
+      const {
     return Base::biology_modules_[0];
   }
 
@@ -110,6 +113,7 @@ inline void RunIOTest() {
   cell.SetZAxis({7, 8, 9});
   cell.AddBiologyModule(GrowthModule());
   cell.AddBiologyModule(MovementModule({1, 2, 3}));
+  cell.SetBoxIdx(123);
 
   // write to root file
   WritePersistentObject(ROOTFILE, "cell", cell, "new");
@@ -154,8 +158,13 @@ inline void RunIOTest() {
   EXPECT_EQ(2u, restored_cell->GetBiologyModules().size());
   EXPECT_TRUE(get_if<GrowthModule>(&restored_cell->GetBiologyModules()[0]) !=
               nullptr);
+  EXPECT_NEAR(0.5, get_if<GrowthModule>(&restored_cell->GetBiologyModules()[0])
+                       ->growth_rate_,
+              kEpsilon);
   EXPECT_TRUE(get_if<MovementModule>(&restored_cell->GetBiologyModules()[1]) !=
               nullptr);
+
+  EXPECT_EQ(123u, restored_cell->GetBoxIdx());
 
   // delete root file
   remove(ROOTFILE);

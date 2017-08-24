@@ -21,19 +21,24 @@ namespace bdm {
 using std::array;
 using std::vector;
 
+/// Forward declaration for concrete compile time parameter.
+/// Will be used as default template parameter.
+struct CompileTimeParam;
+
 template <typename Base = SimulationObject<>,
-          typename TBiologyModuleVariant = Variant<NullBiologyModule>>
+          typename TCompileTimeParam = CompileTimeParam>
 class CellExt : public Base {
  public:
   BDM_CLASS_HEADER_ADV(CellExt, 1,
                        CellExt<typename Base::template Self<TTBackend> COMMA()
-                                   TBiologyModuleVariant>,
+                                   TCompileTimeParam>,
                        template <typename COMMA() typename>, position_,
                        mass_location_, tractor_force_, diameter_, volume_,
                        adherence_, density_, x_axis_, y_axis_, z_axis_,
-                       neighbors_, biology_modules_);
+                       biology_modules_, box_idx_);
 
  public:
+  using TBiologyModuleVariant = typename TCompileTimeParam::BiologyModules;
   CellExt() {}
   explicit CellExt(double diameter) : diameter_(diameter) { UpdateVolume(); }
   explicit CellExt(const array<double, 3>& position)
@@ -134,8 +139,6 @@ class CellExt : public Base {
 
   double GetVolume() const { return volume_[kIdx]; }
 
-  const InlineVector<int, 8>& GetNeighbors() const { return neighbors_[kIdx]; }
-
   void SetAdherence(double adherence) { adherence_[kIdx] = adherence; }
 
   void SetDiameter(double diameter) {
@@ -157,10 +160,6 @@ class CellExt : public Base {
 
   void SetTractorForce(const array<double, 3>& tractor_force) {
     tractor_force_[kIdx] = tractor_force;
-  }
-
-  void SetNeighbors(const InlineVector<int, 8>& neighbors) {
-    neighbors_[kIdx] = neighbors;
   }
 
   void ChangeVolume(double speed) {
@@ -199,6 +198,10 @@ class CellExt : public Base {
                                       diameter_[kIdx], iof_coefficient, force);
   }
 
+  uint64_t GetBoxIdx() const { return box_idx_[kIdx]; }
+
+  void SetBoxIdx(uint64_t idx) { box_idx_[kIdx] = idx; }
+
  protected:
   /// Returns the position in the polar coordinate system (cylindrical or
   /// spherical) of a point expressed in global cartesian coordinates
@@ -223,16 +226,18 @@ class CellExt : public Base {
   /// Third axis of the local coordinate system.
   vec<array<double, 3>> z_axis_ = {array<double, 3>{0.0, 0.0, 1.0}};
 
-  /// stores a list of neighbor ids for each scalar cell
-  vec<InlineVector<int, 8>> neighbors_;
-
   /// collection of biology modules which define the internal behavior
   vec<vector<TBiologyModuleVariant>> biology_modules_;
+
+  /// Grid box index
+  vec<uint64_t> box_idx_;
 };
 
-template <typename Backend = Scalar,
-          typename TBiologyModuleVariant = Variant<NullBiologyModule>>
-using Cell = CellExt<SimulationObject<Backend>, TBiologyModuleVariant>;
+using Cell = CellExt<SimulationObject<Scalar>>;
+using SoaCell = CellExt<SimulationObject<Soa>>;
+/// Used for testing purposes which require different compile time parameter
+template <typename TCompileTimeParam>
+using TestCell = CellExt<SimulationObject<Scalar>, TCompileTimeParam>;
 
 // ----------------------------------------------------------------------------
 // Implementation -------------------------------------------------------------
@@ -360,6 +365,8 @@ inline void CellExt<T, TBiologyModuleVariant>::DivideImpl(
   // F) change properties of this cell
   diameter_[kIdx] = r1 * 2;
   UpdateVolume();
+
+  daughter->box_idx_[0] = box_idx_[kIdx];
 
   // G) TODO(lukas) Copy the intracellular and membrane bound Substances
 }
