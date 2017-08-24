@@ -155,7 +155,7 @@ TEST(SimulationObjectUtilTest, Soa_AssignmentOperator) {
   EXPECT_EQ(1u, neurons.size());
 
   neurons[0] = new_neuron1;
-  EXPECT_EQ(123, neurons[0].GetDiameter());
+  EXPECT_EQ(123u, neurons[0].GetDiameter());
   auto& position = neurons[0].GetPosition();
   EXPECT_EQ(9, position[0]);
   EXPECT_EQ(8, position[1]);

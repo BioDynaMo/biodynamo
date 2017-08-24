@@ -29,11 +29,6 @@ class DisplacementOp {
     auto search_radius = grid.GetLargestObjectSize();
     double squared_radius = search_radius * search_radius;
 
-    for (size_t i = 0; i < cells->size(); i++) {
-      auto& position = ((*cells)[i]).GetPosition();
-      std::cout << "[DO] Cell position: [" << position[0] << "," << position[1] << "," << position[2] << "]" << std::endl;
-    }
-
 #pragma omp parallel for shared(grid) firstprivate(squared_radius)
     for (size_t i = 0; i < cells->size(); i++) {
       auto&& cell = (*cells)[i];

@@ -25,6 +25,7 @@ TEST(CellTest, DivideVolumeRatioPhiTheta) {
   mother.SetZAxis({7, 8, 9});
   mother.AddBiologyModule(GrowthModule());
   mother.AddBiologyModule(MovementModule({1, 2, 3}));
+  mother.SetBoxIdx(123);
 
   TestCell<> daughter;
   mother.Divide(&daughter, 0.75, 0.12, 0.34);
@@ -62,6 +63,8 @@ TEST(CellTest, DivideVolumeRatioPhiTheta) {
   EXPECT_NEAR(7, mother.GetZAxis()[0], kEpsilon);
   EXPECT_NEAR(8, mother.GetZAxis()[1], kEpsilon);
   EXPECT_NEAR(9, mother.GetZAxis()[2], kEpsilon);
+
+  EXPECT_EQ(123u, mother.GetBoxIdx());
 
   // verify daughter data members
   EXPECT_NEAR(11.448401425472813, daughter.GetPosition()[0], kEpsilon);
@@ -101,6 +104,8 @@ TEST(CellTest, DivideVolumeRatioPhiTheta) {
   if (get_if<GrowthModule>(&(daughter.GetBiologyModules()[0])) == nullptr) {
     FAIL() << "Variant type at position 0 is not a GrowthModule";
   }
+
+  EXPECT_EQ(123u, daughter.GetBoxIdx());
 
   // additional check
   EXPECT_NEAR(5, mother.GetMass() + daughter.GetMass(), kEpsilon);

@@ -113,6 +113,7 @@ inline void RunIOTest() {
   cell.SetZAxis({7, 8, 9});
   cell.AddBiologyModule(GrowthModule());
   cell.AddBiologyModule(MovementModule({1, 2, 3}));
+  cell.SetBoxIdx(123);
 
   // write to root file
   WritePersistentObject(ROOTFILE, "cell", cell, "new");
@@ -162,6 +163,8 @@ inline void RunIOTest() {
               kEpsilon);
   EXPECT_TRUE(get_if<MovementModule>(&restored_cell->GetBiologyModules()[1]) !=
               nullptr);
+
+  EXPECT_EQ(123u, restored_cell->GetBoxIdx());
 
   // delete root file
   remove(ROOTFILE);

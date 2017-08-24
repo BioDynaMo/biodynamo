@@ -28,7 +28,7 @@ struct CompileTimeParam : public DefaultCompileTimeParam<> {
 };
 
 inline int Simulate(const CommandLineOptions& options,
-                    size_t cells_per_dim = 3) {
+                    size_t cells_per_dim = 128) {
   // 3. Define initial model - in this example: 3D grid of cells
   auto construct = [](const std::array<double, 3>& position) {
     Cell cell(position);

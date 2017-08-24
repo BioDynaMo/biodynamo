@@ -35,7 +35,7 @@ class CellExt : public Base {
                        template <typename COMMA() typename>, position_,
                        mass_location_, tractor_force_, diameter_, volume_,
                        adherence_, density_, x_axis_, y_axis_, z_axis_,
-                       biology_modules_);
+                       biology_modules_, box_idx_);
 
  public:
   using TBiologyModuleVariant = typename TCompileTimeParam::BiologyModules;
@@ -198,6 +198,10 @@ class CellExt : public Base {
                                       diameter_[kIdx], iof_coefficient, force);
   }
 
+  uint64_t GetBoxIdx() const { return box_idx_[kIdx]; }
+
+  void SetBoxIdx(uint64_t idx) { box_idx_[kIdx] = idx; }
+
  protected:
   /// Returns the position in the polar coordinate system (cylindrical or
   /// spherical) of a point expressed in global cartesian coordinates
@@ -224,6 +228,9 @@ class CellExt : public Base {
 
   /// collection of biology modules which define the internal behavior
   vec<vector<TBiologyModuleVariant>> biology_modules_;
+
+  /// Grid box index
+  vec<uint64_t> box_idx_;
 };
 
 using Cell = CellExt<SimulationObject<Scalar>>;
@@ -358,6 +365,8 @@ inline void CellExt<T, TBiologyModuleVariant>::DivideImpl(
   // F) change properties of this cell
   diameter_[kIdx] = r1 * 2;
   UpdateVolume();
+
+  daughter->box_idx_[0] = box_idx_[kIdx];
 
   // G) TODO(lukas) Copy the intracellular and membrane bound Substances
 }

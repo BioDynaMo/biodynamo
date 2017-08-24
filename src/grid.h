@@ -234,10 +234,9 @@ class Grid {
     ClearGrid();
 
     auto inf = Param::kInfinity;
-    array<double, 6> tmp_dim = {{inf,-inf,inf,-inf,inf,-inf}};
-    CalculateGridDimensions(tmp_dim);
+    array<double, 6> tmp_dim = {{inf, -inf, inf, -inf, inf, -inf}};
+    CalculateGridDimensions(&tmp_dim);
     np_grid_dimensions_ = tmp_dim;
-    std::cout << "GD: [" << tmp_dim[0] << "," << tmp_dim[1] << "," << tmp_dim[2] << "," << tmp_dim[3] << "," << tmp_dim[4] << "," << tmp_dim[5] << "]" << std::endl;
     RoundOffGridDimensions(tmp_dim);
 
     auto los = ceil(largest_object_size_);
@@ -288,25 +287,26 @@ class Grid {
     auto rm = TResourceManager::Get();
     rm->ApplyOnAllElements([this](auto&& sim_object, SoHandle id) {
       const auto& position = sim_object.GetPosition();
-      auto box = this->GetBoxPointer(this->GetBoxIndex(position));
+      auto idx = this->GetBoxIndex(position);
+      auto box = this->GetBoxPointer(idx);
       box->AddObject(id);
+      sim_object.SetBoxIdx(idx);
     });
   }
 
   /// Calculates what the grid dimensions need to be in order to contain all the
   /// simulation objects
-  void CalculateGridDimensions(array<double, 6>& grid_dimensions) {
+  void CalculateGridDimensions(array<double, 6>* grid_dimensions) {
     auto rm = TResourceManager::Get();
     rm->ApplyOnAllElements([&](auto&& sim_object, SoHandle handle) {
       const auto& position = sim_object.GetPosition();
       auto diameter = sim_object.GetDiameter();
-      std::cout << "[GR] Cell position: [" << position[0] << "," << position[1] << "," << position[2] << "]" << std::endl;
       for (size_t j = 0; j < 3; j++) {
-        if (position[j] < grid_dimensions[2 * j]) {
-          grid_dimensions[2 * j] = position[j];
+        if (position[j] < (*grid_dimensions)[2 * j]) {
+          (*grid_dimensions)[2 * j] = position[j];
         }
-        if (position[j] > grid_dimensions[2 * j + 1]) {
-          grid_dimensions[2 * j + 1] = position[j];
+        if (position[j] > (*grid_dimensions)[2 * j + 1]) {
+          (*grid_dimensions)[2 * j + 1] = position[j];
         }
         if (diameter > largest_object_size_) {
           largest_object_size_ = diameter;
@@ -315,7 +315,7 @@ class Grid {
     });
   }
 
-  void RoundOffGridDimensions(array<double, 6>& grid_dimensions) {
+  void RoundOffGridDimensions(const array<double, 6>& grid_dimensions) {
     grid_dimensions_[0] = floor(grid_dimensions[0]);
     grid_dimensions_[2] = floor(grid_dimensions[2]);
     grid_dimensions_[4] = floor(grid_dimensions[4]);
@@ -385,7 +385,7 @@ class Grid {
                                    const SoHandle& simulation_object_id,
                                    double squared_radius) {
     const auto& position = query.GetPosition();
-    auto idx = GetBoxIndex(position);
+    auto idx = query.GetBoxIdx();
 
     FixedSizeVector<const Box*, 27> neighbor_boxes;
     GetMooreBoxes(&neighbor_boxes, idx);
