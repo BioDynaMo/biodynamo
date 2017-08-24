@@ -28,7 +28,7 @@ struct CompileTimeParam : public DefaultCompileTimeParam<> {
 };
 
 inline int Simulate(const CommandLineOptions& options,
-                    size_t cells_per_dim = 128) {
+                    size_t cells_per_dim = 3) {
   // 3. Define initial model - in this example: 3D grid of cells
   auto construct = [](const std::array<double, 3>& position) {
     Cell cell(position);
@@ -43,7 +43,7 @@ inline int Simulate(const CommandLineOptions& options,
 
   // 4. Run simulation for one timestep
   Scheduler<> scheduler(options.backup_file_, options.restore_file_);
-  scheduler.Simulate(1);
+  scheduler.Simulate(10000);
   return 0;
 }
 

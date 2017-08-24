@@ -3,6 +3,7 @@
 
 #include <array>
 #include <cmath>
+#include <iostream>
 #include <limits>
 #include <vector>
 #include "inline_vector.h"
@@ -210,10 +211,7 @@ class Grid {
 
   virtual ~Grid() {}
 
-  /// @brief      Gets the singleton instance
-  ///
-  /// @return     The instance
-  ///
+  /// Gets the singleton instance
   static Grid<TResourceManager>& GetInstance() {
     static Grid<TResourceManager> kGrid;
     return kGrid;
@@ -222,37 +220,41 @@ class Grid {
   /// Clears the grid
   void ClearGrid() {
     boxes_.clear();
-    box_length_ = 0;
+    box_length_ = 1;
     largest_object_size_ = 0;
     num_boxes_axis_ = {{0}};
     num_boxes_xy_ = 0;
-    auto inf = Param::kInfinity;
+    int32_t inf = std::numeric_limits<int32_t>::max();
     grid_dimensions_ = {inf, -inf, inf, -inf, inf, -inf};
     successors_.clear();
   }
 
-  /// @brief      Updates the grid, as simulation objects may have moved, added
-  ///             or deleted
+  /// Updates the grid, as simulation objects may have moved, added or deleted
   void UpdateGrid() {
     ClearGrid();
-    CalculateGridDimensions();
 
-    // todo: in some cases smaller box length still gives correct simulation
-    // results (and is faster). Find out what this should be set to
-    box_length_ = ceil(largest_object_size_);
+    auto inf = Param::kInfinity;
+    array<double, 6> tmp_dim = {{inf,-inf,inf,-inf,inf,-inf}};
+    CalculateGridDimensions(tmp_dim);
+    np_grid_dimensions_ = tmp_dim;
+    std::cout << "GD: [" << tmp_dim[0] << "," << tmp_dim[1] << "," << tmp_dim[2] << "," << tmp_dim[3] << "," << tmp_dim[4] << "," << tmp_dim[5] << "]" << std::endl;
+    RoundOffGridDimensions(tmp_dim);
+
+    auto los = ceil(largest_object_size_);
+    box_length_ = (los == 0) ? 1 : los;
+
     for (int i = 0; i < 3; i++) {
-      double dimension_length =
+      int dimension_length =
           grid_dimensions_[2 * i + 1] - grid_dimensions_[2 * i];
-      double r = fmod(dimension_length, box_length_);
+      int r = dimension_length % box_length_;
       // If the grid is not perfectly divisible along each dimension by the
       // resolution, extend the grid so that it is
-      if (r != 0.0) {
+      if (r != 0) {
         // std::abs for the case that box_length_ > dimension_length
-        grid_dimensions_[2 * i + 1] += std::abs(dimension_length - box_length_);
+        grid_dimensions_[2 * i + 1] += (box_length_ - r);
       } else {
         // Else extend the grid dimension with one row, because the outmost
-        // object
-        // lies exactly on the border
+        // object lies exactly on the border
         grid_dimensions_[2 * i + 1] += box_length_;
       }
     }
@@ -293,25 +295,33 @@ class Grid {
 
   /// Calculates what the grid dimensions need to be in order to contain all the
   /// simulation objects
-  ///
-  /// @return     The grid dimensions
-  void CalculateGridDimensions() {
+  void CalculateGridDimensions(array<double, 6>& grid_dimensions) {
     auto rm = TResourceManager::Get();
     rm->ApplyOnAllElements([&](auto&& sim_object, SoHandle handle) {
       const auto& position = sim_object.GetPosition();
       auto diameter = sim_object.GetDiameter();
+      std::cout << "[GR] Cell position: [" << position[0] << "," << position[1] << "," << position[2] << "]" << std::endl;
       for (size_t j = 0; j < 3; j++) {
-        if (position[j] < grid_dimensions_[2 * j]) {
-          grid_dimensions_[2 * j] = position[j];
+        if (position[j] < grid_dimensions[2 * j]) {
+          grid_dimensions[2 * j] = position[j];
         }
-        if (position[j] > grid_dimensions_[2 * j + 1]) {
-          grid_dimensions_[2 * j + 1] = position[j];
+        if (position[j] > grid_dimensions[2 * j + 1]) {
+          grid_dimensions[2 * j + 1] = position[j];
         }
         if (diameter > largest_object_size_) {
           largest_object_size_ = diameter;
         }
       }
     });
+  }
+
+  void RoundOffGridDimensions(array<double, 6>& grid_dimensions) {
+    grid_dimensions_[0] = floor(grid_dimensions[0]);
+    grid_dimensions_[2] = floor(grid_dimensions[2]);
+    grid_dimensions_[4] = floor(grid_dimensions[4]);
+    grid_dimensions_[1] = ceil(grid_dimensions[1]);
+    grid_dimensions_[3] = ceil(grid_dimensions[3]);
+    grid_dimensions_[5] = ceil(grid_dimensions[5]);
   }
 
   /// @brief      Calculates the squared euclidian distance between two points
@@ -398,17 +408,14 @@ class Grid {
     }
   }
 
-  /// @brief      Gets the size of the largest object in the grid
-  ///
-  /// @return     The size of the largest object
-  ///
+  /// Gets the size of the largest object in the grid
   double GetLargestObjectSize() const { return largest_object_size_; }
 
  private:
   /// The vector containing all the boxes in the grid
   vector<Box> boxes_;
   /// Length of a Box
-  uint32_t box_length_ = 0;
+  uint32_t box_length_ = 1;
   /// Stores the number of boxes for each axis
   array<uint32_t, 3> num_boxes_axis_ = {{0}};
   /// Number of boxes in the xy plane (=num_boxes_axis_[0] * num_boxes_axis_[1])
@@ -421,9 +428,8 @@ class Grid {
   double largest_object_size_ = 0;
   /// Cube which contains all simulation objects
   /// {x_min, x_max, y_min, y_max, z_min, z_max}
-  std::array<double, 6> grid_dimensions_ = {
-      {Param::kInfinity, -Param::kInfinity, Param::kInfinity, -Param::kInfinity,
-       Param::kInfinity, -Param::kInfinity}};
+  std::array<int32_t, 6> grid_dimensions_;
+  std::array<double, 6> np_grid_dimensions_;
 
   /// @brief      Gets the Moore (i.e adjacent) boxes of the query box
   ///
@@ -526,9 +532,9 @@ class Grid {
   ///
   size_t GetBoxIndex(const array<double, 3>& position) const {
     array<uint32_t, 3> box_coord;
-    box_coord[0] = floor(position[0] - grid_dimensions_[0]) / box_length_;
-    box_coord[1] = floor(position[1] - grid_dimensions_[2]) / box_length_;
-    box_coord[2] = floor(position[2] - grid_dimensions_[4]) / box_length_;
+    box_coord[0] = (floor(position[0]) - grid_dimensions_[0]) / box_length_;
+    box_coord[1] = (floor(position[1]) - grid_dimensions_[2]) / box_length_;
+    box_coord[2] = (floor(position[2]) - grid_dimensions_[4]) / box_length_;
 
     return GetBoxIndex(box_coord);
   }
