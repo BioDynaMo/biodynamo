@@ -6,7 +6,8 @@
   <exclusion>
     <class pattern="std::array<*>" />
     <class pattern="*bdm::SoaRef*"/>
-    <class name="chrono::system_clock"/>
+    <class name="std::chrono::system_clock"/>
+    <class pattern="std::chrono*" />
     <class pattern="*_Test" />
     <!-- list of classes with dictionary in libbiodynamo
          -> all selected classes from libbiodynamo-selection.xml -->
