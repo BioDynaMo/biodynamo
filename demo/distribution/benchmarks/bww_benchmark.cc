@@ -1,5 +1,7 @@
 #include "bww_benchmark.h"
 
+#include "TROOT.h"
+
 zmqpp::context bdm::TestBWWData::ctx_{};
 std::string bdm::TestBWWData::worker1_("W1");
 std::string bdm::TestBWWData::worker2_("W2");
@@ -7,6 +9,8 @@ size_t bdm::TestBWWData::n_messages_(1000);
 bool bdm::TestBWWData::verbose_(false);
 
 int main(int argc, const char **argv) {
+  ROOT::EnableThreadSafety();
+
   bdm::TestBWWData::n_messages_ =
       (argc >= 2 ? atoi(argv[1]) : bdm::TestBWWData::n_messages_);
   bdm::TestBWWData::verbose_ = (argc == 2 && strcmp(argv[1], "-v") == 0) ||

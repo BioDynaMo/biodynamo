@@ -1,11 +1,15 @@
 #include "cbw_benchmark.h"
 
+#include "TROOT.h"
+
 zmqpp::context bdm::TestCBWData::ctx_{};
 std::string bdm::TestCBWData::worker_("W1");
 size_t bdm::TestCBWData::n_messages_(1000);
 bool bdm::TestCBWData::verbose_(false);
 
 int main(int argc, const char **argv) {
+  ROOT::EnableThreadSafety();
+
   bdm::TestCBWData::n_messages_ =
       (argc >= 2 ? atoi(argv[1]) : bdm::TestCBWData::n_messages_);
   bdm::TestCBWData::verbose_ = (argc == 2 && strcmp(argv[1], "-v") == 0) ||

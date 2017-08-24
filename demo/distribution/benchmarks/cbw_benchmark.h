@@ -22,11 +22,11 @@ struct TestCBWData {
 };
 
 inline void ClientTask() {
+  Logger logger("Task[Client]");
   Client client(&TestCBWData::ctx_, "tcp://127.0.0.1:5555",
                 TestCBWData::verbose_);
 
-  std::cout << "I: Sending " << TestCBWData::n_messages_ << " messages..."
-            << std::endl;
+  logger.Info("Sending ", TestCBWData::n_messages_, " messages...");
 
   auto start = std::chrono::high_resolution_clock::now();
   size_t remaining = TestCBWData::n_messages_;
@@ -34,7 +34,7 @@ inline void ClientTask() {
   zmqpp::message hello_msg;
   hello_msg.push_back("Hello world");
 
-  std::string command;
+  ClientProtocolCmd command;
   std::unique_ptr<zmqpp::message> msg;
   while (remaining > 0) {
     msg = std::make_unique<zmqpp::message>(hello_msg.copy());
@@ -42,12 +42,14 @@ inline void ClientTask() {
 
     msg = std::make_unique<zmqpp::message>();
     if (!client.Recv(&msg, &command)) {
-      std::cout << "Interrupted..." << std::endl;
+      logger.Error("Interrupted...");
       break;
     }
 
-    if (command == MDPC_NAK) {
-      std::cout << "E: invalid worker_ " << TestCBWData::worker_ << std::endl;
+    logger.Debug("Received: ", *msg);
+
+    if (command == ClientProtocolCmd::kNak) {
+      logger.Warning("Invalid worker ", TestCBWData::worker_);
       std::this_thread::sleep_for(HEARTBEAT_INTERVAL);
       continue;
     }
@@ -60,11 +62,11 @@ inline void ClientTask() {
                               std::chrono::high_resolution_clock::now() - start)
                               .count()) /
       1000.0;
-  std::cout << "I: Received " << TestCBWData::n_messages_ - remaining
-            << " replies in " << elapsed << " ms" << std::endl;
-  std::cout << "I: Time per message: "
-            << elapsed / (TestCBWData::n_messages_ - remaining) << " ms"
-            << std::endl;
+
+  logger.Info("Received ", TestCBWData::n_messages_ - remaining, " replies in ",
+              elapsed, " ms");
+  logger.Info("Time per message: ",
+              elapsed / (TestCBWData::n_messages_ - remaining), " ms");
 
   // Send stop signal
   // assert( api.Stop() );
@@ -76,6 +78,7 @@ inline void BrokerTask() {
 }
 
 inline void WorkerTask() {
+  Logger logger("Task[W1]");
   DistWorkerAPI api(&TestCBWData::ctx_, TestCBWData::worker_,
                     TestCBWData::verbose_);
 
@@ -87,11 +90,10 @@ inline void WorkerTask() {
     // wait for message
     api.ReceiveMessage(&msg);
 
-    if (TestCBWData::verbose_) {
-      std::cout << "worker_: received message: " << *msg << std::endl;
-    }
+    logger.Debug("Received message: ", *msg);
 
     // echo that message
+    msg->push_front("client");
     api.SendMessage(std::move(msg), CommunicatorId::kBroker);
   }
 
