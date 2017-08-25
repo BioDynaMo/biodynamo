@@ -1,0 +1,40 @@
+#####################################
+## Building ParaView for BioDynaMo ##
+#####################################
+
+
+## Step 1: Install QT 5.6.2
+wget https://download.qt.io/official_releases/qt/5.6/5.6.2/qt-opensource-linux-x64-5.6.2.run
+chmod +x qt-opensource-linux-x64-5.6.2.run
+./qt-opensource-linux-x64-5.6.2.run
+
+
+## Step 2: Clone paraview github repository
+git clone https://gitlab.kitware.com/paraview/paraview.git
+cd paraview
+git submodule update --init
+git checkout v5.4.0
+
+
+## Step 3: Generate the cmake files for paraview
+#
+# If you want to build against a specific Qt library at /path/to/qt/cmake
+# then set CMAKE_PREFIX_PATH=/path/to/qt/cmake (in this dir all the Qt modules
+# should be available)
+#
+# NB: OpenMPI should be installed on your system to link with ParaView!
+#
+# Change the CMAKE_INSTALL_PREFIX to an existing directory and run the following
+# command to generate cmake files
+
+
+mkdir ../paraview-build
+cd ../paraview-build
+
+$cmake \
+-DCMAKE_INSTALL_PREFIX:STRING="/path/to/separate/dir" \
+-DCMAKE_BUILD_TYPE:STRING="Release" \
+-DPARAVIEW_ENABLE_PYTHON:BOOL=ON \
+-DPARAVIEW_ENABLE_MPI:BOOL=ON \
+-DPARAVIEW_INSTALL_DEVELOPMENT_FILES:BOOL=ON \
+ ../paraview
