@@ -43,7 +43,7 @@ inline int Simulate(const CommandLineOptions& options,
 
   // 4. Run simulation for one timestep
   Scheduler<> scheduler(options.backup_file_, options.restore_file_);
-  scheduler.Simulate(10000);
+  scheduler.Simulate(1);
   return 0;
 }
 
