@@ -79,8 +79,8 @@ class CatalystAdaptor {
       // the first time it's needed. If we needed the memory
       // we could delete it and rebuild as necessary.
       g_vtk_grid_ = vtkUnstructuredGrid::New();
-      BuildVTKGrid(sim_objects);
     }
+    BuildVTKGrid(sim_objects);
   }
 
   ///
@@ -147,47 +147,48 @@ class CatalystAdaptor {
       g_processor_->CoProcess(data_description.GetPointer());
     }
 
-    // ----------------- User changes propagation ------------------------------
+    // // ----------------- User changes propagation
+    // ------------------------------
 
-    vtkFieldData* user_data = data_description->GetUserData();
-    if (!user_data) {
-      // no user changes
-      return;
-    }
+    // vtkFieldData* user_data = data_description->GetUserData();
+    // if (!user_data) {
+    //   // no user changes
+    //   return;
+    // }
 
-    // Which properties/attribute the user changed
-    vtkStringArray* prop_arrays =
-        vtkStringArray::SafeDownCast(user_data->GetAbstractArray("PropArrays"));
-    if (!prop_arrays) {
-      std::cout << "Warning: Cannot find propagated array names" << endl;
-      return;
-    }
+    // // Which properties/attribute the user changed
+    // vtkStringArray* prop_arrays =
+    //     vtkStringArray::SafeDownCast(user_data->GetAbstractArray("PropArrays"));
+    // if (!prop_arrays) {
+    //   std::cout << "Warning: Cannot find propagated array names" << endl;
+    //   return;
+    // }
 
-    // Get every changed attribute
-    vtkIdTypeArray* idx_array;
-    vtkDoubleArray* val_array;
-    for (int j = 0; j < prop_arrays->GetSize(); j++) {
-      auto attribute = prop_arrays->GetValue(j);
-      idx_array = vtkIdTypeArray::SafeDownCast(user_data->GetAbstractArray(
-          (std::string("PropIdx") + std::string(attribute)).c_str()));
-      val_array = vtkDoubleArray::SafeDownCast(user_data->GetAbstractArray(
-          (std::string("PropVals") + std::string(attribute)).c_str()));
+    // // Get every changed attribute
+    // vtkIdTypeArray* idx_array;
+    // vtkDoubleArray* val_array;
+    // for (int j = 0; j < prop_arrays->GetSize(); j++) {
+    //   auto attribute = prop_arrays->GetValue(j);
+    //   idx_array = vtkIdTypeArray::SafeDownCast(user_data->GetAbstractArray(
+    //       (std::string("PropIdx") + std::string(attribute)).c_str()));
+    //   val_array = vtkDoubleArray::SafeDownCast(user_data->GetAbstractArray(
+    //       (std::string("PropVals") + std::string(attribute)).c_str()));
 
-      if (!idx_array || !val_array) {
-        std::cerr << "Warning: null pointer returned while fetching '"
-                  << attribute << "' array " << endl;
-      }
+    //   if (!idx_array || !val_array) {
+    //     std::cerr << "Warning: null pointer returned while fetching '"
+    //               << attribute << "' array " << endl;
+    //   }
 
-      // Update changed sim_objects
-      for (int i = 0; i < idx_array->GetNumberOfTuples(); i++) {
-        std::cout << "sim_objects[" << idx_array->GetValue(i)
-                  << "] = " << val_array->GetValue(i) << endl;
+    //   // Update changed sim_objects
+    //   for (int i = 0; i < idx_array->GetNumberOfTuples(); i++) {
+    //     std::cout << "sim_objects[" << idx_array->GetValue(i)
+    //               << "] = " << val_array->GetValue(i) << endl;
 
-        // reflection here!
-        (*sim_objects)[idx_array->GetValue(i)].SetDiameter(
-            val_array->GetValue(i));
-      }
-    }
+    //     // reflection here!
+    //     (*sim_objects)[idx_array->GetValue(i)].SetDiameter(
+    //         val_array->GetValue(i));
+    //   }
+    // }
   }
 
  private:

@@ -24,29 +24,22 @@ def CreateCoProcessor():
             #state file generated using paraview version 5.3.0
             global propDiameterFilterScript
 
-            #setup the data processing pipelines
-
             #disable automatic camera reset on 'Show'
             paraview.simple._DisableFirstRenderCameraReset()
 
             #create a new 'XML Unstructured Grid Reader'
             #create a producer from a simulation input
-            results4Paraview0vtu = coprocessor.CreateProducer(datadescription, 'input')
+            biodynamoInput = coprocessor.CreateProducer(datadescription, 'input')
 
             # create new Programmable filter for propagating user changes
-            propDiameterFilter = ProgrammableFilter(Input=results4Paraview0vtu)
+            propDiameterFilter = ProgrammableFilter(guiName="back_propagation", Input=biodynamoInput)
             propDiameterFilter.CopyArrays = True
             propDiameterFilter.Script = propDiameterFilterScript
 
-            #create a new 'Calculator'
-            calculator1 = Calculator(Input = propDiameterFilter)
-            calculator1.ResultArrayName = 'Radius'
-            calculator1.Function = '0.5*Diameter'
-
             #create a new 'Glyph'
             #glyph1 = Glyph(Input = propDiameterFilter, GlyphType = 'Sphere')
-            glyph1 = Glyph(Input = calculator1, GlyphType = 'Sphere')
-            glyph1.Scalars = [ 'POINTS', 'Radius' ]
+            glyph1 = Glyph(guiName="cells", GlyphType = 'Sphere')
+            glyph1.Scalars = [ 'POINTS', 'Diameter' ]
             glyph1.Vectors = [ 'POINTS', 'None' ]
             glyph1.ScaleMode = 'scalar'
             glyph1.GlyphMode = 'All Points'
@@ -64,7 +57,7 @@ def CreateCoProcessor():
     coprocessor = CoProcessor()
 
     #these are the frequencies at which the coprocessor updates.
-    freqs = { 'input' : []}
+    freqs = { 'input' : [10, 100]}
     coprocessor.SetUpdateFrequencies(freqs)
     return coprocessor
 
@@ -116,6 +109,8 @@ def DoCoProcessing(datadescription):
 
     #Live Visualization, if enabled.
     coprocessor.DoLiveVisualization(datadescription, "localhost", 22222)
+
+    UpdatePipeline()
 
     # ---------------------------------------------------------------------------
     # global propFilterName
