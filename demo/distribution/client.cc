@@ -62,14 +62,16 @@ void Client::Send(const std::string& identity,
   //  Frame 3..n: Application frames
 
   // TODO(kkanellis): add identity to client
-  std::unique_ptr<std::string> header =
+
+  // Frame 2
+  size_t header_sz;
+  std::unique_ptr<const char[]> header =
       ClientCommandHeader(ClientProtocolCmd::kRequest, CommunicatorId::kClient,
                           CommunicatorId::kSomeWorker)
           .worker_id(identity)
-          .ToString();
+          .Serialize(&header_sz);
+  msg->push_front(header.get(), header_sz);
 
-  // Frame 2
-  msg->push_front(*header);
   // Frame 1
   msg->push_front(MDPC_CLIENT);
 
@@ -99,11 +101,9 @@ bool Client::Recv(std::unique_ptr<zmqpp::message>* msg_out,
   msg->pop_front();
   assert(protocol == MDPC_CLIENT);
 
-  std::string* header_str = new std::string(msg->get(0));
-  msg->pop_front();
-
   std::unique_ptr<ClientCommandHeader> header =
-      ClientCommandHeader::FromString<ClientCommandHeader>(header_str);
+      ClientCommandHeader::Deserialize(msg->raw_data(0), msg->size(0));
+  msg->pop_front();
   assert(header->cmd_ == ClientProtocolCmd::kReport ||
          header->cmd_ == ClientProtocolCmd::kNak);
 

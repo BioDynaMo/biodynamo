@@ -22,8 +22,7 @@ class WorkerCommunicator : public Communicator {
 
  private:
   void SendToCoWorker(const WorkerProtocolCmd command,
-                      std::unique_ptr<zmqpp::message> message = nullptr,
-                      const std::string& client_id = "");
+                      std::unique_ptr<zmqpp::message> message = nullptr);
 
   bool client_;  // Act as client? (aka initiate communication)
   std::string coworker_identity_;

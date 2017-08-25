@@ -61,6 +61,7 @@ void BrokerCommunicator::HandleIncomingMessage() {
   // Frame 2:     WorkerCommandHeader (serialized)
   // Frame 3..n:  application frames
 
+  // TODO(kkanellis): replace with smart pointer
   auto msg_p = new zmqpp::message();
   if (!socket_->receive(*msg_p)) {
     // Interrupted
@@ -78,10 +79,9 @@ void BrokerCommunicator::HandleIncomingMessage() {
   assert(protocol == MDPW_WORKER);
 
   // Frame 2
-  std::string* header_str = new std::string(msg_p->get(0));
-  msg_p->pop_front();
   std::unique_ptr<WorkerCommandHeader> header =
-      ClientCommandHeader::FromString<WorkerCommandHeader>(header_str);
+      WorkerCommandHeader::Deserialize(msg_p->raw_data(0), msg_p->size(0));
+  msg_p->pop_front();
 
   switch (header->cmd_) {
     case WorkerProtocolCmd::kRequest:
@@ -138,13 +138,14 @@ void BrokerCommunicator::SendToBroker(
   auto msg = message ? message->copy() : zmqpp::message();
 
   // Frame 2
-  std::unique_ptr<std::string> header =
+  size_t header_sz;
+  std::unique_ptr<const char[]> header =
       WorkerCommandHeader(command, CommunicatorId::kSomeWorker,
                           CommunicatorId::kBroker)
           .worker_id(info_->identity_)
           .client_id(client_id)
-          .ToString();
-  msg.push_front(*header);
+          .Serialize(&header_sz);
+  msg.push_front(header.get(), header_sz);
 
   // Frame 1
   msg.push_front(MDPW_WORKER);
