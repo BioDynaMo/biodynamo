@@ -3,6 +3,7 @@
 
 #include <Rtypes.h>
 #include <TBufferFile.h>
+#include <TStorage.h>
 
 #include <string>
 
@@ -82,22 +83,35 @@ class CommandHeader {
   CommunicatorId sender_ = CommunicatorId::kUndefined;
   CommunicatorId receiver_ = CommunicatorId::kUndefined;
 
-  // Deserialize class
-  template <typename T>
-  static std::unique_ptr<T> FromString(const std::string* str) {
-    TBufferFile buf(
-        TBufferFile::EMode::kRead, str->size(),
-        (const_cast<void*>(reinterpret_cast<const void*>(str->c_str()))));
-
-    return std::unique_ptr<T>(
-        reinterpret_cast<T*>(buf.ReadObjectAny(T::Class())));
-  }
-
   inline friend std::ostream& operator<<(std::ostream& stream,
                                          const CommandHeader& header) {
     stream << "[Sender    ]: " << header.sender_ << std::endl
            << "[Receiver  ]: " << header.receiver_ << std::endl;
     return stream;
+  }
+
+  template <typename T>
+  static std::unique_ptr<T> Deserialize(const void* data, size_t size) {
+    TBufferFile buf(TBufferFile::EMode::kRead, size, const_cast<void*>(data),
+                    kFALSE);
+    return std::unique_ptr<T>(
+        reinterpret_cast<T*>(buf.ReadObjectAny(T::Class())));
+  }
+
+ protected:
+  template <typename T>
+  inline std::unique_ptr<const char[]> Serialize(T obj, size_t* sz_out) {
+    auto data_sz = TBuffer::kInitialSize;  //+ TBuffer::kExtraSpace;
+    std::unique_ptr<char[]> data(new char[data_sz]);
+    memset(data.get(), 0, data_sz);  // initialize bytes
+
+    TBufferFile buf(TBufferFile::EMode::kWrite, data_sz, data.get(), kFALSE,
+                    TStorage::ReAllocChar);
+    assert(buf.WriteObjectAny(&obj, T::Class()) == 1);
+    assert(buf.CheckObject(&obj, T::Class()));
+
+    *sz_out = buf.Length();
+    return std::move(data);
   }
 
   ClassDef(CommandHeader, 1);
@@ -125,14 +139,13 @@ class ClientCommandHeader : public CommandHeader {
   optional_arg(ClientCommandHeader, std::string, worker_id, "");
   optional_arg(ClientCommandHeader, std::uint16_t, app_frames, 0);
 
-  // Serialize class
-  std::unique_ptr<std::string> ToString() {
-    TBufferFile buf(TBufferFile::EMode::kWrite);
-    assert(buf.WriteObjectAny(this, ClientCommandHeader::Class()) == 1);
-    assert(buf.CheckObject(this, ClientCommandHeader::Class()));
+  std::unique_ptr<const char[]> Serialize(size_t* sz_out) {
+    return CommandHeader::Serialize(*this, sz_out);
+  }
 
-    return std::make_unique<std::string>(
-        std::string(buf.Buffer(), buf.Length()));
+  static std::unique_ptr<ClientCommandHeader> Deserialize(const void* data,
+                                                          size_t size) {
+    return CommandHeader::Deserialize<ClientCommandHeader>(data, size);
   }
 
   inline friend std::ostream& operator<<(std::ostream& stream,
@@ -165,16 +178,13 @@ class WorkerCommandHeader : public CommandHeader {
   optional_arg(WorkerCommandHeader, std::string, worker_id, "");
   optional_arg(WorkerCommandHeader, std::uint16_t, app_frames, 0);
 
-  // Serialize class
-  std::unique_ptr<std::string> ToString() {
-    TBufferFile buf(TBufferFile::EMode::kWrite);
-    assert(buf.WriteObjectAny(this, WorkerCommandHeader::Class()) == 1);
-    assert(buf.CheckObject(this, WorkerCommandHeader::Class()));
+  std::unique_ptr<const char[]> Serialize(size_t* sz_out) {
+    return CommandHeader::Serialize(*this, sz_out);
+  }
 
-    std::cout << *this << std::endl;
-
-    return std::make_unique<std::string>(
-        std::string(buf.Buffer(), buf.Length()));
+  static std::unique_ptr<WorkerCommandHeader> Deserialize(const void* data,
+                                                          size_t size) {
+    return CommandHeader::Deserialize<WorkerCommandHeader>(data, size);
   }
 
   inline friend std::ostream& operator<<(std::ostream& stream,
