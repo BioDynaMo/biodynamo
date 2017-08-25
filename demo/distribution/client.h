@@ -11,7 +11,7 @@ namespace bdm {
 
 class Client {
  public:
-  Client(zmqpp::context *ctx, const std::string &broker, bool verbose);
+  Client(zmqpp::context *ctx, const std::string &broker, LoggingLevel level);
   ~Client();
 
   void SetTimeout(duration_ms_t timeout);
@@ -36,7 +36,6 @@ class Client {
   zmqpp::socket *sock = nullptr;  //  Socket to broker
   std::string broker;             //  Broker address
   duration_ms_t timeout;          //  Request timeout
-  bool verbose;                   //  Print activity to stdout
 
   Logger logger_;
 };

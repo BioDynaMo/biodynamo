@@ -2,13 +2,13 @@
 
 namespace bdm {
 
-Client::Client(zmqpp::context* ctx, const std::string& broker, bool verbose)
-    : logger_("Client") {
+Client::Client(zmqpp::context* ctx, const std::string& broker,
+               LoggingLevel level)
+    : logger_("Client", level) {
   assert(!broker.empty());
 
   this->ctx = ctx;
   this->broker = broker;
-  this->verbose = verbose;
   this->timeout = duration_ms_t(2500);  // msecs
 
   ConnectToBroker();

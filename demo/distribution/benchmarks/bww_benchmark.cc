@@ -6,15 +6,18 @@ zmqpp::context bdm::TestBWWData::ctx_{};
 std::string bdm::TestBWWData::worker1_("W1");
 std::string bdm::TestBWWData::worker2_("W2");
 size_t bdm::TestBWWData::n_messages_(1000);
-bool bdm::TestBWWData::verbose_(false);
+bdm::LoggingLevel bdm::TestBWWData::level_(LoggingLevel::kDebug);
 
 int main(int argc, const char **argv) {
   ROOT::EnableThreadSafety();
 
   bdm::TestBWWData::n_messages_ =
       (argc >= 2 ? atoi(argv[1]) : bdm::TestBWWData::n_messages_);
-  bdm::TestBWWData::verbose_ = (argc == 2 && strcmp(argv[1], "-v") == 0) ||
-                               (argc == 3 && strcmp(argv[2], "-v") == 0);
+
+  bdm::TestBWWData::level_ = ((argc == 2 && strcmp(argv[1], "-v") == 0) ||
+                              (argc == 3 && strcmp(argv[2], "-v") == 0))
+                                 ? bdm::LoggingLevel::kDebug
+                                 : bdm::LoggingLevel::kInfo;
 
   std::thread broker_t(bdm::TestBWWBrokerTask);
   std::thread worker1_t(bdm::TestBWWWorker1Task);

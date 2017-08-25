@@ -3,8 +3,8 @@
 namespace bdm {
 
 Broker::Broker(zmqpp::context* ctx, const std::string& endpoint,
-               const bool verbose)
-    : ctx_(ctx), endpoint_(endpoint), verbose_(verbose), logger_("Broker") {
+               LoggingLevel level)
+    : ctx_(ctx), endpoint_(endpoint), logger_("Broker", level) {
   this->socket_ = new zmqpp::socket(*ctx_, zmqpp::socket_type::router);
   this->hb_at_ =
       std::chrono::system_clock::now() + duration_ms_t(HEARTBEAT_INTERVAL);
