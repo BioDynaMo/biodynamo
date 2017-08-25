@@ -9,14 +9,13 @@
 #include <string>
 #include <tuple>
 
-#include "common.h"
+#include "message.h"
 
 namespace bdm {
 
 // ROOT logging levels
 enum class LoggingLevel : Int_t {
   kUnset = ::kUnset,
-  kPrint = ::kPrint,
   kDebug = ::kPrint,
   kInfo = ::kInfo,
   kWarning = ::kWarning,
@@ -35,16 +34,14 @@ class Logger {
   ~Logger() {}
 
   template <typename... Args>
-  void Print(const Args&... parts) const {
-    if (LoggingLevel::kPrint >= level_) {
-      auto message = ConstructMessage(parts...);
-      // Print to stderr (as ROOT does for every message)
-      fprintf(stderr, "%s", message->c_str());
-    }
+  inline void Print(const Args&... parts) const {
+    auto message = ConstructMessage(parts...);
+    // Print to stderr (as ROOT does for every message)
+    fprintf(stderr, "%s\n", message->c_str());
   }
 
   template <typename... Args>
-  void Debug(const Args&... parts) const {
+  inline void Debug(const Args&... parts) const {
     if (LoggingLevel::kDebug >= level_) {
       auto message = ConstructMessage(parts...);
       // Emulate ROOT logging message
@@ -54,7 +51,7 @@ class Logger {
   }
 
   template <typename... Args>
-  void Info(const Args&... parts) const {
+  inline void Info(const Args&... parts) const {
     if (LoggingLevel::kInfo >= level_) {
       auto message = ConstructMessage(parts...);
       // ROOT function
@@ -63,7 +60,7 @@ class Logger {
   }
 
   template <typename... Args>
-  void Warning(const Args&... parts) const {
+  inline void Warning(const Args&... parts) const {
     if (LoggingLevel::kWarning >= level_) {
       auto message = ConstructMessage(parts...);
       // ROOT function
@@ -72,7 +69,7 @@ class Logger {
   }
 
   template <typename... Args>
-  void Error(const Args&... parts) const {
+  inline void Error(const Args&... parts) const {
     if (LoggingLevel::kError >= level_) {
       auto message = ConstructMessage(parts...);
       // ROOT function
@@ -81,7 +78,7 @@ class Logger {
   }
 
   template <typename... Args>
-  void Break(const Args&... parts) const {
+  inline void Break(const Args&... parts) const {
     if (LoggingLevel::kBreak >= level_) {
       auto message = ConstructMessage(parts...);
       // ROOT function
@@ -90,7 +87,7 @@ class Logger {
   }
 
   template <typename... Args>
-  void SysError(const Args&... parts) const {
+  inline void SysError(const Args&... parts) const {
     if (LoggingLevel::kSysError >= level_) {
       auto message = ConstructMessage(parts...);
       // ROOT function
@@ -99,7 +96,7 @@ class Logger {
   }
 
   template <typename... Args>
-  void Fatal(const Args&... parts) const {
+  inline void Fatal(const Args&... parts) const {
     if (LoggingLevel::kFatal >= level_) {
       auto message = ConstructMessage(parts...);
       // ROOT function
