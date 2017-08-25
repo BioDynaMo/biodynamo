@@ -140,6 +140,54 @@ TEST(GridTest, UpdateGrid) {
   EXPECT_EQ(expected_61, neighbors[61]);
 }
 
+TEST(GridTest, GetBoxIndex) {
+  auto rm = ResourceManager<>::Get();
+  rm->Clear();
+  auto cells = rm->Get<Cell>();
+  CellFactory(cells, 3);
+
+  auto& grid = Grid<>::GetInstance();
+  grid.Initialize();
+
+  std::array<double, 3> position_0 = {{0, 0, 0}};
+  std::array<double, 3> position_1 = {{1e-15, 1e-15, 1e-15}};
+  std::array<double, 3> position_2 = {{-1e-15, 1e-15, 1e-15}};
+
+  size_t expected_idx_0 = 21;
+  size_t expected_idx_1 = 21;
+  size_t expected_idx_2 = 20;
+
+  size_t idx_0 = grid.GetBoxIndex(position_0);
+  size_t idx_1 = grid.GetBoxIndex(position_1);
+  size_t idx_2 = grid.GetBoxIndex(position_2);
+
+  EXPECT_EQ(expected_idx_0, idx_0);
+  EXPECT_EQ(expected_idx_1, idx_1);
+  EXPECT_EQ(expected_idx_2, idx_2);
+}
+
+TEST(GridTest, GridDimensions) {
+  auto rm = ResourceManager<>::Get();
+  rm->Clear();
+  auto cells = rm->Get<Cell>();
+  CellFactory(cells, 3);
+
+  auto& grid = Grid<>::GetInstance();
+  grid.Initialize();
+
+  std::array<int32_t, 6> expected_dim_0 = {{-30, 90, -30, 90, -30, 90}};
+  auto& dim_0 = grid.GetGridDimensions();
+
+  EXPECT_EQ(expected_dim_0, dim_0);
+
+  ((*cells)[0]).SetPosition({{100, 0, 0}});
+  grid.UpdateGrid();
+  std::array<int32_t, 6> expected_dim_1 = {{-30, 150, -30, 90, -30, 90}};
+  auto& dim_1 = grid.GetGridDimensions();
+
+  EXPECT_EQ(expected_dim_1, dim_1);
+}
+
 // TODO(lukas) test with different kind of cells
 
 }  // namespace bdm
