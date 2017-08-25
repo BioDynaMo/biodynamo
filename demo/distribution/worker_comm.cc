@@ -6,7 +6,7 @@ WorkerCommunicator::WorkerCommunicator(DistSharedInfo* info,
                                        const std::string& endpoint,
                                        CommunicatorId comm_id)
     : Communicator(info, endpoint, comm_id),
-      logger_("WComm_[" + info_->identity_ + "]") {
+      logger_("WComm_[" + info_->identity_ + "]", info_->logging_level_) {
   // By convention we define that we act as client if
   // we initiate the communication with the left worker
   this->client_ = (comm_id == CommunicatorId::kLeftNeighbour ? true : false);

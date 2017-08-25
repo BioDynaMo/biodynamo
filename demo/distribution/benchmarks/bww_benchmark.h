@@ -20,13 +20,13 @@ struct TestBWWData {
   static std::string worker1_;
   static std::string worker2_;
   static size_t n_messages_;
-  static bool verbose_;
+  static LoggingLevel level_;
 };
 
 inline void TestBWWClientTask() {
   Logger logger("Task[Client]");
   Client client(&TestBWWData::ctx_, "tcp://127.0.0.1:5555",
-                TestBWWData::verbose_);
+                TestBWWData::level_);
 
   logger.Info("Sending ", TestBWWData::n_messages_, " messages...");
 
@@ -77,14 +77,14 @@ inline void TestBWWClientTask() {
 }
 
 inline void TestBWWBrokerTask() {
-  Broker broker(&TestBWWData::ctx_, "tcp://*:5555", TestBWWData::verbose_);
+  Broker broker(&TestBWWData::ctx_, "tcp://*:5555", TestBWWData::level_);
   broker.Run();
 }
 
 inline void TestBWWWorker1Task() {
   Logger logger("Task[W1]");
   DistWorkerAPI api(&TestBWWData::ctx_, TestBWWData::worker1_,
-                    TestBWWData::verbose_);
+                    TestBWWData::level_);
 
   api.AddBrokerCommunicator("tcp://127.0.0.1:5555");
   api.AddRightNeighbourCommunicator("tcp://127.0.0.1:5556");
@@ -122,7 +122,7 @@ inline void TestBWWWorker1Task() {
 inline void TestBWWWorker2Task() {
   Logger logger("Task[W2]");
   DistWorkerAPI api(&TestBWWData::ctx_, TestBWWData::worker2_,
-                    TestBWWData::verbose_);
+                    TestBWWData::level_);
 
   api.AddBrokerCommunicator("tcp://127.0.0.1:5555");
   api.AddLeftNeighbourCommunicator("tcp://127.0.0.1:5556");

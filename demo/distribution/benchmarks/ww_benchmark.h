@@ -15,12 +15,12 @@ namespace bdm {
 struct TestWWData {
   static zmqpp::context ctx_;
   static size_t n_messages_;
-  static bool verbose_;
+  static LoggingLevel level_;
 };
 
 inline void RWorker() {
-  Logger logger("APP-W1");
-  DistWorkerAPI api(&TestWWData::ctx_, "W1", TestWWData::verbose_);
+  Logger logger("APP-W1", TestWWData::level_);
+  DistWorkerAPI api(&TestWWData::ctx_, "W1", TestWWData::level_);
 
   api.AddRightNeighbourCommunicator("tcp://127.0.0.1:5500");
   assert(api.Start());
@@ -31,9 +31,7 @@ inline void RWorker() {
     msg = std::make_unique<zmqpp::message>();
     assert(api.ReceiveMessage(&msg, CommunicatorId::kRightNeighbour));
 
-    if (TestWWData::verbose_) {
-      logger.Info("Received message: ", *msg);
-    }
+    logger.Debug("Received message: ", *msg);
 
     // echo that message
     api.SendMessage(std::move(msg), CommunicatorId::kRightNeighbour);
@@ -44,8 +42,8 @@ inline void RWorker() {
 }
 
 inline void LWorker() {
-  Logger logger("APP-W2");
-  DistWorkerAPI api(&TestWWData::ctx_, "W2", TestWWData::verbose_);
+  Logger logger("APP-W2", TestWWData::level_);
+  DistWorkerAPI api(&TestWWData::ctx_, "W2", TestWWData::level_);
 
   api.AddLeftNeighbourCommunicator("tcp://127.0.0.1:5500");
   assert(api.Start());
@@ -66,9 +64,7 @@ inline void LWorker() {
     msg = std::make_unique<zmqpp::message>();
     assert(api.ReceiveMessage(&msg, CommunicatorId::kLeftNeighbour));
 
-    if (TestWWData::verbose_) {
-      logger.Info("Received message: ", *msg);
-    }
+    logger.Debug("Received message: ", *msg);
   }
 
   auto elapsed =
@@ -76,10 +72,10 @@ inline void LWorker() {
                               std::chrono::high_resolution_clock::now() - start)
                               .count()) /
       1000.0;
-  std::cout << "I: Sent " << TestWWData::n_messages_ << " messages in "
-            << elapsed << " ms" << std::endl;
-  std::cout << "I: Time per message: " << elapsed / TestWWData::n_messages_
-            << " ms" << std::endl;
+  logger.Warning("Received ", TestWWData::n_messages_, " replies in ", elapsed,
+                 " ms");
+  logger.Warning("Time per message: ", elapsed / (TestWWData::n_messages_),
+                 " ms");
 
   // Send stop signal
   assert(api.Stop());

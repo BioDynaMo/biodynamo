@@ -25,7 +25,7 @@ struct LRU {
 
 class Broker {
  public:
-  Broker(zmqpp::context* ctx, const std::string& endpoint, const bool verbose);
+  Broker(zmqpp::context* ctx, const std::string& endpoint, LoggingLevel level);
   ~Broker();
   void Run();
 
@@ -47,7 +47,6 @@ class Broker {
   std::set<WorkerEntry*, LRU> waiting_;
 
   time_point_t hb_at_;  //  When to send HEARTBEAT
-  bool verbose_;        //  Print activity to stdout
 
   Logger logger_;
 };

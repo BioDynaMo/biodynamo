@@ -7,7 +7,7 @@ BrokerCommunicator::BrokerCommunicator(DistSharedInfo* info,
     : Communicator(info, endpoint, CommunicatorId::kBroker),
       hb_delay_(duration_ms_t(HEARTBEAT_INTERVAL)),
       hb_rec_delay_(duration_ms_t(HEARTBEAT_INTERVAL)),
-      logger_("BComm_[" + info_->identity_ + "]") {}
+      logger_("BComm_[" + info_->identity_ + "]", info_->logging_level_) {}
 
 BrokerCommunicator::~BrokerCommunicator() {
   SendToBroker(WorkerProtocolCmd::kDisconnect);

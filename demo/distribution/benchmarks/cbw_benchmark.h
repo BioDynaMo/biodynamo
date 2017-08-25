@@ -18,13 +18,13 @@ struct TestCBWData {
   static zmqpp::context ctx_;
   static std::string worker_;
   static size_t n_messages_;
-  static bool verbose_;
+  static LoggingLevel level_;
 };
 
 inline void ClientTask() {
-  Logger logger("Task[Client]");
+  Logger logger("Task[Client]", TestCBWData::level_);
   Client client(&TestCBWData::ctx_, "tcp://127.0.0.1:5555",
-                TestCBWData::verbose_);
+                TestCBWData::level_);
 
   logger.Info("Sending ", TestCBWData::n_messages_, " messages...");
 
@@ -73,14 +73,14 @@ inline void ClientTask() {
 }
 
 inline void BrokerTask() {
-  Broker broker(&TestCBWData::ctx_, "tcp://*:5555", TestCBWData::verbose_);
+  Broker broker(&TestCBWData::ctx_, "tcp://*:5555", TestCBWData::level_);
   broker.Run();
 }
 
 inline void WorkerTask() {
-  Logger logger("Task[W1]");
+  Logger logger("Task[W1]", TestCBWData::level_);
   DistWorkerAPI api(&TestCBWData::ctx_, TestCBWData::worker_,
-                    TestCBWData::verbose_);
+                    TestCBWData::level_);
 
   api.AddBrokerCommunicator("tcp://127.0.0.1:5555");
   assert(api.Start());

@@ -19,7 +19,8 @@ namespace bdm {
 
 class DistWorkerAPI {
  public:
-  DistWorkerAPI(zmqpp::context* ctx, const std::string identity, bool verbose);
+  DistWorkerAPI(zmqpp::context* ctx, const std::string identity,
+                LoggingLevel level);
   ~DistWorkerAPI();
   bool Start();
 

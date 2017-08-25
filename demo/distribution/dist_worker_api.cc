@@ -3,15 +3,15 @@
 namespace bdm {
 
 DistWorkerAPI::DistWorkerAPI(zmqpp::context* ctx, const std::string identity,
-                             bool verbose)
-    : comms_(), logger_("WAPI_[" + identity + "]") {
+                             LoggingLevel level)
+    : comms_(), logger_("WAPI_[" + identity + "]", level) {
   info_ = new DistSharedInfo();
 
   info_->reactor_ = new zmqpp::reactor();
   info_->ctx_ = ctx;
   info_->pending_ = new std::vector<std::unique_ptr<zmqpp::message> >();
   info_->identity_ = identity;
-  info_->verbose_ = verbose;
+  info_->logging_level_ = level;
 }
 
 DistWorkerAPI::~DistWorkerAPI() { delete thread_; }
