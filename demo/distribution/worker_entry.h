@@ -32,13 +32,14 @@ class WorkerEntry {
     // Frame 4..n:  Application frames
 
     // Frame 3
-    std::unique_ptr<std::string> header =
+    size_t header_sz;
+    std::unique_ptr<const char[]> header =
         WorkerCommandHeader(command, CommunicatorId::kClient,
                             CommunicatorId::kSomeWorker)
             .worker_id(identity)
             .client_id(client_id)
-            .ToString();
-    msg.push_front(*header);
+            .Serialize(&header_sz);
+    msg.push_front(header.get(), header_sz);
 
     // Frame 2
     msg.push_front(MDPW_WORKER);

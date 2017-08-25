@@ -62,10 +62,9 @@ void WorkerCommunicator::HandleIncomingMessage() {
   assert(protocol == MDPW_WORKER);
 
   // Frame 2
-  std::string* header_str = new std::string(msg_p->get(0));
-  msg_p->pop_front();
   std::unique_ptr<WorkerCommandHeader> header =
-      ClientCommandHeader::FromString<WorkerCommandHeader>(header_str);
+      WorkerCommandHeader::Deserialize(msg_p->raw_data(0), msg_p->size(0));
+  msg_p->pop_front();
 
   switch (header->cmd_) {
     case WorkerProtocolCmd::kReady:
@@ -76,7 +75,7 @@ void WorkerCommunicator::HandleIncomingMessage() {
       if (!client_ && !is_connected_) {
         // Reply with MDPW_READY to co-worker
         logger_.Info("Connection request from ", coworker_identity_);
-        SendToCoWorker(WorkerProtocolCmd::kReady, nullptr, coworker_identity_);
+        SendToCoWorker(WorkerProtocolCmd::kReady, nullptr);
       }
       is_connected_ = true;
       break;
@@ -108,7 +107,7 @@ void WorkerCommunicator::Connect() {
 
     // Connect to coworker
     logger_.Info("Connecting to ", coworker_str_, " worker at ", endpoint_);
-    SendToCoWorker(WorkerProtocolCmd::kReady, nullptr, info_->identity_);
+    SendToCoWorker(WorkerProtocolCmd::kReady, nullptr);
 
   } else {
     socket_ = new zmqpp::socket(*(info_->ctx_), zmqpp::socket_type::router);
@@ -122,8 +121,7 @@ void WorkerCommunicator::Connect() {
 
 void WorkerCommunicator::SendToCoWorker(
     const WorkerProtocolCmd command,
-    std::unique_ptr<zmqpp::message> message /* = nullptr */,
-    const std::string& client_id /* = "" */) {
+    std::unique_ptr<zmqpp::message> message /* = nullptr */) {
   // Message format sent
   // Frame 1:    BDM/0.1W
   // Frame 2:    WorkerCommandHeader class (serialized)
@@ -137,12 +135,13 @@ void WorkerCommunicator::SendToCoWorker(
                            : CommunicatorId::kLeftNeighbour);
 
   // Frame 2
-  std::unique_ptr<std::string> header =
+  size_t header_sz;
+  std::unique_ptr<const char[]> header =
       WorkerCommandHeader(command, sender, receiver)
           .client_id(info_->identity_)
           .worker_id(coworker_identity_)
-          .ToString();
-  msg.push_front(*header);
+          .Serialize(&header_sz);
+  msg.push_front(header.get(), header_sz);
 
   // Frame 1
   msg.push_front(MDPW_WORKER);

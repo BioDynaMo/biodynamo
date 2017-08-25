@@ -32,11 +32,9 @@ void Broker::HandleMessageWorker(const std::string& identity,
   assert(msg->parts() >= 1);  //  At least, command
 
   // Frame 1
-  std::string* header_str = new std::string(msg->get(0));
-  msg->pop_front();
-
   std::unique_ptr<WorkerCommandHeader> header =
-      CommandHeader::FromString<WorkerCommandHeader>(header_str);
+      WorkerCommandHeader::Deserialize(msg->raw_data(0), msg->size(0));
+  msg->pop_front();
 
   bool worker_ready = (workers_.find(identity) != workers_.end());
   WorkerEntry* worker = GetOrCreateWorker(identity);
@@ -65,14 +63,15 @@ void Broker::HandleMessageWorker(const std::string& identity,
       // Frame 4..n:  Application frames
 
       // Frame 3
-      std::unique_ptr<std::string> c_header =
+      size_t c_header_sz;
+      std::unique_ptr<const char[]> c_header =
           ClientCommandHeader(ClientProtocolCmd::kReport,
                               CommunicatorId::kSomeWorker,
                               CommunicatorId::kClient)
               .worker_id(worker->identity)
               .client_id(header->client_id_)
-              .ToString();
-      msg->push_front(*c_header);
+              .Serialize(&c_header_sz);
+      msg->push_front(c_header.get(), c_header_sz);
 
       // Frame 2
       msg->push_front(MDPC_CLIENT);
@@ -112,11 +111,9 @@ void Broker::HandleMessageClient(const std::string& sender,
   assert(msg->parts() >= 1);
 
   // Frame 1
-  std::string* header_str = new std::string(msg->get(0));
-  msg->pop_front();
-
   std::unique_ptr<ClientCommandHeader> header =
-      CommandHeader::FromString<ClientCommandHeader>(header_str);
+      ClientCommandHeader::Deserialize(msg->raw_data(0), msg->size(0));
+  msg->pop_front();
 
   // Ignore MMI service for now
   // When MMI service is implemented, header->receiver_
@@ -134,12 +131,13 @@ void Broker::HandleMessageClient(const std::string& sender,
     // Frame 4..n:  Application frames
 
     // Frame 3
-    std::unique_ptr<std::string> header =
+    size_t header_sz;
+    std::unique_ptr<const char[]> header =
         ClientCommandHeader(ClientProtocolCmd::kNak, CommunicatorId::kBroker,
                             CommunicatorId::kClient)
             .client_id(sender)
-            .ToString();
-    msg->push_front(*header);
+            .Serialize(&header_sz);
+    msg->push_front(header.get(), header_sz);
 
     // Frame 2
     msg->push_front(MDPC_CLIENT);
