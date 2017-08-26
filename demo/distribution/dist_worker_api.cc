@@ -5,35 +5,34 @@ namespace bdm {
 DistWorkerAPI::DistWorkerAPI(zmqpp::context* ctx, const std::string identity,
                              LoggingLevel level)
     : comms_(), logger_("WAPI_[" + identity + "]", level) {
-  info_ = new DistSharedInfo();
-
-  info_->reactor_ = new zmqpp::reactor();
-  info_->ctx_ = ctx;
-  info_->pending_ = new std::vector<std::unique_ptr<zmqpp::message> >();
-  info_->identity_ = identity;
-  info_->logging_level_ = level;
+  info_.ctx_ = ctx;
+  info_.identity_ = identity;
+  info_.logging_level_ = level;
 }
 
-DistWorkerAPI::~DistWorkerAPI() { delete thread_; }
+DistWorkerAPI::~DistWorkerAPI() {}
 
 bool DistWorkerAPI::Start() {
   // Create (and bind) parent socket
-  parent_pipe_ = new zmqpp::socket(*(info_->ctx_), zmqpp::socket_type::pair);
-  endpoint_ = "inproc://W_API_" + info_->identity_;
+  parent_pipe_ =
+      std::make_unique<zmqpp::socket>(*(info_.ctx_), zmqpp::socket_type::pair);
+  endpoint_ = "inproc://W_API_" + info_.identity_;
 
   try {
     parent_pipe_->bind(endpoint_);
   } catch (const zmqpp::zmq_internal_exception&) {
-    logger_.Error("Endpoint '", info_->identity_, "' already taken");
+    logger_.Error("Endpoint '", info_.identity_, "' already taken");
     return false;
   }
 
   // Create child socket
-  child_pipe_ = new zmqpp::socket(*(info_->ctx_), zmqpp::socket_type::pair);
+  child_pipe_ =
+      std::make_unique<zmqpp::socket>(*(info_.ctx_), zmqpp::socket_type::pair);
   child_pipe_->connect(endpoint_);
 
   // Create background thread
-  thread_ = new std::thread(std::bind(&DistWorkerAPI::HandleNetwork, this));
+  thread_ = std::make_unique<std::thread>(
+      std::bind(&DistWorkerAPI::HandleNetwork, this));
   logger_.Info("Started thread with id ", thread_->get_id());
 
   auto sig = parent_pipe_->wait();
@@ -45,23 +44,23 @@ void DistWorkerAPI::AddBrokerCommunicator(const std::string& endpoint) {
   auto& comm = comms_[ToUnderlying(CommunicatorId::kBroker)];
   assert(!comm);
 
-  comm = std::unique_ptr<Communicator>(new BrokerCommunicator(info_, endpoint));
+  comm = std::make_unique<BrokerCommunicator>(&info_, endpoint);
 }
 
 void DistWorkerAPI::AddLeftNeighbourCommunicator(const std::string& endpoint) {
   auto& comm = comms_[ToUnderlying(CommunicatorId::kLeftNeighbour)];
   assert(!comm);
 
-  comm = std::unique_ptr<Communicator>(
-      new WorkerCommunicator(info_, endpoint, CommunicatorId::kLeftNeighbour));
+  comm = std::make_unique<WorkerCommunicator>(&info_, endpoint,
+                                              CommunicatorId::kLeftNeighbour);
 }
 
 void DistWorkerAPI::AddRightNeighbourCommunicator(const std::string& endpoint) {
   auto& comm = comms_[ToUnderlying(CommunicatorId::kRightNeighbour)];
   assert(!comm);
 
-  comm = std::unique_ptr<Communicator>(
-      new WorkerCommunicator(info_, endpoint, CommunicatorId::kRightNeighbour));
+  comm = std::make_unique<WorkerCommunicator>(&info_, endpoint,
+                                              CommunicatorId::kRightNeighbour);
 }
 
 void DistWorkerAPI::SendMessage(std::unique_ptr<zmqpp::message> msg,
@@ -80,7 +79,7 @@ bool DistWorkerAPI::ReceiveMessage(std::unique_ptr<zmqpp::message>* msg,
   auto& queue = msg_queues_[ToUnderlying(from)];
   if (queue.empty()) {
     // Wait for message until timeout
-    // NOTE: we use the predicate to avoid spurious wakeup
+    // NOTE: we use the predicate to avoid spurious wakeups
     std::unique_lock<std::mutex> lk(msgs_cv_m);
     msgs_cv_.wait_for(lk, timeout, [this, &queue] {
       ReceiveAllMessages();
@@ -151,9 +150,8 @@ bool DistWorkerAPI::Stop(bool wait /* = true */, bool force /* = false */) {
   assert(sig == zmqpp::signal::ok || sig == zmqpp::signal::ko);
   if (sig == zmqpp::signal::ok) {
     thread_->join();
-    thread_ = nullptr;
 
-    delete parent_pipe_;
+    parent_pipe_->close();
   }
 
   return (sig == zmqpp::signal::ok);
@@ -173,17 +171,17 @@ void DistWorkerAPI::HandleNetwork() {
   child_pipe_->send(zmqpp::signal::ok);
 
   // Add app_sock to reactor
-  info_->reactor_->add(*child_pipe_,
-                       std::bind(&DistWorkerAPI::HandleAppMessage, this));
+  info_.reactor_.add(*child_pipe_,
+                     std::bind(&DistWorkerAPI::HandleAppMessage, this));
 
   logger_.Info("Listening to network...");
-  while (!info_->zctx_interrupted_) {
-    if (!info_->reactor_->poll(HEARTBEAT_INTERVAL.count())) {
+  while (!info_.zctx_interrupted_) {
+    if (!info_.reactor_.poll(HEARTBEAT_INTERVAL.count())) {
       ForEachValidCommunicator(
           [](std::unique_ptr<Communicator>& comm) { comm->ReactorTimedOut(); });
     }
 
-    if (!info_->pending_->empty()) {
+    if (!info_.pending_.empty()) {
       // Handle pending messages from network
       HandleNetworkMessages();
     }
@@ -207,7 +205,7 @@ void DistWorkerAPI::HandleAppMessage() {
   auto msg = std::make_unique<zmqpp::message>();
   if (!child_pipe_->receive(*msg) || msg->is_signal()) {
     // Interrupted
-    info_->zctx_interrupted_ = true;
+    info_.zctx_interrupted_ = true;
     return;
   }
 
@@ -225,7 +223,7 @@ void DistWorkerAPI::HandleAppMessage() {
 
 void DistWorkerAPI::HandleNetworkMessages() {
   std::uint8_t comm_id;
-  for (auto& msg_p : *(info_->pending_)) {
+  for (auto& msg_p : info_.pending_) {
     // Verify that sender exists
     msg_p->get(comm_id, 0);
     assert(IsValidCommunicator(comm_id));
@@ -233,7 +231,7 @@ void DistWorkerAPI::HandleNetworkMessages() {
     child_pipe_->send(*msg_p);
     msgs_cv_.notify_one();
   }
-  info_->pending_->clear();
+  info_.pending_.clear();
 }
 
 void DistWorkerAPI::ReceiveAllMessages() {
@@ -258,7 +256,7 @@ void DistWorkerAPI::Cleanup() {
     // Explicitly delete communicators
     ForEachValidCommunicator(
         [](std::unique_ptr<Communicator>& comm) { comm.reset(); });
-    info_->reactor_->remove(*child_pipe_);
+    info_.reactor_.remove(*child_pipe_);
 
     // Everything cleaned!
     child_pipe_->send(zmqpp::signal::ok);
@@ -267,8 +265,7 @@ void DistWorkerAPI::Cleanup() {
     child_pipe_->send(zmqpp::signal::ko);
   }
 
-  delete child_pipe_;
-  delete info_->reactor_;
+  child_pipe_->close();
 }
 
 bool DistWorkerAPI::IsValidCommunicator(std::uint8_t comm_id) {

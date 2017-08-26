@@ -21,12 +21,12 @@ typedef std::chrono::time_point<std::chrono::system_clock> time_point_t;
 typedef std::chrono::milliseconds duration_ms_t;
 
 struct DistSharedInfo {
-  std::vector<std::unique_ptr<zmqpp::message> >* pending_;
-  zmqpp::reactor* reactor_;        // Polling handler
-  zmqpp::context* ctx_;            // ZMQ context
-  std::string identity_;           // Current node identity
-  LoggingLevel logging_level_;     // Print to stdout
-  bool zctx_interrupted_ = false;  // ZMQ interrupted by signal
+  std::vector<std::unique_ptr<zmqpp::message> > pending_;
+  zmqpp::reactor reactor_;                  // Polling handler
+  zmqpp::context* ctx_;                     // ZMQ context
+  std::string identity_;                    // Current node identity
+  LoggingLevel logging_level_;              // What logger prints
+  volatile bool zctx_interrupted_ = false;  // ZMQ interrupted by signal
 };
 
 template <typename E>

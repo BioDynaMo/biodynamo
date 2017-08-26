@@ -35,7 +35,7 @@ class BrokerCommunicator : public Communicator {
                     std::unique_ptr<zmqpp::message> message = nullptr,
                     const std::string client_id = "");
 
-  std::vector<zmqpp::socket*> purge_later_;
+  std::vector<std::unique_ptr<zmqpp::socket> > purge_later_;
 
   //  Heartbeat management
   time_point_t hb_at_;          //  When to send HEARTBEAT

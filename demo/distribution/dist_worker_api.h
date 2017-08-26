@@ -54,7 +54,7 @@ class DistWorkerAPI {
   void ForEachValidCommunicator(
       std::function<void(std::unique_ptr<Communicator>&)> f);
 
-  DistSharedInfo* info_;
+  DistSharedInfo info_;
 
   std::array<std::unique_ptr<Communicator>,
              ToUnderlying(CommunicatorId::kCount)>
@@ -66,12 +66,12 @@ class DistWorkerAPI {
   std::condition_variable msgs_cv_;
   std::mutex msgs_cv_m;
 
-  zmqpp::socket* parent_pipe_;  // Used by computation thread
-  zmqpp::socket* child_pipe_;   // Used by background thread
-  std::string endpoint_;        // Application endpoint
+  std::unique_ptr<zmqpp::socket> parent_pipe_;  // Used by computation thread
+  std::unique_ptr<zmqpp::socket> child_pipe_;   // Used by background thread
+  std::string endpoint_;                        // Application endpoint
 
-  std::thread* thread_ = nullptr;      //  Background/Network thread
-  std::exception_ptr eptr_ = nullptr;  //  Holds the last exception
+  std::unique_ptr<std::thread> thread_;  //  Background/Network thread
+  std::exception_ptr eptr_ = nullptr;    //  Holds the last exception
 
   Logger logger_;
 };
