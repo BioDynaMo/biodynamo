@@ -15,6 +15,7 @@ BrokerCommunicator::~BrokerCommunicator() {
 
 void BrokerCommunicator::ReactorTimedOut() {
   // Timeout
+  // TODO(kkanellis): decrease liveness IF it's time
   if (--hb_liveness_ == 0) {
     logger_.Warning("Disconnected from broker - retrying...");
     std::this_thread::sleep_for(hb_rec_delay_);
@@ -32,7 +33,6 @@ void BrokerCommunicator::ReactorServedRequests() {
   // Purge old sockets
   for (auto& socket_p : purge_later_) {
     socket_p->close();
-    delete socket_p;
   }
   purge_later_.clear();
 }
@@ -62,7 +62,7 @@ void BrokerCommunicator::HandleIncomingMessage() {
   // Frame 3..n:  application frames
 
   // TODO(kkanellis): replace with smart pointer
-  auto msg_p = new zmqpp::message();
+  auto msg_p = std::make_unique<zmqpp::message>();
   if (!socket_->receive(*msg_p)) {
     // Interrupted
     info_->zctx_interrupted_ = true;
@@ -87,7 +87,7 @@ void BrokerCommunicator::HandleIncomingMessage() {
     case WorkerProtocolCmd::kRequest:
       // Process message from broker
       msg_p->push_front(ToUnderlying(comm_id_));
-      info_->pending_->push_back(std::unique_ptr<zmqpp::message>(msg_p));
+      info_->pending_.push_back(std::move(msg_p));
       break;
     case WorkerProtocolCmd::kHeartbeat:
       // Do nothing
@@ -104,17 +104,18 @@ void BrokerCommunicator::HandleIncomingMessage() {
 void BrokerCommunicator::Connect() {
   if (socket_) {
     // Lazy remove socket
-    info_->reactor_->remove(*socket_);
-    purge_later_.push_back(socket_);
+    info_->reactor_.remove(*socket_);
+    purge_later_.push_back(std::move(socket_));
   }
 
   // Create new socket
-  socket_ = new zmqpp::socket(*(info_->ctx_), zmqpp::socket_type::dealer);
+  socket_ = std::make_unique<zmqpp::socket>(*(info_->ctx_),
+                                            zmqpp::socket_type::dealer);
   socket_->set(zmqpp::socket_option::identity, info_->identity_);
   socket_->connect(endpoint_);
 
   // Add newly created broker socket to reactor
-  info_->reactor_->add(
+  info_->reactor_.add(
       *socket_, std::bind(&BrokerCommunicator::HandleIncomingMessage, this));
 
   // Register service with broker

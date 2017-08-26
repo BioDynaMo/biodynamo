@@ -18,8 +18,7 @@ WorkerCommunicator::WorkerCommunicator(DistSharedInfo* info,
 
 WorkerCommunicator::~WorkerCommunicator() {
   if (socket_) {
-    info_->reactor_->remove(*socket_);
-    socket_->disconnect(endpoint_);
+    info_->reactor_.remove(*socket_);
   }
 }
 
@@ -37,7 +36,7 @@ void WorkerCommunicator::HandleIncomingMessage() {
   // Frame 2:     WorkerCommandHeader (serialized)
   // Frame 3..n:  application frames
 
-  auto msg_p = new zmqpp::message();
+  auto msg_p = std::make_unique<zmqpp::message>();
   if (!socket_->receive(*msg_p)) {
     // Interrupted
     info_->zctx_interrupted_ = true;
@@ -65,6 +64,8 @@ void WorkerCommunicator::HandleIncomingMessage() {
   std::unique_ptr<WorkerCommandHeader> header =
       WorkerCommandHeader::Deserialize(msg_p->raw_data(0), msg_p->size(0));
   msg_p->pop_front();
+  assert(header->sender_ == (client_ ? CommunicatorId::kRightNeighbour
+                                     : CommunicatorId::kLeftNeighbour));
 
   switch (header->cmd_) {
     case WorkerProtocolCmd::kReady:
@@ -75,7 +76,7 @@ void WorkerCommunicator::HandleIncomingMessage() {
       if (!client_ && !is_connected_) {
         // Reply with MDPW_READY to co-worker
         logger_.Info("Connection request from ", coworker_identity_);
-        SendToCoWorker(WorkerProtocolCmd::kReady, nullptr);
+        SendToCoWorker(WorkerProtocolCmd::kReady);
       }
       is_connected_ = true;
       break;
@@ -86,7 +87,7 @@ void WorkerCommunicator::HandleIncomingMessage() {
       assert(coworker_identity_ == header->client_id_);
 
       msg_p->push_front(ToUnderlying(comm_id_));
-      info_->pending_->push_back(std::unique_ptr<zmqpp::message>(msg_p));
+      info_->pending_.push_back(std::move(msg_p));
       break;
     default:
       logger_.Error("Invalid input message", *msg_p);
@@ -101,21 +102,22 @@ void WorkerCommunicator::Connect() {
 
   if (client_) {
     // client initiates the communication
-    socket_ = new zmqpp::socket(*(info_->ctx_), zmqpp::socket_type::dealer);
+    socket_ = std::make_unique<zmqpp::socket>(*(info_->ctx_),
+                                              zmqpp::socket_type::dealer);
     socket_->set(zmqpp::socket_option::identity, info_->identity_);
     socket_->connect(endpoint_);
 
     // Connect to coworker
     logger_.Info("Connecting to ", coworker_str_, " worker at ", endpoint_);
-    SendToCoWorker(WorkerProtocolCmd::kReady, nullptr);
-
+    SendToCoWorker(WorkerProtocolCmd::kReady);
   } else {
-    socket_ = new zmqpp::socket(*(info_->ctx_), zmqpp::socket_type::router);
+    socket_ = std::make_unique<zmqpp::socket>(*(info_->ctx_),
+                                              zmqpp::socket_type::router);
     socket_->bind(endpoint_);
   }
 
   // Add newly created broker socket to reactor
-  info_->reactor_->add(
+  info_->reactor_.add(
       *socket_, std::bind(&WorkerCommunicator::HandleIncomingMessage, this));
 }
 
@@ -127,7 +129,7 @@ void WorkerCommunicator::SendToCoWorker(
   // Frame 2:    WorkerCommandHeader class (serialized)
   // Frame 3..n: Application frames
 
-  auto msg = message ? message->copy() : zmqpp::message();
+  auto msg = message ? std::move(message) : std::make_unique<zmqpp::message>();
 
   auto sender = (client_ ? CommunicatorId::kLeftNeighbour
                          : CommunicatorId::kRightNeighbour);
@@ -141,19 +143,19 @@ void WorkerCommunicator::SendToCoWorker(
           .client_id(info_->identity_)
           .worker_id(coworker_identity_)
           .Serialize(&header_sz);
-  msg.push_front(header.get(), header_sz);
+  msg->push_front(header.get(), header_sz);
 
   // Frame 1
-  msg.push_front(MDPW_WORKER);
+  msg->push_front(MDPW_WORKER);
 
   if (!client_) {
     // Need to add the coworker identity
     // ROUTER -> DEALER socket
-    msg.push_front(coworker_identity_);
+    msg->push_front(coworker_identity_);
   }
 
   logger_.Debug("Sending ", command, " to ", coworker_identity_, " worker: ",
-                msg);
-  socket_->send(msg);
+                *msg);
+  socket_->send(*msg);
 }
 }  // namespace bdm

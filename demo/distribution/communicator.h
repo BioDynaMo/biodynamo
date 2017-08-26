@@ -17,11 +17,7 @@ class Communicator {
         comm_id_(comm_id),
         is_connected_(false) {}
 
-  virtual ~Communicator() {
-    if (socket_) {
-      delete socket_;
-    }
-  }
+  virtual ~Communicator() {}
 
   virtual void ReactorTimedOut() {}
   virtual void ReactorServedRequests() {}
@@ -35,7 +31,7 @@ class Communicator {
     return comm_id_;
   }
 
-  virtual zmqpp::socket* GetSocketPtr() { return socket_; }
+  virtual zmqpp::socket* GetSocketPtr() { return socket_.get(); }
 
   virtual bool IsConnected() { return is_connected_; }
 
@@ -59,7 +55,7 @@ class Communicator {
  protected:
   DistSharedInfo* info_;
 
-  zmqpp::socket* socket_;
+  std::unique_ptr<zmqpp::socket> socket_;
   std::string endpoint_;
 
   CommunicatorId comm_id_;
