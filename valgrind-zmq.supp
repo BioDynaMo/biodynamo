@@ -1,0 +1,44 @@
+# Additional valgrind suppression file for ZeroMQ.
+#
+# To use, run valgrind with:
+#   valgrind --suppressions=valgrind-zmq.supp ...
+# 
+# This file suppresses known memory leaks with ZeroMQ framework
+# Taken from CZMQ: https://github.com/zeromq/czmq/blob/master/src/.valgrind.supp
+# 
+# Also check ZeroMQ wiki: http://zeromq.org/docs:using-valgrind 
+
+{
+  <socketcall_sendto>
+  Memcheck:Param
+  socketcall.sendto(msg)
+  fun:send
+  ...
+}
+
+{
+  <socketcall_sendto>
+  Memcheck:Param
+  socketcall.send(msg)
+  fun:send
+  ...
+}
+
+{
+  <glibc_freeres>
+  Memcheck:Free
+  fun:free
+  ...
+  fun:__libc_freeres
+  ...
+}
+
+{
+  <glibc_internal_pool>
+  Memcheck:Leak
+  match-leak-kinds: reachable
+  fun:malloc
+  fun:pool
+  fun:__static_initialization_and_destruction_0
+  ...
+}
