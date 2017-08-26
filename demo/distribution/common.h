@@ -8,9 +8,11 @@
 #include <iostream>
 #include <map>
 #include <memory>
+#include <queue>
 #include <set>
 #include <sstream>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "logger.h"
@@ -20,8 +22,15 @@ namespace bdm {
 typedef std::chrono::time_point<std::chrono::system_clock> time_point_t;
 typedef std::chrono::milliseconds duration_ms_t;
 
+class CommandHeader;
+typedef std::pair<std::unique_ptr<zmqpp::message>,
+                  std::unique_ptr<CommandHeader> >
+    MessageMiddlewareHeaderPair;
+
 struct DistSharedInfo {
-  std::vector<std::unique_ptr<zmqpp::message> > pending_;
+  // Messages destined to application; waiting for processing
+  std::queue<MessageMiddlewareHeaderPair> mq_app_deliver_;
+
   zmqpp::reactor reactor_;                  // Polling handler
   zmqpp::context* ctx_;                     // ZMQ context
   std::string identity_;                    // Current node identity

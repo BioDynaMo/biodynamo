@@ -65,57 +65,57 @@ void DistWorkerAPI::AddRightNeighbourCommunicator(const std::string& endpoint) {
 
 void DistWorkerAPI::SendMessage(std::unique_ptr<zmqpp::message> msg,
                                 CommunicatorId to) {
-  msg->push_front(ToUnderlying(to));
-  parent_pipe_->send(*msg);
+  // TODO(kkanellis): create application header
+
+  // Create header
+  auto header = std::make_unique<WorkerCommandHeader>();
+  header->receiver_ = to;
+
+  std::unique_lock<std::mutex> lk(mq_net_deliver_mtx_);
+  mq_net_deliver_.push(std::make_pair(std::move(msg), std::move(header)));
+  lk.unlock();
+
+  // Notify the communication thread
+  parent_pipe_->send(zmqpp::signal::test);
 }
 
 bool DistWorkerAPI::ReceiveMessage(std::unique_ptr<zmqpp::message>* msg,
                                    CommunicatorId from, duration_ms_t timeout) {
   assert(from > CommunicatorId::kUndefined);
 
-  // Read all pending messages from the pipe
-  ReceiveAllMessages();
-
-  auto& queue = msg_queues_[ToUnderlying(from)];
+  auto& queue = app_messages_[ToUnderlying(from)];
   if (queue.empty()) {
     // Wait for message until timeout
     // NOTE: we use the predicate to avoid spurious wakeups
-    std::unique_lock<std::mutex> lk(msgs_cv_m);
-    msgs_cv_.wait_for(lk, timeout, [this, &queue] {
-      ReceiveAllMessages();
-      return !queue.empty();
-    });
+    std::unique_lock<std::mutex> lk(app_messages_mtx_);
+    app_messages_cv_.wait_for(lk, timeout,
+                              [this, &queue] { return !queue.empty(); });
   }
 
-  ReceiveAllMessages();
-  bool empty_queue = queue.empty();
-  if (!empty_queue) {
+  if (!queue.empty()) {
     *msg = std::move(*(queue.begin()));
     queue.pop_front();
+    return true;
   }
 
-  return !empty_queue;
+  // No message available
+  return false;
 }
 
 bool DistWorkerAPI::ReceiveMessage(std::unique_ptr<zmqpp::message>* msg,
                                    duration_ms_t timeout) {
-  // Read all pending messages from the pipe
-  ReceiveAllMessages();
-
   auto predicate = [](auto& queue) { return !queue.empty(); };
-  if (!std::any_of(msg_queues_.begin(), msg_queues_.end(), predicate)) {
+  if (!std::any_of(app_messages_.begin(), app_messages_.end(), predicate)) {
     // Wait for message until timeout
     // NOTE: we use the predicate to avoid spurious wakeup
-    std::unique_lock<std::mutex> lk(msgs_cv_m);
-    msgs_cv_.wait_for(lk, timeout, [this, &predicate] {
-      ReceiveAllMessages();
-      return std::any_of(msg_queues_.begin(), msg_queues_.end(), predicate);
+    std::unique_lock<std::mutex> lk(app_messages_mtx_);
+    app_messages_cv_.wait_for(lk, timeout, [this, &predicate] {
+      return std::any_of(app_messages_.begin(), app_messages_.end(), predicate);
     });
   }
 
   // Return message from anyone
-  ReceiveAllMessages();
-  for (auto& c : msg_queues_) {
+  for (auto& c : app_messages_) {
     if (!c.empty()) {
       *msg = std::move(*(c.begin()));
       c.pop_front();
@@ -123,16 +123,15 @@ bool DistWorkerAPI::ReceiveMessage(std::unique_ptr<zmqpp::message>* msg,
     }
   }
 
+  // No message available
   return false;
 }
 
-bool DistWorkerAPI::IsConnected(const CommunicatorId comm) {
-  auto id = ToUnderlying(comm);
-  if (!IsValidCommunicator(id)) {
+bool DistWorkerAPI::IsConnected(const CommunicatorId comm) const {
+  if (!IsValidCommunicator(comm)) {
     return false;
   }
-
-  return GetValidCommunicator(id).IsConnected();
+  return GetValidCommunicator(comm).IsConnected();
 }
 
 bool DistWorkerAPI::Stop(bool wait /* = true */, bool force /* = false */) {
@@ -181,8 +180,8 @@ void DistWorkerAPI::HandleNetwork() {
           [](std::unique_ptr<Communicator>& comm) { comm->ReactorTimedOut(); });
     }
 
-    if (!info_.pending_.empty()) {
-      // Handle pending messages from network
+    // Handle pending messages from network
+    if (!info_.mq_app_deliver_.empty()) {
       HandleNetworkMessages();
     }
 
@@ -202,53 +201,46 @@ void DistWorkerAPI::HandleAppMessage() {
   // Frame 2:    recipient id
   // Frame 3..n: application frame(s)
 
-  auto msg = std::make_unique<zmqpp::message>();
-  if (!child_pipe_->receive(*msg) || msg->is_signal()) {
+  auto sig = zmqpp::signal();
+  if (!child_pipe_->receive(sig) || sig == zmqpp::signal::stop) {
     // Interrupted
     info_.zctx_interrupted_ = true;
     return;
   }
+  // App wants to send a new message
+  assert(sig == zmqpp::signal::test);
 
-  // TODO(kkanellis): w->w don't need receipient id
-  // assert(msg->parts() >= 3);
+  std::unique_lock<std::mutex> lk(mq_net_deliver_mtx_);
+  assert(!mq_net_deliver_.empty());
 
   // Find out where to forward the message
-  std::uint8_t comm_id;
-  msg->get(comm_id, 0);
-  msg->pop_front();
+  auto& pair = mq_net_deliver_.front();
+  auto& comm = GetValidCommunicator(pair.second->receiver_);
 
-  auto& comm = GetValidCommunicator(comm_id);
-  comm.HandleOutgoingMessage(std::move(msg));
+  comm.HandleOutgoingMessage(std::move(pair.first), std::move(pair.second));
+
+  mq_net_deliver_.pop();
+  // TODO(kkanellis): maybe release lock earlier?
 }
 
 void DistWorkerAPI::HandleNetworkMessages() {
-  std::uint8_t comm_id;
-  for (auto& msg_p : info_.pending_) {
+  // Process all pending messages
+  std::unique_lock<std::mutex> lk(app_messages_mtx_);
+  while (!info_.mq_app_deliver_.empty()) {
+    auto& pair = info_.mq_app_deliver_.front();
+
     // Verify that sender exists
-    msg_p->get(comm_id, 0);
+    auto comm_id = pair.second->sender_;
     assert(IsValidCommunicator(comm_id));
 
-    child_pipe_->send(*msg_p);
-    msgs_cv_.notify_one();
+    // Push the message to the correct container & notify the app thread
+    app_messages_[ToUnderlying(comm_id)].push_back(std::move(pair.first));
+    info_.mq_app_deliver_.pop();
   }
-  info_.pending_.clear();
-}
 
-void DistWorkerAPI::ReceiveAllMessages() {
-  std::uint8_t comm_id;
-
-  auto msg = std::make_unique<zmqpp::message>();
-  while (parent_pipe_->receive(*msg, true)) {
-    // Push to the proper container
-    msg->get(comm_id, 0);
-    msg->pop_front();
-    assert(IsValidCommunicator(comm_id));
-
-    msg_queues_[comm_id].push_back(std::move(msg));
-
-    // Next message?
-    msg = std::make_unique<zmqpp::message>();
-  }
+  // Unlock & notify the app thread
+  lk.unlock();
+  app_messages_cv_.notify_one();
 }
 
 void DistWorkerAPI::Cleanup() {
@@ -268,17 +260,19 @@ void DistWorkerAPI::Cleanup() {
   child_pipe_->close();
 }
 
-bool DistWorkerAPI::IsValidCommunicator(std::uint8_t comm_id) {
-  if (comm_id == 0 || comm_id >= comms_.size()) {
-    logger_.Error("Invalid communicator id: ", comm_id);
+inline bool DistWorkerAPI::IsValidCommunicator(CommunicatorId comm_id) const {
+  std::uint8_t id = ToUnderlying(comm_id);
+  if (id == 0 || id >= comms_.size()) {
+    logger_.Error("Invalid communicator id: ", id);
     assert(false);
   }
-  return (comms_[comm_id] != nullptr);
+  return (comms_[id] != nullptr);
 }
 
-Communicator& DistWorkerAPI::GetValidCommunicator(std::uint8_t comm_id) {
+inline Communicator& DistWorkerAPI::GetValidCommunicator(
+    CommunicatorId comm_id) const {
   assert(IsValidCommunicator(comm_id));
-  return *comms_[comm_id];
+  return *comms_[ToUnderlying(comm_id)];
 }
 
 void DistWorkerAPI::ForEachValidCommunicator(
