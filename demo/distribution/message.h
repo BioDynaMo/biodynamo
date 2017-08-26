@@ -1,4 +1,9 @@
+#ifndef DEMO_DISTRIBUTION_MESSAGE_H_
+#define DEMO_DISTRIBUTION_MESSAGE_H_
+
 #include <zmqpp/zmqpp.hpp>
+
+#include <string>
 
 namespace bdm {
 
@@ -54,4 +59,6 @@ inline std::ostream& operator<<(std::ostream& out, const zmqpp::message& msg) {
   out << std::endl << ss.str();
   return out;
 }
-};
+};  // namespace bdm
+
+#endif  // DEMO_DISTRIBUTION_MESSAGE_H_
