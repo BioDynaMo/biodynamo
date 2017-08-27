@@ -27,8 +27,10 @@ class Client {
 
   void Send(const std::string &identity, std::unique_ptr<zmqpp::message> msg);
   bool Recv(std::unique_ptr<zmqpp::message> *msg_out,
-            ClientProtocolCmd *command_out = nullptr,
-            std::string *identity_out = nullptr);
+            ClientProtocolCmd *command = nullptr,
+            std::string *recv_from = nullptr);
+
+  void RequestBrokerTermination();
 
  private:
   void ConnectToBroker();

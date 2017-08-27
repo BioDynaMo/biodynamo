@@ -14,31 +14,44 @@ namespace bdm {
 const std::string PROTOCOL_CLIENT = "BDM/0.1C";
 const std::string PROTOCOL_WORKER = "BDM/0.1W";
 
-// Distributed API commands
-enum class AppProtocolCommand : std::uint8_t {
-  kDebug = 0,
+// ###### Application level protocol definition ########## //
+// ------------------------------------------------------- //
+
+enum class AppProtocolCmd : std::uint8_t {
+  kInvalid = 0,
+  kDebugString,
 
   kCount,
-  kMinValue = kDebug,
-  kMaxValue = kDebug,
+  kMinValue = kDebugString,
+  kMaxValue = kDebugString
 };
+const std::string AppProtocolCmdStr[] = {"Invalid", "DebugString"};
+
+inline std::ostream& operator<<(std::ostream& stream,
+                                const AppProtocolCmd& cmd) {
+  stream << AppProtocolCmdStr[ToUnderlying(cmd)];
+  return stream;
+}
 
 class AppMessageHeader {
-  AppProtocolCommand cmd;
+  AppProtocolCmd cmd;
   CommunicatorId sender;
 
   // ClassDef(AppMessageHeader, 1);
 };
 
-// -------------------------------------------------------- //
+// ###### Middleware protocol definition ########## //
+// ------------------------------------------------------- //
+
 enum class ClientProtocolCmd : std::uint8_t {
   kInvalid = 0,
   kRequest,
   kReport,
   kNak,
+  kBrokerTerminate,
 
   kMinValue = kRequest,
-  kMaxValue = kNak,
+  kMaxValue = kBrokerTerminate,
   kCount = kMaxValue
 };
 const std::string ClientProtocolCmdStr[] = {"Invalid", "Request", "Report",
