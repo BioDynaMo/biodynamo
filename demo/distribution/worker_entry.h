@@ -32,10 +32,11 @@ class WorkerEntry {
     // Frame 4..n:  Application frames
 
     // Frame 3
+    auto sender =
+        client_id.empty() ? CommunicatorId::kBroker : CommunicatorId::kClient;
     size_t header_sz;
     std::unique_ptr<const char[]> header =
-        WorkerCommandHeader(command, CommunicatorId::kClient,
-                            CommunicatorId::kSomeWorker)
+        WorkerCommandHeader(command, sender, CommunicatorId::kSomeWorker)
             .worker_id(identity)
             .client_id(client_id)
             .Serialize(&header_sz);

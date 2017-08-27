@@ -54,8 +54,13 @@ void Broker::HandleMessageWorker(const std::string& identity,
     }
   } else if (header->cmd_ == WorkerProtocolCmd::kReport) {
     if (worker_ready) {
-      //  Forward worker report message to appropriate client
+      // Ignore MMI service for now
+      // When MMI service is implemented, header->receiver_
+      // will point to CommunicatorId::kBroker
+      assert(header->receiver_ == CommunicatorId::kClient);
 
+      //  Forward worker report message to appropriate client
+      //
       // Message format:
       // Frame 1:     client_id (manually; ROUTER socket)
       // Frame 2:     "BDM/0.1C"
@@ -121,7 +126,7 @@ void Broker::HandleMessageClient(const std::string& sender,
   assert(header->receiver_ == CommunicatorId::kSomeWorker);
 
   if (workers_.find(header->worker_id_) == workers_.end()) {
-    // no such worker exist
+    // Error: No such worker exist
     logger_.Warning("Invalid worker ", header->worker_id_, "! Droping message");
 
     // Message format:
