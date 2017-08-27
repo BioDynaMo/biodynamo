@@ -5,6 +5,7 @@
 
 #include <chrono>
 #include <iostream>
+#include <queue>
 #include <string>
 #include <vector>
 
@@ -36,6 +37,7 @@ class BrokerCommunicator : public Communicator {
                     const std::string client_id = "");
 
   std::vector<std::unique_ptr<zmqpp::socket> > purge_later_;
+  std::queue<std::string> clients_;
 
   //  Heartbeat management
   time_point_t hb_at_;          //  When to send HEARTBEAT

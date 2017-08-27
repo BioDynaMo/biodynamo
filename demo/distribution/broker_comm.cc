@@ -43,15 +43,13 @@ void BrokerCommunicator::HandleOutgoingMessage(
   // Frame 1:     client_id
   // Frame 2..n:  application frames
 
-  logger_.Debug("Sending message to broker: ", *msg);
+  // Send to correct client
+  assert(!clients_.empty());
+  std::string client_id = clients_.front();
+  clients_.pop();
 
-  assert(msg->parts() >= 1);
-
-  // Verify client id exists
-  std::string client_id = msg->get(0);
-  msg->pop_front();
-  assert(!client_id.empty());
-
+  logger_.Debug("Sending message to client [", client_id, "] via broker: ",
+                *msg);
   SendToBroker(WorkerProtocolCmd::kReport, std::move(msg), client_id);
 }
 
@@ -61,7 +59,6 @@ void BrokerCommunicator::HandleIncomingMessage() {
   // Frame 2:     WorkerCommandHeader (serialized)
   // Frame 3..n:  application frames
 
-  // TODO(kkanellis): replace with smart pointer
   auto msg_p = std::make_unique<zmqpp::message>();
   if (!socket_->receive(*msg_p)) {
     // Interrupted
@@ -85,8 +82,12 @@ void BrokerCommunicator::HandleIncomingMessage() {
 
   switch (header->cmd_) {
     case WorkerProtocolCmd::kRequest:
-      // Process message from broker
-      msg_p->push_front(ToUnderlying(comm_id_));
+      // Keep which client made the request
+      // Since we use synchronous request, the application will reply
+      // FIRST to this request (FIFO order)
+      clients_.push(header->client_id_);
+
+      // Send message to application
       info_->mq_app_deliver_.push(
           std::make_pair(std::move(msg_p), CommunicatorId::kBroker));
       break;
@@ -139,11 +140,13 @@ void BrokerCommunicator::SendToBroker(
 
   auto msg = message ? message->copy() : zmqpp::message();
 
+  auto receiver =
+      client_id.empty() ? CommunicatorId::kBroker : CommunicatorId::kClient;
+
   // Frame 2
   size_t header_sz;
   std::unique_ptr<const char[]> header =
-      WorkerCommandHeader(command, CommunicatorId::kSomeWorker,
-                          CommunicatorId::kBroker)
+      WorkerCommandHeader(command, CommunicatorId::kSomeWorker, receiver)
           .worker_id(info_->identity_)
           .client_id(client_id)
           .Serialize(&header_sz);
