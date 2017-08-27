@@ -4,17 +4,15 @@ namespace bdm {
 
 Broker::Broker(zmqpp::context* ctx, const std::string& endpoint,
                LoggingLevel level)
-    : ctx_(ctx), endpoint_(endpoint), logger_("Broker", level) {
-  this->socket_ = new zmqpp::socket(*ctx_, zmqpp::socket_type::router);
-  this->hb_at_ =
-      std::chrono::system_clock::now() + duration_ms_t(HEARTBEAT_INTERVAL);
+    : ctx_(ctx),
+      socket_(nullptr),
+      endpoint_(endpoint),
+      logger_("Broker", level) {
+  socket_ = std::make_unique<zmqpp::socket>(*ctx_, zmqpp::socket_type::router);
+  hb_at_ = std::chrono::system_clock::now() + duration_ms_t(HEARTBEAT_INTERVAL);
 }
 
-Broker::~Broker() {
-  if (socket_) {
-    delete socket_;
-  }
-}
+Broker::~Broker() {}
 
 void Broker::Bind() {
   socket_->bind(endpoint_);
@@ -153,7 +151,7 @@ void Broker::HandleMessageClient(const std::string& sender,
     logger_.Debug("Sending NAK reply to client: ", *msg);
     socket_->send(*msg);
   } else {
-    WorkerEntry* worker = workers_[header->worker_id_];
+    WorkerEntry* worker = workers_[header->worker_id_].get();
 
     // Forward the pending messages to the worker
     worker->Send(WorkerProtocolCmd::kRequest, std::move(msg), sender);
@@ -185,25 +183,24 @@ WorkerEntry* Broker::GetOrCreateWorker(const std::string& identity) {
 
   if (workers_.find(identity) == workers_.end()) {
     // Create worker and add him to workers
-    WorkerEntry* worker = new WorkerEntry(socket_, identity, logger_);
-    workers_[identity] = worker;
+    workers_[identity] =
+        std::make_unique<WorkerEntry>(socket_.get(), identity, logger_);
 
     logger_.Info("Registering new worker: ", identity);
   }
-  return workers_[identity];
+  return workers_[identity].get();
 }
 
 void Broker::DeleteWorker(WorkerEntry* worker, bool disconnect /* = true */) {
   if (disconnect) {
     worker->Send(WorkerProtocolCmd::kDisconnect);
   }
-
-  // Remove from waiting & workers list
-  waiting_.erase(worker);
-  workers_.erase(worker->identity_);
   logger_.Info("Delete expired worker ", worker->identity_);
 
-  delete worker;
+  // Remove from waiting & workers list
+  // Note: The deleting order is important
+  waiting_.erase(worker);
+  workers_.erase(worker->identity_);
 }
 
 void Broker::Run() {

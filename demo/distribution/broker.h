@@ -40,10 +40,10 @@ class Broker {
   WorkerEntry* GetOrCreateWorker(const std::string& identity);
   void DeleteWorker(WorkerEntry* worker, bool disconnect = true);
 
-  zmqpp::context* ctx_ = nullptr;
-  zmqpp::socket* socket_ = nullptr;
+  zmqpp::context* ctx_;
+  std::unique_ptr<zmqpp::socket> socket_;
   std::string endpoint_;
-  std::map<std::string, WorkerEntry*> workers_;
+  std::map<std::string, std::unique_ptr<WorkerEntry> > workers_;
   std::set<WorkerEntry*, LRU> waiting_;
 
   time_point_t hb_at_;  //  When to send HEARTBEAT
