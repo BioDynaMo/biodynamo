@@ -47,7 +47,7 @@ void Broker::HandleMessageWorker(const std::string& identity,
       assert(header->worker_id_ == identity);
 
       // Monitor worker using heartbeats
-      worker->expiry = std::chrono::system_clock::now() + HEARTBEAT_EXPIRY;
+      worker->expiry_ = std::chrono::system_clock::now() + HEARTBEAT_EXPIRY;
       waiting_.insert(worker);
 
       logger_.Info("Worker ", identity, " created");
@@ -73,7 +73,7 @@ void Broker::HandleMessageWorker(const std::string& identity,
           ClientCommandHeader(ClientProtocolCmd::kReport,
                               CommunicatorId::kSomeWorker,
                               CommunicatorId::kClient)
-              .worker_id(worker->identity)
+              .worker_id(worker->identity_)
               .client_id(header->client_id_)
               .Serialize(&c_header_sz);
       msg->push_front(c_header.get(), c_header_sz);
@@ -94,7 +94,7 @@ void Broker::HandleMessageWorker(const std::string& identity,
       // Remove and reinsert worker to the waiting
       // queue after updating his expiration time
       waiting_.erase(waiting_.find(worker));
-      worker->expiry = std::chrono::system_clock::now() + HEARTBEAT_EXPIRY;
+      worker->expiry_ = std::chrono::system_clock::now() + HEARTBEAT_EXPIRY;
       waiting_.insert(worker);
     } else {
       DeleteWorker(worker);
@@ -120,8 +120,8 @@ void Broker::HandleMessageClient(const std::string& sender,
       ClientCommandHeader::Deserialize(msg->raw_data(0), msg->size(0));
   msg->pop_front();
 
-  // Ignore MMI service for now
-  // When MMI service is implemented, header->receiver_
+  // Ignore broker service for now
+  // When broker service is implemented, header->receiver_
   // will point to CommunicatorId::kBroker
   assert(header->receiver_ == CommunicatorId::kSomeWorker);
 
@@ -149,23 +149,14 @@ void Broker::HandleMessageClient(const std::string& sender,
     // Frame 1
     msg->push_front(sender);
 
-    logger_.Debug("Sending NAK reply to client: ", *msg);
-
     // send NAK to client
+    logger_.Debug("Sending NAK reply to client: ", *msg);
     socket_->send(*msg);
   } else {
     WorkerEntry* worker = workers_[header->worker_id_];
 
     // Forward the pending messages to the worker
-    worker->requests.push_back(msg->copy());
-
-    while (!worker->requests.empty()) {
-      zmqpp::message& pending = worker->requests.front();
-
-      // TODO(kkanellis): fix client (what if client is different?)
-      worker->Send(socket_, WorkerProtocolCmd::kRequest, &pending, sender);
-      worker->requests.pop_front();
-    }
+    worker->Send(WorkerProtocolCmd::kRequest, std::move(msg), sender);
   }
 }
 
@@ -178,7 +169,7 @@ void Broker::HandleMessageClient(const std::string& sender,
 void Broker::Purge() {
   while (!waiting_.empty()) {
     WorkerEntry* worker = *waiting_.begin();
-    if (std::chrono::system_clock::now() < worker->expiry) {
+    if (std::chrono::system_clock::now() < worker->expiry_) {
       break;
     }
 
@@ -194,7 +185,7 @@ WorkerEntry* Broker::GetOrCreateWorker(const std::string& identity) {
 
   if (workers_.find(identity) == workers_.end()) {
     // Create worker and add him to workers
-    WorkerEntry* worker = new WorkerEntry(identity, logger_);
+    WorkerEntry* worker = new WorkerEntry(socket_, identity, logger_);
     workers_[identity] = worker;
 
     logger_.Info("Registering new worker: ", identity);
@@ -204,15 +195,15 @@ WorkerEntry* Broker::GetOrCreateWorker(const std::string& identity) {
 
 void Broker::DeleteWorker(WorkerEntry* worker, bool disconnect /* = true */) {
   if (disconnect) {
-    worker->Send(socket_, WorkerProtocolCmd::kDisconnect);
+    worker->Send(WorkerProtocolCmd::kDisconnect);
   }
 
   // Remove from waiting & workers list
   waiting_.erase(worker);
-  workers_.erase(worker->identity);
-  delete worker;
+  workers_.erase(worker->identity_);
+  logger_.Info("Delete expired worker ", worker->identity_);
 
-  logger_.Info("Delete expired worker ", worker->identity);
+  delete worker;
 }
 
 void Broker::Run() {
@@ -262,7 +253,7 @@ void Broker::Run() {
     if (std::chrono::system_clock::now() > hb_at_) {
       Purge();
       for (auto worker : waiting_) {
-        worker->Send(socket_, WorkerProtocolCmd::kHeartbeat);
+        worker->Send(WorkerProtocolCmd::kHeartbeat);
       }
       hb_at_ = std::chrono::system_clock::now() + HEARTBEAT_INTERVAL;
     }

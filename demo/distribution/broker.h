@@ -16,8 +16,8 @@ namespace bdm {
 struct LRU {
   // First sort by (heartbeat) expiration time; then by pointer value
   bool operator()(const WorkerEntry* lhs, const WorkerEntry* rhs) const {
-    if (lhs->expiry != rhs->expiry) {
-      return lhs->expiry < rhs->expiry;
+    if (lhs->expiry_ != rhs->expiry_) {
+      return lhs->expiry_ < rhs->expiry_;
     }
     return lhs < rhs;
   }
