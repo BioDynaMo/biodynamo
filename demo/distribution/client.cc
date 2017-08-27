@@ -2,41 +2,38 @@
 
 namespace bdm {
 
-Client::Client(zmqpp::context* ctx, const std::string& broker,
-               LoggingLevel level)
-    : logger_("Client", level) {
-  assert(!broker.empty());
-
-  this->ctx = ctx;
-  this->broker = broker;
-  this->timeout = duration_ms_t(2500);  // msecs
-
+Client::Client(zmqpp::context* ctx, const std::string& identity,
+               const std::string& broker, LoggingLevel level)
+    : ctx_(ctx),
+      socket_(nullptr),
+      identity_(identity),
+      broker_endpoint_(broker),
+      timeout_(duration_ms_t(2500)),
+      logger_("Client", level) {
   ConnectToBroker();
 }
 
-Client::~Client() {
-  sock->close();
-  delete sock;
-}
+Client::~Client() {}
 
 void Client::ConnectToBroker() {
-  if (sock) {
-    sock->close();
-    delete sock;
+  if (socket_) {
+    // delete socket
+    socket_->close();
+    socket_.reset();
   }
 
-  sock = new zmqpp::socket(*ctx, zmqpp::socket_type::dealer);
-  sock->set(zmqpp::socket_option::identity, "client");
-  sock->connect(broker);
+  socket_ = std::make_unique<zmqpp::socket>(*ctx_, zmqpp::socket_type::dealer);
+  socket_->set(zmqpp::socket_option::identity, identity_);
+  socket_->connect(broker_endpoint_);
 
-  logger_.Info("Connecting to broker at ", broker);
+  logger_.Info("Connecting to broker at ", broker_endpoint_);
 }
 
-void Client::SetTimeout(duration_ms_t timeout) { this->timeout = timeout; }
+void Client::SetTimeout(duration_ms_t timeout) { timeout_ = timeout; }
 
 template <typename T>
 void Client::SetSocketOption(zmqpp::socket_option option, const T& value) {
-  sock->set(option, value);
+  socket_->set(option, value);
 }
 
 template <typename T>
@@ -48,7 +45,7 @@ T Client::GetSocketOption(zmqpp::socket_option option) {
 
 template <typename T>
 void Client::GetSocketOption(zmqpp::socket_option option, T* value) {
-  sock->get(option, *value);
+  socket_->get(option, *value);
 }
 
 //  Here is the send method. It sends a request to the broker.
@@ -60,8 +57,6 @@ void Client::Send(const std::string& identity,
   //  Frame 1:    "BDM/0.1C"
   //  Frame 2:    ClientCommandHeader class (serialized)
   //  Frame 3..n: Application frames
-
-  // TODO(kkanellis): add identity to client
 
   // Frame 2
   size_t header_sz;
@@ -76,7 +71,7 @@ void Client::Send(const std::string& identity,
   msg->push_front(MDPC_CLIENT);
 
   logger_.Debug("Send request to '", identity, "' identity: ", *msg);
-  sock->send(*msg);
+  socket_->send(*msg);
 }
 
 // TODO(kkanellis): change name of arguments
@@ -84,7 +79,7 @@ bool Client::Recv(std::unique_ptr<zmqpp::message>* msg_out,
                   ClientProtocolCmd* command_out /* = nullptr */,
                   std::string* identity_out /* = nullptr */) {
   auto msg = std::make_unique<zmqpp::message>();
-  if (!sock->receive(*msg)) {
+  if (!socket_->receive(*msg)) {
     return false;
   }
 
