@@ -51,7 +51,7 @@ void Client::GetSocketOption(zmqpp::socket_option option, T* value) {
 //  Here is the send method. It sends a request to the broker.
 //  It takes ownership of the request message, and destroys it when sent.
 
-void Client::Send(const std::string& identity,
+void Client::Send(const std::string& worker_identity,
                   std::unique_ptr<zmqpp::message> msg) {
   //  Message format:
   //  Frame 1:    "BDM/0.1C"
@@ -63,21 +63,21 @@ void Client::Send(const std::string& identity,
   std::unique_ptr<const char[]> header =
       ClientCommandHeader(ClientProtocolCmd::kRequest, CommunicatorId::kClient,
                           CommunicatorId::kSomeWorker)
-          .worker_id(identity)
+          .client_id(identity_)
+          .worker_id(worker_identity)
           .Serialize(&header_sz);
   msg->push_front(header.get(), header_sz);
 
   // Frame 1
   msg->push_front(MDPC_CLIENT);
 
-  logger_.Debug("Send request to '", identity, "' identity: ", *msg);
+  logger_.Debug("Send request to '", worker_identity, "' : ", *msg);
   socket_->send(*msg);
 }
 
-// TODO(kkanellis): change name of arguments
 bool Client::Recv(std::unique_ptr<zmqpp::message>* msg_out,
-                  ClientProtocolCmd* command_out /* = nullptr */,
-                  std::string* identity_out /* = nullptr */) {
+                  ClientProtocolCmd* command /* = nullptr */,
+                  std::string* recv_from /* = nullptr */) {
   auto msg = std::make_unique<zmqpp::message>();
   if (!socket_->receive(*msg)) {
     return false;
@@ -102,16 +102,32 @@ bool Client::Recv(std::unique_ptr<zmqpp::message>* msg_out,
   assert(header->cmd_ == ClientProtocolCmd::kReport ||
          header->cmd_ == ClientProtocolCmd::kNak);
 
-  if (command_out != nullptr) {
-    *command_out = header->cmd_;
+  if (command != nullptr) {
+    *command = header->cmd_;
   }
 
-  if (identity_out != nullptr) {
-    *identity_out = header->worker_id_;
+  if (recv_from != nullptr) {
+    *recv_from = header->worker_id_;
   }
 
-  // Success only when not received NA
   *msg_out = std::move(msg);
-  return (header->cmd_ != ClientProtocolCmd::kNak);
+  return true;
 }
+
+void Client::RequestBrokerTermination() {
+  zmqpp::message msg;
+
+  size_t header_sz;
+  std::unique_ptr<const char[]> header =
+      ClientCommandHeader(ClientProtocolCmd::kBrokerTerminate,
+                          CommunicatorId::kClient, CommunicatorId::kBroker)
+          .client_id(identity_)
+          .Serialize(&header_sz);
+  msg.push_front(header.get(), header_sz);
+  msg.push_front(MDPC_CLIENT);
+
+  logger_.Debug("Send termination request to broker...");
+  socket_->send(msg);
+}
+
 }  // namespace bdm

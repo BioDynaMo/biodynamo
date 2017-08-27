@@ -46,7 +46,8 @@ class Broker {
   std::map<std::string, std::unique_ptr<WorkerEntry> > workers_;
   std::set<WorkerEntry*, LRU> waiting_;
 
-  time_point_t hb_at_;  //  When to send HEARTBEAT
+  time_point_t hb_at_;            //  When to send HEARTBEAT
+  bool req_termination_ = false;  //  Client asked termination?
 
   Logger logger_;
 };

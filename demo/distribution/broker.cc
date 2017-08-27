@@ -117,44 +117,51 @@ void Broker::HandleMessageClient(const std::string& sender,
   std::unique_ptr<ClientCommandHeader> header =
       ClientCommandHeader::Deserialize(msg->raw_data(0), msg->size(0));
   msg->pop_front();
+  assert(sender == header->client_id_);
 
-  // Ignore broker service for now
-  // When broker service is implemented, header->receiver_
-  // will point to CommunicatorId::kBroker
-  assert(header->receiver_ == CommunicatorId::kSomeWorker);
+  if (header->receiver_ == CommunicatorId::kBroker) {
+    // Currently only termination is supported
+    assert(header->cmd_ == ClientProtocolCmd::kBrokerTerminate);
+    req_termination_ = true;
+  } else if (header->receiver_ == CommunicatorId::kSomeWorker) {
+    // Message destined for a worker
 
-  if (workers_.find(header->worker_id_) == workers_.end()) {
-    // Error: No such worker exist
-    logger_.Warning("Invalid worker ", header->worker_id_, "! Droping message");
+    if (workers_.find(header->worker_id_) == workers_.end()) {
+      // Error: No such worker exist
+      logger_.Warning("Invalid worker ", header->worker_id_,
+                      "! Droping message");
 
-    // Message format:
-    // Frame 1:     client_id (manually; ROUTER socket)
-    // Frame 2:     "BDM/0.1C"
-    // Frame 3:     ClientCommandHeader class (serialized)
-    // Frame 4..n:  Application frames
+      // Message format:
+      // Frame 1:     client_id (manually; ROUTER socket)
+      // Frame 2:     "BDM/0.1C"
+      // Frame 3:     ClientCommandHeader class (serialized)
+      // Frame 4..n:  Application frames
 
-    // Frame 3
-    size_t header_sz;
-    std::unique_ptr<const char[]> header =
-        ClientCommandHeader(ClientProtocolCmd::kNak, CommunicatorId::kBroker,
-                            CommunicatorId::kClient)
-            .client_id(sender)
-            .Serialize(&header_sz);
-    msg->push_front(header.get(), header_sz);
+      // Frame 3
+      size_t header_sz;
+      std::unique_ptr<const char[]> header =
+          ClientCommandHeader(ClientProtocolCmd::kNak, CommunicatorId::kBroker,
+                              CommunicatorId::kClient)
+              .client_id(sender)
+              .Serialize(&header_sz);
+      msg->push_front(header.get(), header_sz);
 
-    // Frame 2
-    msg->push_front(MDPC_CLIENT);
-    // Frame 1
-    msg->push_front(sender);
+      // Frame 2
+      msg->push_front(MDPC_CLIENT);
+      // Frame 1
+      msg->push_front(sender);
 
-    // send NAK to client
-    logger_.Debug("Sending NAK reply to client: ", *msg);
-    socket_->send(*msg);
+      // send NAK to client
+      logger_.Debug("Sending NAK reply to client: ", *msg);
+      socket_->send(*msg);
+    } else {
+      WorkerEntry* worker = workers_[header->worker_id_].get();
+
+      // Forward the pending messages to the worker
+      worker->Send(WorkerProtocolCmd::kRequest, std::move(msg), sender);
+    }
   } else {
-    WorkerEntry* worker = workers_[header->worker_id_].get();
-
-    // Forward the pending messages to the worker
-    worker->Send(WorkerProtocolCmd::kRequest, std::move(msg), sender);
+    logger_.Error("Invalid receiver: ", header->receiver_);
   }
 }
 
@@ -209,7 +216,9 @@ void Broker::Run() {
   zmqpp::poller poller;
   poller.add(*socket_, zmqpp::poller::poll_in);
 
-  while (true) {
+  // Run until someone requested termination and
+  // there are no more connected workers
+  while (!req_termination_ || !workers_.empty()) {
     // Wait till heartbeat duration
     poller.poll(HEARTBEAT_INTERVAL.count());
 
