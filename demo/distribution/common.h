@@ -22,29 +22,10 @@ namespace bdm {
 typedef std::chrono::time_point<std::chrono::system_clock> time_point_t;
 typedef std::chrono::milliseconds duration_ms_t;
 
-class CommandHeader;
-typedef std::pair<std::unique_ptr<zmqpp::message>,
-                  std::unique_ptr<CommandHeader> >
-    MessageMiddlewareHeaderPair;
-
-struct DistSharedInfo {
-  // Messages destined to application; waiting for processing
-  std::queue<MessageMiddlewareHeaderPair> mq_app_deliver_;
-
-  zmqpp::reactor reactor_;                  // Polling handler
-  zmqpp::context* ctx_;                     // ZMQ context
-  std::string identity_;                    // Current node identity
-  LoggingLevel logging_level_;              // What logger prints
-  volatile bool zctx_interrupted_ = false;  // ZMQ interrupted by signal
-};
-
 template <typename E>
 constexpr typename std::underlying_type<E>::type ToUnderlying(E e) {
   return static_cast<typename std::underlying_type<E>::type>(e);
 }
-
-// -------- Application level protocol ---------
-// ---------------------------------------------
 
 // Communicator identifiers
 enum class CommunicatorId : std::uint8_t {
@@ -68,6 +49,20 @@ inline std::ostream& operator<<(std::ostream& stream,
   stream << CommunicatorIdStr[ToUnderlying(comm_id)];
   return stream;
 }
+
+typedef std::pair<std::unique_ptr<zmqpp::message>, CommunicatorId>
+    MessageMiddlewareHeaderPair;
+
+struct DistSharedInfo {
+  // Messages destined to application; waiting for processing
+  std::queue<MessageMiddlewareHeaderPair> mq_app_deliver_;
+
+  zmqpp::reactor reactor_;                  // Polling handler
+  zmqpp::context* ctx_;                     // ZMQ context
+  std::string identity_;                    // Current node identity
+  LoggingLevel logging_level_;              // What logger prints
+  volatile bool zctx_interrupted_ = false;  // ZMQ interrupted by signal
+};
 
 // -------- Majordomo pattern constants --------
 // ---------------------------------------------
