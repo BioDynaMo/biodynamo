@@ -87,7 +87,8 @@ void BrokerCommunicator::HandleIncomingMessage() {
     case WorkerProtocolCmd::kRequest:
       // Process message from broker
       msg_p->push_front(ToUnderlying(comm_id_));
-      info_->pending_.push_back(std::move(msg_p));
+      info_->mq_app_deliver_.push(
+          std::make_pair(std::move(msg_p), CommunicatorId::kBroker));
       break;
     case WorkerProtocolCmd::kHeartbeat:
       // Do nothing

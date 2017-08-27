@@ -68,11 +68,8 @@ void DistWorkerAPI::SendMessage(std::unique_ptr<zmqpp::message> msg,
   // TODO(kkanellis): create application header
 
   // Create header
-  auto header = std::make_unique<WorkerCommandHeader>();
-  header->receiver_ = to;
-
   std::unique_lock<std::mutex> lk(mq_net_deliver_mtx_);
-  mq_net_deliver_.push(std::make_pair(std::move(msg), std::move(header)));
+  mq_net_deliver_.push(std::make_pair(std::move(msg), to));
   lk.unlock();
 
   // Notify the communication thread
@@ -215,9 +212,9 @@ void DistWorkerAPI::HandleAppMessage() {
 
   // Find out where to forward the message
   auto& pair = mq_net_deliver_.front();
-  auto& comm = GetValidCommunicator(pair.second->receiver_);
+  auto& comm = GetValidCommunicator(pair.second);
 
-  comm.HandleOutgoingMessage(std::move(pair.first), std::move(pair.second));
+  comm.HandleOutgoingMessage(std::move(pair.first));
 
   mq_net_deliver_.pop();
   // TODO(kkanellis): maybe release lock earlier?
@@ -229,8 +226,8 @@ void DistWorkerAPI::HandleNetworkMessages() {
   while (!info_.mq_app_deliver_.empty()) {
     auto& pair = info_.mq_app_deliver_.front();
 
-    // Verify that sender exists
-    auto comm_id = pair.second->sender_;
+    // Verify that sender of the message exists
+    auto comm_id = pair.second;
     assert(IsValidCommunicator(comm_id));
 
     // Push the message to the correct container & notify the app thread

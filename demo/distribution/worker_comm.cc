@@ -9,11 +9,9 @@ WorkerCommunicator::WorkerCommunicator(DistSharedInfo* info,
       logger_("WComm_[" + info_->identity_ + "]", info_->logging_level_) {
   // By convention we define that we act as client if
   // we initiate the communication with the left worker
-  this->client_ = (comm_id == CommunicatorId::kLeftNeighbour ? true : false);
-  this->worker_str_ =
-      (client_ ? "right (client/dealer)" : "left (server/router)");
+  this->client_ = (comm_id == CommunicatorId::kRightNeighbour ? true : false);
   this->coworker_str_ =
-      (!client_ ? "right (client/dealer)" : "left (server/router)");
+      (client_ ? "right (server/router)" : "left (client/dealer)");
 }
 
 WorkerCommunicator::~WorkerCommunicator() {
@@ -24,8 +22,10 @@ WorkerCommunicator::~WorkerCommunicator() {
 
 void WorkerCommunicator::HandleOutgoingMessage(
     std::unique_ptr<zmqpp::message> msg) {
-  logger_.Debug("Sending message to ", worker_str_, " worker: ", *msg);
+  logger_.Debug("Sending message to ", coworker_str_, " co-worker: ", *msg);
+
   // TODO(kkanellis): fix this! It can be report or request
+  // Actually doesn't matter -- can be handled by app level protocol
   SendToCoWorker(WorkerProtocolCmd::kReport, std::move(msg));
 }
 
@@ -44,8 +44,8 @@ void WorkerCommunicator::HandleIncomingMessage() {
   }
   assert(msg_p->parts() >= (2 + ((unsigned)!client_)));
 
-  logger_.Debug("Received message from ", coworker_identity_, " worker: ",
-                *msg_p);
+  logger_.Debug("Received message from ", coworker_str_, " co-worker [",
+                coworker_identity_, "]: ", *msg_p);
 
   if (!client_) {
     // Check message origin
@@ -75,7 +75,8 @@ void WorkerCommunicator::HandleIncomingMessage() {
 
       if (!client_ && !is_connected_) {
         // Reply with MDPW_READY to co-worker
-        logger_.Info("Connection request from ", coworker_identity_);
+        logger_.Info("Connection request from ", coworker_str_, " co-worker [",
+                     coworker_identity_, "]");
         SendToCoWorker(WorkerProtocolCmd::kReady);
       }
       is_connected_ = true;
@@ -86,8 +87,7 @@ void WorkerCommunicator::HandleIncomingMessage() {
       // This should be halo-region cells request/report
       assert(coworker_identity_ == header->client_id_);
 
-      msg_p->push_front(ToUnderlying(comm_id_));
-      info_->pending_.push_back(std::move(msg_p));
+      info_->mq_app_deliver_.push(std::make_pair(std::move(msg_p), comm_id_));
       break;
     default:
       logger_.Error("Invalid input message", *msg_p);
@@ -108,11 +108,14 @@ void WorkerCommunicator::Connect() {
     socket_->connect(endpoint_);
 
     // Connect to coworker
-    logger_.Info("Connecting to ", coworker_str_, " worker at ", endpoint_);
+    logger_.Info("Connecting to ", coworker_str_, " co-worker [",
+                 coworker_identity_, "] at ", endpoint_);
     SendToCoWorker(WorkerProtocolCmd::kReady);
   } else {
     socket_ = std::make_unique<zmqpp::socket>(*(info_->ctx_),
                                               zmqpp::socket_type::router);
+    logger_.Info("Waiting for connection from ", coworker_str_,
+                 " co-worker at ", endpoint_);
     socket_->bind(endpoint_);
   }
 
@@ -131,10 +134,10 @@ void WorkerCommunicator::SendToCoWorker(
 
   auto msg = message ? std::move(message) : std::make_unique<zmqpp::message>();
 
-  auto sender = (client_ ? CommunicatorId::kLeftNeighbour
-                         : CommunicatorId::kRightNeighbour);
-  auto receiver = (client_ ? CommunicatorId::kRightNeighbour
-                           : CommunicatorId::kLeftNeighbour);
+  auto receiver = comm_id_;
+  auto sender = (comm_id_ == CommunicatorId::kLeftNeighbour
+                     ? CommunicatorId::kRightNeighbour
+                     : CommunicatorId::kLeftNeighbour);
 
   // Frame 2
   size_t header_sz;

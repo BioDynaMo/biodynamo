@@ -18,7 +18,7 @@ class WorkerCommunicator : public Communicator {
 
   void Connect() override;
   void HandleOutgoingMessage(std::unique_ptr<zmqpp::message> msg) override;
-  void HandleIncomingMessage();
+  void HandleIncomingMessage() override;
 
  private:
   void SendToCoWorker(const WorkerProtocolCmd command,
@@ -28,7 +28,6 @@ class WorkerCommunicator : public Communicator {
   std::string coworker_identity_;
 
   std::string coworker_str_;
-  std::string worker_str_;
 
   Logger logger_;
 };
