@@ -21,7 +21,6 @@ void Broker::Bind() {
 
 //  This method processes one READY, REPORT, HEARTBEAT or
 //  DISCONNECT message sent to the broker by a worker
-
 void Broker::HandleMessageWorker(const std::string& identity,
                                  std::unique_ptr<zmqpp::message> msg) {
   // Message format:
@@ -52,7 +51,7 @@ void Broker::HandleMessageWorker(const std::string& identity,
     }
   } else if (header->cmd_ == WorkerProtocolCmd::kReport) {
     if (worker_ready) {
-      // Ignore MMI service for now
+      // Ignore broker service for now
       // When MMI service is implemented, header->receiver_
       // will point to CommunicatorId::kBroker
       assert(header->receiver_ == CommunicatorId::kClient);
@@ -119,41 +118,39 @@ void Broker::HandleMessageClient(const std::string& sender,
   msg->pop_front();
   assert(sender == header->client_id_);
 
+  bool worker_exists = (workers_.find(header->worker_id_) != workers_.end());
+
   if (header->receiver_ == CommunicatorId::kBroker) {
-    // Currently only termination is supported
-    assert(header->cmd_ == ClientProtocolCmd::kBrokerTerminate);
-    req_termination_ = true;
+    // Handle broker service
+    switch (header->cmd_) {
+      case ClientProtocolCmd::kBrokerTerminate:
+        req_termination_ = true;
+        // Send ACK back to client
+        ReplyToClient(ClientProtocolCmd::kAck, sender);
+        break;
+      case ClientProtocolCmd::kCheckWorker:
+        // Reply with ACK if worker is connected; NAK otherwise
+        {
+          auto reply_cmd =
+              worker_exists ? ClientProtocolCmd::kAck : ClientProtocolCmd::kNak;
+          ReplyToClient(reply_cmd, sender, nullptr, header->worker_id_);
+        }
+        break;
+      default:
+        logger_.Error("Invalid command ", header->cmd_, " for broker!");
+        assert(false);
+    }
+
   } else if (header->receiver_ == CommunicatorId::kSomeWorker) {
     // Message destined for a worker
 
-    if (workers_.find(header->worker_id_) == workers_.end()) {
-      // Error: No such worker exist
+    if (!worker_exists) {
       logger_.Warning("Invalid worker ", header->worker_id_,
                       "! Droping message");
 
-      // Message format:
-      // Frame 1:     client_id (manually; ROUTER socket)
-      // Frame 2:     "BDM/0.1C"
-      // Frame 3:     ClientCommandHeader class (serialized)
-      // Frame 4..n:  Application frames
-
-      // Frame 3
-      size_t header_sz;
-      std::unique_ptr<const char[]> header =
-          ClientCommandHeader(ClientProtocolCmd::kNak, CommunicatorId::kBroker,
-                              CommunicatorId::kClient)
-              .client_id(sender)
-              .Serialize(&header_sz);
-      msg->push_front(header.get(), header_sz);
-
-      // Frame 2
-      msg->push_front(MDPC_CLIENT);
-      // Frame 1
-      msg->push_front(sender);
-
-      // send NAK to client
-      logger_.Debug("Sending NAK reply to client: ", *msg);
-      socket_->send(*msg);
+      // Send Nak to client
+      ReplyToClient(ClientProtocolCmd::kNak, sender, nullptr,
+                    header->worker_id_);
     } else {
       WorkerEntry* worker = workers_[header->worker_id_].get();
 
@@ -163,6 +160,38 @@ void Broker::HandleMessageClient(const std::string& sender,
   } else {
     logger_.Error("Invalid receiver: ", header->receiver_);
   }
+}
+
+void Broker::ReplyToClient(ClientProtocolCmd cmd, const std::string& client_id,
+                           std::unique_ptr<zmqpp::message> msg /* = nullptr */,
+                           const std::string& worker_id /* = "" */) {
+  // Message format:
+  // Frame 1:     client_id (manually; ROUTER socket)
+  // Frame 2:     "BDM/0.1C"
+  // Frame 3:     ClientCommandHeader class (serialized)
+  // Frame 4..n:  Application frames
+
+  if (!msg) {
+    msg = std::make_unique<zmqpp::message>();
+  }
+
+  // Frame 3
+  size_t header_sz;
+  std::unique_ptr<const char[]> header =
+      ClientCommandHeader(cmd, CommunicatorId::kBroker, CommunicatorId::kClient)
+          .client_id(client_id)
+          .worker_id(worker_id)
+          .Serialize(&header_sz);
+  msg->push_front(header.get(), header_sz);
+
+  // Frame 2
+  msg->push_front(MDPC_CLIENT);
+  // Frame 1
+  msg->push_front(client_id);
+
+  // send NAK to client
+  logger_.Debug("Sending ", cmd, " reply to client [", client_id, "]: ", *msg);
+  socket_->send(*msg);
 }
 
 //  The purge method deletes any idle workers that haven't pinged us in a

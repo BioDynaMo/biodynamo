@@ -48,31 +48,50 @@ void Client::GetSocketOption(zmqpp::socket_option option, T* value) {
   socket_->get(option, *value);
 }
 
-//  Here is the send method. It sends a request to the broker.
-//  It takes ownership of the request message, and destroys it when sent.
-
-void Client::Send(const std::string& worker_identity,
-                  std::unique_ptr<zmqpp::message> msg) {
+void Client::Send(ClientProtocolCmd cmd, CommunicatorId receiver,
+                  std::unique_ptr<zmqpp::message> msg,
+                  const std::string& worker_id) {
   //  Message format:
   //  Frame 1:    "BDM/0.1C"
   //  Frame 2:    ClientCommandHeader class (serialized)
   //  Frame 3..n: Application frames
 
+  if (!msg) {
+    msg = std::make_unique<zmqpp::message>();
+  }
+
+  assert(receiver == CommunicatorId::kBroker ||
+         receiver == CommunicatorId::kSomeWorker);
+
   // Frame 2
   size_t header_sz;
   std::unique_ptr<const char[]> header =
-      ClientCommandHeader(ClientProtocolCmd::kRequest, CommunicatorId::kClient,
-                          CommunicatorId::kSomeWorker)
+      ClientCommandHeader(cmd, CommunicatorId::kClient, receiver)
           .client_id(identity_)
-          .worker_id(worker_identity)
+          .worker_id(worker_id)
           .Serialize(&header_sz);
   msg->push_front(header.get(), header_sz);
 
   // Frame 1
   msg->push_front(MDPC_CLIENT);
 
-  logger_.Debug("Send request to '", worker_identity, "' : ", *msg);
+  if (receiver == CommunicatorId::kBroker) {
+    logger_.Debug("Send ", cmd, " request to broker: ", *msg);
+  } else {
+    logger_.Debug("Send request to worker [", worker_id, "]: ", *msg);
+  }
   socket_->send(*msg);
+}
+
+//  Here is the send method. It sends a request to the broker.
+//  It takes ownership of the request message, and destroys it when sent.
+void Client::SendToWorker(std::unique_ptr<zmqpp::message> msg,
+                          const std::string& worker_id) {
+  // Worker identity must not be empty
+  assert(!worker_id.empty());
+
+  Send(ClientProtocolCmd::kRequest, CommunicatorId::kSomeWorker, std::move(msg),
+       worker_id);
 }
 
 bool Client::Recv(std::unique_ptr<zmqpp::message>* msg_out,
@@ -100,6 +119,7 @@ bool Client::Recv(std::unique_ptr<zmqpp::message>* msg_out,
       ClientCommandHeader::Deserialize(msg->raw_data(0), msg->size(0));
   msg->pop_front();
   assert(header->cmd_ == ClientProtocolCmd::kReport ||
+         header->cmd_ == ClientProtocolCmd::kAck ||
          header->cmd_ == ClientProtocolCmd::kNak);
 
   if (command != nullptr) {
@@ -114,20 +134,34 @@ bool Client::Recv(std::unique_ptr<zmqpp::message>* msg_out,
   return true;
 }
 
-void Client::RequestBrokerTermination() {
-  zmqpp::message msg;
+bool Client::CheckWorker(const std::string& worker_id) {
+  logger_.Debug("Checking worker [", worker_id, "]...");
+  Send(ClientProtocolCmd::kCheckWorker, CommunicatorId::kBroker, nullptr,
+       worker_id);
 
-  size_t header_sz;
-  std::unique_ptr<const char[]> header =
-      ClientCommandHeader(ClientProtocolCmd::kBrokerTerminate,
-                          CommunicatorId::kClient, CommunicatorId::kBroker)
-          .client_id(identity_)
-          .Serialize(&header_sz);
-  msg.push_front(header.get(), header_sz);
-  msg.push_front(MDPC_CLIENT);
+  auto msg = std::make_unique<zmqpp::message>();
+  ClientProtocolCmd command;
+  if (!Recv(&msg, &command)) {
+    logger_.Error("Interrupted...");
+    return false;
+  }
 
+  logger_.Debug("Received ", command, " from broker");
+  return (command == ClientProtocolCmd::kAck);
+}
+
+bool Client::RequestBrokerTermination() {
   logger_.Debug("Send termination request to broker...");
-  socket_->send(msg);
+  Send(ClientProtocolCmd::kBrokerTerminate, CommunicatorId::kBroker);
+
+  auto msg = std::make_unique<zmqpp::message>();
+  ClientProtocolCmd command;
+  if (!Recv(&msg, &command)) {
+    logger_.Error("Interrupted...");
+    return false;
+  }
+  logger_.Debug("Received ", command, " from broker");
+  return (command == ClientProtocolCmd::kAck);
 }
 
 }  // namespace bdm
