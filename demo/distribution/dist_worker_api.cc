@@ -4,7 +4,9 @@ namespace bdm {
 
 DistWorkerAPI::DistWorkerAPI(zmqpp::context* ctx, const std::string identity,
                              LoggingLevel level)
-    : comms_(), logger_("WAPI_[" + identity + "]", level) {
+    : comms_(),
+      zctx_interrupted_(false),
+      logger_("WAPI_[" + identity + "]", level) {
   info_.ctx_ = ctx;
   info_.identity_ = identity;
   info_.logging_level_ = level;
@@ -180,10 +182,17 @@ void DistWorkerAPI::HandleNetwork() {
                      std::bind(&DistWorkerAPI::HandleAppMessage, this));
 
   logger_.Info("Listening to network...");
-  while (!info_.zctx_interrupted_) {
+  while (!zctx_interrupted_) {
     if (!info_.reactor_.poll(HEARTBEAT_INTERVAL.count())) {
       ForEachValidCommunicator(
           [](std::unique_ptr<Communicator>& comm) { comm->ReactorTimedOut(); });
+
+      // Check if interrupted
+      if (EINTR == zmq_errno()) {
+        logger_.Warning("Interrupted...");
+        zctx_interrupted_ = true;
+        continue;
+      }
     }
 
     // Handle pending messages from network
@@ -210,7 +219,7 @@ void DistWorkerAPI::HandleAppMessage() {
   auto sig = zmqpp::signal();
   if (!child_pipe_->receive(sig) || sig == zmqpp::signal::stop) {
     // Interrupted
-    info_.zctx_interrupted_ = true;
+    zctx_interrupted_ = true;
     return;
   }
   // App wants to send a new message

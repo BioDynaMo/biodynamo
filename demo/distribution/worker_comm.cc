@@ -36,61 +36,62 @@ void WorkerCommunicator::HandleIncomingMessage() {
   // Frame 2:     WorkerCommandHeader (serialized)
   // Frame 3..n:  application frames
 
+  // Receive all messages from the socket
   auto msg_p = std::make_unique<zmqpp::message>();
-  if (!socket_->receive(*msg_p)) {
-    // Interrupted
-    info_->zctx_interrupted_ = true;
-    return;
-  }
-  assert(msg_p->parts() >= (2 + ((unsigned)!client_)));
+  while (socket_->receive(*msg_p, true)) {
+    assert(msg_p->parts() >= (2 + ((unsigned)!client_)));
+    logger_.Debug("Received message from ", coworker_str_, " co-worker [",
+                  coworker_identity_, "]: ", *msg_p);
 
-  logger_.Debug("Received message from ", coworker_str_, " co-worker [",
-                coworker_identity_, "]: ", *msg_p);
+    if (!client_) {
+      // Check message origin
+      std::string coworker = msg_p->get(0);
+      msg_p->pop_front();
+      assert(coworker == coworker_identity_   // After handshake
+             || coworker_identity_.empty());  // At handshake
+    }
 
-  if (!client_) {
-    // Check message origin
-    std::string coworker = msg_p->get(0);
+    // Frame 1
+    std::string protocol = msg_p->get(0);
     msg_p->pop_front();
-    assert(coworker == coworker_identity_   // After handshake
-           || coworker_identity_.empty());  // At handshake
-  }
+    assert(protocol == MDPW_WORKER);
 
-  // Frame 1
-  std::string protocol = msg_p->get(0);
-  msg_p->pop_front();
-  assert(protocol == MDPW_WORKER);
+    // Frame 2
+    std::unique_ptr<WorkerCommandHeader> header =
+        WorkerCommandHeader::Deserialize(msg_p->raw_data(0), msg_p->size(0));
+    msg_p->pop_front();
+    assert(header->sender_ == (client_ ? CommunicatorId::kRightNeighbour
+                                       : CommunicatorId::kLeftNeighbour));
 
-  // Frame 2
-  std::unique_ptr<WorkerCommandHeader> header =
-      WorkerCommandHeader::Deserialize(msg_p->raw_data(0), msg_p->size(0));
-  msg_p->pop_front();
-  assert(header->sender_ == (client_ ? CommunicatorId::kRightNeighbour
-                                     : CommunicatorId::kLeftNeighbour));
+    switch (header->cmd_) {
+      case WorkerProtocolCmd::kReady:
+        // Save coworker info
+        assert(!header->client_id_.empty());
+        coworker_identity_ = header->client_id_;
 
-  switch (header->cmd_) {
-    case WorkerProtocolCmd::kReady:
-      // Save coworker info
-      assert(!header->client_id_.empty());
-      coworker_identity_ = header->client_id_;
+        if (!client_ && !is_connected_) {
+          // Reply with MDPW_READY to co-worker
+          logger_.Info("Connection request from ", coworker_str_,
+                       " co-worker [", coworker_identity_, "]");
+          SendToCoWorker(WorkerProtocolCmd::kReady);
+        }
+        is_connected_ = true;
+        break;
+      case WorkerProtocolCmd::kRequest:
+      case WorkerProtocolCmd::kReport:
+        // Proccess request/report from coworker
+        // This should be halo-region cells request/report
+        assert(is_connected_);
+        assert(coworker_identity_ == header->client_id_);
 
-      if (!client_ && !is_connected_) {
-        // Reply with MDPW_READY to co-worker
-        logger_.Info("Connection request from ", coworker_str_, " co-worker [",
-                     coworker_identity_, "]");
-        SendToCoWorker(WorkerProtocolCmd::kReady);
-      }
-      is_connected_ = true;
-      break;
-    case WorkerProtocolCmd::kRequest:
-    case WorkerProtocolCmd::kReport:
-      // Proccess request/report from coworker
-      // This should be halo-region cells request/report
-      assert(coworker_identity_ == header->client_id_);
+        info_->mq_app_deliver_.push(std::make_pair(std::move(msg_p), comm_id_));
+        break;
+      default:
+        logger_.Error("Invalid input message", *msg_p);
+    }
 
-      info_->mq_app_deliver_.push(std::make_pair(std::move(msg_p), comm_id_));
-      break;
-    default:
-      logger_.Error("Invalid input message", *msg_p);
+    // Prepare for next message
+    msg_p = std::make_unique<zmqpp::message>();
   }
 }
 
@@ -114,14 +115,17 @@ void WorkerCommunicator::Connect() {
   } else {
     socket_ = std::make_unique<zmqpp::socket>(*(info_->ctx_),
                                               zmqpp::socket_type::router);
+    socket_->bind(endpoint_);
     logger_.Info("Waiting for connection from ", coworker_str_,
                  " co-worker at ", endpoint_);
-    socket_->bind(endpoint_);
   }
-
   // Add newly created broker socket to reactor
   info_->reactor_.add(
       *socket_, std::bind(&WorkerCommunicator::HandleIncomingMessage, this));
+
+  // Maybe client already sent a messages
+  // Note: it is automatically buffered by 0ZQ
+  HandleIncomingMessage();
 }
 
 void WorkerCommunicator::SendToCoWorker(
