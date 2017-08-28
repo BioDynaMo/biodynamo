@@ -48,7 +48,7 @@ class WorkerEntry {
     // Frame 1: Deliver to correct worker
     msg.push_front(identity_);
 
-    logger_.Debug("Sending ", command, " to worker: ", msg);
+    logger_.Debug("Sending ", command, " to worker[", identity_, "]: ", msg);
     socket_->send(msg);
   }
 

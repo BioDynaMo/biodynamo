@@ -41,6 +41,7 @@ class DistWorkerAPI {
 
   void SendMessage(std::unique_ptr<zmqpp::message> msg, CommunicatorId to);
   bool ReceiveMessage(std::unique_ptr<zmqpp::message>* msg,
+                      CommunicatorId* from = nullptr,
                       duration_ms_t timeout = std::chrono::milliseconds(1000));
   bool ReceiveMessage(std::unique_ptr<zmqpp::message>* msg, CommunicatorId from,
                       duration_ms_t timeout = std::chrono::milliseconds(1000));
