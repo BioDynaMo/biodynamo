@@ -23,22 +23,31 @@ struct TestCBWData {
 
 inline void ClientTask() {
   Logger logger("Task[Client]", TestCBWData::level_);
-  Client client(&TestCBWData::ctx_, "tcp://127.0.0.1:5555",
+  Client client(&TestCBWData::ctx_, "client", "tcp://127.0.0.1:5555",
                 TestCBWData::level_);
 
   logger.Info("Sending ", TestCBWData::n_messages_, " messages...");
 
-  auto start = std::chrono::high_resolution_clock::now();
-  size_t remaining = TestCBWData::n_messages_;
+  // Spin until worker is available
+  while (!client.CheckWorker(TestCBWData::worker_)) {
+    // Don't buzy-wait
+    logger.Debug("Waiting for worker...");
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+  }
 
+  // Sample message
   zmqpp::message hello_msg;
   hello_msg.push_back("Hello world");
+
+  // Start stopwatch
+  auto start = std::chrono::high_resolution_clock::now();
+  size_t remaining = TestCBWData::n_messages_;
 
   ClientProtocolCmd command;
   std::unique_ptr<zmqpp::message> msg;
   while (remaining > 0) {
     msg = std::make_unique<zmqpp::message>(hello_msg.copy());
-    client.Send(TestCBWData::worker_, std::move(msg));
+    client.SendToWorker(std::move(msg), TestCBWData::worker_);
 
     msg = std::make_unique<zmqpp::message>();
     if (!client.Recv(&msg, &command)) {
@@ -68,8 +77,8 @@ inline void ClientTask() {
   logger.Info("Time per message: ",
               elapsed / (TestCBWData::n_messages_ - remaining), " ms");
 
-  // Send stop signal
-  // assert( api.Stop() );
+  // Request broker termination
+  assert(client.RequestBrokerTermination());
 }
 
 inline void BrokerTask() {
@@ -88,12 +97,11 @@ inline void WorkerTask() {
   std::unique_ptr<zmqpp::message> msg;
   for (size_t i = 0; i < TestCBWData::n_messages_; i++) {
     // wait for message
-    api.ReceiveMessage(&msg);
+    assert(api.ReceiveMessage(&msg));
 
     logger.Debug("Received message: ", *msg);
 
     // echo that message
-    msg->push_front("client");
     api.SendMessage(std::move(msg), CommunicatorId::kBroker);
   }
 
