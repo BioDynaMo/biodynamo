@@ -57,11 +57,10 @@ struct DistSharedInfo {
   // Messages destined to application; waiting for processing
   std::queue<MessageMiddlewareHeaderPair> mq_app_deliver_;
 
-  zmqpp::reactor reactor_;                  // Polling handler
-  zmqpp::context* ctx_;                     // ZMQ context
-  std::string identity_;                    // Current node identity
-  LoggingLevel logging_level_;              // What logger prints
-  volatile bool zctx_interrupted_ = false;  // ZMQ interrupted by signal
+  zmqpp::reactor reactor_;      // Polling handler
+  zmqpp::context* ctx_;         // ZMQ context
+  std::string identity_;        // Current node identity
+  LoggingLevel logging_level_;  // What logger prints
 };
 
 // -------- Majordomo pattern constants --------

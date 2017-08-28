@@ -92,6 +92,8 @@ class DistWorkerAPI {
   std::unique_ptr<std::thread> thread_;  //  Background/Network thread
   std::exception_ptr eptr_;              //  Holds the last exception
 
+  bool zctx_interrupted_;  // ZMQ interrupted by signal
+
   Logger logger_;
 };
 }  // namespace bdm

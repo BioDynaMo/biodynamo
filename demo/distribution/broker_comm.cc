@@ -59,47 +59,48 @@ void BrokerCommunicator::HandleIncomingMessage() {
   // Frame 2:     WorkerCommandHeader (serialized)
   // Frame 3..n:  application frames
 
+  // Receive all messages from the socket
   auto msg_p = std::make_unique<zmqpp::message>();
-  if (!socket_->receive(*msg_p)) {
-    // Interrupted
-    info_->zctx_interrupted_ = true;
-    return;
-  }
-  assert(msg_p->parts() >= 2);
-  logger_.Debug("Received message from broker: ", *msg_p);
+  while (socket_->receive(*msg_p, true)) {
+    assert(msg_p->parts() >= 2);
+    logger_.Debug("Received message from broker: ", *msg_p);
 
-  hb_liveness_ = HEARTBEAT_LIVENESS;
+    hb_liveness_ = HEARTBEAT_LIVENESS;
 
-  // Frame 1
-  std::string protocol = msg_p->get(0);
-  msg_p->pop_front();
-  assert(protocol == MDPW_WORKER);
+    // Frame 1
+    std::string protocol = msg_p->get(0);
+    msg_p->pop_front();
+    assert(protocol == MDPW_WORKER);
 
-  // Frame 2
-  std::unique_ptr<WorkerCommandHeader> header =
-      WorkerCommandHeader::Deserialize(msg_p->raw_data(0), msg_p->size(0));
-  msg_p->pop_front();
+    // Frame 2
+    std::unique_ptr<WorkerCommandHeader> header =
+        WorkerCommandHeader::Deserialize(msg_p->raw_data(0), msg_p->size(0));
+    msg_p->pop_front();
 
-  switch (header->cmd_) {
-    case WorkerProtocolCmd::kRequest:
-      // Keep which client made the request
-      // Since we use synchronous request, the application will reply
-      // FIRST to this request (FIFO order)
-      clients_.push(header->client_id_);
+    switch (header->cmd_) {
+      case WorkerProtocolCmd::kRequest:
+        // Keep which client made the request
+        // Since we use synchronous request, the application will reply
+        // FIRST to this request (FIFO order)
+        clients_.push(header->client_id_);
 
-      // Send message to application
-      info_->mq_app_deliver_.push(
-          std::make_pair(std::move(msg_p), CommunicatorId::kBroker));
-      break;
-    case WorkerProtocolCmd::kHeartbeat:
-      // Do nothing
-      break;
-    case WorkerProtocolCmd::kDisconnect:
-      // Reconnect to broker
-      Connect();
-      break;
-    default:
-      logger_.Error("Invalid input message", *msg_p);
+        // Send message to application
+        info_->mq_app_deliver_.push(
+            std::make_pair(std::move(msg_p), CommunicatorId::kBroker));
+        break;
+      case WorkerProtocolCmd::kHeartbeat:
+        // Do nothing
+        break;
+      case WorkerProtocolCmd::kDisconnect:
+        // Reconnect to broker
+        Connect();
+        break;
+      default:
+        logger_.Error("Invalid input message", *msg_p);
+    }
+
+    // Prepare for next message
+    msg_p = std::make_unique<zmqpp::message>();
   }
 }
 
