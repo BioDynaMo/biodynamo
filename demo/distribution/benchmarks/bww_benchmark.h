@@ -10,7 +10,6 @@
 
 #include "distribution/broker.h"
 #include "distribution/client.h"
-#include "distribution/common.h"
 #include "distribution/dist_worker_api.h"
 
 namespace bdm {
@@ -24,17 +23,27 @@ struct TestBWWData {
 };
 
 inline void TestBWWClientTask() {
-  Logger logger("Task[Client]");
-  Client client(&TestBWWData::ctx_, "tcp://127.0.0.1:5555",
+  Logger logger("Task[Client]", TestBWWData::level_);
+  Client client(&TestBWWData::ctx_, "client", "tcp://127.0.0.1:5555",
                 TestBWWData::level_);
 
   logger.Info("Sending ", TestBWWData::n_messages_, " messages...");
 
-  auto start = std::chrono::high_resolution_clock::now();
-  size_t remaining = TestBWWData::n_messages_;
+  // Spin until both worker are available
+  while (!client.CheckWorker(TestBWWData::worker1_) ||
+         !client.CheckWorker(TestBWWData::worker2_)) {
+    // Don't buzy-wait
+    logger.Debug("Waiting for workers...");
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+  }
 
+  // Sample message
   zmqpp::message hello_msg;
   hello_msg.push_back("Hello world");
+
+  // Start stopwatch
+  auto start = std::chrono::high_resolution_clock::now();
+  size_t remaining = TestBWWData::n_messages_;
 
   ClientProtocolCmd command;
   std::unique_ptr<zmqpp::message> msg;
@@ -45,9 +54,9 @@ inline void TestBWWClientTask() {
         (remaining % 2 == 0 ? TestBWWData::worker1_ : TestBWWData::worker2_);
 
     msg = std::make_unique<zmqpp::message>(hello_msg.copy());
-    client.Send(worker, std::move(msg));
+    client.SendToWorker(std::move(msg), worker);
 
-    msg = std::make_unique<zmqpp::message>(hello_msg.copy());
+    msg = std::make_unique<zmqpp::message>();
     if (!client.Recv(&msg, &command)) {
       logger.Error("Interrupted...");
       break;
@@ -72,8 +81,8 @@ inline void TestBWWClientTask() {
   logger.Info("Time per message: ",
               elapsed / (TestBWWData::n_messages_ - remaining), " ms");
 
-  // Send stop signal
-  // assert( api.Stop() );
+  // Request broker termination
+  assert(client.RequestBrokerTermination());
 }
 
 inline void TestBWWBrokerTask() {
@@ -82,7 +91,7 @@ inline void TestBWWBrokerTask() {
 }
 
 inline void TestBWWWorker1Task() {
-  Logger logger("Task[W1]");
+  Logger logger("Task[W1]", TestBWWData::level_);
   DistWorkerAPI api(&TestBWWData::ctx_, TestBWWData::worker1_,
                     TestBWWData::level_);
 
@@ -91,22 +100,21 @@ inline void TestBWWWorker1Task() {
   assert(api.Start());
 
   std::unique_ptr<zmqpp::message> msg;
-  std::uint8_t from;
+  CommunicatorId from;
   for (size_t i = 0; i < TestBWWData::n_messages_; i++) {
     // wait for message
-    api.ReceiveMessage(&msg);
+    assert(api.ReceiveMessage(&msg, &from));
 
     logger.Debug("Received message: ", *msg);
 
-    msg->get(from, 0);
-    msg->pop_front();
-
-    switch (static_cast<CommunicatorId>(from)) {
+    switch (from) {
       case CommunicatorId::kBroker:
         api.SendMessage(std::move(msg), CommunicatorId::kRightNeighbour);
+        api.ReceiveMessage(&msg, CommunicatorId::kRightNeighbour);
+        api.SendMessage(std::move(msg), CommunicatorId::kBroker);
         break;
       case CommunicatorId::kRightNeighbour:
-        api.SendMessage(std::move(msg), CommunicatorId::kBroker);
+        api.SendMessage(std::move(msg), CommunicatorId::kRightNeighbour);
         break;
       default:
         logger.Error("Wrong communicator id");
@@ -120,7 +128,7 @@ inline void TestBWWWorker1Task() {
 }
 
 inline void TestBWWWorker2Task() {
-  Logger logger("Task[W2]");
+  Logger logger("Task[W2]", TestBWWData::level_);
   DistWorkerAPI api(&TestBWWData::ctx_, TestBWWData::worker2_,
                     TestBWWData::level_);
 
@@ -129,22 +137,21 @@ inline void TestBWWWorker2Task() {
   assert(api.Start());
 
   std::unique_ptr<zmqpp::message> msg;
-  std::uint8_t from;
+  CommunicatorId from;
   for (size_t i = 0; i < TestBWWData::n_messages_; i++) {
     // wait for message
-    api.ReceiveMessage(&msg);
+    assert(api.ReceiveMessage(&msg, &from));
 
     logger.Debug("Received message: ", *msg);
 
-    msg->get(from, 0);
-    msg->pop_front();
-
-    switch (static_cast<CommunicatorId>(from)) {
+    switch (from) {
       case CommunicatorId::kBroker:
         api.SendMessage(std::move(msg), CommunicatorId::kLeftNeighbour);
+        api.ReceiveMessage(&msg, CommunicatorId::kLeftNeighbour);
+        api.SendMessage(std::move(msg), CommunicatorId::kBroker);
         break;
       case CommunicatorId::kLeftNeighbour:
-        api.SendMessage(std::move(msg), CommunicatorId::kBroker);
+        api.SendMessage(std::move(msg), CommunicatorId::kLeftNeighbour);
         break;
       default:
         logger.Error("Wrong communicator id");

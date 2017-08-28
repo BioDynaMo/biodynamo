@@ -18,34 +18,34 @@ struct TestWWData {
   static LoggingLevel level_;
 };
 
-inline void RWorker() {
+inline void LWorker() {
   Logger logger("APP-W1", TestWWData::level_);
   DistWorkerAPI api(&TestWWData::ctx_, "W1", TestWWData::level_);
 
-  api.AddRightNeighbourCommunicator("tcp://127.0.0.1:5500");
+  api.AddLeftNeighbourCommunicator("tcp://127.0.0.1:5500");
   assert(api.Start());
 
   std::unique_ptr<zmqpp::message> msg;
   for (size_t i = 0; i < TestWWData::n_messages_; i++) {
     // wait for message
     msg = std::make_unique<zmqpp::message>();
-    assert(api.ReceiveMessage(&msg, CommunicatorId::kRightNeighbour));
+    assert(api.ReceiveMessage(&msg, CommunicatorId::kLeftNeighbour));
 
     logger.Debug("Received message: ", *msg);
 
     // echo that message
-    api.SendMessage(std::move(msg), CommunicatorId::kRightNeighbour);
+    api.SendMessage(std::move(msg), CommunicatorId::kLeftNeighbour);
   }
 
   // Send stop signal
   assert(api.Stop());
 }
 
-inline void LWorker() {
+inline void RWorker() {
   Logger logger("APP-W2", TestWWData::level_);
   DistWorkerAPI api(&TestWWData::ctx_, "W2", TestWWData::level_);
 
-  api.AddLeftNeighbourCommunicator("tcp://127.0.0.1:5500");
+  api.AddRightNeighbourCommunicator("tcp://127.0.0.1:5500");
   assert(api.Start());
 
   auto start = std::chrono::high_resolution_clock::now();
@@ -59,10 +59,10 @@ inline void LWorker() {
   for (size_t i = 0; i < TestWWData::n_messages_; i++) {
     // Send first must send the message
     msg = std::make_unique<zmqpp::message>(hello_msg.copy());
-    api.SendMessage(std::move(msg), CommunicatorId::kLeftNeighbour);
+    api.SendMessage(std::move(msg), CommunicatorId::kRightNeighbour);
 
     msg = std::make_unique<zmqpp::message>();
-    assert(api.ReceiveMessage(&msg, CommunicatorId::kLeftNeighbour));
+    assert(api.ReceiveMessage(&msg, CommunicatorId::kRightNeighbour));
 
     logger.Debug("Received message: ", *msg);
   }
