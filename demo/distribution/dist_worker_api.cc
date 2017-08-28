@@ -100,6 +100,7 @@ bool DistWorkerAPI::ReceiveMessage(std::unique_ptr<zmqpp::message>* msg,
 }
 
 bool DistWorkerAPI::ReceiveMessage(std::unique_ptr<zmqpp::message>* msg,
+                                   CommunicatorId* from,
                                    duration_ms_t timeout) {
   auto predicate = [](auto& queue) { return !queue.empty(); };
   if (!std::any_of(app_messages_.begin(), app_messages_.end(), predicate)) {
@@ -112,12 +113,20 @@ bool DistWorkerAPI::ReceiveMessage(std::unique_ptr<zmqpp::message>* msg,
   }
 
   // Return message from anyone
+  std::uint8_t comm_id;
   for (auto& c : app_messages_) {
     if (!c.empty()) {
       *msg = std::move(*(c.begin()));
       c.pop_front();
+
+      if (from != nullptr) {
+        *from = static_cast<CommunicatorId>(comm_id);
+      }
+
       return true;
     }
+
+    ++comm_id;
   }
 
   // No message available
