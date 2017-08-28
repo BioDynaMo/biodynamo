@@ -35,6 +35,11 @@ class Broker {
                            std::unique_ptr<zmqpp::message> msg);
   void HandleMessageClient(const std::string& identity,
                            std::unique_ptr<zmqpp::message> msg);
+
+  void ReplyToClient(ClientProtocolCmd cmd, const std::string& client_id,
+                     std::unique_ptr<zmqpp::message> message = nullptr,
+                     const std::string& worker = "");
+
   void Purge();
 
   WorkerEntry* GetOrCreateWorker(const std::string& identity);

@@ -25,15 +25,21 @@ class Client {
   template <typename T>
   void GetSocketOption(zmqpp::socket_option option, T *value);
 
-  void Send(const std::string &identity, std::unique_ptr<zmqpp::message> msg);
+  void SendToWorker(std::unique_ptr<zmqpp::message> msg,
+                    const std::string &worker_id);
   bool Recv(std::unique_ptr<zmqpp::message> *msg_out,
             ClientProtocolCmd *command = nullptr,
             std::string *recv_from = nullptr);
 
-  void RequestBrokerTermination();
+  // RPC calls to broker service
+  bool CheckWorker(const std::string &worker_id);
+  bool RequestBrokerTermination();
 
  private:
   void ConnectToBroker();
+  void Send(ClientProtocolCmd cmd, CommunicatorId receiver,
+            std::unique_ptr<zmqpp::message> msg = nullptr,
+            const std::string &worker_id = "");
 
   zmqpp::context *ctx_;                    //  Our context
   std::unique_ptr<zmqpp::socket> socket_;  //  Socket to broker

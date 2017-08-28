@@ -47,15 +47,18 @@ enum class ClientProtocolCmd : std::uint8_t {
   kInvalid = 0,
   kRequest,
   kReport,
+  kAck,
   kNak,
+  kCheckWorker,
   kBrokerTerminate,
 
   kMinValue = kRequest,
   kMaxValue = kBrokerTerminate,
   kCount = kMaxValue
 };
-const std::string ClientProtocolCmdStr[] = {"Invalid", "Request", "Report",
-                                            "Nak"};
+const std::string ClientProtocolCmdStr[] = {
+    "[Invalid]", "[Request]",     "[Report]",     "[ACK]",
+    "[NAK]",     "[CheckWorker]", "ReqTerminate]"};
 
 inline std::ostream& operator<<(std::ostream& stream,
                                 const ClientProtocolCmd& cmd) {
@@ -77,8 +80,9 @@ enum class WorkerProtocolCmd : std::uint8_t {
   kMaxValue = kDisconnect,
   kCount = kMaxValue
 };
-const std::string WorkerProtocolCmdStr[] = {
-    "Invalid", "Ready", "Request", "Report", "Heartbeat", "Disconnect"};
+const std::string WorkerProtocolCmdStr[] = {"[Invalid]",   "[Ready]",
+                                            "[Request]",   "[Report]",
+                                            "[Heartbeat]", "[Disconnect]"};
 
 inline std::ostream& operator<<(std::ostream& stream,
                                 const WorkerProtocolCmd& cmd) {
