@@ -162,19 +162,20 @@ if (test)
 
   include(cmake/Testing.cmake)
 
-  # main test executable
-  file(GLOB TEST_SOURCES ${CMAKE_SOURCE_DIR}/test/*.cc)
-  file(GLOB TEST_HEADERS ${CMAKE_SOURCE_DIR}/test/*.h)
+  # unit tests
+  #   main test executable
+  file(GLOB TEST_SOURCES ${CMAKE_SOURCE_DIR}/test/unit/*.cc)
+  file(GLOB TEST_HEADERS ${CMAKE_SOURCE_DIR}/test/unit/*.h)
   bdm_add_test_executable(runBiodynamoTestsMain
                           SOURCES ${TEST_SOURCES}
                           HEADERS ${TEST_HEADERS})
 
-  # separate test binaries - each source file is compiled into a separate binary
-  file(GLOB TEST_SOURCES ${CMAKE_SOURCE_DIR}/test/separate_binary/*.cc)
+  #   separate test binaries - each source file is compiled into a separate binary
+  file(GLOB TEST_SOURCES ${CMAKE_SOURCE_DIR}/test/unit/separate_binary/*.cc)
   file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/empty_header.h "")
   foreach(file ${TEST_SOURCES})
     get_filename_component(filename ${file} NAME_WE)
-    set(TEST_HEADER ${CMAKE_SOURCE_DIR}/test/separate_binary/${filename}.h)
+    set(TEST_HEADER ${CMAKE_SOURCE_DIR}/test/unit/separate_binary/${filename}.h)
     if (NOT EXISTS ${TEST_HEADER})
       set(TEST_HEADER ${CMAKE_CURRENT_BINARY_DIR}/empty_header.h)
     endif()
@@ -182,6 +183,16 @@ if (test)
                             SOURCES ${file}
                             HEADERS ${TEST_HEADER})
   endforeach()
+
+  # integration tests
+  if (NOT coverage)
+    #   backup-restore
+    bdm_add_executable(backup-restore
+                      SOURCES test/integration/backup_restore.cc
+                      HEADERS test/integration/backup_restore.h
+                      LIBRARIES biodynamo)
+    add_test(NAME "integration-backup-restore" COMMAND ${CMAKE_SOURCE_DIR}/test/integration/backup_restore.sh)
+  endif()
 endif()
 
 # --------------- add targets for code style and submission checks -------------
@@ -192,9 +203,3 @@ bdm_add_executable(cell_division_module
                    SOURCES demo/cell_division_module.cc
                    HEADERS demo/cell_division_module.h
                    LIBRARIES biodynamo)
-
-# --------------------- build backup_restore executable ------------------
-bdm_add_executable(backup-restore
-                  SOURCES demo/backup_restore.cc
-                  HEADERS demo/backup_restore.h
-                  LIBRARIES biodynamo)
