@@ -192,6 +192,12 @@ bdm_add_executable(cell_division_module
                    SOURCES demo/cell_division_module.cc
                    HEADERS demo/cell_division_module.h
                    LIBRARIES biodynamo)
+                   
+# --------------------- build cell_growth executable ------------------
+bdm_add_executable(cell_growth
+                   SOURCES demo/cell_growth.cc
+                   HEADERS demo/cell_growth.h
+                   LIBRARIES biodynamo)
 
 # --------------------- build backup_restore executable ------------------
 bdm_add_executable(backup-restore
