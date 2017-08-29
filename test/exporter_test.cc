@@ -106,39 +106,42 @@ TEST(ExportTest, ExportToFile) {
   }
   EXPECT_EQ(" 0.5 1 0 -5 5 0.9", line);
   for (int i = 0; i < 5; ++i) {
-  	std::getline(ifs, line);
+    std::getline(ifs, line);
   }
   EXPECT_EQ(" 0 1", line);
-    for (int i = 0; i < 3; ++i) {
-  	std::getline(ifs, line);
+  for (int i = 0; i < 3; ++i) {
+    std::getline(ifs, line);
   }
   EXPECT_EQ(" 0 0", line);
   for (int i = 0; i < 3; ++i) {
-  	std::getline(ifs, line);
+    std::getline(ifs, line);
   }
   EXPECT_EQ(" 10 10", line);
   for (int i = 0; i < 3; ++i) {
-  	std::getline(ifs, line);
+    std::getline(ifs, line);
   }
   EXPECT_EQ(" 0 0", line);
   for (int i = 0; i < 3; ++i) {
-  	std::getline(ifs, line);
+    std::getline(ifs, line);
   }
   EXPECT_EQ(" 523.599 523.599", line);
   for (int i = 0; i < 3; ++i) {
-  	std::getline(ifs, line);
+    std::getline(ifs, line);
   }
   EXPECT_EQ(" 0 0 0 0 0 0", line);
   for (int i = 0; i < 4; ++i) {
-  	std::getline(ifs, line);
+    std::getline(ifs, line);
   }
-  EXPECT_EQ("            <DataArray type=\"Int32\" Name=\"connectivity\" format=\"ascii\">", line);
+  EXPECT_EQ(
+      "            <DataArray type=\"Int32\" Name=\"connectivity\" "
+      "format=\"ascii\">",
+      line);
   for (int i = 0; i < 4; ++i) {
-  	std::getline(ifs, line);
+    std::getline(ifs, line);
   }
   EXPECT_EQ(" 1 1", line);
-    for (int i = 0; i < 3; ++i) {
-  	std::getline(ifs, line);
+  for (int i = 0; i < 3; ++i) {
+    std::getline(ifs, line);
   }
   EXPECT_EQ(" 1 1", line);
   for (int i = 0; i < 5; ++i) {
