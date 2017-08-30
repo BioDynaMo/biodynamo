@@ -9,6 +9,7 @@
 #include <queue>
 #include <string>
 #include <thread>
+#include <utility>
 #include <vector>
 
 #include "broker_comm.h"
@@ -17,6 +18,10 @@
 #include "worker_comm.h"
 
 namespace bdm {
+
+typedef std::pair<std::unique_ptr<zmqpp::message>,
+                  std::unique_ptr<AppMessageHeader> >
+    MessageAppHeaderPair;
 
 class DistWorkerAPI {
  public:
@@ -39,29 +44,59 @@ class DistWorkerAPI {
   //  worker)
   void AddRightNeighbourCommunicator(const std::string& endpoint);
 
-  void SendMessage(std::unique_ptr<zmqpp::message> msg, CommunicatorId to);
-  bool ReceiveMessage(std::unique_ptr<zmqpp::message>* msg,
-                      CommunicatorId* from = nullptr,
-                      duration_ms_t timeout = std::chrono::milliseconds(1000));
-  bool ReceiveMessage(std::unique_ptr<zmqpp::message>* msg, CommunicatorId from,
-                      duration_ms_t timeout = std::chrono::milliseconds(1000));
+  void SendDebugMessage(const std::string& value, CommunicatorId to);
 
-  bool IsConnected(const CommunicatorId comm) const;
+  bool ReceiveDebugMessage(std::string* value, CommunicatorId from);
+
+  bool ReceiveDebugMessageFromAny(std::string* value, CommunicatorId* from);
+
+  void SetWaitingTimeout(duration_ms_t timeout) { wait_timeout_ = timeout; }
+
+  bool IsConnected(const CommunicatorId comm) const {
+    if (!IsValidCommunicator(comm)) {
+      return false;
+    }
+    return GetValidCommunicator(comm).IsConnected();
+  }
 
   bool Stop(bool wait = true, bool force = false);
 
   std::exception_ptr GetLastException() { return eptr_; }
 
  private:
+  void SendRawMessage(std::unique_ptr<zmqpp::message> msg, CommunicatorId to);
+
+  bool WaitForMessage(std::unique_ptr<zmqpp::message>* msg, CommunicatorId from,
+                      std::unique_ptr<AppMessageHeader>* header = nullptr,
+                      AppProtocolCmd cmd = AppProtocolCmd::kInvalid);
+
+  bool WaitForMessageFromAny(
+      std::unique_ptr<zmqpp::message>* msg, CommunicatorId* from,
+      std::unique_ptr<AppMessageHeader>* header = nullptr,
+      AppProtocolCmd cmd = AppProtocolCmd::kInvalid);
+
   void HandleNetwork();
+
   void HandleAppMessage();
 
   void HandleNetworkMessages();
 
   void Cleanup();
 
-  inline bool IsValidCommunicator(CommunicatorId comm_id) const;
-  inline Communicator& GetValidCommunicator(CommunicatorId comm__id) const;
+  inline bool IsValidCommunicator(CommunicatorId comm_id) const {
+    std::uint8_t id = ToUnderlying(comm_id);
+    if (id == 0 || id >= comms_.size()) {
+      logger_.Error("Invalid communicator id: ", id);
+      assert(false);
+    }
+    return (comms_[id] != nullptr);
+  }
+
+  inline Communicator& GetValidCommunicator(CommunicatorId comm_id) const {
+    assert(IsValidCommunicator(comm_id));
+    return *comms_[ToUnderlying(comm_id)];
+  }
+
   void ForEachValidCommunicator(
       std::function<void(std::unique_ptr<Communicator>&)> f);
 
@@ -78,7 +113,7 @@ class DistWorkerAPI {
   std::mutex mq_net_deliver_mtx_;
 
   // Messages ready to be delivered to the application
-  std::array<std::deque<std::unique_ptr<zmqpp::message> >,
+  std::array<std::deque<MessageAppHeaderPair>,
              ToUnderlying(CommunicatorId::kCount)>
       app_messages_;
   // Serialize access to app_messages_
@@ -92,6 +127,7 @@ class DistWorkerAPI {
   std::unique_ptr<std::thread> thread_;  //  Background/Network thread
   std::exception_ptr eptr_;              //  Holds the last exception
 
+  duration_ms_t wait_timeout_;
   bool zctx_interrupted_;  // ZMQ interrupted by signal
 
   Logger logger_;
