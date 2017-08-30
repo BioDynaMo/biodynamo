@@ -70,7 +70,7 @@ void BrokerCommunicator::HandleIncomingMessage() {
     // Frame 1
     std::string protocol = msg_p->get(0);
     msg_p->pop_front();
-    assert(protocol == MDPW_WORKER);
+    assert(protocol == PROTOCOL_WORKER);
 
     // Frame 2
     std::unique_ptr<WorkerCommandHeader> header =
@@ -154,7 +154,7 @@ void BrokerCommunicator::SendToBroker(
   msg.push_front(header.get(), header_sz);
 
   // Frame 1
-  msg.push_front(MDPW_WORKER);
+  msg.push_front(PROTOCOL_WORKER);
 
   logger_.Debug("Sending ", command, " to broker: ", msg);
   socket_->send(msg);

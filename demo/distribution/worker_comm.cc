@@ -54,7 +54,7 @@ void WorkerCommunicator::HandleIncomingMessage() {
     // Frame 1
     std::string protocol = msg_p->get(0);
     msg_p->pop_front();
-    assert(protocol == MDPW_WORKER);
+    assert(protocol == PROTOCOL_WORKER);
 
     // Frame 2
     std::unique_ptr<WorkerCommandHeader> header =
@@ -70,7 +70,7 @@ void WorkerCommunicator::HandleIncomingMessage() {
         coworker_identity_ = header->client_id_;
 
         if (!client_ && !is_connected_) {
-          // Reply with MDPW_READY to co-worker
+          // Reply with [Ready] to co-worker
           logger_.Info("Connection request from ", coworker_str_,
                        " co-worker [", coworker_identity_, "]");
           SendToCoWorker(WorkerProtocolCmd::kReady);
@@ -153,7 +153,7 @@ void WorkerCommunicator::SendToCoWorker(
   msg->push_front(header.get(), header_sz);
 
   // Frame 1
-  msg->push_front(MDPW_WORKER);
+  msg->push_front(PROTOCOL_WORKER);
 
   if (!client_) {
     // Need to add the coworker identity

@@ -16,7 +16,7 @@ Broker::~Broker() {}
 
 void Broker::Bind() {
   socket_->bind(endpoint_);
-  logger_.Info("MDP broker/0.2.0 is active at ", endpoint_);
+  logger_.Info("BDM broker/0.1 is active at ", endpoint_);
 }
 
 //  This method processes one READY, REPORT, HEARTBEAT or
@@ -76,7 +76,7 @@ void Broker::HandleMessageWorker(const std::string& identity,
       msg->push_front(c_header.get(), c_header_sz);
 
       // Frame 2
-      msg->push_front(MDPC_CLIENT);
+      msg->push_front(PROTOCOL_CLIENT);
       // Frame 1
       msg->push_front(header->client_id_);
 
@@ -185,7 +185,7 @@ void Broker::ReplyToClient(ClientProtocolCmd cmd, const std::string& client_id,
   msg->push_front(header.get(), header_sz);
 
   // Frame 2
-  msg->push_front(MDPC_CLIENT);
+  msg->push_front(PROTOCOL_CLIENT);
   // Frame 1
   msg->push_front(client_id);
 
@@ -274,9 +274,9 @@ void Broker::Run() {
       std::string protocol = msg->get(0);
       msg->pop_front();
 
-      if (protocol == MDPC_CLIENT) {
+      if (protocol == PROTOCOL_CLIENT) {
         HandleMessageClient(sender, std::move(msg));
-      } else if (protocol == MDPW_WORKER) {
+      } else if (protocol == PROTOCOL_WORKER) {
         HandleMessageWorker(sender, std::move(msg));
       } else {
         logger_.Error("Invalid message: ", *msg);

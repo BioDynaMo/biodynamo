@@ -74,7 +74,7 @@ void Client::Send(ClientProtocolCmd cmd, CommunicatorId receiver,
   msg->push_front(header.get(), header_sz);
 
   // Frame 1
-  msg->push_front(MDPC_CLIENT);
+  msg->push_front(PROTOCOL_CLIENT);
 
   if (receiver == CommunicatorId::kBroker) {
     logger_.Debug("Send ", cmd, " request to broker: ", *msg);
@@ -118,7 +118,7 @@ bool Client::Recv(std::unique_ptr<zmqpp::message>* msg_out,
   // Read protocol version
   std::string protocol = msg->get(0);
   msg->pop_front();
-  assert(protocol == MDPC_CLIENT);
+  assert(protocol == PROTOCOL_CLIENT);
 
   std::unique_ptr<ClientCommandHeader> header =
       ClientCommandHeader::Deserialize(msg->raw_data(0), msg->size(0));
