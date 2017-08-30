@@ -29,10 +29,8 @@ void Broker::HandleMessageWorker(const std::string& identity,
   assert(msg->parts() >= 1);  //  At least, command
 
   // Frame 1
-  std::unique_ptr<WorkerMiddlewareMessageHeader> header =
-      WorkerMiddlewareMessageHeader::Deserialize(msg->raw_data(0),
-                                                 msg->size(0));
-  msg->pop_front();
+  auto header =
+      MessageUtil::PopFrontHeader<WorkerMiddlewareMessageHeader>(msg.get());
 
   bool worker_ready = (workers_.find(identity) != workers_.end());
   WorkerEntry* worker = GetOrCreateWorker(identity);
@@ -66,15 +64,12 @@ void Broker::HandleMessageWorker(const std::string& identity,
       // Frame 4..n:  Application frames
 
       // Frame 3
-      size_t c_header_sz;
-      std::unique_ptr<const char[]> c_header =
-          ClientMiddlewareMessageHeader(ClientProtocolCmd::kReport,
-                                        CommunicatorId::kSomeWorker,
-                                        CommunicatorId::kClient)
-              .worker_id(worker->identity_)
-              .client_id(header->client_id_)
-              .Serialize(&c_header_sz);
-      msg->push_front(c_header.get(), c_header_sz);
+      auto c_header = ClientMiddlewareMessageHeader(ClientProtocolCmd::kReport,
+                                                    CommunicatorId::kSomeWorker,
+                                                    CommunicatorId::kClient)
+                          .worker_id(worker->identity_)
+                          .client_id(header->client_id_);
+      MessageUtil::PushFrontHeader(msg.get(), c_header);
 
       // Frame 2
       msg->push_front(PROTOCOL_CLIENT);
@@ -114,10 +109,9 @@ void Broker::HandleMessageClient(const std::string& sender,
   assert(msg->parts() >= 1);
 
   // Frame 1
-  std::unique_ptr<ClientMiddlewareMessageHeader> header =
-      ClientMiddlewareMessageHeader::Deserialize(msg->raw_data(0),
-                                                 msg->size(0));
-  msg->pop_front();
+  auto header =
+      MessageUtil::PopFrontHeader<ClientMiddlewareMessageHeader>(msg.get());
+
   assert(sender == header->client_id_);
 
   bool worker_exists = (workers_.find(header->worker_id_) != workers_.end());
@@ -178,14 +172,11 @@ void Broker::ReplyToClient(ClientProtocolCmd cmd, const std::string& client_id,
   }
 
   // Frame 3
-  size_t header_sz;
-  std::unique_ptr<const char[]> header =
-      ClientMiddlewareMessageHeader(cmd, CommunicatorId::kBroker,
-                                    CommunicatorId::kClient)
-          .client_id(client_id)
-          .worker_id(worker_id)
-          .Serialize(&header_sz);
-  msg->push_front(header.get(), header_sz);
+  auto header = ClientMiddlewareMessageHeader(cmd, CommunicatorId::kBroker,
+                                              CommunicatorId::kClient)
+                    .client_id(client_id)
+                    .worker_id(worker_id);
+  MessageUtil::PushFrontHeader(msg.get(), header);
 
   // Frame 2
   msg->push_front(PROTOCOL_CLIENT);

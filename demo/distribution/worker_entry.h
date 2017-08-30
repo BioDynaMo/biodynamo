@@ -20,9 +20,11 @@ class WorkerEntry {
   ~WorkerEntry() {}
 
   void Send(WorkerProtocolCmd command,
-            std::unique_ptr<zmqpp::message> message = nullptr,
+            std::unique_ptr<zmqpp::message> msg = nullptr,
             const std::string& client_id = "") const {
-    auto msg = message ? message->copy() : zmqpp::message();
+    if (msg == nullptr) {
+      msg = std::make_unique<zmqpp::message>();
+    }
 
     // Message format:
     // Frame 1:     worker_id (manually; ROUTER socket)
@@ -34,23 +36,20 @@ class WorkerEntry {
     auto sender =
         client_id.empty() ? CommunicatorId::kBroker : CommunicatorId::kClient;
 
-    size_t header_sz;
-    std::unique_ptr<const char[]> header =
-        WorkerMiddlewareMessageHeader(command, sender,
-                                      CommunicatorId::kSomeWorker)
-            .worker_id(identity_)
-            .client_id(client_id)
-            .Serialize(&header_sz);
-    msg.push_front(header.get(), header_sz);
+    auto header = WorkerMiddlewareMessageHeader(command, sender,
+                                                CommunicatorId::kSomeWorker)
+                      .worker_id(identity_)
+                      .client_id(client_id);
+    MessageUtil::PushFrontHeader(msg.get(), header);
 
     // Frame 2
-    msg.push_front(PROTOCOL_WORKER);
+    msg->push_front(PROTOCOL_WORKER);
 
     // Frame 1: Deliver to correct worker
-    msg.push_front(identity_);
+    msg->push_front(identity_);
 
-    logger_.Debug("Sending ", command, " to worker[", identity_, "]: ", msg);
-    socket_->send(msg);
+    logger_.Debug("Sending ", command, " to worker[", identity_, "]: ", *msg);
+    socket_->send(*msg);
   }
 
   std::string identity_;  // Worker (printable) identity
