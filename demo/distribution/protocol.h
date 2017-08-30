@@ -19,11 +19,13 @@ const std::string PROTOCOL_WORKER = "BDM/0.1W";
 
 enum class AppProtocolCmd : std::uint8_t {
   kInvalid = 0,
-  kDebugString,
+  kDebug,
+  kRequestHaloRegion,
+  kReportHaloRegion,
 
   kCount,
-  kMinValue = kDebugString,
-  kMaxValue = kDebugString
+  kMinValue = kDebug,
+  kMaxValue = kRequestHaloRegion,
 };
 const std::string AppProtocolCmdStr[] = {"Invalid", "DebugString"};
 
@@ -34,10 +36,43 @@ inline std::ostream& operator<<(std::ostream& stream,
 }
 
 class AppMessageHeader {
-  AppProtocolCmd cmd;
-  CommunicatorId sender;
+ public:
+  AppMessageHeader() {}
+  explicit AppMessageHeader(AppProtocolCmd cmd) : cmd_(cmd) {}
+  virtual ~AppMessageHeader() {}
 
-  // ClassDef(AppMessageHeader, 1);
+  AppProtocolCmd cmd_;
+
+  inline friend std::ostream& operator<<(std::ostream& stream,
+                                         const AppMessageHeader& header) {
+    stream << "[Command]: " << header.cmd_ << std::endl;
+    return stream;
+  }
+
+  static std::unique_ptr<AppMessageHeader> Deserialize(const void* data,
+                                                       size_t size) {
+    TBufferFile buf(TBufferFile::EMode::kRead, size, const_cast<void*>(data),
+                    kFALSE);
+    return std::unique_ptr<AppMessageHeader>(
+        reinterpret_cast<AppMessageHeader*>(
+            buf.ReadObjectAny(AppMessageHeader::Class())));
+  }
+
+  inline std::unique_ptr<const char[]> Serialize(size_t* sz_out) {
+    auto data_sz = TBuffer::kInitialSize;  //+ TBuffer::kExtraSpace;
+    std::unique_ptr<char[]> data(new char[data_sz]);
+    memset(data.get(), 0, data_sz);  // initialize bytes
+
+    TBufferFile buf(TBufferFile::EMode::kWrite, data_sz, data.get(), kFALSE,
+                    TStorage::ReAllocChar);
+    assert(buf.WriteObjectAny(this, AppMessageHeader::Class()) == 1);
+    assert(buf.CheckObject(this, AppMessageHeader::Class()));
+
+    *sz_out = buf.Length();
+    return std::move(data);
+  }
+
+  ClassDef(AppMessageHeader, 1);
 };
 
 // ###### Middleware protocol definition ########## //
