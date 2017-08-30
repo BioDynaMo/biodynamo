@@ -25,16 +25,15 @@ inline void LWorker() {
   api.AddLeftNeighbourCommunicator("tcp://127.0.0.1:5500");
   assert(api.Start());
 
-  std::unique_ptr<zmqpp::message> msg;
+  std::string msg;
   for (size_t i = 0; i < TestWWData::n_messages_; i++) {
     // wait for message
-    msg = std::make_unique<zmqpp::message>();
-    assert(api.ReceiveMessage(&msg, CommunicatorId::kLeftNeighbour));
+    assert(api.ReceiveDebugMessage(&msg, CommunicatorId::kLeftNeighbour));
 
-    logger.Debug("Received message: ", *msg);
+    logger.Debug("Received message: ", msg);
 
     // echo that message
-    api.SendMessage(std::move(msg), CommunicatorId::kLeftNeighbour);
+    api.SendDebugMessage(msg, CommunicatorId::kLeftNeighbour);
   }
 
   // Send stop signal
@@ -52,19 +51,14 @@ inline void RWorker() {
 
   logger.Info("I: Sending ", TestWWData::n_messages_, " messages...");
 
-  zmqpp::message hello_msg;
-  hello_msg.push_front("Hello world");
-
-  std::unique_ptr<zmqpp::message> msg;
+  std::string msg = "Hello world!";
   for (size_t i = 0; i < TestWWData::n_messages_; i++) {
     // Send first must send the message
-    msg = std::make_unique<zmqpp::message>(hello_msg.copy());
-    api.SendMessage(std::move(msg), CommunicatorId::kRightNeighbour);
+    api.SendDebugMessage(msg, CommunicatorId::kRightNeighbour);
 
-    msg = std::make_unique<zmqpp::message>();
-    assert(api.ReceiveMessage(&msg, CommunicatorId::kRightNeighbour));
+    assert(api.ReceiveDebugMessage(&msg, CommunicatorId::kRightNeighbour));
 
-    logger.Debug("Received message: ", *msg);
+    logger.Debug("Received message: ", msg);
   }
 
   auto elapsed =
