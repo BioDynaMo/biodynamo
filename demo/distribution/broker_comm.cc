@@ -56,7 +56,7 @@ void BrokerCommunicator::HandleOutgoingMessage(
 void BrokerCommunicator::HandleIncomingMessage() {
   // Expected message format
   // Frame 1:     "BDM/0.1W"
-  // Frame 2:     WorkerCommandHeader (serialized)
+  // Frame 2:     WorkerMiddlewareMessageHeader (serialized)
   // Frame 3..n:  application frames
 
   // Receive all messages from the socket
@@ -73,8 +73,9 @@ void BrokerCommunicator::HandleIncomingMessage() {
     assert(protocol == PROTOCOL_WORKER);
 
     // Frame 2
-    std::unique_ptr<WorkerCommandHeader> header =
-        WorkerCommandHeader::Deserialize(msg_p->raw_data(0), msg_p->size(0));
+    std::unique_ptr<WorkerMiddlewareMessageHeader> header =
+        WorkerMiddlewareMessageHeader::Deserialize(msg_p->raw_data(0),
+                                                   msg_p->size(0));
     msg_p->pop_front();
 
     switch (header->cmd_) {
@@ -136,7 +137,7 @@ void BrokerCommunicator::SendToBroker(
     const std::string client_id /* = "" */) {
   // Message format sent
   // Frame 1:    BDM/0.1W
-  // Frame 2:    WorkerCommandHeader class (serialized)
+  // Frame 2:    WorkerMiddlewareMessageHeader class (serialized)
   // Frame 3..n: Application frames
 
   auto msg = message ? message->copy() : zmqpp::message();
@@ -147,7 +148,8 @@ void BrokerCommunicator::SendToBroker(
   // Frame 2
   size_t header_sz;
   std::unique_ptr<const char[]> header =
-      WorkerCommandHeader(command, CommunicatorId::kSomeWorker, receiver)
+      WorkerMiddlewareMessageHeader(command, CommunicatorId::kSomeWorker,
+                                    receiver)
           .worker_id(info_->identity_)
           .client_id(client_id)
           .Serialize(&header_sz);

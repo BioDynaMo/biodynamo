@@ -27,7 +27,7 @@ class WorkerEntry {
     // Message format:
     // Frame 1:     worker_id (manually; ROUTER socket)
     // Frame 2:     "BDM/0.1W"
-    // Frame 3:     WorkerCommandHeader class (serialized)
+    // Frame 3:     WorkerMiddlewareMessageHeader class (serialized)
     // Frame 4..n:  Application frames
 
     // Frame 3
@@ -36,7 +36,8 @@ class WorkerEntry {
 
     size_t header_sz;
     std::unique_ptr<const char[]> header =
-        WorkerCommandHeader(command, sender, CommunicatorId::kSomeWorker)
+        WorkerMiddlewareMessageHeader(command, sender,
+                                      CommunicatorId::kSomeWorker)
             .worker_id(identity_)
             .client_id(client_id)
             .Serialize(&header_sz);
