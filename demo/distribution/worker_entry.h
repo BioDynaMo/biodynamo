@@ -43,7 +43,7 @@ class WorkerEntry {
     msg.push_front(header.get(), header_sz);
 
     // Frame 2
-    msg.push_front(MDPW_WORKER);
+    msg.push_front(PROTOCOL_WORKER);
 
     // Frame 1: Deliver to correct worker
     msg.push_front(identity_);

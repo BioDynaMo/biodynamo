@@ -65,8 +65,6 @@ struct DistSharedInfo {
 
 // -------- Majordomo pattern constants --------
 // ---------------------------------------------
-const std::string MDPC_CLIENT = "MDPC0X";
-const std::string MDPW_WORKER = "MDPW0X";
 
 // Heartbeat
 const size_t HEARTBEAT_LIVENESS = 3;           //  3-5 is reasonable
