@@ -24,13 +24,14 @@ void Broker::Bind() {
 void Broker::HandleMessageWorker(const std::string& identity,
                                  std::unique_ptr<zmqpp::message> msg) {
   // Message format:
-  // Frame 1:     WorkerCommandHeader class (serialized)
+  // Frame 1:     WorkerMiddlewareMessageHeader class (serialized)
   // Frame 2..n:  Application frames
   assert(msg->parts() >= 1);  //  At least, command
 
   // Frame 1
-  std::unique_ptr<WorkerCommandHeader> header =
-      WorkerCommandHeader::Deserialize(msg->raw_data(0), msg->size(0));
+  std::unique_ptr<WorkerMiddlewareMessageHeader> header =
+      WorkerMiddlewareMessageHeader::Deserialize(msg->raw_data(0),
+                                                 msg->size(0));
   msg->pop_front();
 
   bool worker_ready = (workers_.find(identity) != workers_.end());
@@ -61,15 +62,15 @@ void Broker::HandleMessageWorker(const std::string& identity,
       // Message format:
       // Frame 1:     client_id (manually; ROUTER socket)
       // Frame 2:     "BDM/0.1C"
-      // Frame 3:     ClientCommandHeader class (serialized)
+      // Frame 3:     ClientMiddlewareMessageHeader class (serialized)
       // Frame 4..n:  Application frames
 
       // Frame 3
       size_t c_header_sz;
       std::unique_ptr<const char[]> c_header =
-          ClientCommandHeader(ClientProtocolCmd::kReport,
-                              CommunicatorId::kSomeWorker,
-                              CommunicatorId::kClient)
+          ClientMiddlewareMessageHeader(ClientProtocolCmd::kReport,
+                                        CommunicatorId::kSomeWorker,
+                                        CommunicatorId::kClient)
               .worker_id(worker->identity_)
               .client_id(header->client_id_)
               .Serialize(&c_header_sz);
@@ -108,13 +109,14 @@ void Broker::HandleMessageWorker(const std::string& identity,
 void Broker::HandleMessageClient(const std::string& sender,
                                  std::unique_ptr<zmqpp::message> msg) {
   // Message format:
-  // Frame 1:     ClientCommandHeader class (serialized)
+  // Frame 1:     ClientMiddlewareMessageHeader class (serialized)
   // Frame 2..n:  Application frames
   assert(msg->parts() >= 1);
 
   // Frame 1
-  std::unique_ptr<ClientCommandHeader> header =
-      ClientCommandHeader::Deserialize(msg->raw_data(0), msg->size(0));
+  std::unique_ptr<ClientMiddlewareMessageHeader> header =
+      ClientMiddlewareMessageHeader::Deserialize(msg->raw_data(0),
+                                                 msg->size(0));
   msg->pop_front();
   assert(sender == header->client_id_);
 
@@ -168,7 +170,7 @@ void Broker::ReplyToClient(ClientProtocolCmd cmd, const std::string& client_id,
   // Message format:
   // Frame 1:     client_id (manually; ROUTER socket)
   // Frame 2:     "BDM/0.1C"
-  // Frame 3:     ClientCommandHeader class (serialized)
+  // Frame 3:     ClientMiddlewareMessageHeader class (serialized)
   // Frame 4..n:  Application frames
 
   if (!msg) {
@@ -178,7 +180,8 @@ void Broker::ReplyToClient(ClientProtocolCmd cmd, const std::string& client_id,
   // Frame 3
   size_t header_sz;
   std::unique_ptr<const char[]> header =
-      ClientCommandHeader(cmd, CommunicatorId::kBroker, CommunicatorId::kClient)
+      ClientMiddlewareMessageHeader(cmd, CommunicatorId::kBroker,
+                                    CommunicatorId::kClient)
           .client_id(client_id)
           .worker_id(worker_id)
           .Serialize(&header_sz);
@@ -260,7 +263,7 @@ void Broker::Run() {
       // Message format received (expected)
       // Frame 1:     sender id (auto; DEALER socket)
       // Frame 2:     "BDM/0.1C" || "BDM/0.1W"
-      // Frame 3:     *CommandHeader class (serialized)
+      // Frame 3:     *MiddlewareMessageHeader class (serialized)
       // Frame 4..n:  Application frames
       assert(msg->parts() >= 3);
 

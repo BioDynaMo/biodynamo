@@ -33,7 +33,7 @@ void WorkerCommunicator::HandleIncomingMessage() {
   // Expected message format
   // Frame *:     coworker_id (if client)
   // Frame 1:     "BDM/0.1W"
-  // Frame 2:     WorkerCommandHeader (serialized)
+  // Frame 2:     WorkerMiddlewareMessageHeader (serialized)
   // Frame 3..n:  application frames
 
   // Receive all messages from the socket
@@ -57,8 +57,9 @@ void WorkerCommunicator::HandleIncomingMessage() {
     assert(protocol == PROTOCOL_WORKER);
 
     // Frame 2
-    std::unique_ptr<WorkerCommandHeader> header =
-        WorkerCommandHeader::Deserialize(msg_p->raw_data(0), msg_p->size(0));
+    std::unique_ptr<WorkerMiddlewareMessageHeader> header =
+        WorkerMiddlewareMessageHeader::Deserialize(msg_p->raw_data(0),
+                                                   msg_p->size(0));
     msg_p->pop_front();
     assert(header->sender_ == (client_ ? CommunicatorId::kRightNeighbour
                                        : CommunicatorId::kLeftNeighbour));
@@ -133,7 +134,7 @@ void WorkerCommunicator::SendToCoWorker(
     std::unique_ptr<zmqpp::message> message /* = nullptr */) {
   // Message format sent
   // Frame 1:    BDM/0.1W
-  // Frame 2:    WorkerCommandHeader class (serialized)
+  // Frame 2:    WorkerMiddlewareMessageHeader class (serialized)
   // Frame 3..n: Application frames
 
   auto msg = message ? std::move(message) : std::make_unique<zmqpp::message>();
@@ -146,7 +147,7 @@ void WorkerCommunicator::SendToCoWorker(
   // Frame 2
   size_t header_sz;
   std::unique_ptr<const char[]> header =
-      WorkerCommandHeader(command, sender, receiver)
+      WorkerMiddlewareMessageHeader(command, sender, receiver)
           .client_id(info_->identity_)
           .worker_id(coworker_identity_)
           .Serialize(&header_sz);

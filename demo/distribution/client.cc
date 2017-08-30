@@ -53,7 +53,7 @@ void Client::Send(ClientProtocolCmd cmd, CommunicatorId receiver,
                   const std::string& worker_id) {
   //  Message format:
   //  Frame 1:    "BDM/0.1C"
-  //  Frame 2:    ClientCommandHeader class (serialized)
+  //  Frame 2:    ClientMiddlewareMessageHeader class (serialized)
   //  Frame 3:    AppMessageHeader class (serialized)
   //  Frame 4..n: Application frames
 
@@ -67,7 +67,7 @@ void Client::Send(ClientProtocolCmd cmd, CommunicatorId receiver,
   // Frame 2
   size_t header_sz;
   std::unique_ptr<const char[]> header =
-      ClientCommandHeader(cmd, CommunicatorId::kClient, receiver)
+      ClientMiddlewareMessageHeader(cmd, CommunicatorId::kClient, receiver)
           .client_id(identity_)
           .worker_id(worker_id)
           .Serialize(&header_sz);
@@ -111,7 +111,7 @@ bool Client::Recv(std::unique_ptr<zmqpp::message>* msg_out,
 
   //  Message format:
   //  Frame 1:    "BDM/0.1C"
-  //  Frame 2:    ClientCommandHeader class (serialized)
+  //  Frame 2:    ClientMiddlewareMessageHeader class (serialized)
   //  Frame 3..n: Application frames
   assert(msg->parts() >= 2);
 
@@ -120,8 +120,9 @@ bool Client::Recv(std::unique_ptr<zmqpp::message>* msg_out,
   msg->pop_front();
   assert(protocol == PROTOCOL_CLIENT);
 
-  std::unique_ptr<ClientCommandHeader> header =
-      ClientCommandHeader::Deserialize(msg->raw_data(0), msg->size(0));
+  std::unique_ptr<ClientMiddlewareMessageHeader> header =
+      ClientMiddlewareMessageHeader::Deserialize(msg->raw_data(0),
+                                                 msg->size(0));
   msg->pop_front();
   assert(header->cmd_ == ClientProtocolCmd::kReport ||
          header->cmd_ == ClientProtocolCmd::kAck ||

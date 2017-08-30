@@ -125,18 +125,18 @@ inline std::ostream& operator<<(std::ostream& stream,
   return stream;
 }
 
-class CommandHeader {
+class MiddlewareMessageHeader {
  public:
-  CommandHeader() {}
-  CommandHeader(CommunicatorId sender, CommunicatorId receiver)
+  MiddlewareMessageHeader() {}
+  MiddlewareMessageHeader(CommunicatorId sender, CommunicatorId receiver)
       : sender_(sender), receiver_(receiver) {}
-  virtual ~CommandHeader() {}
+  virtual ~MiddlewareMessageHeader() {}
 
   CommunicatorId sender_ = CommunicatorId::kUndefined;
   CommunicatorId receiver_ = CommunicatorId::kUndefined;
 
-  inline friend std::ostream& operator<<(std::ostream& stream,
-                                         const CommandHeader& header) {
+  inline friend std::ostream& operator<<(
+      std::ostream& stream, const MiddlewareMessageHeader& header) {
     stream << "[Sender    ]: " << header.sender_ << std::endl
            << "[Receiver  ]: " << header.receiver_ << std::endl;
     return stream;
@@ -166,7 +166,7 @@ class CommandHeader {
     return std::move(data);
   }
 
-  ClassDef(CommandHeader, 1);
+  ClassDef(MiddlewareMessageHeader, 1);
 };
 
 #define optional_arg(class_, type, name, default_value) \
@@ -177,35 +177,36 @@ class CommandHeader {
   }                                                     \
   type name##_ = default_value
 
-class ClientCommandHeader : public CommandHeader {
+class ClientMiddlewareMessageHeader : public MiddlewareMessageHeader {
  public:
-  ClientCommandHeader() {}
-  ClientCommandHeader(ClientProtocolCmd cmd, CommunicatorId sender,
-                      CommunicatorId receiver)
-      : CommandHeader(sender, receiver), cmd_(cmd) {}
-  virtual ~ClientCommandHeader() {}
+  ClientMiddlewareMessageHeader() {}
+  ClientMiddlewareMessageHeader(ClientProtocolCmd cmd, CommunicatorId sender,
+                                CommunicatorId receiver)
+      : MiddlewareMessageHeader(sender, receiver), cmd_(cmd) {}
+  virtual ~ClientMiddlewareMessageHeader() {}
 
   ClientProtocolCmd cmd_ = ClientProtocolCmd::kInvalid;
 
-  optional_arg(ClientCommandHeader, std::string, client_id, "");
-  optional_arg(ClientCommandHeader, std::string, worker_id, "");
-  optional_arg(ClientCommandHeader, std::uint16_t, app_frames, 0);
+  optional_arg(ClientMiddlewareMessageHeader, std::string, client_id, "");
+  optional_arg(ClientMiddlewareMessageHeader, std::string, worker_id, "");
+  optional_arg(ClientMiddlewareMessageHeader, std::uint16_t, app_frames, 0);
 
   std::unique_ptr<const char[]> Serialize(size_t* sz_out) {
-    return CommandHeader::Serialize(*this, sz_out);
+    return MiddlewareMessageHeader::Serialize(*this, sz_out);
   }
 
-  static std::unique_ptr<ClientCommandHeader> Deserialize(const void* data,
-                                                          size_t size) {
-    return CommandHeader::Deserialize<ClientCommandHeader>(data, size);
+  static std::unique_ptr<ClientMiddlewareMessageHeader> Deserialize(
+      const void* data, size_t size) {
+    return MiddlewareMessageHeader::Deserialize<ClientMiddlewareMessageHeader>(
+        data, size);
   }
 
-  inline friend std::ostream& operator<<(std::ostream& stream,
-                                         const ClientCommandHeader& header) {
-    stream << std::endl << "{ClientCommandHeader}" << std::endl;
+  inline friend std::ostream& operator<<(
+      std::ostream& stream, const ClientMiddlewareMessageHeader& header) {
+    stream << std::endl << "{ClientMiddlewareMessageHeader}" << std::endl;
 
     stream << "[Command   ]: " << header.cmd_ << std::endl;
-    stream << static_cast<CommandHeader>(header);
+    stream << static_cast<MiddlewareMessageHeader>(header);
     stream << "[Client id ]: " << header.client_id_ << std::endl
            << "[Worker id ]: " << header.worker_id_ << std::endl
            << "[App frames]: " << header.app_frames_ << std::endl;
@@ -213,38 +214,39 @@ class ClientCommandHeader : public CommandHeader {
     return stream;
   }
 
-  ClassDef(ClientCommandHeader, 1);
+  ClassDef(ClientMiddlewareMessageHeader, 1);
 };
 
-class WorkerCommandHeader : public CommandHeader {
+class WorkerMiddlewareMessageHeader : public MiddlewareMessageHeader {
  public:
-  WorkerCommandHeader() {}
-  WorkerCommandHeader(WorkerProtocolCmd cmd, CommunicatorId sender,
-                      CommunicatorId receiver)
-      : CommandHeader(sender, receiver), cmd_(cmd) {}
-  virtual ~WorkerCommandHeader() {}
+  WorkerMiddlewareMessageHeader() {}
+  WorkerMiddlewareMessageHeader(WorkerProtocolCmd cmd, CommunicatorId sender,
+                                CommunicatorId receiver)
+      : MiddlewareMessageHeader(sender, receiver), cmd_(cmd) {}
+  virtual ~WorkerMiddlewareMessageHeader() {}
 
   WorkerProtocolCmd cmd_ = WorkerProtocolCmd::kInvalid;
 
-  optional_arg(WorkerCommandHeader, std::string, client_id, "");
-  optional_arg(WorkerCommandHeader, std::string, worker_id, "");
-  optional_arg(WorkerCommandHeader, std::uint16_t, app_frames, 0);
+  optional_arg(WorkerMiddlewareMessageHeader, std::string, client_id, "");
+  optional_arg(WorkerMiddlewareMessageHeader, std::string, worker_id, "");
+  optional_arg(WorkerMiddlewareMessageHeader, std::uint16_t, app_frames, 0);
 
   std::unique_ptr<const char[]> Serialize(size_t* sz_out) {
-    return CommandHeader::Serialize(*this, sz_out);
+    return MiddlewareMessageHeader::Serialize(*this, sz_out);
   }
 
-  static std::unique_ptr<WorkerCommandHeader> Deserialize(const void* data,
-                                                          size_t size) {
-    return CommandHeader::Deserialize<WorkerCommandHeader>(data, size);
+  static std::unique_ptr<WorkerMiddlewareMessageHeader> Deserialize(
+      const void* data, size_t size) {
+    return MiddlewareMessageHeader::Deserialize<WorkerMiddlewareMessageHeader>(
+        data, size);
   }
 
-  inline friend std::ostream& operator<<(std::ostream& stream,
-                                         const WorkerCommandHeader& header) {
-    stream << std::endl << "{WorkerCommandHeader}" << std::endl;
+  inline friend std::ostream& operator<<(
+      std::ostream& stream, const WorkerMiddlewareMessageHeader& header) {
+    stream << std::endl << "{WorkerMiddlewareMessageHeader}" << std::endl;
 
     stream << "[Command   ]: " << header.cmd_ << std::endl;
-    stream << static_cast<CommandHeader>(header);
+    stream << static_cast<MiddlewareMessageHeader>(header);
     stream << "[Client id ]: " << header.client_id_ << std::endl
            << "[Worker id ]: " << header.worker_id_ << std::endl
            << "[App frames]: " << header.app_frames_ << std::endl;
@@ -252,7 +254,7 @@ class WorkerCommandHeader : public CommandHeader {
     return stream;
   }
 
-  ClassDef(WorkerCommandHeader, 1);
+  ClassDef(WorkerMiddlewareMessageHeader, 1);
 };
 
 }  // namespace bdm
