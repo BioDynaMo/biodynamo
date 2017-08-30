@@ -73,10 +73,8 @@ void BrokerCommunicator::HandleIncomingMessage() {
     assert(protocol == PROTOCOL_WORKER);
 
     // Frame 2
-    std::unique_ptr<WorkerMiddlewareMessageHeader> header =
-        WorkerMiddlewareMessageHeader::Deserialize(msg_p->raw_data(0),
-                                                   msg_p->size(0));
-    msg_p->pop_front();
+    auto header =
+        MessageUtil::PopFrontHeader<WorkerMiddlewareMessageHeader>(msg_p.get());
 
     switch (header->cmd_) {
       case WorkerProtocolCmd::kRequest:
@@ -133,33 +131,32 @@ void BrokerCommunicator::Connect() {
 
 void BrokerCommunicator::SendToBroker(
     const WorkerProtocolCmd command,
-    std::unique_ptr<zmqpp::message> message /* = nullptr */,
+    std::unique_ptr<zmqpp::message> msg /* = nullptr */,
     const std::string client_id /* = "" */) {
   // Message format sent
   // Frame 1:    BDM/0.1W
   // Frame 2:    WorkerMiddlewareMessageHeader class (serialized)
   // Frame 3..n: Application frames
 
-  auto msg = message ? message->copy() : zmqpp::message();
+  if (!msg) {
+    msg = std::make_unique<zmqpp::message>();
+  }
 
   auto receiver =
       client_id.empty() ? CommunicatorId::kBroker : CommunicatorId::kClient;
 
   // Frame 2
-  size_t header_sz;
-  std::unique_ptr<const char[]> header =
-      WorkerMiddlewareMessageHeader(command, CommunicatorId::kSomeWorker,
-                                    receiver)
-          .worker_id(info_->identity_)
-          .client_id(client_id)
-          .Serialize(&header_sz);
-  msg.push_front(header.get(), header_sz);
+  auto header = WorkerMiddlewareMessageHeader(
+                    command, CommunicatorId::kSomeWorker, receiver)
+                    .worker_id(info_->identity_)
+                    .client_id(client_id);
+  MessageUtil::PushFrontHeader(msg.get(), header);
 
   // Frame 1
-  msg.push_front(PROTOCOL_WORKER);
+  msg->push_front(PROTOCOL_WORKER);
 
-  logger_.Debug("Sending ", command, " to broker: ", msg);
-  socket_->send(msg);
+  logger_.Debug("Sending ", command, " to broker: ", *msg);
+  socket_->send(*msg);
 }
 
 void BrokerCommunicator::SetHeartbeatDelay(const duration_ms_t& hb_delay) {

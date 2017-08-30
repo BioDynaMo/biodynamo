@@ -73,10 +73,8 @@ void DistWorkerAPI::SendDebugMessage(const std::string& value,
   msg->push_front(value);
 
   // Create header
-  size_t header_sz;
-  std::unique_ptr<const char[]> header =
-      AppMessageHeader(AppProtocolCmd::kDebug).Serialize(&header_sz);
-  msg->push_front(header.get(), header_sz);
+  auto header = AppMessageHeader(AppProtocolCmd::kDebug);
+  MessageUtil::PushFrontHeader<AppMessageHeader>(msg.get(), header);
 
   SendRawMessage(std::move(msg), to);
 }
@@ -314,9 +312,8 @@ void DistWorkerAPI::HandleNetworkMessages() {
     assert(IsValidCommunicator(comm_id));
 
     // Deserialize & store application header
-    std::unique_ptr<AppMessageHeader> header = AppMessageHeader::Deserialize(
-        pair.first->raw_data(0), pair.first->size(0));
-    pair.first->pop_front();
+    auto header =
+        MessageUtil::PopFrontHeader<AppMessageHeader>(pair.first.get());
 
     // Push the message to the correct container & notify the app thread
     app_messages_[ToUnderlying(comm_id)].push_back(

@@ -14,6 +14,48 @@ namespace bdm {
 const std::string PROTOCOL_CLIENT = "BDM/0.1C";
 const std::string PROTOCOL_WORKER = "BDM/0.1W";
 
+class MessageUtil {
+ public:
+  template <typename T>
+  inline static std::unique_ptr<T> PopFrontHeader(zmqpp::message* msg) {
+    auto header = MessageUtil::Deserialize<T>(msg->raw_data(0), msg->size(0));
+    msg->pop_front();
+
+    return header;
+  }
+
+  template <typename T>
+  inline static void PushFrontHeader(zmqpp::message* msg, const T header) {
+    size_t header_sz;
+    std::unique_ptr<const char[]> header_bin =
+        MessageUtil::Serialize(header, &header_sz);
+    msg->push_front(header_bin.get(), header_sz);
+  }
+
+  template <typename T>
+  inline static std::unique_ptr<T> Deserialize(const void* data, size_t size) {
+    TBufferFile buf(TBufferFile::EMode::kRead, size, const_cast<void*>(data),
+                    kFALSE);
+    return std::unique_ptr<T>(
+        reinterpret_cast<T*>(buf.ReadObjectAny(T::Class())));
+  }
+
+  template <typename T>
+  inline static std::unique_ptr<const char[]> Serialize(T obj, size_t* sz_out) {
+    auto data_sz = TBuffer::kInitialSize;  //+ TBuffer::kExtraSpace;
+    std::unique_ptr<char[]> data(new char[data_sz]);
+    memset(data.get(), 0, data_sz);  // initialize bytes
+
+    TBufferFile buf(TBufferFile::EMode::kWrite, data_sz, data.get(), kFALSE,
+                    TStorage::ReAllocChar);
+    assert(buf.WriteObjectAny(&obj, T::Class()) == 1);
+    assert(buf.CheckObject(&obj, T::Class()));
+
+    *sz_out = buf.Length();
+    return std::move(data);
+  }
+};
+
 // ###### Application level protocol definition ########## //
 // ------------------------------------------------------- //
 
@@ -47,29 +89,6 @@ class AppMessageHeader {
                                          const AppMessageHeader& header) {
     stream << "[Command]: " << header.cmd_ << std::endl;
     return stream;
-  }
-
-  static std::unique_ptr<AppMessageHeader> Deserialize(const void* data,
-                                                       size_t size) {
-    TBufferFile buf(TBufferFile::EMode::kRead, size, const_cast<void*>(data),
-                    kFALSE);
-    return std::unique_ptr<AppMessageHeader>(
-        reinterpret_cast<AppMessageHeader*>(
-            buf.ReadObjectAny(AppMessageHeader::Class())));
-  }
-
-  inline std::unique_ptr<const char[]> Serialize(size_t* sz_out) {
-    auto data_sz = TBuffer::kInitialSize;  //+ TBuffer::kExtraSpace;
-    std::unique_ptr<char[]> data(new char[data_sz]);
-    memset(data.get(), 0, data_sz);  // initialize bytes
-
-    TBufferFile buf(TBufferFile::EMode::kWrite, data_sz, data.get(), kFALSE,
-                    TStorage::ReAllocChar);
-    assert(buf.WriteObjectAny(this, AppMessageHeader::Class()) == 1);
-    assert(buf.CheckObject(this, AppMessageHeader::Class()));
-
-    *sz_out = buf.Length();
-    return std::move(data);
   }
 
   ClassDef(AppMessageHeader, 1);
@@ -142,30 +161,6 @@ class MiddlewareMessageHeader {
     return stream;
   }
 
-  template <typename T>
-  static std::unique_ptr<T> Deserialize(const void* data, size_t size) {
-    TBufferFile buf(TBufferFile::EMode::kRead, size, const_cast<void*>(data),
-                    kFALSE);
-    return std::unique_ptr<T>(
-        reinterpret_cast<T*>(buf.ReadObjectAny(T::Class())));
-  }
-
- protected:
-  template <typename T>
-  inline std::unique_ptr<const char[]> Serialize(T obj, size_t* sz_out) {
-    auto data_sz = TBuffer::kInitialSize;  //+ TBuffer::kExtraSpace;
-    std::unique_ptr<char[]> data(new char[data_sz]);
-    memset(data.get(), 0, data_sz);  // initialize bytes
-
-    TBufferFile buf(TBufferFile::EMode::kWrite, data_sz, data.get(), kFALSE,
-                    TStorage::ReAllocChar);
-    assert(buf.WriteObjectAny(&obj, T::Class()) == 1);
-    assert(buf.CheckObject(&obj, T::Class()));
-
-    *sz_out = buf.Length();
-    return std::move(data);
-  }
-
   ClassDef(MiddlewareMessageHeader, 1);
 };
 
@@ -189,17 +184,6 @@ class ClientMiddlewareMessageHeader : public MiddlewareMessageHeader {
 
   optional_arg(ClientMiddlewareMessageHeader, std::string, client_id, "");
   optional_arg(ClientMiddlewareMessageHeader, std::string, worker_id, "");
-  optional_arg(ClientMiddlewareMessageHeader, std::uint16_t, app_frames, 0);
-
-  std::unique_ptr<const char[]> Serialize(size_t* sz_out) {
-    return MiddlewareMessageHeader::Serialize(*this, sz_out);
-  }
-
-  static std::unique_ptr<ClientMiddlewareMessageHeader> Deserialize(
-      const void* data, size_t size) {
-    return MiddlewareMessageHeader::Deserialize<ClientMiddlewareMessageHeader>(
-        data, size);
-  }
 
   inline friend std::ostream& operator<<(
       std::ostream& stream, const ClientMiddlewareMessageHeader& header) {
@@ -208,8 +192,7 @@ class ClientMiddlewareMessageHeader : public MiddlewareMessageHeader {
     stream << "[Command   ]: " << header.cmd_ << std::endl;
     stream << static_cast<MiddlewareMessageHeader>(header);
     stream << "[Client id ]: " << header.client_id_ << std::endl
-           << "[Worker id ]: " << header.worker_id_ << std::endl
-           << "[App frames]: " << header.app_frames_ << std::endl;
+           << "[Worker id ]: " << header.worker_id_ << std::endl;
 
     return stream;
   }
@@ -229,17 +212,6 @@ class WorkerMiddlewareMessageHeader : public MiddlewareMessageHeader {
 
   optional_arg(WorkerMiddlewareMessageHeader, std::string, client_id, "");
   optional_arg(WorkerMiddlewareMessageHeader, std::string, worker_id, "");
-  optional_arg(WorkerMiddlewareMessageHeader, std::uint16_t, app_frames, 0);
-
-  std::unique_ptr<const char[]> Serialize(size_t* sz_out) {
-    return MiddlewareMessageHeader::Serialize(*this, sz_out);
-  }
-
-  static std::unique_ptr<WorkerMiddlewareMessageHeader> Deserialize(
-      const void* data, size_t size) {
-    return MiddlewareMessageHeader::Deserialize<WorkerMiddlewareMessageHeader>(
-        data, size);
-  }
 
   inline friend std::ostream& operator<<(
       std::ostream& stream, const WorkerMiddlewareMessageHeader& header) {
@@ -248,8 +220,7 @@ class WorkerMiddlewareMessageHeader : public MiddlewareMessageHeader {
     stream << "[Command   ]: " << header.cmd_ << std::endl;
     stream << static_cast<MiddlewareMessageHeader>(header);
     stream << "[Client id ]: " << header.client_id_ << std::endl
-           << "[Worker id ]: " << header.worker_id_ << std::endl
-           << "[App frames]: " << header.app_frames_ << std::endl;
+           << "[Worker id ]: " << header.worker_id_ << std::endl;
 
     return stream;
   }

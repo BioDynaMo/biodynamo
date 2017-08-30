@@ -57,10 +57,9 @@ void WorkerCommunicator::HandleIncomingMessage() {
     assert(protocol == PROTOCOL_WORKER);
 
     // Frame 2
-    std::unique_ptr<WorkerMiddlewareMessageHeader> header =
-        WorkerMiddlewareMessageHeader::Deserialize(msg_p->raw_data(0),
-                                                   msg_p->size(0));
-    msg_p->pop_front();
+    auto header =
+        MessageUtil::PopFrontHeader<WorkerMiddlewareMessageHeader>(msg_p.get());
+
     assert(header->sender_ == (client_ ? CommunicatorId::kRightNeighbour
                                        : CommunicatorId::kLeftNeighbour));
 
@@ -131,13 +130,16 @@ void WorkerCommunicator::Connect() {
 
 void WorkerCommunicator::SendToCoWorker(
     const WorkerProtocolCmd command,
-    std::unique_ptr<zmqpp::message> message /* = nullptr */) {
+    std::unique_ptr<zmqpp::message> msg /* = nullptr */) {
   // Message format sent
   // Frame 1:    BDM/0.1W
   // Frame 2:    WorkerMiddlewareMessageHeader class (serialized)
   // Frame 3..n: Application frames
 
-  auto msg = message ? std::move(message) : std::make_unique<zmqpp::message>();
+  // Create new message if not provided with one
+  if (!msg) {
+    msg = std::make_unique<zmqpp::message>();
+  }
 
   auto receiver = comm_id_;
   auto sender = (comm_id_ == CommunicatorId::kLeftNeighbour
@@ -145,13 +147,10 @@ void WorkerCommunicator::SendToCoWorker(
                      : CommunicatorId::kLeftNeighbour);
 
   // Frame 2
-  size_t header_sz;
-  std::unique_ptr<const char[]> header =
-      WorkerMiddlewareMessageHeader(command, sender, receiver)
-          .client_id(info_->identity_)
-          .worker_id(coworker_identity_)
-          .Serialize(&header_sz);
-  msg->push_front(header.get(), header_sz);
+  auto header = WorkerMiddlewareMessageHeader(command, sender, receiver)
+                    .client_id(info_->identity_)
+                    .worker_id(coworker_identity_);
+  MessageUtil::PushFrontHeader(msg.get(), header);
 
   // Frame 1
   msg->push_front(PROTOCOL_WORKER);
