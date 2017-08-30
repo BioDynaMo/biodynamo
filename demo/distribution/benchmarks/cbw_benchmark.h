@@ -94,15 +94,15 @@ inline void WorkerTask() {
   api.AddBrokerCommunicator("tcp://127.0.0.1:5555");
   assert(api.Start());
 
-  std::unique_ptr<zmqpp::message> msg;
+  std::string msg;
   for (size_t i = 0; i < TestCBWData::n_messages_; i++) {
     // wait for message
-    assert(api.ReceiveMessage(&msg));
+    assert(api.ReceiveDebugMessage(&msg, CommunicatorId::kBroker));
 
-    logger.Debug("Received message: ", *msg);
+    logger.Debug("Received message: ", msg);
 
     // echo that message
-    api.SendMessage(std::move(msg), CommunicatorId::kBroker);
+    api.SendDebugMessage(msg, CommunicatorId::kBroker);
   }
 
   // Send stop signal

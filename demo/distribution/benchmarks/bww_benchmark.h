@@ -99,22 +99,22 @@ inline void TestBWWWorker1Task() {
   api.AddRightNeighbourCommunicator("tcp://127.0.0.1:5556");
   assert(api.Start());
 
-  std::unique_ptr<zmqpp::message> msg;
   CommunicatorId from;
+  std::string msg;
   for (size_t i = 0; i < TestBWWData::n_messages_; i++) {
     // wait for message
-    assert(api.ReceiveMessage(&msg, &from));
+    assert(api.ReceiveDebugMessageFromAny(&msg, &from));
 
-    logger.Debug("Received message: ", *msg);
+    logger.Debug("Received message: ", msg);
 
     switch (from) {
       case CommunicatorId::kBroker:
-        api.SendMessage(std::move(msg), CommunicatorId::kRightNeighbour);
-        api.ReceiveMessage(&msg, CommunicatorId::kRightNeighbour);
-        api.SendMessage(std::move(msg), CommunicatorId::kBroker);
+        api.SendDebugMessage(msg, CommunicatorId::kRightNeighbour);
+        api.ReceiveDebugMessage(&msg, CommunicatorId::kRightNeighbour);
+        api.SendDebugMessage(msg, CommunicatorId::kBroker);
         break;
       case CommunicatorId::kRightNeighbour:
-        api.SendMessage(std::move(msg), CommunicatorId::kRightNeighbour);
+        api.SendDebugMessage(msg, CommunicatorId::kRightNeighbour);
         break;
       default:
         logger.Error("Wrong communicator id");
@@ -136,22 +136,22 @@ inline void TestBWWWorker2Task() {
   api.AddLeftNeighbourCommunicator("tcp://127.0.0.1:5556");
   assert(api.Start());
 
-  std::unique_ptr<zmqpp::message> msg;
   CommunicatorId from;
+  std::string msg;
   for (size_t i = 0; i < TestBWWData::n_messages_; i++) {
     // wait for message
-    assert(api.ReceiveMessage(&msg, &from));
+    assert(api.ReceiveDebugMessageFromAny(&msg, &from));
 
-    logger.Debug("Received message: ", *msg);
+    logger.Debug("Received message: ", msg);
 
     switch (from) {
       case CommunicatorId::kBroker:
-        api.SendMessage(std::move(msg), CommunicatorId::kLeftNeighbour);
-        api.ReceiveMessage(&msg, CommunicatorId::kLeftNeighbour);
-        api.SendMessage(std::move(msg), CommunicatorId::kBroker);
+        api.SendDebugMessage(msg, CommunicatorId::kLeftNeighbour);
+        api.ReceiveDebugMessage(&msg, CommunicatorId::kLeftNeighbour);
+        api.SendDebugMessage(msg, CommunicatorId::kBroker);
         break;
       case CommunicatorId::kLeftNeighbour:
-        api.SendMessage(std::move(msg), CommunicatorId::kLeftNeighbour);
+        api.SendDebugMessage(msg, CommunicatorId::kLeftNeighbour);
         break;
       default:
         logger.Error("Wrong communicator id");
