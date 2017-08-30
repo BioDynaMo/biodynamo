@@ -54,7 +54,8 @@ void Client::Send(ClientProtocolCmd cmd, CommunicatorId receiver,
   //  Message format:
   //  Frame 1:    "BDM/0.1C"
   //  Frame 2:    ClientCommandHeader class (serialized)
-  //  Frame 3..n: Application frames
+  //  Frame 3:    AppMessageHeader class (serialized)
+  //  Frame 4..n: Application frames
 
   if (!msg) {
     msg = std::make_unique<zmqpp::message>();
@@ -83,12 +84,16 @@ void Client::Send(ClientProtocolCmd cmd, CommunicatorId receiver,
   socket_->send(*msg);
 }
 
-//  Here is the send method. It sends a request to the broker.
-//  It takes ownership of the request message, and destroys it when sent.
 void Client::SendToWorker(std::unique_ptr<zmqpp::message> msg,
                           const std::string& worker_id) {
   // Worker identity must not be empty
   assert(!worker_id.empty());
+
+  // Push AppMessageHeader
+  size_t header_sz;
+  std::unique_ptr<const char[]> header =
+      AppMessageHeader(AppProtocolCmd::kDebug).Serialize(&header_sz);
+  msg->push_front(header.get(), header_sz);
 
   Send(ClientProtocolCmd::kRequest, CommunicatorId::kSomeWorker, std::move(msg),
        worker_id);
