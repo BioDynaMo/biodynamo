@@ -1,5 +1,6 @@
 // I/O related code must be in header file
 #include "unit/resource_manager_test.h"
+#include "cell.h"
 
 namespace bdm {
 namespace resource_manager_test_internal {
@@ -121,41 +122,40 @@ TEST(ResourceManagerTest, ApplyOnAllElementsSoa) {
   RunApplyOnAllElementsTest<Soa, AScalar, BScalar>();
 }
 
-template <typename Backend, typename A, typename B>
+// This test uses Cells since ASoa, BSoa are strippted down simulatio objects
+// and are themselves not thread safe.
+template <typename Backend>
 void RunApplyOnAllElementsParallelTest() {
-  using CTParam = CompileTimeParam<Backend, A, B>;
+  using CTParam = CompileTimeParam<Backend, Cell>;
   auto rm = ResourceManager<CTParam>::Get();
   rm->Clear();
 
-  auto a_collection = rm->template Get<A>();
-  a_collection->push_back(AScalar(12));
-  a_collection->push_back(AScalar(34));
+  auto cells = rm->template Get<Cell>();
+  cells->push_back(Cell(3.14));
+  cells->push_back(Cell(6.28));
+  cells->push_back(Cell(9.42));
 
-  auto b_collection = rm->template Get<B>();
-  b_collection->push_back(BScalar(3.14));
-  b_collection->push_back(BScalar(6.28));
-  rm->ApplyOnAllElementsParallel([](auto& element, SoHandle handle) {  // NOLINT
-    const double kEpsilon = abs_error<double>::value;
-    if (handle == SoHandle(0, 0)) {
-      EXPECT_EQ(12, element.GetData());
-    } else if (handle == SoHandle(0, 1)) {
-      EXPECT_EQ(34, element.GetData());
-    } else if (handle == SoHandle(1, 0)) {
-      EXPECT_NEAR(3.14, element.GetData(), kEpsilon);
-    } else if (handle == SoHandle(1, 1)) {
-      EXPECT_NEAR(6.28, element.GetData(), kEpsilon);
-    }
-  });
+  rm->ApplyOnAllElementsParallel(
+      [](auto&& element, SoHandle handle) {
+        const double kEpsilon = abs_error<double>::value;
+        if (handle == SoHandle(0, 0)) {
+          EXPECT_EQ(3.14, element.GetDiameter());
+        } else if (handle == SoHandle(0, 1)) {
+          EXPECT_EQ(6.28, element.GetDiameter());
+        } else if (handle == SoHandle(0, 2)) {
+          EXPECT_NEAR(9.42, element.GetDiameter(), kEpsilon);
+        } else {
+          FAIL();
+        }
+      });
 }
 
 TEST(ResourceManagerTest, ApplyOnAllElementsParallelAos) {
-  RunApplyOnAllElementsParallelTest<Scalar, AScalar, BScalar>();
-  RunApplyOnAllElementsParallelTest<Scalar, ASoa, BSoa>();
+  RunApplyOnAllElementsParallelTest<Scalar>();
 }
 
 TEST(ResourceManagerTest, ApplyOnAllElementsParallelSoa) {
-  RunApplyOnAllElementsParallelTest<Soa, ASoa, BSoa>();
-  RunApplyOnAllElementsParallelTest<Soa, AScalar, BScalar>();
+  RunApplyOnAllElementsParallelTest<Soa>();
 }
 
 template <typename Backend, typename A, typename B>
@@ -203,6 +203,26 @@ TEST(ResourceManagerTest, ApplyOnAllTypesSoa) {
 TEST(ResourceManagerTest, IOAos) { RunIOAosTest(); }
 
 TEST(ResourceManagerTest, IOSoa) { RunSoaTest(); }
+
+TEST(SoHandle, EqualsOperator) {
+  EXPECT_EQ(SoHandle(0, 0), SoHandle(0, 0));
+  EXPECT_EQ(SoHandle(1, 0), SoHandle(1, 0));
+  EXPECT_EQ(SoHandle(0, 1), SoHandle(0, 1));
+  EXPECT_EQ(SoHandle(1, 1), SoHandle(1, 1));
+
+  EXPECT_FALSE(SoHandle(0, 0) == SoHandle(0, 1));
+  EXPECT_FALSE(SoHandle(0, 0) == SoHandle(1, 0));
+  EXPECT_FALSE(SoHandle(0, 0) == SoHandle(1, 1));
+  EXPECT_FALSE(SoHandle(1, 0) == SoHandle(0, 0));
+  EXPECT_FALSE(SoHandle(1, 0) == SoHandle(0, 1));
+  EXPECT_FALSE(SoHandle(1, 0) == SoHandle(1, 1));
+  EXPECT_FALSE(SoHandle(0, 1) == SoHandle(0, 0));
+  EXPECT_FALSE(SoHandle(0, 1) == SoHandle(1, 0));
+  EXPECT_FALSE(SoHandle(0, 1) == SoHandle(1, 1));
+  EXPECT_FALSE(SoHandle(1, 1) == SoHandle(0, 0));
+  EXPECT_FALSE(SoHandle(1, 1) == SoHandle(1, 0));
+  EXPECT_FALSE(SoHandle(1, 1) == SoHandle(0, 1));
+}
 
 }  // namespace resource_manager_test_internal
 }  // namespace bdm
