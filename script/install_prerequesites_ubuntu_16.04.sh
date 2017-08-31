@@ -89,7 +89,7 @@ function Install {
   BDM_ENVIRONMENT_FILE=${THIRD_PARTY_DIR}/bdm_environment.sh
   touch ${BDM_ENVIRONMENT_FILE}
 
-  echo ". ${THIRD_PARTY_DIR}/root/bin/thisroot.sh" >> ${BDM_ENVIRONMENT_FILE}
+  echo ". ${THIRD_PARTY_DIR}/root/bin/thisroot.sh" > ${BDM_ENVIRONMENT_FILE}
 
   # needed for Catalyst
   ln -s /usr/lib/libmpi.so /usr/local/lib/libmpi.so
