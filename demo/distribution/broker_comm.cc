@@ -14,25 +14,26 @@ BrokerCommunicator::~BrokerCommunicator() {
 }
 
 void BrokerCommunicator::ReactorTimedOut() {
-  // Timeout
-  // TODO(kkanellis): decrease liveness IF it's time
   if (--hb_liveness_ == 0) {
+    // Haven't heard from the broker for a while
     is_connected_ = false;
 
     logger_.Warning("Disconnected from broker - retrying...");
     std::this_thread::sleep_for(hb_rec_delay_);
+
+    // Trying to reconnect
     Connect();
   }
 }
 
 void BrokerCommunicator::ReactorServedRequests() {
-  //  Send HEARTBEAT if it's time
   if (std::chrono::system_clock::now() > hb_at_) {
+    // Send HEARTBEAT to the broker
     SendToBroker(WorkerProtocolCmd::kHeartbeat);
     hb_at_ = std::chrono::system_clock::now() + hb_delay_;
   }
 
-  // Purge old sockets
+  // Purge old & invalid sockets
   for (auto& socket_p : purge_later_) {
     socket_p->close();
   }
@@ -42,10 +43,11 @@ void BrokerCommunicator::ReactorServedRequests() {
 void BrokerCommunicator::HandleOutgoingMessage(
     std::unique_ptr<zmqpp::message> msg) {
   // Message Format
-  // Frame 1:     client_id
+  // Frame 1:     AppMessageHeader
   // Frame 2..n:  application frames
 
   // Send to correct client
+  // NOTE: FIFO order of replying to clients
   assert(!clients_.empty());
   std::string client_id = clients_.front();
   clients_.pop();
@@ -55,19 +57,19 @@ void BrokerCommunicator::HandleOutgoingMessage(
   SendToBroker(WorkerProtocolCmd::kReport, std::move(msg), client_id);
 }
 
-void BrokerCommunicator::HandleIncomingMessage() {
+void BrokerCommunicator::HandleIncomingMessages() {
   // Expected message format
   // Frame 1:     "BDM/0.1W"
-  // Frame 2:     WorkerMiddlewareMessageHeader (serialized)
+  // Frame 2:     WorkerMiddlewareMessageHeader
   // Frame 3..n:  application frames
 
   // Receive all messages from the socket
   auto msg_p = std::make_unique<zmqpp::message>();
   while (socket_->receive(*msg_p, true)) {
-    assert(msg_p->parts() >= 2);
     logger_.Debug("Received message from broker: ", *msg_p);
 
-    hb_liveness_ = HEARTBEAT_LIVENESS;
+    assert(msg_p->parts() >= 2);
+    hb_liveness_ = HEARTBEAT_LIVENESS;  // Broker is alive
 
     // Frame 1
     std::string protocol = msg_p->get(0);
@@ -78,6 +80,7 @@ void BrokerCommunicator::HandleIncomingMessage() {
     auto header =
         MessageUtil::PopFrontObject<WorkerMiddlewareMessageHeader>(msg_p.get());
 
+    //
     switch (header->cmd_) {
       case WorkerProtocolCmd::kRequest:
         // Keep which client made the request
@@ -85,12 +88,12 @@ void BrokerCommunicator::HandleIncomingMessage() {
         // FIRST to this request (FIFO order)
         clients_.push(header->client_id_);
 
-        // Send message to application
+        // Propagate message to the API
         info_->mq_app_deliver_.push(
             std::make_pair(std::move(msg_p), CommunicatorId::kBroker));
         break;
       case WorkerProtocolCmd::kHeartbeat:
-        // Do nothing
+        // Update connection status
         is_connected_ = true;
         break;
       case WorkerProtocolCmd::kDisconnect:
@@ -121,7 +124,7 @@ void BrokerCommunicator::Connect() {
 
   // Add newly created broker socket to reactor
   info_->reactor_.add(
-      *socket_, std::bind(&BrokerCommunicator::HandleIncomingMessage, this));
+      *socket_, std::bind(&BrokerCommunicator::HandleIncomingMessages, this));
 
   // Register service with broker
   logger_.Info("Connecting to broker at ", endpoint_);
@@ -136,9 +139,9 @@ void BrokerCommunicator::SendToBroker(
     const WorkerProtocolCmd command,
     std::unique_ptr<zmqpp::message> msg /* = nullptr */,
     const std::string client_id /* = "" */) {
-  // Message format sent
+  // Sending message structure
   // Frame 1:    BDM/0.1W
-  // Frame 2:    WorkerMiddlewareMessageHeader class (serialized)
+  // Frame 2:    WorkerMiddlewareMessageHeader
   // Frame 3..n: Application frames
 
   if (!msg) {
