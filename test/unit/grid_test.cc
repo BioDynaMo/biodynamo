@@ -75,19 +75,9 @@ TEST(GridTest, SetupGrid) {
   EXPECT_EQ(expected_63, neighbors[63]);
 }
 
-TEST(GridTest, UpdateGrid) {
-  auto rm = ResourceManager<>::Get();
-  rm->Clear();
-  auto cells = rm->Get<Cell>();
-  CellFactory(cells, 4);
-
+template <typename TContainer>
+void RunUpdateGridTest(TContainer* cells) {
   auto& grid = Grid<>::GetInstance();
-  grid.Initialize();
-
-  // Remove cells 1 and 42 (they are swapped with the last two cells)
-  cells->DelayedRemove(1);
-  cells->DelayedRemove(42);
-  cells->Commit();
 
   // Update the grid
   grid.UpdateGrid();
@@ -138,6 +128,47 @@ TEST(GridTest, UpdateGrid) {
   EXPECT_EQ(expected_5, neighbors[5]);
   EXPECT_EQ(expected_41, neighbors[41]);
   EXPECT_EQ(expected_61, neighbors[61]);
+}
+
+TEST(GridTest, UpdateGrid) {
+  auto rm = ResourceManager<>::Get();
+  rm->Clear();
+  auto cells = rm->Get<Cell>();
+  CellFactory(cells, 4);
+
+  auto& grid = Grid<>::GetInstance();
+  grid.Initialize();
+
+  // Remove cells 1 and 42 (they are swapped with the last two cells)
+  cells->DelayedRemove(1);
+  cells->DelayedRemove(42);
+  cells->Commit();
+
+  RunUpdateGridTest(cells);
+}
+
+TEST(GridTest, NoRaceConditionDuringUpdate) {
+  auto rm = ResourceManager<>::Get();
+  rm->Clear();
+  auto cells = rm->Get<Cell>();
+  CellFactory(cells, 4);
+
+  // make sure that there are multiple cells per box
+  (*cells)[0].SetDiameter(60);
+
+  auto& grid = Grid<>::GetInstance();
+  grid.Initialize();
+
+  // Remove cells 1 and 42 (they are swapped with the last two cells)
+  cells->DelayedRemove(1);
+  cells->DelayedRemove(42);
+  cells->Commit();
+
+  // run 100 times to increase possibility of race condition due to different
+  // scheduling of threads
+  for (uint16_t i = 0; i < 100; i++) {
+    RunUpdateGridTest(cells);
+  }
 }
 
 TEST(GridTest, GetBoxIndex) {

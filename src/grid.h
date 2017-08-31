@@ -1,7 +1,9 @@
 #ifndef GRID_H_
 #define GRID_H_
 
+#include <omp.h>
 #include <array>
+#include <atomic>
 #include <cmath>
 #include <iostream>
 #include <limits>
@@ -85,12 +87,22 @@ template <typename TResourceManager = ResourceManager<>>
 class Grid {
  public:
   /// A single unit cube of the grid
-  class Box {
-   public:
-    SoHandle start_ = SoHandle(0, 0);
-    uint16_t length_ = 0;
+  struct Box {
+    /// start value of the linked list of simulatio objects inside this box.
+    /// Next element can be found at `successors_[start_]`
+    std::atomic<SoHandle> start_;
+    /// length of the linked list
+    std::atomic<uint16_t> length_;
 
-    Box() {}
+    Box() : start_(SoHandle()), length_(0) {}
+    /// Copy Constructor required for boxes_.resize()
+    /// Since box values will be overwritten afterwards it forwards to the
+    /// default ctor
+    Box(const Box& other) : Box() {}
+    /// Required for boxes_.resize
+    /// Since box values will be overwritten afterwards, implementation is
+    /// missing
+    const Box& operator=(const Box& other) const { return *this; }
 
     bool IsEmpty() const { return length_ == 0; }
 
@@ -98,16 +110,13 @@ class Grid {
     ///
     /// @param[in]  obj_id  The object's identifier
     ///
-    template <typename TGrid = Grid<TResourceManager>>
-    void AddObject(SoHandle obj_id) {
-      if (IsEmpty()) {
-        start_ = obj_id;
-      } else {
-        // Add to the linked list of successor cells
-        TGrid::GetInstance().successors_[obj_id] = start_;
-        start_ = obj_id;
-      }
+    template <typename TSuccessors>
+    void AddObject(SoHandle obj_id, TSuccessors* successors) {
       length_++;
+      auto old_start = std::atomic_exchange(&start_, obj_id);
+      if (old_start != SoHandle()) {
+        (*successors)[obj_id] = old_start;
+      }
     }
 
     /// An iterator that iterates over the cells in this box
@@ -272,6 +281,8 @@ class Grid {
         dimension_length -= box_length_;
         num_boxes_axis_[i]++;
       }
+
+      // num_boxes_axis_[i] = dimension_length / box_length_ + 1;
     }
 
     num_boxes_xy_ = num_boxes_axis_[0] * num_boxes_axis_[1];
@@ -285,34 +296,84 @@ class Grid {
 
     // Assign simulation objects to boxes
     auto rm = TResourceManager::Get();
-    rm->ApplyOnAllElements([this](auto&& sim_object, SoHandle id) {
+    rm->ApplyOnAllElementsParallel([this](auto&& sim_object, SoHandle id) {
       const auto& position = sim_object.GetPosition();
       auto idx = this->GetBoxIndex(position);
       auto box = this->GetBoxPointer(idx);
-      box->AddObject(id);
+      box->AddObject(id, &successors_);
       sim_object.SetBoxIdx(idx);
     });
   }
 
   /// Calculates what the grid dimensions need to be in order to contain all the
   /// simulation objects
-  void CalculateGridDimensions(array<double, 6>* grid_dimensions) {
+  void CalculateGridDimensions(array<double, 6>* ret_grid_dimensions) {
     auto rm = TResourceManager::Get();
-    rm->ApplyOnAllElements([&](auto&& sim_object, SoHandle handle) {
-      const auto& position = sim_object.GetPosition();
-      auto diameter = sim_object.GetDiameter();
-      for (size_t j = 0; j < 3; j++) {
-        if (position[j] < (*grid_dimensions)[2 * j]) {
-          (*grid_dimensions)[2 * j] = position[j];
+
+    const auto max_threads = omp_get_max_threads();
+
+    std::vector<std::array<double, 6>*> all_grid_dimensions(max_threads,
+                                                            nullptr);
+    std::vector<double*> all_largest_object_size(max_threads, nullptr);
+
+#pragma omp parallel
+    {
+      auto thread_id = omp_get_thread_num();
+      auto* grid_dimensions = new std::array<double, 6>;
+      *grid_dimensions = {{Param::kInfinity, -Param::kInfinity,
+                           Param::kInfinity, -Param::kInfinity,
+                           Param::kInfinity, -Param::kInfinity}};
+      double* largest_object_size = new double;
+      *largest_object_size = 0;
+      all_grid_dimensions[thread_id] = grid_dimensions;
+      all_largest_object_size[thread_id] = largest_object_size;
+
+      rm->ApplyOnAllTypes([&](auto* sim_objects, uint16_t type_idx) {
+#pragma omp for
+        for (size_t i = 0; i < sim_objects->size(); i++) {
+          const auto& position = (*sim_objects)[i].GetPosition();
+          for (size_t j = 0; j < 3; j++) {
+            if (position[j] < (*grid_dimensions)[2 * j]) {
+              (*grid_dimensions)[2 * j] = position[j];
+            }
+            if (position[j] > (*grid_dimensions)[2 * j + 1]) {
+              (*grid_dimensions)[2 * j + 1] = position[j];
+            }
+          }
+          auto diameter = (*sim_objects)[i].GetDiameter();
+          if (diameter > *largest_object_size) {
+            *largest_object_size = diameter;
+          }
         }
-        if (position[j] > (*grid_dimensions)[2 * j + 1]) {
-          (*grid_dimensions)[2 * j + 1] = position[j];
-        }
-        if (diameter > largest_object_size_) {
-          largest_object_size_ = diameter;
+      });
+
+#pragma omp master
+      {
+        for (int i = 0; i < max_threads; i++) {
+          for (size_t j = 0; j < 3; j++) {
+            if ((*all_grid_dimensions[i])[2 * j] <
+                (*ret_grid_dimensions)[2 * j]) {
+              (*ret_grid_dimensions)[2 * j] = (*all_grid_dimensions[i])[2 * j];
+            }
+            if ((*all_grid_dimensions[i])[2 * j + 1] >
+                (*ret_grid_dimensions)[2 * j + 1]) {
+              (*ret_grid_dimensions)[2 * j + 1] =
+                  (*all_grid_dimensions[i])[2 * j + 1];
+            }
+          }
+          if ((*all_largest_object_size[i]) > largest_object_size_) {
+            largest_object_size_ = *(all_largest_object_size[i]);
+          }
         }
       }
-    });
+    }
+
+    for (auto element : all_grid_dimensions) {
+      delete element;
+    }
+    for (auto element : all_largest_object_size) {
+      delete element;
+    }
   }
 
   void RoundOffGridDimensions(const array<double, 6>& grid_dimensions) {

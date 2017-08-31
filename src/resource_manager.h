@@ -19,11 +19,13 @@ namespace bdm {
 /// second specifies the element within this vector.
 class SoHandle {
  public:
-  SoHandle() : type_idx_(0), element_idx_(0) {}
+  SoHandle() noexcept
+      : type_idx_(std::numeric_limits<decltype(type_idx_)>::max()),
+        element_idx_(std::numeric_limits<decltype(element_idx_)>::max()) {}
   SoHandle(uint16_t type_idx, uint64_t element_idx)
       : type_idx_(type_idx), element_idx_(element_idx) {}
   uint16_t GetTypeIdx() const { return type_idx_; }
-  uint64_t GetElementIdx() const { return element_idx_; }
+  uint32_t GetElementIdx() const { return element_idx_; }
 
   bool operator==(const SoHandle& other) const {
     return type_idx_ == other.type_idx_ && element_idx_ == other.element_idx_;
@@ -48,7 +50,9 @@ class SoHandle {
 
  private:
   uint16_t type_idx_;
-  uint64_t element_idx_;
+  /// changed element index to uint32_t after issues with std::atomic with
+  /// size 16 -> max element_idx: 4.294.967.296
+  uint32_t element_idx_;
 };
 
 namespace detail {
@@ -164,7 +168,7 @@ class ResourceManager {
   /// Apply a function on all elements in every container
   /// @param function that will be called with each container as a parameter
   ///
-  ///     rm->ApplyOnAllElements([](auto& element, const SoHandle&& handle) {
+  ///     rm->ApplyOnAllElements([](auto& element, SoHandle handle) {
   ///                              std::cout << element << std::endl;
   ///                          });
   template <typename TFunction>
@@ -172,6 +176,22 @@ class ResourceManager {
     // runtime dispatch - TODO(lukas) replace with c++17 std::apply
     for (uint16_t i = 0; i < std::tuple_size<decltype(data_)>::value; i++) {
       ::bdm::Apply(&data_, i, [&](auto* container) {
+        for (size_t e = 0; e < container->size(); e++) {
+          function((*container)[e], SoHandle(i, e));
+        }
+      });
+    }
+  }
+
+  /// Apply a function on all elements in every container
+  /// Function invocations are parallelized
+  /// \see ApplyOnAllElements
+  template <typename TFunction>
+  void ApplyOnAllElementsParallel(TFunction&& function) {
+    // runtime dispatch - TODO(lukas) replace with c++17 std::apply
+    for (uint16_t i = 0; i < std::tuple_size<decltype(data_)>::value; i++) {
+      ::bdm::Apply(&data_, i, [&](auto* container) {
+#pragma omp parallel for
         for (size_t e = 0; e < container->size(); e++) {
           function((*container)[e], SoHandle(i, e));
         }
