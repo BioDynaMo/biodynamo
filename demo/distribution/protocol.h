@@ -17,19 +17,19 @@ const std::string PROTOCOL_WORKER = "BDM/0.1W";
 class MessageUtil {
  public:
   template <typename T>
-  inline static std::unique_ptr<T> PopFrontHeader(zmqpp::message* msg) {
-    auto header = MessageUtil::Deserialize<T>(msg->raw_data(0), msg->size(0));
+  inline static std::unique_ptr<T> PopFrontObject(zmqpp::message* msg) {
+    auto obj = MessageUtil::Deserialize<T>(msg->raw_data(0), msg->size(0));
     msg->pop_front();
 
-    return header;
+    return obj;
   }
 
   template <typename T>
-  inline static void PushFrontHeader(zmqpp::message* msg, const T& header) {
-    size_t header_sz;
-    std::unique_ptr<const char[]> header_bin =
-        MessageUtil::Serialize(header, &header_sz);
-    msg->push_front(header_bin.get(), header_sz);
+  inline static void PushFrontObject(zmqpp::message* msg, const T& obj) {
+    size_t obj_sz;
+    std::unique_ptr<const char[]> obj_bin =
+        MessageUtil::Serialize(obj, &obj_sz);
+    msg->push_front(obj_bin.get(), obj_sz);
   }
 
   template <typename T>
