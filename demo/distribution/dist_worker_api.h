@@ -50,6 +50,45 @@ class DistWorkerAPI {
 
   bool ReceiveDebugMessageFromAny(std::string* value, CommunicatorId* from);
 
+  template <typename T>
+  void SendHaloRegion(const T& region, CommunicatorId to, AppProtocolCmd cmd) {
+    // We assume T is a ROOT serializable object
+    auto msg = std::make_unique<zmqpp::message>();
+
+    // Halo region
+    MessageUtil::PushFrontObject<T>(msg.get(), region);
+
+    // Application header
+    auto header = AppMessageHeader(cmd);
+    MessageUtil::PushFrontObject<AppMessageHeader>(msg.get(), header);
+
+    SendRawMessage(std::move(msg), to);
+  }
+
+  template <typename T>
+  bool ReceiveHaloRegion(std::unique_ptr<T>* region, CommunicatorId from,
+                         AppProtocolCmd* cmd) {
+    // Wait for message
+    std::unique_ptr<zmqpp::message> msg;
+    std::unique_ptr<AppMessageHeader> header;
+    if (!WaitForMessage(&msg, from, &header)) {
+      return false;
+    }
+
+    // Validate message type
+    assert(header->cmd_ == AppProtocolCmd::kRequestHaloRegion ||
+           header->cmd_ == AppProtocolCmd::kReportHaloRegion);
+
+    // Return received app command
+    *cmd = header->cmd_;
+
+    // Get halo region
+    assert(msg->parts() == 1);
+    *region = MessageUtil::PopFrontObject<T>(msg.get());
+
+    return true;
+  }
+
   void SetWaitingTimeout(duration_ms_t timeout) { wait_timeout_ = timeout; }
 
   bool IsConnected(const CommunicatorId comm) const {
@@ -77,7 +116,7 @@ class DistWorkerAPI {
 
   void HandleNetwork();
 
-  void HandleAppMessage();
+  void HandleAppMessages();
 
   void HandleNetworkMessages();
 
@@ -109,7 +148,7 @@ class DistWorkerAPI {
 
   // Messages waiting to be handled by the communicators
   // (and then sent over the network)
-  std::queue<MessageMiddlewareHeaderPair> mq_net_deliver_;
+  std::deque<MessageMiddlewareHeaderPair> mq_net_deliver_;
   std::mutex mq_net_deliver_mtx_;
 
   // Messages ready to be delivered to the application
