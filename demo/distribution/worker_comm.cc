@@ -7,8 +7,8 @@ WorkerCommunicator::WorkerCommunicator(DistSharedInfo* info,
                                        CommunicatorId comm_id)
     : Communicator(info, endpoint, comm_id),
       logger_("WComm_[" + info_->identity_ + "]", info_->logging_level_) {
-  // By convention we define that we act as client if
-  // we initiate the communication with the left worker
+  // By convention we define that we act as client (i.e we initiate the
+  // handshake) if we connect to the RightNeighbour
   this->client_ = (comm_id == CommunicatorId::kRightNeighbour ? true : false);
   this->coworker_str_ =
       (client_ ? "right (server/router)" : "left (client/dealer)");
@@ -24,27 +24,26 @@ void WorkerCommunicator::HandleOutgoingMessage(
     std::unique_ptr<zmqpp::message> msg) {
   logger_.Debug("Sending message to ", coworker_str_, " co-worker: ", *msg);
 
-  // TODO(kkanellis): fix this! It can be report or request
-  // Actually doesn't matter -- can be handled by app level protocol
   SendToCoWorker(WorkerProtocolCmd::kReport, std::move(msg));
 }
 
-void WorkerCommunicator::HandleIncomingMessage() {
+void WorkerCommunicator::HandleIncomingMessages() {
   // Expected message format
   // Frame *:     coworker_id (if client)
   // Frame 1:     "BDM/0.1W"
-  // Frame 2:     WorkerMiddlewareMessageHeader (serialized)
-  // Frame 3..n:  application frames
+  // Frame 2:     WorkerMiddlewareMessageHeader
+  // Frame 3..n:  Application frames
 
   // Receive all messages from the socket
   auto msg_p = std::make_unique<zmqpp::message>();
   while (socket_->receive(*msg_p, true)) {
-    assert(msg_p->parts() >= (2 + ((unsigned)!client_)));
     logger_.Debug("Received message from ", coworker_str_, " co-worker [",
                   coworker_identity_, "]: ", *msg_p);
+    assert(msg_p->parts() >= (2 + ((unsigned)!client_)));
 
     if (!client_) {
       // Check message origin
+      // Frame *
       std::string coworker = msg_p->get(0);
       msg_p->pop_front();
       assert(coworker == coworker_identity_   // After handshake
@@ -82,7 +81,7 @@ void WorkerCommunicator::HandleIncomingMessage() {
       case WorkerProtocolCmd::kRequest:
       case WorkerProtocolCmd::kReport:
         // Proccess request/report from coworker
-        // This should be halo-region cells request/report
+        // This is probably halo-region cells request/report
         assert(is_connected_);
         assert(coworker_identity_ == header->client_id_);
 
@@ -98,13 +97,17 @@ void WorkerCommunicator::HandleIncomingMessage() {
 }
 
 void WorkerCommunicator::Connect() {
-  ///  W2        W3           W4         W5
-  /// ... ||  L ---- R  || L ---- R  || ...
-  ///  ^------^      ^-----^      ^------^
-  ///  D      R      D     R      D      R
+  // Cheatsheat:
+  //  * D -> DEALER SOCKET
+  //  * R -> ROUTER SOCKET
+  /////////////////////////////////////////
+  //  W2        W3           W4         W5
+  // ... ||  l ---- r  || l ---- r  || ...
+  //  ^------^      ^-----^      ^------^
+  //  D      R      D     R      D      R
 
   if (client_) {
-    // client initiates the communication
+    // Client initiates the handshake
     socket_ = std::make_unique<zmqpp::socket>(*(info_->ctx_),
                                               zmqpp::socket_type::dealer);
     socket_->set(zmqpp::socket_option::identity, info_->identity_);
@@ -117,26 +120,26 @@ void WorkerCommunicator::Connect() {
   } else {
     socket_ = std::make_unique<zmqpp::socket>(*(info_->ctx_),
                                               zmqpp::socket_type::router);
+    // Throw if can't router the message
     SetSocketOption(zmqpp::socket_option::router_mandatory, 1);
     socket_->bind(endpoint_);
     logger_.Info("Waiting for connection from ", coworker_str_,
                  " co-worker at ", endpoint_);
   }
-  // Add newly created broker socket to reactor
+  // Add newly created socket to reactor
   info_->reactor_.add(
-      *socket_, std::bind(&WorkerCommunicator::HandleIncomingMessage, this));
+      *socket_, std::bind(&WorkerCommunicator::HandleIncomingMessages, this));
 
-  // Maybe client already sent a messages
-  // Note: it is automatically buffered by ZMQ
-  HandleIncomingMessage();
+  // Maybe client already sent a messages, so check for messages
+  HandleIncomingMessages();
 }
 
 void WorkerCommunicator::SendToCoWorker(
     const WorkerProtocolCmd command,
     std::unique_ptr<zmqpp::message> msg /* = nullptr */) {
-  // Message format sent
+  // Sending message structure
   // Frame 1:    BDM/0.1W
-  // Frame 2:    WorkerMiddlewareMessageHeader class (serialized)
+  // Frame 2:    WorkerMiddlewareMessageHeader
   // Frame 3..n: Application frames
 
   // Create new message if not provided with one
