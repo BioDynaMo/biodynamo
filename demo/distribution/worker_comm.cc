@@ -75,6 +75,8 @@ void WorkerCommunicator::HandleIncomingMessage() {
                        " co-worker [", coworker_identity_, "]");
           SendToCoWorker(WorkerProtocolCmd::kReady);
         }
+
+        logger_.Info("Connected to co-worker [", coworker_identity_, "]");
         is_connected_ = true;
         break;
       case WorkerProtocolCmd::kRequest:
@@ -115,6 +117,7 @@ void WorkerCommunicator::Connect() {
   } else {
     socket_ = std::make_unique<zmqpp::socket>(*(info_->ctx_),
                                               zmqpp::socket_type::router);
+    SetSocketOption(zmqpp::socket_option::router_mandatory, 1);
     socket_->bind(endpoint_);
     logger_.Info("Waiting for connection from ", coworker_str_,
                  " co-worker at ", endpoint_);
@@ -124,7 +127,7 @@ void WorkerCommunicator::Connect() {
       *socket_, std::bind(&WorkerCommunicator::HandleIncomingMessage, this));
 
   // Maybe client already sent a messages
-  // Note: it is automatically buffered by 0ZQ
+  // Note: it is automatically buffered by ZMQ
   HandleIncomingMessage();
 }
 
