@@ -25,7 +25,7 @@ class MessageUtil {
   }
 
   template <typename T>
-  inline static void PushFrontHeader(zmqpp::message* msg, const T header) {
+  inline static void PushFrontHeader(zmqpp::message* msg, const T& header) {
     size_t header_sz;
     std::unique_ptr<const char[]> header_bin =
         MessageUtil::Serialize(header, &header_sz);
@@ -41,7 +41,8 @@ class MessageUtil {
   }
 
   template <typename T>
-  inline static std::unique_ptr<const char[]> Serialize(T obj, size_t* sz_out) {
+  inline static std::unique_ptr<const char[]> Serialize(const T& obj,
+                                                        size_t* sz_out) {
     auto data_sz = TBuffer::kInitialSize;  //+ TBuffer::kExtraSpace;
     std::unique_ptr<char[]> data(new char[data_sz]);
     memset(data.get(), 0, data_sz);  // initialize bytes
@@ -69,7 +70,8 @@ enum class AppProtocolCmd : std::uint8_t {
   kMinValue = kDebug,
   kMaxValue = kRequestHaloRegion,
 };
-const std::string AppProtocolCmdStr[] = {"Invalid", "DebugString"};
+const std::string AppProtocolCmdStr[] = {
+    "[Invalid]", "[Debug]", "[RequestHaloRegion]", "[ReportHaloRegion]"};
 
 inline std::ostream& operator<<(std::ostream& stream,
                                 const AppProtocolCmd& cmd) {
@@ -144,46 +146,57 @@ inline std::ostream& operator<<(std::ostream& stream,
   return stream;
 }
 
+// Macro is used for named arguments/parameters
+#define optional_arg(class_, type, name, default_value) \
+ public:                                                \
+  class_& name(type name) {                             \
+    name##_ = name;                                     \
+    return static_cast<class_&>(*this);                 \
+  }                                                     \
+  type name##_ = default_value
+
+// Curiously Recurring Template Pattern/Idiom (CRTP)
+template <typename T>
 class MiddlewareMessageHeader {
  public:
-  MiddlewareMessageHeader() {}
+  MiddlewareMessageHeader()
+      : sender_(CommunicatorId::kUndefined),
+        receiver_(CommunicatorId::kUndefined) {}
   MiddlewareMessageHeader(CommunicatorId sender, CommunicatorId receiver)
       : sender_(sender), receiver_(receiver) {}
   virtual ~MiddlewareMessageHeader() {}
 
-  CommunicatorId sender_ = CommunicatorId::kUndefined;
-  CommunicatorId receiver_ = CommunicatorId::kUndefined;
+  // Required fields
+  CommunicatorId sender_;
+  CommunicatorId receiver_;
+
+  // Optional fields
+  optional_arg(T, std::string, client_id, "");
+  optional_arg(T, std::string, worker_id, "");
 
   inline friend std::ostream& operator<<(
       std::ostream& stream, const MiddlewareMessageHeader& header) {
     stream << "[Sender    ]: " << header.sender_ << std::endl
-           << "[Receiver  ]: " << header.receiver_ << std::endl;
+           << "[Receiver  ]: " << header.receiver_ << std::endl
+           << "[Client id ]: " << header.client_id_ << std::endl
+           << "[Worker id ]: " << header.worker_id_ << std::endl;
+
     return stream;
   }
 
   ClassDef(MiddlewareMessageHeader, 1);
 };
 
-#define optional_arg(class_, type, name, default_value) \
- public:                                                \
-  class_& name(type name) {                             \
-    name##_ = name;                                     \
-    return *this;                                       \
-  }                                                     \
-  type name##_ = default_value
-
-class ClientMiddlewareMessageHeader : public MiddlewareMessageHeader {
+class ClientMiddlewareMessageHeader
+    : public MiddlewareMessageHeader<ClientMiddlewareMessageHeader> {
  public:
-  ClientMiddlewareMessageHeader() {}
+  ClientMiddlewareMessageHeader() : cmd_(ClientProtocolCmd::kInvalid) {}
   ClientMiddlewareMessageHeader(ClientProtocolCmd cmd, CommunicatorId sender,
                                 CommunicatorId receiver)
       : MiddlewareMessageHeader(sender, receiver), cmd_(cmd) {}
   virtual ~ClientMiddlewareMessageHeader() {}
 
-  ClientProtocolCmd cmd_ = ClientProtocolCmd::kInvalid;
-
-  optional_arg(ClientMiddlewareMessageHeader, std::string, client_id, "");
-  optional_arg(ClientMiddlewareMessageHeader, std::string, worker_id, "");
+  ClientProtocolCmd cmd_;
 
   inline friend std::ostream& operator<<(
       std::ostream& stream, const ClientMiddlewareMessageHeader& header) {
@@ -191,8 +204,6 @@ class ClientMiddlewareMessageHeader : public MiddlewareMessageHeader {
 
     stream << "[Command   ]: " << header.cmd_ << std::endl;
     stream << static_cast<MiddlewareMessageHeader>(header);
-    stream << "[Client id ]: " << header.client_id_ << std::endl
-           << "[Worker id ]: " << header.worker_id_ << std::endl;
 
     return stream;
   }
@@ -200,18 +211,16 @@ class ClientMiddlewareMessageHeader : public MiddlewareMessageHeader {
   ClassDef(ClientMiddlewareMessageHeader, 1);
 };
 
-class WorkerMiddlewareMessageHeader : public MiddlewareMessageHeader {
+class WorkerMiddlewareMessageHeader
+    : public MiddlewareMessageHeader<WorkerMiddlewareMessageHeader> {
  public:
-  WorkerMiddlewareMessageHeader() {}
+  WorkerMiddlewareMessageHeader() : cmd_(WorkerProtocolCmd::kInvalid) {}
   WorkerMiddlewareMessageHeader(WorkerProtocolCmd cmd, CommunicatorId sender,
                                 CommunicatorId receiver)
       : MiddlewareMessageHeader(sender, receiver), cmd_(cmd) {}
   virtual ~WorkerMiddlewareMessageHeader() {}
 
-  WorkerProtocolCmd cmd_ = WorkerProtocolCmd::kInvalid;
-
-  optional_arg(WorkerMiddlewareMessageHeader, std::string, client_id, "");
-  optional_arg(WorkerMiddlewareMessageHeader, std::string, worker_id, "");
+  WorkerProtocolCmd cmd_;
 
   inline friend std::ostream& operator<<(
       std::ostream& stream, const WorkerMiddlewareMessageHeader& header) {
@@ -219,15 +228,12 @@ class WorkerMiddlewareMessageHeader : public MiddlewareMessageHeader {
 
     stream << "[Command   ]: " << header.cmd_ << std::endl;
     stream << static_cast<MiddlewareMessageHeader>(header);
-    stream << "[Client id ]: " << header.client_id_ << std::endl
-           << "[Worker id ]: " << header.worker_id_ << std::endl;
 
     return stream;
   }
 
   ClassDef(WorkerMiddlewareMessageHeader, 1);
 };
-
 }  // namespace bdm
 
 #endif  // DEMO_DISTRIBUTION_PROTOCOL_H_
