@@ -17,6 +17,8 @@ void BrokerCommunicator::ReactorTimedOut() {
   // Timeout
   // TODO(kkanellis): decrease liveness IF it's time
   if (--hb_liveness_ == 0) {
+    is_connected_ = false;
+
     logger_.Warning("Disconnected from broker - retrying...");
     std::this_thread::sleep_for(hb_rec_delay_);
     Connect();
@@ -89,6 +91,7 @@ void BrokerCommunicator::HandleIncomingMessage() {
         break;
       case WorkerProtocolCmd::kHeartbeat:
         // Do nothing
+        is_connected_ = true;
         break;
       case WorkerProtocolCmd::kDisconnect:
         // Reconnect to broker

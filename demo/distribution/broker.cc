@@ -42,6 +42,9 @@ void Broker::HandleMessageWorker(const std::string& identity,
       // Cross-check worker identity
       assert(header->worker_id_ == identity);
 
+      // Send heartbeat to complete handshake
+      worker->Send(WorkerProtocolCmd::kHeartbeat);
+
       // Monitor worker using heartbeats
       worker->expiry_ = std::chrono::system_clock::now() + HEARTBEAT_EXPIRY;
       waiting_.insert(worker);
