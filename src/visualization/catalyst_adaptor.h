@@ -1,7 +1,7 @@
 #ifndef VISUALIZATION_CATALYST_ADAPTOR_H_
 #define VISUALIZATION_CATALYST_ADAPTOR_H_
 
-#include <iostream>
+#include <TError.h>
 #include <string>
 
 // check for ROOTCLING was necessary, due to ambigous reference to namespace
@@ -208,26 +208,36 @@ class CatalystAdaptor {
 
   template <typename TContainer>
   void BuildVTKGrid(TContainer* sim_objects) {
-    throw "Should not be called, because target not compiled with Catalyst";
+    Fatal("",
+          "Simulation was compiled without ParaView support, but you are "
+          "trying to use it.");
   }
 
   template <typename TContainer>
   void BuildVTKDataStructures(TContainer* sim_objects) {
-    throw "Should not be called, because target not compiled with Catalyst";
+    Fatal("",
+          "Simulation was compiled without ParaView support, but you are "
+          "trying to use it.");
   }
 
   void Initialize(const std::string& script) {
-    throw "Should not be called, because target not compiled with Catalyst";
+    Fatal("",
+          "Simulation was compiled without ParaView support, but you are "
+          "trying to use it.");
   }
 
   void Finalize() {
-    throw "Should not be called, because target not compiled with Catalyst";
+    Fatal("",
+          "Simulation was compiled without ParaView support, but you are "
+          "trying to use it.");
   }
 
   template <typename TContainer>
   void CoProcess(TContainer* sim_objects, double time, size_t time_step,
                  bool last_time_step) {
-    throw "Should not be called, because target not compiled with Catalyst";
+    Fatal("",
+          "Simulation was compiled without ParaView support, but you are "
+          "trying to use it.");
   }
 };
 

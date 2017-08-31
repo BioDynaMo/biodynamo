@@ -6,6 +6,7 @@
 #include "command_line_options.h"
 #include "compile_time_param.h"
 #include "model_initializer.h"
+#include "param.h"
 #include "resource_manager.h"
 #include "scheduler.h"
 #include "simulation_object_util.h"
