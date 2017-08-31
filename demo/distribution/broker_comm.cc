@@ -74,7 +74,7 @@ void BrokerCommunicator::HandleIncomingMessage() {
 
     // Frame 2
     auto header =
-        MessageUtil::PopFrontHeader<WorkerMiddlewareMessageHeader>(msg_p.get());
+        MessageUtil::PopFrontObject<WorkerMiddlewareMessageHeader>(msg_p.get());
 
     switch (header->cmd_) {
       case WorkerProtocolCmd::kRequest:
@@ -150,7 +150,7 @@ void BrokerCommunicator::SendToBroker(
                     command, CommunicatorId::kSomeWorker, receiver)
                     .worker_id(info_->identity_)
                     .client_id(client_id);
-  MessageUtil::PushFrontHeader(msg.get(), header);
+  MessageUtil::PushFrontObject(msg.get(), header);
 
   // Frame 1
   msg->push_front(PROTOCOL_WORKER);

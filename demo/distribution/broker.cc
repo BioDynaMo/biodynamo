@@ -30,7 +30,7 @@ void Broker::HandleMessageWorker(const std::string& identity,
 
   // Frame 1
   auto header =
-      MessageUtil::PopFrontHeader<WorkerMiddlewareMessageHeader>(msg.get());
+      MessageUtil::PopFrontObject<WorkerMiddlewareMessageHeader>(msg.get());
 
   bool worker_ready = (workers_.find(identity) != workers_.end());
   WorkerEntry* worker = GetOrCreateWorker(identity);
@@ -69,7 +69,7 @@ void Broker::HandleMessageWorker(const std::string& identity,
                                                     CommunicatorId::kClient)
                           .worker_id(worker->identity_)
                           .client_id(header->client_id_);
-      MessageUtil::PushFrontHeader(msg.get(), c_header);
+      MessageUtil::PushFrontObject(msg.get(), c_header);
 
       // Frame 2
       msg->push_front(PROTOCOL_CLIENT);
@@ -110,7 +110,7 @@ void Broker::HandleMessageClient(const std::string& sender,
 
   // Frame 1
   auto header =
-      MessageUtil::PopFrontHeader<ClientMiddlewareMessageHeader>(msg.get());
+      MessageUtil::PopFrontObject<ClientMiddlewareMessageHeader>(msg.get());
 
   assert(sender == header->client_id_);
 
@@ -176,7 +176,7 @@ void Broker::ReplyToClient(ClientProtocolCmd cmd, const std::string& client_id,
                                               CommunicatorId::kClient)
                     .client_id(client_id)
                     .worker_id(worker_id);
-  MessageUtil::PushFrontHeader(msg.get(), header);
+  MessageUtil::PushFrontObject(msg.get(), header);
 
   // Frame 2
   msg->push_front(PROTOCOL_CLIENT);

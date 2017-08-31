@@ -69,7 +69,7 @@ void Client::Send(ClientProtocolCmd cmd, CommunicatorId receiver,
       ClientMiddlewareMessageHeader(cmd, CommunicatorId::kClient, receiver)
           .client_id(identity_)
           .worker_id(worker_id);
-  MessageUtil::PushFrontHeader(msg.get(), header);
+  MessageUtil::PushFrontObject(msg.get(), header);
 
   // Frame 1
   msg->push_front(PROTOCOL_CLIENT);
@@ -89,7 +89,7 @@ void Client::SendToWorker(std::unique_ptr<zmqpp::message> msg,
 
   // Push AppMessageHeader
   auto header = AppMessageHeader(AppProtocolCmd::kDebug);
-  MessageUtil::PushFrontHeader(msg.get(), header);
+  MessageUtil::PushFrontObject(msg.get(), header);
 
   Send(ClientProtocolCmd::kRequest, CommunicatorId::kSomeWorker, std::move(msg),
        worker_id);
@@ -117,7 +117,7 @@ bool Client::Recv(std::unique_ptr<zmqpp::message>* msg_out,
   assert(protocol == PROTOCOL_CLIENT);
 
   auto header =
-      MessageUtil::PopFrontHeader<ClientMiddlewareMessageHeader>(msg.get());
+      MessageUtil::PopFrontObject<ClientMiddlewareMessageHeader>(msg.get());
 
   assert(header->cmd_ == ClientProtocolCmd::kReport ||
          header->cmd_ == ClientProtocolCmd::kAck ||

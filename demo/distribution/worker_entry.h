@@ -40,7 +40,7 @@ class WorkerEntry {
                                                 CommunicatorId::kSomeWorker)
                       .worker_id(identity_)
                       .client_id(client_id);
-    MessageUtil::PushFrontHeader(msg.get(), header);
+    MessageUtil::PushFrontObject(msg.get(), header);
 
     // Frame 2
     msg->push_front(PROTOCOL_WORKER);

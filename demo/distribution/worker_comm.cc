@@ -58,7 +58,7 @@ void WorkerCommunicator::HandleIncomingMessage() {
 
     // Frame 2
     auto header =
-        MessageUtil::PopFrontHeader<WorkerMiddlewareMessageHeader>(msg_p.get());
+        MessageUtil::PopFrontObject<WorkerMiddlewareMessageHeader>(msg_p.get());
 
     assert(header->sender_ == (client_ ? CommunicatorId::kRightNeighbour
                                        : CommunicatorId::kLeftNeighbour));
@@ -150,7 +150,7 @@ void WorkerCommunicator::SendToCoWorker(
   auto header = WorkerMiddlewareMessageHeader(command, sender, receiver)
                     .client_id(info_->identity_)
                     .worker_id(coworker_identity_);
-  MessageUtil::PushFrontHeader(msg.get(), header);
+  MessageUtil::PushFrontObject(msg.get(), header);
 
   // Frame 1
   msg->push_front(PROTOCOL_WORKER);
