@@ -5,7 +5,7 @@ namespace bdm {
 DistWorkerAPI::DistWorkerAPI(zmqpp::context* ctx, const std::string identity,
                              LoggingLevel level)
     : comms_(),
-      wait_timeout_(2000),
+      wait_timeout_(HEARTBEAT_INTERVAL),
       zctx_interrupted_(false),
       logger_("WAPI_[" + identity + "]", level) {
   info_.ctx_ = ctx;
@@ -74,7 +74,7 @@ void DistWorkerAPI::SendDebugMessage(const std::string& value,
 
   // Create header
   auto header = AppMessageHeader(AppProtocolCmd::kDebug);
-  MessageUtil::PushFrontHeader<AppMessageHeader>(msg.get(), header);
+  MessageUtil::PushFrontObject<AppMessageHeader>(msg.get(), header);
 
   SendRawMessage(std::move(msg), to);
 }
@@ -119,7 +119,7 @@ void DistWorkerAPI::SendRawMessage(std::unique_ptr<zmqpp::message> msg,
                                    CommunicatorId to) {
   // Queue for delivery
   std::unique_lock<std::mutex> lk(mq_net_deliver_mtx_);
-  mq_net_deliver_.push(std::make_pair(std::move(msg), to));
+  mq_net_deliver_.push_back(std::make_pair(std::move(msg), to));
   lk.unlock();
 
   // Notify the communication thread
@@ -242,7 +242,7 @@ void DistWorkerAPI::HandleNetwork() {
 
   // Add app_sock to reactor
   info_.reactor_.add(*child_pipe_,
-                     std::bind(&DistWorkerAPI::HandleAppMessage, this));
+                     std::bind(&DistWorkerAPI::HandleAppMessages, this));
 
   logger_.Info("Listening to network...");
   while (!zctx_interrupted_) {
@@ -263,6 +263,11 @@ void DistWorkerAPI::HandleNetwork() {
       HandleNetworkMessages();
     }
 
+    // Handle pending messages from the application
+    if (!mq_net_deliver_.empty()) {
+      HandleAppMessages();
+    }
+
     ForEachValidCommunicator([](std::unique_ptr<Communicator>& comm) {
       comm->ReactorServedRequests();
     });
@@ -273,31 +278,42 @@ cleanup:
   logger_.Info("Terminated!");
 }
 
-void DistWorkerAPI::HandleAppMessage() {
+void DistWorkerAPI::HandleAppMessages() {
   // The message must have the following format
   // Frame 1:    communicator identifier (where to send message?)
   // Frame 2:    recipient id
   // Frame 3..n: application frame(s)
 
   auto sig = zmqpp::signal();
-  if (!child_pipe_->receive(sig) || sig == zmqpp::signal::stop) {
+
+  // Check for new message
+  auto new_msg = child_pipe_->receive(sig, true);
+  if (sig == zmqpp::signal::stop) {
     // Interrupted
     zctx_interrupted_ = true;
-    return;
   }
+  assert(!new_msg || (new_msg && (sig == zmqpp::signal::test ||
+                                  sig == zmqpp::signal::stop)));
+
   // App wants to send a new message
-  assert(sig == zmqpp::signal::test);
 
   std::unique_lock<std::mutex> lk(mq_net_deliver_mtx_);
-  assert(!mq_net_deliver_.empty());
+  for (auto it = mq_net_deliver_.begin(); it != mq_net_deliver_.end();) {
+    auto& pair = *it;
 
-  // Find out where to forward the message
-  auto& pair = mq_net_deliver_.front();
-  auto& comm = GetValidCommunicator(pair.second);
+    // Find out where to forward the message
+    auto& comm = GetValidCommunicator(pair.second);
 
-  comm.HandleOutgoingMessage(std::move(pair.first));
+    if (comm.IsConnected()) {
+      // Deliver this message
+      comm.HandleOutgoingMessage(std::move(pair.first));
+      it = mq_net_deliver_.erase(it);
+    } else {
+      // Skip and move to next message
+      ++it;
+    }
+  }
 
-  mq_net_deliver_.pop();
   // TODO(kkanellis): maybe release lock earlier?
 }
 
@@ -313,7 +329,7 @@ void DistWorkerAPI::HandleNetworkMessages() {
 
     // Deserialize & store application header
     auto header =
-        MessageUtil::PopFrontHeader<AppMessageHeader>(pair.first.get());
+        MessageUtil::PopFrontObject<AppMessageHeader>(pair.first.get());
 
     // Push the message to the correct container & notify the app thread
     app_messages_[ToUnderlying(comm_id)].push_back(
