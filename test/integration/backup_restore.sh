@@ -6,9 +6,9 @@ rm $BACKUP_RESTORE_FILE
 # start simulation
 ./backup-restore -b $BACKUP_RESTORE_FILE &
 
-# simulate crash of simulation after 4 seconds
+# simulate crash of simulation after 5 seconds
 SIMULATION_PID=$!
-sleep 4
+sleep 5
 kill -9 $SIMULATION_PID
 
 # restart after artificial crash
