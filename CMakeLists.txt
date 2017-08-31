@@ -260,6 +260,10 @@ bdm_add_executable(ww_benchmark
                   SOURCES ${DISTR_BENCHMARK_SOURCES} ${DISTR_BENCHMARK_PATH}/ww_benchmark.cc
                   HEADERS ${DISTR_BENCHMARK_PATH}/ww_benchmark.h
                   LIBRARIES biodynamo zmq zmqpp)
+bdm_add_executable(ww_halo_benchmark
+                  SOURCES ${DISTR_BENCHMARK_SOURCES} ${DISTR_BENCHMARK_PATH}/ww_halo_benchmark.cc
+                  HEADERS ${DISTR_BENCHMARK_PATH}/ww_halo_benchmark.h
+                  LIBRARIES biodynamo zmq zmqpp)
 bdm_add_executable(cbw_benchmark
                   SOURCES ${DISTR_BENCHMARK_SOURCES} ${DISTR_BENCHMARK_PATH}/cbw_benchmark.cc
                   HEADERS ${DISTR_BENCHMARK_PATH}/cbw_benchmark.h
