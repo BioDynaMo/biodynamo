@@ -135,19 +135,18 @@ void RunApplyOnAllElementsParallelTest() {
   cells->push_back(Cell(6.28));
   cells->push_back(Cell(9.42));
 
-  rm->ApplyOnAllElementsParallel(
-      [](auto&& element, SoHandle handle) {
-        const double kEpsilon = abs_error<double>::value;
-        if (handle == SoHandle(0, 0)) {
-          EXPECT_EQ(3.14, element.GetDiameter());
-        } else if (handle == SoHandle(0, 1)) {
-          EXPECT_EQ(6.28, element.GetDiameter());
-        } else if (handle == SoHandle(0, 2)) {
-          EXPECT_NEAR(9.42, element.GetDiameter(), kEpsilon);
-        } else {
-          FAIL();
-        }
-      });
+  rm->ApplyOnAllElementsParallel([](auto&& element, SoHandle handle) {
+    const double kEpsilon = abs_error<double>::value;
+    if (handle == SoHandle(0, 0)) {
+      EXPECT_EQ(3.14, element.GetDiameter());
+    } else if (handle == SoHandle(0, 1)) {
+      EXPECT_EQ(6.28, element.GetDiameter());
+    } else if (handle == SoHandle(0, 2)) {
+      EXPECT_NEAR(9.42, element.GetDiameter(), kEpsilon);
+    } else {
+      FAIL();
+    }
+  });
 }
 
 TEST(ResourceManagerTest, ApplyOnAllElementsParallelAos) {
