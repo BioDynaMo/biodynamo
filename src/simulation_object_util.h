@@ -17,6 +17,56 @@ namespace bdm {
 using std::enable_if;
 using std::is_same;
 
+/// Macro to define a new simulation object
+/// TODO
+/// \param sim_object_name
+/// \param base_class_scalar_name
+///
+///     BDM_SIM_OBJECT(MyCell, Cell) {
+///       BDM_CLASS_HEADER_ADV(MyCellExt, 1, data_member_);
+///      public:
+///       MyCellExt() {}
+///       ...
+///      private:
+///       vec<int> data_member_;
+///     };
+#define BDM_SIM_OBJECT(sim_object_name, base_class_scalar_name)           \
+  template <typename TCompileTimeParam = CompileTimeParam<>,              \
+            template <typename> class TBase = base_class_scalar_name##T>  \
+  class sim_object_name##Ext;                                             \
+                                                                          \
+  template <typename TCompileTimeParam = CompileTimeParam<>>              \
+  using sim_object_name##T = sim_object_name##Ext<TCompileTimeParam>;     \
+                                                                          \
+  using sim_object_name = sim_object_name##T<CompileTimeParam<Scalar>>;   \
+  using Soa##sim_object_name = sim_object_name##T<CompileTimeParam<Soa>>; \
+                                                                          \
+  template <typename TCompileTimeParam, template <typename> class TBase>  \
+  class sim_object_name##Ext : public TBase<TCompileTimeParam>
+
+/// Macro to define a new simulation object.
+/// For testing purposes it is required to specify the name of the compile
+/// time parameter struct as additional parameter.
+/// \param sim_object_name
+/// \param base_class_scalar_name
+/// \param compile_time_param_name
+/// \see BDM_SIM_OBJECT
+#define BDM_SIM_OBJECT_TEST(sim_object_name, base_class_scalar_name,           \
+                            compile_time_param_name)                           \
+  template <typename TCompileTimeParam = compile_time_param_name<>,            \
+            template <typename> class TBase = base_class_scalar_name##T>       \
+  class sim_object_name##Ext;                                                  \
+                                                                               \
+  template <typename TCompileTimeParam = compile_time_param_name<>>            \
+  using sim_object_name##T = sim_object_name##Ext<TCompileTimeParam>;          \
+                                                                               \
+  using sim_object_name = sim_object_name##T<compile_time_param_name<Scalar>>; \
+  using Soa##sim_object_name =                                                 \
+      sim_object_name##T<compile_time_param_name<Soa>>;                        \
+                                                                               \
+  template <typename TCompileTimeParam, template <typename> class TBase>       \
+  class sim_object_name##Ext : public TBase<TCompileTimeParam>
+
 // -----------------------------------------------------------------------------
 // Helper macros used to generate code for all data members of a class
 
@@ -72,35 +122,10 @@ using std::is_same;
 ///          Every time the layout of the class is changed, class_version_id
 ///          must be incremented by one. The class_version_id should be greater
 ///          or equal to 1.
-/// @param   self_specifier Used internally to create the same object, but with
-///          different backend - required since inheritance chain is not known
-///          inside a mixin. \n
-///          Value: Type Id, but template parameter Base must be replaced with:
-///          `typename Base::template Self<TTBackend>`\n\n
-///          Example: original class: \n
-///          `template<class Base, class Neurite> class Neuron : public Base
-///          {};` \n
-///          Type Id: `Neuron<Base, Neurite>`
-///          replace Base:
-///          `Neuron<typename Base::template Self<TTBackend>, Neurite>` \n\n
-///          "," are not allowed as part of preprocessor parameter -> replace
-///          with COMMA() \n
-///           -> self_specifier:
-///          `Neuron<typename Base::template Self<TTBackend> COMMA() Neurite>`
-/// @param   friend_template_signature used to "friend" all template versions of
-///          this class. Unfortunately, there is no generic definition for
-///          different numbers of template arguments or types. Therefore, the
-///          class template signature has to be repeated as a parameter to this
-///          macro. Example: \n
-///          1) `template <typename T> class Foo {...};`
-///             -> friend_template_signature: `template <typename>` \n
-///          2) `template <typename T, typename U> class Bar {...};`
-///             -> friend_template_signature:
-///             `template <typename COMMA() typename>`
 /// @param  ...: List of all data members of this class
-#define BDM_CLASS_HEADER_ADV(class_name, class_version_id, self_specifier,     \
-                             friend_template_signature, ...)                   \
+#define BDM_CLASS_HEADER_ADV(class_name, class_version_id, ...)                \
  public:                                                                       \
+  using Base = TBase<TCompileTimeParam>;                                       \
   /* reduce verbosity of some types and variables by defining a local alias */ \
   using Base::kIdx;                                                            \
                                                                                \
@@ -112,12 +137,14 @@ using std::is_same;
   /** Used internally to create the same object, but with */                   \
   /** different backend - required since inheritance chain is not known */     \
   /** inside a mixin. */                                                       \
-  template <typename TTBackend = Backend>                                      \
-  using Self = self_specifier;                                                 \
+  template <typename TTBackend>                                                \
+  using Self =                                                                 \
+      class_name<typename TCompileTimeParam::template Self<TTBackend>>;        \
                                                                                \
   /** all template versions of this class are friends of each other */         \
   /** so they can access each others data members */                           \
-  friend_template_signature friend class class_name;                           \
+  template <typename, template <typename> class>                               \
+  friend class class_name;                                                     \
                                                                                \
   explicit class_name(TRootIOCtor* io_ctor) {}                                 \
                                                                                \
@@ -219,7 +246,9 @@ using std::is_same;
  protected:                                                                    \
   /** Equivalent to std::vector<> push_back - it adds the scalar values to */  \
   /** all data members */                                                      \
-  void PushBackImpl(const SimulationObject<Scalar>& o) override {              \
+  void PushBackImpl(const SimulationObject<                                    \
+                    typename TCompileTimeParam::template Self<Scalar>>& o)     \
+      override {                                                               \
     auto other = *static_cast<const Self<Scalar>*>(&o);                        \
     BDM_CLASS_HEADER_PUSH_BACK_BODY(__VA_ARGS__);                              \
     Base::PushBackImpl(o);                                                     \
@@ -245,14 +274,6 @@ using std::is_same;
       VectorPlaceholder<Self<Scalar>>>::type to_be_added_;                     \
                                                                                \
   BDM_ROOT_CLASS_DEF_OVERRIDE(class_name, class_version_id)
-
-/// simpflified interface for standard simulation object with one template
-/// parameter named Base.
-/// Documentation see BDM_CLASS_HEADER_ADV
-#define BDM_CLASS_HEADER(class_name, class_version_id, ...)                 \
-  BDM_CLASS_HEADER_ADV(class_name, class_version_id,                        \
-                       class_name<typename Base::template Self<TTBackend>>, \
-                       template <typename>, __VA_ARGS__)
 
 /// Helper function to make cell division easier for the programmer.
 /// Creates a new daughter object and passes it together with the given

@@ -7,6 +7,7 @@
 #include <ostream>
 #include <tuple>
 #include <utility>
+#include "backend.h"
 #include "tuple_util.h"
 #include "variadic_template_parameter_util.h"
 
@@ -70,7 +71,7 @@ struct ConvertToContainerTuple<Backend, VariadicTypedef<Types...>> {
   // Helper type alias to get a type with certain Backend
   template <typename T>
   using ToBackend = typename T::template Self<Backend>;
-  typedef std::tuple<Container<ToBackend<Types>>...> type;  // NOLINT
+  using type = std::tuple<Container<ToBackend<Types>>...>;  // NOLINT
 };
 
 }  // namespace detail
@@ -90,6 +91,7 @@ struct ConvertToContainerTuple {
 
 /// Forward declaration for concrete compile time parameter.
 /// Will be used as default template parameter.
+template <typename TBackend = Soa>
 struct CompileTimeParam;
 
 /// ResourceManager holds a container for each atomic type in the simulation.
@@ -103,10 +105,10 @@ struct CompileTimeParam;
 /// This makes user code easier since atomic types can be specified as scalars.
 /// @tparam TCompileTimeParam type that containes the compile time parameter for
 /// a specific simulation. ResourceManager extracts Backend and AtomicTypes.
-template <typename TCompileTimeParam = CompileTimeParam>
+template <typename TCompileTimeParam = CompileTimeParam<>>
 class ResourceManager {
  public:
-  using Backend = typename TCompileTimeParam::Backend;
+  using Backend = typename TCompileTimeParam::SimulationBackend;
   using Types = typename TCompileTimeParam::AtomicTypes;
   /// Determine Container based on the Backend
   template <typename T>

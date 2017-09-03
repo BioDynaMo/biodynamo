@@ -27,7 +27,7 @@ struct type_ternary_operator<false, T, U> {
 template <typename Backend>
 struct is_soa {              // NOLINT
   static const bool value =  // NOLINT
-      is_same<Backend, Soa>::value || is_same<Backend, SoaRef>::value;
+      std::is_same<Backend, Soa>::value || std::is_same<Backend, SoaRef>::value;
 };
 
 }  // namespace bdm

@@ -78,21 +78,29 @@ void RunTest() {
   EXPECT_NEAR(1.1, (*cells)[1].GetMass(), abs_error<double>::value);
 }
 
+template <typename TBackend = Soa>
 struct AosCompileTimeParam {
-  using Backend = Scalar;
+  template <typename TTBackend>
+  using Self = AosCompileTimeParam<TTBackend>;
+  using Backend = TBackend;
+  using SimulationBackend = Scalar;
   using BiologyModules = Variant<NullBiologyModule>;
   using AtomicTypes = VariadicTypedef<Cell>;
 };
 
-TEST(DisplacementOpTest, ComputeAos) { RunTest<AosCompileTimeParam>(); }
+TEST(DisplacementOpTest, ComputeAos) { RunTest<AosCompileTimeParam<>>(); }
 
+template <typename TBackend = Soa>
 struct SoaCompileTimeParam {
-  using Backend = Soa;
+  template <typename TTBackend>
+  using Self = SoaCompileTimeParam<TTBackend>;
+  using Backend = TBackend;
+  using SimulationBackend = Soa;
   using BiologyModules = Variant<NullBiologyModule>;
   using AtomicTypes = VariadicTypedef<Cell>;
 };
 
-TEST(DisplacementOpTest, ComputeSoa) { RunTest<SoaCompileTimeParam>(); }
+TEST(DisplacementOpTest, ComputeSoa) { RunTest<SoaCompileTimeParam<>>(); }
 
 }  // namespace displacement_op_test_internal
 }  // namespace bdm

@@ -7,12 +7,12 @@ namespace bdm {
 namespace cell_test_internal {
 
 TEST(CellTest, TransformCoordinatesGlobalToPolar) {
-  TestCell<> cell;
+  TestCell cell;
   cell.TestTransformCoordinatesGlobalToPolar();
 }
 
 TEST(CellTest, DivideVolumeRatioPhiTheta) {
-  TestCell<> mother;
+  TestCell mother;
   mother.SetPosition({5, 6, 7});
   mother.SetMassLocation({5, 6, 7});
   mother.SetTractorForce({0, 0, 0});
@@ -27,7 +27,7 @@ TEST(CellTest, DivideVolumeRatioPhiTheta) {
   mother.AddBiologyModule(MovementModule({1, 2, 3}));
   mother.SetBoxIdx(123);
 
-  TestCell<> daughter;
+  TestCell daughter;
   mother.Divide(&daughter, 0.75, 0.12, 0.34);
 
   const double kEpsilon = abs_error<double>::value;
@@ -112,7 +112,7 @@ TEST(CellTest, DivideVolumeRatioPhiTheta) {
 }
 
 TEST(CellTest, Divide) {
-  TestCell<> cell;
+  TestCell cell;
   gRandom.SetSeed(42);
 
   cell.check_input_parameters_ = true;
@@ -120,12 +120,12 @@ TEST(CellTest, Divide) {
   cell.expected_phi_ = 1.9633629889829609;
   cell.expected_theta_ = 4.2928196812086608;
 
-  TestCell<> daughter;
+  TestCell daughter;
   cell.Divide(&daughter);
 }
 
 TEST(CellTest, DivideVolumeRatio) {
-  TestCell<> cell;
+  TestCell cell;
   gRandom.SetSeed(42);
 
   cell.check_input_parameters_ = true;
@@ -133,12 +133,12 @@ TEST(CellTest, DivideVolumeRatio) {
   cell.expected_phi_ = 1.1956088797871529;
   cell.expected_theta_ = 4.5714174264720571;
 
-  TestCell<> daughter;
+  TestCell daughter;
   cell.Divide(&daughter, 0.59);
 }
 
 TEST(CellTest, DivideAxis) {
-  TestCell<> cell;
+  TestCell cell;
   cell.SetMassLocation({1, 2, 3});
   gRandom.SetSeed(42);
 
@@ -147,12 +147,12 @@ TEST(CellTest, DivideAxis) {
   cell.expected_phi_ = 1.0442265974045177;
   cell.expected_theta_ = 0.72664234068172562;
 
-  TestCell<> daughter;
+  TestCell daughter;
   cell.Divide(&daughter, {9, 8, 7});
 }
 
 TEST(CellTest, DivideVolumeRatioAxis) {
-  TestCell<> cell;
+  TestCell cell;
   cell.SetMassLocation({1, 2, 3});
   gRandom.SetSeed(42);
 
@@ -161,12 +161,12 @@ TEST(CellTest, DivideVolumeRatioAxis) {
   cell.expected_phi_ = 1.0442265974045177;
   cell.expected_theta_ = 0.72664234068172562;
 
-  TestCell<> daughter;
+  TestCell daughter;
   cell.Divide(&daughter, 0.456, {9, 8, 7});
 }
 
 TEST(CellTest, BiologyModule) {
-  TestCell<> cell;
+  TestCell cell;
   double diameter = cell.GetDiameter();
   auto position = cell.GetPosition();
 

@@ -79,7 +79,7 @@ function(bdm_generate_dictionary TARGET)
   file(WRITE ${ARG_DICT} "")
   add_custom_target(${TARGET}
     COMMAND ${GENREFLEX_EXECUTABLE} ${headerfiles} -o ${ARG_DICT} ${rootmapopts} --select=${selectionfile}
-            ${ARG_OPTIONS} ${includedirs} ${definitions} 2>${CMAKE_CURRENT_BINARY_DIR}/${TARGET}.log
+            ${ARG_OPTIONS} ${includedirs} ${definitions} -v >${CMAKE_CURRENT_BINARY_DIR}/${TARGET}.log 2>&1
     WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
     DEPENDS ${ARG_DEPENDS})
 endfunction(bdm_generate_dictionary)

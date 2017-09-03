@@ -7,6 +7,7 @@
 #include <vector>
 
 #include <Rtypes.h>
+#include "compile_time_param.h"
 #include "gtest/gtest.h"
 #include "io_util.h"
 #include "simulation_object.h"
@@ -20,21 +21,20 @@
 namespace bdm {
 namespace simulation_object_util_test_internal {
 
-template <typename Base = SimulationObject<>>
-class CellExt : public Base {
-  BDM_CLASS_HEADER(CellExt, 1, position_, diameter_);
+BDM_SIM_OBJECT(Cell, SimulationObject) {
+  BDM_CLASS_HEADER_ADV(CellExt, 1, position_, diameter_);
 
  public:
   explicit CellExt(const std::array<double, 3>& pos) : position_{{pos}} {}
 
   CellExt() : position_{{1, 2, 3}} {}
 
-  void Divide(Self<Scalar>* daughter, double volume_ratio, double phi,
+  void Divide(Self<Scalar> * daughter, double volume_ratio, double phi,
               double theta) {
     DivideImpl(daughter, volume_ratio, phi, theta);
   }
 
-  virtual void DivideImpl(Self<Scalar>* daughter, double volume_ratio,
+  virtual void DivideImpl(Self<Scalar> * daughter, double volume_ratio,
                           double phi, double theta) {
     daughter->position_[kIdx] = {5, 4, 3};
     diameter_[kIdx] = 1.123;
@@ -65,9 +65,8 @@ class Neurite {
 };
 
 // add Neurites to BaseCell
-template <typename Base = CellExt<>>
-class NeuronExt : public Base {
-  BDM_CLASS_HEADER(NeuronExt, 1, neurites_);
+BDM_SIM_OBJECT(Neuron, Cell) {
+  BDM_CLASS_HEADER_ADV(NeuronExt, 1, neurites_);
 
  public:
   template <class... A>
@@ -76,8 +75,8 @@ class NeuronExt : public Base {
 
   NeuronExt() = default;
 
-  void DivideImpl(typename CellExt<>::template Self<Scalar>* daughter,
-                  double volume_ratio, double phi, double theta) override {
+  void DivideImpl(Cell * daughter, double volume_ratio, double phi,
+                  double theta) override {
     auto neuron = static_cast<Self<Scalar>*>(daughter);
     neuron->neurites_[kIdx].push_back(Neurite(987));
     Base::DivideImpl(daughter, volume_ratio, phi, theta);
@@ -96,28 +95,35 @@ class NeuronExt : public Base {
 
 // -----------------------------------------------------------------------------
 // SOA object for IO test
-template <typename Base = SimulationObject<Soa>>
-class TestObject : public Base {
-  BDM_CLASS_HEADER(TestObject, 1, id_);
+BDM_SIM_OBJECT(TestObject, SimulationObject) {
+  BDM_CLASS_HEADER_ADV(TestObjectExt, 1, id_);
 
  public:
-  TestObject() {}
-  explicit TestObject(int id) : id_(id) {}
+  TestObjectExt() {}
+  explicit TestObjectExt(int id) : id_(id) {}
   int GetId() const { return id_[kIdx]; }
 
  private:
   vec<int> id_;
 };
 
-using SoaTestObject = TestObject<>;
-using ScalarTestObject = TestObject<SimulationObject<Scalar>>;
+}  // namespace simulation_object_util_test_internal
+
+// has to be defined in namespace bdm
+template <typename TBackend>
+struct CompileTimeParam : public DefaultCompileTimeParam<TBackend> {
+  using AtomicTypes =
+      VariadicTypedef<simulation_object_util_test_internal::Neuron>;
+};
+
+namespace simulation_object_util_test_internal {
 
 inline void RunSoaIOTest() {
   remove(ROOTFILE);
 
   auto objects = SoaTestObject::NewEmptySoa();
   for (size_t i = 0; i < 10; i++) {
-    objects.push_back(ScalarTestObject(i));
+    objects.push_back(TestObject(i));
   }
 
   // write to root file
