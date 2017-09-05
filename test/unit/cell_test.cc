@@ -181,7 +181,7 @@ TEST(CellTest, BiologyModule) {
   EXPECT_NEAR(position[2] + 3, cell.GetPosition()[2], abs_error<double>::value);
 }
 
-TEST(CellTest, IO) { RunIOTest(); }
+TEST(DISABLED_CellTest, IO) { RunIOTest(); }
 
 }  // namespace cell_test_internal
 }  // namespace bdm
