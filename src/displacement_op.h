@@ -30,6 +30,8 @@ class DisplacementOp {
     auto search_radius = grid.GetLargestObjectSize();
     double squared_radius = search_radius * search_radius;
 
+    size_t lcallcount = 0;
+
 #pragma omp parallel for shared(grid) firstprivate(squared_radius)
     for (size_t i = 0; i < cells->size(); i++) {
       auto&& cell = (*cells)[i];
@@ -79,7 +81,8 @@ class DisplacementOp {
       //  away)
 
       auto calculate_neighbor_forces =
-          [&cells, &cell, &translation_force_on_point_mass](size_t nc) {
+          [&](size_t cell_id, size_t nc) {
+            // lcallcount++;
             const auto&& neighbor = (*cells)[nc];
             std::array<double, 3> neighbor_force;
             neighbor.GetForceOn(cell.GetMassLocation(), cell.GetDiameter(),
@@ -91,6 +94,7 @@ class DisplacementOp {
 
       grid.ForEachNeighborWithinRadius(calculate_neighbor_forces, *cells, cell,
                                        i, squared_radius);
+      // grid.ForEachNeighbor(calculate_neighbor_forces, cell, i);
 
       // 4) PhysicalBonds
       // How the physics influences the next displacement
@@ -134,7 +138,7 @@ class DisplacementOp {
 // set new positions after all updates have been calculated
 // otherwise some cells would see neighbors with already updated positions
 // which would lead to inconsistencies
-#pragma omp parallel for
+// #pragma omp parallel for
     for (size_t i = 0; i < cells->size(); i++) {
       auto&& cell = (*cells)[i];
       cell.UpdateMassLocation(cell_movements[i]);
@@ -143,6 +147,9 @@ class DisplacementOp {
       // Reset biological movement to 0.
       cell.SetTractorForce({0, 0, 0});
     }
+
+    std::cout << "lcallcount " << lcallcount << std::endl;
+
   }
 };
 
