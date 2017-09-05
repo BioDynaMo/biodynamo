@@ -18,19 +18,29 @@ using std::enable_if;
 using std::is_same;
 
 /// Macro to define a new simulation object
-/// TODO
 /// \param sim_object_name
 /// \param base_class_scalar_name
 ///
-///     BDM_SIM_OBJECT(MyCell, Cell) {
-///       BDM_CLASS_HEADER_ADV(MyCellExt, 1, data_member_);
+///     // Example usage to extend class Cell
+///     BDM_SIM_CLASS(MyCell, Cell) {
+///       BDM_CLASS_HEADER(MyCellExt, 1, data_member_);
 ///      public:
 ///       MyCellExt() {}
 ///       ...
 ///      private:
 ///       vec<int> data_member_;
 ///     };
-#define BDM_SIM_OBJECT(sim_object_name, base_class_scalar_name)           \
+/// This creates one class and three type aliases
+///   * `MyCellExt`: class containing the actual code.
+///      The postfix `Ext` stands for extension.
+///      NB: Inside the body you have to use `MyCellExt` -- e.g.:
+///      `BDM_CLASS_HEADER(MyCellExt, ...)` or constructor.
+///   * `MyCell`: scalar type alias (no template parameter required)
+///      = scalar name
+///   * `SoaMyCell`: soa type alias (no template parameter required)
+///   * `MyCellT`: templated type alias only needed internally for
+///      extension mechanism
+#define BDM_SIM_CLASS(sim_object_name, base_class_scalar_name)            \
   template <typename TCompileTimeParam = CompileTimeParam<>,              \
             template <typename> class TBase = base_class_scalar_name##T>  \
   class sim_object_name##Ext;                                             \
@@ -50,9 +60,9 @@ using std::is_same;
 /// \param sim_object_name
 /// \param base_class_scalar_name
 /// \param compile_time_param_name
-/// \see BDM_SIM_OBJECT
-#define BDM_SIM_OBJECT_TEST(sim_object_name, base_class_scalar_name,           \
-                            compile_time_param_name)                           \
+/// \see BDM_SIM_CLASS
+#define BDM_SIM_CLASS_TEST(sim_object_name, base_class_scalar_name,            \
+                           compile_time_param_name)                            \
   template <typename TCompileTimeParam = compile_time_param_name<>,            \
             template <typename> class TBase = base_class_scalar_name##T>       \
   class sim_object_name##Ext;                                                  \
@@ -123,7 +133,7 @@ using std::is_same;
 ///          must be incremented by one. The class_version_id should be greater
 ///          or equal to 1.
 /// @param  ...: List of all data members of this class
-#define BDM_CLASS_HEADER_ADV(class_name, class_version_id, ...)                \
+#define BDM_CLASS_HEADER(class_name, class_version_id, ...)                    \
  public:                                                                       \
   using Base = TBase<TCompileTimeParam>;                                       \
   /* reduce verbosity of some types and variables by defining a local alias */ \

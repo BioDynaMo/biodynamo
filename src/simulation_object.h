@@ -192,7 +192,7 @@ class SimulationObject : public SimulationObjectImpl<TCompileTimeParam>::type {
 
 /// type alias to be consistent with naming convention for simulation object
 /// extension
-/// \see BDM_SIM_OBJECT
+/// \see BDM_SIM_CLASS
 template <typename TCompileTimeParam>
 using SimulationObjectT = SimulationObject<TCompileTimeParam>;
 
