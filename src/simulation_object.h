@@ -62,9 +62,9 @@ class SoaSimulationObject {
   }
 
   /// Thread safe version of std::vector::push_back
-  void push_back(
+  void push_back(  // NOLINT
       const SimulationObject<typename TCompileTimeParam::template Self<Scalar>>
-          &element) {  // NOLINT
+          &element) {
     std::lock_guard<std::recursive_mutex> lock(mutex_);
     PushBackImpl(element);
   }

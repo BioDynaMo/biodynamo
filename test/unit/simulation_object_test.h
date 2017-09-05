@@ -1,5 +1,5 @@
-#ifndef UNIT_SEPARATE_BINARY_SIMULATION_OBJECT_TEST_H_
-#define UNIT_SEPARATE_BINARY_SIMULATION_OBJECT_TEST_H_
+#ifndef UNIT_SIMULATION_OBJECT_TEST_H_
+#define UNIT_SIMULATION_OBJECT_TEST_H_
 
 #include "gtest/gtest.h"
 #include "simulation_object.h"
@@ -31,4 +31,4 @@ inline void RunPushBackAndClearTest() {
 }  // namespace simulation_object_test_internal
 }  // namespace bdm
 
-#endif  // UNIT_SEPARATE_BINARY_SIMULATION_OBJECT_TEST_H_
+#endif  // UNIT_SIMULATION_OBJECT_TEST_H_
