@@ -17,7 +17,7 @@ endif()
 find_library(VTUNE_LIBRARIES ittnotify PATHS "${VTUNE_LIB_DIR}" NO_DEFAULT_PATH)
 
 if (VTUNE_LIBRARIES)
-  set(VTUNE_FOUND TRUE)
+  set(VTune_FOUND TRUE)
   set(VTUNE_INCLUDE_DIR "${VTUNE_DIR}/include")
   message(STATUS "Found Vtune library ${VTUNE_LIBRARIES}")
 else()

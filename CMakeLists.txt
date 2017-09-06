@@ -17,7 +17,6 @@ option(coverage "Enable test coverage report generation." OFF)
 #--------------------- find packages -------------
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 find_package(OpenMP REQUIRED)
-# find_package(VTune REQUIRED)
 if (test)
   # must be before include(${ROOT_USE_FILE}) otherwise test compile fails
   find_package(Threads REQUIRED)
@@ -41,6 +40,14 @@ if(${ParaView_FOUND})
   add_definitions("-DUSE_CATALYST")
 else()
   message(WARNING "ParaView not found")
+endif()
+
+find_package(VTune)
+if(${VTune_FOUND})
+  include_directories(${VTUNE_INCLUDE_DIR})
+  add_definitions("-DUSE_VTUNE")
+else()
+  message(WARNING "VTune not found")
 endif()
 
 #--------------------- includes -------------
@@ -133,7 +140,7 @@ include_directories("${CMAKE_SOURCE_DIR}/third_party")
 include_directories("${CMAKE_SOURCE_DIR}/demo")
 include_directories("${MPARK_LIB}")
 # include_directories("${Vc_INCLUDE_DIR}")
-# include_directories(${VTUNE_INCLUDE_DIR})
+
 
 # build libbiodynamo
 file(GLOB_RECURSE HEADERS "${CMAKE_SOURCE_DIR}/src/*.h")
@@ -142,8 +149,10 @@ build_libbiodynamo(biodynamo
                    SOURCES ${LIB_SOURCES}
                    HEADERS ${HEADERS}
                    LIBRARIES ${ROOT_LIBRARIES})
+if(${VTune_FOUND})
+  target_link_libraries(biodynamo ${VTUNE_LIBRARIES})
+endif()
 # target_link_libraries(biodynamo ${Vc_LIBRARIES})
-# target_link_libraries(biodynamo ${VTUNE_LIBRARIES})
 # add_dependencies(biodynamo Vc)
 
 # add custom clean target for shared library
