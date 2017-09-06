@@ -105,26 +105,6 @@ else()
   set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_FULL_LIBDIR}) # install LIBDIR
 endif()
 
-#--------------------- setup Vc ----------------
-# setup Vc
-# ExternalProject_Add(
-#     Vc
-#     URL "${CMAKE_SOURCE_DIR}/third_party/Vc-master_2bfce51.zip"
-#     PREFIX "${CMAKE_CURRENT_BINARY_DIR}/Vc"
-#     CMAKE_ARGS "-DBUILD_TESTING=off"
-#     CMAKE_CACHE_ARGS
-#     -DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}
-#     -DCMAKE_C_COMPILER:FILEPATH=${CMAKE_C_COMPILER}
-#     INSTALL_COMMAND "" # Disable install step
-#     # Ugly but necessary, in future versions one can use ${binary_dir}
-#     # in BUILD_BYPRODUCTS
-#     #BUILD_BYPRODUCTS "${binary_dir}/libVc.a"
-#     BUILD_BYPRODUCTS "${CMAKE_CURRENT_BINARY_DIR}/Vc/src/Vc-build/libVc.a"
-# )
-# set(Vc_INCLUDE_DIR "${CMAKE_CURRENT_BINARY_DIR}/Vc/src/Vc/include"
-#                    "${CMAKE_CURRENT_BINARY_DIR}/Vc/src/Vc/")
-# set(Vc_LIBRARIES "${CMAKE_CURRENT_BINARY_DIR}/Vc/src/Vc-build/libVc.a")
-
 #--------------------- setup mpark variant library ----------------
 set(MPARK_LIB "${CMAKE_CURRENT_BINARY_DIR}/mpark/")
 file(MAKE_DIRECTORY "${MPARK_LIB}/")
@@ -139,8 +119,6 @@ include_directories("${CMAKE_SOURCE_DIR}/test")
 include_directories("${CMAKE_SOURCE_DIR}/third_party")
 include_directories("${CMAKE_SOURCE_DIR}/demo")
 include_directories("${MPARK_LIB}")
-# include_directories("${Vc_INCLUDE_DIR}")
-
 
 # build libbiodynamo
 file(GLOB_RECURSE HEADERS "${CMAKE_SOURCE_DIR}/src/*.h")
@@ -152,8 +130,6 @@ build_libbiodynamo(biodynamo
 if(${VTune_FOUND})
   target_link_libraries(biodynamo ${VTUNE_LIBRARIES})
 endif()
-# target_link_libraries(biodynamo ${Vc_LIBRARIES})
-# add_dependencies(biodynamo Vc)
 
 # add custom clean target for shared library
 add_custom_target(libbdmclean COMMAND ${CMAKE_COMMAND} -P "${CMAKE_BINARY_DIR}/CMakeFiles/biodynamo.dir/cmake_clean.cmake")
