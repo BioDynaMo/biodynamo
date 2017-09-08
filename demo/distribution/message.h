@@ -7,7 +7,13 @@
 
 namespace bdm {
 
-// Converts a string to its hex representation
+///
+/// @brief Converts a string to its hex representation
+///
+/// @param[in]  in  the string obj
+///
+/// @return Hex representation of the \p in string
+///
 inline std::string ToHex(const std::string& in) {
   std::stringstream ss;
   for (size_t i = 0; i < in.length(); i++) {
@@ -17,6 +23,9 @@ inline std::string ToHex(const std::string& in) {
   return ss.str();
 }
 
+///
+/// @brief Overloaded stream operator for printing zmq messages
+///
 inline std::ostream& operator<<(std::ostream& out, const zmqpp::message& msg) {
   size_t frames = msg.parts();
   if (!frames) {
