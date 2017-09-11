@@ -14,12 +14,17 @@ namespace bdm {
 /// `struct bdm::CompileTimeParam` has been forward declared by classes using
 /// compile time parameters. This struct must be defined -- e.g. by using
 /// `BDM_DEFAULT_COMPILE_TIME_PARAM()`
-/// @tparam TOptional DefaultCompileTimeParam must be a template class, since
-///         Types used inside are not fully defined yet. Therefore, a
-///         meaningless template parameter has been introduced.
-template <size_t TOptional = 1>
+/// NB Can't be used in tests because CompileTimeParam is hardcoded in Self
+/// alias
+/// @tparam TBackend required to use simulation objects with different Backend
+template <typename TBackend = Soa>
 struct DefaultCompileTimeParam {
-  using Backend = Soa;
+  template <typename TTBackend>
+  using Self = CompileTimeParam<TTBackend>;
+  using Backend = TBackend;
+
+  /// Defines backend used in ResourceManager
+  using SimulationBackend = Soa;
   using BiologyModules = Variant<NullBiologyModule>;
   using AtomicTypes = VariadicTypedef<Cell>;
 };

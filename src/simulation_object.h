@@ -15,18 +15,23 @@ namespace bdm {
 using std::enable_if;
 using std::is_same;
 
-template <typename>
+template <typename TCompileTimeParam>
 class SimulationObject;
 
 /// Contains implementation for SimulationObject that are specific to SOA
 /// backend. The peculiarity of SOA objects is that it is simulation object
 /// and container at the same time.
 /// @see TransactionalVector
-template <typename TBackend>
+template <typename TCompileTimeParam>
 class SoaSimulationObject {
  public:
+  using Backend = typename TCompileTimeParam::Backend;
   template <typename T>
   friend class SoaSimulationObject;
+
+  template <typename TBackend>
+  using Self =
+      SoaSimulationObject<typename TCompileTimeParam::template Self<TBackend>>;
 
   SoaSimulationObject() : to_be_removed_(), size_(1) {}
 
@@ -34,13 +39,13 @@ class SoaSimulationObject {
   /// Copy-ctor declaration to please compiler, but missing implementation.
   /// Therefore, if it gets called somewhere (failing RVO optimization),
   /// the linker would throw an error.
-  explicit SoaSimulationObject(const SoaSimulationObject<SoaRef> &other);
+  explicit SoaSimulationObject(const Self<SoaRef> &other);
 
   /// Detect failing return value optimization (RVO)
   /// Copy-ctor declaration to please compiler, but missing implementation.
   /// Therefore, if it gets called somewhere (failing RVO optimization),
   /// the linker would throw an error.
-  explicit SoaSimulationObject(const SoaSimulationObject<Soa> &other);
+  explicit SoaSimulationObject(const Self<Soa> &other);
 
   template <typename T>
   SoaSimulationObject(T *other, size_t idx)
@@ -57,7 +62,9 @@ class SoaSimulationObject {
   }
 
   /// Thread safe version of std::vector::push_back
-  void push_back(const SimulationObject<Scalar> &element) {  // NOLINT
+  void push_back(  // NOLINT
+      const SimulationObject<typename TCompileTimeParam::template Self<Scalar>>
+          &element) {
     std::lock_guard<std::recursive_mutex> lock(mutex_);
     PushBackImpl(element);
   }
@@ -83,19 +90,23 @@ class SoaSimulationObject {
  protected:
   const size_t kIdx = 0;
 
-  typename type_ternary_operator<is_same<TBackend, SoaRef>::value,
+  typename type_ternary_operator<is_same<Backend, SoaRef>::value,
                                  std::recursive_mutex &,
                                  std::recursive_mutex>::type mutex_;  //!
 
   /// vector of indices with elements which should be removed
-  /// to_be_removed_ is of type vector<size_t>& if TBackend == SoaRef;
+  /// to_be_removed_ is of type vector<size_t>& if Backend == SoaRef;
   /// otherwise vector<size_t>
-  typename type_ternary_operator<is_same<TBackend, SoaRef>::value,
+  typename type_ternary_operator<is_same<Backend, SoaRef>::value,
                                  std::vector<size_t> &,
                                  std::vector<size_t>>::type to_be_removed_;
 
   /// Append a scalar element
-  virtual void PushBackImpl(const SimulationObject<Scalar> &other) { size_++; }
+  virtual void PushBackImpl(
+      const SimulationObject<typename TCompileTimeParam::template Self<Scalar>>
+          &other) {
+    size_++;
+  }
 
   /// Swap element with last element if and remove last element
   virtual void SwapAndPopBack(size_t index, size_t size) { size_--; }
@@ -104,8 +115,8 @@ class SoaSimulationObject {
   virtual void PopBack(size_t index, size_t size) { size_--; }
 
  private:
-  /// size_ is of type size_t& if TBackend == SoaRef; otherwise size_t
-  typename type_ternary_operator<is_same<TBackend, SoaRef>::value, size_t &,
+  /// size_ is of type size_t& if Backend == SoaRef; otherwise size_t
+  typename type_ternary_operator<is_same<Backend, SoaRef>::value, size_t &,
                                  size_t>::type size_;
 
   // use modified class def, due to possible SoaRef backend
@@ -114,6 +125,7 @@ class SoaSimulationObject {
 
 /// Contains implementations for SimulationObject that are specific to scalar
 /// backend
+template <typename TCompileTimeParam>
 class ScalarSimulationObject {
  public:
   virtual ~ScalarSimulationObject() {}
@@ -124,7 +136,9 @@ class ScalarSimulationObject {
   static const std::size_t kIdx = 0;
 
   /// Append a scalar element
-  virtual void PushBackImpl(const SimulationObject<Scalar> &other) {}
+  virtual void PushBackImpl(
+      const SimulationObject<typename TCompileTimeParam::template Self<Scalar>>
+          &other) {}
 
   /// Swap element with last element if and remove last element
   virtual void SwapAndPopBack(size_t index, size_t size) {}
@@ -136,30 +150,21 @@ class ScalarSimulationObject {
 };
 
 /// Helper type trait to map backends to simulation object implementations
-template <typename TBackend>
-struct SimulationObjectImpl {};
-
-template <>
-struct SimulationObjectImpl<Soa> {
-  typedef SoaSimulationObject<Soa> type;  // NOLINT
-};
-
-template <>
-struct SimulationObjectImpl<SoaRef> {
-  typedef SoaSimulationObject<SoaRef> type;  // NOLINT
-};
-
-template <>
-struct SimulationObjectImpl<Scalar> {
-  typedef ScalarSimulationObject type;  // NOLINT
+template <typename TCompileTimeParam>
+struct SimulationObjectImpl {
+  using Backend = typename TCompileTimeParam::Backend;
+  using type = typename type_ternary_operator<
+      is_same<Backend, Scalar>::value,
+      ScalarSimulationObject<TCompileTimeParam>,
+      SoaSimulationObject<TCompileTimeParam>>::type;
 };
 
 /// Contains code required by all simulation objects
-template <typename TBackend = Scalar>
-class SimulationObject : public SimulationObjectImpl<TBackend>::type {
+template <typename TCompileTimeParam>
+class SimulationObject : public SimulationObjectImpl<TCompileTimeParam>::type {
  public:
-  using Base = typename SimulationObjectImpl<TBackend>::type;
-  using Backend = TBackend;
+  using Backend = typename TCompileTimeParam::Backend;
+  using Base = typename SimulationObjectImpl<TCompileTimeParam>::type;
 
   template <typename T>
   friend class SimulationObject;
@@ -171,18 +176,25 @@ class SimulationObject : public SimulationObjectImpl<TBackend>::type {
 
   virtual ~SimulationObject() {}
 
-  SimulationObject<Backend> &operator=(const SimulationObject<Scalar> &) {
-    return *this;
-  }
-
   /// Used internally to create the same object, but with
   /// different backend - required since inheritance chain is not known
   /// inside a mixin.
   template <typename TTBackend>
-  using Self = SimulationObject<TTBackend>;
+  using Self =
+      SimulationObject<typename TCompileTimeParam::template Self<TTBackend>>;
+
+  SimulationObject<TCompileTimeParam> &operator=(const Self<Scalar> &) {
+    return *this;
+  }
 
   BDM_ROOT_CLASS_DEF_OVERRIDE(SimulationObject, 1);
 };
+
+/// type alias to be consistent with naming convention for simulation object
+/// extension
+/// \see BDM_SIM_CLASS
+template <typename TCompileTimeParam>
+using SimulationObjectT = SimulationObject<TCompileTimeParam>;
 
 }  // namespace bdm
 

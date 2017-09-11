@@ -17,7 +17,8 @@ struct TestBehaviour {
   ClassDefNV(TestBehaviour, 1);
 };
 
-struct CompileTimeParam : public DefaultCompileTimeParam<> {
+template <typename TBackend>
+struct CompileTimeParam : public DefaultCompileTimeParam<TBackend> {
   using BiologyModules = Variant<TestBehaviour>;
 };
 

@@ -74,7 +74,7 @@
  * preprocessor making a large number of expansion passes over the given
  * expression.
  */
-#define EVAL(...) EVAL1024(__VA_ARGS__)
+#define EVAL(...) EVAL32(__VA_ARGS__)
 #define EVAL1024(...) EVAL512(EVAL512(__VA_ARGS__))
 #define EVAL512(...) EVAL256(EVAL256(__VA_ARGS__))
 #define EVAL256(...) EVAL128(EVAL128(__VA_ARGS__))

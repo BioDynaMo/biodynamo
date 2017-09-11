@@ -42,14 +42,21 @@ struct MovementModule {
   ClassDefNV(MovementModule, 1);
 };
 
-struct CompileTimeParam {
+template <typename TBackend = Soa>
+struct CTParam {
+  template <typename TTBackend>
+  using Self = CTParam<TTBackend>;
+  using Backend = TBackend;
   using BiologyModules = Variant<GrowthModule, MovementModule>;
 };
 
 /// Class used to get access to protected members
-template <typename Base = CellExt<SimulationObject<Scalar>, CompileTimeParam>>
-class TestCell : public Base {
+BDM_SIM_CLASS_TEST(TestCell, Cell, CTParam) {
+  BDM_CLASS_HEADER(TestCellExt, 1, placeholder_);
+
  public:
+  TestCellExt() {}
+
   void TestTransformCoordinatesGlobalToPolar() {
     array<double, 3> coord = {1, 2, 3};
     Base::SetMassLocation({9, 8, 7});
@@ -74,8 +81,7 @@ class TestCell : public Base {
   const array<double, 3>& GetYAxis() { return Base::y_axis_[Base::kIdx]; }
   const array<double, 3>& GetZAxis() { return Base::z_axis_[Base::kIdx]; }
 
-  const vector<typename CompileTimeParam::BiologyModules>& GetBiologyModules()
-      const {
+  const vector<typename CTParam<>::BiologyModules>& GetBiologyModules() const {
     return Base::biology_modules_[0];
   }
 
@@ -84,7 +90,7 @@ class TestCell : public Base {
   double expected_phi_;
   double expected_theta_;
 
-  void DivideImpl(typename Base::template Self<Scalar>* daughter,
+  void DivideImpl(typename Base::template Self<Scalar> * daughter,
                   double volume_ratio, double phi, double theta) override {
     if (check_input_parameters_) {
       EXPECT_NEAR(expected_volume_ratio_, volume_ratio, 1e-8);
@@ -95,12 +101,22 @@ class TestCell : public Base {
       Base::DivideImpl(daughter, volume_ratio, phi, theta);
     }
   }
-  BDM_ROOT_CLASS_DEF_OVERRIDE(TestCell, 0);
+  vec<bool> placeholder_;  // BDM_CLASS_HEADER needs at least one member
   FRIEND_TEST(CellTest, DivideVolumeRatioPhiTheta);
 };
 
 inline void RunIOTest() {
-  TestCell<> cell;
+  // Temporary workaround for ROOT-8982; makes sure dictionary is working for
+  // this type
+  // important part is to add the namespace for the second template parameter:
+  // bdm::SimulationObjectT
+  bdm::CellExt<bdm::cell_test_internal::CTParam<bdm::Scalar>,
+               bdm::SimulationObjectT>
+      foo;
+
+  remove(ROOTFILE);
+
+  TestCell cell;
   cell.SetPosition({5, 6, 7});
   cell.SetMassLocation({5, 6, 7});
   cell.SetTractorForce({7, 4, 1});
@@ -119,7 +135,7 @@ inline void RunIOTest() {
   WritePersistentObject(ROOTFILE, "cell", cell, "new");
 
   // read back
-  TestCell<>* restored_cell = nullptr;
+  TestCell* restored_cell = nullptr;
   GetPersistentObject(ROOTFILE, "cell", restored_cell);
 
   // validate

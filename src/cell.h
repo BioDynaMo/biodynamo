@@ -21,21 +21,10 @@ namespace bdm {
 using std::array;
 using std::vector;
 
-/// Forward declaration for concrete compile time parameter.
-/// Will be used as default template parameter.
-struct CompileTimeParam;
-
-template <typename Base = SimulationObject<>,
-          typename TCompileTimeParam = CompileTimeParam>
-class CellExt : public Base {
- public:
-  BDM_CLASS_HEADER_ADV(CellExt, 1,
-                       CellExt<typename Base::template Self<TTBackend> COMMA()
-                                   TCompileTimeParam>,
-                       template <typename COMMA() typename>, position_,
-                       mass_location_, tractor_force_, diameter_, volume_,
-                       adherence_, density_, x_axis_, y_axis_, z_axis_,
-                       biology_modules_, box_idx_);
+BDM_SIM_CLASS(Cell, SimulationObject) {
+  BDM_CLASS_HEADER(CellExt, 1, position_, mass_location_, tractor_force_,
+                   diameter_, volume_, adherence_, density_, x_axis_, y_axis_,
+                   z_axis_, biology_modules_, box_idx_);
 
  public:
   using TBiologyModuleVariant = typename TCompileTimeParam::BiologyModules;
@@ -50,7 +39,7 @@ class CellExt : public Base {
   /// @tparam TBiologyModule type of the biology module. Must be in the set of
   ///         types specified in `TBiologyModuleVariant`
   template <typename TBiologyModule>
-  void AddBiologyModule(TBiologyModule&& module);
+  void AddBiologyModule(TBiologyModule && module);
 
   /// Execute all biology modules
   void RunBiologyModules();
@@ -62,7 +51,7 @@ class CellExt : public Base {
   /// the axis of division is random.
   /// @param daughter - second daughter cell = scalar instance which will be
   /// initialized in this method
-  void Divide(Self<Scalar>* daughter);
+  void Divide(Self<Scalar> * daughter);
 
   /// Divide the cell. Of the two daughter cells, one is this one (but smaller,
   /// with half GeneSubstances etc.),
@@ -72,7 +61,7 @@ class CellExt : public Base {
   /// initialized in this method
   /// @param volume_ratio the ratio (Volume daughter 1)/(Volume daughter 2). 1.0
   /// gives equal cells.
-  void Divide(Self<Scalar>* daughter, double volume_ratio);
+  void Divide(Self<Scalar> * daughter, double volume_ratio);
 
   /// Divide the cell. Of the two daughter cells, one is this one (but smaller,
   /// with half GeneSubstances etc.),
@@ -80,7 +69,7 @@ class CellExt : public Base {
   /// @param daughter second daughter cell = scalar instance which will be
   /// initialized in this method
   /// @param axis specifies direction of division
-  void Divide(Self<Scalar>* daughter, const array<double, 3>& axis);
+  void Divide(Self<Scalar> * daughter, const array<double, 3>& axis);
 
   /// Divide the cell. Of the two daughter cells, one is this one (but smaller,
   /// with half GeneSubstances etc.),
@@ -90,11 +79,11 @@ class CellExt : public Base {
   /// @param volume_ratio the ratio (Volume daughter 1)/(Volume daughter 2). 1.0
   /// gives equal cells.
   /// @param axis specifies direction of division
-  void Divide(Self<Scalar>* daughter, double volume_ratio,
+  void Divide(Self<Scalar> * daughter, double volume_ratio,
               const array<double, 3>& axis);
 
   /// Forwards call to DivideImpl @see DivideImpl
-  void Divide(Self<Scalar>* daughter, double volume_ratio, double phi,
+  void Divide(Self<Scalar> * daughter, double volume_ratio, double phi,
               double theta);
 
   /// Divide mother cell in two daughter cells\n
@@ -113,7 +102,7 @@ class CellExt : public Base {
   /// @param phi azimuthal angle (polar coordinate)
   /// @param theta polar angle (polar coordinate)
   /// @see \link simulation_object_util.h Divide \endlink
-  virtual void DivideImpl(Self<Scalar>* daughter, double volume_ratio,
+  virtual void DivideImpl(Self<Scalar> * daughter, double volume_ratio,
                           double phi, double theta);
 
   double GetAdherence() const { return adherence_[kIdx]; }
@@ -233,21 +222,15 @@ class CellExt : public Base {
   vec<uint64_t> box_idx_;
 };
 
-using Cell = CellExt<SimulationObject<Scalar>>;
-using SoaCell = CellExt<SimulationObject<Soa>>;
-/// Used for testing purposes which require different compile time parameter
-template <typename TCompileTimeParam>
-using TestCell = CellExt<SimulationObject<Scalar>, TCompileTimeParam>;
-
 // ----------------------------------------------------------------------------
 // Implementation -------------------------------------------------------------
-template <typename T, typename U>
+template <typename T, template <typename> class U>
 template <typename TBiologyModule>
 inline void CellExt<T, U>::AddBiologyModule(TBiologyModule&& module) {
   biology_modules_[kIdx].emplace_back(module);
 }
 
-template <typename T, typename U>
+template <typename T, template <typename> class U>
 inline void CellExt<T, U>::RunBiologyModules() {
   RunVisitor<Self<Backend>> visitor(this);
   for (auto& module : biology_modules_[kIdx]) {
@@ -255,12 +238,12 @@ inline void CellExt<T, U>::RunBiologyModules() {
   }
 }
 
-template <typename T, typename U>
+template <typename T, template <typename> class U>
 inline void CellExt<T, U>::Divide(Self<Scalar>* daughter) {
   Divide(daughter, 0.9 + 0.2 * gRandom.NextDouble());
 }
 
-template <typename T, typename U>
+template <typename T, template <typename> class U>
 inline void CellExt<T, U>::Divide(Self<Scalar>* daughter, double volume_ratio) {
   // find random point on sphere (based on :
   // http://mathworld.wolfram.com/SpherePointPicking.html)
@@ -269,7 +252,7 @@ inline void CellExt<T, U>::Divide(Self<Scalar>* daughter, double volume_ratio) {
   DivideImpl(daughter, volume_ratio, phi, theta);
 }
 
-template <typename T, typename U>
+template <typename T, template <typename> class U>
 inline void CellExt<T, U>::Divide(Self<Scalar>* daughter,
                                   const array<double, 3>& axis) {
   auto polarcoord = TransformCoordinatesGlobalToPolar(
@@ -278,7 +261,7 @@ inline void CellExt<T, U>::Divide(Self<Scalar>* daughter,
              polarcoord[2]);
 }
 
-template <typename T, typename U>
+template <typename T, template <typename> class U>
 inline void CellExt<T, U>::Divide(Self<Scalar>* daughter, double volume_ratio,
                                   const array<double, 3>& axis) {
   auto polarcoord = TransformCoordinatesGlobalToPolar(
@@ -286,15 +269,16 @@ inline void CellExt<T, U>::Divide(Self<Scalar>* daughter, double volume_ratio,
   DivideImpl(daughter, volume_ratio, polarcoord[1], polarcoord[2]);
 }
 
-template <typename T, typename U>
+template <typename T, template <typename> class U>
 inline void CellExt<T, U>::Divide(Self<Scalar>* daughter, double volume_ratio,
                                   double phi, double theta) {
   DivideImpl(daughter, volume_ratio, phi, theta);
 }
 
-template <typename T, typename TBiologyModuleVariant>
-inline void CellExt<T, TBiologyModuleVariant>::DivideImpl(
-    Self<Scalar>* daughter, double volume_ratio, double phi, double theta) {
+template <typename T, template <typename> class U>
+inline void CellExt<T, U>::DivideImpl(Self<Scalar>* daughter,
+                                      double volume_ratio, double phi,
+                                      double theta) {
   // A) Defining some values
   // ..................................................................
   // defining the two radii s.t total volume is conserved
@@ -371,7 +355,7 @@ inline void CellExt<T, TBiologyModuleVariant>::DivideImpl(
   // G) TODO(lukas) Copy the intracellular and membrane bound Substances
 }
 
-template <typename T, typename U>
+template <typename T, template <typename> class U>
 array<double, 3> CellExt<T, U>::TransformCoordinatesGlobalToPolar(
     const array<double, 3>& pos) const {
   auto vector_to_point = Matrix::Subtract(pos, mass_location_[kIdx]);

@@ -1,27 +1,20 @@
 <lcgdict>
   <selection>
-    <class pattern="bdm::*"/>
-    <class pattern="std::vector<bdm::*>"/>
+    <class pattern="bdm::*<*>"/>
+    <class pattern="bdm::*Module"/>
+    <class pattern="bdm::*Behaviour"/>
+    <class name="bdm::simulation_object_util_test_internal::Neurite" />
+    <class pattern="std::vector<bdm::*<*>>"/>
+    <class pattern="std::tuple<bdm::*<*>"/>
   </selection>
   <exclusion>
     <class pattern="std::array<*>" />
-    <!-- Resolving: Error in <CloseStreamerInfoROOTFile>: Cannot find class
-         bdm::Grid<TResourceManager>::Box. and:
-         Error in <CloseStreamerInfoROOTFile>: Cannot find class
-              bdm::Grid<TResourceManager>::Box::Iterator -->
-    <class pattern="*Box*" />
-    <!-- Resolving: Error in <CloseStreamerInfoROOTFile>: Cannot find class
-         bdm::Grid<TResourceManager>::NeighborIterator. -->
-    <class pattern="*NeighborIterator*" />
-    <!-- Resolving: Error in <CloseStreamerInfoROOTFile>: Cannot find typedef
-         bdm::DefaultCompileTimeParam::Backend -->
-    <class pattern="*Backend*" />
+
     <class pattern="*bdm::SoaRef*"/>
     <class name="chrono::system_clock"/>
     <class pattern="*_Test" />
     <!-- list of classes with dictionary in libbiodynamo
          -> all selected classes from libbiodynamo-selection.xml -->
-    <class name="bdm::ScalarSimulationObject"/>
     <class name="bdm::RuntimeVariables"/>
     <class name="bdm::NullBiologyModule"/>
     <class name="bdm::IntegralTypeWrapper<size_t> "/>

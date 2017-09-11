@@ -22,7 +22,8 @@ struct GrowthModule {
 };
 
 // 2. Define compile time parameter
-struct CompileTimeParam : public DefaultCompileTimeParam<> {
+template <typename Backend>
+struct CompileTimeParam : public DefaultCompileTimeParam<Backend> {
   using BiologyModules = Variant<GrowthModule>;
   // use default Backend and AtomicTypes
 };

@@ -104,7 +104,7 @@ struct BSoa {
 
 template <typename TBackend, typename... Types>
 struct CompileTimeParam {
-  using Backend = TBackend;
+  using SimulationBackend = TBackend;
   using AtomicTypes = VariadicTypedef<Types...>;
 };
 
