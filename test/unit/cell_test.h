@@ -106,6 +106,14 @@ BDM_SIM_CLASS_TEST(TestCell, Cell, CTParam) {
 };
 
 inline void RunIOTest() {
+  // Temporary workaround for ROOT-8982; makes sure dictionary is working for
+  // this type
+  // important part is to add the namespace for the second template parameter:
+  // bdm::SimulationObjectT
+  bdm::CellExt<bdm::cell_test_internal::CTParam<bdm::Scalar>,
+               bdm::SimulationObjectT>
+      foo;
+
   remove(ROOTFILE);
 
   TestCell cell;

@@ -4,7 +4,6 @@
     <class pattern="bdm::*Module"/>
     <class pattern="bdm::*Behaviour"/>
     <class name="bdm::simulation_object_util_test_internal::Neurite" />
-    <class name="bdm::CellExt<bdm::cell_test_internal::CTParam<bdm::Scalar>,SimulationObjectT>" />
     <class pattern="std::vector<bdm::*<*>>"/>
     <class pattern="std::tuple<bdm::*<*>"/>
   </selection>
