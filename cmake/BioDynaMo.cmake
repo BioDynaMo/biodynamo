@@ -77,11 +77,28 @@ function(bdm_generate_dictionary TARGET)
   endforeach()
   #---Actual command----------------------------------------
   file(WRITE ${ARG_DICT} "")
+  # determine when dictionary should be rebuilt
+  # solves problem that add_custom_command does not have a target name that
+  # can be used in add_dependencies and add_custom_target is always executed
+  # if CMake configuration changes always rebuild dictionary -> remove file
+  file(REMOVE ${CMAKE_CURRENT_BINARY_DIR}/rebuild_${TARGET})
+  add_custom_command(
+    OUTPUT rebuild_${TARGET}
+    COMMAND echo 1 >rebuild_${TARGET}
+    DEPENDS ${headerfiles}
+    COMMENT "Build dictionary ${TARGET}")
+  # invoke genreflex only if rebuild_${TARGET} file does not contain a 0.
+  # Had issues with if [[ ]] statement; used grep instead
+  # if grep does not find the pattern it has a non zero exit code
+  # --> grep 0 file || command
+  #   command is executed if pattern 0 is not found in file
   add_custom_target(${TARGET}
-    COMMAND ${GENREFLEX_EXECUTABLE} ${headerfiles} -o ${ARG_DICT} ${rootmapopts} --select=${selectionfile}
+    COMMAND grep 0 ${CMAKE_CURRENT_BINARY_DIR}/rebuild_${TARGET} >/dev/null ||
+            ${GENREFLEX_EXECUTABLE} ${headerfiles} -o ${ARG_DICT} ${rootmapopts} --select=${selectionfile}
             ${ARG_OPTIONS} ${includedirs} ${definitions} -v >${CMAKE_CURRENT_BINARY_DIR}/${TARGET}.log 2>&1
+    COMMAND echo 0 > ${CMAKE_CURRENT_BINARY_DIR}/rebuild_${TARGET}
     WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-    DEPENDS ${ARG_DEPENDS})
+    DEPENDS ${ARG_DEPENDS} ${CMAKE_CURRENT_BINARY_DIR}/rebuild_${TARGET})
 endfunction(bdm_generate_dictionary)
 
 
