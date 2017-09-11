@@ -505,93 +505,184 @@ class Grid {
   void ForEachNeighborPairWithinRadius(const Lambda& lambda,
                                        const TContainer& sim_objects,
                                        double squared_radius) const {
-  #pragma omp parallel
-    {
+ uint32_t z_start, y_start;
+ for(uint16_t i = 0; i < 9; i++) {
+   switch(i) {
+     case 0:
+      z_start = 1;
+      y_start = 1;
+      break;
+      case 1:
+       z_start = 1;
+       y_start = 2;
+       break;
+       case 2:
+        z_start = 1;
+        y_start = 3;
+        break;
+        case 3:
+         z_start = 2;
+         y_start = 1;
+         break;
+         case 4:
+          z_start = 2;
+          y_start = 2;
+          break;
+          case 5:
+           z_start = 2;
+           y_start = 3;
+           break;
+           case 6:
+            z_start = 3;
+            y_start = 1;
+            break;
+            case 7:
+             z_start = 3;
+             y_start = 2;
+             break;
+             case 8:
+              z_start = 3;
+              y_start = 3;
+              break;
+   }
     // size_t counter = 0;
-    auto thread_id = omp_get_thread_num();
-    #pragma omp for collapse(2) schedule(dynamic, 1)
-    for(uint32_t z = 1; z < num_boxes_axis_[2] - 1; z++) {
-    for(uint32_t y = 1; y < num_boxes_axis_[1] - 1; y++) {
-        auto current_box_idx = GetBoxIndex(array<uint32_t, 3>{1, y, z});
-        FixedSizeVector<size_t, 13> box_indices;
-        GetMooreBoxIndices(&box_indices, current_box_idx);
-        // first iteration peeled off
-        // std::cout << "boxidx " << current_box_idx << " - 1 " << y << " " << z << std::endl;
-        ForEachCellNeighborPair(thread_id, lambda, box_indices, current_box_idx, sim_objects, squared_radius);
+      #pragma omp parallel for collapse(2) schedule(dynamic, 1) firstprivate(z_start, y_start)
+      for(uint32_t z = z_start; z < num_boxes_axis_[2] - 1; z+=3) {
+      for(uint32_t y = y_start; y < num_boxes_axis_[1] - 1; y+=3) {
+          auto current_box_idx = GetBoxIndex(array<uint32_t, 3>{1, y, z});
+          FixedSizeVector<size_t, 13> box_indices;
+          GetMooreBoxIndices(&box_indices, current_box_idx);
+          // first iteration peeled off
+          // std::cout << "boxidx " << current_box_idx << " - 1 " << y << " " << z << std::endl;
+          ForEachCellNeighborPair(lambda, box_indices, current_box_idx, sim_objects, squared_radius);
 
-        for(uint32_t x = 2; x < num_boxes_axis_[0] - 1; x++) {
-          // update box_indices
-          ++current_box_idx;
-          ++box_indices;
-          // std::cout << "boxidx " << current_box_idx << " - " << x << " " << y << " " << z << std::endl;
-          ForEachCellNeighborPair(thread_id, lambda, box_indices, current_box_idx, sim_objects, squared_radius);
+          for(uint32_t x = 2; x < num_boxes_axis_[0] - 1; x++) {
+            // update box_indices
+            ++current_box_idx;
+            ++box_indices;
+            // std::cout << "boxidx " << current_box_idx << " - " << x << " " << y << " " << z << std::endl;
+            ForEachCellNeighborPair(lambda, box_indices, current_box_idx, sim_objects, squared_radius);
+          }
         }
       }
-    }
-    // #pragma omp critical
-    // {
-    //   counter_ += counter;
-    // }
     }
   }
 
   template <typename Lambda, typename TContainer>
-  void ForEachCellNeighborPair(size_t thread_id, const Lambda& lambda,
-                              const FixedSizeVector<size_t, 13>& box_indices,
-                              size_t current_box_idx,
-                               const TContainer& sim_objects,
-                               double squared_radius) const {
-    // cells in current box
-    FixedSizeVector<size_t, 16> cells_current_box;
-    GetCellHandles(current_box_idx, &cells_current_box);
-    if (cells_current_box.size() == 0) {
-      return;
+void ForEachCellNeighborPair(const Lambda& lambda,
+                            const FixedSizeVector<size_t, 13>& box_indices,
+                            size_t current_box_idx,
+                             const TContainer& sim_objects,
+                             double squared_radius) const {
+  // cells in current box
+  FixedSizeVector<size_t, 16> cells_current_box;
+  GetCellHandles(current_box_idx, &cells_current_box);
+  if (cells_current_box.size() == 0) {
+    return;
+  }
+  // std::cout << "#cells           " << cells_current_box.size() << std::endl;
+  // std::cout << "counter before   " << counter << std::endl;
+  // auto before = counter;
+  // FIXME if box_length < squared_radius no distance calculations are required
+  for (size_t n = 0; n < cells_current_box.size(); n++) {
+    const auto& pos_n = sim_objects[cells_current_box[n]].GetPosition();
+    for (size_t c = n + 1; c < cells_current_box.size(); c++) {
+      const auto& pos_c = sim_objects[cells_current_box[c]].GetPosition();
+      if (SquaredEuclideanDistance(pos_c, pos_n) < squared_radius) {
+        lambda(cells_current_box[c], cells_current_box[n]);
+        // lambda(cells_current_box[n], cells_current_box[c]);
+      }
+        // counter++;
+        // counter++;
     }
-    // std::cout << "#cells           " << cells_current_box.size() << std::endl;
-    // std::cout << "counter before   " << counter << std::endl;
-    // auto before = counter;
-    // FIXME if box_length < squared_radius no distance calculations are required
-    for (size_t n = 0; n < cells_current_box.size(); n++) {
-      const auto& pos_n = sim_objects[cells_current_box[n]].GetPosition();
-      for (size_t c = n + 1; c < cells_current_box.size(); c++) {
+  }
+  // std::cout << "counter after 1  " << counter << " - delta: " << (counter - before) << std::endl;
+  // before = counter;
+
+  // neighbor boxes
+  FixedSizeVector<size_t, 16> cells_box;
+  for (size_t i = 0; i < box_indices.size(); i++) {
+    size_t box_idx = box_indices[i];
+    cells_box.clear();
+    GetCellHandles(box_idx, &cells_box);
+    for (size_t n = 0; n < cells_box.size(); n++) {
+      const auto& pos_n = sim_objects[cells_box[n]].GetPosition();
+      for (size_t c = 0; c < cells_current_box.size(); c++) {
+        // counter++;
+        // counter++;
         const auto& pos_c = sim_objects[cells_current_box[c]].GetPosition();
         if (SquaredEuclideanDistance(pos_c, pos_n) < squared_radius) {
-          lambda(thread_id, cells_current_box[c], cells_current_box[n]);
-          // lambda(cells_current_box[n], cells_current_box[c]);
-        }
-          // counter++;
-          // counter++;
-      }
-    }
-    // std::cout << "counter after 1  " << counter << " - delta: " << (counter - before) << std::endl;
-    // before = counter;
-
-    // neighbor boxes
-    FixedSizeVector<size_t, 16> cells_box;
-    for (size_t i = 0; i < box_indices.size(); i++) {
-      size_t box_idx = box_indices[i];
-      cells_box.clear();
-      GetCellHandles(box_idx, &cells_box);
-      for (size_t n = 0; n < cells_box.size(); n++) {
-        const auto& pos_n = sim_objects[cells_box[n]].GetPosition();
-        for (size_t c = 0; c < cells_current_box.size(); c++) {
-          // counter++;
-          // counter++;
-          const auto& pos_c = sim_objects[cells_current_box[c]].GetPosition();
-          if (SquaredEuclideanDistance(pos_c, pos_n) < squared_radius) {
-            lambda(thread_id, cells_current_box[c], cells_box[n]);
-            // lambda(cells_box[n], cells_current_box[c]);
-          }
+          lambda(cells_current_box[c], cells_box[n]);
+          // lambda(cells_box[n], cells_current_box[c]);
         }
       }
-      // if(cells_box.size() != 0) {
-        // std::cout << "  boxidx " << box_idx << ", cells " << cells_box.size() << ", counter " << counter << " - ";
-        // PrintBoxCoordinates(box_idx);
-      // }
     }
-    // std::cout << "counter after 2  " << counter << " - delta: " << (counter - before) << std::endl;
-    // std::cout << std::endl;
+    // if(cells_box.size() != 0) {
+      // std::cout << "  boxidx " << box_idx << ", cells " << cells_box.size() << ", counter " << counter << " - ";
+      // PrintBoxCoordinates(box_idx);
+    // }
   }
+  // std::cout << "counter after 2  " << counter << " - delta: " << (counter - before) << std::endl;
+  // std::cout << std::endl;
+}
+
+  // template <typename Lambda, typename TContainer>
+  // void ForEachCellNeighborPair(size_t thread_id, const Lambda& lambda,
+  //                             const FixedSizeVector<size_t, 13>& box_indices,
+  //                             size_t current_box_idx,
+  //                              const TContainer& sim_objects,
+  //                              double squared_radius) const {
+  //   // cells in current box
+  //   FixedSizeVector<size_t, 16> cells_current_box;
+  //   GetCellHandles(current_box_idx, &cells_current_box);
+  //   if (cells_current_box.size() == 0) {
+  //     return;
+  //   }
+  //   // std::cout << "#cells           " << cells_current_box.size() << std::endl;
+  //   // std::cout << "counter before   " << counter << std::endl;
+  //   // auto before = counter;
+  //   // FIXME if box_length < squared_radius no distance calculations are required
+  //   for (size_t n = 0; n < cells_current_box.size(); n++) {
+  //     const auto& pos_n = sim_objects[cells_current_box[n]].GetPosition();
+  //     for (size_t c = n + 1; c < cells_current_box.size(); c++) {
+  //       const auto& pos_c = sim_objects[cells_current_box[c]].GetPosition();
+  //       if (SquaredEuclideanDistance(pos_c, pos_n) < squared_radius) {
+  //         lambda(thread_id, cells_current_box[c], cells_current_box[n]);
+  //         // lambda(cells_current_box[n], cells_current_box[c]);
+  //       }
+  //         // counter++;
+  //         // counter++;
+  //     }
+  //   }
+  //   // std::cout << "counter after 1  " << counter << " - delta: " << (counter - before) << std::endl;
+  //   // before = counter;
+  //
+  //   // neighbor boxes
+  //   FixedSizeVector<size_t, 16> cells_box;
+  //   for (size_t i = 0; i < box_indices.size(); i++) {
+  //     size_t box_idx = box_indices[i];
+  //     cells_box.clear();
+  //     GetCellHandles(box_idx, &cells_box);
+  //     for (size_t n = 0; n < cells_box.size(); n++) {
+  //       const auto& pos_n = sim_objects[cells_box[n]].GetPosition();
+  //       for (size_t c = 0; c < cells_current_box.size(); c++) {
+  //         // counter++;
+  //         // counter++;
+  //         const auto& pos_c = sim_objects[cells_current_box[c]].GetPosition();
+  //         if (SquaredEuclideanDistance(pos_c, pos_n) < squared_radius) {
+  //           lambda(thread_id, cells_current_box[c], cells_box[n]);
+  //           // lambda(cells_box[n], cells_current_box[c]);
+  //         }
+  //       }
+  //     }
+  //     // if(cells_box.size() != 0) {
+  //       // std::cout << "  boxidx " << box_idx << ", cells " << cells_box.size() << ", counter " << counter << " - ";
+  //       // PrintBoxCoordinates(box_idx);
+  //     // }
+  //   }
+  //   // std::cout << "counter after 2  " << counter << " - delta: " << (counter - before) << std::endl;
+  //   // std::cout << std::endl;
+  // }
 
   void GetCellHandles(size_t box_idx, FixedSizeVector<size_t, 16>* handles ) const {
     // auto i = boxes.start_[box_idx];

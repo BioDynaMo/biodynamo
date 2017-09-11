@@ -12,6 +12,7 @@
 #include "math_util.h"
 #include "param.h"
 #include "omp.h"
+#include <atomic>
 
 namespace bdm {
 
@@ -40,10 +41,10 @@ class DisplacementOpNew {
   }
 
 // std::vector<std::array<std::atomic<double>, 3>> force;
+  vector<array<double, 3>> cell_movements;
 
   template <typename TContainer>
   void Compute(TContainer* cells) {
-    vector<array<double, 3>> cell_movements;
     cell_movements.reserve(cells->size());
 
     auto& grid = Grid::GetInstance();
@@ -51,10 +52,9 @@ class DisplacementOpNew {
     double squared_radius = search_radius * search_radius;
 
     // force.resize(cells->size());
-    const uint64_t num_threads = omp_get_max_threads();
-    auto* force = new std::array<double, 3>[cells->size() * num_threads];
+    auto* force = new std::array<double, 3>[cells->size()];
     #pragma omp parallel for
-    for(uint64_t i = 0; i < cells->size() * num_threads; i++) {
+    for(uint64_t i = 0; i < cells->size(); i++) {
       force[i][0] = 0;
       force[i][1] = 0;
       force[i][2] = 0;
@@ -69,9 +69,9 @@ class DisplacementOpNew {
     //   element.resize(expected_neighbors_per_thread);
     // }
 
-    size_t lcallcount = 0;
+    std::atomic<uint64_t> lcallcount(0);
 
-    auto lambda = [&](size_t thread_id, size_t cell_id, size_t neighbor_id) {
+    auto lambda = [&](size_t cell_id, size_t neighbor_id) {
       // lcallcount++;
       auto&& cell = (*cells)[cell_id];
       const auto&& neighbor = (*cells)[neighbor_id];
@@ -79,15 +79,13 @@ class DisplacementOpNew {
       neighbor.GetForceOn(cell.GetMassLocation(), cell.GetDiameter(),
                           &neighbor_force);
 
-      auto idx = thread_id * cell_id;
-      force[idx][0] += neighbor_force[0];
-      force[idx][1] += neighbor_force[1];
-      force[idx][2] += neighbor_force[2];
+      force[cell_id][0] += neighbor_force[0];
+      force[cell_id][1] += neighbor_force[1];
+      force[cell_id][2] += neighbor_force[2];
 
-      idx = thread_id * neighbor_id;
-      force[idx][0] += neighbor_force[0];
-      force[idx][1] += neighbor_force[1];
-      force[idx][2] += neighbor_force[2];
+      force[neighbor_id][0] += neighbor_force[0];
+      force[neighbor_id][1] += neighbor_force[1];
+      force[neighbor_id][2] += neighbor_force[2];
 
       // OmpAtomicAdd(force[cell_id][0], neighbor_force[0]);
       // OmpAtomicAdd(force[cell_id][1], neighbor_force[1]);
@@ -121,14 +119,14 @@ class DisplacementOpNew {
     std::cout << "lcallcount " << lcallcount << std::endl;
 
     // reduction of thread local vectors
-    #pragma omp parallel for
-    for (uint64_t cell_idx = 0; cell_idx < num_threads; cell_idx++) {
-      for (uint64_t i = 1; i < num_threads; i++) {
-        force[cell_idx][0] += force[cell_idx * i][0];
-        force[cell_idx][1] += force[cell_idx * i][1];
-        force[cell_idx][2] += force[cell_idx * i][2];
-      }
-    }
+    // #pragma omp parallel for
+    // for (uint64_t cell_idx = 0; cell_idx < num_threads; cell_idx++) {
+    //   for (uint64_t i = 1; i < num_threads; i++) {
+    //     force[cell_idx][0] += force[cell_idx * i][0];
+    //     force[cell_idx][1] += force[cell_idx * i][1];
+    //     force[cell_idx][2] += force[cell_idx * i][2];
+    //   }
+    // }
 
     // reduce temporary neighbor results
     // #pragma omp parallel

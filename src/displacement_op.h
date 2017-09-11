@@ -7,6 +7,7 @@
 #include "grid.h"
 #include "math_util.h"
 #include "param.h"
+#include <atomic>
 
 namespace bdm {
 
@@ -30,7 +31,7 @@ class DisplacementOp {
     auto search_radius = grid.GetLargestObjectSize();
     double squared_radius = search_radius * search_radius;
 
-    size_t lcallcount = 0;
+    std::atomic<uint64_t> lcallcount(0);
 
 #pragma omp parallel for shared(grid) firstprivate(squared_radius)
     for (size_t i = 0; i < cells->size(); i++) {
