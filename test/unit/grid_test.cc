@@ -207,14 +207,14 @@ TEST(GridTest, GridDimensions) {
   grid.Initialize();
 
   std::array<int32_t, 6> expected_dim_0 = {{-30, 90, -30, 90, -30, 90}};
-  auto& dim_0 = grid.GetGridDimensions();
+  auto& dim_0 = grid.GetDimensions();
 
   EXPECT_EQ(expected_dim_0, dim_0);
 
   ((*cells)[0]).SetPosition({{100, 0, 0}});
   grid.UpdateGrid();
   std::array<int32_t, 6> expected_dim_1 = {{-30, 150, -30, 90, -30, 90}};
-  auto& dim_1 = grid.GetGridDimensions();
+  auto& dim_1 = grid.GetDimensions();
 
   EXPECT_EQ(expected_dim_1, dim_1);
 }

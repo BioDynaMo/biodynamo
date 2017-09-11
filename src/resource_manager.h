@@ -7,7 +7,10 @@
 #include <ostream>
 #include <tuple>
 #include <utility>
+#include <vector>
+
 #include "backend.h"
+#include "diffusion_grid.h"
 #include "tuple_util.h"
 #include "variadic_template_parameter_util.h"
 
@@ -130,11 +133,21 @@ class ResourceManager {
     return &std::get<TypeContainer<ToBackend<Type>>>(data_);
   }
 
+  /// Return the container of diffusion grids
+  std::vector<DiffusionGrid*>& GetDiffusionGrids() { return diffusion_grids_; }
+
   /// Default constructor. Unfortunately needs to be public although it is
   /// a singleton to be able to use ROOT I/O
   ResourceManager() {
     // Soa container contain one element upon construction
     Clear();
+  }
+
+  /// Free the memory that was reserved for the diffusion grids
+  virtual ~ResourceManager() {
+    for (auto grid : diffusion_grids_) {
+      delete grid;
+    }
   }
 
   /// Apply a function on a certain element
@@ -218,6 +231,7 @@ class ResourceManager {
   /// creates one container for each type in Types.
   /// Container type is determined based on the specified Backend
   typename ConvertToContainerTuple<Backend, Types>::type data_;
+  std::vector<DiffusionGrid*> diffusion_grids_;
 
   friend class SimulationBackup;
   ClassDefNV(ResourceManager, 1);

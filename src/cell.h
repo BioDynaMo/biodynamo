@@ -177,6 +177,12 @@ BDM_SIM_CLASS(Cell, SimulationObject) {
     mass_location_[kIdx][2] += delta[2];
   }
 
+  void UpdatePosition(const array<double, 3>& delta) {
+    mass_location_[kIdx][0] += delta[0];
+    mass_location_[kIdx][1] += delta[1];
+    mass_location_[kIdx][2] += delta[2];
+  }
+
   void GetForceOn(const array<double, 3>& ref_mass_location,
                   double ref_diameter, array<double, 3>* force) const {
     DefaultForce default_force;

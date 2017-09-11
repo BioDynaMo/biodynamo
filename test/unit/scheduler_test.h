@@ -85,6 +85,10 @@ inline void RunBackupTest() {
   ResourceManager<>::Get()->Clear();
   remove(ROOTFILE);
 
+  Cell cell;
+  cell.SetDiameter(10);  // important for grid to determine box size
+  ResourceManager<>::Get()->Get<Cell>()->push_back(cell);
+
   TestSchedulerBackup scheduler(ROOTFILE);
   Param::backup_every_x_seconds_ = 1;
   // one simulation step takes 350 ms -> backup should be created every three

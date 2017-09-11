@@ -190,3 +190,9 @@ bdm_add_executable(cell_division_module
                    SOURCES demo/cell_division_module.cc
                    HEADERS demo/cell_division_module.h
                    LIBRARIES biodynamo)
+
+# --------------------- build cell_division_module executable ------------------
+bdm_add_executable(diffusion_module
+                   SOURCES demo/diffusion_module.cc
+                   HEADERS demo/diffusion_module.h
+                   LIBRARIES biodynamo)

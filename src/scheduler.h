@@ -7,6 +7,7 @@
 #include "biology_module_op.h"
 // TODO(lukas) remove once backup and visualization are multicell enabled
 #include "cell.h"
+#include "diffusion_op.h"
 #include "displacement_op.h"
 #include "op_timer.h"
 #include "resource_manager.h"
@@ -26,7 +27,7 @@ class Scheduler {
   Scheduler()
       : backup_(SimulationBackup("", "")), grid_(&TGrid::GetInstance()) {
     if (Param::use_paraview_) {
-      visualization_ = CatalystAdaptor::GetInstance();
+      visualization_ = CatalystAdaptor<>::GetInstance();
       visualization_->Initialize("../src/visualization/simple_pipeline.py");
     }
   }
@@ -38,7 +39,7 @@ class Scheduler {
       restore_point_ = backup_.GetSimulationStepsFromBackup();
     }
     if (Param::use_paraview_) {
-      visualization_ = CatalystAdaptor::GetInstance();
+      visualization_ = CatalystAdaptor<>::GetInstance();
       visualization_->Initialize("../src/visualization/simple_pipeline.py");
     }
   }
@@ -105,6 +106,7 @@ class Scheduler {
       Timing timing("neighbors");
       grid_->UpdateGrid();
     }
+    rm->ApplyOnAllTypes(diffusion_);
     rm->ApplyOnAllTypes(biology_);
     rm->ApplyOnAllTypes(physics_);
     rm->ApplyOnAllTypes(commit);
@@ -115,8 +117,9 @@ class Scheduler {
   size_t total_steps_ = 0;
   size_t restore_point_;
   std::chrono::time_point<Clock> last_backup_ = Clock::now();
-  CatalystAdaptor* visualization_ = nullptr;
+  CatalystAdaptor<>* visualization_ = nullptr;
 
+  OpTimer<DiffusionOp<>> diffusion_ = OpTimer<DiffusionOp<>>("diffusion");
   OpTimer<BiologyModuleOp> biology_ = OpTimer<BiologyModuleOp>("biology");
   OpTimer<DisplacementOp<>> physics_ = OpTimer<DisplacementOp<>>("physics");
 
