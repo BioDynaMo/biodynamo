@@ -8,79 +8,17 @@
 #include <iostream>
 #include <limits>
 #include <vector>
+#include "fixed_size_vector.h"
 #include "inline_vector.h"
 #include "param.h"
 #include "resource_manager.h"
+#include "simulation_object_vector.h"
 
 namespace bdm {
 
 using std::array;
 using std::vector;
 using std::fmod;
-
-/// Vector with fixed number of elements == Array with push_back function that
-/// keeps track of its size
-/// NB: No bounds checking. Do not push_back more often than the number of
-/// maximum elements given by the template parameter N
-template <typename T, std::size_t N>
-class FixedSizeVector {
- public:
-  size_t size() const { return size_; }  // NOLINT
-
-  const T& operator[](size_t idx) const { return data_[idx]; }
-
-  T& operator[](size_t idx) { return data_[idx]; }
-
-  void push_back(const T& value) { data_[size_++] = value; }  // NOLINT
-
-  const T* begin() const { return &(data_[0]); }    // NOLINT
-  const T* end() const { return &(data_[size_]); }  // NOLINT
-  T* begin() { return &(data_[0]); }                // NOLINT
-  T* end() { return &(data_[size_]); }              // NOLINT
-
- private:
-  T data_[N];
-  std::size_t size_ = 0;
-};
-
-/// Two dimensional array to build linked list of SoHandles
-///
-///     // Usage
-///     Successors<> successors;
-///     SoHandle current_element = ...;
-///     SoHandle next_element = successors_[current_element];
-template <typename TResourceManager = ResourceManager<>>
-class Successors {
- public:
-  Successors() { Initialize(); }
-
-  void Initialize() {
-    clear();
-    auto rm = TResourceManager::Get();
-    rm->ApplyOnAllTypes([&](auto* sim_objects, uint16_t type_idx) {
-      data_[type_idx].resize(sim_objects->size());
-    });
-  }
-
-  void clear() {  // NOLINT
-    for (auto& vec : data_) {
-      vec.clear();
-    }
-  }
-
-  const SoHandle& operator[](const SoHandle& handle) const {
-    return data_[handle.GetTypeIdx()][handle.GetElementIdx()];
-  }
-
-  SoHandle& operator[](const SoHandle& handle) {
-    return data_[handle.GetTypeIdx()][handle.GetElementIdx()];
-  }
-
- private:
-  /// one std::vector<SoHandle> for each type in ResourceManager
-  FixedSizeVector<std::vector<SoHandle>, TResourceManager::NumberOfTypes()>
-      data_;
-};
 
 /// A class that represents Cartesian 3D grid
 template <typename TResourceManager = ResourceManager<>>
@@ -110,8 +48,8 @@ class Grid {
     ///
     /// @param[in]  obj_id  The object's identifier
     ///
-    template <typename TSuccessors>
-    void AddObject(SoHandle obj_id, TSuccessors* successors) {
+    template <typename TSimulationObjectVector>
+    void AddObject(SoHandle obj_id, TSimulationObjectVector* successors) {
       length_++;
       auto old_start = std::atomic_exchange(&start_, obj_id);
       if (old_start != SoHandle()) {
@@ -502,7 +440,11 @@ class Grid {
   /// Number of boxes in the xy plane (=num_boxes_axis_[0] * num_boxes_axis_[1])
   size_t num_boxes_xy_ = 0;
   /// Implements linked list - array index = key, value: next element
-  Successors<TResourceManager> successors_;
+  ///
+  ///     // Usage
+  ///     SoHandle current_element = ...;
+  ///     SoHandle next_element = successors_[current_element];
+  SimulationObjectVector<SoHandle, TResourceManager> successors_;
   /// Determines which boxes to search neighbors in (see enum Adjacency)
   Adjacency adjacency_;
   /// The size of the largest object in the simulation
