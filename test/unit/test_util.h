@@ -35,6 +35,19 @@ void EXPECT_ARR_EQ(const std::array<T, N>& expected,  // NOLINT
   }
 }
 
+/// Helper macro to compare two double arrays of size three
+/// parameter actual and expected have been switched for better readability
+///
+///      EXPECT_ARR_NEAR(cells[0].GetPosition(), {123.12345, 10, 123.2345677});
+///      EXPECT_ARR_NEAR(cells[1].GetPosition(), {1, 2, 3});
+#define EXPECT_ARR_NEAR(...)                                         \
+  [](const std::array<double, 3>& actual,                            \
+     const std::array<double, 3>& expected) {                        \
+    for (size_t i = 0; i < actual.size(); i++) {                     \
+      EXPECT_NEAR(expected[i], actual[i], abs_error<double>::value); \
+    }                                                                \
+  }(__VA_ARGS__);
+
 }  // namespace bdm
 
 #endif  // UNIT_TEST_UTIL_H_
