@@ -7,6 +7,8 @@
 #include "grid.h"
 #include "math_util.h"
 #include "param.h"
+#include "simulation_object_vector.h"
+#include <atomic>
 
 namespace bdm {
 
@@ -14,20 +16,54 @@ using std::vector;
 using std::array;
 
 /// Defines the 3D physical interactions between physical objects
-template <typename TGrid = Grid<>>
+template <typename TGrid = Grid<>, typename TResourceManager = ResourceManager<>>
 class DisplacementOp {
  public:
   DisplacementOp() {}
   ~DisplacementOp() {}
 
   template <typename TContainer>
-  void operator()(TContainer* cells, uint16_t type_idx) const {
+  void operator()(TContainer* cells, uint16_t type_idx) {
     vector<array<double, 3>> cell_movements;
     cell_movements.reserve(cells->size());
 
     auto& grid = TGrid::GetInstance();
     auto search_radius = grid.GetLargestObjectSize();
     double squared_radius = search_radius * search_radius;
+
+    // SimulationObjectVector<std::array<double, 3>, TResourceManager> force_;
+    // force_.clear();
+    // force_.Initialize();
+    auto* force_ = new std::array<double, 3>[cells->size()];
+    #pragma omp parallel for
+    for(uint64_t i = 0; i < cells->size(); i++) {
+      force_[i][0] = 0;
+      force_[i][1] = 0;
+      force_[i][2] = 0;
+    }
+
+    std::atomic<uint32_t> callcount(0);
+
+    auto calculate_neighbor_forces = [&](auto&& sim_object1, SoHandle handle1,
+                                         auto&& sim_object2, SoHandle handle2) {
+      // callcount++;
+      std::array<double, 3> neighbor_force;
+      sim_object2.GetForceOn(sim_object1.GetMassLocation(), sim_object1.GetDiameter(),
+                             &neighbor_force);
+      auto idx = handle1.GetElementIdx();
+      force_[idx][0] += neighbor_force[0];
+      force_[idx][1] += neighbor_force[1];
+      force_[idx][2] += neighbor_force[2];
+
+      idx = handle2.GetElementIdx();
+      force_[idx][0] -= neighbor_force[0];
+      force_[idx][1] -= neighbor_force[1];
+      force_[idx][2] -= neighbor_force[2];
+    };
+
+    grid.ForEachNeighborPairWithinRadius(calculate_neighbor_forces, squared_radius);
+
+    std::cout << callcount << std::endl;
 
 #pragma omp parallel for shared(grid) firstprivate(squared_radius)
     for (size_t i = 0; i < cells->size(); i++) {
@@ -64,7 +100,7 @@ class DisplacementOp {
 
       // PHYSICS
       // the physics force to move the point mass
-      std::array<double, 3> translation_force_on_point_mass{0, 0, 0};
+      const std::array<double, 3>& translation_force_on_point_mass = force_[i];
       // the physics force to rotate the cell
       // std::array<double, 3> rotation_force { 0, 0, 0 };
 
@@ -76,19 +112,6 @@ class DisplacementOp {
       // -----------------------------------------------------------
       //  (We check for every neighbor object if they touch us, i.e. push us
       //  away)
-
-      auto calculate_neighbor_forces = [&](auto&& neighbor,
-                                           auto&& neighbor_handle) {
-        std::array<double, 3> neighbor_force;
-        neighbor.GetForceOn(cell.GetMassLocation(), cell.GetDiameter(),
-                            &neighbor_force);
-        translation_force_on_point_mass[0] += neighbor_force[0];
-        translation_force_on_point_mass[1] += neighbor_force[1];
-        translation_force_on_point_mass[2] += neighbor_force[2];
-      };
-
-      grid.ForEachNeighborWithinRadius(calculate_neighbor_forces, cell,
-                                       SoHandle(type_idx, i), squared_radius);
 
       // 4) PhysicalBonds
       // How the physics influences the next displacement
@@ -129,6 +152,8 @@ class DisplacementOp {
       cell_movements[i] = movement_at_next_step;
     }
 
+    delete[] force_;
+
 // set new positions after all updates have been calculated
 // otherwise some cells would see neighbors with already updated positions
 // which would lead to inconsistencies
@@ -142,6 +167,10 @@ class DisplacementOp {
       cell.SetTractorForce({0, 0, 0});
     }
   }
+
+private:
+  /// stores force from neighbors for each simulation object
+  // SimulationObjectVector<std::array<double, 3>> force_;
 };
 
 }  // namespace bdm

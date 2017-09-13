@@ -24,11 +24,13 @@ TEST(FixedSizeVector, All) {
     vector[i]++;
   }
 
-  size_t counter = 0;
-  for (auto element : vector) {
-    ASSERT_EQ(counter + 1, vector[counter]);
+  int counter = 0;
+  for (auto& element : vector) {
+    ASSERT_EQ(counter + 1, element);
     counter++;
   }
 }
+
+// TODO test for ++operator and clear
 
 }  // namespace bdm

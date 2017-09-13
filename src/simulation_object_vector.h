@@ -10,7 +10,10 @@ namespace bdm {
 template <typename T, typename TResourceManager = ResourceManager<>>
 class SimulationObjectVector {
  public:
-  SimulationObjectVector() { Initialize(); }
+  SimulationObjectVector() {
+    data_.resize(3);  // TResourceManager::NumberOfTypes() fixme
+    Initialize();
+  }
 
   /// resize vectors to match number of simulation object of the corresponding
   /// type.
@@ -42,7 +45,7 @@ class SimulationObjectVector {
 
  private:
   /// one std::vector<T> for each type in ResourceManager
-  std::vector<T> data_[TResourceManager::NumberOfTypes()];
+  std::vector<std::vector<T>> data_;
 };
 
 }  // namespace bdm

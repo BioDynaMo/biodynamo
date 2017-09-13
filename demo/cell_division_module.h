@@ -36,7 +36,6 @@ inline int Simulate(const CommandLineOptions& options,
     cell.SetDiameter(30);
     cell.SetAdherence(0.4);
     cell.SetMass(1.0);
-    cell.UpdateVolume();
     cell.AddBiologyModule(GrowthModule());
     return cell;
   };

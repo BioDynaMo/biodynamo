@@ -16,6 +16,16 @@ class FixedSizeVector {
 
   T& operator[](size_t idx) { return data_[idx]; }
 
+  FixedSizeVector& operator++() {
+    #pragma omp simd
+    for (size_t i = 0; i < N; i++) {
+      ++data_[i];
+    }
+    return *this;
+  }
+
+  void clear() { size_ = 0; }  // NOLINT
+
   void push_back(const T& value) { data_[size_++] = value; }  // NOLINT
 
   const T* begin() const { return &(data_[0]); }    // NOLINT

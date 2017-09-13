@@ -11,7 +11,8 @@
 #include "fixed_size_vector.h"
 #include "inline_vector.h"
 #include "param.h"
-#include "resource_manager.h"
+// #include "resource_manager.h"
+#include "cell.h"
 #include "simulation_object_vector.h"
 
 namespace bdm {
@@ -409,6 +410,139 @@ class Grid {
     }
   }
 
+  // TODO
+  template <typename Lambda>
+  void ForEachNeighborPairWithinRadius(const Lambda& lambda,
+                                       double squared_radius) const {
+    uint32_t z_start, y_start;
+    auto rm = TResourceManager::Get();
+    // auto cells = rm->template Get<Cell>();
+    for (uint16_t i = 0; i < 9; i++) {
+      switch (i) {
+        case 0:
+          z_start = 1;
+          y_start = 1;
+          break;
+        case 1:
+          z_start = 1;
+          y_start = 2;
+          break;
+        case 2:
+          z_start = 1;
+          y_start = 3;
+          break;
+        case 3:
+          z_start = 2;
+          y_start = 1;
+          break;
+        case 4:
+          z_start = 2;
+          y_start = 2;
+          break;
+        case 5:
+          z_start = 2;
+          y_start = 3;
+          break;
+        case 6:
+          z_start = 3;
+          y_start = 1;
+          break;
+        case 7:
+          z_start = 3;
+          y_start = 2;
+          break;
+        case 8:
+          z_start = 3;
+          y_start = 3;
+          break;
+      }
+
+#pragma omp parallel for collapse(2) \
+    schedule(dynamic, 1) firstprivate(z_start, y_start)
+      for (uint32_t z = z_start; z < num_boxes_axis_[2] - 1; z += 3) {
+        for (uint32_t y = y_start; y < num_boxes_axis_[1] - 1; y += 3) {
+          auto current_box_idx = GetBoxIndex(array<uint32_t, 3>{1, y, z});
+          FixedSizeVector<size_t, 13> box_indices;
+          GetHalfMooreBoxIndices(&box_indices, current_box_idx);
+          // first iteration peeled off
+          ForEachCellNeighborPair(lambda, rm, box_indices, current_box_idx,
+                                  squared_radius);
+
+          for (uint32_t x = 2; x < num_boxes_axis_[0] - 1; x++) {
+            // update box_indices
+            ++current_box_idx;
+            ++box_indices;
+            ForEachCellNeighborPair(lambda, rm, box_indices, current_box_idx,
+                                    squared_radius);
+          }
+        }
+      }
+    }
+  }
+
+  // TODO
+  // template <typename Lambda, typename TSimObj>
+  template <typename Lambda>
+  void ForEachCellNeighborPair(const Lambda& lambda,
+                              //  TSimObj* cells,
+                               TResourceManager* rm,
+                               const FixedSizeVector<size_t, 13>& box_indices,
+                               size_t current_box_idx,
+                               double squared_radius) const {
+    // cells in current box
+    FixedSizeVector<SoHandle, 16> cells_current_box; // FIXME use InlineVector instead
+    GetCellHandles(current_box_idx, &cells_current_box);
+    if (cells_current_box.size() == 0) {
+      return;
+    }
+    // FIXME if box_length < squared_radius no distance calculations are
+    // required
+    for (size_t n = 0; n < cells_current_box.size(); n++) {
+      rm->ApplyOnElement(cells_current_box[n], [&,this](auto&& element_n){
+        // auto&& element_n = (*cells)[cells_current_box[n].GetElementIdx()];
+
+        const auto& pos_n = element_n.GetPosition();
+        for (size_t c = n + 1; c < cells_current_box.size(); c++) {
+          rm->ApplyOnElement(cells_current_box[c], [&,this](auto&& element_c){
+            // auto&& element_c = (*cells)[cells_current_box[c].GetElementIdx()];
+
+            const std::array<double, 3>& pos_c = element_c.GetPosition();
+            if (this->SquaredEuclideanDistance(pos_c, pos_n) < squared_radius) {
+              lambda(element_c, cells_current_box[c], element_n, cells_current_box[n]);
+            }
+          });
+
+        }
+      });
+
+    }
+
+    // neighbor boxes
+    FixedSizeVector<SoHandle, 16> cells_box;
+    for (size_t i = 0; i < box_indices.size(); i++) {
+      size_t box_idx = box_indices[i];
+      cells_box.clear();
+      GetCellHandles(box_idx, &cells_box);
+      for (size_t n = 0; n < cells_box.size(); n++) {
+        rm->ApplyOnElement(cells_box[n], [&,this](auto&& element_n){
+          // auto&& element_n = (*cells)[cells_box[n].GetElementIdx()];
+
+          const auto& pos_n = element_n.GetPosition();
+          for (size_t c = 0; c < cells_current_box.size(); c++) {
+            rm->ApplyOnElement(cells_current_box[c], [&,this](auto&& element_c){
+              // auto&& element_c = (*cells)[cells_current_box[c].GetElementIdx()];
+
+              const auto& pos_c = element_c.GetPosition();
+              if (this->SquaredEuclideanDistance(pos_c, pos_n) < squared_radius) {
+                lambda(element_c, cells_current_box[c], element_n, cells_box[n]);
+              }
+            });
+          }
+        });
+      }
+    }
+  }
+
   /// @brief      Return the box index in the one dimensional array of the box
   ///             that contains the position
   ///
@@ -518,6 +652,35 @@ class Grid {
     }
   }
 
+  // TODO
+  void GetHalfMooreBoxIndices(FixedSizeVector<size_t, 13>* neighbor_boxes,
+                     size_t box_idx) const {
+    // Adjacent 3 (top, left and front)
+    if (adjacency_ >= kLow) {
+      neighbor_boxes->push_back(box_idx + num_boxes_xy_);
+      neighbor_boxes->push_back(box_idx + num_boxes_axis_[1]);
+      neighbor_boxes->push_back(box_idx + 1);
+    }
+
+    // Adjacent 6
+    if (adjacency_ >= kMedium) {
+      neighbor_boxes->push_back(box_idx + num_boxes_xy_ + num_boxes_axis_[1]);
+      neighbor_boxes->push_back(box_idx + num_boxes_xy_ + 1);
+      neighbor_boxes->push_back(box_idx + num_boxes_axis_[1] - 1);
+      neighbor_boxes->push_back(box_idx + num_boxes_xy_ - num_boxes_axis_[1]);
+      neighbor_boxes->push_back(box_idx + num_boxes_xy_ - 1);
+      neighbor_boxes->push_back(box_idx + num_boxes_axis_[1] + 1);
+    }
+
+    // Adjacent 4
+    if (adjacency_ >= kHigh) {
+      neighbor_boxes->push_back(box_idx + num_boxes_xy_ + num_boxes_axis_[1] + 1);
+      neighbor_boxes->push_back(box_idx + num_boxes_xy_ - num_boxes_axis_[1] - 1);
+      neighbor_boxes->push_back(box_idx + num_boxes_xy_ - num_boxes_axis_[1] + 1);
+      neighbor_boxes->push_back(box_idx + num_boxes_xy_ + num_boxes_axis_[1] - 1);
+    }
+  }
+
   /// @brief      Gets the pointer to the box with the given index
   ///
   /// @param[in]  index  The index of the box
@@ -544,6 +707,20 @@ class Grid {
   size_t GetBoxIndex(const array<uint32_t, 3>& box_coord) const {
     return box_coord[2] * num_boxes_xy_ + box_coord[1] * num_boxes_axis_[0] +
            box_coord[0];
+  }
+
+ // TODO
+  void GetCellHandles(size_t box_idx, FixedSizeVector<SoHandle, 16>* handles ) const {
+    // SoHandle current = static_cast<SoHandle>(boxes_[box_idx].start_);
+    auto size = boxes_[box_idx].length_.load(std::memory_order_relaxed);
+    if(size == 0) {
+      return;
+    }
+    auto current = boxes_[box_idx].start_.load(std::memory_order_relaxed);
+    for (size_t i = 0; i < size; i++) {
+      handles->push_back(current);
+      current = successors_[current];
+    }
   }
 };
 
