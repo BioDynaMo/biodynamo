@@ -5,6 +5,7 @@
 #include <limits>
 #include <memory>
 #include <ostream>
+#include <string>
 #include <tuple>
 #include <utility>
 #include <vector>
@@ -26,7 +27,7 @@ class SoHandle {
   SoHandle() noexcept
       : type_idx_(std::numeric_limits<decltype(type_idx_)>::max()),
         element_idx_(std::numeric_limits<decltype(element_idx_)>::max()) {}
-  SoHandle(uint16_t type_idx, uint64_t element_idx)
+  SoHandle(uint16_t type_idx, uint32_t element_idx)
       : type_idx_(type_idx), element_idx_(element_idx) {}
   uint16_t GetTypeIdx() const { return type_idx_; }
   uint32_t GetElementIdx() const { return element_idx_; }
@@ -135,6 +136,16 @@ class ResourceManager {
 
   /// Return the container of diffusion grids
   std::vector<DiffusionGrid*>& GetDiffusionGrids() { return diffusion_grids_; }
+
+  /// Return the diffusion grid which holds the substance of specified name
+  DiffusionGrid* GetDiffusionGrid(std::string name) {
+    for (auto grid : diffusion_grids_) {
+      if (grid->GetSubstanceName() == name) {
+        return grid;
+      }
+    }
+    return nullptr;
+  }
 
   /// Default constructor. Unfortunately needs to be public although it is
   /// a singleton to be able to use ROOT I/O

@@ -7,6 +7,7 @@
 #include <type_traits>
 #include <vector>
 #include "backend.h"
+#include "diffusion_grid.h"
 #include "macros.h"
 #include "resource_manager.h"
 #include "root_util.h"
@@ -331,6 +332,16 @@ typename std::remove_reference<T>::type::template Self<Scalar>& Divide(
 template <typename Container>
 void Delete(Container* container, size_t index) {
   container->DelayedRemove(index);
+}
+
+/// Get the diffusion grid which holds the substance of specified name
+template <typename TResourceManager = ResourceManager<>>
+static DiffusionGrid* GetDiffusionGrid(std::string name) {
+  auto dg = TResourceManager::Get()->GetDiffusionGrid(name);
+  assert(dg != nullptr &&
+         "Tried to get non-existing diffusion grid. Did you specify the "
+         "correct substance name?");
+  return dg;
 }
 
 }  // namespace bdm

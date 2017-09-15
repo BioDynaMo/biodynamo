@@ -12,8 +12,6 @@
 
 #include "omp.h"
 
-#include "random.h"
-
 namespace bdm {
 
 using std::array;
@@ -73,36 +71,33 @@ class DiffusionGrid {
     initialized_ = true;
   }
 
-  /// @brief      Updates the grid dimensions, based on the given grid
-  ///             dimensons. The diffusion grid dimensions need always be 
-  ///             larger than the neighbor grid dimensions, so that each
-  ///             simulation object can obtain its local concentration /
-  ///             gradient
+  /// @brief      Updates the grid dimensions, based on the given threshold
+  ///             values. The diffusion grid dimensions need always be larger
+  ///             than the neighbor grid dimensions, so that each simulation
+  ///             object can obtain its local concentration / gradient
   ///
-  /// @param[in]  grid_dimensions  The grid dimensions
+  /// @param[in]  threshold_dimensions  The threshold values
   ///
-  void Update(std::array<int32_t, 6>& grid_dimensions) {
-    if (((grid_dimensions[0] != grid_dimensions[2]) && (grid_dimensions[0] != grid_dimensions[4])) || ((grid_dimensions[1] != grid_dimensions[3]) && (grid_dimensions[0] != grid_dimensions[5]))) {
-      // find maximum / minimum grid dimension
-      auto max_gd = *std::max_element(grid_dimensions.begin(), grid_dimensions.end());
-      auto min_gd = *std::min_element(grid_dimensions.begin(), grid_dimensions.end());
-      grid_dimensions = {min_gd, max_gd, min_gd, max_gd, min_gd, max_gd};
-    }
-    // Get grid properties from neighbor grid
-    grid_dimensions_ = grid_dimensions;
+  void Update(std::array<int32_t, 2>& threshold_dimensions) {
+    // Extend the grid dimensions such that each dimension ranges from
+    // {treshold_dimensions[0] - treshold_dimensions[1]}
+    auto min_gd = threshold_dimensions[0];
+    auto max_gd = threshold_dimensions[1];
+    grid_dimensions_ = {min_gd, max_gd, min_gd, max_gd, min_gd, max_gd};
 
+    // If the grid is not perfectly divisible along each dimension by the
+    // resolution, extend the grid so that it is
     for (int i = 0; i < 3; i++) {
       int dimension_length =
           grid_dimensions_[2 * i + 1] - grid_dimensions_[2 * i];
       int r = dimension_length % box_length_;
-      // If the grid is not perfectly divisible along each dimension by the
-      // resolution, extend the grid so that it is
       if (r != 0) {
         // std::abs for the case that box_length_ > dimension_length
         grid_dimensions_[2 * i + 1] += (box_length_ - r);
       }
     }
 
+    // Store the old number of boxes along each axis for comparison
     array<int, 3> tmp_num_boxes_axis = num_boxes_axis_;
 
     // Calculate how many boxes fit along each dimension
@@ -114,14 +109,6 @@ class DiffusionGrid {
       num_boxes_axis_[i] = dimension_length / box_length_;
     }
 
-    total_num_boxes_ =
-        num_boxes_axis_[0] * num_boxes_axis_[1] * num_boxes_axis_[2];
-
-    assert(((int)total_num_boxes_) >= tmp_num_boxes_axis[0] *
-                                          tmp_num_boxes_axis[1] *
-                                          tmp_num_boxes_axis[2] &&
-           "The diffusion grid tried to shrink! It can only become larger");
-
     // Temporarily save previous grid data
     double* tmp_c1 = c1_;
     double* tmp_gradients = gradients_;
@@ -129,16 +116,25 @@ class DiffusionGrid {
     delete[] c2_;
 
     CopyOldData(tmp_c1, tmp_gradients, tmp_num_boxes_axis);
+
+    // Do this check after CopyOldData, because it can increase there
+    total_num_boxes_ =
+        num_boxes_axis_[0] * num_boxes_axis_[1] * num_boxes_axis_[2];
+
+    assert(((int)total_num_boxes_) >= tmp_num_boxes_axis[0] *
+                                          tmp_num_boxes_axis[1] *
+                                          tmp_num_boxes_axis[2] &&
+           "The diffusion grid tried to shrink! It can only become larger");
   }
 
   /// Copies the concentration and gradients values to the new
   /// (larger) grid. In the 2D case it looks like the following:
-  /// 
+  ///
   ///                             [0 0  0  0]
   ///               [v1 v2]  -->  [0 v1 v2 0]
   ///               [v3 v4]  -->  [0 v3 v4 0]
   ///                             [0 0  0  0]
-  ///             
+  ///
   /// The dimensions are doubled in this case from 2x2 to 4x4
   /// If the dimensions would be increased from 2x2 to 3x3, it will still
   /// be increased to 4x4 in order for GetBoxIndex to function correctly
@@ -155,7 +151,8 @@ class DiffusionGrid {
       num_boxes_axis_[2]++;
     }
 
-    size_t new_size = num_boxes_axis_[0] * num_boxes_axis_[1] * num_boxes_axis_[2];
+    size_t new_size =
+        num_boxes_axis_[0] * num_boxes_axis_[1] * num_boxes_axis_[2];
 
     // Allocate more memory for the grid data arrays
     c1_ = new double[new_size];
@@ -181,11 +178,14 @@ class DiffusionGrid {
 
     int num_box_xy = num_boxes_axis_[0] * num_boxes_axis_[1];
     int old_box_xy = old_num_boxes_axis[0] * old_num_boxes_axis[1];
-    int new_origin = off_z * (num_boxes_axis_[0]*num_boxes_axis_[1]) + off_y * num_boxes_axis_[0] + off_x;
+    int new_origin = off_z * (num_boxes_axis_[0] * num_boxes_axis_[1]) +
+                     off_y * num_boxes_axis_[0] + off_x;
     for (int k = 0; k < old_num_boxes_axis[2]; k++) {
       int offset = new_origin + k * num_box_xy;
       for (int j = 0; j < old_num_boxes_axis[1]; j++) {
-        if (j != 0) { offset += num_boxes_axis_[0]; };
+        if (j != 0) {
+          offset += num_boxes_axis_[0];
+        }
         for (int i = 0; i < old_num_boxes_axis[0]; i++) {
           auto idx = k * old_box_xy + j * old_num_boxes_axis[0] + i;
           c1_[offset + i] = old_c1[idx];
@@ -203,7 +203,7 @@ class DiffusionGrid {
   /// boundary conditions. Substances are allowed to leave the simulation
   /// space. This prevents building up concentration at the edges
   ///
-  void RunDiffusionStep() {
+  void DiffuseWithLeakingEdge() {
     int nx = num_boxes_axis_[0];
     int ny = num_boxes_axis_[1];
     int nz = num_boxes_axis_[2];
@@ -216,8 +216,9 @@ class DiffusionGrid {
         // to zero. This prevents substance building up at the edges
         auto dc_2_ = dc_;
         int ymax = yy + YBF;
-        if (ymax >= ny)
+        if (ymax >= ny) {
           ymax = ny;
+        }
         for (int y = yy; y < ymax; y++) {
           dc_2_ = dc_;
           int x;
@@ -280,16 +281,72 @@ class DiffusionGrid {
     c2_ = t;
   }
 
+  /// Solves a 5-point stencil diffusion equation, with closed-edge
+  /// boundary conditions. Substances are not allowed to leave the simulation
+  /// space. Keep in mind that the concentration can build up at the edges
+  ///
+  void DiffuseWithClosedEdge() {
+    int nx = num_boxes_axis_[0];
+    int ny = num_boxes_axis_[1];
+    int nz = num_boxes_axis_[2];
+
+#define YBF 16
+#pragma omp parallel for collapse(2)
+    for (int yy = 0; yy < ny; yy += YBF) {
+      for (int z = 0; z < nz; z++) {
+        int ymax = yy + YBF;
+        if (ymax >= ny) {
+          ymax = ny;
+        }
+        for (int y = yy; y < ymax; y++) {
+          int x;
+          int c, n, s, b, t;
+          x = 0;
+          c = x + y * nx + z * nx * ny;
+          n = (y == 0) ? c : c - nx;
+          s = (y == ny - 1) ? c : c + nx;
+          b = (z == 0) ? c : c - nx * ny;
+          t = (z == nz - 1) ? c : c + nx * ny;
+          c2_[c] = dc_[0] * c1_[c] + dc_[1] * c1_[c] + dc_[2] * c1_[c + 1] +
+                   dc_[3] * c1_[s] + dc_[4] * c1_[n] + dc_[5] * c1_[b] +
+                   dc_[6] * c1_[t];
+#pragma omp simd
+          for (x = 1; x < nx - 1; x++) {
+            ++c;
+            ++n;
+            ++s;
+            ++b;
+            ++t;
+            c2_[c] = dc_[0] * c1_[c] + dc_[1] * c1_[c - 1] +
+                     dc_[2] * c1_[c + 1] + dc_[3] * c1_[s] + dc_[4] * c1_[n] +
+                     dc_[5] * c1_[b] + dc_[6] * c1_[t];
+          }
+          ++c;
+          ++n;
+          ++s;
+          ++b;
+          ++t;
+          c2_[c] = dc_[0] * c1_[c] + dc_[1] * c1_[c - 1] + dc_[2] * c1_[c] +
+                   dc_[3] * c1_[s] + dc_[4] * c1_[n] + dc_[5] * c1_[b] +
+                   dc_[6] * c1_[t];
+        }  // tile ny
+      }    // tile nz
+    }      // block ny
+    double* t = c1_;
+    c1_ = c2_;
+    c2_ = t;
+  }
+
   /// Calculates the gradient for each box in the diffusion grid.
   /// The gradient is calculated in each direction (x, y, z) as following:
   ///
-  /// c(x + box_length_) - c(x - box_length) / (2 * box_length_), 
-  /// 
+  /// c(x + box_length_) - c(x - box_length) / (2 * box_length_),
+  ///
   /// where c(x) implies the concentration at position x
-  /// 
+  ///
   /// At the edges the gradient is the same as the box next to it
   void CalculateGradient() {
-    double gd = 1 / ((double)box_length_ * 2);
+    double gd = 1 / (static_cast<double>(box_length_) * 2);
 
     auto nx = num_boxes_axis_[0];
     auto ny = num_boxes_axis_[1];
@@ -370,9 +427,10 @@ class DiffusionGrid {
     gradient[0] = gradients_[3 * idx];
     gradient[1] = gradients_[3 * idx + 1];
     gradient[2] = gradients_[3 * idx + 2];
-    auto norm = std::sqrt(gradient[0]*gradient[0] + gradient[1]*gradient[1] + gradient[2]*gradient[2]);
+    auto norm =
+        std::sqrt(gradient[0] * gradient[0] + gradient[1] * gradient[1] +
+                  gradient[2] * gradient[2]);
     if (norm > 1e-10) {
-      std::cout << "Norm = " << norm << std::endl;
       gradient[0] /= norm;
       gradient[1] /= norm;
       gradient[2] /= norm;
@@ -395,6 +453,14 @@ class DiffusionGrid {
     return GetBoxIndex(box_coord);
   }
 
+  /// Calculates the box index of the substance at specified position
+  void GetBoxCoords(const array<double, 3>& position,
+                    array<uint32_t, 3>& box_coord) {
+    box_coord[0] = (floor(position[0]) - grid_dimensions_[0]) / box_length_;
+    box_coord[1] = (floor(position[1]) - grid_dimensions_[2]) / box_length_;
+    box_coord[2] = (floor(position[2]) - grid_dimensions_[4]) / box_length_;
+  }
+
   void SetConcentrationThreshold(double t) { concentration_threshold_ = t; }
 
   double* GetAllConcentrations() { return c1_; }
@@ -406,6 +472,8 @@ class DiffusionGrid {
   int GetNumBoxes() { return total_num_boxes_; }
 
   int GetBoxLength() { return box_length_; }
+
+  std::string GetSubstanceName() { return substance_; }
 
   int32_t* GetDimensionsPtr() { return grid_dimensions_.data(); }
 
