@@ -2,6 +2,7 @@
 #define FIXED_SIZE_VECTOR_H_
 
 #include <cstddef>
+#include <cassert>
 
 /// Vector with fixed number of elements == Array with push_back function that
 /// keeps track of its size
@@ -26,7 +27,10 @@ class FixedSizeVector {
 
   void clear() { size_ = 0; }  // NOLINT
 
-  void push_back(const T& value) { data_[size_++] = value; }  // NOLINT
+  void push_back(const T& value) { // NOLINT
+    assert(size_ < N);
+    data_[size_++] = value;
+  }
 
   const T* begin() const { return &(data_[0]); }    // NOLINT
   const T* end() const { return &(data_[size_]); }  // NOLINT

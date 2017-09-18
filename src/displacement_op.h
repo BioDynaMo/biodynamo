@@ -50,15 +50,17 @@ class DisplacementOp {
       std::array<double, 3> neighbor_force;
       sim_object2.GetForceOn(sim_object1.GetMassLocation(), sim_object1.GetDiameter(),
                              &neighbor_force);
-      auto idx = handle1.GetElementIdx();
-      force_[idx][0] += neighbor_force[0];
-      force_[idx][1] += neighbor_force[1];
-      force_[idx][2] += neighbor_force[2];
+       if(neighbor_force[0] != 0.0 || neighbor_force[1] != 0.0 ||neighbor_force[2] != 0.0) {
+        auto idx = handle1.GetElementIdx();
+        force_[idx][0] += neighbor_force[0];
+        force_[idx][1] += neighbor_force[1];
+        force_[idx][2] += neighbor_force[2];
 
-      idx = handle2.GetElementIdx();
-      force_[idx][0] -= neighbor_force[0];
-      force_[idx][1] -= neighbor_force[1];
-      force_[idx][2] -= neighbor_force[2];
+        idx = handle2.GetElementIdx();
+        force_[idx][0] -= neighbor_force[0];
+        force_[idx][1] -= neighbor_force[1];
+        force_[idx][2] -= neighbor_force[2];
+      }
     };
 
     grid.ForEachNeighborPairWithinRadius(calculate_neighbor_forces, squared_radius);
