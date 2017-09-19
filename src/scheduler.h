@@ -106,7 +106,8 @@ class Scheduler {
       grid_->UpdateGrid();
     }
     rm->ApplyOnAllTypes(biology_);
-    rm->ApplyOnAllTypes(physics_);
+    for (int i = 0; i < 10; i++)
+      rm->ApplyOnAllTypes(physics_);
     rm->ApplyOnAllTypes(commit);
   }
 

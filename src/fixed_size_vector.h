@@ -1,8 +1,10 @@
 #ifndef FIXED_SIZE_VECTOR_H_
 #define FIXED_SIZE_VECTOR_H_
 
-#include <cstddef>
 #include <cassert>
+#include <cstddef>
+
+namespace bdm {
 
 /// Vector with fixed number of elements == Array with push_back function that
 /// keeps track of its size
@@ -18,7 +20,7 @@ class FixedSizeVector {
   T& operator[](size_t idx) { return data_[idx]; }
 
   FixedSizeVector& operator++() {
-    #pragma omp simd
+#pragma omp simd
     for (size_t i = 0; i < N; i++) {
       ++data_[i];
     }
@@ -27,7 +29,7 @@ class FixedSizeVector {
 
   void clear() { size_ = 0; }  // NOLINT
 
-  void push_back(const T& value) { // NOLINT
+  void push_back(const T& value) {  // NOLINT
     assert(size_ < N);
     data_[size_++] = value;
   }
@@ -41,5 +43,7 @@ class FixedSizeVector {
   T data_[N];
   std::size_t size_ = 0;
 };
+
+}  // namespace bdm
 
 #endif  // FIXED_SIZE_VECTOR_H_

@@ -8,7 +8,6 @@
 #include "math_util.h"
 #include "param.h"
 #include "simulation_object_vector.h"
-#include <atomic>
 
 namespace bdm {
 
@@ -16,14 +15,15 @@ using std::vector;
 using std::array;
 
 /// Defines the 3D physical interactions between physical objects
-template <typename TGrid = Grid<>, typename TResourceManager = ResourceManager<>>
+template <typename TGrid = Grid<>,
+          typename TResourceManager = ResourceManager<>>
 class DisplacementOp {
  public:
   DisplacementOp() {}
   ~DisplacementOp() {}
 
   template <typename TContainer>
-  void operator()(TContainer* cells, uint16_t type_idx) {
+  void operator()(TContainer* cells, uint16_t type_idx) const {
     vector<array<double, 3>> cell_movements;
     cell_movements.reserve(cells->size());
 
@@ -31,41 +31,27 @@ class DisplacementOp {
     auto search_radius = grid.GetLargestObjectSize();
     double squared_radius = search_radius * search_radius;
 
-    // SimulationObjectVector<std::array<double, 3>, TResourceManager> force_;
-    // force_.clear();
-    // force_.Initialize();
-    auto* force_ = new std::array<double, 3>[cells->size()];
-    #pragma omp parallel for
-    for(uint64_t i = 0; i < cells->size(); i++) {
-      force_[i][0] = 0;
-      force_[i][1] = 0;
-      force_[i][2] = 0;
-    }
-
-    std::atomic<uint32_t> callcount(0);
+    force_.Initialize();
 
     auto calculate_neighbor_forces = [&](auto&& sim_object1, SoHandle handle1,
                                          auto&& sim_object2, SoHandle handle2) {
-      // callcount++;
       std::array<double, 3> neighbor_force;
-      sim_object2.GetForceOn(sim_object1.GetMassLocation(), sim_object1.GetDiameter(),
-                             &neighbor_force);
-       if(neighbor_force[0] != 0.0 || neighbor_force[1] != 0.0 ||neighbor_force[2] != 0.0) {
-        auto idx = handle1.GetElementIdx();
-        force_[idx][0] += neighbor_force[0];
-        force_[idx][1] += neighbor_force[1];
-        force_[idx][2] += neighbor_force[2];
+      sim_object2.GetForceOn(sim_object1.GetMassLocation(),
+                             sim_object1.GetDiameter(), &neighbor_force);
+      if (neighbor_force[0] != 0.0 || neighbor_force[1] != 0.0 ||
+          neighbor_force[2] != 0.0) {
+        force_[handle1][0] += neighbor_force[0];
+        force_[handle1][1] += neighbor_force[1];
+        force_[handle1][2] += neighbor_force[2];
 
-        idx = handle2.GetElementIdx();
-        force_[idx][0] -= neighbor_force[0];
-        force_[idx][1] -= neighbor_force[1];
-        force_[idx][2] -= neighbor_force[2];
+        force_[handle2][0] -= neighbor_force[0];
+        force_[handle2][1] -= neighbor_force[1];
+        force_[handle2][2] -= neighbor_force[2];
       }
     };
 
-    grid.ForEachNeighborPairWithinRadius(calculate_neighbor_forces, squared_radius);
-
-    std::cout << callcount << std::endl;
+    grid.ForEachNeighborPairWithinRadius(calculate_neighbor_forces,
+                                         squared_radius);
 
 #pragma omp parallel for shared(grid) firstprivate(squared_radius)
     for (size_t i = 0; i < cells->size(); i++) {
@@ -102,7 +88,8 @@ class DisplacementOp {
 
       // PHYSICS
       // the physics force to move the point mass
-      const std::array<double, 3>& translation_force_on_point_mass = force_[i];
+      const std::array<double, 3>& translation_force_on_point_mass =
+          force_[SoHandle(type_idx, i)];
       // the physics force to rotate the cell
       // std::array<double, 3> rotation_force { 0, 0, 0 };
 
@@ -154,8 +141,6 @@ class DisplacementOp {
       cell_movements[i] = movement_at_next_step;
     }
 
-    delete[] force_;
-
 // set new positions after all updates have been calculated
 // otherwise some cells would see neighbors with already updated positions
 // which would lead to inconsistencies
@@ -170,9 +155,9 @@ class DisplacementOp {
     }
   }
 
-private:
+ private:
   /// stores force from neighbors for each simulation object
-  // SimulationObjectVector<std::array<double, 3>> force_;
+  mutable SimulationObjectVector<std::array<double, 3>, TResourceManager> force_;
 };
 
 }  // namespace bdm

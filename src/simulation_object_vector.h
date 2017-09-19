@@ -11,7 +11,7 @@ template <typename T, typename TResourceManager = ResourceManager<>>
 class SimulationObjectVector {
  public:
   SimulationObjectVector() {
-    data_.resize(3);  // TResourceManager::NumberOfTypes() fixme
+    data_.resize(TResourceManager::NumberOfTypes());
     Initialize();
   }
 

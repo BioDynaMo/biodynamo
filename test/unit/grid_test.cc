@@ -232,10 +232,6 @@ TEST(GridTest, GetBoxCoordinates) {
   EXPECT_ARR_EQ({3, 0, 0}, grid.GetBoxCoordinates(3));
   EXPECT_ARR_EQ({1, 2, 0}, grid.GetBoxCoordinates(9));
   EXPECT_ARR_EQ({1, 2, 3}, grid.GetBoxCoordinates(57));
-
-  // TODO remove next two lines
-  FixedSizeVector<size_t, 14> foo;
-  grid.GetHalfMooreBoxIndices(&foo, 57);
 }
 
 // TODO(lukas) test with different kind of cells
