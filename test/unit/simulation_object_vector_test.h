@@ -74,8 +74,8 @@ inline void RunTest() {
   vector[SoHandle(1, 0)] = 7;
   EXPECT_EQ(7, vector[SoHandle(1, 0)]);
 
-  vector[SoHandle(0, 3)] = 5;
-  EXPECT_EQ(5, vector[SoHandle(0, 3)]);
+  vector[SoHandle(0, 2)] = 5;
+  EXPECT_EQ(5, vector[SoHandle(0, 2)]);
 }
 
 }  // namespace bdm
