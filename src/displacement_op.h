@@ -157,7 +157,8 @@ class DisplacementOp {
 
  private:
   /// stores force from neighbors for each simulation object
-  mutable SimulationObjectVector<std::array<double, 3>, TResourceManager> force_;
+  mutable SimulationObjectVector<std::array<double, 3>, TResourceManager>
+      force_;
 };
 
 }  // namespace bdm
