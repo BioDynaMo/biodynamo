@@ -1,10 +1,9 @@
-#ifndef UNIT_SIMULATION_OBJECT__VECTOR_TEST_H_
-#define UNIT_SIMULATION_OBJECT__VECTOR_TEST_H_
+#ifndef UNIT_SIMULATION_OBJECT_VECTOR_TEST_H_
+#define UNIT_SIMULATION_OBJECT_VECTOR_TEST_H_
 
 #include "gtest/gtest.h"
 
 #include "backend.h"
-#include "gtest/gtest.h"
 #include "simulation_object.h"
 #include "simulation_object_util.h"
 #include "simulation_object_vector.h"
@@ -78,7 +77,7 @@ inline void RunTest() {
   EXPECT_EQ(5, vector[SoHandle(0, 2)]);
 }
 
-}  // namespace bdm
 }  // namespace simulation_object_vector_test_internal
+}  // namespace bdm
 
-#endif  // UNIT_SIMULATION_OBJECT__VECTOR_TEST_H_
+#endif  // UNIT_SIMULATION_OBJECT_VECTOR_TEST_H_

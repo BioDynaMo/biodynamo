@@ -1,6 +1,7 @@
 #ifndef SIMULATION_OBJECT_VECTOR_H_
 #define SIMULATION_OBJECT_VECTOR_H_
 
+#include <vector>
 #include "resource_manager.h"
 
 namespace bdm {

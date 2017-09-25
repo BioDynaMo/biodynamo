@@ -29,8 +29,14 @@ TEST(FixedSizeVector, All) {
     ASSERT_EQ(counter + 1, element);
     counter++;
   }
-}
 
-// TODO test for ++operator and clear
+  ++vector;
+  for (int i = 0; i < 4; i++) {
+    ASSERT_EQ(i + 2, vector[i]);
+  }
+
+  vector.clear();
+  ASSERT_EQ(0u, vector.size());
+}
 
 }  // namespace bdm
