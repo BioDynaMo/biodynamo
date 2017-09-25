@@ -130,7 +130,9 @@ class Grid {
 
       Iterator& operator++() {
         countdown_--;
-        current_value_ = grid_->successors_[current_value_];
+        if (countdown_ > 0) {
+          current_value_ = grid_->successors_[current_value_];
+        }
         return *this;
       }
 
