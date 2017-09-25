@@ -234,6 +234,61 @@ TEST(GridTest, GetBoxCoordinates) {
   EXPECT_ARR_EQ({1, 2, 3}, grid.GetBoxCoordinates(57));
 }
 
+void RunNoRaceConditionForEachPairTest() {
+  auto rm = ResourceManager<>::Get();
+  rm->Clear();
+  auto cells = rm->Get<Cell>();
+  CellFactory(cells, 3);
+
+  // expecting a 4 * 4 * 4 grid
+  auto& grid = Grid<>::GetInstance();
+  grid.Initialize();
+
+  std::vector<int> result(cells->size());
+
+  auto lambda = [&](auto&& lhs, SoHandle lhs_id, auto&& rhs, SoHandle rhs_id) {
+    result[lhs_id.GetElementIdx()]++;
+    result[rhs_id.GetElementIdx()]++;
+  };
+
+  // space between cells is 20 -> 20^2 + 1 = 401
+  grid.ForEachNeighborPairWithinRadius(lambda, 401);
+
+  EXPECT_EQ(3, result[0]);
+  EXPECT_EQ(4, result[1]);
+  EXPECT_EQ(3, result[2]);
+  EXPECT_EQ(4, result[3]);
+  EXPECT_EQ(5, result[4]);
+  EXPECT_EQ(4, result[5]);
+  EXPECT_EQ(3, result[6]);
+  EXPECT_EQ(4, result[7]);
+  EXPECT_EQ(3, result[8]);
+  EXPECT_EQ(4, result[9]);
+  EXPECT_EQ(5, result[10]);
+  EXPECT_EQ(4, result[11]);
+  EXPECT_EQ(5, result[12]);
+  EXPECT_EQ(6, result[13]);
+  EXPECT_EQ(5, result[14]);
+  EXPECT_EQ(4, result[15]);
+  EXPECT_EQ(5, result[16]);
+  EXPECT_EQ(4, result[17]);
+  EXPECT_EQ(3, result[18]);
+  EXPECT_EQ(4, result[19]);
+  EXPECT_EQ(3, result[20]);
+  EXPECT_EQ(4, result[21]);
+  EXPECT_EQ(5, result[22]);
+  EXPECT_EQ(4, result[23]);
+  EXPECT_EQ(3, result[24]);
+  EXPECT_EQ(4, result[25]);
+  EXPECT_EQ(3, result[26]);
+}
+
+TEST(GridTest, NoRaceConditionForEachPair) {
+  for (int i = 0; i < 10; i++) {
+    RunNoRaceConditionForEachPairTest();
+  }
+}
+
 // TODO(lukas) test with different kind of cells
 
 }  // namespace bdm
