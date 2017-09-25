@@ -856,8 +856,8 @@ class Grid {
   /// Updates the cached simulation object positions exploiting the fact that
   /// ForEachNeighbor... iterates in rows. Therefore, positions from many boxes
   /// can be reused if the x-axis is incremented.
-  /// \param box_indices box indices are expected to be in the following order
-  ///        `C BW FNW NW BNW B FN N BN E BE FNE NE BNE`
+  /// \param so_handles simulation object handles are expected to be in the
+  ///        following order `C BW FNW NW BNW B FN N BN E BE FNE NE BNE`
   /// \param positions simulation object positions from the previous iteration
   ///        input expected to be in either
   ///        `C BW FNW NW BNW B FN N BN E BE FNE NE BNE` or
@@ -889,7 +889,7 @@ class Grid {
   ///                   half of its surrounding boxes
   /// \param positions cached simulation object positions for the center box and
   ///                  half of its surrounding boxes
-  /// \param current_box_idx index into `so_handles` and `positions` to
+  /// \param center_box_idx index into `so_handles` and `positions` to
   ///        determine the center box
   /// \param squared_radius determines cutoff distance - lambda will only be
   ///        called if distance between neighbors squared is smaller than
