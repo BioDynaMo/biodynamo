@@ -7,7 +7,6 @@
 #include "grid.h"
 #include "math_util.h"
 #include "param.h"
-#include "simulation_object_vector.h"
 
 namespace bdm {
 
@@ -15,8 +14,7 @@ using std::vector;
 using std::array;
 
 /// Defines the 3D physical interactions between physical objects
-template <typename TGrid = Grid<>,
-          typename TResourceManager = ResourceManager<>>
+template <typename TGrid = Grid<>>
 class DisplacementOp {
  public:
   DisplacementOp() {}
@@ -30,28 +28,6 @@ class DisplacementOp {
     auto& grid = TGrid::GetInstance();
     auto search_radius = grid.GetLargestObjectSize();
     double squared_radius = search_radius * search_radius;
-
-    force_.Initialize();
-
-    auto calculate_neighbor_forces = [&](auto&& sim_object1, SoHandle handle1,
-                                         auto&& sim_object2, SoHandle handle2) {
-      std::array<double, 3> neighbor_force;
-      sim_object2.GetForceOn(sim_object1.GetMassLocation(),
-                             sim_object1.GetDiameter(), &neighbor_force);
-      if (neighbor_force[0] != 0.0 || neighbor_force[1] != 0.0 ||
-          neighbor_force[2] != 0.0) {
-        force_[handle1][0] += neighbor_force[0];
-        force_[handle1][1] += neighbor_force[1];
-        force_[handle1][2] += neighbor_force[2];
-
-        force_[handle2][0] -= neighbor_force[0];
-        force_[handle2][1] -= neighbor_force[1];
-        force_[handle2][2] -= neighbor_force[2];
-      }
-    };
-
-    grid.ForEachNeighborPairWithinRadius(calculate_neighbor_forces,
-                                         squared_radius);
 
 #pragma omp parallel for shared(grid) firstprivate(squared_radius)
     for (size_t i = 0; i < cells->size(); i++) {
@@ -88,8 +64,7 @@ class DisplacementOp {
 
       // PHYSICS
       // the physics force to move the point mass
-      const std::array<double, 3>& translation_force_on_point_mass =
-          force_[SoHandle(type_idx, i)];
+      std::array<double, 3> translation_force_on_point_mass{0, 0, 0};
       // the physics force to rotate the cell
       // std::array<double, 3> rotation_force { 0, 0, 0 };
 
@@ -101,6 +76,19 @@ class DisplacementOp {
       // -----------------------------------------------------------
       //  (We check for every neighbor object if they touch us, i.e. push us
       //  away)
+
+      auto calculate_neighbor_forces = [&](auto&& neighbor,
+                                           auto&& neighbor_handle) {
+        std::array<double, 3> neighbor_force;
+        neighbor.GetForceOn(cell.GetMassLocation(), cell.GetDiameter(),
+                            &neighbor_force);
+        translation_force_on_point_mass[0] += neighbor_force[0];
+        translation_force_on_point_mass[1] += neighbor_force[1];
+        translation_force_on_point_mass[2] += neighbor_force[2];
+      };
+
+      grid.ForEachNeighborWithinRadius(calculate_neighbor_forces, cell,
+                                       SoHandle(type_idx, i), squared_radius);
 
       // 4) PhysicalBonds
       // How the physics influences the next displacement
@@ -154,11 +142,6 @@ class DisplacementOp {
       cell.SetTractorForce({0, 0, 0});
     }
   }
-
- private:
-  /// stores force from neighbors for each simulation object
-  mutable SimulationObjectVector<std::array<double, 3>, TResourceManager>
-      force_;
 };
 
 }  // namespace bdm
