@@ -18,7 +18,6 @@ void RunTest() {
   cell.SetDiameter(9);
   cell.SetMass(1.4);
   cell.SetPosition({0, 0, 0});
-  cell.SetMassLocation({0, 0, 0});
   // cell.SetTractorForce(tractor_force);
   InlineVector<int, 8> neighbor_1;
   neighbor_1.push_back(1);
@@ -29,7 +28,6 @@ void RunTest() {
   cell.SetDiameter(11);
   cell.SetMass(1.1);
   cell.SetPosition({0, 5, 0});
-  cell.SetMassLocation({0, 5, 0});
   // cell.SetTractorForce(tractor_force);
   InlineVector<int, 8> neighbor_2;
   neighbor_2.push_back(0);
