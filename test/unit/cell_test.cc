@@ -14,7 +14,6 @@ TEST(CellTest, TransformCoordinatesGlobalToPolar) {
 TEST(CellTest, DivideVolumeRatioPhiTheta) {
   TestCell mother;
   mother.SetPosition({5, 6, 7});
-  mother.SetMassLocation({5, 6, 7});
   mother.SetTractorForce({0, 0, 0});
   mother.SetDiameter(10);
   mother.UpdateVolume();
@@ -36,10 +35,6 @@ TEST(CellTest, DivideVolumeRatioPhiTheta) {
   EXPECT_NEAR(0.16369893089539111, mother.GetPosition()[0], kEpsilon);
   EXPECT_NEAR(0.39656253332927616, mother.GetPosition()[1], kEpsilon);
   EXPECT_NEAR(0.6294261357631612, mother.GetPosition()[2], kEpsilon);
-
-  EXPECT_NEAR(0.16369893089539111, mother.GetMassLocation()[0], kEpsilon);
-  EXPECT_NEAR(0.39656253332927616, mother.GetMassLocation()[1], kEpsilon);
-  EXPECT_NEAR(0.6294261357631612, mother.GetMassLocation()[2], kEpsilon);
 
   EXPECT_NEAR(0, mother.GetTractorForce()[0], kEpsilon);
   EXPECT_NEAR(0, mother.GetTractorForce()[1], kEpsilon);
@@ -70,10 +65,6 @@ TEST(CellTest, DivideVolumeRatioPhiTheta) {
   EXPECT_NEAR(11.448401425472813, daughter.GetPosition()[0], kEpsilon);
   EXPECT_NEAR(13.471249955560966, daughter.GetPosition()[1], kEpsilon);
   EXPECT_NEAR(15.494098485649118, daughter.GetPosition()[2], kEpsilon);
-
-  EXPECT_NEAR(11.448401425472813, daughter.GetMassLocation()[0], kEpsilon);
-  EXPECT_NEAR(13.471249955560966, daughter.GetMassLocation()[1], kEpsilon);
-  EXPECT_NEAR(15.494098485649118, daughter.GetMassLocation()[2], kEpsilon);
 
   EXPECT_NEAR(0, daughter.GetTractorForce()[0], kEpsilon);
   EXPECT_NEAR(0, daughter.GetTractorForce()[1], kEpsilon);
@@ -139,7 +130,7 @@ TEST(CellTest, DivideVolumeRatio) {
 
 TEST(CellTest, DivideAxis) {
   TestCell cell;
-  cell.SetMassLocation({1, 2, 3});
+  cell.SetPosition({1, 2, 3});
   gRandom.SetSeed(42);
 
   cell.check_input_parameters_ = true;
@@ -153,7 +144,7 @@ TEST(CellTest, DivideAxis) {
 
 TEST(CellTest, DivideVolumeRatioAxis) {
   TestCell cell;
-  cell.SetMassLocation({1, 2, 3});
+  cell.SetPosition({1, 2, 3});
   gRandom.SetSeed(42);
 
   cell.check_input_parameters_ = true;

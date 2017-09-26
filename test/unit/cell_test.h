@@ -59,7 +59,7 @@ BDM_SIM_OBJECT_TEST(TestCell, Cell, CTParam) {
 
   void TestTransformCoordinatesGlobalToPolar() {
     array<double, 3> coord = {1, 2, 3};
-    Base::SetMassLocation({9, 8, 7});
+    Base::SetPosition({9, 8, 7});
     auto result = Base::TransformCoordinatesGlobalToPolar(coord);
 
     EXPECT_NEAR(10.770329614269007, result[0], abs_error<double>::value);
@@ -119,7 +119,6 @@ inline void RunIOTest() {
 
   TestCell cell;
   cell.SetPosition({5, 6, 7});
-  cell.SetMassLocation({5, 6, 7});
   cell.SetTractorForce({7, 4, 1});
   cell.SetDiameter(12);
   cell.UpdateVolume();
@@ -144,10 +143,6 @@ inline void RunIOTest() {
   EXPECT_NEAR(5, restored_cell->GetPosition()[0], kEpsilon);
   EXPECT_NEAR(6, restored_cell->GetPosition()[1], kEpsilon);
   EXPECT_NEAR(7, restored_cell->GetPosition()[2], kEpsilon);
-
-  EXPECT_NEAR(5, restored_cell->GetMassLocation()[0], kEpsilon);
-  EXPECT_NEAR(6, restored_cell->GetMassLocation()[1], kEpsilon);
-  EXPECT_NEAR(7, restored_cell->GetMassLocation()[2], kEpsilon);
 
   EXPECT_NEAR(7, restored_cell->GetTractorForce()[0], kEpsilon);
   EXPECT_NEAR(4, restored_cell->GetTractorForce()[1], kEpsilon);

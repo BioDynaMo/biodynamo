@@ -67,7 +67,6 @@ struct Chemotaxis : public BaseBiologyModule {
     }
 
     cell->UpdatePosition(diff_gradient);
-    cell->SetPosition(cell->GetMassLocation());
   }
 
  private:
