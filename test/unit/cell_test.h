@@ -67,20 +67,6 @@ BDM_SIM_OBJECT_TEST(TestCell, Cell, CTParam) {
     EXPECT_NEAR(-2.4980915447965089, result[2], abs_error<double>::value);
   }
 
-  void SetXAxis(const array<double, 3>& axis) {
-    Base::x_axis_[Base::kIdx] = axis;
-  }
-  void SetYAxis(const array<double, 3>& axis) {
-    Base::y_axis_[Base::kIdx] = axis;
-  }
-  void SetZAxis(const array<double, 3>& axis) {
-    Base::z_axis_[Base::kIdx] = axis;
-  }
-
-  const array<double, 3>& GetXAxis() { return Base::x_axis_[Base::kIdx]; }
-  const array<double, 3>& GetYAxis() { return Base::y_axis_[Base::kIdx]; }
-  const array<double, 3>& GetZAxis() { return Base::z_axis_[Base::kIdx]; }
-
   const std::vector<typename CTParam<>::BiologyModules>& GetBiologyModules()
       const {
     return Base::biology_modules_[0];
@@ -124,9 +110,6 @@ inline void RunIOTest() {
   cell.UpdateVolume();
   cell.SetAdherence(1.1);
   cell.SetMass(5);
-  cell.SetXAxis({1, 2, 3});
-  cell.SetYAxis({4, 5, 6});
-  cell.SetZAxis({7, 8, 9});
   cell.AddBiologyModule(GrowthModule());
   cell.AddBiologyModule(MovementModule({1, 2, 3}));
   cell.SetBoxIdx(123);
@@ -154,18 +137,6 @@ inline void RunIOTest() {
   EXPECT_NEAR(cell.GetVolume(), restored_cell->GetVolume(), kEpsilon);
   EXPECT_NEAR(1.1, restored_cell->GetAdherence(), kEpsilon);
   EXPECT_NEAR(5, restored_cell->GetMass(), kEpsilon);
-
-  EXPECT_NEAR(1, restored_cell->GetXAxis()[0], kEpsilon);
-  EXPECT_NEAR(2, restored_cell->GetXAxis()[1], kEpsilon);
-  EXPECT_NEAR(3, restored_cell->GetXAxis()[2], kEpsilon);
-
-  EXPECT_NEAR(4, restored_cell->GetYAxis()[0], kEpsilon);
-  EXPECT_NEAR(5, restored_cell->GetYAxis()[1], kEpsilon);
-  EXPECT_NEAR(6, restored_cell->GetYAxis()[2], kEpsilon);
-
-  EXPECT_NEAR(7, restored_cell->GetZAxis()[0], kEpsilon);
-  EXPECT_NEAR(8, restored_cell->GetZAxis()[1], kEpsilon);
-  EXPECT_NEAR(9, restored_cell->GetZAxis()[2], kEpsilon);
 
   EXPECT_EQ(2u, restored_cell->GetBiologyModules().size());
   EXPECT_TRUE(get_if<GrowthModule>(&restored_cell->GetBiologyModules()[0]) !=
