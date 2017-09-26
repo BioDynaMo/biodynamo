@@ -60,7 +60,8 @@ struct KaliumSecretion {
 };
 
 // 2. Define compile time parameter
-struct CompileTimeParam : public DefaultCompileTimeParam<> {
+template <typename Backend>
+struct CompileTimeParam : public DefaultCompileTimeParam<Backend> {
   using BiologyModules = Variant<GrowthModule, Chemotaxis, KaliumSecretion>;
   // use default Backend and AtomicTypes
 };
@@ -97,7 +98,7 @@ inline int Simulate(const CommandLineOptions& options) {
   // 4. Run simulation for N timesteps
   Param::use_paraview_ = true;
   Scheduler<> scheduler(options.backup_file_, options.restore_file_);
-  scheduler.Simulate(2500);
+  scheduler.Simulate(3500);
   return 0;
 }
 

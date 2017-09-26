@@ -50,6 +50,34 @@ class Scheduler {
     }
   }
 
+  template <typename Lambda>
+  void SimulateTill(Lambda stopping_condition) {
+    grid_->Initialize();
+
+    while (!stopping_condition()) {
+      // Simulate
+      Execute();
+
+      // Visualize
+      if (Param::use_paraview_) {
+        double time = Param::kSimulationTimeStep * total_steps_;
+        visualization_->CoProcess(time, total_steps_, false);
+      }
+
+      total_steps_++;
+
+      // Backup
+      using std::chrono::seconds;
+      using std::chrono::duration_cast;
+      if (backup_.BackupEnabled() &&
+          duration_cast<seconds>(Clock::now() - last_backup_).count() >=
+              Param::backup_every_x_seconds_) {
+        last_backup_ = Clock::now();
+        backup_.Backup(total_steps_);
+      }
+    }
+  }
+
   void Simulate(unsigned steps) {
     // TODO(lukas) backup and restore should work for every simulation object in
     // ResourceManager
@@ -72,11 +100,9 @@ class Scheduler {
       Execute();
 
       // Visualize
-      auto rm = TResourceManager::Get();
-      auto cells = rm->template Get<Cell>();
       if (Param::use_paraview_) {
         double time = Param::kSimulationTimeStep * total_steps_;
-        visualization_->CoProcess(cells, time, total_steps_, step == steps - 1);
+        visualization_->CoProcess(time, total_steps_, step == steps - 1);
       }
 
       total_steps_++;
@@ -90,6 +116,10 @@ class Scheduler {
         last_backup_ = Clock::now();
         backup_.Backup(total_steps_);
       }
+
+      // if (total_steps_ % 10 == 0) {
+        std::cout << "step " << total_steps_ << std::endl;
+      // }
     }
   }
 

@@ -22,7 +22,7 @@ def CreateCoProcessor():
             paraview.simple._DisableFirstRenderCameraReset()
 
             #create a producer from a simulation input
-            diffusion_grid_data = coprocessor.CreateProducer(datadescription, 'diffusion_grid_data')
+            diffusion_grid_data = coprocessor.CreateProducer(datadescription, 'dgrid_data')
             cells_data = coprocessor.CreateProducer(datadescription, 'cells_data')
 
             #create a new 'Glyph'
@@ -73,9 +73,9 @@ def RequestDataDescription(datadescription):
     "Callback to populate the request for current timestep"
     timestep = datadescription.GetTimeStep()
     
-    datadescription.GetInputDescriptionByName('diffusion_grid_data').AllFieldsOn()
+    datadescription.GetInputDescriptionByName('dgrid_data').AllFieldsOn()
     datadescription.GetInputDescriptionByName('cells_data').AllFieldsOn()
-    datadescription.GetInputDescriptionByName('diffusion_grid_data').GenerateMeshOn()
+    datadescription.GetInputDescriptionByName('dgrid_data').GenerateMeshOn()
     datadescription.GetInputDescriptionByName('cells_data').GenerateMeshOn()
     
     global coprocessor

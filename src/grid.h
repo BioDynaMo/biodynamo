@@ -317,6 +317,7 @@ class Grid {
     auto max_gd =
         *std::max_element(grid_dimensions_.begin(), grid_dimensions_.end());
     if (min_gd < threshold_dimensions_[0]) {
+      std::cout << "Minimum threshold changed from " << threshold_dimensions_[0] << " to " << min_gd << std::endl;
       threshold_dimensions_[0] = min_gd;
       has_grown_ = true;
       std::cout << "Your simulation objects are getting near the edge of the "
@@ -325,12 +326,13 @@ class Grid {
                 << std::endl;
     }
     if (max_gd > threshold_dimensions_[1]) {
-      threshold_dimensions_[1] = max_gd;
       has_grown_ = true;
+      std::cout << "Maximum threshold changed from " << threshold_dimensions_[1] << " to " << max_gd << std::endl;
       std::cout << "Your simulation objects are getting near the edge of the "
                    "simulation space. Be aware of boundary conditions that may "
                    "come into play!"
                 << std::endl;
+      threshold_dimensions_[1] = max_gd;
     }
   }
 
@@ -341,8 +343,7 @@ class Grid {
 
     const auto max_threads = omp_get_max_threads();
 
-    std::vector<std::array<double, 6>*> all_grid_dimensions(max_threads,
-                                                            nullptr);
+    std::vector<std::array<double, 6>*> all_grid_dimensions(max_threads, nullptr);
     std::vector<double*> all_largest_object_size(max_threads, nullptr);
 
 #pragma omp parallel
@@ -406,6 +407,12 @@ class Grid {
   }
 
   void RoundOffGridDimensions(const array<double, 6>& grid_dimensions) {
+    assert(grid_dimensions_[0] > -9.999999999);
+    assert(grid_dimensions_[2] > -9.999999999);
+    assert(grid_dimensions_[4] > -9.999999999);
+    assert(grid_dimensions_[1] < 80);
+    assert(grid_dimensions_[3] < 80);
+    assert(grid_dimensions_[5] < 80);
     grid_dimensions_[0] = floor(grid_dimensions[0]);
     grid_dimensions_[2] = floor(grid_dimensions[2]);
     grid_dimensions_[4] = floor(grid_dimensions[4]);
@@ -634,6 +641,11 @@ class Grid {
     box_coord[2] = (floor(position[2]) - grid_dimensions_[4]) / box_length_;
 
     return GetBoxIndex(box_coord);
+  }
+
+  void SetDimensionThresholds(int32_t min, int32_t max) {
+    threshold_dimensions_[0] = min;
+    threshold_dimensions_[1] = max;
   }
 
   /// Gets the size of the largest object in the grid

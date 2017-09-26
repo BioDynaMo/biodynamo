@@ -6,6 +6,11 @@
     <class name="bdm::simulation_object_util_test_internal::Neurite" />
     <class pattern="std::vector<bdm::*<*>>"/>
     <class pattern="std::tuple<bdm::*<*>"/>
+    <class name="bdm::KaliumSecretion" />
+    <class name="bdm::DivisionAndMovementModule," />
+    <class name="bdm::BoundingBox" />
+    <class name="bdm::SubstanceSecretion" />
+    <class name="bdm::Chemotaxis" />
   </selection>
   <exclusion>
     <class pattern="std::array<*>" />

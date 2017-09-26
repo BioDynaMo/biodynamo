@@ -140,7 +140,7 @@ add_dependencies(bdmclean libbdmclean)
 generate_rootlogon()
 
 if (${ParaView_FOUND})
-  target_link_libraries(biodynamo vtkPVPythonCatalyst)
+  target_link_libraries(biodynamo vtkPVPythonCatalyst vtkIOParallelXML)
 endif()
 
 # -------------------- build test project  ----------------------
@@ -191,8 +191,14 @@ bdm_add_executable(cell_division_module
                    HEADERS demo/cell_division_module.h
                    LIBRARIES biodynamo)
 
-# --------------------- build cell_division_module executable ------------------
+# --------------------- build cell_diffusion_module executable ------------------
 bdm_add_executable(diffusion_module
                    SOURCES demo/diffusion_module.cc
                    HEADERS demo/diffusion_module.h
+                   LIBRARIES biodynamo)
+
+# --------------------- build cell_diffusion_module executable ------------------
+bdm_add_executable(cell_clustering
+                   SOURCES demo/cell_clustering.cc
+                   HEADERS demo/cell_clustering.h
                    LIBRARIES biodynamo)

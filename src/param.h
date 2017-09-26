@@ -83,7 +83,12 @@ class Param {
   /// Helpful constant to identify 'infinity'
   static constexpr double kInfinity = 1e20;
 
+  /// Enable ParaView for visualization
   static bool use_paraview_;
+  /// Write data to file for post-simulation visualization
+  static bool write_to_file_;
+  /// Frequency to write to file
+  static std::size_t write_freq_;
 };
 
 }  // namespace bdm

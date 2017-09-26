@@ -147,6 +147,17 @@ class ResourceManager {
     return nullptr;
   }
 
+  /// Returns the total number of simulation objects
+  size_t GetNumSimObjects() {
+    size_t num_so = 0;
+    for (uint16_t i = 0; i < std::tuple_size<decltype(data_)>::value; i++) {
+      ::bdm::Apply(&data_, i, [&](auto* container) {
+        num_so += container->size();
+      });
+    }
+    return num_so;
+  }
+
   /// Default constructor. Unfortunately needs to be public although it is
   /// a singleton to be able to use ROOT I/O
   ResourceManager() {

@@ -26,16 +26,19 @@ class DiffusionOp {
     auto& diffusion_grids = TResourceManager::Get()->GetDiffusionGrids();
     for (auto dg : diffusion_grids) {
       if (!(dg->IsInitialized())) {
-        dg->Initialize(grid.GetDimensions(), 0.5 * grid.GetBoxLength());
+        // dg->Initialize(grid.GetDimensions(), 0.125 * grid.GetBoxLength());
+        dg->FixedSize({-10, 90, -10, 90, -10, 90}, 1);
+        dg->SetDecayConstant(0.1);
+        grid.SetDimensionThresholds(-10, 90);
       }
 
       // Update the diffusion grid dimension if the neighbor grid
       // dimensions have changed
-      if (grid.HasGrown()) {
-        dg->Update(grid.GetDimensionThresholds());
-      }
+      // if (grid.HasGrown()) {
+      //   dg->Update(grid.GetDimensionThresholds());
+      // }
 
-      dg->DiffuseWithLeakingEdge();
+      dg->DiffuseWithClosedEdge();
       dg->CalculateGradient();
     }
   }

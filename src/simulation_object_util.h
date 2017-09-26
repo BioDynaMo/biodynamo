@@ -344,6 +344,12 @@ static DiffusionGrid* GetDiffusionGrid(std::string name) {
   return dg;
 }
 
+/// Get the total number of simulation objects
+template <typename TResourceManager = ResourceManager<>>
+static size_t GetNumSimObjects() {
+  return TResourceManager::Get()->GetNumSimObjects();
+}
+
 }  // namespace bdm
 
 #endif  // SIMULATION_OBJECT_UTIL_H_

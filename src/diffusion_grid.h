@@ -33,6 +33,40 @@ class DiffusionGrid {
     delete[] gradients_;
   }
 
+  void FixedSize(const std::array<int32_t, 6>& grid_dimensions,
+                  uint32_t box_length) {
+    // Get grid properties from neighbor grid
+    grid_dimensions_ = grid_dimensions;
+    box_length_ = box_length;
+
+    assert(box_length_ > 0 && "Box length of diffusion grid must be greater than zero!");
+
+    // Calculate how many boxes fit along each dimension
+    for (int i = 0; i < 3; i++) {
+      int dimension_length =
+          grid_dimensions_[2 * i + 1] - grid_dimensions_[2 * i];
+      num_boxes_axis_[i] = dimension_length / box_length_;
+    }
+
+    total_num_boxes_ =
+        num_boxes_axis_[0] * num_boxes_axis_[1] * num_boxes_axis_[2];
+
+    // Allocate memory for the concentration and gradient arrays
+    c1_ = new double[total_num_boxes_];
+    c2_ = new double[total_num_boxes_];
+    gradients_ = new double[3 * total_num_boxes_];
+
+    // Initialze the arrays with zero values
+    for (size_t i = 0; i < total_num_boxes_; i++) {
+      c1_[i] = 0;
+      c2_[i] = 0;
+      gradients_[3 * i] = 0;
+      gradients_[3 * i + 1] = 0;
+      gradients_[3 * i + 2] = 0;
+    }
+    initialized_ = true;
+  }
+
   /// @brief      Initializes the grid by calculating the grid dimensions
   ///             and number of boxes along the axis from the input arguments
   ///
@@ -44,6 +78,8 @@ class DiffusionGrid {
     // Get grid properties from neighbor grid
     grid_dimensions_ = grid_dimensions;
     box_length_ = box_length;
+
+    assert(box_length_ > 0 && "Box length of diffusion grid must be greater than zero!");
 
     // Calculate how many boxes fit along each dimension
     for (int i = 0; i < 3; i++) {
@@ -250,9 +286,9 @@ class DiffusionGrid {
             t = c + nx * ny;
           }
           // x = 0; we leak out substances past this edge (so multiply by 0)
-          c2_[c] = dc_2_[0] * c1_[c] + 0 * c1_[c] + dc_2_[2] * c1_[c + 1] +
+          c2_[c] = (dc_2_[0] * c1_[c] + 0 * c1_[c] + dc_2_[2] * c1_[c + 1] +
                    dc_2_[3] * c1_[s] + dc_2_[4] * c1_[n] + dc_2_[5] * c1_[b] +
-                   dc_2_[6] * c1_[t];
+                   dc_2_[6] * c1_[t])*(1 - mu_);
 #pragma omp simd
           for (x = 1; x < nx - 1; x++) {
             ++c;
@@ -260,9 +296,9 @@ class DiffusionGrid {
             ++s;
             ++b;
             ++t;
-            c2_[c] = dc_2_[0] * c1_[c] + dc_2_[1] * c1_[c - 1] +
+            c2_[c] = (dc_2_[0] * c1_[c] + dc_2_[1] * c1_[c - 1] +
                      dc_2_[2] * c1_[c + 1] + dc_2_[3] * c1_[s] +
-                     dc_2_[4] * c1_[n] + dc_2_[5] * c1_[b] + dc_2_[6] * c1_[t];
+                     dc_2_[4] * c1_[n] + dc_2_[5] * c1_[b] + dc_2_[6] * c1_[t])*(1 - mu_);
           }
           ++c;
           ++n;
@@ -270,9 +306,9 @@ class DiffusionGrid {
           ++b;
           ++t;
           // x = nx-1; we leak out substances past this edge (so multiply by 0)
-          c2_[c] = dc_2_[0] * c1_[c] + dc_2_[1] * c1_[c - 1] + 0 * c1_[c] +
+          c2_[c] = (dc_2_[0] * c1_[c] + dc_2_[1] * c1_[c - 1] + 0 * c1_[c] +
                    dc_2_[3] * c1_[s] + dc_2_[4] * c1_[n] + dc_2_[5] * c1_[b] +
-                   dc_2_[6] * c1_[t];
+                   dc_2_[6] * c1_[t])*(1 - mu_);
         }  // tile ny
       }    // tile nz
     }      // block ny
@@ -307,9 +343,9 @@ class DiffusionGrid {
           s = (y == ny - 1) ? c : c + nx;
           b = (z == 0) ? c : c - nx * ny;
           t = (z == nz - 1) ? c : c + nx * ny;
-          c2_[c] = dc_[0] * c1_[c] + dc_[1] * c1_[c] + dc_[2] * c1_[c + 1] +
+          c2_[c] = (dc_[0] * c1_[c] + dc_[1] * c1_[c] + dc_[2] * c1_[c + 1] +
                    dc_[3] * c1_[s] + dc_[4] * c1_[n] + dc_[5] * c1_[b] +
-                   dc_[6] * c1_[t];
+                   dc_[6] * c1_[t])*(1 - mu_);
 #pragma omp simd
           for (x = 1; x < nx - 1; x++) {
             ++c;
@@ -317,18 +353,18 @@ class DiffusionGrid {
             ++s;
             ++b;
             ++t;
-            c2_[c] = dc_[0] * c1_[c] + dc_[1] * c1_[c - 1] +
+            c2_[c] = (dc_[0] * c1_[c] + dc_[1] * c1_[c - 1] +
                      dc_[2] * c1_[c + 1] + dc_[3] * c1_[s] + dc_[4] * c1_[n] +
-                     dc_[5] * c1_[b] + dc_[6] * c1_[t];
+                     dc_[5] * c1_[b] + dc_[6] * c1_[t])*(1 - mu_);
           }
           ++c;
           ++n;
           ++s;
           ++b;
           ++t;
-          c2_[c] = dc_[0] * c1_[c] + dc_[1] * c1_[c - 1] + dc_[2] * c1_[c] +
+          c2_[c] = (dc_[0] * c1_[c] + dc_[1] * c1_[c - 1] + dc_[2] * c1_[c] +
                    dc_[3] * c1_[s] + dc_[4] * c1_[n] + dc_[5] * c1_[b] +
-                   dc_[6] * c1_[t];
+                   dc_[6] * c1_[t])*(1 - mu_);
         }  // tile ny
       }    // tile nz
     }      // block ny
@@ -401,6 +437,22 @@ class DiffusionGrid {
     }
   }
 
+//   void RunDecayStep(double mu_) {
+//     int nx = num_boxes_axis_[0];
+//     int ny = num_boxes_axis_[1];
+//     int nz = num_boxes_axis_[2];
+//     int c;
+// #pragma omp parallel for
+//     for (int z = 0; z < nz; z++) {
+//       for (int y = 0; y < ny; y++) {
+//         for (int x = 0; x < nx; x++) {
+//           c = x + y * nx + z * nx * ny;
+//           c1_[c] = c1_[c] * (1 - mu_);
+//         }
+//       }
+//     }
+//   }
+
   /// Increase the concentration at specified position with specified amount
   void IncreaseConcentrationBy(const array<double, 3>& position,
                                double amount) {
@@ -461,6 +513,8 @@ class DiffusionGrid {
     box_coord[2] = (floor(position[2]) - grid_dimensions_[4]) / box_length_;
   }
 
+  void SetDecayConstant(double mu) { mu_ = mu; }
+
   void SetConcentrationThreshold(double t) { concentration_threshold_ = t; }
 
   double* GetAllConcentrations() { return c1_; }
@@ -496,6 +550,8 @@ class DiffusionGrid {
   double diffusion_coefficient_ = 0.1;
   /// The maximum concentration value that a box can have
   double concentration_threshold_ = 1;
+  /// Decay constant
+  double mu_ = 0;
   /// The grid dimensions of the diffusion grid
   array<int32_t, 6> grid_dimensions_;
   /// The diffusion coefficients [cc, cw, ce, cs, cn, cb, ct]

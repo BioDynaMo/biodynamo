@@ -20,12 +20,12 @@ class Timing {
       : start_{Timestamp()}, text_{description}, aggregator_{aggregator} {}
 
   ~Timing() {
-    int64_t duration = (Timestamp() - start_);
-    if (aggregator_ == nullptr) {
-      std::cout << text_ << " " << duration << " ms" << std::endl;
-    } else {
-      aggregator_->AddEntry(text_, duration);
-    }
+    // int64_t duration = (Timestamp() - start_);
+    // if (aggregator_ == nullptr) {
+    //   std::cout << text_ << " " << duration << " ms" << std::endl;
+    // } else {
+    //   aggregator_->AddEntry(text_, duration);
+    // }
   }
 
   int64_t Timestamp() {

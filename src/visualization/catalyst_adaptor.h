@@ -4,6 +4,7 @@
 #include <TError.h>
 #include <string>
 
+#include "param.h"
 #include "resource_manager.h"
 
 // check for ROOTCLING was necessary, due to ambigous reference to namespace
@@ -22,6 +23,8 @@
 #include <vtkPointData.h>
 #include <vtkPoints.h>
 #include <vtkStringArray.h>
+#include <vtkXMLPImageDataWriter.h>
+#include <vtkXMLPUnstructuredGridWriter.h>
 #include <vtkUnstructuredGrid.h>
 
 #endif  // defined(USE_CATALYST) && !defined(__ROOTCLING__)
@@ -46,9 +49,9 @@ class CatalystAdaptor {
     double origin_x = grid_dimensions[0];
     double origin_y = grid_dimensions[2];
     double origin_z = grid_dimensions[4];
-    diffusion_grid_->SetOrigin(origin_x, origin_y, origin_z);
-    diffusion_grid_->SetDimensions(num_boxes[0], num_boxes[1], num_boxes[2]);
-    diffusion_grid_->SetSpacing(box_length, box_length, box_length);
+    dgrid_->SetOrigin(origin_x, origin_y, origin_z);
+    dgrid_->SetDimensions(num_boxes[0], num_boxes[1], num_boxes[2]);
+    dgrid_->SetSpacing(box_length, box_length, box_length);
   }
 
   /// @brief      Builds a VTK grid.
@@ -64,7 +67,9 @@ class CatalystAdaptor {
     vtkNew<vtkDoubleArray> diameter_array;
     vtkNew<vtkDoubleArray> gradient_array;
     vtkNew<vtkDoubleArray> concentration_array;
+    vtkNew<vtkIntArray> type_array;
 
+    type_array->SetName("Type");
     position_array->SetName("Cell Positions");
     diameter_array->SetName("Cell Diameters");
     gradient_array->SetName("Diffusion Gradient");
@@ -74,7 +79,7 @@ class CatalystAdaptor {
 
     // Get diffusion grid properties
     auto rm = TResourceManager::Get();
-    auto dg = rm->GetDiffusionGrids()[0];
+    auto& dg = rm->GetDiffusionGrids()[1];
     auto num_boxes = dg->GetNumBoxesArray();
     auto grid_dimensions = dg->GetDimensions();
     auto box_length = dg->GetBoxLength();
@@ -86,6 +91,8 @@ class CatalystAdaptor {
     ConstructDiffusionGrid(box_length, num_boxes, grid_dimensions);
 
     // Point the VTK objects to our simulation data
+    type_array->SetArray(sim_objects->GetCellTypePtr(),
+                         static_cast<vtkIdType>(sim_objects->size()), 1);
     position_array->SetArray(sim_objects->GetPositionPtr(),
                              static_cast<vtkIdType>(sim_objects->size() * 3),
                              1);
@@ -101,10 +108,11 @@ class CatalystAdaptor {
     points->SetData(position_array.GetPointer());
     cells_->SetPoints(points.GetPointer());
     cells_->GetPointData()->AddArray(diameter_array.GetPointer());
+    cells_->GetPointData()->AddArray(type_array.GetPointer());
 
     // Add attribute data to diffusion grid
-    diffusion_grid_->GetPointData()->AddArray(gradient_array.GetPointer());
-    diffusion_grid_->GetPointData()->AddArray(concentration_array.GetPointer());
+    dgrid_->GetPointData()->AddArray(gradient_array.GetPointer());
+    dgrid_->GetPointData()->AddArray(concentration_array.GetPointer());
   }
 
   /// @brief      Wrapper around @ref BuildVTKGRid to define
@@ -116,11 +124,13 @@ class CatalystAdaptor {
   template <typename TContainer>
   void BuildVTKDataStructures(TContainer* sim_objects) {
     if (cells_ == nullptr) {
+      write_ = Param::write_to_file_;
+      write_freq_ = Param::write_freq_;
       // The grid structure isn't changing so we only build it
       // the first time it's needed. If we needed the memory
       // we could delete it and rebuild as necessary.
       cells_ = vtkUnstructuredGrid::New();
-      diffusion_grid_ = vtkImageData::New();
+      dgrid_ = vtkImageData::New();
     }
     BuildVTKGrid(sim_objects);
   }
@@ -154,87 +164,68 @@ class CatalystAdaptor {
     }
   }
 
+  void WriteToFile(size_t step) {
+    vtkNew<vtkXMLPUnstructuredGridWriter> cells_writer;
+    vtkNew<vtkXMLPImageDataWriter> dgrid_writer;
+
+    std::string cells_filename = "cells_data_" + std::to_string(step) + ".pvtu";
+    std::string dgrid_filename = "dgrid_data_" + std::to_string(step) + ".pvti";
+
+    cells_writer->SetFileName(cells_filename.c_str());
+    dgrid_writer->SetFileName(dgrid_filename.c_str());
+    cells_writer->SetInputData(cells_);
+    dgrid_writer->SetInputData(dgrid_);
+
+    cells_writer->Update();
+    dgrid_writer->Update();
+  }
+
+  void SetWriteFrequency(double f) { write_freq_ = f; }
+  void SetWrite(bool w) { write_ = w; }
+
   /// @brief      Applies the pipeline to the data structures in the VTK Grid
   ///
-  /// @param      sim_objects     The simulation objects
   /// @param[in]  step            The simulation step
   /// @param[in]  time_step       The time step duration
   /// @param[in]  last_time_step  Last time step or not
   ///
-  /// @tparam     TContainer   { Container that holds the simulation objects }
-  ///
-  template <typename TContainer>
-  inline void CoProcess(TContainer* sim_objects, double step, size_t time_step,
+  inline void CoProcess(double step, size_t time_step,
                         bool last_time_step) {
-    vtkNew<vtkCPDataDescription> data_description;
-    data_description->AddInput("cells_data");
-    data_description->AddInput("diffusion_grid_data");
-    data_description->SetTimeData(step, time_step);
-    if (last_time_step == true) {
-      // assume that we want to all the pipelines to execute if it
-      // is the last time step.
-      data_description->ForceOutputOn();
+    auto rm = TResourceManager::Get();
+    rm->ApplyOnAllTypes([&,this](auto* sim_objects, uint16_t type_idx) {
+      vtkNew<vtkCPDataDescription> data_description;
+      data_description->AddInput("cells_data");
+      data_description->AddInput("dgrid_data");
+      data_description->SetTimeData(step, time_step);
+      if (last_time_step == true) {
+        // assume that we want to all the pipelines to execute if it
+        // is the last time step.
+        data_description->ForceOutputOn();
+      }
+
+      // If we segfault at here it probably means that the pipeline was not
+      // initialized (with a python script)
+      if (g_processor_->RequestDataDescription(data_description.GetPointer()) !=
+          0) {
+        this->BuildVTKDataStructures(sim_objects);
+        data_description->GetInputDescriptionByName("cells_data")
+            ->SetGrid(cells_);
+        data_description->GetInputDescriptionByName("dgrid_data")
+            ->SetGrid(dgrid_);
+        g_processor_->CoProcess(data_description.GetPointer());
+      }
+    });
+
+    if (time_step % write_freq_ == 0) {
+      WriteToFile(time_step);
     }
-
-    // If we segfault at here it probably means that the pipeline was not
-    // initialized (with a python script)
-    if (g_processor_->RequestDataDescription(data_description.GetPointer()) !=
-        0) {
-      BuildVTKDataStructures(sim_objects);
-      data_description->GetInputDescriptionByName("cells_data")
-          ->SetGrid(cells_);
-      data_description->GetInputDescriptionByName("diffusion_grid_data")
-          ->SetGrid(diffusion_grid_);
-      g_processor_->CoProcess(data_description.GetPointer());
-    }
-
-    // // ----------------- User changes propagation
-    // ------------------------------
-
-    // vtkFieldData* user_data = data_description->GetUserData();
-    // if (!user_data) {
-    //   // no user changes
-    //   return;
-    // }
-
-    // // Which properties/attribute the user changed
-    // vtkStringArray* prop_arrays =
-    //     vtkStringArray::SafeDownCast(user_data->GetAbstractArray("PropArrays"));
-    // if (!prop_arrays) {
-    //   std::cout << "Warning: Cannot find propagated array names" << endl;
-    //   return;
-    // }
-
-    // // Get every changed attribute
-    // vtkIdTypeArray* idx_array;
-    // vtkDoubleArray* val_array;
-    // for (int j = 0; j < prop_arrays->GetSize(); j++) {
-    //   auto attribute = prop_arrays->GetValue(j);
-    //   idx_array = vtkIdTypeArray::SafeDownCast(user_data->GetAbstractArray(
-    //       (std::string("PropIdx") + std::string(attribute)).c_str()));
-    //   val_array = vtkDoubleArray::SafeDownCast(user_data->GetAbstractArray(
-    //       (std::string("PropVals") + std::string(attribute)).c_str()));
-
-    //   if (!idx_array || !val_array) {
-    //     std::cerr << "Warning: null pointer returned while fetching '"
-    //               << attribute << "' array " << endl;
-    //   }
-
-    //   // Update changed sim_objects
-    //   for (int i = 0; i < idx_array->GetNumberOfTuples(); i++) {
-    //     std::cout << "sim_objects[" << idx_array->GetValue(i)
-    //               << "] = " << val_array->GetValue(i) << endl;
-
-    //     // reflection here!
-    //     (*sim_objects)[idx_array->GetValue(i)].SetDiameter(
-    //         val_array->GetValue(i));
-    //   }
-    // }
   }
 
  private:
+  bool write_ = false;
+  size_t write_freq_ = 1;
   vtkCPProcessor* g_processor_ = nullptr;
-  vtkImageData* diffusion_grid_ = nullptr;
+  vtkImageData* dgrid_ = nullptr;
   vtkUnstructuredGrid* cells_ = nullptr;
 };
 
@@ -283,9 +274,7 @@ class CatalystAdaptor {
           "trying to use it.");
   }
 
-  template <typename TContainer>
-  void CoProcess(TContainer* sim_objects, double time, size_t time_step,
-                 bool last_time_step) {
+  void CoProcess(double time, size_t time_step, bool last_time_step) {
     Fatal("",
           "Simulation was compiled without ParaView support, but you are "
           "trying to use it.");
