@@ -19,9 +19,6 @@ TEST(CellTest, DivideVolumeRatioPhiTheta) {
   mother.UpdateVolume();
   mother.SetAdherence(1.1);
   mother.SetMass(5);
-  mother.SetXAxis({1, 2, 3});
-  mother.SetYAxis({4, 5, 6});
-  mother.SetZAxis({7, 8, 9});
   mother.AddBiologyModule(GrowthModule());
   mother.AddBiologyModule(MovementModule({1, 2, 3}));
   mother.SetBoxIdx(123);
@@ -32,9 +29,9 @@ TEST(CellTest, DivideVolumeRatioPhiTheta) {
   const double kEpsilon = abs_error<double>::value;
 
   // verify mother data members
-  EXPECT_NEAR(0.16369893089539111, mother.GetPosition()[0], kEpsilon);
-  EXPECT_NEAR(0.39656253332927616, mother.GetPosition()[1], kEpsilon);
-  EXPECT_NEAR(0.6294261357631612, mother.GetPosition()[2], kEpsilon);
+  EXPECT_NEAR(4.9244246147707642, mother.GetPosition()[0], kEpsilon);
+  EXPECT_NEAR(5.9732661991724063, mother.GetPosition()[1], kEpsilon);
+  EXPECT_NEAR(6.335172788490714, mother.GetPosition()[2], kEpsilon);
 
   EXPECT_NEAR(0, mother.GetTractorForce()[0], kEpsilon);
   EXPECT_NEAR(0, mother.GetTractorForce()[1], kEpsilon);
@@ -47,24 +44,12 @@ TEST(CellTest, DivideVolumeRatioPhiTheta) {
   EXPECT_NEAR(1.1, mother.GetAdherence(), kEpsilon);
   EXPECT_NEAR(2.8571428571428563, mother.GetMass(), kEpsilon);
 
-  EXPECT_NEAR(1, mother.GetXAxis()[0], kEpsilon);
-  EXPECT_NEAR(2, mother.GetXAxis()[1], kEpsilon);
-  EXPECT_NEAR(3, mother.GetXAxis()[2], kEpsilon);
-
-  EXPECT_NEAR(4, mother.GetYAxis()[0], kEpsilon);
-  EXPECT_NEAR(2, mother.GetXAxis()[1], kEpsilon);
-  EXPECT_NEAR(3, mother.GetXAxis()[2], kEpsilon);
-
-  EXPECT_NEAR(7, mother.GetZAxis()[0], kEpsilon);
-  EXPECT_NEAR(8, mother.GetZAxis()[1], kEpsilon);
-  EXPECT_NEAR(9, mother.GetZAxis()[2], kEpsilon);
-
   EXPECT_EQ(123u, mother.GetBoxIdx());
 
   // verify daughter data members
-  EXPECT_NEAR(11.448401425472813, daughter.GetPosition()[0], kEpsilon);
-  EXPECT_NEAR(13.471249955560966, daughter.GetPosition()[1], kEpsilon);
-  EXPECT_NEAR(15.494098485649118, daughter.GetPosition()[2], kEpsilon);
+  EXPECT_NEAR(5.1007671803056471, daughter.GetPosition()[0], kEpsilon);
+  EXPECT_NEAR(6.0356450677701252, daughter.GetPosition()[1], kEpsilon);
+  EXPECT_NEAR(7.8864362820123803, daughter.GetPosition()[2], kEpsilon);
 
   EXPECT_NEAR(0, daughter.GetTractorForce()[0], kEpsilon);
   EXPECT_NEAR(0, daughter.GetTractorForce()[1], kEpsilon);
@@ -76,18 +61,6 @@ TEST(CellTest, DivideVolumeRatioPhiTheta) {
   EXPECT_NEAR(224.39947525641387, daughter.GetVolume(), kEpsilon);
   EXPECT_NEAR(1.1, daughter.GetAdherence(), kEpsilon);
   EXPECT_NEAR(2.1428571428571437, daughter.GetMass(), kEpsilon);
-
-  EXPECT_NEAR(1, daughter.GetXAxis()[0], kEpsilon);
-  EXPECT_NEAR(2, daughter.GetXAxis()[1], kEpsilon);
-  EXPECT_NEAR(3, daughter.GetXAxis()[2], kEpsilon);
-
-  EXPECT_NEAR(4, daughter.GetYAxis()[0], kEpsilon);
-  EXPECT_NEAR(2, daughter.GetXAxis()[1], kEpsilon);
-  EXPECT_NEAR(3, daughter.GetXAxis()[2], kEpsilon);
-
-  EXPECT_NEAR(7, daughter.GetZAxis()[0], kEpsilon);
-  EXPECT_NEAR(8, daughter.GetZAxis()[1], kEpsilon);
-  EXPECT_NEAR(9, daughter.GetZAxis()[2], kEpsilon);
 
   // biology modules mother
   EXPECT_EQ(2u, mother.GetBiologyModules().size());
