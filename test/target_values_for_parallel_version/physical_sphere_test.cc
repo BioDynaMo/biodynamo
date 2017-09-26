@@ -92,9 +92,9 @@ TEST(TargetValue_PhysicalSphere, divide) {
   mother.setDiameter(10);
   mother.setAdherence(1.1);
   mother.setMass(5);
-  mother.setXAxis({1, 2, 3});
-  mother.setYAxis({4, 5, 6});
-  mother.setZAxis({7, 8, 9});
+  mother.setXAxis({1, 0, 0});
+  mother.setYAxis({0, 1, 0});
+  mother.setZAxis({0, 0, 1});
 
   auto sn = SpaceNode<PhysicalNode>::UPtr(new SpaceNodeMock<PhysicalNode>(
       position, &mother, std::vector<PhysicalNode*>{}));
@@ -103,13 +103,13 @@ TEST(TargetValue_PhysicalSphere, divide) {
   auto daughter = mother.divide(0.75, 0.12, 0.34);
 
   // verify mother data members
-  EXPECT_NEAR(0.16369893089539111, mother.getSoNode()->getPosition()[0], 1e-5);
-  EXPECT_NEAR(0.39656253332927616, mother.getSoNode()->getPosition()[1], 1e-5);
-  EXPECT_NEAR(0.6294261357631612, mother.getSoNode()->getPosition()[2], 1e-5);
+  EXPECT_NEAR(4.9244246147707642, mother.getSoNode()->getPosition()[0], 1e-5);
+  EXPECT_NEAR(5.9732661991724063, mother.getSoNode()->getPosition()[1], 1e-5);
+  EXPECT_NEAR(6.3351727884907145, mother.getSoNode()->getPosition()[2], 1e-5);
 
-  EXPECT_NEAR(0.16369893089539111, mother.getMassLocation()[0], 1e-5);
-  EXPECT_NEAR(0.39656253332927616, mother.getMassLocation()[1], 1e-5);
-  EXPECT_NEAR(0.6294261357631612, mother.getMassLocation()[2], 1e-5);
+  EXPECT_NEAR(4.9244246147707642, mother.getMassLocation()[0], 1e-5);
+  EXPECT_NEAR(5.9732661991724063, mother.getMassLocation()[1], 1e-5);
+  EXPECT_NEAR(6.3351727884907145, mother.getMassLocation()[2], 1e-5);
 
   // EXPECT_NEAR(0, mother.getTractorForce()[0], 1e-5);
   // EXPECT_NEAR(0, mother.getTractorForce()[1], 1e-5);
@@ -121,28 +121,28 @@ TEST(TargetValue_PhysicalSphere, divide) {
   EXPECT_NEAR(2.8571428571428563, mother.getMass(), 1e-5);  // FIXME bug??
 
   EXPECT_NEAR(1, mother.getXAxis()[0], 1e-5);
-  EXPECT_NEAR(2, mother.getXAxis()[1], 1e-5);
-  EXPECT_NEAR(3, mother.getXAxis()[2], 1e-5);
+  EXPECT_NEAR(0, mother.getXAxis()[1], 1e-5);
+  EXPECT_NEAR(0, mother.getXAxis()[2], 1e-5);
 
-  EXPECT_NEAR(4, mother.getYAxis()[0], 1e-5);
-  EXPECT_NEAR(5, mother.getYAxis()[1], 1e-5);
-  EXPECT_NEAR(6, mother.getYAxis()[2], 1e-5);
+  EXPECT_NEAR(0, mother.getYAxis()[0], 1e-5);
+  EXPECT_NEAR(1, mother.getYAxis()[1], 1e-5);
+  EXPECT_NEAR(0, mother.getYAxis()[2], 1e-5);
 
-  EXPECT_NEAR(7, mother.getZAxis()[0], 1e-5);
-  EXPECT_NEAR(8, mother.getZAxis()[1], 1e-5);
-  EXPECT_NEAR(9, mother.getZAxis()[2], 1e-5);
+  EXPECT_NEAR(0, mother.getZAxis()[0], 1e-5);
+  EXPECT_NEAR(0, mother.getZAxis()[1], 1e-5);
+  EXPECT_NEAR(1, mother.getZAxis()[2], 1e-5);
 
   // verify daughter data members
-  EXPECT_NEAR(11.448401425472813, daughter->getSoNode()->getPosition()[0],
+  EXPECT_NEAR(5.1007671803056471, daughter->getSoNode()->getPosition()[0],
               1e-5);
-  EXPECT_NEAR(13.471249955560966, daughter->getSoNode()->getPosition()[1],
+  EXPECT_NEAR(6.0356450677701252, daughter->getSoNode()->getPosition()[1],
               1e-5);
-  EXPECT_NEAR(15.494098485649118, daughter->getSoNode()->getPosition()[2],
+  EXPECT_NEAR(7.8864362820123803, daughter->getSoNode()->getPosition()[2],
               1e-5);
 
-  EXPECT_NEAR(11.448401425472813, daughter->getMassLocation()[0], 1e-5);
-  EXPECT_NEAR(13.471249955560966, daughter->getMassLocation()[1], 1e-5);
-  EXPECT_NEAR(15.494098485649118, daughter->getMassLocation()[2], 1e-5);
+  EXPECT_NEAR(5.1007671803056471, daughter->getMassLocation()[0], 1e-5);
+  EXPECT_NEAR(6.0356450677701252, daughter->getMassLocation()[1], 1e-5);
+  EXPECT_NEAR(7.8864362820123803, daughter->getMassLocation()[2], 1e-5);
 
   // EXPECT_NEAR(0, mother.getTractorForce()[0], 1e-5);
   // EXPECT_NEAR(0, mother.getTractorForce()[1], 1e-5);
@@ -154,16 +154,16 @@ TEST(TargetValue_PhysicalSphere, divide) {
   EXPECT_NEAR(2.1428571428571437, daughter->getMass(), 1e-5);  // FIXME bug??
 
   EXPECT_NEAR(1, daughter->getXAxis()[0], 1e-5);
-  EXPECT_NEAR(2, daughter->getXAxis()[1], 1e-5);
-  EXPECT_NEAR(3, daughter->getXAxis()[2], 1e-5);
+  EXPECT_NEAR(0, daughter->getXAxis()[1], 1e-5);
+  EXPECT_NEAR(0, daughter->getXAxis()[2], 1e-5);
 
-  EXPECT_NEAR(4, daughter->getYAxis()[0], 1e-5);
-  EXPECT_NEAR(2, daughter->getXAxis()[1], 1e-5);
-  EXPECT_NEAR(3, daughter->getXAxis()[2], 1e-5);
+  EXPECT_NEAR(0, daughter->getYAxis()[0], 1e-5);
+  EXPECT_NEAR(1, daughter->getYAxis()[1], 1e-5);
+  EXPECT_NEAR(0, daughter->getYAxis()[2], 1e-5);
 
-  EXPECT_NEAR(7, daughter->getZAxis()[0], 1e-5);
-  EXPECT_NEAR(8, daughter->getZAxis()[1], 1e-5);
-  EXPECT_NEAR(9, daughter->getZAxis()[2], 1e-5);
+  EXPECT_NEAR(0, daughter->getZAxis()[0], 1e-5);
+  EXPECT_NEAR(0, daughter->getZAxis()[1], 1e-5);
+  EXPECT_NEAR(1, daughter->getZAxis()[2], 1e-5);
 
   // additional check
   EXPECT_NEAR(5, mother.getMass() + daughter->getMass(), 1e-5);
