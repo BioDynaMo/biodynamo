@@ -13,6 +13,9 @@
     <class pattern="*bdm::SoaRef*"/>
     <class name="chrono::system_clock"/>
     <class pattern="*_Test" />
+    <!-- genreflex generates wrong code:
+         SimulationObjectVector<ResourceManager...> -->
+    <class pattern="bdm::SimulationObjectVector*" />
     <!-- list of classes with dictionary in libbiodynamo
          -> all selected classes from libbiodynamo-selection.xml -->
     <class name="bdm::RuntimeVariables"/>
