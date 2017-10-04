@@ -33,40 +33,6 @@ class DiffusionGrid {
     delete[] gradients_;
   }
 
-  void FixedSize(const std::array<int32_t, 6>& grid_dimensions,
-                  uint32_t box_length) {
-    // Get grid properties from neighbor grid
-    grid_dimensions_ = grid_dimensions;
-    box_length_ = box_length;
-
-    assert(box_length_ > 0 && "Box length of diffusion grid must be greater than zero!");
-
-    // Calculate how many boxes fit along each dimension
-    for (int i = 0; i < 3; i++) {
-      int dimension_length =
-          grid_dimensions_[2 * i + 1] - grid_dimensions_[2 * i];
-      num_boxes_axis_[i] = dimension_length / box_length_;
-    }
-
-    total_num_boxes_ =
-        num_boxes_axis_[0] * num_boxes_axis_[1] * num_boxes_axis_[2];
-
-    // Allocate memory for the concentration and gradient arrays
-    c1_ = new double[total_num_boxes_];
-    c2_ = new double[total_num_boxes_];
-    gradients_ = new double[3 * total_num_boxes_];
-
-    // Initialze the arrays with zero values
-    for (size_t i = 0; i < total_num_boxes_; i++) {
-      c1_[i] = 0;
-      c2_[i] = 0;
-      gradients_[3 * i] = 0;
-      gradients_[3 * i + 1] = 0;
-      gradients_[3 * i + 2] = 0;
-    }
-    initialized_ = true;
-  }
-
   /// @brief      Initializes the grid by calculating the grid dimensions
   ///             and number of boxes along the axis from the input arguments
   ///
@@ -85,6 +51,8 @@ class DiffusionGrid {
     for (int i = 0; i < 3; i++) {
       int dimension_length =
           grid_dimensions_[2 * i + 1] - grid_dimensions_[2 * i];
+      assert((dimension_length % box_length_ == 0) &&
+         "The grid dimensions are not a multiple of its box length");
       num_boxes_axis_[i] = dimension_length / box_length_;
     }
 
@@ -96,7 +64,7 @@ class DiffusionGrid {
     c2_ = new double[total_num_boxes_];
     gradients_ = new double[3 * total_num_boxes_];
 
-    // Initialze the arrays with zero values
+    // Initialize the arrays with zero values
     for (size_t i = 0; i < total_num_boxes_; i++) {
       c1_[i] = 0;
       c2_[i] = 0;
@@ -436,22 +404,6 @@ class DiffusionGrid {
       }
     }
   }
-
-//   void RunDecayStep(double mu_) {
-//     int nx = num_boxes_axis_[0];
-//     int ny = num_boxes_axis_[1];
-//     int nz = num_boxes_axis_[2];
-//     int c;
-// #pragma omp parallel for
-//     for (int z = 0; z < nz; z++) {
-//       for (int y = 0; y < ny; y++) {
-//         for (int x = 0; x < nx; x++) {
-//           c = x + y * nx + z * nx * ny;
-//           c1_[c] = c1_[c] * (1 - mu_);
-//         }
-//       }
-//     }
-//   }
 
   /// Increase the concentration at specified position with specified amount
   void IncreaseConcentrationBy(const array<double, 3>& position,

@@ -117,9 +117,9 @@ class Scheduler {
         backup_.Backup(total_steps_);
       }
 
-      // if (total_steps_ % 10 == 0) {
+      if (total_steps_ % 10 == 0) {
         std::cout << "step " << total_steps_ << std::endl;
-      // }
+      }
     }
   }
 

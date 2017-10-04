@@ -27,9 +27,9 @@ class DiffusionOp {
     for (auto dg : diffusion_grids) {
       if (!(dg->IsInitialized())) {
         // dg->Initialize(grid.GetDimensions(), 0.125 * grid.GetBoxLength());
-        dg->FixedSize({-10, 90, -10, 90, -10, 90}, 1);
+        dg->Initialize({-10, 110, -10, 110, -10, 110}, 0.2*grid.GetBoxLength());
         dg->SetDecayConstant(0.1);
-        grid.SetDimensionThresholds(-10, 90);
+        grid.SetDimensionThresholds(-10, 120);
       }
 
       // Update the diffusion grid dimension if the neighbor grid

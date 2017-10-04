@@ -197,8 +197,14 @@ bdm_add_executable(diffusion_module
                    HEADERS demo/diffusion_module.h
                    LIBRARIES biodynamo)
 
-# --------------------- build cell_diffusion_module executable ------------------
+# --------------------- build cell_diffusion executable ------------------
 bdm_add_executable(cell_clustering
                    SOURCES demo/cell_clustering.cc
                    HEADERS demo/cell_clustering.h
+                   LIBRARIES biodynamo)
+
+# --------------------- build soma_clustering executable ------------------
+bdm_add_executable(soma_clustering
+                   SOURCES demo/soma_clustering.cc
+                   HEADERS demo/soma_clustering.h
                    LIBRARIES biodynamo)

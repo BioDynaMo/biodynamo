@@ -112,6 +112,32 @@ struct ModelInitializer {
     container->Commit();
   }
 
+  /// Adds simulation objects to the ResourceManager. Type of the simulation
+  /// object is determined by the return type of parameter cell_builder.
+  ///
+  /// @param      positions     positions of the simulation objects to be
+  /// @param      cell_builder  function containing the logic to instantiate a
+  ///                           new simulation object. Takes `const
+  ///                           std::array<double, 3>&` as input parameter
+  ///
+  template <typename Function, typename TResourceManager = ResourceManager<>>
+  static void CreateCellsRandom(double LO, double HI, int N, Function cell_builder) {
+    auto rm = TResourceManager::Get();
+    // Determine simulation object type which is returned by the cell_builder
+    using FunctionReturnType = decltype(cell_builder({0, 0, 0}));
+
+    auto container = rm->template Get<FunctionReturnType>();
+    container->reserve(N);
+    for (int i = 0; i < N; i++) {
+      double x = LO + static_cast<double>(rand()) / (static_cast<double>(RAND_MAX/(HI-LO)));
+      double y = LO + static_cast<double>(rand()) / (static_cast<double>(RAND_MAX/(HI-LO)));
+      double z = LO + static_cast<double>(rand()) / (static_cast<double>(RAND_MAX/(HI-LO)));
+      auto new_simulation_object = cell_builder({x, y, z});
+      container->push_back(new_simulation_object);
+    }
+    container->Commit();
+  }
+
   /// @brief      Allows cells to secrete the specified substance. Diffusion
   ///             throughout the simulation space is automatically taken care of
   ///

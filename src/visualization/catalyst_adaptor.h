@@ -65,17 +65,17 @@ class CatalystAdaptor {
     // Prepare VTK objects
     vtkNew<vtkDoubleArray> position_array;
     vtkNew<vtkDoubleArray> diameter_array;
-    vtkNew<vtkDoubleArray> gradient_array;
+    // vtkNew<vtkDoubleArray> gradient_array;
     vtkNew<vtkDoubleArray> concentration_array;
     vtkNew<vtkIntArray> type_array;
 
     type_array->SetName("Type");
     position_array->SetName("Cell Positions");
     diameter_array->SetName("Cell Diameters");
-    gradient_array->SetName("Diffusion Gradient");
+    // gradient_array->SetName("Diffusion Gradient");
     concentration_array->SetName("Substance Concentration");
     position_array->SetNumberOfComponents(3);
-    gradient_array->SetNumberOfComponents(3);
+    // gradient_array->SetNumberOfComponents(3);
 
     // Get diffusion grid properties
     auto rm = TResourceManager::Get();
@@ -84,7 +84,7 @@ class CatalystAdaptor {
     auto grid_dimensions = dg->GetDimensions();
     auto box_length = dg->GetBoxLength();
     auto total_boxes = num_boxes[0] * num_boxes[1] * num_boxes[2];
-    auto gr_ptr = dg->GetAllGradients();
+    // auto gr_ptr = dg->GetAllGradients();
     auto co_ptr = dg->GetAllConcentrations();
 
     // Create the diffusion grid
@@ -98,8 +98,8 @@ class CatalystAdaptor {
                              1);
     diameter_array->SetArray(sim_objects->GetDiameterPtr(),
                              static_cast<vtkIdType>(sim_objects->size()), 1);
-    gradient_array->SetArray(gr_ptr, static_cast<vtkIdType>(total_boxes * 3),
-                             1);
+    // gradient_array->SetArray(gr_ptr, static_cast<vtkIdType>(total_boxes * 3),
+                             // 1);
     concentration_array->SetArray(co_ptr, static_cast<vtkIdType>(total_boxes),
                                   1);
 
@@ -111,7 +111,7 @@ class CatalystAdaptor {
     cells_->GetPointData()->AddArray(type_array.GetPointer());
 
     // Add attribute data to diffusion grid
-    dgrid_->GetPointData()->AddArray(gradient_array.GetPointer());
+    // dgrid_->GetPointData()->AddArray(gradient_array.GetPointer());
     dgrid_->GetPointData()->AddArray(concentration_array.GetPointer());
   }
 
