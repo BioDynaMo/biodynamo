@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cassert>
 #include <exception>
+#include <limits>
 #include <memory>
 #include <set>
 #include <string>
@@ -339,6 +340,47 @@ using std::is_same;
       VectorPlaceholder<Self<Scalar>>>::type to_be_added_;                     \
                                                                                \
   BDM_ROOT_CLASS_DEF_OVERRIDE(class_name, class_version_id)
+
+/// Simulation object pointer. Required to point into simulation objects with
+/// `Soa` backend. `SoaRef` has the drawback that its size depends on the number
+/// of data members. Benefit compared to SoHandle is, that the compiler knows
+/// the type returned by `Get` and can therefore inline the code from the callee
+/// and perform optimizations
+/// @tparam TSo simulation object type - not invariant to the backend
+///         no conversion inside the object.
+/// @tparam TBackend backend - required to avoid extracting it from TSo which
+///         would result in "incomplete type errors" in certain cases.
+template <typename TSo, typename TBackend>
+class SoPointer {
+  using Container = typename TBackend::template Container<TSo>;
+public:
+
+  SoPointer(Container* container, uint64_t element_idx) :
+    so_container_(container), element_idx_(element_idx) {}
+
+  /// constructs an SoPointer object representing a nullptr
+  SoPointer() {}
+
+  bool IsNullPtr() const { return element_idx_ == std::numeric_limits<uint64_t>::max(); }
+
+  /// This method is required, since `operator->` must return a pointer type.
+  /// This is not possible for Soa backends where `operator[]` returns an
+  /// rvalue.
+  template <typename TTBackend = TBackend>
+  typename std::enable_if<std::is_same<TTBackend, Scalar>::value, TSo&>::type
+  Get() {
+    return (*so_container_)[element_idx_];
+  }
+
+  template <typename TTBackend = TBackend>
+  auto Get(typename std::enable_if<std::is_same<TTBackend, Soa>::value>::type* p = 0) {
+    return (*so_container_)[element_idx_];
+  }
+
+private:
+  Container* so_container_ = nullptr;
+  uint64_t element_idx_ = std::numeric_limits<uint64_t>::max();
+};
 
 /// Helper function to make cell division easier for the programmer.
 /// Creates a new daughter object and passes it together with the given
