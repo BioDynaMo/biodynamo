@@ -24,7 +24,7 @@ namespace bdm {
 /// second specifies the element within this vector.
 class SoHandle {
  public:
-  SoHandle() noexcept
+  constexpr SoHandle() noexcept
       : type_idx_(std::numeric_limits<decltype(type_idx_)>::max()),
         element_idx_(std::numeric_limits<decltype(element_idx_)>::max()) {}
   SoHandle(uint16_t type_idx, uint32_t element_idx)
@@ -59,6 +59,8 @@ class SoHandle {
   /// size 16 -> max element_idx: 4.294.967.296
   uint32_t element_idx_;
 };
+
+constexpr SoHandle gNullSoHandle;
 
 namespace detail {
 
@@ -187,11 +189,11 @@ class ResourceManager {
   ///                          std::cout << element << std::endl;
   ///                       });
   template <typename TFunction>
-  void ApplyOnElement(SoHandle handle, TFunction&& function) {
+  auto ApplyOnElement(SoHandle handle, TFunction&& function) {
     auto type_idx = handle.GetTypeIdx();
     auto element_idx = handle.GetElementIdx();
-    ::bdm::Apply(&data_, type_idx,
-                 [&](auto* container) { function((*container)[element_idx]); });
+    return ::bdm::Apply(&data_, type_idx,
+                 [&](auto* container) -> decltype(function((*container)[0])) { return function((*container)[element_idx]); });
   }
 
   /// Apply a function on all container types
@@ -273,6 +275,40 @@ class ResourceManager {
 template <typename T>
 std::unique_ptr<ResourceManager<T>> ResourceManager<T>::instance_ =
     std::unique_ptr<ResourceManager<T>>(new ResourceManager<T>());
+
+/// Returns the ResourceManager
+template <typename TResourceManager = ResourceManager<>>
+TResourceManager* Rm() {
+  return TResourceManager::Get();
+}
+
+// #define SOH_CALL(so_handle, function_with_parameters)
+//   Rm()->ApplyOnElement(so_handle, [&](auto&& so, SoHandle) {
+//     return so.function_with_parameters;
+//   })
+//
+// #define SOH_CALL(so_handle, function_with_parameters, ret_type)
+//   [](SoHandle handle) -> ret_type {
+//     ret_type ret_val;
+//     Rm()->ApplyOnElement(so_handle, [&ret_val](auto&& so) {
+//       ret_val = so.function_with_parameters;
+//     });
+//     return ret_val; 
+//   }(so_handle);
+//
+// std::array<double, 3> position
+// SOH_CALL(mother_, GetPosition(), position);
+// auto& pos = SOH_CALL(mother_, GetPosition(), const std::array<double, 3>&);
+//
+// auto& pos = mother_->CALL(GetPosition());
+//
+//
+// auto& pos = mother_([](auto&& so) { return so.GetPosition(); })
+// auto& pos = mother_(SOHIL(GetPosition()));
+//                 ^ returns rm
+// ApplyOnElement
+// mother_.IsA<Neurite>()
+
 
 }  // namespace bdm
 

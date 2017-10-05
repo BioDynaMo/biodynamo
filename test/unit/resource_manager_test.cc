@@ -229,7 +229,52 @@ TEST(ResourceManagerTest, ApplyOnAllTypesSoa) {
 
 TEST(ResourceManagerTest, IOAos) { RunIOAosTest(); }
 
-TEST(ResourceManagerTest, IOSoa) { RunSoaTest(); }
+TEST(ResourceManagerTest, IOSoa) { RunIOSoaTest(); }
+
+
+TEST(ResourceManagerTest, RmFunction) {
+  EXPECT_EQ(ResourceManager<>::Get(), Rm());
+}
+
+// TODO
+TEST(ResourceManagerTest, GetSimulationObject) {
+  using CTParam = CompileTimeParam<Soa, AScalar, BScalar>;
+  auto rm = ResourceManager<CTParam>::Get();
+  rm->Clear();
+
+  auto a_collection = rm->template Get<AScalar>();
+  a_collection->push_back(AScalar(12));
+
+  // auto b_collection = rm->template Get<BScalar>();
+  // b_collection->push_back(BScalar(3.14));
+  // b_collection->push_back(BScalar(6.28));
+
+  SoHandle soh1(0, 0);
+  // auto&& so1 = rm->GetElement(soh1);
+  // std::cout << so1.GetData() << std::endl;
+  // EXPECT_EQ(12, so1.GetData());
+
+  // SoHandle soh2(1, 1);
+  // auto&& so2 = rm->GetElement(soh2);
+  // EXPECT_EQ(6.28, so2.GetData());
+}
+//
+// TEST(SoHandle, SOH_CALLMacro) {
+//   Rm()->Clear();
+//   Rm()->Get<Cell>()->push_back(Cell({1, 2, 3}));
+//
+//   SoHandle so_handle(0, 0);
+//   // auto& pos =  SOH_CALL(so_handle, GetPosition());
+// //   auto& pos = Rm()->ApplyOnElement(so_handle, [&](auto&& so, SoHandle) {
+// //     return so.GetPosition();
+// //   });
+// //   EXPECT_ARR_NEAR(pos, {1, 2, 3})
+//   auto&& so = Rm()->GetElement(so_handle);
+//   const auto& pos = so.GetPosition();
+//   EXPECT_ARR_NEAR(pos, {1, 2, 3});
+//   so.SetDiameter(21);
+//   EXPECT_NEAR(21, so.GetDiameter(), 1e-5);
+// }
 
 template <typename Backend, typename A, typename B>
 void RunPushBackTest() {

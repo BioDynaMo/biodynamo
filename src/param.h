@@ -11,6 +11,24 @@
 namespace bdm {
 
 struct Param {
+  // FIXME Neurites
+  /// Initial value of the restingLength before any specification.
+  static constexpr double kNeuriteDefaultActualLength = 1.0;
+  /// Diameter of an unspecified (= axon/dendrite) neurite when extends from the
+  /// somaElement
+  static constexpr double kNeuriteDefaultDiameter = 1.0;
+  static constexpr double kNeuriteMinimalBifurcationLength = 0;
+  /// Spring constant
+  static constexpr double kNeuriteDefaultSpringConstant = 10;  // 10;
+  /// Threshold the force acting on a neurite has to reach before a move is made
+  /// ( = static friction).
+  static constexpr double kNeuriteDefaultAdherence = 0.1;
+  /// Rest to the movement ( = kinetic friction).
+  static constexpr double kNeuriteDefaultMass = 1;
+
+  static constexpr double kNeuriteDefaultTension = 0.0;
+
+
   // simulation values ---------------------------------------------------------
 
   /// Backup file name for full simulation backups\n
