@@ -57,10 +57,12 @@ struct GetIndexImpl<T, Counter, FirstType, RemainingTypes...> {
 
 // template <typename TFunction, typename TTuple, typename TFirst>
 // struct ReturnTypeImpl {
-//   using type = decltype(TFunction(std::get<TFirst>(&std::declval<TTuple>())));
+//   using type =
+//   decltype(TFunction(std::get<TFirst>(&std::declval<TTuple>())));
 // };
 //
-// template <typename TFunction, typename TTuple, typename TFirst, typename... TRemainingTypes>
+// template <typename TFunction, typename TTuple, typename TFirst, typename...
+// TRemainingTypes>
 // struct ReturnTypeImpl {
 //   using type = type_ternary_operator<enable_if<
 // };

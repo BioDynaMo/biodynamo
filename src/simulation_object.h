@@ -13,6 +13,7 @@
 
 #include "backend.h"
 #include "root_util.h"
+#include "simulation_object_util.h"
 #include "type_util.h"
 
 namespace bdm {
@@ -20,23 +21,29 @@ namespace bdm {
 using std::enable_if;
 using std::is_same;
 
-template <typename TCompileTimeParam>
+template <typename TCompileTimeParam, template <typename> class TDerived>
 class SimulationObject;
 
 /// Contains implementation for SimulationObject that are specific to SOA
 /// backend. The peculiarity of SOA objects is that it is simulation object
 /// and container at the same time.
 /// @see TransactionalVector
-template <typename TCompileTimeParam>
+template <typename TCompileTimeParam, template <typename> class TDerived>
 class SoaSimulationObject {
  public:
   using Backend = typename TCompileTimeParam::Backend;
-  template <typename T>
+  template <typename, template <typename> class>
   friend class SoaSimulationObject;
+
+  template <typename TTBackend>
+  using TMostDerived =
+      typename TDerived<typename TCompileTimeParam::template Self<TTBackend>>::
+          template CorrectTDerivedParam<TDerived>;
 
   template <typename TBackend>
   using Self =
-      SoaSimulationObject<typename TCompileTimeParam::template Self<TBackend>>;
+      SoaSimulationObject<typename TCompileTimeParam::template Self<TBackend>,
+                          TDerived>;
 
   SoaSimulationObject() : to_be_removed_(), size_(1) {}
 
@@ -69,9 +76,7 @@ class SoaSimulationObject {
   }
 
   /// Thread safe version of std::vector::push_back
-  void push_back(  // NOLINT
-      const SimulationObject<typename TCompileTimeParam::template Self<Scalar>>
-          &element) {
+  void push_back(const TMostDerived<Scalar> &element) {  // NOLINT
     std::lock_guard<std::recursive_mutex> lock(mutex_);
     PushBackImpl(element);
   }
@@ -130,11 +135,7 @@ class SoaSimulationObject {
                                  std::vector<size_t>>::type to_be_removed_;
 
   /// Append a scalar element
-  virtual void PushBackImpl(
-      const SimulationObject<typename TCompileTimeParam::template Self<Scalar>>
-          &other) {
-    size_++;
-  }
+  virtual void PushBackImpl(const TMostDerived<Scalar> &other) { size_++; }
 
   /// Swap element with last element if and remove last element
   virtual void SwapAndPopBack(size_t index, size_t size) { size_--; }
@@ -153,9 +154,14 @@ class SoaSimulationObject {
 
 /// Contains implementations for SimulationObject that are specific to scalar
 /// backend
-template <typename TCompileTimeParam>
+template <typename TCompileTimeParam, template <typename> class TDerived>
 class ScalarSimulationObject {
  public:
+  template <typename TTBackend>
+  using TMostDerived =
+      typename TDerived<typename TCompileTimeParam::template Self<TTBackend>>::
+          template CorrectTDerivedParam<TDerived>;
+
   virtual ~ScalarSimulationObject() {}
 
   std::size_t size() const { return 1; }  // NOLINT
@@ -169,9 +175,7 @@ class ScalarSimulationObject {
   // has been introduced
 
   /// Append a scalar element
-  virtual void PushBackImpl(
-      const SimulationObject<typename TCompileTimeParam::template Self<Scalar>>
-          &other) {}
+  virtual void PushBackImpl(const TMostDerived<Scalar> &other) {}
 
   /// Swap element with last element if and remove last element
   virtual void SwapAndPopBack(size_t index, size_t size) {}
@@ -179,28 +183,32 @@ class ScalarSimulationObject {
   /// Remove last element
   virtual void PopBack(size_t index, size_t size) {}
 
-  ClassDef(ScalarSimulationObject, 1);
+  BDM_ROOT_CLASS_DEF(ScalarSimulationObject, 1);
 };
 
 /// Helper type trait to map backends to simulation object implementations
-template <typename TCompileTimeParam>
+template <typename TCompileTimeParam, template <typename> class TDerived>
 struct SimulationObjectImpl {
   using Backend = typename TCompileTimeParam::Backend;
   using type = typename type_ternary_operator<
       is_same<Backend, Scalar>::value,
-      ScalarSimulationObject<TCompileTimeParam>,
-      SoaSimulationObject<TCompileTimeParam>>::type;
+      ScalarSimulationObject<TCompileTimeParam, TDerived>,
+      SoaSimulationObject<TCompileTimeParam, TDerived>>::type;
 };
 
 /// Contains code required by all simulation objects
-template <typename TCompileTimeParam>
-class SimulationObject : public SimulationObjectImpl<TCompileTimeParam>::type {
+template <typename TCompileTimeParam, template <typename> class TDerived>
+class SimulationObject
+    : public SimulationObjectImpl<TCompileTimeParam, TDerived>::type {
  public:
   using Backend = typename TCompileTimeParam::Backend;
-  using Base = typename SimulationObjectImpl<TCompileTimeParam>::type;
+  using Base = typename SimulationObjectImpl<TCompileTimeParam, TDerived>::type;
 
-  template <typename T>
+  template <typename, template <typename> class>
   friend class SimulationObject;
+
+  template <template <typename> class TTDerived>
+  using CorrectTDerivedParam = SimulationObject<TCompileTimeParam, TTDerived>;
 
   SimulationObject() : Base() {}
 
@@ -214,11 +222,10 @@ class SimulationObject : public SimulationObjectImpl<TCompileTimeParam>::type {
   /// inside a mixin.
   template <typename TTBackend>
   using Self =
-      SimulationObject<typename TCompileTimeParam::template Self<TTBackend>>;
+      SimulationObject<typename TCompileTimeParam::template Self<TTBackend>,
+                       TDerived>;
 
-  SimulationObject<TCompileTimeParam> &operator=(const Self<Scalar> &) {
-    return *this;
-  }
+  Self<Backend> &operator=(const Self<Scalar> &) { return *this; }
 
   BDM_ROOT_CLASS_DEF_OVERRIDE(SimulationObject, 1);
 };
@@ -226,8 +233,12 @@ class SimulationObject : public SimulationObjectImpl<TCompileTimeParam>::type {
 /// type alias to be consistent with naming convention for simulation object
 /// extension
 /// \see BDM_SIM_OBJECT
+template <typename TCompileTimeParam, template <typename> class TDerived>
+using SimulationObject_TCTParam_TDerived =
+    SimulationObject<TCompileTimeParam, TDerived>;
+
 template <typename TCompileTimeParam>
-using SimulationObjectT = SimulationObject<TCompileTimeParam>;
+using SimulationObjectT = SimulationObject<TCompileTimeParam, NullType>;
 
 }  // namespace bdm
 

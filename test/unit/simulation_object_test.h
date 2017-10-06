@@ -3,6 +3,7 @@
 
 #include "gtest/gtest.h"
 #include "simulation_object.h"
+#include "simulation_object_util.h"
 
 namespace bdm {
 namespace simulation_object_test_internal {
@@ -15,12 +16,12 @@ struct CTParam {
 };
 
 inline void RunPushBackAndClearTest() {
-  SimulationObject<CTParam<>> soa;
+  SimulationObject<CTParam<>, SimulationObjectT> soa;
   // call clear, because creating a SOA object with default constructor will
   // already have one element inside
   soa.clear();
   EXPECT_EQ(0u, soa.size());
-  SimulationObject<CTParam<Scalar>> so;
+  SimulationObject<CTParam<Scalar>, SimulationObjectT> so;
   soa.push_back(so);
   soa.push_back(so);
   EXPECT_EQ(2u, soa.size());

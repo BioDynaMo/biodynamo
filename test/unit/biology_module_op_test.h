@@ -37,10 +37,10 @@ struct CTParam {
 
 template <typename T>
 inline void RunTest(T* cells) {
-  CellT<CTParam<Scalar>> cell_1(12);
+  CellTest<CTParam<Scalar>> cell_1(12);
   cell_1.AddBiologyModule(GrowthModule(2));
 
-  CellT<CTParam<Scalar>> cell_2(34);
+  CellTest<CTParam<Scalar>> cell_2(34);
   cell_2.AddBiologyModule(GrowthModule(3));
 
   cells->push_back(cell_1);
@@ -55,12 +55,12 @@ inline void RunTest(T* cells) {
 }
 
 inline void RunTestAos() {
-  TransactionalVector<CellT<CTParam<Scalar>>> cells;
+  TransactionalVector<CellTest<CTParam<Scalar>>> cells;
   RunTest(&cells);
 }
 
 inline void RunTestSoa() {
-  auto cells = CellT<CTParam<>>::NewEmptySoa();
+  auto cells = CellTest<CTParam<>>::NewEmptySoa();
   RunTest(&cells);
 }
 

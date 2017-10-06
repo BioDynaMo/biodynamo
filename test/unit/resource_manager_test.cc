@@ -231,7 +231,6 @@ TEST(ResourceManagerTest, IOAos) { RunIOAosTest(); }
 
 TEST(ResourceManagerTest, IOSoa) { RunIOSoaTest(); }
 
-
 TEST(ResourceManagerTest, RmFunction) {
   EXPECT_EQ(ResourceManager<>::Get(), Rm());
 }

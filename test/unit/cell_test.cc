@@ -137,7 +137,7 @@ TEST(CellTest, BiologyModule) {
   cell.AddBiologyModule(MovementModule({1, 2, 3}));
   cell.AddBiologyModule(GrowthModule());
 
-  cell.RunBiologyModules<TestCell>();
+  cell.RunBiologyModules();
 
   EXPECT_NEAR(diameter + 0.5, cell.GetDiameter(), abs_error<double>::value);
   EXPECT_NEAR(position[0] + 1, cell.GetPosition()[0], abs_error<double>::value);

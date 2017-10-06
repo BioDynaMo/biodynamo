@@ -29,14 +29,13 @@ BDM_SIM_OBJECT(Cell, SimulationObject) {
 
   CellExt() : position_{{1, 2, 3}} {}
 
-  void Divide(Self<Scalar> * daughter, double volume_ratio, double phi,
+  void Divide(TMostDerived<Scalar> * daughter, double volume_ratio, double phi,
               double theta) {
     DivideImpl(daughter, volume_ratio, phi, theta);
   }
 
-  virtual void DivideImpl(void* daughter_vptr, double volume_ratio, double phi,
-                          double theta) {
-    auto daughter = static_cast<Self<Scalar>*>(daughter_vptr);
+  virtual void DivideImpl(TMostDerived<Scalar> * daughter, double volume_ratio,
+                          double phi, double theta) {
     daughter->position_[kIdx] = {5, 4, 3};
     diameter_[kIdx] = 1.123;
   }
@@ -76,10 +75,10 @@ BDM_SIM_OBJECT(Neuron, Cell) {
 
   NeuronExt() = default;
 
-  void DivideImpl(void* daughter, double volume_ratio, double phi, double theta)
-      override {
-    auto neuron = static_cast<Self<Scalar>*>(daughter);
-    neuron->neurites_[kIdx].push_back(Neurite(987));
+  void DivideImpl(TMostDerived<Scalar> * daughter, double volume_ratio,
+                  double phi, double theta) override {
+    // auto neuron = static_cast<Self<Scalar>*>(daughter);
+    daughter->neurites_[kIdx].push_back(Neurite(987));
     Base::DivideImpl(daughter, volume_ratio, phi, theta);
   }
 

@@ -1,8 +1,8 @@
 #ifndef NEUROSCIENCE_COMPILE_TIME_PARAM_H_
 #define NEUROSCIENCE_COMPILE_TIME_PARAM_H_
 
-#include "neuroscience/neuron.h"
 #include "neuroscience/neurite.h"
+#include "neuroscience/neuron.h"
 
 namespace bdm {
 namespace neuroscience {
