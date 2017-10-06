@@ -1,14 +1,14 @@
 #ifndef DIFFUSION_GRID_H_
 #define DIFFUSION_GRID_H_
 
+#include <assert.h>
+
 #include <algorithm>
 #include <array>
 #include <cmath>
 #include <iostream>
 #include <string>
 #include <vector>
-
-#include <assert.h>
 
 #include <Rtypes.h>
 
@@ -85,7 +85,7 @@ class DiffusionGrid {
   ///
   /// @param[in]  threshold_dimensions  The threshold values
   ///
-  void Update(std::array<int32_t, 2>& threshold_dimensions) {
+  void Update(const std::array<int32_t, 2>& threshold_dimensions) {
     // Extend the grid dimensions such that each dimension ranges from
     // {treshold_dimensions[0] - treshold_dimensions[1]}
     auto min_gd = threshold_dimensions[0];
@@ -128,9 +128,9 @@ class DiffusionGrid {
     total_num_boxes_ =
         num_boxes_axis_[0] * num_boxes_axis_[1] * num_boxes_axis_[2];
 
-    assert(((int)total_num_boxes_) >= tmp_num_boxes_axis[0] *
-                                          tmp_num_boxes_axis[1] *
-                                          tmp_num_boxes_axis[2] &&
+    assert((static_cast<int>(total_num_boxes_)) >= tmp_num_boxes_axis[0] *
+                                                       tmp_num_boxes_axis[1] *
+                                                       tmp_num_boxes_axis[2] &&
            "The diffusion grid tried to shrink! It can only become larger");
   }
 
@@ -146,7 +146,8 @@ class DiffusionGrid {
   /// If the dimensions would be increased from 2x2 to 3x3, it will still
   /// be increased to 4x4 in order for GetBoxIndex to function correctly
   ///
-  void CopyOldData(vector<double>& old_c1, vector<double>& old_gradients,
+  void CopyOldData(const vector<double>& old_c1,
+                   const vector<double>& old_gradients,
                    const array<int, 3>& old_num_boxes_axis) {
     if ((((num_boxes_axis_[0] - old_num_boxes_axis[0])) % 2) != 0) {
       num_boxes_axis_[0]++;
@@ -419,20 +420,20 @@ class DiffusionGrid {
 
   /// Get the gradient at specified position
   void GetGradient(const array<double, 3>& position,
-                   array<double, 3>& gradient) {
+                   array<double, 3>* gradient) {
     auto idx = GetBoxIndex(position);
     assert(idx < total_num_boxes_ &&
            "Cell position is out of diffusion grid bounds");
-    gradient[0] = gradients_[3 * idx];
-    gradient[1] = gradients_[3 * idx + 1];
-    gradient[2] = gradients_[3 * idx + 2];
-    auto norm =
-        std::sqrt(gradient[0] * gradient[0] + gradient[1] * gradient[1] +
-                  gradient[2] * gradient[2]);
+    (*gradient)[0] = gradients_[3 * idx];
+    (*gradient)[1] = gradients_[3 * idx + 1];
+    (*gradient)[2] = gradients_[3 * idx + 2];
+    auto norm = std::sqrt((*gradient)[0] * (*gradient)[0] +
+                          (*gradient)[1] * (*gradient)[1] +
+                          (*gradient)[2] * (*gradient)[2]);
     if (norm > 1e-10) {
-      gradient[0] /= norm;
-      gradient[1] /= norm;
-      gradient[2] /= norm;
+      (*gradient)[0] /= norm;
+      (*gradient)[1] /= norm;
+      (*gradient)[2] /= norm;
     }
   }
 

@@ -4,8 +4,10 @@
 #include <algorithm>
 #include <exception>
 #include <memory>
+#include <string>
 #include <type_traits>
 #include <vector>
+
 #include "backend.h"
 #include "diffusion_grid.h"
 #include "macros.h"

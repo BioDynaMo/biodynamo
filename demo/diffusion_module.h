@@ -37,7 +37,7 @@ struct Chemotaxis {
 
     auto& position = cell->GetPosition();
     std::array<double, 3> gradient;
-    dg->GetGradient(position, gradient);
+    dg->GetGradient(position, &gradient);
     gradient[0] *= 0.5;
     gradient[1] *= 0.5;
     gradient[2] *= 0.5;

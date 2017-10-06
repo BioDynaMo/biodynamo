@@ -3,6 +3,7 @@
 
 #include <TError.h>
 #include <string>
+#include <vector>
 
 #include "param.h"
 #include "resource_manager.h"
@@ -73,7 +74,7 @@ class CatalystAdaptor {
     vtkNew<vtkDoubleArray> position_array;
     vtkNew<vtkDoubleArray> diameter_array;
 
-    // TODO: cannot compile targets that do not have this member defined
+    // TODO(ahmad): cannot compile targets that do not have this member defined
     // vtkNew<vtkIntArray> type_array;
 
     // The names that will appear in ParaView
@@ -148,7 +149,7 @@ class CatalystAdaptor {
     if (g_processor_ == nullptr) {
       g_processor_ = vtkCPProcessor::New();
       g_processor_->Initialize();
-      // TODO: Resize to exact numbers
+      // TODO(ahmad): Resize to exact numbers
       so_is_initialized_.resize(5);
       dg_is_initialized_.resize(5);
       write_ = Param::write_to_file_;
@@ -181,7 +182,7 @@ class CatalystAdaptor {
     for (auto sog : so_grids_) {
       vtkNew<vtkXMLPUnstructuredGridWriter> cells_writer;
 
-      // TODO: generate unique name for each container of cells
+      // TODO(ahmad): generate unique name for each container of cells
       std::string cells_filename =
           "cells_data_" + std::to_string(step) + ".pvtu";
 
@@ -194,7 +195,7 @@ class CatalystAdaptor {
     for (auto dg : dgrids_) {
       vtkNew<vtkXMLPImageDataWriter> dgrid_writer;
 
-      // TODO: generate better unique name for each diffusion grid
+      // TODO(ahmad): generate better unique name for each diffusion grid
       std::string dgrid_filename = "dgrid_data_" + std::to_string(idx) + "_" +
                                    std::to_string(step) + ".pvti";
 
@@ -221,7 +222,7 @@ class CatalystAdaptor {
     // Add all simulation object containers to the visualization
     auto rm = TResourceManager::Get();
     rm->ApplyOnAllTypes([&, this](auto* sim_objects, uint16_t type_idx) {
-      // TODO: Generate unique name for each container
+      // TODO(ahmad): Generate unique name for each container
       data_description->AddInput("cells_data");
 
       // If we segfault at here it probably means that the pipeline was not

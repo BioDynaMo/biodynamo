@@ -11,7 +11,7 @@ namespace bdm {
 
 template <typename TContainer>
 void CellFactory(TContainer* cells,
-                 std::vector<std::array<double, 3>>& positions) {
+                 const std::vector<std::array<double, 3>>& positions) {
   cells->reserve(positions.size());
   for (size_t i = 0; i < positions.size(); i++) {
     Cell cell({positions[i][0], positions[i][1], positions[i][2]});

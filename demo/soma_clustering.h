@@ -1,11 +1,12 @@
-#ifndef DEMO_CELL_CLUSTERING_H_
-#define DEMO_CELL_CLUSTERING_H_
+#ifndef DEMO_SOMA_CLUSTERING_H_
+#define DEMO_SOMA_CLUSTERING_H_
 
-#include "biodynamo.h"
-
-// TODO: replace with ROOT random number generator
+// TODO(ahmad): replace with ROOT random number generator
 #include <cstdlib>
 #include <ctime>
+#include <vector>
+
+#include "biodynamo.h"
 
 namespace bdm {
 
@@ -52,8 +53,8 @@ struct Chemotaxis {
     auto& position = cell->GetPosition();
     std::array<double, 3> gradient_0;
     std::array<double, 3> gradient_1;
-    dg_0->GetGradient(position, gradient_0);
-    dg_1->GetGradient(position, gradient_1);
+    dg_0->GetGradient(position, &gradient_0);
+    dg_1->GetGradient(position, &gradient_1);
 
     std::array<double, 3> diff_gradient;
     // for (int i = 0; i < 3; i++) {
@@ -107,7 +108,7 @@ struct CompileTimeParam : public DefaultCompileTimeParam<Backend> {
   using AtomicTypes = VariadicTypedef<MyCell>;
 };
 
-static double getNorm(double* currArray) {
+static double GetNorm(double* currArray) {
   // computes L2 norm of input array
   int c;
   double arraySum = 0;
@@ -119,96 +120,100 @@ static double getNorm(double* currArray) {
   return res;
 }
 
-static double getL2Distance(double pos1x, double pos1y, double pos1z,
+static double GetL2Distance(double pos1x, double pos1y, double pos1z,
                             double pos2x, double pos2y, double pos2z) {
   // returns distance (L2 norm) between two positions in 3D
   double distArray[3];
   distArray[0] = pos2x - pos1x;
   distArray[1] = pos2y - pos1y;
   distArray[2] = pos2z - pos1z;
-  double l2Norm = getNorm(distArray);
+  double l2Norm = GetNorm(distArray);
   return l2Norm;
 }
 
 // Returns 0 if the cell locations within a subvolume of the total system,
-// comprising approximately targetN cells, are arranged as clusters, and 1
+// comprising approximately target_n cells, are arranged as clusters, and 1
 // otherwise.
 template <typename TResourceManager = ResourceManager<>>
-static bool getCriterion(double spatialRange, int targetN) {
+static bool GetCriterion(double spatial_range, int target_n) {
   auto rm = TResourceManager::Get();
   auto my_cells = rm->template Get<MyCell>();
 
-  double* posAll = my_cells->GetPositionPtr();
-  int* typesAll = my_cells->GetCellTypePtr();
+  double* pos_all = my_cells->GetPositionPtr();
+  int* types_all = my_cells->GetCellTypePtr();
   int n = my_cells->size();
 
-  int nrClose = 0;  // number of cells that are close (i.e. within a distance of
-                    // spatialRange)
-  double currDist;
-  int sameTypeClose = 0;  // number of cells of the same type, and that are
-                          // close (i.e. within a distance of spatialRange)
-  int diffTypeClose = 0;  // number of cells of opposite types, and that are
-                          // close (i.e. within a distance of spatialRange)
+  int num_close =
+      0;  // number of cells that are close (i.e. within a distance of
+          // spatial_range)
+  double curr_dist;
+  int same_type_close = 0;  // number of cells of the same type, and that are
+                            // close (i.e. within a distance of spatial_range)
+  int diff_type_close = 0;  // number of cells of opposite types, and that are
+                            // close (i.e. within a distance of spatial_range)
 
-  vector<vector<double>> posSubvol(n);
-  vector<int> typesSubvol(n);
+  vector<vector<double>> pos_sub_vol(n);
+  vector<int> types_sub_vol(n);
 
-  double subVolMax = n / 8;
+  double sub_vol_max = n / 8;
 
-  int nrCellsSubVol = 0;
+  int num_cells_sub_vol = 0;
 
   // the locations of all cells within the subvolume are copied to array
-  // posSubvol
+  // pos_sub_vol
   for (int i1 = 0; i1 < n; i1++) {
-    posSubvol[i1] = vector<double>(3);
+    pos_sub_vol[i1] = vector<double>(3);
 
-    if ((fabs(posAll[3 * i1 + 0] - 0.5) < subVolMax) &&
-        (fabs(posAll[3 * i1 + 1] - 0.5) < subVolMax) &&
-        (fabs(posAll[3 * i1 + 2] - 0.5) < subVolMax)) {
-      posSubvol[nrCellsSubVol][0] = posAll[3 * i1 + 0];
-      posSubvol[nrCellsSubVol][1] = posAll[3 * i1 + 1];
-      posSubvol[nrCellsSubVol][2] = posAll[3 * i1 + 2];
-      typesSubvol[nrCellsSubVol] = typesAll[i1];
-      nrCellsSubVol++;
+    if ((fabs(pos_all[3 * i1 + 0] - 0.5) < sub_vol_max) &&
+        (fabs(pos_all[3 * i1 + 1] - 0.5) < sub_vol_max) &&
+        (fabs(pos_all[3 * i1 + 2] - 0.5) < sub_vol_max)) {
+      pos_sub_vol[num_cells_sub_vol][0] = pos_all[3 * i1 + 0];
+      pos_sub_vol[num_cells_sub_vol][1] = pos_all[3 * i1 + 1];
+      pos_sub_vol[num_cells_sub_vol][2] = pos_all[3 * i1 + 2];
+      types_sub_vol[num_cells_sub_vol] = types_all[i1];
+      num_cells_sub_vol++;
     }
   }
 
-  printf("number of cells in subvolume: %d\n", nrCellsSubVol);
+  printf("number of cells in subvolume: %d\n", num_cells_sub_vol);
 
   // If there are not enough cells within the subvolume, the correctness
   // criterion is not fulfilled
-  if ((((double)(nrCellsSubVol)) / (double)targetN) < 0.25) {
-    std::cout << "not enough cells in subvolume: " << nrCellsSubVol
+  if ((((double)(num_cells_sub_vol)) / (double)target_n) < 0.25) {
+    std::cout << "not enough cells in subvolume: " << num_cells_sub_vol
               << std::endl;
     return false;
   }
 
   // If there are too many cells within the subvolume, the correctness
   // criterion is not fulfilled
-  if ((((double)(nrCellsSubVol)) / (double)targetN) > 4) {
-    std::cout << "too many cells in subvolume: " << nrCellsSubVol << std::endl;
+  if ((((double)(num_cells_sub_vol)) / (double)target_n) > 4) {
+    std::cout << "too many cells in subvolume: " << num_cells_sub_vol
+              << std::endl;
     return false;
   }
 
-#pragma omp parallel for reduction(+ : sameTypeClose, diffTypeClose, nrClose)
-  for (int i1 = 0; i1 < nrCellsSubVol; i1++) {
-    for (int i2 = i1 + 1; i2 < nrCellsSubVol; i2++) {
-      currDist =
-          getL2Distance(posSubvol[i1][0], posSubvol[i1][1], posSubvol[i1][2],
-                        posSubvol[i2][0], posSubvol[i2][1], posSubvol[i2][2]);
-      // spatialRange = 5*(250/finalNumCells)^(1/3) = 2.5 with 2000 cells
-      if (currDist < spatialRange) {
-        nrClose++;
-        if (typesSubvol[i1] * typesSubvol[i2] < 0) {
-          diffTypeClose++;
+#pragma omp parallel for reduction(+ : same_type_close, diff_type_close, \
+                                   num_close)
+  for (int i1 = 0; i1 < num_cells_sub_vol; i1++) {
+    for (int i2 = i1 + 1; i2 < num_cells_sub_vol; i2++) {
+      curr_dist = GetL2Distance(pos_sub_vol[i1][0], pos_sub_vol[i1][1],
+                                pos_sub_vol[i1][2], pos_sub_vol[i2][0],
+                                pos_sub_vol[i2][1], pos_sub_vol[i2][2]);
+      // spatial_range = 5*(250/finalNumCells)^(1/3) = 2.5 with 2000 cells
+      if (curr_dist < spatial_range) {
+        num_close++;
+        if (types_sub_vol[i1] * types_sub_vol[i2] < 0) {
+          diff_type_close++;
         } else {
-          sameTypeClose++;
+          same_type_close++;
         }
       }
     }
   }
 
-  double correctness_coefficient = ((double)diffTypeClose) / (nrClose + 1.0);
+  double correctness_coefficient =
+      ((double)diff_type_close) / (num_close + 1.0);
 
   // check if there are many cells of opposite types located within a close
   // distance, indicative of bad clustering
@@ -220,7 +225,7 @@ static bool getCriterion(double spatialRange, int targetN) {
 
   // check if clusters are large enough, i.e. whether cells have more than 100
   // cells of the same type located nearby
-  double avgNeighbors = ((double)sameTypeClose / nrCellsSubVol);
+  double avgNeighbors = ((double)same_type_close / num_cells_sub_vol);
   printf("average neighbors in subvolume: %f\n", avgNeighbors);
   if (avgNeighbors < 5) {
     printf("cells in subvolume do not have enough neighbors: %f\n",
@@ -279,15 +284,15 @@ inline int Simulate(const CommandLineOptions& options) {
 
   scheduler.Simulate(3001);
 
-  auto crit = getCriterion(5, num_cells / 4);
+  auto crit = GetCriterion(5, num_cells / 4);
   if (crit) {
     std::cout << "SUCCESS" << std::endl;
   } else {
     std::cout << "FAILED" << std::endl;
   }
-  return 0;
+  return !crit;
 }
 
 }  // namespace bdm
 
-#endif  // DEMO_CELL_CLUSTERING_H_
+#endif  // DEMO_SOMA_CLUSTERING_H_

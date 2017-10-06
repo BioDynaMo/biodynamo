@@ -3,6 +3,8 @@
 
 #include <assert.h>
 #include <omp.h>
+
+#include <algorithm>
 #include <array>
 #include <atomic>
 #include <cmath>
