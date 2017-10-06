@@ -18,6 +18,7 @@ class TransactionalVector {
  public:
   using iterator = typename std::vector<T>::iterator;
   using const_iterator = typename std::vector<T>::const_iterator;
+  using value_type = T;
 
   TransactionalVector() {}
 

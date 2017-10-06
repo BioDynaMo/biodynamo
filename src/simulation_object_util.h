@@ -140,6 +140,8 @@ using std::is_same;
   /* reduce verbosity of some types and variables by defining a local alias */ \
   using Base::kIdx;                                                            \
                                                                                \
+  using value_type = class_name<TCompileTimeParam, TBase>;                     \
+                                                                               \
   using Backend = typename Base::Backend;                                      \
                                                                                \
   template <typename T>                                                        \

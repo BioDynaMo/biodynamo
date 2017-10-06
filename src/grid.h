@@ -317,7 +317,6 @@ class Grid {
     auto max_gd =
         *std::max_element(grid_dimensions_.begin(), grid_dimensions_.end());
     if (min_gd < threshold_dimensions_[0]) {
-      std::cout << "Minimum threshold changed from " << threshold_dimensions_[0] << " to " << min_gd << std::endl;
       threshold_dimensions_[0] = min_gd;
       has_grown_ = true;
       std::cout << "Your simulation objects are getting near the edge of the "
@@ -327,7 +326,6 @@ class Grid {
     }
     if (max_gd > threshold_dimensions_[1]) {
       has_grown_ = true;
-      std::cout << "Maximum threshold changed from " << threshold_dimensions_[1] << " to " << max_gd << std::endl;
       std::cout << "Your simulation objects are getting near the edge of the "
                    "simulation space. Be aware of boundary conditions that may "
                    "come into play!"
@@ -343,7 +341,8 @@ class Grid {
 
     const auto max_threads = omp_get_max_threads();
 
-    std::vector<std::array<double, 6>*> all_grid_dimensions(max_threads, nullptr);
+    std::vector<std::array<double, 6>*> all_grid_dimensions(max_threads,
+                                                            nullptr);
     std::vector<double*> all_largest_object_size(max_threads, nullptr);
 
 #pragma omp parallel

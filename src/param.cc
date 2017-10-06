@@ -11,4 +11,10 @@ bool Param::write_to_file_ = false;
 
 std::size_t Param::write_freq_ = 1;
 
+bool Param::bound_space_ = false;
+
+double Param::lbound_ = 0;
+
+double Param::rbound_ = 100;
+
 }  // namespace bdm

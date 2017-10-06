@@ -22,7 +22,7 @@ def CreateCoProcessor():
             paraview.simple._DisableFirstRenderCameraReset()
 
             #create a producer from a simulation input
-            diffusion_grid_data = coprocessor.CreateProducer(datadescription, 'dgrid_data')
+            # diffusion_grid_data = coprocessor.CreateProducer(datadescription, 'dgrid_data')
             cells_data = coprocessor.CreateProducer(datadescription, 'cells_data')
 
             #create a new 'Glyph'
@@ -37,7 +37,7 @@ def CreateCoProcessor():
             timestep = datadescription.GetTimeStep()
 
             if write_to_file == True:
-                diffusion_grid_writer = servermanager.writers.XMLPImageDataWriter(Input=diffusion_grid_data)
+                # diffusion_grid_writer = servermanager.writers.XMLPImageDataWriter(Input=diffusion_grid_data)
                 diffusion_cell_Writer = servermanager.writers.XMLPUnstructuredGridWriter(Input=cells_data)
 
                 coprocessor.RegisterWriter(diffusion_grid_writer, "diffusion_grid_%t.pvti", freq=outputfrequency)
@@ -73,9 +73,9 @@ def RequestDataDescription(datadescription):
     "Callback to populate the request for current timestep"
     timestep = datadescription.GetTimeStep()
     
-    datadescription.GetInputDescriptionByName('dgrid_data').AllFieldsOn()
+    # datadescription.GetInputDescriptionByName('dgrid_data').AllFieldsOn()
     datadescription.GetInputDescriptionByName('cells_data').AllFieldsOn()
-    datadescription.GetInputDescriptionByName('dgrid_data').GenerateMeshOn()
+    # datadescription.GetInputDescriptionByName('dgrid_data').GenerateMeshOn()
     datadescription.GetInputDescriptionByName('cells_data').GenerateMeshOn()
     
     global coprocessor

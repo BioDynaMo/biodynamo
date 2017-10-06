@@ -128,6 +128,11 @@ inline void RunIOTest() {
   b_vector->push_back(BScalar(3.14));
   b_vector->push_back(BScalar(6.28));
 
+  DiffusionGrid* dgrid_1 = new DiffusionGrid("Kalium", 0.4, 0, 2);
+  DiffusionGrid* dgrid_2 = new DiffusionGrid("Natrium", 0.2, 0.1, 1);
+  rm->GetDiffusionGrids().push_back(dgrid_1);
+  rm->GetDiffusionGrids().push_back(dgrid_2);
+
   // backup
   WritePersistentObject(ROOTFILE, "rm", *rm, "new");
 
@@ -144,6 +149,13 @@ inline void RunIOTest() {
   ASSERT_EQ(2u, rm->template Get<B>()->size());
   EXPECT_NEAR(3.14, (*restored_rm->template Get<B>())[0].GetData(), kEpsilon);
   EXPECT_NEAR(6.28, (*restored_rm->template Get<B>())[1].GetData(), kEpsilon);
+
+  EXPECT_EQ("Kalium", restored_rm->GetDiffusionGrids()[0]->GetSubstanceName());
+  EXPECT_EQ("Natrium", restored_rm->GetDiffusionGrids()[1]->GetSubstanceName());
+  EXPECT_EQ(0.6,
+            restored_rm->GetDiffusionGrids()[0]->GetDiffusionCoefficients()[0]);
+  EXPECT_EQ(0.8,
+            restored_rm->GetDiffusionGrids()[1]->GetDiffusionCoefficients()[0]);
 
   remove(ROOTFILE);
 }

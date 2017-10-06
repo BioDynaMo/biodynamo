@@ -112,42 +112,55 @@ struct ModelInitializer {
     container->Commit();
   }
 
-  /// Adds simulation objects to the ResourceManager. Type of the simulation
-  /// object is determined by the return type of parameter cell_builder.
+  /// Adds simulation objects with random positions to the ResourceManager.
+  /// Type of the simulation object is determined by the return type of
+  /// parameter cell_builder.
   ///
-  /// @param      positions     positions of the simulation objects to be
-  /// @param      cell_builder  function containing the logic to instantiate a
+  /// @param[in]  min           The minimum position value
+  /// @param[in]  max           The maximum position value
+  /// @param[in]  num_cells     The number cells
+  /// @param[in]  cell_builder  function containing the logic to instantiate a
   ///                           new simulation object. Takes `const
   ///                           std::array<double, 3>&` as input parameter
   ///
   template <typename Function, typename TResourceManager = ResourceManager<>>
-  static void CreateCellsRandom(double LO, double HI, int N, Function cell_builder) {
+  static void CreateCellsRandom(double min, double max, int num_cells,
+                                Function cell_builder) {
     auto rm = TResourceManager::Get();
     // Determine simulation object type which is returned by the cell_builder
     using FunctionReturnType = decltype(cell_builder({0, 0, 0}));
 
     auto container = rm->template Get<FunctionReturnType>();
-    container->reserve(N);
-    for (int i = 0; i < N; i++) {
-      double x = LO + static_cast<double>(rand()) / (static_cast<double>(RAND_MAX/(HI-LO)));
-      double y = LO + static_cast<double>(rand()) / (static_cast<double>(RAND_MAX/(HI-LO)));
-      double z = LO + static_cast<double>(rand()) / (static_cast<double>(RAND_MAX/(HI-LO)));
+    container->reserve(num_cells);
+    for (int i = 0; i < num_cells; i++) {
+      double x = min +
+                 static_cast<double>(rand()) /
+                     (static_cast<double>(RAND_MAX / (max - min)));
+      double y = min +
+                 static_cast<double>(rand()) /
+                     (static_cast<double>(RAND_MAX / (max - min)));
+      double z = min +
+                 static_cast<double>(rand()) /
+                     (static_cast<double>(RAND_MAX / (max - min)));
       auto new_simulation_object = cell_builder({x, y, z});
       container->push_back(new_simulation_object);
     }
     container->Commit();
   }
 
-  /// @brief      Allows cells to secrete the specified substance. Diffusion
-  ///             throughout the simulation space is automatically taken care of
+  /// Allows cells to secrete the specified substance. Diffusion throughout the
+  // simulation space is automatically taken care of by the DiffusionGrid class
   ///
   /// @param[in]  name             The name of the substance
   /// @param[in]  diffusion_coeff  The diffusion coefficient of the substance
   ///
   template <typename TResourceManager = ResourceManager<>>
-  static void DefineSubstance(std::string name, double diffusion_coeff) {
+  static void DefineSubstance(std::string name, double diffusion_coeff,
+                              double decay_constant, int resolution) {
+    assert(resolution > 0 && "Resolution needs to be a positive integer value");
     auto rm = TResourceManager::Get();
-    DiffusionGrid* d_grid = new DiffusionGrid(name, diffusion_coeff);
+    DiffusionGrid* d_grid =
+        new DiffusionGrid(name, diffusion_coeff, decay_constant, resolution);
     auto& diffusion_grids = rm->GetDiffusionGrids();
     diffusion_grids.push_back(d_grid);
   }

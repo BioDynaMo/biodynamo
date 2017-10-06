@@ -5,6 +5,12 @@
 
 namespace bdm {
 
+// -----------------------------------------------------------------------------
+// This model creats 8 cells at each corner of a cube. A substance is
+// artificially added in the middle of this cube. The cells are modeled to
+// displace according to the extracellular gradient; in this case to the middle.
+// -----------------------------------------------------------------------------
+
 // 1a. Define growth behaviour:
 // Cells divide if the diameter reaches a specific value
 struct GrowthModule {
@@ -51,8 +57,6 @@ struct KaliumSecretion {
     auto dg = GetDiffusionGrid("Kalium");
     array<double, 3> secretion_position = {50, 50, 50};
     dg->IncreaseConcentrationBy(secretion_position, 4);
-    std::array<uint32_t, 3> box_coords;
-    dg->GetBoxCoords(secretion_position, box_coords);
   }
 
   bool IsCopied(Event event) const { return false; }
@@ -93,7 +97,7 @@ inline int Simulate(const CommandLineOptions& options) {
 
   // 3. Define the substances that cells may secrete
   // This needs to be done AFTER the cells have been specified
-  ModelInitializer::DefineSubstance("Kalium", 0.4);
+  ModelInitializer::DefineSubstance("Kalium", 0.4, 0, 5);
 
   // 4. Run simulation for N timesteps
   Param::use_paraview_ = true;

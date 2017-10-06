@@ -15,7 +15,8 @@ namespace bdm {
 // #define spatialScale 5.0
 
 BDM_SIM_CLASS(MyCell, Cell) {
-  BDM_CLASS_HEADER(MyCellExt, 1, cell_type_, division_count_, my_traveled_path_, sim_step_);
+  BDM_CLASS_HEADER(MyCellExt, 1, cell_type_, division_count_, my_traveled_path_,
+                   sim_step_);
 
  public:
   MyCellExt() {}
@@ -68,10 +69,10 @@ struct DivisionAndMovementModule {
       random_cell_movement[2] = dis(gen);
       double normalized_movement = 8.0f / Norm(random_cell_movement);
 
-      std::array<double, 3> displacement =
-      { {random_cell_movement[0] * normalized_movement,
-         random_cell_movement[1] * normalized_movement,
-         random_cell_movement[2] * normalized_movement} };
+      std::array<double, 3> displacement = {
+          {random_cell_movement[0] * normalized_movement,
+           random_cell_movement[1] * normalized_movement,
+           random_cell_movement[2] * normalized_movement}};
 
       // Update cell's position
       cell->UpdatePosition(displacement);
@@ -110,7 +111,8 @@ struct Chemotaxis {
 
       std::array<double, 3> diff_gradient;
       for (int i = 0; i < 3; i++) {
-        diff_gradient[i] = cell->GetCellType()*(gradient_0[i] - gradient_1[i])*speed;
+        diff_gradient[i] =
+            cell->GetCellType() * (gradient_0[i] - gradient_1[i]) * speed;
       }
 
       cell->UpdatePosition(diff_gradient);
@@ -143,74 +145,38 @@ struct SubstanceSecretion {
   ClassDefNV(SubstanceSecretion, 1);
 };
 
-// 1d. Limit cell positions within bounding box
-struct BoundingBox {
-  template <typename T>
-  void Run(T* cell) {
-    auto& pos = cell->GetPosition();
-    double box_size = 80;
-    cell->SetPosition(cell->GetMassLocation());
-    if (pos[0] < 0) {
-      cell->SetCoordinate(0, 0);
-    }
-    if (pos[1] < 0) {
-      cell->SetCoordinate(1, 0);
-    }
-    if (pos[2] < 0) {
-      cell->SetCoordinate(2, 0);
-    }
-    if (pos[0] > box_size) {
-      cell->SetCoordinate(0, box_size);
-    }
-    if (pos[1] > box_size) {
-      cell->SetCoordinate(1, box_size);
-    }
-    if (pos[2] > box_size) {
-      cell->SetCoordinate(2, box_size);
-    }
-    cell->SetPosition(cell->GetMassLocation());
-    cell->UpdateSimStep();
-  }
-  bool IsCopied(Event event) const { return true; }
-  ClassDefNV(BoundingBox, 1);
-};
-
 // 2. Define compile time parameter
 template <typename Backend>
 struct CompileTimeParam : public DefaultCompileTimeParam<Backend> {
-  using BiologyModules = Variant<DivisionAndMovementModule, Chemotaxis,
-                                 SubstanceSecretion, BoundingBox>;
+  using BiologyModules =
+      Variant<DivisionAndMovementModule, Chemotaxis, SubstanceSecretion>;
   using AtomicTypes = VariadicTypedef<MyCell>;
 };
 
 inline int Simulate(int timesteps) {
+  // Create an artificial bounds for the simulation space
+  Param::bound_space_ = true;
+  Param::lbound_ = 0;
+  Param::rbound_ = 1;
+
   // 3. Define initial model - in this example: two cells
   auto construct = [](const std::array<double, 3>& position) {
     MyCell cell(position);
     cell.SetDiameter(8);
     cell.SetCellType(1);
-    cell.AddBiologyModule(BoundingBox());
     cell.AddBiologyModule(SubstanceSecretion());
     cell.AddBiologyModule(Chemotaxis());
     cell.AddBiologyModule(DivisionAndMovementModule());
-    cell.AddBiologyModule(BoundingBox());
     return cell;
   };
   std::vector<std::array<double, 3>> positions;
   positions.push_back({0, 0, 0});
-  // positions.push_back({80, 0, 0});
-  // positions.push_back({0, 80, 0});
-  // positions.push_back({0, 0, 80});
-  // positions.push_back({80, 0, 80});
-  // positions.push_back({0, 80, 80});
-  // positions.push_back({80, 80, 0});
-  // positions.push_back({80, 80, 80});
   ModelInitializer::CreateCells(positions, construct);
 
   // 3. Define the substances that cells may secrete
   // This needs to be done AFTER the cells have been specified
-  ModelInitializer::DefineSubstance("Substance_0", 0.3);
-  ModelInitializer::DefineSubstance("Substance_1", 0.3);
+  ModelInitializer::DefineSubstance("Substance_0", 0.3, 0.01, 2);
+  ModelInitializer::DefineSubstance("Substance_1", 0.3, 0.01, 2);
 
   // 4. Run simulation for N timesteps
   Param::use_paraview_ = true;

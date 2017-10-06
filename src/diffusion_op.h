@@ -26,17 +26,24 @@ class DiffusionOp {
     auto& diffusion_grids = TResourceManager::Get()->GetDiffusionGrids();
     for (auto dg : diffusion_grids) {
       if (!(dg->IsInitialized())) {
-        // dg->Initialize(grid.GetDimensions(), 0.125 * grid.GetBoxLength());
-        dg->Initialize({-10, 110, -10, 110, -10, 110}, 0.2*grid.GetBoxLength());
-        dg->SetDecayConstant(0.1);
-        grid.SetDimensionThresholds(-10, 120);
+        int lbound = grid.GetDimensionThresholds()[0];
+        int rbound = grid.GetDimensionThresholds()[0];
+        // If we are bounded we can directly grow to the specified size, to
+        // avoid copying diffusion grid data with DiffusionGrid::CopyOldData
+        if (Param::bound_space_) {
+          lbound = Param::lbound_;
+          rbound = Param::rbound_;
+          grid.SetDimensionThresholds(lbound, rbound);
+        }
+        dg->Initialize({lbound, rbound, lbound, rbound, lbound, rbound},
+                       grid.GetBoxLength());
       }
 
       // Update the diffusion grid dimension if the neighbor grid
       // dimensions have changed
-      // if (grid.HasGrown()) {
-      //   dg->Update(grid.GetDimensionThresholds());
-      // }
+      if (grid.HasGrown()) {
+        dg->Update(grid.GetDimensionThresholds());
+      }
 
       dg->DiffuseWithClosedEdge();
       dg->CalculateGradient();

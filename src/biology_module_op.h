@@ -15,7 +15,7 @@ struct BiologyModuleOp {
   void operator()(TContainer* cells, uint16_t type_idx) const {
 #pragma omp parallel for
     for (size_t i = 0; i < cells->size(); i++) {
-      (*cells)[i].template RunBiologyModules<TContainer>();
+      (*cells)[i].template RunBiologyModules<typename TContainer::value_type>();
     }
   }
 };

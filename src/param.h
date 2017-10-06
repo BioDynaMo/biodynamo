@@ -89,6 +89,13 @@ class Param {
   static bool write_to_file_;
   /// Frequency to write to file
   static std::size_t write_freq_;
+
+  /// Enforce an artificial cubic bounds around the simulation space
+  static bool bound_space_;
+  /// The left bound
+  static double lbound_;
+  /// The right bound
+  static double rbound_;
 };
 
 }  // namespace bdm

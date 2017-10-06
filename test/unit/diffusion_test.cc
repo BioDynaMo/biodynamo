@@ -2,7 +2,10 @@
 #include "diffusion_grid.h"
 #include "grid.h"
 #include "gtest/gtest.h"
+#include "io_util.h"
 #include "unit/test_util.h"
+
+#define ROOTFILE "bdmFile.root"
 
 namespace bdm {
 
@@ -29,7 +32,7 @@ TEST(DiffusionTest, GridDimensions) {
   positions.push_back({90, 90, 90});
   CellFactory(cells, positions);
 
-  DiffusionGrid* d_grid = new DiffusionGrid("Kalium", 0.4);
+  DiffusionGrid* d_grid = new DiffusionGrid("Kalium", 0.4, 0, 1);
 
   auto& grid = Grid<>::GetInstance();
   grid.Initialize();
@@ -59,7 +62,7 @@ TEST(DiffusionTest, UpdateGrid) {
   positions.push_back({90, 90, 90});
   CellFactory(cells, positions);
 
-  DiffusionGrid* d_grid = new DiffusionGrid("Kalium", 0.4);
+  DiffusionGrid* d_grid = new DiffusionGrid("Kalium", 0.4, 0, 1);
 
   auto& grid = Grid<>::GetInstance();
   grid.Initialize();
@@ -98,7 +101,7 @@ TEST(DiffusionTest, FalseUpdateGrid) {
   positions.push_back({90, 90, 90});
   CellFactory(cells, positions);
 
-  DiffusionGrid* d_grid = new DiffusionGrid("Kalium", 0.4);
+  DiffusionGrid* d_grid = new DiffusionGrid("Kalium", 0.4, 0, 1);
 
   auto& grid = Grid<>::GetInstance();
   grid.Initialize();
@@ -140,7 +143,7 @@ TEST(DiffusionTest, LeakingEdge) {
   positions.push_back({60, 60, 60});
   CellFactory(cells, positions);
 
-  DiffusionGrid* d_grid = new DiffusionGrid("Kalium", 0.4);
+  DiffusionGrid* d_grid = new DiffusionGrid("Kalium", 0.4, 0, 1);
 
   auto& grid = Grid<>::GetInstance();
   grid.Initialize();
@@ -219,7 +222,7 @@ TEST(DiffusionTest, CopyOldData) {
   positions.push_back({60, 60, 60});
   CellFactory(cells, positions);
 
-  DiffusionGrid* d_grid = new DiffusionGrid("Kalium", 0.4);
+  DiffusionGrid* d_grid = new DiffusionGrid("Kalium", 0.4, 0, 1);
 
   auto& grid = Grid<>::GetInstance();
   grid.Initialize();
@@ -291,6 +294,65 @@ TEST(DiffusionTest, CopyOldData) {
   EXPECT_DOUBLE_EQ(0.013002938053771644,
                    grad[3 * (d_grid->GetBoxIndex(rand2_b)) + 0]);
 
+  delete d_grid;
+}
+
+// Test if all the data members of the diffusion grid are correctly serialized
+// and deserialzed with I/O
+TEST(DiffusionTest, IOTest) {
+  auto rm = ResourceManager<>::Get();
+  rm->Clear();
+
+  remove(ROOTFILE);
+
+  DiffusionGrid* d_grid = new DiffusionGrid("Kalium", 0.4, 0, 2);
+
+  // Create a 100x100x100 diffusion grid with 20 boxes per dimension
+  std::array<int32_t, 6> dimensions = {{-50, 50, -50, 50, -50, 50}};
+  d_grid->Initialize(dimensions, 10);
+  d_grid->SetConcentrationThreshold(42);
+  d_grid->SetDecayConstant(0.01);
+
+  // write to root file
+  WritePersistentObject(ROOTFILE, "dgrid", *d_grid, "new");
+
+  // read back
+  DiffusionGrid* restored_d_grid = nullptr;
+  GetPersistentObject(ROOTFILE, "dgrid", restored_d_grid);
+
+  EXPECT_EQ("Kalium", restored_d_grid->GetSubstanceName());
+  EXPECT_EQ(5, restored_d_grid->GetBoxLength());
+  // Concentration
+  // Gradient
+  EXPECT_EQ(42, restored_d_grid->GetConcentrationThreshold());
+  EXPECT_DOUBLE_EQ(0.6, restored_d_grid->GetDiffusionCoefficients()[0]);
+  EXPECT_DOUBLE_EQ(0.066666666666666666,
+                   restored_d_grid->GetDiffusionCoefficients()[1]);
+  EXPECT_DOUBLE_EQ(0.066666666666666666,
+                   restored_d_grid->GetDiffusionCoefficients()[2]);
+  EXPECT_DOUBLE_EQ(0.066666666666666666,
+                   restored_d_grid->GetDiffusionCoefficients()[3]);
+  EXPECT_DOUBLE_EQ(0.066666666666666666,
+                   restored_d_grid->GetDiffusionCoefficients()[4]);
+  EXPECT_DOUBLE_EQ(0.066666666666666666,
+                   restored_d_grid->GetDiffusionCoefficients()[5]);
+  EXPECT_DOUBLE_EQ(0.066666666666666666,
+                   restored_d_grid->GetDiffusionCoefficients()[6]);
+  EXPECT_DOUBLE_EQ(0.01, restored_d_grid->GetDecayConstant());
+  EXPECT_EQ(-50, restored_d_grid->GetDimensions()[0]);
+  EXPECT_EQ(-50, restored_d_grid->GetDimensions()[2]);
+  EXPECT_EQ(-50, restored_d_grid->GetDimensions()[4]);
+  EXPECT_EQ(50, restored_d_grid->GetDimensions()[1]);
+  EXPECT_EQ(50, restored_d_grid->GetDimensions()[3]);
+  EXPECT_EQ(50, restored_d_grid->GetDimensions()[5]);
+  EXPECT_EQ(20, restored_d_grid->GetNumBoxesArray()[0]);
+  EXPECT_EQ(20, restored_d_grid->GetNumBoxesArray()[1]);
+  EXPECT_EQ(20, restored_d_grid->GetNumBoxesArray()[2]);
+  EXPECT_EQ(8000, restored_d_grid->GetNumBoxes());
+  EXPECT_EQ(true, restored_d_grid->IsInitialized());
+  EXPECT_EQ(2, restored_d_grid->GetResolution());
+
+  remove(ROOTFILE);
   delete d_grid;
 }
 

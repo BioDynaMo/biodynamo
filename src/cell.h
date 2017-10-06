@@ -30,7 +30,9 @@ BDM_SIM_CLASS(Cell, SimulationObject) {
  public:
   using TBiologyModuleVariant = typename TCompileTimeParam::BiologyModules;
   CellExt() : density_{1.0} {}
-  explicit CellExt(double diameter) : diameter_(diameter), density_{1.0} { UpdateVolume(); }
+  explicit CellExt(double diameter) : diameter_(diameter), density_{1.0} {
+    UpdateVolume();
+  }
   explicit CellExt(const array<double, 3>& position)
       : position_(position), mass_location_(position), density_{1.0} {}
 
@@ -153,7 +155,6 @@ BDM_SIM_CLASS(Cell, SimulationObject) {
   void SetCoordinate(size_t d, double value) {
     mass_location_[kIdx][d] = value;
   }
-  
 
   void SetTractorForce(const array<double, 3>& tractor_force) {
     tractor_force_[kIdx] = tractor_force;
@@ -292,26 +293,6 @@ inline void CellExt<T, U>::Divide(Self<Scalar>* daughter, double volume_ratio,
   DivideImpl(daughter, volume_ratio, phi, theta);
 }
 
-static double RandomDoublePos() {
-  // returns a random number between a given minimum and maximum
-  double random = ((double)rand()) / (double)RAND_MAX;
-  double a = 0;
-  double r = random;
-  return a + r;
-}
-
-static double getNorm(double* currArray) {
-  // computes L2 norm of input array
-  int c;
-  double arraySum = 0;
-  for (c = 0; c < 3; c++) {
-    arraySum += currArray[c] * currArray[c];
-  }
-  double res = sqrt(arraySum);
-
-  return res;
-}
-
 template <typename T, template <typename> class U>
 inline void CellExt<T, U>::DivideImpl(Self<Scalar>* daughter,
                                       double volume_ratio, double phi,
@@ -325,28 +306,28 @@ inline void CellExt<T, U>::DivideImpl(Self<Scalar>* daughter,
   double r1 = radius / std::pow(1.0 + volume_ratio, 1.0 / 3.0);
   double r2 = radius / std::pow(1.0 + 1 / volume_ratio, 1.0 / 3.0);
 
-  // // define an axis for division (along which the nuclei will move)
-  // double x_coord = std::cos(theta) * std::sin(phi);
-  // double y_coord = std::sin(theta) * std::sin(phi);
-  // double z_coord = std::cos(phi);
-  // double total_length_of_displacement = radius / 4;
-  // array<double, 3> axis_of_division{
-  //     total_length_of_displacement *
-  //         (x_coord * x_axis_[kIdx][0] + y_coord * y_axis_[kIdx][0] +
-  //          z_coord * z_axis_[kIdx][0]),
-  //     total_length_of_displacement *
-  //         (x_coord * x_axis_[kIdx][1] + y_coord * y_axis_[kIdx][1] +
-  //          z_coord * z_axis_[kIdx][1]),
-  //     total_length_of_displacement *
-  //         (x_coord * x_axis_[kIdx][2] + y_coord * y_axis_[kIdx][2] +
-  //          z_coord * z_axis_[kIdx][2])};
+  // define an axis for division (along which the nuclei will move)
+  double x_coord = std::cos(theta) * std::sin(phi);
+  double y_coord = std::sin(theta) * std::sin(phi);
+  double z_coord = std::cos(phi);
+  double total_length_of_displacement = radius / 4.0;
+  array<double, 3> axis_of_division{
+      total_length_of_displacement *
+          (x_coord * x_axis_[kIdx][0] + y_coord * y_axis_[kIdx][0] +
+           z_coord * z_axis_[kIdx][0]),
+      total_length_of_displacement *
+          (x_coord * x_axis_[kIdx][1] + y_coord * y_axis_[kIdx][1] +
+           z_coord * z_axis_[kIdx][1]),
+      total_length_of_displacement *
+          (x_coord * x_axis_[kIdx][2] + y_coord * y_axis_[kIdx][2] +
+           z_coord * z_axis_[kIdx][2])};
 
-  // // two equations for the center displacement :
-  // //  1) d2/d1= v2/v1 = volume_ratio (each sphere is shifted inver.
-  // //  proportionally to its volume)
-  // //  2) d1 + d2 = TOTAL_LENGTH_OF_DISPLACEMENT
-  // double d_2 = total_length_of_displacement / (volume_ratio + 1);
-  // double d_1 = total_length_of_displacement - d_2;
+  // two equations for the center displacement :
+  //  1) d2/d1= v2/v1 = volume_ratio (each sphere is shifted inver.
+  //  proportionally to its volume)
+  //  2) d1 + d2 = TOTAL_LENGTH_OF_DISPLACEMENT
+  double d_2 = total_length_of_displacement / (volume_ratio + 1);
+  double d_1 = total_length_of_displacement - d_2;
 
   // B) Instantiating a new sphere = 2nd daughter
   daughter->x_axis_[0] = x_axis_[kIdx];
@@ -358,31 +339,15 @@ inline void CellExt<T, U>::DivideImpl(Self<Scalar>* daughter,
   daughter->diameter_[0] = r2 * 2;
   daughter->UpdateVolume();
 
-  // // Mass Location
-  // array<double, 3> new_mass_location{
-  //     mass_location_[kIdx][0] + d_2 * axis_of_division[0],
-  //     mass_location_[kIdx][1] + d_2 * axis_of_division[1],
-  //     mass_location_[kIdx][2] + d_2 * axis_of_division[2]};
-  // daughter->mass_location_[0] = new_mass_location;
-  // daughter->position_[0][0] = daughter->mass_location_[0][0];
-  // daughter->position_[0][1] = daughter->mass_location_[0][1];
-  // daughter->position_[0][2] = daughter->mass_location_[0][2];
-
-  double duplicatedCellOffset[3];
-  duplicatedCellOffset[0] = RandomDoublePos() - 0.5;
-  duplicatedCellOffset[1] = RandomDoublePos() - 0.5;
-  duplicatedCellOffset[2] = RandomDoublePos() - 0.5;
-  double currentNorm = getNorm(duplicatedCellOffset);
-
+  // Mass Location
   array<double, 3> new_mass_location{
-    mass_location_[kIdx][0] + 4 * duplicatedCellOffset[0] / currentNorm,
-    mass_location_[kIdx][1] + 4 * duplicatedCellOffset[1] / currentNorm,
-    mass_location_[kIdx][2] + 4 * duplicatedCellOffset[2] / currentNorm};
+      mass_location_[kIdx][0] + d_2 * axis_of_division[0],
+      mass_location_[kIdx][1] + d_2 * axis_of_division[1],
+      mass_location_[kIdx][2] + d_2 * axis_of_division[2]};
   daughter->mass_location_[0] = new_mass_location;
   daughter->position_[0][0] = daughter->mass_location_[0][0];
   daughter->position_[0][1] = daughter->mass_location_[0][1];
   daughter->position_[0][2] = daughter->mass_location_[0][2];
-
 
   CopyVisitor<vector<TBiologyModuleVariant>> visitor(
       Event::kCellDivision, &(daughter->biology_modules_[0]));
@@ -392,12 +357,12 @@ inline void CellExt<T, U>::DivideImpl(Self<Scalar>* daughter,
 
   // E) This sphere becomes the 1st daughter
   // move these cells on opposite direction
-  // position_[kIdx][0] -= d_1 * axis_of_division[0];
-  // position_[kIdx][1] -= d_1 * axis_of_division[1];
-  // position_[kIdx][2] -= d_1 * axis_of_division[2];
-  // mass_location_[kIdx][0] = position_[kIdx][0];
-  // mass_location_[kIdx][1] = position_[kIdx][1];
-  // mass_location_[kIdx][2] = position_[kIdx][2];
+  position_[kIdx][0] -= d_1 * axis_of_division[0];
+  position_[kIdx][1] -= d_1 * axis_of_division[1];
+  position_[kIdx][2] -= d_1 * axis_of_division[2];
+  mass_location_[kIdx][0] = position_[kIdx][0];
+  mass_location_[kIdx][1] = position_[kIdx][1];
+  mass_location_[kIdx][2] = position_[kIdx][2];
 
   // F) change properties of this cell
   diameter_[kIdx] = r1 * 2;
