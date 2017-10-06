@@ -48,6 +48,7 @@ struct CTParam {
   using Self = CTParam<TTBackend>;
   using Backend = TBackend;
   using BiologyModules = Variant<GrowthModule, MovementModule>;
+  using SimulationBackend = Soa;
 };
 
 /// Class used to get access to protected members
@@ -97,9 +98,10 @@ inline void RunIOTest() {
   // this type
   // important part is to add the namespace for the second template parameter:
   // bdm::SimulationObject_TCTParam_TDerived
-  bdm::CellExt<bdm::cell_test_internal::CTParam<bdm::Scalar>,
-               bdm::cell_test_internal::TestCellT,
-               bdm::SimulationObject_TCTParam_TDerived>
+  bdm::CellExt<
+      bdm::cell_test_internal::CTParam<bdm::Scalar>,
+      bdm::cell_test_internal::Capsule<bdm::cell_test_internal::TestCellExt>,
+      bdm::SimulationObject_TCTParam_TDerived>
       foo;
 
   remove(ROOTFILE);

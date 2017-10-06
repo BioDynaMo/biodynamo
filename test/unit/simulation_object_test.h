@@ -15,13 +15,22 @@ struct CTParam {
   using Backend = TBackend;
 };
 
+template <template <typename, typename> class>
+struct TestCapsule;
+
+template <>
+struct TestCapsule<SimulationObject> {
+  template <typename T1, typename T2>
+  using type = SimulationObject<T1, T2>;
+};
+
 inline void RunPushBackAndClearTest() {
-  SimulationObject<CTParam<>, SimulationObjectT> soa;
+  SimulationObject<CTParam<>, TestCapsule<SimulationObject>> soa;
   // call clear, because creating a SOA object with default constructor will
   // already have one element inside
   soa.clear();
   EXPECT_EQ(0u, soa.size());
-  SimulationObject<CTParam<Scalar>, SimulationObjectT> so;
+  SimulationObject<CTParam<Scalar>, TestCapsule<SimulationObject>> so;
   soa.push_back(so);
   soa.push_back(so);
   EXPECT_EQ(2u, soa.size());

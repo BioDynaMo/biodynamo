@@ -20,7 +20,6 @@
     <class pattern="std::array<*>" />
 
     <class pattern="*bdm::SoaRef*"/>
-    <class pattern="*NullType*"/>
     <class name="chrono::system_clock"/>
     <class pattern="*_Test" />
     <!-- genreflex generates wrong code:

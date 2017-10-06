@@ -1,6 +1,8 @@
 #ifndef NEUROSCIENCE_NEURITE_H_
 #define NEUROSCIENCE_NEURITE_H_
 
+#include "math_util.h"
+#include "matrix.h"
 #include "param.h"
 #include "simulation_object.h"
 #include "simulation_object_util.h"
@@ -11,50 +13,52 @@ namespace bdm {
 /// The mother of a neurite can either be a neuron or a neurite.
 /// Therefore, this class acts as an intermediate layer that forwards function
 /// calls to the correct object.
-/// @tparam TNeuron type of neuron
-/// @tparam TNeurite type of neurite. Needs to be a template parameter since
-///         Neurite is not defined at this point
-// template<typename TNeuron, typename TNeurite>
-// class NeuriteMother {
-// public:
-//   template <typename T>
-//   typename std::enable_if<is_same<T, Neuron>::value>::type
-//   Set(T&& so) {
-//     neuron_ptr_ = so;
-//   }
-//
-//   template <typename T>
-//   typename std::enable_if<is_same<T, Neurite>::value>::type
-//   Set(T&& so) {
-//     neurite_ptr_ = so;
-//   }
-//
-//   const std::array<double, 3>& GetPosition() const {
-//     if (!neurite_ptr_.Get().IsNullPtr()) {
-//       return neurite_ptr_.Get().GetPosition();
-//     }
-//     return neuron_ptr_.Get().GetPosition();
-//   }
-//
-//   bool IsNeuron() const { return !neuron_ptr_.IsNullPtr(); }
-//   bool IsNeurite() const { return !neurite_ptr_.IsNullPtr(); }
-//
-//   auto GetDaughterLeft() -> decltype(neurite_ptr_.Get().GetDaughterLeft()) const {
-//     assert(IsNeurite() && "This function call is only allowed for a Neurite");
-//     return neurite_ptr_.Get().GetDaughterLeft();
-//   }
-//
-//   template <typename T>
-//   void RemoveDaughter(T* mother) {
-//     assert(IsNeuron());
-//     // FIXME
-//     // neuron_ptr_.Get().RemoveDaughter();
-//   }
-//
-// private:
-//   SoPointer<TNeuron, > neuron_ptr_;
-//   SoPointer<TNeurite> neurite_ptr_;
-// };
+/// @tparam TNeuron   type of neuronbackend invariant
+/// @tparam TNeurite  type of neurite. Needs to be a template parameter since
+///                   Neurite might not be defined at this point. Backend
+///                   invariant.
+/// @tparam Backend   TODO
+template<typename TNeuron, typename TNeurite, typename Backend>
+class NeuronNeuriteAdapter {
+public:
+  template <typename T>
+  typename std::enable_if<is_same<T, TNeuron>::value>::type
+  Set(T&& so) {
+    neuron_ptr_ = so;
+  }
+
+  template <typename T>
+  typename std::enable_if<is_same<T, TNeurite>::value>::type
+  Set(T&& so) {
+    neurite_ptr_ = so;
+  }
+
+  const std::array<double, 3>& GetPosition() const {
+    if (!neurite_ptr_.IsNullPtr()) {
+      return neurite_ptr_.Get().GetPosition();
+    }
+    return neuron_ptr_.Get().GetPosition();
+  }
+
+  bool IsNeuron() const { return !neuron_ptr_.IsNullPtr(); }
+  bool IsNeurite() const { return !neurite_ptr_.IsNullPtr(); }
+
+  auto GetDaughterLeft() -> decltype(std::declval<SoPointer<TNeurite, Backend>>().Get().GetDaughterLeft()) const {
+    assert(IsNeurite() && "This function call is only allowed for a Neurite");
+    return neurite_ptr_.Get().GetDaughterLeft();
+  }
+
+  template <typename T>
+  void RemoveDaughter(T* mother) {
+    assert(IsNeuron());
+    // FIXME
+    // neuron_ptr_.Get().RemoveDaughter();
+  }
+
+private:
+  SoPointer<TNeuron, Backend> neuron_ptr_;
+  SoPointer<TNeurite, Backend> neurite_ptr_;
+};
 
 /// Class defining the biological properties of a neurite segment, if it contains
 /// a <code>LocalBiologyModule</code>. This class is associated with a <code>PhysicalCylinder</code>.
@@ -73,13 +77,22 @@ namespace bdm {
 /// mother PhysicalNode) are transmitted to the mother element
 ///
 BDM_SIM_OBJECT(Neurite, SimulationObject) {
-  BDM_SIM_OBJECT_HEADER(NeuriteExt, 1, daughter_left_, daughter_right_, spring_axis_, actual_length_, tension_, spring_constant_, resting_length_);
+  BDM_SIM_OBJECT_HEADER(NeuriteExt, 1, position_, volume_, diameter_,
+                                  mother_, daughter_left_, daughter_right_, spring_axis_, actual_length_, tension_, spring_constant_, resting_length_);
+
+  using TNeuron = typename TCompileTimeParam::TNeuron;
+  using SimBackend = typename TCompileTimeParam::SimulationBackend;
+  using MostDerivedSoPtr = SoPointer<MostDerived, SimBackend>;
+  using NeuriteMother = NeuronNeuriteAdapter<TNeuron, MostDerived, SimBackend>;
+
  public:
    NeuriteExt() {}
 
+   const MostDerivedSoPtr& GetDaughterLeft() const { return daughter_left_[kIdx]; }
+
   /// Retracts the Cylinder associated with this NeuriteElement, if it is a terminal one.
   /// \param speed the retraction speed in microns / h
-  // void RetractTerminalEnd(double speed);
+  void RetractTerminalEnd(double speed);
 
  //  /// Moves the point mass of the Cylinder associated with this NeuriteElement, if it is a terminal one.
  //  ///  BUT : if "direction" points in an opposite direction than the cylinder axis, i.e.
@@ -560,24 +573,26 @@ BDM_SIM_OBJECT(Neurite, SimulationObject) {
  //  void updateSpatialOrganizationNodePosition();
 
  private:
+
+
    vec<std::array<double, 3>> position_ = {{0.0, 0.0, 0.0}};
+   vec<double> volume_;
+   vec<double> diameter_;
 
   // TODO has local biology module
   // vec<bool> is_axon_ = {{false}};
 
   /// Parent node in the neuron tree structure can be a Neurite segment
   /// or cell body
-  // vec<NeuriteMother<>> mother_;
-
-  using TNeurite = typename TCompileTimeParam::TNeurite;
-  using SimBackend = typename TCompileTimeParam::SimulationBackend;
+  vec<NeuriteMother> mother_;
+  // SoPointer<TNeuron, SimBackend> foo_;
 
   /// First child node in the neuron tree structure (can only be a Neurite
   /// segment)
-  vec<SoPointer<Self<SimBackend>, SimBackend>> daughter_left_;
+  vec<MostDerivedSoPtr> daughter_left_;
   /// Second child node in the neuron tree structure. (can only be a Neurite
   /// segment)
-  vec<SoPointer<Self<SimBackend>, SimBackend>> daughter_right_;
+  vec<MostDerivedSoPtr> daughter_right_;
 
   // /// number of branching points from here to the soma (root of the neuron tree-structure).*/
   // int branch_order_ = 0;
@@ -627,61 +642,59 @@ BDM_SIM_OBJECT(Neurite, SimulationObject) {
 // -----------------------------------------------------------------------------
 // Implementation
 // -----------------------------------------------------------------------------
-// template <typename T, typename U, template <typename, typename> class V>
-// void NeuriteExt<T, U, V>::RetractTerminalEnd(double speed) {
-//     // check if is a terminal branch
-//     if (!daughter_left_.IsNullPtr()) {
-//       return true;
-//     }
-//     // TODO : what if there are some physical Bonds ??
-//     // scaling for integration step
-//     speed *= Param::kSimulationTimeStep;
-//
-//     // if actual_length_ > length : retraction keeping the same tension
-//     // (putting a limit on how short a branch can be is absolutely necessary
-//     //  otherwise the tension might explode)
-//     if (actual_length_[kIdx] > speed + 0.1) {
-//       double new_actual_length = actual_length_[kIdx] - speed;
-//       double factor = new_actual_length / actual_length_[kIdx];
-//       actual_length_[kIdx] = new_actual_length;
-//       //cf removeproximalCylinder()
-//       resting_length_[kIdx] = spring_constant_[kIdx] * actual_length_[kIdx] / (tension_[kIdx] + spring_constant_[kIdx]);
-//       spring_axis_[kIdx] = {factor * spring_axis_[kIdx][0], factor*spring_axis_[kIdx][1], factor*spring_axis_[kIdx][2]};
-//
-//
-//       position_[kIdx] = Matrix::Add(mother_.GetPosition(), spring_axis_[kIdx]);
-//       UpdateVolume();  // and update concentration of internal stuff.
-//       // be sure i'll run my physics :
-//       // TODO setOnTheSchedulerListForPhysicalObjects(true);
-//       // if actual_length_ < length and mother is a PhysicalCylinder with no other daughter : merge with mother
-//       // TODO replace with static_if: https://stackoverflow.com/questions/37242375/using-sfinae-how-to-avoid-has-no-member-named
-//     } else if (mother_.IsNeurite() && !mother_.GetDaughterRight().IsNullPtr()) {
-//       // TODO RemoveProximalCylinder();  // also updates volume_...
-//       // be sure i'll run my physics :
-//       // TODO setOnTheSchedulerListForPhysicalObjects(true);
-//       RetractTerminalEnd(speed / Param::kSimulationTimeStep);
-//       // if mother is cylinder with other daughter or is not a cylinder : disappear.
-//     } else {
-//       mother_->RemoveDaughter(this);
-//       // TODO still_existing_ = false;
-//       // TODO ecm_->removePhysicalCylinder(this);  // this method removes the SONode
-//       // and the associated neuriteElement also disappears :
-//       // TODO neurite_element_->removeYourself();
-//       // TODO intracellularSubstances quantities
-//       // (concentrations are solved in updateDependentPhysicalVariables():
-//       // for (auto& el : intracellular_substances_) {
-//       //   auto s = el.second.get();
-//       //   mother_->modifyIntracellularQuantity(s->getId(), s->getQuantity() / Param::kSimulationTimeStep);
-//       //   // (divide by time step because it is multiplied by it in the method)
-//       // }
-//       // TODO mother_->updateDependentPhysicalVariables();
-//       // extra-safe : make sure you'll not be run :
-//       // TODO setOnTheSchedulerListForPhysicalObjects(false);
-//     }
-// }
+BDM_SO_DEFINE(void NeuriteExt)::RetractTerminalEnd(double speed) {
+    // check if is a terminal branch
+    if (!daughter_left_.IsNullPtr()) {
+      return;
+    }
+    // TODO : what if there are some physical Bonds ??
+    // scaling for integration step
+    speed *= Param::simulation_time_step_;
+
+    if (actual_length_[kIdx] > speed + 0.1) {
+      // if actual_length_ > length : retraction keeping the same tension
+      // (putting a limit on how short a branch can be is absolutely necessary
+      //  otherwise the tension might explode)
+
+      double new_actual_length = actual_length_[kIdx] - speed;
+      double factor = new_actual_length / actual_length_[kIdx];
+      actual_length_[kIdx] = new_actual_length;
+      //cf removeproximalCylinder()
+      resting_length_[kIdx] = spring_constant_[kIdx] * actual_length_[kIdx] / (tension_[kIdx] + spring_constant_[kIdx]);
+      spring_axis_[kIdx] = {factor * spring_axis_[kIdx][0], factor*spring_axis_[kIdx][1], factor*spring_axis_[kIdx][2]};
+
+      position_[kIdx] = Matrix::Add(mother_.GetPosition(), spring_axis_[kIdx]);
+      UpdateVolume();  // and update concentration of internal stuff.
+      // be sure i'll run my physics :
+      // TODO setOnTheSchedulerListForPhysicalObjects(true);
+    } else if (mother_.IsNeurite() && !mother_.GetDaughterRight().IsNullPtr()) {
+      // if actual_length_ < length and mother is a PhysicalCylinder with no other daughter : merge with mother
+      // TODO RemoveProximalCylinder();  // also updates volume_...
+      // be sure i'll run my physics :
+      // TODO setOnTheSchedulerListForPhysicalObjects(true);
+      RetractTerminalEnd(speed / Param::simulation_time_step_);
+    } else {
+      // if mother is cylinder with other daughter or is not a cylinder : disappear.
+      mother_->RemoveDaughter(this);
+      // TODO still_existing_ = false;
+      // TODO ecm_->removePhysicalCylinder(this);  // this method removes the SONode
+      // and the associated neuriteElement also disappears :
+      // TODO neurite_element_->removeYourself();
+      // TODO intracellularSubstances quantities
+      // (concentrations are solved in updateDependentPhysicalVariables():
+      // for (auto& el : intracellular_substances_) {
+      //   auto s = el.second.get();
+      //   mother_->modifyIntracellularQuantity(s->getId(), s->getQuantity() / Param::simulation_time_step_);
+      //   // (divide by time step because it is multiplied by it in the method)
+      // }
+      // TODO mother_->updateDependentPhysicalVariables();
+      // extra-safe : make sure you'll not be run :
+      // TODO setOnTheSchedulerListForPhysicalObjects(false);
+    }
+}
 
 BDM_SO_DEFINE(void NeuriteExt)::UpdateVolume() {
-  // volume_[kIdx] = Math::kPi / 4 * diameter_[kIdx] * diameter_[kIdx] * actual_length_[kIdx];
+  volume_[kIdx] = Math::kPi / 4 * diameter_[kIdx] * diameter_[kIdx] * actual_length_[kIdx];
   // TODO updateIntracellularConcentrations();
 }
 
