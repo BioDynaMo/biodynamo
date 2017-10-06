@@ -192,8 +192,10 @@ class ResourceManager {
   auto ApplyOnElement(SoHandle handle, TFunction&& function) {
     auto type_idx = handle.GetTypeIdx();
     auto element_idx = handle.GetElementIdx();
-    return ::bdm::Apply(&data_, type_idx,
-                 [&](auto* container) -> decltype(function((*container)[0])) { return function((*container)[element_idx]); });
+    return ::bdm::Apply(&data_, type_idx, [&](auto* container) -> decltype(
+                                              function((*container)[0])) {
+      return function((*container)[element_idx]);
+    });
   }
 
   /// Apply a function on all container types
@@ -293,7 +295,7 @@ TResourceManager* Rm() {
 //     Rm()->ApplyOnElement(so_handle, [&ret_val](auto&& so) {
 //       ret_val = so.function_with_parameters;
 //     });
-//     return ret_val; 
+//     return ret_val;
 //   }(so_handle);
 //
 // std::array<double, 3> position
@@ -308,7 +310,6 @@ TResourceManager* Rm() {
 //                 ^ returns rm
 // ApplyOnElement
 // mother_.IsA<Neurite>()
-
 
 }  // namespace bdm
 

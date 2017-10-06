@@ -20,8 +20,7 @@ struct BiologyModuleOp {
 // biology modules are not equal in workload
 #pragma omp for nowait
       for (size_t i = 0; i < cells->size(); i++) {
-        (*cells)[i]
-            .template RunBiologyModules<typename TContainer::value_type>();
+        (*cells)[i].RunBiologyModules();
       }
     }
   }

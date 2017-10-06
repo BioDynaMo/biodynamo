@@ -77,8 +77,8 @@ BDM_SIM_OBJECT_TEST(TestCell, Cell, CTParam) {
   double expected_phi_;
   double expected_theta_;
 
-  void DivideImpl(void* daughter, double volume_ratio, double phi, double theta)
-      override {
+  void DivideImpl(TMostDerived<Scalar> * daughter, double volume_ratio,
+                  double phi, double theta) override {
     if (check_input_parameters_) {
       EXPECT_NEAR(expected_volume_ratio_, volume_ratio, 1e-8);
       EXPECT_NEAR(expected_phi_, phi, 1e-8);
@@ -96,9 +96,10 @@ inline void RunIOTest() {
   // Temporary workaround for ROOT-8982; makes sure dictionary is working for
   // this type
   // important part is to add the namespace for the second template parameter:
-  // bdm::SimulationObjectT
+  // bdm::SimulationObject_TCTParam_TDerived
   bdm::CellExt<bdm::cell_test_internal::CTParam<bdm::Scalar>,
-               bdm::SimulationObjectT>
+               bdm::cell_test_internal::TestCellT,
+               bdm::SimulationObject_TCTParam_TDerived>
       foo;
 
   remove(ROOTFILE);

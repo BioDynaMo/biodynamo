@@ -8,7 +8,9 @@ namespace bdm {
 
 template <typename TBackend>
 struct CompileTimeParam : public DefaultCompileTimeParam<TBackend>,
-                          public neuroscience::DefaultCompileTimeParam<TBackend> {
+                          public
+                          neuroscience::DefaultCompileTimeParam<TBackend> {
+ // using TNeuron1 = typename SpecializedNeuron::template Self<Soa>;
  using TNeuron = SpecializedNeuron;
                           };
 
@@ -20,6 +22,8 @@ TEST(NeuronTest, Scalar) {
 TEST(NeuronTest, Soa) {
   SoaNeuron neuron;
   SoaSpecializedNeuron sneuron;
+  typename SpecializedNeuron::template Self<Soa> soan;
+  // typename CompileTimeParam<>::TNeuron1 soan1;
 }
 
 }  // namespace bdm

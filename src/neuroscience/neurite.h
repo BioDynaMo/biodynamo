@@ -40,7 +40,7 @@ namespace bdm {
 //   bool IsNeurite() const { return !neurite_ptr_.IsNullPtr(); }
 //
 //   auto GetDaughterLeft() -> decltype(neurite_ptr_.Get().GetDaughterLeft()) const {
-//     assert(IsNeurite());
+//     assert(IsNeurite() && "This function call is only allowed for a Neurite");
 //     return neurite_ptr_.Get().GetDaughterLeft();
 //   }
 //
@@ -627,8 +627,8 @@ BDM_SIM_OBJECT(Neurite, SimulationObject) {
 // -----------------------------------------------------------------------------
 // Implementation
 // -----------------------------------------------------------------------------
-// template <typename T, template <typename> class U>
-// void NeuriteExt<T, U>::RetractTerminalEnd(double speed) {
+// template <typename T, typename U, template <typename, typename> class V>
+// void NeuriteExt<T, U, V>::RetractTerminalEnd(double speed) {
 //     // check if is a terminal branch
 //     if (!daughter_left_.IsNullPtr()) {
 //       return true;
@@ -680,8 +680,7 @@ BDM_SIM_OBJECT(Neurite, SimulationObject) {
 //     }
 // }
 
-template <typename T, template <typename> class U>
-void NeuriteExt<T, U>::UpdateVolume() {
+BDM_SO_DEFINE(void NeuriteExt)::UpdateVolume() {
   // volume_[kIdx] = Math::kPi / 4 * diameter_[kIdx] * diameter_[kIdx] * actual_length_[kIdx];
   // TODO updateIntracellularConcentrations();
 }

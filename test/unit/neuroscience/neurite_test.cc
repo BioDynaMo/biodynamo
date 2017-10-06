@@ -7,15 +7,12 @@
 namespace bdm {
 
 template <typename TBackend>
-struct CompileTimeParam : public DefaultCompileTimeParam<TBackend>,
-                          public neuroscience::DefaultCompileTimeParam<TBackend> {};
+struct CompileTimeParam
+    : public DefaultCompileTimeParam<TBackend>,
+      public neuroscience::DefaultCompileTimeParam<TBackend> {};
 
-TEST(NeuriteTest, Scalar) {
-  Neurite neurite;
-}
+TEST(NeuriteTest, Scalar) { Neurite neurite; }
 
-TEST(NeuriteTest, Soa) {
-  SoaNeurite neurite;
-}
+TEST(NeuriteTest, Soa) { SoaNeurite neurite; }
 
 }  // namespace bdm

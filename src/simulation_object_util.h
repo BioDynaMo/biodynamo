@@ -23,6 +23,15 @@ namespace bdm {
 using std::enable_if;
 using std::is_same;
 
+template <typename TCompileTimeParam = int>
+struct NullType {
+  template <template <typename> class TTDerived>
+  using CorrectTDerivedParam = NullType<>;
+
+  template <typename TTBackend>
+  using Self = NullType<>;
+};
+
 /// Macro to define a new simulation object
 /// \param sim_object_name
 /// \param base_class_scalar_name
@@ -46,42 +55,69 @@ using std::is_same;
 ///   * `SoaMyCell`: soa type alias (no template parameter required)
 ///   * `MyCellT`: templated type alias only needed internally for
 ///      extension mechanism
-#define BDM_SIM_OBJECT(sim_object_name, base_class_scalar_name)           \
-  template <typename TCompileTimeParam = CompileTimeParam<>,              \
-            template <typename> class TBase = base_class_scalar_name##T>  \
-  class sim_object_name##Ext;                                             \
-                                                                          \
-  template <typename TCompileTimeParam = CompileTimeParam<>>              \
-  using sim_object_name##T = sim_object_name##Ext<TCompileTimeParam>;     \
-                                                                          \
-  using sim_object_name = sim_object_name##T<CompileTimeParam<Scalar>>;   \
-  using Soa##sim_object_name = sim_object_name##T<CompileTimeParam<Soa>>; \
-                                                                          \
-  template <typename TCompileTimeParam, template <typename> class TBase>  \
-  class sim_object_name##Ext : public TBase<TCompileTimeParam>
+// TODO update documentation
+#define BDM_SIM_OBJECT(sim_object, base_class)                                  \
+  template <typename TCompileTimeParam = CompileTimeParam<>,                   \
+            template <typename> class TDerived = NullType,                     \
+            template <typename, template <typename> class> class TBase =       \
+                base_class##_TCTParam_TDerived>                                \
+  struct sim_object##Ext;                                                      \
+                                                                               \
+  template <typename TCompileTimeParam = CompileTimeParam<>>                   \
+  using sim_object##T = sim_object##Ext<TCompileTimeParam>;                    \
+                                                                               \
+  template <typename TCompileTimeParam = CompileTimeParam<>,                   \
+            template <typename> class TDerived = NullType>                     \
+  using sim_object##_TCTParam_TDerived =                                       \
+      sim_object##Ext<TCompileTimeParam, TDerived>;                            \
+                                                                               \
+  using sim_object = sim_object##Ext<CompileTimeParam<Scalar>, sim_object##T>; \
+  using Soa##sim_object =                                                      \
+      sim_object##Ext<CompileTimeParam<Soa>, sim_object##T>;                   \
+                                                                               \
+  template <typename TCompileTimeParam = CompileTimeParam<>>                   \
+  using sim_object##Test = sim_object##Ext<TCompileTimeParam, sim_object##T>;  \
+                                                                               \
+  template <typename TCompileTimeParam, template <typename> class TDerived,    \
+            template <typename, template <typename> class> class TBase>        \
+  struct sim_object##Ext : public TBase<TCompileTimeParam, TDerived>
+
+// TODO
+#define BDM_SO_DEFINE(...)                                                  \
+  template <typename TCompileTimeParam, template <typename> class TDerived, \
+            template <typename, template <typename> class> class TBase>     \
+  __VA_ARGS__<TCompileTimeParam, TDerived, TBase>
 
 /// Macro to define a new simulation object.
 /// For testing purposes it is required to specify the name of the compile
 /// time parameter struct as additional parameter.
-/// \param sim_object_name
-/// \param base_class_scalar_name
-/// \param compile_time_param_name
+/// \param sim_object
+/// \param base_class
+/// \param compile_time_param
 /// \see BDM_SIM_OBJECT
-#define BDM_SIM_OBJECT_TEST(sim_object_name, base_class_scalar_name,           \
-                            compile_time_param_name)                           \
-  template <typename TCompileTimeParam = compile_time_param_name<>,            \
-            template <typename> class TBase = base_class_scalar_name##T>       \
-  class sim_object_name##Ext;                                                  \
-                                                                               \
-  template <typename TCompileTimeParam = compile_time_param_name<>>            \
-  using sim_object_name##T = sim_object_name##Ext<TCompileTimeParam>;          \
-                                                                               \
-  using sim_object_name = sim_object_name##T<compile_time_param_name<Scalar>>; \
-  using Soa##sim_object_name =                                                 \
-      sim_object_name##T<compile_time_param_name<Soa>>;                        \
-                                                                               \
-  template <typename TCompileTimeParam, template <typename> class TBase>       \
-  class sim_object_name##Ext : public TBase<TCompileTimeParam>
+#define BDM_SIM_OBJECT_TEST(sim_object, base_class, compile_time_param)      \
+  template <typename TCompileTimeParam = compile_time_param<>,              \
+            template <typename> class TDerived = NullType,                  \
+            template <typename, template <typename> class> class TBase =    \
+                base_class##_TCTParam_TDerived>                             \
+  struct sim_object##Ext;                                                   \
+                                                                            \
+  template <typename TCompileTimeParam = compile_time_param<>>              \
+  using sim_object##T = sim_object##Ext<TCompileTimeParam>;                 \
+                                                                            \
+  template <typename TCompileTimeParam = compile_time_param<>,              \
+            template <typename> class TDerived = NullType>                  \
+  using sim_object##_TCTParam_TDerived =                                    \
+      sim_object##Ext<TCompileTimeParam, TDerived>;                         \
+                                                                            \
+  using sim_object =                                                        \
+      sim_object##Ext<compile_time_param<Scalar>, sim_object##T>;           \
+  using Soa##sim_object =                                                   \
+      sim_object##Ext<compile_time_param<Soa>, sim_object##T>;              \
+                                                                            \
+  template <typename TCompileTimeParam, template <typename> class TDerived, \
+            template <typename, template <typename> class> class TBase>     \
+  struct sim_object##Ext : public TBase<TCompileTimeParam, TDerived>
 
 // -----------------------------------------------------------------------------
 // Helper macros used to generate code for all data members of a class
@@ -159,28 +195,41 @@ using std::is_same;
 /// @param  ...: List of all data members of this class
 #define BDM_SIM_OBJECT_HEADER(class_name, class_version_id, ...)               \
  public:                                                                       \
-  using Base = TBase<TCompileTimeParam>;                                       \
-  /* reduce verbosity of some types and variables by defining a local alias */ \
-  using Base::kIdx;                                                            \
+  using Base = TBase<TCompileTimeParam, TDerived>;                             \
                                                                                \
-  using value_type = class_name<TCompileTimeParam, TBase>;                     \
+  /** reduce verbosity by defining a local alias */                            \
+  using Base::kIdx;                                                            \
                                                                                \
   using Backend = typename Base::Backend;                                      \
                                                                                \
   template <typename T>                                                        \
   using vec = typename Backend::template vec<T>;                               \
                                                                                \
-  /** Used internally to create the same object, but with */                   \
-  /** different backend - required since inheritance chain is not known */     \
-  /** inside a mixin. */                                                       \
+  /** Template parameter TDerived contains a template parameter TDerived */    \
+  /** itself with value NullType. To correct this, this type alias helps to */ \
+  /** replace it with the correct value */                                     \
+  template <template <typename> class TTDerived>                               \
+  using CorrectTDerivedParam =                                                 \
+      class_name<TCompileTimeParam, TTDerived, TBase>;                         \
+                                                                               \
+  using MostDerived = typename TDerived<                                       \
+      TCompileTimeParam>::template CorrectTDerivedParam<TDerived>;             \
+                                                                               \
+  template <typename TTBackend>                                                \
+  using TMostDerived =                                                         \
+      typename TDerived<typename TCompileTimeParam::template Self<             \
+          TTBackend>>::template CorrectTDerivedParam<TDerived>;                \
+                                                                               \
   template <typename TTBackend>                                                \
   using Self =                                                                 \
-      class_name<typename TCompileTimeParam::template Self<TTBackend>>;        \
+      class_name<typename TCompileTimeParam::template Self<TTBackend>,         \
+                 TDerived, TBase>;                                             \
                                                                                \
-  /** all template versions of this class are friends of each other */         \
-  /** so they can access each others data members */                           \
-  template <typename, template <typename> class>                               \
+  template <typename, template <typename> class,                               \
+            template <typename, template <typename> class> class>              \
   friend class class_name;                                                     \
+                                                                               \
+  using value_type = Self<Soa>;                                                \
                                                                                \
   explicit class_name(TRootIOCtor* io_ctor) {}                                 \
                                                                                \
@@ -312,12 +361,9 @@ using std::is_same;
  protected:                                                                    \
   /** Equivalent to std::vector<> push_back - it adds the scalar values to */  \
   /** all data members */                                                      \
-  void PushBackImpl(const SimulationObject<                                    \
-                    typename TCompileTimeParam::template Self<Scalar>>& o)     \
-      override {                                                               \
-    auto other = *static_cast<const Self<Scalar>*>(&o);                        \
+  void PushBackImpl(const TMostDerived<Scalar>& other) override {              \
     BDM_SIM_OBJECT_PUSH_BACK_BODY(__VA_ARGS__);                                \
-    Base::PushBackImpl(o);                                                     \
+    Base::PushBackImpl(other);                                                 \
   }                                                                            \
                                                                                \
   /** Swap element with last element and remove last element from each */      \
@@ -352,32 +398,39 @@ using std::is_same;
 ///         would result in "incomplete type errors" in certain cases.
 template <typename TSo, typename TBackend>
 class SoPointer {
-  using Container = typename TBackend::template Container<TSo>;
-public:
+  // Helper type alias to get a type with certain Backend
+  template <typename T>
+  using ToBackend = typename T::template Self<TBackend>;
+  using Container = typename TBackend::template Container<ToBackend<TSo>>;
 
-  SoPointer(Container* container, uint64_t element_idx) :
-    so_container_(container), element_idx_(element_idx) {}
+ public:
+  SoPointer(Container* container, uint64_t element_idx)
+      : so_container_(container), element_idx_(element_idx) {}
 
   /// constructs an SoPointer object representing a nullptr
   SoPointer() {}
 
-  bool IsNullPtr() const { return element_idx_ == std::numeric_limits<uint64_t>::max(); }
+  bool IsNullPtr() const {
+    return element_idx_ == std::numeric_limits<uint64_t>::max();
+  }
 
   /// This method is required, since `operator->` must return a pointer type.
   /// This is not possible for Soa backends where `operator[]` returns an
   /// rvalue.
   template <typename TTBackend = TBackend>
-  typename std::enable_if<std::is_same<TTBackend, Scalar>::value, TSo&>::type
+  typename std::enable_if<std::is_same<TTBackend, Scalar>::value,
+                          ToBackend<TSo>&>::type
   Get() {
     return (*so_container_)[element_idx_];
   }
 
   template <typename TTBackend = TBackend>
-  auto Get(typename std::enable_if<std::is_same<TTBackend, Soa>::value>::type* p = 0) {
+  auto Get(typename std::enable_if<std::is_same<TTBackend, Soa>::value>::type*
+               p = 0) {
     return (*so_container_)[element_idx_];
   }
 
-private:
+ private:
   Container* so_container_ = nullptr;
   uint64_t element_idx_ = std::numeric_limits<uint64_t>::max();
 };
