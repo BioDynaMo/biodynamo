@@ -1,9 +1,9 @@
 #ifndef NEUROSCIENCE_NEURON_H_
 #define NEUROSCIENCE_NEURON_H_
 
+#include <typeinfo>  // TODO remove
 #include "cell.h"
 #include "simulation_object_util.h"
-#include <typeinfo> // TODO remove
 
 namespace bdm {
 
@@ -12,16 +12,18 @@ BDM_SIM_OBJECT(Neuron, Cell) {
  public:
   using SimBackend = typename TCompileTimeParam::SimulationBackend;
   using TNeurite = typename TCompileTimeParam::TNeurite;
-  using TNeuron = typename TCompileTimeParam::TNeuron;
-  NeuronExt() {
-    std::cout << typeid(TMostDerived<SimBackend>).name() << std::endl;
-  }
+
+  NeuronExt() { std::cout << typeid(MostDerived).name() << std::endl; }
 
  private:
+  // vec<SoPointer<typename ToBackend<TNeurite, SimBackend>::type, SimBackend>>
+  // daughters_;
   vec<SoPointer<TNeurite, SimBackend>> daughters_;
+  // TNeurite* bar_;
+
   // vec<SoPointer<TNeuron<SimBackend>, SimBackend>> foo_;
-  vec<SoPointer<TMostDerived<SimBackend>, SimBackend>> foo_;
-  // vec<TMostDerived<SimBackend>*> foo_;
+  vec<SoPointer<MostDerived, SimBackend>> foo_;
+  // vec<MostDerived*> foo_;
   // using TNeuron instead of Self<Backend> in case a customized neuron is used
   //  vec<SoPointer<TNeuron, SimBackend>> bar_;
   // TNeuron* bar_;
@@ -34,7 +36,7 @@ BDM_SIM_OBJECT(SpecializedNeuron, Neuron) {
   SpecializedNeuronExt() { auto&& me = me_[kIdx].Get(); }
 
  private:
-  vec<SoPointer<Self<SimBackend>, SimBackend>> me_;
+  vec<SoPointer<MostDerived, SimBackend>> me_;
 };
 
 }  // namespace bdm

@@ -21,24 +21,23 @@ namespace bdm {
 using std::enable_if;
 using std::is_same;
 
-template <typename TCompileTimeParam, template <typename> class TDerived>
+template <typename TCompileTimeParam, typename TDerived>
 class SimulationObject;
 
 /// Contains implementation for SimulationObject that are specific to SOA
 /// backend. The peculiarity of SOA objects is that it is simulation object
 /// and container at the same time.
 /// @see TransactionalVector
-template <typename TCompileTimeParam, template <typename> class TDerived>
+template <typename TCompileTimeParam, typename TDerived>
 class SoaSimulationObject {
  public:
   using Backend = typename TCompileTimeParam::Backend;
-  template <typename, template <typename> class>
+  template <typename, typename>
   friend class SoaSimulationObject;
 
   template <typename TTBackend>
-  using TMostDerived =
-      typename TDerived<typename TCompileTimeParam::template Self<TTBackend>>::
-          template CorrectTDerivedParam<TDerived>;
+  using TMostDerived = typename TDerived::template type<
+      typename TCompileTimeParam::template Self<TTBackend>, TDerived>;
 
   template <typename TBackend>
   using Self =
@@ -154,13 +153,12 @@ class SoaSimulationObject {
 
 /// Contains implementations for SimulationObject that are specific to scalar
 /// backend
-template <typename TCompileTimeParam, template <typename> class TDerived>
+template <typename TCompileTimeParam, typename TDerived>
 class ScalarSimulationObject {
  public:
   template <typename TTBackend>
-  using TMostDerived =
-      typename TDerived<typename TCompileTimeParam::template Self<TTBackend>>::
-          template CorrectTDerivedParam<TDerived>;
+  using TMostDerived = typename TDerived::template type<
+      typename TCompileTimeParam::template Self<TTBackend>, TDerived>;
 
   virtual ~ScalarSimulationObject() {}
 
@@ -187,7 +185,7 @@ class ScalarSimulationObject {
 };
 
 /// Helper type trait to map backends to simulation object implementations
-template <typename TCompileTimeParam, template <typename> class TDerived>
+template <typename TCompileTimeParam, typename TDerived>
 struct SimulationObjectImpl {
   using Backend = typename TCompileTimeParam::Backend;
   using type = typename type_ternary_operator<
@@ -197,18 +195,15 @@ struct SimulationObjectImpl {
 };
 
 /// Contains code required by all simulation objects
-template <typename TCompileTimeParam, template <typename> class TDerived>
+template <typename TCompileTimeParam, typename TDerived>
 class SimulationObject
     : public SimulationObjectImpl<TCompileTimeParam, TDerived>::type {
  public:
   using Backend = typename TCompileTimeParam::Backend;
   using Base = typename SimulationObjectImpl<TCompileTimeParam, TDerived>::type;
 
-  template <typename, template <typename> class>
+  template <typename, typename>
   friend class SimulationObject;
-
-  template <template <typename> class TTDerived>
-  using CorrectTDerivedParam = SimulationObject<TCompileTimeParam, TTDerived>;
 
   SimulationObject() : Base() {}
 
@@ -232,13 +227,15 @@ class SimulationObject
 
 /// type alias to be consistent with naming convention for simulation object
 /// extension
+// <<<<<<< fd61b840dad0f9487b0036ea9aa49a238eef7f8e
+// /// \see BDM_SIM_OBJECT
+// template <typename TCompileTimeParam, template <typename> class TDerived>
+// =======
 /// \see BDM_SIM_OBJECT
-template <typename TCompileTimeParam, template <typename> class TDerived>
+template <typename TCompileTimeParam, typename TDerived>
+// >>>>>>> Improve CRTP solution. Fix compile errors with placeholder NullType
 using SimulationObject_TCTParam_TDerived =
     SimulationObject<TCompileTimeParam, TDerived>;
-
-template <typename TCompileTimeParam>
-using SimulationObjectT = SimulationObject<TCompileTimeParam, NullType>;
 
 }  // namespace bdm
 
