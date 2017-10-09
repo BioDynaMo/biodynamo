@@ -22,8 +22,10 @@ using std::vector;
 class DiffusionGrid {
  public:
   DiffusionGrid() {}
-  DiffusionGrid(std::string substance, double dc, double mu, int resolution)
-      : substance_(substance),
+  DiffusionGrid(int substance_id, std::string substance_name, double dc,
+                double mu, int resolution)
+      : substance_(substance_id),
+        substance_name_(substance_name),
         dc_({{1 - dc, dc / 6, dc / 6, dc / 6, dc / 6, dc / 6, dc / 6}}),
         mu_(mu),
         resolution_(resolution) {}
@@ -469,7 +471,9 @@ class DiffusionGrid {
 
   int GetBoxLength() { return box_length_; }
 
-  std::string GetSubstanceName() { return substance_; }
+  int GetSubstanceId() { return substance_; }
+
+  std::string GetSubstanceName() { return substance_name_; }
 
   double GetDecayConstant() { return mu_; }
 
@@ -484,8 +488,10 @@ class DiffusionGrid {
   int GetResolution() { return resolution_; }
 
  private:
+  /// The id of the substance of this grid
+  int substance_;
   /// The name of the substance of this grid
-  std::string substance_;
+  std::string substance_name_;
   /// The length of a box
   uint32_t box_length_;
   /// The array of concentration values
@@ -498,7 +504,7 @@ class DiffusionGrid {
   double concentration_threshold_ = 1;
   /// The diffusion coefficients [cc, cw, ce, cs, cn, cb, ct]
   array<double, 7> dc_;
-  /// Decay constant
+  /// The decay constant
   double mu_ = 0;
   /// The grid dimensions of the diffusion grid
   array<int32_t, 6> grid_dimensions_;
@@ -509,7 +515,7 @@ class DiffusionGrid {
   /// Flag to determine if this grid has been initialized
   bool initialized_ = false;
   /// The resolution of the diffusion grid
-  int resolution_;
+  int resolution_ = 1;
 
   ClassDefNV(DiffusionGrid, 1);
 };

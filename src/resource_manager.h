@@ -138,9 +138,9 @@ class ResourceManager {
   std::vector<DiffusionGrid*>& GetDiffusionGrids() { return diffusion_grids_; }
 
   /// Return the diffusion grid which holds the substance of specified name
-  DiffusionGrid* GetDiffusionGrid(std::string name) {
+  DiffusionGrid* GetDiffusionGrid(int substance_id) {
     for (auto grid : diffusion_grids_) {
-      if (grid->GetSubstanceName() == name) {
+      if (grid->GetSubstanceId() == substance_id) {
         return grid;
       }
     }

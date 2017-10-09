@@ -32,7 +32,7 @@ TEST(DiffusionTest, GridDimensions) {
   positions.push_back({90, 90, 90});
   CellFactory(cells, positions);
 
-  DiffusionGrid* d_grid = new DiffusionGrid("Kalium", 0.4, 0, 1);
+  DiffusionGrid* d_grid = new DiffusionGrid(0, "Kalium", 0.4, 0, 1);
 
   auto& grid = Grid<>::GetInstance();
   grid.Initialize();
@@ -62,7 +62,7 @@ TEST(DiffusionTest, UpdateGrid) {
   positions.push_back({90, 90, 90});
   CellFactory(cells, positions);
 
-  DiffusionGrid* d_grid = new DiffusionGrid("Kalium", 0.4, 0, 1);
+  DiffusionGrid* d_grid = new DiffusionGrid(0, "Kalium", 0.4, 0, 1);
 
   auto& grid = Grid<>::GetInstance();
   grid.Initialize();
@@ -101,7 +101,7 @@ TEST(DiffusionTest, FalseUpdateGrid) {
   positions.push_back({90, 90, 90});
   CellFactory(cells, positions);
 
-  DiffusionGrid* d_grid = new DiffusionGrid("Kalium", 0.4, 0, 1);
+  DiffusionGrid* d_grid = new DiffusionGrid(0, "Kalium", 0.4, 0, 1);
 
   auto& grid = Grid<>::GetInstance();
   grid.Initialize();
@@ -143,7 +143,7 @@ TEST(DiffusionTest, LeakingEdge) {
   positions.push_back({60, 60, 60});
   CellFactory(cells, positions);
 
-  DiffusionGrid* d_grid = new DiffusionGrid("Kalium", 0.4, 0, 1);
+  DiffusionGrid* d_grid = new DiffusionGrid(0, "Kalium", 0.4, 0, 1);
 
   auto& grid = Grid<>::GetInstance();
   grid.Initialize();
@@ -222,7 +222,7 @@ TEST(DiffusionTest, CopyOldData) {
   positions.push_back({60, 60, 60});
   CellFactory(cells, positions);
 
-  DiffusionGrid* d_grid = new DiffusionGrid("Kalium", 0.4, 0, 1);
+  DiffusionGrid* d_grid = new DiffusionGrid(0, "Kalium", 0.4, 0, 1);
 
   auto& grid = Grid<>::GetInstance();
   grid.Initialize();
@@ -305,7 +305,7 @@ TEST(DiffusionTest, IOTest) {
 
   remove(ROOTFILE);
 
-  DiffusionGrid* d_grid = new DiffusionGrid("Kalium", 0.4, 0, 2);
+  DiffusionGrid* d_grid = new DiffusionGrid(0, "Kalium", 0.4, 0, 2);
 
   // Create a 100x100x100 diffusion grid with 20 boxes per dimension
   std::array<int32_t, 6> dimensions = {{-50, 50, -50, 50, -50, 50}};

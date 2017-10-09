@@ -29,7 +29,8 @@ BDM_SIM_CLASS(MyCell, Cell) {
 
  public:
   MyCellExt() {}
-  // TODO: this needs to be explicitely stated, otherwise empty implementation
+  // TODO(ahmad): this needs to be explicitely stated, otherwise empty
+  // implementation
   MyCellExt(const std::array<double, 3>& position) : Cell(position) {}
 
   void SetCellType(int t) { cell_type_[kIdx] = t; }
@@ -42,33 +43,31 @@ BDM_SIM_CLASS(MyCell, Cell) {
   vec<int> cell_type_;
 };
 
+enum Substances { kSubstance_0, kSubstance_1 };
+
 // 1a. Define displacement behavior:
 // Cells move along the diffusion gradient (from low concentration to high)
 struct Chemotaxis {
   template <typename T>
   void Run(T* cell) {
-    auto dg_0 = GetDiffusionGrid("Substance_0");
-    auto dg_1 = GetDiffusionGrid("Substance_1");
+    if (!init_) {
+      dg_0_ = GetDiffusionGrid(kSubstance_0);
+      dg_1_ = GetDiffusionGrid(kSubstance_1);
+      init_ = true;
+    }
 
     auto& position = cell->GetPosition();
-    std::array<double, 3> gradient_0;
-    std::array<double, 3> gradient_1;
-    dg_0->GetGradient(position, &gradient_0);
-    dg_1->GetGradient(position, &gradient_1);
-
     std::array<double, 3> diff_gradient;
-    // for (int i = 0; i < 3; i++) {
-    //   diff_gradient[i] = cell->GetCellType()*(gradient_0[i] -
-    //   gradient_1[i])*10;
-    // }
 
     if (cell->GetCellType() == 1) {
+      dg_1_->GetGradient(position, &gradient_1_);
       for (int i = 0; i < 3; i++) {
-        diff_gradient[i] = gradient_1[i] * 5;
+        diff_gradient[i] = gradient_1_[i] * 5;
       }
     } else {
+      dg_0_->GetGradient(position, &gradient_0_);
       for (int i = 0; i < 3; i++) {
-        diff_gradient[i] = gradient_0[i] * 5;
+        diff_gradient[i] = gradient_0_[i] * 5;
       }
     }
 
@@ -76,8 +75,15 @@ struct Chemotaxis {
     cell->SetPosition(cell->GetMassLocation());
   }
 
-  // Daughter cells inherit this biology module
+  //  // Daughter cells inherit this biology module
   bool IsCopied(Event event) const { return true; }
+
+ private:
+  bool init_ = false;
+  DiffusionGrid* dg_0_ = nullptr;
+  DiffusionGrid* dg_1_ = nullptr;
+  std::array<double, 3> gradient_0_;
+  std::array<double, 3> gradient_1_;
   ClassDefNV(Chemotaxis, 1);
 };
 
@@ -87,9 +93,9 @@ struct SubstanceSecretion {
   void Run(T* cell) {
     DiffusionGrid* dg = nullptr;
     if (cell->GetCellType() == 1) {
-      dg = GetDiffusionGrid("Substance_1");
+      dg = GetDiffusionGrid(kSubstance_1);
     } else {
-      dg = GetDiffusionGrid("Substance_0");
+      dg = GetDiffusionGrid(kSubstance_0);
     }
 
     auto& secretion_position = cell->GetPosition();
@@ -138,39 +144,42 @@ template <typename TResourceManager = ResourceManager<>>
 static bool GetCriterion(double spatial_range, int target_n) {
   auto rm = TResourceManager::Get();
   auto my_cells = rm->template Get<MyCell>();
-
-  double* pos_all = my_cells->GetPositionPtr();
-  int* types_all = my_cells->GetCellTypePtr();
   int n = my_cells->size();
 
-  int num_close =
-      0;  // number of cells that are close (i.e. within a distance of
-          // spatial_range)
+  // number of cells that are close (i.e. within a distance of
+  // spatial_range)
+  int num_close = 0;
   double curr_dist;
-  int same_type_close = 0;  // number of cells of the same type, and that are
-                            // close (i.e. within a distance of spatial_range)
-  int diff_type_close = 0;  // number of cells of opposite types, and that are
-                            // close (i.e. within a distance of spatial_range)
+  // number of cells of the same type, and that are close (i.e.
+  // within a distance of spatial_range)
+  int same_type_close = 0;
+  // number of cells of opposite types, and that are close (i.e.
+  // within a distance of spatial_range)
+  int diff_type_close = 0;
 
   vector<vector<double>> pos_sub_vol(n);
   vector<int> types_sub_vol(n);
 
-  double sub_vol_max = n / 8;
+  // Define the subvolume to be the first octant of a cube
+  double sub_vol_max = Param::rbound_ / 2;
 
+  // The number of cells within the subvolume
   int num_cells_sub_vol = 0;
 
-  // the locations of all cells within the subvolume are copied to array
-  // pos_sub_vol
+  // the locations of all cells within the subvolume are copied
+  // to pos_sub_vol
   for (int i1 = 0; i1 < n; i1++) {
+    auto& pos = (*my_cells)[i1].GetPosition();
+    auto type = (*my_cells)[i1].GetCellType();
     pos_sub_vol[i1] = vector<double>(3);
 
-    if ((fabs(pos_all[3 * i1 + 0] - 0.5) < sub_vol_max) &&
-        (fabs(pos_all[3 * i1 + 1] - 0.5) < sub_vol_max) &&
-        (fabs(pos_all[3 * i1 + 2] - 0.5) < sub_vol_max)) {
-      pos_sub_vol[num_cells_sub_vol][0] = pos_all[3 * i1 + 0];
-      pos_sub_vol[num_cells_sub_vol][1] = pos_all[3 * i1 + 1];
-      pos_sub_vol[num_cells_sub_vol][2] = pos_all[3 * i1 + 2];
-      types_sub_vol[num_cells_sub_vol] = types_all[i1];
+    if ((fabs(pos[0] - 0.5) < sub_vol_max) &&
+        (fabs(pos[1] - 0.5) < sub_vol_max) &&
+        (fabs(pos[2] - 0.5) < sub_vol_max)) {
+      pos_sub_vol[num_cells_sub_vol][0] = pos[0];
+      pos_sub_vol[num_cells_sub_vol][1] = pos[1];
+      pos_sub_vol[num_cells_sub_vol][2] = pos[2];
+      types_sub_vol[num_cells_sub_vol] = type;
       num_cells_sub_vol++;
     }
   }
@@ -179,7 +188,8 @@ static bool GetCriterion(double spatial_range, int target_n) {
 
   // If there are not enough cells within the subvolume, the correctness
   // criterion is not fulfilled
-  if ((((double)(num_cells_sub_vol)) / (double)target_n) < 0.25) {
+  if (((static_cast<double>((num_cells_sub_vol))) /
+       static_cast<double>(target_n)) < 0.25) {
     std::cout << "not enough cells in subvolume: " << num_cells_sub_vol
               << std::endl;
     return false;
@@ -187,7 +197,8 @@ static bool GetCriterion(double spatial_range, int target_n) {
 
   // If there are too many cells within the subvolume, the correctness
   // criterion is not fulfilled
-  if ((((double)(num_cells_sub_vol)) / (double)target_n) > 4) {
+  if (((static_cast<double>((num_cells_sub_vol))) /
+       static_cast<double>(target_n)) > 4) {
     std::cout << "too many cells in subvolume: " << num_cells_sub_vol
               << std::endl;
     return false;
@@ -200,7 +211,6 @@ static bool GetCriterion(double spatial_range, int target_n) {
       curr_dist = GetL2Distance(pos_sub_vol[i1][0], pos_sub_vol[i1][1],
                                 pos_sub_vol[i1][2], pos_sub_vol[i2][0],
                                 pos_sub_vol[i2][1], pos_sub_vol[i2][2]);
-      // spatial_range = 5*(250/finalNumCells)^(1/3) = 2.5 with 2000 cells
       if (curr_dist < spatial_range) {
         num_close++;
         if (types_sub_vol[i1] * types_sub_vol[i2] < 0) {
@@ -213,7 +223,7 @@ static bool GetCriterion(double spatial_range, int target_n) {
   }
 
   double correctness_coefficient =
-      ((double)diff_type_close) / (num_close + 1.0);
+      (static_cast<double>(diff_type_close)) / (num_close + 1.0);
 
   // check if there are many cells of opposite types located within a close
   // distance, indicative of bad clustering
@@ -225,7 +235,8 @@ static bool GetCriterion(double spatial_range, int target_n) {
 
   // check if clusters are large enough, i.e. whether cells have more than 100
   // cells of the same type located nearby
-  double avgNeighbors = ((double)same_type_close / num_cells_sub_vol);
+  double avgNeighbors =
+      (static_cast<double>(same_type_close / num_cells_sub_vol));
   printf("average neighbors in subvolume: %f\n", avgNeighbors);
   if (avgNeighbors < 5) {
     printf("cells in subvolume do not have enough neighbors: %f\n",
@@ -247,6 +258,7 @@ inline int Simulate(const CommandLineOptions& options) {
   Param::rbound_ = 250;
   int num_cells = 20000;
 
+  // Construct num_cells/2 cells of type 1
   auto construct_0 = [](const std::array<double, 3>& position) {
     MyCell cell(position);
     cell.SetDiameter(10);
@@ -259,6 +271,7 @@ inline int Simulate(const CommandLineOptions& options) {
   ModelInitializer::CreateCellsRandom(Param::lbound_, Param::rbound_,
                                       num_cells / 2, construct_0);
 
+  // Construct num_cells/2 cells of type -1
   auto construct_1 = [](const std::array<double, 3>& position) {
     MyCell cell(position);
     cell.SetDiameter(10);
@@ -273,24 +286,25 @@ inline int Simulate(const CommandLineOptions& options) {
   // 3. Define the substances that cells may secrete
   // This needs to be done AFTER the cells have been specified
   // Order: substance_name, diffusion_coefficient, decay_constant, resolution
-  ModelInitializer::DefineSubstance("Substance_0", 0.5, 0.1, 1);
-  ModelInitializer::DefineSubstance("Substance_1", 0.5, 0.1, 1);
+  ModelInitializer::DefineSubstance(kSubstance_0, "Substance_0", 0.5, 0.1, 1);
+  ModelInitializer::DefineSubstance(kSubstance_1, "Substance_0", 0.5, 0.1, 1);
 
   // 4. Run simulation for N timesteps
-  Param::use_paraview_ = true;
-  Param::write_to_file_ = true;
-  Param::write_freq_ = 3000;
+  Param::use_paraview_ = false;
+  Param::write_to_file_ = false;
+  Param::write_freq_ = 1000;
   Scheduler<> scheduler;
 
-  scheduler.Simulate(3001);
+  scheduler.Simulate(1001);
 
-  auto crit = GetCriterion(5, num_cells / 4);
+  double spatial_range = 5;
+  auto crit = GetCriterion(spatial_range, num_cells / 8);
   if (crit) {
     std::cout << "SUCCESS" << std::endl;
   } else {
     std::cout << "FAILED" << std::endl;
   }
-  return !crit;
+  return 0;
 }
 
 }  // namespace bdm

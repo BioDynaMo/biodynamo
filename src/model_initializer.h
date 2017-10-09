@@ -149,18 +149,23 @@ struct ModelInitializer {
   }
 
   /// Allows cells to secrete the specified substance. Diffusion throughout the
-  // simulation space is automatically taken care of by the DiffusionGrid class
+  /// simulation space is automatically taken care of by the DiffusionGrid class
   ///
-  /// @param[in]  name             The name of the substance
-  /// @param[in]  diffusion_coeff  The diffusion coefficient of the substance
+  /// @param[in]  substance_id     The substance identifier
+  /// @param[in]  substance_name   The substance name
+  /// @param[in]  diffusion_coeff  The diffusion coefficient
+  /// @param[in]  decay_constant   The decay constant
+  /// @param[in]  resolution       The resolution of the diffusion grid
   ///
   template <typename TResourceManager = ResourceManager<>>
-  static void DefineSubstance(std::string name, double diffusion_coeff,
-                              double decay_constant, int resolution) {
+  static void DefineSubstance(int substance_id, std::string substance_name,
+                              double diffusion_coeff, double decay_constant,
+                              int resolution) {
     assert(resolution > 0 && "Resolution needs to be a positive integer value");
     auto rm = TResourceManager::Get();
     DiffusionGrid* d_grid =
-        new DiffusionGrid(name, diffusion_coeff, decay_constant, resolution);
+        new DiffusionGrid(substance_id, substance_name, diffusion_coeff,
+                          decay_constant, resolution);
     auto& diffusion_grids = rm->GetDiffusionGrids();
     diffusion_grids.push_back(d_grid);
   }

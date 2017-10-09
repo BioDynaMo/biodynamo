@@ -128,8 +128,8 @@ inline void RunIOTest() {
   b_vector->push_back(BScalar(3.14));
   b_vector->push_back(BScalar(6.28));
 
-  DiffusionGrid* dgrid_1 = new DiffusionGrid("Kalium", 0.4, 0, 2);
-  DiffusionGrid* dgrid_2 = new DiffusionGrid("Natrium", 0.2, 0.1, 1);
+  DiffusionGrid* dgrid_1 = new DiffusionGrid(0, "Kalium", 0.4, 0, 2);
+  DiffusionGrid* dgrid_2 = new DiffusionGrid(1, "Natrium", 0.2, 0.1, 1);
   rm->GetDiffusionGrids().push_back(dgrid_1);
   rm->GetDiffusionGrids().push_back(dgrid_2);
 
@@ -150,6 +150,8 @@ inline void RunIOTest() {
   EXPECT_NEAR(3.14, (*restored_rm->template Get<B>())[0].GetData(), kEpsilon);
   EXPECT_NEAR(6.28, (*restored_rm->template Get<B>())[1].GetData(), kEpsilon);
 
+  EXPECT_EQ(0, restored_rm->GetDiffusionGrids()[0]->GetSubstanceId());
+  EXPECT_EQ(1, restored_rm->GetDiffusionGrids()[1]->GetSubstanceId());
   EXPECT_EQ("Kalium", restored_rm->GetDiffusionGrids()[0]->GetSubstanceName());
   EXPECT_EQ("Natrium", restored_rm->GetDiffusionGrids()[1]->GetSubstanceName());
   EXPECT_EQ(0.6,

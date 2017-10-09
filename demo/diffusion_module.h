@@ -1,6 +1,8 @@
 #ifndef DEMO_DIFFUSION_MODULE_H_
 #define DEMO_DIFFUSION_MODULE_H_
 
+#include <vector>
+
 #include "biodynamo.h"
 
 namespace bdm {
@@ -10,6 +12,9 @@ namespace bdm {
 // artificially added in the middle of this cube. The cells are modeled to
 // displace according to the extracellular gradient; in this case to the middle.
 // -----------------------------------------------------------------------------
+
+// List the extracellular substances
+enum Substances { kKalium };
 
 // 1a. Define growth behaviour:
 // Cells divide if the diameter reaches a specific value
@@ -32,7 +37,7 @@ struct GrowthModule {
 struct Chemotaxis {
   template <typename T>
   void Run(T* cell) {
-    auto dg = GetDiffusionGrid("Kalium");
+    auto dg = GetDiffusionGrid(kKalium);
     dg->SetConcentrationThreshold(1e15);
 
     auto& position = cell->GetPosition();
@@ -54,7 +59,7 @@ struct Chemotaxis {
 struct KaliumSecretion {
   template <typename T>
   void Run(T* cell) {
-    auto dg = GetDiffusionGrid("Kalium");
+    auto dg = GetDiffusionGrid(kKalium);
     array<double, 3> secretion_position = {50, 50, 50};
     dg->IncreaseConcentrationBy(secretion_position, 4);
   }
@@ -97,7 +102,7 @@ inline int Simulate(const CommandLineOptions& options) {
 
   // 3. Define the substances that cells may secrete
   // This needs to be done AFTER the cells have been specified
-  ModelInitializer::DefineSubstance("Kalium", 0.4, 0, 5);
+  ModelInitializer::DefineSubstance(kKalium, "Kalium", 0.4, 0, 5);
 
   // 4. Run simulation for N timesteps
   Param::use_paraview_ = true;

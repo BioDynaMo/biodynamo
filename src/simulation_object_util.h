@@ -340,8 +340,8 @@ void Delete(Container* container, size_t index) {
 
 /// Get the diffusion grid which holds the substance of specified name
 template <typename TResourceManager = ResourceManager<>>
-static DiffusionGrid* GetDiffusionGrid(std::string name) {
-  auto dg = TResourceManager::Get()->GetDiffusionGrid(name);
+static DiffusionGrid* GetDiffusionGrid(int substance_id) {
+  auto dg = TResourceManager::Get()->GetDiffusionGrid(substance_id);
   assert(dg != nullptr &&
          "Tried to get non-existing diffusion grid. Did you specify the "
          "correct substance name?");

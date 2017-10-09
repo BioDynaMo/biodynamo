@@ -13,9 +13,16 @@ using std::size_t;
 struct BiologyModuleOp {
   template <typename TContainer>
   void operator()(TContainer* cells, uint16_t type_idx) const {
-#pragma omp parallel for
-    for (size_t i = 0; i < cells->size(); i++) {
-      (*cells)[i].template RunBiologyModules<typename TContainer::value_type>();
+#pragma omp parallel
+    {
+// Iterations are data independent, so threads don't need to
+// wait for each other, which can improve performance when
+// biology modules are not equal in workload
+#pragma omp for nowait
+      for (size_t i = 0; i < cells->size(); i++) {
+        (*cells)[i]
+            .template RunBiologyModules<typename TContainer::value_type>();
+      }
     }
   }
 };
