@@ -5,6 +5,7 @@
 #include <iostream>
 #include <string>
 
+#include "param.h"
 #include "timing_aggregator.h"
 
 namespace bdm {
@@ -20,12 +21,14 @@ class Timing {
       : start_{Timestamp()}, text_{description}, aggregator_{aggregator} {}
 
   ~Timing() {
-    // int64_t duration = (Timestamp() - start_);
-    // if (aggregator_ == nullptr) {
-    //   std::cout << text_ << " " << duration << " ms" << std::endl;
-    // } else {
-    //   aggregator_->AddEntry(text_, duration);
-    // }
+    if (Param::display_timers_) {
+      int64_t duration = (Timestamp() - start_);
+      if (aggregator_ == nullptr) {
+        std::cout << text_ << " " << duration << " ms" << std::endl;
+      } else {
+        aggregator_->AddEntry(text_, duration);
+      }
+    }
   }
 
   int64_t Timestamp() {

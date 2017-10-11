@@ -96,6 +96,12 @@ class Param {
   static double lbound_;
   /// The right bound
   static double rbound_;
+
+  /// Enable physics in the simulation
+  static bool run_physics_;
+
+  /// Display the timers of all operations for each time step
+  static bool display_timers_;
 };
 
 }  // namespace bdm

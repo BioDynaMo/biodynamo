@@ -156,7 +156,33 @@ class DisplacementOp {
       cell.SetPosition(cell.GetMassLocation());
 
       // Reset biological movement to 0.
-      // cell.SetTractorForce({0, 0, 0});
+      cell.SetTractorForce({0, 0, 0});
+    }
+  }
+};
+
+/// Keeps the simulation objects contained within the bounds as defined in
+/// param.h
+class BoundSpace {
+ public:
+  BoundSpace() {}
+  ~BoundSpace() {}
+
+  template <typename TContainer>
+  void operator()(TContainer* cells, uint16_t type_idx) const {
+// set new positions after all updates have been calculated
+// otherwise some cells would see neighbors with already updated positions
+// which would lead to inconsistencies
+#pragma omp parallel for
+    for (size_t i = 0; i < cells->size(); i++) {
+      auto&& cell = (*cells)[i];
+      if (Param::bound_space_) {
+        ApplyBoundingBox(&cell, Param::lbound_, Param::rbound_);
+      }
+      cell.SetPosition(cell.GetMassLocation());
+
+      // Reset biological movement to 0.
+      cell.SetTractorForce({0, 0, 0});
     }
   }
 };

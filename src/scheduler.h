@@ -138,7 +138,11 @@ class Scheduler {
     }
     rm->ApplyOnAllTypes(diffusion_);
     rm->ApplyOnAllTypes(biology_);
-    rm->ApplyOnAllTypes(physics_);
+    if (Param::run_physics_) {
+      rm->ApplyOnAllTypes(physics_with_bound_);
+    } else if (Param::bound_space_) {
+      rm->ApplyOnAllTypes(bound_space_);
+    }
     rm->ApplyOnAllTypes(commit);
   }
 
@@ -151,7 +155,9 @@ class Scheduler {
 
   OpTimer<DiffusionOp<>> diffusion_ = OpTimer<DiffusionOp<>>("diffusion");
   OpTimer<BiologyModuleOp> biology_ = OpTimer<BiologyModuleOp>("biology");
-  OpTimer<DisplacementOp<>> physics_ = OpTimer<DisplacementOp<>>("physics");
+  OpTimer<DisplacementOp<>> physics_with_bound_ =
+      OpTimer<DisplacementOp<>>("physics");
+  OpTimer<BoundSpace> bound_space_ = OpTimer<BoundSpace>("bound_space");
 
   TGrid* grid_;
 };

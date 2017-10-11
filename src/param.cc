@@ -17,4 +17,8 @@ double Param::lbound_ = 0;
 
 double Param::rbound_ = 100;
 
+bool Param::run_physics_ = true;
+
+bool Param::display_timers_ = false;
+
 }  // namespace bdm
