@@ -138,13 +138,10 @@ class ResourceManager {
   std::vector<DiffusionGrid*>& GetDiffusionGrids() { return diffusion_grids_; }
 
   /// Return the diffusion grid which holds the substance of specified name
-  DiffusionGrid* GetDiffusionGrid(int substance_id) {
-    for (auto grid : diffusion_grids_) {
-      if (grid->GetSubstanceId() == substance_id) {
-        return grid;
-      }
-    }
-    return nullptr;
+  DiffusionGrid* GetDiffusionGrid(size_t substance_id) {
+    assert(substance_id < diffusion_grids_.size() &&
+           "You tried to access a diffusion grid that does not exist!");
+    return diffusion_grids_[substance_id];
   }
 
   /// Returns the total number of simulation objects

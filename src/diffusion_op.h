@@ -27,7 +27,7 @@ class DiffusionOp {
     for (auto dg : diffusion_grids) {
       if (!(dg->IsInitialized())) {
         int lbound = grid.GetDimensionThresholds()[0];
-        int rbound = grid.GetDimensionThresholds()[0];
+        int rbound = grid.GetDimensionThresholds()[1];
         // If we are bounded we can directly grow to the specified size, to
         // avoid copying diffusion grid data with DiffusionGrid::CopyOldData
         if (Param::bound_space_) {

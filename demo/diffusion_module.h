@@ -37,7 +37,7 @@ struct GrowthModule {
 struct Chemotaxis {
   template <typename T>
   void Run(T* cell) {
-    auto dg = GetDiffusionGrid(kKalium);
+    static auto dg = GetDiffusionGrid(kKalium);
     dg->SetConcentrationThreshold(1e15);
 
     auto& position = cell->GetPosition();
@@ -59,7 +59,7 @@ struct Chemotaxis {
 struct KaliumSecretion {
   template <typename T>
   void Run(T* cell) {
-    auto dg = GetDiffusionGrid(kKalium);
+    static auto dg = GetDiffusionGrid(kKalium);
     array<double, 3> secretion_position = {50, 50, 50};
     dg->IncreaseConcentrationBy(secretion_position, 4);
   }
@@ -76,7 +76,8 @@ struct CompileTimeParam : public DefaultCompileTimeParam<Backend> {
 };
 
 inline int Simulate(const CommandLineOptions& options) {
-  // 3. Define initial model - in this example: two cells
+  Param::backup_every_x_seconds_ = 1;
+  // 3a. Define initial model - in this example: two cells
   auto construct = [](const std::array<double, 3>& position) {
     Cell cell(position);
     cell.SetDiameter(30);
@@ -84,6 +85,7 @@ inline int Simulate(const CommandLineOptions& options) {
     cell.SetMass(1.0);
     cell.AddBiologyModule(Chemotaxis());
     cell.AddBiologyModule(GrowthModule());
+    // Let only one cell be responsible for the artificial substance secretion
     if (position[0] == 0 && position[1] == 0 && position[2] == 0) {
       cell.AddBiologyModule(KaliumSecretion());
     }
@@ -100,8 +102,7 @@ inline int Simulate(const CommandLineOptions& options) {
   positions.push_back({100, 100, 100});
   ModelInitializer::CreateCells(positions, construct);
 
-  // 3. Define the substances that cells may secrete
-  // This needs to be done AFTER the cells have been specified
+  // 3b. Define the substances that cells may secrete
   ModelInitializer::DefineSubstance(kKalium, "Kalium", 0.4, 0, 5);
 
   // 4. Run simulation for N timesteps
