@@ -18,9 +18,11 @@ template <typename TBackend>
 struct CompileTimeParam
     : public DefaultCompileTimeParam<TBackend>,
       public neuroscience::DefaultCompileTimeParam<TBackend> {
-  using TNeuron = SpecializedNeuron;
+  using TNeuron = neuroscience::SpecializedNeuron;
   using TNeurite = SpecializedNeurite;
 };
+
+namespace neuroscience {
 
 TEST(NeuronTest, Scalar) {
   Neurite neurite;
@@ -36,4 +38,5 @@ TEST(NeuronTest, Soa) {
   typename CompileTimeParam<>::TNeuron soan1;
 }
 
+}  // namespace neuroscience
 }  // namespace bdm

@@ -32,8 +32,17 @@ using std::is_same;
 ///
 ///     // Usage:
 ///     typename ToBackend<Neuron, Soa>::type neurons;
+// TODO documentation
 template <typename TSoScalar, typename TBackend>
-struct ToBackend;
+using ToBackend = decltype(ADLHelper(std::declval<TSoScalar*>(), std::declval<TBackend>()));
+
+// TODO documentation
+template <typename TSoScalar>
+using ToScalar = decltype(ADLHelper(std::declval<TSoScalar*>(), std::declval<Scalar>()));
+
+// TODO documentation
+template <typename TSoScalar>
+using ToSoa = decltype(ADLHelper(std::declval<TSoScalar*>(), std::declval<Soa>()));
 
 /// This type trait is need to encapsulate the derived type and pass it into
 /// simulation objects. Inside `BDM_SIM_OBJECT` a template specialization is
@@ -79,9 +88,6 @@ struct Capsule;
                       template <typename, typename> class TBase> class TSoExt> \
   struct Capsule;                                                              \
                                                                                \
-  template <typename TSoScalar, typename TBackend>                             \
-  struct ToBackend;                                                            \
-                                                                               \
   template <typename TCompileTimeParam, typename TDerived>                     \
   using sim_object##_TCTParam_TDerived =                                       \
       sim_object##Ext<TCompileTimeParam, TDerived>;                            \
@@ -98,22 +104,10 @@ struct Capsule;
   using Soa##sim_object =                                                      \
       sim_object##Ext<CompileTimeParam<Soa>, Capsule<sim_object##Ext>>;        \
                                                                                \
-  template <>                                                                  \
-  struct ToBackend<sim_object, Scalar> {                                       \
-    using type = sim_object;                                                   \
-  };                                                                           \
-  template <>                                                                  \
-  struct ToBackend<sim_object, Soa> {                                          \
-    using type = Soa##sim_object;                                              \
-  };                                                                           \
-  template <>                                                                  \
-  struct ToBackend<Soa##sim_object, Scalar> {                                  \
-    using type = sim_object;                                                   \
-  };                                                                           \
-  template <>                                                                  \
-  struct ToBackend<Soa##sim_object, Soa> {                                     \
-    using type = Soa##sim_object;                                              \
-  };                                                                           \
+  sim_object ADLHelper(sim_object*, Scalar);                                   \
+  Soa##sim_object ADLHelper(sim_object*, Soa);                                 \
+  sim_object ADLHelper(Soa##sim_object*, Scalar); \
+  Soa##sim_object ADLHelper(Soa##sim_object*, Soa); \
                                                                                \
   template <typename TCompileTimeParam>                                        \
   using sim_object##Test =                                                     \
@@ -157,9 +151,6 @@ struct Capsule;
                       template <typename, typename> class TBase> class TSoExt> \
   struct Capsule;                                                              \
                                                                                \
-  template <typename TSoScalar, typename TBackend>                             \
-  struct ToBackend;                                                            \
-                                                                               \
   template <typename TCompileTimeParam, typename TDerived>                     \
   using sim_object##_TCTParam_TDerived =                                       \
       sim_object##Ext<TCompileTimeParam, TDerived>;                            \
@@ -175,24 +166,12 @@ struct Capsule;
       sim_object##Ext<compile_time_param<Scalar>, Capsule<sim_object##Ext>>;   \
   using Soa##sim_object =                                                      \
       sim_object##Ext<compile_time_param<Soa>, Capsule<sim_object##Ext>>;      \
-                                                                               \
-  template <>                                                                  \
-  struct ToBackend<sim_object, Scalar> {                                       \
-    using type = sim_object;                                                   \
-  };                                                                           \
-  template <>                                                                  \
-  struct ToBackend<sim_object, Soa> {                                          \
-    using type = Soa##sim_object;                                              \
-  };                                                                           \
-  template <>                                                                  \
-  struct ToBackend<Soa##sim_object, Scalar> {                                  \
-    using type = sim_object;                                                   \
-  };                                                                           \
-  template <>                                                                  \
-  struct ToBackend<Soa##sim_object, Soa> {                                     \
-    using type = Soa##sim_object;                                              \
-  };                                                                           \
-                                                                               \
+      \
+  sim_object ADLHelper(sim_object*, Scalar);                                   \
+  Soa##sim_object ADLHelper(sim_object*, Soa);                                 \
+  sim_object ADLHelper(Soa##sim_object*, Scalar); \
+  Soa##sim_object ADLHelper(Soa##sim_object*, Soa); \
+      \
   template <typename TCompileTimeParam>                                        \
   using sim_object##Test =                                                     \
       sim_object##Ext<TCompileTimeParam, Capsule<sim_object##Ext>>;            \
@@ -286,18 +265,20 @@ struct Capsule;
                                                                                \
   template <typename T>                                                        \
   using vec = typename Backend::template vec<T>;                               \
+  \
+  using SimBackend = typename TCompileTimeParam::SimulationBackend;\
                                                                                \
   /** Templated type alias to create the most derived type with a specific */  \
-  /** template. */                                                             \
+  /** backend. */                                                             \
   template <typename TTBackend>                                                \
   using TMostDerived = typename TDerived::template type<                       \
       typename TCompileTimeParam::template Self<TTBackend>, TDerived>;         \
-                                                                               \
   /** MostDerived type with scalar backend */                                  \
   using MostDerived = TMostDerived<Scalar>;                                    \
   /** MostDerived type with simulation backend */                              \
-  using MostDerivedSB =                                                        \
-      TMostDerived<typename TCompileTimeParam::SimulationBackend>;             \
+  using MostDerivedSB = TMostDerived<SimBackend>;             \
+  /** MostDerived SoPointer type */ \
+  using MostDerivedSoPtr = SoPointer<MostDerivedSB, SimBackend>; \
                                                                                \
   /** Templated type alias to obtain the same type as `this`, but with */      \
   /** different backend. */                                                    \
@@ -305,6 +286,15 @@ struct Capsule;
   using Self =                                                                 \
       class_name<typename TCompileTimeParam::template Self<TTBackend>,         \
                  TDerived, TBase>;                                             \
+                 \
+  /** Templated type alias to convert an external type to the simulation  */ \
+  /** backend  */\
+  template <typename T>\
+  using ToSimBackend = decltype(ADLHelper(std::declval<T*>(), std::declval<SimBackend>()));\
+\
+  /** Templated type alias to get a `SoPointer` for the given type */ \
+  template <typename T> \
+  using GetSoPtr = SoPointer<ToSimBackend<T>, SimBackend>;\
                                                                                \
   template <typename, typename, template <typename, typename> class>           \
   friend class class_name;                                                     \
@@ -437,11 +427,13 @@ struct Capsule;
 ///         inside the object.
 /// @tparam TBackend backend - required to avoid extracting it from TSo which
 ///         would result in "incomplete type errors" in certain cases.
+// TODO TSo must be in simulation backend see DefaultCompileTimeParam
 template <typename TSo, typename TBackend>
 class SoPointer {
   /// Determine correct container
-  using Container = typename TBackend::template Container<
-      typename ToBackend<TSo, TBackend>::type>;
+  using Container = typename TBackend::template Container<TSo>;
+  //     typename ToBackend<TSo, TBackend>::type>;
+  // using Container = TSo;
 
  public:
   SoPointer(Container* container, uint64_t element_idx)
@@ -466,10 +458,25 @@ class SoPointer {
   /// This method is required, since `operator->` must return a pointer type.
   /// This is not possible for Soa backends where `operator[]` returns an
   /// rvalue.
+  // template <typename TTBackend = TBackend>
+  // typename std::enable_if<std::is_same<TTBackend, Scalar>::value,
+  //                         typename ToBackend<TSo, Scalar>::type&>::type
+  // Get() {
+  //   return (*so_container_)[element_idx_];
+  // }
+
+  // auto Get(typename std::enable_if<std::is_same<TTBackend, Soa>::value>::type*
+  //              p = 0) {
+
   template <typename TTBackend = TBackend>
-  typename std::enable_if<std::is_same<TTBackend, Scalar>::value,
-                          typename ToBackend<TSo, Scalar>::type&>::type
-  Get() {
+  auto& Get(typename std::enable_if<std::is_same<TTBackend, Scalar>::value>::type*
+               p = 0) {
+    return (*so_container_)[element_idx_];
+  }
+
+  template <typename TTBackend = TBackend>
+  const auto& Get(typename std::enable_if<std::is_same<TTBackend, Scalar>::value>::type*
+               p = 0) const {
     return (*so_container_)[element_idx_];
   }
 
@@ -479,10 +486,19 @@ class SoPointer {
     return (*so_container_)[element_idx_];
   }
 
+  template <typename TTBackend = TBackend>
+  const auto Get(typename std::enable_if<std::is_same<TTBackend, Soa>::value>::type*
+               p = 0) const {
+    return (*so_container_)[element_idx_];
+  }
+
  private:
   Container* so_container_ = nullptr;
   uint64_t element_idx_ = std::numeric_limits<uint64_t>::max();
 };
+
+// template <typename T, typename TBackend>
+// using ToScalar = decltype(ADLHelper(std::declval<T*>(), std::declval<TBackend>()));
 
 /// Helper function to make cell division easier for the programmer.
 /// Creates a new daughter object and passes it together with the given
@@ -516,7 +532,7 @@ auto Divide(T&& progenitor, Params... parameters) {
   using DaughterType =
       typename std::remove_reference<T>::type::template Self<Scalar>;
   auto container = TResourceManager::Get()->template Get<DaughterType>();
-  return SoPointer<DaughterType, typename TResourceManager::Backend>(container, Divide(progenitor, container, parameters...));
+  return typename DaughterType::MostDerivedSoPtr(container, Divide(progenitor, container, parameters...));
 }
 
 /// Helper function to make cell death easier for the programmer.

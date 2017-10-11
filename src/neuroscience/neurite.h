@@ -7,6 +7,8 @@
 #include "random.h"
 #include "simulation_object.h"
 #include "simulation_object_util.h"
+#include <typeinfo>  // TODO remove
+#include <iostream>  // TODO remove
 
 #include "TError.h"
 
@@ -21,17 +23,17 @@ namespace bdm {
 ///                   Neurite might not be defined at this point. Backend
 ///                   invariant.
 /// @tparam Backend   TODO
-template<typename TNeuron, typename TNeurite, typename Backend>
+template<typename TNeuronSoPtr, typename TNeuriteSoPtr>
 class NeuronNeuriteAdapter {
 public:
   template <typename T>
-  typename std::enable_if<is_same<T, TNeuron>::value>::type
+  typename std::enable_if<is_same<T, TNeuronSoPtr>::value>::type
   Set(T&& so) {
     neuron_ptr_ = so;
   }
 
   template <typename T>
-  typename std::enable_if<is_same<T, TNeurite>::value>::type
+  typename std::enable_if<is_same<T, TNeuriteSoPtr>::value>::type
   Set(T&& so) {
     neurite_ptr_ = so;
   }
@@ -46,7 +48,7 @@ public:
   bool IsNeuron() const { return !neuron_ptr_.IsNullPtr(); }
   bool IsNeurite() const { return !neurite_ptr_.IsNullPtr(); }
 
-  auto GetDaughterLeft() -> decltype(std::declval<SoPointer<TNeurite, Backend>>().Get().GetDaughterLeft()) const {
+  auto GetDaughterLeft() -> decltype(std::declval<TNeuriteSoPtr>().Get().GetDaughterLeft()) const {
     assert(IsNeurite() && "This function call is only allowed for a Neurite");
     return neurite_ptr_.Get().GetDaughterLeft();
   }
@@ -59,8 +61,8 @@ public:
   }
 
 private:
-  SoPointer<TNeuron, Backend> neuron_ptr_;
-  SoPointer<TNeurite, Backend> neurite_ptr_;
+  TNeuronSoPtr neuron_ptr_;
+  TNeuriteSoPtr neurite_ptr_;
 };
 
 /// Class defining the biological properties of a neurite segment, if it contains
@@ -84,12 +86,22 @@ BDM_SIM_OBJECT(Neurite, SimulationObject) {
                                   mother_, daughter_left_, daughter_right_, branch_order_, force_to_transmit_to_proximal_mass_, spring_axis_, actual_length_, tension_, spring_constant_, resting_length_);
 
   using TNeuron = typename TCompileTimeParam::TNeuron;
-  using SimBackend = typename TCompileTimeParam::SimulationBackend;
-  using MostDerivedSoPtr = SoPointer<MostDerived, SimBackend>;
-  using NeuriteMother = NeuronNeuriteAdapter<TNeuron, MostDerived, SimBackend>;
+
+  // using NeuriteMother = NeuronNeuriteAdapter<Convert<TNeuron, SimBackend>, MostDerivedSB, SimBackend>;
+  using NeuriteMother = NeuronNeuriteAdapter<GetSoPtr<TNeuron>, MostDerivedSoPtr>;
+
+  // SoPointer<typename ToBackend<TNeuron, Scalar>::type, SimBackend> aa_;
+  GetSoPtr<TNeuron> aa_;
 
  public:
-   NeuriteExt() {}
+   NeuriteExt() {
+     auto& pos = mother_[kIdx].GetPosition();
+     ToSimBackend<TNeuron> nsb;
+    std::cout << "ADL " << typeid(decltype(ADLHelper(std::declval<TNeuron*>(), std::declval<Scalar>()))).name() << std::endl;
+    std::cout << "ADL " << typeid(decltype(ADLHelper(std::declval<TNeuron*>(), std::declval<Soa>()))).name() << std::endl;
+    // std::cout << "ADL " << typeid(Convert<TNeuron, Scalar>).name() << std::endl;
+   }
+   const std::array<double, 3>& GetPosition() const { return position_[kIdx]; }
 
   /// Retracts the cylinder, if it is a terminal one.
   /// Branch retraction by moving the distal end toward the
