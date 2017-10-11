@@ -483,6 +483,19 @@ TEST(SimulationObjectUtilTest, Soa_SoPointer) {
   RunSoPointerTest<decltype(sim_objects), Soa>(&sim_objects);
 }
 
+TEST(SimulationObjectUtilTest, ToBackend) {
+  EXPECT_EQ(typeid(Neuron), typeid(ToBackend<Neuron, Scalar>));
+  EXPECT_EQ(typeid(SoaNeuron), typeid(ToBackend<Neuron, Soa>));
+}
+
+TEST(SimulationObjectUtilTest, ToScalar) {
+  EXPECT_EQ(typeid(Neuron), typeid(ToScalar<Neuron>));
+}
+
+TEST(SimulationObjectUtilTest, ToSoa) {
+  EXPECT_EQ(typeid(SoaNeuron), typeid(ToSoa<Neuron>));
+}
+
 // }  // namespace simulation_object_util_test_internal
 }  // namespace bdm
 
