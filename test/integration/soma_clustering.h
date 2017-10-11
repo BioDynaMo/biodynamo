@@ -1,12 +1,11 @@
-#ifndef DEMO_SOMA_CLUSTERING_H_
-#define DEMO_SOMA_CLUSTERING_H_
+#ifndef INTEGRATION_SOMA_CLUSTERING_H_
+#define INTEGRATION_SOMA_CLUSTERING_H_
 
-// TODO(ahmad): replace with ROOT random number generator
-#include <cstdlib>
-#include <ctime>
 #include <vector>
 
 #include "biodynamo.h"
+#include "math_util.h"
+#include "matrix.h"
 
 namespace bdm {
 
@@ -31,7 +30,7 @@ BDM_SIM_CLASS(MyCell, Cell) {
   MyCellExt() {}
   // TODO(ahmad): this needs to be explicitely stated, otherwise empty
   // implementation
-  MyCellExt(const std::array<double, 3>& position) : Cell(position) {}
+  MyCellExt(const std::array<double, 3>& position) : Base(position) {}
 
   void SetCellType(int t) { cell_type_[kIdx] = t; }
 
@@ -61,14 +60,10 @@ struct Chemotaxis {
 
     if (cell->GetCellType() == 1) {
       dg_1_->GetGradient(position, &gradient_1_);
-      for (int i = 0; i < 3; i++) {
-        diff_gradient[i] = gradient_1_[i] * 5;
-      }
+      diff_gradient = Matrix::ScalarMult(5, gradient_1_);
     } else {
       dg_0_->GetGradient(position, &gradient_0_);
-      for (int i = 0; i < 3; i++) {
-        diff_gradient[i] = gradient_0_[i] * 5;
-      }
+      diff_gradient = Matrix::ScalarMult(5, gradient_0_);
     }
 
     cell->UpdatePosition(diff_gradient);
@@ -91,19 +86,26 @@ struct Chemotaxis {
 struct SubstanceSecretion {
   template <typename T>
   void Run(T* cell) {
-    DiffusionGrid* dg = nullptr;
-    if (cell->GetCellType() == 1) {
-      dg = GetDiffusionGrid(kSubstance_1);
-    } else {
-      dg = GetDiffusionGrid(kSubstance_0);
+    if (!init_) {
+      dg_0_ = GetDiffusionGrid(kSubstance_0);
+      dg_1_ = GetDiffusionGrid(kSubstance_1);
+      init_ = true;
     }
-
     auto& secretion_position = cell->GetPosition();
-    dg->IncreaseConcentrationBy(secretion_position, 1);
+    if (cell->GetCellType() == 1) {
+      dg_1_->IncreaseConcentrationBy(secretion_position, 1);
+    } else {
+      dg_0_->IncreaseConcentrationBy(secretion_position, 1);
+    }
   }
 
   // Daughter cells inherit this biology module
   bool IsCopied(Event event) const { return true; }
+
+ private:
+  bool init_ = false;
+  DiffusionGrid* dg_0_ = nullptr;
+  DiffusionGrid* dg_1_ = nullptr;
   ClassDefNV(SubstanceSecretion, 1);
 };
 
@@ -113,29 +115,6 @@ struct CompileTimeParam : public DefaultCompileTimeParam<Backend> {
   using BiologyModules = Variant<Chemotaxis, SubstanceSecretion>;
   using AtomicTypes = VariadicTypedef<MyCell>;
 };
-
-static double GetNorm(double* currArray) {
-  // computes L2 norm of input array
-  int c;
-  double arraySum = 0;
-  for (c = 0; c < 3; c++) {
-    arraySum += currArray[c] * currArray[c];
-  }
-  double res = sqrt(arraySum);
-
-  return res;
-}
-
-static double GetL2Distance(double pos1x, double pos1y, double pos1z,
-                            double pos2x, double pos2y, double pos2z) {
-  // returns distance (L2 norm) between two positions in 3D
-  double distArray[3];
-  distArray[0] = pos2x - pos1x;
-  distArray[1] = pos2y - pos1y;
-  distArray[2] = pos2z - pos1z;
-  double l2Norm = GetNorm(distArray);
-  return l2Norm;
-}
 
 // Returns 0 if the cell locations within a subvolume of the total system,
 // comprising approximately target_n cells, are arranged as clusters, and 1
@@ -157,7 +136,7 @@ static bool GetCriterion(double spatial_range, int target_n) {
   // within a distance of spatial_range)
   int diff_type_close = 0;
 
-  vector<vector<double>> pos_sub_vol(n);
+  vector<array<double, 3>> pos_sub_vol(n);
   vector<int> types_sub_vol(n);
 
   // Define the subvolume to be the first octant of a cube
@@ -171,7 +150,6 @@ static bool GetCriterion(double spatial_range, int target_n) {
   for (int i1 = 0; i1 < n; i1++) {
     auto& pos = (*my_cells)[i1].GetPosition();
     auto type = (*my_cells)[i1].GetCellType();
-    pos_sub_vol[i1] = vector<double>(3);
 
     if ((fabs(pos[0] - 0.5) < sub_vol_max) &&
         (fabs(pos[1] - 0.5) < sub_vol_max) &&
@@ -184,7 +162,8 @@ static bool GetCriterion(double spatial_range, int target_n) {
     }
   }
 
-  printf("number of cells in subvolume: %d\n", num_cells_sub_vol);
+  std::cout << "number of cells in subvolume: " << num_cells_sub_vol
+            << std::endl;
 
   // If there are not enough cells within the subvolume, the correctness
   // criterion is not fulfilled
@@ -208,9 +187,7 @@ static bool GetCriterion(double spatial_range, int target_n) {
                                    num_close)
   for (int i1 = 0; i1 < num_cells_sub_vol; i1++) {
     for (int i2 = i1 + 1; i2 < num_cells_sub_vol; i2++) {
-      curr_dist = GetL2Distance(pos_sub_vol[i1][0], pos_sub_vol[i1][1],
-                                pos_sub_vol[i1][2], pos_sub_vol[i2][0],
-                                pos_sub_vol[i2][1], pos_sub_vol[i2][2]);
+      curr_dist = Math::GetL2Distance(pos_sub_vol[i1], pos_sub_vol[i2]);
       if (curr_dist < spatial_range) {
         num_close++;
         if (types_sub_vol[i1] * types_sub_vol[i2] < 0) {
@@ -228,23 +205,24 @@ static bool GetCriterion(double spatial_range, int target_n) {
   // check if there are many cells of opposite types located within a close
   // distance, indicative of bad clustering
   if (correctness_coefficient > 0.1) {
-    printf("cells in subvolume are not well-clustered: %f\n",
-           correctness_coefficient);
+    std::cout << "cells in subvolume are not well-clustered: "
+              << correctness_coefficient << std::endl;
     return false;
   }
 
   // check if clusters are large enough, i.e. whether cells have more than 100
   // cells of the same type located nearby
-  double avgNeighbors =
+  double avg_neighbors =
       (static_cast<double>(same_type_close / num_cells_sub_vol));
-  printf("average neighbors in subvolume: %f\n", avgNeighbors);
-  if (avgNeighbors < 5) {
-    printf("cells in subvolume do not have enough neighbors: %f\n",
-           avgNeighbors);
+  std::cout << "average neighbors in subvolume: " << avg_neighbors << std::endl;
+  if (avg_neighbors < 5) {
+    std::cout << "cells in subvolume do not have enough neighbors: "
+              << avg_neighbors << std::endl;
     return false;
   }
 
-  printf("correctness coefficient: %f\n", correctness_coefficient);
+  std::cout << "correctness coefficient: " << correctness_coefficient
+            << std::endl;
 
   return true;
 }
@@ -256,7 +234,10 @@ inline int Simulate(const CommandLineOptions& options) {
   Param::bound_space_ = true;
   Param::lbound_ = 0;
   Param::rbound_ = 250;
+  Param::run_physics_ = false;
   int num_cells = 20000;
+
+  gTRandom.SetSeed(4357);
 
   // Construct num_cells/2 cells of type 1
   auto construct_0 = [](const std::array<double, 3>& position) {
@@ -267,7 +248,6 @@ inline int Simulate(const CommandLineOptions& options) {
     cell.AddBiologyModule(Chemotaxis());
     return cell;
   };
-  srand(static_cast<unsigned>(time(0)));
   ModelInitializer::CreateCellsRandom(Param::lbound_, Param::rbound_,
                                       num_cells / 2, construct_0);
 
@@ -284,10 +264,9 @@ inline int Simulate(const CommandLineOptions& options) {
                                       num_cells / 2, construct_1);
 
   // 3. Define the substances that cells may secrete
-  // This needs to be done AFTER the cells have been specified
   // Order: substance_name, diffusion_coefficient, decay_constant, resolution
   ModelInitializer::DefineSubstance(kSubstance_0, "Substance_0", 0.5, 0.1, 1);
-  ModelInitializer::DefineSubstance(kSubstance_1, "Substance_0", 0.5, 0.1, 1);
+  ModelInitializer::DefineSubstance(kSubstance_1, "Substance_1", 0.5, 0.1, 1);
 
   // 4. Run simulation for N timesteps
   Param::use_paraview_ = false;
@@ -299,14 +278,9 @@ inline int Simulate(const CommandLineOptions& options) {
 
   double spatial_range = 5;
   auto crit = GetCriterion(spatial_range, num_cells / 8);
-  if (crit) {
-    std::cout << "SUCCESS" << std::endl;
-  } else {
-    std::cout << "FAILED" << std::endl;
-  }
-  return 0;
+  return !crit;
 }
 
 }  // namespace bdm
 
-#endif  // DEMO_SOMA_CLUSTERING_H_
+#endif  // INTEGRATION_SOMA_CLUSTERING_H_

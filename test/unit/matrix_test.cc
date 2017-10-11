@@ -32,4 +32,14 @@ TEST(MatrixTest, Dot) {
   EXPECT_NEAR(3.03, result, abs_error<double>::value);
 }
 
+TEST(MatrixTest, ScalarMult) {
+  array<double, 3> a = {0.5, 0.7, 0.8};
+  double k = 5;
+  auto result = Matrix::ScalarMult(k, a);
+
+  EXPECT_NEAR(2.5, result[0], abs_error<double>::value);
+  EXPECT_NEAR(3.5, result[1], abs_error<double>::value);
+  EXPECT_NEAR(4.0, result[2], abs_error<double>::value);
+}
+
 }  // namespace bdm

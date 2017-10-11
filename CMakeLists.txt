@@ -179,6 +179,11 @@ if (test)
                       HEADERS test/integration/backup_restore.h
                       LIBRARIES biodynamo)
     add_test(NAME "integration-backup-restore" COMMAND ${CMAKE_SOURCE_DIR}/test/integration/backup_restore.sh)
+    bdm_add_executable(soma_clustering
+                      SOURCES test/integration/soma_clustering.cc
+                      HEADERS test/integration/soma_clustering.h
+                      LIBRARIES biodynamo)
+    add_test(NAME "integration-soma-clustering" COMMAND ${CMAKE_SOURCE_DIR}/build/soma_clustering)
   endif()
 endif()
 
@@ -195,10 +200,4 @@ bdm_add_executable(cell_division_module
 bdm_add_executable(diffusion_module
                    SOURCES demo/diffusion_module.cc
                    HEADERS demo/diffusion_module.h
-                   LIBRARIES biodynamo)
-
-# --------------------- build soma_clustering executable ------------------
-bdm_add_executable(soma_clustering
-                   SOURCES demo/soma_clustering.cc
-                   HEADERS demo/soma_clustering.h
                    LIBRARIES biodynamo)

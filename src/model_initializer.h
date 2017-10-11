@@ -1,8 +1,11 @@
 #ifndef MODEL_INITIALIZER_H_
 #define MODEL_INITIALIZER_H_
 
+#include <ctime>
 #include <string>
 #include <vector>
+
+#include "random.h"
 
 #include "diffusion_grid.h"
 #include "resource_manager.h"
@@ -14,8 +17,8 @@ struct ModelInitializer {
   /// ResourceManager. Type of the simulation object is determined by the return
   /// type of parameter cell_builder.
   ///
-  /// ModelInitializer::Grid3D(8, 10, [](const std::array<double, 3>& pos){
-  /// return Cell(pos); });
+  ///     ModelInitializer::Grid3D(8, 10, [](const std::array<double, 3>& pos){
+  ///     return Cell(pos); });
   /// @param      cells_per_dim  number of simulation objects on each axis.
   ///                            Number of generated simulation objects =
   ///                            `cells_per_dim ^ 3`
@@ -52,8 +55,8 @@ struct ModelInitializer {
   /// ResourceManager. Type of the simulation object is determined by the return
   /// type of parameter cell_builder.
   ///
-  /// ModelInitializer::Grid3D({8,6,4}, 10, [](const std::array<double, 3>&
-  /// pos){ return Cell(pos); });
+  ///     ModelInitializer::Grid3D({8,6,4}, 10, [](const std::array<double, 3>&
+  ///     pos){ return Cell(pos); });
   /// @param      cells_per_dim  number of simulation objects on each axis.
   ///                            Number of generated simulation objects =
   ///                            `cells_per_dim[0] * cells_per_dim[1] *
@@ -132,16 +135,14 @@ struct ModelInitializer {
 
     auto container = rm->template Get<FunctionReturnType>();
     container->reserve(num_cells);
+
+    // TODO(ahmad): throughout simulation only one random number generator
+    // should be used, so this should go someplace accessible for other
+    // classes / functions
     for (int i = 0; i < num_cells; i++) {
-      double x = min +
-                 static_cast<double>(rand()) /
-                     (static_cast<double>(RAND_MAX / (max - min)));
-      double y = min +
-                 static_cast<double>(rand()) /
-                     (static_cast<double>(RAND_MAX / (max - min)));
-      double z = min +
-                 static_cast<double>(rand()) /
-                     (static_cast<double>(RAND_MAX / (max - min)));
+      double x = gTRandom.Uniform(min, max);
+      double y = gTRandom.Uniform(min, max);
+      double z = gTRandom.Uniform(min, max);
       auto new_simulation_object = cell_builder({x, y, z});
       container->push_back(new_simulation_object);
     }
