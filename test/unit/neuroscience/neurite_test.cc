@@ -11,8 +11,11 @@ struct CompileTimeParam
     : public DefaultCompileTimeParam<TBackend>,
       public neuroscience::DefaultCompileTimeParam<TBackend> {};
 
-// TEST(NeuriteTest, Scalar) { Neurite neurite; }
-//
-// TEST(NeuriteTest, Soa) { SoaNeurite neurite; }
+TEST(NeuriteTest, Scalar) {
+  Neurite neurite;
+  // neurite.BifurcationPermitted();
+}
+
+TEST(NeuriteTest, Soa) { SoaNeurite neurite; }
 
 }  // namespace bdm

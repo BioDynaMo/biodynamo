@@ -6,14 +6,24 @@
 
 namespace bdm {
 
+BDM_SIM_OBJECT(SpecializedNeurite, Neurite) {
+  BDM_SIM_OBJECT_HEADER(SpecializedNeuriteExt, 1, foo_);
+public:
+  SpecializedNeuriteExt() {}
+private:
+  vec<int> foo_;
+};
+
 template <typename TBackend>
 struct CompileTimeParam
     : public DefaultCompileTimeParam<TBackend>,
       public neuroscience::DefaultCompileTimeParam<TBackend> {
   using TNeuron = SpecializedNeuron;
+  using TNeurite = SpecializedNeurite;
 };
 
 TEST(NeuronTest, Scalar) {
+  Neurite neurite;
   Neuron neuron;
   typename Neuron::template Self<Scalar> neuron1;
   SpecializedNeuron sneuron;
