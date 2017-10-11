@@ -1,7 +1,10 @@
 #ifndef GRID_H_
 #define GRID_H_
 
+#include <assert.h>
 #include <omp.h>
+
+#include <algorithm>
 #include <array>
 #include <atomic>
 #include <cmath>
@@ -10,6 +13,7 @@
 #include <vector>
 #include "cell.h"
 #include "fixed_size_vector.h"
+
 #include "inline_vector.h"
 #include "param.h"
 #include "simulation_object_vector.h"
@@ -72,7 +76,7 @@ class Grid {
     /// start value of the linked list of simulatio objects inside this box.
     /// Next element can be found at `successors_[start_]`
     std::atomic<SoHandle> start_;
-    /// length of the linked list
+    /// length of the linked list (i.e. number of simulation objects)
     std::atomic<uint16_t> length_;
 
     Box() : start_(SoHandle()), length_(0) {}
@@ -89,7 +93,10 @@ class Grid {
 
     /// @brief      Adds a simulation object to this box
     ///
-    /// @param[in]  obj_id  The object's identifier
+    /// @param[in]  obj_id       The object's identifier
+    /// @param      successors   The successors
+    ///
+    /// @tparam     TSuccessors  Type of successors
     ///
     template <typename TSimulationObjectVector>
     void AddObject(SoHandle obj_id, TSimulationObjectVector* successors) {
@@ -119,9 +126,12 @@ class Grid {
 
       const SoHandle& operator*() const { return current_value_; }
 
+      /// Pointer to the neighbor grid; for accessing the successor_ list
       Grid<TResourceManager>* grid_;
+      /// The current simulation object to be considered
       SoHandle current_value_;
-      int countdown_;
+      /// The remain number of simulation objects to consider
+      int countdown_ = 0;
     };
 
     template <typename TGrid = Grid<TResourceManager>>
@@ -135,6 +145,7 @@ class Grid {
     explicit NeighborIterator(
         const FixedSizeVector<const Box*, 27>& neighbor_boxes)
         : neighbor_boxes_(neighbor_boxes),
+          // start iterator from box 0
           box_iterator_(neighbor_boxes_[0]->begin()) {
       // if first box is empty
       if (neighbor_boxes_[0]->IsEmpty()) {
@@ -146,7 +157,7 @@ class Grid {
 
     const SoHandle& operator*() const { return *box_iterator_; }
 
-    /// version where empty neighbors in neighbor_boxes_ are allowed
+    /// Version where empty neighbor boxes are allowed
     NeighborIterator& operator++() {
       ++box_iterator_;
       // if iterator of current box has come to an end, continue with next box
@@ -157,9 +168,14 @@ class Grid {
     }
 
    private:
+    /// The 27 neighbor boxes that will be searched for simulation objects
     const FixedSizeVector<const Box*, 27>& neighbor_boxes_;
+    /// The box that shall be considered to iterate over for finding simulation
+    /// objects
     typename Box::Iterator box_iterator_;
+    /// The id of the box to be considered (i.e. value between 0 - 26)
     uint16_t box_idx_ = 0;
+    /// Flag to indicate that all the neighbor boxes have been searched through
     bool is_end_ = false;
 
     /// Forwards the iterator to the next non empty box and returns itself
@@ -182,6 +198,8 @@ class Grid {
   };
 
   /// Enum that determines the degree of adjacency in search neighbor boxes
+  //  todo(ahmad): currently only kHigh is supported (hardcoded 26 several
+  //  places)
   enum Adjacency {
     kLow,    /**< The closest 8  neighboring boxes */
     kMedium, /**< The closest 18  neighboring boxes */
@@ -198,7 +216,11 @@ class Grid {
   void Initialize(Adjacency adjacency = kHigh) {
     adjacency_ = adjacency;
 
+    int32_t inf = std::numeric_limits<int32_t>::max();
+    threshold_dimensions_ = {inf, -inf};
+
     UpdateGrid();
+    initialized_ = true;
   }
 
   virtual ~Grid() {}
@@ -219,6 +241,7 @@ class Grid {
     int32_t inf = std::numeric_limits<int32_t>::max();
     grid_dimensions_ = {inf, -inf, inf, -inf, inf, -inf};
     successors_.clear();
+    has_grown_ = false;
   }
 
   /// Updates the grid, as simulation objects may have moved, added or deleted
@@ -228,11 +251,13 @@ class Grid {
     auto inf = Param::kInfinity;
     array<double, 6> tmp_dim = {{inf, -inf, inf, -inf, inf, -inf}};
     CalculateGridDimensions(&tmp_dim);
-    np_grid_dimensions_ = tmp_dim;
     RoundOffGridDimensions(tmp_dim);
 
     auto los = ceil(largest_object_size_);
-    box_length_ = (los == 0) ? 1 : los;
+    assert(los > 0 &&
+           "The largest object size was found to be 0. Please check if your "
+           "cells are correctly initialized.");
+    box_length_ = los;
 
     for (int i = 0; i < 3; i++) {
       int dimension_length =
@@ -258,18 +283,17 @@ class Grid {
 
     // Calculate how many boxes fit along each dimension
     for (int i = 0; i < 3; i++) {
-      double dimension_length =
+      int dimension_length =
           grid_dimensions_[2 * i + 1] - grid_dimensions_[2 * i];
-      while (dimension_length > 0.0) {
-        dimension_length -= box_length_;
-        num_boxes_axis_[i]++;
-      }
-
-      // num_boxes_axis_[i] = dimension_length / box_length_ + 1;
+      assert((dimension_length % box_length_ == 0) &&
+             "The grid dimensions are not a multiple of its box length");
+      num_boxes_axis_[i] = dimension_length / box_length_;
     }
 
     num_boxes_xy_ = num_boxes_axis_[0] * num_boxes_axis_[1];
     auto total_num_boxes = num_boxes_xy_ * num_boxes_axis_[2];
+
+    CheckGridGrowth();
 
     if (boxes_.size() != total_num_boxes) {
       boxes_.resize(total_num_boxes, Box());
@@ -286,6 +310,31 @@ class Grid {
       box->AddObject(id, &successors_);
       sim_object.SetBoxIdx(idx);
     });
+  }
+
+  void CheckGridGrowth() {
+    // Determine if the grid dimensions have changed (changed in the sense that
+    // the grid has grown outwards)
+    auto min_gd =
+        *std::min_element(grid_dimensions_.begin(), grid_dimensions_.end());
+    auto max_gd =
+        *std::max_element(grid_dimensions_.begin(), grid_dimensions_.end());
+    if (min_gd < threshold_dimensions_[0] && initialized_) {
+      threshold_dimensions_[0] = min_gd;
+      has_grown_ = true;
+      std::cout << "Your simulation objects are getting near the edge of the "
+                   "simulation space. Be aware of boundary conditions that may "
+                   "come into play!"
+                << std::endl;
+    }
+    if (max_gd > threshold_dimensions_[1] && initialized_) {
+      has_grown_ = true;
+      std::cout << "Your simulation objects are getting near the edge of the "
+                   "simulation space. Be aware of boundary conditions that may "
+                   "come into play!"
+                << std::endl;
+      threshold_dimensions_[1] = max_gd;
+    }
   }
 
   /// Calculates what the grid dimensions need to be in order to contain all the
@@ -360,6 +409,12 @@ class Grid {
   }
 
   void RoundOffGridDimensions(const array<double, 6>& grid_dimensions) {
+    assert(grid_dimensions_[0] > -9.999999999);
+    assert(grid_dimensions_[2] > -9.999999999);
+    assert(grid_dimensions_[4] > -9.999999999);
+    assert(grid_dimensions_[1] < 80);
+    assert(grid_dimensions_[3] < 80);
+    assert(grid_dimensions_[5] < 80);
     grid_dimensions_[0] = floor(grid_dimensions[0]);
     grid_dimensions_[2] = floor(grid_dimensions[2]);
     grid_dimensions_[4] = floor(grid_dimensions[4]);
@@ -590,10 +645,23 @@ class Grid {
     return GetBoxIndex(box_coord);
   }
 
+  void SetDimensionThresholds(int32_t min, int32_t max) {
+    threshold_dimensions_[0] = min;
+    threshold_dimensions_[1] = max;
+  }
+
   /// Gets the size of the largest object in the grid
   double GetLargestObjectSize() const { return largest_object_size_; }
 
-  array<int32_t, 6>& GetGridDimensions() { return grid_dimensions_; }
+  array<int32_t, 6>& GetDimensions() { return grid_dimensions_; }
+
+  array<int32_t, 2>& GetDimensionThresholds() { return threshold_dimensions_; }
+
+  array<uint32_t, 3>& GetNumBoxes() { return num_boxes_axis_; }
+
+  uint32_t GetBoxLength() { return box_length_; }
+
+  bool HasGrown() { return has_grown_; }
 
   std::array<uint64_t, 3> GetBoxCoordinates(size_t box_idx) const {
     std::array<uint64_t, 3> box_coord;
@@ -626,7 +694,13 @@ class Grid {
   /// Cube which contains all simulation objects
   /// {x_min, x_max, y_min, y_max, z_min, z_max}
   std::array<int32_t, 6> grid_dimensions_;
-  std::array<double, 6> np_grid_dimensions_;
+  /// Stores the min / max dimension value that need to be surpassed in order
+  /// to trigger a diffusion grid change
+  std::array<int32_t, 2> threshold_dimensions_;
+  // Flag to indicate that the grid dimensions have increased
+  bool has_grown_ = false;
+  /// Flag to indicate if the grid has been initialized or not
+  bool initialized_ = false;
 
   /// @brief      Gets the Moore (i.e adjacent) boxes of the query box
   ///
@@ -728,6 +802,7 @@ class Grid {
   ///        +-----+----+-----+
   ///        | FSW | FS | FSE |
   ///        +-----+----+-----+
+  ///
   void GetHalfMooreBoxIndices(FixedSizeVector<size_t, 14>* neighbor_boxes,
                               size_t box_idx) const {
     // C
@@ -858,6 +933,7 @@ class Grid {
   /// can be reused if the x-axis is incremented.
   /// \param so_handles simulation object handles are expected to be in the
   ///        following order `C BW FNW NW BNW B FN N BN E BE FNE NE BNE`
+  /// \param rm The resource manager
   /// \param positions simulation object positions from the previous iteration
   ///        input expected to be in either
   ///        `C BW FNW NW BNW B FN N BN E BE FNE NE BNE` or

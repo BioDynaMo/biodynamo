@@ -4,9 +4,12 @@
 #include <algorithm>
 #include <exception>
 #include <memory>
+#include <string>
 #include <type_traits>
 #include <vector>
+
 #include "backend.h"
+#include "diffusion_grid.h"
 #include "macros.h"
 #include "resource_manager.h"
 #include "root_util.h"
@@ -138,6 +141,8 @@ using std::is_same;
   using Base = TBase<TCompileTimeParam>;                                       \
   /* reduce verbosity of some types and variables by defining a local alias */ \
   using Base::kIdx;                                                            \
+                                                                               \
+  using value_type = class_name<TCompileTimeParam, TBase>;                     \
                                                                                \
   using Backend = typename Base::Backend;                                      \
                                                                                \
@@ -331,6 +336,22 @@ typename std::remove_reference<T>::type::template Self<Scalar>& Divide(
 template <typename Container>
 void Delete(Container* container, size_t index) {
   container->DelayedRemove(index);
+}
+
+/// Get the diffusion grid which holds the substance of specified name
+template <typename TResourceManager = ResourceManager<>>
+static DiffusionGrid* GetDiffusionGrid(int substance_id) {
+  auto dg = TResourceManager::Get()->GetDiffusionGrid(substance_id);
+  assert(dg != nullptr &&
+         "Tried to get non-existing diffusion grid. Did you specify the "
+         "correct substance name?");
+  return dg;
+}
+
+/// Get the total number of simulation objects
+template <typename TResourceManager = ResourceManager<>>
+static size_t GetNumSimObjects() {
+  return TResourceManager::Get()->GetNumSimObjects();
 }
 
 }  // namespace bdm

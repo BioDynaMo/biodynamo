@@ -7,6 +7,7 @@
 #include "biology_module_op.h"
 // TODO(lukas) remove once backup and visualization are multicell enabled
 #include "cell.h"
+#include "diffusion_op.h"
 #include "displacement_op.h"
 #include "op_timer.h"
 #include "resource_manager.h"
@@ -26,7 +27,7 @@ class Scheduler {
   Scheduler()
       : backup_(SimulationBackup("", "")), grid_(&TGrid::GetInstance()) {
     if (Param::use_paraview_) {
-      visualization_ = CatalystAdaptor::GetInstance();
+      visualization_ = CatalystAdaptor<>::GetInstance();
       visualization_->Initialize("../src/visualization/simple_pipeline.py");
     }
   }
@@ -38,7 +39,7 @@ class Scheduler {
       restore_point_ = backup_.GetSimulationStepsFromBackup();
     }
     if (Param::use_paraview_) {
-      visualization_ = CatalystAdaptor::GetInstance();
+      visualization_ = CatalystAdaptor<>::GetInstance();
       visualization_->Initialize("../src/visualization/simple_pipeline.py");
     }
   }
@@ -46,6 +47,34 @@ class Scheduler {
   virtual ~Scheduler() {
     if (Param::use_paraview_) {
       visualization_->Finalize();
+    }
+  }
+
+  template <typename Lambda>
+  void SimulateTill(Lambda stopping_condition) {
+    grid_->Initialize();
+
+    while (!stopping_condition()) {
+      // Simulate
+      Execute();
+
+      // Visualize
+      if (Param::use_paraview_) {
+        double time = Param::kSimulationTimeStep * total_steps_;
+        visualization_->CoProcess(time, total_steps_, false);
+      }
+
+      total_steps_++;
+
+      // Backup
+      using std::chrono::seconds;
+      using std::chrono::duration_cast;
+      if (backup_.BackupEnabled() &&
+          duration_cast<seconds>(Clock::now() - last_backup_).count() >=
+              Param::backup_every_x_seconds_) {
+        last_backup_ = Clock::now();
+        backup_.Backup(total_steps_);
+      }
     }
   }
 
@@ -71,11 +100,9 @@ class Scheduler {
       Execute();
 
       // Visualize
-      auto rm = TResourceManager::Get();
-      auto cells = rm->template Get<Cell>();
       if (Param::use_paraview_) {
         double time = Param::kSimulationTimeStep * total_steps_;
-        visualization_->CoProcess(cells, time, total_steps_, step == steps - 1);
+        visualization_->CoProcess(time, total_steps_, step == steps - 1);
       }
 
       total_steps_++;
@@ -88,6 +115,10 @@ class Scheduler {
               Param::backup_every_x_seconds_) {
         last_backup_ = Clock::now();
         backup_.Backup(total_steps_);
+      }
+
+      if (total_steps_ % 10 == 0) {
+        std::cout << "step " << total_steps_ << std::endl;
       }
     }
   }
@@ -105,8 +136,13 @@ class Scheduler {
       Timing timing("neighbors");
       grid_->UpdateGrid();
     }
+    rm->ApplyOnAllTypes(diffusion_);
     rm->ApplyOnAllTypes(biology_);
-    rm->ApplyOnAllTypes(physics_);
+    if (Param::run_physics_) {
+      rm->ApplyOnAllTypes(physics_with_bound_);
+    } else if (Param::bound_space_) {
+      rm->ApplyOnAllTypes(bound_space_);
+    }
     rm->ApplyOnAllTypes(commit);
   }
 
@@ -115,10 +151,13 @@ class Scheduler {
   size_t total_steps_ = 0;
   size_t restore_point_;
   std::chrono::time_point<Clock> last_backup_ = Clock::now();
-  CatalystAdaptor* visualization_ = nullptr;
+  CatalystAdaptor<>* visualization_ = nullptr;
 
+  OpTimer<DiffusionOp<>> diffusion_ = OpTimer<DiffusionOp<>>("diffusion");
   OpTimer<BiologyModuleOp> biology_ = OpTimer<BiologyModuleOp>("biology");
-  OpTimer<DisplacementOp<>> physics_ = OpTimer<DisplacementOp<>>("physics");
+  OpTimer<DisplacementOp<>> physics_with_bound_ =
+      OpTimer<DisplacementOp<>>("physics");
+  OpTimer<BoundSpace> bound_space_ = OpTimer<BoundSpace>("bound_space");
 
   TGrid* grid_;
 };

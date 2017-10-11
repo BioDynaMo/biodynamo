@@ -4,6 +4,8 @@
 #include <array>
 #include <cstdio>
 
+#include <TRandom3.h>
+
 namespace bdm {
 
 /// C++ implementation of the Java default random number generator
@@ -48,6 +50,7 @@ class Random {
 };
 
 extern thread_local Random gRandom;
+extern thread_local TRandom3 gTRandom;
 
 }  // namespace bdm
 

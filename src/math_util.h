@@ -2,6 +2,7 @@
 #define MATH_UTIL_H_
 
 #include <array>
+#include <cmath>
 
 namespace bdm {
 
@@ -24,6 +25,17 @@ struct Math {
     ret[1] = a[1] / norm;
     ret[2] = a[2] / norm;
     return ret;
+  }
+
+  // Helper function that returns distance (L2 norm) between two positions in 3D
+  static double GetL2Distance(const std::array<double, 3>& pos1,
+                              const std::array<double, 3>& pos2) {
+    std::array<double, 3> dist_array;
+    dist_array[0] = pos2[0] - pos1[0];
+    dist_array[1] = pos2[1] - pos1[1];
+    dist_array[2] = pos2[2] - pos1[2];
+    double l2_norm = Norm(dist_array);
+    return sqrt(l2_norm);
   }
 };
 

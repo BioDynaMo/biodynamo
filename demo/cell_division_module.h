@@ -5,6 +5,11 @@
 
 namespace bdm {
 
+// -----------------------------------------------------------------------------
+// This model creates a grid of 128x128x128 cells. Each cell grows untill a
+// specific volume, after which it proliferates (i.e. divides).
+// -----------------------------------------------------------------------------
+
 // 1. Define growth behaviour
 //    (must be defined in the header for it be picked up in the IO dictionary)
 struct GrowthModule {

@@ -120,7 +120,7 @@ TEST(ExportTest, ExportToFile) {
   for (int i = 0; i < 3; ++i) {
     std::getline(ifs, line);
   }
-  EXPECT_EQ(" 0 0", line);
+  EXPECT_EQ(" 523.599 523.599", line);
   for (int i = 0; i < 3; ++i) {
     std::getline(ifs, line);
   }

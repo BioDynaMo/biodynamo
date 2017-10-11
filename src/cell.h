@@ -3,6 +3,7 @@
 
 #include <array>
 #include <cmath>
+#include <complex>
 #include <type_traits>
 #include <vector>
 
@@ -28,10 +29,12 @@ BDM_SIM_CLASS(Cell, SimulationObject) {
 
  public:
   using TBiologyModuleVariant = typename TCompileTimeParam::BiologyModules;
-  CellExt() {}
-  explicit CellExt(double diameter) : diameter_(diameter) { UpdateVolume(); }
+  CellExt() : density_{1.0} {}
+  explicit CellExt(double diameter) : diameter_(diameter), density_{1.0} {
+    UpdateVolume();
+  }
   explicit CellExt(const array<double, 3>& position)
-      : position_(position), mass_location_(position) {}
+      : position_(position), mass_location_(position), density_{1.0} {}
 
   virtual ~CellExt() {}
 
@@ -42,6 +45,8 @@ BDM_SIM_CLASS(Cell, SimulationObject) {
   void AddBiologyModule(TBiologyModule && module);
 
   /// Execute all biology modules
+  /// \tparam TDerived TODO
+  template <typename TDerived>
   void RunBiologyModules();
 
   /// Divide the cell. Of the two daughter cells, one is this one (but smaller,
@@ -147,6 +152,10 @@ BDM_SIM_CLASS(Cell, SimulationObject) {
     position_[kIdx] = position;
   }
 
+  void SetCoordinate(size_t d, double value) {
+    mass_location_[kIdx][d] = value;
+  }
+
   void SetTractorForce(const array<double, 3>& tractor_force) {
     tractor_force_[kIdx] = tractor_force;
   }
@@ -172,6 +181,12 @@ BDM_SIM_CLASS(Cell, SimulationObject) {
   }
 
   void UpdateMassLocation(const array<double, 3>& delta) {
+    mass_location_[kIdx][0] += delta[0];
+    mass_location_[kIdx][1] += delta[1];
+    mass_location_[kIdx][2] += delta[2];
+  }
+
+  void UpdatePosition(const array<double, 3>& delta) {
     mass_location_[kIdx][0] += delta[0];
     mass_location_[kIdx][1] += delta[1];
     mass_location_[kIdx][2] += delta[2];
@@ -231,8 +246,11 @@ inline void CellExt<T, U>::AddBiologyModule(TBiologyModule&& module) {
 }
 
 template <typename T, template <typename> class U>
+template <typename TDerived>
 inline void CellExt<T, U>::RunBiologyModules() {
-  RunVisitor<Self<Backend>> visitor(this);
+  using DerivedType = typename TDerived::template Self<Backend>;
+  auto* derived = static_cast<DerivedType*>(this);
+  RunVisitor<DerivedType> visitor(derived);
   for (auto& module : biology_modules_[kIdx]) {
     visit(visitor, module);
   }

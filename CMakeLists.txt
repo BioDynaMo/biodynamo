@@ -140,7 +140,7 @@ add_dependencies(bdmclean libbdmclean)
 generate_rootlogon()
 
 if (${ParaView_FOUND})
-  target_link_libraries(biodynamo vtkPVPythonCatalyst)
+  target_link_libraries(biodynamo vtkPVPythonCatalyst vtkIOParallelXML)
 endif()
 
 # -------------------- build test project  ----------------------
@@ -179,6 +179,11 @@ if (test)
                       HEADERS test/integration/backup_restore.h
                       LIBRARIES biodynamo)
     add_test(NAME "integration-backup-restore" COMMAND ${CMAKE_SOURCE_DIR}/test/integration/backup_restore.sh)
+    bdm_add_executable(soma_clustering
+                      SOURCES test/integration/soma_clustering.cc
+                      HEADERS test/integration/soma_clustering.h
+                      LIBRARIES biodynamo)
+    add_test(NAME "integration-soma-clustering" COMMAND ${CMAKE_SOURCE_DIR}/build/soma_clustering)
   endif()
 endif()
 
@@ -189,4 +194,10 @@ include(cmake/CppStyleGuideChecks.cmake)
 bdm_add_executable(cell_division_module
                    SOURCES demo/cell_division_module.cc
                    HEADERS demo/cell_division_module.h
+                   LIBRARIES biodynamo)
+
+# --------------------- build cell_diffusion_module executable ------------------
+bdm_add_executable(diffusion_module
+                   SOURCES demo/diffusion_module.cc
+                   HEADERS demo/diffusion_module.h
                    LIBRARIES biodynamo)

@@ -5,9 +5,13 @@
 #include <limits>
 #include <memory>
 #include <ostream>
+#include <string>
 #include <tuple>
 #include <utility>
+#include <vector>
+
 #include "backend.h"
+#include "diffusion_grid.h"
 #include "tuple_util.h"
 #include "variadic_template_parameter_util.h"
 
@@ -23,7 +27,7 @@ class SoHandle {
   SoHandle() noexcept
       : type_idx_(std::numeric_limits<decltype(type_idx_)>::max()),
         element_idx_(std::numeric_limits<decltype(element_idx_)>::max()) {}
-  SoHandle(uint16_t type_idx, uint64_t element_idx)
+  SoHandle(uint16_t type_idx, uint32_t element_idx)
       : type_idx_(type_idx), element_idx_(element_idx) {}
   uint16_t GetTypeIdx() const { return type_idx_; }
   uint32_t GetElementIdx() const { return element_idx_; }
@@ -130,11 +134,38 @@ class ResourceManager {
     return &std::get<TypeContainer<ToBackend<Type>>>(data_);
   }
 
+  /// Return the container of diffusion grids
+  std::vector<DiffusionGrid*>& GetDiffusionGrids() { return diffusion_grids_; }
+
+  /// Return the diffusion grid which holds the substance of specified name
+  DiffusionGrid* GetDiffusionGrid(size_t substance_id) {
+    assert(substance_id < diffusion_grids_.size() &&
+           "You tried to access a diffusion grid that does not exist!");
+    return diffusion_grids_[substance_id];
+  }
+
+  /// Returns the total number of simulation objects
+  size_t GetNumSimObjects() {
+    size_t num_so = 0;
+    for (uint16_t i = 0; i < std::tuple_size<decltype(data_)>::value; i++) {
+      ::bdm::Apply(&data_, i,
+                   [&](auto* container) { num_so += container->size(); });
+    }
+    return num_so;
+  }
+
   /// Default constructor. Unfortunately needs to be public although it is
   /// a singleton to be able to use ROOT I/O
   ResourceManager() {
     // Soa container contain one element upon construction
     Clear();
+  }
+
+  /// Free the memory that was reserved for the diffusion grids
+  virtual ~ResourceManager() {
+    for (auto grid : diffusion_grids_) {
+      delete grid;
+    }
   }
 
   /// Apply a function on a certain element
@@ -218,6 +249,7 @@ class ResourceManager {
   /// creates one container for each type in Types.
   /// Container type is determined based on the specified Backend
   typename ConvertToContainerTuple<Backend, Types>::type data_;
+  std::vector<DiffusionGrid*> diffusion_grids_;
 
   friend class SimulationBackup;
   ClassDefNV(ResourceManager, 1);

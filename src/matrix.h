@@ -47,6 +47,21 @@ class Matrix {
     }
     return product;
   }
+
+  /// Multiplication of (all the elements of) a vector by a scalar value.
+  ///
+  /// @param  k a scalar
+  /// @param  a the vector we want to multiply
+  /// @return k * a
+  template <std::size_t N>
+  static std::array<double, N> ScalarMult(double k,
+                                          const std::array<double, N>& a) {
+    std::array<double, N> result;
+    for (size_t i = 0; i < N; i++) {
+      result[i] = a[i] * k;
+    }
+    return result;
+  }
 };
 
 }  // namespace bdm

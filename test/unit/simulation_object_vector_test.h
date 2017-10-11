@@ -1,9 +1,13 @@
 #ifndef UNIT_SIMULATION_OBJECT_VECTOR_TEST_H_
 #define UNIT_SIMULATION_OBJECT_VECTOR_TEST_H_
 
+#include <limits>
+
 #include "gtest/gtest.h"
 
 #include "backend.h"
+#include "cell.h"
+#include "compile_time_param.h"
 #include "simulation_object.h"
 #include "simulation_object_util.h"
 #include "simulation_object_vector.h"
@@ -75,6 +79,69 @@ inline void RunTest() {
 
   vector[SoHandle(0, 2)] = 5;
   EXPECT_EQ(5, vector[SoHandle(0, 2)]);
+}
+
+template <typename TBackend = Soa>
+struct DefaultCompileTimeParam1 {
+  template <typename TTBackend>
+  using Self = CompileTimeParam<TTBackend>;
+  using Backend = TBackend;
+
+  /// Defines backend used in ResourceManager
+  using SimulationBackend = Soa;
+  using BiologyModules = Variant<NullBiologyModule>;
+  using AtomicTypes = VariadicTypedef<Cell>;
+};
+
+// Tests if SimulationObjectVector::Initialize does indeed initialize the
+// object correctly (i.e. set the data_ member to the default values)
+inline void RunInitializeTest() {
+  // setup resource manager
+  using Rm = ResourceManager<CompileTimeParam1<Soa>>;
+  auto rm = Rm::Get();
+
+  ASSERT_EQ(2u, Rm::NumberOfTypes());
+
+  // Add some simulation objects, which shall be of type 0
+  auto as = rm->Get<A>();
+  as->push_back(A(3));
+  as->push_back(A(2));
+  as->push_back(A(1));
+
+  // Add some simulation objects, which shall be of type 1
+  auto bs = rm->Get<B>();
+  bs->push_back(B(8));
+  bs->push_back(B(9));
+
+  // The exected initial values for SoHandle objects
+  auto max16 = std::numeric_limits<uint16_t>::max();
+  auto max32 = std::numeric_limits<uint32_t>::max();
+
+  // Check if the initial state is obtained after the push backs
+  SimulationObjectVector<SoHandle, Rm> vector;
+  EXPECT_EQ(SoHandle(max16, max32), vector[SoHandle(0, 0)]);
+  EXPECT_EQ(SoHandle(max16, max32), vector[SoHandle(0, 1)]);
+  EXPECT_EQ(SoHandle(max16, max32), vector[SoHandle(0, 2)]);
+  EXPECT_EQ(SoHandle(max16, max32), vector[SoHandle(1, 0)]);
+  EXPECT_EQ(SoHandle(max16, max32), vector[SoHandle(1, 1)]);
+
+  // Assign a value to object 0 of simulation type 1
+  vector[SoHandle(1, 0)] = SoHandle(1, 0);
+  EXPECT_EQ(SoHandle(1, 0), vector[SoHandle(1, 0)]);
+
+  // Assign a value to object 2 of simulation type 0
+  vector[SoHandle(0, 2)] = SoHandle(0, 2);
+  EXPECT_EQ(SoHandle(0, 2), vector[SoHandle(0, 2)]);
+
+  // Initialize should reset vector to the default values
+  vector.Initialize();
+
+  // Check if Initialize indeed reset the values to the defaults
+  EXPECT_EQ(SoHandle(max16, max32), vector[SoHandle(0, 0)]);
+  EXPECT_EQ(SoHandle(max16, max32), vector[SoHandle(0, 1)]);
+  EXPECT_EQ(SoHandle(max16, max32), vector[SoHandle(0, 2)]);
+  EXPECT_EQ(SoHandle(max16, max32), vector[SoHandle(1, 0)]);
+  EXPECT_EQ(SoHandle(max16, max32), vector[SoHandle(1, 1)]);
 }
 
 }  // namespace simulation_object_vector_test_internal

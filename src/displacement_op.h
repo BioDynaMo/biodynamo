@@ -13,6 +13,19 @@ namespace bdm {
 using std::vector;
 using std::array;
 
+template <typename TSO>
+void ApplyBoundingBox(TSO* cell, double lb, double rb) {
+  auto& pos = cell->GetPosition();
+  for (int i = 0; i < 3; i++) {
+    if (pos[i] < lb) {
+      cell->SetCoordinate(i, lb);
+    }
+    if (pos[i] > rb) {
+      cell->SetCoordinate(i, rb);
+    }
+  }
+}
+
 /// Defines the 3D physical interactions between physical objects
 template <typename TGrid = Grid<>>
 class DisplacementOp {
@@ -104,6 +117,7 @@ class DisplacementOp {
       //  - break adherence and make us translate ?
       physical_translation = norm_of_force > cell.GetAdherence();
 
+      assert(cell.GetMass() != 0 && "The mass of a cell was found to be zero!");
       double mh = h / cell.GetMass();
       // adding the physics translation (scale by weight) if important enough
       if (physical_translation) {
@@ -136,6 +150,35 @@ class DisplacementOp {
     for (size_t i = 0; i < cells->size(); i++) {
       auto&& cell = (*cells)[i];
       cell.UpdateMassLocation(cell_movements[i]);
+      if (Param::bound_space_) {
+        ApplyBoundingBox(&cell, Param::lbound_, Param::rbound_);
+      }
+      cell.SetPosition(cell.GetMassLocation());
+
+      // Reset biological movement to 0.
+      cell.SetTractorForce({0, 0, 0});
+    }
+  }
+};
+
+/// Keeps the simulation objects contained within the bounds as defined in
+/// param.h
+class BoundSpace {
+ public:
+  BoundSpace() {}
+  ~BoundSpace() {}
+
+  template <typename TContainer>
+  void operator()(TContainer* cells, uint16_t type_idx) const {
+// set new positions after all updates have been calculated
+// otherwise some cells would see neighbors with already updated positions
+// which would lead to inconsistencies
+#pragma omp parallel for
+    for (size_t i = 0; i < cells->size(); i++) {
+      auto&& cell = (*cells)[i];
+      if (Param::bound_space_) {
+        ApplyBoundingBox(&cell, Param::lbound_, Param::rbound_);
+      }
       cell.SetPosition(cell.GetMassLocation());
 
       // Reset biological movement to 0.
