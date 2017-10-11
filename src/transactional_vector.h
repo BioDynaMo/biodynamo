@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <exception>
 #include <mutex>
 #include <vector>
 
@@ -25,18 +26,19 @@ class TransactionalVector {
 
   /// Returns the vector's size. Uncommited changes are not taken into account
   size_t size() const {  // NOLINT
-    return data_.size();
+    return size_;
   }
 
   /// Safe method to add an element to this vector.
   /// Does not invalidate, iterators, pointers or references.
   /// Changes do not take effect until they are commited.
-  /// @param element that should be added to the vector
-  /// @return reference to the added element inside the temporary vector
-  T& DelayedPushBack(const T& element) {
+  /// @param  element that should be added to the vector
+  /// @return index of the added element in `data_`. Will be bigger than
+  ///         `size()`
+  uint64_t DelayedPushBack(const T& element) {
     std::lock_guard<std::recursive_mutex> lock(mutex_);
-    to_be_added_.push_back(element);
-    return to_be_added_[to_be_added_.size() - 1];
+    data_.push_back(element);
+    return data_.size() - 1;
   }
 
   /// Safe method to remove an element from this vector
@@ -62,29 +64,35 @@ class TransactionalVector {
   void Commit() {
     std::lock_guard<std::recursive_mutex> lock(mutex_);
     // commit delayed push backs
-    data_.insert(data_.end(), to_be_added_.begin(), to_be_added_.end());
-    to_be_added_.clear();
+    size_ = data_.size();
     // commit delayed removes
     // sort indices in descending order to prevent out of bounds accesses
     auto descending = [](auto a, auto b) { return a > b; };
     std::sort(to_be_removed_.begin(), to_be_removed_.end(), descending);
     for (size_t idx : to_be_removed_) {
       assert(idx < data_.size() && "Removed index outside array boundaries");
-      if (data_.size() > 1) {
+      if (idx < data_.size() - 1) { // idx points to last element
         // invalidates pointer of last element
         std::swap(data_[idx], data_[data_.size() - 1]);
         data_.pop_back();
-      } else {
+      } else {  // idx does not point to last element
         data_.pop_back();
       }
+      size_--;
     }
     to_be_removed_.clear();
   }
 
-  /// Thread safe version of std::vector::push_back
+  /// Thread safe version of `std::vector::push_back`.
+  /// Throws `std::logic_error` if there are uncommited delayed additions.
   void push_back(const T& element) {  // NOLINT
     std::lock_guard<std::recursive_mutex> lock(mutex_);
-    data_.push_back(element);
+    if (data_.size() == size_) {
+      data_.push_back(element);
+      size_++;
+    } else {
+      throw std::logic_error("There are uncommited delayed additions to this container");
+    }
   }
 
   /// Thread safe version of std::vector::reserve
@@ -97,6 +105,7 @@ class TransactionalVector {
   void clear() {  // NOLINT
     std::lock_guard<std::recursive_mutex> lock(mutex_);
     data_.clear();
+    size_ = 0;
   }
 
   T& operator[](size_t index) { return data_[index]; }
@@ -105,19 +114,18 @@ class TransactionalVector {
 
   iterator begin() { return data_.begin(); }  // NOLINT
 
-  iterator end() { return data_.end(); }  // NOLINT
+  iterator end() { return data_.begin() += size_; }  // NOLINT
 
   const_iterator cbegin() { return data_.cbegin(); }  // NOLINT
 
-  const_iterator cend() { return data_.cend(); }  // NOLINT
+  const_iterator cend() { return data_.cbegin() += size_; }  // NOLINT
 
  private:
   std::recursive_mutex mutex_;  //!
   std::vector<T> data_;
+  uint64_t size_ = 0;
   /// vector of indices with elements which should be removed
   std::vector<size_t> to_be_removed_;
-  /// elements that are added using `DelayedPushBack` and not yet commited
-  std::vector<T> to_be_added_;
 };
 
 }  // namespace bdm

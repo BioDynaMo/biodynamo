@@ -26,7 +26,7 @@ using std::is_same;
 /// Type trait to convert a Simulation object into another Backend.\n
 /// Using the internal templated type alias `typename T::template Self<Backend>`
 /// is not always possible (if the type is still incomplete).\n
-/// Preprocessor macro `BDM_SIM_CLASS` generates template specializations
+/// Preprocessor macro `BDM_SIM_OBJECT` generates template specializations
 /// @tparam TSoScalar simulation object with scalar backend
 /// @tparam TBackend  desired backend
 ///
@@ -36,7 +36,7 @@ template <typename TSoScalar, typename TBackend>
 struct ToBackend;
 
 /// This type trait is need to encapsulate the derived type and pass it into
-/// simulation objects. Inside `BDM_SIM_CLASS` a template specialization is
+/// simulation objects. Inside `BDM_SIM_OBJECT` a template specialization is
 /// created for each simulation object.
 /// @tparam TSoExt template template parameter of a simulation object
 template <template <typename TCompileTimeParam, typename TDerived,
@@ -128,7 +128,7 @@ struct Capsule;
 ///
 ///     // Usage:
 ///     BDM(Cell, SimulationObject) {
-///        BDM_CLASS_HEADER(...);
+///        BDM_SIM_OBJECT_HEADER(...);
 ///      public:
 ///       void Foo();
 ///       ...
@@ -390,52 +390,18 @@ struct Capsule;
     return *this;                                                              \
   }                                                                            \
                                                                                \
-  /** This method commits changes made by `DelayedPushBack` and */             \
-  /** `DelayedRemove`. */                                                      \
-  /** CAUTION: \n*/                                                            \
-  /**   * Commit invalidates pointers and references returned by*/             \
-  /**     `DelayedPushBack`. \n*/                                              \
-  /**   * If memory reallocations are required all pointers or references*/    \
-  /**     into this container are invalidated\n*/                              \
-  /** One removal has constant complexity. If the element which should be*/    \
-  /** removed is not the last element it is swapped with the last one.*/       \
-  /** In the next step it can be removed in constant time using pop_back.*/    \
-  /** CAUTION: Swapping elements invalidates pointers to this element.*/       \
-  template <typename T = Backend>                                              \
-  typename enable_if<is_soa<T>::value>::type Commit() {                        \
-    std::lock_guard<std::recursive_mutex> lock(Base::mutex_);                  \
-    /* commit delayed push backs */                                            \
-    for (auto& element : to_be_added_) {                                       \
-      PushBackImpl(element);                                                   \
-    }                                                                          \
-    to_be_added_.clear();                                                      \
-    /* commit delayed removes */                                               \
-    /* sort indices in descending order to prevent out of bounds accesses */   \
-    auto descending = [](auto a, auto b) { return a > b; };                    \
-    std::sort(Base::to_be_removed_.begin(), Base::to_be_removed_.end(),        \
-              descending);                                                     \
-    for (size_t idx : Base::to_be_removed_) {                                  \
-      assert(idx < Base::size() && "Removed index outside array boundaries");  \
-      if (Base::size() > 1) {                                                  \
-        SwapAndPopBack(idx, Base::size());                                     \
-      } else {                                                                 \
-        PopBack(idx, Base::size());                                            \
-      }                                                                        \
-    }                                                                          \
-    Base::to_be_removed_.clear();                                              \
-  }                                                                            \
-                                                                               \
   /** Safe method to add an element to this vector. */                         \
   /** Does not invalidate, iterators, pointers or references. */               \
   /** Changes do not take effect until they are commited.*/                    \
   /** @param element that should be added to the vector*/                      \
-  /** @return reference to the added element inside the temporary vector*/     \
+  /** @return  index of the added element in `data_`. Will be bigger than*/    \
+  /**          `size()` */                                                     \
   template <typename T = Backend>                                              \
-  typename enable_if<is_soa<T>::value, Self<Scalar>&>::type DelayedPushBack(   \
-      const Self<Scalar>& element) {                                           \
+  uint64_t DelayedPushBack(                                                    \
+      const Self<Scalar>& other) {                                           \
     std::lock_guard<std::recursive_mutex> lock(Base::mutex_);                  \
-    to_be_added_.push_back(element);                                           \
-    return to_be_added_[to_be_added_.size() - 1];                              \
+    PushBackImpl(other); \
+    return Base::TotalSize() - 1;                                                      \
   }                                                                            \
                                                                                \
  protected:                                                                    \
@@ -454,17 +420,12 @@ struct Capsule;
   }                                                                            \
                                                                                \
   /** Remove last element from each data member */                             \
-  void PopBack(size_t index, size_t size) override {                           \
-    BDM_SIM_OBJECT_POP_BACK_BODY(__VA_ARGS__);                                 \
-    Base::PopBack(index, size);                                                \
+  void PopBack() override {                           \
+    BDM_SIM_OBJECT_POP_BACK_BODY(__VA_ARGS__);                               \
+    Base::PopBack();                                                \
   }                                                                            \
                                                                                \
  private:                                                                      \
-  /** Elements that are added using `DelayedPushBack` and not yet commited */  \
-  typename type_ternary_operator<                                              \
-      is_same<Backend, Soa>::value, std::vector<Self<Scalar>>,                 \
-      VectorPlaceholder<Self<Scalar>>>::type to_be_added_;                     \
-                                                                               \
   BDM_ROOT_CLASS_DEF_OVERRIDE(class_name, class_version_id)
 
 /// Simulation object pointer. Required to point into simulation objects with
@@ -491,6 +452,15 @@ class SoPointer {
 
   bool IsNullPtr() const {
     return element_idx_ == std::numeric_limits<uint64_t>::max();
+  }
+
+  bool operator==(const SoPointer<TSo, TBackend>& other) const {
+    return element_idx_ == other.element_idx_ && so_container_ == other.so_container_;
+  }
+
+  SoPointer<TSo, TBackend>& operator=(nullptr_t) {
+    element_idx_ = std::numeric_limits<uint64_t>::max();
+    return *this;
   }
 
   /// This method is required, since `operator->` must return a pointer type.
@@ -528,8 +498,7 @@ class SoPointer {
 ///         returned. This reference will become invalid once `Commit()`
 ///         method of the container is called.
 template <typename T, typename Container, typename... Params>
-typename std::remove_reference<T>::type::template Self<Scalar>& Divide(
-    T&& progenitor, Container* container, Params... parameters) {
+uint64_t Divide(T&& progenitor, Container* container, Params... parameters) {
   // daughter type is scalar version of T
   using DaughterType =
       typename std::remove_reference<T>::type::template Self<Scalar>;
@@ -542,13 +511,12 @@ typename std::remove_reference<T>::type::template Self<Scalar>& Divide(
 /// Container is obtained from the ResourceManager
 template <typename T, typename... Params,
           typename TResourceManager = ResourceManager<>>
-typename std::remove_reference<T>::type::template Self<Scalar>& Divide(
-    T&& progenitor, Params... parameters) {
+auto Divide(T&& progenitor, Params... parameters) {
   // daughter type is scalar version of T
   using DaughterType =
       typename std::remove_reference<T>::type::template Self<Scalar>;
   auto container = TResourceManager::Get()->template Get<DaughterType>();
-  return Divide(progenitor, container, parameters...);
+  return SoPointer<DaughterType, typename TResourceManager::Backend>(container, Divide(progenitor, container, parameters...));
 }
 
 /// Helper function to make cell death easier for the programmer.

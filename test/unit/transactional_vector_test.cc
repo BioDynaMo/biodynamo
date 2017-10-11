@@ -8,12 +8,14 @@ namespace transactional_vector_test_internal {
 TEST(TransactionalVectorTest, All) {
   TransactionalVector<int> vector;
 
-  vector.DelayedPushBack(1);
-  vector.DelayedPushBack(2);
-  vector.DelayedPushBack(3);
+  EXPECT_EQ(0u, vector.DelayedPushBack(1));
+  EXPECT_EQ(1u, vector.DelayedPushBack(2));
+  EXPECT_EQ(2u, vector.DelayedPushBack(3));
 
   // changes have not been commited yet
   EXPECT_EQ(0u, vector.size());
+  EXPECT_TRUE(vector.begin() == vector.end());
+  EXPECT_TRUE(vector.cbegin() == vector.cend());
 
   vector.Commit();
 
@@ -22,10 +24,19 @@ TEST(TransactionalVectorTest, All) {
   EXPECT_EQ(2, vector[1]);
   EXPECT_EQ(3, vector[2]);
 
+  // test iterator
+  int64_t counter = 0;
+  for(auto i : vector) {
+    EXPECT_EQ(counter++  + 1, i);
+  }
+  EXPECT_EQ(counter, 3);
+
   vector.DelayedRemove(0);
 
   // changes have not been commited yet
   EXPECT_EQ(3u, vector.size());
+  EXPECT_TRUE((vector.begin() += 3) == vector.end());
+  EXPECT_TRUE((vector.cbegin() += 3) == vector.cend());
 
   vector.Commit();
 
@@ -33,10 +44,35 @@ TEST(TransactionalVectorTest, All) {
   EXPECT_EQ(3, vector[0]);
   EXPECT_EQ(2, vector[1]);
 
+  // test iterator
+  counter = 0;
+  for(auto i : vector) {
+    if(!counter++) {
+      EXPECT_EQ(3, i);
+    } else {
+      EXPECT_EQ(2, i);
+    }
+  }
+  EXPECT_EQ(counter, 2);
+
   vector.DelayedRemove(0);
   vector.DelayedRemove(1);
   vector.Commit();
   EXPECT_EQ(0u, vector.size());
+  EXPECT_TRUE(vector.begin() == vector.end());
+  EXPECT_TRUE(vector.cbegin() == vector.cend());
+
+  // push_back
+  vector.push_back(9);
+  EXPECT_EQ(1u, vector.size());
+  EXPECT_EQ(9, vector[0]);
+
+  vector.DelayedPushBack(10);
+  EXPECT_EQ(1u, vector.size());
+  try {
+    vector.push_back(11);
+    FAIL() << "Should have thrown a logic_error";
+  } catch(std::logic_error& e) {}
 }
 
 TEST(TransactionalVectorTest, DelayedRemove) {

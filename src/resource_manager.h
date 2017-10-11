@@ -80,6 +80,16 @@ struct ConvertToContainerTuple<Backend, VariadicTypedef<Types...>> {
   using type = std::tuple<Container<ToBackend<Types>>...>;  // NOLINT
 };
 
+/// Type trait to obtain the index of a type within a tuple.
+/// Required to extract variadic types from withi a `VariadicTypedef`
+template <typename TSo, typename... Types>
+struct ToIndex;
+
+template <typename TSo, typename... Types>
+struct ToIndex<TSo, VariadicTypedef<Types...>> {
+  static constexpr uint16_t value = GetIndex<TSo, Types...>();
+};
+
 }  // namespace detail
 
 /// Create a tuple of types in the parameter pack and wrap each type with
@@ -94,6 +104,8 @@ struct ConvertToContainerTuple {
       typename detail::ConvertToContainerTuple<Backend, TVariadicTypedef>::type
           type;  // NOLINT
 };
+
+
 
 /// Forward declaration for concrete compile time parameter.
 /// Will be used as default template parameter.
@@ -262,6 +274,11 @@ class ResourceManager {
     return std::tuple_size<decltype(data_)>::value;
   }
 
+  template <typename TSo>
+  static constexpr uint16_t GetTypeIndex() {
+    return detail::ToIndex<TSo, Types>::value;
+  }
+
  private:
   static std::unique_ptr<ResourceManager<TCompileTimeParam>> instance_;
 
@@ -283,33 +300,6 @@ template <typename TResourceManager = ResourceManager<>>
 TResourceManager* Rm() {
   return TResourceManager::Get();
 }
-
-// #define SOH_CALL(so_handle, function_with_parameters)
-//   Rm()->ApplyOnElement(so_handle, [&](auto&& so, SoHandle) {
-//     return so.function_with_parameters;
-//   })
-//
-// #define SOH_CALL(so_handle, function_with_parameters, ret_type)
-//   [](SoHandle handle) -> ret_type {
-//     ret_type ret_val;
-//     Rm()->ApplyOnElement(so_handle, [&ret_val](auto&& so) {
-//       ret_val = so.function_with_parameters;
-//     });
-//     return ret_val;
-//   }(so_handle);
-//
-// std::array<double, 3> position
-// SOH_CALL(mother_, GetPosition(), position);
-// auto& pos = SOH_CALL(mother_, GetPosition(), const std::array<double, 3>&);
-//
-// auto& pos = mother_->CALL(GetPosition());
-//
-//
-// auto& pos = mother_([](auto&& so) { return so.GetPosition(); })
-// auto& pos = mother_(SOHIL(GetPosition()));
-//                 ^ returns rm
-// ApplyOnElement
-// mother_.IsA<Neurite>()
 
 }  // namespace bdm
 

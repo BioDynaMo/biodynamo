@@ -44,7 +44,7 @@ class SoaSimulationObject {
       SoaSimulationObject<typename TCompileTimeParam::template Self<TBackend>,
                           TDerived>;
 
-  SoaSimulationObject() : to_be_removed_(), size_(1) {}
+  SoaSimulationObject() : to_be_removed_(), total_size_(1), size_(1) {}
 
   /// Detect failing return value optimization (RVO)
   /// Copy-ctor declaration to please compiler, but missing implementation.
@@ -63,6 +63,7 @@ class SoaSimulationObject {
       : kIdx(idx),
         mutex_(other->mutex_),
         to_be_removed_(other->to_be_removed_),
+        total_size_(other->total_size_),
         size_(other->size_) {}
 
   virtual ~SoaSimulationObject() {}
@@ -74,10 +75,19 @@ class SoaSimulationObject {
     return size_;
   }
 
+  /// Returns the number of elements in the container including non commited
+  /// additions
+  size_t TotalSize() const { return total_size_; }
+
   /// Thread safe version of std::vector::push_back
   void push_back(const TMostDerived<Scalar> &element) {  // NOLINT
     std::lock_guard<std::recursive_mutex> lock(mutex_);
-    PushBackImpl(element);
+    if (total_size_ == size_) {
+      PushBackImpl(element);
+      size_++;
+    } else {
+      throw std::logic_error("There are uncommited delayed additions to this container");
+    }
   }
 
   /// Safe method to remove an element from this vector
@@ -92,7 +102,41 @@ class SoaSimulationObject {
 
   /// Equivalent to std::vector<> clear - it removes all elements from all
   /// data members
-  void clear() { size_ = 0; }  // NOLINT
+  void clear() {  // NOLINT
+    total_size_ = 0;
+    size_ = 0;
+  }
+
+  /// This method commits changes made by `DelayedPushBack` and `DelayedRemove`.
+  /// CAUTION: \n
+  ///   * Commit invalidates pointers and references returned by
+  ///     `DelayedPushBack`. \n
+  ///   * If memory reallocations are required all pointers or references
+  ///     into this container are invalidated\n
+  /// One removal has constant complexity. If the element which should be
+  /// removed is not the last element it is swapped with the last one.
+  /// (CAUTION: this invalidates pointers and references to the last element)
+  /// In the next step it can be removed in constant time using pop_back. \n
+  void Commit() {
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
+    // commit delayed push backs
+    size_ = total_size_;
+    // commit delayed removes
+    // sort indices in descending order to prevent out of bounds accesses
+    auto descending = [](auto a, auto b) { return a > b; };
+    std::sort(to_be_removed_.begin(), to_be_removed_.end(), descending);
+    for (size_t idx : to_be_removed_) {
+      assert(idx < size_ && "Removed index outside array boundaries");
+      if (idx < size_ - 1) {
+        SwapAndPopBack(idx, size_);
+      } else {
+        PopBack();
+      }
+      size_--;
+    }
+    to_be_removed_.clear();
+    total_size_ = size_;
+  }
 
   /// Equivalent to std::vector<> reserve - it increases the capacity
   /// of all data member containers
@@ -134,15 +178,21 @@ class SoaSimulationObject {
                                  std::vector<size_t>>::type to_be_removed_;
 
   /// Append a scalar element
-  virtual void PushBackImpl(const TMostDerived<Scalar> &other) { size_++; }
+  virtual void PushBackImpl(const TMostDerived<Scalar> &other) { total_size_++; }
 
   /// Swap element with last element if and remove last element
-  virtual void SwapAndPopBack(size_t index, size_t size) { size_--; }
+  virtual void SwapAndPopBack(size_t index, size_t size) {}
 
   /// Remove last element
-  virtual void PopBack(size_t index, size_t size) { size_--; }
+  virtual void PopBack() {}
 
  private:
+   /// vector of indices with elements which should be removed
+   /// to_be_removed_ is of type vector<size_t>& if Backend == SoaRef;
+   /// otherwise vector<size_t>
+   typename type_ternary_operator<is_same<Backend, SoaRef>::value,
+                                 size_t&, size_t>::type total_size_ = 0;
+
   /// size_ is of type size_t& if Backend == SoaRef; otherwise size_t
   typename type_ternary_operator<is_same<Backend, SoaRef>::value, size_t &,
                                  size_t>::type size_;
@@ -179,7 +229,7 @@ class ScalarSimulationObject {
   virtual void SwapAndPopBack(size_t index, size_t size) {}
 
   /// Remove last element
-  virtual void PopBack(size_t index, size_t size) {}
+  virtual void PopBack() {}
 
   BDM_ROOT_CLASS_DEF(ScalarSimulationObject, 1);
 };

@@ -55,18 +55,6 @@ struct GetIndexImpl<T, Counter, FirstType, RemainingTypes...> {
   }
 };
 
-// template <typename TFunction, typename TTuple, typename TFirst>
-// struct ReturnTypeImpl {
-//   using type =
-//   decltype(TFunction(std::get<TFirst>(&std::declval<TTuple>())));
-// };
-//
-// template <typename TFunction, typename TTuple, typename TFirst, typename...
-// TRemainingTypes>
-// struct ReturnTypeImpl {
-//   using type = type_ternary_operator<enable_if<
-// };
-
 }  // namespace detail
 
 /// This function applies the given function on tuple element index.
@@ -85,7 +73,7 @@ void Apply(TTuple* t, size_t index, TFunction&& f) {
 /// Return the index of the first occurence of type T within the variadic
 /// template parameter Types.
 template <typename T, typename... Types>
-inline size_t GetIndex() {
+inline constexpr size_t GetIndex() {
   return bdm::detail::template GetIndexImpl<T, 0, Types...>::GetValue();
 }
 

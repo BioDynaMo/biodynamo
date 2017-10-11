@@ -3,11 +3,84 @@
 #include "unit/separate_binary/simulation_object_util_test.h"
 
 namespace bdm {
-namespace simulation_object_util_test_internal {
+// namespace simulation_object_util_test_internal {
 
 // The following tests check if code insertion in new classes works as intended
 // Therefore SimulationObject is extended in two stages: first by CellExt and
 // then by NeuronExt
+
+TEST(SimulationObjectUtilTest, ContainerFunctionality) {
+  using Scalar = ContainerTestClass;
+  auto vector = Scalar::NewEmptySoa();
+
+  EXPECT_EQ(0u, vector.size());
+  EXPECT_EQ(0u, vector.GetTotalSize());
+
+  EXPECT_EQ(0u, vector.DelayedPushBack(Scalar(1, 1.0)));
+  EXPECT_EQ(1u, vector.DelayedPushBack(Scalar(2, 2.0)));
+  EXPECT_EQ(2u, vector.DelayedPushBack(Scalar(3, 3.0)));
+
+  // changes have not been commited yet
+  EXPECT_EQ(0u, vector.size());
+  //   but data is already in vector
+  EXPECT_EQ(3u, vector.GetVecDm1().size());
+  EXPECT_EQ(3u, vector.GetVecDm2().size());
+  EXPECT_EQ(3u, vector.GetTotalSize());
+
+  vector.Commit();
+
+  EXPECT_EQ(3u, vector.size());
+  EXPECT_EQ(3u, vector.GetVecDm1().size());
+  EXPECT_EQ(3u, vector.GetVecDm2().size());
+  EXPECT_EQ(3u, vector.GetTotalSize());
+
+  EXPECT_EQ(1, vector[0].GetDm1());
+  EXPECT_EQ(1.0, vector[0].GetDm2());
+  EXPECT_EQ(2, vector[1].GetDm1());
+  EXPECT_EQ(2.0, vector[1].GetDm2());
+  EXPECT_EQ(3, vector[2].GetDm1());
+  EXPECT_EQ(3.0, vector[2].GetDm2());
+
+  vector.DelayedRemove(0);
+
+  // changes have not been commited yet
+  EXPECT_EQ(3u, vector.size());
+  EXPECT_EQ(3u, vector.GetVecDm1().size());
+  EXPECT_EQ(3u, vector.GetVecDm2().size());
+  EXPECT_EQ(3u, vector.GetTotalSize());
+
+  vector.Commit();
+
+  EXPECT_EQ(2u, vector.size());
+  EXPECT_EQ(2u, vector.GetVecDm1().size());
+  EXPECT_EQ(2u, vector.GetVecDm2().size());
+  EXPECT_EQ(2u, vector.GetTotalSize());
+
+  EXPECT_EQ(3, vector[0].GetDm1());
+  EXPECT_EQ(3.0, vector[0].GetDm2());
+  EXPECT_EQ(2, vector[1].GetDm1());
+  EXPECT_EQ(2.0, vector[1].GetDm2());
+
+  vector.DelayedRemove(0);
+  vector.DelayedRemove(1);
+  vector.Commit();
+  EXPECT_EQ(0u, vector.size());
+  EXPECT_EQ(0u, vector.GetTotalSize());
+
+  // push_back
+  vector.push_back(Scalar(9, 9.0));
+  EXPECT_EQ(1u, vector.size());
+  EXPECT_EQ(1u, vector.GetTotalSize());
+  EXPECT_EQ(9, vector[0].GetDm1());
+
+  vector.DelayedPushBack(Scalar(10, 10.0));
+  EXPECT_EQ(1u, vector.size());
+  EXPECT_EQ(2u, vector.GetTotalSize());
+  try {
+    vector.push_back(Scalar(11, 11.0));
+    FAIL() << "Should have thrown a logic_error";
+  } catch(std::logic_error& e) {}
+}
 
 template <typename T>
 void RunDefaultConstructorTest(const T& neuron) {
@@ -181,12 +254,14 @@ void RunDivideTest(TContainer* neurons) {
   Neuron neuron;
   neurons->push_back(neuron);
 
-  auto&& new_neuron = Divide((*neurons)[0], neurons, 1.0, 2.0, 3.0);
+  auto new_neuron_idx = Divide((*neurons)[0], neurons, 1.0, 2.0, 3.0);
 
-  EXPECT_EQ(987u, new_neuron.GetNeurites()[0].id_);
-  EXPECT_EQ(5, new_neuron.GetPosition()[0]);
-  EXPECT_EQ(4, new_neuron.GetPosition()[1]);
-  EXPECT_EQ(3, new_neuron.GetPosition()[2]);
+  EXPECT_EQ(1u, new_neuron_idx);
+  EXPECT_EQ(1u, neurons->size()); // not visible yet
+  EXPECT_EQ(987u, (*neurons)[new_neuron_idx].GetNeurites()[0].id_);
+  EXPECT_EQ(5, (*neurons)[new_neuron_idx].GetPosition()[0]);
+  EXPECT_EQ(4, (*neurons)[new_neuron_idx].GetPosition()[1]);
+  EXPECT_EQ(3, (*neurons)[new_neuron_idx].GetPosition()[2]);
 
   // commit invalidates new_neuron
   neurons->Commit();
@@ -222,10 +297,10 @@ TEST(SimulationObjectUtilTest, Soa_DivideWithResourceManager) {
 
   auto&& new_neuron = Divide((*neurons)[0], 1.0, 2.0, 3.0);
 
-  EXPECT_EQ(987u, new_neuron.GetNeurites()[0].id_);
-  EXPECT_EQ(5, new_neuron.GetPosition()[0]);
-  EXPECT_EQ(4, new_neuron.GetPosition()[1]);
-  EXPECT_EQ(3, new_neuron.GetPosition()[2]);
+  EXPECT_EQ(987u, new_neuron.Get().GetNeurites()[0].id_);
+  EXPECT_EQ(5, new_neuron.Get().GetPosition()[0]);
+  EXPECT_EQ(4, new_neuron.Get().GetPosition()[1]);
+  EXPECT_EQ(3, new_neuron.Get().GetPosition()[2]);
 
   // commit invalidates new_neuron
   neurons->Commit();
@@ -366,50 +441,49 @@ TEST(SimulationObjectUtilTestDeathTest, ForEachDataMemberInNonExistantDm) {
 
 // ----------------------------------------------------------------------------
 // SoPointer tests
+/// This function is before the decleration of `SoPointerTestClass` to test
+/// if the SoPointer implementation can deal with incomplete types
+template <typename T, typename TBackend>
+void RunSoPointerTest(T* sim_objects) {
+  using SO = typename T::value_type;
 
-// /// This function is before the decleration of `SoPointerTestClass` to test
-// /// if the SoPointer implementation can deal with incomplete types
-// template <typename T, typename TBackend>
-// void RunSoPointerTest(T* sim_objects) {
-//   using SO = typename T::value_type;
-//
-//   SoPointer<SO, TBackend> null_so_pointer;
-//   EXPECT_TRUE(null_so_pointer.IsNullPtr());
-//
-//   SoPointer<SO, TBackend> so_ptr(sim_objects, 0);
-//
-//   EXPECT_FALSE(so_ptr.IsNullPtr());
-//   EXPECT_EQ(123u, so_ptr.Get().GetId());
-// }
-//
-// BDM_SIM_CLASS(SoPointerTestClass, SimulationObject) {
-//   BDM_CLASS_HEADER(SoPointerTestClassExt, 1, id_);
-//
-//  public:
-//   SoPointerTestClassExt() {}
-//   SoPointerTestClassExt(uint64_t id) { id_[kIdx] = id; }
-//
-//   uint64_t GetId() const { return id_[kIdx]; }
-//
-//  private:
-//   vec<uint64_t> id_;
-// };
-//
-// TEST(SimulationObjectUtilTest, Aos_SoPointer) {
-//   TransactionalVector<SoPointerTestClass> sim_objects;
-//   SoPointerTestClass so(123);
-//   sim_objects.push_back(so);
-//   RunSoPointerTest<decltype(sim_objects), Scalar>(&sim_objects);
-// }
-//
-// TEST(SimulationObjectUtilTest, Soa_SoPointer) {
-//   auto sim_objects = SoPointerTestClass::NewEmptySoa();
-//   SoPointerTestClass so(123);
-//   sim_objects.push_back(so);
-//   RunSoPointerTest<decltype(sim_objects), Soa>(&sim_objects);
-// }
+  SoPointer<SO, TBackend> null_so_pointer;
+  EXPECT_TRUE(null_so_pointer.IsNullPtr());
 
-}  // namespace simulation_object_util_test_internal
+  SoPointer<SO, TBackend> so_ptr(sim_objects, 0);
+
+  EXPECT_FALSE(so_ptr.IsNullPtr());
+  EXPECT_EQ(123u, so_ptr.Get().GetId());
+}
+
+BDM_SIM_OBJECT(SoPointerTestClass, SimulationObject) {
+  BDM_SIM_OBJECT_HEADER(SoPointerTestClassExt, 1, id_);
+
+ public:
+  SoPointerTestClassExt() {}
+  SoPointerTestClassExt(uint64_t id) { id_[kIdx] = id; }
+
+  uint64_t GetId() const { return id_[kIdx]; }
+
+ private:
+  vec<uint64_t> id_;
+};
+
+TEST(SimulationObjectUtilTest, Aos_SoPointer) {
+  TransactionalVector<SoPointerTestClass> sim_objects;
+  SoPointerTestClass so(123);
+  sim_objects.push_back(so);
+  RunSoPointerTest<decltype(sim_objects), Scalar>(&sim_objects);
+}
+
+TEST(SimulationObjectUtilTest, Soa_SoPointer) {
+  auto sim_objects = SoPointerTestClass::NewEmptySoa();
+  SoPointerTestClass so(123);
+  sim_objects.push_back(so);
+  RunSoPointerTest<decltype(sim_objects), Soa>(&sim_objects);
+}
+
+// }  // namespace simulation_object_util_test_internal
 }  // namespace bdm
 
 int main(int argc, char** argv) {
