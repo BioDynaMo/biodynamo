@@ -12,7 +12,7 @@ if(APPLE)
 else()
    option(valgrind "Enable valgrind tests and make build compatible with valgrind tool." ON)
 endif()
-option(coverage "Enable test coverage report generation." OFF)
+option(coverage "Enable test coverage report generation. Sets build type to coverage" OFF)
 
 #--------------------- find packages -------------
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
@@ -55,41 +55,13 @@ include(BioDynaMo)
 include(ExternalProject)
 include(cmake/doxygen.cmake)
 
-#--------------------- check if compiler supports C++11 -------------
-# http://stackoverflow.com/questions/10851247/how-to-activate-c-11-in-cmake
-include(CheckCXXCompilerFlag)
-check_cxx_compiler_flag("-std=c++14" COMPILER_SUPPORTS_CXX14)
-if(COMPILER_SUPPORTS_CXX14)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
-  set(CMAKE_CXX_STANDARD 14)
-  set(CMAKE_CXX_STANDARD_REQUIRED ON)
-else()
-  message(ERROR "The compiler ${CMAKE_CXX_COMPILER} has no C++14 support. Please use a different C++ compiler.")
+#--------------------- set compiler flags and default build type -------------
+if(coverage)
+  set(CMAKE_BUILD_TYPE Coverage)
+elseif(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE RelWithDebInfo)
 endif()
-
-#--------------------- set compiler flags -------------
-if (coverage)
-  set(CMAKE_BUILD_TYPE "Debug")
-  set(GCC_COMPILE_FLAGS "-Wall -Wno-missing-braces -g -O0 -fprofile-arcs -ftest-coverage -fPIC")
-else()
-  set(GCC_COMPILE_FLAGS "-Wall -Wno-missing-braces -fPIC")
-endif()
-set(GCC_LINK_FLAGS "")
-# append
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${GCC_COMPILE_FLAGS}")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GCC_COMPILE_FLAGS}")
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${GCC_LINK_FLAGS}")
-# append OpenMP flags
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-# special clang flag
-if(${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
-  # silence unsupported -pthread argument at link time
-  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Qunused-arguments")
-  SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Qunused-arguments")
-  # silence clang 3.9 warning
-  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-undefined-var-template")
-endif()
+include(cmake/SetCompilerFlags.cmake)
 
 #--------------------- set rpath options -------------
 # When building, use the RPATH
@@ -138,7 +110,6 @@ add_custom_target(bdmclean)
 add_dependencies(bdmclean libbdmclean)
 
 generate_rootlogon()
-
 if (${ParaView_FOUND})
   target_link_libraries(biodynamo vtkPVPythonCatalyst vtkIOParallelXML)
 endif()
