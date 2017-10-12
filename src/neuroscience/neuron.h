@@ -40,7 +40,7 @@ BDM_SIM_OBJECT(SpecializedNeuron, Neuron) {
   BDM_SIM_OBJECT_HEADER(SpecializedNeuronExt, 1, me_);
  public:
   SpecializedNeuronExt() {
-    auto&& me = me_[kIdx].Get();
+    // auto&& me = me_[kIdx].Get();
   }
 
  private:

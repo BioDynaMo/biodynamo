@@ -94,13 +94,7 @@ BDM_SIM_OBJECT(Neurite, SimulationObject) {
   GetSoPtr<TNeuron> aa_;
 
  public:
-   NeuriteExt() {
-     auto& pos = mother_[kIdx].GetPosition();
-     ToSimBackend<TNeuron> nsb;
-    std::cout << "ADL " << typeid(decltype(ADLHelper(std::declval<TNeuron*>(), std::declval<Scalar>()))).name() << std::endl;
-    std::cout << "ADL " << typeid(decltype(ADLHelper(std::declval<TNeuron*>(), std::declval<Soa>()))).name() << std::endl;
-    // std::cout << "ADL " << typeid(Convert<TNeuron, Scalar>).name() << std::endl;
-   }
+   NeuriteExt() {}
    const std::array<double, 3>& GetPosition() const { return position_[kIdx]; }
 
   /// Retracts the cylinder, if it is a terminal one.
