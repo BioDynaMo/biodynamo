@@ -14,7 +14,7 @@ else()
 endif()
 option(coverage "Enable test coverage report generation. Sets build type to coverage" OFF)
 
-#--------------------- find packages -------------
+# -------------------- find packages ------------------------------------------
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 find_package(OpenMP REQUIRED)
 if (test)
@@ -50,12 +50,12 @@ else()
   message(WARNING "VTune not found")
 endif()
 
-#--------------------- includes -------------
+# -------------------- includes -----------------------------------------------
 include(BioDynaMo)
 include(ExternalProject)
 include(cmake/doxygen.cmake)
 
-#--------------------- set compiler flags and default build type -------------
+# -------------------- set default build type and compiler flags ---------------
 if(coverage)
   set(CMAKE_BUILD_TYPE Coverage)
 elseif(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
@@ -63,7 +63,7 @@ elseif(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
 endif()
 include(cmake/SetCompilerFlags.cmake)
 
-#--------------------- set rpath options -------------
+# -------------------- set rpath options ---------------------------------------
 # When building, use the RPATH
 set(CMAKE_SKIP_BUILD_RPATH FALSE)           # don't skip the full RPATH for the build tree
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)   # use always the build RPATH for the build tree
@@ -77,13 +77,13 @@ else()
   set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_FULL_LIBDIR}) # install LIBDIR
 endif()
 
-#--------------------- setup mpark variant library ----------------
+# -------------------- setup mpark variant library -----------------------------
 set(MPARK_LIB "${CMAKE_CURRENT_BINARY_DIR}/mpark/")
 file(MAKE_DIRECTORY "${MPARK_LIB}/")
 execute_process(COMMAND ${CMAKE_COMMAND} -E tar xf "${CMAKE_SOURCE_DIR}/third_party/mpark_4ee0086.zip"
                 WORKING_DIRECTORY "${MPARK_LIB}")
 
-#--------------------- build shared library libbiodynamo ----------------
+# -------------------- build shared library libbiodynamo -----------------------
 # add the headers into the project
 include(${ROOT_USE_FILE})
 include_directories("${CMAKE_SOURCE_DIR}/src")
@@ -114,7 +114,7 @@ if (${ParaView_FOUND})
   target_link_libraries(biodynamo vtkPVPythonCatalyst vtkIOParallelXML)
 endif()
 
-# -------------------- build test project  ----------------------
+# -------------------- build test project  ------------------------------------
 if (test)
   enable_testing()
 
@@ -158,16 +158,19 @@ if (test)
   endif()
 endif()
 
-# --------------- add targets for code style and submission checks -------------
+# -------------------- Install configuration -----------------------------------
+include(cmake/Installation.cmake)
+
+# -------------------- add targets for code style and submission checks --------
 include(cmake/CppStyleGuideChecks.cmake)
 
-# --------------------- build cell_division_module executable ------------------
+# -------------------- build cell_division_module executable -------------------
 bdm_add_executable(cell_division_module
                    SOURCES demo/cell_division_module.cc
                    HEADERS demo/cell_division_module.h
                    LIBRARIES biodynamo)
 
-# --------------------- build cell_diffusion_module executable ------------------
+# -------------------- build cell_diffusion_module executable ------------------
 bdm_add_executable(diffusion_module
                    SOURCES demo/diffusion_module.cc
                    HEADERS demo/diffusion_module.h
