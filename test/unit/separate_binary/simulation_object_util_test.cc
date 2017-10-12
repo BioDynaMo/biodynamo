@@ -454,6 +454,9 @@ void RunSoPointerTest(T* sim_objects) {
 
   EXPECT_FALSE(so_ptr.IsNullPtr());
   EXPECT_EQ(123u, so_ptr.Get().GetId());
+
+  so_ptr = nullptr;
+  EXPECT_TRUE(so_ptr.IsNullPtr());
 }
 
 BDM_SIM_OBJECT(SoPointerTestClass, SimulationObject) {
