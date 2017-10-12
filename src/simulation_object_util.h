@@ -23,24 +23,28 @@ namespace bdm {
 using std::enable_if;
 using std::is_same;
 
-/// Type trait to convert a Simulation object into another Backend.\n
+/// Templated type trait to convert a simulation object into another Backend.\n
 /// Using the internal templated type alias `typename T::template Self<Backend>`
 /// is not always possible (if the type is still incomplete).\n
-/// Preprocessor macro `BDM_SIM_OBJECT` generates template specializations
+/// Preprocessor macro `BDM_SIM_OBJECT` generates `ADLHelper` function
+/// declerations whose return value is the converted type. This techniques is
+/// called argument dependant look-up (ADL) and is required to find the type
+/// even in different namespaces.
 /// @tparam TSoScalar simulation object with scalar backend
 /// @tparam TBackend  desired backend
 ///
 ///     // Usage:
-///     typename ToBackend<Neuron, Soa>::type neurons;
-// TODO documentation
+///     ToBackend<Neuron, Soa> neurons;
 template <typename TSoScalar, typename TBackend>
 using ToBackend = decltype(ADLHelper(std::declval<TSoScalar*>(), std::declval<TBackend>()));
 
-// TODO documentation
+/// Templated type trait that converts the given type to a scalar backend.\n
+/// Shorter version of `ToBackend<SomeType, Scalar>`.
 template <typename TSoScalar>
 using ToScalar = decltype(ADLHelper(std::declval<TSoScalar*>(), std::declval<Scalar>()));
 
-// TODO documentation
+/// Templated type trait that converts the given type to a soa backend.\n
+/// Shorter version of `ToBackend<SomeType, Soa>`.
 template <typename TSoScalar>
 using ToSoa = decltype(ADLHelper(std::declval<TSoScalar*>(), std::declval<Soa>()));
 
@@ -104,6 +108,11 @@ struct Capsule;
   using Soa##sim_object =                                                      \
       sim_object##Ext<CompileTimeParam<Soa>, Capsule<sim_object##Ext>>;        \
                                                                                \
+  /** Functions used to associate a return type with a number of parameter */  \
+  /** types: e.g. `SoaCell ADLHelper(Cell, Soa);`*/  \
+  /** These functions can then be used to implement `bdm::ToBackend` */  \
+  /** This technique is called argument dependant look-up and required to */   \
+  /** find this association in different namespaces */   \
   sim_object ADLHelper(sim_object*, Scalar);                                   \
   Soa##sim_object ADLHelper(sim_object*, Soa);                                 \
   sim_object ADLHelper(Soa##sim_object*, Scalar); \
@@ -167,6 +176,11 @@ struct Capsule;
   using Soa##sim_object =                                                      \
       sim_object##Ext<compile_time_param<Soa>, Capsule<sim_object##Ext>>;      \
       \
+  /** Functions used to associate a return type with a number of parameter */  \
+  /** types: e.g. `SoaCell ADLHelper(Cell, Soa);`*/  \
+  /** These functions can then be used to implement `bdm::ToBackend` */  \
+  /** This technique is called argument dependant look-up and required to */   \
+  /** find this association in different namespaces */   \
   sim_object ADLHelper(sim_object*, Scalar);                                   \
   Soa##sim_object ADLHelper(sim_object*, Soa);                                 \
   sim_object ADLHelper(Soa##sim_object*, Scalar); \
@@ -288,17 +302,19 @@ struct Capsule;
                  TDerived, TBase>;                                             \
                  \
   /** Templated type alias to convert an external type to the simulation  */ \
-  /** backend  */\
+  /** backend.  */\
   template <typename T>\
   using ToSimBackend = decltype(ADLHelper(std::declval<T*>(), std::declval<SimBackend>()));\
 \
-  /** Templated type alias to get a `SoPointer` for the given type */ \
+  /** Templated type alias to get a `SoPointer` for the given external type */ \
   template <typename T> \
   using GetSoPtr = SoPointer<ToSimBackend<T>, SimBackend>;\
                                                                                \
   template <typename, typename, template <typename, typename> class>           \
   friend class class_name;                                                     \
                                                                                \
+  /** Only used for Soa backends to be consistent with  */                     \
+  /** e.g. `std::vector<T>::value_type`. */                                    \
   using value_type = Self<Soa>;                                                \
                                                                                \
   explicit class_name(TRootIOCtor* io_ctor) {}                                 \
@@ -423,17 +439,13 @@ struct Capsule;
 /// of data members. Benefit compared to SoHandle is, that the compiler knows
 /// the type returned by `Get` and can therefore inline the code from the callee
 /// and perform optimizations
-/// @tparam TSo simulation object type - backend invariant - will be transformed
-///         inside the object.
+/// @tparam TSoSimBackend simulation object type with simulation backend
 /// @tparam TBackend backend - required to avoid extracting it from TSo which
 ///         would result in "incomplete type errors" in certain cases.
-// TODO TSo must be in simulation backend see DefaultCompileTimeParam
-template <typename TSo, typename TBackend>
+template <typename TSoSimBackend, typename TBackend>
 class SoPointer {
   /// Determine correct container
-  using Container = typename TBackend::template Container<TSo>;
-  //     typename ToBackend<TSo, TBackend>::type>;
-  // using Container = TSo;
+  using Container = typename TBackend::template Container<TSoSimBackend>;
 
  public:
   SoPointer(Container* container, uint64_t element_idx)
@@ -442,32 +454,27 @@ class SoPointer {
   /// constructs an SoPointer object representing a nullptr
   SoPointer() {}
 
+  /// TODO change to operator `so_ptr == nullptr` or `so_ptr != nullptr`
   bool IsNullPtr() const {
     return element_idx_ == std::numeric_limits<uint64_t>::max();
   }
 
-  bool operator==(const SoPointer<TSo, TBackend>& other) const {
+  bool operator==(const SoPointer<TSoSimBackend, TBackend>& other) const {
     return element_idx_ == other.element_idx_ && so_container_ == other.so_container_;
   }
 
-  SoPointer<TSo, TBackend>& operator=(nullptr_t) {
+  /// Assignment operator that changes the internal representation to nullptr.
+  /// Makes the following statement possible `so_ptr = nullptr;`
+  SoPointer<TSoSimBackend, TBackend>& operator=(std::nullptr_t) {
     element_idx_ = std::numeric_limits<uint64_t>::max();
     return *this;
   }
 
-  /// This method is required, since `operator->` must return a pointer type.
-  /// This is not possible for Soa backends where `operator[]` returns an
-  /// rvalue.
-  // template <typename TTBackend = TBackend>
-  // typename std::enable_if<std::is_same<TTBackend, Scalar>::value,
-  //                         typename ToBackend<TSo, Scalar>::type&>::type
-  // Get() {
-  //   return (*so_container_)[element_idx_];
-  // }
-
-  // auto Get(typename std::enable_if<std::is_same<TTBackend, Soa>::value>::type*
-  //              p = 0) {
-
+  /// Method to return the object it points to. Unfortunately, it is not
+  /// possible to use `operator->`, which would lead to a nice syntax like:
+  /// `so_ptr->SomeFunction()`. `operator->` must return a pointer which is
+  /// not possible for Soa backends (`operator[]` returns a temporary SoaRef
+  /// object).
   template <typename TTBackend = TBackend>
   auto& Get(typename std::enable_if<std::is_same<TTBackend, Scalar>::value>::type*
                p = 0) {
@@ -496,9 +503,6 @@ class SoPointer {
   Container* so_container_ = nullptr;
   uint64_t element_idx_ = std::numeric_limits<uint64_t>::max();
 };
-
-// template <typename T, typename TBackend>
-// using ToScalar = decltype(ADLHelper(std::declval<T*>(), std::declval<TBackend>()));
 
 /// Helper function to make cell division easier for the programmer.
 /// Creates a new daughter object and passes it together with the given

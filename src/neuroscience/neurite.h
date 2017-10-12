@@ -14,15 +14,11 @@
 
 namespace bdm {
 
-// TODO
 /// The mother of a neurite can either be a neuron or a neurite.
 /// Therefore, this class acts as an intermediate layer that forwards function
 /// calls to the correct object.
-/// @tparam TNeuron   type of neuronbackend invariant
-/// @tparam TNeurite  type of neurite. Needs to be a template parameter since
-///                   Neurite might not be defined at this point. Backend
-///                   invariant.
-/// @tparam Backend   TODO
+/// @tparam TNeuronSoPtr   type of Neuron simulation object pointer
+/// @tparam TNeuriteSoPtr  type of Neurite simulation object pointer.
 template<typename TNeuronSoPtr, typename TNeuriteSoPtr>
 class NeuronNeuriteAdapter {
 public:
