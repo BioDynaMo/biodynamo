@@ -14,6 +14,8 @@ else()
 endif()
 option(coverage "Enable test coverage report generation. Sets build type to coverage" OFF)
 
+set(BDM_CMAKE_DIR cmake)
+
 # -------------------- find packages ------------------------------------------
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 find_package(OpenMP REQUIRED)
@@ -113,6 +115,9 @@ generate_rootlogon()
 if (${ParaView_FOUND})
   target_link_libraries(biodynamo vtkPVPythonCatalyst vtkIOParallelXML)
 endif()
+
+# create cmake files used by external builds
+configure_file("cmake/UseBioDynaMo.cmake.in" "UseBioDynaMo.cmake" @ONLY)
 
 # -------------------- build test project  ------------------------------------
 if (test)

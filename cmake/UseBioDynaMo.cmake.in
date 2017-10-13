@@ -1,0 +1,60 @@
+# This file contains the build setup for simulation projects outside the
+# biodynamo repository
+# Usage:
+# find_package(BioDynaMo)
+# include(${BDM_USE_FILE})
+# bdm_add_executable(...)
+
+set(BDM_CMAKE_DIR "@PROJECT_SOURCE_DIR@/cmake")
+
+# -------------------- find packages ------------------------------------------
+find_package(OpenMP REQUIRED)
+find_package(Git)
+find_package(ROOT REQUIRED COMPONENTS Eve Geom Gui)
+
+find_package(ParaView 5.3 QUIET OPTIONAL_COMPONENTS vtkPVPythonCatalyst)
+if(${ParaView_FOUND})
+  message(STATUS "Found ParaView")
+  include("${PARAVIEW_USE_FILE}")
+  add_definitions("-DUSE_CATALYST")
+else()
+  message(WARNING "ParaView not found")
+endif()
+
+# -------------------- set default build type and compiler flags ---------------
+if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Release)
+endif()
+include("@PROJECT_SOURCE_DIR@/cmake/SetCompilerFlags.cmake")
+
+# -------------------- set rpath options ---------------------------------------
+# When building, use the RPATH
+set(CMAKE_SKIP_BUILD_RPATH FALSE)           # don't skip the full RPATH for the build tree
+set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)   # use always the build RPATH for the build tree
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE) # point to directories outside the build tree to the install RPATH
+
+if(APPLE)
+  set(CMAKE_MACOSX_RPATH TRUE)                 # use RPATH for MacOSX
+  set(CMAKE_INSTALL_NAME_DIR "@rpath")
+  set(CMAKE_INSTALL_RPATH "@loader_path/")     # self relative LIBDIR
+else()
+  set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_FULL_LIBDIR}) # install LIBDIR
+endif()
+
+
+# -------------------- includes -----------------------------------------------
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "@PROJECT_SOURCE_DIR@/cmake/")
+include("@PROJECT_SOURCE_DIR@/cmake/BioDynaMo.cmake")
+include(${ROOT_USE_FILE})
+
+set(BDM_REQUIRED_LIBRARIES biodynamo ${ROOT_LIBRARIES} vtkPVPythonCatalyst vtkIOParallelXML)
+
+# packaged install
+# include_directories("/usr/include/biodynamo/")
+# link_directories()
+
+# BioDynaMo dev version
+include_directories("@PROJECT_SOURCE_DIR@/src")
+include_directories("@PROJECT_SOURCE_DIR@/third_party")
+include_directories("@PROJECT_BINARY_DIR@/mpark")
+link_directories("@PROJECT_BINARY_DIR@")
