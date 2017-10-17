@@ -72,16 +72,9 @@ include(cmake/SetCompilerFlags.cmake)
 # -------------------- set rpath options ---------------------------------------
 # When building, use the RPATH
 set(CMAKE_SKIP_BUILD_RPATH FALSE)           # don't skip the full RPATH for the build tree
-set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)   # use always the build RPATH for the build tree
-set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE) # point to directories outside the build tree to the install RPATH
-
-if(APPLE)
-  set(CMAKE_MACOSX_RPATH TRUE)                 # use RPATH for MacOSX
-  set(CMAKE_INSTALL_NAME_DIR "@rpath")
-  set(CMAKE_INSTALL_RPATH "@loader_path/")     # self relative LIBDIR
-else()
-  set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_FULL_LIBDIR}) # install LIBDIR
-endif()
+set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
+set(CMAKE_INSTALL_RPATH "")
 
 # -------------------- setup mpark variant library -----------------------------
 set(MPARK_LIB "${CMAKE_CURRENT_BINARY_DIR}/mpark/")
