@@ -16,6 +16,10 @@ option(coverage "Enable test coverage report generation. Sets build type to cove
 
 set(BDM_CMAKE_DIR cmake)
 
+if(UNIX AND NOT APPLE)
+  set(LINUX TRUE)
+endif()
+
 # -------------------- find packages ------------------------------------------
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 find_package(OpenMP REQUIRED)

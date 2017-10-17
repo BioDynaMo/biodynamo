@@ -17,11 +17,15 @@ if(DOXYGEN_FOUND)
   configure_file(${doxyfile_in} ${doxyfile} @ONLY)
 
   add_custom_target(doc
+      ALL
       COMMAND ${DOXYGEN_EXECUTABLE} ${doxyfile}
       WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
       COMMENT "Generating API documentation with Doxygen.
        Open the following file in your browser: ${CMAKE_BINARY_DIR}/doc/html/index.html"
       VERBATIM)
 
-  install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/doc/html" DESTINATION share/doc)
+  # Issue with long file names when building deb pacakages
+  # https://gitlab.kitware.com/cmake/cmake/issues/14332
+  # Issue resolved in CMake 3.7.2
+  # install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/doc/html" DESTINATION share/doc)
 endif()

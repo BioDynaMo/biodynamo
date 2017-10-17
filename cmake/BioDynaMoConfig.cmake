@@ -12,8 +12,10 @@
 #          BioDynaMoConfig.cmake
 #          biodynamo-config.cmake
 #
-# make sure the folder containing this file is added to the PATH environment
-# variable or use`cmake -DCMAKE_FIND_DEBUG_MODE=ON ..` to debug the issue.
+# make sure the folder containing this file is in one of the folders described
+# in https://cmake.org/cmake/help/latest/command/find_package.html where
+# '<prefix>' are all directories inside  PATH environment variable.
+# Use`cmake -DCMAKE_FIND_DEBUG_MODE=ON ..` to debug the issue.
 
 find_file(BioDynaMo_USE_FILE
           UseBioDynaMo.cmake

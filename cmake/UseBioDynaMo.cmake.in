@@ -1,11 +1,16 @@
 # This file contains the build setup for simulation projects outside the
 # biodynamo repository
 # Usage:
-# find_package(BioDynaMo)
-# include(${BDM_USE_FILE})
-# bdm_add_executable(...)
+#   find_package(BioDynaMo REQUIRED)
+#   include(${BDM_USE_FILE})
+#   bdm_add_executable(...)
 
-set(BDM_CMAKE_DIR "@PROJECT_SOURCE_DIR@/cmake")
+if(LINUX)
+  set(BDM_CMAKE_DIR "/snap/biodynamo/current/biodynamo/share/cmake")
+elseif(APPLE)
+  # TODO change
+  set(BDM_CMAKE_DIR "/snap/biodynamo/current/biodynamo/share/cmake")
+endif()
 
 # -------------------- find packages ------------------------------------------
 find_package(OpenMP REQUIRED)
@@ -25,7 +30,7 @@ endif()
 if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif()
-include("@PROJECT_SOURCE_DIR@/cmake/SetCompilerFlags.cmake")
+include("${BDM_CMAKE_DIR}/cmake/SetCompilerFlags.cmake")
 
 # -------------------- set rpath options ---------------------------------------
 # When building, use the RPATH
@@ -43,18 +48,23 @@ endif()
 
 
 # -------------------- includes -----------------------------------------------
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "@PROJECT_SOURCE_DIR@/cmake/")
-include("@PROJECT_SOURCE_DIR@/cmake/BioDynaMo.cmake")
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${BDM_CMAKE_DIR}")
+include("${BDM_CMAKE_DIR}/cmake/BioDynaMo.cmake")
 include(${ROOT_USE_FILE})
 
 set(BDM_REQUIRED_LIBRARIES biodynamo ${ROOT_LIBRARIES} vtkPVPythonCatalyst vtkIOParallelXML)
 
 # packaged install
-# include_directories("/usr/include/biodynamo/")
-# link_directories()
+if(LINUX)
+  include_directories("/snap/biodynamo/current/biodynamo/include")
+  link_directories("/snap/biodynamo/current/biodynamo/lib")
+elseif(APPLE)
+  # TODO
+endif()
 
 # BioDynaMo dev version
-include_directories("@PROJECT_SOURCE_DIR@/src")
-include_directories("@PROJECT_SOURCE_DIR@/third_party")
-include_directories("@PROJECT_BINARY_DIR@/mpark")
-link_directories("@PROJECT_BINARY_DIR@")
+# TODO define variable to use dev version
+# include_directories("@PROJECT_SOURCE_DIR@/src")
+# include_directories("@PROJECT_SOURCE_DIR@/third_party")
+# include_directories("@PROJECT_BINARY_DIR@/mpark")
+# link_directories("@PROJECT_BINARY_DIR@")
