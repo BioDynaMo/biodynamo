@@ -9,7 +9,7 @@ bool Param::use_paraview_ = false;
 
 bool Param::write_to_file_ = false;
 
-std::size_t Param::write_freq_ = 1;
+uint32_t Param::write_freq_ = 1;
 
 bool Param::bound_space_ = false;
 

@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.2.0)
 # to support Ninja as generator
 
 project(BioDynaMo)
+set(BDM_VERSION 0.1.0)
 
 # Options. Turn on with 'cmake -Dmyvarname=ON'.
 option(test "Build all tests." ON) # Makes boolean 'test' available.
@@ -22,7 +23,20 @@ endif()
 
 # -------------------- find packages ------------------------------------------
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
-find_package(OpenMP REQUIRED)
+# CMake cannot find LLVM's Clang OpenMP library by default (this makes 
+# find_package(OpenMP) fail). Therefore we manually specify the OpenMP flags. 
+# Furthermore, rootcling cannot find omp.h by default, so we copy this (with a 
+# shell script to /usr/local/Cellar/biodynamo, which is brew's default install 
+# directory), and include this directory. We cannot directly include the 
+# original directory, because of header conflicts (such as stdint.h)
+if(APPLE)
+  link_directories(/usr/local/opt/llvm/lib)
+  set(OpenMP_C_FLAGS -fopenmp=libomp)
+  set(OpenMP_CXX_FLAGS -fopenmp=libomp)
+  include_directories(/usr/local/Cellar/biodynamo)
+else()
+  find_package(OpenMP REQUIRED)
+endif()
 if (test)
   # must be before include(${ROOT_USE_FILE}) otherwise test compile fails
   find_package(Threads REQUIRED)

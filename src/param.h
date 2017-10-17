@@ -88,7 +88,7 @@ class Param {
   /// Write data to file for post-simulation visualization
   static bool write_to_file_;
   /// Frequency to write to file
-  static std::size_t write_freq_;
+  static uint32_t write_freq_;
 
   /// Enforce an artificial cubic bounds around the simulation space
   static bool bound_space_;

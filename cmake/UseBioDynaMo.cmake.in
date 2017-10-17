@@ -8,12 +8,24 @@
 if(LINUX)
   set(BDM_CMAKE_DIR "/snap/biodynamo/current/biodynamo/share/cmake")
 elseif(APPLE)
-  # TODO change
-  set(BDM_CMAKE_DIR "/snap/biodynamo/current/biodynamo/share/cmake")
+  set(BDM_CMAKE_DIR "/usr/local/Cellar/biodynamo/share/cmake")
 endif()
 
 # -------------------- find packages ------------------------------------------
-find_package(OpenMP REQUIRED)
+# CMake cannot find LLVM's Clang OpenMP library by default (this makes 
+# find_package(OpenMP) fail). Therefore we manually specify the OpenMP flags. 
+# Furthermore, rootcling cannot find omp.h by default, so we copy this (with a 
+# shell script to /usr/local/Cellar/biodynamo, which is brew's default install 
+# directory), and include this directory. We cannot directly include the 
+# original directory, because of header conflicts (such as stdint.h)
+if(APPLE)
+  link_directories(/usr/local/opt/llvm/lib)
+  set(OpenMP_C_FLAGS -fopenmp=libomp)
+  set(OpenMP_CXX_FLAGS -fopenmp=libomp)
+  include_directories(/usr/local/Cellar/biodynamo)
+else()
+  find_package(OpenMP REQUIRED)
+endif()
 find_package(Git)
 find_package(ROOT REQUIRED COMPONENTS Eve Geom Gui)
 
@@ -51,7 +63,8 @@ if(LINUX)
   include_directories("/snap/biodynamo/current/biodynamo/include")
   link_directories("/snap/biodynamo/current/biodynamo/lib")
 elseif(APPLE)
-  # TODO
+  include_directories("/usr/local/Cellar/biodynamo/include")
+  link_directories("/usr/local/Cellar/biodynamo/lib")
 endif()
 
 # BioDynaMo dev version
