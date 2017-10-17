@@ -25,6 +25,11 @@ mark_as_advanced(${CMAKE_INSTALL_BINDIR}
                  ${CMAKE_INSTALL_DATADIR}
                  ${CMAKE_INSTALL_CMAKEDATADIR})
 
+if(LINUX)
+  install(FILES cmake/biodynamo_linux.env DESTINATION ${CMAKE_INSTALL_BINDIR} RENAME biodynamo.env)
+elseif(APPLE)
+  # TODO
+endif()
 # libbiodynamo.so
 install(TARGETS biodynamo LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
 # headers and python scripts
