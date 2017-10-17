@@ -1,4 +1,6 @@
 #!/bin/bash
+# Argument
+#   $1 root commit_id
 
 sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
 wget -O - http://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
@@ -13,7 +15,12 @@ sudo rm /usr/bin/cmake
 sudo ln -s `pwd`/cmake-3.6.3-Linux-x86_64/bin/cmake /usr/bin/cmake
 
 cd /root
-git clone https://github.com/breitwieserCern/root.git
+git clone https://github.com/root-project/root.git
+
+cd root
+git checkout $1
+git status
+cd ..
 
 mkdir install
 mkdir install/root
