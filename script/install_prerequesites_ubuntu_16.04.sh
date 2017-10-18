@@ -102,9 +102,9 @@ function Install {
   tar -xzf paraview-5.4_ubuntu14_gcc5.4_openmpi.tar.gz -C $THIRD_PARTY_DIR/paraview
 
   # install Qt
-  wget -O Qt5.6.2_ubuntu16_gcc5.4.tar.gz "https://cernbox.cern.ch/index.php/s/BbFptgxo2K565IS/download?path=%2F&files=Qt5.9.1_ubuntu16_gcc5.4.tar.gz"
+  wget -O Qt5.9.1_ubuntu16_gcc5.4.tar.gz "https://cernbox.cern.ch/index.php/s/BbFptgxo2K565IS/download?path=%2F&files=Qt5.9.1_ubuntu16_gcc5.4.tar.gz"
   mkdir -p $THIRD_PARTY_DIR/qt
-  tar -xzf Qt5.6.2_ubuntu16_gcc5.4.tar.gz -C $THIRD_PARTY_DIR/qt
+  tar -xzf Qt5.9.1_ubuntu16_gcc5.4.tar.gz -C $THIRD_PARTY_DIR/qt
 
   echo 'export CC=gcc-5' >> ${BDM_ENVIRONMENT_FILE}
   echo 'export CXX=g++-5' >> ${BDM_ENVIRONMENT_FILE}

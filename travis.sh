@@ -66,9 +66,9 @@ if [ "$TRAVIS_OS_NAME" = "linux" ]; then
   sudo mkdir -p /opt/biodynamo/paraview
   sudo tar -xzf paraview-5.4_ubuntu14_gcc5.4_openmpi.tar.gz -C /opt/biodynamo/paraview
 
-  wget -O Qt5.6.2_ubuntu16_gcc5.4.tar.gz "https://cernbox.cern.ch/index.php/s/BbFptgxo2K565IS/download?path=%2F&files=Qt5.6.2_ubuntu16_gcc5.4.tar.gz"
+  wget -O Qt5.9.1_ubuntu16_gcc5.4.tar.gz "https://cernbox.cern.ch/index.php/s/BbFptgxo2K565IS/download?path=%2F&files=Qt5.9.1_ubuntu16_gcc5.4.tar.gz"
   sudo mkdir -p /opt/biodynamo/qt
-  sudo tar -xzf Qt5.6.2_ubuntu16_gcc5.4.tar.gz -C /opt/biodynamo/qt
+  sudo tar -xzf Qt5.9.1_ubuntu16_gcc5.4.tar.gz -C /opt/biodynamo/qt
 
   export ParaView_DIR=/opt/biodynamo/paraview/lib/cmake/paraview-5.4
   export Qt5_DIR=/opt/biodynamo/qt/lib/cmake/Qt5
