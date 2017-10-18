@@ -2,7 +2,7 @@
 #
 # Script defines the following variables
 #   BioDynaMo_FOUND      - set to true of BioDynaMo has been found
-#   BioDynaMo_USE_FILE   - cmake script that will setup the build
+#   BDM_USE_FILE         - cmake script that will setup the build
 #
 # If an external project can't locate this file emitting the following error
 # message:
@@ -17,17 +17,17 @@
 # '<prefix>' are all directories inside  PATH environment variable.
 # Use`cmake -DCMAKE_FIND_DEBUG_MODE=ON ..` to debug the issue.
 
-find_file(BioDynaMo_USE_FILE
+find_file(BDM_USE_FILE
           UseBioDynaMo.cmake
           PATHS "/snap/biodynamo/current/biodynamo/share/cmake"   # LINUX
                 "/usr/local/share/biodynamo/cmake"                # APPLE
                 "BDM_CMAKE_DIR")
 
-if(NOT BioDynaMo_USE_FILE AND BioDynaMo_FIND_REQUIRED)
+if(NOT BDM_USE_FILE AND BioDynaMo_FIND_REQUIRED)
   message(FATAL_ERROR "BioDynaMo not found! Try to set BDM_CMAKE_DIR environment variable \
                        pointing to the directory that contains the file UseBioDynaMo.cmake \
                        or add -DBDM_CMAKE_DIR=... to the cmake command")
-elseif(NOT BioDynaMo_USE_FILE AND NOT BioDynaMo_FIND_QUIETLY)
+elseif(NOT BDM_USE_FILE AND NOT BioDynaMo_FIND_QUIETLY)
   message(WARNING "BioDynaMo not found! Try to set BDM_CMAKE_DIR environment variable \
                    pointing to the directory that contains the file UseBioDynaMo.cmake \
                    or add -DBDM_CMAKE_DIR=... to the cmake command")

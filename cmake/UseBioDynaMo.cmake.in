@@ -2,7 +2,7 @@
 # biodynamo repository
 # Usage:
 #   find_package(BioDynaMo REQUIRED)
-#   include(${BioDynaMo_USE_FILE})
+#   include(${BDM_USE_FILE})
 #   bdm_add_executable(...)
 
 if(UNIX AND NOT APPLE)
