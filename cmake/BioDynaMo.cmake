@@ -73,7 +73,11 @@ function(bdm_generate_dictionary TARGET)
   #---Get preprocessor definitions--------------------------
   get_directory_property(defs COMPILE_DEFINITIONS)
   foreach( d ${defs})
-   set(definitions ${definitions} -D${d})
+    # definitions that were initialily defined with escaped quotes
+    # e.g. add_definitions(-DFOO=\"bar\") are changed to normal quotes in ${d}
+    # The string replace call has been added to fix this issue
+    string(REPLACE "\"" "\\\"" d_fixed ${d})
+    set(definitions ${definitions} -D${d_fixed})
   endforeach()
   #---Actual command----------------------------------------
   file(WRITE ${ARG_DICT} "")

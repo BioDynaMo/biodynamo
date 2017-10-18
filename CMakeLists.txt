@@ -21,13 +21,15 @@ if(UNIX AND NOT APPLE)
   set(LINUX TRUE)
 endif()
 
+add_definitions(-DBDM_SRC_DIR=\"${CMAKE_SOURCE_DIR}/src\")  # escaped quotes are mandatory
+
 # -------------------- find packages ------------------------------------------
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
-# CMake cannot find LLVM's Clang OpenMP library by default (this makes 
-# find_package(OpenMP) fail). Therefore we manually specify the OpenMP flags. 
-# Furthermore, rootcling cannot find omp.h by default, so we copy this (with a 
-# shell script to /usr/local/Cellar/biodynamo, which is brew's default install 
-# directory), and include this directory. We cannot directly include the 
+# CMake cannot find LLVM's Clang OpenMP library by default (this makes
+# find_package(OpenMP) fail). Therefore we manually specify the OpenMP flags.
+# Furthermore, rootcling cannot find omp.h by default, so we copy this (with a
+# shell script to /usr/local/Cellar/biodynamo, which is brew's default install
+# directory), and include this directory. We cannot directly include the
 # original directory, because of header conflicts (such as stdint.h)
 if(APPLE)
   link_directories(/usr/local/opt/llvm/lib)

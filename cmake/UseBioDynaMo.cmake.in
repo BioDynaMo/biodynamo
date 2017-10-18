@@ -2,7 +2,7 @@
 # biodynamo repository
 # Usage:
 #   find_package(BioDynaMo REQUIRED)
-#   include(${BDM_USE_FILE})
+#   include(${BioDynaMo_USE_FILE})
 #   bdm_add_executable(...)
 
 if(UNIX AND NOT APPLE)
@@ -11,8 +11,12 @@ endif()
 
 if(LINUX)
   set(BDM_CMAKE_DIR "/snap/biodynamo/current/biodynamo/share/cmake")
+  # escaped quotes are mandatory
+  add_definitions(-DBDM_SRC_DIR=\"/snap/biodynamo/current/biodynamo/include\")
 elseif(APPLE)
   set(BDM_CMAKE_DIR "/usr/local/share/biodynamo/cmake")
+  # escaped quotes are mandatory
+  add_definitions(-DBDM_SRC_DIR=\"/usr/local/include/biodynamo\")
 endif()
 
 # -------------------- find packages ------------------------------------------

@@ -28,7 +28,8 @@ class Scheduler {
       : backup_(SimulationBackup("", "")), grid_(&TGrid::GetInstance()) {
     if (Param::use_paraview_) {
       visualization_ = CatalystAdaptor<>::GetInstance();
-      visualization_->Initialize("../src/visualization/simple_pipeline.py");
+      visualization_->Initialize(BDM_SRC_DIR
+                                 "/visualization/simple_pipeline.py");
     }
   }
 
@@ -40,7 +41,8 @@ class Scheduler {
     }
     if (Param::use_paraview_) {
       visualization_ = CatalystAdaptor<>::GetInstance();
-      visualization_->Initialize("../src/visualization/simple_pipeline.py");
+      visualization_->Initialize(BDM_SRC_DIR
+                                 "/visualization/simple_pipeline.py");
     }
   }
 
