@@ -10,7 +10,6 @@
 
 namespace bdm {
 
-using std::vector;
 using std::array;
 
 template <typename TSO>
@@ -35,7 +34,7 @@ class DisplacementOp {
 
   template <typename TContainer>
   void operator()(TContainer* cells, uint16_t type_idx) const {
-    vector<array<double, 3>> cell_movements;
+    std::vector<array<double, 3>> cell_movements;
     cell_movements.reserve(cells->size());
 
     auto& grid = TGrid::GetInstance();

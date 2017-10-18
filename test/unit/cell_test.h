@@ -81,7 +81,7 @@ BDM_SIM_CLASS_TEST(TestCell, Cell, CTParam) {
   const array<double, 3>& GetYAxis() { return Base::y_axis_[Base::kIdx]; }
   const array<double, 3>& GetZAxis() { return Base::z_axis_[Base::kIdx]; }
 
-  const vector<typename CTParam<>::BiologyModules>& GetBiologyModules() const {
+  const std::vector<typename CTParam<>::BiologyModules>& GetBiologyModules() const {
     return Base::biology_modules_[0];
   }
 

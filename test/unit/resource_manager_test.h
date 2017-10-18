@@ -16,8 +16,6 @@
 namespace bdm {
 namespace resource_manager_test_internal {
 
-using std::vector;
-
 struct ASoa;
 struct BSoa;
 
@@ -58,7 +56,7 @@ struct ASoa {
   using Self = typename type_ternary_operator<std::is_same<Soa, Backend>::value,
                                               ASoa, AScalar>::type;
 
-  vector<int> data_;
+  std::vector<int> data_;
   size_t idx_ = 0;
 
   int GetData() { return data_[idx_]; }
@@ -83,7 +81,7 @@ struct BSoa {
   using Self = typename type_ternary_operator<std::is_same<Soa, Backend>::value,
                                               BSoa, BScalar>::type;
 
-  vector<double> data_;
+  std::vector<double> data_;
   size_t idx_ = 0;
 
   double GetData() { return data_[idx_]; }

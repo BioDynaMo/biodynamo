@@ -21,7 +21,6 @@
 namespace bdm {
 
 using std::array;
-using std::vector;
 using std::fmod;
 
 /// FIFO data structure. Stores max N number of objects.
@@ -674,7 +673,7 @@ class Grid {
 
  private:
   /// The vector containing all the boxes in the grid
-  vector<Box> boxes_;
+  std::vector<Box> boxes_;
   /// Length of a Box
   uint32_t box_length_ = 1;
   /// Stores the number of boxes for each axis

@@ -6,8 +6,8 @@ namespace biology_module_util_test_internal {
 TEST(BiologyModuleUtilTest, RunVisitor) { RunRunVisitor(); }
 
 TEST(BiologyModuleUtilTest, CopyVisitorIsCopied) {
-  vector<Variant<CopyTestBiologyModule>> destination_module_vector;
-  CopyVisitor<vector<Variant<CopyTestBiologyModule>>> visitor(
+  std::vector<Variant<CopyTestBiologyModule>> destination_module_vector;
+  CopyVisitor<std::vector<Variant<CopyTestBiologyModule>>> visitor(
       Event::kCellDivision, &destination_module_vector);
 
   CopyTestBiologyModule module;
@@ -21,8 +21,8 @@ TEST(BiologyModuleUtilTest, CopyVisitorIsCopied) {
 }
 
 TEST(BiologyModuleUtilTest, CopyVisitorIsNotCopied) {
-  vector<Variant<CopyTestBiologyModule>> destination_module_vector;
-  CopyVisitor<vector<Variant<CopyTestBiologyModule>>> visitor(
+  std::vector<Variant<CopyTestBiologyModule>> destination_module_vector;
+  CopyVisitor<std::vector<Variant<CopyTestBiologyModule>>> visitor(
       Event::kCellDivision, &destination_module_vector);
 
   CopyTestBiologyModule module;

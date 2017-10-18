@@ -20,7 +20,6 @@
 namespace bdm {
 
 using std::array;
-using std::vector;
 
 BDM_SIM_CLASS(Cell, SimulationObject) {
   BDM_CLASS_HEADER(CellExt, 1, position_, mass_location_, tractor_force_,
@@ -231,7 +230,7 @@ BDM_SIM_CLASS(Cell, SimulationObject) {
   vec<array<double, 3>> z_axis_ = {array<double, 3>{0.0, 0.0, 1.0}};
 
   /// collection of biology modules which define the internal behavior
-  vec<vector<TBiologyModuleVariant>> biology_modules_;
+  vec<std::vector<TBiologyModuleVariant>> biology_modules_;
 
   /// Grid box index
   vec<uint64_t> box_idx_;
@@ -349,7 +348,7 @@ inline void CellExt<T, U>::DivideImpl(Self<Scalar>* daughter,
   daughter->position_[0][1] = daughter->mass_location_[0][1];
   daughter->position_[0][2] = daughter->mass_location_[0][2];
 
-  CopyVisitor<vector<TBiologyModuleVariant>> visitor(
+  CopyVisitor<std::vector<TBiologyModuleVariant>> visitor(
       Event::kCellDivision, &(daughter->biology_modules_[0]));
   for (auto& module : biology_modules_[kIdx]) {
     visit(visitor, module);

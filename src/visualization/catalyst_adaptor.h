@@ -265,10 +265,10 @@ class CatalystAdaptor {
   bool write_ = false;
   size_t write_freq_ = 1;
   vtkCPProcessor* g_processor_ = nullptr;
-  vector<vtkImageData*> dgrids_;
-  vector<vtkUnstructuredGrid*> so_grids_;
-  vector<bool> so_is_initialized_;
-  vector<bool> dg_is_initialized_;
+  std::vector<vtkImageData*> dgrids_;
+  std::vector<vtkUnstructuredGrid*> so_grids_;
+  std::vector<bool> so_is_initialized_;
+  std::vector<bool> dg_is_initialized_;
 };
 
 #else
