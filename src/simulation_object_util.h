@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <exception>
 #include <memory>
+#include <set>
 #include <string>
 #include <type_traits>
 #include <vector>
@@ -200,10 +201,9 @@ using std::is_same;
       : Base(other, idx),                                                      \
         REMOVE_TRAILING_COMMAS(BDM_CLASS_HEADER_CPY_CTOR_INIT(__VA_ARGS__)) {} \
                                                                                \
-  /** Executes the given function for all data members    */                   \
-  /**                                                               */         \
-  /**     // Function could be a lambda in the following form       */         \
-  /**     [](auto* data_member, const std::string& dm_name) { ... } */         \
+  /** Executes the given function for all data members             */          \
+  /**  Function could be a lambda in the following form:           */          \
+  /**  `[](auto* data_member, const std::string& dm_name) { ... }` */          \
   template <typename Function, typename T = Backend>                           \
   typename enable_if<is_soa<T>::value>::type ForEachDataMember(Function f) {   \
     BDM_CLASS_HEADER_FOREACHDM_BODY(__VA_ARGS__)                               \
@@ -211,9 +211,8 @@ using std::is_same;
   }                                                                            \
                                                                                \
   /** Executes the given function for the specified data members    */         \
-  /**                                                               */         \
-  /**     // Function could be a lambda in the following form       */         \
-  /**     [](auto* data_member, const std::string& dm_name) { ... } */         \
+  /** Function could be a lambda in the following form              */         \
+  /** `[](auto* data_member, const std::string& dm_name) { ... }`   */         \
   template <typename Function, typename T = Backend>                           \
   typename enable_if<is_soa<T>::value>::type ForEachDataMemberIn(              \
       std::set<std::string> dm_selector, Function f) {                         \
