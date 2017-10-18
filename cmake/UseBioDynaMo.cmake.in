@@ -8,7 +8,7 @@
 if(LINUX)
   set(BDM_CMAKE_DIR "/snap/biodynamo/current/biodynamo/share/cmake")
 elseif(APPLE)
-  set(BDM_CMAKE_DIR "/usr/local/Cellar/biodynamo/share/cmake")
+  set(BDM_CMAKE_DIR "/usr/local/share/biodynamo/cmake")
 endif()
 
 # -------------------- find packages ------------------------------------------
@@ -42,7 +42,7 @@ endif()
 if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif()
-include("${BDM_CMAKE_DIR}/cmake/SetCompilerFlags.cmake")
+include("${BDM_CMAKE_DIR}/SetCompilerFlags.cmake")
 
 # -------------------- set rpath options ---------------------------------------
 # When building, use the RPATH
@@ -53,7 +53,7 @@ set(CMAKE_INSTALL_RPATH "")
 
 # -------------------- includes -----------------------------------------------
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${BDM_CMAKE_DIR}")
-include("${BDM_CMAKE_DIR}/cmake/BioDynaMo.cmake")
+include("${BDM_CMAKE_DIR}/BioDynaMo.cmake")
 include(${ROOT_USE_FILE})
 
 set(BDM_REQUIRED_LIBRARIES biodynamo ${ROOT_LIBRARIES} vtkPVPythonCatalyst vtkIOParallelXML)
@@ -63,8 +63,8 @@ if(LINUX)
   include_directories("/snap/biodynamo/current/biodynamo/include")
   link_directories("/snap/biodynamo/current/biodynamo/lib")
 elseif(APPLE)
-  include_directories("/usr/local/Cellar/biodynamo/include")
-  link_directories("/usr/local/Cellar/biodynamo/lib")
+  include_directories("/usr/local/include/biodynamo")
+  link_directories("/usr/local/lib/biodynamo")
 endif()
 
 # BioDynaMo dev version

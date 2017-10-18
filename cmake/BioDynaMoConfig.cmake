@@ -20,7 +20,7 @@
 find_file(BioDynaMo_USE_FILE
           UseBioDynaMo.cmake
           PATHS "/usr/share/biodynamo/cmake"
-          		"/usr/local/share/cmake"
+          		"/usr/local/share/biodynamo/cmake"
           ENV "BDM_CMAKE_DIR")
 
 if(NOT BioDynaMo_USE_FILE AND BioDynaMo_FIND_REQUIRED)
