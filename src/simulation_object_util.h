@@ -125,6 +125,24 @@ using std::is_same;
 #define BDM_CLASS_HEADER_ASSIGNMENT_OP_BODY_ITERATOR(data_member) \
   data_member[kIdx] = rhs.data_member[0];
 
+#define BDM_CLASS_HEADER_FOREACHDM_BODY(...) \
+  EVAL(LOOP(BDM_CLASS_HEADER_FOREACHDM_BODY_ITERATOR, __VA_ARGS__))
+
+#define BDM_CLASS_HEADER_FOREACHDM_BODY_ITERATOR(data_member) \
+  f(&data_member, #data_member);
+
+#define BDM_CLASS_HEADER_FOREACHDMIN_BODY(...) \
+  EVAL(LOOP(BDM_CLASS_HEADER_FOREACHDMIN_BODY_ITERATOR, __VA_ARGS__))
+
+#define BDM_CLASS_HEADER_FOREACHDMIN_BODY_ITERATOR(data_member) \
+  {                                                             \
+    auto it = dm_selector.find(#data_member);                   \
+    if (it != dm_selector.end()) {                              \
+      f(&data_member, #data_member);                            \
+      dm_selector.erase(it);                                    \
+    }                                                           \
+  }
+
 /// Macro to insert required boilerplate code into simulation object
 /// @param  class_name class name witout template specifier e.g. \n
 ///         `class Foo {};` \n
@@ -181,6 +199,27 @@ using std::is_same;
   class_name(T* other, size_t idx)                                             \
       : Base(other, idx),                                                      \
         REMOVE_TRAILING_COMMAS(BDM_CLASS_HEADER_CPY_CTOR_INIT(__VA_ARGS__)) {} \
+                                                                               \
+  /** Executes the given function for all data members    */                   \
+  /**                                                               */         \
+  /**     // Function could be a lambda in the following form       */         \
+  /**     [](auto* data_member, const std::string& dm_name) { ... } */         \
+  template <typename Function, typename T = Backend>                           \
+  typename enable_if<is_soa<T>::value>::type ForEachDataMember(Function f) {   \
+    BDM_CLASS_HEADER_FOREACHDM_BODY(__VA_ARGS__)                               \
+    Base::ForEachDataMember(f);                                                \
+  }                                                                            \
+                                                                               \
+  /** Executes the given function for the specified data members    */         \
+  /**                                                               */         \
+  /**     // Function could be a lambda in the following form       */         \
+  /**     [](auto* data_member, const std::string& dm_name) { ... } */         \
+  template <typename Function, typename T = Backend>                           \
+  typename enable_if<is_soa<T>::value>::type ForEachDataMemberIn(              \
+      std::set<std::string> dm_selector, Function f) {                         \
+    BDM_CLASS_HEADER_FOREACHDMIN_BODY(__VA_ARGS__)                             \
+    Base::ForEachDataMemberIn(dm_selector, f);                                 \
+  }                                                                            \
                                                                                \
   /** Equivalent to std::vector<> clear - it removes all elements from */      \
   /** all data members */                                                      \
