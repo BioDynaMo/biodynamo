@@ -27,6 +27,8 @@ mark_as_advanced(${CMAKE_INSTALL_BINDIR}
 
 if(LINUX)
   install(FILES cmake/biodynamo_linux.env DESTINATION ${CMAKE_INSTALL_BINDIR} RENAME biodynamo.env)
+  install(FILES cmake/get-biodynamo-env-path.sh DESTINATION ${CMAKE_INSTALL_BINDIR}
+          PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
 elseif(APPLE)
   install(FILES cmake/biodynamo_macos.env DESTINATION ${CMAKE_INSTALL_BINDIR} RENAME biodynamo.env)
 endif()
@@ -51,5 +53,4 @@ install(FILES ${CMAKE_BINARY_DIR}/UseBioDynaMo.cmake DESTINATION ${CMAKE_INSTALL
 # CMake files required from external projects
 install(FILES cmake/BioDynaMoConfig.cmake DESTINATION ${CMAKE_INSTALL_CMAKEDIR})
 
-# TODO environment script
 # TODO copy of copyright information and distribution license
