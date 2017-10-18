@@ -59,8 +59,8 @@ fi
 # install ROOT
 cd
 if [ "$TRAVIS_OS_NAME" = "linux" ]; then
-  wget --progress=dot:giga -O root_dict_path.Linux-ubuntu14-x86_64-gcc5.4.tar.gz "https://cernbox.cern.ch/index.php/s/BbFptgxo2K565IS/download?path=%2F&files=root_dict_patch.Linux-ubuntu14-x86_64-gcc5.4.tar.gz"
-  tar zxf "root_dict_path.Linux-ubuntu14-x86_64-gcc5.4.tar.gz" > /dev/null
+  wget --progress=dot:giga -O root_v6.11.01_Linux-ubuntu14-x86_64-gcc5.4_263508429d.tar.gz "https://cernbox.cern.ch/index.php/s/BbFptgxo2K565IS/download?path=%2F&files=root_v6.11.01_Linux-ubuntu14-x86_64-gcc5.4_263508429d.tar.gz"
+  tar zxf "root_v6.11.01_Linux-ubuntu14-x86_64-gcc5.4_263508429d.tar.gz" > /dev/null
 
   wget -O paraview-5.4_ubuntu14_gcc5.4_openmpi.tar.gz "https://cernbox.cern.ch/index.php/s/BbFptgxo2K565IS/download?path=%2F&files=paraview-5.4_ubuntu14_gcc5.4_openmpi.tar.gz"
   sudo mkdir -p /opt/biodynamo/paraview

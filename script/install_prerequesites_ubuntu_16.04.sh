@@ -82,8 +82,8 @@ function Install {
   apt-get -y install zenity
 
   # install ROOT
-  wget -O /tmp/root_dict_patch.Linux-ubuntu16-x86_64-gcc5.4.tar.gz "https://cernbox.cern.ch/index.php/s/BbFptgxo2K565IS/download?path=%2F&files=root_dict_patch.Linux-ubuntu16-x86_64-gcc5.4.tar.gz"
-  tar -xzf /tmp/root_dict_patch.Linux-ubuntu16-x86_64-gcc5.4.tar.gz -C $THIRD_PARTY_DIR
+  wget -O /tmp/root_v6.11.01_Linux-ubuntu16-x86_64-gcc5.4_263508429d.tar.gz "https://cernbox.cern.ch/index.php/s/BbFptgxo2K565IS/download?path=%2F&files=root_v6.11.01_Linux-ubuntu16-x86_64-gcc5.4_263508429d.tar.gz"
+  tar -xzf /tmp/root_v6.11.01_Linux-ubuntu16-x86_64-gcc5.4_263508429d.tar.gz -C $THIRD_PARTY_DIR
 
   # create environment script
   BDM_ENVIRONMENT_FILE=${THIRD_PARTY_DIR}/bdm_environment.sh
