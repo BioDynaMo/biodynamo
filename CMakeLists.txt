@@ -167,11 +167,13 @@ if (test)
                       SOURCES test/integration/backup_restore.cc
                       HEADERS test/integration/backup_restore.h
                       LIBRARIES biodynamo)
+    add_dependencies(check backup-restore)
     add_test(NAME "integration-backup-restore" COMMAND ${CMAKE_SOURCE_DIR}/test/integration/backup_restore.sh)
     bdm_add_executable(soma_clustering
                       SOURCES test/integration/soma_clustering.cc
                       HEADERS test/integration/soma_clustering.h
                       LIBRARIES biodynamo)
+    add_dependencies(check soma_clustering)
     add_test(NAME "integration-soma-clustering" COMMAND ${CMAKE_SOURCE_DIR}/build/soma_clustering)
   endif()
 endif()
