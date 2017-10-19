@@ -105,6 +105,14 @@ if [ "$TRAVIS_OS_NAME" = "linux" ]; then
   # build biodynamo and run tests
   mkdir build
   cd build
-  cmake ..
+  mkdir install
+  cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=install ..
+  make -j2
   make check-submission
+
+  # build snap package
+  sudo apt-get -y install snapd
+  sudo snap install core
+  make install
+  sudo docker run --net=host -v $PWD:$PWD -v /snap/core/:/snap/core/ -w $PWD snapcore/snapcraft snapcraft
 fi

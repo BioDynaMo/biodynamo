@@ -13,5 +13,8 @@ matrix:
 script:
   - ./travis.sh
 
+services:
+  - docker
+
 notifications:
   slack: cernopenlab:2MzX9lwS6W9nU47MuY1qSmk9
