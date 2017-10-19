@@ -131,6 +131,8 @@ endif()
 
 # create cmake files used by external builds
 configure_file("cmake/UseBioDynaMo.cmake.in" "UseBioDynaMo.cmake" @ONLY)
+# create snapcraft config file
+configure_file("cmake/snapcraft.yaml.in" "snapcraft.yaml" @ONLY)
 
 # -------------------- build test project  ------------------------------------
 if (test)
