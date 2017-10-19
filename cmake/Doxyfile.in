@@ -8,7 +8,7 @@ PROJECT_NAME           = "@CMAKE_PROJECT_NAME@"
 PROJECT_NUMBER         = @VERSION_MAJOR@.@VERSION_MINOR@.@VERSION_PATCH@
 STRIP_FROM_PATH        = "@PROJECT_SOURCE_DIR@/src"
 INPUT                  = "@PROJECT_SOURCE_DIR@/src" \
-                         "@PROJECT_SOURCE_DIR@/doc" \
+                         "@PROJECT_SOURCE_DIR@/doc/reference_manual" \
                          "@PROJECT_SOURCE_DIR@/README.md"
 FILE_PATTERNS          = *.h \
                          *.cc \
