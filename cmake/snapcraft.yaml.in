@@ -26,7 +26,7 @@ parts:
 
   run:
     plugin: dump
-    source: ../bin
+    source: bin
 
   root:
     plugin: dump

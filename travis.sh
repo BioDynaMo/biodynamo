@@ -111,10 +111,20 @@ if [ "$TRAVIS_OS_NAME" = "linux" ]; then
   make check-submission
 
   # build snap package
+  make install
   sudo apt-get -y install snapd
   sudo snap install core
-  make install
+
+  mkdir build-snap && cd build-snap
+  mv ../snapcraft.yaml .
+  # create run command
+  mkdir bin
+  echo '#!/bin/bash' > bin/run
+  echo '# execute command given as first parameter' >> bin/run
+  echo '$1' >> bin/run
+  chmod +x bin/run
+
   sudo docker pull snapcore/snapcraft
   echo "Start building snap package"
-  sudo docker run --net=host -v $PWD:$PWD -v /snap/core/:/snap/core/ -w $PWD snapcore/snapcraft snapcraft
+  sudo docker run --net=host -v $PWD:$PWD -v $PWD/../install:$PWD/../install -v /snap/core/:/snap/core/ -w $PWD snapcore/snapcraft snapcraft
 fi
