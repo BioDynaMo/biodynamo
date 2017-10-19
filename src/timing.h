@@ -21,7 +21,7 @@ class Timing {
       : start_{Timestamp()}, text_{description}, aggregator_{aggregator} {}
 
   ~Timing() {
-    if (Param::display_timers_) {
+    if (Param::output_op_runtime_) {
       int64_t duration = (Timestamp() - start_);
       if (aggregator_ == nullptr) {
         std::cout << text_ << " " << duration << " ms" << std::endl;

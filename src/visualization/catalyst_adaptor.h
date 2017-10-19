@@ -293,7 +293,7 @@ class CatalystAdaptor {
       data_description->ForceOutputOn();
     }
 
-    if (step % Param::write_freq_ == 0) {
+    if (step % Param::visualization_export_interval_ == 0) {
       WriteToFile(step);
     }
   }

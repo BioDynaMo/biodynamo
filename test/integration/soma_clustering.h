@@ -140,7 +140,7 @@ static bool GetCriterion(double spatial_range, int target_n) {
   std::vector<int> types_sub_vol(n);
 
   // Define the subvolume to be the first octant of a cube
-  double sub_vol_max = Param::rbound_ / 2;
+  double sub_vol_max = Param::max_bound_ / 2;
 
   // The number of cells within the subvolume
   int num_cells_sub_vol = 0;
@@ -227,14 +227,16 @@ static bool GetCriterion(double spatial_range, int target_n) {
   return true;
 }
 
-inline int Simulate(const CommandLineOptions& options) {
+inline int Simulate(int argc, const char** argv) {
+  InitializeBioDynamo(argc, argv);
+
   // 3. Define initial model
 
   // Create an artificial bounds for the simulation space
   Param::bound_space_ = true;
-  Param::lbound_ = 0;
-  Param::rbound_ = 250;
-  Param::run_physics_ = false;
+  Param::min_bound_ = 0;
+  Param::max_bound_ = 250;
+  Param::run_mechanical_interactions_ = false;
   int num_cells = 20000;
 
   gTRandom.SetSeed(4357);
@@ -248,7 +250,7 @@ inline int Simulate(const CommandLineOptions& options) {
     cell.AddBiologyModule(Chemotaxis());
     return cell;
   };
-  ModelInitializer::CreateCellsRandom(Param::lbound_, Param::rbound_,
+  ModelInitializer::CreateCellsRandom(Param::min_bound_, Param::max_bound_,
                                       num_cells / 2, construct_0);
 
   // Construct num_cells/2 cells of type -1
@@ -260,7 +262,7 @@ inline int Simulate(const CommandLineOptions& options) {
     cell.AddBiologyModule(Chemotaxis());
     return cell;
   };
-  ModelInitializer::CreateCellsRandom(Param::lbound_, Param::rbound_,
+  ModelInitializer::CreateCellsRandom(Param::min_bound_, Param::max_bound_,
                                       num_cells / 2, construct_1);
 
   // 3. Define the substances that cells may secrete
@@ -270,7 +272,7 @@ inline int Simulate(const CommandLineOptions& options) {
 
   // 4. Run simulation for N timesteps
   Param::export_visualization_ = true;
-  Param::write_freq_ = 1000;
+  Param::visualization_export_interval_ = 1000;
   Scheduler<> scheduler;
 
   scheduler.Simulate(1001);

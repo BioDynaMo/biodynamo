@@ -33,9 +33,12 @@ struct CompileTimeParam : public DefaultCompileTimeParam<Backend> {
   // use default Backend and AtomicTypes
 };
 
-inline int Simulate(const CommandLineOptions& options,
-                    size_t cells_per_dim = 128) {
-  // 3. Define initial model - in this example: 3D grid of cells
+inline int Simulate(int argc, const char** argv) {
+  // 3. Initialize BioDynaMo
+  InitializeBioDynamo(argc, argv);
+
+  // 4. Define initial model - in this example: 3D grid of cells
+  size_t cells_per_dim = 128;
   auto construct = [](const std::array<double, 3>& position) {
     Cell cell(position);
     cell.SetDiameter(30);
@@ -46,8 +49,8 @@ inline int Simulate(const CommandLineOptions& options,
   };
   ModelInitializer::Grid3D(cells_per_dim, 20, construct);
 
-  // 4. Run simulation for one timestep
-  Scheduler<> scheduler(options.backup_file_, options.restore_file_);
+  // 5. Run simulation for one timestep
+  Scheduler<> scheduler;
   scheduler.Simulate(1);
   return 0;
 }

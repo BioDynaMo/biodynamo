@@ -25,16 +25,7 @@ class Scheduler {
   using Clock = std::chrono::high_resolution_clock;
 
   Scheduler()
-      : backup_(SimulationBackup("", "")), grid_(&TGrid::GetInstance()) {
-    visualization_ = CatalystAdaptor<>::GetInstance();
-    if (Param::live_visualization_ || Param::export_visualization_) {
-      visualization_->Initialize(BDM_SRC_DIR
-                                 "/visualization/simple_pipeline.py");
-    }
-  }
-
-  Scheduler(const std::string& backup_file, const std::string& restore_file)
-      : backup_(SimulationBackup(backup_file, restore_file)),
+      : backup_(SimulationBackup(Param::backup_file_, Param::restore_file_)),
         grid_(&TGrid::GetInstance()) {
     if (backup_.RestoreEnabled()) {
       restore_point_ = backup_.GetSimulationStepsFromBackup();
@@ -62,7 +53,7 @@ class Scheduler {
 
       // Visualize
       if (Param::live_visualization_) {
-        double time = Param::kSimulationTimeStep * total_steps_;
+        double time = Param::simulation_time_step_ * total_steps_;
         visualization_->CoProcess(time, total_steps_, false);
       }
 
@@ -73,7 +64,7 @@ class Scheduler {
       using std::chrono::duration_cast;
       if (backup_.BackupEnabled() &&
           duration_cast<seconds>(Clock::now() - last_backup_).count() >=
-              Param::backup_every_x_seconds_) {
+              Param::backup_interval_) {
         last_backup_ = Clock::now();
         backup_.Backup(total_steps_);
       }
@@ -103,11 +94,11 @@ class Scheduler {
 
       // Visualize
       if (Param::live_visualization_) {
-        double time = Param::kSimulationTimeStep * total_steps_;
+        double time = Param::simulation_time_step_ * total_steps_;
         visualization_->CoProcess(time, total_steps_, step == steps - 1);
       }
       if (Param::export_visualization_) {
-        double time = Param::kSimulationTimeStep * total_steps_;
+        double time = Param::simulation_time_step_ * total_steps_;
         visualization_->ExportVisualization(time, total_steps_,
                                             step == steps - 1);
       }
@@ -119,7 +110,7 @@ class Scheduler {
       using std::chrono::duration_cast;
       if (backup_.BackupEnabled() &&
           duration_cast<seconds>(Clock::now() - last_backup_).count() >=
-              Param::backup_every_x_seconds_) {
+              Param::backup_interval_) {
         last_backup_ = Clock::now();
         backup_.Backup(total_steps_);
       }
@@ -145,7 +136,7 @@ class Scheduler {
     }
     rm->ApplyOnAllTypes(diffusion_);
     rm->ApplyOnAllTypes(biology_);
-    if (Param::run_physics_) {
+    if (Param::run_mechanical_interactions_) {
       rm->ApplyOnAllTypes(physics_with_bound_);
     } else if (Param::bound_space_) {
       rm->ApplyOnAllTypes(bound_space_);

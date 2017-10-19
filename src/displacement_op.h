@@ -64,7 +64,7 @@ class DisplacementOp {
       bool physical_translation = false;
       // bool physical_rotation = false;
 
-      double h = Param::kSimulationTimeStep;
+      double h = Param::simulation_time_step_;
       std::array<double, 3> movement_at_next_step{0, 0, 0};
 
       // BIOLOGY :
@@ -129,14 +129,14 @@ class DisplacementOp {
 
         // but we want to avoid huge jumps in the simulation, so there are
         // maximum distances possible
-        if (norm_of_force * mh > Param::kSimulationMaximalDisplacement) {
+        if (norm_of_force * mh > Param::simulation_max_displacement_) {
           const auto& norm = Math::Normalize(movement_at_next_step);
           movement_at_next_step[0] =
-              norm[0] * Param::kSimulationMaximalDisplacement;
+              norm[0] * Param::simulation_max_displacement_;
           movement_at_next_step[1] =
-              norm[1] * Param::kSimulationMaximalDisplacement;
+              norm[1] * Param::simulation_max_displacement_;
           movement_at_next_step[2] =
-              norm[2] * Param::kSimulationMaximalDisplacement;
+              norm[2] * Param::simulation_max_displacement_;
         }
       }
       cell_movements[i] = movement_at_next_step;
@@ -150,7 +150,7 @@ class DisplacementOp {
       auto&& cell = (*cells)[i];
       cell.UpdateMassLocation(cell_movements[i]);
       if (Param::bound_space_) {
-        ApplyBoundingBox(&cell, Param::lbound_, Param::rbound_);
+        ApplyBoundingBox(&cell, Param::min_bound_, Param::max_bound_);
       }
       cell.SetPosition(cell.GetMassLocation());
 
@@ -176,7 +176,7 @@ class BoundSpace {
     for (size_t i = 0; i < cells->size(); i++) {
       auto&& cell = (*cells)[i];
       if (Param::bound_space_) {
-        ApplyBoundingBox(&cell, Param::lbound_, Param::rbound_);
+        ApplyBoundingBox(&cell, Param::min_bound_, Param::max_bound_);
       }
       cell.SetPosition(cell.GetMassLocation());
 

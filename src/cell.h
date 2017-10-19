@@ -161,7 +161,7 @@ BDM_SIM_CLASS(Cell, SimulationObject) {
 
   void ChangeVolume(double speed) {
     // scaling for integration step
-    double delta = speed * Param::kSimulationTimeStep;
+    double delta = speed * Param::simulation_time_step_;
     volume_[kIdx] += delta;
     if (volume_[kIdx] < 5.2359877E-7) {
       volume_[kIdx] = 5.2359877E-7;
@@ -194,7 +194,8 @@ BDM_SIM_CLASS(Cell, SimulationObject) {
   void GetForceOn(const array<double, 3>& ref_mass_location,
                   double ref_diameter, array<double, 3>* force) const {
     DefaultForce default_force;
-    double iof_coefficient = Param::kSphereDefaultInterObjectCoefficient;
+    // TODO(lukas) think about default values in config file
+    double iof_coefficient = 0.15;
 
     default_force.ForceBetweenSpheres(ref_mass_location, ref_diameter,
                                       iof_coefficient, mass_location_[kIdx],

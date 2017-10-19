@@ -22,8 +22,10 @@ struct CompileTimeParam : public DefaultCompileTimeParam<TBackend> {
   using BiologyModules = Variant<TestBehaviour>;
 };
 
-inline int Simulate(const CommandLineOptions& options) {
-  Param::backup_every_x_seconds_ = 1;
+inline int Simulate(int argc, const char** argv) {
+  InitializeBioDynamo(argc, argv);
+
+  Param::backup_interval_ = 1;
 
   auto cells = ResourceManager<>::Get()->Get<Cell>();
   for (size_t i = 0; i < 10; i++) {
@@ -33,7 +35,7 @@ inline int Simulate(const CommandLineOptions& options) {
     cells->push_back(cell);
   }
 
-  Scheduler<> scheduler(options.backup_file_, options.restore_file_);
+  Scheduler<> scheduler;
 
   // will perform backup after iteration 3
   scheduler.Simulate(3);  // 1050 ms

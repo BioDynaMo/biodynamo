@@ -75,9 +75,12 @@ struct CompileTimeParam : public DefaultCompileTimeParam<Backend> {
   // use default Backend and AtomicTypes
 };
 
-inline int Simulate(const CommandLineOptions& options) {
-  Param::backup_every_x_seconds_ = 1;
-  // 3a. Define initial model - in this example: two cells
+inline int Simulate(int argc, const char** argv) {
+  // 3. Initialize BioDynaMo
+  InitializeBioDynamo(argc, argv);
+
+  Param::backup_interval_ = 1;
+  // 4a. Define initial model - in this example: two cells
   auto construct = [](const std::array<double, 3>& position) {
     Cell cell(position);
     cell.SetDiameter(30);
@@ -102,12 +105,12 @@ inline int Simulate(const CommandLineOptions& options) {
   positions.push_back({100, 100, 100});
   ModelInitializer::CreateCells(positions, construct);
 
-  // 3b. Define the substances that cells may secrete
+  // 4b. Define the substances that cells may secrete
   ModelInitializer::DefineSubstance(kKalium, "Kalium", 0.4, 0, 5);
 
-  // 4. Run simulation for N timesteps
+  // 5. Run simulation for N timesteps
   Param::live_visualization_ = true;
-  Scheduler<> scheduler(options.backup_file_, options.restore_file_);
+  Scheduler<> scheduler;
   scheduler.Simulate(3500);
   return 0;
 }
