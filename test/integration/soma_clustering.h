@@ -269,8 +269,7 @@ inline int Simulate(const CommandLineOptions& options) {
   ModelInitializer::DefineSubstance(kSubstance_1, "Substance_1", 0.5, 0.1, 1);
 
   // 4. Run simulation for N timesteps
-  Param::use_paraview_ = false;
-  Param::write_to_file_ = false;
+  Param::export_visualization_ = true;
   Param::write_freq_ = 1000;
   Scheduler<> scheduler;
 

@@ -106,7 +106,7 @@ inline int Simulate(const CommandLineOptions& options) {
   ModelInitializer::DefineSubstance(kKalium, "Kalium", 0.4, 0, 5);
 
   // 4. Run simulation for N timesteps
-  Param::use_paraview_ = true;
+  Param::live_visualization_ = true;
   Scheduler<> scheduler(options.backup_file_, options.restore_file_);
   scheduler.Simulate(3500);
   return 0;

@@ -83,10 +83,10 @@ class Param {
   /// Helpful constant to identify 'infinity'
   static constexpr double kInfinity = 1e20;
 
-  /// Enable ParaView for visualization
-  static bool use_paraview_;
+  /// Use ParaView Catalyst for live visualization
+  static bool live_visualization_;
   /// Write data to file for post-simulation visualization
-  static bool write_to_file_;
+  static bool export_visualization_;
   /// Frequency to write to file
   static uint32_t write_freq_;
 

@@ -43,7 +43,11 @@ class CatalystAdaptor {
     return &kInstance;
   }
 
-  /// Build the diffusion grid visualization
+  /// Sets the properties of the diffusion VTK grid structures
+  ///
+  /// @param      dg    The diffusion grid
+  /// @param[in]  idx   Its index within the vector of diffusion VTK structures
+  ///
   void ConstructDiffusionGrid(DiffusionGrid* dg, uint16_t idx) {
     auto num_boxes = dg->GetNumBoxesArray();
     auto grid_dimensions = dg->GetDimensions();
@@ -52,12 +56,12 @@ class CatalystAdaptor {
     double origin_x = grid_dimensions[0];
     double origin_y = grid_dimensions[2];
     double origin_z = grid_dimensions[4];
-    dgrids_[idx]->SetOrigin(origin_x, origin_y, origin_z);
-    dgrids_[idx]->SetDimensions(num_boxes[0], num_boxes[1], num_boxes[2]);
-    dgrids_[idx]->SetSpacing(box_length, box_length, box_length);
+    vtk_dgrids_[idx]->SetOrigin(origin_x, origin_y, origin_z);
+    vtk_dgrids_[idx]->SetDimensions(num_boxes[0], num_boxes[1], num_boxes[2]);
+    vtk_dgrids_[idx]->SetSpacing(box_length, box_length, box_length);
   }
 
-  /// Builds VTK structures for given simulation object container
+  /// Builds the VTK grid structure for given simulation object container
   ///
   /// @param      sim_objects  The simulation objects
   ///
@@ -66,7 +70,7 @@ class CatalystAdaptor {
   template <typename TContainer>
   void BuildCellsVTKStructures(TContainer* sim_objects, uint16_t type_idx) {
     if (so_is_initialized_[type_idx] == false) {
-      so_grids_.push_back(vtkUnstructuredGrid::New());
+      vtk_so_grids_.push_back(vtkUnstructuredGrid::New());
       so_is_initialized_[type_idx] = true;
     }
 
@@ -97,21 +101,22 @@ class CatalystAdaptor {
     // The positions of the cells need to be vtkPoints
     vtkNew<vtkPoints> points;
     points->SetData(position_array.GetPointer());
-    so_grids_[type_idx]->SetPoints(points.GetPointer());
+    vtk_so_grids_[type_idx]->SetPoints(points.GetPointer());
 
     // Add attribute data to cells (i.e. cell properties)
-    so_grids_[type_idx]->GetPointData()->AddArray(diameter_array.GetPointer());
-    // so_grids_[type_idx]->GetPointData()->AddArray(type_array.GetPointer());
+    vtk_so_grids_[type_idx]->GetPointData()->AddArray(
+        diameter_array.GetPointer());
+    // vtk_so_grids_[type_idx]->GetPointData()->AddArray(type_array.GetPointer());
   }
 
-  /// Builds VTK structures for given diffusion grid
+  /// Builds the VTK grid structure for given diffusion grid
   ///
   /// @param      dg    The diffusion grid
   /// @param[in]  idx   The index
   ///
   void BuildDiffusionGridVTKStructures(DiffusionGrid* dg, uint16_t idx) {
     if (dg_is_initialized_[idx] == false) {
-      dgrids_.push_back(vtkImageData::New());
+      vtk_dgrids_.push_back(vtkImageData::New());
       dg_is_initialized_[idx] = true;
     }
 
@@ -137,11 +142,13 @@ class CatalystAdaptor {
                                   1);
 
     // Add attribute data to diffusion grid
-    // dgrids_[idx]->GetPointData()->AddArray(gradient_array.GetPointer());
-    dgrids_[idx]->GetPointData()->AddArray(concentration_array.GetPointer());
+    // vtk_dgrids_[idx]->GetPointData()->AddArray(gradient_array.GetPointer());
+    vtk_dgrids_[idx]->GetPointData()->AddArray(
+        concentration_array.GetPointer());
   }
 
-  /// @brief      Initializes Catalyst with the predefined pipeline
+  /// Initializes Catalyst with the predefined pipeline and allocates memory
+  /// for the VTK grid structures
   ///
   /// @param[in]  script  The Python script that contains the pipeline
   ///
@@ -149,11 +156,10 @@ class CatalystAdaptor {
     if (g_processor_ == nullptr) {
       g_processor_ = vtkCPProcessor::New();
       g_processor_->Initialize();
-      // TODO(ahmad): Resize to exact numbers
-      so_is_initialized_.resize(5);
-      dg_is_initialized_.resize(5);
-      write_ = Param::write_to_file_;
-      write_freq_ = Param::write_freq_;
+
+      auto rm = TResourceManager::Get();
+      so_is_initialized_.resize(rm->NumberOfTypes());
+      dg_is_initialized_.resize(rm->GetDiffusionGrids().size());
     } else {
       g_processor_->RemoveAllPipelines();
     }
@@ -168,18 +174,23 @@ class CatalystAdaptor {
       g_processor_->Delete();
       g_processor_ = nullptr;
     }
-    for (auto sog : so_grids_) {
+    for (auto sog : vtk_so_grids_) {
       sog->Delete();
       sog = nullptr;
     }
-    for (auto dg : dgrids_) {
+    for (auto dg : vtk_dgrids_) {
       dg->Delete();
       dg = nullptr;
     }
   }
 
+  /// Helper function to write simulation objects to file. It loops through the
+  /// vectors of VTK grid structures and calls the internal VTK writer methods
+  ///
+  /// @param[in]  step  The step
+  ///
   void WriteToFile(size_t step) {
-    for (auto sog : so_grids_) {
+    for (auto vtk_so : vtk_so_grids_) {
       vtkNew<vtkXMLPUnstructuredGridWriter> cells_writer;
 
       // TODO(ahmad): generate unique name for each container of cells
@@ -187,38 +198,32 @@ class CatalystAdaptor {
           "cells_data_" + std::to_string(step) + ".pvtu";
 
       cells_writer->SetFileName(cells_filename.c_str());
-      cells_writer->SetInputData(sog);
+      cells_writer->SetInputData(vtk_so);
       cells_writer->Update();
     }
 
-    int idx = 0;
-    for (auto dg : dgrids_) {
+    auto& dgrids = TResourceManager::Get()->GetDiffusionGrids();
+
+    size_t idx = 0;
+    for (auto vtk_dg : vtk_dgrids_) {
       vtkNew<vtkXMLPImageDataWriter> dgrid_writer;
 
-      // TODO(ahmad): generate better unique name for each diffusion grid
-      std::string dgrid_filename = "dgrid_data_" + std::to_string(idx) + "_" +
+      std::string dgrid_filename = dgrids[idx]->GetSubstanceName() + "_" +
                                    std::to_string(step) + ".pvti";
 
       dgrid_writer->SetFileName(dgrid_filename.c_str());
-      dgrid_writer->SetInputData(dg);
+      dgrid_writer->SetInputData(vtk_dg);
       dgrid_writer->Update();
       idx++;
     }
   }
 
-  void SetWriteFrequency(double f) { write_freq_ = f; }
-  void SetWrite(bool w) { write_ = w; }
-
-  /// @brief      Applies the pipeline to the data structures in the VTK Grid
+  /// Creates the VTK objects that represent the simulation objects in ParaView.
   ///
-  /// @param[in]  step            The simulation step
-  /// @param[in]  time_step       The time step duration
-  /// @param[in]  last_time_step  Last time step or not
+  /// @param      data_description  The data description
   ///
-  inline void CoProcess(double step, size_t time_step, bool last_time_step) {
-    vtkNew<vtkCPDataDescription> data_description;
-    data_description->SetTimeData(step, time_step);
-
+  void CreateVtkObjects(
+      vtkNew<vtkCPDataDescription>& data_description) {  // NOLINT
     // Add all simulation object containers to the visualization
     auto rm = TResourceManager::Get();
     rm->ApplyOnAllTypes([&, this](auto* sim_objects, uint16_t type_idx) {
@@ -231,7 +236,7 @@ class CatalystAdaptor {
           0) {
         this->BuildCellsVTKStructures(sim_objects, type_idx);
         data_description->GetInputDescriptionByName("cells_data")
-            ->SetGrid(so_grids_[type_idx]);
+            ->SetGrid(vtk_so_grids_[type_idx]);
       }
     });
 
@@ -245,28 +250,58 @@ class CatalystAdaptor {
         this->BuildDiffusionGridVTKStructures(dg, idx);
         data_description
             ->GetInputDescriptionByName(dg->GetSubstanceName().c_str())
-            ->SetGrid(dgrids_[idx]);
+            ->SetGrid(vtk_dgrids_[idx]);
       }
       idx++;
     }
+  }
+
+  /// Applies the pipeline to the simulation objects during live visualization
+  ///
+  /// @param[in]  time            The simulation time
+  /// @param[in]  step            The time step duration
+  /// @param[in]  last_time_step  Last time step or not
+  ///
+  inline void CoProcess(double time, size_t step, bool last_time_step) {
+    vtkNew<vtkCPDataDescription> data_description;
+    data_description->SetTimeData(time, step);
+
+    CreateVtkObjects(data_description);
 
     if (last_time_step == true) {
       data_description->ForceOutputOn();
     }
 
     g_processor_->CoProcess(data_description.GetPointer());
+  }
 
-    if (time_step % write_freq_ == 0) {
-      WriteToFile(time_step);
+  /// Exports the visualized objects to file, so that they can be imported and
+  /// visualized in ParaView at a later point in time
+  ///
+  /// @param[in]  time            The simulation time
+  /// @param[in]  step            The time step
+  /// @param[in]  last_time_step  The last time step
+  ///
+  inline void ExportVisualization(double time, size_t step,
+                                  bool last_time_step) {
+    vtkNew<vtkCPDataDescription> data_description;
+    data_description->SetTimeData(time, step);
+
+    CreateVtkObjects(data_description);
+
+    if (last_time_step == true) {
+      data_description->ForceOutputOn();
+    }
+
+    if (step % Param::write_freq_ == 0) {
+      WriteToFile(step);
     }
   }
 
  private:
-  bool write_ = false;
-  size_t write_freq_ = 1;
   vtkCPProcessor* g_processor_ = nullptr;
-  std::vector<vtkImageData*> dgrids_;
-  std::vector<vtkUnstructuredGrid*> so_grids_;
+  std::vector<vtkImageData*> vtk_dgrids_;
+  std::vector<vtkUnstructuredGrid*> vtk_so_grids_;
   std::vector<bool> so_is_initialized_;
   std::vector<bool> dg_is_initialized_;
 };
@@ -282,28 +317,6 @@ class CatalystAdaptor {
     return &kInstance;
   }
 
-  void ConstructDiffusionGrid(size_t box_length,
-                              const std::array<int, 3>& num_boxes,
-                              const std::array<int, 6>& grid_dimensions) {
-    Fatal("",
-          "Simulation was compiled without ParaView support, but you are "
-          "trying to use it.");
-  }
-
-  template <typename TContainer>
-  void BuildVTKGrid(TContainer* sim_objects) {
-    Fatal("",
-          "Simulation was compiled without ParaView support, but you are "
-          "trying to use it.");
-  }
-
-  template <typename TContainer>
-  void BuildVTKDataStructures(TContainer* sim_objects) {
-    Fatal("",
-          "Simulation was compiled without ParaView support, but you are "
-          "trying to use it.");
-  }
-
   void Initialize(const std::string& script) {
     Fatal("",
           "Simulation was compiled without ParaView support, but you are "
@@ -317,6 +330,12 @@ class CatalystAdaptor {
   }
 
   void CoProcess(double time, size_t time_step, bool last_time_step) {
+    Fatal("",
+          "Simulation was compiled without ParaView support, but you are "
+          "trying to use it.");
+  }
+
+  void ExportVisualization(double step, size_t time_step, bool last_time_step) {
     Fatal("",
           "Simulation was compiled without ParaView support, but you are "
           "trying to use it.");

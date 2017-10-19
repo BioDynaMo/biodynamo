@@ -26,8 +26,8 @@ class Scheduler {
 
   Scheduler()
       : backup_(SimulationBackup("", "")), grid_(&TGrid::GetInstance()) {
-    if (Param::use_paraview_) {
-      visualization_ = CatalystAdaptor<>::GetInstance();
+    visualization_ = CatalystAdaptor<>::GetInstance();
+    if (Param::live_visualization_ || Param::export_visualization_) {
       visualization_->Initialize(BDM_SRC_DIR
                                  "/visualization/simple_pipeline.py");
     }
@@ -39,15 +39,15 @@ class Scheduler {
     if (backup_.RestoreEnabled()) {
       restore_point_ = backup_.GetSimulationStepsFromBackup();
     }
-    if (Param::use_paraview_) {
-      visualization_ = CatalystAdaptor<>::GetInstance();
+    visualization_ = CatalystAdaptor<>::GetInstance();
+    if (Param::live_visualization_ || Param::export_visualization_) {
       visualization_->Initialize(BDM_SRC_DIR
                                  "/visualization/simple_pipeline.py");
     }
   }
 
   virtual ~Scheduler() {
-    if (Param::use_paraview_) {
+    if (Param::live_visualization_ || Param::export_visualization_) {
       visualization_->Finalize();
     }
   }
@@ -61,7 +61,7 @@ class Scheduler {
       Execute();
 
       // Visualize
-      if (Param::use_paraview_) {
+      if (Param::live_visualization_) {
         double time = Param::kSimulationTimeStep * total_steps_;
         visualization_->CoProcess(time, total_steps_, false);
       }
@@ -102,9 +102,14 @@ class Scheduler {
       Execute();
 
       // Visualize
-      if (Param::use_paraview_) {
+      if (Param::live_visualization_) {
         double time = Param::kSimulationTimeStep * total_steps_;
         visualization_->CoProcess(time, total_steps_, step == steps - 1);
+      }
+      if (Param::export_visualization_) {
+        double time = Param::kSimulationTimeStep * total_steps_;
+        visualization_->ExportVisualization(time, total_steps_,
+                                            step == steps - 1);
       }
 
       total_steps_++;
