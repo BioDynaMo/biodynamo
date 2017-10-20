@@ -18,7 +18,9 @@ double Param::max_bound_ = 100;
 bool Param::live_visualization_ = false;
 bool Param::export_visualization_ = false;
 uint32_t Param::visualization_export_interval_ = 1;
-std::unordered_map<std::string, std::set<std::string>> Param::visualize_;
+std::unordered_map<std::string, std::set<std::string>>
+    Param::visualize_sim_objects_;
+std::vector<Param::VisualizeDiffusion> Param::visualize_diffusion_;
 
 // development group
 bool Param::output_op_runtime_ = false;
@@ -50,12 +52,14 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
   BDM_ASSIGN_CONFIG_VALUE(visualization_export_interval_,
                           "visualization.export_interval");
 
-  //   visualize
-  auto visualize_tarr = config->get_table_array("visualize");
-  for (const auto& table : *visualize_tarr) {
+  //   visualize_sim_objects_
+  auto visualize_sim_objects_tarr =
+      config->get_table_array("visualize_sim_object");
+  for (const auto& table : *visualize_sim_objects_tarr) {
     auto name = table->get_as<std::string>("name");
     if (!name) {
-      Warning("AssignFromConfig", "Missing name for attribute visualize");
+      Warning("AssignFromConfig",
+              "Missing name for attribute visualize_sim_object");
       continue;
     }
     auto dm_option =
@@ -65,7 +69,33 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
     for (const auto& val : *dm_option) {
       data_members.insert(val);
     }
-    visualize_[*name] = data_members;
+    visualize_sim_objects_[*name] = data_members;
+  }
+
+  //   visualize_diffusion_
+  auto visualize_diffusion_tarr =
+      config->get_table_array("visualize_diffusion");
+  for (const auto& table : *visualize_diffusion_tarr) {
+    auto name = table->get_as<std::string>("name");
+    if (!name) {
+      Warning("AssignFromConfig",
+              "Missing name for attribute visualize_diffusion");
+      continue;
+    }
+
+    VisualizeDiffusion vd;
+    vd.name_ = *name;
+
+    auto concentration = table->get_as<bool>("concentration");
+    if (concentration) {
+      vd.concentration_ = *concentration;
+    }
+    auto gradient = table->get_as<bool>("gradient");
+    if (gradient) {
+      vd.gradient_ = *gradient;
+    }
+
+    visualize_diffusion_.push_back(vd);
   }
 
   // development group
@@ -88,7 +118,8 @@ void Param::Reset() {
   live_visualization_ = false;
   export_visualization_ = false;
   visualization_export_interval_ = 1;
-  visualize_.clear();
+  visualize_sim_objects_.clear();
+  visualize_diffusion_.clear();
 
   // development group
   output_op_runtime_ = false;

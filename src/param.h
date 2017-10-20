@@ -5,6 +5,7 @@
 #include <set>
 #include <string>
 #include <unordered_map>
+#include <vector>
 #include "cpptoml/cpptoml.h"
 
 namespace bdm {
@@ -131,15 +132,46 @@ struct Param {
   ///     # turn on live or export
   ///     export = true
   ///
-  ///       [[visualize]]
+  ///       [[visualize_sim_object]]
   ///       name = "Cell"
   ///       # the following entry is optional
   ///       additional_data_members = [ "density_" ]
   ///
   ///       # The former block can be repeated for further simulation objects
-  ///       [[visualize]]
+  ///       [[visualize_sim_object]]
   ///       name = "Neurite"
-  static std::unordered_map<std::string, std::set<std::string>> visualize_;
+  static std::unordered_map<std::string, std::set<std::string>>
+      visualize_sim_objects_;
+
+  struct VisualizeDiffusion {
+    std::string name_;
+    bool concentration_ = true;
+    bool gradient_ = false;
+  };
+
+  /// Spefifies if for which substances extracellular diffusion should be
+  /// visualized.\n
+  /// Default value: emtpy (no diffusion will be visualized)\n
+  /// TOML config file:
+  ///
+  ///     [visualization]
+  ///     # turn on live or export
+  ///     export = true
+  ///
+  ///       [[visualize_diffusion]]
+  ///       # Name of the substance
+  ///       name = "Na"
+  ///       # the following two entries are optional
+  ///       #   default value for concentration is true
+  ///       concentration = true
+  ///       #   default value for gradient is false
+  ///       gradient = false
+  ///
+  ///       # The former block can be repeated for further substances
+  ///       [[visualize_diffusion]]
+  ///       name = "K"
+  ///       # default values: concentration = true and gradient = false
+  static std::vector<VisualizeDiffusion> visualize_diffusion_;
 
   // development values --------------------------------------------------------
 
