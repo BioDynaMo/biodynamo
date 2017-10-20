@@ -4,6 +4,8 @@
 #include <array>
 #include <cmath>
 #include <complex>
+#include <set>
+#include <string>
 #include <type_traits>
 #include <vector>
 
@@ -27,6 +29,12 @@ BDM_SIM_CLASS(Cell, SimulationObject) {
                    z_axis_, biology_modules_, box_idx_);
 
  public:
+  /// Returns the data members that are required to visualize this simulation
+  /// object.
+  static std::set<std::string> GetRequiredVisDataMembers() {
+    return {"position_", "diameter_"};
+  }
+
   using TBiologyModuleVariant = typename TCompileTimeParam::BiologyModules;
   CellExt() : density_{1.0} {}
   explicit CellExt(double diameter) : diameter_(diameter), density_{1.0} {
