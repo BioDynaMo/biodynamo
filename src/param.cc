@@ -1,4 +1,5 @@
 #include "param.h"
+#include <TError.h>
 
 namespace bdm {
 
@@ -17,6 +18,7 @@ double Param::max_bound_ = 100;
 bool Param::live_visualization_ = false;
 bool Param::export_visualization_ = false;
 uint32_t Param::visualization_export_interval_ = 1;
+std::unordered_map<std::string, std::set<std::string>> Param::visualize_;
 
 // development group
 bool Param::output_op_runtime_ = false;
@@ -47,6 +49,25 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
   BDM_ASSIGN_CONFIG_VALUE(export_visualization_, "visualization.export");
   BDM_ASSIGN_CONFIG_VALUE(visualization_export_interval_,
                           "visualization.export_interval");
+
+  //   visualize
+  auto visualize_tarr = config->get_table_array("visualize");
+  for (const auto& table : *visualize_tarr) {
+    auto name = table->get_as<std::string>("name");
+    if (!name) {
+      Warning("AssignFromConfig", "Missing name for attribute visualize");
+      continue;
+    }
+    auto dm_option =
+        table->get_array_of<std::string>("additional_data_members");
+
+    std::set<std::string> data_members;
+    for (const auto& val : *dm_option) {
+      data_members.insert(val);
+    }
+    visualize_[*name] = data_members;
+  }
+
   // development group
   BDM_ASSIGN_CONFIG_VALUE(output_op_runtime_, "development.output_op_runtime");
 }
@@ -67,6 +88,7 @@ void Param::Reset() {
   live_visualization_ = false;
   export_visualization_ = false;
   visualization_export_interval_ = 1;
+  visualize_.clear();
 
   // development group
   output_op_runtime_ = false;

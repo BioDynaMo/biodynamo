@@ -2,7 +2,9 @@
 #define PARAM_H_
 
 #include <cinttypes>
+#include <set>
 #include <string>
+#include <unordered_map>
 #include "cpptoml/cpptoml.h"
 
 namespace bdm {
@@ -116,6 +118,28 @@ struct Param {
   ///     [visualization]
   ///     export_interval = 1
   static uint32_t visualization_export_interval_;
+
+  /// Specifies which simulation objects should be visualized. \n
+  /// Every simulation object defines the minimum set of data members which
+  /// are required to visualize it. (e.g. Cell: `position_` and `diameter_`).\n
+  /// With this parameter it is also possible to extend the number of data
+  /// members that are sent to the visualization engine.
+  /// Default value: emtpy (no simulation object will be visualized)\n
+  /// TOML config file:
+  ///
+  ///     [visualization]
+  ///     # turn on live or export
+  ///     export = true
+  ///
+  ///       [[visualize]]
+  ///       name = "Cell"
+  ///       # the following entry is optional
+  ///       additional_data_members = [ "density_" ]
+  ///
+  ///       # The former block can be repeated for further simulation objects
+  ///       [[visualize]]
+  ///       name = "Neurite"
+  static std::unordered_map<std::string, std::set<std::string>> visualize_;
 
   // development values --------------------------------------------------------
 

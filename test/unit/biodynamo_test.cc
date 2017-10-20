@@ -22,6 +22,13 @@ const char* kConfigContent =
     "export = true\n"
     "export_interval = 100\n"
     "\n"
+    "  [[visualize]]\n"
+    "  name = \"Cell\"\n"
+    "\n"
+    "  [[visualize]]\n"
+    "  name = \"Neurite\"\n"
+    "  additional_data_members = [ \"spring_axis_\", \"tension_\" ]\n"
+    "\n"
     "[development]\n"
     "# this is a comment\n"
     "output_op_runtime = true\n";
@@ -48,6 +55,26 @@ TEST(BiodynamoTest, InitializeBioDynamo) {
   EXPECT_TRUE(Param::live_visualization_);
   EXPECT_TRUE(Param::export_visualization_);
   EXPECT_EQ(100u, Param::visualization_export_interval_);
+
+  // visualize
+  EXPECT_EQ(2u, Param::visualize_.size());
+  auto it = Param::visualize_.cbegin();
+  uint64_t counter = 0;
+  while (it != Param::visualize_.cend()) {
+    if (counter == 1) {
+      EXPECT_EQ("Cell", (*it).first);
+      EXPECT_EQ(0u, (*it).second.size());
+    } else if (counter == 0) {
+      EXPECT_EQ("Neurite", (*it).first);
+      auto additional_dm = (*it).second;
+      EXPECT_EQ(2, additional_dm.size());
+      EXPECT_TRUE(additional_dm.find("spring_axis_") != additional_dm.end());
+      EXPECT_TRUE(additional_dm.find("tension_") != additional_dm.end());
+    }
+    counter++;
+    it++;
+  }
+
   EXPECT_TRUE(Param::output_op_runtime_);
 
   Param::Reset();
@@ -80,6 +107,26 @@ TEST(BiodynamoTest, InitializeBioDynamoWithCLIArguments) {
   EXPECT_TRUE(Param::live_visualization_);
   EXPECT_TRUE(Param::export_visualization_);
   EXPECT_EQ(100u, Param::visualization_export_interval_);
+
+  // visualize
+  EXPECT_EQ(2u, Param::visualize_.size());
+  auto it = Param::visualize_.cbegin();
+  uint64_t counter = 0;
+  while (it != Param::visualize_.cend()) {
+    if (counter == 1) {
+      EXPECT_EQ("Cell", (*it).first);
+      EXPECT_EQ(0u, (*it).second.size());
+    } else if (counter == 0) {
+      EXPECT_EQ("Neurite", (*it).first);
+      auto additional_dm = (*it).second;
+      EXPECT_EQ(2, additional_dm.size());
+      EXPECT_TRUE(additional_dm.find("spring_axis_") != additional_dm.end());
+      EXPECT_TRUE(additional_dm.find("tension_") != additional_dm.end());
+    }
+    counter++;
+    it++;
+  }
+
   EXPECT_TRUE(Param::output_op_runtime_);
 
   Param::Reset();
