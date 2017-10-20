@@ -127,6 +127,13 @@ struct Param {
   ///     output_op_runtime = false
   static bool output_op_runtime_;
 
+  /// Resets the static variables to its default values
+  static void Reset();
+
+ private:
+  friend void InitializeBioDynamo(int, const char**);
+
+  /// Assign values from config file to static variables
   static void AssignFromConfig(const std::shared_ptr<cpptoml::table>&);
 };
 
