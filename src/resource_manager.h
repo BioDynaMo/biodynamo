@@ -238,6 +238,11 @@ class ResourceManager {
         [](auto* container, uint16_t type_idx) { container->clear(); });
   }
 
+  template <typename TSo>
+  void push_back(const TSo& so) {  // NOLINT
+    Get<TSo>()->push_back(so);
+  }
+
   /// Returns the number of simulation object types
   static constexpr size_t NumberOfTypes() {
     return std::tuple_size<decltype(data_)>::value;
