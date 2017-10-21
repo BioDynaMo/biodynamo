@@ -188,6 +188,12 @@ include(cmake/Installation.cmake)
 # -------------------- add targets for code style and submission checks --------
 include(cmake/CppStyleGuideChecks.cmake)
 
+# -------------------- add target to build snap package ------------------------
+add_custom_target(snap-package
+  COMMAND ../cmake/build_snap_package.sh ${CMAKE_INSTALL_PREFIX}
+  WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+  COMMENT "Build snap package")
+
 # -------------------- build cell_division_module executable -------------------
 bdm_add_executable(cell_division_module
                    SOURCES demo/cell_division_module.cc
