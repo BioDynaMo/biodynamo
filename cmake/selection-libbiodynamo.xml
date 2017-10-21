@@ -6,6 +6,7 @@
     <class name="bdm::ScalarSimulationObject"/>
     <class name="bdm::RuntimeVariables"/>
     <class name="bdm::NullBiologyModule"/>
+    <class name="bdm::GrowDivide"/>
     <class name="bdm::IntegralTypeWrapper<size_t> "/>
   </selection>
 </lcgdict>

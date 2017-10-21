@@ -8,7 +8,7 @@
 namespace bdm {
 
 // -----------------------------------------------------------------------------
-// This model creats 8 cells at each corner of a cube. A substance is
+// This model creates 8 cells at each corner of a cube. A substance is
 // artificially added in the middle of this cube. The cells are modeled to
 // displace according to the extracellular gradient; in this case to the middle.
 // -----------------------------------------------------------------------------
@@ -16,23 +16,7 @@ namespace bdm {
 // List the extracellular substances
 enum Substances { kKalium };
 
-// 1a. Define growth behaviour:
-// Cells divide if the diameter reaches a specific value
-struct GrowthModule {
-  template <typename T>
-  void Run(T* cell) {
-    if (cell->GetDiameter() <= 32) {
-      cell->ChangeVolume(1500);
-    } else {
-      Divide(*cell);
-    }
-  }
-
-  bool IsCopied(Event event) const { return true; }
-  ClassDefNV(GrowthModule, 1);
-};
-
-// 1b. Define displacement behavior:
+// 1a. Define displacement behavior:
 // Cells move along the diffusion gradient (from low concentration to high)
 struct Chemotaxis {
   template <typename T>
@@ -54,7 +38,7 @@ struct Chemotaxis {
   ClassDefNV(Chemotaxis, 1);
 };
 
-// 1c. Define secretion behavior:
+// 1b. Define secretion behavior:
 // One cell is assigned to secrete Kalium artificially at one location
 struct KaliumSecretion {
   template <typename T>
@@ -71,7 +55,7 @@ struct KaliumSecretion {
 // 2. Define compile time parameter
 template <typename Backend>
 struct CompileTimeParam : public DefaultCompileTimeParam<Backend> {
-  using BiologyModules = Variant<GrowthModule, Chemotaxis, KaliumSecretion>;
+  using BiologyModules = Variant<GrowDivide, Chemotaxis, KaliumSecretion>;
   // use default Backend and AtomicTypes
 };
 
@@ -87,7 +71,7 @@ inline int Simulate(int argc, const char** argv) {
     cell.SetAdherence(0.4);
     cell.SetMass(1.0);
     cell.AddBiologyModule(Chemotaxis());
-    cell.AddBiologyModule(GrowthModule());
+    cell.AddBiologyModule(GrowDivide(32, 1500));
     // Let only one cell be responsible for the artificial substance secretion
     if (position[0] == 0 && position[1] == 0 && position[2] == 0) {
       cell.AddBiologyModule(KaliumSecretion());
