@@ -46,7 +46,10 @@ enum Substances { kSubstance_0, kSubstance_1 };
 
 // 1a. Define displacement behavior:
 // Cells move along the diffusion gradient (from low concentration to high)
-struct Chemotaxis {
+struct Chemotaxis : public BaseBiologyModule {
+  // Daughter cells inherit this biology module
+  Chemotaxis() : BaseBiologyModule(gAllBmEvents) {}
+
   template <typename T>
   void Run(T* cell) {
     if (!init_) {
@@ -70,9 +73,6 @@ struct Chemotaxis {
     cell->SetPosition(cell->GetMassLocation());
   }
 
-  //  // Daughter cells inherit this biology module
-  bool IsCopied(Event event) const { return true; }
-
  private:
   bool init_ = false;
   DiffusionGrid* dg_0_ = nullptr;
@@ -83,7 +83,10 @@ struct Chemotaxis {
 };
 
 // 1b. Define secretion behavior:
-struct SubstanceSecretion {
+struct SubstanceSecretion : public BaseBiologyModule {
+  // Daughter cells inherit this biology module
+  SubstanceSecretion() : BaseBiologyModule(gAllBmEvents) {}
+
   template <typename T>
   void Run(T* cell) {
     if (!init_) {
@@ -98,9 +101,6 @@ struct SubstanceSecretion {
       dg_0_->IncreaseConcentrationBy(secretion_position, 1);
     }
   }
-
-  // Daughter cells inherit this biology module
-  bool IsCopied(Event event) const { return true; }
 
  private:
   bool init_ = false;

@@ -4,8 +4,8 @@
 
 namespace bdm {
 
-const char* kConfigFileName = "bdm.toml";
-const char* kConfigContent =
+const char* gConfigFileName = "bdm.toml";
+const char* gConfigContent =
     "[simulation]\n"
     "backup_file = \"backup.root\"\n"
     "restore_file = \"restore.root\"\n"
@@ -92,10 +92,10 @@ void ValidateNonCLIParameter() {
 }
 
 TEST(BiodynamoTest, InitializeBioDynamo) {
-  remove(kConfigFileName);
+  remove(gConfigFileName);
 
-  std::ofstream config_file(kConfigFileName);
-  config_file << kConfigContent;
+  std::ofstream config_file(gConfigFileName);
+  config_file << gConfigContent;
   config_file.close();
 
   const char* argv[1] = {"binary_name"};
@@ -106,14 +106,14 @@ TEST(BiodynamoTest, InitializeBioDynamo) {
   ValidateNonCLIParameter();
 
   Param::Reset();
-  remove(kConfigFileName);
+  remove(gConfigFileName);
 }
 
 TEST(BiodynamoTest, InitializeBioDynamoWithCLIArguments) {
-  remove(kConfigFileName);
+  remove(gConfigFileName);
 
-  std::ofstream config_file(kConfigFileName);
-  config_file << kConfigContent;
+  std::ofstream config_file(gConfigFileName);
+  config_file << gConfigContent;
   config_file.close();
 
   const char* argv[5] = {"binary_name", "-b", "mybackup.root", "-r",
@@ -127,7 +127,7 @@ TEST(BiodynamoTest, InitializeBioDynamoWithCLIArguments) {
   ValidateNonCLIParameter();
 
   Param::Reset();
-  remove(kConfigFileName);
+  remove(gConfigFileName);
 }
 
 }  // namespace bdm

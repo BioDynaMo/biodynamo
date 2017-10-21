@@ -2,6 +2,7 @@
 #define UNIT_BIOLOGY_MODULE_UTIL_TEST_H_
 
 #include "biology_module_util.h"
+#include "cell.h"
 #include "gtest/gtest.h"
 
 namespace bdm {
@@ -19,7 +20,7 @@ struct RunTestBiologyModule {
     gRunMethodCalled = true;
   }
 
-  bool IsCopied(Event event) {
+  bool IsCopied(BmEvent event) {
     EXPECT_TRUE(false) << "This method should not be called from RunVisitor";
     return false;
   }
@@ -43,12 +44,12 @@ struct CopyTestBiologyModule {
     EXPECT_TRUE(false) << "This method should not be called from CopyVisitor";
   }
 
-  bool IsCopied(Event event) const {
+  bool IsCopied(BmEvent event) const {
     EXPECT_EQ(expected_event_, event);
     return is_copied_return_value_;
   }
 
-  Event expected_event_;
+  BmEvent expected_event_;
   bool is_copied_return_value_ = true;
   ClassDefNV(CopyTestBiologyModule, 1);
 };

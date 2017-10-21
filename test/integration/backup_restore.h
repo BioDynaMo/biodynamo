@@ -6,14 +6,15 @@
 
 namespace bdm {
 
-struct TestBehaviour {
+struct TestBehaviour : public BaseBiologyModule {
+  TestBehaviour() : BaseBiologyModule(gAllBmEvents) {}
+
   template <typename T>
   void Run(T* cell) {
     usleep(35000);  // 35 ms -> one iteration will take 350 ms
     cell->SetDiameter(cell->GetDiameter() + 1);
   }
 
-  bool IsCopied(Event event) const { return true; }
   ClassDefNV(TestBehaviour, 1);
 };
 

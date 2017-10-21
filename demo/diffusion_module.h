@@ -18,7 +18,9 @@ enum Substances { kKalium };
 
 // 1a. Define displacement behavior:
 // Cells move along the diffusion gradient (from low concentration to high)
-struct Chemotaxis {
+struct Chemotaxis : public BaseBiologyModule {
+  Chemotaxis() : BaseBiologyModule(gAllBmEvents) {}
+
   template <typename T>
   void Run(T* cell) {
     static auto dg = GetDiffusionGrid(kKalium);
@@ -34,13 +36,14 @@ struct Chemotaxis {
     cell->UpdatePosition(gradient);
   }
 
-  bool IsCopied(Event event) const { return true; }
   ClassDefNV(Chemotaxis, 1);
 };
 
 // 1b. Define secretion behavior:
 // One cell is assigned to secrete Kalium artificially at one location
-struct KaliumSecretion {
+struct KaliumSecretion : public BaseBiologyModule {
+  KaliumSecretion() : BaseBiologyModule() {}
+
   template <typename T>
   void Run(T* cell) {
     static auto dg = GetDiffusionGrid(kKalium);
@@ -48,7 +51,6 @@ struct KaliumSecretion {
     dg->IncreaseConcentrationBy(secretion_position, 4);
   }
 
-  bool IsCopied(Event event) const { return false; }
   ClassDefNV(KaliumSecretion, 1);
 };
 
@@ -71,7 +73,7 @@ inline int Simulate(int argc, const char** argv) {
     cell.SetAdherence(0.4);
     cell.SetMass(1.0);
     cell.AddBiologyModule(Chemotaxis());
-    cell.AddBiologyModule(GrowDivide(32, 1500));
+    cell.AddBiologyModule(GrowDivide(32, 1500, {gAllBmEvents}));
     // Let only one cell be responsible for the artificial substance secretion
     if (position[0] == 0 && position[1] == 0 && position[2] == 0) {
       cell.AddBiologyModule(KaliumSecretion());

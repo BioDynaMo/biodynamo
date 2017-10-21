@@ -13,7 +13,7 @@ namespace biology_module_op_test_internal {
 
 using std::size_t;
 
-struct GrowthModule {
+struct GrowthModule : public BaseBiologyModule {
   double growth_rate_;
 
   GrowthModule() : growth_rate_(0.5) {}
@@ -24,7 +24,6 @@ struct GrowthModule {
     t->SetDiameter(t->GetDiameter() + growth_rate_);
   }
 
-  bool IsCopied(Event event) const { return false; }
   ClassDefNV(GrowthModule, 1);
 };
 

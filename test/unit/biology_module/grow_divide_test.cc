@@ -12,7 +12,7 @@ TEST(GrowDivideTest, Grow) {
   Cell cell;
   cell.SetDiameter(40);
 
-  GrowDivide gd(40, 300);
+  GrowDivide gd(40, 300, {gAllBmEvents});
   gd.Run(&cell);
 
   rm->Get<Cell>()->Commit();
@@ -28,12 +28,12 @@ TEST(GrowDivideTest, Divide) {
   Cell cell;
   cell.SetDiameter(41);
 
-  GrowDivide gd(40, 300);
+  GrowDivide gd(40, 300, {gAllBmEvents});
   gd.Run(&cell);
 
   rm->Get<Cell>()->Commit();
 
-  EXPECT_TRUE(41 > cell.GetDiameter());
+  EXPECT_GT(41, cell.GetDiameter());
   EXPECT_EQ(1u, rm->Get<Cell>()->size());
 }
 

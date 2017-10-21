@@ -8,10 +8,13 @@ namespace bdm {
 
 /// This biology module grows the simulation object until the diameter reaches
 /// the specified threshold and divides the object afterwards.
-struct GrowDivide {
-  GrowDivide() {}
-  GrowDivide(double threshold, double growth_rate)
-      : threshold_(threshold), growth_rate_(growth_rate) {}
+struct GrowDivide : public BaseBiologyModule {
+  GrowDivide() : BaseBiologyModule(gAllBmEvents) {}
+  GrowDivide(double threshold, double growth_rate,
+             std::initializer_list<BmEvent> event_list)
+      : BaseBiologyModule(event_list),
+        threshold_(threshold),
+        growth_rate_(growth_rate) {}
 
   template <typename T>
   void Run(T* cell) {
@@ -21,8 +24,6 @@ struct GrowDivide {
       Divide(*cell);
     }
   }
-
-  bool IsCopied(Event event) const { return true; }
 
  private:
   double threshold_ = 40;

@@ -13,15 +13,15 @@
 namespace bdm {
 namespace cell_test_internal {
 
-struct GrowthModule {
+struct GrowthModule : public BaseBiologyModule {
   double growth_rate_ = 0.5;
+  GrowthModule() : BaseBiologyModule(gCellDivision) {}
 
   template <typename T>
   void Run(T* t) {
     t->SetDiameter(t->GetDiameter() + growth_rate_);
   }
 
-  bool IsCopied(Event event) const { return event == Event::kCellDivision; }
   ClassDefNV(GrowthModule, 1);
 };
 
@@ -38,7 +38,7 @@ struct MovementModule {
     t->SetPosition(Matrix::Add(position, velocity_));
   }
 
-  bool IsCopied(Event event) const { return false; }
+  bool IsCopied(BmEvent event) const { return false; }
   ClassDefNV(MovementModule, 1);
 };
 
