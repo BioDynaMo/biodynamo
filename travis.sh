@@ -115,4 +115,28 @@ if [ "$TRAVIS_OS_NAME" = "linux" ]; then
   sudo snap install core
 
   make snap-package
+
+  # test snap package
+  #   revert image to initial conditions
+  sudo apt-get -y remove openmpi-bin libopenmpi-dev
+  sudo apt-get -y remove freeglut3-dev
+  sudo apt-get -y remove gcc-5 g++-5
+  sudo apt-get -y remove valgrind
+  sudo apt-get -y remove doxygen
+  sudo apt-get -y remove cloc
+  sudo apt-get -y remove libiomp-dev
+  sudo apt-get -y remove clang-3.9 clang-format-3.9 clang-tidy-3.9
+  export CC=""
+  export CXX=""
+  sudo rm /usr/bin/cmake
+  sudo rm -rf /opt/biodynamo
+
+  ../test/integration/test_snap_package.sh
+  TEST_RET_VAL=$?
+  if [ "0" = "${TEST_RET_VAL}" ]; then
+    echo "Upload snap package"
+    # TODO upload
+  else
+    exit ${TEST_RET_VAL}
+  fi
 fi
