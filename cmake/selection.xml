@@ -29,6 +29,8 @@
          -> all selected classes from libbiodynamo-selection.xml -->
     <class name="bdm::RuntimeVariables"/>
     <class name="bdm::NullBiologyModule"/>
+    <class name="bdm::BaseBiologyModule"/>
+    <class name="bdm::GrowDivide"/>
     <class name="bdm::IntegralTypeWrapper<size_t> "/>
     <!-- list of template classes with custom streamers -->
     <class pattern="bdm::Variant*" />
