@@ -1,6 +1,6 @@
 #!/bin/bash
 
-sudo snap install --dangerous --classic snap-package/biodynamo_0.1.0_amd64.snap
+sudo snap install --dangerous --classic build-snap/biodynamo_0.1.0_amd64.snap
 
 rm -rf simulation-templates
 git clone https://github.com/BioDynaMo/simulation-templates.git
