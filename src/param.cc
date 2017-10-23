@@ -24,6 +24,7 @@ std::vector<Param::VisualizeDiffusion> Param::visualize_diffusion_;
 
 // development group
 bool Param::output_op_runtime_ = false;
+bool Param::python_catalyst_pipeline_ = false;
 
 #define BDM_ASSIGN_CONFIG_VALUE(variable, config_key)                      \
   {                                                                        \
@@ -123,6 +124,7 @@ void Param::Reset() {
 
   // development group
   output_op_runtime_ = false;
+  python_catalyst_pipeline_ = false;
 }
 
 }  // namespace bdm

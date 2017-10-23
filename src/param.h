@@ -183,6 +183,14 @@ struct Param {
   ///     output_op_runtime = false
   static bool output_op_runtime_;
 
+  /// Use the python script (simple_pipeline.py) to do Live Visualization with
+  /// ParaView. If false, we use the C++ pipeline
+  /// Defautl value: `false`\n
+  /// TOML config file:
+  ///     [development]
+  ///     python_catalyst_pipeline_ = false
+  static bool python_catalyst_pipeline_;
+
   /// Resets the static variables to its default values
   static void Reset();
 

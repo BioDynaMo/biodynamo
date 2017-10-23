@@ -11,6 +11,7 @@
 // check for ROOTCLING was necessary, due to ambigous reference to namespace
 // detail when using ROOT I/O
 #if defined(USE_CATALYST) && !defined(__ROOTCLING__)
+
 #include <vtkCPDataDescription.h>
 #include <vtkCPInputDataDescription.h>
 #include <vtkCPProcessor.h>
@@ -27,6 +28,8 @@
 #include <vtkUnstructuredGrid.h>
 #include <vtkXMLPImageDataWriter.h>
 #include <vtkXMLPUnstructuredGridWriter.h>
+
+#include "visualization/simple_pipeline.h"
 
 #endif  // defined(USE_CATALYST) && !defined(__ROOTCLING__)
 
@@ -83,8 +86,8 @@ class CatalystAdaptor {
 
     // The names that will appear in ParaView
     // type_array->SetName("Type");
-    position_array->SetName("Cell Positions");
-    diameter_array->SetName("Cell Diameters");
+    position_array->SetName("Positions");
+    diameter_array->SetName("Diameters");
 
     // position has three components (x, y, z)
     position_array->SetNumberOfComponents(3);
@@ -163,9 +166,15 @@ class CatalystAdaptor {
     } else {
       g_processor_->RemoveAllPipelines();
     }
-    vtkNew<vtkCPPythonScriptPipeline> pipeline;
-    pipeline->Initialize(script.c_str());
-    g_processor_->AddPipeline(pipeline.GetPointer());
+
+    if (Param::python_catalyst_pipeline_) {
+      vtkNew<vtkCPPythonScriptPipeline> pipeline;
+      pipeline->Initialize(script.c_str());
+      g_processor_->AddPipeline(pipeline.GetPointer());
+    } else {
+      vtkCPVTKPipeline* pipeline = new vtkCPVTKPipeline();
+      g_processor_->AddPipeline(pipeline);
+    }
   }
 
   /// Cleans up allocated memory

@@ -55,7 +55,7 @@ if ("$ENV{CMAKE_EXPORT_COMPILE_COMMANDS}" STREQUAL "1" OR CLANG_TIDY_FOUND)
   set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 endif()
 
-find_package(ParaView 5.3 QUIET OPTIONAL_COMPONENTS vtkPVPythonCatalyst)
+find_package(ParaView 5.3 QUIET OPTIONAL_COMPONENTS vtkPVPythonCatalyst vtkPVVTKExtensionsDefault vtkPVServerManagerRendering)
 if(${ParaView_FOUND})
   message(STATUS "Found ParaView")
   include("${PARAVIEW_USE_FILE}")
@@ -133,7 +133,7 @@ add_dependencies(bdmclean libbdmclean)
 
 generate_rootlogon()
 if (${ParaView_FOUND})
-  target_link_libraries(biodynamo vtkPVPythonCatalyst vtkIOParallelXML)
+  target_link_libraries(biodynamo vtkPVPythonCatalyst vtkIOParallelXML vtkPVVTKExtensionsDefault vtkPVServerManagerRendering)
 endif()
 
 # create cmake files used by external builds

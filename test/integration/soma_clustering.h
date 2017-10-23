@@ -272,6 +272,7 @@ inline int Simulate(int argc, const char** argv) {
 
   // 4. Run simulation for N timesteps
   Param::export_visualization_ = true;
+  Param::live_visualization_ = true;
   Param::visualization_export_interval_ = 1000;
   Scheduler<> scheduler;
 
