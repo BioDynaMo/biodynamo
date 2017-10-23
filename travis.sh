@@ -131,6 +131,9 @@ if [ "$TRAVIS_OS_NAME" = "linux" ]; then
   sudo rm /usr/bin/cmake
   sudo rm -rf /opt/biodynamo
 
+  printenv
+  export PATH=/snap/bin:$PATH
+
   ../test/integration/test_snap_package.sh
   TEST_RET_VAL=$?
   if [ "0" = "${TEST_RET_VAL}" ]; then
