@@ -22,7 +22,7 @@ if [ "$TRAVIS_OS_NAME" = "osx" ]; then
   export LDFLAGS=-L$LLVMDIR/lib
   export DYLD_LIBRARY_PATH=$LLVMDIR/lib:$DYLD_LIBRARY_PATH
   # get latest cmake
-  brew install cmake
+  brew update cmake
   export PATH=$LLVMDIR/bin:$PATH:
 fi
 
