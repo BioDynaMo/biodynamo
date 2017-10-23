@@ -1,5 +1,7 @@
 import os
+import getpass
 import re
+import requests
 import subprocess as sp
 import sys
 
@@ -73,13 +75,17 @@ def CreateNewGithubRepository(sim_name):
     gh_user = input("Username for 'https://github.com': ")
     repo_url = "https://github.com/" + gh_user + "/" + sim_name + ".git"
     try:
-        # url     = 'https://api.github.com/user/repos'
-        # payload = { 'name' : sim_name, 'description': 'Simulation powered by BioDynaMo' }
-        # requests.post(url, auth=('user', 'pass'), data=payload)
-        out = sp.check_output(["curl", "-u", "'" + gh_user + "'", "https://api.github.com/user/repos", "-d", "'{\"name\":\"" + sim_name + "\", \"description\": \"Simulation powered by BioDynaMo\"}'"])
-        print(out)
+        gh_pass = getpass.getpass("Password for 'https://" + gh_user + "@github.com':")
+        url     = 'https://api.github.com/user/repos'
+        r = requests.post(url, auth=(gh_user, gh_pass), data='{"name":"' + sim_name + '", "description": "Simulation powered by BioDynaMo"}')
+        gh_pass = "123456789abcdefgh"
+        if r.status_code != 201:
+            print("Github repository creation failed.")
+            print(r.status_code)
+            print(r.text)
+            sys.exit(1)
     except sp.CalledProcessError as err:
-        print("Github repository creation of failed.")
+        print("Github repository creation failed.")
         print(err)
         sys.exit(1)
 

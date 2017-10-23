@@ -3,7 +3,7 @@
 # from optparse import OptionParser
 import argparse
 # import new_command
-from new_command import New
+from new_command import NewCommand
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='biodynamo')
