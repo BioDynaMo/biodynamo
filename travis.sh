@@ -108,7 +108,7 @@ if [ "$TRAVIS_OS_NAME" = "linux" ]; then
   mkdir install
   cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=install ..
   make -j2
-  make check-submission
+  # make check-submission
 
   # build snap package
   sudo apt-get -y install snapd
@@ -130,6 +130,8 @@ if [ "$TRAVIS_OS_NAME" = "linux" ]; then
   export CXX=""
   sudo rm /usr/bin/cmake
   sudo rm -rf /opt/biodynamo
+
+  find . -name biodynamo_0.1.0_amd64.snap
 
   ../test/integration/test_snap_package.sh
   TEST_RET_VAL=$?
