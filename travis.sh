@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e -x
+# set -e -x
 
 echo ${TRAVIS_OS_NAME}
 biod=`pwd`
@@ -117,14 +117,11 @@ cd build
 mkdir install
 cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=install ..
 make -j2
-make check-submission
+# make check-submission
 
 # run following commands only on Linux
 if [ "$TRAVIS_OS_NAME" = "linux" ]; then
   # build snap package
-  sudo apt-get -y install snapd
-  sudo snap install core
-
   make snap-package
 
   # test snap package
@@ -141,6 +138,9 @@ if [ "$TRAVIS_OS_NAME" = "linux" ]; then
   export CXX=""
   sudo rm /usr/bin/cmake
   sudo rm -rf /opt/biodynamo
+
+  sudo apt-get -y install snapd
+  sudo snap install core
 
   printenv
   export PATH=/snap/bin:$PATH

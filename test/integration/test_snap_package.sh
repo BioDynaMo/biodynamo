@@ -2,6 +2,15 @@
 
 sudo snap install --dangerous --classic build-snap/biodynamo_0.1.0_amd64.snap
 
+ldd /snap/bin/biodynamo.cmake
+ls -al /snap/biodynamo/current/usr/lib/x86_64-linux-gnu/
+
+echo "ldd"
+ldd /snap/biodynamo/current/usr/bin/cmake
+
+echo "biodynamo.run ldd..."
+biodynamo.run "ldd /snap/biodynamo/current/usr/bin/cmake"
+
 rm -rf simulation-templates
 git clone https://github.com/BioDynaMo/simulation-templates.git
 cd simulation-templates

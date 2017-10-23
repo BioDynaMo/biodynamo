@@ -2,6 +2,9 @@
 
 BRANCH=$1
 
+sudo apt-get update
+sudo apt-get install docker
+
 cd /root
 git clone https://github.com/BioDynaMo/biodynamo
 export TRAVIS_OS_NAME="linux"

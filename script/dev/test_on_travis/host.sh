@@ -17,8 +17,8 @@ BRANCH=$1
 # enables GUI apps
 xhost +local:root
 
-sudo docker stop travis-14
-sudo docker rm travis-14
+# sudo docker stop travis-14
+# sudo docker rm travis-14
 
 sudo docker run --name travis-14 --net=host --env="DISPLAY" -dit travisci/ci-garnet:packer-1496954857 /sbin/init
 
