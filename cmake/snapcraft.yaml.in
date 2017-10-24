@@ -68,7 +68,7 @@ environment:
   PYTHONPATH: /snap/biodynamo/current/dependencies/paraview/lib/paraview-5.4/site-packages:/snap/biodynamo/current/dependencies/paraview/lib/paraview-5.4/site-packages/vtk
   QT_QPA_PLATFORM_PLUGIN_PATH: /snap/biodynamo/current/dependencies/qt/plugins
   # General
-  LD_LIBRARY_PATH: /snap/biodynamo/current/dependencies/root/lib:/snap/biodynamo/current/dependencies/qt/lib:/snap/biodynamo/current/usr/lib/openmpi/lib:/snap/biodynamo/current/dependencies/paraview/lib/paraview-5.4
+  LD_LIBRARY_PATH:    /snap/core/current/lib:/snap/core/current/lib64:/snap/core/current/usr/lib:/snap/core/current/lib/x86_64-linux-gnu:/snap/core/current/usr/lib/x86_64-linux-gnu:/snap/biodynamo/current/lib:/snap/biodynamo/current/usr/lib:/snap/biodynamo/current/lib/x86_64-linux-gnu:/snap/biodynamo/current/usr/lib/x86_64-linux-gnu:/snap/biodynamo/current/dependencies/root/lib:/snap/biodynamo/current/dependencies/qt/lib:/snap/biodynamo/current/usr/lib/openmpi/lib:/snap/biodynamo/current/dependencies/paraview/lib/paraview-5.4:$LD_LIBRARY_PATH
   PATH: /snap/biodynamo/current/dependencies/root/bin:/snap/biodynamo/current/dependencies/paraview/bin:$PATH
   CC: /snap/biodynamo/current/usr/bin/gcc-5
   CXX: /snap/biodynamo/current/usr/bin/g++-5
