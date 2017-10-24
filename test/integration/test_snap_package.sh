@@ -32,15 +32,7 @@ echo 'gdb -q $1 core -x ~/backtrace' >> segfault_wrapper.sh
 echo '' >> segfault_wrapper.sh
 chmod +x segfault_wrapper.sh
 
-echo ""
-./segfault_wrapper.sh biodynamo.run "ldd /snap/biodynamo/current/usr/bin/cmake"
-echo ""
 ./segfault_wrapper.sh biodynamo.cmake ..
-echo ""
-./segfault_wrapper.sh biodynamo.make -j4
-echo ""
-./segfault_wrapper.sh biodynamo.run ./my-simulation
-echo ""
 
 # create file with expected output
 echo "Warning in <InitializeBioDynamo>: Config file bdm.toml not found." > expected
