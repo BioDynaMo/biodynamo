@@ -19,6 +19,29 @@ biodynamo.cmake ..
 biodynamo.make -j4
 biodynamo.run ./my-simulation >actual 2>&1
 
+# debug segfault
+echo "backtrace" > ~/backtrace
+echo "quit" >> ~/backtrace
+echo "" >> ~/backtrace
+
+sudo apt-get install gdb
+echo '#!/bin/bash' > segfault_wrapper.sh
+echo 'ulimit -c unlimited' >> segfault_wrapper.sh
+echo '"$@"' >> segfault_wrapper.sh
+echo 'gdb -q $1 core -x ~/backtrace' >> segfault_wrapper.sh
+echo '' >> segfault_wrapper.sh
+chmod +x segfault_wrapper.sh
+
+echo ""
+./segfault_wrapper.sh biodynamo.run "ldd /snap/biodynamo/current/usr/bin/cmake"
+echo ""
+./segfault_wrapper.sh biodynamo.cmake ..
+echo ""
+./segfault_wrapper.sh biodynamo.make -j4
+echo ""
+./segfault_wrapper.sh biodynamo.run ./my-simulation
+echo ""
+
 # create file with expected output
 echo "Warning in <InitializeBioDynamo>: Config file bdm.toml not found." > expected
 echo "Warning: No backup file name given. No backups will be made!" >> expected
