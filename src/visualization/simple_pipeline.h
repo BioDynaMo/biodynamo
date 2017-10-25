@@ -46,7 +46,7 @@ class vtkCPVTKPipeline : public vtkCPPipeline {
 
   void Initialize() {}
 
-  int RequestDataDescription(vtkCPDataDescription* data_description) {
+  int RequestDataDescription(vtkCPDataDescription* data_description) override {
     if (!data_description) {
       vtkWarningMacro(
           "The data description is empty. There is nothing to visualize!");
@@ -177,7 +177,15 @@ class vtkCPVTKPipeline : public vtkCPPipeline {
       insitu_link_ = vtkSmartPointer<vtkLiveInsituLink>::New();
       insitu_link_->SetHostname("localhost");
       insitu_link_->SetInsituPort(22222);
-      insitu_link_->Initialize(session_manager_);
+      insitu_link_->Initialize(
+          vtkSMProxyManager::GetProxyManager()->GetActiveSessionProxyManager());
+    }
+
+    // If there is not link with the ParaView client, then do not go trough the
+    // process of updating sources / filters
+    if (!insitu_link_->Initialize(vtkSMProxyManager::GetProxyManager()
+                                      ->GetActiveSessionProxyManager())) {
+      return;
     }
 
     // Get the time information from the data
@@ -209,7 +217,7 @@ class vtkCPVTKPipeline : public vtkCPPipeline {
     }
   }
 
-  int CoProcess(vtkCPDataDescription* data_description) {
+  int CoProcess(vtkCPDataDescription* data_description) override {
     if (!data_description) {
       vtkWarningMacro(
           "The data description is empty. There is nothing to visualize!");
