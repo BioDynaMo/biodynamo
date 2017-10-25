@@ -9,14 +9,17 @@ if(UNIX AND NOT APPLE)
   set(LINUX TRUE)
 endif()
 
-if(LINUX)
-  set(BDM_CMAKE_DIR "/snap/biodynamo/current/biodynamo/share/cmake")
-  # escaped quotes are mandatory
-  add_definitions(-DBDM_SRC_DIR=\"/snap/biodynamo/current/biodynamo/include\")
+if(DEFINED ENV{BDM_CMAKE_DIR})
+    set(BDM_CMAKE_DIR $ENV{BDM_CMAKE_DIR})
+    add_definitions(-DBDM_SRC_DIR=\"$ENV{BDM_SRC_DIR}\")
+elseif(LINUX)
+    set(BDM_CMAKE_DIR "/snap/biodynamo/current/biodynamo/share/cmake")
+    # escaped quotes are mandatory
+    add_definitions(-DBDM_SRC_DIR=\"/snap/biodynamo/current/biodynamo/include\")
 elseif(APPLE)
-  set(BDM_CMAKE_DIR "/usr/local/share/biodynamo/cmake")
-  # escaped quotes are mandatory
-  add_definitions(-DBDM_SRC_DIR=\"/usr/local/include/biodynamo\")
+    set(BDM_CMAKE_DIR "/usr/local/share/biodynamo/cmake")
+    # escaped quotes are mandatory
+    add_definitions(-DBDM_SRC_DIR=\"/usr/local/include/biodynamo\")
 endif()
 
 # -------------------- find packages ------------------------------------------
@@ -64,10 +67,14 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${BDM_CMAKE_DIR}")
 include("${BDM_CMAKE_DIR}/BioDynaMo.cmake")
 include(${ROOT_USE_FILE})
 
-set(BDM_REQUIRED_LIBRARIES biodynamo ${ROOT_LIBRARIES} vtkPVPythonCatalyst vtkIOParallelXML)
+set(BDM_REQUIRED_LIBRARIES biodynamo ${ROOT_LIBRARIES} vtkPVPythonCatalyst 
+    vtkIOParallelXML vtkPVVTKExtensionsDefault vtkPVServerManagerRendering)
 
 # packaged install
-if(LINUX)
+if(DEFINED ENV{BDM_CMAKE_DIR})
+  include_directories("$ENV{BDM_CMAKE_DIR}/../../include")
+  link_directories("$ENV{BDM_CMAKE_DIR}/../../lib")
+elseif(LINUX)
   include_directories("/snap/biodynamo/current/biodynamo/include")
   link_directories("/snap/biodynamo/current/biodynamo/lib")
 elseif(APPLE)

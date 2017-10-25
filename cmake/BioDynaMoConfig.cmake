@@ -21,7 +21,7 @@ find_file(BDM_USE_FILE
           UseBioDynaMo.cmake
           PATHS "/snap/biodynamo/current/biodynamo/share/cmake"   # LINUX
                 "/usr/local/share/biodynamo/cmake"                # APPLE
-                "BDM_CMAKE_DIR")
+                "$ENV{BDM_CMAKE_DIR}")
 
 if(NOT BDM_USE_FILE AND BioDynaMo_FIND_REQUIRED)
   message(FATAL_ERROR "BioDynaMo not found! Try to set BDM_CMAKE_DIR environment variable \

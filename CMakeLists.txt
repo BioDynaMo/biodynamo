@@ -55,7 +55,8 @@ if ("$ENV{CMAKE_EXPORT_COMPILE_COMMANDS}" STREQUAL "1" OR CLANG_TIDY_FOUND)
   set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 endif()
 
-find_package(ParaView 5.3 QUIET OPTIONAL_COMPONENTS vtkPVPythonCatalyst vtkPVVTKExtensionsDefault vtkPVServerManagerRendering)
+find_package(ParaView 5.3 QUIET OPTIONAL_COMPONENTS vtkPVPythonCatalyst
+  vtkPVVTKExtensionsDefault vtkPVServerManagerRendering)
 if(${ParaView_FOUND})
   message(STATUS "Found ParaView")
   include("${PARAVIEW_USE_FILE}")
@@ -133,7 +134,8 @@ add_dependencies(bdmclean libbdmclean)
 
 generate_rootlogon()
 if (${ParaView_FOUND})
-  target_link_libraries(biodynamo vtkPVPythonCatalyst vtkIOParallelXML vtkPVVTKExtensionsDefault vtkPVServerManagerRendering)
+  target_link_libraries(biodynamo vtkPVPythonCatalyst vtkIOParallelXML 
+    vtkPVVTKExtensionsDefault vtkPVServerManagerRendering)
 endif()
 
 # create cmake files used by external builds
@@ -179,13 +181,15 @@ if (test)
                       HEADERS test/integration/backup_restore.h
                       LIBRARIES biodynamo)
     add_dependencies(check backup-restore)
-    add_test(NAME "integration-backup-restore" COMMAND ${CMAKE_SOURCE_DIR}/test/integration/backup_restore.sh)
+    add_test(NAME "integration-backup-restore"
+             COMMAND ${CMAKE_SOURCE_DIR}/test/integration/backup_restore.sh)
     bdm_add_executable(soma_clustering
                       SOURCES test/integration/soma_clustering.cc
                       HEADERS test/integration/soma_clustering.h
                       LIBRARIES biodynamo)
     add_dependencies(check soma_clustering)
-    add_test(NAME "integration-soma-clustering" COMMAND ${CMAKE_SOURCE_DIR}/build/soma_clustering)
+    add_test(NAME "integration-soma-clustering"
+             COMMAND ${CMAKE_SOURCE_DIR}/build/soma_clustering)
   endif()
 endif()
 
