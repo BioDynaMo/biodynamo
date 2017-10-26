@@ -125,7 +125,7 @@ struct Param {
   /// are required to visualize it. (e.g. Cell: `position_` and `diameter_`).\n
   /// With this parameter it is also possible to extend the number of data
   /// members that are sent to the visualization engine.
-  /// Default value: emtpy (no simulation object will be visualized)\n
+  /// Default value: empty (no simulation object will be visualized)\n
   /// TOML config file:
   ///
   ///     [visualization]
@@ -151,7 +151,7 @@ struct Param {
 
   /// Spefifies if for which substances extracellular diffusion should be
   /// visualized.\n
-  /// Default value: emtpy (no diffusion will be visualized)\n
+  /// Default value: empty (no diffusion will be visualized)\n
   /// TOML config file:
   ///
   ///     [visualization]

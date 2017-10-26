@@ -195,6 +195,12 @@ using std::is_same;
     return ret_value;                                                          \
   }                                                                            \
                                                                                \
+  /** Returns the Scalar name of the container minus the "Ext"     */          \
+  static const std::string GetScalarTypeName() {                               \
+    static std::string kScalarType = #class_name;                              \
+    return kScalarType.substr(0, kScalarType.size() - 3);                      \
+  }                                                                            \
+                                                                               \
   /** Constructor to create SOA reference object */                            \
   template <typename T>                                                        \
   class_name(T* other, size_t idx)                                             \

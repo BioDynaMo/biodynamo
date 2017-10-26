@@ -3,6 +3,7 @@
 
 #include <TError.h>
 #include <string>
+#include <type_traits>
 #include <vector>
 
 #include "param.h"
@@ -64,6 +65,54 @@ class CatalystAdaptor {
     vtk_dgrids_[idx]->SetSpacing(box_length, box_length, box_length);
   }
 
+  struct AddCellAttributeData {
+    AddCellAttributeData(size_t ti, size_t nc, std::vector<vtkUnstructuredGrid*>* vd) : 
+      type_idx(ti),
+      num_cells(nc),
+      vtk_data(vd)
+      {}
+
+    void operator()(std::vector<double>* dm, const std::string& name) {
+      vtkNew<vtkDoubleArray> vtk_array;
+      vtk_array->SetName(name.c_str());
+      auto ptr = dm->data();
+      vtk_array->SetArray(ptr, static_cast<vtkIdType>(num_cells), 1);
+      (*vtk_data)[type_idx]->GetPointData()->AddArray(vtk_array.GetPointer());
+    }
+
+    void operator()(std::vector<int>* dm, const std::string& name) {
+      vtkNew<vtkIntArray> vtk_array;
+      vtk_array->SetName(name.c_str());
+      auto ptr = dm->data();
+      vtk_array->SetArray(ptr, static_cast<vtkIdType>(num_cells), 1);
+      (*vtk_data)[type_idx]->GetPointData()->AddArray(vtk_array.GetPointer());
+    }
+
+    void operator()(std::vector<std::array<double, 3>>* dm, const std::string& name) {
+      vtkNew<vtkDoubleArray> vtk_array;
+      vtk_array->SetName(name.c_str());
+      auto ptr = dm->data()->data();
+      vtk_array->SetArray(ptr, static_cast<vtkIdType>(3 * num_cells), 1);
+      (*vtk_data)[type_idx]->GetPointData()->AddArray(vtk_array.GetPointer());
+    }
+
+    void operator()(std::vector<std::array<int, 3>>* dm, const std::string& name) {
+      vtkNew<vtkIntArray> vtk_array;
+      vtk_array->SetName(name.c_str());
+      auto ptr = dm->data()->data();
+      vtk_array->SetArray(ptr, static_cast<vtkIdType>(3 * num_cells), 1);
+      (*vtk_data)[type_idx]->GetPointData()->AddArray(vtk_array.GetPointer());
+    }
+
+    void operator()(...) {
+      Fatal("AddCellAttributeData", "This data member is not supported for visualization");
+    }
+
+    size_t type_idx;
+    size_t num_cells;
+    std::vector<vtkUnstructuredGrid*>* vtk_data;
+  };
+
   /// Builds the VTK grid structure for given simulation object container
   ///
   /// @param      sim_objects  The simulation objects
@@ -77,39 +126,24 @@ class CatalystAdaptor {
       so_is_initialized_[type_idx] = true;
     }
 
-    // Build
+    auto num_cells = sim_objects->size();
+    auto& scalar_name = TContainer::GetScalarTypeName();
+    auto& scalar_list = Param::visualize_sim_objects_[scalar_name];
+
+    if (!scalar_list.empty()) {
+      sim_objects->ForEachDataMemberIn(scalar_list, AddCellAttributeData(type_idx, num_cells, &vtk_so_grids_));
+    }
+
     vtkNew<vtkDoubleArray> position_array;
-    vtkNew<vtkDoubleArray> diameter_array;
-
-    // TODO(ahmad): cannot compile targets that do not have this member defined
-    // vtkNew<vtkIntArray> type_array;
-
-    // The names that will appear in ParaView
-    // type_array->SetName("Type");
     position_array->SetName("Positions");
-    diameter_array->SetName("Diameters");
-
-    // position has three components (x, y, z)
     position_array->SetNumberOfComponents(3);
-
-    // Point the VTK objects to our simulation data
-    // type_array->SetArray(sim_objects->GetCellTypePtr(),
-    // static_cast<vtkIdType>(sim_objects->size()), 1);
     position_array->SetArray(sim_objects->GetPositionPtr(),
-                             static_cast<vtkIdType>(sim_objects->size() * 3),
-                             1);
-    diameter_array->SetArray(sim_objects->GetDiameterPtr(),
-                             static_cast<vtkIdType>(sim_objects->size()), 1);
+                             static_cast<vtkIdType>(num_cells * 3), 1);
 
     // The positions of the cells need to be vtkPoints
     vtkNew<vtkPoints> points;
     points->SetData(position_array.GetPointer());
     vtk_so_grids_[type_idx]->SetPoints(points.GetPointer());
-
-    // Add attribute data to cells (i.e. cell properties)
-    vtk_so_grids_[type_idx]->GetPointData()->AddArray(
-        diameter_array.GetPointer());
-    // vtk_so_grids_[type_idx]->GetPointData()->AddArray(type_array.GetPointer());
   }
 
   /// Builds the VTK grid structure for given diffusion grid
@@ -117,37 +151,35 @@ class CatalystAdaptor {
   /// @param      dg    The diffusion grid
   /// @param[in]  idx   The index
   ///
-  void BuildDiffusionGridVTKStructures(DiffusionGrid* dg, uint16_t idx) {
+  void BuildDiffusionGridVTKStructures(DiffusionGrid* dg, uint16_t idx, const Param::VisualizeDiffusion& vd) {
     if (dg_is_initialized_[idx] == false) {
       vtk_dgrids_.push_back(vtkImageData::New());
       dg_is_initialized_[idx] = true;
     }
 
-    // vtkNew<vtkDoubleArray> gradient_array;
-    vtkNew<vtkDoubleArray> concentration_array;
-
-    // gradient_array->SetName("Diffusion Gradient");
-    concentration_array->SetName("Substance Concentration");
-
-    // Gradient has three components (x, y, z)
-    // gradient_array->SetNumberOfComponents(3);
-
-    // auto gr_ptr = dg->GetAllGradients();
-    auto co_ptr = dg->GetAllConcentrations();
-
     // Create the diffusion grid
     ConstructDiffusionGrid(dg, idx);
-
     auto total_boxes = dg->GetNumBoxes();
-    // gradient_array->SetArray(gr_ptr, static_cast<vtkIdType>(total_boxes * 3),
-    // 1);
-    concentration_array->SetArray(co_ptr, static_cast<vtkIdType>(total_boxes),
-                                  1);
 
-    // Add attribute data to diffusion grid
-    // vtk_dgrids_[idx]->GetPointData()->AddArray(gradient_array.GetPointer());
-    vtk_dgrids_[idx]->GetPointData()->AddArray(
-        concentration_array.GetPointer());
+    // Add attribute data
+    if (vd.concentration_) {
+      vtkNew<vtkDoubleArray> concentration_array;
+      concentration_array->SetName("Substance Concentration");
+      auto co_ptr = dg->GetAllConcentrations();
+      concentration_array->SetArray(co_ptr, static_cast<vtkIdType>(total_boxes),
+                                    1);
+      vtk_dgrids_[idx]->GetPointData()->AddArray(
+          concentration_array.GetPointer());
+    }
+    if (vd.gradient_) {
+      vtkNew<vtkDoubleArray> gradient_array;
+      gradient_array->SetName("Diffusion Gradient");
+      gradient_array->SetNumberOfComponents(3);
+      auto gr_ptr = dg->GetAllGradients();
+      gradient_array->SetArray(gr_ptr, static_cast<vtkIdType>(total_boxes * 3),
+                               1);
+      vtk_dgrids_[idx]->GetPointData()->AddArray(gradient_array.GetPointer());
+    }
   }
 
   /// Initializes Catalyst with the predefined pipeline and allocates memory
@@ -233,35 +265,43 @@ class CatalystAdaptor {
   ///
   void CreateVtkObjects(
       vtkNew<vtkCPDataDescription>& data_description) {  // NOLINT
-    // Add all simulation object containers to the visualization
+    // Add simulation objects to the visualization if requested
     auto rm = TResourceManager::Get();
     rm->ApplyOnAllTypes([&, this](auto* sim_objects, uint16_t type_idx) {
-      // TODO(ahmad): Generate unique name for each container
-      data_description->AddInput("cells_data");
+      auto so_name = std::decay<decltype(*sim_objects)>::type::GetScalarTypeName().c_str();      
+
+      data_description->AddInput(so_name);
 
       // If we segfault at here it probably means that the pipeline was not
       // initialized (with a python script)
-      if (g_processor_->RequestDataDescription(data_description.GetPointer()) !=
+      if ((g_processor_->RequestDataDescription(data_description.GetPointer())) !=
           0) {
         this->BuildCellsVTKStructures(sim_objects, type_idx);
-        data_description->GetInputDescriptionByName("cells_data")
+        data_description->GetInputDescriptionByName(so_name)
             ->SetGrid(vtk_so_grids_[type_idx]);
       }
     });
 
-    // Add all diffusion grids to the visualization
-    auto& dgs = rm->GetDiffusionGrids();
-    uint16_t idx = 0;
-    for (auto dg : dgs) {
-      data_description->AddInput(dg->GetSubstanceName().c_str());
-      if (g_processor_->RequestDataDescription(data_description.GetPointer()) !=
-          0) {
-        this->BuildDiffusionGridVTKStructures(dg, idx);
-        data_description
-            ->GetInputDescriptionByName(dg->GetSubstanceName().c_str())
-            ->SetGrid(vtk_dgrids_[idx]);
+    // Add all diffusion grids to the visualization if requested
+    if (!Param::visualize_diffusion_.empty()) {
+      for (auto& vd : Param::visualize_diffusion_) {
+        auto dg = rm->GetDiffusionGrid(vd.name_);
+        if (dg == nullptr) {
+          std::string msg = "The substance with the name " + vd.name_ + " was not found in the list of defined substances. Did you spell the name correctly during configuration?";
+          Warning("Visualize Diffusion", "%s", msg.c_str());
+          continue;
+        }
+        uint16_t idx = 0;
+        data_description->AddInput(dg->GetSubstanceName().c_str());
+        if (g_processor_->RequestDataDescription(data_description.GetPointer()) !=
+            0) {
+          this->BuildDiffusionGridVTKStructures(dg, idx, vd);
+          data_description
+              ->GetInputDescriptionByName(dg->GetSubstanceName().c_str())
+              ->SetGrid(vtk_dgrids_[idx]);
+        }
+        idx++;
       }
-      idx++;
     }
   }
 

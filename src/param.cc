@@ -56,47 +56,51 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
   //   visualize_sim_objects_
   auto visualize_sim_objects_tarr =
       config->get_table_array("visualize_sim_object");
-  for (const auto& table : *visualize_sim_objects_tarr) {
-    auto name = table->get_as<std::string>("name");
-    if (!name) {
-      Warning("AssignFromConfig",
-              "Missing name for attribute visualize_sim_object");
-      continue;
-    }
-    auto dm_option =
-        table->get_array_of<std::string>("additional_data_members");
+  if(visualize_sim_objects_tarr) {
+    for (const auto& table : *visualize_sim_objects_tarr) {
+      auto name = table->get_as<std::string>("name");
+      if (!name) {
+        Warning("AssignFromConfig",
+                "Missing name for attribute visualize_sim_object");
+        continue;
+      }
+      auto dm_option =
+          table->get_array_of<std::string>("additional_data_members");
 
-    std::set<std::string> data_members;
-    for (const auto& val : *dm_option) {
-      data_members.insert(val);
+      std::set<std::string> data_members;
+      for (const auto& val : *dm_option) {
+        data_members.insert(val);
+      }
+      visualize_sim_objects_[*name] = data_members;
     }
-    visualize_sim_objects_[*name] = data_members;
   }
 
   //   visualize_diffusion_
   auto visualize_diffusion_tarr =
       config->get_table_array("visualize_diffusion");
-  for (const auto& table : *visualize_diffusion_tarr) {
-    auto name = table->get_as<std::string>("name");
-    if (!name) {
-      Warning("AssignFromConfig",
-              "Missing name for attribute visualize_diffusion");
-      continue;
-    }
+  if(visualize_diffusion_tarr) {
+    for (const auto& table : *visualize_diffusion_tarr) {
+      auto name = table->get_as<std::string>("name");
+      if (!name) {
+        Warning("AssignFromConfig",
+                "Missing name for attribute visualize_diffusion");
+        continue;
+      }
 
-    VisualizeDiffusion vd;
-    vd.name_ = *name;
+      VisualizeDiffusion vd;
+      vd.name_ = *name;
 
-    auto concentration = table->get_as<bool>("concentration");
-    if (concentration) {
-      vd.concentration_ = *concentration;
-    }
-    auto gradient = table->get_as<bool>("gradient");
-    if (gradient) {
-      vd.gradient_ = *gradient;
-    }
+      auto concentration = table->get_as<bool>("concentration");
+      if (concentration) {
+        vd.concentration_ = *concentration;
+      }
+      auto gradient = table->get_as<bool>("gradient");
+      if (gradient) {
+        vd.gradient_ = *gradient;
+      }
 
-    visualize_diffusion_.push_back(vd);
+      visualize_diffusion_.push_back(vd);
+    }
   }
 
   // development group
