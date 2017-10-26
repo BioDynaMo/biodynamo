@@ -3,7 +3,7 @@
 BRANCH=$1
 
 sudo apt-get update
-sudo apt-get install docker
+sudo apt-get install -y docker
 
 cd /root
 git clone https://github.com/BioDynaMo/biodynamo
