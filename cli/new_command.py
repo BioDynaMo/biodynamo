@@ -124,5 +124,5 @@ def NewCommand(sim_name):
     CreateNewGithubRepository(sim_name)
 
     Print.success(sim_name + " has been created successfully!")
-    print('Stepping into the directory "%s"' % (sim_name))
-    sp.check_output(["cd", sim_name])
+    print('To compile and run this simulation, change the directory by calling '
+            '"cd %s"' % (sim_name))

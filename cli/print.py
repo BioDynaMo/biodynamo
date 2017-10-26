@@ -19,5 +19,9 @@ class Print:
         print(Print.RED + str(message) + Print.END)
 
     @staticmethod
+    def warning(message):
+        print(Print.YELLOW + str(message) + Print.END)
+
+    @staticmethod
     def new_step(message):
         print('\n' + Print.BOLD + Print.BLUE + str(message) + Print.END)

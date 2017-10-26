@@ -1,8 +1,8 @@
 import os, platform, time, sys
 import subprocess as sp
-
+from print import Print
 from build_command import BuildCommand
-from run_command import RunWithDebugInfoCommand
+from run_command import RunCommand
 
 def query_yes_no(question, default="yes"):
     """Ask a yes/no question via input() and return their answer.
@@ -39,22 +39,23 @@ def query_yes_no(question, default="yes"):
 def UncommittedFiles():
     staged_files, unstaged_files = 0, 0
     untracked_files = ""
+    Print.new_step("Check for uncommited files")
 
     try:
-        staged_files = sp.check_output(["git", "diff", "--cached", "--quiet"])
+        sp.check_output(["git", "diff", "--cached", "--quiet"])
     except sp.CalledProcessError as err:
         staged_files = err.returncode
 
     try:
-        unstaged_files = sp.check_output(["git", "diff", "--quiet"])
+        sp.check_output(["git", "diff", "--quiet"])
     except sp.CalledProcessError as err:
         unstaged_files = err.returncode
 
     if not staged_files or not unstaged_files:
         try:
-            untracked_files = sp.check_output(["git", "ls-files", "--exclude-standard", "--others"])
+            untracked_files = sp.check_output(["git", "ls-files", "--exclude-standard", "--others"]).decode('ascii')
         except sp.CalledProcessError as err:
-            print("Could not perform check on untracked files. Continuing anyway...")
+            Print.warning("Could not perform check on untracked files. Continuing anyway...")
             pass
 
     if staged_files or unstaged_files:
@@ -65,7 +66,7 @@ def UncommittedFiles():
 
 
         print("")
-        print("Rerun biodynamo assistance once you have resolved these issues")
+        Print.warning("Rerun biodynamo assistance once you have resolved these issues")
 
         return 1
 
@@ -82,6 +83,8 @@ def CopyRootDictionaries():
 
 
 def GenerateSystemInfoLog():
+    Print.new_step("Generate system info log")
+
     try:
         sfile = open('debug/system_info.log', 'w+')
     except sp.CalledProcessError as err:
@@ -120,11 +123,12 @@ def GenerateSystemInfoLog():
 
 # Creates a folder "debug" with debug files
 def GenerateDebugOutput(sim_name):
+    Print.new_step("Generate debug output")
     # generates cmake_output.log and / or make_output.log (depends if cmake
     # ran sucessfully or not)
     if BuildCommand(debug=True):
         # generates runtime_output.log
-        RunWithDebugInfoCommand(sim_name)
+        RunCommand(debug=True)
         # generates root dictionary log(s)
         CopyRootDictionaries()
     # generates system_info.log
@@ -132,15 +136,17 @@ def GenerateDebugOutput(sim_name):
 
 
 def CreateDebugBranch(sim_name):
+    Print.new_step("Create debug branch")
+
     original_branch = sp.check_output(
-    ["git", "rev-parse", "--abbrev-ref", "HEAD"]).decode('ascii').split("\n")[0]
+        ["git", "rev-parse", "--abbrev-ref", "HEAD"]).decode('ascii').split("\n")[0]
     branch_name = "bdm-assist-" + time.strftime("%Y%m%d")
     sp.check_output(["git", "checkout", "-b", branch_name])
     sp.check_output(["git", "add", "debug"])
     sp.check_output(["git", "commit", "-m", '"Add debug information"'])
     sp.check_output(["git", "push", "origin", branch_name])
     remote_url = sp.check_output(
-    ["git", "remote", "get-url", "origin"]).decode('ascii').split("\n")[0]
+        ["git", "remote", "get-url", "origin"]).decode('ascii').split("\n")[0]
     branch_url = remote_url[:-4] + "/tree/" + branch_name
 
     print("An assistance branch has been created, called '%s'" % (branch_name))
@@ -158,8 +164,6 @@ def AssistCommand():
     if UncommittedFiles():
         return
 
-    print("Generating debug information...")
     GenerateDebugOutput(sim_name)
 
-    print("Creating debug branch...")
     CreateDebugBranch(sim_name)
