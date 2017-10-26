@@ -66,11 +66,9 @@ class CatalystAdaptor {
   }
 
   struct AddCellAttributeData {
-    AddCellAttributeData(size_t ti, size_t nc, std::vector<vtkUnstructuredGrid*>* vd) : 
-      type_idx(ti),
-      num_cells(nc),
-      vtk_data(vd)
-      {}
+    AddCellAttributeData(size_t ti, size_t nc,
+                         std::vector<vtkUnstructuredGrid*>* vd)
+        : type_idx(ti), num_cells(nc), vtk_data(vd) {}
 
     void operator()(std::vector<double>* dm, const std::string& name) {
       vtkNew<vtkDoubleArray> vtk_array;
@@ -88,7 +86,8 @@ class CatalystAdaptor {
       (*vtk_data)[type_idx]->GetPointData()->AddArray(vtk_array.GetPointer());
     }
 
-    void operator()(std::vector<std::array<double, 3>>* dm, const std::string& name) {
+    void operator()(std::vector<std::array<double, 3>>* dm,
+                    const std::string& name) {
       vtkNew<vtkDoubleArray> vtk_array;
       vtk_array->SetName(name.c_str());
       auto ptr = dm->data()->data();
@@ -96,7 +95,8 @@ class CatalystAdaptor {
       (*vtk_data)[type_idx]->GetPointData()->AddArray(vtk_array.GetPointer());
     }
 
-    void operator()(std::vector<std::array<int, 3>>* dm, const std::string& name) {
+    void operator()(std::vector<std::array<int, 3>>* dm,
+                    const std::string& name) {
       vtkNew<vtkIntArray> vtk_array;
       vtk_array->SetName(name.c_str());
       auto ptr = dm->data()->data();
@@ -105,7 +105,8 @@ class CatalystAdaptor {
     }
 
     void operator()(...) {
-      Fatal("AddCellAttributeData", "This data member is not supported for visualization");
+      Fatal("AddCellAttributeData",
+            "This data member is not supported for visualization");
     }
 
     size_t type_idx;
@@ -131,7 +132,9 @@ class CatalystAdaptor {
     auto& scalar_list = Param::visualize_sim_objects_[scalar_name];
 
     if (!scalar_list.empty()) {
-      sim_objects->ForEachDataMemberIn(scalar_list, AddCellAttributeData(type_idx, num_cells, &vtk_so_grids_));
+      sim_objects->ForEachDataMemberIn(
+          scalar_list,
+          AddCellAttributeData(type_idx, num_cells, &vtk_so_grids_));
     }
 
     vtkNew<vtkDoubleArray> position_array;
@@ -151,7 +154,8 @@ class CatalystAdaptor {
   /// @param      dg    The diffusion grid
   /// @param[in]  idx   The index
   ///
-  void BuildDiffusionGridVTKStructures(DiffusionGrid* dg, uint16_t idx, const Param::VisualizeDiffusion& vd) {
+  void BuildDiffusionGridVTKStructures(DiffusionGrid* dg, uint16_t idx,
+                                       const Param::VisualizeDiffusion& vd) {
     if (dg_is_initialized_[idx] == false) {
       vtk_dgrids_.push_back(vtkImageData::New());
       dg_is_initialized_[idx] = true;
@@ -268,17 +272,18 @@ class CatalystAdaptor {
     // Add simulation objects to the visualization if requested
     auto rm = TResourceManager::Get();
     rm->ApplyOnAllTypes([&, this](auto* sim_objects, uint16_t type_idx) {
-      auto so_name = std::decay<decltype(*sim_objects)>::type::GetScalarTypeName().c_str();      
+      auto so_name =
+          std::decay<decltype(*sim_objects)>::type::GetScalarTypeName().c_str();
 
       data_description->AddInput(so_name);
 
       // If we segfault at here it probably means that the pipeline was not
       // initialized (with a python script)
-      if ((g_processor_->RequestDataDescription(data_description.GetPointer())) !=
-          0) {
+      if ((g_processor_->RequestDataDescription(
+              data_description.GetPointer())) != 0) {
         this->BuildCellsVTKStructures(sim_objects, type_idx);
-        data_description->GetInputDescriptionByName(so_name)
-            ->SetGrid(vtk_so_grids_[type_idx]);
+        data_description->GetInputDescriptionByName(so_name)->SetGrid(
+            vtk_so_grids_[type_idx]);
       }
     });
 
@@ -287,14 +292,17 @@ class CatalystAdaptor {
       for (auto& vd : Param::visualize_diffusion_) {
         auto dg = rm->GetDiffusionGrid(vd.name_);
         if (dg == nullptr) {
-          std::string msg = "The substance with the name " + vd.name_ + " was not found in the list of defined substances. Did you spell the name correctly during configuration?";
+          std::string msg = "The substance with the name " + vd.name_ +
+                            " was not found in the list of defined substances. "
+                            "Did you spell the name correctly during "
+                            "configuration?";
           Warning("Visualize Diffusion", "%s", msg.c_str());
           continue;
         }
         uint16_t idx = 0;
         data_description->AddInput(dg->GetSubstanceName().c_str());
-        if (g_processor_->RequestDataDescription(data_description.GetPointer()) !=
-            0) {
+        if (g_processor_->RequestDataDescription(
+                data_description.GetPointer()) != 0) {
           this->BuildDiffusionGridVTKStructures(dg, idx, vd);
           data_description
               ->GetInputDescriptionByName(dg->GetSubstanceName().c_str())

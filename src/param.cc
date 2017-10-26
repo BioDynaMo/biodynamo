@@ -56,7 +56,7 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
   //   visualize_sim_objects_
   auto visualize_sim_objects_tarr =
       config->get_table_array("visualize_sim_object");
-  if(visualize_sim_objects_tarr) {
+  if (visualize_sim_objects_tarr) {
     for (const auto& table : *visualize_sim_objects_tarr) {
       auto name = table->get_as<std::string>("name");
       if (!name) {
@@ -78,7 +78,7 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
   //   visualize_diffusion_
   auto visualize_diffusion_tarr =
       config->get_table_array("visualize_diffusion");
-  if(visualize_diffusion_tarr) {
+  if (visualize_diffusion_tarr) {
     for (const auto& table : *visualize_diffusion_tarr) {
       auto name = table->get_as<std::string>("name");
       if (!name) {
