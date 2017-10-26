@@ -107,8 +107,7 @@ class vtkCPVTKPipeline : public vtkCPPipeline {
             session_manager_->NewProxy("filters", "Glyph")));
         controller_->PreInitializeProxy(glyph);
         std::string object_name_str = object_name;
-        std::string glyph_name = object_name_str + "_glyph";
-        session_manager_->RegisterProxy("filters", glyph_name.c_str(), glyph);
+        std::string glyph_name = object_name_str + "_Glyph";
 
         vtkSMPropertyHelper(glyph, "Input").Set(producer);
         vtkSMPropertyHelper(glyph, "Source").Set(GetSphereSource(glyph));
@@ -121,7 +120,7 @@ class vtkCPVTKPipeline : public vtkCPPipeline {
         glyph->UpdateVTKObjects();
         producer->UpdateVTKObjects();
         controller_->PostInitializeProxy(glyph);
-        controller_->RegisterPipelineProxy(glyph);
+        controller_->RegisterPipelineProxy(glyph, glyph_name.c_str());
 
         glyph->UpdatePropertyInformation();
         glyph->UpdatePipeline();
