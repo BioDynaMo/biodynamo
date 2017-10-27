@@ -26,12 +26,14 @@ std::vector<Param::VisualizeDiffusion> Param::visualize_diffusion_;
 bool Param::output_op_runtime_ = false;
 bool Param::python_catalyst_pipeline_ = false;
 
-#define BDM_ASSIGN_CONFIG_VALUE(variable, config_key)                      \
-  {                                                                        \
-    auto value = config->get_qualified_as<decltype(variable)>(config_key); \
-    if (value) {                                                           \
-      variable = *value;                                                   \
-    }                                                                      \
+#define BDM_ASSIGN_CONFIG_VALUE(variable, config_key)                        \
+  {                                                                          \
+    if (config->contains_qualified(config_key)) {                            \
+      auto value = config->get_qualified_as<decltype(variable)>(config_key); \
+      if (value) {                                                           \
+        variable = *value;                                                   \
+      }                                                                      \
+    }                                                                        \
   }
 
 void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
