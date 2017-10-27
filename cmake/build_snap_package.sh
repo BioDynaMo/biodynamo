@@ -9,7 +9,7 @@ if [[ $# -ne 1 ]]; then
   exit
 fi
 
-make install
+sudo make install
 mkdir -p build-snap && cd build-snap
 mv ../snapcraft.yaml .
 # create run command

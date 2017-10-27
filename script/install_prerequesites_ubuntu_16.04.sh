@@ -51,7 +51,7 @@ function Install {
 
   # install packages
   apt-get -y install freeglut3-dev
-  apt-get -y install git valgrind python python2.7-dev lcov
+  apt-get -y install git valgrind python python3 python2.7-dev lcov
   apt-get -y install gcc-5 g++-5 make
   apt-get -y install clang-3.9 clang-format-3.9 clang-tidy-3.9 libomp-dev
   apt-get -y install doxygen graphviz
@@ -60,11 +60,13 @@ function Install {
   wget -O /tmp/root_v6.11.01_Linux-ubuntu16-x86_64-gcc5.4_263508429d.tar.gz "https://cernbox.cern.ch/index.php/s/BbFptgxo2K565IS/download?path=%2F&files=root_v6.11.01_Linux-ubuntu16-x86_64-gcc5.4_263508429d.tar.gz"
   tar -xzf /tmp/root_v6.11.01_Linux-ubuntu16-x86_64-gcc5.4_263508429d.tar.gz -C $THIRD_PARTY_DIR
 
-  # create environment script
-  BDM_ENVIRONMENT_FILE=${THIRD_PARTY_DIR}/bdm_environment.sh
-  touch ${BDM_ENVIRONMENT_FILE}
-
-  echo ". ${THIRD_PARTY_DIR}/root/bin/thisroot.sh" > ${BDM_ENVIRONMENT_FILE}
+  # copy environment script
+  #   get path of this script
+  pushd `dirname $0` > /dev/null
+  SCRIPTPATH=`pwd`
+  popd > /dev/null
+  BDM_ENVIRONMENT_FILE=/opt/biodynamo/biodynamo_dev.env
+  cp $SCRIPTPATH/../cmake/biodynamo_linux_dev.env $BDM_ENVIRONMENT_FILE
 
   # install ParaView
   wget -O paraview-5.4_ubuntu14_gcc5.4.tar.gz "https://cernbox.cern.ch/index.php/s/BbFptgxo2K565IS/download?path=%2F&files=paraview-5.4.1_ubuntu16_gcc5.4.tar.gz"
@@ -79,17 +81,6 @@ function Install {
   # use only until patched archive has been uploaded
   rm $THIRD_PARTY_DIR/qt/plugins/platformthemes/libqgtk3.so
   echo "" > $THIRD_PARTY_DIR/qt/lib/cmake/Qt5Gui/Qt5Gui_QGtk3ThemePlugin.cmake
-
-  echo 'export CC=gcc-5' >> ${BDM_ENVIRONMENT_FILE}
-  echo 'export CXX=g++-5' >> ${BDM_ENVIRONMENT_FILE}
-
-  # Set environmental variables for ParaView
-  echo "export ParaView_DIR=$THIRD_PARTY_DIR/paraview/lib/cmake/paraview-5.4" >> ${BDM_ENVIRONMENT_FILE}
-  echo "export Qt5_DIR=$THIRD_PARTY_DIR/qt/lib/cmake/Qt5" >> ${BDM_ENVIRONMENT_FILE}
-  echo "export LD_LIBRARY_PATH=$THIRD_PARTY_DIR/qt/lib:/usr/lib/openmpi/lib:\${LD_LIBRARY_PATH}" >> ${BDM_ENVIRONMENT_FILE}
-  echo "export PYTHONPATH=$THIRD_PARTY_DIR/paraview/lib/paraview-5.4/site-packages:$THIRD_PARTY_DIR/paraview/lib/paraview-5.4/site-packages/vtk" >> ${BDM_ENVIRONMENT_FILE}
-  echo "export QT_QPA_PLATFORM_PLUGIN_PATH=$THIRD_PARTY_DIR/qt/plugins" >> ${BDM_ENVIRONMENT_FILE}
-  echo "export PATH=$THIRD_PARTY_DIR/paraview/bin:\${PATH}" >> ${BDM_ENVIRONMENT_FILE}
 
   # Remove the downloaded tar files
   rm -rf *.tar.gz

@@ -1,5 +1,19 @@
 # This file contains configuration for the install step
 
+# check if CMAKE_INSTALL_PREFIX is empty or /opt/biodynamo
+# We only allow /opt/biodynamo as prefix path. This enables us to provide
+# one development environment script for building biodynamo and out of source
+# simulations. (The path to the development install is known and can be
+# hardcoded )
+if (NOT CMAKE_INSTALL_PREFIX)
+  set(CMAKE_INSTALL_PREFIX "/opt/biodynamo" CACHE PATH "BioDynaMo install prefix" FORCE)
+elseif(CMAKE_INSTALL_PREFIX STREQUAL "/usr/local")
+  message(WARNING "Changing default CMAKE_PREFIX_PATH to /opt/biodynamo")
+  set(CMAKE_INSTALL_PREFIX "/opt/biodynamo" CACHE PATH "BioDynaMo install prefix" FORCE)
+elseif( CMAKE_INSTALL_PREFIX AND NOT CMAKE_INSTALL_PREFIX STREQUAL "/opt/biodynamo" )
+  message(FATAL_ERROR "CMAKE_INSTALL_PREFIX must be /opt/biodynamo")
+endif()
+
 # set install directories
 if(LINUX)
   set(CMAKE_INSTALL_BINDIR        "biodynamo/bin"                  CACHE PATH "User executables (bin)")
