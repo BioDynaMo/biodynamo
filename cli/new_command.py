@@ -5,7 +5,7 @@ import requests
 import subprocess as sp
 import sys
 import time
-from print import Print
+from print_command import Print
 
 def ValidateSimName(sim_name):
     pattern = re.compile("^[a-zA-Z]+[a-zA-Z0-9\-_]+$")

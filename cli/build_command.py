@@ -1,6 +1,6 @@
 import os, sys
 import subprocess as sp
-from print import Print
+from print_command import Print
 
 
 # The BioDynaMo CLI command to build a simulation binary.

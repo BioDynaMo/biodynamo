@@ -38,6 +38,7 @@ install(FILES cli/assist_command.py DESTINATION ${CMAKE_INSTALL_BINDIR})
 install(FILES cli/build_command.py DESTINATION ${CMAKE_INSTALL_BINDIR})
 install(FILES cli/new_command.py DESTINATION ${CMAKE_INSTALL_BINDIR})
 install(FILES cli/run_command.py DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(FILES cli/print_command.py DESTINATION ${CMAKE_INSTALL_BINDIR})
 # libbiodynamo.so
 install(TARGETS biodynamo LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
 install(FILES build/libbiodynamo_dict_rdict.pcm DESTINATION ${CMAKE_INSTALL_LIBDIR})
