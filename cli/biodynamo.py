@@ -36,13 +36,14 @@ if __name__ == '__main__':
     'a template project from BioDynaMo, renames it to the given simulation name, '
     'creates a new Github repository and configures git.')
     spp.add_argument('SIMULATION_NAME', type=str, help='simulation name help')
+    spp.add_argument('--no-github', action='store_true', help='Do not create a Github repository.'    )
 
     sp.add_parser('run', help='Executes the simulation')
 
     args = parser.parse_args()
 
     if args.cmd == 'new':
-    	NewCommand(args.SIMULATION_NAME)
+    	NewCommand(args.SIMULATION_NAME, args.no_github)
     elif args.cmd == 'build':
     	BuildCommand()
     elif args.cmd == 'clean':

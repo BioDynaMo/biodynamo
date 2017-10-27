@@ -1,7 +1,11 @@
 import os
 import getpass
 import re
-import requests
+import json
+import urllib.request
+import urllib.error
+import http.client
+import base64
 import subprocess as sp
 import sys
 import time
@@ -30,7 +34,10 @@ def DownloadTemplateRepository(sim_name):
         sp.check_output(["rm", "-rf", sim_name+"/.git"])
     except sp.CalledProcessError as err:
         Print.error("Error while downloading the template project from BioDynaMo")
-        CleanupOnError(sim_name)
+        # Do not use CleanupOnError here
+        # One failure could be an already existing directory
+        # we must not remove it
+        sys.exit(1)
 
 def ModifyFileContent(filename, fn):
 	with open(filename) as f:
@@ -92,14 +99,18 @@ def CreateNewGithubRepository(sim_name):
 
     # create new github repo
     try:
-        url = 'https://api.github.com/user/repos'
-        r = requests.post(url, auth=(gh_user, gh_pass), data='{"name":"' + sim_name + '", "description": "Simulation powered by BioDynaMo"}')
-        if r.status_code != 201:
-            Print.error("Github repository creation failed.")
-            Print.error(r.status_code)
-            Print.error(r.text)
-            CleanupOnError(sim_name)
-    except sp.CalledProcessError as err:
+        data = {"name": sim_name , "description": "Simulation powered by BioDynaMo"}
+        headers = {'Content-Type': 'application/json'}
+        bytes = json.dumps(data).encode('utf-8')
+        url = "https://api.github.com/user/repos"
+
+        request = urllib.request.Request(url, data=bytes, headers=headers)
+
+        credentials = ('%s:%s' % (gh_user, gh_pass))
+        encoded_credentials = base64.b64encode(credentials.encode('ascii'))
+        request.add_header('Authorization', 'Basic %s' % encoded_credentials.decode("ascii"))
+        result = urllib.request.urlopen(request)
+    except urllib.error.HTTPError as err:
         Print.error("Github repository creation failed.")
         Print.error(err)
         CleanupOnError(sim_name)
@@ -112,7 +123,7 @@ def CreateNewGithubRepository(sim_name):
         Print.error("Error: Setting remote github url ({0}) failed.".format(repo_url))
         CleanupOnError(sim_name)
 
-def NewCommand(sim_name):
+def NewCommand(sim_name, no_github):
     print("Info: This command requires a Github.com account.")
     print("      Please have your account details ready, or ")
     print("      go over to https://github.com/join to sign up.")
@@ -121,7 +132,8 @@ def NewCommand(sim_name):
     DownloadTemplateRepository(sim_name)
     CustomizeFiles(sim_name)
     InitializeNewGitRepo(sim_name)
-    CreateNewGithubRepository(sim_name)
+    if(not no_github):
+        CreateNewGithubRepository(sim_name)
 
     Print.success(sim_name + " has been created successfully!")
     print('To compile and run this simulation, change the directory by calling '

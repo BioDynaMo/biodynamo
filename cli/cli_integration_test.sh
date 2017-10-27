@@ -3,7 +3,7 @@
 echo "Starting BioDynaMo CLI Test"
 
 cd /tmp
-biodynamo new test-sim
+biodynamo new test-sim --no-github
 cd test-sim
 biodynamo build
 biodynamo run >actual 2>&1
