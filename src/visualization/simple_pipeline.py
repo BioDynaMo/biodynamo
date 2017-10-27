@@ -22,7 +22,7 @@ def CreateCoProcessor():
                 grid = datadescription.GetInputDescription(i).GetGrid()
 
                 #create a new 'Glyph'
-                if grid_type.IsA("vtkUnstructuredGrid") == True:
+                if grid.IsA("vtkUnstructuredGrid") == True:
                     gui_name = data_name + "_glyph"
                     glyph = Glyph(guiName=gui_name, Input=data, GlyphType='Sphere')
                     glyph.Scalars = [ 'POINTS', 'Diameters' ]

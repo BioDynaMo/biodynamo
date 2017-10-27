@@ -58,20 +58,31 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
       config->get_table_array("visualize_sim_object");
   if (visualize_sim_objects_tarr) {
     for (const auto& table : *visualize_sim_objects_tarr) {
-      auto name = table->get_as<std::string>("name");
-      if (!name) {
-        Warning("AssignFromConfig",
-                "Missing name for attribute visualize_sim_object");
-        continue;
-      }
-      auto dm_option =
-          table->get_array_of<std::string>("additional_data_members");
+      // We do a 'redundant' check here, because `get_as` on Mac OS does not
+      // catch the exception when the "name" is not defined in the bdm.toml
+      // Same goes for all the other redundant checks
+      if (table->contains("name")) {
+        auto name = table->get_as<std::string>("name");
+        if (!name) {
+          Warning("AssignFromConfig",
+                  "Missing name for attribute visualize_sim_object");
+          continue;
+        }
 
-      std::set<std::string> data_members;
-      for (const auto& val : *dm_option) {
-        data_members.insert(val);
+        if (table->contains("additional_data_members")) {
+          auto dm_option =
+              table->get_array_of<std::string>("additional_data_members");
+
+          std::set<std::string> data_members;
+          for (const auto& val : *dm_option) {
+            data_members.insert(val);
+          }
+          visualize_sim_objects_[*name] = data_members;
+        } else {
+          std::set<std::string> data_members;
+          visualize_sim_objects_[*name] = data_members;
+        }
       }
-      visualize_sim_objects_[*name] = data_members;
     }
   }
 
@@ -80,26 +91,32 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
       config->get_table_array("visualize_diffusion");
   if (visualize_diffusion_tarr) {
     for (const auto& table : *visualize_diffusion_tarr) {
-      auto name = table->get_as<std::string>("name");
-      if (!name) {
-        Warning("AssignFromConfig",
-                "Missing name for attribute visualize_diffusion");
-        continue;
-      }
+      if (table->contains("name")) {
+        auto name = table->get_as<std::string>("name");
+        if (!name) {
+          Warning("AssignFromConfig",
+                  "Missing name for attribute visualize_diffusion");
+          continue;
+        }
 
-      VisualizeDiffusion vd;
-      vd.name_ = *name;
+        VisualizeDiffusion vd;
+        vd.name_ = *name;
 
-      auto concentration = table->get_as<bool>("concentration");
-      if (concentration) {
-        vd.concentration_ = *concentration;
-      }
-      auto gradient = table->get_as<bool>("gradient");
-      if (gradient) {
-        vd.gradient_ = *gradient;
-      }
+        if (table->contains("concentration")) {
+          auto concentration = table->get_as<bool>("concentration");
+          if (concentration) {
+            vd.concentration_ = *concentration;
+          }
+        }
+        if (table->contains("gradient")) {
+          auto gradient = table->get_as<bool>("gradient");
+          if (gradient) {
+            vd.gradient_ = *gradient;
+          }
+        }
 
-      visualize_diffusion_.push_back(vd);
+        visualize_diffusion_.push_back(vd);
+      }
     }
   }
 

@@ -90,14 +90,12 @@ include(cmake/SetCompilerFlags.cmake)
 # When building, use the RPATH
 set(CMAKE_SKIP_BUILD_RPATH FALSE)           # don't skip the full RPATH for the build tree
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
+set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 if(APPLE)
-  set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
-  set(CMAKE_INSTALL_RPATH 
+  set(CMAKE_INSTALL_RPATH
 	"/usr/local/lib/paraview-5.4"
 	"/usr/local/opt/qt5/lib"
 	"/usr/local/lib/biodynamo")
-else()
-  set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 endif()
 
 # -------------------- setup mpark variant library -----------------------------
@@ -134,6 +132,7 @@ add_dependencies(bdmclean libbdmclean)
 
 generate_rootlogon()
 if (${ParaView_FOUND})
+  link_directories($ENV{ParaView_DIR}/../../paraview-5.4)
   target_link_libraries(biodynamo vtkPVPythonCatalyst vtkIOParallelXML 
     vtkPVVTKExtensionsDefault vtkPVServerManagerRendering)
 endif()

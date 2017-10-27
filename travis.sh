@@ -12,8 +12,8 @@ if [ "$TRAVIS_OS_NAME" = "osx" ]; then
   brew update >& /dev/null
   brew install doxygen
   brew install valgrind
-  #brew install cloc
-  # get clang 3.9
+  brew install cloc
+  # get clang 5.0
   brew install llvm
   export LLVMDIR="/usr/local/opt/llvm"
   export CC=$LLVMDIR/bin/clang
@@ -22,8 +22,12 @@ if [ "$TRAVIS_OS_NAME" = "osx" ]; then
   export LDFLAGS=-L$LLVMDIR/lib
   export DYLD_LIBRARY_PATH=$LLVMDIR/lib:$DYLD_LIBRARY_PATH
   # get latest cmake
-  brew update cmake
-  export PATH=$LLVMDIR/bin:$PATH:
+  brew upgrade cmake
+  export PATH=$LLVMDIR/bin:$PATH
+  # copy the omp.h file to our CMAKE_PREFIX_PATH
+  sudo mkdir -p /usr/local/Cellar/biodynamo
+  OMP_V=`/usr/local/opt/llvm/bin/llvm-config --version`
+  sudo cp -f /usr/local/opt/llvm/lib/clang/$OMP_V/include/omp.h /usr/local/Cellar/biodynamo
 fi
 
 if [ "$TRAVIS_OS_NAME" = "linux" ]; then
@@ -80,15 +84,13 @@ else
   sudo mkdir -p /opt/biodynamo/paraview
   sudo tar -xzf paraview-5.4_macos64_llvm-5.0.tar.gz -C /opt/biodynamo/paraview
 
-  wget -O Qt5.9.1_macos64_clang81.tar.gz "https://cernbox.cern.ch/index.php/s/BbFptgxo2K565IS/download?path=%2F&files=Qt5.9.1_macos64_clang81.tar.gz"
-  sudo mkdir -p /opt/biodynamo/qt
-  sudo tar -xzf Qt5.9.1_macos64_clang81.tar.gz -C /opt/biodynamo/qt
+  brew install qt
 
   export ParaView_DIR=/opt/biodynamo/paraview/lib/cmake/paraview-5.4
-  export Qt5_DIR=/opt/biodynamo/qt/lib/cmake/Qt5
+  export Qt5_DIR=/usr/local/opt/qt/lib/cmake/Qt5
 
-  export DYLD_LIBRARY_PATH=/opt/biodynamo/qt/lib:/usr/lib/openmpi/lib:/usr/local/opt/llvm/lib:$DYLD_LIBRARY_PATH
-  export DYLD_FRAMEWORK_PATH=${Qt5_DIR}/../..
+  export DYLD_LIBRARY_PATH=/opt/biodynamo/qt/lib:/usr/lib/openmpi/lib:$DYLD_LIBRARY_PATH
+  export DYLD_LIBRARY_PATH=/opt/biodynamo/paraview/lib/paraview-5.4:$DYLD_LIBRARY_PATH
 fi
 
 # set the Python envars for Catalyst
@@ -105,7 +107,6 @@ ${CXX} -v
 
 cd $biod
 
-
 cloc .
 # add master branch
 # https://github.com/travis-ci/travis-ci/issues/6069
@@ -115,9 +116,10 @@ git remote set-branches --add origin master
 mkdir build
 cd build
 mkdir install
+
 cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=install ..
 make -j2
-# make check-submission
+make check-submission
 
 # run following commands only on Linux
 if [ "$TRAVIS_OS_NAME" = "linux" ]; then
@@ -154,6 +156,22 @@ if [ "$TRAVIS_OS_NAME" = "linux" ]; then
     exit ${TEST_RET_VAL}
   fi
 else
-  brew tap Biodynamo/biodynamo
-  brew install biodynamo
+  # revert image to initial conditions
+  export CC=""
+  export CXX=""
+  export DYLD_LIBRARY_PATH=""
+  brew uninstall cmake
+  brew uninstall qt
+  brew uninstall llvm
+  sudo rm -rf /opt/biodynamo
+  sudo rm -rf /usr/local/Cellar/biodynamo
+
+  # run package test
+  ../test/integration/test_brew_package.sh
+  TEST_RET_VAL=$?
+  if [ "0" = "${TEST_RET_VAL}" ]; then
+    echo "Installation was successfull!"
+  else
+    exit ${TEST_RET_VAL}
+  fi
 fi
