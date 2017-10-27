@@ -26,10 +26,10 @@ using std::array;
 /// Declare new biology module event for cell division
 extern const BmEvent gCellDivision;
 
-BDM_SIM_CLASS(Cell, SimulationObject) {
-  BDM_CLASS_HEADER(CellExt, 1, position_, mass_location_, tractor_force_,
-                   diameter_, volume_, adherence_, density_, x_axis_, y_axis_,
-                   z_axis_, biology_modules_, box_idx_);
+BDM_SIM_OBJECT(Cell, SimulationObject) {
+  BDM_SIM_OBJECT_HEADER(CellExt, 1, position_, mass_location_, tractor_force_,
+                        diameter_, volume_, adherence_, density_, x_axis_,
+                        y_axis_, z_axis_, biology_modules_, box_idx_);
 
  public:
   /// Returns the data members that are required to visualize this simulation

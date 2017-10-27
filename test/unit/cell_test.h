@@ -51,8 +51,8 @@ struct CTParam {
 };
 
 /// Class used to get access to protected members
-BDM_SIM_CLASS_TEST(TestCell, Cell, CTParam) {
-  BDM_CLASS_HEADER(TestCellExt, 1, placeholder_);
+BDM_SIM_OBJECT_TEST(TestCell, Cell, CTParam) {
+  BDM_SIM_OBJECT_HEADER(TestCellExt, 1, placeholder_);
 
  public:
   TestCellExt() {}
@@ -102,7 +102,7 @@ BDM_SIM_CLASS_TEST(TestCell, Cell, CTParam) {
       Base::DivideImpl(daughter, volume_ratio, phi, theta);
     }
   }
-  vec<bool> placeholder_;  // BDM_CLASS_HEADER needs at least one member
+  vec<bool> placeholder_;  // BDM_SIM_OBJECT_HEADER needs at least one member
   FRIEND_TEST(CellTest, DivideVolumeRatioPhiTheta);
 };
 

@@ -26,8 +26,8 @@ using std::is_same;
 /// \param base_class_scalar_name
 ///
 ///     // Example usage to extend class Cell
-///     BDM_SIM_CLASS(MyCell, Cell) {
-///       BDM_CLASS_HEADER(MyCellExt, 1, data_member_);
+///     BDM_SIM_OBJECT(MyCell, Cell) {
+///       BDM_SIM_OBJECT_HEADER(MyCellExt, 1, data_member_);
 ///      public:
 ///       MyCellExt() {}
 ///       ...
@@ -38,13 +38,13 @@ using std::is_same;
 ///   * `MyCellExt`: class containing the actual code.
 ///      The postfix `Ext` stands for extension.
 ///      NB: Inside the body you have to use `MyCellExt` -- e.g.:
-///      `BDM_CLASS_HEADER(MyCellExt, ...)` or constructor.
+///      `BDM_SIM_OBJECT_HEADER(MyCellExt, ...)` or constructor.
 ///   * `MyCell`: scalar type alias (no template parameter required)
 ///      = scalar name
 ///   * `SoaMyCell`: soa type alias (no template parameter required)
 ///   * `MyCellT`: templated type alias only needed internally for
 ///      extension mechanism
-#define BDM_SIM_CLASS(sim_object_name, base_class_scalar_name)            \
+#define BDM_SIM_OBJECT(sim_object_name, base_class_scalar_name)           \
   template <typename TCompileTimeParam = CompileTimeParam<>,              \
             template <typename> class TBase = base_class_scalar_name##T>  \
   class sim_object_name##Ext;                                             \
@@ -64,9 +64,9 @@ using std::is_same;
 /// \param sim_object_name
 /// \param base_class_scalar_name
 /// \param compile_time_param_name
-/// \see BDM_SIM_CLASS
-#define BDM_SIM_CLASS_TEST(sim_object_name, base_class_scalar_name,            \
-                           compile_time_param_name)                            \
+/// \see BDM_SIM_OBJECT
+#define BDM_SIM_OBJECT_TEST(sim_object_name, base_class_scalar_name,           \
+                            compile_time_param_name)                           \
   template <typename TCompileTimeParam = compile_time_param_name<>,            \
             template <typename> class TBase = base_class_scalar_name##T>       \
   class sim_object_name##Ext;                                                  \
@@ -84,64 +84,64 @@ using std::is_same;
 // -----------------------------------------------------------------------------
 // Helper macros used to generate code for all data members of a class
 
-#define BDM_CLASS_HEADER_PUSH_BACK_BODY(...) \
-  EVAL(LOOP(BDM_CLASS_HEADER_PUSH_BACK_BODY_ITERATOR, __VA_ARGS__))
+#define BDM_SIM_OBJECT_PUSH_BACK_BODY(...) \
+  EVAL(LOOP(BDM_SIM_OBJECT_PUSH_BACK_BODY_ITERATOR, __VA_ARGS__))
 
-#define BDM_CLASS_HEADER_PUSH_BACK_BODY_ITERATOR(data_member) \
+#define BDM_SIM_OBJECT_PUSH_BACK_BODY_ITERATOR(data_member) \
   data_member.push_back(other.data_member[0]);
 
-#define BDM_CLASS_HEADER_POP_BACK_BODY(...) \
-  EVAL(LOOP(BDM_CLASS_HEADER_POP_BACK_BODY_ITERATOR, __VA_ARGS__))
+#define BDM_SIM_OBJECT_POP_BACK_BODY(...) \
+  EVAL(LOOP(BDM_SIM_OBJECT_POP_BACK_BODY_ITERATOR, __VA_ARGS__))
 
-#define BDM_CLASS_HEADER_POP_BACK_BODY_ITERATOR(data_member) \
+#define BDM_SIM_OBJECT_POP_BACK_BODY_ITERATOR(data_member) \
   data_member.pop_back();
 
-#define BDM_CLASS_HEADER_SWAP_AND_POP_BACK_BODY(...) \
-  EVAL(LOOP(BDM_CLASS_HEADER_SWAP_AND_POP_BACK_BODY_ITERATOR, __VA_ARGS__))
+#define BDM_SIM_OBJECT_SWAP_AND_POP_BACK_BODY(...) \
+  EVAL(LOOP(BDM_SIM_OBJECT_SWAP_AND_POP_BACK_BODY_ITERATOR, __VA_ARGS__))
 
-#define BDM_CLASS_HEADER_SWAP_AND_POP_BACK_BODY_ITERATOR(data_member) \
-  std::swap(data_member[index], data_member[size - 1]);               \
+#define BDM_SIM_OBJECT_SWAP_AND_POP_BACK_BODY_ITERATOR(data_member) \
+  std::swap(data_member[index], data_member[size - 1]);             \
   data_member.pop_back();
 
-#define BDM_CLASS_HEADER_CPY_CTOR_INIT(...) \
-  EVAL(LOOP(BDM_CLASS_HEADER_CPY_CTOR_INIT_ITERATOR, __VA_ARGS__))
+#define BDM_SIM_OBJECT_CPY_CTOR_INIT(...) \
+  EVAL(LOOP(BDM_SIM_OBJECT_CPY_CTOR_INIT_ITERATOR, __VA_ARGS__))
 
-#define BDM_CLASS_HEADER_CPY_CTOR_INIT_ITERATOR(data_member) \
+#define BDM_SIM_OBJECT_CPY_CTOR_INIT_ITERATOR(data_member) \
   data_member(other->data_member),
 
-#define BDM_CLASS_HEADER_CLEAR_BODY(...) \
-  EVAL(LOOP(BDM_CLASS_HEADER_CLEAR_BODY_ITERATOR, __VA_ARGS__))
+#define BDM_SIM_OBJECT_CLEAR_BODY(...) \
+  EVAL(LOOP(BDM_SIM_OBJECT_CLEAR_BODY_ITERATOR, __VA_ARGS__))
 
-#define BDM_CLASS_HEADER_CLEAR_BODY_ITERATOR(data_member) data_member.clear();
+#define BDM_SIM_OBJECT_CLEAR_BODY_ITERATOR(data_member) data_member.clear();
 
-#define BDM_CLASS_HEADER_RESERVE_BODY(...) \
-  EVAL(LOOP_2_1(BDM_CLASS_HEADER_RESERVE_BODY_ITERATOR, __VA_ARGS__))
+#define BDM_SIM_OBJECT_RESERVE_BODY(...) \
+  EVAL(LOOP_2_1(BDM_SIM_OBJECT_RESERVE_BODY_ITERATOR, __VA_ARGS__))
 
-#define BDM_CLASS_HEADER_RESERVE_BODY_ITERATOR(new_cap, data_member) \
+#define BDM_SIM_OBJECT_RESERVE_BODY_ITERATOR(new_cap, data_member) \
   data_member.reserve(new_cap);
 
-#define BDM_CLASS_HEADER_ASSIGNMENT_OP_BODY(...) \
-  EVAL(LOOP(BDM_CLASS_HEADER_ASSIGNMENT_OP_BODY_ITERATOR, __VA_ARGS__))
+#define BDM_SIM_OBJECT_ASSIGNMENT_OP_BODY(...) \
+  EVAL(LOOP(BDM_SIM_OBJECT_ASSIGNMENT_OP_BODY_ITERATOR, __VA_ARGS__))
 
-#define BDM_CLASS_HEADER_ASSIGNMENT_OP_BODY_ITERATOR(data_member) \
+#define BDM_SIM_OBJECT_ASSIGNMENT_OP_BODY_ITERATOR(data_member) \
   data_member[kIdx] = rhs.data_member[0];
 
-#define BDM_CLASS_HEADER_FOREACHDM_BODY(...) \
-  EVAL(LOOP(BDM_CLASS_HEADER_FOREACHDM_BODY_ITERATOR, __VA_ARGS__))
+#define BDM_SIM_OBJECT_FOREACHDM_BODY(...) \
+  EVAL(LOOP(BDM_SIM_OBJECT_FOREACHDM_BODY_ITERATOR, __VA_ARGS__))
 
-#define BDM_CLASS_HEADER_FOREACHDM_BODY_ITERATOR(data_member) \
+#define BDM_SIM_OBJECT_FOREACHDM_BODY_ITERATOR(data_member) \
   f(&data_member, #data_member);
 
-#define BDM_CLASS_HEADER_FOREACHDMIN_BODY(...) \
-  EVAL(LOOP(BDM_CLASS_HEADER_FOREACHDMIN_BODY_ITERATOR, __VA_ARGS__))
+#define BDM_SIM_OBJECT_FOREACHDMIN_BODY(...) \
+  EVAL(LOOP(BDM_SIM_OBJECT_FOREACHDMIN_BODY_ITERATOR, __VA_ARGS__))
 
-#define BDM_CLASS_HEADER_FOREACHDMIN_BODY_ITERATOR(data_member) \
-  {                                                             \
-    auto it = dm_selector.find(#data_member);                   \
-    if (it != dm_selector.end()) {                              \
-      f(&data_member, #data_member);                            \
-      dm_selector.erase(it);                                    \
-    }                                                           \
+#define BDM_SIM_OBJECT_FOREACHDMIN_BODY_ITERATOR(data_member) \
+  {                                                           \
+    auto it = dm_selector.find(#data_member);                 \
+    if (it != dm_selector.end()) {                            \
+      f(&data_member, #data_member);                          \
+      dm_selector.erase(it);                                  \
+    }                                                         \
   }
 
 /// Macro to insert required boilerplate code into simulation object
@@ -155,7 +155,7 @@ using std::is_same;
 ///          must be incremented by one. The class_version_id should be greater
 ///          or equal to 1.
 /// @param  ...: List of all data members of this class
-#define BDM_CLASS_HEADER(class_name, class_version_id, ...)                    \
+#define BDM_SIM_OBJECT_HEADER(class_name, class_version_id, ...)               \
  public:                                                                       \
   using Base = TBase<TCompileTimeParam>;                                       \
   /* reduce verbosity of some types and variables by defining a local alias */ \
@@ -205,14 +205,14 @@ using std::is_same;
   template <typename T>                                                        \
   class_name(T* other, size_t idx)                                             \
       : Base(other, idx),                                                      \
-        REMOVE_TRAILING_COMMAS(BDM_CLASS_HEADER_CPY_CTOR_INIT(__VA_ARGS__)) {} \
+        REMOVE_TRAILING_COMMAS(BDM_SIM_OBJECT_CPY_CTOR_INIT(__VA_ARGS__)) {}   \
                                                                                \
   /** Executes the given function for all data members             */          \
   /**  Function could be a lambda in the following form:           */          \
   /**  `[](auto* data_member, const std::string& dm_name) { ... }` */          \
   template <typename Function, typename T = Backend>                           \
   typename enable_if<is_soa<T>::value>::type ForEachDataMember(Function f) {   \
-    BDM_CLASS_HEADER_FOREACHDM_BODY(__VA_ARGS__)                               \
+    BDM_SIM_OBJECT_FOREACHDM_BODY(__VA_ARGS__)                                 \
     Base::ForEachDataMember(f);                                                \
   }                                                                            \
                                                                                \
@@ -222,7 +222,7 @@ using std::is_same;
   template <typename Function, typename T = Backend>                           \
   typename enable_if<is_soa<T>::value>::type ForEachDataMemberIn(              \
       std::set<std::string> dm_selector, Function f) {                         \
-    BDM_CLASS_HEADER_FOREACHDMIN_BODY(__VA_ARGS__)                             \
+    BDM_SIM_OBJECT_FOREACHDMIN_BODY(__VA_ARGS__)                               \
     Base::ForEachDataMemberIn(dm_selector, f);                                 \
   }                                                                            \
                                                                                \
@@ -232,7 +232,7 @@ using std::is_same;
   typename enable_if<is_soa<T>::value>::type clear() {                         \
     std::lock_guard<std::recursive_mutex> lock(Base::mutex_);                  \
     Base::clear();                                                             \
-    BDM_CLASS_HEADER_CLEAR_BODY(__VA_ARGS__)                                   \
+    BDM_SIM_OBJECT_CLEAR_BODY(__VA_ARGS__)                                     \
   }                                                                            \
                                                                                \
   /** Equivalent to std::vector<> reserve - it increases the capacity */       \
@@ -242,7 +242,7 @@ using std::is_same;
       std::size_t new_capacity) {                                              \
     std::lock_guard<std::recursive_mutex> lock(Base::mutex_);                  \
     Base::reserve(new_capacity);                                               \
-    BDM_CLASS_HEADER_RESERVE_BODY(new_capacity, __VA_ARGS__)                   \
+    BDM_SIM_OBJECT_RESERVE_BODY(new_capacity, __VA_ARGS__)                     \
   }                                                                            \
                                                                                \
   Self<SoaRef> operator[](size_t idx) { return Self<SoaRef>(this, idx); }      \
@@ -254,7 +254,7 @@ using std::is_same;
   template <typename T = Backend>                                              \
   typename enable_if<is_same<T, SoaRef>::value, Self<SoaRef>&>::type           \
   operator=(const Self<Scalar>& rhs) {                                         \
-    BDM_CLASS_HEADER_ASSIGNMENT_OP_BODY(__VA_ARGS__)                           \
+    BDM_SIM_OBJECT_ASSIGNMENT_OP_BODY(__VA_ARGS__)                             \
     Base::operator=(rhs);                                                      \
     return *this;                                                              \
   }                                                                            \
@@ -309,20 +309,20 @@ using std::is_same;
                     typename TCompileTimeParam::template Self<Scalar>>& o)     \
       override {                                                               \
     auto other = *static_cast<const Self<Scalar>*>(&o);                        \
-    BDM_CLASS_HEADER_PUSH_BACK_BODY(__VA_ARGS__);                              \
+    BDM_SIM_OBJECT_PUSH_BACK_BODY(__VA_ARGS__);                                \
     Base::PushBackImpl(o);                                                     \
   }                                                                            \
                                                                                \
   /** Swap element with last element and remove last element from each */      \
   /** data member */                                                           \
   void SwapAndPopBack(size_t index, size_t size) override {                    \
-    BDM_CLASS_HEADER_SWAP_AND_POP_BACK_BODY(__VA_ARGS__);                      \
+    BDM_SIM_OBJECT_SWAP_AND_POP_BACK_BODY(__VA_ARGS__);                        \
     Base::SwapAndPopBack(index, size);                                         \
   }                                                                            \
                                                                                \
   /** Remove last element from each data member */                             \
   void PopBack(size_t index, size_t size) override {                           \
-    BDM_CLASS_HEADER_POP_BACK_BODY(__VA_ARGS__);                               \
+    BDM_SIM_OBJECT_POP_BACK_BODY(__VA_ARGS__);                                 \
     Base::PopBack(index, size);                                                \
   }                                                                            \
                                                                                \

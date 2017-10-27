@@ -18,8 +18,8 @@ namespace simulation_object_vector_test_internal {
 template <typename TBackend = Soa>
 struct CompileTimeParam1;
 
-BDM_SIM_CLASS_TEST(A, SimulationObject, CompileTimeParam1) {
-  BDM_CLASS_HEADER(AExt, 1, id_);
+BDM_SIM_OBJECT_TEST(A, SimulationObject, CompileTimeParam1) {
+  BDM_SIM_OBJECT_HEADER(AExt, 1, id_);
 
  public:
   AExt() {}
@@ -29,8 +29,8 @@ BDM_SIM_CLASS_TEST(A, SimulationObject, CompileTimeParam1) {
   vec<int> id_;
 };
 
-BDM_SIM_CLASS_TEST(B, SimulationObject, CompileTimeParam1) {
-  BDM_CLASS_HEADER(BExt, 1, id_);
+BDM_SIM_OBJECT_TEST(B, SimulationObject, CompileTimeParam1) {
+  BDM_SIM_OBJECT_HEADER(BExt, 1, id_);
 
  public:
   BExt() {}
