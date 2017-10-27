@@ -22,6 +22,7 @@ parts:
        - cmake
        - make
        - python3
+       - python3-requests
        - libomp-dev
 
   run:
@@ -32,48 +33,84 @@ parts:
     plugin: dump
     source: https://cernbox.cern.ch/index.php/s/BbFptgxo2K565IS/download?path=%2F&files=root_v6.11.01_Linux-ubuntu16-x86_64-gcc5.4_263508429d.tar.gz
     prepare: mkdir -p dependencies/root && mv * dependencies/root 2>/dev/null ; true
-    stage-packages:
-      # missing ldd
-      - libc-bin
 
   qt:
     plugin: dump
     source: https://cernbox.cern.ch/index.php/s/BbFptgxo2K565IS/download?path=%2F&files=Qt5.9.1_ubuntu16_gcc5.4.tar.gz
-    prepare: mkdir -p dependencies/qt && mv * dependencies/qt 2>/dev/null ; true
+    prepare: |
+      mkdir -p dependencies/qt && mv * dependencies/qt 2>/dev/null ; true
+      # patch qt to avoid libprotobuf error for paraview
+      rm dependencies/qt/plugins/platformthemes/libqgtk3.so
+      echo "" > dependencies/qt/lib/cmake/Qt5Gui/Qt5Gui_QGtk3ThemePlugin.cmake
 
   paraview:
     plugin: dump
-    source: https://cernbox.cern.ch/index.php/s/BbFptgxo2K565IS/download?path=%2F&files=paraview-5.4_ubuntu16_gcc5.4_openmpi_qt5.9.1.tar.gz
-    prepare: mkdir -p dependencies/paraview && mv * dependencies/paraview 2>/dev/null ; true
+    source: https://cernbox.cern.ch/index.php/s/BbFptgxo2K565IS/download?path=%2F&files=paraview-5.4.1_ubuntu16_gcc5.4.tar.gz
+    prepare: |
+      mkdir -p dependencies/paraview && mv * dependencies/paraview 2>/dev/null ; true
+    install: |
+      ln -s $SNAP/usr/lib/x86_64-linux-gnu/libpython2.7.so.1 $SNAPCRAFT_PART_INSTALL/usr/lib/x86_64-linux-gnu/libpython2.7.so
     stage-packages:
-      - libopenmpi-dev
-      - openmpi-bin
+      - libpython2.7
       - freeglut3-dev
 
 environment:
   # $SNAP not pointing to current
   # therefore replaced $SNAP with /snap/biodynamo/current
   # root, extracted from root/bin/thisroot.sh
-  DYLD_LIBRARY_PATH: /snap/biodynamo/current/dependencies/root/lib
-  ROOTSYS: /snap/biodynamo/current/dependencies/root
-  CMAKE_PREFIX_PATH: /snap/biodynamo/current/dependencies/root:/snap/biodynamo/current/cmake
-  JUPYTER_PATH: /snap/biodynamo/current/dependencies/root/etc/notebook
-  SHLIB_PATH: /snap/biodynamo/current/dependencies/root/lib
-  LIBPATH: /snap/biodynamo/current/dependencies/root/lib
-  PYTHONPATH: /snap/biodynamo/current/dependencies/root/lib
-  MANPATH: /snap/biodynamo/current/dependencies/root/man
+  DYLD_LIBRARY_PATH:  /snap/biodynamo/current/dependencies/root/lib
+  ROOTSYS:            /snap/biodynamo/current/dependencies/root
+  CMAKE_PREFIX_PATH:  /snap/biodynamo/current/dependencies/root:/snap/biodynamo/current/cmake
+  JUPYTER_PATH:       /snap/biodynamo/current/dependencies/root/etc/notebook
+  SHLIB_PATH:         /snap/biodynamo/current/dependencies/root/lib
+  LIBPATH:            /snap/biodynamo/current/dependencies/root/lib
+  PYTHONPATH:         /snap/biodynamo/current/dependencies/root/lib
+  MANPATH:            /snap/biodynamo/current/dependencies/root/man
   # Paraview
   ParaView_DIR: /snap/biodynamo/current/dependencies/paraview/lib/cmake/paraview-5.4
-  Qt5_DIR: /snap/biodynamo/current/dependencies/qt/lib/cmake/Qt5
-  PYTHONPATH: /snap/biodynamo/current/dependencies/paraview/lib/paraview-5.4/site-packages:/snap/biodynamo/current/dependencies/paraview/lib/paraview-5.4/site-packages/vtk
+  Qt5_DIR:      /snap/biodynamo/current/dependencies/qt/lib/cmake/Qt5
+  PYTHONPATH: "
+    /snap/biodynamo/current/dependencies/paraview/lib/paraview-5.4/site-packages:\
+    /snap/biodynamo/current/dependencies/paraview/lib/paraview-5.4/site-packages/vtk"
   QT_QPA_PLATFORM_PLUGIN_PATH: /snap/biodynamo/current/dependencies/qt/plugins
   # General
-  LD_LIBRARY_PATH:    /snap/core/current/lib:/snap/core/current/lib64:/snap/core/current/usr/lib:/snap/core/current/lib/x86_64-linux-gnu:/snap/core/current/usr/lib/x86_64-linux-gnu:/snap/biodynamo/current/lib:/snap/biodynamo/current/usr/lib:/snap/biodynamo/current/lib/x86_64-linux-gnu:/snap/biodynamo/current/usr/lib/x86_64-linux-gnu:/snap/biodynamo/current/dependencies/root/lib:/snap/biodynamo/current/dependencies/qt/lib:/snap/biodynamo/current/usr/lib/openmpi/lib:/snap/biodynamo/current/dependencies/paraview/lib/paraview-5.4:$LD_LIBRARY_PATH
-  PATH: /snap/biodynamo/current/dependencies/root/bin:/snap/biodynamo/current/dependencies/paraview/bin:$PATH
-  CC: /snap/biodynamo/current/usr/bin/gcc-5
-  CXX: /snap/biodynamo/current/usr/bin/g++-5
+  # The following path in LD_LIBRARY_PATH is causing segfaults with conflicting
+  # system libraries.
+  # /snap/core/current/lib/x86_64-linux-gnu:\
+  # Until this issue has been resolved the generated snap will only work on the
+  # system it was built on.
+  # https://forum.snapcraft.io/t/classic-snaps-failing-on-ubuntu-17-10/2324/45
+  LD_LIBRARY_PATH: "\
+    /snap/core/current/lib:\
+    /snap/core/current/lib/x86_64-linux-gnu:\
+    /snap/core/current/lib64:\
+    /snap/core/current/usr/lib:\
+    /snap/core/current/usr/lib/x86_64-linux-gnu:\
+    /snap/biodynamo/current/lib:\
+    /snap/biodynamo/current/lib/x86_64-linux-gnu:\
+    /snap/biodynamo/current/usr/lib:\
+    /snap/biodynamo/current/usr/lib/git-core:\
+    /snap/biodynamo/current/usr/lib/openmpi/lib:\
+    /snap/biodynamo/current/usr/lib/openmpi/lib/openmpi:\
+    /snap/biodynamo/current/usr/lib/python2.7/config-x86_64-linux-gnu:\
+    /snap/biodynamo/current/usr/lib/x86_64-linux-gnu:\
+    /snap/biodynamo/current/usr/lib/x86_64-linux-gnu/mesa:\
+    /snap/biodynamo/current/biodynamo/lib:\
+    /snap/biodynamo/current/dependencies/root/lib:\
+    /snap/biodynamo/current/dependencies/qt/lib:\
+    /snap/biodynamo/current/dependencies/paraview/lib/paraview-5.4:\
+    $LD_LIBRARY_PATH"
+  PATH: "
+    /snap/biodynamo/current/dependencies/root/bin:\
+    /snap/biodynamo/current/dependencies/paraview/bin:$PATH"
+  CC:   /snap/biodynamo/current/usr/bin/gcc-5
+  CXX:  /snap/biodynamo/current/usr/bin/g++-5
+  GIT_EXEC_PATH: /snap/biodynamo/current/usr/lib/git-core
 
 apps:
+  biodynamo:
+    command: biodynamo/bin/biodynamo
+
   # script that must be sourced to set the environment outside this snap
   getenv:
     command: biodynamo/bin/get-biodynamo-env-path.sh
@@ -91,3 +128,5 @@ apps:
     command: usr/bin/cmake
   make:
     command: usr/bin/make
+  git:
+    command: usr/bin/git

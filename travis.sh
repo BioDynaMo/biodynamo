@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# set -e -x
+set -e -x
 
 echo ${TRAVIS_OS_NAME}
 biod=`pwd`
@@ -123,8 +123,13 @@ make check-submission
 
 # run following commands only on Linux
 if [ "$TRAVIS_OS_NAME" = "linux" ]; then
+  # commented until the following snapcraft issue is resolved:
+  # https://forum.snapcraft.io/t/classic-snaps-failing-on-ubuntu-17-10/2324/45
+  # as a result all binaries in our snap package segfault
+  echo ""  # noop, because if statement must have at least one command
+
   # build snap package
-  make snap-package
+  # make snap-package
 
   # test snap package
   #   revert image to initial conditions
@@ -140,21 +145,20 @@ if [ "$TRAVIS_OS_NAME" = "linux" ]; then
   # export CXX=""
   # sudo rm /usr/bin/cmake
   # sudo rm -rf /opt/biodynamo
-
-  sudo apt-get -y install snapd
-  sudo snap install core
-
-  printenv
-  export PATH=/snap/bin:$PATH
-
-  ../test/integration/test_snap_package.sh
-  TEST_RET_VAL=$?
-  if [ "0" = "${TEST_RET_VAL}" ]; then
-    echo "Upload snap package"
-    # TODO upload
-  else
-    exit ${TEST_RET_VAL}
-  fi
+  #
+  # sudo apt-get -y install snapd
+  # sudo snap install core
+  #
+  # export PATH=/snap/bin:$PATH
+  #
+  # ../test/integration/test_snap_package.sh
+  # TEST_RET_VAL=$?
+  # if [ "0" = "${TEST_RET_VAL}" ]; then
+  #   echo "Upload snap package"
+  #   # TODO upload
+  # else
+  #   exit ${TEST_RET_VAL}
+  # fi
 else
   # revert image to initial conditions
   export CC=""

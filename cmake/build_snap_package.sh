@@ -16,7 +16,7 @@ mv ../snapcraft.yaml .
 mkdir -p bin
 echo '#!/bin/bash' > bin/run
 echo '# execute command given as first parameter' >> bin/run
-echo '$1' >> bin/run
+echo '"$@"' >> bin/run
 chmod +x bin/run
 
 sudo docker pull snapcore/snapcraft
