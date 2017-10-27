@@ -10,10 +10,10 @@ if [[ $# -ne 1 ]]; then
 fi
 
 make install
-mkdir build-snap && cd build-snap
+mkdir -p build-snap && cd build-snap
 mv ../snapcraft.yaml .
 # create run command
-mkdir bin
+mkdir -p bin
 echo '#!/bin/bash' > bin/run
 echo '# execute command given as first parameter' >> bin/run
 echo '$1' >> bin/run
