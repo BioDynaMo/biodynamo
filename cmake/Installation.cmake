@@ -47,7 +47,8 @@ elseif(APPLE)
   install(FILES cmake/biodynamo_macos.env DESTINATION ${CMAKE_INSTALL_BINDIR} RENAME biodynamo.env)
 endif()
 # biodynamo cli
-install(FILES cli/biodynamo.py DESTINATION ${CMAKE_INSTALL_BINDIR} RENAME biodynamo)
+install(FILES cli/biodynamo.py DESTINATION ${CMAKE_INSTALL_BINDIR} RENAME biodynamo
+        PERMISSIONS OWNER_READ OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
 install(FILES cli/assist_command.py DESTINATION ${CMAKE_INSTALL_BINDIR})
 install(FILES cli/build_command.py DESTINATION ${CMAKE_INSTALL_BINDIR})
 install(FILES cli/new_command.py DESTINATION ${CMAKE_INSTALL_BINDIR})
