@@ -32,6 +32,12 @@ if(LINUX)
 elseif(APPLE)
   install(FILES cmake/biodynamo_macos.env DESTINATION ${CMAKE_INSTALL_BINDIR} RENAME biodynamo.env)
 endif()
+# biodynamo cli
+install(FILES cli/biodynamo.py DESTINATION ${CMAKE_INSTALL_BINDIR} RENAME biodynamo)
+install(FILES cli/assist_command.py DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(FILES cli/build_command.py DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(FILES cli/new_command.py DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(FILES cli/run_command.py DESTINATION ${CMAKE_INSTALL_BINDIR})
 # libbiodynamo.so
 install(TARGETS biodynamo LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
 install(FILES build/libbiodynamo_dict_rdict.pcm DESTINATION ${CMAKE_INSTALL_LIBDIR})
