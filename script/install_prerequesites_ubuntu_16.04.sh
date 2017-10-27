@@ -2,30 +2,7 @@
 # This script installs the required packages on ubuntu 16.04 as outlined in the
 # main README.md
 
-function AddToBashrc {
-  echo "Adding \"source ${BDM_ENVIRONMENT_FILE}\" to .bashrc"
-  echo "source ${BDM_ENVIRONMENT_FILE}" >> ~/.bashrc
-  echo ""
-  echo "Restart your terminal for the changes to take effect or source the .bashrc!"
-}
-
-function ExplainBashrc {
-  echo ""
-  echo "+---------------------------------------------------------------------------+"
-  echo "| You have chosen not append the environment variables to your .bashrc.     |"
-  echo "| In order to build BioDynaMo properly you can do either of the following:  |"
-  echo "|                                                                           |"
-  echo "| 1. Edit your .bashrc (e.g. gedit ~/.bashrc) to include the following line:|"
-  echo "|                                                                           |"
-  echo "|    source $BDM_ENVIRONMENT_FILE              |"
-  echo "|                                                                           |"
-  echo "| And restart your terminal for the changes to take effect                  |"
-  echo "| 2. In every terminal you want to build BioDynamo execute:                 |"
-  echo "|                                                                           |"
-  echo "|    source $BDM_ENVIRONMENT_FILE              |"
-  echo "+---------------------------------------------------------------------------+"
-  echo ""
-}
+INSTALL_DIR=/opt/biodynamo
 
 function InstallCmake {
   wget https://cmake.org/files/v3.6/cmake-3.6.3-Linux-x86_64.tar.gz
@@ -73,13 +50,11 @@ function Install {
   fi
 
   # install packages
-  apt-get -y install libopenmpi-dev openmpi-bin
   apt-get -y install freeglut3-dev
   apt-get -y install git valgrind python python2.7-dev lcov
   apt-get -y install gcc-5 g++-5 make
   apt-get -y install clang-3.9 clang-format-3.9 clang-tidy-3.9 libomp-dev
   apt-get -y install doxygen graphviz
-  apt-get -y install zenity
 
   # install ROOT
   wget -O /tmp/root_v6.11.01_Linux-ubuntu16-x86_64-gcc5.4_263508429d.tar.gz "https://cernbox.cern.ch/index.php/s/BbFptgxo2K565IS/download?path=%2F&files=root_v6.11.01_Linux-ubuntu16-x86_64-gcc5.4_263508429d.tar.gz"
@@ -91,20 +66,19 @@ function Install {
 
   echo ". ${THIRD_PARTY_DIR}/root/bin/thisroot.sh" > ${BDM_ENVIRONMENT_FILE}
 
-  # needed for Catalyst
-  ln -s /usr/lib/libmpi.so /usr/local/lib/libmpi.so
-  ln -s /usr/lib/libmpi.so /usr/local/lib/libmpi.so.12
-  ln -s /usr/lib/openmpi/lib/libmpi.so /usr/lib/openmpi/lib/libmpi.so.1
-
   # install ParaView
-  wget -O paraview-5.4_ubuntu14_gcc5.4_openmpi.tar.gz "https://cernbox.cern.ch/index.php/s/BbFptgxo2K565IS/download?path=%2F&files=paraview-5.4_ubuntu16_gcc5.4_openmpi_qt5.9.1.tar.gz"
+  wget -O paraview-5.4_ubuntu14_gcc5.4.tar.gz "https://cernbox.cern.ch/index.php/s/BbFptgxo2K565IS/download?path=%2F&files=paraview-5.4.1_ubuntu16_gcc5.4.tar.gz"
   mkdir -p $THIRD_PARTY_DIR/paraview
-  tar -xzf paraview-5.4_ubuntu14_gcc5.4_openmpi.tar.gz -C $THIRD_PARTY_DIR/paraview
+  tar -xzf paraview-5.4_ubuntu14_gcc5.4.tar.gz -C $THIRD_PARTY_DIR/paraview
 
   # install Qt
   wget -O Qt5.9.1_ubuntu16_gcc5.4.tar.gz "https://cernbox.cern.ch/index.php/s/BbFptgxo2K565IS/download?path=%2F&files=Qt5.9.1_ubuntu16_gcc5.4.tar.gz"
   mkdir -p $THIRD_PARTY_DIR/qt
   tar -xzf Qt5.9.1_ubuntu16_gcc5.4.tar.gz -C $THIRD_PARTY_DIR/qt
+  # temporal workaround to avoid libprotobuf error for paraview
+  # use only until patched archive has been uploaded
+  rm $THIRD_PARTY_DIR/qt/plugins/platformthemes/libqgtk3.so
+  echo "" > $THIRD_PARTY_DIR/qt/lib/cmake/Qt5Gui/Qt5Gui_QGtk3ThemePlugin.cmake
 
   echo 'export CC=gcc-5' >> ${BDM_ENVIRONMENT_FILE}
   echo 'export CXX=g++-5' >> ${BDM_ENVIRONMENT_FILE}
@@ -120,37 +94,16 @@ function Install {
   # Remove the downloaded tar files
   rm -rf *.tar.gz
 
-  # add to ~/.bashrc
-  if [ "$(cat ~/.bashrc | grep "source ${BDM_ENVIRONMENT_FILE}" | wc -l)" == "0" ]; then
-    while true; do
-      read -p "Do you want to append the environmental variables to your .bashrc (recommended)? (y/n)" yn
-      case $yn in
-        [Yy]* ) AddToBashrc; exit;;
-        [Nn]* ) ExplainBashrc; exit;;
-            * ) echo "Please answer yes or no.";;
-      esac
-    done
-  fi
+  echo "Installation of prerequisites finished"
+  echo "In every terminal you want to build or use BioDynamo execute:"
+  echo "    source $BDM_ENVIRONMENT_FILE"
+  echo ""
 }
 
 if [ "$(whoami)" != "root" ]; then
   echo "Error: This script requires root access. Exiting now."
   exit;
 fi
-
-# prompts user for installation directory
-while true; do
-  read -p "The default installation directory is /opt/biodynamo.
-Do you want to change the installation directory? (y/n) " yn
-  case $yn in
-    [Yy]* ) INSTALL_DIR="$(zenity --file-selection --directory)";
-            if [${INSTALL_DIR} == ""]; then INSTALL_DIR=/opt/biodynamo; fi;
-            echo "You selected ${INSTALL_DIR} as the installation directory";
-            break;;
-    [Nn]* ) INSTALL_DIR=/opt/biodynamo; break;;
-        * ) echo "Please answer yes or no.";;
-  esac
-done
 
 echo ""
 
