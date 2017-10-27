@@ -12,7 +12,7 @@ TEST(SchedulerTest, NoRestoreFile) {
   ResourceManager<>::Get()->Get<Cell>()->push_back(cell);
 
   // start restore validation
-  TestSchedulerRestore scheduler("");
+  auto scheduler = TestSchedulerRestore::Create("");
   scheduler.Simulate(100);
   EXPECT_EQ(100u, scheduler.execute_calls);
   EXPECT_EQ(1u, ResourceManager<>::Get()->Get<Cell>()->size());

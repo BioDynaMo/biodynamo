@@ -9,6 +9,14 @@ rm $BACKUP_RESTORE_FILE
 # simulate crash of simulation after 5 seconds
 SIMULATION_PID=$!
 sleep 5
+# wait longer if backup file has not been created yet
+# check every second if backup file exists
+for i in {0..5}; do
+  if [ -e "$BACKUP_RESTORE_FILE" ]; then
+    break
+  fi
+  sleep 1
+done
 kill -9 $SIMULATION_PID
 
 # restart after artificial crash

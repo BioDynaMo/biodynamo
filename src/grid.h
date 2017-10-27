@@ -11,9 +11,10 @@
 #include <iostream>
 #include <limits>
 #include <vector>
-#include "cell.h"
-#include "fixed_size_vector.h"
 
+#include "cell.h"
+#include "constant.h"
+#include "fixed_size_vector.h"
 #include "inline_vector.h"
 #include "param.h"
 #include "simulation_object_vector.h"
@@ -21,7 +22,6 @@
 namespace bdm {
 
 using std::array;
-using std::vector;
 using std::fmod;
 
 /// FIFO data structure. Stores max N number of objects.
@@ -248,7 +248,7 @@ class Grid {
   void UpdateGrid() {
     ClearGrid();
 
-    auto inf = Param::kInfinity;
+    auto inf = Constant::kInfinity;
     array<double, 6> tmp_dim = {{inf, -inf, inf, -inf, inf, -inf}};
     CalculateGridDimensions(&tmp_dim);
     RoundOffGridDimensions(tmp_dim);
@@ -352,9 +352,9 @@ class Grid {
     {
       auto thread_id = omp_get_thread_num();
       auto* grid_dimensions = new std::array<double, 6>;
-      *grid_dimensions = {{Param::kInfinity, -Param::kInfinity,
-                           Param::kInfinity, -Param::kInfinity,
-                           Param::kInfinity, -Param::kInfinity}};
+      *grid_dimensions = {{Constant::kInfinity, -Constant::kInfinity,
+                           Constant::kInfinity, -Constant::kInfinity,
+                           Constant::kInfinity, -Constant::kInfinity}};
       double* largest_object_size = new double;
       *largest_object_size = 0;
       all_grid_dimensions[thread_id] = grid_dimensions;
@@ -674,7 +674,7 @@ class Grid {
 
  private:
   /// The vector containing all the boxes in the grid
-  vector<Box> boxes_;
+  std::vector<Box> boxes_;
   /// Length of a Box
   uint32_t box_length_ = 1;
   /// Stores the number of boxes for each axis

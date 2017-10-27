@@ -3,8 +3,13 @@
 
 #include <algorithm>
 #include <mutex>
+#include <set>
+#include <sstream>
+#include <string>
 #include <type_traits>
 #include <vector>
+
+#include <TError.h>
 
 #include "backend.h"
 #include "root_util.h"
@@ -86,6 +91,27 @@ class SoaSimulationObject {
   /// Equivalent to std::vector<> reserve - it increases the capacity
   /// of all data member containers
   void reserve(size_t new_capacity) {}  // NOLINT
+
+  template <typename Function>
+  void ForEachDataMember(Function l) {}
+
+  template <typename Function>
+  void ForEachDataMemberIn(const std::set<std::string> &dm_selector,
+                           Function f) {
+    // validate data_members
+    // all data members should have been removed from the set. Remaining
+    // entries do not exist
+    if (dm_selector.size() != 0) {
+      std::stringstream sstr;
+      for (auto &element : dm_selector) {
+        sstr << element << ", ";
+      }
+      Fatal("ForEachDataMemberIn",
+            "Please check your config file. The following data members do not "
+            "exist: %s",
+            sstr.str().c_str());
+    }
+  }
 
  protected:
   const size_t kIdx = 0;

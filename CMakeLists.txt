@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.2.0)
 # to support Ninja as generator
 
 project(BioDynaMo)
+set(BDM_VERSION 0.1.0)
 
 # Options. Turn on with 'cmake -Dmyvarname=ON'.
 option(test "Build all tests." ON) # Makes boolean 'test' available.
@@ -12,11 +13,32 @@ if(APPLE)
 else()
    option(valgrind "Enable valgrind tests and make build compatible with valgrind tool." ON)
 endif()
-option(coverage "Enable test coverage report generation." OFF)
+option(coverage "Enable test coverage report generation. Sets build type to coverage" OFF)
 
-#--------------------- find packages -------------
+set(BDM_CMAKE_DIR cmake)
+
+if(UNIX AND NOT APPLE)
+  set(LINUX TRUE)
+endif()
+
+add_definitions(-DBDM_SRC_DIR=\"${CMAKE_SOURCE_DIR}/src\")  # escaped quotes are mandatory
+
+# -------------------- find packages ------------------------------------------
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
-find_package(OpenMP REQUIRED)
+# CMake cannot find LLVM's Clang OpenMP library by default (this makes
+# find_package(OpenMP) fail). Therefore we manually specify the OpenMP flags.
+# Furthermore, rootcling cannot find omp.h by default, so we copy this (with a
+# shell script to /usr/local/Cellar/biodynamo, which is brew's default install
+# directory), and include this directory. We cannot directly include the
+# original directory, because of header conflicts (such as stdint.h)
+if(APPLE)
+  link_directories(/usr/local/opt/llvm/lib)
+  set(OpenMP_C_FLAGS -fopenmp=libomp)
+  set(OpenMP_CXX_FLAGS -fopenmp=libomp)
+  include_directories(/usr/local/Cellar/biodynamo)
+else()
+  find_package(OpenMP REQUIRED)
+endif()
 if (test)
   # must be before include(${ROOT_USE_FILE}) otherwise test compile fails
   find_package(Threads REQUIRED)
@@ -33,7 +55,8 @@ if ("$ENV{CMAKE_EXPORT_COMPILE_COMMANDS}" STREQUAL "1" OR CLANG_TIDY_FOUND)
   set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 endif()
 
-find_package(ParaView 5.3 QUIET OPTIONAL_COMPONENTS vtkPVPythonCatalyst)
+find_package(ParaView 5.3 QUIET OPTIONAL_COMPONENTS vtkPVPythonCatalyst
+  vtkPVVTKExtensionsDefault vtkPVServerManagerRendering)
 if(${ParaView_FOUND})
   message(STATUS "Found ParaView")
   include("${PARAVIEW_USE_FILE}")
@@ -50,68 +73,38 @@ else()
   message(WARNING "VTune not found")
 endif()
 
-#--------------------- includes -------------
+# -------------------- includes -----------------------------------------------
 include(BioDynaMo)
 include(ExternalProject)
 include(cmake/doxygen.cmake)
 
-#--------------------- check if compiler supports C++11 -------------
-# http://stackoverflow.com/questions/10851247/how-to-activate-c-11-in-cmake
-include(CheckCXXCompilerFlag)
-check_cxx_compiler_flag("-std=c++14" COMPILER_SUPPORTS_CXX14)
-if(COMPILER_SUPPORTS_CXX14)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
-  set(CMAKE_CXX_STANDARD 14)
-  set(CMAKE_CXX_STANDARD_REQUIRED ON)
-else()
-  message(ERROR "The compiler ${CMAKE_CXX_COMPILER} has no C++14 support. Please use a different C++ compiler.")
+# -------------------- set default build type and compiler flags ---------------
+if(coverage)
+  set(CMAKE_BUILD_TYPE Coverage)
+elseif(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE RelWithDebInfo)
 endif()
+include(cmake/SetCompilerFlags.cmake)
 
-#--------------------- set compiler flags -------------
-if (coverage)
-  set(CMAKE_BUILD_TYPE "Debug")
-  set(GCC_COMPILE_FLAGS "-Wall -Wno-missing-braces -g -O0 -fprofile-arcs -ftest-coverage -fPIC")
-else()
-  set(GCC_COMPILE_FLAGS "-Wall -Wno-missing-braces -fPIC")
-endif()
-set(GCC_LINK_FLAGS "")
-# append
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${GCC_COMPILE_FLAGS}")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GCC_COMPILE_FLAGS}")
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${GCC_LINK_FLAGS}")
-# append OpenMP flags
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-# special clang flag
-if(${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
-  # silence unsupported -pthread argument at link time
-  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Qunused-arguments")
-  SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Qunused-arguments")
-  # silence clang 3.9 warning
-  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-undefined-var-template")
-endif()
-
-#--------------------- set rpath options -------------
+# -------------------- set rpath options ---------------------------------------
 # When building, use the RPATH
 set(CMAKE_SKIP_BUILD_RPATH FALSE)           # don't skip the full RPATH for the build tree
-set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)   # use always the build RPATH for the build tree
-set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE) # point to directories outside the build tree to the install RPATH
-
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
+set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 if(APPLE)
-  set(CMAKE_MACOSX_RPATH TRUE)                 # use RPATH for MacOSX
-  set(CMAKE_INSTALL_NAME_DIR "@rpath")
-  set(CMAKE_INSTALL_RPATH "@loader_path/")     # self relative LIBDIR
-else()
-  set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_FULL_LIBDIR}) # install LIBDIR
+  set(CMAKE_INSTALL_RPATH
+	"/usr/local/lib/paraview-5.4"
+	"/usr/local/opt/qt5/lib"
+	"/usr/local/lib/biodynamo")
 endif()
 
-#--------------------- setup mpark variant library ----------------
+# -------------------- setup mpark variant library -----------------------------
 set(MPARK_LIB "${CMAKE_CURRENT_BINARY_DIR}/mpark/")
 file(MAKE_DIRECTORY "${MPARK_LIB}/")
 execute_process(COMMAND ${CMAKE_COMMAND} -E tar xf "${CMAKE_SOURCE_DIR}/third_party/mpark_4ee0086.zip"
                 WORKING_DIRECTORY "${MPARK_LIB}")
 
-#--------------------- build shared library libbiodynamo ----------------
+# -------------------- build shared library libbiodynamo -----------------------
 # add the headers into the project
 include(${ROOT_USE_FILE})
 include_directories("${CMAKE_SOURCE_DIR}/src")
@@ -138,12 +131,18 @@ add_custom_target(bdmclean)
 add_dependencies(bdmclean libbdmclean)
 
 generate_rootlogon()
-
 if (${ParaView_FOUND})
-  target_link_libraries(biodynamo vtkPVPythonCatalyst vtkIOParallelXML)
+  link_directories($ENV{ParaView_DIR}/../../paraview-5.4)
+  target_link_libraries(biodynamo vtkPVPythonCatalyst vtkIOParallelXML 
+    vtkPVVTKExtensionsDefault vtkPVServerManagerRendering)
 endif()
 
-# -------------------- build test project  ----------------------
+# create cmake files used by external builds
+configure_file("cmake/UseBioDynaMo.cmake.in" "UseBioDynaMo.cmake" @ONLY)
+# create snapcraft config file
+configure_file("cmake/snapcraft.yaml.in" "snapcraft.yaml" @ONLY)
+
+# -------------------- build test project  ------------------------------------
 if (test)
   enable_testing()
 
@@ -151,8 +150,10 @@ if (test)
 
   # unit tests
   #   main test executable
-  file(GLOB TEST_SOURCES ${CMAKE_SOURCE_DIR}/test/unit/*.cc)
-  file(GLOB TEST_HEADERS ${CMAKE_SOURCE_DIR}/test/unit/*.h)
+  file(GLOB TEST_SOURCES ${CMAKE_SOURCE_DIR}/test/unit/*.cc
+                         ${CMAKE_SOURCE_DIR}/test/unit/biology_module/*.cc)
+  file(GLOB TEST_HEADERS ${CMAKE_SOURCE_DIR}/test/unit/*.h
+                         ${CMAKE_SOURCE_DIR}/test/unit/biology_module/*.h)
   bdm_add_test_executable(runBiodynamoTestsMain
                           SOURCES ${TEST_SOURCES}
                           HEADERS ${TEST_HEADERS})
@@ -178,25 +179,38 @@ if (test)
                       SOURCES test/integration/backup_restore.cc
                       HEADERS test/integration/backup_restore.h
                       LIBRARIES biodynamo)
-    add_test(NAME "integration-backup-restore" COMMAND ${CMAKE_SOURCE_DIR}/test/integration/backup_restore.sh)
+    add_dependencies(check backup-restore)
+    add_test(NAME "integration-backup-restore"
+             COMMAND ${CMAKE_SOURCE_DIR}/test/integration/backup_restore.sh)
     bdm_add_executable(soma_clustering
                       SOURCES test/integration/soma_clustering.cc
                       HEADERS test/integration/soma_clustering.h
                       LIBRARIES biodynamo)
-    add_test(NAME "integration-soma-clustering" COMMAND ${CMAKE_SOURCE_DIR}/build/soma_clustering)
+    add_dependencies(check soma_clustering)
+    add_test(NAME "integration-soma-clustering"
+             COMMAND ${CMAKE_SOURCE_DIR}/build/soma_clustering)
   endif()
 endif()
 
-# --------------- add targets for code style and submission checks -------------
+# -------------------- Install configuration -----------------------------------
+include(cmake/Installation.cmake)
+
+# -------------------- add targets for code style and submission checks --------
 include(cmake/CppStyleGuideChecks.cmake)
 
-# --------------------- build cell_division_module executable ------------------
+# -------------------- add target to build snap package ------------------------
+add_custom_target(snap-package
+  COMMAND ../cmake/build_snap_package.sh ${CMAKE_INSTALL_PREFIX}
+  WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+  COMMENT "Build snap package")
+
+# -------------------- build cell_division_module executable -------------------
 bdm_add_executable(cell_division_module
                    SOURCES demo/cell_division_module.cc
                    HEADERS demo/cell_division_module.h
                    LIBRARIES biodynamo)
 
-# --------------------- build cell_diffusion_module executable ------------------
+# -------------------- build cell_diffusion_module executable ------------------
 bdm_add_executable(diffusion_module
                    SOURCES demo/diffusion_module.cc
                    HEADERS demo/diffusion_module.h

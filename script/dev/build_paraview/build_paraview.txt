@@ -2,11 +2,20 @@
 ## Building ParaView for BioDynaMo ##
 #####################################
 
+## Step 1: Install QT 5.9.1
 
-## Step 1: Install QT 5.6.2
-wget https://download.qt.io/official_releases/qt/5.6/5.6.2/qt-opensource-linux-x64-5.6.2.run
-chmod +x qt-opensource-linux-x64-5.6.2.run
-./qt-opensource-linux-x64-5.6.2.run
+(LINUX)
+wget https://download.qt.io/official_releases/qt/5.9/5.9.1/qt-opensource-linux-x64-5.9.1.run
+chmod +x qt-opensource-linux-x64-5.9.1.run
+./qt-opensource-linux-x64-5.9.1.run
+"follow the instruction in the GUI"
+
+(MAC OS)
+wget https://download.qt.io/official_releases/qt/5.9/5.9.1/qt-opensource-mac-x64-5.9.1.dmg
+hdiutil attach qt-opensource-mac-x64-5.9.1.dmg
+open /Volumes/qt-opensource-mac-x64-5.9.1/qt-opensource-mac-x64-5.9.1.app
+"follow the instruction in the GUI"
+hdiutil detach /Volumes/qt-opensource-mac-x64-5.9.1
 
 
 ## Step 2: Clone paraview github repository
@@ -14,7 +23,8 @@ git clone https://gitlab.kitware.com/paraview/paraview.git
 cd paraview
 git submodule update --init
 git checkout v5.4.0
-
+git pull
+git submodule update
 
 ## Step 3: Generate the cmake files for paraview
 #
@@ -38,3 +48,21 @@ $cmake \
 -DPARAVIEW_ENABLE_MPI:BOOL=ON \
 -DPARAVIEW_INSTALL_DEVELOPMENT_FILES:BOOL=ON \
  ../paraview
+ 
+## Step 4:
+make -j4
+sudo make install
+
+
+## Step 5:
+"compress the installation folder in tar.gz format"
+"NB: for MacOS you need to compress the paraview-build/CMakeFiles/__macos_install folder"
+"naming convention: paraview-<version>_<platform>_<compiler>.tar.gz"
+
+
+# After untarring the directory tree should like like this:
+# paraview
+#   |-- bin
+#   |-- include
+#   |-- lib
+#   |-- share

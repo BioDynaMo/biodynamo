@@ -70,10 +70,18 @@ function(bdm_generate_dictionary TARGET)
   foreach( d ${incdirs})
     set(includedirs ${includedirs} -I${d})
   endforeach()
+  # header install path on linux
+  set(includedirs ${includedirs} -I/snap/biodynamo/current/biodynamo/include)
+  # header install path on osx
+  set(includedirs ${includedirs} -I/usr/local/include/biodynamo)
   #---Get preprocessor definitions--------------------------
   get_directory_property(defs COMPILE_DEFINITIONS)
   foreach( d ${defs})
-   set(definitions ${definitions} -D${d})
+    # definitions that were initialily defined with escaped quotes
+    # e.g. add_definitions(-DFOO=\"bar\") are changed to normal quotes in ${d}
+    # The string replace call has been added to fix this issue
+    string(REPLACE "\"" "\\\"" d_fixed ${d})
+    set(definitions ${definitions} -D${d_fixed})
   endforeach()
   #---Actual command----------------------------------------
   file(WRITE ${ARG_DICT} "")
@@ -111,7 +119,10 @@ endfunction(bdm_generate_dictionary)
 # To make debugging of compile errors easier an object library with SOURCES
 # is compiled first, then dictionaries are generated. Afterwards these
 # dictionaries are compiled and linked with the object files compiled in the
-# first step
+# first step.
+# Uses the variable `BDM_CMAKE_DIR` to point to the cmake directory. This is
+# necessary, since this function is used from within the BioDynaMo repository
+# and external simulation projects.
 # \param TARGET target name for the executable
 # \param SOURCES list of source files
 # \param LIBRARIES list of libraries that should be linked to the executable.
@@ -126,14 +137,14 @@ function(bdm_add_executable TARGET)
   bdm_generate_dictionary(${TARGET}-dict
     DICT "${DICT_FILE}"
     HEADERS ${ARG_HEADERS}
-    SELECTION cmake/selection.xml
+    SELECTION ${BDM_CMAKE_DIR}/selection.xml
     DEPENDS ${TARGET}-objectlib)
   # dictionary with custom streamers
   set(DICT_FILE_CS "${CMAKE_CURRENT_BINARY_DIR}/${TARGET}_custom_streamers_dict.cc")
   bdm_generate_dictionary(${TARGET}-custom-streamer-dict
     DICT "${DICT_FILE_CS}"
     HEADERS ${ARG_HEADERS}
-    SELECTION cmake/selection_custom_streamers.xml
+    SELECTION ${BDM_CMAKE_DIR}/selection_custom_streamers.xml
     DEPENDS ${TARGET}-objectlib)
   set(DICT_SRCS ${DICT_FILE} ${DICT_FILE_CS})
 
@@ -158,7 +169,7 @@ function(build_libbiodynamo TARGET)
   bdm_generate_dictionary(${TARGET}-dict
     DICT "${DICT_FILE}"
     HEADERS ${ARG_HEADERS}
-    SELECTION cmake/selection-libbiodynamo.xml
+    SELECTION ${BDM_CMAKE_DIR}/selection-libbiodynamo.xml
     DEPENDS ${TARGET}-objectlib)
 
   # generate shared library

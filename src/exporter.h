@@ -323,7 +323,7 @@ class ParaviewExporter : public Exporter<TContainer> {
     pvd << "<Collection>" << std::endl;
     /// iterate for all (time) steps
     for (uint64_t i = 0; i < num_iterations; i++) {
-      pvd << "<DataSet timestep=\"" << (i * Param::kSimulationTimeStep)
+      pvd << "<DataSet timestep=\"" << (i * Param::simulation_time_step_)
           << "\" group=\"\" part=\"0\" file=\"" << filename << '-' << i
           << ".vtu\">";
       pvd << std::endl;

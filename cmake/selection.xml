@@ -11,6 +11,8 @@
     <class name="bdm::DivisionAndMovementModule," />
     <class name="bdm::SubstanceSecretion" />
     <class name="bdm::Chemotaxis" />
+    <class pattern="std::__1::vector<bdm::*<*>>" />
+    <class pattern="std::__1::tuple<bdm::*<*>" />
     <class pattern="bdm::resource_manager_test_internal::*" />
 
   </selection>
@@ -27,8 +29,12 @@
          -> all selected classes from libbiodynamo-selection.xml -->
     <class name="bdm::RuntimeVariables"/>
     <class name="bdm::NullBiologyModule"/>
+    <class name="bdm::BaseBiologyModule"/>
+    <class name="bdm::GrowDivide"/>
     <class name="bdm::IntegralTypeWrapper<size_t> "/>
     <!-- list of template classes with custom streamers -->
     <class pattern="bdm::Variant*" />
+    <class pattern="std::__1::vector<bdm::Variant<*>>" />
+    <class pattern="std::__1::tuple<*>::_*" />
   </exclusion>
 </lcgdict>

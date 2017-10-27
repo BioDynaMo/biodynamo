@@ -1,0 +1,6 @@
+site_name: BioDynaMo User Documentation
+theme: 'material'
+pages:
+    - Home: index.md
+    - Getting Started: getting_started.md
+    - Your First Simulation: first_simulation.md

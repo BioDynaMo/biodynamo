@@ -137,11 +137,21 @@ class ResourceManager {
   /// Return the container of diffusion grids
   std::vector<DiffusionGrid*>& GetDiffusionGrids() { return diffusion_grids_; }
 
-  /// Return the diffusion grid which holds the substance of specified name
+  /// Return the diffusion grid which holds the substance of specified id
   DiffusionGrid* GetDiffusionGrid(size_t substance_id) {
     assert(substance_id < diffusion_grids_.size() &&
            "You tried to access a diffusion grid that does not exist!");
     return diffusion_grids_[substance_id];
+  }
+
+  /// Return the diffusion grid which holds the substance of specified name
+  DiffusionGrid* GetDiffusionGrid(std::string substance_name) {
+    for (auto dg : diffusion_grids_) {
+      if (dg->GetSubstanceName() == substance_name) {
+        return dg;
+      }
+    }
+    return nullptr;
   }
 
   /// Returns the total number of simulation objects
@@ -236,6 +246,11 @@ class ResourceManager {
   void Clear() {
     ApplyOnAllTypes(
         [](auto* container, uint16_t type_idx) { container->clear(); });
+  }
+
+  template <typename TSo>
+  void push_back(const TSo& so) {  // NOLINT
+    Get<TSo>()->push_back(so);
   }
 
   /// Returns the number of simulation object types

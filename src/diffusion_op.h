@@ -31,8 +31,8 @@ class DiffusionOp {
         // If we are bounded we can directly grow to the specified size, to
         // avoid copying diffusion grid data with DiffusionGrid::CopyOldData
         if (Param::bound_space_) {
-          lbound = Param::lbound_;
-          rbound = Param::rbound_;
+          lbound = Param::min_bound_;
+          rbound = Param::max_bound_;
           grid.SetDimensionThresholds(lbound, rbound);
         }
         dg->Initialize({lbound, rbound, lbound, rbound, lbound, rbound},

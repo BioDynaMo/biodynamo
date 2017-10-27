@@ -16,17 +16,27 @@ namespace scheduler_test_internal {
 
 class TestSchedulerRestore : public Scheduler<> {
  public:
-  explicit TestSchedulerRestore(const std::string& restore)
-      : Scheduler<>("", restore) {}
+  static TestSchedulerRestore Create(const std::string& restore) {
+    Param::backup_file_ = "";
+    Param::restore_file_ = restore;
+    return TestSchedulerRestore();
+  }
+
   void Execute() override { execute_calls++; }
 
   unsigned execute_calls = 0;
+
+ private:
+  TestSchedulerRestore() : Scheduler<>() {}
 };
 
 class TestSchedulerBackup : public Scheduler<> {
  public:
-  explicit TestSchedulerBackup(const std::string& backup)
-      : Scheduler<>(backup, "") {}
+  static TestSchedulerBackup Create(const std::string& backup) {
+    Param::backup_file_ = backup;
+    Param::restore_file_ = "";
+    return TestSchedulerBackup();
+  }
 
   void Execute() override {
     // sleep
@@ -41,6 +51,9 @@ class TestSchedulerBackup : public Scheduler<> {
     execute_calls_++;
   }
   unsigned execute_calls_ = 0;
+
+ private:
+  TestSchedulerBackup() : Scheduler<>() {}
 };
 
 inline void RunRestoreTest() {
@@ -57,7 +70,7 @@ inline void RunRestoreTest() {
   EXPECT_EQ(0u, ResourceManager<>::Get()->Get<Cell>()->size());
 
   // start restore validation
-  TestSchedulerRestore scheduler(ROOTFILE);
+  auto scheduler = TestSchedulerRestore::Create(ROOTFILE);
   // 149 simulation steps have already been calculated. Therefore, this call
   // should be ignored
   scheduler.Simulate(100);
@@ -89,8 +102,8 @@ inline void RunBackupTest() {
   cell.SetDiameter(10);  // important for grid to determine box size
   ResourceManager<>::Get()->Get<Cell>()->push_back(cell);
 
-  TestSchedulerBackup scheduler(ROOTFILE);
-  Param::backup_every_x_seconds_ = 1;
+  auto scheduler = TestSchedulerBackup::Create(ROOTFILE);
+  Param::backup_interval_ = 1;
   // one simulation step takes 350 ms -> backup should be created every three
   // steps
   scheduler.Simulate(7);

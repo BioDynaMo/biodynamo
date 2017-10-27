@@ -15,7 +15,6 @@
 namespace bdm {
 
 using std::array;
-using std::vector;
 
 /// A class that computes the diffusion of extracellular substances
 /// It maintains the concentration and gradient of a single substance
@@ -119,8 +118,8 @@ class DiffusionGrid {
     }
 
     // Temporarily save previous grid data
-    vector<double> tmp_c1 = c1_;
-    vector<double> tmp_gradients = gradients_;
+    std::vector<double> tmp_c1 = c1_;
+    std::vector<double> tmp_gradients = gradients_;
 
     c2_.clear();
 
@@ -148,8 +147,8 @@ class DiffusionGrid {
   /// If the dimensions would be increased from 2x2 to 3x3, it will still
   /// be increased to 4x4 in order for GetBoxIndex to function correctly
   ///
-  void CopyOldData(const vector<double>& old_c1,
-                   const vector<double>& old_gradients,
+  void CopyOldData(const std::vector<double>& old_c1,
+                   const std::vector<double>& old_gradients,
                    const array<int, 3>& old_num_boxes_axis) {
     if ((((num_boxes_axis_[0] - old_num_boxes_axis[0])) % 2) != 0) {
       num_boxes_axis_[0]++;
@@ -495,11 +494,11 @@ class DiffusionGrid {
   /// The length of a box
   uint32_t box_length_;
   /// The array of concentration values
-  vector<double> c1_;
+  std::vector<double> c1_;
   /// An extra concentration data buffer for faster value updating
-  vector<double> c2_;
+  std::vector<double> c2_;
   /// The array of gradients (x, y, z)
-  vector<double> gradients_;
+  std::vector<double> gradients_;
   /// The maximum concentration value that a box can have
   double concentration_threshold_ = 1;
   /// The diffusion coefficients [cc, cw, ce, cs, cn, cb, ct]

@@ -4,6 +4,8 @@
 #include <array>
 #include <cmath>
 #include <complex>
+#include <set>
+#include <string>
 #include <type_traits>
 #include <vector>
 
@@ -20,7 +22,9 @@
 namespace bdm {
 
 using std::array;
-using std::vector;
+
+/// Declare new biology module event for cell division
+extern const BmEvent gCellDivision;
 
 BDM_SIM_CLASS(Cell, SimulationObject) {
   BDM_CLASS_HEADER(CellExt, 1, position_, mass_location_, tractor_force_,
@@ -28,6 +32,12 @@ BDM_SIM_CLASS(Cell, SimulationObject) {
                    z_axis_, biology_modules_, box_idx_);
 
  public:
+  /// Returns the data members that are required to visualize this simulation
+  /// object.
+  static std::set<std::string> GetRequiredVisDataMembers() {
+    return {"position_", "diameter_"};
+  }
+
   using TBiologyModuleVariant = typename TCompileTimeParam::BiologyModules;
   CellExt() : density_{1.0} {}
   explicit CellExt(double diameter) : diameter_(diameter), density_{1.0} {
@@ -162,7 +172,7 @@ BDM_SIM_CLASS(Cell, SimulationObject) {
 
   void ChangeVolume(double speed) {
     // scaling for integration step
-    double delta = speed * Param::kSimulationTimeStep;
+    double delta = speed * Param::simulation_time_step_;
     volume_[kIdx] += delta;
     if (volume_[kIdx] < 5.2359877E-7) {
       volume_[kIdx] = 5.2359877E-7;
@@ -195,7 +205,8 @@ BDM_SIM_CLASS(Cell, SimulationObject) {
   void GetForceOn(const array<double, 3>& ref_mass_location,
                   double ref_diameter, array<double, 3>* force) const {
     DefaultForce default_force;
-    double iof_coefficient = Param::kSphereDefaultInterObjectCoefficient;
+    // TODO(lukas) think about default values in config file
+    double iof_coefficient = 0.15;
 
     default_force.ForceBetweenSpheres(ref_mass_location, ref_diameter,
                                       iof_coefficient, mass_location_[kIdx],
@@ -231,7 +242,7 @@ BDM_SIM_CLASS(Cell, SimulationObject) {
   vec<array<double, 3>> z_axis_ = {array<double, 3>{0.0, 0.0, 1.0}};
 
   /// collection of biology modules which define the internal behavior
-  vec<vector<TBiologyModuleVariant>> biology_modules_;
+  vec<std::vector<TBiologyModuleVariant>> biology_modules_;
 
   /// Grid box index
   vec<uint64_t> box_idx_;
@@ -349,8 +360,8 @@ inline void CellExt<T, U>::DivideImpl(Self<Scalar>* daughter,
   daughter->position_[0][1] = daughter->mass_location_[0][1];
   daughter->position_[0][2] = daughter->mass_location_[0][2];
 
-  CopyVisitor<vector<TBiologyModuleVariant>> visitor(
-      Event::kCellDivision, &(daughter->biology_modules_[0]));
+  CopyVisitor<std::vector<TBiologyModuleVariant>> visitor(
+      gCellDivision, &(daughter->biology_modules_[0]));
   for (auto& module : biology_modules_[kIdx]) {
     visit(visitor, module);
   }

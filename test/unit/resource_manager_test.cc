@@ -203,6 +203,42 @@ TEST(ResourceManagerTest, IOAos) { RunIOAosTest(); }
 
 TEST(ResourceManagerTest, IOSoa) { RunSoaTest(); }
 
+template <typename Backend, typename A, typename B>
+void RunPushBackTest() {
+  const double kEpsilon = abs_error<double>::value;
+  using CTParam = CompileTimeParam<Backend, A, B>;
+  auto rm = ResourceManager<CTParam>::Get();
+  rm->Clear();
+
+  rm->push_back(AScalar(12));
+  rm->push_back(AScalar(34));
+
+  rm->push_back(BScalar(3.14));
+  rm->push_back(BScalar(6.28));
+
+  rm->push_back(AScalar(87));
+
+  auto as = rm->template Get<A>();
+  auto bs = rm->template Get<B>();
+
+  EXPECT_EQ((*as)[0].GetData(), 12);
+  EXPECT_EQ((*as)[1].GetData(), 34);
+  EXPECT_EQ((*as)[2].GetData(), 87);
+
+  EXPECT_NEAR((*bs)[0].GetData(), 3.14, kEpsilon);
+  EXPECT_NEAR((*bs)[1].GetData(), 6.28, kEpsilon);
+}
+
+TEST(ResourceManagerTest, push_backSoa) {
+  RunPushBackTest<Soa, AScalar, BScalar>();
+  RunPushBackTest<Soa, ASoa, BSoa>();
+}
+
+TEST(ResourceManagerTest, push_backAos) {
+  RunPushBackTest<Scalar, AScalar, BScalar>();
+  RunPushBackTest<Scalar, ASoa, BSoa>();
+}
+
 TEST(SoHandle, EqualsOperator) {
   EXPECT_EQ(SoHandle(0, 0), SoHandle(0, 0));
   EXPECT_EQ(SoHandle(1, 0), SoHandle(1, 0));

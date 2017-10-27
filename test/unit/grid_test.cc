@@ -29,7 +29,7 @@ TEST(GridTest, SetupGrid) {
   auto& grid = Grid<>::GetInstance();
   grid.Initialize();
 
-  vector<vector<SoHandle>> neighbors(cells->size());
+  std::vector<std::vector<SoHandle>> neighbors(cells->size());
 
 // Lambda that fills a vector of neighbors for each cell (excluding itself)
 #pragma omp parallel for
@@ -82,7 +82,7 @@ void RunUpdateGridTest(TContainer* cells) {
   // Update the grid
   grid.UpdateGrid();
 
-  vector<vector<SoHandle>> neighbors(cells->size());
+  std::vector<std::vector<SoHandle>> neighbors(cells->size());
 
 // Lambda that fills a vector of neighbors for each cell (excluding itself)
 #pragma omp parallel for

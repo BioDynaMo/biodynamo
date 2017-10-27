@@ -2,106 +2,203 @@
 #define PARAM_H_
 
 #include <cinttypes>
+#include <set>
+#include <string>
+#include <unordered_map>
+#include <vector>
+#include "cpptoml/cpptoml.h"
 
 namespace bdm {
 
-class Param {
- public:
+struct Param {
+  // simulation values ---------------------------------------------------------
+
+  /// Backup file name for full simulation backups\n
+  /// Default value: `""` (no backups will be made)\n
+  /// TOML config file:
   ///
-  static uint32_t backup_every_x_seconds_;
+  ///     [simulation]
+  ///     backup_file = <path>/<filename>.root
+  /// Command line argument: `-b, --backup`
+  static std::string backup_file_;
 
-  /// Time between two simulation step, in hours.
-  static constexpr double kSimulationTimeStep = 0.01;
+  /// File name to restore simulation from\n
+  /// Default value: `""` (no restore will be made)\n
+  /// TOML config file:
+  ///
+  ///     [simulation]
+  ///     restore_file = <path>/<filename>.root
+  /// Command line argument: `-r, --restore`
+  static std::string restore_file_;
+
+  /// Specifies the interval (in seconds) in which backups will be performed.\n
+  /// Default Value: `1800` (every half an hour)\n
+  /// TOML config file:
+  ///
+  ///     [simulation]
+  ///     backup_interval = 1800  # backup every half an hour
+  static uint32_t backup_interval_;
+
+  /// Time between two simulation steps, in hours.
+  /// Default value: `0.01`\n
+  /// TOML config file:
+  ///
+  ///     [simulation]
+  ///     time_step = 0.0125
+  static double simulation_time_step_;
+
   /// Maximum jump that a point mass can do in one time step. Useful to
-  /// stabilize the simulation
-  static constexpr double kSimulationMaximalDisplacement = 3.0;
+  /// stabilize the simulation\n
+  /// Default value: `3.0`\n
+  /// TOML config file:
+  ///
+  ///     [simulation]
+  ///     max_displacement = 3.0
+  static double simulation_max_displacement_;
 
-  static constexpr double kDefaultTolerance = 0.000000001;
+  /// Calculate mechanical interactions between simulation objects.\n
+  /// Default value: `true`\n
+  /// TOML config file:
+  ///
+  ///     [simulation]
+  ///     run_mechanical_interactions = true
+  static bool run_mechanical_interactions_;
 
-  /// Maximum length of a discrete segment before it is cut into two parts.
-  static constexpr double kNeuriteMaxLength = 20;  // usual value : 20
-  /// Minimum length of a discrete segment before. If smaller it will try to
-  /// fuse with the proximal one
-  static constexpr double kNeuriteMinLength = 2.0;  // usual value : 10
-
-  // Diffusion (saving time by not running diffusion for too small differences)
-
-  /// If concentration of a substance smaller than this, it is not diffused
-  static constexpr double kMinimalConcentrationForExtracellularDiffusion = 1e-5;
-
-  /// If absolute concentration difference is smaller than that, there is no
-  /// diffusion
-  static constexpr double
-      kMinimalDifferenceConcentrationForExtracacellularDiffusion = 1e-5;
-  /// If ratio (absolute concentration difference)/concentration is smaller than
-  /// that, no diffusion.
-  static constexpr double kMinimalDCOverCForExtracellularDiffusion = 1e-3;
-
-  /// If concentration of a substance smaller than this, it is not diffused
-  static constexpr double kMinimalConcentrationForIntracellularDiffusion =
-      1e-10;
-  /// If absolute concentration difference is smaller than that, there is no
-  /// diffusion
-  static constexpr double
-      kMinimalDifferenceConcentrationForIntracellularDiffusion = 1e-7;
-  /// If ration (absolute concentration difference)/concentration is smaller
-  /// than that, no diffusion.
-  static constexpr double kMinimalDCOverCForIntracellularDiffusion = 1e-4;
-
-  // Neurites
-  /// Initial value of the restingLength before any specification.
-  static constexpr double kNeuriteDefaultActualLength = 1.0;
-  /// Diameter of an unspecified (= axon/dendrite) neurite when extends from the
-  /// somaElement
-  static constexpr double kNeuriteDefaultDiameter = 1.0;
-  static constexpr double kNeuriteMinimalBifurcationLength = 0;
-  /// Spring constant
-  static constexpr double kNeuriteDefaultSpringConstant = 10;  // 10;
-  /// Threshold the force acting on a neurite has to reach before a move is made
-  /// ( = static friction).
-  static constexpr double kNeuriteDefaultAdherence = 0.1;
-  /// Rest to the movement ( = kinetic friction).
-  static constexpr double kNeuriteDefaultMass = 1;
-
-  static constexpr double kNeuriteDefaultTension = 0.0;
-
-  // Somata
-  /// CAUTION: not the radius but the diameter
-  static constexpr double kSphereDefaultDiameter = 20;
-  /// Threshold the force acting on a somaElement has to reach before a move is
-  /// made ( = static friction).
-  static constexpr double kSphereDefaultAdherence = 0.4;
-  /// Restistance to the movement ( = kinetic friction).
-  static constexpr double kSphereDefaultMass = 1;
-
-  static constexpr double kSphereDefaultRotationalInertia = 0.5;
-
-  static constexpr double kSphereDefaultInterObjectCoefficient = 0.15;
-
-  /// Helpful constant to compare with 0
-  static constexpr double kEpsilon = 1e-20;
-  /// Helpful constant to identify 'infinity'
-  static constexpr double kInfinity = 1e20;
-
-  /// Enable ParaView for visualization
-  static bool use_paraview_;
-  /// Write data to file for post-simulation visualization
-  static bool write_to_file_;
-  /// Frequency to write to file
-  static std::size_t write_freq_;
-
-  /// Enforce an artificial cubic bounds around the simulation space
+  /// Enforce an artificial cubic bounds around the simulation space.
+  /// Simulation objects cannot move outside this cube. Dimensions of this cube
+  /// are determined by parameter `lbound` and `rbound`.\n
+  /// Default value: `false` (simulation space is "infinite")\n
+  /// TOML config file:
+  ///
+  ///     [simulation]
+  ///     bound_space = false
   static bool bound_space_;
-  /// The left bound
-  static double lbound_;
-  /// The right bound
-  static double rbound_;
 
-  /// Enable physics in the simulation
-  static bool run_physics_;
+  /// Minimum allowed value for x-, y- and z-position if simulation space is
+  /// bound (@see `bound_space_`).\n
+  /// Default value: `0`\n
+  /// TOML config file:
+  ///
+  ///     [simulation]
+  ///     min_bound = 0
+  static double min_bound_;
 
-  /// Display the timers of all operations for each time step
-  static bool display_timers_;
+  /// Maximum allowed value for x-, y- and z-position if simulation space is
+  /// bound (@see `bound_space_`).\n
+  /// Default value: `100`\n
+  /// TOML config file:
+  ///
+  ///     [simulation]
+  ///     max_bound = 100
+  static double max_bound_;
+
+  // visualization values ------------------------------------------------------
+
+  /// Use ParaView Catalyst for live visualization.\n
+  /// Defaut value: `false`\n
+  /// TOML config file:
+  ///
+  ///     [visualization]
+  ///     live = false
+  static bool live_visualization_;
+
+  /// Write data to file for post-simulation visualization
+  /// Defaut value: `false`\n
+  /// TOML config file:
+  ///
+  ///     [visualization]
+  ///     export = false
+  static bool export_visualization_;
+
+  /// If `export_visualization_` is set to true, this parameter specifies
+  /// how often it should be exported. 1 = every timestep, 10: every 10
+  /// time steps.\n
+  /// Defaut value: `1`\n
+  /// TOML config file:
+  ///
+  ///     [visualization]
+  ///     export_interval = 1
+  static uint32_t visualization_export_interval_;
+
+  /// Specifies which simulation objects should be visualized. \n
+  /// Every simulation object defines the minimum set of data members which
+  /// are required to visualize it. (e.g. Cell: `position_` and `diameter_`).\n
+  /// With this parameter it is also possible to extend the number of data
+  /// members that are sent to the visualization engine.
+  /// Default value: empty (no simulation object will be visualized)\n
+  /// TOML config file:
+  ///
+  ///     [visualization]
+  ///     # turn on live or export
+  ///     export = true
+  ///
+  ///       [[visualize_sim_object]]
+  ///       name = "Cell"
+  ///       # the following entry is optional
+  ///       additional_data_members = [ "density_" ]
+  ///
+  ///       # The former block can be repeated for further simulation objects
+  ///       [[visualize_sim_object]]
+  ///       name = "Neurite"
+  static std::unordered_map<std::string, std::set<std::string>>
+      visualize_sim_objects_;
+
+  struct VisualizeDiffusion {
+    std::string name_;
+    bool concentration_ = true;
+    bool gradient_ = false;
+  };
+
+  /// Spefifies if for which substances extracellular diffusion should be
+  /// visualized.\n
+  /// Default value: empty (no diffusion will be visualized)\n
+  /// TOML config file:
+  ///
+  ///     [visualization]
+  ///     # turn on live or export
+  ///     export = true
+  ///
+  ///       [[visualize_diffusion]]
+  ///       # Name of the substance
+  ///       name = "Na"
+  ///       # the following two entries are optional
+  ///       #   default value for concentration is true
+  ///       concentration = true
+  ///       #   default value for gradient is false
+  ///       gradient = false
+  ///
+  ///       # The former block can be repeated for further substances
+  ///       [[visualize_diffusion]]
+  ///       name = "K"
+  ///       # default values: concentration = true and gradient = false
+  static std::vector<VisualizeDiffusion> visualize_diffusion_;
+
+  // development values --------------------------------------------------------
+
+  /// Output runtime information for all operations for each time step.\n
+  /// Default Value: `false`\n
+  /// TOML config file:
+  ///
+  ///     [development]
+  ///     output_op_runtime = false
+  static bool output_op_runtime_;
+
+  /// Use the python script (simple_pipeline.py) to do Live Visualization with
+  /// ParaView. If false, we use the C++ pipeline
+  /// Defautl value: `false`\n
+  /// TOML config file:
+  ///     [development]
+  ///     python_catalyst_pipeline_ = false
+  static bool python_catalyst_pipeline_;
+
+  /// Resets the static variables to its default values
+  static void Reset();
+
+ private:
+  friend void InitializeBioDynamo(int, const char**);
+
+  /// Assign values from config file to static variables
+  static void AssignFromConfig(const std::shared_ptr<cpptoml::table>&);
 };
 
 }  // namespace bdm

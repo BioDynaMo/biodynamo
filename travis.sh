@@ -12,20 +12,22 @@ if [ "$TRAVIS_OS_NAME" = "osx" ]; then
   brew update >& /dev/null
   brew install doxygen
   brew install valgrind
-  #brew install cloc
-  # get clang 3.9
-  wget http://releases.llvm.org/3.9.0/clang+llvm-3.9.0-x86_64-apple-darwin.tar.xz 2> /dev/null
-  tar xf clang+llvm-3.9.0-x86_64-apple-darwin.tar.xz > /dev/null
-  export LLVMDIR="`pwd`/clang+llvm-3.9.0-x86_64-apple-darwin"
+  brew install cloc
+  # get clang 5.0
+  brew install llvm
+  export LLVMDIR="/usr/local/opt/llvm"
   export CC=$LLVMDIR/bin/clang
   export CXX=$LLVMDIR/bin/clang++
   export CXXFLAGS=-I$LLVMDIR/include
   export LDFLAGS=-L$LLVMDIR/lib
   export DYLD_LIBRARY_PATH=$LLVMDIR/lib:$DYLD_LIBRARY_PATH
   # get latest cmake
-  wget https://cmake.org/files/v3.6/cmake-3.6.1-Darwin-x86_64.tar.gz 2> /dev/null
-  tar zxf cmake-3.6.1-Darwin-x86_64.tar.gz > /dev/null
-  export PATH=$LLVMDIR/bin:"`pwd`/cmake-3.6.1-Darwin-x86_64/CMake.app/Contents/bin":$PATH:
+  brew upgrade cmake
+  export PATH=$LLVMDIR/bin:$PATH
+  # copy the omp.h file to our CMAKE_PREFIX_PATH
+  sudo mkdir -p /usr/local/Cellar/biodynamo
+  OMP_V=`/usr/local/opt/llvm/bin/llvm-config --version`
+  sudo cp -f /usr/local/opt/llvm/lib/clang/$OMP_V/include/omp.h /usr/local/Cellar/biodynamo
 fi
 
 if [ "$TRAVIS_OS_NAME" = "linux" ]; then
@@ -59,25 +61,36 @@ fi
 # install ROOT
 cd
 if [ "$TRAVIS_OS_NAME" = "linux" ]; then
-  wget --progress=dot:giga -O root_dict_path.Linux-ubuntu14-x86_64-gcc5.4.tar.gz "https://cernbox.cern.ch/index.php/s/BbFptgxo2K565IS/download?path=%2F&files=root_dict_patch.Linux-ubuntu14-x86_64-gcc5.4.tar.gz"
-  tar zxf "root_dict_path.Linux-ubuntu14-x86_64-gcc5.4.tar.gz" > /dev/null
+  wget --progress=dot:giga -O root_v6.11.01_Linux-ubuntu14-x86_64-gcc5.4_263508429d.tar.gz "https://cernbox.cern.ch/index.php/s/BbFptgxo2K565IS/download?path=%2F&files=root_v6.11.01_Linux-ubuntu14-x86_64-gcc5.4_263508429d.tar.gz"
+  tar zxf "root_v6.11.01_Linux-ubuntu14-x86_64-gcc5.4_263508429d.tar.gz" > /dev/null
 
   wget -O paraview-5.4_ubuntu14_gcc5.4_openmpi.tar.gz "https://cernbox.cern.ch/index.php/s/BbFptgxo2K565IS/download?path=%2F&files=paraview-5.4_ubuntu14_gcc5.4_openmpi.tar.gz"
   sudo mkdir -p /opt/biodynamo/paraview
   sudo tar -xzf paraview-5.4_ubuntu14_gcc5.4_openmpi.tar.gz -C /opt/biodynamo/paraview
 
-  wget -O Qt5.6.2_ubuntu16_gcc5.4.tar.gz "https://cernbox.cern.ch/index.php/s/BbFptgxo2K565IS/download?path=%2F&files=Qt5.6.2_ubuntu16_gcc5.4.tar.gz"
+  wget -O Qt5.9.1_ubuntu16_gcc5.4.tar.gz "https://cernbox.cern.ch/index.php/s/BbFptgxo2K565IS/download?path=%2F&files=Qt5.9.1_ubuntu16_gcc5.4.tar.gz"
   sudo mkdir -p /opt/biodynamo/qt
-  sudo tar -xzf Qt5.6.2_ubuntu16_gcc5.4.tar.gz -C /opt/biodynamo/qt
+  sudo tar -xzf Qt5.9.1_ubuntu16_gcc5.4.tar.gz -C /opt/biodynamo/qt
 
   export ParaView_DIR=/opt/biodynamo/paraview/lib/cmake/paraview-5.4
   export Qt5_DIR=/opt/biodynamo/qt/lib/cmake/Qt5
 
   export LD_LIBRARY_PATH=/opt/biodynamo/qt/lib:/usr/lib/openmpi/lib:$LD_LIBRARY_PATH
 else
-  # write progress to terminal to prevent termination by travis if it takes longer than 10 min
-  wget --progress=dot:giga https://root.cern.ch/download/root_v6.10.00.macosx64-10.11-clang80.tar.gz
-  tar zxf root_v6.10.00.macosx64-10.11-clang80.tar.gz > /dev/null
+  wget --progress=dot:giga -O root_v6.11.01_macos64_LLVM-Clang-5.0_263508429d.tar.gz "https://cernbox.cern.ch/index.php/s/BbFptgxo2K565IS/download?path=%2F&files=root_v6.11.01_macos64_LLVM-Clang-5.0_263508429d.tar.gz"
+  tar zxf "root_v6.11.01_macos64_LLVM-Clang-5.0_263508429d.tar.gz" > /dev/null
+
+  wget -O paraview-5.4_macos64_llvm-5.0.tar.gz "https://cernbox.cern.ch/index.php/s/BbFptgxo2K565IS/download?path=%2F&files=paraview-5.4_macos64_llvm-5.0.tar.gz"
+  sudo mkdir -p /opt/biodynamo/paraview
+  sudo tar -xzf paraview-5.4_macos64_llvm-5.0.tar.gz -C /opt/biodynamo/paraview
+
+  brew install qt
+
+  export ParaView_DIR=/opt/biodynamo/paraview/lib/cmake/paraview-5.4
+  export Qt5_DIR=/usr/local/opt/qt/lib/cmake/Qt5
+
+  export DYLD_LIBRARY_PATH=/opt/biodynamo/qt/lib:/usr/lib/openmpi/lib:$DYLD_LIBRARY_PATH
+  export DYLD_LIBRARY_PATH=/opt/biodynamo/paraview/lib/paraview-5.4:$DYLD_LIBRARY_PATH
 fi
 
 # set the Python envars for Catalyst
@@ -94,17 +107,75 @@ ${CXX} -v
 
 cd $biod
 
+cloc .
+# add master branch
+# https://github.com/travis-ci/travis-ci/issues/6069
+git remote set-branches --add origin master
+
+# build biodynamo and run tests
+mkdir build
+cd build
+mkdir install
+
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=install ..
+make -j2
+make check-submission
+
 # run following commands only on Linux
 if [ "$TRAVIS_OS_NAME" = "linux" ]; then
-  cloc .
+  # commented until the following snapcraft issue is resolved:
+  # https://forum.snapcraft.io/t/classic-snaps-failing-on-ubuntu-17-10/2324/45
+  # as a result all binaries in our snap package segfault
+  echo ""  # noop, because if statement must have at least one command
 
-  # add master branch
-  # https://github.com/travis-ci/travis-ci/issues/6069
-  git remote set-branches --add origin master
+  # build snap package
+  # make snap-package
 
-  # build biodynamo and run tests
-  mkdir build
-  cd build
-  cmake ..
-  make check-submission
+  # test snap package
+  #   revert image to initial conditions
+  # sudo apt-get -y remove openmpi-bin libopenmpi-dev
+  # sudo apt-get -y remove freeglut3-dev
+  # sudo apt-get -y remove gcc-5 g++-5
+  # sudo apt-get -y remove valgrind
+  # sudo apt-get -y remove doxygen
+  # sudo apt-get -y remove cloc
+  # sudo apt-get -y remove libiomp-dev
+  # sudo apt-get -y remove clang-3.9 clang-format-3.9 clang-tidy-3.9
+  # export CC=""
+  # export CXX=""
+  # sudo rm /usr/bin/cmake
+  # sudo rm -rf /opt/biodynamo
+  #
+  # sudo apt-get -y install snapd
+  # sudo snap install core
+  #
+  # export PATH=/snap/bin:$PATH
+  #
+  # ../test/integration/test_snap_package.sh
+  # TEST_RET_VAL=$?
+  # if [ "0" = "${TEST_RET_VAL}" ]; then
+  #   echo "Upload snap package"
+  #   # TODO upload
+  # else
+  #   exit ${TEST_RET_VAL}
+  # fi
+else
+  # revert image to initial conditions
+  export CC=""
+  export CXX=""
+  export DYLD_LIBRARY_PATH=""
+  brew uninstall cmake
+  brew uninstall qt
+  brew uninstall llvm
+  sudo rm -rf /opt/biodynamo
+  sudo rm -rf /usr/local/Cellar/biodynamo
+
+  # run package test
+  ../test/integration/test_brew_package.sh
+  TEST_RET_VAL=$?
+  if [ "0" = "${TEST_RET_VAL}" ]; then
+    echo "Installation was successfull!"
+  else
+    exit ${TEST_RET_VAL}
+  fi
 fi

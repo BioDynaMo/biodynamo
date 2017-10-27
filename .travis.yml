@@ -2,8 +2,8 @@ language: c++
 
 matrix:
   include:
-    # - os: osx
-    #   compiler: clang
+    - os: osx
+      compiler: clang
     - os: linux
       compiler: gcc
       dist: trusty
@@ -13,5 +13,11 @@ matrix:
 script:
   - ./travis.sh
 
+services:
+  - docker
+
 notifications:
   slack: cernopenlab:2MzX9lwS6W9nU47MuY1qSmk9
+
+after_failure:
+  - "cat /Users/travis/build/BioDynaMo/biodynamo/build/*.log"
