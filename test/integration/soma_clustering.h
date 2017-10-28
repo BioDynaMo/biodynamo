@@ -33,10 +33,7 @@ BDM_SIM_OBJECT(MyCell, Cell) {
   MyCellExt(const std::array<double, 3>& position) : Base(position) {}
 
   void SetCellType(int t) { cell_type_[kIdx] = t; }
-
-  int GetCellType() { return cell_type_[kIdx]; }
-  // This function is used by ParaView for coloring the cells by their type
-  int* GetCellTypePtr() { return cell_type_.data(); }
+  int GetCellType() const { return cell_type_[kIdx]; }
 
  private:
   vec<int> cell_type_;
