@@ -47,6 +47,7 @@ parts:
     source: https://cernbox.cern.ch/index.php/s/BbFptgxo2K565IS/download?path=%2F&files=paraview-5.4.1_ubuntu16_gcc5.4.tar.gz
     prepare: |
       mkdir -p dependencies/paraview && mv * dependencies/paraview 2>/dev/null ; true
+      find dependencies/paraview/lib/cmake/ -type f -name "*.cmake" -exec sed -i 's|/usr/lib/x86_64-linux-gnu/|/snap/biodynamo/current/usr/lib/x86_64-linux-gnu/|g' {} +
     install: |
       ln -s $SNAP/usr/lib/x86_64-linux-gnu/libpython2.7.so.1 $SNAPCRAFT_PART_INSTALL/usr/lib/x86_64-linux-gnu/libpython2.7.so
     stage-packages:
