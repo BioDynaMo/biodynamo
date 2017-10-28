@@ -16,6 +16,10 @@ parts:
   biodynamo:
     plugin: dump
     source: @CMAKE_INSTALL_PREFIX@
+    prepare: |
+      find biodynamo/bin/ -type f -name "*.py" -exec sed -i 's|"git"|"/snap/biodynamo/current/usr/bin/git"|g' {} +
+      find biodynamo/bin/ -type f -name "*.py" -exec sed -i 's|"make"|"/snap/biodynamo/current/usr/bin/make"|g' {} +
+      find biodynamo/bin/ -type f -name "*.py" -exec sed -i 's|"cmake"|"/snap/biodynamo/current/usr/bin/cmake"|g' {} +
     stage-packages:
        - g++-5
        - git
@@ -101,6 +105,7 @@ environment:
     /snap/biodynamo/current/dependencies/paraview/lib/paraview-5.4:\
     $LD_LIBRARY_PATH"
   PATH: "
+    /snap/biodynamo/current/usr/bin:\
     /snap/biodynamo/current/dependencies/root/bin:\
     /snap/biodynamo/current/dependencies/paraview/bin:$PATH"
   CC:   /snap/biodynamo/current/usr/bin/gcc-5

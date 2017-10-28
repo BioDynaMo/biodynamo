@@ -140,7 +140,7 @@ def CreateDebugBranch(sim_name):
 
     original_branch = sp.check_output(
         ["git", "rev-parse", "--abbrev-ref", "HEAD"]).decode('ascii').split("\n")[0]
-    branch_name = "bdm-assist-" + time.strftime("%Y%m%d")
+    branch_name = "bdm-assist-" + time.strftime("%Y%m%d_%H%M")
     sp.check_output(["git", "checkout", "-b", branch_name])
     sp.check_output(["git", "add", "debug"])
     sp.check_output(["git", "commit", "-m", '"Add debug information"'])

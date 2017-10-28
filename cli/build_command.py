@@ -1,5 +1,6 @@
 import os, sys
 import subprocess as sp
+from pathlib import Path
 from print_command import Print
 
 
@@ -8,6 +9,7 @@ def BuildCommand(clean=False, debug=False, build=True):
     build_dir = "build"
     debug_dir = "debug"
 
+    Print.new_step("Build")
 
     if clean or debug:
         Print.new_step("Clean build directory")
@@ -44,13 +46,15 @@ def BuildCommand(clean=False, debug=False, build=True):
                 "Compilation failed. Generating debug/make_output.log..."
                 )
                 return
-                
+
     elif build:
-        try:
-            sp.check_output(["cmake", "-B./" + build_dir, "-H."])
-        except sp.CalledProcessError as err:
-            Print.error("Failed to run CMake. Check the debug output above.")
-            sys.exit(1)
+        # if CMakeCache.txt does not exist, run cmake
+        if not Path(build_dir + "/CMakeCache.txt").is_file():
+            try:
+                sp.check_output(["cmake", "-B./" + build_dir, "-H."])
+            except sp.CalledProcessError as err:
+                Print.error("Failed to run CMake. Check the debug output above.")
+                sys.exit(1)
 
         try:
             sp.check_output(["make", "-j4", "-C", build_dir])

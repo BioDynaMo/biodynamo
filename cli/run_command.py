@@ -2,7 +2,6 @@ import os
 import subprocess as sp
 from print_command import Print
 from build_command import BuildCommand
-from pathlib import Path
 
 
 ## The BioDynaMo CLI command to run a simulation
@@ -11,17 +10,16 @@ from pathlib import Path
 ##
 def RunCommand(debug=False):
     sim_name = os.getcwd().split("/")[-1]
-    Print.new_step("Run " + sim_name)
     cmd = "./build/" + sim_name
-    if(Path(cmd).is_file()):
-        try:
-            if debug:
-                sp.check_output([cmd, "&>", "debug/runtime_output.log"])
-            else:
-                sp.check_output([cmd])
-                Print.success("Finished successfully")
-        except sp.CalledProcessError as err:
-            Print.error("Error during execution of {0}".format(cmd))
-    else:
-        Print.warning("Could not find executable. Will start to build project.")
+
+    try:
         BuildCommand()
+        Print.new_step("Run " + sim_name)
+        if debug:
+            sp.check_output([cmd, "&>", "debug/runtime_output.log"])
+        else:
+            print(sp.check_output([cmd], stderr=sp.STDOUT).decode('utf-8'))
+            Print.success("Finished successfully")
+    except sp.CalledProcessError as err:
+        print(err.output.decode("utf-8"))
+        Print.error("Error during execution of {0}".format(cmd))
