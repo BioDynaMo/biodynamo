@@ -133,14 +133,13 @@ add_dependencies(bdmclean libbdmclean)
 generate_rootlogon()
 if (${ParaView_FOUND})
   link_directories($ENV{ParaView_DIR}/../../paraview-5.4)
-  target_link_libraries(biodynamo vtkPVPythonCatalyst vtkIOParallelXML 
+  target_link_libraries(biodynamo vtkPVPythonCatalyst vtkIOParallelXML
     vtkPVVTKExtensionsDefault vtkPVServerManagerRendering)
 endif()
 
 # create cmake files used by external builds
 configure_file("cmake/UseBioDynaMo.cmake.in" "UseBioDynaMo.cmake" @ONLY)
-# create snapcraft config file
-configure_file("cmake/snapcraft.yaml.in" "snapcraft.yaml" @ONLY)
+
 
 # -------------------- build test project  ------------------------------------
 if (test)
@@ -198,7 +197,10 @@ include(cmake/Installation.cmake)
 # -------------------- add targets for code style and submission checks --------
 include(cmake/CppStyleGuideChecks.cmake)
 
-# -------------------- add target to build snap package ------------------------
+# -------------------- build snap package --------------------------------------
+# create snapcraft config file
+configure_file("cmake/snapcraft.yaml.in" "snapcraft.yaml" @ONLY)
+
 add_custom_target(snap-package
   COMMAND ../cmake/build_snap_package.sh ${CMAKE_INSTALL_PREFIX}
   WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
