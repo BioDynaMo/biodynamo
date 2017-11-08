@@ -91,8 +91,8 @@ BDM_SIM_OBJECT_TEST(TestCell, Cell, CTParam) {
   double expected_phi_;
   double expected_theta_;
 
-  void DivideImpl(typename Base::template Self<Scalar> * daughter,
-                  double volume_ratio, double phi, double theta) override {
+  void DivideImpl(void* daughter, double volume_ratio, double phi, double theta)
+      override {
     if (check_input_parameters_) {
       EXPECT_NEAR(expected_volume_ratio_, volume_ratio, 1e-8);
       EXPECT_NEAR(expected_phi_, phi, 1e-8);
