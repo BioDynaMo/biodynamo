@@ -1,6 +1,17 @@
 site_name: BioDynaMo User Documentation
 theme: 'material'
+markdown_extensions:
+  - admonition
+  - codehilite
 pages:
     - Home: index.md
-    - Getting Started: getting_started.md
-    - Your First Simulation: first_simulation.md
+    - Getting Started:
+      - Installation: installation.md
+      - Usage: usage.md
+    - Exercises:
+      - Hello World: hello_world.md
+      - Visualization: visualization.md
+      - Diffusion: diffusion.md
+      # - Soma Clustering: soma_clustering.md
+    - Documentation: documentation.md
+    - Contact: contact.md
