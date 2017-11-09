@@ -1,7 +1,7 @@
 # Getting Started
 
 There are two types of installations of BioDynaMo: the **user installation** and
-the **developers installation**. Currently supported platforms are Linux and 
+the **developers installation**. Currently supported platforms are Linux and
 Mac OS X. Below you will find instructions on how to install each installation
 type for the supported platforms.
 
@@ -55,7 +55,7 @@ sudo make install
 git clone https://github.com/BioDynaMo/biodynamo
 cd biodynamo
 
-sudo script/install_prerequesites_macos.sh
+script/install_prerequesites_macos.sh
 
 # source biodynamo environment
 source /opt/biodynamo/biodynamo_dev.env
