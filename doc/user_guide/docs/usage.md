@@ -1,11 +1,16 @@
 # Usage
 
+There is a slight difference in usage of BioDynaMo between the user-installed
+version and the developer-installed version. Below you will find the usage
+instructions for the user-installed version. At the [bottom of the page](#notes-for-developers) you can
+find some remarks for the developer-installed version.
+
 ## Setting up the Command Line Interface
 
 Setting up a simulation and running it is done with the BioDynaMo command line
 interface (CLI). 
 
-!!! note "Note (for Mac OS users)"
+!!! info "Note (for Mac OS users)"
 	In order for the CLI to be available in your shell environment
 	it is necessary to run the following command:
 
@@ -71,3 +76,16 @@ biodynamo assist
 This command will create a folder called `debug` in which debug information will be collected.
 A git branch will be created and uploaded to Github. Send the link to this branch to us, 
 so we can take a look at the issue. Check out [Contact](contact.md) on how to contact us.
+
+
+## Notes for developers
+If you have installed the developers version and you want to make use of your
+custom features then the procedure is similar to the user-installed usage. The
+only extra step that needs to be performed is the following one at the beginning:
+
+``` sh
+source /opt/biodynamo/biodynamo_dev.env
+```
+
+!!! note "Mac OS users"
+	You will **not** need to `source biodynamo.env` after this.
