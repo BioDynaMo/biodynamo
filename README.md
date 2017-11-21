@@ -20,41 +20,9 @@ A currently available software solution to simulate neural development is Cx3D,
 ideal for high-performance computing (HPC). In order to adapt Cx3D to support HPC, a
 software that has similar functionalities as Cx3D but is coded in C++ is needed.
 
-## Prerequesites
+## Getting Started
 
-To install all required packages on Ubuntu 16.04 run:
-```
-sudo script/install_prerequesites_ubuntu_16.04.sh
-```
-
-## Build Instructions
-
-Check out code from this repository:
-```
-git clone https://github.com/BioDynaMo/biodynamo.git
-cd biodynamo
-```
-
-Create build directory
-```
-mkdir build && cd build
-```
-
-Configure and build all targets
-```
-cmake ..
-make
-```
-
-This commands build a shared library for BioDynaMo together with a test executable. Furthermore, dependencies
-(GMP, gtest, ...) are automatically downloaded and built as well. They are defined in CMake as ExternalProjects
-
-Run Tests
-```
-make check
-```
-
-In contrast to `make test`, the target `check` will show the test output on failure
+Please have a look at our [user guide](https://biodynamo.github.io/biodynamo/)
 
 ### CMake Options
 Our CMake build script uses a few options to influence the build process. They can be set as follows:
