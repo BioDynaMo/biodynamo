@@ -50,7 +50,7 @@ if [ "$TRAVIS_OS_NAME" = "linux" ]; then
   cd
   wget https://cmake.org/files/v3.6/cmake-3.6.3-Linux-x86_64.tar.gz
   tar -xzf cmake-3.6.3-Linux-x86_64.tar.gz
-  sudo rm /usr/bin/cmake
+  sudo rm -f /usr/bin/cmake
   sudo ln -s `pwd`/cmake-3.6.3-Linux-x86_64/bin/cmake /usr/bin/cmake
 
   # needed for Catalyst
