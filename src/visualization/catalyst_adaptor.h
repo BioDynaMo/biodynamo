@@ -122,31 +122,31 @@ class CatalystAdaptor {
   ///
   template <typename TContainer>
   void BuildCellsVTKStructures(TContainer* sim_objects, uint16_t type_idx) {
-    // if (so_is_initialized_[type_idx] == false) {
-    //   vtk_so_grids_.push_back(vtkUnstructuredGrid::New());
-    //   so_is_initialized_[type_idx] = true;
-    // }
-    //
-    // auto num_cells = sim_objects->size();
-    // auto& scalar_name = TContainer::GetScalarTypeName();
-    // auto& scalar_list = Param::visualize_sim_objects_[scalar_name];
-    //
-    // if (!scalar_list.empty()) {
-    //   sim_objects->ForEachDataMemberIn(
-    //       scalar_list,
-    //       AddCellAttributeData(type_idx, num_cells, &vtk_so_grids_));
-    // }
-    //
-    // vtkNew<vtkDoubleArray> position_array;
-    // position_array->SetName("Positions");
-    // position_array->SetNumberOfComponents(3);
-    // position_array->SetArray(sim_objects->GetPositionPtr(),
-    //                          static_cast<vtkIdType>(num_cells * 3), 1);
-    //
-    // // The positions of the cells need to be vtkPoints
-    // vtkNew<vtkPoints> points;
-    // points->SetData(position_array.GetPointer());
-    // vtk_so_grids_[type_idx]->SetPoints(points.GetPointer());
+    if (so_is_initialized_[type_idx] == false) {
+      vtk_so_grids_.push_back(vtkUnstructuredGrid::New());
+      so_is_initialized_[type_idx] = true;
+    }
+
+    auto num_cells = sim_objects->size();
+    auto& scalar_name = TContainer::GetScalarTypeName();
+    auto& scalar_list = Param::visualize_sim_objects_[scalar_name];
+
+    if (!scalar_list.empty()) {
+      sim_objects->ForEachDataMemberIn(
+          scalar_list,
+          AddCellAttributeData(type_idx, num_cells, &vtk_so_grids_));
+    }
+
+    vtkNew<vtkDoubleArray> position_array;
+    position_array->SetName("Positions");
+    position_array->SetNumberOfComponents(3);
+    position_array->SetArray(sim_objects->GetPositionPtr(),
+                             static_cast<vtkIdType>(num_cells * 3), 1);
+
+    // The positions of the cells need to be vtkPoints
+    vtkNew<vtkPoints> points;
+    points->SetData(position_array.GetPointer());
+    vtk_so_grids_[type_idx]->SetPoints(points.GetPointer());
   }
 
   /// Builds the VTK grid structure for given diffusion grid
