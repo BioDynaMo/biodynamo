@@ -268,15 +268,15 @@ inline void CellExt<T, U>::RunBiologyModules() {
 
 template <typename T, template <typename> class U>
 inline void CellExt<T, U>::Divide(void* daughter) {
-  Divide(daughter, 0.9 + 0.2 * gRandom.NextDouble());
+  Divide(daughter, 0.9 + 0.2 * g__Random.NextDouble());
 }
 
 template <typename T, template <typename> class U>
 inline void CellExt<T, U>::Divide(void* daughter, double volume_ratio) {
   // find random point on sphere (based on :
   // http://mathworld.wolfram.com/SpherePointPicking.html)
-  double theta = 2 * Math::kPi * gRandom.NextDouble();
-  double phi = std::acos(2 * gRandom.NextDouble() - 1);
+  double theta = 2 * Math::kPi * g__Random.NextDouble();
+  double phi = std::acos(2 * g__Random.NextDouble() - 1);
   DivideImpl(daughter, volume_ratio, phi, theta);
 }
 
@@ -285,7 +285,7 @@ inline void CellExt<T, U>::Divide(void* daughter,
                                   const array<double, 3>& axis) {
   auto polarcoord = TransformCoordinatesGlobalToPolar(
       Matrix::Add(axis, mass_location_[kIdx]));
-  DivideImpl(daughter, 0.9 + 0.2 * gRandom.NextDouble(), polarcoord[1],
+  DivideImpl(daughter, 0.9 + 0.2 * g__Random.NextDouble(), polarcoord[1],
              polarcoord[2]);
 }
 

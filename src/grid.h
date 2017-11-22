@@ -351,6 +351,7 @@ class Grid {
 #pragma omp parallel
     {
       auto thread_id = omp_get_thread_num();
+
       auto* grid_dimensions = new std::array<double, 6>;
       *grid_dimensions = {{Constant::kInfinity, -Constant::kInfinity,
                            Constant::kInfinity, -Constant::kInfinity,

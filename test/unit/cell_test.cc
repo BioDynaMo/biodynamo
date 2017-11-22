@@ -113,7 +113,7 @@ TEST(CellTest, DivideVolumeRatioPhiTheta) {
 
 TEST(CellTest, Divide) {
   TestCell cell;
-  gRandom.SetSeed(42);
+  g__Random.SetSeed(42);
 
   cell.check_input_parameters_ = true;
   cell.expected_volume_ratio_ = 1.0455127360065737;
@@ -126,7 +126,7 @@ TEST(CellTest, Divide) {
 
 TEST(CellTest, DivideVolumeRatio) {
   TestCell cell;
-  gRandom.SetSeed(42);
+  g__Random.SetSeed(42);
 
   cell.check_input_parameters_ = true;
   cell.expected_volume_ratio_ = 0.59;
@@ -140,7 +140,7 @@ TEST(CellTest, DivideVolumeRatio) {
 TEST(CellTest, DivideAxis) {
   TestCell cell;
   cell.SetMassLocation({1, 2, 3});
-  gRandom.SetSeed(42);
+  g__Random.SetSeed(42);
 
   cell.check_input_parameters_ = true;
   cell.expected_volume_ratio_ = 1.0455127360065737;
@@ -154,7 +154,7 @@ TEST(CellTest, DivideAxis) {
 TEST(CellTest, DivideVolumeRatioAxis) {
   TestCell cell;
   cell.SetMassLocation({1, 2, 3});
-  gRandom.SetSeed(42);
+  g__Random.SetSeed(42);
 
   cell.check_input_parameters_ = true;
   cell.expected_volume_ratio_ = 0.456;

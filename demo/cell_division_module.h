@@ -23,7 +23,8 @@ inline int Simulate(int argc, const char** argv) {
   InitializeBioDynamo(argc, argv);
 
   // 3. Define initial model - in this example: 3D grid of cells
-  size_t cells_per_dim = 128;
+  size_t cells_per_dim = 32;
+  Param::output_op_runtime_ = true;
   auto construct = [](const std::array<double, 3>& position) {
     Cell cell(position);
     cell.SetDiameter(30);
@@ -36,7 +37,7 @@ inline int Simulate(int argc, const char** argv) {
 
   // 4. Run simulation for one timestep
   Scheduler<> scheduler;
-  scheduler.Simulate(1);
+  scheduler.Simulate(10);
   return 0;
 }
 
