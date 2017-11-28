@@ -47,7 +47,7 @@
             </plugin>
 
             <!-- Jacoco Code Coverage -->
-            <plugin>
+            <!-- <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
                 <version>0.7.0.201403182114</version>
@@ -65,7 +65,7 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin>
+            </plugin> -->
         </plugins>
     </build>
 
