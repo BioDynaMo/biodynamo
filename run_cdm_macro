@@ -1,4 +1,3 @@
 .L /usr/lib/x86_64-linux-gnu/libomp.so
 .L /usr/lib/x86_64-linux-gnu/libatomic.so.1
-.x ../cdm_macro.cc+
-.class CellExt
+.x ../cdm_macro.cc

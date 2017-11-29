@@ -50,6 +50,10 @@ GTAGS
 *.out
 *.app
 
+# cling
+*.d
+*.pcm
+
 #------------------- CMake --------------------
 CMakeCache.txt
 CMakeFiles
