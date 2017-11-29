@@ -9,6 +9,7 @@ namespace dividing_cell_op_test_internal {
 
 template <typename T>
 void RunTest(T* cells) {
+  Rm()->Clear();
   cells->push_back(Cell(41.0));
   cells->push_back(Cell(19.0));
 
