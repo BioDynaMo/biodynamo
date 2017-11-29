@@ -10,95 +10,43 @@
 #include "type_util.h"
 #include "unit/test_util.h"
 #include "variadic_template_parameter_util.h"
+#include "simulation_object_util.h"
 
 #define ROOTFILE "bdmFile.root"
 
 namespace bdm {
 namespace resource_manager_test_internal {
 
-struct ASoa;
-struct BSoa;
+BDM_SIM_OBJECT(A, SimulationObject) {
+  BDM_SIM_OBJECT_HEADER(AExt, 1, data_);
 
-struct AScalar {
-  using Backend = Scalar;
-  template <typename Backend>
-  using Self = typename type_ternary_operator<std::is_same<Soa, Backend>::value,
-                                              ASoa, AScalar>::type;
-
-  AScalar() {}  // for ROOT I/O
-  explicit AScalar(int data) : data_(data) {}
-
-  int GetData() { return data_; }
-
-  int data_;
-
-  ClassDefNV(AScalar, 1);
-};
-
-struct BScalar {
-  using Backend = Scalar;
-  template <typename Backend>
-  using Self = typename type_ternary_operator<std::is_same<Soa, Backend>::value,
-                                              BSoa, BScalar>::type;
-  BScalar() {}  // for ROOT I/O
-  explicit BScalar(double data) : data_(data) {}
-
-  double GetData() { return data_; }
-
-  double data_;
-
-  ClassDefNV(BScalar, 1);
-};
-
-struct ASoa {
-  using Backend = Soa;
-  template <typename Backend>
-  using Self = typename type_ternary_operator<std::is_same<Soa, Backend>::value,
-                                              ASoa, AScalar>::type;
-
-  std::vector<int> data_;
-  size_t idx_ = 0;
-
-  int GetData() { return data_[idx_]; }
-
-  size_t size() const { return data_.size(); }  // NOLINT
-
-  void clear() { data_.clear(); }  // NOLINT
-
-  void push_back(const AScalar& a) { data_.push_back(a.data_); }  // NOLINT
-
-  ASoa& operator[](size_t idx) {
-    idx_ = idx;
-    return *this;
+public:
+  AExt() {}  // for ROOT I/O
+  explicit AExt(int data) {
+    data_[kIdx] = data;
   }
 
-  ClassDefNV(ASoa, 1);
+  int GetData() { return data_[kIdx]; }
+  void SetData(int data) { data_[kIdx] = data; }
+
+  vec<int> data_;
 };
 
-struct BSoa {
-  using Backend = Soa;
-  template <typename Backend>
-  using Self = typename type_ternary_operator<std::is_same<Soa, Backend>::value,
-                                              BSoa, BScalar>::type;
+BDM_SIM_OBJECT(B, SimulationObject) {
+  BDM_SIM_OBJECT_HEADER(BExt, 1, data_);
 
-  std::vector<double> data_;
-  size_t idx_ = 0;
-
-  double GetData() { return data_[idx_]; }
-
-  size_t size() const { return data_.size(); }  // NOLINT
-
-  void clear() { data_.clear(); }  // NOLINT
-
-  void push_back(const BScalar& b) { data_.push_back(b.data_); }  // NOLINT
-
-  BSoa& operator[](size_t idx) {
-    idx_ = idx;
-    return *this;
+public:
+  BExt() {}  // for ROOT I/O
+  explicit BExt(double data) {
+    data_[kIdx] = data;
   }
 
-  ClassDefNV(BSoa, 1);
+  double GetData() { return data_[kIdx]; }
+  void SetData(double data) { data_[kIdx] = data; }
+
+  vec<double> data_;
 };
+
 
 template <typename TBackend, typename... Types>
 struct CompileTimeParam {
@@ -106,25 +54,25 @@ struct CompileTimeParam {
   using AtomicTypes = VariadicTypedef<Types...>;
 };
 
-template <typename Backend, typename A, typename B>
+template <typename Backend, typename TA, typename TB>
 inline void RunIOTest() {
   const double kEpsilon = abs_error<double>::value;
-  using CTParam = CompileTimeParam<Backend, A, B>;
+  using CTParam = CompileTimeParam<Backend, TA, TB>;
   auto rm = ResourceManager<CTParam>::Get();
   rm->Clear();
   remove(ROOTFILE);
 
   // setup
-  auto a_vector = rm->template Get<A>();
+  auto a_vector = rm->template Get<TA>();
   EXPECT_EQ(0u, a_vector->size());
-  a_vector->push_back(AScalar(12));
-  a_vector->push_back(AScalar(34));
-  a_vector->push_back(AScalar(42));
+  a_vector->push_back(A(12));
+  a_vector->push_back(A(34));
+  a_vector->push_back(A(42));
 
-  auto b_vector = rm->template Get<B>();
+  auto b_vector = rm->template Get<TB>();
   EXPECT_EQ(0u, b_vector->size());
-  b_vector->push_back(BScalar(3.14));
-  b_vector->push_back(BScalar(6.28));
+  b_vector->push_back(B(3.14));
+  b_vector->push_back(B(6.28));
 
   DiffusionGrid* dgrid_1 = new DiffusionGrid(0, "Kalium", 0.4, 0, 2);
   DiffusionGrid* dgrid_2 = new DiffusionGrid(1, "Natrium", 0.2, 0.1, 1);
@@ -139,14 +87,14 @@ inline void RunIOTest() {
   GetPersistentObject(ROOTFILE, "rm", restored_rm);
 
   // validate
-  ASSERT_EQ(3u, restored_rm->template Get<A>()->size());
-  EXPECT_EQ(12, (*restored_rm->template Get<A>())[0].GetData());
-  EXPECT_EQ(34, (*restored_rm->template Get<A>())[1].GetData());
-  EXPECT_EQ(42, (*restored_rm->template Get<A>())[2].GetData());
+  ASSERT_EQ(3u, restored_rm->template Get<TA>()->size());
+  EXPECT_EQ(12, (*restored_rm->template Get<TA>())[0].GetData());
+  EXPECT_EQ(34, (*restored_rm->template Get<TA>())[1].GetData());
+  EXPECT_EQ(42, (*restored_rm->template Get<TA>())[2].GetData());
 
-  ASSERT_EQ(2u, rm->template Get<B>()->size());
-  EXPECT_NEAR(3.14, (*restored_rm->template Get<B>())[0].GetData(), kEpsilon);
-  EXPECT_NEAR(6.28, (*restored_rm->template Get<B>())[1].GetData(), kEpsilon);
+  ASSERT_EQ(2u, rm->template Get<TB>()->size());
+  EXPECT_NEAR(3.14, (*restored_rm->template Get<TB>())[0].GetData(), kEpsilon);
+  EXPECT_NEAR(6.28, (*restored_rm->template Get<TB>())[1].GetData(), kEpsilon);
 
   EXPECT_EQ(0, restored_rm->GetDiffusionGrids()[0]->GetSubstanceId());
   EXPECT_EQ(1, restored_rm->GetDiffusionGrids()[1]->GetSubstanceId());
@@ -161,13 +109,13 @@ inline void RunIOTest() {
 }
 
 inline void RunIOAosTest() {
-  RunIOTest<Scalar, AScalar, BScalar>();
-  RunIOTest<Scalar, ASoa, BSoa>();
+  RunIOTest<Scalar, A, B>();
+  RunIOTest<Scalar, SoaA, SoaB>();
 }
 
 inline void RunIOSoaTest() {
-  RunIOTest<Soa, AScalar, BScalar>();
-  RunIOTest<Soa, ASoa, BSoa>();
+  RunIOTest<Soa, A, B>();
+  RunIOTest<Soa, SoaA, SoaB>();
 }
 
 }  // namespace resource_manager_test_internal

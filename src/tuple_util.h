@@ -18,7 +18,7 @@ namespace detail {
 /// The obtained type is then passed to `function`.
 template <typename TTuple, typename TFunction, size_t TIndex>
 void ApplyImpl(TTuple* t, TFunction&& function) {
-  return function(&std::get<TIndex>(*t));
+  function(&std::get<TIndex>(*t));
 }
 
 /// Does the translation of runtime index to compile time index by using
@@ -31,7 +31,7 @@ void Apply(TTuple* t, size_t index, TFunction&& f,
   // create lookup table that maps runtime index to right ApplyImpl function
   static constexpr ApplyImplSignature* kLut[] = {
       &ApplyImpl<TTuple, TFunction, TIndices>...};
-  return kLut[index](t, f);
+  kLut[index](t, f);
 }
 
 template <typename T, size_t Counter, typename... Types>
