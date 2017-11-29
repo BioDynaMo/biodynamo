@@ -269,6 +269,17 @@ class ResourceManager {
     Get<TSo>()->push_back(so);
   }
 
+  /// Create a new simulation object and return a reference to it.
+  /// @tparam TScalarSo simulation object type with scalar backend
+  /// @param args arguments which will be forwarded to the TScalarSo constructor
+  /// @remarks Note that this function is not thread safe.
+  template <typename TScalarSo, typename... Args>
+  auto New(Args... args) {
+    auto container = Get<TScalarSo>();
+    container->push_back(TScalarSo(std::forward<Args>(args)...));
+    return (*container)[container->size() - 1];
+  }
+
   /// Returns the number of simulation object types
   static constexpr size_t NumberOfTypes() {
     return std::tuple_size<decltype(data_)>::value;
