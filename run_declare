@@ -1,0 +1,8 @@
+.L /usr/lib/x86_64-linux-gnu/libomp.so
+.L /usr/lib/x86_64-linux-gnu/libatomic.so.1
+#include "../src/timing.h"
+bdm::Timing("").Timestamp()
+gInterpreter->Declare("#include \"../cdm_macro.cc\"")
+bdm::Timing("").Timestamp()
+cdm_macro()
+bdm::Timing("").Timestamp()
