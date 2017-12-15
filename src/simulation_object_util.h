@@ -382,6 +382,13 @@ void Delete(Container* container, size_t index) {
   container->DelayedRemove(index);
 }
 
+template <typename TSimObject, typename TResourceManager = ResourceManager<>>
+void Delete(const TSimObject& sim_object) {
+  auto rm = TResourceManager::Get();
+  auto container = rm->template Get<TSimObject>();
+  container->DelayedRemove(sim_object.GetElementIdx());
+}
+
 /// Get the diffusion grid which holds the substance of specified name
 template <typename TResourceManager = ResourceManager<>>
 static DiffusionGrid* GetDiffusionGrid(int substance_id) {

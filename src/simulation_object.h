@@ -61,6 +61,8 @@ class SoaSimulationObject {
 
   virtual ~SoaSimulationObject() {}
 
+  uint32_t GetElementIdx() const { return kIdx; }
+
   /// Returns the vector's size. Uncommited changes are not taken into account
   size_t size() const {  // NOLINT
     return size_;
@@ -160,6 +162,11 @@ class ScalarSimulationObject {
 
  protected:
   static const std::size_t kIdx = 0;
+
+  // TODO(lukas) add GetElementIdx
+  // return this - pointer to first element
+  // Difficulty to know the type - will become easier once TMostDerived type
+  // has been introduced
 
   /// Append a scalar element
   virtual void PushBackImpl(
