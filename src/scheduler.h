@@ -129,6 +129,8 @@ class Scheduler {
     static const auto commit = [](auto* sim_objects, uint16_t type_idx) {
       sim_objects->Commit();
     };
+    assert(rm->GetNumSimObjects() > 0 &&
+           "This simulation does not contain any simulation objects.");
 
     {
       Timing timing("neighbors");
