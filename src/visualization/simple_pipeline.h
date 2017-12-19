@@ -3,6 +3,7 @@
 
 #include <map>
 #include <string>
+#include <TError.h>
 
 #if defined(USE_CATALYST) && !defined(__ROOTCLING__)
 #include <vtkCPDataDescription.h>
