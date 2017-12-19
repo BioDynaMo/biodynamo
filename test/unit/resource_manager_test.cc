@@ -122,6 +122,34 @@ TEST(ResourceManagerTest, ApplyOnAllElementsSoa) {
   RunApplyOnAllElementsTest<Soa, AScalar, BScalar>();
 }
 
+template <typename Backend, typename A, typename B>
+void RunGetNumSimObjects() {
+  using CTParam = CompileTimeParam<Backend, A, B>;
+  auto rm = ResourceManager<CTParam>::Get();
+  rm->Clear();
+
+  auto a_collection = rm->template Get<A>();
+  a_collection->push_back(AScalar(12));
+  a_collection->push_back(AScalar(34));
+  a_collection->push_back(AScalar(59));
+
+  auto b_collection = rm->template Get<B>();
+  b_collection->push_back(BScalar(3.14));
+  b_collection->push_back(BScalar(6.28));
+
+  EXPECT_EQ(5u, rm->GetNumSimObjects());
+}
+
+TEST(ResourceManagerTest, GetNumSimObjectsAos) {
+  RunGetNumSimObjects<Scalar, AScalar, BScalar>();
+  RunGetNumSimObjects<Scalar, ASoa, BSoa>();
+}
+
+TEST(ResourceManagerTest, GetNumSimObjectsSoa) {
+  RunGetNumSimObjects<Soa, ASoa, BSoa>();
+  RunGetNumSimObjects<Soa, AScalar, BScalar>();
+}
+
 // This test uses Cells since ASoa, BSoa are strippted down simulatio objects
 // and are themselves not thread safe.
 template <typename Backend>
