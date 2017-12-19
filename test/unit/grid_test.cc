@@ -107,15 +107,15 @@ void RunUpdateGridTest(TContainer* cells) {
       SoHandle(0, 17), SoHandle(0, 18), SoHandle(0, 20), SoHandle(0, 21),
       SoHandle(0, 22), SoHandle(0, 24), SoHandle(0, 25), SoHandle(0, 26)};
   std::vector<SoHandle> expected_41 = {
-      SoHandle(0, 20), SoHandle(0, 21), SoHandle(0, 22), SoHandle(0, 24),
-      SoHandle(0, 25), SoHandle(0, 26), SoHandle(0, 28), SoHandle(0, 29),
-      SoHandle(0, 30), SoHandle(0, 36), SoHandle(0, 37), SoHandle(0, 38),
-      SoHandle(0, 40), SoHandle(0, 42), SoHandle(0, 44), SoHandle(0, 45),
+      SoHandle(0, 1),  SoHandle(0, 20), SoHandle(0, 21), SoHandle(0, 22),
+      SoHandle(0, 24), SoHandle(0, 25), SoHandle(0, 26), SoHandle(0, 28),
+      SoHandle(0, 29), SoHandle(0, 30), SoHandle(0, 36), SoHandle(0, 37),
+      SoHandle(0, 38), SoHandle(0, 40), SoHandle(0, 44), SoHandle(0, 45),
       SoHandle(0, 46), SoHandle(0, 52), SoHandle(0, 53), SoHandle(0, 54),
       SoHandle(0, 56), SoHandle(0, 57), SoHandle(0, 58), SoHandle(0, 60),
       SoHandle(0, 61)};
   std::vector<SoHandle> expected_61 = {
-      SoHandle(0, 40), SoHandle(0, 41), SoHandle(0, 42), SoHandle(0, 44),
+      SoHandle(0, 1),  SoHandle(0, 40), SoHandle(0, 41), SoHandle(0, 44),
       SoHandle(0, 45), SoHandle(0, 46), SoHandle(0, 56), SoHandle(0, 57),
       SoHandle(0, 58), SoHandle(0, 60)};
 
@@ -143,6 +143,8 @@ TEST(GridTest, UpdateGrid) {
   cells->DelayedRemove(1);
   cells->DelayedRemove(42);
   cells->Commit();
+
+  EXPECT_EQ(62u, cells->size());
 
   RunUpdateGridTest(cells);
 }

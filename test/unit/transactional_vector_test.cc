@@ -39,6 +39,33 @@ TEST(TransactionalVectorTest, All) {
   EXPECT_EQ(0u, vector.size());
 }
 
+TEST(TransactionalVectorTest, DelayedRemove) {
+  TransactionalVector<int> vector;
+  for (uint64_t i = 0; i < 10; i++) {
+    vector.push_back(i);
+  }
+
+  EXPECT_EQ(10u, vector.size());
+
+  vector.DelayedRemove(5);
+  vector.DelayedRemove(8);
+  vector.DelayedRemove(3);
+
+  EXPECT_EQ(10u, vector.size());
+
+  vector.Commit();
+
+  EXPECT_EQ(7u, vector.size());
+
+  EXPECT_EQ(0, vector[0]);
+  EXPECT_EQ(1, vector[1]);
+  EXPECT_EQ(2, vector[2]);
+  EXPECT_EQ(7, vector[3]);
+  EXPECT_EQ(4, vector[4]);
+  EXPECT_EQ(9, vector[5]);
+  EXPECT_EQ(6, vector[6]);
+}
+
 void PushBackElements(TransactionalVector<int> *vector, size_t start_value,
                       size_t num_elements) {
   for (size_t i = start_value; i < start_value + num_elements; i++) {

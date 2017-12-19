@@ -2,6 +2,7 @@
 #define TRANSACTIONAL_VECTOR_H_
 
 #include <algorithm>
+#include <cassert>
 #include <mutex>
 #include <vector>
 
@@ -64,7 +65,11 @@ class TransactionalVector {
     data_.insert(data_.end(), to_be_added_.begin(), to_be_added_.end());
     to_be_added_.clear();
     // commit delayed removes
+    // sort indices in descending order to prevent out of bounds accesses
+    auto descending = [](auto a, auto b) { return a > b; };
+    std::sort(to_be_removed_.begin(), to_be_removed_.end(), descending);
     for (size_t idx : to_be_removed_) {
+      assert(idx < data_.size() && "Removed index outside array boundaries");
       if (data_.size() > 1) {
         // invalidates pointer of last element
         std::swap(data_[idx], data_[data_.size() - 1]);

@@ -149,6 +149,33 @@ TEST(SimulationObjectUtilTest, Soa_AssignmentOperator) {
   EXPECT_EQ(3u, neurons[0].GetNeurites().size());
 }
 
+TEST(SimulationObjectUtilTest, Soa_DelayedRemove) {
+  auto vector = TestObject::NewEmptySoa();
+  for (uint64_t i = 0; i < 10; i++) {
+    vector.push_back(TestObject(i));
+  }
+
+  EXPECT_EQ(10u, vector.size());
+
+  vector.DelayedRemove(5);
+  vector.DelayedRemove(8);
+  vector.DelayedRemove(3);
+
+  EXPECT_EQ(10u, vector.size());
+
+  vector.Commit();
+
+  EXPECT_EQ(7u, vector.size());
+
+  EXPECT_EQ(0, vector[0].GetId());
+  EXPECT_EQ(1, vector[1].GetId());
+  EXPECT_EQ(2, vector[2].GetId());
+  EXPECT_EQ(7, vector[3].GetId());
+  EXPECT_EQ(4, vector[4].GetId());
+  EXPECT_EQ(9, vector[5].GetId());
+  EXPECT_EQ(6, vector[6].GetId());
+}
+
 template <typename TContainer>
 void RunDivideTest(TContainer* neurons) {
   Neuron neuron;

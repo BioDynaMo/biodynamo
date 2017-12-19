@@ -2,6 +2,7 @@
 #define SIMULATION_OBJECT_UTIL_H_
 
 #include <algorithm>
+#include <cassert>
 #include <exception>
 #include <memory>
 #include <set>
@@ -279,7 +280,12 @@ using std::is_same;
     }                                                                          \
     to_be_added_.clear();                                                      \
     /* commit delayed removes */                                               \
+    /* sort indices in descending order to prevent out of bounds accesses */   \
+    auto descending = [](auto a, auto b) { return a > b; };                    \
+    std::sort(Base::to_be_removed_.begin(), Base::to_be_removed_.end(),        \
+              descending);                                                     \
     for (size_t idx : Base::to_be_removed_) {                                  \
+      assert(idx < Base::size() && "Removed index outside array boundaries");  \
       if (Base::size() > 1) {                                                  \
         SwapAndPopBack(idx, Base::size());                                     \
       } else {                                                                 \
