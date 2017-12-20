@@ -6,6 +6,8 @@
 #include <string>
 #include <vector>
 
+#include "math_util.h"
+
 namespace bdm {
 
 class TimingAggregator {
@@ -33,38 +35,18 @@ class TimingAggregator {
 };
 
 inline std::ostream& operator<<(std::ostream& os, const TimingAggregator& ta) {
-  if (ta.timings_.size() != 0) {
-    std::vector<std::string> keys(ta.timings_.size());
-    std::vector<std::vector<int64_t>> values(ta.timings_.size());
-    size_t counter = 0;
-    for (auto& timing : ta.timings_) {
-      keys[counter] = timing.first;
-      values[counter] = timing.second;
-      counter++;
-    }
-    // print header
-    if (ta.descriptions_.size() != 0) {
-      os << "descriptions, ";
-    }
-    for (auto& key : keys) {
-      os << key << ", ";
-    }
-    os << std::endl;
-    // print table
-    for (size_t i = 0; i < values[0].size(); i++) {
-      if (i < ta.descriptions_.size()) {
-        os << ta.descriptions_[i] << ", ";
-      }
-      for (auto& value : values) {
-        os << value[i] << ", ";
-      }
-      os << std::endl;
-    }
-  }
   os << std::endl;
+
+  if (ta.timings_.size() != 0) {
+    os << "\033[1mTotal execution time per operation:\033[0m" << std::endl;
+    for (auto& timing : ta.timings_) {
+      os << timing.first << ": " << Math::Sum(timing.second) << std::endl;
+    }
+  } else {
+    os << "No statistics were gathered!" << std::endl;
+  }
   return os;
 }
-
 }  // namespace bdm
 
 #endif  // TIMING_AGGREGATOR_H_

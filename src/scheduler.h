@@ -41,6 +41,9 @@ class Scheduler {
     if (Param::live_visualization_ || Param::export_visualization_) {
       visualization_->Finalize();
     }
+    if (Param::statistics_) {
+      std::cout << gStatistics << std::endl;
+    }
   }
 
   template <typename Lambda>
@@ -133,8 +136,12 @@ class Scheduler {
            "This simulation does not contain any simulation objects.");
 
     {
-      Timing timing("neighbors");
-      grid_->UpdateGrid();
+      if (Param::statistics_) {
+        Timing timing("neighbors", &gStatistics);
+        grid_->UpdateGrid();
+      } else {
+        grid_->UpdateGrid();
+      }
     }
     rm->ApplyOnAllTypes(diffusion_);
     rm->ApplyOnAllTypes(biology_);

@@ -8,6 +8,8 @@ namespace bdm {
 
 using std::string;
 
+static TimingAggregator gStatistics;
+
 /// \brief Decorator for `Operations` to measure runtime
 template <typename TOp>
 struct OpTimer {
@@ -17,8 +19,10 @@ struct OpTimer {
 
   template <typename Container>
   void operator()(Container* cells, uint16_t type_idx) {
-    {
-      Timing timer(timer_msg_);
+    if (Param::statistics_) {
+      Timing timer(timer_msg_, &gStatistics);
+      operation_(cells, type_idx);
+    } else {
       operation_(cells, type_idx);
     }
   }

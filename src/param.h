@@ -174,14 +174,14 @@ struct Param {
   static std::vector<VisualizeDiffusion> visualize_diffusion_;
 
   // development values --------------------------------------------------------
-
-  /// Output runtime information for all operations for each time step.\n
+  /// Statistics of profiling data; keeps track of the execution time of each
+  /// operation at every timestep.\n
   /// Default Value: `false`\n
   /// TOML config file:
   ///
   ///     [development]
-  ///     output_op_runtime = false
-  static bool output_op_runtime_;
+  ///     statistics = false
+  static bool statistics_;
 
   /// Use the python script (simple_pipeline.py) to do Live Visualization with
   /// ParaView. If false, we use the C++ pipeline

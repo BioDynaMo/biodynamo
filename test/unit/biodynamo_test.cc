@@ -40,7 +40,7 @@ const char* gConfigContent =
     "\n"
     "[development]\n"
     "# this is a comment\n"
-    "output_op_runtime = true\n";
+    "statistics = true\n";
 
 void ValidateNonCLIParameter() {
   EXPECT_EQ(3600u, Param::backup_interval_);
@@ -88,7 +88,7 @@ void ValidateNonCLIParameter() {
     }
   }
 
-  EXPECT_TRUE(Param::output_op_runtime_);
+  EXPECT_TRUE(Param::statistics_);
 }
 
 TEST(BiodynamoTest, InitializeBioDynamo) {

@@ -12,6 +12,11 @@ struct Math {
   /// value of pi
   static constexpr double kPi = 3.141592653589793238462643383279502884;
 
+  template <typename T>
+  static T Sum(const std::vector<T>& v) {
+    return std::accumulate(v.begin(), v.end(), 0);
+  }
+
   static double Norm(const std::array<double, 3>& a) {
     double norm = std::sqrt(a[0] * a[0] + a[1] * a[1] + a[2] * a[2]);
     if (norm == 0.0) {

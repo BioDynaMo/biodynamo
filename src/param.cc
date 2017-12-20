@@ -23,7 +23,7 @@ std::unordered_map<std::string, std::set<std::string>>
 std::vector<Param::VisualizeDiffusion> Param::visualize_diffusion_;
 
 // development group
-bool Param::output_op_runtime_ = false;
+bool Param::statistics_ = false;
 bool Param::python_catalyst_pipeline_ = false;
 
 #define BDM_ASSIGN_CONFIG_VALUE(variable, config_key)                        \
@@ -123,7 +123,7 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
   }
 
   // development group
-  BDM_ASSIGN_CONFIG_VALUE(output_op_runtime_, "development.output_op_runtime");
+  BDM_ASSIGN_CONFIG_VALUE(statistics_, "development.statistics");
 }
 
 void Param::Reset() {
@@ -146,7 +146,7 @@ void Param::Reset() {
   visualize_diffusion_.clear();
 
   // development group
-  output_op_runtime_ = false;
+  statistics_ = false;
   python_catalyst_pipeline_ = false;
 }
 
