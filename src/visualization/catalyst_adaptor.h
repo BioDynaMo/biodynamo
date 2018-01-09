@@ -289,6 +289,7 @@ class CatalystAdaptor {
 
     // Add all diffusion grids to the visualization if requested
     if (!Param::visualize_diffusion_.empty()) {
+      uint16_t idx = 0;
       for (auto& vd : Param::visualize_diffusion_) {
         auto dg = rm->GetDiffusionGrid(vd.name_);
         if (dg == nullptr) {
@@ -299,7 +300,6 @@ class CatalystAdaptor {
           Warning("Visualize Diffusion", "%s", msg.c_str());
           continue;
         }
-        uint16_t idx = 0;
         data_description->AddInput(dg->GetSubstanceName().c_str());
         if (g_processor_->RequestDataDescription(
                 data_description.GetPointer()) != 0) {
