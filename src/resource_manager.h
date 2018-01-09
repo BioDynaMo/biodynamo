@@ -261,7 +261,9 @@ class ResourceManager {
   /// Remove elements from each type
   void Clear() {
     ApplyOnAllTypes(
-        [](auto* container, uint16_t type_idx) { container->clear(); });
+        [](auto* container, uint16_t type_idx) {
+          std::cout << container << std::endl;
+          container->clear(); });
   }
 
   template <typename TSo>

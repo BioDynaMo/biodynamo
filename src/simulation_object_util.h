@@ -308,7 +308,7 @@ struct Capsule;
 \
   /** Templated type alias to get a `SoPointer` for the given external type */ \
   template <typename T> \
-  using GetSoPtr = SoPointer<ToSimBackend<T>, SimBackend>;\
+  using ToSoPtr = SoPointer<ToSimBackend<T>, SimBackend>;\
                                                                                \
   template <typename, typename, template <typename, typename> class>           \
   friend class class_name;                                                     \
@@ -331,6 +331,13 @@ struct Capsule;
     }                                                                          \
     return ret_value;                                                          \
   }                                                                            \
+  \
+  template <typename TRm = ResourceManager<TCompileTimeParam>> \
+  MostDerivedSoPtr GetSoPtr() { \
+    auto container = TRm::Get()->template Get<MostDerived>();\
+    return MostDerivedSoPtr(container, kIdx);\
+    /** FIXME: only works for SOA backends **/ \
+  } \
                                                                                \
   /** Returns the Scalar name of the container minus the "Ext"     */          \
   static const std::string GetScalarTypeName() {                               \
