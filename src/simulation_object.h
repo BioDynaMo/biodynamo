@@ -82,6 +82,8 @@ class SoaSimulationObject {
   /// Thread safe version of std::vector::push_back
   void push_back(const TMostDerived<Scalar> &element) {  // NOLINT
     std::lock_guard<std::recursive_mutex> lock(mutex_);
+    std::cout << "size " << size_ << std::endl;
+    std::cout << "total size " << total_size_ << std::endl;
     if (total_size_ == size_) {
       PushBackImpl(element);
       size_++;
@@ -277,13 +279,8 @@ class SimulationObject
 
 /// type alias to be consistent with naming convention for simulation object
 /// extension
-// <<<<<<< fd61b840dad0f9487b0036ea9aa49a238eef7f8e
-// /// \see BDM_SIM_OBJECT
-// template <typename TCompileTimeParam, template <typename> class TDerived>
-// =======
 /// \see BDM_SIM_OBJECT
 template <typename TCompileTimeParam, typename TDerived>
-// >>>>>>> Improve CRTP solution. Fix compile errors with placeholder NullType
 using SimulationObject_TCTParam_TDerived =
     SimulationObject<TCompileTimeParam, TDerived>;
 

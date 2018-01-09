@@ -28,6 +28,8 @@ struct Param {
 
   static constexpr double kNeuriteDefaultTension = 0.0;
 
+  static constexpr double kNeuriteMinLength = 2.0;
+  static constexpr double kNeuriteMaxLength = 15;
 
   // simulation values ---------------------------------------------------------
   /// Name of the simulation executable\n

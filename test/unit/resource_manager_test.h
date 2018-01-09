@@ -54,6 +54,9 @@ struct CompileTimeParam {
   using AtomicTypes = VariadicTypedef<Types...>;
 };
 
+// FIXME this tests cause the following errors:
+// runBiodynamoTestsMain_dict dictionary forward declarations' payload:78:202: error: no template named 'AExt'
+// see rootcling_impl.cxx:L3668 GenerateFwdDeclString
 template <typename Backend, typename TA, typename TB>
 inline void RunIOTest() {
   const double kEpsilon = abs_error<double>::value;
