@@ -23,6 +23,8 @@ namespace neuroscience {
 template<typename TNeuronSoPtr, typename TNeuriteSoPtr>
 class NeuronNeuriteAdapter {
 public:
+  NeuronNeuriteAdapter() {}
+
   template <typename T>
   NeuronNeuriteAdapter(T&& soptr, typename std::enable_if<is_same<T, TNeuronSoPtr>::value>::type* p = 0) {
     neuron_ptr_ = soptr;
@@ -46,6 +48,14 @@ public:
     neurite_ptr_ = soptr;
   }
 
+  TNeuronSoPtr GetNeuronSoPtr() const {
+    return neuron_ptr_;
+  }
+
+  TNeuriteSoPtr GetNeuriteSoPtr() const {
+    return neurite_ptr_;
+  }
+
   const std::array<double, 3>& GetPosition() const {
     if (!neurite_ptr_.IsNullPtr()) {
       return neurite_ptr_.Get().GetPosition();
@@ -53,8 +63,21 @@ public:
     return neuron_ptr_.Get().GetPosition();
   }
 
+  std::array<double, 3> OriginOf(uint32_t daughter_element_idx) const {
+    if (!neurite_ptr_.IsNullPtr()) {
+      return neurite_ptr_.Get().OriginOf(daughter_element_idx);
+    }
+    return neuron_ptr_.Get().OriginOf(daughter_element_idx);
+  }
+
   bool IsNeuron() const { return !neuron_ptr_.IsNullPtr(); }
   bool IsNeurite() const { return !neurite_ptr_.IsNullPtr(); }
+
+  // TODO LB reference?
+  auto GetMother() {
+    assert(IsNeurite() && "This function call is only allowed for a Neurite");
+    return neurite_ptr_.Get().GetMother();
+  }
 
   auto GetDaughterLeft() -> decltype(std::declval<TNeuriteSoPtr>().Get().GetDaughterLeft()) const {
     assert(IsNeurite() && "This function call is only allowed for a Neurite");
@@ -79,6 +102,16 @@ public:
     //neuron_ptr_.Get().UpdateDependentPhysicalVariables();
   }
 
+  template <typename TNeuronOrNeurite>
+  void UpdateRelative(const TNeuronOrNeurite& old_rel, const TNeuronOrNeurite& new_rel) {
+    if (!neurite_ptr_.IsNullPtr()) {
+      neurite_ptr_.Get().UpdateRelative(old_rel, new_rel);
+    }
+    // FIXME
+    //neuron_ptr_.Get().UpdateRelative();
+  }
+
+
   auto RemoveYourself() -> decltype(std::declval<TNeuriteSoPtr>().Get().RemoveYourself()) const {
     assert(IsNeurite() && "This function call is only allowed for a Neurite");
     return neurite_ptr_.Get().RemoveYourself();
@@ -88,6 +121,10 @@ public:
   void RemoveDaughter(const TNeuriteSoPtr& mother) {
     assert(IsNeuron() && "This function call is only allowed for a Neuron");
     neuron_ptr_.Get().RemoveDaughter(mother);
+  }
+
+  bool operator==(const NeuronNeuriteAdapter<TNeuronSoPtr, TNeuriteSoPtr> other ) const {
+    return neuron_ptr_ == other.neuron_ptr_ && neurite_ptr_ == other.neurite_ptr_;
   }
 
 private:
@@ -118,20 +155,42 @@ BDM_SIM_OBJECT(Neurite, SimulationObject) {
 
   using TNeuron = typename TCompileTimeParam::TNeuron;
 
-  // using NeuriteMother = NeuronNeuriteAdapter<Convert<TNeuron, SimBackend>, MostDerivedSB, SimBackend>;
-  using NeuriteMother = NeuronNeuriteAdapter<ToSoPtr<TNeuron>, MostDerivedSoPtr>;
+  // using NeuriteOrNeuron = NeuronNeuriteAdapter<Convert<TNeuron, SimBackend>, MostDerivedSB, SimBackend>;
+  using NeuriteOrNeuron = NeuronNeuriteAdapter<ToSoPtr<TNeuron>, MostDerivedSoPtr>;
 
   // SoPointer<typename ToBackend<TNeuron, Scalar>::type, SimBackend> aa_;
   ToSoPtr<TNeuron> aa_;
 
  public:
    NeuriteExt() {}
+
+   // TODO arrange in order
+
    const std::array<double, 3>& GetPosition() const { return position_[kIdx]; }
    void SetDiameter(double diameter) {
-     std::cout << kIdx << " - " << diameter << std::endl;
-    //  diameter_[kIdx] = diameter;
+     diameter_[kIdx] = diameter;
+     UpdateVolume();
    }
    void SetPosition(const std::array<double, 3>& position) { position_[kIdx] = position; }
+   // TODO reevaluate if method is required or data member should be used
+   /// return end of cylinder position
+   std::array<double, 3> GetMassLocation() const {
+     return Matrix::Add(position_[kIdx], Matrix::ScalarMult(0.5, spring_axis_[kIdx]));
+   }
+   // TODO reevaluate if method is required or data member should be used
+   void SetMassLocation(const std::array<double, 3>& mass_location) const {
+     position_[kIdx] = Matrix::Subtract(mass_location, Matrix::ScalarMult(0.5, spring_axis_[kIdx]));
+   }
+
+   /// Returns the absolute coordinates of the location where the dauther is
+   /// attached.
+   /// @param daughter_element_idx element_idx of the daughter
+   /// @return the coord
+   std::array<double, 3> OriginOf(uint32_t daughter_element_idx) const {
+     return GetMassLocation();
+   }
+
+   // TODO arrange in order end
 
   /// Retracts the cylinder, if it is a terminal one.
   /// Branch retraction by moving the distal end toward the
@@ -217,14 +276,15 @@ BDM_SIM_OBJECT(Neurite, SimulationObject) {
 
   void RemoveDaughter(const MostDerivedSoPtr& daughter);
 
-  void UpdateRelative(const MostDerivedSoPtr& old_relative,
-                      const MostDerivedSoPtr& new_relative);
+  // TODO add documentation
+  void UpdateRelative(const NeuriteOrNeuron& old_relative,
+                      const NeuriteOrNeuron& new_relative);
 
   /// Returns the total force that this `Neurite` exerts on it's mother.
   /// It is the sum of the spring force and the part of the inter-object force
   /// computed earlier in `RunPhyiscs`
   // TODO update Documentation (RunPhysics is probably displacement op)
-  std::array<double, 3> ForceTransmittedFromDaugtherToMother(const NeuriteMother& mother);
+  std::array<double, 3> ForceTransmittedFromDaugtherToMother(const NeuriteOrNeuron& mother);
 
   // *************************************************************************************
   //   DISCRETIZATION , SPATIAL NODE, CELL ELEMENT
@@ -378,9 +438,9 @@ BDM_SIM_OBJECT(Neurite, SimulationObject) {
 
   void SetAxon(bool is_axon);
 
-  const NeuriteMother& GetMother() const;
+  const NeuriteOrNeuron& GetMother() const;
 
-  void SetMother(const NeuriteMother& mother);
+  void SetMother(const NeuriteOrNeuron& mother);
 
   /// @return the (first) distal neurite element, if it exists,
   /// i.e. if this is not the terminal segment (otherwise returns nullptr).
@@ -469,6 +529,26 @@ BDM_SIM_OBJECT(Neurite, SimulationObject) {
 
   void RemoveYourself();
 
+  friend std::ostream& operator<<(std::ostream& str, const Self<Backend>& n) {
+    auto ml = n.GetMassLocation();
+    str << "MassLocation:     " << ml[0] << ", " << ml[1] << ", " << ml[2] << ", " << std::endl;
+    str << "Position:         " << n.position_[n.kIdx][0] << ", " << n.position_[n.kIdx][1] << ", " << n.position_[n.kIdx][2] << ", " << std::endl;
+    str << "x_axis_:          " << n.x_axis_[n.kIdx][0] << ", " << n.x_axis_[n.kIdx][1] << ", " << n.x_axis_[n.kIdx][2] << ", " << std::endl;
+    str << "y_axis_:          " << n.y_axis_[n.kIdx][0] << ", " << n.y_axis_[n.kIdx][1] << ", " << n.y_axis_[n.kIdx][2] << ", " << std::endl;
+    str << "z_axis_:          " << n.z_axis_[n.kIdx][0] << ", " << n.z_axis_[n.kIdx][1] << ", " << n.z_axis_[n.kIdx][2] << ", " << std::endl;
+    // str << "ftttpm:  " << n.force_to_transmit_to_proximal_mass_[n.kIdx][0] << ", " << n.force_to_transmit_to_proximal_mass_[n.kIdx][1] << ", " << n.force_to_transmit_to_proximal_mass_[n.kIdx][2] << ", " << std::endl;
+    str << "spring_axis_:     " << n.spring_axis_[n.kIdx][0] << ", " << n.spring_axis_[n.kIdx][1] << ", " << n.spring_axis_[n.kIdx][2] << ", " << std::endl;
+    str << "volume_:          " << n.volume_[n.kIdx]  << std::endl;
+    str << "diameter_:        " << n.diameter_[n.kIdx]  << std::endl;
+    // str << "is_axon_:  " << n.is_axon_[n.kIdx]  << std::endl;
+    str << "branch_order_:    " << n.branch_order_[n.kIdx]  << std::endl;
+    str << "actual_length_:   " << n.actual_length_[n.kIdx]  << std::endl;
+    str << "tension_:  " << n.tension_[n.kIdx]  << std::endl;
+    str << "spring_constant_: " << n.spring_constant_[n.kIdx]  << std::endl;
+    str << "resting_length_:  " << n.resting_length_[n.kIdx]  << std::endl;
+    return str;
+  }
+
  private:
 
    // TODO data members same as in cell
@@ -488,7 +568,7 @@ BDM_SIM_OBJECT(Neurite, SimulationObject) {
 
   /// Parent node in the neuron tree structure can be a Neurite segment
   /// or cell body
-  vec<NeuriteMother> mother_ = {{}};
+  vec<NeuriteOrNeuron> mother_ = {{}};
 
   /// First child node in the neuron tree structure (can only be a Neurite
   /// segment)
@@ -524,14 +604,14 @@ BDM_SIM_OBJECT(Neurite, SimulationObject) {
   /// Divides the PhysicalCylinder into two PhysicalCylinders of equal length. The one in which the method is called becomes the distal half.
   /// A new PhysicalCylinder is instantiated and becomes the proximal part. All characteristics are transmitted.
   /// A new Neurite element is also instantiated, and assigned to the new proximal PhysicalCylinder
-  void InsertProximalCylinder(TMostDerived<Scalar>* new_neurite_element);
+  void InsertProximalCylinder();
 
   // TODO documentation, TODO rename function
   /// Divides the PhysicalCylinder into two PhysicalCylinders (in fact, into two instances of the derived class).
   /// The one in which the method is called becomes the distal half, and it's length is reduced.
   /// A new PhysicalCylinder is instantiated and becomes the proximal part (=the mother). All characteristics are transmitted
   /// @param distalPortion the fraction of the total old length devoted to the distal half (should be between 0 and 1).
-  void InsertProximalCylinder(TMostDerived<Scalar>* new_neurite_element, double distal_portion);
+  void InsertProximalCylinder(double distal_portion);
 
   // TODO rename function
   /// Merges two neurite elements together. The one in which the method is called phagocytes it's mother.
@@ -576,7 +656,7 @@ BDM_SO_DEFINE(inline void NeuriteExt)::RetractTerminalEnd(double speed) {
       // TODO setOnTheSchedulerListForPhysicalObjects(true);
     } else if (mother_[kIdx].IsNeurite() && !mother_[kIdx].GetDaughterRight().IsNullPtr()) {
       // if actual_length_ < length and mother is a PhysicalCylinder with no other daughter : merge with mother
-      // TODO RemoveProximalCylinder();  // also updates volume_...
+      RemoveProximalCylinder();  // also updates volume_...
       // be sure i'll run my physics :
       // TODO setOnTheSchedulerListForPhysicalObjects(true);
       RetractTerminalEnd(speed / Param::simulation_time_step_);
@@ -678,18 +758,22 @@ BDM_SO_DEFINE(inline void NeuriteExt)::RemoveDaughter(const typename NeuriteExt<
   Fatal("Neurite", "Given object is not a daughter!");
 }
 
-BDM_SO_DEFINE(inline void NeuriteExt)::UpdateRelative(const MostDerivedSoPtr& old_relative,
-                                                      const MostDerivedSoPtr& new_relative) {
+BDM_SO_DEFINE(inline void NeuriteExt)::UpdateRelative(const NeuriteOrNeuron& old_relative,
+                                                      const NeuriteOrNeuron& new_relative) {
   if (old_relative == mother_[kIdx]) {
     mother_[kIdx] = new_relative;
-  } else  if (old_relative == daughter_left_[kIdx]) {
-    daughter_left_[kIdx] == new_relative;
-  } else if (old_relative == daughter_right_[kIdx]) {
-    daughter_right_[kIdx] == new_relative;
+  } else {
+    auto old_neurite = old_relative.GetNeuriteSoPtr();
+    auto new_neurite = new_relative.GetNeuriteSoPtr();
+    if (old_neurite == daughter_left_[kIdx]) {
+      daughter_left_[kIdx] == new_neurite;
+    } else if (old_neurite == daughter_right_[kIdx]) {
+      daughter_right_[kIdx] == new_neurite;
+    }
   }
 }
 
-BDM_SO_DEFINE(inline std::array<double, 3> NeuriteExt)::ForceTransmittedFromDaugtherToMother(const NeuriteMother& mother) {
+BDM_SO_DEFINE(inline std::array<double, 3> NeuriteExt)::ForceTransmittedFromDaugtherToMother(const NeuriteOrNeuron& mother) {
   if(mother_[kIdx] != mother) {
     Fatal("Neurite", "Given object is not the mother!");
   }
@@ -712,11 +796,11 @@ BDM_SO_DEFINE(inline std::array<double, 3> NeuriteExt)::ForceTransmittedFromDaug
 BDM_SO_DEFINE(inline void NeuriteExt)::RunDiscretization() {
   if (actual_length_[kIdx] > Param::kNeuriteMaxLength) {
     if (daughter_left_[kIdx].IsNullPtr()) { // if terminal branch :
-      // TODO InsertProximalCylinder(0.1);
+      InsertProximalCylinder(0.1);
     } else if (mother_[kIdx].IsNeuron()) {  // if initial branch :
-      // TODO InsertProximalCylinder(0.9);
+      InsertProximalCylinder(0.9);
     } else {
-      // TODO InsertProximalCylinder(0.5);
+      InsertProximalCylinder(0.5);
     }
   } else if (actual_length_[kIdx] < Param::kNeuriteMinLength && mother_[kIdx].IsNeurite()
       && mother_[kIdx].GetRestingLength() < Param::kNeuriteMaxLength - resting_length_[kIdx] - 1
@@ -724,7 +808,8 @@ BDM_SO_DEFINE(inline void NeuriteExt)::RunDiscretization() {
     // if the previous branch is removed, we first remove its associated NeuriteElement
     mother_[kIdx].RemoveYourself();
     // then we remove it
-    // TODO RemoveProximalCylinder();
+    RemoveProximalCylinder();
+    // TODO LB: what about ourselves??
   }
 }
 
@@ -739,16 +824,19 @@ BDM_SO_DEFINE(inline void NeuriteExt)::MovePointMass(double speed, const std::ar
   // auto normalized_dir = Math::Normalize(direction);
   // std::array<double, 3> displacement { length * normalized_dir[0], length * normalized_dir[1], length
   //     * normalized_dir[2] };
-  auto&& displacement = Matrix::ScalarMult(length, Math::Normalize(direction));
-  // mass_location_ = Matrix::add(displacement, mass_location_);
+  auto displacement = Matrix::ScalarMult(length, Math::Normalize(direction));
+  // TODO mass_location_ = Matrix::add(displacement, mass_location_);
+  // position_[kIdx] = Matrix::Add(displacement, position_[kIdx]);
+  // SetMassLocation(Matrix::Add(displacement, GetMassLocation()));
   position_[kIdx] = Matrix::Add(displacement, position_[kIdx]);
   // here I have to define the actual length ..........
-  auto& relative_ml = mother_[kIdx].GetPosition();
-  spring_axis_[kIdx] = Matrix::Subtract(position_[kIdx], relative_ml);
+  // auto& relative_pos = mother_[kIdx].GetPosition();
+  auto relative_pos = mother_[kIdx].OriginOf(Base::GetElementIdx()); // TODO change to auto&&
+  spring_axis_[kIdx] = Matrix::Subtract(position_[kIdx], relative_pos);
   // actual_length_ = MathUtil::sqrt(
   //     spring_axis_[0] * spring_axis_[0] + spring_axis_[1] * spring_axis_[1] + spring_axis_[2] * spring_axis_[2]);
   actual_length_[kIdx] = std::sqrt(Matrix::Dot(spring_axis_[kIdx], spring_axis_[kIdx]));
-  // process of elongation : setting tension to 0 increases the restingLength :
+  // process of elongation : setting tension to 0 increases the resting length :
   SetRestingLengthForDesiredTension(0.0);
 
   // some physics and computation obligations....
@@ -789,6 +877,11 @@ BDM_SO_DEFINE(inline void NeuriteExt)::ChangeDiameter(double speed) {
   // TODO scheduleMeAndAllMyFriends();
 }
 
+BDM_SO_DEFINE(inline void NeuriteExt)::UpdateVolume() {
+  volume_[kIdx] = Math::kPi * diameter_[kIdx] * diameter_[kIdx] * actual_length_[kIdx];
+  // TODO updateIntracellularConcentrations();
+}
+
 BDM_SO_DEFINE(inline void NeuriteExt)::UpdateLocalCoordinateAxis() {
   // x (new) = something new
   // z (new) = x (new) cross y(old)
@@ -810,13 +903,6 @@ BDM_SO_DEFINE(inline void NeuriteExt)::UpdateLocalCoordinateAxis() {
 BDM_SO_DEFINE(inline void NeuriteExt)::UpdateDiameter() {
   diameter_[kIdx] = std::sqrt(4 / Math::kPi * volume_[kIdx] / actual_length_[kIdx]);
 }
-
-BDM_SO_DEFINE(inline void NeuriteExt)::UpdateVolume() {
-  volume_[kIdx] = Math::kPi / 4 * diameter_[kIdx] * diameter_[kIdx] * actual_length_[kIdx];
-  // TODO updateIntracellularConcentrations();
-}
-
-
 
 BDM_SO_DEFINE(inline std::array<double, 3> NeuriteExt)::TransformCoordinatesGlobalToLocal(const std::array<double, 3>& position) const {
   auto pos = Matrix::Subtract(position, ProximalEnd());
@@ -873,11 +959,11 @@ BDM_SO_DEFINE(inline void NeuriteExt)::SetAxon(bool is_axon) {
   is_axon_[kIdx] = is_axon;
 }
 
-BDM_SO_DEFINE(inline const typename NeuriteExt<TCompileTimeParam, TDerived, TBase>::NeuriteMother& NeuriteExt)::GetMother() const {
+BDM_SO_DEFINE(inline const typename NeuriteExt<TCompileTimeParam, TDerived, TBase>::NeuriteOrNeuron& NeuriteExt)::GetMother() const {
   return mother_[kIdx];
 }
 
-BDM_SO_DEFINE(inline void NeuriteExt)::SetMother(const NeuriteMother& mother) {
+BDM_SO_DEFINE(inline void NeuriteExt)::SetMother(const NeuriteOrNeuron& mother) {
   mother_[kIdx] = mother;
 }
 
@@ -990,12 +1076,13 @@ BDM_SO_DEFINE(inline void NeuriteExt)::UpdateDependentPhysicalVariables() {
   // TODO updateSpatialOrganizationNodePosition();
 }
 
-BDM_SO_DEFINE(inline void NeuriteExt)::InsertProximalCylinder(TMostDerived<Scalar>* new_neurite_element) {
-  InsertProximalCylinder(new_neurite_element, 0.5);
+BDM_SO_DEFINE(inline void NeuriteExt)::InsertProximalCylinder() {
+  InsertProximalCylinder(0.5);
 }
 
-BDM_SO_DEFINE(inline void NeuriteExt)::InsertProximalCylinder(TMostDerived<Scalar>* new_neurite_element, double distal_portion) {
-  // location
+BDM_SO_DEFINE(inline void NeuriteExt)::InsertProximalCylinder(double distal_portion) {
+  auto new_neurite_element = Rm()->template New<MostDerived>();
+
   auto new_position = Matrix::Subtract(position_[kIdx], Matrix::ScalarMult(distal_portion, spring_axis_[kIdx]));
 
   // TODO
@@ -1003,20 +1090,20 @@ BDM_SO_DEFINE(inline void NeuriteExt)::InsertProximalCylinder(TMostDerived<Scala
   // std::array<double, 3> newProximalCylinderSpatialNodeLocation { mass_location_[0] - temp * spring_axis_[0],
   //     mass_location_[1] - temp * spring_axis_[1], mass_location_[2] - temp * spring_axis_[2] };
 
-  new_neurite_element->position_[0] = new_position;
+  new_neurite_element.position_[0] = new_position;
 
   // family relations
-  mother_->UpdateRelative(this, new_neurite_element);
-  new_neurite_element->SetMother(mother_[kIdx]);
-  SetMother(new_neurite_element);
-  new_neurite_element->SetDaughterLeft(this);
+  // FIXME mother_[kIdx].UpdateRelative(this, new_neurite_element);
+  new_neurite_element.SetMother(mother_[kIdx]);
+  SetMother(new_neurite_element.GetSoPtr());
+  new_neurite_element.SetDaughterLeft(GetSoPtr());
   // TODO SOM relation
   // auto new_son = so_node_->getNewInstance(newProximalCylinderSpatialNodeLocation, new_cylinder.get());  // todo catch PositionNotAllowedException
   // new_cylinder->setSoNode(std::move(new_son));
   // registering the new cylinder with ecm
   // TODO ecm_->addPhysicalCylinder(new_cylinder.get());
   // physics
-  new_neurite_element->resting_length_[kIdx] = (1 - distal_portion) * resting_length_[kIdx];
+  new_neurite_element.resting_length_[kIdx] = (1 - distal_portion) * resting_length_[kIdx];
   resting_length_[kIdx] *= distal_portion;
 
   //  TODO intracellularSubstances quantities .....................................
@@ -1036,9 +1123,9 @@ BDM_SO_DEFINE(inline void NeuriteExt)::InsertProximalCylinder(TMostDerived<Scala
   //   s->setQuantity(quantity_before_distribution * distal_portion);
   // }
   UpdateDependentPhysicalVariables();
-  new_neurite_element->UpdateDependentPhysicalVariables();
+  new_neurite_element.UpdateDependentPhysicalVariables();
   // UpdateLocalCoordinateAxis has to come after UpdateDepend...
-  new_neurite_element->UpdateLocalCoordinateAxis();
+  new_neurite_element.UpdateLocalCoordinateAxis();
 
   // TODO // copy the LocalBiologicalModules (not done in NeuriteElement, because this creation of
   // // cylinder-neuriteElement is decided for physical and not biological reasons
@@ -1066,6 +1153,8 @@ BDM_SO_DEFINE(inline void NeuriteExt)::InsertProximalCylinder(TMostDerived<Scala
   //     }
   //   } while (++it != excrescences_.end());
   // }
+
+  // FIXME what about data members in subclasses
 }
 
 BDM_SO_DEFINE(inline void NeuriteExt)::ExtendSideCylinder(TMostDerived<Scalar>* new_branch, double length, const std::array<double, 3>& direction) {
@@ -1111,7 +1200,7 @@ BDM_SO_DEFINE(inline void NeuriteExt)::RemoveProximalCylinder() {
   // the ex-mother's neurite Element has to be removed
   // TODO proximal_cylinder->getNeuriteElement()->removeYourself();
   // Re-organisation of the PhysicalObject tree structure: by-passing proximalCylinder
-  mother_[kIdx].GetMother()->UpdateRelative(mother_[kIdx], this);
+  mother_[kIdx].GetMother().UpdateRelative(mother_[kIdx], NeuriteOrNeuron(GetSoPtr()));
   SetMother(mother_[kIdx].GetMother());
 
   // TODO collecting (the quantities of) the intracellular substances of the removed cylinder.
@@ -1154,6 +1243,11 @@ BDM_SO_DEFINE(inline void NeuriteExt)::RemoveProximalCylinder() {
   // the SON
   // TODO updateSpatialOrganizationNodePosition();
   // TODO: CAUTION : for future parallel implementation. If a visitor is in the branch, it gets destroyed....
+}
+
+BDM_SO_DEFINE(inline void NeuriteExt)::RemoveYourself() {
+  RemoveFromSimulation();
+  // FIXME remove this function since it only forwards to `RemoveFromSimulation`
 }
 
 }  // namespace neuroscience

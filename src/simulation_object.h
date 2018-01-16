@@ -97,6 +97,8 @@ class SoaSimulationObject {
   /// Changes do not take effect until they are commited.
   /// Upon commit removal has constant complexity @see Commit
   /// @param index remove element at the given index
+  // FIXME: implementation swaps elements, thus invalidating SoHandles and SoPtr
+  //        update mechanism required for classes having data members with those types!!
   void DelayedRemove(size_t index) {
     std::lock_guard<std::recursive_mutex> lock(mutex_);
     to_be_removed_.push_back(index);
@@ -223,6 +225,10 @@ class ScalarSimulationObject {
   // return this - pointer to first element
   // Difficulty to know the type - will become easier once TMostDerived type
   // has been introduced
+  uint32_t GetElementIdx() const {
+    Fatal("GetElementIdx",
+          "GetElementIdx has not been implemented for scalar backends");
+  }
 
   /// Append a scalar element
   virtual void PushBackImpl(const TMostDerived<Scalar> &other) {}

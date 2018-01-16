@@ -316,6 +316,15 @@ struct Capsule;
   /** Only used for Soa backends to be consistent with  */                     \
   /** e.g. `std::vector<T>::value_type`. */                                    \
   using value_type = Self<Soa>;                                                \
+  \
+  /** Returns the ResourceManager */ \
+  /** Avoids the "invalid use of incomplete type" error caused if the  */ \
+  /** global `Rm()` function in resource_manager.h would be used */ \
+  /** FIXME: make static */ \
+  template <typename TResourceManager = ResourceManager<>> \
+  TResourceManager* Rm() { \
+    return TResourceManager::Get(); \
+  } \
                                                                                \
   explicit class_name(TRootIOCtor* io_ctor) {}                                 \
                                                                                \
@@ -332,11 +341,18 @@ struct Capsule;
     return ret_value;                                                          \
   }                                                                            \
   \
-  template <typename TRm = ResourceManager<TCompileTimeParam>> \
   MostDerivedSoPtr GetSoPtr() { \
-    auto container = TRm::Get()->template Get<MostDerived>();\
+    auto* container = Rm()->template Get<MostDerived>();\
     return MostDerivedSoPtr(container, kIdx);\
     /** FIXME: only works for SOA backends **/ \
+    /** FIXME: add test **/ \
+  } \
+  \
+  void RemoveFromSimulation() { \
+    auto container = Rm()->template Get<MostDerived>();\
+    container->DelayedRemove(kIdx);\
+    /** FIXME: only works for SOA backends **/ \
+    /** FIXME: add test **/ \
   } \
                                                                                \
   /** Returns the Scalar name of the container minus the "Ext"     */          \
@@ -504,6 +520,11 @@ class SoPointer {
   const auto Get(typename std::enable_if<std::is_same<TTBackend, Soa>::value>::type*
                p = 0) const {
     return (*so_container_)[element_idx_];
+  }
+
+  friend std::ostream& operator<<(std::ostream& str, const SoPointer<TSoSimBackend, TBackend>& so_ptr) {
+    str << "{ container: " << so_ptr.so_container_ << ", element_idx: " << so_ptr.element_idx_ << "}";
+    return str;
   }
 
  private:

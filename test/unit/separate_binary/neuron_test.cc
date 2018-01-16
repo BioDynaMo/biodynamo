@@ -48,21 +48,34 @@ TEST(NeuronTest, ExtendNeuriteAndElongate) {
   Rm()->Clear();
   const double kEpsilon = 1e-6; // TODO abs_error<double>::value;
   std::array<double, 3> origin = {0, 0, 0};
-  // std::cout << static_cast<void*>(rm->template Get<Neuron>()) << std::endl;
-  std::cout << rm->template Get<SpecializedNeuron>()->TotalSize() << std::endl;
+
   auto neuron = rm->New<SpecializedNeuron>(origin);
-  neuron.SetDiameter(10);
+  neuron.SetDiameter(20);
 
+  // auto neurite_segment = neuron.ExtendNewNeurite({0, 0, 1}).Get();
   auto neurite_segment = neuron.ExtendNewNeurite({0, 0, 1}).Get();
-  neurite_segment.SetDiameter(2);
 
-  for (int i = 0; i < 200; ++i) {
+
+
+  // TODO LB necessary? or should it be removed?
+  // auto commit = [](auto* sim_objects, uint16_t type_idx) {
+  //   sim_objects->Commit();
+  // };
+  // rm->ApplyOnAllTypes(commit);
+
+  neurite_segment.SetDiameter(2);
+  std::cout << neurite_segment << std::endl;
+  for (int i = 0; i < 1; ++i) {
     neurite_segment.ElongateTerminalEnd(10, {0, 0, 1});
-    // ne->getPhysicalCylinder()->runDiscretization();
+    // neurite_segment.RunDiscretization();
   }
 
+  std::cout << std::endl << neurite_segment << std::endl;
 
-  // EXPECT_NEAR(7.41, neurite_segment.GetLength(), kEpsilon);
+
+
+
+  EXPECT_NEAR(7.41, neurite_segment.GetLength(), kEpsilon);
   // EXPECT_NEAR(21, getTotalLength(ne->getPhysicalCylinder()), 1e-5);
 }
 
