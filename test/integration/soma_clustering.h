@@ -269,10 +269,10 @@ inline int Simulate(int argc, const char** argv) {
   ModelInitializer::DefineSubstance(kSubstance_1, "Substance_1", 0.5, 0.1, 1);
 
   // Order: substance name, initialization model, along which axis (0 = x, 1 = y, 2 = z)
-  ModelInitializer::InitializeSubstance(kSubstance_1, "Substance_1", PoissonBand(1), 2);
-  // ModelInitializer::InitializeSubstance(kSubstance_1, "Substance_1", GaussianBand(120, 5), 2);
-  // ModelInitializer::InitializeSubstance(kSubstance_1, "Substance_1", GaussianBand(120, 5), 1);
-  // ModelInitializer::InitializeSubstance(kSubstance_1, "Substance_1", GaussianBand(120, 5), 0);
+  // ModelInitializer::InitializeSubstance(kSubstance_1, "Substance_1", PoissonBand(1, Axis::kZAxis));
+  ModelInitializer::InitializeSubstance(kSubstance_1, "Substance_1", GaussianBand(120, 5, Axis::kXAxis));
+  ModelInitializer::InitializeSubstance(kSubstance_1, "Substance_1", GaussianBand(120, 5, Axis::kYAxis));
+  ModelInitializer::InitializeSubstance(kSubstance_1, "Substance_1", GaussianBand(120, 5, Axis::kZAxis));
 
   // 4. Run simulation for N timesteps
   Scheduler<> scheduler;

@@ -171,10 +171,10 @@ struct ModelInitializer {
   }
 
   template <typename TResourceManager = ResourceManager<>, typename F>
-  static void InitializeSubstance(int substance_id, std::string substance_name, F function, uint8_t axis) {
+  static void InitializeSubstance(int substance_id, std::string substance_name, F function) {
     auto rm = TResourceManager::Get();
     auto diffusion_grid = rm->GetDiffusionGrid(substance_id);
-    diffusion_grid->AddInitializer(function, axis);
+    diffusion_grid->AddInitializer(function);
   }
 };
 
