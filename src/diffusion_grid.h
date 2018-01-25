@@ -91,15 +91,8 @@ class DiffusionGrid {
       return;
     }
 
+    // Apply all functions that initialize this diffusion grid
     for (size_t f = 0; f < initializers_.size(); f++) {
-      // std::array<int, 3> axis = {0, 1, 2};
-      // if (init_axis_[f] == 0) {
-      //   axis = {2, 1, 0};
-      // } else if (init_axis_[f] == 1) {
-      //   axis = {0, 2, 1};
-      // }
-      // Since the diffusion grid is always cubic, we can take any dimension length as the third parameter
-      // auto normal_data = Math::CreateGaussianArray(mean_[i], sigma_[i], num_boxes_axis_[0], grid_dimensions_[0], box_length_);
       for (size_t x = 0; x < num_boxes_axis_[0]; x++) {
         for (size_t y = 0; y < num_boxes_axis_[1]; y++) {
           for (size_t z = 0; z < num_boxes_axis_[2]; z++) {
@@ -108,11 +101,15 @@ class DiffusionGrid {
             box_coord[1] = y;
             box_coord[2] = z;
             size_t idx = GetBoxIndex(box_coord);
-            IncreaseConcentrationBy(idx, initializers_[f](num_boxes_axis_[0], grid_dimensions_[0], box_length_, x, y, z));
+            IncreaseConcentrationBy(idx, initializers_[f](this, x, y, z));
           }
         }
       }
     }
+
+    // Clear the initializer to free up space
+    initializers_.clear();
+    initializers_.shrink_to_fit();
   }
 
   /// @brief      Updates the grid dimensions, based on the given threshold
@@ -570,8 +567,8 @@ class DiffusionGrid {
   int resolution_ = 1;
   /// If false, grid dimensions are even; if true, they are odd
   bool parity_ = false;
-  std::vector<std::function<double(size_t, double, uint32_t, size_t, size_t, size_t)>> initializers_;
-  std::vector<uint8_t> init_axis_;
+  /// A list of functions that initialize this diffusion grid
+  std::vector<std::function<double(DiffusionGrid*, size_t, size_t, size_t)>> initializers_;
 
   ClassDefNV(DiffusionGrid, 1);
 };

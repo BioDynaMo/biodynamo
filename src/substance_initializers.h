@@ -6,6 +6,8 @@
 
 #include "Math/DistFunc.h"
 
+#include "diffusion_grid.h"
+
 namespace bdm {
 
 enum Axis {kXAxis, kYAxis, kZAxis};
@@ -25,11 +27,15 @@ struct GaussianBand {
   }
 
   // Returns the value of gaussian data at specified index
-  double operator()(size_t length, double min, uint32_t bl, size_t x, size_t y, size_t z) {
+  double operator()(DiffusionGrid* dgrid, size_t x, size_t y, size_t z) {
     if(!initialized_) {
+      auto length = dgrid->GetNumBoxesArray()[0];
+      auto box_length = dgrid->GetBoxLength();
+      auto min = dgrid->GetDimensions()[0];
+
       data_.resize(length);
       for (size_t i = 0; i < length; i++) {
-        data_[i] = ROOT::Math::normal_pdf(min + i * bl, sigma_, mean_);
+        data_[i] = ROOT::Math::normal_pdf(min + i * box_length, sigma_, mean_);
       }
       initialized_ = true;
     }
@@ -50,20 +56,30 @@ struct PoissonBand {
   bool initialized_ = false;
 
   // Store the model-related values
-  PoissonBand(double lambda) {
+  PoissonBand(double lambda, uint8_t axis) {
     lambda_ = lambda;
+    axis_ = axis;
   }
 
   // Returns the value of gaussian data at specified index
-  double operator()(int length, double min, uint32_t bl, size_t idx, size_t x, size_t y, size_t z) {
+  double operator()(DiffusionGrid* dgrid, size_t x, size_t y, size_t z) {
     if(!initialized_) {
+      auto length = dgrid->GetNumBoxesArray()[0];
+      auto box_length = dgrid->GetBoxLength();
+      auto min = dgrid->GetDimensions()[0];
+
       data_.resize(length);
-      for (int i = 0; i < length; i++) {
-        data_[i] = ROOT::Math::poisson_pdf(min + i * bl, lambda_);
+      for (size_t i = 0; i < length; i++) {
+        data_[i] = ROOT::Math::poisson_pdf(min + i * box_length, lambda_);
       }
       initialized_ = true;
     }
-    return data_[idx];
+    switch(axis_) {
+      case Axis::kXAxis: return data_[x];
+      case Axis::kYAxis: return data_[y];
+      case Axis::kZAxis: return data_[z];
+      default: throw std::logic_error("You have chosen an non-existing axis!"); 
+    }
   }
 };
 
