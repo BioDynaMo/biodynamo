@@ -2,6 +2,7 @@
 #include "cell.h"
 #include "gtest/gtest.h"
 #include "transactional_vector.h"
+#include "unit/default_ctparam.h"
 #include "unit/test_util.h"
 
 namespace bdm {

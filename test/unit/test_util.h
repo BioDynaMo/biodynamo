@@ -2,13 +2,9 @@
 #define UNIT_TEST_UTIL_H_
 
 #include <type_traits>
-#include "compile_time_param.h"
 #include "gtest/gtest.h"
 
 namespace bdm {
-
-template <typename TBackend>
-struct CompileTimeParam : public DefaultCompileTimeParam<TBackend> {};
 
 template <typename T>
 struct abs_error {
