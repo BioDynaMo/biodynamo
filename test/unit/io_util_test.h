@@ -9,6 +9,7 @@
 #include "dividing_cell_op.h"
 #include "inline_vector.h"
 #include "io_util.h"
+#include "unit/default_ctparam.h"
 #include "unit/test_util.h"
 #include "variant.h"
 

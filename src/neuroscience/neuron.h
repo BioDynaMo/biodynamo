@@ -18,9 +18,10 @@ BDM_SIM_OBJECT(Neuron, Cell) {
   using TNeuriteSoPtr = ToSoPtr<TNeurite>;
 
   NeuronExt() {
-    std::cout << typeid(MostDerived).name() << std::endl;
-    std::cout << "   Neurite Soa " << typeid(typename TNeurite::template Self<Soa>).name() << std::endl;
-    std::cout << "   Neurite Sca " << typeid(typename TNeurite::template Self<Scalar>).name() << std::endl;
+    // TODO remove
+    // std::cout << typeid(MostDerived).name() << std::endl;
+    // std::cout << "   Neurite Soa " << typeid(typename TNeurite::template Self<Soa>).name() << std::endl;
+    // std::cout << "   Neurite Sca " << typeid(typename TNeurite::template Self<Scalar>).name() << std::endl;
   }
 
   NeuronExt(const std::array<double, 3>& position) : Base(position) {}
@@ -79,15 +80,13 @@ BDM_SO_DEFINE(inline typename NeuronExt<TCompileTimeParam, TDerived, TBase>::TNe
 }
 
 BDM_SO_DEFINE(inline typename NeuronExt<TCompileTimeParam, TDerived, TBase>::TNeuriteSoPtr NeuronExt)::ExtendNewNeurite(double diameter, double phi, double theta) {
-  std::cout << "ExtendNewNeurite called with: " << diameter << ", " << phi << ", " << theta << std::endl;
+  // TODO should this take immediate effect? or delayed + commit?
   auto neurite = Rm()->template New<TNeurite>();
   // TODO copy biological modules
   // for (auto module : local_biology_modules_) {
   //   if (module->isCopiedWhenNeuriteExtendsFromSoma())
   //     ne->addLocalBiologyModule(module->getCopy());
   // }
-  // TODO cell_->addNeuriteElement(std::move(ne));
-
 
   // TODO remove comment: code from PhysicalSphere::addNewPhysicalCylinder
   double radius = 0.5 * Base::diameter_[kIdx];
@@ -106,20 +105,15 @@ BDM_SO_DEFINE(inline typename NeuronExt<TCompileTimeParam, TDerived, TBase>::TNe
   auto new_cyl_spring_axis = Matrix::ScalarMult(new_length, axis_direction);
 
   auto new_position = Matrix::Add(new_cyl_begin_location, new_cyl_spring_axis);
-  auto new_cyl_central_node_location = Matrix::Add(new_cyl_begin_location,
-                                                   Matrix::ScalarMult(0.5, new_cyl_spring_axis));
-
+  // TODO remove
+  // auto new_cyl_central_node_location = Matrix::Add(new_cyl_begin_location,
+  //                                                  Matrix::ScalarMult(0.5, new_cyl_spring_axis));
   // set attributes of new neurite segment
   neurite.SetDiameter(diameter);
   neurite.UpdateVolume();
   neurite.SetSpringAxis(new_cyl_spring_axis);
   auto& foo = neurite.GetSpringAxis();
-  std::cout << "nspa: " << foo[0] << ", " << foo[1] << ", " << foo[2] << std::endl;
-  std::cout << "ncml: " << new_position[0] << ", " << new_position[1] << ", " << new_position[2] << std::endl;
-  std::cout << "ml: " << Base::position_[kIdx][0] << ", " << Base::position_[kIdx][1] << ", " << Base::position_[kIdx][2] << std::endl;
-  std::cout << "ncbl: " << new_cyl_begin_location[0] << ", " << new_cyl_begin_location[1] << ", " << new_cyl_begin_location[2] << std::endl;
 
-  // neurite.SetPosition(new_position);
   neurite.SetMassLocation(new_position); // TODO rename variable
   neurite.SetActualLength(new_length);
   neurite.SetRestingLengthForDesiredTension(Param::kNeuriteDefaultTension);
@@ -130,12 +124,6 @@ BDM_SO_DEFINE(inline typename NeuronExt<TCompileTimeParam, TDerived, TBase>::TNe
   daughters_[kIdx].push_back(neurite_soptr);
   neurite.SetMother(GetSoPtr());
   daughters_coord_[kIdx][neurite.GetElementIdx()] = {x_coord, y_coord, z_coord};
-
-  // SpaceNode
-  // TODO can we remove that?
-  // auto new_son = PhysicalObject::so_node_->getNewInstance(new_cyl_central_node_location, cyl.get());  // fixme catch PositionNotAllowedException
-  // cyl->setSoNode(std::move(new_son));
-  // PhysicalNode::ecm_->addPhysicalCylinder(cyl.get());
 
   return neurite_soptr;
 }

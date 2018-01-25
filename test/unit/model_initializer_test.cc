@@ -4,6 +4,7 @@
 #include "cell.h"
 #include "gtest/gtest.h"
 #include "resource_manager.h"
+#include "unit/default_ctparam.h"
 #include "unit/test_util.h"
 #include "variadic_template_parameter_util.h"
 

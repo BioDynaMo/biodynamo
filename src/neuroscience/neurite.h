@@ -164,8 +164,6 @@ BDM_SIM_OBJECT(Neurite, SimulationObject) {
  public:
    NeuriteExt() {}
 
-   // TODO arrange in order
-
    const std::array<double, 3>& GetPosition() const { return position_[kIdx]; }
    void SetDiameter(double diameter) {
      diameter_[kIdx] = diameter;
@@ -181,6 +179,13 @@ BDM_SIM_OBJECT(Neurite, SimulationObject) {
    void SetMassLocation(const std::array<double, 3>& mass_location) const {
      position_[kIdx] = Matrix::Subtract(mass_location, Matrix::ScalarMult(0.5, spring_axis_[kIdx]));
    }
+
+   const std::array<double, 3>& GetXAxis() const { return x_axis_[kIdx]; }
+   const std::array<double, 3>& GetYAxis() const { return y_axis_[kIdx]; }
+   const std::array<double, 3>& GetZAxis() const { return z_axis_[kIdx]; }
+
+   double GetVolume() const { return volume_[kIdx]; }
+   double GetDiameter() const { return diameter_[kIdx]; }
 
    /// Returns the absolute coordinates of the location where the dauther is
    /// attached.
@@ -549,10 +554,26 @@ BDM_SIM_OBJECT(Neurite, SimulationObject) {
     return str;
   }
 
+ protected:
+   void Copy(const TMostDerived<Backend>& rhs) {
+     // TODO adherence
+     //  adherence_, density_
+     SetDiameter(rhs.GetDiameter()); // also updates volyume
+     x_axis_[kIdx] = rhs.GetXAxis();
+     y_axis_[kIdx] = rhs.GetYAxis();
+     z_axis_[kIdx] = rhs.GetZAxis();
+
+     spring_axis_[kIdx] = rhs.GetSpringAxis();
+     branch_order_[kIdx] = rhs.GetBranchOrder();
+     spring_constant_[kIdx] = rhs.GetSpringConstant();
+     // TODO what about actual length, tension and resting_length_ ??
+   }
+
  private:
 
    // TODO data members same as in cell
-   /// position_ is distal end of the cylinder
+   /// position_ is middle point of cylinder_
+   /// mass_location_ is distal end of the cylinder
    vec<std::array<double, 3>> position_ = {{0.0, 0.0, 0.0}};
    vec<double> volume_;
    vec<double> diameter_ = {{ Param::kNeuriteDefaultDiameter }};
@@ -796,16 +817,20 @@ BDM_SO_DEFINE(inline std::array<double, 3> NeuriteExt)::ForceTransmittedFromDaug
 BDM_SO_DEFINE(inline void NeuriteExt)::RunDiscretization() {
   if (actual_length_[kIdx] > Param::kNeuriteMaxLength) {
     if (daughter_left_[kIdx].IsNullPtr()) { // if terminal branch :
+      std::cout << "InsertProximalCylinder 0.1" << std::endl;
       InsertProximalCylinder(0.1);
     } else if (mother_[kIdx].IsNeuron()) {  // if initial branch :
+      std::cout << "InsertProximalCylinder 0.9" << std::endl;
       InsertProximalCylinder(0.9);
     } else {
+      std::cout << "InsertProximalCylinder 0.5" << std::endl;
       InsertProximalCylinder(0.5);
     }
   } else if (actual_length_[kIdx] < Param::kNeuriteMinLength && mother_[kIdx].IsNeurite()
       && mother_[kIdx].GetRestingLength() < Param::kNeuriteMaxLength - resting_length_[kIdx] - 1
       && mother_[kIdx].GetDaughterRight().IsNullPtr() && !daughter_left_[kIdx].IsNullPtr()) {
     // if the previous branch is removed, we first remove its associated NeuriteElement
+    std::cout << "InsertProximalCylinder removeYourself" << std::endl;
     mother_[kIdx].RemoveYourself();
     // then we remove it
     RemoveProximalCylinder();
@@ -821,20 +846,17 @@ BDM_SO_DEFINE(inline void NeuriteExt)::MovePointMass(double speed, const std::ar
 
   // scaling for integration step
   double length = speed * Param::simulation_time_step_;
-  // auto normalized_dir = Math::Normalize(direction);
-  // std::array<double, 3> displacement { length * normalized_dir[0], length * normalized_dir[1], length
-  //     * normalized_dir[2] };
   auto displacement = Matrix::ScalarMult(length, Math::Normalize(direction));
   // TODO mass_location_ = Matrix::add(displacement, mass_location_);
   // position_[kIdx] = Matrix::Add(displacement, position_[kIdx]);
   // SetMassLocation(Matrix::Add(displacement, GetMassLocation()));
-  position_[kIdx] = Matrix::Add(displacement, position_[kIdx]);
+  // position_[kIdx] = Matrix::Add(displacement, position_[kIdx]);
+  auto new_mass_location = Matrix::Add(displacement, GetMassLocation());
   // here I have to define the actual length ..........
   // auto& relative_pos = mother_[kIdx].GetPosition();
   auto relative_pos = mother_[kIdx].OriginOf(Base::GetElementIdx()); // TODO change to auto&&
-  spring_axis_[kIdx] = Matrix::Subtract(position_[kIdx], relative_pos);
-  // actual_length_ = MathUtil::sqrt(
-  //     spring_axis_[0] * spring_axis_[0] + spring_axis_[1] * spring_axis_[1] + spring_axis_[2] * spring_axis_[2]);
+  spring_axis_[kIdx] = Matrix::Subtract(new_mass_location, relative_pos);
+  SetMassLocation(new_mass_location);
   actual_length_[kIdx] = std::sqrt(Matrix::Dot(spring_axis_[kIdx], spring_axis_[kIdx]));
   // process of elongation : setting tension to 0 increases the resting length :
   SetRestingLengthForDesiredTension(0.0);
@@ -878,7 +900,7 @@ BDM_SO_DEFINE(inline void NeuriteExt)::ChangeDiameter(double speed) {
 }
 
 BDM_SO_DEFINE(inline void NeuriteExt)::UpdateVolume() {
-  volume_[kIdx] = Math::kPi * diameter_[kIdx] * diameter_[kIdx] * actual_length_[kIdx];
+  volume_[kIdx] = Math::kPi / 4 * diameter_[kIdx] * diameter_[kIdx] * actual_length_[kIdx];
   // TODO updateIntracellularConcentrations();
 }
 
@@ -1069,7 +1091,9 @@ BDM_SO_DEFINE(inline const std::array<double, 3>& NeuriteExt)::GetAxis() const {
 }
 
 BDM_SO_DEFINE(inline void NeuriteExt)::UpdateDependentPhysicalVariables() {
-  spring_axis_[kIdx] = Matrix::Subtract(position_[kIdx], mother_[kIdx].GetPosition());
+  // spring_axis_[kIdx] = Matrix::Subtract(position_[kIdx], mother_[kIdx].GetPosition());
+  auto relative_ml = mother_[kIdx].OriginOf(Base::GetElementIdx());
+  spring_axis_[kIdx] = Matrix::Subtract(GetMassLocation(), relative_ml);
   actual_length_[kIdx] = std::sqrt(Matrix::Dot(spring_axis_[kIdx], spring_axis_[kIdx]));
   tension_[kIdx] = spring_constant_[kIdx] * (actual_length_[kIdx] - resting_length_[kIdx]) / resting_length_[kIdx];
   UpdateVolume();
@@ -1081,16 +1105,25 @@ BDM_SO_DEFINE(inline void NeuriteExt)::InsertProximalCylinder() {
 }
 
 BDM_SO_DEFINE(inline void NeuriteExt)::InsertProximalCylinder(double distal_portion) {
+  std::cout << "DP " << distal_portion << std::endl;
+  std::cout << "resting_length_ " << resting_length_[kIdx] << std::endl;
+
+  auto distal_location = GetMassLocation();
+
   auto new_neurite_element = Rm()->template New<MostDerived>();
 
-  auto new_position = Matrix::Subtract(position_[kIdx], Matrix::ScalarMult(distal_portion, spring_axis_[kIdx]));
+  auto new_position = Matrix::Subtract(GetMassLocation(), Matrix::ScalarMult(distal_portion, spring_axis_[kIdx]));
 
   // TODO
   // double temp = distal_portion + (1 - distal_portion) / 2.0;
   // std::array<double, 3> newProximalCylinderSpatialNodeLocation { mass_location_[0] - temp * spring_axis_[0],
   //     mass_location_[1] - temp * spring_axis_[1], mass_location_[2] - temp * spring_axis_[2] };
+  // FIXME position so_node gets proximal position assigned not middle position like in ExtendNewNeurite
 
-  new_neurite_element.position_[0] = new_position;
+  new_neurite_element.SetPosition(new_position);
+
+  new_neurite_element.Copy(*static_cast<TMostDerived<Backend>*>(this));
+
 
   // family relations
   // FIXME mother_[kIdx].UpdateRelative(this, new_neurite_element);
@@ -1103,7 +1136,7 @@ BDM_SO_DEFINE(inline void NeuriteExt)::InsertProximalCylinder(double distal_port
   // registering the new cylinder with ecm
   // TODO ecm_->addPhysicalCylinder(new_cylinder.get());
   // physics
-  new_neurite_element.resting_length_[kIdx] = (1 - distal_portion) * resting_length_[kIdx];
+  new_neurite_element.SetRestingLength((1 - distal_portion) * resting_length_[kIdx]);
   resting_length_[kIdx] *= distal_portion;
 
   //  TODO intracellularSubstances quantities .....................................
@@ -1122,6 +1155,7 @@ BDM_SO_DEFINE(inline void NeuriteExt)::InsertProximalCylinder(double distal_port
   //   // decrease value of IntracellularSubstance in this cylinder
   //   s->setQuantity(quantity_before_distribution * distal_portion);
   // }
+  SetMassLocation(distal_location);
   UpdateDependentPhysicalVariables();
   new_neurite_element.UpdateDependentPhysicalVariables();
   // UpdateLocalCoordinateAxis has to come after UpdateDepend...
@@ -1153,6 +1187,7 @@ BDM_SO_DEFINE(inline void NeuriteExt)::InsertProximalCylinder(double distal_port
   //     }
   //   } while (++it != excrescences_.end());
   // }
+
 
   // FIXME what about data members in subclasses
 }
