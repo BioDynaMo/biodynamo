@@ -5,9 +5,8 @@
 #include <string>
 #include <vector>
 
-#include "random.h"
-
 #include "diffusion_grid.h"
+#include "random.h"
 #include "resource_manager.h"
 
 namespace bdm {
@@ -169,6 +168,13 @@ struct ModelInitializer {
                           decay_constant, resolution);
     auto& diffusion_grids = rm->GetDiffusionGrids();
     diffusion_grids.push_back(d_grid);
+  }
+
+  template <typename TResourceManager = ResourceManager<>, typename F>
+  static void InitializeSubstance(int substance_id, std::string substance_name, F function, uint8_t axis) {
+    auto rm = TResourceManager::Get();
+    auto diffusion_grid = rm->GetDiffusionGrid(substance_id);
+    diffusion_grid->AddInitializer(function, axis);
   }
 };
 

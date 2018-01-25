@@ -6,6 +6,7 @@
 #include "biodynamo.h"
 #include "math_util.h"
 #include "matrix.h"
+#include "substance_initializers.h"
 
 namespace bdm {
 
@@ -39,7 +40,7 @@ BDM_SIM_OBJECT(MyCell, Cell) {
   vec<int> cell_type_;
 };
 
-enum Substances { kSubstance_0, kSubstance_1 };
+enum Substances { kSubstance_1 };
 
 // 1a. Define displacement behavior:
 // Cells move along the diffusion gradient (from low concentration to high)
@@ -50,7 +51,7 @@ struct Chemotaxis : public BaseBiologyModule {
   template <typename T>
   void Run(T* cell) {
     if (!init_) {
-      dg_0_ = GetDiffusionGrid(kSubstance_0);
+      // dg_0_ = GetDiffusionGrid(kSubstance_0);
       dg_1_ = GetDiffusionGrid(kSubstance_1);
       init_ = true;
     }
@@ -62,8 +63,8 @@ struct Chemotaxis : public BaseBiologyModule {
       dg_1_->GetGradient(position, &gradient_1_);
       diff_gradient = Matrix::ScalarMult(5, gradient_1_);
     } else {
-      dg_0_->GetGradient(position, &gradient_0_);
-      diff_gradient = Matrix::ScalarMult(5, gradient_0_);
+      // dg_0_->GetGradient(position, &gradient_0_);
+      // diff_gradient = Matrix::ScalarMult(5, gradient_0_);
     }
 
     cell->UpdatePosition(diff_gradient);
@@ -72,7 +73,7 @@ struct Chemotaxis : public BaseBiologyModule {
 
  private:
   bool init_ = false;
-  DiffusionGrid* dg_0_ = nullptr;
+  // DiffusionGrid* dg_0_ = nullptr;
   DiffusionGrid* dg_1_ = nullptr;
   std::array<double, 3> gradient_0_;
   std::array<double, 3> gradient_1_;
@@ -87,7 +88,7 @@ struct SubstanceSecretion : public BaseBiologyModule {
   template <typename T>
   void Run(T* cell) {
     if (!init_) {
-      dg_0_ = GetDiffusionGrid(kSubstance_0);
+      // dg_0_ = GetDiffusionGrid(kSubstance_0);
       dg_1_ = GetDiffusionGrid(kSubstance_1);
       init_ = true;
     }
@@ -243,8 +244,8 @@ inline int Simulate(int argc, const char** argv) {
     MyCell cell(position);
     cell.SetDiameter(10);
     cell.SetCellType(1);
-    cell.AddBiologyModule(SubstanceSecretion());
-    cell.AddBiologyModule(Chemotaxis());
+    // cell.AddBiologyModule(SubstanceSecretion());
+    // cell.AddBiologyModule(Chemotaxis());
     return cell;
   };
   ModelInitializer::CreateCellsRandom(Param::min_bound_, Param::max_bound_,
@@ -255,8 +256,8 @@ inline int Simulate(int argc, const char** argv) {
     MyCell cell(position);
     cell.SetDiameter(10);
     cell.SetCellType(-1);
-    cell.AddBiologyModule(SubstanceSecretion());
-    cell.AddBiologyModule(Chemotaxis());
+    // cell.AddBiologyModule(SubstanceSecretion());
+    // cell.AddBiologyModule(Chemotaxis());
     return cell;
   };
   ModelInitializer::CreateCellsRandom(Param::min_bound_, Param::max_bound_,
@@ -264,16 +265,19 @@ inline int Simulate(int argc, const char** argv) {
 
   // 3. Define the substances that cells may secrete
   // Order: substance_name, diffusion_coefficient, decay_constant, resolution
-  ModelInitializer::DefineSubstance(kSubstance_0, "Substance_0", 0.5, 0.1, 1);
+  // ModelInitializer::DefineSubstance(kSubstance_0, "Substance_0", 0.5, 0.1, 1);
   ModelInitializer::DefineSubstance(kSubstance_1, "Substance_1", 0.5, 0.1, 1);
 
+  // Order: substance name, initialization model, along which axis (0 = x, 1 = y, 2 = z)
+  ModelInitializer::InitializeSubstance(kSubstance_1, "Substance_1", PoissonBand(1), 2);
+  // ModelInitializer::InitializeSubstance(kSubstance_1, "Substance_1", GaussianBand(120, 5), 2);
+  // ModelInitializer::InitializeSubstance(kSubstance_1, "Substance_1", GaussianBand(120, 5), 1);
+  // ModelInitializer::InitializeSubstance(kSubstance_1, "Substance_1", GaussianBand(120, 5), 0);
+
   // 4. Run simulation for N timesteps
-  Param::export_visualization_ = true;
-  Param::live_visualization_ = true;
-  Param::visualization_export_interval_ = 1000;
   Scheduler<> scheduler;
 
-  scheduler.Simulate(1001);
+  scheduler.Simulate(100);
 
   double spatial_range = 5;
   auto crit = GetCriterion(spatial_range, num_cells / 8);

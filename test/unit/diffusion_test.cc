@@ -79,9 +79,9 @@ TEST(DiffusionTest, UpdateGrid) {
 
   auto d_dims = d_grid->GetDimensions();
 
-  EXPECT_EQ(-60, d_dims[0]);
-  EXPECT_EQ(-60, d_dims[2]);
-  EXPECT_EQ(-60, d_dims[4]);
+  EXPECT_EQ(-90, d_dims[0]);
+  EXPECT_EQ(-90, d_dims[2]);
+  EXPECT_EQ(-90, d_dims[4]);
   EXPECT_EQ(210, d_dims[1]);
   EXPECT_EQ(210, d_dims[3]);
   EXPECT_EQ(210, d_dims[5]);

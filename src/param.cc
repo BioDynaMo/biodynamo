@@ -23,6 +23,8 @@ std::unordered_map<std::string, std::set<std::string>>
 std::vector<Param::VisualizeDiffusion> Param::visualize_diffusion_;
 
 // development group
+bool Param::show_simulation_step_ = true;
+uint32_t Param::simulation_step_freq_ = 10;
 bool Param::statistics_ = false;
 bool Param::python_catalyst_pipeline_ = false;
 
@@ -124,6 +126,9 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
 
   // development group
   BDM_ASSIGN_CONFIG_VALUE(statistics_, "development.statistics");
+  BDM_ASSIGN_CONFIG_VALUE(python_catalyst_pipeline_, "development.python_catalyst_pipeline");
+  BDM_ASSIGN_CONFIG_VALUE(show_simulation_step_, "development.show_simulation_step");
+  BDM_ASSIGN_CONFIG_VALUE(simulation_step_freq_, "development.simulation_step_freq");
 }
 
 void Param::Reset() {
@@ -148,6 +153,8 @@ void Param::Reset() {
   // development group
   statistics_ = false;
   python_catalyst_pipeline_ = false;
+  show_simulation_step_ = true;
+  simulation_step_freq_ = 10;
 }
 
 }  // namespace bdm

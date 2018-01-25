@@ -90,6 +90,16 @@ class Scheduler {
     }
 
     grid_->Initialize();
+    int lbound = grid_->GetDimensionThresholds()[0];
+    int rbound = grid_->GetDimensionThresholds()[1];
+    for (auto& dgrid : TResourceManager::Get()->GetDiffusionGrids()) {
+      // Create data structures, whose size depend on the grid dimensions
+      dgrid->Initialize({lbound, rbound, lbound, rbound, lbound, rbound},
+                   grid_->GetBoxLength());
+      // Initialize data structures with user-defined values
+      dgrid->RunInitializers();
+     }
+       
 
     for (unsigned step = 0; step < steps; step++) {
       // Simulate
@@ -118,7 +128,8 @@ class Scheduler {
         backup_.Backup(total_steps_);
       }
 
-      if (total_steps_ % 10 == 0) {
+
+      if (Param::show_simulation_step_ && total_steps_ % Param::simulation_step_freq_ == 0) {
         std::cout << "step " << total_steps_ << std::endl;
       }
     }

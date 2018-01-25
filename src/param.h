@@ -185,11 +185,26 @@ struct Param {
 
   /// Use the python script (simple_pipeline.py) to do Live Visualization with
   /// ParaView. If false, we use the C++ pipeline
-  /// Defautl value: `false`\n
+  /// Default value: `false`\n
   /// TOML config file:
   ///     [development]
   ///     python_catalyst_pipeline_ = false
   static bool python_catalyst_pipeline_;
+
+  /// Display the current simulation step in the terminal output
+  /// Default value: `true`\n
+  /// TOML config file:
+  ///     [development]
+  ///     show_simulation_step = true
+  static bool show_simulation_step_;
+
+  /// Sets the frequency at which the current simulation step is displayed.
+  /// Display every `simulation_step_freq_` steps.
+  /// Default value: `10`\n
+  /// TOML config file:
+  ///     [development]
+  ///     simulation_step_freq = false
+  static uint32_t simulation_step_freq_;
 
   /// Resets the static variables to its default values
   static void Reset();

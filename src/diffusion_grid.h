@@ -12,6 +12,8 @@
 
 #include <Rtypes.h>
 
+#include "math_util.h"
+
 namespace bdm {
 
 using std::array;
@@ -68,6 +70,10 @@ class DiffusionGrid {
       num_boxes_axis_[i] = dimension_length / box_length_;
     }
 
+    // Set the parity of the number of boxes along the dimensions (since all
+    // dimensions are the same, we just take the x-axis here)
+    parity_ = num_boxes_axis_[0] % 2;
+
     total_num_boxes_ =
         num_boxes_axis_[0] * num_boxes_axis_[1] * num_boxes_axis_[2];
 
@@ -76,7 +82,72 @@ class DiffusionGrid {
     c2_.resize(total_num_boxes_);
     gradients_.resize(3 * total_num_boxes_);
 
+    // TODO: loop over vector<functions>
+    // AddConcentrationAlongAxis();
+
     initialized_ = true;
+  }
+
+  // void AddConcentrationAlongAxis() {
+  //   assert(num_boxes_axis_[0] > 0 && "The number of boxes along an axis was found to be zero!");
+  //   if (sigma_.empty()) {
+  //     return;
+  //   }
+
+  //   for (size_t i = 0; i < sigma_.size(); i++) {
+  //     std::array<int, 3> axis = {0, 1, 2};
+  //     if (selected_[i] == 0) {
+  //       axis = {2, 1, 0};
+  //     } else if (selected_[i] == 1) {
+  //       axis = {0, 2, 1};
+  //     }
+  //     // Since the diffusion grid is always cubic, we can take any dimension length as the third parameter
+  //     auto normal_data = Math::CreateGaussianArray(mean_[i], sigma_[i], num_boxes_axis_[0], grid_dimensions_[0], box_length_);
+  //     for (int i = 0; i < num_boxes_axis_[axis[0]]; i++) {
+  //       for (int j = 0; j < num_boxes_axis_[axis[1]]; j++) {
+  //         size_t m = 0;
+  //         for (int k = 0; k < num_boxes_axis_[axis[2]]; k++) {
+  //           std::array<uint32_t, 3> box_coord;
+  //           box_coord[axis[0]] = static_cast<uint32_t>(i);
+  //           box_coord[axis[1]] = static_cast<uint32_t>(j);
+  //           box_coord[axis[2]] = static_cast<uint32_t>(k);
+  //           size_t idx = GetBoxIndex(box_coord);
+  //           IncreaseConcentrationBy(idx, normal_data[m]);
+  //           m++;
+  //         }
+  //       }
+  //     }
+  //   }
+  // }
+
+  void RunInitializers() {
+    assert(num_boxes_axis_[0] > 0 && "The number of boxes along an axis was found to be zero!");
+    if (initializers_.empty()) {
+      return;
+    }
+
+    for (size_t f = 0; f < initializers_.size(); f++) {
+      std::array<int, 3> axis = {0, 1, 2};
+      if (init_axis_[f] == 0) {
+        axis = {2, 1, 0};
+      } else if (init_axis_[f] == 1) {
+        axis = {0, 2, 1};
+      }
+      // Since the diffusion grid is always cubic, we can take any dimension length as the third parameter
+      // auto normal_data = Math::CreateGaussianArray(mean_[i], sigma_[i], num_boxes_axis_[0], grid_dimensions_[0], box_length_);
+      for (int i = 0; i < num_boxes_axis_[axis[0]]; i++) {
+        for (int j = 0; j < num_boxes_axis_[axis[1]]; j++) {
+          for (int k = 0; k < num_boxes_axis_[axis[2]]; k++) {
+            std::array<uint32_t, 3> box_coord;
+            box_coord[axis[0]] = static_cast<uint32_t>(i);
+            box_coord[axis[1]] = static_cast<uint32_t>(j);
+            box_coord[axis[2]] = static_cast<uint32_t>(k);
+            size_t idx = GetBoxIndex(box_coord);
+            IncreaseConcentrationBy(idx, initializers_[f](num_boxes_axis_[0], grid_dimensions_[0], box_length_, k));
+          }
+        }
+      }
+    }
   }
 
   /// @brief      Updates the grid dimensions, based on the given threshold
@@ -117,17 +188,31 @@ class DiffusionGrid {
       num_boxes_axis_[i] = dimension_length / box_length_;
     }
 
+    // We need to maintain the parity of the number of boxes along each dimension,
+    // otherwise copying of the substances to the increases grid will not be
+    // symmetrically done; resulting in shifting of boxes
+    // We add a box in the negative direction, because the only way the parity
+    // could have changed is because of adding a box in the positive direction
+    // (due to the grid not being perfectly divisible; see above)
+    if (num_boxes_axis_[0] % 2 != parity_) {
+      for (int i = 0; i < 3; i++) {
+        grid_dimensions_[2 * i] -= box_length_;
+        num_boxes_axis_[i]++;
+      }
+    }
+
     // Temporarily save previous grid data
     std::vector<double> tmp_c1 = c1_;
     std::vector<double> tmp_gradients = gradients_;
 
+    c1_.clear();
     c2_.clear();
+    gradients_.clear();
 
-    CopyOldData(tmp_c1, tmp_gradients, tmp_num_boxes_axis);
-
-    // Do this check after CopyOldData, because it can increase there
     total_num_boxes_ =
         num_boxes_axis_[0] * num_boxes_axis_[1] * num_boxes_axis_[2];
+
+    CopyOldData(tmp_c1, tmp_gradients, tmp_num_boxes_axis);
 
     assert((static_cast<int>(total_num_boxes_)) >= tmp_num_boxes_axis[0] *
                                                        tmp_num_boxes_axis[1] *
@@ -150,23 +235,10 @@ class DiffusionGrid {
   void CopyOldData(const std::vector<double>& old_c1,
                    const std::vector<double>& old_gradients,
                    const array<int, 3>& old_num_boxes_axis) {
-    if ((((num_boxes_axis_[0] - old_num_boxes_axis[0])) % 2) != 0) {
-      num_boxes_axis_[0]++;
-    }
-    if ((((num_boxes_axis_[1] - old_num_boxes_axis[1])) % 2) != 0) {
-      num_boxes_axis_[1]++;
-    }
-    if ((((num_boxes_axis_[2] - old_num_boxes_axis[2])) % 2) != 0) {
-      num_boxes_axis_[2]++;
-    }
-
-    size_t new_size =
-        num_boxes_axis_[0] * num_boxes_axis_[1] * num_boxes_axis_[2];
-
     // Allocate more memory for the grid data arrays
-    c1_.resize(new_size);
-    c2_.resize(new_size);
-    gradients_.resize(3 * new_size);
+    c1_.resize(total_num_boxes_);
+    c2_.resize(total_num_boxes_);
+    gradients_.resize(3 * total_num_boxes_);
 
     auto incr_dim_x = num_boxes_axis_[0] - old_num_boxes_axis[0];
     auto incr_dim_y = num_boxes_axis_[1] - old_num_boxes_axis[1];
@@ -406,6 +478,11 @@ class DiffusionGrid {
   void IncreaseConcentrationBy(const array<double, 3>& position,
                                double amount) {
     auto idx = GetBoxIndex(position);
+    IncreaseConcentrationBy(idx, amount);
+  }
+
+  /// Increase the concentration at specified box with specified amount
+  void IncreaseConcentrationBy(size_t idx, double amount) {
     assert(idx < total_num_boxes_ &&
            "Cell position is out of diffusion grid bounds");
     c1_[idx] += amount;
@@ -486,6 +563,18 @@ class DiffusionGrid {
 
   int GetResolution() { return resolution_; }
 
+  // void AddGaussianLayer(double mean, double sigma, int selected) {
+  //   mean_.push_back(mean);
+  //   sigma_.push_back(sigma);
+  //   selected_.push_back(selected);
+  // }
+
+  template<typename F>
+  void AddInitializer(F function, uint8_t axis) {
+    initializers_.push_back(function);
+    init_axis_.push_back(axis);
+  }
+
  private:
   /// The id of the substance of this grid
   int substance_;
@@ -515,6 +604,10 @@ class DiffusionGrid {
   bool initialized_ = false;
   /// The resolution of the diffusion grid
   int resolution_ = 1;
+  /// If false, grid dimensions are even; if true, they are odd
+  bool parity_ = false;
+  std::vector<std::function<double(int, double, uint32_t, size_t)>> initializers_;
+  std::vector<uint8_t> init_axis_;
 
   ClassDefNV(DiffusionGrid, 1);
 };

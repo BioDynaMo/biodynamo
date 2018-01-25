@@ -151,6 +151,7 @@ class DisplacementOp {
       cell.UpdateMassLocation(cell_movements[i]);
       if (Param::bound_space_) {
         ApplyBoundingBox(&cell, Param::min_bound_, Param::max_bound_);
+        grid.SetDimensionThresholds(Param::min_bound_, Param::max_bound_);
       }
       cell.SetPosition(cell.GetMassLocation());
 
@@ -172,11 +173,13 @@ class BoundSpace {
 // set new positions after all updates have been calculated
 // otherwise some cells would see neighbors with already updated positions
 // which would lead to inconsistencies
+    auto& grid = Grid<>::GetInstance();
 #pragma omp parallel for
     for (size_t i = 0; i < cells->size(); i++) {
       auto&& cell = (*cells)[i];
       if (Param::bound_space_) {
         ApplyBoundingBox(&cell, Param::min_bound_, Param::max_bound_);
+        grid.SetDimensionThresholds(Param::min_bound_, Param::max_bound_);
       }
       cell.SetPosition(cell.GetMassLocation());
 

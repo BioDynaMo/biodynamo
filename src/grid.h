@@ -319,21 +319,13 @@ class Grid {
         *std::min_element(grid_dimensions_.begin(), grid_dimensions_.end());
     auto max_gd =
         *std::max_element(grid_dimensions_.begin(), grid_dimensions_.end());
-    if (min_gd < threshold_dimensions_[0] && initialized_) {
+    if (min_gd < threshold_dimensions_[0]) {
       threshold_dimensions_[0] = min_gd;
       has_grown_ = true;
-      std::cout << "Your simulation objects are getting near the edge of the "
-                   "simulation space. Be aware of boundary conditions that may "
-                   "come into play!"
-                << std::endl;
     }
-    if (max_gd > threshold_dimensions_[1] && initialized_) {
-      has_grown_ = true;
-      std::cout << "Your simulation objects are getting near the edge of the "
-                   "simulation space. Be aware of boundary conditions that may "
-                   "come into play!"
-                << std::endl;
+    if (max_gd > threshold_dimensions_[1]) {
       threshold_dimensions_[1] = max_gd;
+      has_grown_ = true;
     }
   }
 
@@ -671,6 +663,8 @@ class Grid {
     box_coord[0] = remainder % num_boxes_axis_[0];
     return box_coord;
   }
+
+  bool IsInitialized() { return initialized_; }
 
  private:
   /// The vector containing all the boxes in the grid
