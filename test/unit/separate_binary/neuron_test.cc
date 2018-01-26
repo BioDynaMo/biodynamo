@@ -136,9 +136,58 @@ TEST(NeuronTest, ExtendNeuriteAndElongate) {
   EXPECT_TRUE(proximal_segment.GetDaughterRight().IsNullPtr());
   EXPECT_TRUE(proximal_segment.GetMother().IsNeuron());
 
-  // EXPECT_NEAR(21, getTotalLength(ne->getPhysicalCylinder()), 1e-5);
   EXPECT_EQ(1, rm->Get<SpecializedNeuron>()->size());
   EXPECT_EQ(2, rm->Get<SpecializedNeurite>()->size());
+}
+
+TEST(NeuriteTest, PartialRetraction) {
+  auto* rm = Rm();
+  Rm()->Clear();
+  const double kEpsilon = abs_error<double>::value;
+  std::array<double, 3> origin = {0, 0, 0};
+  auto commit = [](auto* container, uint16_t type_idx){
+    container->Commit();
+  };
+
+  auto neuron = rm->New<SpecializedNeuron>(origin);
+  neuron.SetDiameter(20);
+
+  auto neurite_segment = neuron.ExtendNewNeurite({0, 0, 1}).Get();
+  neurite_segment.SetDiameter(2);
+
+  // will create a new neurite segment at iteration 139
+  for (int i = 0; i < 200; ++i) {
+    neurite_segment.ElongateTerminalEnd(10, {0, 0, 1});
+    neurite_segment.RunDiscretization();
+  }
+
+  // will remove the proximal segment
+  for (int i = 0; i < 140; ++i) {
+    neurite_segment.RetractTerminalEnd(10);
+    neurite_segment.RunDiscretization();
+    rm->ApplyOnAllTypes(commit);
+  }
+
+  // verify
+  EXPECT_ARR_NEAR(neurite_segment.GetMassLocation(), {0, 0, 17});
+  EXPECT_ARR_NEAR(neurite_segment.GetPosition(), {0, 0, 13.5});
+  EXPECT_ARR_NEAR(neurite_segment.GetXAxis(), {0, 0, 1});
+  EXPECT_ARR_NEAR(neurite_segment.GetYAxis(), {0, 1, 0});
+  EXPECT_ARR_NEAR(neurite_segment.GetZAxis(), {-1, 0, 0});
+  EXPECT_ARR_NEAR(neurite_segment.GetSpringAxis(), {0, 0, 7});
+  EXPECT_NEAR(21.991148575129266, neurite_segment.GetVolume(), kEpsilon);
+  EXPECT_NEAR(2, neurite_segment.GetDiameter(), kEpsilon);
+  EXPECT_NEAR(0, neurite_segment.GetBranchOrder(), kEpsilon);
+  EXPECT_NEAR(7, neurite_segment.GetActualLength(), kEpsilon);
+  EXPECT_NEAR(0, neurite_segment.GetTension(), kEpsilon);
+  EXPECT_NEAR(10, neurite_segment.GetSpringConstant(), kEpsilon);
+  EXPECT_NEAR(7, neurite_segment.GetRestingLength(), kEpsilon);
+  EXPECT_TRUE(neurite_segment.GetDaughterLeft().IsNullPtr());
+  EXPECT_TRUE(neurite_segment.GetDaughterRight().IsNullPtr());
+  EXPECT_TRUE(neurite_segment.GetMother().IsNeuron());
+
+  EXPECT_EQ(1, rm->Get<SpecializedNeuron>()->size());
+  EXPECT_EQ(1, rm->Get<SpecializedNeurite>()->size());
 }
 
 }  // namespace neuroscience

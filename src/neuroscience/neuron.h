@@ -80,7 +80,9 @@ BDM_SIM_OBJECT(Neuron, Cell) {
 // Implementation
 // -----------------------------------------------------------------------------
 BDM_SO_DEFINE(inline void NeuronExt)::RemoveDaughter(const ToSoPtr<typename TCompileTimeParam::TNeurite> daugther) {
-
+  auto it = std::find(std::begin(daughters_[kIdx]), std::end(daughters_[kIdx]), daugther);
+  assert(it != std::end(daughters_[kIdx]));
+  daughters_[kIdx].erase(it);
 }
 
 BDM_SO_DEFINE(inline typename NeuronExt<TCompileTimeParam, TDerived, TBase>::TNeuriteSoPtr NeuronExt)::ExtendNewNeurite(const std::array<double, 3>& direction) {
