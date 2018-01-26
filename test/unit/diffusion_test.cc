@@ -430,10 +430,10 @@ TEST(DiffusionTest, IOTest) {
   EXPECT_EQ(50, restored_d_grid->GetDimensions()[1]);
   EXPECT_EQ(50, restored_d_grid->GetDimensions()[3]);
   EXPECT_EQ(50, restored_d_grid->GetDimensions()[5]);
-  EXPECT_EQ(20, restored_d_grid->GetNumBoxesArray()[0]);
-  EXPECT_EQ(20, restored_d_grid->GetNumBoxesArray()[1]);
-  EXPECT_EQ(20, restored_d_grid->GetNumBoxesArray()[2]);
-  EXPECT_EQ(8000, restored_d_grid->GetNumBoxes());
+  EXPECT_EQ(20u, restored_d_grid->GetNumBoxesArray()[0]);
+  EXPECT_EQ(20u, restored_d_grid->GetNumBoxesArray()[1]);
+  EXPECT_EQ(20u, restored_d_grid->GetNumBoxesArray()[2]);
+  EXPECT_EQ(8000u, restored_d_grid->GetNumBoxes());
   EXPECT_EQ(true, restored_d_grid->IsInitialized());
   EXPECT_EQ(2, restored_d_grid->GetResolution());
 

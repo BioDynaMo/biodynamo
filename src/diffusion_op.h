@@ -27,7 +27,9 @@ class DiffusionOp {
     for (auto dg : diffusion_grids) {
       // Update the diffusion grid dimension if the neighbor grid
       // dimensions have changed
-      if (grid.HasGrown()) {
+      // If the space is bound, we do not need to update the dimensions, because
+      // these should not be changing anyway
+      if (grid.HasGrown() && !Param::bound_space_) {
         std::cout << "Your simulation objects are getting near the edge of the "
                      "simulation space. Be aware of boundary conditions that may "
                      "come into play!"

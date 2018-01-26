@@ -46,34 +46,6 @@ class Scheduler {
     }
   }
 
-  template <typename Lambda>
-  void SimulateTill(Lambda stopping_condition) {
-    grid_->Initialize();
-
-    while (!stopping_condition()) {
-      // Simulate
-      Execute();
-
-      // Visualize
-      if (Param::live_visualization_) {
-        double time = Param::simulation_time_step_ * total_steps_;
-        visualization_->CoProcess(time, total_steps_, false);
-      }
-
-      total_steps_++;
-
-      // Backup
-      using std::chrono::seconds;
-      using std::chrono::duration_cast;
-      if (backup_.BackupEnabled() &&
-          duration_cast<seconds>(Clock::now() - last_backup_).count() >=
-              Param::backup_interval_) {
-        last_backup_ = Clock::now();
-        backup_.Backup(total_steps_);
-      }
-    }
-  }
-
   void Simulate(unsigned steps) {
     // TODO(lukas) backup and restore should work for every simulation object in
     // ResourceManager
@@ -90,6 +62,10 @@ class Scheduler {
     }
 
     grid_->Initialize();
+    if (Param::bound_space_) {
+      auto rm = TResourceManager::Get();
+      rm->ApplyOnAllTypes(bound_space_);
+    }
     int lbound = grid_->GetDimensionThresholds()[0];
     int rbound = grid_->GetDimensionThresholds()[1];
     for (auto& dgrid : TResourceManager::Get()->GetDiffusionGrids()) {
@@ -98,13 +74,9 @@ class Scheduler {
                    grid_->GetBoxLength());
       // Initialize data structures with user-defined values
       dgrid->RunInitializers();
-     }
-       
+    }
 
     for (unsigned step = 0; step < steps; step++) {
-      // Simulate
-      Execute();
-
       // Visualize
       if (Param::live_visualization_) {
         double time = Param::simulation_time_step_ * total_steps_;
@@ -115,6 +87,9 @@ class Scheduler {
         visualization_->ExportVisualization(time, total_steps_,
                                             step == steps - 1);
       }
+
+      // Simulate
+      Execute();
 
       total_steps_++;
 
@@ -153,6 +128,12 @@ class Scheduler {
       } else {
         grid_->UpdateGrid();
       }
+    }
+    // TODO: should we only do it here and not after we run the physics?
+    // we need it here, because we need to update the threshold values before
+    // we update the diffusion grid
+    if (Param::bound_space_) {
+      rm->ApplyOnAllTypes(bound_space_);
     }
     rm->ApplyOnAllTypes(diffusion_);
     rm->ApplyOnAllTypes(biology_);

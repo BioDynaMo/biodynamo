@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
+#include <functional>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -94,14 +95,17 @@ class DiffusionGrid {
     // Apply all functions that initialize this diffusion grid
     for (size_t f = 0; f < initializers_.size(); f++) {
       for (size_t x = 0; x < num_boxes_axis_[0]; x++) {
+        double real_x = grid_dimensions_[0] + x * box_length_;
         for (size_t y = 0; y < num_boxes_axis_[1]; y++) {
+          double real_y = grid_dimensions_[2] + y * box_length_;
           for (size_t z = 0; z < num_boxes_axis_[2]; z++) {
+            double real_z = grid_dimensions_[4] + z * box_length_;
             std::array<uint32_t, 3> box_coord;
             box_coord[0] = x;
             box_coord[1] = y;
             box_coord[2] = z;
             size_t idx = GetBoxIndex(box_coord);
-            IncreaseConcentrationBy(idx, initializers_[f](this, x, y, z));
+            IncreaseConcentrationBy(idx, initializers_[f](real_x, real_y, real_z));
           }
         }
       }
@@ -176,7 +180,7 @@ class DiffusionGrid {
 
     CopyOldData(tmp_c1, tmp_gradients, tmp_num_boxes_axis);
 
-    assert((static_cast<int>(total_num_boxes_)) >= tmp_num_boxes_axis[0] *
+    assert(total_num_boxes_ >= tmp_num_boxes_axis[0] *
                                                        tmp_num_boxes_axis[1] *
                                                        tmp_num_boxes_axis[2] &&
            "The diffusion grid tried to shrink! It can only become larger");
@@ -568,7 +572,7 @@ class DiffusionGrid {
   /// If false, grid dimensions are even; if true, they are odd
   bool parity_ = false;
   /// A list of functions that initialize this diffusion grid
-  std::vector<std::function<double(DiffusionGrid*, size_t, size_t, size_t)>> initializers_;
+  std::vector<std::function<double(double, double, double)>> initializers_;
 
   ClassDefNV(DiffusionGrid, 1);
 };

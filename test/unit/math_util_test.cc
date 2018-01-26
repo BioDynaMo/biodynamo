@@ -56,16 +56,4 @@ TEST(MathUtilTest, Sum) {
   EXPECT_EQ(55, result);
 }
 
-TEST(MathUtilTest, GaussianArray) {
-  gTRandom.SetSeed(4357);
-  int length = 180;
-  auto arr = Math::CreateGaussianArray(90, 5, length);
-  std::ofstream outfile;
-  outfile.open ("gaussian_distribution.csv");
-  for (int i = 0; i < length; i++) {
-    outfile << arr[i] << std::endl;
-  }
-  outfile.close();
-}
-
 }  // namespace bdm
