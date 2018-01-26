@@ -23,6 +23,8 @@ namespace neuroscience {
 template<typename TNeuronSoPtr, typename TNeuriteSoPtr>
 class NeuronNeuriteAdapter {
 public:
+  using Self = NeuronNeuriteAdapter<TNeuronSoPtr, TNeuriteSoPtr>;
+
   NeuronNeuriteAdapter() {}
 
   template <typename T>
@@ -74,7 +76,7 @@ public:
   bool IsNeurite() const { return !neurite_ptr_.IsNullPtr(); }
 
   // TODO LB reference?
-  auto GetMother() {
+  Self GetMother() {
     assert(IsNeurite() && "This function call is only allowed for a Neurite");
     return neurite_ptr_.Get().GetMother();
   }
@@ -444,7 +446,9 @@ BDM_SIM_OBJECT(Neurite, SimulationObject) {
 
   void SetAxon(bool is_axon);
 
-  const NeuriteOrNeuron& GetMother() const;
+  // FIXME
+  // const NeuriteOrNeuron& GetMother() const;
+  NeuriteOrNeuron GetMother();
 
   void SetMother(const NeuriteOrNeuron& mother);
 
@@ -670,13 +674,14 @@ BDM_SO_DEFINE(inline void NeuriteExt)::RetractTerminalEnd(double speed) {
       actual_length_[kIdx] = new_actual_length;
       //cf removeproximalCylinder()
       resting_length_[kIdx] = spring_constant_[kIdx] * actual_length_[kIdx] / (tension_[kIdx] + spring_constant_[kIdx]);
-      spring_axis_[kIdx] = {factor * spring_axis_[kIdx][0], factor*spring_axis_[kIdx][1], factor*spring_axis_[kIdx][2]};
+      spring_axis_[kIdx] = Matrix::ScalarMult(factor, spring_axis_[kIdx]);
 
       mass_location_[kIdx] = Matrix::Add(mother_[kIdx].OriginOf(Base::GetElementIdx()), spring_axis_[kIdx]);
       UpdateVolume();  // and update concentration of internal stuff.
       // be sure i'll run my physics :
       // TODO setOnTheSchedulerListForPhysicalObjects(true);
-    } else if (mother_[kIdx].IsNeurite() && !mother_[kIdx].GetDaughterRight().IsNullPtr()) {
+    } else if (mother_[kIdx].IsNeurite() && mother_[kIdx].GetDaughterRight().IsNullPtr()) {
+
       // if actual_length_ < length and mother is a PhysicalCylinder with no other daughter : merge with mother
       RemoveProximalCylinder();  // also updates volume_...
       // be sure i'll run my physics :
@@ -685,10 +690,8 @@ BDM_SO_DEFINE(inline void NeuriteExt)::RetractTerminalEnd(double speed) {
     } else {
       // if mother is cylinder with other daughter or is not a cylinder : disappear.
       mother_[kIdx].RemoveDaughter(GetSoPtr());
-      // TODO still_existing_ = false;
-      // TODO ecm_->removePhysicalCylinder(this);  // this method removes the SONode
-      // and the associated neuriteElement also disappears :
-      // TODO neurite_element_->removeYourself();
+      RemoveFromSimulation();
+
       // TODO intracellularSubstances quantities
       // (concentrations are solved in updateDependentPhysicalVariables():
       // for (auto& el : intracellular_substances_) {
@@ -788,9 +791,9 @@ BDM_SO_DEFINE(inline void NeuriteExt)::UpdateRelative(const NeuriteOrNeuron& old
     auto old_neurite = old_relative.GetNeuriteSoPtr();
     auto new_neurite = new_relative.GetNeuriteSoPtr();
     if (old_neurite == daughter_left_[kIdx]) {
-      daughter_left_[kIdx] == new_neurite;
+      daughter_left_[kIdx] = new_neurite;
     } else if (old_neurite == daughter_right_[kIdx]) {
-      daughter_right_[kIdx] == new_neurite;
+      daughter_right_[kIdx] = new_neurite;
     }
   }
 }
@@ -978,7 +981,7 @@ BDM_SO_DEFINE(inline void NeuriteExt)::SetAxon(bool is_axon) {
   is_axon_[kIdx] = is_axon;
 }
 
-BDM_SO_DEFINE(inline const typename NeuriteExt<TCompileTimeParam, TDerived, TBase>::NeuriteOrNeuron& NeuriteExt)::GetMother() const {
+BDM_SO_DEFINE(inline typename NeuriteExt<TCompileTimeParam, TDerived, TBase>::NeuriteOrNeuron NeuriteExt)::GetMother() {
   return mother_[kIdx];
 }
 
@@ -1219,14 +1222,16 @@ BDM_SO_DEFINE(inline void NeuriteExt)::ExtendSideCylinder(TMostDerived<Scalar>* 
 }
 
 BDM_SO_DEFINE(inline void NeuriteExt)::RemoveProximalCylinder() {
-  // The mother is removed if (a) it is a PhysicalCylinder and (b) it has no other daughter than
+  // The mother is removed if (a) it is a neurite segment and (b) it has no other daughter than
   if (!mother_[kIdx].IsNeurite() || !mother_[kIdx].GetDaughterRight().IsNullPtr()) {
     return;
   }
-  // the ex-mother's neurite Element has to be removed
-  // TODO proximal_cylinder->getNeuriteElement()->removeYourself();
+  // The guy we gonna remove
+  // TODO rename to neurite (no cylinder)
+  auto proximal_cylinder = mother_[kIdx].GetNeuriteSoPtr().Get();
+
   // Re-organisation of the PhysicalObject tree structure: by-passing proximalCylinder
-  mother_[kIdx].GetMother().UpdateRelative(mother_[kIdx], NeuriteOrNeuron(GetSoPtr()));
+  proximal_cylinder.GetMother().UpdateRelative(mother_[kIdx], NeuriteOrNeuron(GetSoPtr()));
   SetMother(mother_[kIdx].GetMother());
 
   // TODO collecting (the quantities of) the intracellular substances of the removed cylinder.
@@ -1241,15 +1246,15 @@ BDM_SO_DEFINE(inline void NeuriteExt)::RemoveProximalCylinder() {
   // (we don't use updateDependentPhysicalVariables(), because we have tension and want to
   // compute restingLength, and not the opposite...)
   // T = k*(A-R)/R --> R = k*A/(T+K)
-  spring_axis_[kIdx] = Matrix::Subtract(mass_location_[kIdx], mother_[kIdx].GetPosition());
+  spring_axis_[kIdx] = Matrix::Subtract(mass_location_[kIdx], mother_[kIdx].OriginOf(Base::GetElementIdx()));
   actual_length_[kIdx] = Math::Norm(spring_axis_[kIdx]);
   resting_length_[kIdx] = spring_constant_[kIdx] * actual_length_[kIdx] / (tension_[kIdx] + spring_constant_[kIdx]);
   // .... and volume_
   UpdateVolume();
   // and local coord
   UpdateLocalCoordinateAxis();
-  // ecm
-  // TODO ecm_->removePhysicalCylinder(proximal_cylinder);
+
+  proximal_cylinder.RemoveFromSimulation();
 
   // dealing with excressences:
   // mine are shifted up :
