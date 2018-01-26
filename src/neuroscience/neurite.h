@@ -56,7 +56,7 @@ public:
     return neurite_ptr_;
   }
 
-  const std::array<double, 3>& GetPosition() const {
+  const std::array<double, 3> GetPosition() const {
     if (!neurite_ptr_.IsNullPtr()) {
       return neurite_ptr_.Get().GetPosition();
     }
@@ -107,10 +107,11 @@ public:
     if (!neurite_ptr_.IsNullPtr()) {
       neurite_ptr_.Get().UpdateRelative(old_rel, new_rel);
     }
-    // FIXME
-    //neuron_ptr_.Get().UpdateRelative();
+    // TODO improve
+    auto old_neurite_soptr = old_rel.GetNeuriteSoPtr();
+    auto new_neurite_soptr = new_rel.GetNeuriteSoPtr();
+    neuron_ptr_.Get().UpdateRelative(old_neurite_soptr, new_neurite_soptr);
   }
-
 
   auto RemoveYourself() -> decltype(std::declval<TNeuriteSoPtr>().Get().RemoveYourself()) const {
     assert(IsNeurite() && "This function call is only allowed for a Neurite");
@@ -149,7 +150,7 @@ private:
 /// mother PhysicalNode) are transmitted to the mother element
 // TODO
 BDM_SIM_OBJECT(Neurite, SimulationObject) {
-  BDM_SIM_OBJECT_HEADER(NeuriteExt, 1, position_, volume_, diameter_, x_axis_, y_axis_, z_axis_,
+  BDM_SIM_OBJECT_HEADER(NeuriteExt, 1, mass_location_, volume_, diameter_, x_axis_, y_axis_, z_axis_,
                                   is_axon_,
                                   mother_, daughter_left_, daughter_right_, branch_order_, force_to_transmit_to_proximal_mass_, spring_axis_, actual_length_, tension_, spring_constant_, resting_length_);
 
@@ -164,20 +165,20 @@ BDM_SIM_OBJECT(Neurite, SimulationObject) {
  public:
    NeuriteExt() {}
 
-   const std::array<double, 3>& GetPosition() const { return position_[kIdx]; }
    void SetDiameter(double diameter) {
      diameter_[kIdx] = diameter;
      UpdateVolume();
    }
-   void SetPosition(const std::array<double, 3>& position) { position_[kIdx] = position; }
+   const std::array<double, 3> GetPosition() const { return Matrix::Subtract(mass_location_[kIdx], Matrix::ScalarMult(0.5, spring_axis_[kIdx])); }
+   void SetPosition(const std::array<double, 3>& position) { mass_location_[kIdx] = Matrix::Add(position, Matrix::ScalarMult(0.5, spring_axis_[kIdx])); }
    // TODO reevaluate if method is required or data member should be used
    /// return end of cylinder position
-   std::array<double, 3> GetMassLocation() const {
-     return Matrix::Add(position_[kIdx], Matrix::ScalarMult(0.5, spring_axis_[kIdx]));
+   std::array<double, 3>& GetMassLocation() const {
+     return mass_location_[kIdx];
    }
    // TODO reevaluate if method is required or data member should be used
    void SetMassLocation(const std::array<double, 3>& mass_location) const {
-     position_[kIdx] = Matrix::Subtract(mass_location, Matrix::ScalarMult(0.5, spring_axis_[kIdx]));
+     mass_location_[kIdx] = mass_location;
    }
 
    const std::array<double, 3>& GetXAxis() const { return x_axis_[kIdx]; }
@@ -192,7 +193,7 @@ BDM_SIM_OBJECT(Neurite, SimulationObject) {
    /// @param daughter_element_idx element_idx of the daughter
    /// @return the coord
    std::array<double, 3> OriginOf(uint32_t daughter_element_idx) const {
-     return GetMassLocation();
+     return mass_location_[kIdx];
    }
 
    // TODO arrange in order end
@@ -535,9 +536,9 @@ BDM_SIM_OBJECT(Neurite, SimulationObject) {
   void RemoveYourself();
 
   friend std::ostream& operator<<(std::ostream& str, const Self<Backend>& n) {
-    auto ml = n.GetMassLocation();
-    str << "MassLocation:     " << ml[0] << ", " << ml[1] << ", " << ml[2] << ", " << std::endl;
-    str << "Position:         " << n.position_[n.kIdx][0] << ", " << n.position_[n.kIdx][1] << ", " << n.position_[n.kIdx][2] << ", " << std::endl;
+    auto pos = n.GetPosition();
+    str << "MassLocation:     " << n.mass_location_[n.kIdx][0] << ", " << n.mass_location_[n.kIdx][1] << ", " << n.mass_location_[n.kIdx][2] << ", " << std::endl;
+    str << "Position:         " << pos[0] << ", " << pos[1] << ", " << pos[2] << ", " << std::endl;
     str << "x_axis_:          " << n.x_axis_[n.kIdx][0] << ", " << n.x_axis_[n.kIdx][1] << ", " << n.x_axis_[n.kIdx][2] << ", " << std::endl;
     str << "y_axis_:          " << n.y_axis_[n.kIdx][0] << ", " << n.y_axis_[n.kIdx][1] << ", " << n.y_axis_[n.kIdx][2] << ", " << std::endl;
     str << "z_axis_:          " << n.z_axis_[n.kIdx][0] << ", " << n.z_axis_[n.kIdx][1] << ", " << n.z_axis_[n.kIdx][2] << ", " << std::endl;
@@ -574,7 +575,7 @@ BDM_SIM_OBJECT(Neurite, SimulationObject) {
    // TODO data members same as in cell
    /// position_ is middle point of cylinder_
    /// mass_location_ is distal end of the cylinder
-   vec<std::array<double, 3>> position_ = {{0.0, 0.0, 0.0}};
+   vec<std::array<double, 3>> mass_location_ = {{0.0, 0.0, 0.0}};
    vec<double> volume_;
    vec<double> diameter_ = {{ Param::kNeuriteDefaultDiameter }};
    /// First axis of the local coordinate system equal to cylinder axis
@@ -671,7 +672,7 @@ BDM_SO_DEFINE(inline void NeuriteExt)::RetractTerminalEnd(double speed) {
       resting_length_[kIdx] = spring_constant_[kIdx] * actual_length_[kIdx] / (tension_[kIdx] + spring_constant_[kIdx]);
       spring_axis_[kIdx] = {factor * spring_axis_[kIdx][0], factor*spring_axis_[kIdx][1], factor*spring_axis_[kIdx][2]};
 
-      position_[kIdx] = Matrix::Add(mother_[kIdx].GetPosition(), spring_axis_[kIdx]);
+      mass_location_[kIdx] = Matrix::Add(mother_[kIdx].OriginOf(Base::GetElementIdx()), spring_axis_[kIdx]);
       UpdateVolume();  // and update concentration of internal stuff.
       // be sure i'll run my physics :
       // TODO setOnTheSchedulerListForPhysicalObjects(true);
@@ -847,16 +848,12 @@ BDM_SO_DEFINE(inline void NeuriteExt)::MovePointMass(double speed, const std::ar
   // scaling for integration step
   double length = speed * Param::simulation_time_step_;
   auto displacement = Matrix::ScalarMult(length, Math::Normalize(direction));
-  // TODO mass_location_ = Matrix::add(displacement, mass_location_);
-  // position_[kIdx] = Matrix::Add(displacement, position_[kIdx]);
-  // SetMassLocation(Matrix::Add(displacement, GetMassLocation()));
-  // position_[kIdx] = Matrix::Add(displacement, position_[kIdx]);
-  auto new_mass_location = Matrix::Add(displacement, GetMassLocation());
+  auto new_mass_location = Matrix::Add(displacement, mass_location_[kIdx]);
   // here I have to define the actual length ..........
   // auto& relative_pos = mother_[kIdx].GetPosition();
-  auto relative_pos = mother_[kIdx].OriginOf(Base::GetElementIdx()); // TODO change to auto&&
-  spring_axis_[kIdx] = Matrix::Subtract(new_mass_location, relative_pos);
-  SetMassLocation(new_mass_location);
+  auto relative_ml = mother_[kIdx].OriginOf(Base::GetElementIdx()); // TODO change to auto&&
+  spring_axis_[kIdx] = Matrix::Subtract(new_mass_location, relative_ml);
+  mass_location_[kIdx] = new_mass_location;
   actual_length_[kIdx] = std::sqrt(Matrix::Dot(spring_axis_[kIdx], spring_axis_[kIdx]));
   // process of elongation : setting tension to 0 increases the resting length :
   SetRestingLengthForDesiredTension(0.0);
@@ -1064,11 +1061,11 @@ BDM_SO_DEFINE(inline bool NeuriteExt)::IsTerminal() const {
 }
 
 BDM_SO_DEFINE(inline std::array<double, 3> NeuriteExt)::ProximalEnd() const {
-  return Matrix::Subtract(position_[kIdx], spring_axis_[kIdx]);
+  return Matrix::Subtract(mass_location_[kIdx], spring_axis_[kIdx]);
 }
 
 BDM_SO_DEFINE(inline const std::array<double, 3>& NeuriteExt)::DistalEnd() const {
-  return position_[kIdx];
+  return mass_location_[kIdx];
 }
 
 BDM_SO_DEFINE(inline double NeuriteExt)::LengthToProximalBranchingPoint() const {
@@ -1091,9 +1088,8 @@ BDM_SO_DEFINE(inline const std::array<double, 3>& NeuriteExt)::GetAxis() const {
 }
 
 BDM_SO_DEFINE(inline void NeuriteExt)::UpdateDependentPhysicalVariables() {
-  // spring_axis_[kIdx] = Matrix::Subtract(position_[kIdx], mother_[kIdx].GetPosition());
   auto relative_ml = mother_[kIdx].OriginOf(Base::GetElementIdx());
-  spring_axis_[kIdx] = Matrix::Subtract(GetMassLocation(), relative_ml);
+  spring_axis_[kIdx] = Matrix::Subtract(mass_location_[kIdx], relative_ml);
   actual_length_[kIdx] = std::sqrt(Matrix::Dot(spring_axis_[kIdx], spring_axis_[kIdx]));
   tension_[kIdx] = spring_constant_[kIdx] * (actual_length_[kIdx] - resting_length_[kIdx]) / resting_length_[kIdx];
   UpdateVolume();
@@ -1105,14 +1101,10 @@ BDM_SO_DEFINE(inline void NeuriteExt)::InsertProximalCylinder() {
 }
 
 BDM_SO_DEFINE(inline void NeuriteExt)::InsertProximalCylinder(double distal_portion) {
-  std::cout << "DP " << distal_portion << std::endl;
-  std::cout << "resting_length_ " << resting_length_[kIdx] << std::endl;
-
-  auto distal_location = GetMassLocation();
-
   auto new_neurite_element = Rm()->template New<MostDerived>();
 
-  auto new_position = Matrix::Subtract(GetMassLocation(), Matrix::ScalarMult(distal_portion, spring_axis_[kIdx]));
+  // TODO reformulate to mass_location_
+  auto new_position = Matrix::Subtract(mass_location_[kIdx], Matrix::ScalarMult(distal_portion, spring_axis_[kIdx]));
 
   // TODO
   // double temp = distal_portion + (1 - distal_portion) / 2.0;
@@ -1120,13 +1112,13 @@ BDM_SO_DEFINE(inline void NeuriteExt)::InsertProximalCylinder(double distal_port
   //     mass_location_[1] - temp * spring_axis_[1], mass_location_[2] - temp * spring_axis_[2] };
   // FIXME position so_node gets proximal position assigned not middle position like in ExtendNewNeurite
 
-  new_neurite_element.SetPosition(new_position);
 
+  new_neurite_element.SetPosition(new_position);
   new_neurite_element.Copy(*static_cast<TMostDerived<Backend>*>(this));
 
 
   // family relations
-  // FIXME mother_[kIdx].UpdateRelative(this, new_neurite_element);
+  mother_[kIdx].UpdateRelative(NeuriteOrNeuron(GetSoPtr()), NeuriteOrNeuron(new_neurite_element.GetSoPtr()));
   new_neurite_element.SetMother(mother_[kIdx]);
   SetMother(new_neurite_element.GetSoPtr());
   new_neurite_element.SetDaughterLeft(GetSoPtr());
@@ -1155,7 +1147,6 @@ BDM_SO_DEFINE(inline void NeuriteExt)::InsertProximalCylinder(double distal_port
   //   // decrease value of IntracellularSubstance in this cylinder
   //   s->setQuantity(quantity_before_distribution * distal_portion);
   // }
-  SetMassLocation(distal_location);
   UpdateDependentPhysicalVariables();
   new_neurite_element.UpdateDependentPhysicalVariables();
   // UpdateLocalCoordinateAxis has to come after UpdateDepend...
@@ -1202,7 +1193,7 @@ BDM_SO_DEFINE(inline void NeuriteExt)::ExtendSideCylinder(TMostDerived<Scalar>* 
   }
   // location of mass and computation center
   auto new_spring_axis = Matrix::ScalarMult(length, Math::Normalize(direction));
-  new_branch->position_[0] = Matrix::Add(position_[kIdx], new_spring_axis);
+  new_branch->mass_location_[0] = Matrix::Add(mass_location_[kIdx], new_spring_axis);
   new_branch->spring_axis_[0] = new_spring_axis;
   // physics
   new_branch->actual_length_[0] = length;
@@ -1250,7 +1241,7 @@ BDM_SO_DEFINE(inline void NeuriteExt)::RemoveProximalCylinder() {
   // (we don't use updateDependentPhysicalVariables(), because we have tension and want to
   // compute restingLength, and not the opposite...)
   // T = k*(A-R)/R --> R = k*A/(T+K)
-  spring_axis_[kIdx] = Matrix::Subtract(position_[kIdx], mother_[kIdx].GetPosition());
+  spring_axis_[kIdx] = Matrix::Subtract(mass_location_[kIdx], mother_[kIdx].GetPosition());
   actual_length_[kIdx] = Math::Norm(spring_axis_[kIdx]);
   resting_length_[kIdx] = spring_constant_[kIdx] * actual_length_[kIdx] / (tension_[kIdx] + spring_constant_[kIdx]);
   // .... and volume_

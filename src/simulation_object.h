@@ -228,6 +228,7 @@ class ScalarSimulationObject {
   uint32_t GetElementIdx() const {
     Fatal("GetElementIdx",
           "GetElementIdx has not been implemented for scalar backends");
+    return 0;  // avoid missing return statement compiler warning
   }
 
   /// Append a scalar element

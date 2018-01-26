@@ -1,6 +1,7 @@
 #ifndef NEUROSCIENCE_NEURON_H_
 #define NEUROSCIENCE_NEURON_H_
 
+#include <algorithm>
 #include <unordered_map>
 #include <typeinfo>  // TODO remove
 #include "cell.h"
@@ -41,6 +42,15 @@ BDM_SIM_OBJECT(Neuron, Cell) {
   /// @param daughter_element_idx element_idx of the daughter
   /// @return the coord
   std::array<double, 3> OriginOf(uint32_t daughter_element_idx) const;
+
+
+  void UpdateRelative(const ToSoPtr<TNeurite>& old_rel, const ToSoPtr<TNeurite>& new_rel) {
+    auto coord = daughters_coord_[kIdx][old_rel.Get().GetElementIdx()];
+    auto it = std::find(std::begin(daughters_[kIdx]), std::end(daughters_[kIdx]), old_rel);
+    assert(it != std::end(daughters_[kIdx]) && "old_element_idx could not be found in daughters_ vector");
+    *it = new_rel;
+    daughters_coord_[kIdx][new_rel.Get().GetElementIdx()] = coord;
+  }
 
  private:
   // vec<SoPointer<typename ToBackend<TNeurite, SimBackend>::type, SimBackend>>
@@ -135,7 +145,6 @@ BDM_SO_DEFINE(inline std::array<double, 3> NeuronExt)::OriginOf(uint32_t daughte
   xyz = Matrix::ScalarMult(radius, xyz);
 
   const auto& pos = Base::position_[kIdx];
-
 
   return {
     pos[0] + xyz[0] * Base::kXAxis[0] + xyz[1] * Base::kYAxis[0] + xyz[2] * Base::kZAxis[0],
