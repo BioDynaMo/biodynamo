@@ -8,10 +8,11 @@ pages:
     - Getting Started:
       - Installation: installation.md
       - Usage: usage.md
-    - Exercises:
+    - Tutorials:
       - Hello World: hello_world.md
       - Visualization: visualization.md
       - Diffusion: diffusion.md
+      - Substance Initialization: substance_initializers.md
       # - Soma Clustering: soma_clustering.md
     - Documentation: documentation.md
     - Contact: contact.md
