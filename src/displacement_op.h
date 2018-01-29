@@ -14,13 +14,16 @@ using std::array;
 
 template <typename TSO>
 void ApplyBoundingBox(TSO* cell, double lb, double rb) {
+  // Need to create a small distance from the positive edge of each dimension;
+  // otherwise it will fall out of the boundary of the simulation space
+  double eps = 1e-10;
   auto& pos = cell->GetPosition();
   for (int i = 0; i < 3; i++) {
     if (pos[i] < lb) {
       cell->SetCoordinate(i, lb);
     }
-    if (pos[i] > rb) {
-      cell->SetCoordinate(i, rb);
+    if (pos[i] >= rb) {
+      cell->SetCoordinate(i, rb - eps);
     }
   }
 }
