@@ -13,6 +13,8 @@ bool Param::run_mechanical_interactions_ = true;
 bool Param::bound_space_ = false;
 double Param::min_bound_ = 0;
 double Param::max_bound_ = 100;
+bool Param::leaking_edges_ = false;
+bool Param::calculate_gradients_ = true;
 
 // visualization group
 bool Param::live_visualization_ = false;
@@ -51,6 +53,8 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
   BDM_ASSIGN_CONFIG_VALUE(bound_space_, "simulation.bound_space");
   BDM_ASSIGN_CONFIG_VALUE(min_bound_, "simulation.min_bound");
   BDM_ASSIGN_CONFIG_VALUE(max_bound_, "simulation.max_bound");
+  BDM_ASSIGN_CONFIG_VALUE(leaking_edges_, "simulation.leaking_edges");
+  BDM_ASSIGN_CONFIG_VALUE(calculate_gradients_, "simulation.calculate_gradients");
   // visualization group
   BDM_ASSIGN_CONFIG_VALUE(live_visualization_, "visualization.live");
   BDM_ASSIGN_CONFIG_VALUE(export_visualization_, "visualization.export");
@@ -142,6 +146,8 @@ void Param::Reset() {
   bound_space_ = false;
   min_bound_ = 0;
   max_bound_ = 100;
+  leaking_edges_ = false;
+  calculate_gradients_ = true;
 
   // visualization group
   live_visualization_ = false;

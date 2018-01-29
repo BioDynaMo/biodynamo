@@ -92,6 +92,22 @@ struct Param {
   ///     max_bound = 100
   static double max_bound_;
 
+  /// Allow substances to leak out of the simulation space. In this way
+  /// the substance concentration will not be blocked by an artificial border\n
+  /// Default value: `false` (closed edges by default)\n
+  /// TOML config file:
+  ///
+  ///     [simulation]
+  ///     leaking_edges = false
+  static bool leaking_edges_;
+
+  /// Calculate the diffusion gradient for each substance.\n
+  /// TOML config file:
+  ///
+  ///     [simulation]
+  ///     calculate_gradients = true
+  static bool calculate_gradients_;
+
   // visualization values ------------------------------------------------------
 
   /// Use ParaView Catalyst for live visualization.\n
