@@ -71,7 +71,7 @@ class Scheduler {
     for (auto& dgrid : TResourceManager::Get()->GetDiffusionGrids()) {
       // Create data structures, whose size depend on the grid dimensions
       dgrid->Initialize({lbound, rbound, lbound, rbound, lbound, rbound},
-                   grid_->GetBoxLength());
+                        grid_->GetBoxLength());
       // Initialize data structures with user-defined values
       dgrid->RunInitializers();
     }
@@ -103,8 +103,8 @@ class Scheduler {
         backup_.Backup(total_steps_);
       }
 
-
-      if (Param::show_simulation_step_ && total_steps_ % Param::simulation_step_freq_ == 0) {
+      if (Param::show_simulation_step_ &&
+          total_steps_ % Param::simulation_step_freq_ == 0) {
         std::cout << "step " << total_steps_ << std::endl;
       }
     }
@@ -129,8 +129,8 @@ class Scheduler {
         grid_->UpdateGrid();
       }
     }
-    // TODO: should we only do it here and not after we run the physics?
-    // we need it here, because we need to update the threshold values before
+    // TODO(ahmad): should we only do it here and not after we run the physics?
+    // We need it here, because we need to update the threshold values before
     // we update the diffusion grid
     if (Param::bound_space_) {
       rm->ApplyOnAllTypes(bound_space_);

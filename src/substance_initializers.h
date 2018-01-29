@@ -12,11 +12,11 @@ namespace bdm {
 
 // -----------------------------------------------------------------------------
 // A substance initializer is a function that can be used to initialize the
-// concentration values of a particular substance in space. 
+// concentration values of a particular substance in space.
 // -----------------------------------------------------------------------------
 
 // Use this enum to express the axis you are interested in
-enum Axis {kXAxis, kYAxis, kZAxis};
+enum Axis { kXAxis, kYAxis, kZAxis };
 
 /// An initializer that uniformly initializes the concentration of a diffusion
 /// grid based on the input value and the range (along the specified axis).
@@ -34,26 +34,27 @@ struct Uniform {
   }
 
   double operator()(double x, double y, double z) {
-    switch(axis_) {
+    switch (axis_) {
       case Axis::kXAxis: {
         if (x >= min_ && x <= max_) {
           return value_;
-        };
+        }
         break;
       }
       case Axis::kYAxis: {
         if (y >= min_ && y <= max_) {
           return value_;
-        };
+        }
         break;
       }
       case Axis::kZAxis: {
         if (z >= min_ && z <= max_) {
           return value_;
-        };
+        }
         break;
       }
-      default: throw std::logic_error("You have chosen an non-existing axis!"); 
+      default:
+        throw std::logic_error("You have chosen an non-existing axis!");
     }
     return 0;
   }
@@ -90,17 +91,21 @@ struct GaussianBand {
   /// @param[in]  z     The z coordinate
   ///
   double operator()(double x, double y, double z) {
-    switch(axis_) {
-      case Axis::kXAxis: return ROOT::Math::normal_pdf(x, sigma_, mean_);
-      case Axis::kYAxis: return ROOT::Math::normal_pdf(y, sigma_, mean_);
-      case Axis::kZAxis: return ROOT::Math::normal_pdf(z, sigma_, mean_);
-      default: throw std::logic_error("You have chosen an non-existing axis!"); 
+    switch (axis_) {
+      case Axis::kXAxis:
+        return ROOT::Math::normal_pdf(x, sigma_, mean_);
+      case Axis::kYAxis:
+        return ROOT::Math::normal_pdf(y, sigma_, mean_);
+      case Axis::kZAxis:
+        return ROOT::Math::normal_pdf(z, sigma_, mean_);
+      default:
+        throw std::logic_error("You have chosen an non-existing axis!");
     }
   }
 };
 
 /// An initializer that follows a Poisson (normal) distribution along one axis
-/// The function ROOT::Math::poisson_pdfd(X, lambda) follows the normal 
+/// The function ROOT::Math::poisson_pdfd(X, lambda) follows the normal
 /// probability density function:
 /// {e^( - lambda ) * lambda ^x )} / x!
 struct PoissonBand {
@@ -126,11 +131,15 @@ struct PoissonBand {
   /// @param[in]  z     The z coordinate
   ///
   double operator()(double x, double y, double z) {
-    switch(axis_) {
-      case Axis::kXAxis: return ROOT::Math::poisson_pdf(x, lambda_);
-      case Axis::kYAxis: return ROOT::Math::poisson_pdf(y, lambda_);
-      case Axis::kZAxis: return ROOT::Math::poisson_pdf(y, lambda_);
-      default: throw std::logic_error("You have chosen an non-existing axis!"); 
+    switch (axis_) {
+      case Axis::kXAxis:
+        return ROOT::Math::poisson_pdf(x, lambda_);
+      case Axis::kYAxis:
+        return ROOT::Math::poisson_pdf(y, lambda_);
+      case Axis::kZAxis:
+        return ROOT::Math::poisson_pdf(y, lambda_);
+      default:
+        throw std::logic_error("You have chosen an non-existing axis!");
     }
   }
 };

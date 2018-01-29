@@ -145,7 +145,7 @@ class DisplacementOp {
       cell_movements[i] = movement_at_next_step;
     }
 
-// set new positions after all updates have been calculated
+// Set new positions after all updates have been calculated
 // otherwise some cells would see neighbors with already updated positions
 // which would lead to inconsistencies
 #pragma omp parallel for
@@ -173,9 +173,9 @@ class BoundSpace {
 
   template <typename TContainer>
   void operator()(TContainer* cells, uint16_t type_idx) const {
-// set new positions after all updates have been calculated
-// otherwise some cells would see neighbors with already updated positions
-// which would lead to inconsistencies
+    // set new positions after all updates have been calculated
+    // otherwise some cells would see neighbors with already updated positions
+    // which would lead to inconsistencies
     auto& grid = Grid<>::GetInstance();
 #pragma omp parallel for
     for (size_t i = 0; i < cells->size(); i++) {

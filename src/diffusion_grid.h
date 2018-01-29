@@ -87,7 +87,8 @@ class DiffusionGrid {
   }
 
   void RunInitializers() {
-    assert(num_boxes_axis_[0] > 0 && "The number of boxes along an axis was found to be zero!");
+    assert(num_boxes_axis_[0] > 0 &&
+           "The number of boxes along an axis was found to be zero!");
     if (initializers_.empty()) {
       return;
     }
@@ -105,7 +106,8 @@ class DiffusionGrid {
             box_coord[1] = y;
             box_coord[2] = z;
             size_t idx = GetBoxIndex(box_coord);
-            IncreaseConcentrationBy(idx, initializers_[f](real_x, real_y, real_z));
+            IncreaseConcentrationBy(idx,
+                                    initializers_[f](real_x, real_y, real_z));
           }
         }
       }
@@ -154,7 +156,8 @@ class DiffusionGrid {
       num_boxes_axis_[i] = dimension_length / box_length_;
     }
 
-    // We need to maintain the parity of the number of boxes along each dimension,
+    // We need to maintain the parity of the number of boxes along each
+    // dimension,
     // otherwise copying of the substances to the increases grid will not be
     // symmetrically done; resulting in shifting of boxes
     // We add a box in the negative direction, because the only way the parity
@@ -180,9 +183,8 @@ class DiffusionGrid {
 
     CopyOldData(tmp_c1, tmp_gradients, tmp_num_boxes_axis);
 
-    assert(total_num_boxes_ >= tmp_num_boxes_axis[0] *
-                                                       tmp_num_boxes_axis[1] *
-                                                       tmp_num_boxes_axis[2] &&
+    assert(total_num_boxes_ >= tmp_num_boxes_axis[0] * tmp_num_boxes_axis[1] *
+                                   tmp_num_boxes_axis[2] &&
            "The diffusion grid tried to shrink! It can only become larger");
   }
 
@@ -462,7 +464,7 @@ class DiffusionGrid {
     return c1_[GetBoxIndex(position)];
   }
 
-  /// Get the gradient at specified position
+  /// Get the (normalized) gradient at specified position
   void GetGradient(const array<double, 3>& position,
                    array<double, 3>* gradient) {
     auto idx = GetBoxIndex(position);
@@ -535,7 +537,7 @@ class DiffusionGrid {
   //   selected_.push_back(selected);
   // }
 
-  template<typename F>
+  template <typename F>
   void AddInitializer(F function) {
     initializers_.push_back(function);
   }

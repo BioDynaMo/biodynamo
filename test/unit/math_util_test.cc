@@ -3,8 +3,6 @@
 #include "gtest/gtest.h"
 #include "unit/test_util.h"
 
-#include <fstream>
-
 namespace bdm {
 
 TEST(MathUtilTest, Norm) {

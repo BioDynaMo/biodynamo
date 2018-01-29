@@ -9,7 +9,7 @@
 namespace bdm {
 
 // -----------------------------------------------------------------------------
-// In this integration test we should how to make use of the 'substance 
+// In this integration test we should how to make use of the 'substance
 // initializers', in order to initialize the concentration of a particular
 // substance. We create a gaussian distribution along each axis.
 // -----------------------------------------------------------------------------
@@ -37,8 +37,8 @@ inline int Simulate(int argc, const char** argv) {
     cell.SetDiameter(10);
     return cell;
   };
-  ModelInitializer::CreateCellsRandom(Param::min_bound_, Param::max_bound_,
-                                      1, construct);
+  ModelInitializer::CreateCellsRandom(Param::min_bound_, Param::max_bound_, 1,
+                                      construct);
 
   // 3. Define the substances in our simulation
   // Order: substance id, substance_name, diffusion_coefficient, decay_constant,
@@ -48,8 +48,9 @@ inline int Simulate(int argc, const char** argv) {
   // Order: substance id, substance name, initialization model, along which axis
   // (0 = x, 1 = y, 2 = z). See the documentation of `GaussianBand` for
   // information about its arguments
-  ModelInitializer::InitializeSubstance(kSubstance, "Substance", GaussianBand(120, 5, Axis::kXAxis));
-  
+  ModelInitializer::InitializeSubstance(kSubstance, "Substance",
+                                        GaussianBand(120, 5, Axis::kXAxis));
+
   // auto initer_y = [](double x, double y, double z) {
   //   return ROOT::Math::normal_pdf(y, 5, 120);
   // };
