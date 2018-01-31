@@ -190,6 +190,41 @@ TEST(NeuriteTest, PartialRetraction) {
   EXPECT_EQ(1, rm->Get<SpecializedNeurite>()->size());
 }
 
+TEST(NeuriteTest, TotalRetraction) {
+  auto* rm = Rm();
+  Rm()->Clear();
+  const double kEpsilon = abs_error<double>::value;
+  std::array<double, 3> origin = {0, 0, 0};
+  auto commit = [](auto* container, uint16_t type_idx){
+    container->Commit();
+  };
+
+  auto neuron = rm->New<SpecializedNeuron>(origin);
+  neuron.SetDiameter(20);
+
+  auto neurite_segment = neuron.ExtendNewNeurite({0, 0, 1}).Get();
+  neurite_segment.SetDiameter(2);
+
+  // will create a new neurite segment at iteration 139
+  for (int i = 0; i < 200; ++i) {
+    neurite_segment.ElongateTerminalEnd(10, {0, 0, 1});
+    neurite_segment.RunDiscretization();
+  }
+
+  // will remove the entire neurite
+  // neurite_segment will be removed in iteration 209
+  for (int i = 0; i < 210; ++i) {
+    neurite_segment.RetractTerminalEnd(10);
+    neurite_segment.RunDiscretization();
+    rm->ApplyOnAllTypes(commit);
+  }
+
+  // verify
+  EXPECT_EQ(1, rm->Get<SpecializedNeuron>()->size());
+  EXPECT_EQ(0, rm->Get<SpecializedNeurite>()->size());
+  EXPECT_EQ(0, neuron.GetDaughters().size());
+}
+
 }  // namespace neuroscience
 }  // namespace bdm
 
