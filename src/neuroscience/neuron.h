@@ -45,11 +45,16 @@ BDM_SIM_OBJECT(Neuron, Cell) {
 
 
   void UpdateRelative(const ToSoPtr<TNeurite>& old_rel, const ToSoPtr<TNeurite>& new_rel) {
+    std::cout << "UpdateRelative" << std::endl;
     auto coord = daughters_coord_[kIdx][old_rel.Get().GetElementIdx()];
     auto it = std::find(std::begin(daughters_[kIdx]), std::end(daughters_[kIdx]), old_rel);
     assert(it != std::end(daughters_[kIdx]) && "old_element_idx could not be found in daughters_ vector");
     *it = new_rel;
     daughters_coord_[kIdx][new_rel.Get().GetElementIdx()] = coord;
+  }
+
+  const std::vector<ToSoPtr<TNeurite>>& GetDaughters() const {
+    return daughters_[kIdx];
   }
 
  private:
@@ -81,6 +86,7 @@ BDM_SIM_OBJECT(Neuron, Cell) {
 // -----------------------------------------------------------------------------
 BDM_SO_DEFINE(inline void NeuronExt)::RemoveDaughter(const ToSoPtr<typename TCompileTimeParam::TNeurite> daugther) {
   auto it = std::find(std::begin(daughters_[kIdx]), std::end(daughters_[kIdx]), daugther);
+  std::cout << "RemoveDaughter " << daughters_[kIdx].size() << std::endl;
   assert(it != std::end(daughters_[kIdx]));
   daughters_[kIdx].erase(it);
 }
