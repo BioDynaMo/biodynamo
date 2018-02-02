@@ -100,6 +100,7 @@ public:
   void UpdateDependentPhysicalVariables() {
     if (IsNeurite()) {
       neurite_ptr_.Get().UpdateDependentPhysicalVariables();
+      return;
     }
     assert(IsNeuron() && "Initialization error: neither neuron nor neurite");
     neuron_ptr_.Get().UpdateVolume();
@@ -123,9 +124,12 @@ public:
     return neurite_ptr_.Get().RemoveYourself();
   }
 
-  // TODO remove template param and change to TNeuriteSoPtr?
   void RemoveDaughter(const TNeuriteSoPtr& mother) {
-    assert(IsNeuron() && "This function call is only allowed for a Neuron");
+    if(IsNeurite()) {
+      neurite_ptr_.Get().RemoveDaughter(mother);
+      return;
+    }
+    assert(IsNeuron() && "Initialization error: neither neuron nor neurite");
     neuron_ptr_.Get().RemoveDaughter(mother);
   }
 
@@ -463,6 +467,7 @@ BDM_SIM_OBJECT(Neurite, SimulationObject) {
 
   /// @return the second distal neurite element, if it exists
   /// i.e. if there is a branching point just after this element (otherwise returns nullptr).
+  // TODO rename GetRightDaughter
   const MostDerivedSoPtr& GetDaughterRight() const;
 
   void SetDaughterRight(const MostDerivedSoPtr& daughter);
@@ -779,13 +784,13 @@ BDM_SO_DEFINE(inline void NeuriteExt)::RemoveDaughter(const typename NeuriteExt<
   // If there is another daughter than the one we want to remove,
   // we have to be sure that it will be the daughterLeft->
   if (daughter == daughter_right_[kIdx]) {
-    daughter_right_[kIdx] = nullptr;
+    daughter_right_[kIdx] = MostDerivedSoPtr();
     return;
   }
 
   if (daughter == daughter_left_[kIdx]) {
     daughter_left_[kIdx] = daughter_right_[kIdx];
-    daughter_right_[kIdx] = nullptr;
+    daughter_right_[kIdx] = MostDerivedSoPtr();
     return;
   }
   Fatal("Neurite", "Given object is not a daughter!");
@@ -1062,8 +1067,7 @@ BDM_SO_DEFINE(inline void NeuriteExt)::SetTension(double tension) {
 }
 
 BDM_SO_DEFINE(inline std::array<double, 3> NeuriteExt)::GetUnitaryAxisDirectionVector() const {
-  double factor = 1.0 / actual_length_;
-  // return {factor*spring_axis_[kIdx][0], factor*spring_axis_[kIdx][1], factor*spring_axis_[kIdx][2]};
+  double factor = 1.0 / actual_length_[kIdx];
   return Matrix::ScalarMult(factor, spring_axis_[kIdx]);
 }
 
