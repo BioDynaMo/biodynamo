@@ -37,7 +37,6 @@ public:
     neurite_ptr_ = soptr;
   }
 
-
   template <typename T>
   typename std::enable_if<is_same<T, TNeuronSoPtr>::value>::type
   Set(T&& soptr) {
@@ -59,16 +58,18 @@ public:
   }
 
   const std::array<double, 3> GetPosition() const {
-    if (!neurite_ptr_.IsNullPtr()) {
+    if (IsNeurite()) {
       return neurite_ptr_.Get().GetPosition();
     }
+    assert(IsNeuron() && "Initialization error: neither neuron nor neurite");
     return neuron_ptr_.Get().GetPosition();
   }
 
   std::array<double, 3> OriginOf(uint32_t daughter_element_idx) const {
-    if (!neurite_ptr_.IsNullPtr()) {
+    if (IsNeurite()) {
       return neurite_ptr_.Get().OriginOf(daughter_element_idx);
     }
+    assert(IsNeuron() && "Initialization error: neither neuron nor neurite");
     return neuron_ptr_.Get().OriginOf(daughter_element_idx);
   }
 
@@ -97,21 +98,23 @@ public:
   }
 
   void UpdateDependentPhysicalVariables() {
-    if (!neurite_ptr_.IsNullPtr()) {
+    if (IsNeurite()) {
       neurite_ptr_.Get().UpdateDependentPhysicalVariables();
     }
-    // FIXME
-    //neuron_ptr_.Get().UpdateDependentPhysicalVariables();
+    assert(IsNeuron() && "Initialization error: neither neuron nor neurite");
+    neuron_ptr_.Get().UpdateVolume();
   }
 
   template <typename TNeuronOrNeurite>
   void UpdateRelative(const TNeuronOrNeurite& old_rel, const TNeuronOrNeurite& new_rel) {
-    if (!neurite_ptr_.IsNullPtr()) {
+    if (IsNeurite()) {
       neurite_ptr_.Get().UpdateRelative(old_rel, new_rel);
+      return;
     }
     // TODO improve
     auto old_neurite_soptr = old_rel.GetNeuriteSoPtr();
     auto new_neurite_soptr = new_rel.GetNeuriteSoPtr();
+    assert(IsNeuron() && "Initialization error: neither neuron nor neurite");
     neuron_ptr_.Get().UpdateRelative(old_neurite_soptr, new_neurite_soptr);
   }
 
@@ -229,18 +232,18 @@ BDM_SIM_OBJECT(Neurite, SimulationObject) {
   /// Makes a side branch, i.e. splits this neurite element into two and puts a daughter right at the proximal half.
   /// @param new_branch_diameter
   /// @param direction growth direction, but will be automatically corrected if not at least 45 degrees from the cylinder's axis.
-  TMostDerived<Scalar> Branch(double new_branch_diameter, const std::array<double, 3>& direction);
+  MostDerivedSoPtr Branch(double new_branch_diameter, const std::array<double, 3>& direction);
 
   /// Makes a side branch, i.e. splits this neurite element into two and puts a daughter right at the proximal half.
   /// @param direction growth direction, but will be automatically corrected if not at least 45 degrees from the cylinder's axis.
-  TMostDerived<Scalar> Branch(const std::array<double, 3>& direction);
+  MostDerivedSoPtr Branch(const std::array<double, 3>& direction);
 
   /// Makes a side branch, i.e. splits this neurite element into two and puts a daughter right at the proximal half.
   /// @param diameter of the side branch
-  TMostDerived<Scalar> Branch(double diameter);
+  MostDerivedSoPtr Branch(double diameter);
 
   /// Makes a side branch, i.e. splits this neurite element into two and puts a daughter right at the proximal half.
-  TMostDerived<Scalar> Branch();
+  MostDerivedSoPtr Branch();
 
   /// Returns true if a bifurcation is physicaly possible. That is if the neurite element
   /// has no daughter and the actual length is bigger than the minimum required.
@@ -556,6 +559,8 @@ BDM_SIM_OBJECT(Neurite, SimulationObject) {
     str << "tension_:  " << n.tension_[n.kIdx]  << std::endl;
     str << "spring_constant_: " << n.spring_constant_[n.kIdx]  << std::endl;
     str << "resting_length_:  " << n.resting_length_[n.kIdx]  << std::endl;
+    auto mother = n.mother_[n.kIdx].IsNeuron() ? "neuron" : (n.mother_[n.kIdx].IsNeurite() ? "neurite" : "nullptr");
+    str << "mother_           " << mother << std::endl;
     return str;
   }
 
@@ -630,14 +635,14 @@ BDM_SIM_OBJECT(Neurite, SimulationObject) {
   /// Divides the PhysicalCylinder into two PhysicalCylinders of equal length. The one in which the method is called becomes the distal half.
   /// A new PhysicalCylinder is instantiated and becomes the proximal part. All characteristics are transmitted.
   /// A new Neurite element is also instantiated, and assigned to the new proximal PhysicalCylinder
-  void InsertProximalCylinder();
+  MostDerivedSoPtr InsertProximalCylinder();
 
   // TODO documentation, TODO rename function
   /// Divides the PhysicalCylinder into two PhysicalCylinders (in fact, into two instances of the derived class).
   /// The one in which the method is called becomes the distal half, and it's length is reduced.
   /// A new PhysicalCylinder is instantiated and becomes the proximal part (=the mother). All characteristics are transmitted
   /// @param distalPortion the fraction of the total old length devoted to the distal half (should be between 0 and 1).
-  void InsertProximalCylinder(double distal_portion);
+  MostDerivedSoPtr InsertProximalCylinder(double distal_portion);
 
   // TODO rename function
   /// Merges two neurite elements together. The one in which the method is called phagocytes it's mother.
@@ -649,7 +654,7 @@ BDM_SIM_OBJECT(Neurite, SimulationObject) {
   // void scheduleMeAndAllMyFriends();
 
   // TODO rename function
-  void ExtendSideCylinder(TMostDerived<Scalar>* new_branch, double length, const std::array<double, 3>& direction);
+  MostDerivedSoPtr ExtendSideCylinder(double length, const std::array<double, 3>& direction);
 };
 
 // -----------------------------------------------------------------------------
@@ -716,38 +721,41 @@ BDM_SO_DEFINE(inline bool NeuriteExt)::BranchPermitted() const {
   return !daughter_left_[kIdx].IsNullPtr() && daughter_right_.IsNullPtr();
 }
 
-// BDM_SO_DEFINE(inline typename NeuriteExt<TCompileTimeParam, TDerived, TBase>::template TMostDerived<Scalar> NeuriteExt)::Branch(double new_branch_diameter, const std::array<double, 3>& direction) {
-//   // create a new neurite element for side branch
-//   TMostDerived<Scalar> new_branch;
-//   // TODO auto new_neurite = getCopy();
-//
-//   // TODO fixme
-//   // we first split this cylinder into two pieces
-//   // InsertProximalCylinder(&new_branch);
-//   // then append a "daughter right" between the two
-//   // return ne->getPhysicalCylinder()->extendSideCylinder(length, direction);
-//
-//   // making the branching at physicalObject level
-//   // auto TODO pc_1 = physical_cylinder_->branchCylinder(1.0, direction);
-//   new_branch.SetDiameter(diameter_[kIdx]);
-//   new_branch.SetBranchOrder(branch_order_[kIdx] + 1);
-//   // TODO : Caution : doesn't change the value distally on the main branch
-//
-//   // TODO
-//   // Copy of the local biological modules:
-//   // for (auto m : getLocalBiologyModulesList()) {
-//   //   if (m->isCopiedWhenNeuriteBranches()) {
-//   //     ne->addLocalBiologyModule(m->getCopy());
-//   //   }
-//   // }
-//   return ne;
-// }
+BDM_SO_DEFINE(inline typename NeuriteExt<TCompileTimeParam, TDerived, TBase>::MostDerivedSoPtr NeuriteExt)::Branch(double new_branch_diameter, const std::array<double, 3>& direction) {
+  // create a new neurite element for side branch
+  // auto new_branch = Rm()->template New<MostDerived>();
+  // new_branch.Copy(*static_cast<TMostDerived<Backend>*>(this));
 
-BDM_SO_DEFINE(inline typename NeuriteExt<TCompileTimeParam, TDerived, TBase>::template TMostDerived<Scalar> NeuriteExt)::Branch(const std::array<double, 3>& direction) {
+  double length = 1.0;
+
+  // we first split this neurite segment into two pieces
+  auto proximal_ns = InsertProximalCylinder().Get();
+
+  // then append a "daughter right" between the two
+  auto new_branch_soptr = proximal_ns.ExtendSideCylinder(length, direction);
+  auto new_branch = new_branch_soptr.Get();
+
+  // making the branching at physicalObject level
+  // auto TODO pc_1 = physical_cylinder_->branchCylinder(1.0, direction);
+  new_branch.SetDiameter(diameter_[kIdx]);
+  new_branch.SetBranchOrder(branch_order_[kIdx] + 1);
+  // TODO : Caution : doesn't change the value distally on the main branch
+
+  // TODO
+  // Copy of the local biological modules:
+  // for (auto m : getLocalBiologyModulesList()) {
+  //   if (m->isCopiedWhenNeuriteBranches()) {
+  //     ne->addLocalBiologyModule(m->getCopy());
+  //   }
+  // }
+  return new_branch_soptr;
+}
+
+BDM_SO_DEFINE(inline typename NeuriteExt<TCompileTimeParam, TDerived, TBase>::MostDerivedSoPtr NeuriteExt)::Branch(const std::array<double, 3>& direction) {
   return Branch(diameter_[kIdx], direction);
 }
 
-BDM_SO_DEFINE(inline typename NeuriteExt<TCompileTimeParam, TDerived, TBase>::template TMostDerived<Scalar> NeuriteExt)::Branch(double diameter) {
+BDM_SO_DEFINE(inline typename NeuriteExt<TCompileTimeParam, TDerived, TBase>::MostDerivedSoPtr NeuriteExt)::Branch(double diameter) {
   auto rand_noise = gRandom.NextNoise(0.1);
   auto growth_direction = Math::Perp3(Matrix::Add(GetUnitaryAxisDirectionVector(), rand_noise),
                                         gRandom.NextDouble());
@@ -755,7 +763,7 @@ BDM_SO_DEFINE(inline typename NeuriteExt<TCompileTimeParam, TDerived, TBase>::te
   return Branch(diameter, growth_direction);
 }
 
-BDM_SO_DEFINE(inline typename NeuriteExt<TCompileTimeParam, TDerived, TBase>::template TMostDerived<Scalar> NeuriteExt)::Branch() {
+BDM_SO_DEFINE(inline typename NeuriteExt<TCompileTimeParam, TDerived, TBase>::MostDerivedSoPtr NeuriteExt)::Branch() {
   double branch_diameter = diameter_[kIdx];
   auto rand_noise = gRandom.NextNoise(0.1);
   auto growth_direction = Math::Perp3(Matrix::Add(GetUnitaryAxisDirectionVector(), rand_noise),
@@ -1099,11 +1107,11 @@ BDM_SO_DEFINE(inline void NeuriteExt)::UpdateDependentPhysicalVariables() {
   // TODO updateSpatialOrganizationNodePosition();
 }
 
-BDM_SO_DEFINE(inline void NeuriteExt)::InsertProximalCylinder() {
-  InsertProximalCylinder(0.5);
+BDM_SO_DEFINE(inline typename NeuriteExt<TCompileTimeParam, TDerived, TBase>::MostDerivedSoPtr NeuriteExt)::InsertProximalCylinder() {
+  return InsertProximalCylinder(0.5);
 }
 
-BDM_SO_DEFINE(inline void NeuriteExt)::InsertProximalCylinder(double distal_portion) {
+BDM_SO_DEFINE(inline typename NeuriteExt<TCompileTimeParam, TDerived, TBase>::MostDerivedSoPtr NeuriteExt)::InsertProximalCylinder(double distal_portion) {
   auto new_neurite_element = Rm()->template New<MostDerived>();
 
   // TODO reformulate to mass_location_
@@ -1184,9 +1192,14 @@ BDM_SO_DEFINE(inline void NeuriteExt)::InsertProximalCylinder(double distal_port
 
 
   // FIXME what about data members in subclasses
+  return new_neurite_element.GetSoPtr();
 }
 
-BDM_SO_DEFINE(inline void NeuriteExt)::ExtendSideCylinder(TMostDerived<Scalar>* new_branch, double length, const std::array<double, 3>& direction) {
+BDM_SO_DEFINE(inline typename NeuriteExt<TCompileTimeParam, TDerived, TBase>::MostDerivedSoPtr NeuriteExt)::ExtendSideCylinder(double length, const std::array<double, 3>& direction) {
+
+  auto new_branch = Rm()->template New<MostDerived>();
+  new_branch.Copy(*static_cast<TMostDerived<Backend>*>(this));
+
   auto dir = direction;
   double angle_with_side_branch = Math::AngleRadian(spring_axis_[kIdx], direction);
   if (angle_with_side_branch < 0.78 || angle_with_side_branch > 2.35) {  // 45-135 degrees
@@ -1196,29 +1209,28 @@ BDM_SO_DEFINE(inline void NeuriteExt)::ExtendSideCylinder(TMostDerived<Scalar>* 
   }
   // location of mass and computation center
   auto new_spring_axis = Matrix::ScalarMult(length, Math::Normalize(direction));
-  new_branch->mass_location_[0] = Matrix::Add(mass_location_[kIdx], new_spring_axis);
-  new_branch->spring_axis_[0] = new_spring_axis;
+  new_branch.SetMassLocation(Matrix::Add(mass_location_[kIdx], new_spring_axis));
+  new_branch.SetSpringAxis(new_spring_axis);
   // physics
-  new_branch->actual_length_[0] = length;
-  new_branch->SetRestingLengthForDesiredTension(Param::kNeuriteDefaultTension);
-  new_branch->SetDiameter(Param::kNeuriteDefaultDiameter, true);
-  new_branch->UpdateLocalCoordinateAxis();
+  new_branch.SetActualLength(length);
+  new_branch.SetRestingLengthForDesiredTension(Param::kNeuriteDefaultTension);
+  new_branch.SetDiameter(Param::kNeuriteDefaultDiameter);
+  new_branch.UpdateLocalCoordinateAxis();
   // family relations
-  new_branch->SetMother(this);
-  daughter_right_[kIdx] = new_branch;
+  new_branch.SetMother(GetSoPtr());
+  daughter_right_[kIdx] = new_branch.GetSoPtr();
   // TODO new CentralNode
   // auto new_center_location = Matrix::add(mass_location_, Matrix::scalarMult(0.5, new_spring_axis));
   // auto new_son = so_node_->getNewInstance(new_center_location, new_branch.get());  // todo catch PositionNotAllowedException
   // new_branch->setSoNode(std::move(new_son));
 
   // correct physical values (has to be after family relations and SON assignement).
-  new_branch->UpdateDependentPhysicalVariables();
-  // register to ecm
-  // TODO ecm_->addPhysicalCylinder(new_branch.get());
+  new_branch.UpdateDependentPhysicalVariables();
 
   // i'm scheduled to run physics next time :
   // (the side branch automatically is too, because it's a new PhysicalObject)
   // TODO setOnTheSchedulerListForPhysicalObjects(true);
+  return new_branch.GetSoPtr();
 }
 
 BDM_SO_DEFINE(inline void NeuriteExt)::RemoveProximalCylinder() {
