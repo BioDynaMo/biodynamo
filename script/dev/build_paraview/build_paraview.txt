@@ -55,6 +55,19 @@ sudo make install
 
 
 ## Step 5:
+cd <biodynamo-github-dir>/custom-plugins
+cd GlyphExt ("or any other plugin you want to include")
+mkdir build && cd build
+cmake .. && make
+
+(Linux)
+cp libvtkPVGlyphFilterExt.so <paraview-install-dir/lib/paraview-5.4/plugins
+
+(Mac OS)
+cp libvtkPVGlyphFilterExt.dylib <paraview-install-dir/bin/paraview.app/Contents/MacOS/plugins
+
+
+## Step 6:
 "compress the installation folder in tar.gz format"
 "NB: for MacOS you need to compress the paraview-build/CMakeFiles/__macos_install folder"
 "naming convention: paraview-<version>_<platform>_<compiler>.tar.gz"

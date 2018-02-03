@@ -1,8 +1,12 @@
 #ifndef VISUALIZATION_SIMPLE_PIPELINE_H_
-#define VISUALIZATION_SIMPLE_PIPELINE_H_ 1
+#define VISUALIZATION_SIMPLE_PIPELINE_H_
 
+#include <TError.h>
+#include <cstdlib>
 #include <map>
 #include <string>
+#include <vector>
+
 #include "log.h"
 
 #if defined(USE_CATALYST) && !defined(__ROOTCLING__)
@@ -16,14 +20,16 @@
 #include <vtkPVTrivialProducer.h>
 #include <vtkSMInputProperty.h>
 #include <vtkSMParaViewPipelineControllerWithRendering.h>
+#include <vtkSMPluginManager.h>
 #include <vtkSMPropertyHelper.h>
 #include <vtkSMProxy.h>
 #include <vtkSMProxyListDomain.h>
 #include <vtkSMProxyManager.h>
 #include <vtkSMSessionProxyManager.h>
 #include <vtkSMSourceProxy.h>
-#include <vtkSphereSource.h>
 #include <vtkUnstructuredGrid.h>
+
+#include "shape.h"
 
 #endif  // defined(USE_CATALYST) && !defined(__ROOTCLING__)
 
@@ -41,11 +47,30 @@ class vtkCPVTKPipeline : public vtkCPPipeline {
     proxy_manager_ = vtkSMProxyManager::GetProxyManager();
     session_manager_ = proxy_manager_->GetActiveSessionProxyManager();
     controller_ = vtkSMParaViewPipelineControllerWithRendering::New();
+    plugin_manager_ = vtkSMPluginManager::New();
+#ifdef __APPLE__
+    std::string plugin_path = std::string(std::getenv("ParaView_DIR")) +
+                              "/../../../bin/paraview.app/Contents/MacOS/"
+                              "plugins/libvtkPVGlyphFilterExt.dylib";
+#else
+    std::string plugin_path =
+        std::string(std::getenv("ParaView_DIR")) +
+        "/../../paraview-5.4/plugins/libvtkPVGlyphFilterExt.so";
+#endif
+    // Load custom plugin to enable cylinder glyph scaling
+    if (!plugin_manager_->LoadLocalPlugin(plugin_path.c_str())) {
+      Fatal("LoadLocalPlugin",
+            "Was unable to load our custom visualzation plugin. Do you have "
+            "ParaView_DIR set in your environmental variables?");
+    }
   }
 
   virtual ~vtkCPVTKPipeline() {}
 
-  void Initialize() {}
+  void Initialize(const std::vector<Shape>& shapes) {
+    shapes_ = shapes;
+    initialized_ = true;
+  }
 
   int RequestDataDescription(vtkCPDataDescription* data_description) override {
     if (!data_description) {
@@ -64,13 +89,13 @@ class vtkCPVTKPipeline : public vtkCPPipeline {
     return 1;
   }
 
-  vtkSMProxy* GetSphereSource(vtkSMProxy* glyph) {
+  vtkSMProxy* GetSource(vtkSMProxy* glyph, std::string source_name) {
     vtkSMProxyListDomain* pld = vtkSMProxyListDomain::SafeDownCast(
         glyph->GetProperty("Source")->FindDomain("vtkSMProxyListDomain"));
 
     for (unsigned int cc = 0; cc < pld->GetNumberOfProxies(); cc++) {
       if (pld->GetProxyName(cc) &&
-          strcmp(pld->GetProxyName(cc), "SphereSource") == 0) {
+          strcmp(pld->GetProxyName(cc), source_name.c_str()) == 0) {
         return pld->GetProxy(cc);
       }
     }
@@ -99,24 +124,46 @@ class vtkCPVTKPipeline : public vtkCPPipeline {
       vtkPVTrivialProducer* real_producer =
           vtkPVTrivialProducer::SafeDownCast(client_side_object);
 
+      std::string source_name = "SphereSource";
+      int scale_mode = 0;
+
       if (vtk_object->IsA("vtkUnstructuredGrid")) {
         real_producer->SetOutput(vtk_object);
+
+        if (shapes_[i] == Shape::kCylinder) {
+          source_name = "CylinderSource";
+          scale_mode = 4;
+        } else if (shapes_[i] != Shape::kSphere) {
+          Warning("CreatePipeline",
+                  "We currently support only spherical and cylindrical "
+                  "shaped objects for visualization. Received value %d",
+                  shapes_[i]);
+        }
 
         // Create a Glyph filter
         vtkSmartPointer<vtkSMSourceProxy> glyph;
         glyph.TakeReference(vtkSMSourceProxy::SafeDownCast(
-            session_manager_->NewProxy("filters", "Glyph")));
+            session_manager_->NewProxy("filters", "BDMGlyph")));
         controller_->PreInitializeProxy(glyph);
         std::string object_name_str = object_name;
         std::string glyph_name = object_name_str + "_Glyph";
 
         vtkSMPropertyHelper(glyph, "Input").Set(producer);
-        vtkSMPropertyHelper(glyph, "Source").Set(GetSphereSource(glyph));
-        vtkSMPropertyHelper(glyph, "ScaleMode", true).Set(0);
+        vtkSMPropertyHelper(glyph, "Source").Set(GetSource(glyph, source_name));
+        vtkSMPropertyHelper(glyph, "ScaleMode", true).Set(scale_mode);
         vtkSMPropertyHelper(glyph, "ScaleFactor", true).Set(1.0);
         vtkSMPropertyHelper(glyph, "GlyphMode", true).Set(0);
-        vtkSMPropertyHelper(glyph, "Scalars")
-            .SetInputArrayToProcess(vtkDataObject::POINT, "Diameters");
+
+        // TODO(ahmad): variable names should be set to the user-defined ones
+        if (scale_mode == 0) {
+          vtkSMPropertyHelper(glyph, "Scalars")
+              .SetInputArrayToProcess(vtkDataObject::POINT, "diameter_");
+        } else if (scale_mode == 4) {
+          vtkSMPropertyHelper(glyph, "BDMScalars")
+              .SetInputArrayToProcess(vtkDataObject::POINT, "scaling_");
+          vtkSMPropertyHelper(glyph, "Vectors")
+              .SetInputArrayToProcess(vtkDataObject::POINT, "orient_");
+        }
 
         glyph->UpdateVTKObjects();
         producer->UpdateVTKObjects();
@@ -236,14 +283,19 @@ class vtkCPVTKPipeline : public vtkCPPipeline {
     return 1;
   }
 
+  bool IsInitialized() { return initialized_; }
+
  private:
   bool pipeline_created_;
   vtkSMProxyManager* proxy_manager_;
+  vtkSMPluginManager* plugin_manager_;
   vtkSMSessionProxyManager* session_manager_;
   std::map<std::string, vtkSmartPointer<vtkSMSourceProxy>> producer_map_;
   std::map<std::string, vtkSmartPointer<vtkSMSourceProxy>> filter_map_;
   vtkSmartPointer<vtkLiveInsituLink> insitu_link_;
   vtkSMParaViewPipelineControllerWithRendering* controller_;
+  std::vector<Shape> shapes_;
+  bool initialized_ = false;
 };
 
 #else
