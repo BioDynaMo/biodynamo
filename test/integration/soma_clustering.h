@@ -9,7 +9,7 @@
 
 namespace bdm {
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // This model examplifies the use of extracellur diffusion and shows
 // how to extend the default "Cell". In step 0 one can see how an extra
 // data member is added and can be accessed throughout the simulation with
