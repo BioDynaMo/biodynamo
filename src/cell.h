@@ -17,6 +17,7 @@
 #include "math_util.h"
 #include "matrix.h"
 #include "param.h"
+#include "shape.h"
 #include "simulation_object.h"
 #include "simulation_object_util.h"
 
@@ -37,6 +38,8 @@ BDM_SIM_OBJECT(Cell, SimulationObject) {
   static std::set<std::string> GetRequiredVisDataMembers() {
     return {"position_", "diameter_"};
   }
+
+  constexpr Shape GetShape() { return Shape::kSphere; }
 
   using TBiologyModuleVariant = typename TCompileTimeParam::BiologyModules;
   CellExt() : density_{1.0} {}

@@ -94,6 +94,7 @@ class CatalystAdaptor {
       vtkNew<vtkDoubleArray> vtk_array;
       vtk_array->SetName(name.c_str());
       auto ptr = dm->data()->data();
+      vtk_array->SetNumberOfComponents(3);
       vtk_array->SetArray(ptr, static_cast<vtkIdType>(3 * num_cells), 1);
       (*vtk_data)[type_idx]->GetPointData()->AddArray(vtk_array.GetPointer());
     }
@@ -103,6 +104,7 @@ class CatalystAdaptor {
       vtkNew<vtkIntArray> vtk_array;
       vtk_array->SetName(name.c_str());
       auto ptr = dm->data()->data();
+      vtk_array->SetNumberOfComponents(3);
       vtk_array->SetArray(ptr, static_cast<vtkIdType>(3 * num_cells), 1);
       (*vtk_data)[type_idx]->GetPointData()->AddArray(vtk_array.GetPointer());
     }
@@ -128,6 +130,7 @@ class CatalystAdaptor {
     if (so_is_initialized_[type_idx] == false) {
       vtk_so_grids_.push_back(vtkUnstructuredGrid::New());
       so_is_initialized_[type_idx] = true;
+      shapes_.push_back(sim_objects->GetShape());
     }
 
     auto num_cells = sim_objects->size();
@@ -211,8 +214,8 @@ class CatalystAdaptor {
       pipeline->Initialize(script.c_str());
       g_processor_->AddPipeline(pipeline.GetPointer());
     } else {
-      vtkCPVTKPipeline* pipeline = new vtkCPVTKPipeline();
-      g_processor_->AddPipeline(pipeline);
+      pipeline_ = new vtkCPVTKPipeline();
+      g_processor_->AddPipeline(pipeline_);
     }
 
     if (Param::export_visualization_) {
@@ -339,6 +342,12 @@ class CatalystAdaptor {
       data_description->ForceOutputOn();
     }
 
+    if (pipeline_ != nullptr) {
+      if (!(pipeline_->IsInitialized())) {
+        pipeline_->Initialize(shapes_);
+      }
+    }
+
     g_processor_->CoProcess(data_description.GetPointer());
   }
 
@@ -367,10 +376,12 @@ class CatalystAdaptor {
 
  private:
   vtkCPProcessor* g_processor_ = nullptr;
+  vtkCPVTKPipeline* pipeline_ = nullptr;
   std::vector<vtkImageData*> vtk_dgrids_;
   std::vector<vtkUnstructuredGrid*> vtk_so_grids_;
   std::vector<bool> so_is_initialized_;
   std::vector<bool> dg_is_initialized_;
+  std::vector<Shape> shapes_;
   static constexpr char const* kSimulationInfoJson = "simulation_info.json";
 
   friend class CatalystAdaptorTest_GenerateSimulationInfoJson_Test;
