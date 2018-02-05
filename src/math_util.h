@@ -116,6 +116,15 @@ struct Math {
   static double AngleRadian(const std::array<double, 3>& a, const std::array<double, 3>& b) {
     return std::acos(Matrix::Dot(a, b) / (Math::Norm(a) * Math::Norm(b)));
   }
+
+  /// Returns the projection of the first vector onto the second one.
+  /// @param a
+  /// @param b
+  /// @return the projection of a onto b
+  static std::array<double, 3> ProjectionOnto(const std::array<double, 3>& a, const std::array<double, 3>& b) {
+   double k = Matrix::Dot(a, b) / Matrix::Dot(b, b);
+   return Matrix::ScalarMult(k, b);
+ }
 };
 
 }  // namespace bdm

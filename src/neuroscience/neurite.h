@@ -253,36 +253,33 @@ BDM_SIM_OBJECT(Neurite, SimulationObject) {
   /// has no daughter and the actual length is bigger than the minimum required.
   bool BifurcationPermitted() const;
 
- //  ///
- //  /// Bifurcation of a growth come (only works for terminal segments).
- //  /// Note : angles are corrected if they are pointing backward.
- //  /// @param diameter_1  of new daughterLeft
- //  /// @param diameter_2 of new daughterRight
- //  /// @param direction_1
- //  /// @param direction_2
- //  /// \return
- //  ///
- //  std::array<NeuriteElement*, 2> bifurcate(double diameter_1, double diameter_2,
- //                                           const std::array<double, 3>& direction_1,
- //                                           const std::array<double, 3>& direction_2);
- //
- //  /// Bifurcation of a growth come (only works for terminal segments).
- //  /// Note : angles are corrected if they are pointing backward.
- //  /// @param length of new branches
- //  /// @param diameter_1  of new daughterLeft
- //  /// @param diameter_2 of new daughterRight
- //  /// @param direction_1
- //  /// @param direction_2
- //  /// \return
- //  std::array<NeuriteElement*, 2> bifurcate(double length, double diameter_1, double diameter_2,
- //                                           const std::array<double, 3>& direction_1,
- //                                           const std::array<double, 3>& direction_2);
- //
- //  std::array<NeuriteElement*, 2> bifurcate(const std::array<double, 3>& direction_1,
- //                                           const std::array<double, 3>& direction_2);
- //
- //  std::array<NeuriteElement*, 2> bifurcate();
- //
+  /// Bifurcation of a growth come (only works for terminal segments).
+  /// Note : angles are corrected if they are pointing backward.
+  /// @param diameter_1  of new daughterLeft
+  /// @param diameter_2 of new daughterRight
+  /// @param direction_1
+  /// @param direction_2
+  /// \return
+  std::array<MostDerivedSoPtr, 2> Bifurcate(double diameter_1, double diameter_2,
+                                           const std::array<double, 3>& direction_1,
+                                           const std::array<double, 3>& direction_2);
+
+  /// Bifurcation of a growth come (only works for terminal segments).
+  /// Note : angles are corrected if they are pointing backward.
+  /// @param length of new branches
+  /// @param diameter_1  of new daughterLeft
+  /// @param diameter_2 of new daughterRight
+  /// @param direction_1
+  /// @param direction_2
+  /// \return
+  std::array<MostDerivedSoPtr, 2> Bifurcate(double length, double diameter_1, double diameter_2,
+                                           const std::array<double, 3>& direction_1,
+                                           const std::array<double, 3>& direction_2);
+
+  std::array<MostDerivedSoPtr, 2> Bifurcate(const std::array<double, 3>& direction_1,
+                                           const std::array<double, 3>& direction_2);
+
+  std::array<MostDerivedSoPtr, 2> Bifurcate();
 
 
   // *************************************************************************************
@@ -322,28 +319,6 @@ BDM_SIM_OBJECT(Neurite, SimulationObject) {
   ///
   void MovePointMass(double speed, const std::array<double, 3>& direction);
 
- //
- //  ///
- //  /// Bifurcation of the growth cone creating : adds the 2 <code>PhysicalCylinder</code> that become
- //  /// daughter left and daughter right
- //  /// @param length the length of the new branches
- //  /// @param direction_1 of the first branch (if
- //  /// @param newBranchL
- //  /// @param newBranchR
- //  ///
- //
- //  std::array<UPtr, 2> bifurcateCylinder(double length, const std::array<double, 3>& direction_1,
- //                                        const std::array<double, 3>& direction_2);
- //
- //  ///
- //  /// Makes a side branching by adding a second daughter to a non terminal <code>PhysicalCylinder</code>.
- //  /// The new <code>PhysicalCylinder</code> is perpendicular to the mother branch.
- //  /// @param direction the direction of the new neuriteLement (But will be automatically corrected if
- //  /// not al least 45 degrees from the cylinder's axis).
- //  /// \return the newly added <code>NeuriteSegment</code>
- //  ///
- //  UPtr branchCylinder(double length, const std::array<double, 3>& direction);
- //
   void SetRestingLengthForDesiredTension(double tension);
 
   /// Progressive modification of the volume. Updates the diameter, the intracellular concentration
@@ -779,6 +754,127 @@ BDM_SO_DEFINE(inline typename NeuriteExt<TCompileTimeParam, TDerived, TBase>::Mo
 BDM_SO_DEFINE(inline bool NeuriteExt)::BifurcationPermitted() const {
   return (daughter_left_[kIdx].IsNullPtr() && actual_length_[kIdx] > Param::kNeuriteMinimalBifurcationLength);
 }
+
+BDM_SO_DEFINE(inline std::array<typename NeuriteExt<TCompileTimeParam, TDerived, TBase>::MostDerivedSoPtr, 2> NeuriteExt)::Bifurcate() {
+  // initial default length :
+  double l = Param::kNeuriteDefaultActualLength;
+  // diameters :
+  double d = diameter_[kIdx];
+  // direction : (60 degrees between branches)
+  double random = gRandom.NextDouble();
+  auto perp_plane = Math::Perp3(spring_axis_[kIdx], random);
+  double angle_between_branches = Math::kPi / 3.0;
+  auto direction_1 = Math::RotAroundAxis(spring_axis_[kIdx], angle_between_branches * 0.5, perp_plane);
+  auto direction_2 = Math::RotAroundAxis(spring_axis_[kIdx], -angle_between_branches * 0.5, perp_plane);
+
+  return Bifurcate(l, d, d, direction_1, direction_2);
+}
+
+BDM_SO_DEFINE(inline std::array<typename NeuriteExt<TCompileTimeParam, TDerived, TBase>::MostDerivedSoPtr, 2> NeuriteExt)::Bifurcate(const std::array<double, 3>& direction_1,
+                                         const std::array<double, 3>& direction_2) {
+   // initial default length :
+   double l = Param::kNeuriteDefaultActualLength;
+   // diameters :
+   double d = diameter_[kIdx];
+   return Bifurcate(l, d, d, direction_1, direction_2);
+}
+
+BDM_SO_DEFINE(inline std::array<typename NeuriteExt<TCompileTimeParam, TDerived, TBase>::MostDerivedSoPtr, 2> NeuriteExt)::Bifurcate(double length, double diameter_1, double diameter_2,
+                                         const std::array<double, 3>& direction_1,
+                                         const std::array<double, 3>& direction_2) {
+    // 1) physical bifurcation
+    // check it is a terminal branch
+      if (!daughter_left_[kIdx].IsNullPtr()) {
+        Fatal("Neurites", "Bifurcation only allowed on a terminal neurite segment");
+      }
+      auto new_branch_l = Rm()->template New<MostDerived>();
+      auto new_branch_r = Rm()->template New<MostDerived>();
+      // create the cylinders
+      new_branch_l.Copy(*static_cast<TMostDerived<Backend>*>(this));
+      new_branch_r.Copy(*static_cast<TMostDerived<Backend>*>(this));
+      // set family relations
+      daughter_left_[kIdx] = new_branch_l.GetSoPtr();
+      new_branch_l.SetMother(GetSoPtr());
+      daughter_right_[kIdx] = new_branch_r.GetSoPtr();
+      new_branch_r.SetMother(GetSoPtr());
+
+      // check that the directions are not pointing backwards
+      auto dir_1 = direction_1;  // todo avoid cpy
+      auto dir_2 = direction_2;
+      if (Math::AngleRadian(spring_axis_[kIdx], direction_1) > Math::kPi / 2.0) {
+        auto proj = Math::ProjectionOnto(direction_1, spring_axis_[kIdx]);
+        proj = Matrix::ScalarMult(-1, proj);
+        dir_1 = Matrix::Add(direction_1, proj);
+      }
+      if (Math::AngleRadian(spring_axis_[kIdx], direction_2) > Math::kPi / 2.0) {
+        auto proj = Math::ProjectionOnto(direction_2, spring_axis_[kIdx]);
+        proj = Matrix::ScalarMult(-1, proj);
+        dir_2 = Matrix::Add(direction_2, proj);
+      }
+
+      // mass location and spring axis
+      new_branch_l.SetSpringAxis(Matrix::ScalarMult(length, Math::Normalize(dir_1)));
+      new_branch_l.SetMassLocation(Matrix::Add(mass_location_[kIdx], new_branch_l.GetSpringAxis()));
+      new_branch_l.UpdateLocalCoordinateAxis();  // (important so that x_axis_ is correct)
+
+      new_branch_r.SetSpringAxis(Matrix::ScalarMult(length, Math::Normalize(dir_2)));
+      new_branch_r.SetMassLocation(Matrix::Add(mass_location_[kIdx], new_branch_r.GetSpringAxis()));
+      new_branch_r.UpdateLocalCoordinateAxis();
+
+      // physics of tension :
+      new_branch_l.SetActualLength(length);
+      new_branch_r.SetActualLength(length);
+      new_branch_r.SetRestingLengthForDesiredTension(Param::kNeuriteDefaultTension);
+      new_branch_l.SetRestingLengthForDesiredTension(Param::kNeuriteDefaultTension);
+
+      // spatial organization node
+      // TODO
+      // auto new_branch_center = Matrix::add(mass_location_, Matrix::scalarMult(0.5, new_branch_l->spring_axis_));
+      // auto new_son = so_node_->getNewInstance(new_branch_center, new_branch_l.get());  // todo catch PositionNotAllowedException
+      // new_branch_l->setSoNode(std::move(new_son));
+      //
+      // new_branch_center = Matrix::add(mass_location_, Matrix::scalarMult(0.5, new_branch_r->spring_axis_));
+      // new_son = so_node_->getNewInstance(new_branch_center, new_branch_r.get());  // todo catch PositionNotAllowedException
+      // new_branch_r->setSoNode(std::move(new_son));
+
+      // set local coordinate axis in the new branches
+      // TODO again?? alreay done a few lines up
+      new_branch_l.UpdateLocalCoordinateAxis();
+      new_branch_r.UpdateLocalCoordinateAxis();
+
+      // i'm scheduled to run physics next time :
+      // (the daughters automatically are too, because they are new PhysicalObjects)
+      // setOnTheSchedulerListForPhysicalObjects(true);
+
+      new_branch_l.UpdateDependentPhysicalVariables();
+      new_branch_r.UpdateDependentPhysicalVariables();
+
+
+    // 2) creating the first daughter branch
+    new_branch_l.SetDiameter(diameter_1);
+    new_branch_l.SetBranchOrder(branch_order_[kIdx] + 1);
+
+    // 3) the second one
+    new_branch_r.SetDiameter(diameter_2);
+    new_branch_r.SetBranchOrder(branch_order_[kIdx] + 1);
+
+    // 4) the local biological modules :
+    // for (auto m : local_biology_modules_) {
+    //  // copy...
+    //  if (m->isCopiedWhenNeuriteBranches()) {
+    //    // ...for the first neurite
+    //    ne_1->addLocalBiologyModule(m->getCopy());
+    //    // ...for the second neurite
+    //    ne_2->addLocalBiologyModule(m->getCopy());
+    //  }
+    //  // and remove
+    //  if (m->isDeletedAfterNeuriteHasBifurcated()) {
+    //    removeLocalBiologyModule(m);
+    //  }
+    // }
+    return {new_branch_l.GetSoPtr(), new_branch_r.GetSoPtr()};
+}
+
 
 BDM_SO_DEFINE(inline void NeuriteExt)::RemoveDaughter(const typename NeuriteExt<TCompileTimeParam, TDerived, TBase>::MostDerivedSoPtr& daughter) {
   // If there is another daughter than the one we want to remove,
