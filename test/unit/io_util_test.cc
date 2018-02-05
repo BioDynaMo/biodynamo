@@ -32,14 +32,4 @@ TEST(IOTest, RuntimeVars) {
   remove(ROOTFILE);
 }
 
-TEST(IOTest, DividingCellAos) {
-  TransactionalVector<Cell> cells;
-  RunTestDivCell(&cells);
-}
-
-TEST(IOTest, DividingCellSoa) {
-  auto cells = Cell::NewEmptySoa();
-  RunTestDivCell(&cells);
-}
-
 }  // namespace bdm
