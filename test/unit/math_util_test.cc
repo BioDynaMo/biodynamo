@@ -87,4 +87,12 @@ TEST(MathUtilTest, AngleRadian) {
   EXPECT_NEAR(0.489306575615854, result, abs_error<double>::value);
 }
 
+TEST(MathUtilTest, ProjectionOnto) {
+  std::array<double, 3> a = {1,2,3};
+  std::array<double, 3> b = {9,8,7};
+
+  auto result = Math::ProjectionOnto(a, b);
+  EXPECT_ARR_NEAR(result, {{2.134020618556701, 1.8969072164948453, 1.6597938144329896}});
+}
+
 }  // namespace bdm
