@@ -21,6 +21,7 @@ bool Param::calculate_gradients_ = true;
 size_t Param::total_steps_ = 0;
 Param::NumericalODESolver Param::numerical_ode_solver_ =
     Param::NumericalODESolver::kEuler;
+unsigned Param::simulation_steps_ = 1;
 
 // visualization group
 bool Param::live_visualization_ = false;
@@ -35,6 +36,12 @@ bool Param::show_simulation_step_ = true;
 uint32_t Param::simulation_step_freq_ = 10;
 bool Param::statistics_ = false;
 bool Param::python_catalyst_pipeline_ = false;
+
+// experimental group
+bool Param::use_gpu_ = false;
+bool Param::use_opencl_ = false;
+bool Param::opencl_debug_ = false;
+int Param::preferred_gpu_ = 0;
 
 #define BDM_ASSIGN_CONFIG_VALUE(variable, config_key)                        \
   {                                                                          \
@@ -62,6 +69,7 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
   BDM_ASSIGN_CONFIG_VALUE(leaking_edges_, "simulation.leaking_edges");
   BDM_ASSIGN_CONFIG_VALUE(calculate_gradients_,
                           "simulation.calculate_gradients");
+  BDM_ASSIGN_CONFIG_VALUE(simulation_steps_, "simulation.simulation_steps");
   // visualization group
   BDM_ASSIGN_CONFIG_VALUE(live_visualization_, "visualization.live");
   BDM_ASSIGN_CONFIG_VALUE(export_visualization_, "visualization.export");
@@ -143,6 +151,12 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
                           "development.show_simulation_step");
   BDM_ASSIGN_CONFIG_VALUE(simulation_step_freq_,
                           "development.simulation_step_freq");
+  
+  // experimental group
+  BDM_ASSIGN_CONFIG_VALUE(use_gpu_, "experimental.use_gpu");
+  BDM_ASSIGN_CONFIG_VALUE(use_opencl_, "experimental.use_opencl");
+  BDM_ASSIGN_CONFIG_VALUE(opencl_debug_, "experimental.opencl_debug");
+  BDM_ASSIGN_CONFIG_VALUE(preferred_gpu_, "experimental.preferred_gpu");
 }
 
 void Param::Reset() {
@@ -161,6 +175,7 @@ void Param::Reset() {
   calculate_gradients_ = true;
   total_steps_ = 0;
   numerical_ode_solver_ = NumericalODESolver::kEuler;
+  simulation_steps_ = 1;
 
   // visualization group
   live_visualization_ = false;
@@ -174,6 +189,12 @@ void Param::Reset() {
   python_catalyst_pipeline_ = false;
   show_simulation_step_ = true;
   simulation_step_freq_ = 10;
+
+  // experimental group
+  use_gpu_ = false;
+  use_opencl_ = false;
+  opencl_debug_ = false;
+  preferred_gpu_ = 0;
 }
 
 }  // namespace bdm

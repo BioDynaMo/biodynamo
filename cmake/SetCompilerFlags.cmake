@@ -12,13 +12,13 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 # general flags
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-missing-braces -m64 -fPIC ${OpenMP_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-missing-braces -Wno-ignored-attributes -m64 -fPIC ${OpenMP_CXX_FLAGS}")
 set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -Wall -Wno-missing-braces -m64 -fPIC ${OpenMP_C_FLAGS}")
 
 # special clang flags
 if(${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
   # silence clang 3.9 warning
-  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-undefined-var-template")
+  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++ -lc++abi -Wno-undefined-var-template")
 endif()
 
 # flags for specific build type

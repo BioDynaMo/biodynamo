@@ -17,6 +17,11 @@
 
   </selection>
   <exclusion>
+    <class pattern="cl::*" />
+    <class name="cl::CommandQueue" />
+    <class name="cl::Context" />
+    <class name="cl::Program" />
+    <class pattern="*_TC2*" />
     <class pattern="std::array<*>" />
 
     <class pattern="*bdm::SoaRef*"/>

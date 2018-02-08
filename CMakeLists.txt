@@ -38,12 +38,18 @@ if(APPLE)
   include_directories(/usr/local/Cellar/biodynamo)
 else()
   find_package(OpenMP REQUIRED)
+  execute_process(COMMAND ${CMAKE_CXX_COMPILER} --print-file-name=include/omp.h OUTPUT_VARIABLE OMP_HEADER_PATH)
+  get_filename_component(OMP_HEADER_DIR "${OMP_HEADER_PATH}" DIRECTORY)
+  include_directories(${OMP_HEADER_DIR})
+  message(WARNING ${OMP_HEADER_DIR})
 endif()
 if (test)
   # must be before include(${ROOT_USE_FILE}) otherwise test compile fails
   find_package(Threads REQUIRED)
 endif()
 
+find_package(CUDA)
+find_package(OpenCL)
 find_package(Git)
 find_package(ROOT REQUIRED COMPONENTS Geom Gui)
 
@@ -93,9 +99,9 @@ set(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 if(APPLE)
   set(CMAKE_INSTALL_RPATH
-	"/usr/local/lib/paraview-5.4"
-	"/usr/local/opt/qt5/lib"
-	"/usr/local/lib/biodynamo")
+  "/usr/local/lib/paraview-5.4"
+  "/usr/local/opt/qt5/lib"
+  "/usr/local/lib/biodynamo")
 endif()
 
 # -------------------- setup mpark variant library -----------------------------
@@ -112,16 +118,46 @@ include_directories("${CMAKE_SOURCE_DIR}/test")
 include_directories("${CMAKE_SOURCE_DIR}/third_party")
 include_directories("${CMAKE_SOURCE_DIR}/demo")
 include_directories("${MPARK_LIB}")
+# to find omp.h : Doesnt work, because uses wrong intrinsic headers for other stuff then... So let's copy it to build dir
+# include_directories("/afs/cern.ch/sw/lcg/external/gcc/6.3.0/x86_64-centos7/lib/gcc/x86_64-pc-linux-gnu/6.3.0/include/")
+include_directories("${CMAKE_SOURCE_DIR}/build")
 
 # build libbiodynamo
 file(GLOB_RECURSE HEADERS "${CMAKE_SOURCE_DIR}/src/*.h")
 file(GLOB_RECURSE LIB_SOURCES "${CMAKE_SOURCE_DIR}/src/*.cc")
+file(GLOB_RECURSE KERNELS "${CMAKE_SOURCE_DIR}/src/*.cu")
 build_libbiodynamo(biodynamo
                    SOURCES ${LIB_SOURCES}
                    HEADERS ${HEADERS}
                    LIBRARIES ${ROOT_LIBRARIES})
 if(${VTune_FOUND})
   target_link_libraries(biodynamo ${VTUNE_LIBRARIES})
+endif()
+
+# Link to OpenCL
+if (OpenCL_FOUND)
+  if (APPLE)
+    # Apple does not ship OpenCL C++ bindings by default
+    include_directories("${CMAKE_SOURCE_DIR}/third_party")
+  endif()
+  add_definitions("-DUSE_OPENCL")
+  link_directories("${CMAKE_SOURCE_DIR}/build")
+  target_link_libraries(biodynamo ${OpenCL_LIBRARIES})
+endif()
+
+if (CUDA_FOUND)
+  add_definitions("-DUSE_CUDA")
+  # Compile CUDA kernels into shared library
+  set(CUDA_HOST_COMPILER "/usr/bin/")
+  # CUDA 8.0 is not compatible with gcc > 5
+  set(NVCCFLAGS="--compiler-bindir ${CUDA_HOST_COMPILER}")
+  # set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -g -G" )
+  set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -std=c++11" )
+  set(CUDA_HELPER_PATH "${CUDA_TOOLKIT_ROOT_DIR}/samples/common/inc")
+  cuda_include_directories(${CUDA_INCLUDE_DIRS} ${CUDA_HELPER_PATH})
+  include_directories(${CUDA_INCLUDE_DIRS} ${CUDA_HELPER_PATH})
+  cuda_add_library(bdmcuda ${KERNELS} OPTIONS -arch sm_60)
+  target_link_libraries(biodynamo bdmcuda)
 endif()
 
 # add custom clean target for shared library
@@ -199,6 +235,15 @@ if (test)
     #   makefile project
     add_test(NAME "makefile-project"
              COMMAND ${CMAKE_SOURCE_DIR}/test/integration/makefile_project.sh)
+    bdm_add_executable(cell_division_gpu
+                      SOURCES test/integration/cell_division_gpu.cc
+                      HEADERS test/integration/cell_division_gpu.h
+                      LIBRARIES biodynamo)
+    if(OpenCL_FOUND OR CUDA_FOUND)
+      add_dependencies(check cell_division_gpu)
+      add_test(NAME "integration-cell-division-gpu"
+               COMMAND ${CMAKE_SOURCE_DIR}/build/cell_division_gpu)
+    endif()
   endif()
 endif()
 
