@@ -5,25 +5,17 @@ this tutorial is also accessible in [pdf](https://cernbox.cern.ch/index.php/s/FZ
 
 ## Introduction
 
-TODO: introduction
+BioDynaMo is platform for computer simulations of biological dynamics. You can learn more about BioDynaMo by accessing its official website.
 
-[BioDynaMo official website](https://biodynamo.web.cern.ch/)
-
-This Tutorial in designed for user with limited knowledge of C++ language.
+This Tutorial in designed for user with limited knowledge of C++ language and will teach you the basics of BioDynaMo:
+* Create, build and run a new project
+* Create cells with a specific behaviour through a biological module
+* Extend an existing structure
+* visualise a simulation
 
 ### Installation
 
-You can access the installation page by clicking [here](https://biodynamo.github.io/biodynamo/installation/).  
-BioDynaMo user installation can be performed by typing in a terminal
-linux:
-``` sh
-wget https://github.com/BioDynaMo/biodynamo/releases/download/v0.1.0/biodynamo_0.1.0_amd64.snap
-sudo snap install --dangerous --classic biodynamo_0.1.0_amd64.snap
-```
-Mac OS:
-``` sh
-brew install Biodynamo/biodynamo/biodynamo
-```
+You can access the installation page by clicking [here](https://biodynamo.github.io/biodynamo/installation/).
 
 ### Structure creation
 
@@ -140,30 +132,38 @@ you also can say to Paraview to visualize a particular parameter of ours cells, 
     additional_data_members = [ "diameter_" ]
 ```
 Because those visualization parameters are not in the source code, you don’t need to compile your code again. We will first see live visualization then the export visualization. In both cases, simply run Paraview using the console line command `paraview &`. This windows should appears
+
 ![Open ParaView](images/jean_tutorial/paraview1.png)
 
 #### Live visualisation
 
 Click on the _Catalyst_ top menu, and select _Connect_ This windows should appears
+
 ![Connect ParaView](images/jean_tutorial/paraview2.png)
 
 Click OK, then this windows should appears
+
 ![Connect ready](images/jean_tutorial/paraview3.png)
 
 Your Paraview is now accepting connections! Click OK, and go back to the _Catalyst_ menu, and select _Pause Simulation_. Using the same console, launch your tutorial simulation. You now notice that the programme stop right before running the simulation, because we used the Paraview _Pause Simulation_.
+
 ![terminal accetped connection](images/jean_tutorial/paraview4.png)
 
 Go back to Paraview. You notice that new objects have appeared in the _Pipeline Browser_ section. Click on the round shape in front of _Cells Glyph_.
+
 ![select Cells_glyph](images/jean_tutorial/paraview5.png)
 
 A new Builtin object have appeared: _Extract: Cells Glyph_. Click on _Extract_ cells then on the eye in front of it.
+
 ![select Extract Cells_glyph](images/jean_tutorial/paraview6.png)
 
 All cells appear on the screen!
 You can now go to the _Catalyst_ menu, and select _Continue_. The simulation will run the number of steps you specified in your code.
+
 ![Cell display](images/jean_tutorial/paraview7.png)
 
 However, the displayed cells don’t exhibit their correct diameters, cells are just represented by dots. In order to tell Paraview to represents our cells with the correct diameter, we need to create a Glyph filter. The _Glyph filter_ creation is identical for the export visualization. create a Glyph filter by clicking on this icon:
+
 ![Glyph filter](images/jean_tutorial/paraview7-2.png)
 
 Then, enter the following parameters:
@@ -175,9 +175,11 @@ Scale Mode    = 'Scalar'
 Scale Factor  = '1'
 Coloring      = 'diameter_'
 ```
+
 ![Glyph param](images/jean_tutorial/paraview7-3.png)
 
 Finally click on Apply. We now can see all our cells with the correct diameters!
+
 ![Cell display correct diam](images/jean_tutorial/paraview7-4.png)
 
 We can also note that instead of creating a configuration file, you can do the same by adding directly in our Simulate function the lines
@@ -194,17 +196,21 @@ Even if live visualization is particularly useful to set or tune a simulation, i
 #### Export Visualisation
 
 In the configuration file, turn the export parameter to true then run your modelling. You’ll notice the creation of several new files "cells_data_x_x.vtu" and "cells_data_x.pvtu". Open Paraview and select "Open"
+
 ![Paraview open](images/jean_tutorial/paraview14.png)
 
 A new windows appears, select the "group" file and click ok.
+
 ![Paraview select group](images/jean_tutorial/paraview15.png)
 
 Finally, click "Apply"
+
 ![Paraview export apply](images/jean_tutorial/paraview16.png)
 
 We can now create a Glyph filter (same method as live visualization).
 
 A major advantage of export visualization, in addition of not impacting the simulation time, is that you can visualize your modelling freely in time. using the arrows in the top menu, you can choose respectively to go back to the beginning of the simulation, go one step back, run normally, go one step further or go to the end of the simulation. You also can see witch step you are currently visualising (remember that this step number is the number of your modelling step divided by the export\_interval you choose in your configuration file).
+
 ![Paraview time](images/jean_tutorial/paraview17.png)
 
 In both cases, even if we can now visualize our cell, they have all the same color, which can be a bit confusing and doesn't allow us to visualise properly what is going on.
@@ -267,13 +273,14 @@ This new simulation is now functional, however before running it, we need to tel
 ```
 
 With those changes, we are now able to colourise our different layers. All you have to do, after displaying cells and creating the _Glyph_ filter (chapter 3.1) is to select your _Glyph_ filter and to select cell\_colour\_ in the _Coloring_ section.
+
 ![Paraview select colour](images/jean_tutorial/paraview8.png)
 
 Well done, we can now visualise the different layers and the cancerous cell in red!
+
 ![Paraview colour layers](images/jean_tutorial/paraview9.png)
 
 However, there still is a little problem. The attribute cell\_colour\_ is not transmitted to the daughter cell after a division. You can also notice that it is not really easy to see the cancerous cells. We will solve those issues in the next chapter.
-
 
 ### Transmitting its color and playing with Filters
 
@@ -285,15 +292,19 @@ To enable dividing cells to transmit its color - meaning its cell\_color\_ attri
 ```
 
 Even if our cancerous cells transmit their colour to their daughter, it still is not really easy to spot them in the middle of thousands of other cells. This problem can be solve using the threshold filter function of Paraview. To do that, after displaying cells colour as at the end of 3.2, click on the threshold filter button. This filter will be applied to the currently selected _Pipeline Browser_, so pay attention to select the correct one (_Glyph1_) before creating the threshold filter.
+
 ![Paraview threshold filter](images/jean_tutorial/paraview10.png)
 
 On the _Properties_ menu, select the _Scalar_ _cell\_colour\__, put the minimum value at 7 and the maximum at 8 (so only the value of cancerous cell is selected) then click _Apply_
+
 ![Paraview threshold filter scalar](images/jean_tutorial/paraview11.png)
 
 Finaly, choose the _Coloring_ mode _cell\_colour\__.
+
 ![Paraview threshold filter colouring](images/jean_tutorial/paraview12.png)
 
 Great, we can now choose to display either all the cells, or just the cancerous cells by selecting either the _Glyph1_ or the _Threshold1_ in the _Pipeline Browser_!
+
 ![Paraview threshold display](images/jean_tutorial/paraview13.png)
 
 This is of course just an example of what you can do with the threshold filters.
