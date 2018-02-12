@@ -11,6 +11,7 @@
     <class name="bdm::DivisionAndMovementModule," />
     <class name="bdm::SubstanceSecretion" />
     <class name="bdm::Chemotaxis" />
+    <class name="bdm::GeneCalculation" />
     <class pattern="std::__1::vector<bdm::*<*>>" />
     <class pattern="std::__1::tuple<bdm::*<*>" />
     <class pattern="bdm::resource_manager_test_internal::*" />

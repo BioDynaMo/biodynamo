@@ -46,6 +46,35 @@ class Scheduler {
     }
   }
 
+  template <typename Lambda>
+  void SimulateTill(Lambda stopping_condition) {
+    grid_->Initialize();
+
+    while (!stopping_condition()) {
+      // Simulate
+      Execute();
+
+      // Visualize
+      if (Param::live_visualization_) {
+        double time = Param::simulation_time_step_ * total_steps_;
+        visualization_->CoProcess(time, total_steps_, false);
+      }
+
+      total_steps_++;
+      Param::step_global_ = total_steps_;
+
+      // Backup
+      using std::chrono::seconds;
+      using std::chrono::duration_cast;
+      if (backup_.BackupEnabled() &&
+          duration_cast<seconds>(Clock::now() - last_backup_).count() >=
+              Param::backup_interval_) {
+        last_backup_ = Clock::now();
+        backup_.Backup(total_steps_);
+      }
+    }
+  }
+
   void Simulate(unsigned steps) {
     // TODO(lukas) backup and restore should work for every simulation object in
     // ResourceManager
@@ -92,6 +121,7 @@ class Scheduler {
       Execute();
 
       total_steps_++;
+      Param::step_global_ = total_steps_;
 
       // Backup
       using std::chrono::seconds;

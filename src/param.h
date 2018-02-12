@@ -11,11 +11,24 @@
 namespace bdm {
 
 struct Param {
+
   // simulation values ---------------------------------------------------------
   /// Name of the simulation executable\n
   /// Default value: biodynamo_simulation\n
   /// Cannot be changed using the TOML config file
   static std::string executable_name_;
+
+  ///protein_amount specifies the amount of different proteins in the simulation
+  static const int protein_amount = 3;
+
+  ///Lambda function which contains functions by which GeneCalculation module calculate concentration of proteins on each step
+  static std::function<std::vector<double>(double, std::vector<std::array<double, protein_amount>>)> functions;
+
+  /// Variable which is tracking current step of simulation
+  static size_t step_global_;
+
+  ///Variable which specifies method using for solving differential equation {"Euler", "RK4"}.
+  static std::string dE_solve_method;
 
   /// Backup file name for full simulation backups\n
   /// Default value: `""` (no backups will be made)\n
