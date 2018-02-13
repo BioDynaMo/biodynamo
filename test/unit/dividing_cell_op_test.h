@@ -14,8 +14,8 @@ void RunTest() {
   auto rm = TRm::Get();
   rm->Clear();
   auto cells = rm->template Get<Cell>();
-  cells->push_back(Cell(41.0));
-  cells->push_back(Cell(19.0));
+  rm->template New<Cell>(41.0);
+  rm->template New<Cell>(19.0);
 
   EXPECT_EQ(2u, cells->size());
 
