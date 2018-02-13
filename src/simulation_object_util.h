@@ -154,7 +154,7 @@ struct Capsule;
             typename TDerived = char,                                          \
             template <typename, typename> class TBase =                        \
                 base_class##_TCTParam_TDerived>                                \
-  struct sim_object##Ext;                                                      \
+  class sim_object##Ext;                                                      \
                                                                                \
   template <template <typename TCompileTimeParam, typename TDerived,           \
                       template <typename, typename> class TBase> class TSoExt> \
@@ -192,7 +192,7 @@ struct Capsule;
                                                                                \
   template <typename TCompileTimeParam, typename TDerived,                     \
             template <typename, typename> class TBase>                         \
-  struct sim_object##Ext : public TBase<TCompileTimeParam, TDerived>
+  class sim_object##Ext : public TBase<TCompileTimeParam, TDerived>
 
 // -----------------------------------------------------------------------------
 // Helper macros used to generate code for all data members of a class
