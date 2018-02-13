@@ -82,8 +82,6 @@ class SoaSimulationObject {
   /// Thread safe version of std::vector::push_back
   void push_back(const TMostDerived<Scalar> &element) {  // NOLINT
     std::lock_guard<std::recursive_mutex> lock(mutex_);
-    std::cout << "size " << size_ << std::endl;
-    std::cout << "total size " << total_size_ << std::endl;
     if (total_size_ == size_) {
       PushBackImpl(element);
       size_++;

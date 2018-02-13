@@ -8,8 +8,7 @@ namespace dividing_cell_op_test_internal {
 // time parameter (separate_binary/dividing_cell_op_aos_test.cc)
 
 TEST(DividingCellOpTest, ComputeSoa) {
-  auto cells = Cell::NewEmptySoa();
-  RunTest(&cells);
+  RunTest();
 }
 
 }  // namespace dividing_cell_op_test_internal
