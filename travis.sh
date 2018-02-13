@@ -119,6 +119,6 @@ mkdir build
 cd build
 mkdir install
 
-cmake -DCMAKE_BUILD_TYPE=Debug ..
+cmake -DCMAKE_BUILD_TYPE=Release ..
 make -j2
 make check-submission
