@@ -1,5 +1,4 @@
 #include "compile_time_param.h"
-#include "transactional_vector.h"
 #include "unit/dividing_cell_op_test.h"
 
 namespace bdm {
