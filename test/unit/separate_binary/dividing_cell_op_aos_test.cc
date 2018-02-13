@@ -12,8 +12,7 @@ struct CompileTimeParam : public DefaultCompileTimeParam<TBackend> {
 namespace dividing_cell_op_test_internal {
 
 TEST(DividingCellOpTest, ComputeAos) {
-  TransactionalVector<Cell> cells;
-  RunTest(&cells);
+  RunTest();
 }
 
 }  // namespace dividing_cell_op_test_internal

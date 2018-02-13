@@ -9,11 +9,15 @@
 namespace bdm {
 namespace dividing_cell_op_test_internal {
 
-template <typename T, typename TRm = ResourceManager<>>
-void RunTest(T* cells) {
-  TRm::Get()->Clear();
+template <typename TRm = ResourceManager<>>
+void RunTest() {
+  auto rm = TRm::Get();
+  rm->Clear();
+  auto cells = rm->template Get<Cell>();
   cells->push_back(Cell(41.0));
   cells->push_back(Cell(19.0));
+
+  EXPECT_EQ(2u, cells->size());
 
   double volume_mother = (*cells)[0].GetVolume();
 
@@ -33,6 +37,7 @@ void RunTest(T* cells) {
   // volume of two daughter cells must be equal to volume of the mother
   EXPECT_NEAR(volume_mother, (*cells)[0].GetVolume() + (*cells)[2].GetVolume(),
               abs_error<double>::value);
+
 }
 
 }  // namespace dividing_cell_op_test_internal
