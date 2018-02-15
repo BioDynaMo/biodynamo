@@ -12,7 +12,6 @@
 #include <limits>
 #include <vector>
 
-#include "cell.h"
 #include "constant.h"
 #include "fixed_size_vector.h"
 #include "inline_vector.h"

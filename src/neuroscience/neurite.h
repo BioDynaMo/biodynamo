@@ -159,7 +159,7 @@ private:
 /// mother PhysicalNode) are transmitted to the mother element
 // TODO
 BDM_SIM_OBJECT(Neurite, SimulationObject) {
-  BDM_SIM_OBJECT_HEADER(NeuriteExt, 1, mass_location_, volume_, diameter_, x_axis_, y_axis_, z_axis_,
+  BDM_SIM_OBJECT_HEADER(NeuriteExt, 1, mass_location_, volume_, diameter_, adherence_, x_axis_, y_axis_, z_axis_,
                                   is_axon_,
                                   mother_, daughter_left_, daughter_right_, branch_order_, force_to_transmit_to_proximal_mass_, spring_axis_, actual_length_, tension_, spring_constant_, resting_length_);
 
@@ -189,6 +189,9 @@ BDM_SIM_OBJECT(Neurite, SimulationObject) {
    void SetMassLocation(const std::array<double, 3>& mass_location) const {
      mass_location_[kIdx] = mass_location;
    }
+
+   double GetAdherence() const { return adherence_[kIdx]; }
+   void SetAdherence(double adherence) { adherence_[kIdx] = adherence; }
 
    const std::array<double, 3>& GetXAxis() const { return x_axis_[kIdx]; }
    const std::array<double, 3>& GetYAxis() const { return y_axis_[kIdx]; }
@@ -333,7 +336,8 @@ BDM_SIM_OBJECT(Neurite, SimulationObject) {
  //  //   Physics
  //  // *************************************************************************************
  //
- //  void runPhysics() override;
+  // TODO documentatio, rename (maybe mechanical interactions)
+  void RunPhysics();
  //
  //  std::array<double, 3> getForceOn(PhysicalSphere* s) override;
  //
@@ -547,7 +551,8 @@ BDM_SIM_OBJECT(Neurite, SimulationObject) {
  protected:
    void Copy(const TMostDerived<Backend>& rhs) {
      // TODO adherence
-     //  adherence_, density_
+     adherence_[kIdx] = rhs.GetAdherence();
+     //  density_
      SetDiameter(rhs.GetDiameter()); // also updates volyume
      x_axis_[kIdx] = rhs.GetXAxis();
      y_axis_[kIdx] = rhs.GetYAxis();
@@ -567,6 +572,7 @@ BDM_SIM_OBJECT(Neurite, SimulationObject) {
    vec<std::array<double, 3>> mass_location_ = {{0.0, 0.0, 0.0}};
    vec<double> volume_;
    vec<double> diameter_ = {{ Param::kNeuriteDefaultDiameter }};
+   vec<double> adherence_;
    /// First axis of the local coordinate system equal to cylinder axis
    vec<array<double, 3>> x_axis_ = {{1.0, 0.0, 0.0}};
    /// Second axis of the local coordinate system.
@@ -663,14 +669,10 @@ BDM_SO_DEFINE(inline void NeuriteExt)::RetractTerminalEnd(double speed) {
 
       mass_location_[kIdx] = Matrix::Add(mother_[kIdx].OriginOf(Base::GetElementIdx()), spring_axis_[kIdx]);
       UpdateVolume();  // and update concentration of internal stuff.
-      // be sure i'll run my physics :
-      // TODO setOnTheSchedulerListForPhysicalObjects(true);
     } else if (mother_[kIdx].IsNeurite() && mother_[kIdx].GetDaughterRight().IsNullPtr()) {
 
       // if actual_length_ < length and mother is a PhysicalCylinder with no other daughter : merge with mother
       RemoveProximalCylinder();  // also updates volume_...
-      // be sure i'll run my physics :
-      // TODO setOnTheSchedulerListForPhysicalObjects(true);
       RetractTerminalEnd(speed / Param::simulation_time_step_);
     } else {
       // if mother is cylinder with other daughter or is not a cylinder : disappear.
@@ -685,8 +687,6 @@ BDM_SO_DEFINE(inline void NeuriteExt)::RetractTerminalEnd(double speed) {
       //   // (divide by time step because it is multiplied by it in the method)
       // }
       mother_[kIdx].UpdateDependentPhysicalVariables();
-      // extra-safe : make sure you'll not be run :
-      // TODO setOnTheSchedulerListForPhysicalObjects(false);
     }
 }
 
@@ -703,10 +703,7 @@ BDM_SO_DEFINE(inline bool NeuriteExt)::BranchPermitted() const {
 
 BDM_SO_DEFINE(inline typename NeuriteExt<TCompileTimeParam, TDerived, TBase>::MostDerivedSoPtr NeuriteExt)::Branch(double new_branch_diameter, const std::array<double, 3>& direction) {
   // create a new neurite element for side branch
-  // auto new_branch = Rm()->template New<MostDerived>();
-  // new_branch.Copy(*static_cast<TMostDerived<Backend>*>(this));
-
-  double length = 1.0;
+  double length = 1.0;  // TODO hard coded value
 
   // we first split this neurite segment into two pieces
   auto proximal_ns = InsertProximalCylinder().Get();
@@ -716,7 +713,6 @@ BDM_SO_DEFINE(inline typename NeuriteExt<TCompileTimeParam, TDerived, TBase>::Mo
   auto new_branch = new_branch_soptr.Get();
 
   // making the branching at physicalObject level
-  // auto TODO pc_1 = physical_cylinder_->branchCylinder(1.0, direction);
   new_branch.SetDiameter(diameter_[kIdx]);
   new_branch.SetBranchOrder(branch_order_[kIdx] + 1);
   // TODO : Caution : doesn't change the value distally on the main branch
@@ -827,16 +823,6 @@ BDM_SO_DEFINE(inline std::array<typename NeuriteExt<TCompileTimeParam, TDerived,
       new_branch_r.SetRestingLengthForDesiredTension(Param::kNeuriteDefaultTension);
       new_branch_l.SetRestingLengthForDesiredTension(Param::kNeuriteDefaultTension);
 
-      // spatial organization node
-      // TODO
-      // auto new_branch_center = Matrix::add(mass_location_, Matrix::scalarMult(0.5, new_branch_l->spring_axis_));
-      // auto new_son = so_node_->getNewInstance(new_branch_center, new_branch_l.get());  // todo catch PositionNotAllowedException
-      // new_branch_l->setSoNode(std::move(new_son));
-      //
-      // new_branch_center = Matrix::add(mass_location_, Matrix::scalarMult(0.5, new_branch_r->spring_axis_));
-      // new_son = so_node_->getNewInstance(new_branch_center, new_branch_r.get());  // todo catch PositionNotAllowedException
-      // new_branch_r->setSoNode(std::move(new_son));
-
       // set local coordinate axis in the new branches
       // TODO again?? alreay done a few lines up
       new_branch_l.UpdateLocalCoordinateAxis();
@@ -858,6 +844,7 @@ BDM_SO_DEFINE(inline std::array<typename NeuriteExt<TCompileTimeParam, TDerived,
     new_branch_r.SetDiameter(diameter_2);
     new_branch_r.SetBranchOrder(branch_order_[kIdx] + 1);
 
+    // TODO
     // 4) the local biological modules :
     // for (auto m : local_biology_modules_) {
     //  // copy...
@@ -918,12 +905,6 @@ BDM_SO_DEFINE(inline std::array<double, 3> NeuriteExt)::ForceTransmittedFromDaug
   if (factor < 0) {
     factor = 0;
   }
-  // TODO
-  // return {
-  //   factor*spring_axis_[0] + force_to_transmit_to_proximal_mass_[0],
-  //   factor*spring_axis_[1] + force_to_transmit_to_proximal_mass_[1],
-  //   factor*spring_axis_[2] + force_to_transmit_to_proximal_mass_[2]
-  // };
   return Matrix::Add(Matrix::ScalarMult(factor, spring_axis_[kIdx]), force_to_transmit_to_proximal_mass_[kIdx]);
 }
 
@@ -1006,6 +987,186 @@ BDM_SO_DEFINE(inline void NeuriteExt)::ChangeDiameter(double speed) {
   UpdateVolume();
   // no call to updateIntracellularConcentrations() cause it's done by updateVolume().
   // TODO scheduleMeAndAllMyFriends();
+}
+
+BDM_SO_DEFINE(inline void NeuriteExt)::RunPhysics() {
+  // decide first if we have to split or fuse this cylinder. Usually only
+  // terminal branches (growth cone) do
+  if (daughter_left_[kIdx].IsNullPtr()) {
+    RunDiscretization();
+  }
+
+  // in case we don't move, we won't run physics the next time :
+  // setOnTheSchedulerListForPhysicalObjects(false);
+
+  double h = Param::simulation_time_step_; // TODO rename h
+  std::array<double, 3> force_on_my_point_mass { 0, 0, 0 };
+  std::array<double, 3> force_on_my_mothers_point_mass { 0, 0, 0 };
+
+  // 1) Spring force
+  //   Only the spring of this cylinder. The daughters spring also act on this
+  //    mass, but they are treated in point (2)
+  double factor = -tension_ / actual_length_[kIdx];  // the minus sign is important because the spring axis goes in the opposite direction
+  force_on_my_point_mass = Matrix::Add(force_on_my_point_mass, Matrix::ScalarMult(factor, spring_axis_[kIdx]));
+
+  // 2) Force transmitted by daugthers (if they exist) ----------------------------------
+  if (!daughter_left_[kIdx].IsNullPtr()) {
+    auto force_from_daughter = daughter_left_[kIdx].Get().ForceTransmittedFromDaugtherToMother(GetSoPtr());
+    force_on_my_point_mass = Matrix::Add(force_on_my_point_mass, force_from_daughter);
+  }
+  if (!daughter_right_[kIdx].IsNullPtr()) {
+    auto force_from_daughter = daughter_right_[kIdx].Get().ForceTransmittedFromDaugtherToMother(GetSoPtr());
+    force_on_my_point_mass = Matrix::Add(force_on_my_point_mass, force_from_daughter);
+  }
+
+  // 3) Object avoidance force -----------------------------------------------------------
+  //  (We check for every neighbor object if they touch us, i.e. push us away)
+  auto calculate_neighbor_forces = [&](auto&& neighbor,
+                                       auto&& neighbor_handle) {
+    // if it is a direct relative, we don't take it into account
+    // TODO
+    // if (neighbor == mother_ || neighbor == daughter_left_ || neighbor == daughter_right_)
+    //   return;
+    // // if sister branch, we also don't take into account
+    // if (n->isAPhysicalCylinder()) {
+    //   auto n_cyl = static_cast<PhysicalCylinder*>(neighbor);
+    //   if (n_cyl->getMother() == mother_) {
+    //     return;
+    //   }
+    // }
+
+    // if we have a PhysicalBond with him, we also don't take it into account
+    // TODO
+    // for (auto pb : physical_bonds_) {
+    //   if (pb->getOppositePhysicalObject(this)
+    //       == neighbor) {
+    //     continue;
+    //   }
+    // }
+
+    auto force_from_neighbor = neighbor.GetForceOn(this);
+
+    // 1) "artificial force" to maintain the sphere in the ecm simulation boundaries--------
+    // TODO
+    // if (ecm_->getArtificialWallForCylinders()) {
+    //   auto force_from_artificial_wall = ecm_->forceFromArtificialWall(mass_location_, diameter_ * 0.5);
+    //   force_on_my_point_mass[0] += force_from_artificial_wall[0];
+    //   force_on_my_point_mass[1] += force_from_artificial_wall[1];
+    //   force_on_my_point_mass[2] += force_from_artificial_wall[2];
+    // }
+
+    if (std::abs(force_from_neighbor[3]) < 1E-10) {
+      // (if all the force is transmitted to the (distal end) point mass : )
+      force_on_my_point_mass = Matrix::Add(force_on_my_point_mass, force_from_neighbor);
+    } else {
+      // (if there is a part transmitted to the proximal end : )
+      double part_for_point_mass = 1.0 - force_from_neighbor[3];
+      force_on_my_point_mass = Matrix::Add(force_on_my_point_mass, Matrix::ScalarMult(part_for_point_mass, force_from_neighbor));
+      force_on_my_mothers_point_mass = Matrix::Add(force_on_my_mothers_point_mass, Matrix::ScalarMult(force_from_neighbor[3], force_from_neighbor));
+    }
+  };
+
+  // TODO
+  // grid.ForEachNeighborWithinRadius(calculate_neighbor_forces, *this,
+  //                                  GetSoHandle(), squared_radius);
+
+  bool anti_kink = false;
+  // TEST : anti-kink
+  if (anti_kink) {
+    double KK = 5;
+    if (!daughter_left_[kIdx].IsNullPtr() && daughter_right_[kIdx].IsNullPtr()) {
+      if (!daughter_left_[kIdx].Get().GetDaughterLeft().IsNullPtr()) {
+        auto downstream = daughter_left_[kIdx].Get().GetDaughterLeft().Get();
+        double rresting = daughter_left_[kIdx].Get().GetRestingLength() + downstream.GetRestingLength();
+        auto down_to_me = Matrix::Subtract(GetMassLocation(), downstream.GetMassLocation());
+        double aactual = Math::Norm(down_to_me);
+
+        force_on_my_point_mass = Matrix::Add(
+            force_on_my_point_mass, Matrix::ScalarMult(KK * (rresting - aactual), Math::Normalize(down_to_me)));
+      }
+    }
+
+    if (!daughter_left_[kIdx].IsNullPtr() && mother_[kIdx].IsNeurite()) {
+      // TODO rename mother_cyl
+      auto mother_cyl = mother_[kIdx].GetNeuriteSoPtr().Get();
+      double rresting = GetRestingLength() + mother_cyl.GetRestingLength();
+      auto down_to_me = Matrix::Subtract(GetMassLocation(), mother_cyl.ProximalEnd());
+      double aactual = Math::Norm(down_to_me);
+
+      force_on_my_point_mass = Matrix::Add(
+          force_on_my_point_mass, Matrix::ScalarMult(KK * (rresting - aactual), Math::Normalize(down_to_me)));
+    }
+  }
+  // 4) PhysicalBond -----------------------------------------------------------
+  // TODO physical bonds
+  // for (auto pb : physical_bonds_) {
+  //   auto force_physical_bond = pb->getForceOn(this);
+  //
+  //   if (std::abs(force_physical_bond[3]) < 1E-10) {
+  //     // (if all the force is transmitted to the (distal end) point mass : )
+  //     force_on_my_point_mass[0] += force_physical_bond[0];
+  //     force_on_my_point_mass[1] += force_physical_bond[1];
+  //     force_on_my_point_mass[2] += force_physical_bond[2];
+  //   } else {
+  //     // (if there is a part transmitted to the proximal end : )
+  //     double part_for_point_mass = 1.0 - force_physical_bond[3];
+  //     force_on_my_point_mass[0] += force_physical_bond[0] * part_for_point_mass;
+  //     force_on_my_point_mass[1] += force_physical_bond[1] * part_for_point_mass;
+  //     force_on_my_point_mass[2] += force_physical_bond[2] * part_for_point_mass;
+  //     force_on_my_mothers_point_mass[0] += force_physical_bond[0] * force_physical_bond[3];
+  //     force_on_my_mothers_point_mass[1] += force_physical_bond[1] * force_physical_bond[3];
+  //     force_on_my_mothers_point_mass[2] += force_physical_bond[2] * force_physical_bond[3];
+  //   }
+  // }
+
+  // 5) define the force that will be transmitted to the mother
+  force_to_transmit_to_proximal_mass_[kIdx] = force_on_my_mothers_point_mass;
+  // 6) Compute the movement of this neurite elicited by the resultant force----------------
+  //  6.0) In case we display the force
+  // TODO total_force_last_time_step_ is never read
+  // total_force_last_time_step_[kIdx][0] = force_on_my_point_mass[0];
+  // total_force_last_time_step_[kIdx][1] = force_on_my_point_mass[1];
+  // total_force_last_time_step_[kIdx][2] = force_on_my_point_mass[2];
+  // total_force_last_time_step_[kIdx][3] = 1;
+  //  6.1) Define movement scale
+  // FIXME
+  // double h_over_m = h / GetMass();
+  double h_over_m = 1.0;
+  double force_norm = Math::Norm(force_on_my_point_mass);
+  //  6.2) If is F not strong enough -> no movements
+  if (force_norm < adherence_[kIdx]) {
+    // TODO total_force_last_time_step_ is never read
+    // total_force_last_time_step_[kIdx][3] = -1;
+    return;
+  }
+  // So, what follows is only executed if we do actually move :
+
+  //  6.3) Since there's going be a move, we calculate it
+  auto displacement = Matrix::ScalarMult(h_over_m, force_on_my_point_mass);
+  double displacement_norm = force_norm * h_over_m;
+
+  //  6.4) There is an upper bound for the movement.
+  if (displacement_norm > Param::simulation_max_displacement_) {
+    displacement = Matrix::ScalarMult(Param::simulation_max_displacement_ / displacement_norm, displacement);
+  }
+
+  // 8) Eventually, we do perform the move--------------------------------------------------
+  // 8.1) The move of our mass
+  SetMassLocation(Matrix::Add(GetMassLocation(), displacement));
+  // 8.2) Recompute length, tension and re-center the computation node, and redefine axis
+  UpdateDependentPhysicalVariables();
+  UpdateLocalCoordinateAxis();
+  // 8.3) For the relatives: recompute the lenght, tension etc. (why for mother? have to think about that)
+  if (!daughter_left_[kIdx].IsNullPtr()){
+    auto left = daughter_left_[kIdx].Get();
+    left.UdateDependentPhysicalVariables();
+    left.UpdateLocalCoordinateAxis();
+  }
+  if (!daughter_right_[kIdx].IsNullPtr()){
+    auto right = daughter_right_[kIdx].Get();
+    right.UdateDependentPhysicalVariables();
+    right.UpdateLocalCoordinateAxis();
+  }
 }
 
 BDM_SO_DEFINE(inline void NeuriteExt)::UpdateVolume() {
@@ -1204,7 +1365,6 @@ BDM_SO_DEFINE(inline void NeuriteExt)::UpdateDependentPhysicalVariables() {
   actual_length_[kIdx] = std::sqrt(Matrix::Dot(spring_axis_[kIdx], spring_axis_[kIdx]));
   tension_[kIdx] = spring_constant_[kIdx] * (actual_length_[kIdx] - resting_length_[kIdx]) / resting_length_[kIdx];
   UpdateVolume();
-  // TODO updateSpatialOrganizationNodePosition();
 }
 
 BDM_SO_DEFINE(inline typename NeuriteExt<TCompileTimeParam, TDerived, TBase>::MostDerivedSoPtr NeuriteExt)::InsertProximalCylinder() {
@@ -1217,13 +1377,6 @@ BDM_SO_DEFINE(inline typename NeuriteExt<TCompileTimeParam, TDerived, TBase>::Mo
   // TODO reformulate to mass_location_
   auto new_position = Matrix::Subtract(mass_location_[kIdx], Matrix::ScalarMult(distal_portion, spring_axis_[kIdx]));
 
-  // TODO
-  // double temp = distal_portion + (1 - distal_portion) / 2.0;
-  // std::array<double, 3> newProximalCylinderSpatialNodeLocation { mass_location_[0] - temp * spring_axis_[0],
-  //     mass_location_[1] - temp * spring_axis_[1], mass_location_[2] - temp * spring_axis_[2] };
-  // FIXME position so_node gets proximal position assigned not middle position like in ExtendNewNeurite
-
-
   new_neurite_element.SetPosition(new_position);
   new_neurite_element.Copy(*static_cast<TMostDerived<Backend>*>(this));
 
@@ -1233,11 +1386,6 @@ BDM_SO_DEFINE(inline typename NeuriteExt<TCompileTimeParam, TDerived, TBase>::Mo
   new_neurite_element.SetMother(mother_[kIdx]);
   SetMother(new_neurite_element.GetSoPtr());
   new_neurite_element.SetDaughterLeft(GetSoPtr());
-  // TODO SOM relation
-  // auto new_son = so_node_->getNewInstance(newProximalCylinderSpatialNodeLocation, new_cylinder.get());  // todo catch PositionNotAllowedException
-  // new_cylinder->setSoNode(std::move(new_son));
-  // registering the new cylinder with ecm
-  // TODO ecm_->addPhysicalCylinder(new_cylinder.get());
   // physics
   new_neurite_element.SetRestingLength((1 - distal_portion) * resting_length_[kIdx]);
   resting_length_[kIdx] *= distal_portion;
@@ -1319,17 +1467,10 @@ BDM_SO_DEFINE(inline typename NeuriteExt<TCompileTimeParam, TDerived, TBase>::Mo
   // family relations
   new_branch.SetMother(GetSoPtr());
   daughter_right_[kIdx] = new_branch.GetSoPtr();
-  // TODO new CentralNode
-  // auto new_center_location = Matrix::add(mass_location_, Matrix::scalarMult(0.5, new_spring_axis));
-  // auto new_son = so_node_->getNewInstance(new_center_location, new_branch.get());  // todo catch PositionNotAllowedException
-  // new_branch->setSoNode(std::move(new_son));
 
   // correct physical values (has to be after family relations and SON assignement).
   new_branch.UpdateDependentPhysicalVariables();
 
-  // i'm scheduled to run physics next time :
-  // (the side branch automatically is too, because it's a new PhysicalObject)
-  // TODO setOnTheSchedulerListForPhysicalObjects(true);
   return new_branch.GetSoPtr();
 }
 
@@ -1368,6 +1509,7 @@ BDM_SO_DEFINE(inline void NeuriteExt)::RemoveProximalCylinder() {
 
   proximal_cylinder.RemoveFromSimulation();
 
+  // TODO
   // dealing with excressences:
   // mine are shifted up :
   // double shift = actual_length_ - proximal_cylinder->actual_length_;

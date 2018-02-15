@@ -276,8 +276,17 @@ class ResourceManager {
   /// @tparam TScalarSo simulation object type with scalar backend
   /// @param args arguments which will be forwarded to the TScalarSo constructor
   /// @remarks Note that this function is not thread safe.
-  template <typename TScalarSo, typename... Args>
-  auto New(Args... args) {
+  template <typename TScalarSo, typename... Args, typename TBackend = Backend>
+  typename std::enable_if<std::is_same<TBackend, Soa>::value, typename TScalarSo::template Self<SoaRef>>::type
+  New(Args... args) {
+    auto container = Get<TScalarSo>();
+    container->push_back(TScalarSo(std::forward<Args>(args)...));
+    return (*container)[container->size() - 1];
+  }
+
+  template <typename TScalarSo, typename... Args, typename TBackend = Backend>
+  typename std::enable_if<std::is_same<TBackend, Scalar>::value, TScalarSo&>::type
+  New(Args... args) {
     auto container = Get<TScalarSo>();
     container->push_back(TScalarSo(std::forward<Args>(args)...));
     return (*container)[container->size() - 1];
