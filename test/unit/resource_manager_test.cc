@@ -296,13 +296,13 @@ void RunNewTest() {
   auto rm = ResourceManager<CTParam>::Get();
   rm->Clear();
 
-  auto a0 = rm->template New<A>(12);
-  auto a1 = rm->template New<A>(34);
+  auto&& a0 = rm->template New<A>(12);
+  auto&& a1 = rm->template New<A>(34);
 
-  auto b0 = rm->template New<B>(3.14);
-  auto b1 = rm->template New<B>(6.28);
+  auto&& b0 = rm->template New<B>(3.14);
+  auto&& b1 = rm->template New<B>(6.28);
 
-  auto a2 = rm->template New<A>(87);
+  auto&& a2 = rm->template New<A>(87);
 
   EXPECT_EQ(a0.GetData(), 12);
   EXPECT_EQ(a1.GetData(), 34);
@@ -311,8 +311,8 @@ void RunNewTest() {
   EXPECT_NEAR(b0.GetData(), 3.14, kEpsilon);
   EXPECT_NEAR(b1.GetData(), 6.28, kEpsilon);
 
-  auto as = rm->template Get<TA>();
-  auto bs = rm->template Get<TB>();
+  auto&& as = rm->template Get<TA>();
+  auto&& bs = rm->template Get<TB>();
 
   EXPECT_EQ((*as)[0].GetData(), 12);
   EXPECT_EQ((*as)[1].GetData(), 34);
@@ -327,13 +327,13 @@ void RunNewTest() {
 }
 
 TEST(ResourceManagerTest, NewSoa) {
-  // RunNewTest<Soa, A, B>();
+  RunNewTest<Soa, A, B>();
   RunNewTest<Soa, SoaA, SoaB>();
 }
 
 TEST(ResourceManagerTest, NewAos) {
-  // RunNewTest<Scalar, A, B>();
-  // RunNewTest<Scalar, SoaA, SoaB>();
+  RunNewTest<Scalar, A, B>();
+  RunNewTest<Scalar, SoaA, SoaB>();
 }
 
 TEST(SoHandle, EqualsOperator) {

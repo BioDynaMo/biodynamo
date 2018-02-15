@@ -216,18 +216,17 @@ class ScalarSimulationObject {
 
   std::size_t size() const { return 1; }  // NOLINT
 
+  template <typename TRm = ResourceManager<>>
+  uint32_t GetElementIdx() const {
+    auto* container = TRm::Get()->template Get<TMostDerived<Scalar>>();
+    const auto* address_first_element = &((*container)[0]);
+    uint32_t idx = reinterpret_cast<decltype(address_first_element)>(this) - address_first_element;
+    assert(idx < container->size() && "Element index larger than number of elements");
+    return idx;
+  }
+
  protected:
   static const std::size_t kIdx = 0;
-
-  // TODO(lukas) add GetElementIdx
-  // return this - pointer to first element
-  // Difficulty to know the type - will become easier once TMostDerived type
-  // has been introduced
-  uint32_t GetElementIdx() const {
-    Fatal("GetElementIdx",
-          "GetElementIdx has not been implemented for scalar backends");
-    return 0;  // avoid missing return statement compiler warning
-  }
 
   /// Append a scalar element
   virtual void PushBackImpl(const TMostDerived<Scalar> &other) {}

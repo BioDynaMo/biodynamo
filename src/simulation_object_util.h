@@ -325,6 +325,12 @@ struct Capsule;
   TResourceManager* Rm() { \
     return TResourceManager::Get(); \
   } \
+  \
+  template <typename TResourceManager = ResourceManager<>> \
+  SoHandle GetSoHandle() const { \
+    auto type_idx = TResourceManager::template GetTypeIndex<MostDerived>(); \
+    return SoHandle(type_idx, Base::GetElementIdx()); \
+  }\
                                                                                \
   explicit class_name(TRootIOCtor* io_ctor) {}                                 \
                                                                                \
