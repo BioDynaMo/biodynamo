@@ -46,7 +46,7 @@ class DisplacementOp {
 
 #pragma omp parallel for shared(grid) firstprivate(squared_radius)
     for (size_t i = 0; i < cells->size(); i++) {
-      cell_movements[i] = (*cells)[i].RunPhysics(grid, squared_radius);
+      cell_movements[i] = (*cells)[i].RunPhysics(&grid, squared_radius);
     }
 
 // Set new positions after all updates have been calculated

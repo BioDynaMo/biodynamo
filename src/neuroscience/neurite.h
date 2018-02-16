@@ -182,11 +182,11 @@ BDM_SIM_OBJECT(Neurite, SimulationObject) {
    void SetPosition(const std::array<double, 3>& position) { mass_location_[kIdx] = Matrix::Add(position, Matrix::ScalarMult(0.5, spring_axis_[kIdx])); }
    // TODO reevaluate if method is required or data member should be used
    /// return end of cylinder position
-   std::array<double, 3>& GetMassLocation() const {
+   const std::array<double, 3>& GetMassLocation() const {
      return mass_location_[kIdx];
    }
    // TODO reevaluate if method is required or data member should be used
-   void SetMassLocation(const std::array<double, 3>& mass_location) const {
+   void SetMassLocation(const std::array<double, 3>& mass_location) {
      mass_location_[kIdx] = mass_location;
    }
 
@@ -337,7 +337,8 @@ BDM_SIM_OBJECT(Neurite, SimulationObject) {
  //  // *************************************************************************************
  //
   // TODO documentatio, rename (maybe mechanical interactions)
-  void RunPhysics();
+  template <typename TGrid>
+  void RunPhysics(TGrid* grid, double squared_radius);
  //
  //  std::array<double, 3> getForceOn(PhysicalSphere* s) override;
  //
@@ -989,7 +990,8 @@ BDM_SO_DEFINE(inline void NeuriteExt)::ChangeDiameter(double speed) {
   // TODO scheduleMeAndAllMyFriends();
 }
 
-BDM_SO_DEFINE(inline void NeuriteExt)::RunPhysics() {
+BDM_SO_DEFINE(template <typename TGrid>
+inline void NeuriteExt)::RunPhysics(TGrid* grid, double squared_radius) {
   // decide first if we have to split or fuse this cylinder. Usually only
   // terminal branches (growth cone) do
   if (daughter_left_[kIdx].IsNullPtr()) {
@@ -1022,18 +1024,32 @@ BDM_SO_DEFINE(inline void NeuriteExt)::RunPhysics() {
   // 3) Object avoidance force -----------------------------------------------------------
   //  (We check for every neighbor object if they touch us, i.e. push us away)
   auto calculate_neighbor_forces = [&](auto&& neighbor,
-                                       auto&& neighbor_handle) {
-    // if it is a direct relative, we don't take it into account
-    // TODO
-    // if (neighbor == mother_ || neighbor == daughter_left_ || neighbor == daughter_right_)
-    //   return;
-    // // if sister branch, we also don't take into account
-    // if (n->isAPhysicalCylinder()) {
-    //   auto n_cyl = static_cast<PhysicalCylinder*>(neighbor);
-    //   if (n_cyl->getMother() == mother_) {
-    //     return;
-    //   }
-    // }
+                                       SoHandle neighbor_handle) {
+    std::cout << typeid(neighbor).name() << std::endl;
+    using NeighborBackend = typename decltype(neighbor)::Backend;
+    using NeighborNeurite = TMostDerived<NeighborBackend>;
+    using NeighborNeuron = typename TNeuron::template Self<NeighborBackend>;
+    // TODO(lukas) once we switch to C++17 use if constexpr.
+    // As a consequence the reinterpret_cast won't be needed anymore.
+
+    // if neighbor is a Neurite
+    if (std::is_same<NeighborNeurite, decltype(neighbor)>::value) {
+      auto n_soptr = reinterpret_cast<NeighborNeurite*>(&neighbor)->GetSoPtr();
+      // if it is a direct relative, or sister branch, we don't take it into account
+      if (n_soptr == daughter_left_[kIdx] ||
+          n_soptr == daughter_right_[kIdx] ||
+          (mother_[kIdx].IsNeurite() && mother_[kIdx].GetNeuriteSoPtr() == n_soptr) ||
+          neighbor.GetMother() == mother_[kIdx]) {
+        return;
+      }
+    } else if (std::is_same<NeighborNeuron, decltype(neighbor)>::value) {
+      // if neighbor is Neuron
+      // if it is a direct relative, we don't take it into account
+      auto n_soptr = reinterpret_cast<NeighborNeuron*>(&neighbor)->GetSoPtr();
+      if(mother_[kIdx].IsNeuron() && mother_[kIdx].GetNeuronSoPtr() == n_soptr) {
+        return;
+      }
+    }
 
     // if we have a PhysicalBond with him, we also don't take it into account
     // TODO
@@ -1044,7 +1060,8 @@ BDM_SO_DEFINE(inline void NeuriteExt)::RunPhysics() {
     //   }
     // }
 
-    auto force_from_neighbor = neighbor.GetForceOn(this);
+    std::array<double, 4> force_from_neighbor;
+    neighbor.GetForceOn(this, &force_from_neighbor);
 
     // 1) "artificial force" to maintain the sphere in the ecm simulation boundaries--------
     // TODO
@@ -1055,20 +1072,25 @@ BDM_SO_DEFINE(inline void NeuriteExt)::RunPhysics() {
     //   force_on_my_point_mass[2] += force_from_artificial_wall[2];
     // }
 
-    if (std::abs(force_from_neighbor[3]) < 1E-10) {
+    if (std::abs(force_from_neighbor[3]) < 1E-10) {  // TODO hard coded value
       // (if all the force is transmitted to the (distal end) point mass : )
-      force_on_my_point_mass = Matrix::Add(force_on_my_point_mass, force_from_neighbor);
+      force_on_my_point_mass[0] += force_from_neighbor[0];
+      force_on_my_point_mass[1] += force_from_neighbor[1];
+      force_on_my_point_mass[2] += force_from_neighbor[2];
     } else {
       // (if there is a part transmitted to the proximal end : )
       double part_for_point_mass = 1.0 - force_from_neighbor[3];
-      force_on_my_point_mass = Matrix::Add(force_on_my_point_mass, Matrix::ScalarMult(part_for_point_mass, force_from_neighbor));
-      force_on_my_mothers_point_mass = Matrix::Add(force_on_my_mothers_point_mass, Matrix::ScalarMult(force_from_neighbor[3], force_from_neighbor));
+      force_on_my_point_mass[0] += force_from_neighbor[0] * part_for_point_mass;
+      force_on_my_point_mass[1] += force_from_neighbor[1] * part_for_point_mass;
+      force_on_my_point_mass[2] += force_from_neighbor[2] * part_for_point_mass;
+      force_on_my_mothers_point_mass[0] += force_from_neighbor[0] * force_from_neighbor[3];
+      force_on_my_mothers_point_mass[1] += force_from_neighbor[1] * force_from_neighbor[3];
+      force_on_my_mothers_point_mass[2] += force_from_neighbor[2] * force_from_neighbor[3];
     }
   };
 
-  // TODO
-  // grid.ForEachNeighborWithinRadius(calculate_neighbor_forces, *this,
-  //                                  GetSoHandle(), squared_radius);
+  grid->ForEachNeighborWithinRadius(calculate_neighbor_forces, *this,
+                                    GetSoHandle(), squared_radius);
 
   bool anti_kink = false;
   // TEST : anti-kink
