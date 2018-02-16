@@ -186,17 +186,18 @@ BDM_SIM_OBJECT(Cell, SimulationObject) {
   }
 
   template <typename TGrid>
-  std::array<double, 3> RunPhysics(TGrid& grid, double squared_radius);
+  std::array<double, 3> RunPhysics(TGrid* grid, double squared_radius);
 
-  void GetForceOn(const array<double, 3>& ref_mass_location,
-                  double ref_diameter, array<double, 3>* force) const {
+  template <typename TSo>
+  void GetForceOn(const TSo* reference_so, array<double, 3>* force) const {
     DefaultForce default_force;
     // TODO(lukas) think about default values in config file
-    double iof_coefficient = 0.15;
+    // double iof_coefficient = 0.15;
 
-    default_force.ForceBetweenSpheres(ref_mass_location, ref_diameter,
-                                      iof_coefficient, position_[kIdx],
-                                      diameter_[kIdx], iof_coefficient, force);
+    default_force.ForceBetweenSpheres(reference_so, this, force);
+                                      // ref_mass_location, ref_diameter,
+                                      // iof_coefficient, position_[kIdx],
+                                      // diameter_[kIdx], iof_coefficient, force);
   }
 
   uint64_t GetBoxIdx() const { return box_idx_[kIdx]; }
@@ -354,7 +355,7 @@ BDM_SO_DEFINE(inline void CellExt)::DivideImpl(TMostDerived<Scalar>* daughter,
 }
 
 BDM_SO_DEFINE(template <typename TGrid>
-inline std::array<double, 3> CellExt)::RunPhysics(TGrid& grid, double squared_radius){
+inline std::array<double, 3> CellExt)::RunPhysics(TGrid* grid, double squared_radius){
   // Basically, the idea is to make the sum of all the forces acting
   // on the Point mass. It is stored in translationForceOnPointMass.
   // There is also a computation of the torque (only applied
@@ -403,14 +404,13 @@ inline std::array<double, 3> CellExt)::RunPhysics(TGrid& grid, double squared_ra
   auto calculate_neighbor_forces = [&,this](auto&& neighbor,
                                        auto&& neighbor_handle) {
     std::array<double, 3> neighbor_force;
-    neighbor.GetForceOn(this->GetPosition(), this->GetDiameter(),
-                        &neighbor_force);
+    neighbor.GetForceOn(this, &neighbor_force);
     translation_force_on_point_mass[0] += neighbor_force[0];
     translation_force_on_point_mass[1] += neighbor_force[1];
     translation_force_on_point_mass[2] += neighbor_force[2];
   };
 
-  grid.ForEachNeighborWithinRadius(calculate_neighbor_forces, *this,
+  grid->ForEachNeighborWithinRadius(calculate_neighbor_forces, *this,
                                    GetSoHandle(), squared_radius);
                                   //  SoHandle(0, kIdx), squared_radius);
 
