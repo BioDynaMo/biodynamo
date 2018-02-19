@@ -63,7 +63,7 @@ struct Uniform {
 /// An initializer that follows a Gaussian (normal) distribution along one axis
 /// We use ROOT's built-in statistics function `normal_pdf(X, sigma, mean)`,
 /// that follows the normal probability density function:
-/// ( 1/( sigma * sqrt(2\pi) ))*e^( (-(x - mean )^2) / (2*sigma^2))
+/// ( 1/( sigma * sqrt(2*pi) ))*e^( (-(x - mean )^2) / (2*sigma^2))
 struct GaussianBand {
   double mean_;
   double sigma_;
