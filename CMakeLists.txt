@@ -188,6 +188,13 @@ if (test)
     add_dependencies(check soma_clustering)
     add_test(NAME "integration-soma-clustering"
              COMMAND ${CMAKE_SOURCE_DIR}/build/soma_clustering)
+    bdm_add_executable(substance_initialization
+                      SOURCES test/integration/substance_initialization.cc
+                      HEADERS test/integration/substance_initialization.h
+                      LIBRARIES biodynamo)
+    add_dependencies(check substance_initialization)
+    add_test(NAME "integration-substance-initialization"
+             COMMAND ${CMAKE_SOURCE_DIR}/build/substance_initialization)
   endif()
 endif()
 

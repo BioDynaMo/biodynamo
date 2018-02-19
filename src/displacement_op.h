@@ -14,13 +14,16 @@ using std::array;
 
 template <typename TSO>
 void ApplyBoundingBox(TSO* cell, double lb, double rb) {
+  // Need to create a small distance from the positive edge of each dimension;
+  // otherwise it will fall out of the boundary of the simulation space
+  double eps = 1e-10;
   auto& pos = cell->GetPosition();
   for (int i = 0; i < 3; i++) {
     if (pos[i] < lb) {
       cell->SetCoordinate(i, lb);
     }
-    if (pos[i] > rb) {
-      cell->SetCoordinate(i, rb);
+    if (pos[i] >= rb) {
+      cell->SetCoordinate(i, rb - eps);
     }
   }
 }
@@ -142,7 +145,7 @@ class DisplacementOp {
       cell_movements[i] = movement_at_next_step;
     }
 
-// set new positions after all updates have been calculated
+// Set new positions after all updates have been calculated
 // otherwise some cells would see neighbors with already updated positions
 // which would lead to inconsistencies
 #pragma omp parallel for
@@ -151,6 +154,7 @@ class DisplacementOp {
       cell.UpdateMassLocation(cell_movements[i]);
       if (Param::bound_space_) {
         ApplyBoundingBox(&cell, Param::min_bound_, Param::max_bound_);
+        grid.SetDimensionThresholds(Param::min_bound_, Param::max_bound_);
       }
       cell.SetPosition(cell.GetMassLocation());
 
@@ -169,14 +173,16 @@ class BoundSpace {
 
   template <typename TContainer>
   void operator()(TContainer* cells, uint16_t type_idx) const {
-// set new positions after all updates have been calculated
-// otherwise some cells would see neighbors with already updated positions
-// which would lead to inconsistencies
+    // set new positions after all updates have been calculated
+    // otherwise some cells would see neighbors with already updated positions
+    // which would lead to inconsistencies
+    auto& grid = Grid<>::GetInstance();
 #pragma omp parallel for
     for (size_t i = 0; i < cells->size(); i++) {
       auto&& cell = (*cells)[i];
       if (Param::bound_space_) {
         ApplyBoundingBox(&cell, Param::min_bound_, Param::max_bound_);
+        grid.SetDimensionThresholds(Param::min_bound_, Param::max_bound_);
       }
       cell.SetPosition(cell.GetMassLocation());
 

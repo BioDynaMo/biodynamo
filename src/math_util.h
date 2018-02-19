@@ -6,6 +6,8 @@
 #include <numeric>
 #include <vector>
 
+#include "random.h"
+
 namespace bdm {
 
 struct Math {

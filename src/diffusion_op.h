@@ -25,28 +25,27 @@ class DiffusionOp {
     auto& grid = TGrid::GetInstance();
     auto& diffusion_grids = TResourceManager::Get()->GetDiffusionGrids();
     for (auto dg : diffusion_grids) {
-      if (!(dg->IsInitialized())) {
-        int lbound = grid.GetDimensionThresholds()[0];
-        int rbound = grid.GetDimensionThresholds()[1];
-        // If we are bounded we can directly grow to the specified size, to
-        // avoid copying diffusion grid data with DiffusionGrid::CopyOldData
-        if (Param::bound_space_) {
-          lbound = Param::min_bound_;
-          rbound = Param::max_bound_;
-          grid.SetDimensionThresholds(lbound, rbound);
-        }
-        dg->Initialize({lbound, rbound, lbound, rbound, lbound, rbound},
-                       grid.GetBoxLength());
-      }
-
-      // Update the diffusion grid dimension if the neighbor grid
-      // dimensions have changed
-      if (grid.HasGrown()) {
+      // Update the diffusion grid dimension if the neighbor grid dimensions
+      // have changed. If the space is bound, we do not need to update the
+      // dimensions, because these should not be changing anyway
+      if (grid.HasGrown() && !Param::bound_space_) {
+        std::cout
+            << "Your simulation objects are getting near the edge of the "
+               "simulation space. Be aware of boundary conditions that may "
+               "come into play!"
+            << std::endl;
         dg->Update(grid.GetDimensionThresholds());
       }
 
-      dg->DiffuseWithClosedEdge();
-      dg->CalculateGradient();
+      if (Param::leaking_edges_) {
+        dg->DiffuseWithLeakingEdge();
+      } else {
+        dg->DiffuseWithClosedEdge();
+      }
+
+      if (Param::calculate_gradients_) {
+        dg->CalculateGradient();
+      }
     }
   }
 };
