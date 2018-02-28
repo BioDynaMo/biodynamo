@@ -164,7 +164,7 @@ private:
 /// mother PhysicalNode) are transmitted to the mother element
 // TODO
 BDM_SIM_OBJECT(Neurite, SimulationObject) {
-  BDM_SIM_OBJECT_HEADER(NeuriteExt, 1, mass_location_, volume_, diameter_, adherence_, x_axis_, y_axis_, z_axis_, box_idx_,
+  BDM_SIM_OBJECT_HEADER(NeuriteExt, 1, biology_modules_, mass_location_, volume_, diameter_, adherence_, x_axis_, y_axis_, z_axis_, box_idx_,
                                   is_axon_,
                                   mother_, daughter_left_, daughter_right_, branch_order_, force_to_transmit_to_proximal_mass_, spring_axis_, actual_length_, tension_, spring_constant_, resting_length_);
 
@@ -218,8 +218,23 @@ BDM_SIM_OBJECT(Neurite, SimulationObject) {
      return mass_location_[kIdx];
    }
 
-   // FIXME add implementation for biology modules
-   void RunBiologyModules() {}
+   using TBiologyModuleVariant = typename TCompileTimeParam::BiologyModules;
+
+   /// Add a biology module to this cell
+   /// @tparam TBiologyModule type of the biology module. Must be in the set of
+   ///         types specified in `TBiologyModuleVariant`
+   template <typename TBiologyModule>
+   void AddBiologyModule(TBiologyModule && module) {
+     biology_modules_[kIdx].emplace_back(module);
+   }
+
+   /// Execute all biology modules
+   void RunBiologyModules() {
+     RunVisitor<TMostDerived<Backend>> visitor(static_cast<TMostDerived<Backend>*>(this));
+     for (auto& module : biology_modules_[kIdx]) {
+       visit(visitor, module);
+     }
+   }
 
    // TODO arrange in order end
 
@@ -580,6 +595,20 @@ BDM_SIM_OBJECT(Neurite, SimulationObject) {
      spring_constant_[kIdx] = rhs.GetSpringConstant();
      // TODO what about actual length, tension and resting_length_ ??
    }
+
+   /// collection of biology modules which define the internal behavior
+   vec<std::vector<TBiologyModuleVariant>> biology_modules_ = {{}};
+
+  /// copies biology_modules_ to destination
+  /// @param[in]  event biology module event - used to determine wether a BM
+  ///                  should be copied
+  /// @param[out] destination distination for the new biology modules
+  void CopyBiologyModules(BmEvent event, std::vector<TBiologyModuleVariant>* destination) const {
+    CopyVisitor<std::vector<TBiologyModuleVariant>> visitor(event, destination);
+    for (auto& module : biology_modules_[kIdx]) {
+      visit(visitor, module);
+    }
+  }
 
  private:
 

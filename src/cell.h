@@ -28,6 +28,53 @@ using std::array;
 /// Declare new biology module event for cell division
 extern const BmEvent gCellDivision;
 
+// TODO put common functionality like biology modules into BaseSimObject
+// PROBLEM: root dictionary issue, can't find streamer
+// Warning in <TStreamerInfo::Build>: bdm::CellExt<bdm::CompileTimeParam<bdm::Soa>,bdm::Capsule<bdm::CellExt>,bdm::BaseSimObject_TCTParam_TDerived>:
+// base class bdm::BaseSimObjectExt<bdm::CompileTimeParam<bdm::Soa>,bdm::Capsule<bdm::CellExt>,SimulationObject_TCTParam_TDerived> has no streamer or dictionary it will not be saved
+//                                                                                             ^ missing bdm::
+// Dictionary contains version with bdm::Simulation...
+//
+//
+// BDM_SIM_OBJECT(BaseSimObject, bdm::SimulationObject) {
+//   BDM_SIM_OBJECT_HEADER(BaseSimObjectExt, 1, biology_modules_);
+//  public:
+//   using TBiologyModuleVariant = typename TCompileTimeParam::BiologyModules;
+//
+//   BaseSimObjectExt() {}
+//
+//   /// Add a biology module to this cell
+//   /// @tparam TBiologyModule type of the biology module. Must be in the set of
+//   ///         types specified in `TBiologyModuleVariant`
+//   template <typename TBiologyModule>
+//   void AddBiologyModule(TBiologyModule && module) {
+//     biology_modules_[kIdx].emplace_back(module);
+//   }
+//
+//   /// Execute all biology modules
+//   void RunBiologyModules() {
+//     RunVisitor<TMostDerived<Backend>> visitor(static_cast<TMostDerived<Backend>*>(this));
+//     for (auto& module : biology_modules_[kIdx]) {
+//       visit(visitor, module);
+//     }
+//   }
+//
+//  protected:
+//   /// collection of biology modules which define the internal behavior
+//   vec<std::vector<TBiologyModuleVariant>> biology_modules_ = {{}};
+//
+//  /// copies biology_modules_ to destination
+//  /// @param[in]  event biology module event - used to determine wether a BM
+//  ///                  should be copied
+//  /// @param[out] destination distination for the new biology modules
+//  void CopyBiologyModules(BmEvent event, std::vector<TBiologyModuleVariant>* destination) const {
+//    CopyVisitor<std::vector<TBiologyModuleVariant>> visitor(event, destination);
+//    for (auto& module : biology_modules_[kIdx]) {
+//      visit(visitor, module);
+//    }
+//  }
+// };
+
 BDM_SIM_OBJECT(Cell, SimulationObject) {
   BDM_SIM_OBJECT_HEADER(CellExt, 1, position_, tractor_force_,
                         diameter_, volume_, adherence_, density_,
@@ -223,6 +270,17 @@ BDM_SIM_OBJECT(Cell, SimulationObject) {
 
   /// Grid box index
   vec<uint64_t> box_idx_;
+
+  /// copies biology_modules_ to destination
+  /// @param[in]  event biology module event - used to determine wether a BM
+  ///                  should be copied
+  /// @param[out] destination distination for the new biology modules
+  void CopyBiologyModules(BmEvent event, std::vector<TBiologyModuleVariant>* destination) const {
+    CopyVisitor<std::vector<TBiologyModuleVariant>> visitor(event, destination);
+    for (auto& module : biology_modules_[kIdx]) {
+      visit(visitor, module);
+    }
+  }
 };
 
 // ----------------------------------------------------------------------------
@@ -324,11 +382,7 @@ BDM_SO_DEFINE(inline void CellExt)::DivideImpl(TMostDerived<Scalar>* daughter,
                                 position_[kIdx][2] + d_2 * axis_of_division[2]};
   daughter->position_[0] = new_position;
 
-  CopyVisitor<std::vector<TBiologyModuleVariant>> visitor(
-      gCellDivision, &(daughter->biology_modules_[0]));
-  for (auto& module : biology_modules_[kIdx]) {
-    visit(visitor, module);
-  }
+  CopyBiologyModules(gCellDivision, &(daughter->biology_modules_[0]));
 
   // E) This sphere becomes the 1st daughter
   // move these cells on opposite direction
