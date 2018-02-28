@@ -5,6 +5,7 @@
 #include <cmath>
 
 #include "backend.h"
+#include "geometry.h"
 #include "math_util.h"
 #include "random.h"
 
@@ -16,6 +17,48 @@ class DefaultForce {
   ~DefaultForce() {}
   DefaultForce(const DefaultForce&) = delete;
   DefaultForce& operator=(const DefaultForce&) = delete;
+
+  template <typename TLhs, typename TRhs>
+  typename std::enable_if<TLhs::GetGeometry() == kSphere &&
+                 TRhs::GetGeometry() == kSphere,
+                 std::array<double, 3>>::type
+  GetForce(const TLhs* lhs, const TRhs* rhs) {
+     std::array<double, 3> result;
+     ForceBetweenSpheres(lhs, rhs, &result);
+     return result;
+  }
+
+  template <typename TLhs, typename TRhs>
+  typename std::enable_if<TLhs::GetGeometry() == kSphere &&
+                 TRhs::GetGeometry() == kCylinder,
+                 std::array<double, 3>>::type
+  GetForce(const TLhs* lhs, const TRhs* rhs) {
+     std::array<double, 3> result;
+     ForceOnASphereFromACylinder(lhs, rhs, &result);
+     return result;
+  }
+
+  template <typename TLhs, typename TRhs>
+  typename std::enable_if<TLhs::GetGeometry() == kCylinder &&
+                 TRhs::GetGeometry() == kSphere,
+                 std::array<double, 4>>::type
+  GetForce(const TLhs* lhs, const TRhs* rhs) {
+     std::array<double, 4> result;
+     ForceOnACylinderFromASphere(lhs, rhs, &result);
+     return result;
+  }
+
+  template <typename TLhs, typename TRhs>
+  typename std::enable_if<TLhs::GetGeometry() == kCylinder &&
+                 TRhs::GetGeometry() == kCylinder,
+                 std::array<double, 4>>::type
+  GetForce(const TLhs* lhs, const TRhs* rhs) {
+     std::array<double, 4> result;
+     ForceBetweenCylinders(lhs, rhs, &result);
+     return result;
+  }
+
+  // TODO default version?
 
   template <typename TSphereLhs, typename TSphereRhs>
   void ForceBetweenSpheres(const TSphereLhs* sphere_lhs,

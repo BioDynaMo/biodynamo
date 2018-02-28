@@ -13,16 +13,17 @@ namespace bdm {
 using std::array;
 
 template <typename TSO>
-void ApplyBoundingBox(TSO* cell, double lb, double rb) {
-  auto& pos = cell->GetPosition();
+void ApplyBoundingBox(TSO* sim_object, double lb, double rb) {
+  auto pos = sim_object->GetPosition();
   for (int i = 0; i < 3; i++) {
     if (pos[i] < lb) {
-      cell->SetCoordinate(i, lb);
+      pos[i] = lb;
     }
-    if (pos[i] > rb) {
-      cell->SetCoordinate(i, rb);
+    else if (pos[i] > rb) {
+      pos[i] = rb;
     }
   }
+  sim_object->SetPosition(pos);
 }
 
 /// Defines the 3D physical interactions between physical objects
@@ -33,32 +34,31 @@ class DisplacementOp {
   ~DisplacementOp() {}
 
   template <typename TContainer>
-  void operator()(TContainer* cells, uint16_t type_idx) const {
-    std::vector<array<double, 3>> cell_movements;
-    cell_movements.reserve(cells->size());
+  void operator()(TContainer* sim_objects, uint16_t type_idx) const {
+    std::vector<array<double, 3>> sim_object_movements;
+    sim_object_movements.reserve(sim_objects->size());
 
     auto& grid = TGrid::GetInstance();
     auto search_radius = grid.GetLargestObjectSize();
     double squared_radius = search_radius * search_radius;
 
 #pragma omp parallel for shared(grid) firstprivate(squared_radius)
-    for (size_t i = 0; i < cells->size(); i++) {
-      cell_movements[i] = (*cells)[i].RunPhysics(&grid, squared_radius);
+    for (size_t i = 0; i < sim_objects->size(); i++) {
+      sim_object_movements[i] = (*sim_objects)[i].CalculateDisplacement(&grid, squared_radius);
     }
 
 // set new positions after all updates have been calculated
-// otherwise some cells would see neighbors with already updated positions
+// otherwise some sim_objects would see neighbors with already updated positions
 // which would lead to inconsistencies
+// FIXME there are still inconsistencies if there are more than one simulation
+//  object types!
 #pragma omp parallel for
-    for (size_t i = 0; i < cells->size(); i++) {
-      auto&& cell = (*cells)[i];
-      cell.UpdatePosition(cell_movements[i]);
+    for (size_t i = 0; i < sim_objects->size(); i++) {
+      auto&& sim_object = (*sim_objects)[i];
+      sim_object.ApplyDisplacement(sim_object_movements[i]);
       if (Param::bound_space_) {
-        ApplyBoundingBox(&cell, Param::min_bound_, Param::max_bound_);
+        ApplyBoundingBox(&sim_object, Param::min_bound_, Param::max_bound_);
       }
-
-      // Reset biological movement to 0.
-      cell.SetTractorForce({0, 0, 0});
     }
   }
 };
@@ -71,19 +71,16 @@ class BoundSpace {
   ~BoundSpace() {}
 
   template <typename TContainer>
-  void operator()(TContainer* cells, uint16_t type_idx) const {
+  void operator()(TContainer* sim_objects, uint16_t type_idx) const {
 // set new positions after all updates have been calculated
-// otherwise some cells would see neighbors with already updated positions
+// otherwise some sim_objects would see neighbors with already updated positions
 // which would lead to inconsistencies
 #pragma omp parallel for
-    for (size_t i = 0; i < cells->size(); i++) {
-      auto&& cell = (*cells)[i];
+    for (size_t i = 0; i < sim_objects->size(); i++) {
+      auto&& sim_object = (*sim_objects)[i];
       if (Param::bound_space_) {
-        ApplyBoundingBox(&cell, Param::min_bound_, Param::max_bound_);
+        ApplyBoundingBox(&sim_object, Param::min_bound_, Param::max_bound_);
       }
-
-      // Reset biological movement to 0.
-      cell.SetTractorForce({0, 0, 0});
     }
   }
 };

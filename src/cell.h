@@ -12,6 +12,7 @@
 #include "backend.h"
 #include "biology_module_util.h"
 #include "default_force.h"
+#include "geometry.h"
 #include "inline_vector.h"
 #include "math_util.h"
 #include "matrix.h"
@@ -46,6 +47,8 @@ BDM_SIM_OBJECT(Cell, SimulationObject) {
       : position_(position), density_{1.0} {}
 
   virtual ~CellExt() {}
+
+  static constexpr Geometry GetGeometry() { return kSphere; }
 
   /// Add a biology module to this cell
   /// @tparam TBiologyModule type of the biology module. Must be in the set of
@@ -127,6 +130,7 @@ BDM_SIM_OBJECT(Cell, SimulationObject) {
 
   const array<double, 3>& GetPosition() const { return position_[kIdx]; }
 
+  // TODO this only works for SOA backend
   double* GetPositionPtr() { return &(position_[0][0]); }
   double* GetDiameterPtr() { return &(diameter_[0]); }
 
@@ -149,10 +153,6 @@ BDM_SIM_OBJECT(Cell, SimulationObject) {
 
   void SetPosition(const array<double, 3>& position) {
     position_[kIdx] = position;
-  }
-
-  void SetCoordinate(size_t d, double value) {
-    position_[kIdx][d] = value;
   }
 
   void SetTractorForce(const array<double, 3>& tractor_force) {
@@ -186,7 +186,9 @@ BDM_SIM_OBJECT(Cell, SimulationObject) {
   }
 
   template <typename TGrid>
-  std::array<double, 3> RunPhysics(TGrid* grid, double squared_radius);
+  std::array<double, 3> CalculateDisplacement(TGrid* grid, double squared_radius);
+
+  void ApplyDisplacement(const std::array<double, 3>& displacement);
 
   template <typename TSo>
   void GetForceOn(const TSo* reference_so, array<double, 3>* force) const {
@@ -194,10 +196,16 @@ BDM_SIM_OBJECT(Cell, SimulationObject) {
     // TODO(lukas) think about default values in config file
     // double iof_coefficient = 0.15;
 
-    default_force.ForceBetweenSpheres(reference_so, this, force);
-                                      // ref_mass_location, ref_diameter,
-                                      // iof_coefficient, position_[kIdx],
-                                      // diameter_[kIdx], iof_coefficient, force);
+    *force = default_force.GetForce(reference_so, this);
+
+    // FIXME
+    // if (reference_so->GetGeometry() == kSphere) {
+    //   default_force.ForceBetweenSpheres(reference_so, this, force);
+    // } else if (reference_so->GetGeometry() == kCylinder) {
+    //   default_force.ForceOnASphereFromACylinder(reference_so, this, force);
+    // } else {
+    //   Fatal("Cell::GetForceOn", "Shape not supported");
+    // }
   }
 
   uint64_t GetBoxIdx() const { return box_idx_[kIdx]; }
@@ -355,7 +363,7 @@ BDM_SO_DEFINE(inline void CellExt)::DivideImpl(TMostDerived<Scalar>* daughter,
 }
 
 BDM_SO_DEFINE(template <typename TGrid>
-inline std::array<double, 3> CellExt)::RunPhysics(TGrid* grid, double squared_radius){
+inline std::array<double, 3> CellExt)::CalculateDisplacement(TGrid* grid, double squared_radius){
   // Basically, the idea is to make the sum of all the forces acting
   // on the Point mass. It is stored in translationForceOnPointMass.
   // There is also a computation of the torque (only applied
@@ -411,8 +419,7 @@ inline std::array<double, 3> CellExt)::RunPhysics(TGrid* grid, double squared_ra
   };
 
   grid->ForEachNeighborWithinRadius(calculate_neighbor_forces, *this,
-                                   GetSoHandle(), squared_radius);
-                                  //  SoHandle(0, kIdx), squared_radius);
+                                    GetSoHandle(), squared_radius);
 
   // 4) PhysicalBonds
   // How the physics influences the next displacement
@@ -452,6 +459,12 @@ inline std::array<double, 3> CellExt)::RunPhysics(TGrid* grid, double squared_ra
     }
   }
   return movement_at_next_step;
+}
+
+BDM_SO_DEFINE(inline void CellExt)::ApplyDisplacement(const std::array<double, 3>& displacement) {
+  UpdatePosition(displacement);
+  // Reset biological movement to 0.
+  SetTractorForce({0, 0, 0});
 }
 
 BDM_SO_DEFINE(inline array<double, 3> CellExt)::TransformCoordinatesGlobalToPolar(

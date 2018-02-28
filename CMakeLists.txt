@@ -219,3 +219,9 @@ bdm_add_executable(diffusion_module
                    SOURCES demo/diffusion_module.cc
                    HEADERS demo/diffusion_module.h
                    LIBRARIES biodynamo)
+
+# -------------------- build cell_diffusion_module executable ------------------
+bdm_add_executable(figure5
+                   SOURCES demo/figure_5.cc
+                   HEADERS demo/figure_5.h
+                   LIBRARIES biodynamo)

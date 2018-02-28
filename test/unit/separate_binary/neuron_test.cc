@@ -3,6 +3,7 @@
 
 #include "compile_time_param.h"
 #include "neuroscience/compile_time_param.h"
+#include "displacement_op.h"
 
 #include "unit/test_util.h"
 // FIXME move to neuroscience directory
@@ -618,6 +619,71 @@ TEST(NeuriteTest, Bifurcate) {
   rm->ApplyOnAllTypes(commit);
   EXPECT_EQ(1u, rm->Get<SpecializedNeuron>()->size());
   EXPECT_EQ(3u, rm->Get<SpecializedNeurite>()->size());
+}
+
+
+TEST(DISABLED_NeuronNeuriteTest, Displacement) {
+  auto* rm = Rm();
+  rm->Clear();
+  auto* neurons = rm->template Get<SpecializedNeuron>();
+  auto* neurite_segments = rm->template Get<SpecializedNeurite>();
+
+  // Cell 1
+  // auto&& cell1 = rm->template New<Cell>();
+  // cell1.SetAdherence(0.3);
+  // cell1.SetDiameter(9);
+  // cell1.SetMass(1.4);
+  // cell1.SetPosition({0, 0, 0});
+  //
+  // // Cell 2
+  // auto&& cell2 = rm->template New<Cell>();
+  // cell2.SetAdherence(0.4);
+  // cell2.SetDiameter(11);
+  // cell2.SetMass(1.1);
+  // cell2.SetPosition({0, 5, 0});
+
+  auto& grid = Grid<>::GetInstance();
+  grid.Initialize();
+
+  // execute operation
+  DisplacementOp<> op;
+  op(neurons, 0);
+  op(neurite_segments, 1);
+
+  // // check results
+  // // cell 1
+  // auto final_position = (*cells)[0].GetPosition();
+  // EXPECT_NEAR(0, final_position[0], abs_error<double>::value);
+  // EXPECT_NEAR(-0.07797206232558615, final_position[1],
+  //             abs_error<double>::value);
+  // EXPECT_NEAR(0, final_position[2], abs_error<double>::value);
+  // // cell 2
+  // final_position = (*cells)[1].GetPosition();
+  // EXPECT_NEAR(0, final_position[0], abs_error<double>::value);
+  // EXPECT_NEAR(5.0992371702325645, final_position[1], abs_error<double>::value);
+  // EXPECT_NEAR(0, final_position[2], abs_error<double>::value);
+  //
+  // // check if tractor_force has been reset to zero
+  // // cell 1
+  // auto final_tf = (*cells)[0].GetTractorForce();
+  // EXPECT_NEAR(0, final_tf[0], abs_error<double>::value);
+  // EXPECT_NEAR(0, final_tf[1], abs_error<double>::value);
+  // EXPECT_NEAR(0, final_tf[2], abs_error<double>::value);
+  // // cell 2
+  // final_tf = (*cells)[1].GetTractorForce();
+  // EXPECT_NEAR(0, final_tf[0], abs_error<double>::value);
+  // EXPECT_NEAR(0, final_tf[1], abs_error<double>::value);
+  // EXPECT_NEAR(0, final_tf[2], abs_error<double>::value);
+  //
+  // // remaining fields should remain unchanged
+  // // cell 1
+  // EXPECT_NEAR(0.3, (*cells)[0].GetAdherence(), abs_error<double>::value);
+  // EXPECT_NEAR(9, (*cells)[0].GetDiameter(), abs_error<double>::value);
+  // EXPECT_NEAR(1.4, (*cells)[0].GetMass(), abs_error<double>::value);
+  // // cell 2
+  // EXPECT_NEAR(0.4, (*cells)[1].GetAdherence(), abs_error<double>::value);
+  // EXPECT_NEAR(11, (*cells)[1].GetDiameter(), abs_error<double>::value);
+  // EXPECT_NEAR(1.1, (*cells)[1].GetMass(), abs_error<double>::value);
 }
 
 
