@@ -36,7 +36,17 @@
 vtkStandardNewMacro(vtkGlyph3DExt);
 
 //----------------------------------------------------------------------------
-vtkGlyph3DExt::vtkGlyph3DExt() {}
+vtkGlyph3DExt::vtkGlyph3DExt() {
+  // by default process active point scalars
+  this->SetInputArrayToProcess(4,0,0,vtkDataObject::FIELD_ASSOCIATION_POINTS,
+                               vtkDataSetAttributes::SCALARS);
+  // by default process active point scalars
+  this->SetInputArrayToProcess(5,0,0,vtkDataObject::FIELD_ASSOCIATION_POINTS,
+                               vtkDataSetAttributes::SCALARS);
+  // by default process active point scalars
+  this->SetInputArrayToProcess(6,0,0,vtkDataObject::FIELD_ASSOCIATION_POINTS,
+                               vtkDataSetAttributes::SCALARS);
+}
 
 //----------------------------------------------------------------------------
 vtkGlyph3DExt::~vtkGlyph3DExt() {}
@@ -66,6 +76,7 @@ bool vtkGlyph3DExt::Execute(vtkDataSet *input,
 
   vtkPointData *pd;
   vtkDataArray *inCScalars;  // Scalars for Coloring
+  vtkDataArray *x_scaling, *y_scaling, *z_scaling = NULL;
   unsigned char *inGhostLevels = 0;
   vtkDataArray *inNormals, *sourceNormals = NULL;
   vtkDataArray *sourceTCoords = NULL;
@@ -78,7 +89,7 @@ bool vtkGlyph3DExt::Execute(vtkDataSet *input,
   vtkDataArray *newVectors = NULL;
   vtkDataArray *newNormals = NULL;
   vtkDataArray *newTCoords = NULL;
-  double x[3], v[3], vNew[3], s = 0.0, vMag = 0.0, value, tc[3], n[3];
+  double x[3], v[3], vNew[3], s = 0.0, vMag = 0.0, value, tc[3], xs = 0.0, ys = 0.0, zs = 0.0;
   vtkTransform *trans = vtkTransform::New();
   vtkNew<vtkIdList> pointIdList;
   vtkIdList *cellPts;
@@ -106,6 +117,9 @@ bool vtkGlyph3DExt::Execute(vtkDataSet *input,
   pd = input->GetPointData();
   inNormals = this->GetInputArrayToProcess(2, input);
   inCScalars = this->GetInputArrayToProcess(3, input);
+  x_scaling = this->GetInputArrayToProcess(4, input);
+  y_scaling = this->GetInputArrayToProcess(5, input);
+  z_scaling = this->GetInputArrayToProcess(6, input);
   if (inCScalars == NULL) {
     inCScalars = inSScalars;
   }
@@ -344,30 +358,24 @@ bool vtkGlyph3DExt::Execute(vtkDataSet *input,
       }
     }
 
-    if (haveNormals && inNormals) {
-      if (inNormals->GetNumberOfComponents() > 3) {
-        vtkErrorMacro(<< "vtkDataArray " << inNormals->GetName()
-                      << " has more than 3 components.\n");
-        pts->Delete();
-        trans->Delete();
-        if (newPts) {
-          newPts->Delete();
-        }
-        if (newVectors) {
-          newVectors->Delete();
-        }
-        return false;
+    if (x_scaling || y_scaling || z_scaling) {
+      if (x_scaling) {
+        xs = x_scaling->GetComponent(inPtId, 0);
+      }
+      if (y_scaling) {
+        ys = y_scaling->GetComponent(inPtId, 0);
+      }
+      if (z_scaling) {
+        zs = z_scaling->GetComponent(inPtId, 0);
       }
 
-      n[0] = 0;
-      n[1] = 0;
-      n[2] = 0;
-      inNormals->GetTuple(inPtId, n);
-
       if (this->ScaleMode == VTK_SCALE_BY_NORMAL) {
-        scalex = n[0];
-        scaley = n[1];
-        scalez = n[2];
+        scalex = xs;
+        scaley = ys;
+        scalez = zs;
+        std::cout << "scalex = " << scalex << std::endl;
+        std::cout << "scaley = " << scaley << std::endl;
+        std::cout << "scalez = " << scalez << std::endl;
       }
     }
 

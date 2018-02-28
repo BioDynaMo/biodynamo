@@ -122,13 +122,69 @@ glyphs using the selected vectors by checking the **Orient** property.
         </Documentation>
       </StringVectorProperty>
       <StringVectorProperty command="SetInputArrayToProcess"
-                            default_values="2"
+                            default_values="4"
                             element_types="0 0 0 0 2"
-                            name="BDMScalars"
+                            name="X-Scaling"
                             number_of_elements="5">
         <!-- default value=1 so normals go to the right place -->
-        <ArrayListDomain attribute_type="Normals"
-                         input_domain_name="input_array3"
+        <ArrayListDomain attribute_type="Scalars"
+                         input_domain_name="input_array5"
+                         name="array_list"
+                         none_string="None">
+          <RequiredProperties>
+            <Property function="Input"
+                      name="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <FieldDataDomain name="field_list">
+          <RequiredProperties>
+            <Property function="Input"
+                      name="Input" />
+          </RequiredProperties>
+        </FieldDataDomain>
+        <Documentation>
+Select the input array to be treated as the active **Vectors**.  You can
+scale the glyphs using the selected vectors by setting the **Scale
+Mode** property to **vector** or **vector_components**. You can orient the
+glyphs using the selected vectors by checking the **Orient** property.
+        </Documentation>
+      </StringVectorProperty>
+      <StringVectorProperty command="SetInputArrayToProcess"
+                            default_values="5"
+                            element_types="0 0 0 0 2"
+                            name="Y-Scaling"
+                            number_of_elements="5">
+        <!-- default value=1 so normals go to the right place -->
+        <ArrayListDomain attribute_type="Scalars"
+                         input_domain_name="input_array6"
+                         name="array_list"
+                         none_string="None">
+          <RequiredProperties>
+            <Property function="Input"
+                      name="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <FieldDataDomain name="field_list">
+          <RequiredProperties>
+            <Property function="Input"
+                      name="Input" />
+          </RequiredProperties>
+        </FieldDataDomain>
+        <Documentation>
+Select the input array to be treated as the active **Vectors**.  You can
+scale the glyphs using the selected vectors by setting the **Scale
+Mode** property to **vector** or **vector_components**. You can orient the
+glyphs using the selected vectors by checking the **Orient** property.
+        </Documentation>
+      </StringVectorProperty>
+      <StringVectorProperty command="SetInputArrayToProcess"
+                            default_values="6"
+                            element_types="0 0 0 0 2"
+                            name="Z-Scaling"
+                            number_of_elements="5">
+        <!-- default value=1 so normals go to the right place -->
+        <ArrayListDomain attribute_type="Scalars"
+                         input_domain_name="input_array7"
                          name="array_list"
                          none_string="None">
           <RequiredProperties>
@@ -296,7 +352,9 @@ source.</Documentation>
       <PropertyGroup label="Active Attributes">
         <Property name="Scalars" />
         <Property name="Vectors" />
-        <Property name="BDMScalars" />
+        <Property name="X-Scaling" />
+        <Property name="Y-Scaling" />
+        <Property name="Z-Scaling" />
       </PropertyGroup>
       <PropertyGroup label="Glyph Transform">
         <Property name="GlyphTransform" />
