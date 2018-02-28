@@ -1,6 +1,7 @@
 #ifndef NEUROSCIENCE_NEURITE_H_
 #define NEUROSCIENCE_NEURITE_H_
 
+#include "geometry.h"
 #include "math_util.h"
 #include "matrix.h"
 #include "param.h"
@@ -137,6 +138,10 @@ public:
     return neuron_ptr_ == other.neuron_ptr_ && neurite_ptr_ == other.neurite_ptr_;
   }
 
+  bool operator!=(const NeuronNeuriteAdapter<TNeuronSoPtr, TNeuriteSoPtr> other ) const {
+    return !(*this == other);
+  }
+
 private:
   TNeuronSoPtr neuron_ptr_;
   TNeuriteSoPtr neurite_ptr_;
@@ -159,7 +164,7 @@ private:
 /// mother PhysicalNode) are transmitted to the mother element
 // TODO
 BDM_SIM_OBJECT(Neurite, SimulationObject) {
-  BDM_SIM_OBJECT_HEADER(NeuriteExt, 1, mass_location_, volume_, diameter_, adherence_, x_axis_, y_axis_, z_axis_,
+  BDM_SIM_OBJECT_HEADER(NeuriteExt, 1, mass_location_, volume_, diameter_, adherence_, x_axis_, y_axis_, z_axis_, box_idx_,
                                   is_axon_,
                                   mother_, daughter_left_, daughter_right_, branch_order_, force_to_transmit_to_proximal_mass_, spring_axis_, actual_length_, tension_, spring_constant_, resting_length_);
 
@@ -173,6 +178,23 @@ BDM_SIM_OBJECT(Neurite, SimulationObject) {
 
  public:
    NeuriteExt() {}
+
+   // TODO temporary solution
+   static constexpr Geometry GetGeometry() { return kCylinder; }
+
+   template <typename TSo>
+   void GetForceOn(const TSo* reference_so, array<double, 3>* force) const {
+     DefaultForce default_force;
+     *force = default_force.GetForce(reference_so, this);
+
+    //  if (reference_so->GetGeometry() == kSphere) {
+    //    default_force.ForceOnACylinderFromASphere(reference_so, this, force);
+    //  } else if (reference_so->GetGeometry() == kCylinder) {
+    //    default_force.ForceBetweenCylinders(reference_so, this, force);
+    //  } else {
+    //    Fatal("NeuriteSegment::GetForceOn", "Shape not supported");
+    //  }
+   }
 
    void SetDiameter(double diameter) {
      diameter_[kIdx] = diameter;
@@ -200,6 +222,9 @@ BDM_SIM_OBJECT(Neurite, SimulationObject) {
    double GetVolume() const { return volume_[kIdx]; }
    double GetDiameter() const { return diameter_[kIdx]; }
 
+   uint64_t GetBoxIdx() const { return box_idx_[kIdx]; }
+   void SetBoxIdx(uint64_t idx) { box_idx_[kIdx] = idx; }
+
    /// Returns the absolute coordinates of the location where the dauther is
    /// attached.
    /// @param daughter_element_idx element_idx of the daughter
@@ -208,7 +233,15 @@ BDM_SIM_OBJECT(Neurite, SimulationObject) {
      return mass_location_[kIdx];
    }
 
+   // FIXME add implementation for biology modules
+   void RunBiologyModules() {}
+
    // TODO arrange in order end
+
+   // TODO should be generated
+   double* GetPositionPtr() { return &(mass_location_[0][0]); }  // FIXME
+   double* GetDiameterPtr() { return &(diameter_[0]); }
+   /// TODO generated end`
 
   /// Retracts the cylinder, if it is a terminal one.
   /// Branch retraction by moving the distal end toward the
@@ -298,7 +331,7 @@ BDM_SIM_OBJECT(Neurite, SimulationObject) {
   /// Returns the total force that this `Neurite` exerts on it's mother.
   /// It is the sum of the spring force and the part of the inter-object force
   /// computed earlier in `RunPhyiscs`
-  // TODO update Documentation (RunPhysics is probably displacement op)
+  // TODO update Documentation (CalculateDisplacement is probably displacement op)
   std::array<double, 3> ForceTransmittedFromDaugtherToMother(const NeuriteOrNeuron& mother);
 
   // *************************************************************************************
@@ -338,12 +371,10 @@ BDM_SIM_OBJECT(Neurite, SimulationObject) {
  //
   // TODO documentatio, rename (maybe mechanical interactions)
   template <typename TGrid>
-  void RunPhysics(TGrid* grid, double squared_radius);
- //
- //  std::array<double, 3> getForceOn(PhysicalSphere* s) override;
- //
- //  std::array<double, 4> getForceOn(PhysicalCylinder* c) override;
- //
+  std::array<double, 3> CalculateDisplacement(TGrid* grid, double squared_radius);
+
+  void ApplyDisplacement(const std::array<double, 3>& displacement);
+
  //  bool isInContactWithSphere(PhysicalSphere* s) override;
  //
  //  bool isInContactWithCylinder(PhysicalCylinder* c) override;
@@ -580,6 +611,8 @@ BDM_SIM_OBJECT(Neurite, SimulationObject) {
    vec<array<double, 3>> y_axis_ = {{0.0, 1.0, 0.0}};
    /// Third axis of the local coordinate system.
    vec<array<double, 3>> z_axis_ = {{0.0, 0.0, 1.0}};
+   /// Grid box index
+   vec<uint64_t> box_idx_;
 
 
   vec<bool> is_axon_ = {{false}};
@@ -991,7 +1024,7 @@ BDM_SO_DEFINE(inline void NeuriteExt)::ChangeDiameter(double speed) {
 }
 
 BDM_SO_DEFINE(template <typename TGrid>
-inline void NeuriteExt)::RunPhysics(TGrid* grid, double squared_radius) {
+inline std::array<double, 3> NeuriteExt)::CalculateDisplacement(TGrid* grid, double squared_radius) {
   // decide first if we have to split or fuse this cylinder. Usually only
   // terminal branches (growth cone) do
   if (daughter_left_[kIdx].IsNullPtr()) {
@@ -1008,7 +1041,7 @@ inline void NeuriteExt)::RunPhysics(TGrid* grid, double squared_radius) {
   // 1) Spring force
   //   Only the spring of this cylinder. The daughters spring also act on this
   //    mass, but they are treated in point (2)
-  double factor = -tension_ / actual_length_[kIdx];  // the minus sign is important because the spring axis goes in the opposite direction
+  double factor = -tension_[kIdx] / actual_length_[kIdx];  // the minus sign is important because the spring axis goes in the opposite direction
   force_on_my_point_mass = Matrix::Add(force_on_my_point_mass, Matrix::ScalarMult(factor, spring_axis_[kIdx]));
 
   // 2) Force transmitted by daugthers (if they exist) ----------------------------------
@@ -1023,10 +1056,10 @@ inline void NeuriteExt)::RunPhysics(TGrid* grid, double squared_radius) {
 
   // 3) Object avoidance force -----------------------------------------------------------
   //  (We check for every neighbor object if they touch us, i.e. push us away)
-  auto calculate_neighbor_forces = [&](auto&& neighbor,
+  auto calculate_neighbor_forces = [this,&force_on_my_point_mass, &force_on_my_mothers_point_mass](auto&& neighbor,
                                        SoHandle neighbor_handle) {
     std::cout << typeid(neighbor).name() << std::endl;
-    using NeighborBackend = typename decltype(neighbor)::Backend;
+    using NeighborBackend = typename std::decay<decltype(neighbor)>::type::Backend;
     using NeighborNeurite = TMostDerived<NeighborBackend>;
     using NeighborNeuron = typename TNeuron::template Self<NeighborBackend>;
     // TODO(lukas) once we switch to C++17 use if constexpr.
@@ -1036,17 +1069,17 @@ inline void NeuriteExt)::RunPhysics(TGrid* grid, double squared_radius) {
     if (std::is_same<NeighborNeurite, decltype(neighbor)>::value) {
       auto n_soptr = reinterpret_cast<NeighborNeurite*>(&neighbor)->GetSoPtr();
       // if it is a direct relative, or sister branch, we don't take it into account
-      if (n_soptr == daughter_left_[kIdx] ||
-          n_soptr == daughter_right_[kIdx] ||
-          (mother_[kIdx].IsNeurite() && mother_[kIdx].GetNeuriteSoPtr() == n_soptr) ||
-          neighbor.GetMother() == mother_[kIdx]) {
+      if (n_soptr == this->GetDaughterLeft() ||
+          n_soptr == this->GetDaughterRight() ||
+          (this->GetMother().IsNeurite() && this->GetMother().GetNeuriteSoPtr() == n_soptr) ||
+          n_soptr.Get().GetMother() == this->GetMother()) {
         return;
       }
     } else if (std::is_same<NeighborNeuron, decltype(neighbor)>::value) {
       // if neighbor is Neuron
       // if it is a direct relative, we don't take it into account
       auto n_soptr = reinterpret_cast<NeighborNeuron*>(&neighbor)->GetSoPtr();
-      if(mother_[kIdx].IsNeuron() && mother_[kIdx].GetNeuronSoPtr() == n_soptr) {
+      if(this->GetMother().IsNeuron() && this->GetMother().GetNeuronSoPtr() == n_soptr) {
         return;
       }
     }
@@ -1060,8 +1093,10 @@ inline void NeuriteExt)::RunPhysics(TGrid* grid, double squared_radius) {
     //   }
     // }
 
-    std::array<double, 4> force_from_neighbor;
-    neighbor.GetForceOn(this, &force_from_neighbor);
+    DefaultForce force;
+    std::array<double, 4> force_from_neighbor = force.GetForce(this, &neighbor);
+    // std::array<double, 4> force_from_neighbor;
+    // TODO remove neighbor.GetForceOn(this, &force_from_neighbor);
 
     // 1) "artificial force" to maintain the sphere in the ecm simulation boundaries--------
     // TODO
@@ -1159,7 +1194,7 @@ inline void NeuriteExt)::RunPhysics(TGrid* grid, double squared_radius) {
   if (force_norm < adherence_[kIdx]) {
     // TODO total_force_last_time_step_ is never read
     // total_force_last_time_step_[kIdx][3] = -1;
-    return;
+    return {0, 0, 0};
   }
   // So, what follows is only executed if we do actually move :
 
@@ -1172,21 +1207,24 @@ inline void NeuriteExt)::RunPhysics(TGrid* grid, double squared_radius) {
     displacement = Matrix::ScalarMult(Param::simulation_max_displacement_ / displacement_norm, displacement);
   }
 
-  // 8) Eventually, we do perform the move--------------------------------------------------
-  // 8.1) The move of our mass
+  return displacement;
+}
+
+BDM_SO_DEFINE(inline void NeuriteExt)::ApplyDisplacement(const std::array<double, 3>& displacement) {
+  // move of our mass
   SetMassLocation(Matrix::Add(GetMassLocation(), displacement));
-  // 8.2) Recompute length, tension and re-center the computation node, and redefine axis
+  // Recompute length, tension and re-center the computation node, and redefine axis
   UpdateDependentPhysicalVariables();
   UpdateLocalCoordinateAxis();
-  // 8.3) For the relatives: recompute the lenght, tension etc. (why for mother? have to think about that)
+  // For the relatives: recompute the lenght, tension etc. (why for mother? have to think about that)
   if (!daughter_left_[kIdx].IsNullPtr()){
     auto left = daughter_left_[kIdx].Get();
-    left.UdateDependentPhysicalVariables();
+    left.UpdateDependentPhysicalVariables();
     left.UpdateLocalCoordinateAxis();
   }
   if (!daughter_right_[kIdx].IsNullPtr()){
     auto right = daughter_right_[kIdx].Get();
-    right.UdateDependentPhysicalVariables();
+    right.UpdateDependentPhysicalVariables();
     right.UpdateLocalCoordinateAxis();
   }
 }
