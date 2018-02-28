@@ -12,7 +12,7 @@
 #include "backend.h"
 #include "biology_module_util.h"
 #include "default_force.h"
-#include "geometry.h"
+#include "shape.h"
 #include "inline_vector.h"
 #include "math_util.h"
 #include "matrix.h"
@@ -39,7 +39,7 @@ BDM_SIM_OBJECT(Cell, SimulationObject) {
     return {"position_", "diameter_"};
   }
 
-  constexpr Shape GetShape() { return Shape::kSphere; }
+  static constexpr Shape GetShape() { return Shape::kSphere; }
 
   using TBiologyModuleVariant = typename TCompileTimeParam::BiologyModules;
   CellExt() : density_{1.0} {}
@@ -50,8 +50,6 @@ BDM_SIM_OBJECT(Cell, SimulationObject) {
       : position_(position), density_{1.0} {}
 
   virtual ~CellExt() {}
-
-  static constexpr Geometry GetGeometry() { return kSphere; }
 
   /// Add a biology module to this cell
   /// @tparam TBiologyModule type of the biology module. Must be in the set of

@@ -5,7 +5,7 @@
 #include <cmath>
 
 #include "backend.h"
-#include "geometry.h"
+#include "shape.h"
 #include "math_util.h"
 #include "random.h"
 
@@ -19,8 +19,8 @@ class DefaultForce {
   DefaultForce& operator=(const DefaultForce&) = delete;
 
   template <typename TLhs, typename TRhs>
-  typename std::enable_if<TLhs::GetGeometry() == kSphere &&
-                 TRhs::GetGeometry() == kSphere,
+  typename std::enable_if<TLhs::GetShape() == kSphere &&
+                 TRhs::GetShape() == kSphere,
                  std::array<double, 3>>::type
   GetForce(const TLhs* lhs, const TRhs* rhs) {
      std::array<double, 3> result;
@@ -29,8 +29,8 @@ class DefaultForce {
   }
 
   template <typename TLhs, typename TRhs>
-  typename std::enable_if<TLhs::GetGeometry() == kSphere &&
-                 TRhs::GetGeometry() == kCylinder,
+  typename std::enable_if<TLhs::GetShape() == kSphere &&
+                 TRhs::GetShape() == kCylinder,
                  std::array<double, 3>>::type
   GetForce(const TLhs* lhs, const TRhs* rhs) {
      std::array<double, 3> result;
@@ -39,8 +39,8 @@ class DefaultForce {
   }
 
   template <typename TLhs, typename TRhs>
-  typename std::enable_if<TLhs::GetGeometry() == kCylinder &&
-                 TRhs::GetGeometry() == kSphere,
+  typename std::enable_if<TLhs::GetShape() == kCylinder &&
+                 TRhs::GetShape() == kSphere,
                  std::array<double, 4>>::type
   GetForce(const TLhs* lhs, const TRhs* rhs) {
      std::array<double, 4> result;
@@ -49,8 +49,8 @@ class DefaultForce {
   }
 
   template <typename TLhs, typename TRhs>
-  typename std::enable_if<TLhs::GetGeometry() == kCylinder &&
-                 TRhs::GetGeometry() == kCylinder,
+  typename std::enable_if<TLhs::GetShape() == kCylinder &&
+                 TRhs::GetShape() == kCylinder,
                  std::array<double, 4>>::type
   GetForce(const TLhs* lhs, const TRhs* rhs) {
      std::array<double, 4> result;

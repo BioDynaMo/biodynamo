@@ -1,7 +1,7 @@
 #ifndef NEUROSCIENCE_NEURITE_H_
 #define NEUROSCIENCE_NEURITE_H_
 
-#include "geometry.h"
+#include "shape.h"
 #include "math_util.h"
 #include "matrix.h"
 #include "param.h"
@@ -179,8 +179,7 @@ BDM_SIM_OBJECT(Neurite, SimulationObject) {
  public:
    NeuriteExt() {}
 
-   // TODO temporary solution
-   static constexpr Geometry GetGeometry() { return kCylinder; }
+   static constexpr Shape GetShape() { return kCylinder; }
 
    template <typename TSo>
    void GetForceOn(const TSo* reference_so, array<double, 3>* force) const {
