@@ -181,20 +181,6 @@ BDM_SIM_OBJECT(Neurite, SimulationObject) {
 
    static constexpr Shape GetShape() { return kCylinder; }
 
-   template <typename TSo>
-   void GetForceOn(const TSo* reference_so, array<double, 3>* force) const {
-     DefaultForce default_force;
-     *force = default_force.GetForce(reference_so, this);
-
-    //  if (reference_so->GetGeometry() == kSphere) {
-    //    default_force.ForceOnACylinderFromASphere(reference_so, this, force);
-    //  } else if (reference_so->GetGeometry() == kCylinder) {
-    //    default_force.ForceBetweenCylinders(reference_so, this, force);
-    //  } else {
-    //    Fatal("NeuriteSegment::GetForceOn", "Shape not supported");
-    //  }
-   }
-
    void SetDiameter(double diameter) {
      diameter_[kIdx] = diameter;
      UpdateVolume();
@@ -1094,8 +1080,6 @@ inline std::array<double, 3> NeuriteExt)::CalculateDisplacement(TGrid* grid, dou
 
     DefaultForce force;
     std::array<double, 4> force_from_neighbor = force.GetForce(this, &neighbor);
-    // std::array<double, 4> force_from_neighbor;
-    // TODO remove neighbor.GetForceOn(this, &force_from_neighbor);
 
     // 1) "artificial force" to maintain the sphere in the ecm simulation boundaries--------
     // TODO

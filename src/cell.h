@@ -191,24 +191,6 @@ BDM_SIM_OBJECT(Cell, SimulationObject) {
 
   void ApplyDisplacement(const std::array<double, 3>& displacement);
 
-  template <typename TSo>
-  void GetForceOn(const TSo* reference_so, array<double, 3>* force) const {
-    DefaultForce default_force;
-    // TODO(lukas) think about default values in config file
-    // double iof_coefficient = 0.15;
-
-    *force = default_force.GetForce(reference_so, this);
-
-    // FIXME
-    // if (reference_so->GetGeometry() == kSphere) {
-    //   default_force.ForceBetweenSpheres(reference_so, this, force);
-    // } else if (reference_so->GetGeometry() == kCylinder) {
-    //   default_force.ForceOnASphereFromACylinder(reference_so, this, force);
-    // } else {
-    //   Fatal("Cell::GetForceOn", "Shape not supported");
-    // }
-  }
-
   uint64_t GetBoxIdx() const { return box_idx_[kIdx]; }
 
   void SetBoxIdx(uint64_t idx) { box_idx_[kIdx] = idx; }
@@ -412,8 +394,8 @@ inline std::array<double, 3> CellExt)::CalculateDisplacement(TGrid* grid, double
 
   auto calculate_neighbor_forces = [&,this](auto&& neighbor,
                                        auto&& neighbor_handle) {
-    std::array<double, 3> neighbor_force;
-    neighbor.GetForceOn(this, &neighbor_force);
+    DefaultForce default_force;
+    auto neighbor_force = default_force.GetForce(this, &neighbor);
     translation_force_on_point_mass[0] += neighbor_force[0];
     translation_force_on_point_mass[1] += neighbor_force[1];
     translation_force_on_point_mass[2] += neighbor_force[2];
