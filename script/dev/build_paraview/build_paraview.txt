@@ -48,14 +48,13 @@ $cmake \
 -DPARAVIEW_ENABLE_MPI:BOOL=ON \
 -DPARAVIEW_INSTALL_DEVELOPMENT_FILES:BOOL=ON \
  ../paraview
- 
+
 ## Step 4:
 make -j4
 sudo make install
 
-
 ## Step 5:
-cd <biodynamo-github-dir>/custom-plugins
+cd <biodynamo-github-dir>/paraview_plugin
 cd GlyphExt ("or any other plugin you want to include")
 mkdir build && cd build
 cmake .. && make

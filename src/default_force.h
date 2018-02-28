@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <TError.h>
 
 #include "backend.h"
 #include "shape.h"
@@ -22,7 +23,7 @@ class DefaultForce {
   typename std::enable_if<TLhs::GetShape() == kSphere &&
                  TRhs::GetShape() == kSphere,
                  std::array<double, 3>>::type
-  GetForce(const TLhs* lhs, const TRhs* rhs) {
+  GetForce(const TLhs* lhs, const TRhs* rhs) const {
      std::array<double, 3> result;
      ForceBetweenSpheres(lhs, rhs, &result);
      return result;
@@ -32,7 +33,7 @@ class DefaultForce {
   typename std::enable_if<TLhs::GetShape() == kSphere &&
                  TRhs::GetShape() == kCylinder,
                  std::array<double, 3>>::type
-  GetForce(const TLhs* lhs, const TRhs* rhs) {
+  GetForce(const TLhs* lhs, const TRhs* rhs) const {
      std::array<double, 3> result;
      ForceOnASphereFromACylinder(lhs, rhs, &result);
      return result;
@@ -42,7 +43,7 @@ class DefaultForce {
   typename std::enable_if<TLhs::GetShape() == kCylinder &&
                  TRhs::GetShape() == kSphere,
                  std::array<double, 4>>::type
-  GetForce(const TLhs* lhs, const TRhs* rhs) {
+  GetForce(const TLhs* lhs, const TRhs* rhs) const {
      std::array<double, 4> result;
      ForceOnACylinderFromASphere(lhs, rhs, &result);
      return result;
@@ -52,18 +53,22 @@ class DefaultForce {
   typename std::enable_if<TLhs::GetShape() == kCylinder &&
                  TRhs::GetShape() == kCylinder,
                  std::array<double, 4>>::type
-  GetForce(const TLhs* lhs, const TRhs* rhs) {
+  GetForce(const TLhs* lhs, const TRhs* rhs) const {
      std::array<double, 4> result;
      ForceBetweenCylinders(lhs, rhs, &result);
      return result;
   }
 
-  // TODO default version?
+  std::array<double, 3> GetForce(...) const {
+    Fatal("DefaultForce", "DefaultForce only supports sphere or cylinder shapes");
+    return {0, 0, 0};
+  }
 
+ private:
   template <typename TSphereLhs, typename TSphereRhs>
   void ForceBetweenSpheres(const TSphereLhs* sphere_lhs,
                            const TSphereRhs* sphere_rhs,
-                           std::array<double, 3>* result) {
+                           std::array<double, 3>* result) const {
     const std::array<double, 3>& ref_mass_location = sphere_lhs->GetPosition();
     double ref_diameter = sphere_lhs->GetDiameter();
     double ref_iof_coefficient = 0.15;
@@ -276,7 +281,6 @@ class DefaultForce {
     *result = {force[0], force[1], force[2], K};
   }
 
- private:
   std::array<double, 4> ComputeForceOfASphereOnASphere(
       const std::array<double, 3>& c1, double r1,
       const std::array<double, 3>& c2, double r2) const {
