@@ -373,9 +373,6 @@ bool vtkGlyph3DExt::Execute(vtkDataSet *input,
         scalex = xs;
         scaley = ys;
         scalez = zs;
-        std::cout << "scalex = " << scalex << std::endl;
-        std::cout << "scaley = " << scaley << std::endl;
-        std::cout << "scalez = " << scalez << std::endl;
       }
     }
 
@@ -457,6 +454,11 @@ bool vtkGlyph3DExt::Execute(vtkDataSet *input,
     // translate Source to Input point
     input->GetPoint(inPtId, x);
     trans->Translate(x[0], x[1], x[2]);
+    // BioDynaMo passes the endpoint of the cylinder as location
+    // Paraview  expects the center point. Therefore we need to correct by half
+    // of the length
+    // trans->Translate(- xs / 2.0, -ys / 2.0, -zs / 2.0);
+    // FIXME
 
     if (haveVectors) {
       // Copy Input vector
@@ -464,18 +466,41 @@ bool vtkGlyph3DExt::Execute(vtkDataSet *input,
         newVectors->InsertTuple(i + ptIncr, v);
       }
       if (this->Orient && (vMag > 0.0)) {
-        // if there is no y or z component
-        if (v[1] == 0.0 && v[2] == 0.0) {
-          if (v[0] < 0) {
-            // just flip x if we need to
-            trans->RotateWXYZ(180.0, 0, 1, 0);
+        // starting position: cylinder is oriented in the y-axis
+
+        // Rotation around the z-axis
+        double alpha = 90;
+        if (std::abs(v[1]) > 1e-5) {
+          alpha = vtkMath::DegreesFromRadians(std::atan(v[0]/v[1]));
+          if(v[0] > 0 && v[1] < 0) {
+            // II Quadrant
+            alpha = 180 - alpha;
+          } else if (v[0] < 0 && v[1] < 0) {
+            // III Quadrant
+            alpha = 180 + alpha;
+          } else if (v[0] < 0 && v[1] > 0) {
+            // III Quadrant
+            alpha = 360 - alpha;
           }
-        } else {
-          vNew[0] = (v[0] + vMag) / 2.0;
-          vNew[1] = v[1] / 2.0;
-          vNew[2] = v[2] / 2.0;
-          trans->RotateWXYZ(180.0, vNew[0], vNew[1], vNew[2]);
         }
+        trans->RotateZ(alpha);
+
+        // Rotation around the x-axis
+        double beta = 90;
+        if (std::abs(v[1]) > 1e-5) {
+          beta = vtkMath::DegreesFromRadians(std::atan(v[2]/v[1]));
+          if(v[2] > 0 && v[1] < 0) {
+            // II Quadrant
+            beta = 180 - beta;
+          } else if (v[2] < 0 && v[1] < 0) {
+            // III Quadrant
+            beta = 180 + beta;
+          } else if (v[2] < 0 && v[1] > 0) {
+            // III Quadrant
+            beta = 360 - beta;
+          }
+        }
+        trans->RotateX(beta);
       }
     }
 

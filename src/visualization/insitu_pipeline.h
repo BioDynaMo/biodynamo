@@ -1,5 +1,5 @@
-#ifndef VISUALIZATION_SIMPLE_PIPELINE_H_
-#define VISUALIZATION_SIMPLE_PIPELINE_H_ 1
+#ifndef VISUALIZATION_INSITU_PIPELINE_H_
+#define VISUALIZATION_INSITU_PIPELINE_H_
 
 #include <TError.h>
 #include <cstdlib>
@@ -35,10 +35,10 @@ namespace bdm {
 
 #if defined(USE_CATALYST) && !defined(__ROOTCLING__)
 
-class vtkCPVTKPipeline : public vtkCPPipeline {
+class InSituPipeline : public vtkCPPipeline {
  public:
-  vtkTypeMacro(vtkCPVTKPipeline, vtkCPPipeline);
-  vtkCPVTKPipeline() {
+  vtkTypeMacro(InSituPipeline, vtkCPPipeline);
+  InSituPipeline() {
     this->pipeline_created_ = false;
 
     // Get current proxy manager
@@ -63,9 +63,9 @@ class vtkCPVTKPipeline : public vtkCPPipeline {
     }
   }
 
-  virtual ~vtkCPVTKPipeline() {}
+  virtual ~InSituPipeline() {}
 
-  void Initialize(const std::vector<Shape>& shapes) {
+  void Initialize(const std::unordered_map<std::string, Shape>& shapes) {
     shapes_ = shapes;
     initialized_ = true;
   }
@@ -128,14 +128,14 @@ class vtkCPVTKPipeline : public vtkCPPipeline {
       if (vtk_object->IsA("vtkUnstructuredGrid")) {
         real_producer->SetOutput(vtk_object);
 
-        if (shapes_[i] == Shape::kCylinder) {
+        if (shapes_[object_name] == Shape::kCylinder) {
           source_name = "CylinderSource";
           scale_mode = 4;
-        } else if (shapes_[i] != Shape::kSphere) {
+        } else if (shapes_[object_name] != Shape::kSphere) {
           Warning("CreatePipeline",
                   "We currently support only spherical and cylindrical "
                   "shaped objects for visualization. Received value %d",
-                  shapes_[i]);
+                  shapes_[object_name]);
         }
 
         // Create a Glyph filter
@@ -152,15 +152,18 @@ class vtkCPVTKPipeline : public vtkCPPipeline {
         vtkSMPropertyHelper(glyph, "ScaleFactor", true).Set(1.0);
         vtkSMPropertyHelper(glyph, "GlyphMode", true).Set(0);
 
-        // TODO(ahmad): variable names should be set to the user-defined ones
         if (scale_mode == 0) {
           vtkSMPropertyHelper(glyph, "Scalars")
               .SetInputArrayToProcess(vtkDataObject::POINT, "diameter_");
         } else if (scale_mode == 4) {
-          vtkSMPropertyHelper(glyph, "BDMScalars")
-              .SetInputArrayToProcess(vtkDataObject::POINT, "scaling_");
+          vtkSMPropertyHelper(glyph, "X-Scaling")
+              .SetInputArrayToProcess(vtkDataObject::POINT, "diameter_");
+          vtkSMPropertyHelper(glyph, "Y-Scaling")
+              .SetInputArrayToProcess(vtkDataObject::POINT, "actual_length_");
+          vtkSMPropertyHelper(glyph, "Z-Scaling")
+              .SetInputArrayToProcess(vtkDataObject::POINT, "diameter_");
           vtkSMPropertyHelper(glyph, "Vectors")
-              .SetInputArrayToProcess(vtkDataObject::POINT, "orient_");
+              .SetInputArrayToProcess(vtkDataObject::POINT, "spring_axis_");
         }
 
         glyph->UpdateVTKObjects();
@@ -292,7 +295,7 @@ class vtkCPVTKPipeline : public vtkCPPipeline {
   std::map<std::string, vtkSmartPointer<vtkSMSourceProxy>> filter_map_;
   vtkSmartPointer<vtkLiveInsituLink> insitu_link_;
   vtkSMParaViewPipelineControllerWithRendering* controller_;
-  std::vector<Shape> shapes_;
+  std::unordered_map<std::string, Shape> shapes_;
   bool initialized_ = false;
 };
 
@@ -300,7 +303,7 @@ class vtkCPVTKPipeline : public vtkCPPipeline {
 
 /// False front (to ignore Catalyst in gtests)
 class vtkCPDataDescription;
-class vtkCPVTKPipeline {
+class InSituPipeline {
  public:
   void Initialize() {
     Fatal("",
@@ -336,4 +339,4 @@ class vtkCPVTKPipeline {
 
 }  // namespace bdm
 
-#endif  // VISUALIZATION_SIMPLE_PIPELINE_H_
+#endif  // VISUALIZATION_INSITU_PIPELINE_H_

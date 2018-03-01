@@ -179,6 +179,12 @@ BDM_SIM_OBJECT(Neurite, SimulationObject) {
  public:
    NeuriteExt() {}
 
+   /// Returns the data members that are required to visualize this simulation
+   /// object.
+   static std::set<std::string> GetRequiredVisDataMembers() {
+     return {"mass_location_", "diameter_", "actual_length_", "spring_axis_"};
+   }
+
    static constexpr Shape GetShape() { return kCylinder; }
 
    void SetDiameter(double diameter) {
@@ -549,12 +555,6 @@ BDM_SIM_OBJECT(Neurite, SimulationObject) {
  //  /// Is usually called after change of the volume (and therefore we don't modify it here)
  //  ///
  //  void updateIntracellularConcentrations() override;
- //
- //  ///
- //  /// Repositioning of the SpatialNode location (usually a Delaunay vertex) at the barycenter of the cylinder.
- //  /// If it is already closer than a quarter of the diameter of the cylinder, it is not displaced.
- //  ///
- //  void updateSpatialOrganizationNodePosition();
 
   void RemoveYourself();
 
@@ -648,7 +648,7 @@ BDM_SIM_OBJECT(Neurite, SimulationObject) {
   /// The part of the inter-object force transmitted to the mother (parent node)
   vec<std::array<double, 3>> force_to_transmit_to_proximal_mass_ = {{ 0, 0, 0 }};
 
-  /// from the attachment point to the mass location = position_
+  /// from the attachment point to the mass location
   /// (proximal -> distal).
   vec<std::array<double, 3>> spring_axis_ = {{ 0, 0, 0 }};
 
@@ -993,6 +993,8 @@ BDM_SO_DEFINE(inline void NeuriteExt)::MovePointMass(double speed, const std::ar
   // here I have to define the actual length ..........
   // auto& relative_pos = mother_[kIdx].GetPosition();
   auto relative_ml = mother_[kIdx].OriginOf(Base::GetElementIdx()); // TODO change to auto&&
+  std::cout << "direction    " << direction[0] << ", " << direction[1] << ", " << direction[2] << std::endl;
+  std::cout << "spring_axis_ " << spring_axis_[kIdx][0] << ", " << spring_axis_[kIdx][1] << ", " << spring_axis_[kIdx][2] << std::endl;
   spring_axis_[kIdx] = Matrix::Subtract(new_mass_location, relative_ml);
   mass_location_[kIdx] = new_mass_location;
   actual_length_[kIdx] = std::sqrt(Matrix::Dot(spring_axis_[kIdx], spring_axis_[kIdx]));
