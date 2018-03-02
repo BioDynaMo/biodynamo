@@ -205,6 +205,34 @@ Mode** property to **vector** or **vector_components**. You can orient the
 glyphs using the selected vectors by checking the **Orient** property.
         </Documentation>
       </StringVectorProperty>
+      <StringVectorProperty command="SetInputArrayToProcess"
+                            default_values="7"
+                            element_types="0 0 0 0 2"
+                            name="MassLocation"
+                            number_of_elements="5">
+        <!-- default value=1 so normals go to the right place -->
+        <ArrayListDomain attribute_type="Vectors"
+                         input_domain_name="input_array8"
+                         name="array_list"
+                         none_string="None">
+          <RequiredProperties>
+            <Property function="Input"
+                      name="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <FieldDataDomain name="field_list">
+          <RequiredProperties>
+            <Property function="Input"
+                      name="Input" />
+          </RequiredProperties>
+        </FieldDataDomain>
+        <Documentation>
+Select the input array to be treated as the active **Normals**.  You can
+scale the glyphs using the selected vectors by setting the **Scale
+Mode** property to **vector** or **vector_components**. You can orient the
+glyphs using the selected vectors by checking the **Orient** property.
+        </Documentation>
+      </StringVectorProperty>
       <IntVectorProperty command="SetOrient"
                          default_values="1"
                          name="Orient"
@@ -355,6 +383,7 @@ source.</Documentation>
         <Property name="X-Scaling" />
         <Property name="Y-Scaling" />
         <Property name="Z-Scaling" />
+        <Property name="MassLocation" />
       </PropertyGroup>
       <PropertyGroup label="Glyph Transform">
         <Property name="GlyphTransform" />

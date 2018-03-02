@@ -123,6 +123,7 @@ class InSituPipeline : public vtkCPPipeline {
           vtkPVTrivialProducer::SafeDownCast(client_side_object);
 
       std::string source_name = "SphereSource";
+      std::string glyph_type = "Glyph";
       int scale_mode = 0;
 
       if (vtk_object->IsA("vtkUnstructuredGrid")) {
@@ -130,6 +131,7 @@ class InSituPipeline : public vtkCPPipeline {
 
         if (shapes_[object_name] == Shape::kCylinder) {
           source_name = "CylinderSource";
+          glyph_type = "BDMGlyph";
           scale_mode = 4;
         } else if (shapes_[object_name] != Shape::kSphere) {
           Warning("CreatePipeline",
@@ -141,7 +143,7 @@ class InSituPipeline : public vtkCPPipeline {
         // Create a Glyph filter
         vtkSmartPointer<vtkSMSourceProxy> glyph;
         glyph.TakeReference(vtkSMSourceProxy::SafeDownCast(
-            session_manager_->NewProxy("filters", "BDMGlyph")));
+            session_manager_->NewProxy("filters", glyph_type.c_str())));
         controller_->PreInitializeProxy(glyph);
         std::string object_name_str = object_name;
         std::string glyph_name = object_name_str + "_Glyph";
@@ -164,6 +166,8 @@ class InSituPipeline : public vtkCPPipeline {
               .SetInputArrayToProcess(vtkDataObject::POINT, "diameter_");
           vtkSMPropertyHelper(glyph, "Vectors")
               .SetInputArrayToProcess(vtkDataObject::POINT, "spring_axis_");
+          vtkSMPropertyHelper(glyph, "MassLocation")
+              .SetInputArrayToProcess(vtkDataObject::POINT, "mass_location_");
         }
 
         glyph->UpdateVTKObjects();

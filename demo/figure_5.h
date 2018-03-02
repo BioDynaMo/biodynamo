@@ -17,6 +17,11 @@ struct CompileTimeParam : public DefaultCompileTimeParam<TBackend>,
   using AtomicTypes = VariadicTypedef<Cell, Neuron, Neurite>;
 };
 
+// TODO move to math_util
+inline double DegreesToRadians(double degrees) {
+  return degrees / 180 * Math::kPi;
+}
+
 inline int Simulate(int argc, const char** argv) {
   InitializeBioDynamo(argc, argv);
   gErrorIgnoreLevel = kWarning;  // TODO make command line argument
@@ -35,11 +40,13 @@ inline int Simulate(int argc, const char** argv) {
   // TODO neuron set color to solid red
 
   //    creating a single neurite
-  auto ne = neuron.ExtendNewNeurite(2.0, 0, 0).Get();
-  // auto ne = neuron.ExtendNewNeurite(2.0, Math::kPi / 4.0, Math::kPi / 2.0).Get();
+  // auto ne = neuron.ExtendNewNeurite(2.0, 0, 0).Get();
+  // auto ne = neuron.ExtendNewNeurite(2.0, Math::kPi / 4.0, Math::kPi / 2.0).Get();  // FIXME theta and phi are mixed up in the function
+  auto ne = neuron.ExtendNewNeurite(2.0, DegreesToRadians(36.6992), DegreesToRadians(63.4349)).Get();  // FIXME theta and phi are mixed up in the function
   //    elongating the neurite :
+  // std::array<double, 3> direction_up = { 0, 0, 1 };
   // std::array<double, 3> direction_up = { 0, 1, 1 };
-  std::array<double, 3> direction_up = { 0, 0, 1 };
+  std::array<double, 3> direction_up = { 1.5, 2.3, 3.8 };
   for (int i = 0; i < 103; i++) {
     ne.ElongateTerminalEnd(300, direction_up);
     ne.RunDiscretization();
@@ -53,17 +60,17 @@ inline int Simulate(int argc, const char** argv) {
   cell_b.SetDiameter(10);
   // TODO cell_b->SetColor(Param::kYellowSolid);
 
-  // auto cell_c = Rm()->New<Cell>();
-  // cell_c.SetPosition({ -10, 0, 100 });
-  // cell_c.SetMass(3);
-  // cell_c.SetDiameter(10);
-  // // TODO cell_c->SetColor(Param::kYellowSolid);
-  //
-  // auto cell_d = Rm()->New<Cell>();
-  // cell_d.SetPosition({ 10, 0, 160});
-  // cell_d.SetMass(2);
-  // cell_d.SetDiameter(10);
-  // // TODO cell_d->SetColor(Param::kYellowSolid);
+  auto cell_c = Rm()->New<Cell>();
+  cell_c.SetPosition({ -10, 0, 100 });
+  cell_c.SetMass(3);
+  cell_c.SetDiameter(10);
+  // TODO cell_c->SetColor(Param::kYellowSolid);
+  
+  auto cell_d = Rm()->New<Cell>();
+  cell_d.SetPosition({ 10, 0, 160});
+  cell_d.SetMass(2);
+  cell_d.SetDiameter(10);
+  // TODO cell_d->SetColor(Param::kYellowSolid);
 
   // 4) setting a large diameter OR letting them grow
   for (int i = 0; i < 15; i++) {
@@ -72,7 +79,7 @@ inline int Simulate(int argc, const char** argv) {
     // cell_d.SetDiameter(cell_d.GetDiameter()+1);
     scheduler.Simulate(1);
   }
-
+  
   scheduler.Simulate(1000);
 
   // FIXME check result

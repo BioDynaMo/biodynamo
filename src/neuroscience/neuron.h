@@ -154,7 +154,7 @@ BDM_SO_DEFINE(
   neurite.SetDiameter(diameter);
   neurite.UpdateVolume();
   neurite.SetSpringAxis(new_cyl_spring_axis);
-  auto& foo = neurite.GetSpringAxis();
+  // auto& foo = neurite.GetSpringAxis();
 
   neurite.SetMassLocation(new_position);  // TODO rename variable
   neurite.SetActualLength(new_length);

@@ -46,6 +46,9 @@ vtkGlyph3DExt::vtkGlyph3DExt() {
   // by default process active point scalars
   this->SetInputArrayToProcess(6,0,0,vtkDataObject::FIELD_ASSOCIATION_POINTS,
                                vtkDataSetAttributes::SCALARS);
+  // by default process active point scalars
+  this->SetInputArrayToProcess(7,0,0,vtkDataObject::FIELD_ASSOCIATION_POINTS,
+                               vtkDataSetAttributes::VECTORS);
 }
 
 //----------------------------------------------------------------------------
@@ -76,7 +79,7 @@ bool vtkGlyph3DExt::Execute(vtkDataSet *input,
 
   vtkPointData *pd;
   vtkDataArray *inCScalars;  // Scalars for Coloring
-  vtkDataArray *x_scaling, *y_scaling, *z_scaling = NULL;
+  vtkDataArray *x_scaling, *y_scaling, *z_scaling, *end_position = NULL;
   unsigned char *inGhostLevels = 0;
   vtkDataArray *inNormals, *sourceNormals = NULL;
   vtkDataArray *sourceTCoords = NULL;
@@ -84,13 +87,16 @@ bool vtkGlyph3DExt::Execute(vtkDataSet *input,
   vtkPoints *sourcePts = NULL;
   vtkSmartPointer<vtkPoints> transformedSourcePts =
       vtkSmartPointer<vtkPoints>::New();
+  vtkSmartPointer<vtkPoints> transformedSourcePts2 =
+      vtkSmartPointer<vtkPoints>::New();
   vtkPoints *newPts;
   vtkDataArray *newScalars = NULL;
   vtkDataArray *newVectors = NULL;
   vtkDataArray *newNormals = NULL;
   vtkDataArray *newTCoords = NULL;
-  double x[3], v[3], vNew[3], s = 0.0, vMag = 0.0, value, tc[3], xs = 0.0, ys = 0.0, zs = 0.0;
+  double x[3], v[3], vNew[3], ep[3], s = 0.0, vMag = 0.0, value, tc[3], xs = 0.0, ys = 0.0, zs = 0.0;
   vtkTransform *trans = vtkTransform::New();
+  vtkTransform *trans2 = vtkTransform::New();
   vtkNew<vtkIdList> pointIdList;
   vtkIdList *cellPts;
   int npts;
@@ -120,6 +126,7 @@ bool vtkGlyph3DExt::Execute(vtkDataSet *input,
   x_scaling = this->GetInputArrayToProcess(4, input);
   y_scaling = this->GetInputArrayToProcess(5, input);
   z_scaling = this->GetInputArrayToProcess(6, input);
+  end_position = this->GetInputArrayToProcess(7, input);
   if (inCScalars == NULL) {
     inCScalars = inSScalars;
   }
@@ -140,6 +147,7 @@ bool vtkGlyph3DExt::Execute(vtkDataSet *input,
     vtkDebugMacro(<< "No points to glyph!");
     pts->Delete();
     trans->Delete();
+    trans2->Delete();
     return 1;
   }
 
@@ -164,6 +172,7 @@ bool vtkGlyph3DExt::Execute(vtkDataSet *input,
       vtkErrorMacro(<< "Indexing on but don't have data to index with");
       pts->Delete();
       trans->Delete();
+      trans2->Delete();
       return true;
     } else {
       vtkWarningMacro(<< "Turning indexing off: no data to index with");
@@ -301,7 +310,9 @@ bool vtkGlyph3DExt::Execute(vtkDataSet *input,
   }
 
   transformedSourcePts->SetDataTypeToDouble();
+  transformedSourcePts2->SetDataTypeToDouble();
   transformedSourcePts->Allocate(numSourcePts);
+  transformedSourcePts2->Allocate(numSourcePts);
 
   // Traverse all Input points, transforming Source points and copying
   // point attributes.
@@ -334,6 +345,7 @@ bool vtkGlyph3DExt::Execute(vtkDataSet *input,
                       << " has more than 3 components.\n");
         pts->Delete();
         trans->Delete();
+        trans2->Delete();
         if (newPts) {
           newPts->Delete();
         }
@@ -439,6 +451,7 @@ bool vtkGlyph3DExt::Execute(vtkDataSet *input,
 
     // Now begin copying/transforming glyph
     trans->Identity();
+    trans2->Identity();
 
     // Copy all topology (transformation independent)
     for (cellId = 0; cellId < numSourceCells; cellId++) {
@@ -453,12 +466,7 @@ bool vtkGlyph3DExt::Execute(vtkDataSet *input,
 
     // translate Source to Input point
     input->GetPoint(inPtId, x);
-    trans->Translate(x[0], x[1], x[2]);
-    // BioDynaMo passes the endpoint of the cylinder as location
-    // Paraview  expects the center point. Therefore we need to correct by half
-    // of the length
-    // trans->Translate(- xs / 2.0, -ys / 2.0, -zs / 2.0);
-    // FIXME
+    // trans->Translate(x[0], x[1], x[2]);
 
     if (haveVectors) {
       // Copy Input vector
@@ -466,43 +474,24 @@ bool vtkGlyph3DExt::Execute(vtkDataSet *input,
         newVectors->InsertTuple(i + ptIncr, v);
       }
       if (this->Orient && (vMag > 0.0)) {
-        // starting position: cylinder is oriented in the y-axis
+        double rotation_axis[3] = {v[0] / vMag, v[1] / vMag + 1, v[2] / vMag};
+        trans->RotateWXYZ(180.0, rotation_axis);
+        // trans->RotateX(45.0);
 
-        // Rotation around the z-axis
-        double alpha = 90;
-        if (std::abs(v[1]) > 1e-5) {
-          alpha = vtkMath::DegreesFromRadians(std::atan(v[0]/v[1]));
-          if(v[0] > 0 && v[1] < 0) {
-            // II Quadrant
-            alpha = 180 - alpha;
-          } else if (v[0] < 0 && v[1] < 0) {
-            // III Quadrant
-            alpha = 180 + alpha;
-          } else if (v[0] < 0 && v[1] > 0) {
-            // III Quadrant
-            alpha = 360 - alpha;
-          }
-        }
-        trans->RotateZ(alpha);
 
-        // Rotation around the x-axis
-        double beta = 90;
-        if (std::abs(v[1]) > 1e-5) {
-          beta = vtkMath::DegreesFromRadians(std::atan(v[2]/v[1]));
-          if(v[2] > 0 && v[1] < 0) {
-            // II Quadrant
-            beta = 180 - beta;
-          } else if (v[2] < 0 && v[1] < 0) {
-            // III Quadrant
-            beta = 180 + beta;
-          } else if (v[2] < 0 && v[1] > 0) {
-            // III Quadrant
-            beta = 360 - beta;
+        // TODO document
+        if(end_position) {
+          double middle_position[3];
+          end_position->GetTuple(inPtId, ep);
+          for (uint64_t i = 0; i < 3; i++) {
+            middle_position[i] = ep[i] - v[i] / 2.0;
           }
+          trans2->Translate(middle_position[0], middle_position[1], middle_position[2]);
         }
-        trans->RotateX(beta);
       }
     }
+
+
 
     if (haveTCoords) {
       for (i = 0; i < numSourcePts; i++) {
@@ -553,10 +542,14 @@ bool vtkGlyph3DExt::Execute(vtkDataSet *input,
     // multiply points and normals by resulting matrix
     if (this->SourceTransform) {
       transformedSourcePts->Reset();
+      transformedSourcePts2->Reset();
       this->SourceTransform->TransformPoints(sourcePts, transformedSourcePts);
-      trans->TransformPoints(transformedSourcePts, newPts);
+      trans->TransformPoints(transformedSourcePts, transformedSourcePts2);
+      trans2->TransformPoints(transformedSourcePts2, newPts);
     } else {
-      trans->TransformPoints(sourcePts, newPts);
+      transformedSourcePts->Reset();
+      trans->TransformPoints(sourcePts, transformedSourcePts);
+      trans2->TransformPoints(transformedSourcePts, newPts);
     }
 
     if (haveNormals) {

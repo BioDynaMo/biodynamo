@@ -92,7 +92,7 @@ class CatalystAdaptor {
 
     void operator()(std::vector<std::array<double, 3>>* dm,
                     const std::string& name) {
-      if(name == "position_" || name == "mass_location_") { // TODO performance
+      if(name == "position_") { // TODO performance
         vtkNew<vtkDoubleArray> vtk_array;
         vtk_array->SetName(name.c_str());
         auto ptr = dm->data()->data();
@@ -102,6 +102,19 @@ class CatalystAdaptor {
         vtkNew<vtkPoints> points;
         points->SetData(vtk_array.GetPointer());
         (*vtk_data)[type_idx]->SetPoints(points.GetPointer());
+      } else if(name == "mass_location_") {
+        // create points with position {0, 0, 0}
+        // BDMGlyph will rotate and translate
+        vtkNew<vtkPoints> points;
+        points->SetNumberOfPoints(num_cells);
+        (*vtk_data)[type_idx]->SetPoints(points.GetPointer());
+        
+        vtkNew<vtkDoubleArray> vtk_array;
+        vtk_array->SetName(name.c_str());
+        auto ptr = dm->data()->data();
+        vtk_array->SetNumberOfComponents(3);
+        vtk_array->SetArray(ptr, static_cast<vtkIdType>(3 * num_cells), 1);
+        (*vtk_data)[type_idx]->GetPointData()->AddArray(vtk_array.GetPointer());
       } else {
         vtkNew<vtkDoubleArray> vtk_array;
         vtk_array->SetName(name.c_str());
