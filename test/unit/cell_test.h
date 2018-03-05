@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "biology_module_util.h"
+#include "cell.h"
 #include "gtest/gtest.h"
 #include "io_util.h"
 #include "unit/test_util.h"
