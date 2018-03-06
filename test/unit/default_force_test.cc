@@ -209,10 +209,6 @@ TEST(DefaultForce, SphereSmallCylinderHorizontal) {
   cylinder.SetSpringAxis({-8, 0, 0});  // -> proximal end = {4, 24.5, 0?}
   cylinder.SetDiameter(4);
 
-//  if (Math::Norm(cylinder.GetSpringAxis()) < (sphere.GetDiameter()*0.5)){
-//    std::cout << "case I: the cylinder is small with respect to the sphere" << std::endl;
-//  }
-
 //  std::cout << std::setprecision (15) << "proximal end : " << cylinder.ProximalEnd()[0] << " ; " << cylinder.ProximalEnd()[1] << " ; " << cylinder.ProximalEnd()[2] << std::endl;
 
   EXPECT_ARR_NEAR({4, 24.5, 0}, cylinder.ProximalEnd());
@@ -222,8 +218,8 @@ TEST(DefaultForce, SphereSmallCylinderHorizontal) {
 
 //  std::cout<< std::setprecision (15) << "forces: " << result1[0] << " ; " << result1[1] << " ; " << result1[2] << " ; "  << result1[3] << std::endl;
 
-  EXPECT_NEAR(-0.350561270358108, result1[0], abs_error<double>::value);
-  EXPECT_NEAR(2.14718778094341, result1[1], abs_error<double>::value);
+  EXPECT_NEAR(-0.196774255282483, result1[0], abs_error<double>::value);
+  EXPECT_NEAR(2.41048462721042, result1[1], abs_error<double>::value);
   EXPECT_NEAR(0, result1[2], abs_error<double>::value);
   EXPECT_NEAR(0, result1[3], abs_error<double>::value);
 
@@ -231,12 +227,11 @@ TEST(DefaultForce, SphereSmallCylinderHorizontal) {
   
   auto result2 = force.GetForce(&sphere, &cylinder);
 
-  EXPECT_ARR_NEAR({0.350561270358108,-2.14718778094341 , 0}, result2);
+  EXPECT_ARR_NEAR({0.196774255282483, -2.41048462721042 , 0}, result2);
 }
 
 // test I case of ForceOnACylinderFromASphere() function, ie if cylinder length < sphere radius
 // sphere-cylinder interaction is done vertically at the tip of the cylinder (mass location)
-//  template <typename TRm = ResourceManager<>>
   TEST(DefaultForce, SphereSmallCylinderVertical) {
 
   Cell sphere({0, 0, 0});
@@ -248,8 +243,6 @@ TEST(DefaultForce, SphereSmallCylinderHorizontal) {
   cylinder.SetSpringAxis({0, -8, 0});  // -> proximal end = {0, 32, 0?}
   cylinder.SetDiameter(4);
 
-  //ElongateTerminalEnd(10, {1.0, 0.0, 0.0})
-
 //  std::cout << std::setprecision (15) << "proximal end : " << cylinder.ProximalEnd()[0] << " ; " << cylinder.ProximalEnd()[1] << " ; " << cylinder.ProximalEnd()[2] << std::endl;
 
   EXPECT_ARR_NEAR({0, 32, 0}, cylinder.ProximalEnd());
@@ -257,28 +250,44 @@ TEST(DefaultForce, SphereSmallCylinderHorizontal) {
   DefaultForce force;
   auto result1 = force.GetForce(&cylinder, &sphere);
 
-  std::cout<< std::setprecision (15) << "forces: " << result1[0] << " ; " << result1[1] << " ; " << result1[2] << " ; "  << result1[3] << std::endl;
+//  std::cout<< std::setprecision (15) << "forces: " << result1[0] << " ; " << result1[1] << " ; " << result1[2] << " ; "  << result1[3] << std::endl;
 
   EXPECT_NEAR(0, result1[0], abs_error<double>::value);
-  EXPECT_NEAR(3, result1[1], abs_error<double>::value); // real overlap is only 1, so should be 1
+  EXPECT_NEAR(1, result1[1], abs_error<double>::value); // real overlap is only 1, so should be 1
   EXPECT_NEAR(0, result1[2], abs_error<double>::value);
   EXPECT_NEAR(0, result1[3], abs_error<double>::value);
   
   auto result2 = force.GetForce(&sphere, &cylinder);
-  EXPECT_ARR_NEAR({0, -3, 0}, result2);
-
-  // TODO: try to actually move cells due to repulsion force. see if gap due to too strong force
-  Param::run_mechanical_interactions_ = true;
-  Scheduler<> scheduler;
-  scheduler.Simulate(50);
-
-  std::array<double, 3> locationAfterMovement=cylinder.GetMassLocation();
-  
-  std::cout << std::setprecision (15) << "proximal end : " << cylinder.ProximalEnd()[0] << " ; " << cylinder.ProximalEnd()[1] << " ; " << cylinder.ProximalEnd()[2] << std::endl;
-  std::cout << "mass location: " << locationAfterMovement[0] << " ; " << locationAfterMovement[1] << " ; " << locationAfterMovement[2] << std::endl;
-  
+  EXPECT_ARR_NEAR({0, -1, 0}, result2);  
 }
 
+// opposit case of Vertical: cylinder is below the cell
+  TEST(DefaultForce, SphereSmallCylinderVertical2) {
+
+  Cell sphere({0, 0, 0});
+  sphere.SetDiameter(50);
+  ResourceManager<>::Get()->push_back(sphere);
+  
+  Neurite cylinder;
+  cylinder.SetMassLocation({0, -24, 0});
+  cylinder.SetSpringAxis({0, 8, 0});  // -> proximal end = {0, -32, 0}
+  cylinder.SetDiameter(4);
+
+  EXPECT_ARR_NEAR({0, -32, 0}, cylinder.ProximalEnd());
+
+  DefaultForce force;
+  auto result1 = force.GetForce(&cylinder, &sphere);
+
+  EXPECT_NEAR(0, result1[0], abs_error<double>::value);
+  EXPECT_NEAR(-1, result1[1], abs_error<double>::value); // real overlap is only 1, so should be 1
+  EXPECT_NEAR(0, result1[2], abs_error<double>::value);
+  EXPECT_NEAR(0, result1[3], abs_error<double>::value);
+  
+  auto result2 = force.GetForce(&sphere, &cylinder);
+  EXPECT_ARR_NEAR({0, 1, 0}, result2);
+}
+
+  
 // test the II case of ForceOnACylinderFromASphere() function, ie if cylinder length > sphere radius
 // sphere-cylinder interaction is done at the center and in the horizontal orientation of the cylinder
 TEST(DefaultForce, SphereLongCylinderHorizontalCenter) {
@@ -337,7 +346,7 @@ TEST(DefaultForce, SphereLongCylinderHorizontalCenter) {
     DefaultForce force;
     auto result1 = force.GetForce(&cylinder, &sphere);
 
-    std::cout<< std::setprecision (15) << "forces: " << result1[0] << " ; " << result1[1] << " ; " << result1[2] << " ; "  << result1[3] << std::endl;
+//    std::cout<< std::setprecision (15) << "forces: " << result1[0] << " ; " << result1[1] << " ; " << result1[2] << " ; "  << result1[3] << std::endl;
 
     EXPECT_NEAR(0, result1[0], abs_error<double>::value);
     EXPECT_NEAR(0.5, result1[1], abs_error<double>::value); // okay
