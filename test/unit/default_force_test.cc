@@ -217,7 +217,6 @@ TEST(DefaultForce, SphereSmallCylinderHorizontal) {
   EXPECT_NEAR(0, result1[2], abs_error<double>::value);
   EXPECT_NEAR(0, result1[3], abs_error<double>::value);
   auto result2 = force.GetForce(&sphere, &cylinder);
-
   EXPECT_ARR_NEAR({0.196774255282483, -2.41048462721042 , 0}, result2);
 }
 
@@ -231,7 +230,7 @@ TEST(DefaultForce, SphereSmallCylinderHorizontal) {
 
   Neurite cylinder;
   cylinder.SetMassLocation({0, 24, 0});
-  cylinder.SetSpringAxis({0, -8, 0});  // -> proximal end = {0, 32, 0?}
+  cylinder.SetSpringAxis({0, -8, 0});  // -> proximal end = {0, 32, 0}
   cylinder.SetDiameter(4);
 
   EXPECT_ARR_NEAR({0, 32, 0}, cylinder.ProximalEnd());
@@ -323,7 +322,6 @@ TEST(DefaultForce, SphereLongCylinderHorizontalCenter) {
     EXPECT_NEAR(0.975, result1[3], abs_error<double>::value); // 0.975 force is transmited to proximalEnd
 
     auto result2 = force.GetForce(&sphere, &cylinder);
-
     EXPECT_ARR_NEAR({0,-0.5 , 0}, result2);
   }
 
