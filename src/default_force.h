@@ -135,7 +135,14 @@ class DefaultForce {
     // we only consider the interaction between the sphere and the point mass
     // (i.e. distal point) of the cylinder - that we treat as a sphere.
     if (actualLength < r) {
-      *result = ComputeForceOfASphereOnASphere(pD, d * 0.5, c, r);
+      //move back sphere center by 1 cylinder radius from pD
+      // vector_x = rc * (axis[0]/actualLength)
+      // vector_y = rc * (axis[1]/actualLength)
+      // vector_z = rc * (axis[2]/actualLength)
+      double rc = 0.5 * d;
+      std::array<double, 3> dvec={rc*(axis[0]/actualLength), rc*(axis[1]/actualLength), rc*(axis[2]/actualLength)}; // displacement vector
+      std::array<double, 3> npD = {pD[0]-dvec[0], pD[1]-dvec[1], pD[2]-dvec[2]}; // new sphere center
+      *result = ComputeForceOfASphereOnASphere(npD, rc, c, r);
       return;
     }
 
