@@ -3,7 +3,7 @@
 set -e -x
 
 echo ${TRAVIS_OS_NAME}
-biod=`pwd`
+BDM_DIR=`pwd`
 
 # update and install packages
 if [ "$TRAVIS_OS_NAME" = "osx" ]; then
@@ -58,54 +58,56 @@ if [ "$TRAVIS_OS_NAME" = "linux" ]; then
   sudo ln -s /usr/lib/libmpi.so /usr/local/lib/libmpi.so.12
 fi
 
-# install ROOT
-cd
+# install third_party applications
+THIRD_PARTY_DIR=/opt/biodynamo/third_party
+sudo mkdir -p $THIRD_PARTY_DIR
+#   download tars to tmp directory
+cd /tmp
+BDM_ENVIRONMENT_FILE=/opt/biodynamo/biodynamo_dev.env
+
 if [ "$TRAVIS_OS_NAME" = "linux" ]; then
+  # install ROOT
   wget --progress=dot:giga -O root_v6.11.01_Linux-ubuntu14-x86_64-gcc5.4_263508429d.tar.gz "https://cernbox.cern.ch/index.php/s/BbFptgxo2K565IS/download?path=%2F&files=root_v6.11.01_Linux-ubuntu14-x86_64-gcc5.4_263508429d.tar.gz"
-  tar zxf "root_v6.11.01_Linux-ubuntu14-x86_64-gcc5.4_263508429d.tar.gz" > /dev/null
+  sudo tar zxf "root_v6.11.01_Linux-ubuntu14-x86_64-gcc5.4_263508429d.tar.gz" -C $THIRD_PARTY_DIR
 
-  wget -O paraview-5.4_ubuntu14_gcc5.4_openmpi.tar.gz "https://cernbox.cern.ch/index.php/s/BbFptgxo2K565IS/download?path=%2F&files=paraview-5.4_ubuntu14_gcc5.4_openmpi.tar.gz"
-  sudo mkdir -p /opt/biodynamo/paraview
-  sudo tar -xzf paraview-5.4_ubuntu14_gcc5.4_openmpi.tar.gz -C /opt/biodynamo/paraview
-
+  # install qt
   wget -O Qt5.9.1_ubuntu16_gcc5.4.tar.gz "https://cernbox.cern.ch/index.php/s/BbFptgxo2K565IS/download?path=%2F&files=Qt5.9.1_ubuntu16_gcc5.4.tar.gz"
-  sudo mkdir -p /opt/biodynamo/qt
-  sudo tar -xzf Qt5.9.1_ubuntu16_gcc5.4.tar.gz -C /opt/biodynamo/qt
+  sudo mkdir -p $THIRD_PARTY_DIR/qt
+  sudo tar -xzf Qt5.9.1_ubuntu16_gcc5.4.tar.gz -C $THIRD_PARTY_DIR/qt
 
-  export ParaView_DIR=/opt/biodynamo/paraview/lib/cmake/paraview-5.4
-  export Qt5_DIR=/opt/biodynamo/qt/lib/cmake/Qt5
+  # install paraview
+  wget -O paraview-5.4_ubuntu14_gcc5.4_openmpi.tar.gz "https://cernbox.cern.ch/index.php/s/BbFptgxo2K565IS/download?path=%2F&files=paraview-5.4_ubuntu14_gcc5.4_openmpi.tar.gz"
+  sudo mkdir -p $THIRD_PARTY_DIR/paraview
+  sudo tar -xzf paraview-5.4_ubuntu14_gcc5.4_openmpi.tar.gz -C $THIRD_PARTY_DIR/paraview
 
-  export LD_LIBRARY_PATH=/opt/biodynamo/qt/lib:/usr/lib/openmpi/lib:$LD_LIBRARY_PATH
+  # copy environment script
+  sudo cp $BDM_DIR/cmake/biodynamo_linux_dev.env $BDM_ENVIRONMENT_FILE
 else
+  # install ROOT
   wget --progress=dot:giga -O root_v6.11.01_macos64_LLVM-Clang-5.0_263508429d.tar.gz "https://cernbox.cern.ch/index.php/s/BbFptgxo2K565IS/download?path=%2F&files=root_v6.11.01_macos64_LLVM-Clang-5.0_263508429d.tar.gz"
-  tar zxf "root_v6.11.01_macos64_LLVM-Clang-5.0_263508429d.tar.gz" > /dev/null
+  sudo sudo tar zxf "root_v6.11.01_macos64_LLVM-Clang-5.0_263508429d.tar.gz" -C $THIRD_PARTY_DIR
 
-  wget -O paraview-5.4_macos64_llvm-5.0.tar.gz "https://cernbox.cern.ch/index.php/s/BbFptgxo2K565IS/download?path=%2F&files=paraview-5.4_macos64_llvm-5.0.tar.gz"
-  sudo mkdir -p /opt/biodynamo/paraview
-  sudo tar -xzf paraview-5.4_macos64_llvm-5.0.tar.gz -C /opt/biodynamo/paraview
-
+  # install qt
   brew install qt
 
-  export ParaView_DIR=/opt/biodynamo/paraview/lib/cmake/paraview-5.4
-  export Qt5_DIR=/usr/local/opt/qt/lib/cmake/Qt5
+  # install paraview
+  wget -O paraview-5.4_macos64_llvm-5.0.tar.gz "https://cernbox.cern.ch/index.php/s/BbFptgxo2K565IS/download?path=%2F&files=paraview-5.4_macos64_llvm-5.0.tar.gz"
+  sudo mkdir -p $THIRD_PARTY_DIR/paraview
+  sudo tar -xzf paraview-5.4_macos64_llvm-5.0.tar.gz -C $THIRD_PARTY_DIR/paraview
 
-  export DYLD_LIBRARY_PATH=/opt/biodynamo/qt/lib:/usr/lib/openmpi/lib:$DYLD_LIBRARY_PATH
-  export DYLD_LIBRARY_PATH=/opt/biodynamo/paraview/lib/paraview-5.4:$DYLD_LIBRARY_PATH
+  # copy environment script
+  sudo cp $BDM_DIR/cmake/biodynamo_macos_dev.env $BDM_ENVIRONMENT_FILE
 fi
 
-# set the Python envars for Catalyst
-export PYTHONPATH=$ParaView_DIR/../../paraview-5.4/site-packages
-export PYTHONPATH=$PYTHONPATH:$ParaView_DIR/../../paraview-5.4/site-packages/vtk
-
-cd root
-. bin/thisroot.sh
+# source environment file
+. $BDM_ENVIRONMENT_FILE
 
 # output compiler information
 echo ${CXX}
 ${CXX} --version
 ${CXX} -v
 
-cd $biod
+cd $BDM_DIR
 
 cloc .
 # add master branch

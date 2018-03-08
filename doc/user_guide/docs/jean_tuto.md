@@ -1,7 +1,6 @@
 # BioDynaMo short tutorial
 
 Written by Jean de Montigny  
-this tutorial is also accessible in [pdf](https://cernbox.cern.ch/index.php/s/FZXK9Wd8Gu7SlYB)
 
 ## Introduction
 
@@ -191,23 +190,17 @@ We can also note that instead of creating a configuration file, you can do the s
 ```
 
 However, it is important to note that if you want to change any visualization parameter using this second method, you will have to compile again your code. That is not the case using a configuration file.  
-Even if live visualization is particularly useful to set or tune a simulation, it is capital to note that it also drastically slow down the simulation! One way to avoid this major problem is to export visualization files and read then after the modelling is done.
+Even if live visualization is particularly useful to set or tune a simulation, it is capital to note that it also drastically slows down the simulation! One way to avoid this major problem is to export visualization files and read then after the modelling is done.
 
 #### Export Visualisation
 
-In the configuration file, turn the export parameter to true then run your modelling. You’ll notice the creation of several new files "cells_data_x_x.vtu" and "cells_data_x.pvtu". Open Paraview and select "Open"
+In the configuration file, turn the export parameter to true then run your modelling. You’ll notice the creation of several new files "cells_data_x_x.vtu" and "cells_data_x.pvtu". Open Paraview and select "File->Load State" as shown below:
 
-![Paraview open](images/jean_tutorial/paraview14.png)
+![ParaView Load State](images/pv_load_state.png)
 
-A new windows appears, select the "group" file and click ok.
+Navigate to your simulation directory and select the `pvsm` file.
 
-![Paraview select group](images/jean_tutorial/paraview15.png)
-
-Finally, click "Apply"
-
-![Paraview export apply](images/jean_tutorial/paraview16.png)
-
-We can now create a Glyph filter (same method as live visualization).
+![ParaView Select *.pvsm](images/pv_select_pvsm.png)
 
 A major advantage of export visualization, in addition of not impacting the simulation time, is that you can visualize your modelling freely in time. using the arrows in the top menu, you can choose respectively to go back to the beginning of the simulation, go one step back, run normally, go one step further or go to the end of the simulation. You also can see witch step you are currently visualising (remember that this step number is the number of your modelling step divided by the export\_interval you choose in your configuration file).
 
@@ -233,7 +226,7 @@ We will do that directly in our tutorial.h file by writing
       void SetCelColour(int cellColour) { cell_colour_[kIdx] = cellColour; }
       int GetCellColour() { return cell_colour_[kIdx]; }
       int* GetCellColourPtr() { return cell_colour_.data(); }
-      
+
     private:
     // private data can only be accessed by public function and not directly
       vec<int> cell_colour_; // declare our new data member and define its type
@@ -286,7 +279,7 @@ However, there still is a little problem. The attribute cell\_colour\_ is not tr
 
 To enable dividing cells to transmit its color - meaning its cell\_color\_ attribute value - we have to modify a little our biology module.
 ``` C++
-//        Divide(*cell); // old 
+//        Divide(*cell); // old
         auto&& daughter = Divide(*cell); // we now have access to the daughter
         daughter.SetCellColour(cell->GetCellColour()); // daughter cell_colour_ is setted to her mother cell_colour_ value
 ```
@@ -372,7 +365,7 @@ Coming soon.
 
 ## Code
 
-### tutorial.cc 
+### tutorial.cc
 
 ``` C++
 #include "tutorial.h"
@@ -390,11 +383,11 @@ int main(int argc, const char** argv) { return bdm::Simulate(argc, argv); }
 //using namespace std;
 
 namespace bdm {
-  
+
 // 1. Define growth behaviour
   struct GrowthModule : public BaseBiologyModule {
   GrowthModule() : BaseBiologyModule(gAllBmEvents) {}
-    
+
     template <typename T>
       void Run(T* cell) {
 
@@ -405,7 +398,7 @@ namespace bdm {
         Divide(*cell);
       }
     }
-    
+
     ClassDefNV(GrowthModule, 1);
   };
 
@@ -414,12 +407,12 @@ namespace bdm {
     struct CompileTimeParam : public DefaultCompileTimeParam<Backend> {
   using BiologyModules = Variant<GrowthModule>;
   };
-  
-   
+
+
 template <typename TResourceManager = ResourceManager<>>
 inline int Simulate(int argc, const char** argv) {
   InitializeBioDynamo(argc, argv);
-  
+
   size_t nb_of_cells=2400; // number of cells in the simulation
   int cube_dim = 100; // cube of 100*100*100
   double x_coord, y_coord, z_coord;
@@ -440,7 +433,7 @@ inline int Simulate(int argc, const char** argv) {
 
     cells->push_back(cell); // put the created cell in our cells structure
   }
-  
+
   // create a cancerous cell, containing the BiologyModule GrowthModule
   Cell cell({20, 50, 50});
   cell.SetDiameter(6);
@@ -452,7 +445,7 @@ inline int Simulate(int argc, const char** argv) {
   // Run simulation
   Scheduler<> scheduler;
   scheduler.Simulate(1000);
-  
+
   std::cout << "Simulation completed successfully!" << std::endl;
   return 0;
 }
@@ -490,18 +483,18 @@ namespace bdm {
       void SetCellColour(int cellColour) { cell_colour_[kIdx] = cellColour; }
       int GetCellColour() { return cell_colour_[kIdx]; }
       int* GetCellColourPtr() { return cell_colour_.data(); }
-    
+
     private:
       // declare new data member and define their type
       // private data can only be accessed by public function and not directly
       vec<bool> can_divide_;
       vec<int> cell_colour_;
   };
-  
+
 // 1. Define growth behaviour
   struct GrowthModule : public BaseBiologyModule {
   GrowthModule() : BaseBiologyModule(gAllBmEvents) {}
-    
+
     template <typename T>
       void Run(T* cell) {
 
@@ -514,7 +507,7 @@ namespace bdm {
         //Reset biological movement to 0.
         cell->SetTractorForce({0, 0, 0}); // avoid unwanted movements after our cell displacement
       }
-      
+
       else { // if diameter > 8
         if (gTRandom.Uniform(0, 1) <0.8 && cell->GetCanDivide()){
           auto&& daughter = Divide(*cell);
@@ -526,7 +519,7 @@ namespace bdm {
         }
       }
     }
-    
+
     ClassDefNV(GrowthModule, 1);
   };
 
@@ -536,10 +529,10 @@ namespace bdm {
   using BiologyModules = Variant<GrowthModule>;
   using AtomicTypes = VariadicTypedef<MyCell>; // use MyCell object
   };
-  
-   
+
+
 template <typename TResourceManager = ResourceManager<>>
-  
+
 inline int Simulate(int argc, const char** argv) {
   InitializeBioDynamo(argc, argv);
 
@@ -564,7 +557,7 @@ inline int Simulate(int argc, const char** argv) {
 
     cells->push_back(cell); // put the created cell in our cells structure
   }
-  
+
   // create a cancerous cell, containing the BiologyModule GrowthModule
   MyCell cell({20, 50, 50});
   cell.SetDiameter(6);
@@ -579,13 +572,13 @@ inline int Simulate(int argc, const char** argv) {
 //  Param::export_visualization_ = true; // allows export of visualization files
 //  Param::visualization_export_interval_ = 10; // export visualization files every 10 steps
 //  Param::visualize_sim_objects_["MyCell"] = std::set<std::string>{"diameter_"}; // add the data member diameter_ to the visualization objects
-  
+
   // Run simulation
   Scheduler<> scheduler;
   for (int i=0; i<100; i++){
     scheduler.Simulate(1);
   }
-  
+
   std::cout << "Simulation completed successfully!" << std::endl;
   return 0;
 }
@@ -594,4 +587,3 @@ inline int Simulate(int argc, const char** argv) {
 
 #endif // TUTORIAL_H_
 ```
-

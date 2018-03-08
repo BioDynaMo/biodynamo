@@ -2,6 +2,9 @@
 #define VISUALIZATION_CATALYST_ADAPTOR_H_
 
 #include <TError.h>
+#include <algorithm>
+#include <fstream>
+#include <sstream>
 #include <string>
 #include <type_traits>
 #include <vector>
@@ -211,6 +214,10 @@ class CatalystAdaptor {
       vtkCPVTKPipeline* pipeline = new vtkCPVTKPipeline();
       g_processor_->AddPipeline(pipeline);
     }
+
+    if (Param::export_visualization_) {
+      GenerateSimulationInfoJson();
+    }
   }
 
   /// Cleans up allocated memory
@@ -226,6 +233,9 @@ class CatalystAdaptor {
     for (auto dg : vtk_dgrids_) {
       dg->Delete();
       dg = nullptr;
+    }
+    if (Param::export_visualization_) {
+      GenerateParaviewState();
     }
   }
 
@@ -361,6 +371,86 @@ class CatalystAdaptor {
   std::vector<vtkUnstructuredGrid*> vtk_so_grids_;
   std::vector<bool> so_is_initialized_;
   std::vector<bool> dg_is_initialized_;
+  static constexpr char const* kSimulationInfoJson = "simulation_info.json";
+
+  friend class CatalystAdaptorTest_GenerateSimulationInfoJson_Test;
+  friend class CatalystAdaptorTest_GenerateParaviewState_Test;
+
+  /// If the user selects the visualiation option export, we need to pass the
+  /// information on the C++ side to a python script which generates the
+  /// ParaView state file. The Json file is generated inside this function
+  /// \see GenerateParaviewState
+  static void GenerateSimulationInfoJson() {
+    // simulation objects
+    std::stringstream sim_objects;
+    uint64_t num_sim_objects = Param::visualize_sim_objects_.size();
+    uint64_t counter = 0;
+    for (const auto& entry : Param::visualize_sim_objects_) {
+      auto so_name = entry.first;
+      // TODO(lukas) remove to lower case transformation after export file names
+      // have been generalized
+      std::transform(so_name.begin(), so_name.end(), so_name.begin(),
+                     ::tolower);
+
+      sim_objects << "    { \"name\":\"" << so_name << "\", ";
+      // TODO(lukas) generalize
+      sim_objects << "\"glyph\":\"Glyph\", \"shape\":\"Sphere\", "
+                     "\"scaling_attribute\":\"diameter_\" }";
+      if (counter != num_sim_objects - 1) {
+        sim_objects << "," << std::endl;
+      }
+      counter++;
+    }
+
+    // extracellular substances
+    std::stringstream substances;
+    uint64_t num_substances = Param::visualize_diffusion_.size();
+    for (uint64_t i = 0; i < num_substances; i++) {
+      substances << "    { \"name\":\"" << Param::visualize_diffusion_[i].name_
+                 << "\", ";
+      std::string has_gradient =
+          Param::visualize_diffusion_[i].gradient_ ? "true" : "false";
+      substances << "\"has_gradient\":\"" << has_gradient << "\" }";
+
+      if (i != num_substances - 1) {
+        substances << "," << std::endl;
+      }
+    }
+
+    // write to file
+    std::ofstream ofstr;
+    ofstr.open(kSimulationInfoJson);
+    ofstr << "{" << std::endl
+          << "  \"simulation\": {" << std::endl
+          << "    \"name\":\"" << Param::executable_name_ << "\"," << std::endl
+          << "    \"result_dir\":\""
+          << "."
+          << "\"" << std::endl
+          << "  }," << std::endl
+          << "  \"sim_objects\": [" << std::endl
+          << sim_objects.str() << std::endl
+          << "  ]," << std::endl
+          << "  \"extracellular_substances\": [" << std::endl
+          << substances.str() << std::endl
+          << "  ]" << std::endl
+          << "}" << std::endl;
+    ofstr.close();
+  }
+
+  /// This function generates the Paraview state based on the exported files
+  /// Therefore, the user can load the visualization simply by opening the pvsm
+  /// file and does not have to perform a lot of manual steps.
+  static void GenerateParaviewState() {
+    std::stringstream python_cmd;
+    python_cmd << "pvpython "
+               << BDM_SRC_DIR "/visualization/generate_pv_state.py "
+               << kSimulationInfoJson;
+    int ret_code = system(python_cmd.str().c_str());
+    if (ret_code) {
+      Fatal("GenerateParaviewState",
+            "Error during generation of ParaView state");
+    }
+  }
 };
 
 #else

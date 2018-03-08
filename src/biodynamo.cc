@@ -5,6 +5,7 @@
 namespace bdm {
 
 void InitializeBioDynamo(int argc, const char** argv) {
+  Param::executable_name_ = argv[0];
   auto options = bdm::DefaultSimulationOptionParser(argc, argv);
   constexpr auto kConfigFile = "bdm.toml";
   constexpr auto kConfigFileParentDir = "../bdm.toml";

@@ -4,6 +4,7 @@
 namespace bdm {
 
 // simulation group
+std::string Param::executable_name_ = "biodynamo_simulation";
 std::string Param::backup_file_ = "";
 std::string Param::restore_file_ = "";
 uint32_t Param::backup_interval_ = 1800;
@@ -141,6 +142,7 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
 
 void Param::Reset() {
   // simulation group
+  executable_name_ = "biodynamo_simulation";
   backup_file_ = "";
   restore_file_ = "";
   backup_interval_ = 1800;

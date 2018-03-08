@@ -14,7 +14,7 @@ touch bdm.toml
 
 ## Export visualization files
 
-One way to enable visualization is to export a visualization file every time step 
+One way to enable visualization is to export a visualization file every time step
 (or every N time steps). In the `bmd.toml` file add the following lines:
 
 ```
@@ -48,36 +48,13 @@ biodynamo.paraview
 paraview
 ```
 
-And select "Open" as shown below:
+And select "File->Load State" as shown below:
 
-![Open in ParaView](images/open_file.png)
+![ParaView Load State](images/pv_load_state.png)
 
-Navigate to your simulation directory.
-Then select the files that represent your simulation objects. If you have 
-output over multiple timesteps, import your simulation objects as "Group", as
-shown in the image below:
+Navigate to your simulation directory and select the `pvsm` file.
 
-![Open as Group](images/select_pvtu.png)
-
-Click on the `cells_data_` entry in the Pipeline Browser and press "Apply". From "Filters", select
-"Search" (or do Ctrl + Space). Search for the "Glyph" filter, Apply it, and set
-the following properties:
-
-``` Python
-Glyph Type 		= 'Sphere'
-Scalars 		= 'diameter_'
-Glyph Mode 		= 'All Points'
-Scale Mode		= 'Scalar'
-Scale Factor	= 1
-Coloring		= 'diameter_'
-```
-
-Press "Apply" to let the changes take effect.
-
-From "View", select "Animation Panel". This will display some animation settings
-at the bottom of the screen. From the "Mode" select "Real Time".
-Then click the Play button at the top of the screen to run the simulation visualization.
-
+![ParaView Select *.pvsm](images/pv_select_pvsm.png)
 
 <!-- ## Live visualization
 
@@ -90,4 +67,3 @@ This feature allows you to inspect your simulation while it is running. In your
 live = true
 ```
  -->
-

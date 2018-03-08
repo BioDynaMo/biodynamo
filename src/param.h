@@ -12,6 +12,10 @@ namespace bdm {
 
 struct Param {
   // simulation values ---------------------------------------------------------
+  /// Name of the simulation executable\n
+  /// Default value: biodynamo_simulation\n
+  /// Cannot be changed using the TOML config file
+  static std::string executable_name_;
 
   /// Backup file name for full simulation backups\n
   /// Default value: `""` (no backups will be made)\n
