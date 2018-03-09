@@ -47,13 +47,15 @@ TEST_F(CatalystAdaptorTest, GenerateSimulationInfoJson) {
   std::stringstream buffer;
   buffer << ifs.rdbuf();
 
+  // TODO(lukas) once file export has been generalized, change first sim_object
+  // name to "neuron"
   const char* expected = R"STR({
   "simulation": {
     "name":"MySimulation",
     "result_dir":"."
   },
   "sim_objects": [
-    { "name":"neuron", "glyph":"Glyph", "shape":"Sphere", "scaling_attribute":"diameter_" },
+    { "name":"cell", "glyph":"Glyph", "shape":"Sphere", "scaling_attribute":"diameter_" },
     { "name":"cell", "glyph":"Glyph", "shape":"Sphere", "scaling_attribute":"diameter_" }
   ],
   "extracellular_substances": [

@@ -25,7 +25,7 @@ git checkout newcastle
 
 ### Inspect the code
 
-Go into the `diffusion` directory and open the source file `src/diffusion_biology_modules.h` in your favorite editor. 
+Go into the `diffusion` directory and open the source file `src/diffusion_biology_modules.h` in your favorite editor.
 We can note the following things from its content:
 
 #### 1. List the substances
@@ -35,7 +35,7 @@ enum Substances { kKalium };
 ```
 
 The extracellular substances that will be used in the simulation are listed in
-an `enum` data structure. In this case it is just a single substance. According to our C++ 
+an `enum` data structure. In this case it is just a single substance. According to our C++
 coding style we will prepend the substance's name with the letter "k".
 
 #### 2. Set up the biology modules
@@ -144,23 +144,13 @@ biodynamo run
 
 ### Visualize the simulation
 
-Open ParaView and navigate to the `diffusion` directory. Open the `cells_data_*`
-and `Kalium_*` files as Group (see the [Visualization](visualization.md) exercise as a reference).
-
-Click on the `cells_data_` entry in the Pipeline Browser. From "Filters", select
-"Search" (or do `Ctrl + Space`). Search for the "Glyph" filter, Apply it, and set
-the following properties:
-
-``` Python
-Glyph Type 		= 'Sphere'
-Scalars 		= 'Diameters'
-Scale Mode 		= 'Scalar'
-Scale Factor    = 1
-Glyph Mode 		= 'All Points'
-```
-
-Press "Apply" to let the changes take effect.
+Load the generated ParaView state file as described in [Section Visualization](visualization.md#export-visualization-files).
 
 From "View", select "Animation Panel". This will display some animation settings
 at the bottom of the screen. From the "Mode" select "Real Time".
 Then click the Play button at the top of the screen to run the simulation visualization.
+
+<video width="100%" controls>
+  <source src="https://cernbox.cern.ch/index.php/s/rzl2Kb4uxny4ZXF/download?path=%2F&files=exported_visualization.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>

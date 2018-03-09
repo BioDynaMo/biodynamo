@@ -43,6 +43,7 @@ const char* gConfigContent =
     "statistics = true\n";
 
 void ValidateNonCLIParameter() {
+  EXPECT_EQ("binary_name", Param::executable_name_);
   EXPECT_EQ(3600u, Param::backup_interval_);
   EXPECT_EQ(0.0125, Param::simulation_time_step_);
   EXPECT_EQ(2.0, Param::simulation_max_displacement_);
@@ -98,7 +99,7 @@ TEST(BiodynamoTest, InitializeBioDynamo) {
   config_file << gConfigContent;
   config_file.close();
 
-  const char* argv[1] = {"binary_name"};
+  const char* argv[1] = {"./binary_name"};
   InitializeBioDynamo(1, argv);
 
   EXPECT_EQ("backup.root", Param::backup_file_);
@@ -116,7 +117,7 @@ TEST(BiodynamoTest, InitializeBioDynamoWithCLIArguments) {
   config_file << gConfigContent;
   config_file.close();
 
-  const char* argv[5] = {"binary_name", "-b", "mybackup.root", "-r",
+  const char* argv[5] = {"./binary_name", "-b", "mybackup.root", "-r",
                          "myrestore.root"};
   InitializeBioDynamo(5, argv);
 
@@ -128,6 +129,26 @@ TEST(BiodynamoTest, InitializeBioDynamoWithCLIArguments) {
 
   Param::Reset();
   remove(gConfigFileName);
+}
+
+TEST(BiodynamoTest, InitializeBioDynaMoExecutableName) {
+  // same working dir
+  const char* argv0[1] = {"./binary_name"};
+  InitializeBioDynamo(1, argv0);
+  EXPECT_EQ("binary_name", Param::executable_name_);
+  Param::Reset();
+
+  // in PATH
+  const char* argv1[1] = {"binary_name"};
+  InitializeBioDynamo(1, argv1);
+  EXPECT_EQ("binary_name", Param::executable_name_);
+  Param::Reset();
+
+  // binary dir != working dir
+  const char* argv2[1] = {"./build/binary_name"};
+  InitializeBioDynamo(1, argv2);
+  EXPECT_EQ("binary_name", Param::executable_name_);
+  Param::Reset();
 }
 
 }  // namespace bdm

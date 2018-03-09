@@ -1,11 +1,26 @@
 #include "biodynamo.h"
+#include <string>
 #include "command_line_options.h"
 #include "cpptoml/cpptoml.h"
 
 namespace bdm {
 
+/// Return only the executable name given the path
+/// @param path path and filename of the executable
+/// e.g. `executable`, `./executable`, './build/executable'
+/// @return `executabl`
+std::string ExtractExecutableName(const char* path) {
+  std::string s(path);
+  auto pos = s.find_last_of("/");
+  if (pos == std::string::npos) {
+    return s;
+  } else {
+    return s.substr(pos + 1, s.length() - 1);
+  }
+}
+
 void InitializeBioDynamo(int argc, const char** argv) {
-  Param::executable_name_ = argv[0];
+  Param::executable_name_ = ExtractExecutableName(argv[0]);
   auto options = bdm::DefaultSimulationOptionParser(argc, argv);
   constexpr auto kConfigFile = "bdm.toml";
   constexpr auto kConfigFileParentDir = "../bdm.toml";

@@ -25,12 +25,12 @@ from paraview.simple import *
 def ExtractIterationFromFilename(x): return int(x.split('_')[-1].split('.')[0])
 
 # ------------------------------------------------------------------------------
-def ProcessSimulationObject(result_dir, so_info):
+def ProcessSimulationObject(so_info):
     so_name = so_info['name']
     # determine pvtu files
-    files = glob.glob('{0}/{1}s_data*.pvtu'.format(result_dir, so_name))
+    files = glob.glob('./{0}s_data*.pvtu'.format(so_name))
     if len(files) == 0:
-        print('No data files found for simulation object {0} in directory {1} '.format(so_name, result_dir))
+        print('No data files found for simulation object {0}'.format(so_name))
         sys.exit(1)
 
     files.sort(cmp=lambda x, y: ExtractIterationFromFilename(x) - ExtractIterationFromFilename(y))
@@ -138,12 +138,12 @@ def AddDiffusionGradientGlyph(substance_name, substance_data, render_view):
 
 
 # ------------------------------------------------------------------------------
-def ProcessExtracellularSubstance(result_dir, substance_info):
+def ProcessExtracellularSubstance(substance_info):
     substance_name = substance_info['name']
     # determine pvti files
-    files = glob.glob('{0}/{1}*.pvti'.format(result_dir, substance_name))
+    files = glob.glob('./{0}*.pvti'.format(substance_name))
     if len(files) == 0:
-        print('No data files found for substance {0} in directory {1} '.format(substance_name, result_dir))
+        print('No data files found for substance {0}'.format(substance_name))
         sys.exit(1)
 
     files.sort(cmp=lambda x, y: ExtractIterationFromFilename(x) - ExtractIterationFromFilename(y))
@@ -185,19 +185,22 @@ def BuildParaviewState(build_info):
     paraview.simple._DisableFirstRenderCameraReset()
 
     sim_info = build_info['simulation']
+
+    # change directory
     result_dir = sim_info['result_dir']
-    if not os.path.exists(result_dir):
+    if result_dir != "" and not os.path.exists(result_dir):
         print('Simulation result directory "{0}" does not exist'.format(result_dir))
         sys.exit(1)
+    os.chdir(result_dir)
 
     # simulation objects
     for so_info in build_info['sim_objects']:
-        ProcessSimulationObject(result_dir, so_info)
+        ProcessSimulationObject(so_info)
     # extracellular substances
     for substance_info in build_info['extracellular_substances']:
-        ProcessExtracellularSubstance(result_dir, substance_info)
+        ProcessExtracellularSubstance(substance_info)
 
-    SaveState('{0}/{1}.pvsm'.format(result_dir, sim_info['name']))
+    SaveState('{0}.pvsm'.format(sim_info['name']))
 
 
 # ------------------------------------------------------------------------------

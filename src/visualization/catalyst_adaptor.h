@@ -387,10 +387,9 @@ class CatalystAdaptor {
     uint64_t counter = 0;
     for (const auto& entry : Param::visualize_sim_objects_) {
       auto so_name = entry.first;
-      // TODO(lukas) remove to lower case transformation after export file names
-      // have been generalized
-      std::transform(so_name.begin(), so_name.end(), so_name.begin(),
-                     ::tolower);
+      // TODO(lukas) remove next line after export file names have been
+      // generalized
+      so_name = "cell";
 
       sim_objects << "    { \"name\":\"" << so_name << "\", ";
       // TODO(lukas) generalize

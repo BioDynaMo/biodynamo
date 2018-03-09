@@ -175,13 +175,7 @@ Even if live visualization is particularly useful to set or tune a simulation, i
 
 #### Export Visualisation
 
-In the configuration file, turn the export parameter to true then run your modelling. You’ll notice the creation of several new files "cells_data_x_x.vtu" and "cells_data_x.pvtu". Open Paraview and select "File->Load State" as shown below:
-
-![ParaView Load State](images/pv_load_state.png)
-
-Navigate to your simulation directory and select the `pvsm` file.
-
-![ParaView Select *.pvsm](images/pv_select_pvsm.png)
+In the configuration file, turn the export parameter to true then run your modelling. You’ll notice the creation of several new files with the following file extensions `*.pvsm, *.pvtu, *.vtu, *pvti, *.vti`. Open ParaView and load the generated state file as described in [Section Visualization](visualization.md#export-visualization-files).
 
 A major advantage of export visualization, in addition of not impacting the simulation time, is that you can visualize your modelling freely in time. using the arrows in the top menu, you can choose respectively to go back to the beginning of the simulation, go one step back, run normally, go one step further or go to the end of the simulation. You also can see witch step you are currently visualising (remember that this step number is the number of your modelling step divided by the export\_interval you choose in your configuration file).
 
