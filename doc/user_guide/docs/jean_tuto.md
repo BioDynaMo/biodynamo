@@ -130,7 +130,17 @@ you also can say to Paraview to visualize a particular parameter of ours cells, 
     name = "Cell"
     additional_data_members = [ "diameter_" ]
 ```
-Because those visualization parameters are not in the source code, you don’t need to compile your code again. We will first see live visualization then the export visualization. In both cases, simply run Paraview using the console line command `paraview &`. This windows should appears
+Because those visualization parameters are not in the source code, you don’t need to compile your code again.
+We can note that instead of creating a configuration file, you can do the same by adding directly in our Simulate function the lines
+``` C++
+    Param::live_visualization_ = true; // allows live visualization
+    Param::export_visualization_ = true; // allows export of visualization files
+    Param::visualization_export_interval_ = 2; // export visualization files every 2 steps
+    Param::visualize_sim_objects_["Cell"] = std::set<std::string>{ "diameter_" }; // add the data member diameter_ to the visualization objects
+```
+Once again, it is important to note that if you want to change any visualization parameter using this second method, you will have to compile again your code. That is not the case using a configuration file.  
+
+We will first see live visualization then the export visualization. In both cases, simply run Paraview using the console line command `paraview &`. This windows should appears
 
 ![Open ParaView](images/jean_tutorial/paraview1.png)
 
@@ -152,44 +162,15 @@ Go back to Paraview. You notice that new objects have appeared in the _Pipeline 
 
 ![select Cells_glyph](images/jean_tutorial/paraview5.png)
 
-A new Builtin object have appeared: _Extract: Cells Glyph_. Click on _Extract_ cells then on the eye in front of it.
+A new Builtin object have appeared: _Extract: Cells Glyph_. Click on the eye in front of it.
 
 ![select Extract Cells_glyph](images/jean_tutorial/paraview6.png)
 
 All cells appear on the screen!
 You can now go to the _Catalyst_ menu, and select _Continue_. The simulation will run the number of steps you specified in your code.
 
-![Cell display](images/jean_tutorial/paraview7.png)
-
-However, the displayed cells don’t exhibit their correct diameters, cells are just represented by dots. In order to tell Paraview to represents our cells with the correct diameter, we need to create a Glyph filter. The _Glyph filter_ creation is identical for the export visualization. create a Glyph filter by clicking on this icon:
-
-![Glyph filter](images/jean_tutorial/paraview7-2.png)
-
-Then, enter the following parameters:
-``` C++
-Glyph Type    = 'Sphere'
-Scalars       = 'diameter_'
-Glyph Mode    = 'All Points'
-Scale Mode    = 'Scalar'
-Scale Factor  = '1'
-Coloring      = 'diameter_'
-```
-
-![Glyph param](images/jean_tutorial/paraview7-3.png)
-
-Finally click on Apply. We now can see all our cells with the correct diameters!
-
 ![Cell display correct diam](images/jean_tutorial/paraview7-4.png)
 
-We can also note that instead of creating a configuration file, you can do the same by adding directly in our Simulate function the lines
-``` C++
-    Param::live_visualization_ = true; // allows live visualization
-    Param::export_visualization_ = true; // allows export of visualization files
-    Param::visualization_export_interval_ = 2; // export visualization files every 2 steps
-    Param::visualize_sim_objects_["Cell"] = std::set<std::string>{ "diameter_" }; // add the data member diameter_ to the visualization objects
-```
-
-However, it is important to note that if you want to change any visualization parameter using this second method, you will have to compile again your code. That is not the case using a configuration file.  
 Even if live visualization is particularly useful to set or tune a simulation, it is capital to note that it also drastically slows down the simulation! One way to avoid this major problem is to export visualization files and read then after the modelling is done.
 
 #### Export Visualisation
