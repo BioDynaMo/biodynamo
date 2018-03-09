@@ -507,24 +507,28 @@ class SoPointer {
   template <typename TTBackend = TBackend>
   auto& Get(typename std::enable_if<std::is_same<TTBackend, Scalar>::value>::type*
                p = 0) {
+    assert(!IsNullPtr());
     return (*so_container_)[element_idx_];
   }
 
   template <typename TTBackend = TBackend>
   const auto& Get(typename std::enable_if<std::is_same<TTBackend, Scalar>::value>::type*
                p = 0) const {
+    assert(!IsNullPtr());
     return (*so_container_)[element_idx_];
   }
 
   template <typename TTBackend = TBackend>
   auto Get(typename std::enable_if<std::is_same<TTBackend, Soa>::value>::type*
                p = 0) {
+    assert(!IsNullPtr());
     return (*so_container_)[element_idx_];
   }
 
   template <typename TTBackend = TBackend>
   const auto Get(typename std::enable_if<std::is_same<TTBackend, Soa>::value>::type*
                p = 0) const {
+    assert(!IsNullPtr());
     return (*so_container_)[element_idx_];
   }
 
