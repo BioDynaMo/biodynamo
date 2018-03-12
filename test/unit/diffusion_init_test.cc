@@ -17,6 +17,7 @@ TEST(DiffusionInitTest, GaussianBand) {
   Param::bound_space_ = true;
   Param::min_bound_ = 0;
   Param::max_bound_ = 250;
+  Rm()->Clear();
 
   // Create one cell at a random position
   auto construct = [](const std::array<double, 3>& position) {
@@ -70,6 +71,8 @@ TEST(DiffusionInitTest, GaussianBand) {
               kEps);
   EXPECT_NEAR(ROOT::Math::normal_pdf(130, 50, 125), conc[dgrid->GetBoxIndex(f)],
               kEps);
+
+  Param::Reset();
 }
 
 }  // namespace bdm
