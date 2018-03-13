@@ -123,9 +123,9 @@ BDM_SO_DEFINE(
   double radius = 0.5 * Base::diameter_[kIdx];
   double new_length = Param::kNeuriteDefaultActualLength;
   // position in bdm.cells coord
-  double x_coord = std::cos(theta) * std::sin(phi);
+  double x_coord = std::sin(theta) * std::cos(phi);
   double y_coord = std::sin(theta) * std::sin(phi);
-  double z_coord = std::cos(phi);
+  double z_coord = std::cos(theta);
   std::array<double, 3> axis_direction{
       x_coord * Base::kXAxis[0] + y_coord * Base::kYAxis[0] +
           z_coord * Base::kZAxis[0],

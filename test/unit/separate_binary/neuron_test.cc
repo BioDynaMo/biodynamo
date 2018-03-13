@@ -2,8 +2,8 @@
 #include "gtest/gtest.h"
 
 #include "compile_time_param.h"
-#include "neuroscience/compile_time_param.h"
 #include "displacement_op.h"
+#include "neuroscience/compile_time_param.h"
 
 #include "unit/test_util.h"
 // FIXME move to neuroscience directory
@@ -13,9 +13,11 @@ namespace bdm {
 namespace neuroscience {
 BDM_SIM_OBJECT(SpecializedNeurite, Neurite) {
   BDM_SIM_OBJECT_HEADER(SpecializedNeuriteExt, 1, foo_);
-public:
+
+ public:
   SpecializedNeuriteExt() {}
-private:
+
+ private:
   vec<int> foo_;
 };
 }
@@ -26,7 +28,8 @@ struct CompileTimeParam
       public neuroscience::DefaultCompileTimeParam<TBackend> {
   using TNeuron = neuroscience::SpecializedNeuron;
   using TNeurite = neuroscience::SpecializedNeurite;
-  using AtomicTypes = VariadicTypedef<neuroscience::SpecializedNeuron, neuroscience::SpecializedNeurite>;
+  using AtomicTypes = VariadicTypedef<neuroscience::SpecializedNeuron,
+                                      neuroscience::SpecializedNeurite>;
 };
 
 namespace neuroscience {
@@ -43,6 +46,50 @@ TEST(NeuronTest, Soa) {
   SoaSpecializedNeuron sneuron;
   typename SpecializedNeuron::template Self<Soa> soan;
   typename CompileTimeParam<>::TNeuron soan1;
+}
+
+TEST(NeuronTest, ExtendNewNeuriteSphericalCoordinates) {
+  auto* rm = Rm();
+  Rm()->Clear();
+  const double kEpsilon = abs_error<double>::value;
+
+  // create neuron
+  std::array<double, 3> origin = {0, 0, 0};
+  auto neuron = rm->New<SpecializedNeuron>(origin);
+  neuron.SetDiameter(20);
+
+  // new neurite
+  auto neurite =
+      neuron.ExtendNewNeurite(10, Math::kPi / 8, Math::kPi / 3).Get();
+  neurite.SetDiameter(2);
+
+  // verify
+  EXPECT_ARR_NEAR(neurite.GetPosition(),
+                  {8.4010830245082868, 3.4798425273737141, 5.2500000000000009});
+  EXPECT_ARR_NEAR(neurite.GetMassLocation(),
+                  {8.8011345971039194, 3.6455493143915101, 5.5});
+  EXPECT_ARR_NEAR(neurite.GetXAxis(),
+                  {0.80010314519126546, 0.3314135740355918, 0.5});
+  EXPECT_ARR_NEAR(
+      neurite.GetYAxis(),
+      {-0.28104832556833692, 0.94348558173665553, -0.17563255891285873});
+  EXPECT_ARR_NEAR(neurite.GetZAxis(),
+                  {-0.52994980493465504, 0, 0.84802901144343001});
+  EXPECT_ARR_NEAR(neurite.GetSpringAxis(),
+                  {0.80010314519126546, 0.3314135740355918, 0.5});
+  EXPECT_NEAR(3.1415926535897931, neurite.GetVolume(), kEpsilon);
+  EXPECT_NEAR(2, neurite.GetDiameter(), kEpsilon);
+  EXPECT_NEAR(0, neurite.GetBranchOrder(), kEpsilon);
+  EXPECT_NEAR(1, neurite.GetActualLength(), kEpsilon);
+  EXPECT_NEAR(0, neurite.GetTension(), kEpsilon);
+  EXPECT_NEAR(10, neurite.GetSpringConstant(), kEpsilon);
+  EXPECT_NEAR(1, neurite.GetRestingLength(), kEpsilon);
+  EXPECT_TRUE(neurite.GetDaughterLeft().IsNullPtr());
+  EXPECT_TRUE(neurite.GetDaughterRight().IsNullPtr());
+  EXPECT_TRUE(neurite.GetMother().IsNeuron());
+
+  EXPECT_EQ(1u, rm->Get<SpecializedNeuron>()->size());
+  EXPECT_EQ(1u, rm->Get<SpecializedNeurite>()->size());
 }
 
 TEST(NeuronTest, ExtendNewNeurite) {
@@ -146,9 +193,7 @@ TEST(NeuriteTest, PartialRetraction) {
   Rm()->Clear();
   const double kEpsilon = abs_error<double>::value;
   std::array<double, 3> origin = {0, 0, 0};
-  auto commit = [](auto* container, uint16_t type_idx){
-    container->Commit();
-  };
+  auto commit = [](auto* container, uint16_t type_idx) { container->Commit(); };
 
   auto neuron = rm->New<SpecializedNeuron>(origin);
   neuron.SetDiameter(20);
@@ -195,9 +240,7 @@ TEST(NeuriteTest, TotalRetraction) {
   auto* rm = Rm();
   Rm()->Clear();
   std::array<double, 3> origin = {0, 0, 0};
-  auto commit = [](auto* container, uint16_t type_idx){
-    container->Commit();
-  };
+  auto commit = [](auto* container, uint16_t type_idx) { container->Commit(); };
 
   auto neuron = rm->New<SpecializedNeuron>(origin);
   neuron.SetDiameter(20);
@@ -230,9 +273,7 @@ TEST(NeuriteTest, Branch) {
   Rm()->Clear();
   const double kEpsilon = abs_error<double>::value;
   std::array<double, 3> origin = {0, 0, 0};
-  auto commit = [](auto* container, uint16_t type_idx){
-    container->Commit();
-  };
+  auto commit = [](auto* container, uint16_t type_idx) { container->Commit(); };
 
   auto neuron = rm->New<SpecializedNeuron>(origin);
   neuron.SetDiameter(20);
@@ -250,12 +291,17 @@ TEST(NeuriteTest, Branch) {
 
   // verify
   //  neurite segment
-  EXPECT_ARR_NEAR(neurite_segment.GetMassLocation(), {0, 14.142135623730928, 25.142135623730923});
-  EXPECT_ARR_NEAR(neurite_segment.GetPosition(), {0,  12.881717786265909, 23.856717786265904});
-  EXPECT_ARR_NEAR(neurite_segment.GetXAxis(), {0, 0.70012926565611089, 0.7140161142242063});
-  EXPECT_ARR_NEAR(neurite_segment.GetYAxis(), {0, 0.71401611422420619, -0.70012926565611078});
+  EXPECT_ARR_NEAR(neurite_segment.GetMassLocation(),
+                  {0, 14.142135623730928, 25.142135623730923});
+  EXPECT_ARR_NEAR(neurite_segment.GetPosition(),
+                  {0, 12.881717786265909, 23.856717786265904});
+  EXPECT_ARR_NEAR(neurite_segment.GetXAxis(),
+                  {0, 0.70012926565611089, 0.7140161142242063});
+  EXPECT_ARR_NEAR(neurite_segment.GetYAxis(),
+                  {0, 0.71401611422420619, -0.70012926565611078});
   EXPECT_ARR_NEAR(neurite_segment.GetZAxis(), {-1, 0, 0});
-  EXPECT_ARR_NEAR(neurite_segment.GetSpringAxis(), {0, 2.5208356749300371, 2.5708356749300378});
+  EXPECT_ARR_NEAR(neurite_segment.GetSpringAxis(),
+                  {0, 2.5208356749300371, 2.5708356749300378});
   EXPECT_NEAR(11.311395231915842, neurite_segment.GetVolume(), kEpsilon);
   EXPECT_NEAR(2, neurite_segment.GetDiameter(), kEpsilon);
   EXPECT_NEAR(0, neurite_segment.GetBranchOrder(), kEpsilon);
@@ -269,26 +315,34 @@ TEST(NeuriteTest, Branch) {
 
   //  proximal segment
   auto proximal_segment = neurite_segment.GetMother().GetNeuriteSoPtr().Get();
-  EXPECT_ARR_NEAR(proximal_segment.GetMassLocation(), {0, 11.621299948800891, 22.571299948800885});
-  EXPECT_ARR_NEAR(proximal_segment.GetPosition(), {0, 10.360882111335872, 21.285882111335866});
-  EXPECT_ARR_NEAR(proximal_segment.GetXAxis(), {0, 0.70012926565611089, 0.7140161142242063});
-  EXPECT_ARR_NEAR(proximal_segment.GetYAxis(), {0, 0.71401611422420619, -0.70012926565611078});
+  EXPECT_ARR_NEAR(proximal_segment.GetMassLocation(),
+                  {0, 11.621299948800891, 22.571299948800885});
+  EXPECT_ARR_NEAR(proximal_segment.GetPosition(),
+                  {0, 10.360882111335872, 21.285882111335866});
+  EXPECT_ARR_NEAR(proximal_segment.GetXAxis(),
+                  {0, 0.70012926565611089, 0.7140161142242063});
+  EXPECT_ARR_NEAR(proximal_segment.GetYAxis(),
+                  {0, 0.71401611422420619, -0.70012926565611078});
   EXPECT_ARR_NEAR(proximal_segment.GetZAxis(), {-1, 0, 0});
-  EXPECT_ARR_NEAR(proximal_segment.GetSpringAxis(), {0, 2.5208356749300371, 2.5708356749300378});
+  EXPECT_ARR_NEAR(proximal_segment.GetSpringAxis(),
+                  {0, 2.5208356749300371, 2.5708356749300378});
   EXPECT_NEAR(11.311395231915842, proximal_segment.GetVolume(), kEpsilon);
   EXPECT_NEAR(2, proximal_segment.GetDiameter(), kEpsilon);
   EXPECT_NEAR(0, proximal_segment.GetBranchOrder(), kEpsilon);
   EXPECT_NEAR(3.6005289288510043, proximal_segment.GetActualLength(), kEpsilon);
   EXPECT_NEAR(0, proximal_segment.GetTension(), kEpsilon);
   EXPECT_NEAR(10, proximal_segment.GetSpringConstant(), kEpsilon);
-  EXPECT_NEAR(3.6005289288510043, proximal_segment.GetRestingLength(), kEpsilon);
+  EXPECT_NEAR(3.6005289288510043, proximal_segment.GetRestingLength(),
+              kEpsilon);
   EXPECT_FALSE(proximal_segment.GetDaughterLeft().IsNullPtr());
   EXPECT_FALSE(proximal_segment.GetDaughterRight().IsNullPtr());
   EXPECT_TRUE(proximal_segment.GetMother().IsNeurite());
 
   //  new branch
-  EXPECT_ARR_NEAR(branch.GetMassLocation(), {0, 12.621299948800891, 22.571299948800885});
-  EXPECT_ARR_NEAR(branch.GetPosition(), {0, 12.121299948800891, 22.571299948800885});
+  EXPECT_ARR_NEAR(branch.GetMassLocation(),
+                  {0, 12.621299948800891, 22.571299948800885});
+  EXPECT_ARR_NEAR(branch.GetPosition(),
+                  {0, 12.121299948800891, 22.571299948800885});
   EXPECT_ARR_NEAR(branch.GetXAxis(), {0, 1, 0});
   EXPECT_ARR_NEAR(branch.GetYAxis(), {0, 0, -1});
   EXPECT_ARR_NEAR(branch.GetZAxis(), {-1, 0, 0});
@@ -314,9 +368,7 @@ TEST(NeuriteTest, RightDaughterRetraction) {
   Rm()->Clear();
   const double kEpsilon = abs_error<double>::value;
   std::array<double, 3> origin = {0, 0, 0};
-  auto commit = [](auto* container, uint16_t type_idx){
-    container->Commit();
-  };
+  auto commit = [](auto* container, uint16_t type_idx) { container->Commit(); };
 
   auto neuron = rm->New<SpecializedNeuron>(origin);
   neuron.SetDiameter(20);
@@ -354,12 +406,16 @@ TEST(NeuriteTest, RightDaughterRetraction) {
   EXPECT_NEAR(6.90360233225694, branch.GetLength(), kEpsilon);
 
   //  new branch
-  EXPECT_ARR_NEAR(branch.GetMassLocation(), {0, 17.9175034106028, 25.4028272980485});
-  EXPECT_ARR_NEAR(branch.GetPosition(), {0, 14.769401679701861, 23.987063623424685});
+  EXPECT_ARR_NEAR(branch.GetMassLocation(),
+                  {0, 17.9175034106028, 25.4028272980485});
+  EXPECT_ARR_NEAR(branch.GetPosition(),
+                  {0, 14.769401679701861, 23.987063623424685});
   EXPECT_ARR_NEAR(branch.GetXAxis(), {0, 0.912017112049318, 0.410152151438001});
-  EXPECT_ARR_NEAR(branch.GetYAxis(), {0, 0.410152151438001, -0.912017112049318});
+  EXPECT_ARR_NEAR(branch.GetYAxis(),
+                  {0, 0.410152151438001, -0.912017112049318});
   EXPECT_ARR_NEAR(branch.GetZAxis(), {-1, 0, 0});
-  EXPECT_ARR_NEAR(branch.GetSpringAxis(), {0, 6.29620346180194, 2.8315273492476});
+  EXPECT_ARR_NEAR(branch.GetSpringAxis(),
+                  {0, 6.29620346180194, 2.8315273492476});
   EXPECT_NEAR(21.688306370323865, branch.GetVolume(), kEpsilon);
   EXPECT_NEAR(2, branch.GetDiameter(), kEpsilon);
   EXPECT_NEAR(1, branch.GetBranchOrder(), kEpsilon);
@@ -381,9 +437,7 @@ TEST(NeuriteTest, RightDaughterTotalRetraction) {
   Rm()->Clear();
   const double kEpsilon = abs_error<double>::value;
   std::array<double, 3> origin = {0, 0, 0};
-  auto commit = [](auto* container, uint16_t type_idx){
-    container->Commit();
-  };
+  auto commit = [](auto* container, uint16_t type_idx) { container->Commit(); };
 
   auto neuron = rm->New<SpecializedNeuron>(origin);
   neuron.SetDiameter(20);
@@ -412,7 +466,7 @@ TEST(NeuriteTest, RightDaughterTotalRetraction) {
   auto proximal_segment = neurite_segment.GetMother().GetNeuriteSoPtr().Get();
   auto right_daughter_ps = proximal_segment.GetDaughterRight().Get();
   // right_daughter_ps == branch
-  while(!proximal_segment.GetDaughterRight().IsNullPtr()) {
+  while (!proximal_segment.GetDaughterRight().IsNullPtr()) {
     right_daughter_ps.RetractTerminalEnd(10);
     right_daughter_ps.RunDiscretization();
   }
@@ -431,9 +485,7 @@ TEST(NeuriteTest, LeftDaughterRetraction) {
   Rm()->Clear();
   const double kEpsilon = abs_error<double>::value;
   std::array<double, 3> position = {0, 0, 0};
-  auto commit = [](auto* container, uint16_t type_idx){
-    container->Commit();
-  };
+  auto commit = [](auto* container, uint16_t type_idx) { container->Commit(); };
 
   auto neuron = rm->New<SpecializedNeuron>(position);
   neuron.SetDiameter(20);
@@ -471,12 +523,16 @@ TEST(NeuriteTest, LeftDaughterRetraction) {
   EXPECT_NEAR(10.903602332257, branch.GetLength(), kEpsilon);
 
   //  new branch
-  EXPECT_ARR_NEAR(branch.GetMassLocation(), {0, 21.5655718588001, 27.0434359038005});
-  EXPECT_ARR_NEAR(branch.GetPosition(), {0, 16.59343590380049, 24.807367926300685});
+  EXPECT_ARR_NEAR(branch.GetMassLocation(),
+                  {0, 21.5655718588001, 27.0434359038005});
+  EXPECT_ARR_NEAR(branch.GetPosition(),
+                  {0, 16.59343590380049, 24.807367926300685});
   EXPECT_ARR_NEAR(branch.GetXAxis(), {0, 0.912017112049318, 0.410152151438001});
-  EXPECT_ARR_NEAR(branch.GetYAxis(), {0, 0.410152151438001, -0.912017112049318});
+  EXPECT_ARR_NEAR(branch.GetYAxis(),
+                  {0, 0.410152151438001, -0.912017112049318});
   EXPECT_ARR_NEAR(branch.GetZAxis(), {-1, 0, 0});
-  EXPECT_ARR_NEAR(branch.GetSpringAxis(), {0, 9.9442719099992, 4.4721359549996});
+  EXPECT_ARR_NEAR(branch.GetSpringAxis(),
+                  {0, 9.9442719099992, 4.4721359549996});
   EXPECT_NEAR(34.254676984682995, branch.GetVolume(), kEpsilon);
   EXPECT_NEAR(2, branch.GetDiameter(), kEpsilon);
   EXPECT_NEAR(1, branch.GetBranchOrder(), kEpsilon);
@@ -497,9 +553,7 @@ TEST(NeuriteTest, RetractAllDendrites) {
   auto* rm = Rm();
   Rm()->Clear();
   std::array<double, 3> origin = {0, 0, 0};
-  auto commit = [](auto* container, uint16_t type_idx){
-    container->Commit();
-  };
+  auto commit = [](auto* container, uint16_t type_idx) { container->Commit(); };
 
   auto neuron = rm->New<SpecializedNeuron>(origin);
   neuron.SetDiameter(20);
@@ -547,9 +601,7 @@ TEST(NeuriteTest, Bifurcate) {
   Rm()->Clear();
   const double kEpsilon = abs_error<double>::value;
   std::array<double, 3> origin = {0, 0, 0};
-  auto commit = [](auto* container, uint16_t type_idx){
-    container->Commit();
-  };
+  auto commit = [](auto* container, uint16_t type_idx) { container->Commit(); };
 
   auto neuron = rm->New<SpecializedNeuron>(origin);
   neuron.SetDiameter(20);
@@ -580,12 +632,17 @@ TEST(NeuriteTest, Bifurcate) {
 
   //  left branch
   auto branch_l = bifurcation[0].Get();
-  EXPECT_ARR_NEAR(branch_l.GetMassLocation(), {0, 0.707106781186547, 11.7071067811865});
-  EXPECT_ARR_NEAR(branch_l.GetPosition(), {0, 0.353553390593274, 11.3535533905933});
-  EXPECT_ARR_NEAR(branch_l.GetXAxis(), {0, 0.707106781186548, 0.707106781186548});
-  EXPECT_ARR_NEAR(branch_l.GetYAxis(), {0, 0.707106781186548, -0.707106781186548});
+  EXPECT_ARR_NEAR(branch_l.GetMassLocation(),
+                  {0, 0.707106781186547, 11.7071067811865});
+  EXPECT_ARR_NEAR(branch_l.GetPosition(),
+                  {0, 0.353553390593274, 11.3535533905933});
+  EXPECT_ARR_NEAR(branch_l.GetXAxis(),
+                  {0, 0.707106781186548, 0.707106781186548});
+  EXPECT_ARR_NEAR(branch_l.GetYAxis(),
+                  {0, 0.707106781186548, -0.707106781186548});
   EXPECT_ARR_NEAR(branch_l.GetZAxis(), {-1, 0, 0});
-  EXPECT_ARR_NEAR(branch_l.GetSpringAxis(), {0, 0.707106781186547, 0.707106781186548});
+  EXPECT_ARR_NEAR(branch_l.GetSpringAxis(),
+                  {0, 0.707106781186547, 0.707106781186548});
   EXPECT_NEAR(3.1415926535897931, branch_l.GetVolume(), kEpsilon);
   EXPECT_NEAR(2, branch_l.GetDiameter(), kEpsilon);
   EXPECT_NEAR(1, branch_l.GetBranchOrder(), kEpsilon);
@@ -599,12 +656,17 @@ TEST(NeuriteTest, Bifurcate) {
 
   //  right branch
   auto branch_r = bifurcation[1].Get();
-  EXPECT_ARR_NEAR(branch_r.GetMassLocation(), {0.707106781186547, 0.707106781186547, 11});
-  EXPECT_ARR_NEAR(branch_r.GetPosition(), {0.353553390593274, 0.353553390593274, 11});
-  EXPECT_ARR_NEAR(branch_r.GetXAxis(), {0.707106781186548, 0.707106781186548, 0});
-  EXPECT_ARR_NEAR(branch_r.GetYAxis(), {-0.707106781186548, 0.707106781186548, -0});
+  EXPECT_ARR_NEAR(branch_r.GetMassLocation(),
+                  {0.707106781186547, 0.707106781186547, 11});
+  EXPECT_ARR_NEAR(branch_r.GetPosition(),
+                  {0.353553390593274, 0.353553390593274, 11});
+  EXPECT_ARR_NEAR(branch_r.GetXAxis(),
+                  {0.707106781186548, 0.707106781186548, 0});
+  EXPECT_ARR_NEAR(branch_r.GetYAxis(),
+                  {-0.707106781186548, 0.707106781186548, -0});
   EXPECT_ARR_NEAR(branch_r.GetZAxis(), {-0, 0, 1});
-  EXPECT_ARR_NEAR(branch_r.GetSpringAxis(), {0.707106781186547, 0.707106781186547, 0});
+  EXPECT_ARR_NEAR(branch_r.GetSpringAxis(),
+                  {0.707106781186547, 0.707106781186547, 0});
   EXPECT_NEAR(3.1415926535897931, branch_r.GetVolume(), kEpsilon);
   EXPECT_NEAR(2, branch_r.GetDiameter(), kEpsilon);
   EXPECT_NEAR(1, branch_r.GetBranchOrder(), kEpsilon);
@@ -620,7 +682,6 @@ TEST(NeuriteTest, Bifurcate) {
   EXPECT_EQ(1u, rm->Get<SpecializedNeuron>()->size());
   EXPECT_EQ(3u, rm->Get<SpecializedNeurite>()->size());
 }
-
 
 TEST(DISABLED_NeuronNeuriteTest, Displacement) {
   auto* rm = Rm();
@@ -660,7 +721,8 @@ TEST(DISABLED_NeuronNeuriteTest, Displacement) {
   // // cell 2
   // final_position = (*cells)[1].GetPosition();
   // EXPECT_NEAR(0, final_position[0], abs_error<double>::value);
-  // EXPECT_NEAR(5.0992371702325645, final_position[1], abs_error<double>::value);
+  // EXPECT_NEAR(5.0992371702325645, final_position[1],
+  // abs_error<double>::value);
   // EXPECT_NEAR(0, final_position[2], abs_error<double>::value);
   //
   // // check if tractor_force has been reset to zero
@@ -686,10 +748,8 @@ TEST(DISABLED_NeuronNeuriteTest, Displacement) {
   // EXPECT_NEAR(1.1, (*cells)[1].GetMass(), abs_error<double>::value);
 }
 
-
 }  // namespace neuroscience
 }  // namespace bdm
-
 
 int main(int argc, char** argv) {
   ::testing::InitGoogleTest(&argc, argv);
