@@ -27,7 +27,10 @@ inline int Simulate(int argc, const char** argv) {
   gErrorIgnoreLevel = kWarning;  // TODO make command line argument
 
   // hard code parameters to avoid parameter file
-  Param::live_visualization_ = true;
+  Param::export_visualization_ = true;
+  Param::visualize_sim_objects_["Cell"] = {};
+  Param::visualize_sim_objects_["Neuron"] = {};
+  Param::visualize_sim_objects_["Neurite"] = {};
 
   Scheduler<> scheduler;
 
@@ -65,7 +68,7 @@ inline int Simulate(int argc, const char** argv) {
   cell_c.SetMass(3);
   cell_c.SetDiameter(10);
   // TODO cell_c->SetColor(Param::kYellowSolid);
-  
+
   auto cell_d = Rm()->New<Cell>();
   cell_d.SetPosition({ 10, 0, 160});
   cell_d.SetMass(2);
@@ -79,8 +82,8 @@ inline int Simulate(int argc, const char** argv) {
     // cell_d.SetDiameter(cell_d.GetDiameter()+1);
     scheduler.Simulate(1);
   }
-  
-  scheduler.Simulate(1000);
+
+  scheduler.Simulate(10);
 
   // FIXME check result
   return 0;

@@ -31,12 +31,16 @@ TEST_F(CatalystAdaptorTest, GenerateSimulationInfoJson) {
   Param::export_visualization_ = true;
   Param::visualize_sim_objects_.clear();
   Param::visualize_sim_objects_["cell"] = {};
-  Param::visualize_sim_objects_["neuron"] = {};
+  Param::visualize_sim_objects_["neurite"] = {};
   Param::visualize_diffusion_.clear();
   Param::visualize_diffusion_.push_back({"sodium", true, true});
   Param::executable_name_ = kSimulationName;
 
-  CatalystAdaptor<>::GenerateSimulationInfoJson();
+  std::unordered_map<std::string, Shape> shapes;
+  shapes["cell"] = kSphere;
+  shapes["neurite"] = kCylinder;
+
+  CatalystAdaptor<>::GenerateSimulationInfoJson(shapes);
 
   Param::Reset();
 
@@ -47,16 +51,28 @@ TEST_F(CatalystAdaptorTest, GenerateSimulationInfoJson) {
   std::stringstream buffer;
   buffer << ifs.rdbuf();
 
-  // TODO(lukas) once file export has been generalized, change first sim_object
-  // name to "neuron"
   const char* expected = R"STR({
   "simulation": {
     "name":"MySimulation",
     "result_dir":"."
   },
   "sim_objects": [
-    { "name":"cell", "glyph":"Glyph", "shape":"Sphere", "scaling_attribute":"diameter_" },
-    { "name":"cell", "glyph":"Glyph", "shape":"Sphere", "scaling_attribute":"diameter_" }
+    {
+      "name":"neurite",
+      "glyph":"BDMGlyph",
+      "shape":"Cylinder",
+      "x_scaling_attribute":"diameter_",
+      "y_scaling_attribute":"actual_length_",
+      "z_scaling_attribute":"diameter_",
+      "Vectors":"spring_axis_",
+      "MassLocation":"mass_location_"
+    },
+    {
+      "name":"cell",
+      "glyph":"Glyph",
+      "shape":"Sphere",
+      "scaling_attribute":"diameter_"
+    }
   ],
   "extracellular_substances": [
     { "name":"sodium", "has_gradient":"true" }

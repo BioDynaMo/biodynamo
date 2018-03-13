@@ -92,7 +92,7 @@ class CatalystAdaptor {
 
     void operator()(std::vector<std::array<double, 3>>* dm,
                     const std::string& name) {
-      if(name == "position_") { // TODO performance
+      if (name == "position_") {  // TODO performance
         vtkNew<vtkDoubleArray> vtk_array;
         vtk_array->SetName(name.c_str());
         auto ptr = dm->data()->data();
@@ -102,13 +102,13 @@ class CatalystAdaptor {
         vtkNew<vtkPoints> points;
         points->SetData(vtk_array.GetPointer());
         (*vtk_data)[type_idx]->SetPoints(points.GetPointer());
-      } else if(name == "mass_location_") {
+      } else if (name == "mass_location_") {
         // create points with position {0, 0, 0}
         // BDMGlyph will rotate and translate
         vtkNew<vtkPoints> points;
         points->SetNumberOfPoints(num_cells);
         (*vtk_data)[type_idx]->SetPoints(points.GetPointer());
-        
+
         vtkNew<vtkDoubleArray> vtk_array;
         vtk_array->SetName(name.c_str());
         auto ptr = dm->data()->data();
@@ -165,8 +165,7 @@ class CatalystAdaptor {
 
     auto required_dm = TContainer::GetRequiredVisDataMembers();
     sim_objects->ForEachDataMemberIn(
-        required_dm,
-        AddCellAttributeData(type_idx, num_cells, &vtk_so_grids_));
+        required_dm, AddCellAttributeData(type_idx, num_cells, &vtk_so_grids_));
 
     auto& additional_dm = Param::visualize_sim_objects_[scalar_name];
     if (!additional_dm.empty()) {
@@ -238,10 +237,6 @@ class CatalystAdaptor {
       pipeline_ = new InSituPipeline();  // TODO change name to InSituPipeline
       g_processor_->AddPipeline(pipeline_);
     }
-
-    if (Param::export_visualization_) {
-      GenerateSimulationInfoJson();
-    }
   }
 
   /// Cleans up allocated memory
@@ -272,8 +267,8 @@ class CatalystAdaptor {
     uint64_t counter = 0;
     for (auto vtk_so : vtk_so_grids_) {
       vtkNew<vtkXMLPUnstructuredGridWriter> cells_writer;
-      std::string filename = so_scalar_names_[counter]+ "_data_" +
-                                   std::to_string(step) + ".pvtu";
+      std::string filename =
+          so_scalar_names_[counter] + "_data_" + std::to_string(step) + ".pvtu";
 
       cells_writer->SetFileName(filename.c_str());
       cells_writer->SetInputData(vtk_so);
@@ -386,6 +381,11 @@ class CatalystAdaptor {
 
     CreateVtkObjects(data_description);
 
+    if (!sim_info_json_generated_) {
+      GenerateSimulationInfoJson(shapes_);
+      sim_info_json_generated_ = true;
+    }
+
     if (last_time_step == true) {
       data_description->ForceOutputOn();
     }
@@ -404,6 +404,8 @@ class CatalystAdaptor {
   std::vector<bool> dg_is_initialized_;
   std::unordered_map<std::string, Shape> shapes_;
   std::vector<std::string> so_scalar_names_;
+  //
+  bool sim_info_json_generated_ = false;
   static constexpr char const* kSimulationInfoJson = "simulation_info.json";
 
   friend class CatalystAdaptorTest_GenerateSimulationInfoJson_Test;
@@ -413,24 +415,38 @@ class CatalystAdaptor {
   /// information on the C++ side to a python script which generates the
   /// ParaView state file. The Json file is generated inside this function
   /// \see GenerateParaviewState
-  static void GenerateSimulationInfoJson() {
+  static void GenerateSimulationInfoJson(
+      const std::unordered_map<std::string, Shape>& shapes) {
     // simulation objects
     std::stringstream sim_objects;
     uint64_t num_sim_objects = Param::visualize_sim_objects_.size();
     uint64_t counter = 0;
     for (const auto& entry : Param::visualize_sim_objects_) {
-      auto so_name = entry.first;
-      // TODO(lukas) remove next line after export file names have been
-      // generalized
-      so_name = "cell";
+      std::string so_name = entry.first;
 
-      sim_objects << "    { \"name\":\"" << so_name << "\", ";
-      // TODO(lukas) generalize
-      sim_objects << "\"glyph\":\"Glyph\", \"shape\":\"Sphere\", "
-                     "\"scaling_attribute\":\"diameter_\" }";
-      if (counter != num_sim_objects - 1) {
-        sim_objects << "," << std::endl;
+      sim_objects << "    {" << std::endl
+                  << "      \"name\":\"" << so_name << "\"," << std::endl;
+      if (shapes.at(so_name) == Shape::kSphere) {
+        sim_objects << "      \"glyph\":\"Glyph\"," << std::endl
+                    << "      \"shape\":\"Sphere\"," << std::endl
+                    << "      \"scaling_attribute\":\"diameter_\"" << std::endl;
+      } else if (shapes.at(so_name) == kCylinder) {
+        sim_objects << "      \"glyph\":\"BDMGlyph\"," << std::endl
+                    << "      \"shape\":\"Cylinder\"," << std::endl
+                    << "      \"x_scaling_attribute\":\"diameter_\","
+                    << std::endl
+                    << "      \"y_scaling_attribute\":\"actual_length_\","
+                    << std::endl
+                    << "      \"z_scaling_attribute\":\"diameter_\","
+                    << std::endl
+                    << "      \"Vectors\":\"spring_axis_\"," << std::endl
+                    << "      \"MassLocation\":\"mass_location_\"" << std::endl;
       }
+      sim_objects << "    }";
+      if (counter != num_sim_objects - 1) {
+        sim_objects << ",";
+      }
+      sim_objects << std::endl;
       counter++;
     }
 
@@ -460,8 +476,7 @@ class CatalystAdaptor {
           << "\"" << std::endl
           << "  }," << std::endl
           << "  \"sim_objects\": [" << std::endl
-          << sim_objects.str() << std::endl
-          << "  ]," << std::endl
+          << sim_objects.str() << "  ]," << std::endl
           << "  \"extracellular_substances\": [" << std::endl
           << substances.str() << std::endl
           << "  ]" << std::endl
