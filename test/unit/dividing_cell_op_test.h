@@ -11,6 +11,7 @@ namespace dividing_cell_op_test_internal {
 
 template <typename TRm = ResourceManager<>>
 void RunTest() {
+  Param::Reset();
   auto rm = TRm::Get();
   rm->Clear();
   auto cells = rm->template Get<Cell>();
