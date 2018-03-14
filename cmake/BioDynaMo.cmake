@@ -109,6 +109,84 @@ function(bdm_generate_dictionary TARGET)
     DEPENDS ${ARG_DEPENDS} ${CMAKE_CURRENT_BINARY_DIR}/rebuild_${TARGET})
 endfunction(bdm_generate_dictionary)
 
+# TODO fix documentation
+# function bdm_generate_dictionary1 (TARGET
+#                                DICT dictionary
+#                                DEPENDS
+#                                HEADERS header1 header2 ...
+#                                DEPENDS target1 target2
+#                                OPTIONS opt1...)
+# BDM version of ROOT's genreflex macro. Uses add_custom_target instead of
+# add_custom_command. This change is required to add dependencies between the
+# object library dictionary generation and creation of the final shared lib/
+# executable.
+# Ouput of genreflex is piped into a log file ${TARGET}.log
+function(bdm_generate_dictionary1 TARGET)
+  CMAKE_PARSE_ARGUMENTS(ARG "" "DICT" "LINKDEF;HEADERS;DEPENDS;OPTIONS" "" ${ARGN})
+  #---Get the list of header files-------------------------
+  set(headerfiles)
+  foreach(fp ${ARG_HEADERS})
+    file(GLOB files ${fp})
+    if(files)
+      foreach(f ${files})
+        set(headerfiles ${headerfiles} ${f})
+      endforeach()
+    else()
+      set(headerfiles ${headerfiles} ${fp})
+    endif()
+  endforeach()
+
+  #--- linkdef file ------------------------------------
+  # TODO generate linkdef
+  set(linkdeffile ${CMAKE_CURRENT_BINARY_DIR}/${TARGET}_linkdef.h)
+
+  #---Get the list of include directories------------------
+  get_directory_property(incdirs INCLUDE_DIRECTORIES)
+  set(includedirs)
+  foreach( d ${incdirs})
+    set(includedirs ${includedirs} -I${d})
+  endforeach()
+  # header install path on linux
+  set(includedirs ${includedirs} -I/snap/biodynamo/current/biodynamo/include)
+  # header install path on osx
+  set(includedirs ${includedirs} -I/usr/local/include/biodynamo)
+  #---Get preprocessor definitions--------------------------
+  get_directory_property(defs COMPILE_DEFINITIONS)
+  foreach( d ${defs})
+    # definitions that were initialily defined with escaped quotes
+    # e.g. add_definitions(-DFOO=\"bar\") are changed to normal quotes in ${d}
+    # The string replace call has been added to fix this issue
+    string(REPLACE "\"" "\\\"" d_fixed ${d})
+    set(definitions ${definitions} -D${d_fixed})
+  endforeach()
+  #---Actual command----------------------------------------
+  message("ARGDICT " ${ARG_DICT})
+  file(WRITE ${ARG_DICT} "")
+  # determine when dictionary should be rebuilt
+  # solves problem that add_custom_command does not have a target name that
+  # can be used in add_dependencies and add_custom_target is always executed
+  # if CMake configuration changes always rebuild dictionary -> remove file
+  file(REMOVE ${CMAKE_CURRENT_BINARY_DIR}/rebuild_${TARGET})
+  add_custom_command(
+    OUTPUT rebuild_${TARGET}
+    COMMAND echo 1 >rebuild_${TARGET}
+    DEPENDS ${headerfiles}
+    COMMENT "Build dictionary ${TARGET}")
+  # invoke genreflex only if rebuild_${TARGET} file does not contain a 0.
+  # Had issues with if [[ ]] statement; used grep instead
+  # if grep does not find the pattern it has a non zero exit code
+  # --> grep 0 file || command
+  #   command is executed if pattern 0 is not found in file
+  add_custom_target(${TARGET}
+    COMMAND grep 0 ${CMAKE_CURRENT_BINARY_DIR}/rebuild_${TARGET} >/dev/null ||
+            ${ROOTCLING_EXECUTABLE} -f ${ARG_DICT} ${rootmapopts} ${ARG_OPTIONS}
+            ${includedirs} ${definitions} -v  ${headerfiles} ${linkdeffile}
+            >${CMAKE_CURRENT_BINARY_DIR}/${TARGET}.log 2>&1
+    COMMAND echo 0 > ${CMAKE_CURRENT_BINARY_DIR}/rebuild_${TARGET}
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+    DEPENDS ${ARG_DEPENDS} ${CMAKE_CURRENT_BINARY_DIR}/rebuild_${TARGET})
+endfunction(bdm_generate_dictionary1)
+
 
 # function bdm_add_executable( TARGET
 #                              SOURCES source1 source2 ...
@@ -133,24 +211,29 @@ function(bdm_add_executable TARGET)
   add_library(${TARGET}-objectlib OBJECT ${ARG_SOURCES})
 
   # generate dictionaries using genreflex
+  # set(DICT_FILE "${CMAKE_CURRENT_BINARY_DIR}/${TARGET}_dict.cc")
+  # bdm_generate_dictionary(${TARGET}-dict
+  #   DICT "${DICT_FILE}"
+  #   HEADERS ${ARG_HEADERS}
+  #   SELECTION ${BDM_CMAKE_DIR}/selection.xml
+  #   DEPENDS ${TARGET}-objectlib)
+  # # dictionary with custom streamers
+  # set(DICT_FILE_CS "${CMAKE_CURRENT_BINARY_DIR}/${TARGET}_custom_streamers_dict.cc")
+  # bdm_generate_dictionary(${TARGET}-custom-streamer-dict
+  #   DICT "${DICT_FILE_CS}"
+  #   HEADERS ${ARG_HEADERS}
+  #   SELECTION ${BDM_CMAKE_DIR}/selection_custom_streamers.xml
+  #   DEPENDS ${TARGET}-objectlib)
+  # set(DICT_SRCS ${DICT_FILE} ${DICT_FILE_CS})
   set(DICT_FILE "${CMAKE_CURRENT_BINARY_DIR}/${TARGET}_dict.cc")
-  bdm_generate_dictionary(${TARGET}-dict
+  bdm_generate_dictionary1(${TARGET}-dict
     DICT "${DICT_FILE}"
     HEADERS ${ARG_HEADERS}
-    SELECTION ${BDM_CMAKE_DIR}/selection.xml
     DEPENDS ${TARGET}-objectlib)
-  # dictionary with custom streamers
-  set(DICT_FILE_CS "${CMAKE_CURRENT_BINARY_DIR}/${TARGET}_custom_streamers_dict.cc")
-  bdm_generate_dictionary(${TARGET}-custom-streamer-dict
-    DICT "${DICT_FILE_CS}"
-    HEADERS ${ARG_HEADERS}
-    SELECTION ${BDM_CMAKE_DIR}/selection_custom_streamers.xml
-    DEPENDS ${TARGET}-objectlib)
-  set(DICT_SRCS ${DICT_FILE} ${DICT_FILE_CS})
 
   # generate executable
-  add_executable(${TARGET} $<TARGET_OBJECTS:${TARGET}-objectlib> ${DICT_SRCS})
-  add_dependencies(${TARGET} ${TARGET}-dict ${TARGET}-custom-streamer-dict)
+  add_executable(${TARGET} $<TARGET_OBJECTS:${TARGET}-objectlib> ${DICT_FILE})
+  add_dependencies(${TARGET} ${TARGET}-dict ${TARGET}-dict)
   target_link_libraries(${TARGET} ${ARG_LIBRARIES})
 endfunction(bdm_add_executable)
 

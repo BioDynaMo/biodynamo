@@ -308,7 +308,8 @@ class ResourceManager {
   /// creates one container for each type in Types.
   /// Container type is determined based on the specified Backend
   typename ConvertToContainerTuple<Backend, Types>::type data_;
-  std::vector<DiffusionGrid*> diffusion_grids_;
+  // FIXME
+  std::vector<DiffusionGrid*> diffusion_grids_;  //!
 
   friend class SimulationBackup;
   ClassDefNV(ResourceManager, 1);
