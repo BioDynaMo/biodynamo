@@ -109,6 +109,40 @@ function(bdm_generate_dictionary TARGET)
     DEPENDS ${ARG_DEPENDS} ${CMAKE_CURRENT_BINARY_DIR}/rebuild_${TARGET})
 endfunction(bdm_generate_dictionary)
 
+find_program(ROOTCLING_EXECUTABLE rootcling HINTS $ENV{ROOTSYS}/bin)
+
+#TODO documentation
+# Converts the given path to a path that is relative to one of the include
+# directories specified using `include_directories(...)`
+# \param[in] FILE_PATH file path that should be converved:
+#            NB: must be an absolute path, or relative to CMAKE_SOURCE_DIR
+# \param[out] REL_TO_INCLUDES return variable
+function(get_path_rel_to_includes FILE_PATH REL_TO_INCLUDES)
+  # get absolute path
+  if(IS_ABSOLUTE ${FILE_PATH})
+    set(absolute_path ${FILE_PATH})
+  else()
+    set(absolute_path ${CMAKE_SOURCE_DIR}/${FILE_PATH})
+  endif()
+  if(NOT EXISTS ${absolute_path})
+    message(AUTHOR_WARNING "File ${ABSOLUTE_PATH} does not exist!")
+  endif()
+
+  # get include directories
+  get_directory_property(incdirs INCLUDE_DIRECTORIES)
+
+  foreach(i ${incdirs})
+    string(FIND ${absolute_path} ${i}/ pos)
+    if(${pos} EQUAL 0)
+      string(REPLACE ${i}/ "" result ${absolute_path})
+      # return value
+      set (${REL_TO_INCLUDES} ${result} PARENT_SCOPE)
+      return()
+    endif()
+  endforeach()
+  message(WARNING "File '${FILE_PATH}' not found in any include directory")
+endfunction(get_path_rel_to_includes)
+
 # TODO fix documentation
 # function bdm_generate_dictionary1 (TARGET
 #                                DICT dictionary
@@ -123,34 +157,39 @@ endfunction(bdm_generate_dictionary)
 # Ouput of genreflex is piped into a log file ${TARGET}.log
 function(bdm_generate_dictionary1 TARGET)
   CMAKE_PARSE_ARGUMENTS(ARG "" "DICT" "LINKDEF;HEADERS;DEPENDS;OPTIONS" "" ${ARGN})
-  #---Get the list of header files-------------------------
-  set(headerfiles)
-  foreach(fp ${ARG_HEADERS})
-    file(GLOB files ${fp})
-    if(files)
-      foreach(f ${files})
-        set(headerfiles ${headerfiles} ${f})
-      endforeach()
+
+  # Get the list of include directories------------------
+  get_directory_property(incdirs INCLUDE_DIRECTORIES)
+  message(${incdirs})
+  set(includedirs)
+  foreach(i ${incdirs})
+    # include directorie must be a relative path, otherwise rootcling recursively
+    # adds all includes into the dictionary which leads to compile errors
+    string(FIND ${i} ${CMAKE_SOURCE_DIR}/ pos)
+    if(${pos} EQUAL 0)
+      file(RELATIVE_PATH result "${CMAKE_SOURCE_DIR}" "${i}")
+      set(includedirs ${includedirs} -I${result})
     else()
-      set(headerfiles ${headerfiles} ${fp})
+      set(includedirs ${includedirs} -I${i})
     endif()
   endforeach()
 
-  #--- linkdef file ------------------------------------
-  # TODO generate linkdef
-  set(linkdeffile ${CMAKE_CURRENT_BINARY_DIR}/${TARGET}_linkdef.h)
-
-  #---Get the list of include directories------------------
-  get_directory_property(incdirs INCLUDE_DIRECTORIES)
-  set(includedirs)
-  foreach( d ${incdirs})
-    set(includedirs ${includedirs} -I${d})
+  # Get the list of header files relative to the include directories ---------
+  set(headerfiles)
+  foreach(fp ${ARG_HEADERS})
+    get_path_rel_to_includes(${fp} relative_path)
+    set(headerfiles ${headerfiles} ${relative_path})
   endforeach()
-  # header install path on linux
-  set(includedirs ${includedirs} -I/snap/biodynamo/current/biodynamo/include)
-  # header install path on osx
-  set(includedirs ${includedirs} -I/usr/local/include/biodynamo)
-  #---Get preprocessor definitions--------------------------
+  message(${TARGET})
+  message("" ${headerfiles})
+  message(${includedirs})
+  message("")
+
+  # linkdef file ------------------------------------
+  # TODO generate linkdef
+  set(linkdeffile ${CMAKE_SOURCE_DIR}/${TARGET}_linkdef.h)
+
+  # get preprocessor definitions--------------------------
   get_directory_property(defs COMPILE_DEFINITIONS)
   foreach( d ${defs})
     # definitions that were initialily defined with escaped quotes
@@ -159,8 +198,8 @@ function(bdm_generate_dictionary1 TARGET)
     string(REPLACE "\"" "\\\"" d_fixed ${d})
     set(definitions ${definitions} -D${d_fixed})
   endforeach()
-  #---Actual command----------------------------------------
-  message("ARGDICT " ${ARG_DICT})
+
+  # actual command----------------------------------------
   file(WRITE ${ARG_DICT} "")
   # determine when dictionary should be rebuilt
   # solves problem that add_custom_command does not have a target name that
@@ -170,24 +209,25 @@ function(bdm_generate_dictionary1 TARGET)
   add_custom_command(
     OUTPUT rebuild_${TARGET}
     COMMAND echo 1 >rebuild_${TARGET}
-    DEPENDS ${headerfiles}
+    DEPENDS ${ARG_HEADERS}
     COMMENT "Build dictionary ${TARGET}")
-  # invoke genreflex only if rebuild_${TARGET} file does not contain a 0.
+  # invoke rootcling only if rebuild_${TARGET} file does not contain a 0.
   # Had issues with if [[ ]] statement; used grep instead
   # if grep does not find the pattern it has a non zero exit code
   # --> grep 0 file || command
   #   command is executed if pattern 0 is not found in file
   add_custom_target(${TARGET}
     COMMAND grep 0 ${CMAKE_CURRENT_BINARY_DIR}/rebuild_${TARGET} >/dev/null ||
-            ${ROOTCLING_EXECUTABLE} -f ${ARG_DICT} ${rootmapopts} ${ARG_OPTIONS}
-            ${includedirs} ${definitions} -v  ${headerfiles} ${linkdeffile}
-            >${CMAKE_CURRENT_BINARY_DIR}/${TARGET}.log 2>&1
+            ${ROOTCLING_EXECUTABLE} -f ${ARG_DICT} ${rootmapopts} -noIncludePaths
+            ${ARG_OPTIONS} ${includedirs} ${definitions} -v  ${headerfiles}
+            ${linkdeffile} >${CMAKE_CURRENT_BINARY_DIR}/${TARGET}.log 2>&1
     COMMAND echo 0 > ${CMAKE_CURRENT_BINARY_DIR}/rebuild_${TARGET}
     WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
     DEPENDS ${ARG_DEPENDS} ${CMAKE_CURRENT_BINARY_DIR}/rebuild_${TARGET})
 endfunction(bdm_generate_dictionary1)
 
 
+# TODO describe path constraints for headers and sources
 # function bdm_add_executable( TARGET
 #                              SOURCES source1 source2 ...
 #                              HEADERS header1 header2 ...
@@ -245,19 +285,20 @@ endfunction(bdm_add_executable)
 function(build_libbiodynamo TARGET)
   cmake_parse_arguments(ARG "" "" "SOURCES;HEADERS;LIBRARIES" ${ARGN} )
 
-  add_library(${TARGET}-objectlib OBJECT ${ARG_SOURCES})
+  # add_library(${TARGET}-objectlib OBJECT ${ARG_SOURCES})
 
   # generate dictionary using genreflex
-  set(DICT_FILE "${CMAKE_CURRENT_BINARY_DIR}/libbiodynamo_dict.cc")
-  bdm_generate_dictionary(${TARGET}-dict
-    DICT "${DICT_FILE}"
-    HEADERS ${ARG_HEADERS}
-    SELECTION ${BDM_CMAKE_DIR}/selection-libbiodynamo.xml
-    DEPENDS ${TARGET}-objectlib)
+  # set(DICT_FILE "${CMAKE_CURRENT_BINARY_DIR}/libbiodynamo_dict.cc")
+  # bdm_generate_dictionary(${TARGET}-dict
+  #   DICT "${DICT_FILE}"
+  #   HEADERS ${ARG_HEADERS}
+  #   SELECTION ${BDM_CMAKE_DIR}/selection-libbiodynamo.xml
+  #   DEPENDS ${TARGET}-objectlib)
 
   # generate shared library
-  add_library(${TARGET} SHARED $<TARGET_OBJECTS:${TARGET}-objectlib> ${DICT_FILE})
-  add_dependencies(${TARGET} ${TARGET}-dict)
+  # add_library(${TARGET} SHARED $<TARGET_OBJECTS:${TARGET}-objectlib> ${DICT_FILE})
+  # add_dependencies(${TARGET} ${TARGET}-dict)
+  add_library(${TARGET} SHARED ${ARG_SOURCES})
   target_link_libraries(${TARGET} ${ARG_LIBRARIES})
 endfunction(build_libbiodynamo)
 

@@ -1,10 +1,10 @@
-// some C++ header definition
 #ifdef __ROOTCLING__
 // turns off dictionary generation for all
 #pragma link off all class;
 #pragma link off all function;
 #pragma link off all global;
 #pragma link off all typedef;
+
 
 // should be in libbiodynamo
 #pragma link C++ class bdm::NullBiologyModule+;
