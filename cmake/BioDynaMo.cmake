@@ -250,6 +250,7 @@ function(bdm_add_executable TARGET)
 
   add_library(${TARGET}-objectlib OBJECT ${ARG_SOURCES})
 
+  # FIXME remove
   # generate dictionaries using genreflex
   # set(DICT_FILE "${CMAKE_CURRENT_BINARY_DIR}/${TARGET}_dict.cc")
   # bdm_generate_dictionary(${TARGET}-dict
@@ -265,6 +266,13 @@ function(bdm_add_executable TARGET)
   #   SELECTION ${BDM_CMAKE_DIR}/selection_custom_streamers.xml
   #   DEPENDS ${TARGET}-objectlib)
   # set(DICT_SRCS ${DICT_FILE} ${DICT_FILE_CS})
+  add_executable(${TARGET}-linkdef-generator
+                 cmake/generate_linkdef/generate_linkdef_macro.cc)
+  target_link_libraries(${TARGET}-linkdef-generator ${ARG_LIBRARIES})
+  # FIXME check clang for unresolved-symbols flag
+  set_target_properties(${TARGET}-linkdef-generator
+                        PROPERTIES LINK_FLAGS "-Wl,--unresolved-symbols=ignore-all")
+
   set(DICT_FILE "${CMAKE_CURRENT_BINARY_DIR}/${TARGET}_dict.cc")
   bdm_generate_dictionary1(${TARGET}-dict
     DICT "${DICT_FILE}"

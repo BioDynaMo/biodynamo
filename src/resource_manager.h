@@ -12,6 +12,7 @@
 
 #include "backend.h"
 #include "diffusion_grid.h"
+#include "linkdef_util.h"
 #include "tuple_util.h"
 #include "variadic_template_parameter_util.h"
 
@@ -137,6 +138,26 @@ class ResourceManager {
 
   /// Singleton pattern - return the only instance with this template parameters
   static ResourceManager<TCompileTimeParam>* Get() { return instance_.get(); }
+
+  // TODO documentation
+  static void AddToLinkDef(std::set<LinkDefDescriptor>& entries) {
+    // add tuple
+    using TupleType = decltype(instance_->data_);
+    entries.insert({typeid(TupleType), true});
+
+
+    // runtime dispatch - TODO(lukas) replace with c++17 std::apply
+    TupleType tuple;
+    for (uint16_t i = 0; i < std::tuple_size<TupleType>::value; i++) {
+      ::bdm::Apply(&tuple, i, [&](auto* container) {
+        using ContainerType = decltype(container);
+        entries.insert({typeid(ContainerType), true});
+        CallAddToLinkDef<std::decay_t<ContainerType>>(entries);
+      });
+    }
+
+    // FIXME diffusion grid
+  }
 
   /// Return the container of this Type
   /// @tparam Type atomic type whose container should be returned
