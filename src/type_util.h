@@ -6,7 +6,6 @@
 #include <tuple>
 
 #include "backend.h"
-#include "variant.h"
 
 namespace bdm {
 
@@ -47,10 +46,12 @@ struct is_tuple<std::tuple<T...>> : std::true_type {};
 template <typename T>
 struct is_vector : std::false_type {};
 
-template <typename T>
-struct is_vector<std::vector<T>> : std::true_type {};
+template <typename T, typename TAllocator>
+struct is_vector<std::vector<T, TAllocator>> : std::true_type {};
 
 // -----------------------------------------------------------------------------
+template <typename... T> class Variant;
+
 /// Type trait to determine whether type `T` is bdm::Variant<...>
 template <typename T>
 struct is_Variant : std::false_type {};

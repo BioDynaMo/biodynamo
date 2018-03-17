@@ -316,6 +316,18 @@ struct Capsule;
   /** Only used for Soa backends to be consistent with  */                     \
   /** e.g. `std::vector<T>::value_type`. */                                    \
   using value_type = Self<Soa>;                                                \
+                                                                               \
+  /** This function is called during ROOT LinkDef generation. */               \
+  /** It adds a linkdef entry for each data member or base type. */            \
+  /** If this type is subclassed it also adds an entry of itself. */           \
+  /** TODO link to documentation */                                            \
+  static void AddToLinkDef(std::set<LinkDefDescriptor>& entries) {             \
+    AddSelfToLinkDefEntries<Self<Backend>>(entries, true);                     \
+    Self<Backend>().ForEachDataMember([&](auto* data_member, const std::string& dm_name) {      \
+      AddAllLinkDefEntries<decltype(data_member)>(entries, true);              \
+    });                                                                        \
+    Base::AddToLinkDef(entries);                                               \
+  }                                                                            \
   \
   /** Returns the ResourceManager */ \
   /** Avoids the "invalid use of incomplete type" error caused if the  */ \

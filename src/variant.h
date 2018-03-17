@@ -7,7 +7,7 @@
 #include <tuple>
 
 #include "mpark/variant.hpp"
-#include "root_util.h"
+#include "linkdef_util.h"
 #include "tuple_util.h"
 
 namespace bdm {
@@ -30,6 +30,23 @@ const T* get_if(TVariant* variant_wrapper) {  // NOLINT
 template <typename... Types>
 class Variant {
  public:
+  /// This function is called during ROOT LinkDef generation.
+  /// It adds a linkdef entry for each data member or base type.
+  /// If this type is subclassed it also adds an entry of itself.
+  // TODO link to documentation
+  static void AddToLinkDef(std::set<LinkDefDescriptor>& entries) {
+    // iterate over Types using a tuple as Helper
+    using TupleType = std::tuple<Types...>;
+    TupleType tuple;
+    for (uint16_t i = 0; i < std::tuple_size<TupleType>::value; i++) {
+      ::bdm::Apply(&tuple, i, [&](auto* value) {
+        using ContainerType = decltype(value);
+        entries.insert(LinkDefDescriptor::Create<ContainerType>(true));
+        CallAddToLinkDef<ContainerType>(entries);
+      });
+    }
+  }
+
   template <typename T>
   Variant(const T& value) : data_(value) {}  // NOLINT
 

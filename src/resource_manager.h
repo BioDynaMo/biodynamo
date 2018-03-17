@@ -139,12 +139,15 @@ class ResourceManager {
   /// Singleton pattern - return the only instance with this template parameters
   static ResourceManager<TCompileTimeParam>* Get() { return instance_.get(); }
 
-  // TODO documentation
+  /// This function is called during ROOT LinkDef generation.
+  /// It adds a linkdef entry for each data member or base type.
+  /// If this type is subclassed it also adds an entry of itself.
+  // TODO link to documentation
   static void AddToLinkDef(std::set<LinkDefDescriptor>& entries) {
     using TupleType = decltype(instance_->data_);
-    AddLinkDefEntry<TupleType>(entries, true);
+    AddAllLinkDefEntries<TupleType>(entries, true);
     using DiffusionGridType = decltype(instance_->diffusion_grids_);
-    AddLinkDefEntry<DiffusionGridType>(entries, true);
+    AddAllLinkDefEntries<DiffusionGridType>(entries, true);
   }
 
   /// Return the container of this Type

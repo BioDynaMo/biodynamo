@@ -1,6 +1,7 @@
 #ifndef LINKDEF_UTIL_H_
 #define LINKDEF_UTIL_H_
 
+#include <iostream> // TODO remove
 #include <cxxabi.h>
 #include <functional>
 #include <ostream>
@@ -89,12 +90,14 @@ template <typename T>
 struct has_AddToLinkDef : decltype(detail::has_AddToLinkDef<T>(0)) {};
 
 // -----------------------------------------------------------------------------
+/// TODO describe that T can be pointer, reference, ...
+/// uses `std::decay_t` and `std::remove_pointer_t`
 template<typename T>
 void CallAddToLinkDef(...) {}
 
 template<typename T>
-auto CallAddToLinkDef(std::set<LinkDefDescriptor>& entries) -> decltype(T::AddToLinkDef(std::declval<std::set<LinkDefDescriptor>&>()), void()) {
-  T::AddToLinkDef(entries);
+auto CallAddToLinkDef(std::set<LinkDefDescriptor>& entries) -> decltype(std::remove_pointer_t<std::decay_t<T>>::AddToLinkDef(std::declval<std::set<LinkDefDescriptor>&>()), void()) {
+  std::remove_pointer_t<std::decay_t<T>>::AddToLinkDef(entries);
 }
 
 // -----------------------------------------------------------------------------
@@ -102,14 +105,18 @@ namespace detail {
 
 /// Default
 template <typename T>
-void AddLinkDefEntry(std::set<LinkDefDescriptor>& entries, bool streamer, ...) {
+void AddAllLinkDefEntries(std::set<LinkDefDescriptor>& entries, bool streamer, ...) {
+  std::cout << "add default  " << typeid(T).name() << std::endl;
+
   entries.insert(LinkDefDescriptor::Create<T>(true));
   CallAddToLinkDef<T>(entries);
 }
 
 /// for std::tuple
 template <typename TupleType>
-auto AddLinkDefEntry(std::set<LinkDefDescriptor>& entries, bool streamer, int) -> decltype(std::enable_if_t<is_tuple<TupleType>::value>(), void()) {
+auto AddAllLinkDefEntries(std::set<LinkDefDescriptor>& entries, bool streamer, int) -> decltype(std::enable_if_t<is_tuple<TupleType>::value>(), void()) {
+  std::cout << "add tuple    " << LinkDefDescriptor::Create<TupleType>(true) << std::endl;
+
   entries.insert(LinkDefDescriptor::Create<TupleType>(true));
   // runtime dispatch - TODO(lukas) replace with c++17 std::apply
   TupleType tuple;
@@ -117,22 +124,25 @@ auto AddLinkDefEntry(std::set<LinkDefDescriptor>& entries, bool streamer, int) -
     ::bdm::Apply(&tuple, i, [&](auto* container) {
       using ContainerType = decltype(container);
       entries.insert(LinkDefDescriptor::Create<ContainerType>(true));
-      CallAddToLinkDef<std::decay_t<ContainerType>>(entries);
+      CallAddToLinkDef<ContainerType>(entries);
     });
   }
 }
 
 /// for std::vector
 template <typename T>
-auto AddLinkDefEntry(std::set<LinkDefDescriptor>& entries, bool streamer, int) -> decltype(std::enable_if_t<is_vector<T>::value>(), void()) {
-  using value_type = typename T::value_type;
+auto AddAllLinkDefEntries(std::set<LinkDefDescriptor>& entries, bool streamer, int) -> decltype(std::enable_if_t<is_vector<std::remove_pointer_t<T>>::value>(), void()) {
+  using value_type = typename std::remove_pointer_t<T>::value_type;
+  std::cout << "add vector   " << LinkDefDescriptor::Create<value_type>(true) << std::endl;
   entries.insert(LinkDefDescriptor::Create<value_type>(true));
-  CallAddToLinkDef<value_type>(entries);
+  // CallAddToLinkDef<value_type>(entries);
+  AddAllLinkDefEntries<value_type>(entries, streamer, 0);
 }
 
 /// for bdm::Variant
 template <typename T>
-auto AddLinkDefEntry(std::set<LinkDefDescriptor>& entries, bool streamer, int) -> decltype(std::enable_if_t<is_Variant<T>::value>(), void()) {
+auto AddAllLinkDefEntries(std::set<LinkDefDescriptor>& entries, bool streamer, int) -> decltype(std::enable_if_t<is_Variant<T>::value>(), void()) {
+  std::cout << "add variant  " << LinkDefDescriptor::Create<T>(true) << std::endl;
   entries.insert(LinkDefDescriptor::Create<T>(false));
   CallAddToLinkDef<T>(entries);
 }
@@ -140,15 +150,22 @@ auto AddLinkDefEntry(std::set<LinkDefDescriptor>& entries, bool streamer, int) -
 }  // namespace detail
 
 /// TODO documentation
+/// recursive
 template <typename T>
-void AddLinkDefEntry(std::set<LinkDefDescriptor>& entries, bool streamer) {
-  detail::AddLinkDefEntry<T>(entries, streamer, 0);
+void AddAllLinkDefEntries(std::set<LinkDefDescriptor>& entries, bool streamer) {
+  detail::AddAllLinkDefEntries<T>(entries, streamer, 0);
+}
+
+
+template <typename T>
+void AddSelfToLinkDefEntries(std::set<LinkDefDescriptor>& entries, bool streamer) {
+  entries.insert(LinkDefDescriptor::Create<T>(true));
 }
 
 // -----------------------------------------------------------------------------
 #define BDM_ADD_TYPE_TO_LINKDEF(type, streamer) \
   static int kRegisterFunction ## __FILE__ ## __LINE__ = ::bdm::AddToLinkDefFunction([](std::set<LinkDefDescriptor>& entries){ \
-    ::bdm::AddLinkDefEntry<type>(entries, streamer); \
+    ::bdm::AddAllLinkDefEntries<type>(entries, streamer); \
   });
 
 

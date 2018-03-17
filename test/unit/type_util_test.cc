@@ -40,6 +40,8 @@ TEST(is_vector, All) {
   static_assert(is_vector<std::vector<int>>(), "std::vector<int> IS a std::vector");
   static_assert(is_vector<std::vector<std::string>>(),
                 "std::vector<std::string> IS a std::vector");
+  static_assert(is_vector<std::vector<double, std::allocator<double> >>(),
+                "std::vector<double, std::allocator<double> > IS a std::vector");
 }
 
 TEST(is_Variant, All) {

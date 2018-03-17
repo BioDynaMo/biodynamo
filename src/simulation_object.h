@@ -12,6 +12,7 @@
 #include <TError.h>
 
 #include "backend.h"
+#include "linkdef_util.h"
 #include "root_util.h"
 #include "simulation_object_util.h"
 #include "type_util.h"
@@ -43,6 +44,14 @@ class SoaSimulationObject {
   using Self =
       SoaSimulationObject<typename TCompileTimeParam::template Self<TBackend>,
                           TDerived>;
+
+  /// This function is called during ROOT LinkDef generation.
+  /// It adds a linkdef entry for each data member or base type.
+  /// If this type is subclassed it also adds an entry of itself.
+  // TODO link to documentation
+  static void AddToLinkDef(std::set<LinkDefDescriptor>& entries) {
+    AddSelfToLinkDefEntries<SoaSimulationObject<TCompileTimeParam, TDerived>>(entries, true);
+  }
 
   SoaSimulationObject() : to_be_removed_(), total_size_(1), size_(1) {}
 
@@ -212,6 +221,14 @@ class ScalarSimulationObject {
   using TMostDerived = typename TDerived::template type<
       typename TCompileTimeParam::template Self<TTBackend>, TDerived>;
 
+  /// This function is called during ROOT LinkDef generation.
+  /// It adds a linkdef entry for each data member or base type.
+  /// If this type is subclassed it also adds an entry of itself.
+  // TODO link to documentation
+  static void AddToLinkDef(std::set<LinkDefDescriptor>& entries) {
+    AddSelfToLinkDefEntries<ScalarSimulationObject<TCompileTimeParam, TDerived>>(entries, true);
+  }
+
   virtual ~ScalarSimulationObject() {}
 
   std::size_t size() const { return 1; }  // NOLINT
@@ -260,6 +277,15 @@ class SimulationObject
 
   template <typename, typename>
   friend class SimulationObject;
+
+  /// This function is called during ROOT LinkDef generation.
+  /// It adds a linkdef entry for each data member or base type.
+  /// If this type is subclassed it also adds an entry of itself.
+  // TODO link to documentation
+  static void AddToLinkDef(std::set<LinkDefDescriptor>& entries) {
+    AddSelfToLinkDefEntries<SimulationObject<TCompileTimeParam, TDerived>>(entries, true);
+    Base::AddToLinkDef(entries);
+  }
 
   SimulationObject() : Base() {}
 
