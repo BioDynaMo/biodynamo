@@ -1,4 +1,3 @@
-#include <cxxabi.h>
 #include <string>
 
 // TODO rename to linkdef_generator_template.cc.in
@@ -7,14 +6,14 @@
 #include "figure_5.h"
 #include "linkdef_util.h"
 
-const std::string demangle(const char* name) {
-  int status = -4;
-  char* res = abi::__cxa_demangle(name, NULL, NULL, &status);
-  const char* const demangled_name = (status==0)?res:name;
-  std::string ret_val(demangled_name);
-  free(res);
-  return ret_val;
-}
+// const std::string demangle(const char* name) {
+//   int status = -4;
+//   char* res = abi::__cxa_demangle(name, NULL, NULL, &status);
+//   const char* const demangled_name = (status==0)?res:name;
+//   std::string ret_val(demangled_name);
+//   free(res);
+//   return ret_val;
+// }
 
 using bdm::LinkDefDescriptor;
 
@@ -25,6 +24,14 @@ using bdm::LinkDefDescriptor;
 // });
 BDM_ADD_TYPE_TO_LINKDEF(bdm::ResourceManager<>, true);
 
+  const char* linkdef_header = R"LINKDEF_HEADER(// some C++ header definition
+  #ifdef __ROOTCLING__
+  // turns off dictionary generation for all
+  #pragma link off all class;
+  #pragma link off all function;
+  #pragma link off all global;
+  #pragma link off all typedef;
+)LINKDEF_HEADER";
 
 int main() {
   // std::cout << typeid(bdm::ResourceManager<>).name() << std::endl;
@@ -40,7 +47,7 @@ int main() {
   }
 
   for(auto&& ld_entry : entries) {
-    std::cout << demangle(ld_entry.type_index_.name()) << std::endl;
+    std::cout << ld_entry << std::endl;
   }
 
   // bdm::ResourceManager<>::Add

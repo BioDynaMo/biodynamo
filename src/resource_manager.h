@@ -141,22 +141,10 @@ class ResourceManager {
 
   // TODO documentation
   static void AddToLinkDef(std::set<LinkDefDescriptor>& entries) {
-    // add tuple
     using TupleType = decltype(instance_->data_);
-    entries.insert({typeid(TupleType), true});
-
-
-    // runtime dispatch - TODO(lukas) replace with c++17 std::apply
-    TupleType tuple;
-    for (uint16_t i = 0; i < std::tuple_size<TupleType>::value; i++) {
-      ::bdm::Apply(&tuple, i, [&](auto* container) {
-        using ContainerType = decltype(container);
-        entries.insert({typeid(ContainerType), true});
-        CallAddToLinkDef<std::decay_t<ContainerType>>(entries);
-      });
-    }
-
-    // FIXME diffusion grid
+    AddLinkDefEntry<TupleType>(entries, true);
+    using DiffusionGridType = decltype(instance_->diffusion_grids_);
+    AddLinkDefEntry<DiffusionGridType>(entries, true);
   }
 
   /// Return the container of this Type

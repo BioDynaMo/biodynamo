@@ -6,7 +6,7 @@ namespace linkdef_util_test_internal {
 
 struct Has {
   static void AddToLinkDef(std::set<LinkDefDescriptor>& entries) {
-    entries.insert({typeid(Has), false});
+    entries.insert(LinkDefDescriptor::Create<Has>(false));
   }
 };
 
