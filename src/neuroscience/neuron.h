@@ -121,7 +121,7 @@ BDM_SO_DEFINE(
         NeuronExt)::ExtendNewNeurite(const std::array<double, 3>& direction) {
   auto dir = Matrix::Add(direction, Base::position_[kIdx]);
   auto angles = Base::TransformCoordinatesGlobalToPolar(dir);
-  return ExtendNewNeurite(Param::kNeuriteDefaultDiameter, angles[1], angles[2]);
+  return ExtendNewNeurite(Param::kNeuriteDefaultDiameter, angles[2], angles[1]);
 }
 
 BDM_SO_DEFINE(

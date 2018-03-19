@@ -544,12 +544,11 @@ BDM_SO_DEFINE(inline array<double, 3> CellExt)::TransformCoordinatesGlobalToPola
   array<double, 3> local_cartesian{Matrix::Dot(kXAxis, vector_to_point),
                                    Matrix::Dot(kYAxis, vector_to_point),
                                    Matrix::Dot(kZAxis, vector_to_point)};
-  return {std::sqrt(local_cartesian[0] * local_cartesian[0] +
+  double radius = std::sqrt(local_cartesian[0] * local_cartesian[0] +
                     local_cartesian[1] * local_cartesian[1] +
-                    local_cartesian[2] * local_cartesian[2]),
-          std::atan2(std::sqrt(local_cartesian[0] * local_cartesian[0] +
-                               local_cartesian[1] * local_cartesian[1]),
-                     local_cartesian[2]),
+                    local_cartesian[2] * local_cartesian[2]);
+  return {radius,
+          std::acos(local_cartesian[2]/radius),
           std::atan2(local_cartesian[1], local_cartesian[0])};
 }
 
