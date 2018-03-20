@@ -69,6 +69,8 @@ private:
     char* result = abi::__cxa_demangle(name, NULL, NULL, &status);
     if (!status) {
       std::string ret_value(result);
+      ReplaceAllInString(ret_value, ", ", ",");
+      ReplaceAllInString(ret_value, "bdm::SimulationObject>", "bdm::SimulationObject_TCTParam_TDerived>");
       free(result);
       return ret_value;
     }
@@ -81,6 +83,16 @@ private:
     // in the namespace `bdm`.
     // Maybe better to switch to blacklisting
     return demangled_type_name.find("bdm::") == std::string::npos;
+  }
+
+  // TODO move to string util
+  static void ReplaceAllInString(std::string& s, const std::string search, const std::string replace) {
+	 size_t pos = s.find(search);
+	 while( pos != std::string::npos){
+	    s.replace(pos, search.size(), replace);
+	    pos = s.find(search, pos + search.size());
+	 }
+   std::cout << s << std::endl;
   }
 };
 
@@ -113,12 +125,23 @@ struct has_AddToLinkDef : decltype(detail::has_AddToLinkDef<T>(0)) {};
 // -----------------------------------------------------------------------------
 /// TODO describe that T can be pointer, reference, ...
 /// uses `std::decay_t` and `std::remove_pointer_t`
+namespace detail {
+
+/// NB: entries is of non-trivial type and can't be part of the variadic argument
+/// ...
 template<typename T>
-void CallAddToLinkDef(...) {}
+void CallAddToLinkDef(std::set<LinkDefDescriptor>& entries, ...) {}
 
 template<typename T>
-auto CallAddToLinkDef(std::set<LinkDefDescriptor>& entries) -> decltype(std::remove_pointer_t<std::decay_t<T>>::AddToLinkDef(std::declval<std::set<LinkDefDescriptor>&>()), void()) {
+auto CallAddToLinkDef(std::set<LinkDefDescriptor>& entries, int) -> decltype(std::remove_pointer_t<std::decay_t<T>>::AddToLinkDef(std::declval<std::set<LinkDefDescriptor>&>()), void()) {
   std::remove_pointer_t<std::decay_t<T>>::AddToLinkDef(entries);
+}
+
+}  // namespace detail
+
+template<typename T>
+void CallAddToLinkDef(std::set<LinkDefDescriptor>& entries) {
+  ::bdm::detail::CallAddToLinkDef<T>(entries, 0);
 }
 
 // -----------------------------------------------------------------------------
@@ -134,7 +157,7 @@ void AddAllLinkDefEntries(std::set<LinkDefDescriptor>& entries, bool streamer, .
   std::cout << "add default  " << LinkDefDescriptor::Create<T>(true)  << std::endl;
 
   entries.insert(LinkDefDescriptor::Create<T>(true));
-  CallAddToLinkDef<T>(entries);
+  ::bdm::CallAddToLinkDef<T>(entries);
 }
 
 /// for std::tuple
@@ -149,7 +172,7 @@ auto AddAllLinkDefEntries(std::set<LinkDefDescriptor>& entries, bool streamer, i
     ::bdm::Apply(&tuple, i, [&](auto* container) {
       using ContainerType = decltype(container);
       entries.insert(LinkDefDescriptor::Create<ContainerType>(true));
-      CallAddToLinkDef<ContainerType>(entries);
+      ::bdm::CallAddToLinkDef<ContainerType>(entries);
     });
   }
 }
@@ -173,7 +196,7 @@ auto AddAllLinkDefEntries(std::set<LinkDefDescriptor>& entries, bool streamer, i
   std::cout << "  " << typeid(T).name() << std::endl;
 
   entries.insert(LinkDefDescriptor::Create<T>(false));
-  CallAddToLinkDef<T>(entries);
+  ::bdm::CallAddToLinkDef<T>(entries);
 }
 
 }  // namespace detail
@@ -192,12 +215,24 @@ void AddSelfToLinkDefEntries(std::set<LinkDefDescriptor>& entries, bool streamer
 }
 
 // -----------------------------------------------------------------------------
-#define BDM_ADD_TYPE_TO_LINKDEF(type, streamer) \
-  static int kRegisterFunction ## __FILE__ ## __LINE__ = ::bdm::AddToLinkDefFunction([](std::set<LinkDefDescriptor>& entries){ \
-    ::bdm::AddAllLinkDefEntries<type>(entries, streamer); \
+/// Use this macro to add this type and all its depending types to the linkdef
+/// file. It creates a lambda and registers it with `kAddToLinkDefFunctions`.
+/// Automatic registration is performed with a static variable inside a template
+/// specialization of `RegistrationHelper`. The use of `RegistrationHelper`
+/// avoids the problem of generating a unique identifier across files.
+/// e.g. `static unique_identifier = ::bdm::AddToLinkDefFunction(...);`
+#ifdef BDM_CREATE_LINKDEF
+#define BDM_ADD_TYPE_TO_LINKDEF(...) \
+  template <typename> struct RegistrationHelper; \
+  template <> struct RegistrationHelper<__VA_ARGS__> { \
+    static int value; \
+  }; \
+  int RegistrationHelper<__VA_ARGS__>::value = ::bdm::AddToLinkDefFunction([](std::set<LinkDefDescriptor>& entries){ \
+    ::bdm::AddAllLinkDefEntries<__VA_ARGS__>(entries, true); \
   });
-
-
+#else
+#define BDM_ADD_TYPE_TO_LINKDEF(...)
+#endif   // BDM_CREATE_LINKDEF
 
 
 }  // namespace bdm

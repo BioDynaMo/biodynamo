@@ -4,6 +4,7 @@
 #include "biology_module_util.h"
 #include "cell.h"
 #include "gtest/gtest.h"
+#include "linkdef_util.h"
 
 namespace bdm {
 namespace biology_module_util_test_internal {
@@ -55,6 +56,9 @@ struct CopyTestBiologyModule {
 };
 
 struct TestSimulationObject {};
+
+BDM_ADD_TYPE_TO_LINKDEF(RunTestBiologyModule<TestSimulationObject>);
+BDM_ADD_TYPE_TO_LINKDEF(CopyTestBiologyModule);
 
 inline void RunRunVisitor() {
   TestSimulationObject sim_object;

@@ -144,8 +144,12 @@ class ResourceManager {
   /// If this type is subclassed it also adds an entry of itself.
   // TODO link to documentation
   static void AddToLinkDef(std::set<LinkDefDescriptor>& entries) {
-    using TupleType = decltype(instance_->data_);
-    AddAllLinkDefEntries<TupleType>(entries, true);
+    // generate linkdef for Scalar and Soa backend
+    using TupleTypeSoa = typename ConvertToContainerTuple<Soa, Types>::type;
+    AddAllLinkDefEntries<TupleTypeSoa>(entries, true);
+    using TupleTypeScalar = typename ConvertToContainerTuple<Scalar, Types>::type;
+    AddAllLinkDefEntries<TupleTypeScalar>(entries, true);
+
     using DiffusionGridType = decltype(instance_->diffusion_grids_);
     AddAllLinkDefEntries<DiffusionGridType>(entries, true);
   }
@@ -321,7 +325,7 @@ class ResourceManager {
   /// Container type is determined based on the specified Backend
   typename ConvertToContainerTuple<Backend, Types>::type data_;
   // FIXME
-  std::vector<DiffusionGrid*> diffusion_grids_;  //!
+  std::vector<DiffusionGrid*> diffusion_grids_;
 
   friend class SimulationBackup;
   ClassDefNV(ResourceManager, 1);

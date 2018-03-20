@@ -155,7 +155,7 @@ private:
   TNeuronSoPtr neuron_ptr_;
   TNeuriteSoPtr neurite_ptr_;
 
-  ClassDef(NeuronNeuriteAdapter, 1);
+  BDM_ROOT_CLASS_DEF(NeuronNeuriteAdapter, 1);
 };
 
 /// Class defining the biological properties of a neurite segment, if it contains

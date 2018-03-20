@@ -153,27 +153,6 @@ class SoaSimulationObject {
   /// of all data member containers
   void reserve(size_t new_capacity) {}  // NOLINT
 
-  template <typename Function>
-  void ForEachDataMember(Function l) {}
-
-  template <typename Function>
-  void ForEachDataMemberIn(const std::set<std::string> &dm_selector,
-                           Function f) {
-    // validate data_members
-    // all data members should have been removed from the set. Remaining
-    // entries do not exist
-    if (dm_selector.size() != 0) {
-      std::stringstream sstr;
-      for (auto &element : dm_selector) {
-        sstr << element << ", ";
-      }
-      Fatal("ForEachDataMemberIn",
-            "Please check your config file. The following data members do not "
-            "exist: %s",
-            sstr.str().c_str());
-    }
-  }
-
  protected:
   const size_t kIdx = 0;
 
@@ -293,6 +272,27 @@ class SimulationObject
   SimulationObject(T *other, size_t idx) : Base(other, idx) {}
 
   virtual ~SimulationObject() {}
+
+  template <typename Function>
+  void ForEachDataMember(Function l) {}
+
+  template <typename Function>
+  void ForEachDataMemberIn(const std::set<std::string> &dm_selector,
+                           Function f) {
+    // validate data_members
+    // all data members should have been removed from the set. Remaining
+    // entries do not exist
+    if (dm_selector.size() != 0) {
+      std::stringstream sstr;
+      for (auto &element : dm_selector) {
+        sstr << element << ", ";
+      }
+      Fatal("ForEachDataMemberIn",
+            "Please check your config file. The following data members do not "
+            "exist: %s",
+            sstr.str().c_str());
+    }
+  }
 
   /// Used internally to create the same object, but with
   /// different backend - required since inheritance chain is not known

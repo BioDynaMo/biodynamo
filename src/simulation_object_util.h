@@ -388,8 +388,8 @@ struct Capsule;
   /** Executes the given function for all data members             */          \
   /**  Function could be a lambda in the following form:           */          \
   /**  `[](auto* data_member, const std::string& dm_name) { ... }` */          \
-  template <typename Function, typename T = Backend>                           \
-  typename enable_if<is_soa<T>::value>::type ForEachDataMember(Function f) {   \
+  template <typename Function>                           \
+  void ForEachDataMember(Function f) {   \
     BDM_SIM_OBJECT_FOREACHDM_BODY(__VA_ARGS__)                                 \
     Base::ForEachDataMember(f);                                                \
   }                                                                            \
@@ -397,8 +397,8 @@ struct Capsule;
   /** Executes the given function for the specified data members    */         \
   /** Function could be a lambda in the following form              */         \
   /** `[](auto* data_member, const std::string& dm_name) { ... }`   */         \
-  template <typename Function, typename T = Backend>                           \
-  typename enable_if<is_soa<T>::value>::type ForEachDataMemberIn(              \
+  template <typename Function>                           \
+  void ForEachDataMemberIn(              \
       std::set<std::string> dm_selector, Function f) {                         \
     BDM_SIM_OBJECT_FOREACHDMIN_BODY(__VA_ARGS__)                               \
     Base::ForEachDataMemberIn(dm_selector, f);                                 \
@@ -553,7 +553,7 @@ class SoPointer {
   Container* so_container_ = nullptr;
   uint64_t element_idx_ = std::numeric_limits<uint64_t>::max();
 
-  ClassDef(SoPointer, 1);
+  BDM_ROOT_CLASS_DEF(SoPointer, 1);
 };
 
 /// Helper function to make cell division easier for the programmer.

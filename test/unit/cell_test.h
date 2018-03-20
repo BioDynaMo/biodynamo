@@ -26,6 +26,8 @@ struct GrowthModule : public BaseBiologyModule {
   ClassDefNV(GrowthModule, 1);
 };
 
+BDM_ADD_TYPE_TO_LINKDEF(GrowthModule);
+
 struct MovementModule {
   std::array<double, 3> velocity_;
 
@@ -42,6 +44,8 @@ struct MovementModule {
   bool IsCopied(BmEvent event) const { return false; }
   ClassDefNV(MovementModule, 1);
 };
+
+BDM_ADD_TYPE_TO_LINKDEF(MovementModule);
 
 template <typename TBackend = Soa>
 struct CTParam {
@@ -94,16 +98,9 @@ BDM_SIM_OBJECT_TEST(TestCell, Cell, CTParam) {
   FRIEND_TEST(CellTest, DivideVolumeRatioPhiTheta);
 };
 
+BDM_ADD_TYPE_TO_LINKDEF(TestCell);
+
 inline void RunIOTest() {
-  // Temporary workaround for ROOT-8982; makes sure dictionary is working for
-  // this type
-  // important part is to add the namespace for the second template parameter:
-  // bdm::SimulationObject_TCTParam_TDerived
-  bdm::CellExt<
-      bdm::cell_test_internal::CTParam<bdm::Scalar>,
-      bdm::cell_test_internal::Capsule<bdm::cell_test_internal::TestCellExt>,
-      bdm::SimulationObject_TCTParam_TDerived>
-      foo;
 
   remove(ROOTFILE);
 

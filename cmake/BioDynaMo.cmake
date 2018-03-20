@@ -143,10 +143,36 @@ function(get_path_rel_to_includes FILE_PATH REL_TO_INCLUDES)
   message(WARNING "File '${FILE_PATH}' not found in any include directory")
 endfunction(get_path_rel_to_includes)
 
+# TODO documentation
+# generates the source file from a template and builds it
+# NB: headers must be relative to include directories
+# HEADERS LIBRARIES
+function(bdm_linkdef_generator TARGET)
+  CMAKE_PARSE_ARGUMENTS(ARG "" "" "HEADERS;LIBRARIES" "" ${ARGN})
+
+  # create the list of includes that will be inserted into the linkdef generator
+  # source file
+  set(linkdef_generator_includes)
+  foreach(fp ${ARG_HEADERS})
+    set(linkdef_generator_includes "${linkdef_generator_includes}#include \"${fp}\"\n")
+  endforeach()
+  set(linkdef_file "${CMAKE_CURRENT_BINARY_DIR}/${TARGET}_linkdef.h")
+
+  # create linkdef generator source file for ${TARGET}
+  configure_file("cmake/generate_linkdef/linkdef_generator_template.cc.in"
+                 "${TARGET}-linkdef-generator.cc" @ONLY)
+
+  add_executable(${TARGET}-linkdef-generator
+                 ${TARGET}-linkdef-generator.cc)
+  target_link_libraries(${TARGET}-linkdef-generator ${ARG_LIBRARIES})
+  # FIXME check clang for unresolved-symbols flag
+  set_target_properties(${TARGET}-linkdef-generator
+                        PROPERTIES LINK_FLAGS "-Wl,--unresolved-symbols=ignore-all")
+endfunction(bdm_linkdef_generator)
+
 # TODO fix documentation
 # function bdm_generate_dictionary1 (TARGET
 #                                DICT dictionary
-#                                DEPENDS
 #                                HEADERS header1 header2 ...
 #                                DEPENDS target1 target2
 #                                OPTIONS opt1...)
@@ -156,7 +182,7 @@ endfunction(get_path_rel_to_includes)
 # executable.
 # Ouput of genreflex is piped into a log file ${TARGET}.log
 function(bdm_generate_dictionary1 TARGET)
-  CMAKE_PARSE_ARGUMENTS(ARG "" "DICT" "LINKDEF;HEADERS;DEPENDS;OPTIONS" "" ${ARGN})
+  CMAKE_PARSE_ARGUMENTS(ARG "" "DICT" "HEADERS;DEPENDS;OPTIONS" "" ${ARGN})
 
   # Get the list of include directories------------------
   get_directory_property(incdirs INCLUDE_DIRECTORIES)
@@ -187,7 +213,10 @@ function(bdm_generate_dictionary1 TARGET)
 
   # linkdef file ------------------------------------
   # TODO generate linkdef
-  set(linkdeffile ${CMAKE_SOURCE_DIR}/${TARGET}_linkdef.h)
+  bdm_linkdef_generator(${TARGET}
+                        HEADERS ${headerfiles}
+                        LIBRARIES ${ARG_LIBRARIES})
+  set(linkdeffile ${CMAKE_CURRENT_BINARY_DIR}/${TARGET}_linkdef.h)
 
   # get preprocessor definitions--------------------------
   get_directory_property(defs COMPILE_DEFINITIONS)
@@ -218,12 +247,14 @@ function(bdm_generate_dictionary1 TARGET)
   #   command is executed if pattern 0 is not found in file
   add_custom_target(${TARGET}
     COMMAND grep 0 ${CMAKE_CURRENT_BINARY_DIR}/rebuild_${TARGET} >/dev/null ||
+            ${CMAKE_CURRENT_BINARY_DIR}/${TARGET}-linkdef-generator &&
             ${ROOTCLING_EXECUTABLE} -f ${ARG_DICT} ${rootmapopts} -noIncludePaths
             ${ARG_OPTIONS} ${includedirs} ${definitions} -v  ${headerfiles}
             ${linkdeffile} >${CMAKE_CURRENT_BINARY_DIR}/${TARGET}.log 2>&1
     COMMAND echo 0 > ${CMAKE_CURRENT_BINARY_DIR}/rebuild_${TARGET}
     WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-    DEPENDS ${ARG_DEPENDS} ${CMAKE_CURRENT_BINARY_DIR}/rebuild_${TARGET})
+    DEPENDS ${ARG_DEPENDS} ${CMAKE_CURRENT_BINARY_DIR}/rebuild_${TARGET}
+            ${TARGET}-linkdef-generator)
 endfunction(bdm_generate_dictionary1)
 
 
@@ -266,12 +297,6 @@ function(bdm_add_executable TARGET)
   #   SELECTION ${BDM_CMAKE_DIR}/selection_custom_streamers.xml
   #   DEPENDS ${TARGET}-objectlib)
   # set(DICT_SRCS ${DICT_FILE} ${DICT_FILE_CS})
-  add_executable(${TARGET}-linkdef-generator
-                 cmake/generate_linkdef/generate_linkdef_macro.cc)
-  target_link_libraries(${TARGET}-linkdef-generator ${ARG_LIBRARIES})
-  # FIXME check clang for unresolved-symbols flag
-  set_target_properties(${TARGET}-linkdef-generator
-                        PROPERTIES LINK_FLAGS "-Wl,--unresolved-symbols=ignore-all")
 
   set(DICT_FILE "${CMAKE_CURRENT_BINARY_DIR}/${TARGET}_dict.cc")
   bdm_generate_dictionary1(${TARGET}-dict

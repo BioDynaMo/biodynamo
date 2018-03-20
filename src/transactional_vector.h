@@ -7,6 +7,9 @@
 #include <mutex>
 #include <vector>
 
+#include "linkdef_util.h"
+#include "root_util.h"
+
 namespace bdm {
 
 /// TransactionalVector has methods to add and remove elements which must be
@@ -21,6 +24,14 @@ class TransactionalVector {
   using iterator = typename std::vector<T>::iterator;
   using const_iterator = typename std::vector<T>::const_iterator;
   using value_type = T;
+
+  /// This function is called during ROOT LinkDef generation.
+  /// It adds a linkdef entry for each data member or base type.
+  /// If this type is subclassed it also adds an entry of itself.
+  // TODO link to documentation
+  static void AddToLinkDef(std::set<LinkDefDescriptor>& entries) {
+    AddAllLinkDefEntries<std::vector<T>>(entries, true);
+  }
 
   TransactionalVector() {}
 
@@ -126,6 +137,8 @@ class TransactionalVector {
   uint64_t size_ = 0;
   /// vector of indices with elements which should be removed
   std::vector<size_t> to_be_removed_;
+
+  BDM_ROOT_CLASS_DEF(TransactionalVector, 1);  // TODO change to ClassDef
 };
 
 }  // namespace bdm

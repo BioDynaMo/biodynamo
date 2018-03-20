@@ -1,25 +1,25 @@
+#define BDM_CREATE_LINKDEF
+
+#include <fstream>
 #include <string>
 #include "linkdef_util.h"
 
-// TODO rename to linkdef_generator_template.cc.in
-
-// TODO add all the headers here
-#include "figure_5.h"
-
+// include all headers of this target
+@linkdef_generator_includes@
 
 namespace bdm {
 
 static int main_add_to_linkdef = AddToLinkDefFunction([](std::set<LinkDefDescriptor>& entries){
+  AddAllLinkDefEntries<RuntimeVariables>(entries, true);
+  AddAllLinkDefEntries<IntegralTypeWrapper<size_t>>(entries, true);
   AddAllLinkDefEntries<ResourceManager<>>(entries, true);
 });
 
 }  // namespace bdm
 
 using bdm::LinkDefDescriptor;
-// BDM_ADD_TYPE_TO_LINKDEF(bdm::ResourceManager<>, true);
 
-
-  const char* linkdef_header = R"LINKDEF_HEADER(// some C++ header definition
+const char* linkdef_header = R"LINKDEF_HEADER(// some C++ header definition
   #ifdef __ROOTCLING__
   // turns off dictionary generation for all
   #pragma link off all class;
@@ -29,11 +29,9 @@ using bdm::LinkDefDescriptor;
 
 )LINKDEF_HEADER";
 
-  const char* linkdef_footer = "#endif";
+const char* linkdef_footer = "#endif";
 
 int main() {
-  // std::cout << typeid(bdm::ResourceManager<>).name() << std::endl;
-
   std::set<LinkDefDescriptor> entries;
 
   for(auto&& function : bdm::kAddToLinkDefFunctions) {
@@ -47,11 +45,13 @@ int main() {
 
   std::sort(linkdef_lines.begin(), linkdef_lines.end());
 
-  std::cout << linkdef_header << std::endl;
+  std::ofstream ofs("@linkdef_file@");
+  ofs << linkdef_header << std::endl;
 
   for (auto&& line : linkdef_lines) {
-    std::cout << "  " << line << std::endl;
+    ofs << "  " << line << std::endl;
   }
 
-  std::cout << std::endl <<  linkdef_footer << std::endl;
+  ofs << std::endl <<  linkdef_footer << std::endl;
+  ofs.close();
 }

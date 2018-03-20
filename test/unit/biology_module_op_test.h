@@ -5,6 +5,7 @@
 #include "biology_module_util.h"
 #include "cell.h"
 #include "compile_time_param.h"
+#include "linkdef_util.h"
 #include "transactional_vector.h"
 #include "unit/test_util.h"
 
@@ -26,6 +27,8 @@ struct GrowthModule : public BaseBiologyModule {
 
   ClassDefNV(GrowthModule, 1);
 };
+
+BDM_ADD_TYPE_TO_LINKDEF(GrowthModule);
 
 template <typename TBackend = Soa>
 struct CTParam {

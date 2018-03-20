@@ -6,6 +6,7 @@
 #include <sstream>
 #include <vector>
 
+#include "linkdef_util.h"
 #include "root_util.h"
 
 namespace bdm {
