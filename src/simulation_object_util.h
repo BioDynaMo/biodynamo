@@ -552,6 +552,8 @@ class SoPointer {
  private:
   Container* so_container_ = nullptr;
   uint64_t element_idx_ = std::numeric_limits<uint64_t>::max();
+
+  ClassDef(SoPointer, 1);
 };
 
 /// Helper function to make cell division easier for the programmer.

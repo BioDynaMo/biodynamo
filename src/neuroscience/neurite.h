@@ -26,6 +26,15 @@ class NeuronNeuriteAdapter {
 public:
   using Self = NeuronNeuriteAdapter<TNeuronSoPtr, TNeuriteSoPtr>;
 
+  /// This function is called during ROOT LinkDef generation.
+  /// It adds a linkdef entry for each data member or base type.
+  /// If this type is subclassed it also adds an entry of itself.
+  // TODO link to documentation
+  static void AddToLinkDef(std::set<LinkDefDescriptor>& entries) {
+    AddAllLinkDefEntries<TNeuronSoPtr>(entries, true);
+    AddAllLinkDefEntries<TNeuriteSoPtr>(entries, true);
+  }
+
   NeuronNeuriteAdapter() {}
 
   template <typename T>
@@ -145,6 +154,8 @@ public:
 private:
   TNeuronSoPtr neuron_ptr_;
   TNeuriteSoPtr neurite_ptr_;
+
+  ClassDef(NeuronNeuriteAdapter, 1);
 };
 
 /// Class defining the biological properties of a neurite segment, if it contains

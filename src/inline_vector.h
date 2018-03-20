@@ -20,6 +20,14 @@ using std::size_t;
 template <typename T, size_t N>
 class InlineVector {
  public:
+  /// This function is called during ROOT LinkDef generation.
+  /// It adds a linkdef entry for each data member or base type.
+  /// If this type is subclassed it also adds an entry of itself.
+  // TODO link to documentation
+  static void AddToLinkDef(std::set<LinkDefDescriptor>& entries) {
+    AddAllLinkDefEntries<T>(entries, true);
+  }
+
   explicit InlineVector(TRootIOCtor* io_ctor) {}  // Constructor for ROOT I/O
   InlineVector() {}
 

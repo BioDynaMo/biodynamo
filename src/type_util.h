@@ -5,11 +5,12 @@
 #include <vector>
 #include <tuple>
 
-#include "backend.h"
-
 namespace bdm {
 
 using std::is_same;
+
+struct Soa;
+struct SoaRef;
 
 /// Type trait which defines a ternary operator for types which can be evaluated
 /// at compile time

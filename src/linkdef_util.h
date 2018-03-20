@@ -6,6 +6,7 @@
 #include <functional>
 #include <ostream>
 #include <set>
+#include <sstream>
 #include <typeindex>
 #include <typeinfo>
 #include <type_traits>
@@ -36,9 +37,22 @@ public:
     return type_index_.hash_code() < other.type_index_.hash_code();
   }
 
+  void GenerateLinkDefLine(std::vector<std::string>& linkdef_lines) const {
+    auto demangled = Demangle(type_index_.name());
+    if(!Filter(demangled)) {
+      std::stringstream stream;
+      stream << "#pragma link C++ class " << Demangle(type_index_.name())
+             << (streamer_ ? "+;" : ";");
+      linkdef_lines.emplace_back(stream.str());
+    }
+  }
+
   friend std::ostream& operator<<(std::ostream& stream, const LinkDefDescriptor& ldd) {
-    stream << "#pragma link C++ class " << Demangle(ldd.type_index_.name())
-           << (ldd.streamer_ ? "+;" : ";");
+    auto demangled = Demangle(ldd.type_index_.name());
+    if(!Filter(demangled)) {
+      stream << "#pragma link C++ class " << Demangle(ldd.type_index_.name())
+             << (ldd.streamer_ ? "+;" : ";");
+    }
     return stream;
   }
 
@@ -60,6 +74,13 @@ private:
     }
     Fatal("LinkDefDescriptor::Demangle", "abi::__cxa_demangle returned non-zero exit code");
     return "";
+  }
+
+  static bool Filter(const std::string& demangled_type_name) {
+    // TODO current solution is whitelisting the types. -> all types must be
+    // in the namespace `bdm`.
+    // Maybe better to switch to blacklisting
+    return demangled_type_name.find("bdm::") == std::string::npos;
   }
 };
 
@@ -101,12 +122,16 @@ auto CallAddToLinkDef(std::set<LinkDefDescriptor>& entries) -> decltype(std::rem
 }
 
 // -----------------------------------------------------------------------------
+// forward declaration
+template <typename T>
+void AddAllLinkDefEntries(std::set<LinkDefDescriptor>& entries, bool streamer);
+
 namespace detail {
 
 /// Default
 template <typename T>
 void AddAllLinkDefEntries(std::set<LinkDefDescriptor>& entries, bool streamer, ...) {
-  std::cout << "add default  " << typeid(T).name() << std::endl;
+  std::cout << "add default  " << LinkDefDescriptor::Create<T>(true)  << std::endl;
 
   entries.insert(LinkDefDescriptor::Create<T>(true));
   CallAddToLinkDef<T>(entries);
@@ -131,18 +156,22 @@ auto AddAllLinkDefEntries(std::set<LinkDefDescriptor>& entries, bool streamer, i
 
 /// for std::vector
 template <typename T>
-auto AddAllLinkDefEntries(std::set<LinkDefDescriptor>& entries, bool streamer, int) -> decltype(std::enable_if_t<is_vector<std::remove_pointer_t<T>>::value>(), void()) {
-  using value_type = typename std::remove_pointer_t<T>::value_type;
-  std::cout << "add vector   " << LinkDefDescriptor::Create<value_type>(true) << std::endl;
-  entries.insert(LinkDefDescriptor::Create<value_type>(true));
+auto AddAllLinkDefEntries(std::set<LinkDefDescriptor>& entries, bool streamer, int) -> decltype(std::enable_if_t<is_vector<std::remove_pointer_t<std::decay_t<T>>>::value>(), void()) {
+  using VectorType = typename std::remove_pointer_t<std::decay_t<T>>;
+  using value_type = std::remove_pointer_t<std::decay_t<typename VectorType::value_type>>;
+  std::cout << "add vector   " << LinkDefDescriptor::Create<T>(true) << std::endl;
+  std::cout << "  " << typeid(value_type).name() << std::endl;
+  // entries.insert(LinkDefDescriptor::Create<value_type>(true));
   // CallAddToLinkDef<value_type>(entries);
-  AddAllLinkDefEntries<value_type>(entries, streamer, 0);
+  ::bdm::AddAllLinkDefEntries<value_type>(entries, streamer);
 }
 
 /// for bdm::Variant
 template <typename T>
-auto AddAllLinkDefEntries(std::set<LinkDefDescriptor>& entries, bool streamer, int) -> decltype(std::enable_if_t<is_Variant<T>::value>(), void()) {
-  std::cout << "add variant  " << LinkDefDescriptor::Create<T>(true) << std::endl;
+auto AddAllLinkDefEntries(std::set<LinkDefDescriptor>& entries, bool streamer, int) -> decltype(std::enable_if_t<is_Variant<std::remove_pointer_t<T>>::value>(), void()) {
+  std::cout << "add variant  " << LinkDefDescriptor::Create<T>(false) << std::endl;
+  std::cout << "  " << typeid(T).name() << std::endl;
+
   entries.insert(LinkDefDescriptor::Create<T>(false));
   CallAddToLinkDef<T>(entries);
 }

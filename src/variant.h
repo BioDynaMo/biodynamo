@@ -8,6 +8,7 @@
 
 #include "mpark/variant.hpp"
 #include "linkdef_util.h"
+#include "root_util.h"
 #include "tuple_util.h"
 
 namespace bdm {

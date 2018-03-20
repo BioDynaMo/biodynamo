@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "macros.h"
+#include "linkdef_util.h"
 #include "root_util.h"
 #include "transactional_vector.h"
 
@@ -67,6 +68,14 @@ template <typename T>
 class OneElementArray {
  public:
   using value_type = T;
+
+  /// This function is called during ROOT LinkDef generation.
+  /// It adds a linkdef entry for each data member or base type.
+  /// If this type is subclassed it also adds an entry of itself.
+  static void AddToLinkDef(std::set<LinkDefDescriptor>& entries) {
+    AddAllLinkDefEntries<T>(entries, true);
+  }
+
   OneElementArray() : data_() {}
   explicit OneElementArray(TRootIOCtor* io_ctor) {}  // Constructor for ROOT I/O
   explicit OneElementArray(const T& data) : data_(data) {}
