@@ -51,7 +51,7 @@ public:
     auto demangled = Demangle(ldd.type_index_.name());
     if(!Filter(demangled)) {
       stream << "#pragma link C++ class " << Demangle(ldd.type_index_.name())
-             << (ldd.streamer_ ? "+;" : ";");
+             << (ldd.streamer_ ? "+;" : "-;");
     }
     return stream;
   }
@@ -69,7 +69,6 @@ private:
     char* result = abi::__cxa_demangle(name, NULL, NULL, &status);
     if (!status) {
       std::string ret_value(result);
-      ReplaceAllInString(ret_value, ", ", ",");
       ReplaceAllInString(ret_value, "bdm::SimulationObject>", "bdm::SimulationObject_TCTParam_TDerived>");
       free(result);
       return ret_value;
