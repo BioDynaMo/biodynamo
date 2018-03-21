@@ -42,7 +42,7 @@ public:
     if(!Filter(demangled)) {
       std::stringstream stream;
       stream << "#pragma link C++ class " << Demangle(type_index_.name())
-             << (streamer_ ? "+;" : ";");
+             << (streamer_ ? "+;" : "-;");
       linkdef_lines.emplace_back(stream.str());
     }
   }

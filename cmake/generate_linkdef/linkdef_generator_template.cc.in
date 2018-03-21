@@ -10,6 +10,7 @@
 namespace bdm {
 
 static int main_add_to_linkdef = AddToLinkDefFunction([](std::set<LinkDefDescriptor>& entries){
+  AddAllLinkDefEntries<BaseBiologyModule>(entries, true);
   AddAllLinkDefEntries<RuntimeVariables>(entries, true);
   AddAllLinkDefEntries<IntegralTypeWrapper<size_t>>(entries, true);
   AddAllLinkDefEntries<ResourceManager<>>(entries, true);
