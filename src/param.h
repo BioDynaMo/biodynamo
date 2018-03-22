@@ -24,11 +24,8 @@ struct Param {
   ///protein_amount specifies the amount of different proteins in the simulation
   static int protein_amount;
 
-  // /Lambda function which contains functions by which GeneCalculation module calculate concentration of proteins on each step
-  // static std::function<std::vector<double>(double, std::vector<std::array<double, protein_amount>>)> functions;
 
   ///Variable which specifies method using for solving differential equation {"Euler", "RK4"}.
-  // static std::string dE_solve_method;
   enum  dE_solve_method { Euler = 1, RK4 = 2 };
   static dE_solve_method dE_solve_method_choosed;
 

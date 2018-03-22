@@ -9,9 +9,6 @@ namespace bdm {
   using std::vector;
   using std::string;
 
-  //initial values for list of proteins
-  vector<double> init_vals = {12.0, 1.7, 3.4};
-
   struct GeneBM {
     vector<std::function<double(double, double)>> functions_;
 
@@ -36,7 +33,7 @@ namespace bdm {
     GeneBM geneFunction;
 
     GeneCalculation() :
-     BaseBiologyModule(gAllBmEvents), substances_(init_vals){}
+     BaseBiologyModule(gAllBmEvents), substances_({12.0, 1.7, 3.4}){}
     GeneCalculation(vector<double> init_vals) :
      BaseBiologyModule(gAllBmEvents), substances_(init_vals){}
     GeneCalculation(vector<double> init_vals, GeneBM geneFunction) :
@@ -83,6 +80,9 @@ struct CompileTimeParam : public DefaultCompileTimeParam<Backend> {
 inline int Simulate(int argc, const char** argv) {
   // 3. Initialize BioDynaMo
   InitializeBioDynamo(argc, argv);
+  //initial values for list of proteins
+  vector<double> init_vals = {12.0, 1.7, 3.4};
+
   GeneBM geneExmpl;
   geneExmpl.addFunction( [&](double curr_time, double substances_) -> double {
     return 5;

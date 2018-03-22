@@ -1,3 +1,5 @@
+#ifndef UNIT_GENE_MODULE_TEST
+#define UNIT_GENE_MODULE_TEST
 #include "cell_gene_module.h"
 #include "gtest/gtest.h"
 
@@ -159,3 +161,4 @@ TEST(CellGeneModuleTest, RK4Test) {
 }
 
 }  // namespace bdm
+#endif //UNIT_GENE_MODULE_TEST

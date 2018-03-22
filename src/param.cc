@@ -19,16 +19,7 @@ bool Param::leaking_edges_ = false;
 bool Param::calculate_gradients_ = true;
 size_t Param::total_steps_ = 0;
 int Param::protein_amount = 3;
-// enum Param::dE_solve_method { Euler = 1, RK4 = 2 };
 Param::dE_solve_method Param::dE_solve_method_choosed = Param::dE_solve_method::RK4;
-// std::function<std::vector<double>(double, std::vector<std::array<double, Param::protein_amount>>)> Param::functions = [&](double curr_time, std::vector<std::array<double, protein_amount>> substances_) -> std::vector<double> {
-//     std::vector<double> update_value;
-//     update_value.push_back(2*substances_[0][0] - curr_time);
-//     update_value.push_back(1/substances_[0][1]);
-//     update_value.push_back(substances_[0][2]);
-//     assert(update_value.size() == protein_amount && "Amount of functions does not equal to amount of proteins\n");
-//     return update_value;
-//   };
 
 
 // visualization group
