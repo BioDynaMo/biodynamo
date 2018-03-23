@@ -2,6 +2,7 @@
 #define BIODYNAMO_H_
 
 #include "biology_module/grow_divide.h"
+#include "biology_module/gene_calculation.h"
 #include "biology_module_util.h"
 #include "cell.h"
 #include "compile_time_param.h"
