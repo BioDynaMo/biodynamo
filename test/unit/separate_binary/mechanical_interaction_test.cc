@@ -163,8 +163,6 @@ namespace bdm {
     Param::Reset();
     Rm()->Clear();
 
-    //Param::live_visualization_ = true;
-
     auto neuron = Rm()->New<Neuron>();
     neuron.SetPosition({ 0, 0, 0 });
     neuron.SetMass(1);
@@ -195,8 +193,6 @@ namespace bdm {
 
       EXPECT_NEAR(neAxis[0], neAxis[1], abs_error<double>::value);
       EXPECT_NEAR(neAxis[0], neAxis[2], abs_error<double>::value);
-//      EXPECT_TRUE(std::round(1e9*neAxis[0])==std::round(1e9*neAxis[1]));
-//      EXPECT_TRUE(std::round(1e9*neAxis[0])==std::round(1e9*neAxis[2]));
     }
   }
 
@@ -204,14 +200,11 @@ namespace bdm {
     Param::Reset();
     Rm()->Clear();
 
-    Param::live_visualization_ = true;
-
     auto neuron = Rm()->New<Neuron>();
     neuron.SetPosition({ 0, 0, 0 });
     neuron.SetMass(1);
     neuron.SetDiameter(10);
 
-//    auto ne = neuron.ExtendNewNeurite(2.0, DegreesToRadians(36.6992), DegreesToRadians(63.4349)).Get();
     auto ne = neuron.ExtendNewNeurite({1, 1, 1}).Get();
 
     auto& grid = Grid<>::GetInstance();
@@ -224,7 +217,6 @@ namespace bdm {
     EXPECT_NEAR(neAxis[1], 0.57735026918962584, abs_error<double>::value);
     EXPECT_NEAR(neAxis[2], 0.57735026918962584, abs_error<double>::value);
 
-//    std::array<double, 3> direction = { 1.5, 2.3, 3.8 };
     std::array<double, 3> direction = { 2, 1, 1 };
 
     for (int i = 0; i < 98; i++) {
@@ -234,7 +226,40 @@ namespace bdm {
 
       neAxis = ne.GetSpringAxis();
 
-      EXPECT_TRUE(std::round(1e9*neAxis[1])==std::round(1e9*neAxis[2]));
+      EXPECT_NEAR(neAxis[1], neAxis[2], abs_error<double>::value);
+    }
+  }
+
+  TEST(MechanicalInteraction, DiagonalSpecialDirectionYCylinderGrowth) {
+    Param::Reset();
+    Rm()->Clear();
+
+    Param::live_visualization_ = true;
+
+    auto neuron = Rm()->New<Neuron>();
+    neuron.SetPosition({ 0, 0, 0 });
+    neuron.SetMass(1);
+    neuron.SetDiameter(10);
+
+    auto ne = neuron.ExtendNewNeurite({0.5, 1, 2}).Get();
+
+    auto& grid = Grid<>::GetInstance();
+    grid.Initialize();
+    Scheduler<> scheduler;
+
+    std::array<double, 3> neAxis = ne.GetSpringAxis();
+
+    std::array<double, 3> direction = { 0.5, 1, 2 };
+
+    for (int i = 0; i < 98; i++) {
+      ne.ElongateTerminalEnd(300, direction);
+      ne.RunDiscretization();
+      scheduler.Simulate(1);
+
+      neAxis = ne.GetSpringAxis();
+
+      EXPECT_NEAR(neAxis[0], neAxis[1]*0.5, abs_error<double>::value);
+      EXPECT_NEAR(neAxis[1], neAxis[2]*0.5, abs_error<double>::value);
     }
   }
 
@@ -279,12 +304,9 @@ namespace bdm {
 
   }
 
-
   TEST(MechanicalInteraction, NotStraightCylinderGrowthObstacle) {
     Param::Reset();
     Rm()->Clear();
-
-    //Param::live_visualization_ = true;
 
     auto neuron = Rm()->New<Neuron>();
     neuron.SetPosition({ 0, 0, 0 });
@@ -316,11 +338,8 @@ namespace bdm {
     }
 
     neAxis = ne.GetSpringAxis();
-    EXPECT_NEAR(neAxis[0], 0, abs_error<double>::value);
     EXPECT_NEAR(neAxis[1], 0, abs_error<double>::value);
   }
-
-
 
   TEST(MechanicalInteraction, DoubleStraightCylinderGrowth) {
     Param::Reset();
@@ -371,7 +390,6 @@ namespace bdm {
       }
     }
   }
-
 
 } // end namespace bdm
 
