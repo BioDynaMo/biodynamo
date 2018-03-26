@@ -163,7 +163,7 @@ namespace bdm {
     Param::Reset();
     Rm()->Clear();
 
-    Param::live_visualization_ = true;
+    //Param::live_visualization_ = true;
 
     auto neuron = Rm()->New<Neuron>();
     neuron.SetPosition({ 0, 0, 0 });
@@ -183,7 +183,7 @@ namespace bdm {
     EXPECT_NEAR(neAxis[2], 0.57735026918962584, abs_error<double>::value);
 
     std::array<double, 3> direction = { 1, 1, 1 };
-    for (int i = 0; i < 37; i++) {
+    for (int i = 0; i < 100; i++) { //37
 
       ne.ElongateTerminalEnd(300, direction);
       ne.RunDiscretization();
@@ -191,8 +191,12 @@ namespace bdm {
 
       neAxis = ne.GetSpringAxis();
 
-      EXPECT_TRUE(std::round(1e9*neAxis[0])==std::round(1e9*neAxis[1]));
-      EXPECT_TRUE(std::round(1e9*neAxis[0])==std::round(1e9*neAxis[2]));
+      std::cout << "xz spring axis: " << neAxis[0] << " ; " << neAxis[2] << std::endl;
+
+      EXPECT_NEAR(neAxis[0], neAxis[1], abs_error<double>::value);
+      EXPECT_NEAR(neAxis[0], neAxis[2], abs_error<double>::value);
+//      EXPECT_TRUE(std::round(1e9*neAxis[0])==std::round(1e9*neAxis[1]));
+//      EXPECT_TRUE(std::round(1e9*neAxis[0])==std::round(1e9*neAxis[2]));
     }
   }
 
@@ -200,7 +204,7 @@ namespace bdm {
     Param::Reset();
     Rm()->Clear();
 
-    //Param::live_visualization_ = true;
+    Param::live_visualization_ = true;
 
     auto neuron = Rm()->New<Neuron>();
     neuron.SetPosition({ 0, 0, 0 });
