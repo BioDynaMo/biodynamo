@@ -18,7 +18,7 @@
 namespace bdm {
 namespace resource_manager_test_internal {
 
-BDM_SIM_OBJECT(A, SimulationObject) {
+BDM_SIM_OBJECT(A, bdm::SimulationObject) {
   BDM_SIM_OBJECT_HEADER(AExt, 1, data_);
 
 public:
@@ -33,7 +33,7 @@ public:
   vec<int> data_;
 };
 
-BDM_SIM_OBJECT(B, SimulationObject) {
+BDM_SIM_OBJECT(B, bdm::SimulationObject) {
   BDM_SIM_OBJECT_HEADER(BExt, 1, data_);
 
 public:

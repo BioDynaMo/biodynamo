@@ -21,7 +21,7 @@
 namespace bdm {
 // namespace simulation_object_util_test_internal {
 
-BDM_SIM_OBJECT(ContainerTestClass, SimulationObject) {
+BDM_SIM_OBJECT(ContainerTestClass, bdm::SimulationObject) {
   BDM_SIM_OBJECT_HEADER(ContainerTestClassExt, 1, dm1_, dm2_);
 public:
   ContainerTestClassExt() {}
@@ -42,7 +42,7 @@ private:
   vec<double> dm2_;
 };
 
-BDM_SIM_OBJECT(Cell, SimulationObject) {
+BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
   BDM_SIM_OBJECT_HEADER(CellExt, 1, position_, diameter_);
 
  public:
@@ -86,7 +86,7 @@ class Neurite {
 };
 
 // add Neurites to BaseCell
-BDM_SIM_OBJECT(Neuron, Cell) {
+BDM_SIM_OBJECT(Neuron, bdm::Cell) {
   BDM_SIM_OBJECT_HEADER(NeuronExt, 1, neurites_);
 
  public:
@@ -116,7 +116,7 @@ BDM_SIM_OBJECT(Neuron, Cell) {
 
 // -----------------------------------------------------------------------------
 // SOA object for IO test
-BDM_SIM_OBJECT(TestObject, SimulationObject) {
+BDM_SIM_OBJECT(TestObject, bdm::SimulationObject) {
   BDM_SIM_OBJECT_HEADER(TestObjectExt, 1, id_);
 
  public:

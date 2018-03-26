@@ -22,7 +22,7 @@ We can note the following things from its content:
 In `src/my_cell.h` we can find the following code:
 
 ``` C++
-BDM_SIM_OBJECT(MyCell, Cell) {
+BDM_SIM_OBJECT(MyCell, bdm::Cell) {
   BDM_SIM_OBJECT_HEADER(MyCellExt, 1, cell_type_);
 
  public:

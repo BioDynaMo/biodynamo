@@ -75,7 +75,7 @@ extern const BmEvent gCellDivision;
 //  }
 // };
 
-BDM_SIM_OBJECT(Cell, SimulationObject) {
+BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
   BDM_SIM_OBJECT_HEADER(CellExt, 1, position_, tractor_force_,
                         diameter_, volume_, adherence_, density_,
                         biology_modules_, box_idx_);

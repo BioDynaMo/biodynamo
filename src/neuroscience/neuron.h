@@ -11,7 +11,7 @@
 namespace bdm {
 namespace neuroscience {
 
-BDM_SIM_OBJECT(Neuron, Cell) {
+BDM_SIM_OBJECT(Neuron, bdm::Cell) {
   BDM_SIM_OBJECT_HEADER(NeuronExt, 1, daughters_, daughters_coord_, foo_);
 
  public:
@@ -187,7 +187,7 @@ BDM_SO_DEFINE(inline std::array<double, 3> NeuronExt)::OriginOf(
               xyz[2] * Base::kZAxis[2]};
 }
 
-BDM_SIM_OBJECT(SpecializedNeuron, Neuron) {
+BDM_SIM_OBJECT(SpecializedNeuron, bdm::neuroscience::Neuron) {
   BDM_SIM_OBJECT_HEADER(SpecializedNeuronExt, 1, me_);
 
  public:

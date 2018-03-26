@@ -461,7 +461,7 @@ void RunSoPointerTest(T* sim_objects) {
   EXPECT_TRUE(so_ptr.IsNullPtr());
 }
 
-BDM_SIM_OBJECT(SoPointerTestClass, SimulationObject) {
+BDM_SIM_OBJECT(SoPointerTestClass, bdm::SimulationObject) {
   BDM_SIM_OBJECT_HEADER(SoPointerTestClassExt, 1, id_);
 
  public:

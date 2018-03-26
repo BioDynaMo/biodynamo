@@ -61,7 +61,7 @@ struct Capsule;
 /// @param base_class
 ///
 ///     // Example usage to extend class Cell
-///     BDM_SIM_OBJECT(MyCell, Cell) {
+///     BDM_SIM_OBJECT(MyCell, bdm::Cell) {
 ///       BDM_SIM_OBJECT_HEADER(MyCellExt, 1, data_member_);
 ///      public:
 ///       MyCellExt() {}

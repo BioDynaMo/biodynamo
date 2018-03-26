@@ -11,7 +11,7 @@
 namespace bdm {
 
 namespace neuroscience {
-BDM_SIM_OBJECT(SpecializedNeurite, Neurite) {
+BDM_SIM_OBJECT(SpecializedNeurite, bdm::neuroscience::Neurite) {
   BDM_SIM_OBJECT_HEADER(SpecializedNeuriteExt, 1, foo_);
 
  public:
