@@ -1074,15 +1074,15 @@ inline std::array<double, 3> NeuriteExt)::CalculateDisplacement(TGrid* grid, dou
   //  (We check for every neighbor object if they touch us, i.e. push us away)
   auto calculate_neighbor_forces = [this,&force_on_my_point_mass, &force_on_my_mothers_point_mass](auto&& neighbor,
                                        SoHandle neighbor_handle) {
-    std::cout << typeid(neighbor).name() << std::endl;
     using NeighborBackend = typename std::decay<decltype(neighbor)>::type::Backend;
     using NeighborNeurite = TMostDerived<NeighborBackend>;
     using NeighborNeuron = typename TNeuron::template Self<NeighborBackend>;
+
     // TODO(lukas) once we switch to C++17 use if constexpr.
     // As a consequence the reinterpret_cast won't be needed anymore.
 
     // if neighbor is a Neurite
-    if (std::is_same<NeighborNeurite, decltype(neighbor)>::value) {
+    if (std::is_same<NeighborNeurite, std::decay_t<decltype(neighbor)>>::value) {
       auto n_soptr = reinterpret_cast<NeighborNeurite*>(&neighbor)->GetSoPtr();
       // if it is a direct relative, or sister branch, we don't take it into account
       if (n_soptr == this->GetDaughterLeft() ||
@@ -1091,7 +1091,7 @@ inline std::array<double, 3> NeuriteExt)::CalculateDisplacement(TGrid* grid, dou
           n_soptr.Get().GetMother() == this->GetMother()) {
         return;
       }
-    } else if (std::is_same<NeighborNeuron, decltype(neighbor)>::value) {
+    } else if (std::is_same<NeighborNeuron, std::decay_t<decltype(neighbor)>>::value) {
       // if neighbor is Neuron
       // if it is a direct relative, we don't take it into account
       auto n_soptr = reinterpret_cast<NeighborNeuron*>(&neighbor)->GetSoPtr();
@@ -1230,13 +1230,17 @@ BDM_SO_DEFINE(inline void NeuriteExt)::ApplyDisplacement(const std::array<double
   // Recompute length, tension and re-center the computation node, and redefine axis
   UpdateDependentPhysicalVariables();
   UpdateLocalCoordinateAxis();
+
+  // FIXME this whole block might be superfluous - ApplyDisplacement is called
   // For the relatives: recompute the lenght, tension etc. (why for mother? have to think about that)
   if (!daughter_left_[kIdx].IsNullPtr()){
     auto left = daughter_left_[kIdx].Get();
+    // FIXME this is problematic for the distributed version. it modifies a "neightbor"
     left.UpdateDependentPhysicalVariables();
     left.UpdateLocalCoordinateAxis();
   }
   if (!daughter_right_[kIdx].IsNullPtr()){
+    // FIXME this is problematic for the distributed version. it modifies a "neightbor"
     auto right = daughter_right_[kIdx].Get();
     right.UpdateDependentPhysicalVariables();
     right.UpdateLocalCoordinateAxis();
