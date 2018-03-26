@@ -61,9 +61,9 @@ TEST(CellGeneModuleTest, FunctionStructureTest){
 
   vector<double> expected_result;
 
-  expected_result[0] = func1(1,init_values[0]);
-  expected_result[1] = func2(1,init_values[1]);
-  expected_result[2] = func3(1,init_values[2]);
+  expected_result.push_back(func1(1,init_values[0]));
+  expected_result.push_back(func2(1,init_values[1]));
+  expected_result.push_back(func3(1,init_values[2]));
 
   vector<double> actual_result = geneBM.calculate(1,init_values);
   EXPECT_EQ(expected_result,actual_result);
@@ -93,9 +93,9 @@ TEST(GeneExpressionTest, EulerTest) {
   GeneCalculation geneCalculation(init_values, geneBM);
   Cell cell;
   geneCalculation.Run(&cell);
-  init_values[0] = func1(Param::total_steps_ * Param::simulation_time_step_, init_values[0]);
-  init_values[0] = func2(Param::total_steps_ * Param::simulation_time_step_, init_values[0]);
-  init_values[0] = func3(Param::total_steps_ * Param::simulation_time_step_, init_values[0]);
+  init_values[0] += func1(Param::total_steps_ * Param::simulation_time_step_, init_values[0]) * Param::simulation_time_step_;
+  init_values[1] += func2(Param::total_steps_ * Param::simulation_time_step_, init_values[1]) * Param::simulation_time_step_;
+  init_values[2] += func3(Param::total_steps_ * Param::simulation_time_step_, init_values[2]) * Param::simulation_time_step_;
 
   EXPECT_NEAR(init_values[0], geneCalculation.substances_[0], 1e-9);
   EXPECT_NEAR(init_values[1], geneCalculation.substances_[1], 1e-9);
@@ -128,30 +128,30 @@ TEST(CellGeneModuleTest, RK4Test) {
   geneCalculation.Run(&cell);
 
   vector<double> k1;
-  k1[0] = func1(Param::total_steps_ * Param::simulation_time_step_, init_values[0]);
-  k1[1] = func2(Param::total_steps_ * Param::simulation_time_step_, init_values[1]);
-  k1[2] = func3(Param::total_steps_ * Param::simulation_time_step_, init_values[2]);
+  k1.push_back(func1(Param::total_steps_ * Param::simulation_time_step_, init_values[0]));
+  k1.push_back(func2(Param::total_steps_ * Param::simulation_time_step_, init_values[1]));
+  k1.push_back(func3(Param::total_steps_ * Param::simulation_time_step_, init_values[2]));
   for (int i = 0; i < Param::protein_amount; i++)
     init_values[i] += Param::simulation_time_step_*k1[i]/2.0f;
 
   vector<double> k2;
-  k2[0] = func1(Param::total_steps_ * Param::simulation_time_step_ + Param::simulation_time_step_/2.0f, init_values[0]);
-  k2[1] = func2(Param::total_steps_ * Param::simulation_time_step_ + Param::simulation_time_step_/2.0f, init_values[1]);
-  k2[2] = func3(Param::total_steps_ * Param::simulation_time_step_ + Param::simulation_time_step_/2.0f, init_values[2]);
+  k2.push_back(func1(Param::total_steps_ * Param::simulation_time_step_ + Param::simulation_time_step_/2.0f, init_values[0]));
+  k2.push_back(func2(Param::total_steps_ * Param::simulation_time_step_ + Param::simulation_time_step_/2.0f, init_values[1]));
+  k2.push_back(func3(Param::total_steps_ * Param::simulation_time_step_ + Param::simulation_time_step_/2.0f, init_values[2]));
   for (int i = 0; i < Param::protein_amount; i++)
     init_values[i] += Param::simulation_time_step_*k2[i]/2.0f - Param::simulation_time_step_*k1[i]/2.0f;
 
   vector<double> k3;
-  k3[0] = func1(Param::total_steps_ * Param::simulation_time_step_ + Param::simulation_time_step_/2.0f, init_values[0]);
-  k3[1] = func2(Param::total_steps_ * Param::simulation_time_step_ + Param::simulation_time_step_/2.0f, init_values[1]);
-  k3[2] = func3(Param::total_steps_ * Param::simulation_time_step_ + Param::simulation_time_step_/2.0f, init_values[2]);
+  k3.push_back(func1(Param::total_steps_ * Param::simulation_time_step_ + Param::simulation_time_step_/2.0f, init_values[0]));
+  k3.push_back(func2(Param::total_steps_ * Param::simulation_time_step_ + Param::simulation_time_step_/2.0f, init_values[1]));
+  k3.push_back(func3(Param::total_steps_ * Param::simulation_time_step_ + Param::simulation_time_step_/2.0f, init_values[2]));
   for (int i = 0; i < Param::protein_amount; i++)
     init_values[i] += Param::simulation_time_step_*k3[i] - Param::simulation_time_step_*k2[i]/2.0f;
 
   vector<double> k4;
-  k4[0] = func1(Param::total_steps_ * Param::simulation_time_step_ + Param::simulation_time_step_, init_values[0]);
-  k4[1] = func2(Param::total_steps_ * Param::simulation_time_step_ + Param::simulation_time_step_, init_values[1]);
-  k4[2] = func3(Param::total_steps_ * Param::simulation_time_step_ + Param::simulation_time_step_, init_values[2]);
+  k4.push_back(func1(Param::total_steps_ * Param::simulation_time_step_ + Param::simulation_time_step_, init_values[0]));
+  k4.push_back(func2(Param::total_steps_ * Param::simulation_time_step_ + Param::simulation_time_step_, init_values[1]));
+  k4.push_back(func3(Param::total_steps_ * Param::simulation_time_step_ + Param::simulation_time_step_, init_values[2]));
   for (int i = 0; i < Param::protein_amount; i++)
     init_values[i] += Param::simulation_time_step_*(k1[i] + 2*k2[i] + 2*k3[i] + k4[i])/6.0f;
 

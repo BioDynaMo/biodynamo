@@ -175,7 +175,7 @@ class Scheduler {
 
  private:
   SimulationBackup backup_;
-  size_t& total_steps_ = Param::total_steps_;
+  size_t total_steps_ = 0;
   size_t restore_point_;
   std::chrono::time_point<Clock> last_backup_ = Clock::now();
   CatalystAdaptor<>* visualization_ = nullptr;
