@@ -11,7 +11,6 @@
 namespace bdm {
 
 struct Param {
-
   // simulation values ---------------------------------------------------------
   /// Name of the simulation executable\n
   /// Default value: biodynamo_simulation\n
@@ -21,13 +20,10 @@ struct Param {
   /// Variable which is tracking current step of simulation
   static size_t total_steps_;
 
-  ///protein_amount specifies the amount of different proteins in the simulation
-  static int protein_amount;
-
-
-  ///Variable which specifies method using for solving differential equation {"Euler", "RK4"}.
-  enum  dE_solve_method { Euler = 1, RK4 = 2 };
-  static dE_solve_method dE_solve_method_choosed;
+  /// Variable which specifies method using for solving differential equation
+  /// {"Euler", "RK4"}.
+  enum DESolveMethod { kEuler = 1, kRK4 = 2 };
+  static DESolveMethod d_e_solve_method_choosed_;
 
   /// Backup file name for full simulation backups\n
   /// Default value: `""` (no backups will be made)\n

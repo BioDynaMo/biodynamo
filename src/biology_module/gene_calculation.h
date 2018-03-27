@@ -1,7 +1,6 @@
 #ifndef BIOLOGY_MODULE_GENE_CALCULATION_H_
 #define BIOLOGY_MODULE_GENE_CALCULATION_H_
 
-#include <iostream>  // TODO remove
 #include <vector>
 
 #include <Rtypes.h>
@@ -10,61 +9,58 @@
 
 namespace bdm {
 
-struct GeneBM {
-  std::vector<std::function<double(double, double)>> functions_;
+struct GeneCalculation : public BaseBiologyModule {
+  double* time_step = &Param::simulation_time_step_;
+  size_t* total_steps_ = &Param::total_steps_;
+  std::vector<double> substances_ = {};
+  std::vector<std::function<double(double, double)>> functions_ = {};
 
-  void addFunction(std::function<double(double, double)> function){
+  GeneCalculation() : BaseBiologyModule(gAllBmEvents) {}
+
+  void AddFunction(std::function<double(double, double)> function,
+                   double initial_concentration_) {
     functions_.push_back(function);
+    substances_.push_back(initial_concentration_);
   }
-  std::vector<double> calculate(double time, std::vector<double> protein){
-    assert(functions_.size() == Param::protein_amount && "Amount of proteins is incorrect\n");
+
+  std::vector<double> Calculate(double time, std::vector<double> protein) {
     std::vector<double> update_value;
-    for (int i = 0; i < Param::protein_amount; i++){
+    for (unsigned int i = 0; i < functions_.size(); i++) {
       update_value.push_back(functions_[i](time, protein[i]));
     }
     return update_value;
   }
-};
-
-
-
-struct GeneCalculation : public BaseBiologyModule {
-  double time_step = Param::simulation_time_step_;
-  std::vector<double> substances_;
-  GeneBM geneFunction;
-
-  GeneCalculation() :
-   BaseBiologyModule(gAllBmEvents), substances_({12.0, 1.7, 3.4}){}
-  GeneCalculation(std::vector<double> init_vals) :
-   BaseBiologyModule(gAllBmEvents), substances_(init_vals){}
-  GeneCalculation(std::vector<double> init_vals, GeneBM geneFunction) :
-   BaseBiologyModule(gAllBmEvents), substances_(init_vals), geneFunction(geneFunction){}
 
   template <typename T>
   void Run(T* cell) {
-    std::cout<< "Step " << Param::total_steps_ <<"\n";
-    if (Param::dE_solve_method_choosed == Param::dE_solve_method::Euler){
-      // geneFunction.calculate method needs in current time of simulation
-      std::vector<double> update_value = geneFunction.calculate(Param::total_steps_ * time_step, substances_);
-      for (int i = 0; i < Param::protein_amount; i++){
-        substances_[i] += update_value[i] * time_step;
-        std::cout<<substances_[i] << " -- protein " << i <<"\n";
+    if (Param::d_e_solve_method_choosed_ == Param::DESolveMethod::kEuler) {
+      // Calculate method needs in current time of simulation
+      std::vector<double> update_value =
+          Calculate(*total_steps_ * *time_step, substances_);
+      for (unsigned int i = 0; i < functions_.size(); i++) {
+        substances_[i] += update_value[i] * *time_step;
       }
-    }
-    else if (Param::dE_solve_method_choosed == Param::dE_solve_method::RK4){
-      std::vector<double> k1 = geneFunction.calculate(Param::total_steps_ * time_step, substances_);
-      for (int i = 0; i < Param::protein_amount; i++)
-        substances_[i] += time_step*k1[i]/2.0f;
-      std::vector<double> k2 = geneFunction.calculate(Param::total_steps_ * time_step + time_step/2.0f, substances_);
-      for (int i = 0; i < Param::protein_amount; i++)
-        substances_[i] += time_step*k2[i]/2.0f - time_step*k1[i]/2.0f;
-      std::vector<double> k3 = geneFunction.calculate(Param::total_steps_ * time_step + time_step/2.0f, substances_);
-      for (int i = 0; i < Param::protein_amount; i++)
-        substances_[i] += time_step*k3[i] - time_step*k2[i]/2.0f;
-      std::vector<double> k4 = geneFunction.calculate(Param::total_steps_ * time_step + time_step, substances_);
-      for (int i = 0; i < Param::protein_amount; i++){
-        substances_[i] += time_step*(k1[i] + 2*k2[i] + 2*k3[i] + k4[i])/6.0f;
-        std::cout<<substances_[i] << " -- protein " << i <<"\n";
+    } else if (Param::d_e_solve_method_choosed_ == Param::DESolveMethod::kRK4) {
+      std::vector<double> k1 =
+          Calculate(*total_steps_ * *time_step, substances_);
+      for (unsigned int i = 0; i < functions_.size(); i++) {
+        substances_[i] += *time_step * k1[i] / 2.0f;
+      }
+      std::vector<double> k2 = Calculate(
+          *total_steps_ * *time_step + *time_step / 2.0f, substances_);
+      for (unsigned int i = 0; i < functions_.size(); i++) {
+        substances_[i] += *time_step * k2[i] / 2.0f - *time_step * k1[i] / 2.0f;
+      }
+      std::vector<double> k3 = Calculate(
+          *total_steps_ * *time_step + *time_step / 2.0f, substances_);
+      for (unsigned int i = 0; i < functions_.size(); i++) {
+        substances_[i] += *time_step * k3[i] - *time_step * k2[i] / 2.0f;
+      }
+      std::vector<double> k4 =
+          Calculate(*total_steps_ * *time_step + *time_step, substances_);
+      for (unsigned int i = 0; i < functions_.size(); i++) {
+        substances_[i] +=
+            *time_step * (k1[i] + 2 * k2[i] + 2 * k3[i] + k4[i]) / 6.0f;
       }
     }
   }

@@ -18,9 +18,8 @@ double Param::max_bound_ = 100;
 bool Param::leaking_edges_ = false;
 bool Param::calculate_gradients_ = true;
 size_t Param::total_steps_ = 0;
-int Param::protein_amount = 3;
-Param::dE_solve_method Param::dE_solve_method_choosed = Param::dE_solve_method::RK4;
-
+Param::DESolveMethod Param::d_e_solve_method_choosed_ =
+    Param::DESolveMethod::kRK4;
 
 // visualization group
 bool Param::live_visualization_ = false;
