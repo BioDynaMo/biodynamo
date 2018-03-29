@@ -27,6 +27,7 @@ class Scheduler {
   Scheduler()
       : backup_(SimulationBackup(Param::backup_file_, Param::restore_file_)),
         grid_(&TGrid::GetInstance()) {
+    total_steps_ = 0;
     if (backup_.RestoreEnabled()) {
       restore_point_ = backup_.GetSimulationStepsFromBackup();
     }
@@ -175,7 +176,7 @@ class Scheduler {
 
  private:
   SimulationBackup backup_;
-  size_t total_steps_ = 0;
+  size_t& total_steps_ = Param::total_steps_;
   size_t restore_point_;
   std::chrono::time_point<Clock> last_backup_ = Clock::now();
   CatalystAdaptor<>* visualization_ = nullptr;
