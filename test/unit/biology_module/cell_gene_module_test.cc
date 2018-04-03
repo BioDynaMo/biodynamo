@@ -21,10 +21,10 @@ TEST(CellGeneModuleTest, FunctionStructureTest) {
     return curr_time * substance_ + 2;
   };
 
-  GeneCalculation gene_calculation;
-  gene_calculation.AddFunction(func1, init_values[0]);
-  gene_calculation.AddFunction(func2, init_values[1]);
-  gene_calculation.AddFunction(func3, init_values[2]);
+  RegulateGenes regulate_genes;
+  regulate_genes.AddFunction(func1, init_values[0]);
+  regulate_genes.AddFunction(func2, init_values[1]);
+  regulate_genes.AddFunction(func3, init_values[2]);
 
   vector<double> expected_result;
 
@@ -32,7 +32,7 @@ TEST(CellGeneModuleTest, FunctionStructureTest) {
   expected_result.push_back(func2(1, init_values[1]));
   expected_result.push_back(func3(1, init_values[2]));
 
-  vector<double> actual_result = gene_calculation.Calculate(1, init_values);
+  vector<double> actual_result = regulate_genes.Calculate(1, init_values);
   EXPECT_EQ(expected_result, actual_result);
 }
 
@@ -53,12 +53,12 @@ TEST(GeneExpressionTest, EulerTest) {
     return curr_time * substance_ + 2;
   };
 
-  GeneCalculation gene_calculation;
-  gene_calculation.AddFunction(func1, init_values[0]);
-  gene_calculation.AddFunction(func2, init_values[1]);
-  gene_calculation.AddFunction(func3, init_values[2]);
+  RegulateGenes regulate_genes;
+  regulate_genes.AddFunction(func1, init_values[0]);
+  regulate_genes.AddFunction(func2, init_values[1]);
+  regulate_genes.AddFunction(func3, init_values[2]);
   Cell cell;
-  gene_calculation.Run(&cell);
+  regulate_genes.Run(&cell);
 
   init_values[0] += func1(Param::total_steps_ * Param::simulation_time_step_,
                           init_values[0]) *
@@ -70,9 +70,9 @@ TEST(GeneExpressionTest, EulerTest) {
                           init_values[2]) *
                     Param::simulation_time_step_;
 
-  EXPECT_NEAR(init_values[0], gene_calculation.substances_[0], 1e-9);
-  EXPECT_NEAR(init_values[1], gene_calculation.substances_[1], 1e-9);
-  EXPECT_NEAR(init_values[2], gene_calculation.substances_[2], 1e-9);
+  EXPECT_NEAR(init_values[0], regulate_genes.substances_[0], 1e-9);
+  EXPECT_NEAR(init_values[1], regulate_genes.substances_[1], 1e-9);
+  EXPECT_NEAR(init_values[2], regulate_genes.substances_[2], 1e-9);
 }
 
 TEST(CellGeneModuleTest, RK4Test) {
@@ -93,12 +93,12 @@ TEST(CellGeneModuleTest, RK4Test) {
     return curr_time * substance_ + 2;
   };
 
-  GeneCalculation gene_calculation;
-  gene_calculation.AddFunction(func1, init_values[0]);
-  gene_calculation.AddFunction(func2, init_values[1]);
-  gene_calculation.AddFunction(func3, init_values[2]);
+  RegulateGenes regulate_genes;
+  regulate_genes.AddFunction(func1, init_values[0]);
+  regulate_genes.AddFunction(func2, init_values[1]);
+  regulate_genes.AddFunction(func3, init_values[2]);
   Cell cell;
-  gene_calculation.Run(&cell);
+  regulate_genes.Run(&cell);
 
   vector<double> k1;
   k1.push_back(func1(Param::total_steps_ * Param::simulation_time_step_,
@@ -156,9 +156,9 @@ TEST(CellGeneModuleTest, RK4Test) {
                       (k1[i] + 2 * k2[i] + 2 * k3[i] + k4[i]) / 6.0f;
   }
 
-  EXPECT_NEAR(init_values[0], gene_calculation.substances_[0], 1e-9);
-  EXPECT_NEAR(init_values[1], gene_calculation.substances_[1], 1e-9);
-  EXPECT_NEAR(init_values[2], gene_calculation.substances_[2], 1e-9);
+  EXPECT_NEAR(init_values[0], regulate_genes.substances_[0], 1e-9);
+  EXPECT_NEAR(init_values[1], regulate_genes.substances_[1], 1e-9);
+  EXPECT_NEAR(init_values[2], regulate_genes.substances_[2], 1e-9);
 }
 
 }  // namespace bdm

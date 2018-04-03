@@ -9,6 +9,6 @@
     <class name="bdm::NullBiologyModule"/>
     <class name="bdm::GrowDivide"/>
     <class name="bdm::IntegralTypeWrapper<size_t> "/>
-    <class name="bdm::GeneCalculation" />
+    <class name="bdm::RegulateGenes" />
   </selection>
 </lcgdict>

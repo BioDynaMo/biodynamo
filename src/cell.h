@@ -123,6 +123,16 @@ BDM_SIM_OBJECT(Cell, SimulationObject) {
 
   double GetDiameter() const { return diameter_[kIdx]; }
 
+  template <typename T>
+  const T& GetBiologyModule() const {
+    for (unsigned int i = 0; i < biology_modules_[kIdx].size(); i++) {
+      if (std::is_same<T, decltype(biology_modules_[kIdx][i])>::value) {
+        return biology_modules_[kIdx][i];
+      }
+    }
+    return nullptr;
+  }
+
   double GetMass() const { return density_[kIdx] * volume_[kIdx]; }
 
   double GetDensity() const { return density_[kIdx]; }

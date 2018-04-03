@@ -12,37 +12,54 @@ using std::array;
 using std::vector;
 using std::string;
 
-// 2. Define compile time parameter
+// 1. Define compile time parameter
 template <typename Backend>
 struct CompileTimeParam : public DefaultCompileTimeParam<Backend> {
-  using BiologyModules = Variant<GeneCalculation>;
+  using BiologyModules = Variant<RegulateGenes>;
   using AtomicTypes = VariadicTypedef<Cell>;
 };
 
 inline int Simulate(int argc, const char** argv) {
   // 3. Initialize BioDynaMo
   InitializeBioDynamo(argc, argv);
-  // initial values for list of proteins
-  vector<double> init_vals = {12.0, 1.7, 3.4};
 
-  GeneCalculation geneExmpl;
-  geneExmpl.AddFunction(
-      [&](double curr_time, double substances_) -> double { return 5; }, 1);
-  geneExmpl.AddFunction(
-      [&](double curr_time, double substances_) -> double { return 5; }, 5);
-  geneExmpl.AddFunction(
-      [&](double curr_time, double substances_) -> double { return 5; }, 7);
-  size_t cells_per_dim = 1;
+  // 4. Initialize RegulateGenes module.
+  // To add functions to the module use RegulateGenes::AddFunction() function.
+  // You should pass to the function two variables.
+  // The first is of type  std::function<double(double, double)>.
+  // This is the function by which concentration of the protein will be
+  // calculated.
+  // The second is double. This is the initial value for the protein.
+  RegulateGenes regulate_example;
+  regulate_example.AddFunction(
+      [&](double curr_time, double substance) -> double {
+        return curr_time * substance + 0.2f;
+      },
+      1);
+  regulate_example.AddFunction(
+      [&](double curr_time, double substance) -> double {
+        return substance * substance / curr_time;
+      },
+      5);
+  regulate_example.AddFunction(
+      [&](double curr_time, double substance) -> double {
+        return substance + curr_time + 3;
+      },
+      7);
+
+  // 5. Define initial model -- in this example just one cell.
   auto construct = [&](const std::array<double, 3>& position) {
     Cell cell(position);
     cell.SetDiameter(30);
     cell.SetAdherence(0.4);
     cell.SetMass(1.0);
-    cell.AddBiologyModule(geneExmpl);
+    cell.AddBiologyModule(regulate_example);
     return cell;
   };
-  ModelInitializer::Grid3D(cells_per_dim, 20, construct);
+  const std::vector<std::array<double, 3>>& positions = {{0, 0, 0}};
+  ModelInitializer::CreateCells(positions, construct);
 
+  // 6. Run simulation for 200 timesteps
   Scheduler<> scheduler;
   scheduler.Simulate(200);
   return 0;

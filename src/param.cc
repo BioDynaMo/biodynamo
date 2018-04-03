@@ -19,7 +19,7 @@ bool Param::leaking_edges_ = false;
 bool Param::calculate_gradients_ = true;
 size_t Param::total_steps_ = 0;
 Param::DESolveMethod Param::d_e_solve_method_choosed_ =
-    Param::DESolveMethod::kRK4;
+    Param::DESolveMethod::kEuler;
 
 // visualization group
 bool Param::live_visualization_ = false;
@@ -158,6 +158,8 @@ void Param::Reset() {
   max_bound_ = 100;
   leaking_edges_ = false;
   calculate_gradients_ = true;
+  total_steps_ = 0;
+  d_e_solve_method_choosed_ = DESolveMethod::kEuler;
 
   // visualization group
   live_visualization_ = false;
