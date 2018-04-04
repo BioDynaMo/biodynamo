@@ -1,4 +1,5 @@
 #include "cell.h"
+#include <typeinfo>
 #include "gtest/gtest.h"
 #include "unit/cell_test.h"
 #include "unit/test_util.h"
@@ -179,6 +180,23 @@ TEST(CellTest, BiologyModule) {
   EXPECT_NEAR(position[0] + 1, cell.GetPosition()[0], abs_error<double>::value);
   EXPECT_NEAR(position[1] + 2, cell.GetPosition()[1], abs_error<double>::value);
   EXPECT_NEAR(position[2] + 3, cell.GetPosition()[2], abs_error<double>::value);
+}
+
+TEST(CellTest, GetBiologyModuleTest){
+  TestCell mother;
+  mother.AddBiologyModule(GrowthModule());
+
+  GrowthModule growth_module;
+  bool ans = std::is_same<std::vector<const GrowthModule*>*, decltype(mother.GetBiologyModule(growth_module))>::value;
+  //std::cout << std::is_same<GrowthModule,GrowthModule>::value << "\nI'm big ass test\n" << ans << ' ' << typeid(mother.GetBiologyModule(growth_module)).name() << '\n'
+   //<<typeid(growth_module).name()<< "\n "<< std::is_same<std::vector<const GrowthModule*>, decltype(mother.GetBiologyModule(growth_module))>::value <<'\n';
+  EXPECT_TRUE(ans);
+
+  MovementModule movement_module = MovementModule({1, 2, 3});
+  ans = std::is_same<std::vector<const MovementModule*>*, decltype(mother.GetBiologyModule(movement_module))>::value;
+  EXPECT_FALSE(ans);
+  std::cout << "\nI'm big ass test\n" << ans << '\n' << typeid(mother.GetBiologyModule(movement_module)).name() << '\n'
+    << std::is_same<std::vector<const GrowthModule*>*, decltype(mother.GetBiologyModule(movement_module))>::value <<'\n';
 }
 
 TEST(CellTest, IO) { RunIOTest(); }
