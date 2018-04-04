@@ -39,7 +39,7 @@ mkdir install/root
 
 mkdir build
 cd build
-cmake -DCMAKE_C_COMPILER=gcc-5 -DCMAKE_CXX_COMPILER=g++-5 -DCMAKE_INSTALL_PREFIX=/root/install/root -Dcxx14=on ../root/
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=gcc-5 -DCMAKE_CXX_COMPILER=g++-5 -DCMAKE_INSTALL_PREFIX=/root/install/root -Dcxx14=on ../root/
 make -j4 install
 
 cd ../install
