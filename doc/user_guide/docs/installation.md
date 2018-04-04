@@ -11,6 +11,10 @@ The user installation is intended for those that want to make use of the
 existing features of BioDynaMo and only focus on implementing biological models
 with those features.
 
+!!! note
+	The installation will also include the visualization software (ParaView). Therefore it is not
+	necessary to install ParaView yourself.
+
 ### Linux
 
 ``` sh
