@@ -5,15 +5,15 @@ the **developers installation**. Currently supported platforms are Linux and
 Mac OS X. Below you will find instructions on how to install each installation
 type for the supported platforms.
 
+!!! note
+	The installation will also include the visualization software (ParaView).
+	Therefore it is not	necessary to install ParaView yourself.
+
 ## User Installation
 
 The user installation is intended for those that want to make use of the
 existing features of BioDynaMo and only focus on implementing biological models
 with those features.
-
-!!! note
-	The installation will also include the visualization software (ParaView). Therefore it is not
-	necessary to install ParaView yourself.
 
 ### Linux
 
