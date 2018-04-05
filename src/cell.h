@@ -59,6 +59,11 @@ BDM_SIM_OBJECT(Cell, SimulationObject) {
   template <typename TDerived>
   void RunBiologyModules();
 
+  /// Get all biology modules of this cell that match the given type.
+  /// \tparam T  type of the biology module
+  template <typename T>
+  std::vector<const T*> GetBiologyModules() const;
+
   /// Divide the cell. Of the two daughter cells, one is this one (but smaller,
   /// with half GeneSubstances etc.),
   /// and the other one is given as parameter and initialzed accordingly. Both
@@ -122,22 +127,6 @@ BDM_SIM_OBJECT(Cell, SimulationObject) {
   double GetAdherence() const { return adherence_[kIdx]; }
 
   double GetDiameter() const { return diameter_[kIdx]; }
-
-  template <typename T>
-  std::vector<const T*>* GetBiologyModule(T& obj) const {
-    std::vector<const T*> needed_modules;
-    for (unsigned int i = 0; i < biology_modules_[kIdx].size(); i++) {
-      if (get_if<T>(&biology_modules_[kIdx][i]) != nullptr) {
-        needed_modules.push_back(get_if<T>(&biology_modules_[kIdx][i]));
-      }
-    }
-    if (needed_modules.size() > 0){
-      return &needed_modules;
-    }
-    else{
-      return nullptr;
-    }
-  }
 
   double GetMass() const { return density_[kIdx] * volume_[kIdx]; }
 
@@ -280,6 +269,20 @@ inline void CellExt<T, U>::RunBiologyModules() {
   for (auto& module : biology_modules_[kIdx]) {
     visit(visitor, module);
   }
+}
+
+template <typename T, template <typename> class U>
+template <typename TBiologyModule>
+std::vector<const TBiologyModule*> CellExt<T, U>::GetBiologyModules() const {
+  std::vector<const TBiologyModule*> modules;
+  for (unsigned int i = 0; i < biology_modules_[kIdx].size(); i++) {
+    const TBiologyModule* module =
+        get_if<TBiologyModule>(&biology_modules_[kIdx][i]);
+    if (module != nullptr) {
+      modules.push_back(module);
+    }
+  }
+  return modules;
 }
 
 template <typename T, template <typename> class U>

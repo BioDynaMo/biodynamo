@@ -100,9 +100,9 @@ TEST(CellTest, DivideVolumeRatioPhiTheta) {
   EXPECT_NEAR(9, daughter.GetZAxis()[2], kEpsilon);
 
   // biology modules mother
-  EXPECT_EQ(2u, mother.GetBiologyModules().size());
-  EXPECT_EQ(1u, daughter.GetBiologyModules().size());
-  if (get_if<GrowthModule>(&(daughter.GetBiologyModules()[0])) == nullptr) {
+  EXPECT_EQ(2u, mother.GetAllBiologyModules().size());
+  EXPECT_EQ(1u, daughter.GetAllBiologyModules().size());
+  if (get_if<GrowthModule>(&(daughter.GetAllBiologyModules()[0])) == nullptr) {
     FAIL() << "Variant type at position 0 is not a GrowthModule";
   }
 
@@ -182,21 +182,21 @@ TEST(CellTest, BiologyModule) {
   EXPECT_NEAR(position[2] + 3, cell.GetPosition()[2], abs_error<double>::value);
 }
 
-TEST(CellTest, GetBiologyModuleTest){
-  TestCell mother;
-  mother.AddBiologyModule(GrowthModule());
+TEST(CellTest, GetBiologyModulesTest) {
+  // create cell and add bioogy modules
+  TestCell cell;
+  cell.AddBiologyModule(GrowthModule());
+  cell.AddBiologyModule(GrowthModule());
+  cell.AddBiologyModule(MovementModule({1, 2, 3}));
 
-  GrowthModule growth_module;
-  bool ans = std::is_same<std::vector<const GrowthModule*>*, decltype(mother.GetBiologyModule(growth_module))>::value;
-  //std::cout << std::is_same<GrowthModule,GrowthModule>::value << "\nI'm big ass test\n" << ans << ' ' << typeid(mother.GetBiologyModule(growth_module)).name() << '\n'
-   //<<typeid(growth_module).name()<< "\n "<< std::is_same<std::vector<const GrowthModule*>, decltype(mother.GetBiologyModule(growth_module))>::value <<'\n';
-  EXPECT_TRUE(ans);
+  // get all GrowthModules
+  auto growth_modules = cell.GetBiologyModules<GrowthModule>();
+  EXPECT_EQ(2u, growth_modules.size());
 
-  MovementModule movement_module = MovementModule({1, 2, 3});
-  ans = std::is_same<std::vector<const MovementModule*>*, decltype(mother.GetBiologyModule(movement_module))>::value;
-  EXPECT_FALSE(ans);
-  std::cout << "\nI'm big ass test\n" << ans << '\n' << typeid(mother.GetBiologyModule(movement_module)).name() << '\n'
-    << std::is_same<std::vector<const GrowthModule*>*, decltype(mother.GetBiologyModule(movement_module))>::value <<'\n';
+  // get all MovementModules
+  auto movement_modules = cell.GetBiologyModules<MovementModule>();
+  ASSERT_EQ(1u, movement_modules.size());
+  EXPECT_ARR_NEAR(movement_modules[0]->velocity_, {1, 2, 3});
 }
 
 TEST(CellTest, IO) { RunIOTest(); }
