@@ -9,160 +9,51 @@ namespace regulate_genes_test_internal {
 
 struct TestCell {};
 
-TEST(CellGeneModuleTest, FunctionStructureTest) {
-  std::vector<double> init_values{{3, 3, 3}};
+TEST(RegulateGenesTest, EulerTest) {
+  Param::numerical_ode_solver_ = Param::NumericalODESolver::kEuler;
   Param::total_steps_ = 1;
-  std::function<double(double, double)> func1 = [&](
-      double curr_time, double substance_) -> double {
-    return curr_time * substance_;
+
+  auto func1 = [](double curr_time, double last_concentration) {
+    return curr_time * last_concentration;
   };
-  std::function<double(double, double)> func2 = [&](
-      double curr_time, double substance_) -> double {
-    return curr_time * substance_ + 1;
+  auto func2 = [](double curr_time, double last_concentration) {
+    return curr_time * last_concentration + 1;
   };
-  std::function<double(double, double)> func3 = [&](
-      double curr_time, double substance_) -> double {
-    return curr_time * substance_ + 2;
+  auto func3 = [](double curr_time, double last_concentration) {
+    return curr_time * last_concentration + 2;
   };
 
   RegulateGenes regulate_genes;
-  regulate_genes.AddFunction(func1, init_values[0]);
-  regulate_genes.AddFunction(func2, init_values[1]);
-  regulate_genes.AddFunction(func3, init_values[2]);
-
-  std::vector<double> expected_result;
-
-  expected_result.push_back(func1(1, init_values[0]));
-  expected_result.push_back(func2(1, init_values[1]));
-  expected_result.push_back(func3(1, init_values[2]));
-
-  std::vector<double> actual_result = regulate_genes.Calculate(1, init_values);
-  EXPECT_EQ(expected_result, actual_result);
-}
-
-TEST(GeneExpressionTest, EulerTest) {
-  Param::numerical_de_solver_ = Param::NumericalDESolver::kEuler;
-  std::vector<double> init_values{{3, 3, 3}};
-  Param::total_steps_ = 1;
-  std::function<double(double, double)> func1 = [&](
-      double curr_time, double substance_) -> double {
-    return curr_time * substance_;
-  };
-  std::function<double(double, double)> func2 = [&](
-      double curr_time, double substance_) -> double {
-    return curr_time * substance_ + 1;
-  };
-  std::function<double(double, double)> func3 = [&](
-      double curr_time, double substance_) -> double {
-    return curr_time * substance_ + 2;
-  };
-
-  RegulateGenes regulate_genes;
-  regulate_genes.AddFunction(func1, init_values[0]);
-  regulate_genes.AddFunction(func2, init_values[1]);
-  regulate_genes.AddFunction(func3, init_values[2]);
+  regulate_genes.AddGene(func1, 3);
+  regulate_genes.AddGene(func2, 3);
+  regulate_genes.AddGene(func3, 3);
   TestCell cell;
   regulate_genes.Run(&cell);
 
-  init_values[0] += func1(Param::total_steps_ * Param::simulation_time_step_,
-                          init_values[0]) *
-                    Param::simulation_time_step_;
-  init_values[1] += func2(Param::total_steps_ * Param::simulation_time_step_,
-                          init_values[1]) *
-                    Param::simulation_time_step_;
-  init_values[2] += func3(Param::total_steps_ * Param::simulation_time_step_,
-                          init_values[2]) *
-                    Param::simulation_time_step_;
-
-  EXPECT_NEAR(init_values[0], regulate_genes.substances_[0], 1e-9);
-  EXPECT_NEAR(init_values[1], regulate_genes.substances_[1], 1e-9);
-  EXPECT_NEAR(init_values[2], regulate_genes.substances_[2], 1e-9);
+  const auto& concentrations = regulate_genes.GetConcentrations();
+  EXPECT_NEAR(3.0003000000000002, concentrations[0], 1e-9);
+  EXPECT_NEAR(3.0103, concentrations[1], 1e-9);
+  EXPECT_NEAR(3.0203000000000002, concentrations[2], 1e-9);
 }
 
-TEST(CellGeneModuleTest, RK4Test) {
-  Param::numerical_de_solver_ = Param::NumericalDESolver::kRK4;
-  std::vector<double> init_values{{3, 3, 3}};
-  int protein_amount = 3;
-  Param::total_steps_ = 1;
-  std::function<double(double, double)> func1 = [&](
-      double curr_time, double substance_) -> double {
-    return curr_time * substance_;
-  };
-  std::function<double(double, double)> func2 = [&](
-      double curr_time, double substance_) -> double {
-    return curr_time * substance_ + 1;
-  };
-  std::function<double(double, double)> func3 = [&](
-      double curr_time, double substance_) -> double {
-    return curr_time * substance_ + 2;
-  };
+// Example 1 from:
+// https://ece.uwaterloo.ca/~dwharder/NumericalAnalysis/14IVPs/rk/examples.html
+TEST(RegulateGenesTest, RK4Test) {
+  Param::numerical_ode_solver_ = Param::NumericalODESolver::kRK4;
+  Param::total_steps_ = 0;
+  Param::simulation_time_step_ = 1;
 
   RegulateGenes regulate_genes;
-  regulate_genes.AddFunction(func1, init_values[0]);
-  regulate_genes.AddFunction(func2, init_values[1]);
-  regulate_genes.AddFunction(func3, init_values[2]);
+  regulate_genes.AddGene(
+      [](double curr_time, double last_concentration) {
+        return 1 - curr_time * last_concentration;
+      },
+      1);
   TestCell cell;
   regulate_genes.Run(&cell);
 
-  std::vector<double> k1;
-  k1.push_back(func1(Param::total_steps_ * Param::simulation_time_step_,
-                     init_values[0]));
-  k1.push_back(func2(Param::total_steps_ * Param::simulation_time_step_,
-                     init_values[1]));
-  k1.push_back(func3(Param::total_steps_ * Param::simulation_time_step_,
-                     init_values[2]));
-  for (int i = 0; i < protein_amount; i++) {
-    init_values[i] += Param::simulation_time_step_ * k1[i] / 2.0f;
-  }
-
-  std::vector<double> k2;
-  k2.push_back(func1(Param::total_steps_ * Param::simulation_time_step_ +
-                         Param::simulation_time_step_ / 2.0f,
-                     init_values[0]));
-  k2.push_back(func2(Param::total_steps_ * Param::simulation_time_step_ +
-                         Param::simulation_time_step_ / 2.0f,
-                     init_values[1]));
-  k2.push_back(func3(Param::total_steps_ * Param::simulation_time_step_ +
-                         Param::simulation_time_step_ / 2.0f,
-                     init_values[2]));
-  for (int i = 0; i < protein_amount; i++) {
-    init_values[i] += Param::simulation_time_step_ * k2[i] / 2.0f -
-                      Param::simulation_time_step_ * k1[i] / 2.0f;
-  }
-
-  std::vector<double> k3;
-  k3.push_back(func1(Param::total_steps_ * Param::simulation_time_step_ +
-                         Param::simulation_time_step_ / 2.0f,
-                     init_values[0]));
-  k3.push_back(func2(Param::total_steps_ * Param::simulation_time_step_ +
-                         Param::simulation_time_step_ / 2.0f,
-                     init_values[1]));
-  k3.push_back(func3(Param::total_steps_ * Param::simulation_time_step_ +
-                         Param::simulation_time_step_ / 2.0f,
-                     init_values[2]));
-  for (int i = 0; i < protein_amount; i++) {
-    init_values[i] += Param::simulation_time_step_ * k3[i] -
-                      Param::simulation_time_step_ * k2[i] / 2.0f;
-  }
-
-  std::vector<double> k4;
-  k4.push_back(func1(Param::total_steps_ * Param::simulation_time_step_ +
-                         Param::simulation_time_step_,
-                     init_values[0]));
-  k4.push_back(func2(Param::total_steps_ * Param::simulation_time_step_ +
-                         Param::simulation_time_step_,
-                     init_values[1]));
-  k4.push_back(func3(Param::total_steps_ * Param::simulation_time_step_ +
-                         Param::simulation_time_step_,
-                     init_values[2]));
-  for (int i = 0; i < protein_amount; i++) {
-    init_values[i] += Param::simulation_time_step_ *
-                      (k1[i] + 2 * k2[i] + 2 * k3[i] + k4[i]) / 6.0f;
-  }
-
-  EXPECT_NEAR(init_values[0], regulate_genes.substances_[0], 1e-9);
-  EXPECT_NEAR(init_values[1], regulate_genes.substances_[1], 1e-9);
-  EXPECT_NEAR(init_values[2], regulate_genes.substances_[2], 1e-9);
+  const auto& concentrations = regulate_genes.GetConcentrations();
+  EXPECT_NEAR(1.3229166667, concentrations[0], 1e-9);
 }
 
 }  // namespace regulate_genes_test_internal

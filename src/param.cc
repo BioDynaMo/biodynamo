@@ -18,8 +18,8 @@ double Param::max_bound_ = 100;
 bool Param::leaking_edges_ = false;
 bool Param::calculate_gradients_ = true;
 size_t Param::total_steps_ = 0;
-Param::NumericalDESolver Param::numerical_de_solver_ =
-    Param::NumericalDESolver::kEuler;
+Param::NumericalODESolver Param::numerical_ode_solver_ =
+    Param::NumericalODESolver::kEuler;
 
 // visualization group
 bool Param::live_visualization_ = false;
@@ -159,7 +159,7 @@ void Param::Reset() {
   leaking_edges_ = false;
   calculate_gradients_ = true;
   total_steps_ = 0;
-  numerical_de_solver_ = NumericalDESolver::kEuler;
+  numerical_ode_solver_ = NumericalODESolver::kEuler;
 
   // visualization group
   live_visualization_ = false;

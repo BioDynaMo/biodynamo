@@ -24,25 +24,25 @@ inline int Simulate(int argc, const char** argv) {
   InitializeBioDynamo(argc, argv);
 
   // 3. Initialize RegulateGenes module.
-  // To add functions to the module use RegulateGenes::AddFunction() function.
+  // To add functions to the module use RegulateGenes::AddGene() function.
   // You should pass to the function two variables.
   // The first is of type  std::function<double(double, double)>.
   // This is the function by which concentration of the protein will be
   // calculated.
   // The second is double. This is the initial value for the protein.
   RegulateGenes regulate_example;
-  regulate_example.AddFunction(
-      [&](double curr_time, double substance) -> double {
+  regulate_example.AddGene(
+      [](double curr_time, double substance) {
         return curr_time * substance + 0.2f;
       },
       1);
-  regulate_example.AddFunction(
-      [&](double curr_time, double substance) -> double {
+  regulate_example.AddGene(
+      [](double curr_time, double substance) {
         return substance * substance / curr_time;
       },
       5);
-  regulate_example.AddFunction(
-      [&](double curr_time, double substance) -> double {
+  regulate_example.AddGene(
+      [](double curr_time, double substance) {
         return substance + curr_time + 3;
       },
       7);
