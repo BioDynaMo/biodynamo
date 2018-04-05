@@ -32,18 +32,18 @@ inline int Simulate(int argc, const char** argv) {
   // The second is double. This is the initial value for the protein.
   RegulateGenes regulate_example;
   regulate_example.AddGene(
-      [](double curr_time, double substance) {
-        return curr_time * substance + 0.2f;
+      [](double curr_time, double last_concentration) {
+        return curr_time * last_concentration + 0.2f;
       },
       1);
   regulate_example.AddGene(
-      [](double curr_time, double substance) {
-        return substance * substance / curr_time;
+      [](double curr_time, double last_concentration) {
+        return last_concentration * last_concentration * curr_time;
       },
       5);
   regulate_example.AddGene(
-      [](double curr_time, double substance) {
-        return substance + curr_time + 3;
+      [](double curr_time, double last_concentration) {
+        return last_concentration + curr_time + 3;
       },
       7);
 
@@ -59,9 +59,20 @@ inline int Simulate(int argc, const char** argv) {
   const std::vector<std::array<double, 3>>& positions = {{0, 0, 0}};
   ModelInitializer::CreateCells(positions, construct);
 
-  // 5. Run simulation for 200 timesteps
+  // 5. Run simulation
   Scheduler<> scheduler;
-  scheduler.Simulate(200);
+  scheduler.Simulate(10);
+
+  // 6. Output concentration values for each gene
+  auto&& cell = (*(ResourceManager<>::Get()->Get<Cell>()))[0];
+  const auto* regulate_genes = cell.GetBiologyModules<RegulateGenes>()[0];
+  const auto& concentrations = regulate_genes->GetConcentrations();
+  std::cout << "Gene concentrations after " << Param::total_steps_
+            << " time steps" << std::endl;
+  for (double concentration : concentrations) {
+    std::cout << concentration << std::endl;
+  }
+
   return 0;
 }
 
