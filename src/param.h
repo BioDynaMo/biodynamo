@@ -22,8 +22,8 @@ struct Param {
 
   /// Variable which specifies method using for solving differential equation
   /// {"Euler", "RK4"}.
-  enum DESolveMethod { kEuler = 1, kRK4 = 2 };
-  static DESolveMethod d_e_solve_method_choosed_;
+  enum NumericalDESolver { kEuler = 1, kRK4 = 2 };
+  static NumericalDESolver numerical_de_solver_;
 
   /// Backup file name for full simulation backups\n
   /// Default value: `""` (no backups will be made)\n

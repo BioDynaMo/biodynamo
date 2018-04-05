@@ -1,5 +1,5 @@
-#ifndef DEMO_CELL_GENE_MODULE_H_
-#define DEMO_CELL_GENE_MODULE_H_
+#ifndef DEMO_GENE_REGULATION_H_
+#define DEMO_GENE_REGULATION_H_
 
 #include <string>
 #include <vector>
@@ -20,10 +20,10 @@ struct CompileTimeParam : public DefaultCompileTimeParam<Backend> {
 };
 
 inline int Simulate(int argc, const char** argv) {
-  // 3. Initialize BioDynaMo
+  // 2. Initialize BioDynaMo
   InitializeBioDynamo(argc, argv);
 
-  // 4. Initialize RegulateGenes module.
+  // 3. Initialize RegulateGenes module.
   // To add functions to the module use RegulateGenes::AddFunction() function.
   // You should pass to the function two variables.
   // The first is of type  std::function<double(double, double)>.
@@ -47,7 +47,7 @@ inline int Simulate(int argc, const char** argv) {
       },
       7);
 
-  // 5. Define initial model -- in this example just one cell.
+  // 4. Define initial model -- in this example just one cell.
   auto construct = [&](const std::array<double, 3>& position) {
     Cell cell(position);
     cell.SetDiameter(30);
@@ -59,7 +59,7 @@ inline int Simulate(int argc, const char** argv) {
   const std::vector<std::array<double, 3>>& positions = {{0, 0, 0}};
   ModelInitializer::CreateCells(positions, construct);
 
-  // 6. Run simulation for 200 timesteps
+  // 5. Run simulation for 200 timesteps
   Scheduler<> scheduler;
   scheduler.Simulate(200);
   return 0;
@@ -67,4 +67,4 @@ inline int Simulate(int argc, const char** argv) {
 
 }  // namespace bdm
 
-#endif  // DEMO_CELL_GENE_MODULE_H_
+#endif  // DEMO_GENE_REGULATION_H_
