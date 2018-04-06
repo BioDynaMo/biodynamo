@@ -372,7 +372,7 @@ namespace bdm {
     Param::Reset();
     Rm()->Clear();
 
-    Param::live_visualization_ = true;
+    gErrorIgnoreLevel = kWarning;
     Param::export_visualization_ = true;
 
     auto neuron = Rm()->New<Neuron>();
@@ -404,14 +404,18 @@ namespace bdm {
 
 //    std::cout << "---- bifurcation ----" << std::endl;
 //    auto&& ne2=ne.Bifurcate();
-    ne.Bifurcate();
+    auto branches = ne.Bifurcate();
+    auto&& branch_l = branches[0].Get();
+    auto&& branch_r = branches[1].Get();
 
-    for (int i = 0; i < 100; i++) {
-      ne.ElongateTerminalEnd(100, direction);
-//      ne2.ElongateTerminalEnd(100, direction2);
+    for (int i = 0; i < 20; i++) {
+      branch_r.ElongateTerminalEnd(100, direction);
+      branch_r.RunDiscretization();
 
-      ne.RunDiscretization();
-//      ne2.RunDiscretization();
+      if (i < 5) {
+        branch_l.ElongateTerminalEnd(100, direction2);
+        branch_l.RunDiscretization();
+      }
 
       scheduler.Simulate(1);
 

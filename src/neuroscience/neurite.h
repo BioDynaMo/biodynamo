@@ -899,10 +899,6 @@ BDM_SO_DEFINE(inline std::array<typename NeuriteExt<TCompileTimeParam, TDerived,
       // (the daughters automatically are too, because they are new PhysicalObjects)
       // setOnTheSchedulerListForPhysicalObjects(true);
 
-      new_branch_l.UpdateDependentPhysicalVariables();
-      new_branch_r.UpdateDependentPhysicalVariables();
-
-
     // 2) creating the first daughter branch
     new_branch_l.SetDiameter(diameter_1);
     new_branch_l.SetBranchOrder(branch_order_[kIdx] + 1);
@@ -919,6 +915,9 @@ BDM_SO_DEFINE(inline std::array<typename NeuriteExt<TCompileTimeParam, TDerived,
     std::vector<TBiologyModuleVariant> biology_modules_r;
     BiologyModuleEventHandler(gNeuriteBifurcation, &biology_modules_r, true);
     new_branch_r.SetBiologyModules(std::move(biology_modules_r));
+
+    new_branch_l.UpdateDependentPhysicalVariables();
+    new_branch_r.UpdateDependentPhysicalVariables();
 
     return {new_branch_l.GetSoPtr(), new_branch_r.GetSoPtr()};
 }
@@ -1026,8 +1025,12 @@ BDM_SO_DEFINE(inline void NeuriteExt)::MovePointMass(double speed, const std::ar
 
 BDM_SO_DEFINE(inline void NeuriteExt)::SetRestingLengthForDesiredTension(double tension) {
   tension_[kIdx] = tension;
-  // T = k*(A-R)/R --> R = k*A/(T+K)
-  resting_length_[kIdx] = spring_constant_[kIdx] * actual_length_[kIdx] / (tension_[kIdx] + spring_constant_[kIdx]);
+  if (tension == 0.0) {
+    resting_length_[kIdx] = actual_length_[kIdx];
+  } else {
+    // T = k*(A-R)/R --> R = k*A/(T+K)
+    resting_length_[kIdx] = spring_constant_[kIdx] * actual_length_[kIdx] / (tension_[kIdx] + spring_constant_[kIdx]);
+  }
 }
 
 BDM_SO_DEFINE(inline void NeuriteExt)::ChangeVolume(double speed) {
@@ -1419,7 +1422,12 @@ BDM_SO_DEFINE(inline void NeuriteExt)::UpdateDependentPhysicalVariables() {
   auto relative_ml = mother_[kIdx].OriginOf(Base::GetElementIdx());
   spring_axis_[kIdx] = Matrix::Subtract(mass_location_[kIdx], relative_ml);
   actual_length_[kIdx] = std::sqrt(Matrix::Dot(spring_axis_[kIdx], spring_axis_[kIdx]));
-  tension_[kIdx] = spring_constant_[kIdx] * (actual_length_[kIdx] - resting_length_[kIdx]) / resting_length_[kIdx];
+  if (std::abs(actual_length_[kIdx] - resting_length_[kIdx]) > 1e-13) {
+    tension_[kIdx] = spring_constant_[kIdx] * (actual_length_[kIdx] - resting_length_[kIdx]) / resting_length_[kIdx];
+  } else {
+    // avoid floating point rounding effects that increase the tension
+    tension_[kIdx] = 0.0;
+  }
   UpdateVolume();
 }
 
