@@ -87,8 +87,9 @@ else
   wget --progress=dot:giga -O root_v6.11.01_macos64_LLVM-Clang-5.0_263508429d.tar.gz "https://cernbox.cern.ch/index.php/s/BbFptgxo2K565IS/download?path=%2F&files=root_v6.11.01_macos64_LLVM-Clang-5.0_263508429d.tar.gz"
   sudo sudo tar zxf "root_v6.11.01_macos64_LLVM-Clang-5.0_263508429d.tar.gz" -C $THIRD_PARTY_DIR
 
-  # install qt
+  # install qt and python3
   brew install qt
+  brew upgrade python3
 
   # install paraview
   wget -O paraview-5.4_macos64_llvm-5.0.tar.gz "https://cernbox.cern.ch/index.php/s/BbFptgxo2K565IS/download?path=%2F&files=paraview-5.4_macos64_llvm-5.0.tar.gz"
@@ -121,4 +122,6 @@ mkdir install
 
 cmake -DCMAKE_BUILD_TYPE=Release ..
 make -j2
+# install build is required by e.g. makefile_project integration test
+sudo make install
 make check-submission

@@ -1,0 +1,165 @@
+#!/usr/bin/env python3
+
+import argparse
+import os
+import subprocess
+import sys
+import shutil
+
+def SetupCMakeProject(cmake_project_dir):
+    """This function sets up a CMake project that is used to extract the
+       required compiler flags"""
+
+    if os.path.exists(cmake_project_dir):
+        return
+
+    os.makedirs(cmake_project_dir)
+    os.makedirs(cmake_project_dir+"/build")
+
+    cmake_file_content = """cmake_minimum_required(VERSION 3.2.0)
+project(extract-build-info)
+find_package(BioDynaMo REQUIRED)
+include(${BDM_USE_FILE})
+add_executable(extract-build-info empty.cc)
+target_link_libraries(extract-build-info ${BDM_REQUIRED_LIBRARIES})
+message(STATUS "BDM_CMAKE_DIR=${BDM_CMAKE_DIR}")
+"""
+    with open(cmake_project_dir+"/CMakeLists.txt", "w") as cmake_file:
+        cmake_file.write(cmake_file_content)
+
+    with open(cmake_project_dir+"/empty.cc", "w") as src_file:
+        src_file.write("")
+
+def ExtractInformation(tmp_cmake_dir, cmake_output):
+    cxx_flags=""
+    cxx_defines=""
+    cxx_includes=""
+    for line in open(tmp_cmake_dir+'/build/CMakeFiles/extract-build-info.dir/flags.make'):
+        if line.startswith("CXX_FLAGS ="):
+            cxx_flags=line[11:].strip()
+        elif line.startswith("CXX_DEFINES ="):
+            cxx_defines=line[13:].strip()
+        elif line.startswith("CXX_INCLUDES ="):
+            cxx_includes=line[14:].strip()
+
+    linkflags=""
+    with open(tmp_cmake_dir+'/build/CMakeFiles/extract-build-info.dir/link.txt', 'r') as link_file:
+        content = link_file.read()
+        first_whitespace = content.find(" ")
+        # remove compiler
+        content = content[first_whitespace:]
+        remove = " CMakeFiles/extract-build-info.dir/empty.cc.o  -o extract-build-info  "
+        linkflags = content.replace(remove, "").strip()
+
+    cmakedir=""
+    for line in cmake_output.splitlines():
+        if line.startswith("-- BDM_CMAKE_DIR="):
+            cmakedir=line[17:].strip()
+
+    return {'cxxflags':cxx_flags,
+            'cxxdefines':cxx_defines,
+            'cxxincludes':cxx_includes,
+            'linkflags':linkflags,
+            'cmakedir': cmakedir }
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(prog='bdm-config',
+        description='Get various configuration information to compile programs '
+                    'which use BioDynaMo',
+        epilog='')
+
+    parser.add_argument("--build-type", help="Generate flags for the specified build type. " +
+                                             "Possible values: Release, Debug, RelWithDebInfo")
+    parser.add_argument("--cxx-compiler", help="Generate flags for the specified compiler.")
+
+    parser.add_argument('--cxxall',
+                        action='store_true',
+                        help='Equivalent to --cxxflags --cxxincludes --cxxdefines')
+    parser.add_argument('--cxxflags',
+                        action='store_true',
+                        help='C++ compiler flags for files that include BioDynaMo headers.')
+    parser.add_argument('--cxxdefines',
+                        action='store_true',
+                        help='C++ define flags for files that include BioDynaMo headers.')
+    parser.add_argument('--cxxincludes',
+                        action='store_true',
+                        help='C++ include flags for files that include BioDynaMo headers.')
+    parser.add_argument('--linkflags',
+                        action='store_true',
+                        help='Required flags to link against BioDynaMo.')
+
+    parser.add_argument('--cmakedir',
+                        action='store_true',
+                        help='BioDynaMo cmake directory.')
+
+    parser.add_argument('--clean',
+                        action='store_true',
+                        help='bdm-config caches values for faster invocation. ' +
+                             'This flag deletes the cache. This might be needed ' +
+                             'if the compiler changes. This flag cannot be combined ' +
+                             'with other arguments')
+
+    if len(sys.argv) == 1:
+        parser.print_help()
+        sys.exit(1)
+
+    args = parser.parse_args()
+    tmp_cmake_dir="/tmp/bdm-config"
+
+    # clean
+    if args.clean and len(sys.argv) > 2:
+        print("ERROR: --clean flag must not be combined with other arguments")
+        parser.print_help()
+        sys.exit(1)
+    elif args.clean and os.path.exists(tmp_cmake_dir):
+        shutil.rmtree(tmp_cmake_dir)
+        print("bdm-config cache successfully removed.")
+        sys.exit(0)
+    elif args.clean:
+        print("bdm-config cache has already been deleted")
+        sys.exit(0)
+
+    # create a temporary CMake project and extract the required information.
+    # This strategy avoids code duplication between cmake and other builds
+    cmake_args=""
+    if args.build_type is not None and not args.build_type in ["Release", "Debug", "RelWithDebInfo"]:
+        print("ERROR: Build type must be one of: Release, Debug, RelWithDebInfo")
+        parser.print_help()
+        sys.exit(1)
+    elif args.build_type is not None:
+        cmake_args += "-DCMAKE_BUILD_TYPE="+args.build_type
+
+    if args.cxx_compiler is not None:
+        cmake_args += " -DCMAKE_CXX_COMPILER="+args.cxx_compiler
+
+    SetupCMakeProject(tmp_cmake_dir)
+    cmake_out=""
+    try:
+        cmake_out = subprocess.check_output('cmake ' + cmake_args + ' ..', cwd=tmp_cmake_dir+"/build", shell=True).decode('utf-8')
+    except subprocess.CalledProcessError as e:
+        print("Call to CMake failed")
+        print("Error code", e.returncode, e.output)
+        sys.exit(1)
+    build_info = ExtractInformation(tmp_cmake_dir, cmake_out)
+
+    # output requested information
+    if args.cxxflags:
+    	print(build_info["cxxflags"])
+
+    if args.cxxincludes:
+        print(build_info["cxxincludes"])
+
+    if args.cxxdefines:
+        # replace escaped quotes due to issue with:
+        # -DBDM_SRC_DIR=\"/opt/biodynamo/biodynamo/include\"
+        print(build_info["cxxdefines"].replace(r'\"', r'"'))
+
+    if args.cxxall:
+        print(build_info["cxxflags"] + " " + build_info["cxxincludes"] + " " + build_info["cxxdefines"].replace(r'\"', r'"'))
+
+    if args.linkflags:
+        print(build_info["linkflags"])
+
+    if args.cmakedir:
+        print(build_info["cmakedir"])

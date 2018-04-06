@@ -54,6 +54,12 @@ install(FILES cli/build_command.py DESTINATION ${CMAKE_INSTALL_BINDIR})
 install(FILES cli/new_command.py DESTINATION ${CMAKE_INSTALL_BINDIR})
 install(FILES cli/run_command.py DESTINATION ${CMAKE_INSTALL_BINDIR})
 install(FILES cli/print_command.py DESTINATION ${CMAKE_INSTALL_BINDIR})
+# bdm-config
+install(FILES cmake/non-cmake-build/bdm-config DESTINATION ${CMAKE_INSTALL_BINDIR}
+        PERMISSIONS OWNER_READ OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+# bdm_code_generation
+install(FILES cmake/non-cmake-build/bdm_code_generation DESTINATION ${CMAKE_INSTALL_BINDIR}
+        PERMISSIONS OWNER_READ OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
 # libbiodynamo.so
 install(TARGETS biodynamo LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
 install(FILES build/libbiodynamo_dict_rdict.pcm DESTINATION ${CMAKE_INSTALL_LIBDIR})

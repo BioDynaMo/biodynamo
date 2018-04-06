@@ -45,7 +45,7 @@ if (test)
 endif()
 
 find_package(Git)
-find_package(ROOT REQUIRED COMPONENTS Eve Geom Gui)
+find_package(ROOT REQUIRED COMPONENTS Geom Gui)
 
 find_package(ClangTools)
 if ("$ENV{CMAKE_EXPORT_COMPILE_COMMANDS}" STREQUAL "1" OR CLANG_TIDY_FOUND)
@@ -195,6 +195,10 @@ if (test)
     add_dependencies(check substance_initialization)
     add_test(NAME "integration-substance-initialization"
              COMMAND ${CMAKE_SOURCE_DIR}/build/substance_initialization)
+
+    #   makefile project
+    add_test(NAME "makefile-project"
+             COMMAND ${CMAKE_SOURCE_DIR}/test/integration/makefile_project.sh)
   endif()
 endif()
 
