@@ -479,10 +479,8 @@ namespace bdm {
   //       EXPECT_NEAR(neAxis[0], 0, abs_error<double>::value);
   //       EXPECT_NEAR(neAxis2[1], 0, abs_error<double>::value);
   //     }
-  //   }
-  // }
-
-
+    }
+  }
 
 
 } // end namespace bdm
