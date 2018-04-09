@@ -242,6 +242,10 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
      }
    }
 
+   void SetBiologyModules(std::vector<TBiologyModuleVariant>&& bms) {
+     biology_modules_[kIdx] = bms;
+   }
+
    // TODO arrange in order end
 
    // TODO should be generated

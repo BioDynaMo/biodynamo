@@ -11,6 +11,9 @@
 namespace bdm {
 namespace neuroscience {
 
+
+extern const BmEvent gExtendNeurite;
+
 BDM_SIM_OBJECT(Neuron, bdm::Cell) {
   BDM_SIM_OBJECT_HEADER(NeuronExt, 1, daughters_, daughters_coord_, foo_);
 
@@ -113,11 +116,10 @@ BDM_SO_DEFINE(
                                      double theta) {
   // TODO should this take immediate effect? or delayed + commit?
   auto neurite = Rm()->template New<TNeurite>();
-  // TODO copy biological modules
-  // for (auto module : local_biology_modules_) {
-  //   if (module->isCopiedWhenNeuriteExtendsFromSoma())
-  //     ne->addLocalBiologyModule(module->getCopy());
-  // }
+
+  std::vector<typename Base::TBiologyModuleVariant> neurite_bms;
+  Base::CopyBiologyModules(gExtendNeurite, &neurite_bms);
+  neurite.SetBiologyModules(std::move(neurite_bms));
 
   // TODO remove comment: code from PhysicalSphere::addNewPhysicalCylinder
   double radius = 0.5 * Base::diameter_[kIdx];
