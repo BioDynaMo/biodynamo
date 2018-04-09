@@ -16,6 +16,13 @@
 namespace bdm {
 namespace neuroscience {
 
+// Declare biology module events for neurites
+extern const BmEvent gNeuriteElongation;
+extern const BmEvent gNeuriteBranching;
+extern const BmEvent gNeuriteBifurcation;
+extern const BmEvent gNeuriteSideCylinderExtension;
+
+
 /// The mother of a neurite can either be a neuron or a neurite.
 /// Therefore, this class acts as an intermediate layer that forwards function
 /// calls to the correct object.
@@ -603,16 +610,29 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
    /// collection of biology modules which define the internal behavior
    vec<std::vector<TBiologyModuleVariant>> biology_modules_ = {{}};
 
-  /// copies biology_modules_ to destination
-  /// @param[in]  event biology module event - used to determine wether a BM
-  ///                  should be copied
-  /// @param[out] destination distination for the new biology modules
-  void CopyBiologyModules(BmEvent event, std::vector<TBiologyModuleVariant>* destination) const {
-    CopyVisitor<std::vector<TBiologyModuleVariant>> visitor(event, destination);
-    for (auto& module : biology_modules_[kIdx]) {
-      visit(visitor, module);
-    }
-  }
+   /// Copies biology modules to destination and removes them from
+   /// `biology_modules_` if the biology modules are marked for the specific
+   /// event. @see BaseBiologyModule
+   /// @param[in]  event biology module event - used to determine wether a BM
+   ///                   should be copied to destination or removed from
+   ///                   from `biology_modules_`
+   /// @param[out] destination distination for the new biology modules
+   void BiologyModuleEventHandler(BmEvent event, std::vector<TBiologyModuleVariant>* destination) {
+     CopyVisitor<std::vector<TBiologyModuleVariant>> visitor(event, destination);
+     for (auto& module : biology_modules_[kIdx]) {
+       visit(visitor, module);
+     }
+
+     RemoveVisitor remove_visitor(event);
+     for (auto it = biology_modules_[kIdx].begin(); it != biology_modules_[kIdx].end(); ) {
+       visit(remove_visitor, *it);
+       if (remove_visitor.return_value_) {
+         it = biology_modules_[kIdx].erase(it);
+       } else {
+         ++it;
+       }
+     }
+   }
 
  private:
 
@@ -772,7 +792,7 @@ BDM_SO_DEFINE(inline typename NeuriteExt<TCompileTimeParam, TDerived, TBase>::Mo
   // TODO
   // Copy of the local biological modules:
   // for (auto m : getLocalBiologyModulesList()) {
-  //   if (m->isCopiedWhenNeuriteBranches()) {
+  //   if (m->CopyWhenNeuriteBranches()) {
   //     ne->addLocalBiologyModule(m->getCopy());
   //   }
   // }
@@ -900,7 +920,7 @@ BDM_SO_DEFINE(inline std::array<typename NeuriteExt<TCompileTimeParam, TDerived,
     // 4) the local biological modules :
     // for (auto m : local_biology_modules_) {
     //  // copy...
-    //  if (m->isCopiedWhenNeuriteBranches()) {
+    //  if (m->CopyWhenNeuriteBranches()) {
     //    // ...for the first neurite
     //    ne_1->addLocalBiologyModule(m->getCopy());
     //    // ...for the second neurite
@@ -1496,7 +1516,7 @@ BDM_SO_DEFINE(inline typename NeuriteExt<TCompileTimeParam, TDerived, TBase>::Mo
   // TODO // copy the LocalBiologicalModules (not done in NeuriteElement, because this creation of
   // // cylinder-neuriteElement is decided for physical and not biological reasons
   // for (auto module : neurite_element_->getLocalBiologyModulesList()) {
-  //   if (module->isCopiedWhenNeuriteElongates())
+  //   if (module->CopyWhenNeuriteElongates())
   //     ne->addLocalBiologyModule(module->getCopy());
   // }
 

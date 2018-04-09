@@ -118,7 +118,7 @@ BDM_SO_DEFINE(
   auto neurite = Rm()->template New<TNeurite>();
 
   std::vector<typename Base::TBiologyModuleVariant> neurite_bms;
-  Base::CopyBiologyModules(gExtendNeurite, &neurite_bms);
+  Base::BiologyModuleEventHandler(gExtendNeurite, &neurite_bms);
   neurite.SetBiologyModules(std::move(neurite_bms));
 
   // TODO remove comment: code from PhysicalSphere::addNewPhysicalCylinder

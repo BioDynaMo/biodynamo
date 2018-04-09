@@ -63,16 +63,29 @@ extern const BmEvent gCellDivision;
 //   /// collection of biology modules which define the internal behavior
 //   vec<std::vector<TBiologyModuleVariant>> biology_modules_ = {{}};
 //
-//  /// copies biology_modules_ to destination
-//  /// @param[in]  event biology module event - used to determine wether a BM
-//  ///                  should be copied
-//  /// @param[out] destination distination for the new biology modules
-//  void CopyBiologyModules(BmEvent event, std::vector<TBiologyModuleVariant>* destination) const {
-//    CopyVisitor<std::vector<TBiologyModuleVariant>> visitor(event, destination);
-//    for (auto& module : biology_modules_[kIdx]) {
-//      visit(visitor, module);
-//    }
-//  }
+// /// Copies biology modules to destination and removes them from
+// /// `biology_modules_` if the biology modules are marked for the specific
+// /// event. @see BaseBiologyModule
+// /// @param[in]  event biology module event - used to determine wether a BM
+// ///                   should be copied to destination or removed from
+// ///                   from `biology_modules_`
+// /// @param[out] destination distination for the new biology modules
+// void BiologyModuleEventHandler(BmEvent event, std::vector<TBiologyModuleVariant>* destination) {
+//   CopyVisitor<std::vector<TBiologyModuleVariant>> visitor(event, destination);
+//   for (auto& module : biology_modules_[kIdx]) {
+//     visit(visitor, module);
+//   }
+//
+//   RemoveVisitor remove_visitor(event);
+//   for (auto it = biology_modules_[kIdx].begin(); it != biology_modules_[kIdx].end(); ) {
+//     visit(remove_visitor, *it);
+//     if (remove_visitor.return_value_) {
+//       it = biology_modules_[kIdx].erase(it);
+//     } else {
+//       ++it;
+//     }
+//   }
+// }
 // };
 
 BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
@@ -271,14 +284,27 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
   /// Grid box index
   vec<uint64_t> box_idx_;
 
-  /// copies biology_modules_ to destination
+  /// Copies biology modules to destination and removes them from
+  /// `biology_modules_` if the biology modules are marked for the specific
+  /// event. @see BaseBiologyModule
   /// @param[in]  event biology module event - used to determine wether a BM
-  ///                  should be copied
+  ///                   should be copied to destination or removed from
+  ///                   from `biology_modules_`
   /// @param[out] destination distination for the new biology modules
-  void CopyBiologyModules(BmEvent event, std::vector<TBiologyModuleVariant>* destination) const {
+  void BiologyModuleEventHandler(BmEvent event, std::vector<TBiologyModuleVariant>* destination) {
     CopyVisitor<std::vector<TBiologyModuleVariant>> visitor(event, destination);
     for (auto& module : biology_modules_[kIdx]) {
       visit(visitor, module);
+    }
+
+    RemoveVisitor remove_visitor(event);
+    for (auto it = biology_modules_[kIdx].begin(); it != biology_modules_[kIdx].end(); ) {
+      visit(remove_visitor, *it);
+      if (remove_visitor.return_value_) {
+        it = biology_modules_[kIdx].erase(it);
+      } else {
+        ++it;
+      }
     }
   }
 };
@@ -382,7 +408,7 @@ BDM_SO_DEFINE(inline void CellExt)::DivideImpl(TMostDerived<Scalar>* daughter,
                                 position_[kIdx][2] + d_2 * axis_of_division[2]};
   daughter->position_[0] = new_position;
 
-  CopyBiologyModules(gCellDivision, &(daughter->biology_modules_[0]));
+  BiologyModuleEventHandler(gCellDivision, &(daughter->biology_modules_[0]));
 
   // E) This sphere becomes the 1st daughter
   // move these cells on opposite direction

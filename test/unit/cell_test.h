@@ -39,7 +39,8 @@ struct MovementModule {
     t->SetPosition(Matrix::Add(position, velocity_));
   }
 
-  bool IsCopied(BmEvent event) const { return false; }
+  bool Copy(BmEvent event) const { return false; }
+  bool Remove(BmEvent event) const { return event == gCellDivision; }
   ClassDefNV(MovementModule, 1);
 };
 
@@ -90,6 +91,12 @@ BDM_SIM_OBJECT_TEST(TestCell, bdm::Cell, CTParam) {
       Base::DivideImpl(daughter, volume_ratio, phi, theta);
     }
   }
+
+  /// forwards call to BiologyModuleEventHandler which is protected
+  void CallBiologyModuleEventHandler(BmEvent event, std::vector<typename CTParam<>::BiologyModules>* destination) {
+    Base::BiologyModuleEventHandler(event, destination);
+  }
+
   vec<bool> placeholder_;  // BDM_SIM_OBJECT_HEADER needs at least one member
   FRIEND_TEST(CellTest, DivideVolumeRatioPhiTheta);
 };

@@ -63,7 +63,7 @@ TEST(CellTest, DivideVolumeRatioPhiTheta) {
   EXPECT_NEAR(2.1428571428571437, daughter.GetMass(), kEpsilon);
 
   // biology modules mother
-  EXPECT_EQ(2u, mother.GetBiologyModules().size());
+  EXPECT_EQ(1u, mother.GetBiologyModules().size());
   EXPECT_EQ(1u, daughter.GetBiologyModules().size());
   if (get_if<GrowthModule>(&(daughter.GetBiologyModules()[0])) == nullptr) {
     FAIL() << "Variant type at position 0 is not a GrowthModule";
@@ -143,6 +143,23 @@ TEST(CellTest, BiologyModule) {
   EXPECT_NEAR(position[0] + 1, cell.GetPosition()[0], abs_error<double>::value);
   EXPECT_NEAR(position[1] + 2, cell.GetPosition()[1], abs_error<double>::value);
   EXPECT_NEAR(position[2] + 3, cell.GetPosition()[2], abs_error<double>::value);
+}
+
+TEST(CellTest, BiologyModuleEventHandler) {
+  TestCell cell;
+
+  cell.AddBiologyModule(MovementModule({1, 2, 3}));
+  cell.AddBiologyModule(GrowthModule());
+
+  std::vector<Variant<GrowthModule, MovementModule>> destination;
+
+  cell.CallBiologyModuleEventHandler(gCellDivision, &destination);
+
+  const auto& bms = cell.GetBiologyModules();
+  ASSERT_EQ(1u, bms.size());
+  EXPECT_TRUE(get_if<GrowthModule>(&bms[0]) != nullptr);
+  ASSERT_EQ(1u, destination.size());
+  EXPECT_TRUE(get_if<GrowthModule>(&destination[0]) != nullptr);
 }
 
 TEST(CellTest, IO) { RunIOTest(); }
