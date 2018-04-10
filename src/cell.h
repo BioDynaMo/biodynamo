@@ -59,6 +59,11 @@ BDM_SIM_OBJECT(Cell, SimulationObject) {
   template <typename TDerived>
   void RunBiologyModules();
 
+  /// Get all biology modules of this cell that match the given type.
+  /// \tparam T  type of the biology module
+  template <typename T>
+  std::vector<const T*> GetBiologyModules() const;
+
   /// Divide the cell. Of the two daughter cells, one is this one (but smaller,
   /// with half GeneSubstances etc.),
   /// and the other one is given as parameter and initialzed accordingly. Both
@@ -264,6 +269,20 @@ inline void CellExt<T, U>::RunBiologyModules() {
   for (auto& module : biology_modules_[kIdx]) {
     visit(visitor, module);
   }
+}
+
+template <typename T, template <typename> class U>
+template <typename TBiologyModule>
+std::vector<const TBiologyModule*> CellExt<T, U>::GetBiologyModules() const {
+  std::vector<const TBiologyModule*> modules;
+  for (unsigned int i = 0; i < biology_modules_[kIdx].size(); i++) {
+    const TBiologyModule* module =
+        get_if<TBiologyModule>(&biology_modules_[kIdx][i]);
+    if (module != nullptr) {
+      modules.push_back(module);
+    }
+  }
+  return modules;
 }
 
 template <typename T, template <typename> class U>

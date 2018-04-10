@@ -27,6 +27,7 @@ class Scheduler {
   Scheduler()
       : backup_(SimulationBackup(Param::backup_file_, Param::restore_file_)),
         grid_(&TGrid::GetInstance()) {
+    total_steps_ = 0;
     if (backup_.RestoreEnabled()) {
       restore_point_ = backup_.GetSimulationStepsFromBackup();
     }
@@ -43,6 +44,34 @@ class Scheduler {
     }
     if (Param::statistics_) {
       std::cout << gStatistics << std::endl;
+    }
+  }
+
+  template <typename Lambda>
+  void SimulateTill(Lambda stopping_condition) {
+    grid_->Initialize();
+
+    while (!stopping_condition()) {
+      // Simulate
+      Execute();
+
+      // Visualize
+      if (Param::live_visualization_) {
+        double time = Param::simulation_time_step_ * total_steps_;
+        visualization_->CoProcess(time, total_steps_, false);
+      }
+
+      total_steps_++;
+
+      // Backup
+      using std::chrono::seconds;
+      using std::chrono::duration_cast;
+      if (backup_.BackupEnabled() &&
+          duration_cast<seconds>(Clock::now() - last_backup_).count() >=
+              Param::backup_interval_) {
+        last_backup_ = Clock::now();
+        backup_.Backup(total_steps_);
+      }
     }
   }
 
@@ -147,7 +176,7 @@ class Scheduler {
 
  private:
   SimulationBackup backup_;
-  size_t total_steps_ = 0;
+  size_t& total_steps_ = Param::total_steps_;
   size_t restore_point_;
   std::chrono::time_point<Clock> last_backup_ = Clock::now();
   CatalystAdaptor<>* visualization_ = nullptr;

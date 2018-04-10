@@ -17,6 +17,14 @@ struct Param {
   /// Cannot be changed using the TOML config file
   static std::string executable_name_;
 
+  /// Variable which is tracking current step of simulation
+  static size_t total_steps_;
+
+  /// Variable which specifies method using for solving differential equation
+  /// {"Euler", "RK4"}.
+  enum NumericalODESolver { kEuler = 1, kRK4 = 2 };
+  static NumericalODESolver numerical_ode_solver_;
+
   /// Backup file name for full simulation backups\n
   /// Default value: `""` (no backups will be made)\n
   /// TOML config file:

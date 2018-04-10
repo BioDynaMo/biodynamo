@@ -81,7 +81,7 @@ BDM_SIM_OBJECT_TEST(TestCell, Cell, CTParam) {
   const array<double, 3>& GetYAxis() { return Base::y_axis_[Base::kIdx]; }
   const array<double, 3>& GetZAxis() { return Base::z_axis_[Base::kIdx]; }
 
-  const std::vector<typename CTParam<>::BiologyModules>& GetBiologyModules()
+  const std::vector<typename CTParam<>::BiologyModules>& GetAllBiologyModules()
       const {
     return Base::biology_modules_[0];
   }
@@ -172,14 +172,15 @@ inline void RunIOTest() {
   EXPECT_NEAR(8, restored_cell->GetZAxis()[1], kEpsilon);
   EXPECT_NEAR(9, restored_cell->GetZAxis()[2], kEpsilon);
 
-  EXPECT_EQ(2u, restored_cell->GetBiologyModules().size());
-  EXPECT_TRUE(get_if<GrowthModule>(&restored_cell->GetBiologyModules()[0]) !=
+  EXPECT_EQ(2u, restored_cell->GetAllBiologyModules().size());
+  EXPECT_TRUE(get_if<GrowthModule>(&restored_cell->GetAllBiologyModules()[0]) !=
               nullptr);
-  EXPECT_NEAR(0.5, get_if<GrowthModule>(&restored_cell->GetBiologyModules()[0])
-                       ->growth_rate_,
+  EXPECT_NEAR(0.5,
+              get_if<GrowthModule>(&restored_cell->GetAllBiologyModules()[0])
+                  ->growth_rate_,
               kEpsilon);
-  EXPECT_TRUE(get_if<MovementModule>(&restored_cell->GetBiologyModules()[1]) !=
-              nullptr);
+  EXPECT_TRUE(get_if<MovementModule>(
+                  &restored_cell->GetAllBiologyModules()[1]) != nullptr);
 
   EXPECT_EQ(123u, restored_cell->GetBoxIdx());
 

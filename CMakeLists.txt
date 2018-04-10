@@ -228,3 +228,9 @@ bdm_add_executable(diffusion_module
                    SOURCES demo/diffusion_module.cc
                    HEADERS demo/diffusion_module.h
                    LIBRARIES biodynamo)
+
+# --------------------- build gene_regulation executable ------------------
+bdm_add_executable(gene_regulation
+                   SOURCES demo/gene_regulation.cc
+                   HEADERS demo/gene_regulation.h
+                   LIBRARIES biodynamo)
