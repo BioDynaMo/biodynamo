@@ -376,11 +376,11 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
 
   void SetRestingLengthForDesiredTension(double tension);
 
-  /// Progressive modification of the volume. Updates the diameter, the intracellular concentration
+  /// Progressive modification of the volume. Updates the diameter.
   /// @param speed cubic micron/ h
   void ChangeVolume(double speed);
 
-  /// Progressive modification of the diameter. Updates the volume, the intracellular concentration
+  /// Progressive modification of the diameter. Updates the volume.
   /// @param speed micron/ h
   void ChangeDiameter(double speed);
  //
@@ -394,18 +394,6 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
 
   void ApplyDisplacement(const std::array<double, 3>& displacement);
 
- // TODO below function implementations
- //  bool isInContactWithSphere(PhysicalSphere* s) override;
- //
- //  bool isInContactWithCylinder(PhysicalCylinder* c) override;
- //
- //  /// Returns the point on this cylinder's spring axis that is the closest to the point p.*/
- //  std::array<double, 3> closestPointTo(const std::array<double, 3>& p);
- //
- //  void runIntracellularDiffusion() override;
- //
- //  std::array<double, 3> getUnitNormalVector(const std::array<double, 3>& position) const override;
- //
   /// Defines the three orthonormal local axis so that a cylindrical coordinate system
   /// can be used. The xAxis is aligned with the `spring_axis_`. The two other are in the
   /// plane perpendicular to `spring_axis_`. This method to update the axis was suggested by
@@ -415,8 +403,7 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
   /// Recomputes diameter after volume has changed.*/
   void UpdateDiameter();
 
-  /// Recomputes volume, after diameter has been change. And makes a call for
-  /// recomputing then concentration of IntracellularSubstances.*/
+  /// Recomputes volume, after diameter has been change.
   void UpdateVolume();
 
   // *************************************************************************************
@@ -562,16 +549,10 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
   /// This method also automatically calls the <code>resetComputationCenterPosition()</code>
   /// method at the end.
   void UpdateDependentPhysicalVariables();
- //
- // protected:
- //  ///
- //  /// Updates the concentration of substances, based on the volume of the object.
- //  /// Is usually called after change of the volume (and therefore we don't modify it here)
- //  ///
- //  void updateIntracellularConcentrations() override; // TODO
 
   void RemoveYourself();
 
+  // TODO
   friend std::ostream& operator<<(std::ostream& str, const Self<Backend>& n) {
     auto pos = n.GetPosition();
     str << "MassLocation:     " << n.mass_location_[n.kIdx][0] << ", " << n.mass_location_[n.kIdx][1] << ", " << n.mass_location_[n.kIdx][2] << ", " << std::endl;
@@ -758,13 +739,6 @@ BDM_SO_DEFINE(inline void NeuriteExt)::RetractTerminalEnd(double speed) {
       mother_[kIdx].RemoveDaughter(GetSoPtr());
       RemoveFromSimulation();
 
-      // TODO intracellularSubstances quantities
-      // (concentrations are solved in updateDependentPhysicalVariables():
-      // for (auto& el : intracellular_substances_) {
-      //   auto s = el.second.get();
-      //   mother_->modifyIntracellularQuantity(s->getId(), s->getQuantity() / Param::simulation_time_step_);
-      //   // (divide by time step because it is multiplied by it in the method)
-      // }
       mother_[kIdx].UpdateDependentPhysicalVariables();
     }
 }
@@ -1048,8 +1022,6 @@ BDM_SO_DEFINE(inline void NeuriteExt)::ChangeVolume(double speed) {
     volume_[kIdx] = 5.2359877E-7;
   }
   UpdateDiameter();
-  // TODO updateIntracellularConcentrations();
-  // TODO scheduleMeAndAllMyFriends();
 }
 
 BDM_SO_DEFINE(inline void NeuriteExt)::ChangeDiameter(double speed) {
@@ -1057,8 +1029,6 @@ BDM_SO_DEFINE(inline void NeuriteExt)::ChangeDiameter(double speed) {
   double dD = speed * Param::simulation_time_step_;
   diameter_[kIdx] += dD;
   UpdateVolume();
-  // no call to updateIntracellularConcentrations() cause it's done by updateVolume().
-  // TODO scheduleMeAndAllMyFriends();
 }
 
 BDM_SO_DEFINE(template <typename TGrid>
@@ -1271,7 +1241,6 @@ BDM_SO_DEFINE(inline void NeuriteExt)::ApplyDisplacement(const std::array<double
 
 BDM_SO_DEFINE(inline void NeuriteExt)::UpdateVolume() {
   volume_[kIdx] = Math::kPi / 4 * diameter_[kIdx] * diameter_[kIdx] * actual_length_[kIdx];
-  // TODO updateIntracellularConcentrations();
 }
 
 BDM_SO_DEFINE(inline void NeuriteExt)::UpdateLocalCoordinateAxis() {
@@ -1490,22 +1459,6 @@ BDM_SO_DEFINE(inline typename NeuriteExt<TCompileTimeParam, TDerived, TBase>::Mo
   new_neurite_element.SetRestingLength((1 - distal_portion) * resting_length_[kIdx]);
   resting_length_[kIdx] *= distal_portion;
 
-  //  TODO intracellularSubstances quantities .....................................
-  // (concentrations are solved in updateDependentPhysicalVariables():
-  // for (auto& pair : intracellular_substances_) {
-  //   auto s = pair.second.get();
-  //   // if doesn't diffuse at all : all the substance stays in the distal part !
-  //   if (s->getDiffusionConstant() < 0.000000000001) {
-  //     continue;
-  //   }
-  //   // create similar IntracellularSubstance and insert it into the new cylinder
-  //   double quantity_before_distribution = s->getQuantity();
-  //   auto s2 = IntracellularSubstance::UPtr(new IntracellularSubstance(*s));
-  //   s2->setQuantity(quantity_before_distribution * (1 - distal_portion));
-  //   new_cylinder->addNewIntracellularSubstance(std::move(s2));
-  //   // decrease value of IntracellularSubstance in this cylinder
-  //   s->setQuantity(quantity_before_distribution * distal_portion);
-  // }
   UpdateDependentPhysicalVariables();
   new_neurite_element.UpdateDependentPhysicalVariables();
   // UpdateLocalCoordinateAxis has to come after UpdateDepend...
@@ -1584,14 +1537,6 @@ BDM_SO_DEFINE(inline void NeuriteExt)::RemoveProximalCylinder() {
   // Re-organisation of the PhysicalObject tree structure: by-passing proximalCylinder
   proximal_cylinder.GetMother().UpdateRelative(mother_[kIdx], NeuriteOrNeuron(GetSoPtr()));
   SetMother(mother_[kIdx].GetMother());
-
-  // TODO collecting (the quantities of) the intracellular substances of the removed cylinder.
-  // for (auto s : proximal_cylinder->getIntracellularSubstances1()) {
-  //   modifyIntracellularQuantity(s->getId(), s->getQuantity() / Param::simulation_time_step_);
-  //   // divided by time step, because in the method the parameter is multiplied by time step...
-  //   // and we want to change the quantity.
-  //   // We don't change the concentration, it is done later by the call to updateVolume()
-  // }
 
   // Keeping the same tension :
   // (we don't use updateDependentPhysicalVariables(), because we have tension and want to
