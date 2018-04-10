@@ -76,6 +76,58 @@ namespace bdm {
 
   }
 
+  TEST(NeuriteBehaviour, BranchingGrowth) {
+      Param::Reset();
+      Rm()->Clear();
+
+      Param::run_mechanical_interactions_= true;
+      Param::live_visualization_ = true;
+      Param::export_visualization_ = true;
+
+      double diamReducSpeed = 0.001;
+      double branchingFactor = 0.005;
+
+      auto neuron = Rm()->New<Neuron>();
+      neuron.SetPosition({ 0, 0, 0 });
+      neuron.SetMass(1);
+      neuron.SetDiameter(10);
+
+      auto ne = neuron.ExtendNewNeurite({0, 0, 1}).Get();
+      ne.SetDiameter(1);
+
+      auto& grid = Grid<>::GetInstance();
+      grid.Initialize();
+      Scheduler<> scheduler;
+
+      std::array<double, 3> previous_direction;
+      std::array<double, 3> direction;
+
+      for (int i = 0; i < 200; i++) {
+        auto my_neurites = Rm()->template Get<Neurite>();
+        int nbOfNeurites = my_neurites->size();
+
+        for (int neuriteNb=0; neuriteNb< nbOfNeurites; neuriteNb++) { // for each neurite in simulation
+          auto ne = (*my_neurites)[neuriteNb];
+
+          if (ne.IsTerminal() && ne.GetDiameter()>0.5) {
+            previous_direction = ne.GetSpringAxis();
+            direction = {gTRandom.Uniform(-10, 10), gTRandom.Uniform(-10, 10), gTRandom.Uniform(0, 5)};
+
+            std::array<double, 3> step_direction = Matrix::Add(previous_direction, direction);
+
+            ne.ElongateTerminalEnd(10, step_direction);
+  //          ne.SetDiameter(ne.GetDiameter()-diamReducSpeed);
+            ne.SetDiameter(1);
+
+            if (gTRandom.Uniform(0, 1)<branchingFactor*ne.GetDiameter()) {
+              ne.Bifurcate();
+            }
+            //            ne.RunDiscretization();
+          }
+        }
+        scheduler.Simulate(1);
+      }
+    } // end test
 
 } // end namespace bdm
 
