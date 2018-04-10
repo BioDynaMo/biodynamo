@@ -694,11 +694,6 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
   /// Merges two neurite elements together. The one in which the method is called phagocytes it's mother.
   void RemoveProximalCylinder();
 
-  //
-  // /// Sets the scheduling flag onTheSchedulerListForPhysicalObjects to true
-  // /// for me and for all my neighbors, relative, things I share a physicalBond with
-  // void scheduleMeAndAllMyFriends();
-
   // TODO rename function
   MostDerivedSoPtr ExtendSideCylinder(double length, const std::array<double, 3>& direction);
 };
@@ -711,7 +706,6 @@ BDM_SO_DEFINE(inline void NeuriteExt)::RetractTerminalEnd(double speed) {
     if (!daughter_left_[kIdx].IsNullPtr()) {
       return;
     }
-    // TODO : what if there are some physical Bonds ??
     // scaling for integration step
     speed *= Param::simulation_time_step_;
 
@@ -1092,15 +1086,6 @@ inline std::array<double, 3> NeuriteExt)::CalculateDisplacement(TGrid* grid, dou
       }
     }
 
-    // if we have a PhysicalBond with him, we also don't take it into account
-    // TODO
-    // for (auto pb : physical_bonds_) {
-    //   if (pb->getOppositePhysicalObject(this)
-    //       == neighbor) {
-    //     continue;
-    //   }
-    // }
-
     DefaultForce force;
     std::array<double, 4> force_from_neighbor = force.GetForce(this, &neighbor);
 
@@ -1160,27 +1145,6 @@ inline std::array<double, 3> NeuriteExt)::CalculateDisplacement(TGrid* grid, dou
           force_on_my_point_mass, Matrix::ScalarMult(KK * (rresting - aactual), Math::Normalize(down_to_me)));
     }
   }
-  // 4) PhysicalBond -----------------------------------------------------------
-  // TODO physical bonds
-  // for (auto pb : physical_bonds_) {
-  //   auto force_physical_bond = pb->getForceOn(this);
-  //
-  //   if (std::abs(force_physical_bond[3]) < 1E-10) {
-  //     // (if all the force is transmitted to the (distal end) point mass : )
-  //     force_on_my_point_mass[0] += force_physical_bond[0];
-  //     force_on_my_point_mass[1] += force_physical_bond[1];
-  //     force_on_my_point_mass[2] += force_physical_bond[2];
-  //   } else {
-  //     // (if there is a part transmitted to the proximal end : )
-  //     double part_for_point_mass = 1.0 - force_physical_bond[3];
-  //     force_on_my_point_mass[0] += force_physical_bond[0] * part_for_point_mass;
-  //     force_on_my_point_mass[1] += force_physical_bond[1] * part_for_point_mass;
-  //     force_on_my_point_mass[2] += force_physical_bond[2] * part_for_point_mass;
-  //     force_on_my_mothers_point_mass[0] += force_physical_bond[0] * force_physical_bond[3];
-  //     force_on_my_mothers_point_mass[1] += force_physical_bond[1] * force_physical_bond[3];
-  //     force_on_my_mothers_point_mass[2] += force_physical_bond[2] * force_physical_bond[3];
-  //   }
-  // }
 
   // 5) define the force that will be transmitted to the mother
   force_to_transmit_to_proximal_mass_[kIdx] = force_on_my_mothers_point_mass;
@@ -1469,27 +1433,6 @@ BDM_SO_DEFINE(inline typename NeuriteExt<TCompileTimeParam, TDerived, TBase>::Mo
   BiologyModuleEventHandler(gNeuriteElongation, &new_biology_modules);
   new_neurite_element.SetBiologyModules(std::move(new_biology_modules));
 
-  // TODO deal with the excressences:
-  // if (!excrescences_.empty()) {
-  //   auto it = excrescences_.begin();
-  //   do {
-  //     auto ex_raw = (*it).get();
-  //     auto pos = ex_raw->getPositionOnPO();
-  //     // transmit them to proximal cyl
-  //     if (pos[0] < new_cylinder->actual_length_) {
-  //       ex_raw->setPo(new_cylinder.get());
-  //       new_cylinder->addExcrescence(std::move(*it));
-  //       excrescences_.erase(it);
-  //       it--;
-  //     } else {
-  //       // or kep them here, depending on coordinate
-  //       pos[0] -= new_cylinder->actual_length_;
-  //       ex_raw->setPositionOnPO(pos);
-  //     }
-  //   } while (++it != excrescences_.end());
-  // }
-
-
   // FIXME what about data members in subclasses
   return new_neurite_element.GetSoPtr();
 }
@@ -1551,26 +1494,6 @@ BDM_SO_DEFINE(inline void NeuriteExt)::RemoveProximalCylinder() {
   UpdateLocalCoordinateAxis();
 
   proximal_cylinder.RemoveFromSimulation();
-
-  // TODO
-  // dealing with excressences:
-  // mine are shifted up :
-  // double shift = actual_length_ - proximal_cylinder->actual_length_;
-  // for (auto& ex : excrescences_) {
-  //   auto pos = ex->getPositionOnPO();
-  //   pos[0] += shift;
-  //   ex->setPositionOnPO(pos);
-  // }
-  // // I incorporate the ones of the previous cyl:
-  // for (auto& ex : proximal_cylinder->excrescences_) {
-  //   excrescences_.push_back(std::move(ex));
-  //   ex->setPo(this);
-  // }
-  // // TODO: take care of Physical Bonds
-  // proximal_cylinder->setStillExisting(false);
-  // the SON
-  // TODO updateSpatialOrganizationNodePosition();
-  // TODO: CAUTION : for future parallel implementation. If a visitor is in the branch, it gets destroyed....
 }
 
 BDM_SO_DEFINE(inline void NeuriteExt)::RemoveYourself() {
