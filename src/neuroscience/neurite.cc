@@ -1,4 +1,4 @@
-#include "neuroscience/neuron.h"
+#include "neuroscience/neurite.h"
 
 namespace bdm {
 namespace neuroscience {

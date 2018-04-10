@@ -59,10 +59,10 @@ class UniqueBmEventFactory {
 };
 
 /// BaseBiologyModule encapsulates logic to decide for which BmEvents
-/// a biology module should be copied or deleted
+/// a biology module should be copied or removed
 struct BaseBiologyModule {
   /// Default ctor sets `copy_mask_` and remove_mask_` to 0; meaning that
-  /// `Copy` anwill always return false
+  /// `Copy` and `Remove` will always return false
   BaseBiologyModule() : copy_mask_(0), remove_mask_(0) {}
   explicit BaseBiologyModule(BmEvent copy_event, BmEvent remove_event = 0) : copy_mask_(copy_event), remove_mask_(remove_event) {}
 

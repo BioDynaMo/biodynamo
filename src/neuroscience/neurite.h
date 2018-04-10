@@ -1,6 +1,8 @@
 #ifndef NEUROSCIENCE_NEURITE_H_
 #define NEUROSCIENCE_NEURITE_H_
 
+#include "biology_module_util.h"
+#include "default_force.h"
 #include "shape.h"
 #include "math_util.h"
 #include "matrix.h"
@@ -392,6 +394,7 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
 
   void ApplyDisplacement(const std::array<double, 3>& displacement);
 
+ // TODO below function implementations
  //  bool isInContactWithSphere(PhysicalSphere* s) override;
  //
  //  bool isInContactWithCylinder(PhysicalCylinder* c) override;
@@ -565,7 +568,7 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
  //  /// Updates the concentration of substances, based on the volume of the object.
  //  /// Is usually called after change of the volume (and therefore we don't modify it here)
  //  ///
- //  void updateIntracellularConcentrations() override;
+ //  void updateIntracellularConcentrations() override; // TODO
 
   void RemoveYourself();
 
@@ -617,11 +620,15 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
    ///                   should be copied to destination or removed from
    ///                   from `biology_modules_`
    /// @param[out] destination distination for the new biology modules
-   void BiologyModuleEventHandler(BmEvent event, std::vector<TBiologyModuleVariant>* destination) {
+   /// @param[in]  skip_removal skip the removal of biology modules. Default
+   ///             value is false.
+   void BiologyModuleEventHandler(BmEvent event, std::vector<TBiologyModuleVariant>* destination, bool skip_removal = false) {
      CopyVisitor<std::vector<TBiologyModuleVariant>> visitor(event, destination);
      for (auto& module : biology_modules_[kIdx]) {
        visit(visitor, module);
      }
+
+     if (skip_removal) return;
 
      RemoveVisitor remove_visitor(event);
      for (auto it = biology_modules_[kIdx].begin(); it != biology_modules_[kIdx].end(); ) {
@@ -789,13 +796,10 @@ BDM_SO_DEFINE(inline typename NeuriteExt<TCompileTimeParam, TDerived, TBase>::Mo
   new_branch.SetBranchOrder(branch_order_[kIdx] + 1);
   // TODO : Caution : doesn't change the value distally on the main branch
 
-  // TODO
-  // Copy of the local biological modules:
-  // for (auto m : getLocalBiologyModulesList()) {
-  //   if (m->CopyWhenNeuriteBranches()) {
-  //     ne->addLocalBiologyModule(m->getCopy());
-  //   }
-  // }
+  std::vector<TBiologyModuleVariant> branch_biology_modules;
+  BiologyModuleEventHandler(gNeuriteBifurcation, &branch_biology_modules);
+  new_branch.SetBiologyModules(std::move(branch_biology_modules));
+
   return new_branch_soptr;
 }
 
@@ -916,21 +920,15 @@ BDM_SO_DEFINE(inline std::array<typename NeuriteExt<TCompileTimeParam, TDerived,
     new_branch_r.SetDiameter(diameter_2);
     new_branch_r.SetBranchOrder(branch_order_[kIdx] + 1);
 
-    // TODO
-    // 4) the local biological modules :
-    // for (auto m : local_biology_modules_) {
-    //  // copy...
-    //  if (m->CopyWhenNeuriteBranches()) {
-    //    // ...for the first neurite
-    //    ne_1->addLocalBiologyModule(m->getCopy());
-    //    // ...for the second neurite
-    //    ne_2->addLocalBiologyModule(m->getCopy());
-    //  }
-    //  // and remove
-    //  if (m->isDeletedAfterNeuriteHasBifurcated()) {
-    //    removeLocalBiologyModule(m);
-    //  }
-    // }
+    // 4) the biological modules :
+    std::vector<TBiologyModuleVariant> biology_modules_l;
+    BiologyModuleEventHandler(gNeuriteBifurcation, &biology_modules_l);
+    new_branch_l.SetBiologyModules(std::move(biology_modules_l));
+
+    std::vector<TBiologyModuleVariant> biology_modules_r;
+    BiologyModuleEventHandler(gNeuriteBifurcation, &biology_modules_r, true);
+    new_branch_r.SetBiologyModules(std::move(biology_modules_r));
+
     return {new_branch_l.GetSoPtr(), new_branch_r.GetSoPtr()};
 }
 
@@ -1137,7 +1135,7 @@ inline std::array<double, 3> NeuriteExt)::CalculateDisplacement(TGrid* grid, dou
     std::array<double, 4> force_from_neighbor = force.GetForce(this, &neighbor);
 
     // 1) "artificial force" to maintain the sphere in the ecm simulation boundaries--------
-    // TODO
+    // TODO remove this; this is done in dispalcement op
     // if (ecm_->getArtificialWallForCylinders()) {
     //   auto force_from_artificial_wall = ecm_->forceFromArtificialWall(mass_location_, diameter_ * 0.5);
     //   force_on_my_point_mass[0] += force_from_artificial_wall[0];
@@ -1513,12 +1511,10 @@ BDM_SO_DEFINE(inline typename NeuriteExt<TCompileTimeParam, TDerived, TBase>::Mo
   // UpdateLocalCoordinateAxis has to come after UpdateDepend...
   new_neurite_element.UpdateLocalCoordinateAxis();
 
-  // TODO // copy the LocalBiologicalModules (not done in NeuriteElement, because this creation of
-  // // cylinder-neuriteElement is decided for physical and not biological reasons
-  // for (auto module : neurite_element_->getLocalBiologyModulesList()) {
-  //   if (module->CopyWhenNeuriteElongates())
-  //     ne->addLocalBiologyModule(module->getCopy());
-  // }
+  std::vector<TBiologyModuleVariant> new_biology_modules;
+  // TODO what about gNeuriteSideCylinderExtension ??
+  BiologyModuleEventHandler(gNeuriteElongation, &new_biology_modules);
+  new_neurite_element.SetBiologyModules(std::move(new_biology_modules));
 
   // TODO deal with the excressences:
   // if (!excrescences_.empty()) {

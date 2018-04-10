@@ -70,11 +70,15 @@ extern const BmEvent gCellDivision;
 // ///                   should be copied to destination or removed from
 // ///                   from `biology_modules_`
 // /// @param[out] destination distination for the new biology modules
-// void BiologyModuleEventHandler(BmEvent event, std::vector<TBiologyModuleVariant>* destination) {
+// /// @param[in]  skip_removal skip the removal of biology modules. Default
+// ///             value is false.
+// void BiologyModuleEventHandler(BmEvent event, std::vector<TBiologyModuleVariant>* destination, bool skip_removal = false) {
 //   CopyVisitor<std::vector<TBiologyModuleVariant>> visitor(event, destination);
 //   for (auto& module : biology_modules_[kIdx]) {
 //     visit(visitor, module);
 //   }
+//
+//   if (skip_removal) return;
 //
 //   RemoveVisitor remove_visitor(event);
 //   for (auto it = biology_modules_[kIdx].begin(); it != biology_modules_[kIdx].end(); ) {
@@ -291,11 +295,15 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
   ///                   should be copied to destination or removed from
   ///                   from `biology_modules_`
   /// @param[out] destination distination for the new biology modules
-  void BiologyModuleEventHandler(BmEvent event, std::vector<TBiologyModuleVariant>* destination) {
+  /// @param[in]  skip_removal skip the removal of biology modules. Default
+  ///             value is false.
+  void BiologyModuleEventHandler(BmEvent event, std::vector<TBiologyModuleVariant>* destination, bool skip_removal = false) {
     CopyVisitor<std::vector<TBiologyModuleVariant>> visitor(event, destination);
     for (auto& module : biology_modules_[kIdx]) {
       visit(visitor, module);
     }
+
+    if (skip_removal) return;
 
     RemoveVisitor remove_visitor(event);
     for (auto it = biology_modules_[kIdx].begin(); it != biology_modules_[kIdx].end(); ) {
