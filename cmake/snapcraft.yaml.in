@@ -34,12 +34,12 @@ parts:
 
   root:
     plugin: dump
-    source: https://cernbox.cern.ch/index.php/s/BbFptgxo2K565IS/download?path=%2F&files=root_v6.11.01_Linux-ubuntu16-x86_64-gcc5.4_263508429d.tar.gz
+    source: https://cernbox.cern.ch/index.php/s/1ekMudArMqFhcXt/download?path=%2F&files=root_v6.11.01_Linux-ubuntu16-x86_64-gcc5.4_263508429d.tar.gz
     prepare: mkdir -p dependencies/root && mv * dependencies/root 2>/dev/null ; true
 
   qt:
     plugin: dump
-    source: https://cernbox.cern.ch/index.php/s/BbFptgxo2K565IS/download?path=%2F&files=Qt5.9.1_ubuntu16_gcc5.4.tar.gz
+    source: https://cernbox.cern.ch/index.php/s/1ekMudArMqFhcXt/download?path=%2F&files=Qt5.9.1_ubuntu16_gcc5.4.tar.gz
     prepare: |
       mkdir -p dependencies/qt && mv * dependencies/qt 2>/dev/null ; true
       # patch qt to avoid libprotobuf error for paraview
@@ -48,7 +48,7 @@ parts:
 
   paraview:
     plugin: dump
-    source: https://cernbox.cern.ch/index.php/s/BbFptgxo2K565IS/download?path=%2F&files=paraview-5.4.1_ubuntu16_gcc5.4.tar.gz
+    source: https://cernbox.cern.ch/index.php/s/1ekMudArMqFhcXt/download?path=%2F&files=paraview-5.4.1_ubuntu16_gcc5.4.tar.gz
     prepare: |
       mkdir -p dependencies/paraview && mv * dependencies/paraview 2>/dev/null ; true
       find dependencies/paraview/lib/cmake/ -type f -name "*.cmake" -exec sed -i 's|/usr/lib/x86_64-linux-gnu/|/snap/biodynamo/current/usr/lib/x86_64-linux-gnu/|g' {} +

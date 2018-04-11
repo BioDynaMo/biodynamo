@@ -57,7 +57,7 @@ function Install {
   apt-get -y install doxygen graphviz
 
   # install ROOT
-  wget -O /tmp/root_v6.11.01_Linux-ubuntu16-x86_64-gcc5.4_263508429d.tar.gz "https://cernbox.cern.ch/index.php/s/BbFptgxo2K565IS/download?path=%2F&files=root_v6.11.01_Linux-ubuntu16-x86_64-gcc5.4_263508429d.tar.gz"
+  wget -O /tmp/root_v6.11.01_Linux-ubuntu16-x86_64-gcc5.4_263508429d.tar.gz "https://cernbox.cern.ch/index.php/s/1ekMudArMqFhcXt/download?path=%2F&files=root_v6.11.01_Linux-ubuntu16-x86_64-gcc5.4_263508429d.tar.gz"
   tar -xzf /tmp/root_v6.11.01_Linux-ubuntu16-x86_64-gcc5.4_263508429d.tar.gz -C $THIRD_PARTY_DIR
 
   # copy environment script
@@ -69,12 +69,12 @@ function Install {
   cp $SCRIPTPATH/../cmake/biodynamo_linux_dev.env $BDM_ENVIRONMENT_FILE
 
   # install ParaView
-  wget -O paraview-5.4_ubuntu14_gcc5.4.tar.gz "https://cernbox.cern.ch/index.php/s/BbFptgxo2K565IS/download?path=%2F&files=paraview-5.4.1_ubuntu16_gcc5.4.tar.gz"
+  wget -O paraview-5.4_ubuntu14_gcc5.4.tar.gz "https://cernbox.cern.ch/index.php/s/1ekMudArMqFhcXt/download?path=%2F&files=paraview-5.4.1_ubuntu16_gcc5.4.tar.gz"
   mkdir -p $THIRD_PARTY_DIR/paraview
   tar -xzf paraview-5.4_ubuntu14_gcc5.4.tar.gz -C $THIRD_PARTY_DIR/paraview
 
   # install Qt
-  wget -O Qt5.9.1_ubuntu16_gcc5.4.tar.gz "https://cernbox.cern.ch/index.php/s/BbFptgxo2K565IS/download?path=%2F&files=Qt5.9.1_ubuntu16_gcc5.4.tar.gz"
+  wget -O Qt5.9.1_ubuntu16_gcc5.4.tar.gz "https://cernbox.cern.ch/index.php/s/1ekMudArMqFhcXt/download?path=%2F&files=Qt5.9.1_ubuntu16_gcc5.4.tar.gz"
   mkdir -p $THIRD_PARTY_DIR/qt
   tar -xzf Qt5.9.1_ubuntu16_gcc5.4.tar.gz -C $THIRD_PARTY_DIR/qt
   # temporal workaround to avoid libprotobuf error for paraview
