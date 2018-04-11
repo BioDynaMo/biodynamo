@@ -38,10 +38,6 @@ if(APPLE)
   include_directories(/usr/local/Cellar/biodynamo)
 else()
   find_package(OpenMP REQUIRED)
-  execute_process(COMMAND ${CMAKE_CXX_COMPILER} --print-file-name=include/omp.h OUTPUT_VARIABLE OMP_HEADER_PATH)
-  get_filename_component(OMP_HEADER_DIR "${OMP_HEADER_PATH}" DIRECTORY)
-  include_directories(${OMP_HEADER_DIR})
-  message(WARNING ${OMP_HEADER_DIR})
 endif()
 if (test)
   # must be before include(${ROOT_USE_FILE}) otherwise test compile fails
@@ -94,7 +90,7 @@ include(cmake/SetCompilerFlags.cmake)
 
 # -------------------- set rpath options ---------------------------------------
 # When building, use the RPATH
-set(CMAKE_SKIP_BUILD_RPATH FALSE)           # don't skip the full RPATH for the build tree
+set(CMAKE_SKIP_BUILD_RPATH FALSE) # don't skip the full RPATH for the build tree
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 if(APPLE)
@@ -118,9 +114,17 @@ include_directories("${CMAKE_SOURCE_DIR}/test")
 include_directories("${CMAKE_SOURCE_DIR}/third_party")
 include_directories("${CMAKE_SOURCE_DIR}/demo")
 include_directories("${MPARK_LIB}")
-# to find omp.h : Doesnt work, because uses wrong intrinsic headers for other stuff then... So let's copy it to build dir
-# include_directories("/afs/cern.ch/sw/lcg/external/gcc/6.3.0/x86_64-centos7/lib/gcc/x86_64-pc-linux-gnu/6.3.0/include/")
-include_directories("${CMAKE_SOURCE_DIR}/build")
+
+# Fix for rootcling not able to find omp.h. We cannot include the entire include
+# directory of the compiler (where omp.h is in), because rootcling starts using
+# the intrinsics found in there. Therefore we do a local copy into the build dir.
+execute_process(COMMAND ${CMAKE_CXX_COMPILER} --print-file-name=include/omp.h \ 
+  OUTPUT_VARIABLE OMP_HEADER_PATH)
+# above command returns path with "\n" appended
+string(REGEX REPLACE "\n$" "" OMP_HEADER_PATH "${OMP_HEADER_PATH}")
+execute_process(COMMAND mkdir -p ${CMAKE_SOURCE_DIR}/build/omp)
+execute_process(COMMAND cp ${OMP_HEADER_PATH} ${CMAKE_SOURCE_DIR}/build/omp)
+include_directories("${CMAKE_SOURCE_DIR}/build/omp")
 
 # build libbiodynamo
 file(GLOB_RECURSE HEADERS "${CMAKE_SOURCE_DIR}/src/*.h")
@@ -272,10 +276,4 @@ bdm_add_executable(cell_division_module
 bdm_add_executable(diffusion_module
                    SOURCES demo/diffusion_module.cc
                    HEADERS demo/diffusion_module.h
-                   LIBRARIES biodynamo)
-
-# --------------------- build gene_regulation executable ------------------
-bdm_add_executable(gene_regulation
-                   SOURCES demo/gene_regulation.cc
-                   HEADERS demo/gene_regulation.h
                    LIBRARIES biodynamo)
