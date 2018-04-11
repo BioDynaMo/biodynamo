@@ -67,16 +67,16 @@ BDM_ENVIRONMENT_FILE=/opt/biodynamo/biodynamo_dev.env
 
 if [ "$TRAVIS_OS_NAME" = "linux" ]; then
   # install ROOT
-  wget --progress=dot:giga -O root_v6.11.01_Linux-ubuntu14-x86_64-gcc5.4_263508429d.tar.gz "https://cernbox.cern.ch/index.php/s/BbFptgxo2K565IS/download?path=%2F&files=root_v6.11.01_Linux-ubuntu14-x86_64-gcc5.4_263508429d.tar.gz"
+  wget --progress=dot:giga -O root_v6.11.01_Linux-ubuntu14-x86_64-gcc5.4_263508429d.tar.gz "https://cernbox.cern.ch/index.php/s/1ekMudArMqFhcXt/download?path=%2F&files=root_v6.11.01_Linux-ubuntu14-x86_64-gcc5.4_263508429d.tar.gz"
   sudo tar zxf "root_v6.11.01_Linux-ubuntu14-x86_64-gcc5.4_263508429d.tar.gz" -C $THIRD_PARTY_DIR
 
   # install qt
-  wget -O Qt5.9.1_ubuntu16_gcc5.4.tar.gz "https://cernbox.cern.ch/index.php/s/BbFptgxo2K565IS/download?path=%2F&files=Qt5.9.1_ubuntu16_gcc5.4.tar.gz"
+  wget -O Qt5.9.1_ubuntu16_gcc5.4.tar.gz "https://cernbox.cern.ch/index.php/s/1ekMudArMqFhcXt/download?path=%2F&files=Qt5.9.1_ubuntu16_gcc5.4.tar.gz"
   sudo mkdir -p $THIRD_PARTY_DIR/qt
   sudo tar -xzf Qt5.9.1_ubuntu16_gcc5.4.tar.gz -C $THIRD_PARTY_DIR/qt
 
   # install paraview
-  wget -O paraview-5.4_ubuntu14_gcc5.4_openmpi.tar.gz "https://cernbox.cern.ch/index.php/s/BbFptgxo2K565IS/download?path=%2F&files=paraview-5.4_ubuntu14_gcc5.4_openmpi.tar.gz"
+  wget -O paraview-5.4_ubuntu14_gcc5.4_openmpi.tar.gz "https://cernbox.cern.ch/index.php/s/1ekMudArMqFhcXt/download?path=%2F&files=paraview-5.4_ubuntu14_gcc5.4_openmpi.tar.gz"
   sudo mkdir -p $THIRD_PARTY_DIR/paraview
   sudo tar -xzf paraview-5.4_ubuntu14_gcc5.4_openmpi.tar.gz -C $THIRD_PARTY_DIR/paraview
 
@@ -84,7 +84,7 @@ if [ "$TRAVIS_OS_NAME" = "linux" ]; then
   sudo cp $BDM_DIR/cmake/biodynamo_linux_dev.env $BDM_ENVIRONMENT_FILE
 else
   # install ROOT
-  wget --progress=dot:giga -O root_v6.11.01_macos64_LLVM-Clang-5.0_263508429d.tar.gz "https://cernbox.cern.ch/index.php/s/BbFptgxo2K565IS/download?path=%2F&files=root_v6.11.01_macos64_LLVM-Clang-5.0_263508429d.tar.gz"
+  wget --progress=dot:giga -O root_v6.11.01_macos64_LLVM-Clang-5.0_263508429d.tar.gz "https://cernbox.cern.ch/index.php/s/1ekMudArMqFhcXt/download?path=%2F&files=root_v6.11.01_macos64_LLVM-Clang-5.0_263508429d.tar.gz"
   sudo sudo tar zxf "root_v6.11.01_macos64_LLVM-Clang-5.0_263508429d.tar.gz" -C $THIRD_PARTY_DIR
 
   # install qt and python3
@@ -92,7 +92,7 @@ else
   brew upgrade python3
 
   # install paraview
-  wget -O paraview-5.4_macos64_llvm-5.0.tar.gz "https://cernbox.cern.ch/index.php/s/BbFptgxo2K565IS/download?path=%2F&files=paraview-5.4_macos64_llvm-5.0.tar.gz"
+  wget -O paraview-5.4_macos64_llvm-5.0.tar.gz "https://cernbox.cern.ch/index.php/s/1ekMudArMqFhcXt/download?path=%2F&files=paraview-5.4_macos64_llvm-5.0.tar.gz"
   sudo mkdir -p $THIRD_PARTY_DIR/paraview
   sudo tar -xzf paraview-5.4_macos64_llvm-5.0.tar.gz -C $THIRD_PARTY_DIR/paraview
 

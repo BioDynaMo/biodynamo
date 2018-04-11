@@ -42,7 +42,7 @@ function Install {
   sudo cp -f $LLVMDIR/lib/clang/$OMP_V/include/omp.h /usr/local/Cellar/biodynamo
 
   # install ROOT
-  wget --progress=dot:giga -O root_v6.11.01_macos64_LLVM-Clang-5.0_263508429d.tar.gz "https://cernbox.cern.ch/index.php/s/BbFptgxo2K565IS/download?path=%2F&files=root_v6.11.01_macos64_LLVM-Clang-5.0_263508429d.tar.gz"
+  wget --progress=dot:giga -O root_v6.11.01_macos64_LLVM-Clang-5.0_263508429d.tar.gz "https://cernbox.cern.ch/index.php/s/1ekMudArMqFhcXt/download?path=%2F&files=root_v6.11.01_macos64_LLVM-Clang-5.0_263508429d.tar.gz"
   sudo tar -xzf root_v6.11.01_macos64_LLVM-Clang-5.0_263508429d.tar.gz -C $THIRD_PARTY_DIR
 
   # copy environment script
@@ -54,7 +54,7 @@ function Install {
   sudo cp $SCRIPTPATH/../cmake/biodynamo_macos_dev.env $BDM_ENVIRONMENT_FILE
 
   # install ParaView
-  wget -O paraview-5.4_macos64_llvm-5.0.tar.gz "https://cernbox.cern.ch/index.php/s/BbFptgxo2K565IS/download?path=%2F&files=paraview-5.4_macos64_llvm-5.0.tar.gz"
+  wget -O paraview-5.4_macos64_llvm-5.0.tar.gz "https://cernbox.cern.ch/index.php/s/1ekMudArMqFhcXt/download?path=%2F&files=paraview-5.4_macos64_llvm-5.0.tar.gz"
   sudo mkdir -p $THIRD_PARTY_DIR/paraview
   sudo tar -xzf paraview-5.4_macos64_llvm-5.0.tar.gz -C $THIRD_PARTY_DIR/paraview
 
