@@ -303,11 +303,11 @@ class CatalystAdaptor {
       for (auto& vd : Param::visualize_diffusion_) {
         auto dg = rm->GetDiffusionGrid(vd.name_);
         if (dg == nullptr) {
-          std::string msg = "The substance with the name " + vd.name_ +
-                            " was not found in the list of defined substances. "
-                            "Did you spell the name correctly during "
-                            "configuration?";
-          Warning("Visualize Diffusion", "%s", msg.c_str());
+          Log::Warning("Visualize Diffusion", "The substance with the name ",
+                       vd.name_,
+                       " was not found in the list of defined substances. "
+                       "Did you spell the name correctly during "
+                       "configuration?");
           continue;
         }
         data_description->AddInput(dg->GetSubstanceName().c_str());
