@@ -46,7 +46,7 @@ static void FindGpuDevicesCuda() {
     cudaSetDevice(i);
     cudaDeviceProp prop;
     cudaGetDeviceProperties(&prop, i);
-    std::cout << "  [" << (i + 1) << "] " << prop.name << std::endl;
+    std::cout << "  [" << i << "] " << prop.name << std::endl;
   }
 
   cudaSetDevice(Param::preferred_gpu_);
