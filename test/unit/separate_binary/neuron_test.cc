@@ -48,6 +48,76 @@ TEST(NeuronTest, Soa) {
   typename CompileTimeParam<>::TNeuron soan1;
 }
 
+
+struct UpdateReferencesNeuron : SpecializedNeuron {
+  void AddDaughters() {
+    using SoPtr = typename SpecializedNeuron::template ToSoPtr<SpecializedNeurite>;
+    daughters_[SpecializedNeuron::kIdx].push_back(SoPtr());
+    daughters_[SpecializedNeuron::kIdx].push_back(SoPtr());
+    daughters_[SpecializedNeuron::kIdx].push_back(SoPtr());
+    daughters_[SpecializedNeuron::kIdx][0].SetElementIdx(9);
+    daughters_[SpecializedNeuron::kIdx][1].SetElementIdx(7);
+    daughters_[SpecializedNeuron::kIdx][2].SetElementIdx(5);
+  }
+};
+
+TEST(NeuronTest, UpdateReferences) {
+  UpdateReferencesNeuron neuron;
+  neuron.AddDaughters();
+
+  std::vector<std::unordered_map<uint32_t, uint32_t>> updates = {{}, {{9, 3}, {5, 1}}};
+
+  neuron.UpdateReferences(updates);
+
+  const auto& daughters = neuron.GetDaughters();
+  ASSERT_EQ(3, daughters.size());
+  EXPECT_EQ(3, daughters[0].GetElementIdx());
+  EXPECT_EQ(7, daughters[1].GetElementIdx());
+  EXPECT_EQ(1, daughters[2].GetElementIdx());
+}
+
+/// Test that the references of mother, daughter_left_ and daughter_right_
+/// are updated correctly
+TEST(NeuriteTest, UpdateReferences) {
+  SpecializedNeurite neurite;
+
+  auto dl = neurite.GetDaughterLeft();
+  dl.SetElementIdx(12);
+  neurite.SetDaughterLeft(dl);
+
+  auto dr = neurite.GetDaughterRight();
+  dr.SetElementIdx(24);
+  neurite.SetDaughterRight(dr);
+
+  auto mother = neurite.GetMother();
+  mother.GetNeuronSoPtr().SetElementIdx(89);
+  neurite.SetMother(mother);
+
+  std::vector<std::unordered_map<uint32_t, uint32_t>> updates;
+  updates.push_back({{89, 56}});
+  updates.push_back({{12, 1}, {24, 2}, {36, 3}});
+
+  neurite.UpdateReferences(updates);
+
+  EXPECT_EQ(1, neurite.GetDaughterLeft().GetElementIdx());
+  EXPECT_EQ(2, neurite.GetDaughterRight().GetElementIdx());
+  EXPECT_EQ(56, neurite.GetMother().GetNeuronSoPtr().GetElementIdx());
+  EXPECT_EQ(neurite.GetMother().GetNeuriteSoPtr(), nullptr);
+
+  // also test if mother is neurite
+  //   reset mother
+  mother.GetNeuronSoPtr() = nullptr;
+  mother.GetNeuriteSoPtr().SetElementIdx(36);
+  neurite.SetMother(mother);
+
+  neurite.UpdateReferences(updates);
+
+  EXPECT_EQ(1, neurite.GetDaughterLeft().GetElementIdx());
+  EXPECT_EQ(2, neurite.GetDaughterRight().GetElementIdx());
+  EXPECT_EQ(3, neurite.GetMother().GetNeuriteSoPtr().GetElementIdx());
+  EXPECT_EQ(neurite.GetMother().GetNeuronSoPtr(), nullptr);
+}
+
 TEST(NeuronTest, ExtendNewNeuriteSphericalCoordinates) {
   auto* rm = Rm();
   Rm()->Clear();

@@ -32,6 +32,20 @@ BDM_SIM_OBJECT(Neuron, bdm::Cell) {
 
   NeuronExt(const std::array<double, 3>& position) : Base(position) {}
 
+  /// Update references of simulation objects that changed its memory position.
+  /// @param update_info vector index = type_id, map stores (old_index -> new_index)
+  void UpdateReferences(const std::vector<std::unordered_map<uint32_t, uint32_t>>& update_info) {
+    // Neuron only stores TNeurites
+    using TRm = std::remove_pointer_t<decltype(Rm())>;
+    constexpr int neurite_type_idx = TRm::template GetTypeIndex<TNeurite>();
+    const auto& neurite_updates = update_info[neurite_type_idx];
+    for (auto& daugther : daughters_[kIdx]) {
+      // `this` required, because declaration in dependent base are not found
+      // by unqualified look-up.
+      this->UpdateReference(&daugther, neurite_updates);
+    }
+  }
+
   // *************************************************************************************
   //      METHODS FOR NEURON TREE STRUCTURE *
   // *************************************************************************************
@@ -64,7 +78,7 @@ BDM_SIM_OBJECT(Neuron, bdm::Cell) {
     return daughters_[kIdx];
   }
 
- private:
+ protected:
   // vec<SoPointer<typename ToBackend<TNeurite, SimBackend>::type, SimBackend>>
   // daughters_;
   // vec<SoPointer<ToBackend<TNeurite, SimBackend>, SimBackend>> daughters_;

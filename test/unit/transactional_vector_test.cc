@@ -91,9 +91,12 @@ TEST(TransactionalVectorTest, DelayedRemove) {
 
   EXPECT_EQ(10u, vector.size());
 
-  vector.Commit();
+  auto updated_indices = vector.Commit();
 
   EXPECT_EQ(7u, vector.size());
+  ASSERT_EQ(2u, updated_indices.size());
+  EXPECT_EQ(5, updated_indices[9]);
+  EXPECT_EQ(3, updated_indices[7]);
 
   EXPECT_EQ(0, vector[0]);
   EXPECT_EQ(1, vector[1]);

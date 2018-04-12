@@ -5,6 +5,7 @@
 #include <cassert>
 #include <exception>
 #include <mutex>
+#include <unordered_map>
 #include <vector>
 
 namespace bdm {
@@ -21,6 +22,36 @@ class TransactionalVector {
   using iterator = typename std::vector<T>::iterator;
   using const_iterator = typename std::vector<T>::const_iterator;
   using value_type = T;
+
+  /// If elements are reordered, SoHandle and SoPointer need to be updated to
+  /// point to the new memory location. Elements can be reordered several
+  /// times during one operation (e.g. `DelayedRemove`): 9 -> 8 and 8 -> 5.
+  /// This method shortens the path to the direct route from 9 -> 5.
+  /// @param all_updates vector of pairs (old index, new index). \n
+  ///        The pair stores (old index, new index).
+  static void ShortcutUpdatedIndices(std::unordered_map<uint32_t, uint32_t>* all_updates) {
+    std::vector<uint32_t> delete_keys;
+    for (auto it = all_updates->begin(); it != all_updates->end(); ++it) {
+      uint32_t intermediate = it->second;
+
+      while (true) {
+        auto search = all_updates->find(intermediate);
+        if(search != all_updates->end()) {
+          intermediate = search->second;
+          delete_keys.push_back(search->first);
+        } else {
+          break;
+        }
+      }
+      // intermediate contains the final new index
+      (*all_updates)[it->first] = intermediate;
+    }
+
+    // delete all intermediate entries
+    for (auto key : delete_keys) {
+      all_updates->erase(all_updates->find(key));
+    }
+  }
 
   TransactionalVector() {}
 
@@ -61,8 +92,9 @@ class TransactionalVector {
   /// removed is not the last element it is swapped with the last one.
   /// (CAUTION: this invalidates pointers and references to the last element)
   /// In the next step it can be removed in constant time using pop_back. \n
-  void Commit() {
+  std::unordered_map<uint32_t, uint32_t> Commit() {
     std::lock_guard<std::recursive_mutex> lock(mutex_);
+    std::unordered_map<uint32_t, uint32_t> updated_indices;
     // commit delayed push backs
     size_ = data_.size();
     // commit delayed removes
@@ -71,16 +103,22 @@ class TransactionalVector {
     std::sort(to_be_removed_.begin(), to_be_removed_.end(), descending);
     for (size_t idx : to_be_removed_) {
       assert(idx < data_.size() && "Removed index outside array boundaries");
-      if (idx < data_.size() - 1) { // idx points to last element
+      if (idx < data_.size() - 1) { // idx does not point to last element
         // invalidates pointer of last element
-        std::swap(data_[idx], data_[data_.size() - 1]);
+        uint32_t old_index = data_.size() - 1;
+        std::swap(data_[idx], data_[old_index]);
         data_.pop_back();
-      } else {  // idx does not point to last element
+        updated_indices[old_index] = idx;
+      } else {  // idx points to last element
         data_.pop_back();
       }
       size_--;
     }
     to_be_removed_.clear();
+
+    ShortcutUpdatedIndices(&updated_indices);
+
+    return updated_indices;
   }
 
   /// Thread safe version of `std::vector::push_back`.

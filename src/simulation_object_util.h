@@ -483,9 +483,22 @@ class SoPointer {
   /// constructs an SoPointer object representing a nullptr
   SoPointer() {}
 
+  uint32_t GetElementIdx() const { return element_idx_; }
+  void SetElementIdx(uint32_t element_idx) { element_idx_ = element_idx; }
+
   /// TODO change to operator `so_ptr == nullptr` or `so_ptr != nullptr`
   bool IsNullPtr() const {
     return element_idx_ == std::numeric_limits<uint64_t>::max();
+  }
+
+  /// Equals operator that enables the following statement `so_ptr == nullptr;`
+  bool operator==(std::nullptr_t) const {
+    return element_idx_ == std::numeric_limits<uint64_t>::max();
+  }
+
+  /// Not equal operator that enables the following statement `so_ptr != nullptr;`
+  bool operator!=(std::nullptr_t) const {
+    return ! this->operator==(nullptr);
   }
 
   bool operator==(const SoPointer<TSoSimBackend, TBackend>& other) const {

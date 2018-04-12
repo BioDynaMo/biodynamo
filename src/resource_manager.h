@@ -31,6 +31,7 @@ class SoHandle {
       : type_idx_(type_idx), element_idx_(element_idx) {}
   uint16_t GetTypeIdx() const { return type_idx_; }
   uint32_t GetElementIdx() const { return element_idx_; }
+  void SetElementIdx(uint32_t element_idx) { element_idx_ = element_idx_; }
 
   bool operator==(const SoHandle& other) const {
     return type_idx_ == other.type_idx_ && element_idx_ == other.element_idx_;
@@ -54,6 +55,9 @@ class SoHandle {
   }
 
  private:
+  // TODO(lukas) add using TypeIdx_t = uint16_t and
+  // using ElementIdx_t = uint32_t
+
   uint16_t type_idx_;
   /// changed element index to uint32_t after issues with std::atomic with
   /// size 16 -> max element_idx: 4.294.967.296
@@ -219,6 +223,21 @@ class ResourceManager {
   ///                        });
   template <typename TFunction>
   void ApplyOnAllTypes(TFunction&& function) {
+    // runtime dispatch - TODO(lukas) replace with c++17 std::apply
+    for (uint16_t i = 0; i < std::tuple_size<decltype(data_)>::value; i++) {
+      ::bdm::Apply(&data_, i, [&](auto* container) { function(container, i); });
+    }
+  }
+
+  /// Apply a function on all container types. Function invocations are
+  /// parallelized
+  /// @param function that will be called with each container as a parameter
+  ///
+  ///     rm->ApplyOnAllTypes([](auto* container, uint16_t type_idx) {
+  ///                          std::cout << container->size() << std::endl;
+  ///                        });
+  template <typename TFunction>
+  void ApplyOnAllTypesParallel(TFunction&& function) {
     // runtime dispatch - TODO(lukas) replace with c++17 std::apply
     for (uint16_t i = 0; i < std::tuple_size<decltype(data_)>::value; i++) {
       ::bdm::Apply(&data_, i, [&](auto* container) { function(container, i); });

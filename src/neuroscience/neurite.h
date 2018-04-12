@@ -59,13 +59,17 @@ public:
     neurite_ptr_ = soptr;
   }
 
-  TNeuronSoPtr GetNeuronSoPtr() const {
+  const TNeuronSoPtr& GetNeuronSoPtr() const {
     return neuron_ptr_;
   }
 
-  TNeuriteSoPtr GetNeuriteSoPtr() const {
+  const TNeuriteSoPtr& GetNeuriteSoPtr() const {
     return neurite_ptr_;
   }
+
+  TNeuronSoPtr& GetNeuronSoPtr() { return neuron_ptr_; }
+
+  TNeuriteSoPtr& GetNeuriteSoPtr() { return neurite_ptr_; }
 
   const std::array<double, 3> GetPosition() const {
     if (IsNeurite()) {
@@ -186,8 +190,6 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
   ToSoPtr<TNeuron> aa_;
 
  public:
-   NeuriteExt() {}
-
    /// Returns the data members that are required to visualize this simulation
    /// object.
    static std::set<std::string> GetRequiredVisDataMembers() {
@@ -195,6 +197,27 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
    }
 
    static constexpr Shape GetShape() { return kCylinder; }
+
+   NeuriteExt() {}
+
+  /// Update references of simulation objects that changed its memory position.
+  /// @param update_info vector index = type_id, map stores (old_index -> new_index)
+  void UpdateReferences(const std::vector<std::unordered_map<uint32_t, uint32_t>>& update_info) {
+   using TRm = std::remove_pointer_t<decltype(Rm())>;
+
+   constexpr int neurite_type_idx = TRm::template GetTypeIndex<MostDerived>();
+   const auto& neurite_updates = update_info[neurite_type_idx];
+
+    this->UpdateReference(&daughter_right_[kIdx], neurite_updates);
+    this->UpdateReference(&daughter_left_[kIdx], neurite_updates);
+    if (mother_[kIdx].IsNeurite()) {
+      this->UpdateReference(&(mother_[kIdx].GetNeuriteSoPtr()), neurite_updates);
+    } else if (mother_[kIdx].IsNeuron()) {
+      constexpr int neuron_type_idx = TRm::template GetTypeIndex<TNeuron>();
+      const auto& neuron_updates = update_info[neuron_type_idx];
+      this->UpdateReference(&(mother_[kIdx].GetNeuronSoPtr()), neuron_updates);
+    }
+  }
 
    void SetDiameter(double diameter) {
      diameter_[kIdx] = diameter;

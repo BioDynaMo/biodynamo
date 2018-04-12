@@ -5,8 +5,7 @@
 #include <string>
 
 #include "biology_module_op.h"
-// TODO(lukas) remove once backup and visualization are multicell enabled
-#include "cell.h"
+#include "commit_op.h"
 #include "diffusion_op.h"
 #include "displacement_op.h"
 #include "op_timer.h"
@@ -115,9 +114,6 @@ class Scheduler {
   /// This design makes testing more convenient
   virtual void Execute() {
     auto rm = TResourceManager::Get();
-    static const auto commit = [](auto* sim_objects, uint16_t type_idx) {
-      sim_objects->Commit();
-    };
     assert(rm->GetNumSimObjects() > 0 &&
            "This simulation does not contain any simulation objects.");
 
@@ -142,7 +138,15 @@ class Scheduler {
     } else if (Param::bound_space_) {
       rm->ApplyOnAllTypes(bound_space_);
     }
-    rm->ApplyOnAllTypes(commit);
+    rm->ApplyOnAllTypesParallel(commit_);
+    const auto& update_info = commit_->GetUpdateInfo();
+    auto update_references = [&update_info](auto* sim_objects, uint16_t type_idx) {
+      #pragma omp parallel for
+      for (uint64_t i = 0; i < sim_objects->size(); i++) {
+        (*sim_objects)[i].UpdateReferences(update_info);
+      }
+    };
+    rm->ApplyOnAllTypes(update_references);
   }
 
  private:
@@ -152,6 +156,7 @@ class Scheduler {
   std::chrono::time_point<Clock> last_backup_ = Clock::now();
   CatalystAdaptor<>* visualization_ = nullptr;
 
+  OpTimer<CommitOp<>> commit_ = OpTimer<CommitOp<>>("commit");
   OpTimer<DiffusionOp<>> diffusion_ = OpTimer<DiffusionOp<>>("diffusion");
   OpTimer<BiologyModuleOp> biology_ = OpTimer<BiologyModuleOp>("biology");
   OpTimer<DisplacementOp<>> physics_with_bound_ =

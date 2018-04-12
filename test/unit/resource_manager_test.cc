@@ -336,7 +336,7 @@ TEST(ResourceManagerTest, NewAos) {
   RunNewTest<Scalar, SoaA, SoaB>();
 }
 
-TEST(SoHandle, EqualsOperator) {
+TEST(SoHandleTest, EqualsOperator) {
   EXPECT_EQ(SoHandle(0, 0), SoHandle(0, 0));
   EXPECT_EQ(SoHandle(1, 0), SoHandle(1, 0));
   EXPECT_EQ(SoHandle(0, 1), SoHandle(0, 1));

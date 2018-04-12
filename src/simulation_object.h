@@ -7,6 +7,7 @@
 #include <sstream>
 #include <string>
 #include <type_traits>
+#include <unordered_map>
 #include <vector>
 
 #include <TError.h>
@@ -119,8 +120,9 @@ class SoaSimulationObject {
   /// removed is not the last element it is swapped with the last one.
   /// (CAUTION: this invalidates pointers and references to the last element)
   /// In the next step it can be removed in constant time using pop_back. \n
-  void Commit() {
+  std::unordered_map<uint32_t, uint32_t> Commit() {
     std::lock_guard<std::recursive_mutex> lock(mutex_);
+    std::unordered_map<uint32_t, uint32_t> updated_indices;
     // commit delayed push backs
     size_ = total_size_;
     // commit delayed removes
@@ -131,13 +133,19 @@ class SoaSimulationObject {
       assert(idx < size_ && "Removed index outside array boundaries");
       if (idx < size_ - 1) {
         SwapAndPopBack(idx, size_);
+        updated_indices[size_ - 1] = idx;
       } else {
         PopBack();
       }
       size_--;
     }
     to_be_removed_.clear();
+
+    // use implementation from TransactionalVector to avoid code duplication
+    TransactionalVector<int>::ShortcutUpdatedIndices(&updated_indices);
+
     total_size_ = size_;
+    return updated_indices;
   }
 
   /// Equivalent to std::vector<> reserve - it increases the capacity
@@ -275,6 +283,26 @@ class SimulationObject
   using Self =
       SimulationObject<typename TCompileTimeParam::template Self<TTBackend>,
                        TDerived>;
+
+  /// Empty default implementation to update references of simulation objects
+  /// that changed its memory position.
+  /// @param update_info vector index = type_id, map stores (old_index -> new_index)
+  void UpdateReferences(const std::vector<std::unordered_map<uint32_t, uint32_t>>& update_info) {}
+
+  /// Implementation to update a single reference if `reference.GetElementIdx()`
+  /// is a key in `updates`.
+  /// @tparam TReference type of the reference. Must have a `GetElementIdx` and
+  ///         `SetElementIdx` method.
+  /// @param reference reference whos `element_idx` will be updated
+  /// @param updates map that contains the update information
+  ///        (old_index -> new_index) for a specific simulation object type
+  template <typename TReference>
+  void UpdateReference(TReference* reference, const std::unordered_map<uint32_t, uint32_t>& updates) {
+    auto search = updates.find(reference->GetElementIdx());
+    if(search != updates.end()) {
+      reference->SetElementIdx(search->second);
+    }
+  }
 
   Self<Backend> &operator=(const Self<Scalar> &) { return *this; }
 
