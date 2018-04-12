@@ -461,6 +461,14 @@ struct Capsule;
   }                                                                            \
                                                                                \
  private:                                                                      \
+ \
+ /** Cast `this` to the most derived type */ \
+ /** Can be used to call the method of the subclass without virtual functions */\
+ /** e.g. `ThisMD()->Method()` */\
+ /** (CRTP - static polymorphism) */ \
+ MostDerived* ThisMD() { return static_cast<MostDerived*>(this); } \
+ const MostDerived* ThisMD() const { return static_cast<MostDerived*>(this); } \
+\
   BDM_ROOT_CLASS_DEF_OVERRIDE(class_name, class_version_id)
 
 /// Simulation object pointer. Required to point into simulation objects with

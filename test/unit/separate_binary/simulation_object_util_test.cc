@@ -504,6 +504,41 @@ TEST(SimulationObjectUtilTest, ToSoa) {
   EXPECT_EQ(typeid(SoaNeuron), typeid(ToSoa<Neuron>));
 }
 
+BDM_SIM_OBJECT(TestThisMD, SimulationObject) {
+  BDM_SIM_OBJECT_HEADER(TestThisMDExt, 0, foo_);
+
+ public:
+   TestThisMDExt() {}
+
+  int AnotherFunction() {
+    return 123;
+  }
+
+  int SomeFunction() {
+    return ThisMD()->AnotherFunction();
+  }
+
+  vec<int> foo_;
+};
+
+BDM_SIM_OBJECT(TestThisMDSubclass, TestThisMD) {
+  BDM_SIM_OBJECT_HEADER(TestThisMDSubclassExt, 0, foo_);
+
+ public:
+   TestThisMDSubclassExt() {}
+
+  int AnotherFunction() {
+    return 321;
+  }
+
+  vec<int> foo_;
+};
+
+TEST(SimulationObjectUtilTest, ThisMD) {
+  TestThisMDSubclass t;
+  EXPECT_EQ(321, t.SomeFunction());
+}
+
 // }  // namespace simulation_object_util_test_internal
 }  // namespace bdm
 
