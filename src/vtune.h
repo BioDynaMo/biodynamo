@@ -15,7 +15,7 @@
 #define BDM_VTUNE_LOG_WARNING()                                          \
   static bool warning_logged = false;                                    \
   if (!warning_logged) {                                                 \
-    Log::Warning(                                                        \
+    bdm::Log::Warning(                                                   \
         "Vtune",                                                         \
         "Vtune was not found on your system. Call to %s won't have any " \
         "effect",                                                        \

@@ -10,41 +10,20 @@
 
 namespace bdm {
 
-/// @brief Logging levels enumerator
-///
-/// Uses existing ROOT values, defined in TError.h header file
-///
-enum class LoggingLevel : Int_t {
-  kUnset = ::kUnset,
-  kDebug = ::kPrint,
-  kInfo = ::kInfo,
-  kWarning = ::kWarning,
-  kError = ::kError,
-  kBreak = ::kBreak,
-  kSysError = ::kSysError,
-  kFatal = ::kFatal
-};
-
 /// @brief Wrapper class over ROOT logging module
 ///
 class Log {
  public:
-  /// Logger will discard messages which belong to logging levels lower that the
-  /// \p level argument. Only exception is Logger::Print method that will print
-  /// every message, regardless of the \p level.
-  static void SetLoggingLevel(LoggingLevel level) { gErrorIgnoreLevel = (Int_t) level; }
-
   /// @brief Prints debug message
   ///
   /// @param[in]  parts   objects that compose the entire message
   ///
   template <typename... Args>
   inline void Debug(const std::string& location, const Args&... parts) {
-    if (gErrorIgnoreLevel <= (Int_t) LoggingLevel::kDebug) {
+    if (gErrorIgnoreLevel <= kPrint) {
       std::string message = ConstructMessage(parts...);
       // Emulate ROOT logging message
-      fprintf(stderr, "Debug in <%s>: %s\n", location.c_str(),
-              message.c_str());
+      fprintf(stderr, "Debug in <%s>: %s\n", location.c_str(), message.c_str());
     }
   }
 
@@ -148,7 +127,7 @@ class Log {
   ///
   template <typename T, typename... Args>
   static void ConcatNextPart(std::ostringstream* ss, const T& arg,
-                      const Args&... parts) {
+                             const Args&... parts) {
     *ss << arg;
     ConcatNextPart(ss, parts...);
   }
