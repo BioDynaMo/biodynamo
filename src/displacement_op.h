@@ -2,12 +2,8 @@
 #define DISPLACEMENT_OP_H_
 
 #include "displacement_op_cpu.h"
-#ifdef USE_CUDA
 #include "displacement_op_cuda.h"
-#endif
-#ifdef USE_OPENCL
 #include "displacement_op_opencl.h"
-#endif
 #include "grid.h"
 #include "param.h"
 
@@ -41,16 +37,12 @@ class DisplacementOp {
   template <typename TContainer>
   void operator()(TContainer* cells, uint16_t type_idx) {
     if (Param::use_gpu_) {
-#ifdef USE_OPENCL
       if (Param::use_opencl_) {
         opencl_(cells, type_idx);
       }
-#endif
-#ifdef USE_CUDA
       else {
         cuda_(cells, type_idx);
       }
-#endif
     } else {
       cpu_(cells, type_idx);
     }
@@ -58,12 +50,8 @@ class DisplacementOp {
 
  private:
   DisplacementOpCpu<TGrid> cpu_;
-#ifdef USE_CUDA
   DisplacementOpCuda<TGrid> cuda_;
-#endif
-#ifdef USE_OPENCL
   DisplacementOpOpenCL<TGrid> opencl_;
-#endif
 };
 
 /// Keeps the simulation objects contained within the bounds as defined in
