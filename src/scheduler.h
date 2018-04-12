@@ -170,13 +170,7 @@ class Scheduler {
     }
     rm->ApplyOnAllTypes(diffusion_);
     rm->ApplyOnAllTypes(biology_);
-    if (Param::use_gpu_) {
-      rm->ApplyOnAllTypes(physics_);
-    } else if (Param::run_mechanical_interactions_) {
-      rm->ApplyOnAllTypes(physics_with_bound_);
-    } else if (Param::bound_space_) {
-      rm->ApplyOnAllTypes(bound_space_);
-    }
+    rm->ApplyOnAllTypes(physics_);  // Bounding box applied at the end
     rm->ApplyOnAllTypes(commit);
   }
 
@@ -190,8 +184,6 @@ class Scheduler {
   OpTimer<DiffusionOp<>> diffusion_ = OpTimer<DiffusionOp<>>("diffusion");
   OpTimer<BiologyModuleOp> biology_ = OpTimer<BiologyModuleOp>("biology");
   OpTimer<DisplacementOp<>> physics_ = OpTimer<DisplacementOp<>>("physics");
-  OpTimer<DisplacementOp<>> physics_with_bound_ =
-      OpTimer<DisplacementOp<>>("physics");
   OpTimer<BoundSpace> bound_space_ = OpTimer<BoundSpace>("bound_space");
 
   TGrid* grid_;
