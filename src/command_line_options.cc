@@ -1,4 +1,5 @@
 #include "command_line_options.h"
+#include <TError.h>
 #include <stdlib.h>
 #include <iostream>
 #include <sstream>
@@ -33,7 +34,7 @@ CommandLineOptions DefaultSimulationOptionParser(
 
   const char* simulation_usage = simulation_usage_stream.str().c_str();
 
-  const char* verbosity_usage =
+  const char* verbose_usage =
       "-v, --verbose\n"
       "    Verbose mode. Causes BioDynaMo to print debugging messages.\n"
       "    Multiple -v options increases the verbosity. The maximum is 3.\n";
@@ -63,7 +64,7 @@ CommandLineOptions DefaultSimulationOptionParser(
         kNoType,
         "v", "",
         ROOT::option::Arg::None,
-        verbosity_usage
+        verbose_usage
       },
 
       {
@@ -112,25 +113,28 @@ CommandLineOptions DefaultSimulationOptionParser(
 
   CommandLineOptions cl_options;
 
-  LoggingLevel ll = LoggingLevel::kError;
+  Int_t ll = kError;
   if (options[kVerbose]) {
     int verbosity = options[kVerbose].count();
-    std::cout << verbosity << std::endl;
     switch (verbosity) {
       // case 0 can never occur; we wouldn't go into this if statement
       case 1:
-        ll = LoggingLevel::kWarning;
+        ll = kWarning;
         break;
       case 2:
-        ll = LoggingLevel::kInfo;
+        ll = kInfo;
         break;
       case 3:
-        ll = LoggingLevel::kDebug;
+        ll = kPrint;
+        break;
+      default:
+        ll = kPrint;
         break;
     }
   }
 
-  Log::SetLoggingLevel(ll);
+  // Global variable of ROOT that determines verbosity of logging functions
+  gErrorIgnoreLevel = ll;
 
   if (options[kRestoreFilename]) {
     cl_options.restore_file_ = options[kRestoreFilename].arg;
