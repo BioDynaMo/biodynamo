@@ -29,11 +29,10 @@ class DiffusionOp {
       // have changed. If the space is bound, we do not need to update the
       // dimensions, because these should not be changing anyway
       if (grid.HasGrown() && !Param::bound_space_) {
-        std::cout
-            << "Your simulation objects are getting near the edge of the "
-               "simulation space. Be aware of boundary conditions that may "
-               "come into play!"
-            << std::endl;
+        Log::Info("DiffusionOp",
+                  "Your simulation objects are getting near the edge of the "
+                  "simulation space. Be aware of boundary conditions that may "
+                  "come into play!");
         dg->Update(grid.GetDimensionThresholds());
       }
 

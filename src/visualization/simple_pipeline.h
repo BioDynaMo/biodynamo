@@ -1,9 +1,9 @@
 #ifndef VISUALIZATION_SIMPLE_PIPELINE_H_
 #define VISUALIZATION_SIMPLE_PIPELINE_H_ 1
 
-#include <TError.h>
 #include <map>
 #include <string>
+#include "log.h"
 
 #if defined(USE_CATALYST) && !defined(__ROOTCLING__)
 #include <vtkCPDataDescription.h>
@@ -130,8 +130,9 @@ class vtkCPVTKPipeline : public vtkCPPipeline {
       } else if (vtk_object->IsA("vtkImageData")) {
         real_producer->SetOutput(vtkImageData::SafeDownCast(vtk_object));
       } else {
-        std::cout << "Object of type " << vtk_object->GetClassName()
-                  << " is not supported for visualization" << std::endl;
+        Log::Warning("vtkCPVTKPipeline", "Object of type ",
+                     vtk_object->GetClassName(),
+                     " is not supported for visualization");
       }
 
       // Record the producer for updates
@@ -252,32 +253,32 @@ class vtkCPDataDescription;
 class vtkCPVTKPipeline {
  public:
   void Initialize() {
-    Fatal("",
-          "Simulation was compiled without ParaView support, but you are "
-          "trying to use it.");
+    Log::Fatal("vtkCPVTKPipeline::Initialize",
+               "Simulation was compiled without ParaView support, but you are "
+               "trying to use it.");
   }
   int RequestDataDescription(vtkCPDataDescription* data_description) {
-    Fatal("",
-          "Simulation was compiled without ParaView support, but you are "
-          "trying to use it.");
+    Log::Fatal("vtkCPVTKPipeline::RequestDataDescription",
+               "Simulation was compiled without ParaView support, but you are "
+               "trying to use it.");
   }
 
   void CreatePipeline(vtkCPDataDescription* data_description) {
-    Fatal("",
-          "Simulation was compiled without ParaView support, but you are "
-          "trying to use it.");
+    Log::Fatal("vtkCPVTKPipeline::CreatePipeline",
+               "Simulation was compiled without ParaView support, but you are "
+               "trying to use it.");
   }
 
   void DoLiveVisualization(vtkCPDataDescription* data_description) {
-    Fatal("",
-          "Simulation was compiled without ParaView support, but you are "
-          "trying to use it.");
+    Log::Fatal("vtkCPVTKPipeline::DoLiveVisualization",
+               "Simulation was compiled without ParaView support, but you are "
+               "trying to use it.");
   }
 
   int CoProcess(vtkCPDataDescription* data_description) {
-    Fatal("",
-          "Simulation was compiled without ParaView support, but you are "
-          "trying to use it.");
+    Log::Fatal("vtkCPVTKPipeline::CoProcess",
+               "Simulation was compiled without ParaView support, but you are "
+               "trying to use it.");
   }
 };
 

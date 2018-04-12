@@ -8,18 +8,19 @@
 #include <ittnotify.h>
 #else
 
-#include <TError.h>
+#include "log.h"
 
 /// This macro should be inserted in the function body of each wrapper.
 /// It emits a Warning the first time it is called.
-#define BDM_VTUNE_LOG_WARNING()                                              \
-  static bool warning_logged = false;                                        \
-  if (!warning_logged) {                                                     \
-    Warning("",                                                              \
-            "Vtune was not found on your system. Call to %s won't have any " \
-            "effect",                                                        \
-            __FUNCTION__);                                                   \
-    warning_logged = true;                                                   \
+#define BDM_VTUNE_LOG_WARNING()                                          \
+  static bool warning_logged = false;                                    \
+  if (!warning_logged) {                                                 \
+    Log::Warning(                                                        \
+        "Vtune",                                                         \
+        "Vtune was not found on your system. Call to %s won't have any " \
+        "effect",                                                        \
+        __FUNCTION__);                                                   \
+    warning_logged = true;                                               \
   }
 
 struct __itt_domain {};         // NOLINT

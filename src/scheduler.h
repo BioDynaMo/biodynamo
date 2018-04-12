@@ -13,6 +13,7 @@
 #include "resource_manager.h"
 #include "simulation_backup.h"
 
+#include "log.h"
 #include "param.h"
 #include "visualization/catalyst_adaptor.h"
 

@@ -1,10 +1,11 @@
 #ifndef BIOLOGY_MODULE_UTIL_H_
 #define BIOLOGY_MODULE_UTIL_H_
 
-#include <TError.h>
 #include <limits>
 #include <mutex>
 #include "variant.h"
+
+#include "log.h"
 
 namespace bdm {
 
@@ -41,9 +42,9 @@ class UniqueBmEventFactory {
     std::lock_guard<std::recursive_mutex> lock(mutex_);
     constexpr uint64_t kOne = 1;
     if (counter_ == 64) {
-      Fatal("UniqueBmEventFactory",
-            "BioDynaMo only supports 64 unique BmEvents."
-            " You requested a 65th one.");
+      Log::Fatal("UniqueBmEventFactory",
+                 "BioDynaMo only supports 64 unique BmEvents."
+                 " You requested a 65th one.");
     }
     return kOne << counter_++;
   }

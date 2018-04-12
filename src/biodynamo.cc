@@ -31,8 +31,9 @@ void InitializeBioDynamo(int argc, const char** argv) {
     auto config = cpptoml::parse_file(kConfigFileParentDir);
     Param::AssignFromConfig(config);
   } else {
-    Warning("InitializeBioDynamo",
-            "Config file %s not found in `.` or `../` directory.", kConfigFile);
+    Log::Warning("InitializeBioDynamo",
+                 "Config file %s not found in `.` or `../` directory.",
+                 kConfigFile);
   }
   if (options.backup_file_ != "") {
     Param::backup_file_ = options.backup_file_;

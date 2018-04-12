@@ -1,12 +1,12 @@
 #ifndef SIMULATION_BACKUP_H_
 #define SIMULATION_BACKUP_H_
 
-#include <TError.h>
 #include <sstream>
 #include <string>
 #include "resource_manager.h"
 
 #include "io_util.h"
+#include "log.h"
 
 namespace bdm {
 
@@ -25,8 +25,8 @@ class SimulationBackup {
   template <typename TResourceManager = ResourceManager<>>
   void Backup(size_t completed_simulation_steps) {
     if (!backup_) {
-      Fatal("SimulationBackup",
-            "Requested to backup data, but no backup file given.");
+      Log::Fatal("SimulationBackup",
+                 "Requested to backup data, but no backup file given.");
     }
 
     // create temporary file
@@ -55,8 +55,8 @@ class SimulationBackup {
   template <typename TResourceManager = ResourceManager<>>
   void Restore() {
     if (!restore_) {
-      Fatal("SimulationBackup",
-            "Requested to restore data, but no restore file given.");
+      Log::Fatal("SimulationBackup",
+                 "Requested to restore data, but no restore file given.");
     }
 
     TFileRaii file(TFile::Open(restore_file_.c_str()));
@@ -64,8 +64,8 @@ class SimulationBackup {
     file.Get()->GetObject(kRuntimeVariableName.c_str(), restored_rv);
     // check if runtime variables are the same
     if (!(RuntimeVariables() == *restored_rv)) {
-      Warning("SimulationBackup",
-              "Restoring simulation executed on a different system!");
+      Log::Warning("SimulationBackup",
+                   "Restoring simulation executed on a different system!");
     }
     TResourceManager* restored_rm = nullptr;
     file.Get()->GetObject(kResouceManagerName.c_str(), restored_rm);

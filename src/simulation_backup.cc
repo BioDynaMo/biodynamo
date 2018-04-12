@@ -8,17 +8,19 @@ SimulationBackup::SimulationBackup(const std::string& backup_file,
   backup_ = true;
   if (backup_file_ == "") {
     backup_ = false;
-    Warning("", "No backup file name given. No backups will be made!");
+    Log::Warning("SimulationBackup",
+                 "No backup file name given. No backups will be made!");
   } else if (backup_file_ == restore_file_) {
-    Warning("",
-            "Backup file is identical to restore file. Will be overriden after "
-            "restore.");
+    Log::Warning(
+        "SimulationBackup",
+        "Backup file is identical to restore file. Will be overriden after "
+        "restore.");
   }
 
   if (restore_file_ == "") {
     restore_ = false;
   } else if (!FileExists(restore_file_)) {
-    Fatal("", "Given restore file does not exist.");
+    Log::Fatal("SimulationBackup", "Given restore file does not exist.");
   }
 }
 
@@ -29,8 +31,8 @@ size_t SimulationBackup::GetSimulationStepsFromBackup() {
                              wrapper);
     return wrapper->Get();
   } else {
-    Fatal("SimulationBackup",
-          "Requested to restore data, but no restore file given.");
+    Log::Fatal("SimulationBackup",
+               "Requested to restore data, but no restore file given.");
     return 0;
   }
 }

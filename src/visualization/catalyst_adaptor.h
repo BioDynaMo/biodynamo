@@ -1,13 +1,13 @@
 #ifndef VISUALIZATION_CATALYST_ADAPTOR_H_
 #define VISUALIZATION_CATALYST_ADAPTOR_H_
 
-#include <TError.h>
 #include <algorithm>
 #include <fstream>
 #include <sstream>
 #include <string>
 #include <type_traits>
 #include <vector>
+#include "log.h"
 
 #include "param.h"
 #include "resource_manager.h"
@@ -108,8 +108,8 @@ class CatalystAdaptor {
     }
 
     void operator()(...) {
-      Fatal("AddCellAttributeData",
-            "This data member is not supported for visualization");
+      Log::Fatal("CatalystAdaptor::AddCellAttributeData",
+                 "This data member is not supported for visualization");
     }
 
     size_t type_idx;
@@ -446,8 +446,8 @@ class CatalystAdaptor {
                << kSimulationInfoJson;
     int ret_code = system(python_cmd.str().c_str());
     if (ret_code) {
-      Fatal("GenerateParaviewState",
-            "Error during generation of ParaView state");
+      Log::Fatal("CatalystAdaptor::GenerateParaviewState",
+                 "Error during generation of ParaView state");
     }
   }
 };
@@ -464,27 +464,27 @@ class CatalystAdaptor {
   }
 
   void Initialize(const std::string& script) {
-    Fatal("",
-          "Simulation was compiled without ParaView support, but you are "
-          "trying to use it.");
+    Log::Fatal("CatalystAdaptor::Initialize",
+               "Simulation was compiled without ParaView support, but you are "
+               "trying to use it.");
   }
 
   void Finalize() {
-    Fatal("",
-          "Simulation was compiled without ParaView support, but you are "
-          "trying to use it.");
+    Log::Fatal("CatalystAdaptor::Finalize",
+               "Simulation was compiled without ParaView support, but you are "
+               "trying to use it.");
   }
 
   void CoProcess(double time, size_t time_step, bool last_time_step) {
-    Fatal("",
-          "Simulation was compiled without ParaView support, but you are "
-          "trying to use it.");
+    Log::Fatal("CatalystAdaptor::CoProcess",
+               "Simulation was compiled without ParaView support, but you are "
+               "trying to use it.");
   }
 
   void ExportVisualization(double step, size_t time_step, bool last_time_step) {
-    Fatal("",
-          "Simulation was compiled without ParaView support, but you are "
-          "trying to use it.");
+    Log::Fatal("CatalystAdaptor::ExportVisualization",
+               "Simulation was compiled without ParaView support, but you are "
+               "trying to use it.");
   }
 };
 

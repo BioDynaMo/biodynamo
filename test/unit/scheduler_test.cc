@@ -4,6 +4,7 @@ namespace bdm {
 namespace scheduler_test_internal {
 
 TEST(SchedulerTest, NoRestoreFile) {
+  Param::show_simulation_step_ = false;
   ResourceManager<>::Get()->Clear();
   remove(ROOTFILE);
 

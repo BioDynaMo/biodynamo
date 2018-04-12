@@ -9,7 +9,7 @@
 #include <type_traits>
 #include <vector>
 
-#include <TError.h>
+#include "log.h"
 
 #include "backend.h"
 #include "root_util.h"

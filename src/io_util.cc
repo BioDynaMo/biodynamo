@@ -1,6 +1,8 @@
-#include "io_util.h"
 #include <fstream>
 #include <iostream>
+
+#include "io_util.h"
+#include "log.h"
 
 namespace bdm {
 
@@ -16,11 +18,11 @@ void RuntimeVariables::SetSystemInfo(const SysInfo_t& other) {
 
 void RuntimeVariables::PrintSystemInfo() {
   // clang-format off
-  std::cout << "OS:\t"    << sysinfo_.fOS       << std::endl
-            << "Model:\t" << sysinfo_.fModel    << std::endl
-            << "Arch:\t"  << sysinfo_.fCpuType  << std::endl
-            << "#CPUs:\t" << sysinfo_.fCpus     << std::endl
-            << "RAM:\t"   << sysinfo_.fPhysRam  << "MB"  << std::endl;
+  Log::Info("RuntimeVariables", "OS:\t", sysinfo_.fOS, "\n",
+            "Model:\t", sysinfo_.fModel,    "\n",
+            "Arch:\t",  sysinfo_.fCpuType,  "\n",
+            "#CPUs:\t", sysinfo_.fCpus,     "\n",
+            "RAM:\t",   sysinfo_.fPhysRam,  "MB", "\n");
   // clang-format on
 }
 

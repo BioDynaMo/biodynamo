@@ -1,9 +1,9 @@
 #include "command_line_options.h"
-#include <TError.h>
 #include <stdlib.h>
 #include <iostream>
 #include <sstream>
 #include "OptionParser.h"
+#include "log.h"
 
 namespace bdm {
 
@@ -17,7 +17,13 @@ CommandLineOptions DefaultSimulationOptionParser(
   argc -= (argc > 0);
   argv += (argc > 0);
 
-  enum OptionIndex { kUnknown, kRestoreFilename, kBackupFilename, kHelp };
+  enum OptionIndex {
+    kUnknown,
+    kVerbose,
+    kRestoreFilename,
+    kBackupFilename,
+    kHelp
+  };
   enum OptionTypes { kNoType, kString };
 
   std::stringstream simulation_usage_stream;
@@ -26,6 +32,11 @@ CommandLineOptions DefaultSimulationOptionParser(
   simulation_usage_stream << "Options:\n";
 
   const char* simulation_usage = simulation_usage_stream.str().c_str();
+
+  const char* verbosity_usage =
+      "-v, --verbose\n"
+      "    Verbose mode. Causes BioDynaMo to print debugging messages.\n"
+      "    Multiple -v options increases the verbosity. The maximum is 3.\n";
 
   const char* restore_file_usage =
       "-r, --restore filename\n"
@@ -45,6 +56,14 @@ CommandLineOptions DefaultSimulationOptionParser(
         "", "",
         ROOT::option::Arg::None,
         simulation_usage
+      },
+
+      {
+        kVerbose,
+        kNoType,
+        "v", "",
+        ROOT::option::Arg::None,
+        verbosity_usage
       },
 
       {
@@ -80,7 +99,7 @@ CommandLineOptions DefaultSimulationOptionParser(
                              buffer);
 
   if (parse.error()) {
-    Error(0, "Argument parsing error!\n");
+    Log::Error("CommandLineOptions", "Argument parsing error!\n");
     ROOT::option::printUsage(std::cout, simulation_usage_descriptor);
     exit(1);
   }
@@ -92,6 +111,26 @@ CommandLineOptions DefaultSimulationOptionParser(
   }
 
   CommandLineOptions cl_options;
+
+  LoggingLevel ll = LoggingLevel::kError;
+  if (options[kVerbose]) {
+    int verbosity = options[kVerbose].count();
+    std::cout << verbosity << std::endl;
+    switch (verbosity) {
+      // case 0 can never occur; we wouldn't go into this if statement
+      case 1:
+        ll = LoggingLevel::kWarning;
+        break;
+      case 2:
+        ll = LoggingLevel::kInfo;
+        break;
+      case 3:
+        ll = LoggingLevel::kDebug;
+        break;
+    }
+  }
+
+  Log::SetLoggingLevel(ll);
 
   if (options[kRestoreFilename]) {
     cl_options.restore_file_ = options[kRestoreFilename].arg;

@@ -1,6 +1,7 @@
-#include "param.h"
-#include <TError.h>
 #include <vector>
+
+#include "log.h"
+#include "param.h"
 
 namespace bdm {
 
@@ -78,8 +79,8 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
       if (table->contains("name")) {
         auto name = table->get_as<std::string>("name");
         if (!name) {
-          Warning("AssignFromConfig",
-                  "Missing name for attribute visualize_sim_object");
+          Log::Warning("AssignFromConfig",
+                       "Missing name for attribute visualize_sim_object");
           continue;
         }
 
@@ -108,8 +109,8 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
       if (table->contains("name")) {
         auto name = table->get_as<std::string>("name");
         if (!name) {
-          Warning("AssignFromConfig",
-                  "Missing name for attribute visualize_diffusion");
+          Log::Warning("AssignFromConfig",
+                       "Missing name for attribute visualize_diffusion");
           continue;
         }
 

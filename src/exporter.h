@@ -9,11 +9,11 @@
 #include <string>
 
 #include "backend.h"
+#include "log.h"
 #include "param.h"
 
 namespace bdm {
 
-using std::cout;
 using std::endl;
 using std::string;
 using std::fstream;
@@ -175,7 +175,7 @@ class NeuroMLExporter : public Exporter<TContainer> {
 
     outfile.close();
 
-    std::cout << "created NeuroML file" << std::endl;
+    Log::Info("Exporter", "Created NeuroML file");
   }
 
   void ExportSummary(string filename, uint64_t num_iterations) override {}
@@ -192,14 +192,14 @@ class ParaviewExporter : public Exporter<TContainer> {
 
     vtu << "<VTKFile type=\"UnstructuredGrid\" version=\"0.1\" "
            "byte_order=\"LittleEndian\">"
-        << std::endl;
-    vtu << "   <UnstructuredGrid>" << std::endl;
+        << endl;
+    vtu << "   <UnstructuredGrid>" << endl;
     vtu << "      <Piece  NumberOfPoints=\"" << num_cells
-        << "\" NumberOfCells=\"" << num_cells << "\">" << std::endl;
-    vtu << "         <Points>" << std::endl;
+        << "\" NumberOfCells=\"" << num_cells << "\">" << endl;
+    vtu << "         <Points>" << endl;
     vtu << "            <DataArray type=\"Float64\" NumberOfComponents=\"3\" "
            "format=\"ascii\">"
-        << std::endl;
+        << endl;
     for (size_t i = 0; i < num_cells; i++) {
       auto &&cell = (cells)[i];
       auto &coord = cell.GetPosition();
@@ -207,66 +207,66 @@ class ParaviewExporter : public Exporter<TContainer> {
       vtu << ' ' << coord[0] << ' ' << coord[1] << ' ' << coord[2]
           << std::flush;
     }
-    vtu << std::endl;
-    vtu << "            </DataArray>" << std::endl;
-    vtu << "         </Points>" << std::endl;
-    vtu << "         <PointData>" << std::endl;
+    vtu << endl;
+    vtu << "            </DataArray>" << endl;
+    vtu << "         </Points>" << endl;
+    vtu << "         <PointData>" << endl;
     vtu << "            <DataArray type=\"Float64\" Name=\"Cell_ID\" "
            "NumberOfComponents=\"1\" format=\"ascii\">"
-        << std::endl;
+        << endl;
     index = 0;
     for (size_t i = 0; i < num_cells; i++) {
       vtu << ' ' << index++ << std::flush;
     }
-    vtu << std::endl;
-    vtu << "            </DataArray>" << std::endl;
+    vtu << endl;
+    vtu << "            </DataArray>" << endl;
     vtu << "            <DataArray type=\"Float64\" Name=\"Adherence\" "
            "NumberOfComponents=\"1\" format=\"ascii\">"
-        << std::endl;
+        << endl;
     for (size_t i = 0; i < num_cells; i++) {
       auto &&cell = (cells)[i];
       auto adhr = cell.GetAdherence();
 
       vtu << ' ' << adhr << std::flush;
     }
-    vtu << std::endl;
-    vtu << "            </DataArray>" << std::endl;
+    vtu << endl;
+    vtu << "            </DataArray>" << endl;
     vtu << "            <DataArray type=\"Float64\" Name=\"Diameter\" "
            "NumberOfComponents=\"1\" format=\"ascii\">"
-        << std::endl;
+        << endl;
     for (size_t i = 0; i < num_cells; i++) {
       auto &&cell = (cells)[i];
       auto diam = cell.GetDiameter();
 
       vtu << ' ' << diam << std::flush;
     }
-    vtu << std::endl;
-    vtu << "            </DataArray>" << std::endl;
+    vtu << endl;
+    vtu << "            </DataArray>" << endl;
     vtu << "            <DataArray type=\"Float64\" Name=\"Mass\" "
            "NumberOfComponents=\"1\" format=\"ascii\">"
-        << std::endl;
+        << endl;
     for (size_t i = 0; i < num_cells; i++) {
       auto &&cell = (cells)[i];
       auto mass = cell.GetMass();
 
       vtu << ' ' << mass << std::flush;
     }
-    vtu << std::endl;
-    vtu << "            </DataArray>" << std::endl;
+    vtu << endl;
+    vtu << "            </DataArray>" << endl;
     vtu << "            <DataArray type=\"Float64\" Name=\"Volume\" "
            "NumberOfComponents=\"1\" format=\"ascii\">"
-        << std::endl;
+        << endl;
     for (size_t i = 0; i < num_cells; i++) {
       auto &&cell = (cells)[i];
       auto volm = cell.GetVolume();
 
       vtu << ' ' << volm << std::flush;
     }
-    vtu << std::endl;
-    vtu << "            </DataArray>" << std::endl;
+    vtu << endl;
+    vtu << "            </DataArray>" << endl;
     vtu << "            <DataArray type=\"Float64\" Name=\"TractionForce\" "
            "NumberOfComponents=\"3\" format=\"ascii\">"
-        << std::endl;
+        << endl;
     for (size_t i = 0; i < num_cells; i++) {
       auto &&cell = (cells)[i];
       auto &tracf = cell.GetTractorForce();
@@ -274,40 +274,40 @@ class ParaviewExporter : public Exporter<TContainer> {
       vtu << ' ' << tracf[0] << ' ' << tracf[1] << ' ' << tracf[2]
           << std::flush;
     }
-    vtu << std::endl;
-    vtu << "            </DataArray>" << std::endl;
-    vtu << "         </PointData>" << std::endl;
+    vtu << endl;
+    vtu << "            </DataArray>" << endl;
+    vtu << "         </PointData>" << endl;
 
-    vtu << "         <Cells>" << std::endl;
+    vtu << "         <Cells>" << endl;
     vtu << "            <DataArray type=\"Int32\" Name=\"connectivity\" "
            "format=\"ascii\">"
-        << std::endl;
+        << endl;
     index = 0;
     for (size_t i = 0; i < num_cells; i++) {
       vtu << ' ' << index++ << std::flush;
     }
-    vtu << std::endl;
-    vtu << "            </DataArray>" << std::endl;
+    vtu << endl;
+    vtu << "            </DataArray>" << endl;
     vtu << "            <DataArray type=\"Int32\" Name=\"offsets\" "
            "format=\"ascii\">"
-        << std::endl;
+        << endl;
     for (size_t i = 0; i < num_cells; i++) {
       vtu << ' ' << 1 << std::flush;
     }
-    vtu << std::endl;
-    vtu << "            </DataArray>" << std::endl;
+    vtu << endl;
+    vtu << "            </DataArray>" << endl;
     vtu << "            <DataArray type=\"Int32\" Name=\"types\" "
            "format=\"ascii\">"
-        << std::endl;
+        << endl;
     for (size_t i = 0; i < num_cells; i++) {
       vtu << ' ' << 1 << std::flush;
     }
-    vtu << std::endl;
-    vtu << "            </DataArray>" << std::endl;
-    vtu << "         </Cells>" << std::endl;
-    vtu << "      </Piece>" << std::endl;
-    vtu << "   </UnstructuredGrid>" << std::endl;
-    vtu << "</VTKFile>" << std::endl;
+    vtu << endl;
+    vtu << "            </DataArray>" << endl;
+    vtu << "         </Cells>" << endl;
+    vtu << "      </Piece>" << endl;
+    vtu << "   </UnstructuredGrid>" << endl;
+    vtu << "</VTKFile>" << endl;
   }
 
   /// This function creates a .pvd file that lists the individual files across
@@ -316,21 +316,21 @@ class ParaviewExporter : public Exporter<TContainer> {
   void ExportSummary(string filename, uint64_t num_iterations) override {
     std::ofstream pvd(filename + ".pvd");
 
-    pvd << "<?xml version=\"1.0\"?>" << std::endl;
+    pvd << "<?xml version=\"1.0\"?>" << endl;
     pvd << "<VTKFile type=\"Collection\" version=\"0.1\" "
            "byte_order=\"LittleEndian\">"
-        << std::endl;
-    pvd << "<Collection>" << std::endl;
+        << endl;
+    pvd << "<Collection>" << endl;
     /// iterate for all (time) steps
     for (uint64_t i = 0; i < num_iterations; i++) {
       pvd << "<DataSet timestep=\"" << (i * Param::simulation_time_step_)
           << "\" group=\"\" part=\"0\" file=\"" << filename << '-' << i
           << ".vtu\">";
-      pvd << std::endl;
+      pvd << endl;
       /// end of (time) iterations loop...
     }
-    pvd << "</Collection>" << std::endl;
-    pvd << "</VTKFile>" << std::endl;
+    pvd << "</Collection>" << endl;
+    pvd << "</VTKFile>" << endl;
   }
 };
 
