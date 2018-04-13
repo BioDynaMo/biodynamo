@@ -2,7 +2,9 @@
 #define GPU_GPU_HELPER_H_
 
 #include <vector>
-#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <string>
 
 #ifdef USE_OPENCL
 #define __CL_ENABLE_EXCEPTIONS
@@ -17,7 +19,6 @@
 #include "cuda_runtime_api.h"
 #endif
 
-#include "gpu/opencl_kernels.h"
 #include "log.h"
 #include "param.h"
 #include "resource_manager.h"
@@ -68,9 +69,16 @@ static void CompileOpenCLKernels() {
   // TODO(ahmad): create more convenient way to compile all OpenCL kernels, by
   // going through a list of header files. Also, create a stringifier that goes
   // from .cl --> .h, since OpenCL kernels must be input as a string here
+  std::ifstream cl_file(BDM_SRC_DIR"/gpu/displacement_op_opencl_kernel.cl");
+  if (cl_file.fail()) {
+    Log::Error("CompileOpenCLKernels", "Kernel file does not exists!");
+  }
+  std::stringstream buffer;
+  buffer << cl_file.rdbuf();
+
   cl::Program displacement_op_program(
       *context,
-      cl::Program::Sources(1, std::make_pair(displacement_op_opencl_kernel, strlen(displacement_op_opencl_kernel))));
+      cl::Program::Sources(1, std::make_pair(buffer.str().c_str(), strlen(buffer.str().c_str()))));
 
   all_programs->push_back(displacement_op_program);
 
@@ -148,7 +156,7 @@ static void FindGpuDevicesOpenCL() {
     Log::Info("", "Found ", devices->size(), " OpenCL-compatible GPU device(s): ");
 
     for (size_t i = 0; i < devices->size(); i++) {
-      Log::Info("", "  [", (i + 1), "] ", (*devices)[i].getInfo<CL_DEVICE_NAME>());
+      Log::Info("", "  [", i, "] ", (*devices)[i].getInfo<CL_DEVICE_NAME>());
     }
 
     Log::Info("", "Selected GPU [", Param::preferred_gpu_, "]: ", (*devices)[Param::preferred_gpu_].getInfo<CL_DEVICE_NAME>());
