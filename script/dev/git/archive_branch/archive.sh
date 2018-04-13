@@ -34,7 +34,9 @@ fi
 DIR=$(dirname ${GIT_FOLDER_PATH}/refs/archive/$ARCHIVE_NAME)
 mkdir -p $DIR
 
-git tag archive/${BRANCH_NAME} ${BRANCH_NAME}
+echo "Fetch branch from origin"
+git fetch origin ${BRANCH_NAME}
+git tag archive/${BRANCH_NAME} origin/${BRANCH_NAME}
 cp ${GIT_FOLDER_PATH}/refs/tags/archive/${BRANCH_NAME} ${GIT_FOLDER_PATH}/refs/archive/${ARCHIVE_NAME}
 git tag -d archive/${BRANCH_NAME} 2>&1 >/dev/null
 
