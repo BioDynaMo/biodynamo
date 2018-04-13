@@ -19,10 +19,11 @@ class Log {
   /// @param[in]  parts   objects that compose the entire message
   ///
   template <typename... Args>
-  inline void Debug(const std::string& location, const Args&... parts) {
+  static void Debug(const std::string& location, const Args&... parts) {
+    // kPrint has the highest level of verbosity
     if (gErrorIgnoreLevel <= kPrint) {
       std::string message = ConstructMessage(parts...);
-      // Emulate ROOT logging message
+      // Mimic ROOT logging output
       fprintf(stderr, "Debug in <%s>: %s\n", location.c_str(), message.c_str());
     }
   }
