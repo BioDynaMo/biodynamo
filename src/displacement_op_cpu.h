@@ -102,7 +102,6 @@ class DisplacementOpCpu {
 
       assert(cell.GetMass() != 0 && "The mass of a cell was found to be zero!");
       double mh = h / cell.GetMass();
-      // std::cout << "mh = " << mh << std::endl;
       // adding the physics translation (scale by weight) if important enough
       if (physical_translation) {
         // We scale the move with mass and time step

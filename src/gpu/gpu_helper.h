@@ -18,6 +18,7 @@
 #endif
 
 #include "gpu/opencl_kernels.h"
+#include "log.h"
 #include "param.h"
 #include "resource_manager.h"
 
@@ -35,24 +36,24 @@ static void FindGpuDevicesCuda() {
 
   cudaGetDeviceCount(&nDevices);
   if (nDevices == 0) {
-    std::cerr << "No CUDA-compatible GPU found on this machine! Switching to the CPU version..." << std::endl;
+    Log::Error("FindGpuDevicesCuda", "No CUDA-compatible GPU found on this machine! Switching to the CPU version...");
     Param::use_gpu_ = false;
     return;
   }
 
-  std::cout << "Found " << nDevices << " CUDA-compatible GPU device(s): " << std::endl;
+  Log::Info("", "Found ", nDevices, " CUDA-compatible GPU device(s): ");
 
   for (int i = 0; i < nDevices; i++) {
     cudaSetDevice(i);
     cudaDeviceProp prop;
     cudaGetDeviceProperties(&prop, i);
-    std::cout << "  [" << i << "] " << prop.name << std::endl;
+    Log::Info("", "  [", i, "] ", prop.name);
   }
 
   cudaSetDevice(Param::preferred_gpu_);
   cudaDeviceProp prop;
   cudaGetDeviceProperties(&prop, Param::preferred_gpu_);
-  std::cout << std::endl << "Selected GPU [" << Param::preferred_gpu_ << "]: " << prop.name << std::endl << std::endl;
+  Log::Info("", "Selected GPU [", Param::preferred_gpu_, "]: ", prop.name);
 }
 #endif
 
@@ -73,22 +74,21 @@ static void CompileOpenCLKernels() {
 
   all_programs->push_back(displacement_op_program);
 
-  // TODO(ahmad): replace all cout with ROOT logging functions
-  std::cout << "Compiling OpenCL kernels..." << std::endl;
+  Log::Info("", "Compiling OpenCL kernels...");
 
   std::string options;
   if (Param::opencl_debug_) {
-    std::cout << "Building OpenCL kernels with debugging ON" << std::endl;
+    Log::Info("", "Building OpenCL kernels with debugging symbols");
     options = "-g -O0";
+  } else {
+    Log::Info("", "Building OpenCL kernels without debugging symbols");
   }
 
   for (auto& prog : *all_programs) {
     try {
         prog.build(*devices, options.c_str());
     } catch (const cl::Error &) {
-      std::cerr << "OpenCL compilation error" << std::endl
-                << prog.getBuildInfo<CL_PROGRAM_BUILD_LOG>((*devices)[0])
-                << std::endl;
+      Log::Error("CompileOpenCLKernels", "OpenCL compilation error: ", prog.getBuildInfo<CL_PROGRAM_BUILD_LOG>((*devices)[0]));
     }
   }
 }
@@ -110,7 +110,7 @@ static void FindGpuDevicesOpenCL() {
     cl::Platform::get(&platform);
 
     if (platform.empty()) {
-      std::cerr << "OpenCL platforms not found." << std::endl;
+      Log::Error("FindGpuDevicesOpenCL", "No OpenCL platforms found");
     }
 
     // Go over all available platforms and devices until first device is found
@@ -131,28 +131,27 @@ static void FindGpuDevicesOpenCL() {
           devices->push_back(*d);
         }
       } catch (...) {
-        std::cerr << "Found bad OpenCL platform! Continuing to next one." << std::endl;
+        Log::Error("FindGpuDevicesOpenCL", "Found bad OpenCL platform! Continuing to next one");
         devices->clear();
         continue;
       }
     }
 
     if (devices->empty()) {
-      std::cerr << "No OpenCL-compatible GPU found on this machine! Switching to the CPU version..." << std::endl;
+      Log::Warning("FindGpuDevicesOpenCL", "No OpenCL-compatible GPU found on this machine! Switching to the CPU version...");
       Param::use_gpu_ = false;
       return;
     }
 
     *context = cl::Context(*devices);
 
-    std::cout << "Found " << devices->size() << " OpenCL-compatible GPU device(s): " << std::endl << std::endl;
+    Log::Info("", "Found ", devices->size(), " OpenCL-compatible GPU device(s): ");
 
     for (size_t i = 0; i < devices->size(); i++) {
-      std::cout << "  [" << (i + 1) << "] " << (*devices)[i].getInfo<CL_DEVICE_NAME>() << std::endl;
+      Log::Info("", "  [", (i + 1), "] ", (*devices)[i].getInfo<CL_DEVICE_NAME>());
     }
 
-    std::cout << std::endl << "Selected GPU [" << Param::preferred_gpu_ << "]: " << (*devices)[Param::preferred_gpu_].getInfo<CL_DEVICE_NAME>() << std::endl;
-
+    Log::Info("", "Selected GPU [", Param::preferred_gpu_, "]: ", (*devices)[Param::preferred_gpu_].getInfo<CL_DEVICE_NAME>());
 
     // Create command queue for that GPU
     cl_int queue_err;
@@ -162,8 +161,7 @@ static void FindGpuDevicesOpenCL() {
     // Compile the OpenCL kernels
     CompileOpenCLKernels<>();
   } catch (const cl::Error &err) {
-    std::cerr << "OpenCL error: " << err.what() << "(" << err.err() << ")"
-              << std::endl;
+    Log::Error("FindGpuDevicesOpenCL", "OpenCL error: ", err.what(), "(", err.err(), ")");
   }
 }
 #endif
@@ -174,14 +172,14 @@ static void InitializeGPUEnvironment() {
 #ifdef USE_OPENCL
     FindGpuDevicesOpenCL<>();
 #else
-    std::cout << "You tried to use the GPU (OpenCL) version of BioDynaMo, but no OpenCL installation was detected on this machine.\nSwitching to the CPU version..." << std::endl;
+    Log::Info("InitializeGPUEnvironment", "You tried to use the GPU (OpenCL) version of BioDynaMo, but no OpenCL installation was detected on this machine.\nSwitching to the CPU version...");
     Param::use_gpu_ = false;
 #endif
   } else {
 #ifdef USE_CUDA
     FindGpuDevicesCuda();
 #else
-    std::cout << "You tried to use the GPU (CUDA) version of BioDynaMo, but no CUDA installation was detected on this machine.\nSwitching to the CPU version..." << std::endl;
+    Log::Info("InitializeGPUEnvironment", "You tried to use the GPU (CUDA) version of BioDynaMo, but no CUDA installation was detected on this machine.\nSwitching to the CPU version...");
     Param::use_gpu_ = false;
 #endif
   }

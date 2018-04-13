@@ -112,7 +112,6 @@ class DisplacementOpOpenCL {
       // spawned on the GPU, in groups of local_size
       cl::NDRange global_size = cl::NDRange(N + (block_size - (N%block_size)));
       cl::NDRange local_size = cl::NDRange(block_size);
-      // std::cout << "Global work size = " << (N + (block_size - (N%block_size))) << std::endl;
       queue->enqueueNDRangeKernel(collide, cl::NullRange, global_size, local_size);
     } catch (const cl::Error &err) {
       std::cerr << "OpenCL error: " << err.what() << "(" << err.err() << ") = " << getErrorString(err.err()) 

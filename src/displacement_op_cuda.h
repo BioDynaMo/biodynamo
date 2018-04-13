@@ -1,12 +1,13 @@
 #ifndef DISPLACEMENT_OP_CUDA_H_
 #define DISPLACEMENT_OP_CUDA_H_
 
-#include "displacement_op.h"
-#include "gpu/displacement_op_cuda_kernel.h"
-#include "resource_manager.h"
-
 #include <fstream>
 #include <iomanip>
+
+#include "displacement_op.h"
+#include "gpu/displacement_op_cuda_kernel.h"
+#include "log.h"
+#include "resource_manager.h"
 
 namespace bdm {
 
@@ -57,7 +58,7 @@ class DisplacementOpCuda {
     } else {
       // If the number of simulation objects increased
       if (N >= N_) {
-        std::cout << "\nThe number of cells increased signficantly (from " << N_ << " to " << N << "), so we allocate bigger GPU buffers\n" << std::endl;
+        Log::Info("DisplacementOpCuda", "\nThe number of cells increased signficantly (from ", N_, " to ", N, "), so we allocate bigger GPU buffers\n");
         uint32_t new_N = static_cast<uint32_t>(1.25*N);
         N_ = new_N;
         cdo_->resize_cell_buffers(new_N);
@@ -65,7 +66,7 @@ class DisplacementOpCuda {
 
       // If the neighbor grid size increased 
       if (starts.size() >= num_boxes_) {
-        std::cout << "\nThe number of boxes increased signficantly (from " << num_boxes_ << " to " << starts.size() << "), so we allocate bigger GPU buffers\n" << std::endl;
+        Log::Info("DisplacementOpCuda", "\nThe number of boxes increased signficantly (from ", num_boxes_, " to ", "), so we allocate bigger GPU buffers\n");
         uint32_t new_num_boxes = static_cast<uint32_t>(1.25*starts.size());
         num_boxes_ = new_num_boxes;
         cdo_->resize_grid_buffers(new_num_boxes);
