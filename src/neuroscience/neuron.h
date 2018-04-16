@@ -112,7 +112,7 @@ BDM_SO_DEFINE(inline void NeuronExt)::RemoveDaughter(
   auto it = std::find(std::begin(daughters_[kIdx]), std::end(daughters_[kIdx]),
                       daugther);
   std::cout << "RemoveDaughter " << daughters_[kIdx].size() << std::endl;
-  assert(it != std::end(daughters_[kIdx]));
+  assert(it != std::end(daughters_[kIdx]) && "The element you wanted to remove is not part of daughters_[kIdx]");
   daughters_[kIdx].erase(it);
 }
 

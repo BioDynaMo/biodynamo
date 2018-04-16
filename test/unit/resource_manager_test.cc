@@ -1,4 +1,5 @@
 // I/O related code must be in header file
+#include "unit/io_test.h"
 #include "unit/resource_manager_test.h"
 #include "cell.h"
 
@@ -354,6 +355,16 @@ TEST(SoHandleTest, EqualsOperator) {
   EXPECT_FALSE(SoHandle(1, 1) == SoHandle(0, 0));
   EXPECT_FALSE(SoHandle(1, 1) == SoHandle(1, 0));
   EXPECT_FALSE(SoHandle(1, 1) == SoHandle(0, 1));
+}
+
+TEST_F(IOTest, SoHandle) {
+  SoHandle h(12, 34);
+  SoHandle *restored = nullptr;
+
+  BackupAndRestore(h, &restored);
+
+  EXPECT_EQ(12u, restored->GetTypeIdx());
+  EXPECT_EQ(34u, restored->GetElementIdx());
 }
 
 }  // namespace resource_manager_test_internal

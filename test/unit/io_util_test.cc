@@ -2,9 +2,9 @@
 
 namespace bdm {
 
-TEST(IOTest, InvalidRead) { RunInvalidReadTest(); }
+TEST(IOUtilTest, InvalidRead) { RunInvalidReadTest(); }
 
-TEST(IOTest, RuntimeVars) {
+TEST(IOUtilTest, RuntimeVars) {
   RuntimeVariables this_machine;
 
   SysInfo_t si = this_machine.GetSystemInfo();

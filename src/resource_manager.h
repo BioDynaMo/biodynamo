@@ -57,11 +57,12 @@ class SoHandle {
  private:
   // TODO(lukas) add using TypeIdx_t = uint16_t and
   // using ElementIdx_t = uint32_t
-
   uint16_t type_idx_;
   /// changed element index to uint32_t after issues with std::atomic with
   /// size 16 -> max element_idx: 4.294.967.296
   uint32_t element_idx_;
+
+  ClassDefNV(SoHandle, 1);
 };
 
 constexpr SoHandle gNullSoHandle;

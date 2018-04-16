@@ -55,6 +55,7 @@
     <class name="bdm::resource_manager_test_internal::CompileTimeParam<bdm::Soa, bdm::resource_manager_test_internal::AExt<bdm::CompileTimeParam<bdm::Soa>, bdm::resource_manager_test_internal::Capsule<AExt>, bdm::SimulationObject_TCTParam_TDerived>, bdm::resource_manager_test_internal::BExt<bdm::CompileTimeParam<bdm::Soa>, bdm::resource_manager_test_internal::Capsule<BExt>, bdm::SimulationObject_TCTParam_TDerived> >::SimulationBackend" />
     <!-- list of classes with dictionary in libbiodynamo
          -> all selected classes from libbiodynamo-selection.xml -->
+    <class name="bdm::SoHandle" />
     <class name="bdm::RuntimeVariables"/>
     <class name="bdm::NullBiologyModule"/>
     <class name="bdm::BaseBiologyModule"/>
