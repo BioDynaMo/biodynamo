@@ -67,6 +67,10 @@ install(FILES build/libbiodynamo_dict_rdict.pcm DESTINATION ${CMAKE_INSTALL_LIBD
 if(CUDA_FOUND)
   install(TARGETS bdmcuda ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} OPTIONAL)
 endif()
+if(APPLE)
+  install(DIRECTORY DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/OpenCL)
+  install(FILES third_party/OpenCL/cl.hpp DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/OpenCL)
+endif()
 # headers and python scripts
 install(DIRECTORY src/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
         FILES_MATCHING PATTERN "*.h" PATTERN "*.cl" PATTERN "*.py")
