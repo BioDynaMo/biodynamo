@@ -1,4 +1,4 @@
-#include "helper_math.h"
+#include "samples/common/inc/helper_math.h"
 #include "gpu/displacement_op_cuda_kernel.h"
 
 #define gpuErrchk(ans) { gpuAssert((ans), __FILE__, __LINE__); }
