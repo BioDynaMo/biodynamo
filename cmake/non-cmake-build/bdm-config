@@ -136,7 +136,7 @@ if __name__ == '__main__':
     SetupCMakeProject(tmp_cmake_dir)
     cmake_out=""
     try:
-        cmake_out = subprocess.check_output('cmake ' + cmake_args + ' ..', cwd=tmp_cmake_dir+"/build", shell=True).decode('utf-8')
+        cmake_out = subprocess.check_output('cmake ' + cmake_args + ' ..', cwd=tmp_cmake_dir+"/build", stderr=subprocess.DEVNULL, shell=True).decode('utf-8')
     except subprocess.CalledProcessError as e:
         print("Call to CMake failed")
         print("Error code", e.returncode, e.output)
