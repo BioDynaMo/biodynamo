@@ -1,8 +1,0 @@
-export LLVMDIR=/Users/rdm/clang+llvm-3.9.0-x86_64-apple-darwin
-export CLANG_TOOLS_PATH=$LLVMDIR/bin
-export CC=$LLVMDIR/bin/clang
-export CXX=$LLVMDIR/bin/clang++
-export CXXFLAGS=-I$LLVMDIR/include
-export LDFLAGS=-L$LLVMDIR/lib
-export DYLD_LIBRARY_PATH=$LLVMDIR/lib:$DYLD_LIBRARY_PATH
-cmake -GNinja ..
