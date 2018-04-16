@@ -8,17 +8,18 @@ from build_command import BuildCommand
 ##
 ## @param      sim_name  The simulation name
 ##
-def RunCommand(debug=False):
+def RunCommand(args, debug=False):
     sim_name = os.getcwd().split("/")[-1]
+    args_str = ' '.join(args)
     cmd = "./build/" + sim_name
 
     try:
         BuildCommand()
-        Print.new_step("Run " + sim_name)
+        Print.new_step("Run " + sim_name + ' ' + args_str)
         if debug:
             sp.check_output([cmd, "&>", "debug/runtime_output.log"])
         else:
-            print(sp.check_output([cmd], stderr=sp.STDOUT).decode('utf-8'))
+            print(sp.check_output([cmd, args_str], stderr=sp.STDOUT).decode('utf-8'))
             Print.success("Finished successfully")
     except sp.CalledProcessError as err:
         print(err.output.decode("utf-8"))

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
+import sys
 from new_command import NewCommand
 from build_command import BuildCommand
 from run_command import RunCommand
@@ -16,7 +17,7 @@ if __name__ == '__main__':
 
     sp = parser.add_subparsers(dest='cmd')
 
-    sp.add_parser('assist', help='Use this command if you need help from the '
+    assist_sp = sp.add_parser('assist', help='Use this command if you need help from the '
                                  'BiodynaMo developers. This command helps you '
                                  'to gather information which is required to '
                                  'reproduce and debug your issue. First, '
@@ -28,29 +29,41 @@ if __name__ == '__main__':
                                  'a link that you should add to your e-mail or '
                                  'slack message when you describe your issue.' )
 
-    sp.add_parser('build', help='Builds the simulation binary')
+    build_sp = sp.add_parser('build', help='Builds the simulation binary')
 
-    sp.add_parser('clean', help='Removes all build files')
+    clean_sp = sp.add_parser('clean', help='Removes all build files')
 
-    spp = sp.add_parser('new', help='Creates a new simulation project. Downloads '
+    new_sp = sp.add_parser('new', help='Creates a new simulation project. Downloads '
     'a template project from BioDynaMo, renames it to the given simulation name, '
     'creates a new Github repository and configures git.')
-    spp.add_argument('SIMULATION_NAME', type=str, help='simulation name help')
-    spp.add_argument('--no-github', action='store_true', help='Do not create a Github repository.'    )
+    new_sp.add_argument('SIMULATION_NAME', type=str, help='simulation name help')
+    new_sp.add_argument('--no-github', action='store_true', help='Do not create a Github repository.'    )
 
-    sp.add_parser('run', help='Executes the simulation')
+    run_sp = sp.add_parser('run', help='Executes the simulation')
 
-    args = parser.parse_args()
+    args, unknown = parser.parse_known_args()
 
     if args.cmd == 'new':
-    	NewCommand(args.SIMULATION_NAME, args.no_github)
+        if len(unknown) != 0:
+            new_sp.print_help()
+            sys.exit()
+        NewCommand(args.SIMULATION_NAME, args.no_github)
     elif args.cmd == 'build':
-    	BuildCommand()
+        if len(unknown) != 0:
+            build_sp.print_help()
+            sys.exit()
+        BuildCommand()
     elif args.cmd == 'clean':
-    	BuildCommand(clean=True, build=False)
+        if len(unknown) != 0:
+            clean_sp.print_help()
+            sys.exit()
+        BuildCommand(clean=True, build=False)
     elif args.cmd == 'run':
-    	RunCommand()
+        RunCommand(args=unknown)
     elif args.cmd == 'assist':
-    	AssistCommand()
+        if len(unknown) != 0:
+            assist_sp.print_help()
+            sys.exit()
+        AssistCommand()
     else:
         parser.print_help()
