@@ -24,8 +24,9 @@ namespace bdm {
 ///       ...
 ///     }
 class IOTest : public ::testing::Test {
- protected:
+ public:
   static constexpr char const* kRootFile = "io-test.root";
+ protected:
 
   virtual void SetUp() {
     Param::Reset();
@@ -34,19 +35,24 @@ class IOTest : public ::testing::Test {
 
   virtual void TearDown() {
     Param::Reset();
-    remove(kRootFile);
+    // remove(kRootFile);
   }
 
-  /// Writes backup to file and reads it back into restored
-  template <typename T>
-  void BackupAndRestore(const T& backup, T** restored) {
-    // write to root file
-    WritePersistentObject(kRootFile, "T", backup, "new");
 
-    // read back
-    GetPersistentObject(kRootFile, "T", *restored);
-  }
 };
+
+/// Writes backup to file and reads it back into restored
+/// Outside the test fixture so it can be called in a function from the header.
+/// TEST_F can't be added a header due to multiple references linking error
+/// and must be placed in a source file.
+template <typename T>
+void BackupAndRestore(const T& backup, T** restored) {
+  // write to root file
+  WritePersistentObject(IOTest::kRootFile, "T", backup, "new");
+
+  // read back
+  GetPersistentObject(IOTest::kRootFile, "T", *restored);
+}
 
 }  // namespace bdm
 

@@ -2,8 +2,11 @@
 #define SIMULATION_BACKUP_H_
 
 #include <TError.h>
+#include <functional>
 #include <sstream>
 #include <string>
+#include <vector>
+
 #include "resource_manager.h"
 
 #include "io_util.h"
@@ -18,6 +21,15 @@ class SimulationBackup {
   static const std::string kResouceManagerName;
   static const std::string kSimulationStepName;
   static const std::string kRuntimeVariableName;
+
+  /// If a whole simulation is restored from a ROOT file, the new
+  /// ResourceManager is not updated before the end. Consequently, during
+  /// restore, a custom streamer cannot access the new RessourceManager.
+  /// However, they can delay actions that rely on the new RessourceManager
+  /// by registering it to `after_restore_event_` and will be executed
+  /// after the restore has been finished and the ResourceManager has been
+  /// updated.
+  static std::vector<std::function<void()>> after_restore_event_;
 
   SimulationBackup(const std::string& backup_file,
                    const std::string& restore_file);
@@ -58,6 +70,7 @@ class SimulationBackup {
       Fatal("SimulationBackup",
             "Requested to restore data, but no restore file given.");
     }
+    after_restore_event_.clear();
 
     TFileRaii file(TFile::Open(restore_file_.c_str()));
     RuntimeVariables* restored_rv;
@@ -72,6 +85,12 @@ class SimulationBackup {
     TResourceManager::instance_ =
         std::unique_ptr<TResourceManager>(restored_rm);
     // TODO(lukas) random number generator, statics (e.g. Param)
+
+    // call all after restore events
+    for (auto&& event : after_restore_event_) {
+      event();
+    }
+    after_restore_event_.clear();
   }
 
   size_t GetSimulationStepsFromBackup();

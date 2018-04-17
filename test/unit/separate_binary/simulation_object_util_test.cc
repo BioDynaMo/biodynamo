@@ -444,53 +444,6 @@ TEST(SimulationObjectUtilTestDeathTest, ForEachDataMemberInNonExistantDm) {
                "not exist: does_not_exist, .*");
 }
 
-// ----------------------------------------------------------------------------
-// SoPointer tests
-/// This function is before the decleration of `SoPointerTestClass` to test
-/// if the SoPointer implementation can deal with incomplete types
-template <typename T, typename TBackend>
-void RunSoPointerTest(T* sim_objects) {
-  using SO = typename T::value_type;
-
-  SoPointer<SO, TBackend> null_so_pointer;
-  EXPECT_TRUE(null_so_pointer.IsNullPtr());
-
-  SoPointer<SO, TBackend> so_ptr(sim_objects, 0);
-
-  EXPECT_FALSE(so_ptr.IsNullPtr());
-  EXPECT_EQ(123u, so_ptr.Get().GetId());
-
-  so_ptr = nullptr;
-  EXPECT_TRUE(so_ptr.IsNullPtr());
-}
-
-BDM_SIM_OBJECT(SoPointerTestClass, bdm::SimulationObject) {
-  BDM_SIM_OBJECT_HEADER(SoPointerTestClassExt, 1, id_);
-
- public:
-  SoPointerTestClassExt() {}
-  SoPointerTestClassExt(uint64_t id) { id_[kIdx] = id; }
-
-  uint64_t GetId() const { return id_[kIdx]; }
-
- private:
-  vec<uint64_t> id_;
-};
-
-TEST(SimulationObjectUtilTest, Aos_SoPointer) {
-  TransactionalVector<SoPointerTestClass> sim_objects;
-  SoPointerTestClass so(123);
-  sim_objects.push_back(so);
-  RunSoPointerTest<decltype(sim_objects), Scalar>(&sim_objects);
-}
-
-TEST(SimulationObjectUtilTest, Soa_SoPointer) {
-  auto sim_objects = SoPointerTestClass::NewEmptySoa();
-  SoPointerTestClass so(123);
-  sim_objects.push_back(so);
-  RunSoPointerTest<decltype(sim_objects), Soa>(&sim_objects);
-}
-
 TEST(SimulationObjectUtilTest, ToBackend) {
   EXPECT_EQ(typeid(Neuron), typeid(ToBackend<Neuron, Scalar>));
   EXPECT_EQ(typeid(SoaNeuron), typeid(ToBackend<Neuron, Soa>));

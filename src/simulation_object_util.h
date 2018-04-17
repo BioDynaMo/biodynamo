@@ -16,6 +16,7 @@
 #include "macros.h"
 #include "resource_manager.h"
 #include "root_util.h"
+#include "so_pointer.h"
 #include "type_util.h"
 
 namespace bdm {
@@ -470,98 +471,6 @@ struct Capsule;
  const MostDerived* ThisMD() const { return static_cast<MostDerived*>(this); } \
 \
   BDM_ROOT_CLASS_DEF_OVERRIDE(class_name, class_version_id)
-
-/// Simulation object pointer. Required to point into simulation objects with
-/// `Soa` backend. `SoaRef` has the drawback that its size depends on the number
-/// of data members. Benefit compared to SoHandle is, that the compiler knows
-/// the type returned by `Get` and can therefore inline the code from the callee
-/// and perform optimizations
-/// @tparam TSoSimBackend simulation object type with simulation backend
-/// @tparam TBackend backend - required to avoid extracting it from TSo which
-///         would result in "incomplete type errors" in certain cases.
-template <typename TSoSimBackend, typename TBackend>
-class SoPointer {
-  /// Determine correct container
-  using Container = typename TBackend::template Container<TSoSimBackend>;
-
- public:
-  SoPointer(Container* container, uint64_t element_idx)
-      : so_container_(container), element_idx_(element_idx) {}
-
-  /// constructs an SoPointer object representing a nullptr
-  SoPointer() {}
-
-  uint32_t GetElementIdx() const { return element_idx_; }
-  void SetElementIdx(uint32_t element_idx) { element_idx_ = element_idx; }
-
-  /// TODO change to operator `so_ptr == nullptr` or `so_ptr != nullptr`
-  bool IsNullPtr() const {
-    return element_idx_ == std::numeric_limits<uint64_t>::max();
-  }
-
-  /// Equals operator that enables the following statement `so_ptr == nullptr;`
-  bool operator==(std::nullptr_t) const {
-    return element_idx_ == std::numeric_limits<uint64_t>::max();
-  }
-
-  /// Not equal operator that enables the following statement `so_ptr != nullptr;`
-  bool operator!=(std::nullptr_t) const {
-    return ! this->operator==(nullptr);
-  }
-
-  bool operator==(const SoPointer<TSoSimBackend, TBackend>& other) const {
-    return element_idx_ == other.element_idx_ && so_container_ == other.so_container_;
-  }
-
-  /// Assignment operator that changes the internal representation to nullptr.
-  /// Makes the following statement possible `so_ptr = nullptr;`
-  SoPointer<TSoSimBackend, TBackend>& operator=(std::nullptr_t) {
-    element_idx_ = std::numeric_limits<uint64_t>::max();
-    return *this;
-  }
-
-  /// Method to return the object it points to. Unfortunately, it is not
-  /// possible to use `operator->`, which would lead to a nice syntax like:
-  /// `so_ptr->SomeFunction()`. `operator->` must return a pointer which is
-  /// not possible for Soa backends (`operator[]` returns a temporary SoaRef
-  /// object).
-  template <typename TTBackend = TBackend>
-  auto& Get(typename std::enable_if<std::is_same<TTBackend, Scalar>::value>::type*
-               p = 0) {
-    assert(!IsNullPtr());
-    return (*so_container_)[element_idx_];
-  }
-
-  template <typename TTBackend = TBackend>
-  const auto& Get(typename std::enable_if<std::is_same<TTBackend, Scalar>::value>::type*
-               p = 0) const {
-    assert(!IsNullPtr());
-    return (*so_container_)[element_idx_];
-  }
-
-  template <typename TTBackend = TBackend>
-  auto Get(typename std::enable_if<std::is_same<TTBackend, Soa>::value>::type*
-               p = 0) {
-    assert(!IsNullPtr());
-    return (*so_container_)[element_idx_];
-  }
-
-  template <typename TTBackend = TBackend>
-  const auto Get(typename std::enable_if<std::is_same<TTBackend, Soa>::value>::type*
-               p = 0) const {
-    assert(!IsNullPtr());
-    return (*so_container_)[element_idx_];
-  }
-
-  friend std::ostream& operator<<(std::ostream& str, const SoPointer<TSoSimBackend, TBackend>& so_ptr) {
-    str << "{ container: " << so_ptr.so_container_ << ", element_idx: " << so_ptr.element_idx_ << "}";
-    return str;
-  }
-
- private:
-  Container* so_container_ = nullptr;
-  uint64_t element_idx_ = std::numeric_limits<uint64_t>::max();
-};
 
 /// Helper function to make cell division easier for the programmer.
 /// Creates a new daughter object and passes it together with the given

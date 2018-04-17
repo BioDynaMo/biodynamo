@@ -64,6 +64,8 @@
     <!-- list of template classes with custom streamers -->
     <class pattern="bdm::Variant*" />
     <class pattern="std::__1::vector<bdm::Variant<*>>" />
+    <class pattern="bdm::SoPointer*" />
+    <class pattern="std::__1::vector<bdm::SoPointer<*>>" />
     <class pattern="std::__1::tuple<*>::_*" />
   </exclusion>
 </lcgdict>
