@@ -1,8 +1,8 @@
-#include "displacement_op.h"
+#include "biology_module/grow_divide.h"
 #include "cell.h"
+#include "displacement_op.h"
 #include "gpu/gpu_helper.h"
 #include "grid.h"
-#include "biology_module/grow_divide.h"
 #include "gtest/gtest.h"
 #include "unit/test_util.h"
 
@@ -164,5 +164,5 @@ TEST(DisplacementOpGpuTest, ComputeSoaNewOpenCL) {
 }
 #endif
 
-}  // namespace displacement_op_test_internal
+}  // namespace displacement_op_gpu_test_internal
 }  // namespace bdm

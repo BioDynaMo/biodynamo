@@ -151,7 +151,7 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
                           "development.show_simulation_step");
   BDM_ASSIGN_CONFIG_VALUE(simulation_step_freq_,
                           "development.simulation_step_freq");
-  
+
   // experimental group
   BDM_ASSIGN_CONFIG_VALUE(use_gpu_, "experimental.use_gpu");
   BDM_ASSIGN_CONFIG_VALUE(use_opencl_, "experimental.use_opencl");

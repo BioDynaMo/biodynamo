@@ -283,11 +283,11 @@ class ResourceManager {
   std::vector<DiffusionGrid*> diffusion_grids_;
 
 #ifdef USE_OPENCL
-  cl::Context opencl_context_; //!
-  cl::CommandQueue opencl_command_queue_; //!
+  cl::Context opencl_context_;             //!
+  cl::CommandQueue opencl_command_queue_;  //!
   // Currently only support for one GPU device
-  std::vector<cl::Device> opencl_devices_; //!
-  std::vector<cl::Program> opencl_programs_; //!
+  std::vector<cl::Device> opencl_devices_;    //!
+  std::vector<cl::Program> opencl_programs_;  //!
 #endif
 
   friend class SimulationBackup;

@@ -666,8 +666,14 @@ class Grid {
 
   bool IsInitialized() { return initialized_; }
 
-  template <typename T_UINT32>
-  void GetSuccessors(std::vector<T_UINT32>* successors) {
+  /// @brief      Gets the successor list
+  ///
+  /// @param      successors  The successors
+  ///
+  /// @tparam     TUint32     A uint32 type (could also be cl_uint)
+  ///
+  template <typename TUint32>
+  void GetSuccessors(std::vector<TUint32>* successors) {
     uint16_t type = 0;
     for (size_t i = 0; i < successors_.size(type); i++) {
       auto sh = SoHandle(type, i);
@@ -675,20 +681,40 @@ class Grid {
     }
   }
 
-  template <typename T_UINT32, typename T_UINT16>
-  void GetGPUBoxData(std::vector<T_UINT32>* gpu_starts, std::vector<T_UINT16>* gpu_lengths) {
-    gpu_starts->resize(boxes_.size());
-    gpu_lengths->resize(boxes_.size());
+  /// @brief      Gets information about the grid boxes (i.e. which simulation
+  ///             objects reside in each box, wich can be retrieved in
+  ///             combination with the successor list
+  ///
+  /// @param      starts   The gpu starts
+  /// @param      lengths  The gpu lengths
+  ///
+  /// @tparam     TUint32      A uint32 type (could also be cl_uint)
+  /// @tparam     TUint16      A uint32 type (could also be cl_ushort)
+  ///
+  template <typename TUint32, typename TUint16>
+  void GetBoxInfo(std::vector<TUint32>* starts, std::vector<TUint16>* lengths) {
+    starts->resize(boxes_.size());
+    lengths->resize(boxes_.size());
     size_t i = 0;
     for (auto& box : boxes_) {
-      (*gpu_starts)[i] = box.start_.load().GetElementIdx();
-      (*gpu_lengths)[i] = box.length_;
+      (*starts)[i] = box.start_.load().GetElementIdx();
+      (*lengths)[i] = box.length_;
       i++;
     }
   }
 
-  template <typename T_UINT32, typename T_INT32>
-  void GetGridData(T_UINT32* box_length, std::array<T_UINT32, 3>& num_boxes_axis, std::array<T_INT32, 3>& grid_dimensions) {
+  /// @brief      Gets the information about the grid
+  ///
+  /// @param      box_length       The grid's box length
+  /// @param      num_boxes_axis   The number boxes along each axis of the grid
+  /// @param      grid_dimensions  The grid's dimensions
+  ///
+  /// @tparam     TUint32          A uint32 type (could also be cl_uint)
+  /// @tparam     TInt32           A int32 type (could be cl_int)
+  ///
+  template <typename TUint32, typename TInt32>
+  void GetGridInfo(TUint32* box_length, std::array<TUint32, 3>& num_boxes_axis,
+                   std::array<TInt32, 3>& grid_dimensions) {
     box_length[0] = box_length_;
     num_boxes_axis[0] = num_boxes_axis_[0];
     num_boxes_axis[1] = num_boxes_axis_[1];

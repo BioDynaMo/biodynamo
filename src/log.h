@@ -14,9 +14,10 @@ namespace bdm {
 ///
 class Log {
  public:
-  /// @brief Prints debug message
+  /// @brief      Prints debug message
   ///
-  /// @param[in]  parts   objects that compose the entire message
+  /// @param[in]  location  The location of the message
+  /// @param[in]  parts     objects that compose the entire message
   ///
   template <typename... Args>
   static void Debug(const std::string& location, const Args&... parts) {
@@ -28,7 +29,7 @@ class Log {
     }
   }
 
-  /// @brief Prints information message
+  /// @brief      Prints information message
   ///
   /// @param[in]  location  The location of the message
   /// @param[in]  parts     objects that compose the entire message

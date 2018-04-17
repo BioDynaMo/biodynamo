@@ -62,7 +62,9 @@ class DefaultForce {
         {module * comp1, module * comp2, module * comp3});
     *result = force2on1;
     // printf("%f, %f, %f\n", module * comp1, module * comp2, module * comp3);
-    // printf("Force between [%f, %f, %f] & [%f, %f, %f] = %f, %f, %f\n", c1[0], c1[1], c1[2], c2[0], c2[1], c2[2], module * comp1, module * comp2, module * comp3);
+    // printf("Force between [%f, %f, %f] & [%f, %f, %f] = %f, %f, %f\n", c1[0],
+    // c1[1], c1[2], c2[0], c2[1], c2[2], module * comp1, module * comp2, module
+    // * comp3);
   }
 
  private:

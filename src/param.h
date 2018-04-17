@@ -246,7 +246,7 @@ struct Param {
   /// Default value: `false`\n
   /// TOML config file:
   ///     [experimental]
-  ///     use_gpu = false 
+  ///     use_gpu = false
   static bool use_gpu_;
 
   /// When both CUDA and OpenCL are available on a machine, the preference to
@@ -254,7 +254,7 @@ struct Param {
   /// Default value: `false`\n
   /// TOML config file:
   ///     [experimental]
-  ///     use_opencl = false 
+  ///     use_opencl = false
   static bool use_opencl_;
 
   /// Compile OpenCL kernels with debugging symbols, for debugging on CPU
@@ -262,14 +262,14 @@ struct Param {
   /// Default value: `false`\n
   /// TOML config file:
   ///     [experimental]
-  ///     opencl_debug_ = false 
+  ///     opencl_debug_ = false
   static bool opencl_debug_;
 
   /// Set the index of the preferred GPU you wish to use.
   /// Default value: `0`\n
   /// TOML config file:
   ///     [experimental]
-  ///     preferred_gpu = 0 
+  ///     preferred_gpu = 0
   static int preferred_gpu_;
 
   /// Resets the static variables to its default values

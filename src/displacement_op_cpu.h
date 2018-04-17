@@ -25,7 +25,7 @@ class DisplacementOpCpu {
     auto search_radius = grid.GetLargestObjectSize();
     double squared_radius = search_radius * search_radius;
 
-  #pragma omp parallel for shared(grid) firstprivate(squared_radius)
+#pragma omp parallel for shared(grid) firstprivate(squared_radius)
     for (size_t i = 0; i < cells->size(); i++) {
       auto&& cell = (*cells)[i];
       // Basically, the idea is to make the sum of all the forces acting
@@ -126,10 +126,10 @@ class DisplacementOpCpu {
       cell_movements[i] = movement_at_next_step;
     }
 
-  // set new positions after all updates have been calculated
-  // otherwise some cells would see neighbors with already updated positions
-  // which would lead to inconsistencies
-  #pragma omp parallel for
+// set new positions after all updates have been calculated
+// otherwise some cells would see neighbors with already updated positions
+// which would lead to inconsistencies
+#pragma omp parallel for
     for (size_t i = 0; i < cells->size(); i++) {
       auto&& cell = (*cells)[i];
       cell.UpdateMassLocation(cell_movements[i]);

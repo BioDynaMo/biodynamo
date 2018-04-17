@@ -59,7 +59,7 @@ class DisplacementOp {
  private:
   DisplacementOpCpu<TGrid> cpu_;
 #ifdef USE_CUDA
-  DisplacementOpCuda<TGrid> cuda_;
+  DisplacementOpCuda<TGrid> cuda_;  // NOLINT
 #endif
 #ifdef USE_OPENCL
   DisplacementOpOpenCL<TGrid> opencl_;

@@ -37,14 +37,10 @@ class SimulationObjectVector {
   }
 
   // Returns the number of element types
-  size_t size() {
-    return data_.size();
-  }
+  size_t size() { return data_.size(); }  // NOLINT
 
   // Returns the number of elements of specified type
-  size_t size(uint16_t type_idx) {
-    return data_[type_idx].size();
-  }
+  size_t size(uint16_t type_idx) { return data_[type_idx].size(); }  // NOLINT
 
   const T& operator[](const SoHandle& handle) const {
     return data_[handle.GetTypeIdx()][handle.GetElementIdx()];

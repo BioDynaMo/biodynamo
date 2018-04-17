@@ -19,7 +19,8 @@ namespace bdm {
 using std::array;
 
 /// Defines the 3D physical interactions between physical objects
-template <typename TGrid = Grid<>, typename TResourceManager = ResourceManager<>>
+template <typename TGrid = Grid<>,
+          typename TResourceManager = ResourceManager<>>
 class DisplacementOpOpenCL {
  public:
   DisplacementOpOpenCL() {}
@@ -42,40 +43,50 @@ class DisplacementOpOpenCL {
     cl_uint box_length;
     std::array<cl_uint, 3> num_boxes_axis;
     std::array<cl_int, 3> grid_dimensions;
-    cl_double squared_radius = grid.GetLargestObjectSize()*grid.GetLargestObjectSize();
+    cl_double squared_radius =
+        grid.GetLargestObjectSize() * grid.GetLargestObjectSize();
 
     // We need to create a mass vector, because it is not stored by default in
     // a cell container
     cells->FillMassVector(&mass);
     grid.GetSuccessors(&successors);
-    grid.GetGPUBoxData(&gpu_starts, &gpu_lengths);
-    grid.GetGridData(&box_length, num_boxes_axis, grid_dimensions);
+    grid.GetBoxInfo(&gpu_starts, &gpu_lengths);
+    grid.GetGridInfo(&box_length, num_boxes_axis, grid_dimensions);
 
     // Allocate GPU buffers
     cl::Buffer positions_arg(*context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR,
-                 cells->size() * 3 * sizeof(cl_double), cells->GetPositionPtr());
+                             cells->size() * 3 * sizeof(cl_double),
+                             cells->GetPositionPtr());
     cl::Buffer diameters_arg(*context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR,
-                 cells->size() * sizeof(cl_double), cells->GetDiameterPtr());
-    cl::Buffer tractor_force_arg(*context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR,
-                 cells->size() * 3 * sizeof(cl_double), cells->GetTractorForcePtr());
+                             cells->size() * sizeof(cl_double),
+                             cells->GetDiameterPtr());
+    cl::Buffer tractor_force_arg(
+        *context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR,
+        cells->size() * 3 * sizeof(cl_double), cells->GetTractorForcePtr());
     cl::Buffer adherence_arg(*context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR,
-                 cells->size() * sizeof(cl_double), cells->GetAdherencePtr());
+                             cells->size() * sizeof(cl_double),
+                             cells->GetAdherencePtr());
     cl::Buffer box_id_arg(*context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR,
-                 cells->size() * sizeof(cl_uint), cells->GetBoxIdPtr());
+                          cells->size() * sizeof(cl_uint),
+                          cells->GetBoxIdPtr());
     cl::Buffer mass_arg(*context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR,
-                 cells->size() * sizeof(cl_double), mass.data());
-    cl::Buffer cell_movements_arg(*context, CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR,
-                 cells->size() * 3 * sizeof(cl_double), cell_movements.data()->data());
+                        cells->size() * sizeof(cl_double), mass.data());
+    cl::Buffer cell_movements_arg(
+        *context, CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR,
+        cells->size() * 3 * sizeof(cl_double), cell_movements.data()->data());
     cl::Buffer starts_arg(*context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR,
-                 gpu_starts.size() * sizeof(cl_uint), gpu_starts.data());
+                          gpu_starts.size() * sizeof(cl_uint),
+                          gpu_starts.data());
     cl::Buffer lengths_arg(*context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR,
-                 gpu_lengths.size() * sizeof(cl_short), gpu_lengths.data());
+                           gpu_lengths.size() * sizeof(cl_short),
+                           gpu_lengths.data());
     cl::Buffer successors_arg(*context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR,
-                 successors.size() * sizeof(cl_uint), successors.data());
+                              successors.size() * sizeof(cl_uint),
+                              successors.data());
     cl::Buffer nba_arg(*context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR,
-                 3 * sizeof(cl_uint), num_boxes_axis.data());
+                       3 * sizeof(cl_uint), num_boxes_axis.data());
     cl::Buffer gd_arg(*context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR,
-                 3 * sizeof(cl_int), grid_dimensions.data());
+                      3 * sizeof(cl_int), grid_dimensions.data());
 
     // Create the kernel object from our program
     // TODO(ahmad): generalize the program selection, in case we have more than
@@ -102,28 +113,33 @@ class DisplacementOpOpenCL {
     collide.setArg(15, gd_arg);
     collide.setArg(16, cell_movements_arg);
 
-    // The amount of threads for each work group (analogous to CUDA thread block)
+    // The amount of threads for each work group (analogous to CUDA thread
+    // block)
     int block_size = 256;
 
-    auto N = cells->size();
+    auto num_objects = cells->size();
 
     try {
       // The global size determines the total number of threads that will be
       // spawned on the GPU, in groups of local_size
-      cl::NDRange global_size = cl::NDRange(N + (block_size - (N%block_size)));
+      cl::NDRange global_size =
+          cl::NDRange(num_objects + (block_size - (num_objects % block_size)));
       cl::NDRange local_size = cl::NDRange(block_size);
-      queue->enqueueNDRangeKernel(collide, cl::NullRange, global_size, local_size);
-    } catch (const cl::Error &err) {
-      std::cerr << "OpenCL error: " << err.what() << "(" << err.err() << ") = " << getErrorString(err.err()) 
-                << std::endl;
+      queue->enqueueNDRangeKernel(collide, cl::NullRange, global_size,
+                                  local_size);
+    } catch (const cl::Error& err) {
+      Log::Error("DisplacementOpOpenCL", err.what(), "(", err.err(), ") = ",
+                 GetErrorString(err.err()));
       throw;
     }
 
     try {
-      queue->enqueueReadBuffer(cell_movements_arg, CL_TRUE, 0, cells->size() * 3 * sizeof(cl_double), cell_movements.data()->data());
-    } catch (const cl::Error &err) {
-      std::cerr << "OpenCL error: " << err.what() << "(" << err.err() << ") = " << getErrorString(err.err()) 
-                << std::endl;
+      queue->enqueueReadBuffer(cell_movements_arg, CL_TRUE, 0,
+                               cells->size() * 3 * sizeof(cl_double),
+                               cell_movements.data()->data());
+    } catch (const cl::Error& err) {
+      Log::Error("DisplacementOpOpenCL", err.what(), "(", err.err(), ") = ",
+                 GetErrorString(err.err()));
       throw;
     }
 
