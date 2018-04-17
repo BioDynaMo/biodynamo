@@ -146,6 +146,7 @@ if (OpenCL_FOUND)
   endif()
   add_definitions("-DUSE_OPENCL")
   link_directories("${CMAKE_SOURCE_DIR}/build")
+  include_directories(${OpenCL_INCLUDE_DIRS})
   target_link_libraries(biodynamo ${OpenCL_LIBRARIES})
 endif()
 
