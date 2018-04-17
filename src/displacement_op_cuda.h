@@ -1,8 +1,7 @@
 #ifndef DISPLACEMENT_OP_CUDA_H_
 #define DISPLACEMENT_OP_CUDA_H_
 
-#include <fstream>
-#include <iomanip>
+#include <vector>
 
 #include "displacement_op.h"
 #include "gpu/displacement_op_cuda_kernel.h"
@@ -41,7 +40,7 @@ class DisplacementOpCuda {
     cells->FillMassVector(&mass);
     grid.GetSuccessors(&successors);
     grid.GetBoxInfo(&starts, &lengths);
-    grid.GetGridInfo(&box_length, num_boxes_axis, grid_dimensions);
+    grid.GetGridInfo(&box_length, &num_boxes_axis, &grid_dimensions);
 
     // If this is the first time we perform physics on GPU using CUDA
     if (cdo_ == nullptr) {

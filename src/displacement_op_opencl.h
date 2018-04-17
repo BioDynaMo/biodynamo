@@ -1,6 +1,8 @@
 #ifndef DISPLACEMENT_OP_OPENCL_H_
 #define DISPLACEMENT_OP_OPENCL_H_
 
+#include <vector>
+
 #ifdef USE_OPENCL
 #define __CL_ENABLE_EXCEPTIONS
 #ifdef __APPLE__
@@ -51,7 +53,7 @@ class DisplacementOpOpenCL {
     cells->FillMassVector(&mass);
     grid.GetSuccessors(&successors);
     grid.GetBoxInfo(&gpu_starts, &gpu_lengths);
-    grid.GetGridInfo(&box_length, num_boxes_axis, grid_dimensions);
+    grid.GetGridInfo(&box_length, &num_boxes_axis, &grid_dimensions);
 
     // Allocate GPU buffers
     cl::Buffer positions_arg(*context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR,

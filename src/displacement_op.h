@@ -47,7 +47,7 @@ class DisplacementOp {
       }
 #endif
 #ifdef USE_CUDA
-      else {
+      if (!Param::use_opencl_) {
         cuda_(cells, type_idx);
       }
 #endif

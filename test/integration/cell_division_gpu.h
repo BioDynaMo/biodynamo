@@ -1,7 +1,7 @@
-#ifndef INTEGRATION_SOMA_CLUSTERING_H_
-#define INTEGRATION_SOMA_CLUSTERING_H_
+#ifndef INTEGRATION_CELL_DIVISION_GPU_H_
+#define INTEGRATION_CELL_DIVISION_GPU_H_
 
-#include <vector>
+#include <array>
 
 #include "biodynamo.h"
 #include "math_util.h"
@@ -135,4 +135,4 @@ inline int Simulate(int argc, const char** argv) {
 
 }  // namespace bdm
 
-#endif  // INTEGRATION_SOMA_CLUSTERING_H_
+#endif  // INTEGRATION_CELL_DIVISION_GPU_H_

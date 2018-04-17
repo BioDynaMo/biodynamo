@@ -713,15 +713,15 @@ class Grid {
   /// @tparam     TInt32           A int32 type (could be cl_int)
   ///
   template <typename TUint32, typename TInt32>
-  void GetGridInfo(TUint32* box_length, std::array<TUint32, 3>& num_boxes_axis,
-                   std::array<TInt32, 3>& grid_dimensions) {
+  void GetGridInfo(TUint32* box_length, std::array<TUint32, 3>* num_boxes_axis,
+                   std::array<TInt32, 3>* grid_dimensions) {
     box_length[0] = box_length_;
-    num_boxes_axis[0] = num_boxes_axis_[0];
-    num_boxes_axis[1] = num_boxes_axis_[1];
-    num_boxes_axis[2] = num_boxes_axis_[2];
-    grid_dimensions[0] = grid_dimensions_[0];
-    grid_dimensions[1] = grid_dimensions_[2];
-    grid_dimensions[2] = grid_dimensions_[4];
+    (*num_boxes_axis)[0] = num_boxes_axis_[0];
+    (*num_boxes_axis)[1] = num_boxes_axis_[1];
+    (*num_boxes_axis)[2] = num_boxes_axis_[2];
+    (*grid_dimensions)[0] = grid_dimensions_[0];
+    (*grid_dimensions)[1] = grid_dimensions_[2];
+    (*grid_dimensions)[2] = grid_dimensions_[4];
   }
 
  private:
