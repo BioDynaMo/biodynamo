@@ -139,15 +139,16 @@ if(${VTune_FOUND})
 endif()
 
 # Link to OpenCL
-if (OpenCL_FOUND)
-  if (APPLE)
-    # Apple does not ship OpenCL C++ bindings by default
-    include_directories("${CMAKE_SOURCE_DIR}/third_party")
+if (OPENCL_FOUND)
+  if (NOT OPENCL_HAS_CXX)
+    message(WARNING "OpenCL C++ bindings not found. Please install to make use of OpenCL. "
+      "If you think you have installed the C++ bindings correctly, please check if one "
+      "of the following environmentals is set correctly (vendor specific): 
+      - AMD: \t\tAMDAPPSDKROOT
+      - NVIDIA: \tCUDA_PATH
+      - INTEL: \tINTELOPENCLSDK")
+    set(OPENCL_FOUND FALSE)
   endif()
-  add_definitions("-DUSE_OPENCL")
-  link_directories("${CMAKE_SOURCE_DIR}/build")
-  include_directories(${OpenCL_INCLUDE_DIRS})
-  target_link_libraries(biodynamo ${OpenCL_LIBRARIES})
 endif()
 
 if (CUDA_FOUND)
@@ -244,7 +245,7 @@ if (test)
                       SOURCES test/integration/cell_division_gpu.cc
                       HEADERS test/integration/cell_division_gpu.h
                       LIBRARIES biodynamo)
-    if(OpenCL_FOUND OR CUDA_FOUND)
+    if(OPENCL_FOUND OR CUDA_FOUND)
       add_dependencies(check cell_division_gpu)
       add_test(NAME "integration-cell-division-gpu"
                COMMAND ${CMAKE_SOURCE_DIR}/build/cell_division_gpu)

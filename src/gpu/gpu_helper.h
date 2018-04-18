@@ -193,7 +193,7 @@ static void InitializeGPUEnvironment() {
 #else
     Log::Info("InitializeGPUEnvironment",
               "You tried to use the GPU (OpenCL) version of BioDynaMo, but no "
-              "OpenCL installation was detected on this machine.\nSwitching to "
+              "OpenCL installation was detected on this machine. Switching to "
               "the CPU version...");
     Param::use_gpu_ = false;
 #endif
@@ -203,7 +203,7 @@ static void InitializeGPUEnvironment() {
 #else
     Log::Info("InitializeGPUEnvironment",
               "You tried to use the GPU (CUDA) version of BioDynaMo, but no "
-              "CUDA installation was detected on this machine.\nSwitching to "
+              "CUDA installation was detected on this machine. Switching to "
               "the CPU version...");
     Param::use_gpu_ = false;
 #endif
