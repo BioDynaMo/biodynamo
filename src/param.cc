@@ -36,6 +36,12 @@ uint32_t Param::simulation_step_freq_ = 10;
 bool Param::statistics_ = false;
 bool Param::python_catalyst_pipeline_ = false;
 
+// experimental group
+bool Param::use_gpu_ = false;
+bool Param::use_opencl_ = false;
+bool Param::opencl_debug_ = false;
+int Param::preferred_gpu_ = 0;
+
 #define BDM_ASSIGN_CONFIG_VALUE(variable, config_key)                        \
   {                                                                          \
     if (config->contains_qualified(config_key)) {                            \
@@ -143,6 +149,12 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
                           "development.show_simulation_step");
   BDM_ASSIGN_CONFIG_VALUE(simulation_step_freq_,
                           "development.simulation_step_freq");
+
+  // experimental group
+  BDM_ASSIGN_CONFIG_VALUE(use_gpu_, "experimental.use_gpu");
+  BDM_ASSIGN_CONFIG_VALUE(use_opencl_, "experimental.use_opencl");
+  BDM_ASSIGN_CONFIG_VALUE(opencl_debug_, "experimental.opencl_debug");
+  BDM_ASSIGN_CONFIG_VALUE(preferred_gpu_, "experimental.preferred_gpu");
 }
 
 void Param::Reset() {
@@ -174,6 +186,12 @@ void Param::Reset() {
   python_catalyst_pipeline_ = false;
   show_simulation_step_ = true;
   simulation_step_freq_ = 10;
+
+  // experimental group
+  use_gpu_ = false;
+  use_opencl_ = false;
+  opencl_debug_ = false;
+  preferred_gpu_ = 0;
 }
 
 }  // namespace bdm

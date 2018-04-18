@@ -39,12 +39,12 @@ BDM_SIM_OBJECT(Cell, SimulationObject) {
   }
 
   using TBiologyModuleVariant = typename TCompileTimeParam::BiologyModules;
-  CellExt() : density_{1.0} {}
-  explicit CellExt(double diameter) : diameter_(diameter), density_{1.0} {
+  CellExt() : density_(1.0) {}
+  explicit CellExt(double diameter) : diameter_(diameter), density_(1.0) {
     UpdateVolume();
   }
   explicit CellExt(const array<double, 3>& position)
-      : position_(position), mass_location_(position), density_{1.0} {}
+      : position_(position), mass_location_(position), density_(1.0) {}
 
   virtual ~CellExt() {}
 
@@ -138,8 +138,17 @@ BDM_SIM_OBJECT(Cell, SimulationObject) {
 
   const array<double, 3>& GetPosition() const { return position_[kIdx]; }
 
-  double* GetPositionPtr() { return &(position_[0][0]); }
-  double* GetDiameterPtr() { return &(diameter_[0]); }
+  double* GetPositionPtr() { return position_.data()->data(); }
+  double* GetDiameterPtr() { return diameter_.data(); }
+  double* GetTractorForcePtr() { return tractor_force_.data()->data(); }
+  double* GetAdherencePtr() { return adherence_.data(); }
+  uint32_t* GetBoxIdPtr() { return box_idx_.data(); }
+
+  void FillMassVector(std::vector<double> * mass) {
+    for (size_t i = 0; i < diameter_.size(); i++) {
+      (*mass)[i] = density_[i] * volume_[i];
+    }
+  }
 
   const array<double, 3>& GetTractorForce() const {
     return tractor_force_[kIdx];
@@ -217,9 +226,9 @@ BDM_SIM_OBJECT(Cell, SimulationObject) {
                                       diameter_[kIdx], iof_coefficient, force);
   }
 
-  uint64_t GetBoxIdx() const { return box_idx_[kIdx]; }
+  uint32_t GetBoxIdx() const { return box_idx_[kIdx]; }
 
-  void SetBoxIdx(uint64_t idx) { box_idx_[kIdx] = idx; }
+  void SetBoxIdx(uint32_t idx) { box_idx_[kIdx] = idx; }
 
  protected:
   /// Returns the position in the polar coordinate system (cylindrical or
@@ -249,7 +258,7 @@ BDM_SIM_OBJECT(Cell, SimulationObject) {
   vec<std::vector<TBiologyModuleVariant>> biology_modules_;
 
   /// Grid box index
-  vec<uint64_t> box_idx_;
+  vec<uint32_t> box_idx_;
 };
 
 // ----------------------------------------------------------------------------

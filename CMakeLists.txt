@@ -44,6 +44,8 @@ if (test)
   find_package(Threads REQUIRED)
 endif()
 
+find_package(CUDA)
+find_package(OpenCL)
 find_package(Git)
 find_package(ROOT REQUIRED COMPONENTS Geom Gui)
 
@@ -88,14 +90,14 @@ include(cmake/SetCompilerFlags.cmake)
 
 # -------------------- set rpath options ---------------------------------------
 # When building, use the RPATH
-set(CMAKE_SKIP_BUILD_RPATH FALSE)           # don't skip the full RPATH for the build tree
+set(CMAKE_SKIP_BUILD_RPATH FALSE) # don't skip the full RPATH for the build tree
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 if(APPLE)
   set(CMAKE_INSTALL_RPATH
-	"/usr/local/lib/paraview-5.4"
-	"/usr/local/opt/qt5/lib"
-	"/usr/local/lib/biodynamo")
+  "/usr/local/lib/paraview-5.4"
+  "/usr/local/opt/qt5/lib"
+  "/usr/local/lib/biodynamo")
 endif()
 
 # -------------------- setup mpark variant library -----------------------------
@@ -113,15 +115,55 @@ include_directories("${CMAKE_SOURCE_DIR}/third_party")
 include_directories("${CMAKE_SOURCE_DIR}/demo")
 include_directories("${MPARK_LIB}")
 
+# Fix for rootcling not able to find omp.h. We cannot include the entire include
+# directory of the compiler (where omp.h is in), because rootcling starts using
+# the intrinsics found in there. Therefore we do a local copy into the build dir.
+execute_process(COMMAND ${CMAKE_CXX_COMPILER} --print-file-name=include/omp.h 
+                OUTPUT_VARIABLE OMP_HEADER_PATH)
+# above command returns path with "\n" appended
+string(REGEX REPLACE "\n$" "" OMP_HEADER_PATH "${OMP_HEADER_PATH}")
+execute_process(COMMAND mkdir -p ${CMAKE_SOURCE_DIR}/build/omp)
+execute_process(COMMAND cp ${OMP_HEADER_PATH} ${CMAKE_SOURCE_DIR}/build/omp)
+include_directories("${CMAKE_SOURCE_DIR}/build/omp")
+
 # build libbiodynamo
 file(GLOB_RECURSE HEADERS "${CMAKE_SOURCE_DIR}/src/*.h")
 file(GLOB_RECURSE LIB_SOURCES "${CMAKE_SOURCE_DIR}/src/*.cc")
+file(GLOB_RECURSE KERNELS "${CMAKE_SOURCE_DIR}/src/*.cu")
 build_libbiodynamo(biodynamo
                    SOURCES ${LIB_SOURCES}
                    HEADERS ${HEADERS}
                    LIBRARIES ${ROOT_LIBRARIES})
 if(${VTune_FOUND})
   target_link_libraries(biodynamo ${VTUNE_LIBRARIES})
+endif()
+
+# Link to OpenCL
+if (OPENCL_FOUND)
+  if (NOT OPENCL_HAS_CXX)
+    message(WARNING "OpenCL C++ bindings not found. Please install to make use of OpenCL. "
+      "If you think you have installed the C++ bindings correctly, please check if one "
+      "of the following environmentals is set correctly (vendor specific): 
+      - AMD: \t\tAMDAPPSDKROOT
+      - NVIDIA: \tCUDA_PATH
+      - INTEL: \tINTELOPENCLSDK")
+    set(OPENCL_FOUND FALSE)
+  endif()
+endif()
+
+if (CUDA_FOUND)
+  add_definitions("-DUSE_CUDA")
+  # Compile CUDA kernels into shared library
+  set(CUDA_HOST_COMPILER "/usr/bin/")
+  # CUDA 8.0 is not compatible with gcc > 5
+  set(NVCCFLAGS="--compiler-bindir ${CUDA_HOST_COMPILER}")
+  # set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -g -G" )
+  set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -std=c++11" )
+  target_link_libraries(biodynamo ${CUDA_LIBRARIES})
+  cuda_include_directories(${CUDA_INCLUDE_DIRS} ${CUDA_TOOLKIT_ROOT_DIR})
+  include_directories(${CUDA_INCLUDE_DIRS} ${CUDA_TOOLKIT_ROOT_DIR})
+  cuda_add_library(bdmcuda ${KERNELS} OPTIONS -arch sm_60)
+  target_link_libraries(biodynamo bdmcuda)
 endif()
 
 # add custom clean target for shared library
@@ -199,6 +241,15 @@ if (test)
     #   makefile project
     add_test(NAME "makefile-project"
              COMMAND ${CMAKE_SOURCE_DIR}/test/integration/makefile_project.sh)
+    bdm_add_executable(cell_division_gpu
+                      SOURCES test/integration/cell_division_gpu.cc
+                      HEADERS test/integration/cell_division_gpu.h
+                      LIBRARIES biodynamo)
+    if(OPENCL_FOUND OR CUDA_FOUND)
+      add_dependencies(check cell_division_gpu)
+      add_test(NAME "integration-cell-division-gpu"
+               COMMAND ${CMAKE_SOURCE_DIR}/build/cell_division_gpu)
+    endif()
   endif()
 endif()
 
@@ -229,8 +280,8 @@ bdm_add_executable(diffusion_module
                    HEADERS demo/diffusion_module.h
                    LIBRARIES biodynamo)
 
-# --------------------- build gene_regulation executable ------------------
-bdm_add_executable(gene_regulation
-                   SOURCES demo/gene_regulation.cc
-                   HEADERS demo/gene_regulation.h
+# --------------------- build gene_regulation executable ------------------  
+bdm_add_executable(gene_regulation 
+                   SOURCES demo/gene_regulation.cc 
+                   HEADERS demo/gene_regulation.h  
                    LIBRARIES biodynamo)

@@ -8,6 +8,7 @@ namespace bdm {
 TEST(GrowDivideTest, Grow) {
   auto rm = ResourceManager<>::Get();
   rm->Clear();
+  Param::Reset();
 
   Cell cell;
   cell.SetDiameter(40);
@@ -24,6 +25,7 @@ TEST(GrowDivideTest, Grow) {
 TEST(GrowDivideTest, Divide) {
   auto rm = ResourceManager<>::Get();
   rm->Clear();
+  Param::Reset();
 
   Cell cell;
   cell.SetDiameter(41);

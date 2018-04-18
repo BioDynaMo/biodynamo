@@ -63,9 +63,13 @@ install(FILES cmake/non-cmake-build/bdm_code_generation DESTINATION ${CMAKE_INST
 # libbiodynamo.so
 install(TARGETS biodynamo LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
 install(FILES build/libbiodynamo_dict_rdict.pcm DESTINATION ${CMAKE_INSTALL_LIBDIR})
+# libbdmcuda.a
+if(CUDA_FOUND)
+  install(TARGETS bdmcuda ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} OPTIONAL)
+endif()
 # headers and python scripts
 install(DIRECTORY src/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-        FILES_MATCHING PATTERN "*.h" PATTERN "*.py")
+        FILES_MATCHING PATTERN "*.h" PATTERN "*.cl" PATTERN "*.py")
 #   third party headers
 file(GLOB MPARK_HEADERS ${CMAKE_BINARY_DIR}/mpark/mpark/*)
 install(FILES ${MPARK_HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/mpark)
@@ -78,6 +82,7 @@ install(FILES ${SELECTION_FILES} DESTINATION ${CMAKE_INSTALL_CMAKEDATADIR})
 install(FILES cmake/BioDynaMo.cmake DESTINATION ${CMAKE_INSTALL_CMAKEDATADIR})
 install(FILES cmake/SetCompilerFlags.cmake DESTINATION ${CMAKE_INSTALL_CMAKEDATADIR})
 install(FILES cmake/FindROOT.cmake DESTINATION ${CMAKE_INSTALL_CMAKEDATADIR})
+install(FILES cmake/FindOpenCL.cmake DESTINATION ${CMAKE_INSTALL_CMAKEDATADIR})
 install(FILES cmake/RootUseFile.cmake DESTINATION ${CMAKE_INSTALL_CMAKEDATADIR})
 install(FILES ${CMAKE_BINARY_DIR}/UseBioDynaMo.cmake DESTINATION ${CMAKE_INSTALL_CMAKEDATADIR})
 # CMake files required from external projects

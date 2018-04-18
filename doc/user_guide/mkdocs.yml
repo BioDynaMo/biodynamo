@@ -14,5 +14,6 @@ pages:
       - Diffusion: diffusion.md
       - Substance Initialization: substance_initializers.md
       # - Soma Clustering: soma_clustering.md
-    - Documentation: documentation.md
+    - Documentation:
+      - GPU Acceleration: gpu_acceleration.md
     - Contact: contact.md

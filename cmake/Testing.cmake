@@ -57,19 +57,10 @@ function(bdm_add_test_executable TEST_TARGET)
 
   # execute all tests with command: make test
   add_test(NAME ${TEST_TARGET} COMMAND ${TEST_TARGET})
-  if (APPLE)
-    set_tests_properties(${TEST_TARGET} PROPERTIES ENVIRONMENT
-        "DYLD_LIBRARY_PATH=$ENV{DYLD_LIBRARY_PATH}"
-    )
-  endif()
+
   # add valgrind test
   if (valgrind AND NOT coverage)
-    add_test(NAME "valgrind_${TEST_TARGET}" COMMAND valgrind --leak-resolution=high --tool=memcheck --leak-check=full --show-leak-kinds=all --show-reachable=no --suppressions=${CMAKE_BINARY_DIR}/../valgrind-biod.supp --error-exitcode=1 ./${TEST_TARGET} --gtest_filter=-*DeathTest.*:IOTest.InvalidRead)
-    if (APPLE)
-      set_tests_properties(valgrind PROPERTIES ENVIRONMENT
-        "DYLD_LIBRARY_PATH=$ENV{DYLD_LIBRARY_PATH}"
-      )
-    endif()
+    add_test(NAME "valgrind_${TEST_TARGET}" COMMAND valgrind --leak-resolution=high --tool=memcheck --leak-check=full --show-leak-kinds=all --gen-suppressions=all --show-reachable=no --suppressions=${CMAKE_BINARY_DIR}/../valgrind-biod.supp --error-exitcode=1 ./${TEST_TARGET} -- --gtest_filter=-*DeathTest.*:IOTest.InvalidRead)
   endif()
 
   add_dependencies(check ${TEST_TARGET})

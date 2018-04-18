@@ -5,6 +5,11 @@
 #   include(${BDM_USE_FILE})
 #   bdm_add_executable(...)
 
+# Add our CMake files (e.g. FindXXX.cmake files) to the module path, so that out
+# of source build can find them
+get_filename_component(CMAKE_DIR ${BDM_USE_FILE} DIRECTORY)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_DIR})
+
 if(UNIX AND NOT APPLE)
   set(LINUX TRUE)
 endif()
@@ -39,6 +44,8 @@ else()
 endif()
 find_package(Git)
 find_package(ROOT REQUIRED COMPONENTS Geom Gui)
+find_package(CUDA)
+find_package(OpenCL)
 
 find_package(ParaView 5.3 QUIET OPTIONAL_COMPONENTS vtkPVPythonCatalyst)
 if(${ParaView_FOUND})
@@ -48,6 +55,29 @@ if(${ParaView_FOUND})
   link_directories($ENV{ParaView_DIR}/../../paraview-5.4)
 else()
   message(WARNING "ParaView not found")
+endif()
+
+# Link to OpenCL
+if (OPENCL_FOUND)
+  if (OPENCL_HAS_CXX)
+    add_definitions("-DUSE_OPENCL")
+    set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${OPENCL_LIBRARIES})
+  else()
+    message(WARNING "OpenCL C++ bindings not found. Please install to make use of OpenCL. "
+      "If you think you have installed the C++ bindings correctly, please check if one "
+      "of the following environmentals is set correctly (vendor specific): 
+      - AMD: \t\tAMDAPPSDKROOT
+      - NVIDIA: \tCUDA_PATH
+      - INTEL: \tINTELOPENCLSDK")
+    set(OPENCL_FOUND FALSE)
+  endif()
+endif()
+
+if (CUDA_FOUND)
+  add_definitions("-DUSE_CUDA")
+  include_directories(${CUDA_INCLUDE_DIRS} ${CUDA_TOOLKIT_ROOT_DIR})
+  set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${CUDA_LIBRARIES})
+  set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} bdmcuda)
 endif()
 
 # -------------------- set default build type and compiler flags ---------------
@@ -68,7 +98,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${BDM_CMAKE_DIR}")
 include("${BDM_CMAKE_DIR}/BioDynaMo.cmake")
 include(${ROOT_USE_FILE})
 
-set(BDM_REQUIRED_LIBRARIES biodynamo ${ROOT_LIBRARIES} vtkPVPythonCatalyst
+set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} biodynamo ${ROOT_LIBRARIES} vtkPVPythonCatalyst
     vtkIOParallelXML vtkPVVTKExtensionsDefault vtkPVServerManagerRendering)
 
 # packaged install
