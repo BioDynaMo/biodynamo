@@ -21,7 +21,6 @@ bool Param::calculate_gradients_ = true;
 size_t Param::total_steps_ = 0;
 Param::NumericalODESolver Param::numerical_ode_solver_ =
     Param::NumericalODESolver::kEuler;
-unsigned Param::simulation_steps_ = 1;
 
 // visualization group
 bool Param::live_visualization_ = false;
@@ -69,7 +68,6 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
   BDM_ASSIGN_CONFIG_VALUE(leaking_edges_, "simulation.leaking_edges");
   BDM_ASSIGN_CONFIG_VALUE(calculate_gradients_,
                           "simulation.calculate_gradients");
-  BDM_ASSIGN_CONFIG_VALUE(simulation_steps_, "simulation.simulation_steps");
   // visualization group
   BDM_ASSIGN_CONFIG_VALUE(live_visualization_, "visualization.live");
   BDM_ASSIGN_CONFIG_VALUE(export_visualization_, "visualization.export");
@@ -175,7 +173,6 @@ void Param::Reset() {
   calculate_gradients_ = true;
   total_steps_ = 0;
   numerical_ode_solver_ = NumericalODESolver::kEuler;
-  simulation_steps_ = 1;
 
   // visualization group
   live_visualization_ = false;

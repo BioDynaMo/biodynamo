@@ -18,7 +18,7 @@ set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -Wall -Wno-missing-braces -m64 -fPIC ${O
 # special clang flags
 if(${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
   # silence clang 3.9 warning
-  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++ -Wno-undefined-var-template")
+  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-undefined-var-template")
 endif()
 
 # flags for specific build type

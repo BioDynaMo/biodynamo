@@ -60,7 +60,7 @@ function(bdm_add_test_executable TEST_TARGET)
 
   # add valgrind test
   if (valgrind AND NOT coverage)
-    add_test(NAME "valgrind_${TEST_TARGET}" COMMAND valgrind --leak-resolution=high --tool=memcheck --leak-check=full --show-leak-kinds=all --gen-suppressions=all --show-reachable=no --suppressions=${CMAKE_BINARY_DIR}/../valgrind-biod.supp --error-exitcode=1 ./${TEST_TARGET} --gtest_filter=-*DeathTest.*:IOTest.InvalidRead)
+    add_test(NAME "valgrind_${TEST_TARGET}" COMMAND valgrind --leak-resolution=high --tool=memcheck --leak-check=full --show-leak-kinds=all --gen-suppressions=all --show-reachable=no --suppressions=${CMAKE_BINARY_DIR}/../valgrind-biod.supp --error-exitcode=1 ./${TEST_TARGET} -- --gtest_filter=-*DeathTest.*:IOTest.InvalidRead)
   endif()
 
   add_dependencies(check ${TEST_TARGET})

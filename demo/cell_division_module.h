@@ -36,7 +36,7 @@ inline int Simulate(int argc, const char** argv) {
 
   // 4. Run simulation for one timestep
   Scheduler<> scheduler;
-  scheduler.Simulate(Param::simulation_steps_);
+  scheduler.Simulate(1);
   return 0;
 }
 

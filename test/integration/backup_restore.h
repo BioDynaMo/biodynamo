@@ -26,6 +26,8 @@ struct CompileTimeParam : public DefaultCompileTimeParam<TBackend> {
 inline int Simulate(int argc, const char** argv) {
   InitializeBioDynamo(argc, argv);
 
+  Param::Reset();
+
   Param::backup_interval_ = 1;
 
   auto cells = ResourceManager<>::Get()->Get<Cell>();

@@ -44,8 +44,8 @@ inline void RunTest(bool* result) {
 // We need to give every test the same seed for the RNG, because in the cell
 // division, random numbers are used. Within a single executable these numbers
 // vary. Also within the threads this needs to be enforced
-#pragma omp parallel for
-  for (int i = 0; i < omp_get_num_threads(); ++i) {
+#pragma omp parallel
+  {
     gRandom.SetSeed(1);
   }
 
