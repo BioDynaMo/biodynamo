@@ -319,31 +319,7 @@ TEST(SimulationObjectUtilTest, Soa_DivideWithResourceManager) {
   EXPECT_EQ(1.123, (*neurons)[0].GetDiameter());
 }
 
-template <typename TContainer>
-void RunDeleteTest(TContainer* neurons) {
-  Neuron neuron;
-  neurons->push_back(neuron);
-
-  EXPECT_EQ(1u, neurons->size());
-
-  Delete(neurons, 0);
-
-  neurons->Commit();
-
-  EXPECT_EQ(0u, neurons->size());
-}
-
-TEST(SimulationObjectUtilTest, Aos_Delete) {
-  TransactionalVector<Neuron> neurons;
-  RunDeleteTest(&neurons);
-}
-
-TEST(SimulationObjectUtilTest, Soa_Delete) {
-  auto neurons = Neuron::NewEmptySoa();
-  RunDeleteTest(&neurons);
-}
-
-TEST(SimulationObjectUtilTest, RmDelete) {
+TEST(SimulationObjectUtilTest, RemoveFromSimulation) {
   auto rm = ResourceManager<>::Get();
   rm->Clear();
   auto neurons = rm->Get<Neuron>();
@@ -353,7 +329,7 @@ TEST(SimulationObjectUtilTest, RmDelete) {
   EXPECT_EQ(1u, neurons->size());
 
   auto&& to_be_removed = (*neurons)[0];
-  Delete(to_be_removed);
+  to_be_removed.RemoveFromSimulation();
   neurons->Commit();
   EXPECT_EQ(0u, neurons->size());
 }

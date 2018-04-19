@@ -507,24 +507,6 @@ auto Divide(T&& progenitor, Params... parameters) {
   return typename DaughterType::MostDerivedSoPtr(container, Divide(progenitor, container, parameters...));
 }
 
-/// Helper function to make cell death easier for the programmer.
-/// Uses `DelayedRemove` - that means that this change must be commited
-/// before it is visible in the container. @see TransactionalVector
-/// Also added to offer consistent API together with Divide
-/// @param container container from which the element should be removed
-/// @param index specifies the element which gets removed
-template <typename Container>
-void Delete(Container* container, size_t index) {
-  container->DelayedRemove(index);
-}
-
-template <typename TSimObject, typename TResourceManager = ResourceManager<>>
-void Delete(const TSimObject& sim_object) {
-  auto rm = TResourceManager::Get();
-  auto container = rm->template Get<TSimObject>();
-  container->DelayedRemove(sim_object.GetElementIdx());
-}
-
 /// Get the diffusion grid which holds the substance of specified name
 template <typename TResourceManager = ResourceManager<>>
 static DiffusionGrid* GetDiffusionGrid(int substance_id) {
