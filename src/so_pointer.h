@@ -146,7 +146,7 @@ struct ReadContainerFunctor {
       // updated to the new `ResourceManager` yet. Therefore, we must delay this
       // call. It will be executed after the restore operation has been
       // completed.
-      SimulationBackup::after_restore_event_.push_back([&container]() {
+      SimulationBackup::after_restore_event_.push_back([=]() {
         *container = TRm::Get()->template Get<TSoSimBackend>();
       });
     } else if (state == ContainerPointerState::kSeparate) {
