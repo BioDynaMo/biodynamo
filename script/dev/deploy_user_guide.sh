@@ -12,7 +12,9 @@ SCRIPTPATH=`pwd`
 pushd $SCRIPTPATH/../../doc/user_guide > /dev/null
 
 # deploy mkdocs to github pages
-sudo mkdocs gh-deploy
+mkdocs gh-deploy
+
+rm -rf site
 
 # go back to original directory
 popd > /dev/null
