@@ -12,8 +12,9 @@ pages:
       - Hello World: hello_world.md
       - Visualization: visualization.md
       - Diffusion: diffusion.md
-      - Substance Initialization: substance_initializers.md
+      - Tumor Concept: jean_tuto.md
       # - Soma Clustering: soma_clustering.md
     - Documentation:
+      - Substance Initialization: substance_initializers.md
       - GPU Acceleration: gpu_acceleration.md
     - Contact: contact.md
