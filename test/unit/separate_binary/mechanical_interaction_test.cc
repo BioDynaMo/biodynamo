@@ -163,7 +163,7 @@ namespace bdm {
     Param::Reset();
     Rm()->Clear();
 
-    Param::live_visualization_ = true;
+    // Param::live_visualization_ = true;
 
     auto neuron = Rm()->New<Neuron>();
     neuron.SetPosition({ 0, 0, 0 });
@@ -202,7 +202,7 @@ namespace bdm {
     Param::Reset();
     Rm()->Clear();
 
-    //Param::live_visualization_ = true;
+    // Param::live_visualization_ = true;
 
     auto neuron = Rm()->New<Neuron>();
     neuron.SetPosition({ 0, 0, 0 });
