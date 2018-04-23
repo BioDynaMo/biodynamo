@@ -23,7 +23,7 @@ namespace bdm {
 
 // 0. Define my custom cell, which extends Cell by adding an extra
 // data member cell_type.
-BDM_SIM_OBJECT(MyCell, Cell) {
+BDM_SIM_OBJECT(MyCell, bdm::Cell) {
   BDM_SIM_OBJECT_HEADER(MyCellExt, 1, cell_type_);
 
  public:
@@ -67,7 +67,6 @@ struct Chemotaxis : public BaseBiologyModule {
     }
 
     cell->UpdatePosition(diff_gradient);
-    cell->SetPosition(cell->GetMassLocation());
   }
 
  private:
@@ -268,9 +267,6 @@ inline int Simulate(int argc, const char** argv) {
   ModelInitializer::DefineSubstance(kSubstance_1, "Substance_1", 0.5, 0.1, 1);
 
   // 4. Run simulation for N timesteps
-  Param::export_visualization_ = true;
-  Param::live_visualization_ = true;
-  Param::visualization_export_interval_ = 1000;
   Scheduler<> scheduler;
 
   scheduler.Simulate(1001);

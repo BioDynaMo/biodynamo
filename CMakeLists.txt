@@ -118,7 +118,7 @@ include_directories("${MPARK_LIB}")
 # Fix for rootcling not able to find omp.h. We cannot include the entire include
 # directory of the compiler (where omp.h is in), because rootcling starts using
 # the intrinsics found in there. Therefore we do a local copy into the build dir.
-execute_process(COMMAND ${CMAKE_CXX_COMPILER} --print-file-name=include/omp.h 
+execute_process(COMMAND ${CMAKE_CXX_COMPILER} --print-file-name=include/omp.h
                 OUTPUT_VARIABLE OMP_HEADER_PATH)
 # above command returns path with "\n" appended
 string(REGEX REPLACE "\n$" "" OMP_HEADER_PATH "${OMP_HEADER_PATH}")
@@ -143,7 +143,7 @@ if (OPENCL_FOUND)
   if (NOT OPENCL_HAS_CXX)
     message(WARNING "OpenCL C++ bindings not found. Please install to make use of OpenCL. "
       "If you think you have installed the C++ bindings correctly, please check if one "
-      "of the following environmentals is set correctly (vendor specific): 
+      "of the following environmentals is set correctly (vendor specific):
       - AMD: \t\tAMDAPPSDKROOT
       - NVIDIA: \tCUDA_PATH
       - INTEL: \tINTELOPENCLSDK")
@@ -192,9 +192,11 @@ if (test)
   # unit tests
   #   main test executable
   file(GLOB TEST_SOURCES ${CMAKE_SOURCE_DIR}/test/unit/*.cc
-                         ${CMAKE_SOURCE_DIR}/test/unit/biology_module/*.cc)
+                         ${CMAKE_SOURCE_DIR}/test/unit/biology_module/*.cc
+                         ${CMAKE_SOURCE_DIR}/test/unit/neuroscience/*.cc)
   file(GLOB TEST_HEADERS ${CMAKE_SOURCE_DIR}/test/unit/*.h
-                         ${CMAKE_SOURCE_DIR}/test/unit/biology_module/*.h)
+                         ${CMAKE_SOURCE_DIR}/test/unit/biology_module/*.h
+                         ${CMAKE_SOURCE_DIR}/test/unit/neuroscience/*.h)
   bdm_add_test_executable(runBiodynamoTestsMain
                           SOURCES ${TEST_SOURCES}
                           HEADERS ${TEST_HEADERS})
@@ -280,8 +282,14 @@ bdm_add_executable(diffusion_module
                    HEADERS demo/diffusion_module.h
                    LIBRARIES biodynamo)
 
-# --------------------- build gene_regulation executable ------------------  
-bdm_add_executable(gene_regulation 
+# --------------------- build gene_regulation executable ------------------
+bdm_add_executable(gene_regulation
                    SOURCES demo/gene_regulation.cc 
-                   HEADERS demo/gene_regulation.h  
+                   HEADERS demo/gene_regulation.h
+                   LIBRARIES biodynamo)
+
+# -------------------- build cell_diffusion_module executable ------------------
+bdm_add_executable(figure5
+                   SOURCES demo/figure_5.cc
+                   HEADERS demo/figure_5.h
                    LIBRARIES biodynamo)

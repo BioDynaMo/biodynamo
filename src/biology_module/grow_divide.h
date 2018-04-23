@@ -21,7 +21,7 @@ struct GrowDivide : public BaseBiologyModule {
     if (cell->GetDiameter() <= threshold_) {
       cell->ChangeVolume(growth_rate_);
     } else {
-      Divide(*cell);
+      cell->Divide();
     }
   }
 

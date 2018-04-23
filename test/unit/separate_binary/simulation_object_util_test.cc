@@ -3,11 +3,86 @@
 #include "unit/separate_binary/simulation_object_util_test.h"
 
 namespace bdm {
-namespace simulation_object_util_test_internal {
+// namespace simulation_object_util_test_internal {
 
 // The following tests check if code insertion in new classes works as intended
 // Therefore SimulationObject is extended in two stages: first by CellExt and
 // then by NeuronExt
+
+TEST(SimulationObjectUtilTest, ContainerFunctionality) {
+  using Scalar = ContainerTestClass;
+  auto vector = Scalar::NewEmptySoa();
+
+  EXPECT_EQ(0u, vector.size());
+  EXPECT_EQ(0u, vector.GetTotalSize());
+
+  EXPECT_EQ(0u, vector.DelayedPushBack(Scalar(1, 1.0)));
+  EXPECT_EQ(1u, vector.DelayedPushBack(Scalar(2, 2.0)));
+  EXPECT_EQ(2u, vector.DelayedPushBack(Scalar(3, 3.0)));
+
+  // changes have not been commited yet
+  EXPECT_EQ(0u, vector.size());
+  //   but data is already in vector
+  EXPECT_EQ(3u, vector.GetVecDm1().size());
+  EXPECT_EQ(3u, vector.GetVecDm2().size());
+  EXPECT_EQ(3u, vector.GetTotalSize());
+
+  vector.Commit();
+
+  EXPECT_EQ(3u, vector.size());
+  EXPECT_EQ(3u, vector.GetVecDm1().size());
+  EXPECT_EQ(3u, vector.GetVecDm2().size());
+  EXPECT_EQ(3u, vector.GetTotalSize());
+
+  EXPECT_EQ(1, vector[0].GetDm1());
+  EXPECT_EQ(1.0, vector[0].GetDm2());
+  EXPECT_EQ(2, vector[1].GetDm1());
+  EXPECT_EQ(2.0, vector[1].GetDm2());
+  EXPECT_EQ(3, vector[2].GetDm1());
+  EXPECT_EQ(3.0, vector[2].GetDm2());
+
+  vector.DelayedRemove(0);
+
+  // changes have not been commited yet
+  EXPECT_EQ(3u, vector.size());
+  EXPECT_EQ(3u, vector.GetVecDm1().size());
+  EXPECT_EQ(3u, vector.GetVecDm2().size());
+  EXPECT_EQ(3u, vector.GetTotalSize());
+
+  vector.Commit();
+
+  EXPECT_EQ(2u, vector.size());
+  EXPECT_EQ(2u, vector.GetVecDm1().size());
+  EXPECT_EQ(2u, vector.GetVecDm2().size());
+  EXPECT_EQ(2u, vector.GetTotalSize());
+
+  EXPECT_EQ(3, vector[0].GetDm1());
+  EXPECT_EQ(3.0, vector[0].GetDm2());
+  EXPECT_EQ(2, vector[1].GetDm1());
+  EXPECT_EQ(2.0, vector[1].GetDm2());
+
+  vector.DelayedRemove(0);
+  vector.DelayedRemove(1);
+  vector.Commit();
+  EXPECT_EQ(0u, vector.size());
+  EXPECT_EQ(0u, vector.GetTotalSize());
+
+  // push_back
+  vector.push_back(Scalar(9, 9.0));
+  EXPECT_EQ(1u, vector.size());
+  EXPECT_EQ(1u, vector.GetTotalSize());
+  EXPECT_EQ(9, vector[0].GetDm1());
+
+  vector.DelayedPushBack(Scalar(10, 10.0));
+  EXPECT_EQ(1u, vector.size());
+  EXPECT_EQ(2u, vector.GetTotalSize());
+  // clang on Travis OSX image doesn't catch exception
+  // Therefore the following check is commented until this is fixed
+  // try {
+  //   vector.push_back(Scalar(11, 11.0));
+  //   FAIL() << "Should have thrown a logic_error";
+  // } catch(std::logic_error& e) {}
+}
 
 template <typename T>
 void RunDefaultConstructorTest(const T& neuron) {
@@ -163,9 +238,12 @@ TEST(SimulationObjectUtilTest, Soa_DelayedRemove) {
 
   EXPECT_EQ(10u, vector.size());
 
-  vector.Commit();
+  auto updated_indices = vector.Commit();
 
   EXPECT_EQ(7u, vector.size());
+  ASSERT_EQ(2u, updated_indices.size());
+  EXPECT_EQ(5, updated_indices[9]);
+  EXPECT_EQ(3, updated_indices[7]);
 
   EXPECT_EQ(0, vector[0].GetId());
   EXPECT_EQ(1, vector[1].GetId());
@@ -174,40 +252,6 @@ TEST(SimulationObjectUtilTest, Soa_DelayedRemove) {
   EXPECT_EQ(4, vector[4].GetId());
   EXPECT_EQ(9, vector[5].GetId());
   EXPECT_EQ(6, vector[6].GetId());
-}
-
-template <typename TContainer>
-void RunDivideTest(TContainer* neurons) {
-  Neuron neuron;
-  neurons->push_back(neuron);
-
-  auto&& new_neuron = Divide((*neurons)[0], neurons, 1.0, 2.0, 3.0);
-
-  EXPECT_EQ(987u, new_neuron.GetNeurites()[0].id_);
-  EXPECT_EQ(5, new_neuron.GetPosition()[0]);
-  EXPECT_EQ(4, new_neuron.GetPosition()[1]);
-  EXPECT_EQ(3, new_neuron.GetPosition()[2]);
-
-  // commit invalidates new_neuron
-  neurons->Commit();
-
-  ASSERT_EQ(2u, neurons->size());
-  // new_neuron got invalidated by `Commit()`, but is now accessible in neurons
-  EXPECT_EQ(987u, (*neurons)[1].GetNeurites()[0].id_);
-  EXPECT_EQ(5, (*neurons)[1].GetPosition()[0]);
-  EXPECT_EQ(4, (*neurons)[1].GetPosition()[1]);
-  EXPECT_EQ(3, (*neurons)[1].GetPosition()[2]);
-  EXPECT_EQ(1.123, (*neurons)[0].GetDiameter());
-}
-
-TEST(SimulationObjectUtilTest, Aos_Divide) {
-  TransactionalVector<Neuron> neurons;
-  RunDivideTest(&neurons);
-}
-
-TEST(SimulationObjectUtilTest, Soa_Divide) {
-  auto neurons = Neuron::NewEmptySoa();
-  RunDivideTest(&neurons);
 }
 
 // Tests overloaded Divide function which adds new daughter cell to the
@@ -220,7 +264,7 @@ TEST(SimulationObjectUtilTest, Soa_DivideWithResourceManager) {
   Neuron neuron;
   neurons->push_back(neuron);
 
-  auto&& new_neuron = Divide((*neurons)[0], 1.0, 2.0, 3.0);
+  auto&& new_neuron = (*neurons)[0].Divide(1.0, 2.0, 3.0).Get();
 
   EXPECT_EQ(987u, new_neuron.GetNeurites()[0].id_);
   EXPECT_EQ(5, new_neuron.GetPosition()[0]);
@@ -239,31 +283,7 @@ TEST(SimulationObjectUtilTest, Soa_DivideWithResourceManager) {
   EXPECT_EQ(1.123, (*neurons)[0].GetDiameter());
 }
 
-template <typename TContainer>
-void RunDeleteTest(TContainer* neurons) {
-  Neuron neuron;
-  neurons->push_back(neuron);
-
-  EXPECT_EQ(1u, neurons->size());
-
-  Delete(neurons, 0);
-
-  neurons->Commit();
-
-  EXPECT_EQ(0u, neurons->size());
-}
-
-TEST(SimulationObjectUtilTest, Aos_Delete) {
-  TransactionalVector<Neuron> neurons;
-  RunDeleteTest(&neurons);
-}
-
-TEST(SimulationObjectUtilTest, Soa_Delete) {
-  auto neurons = Neuron::NewEmptySoa();
-  RunDeleteTest(&neurons);
-}
-
-TEST(SimulationObjectUtilTest, RmDelete) {
+TEST(SimulationObjectUtilTest, RemoveFromSimulation) {
   auto rm = ResourceManager<>::Get();
   rm->Clear();
   auto neurons = rm->Get<Neuron>();
@@ -273,7 +293,7 @@ TEST(SimulationObjectUtilTest, RmDelete) {
   EXPECT_EQ(1u, neurons->size());
 
   auto&& to_be_removed = (*neurons)[0];
-  Delete(to_be_removed);
+  to_be_removed.RemoveFromSimulation();
   neurons->Commit();
   EXPECT_EQ(0u, neurons->size());
 }
@@ -364,7 +384,55 @@ TEST(SimulationObjectUtilTestDeathTest, ForEachDataMemberInNonExistantDm) {
                "not exist: does_not_exist, .*");
 }
 
-}  // namespace simulation_object_util_test_internal
+TEST(SimulationObjectUtilTest, ToBackend) {
+  EXPECT_EQ(typeid(Neuron), typeid(ToBackend<Neuron, Scalar>));
+  EXPECT_EQ(typeid(SoaNeuron), typeid(ToBackend<Neuron, Soa>));
+}
+
+TEST(SimulationObjectUtilTest, ToScalar) {
+  EXPECT_EQ(typeid(Neuron), typeid(ToScalar<Neuron>));
+}
+
+TEST(SimulationObjectUtilTest, ToSoa) {
+  EXPECT_EQ(typeid(SoaNeuron), typeid(ToSoa<Neuron>));
+}
+
+BDM_SIM_OBJECT(TestThisMD, SimulationObject) {
+  BDM_SIM_OBJECT_HEADER(TestThisMDExt, 0, foo_);
+
+ public:
+   TestThisMDExt() {}
+
+  int AnotherFunction() {
+    return 123;
+  }
+
+  int SomeFunction() {
+    return ThisMD()->AnotherFunction();
+  }
+
+  vec<int> foo_;
+};
+
+BDM_SIM_OBJECT(TestThisMDSubclass, TestThisMD) {
+  BDM_SIM_OBJECT_HEADER(TestThisMDSubclassExt, 0, foo_);
+
+ public:
+   TestThisMDSubclassExt() {}
+
+  int AnotherFunction() {
+    return 321;
+  }
+
+  vec<int> foo_;
+};
+
+TEST(SimulationObjectUtilTest, ThisMD) {
+  TestThisMDSubclass t;
+  EXPECT_EQ(321, t.SomeFunction());
+}
+
+// }  // namespace simulation_object_util_test_internal
 }  // namespace bdm
 
 int main(int argc, char** argv) {

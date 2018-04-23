@@ -20,8 +20,13 @@ struct RunTestBiologyModule {
     gRunMethodCalled = true;
   }
 
-  bool IsCopied(BmEvent event) {
+  bool Copy(BmEvent event) {
     EXPECT_TRUE(false) << "This method should not be called from RunVisitor";
+    return false;
+  }
+
+  bool Remove(BmEvent event) const {
+    EXPECT_TRUE(false) << "This method should not be called from CopyVisitor";
     return false;
   }
 
@@ -36,7 +41,7 @@ struct CopyTestBiologyModule {
   CopyTestBiologyModule(const CopyTestBiologyModule& other) {
     gCopyCtorCalled = true;
     expected_event_ = other.expected_event_;
-    is_copied_return_value_ = other.is_copied_return_value_;
+    copy_return_value_ = other.copy_return_value_;
   }
 
   template <typename T>
@@ -44,14 +49,42 @@ struct CopyTestBiologyModule {
     EXPECT_TRUE(false) << "This method should not be called from CopyVisitor";
   }
 
-  bool IsCopied(BmEvent event) const {
+  bool Copy(BmEvent event) const {
     EXPECT_EQ(expected_event_, event);
-    return is_copied_return_value_;
+    return copy_return_value_;
+  }
+
+  bool Remove(BmEvent event) const {
+    EXPECT_TRUE(false) << "This method should not be called from CopyVisitor";
+    return false;
   }
 
   BmEvent expected_event_;
-  bool is_copied_return_value_ = true;
+  bool copy_return_value_ = true;
   ClassDefNV(CopyTestBiologyModule, 1);
+};
+
+/// Helper class to test remove visitor
+struct RemoveTestBiologyModule {
+  RemoveTestBiologyModule() {}
+
+  template <typename T>
+  void Run(T* t) {
+    EXPECT_TRUE(false) << "This method should not be called from RemoveVisitor";
+  }
+
+  bool Copy(BmEvent event) const {
+    EXPECT_TRUE(false) << "This method should not be called from RemoveVisitor";
+    return false;
+  }
+
+  bool Remove(BmEvent event) const {
+    EXPECT_EQ(expected_event_, event);
+    return expected_event_ == event;
+  }
+
+  BmEvent expected_event_;
+  ClassDefNV(RemoveTestBiologyModule, 1);
 };
 
 struct TestSimulationObject {};

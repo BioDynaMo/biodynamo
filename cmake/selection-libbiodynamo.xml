@@ -3,6 +3,7 @@
      Classes from directory test are not included. -->
 <lcgdict>
   <selection>
+    <class name="bdm::SoHandle" />
     <class name="bdm::ScalarSimulationObject"/>
     <class name="bdm::RuntimeVariables"/>
     <class name="bdm::BaseBiologyModule"/>

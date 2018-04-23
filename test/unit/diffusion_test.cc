@@ -3,6 +3,7 @@
 #include "grid.h"
 #include "gtest/gtest.h"
 #include "io_util.h"
+#include "unit/default_ctparam.h"
 #include "unit/test_util.h"
 
 #define ROOTFILE "bdmFile.root"

@@ -7,12 +7,14 @@
 #include <sstream>
 #include <string>
 #include <type_traits>
+#include <unordered_map>
 #include <vector>
 
 #include "log.h"
 
 #include "backend.h"
 #include "root_util.h"
+#include "simulation_object_util.h"
 #include "type_util.h"
 
 namespace bdm {
@@ -20,25 +22,30 @@ namespace bdm {
 using std::enable_if;
 using std::is_same;
 
-template <typename TCompileTimeParam>
+template <typename TCompileTimeParam, typename TDerived>
 class SimulationObject;
 
 /// Contains implementation for SimulationObject that are specific to SOA
 /// backend. The peculiarity of SOA objects is that it is simulation object
 /// and container at the same time.
 /// @see TransactionalVector
-template <typename TCompileTimeParam>
+template <typename TCompileTimeParam, typename TDerived>
 class SoaSimulationObject {
  public:
   using Backend = typename TCompileTimeParam::Backend;
-  template <typename T>
+  template <typename, typename>
   friend class SoaSimulationObject;
+
+  template <typename TTBackend>
+  using TMostDerived = typename TDerived::template type<
+      typename TCompileTimeParam::template Self<TTBackend>, TDerived>;
 
   template <typename TBackend>
   using Self =
-      SoaSimulationObject<typename TCompileTimeParam::template Self<TBackend>>;
+      SoaSimulationObject<typename TCompileTimeParam::template Self<TBackend>,
+                          TDerived>;
 
-  SoaSimulationObject() : to_be_removed_(), size_(1) {}
+  SoaSimulationObject() : to_be_removed_(), total_size_(1), size_(1) {}
 
   /// Detect failing return value optimization (RVO)
   /// Copy-ctor declaration to please compiler, but missing implementation.
@@ -57,6 +64,7 @@ class SoaSimulationObject {
       : kIdx(idx),
         mutex_(other->mutex_),
         to_be_removed_(other->to_be_removed_),
+        total_size_(other->total_size_),
         size_(other->size_) {}
 
   virtual ~SoaSimulationObject() {}
@@ -68,12 +76,19 @@ class SoaSimulationObject {
     return size_;
   }
 
+  /// Returns the number of elements in the container including non commited
+  /// additions
+  size_t TotalSize() const { return total_size_; }
+
   /// Thread safe version of std::vector::push_back
-  void push_back(  // NOLINT
-      const SimulationObject<typename TCompileTimeParam::template Self<Scalar>>
-          &element) {
+  void push_back(const TMostDerived<Scalar> &element) {  // NOLINT
     std::lock_guard<std::recursive_mutex> lock(mutex_);
-    PushBackImpl(element);
+    if (total_size_ == size_) {
+      PushBackImpl(element);
+      size_++;
+    } else {
+      throw std::logic_error("There are uncommited delayed additions to this container");
+    }
   }
 
   /// Safe method to remove an element from this vector
@@ -81,6 +96,8 @@ class SoaSimulationObject {
   /// Changes do not take effect until they are commited.
   /// Upon commit removal has constant complexity @see Commit
   /// @param index remove element at the given index
+  // FIXME: implementation swaps elements, thus invalidating SoHandles and SoPtr
+  //        update mechanism required for classes having data members with those types!!
   void DelayedRemove(size_t index) {
     std::lock_guard<std::recursive_mutex> lock(mutex_);
     to_be_removed_.push_back(index);
@@ -88,7 +105,48 @@ class SoaSimulationObject {
 
   /// Equivalent to std::vector<> clear - it removes all elements from all
   /// data members
-  void clear() { size_ = 0; }  // NOLINT
+  void clear() {  // NOLINT
+    total_size_ = 0;
+    size_ = 0;
+  }
+
+  /// This method commits changes made by `DelayedPushBack` and `DelayedRemove`.
+  /// CAUTION: \n
+  ///   * Commit invalidates pointers and references returned by
+  ///     `DelayedPushBack`. \n
+  ///   * If memory reallocations are required all pointers or references
+  ///     into this container are invalidated\n
+  /// One removal has constant complexity. If the element which should be
+  /// removed is not the last element it is swapped with the last one.
+  /// (CAUTION: this invalidates pointers and references to the last element)
+  /// In the next step it can be removed in constant time using pop_back. \n
+  std::unordered_map<uint32_t, uint32_t> Commit() {
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
+    std::unordered_map<uint32_t, uint32_t> updated_indices;
+    // commit delayed push backs
+    size_ = total_size_;
+    // commit delayed removes
+    // sort indices in descending order to prevent out of bounds accesses
+    auto descending = [](auto a, auto b) { return a > b; };
+    std::sort(to_be_removed_.begin(), to_be_removed_.end(), descending);
+    for (size_t idx : to_be_removed_) {
+      assert(idx < size_ && "Removed index outside array boundaries");
+      if (idx < size_ - 1) {
+        SwapAndPopBack(idx, size_);
+        updated_indices[size_ - 1] = idx;
+      } else {
+        PopBack();
+      }
+      size_--;
+    }
+    to_be_removed_.clear();
+
+    // use implementation from TransactionalVector to avoid code duplication
+    TransactionalVector<int>::ShortcutUpdatedIndices(&updated_indices);
+
+    total_size_ = size_;
+    return updated_indices;
+  }
 
   /// Equivalent to std::vector<> reserve - it increases the capacity
   /// of all data member containers
@@ -130,19 +188,21 @@ class SoaSimulationObject {
                                  std::vector<size_t>>::type to_be_removed_;
 
   /// Append a scalar element
-  virtual void PushBackImpl(
-      const SimulationObject<typename TCompileTimeParam::template Self<Scalar>>
-          &other) {
-    size_++;
-  }
+  virtual void PushBackImpl(const TMostDerived<Scalar> &other) { total_size_++; }
 
   /// Swap element with last element if and remove last element
-  virtual void SwapAndPopBack(size_t index, size_t size) { size_--; }
+  virtual void SwapAndPopBack(size_t index, size_t size) {}
 
   /// Remove last element
-  virtual void PopBack(size_t index, size_t size) { size_--; }
+  virtual void PopBack() {}
 
  private:
+   /// vector of indices with elements which should be removed
+   /// to_be_removed_ is of type vector<size_t>& if Backend == SoaRef;
+   /// otherwise vector<size_t>
+   typename type_ternary_operator<is_same<Backend, SoaRef>::value,
+                                 size_t&, size_t>::type total_size_ = 0;
+
   /// size_ is of type size_t& if Backend == SoaRef; otherwise size_t
   typename type_ternary_operator<is_same<Backend, SoaRef>::value, size_t &,
                                  size_t>::type size_;
@@ -153,53 +213,60 @@ class SoaSimulationObject {
 
 /// Contains implementations for SimulationObject that are specific to scalar
 /// backend
-template <typename TCompileTimeParam>
+template <typename TCompileTimeParam, typename TDerived>
 class ScalarSimulationObject {
  public:
+  template <typename TTBackend>
+  using TMostDerived = typename TDerived::template type<
+      typename TCompileTimeParam::template Self<TTBackend>, TDerived>;
+
   virtual ~ScalarSimulationObject() {}
 
   std::size_t size() const { return 1; }  // NOLINT
 
+  template <typename TRm = ResourceManager<>>
+  uint32_t GetElementIdx() const {
+    auto* container = TRm::Get()->template Get<TMostDerived<Scalar>>();
+    const auto* address_first_element = &((*container)[0]);
+    uint32_t idx = reinterpret_cast<decltype(address_first_element)>(this) - address_first_element;
+    assert(idx < container->size() && "Element index larger than number of elements");
+    return idx;
+  }
+
  protected:
   static const std::size_t kIdx = 0;
 
-  // TODO(lukas) add GetElementIdx
-  // return this - pointer to first element
-  // Difficulty to know the type - will become easier once TMostDerived type
-  // has been introduced
-
   /// Append a scalar element
-  virtual void PushBackImpl(
-      const SimulationObject<typename TCompileTimeParam::template Self<Scalar>>
-          &other) {}
+  virtual void PushBackImpl(const TMostDerived<Scalar> &other) {}
 
   /// Swap element with last element if and remove last element
   virtual void SwapAndPopBack(size_t index, size_t size) {}
 
   /// Remove last element
-  virtual void PopBack(size_t index, size_t size) {}
+  virtual void PopBack() {}
 
-  ClassDef(ScalarSimulationObject, 1);
+  BDM_ROOT_CLASS_DEF(ScalarSimulationObject, 1);
 };
 
 /// Helper type trait to map backends to simulation object implementations
-template <typename TCompileTimeParam>
+template <typename TCompileTimeParam, typename TDerived>
 struct SimulationObjectImpl {
   using Backend = typename TCompileTimeParam::Backend;
   using type = typename type_ternary_operator<
       is_same<Backend, Scalar>::value,
-      ScalarSimulationObject<TCompileTimeParam>,
-      SoaSimulationObject<TCompileTimeParam>>::type;
+      ScalarSimulationObject<TCompileTimeParam, TDerived>,
+      SoaSimulationObject<TCompileTimeParam, TDerived>>::type;
 };
 
 /// Contains code required by all simulation objects
-template <typename TCompileTimeParam>
-class SimulationObject : public SimulationObjectImpl<TCompileTimeParam>::type {
+template <typename TCompileTimeParam, typename TDerived>
+class SimulationObject
+    : public SimulationObjectImpl<TCompileTimeParam, TDerived>::type {
  public:
   using Backend = typename TCompileTimeParam::Backend;
-  using Base = typename SimulationObjectImpl<TCompileTimeParam>::type;
+  using Base = typename SimulationObjectImpl<TCompileTimeParam, TDerived>::type;
 
-  template <typename T>
+  template <typename, typename>
   friend class SimulationObject;
 
   SimulationObject() : Base() {}
@@ -214,11 +281,30 @@ class SimulationObject : public SimulationObjectImpl<TCompileTimeParam>::type {
   /// inside a mixin.
   template <typename TTBackend>
   using Self =
-      SimulationObject<typename TCompileTimeParam::template Self<TTBackend>>;
+      SimulationObject<typename TCompileTimeParam::template Self<TTBackend>,
+                       TDerived>;
 
-  SimulationObject<TCompileTimeParam> &operator=(const Self<Scalar> &) {
-    return *this;
+  /// Empty default implementation to update references of simulation objects
+  /// that changed its memory position.
+  /// @param update_info vector index = type_id, map stores (old_index -> new_index)
+  void UpdateReferences(const std::vector<std::unordered_map<uint32_t, uint32_t>>& update_info) {}
+
+  /// Implementation to update a single reference if `reference.GetElementIdx()`
+  /// is a key in `updates`.
+  /// @tparam TReference type of the reference. Must have a `GetElementIdx` and
+  ///         `SetElementIdx` method.
+  /// @param reference reference whos `element_idx` will be updated
+  /// @param updates map that contains the update information
+  ///        (old_index -> new_index) for a specific simulation object type
+  template <typename TReference>
+  void UpdateReference(TReference* reference, const std::unordered_map<uint32_t, uint32_t>& updates) {
+    auto search = updates.find(reference->GetElementIdx());
+    if(search != updates.end()) {
+      reference->SetElementIdx(search->second);
+    }
   }
+
+  Self<Backend> &operator=(const Self<Scalar> &) { return *this; }
 
   BDM_ROOT_CLASS_DEF_OVERRIDE(SimulationObject, 1);
 };
@@ -226,8 +312,9 @@ class SimulationObject : public SimulationObjectImpl<TCompileTimeParam>::type {
 /// type alias to be consistent with naming convention for simulation object
 /// extension
 /// \see BDM_SIM_OBJECT
-template <typename TCompileTimeParam>
-using SimulationObjectT = SimulationObject<TCompileTimeParam>;
+template <typename TCompileTimeParam, typename TDerived>
+using SimulationObject_TCTParam_TDerived =
+    SimulationObject<TCompileTimeParam, TDerived>;
 
 }  // namespace bdm
 
