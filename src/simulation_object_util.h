@@ -350,15 +350,13 @@ struct Capsule;
   \
   MostDerivedSoPtr GetSoPtr() { \
     auto* container = Rm()->template Get<MostDerived>();\
-    return MostDerivedSoPtr(container, kIdx);\
-    /** FIXME: only works for SOA backends **/ \
+    return MostDerivedSoPtr(container, Base::GetElementIdx());\
     /** FIXME: add test **/ \
   } \
   \
   void RemoveFromSimulation() { \
     auto container = Rm()->template Get<MostDerived>();\
-    container->DelayedRemove(kIdx);\
-    /** FIXME: only works for SOA backends **/ \
+    container->DelayedRemove(Base::GetElementIdx());\
     /** FIXME: add test **/ \
   } \
                                                                                \
@@ -467,45 +465,10 @@ struct Capsule;
  /** Can be used to call the method of the subclass without virtual functions */\
  /** e.g. `ThisMD()->Method()` */\
  /** (CRTP - static polymorphism) */ \
- MostDerived* ThisMD() { return static_cast<MostDerived*>(this); } \
- const MostDerived* ThisMD() const { return static_cast<MostDerived*>(this); } \
+ TMostDerived<Backend>* ThisMD() { return static_cast<TMostDerived<Backend>*>(this); } \
+ const TMostDerived<Backend>* ThisMD() const { return static_cast<TMostDerived<Backend>*>(this); } \
 \
   BDM_ROOT_CLASS_DEF_OVERRIDE(class_name, class_version_id)
-
-/// Helper function to make cell division easier for the programmer.
-/// Creates a new daughter object and passes it together with the given
-/// parameters to the divide method in `T`. Afterwards the daughter is added
-/// to the given container and a reference returned to the caller.
-/// Uses `DelayedPushBack` - that means that this change must be commited
-/// before it is visible in the container. @see TransactionalVector, CellExt
-/// @param progenitor mother cell which gets divided
-/// @param container where the new daughter cell should be added
-/// @param parameters list of parameters that get forwarded to the right
-///        implementation in `T`
-/// @return "reference" to the new daughter in the temporary container is
-///         returned. This reference will become invalid once `Commit()`
-///         method of the container is called.
-template <typename T, typename Container, typename... Params>
-uint64_t Divide(T&& progenitor, Container* container, Params... parameters) {
-  // daughter type is scalar version of T
-  using DaughterType =
-      typename std::remove_reference<T>::type::template Self<Scalar>;
-  DaughterType daughter;
-  progenitor.Divide(&daughter, parameters...);
-  return container->DelayedPushBack(daughter);
-}
-
-/// Overloaded function to use ResourceManager to omit parameter container.
-/// Container is obtained from the ResourceManager
-template <typename T, typename... Params,
-          typename TResourceManager = ResourceManager<>>
-auto Divide(T&& progenitor, Params... parameters) {
-  // daughter type is scalar version of T
-  using DaughterType =
-      typename std::remove_reference<T>::type::template Self<Scalar>;
-  auto container = TResourceManager::Get()->template Get<DaughterType>();
-  return typename DaughterType::MostDerivedSoPtr(container, Divide(progenitor, container, parameters...));
-}
 
 /// Get the diffusion grid which holds the substance of specified name
 template <typename TResourceManager = ResourceManager<>>

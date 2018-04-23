@@ -1,6 +1,6 @@
 #include "cell.h"
 #include "gtest/gtest.h"
-#include "unit/cell_test.h"
+#include "unit/separate_binary/cell_test.h"
 #include "unit/test_util.h"
 
 namespace bdm {
@@ -23,8 +23,7 @@ TEST(CellTest, DivideVolumeRatioPhiTheta) {
   mother.AddBiologyModule(MovementModule({1, 2, 3}));
   mother.SetBoxIdx(123);
 
-  TestCell daughter;
-  mother.Divide(&daughter, 0.75, 0.12, 0.34);
+  auto&& daughter = mother.Divide(0.75, 0.12, 0.34).Get();
 
   const double kEpsilon = abs_error<double>::value;
 
@@ -84,8 +83,7 @@ TEST(CellTest, Divide) {
   cell.expected_phi_ = 1.9633629889829609;
   cell.expected_theta_ = 4.2928196812086608;
 
-  TestCell daughter;
-  cell.Divide(&daughter);
+  cell.Divide();
 }
 
 TEST(CellTest, DivideVolumeRatio) {
@@ -97,8 +95,7 @@ TEST(CellTest, DivideVolumeRatio) {
   cell.expected_phi_ = 1.1956088797871529;
   cell.expected_theta_ = 4.5714174264720571;
 
-  TestCell daughter;
-  cell.Divide(&daughter, 0.59);
+  cell.Divide(0.59);
 }
 
 TEST(CellTest, DivideAxis) {
@@ -111,8 +108,7 @@ TEST(CellTest, DivideAxis) {
   cell.expected_phi_ = 1.0442265974045177;
   cell.expected_theta_ = 0.72664234068172562;
 
-  TestCell daughter;
-  cell.Divide(&daughter, {9, 8, 7});
+  cell.Divide({9, 8, 7});
 }
 
 TEST(CellTest, DivideVolumeRatioAxis) {
@@ -125,8 +121,7 @@ TEST(CellTest, DivideVolumeRatioAxis) {
   cell.expected_phi_ = 1.0442265974045177;
   cell.expected_theta_ = 0.72664234068172562;
 
-  TestCell daughter;
-  cell.Divide(&daughter, 0.456, {9, 8, 7});
+  cell.Divide(0.456, {9, 8, 7});
 }
 
 TEST(CellTest, BiologyModule) {
@@ -166,3 +161,8 @@ TEST(CellTest, IO) { RunIOTest(); }
 
 }  // namespace cell_test_internal
 }  // namespace bdm
+
+int main(int argc, char** argv) {
+  ::testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
+}

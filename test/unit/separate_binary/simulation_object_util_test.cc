@@ -254,42 +254,6 @@ TEST(SimulationObjectUtilTest, Soa_DelayedRemove) {
   EXPECT_EQ(6, vector[6].GetId());
 }
 
-template <typename TContainer>
-void RunDivideTest(TContainer* neurons) {
-  Neuron neuron;
-  neurons->push_back(neuron);
-
-  auto new_neuron_idx = Divide((*neurons)[0], neurons, 1.0, 2.0, 3.0);
-
-  EXPECT_EQ(1u, new_neuron_idx);
-  EXPECT_EQ(1u, neurons->size()); // not visible yet
-  EXPECT_EQ(987u, (*neurons)[new_neuron_idx].GetNeurites()[0].id_);
-  EXPECT_EQ(5, (*neurons)[new_neuron_idx].GetPosition()[0]);
-  EXPECT_EQ(4, (*neurons)[new_neuron_idx].GetPosition()[1]);
-  EXPECT_EQ(3, (*neurons)[new_neuron_idx].GetPosition()[2]);
-
-  // commit invalidates new_neuron
-  neurons->Commit();
-
-  ASSERT_EQ(2u, neurons->size());
-  // new_neuron got invalidated by `Commit()`, but is now accessible in neurons
-  EXPECT_EQ(987u, (*neurons)[1].GetNeurites()[0].id_);
-  EXPECT_EQ(5, (*neurons)[1].GetPosition()[0]);
-  EXPECT_EQ(4, (*neurons)[1].GetPosition()[1]);
-  EXPECT_EQ(3, (*neurons)[1].GetPosition()[2]);
-  EXPECT_EQ(1.123, (*neurons)[0].GetDiameter());
-}
-
-TEST(SimulationObjectUtilTest, Aos_Divide) {
-  TransactionalVector<Neuron> neurons;
-  RunDivideTest(&neurons);
-}
-
-TEST(SimulationObjectUtilTest, Soa_Divide) {
-  auto neurons = Neuron::NewEmptySoa();
-  RunDivideTest(&neurons);
-}
-
 // Tests overloaded Divide function which adds new daughter cell to the
 // container managed by the ResourceManager with default template parameters
 TEST(SimulationObjectUtilTest, Soa_DivideWithResourceManager) {
@@ -300,12 +264,12 @@ TEST(SimulationObjectUtilTest, Soa_DivideWithResourceManager) {
   Neuron neuron;
   neurons->push_back(neuron);
 
-  auto&& new_neuron = Divide((*neurons)[0], 1.0, 2.0, 3.0);
+  auto&& new_neuron = (*neurons)[0].Divide(1.0, 2.0, 3.0).Get();
 
-  EXPECT_EQ(987u, new_neuron.Get().GetNeurites()[0].id_);
-  EXPECT_EQ(5, new_neuron.Get().GetPosition()[0]);
-  EXPECT_EQ(4, new_neuron.Get().GetPosition()[1]);
-  EXPECT_EQ(3, new_neuron.Get().GetPosition()[2]);
+  EXPECT_EQ(987u, new_neuron.GetNeurites()[0].id_);
+  EXPECT_EQ(5, new_neuron.GetPosition()[0]);
+  EXPECT_EQ(4, new_neuron.GetPosition()[1]);
+  EXPECT_EQ(3, new_neuron.GetPosition()[2]);
 
   // commit invalidates new_neuron
   neurons->Commit();

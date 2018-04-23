@@ -21,7 +21,7 @@ class DividingCellOp {
       if (cell.GetDiameter() <= 40) {
         cell.ChangeVolume(300);
       } else {
-        Divide(cell, cells);
+        cell.Divide();
       }
     }
     cells->Commit();

@@ -44,17 +44,8 @@ struct MovementModule {
   ClassDefNV(MovementModule, 1);
 };
 
-template <typename TBackend = Soa>
-struct CTParam {
-  template <typename TTBackend>
-  using Self = CTParam<TTBackend>;
-  using Backend = TBackend;
-  using BiologyModules = Variant<GrowthModule, MovementModule>;
-  using SimulationBackend = Soa;
-};
-
 /// Class used to get access to protected members
-BDM_SIM_OBJECT_TEST(TestCell, bdm::Cell, CTParam) {
+BDM_SIM_OBJECT(TestCell, bdm::Cell) {
   BDM_SIM_OBJECT_HEADER(TestCellExt, 1, placeholder_);
 
  public:
@@ -70,7 +61,7 @@ BDM_SIM_OBJECT_TEST(TestCell, bdm::Cell, CTParam) {
     EXPECT_NEAR(-2.4980915447965089, result[2], abs_error<double>::value);
   }
 
-  const std::vector<typename CTParam<>::BiologyModules>& GetBiologyModules()
+  const std::vector<Variant<GrowthModule, MovementModule>>& GetBiologyModules()
       const {
     return Base::biology_modules_[0];
   }
@@ -80,8 +71,8 @@ BDM_SIM_OBJECT_TEST(TestCell, bdm::Cell, CTParam) {
   double expected_phi_;
   double expected_theta_;
 
-  void DivideImpl(TMostDerived<Scalar> * daughter, double volume_ratio,
-                  double phi, double theta) override {
+  void DivideImpl(MostDerivedSoPtr* daughter, double volume_ratio,
+                  double phi, double theta) {
     if (check_input_parameters_) {
       EXPECT_NEAR(expected_volume_ratio_, volume_ratio, 1e-8);
       EXPECT_NEAR(expected_phi_, phi, 1e-8);
@@ -93,13 +84,27 @@ BDM_SIM_OBJECT_TEST(TestCell, bdm::Cell, CTParam) {
   }
 
   /// forwards call to BiologyModuleEventHandler which is protected
-  void CallBiologyModuleEventHandler(BmEvent event, std::vector<typename CTParam<>::BiologyModules>* destination) {
+  void CallBiologyModuleEventHandler(BmEvent event, std::vector<Variant<GrowthModule, MovementModule>>* destination) {
     Base::BiologyModuleEventHandler(event, destination);
   }
 
   vec<bool> placeholder_;  // BDM_SIM_OBJECT_HEADER needs at least one member
   FRIEND_TEST(CellTest, DivideVolumeRatioPhiTheta);
 };
+
+}  // namespace cell_test_internal
+
+template <typename TBackend>
+struct CompileTimeParam {
+  template <typename TTBackend>
+  using Self = CompileTimeParam<TTBackend>;
+  using Backend = TBackend;
+  using SimulationBackend = Soa;
+  using BiologyModules = Variant<cell_test_internal::GrowthModule, cell_test_internal::MovementModule>;
+  using AtomicTypes = VariadicTypedef<cell_test_internal::TestCell>;
+};
+
+namespace cell_test_internal {
 
 inline void RunIOTest() {
   remove(ROOTFILE);
