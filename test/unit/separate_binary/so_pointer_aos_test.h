@@ -64,6 +64,8 @@ namespace so_pointer_aos_test_internal {
 
 inline void IOTestSoPointerRmContainerAos() {
   Rm()->Clear();
+  // TODO(lukas) Remove after https://trello.com/c/sKoOTgJM has been resolved
+  Rm()->Get<SoPointerTestClass>()->reserve(2);
   auto&& so1 = Rm()->New<SoPointerTestClass>(123);
   auto&& so2 = Rm()->New<SoPointerTestClass>(456);
 

@@ -218,7 +218,7 @@ class ScalarSimulationObject {
   using TMostDerived = typename TDerived::template type<
       typename TCompileTimeParam::template Self<TTBackend>, TDerived>;
 
-  ScalarSimulationObject() {}
+  ScalarSimulationObject() : element_idx_(0) {}
   ScalarSimulationObject(const ScalarSimulationObject& other) :
    element_idx_(other.element_idx_) {}
 
@@ -226,7 +226,6 @@ class ScalarSimulationObject {
 
   std::size_t size() const { return 1; }  // NOLINT
 
-  template <typename TRm = ResourceManager<>>
   uint32_t GetElementIdx() const {
     return element_idx_;
   }
