@@ -5,6 +5,7 @@
 #include <string>
 
 #include "biology_module_op.h"
+#include "bound_space_op.h"
 #include "commit_op.h"
 #include "diffusion_op.h"
 #include "displacement_op.h"
@@ -168,7 +169,7 @@ class Scheduler {
     rm->ApplyOnAllTypes(biology_);
     rm->ApplyOnAllTypes(physics_);  // Bounding box applied at the end
     rm->ApplyOnAllTypesParallel(commit_);
-    
+
     const auto& update_info = commit_->GetUpdateInfo();
     auto update_references = [&update_info](auto* sim_objects, uint16_t type_idx) {
       #pragma omp parallel for

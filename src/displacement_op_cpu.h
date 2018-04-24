@@ -5,6 +5,7 @@
 #include <cmath>
 #include <vector>
 
+#include "bound_space_op.h"
 #include "grid.h"
 #include "math_util.h"
 #include "param.h"
