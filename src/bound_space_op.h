@@ -21,7 +21,6 @@ void ApplyBoundingBox(TSO* sim_object, double lb, double rb) {
   sim_object->SetPosition(pos);
 }
 
-
 /// Keeps the simulation objects contained within the bounds as defined in
 /// param.h
 class BoundSpace {

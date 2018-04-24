@@ -96,8 +96,6 @@ class SoaSimulationObject {
   /// Changes do not take effect until they are commited.
   /// Upon commit removal has constant complexity @see Commit
   /// @param index remove element at the given index
-  // FIXME: implementation swaps elements, thus invalidating SoHandles and SoPtr
-  //        update mechanism required for classes having data members with those types!!
   void DelayedRemove(size_t index) {
     std::lock_guard<std::recursive_mutex> lock(mutex_);
     to_be_removed_.push_back(index);
@@ -220,21 +218,26 @@ class ScalarSimulationObject {
   using TMostDerived = typename TDerived::template type<
       typename TCompileTimeParam::template Self<TTBackend>, TDerived>;
 
+  ScalarSimulationObject() {}
+  ScalarSimulationObject(const ScalarSimulationObject& other) :
+   element_idx_(other.element_idx_) {}
+
   virtual ~ScalarSimulationObject() {}
 
   std::size_t size() const { return 1; }  // NOLINT
 
   template <typename TRm = ResourceManager<>>
   uint32_t GetElementIdx() const {
-    auto* container = TRm::Get()->template Get<TMostDerived<Scalar>>();
-    const auto* address_first_element = &((*container)[0]);
-    uint32_t idx = reinterpret_cast<decltype(address_first_element)>(this) - address_first_element;
-    assert(idx < container->size() && "Element index larger than number of elements");
-    return idx;
+    return element_idx_;
   }
+
+  // assign the array index of this object in the ResourceManager
+  void SetElementIdx(uint32_t element_idx) { element_idx_ = element_idx; }
 
  protected:
   static const std::size_t kIdx = 0;
+  // array index of this object in the ResourceManager
+  uint32_t element_idx_ = 0;
 
   /// Append a scalar element
   virtual void PushBackImpl(const TMostDerived<Scalar> &other) {}
@@ -245,7 +248,7 @@ class ScalarSimulationObject {
   /// Remove last element
   virtual void PopBack() {}
 
-  BDM_ROOT_CLASS_DEF(ScalarSimulationObject, 1);
+  BDM_ROOT_CLASS_DEF(ScalarSimulationObject, 2);
 };
 
 /// Helper type trait to map backends to simulation object implementations

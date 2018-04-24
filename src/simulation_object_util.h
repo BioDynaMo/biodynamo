@@ -321,7 +321,6 @@ struct Capsule;
   /** Returns the ResourceManager */ \
   /** Avoids the "invalid use of incomplete type" error caused if the  */ \
   /** global `Rm()` function in resource_manager.h would be used */ \
-  /** FIXME: make static */ \
   template <typename TResourceManager = ResourceManager<>> \
   TResourceManager* Rm() { \
     return TResourceManager::Get(); \
@@ -351,13 +350,11 @@ struct Capsule;
   MostDerivedSoPtr GetSoPtr() { \
     auto* container = Rm()->template Get<MostDerived>();\
     return MostDerivedSoPtr(container, Base::GetElementIdx());\
-    /** FIXME: add test **/ \
   } \
   \
   void RemoveFromSimulation() { \
     auto container = Rm()->template Get<MostDerived>();\
     container->DelayedRemove(Base::GetElementIdx());\
-    /** FIXME: add test **/ \
   } \
                                                                                \
   /** Returns the Scalar name of the container minus the "Ext"     */          \

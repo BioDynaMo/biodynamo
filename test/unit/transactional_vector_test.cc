@@ -1,12 +1,41 @@
 #include "transactional_vector.h"
 #include <thread>
 #include "gtest/gtest.h"
+#include "simulation_object_util.h"
+#include "simulation_object.h"
+#include "compile_time_param.h"
 
 namespace bdm {
 namespace transactional_vector_test_internal {
 
+
+BDM_SIM_OBJECT(TestObject, bdm::SimulationObject) {
+  BDM_SIM_OBJECT_HEADER(TestObjectExt, 1, id_);
+
+ public:
+  TestObjectExt(int id) { id_[kIdx] = id; }
+  int GetId() { return id_[kIdx]; }
+
+  bool operator<(const Self<Backend>& other) {
+    return id_[kIdx] < other.id_[kIdx];
+  }
+
+ private:
+  vec<int> id_;
+};
+
+}  // namespace transactional_vector_test_internal
+
+template <typename TBackend>
+struct CompileTimeParam : public DefaultCompileTimeParam<TBackend> {
+  using SimulationBackend = Scalar;
+  using AtomicTypes = VariadicTypedef<transactional_vector_test_internal::TestObject>;
+};
+
+namespace transactional_vector_test_internal {
+
 TEST(TransactionalVectorTest, All) {
-  TransactionalVector<int> vector;
+  TransactionalVector<TestObject> vector;
 
   EXPECT_EQ(0u, vector.DelayedPushBack(1));
   EXPECT_EQ(1u, vector.DelayedPushBack(2));
@@ -20,14 +49,14 @@ TEST(TransactionalVectorTest, All) {
   vector.Commit();
 
   EXPECT_EQ(3u, vector.size());
-  EXPECT_EQ(1, vector[0]);
-  EXPECT_EQ(2, vector[1]);
-  EXPECT_EQ(3, vector[2]);
+  EXPECT_EQ(1, vector[0].GetId());
+  EXPECT_EQ(2, vector[1].GetId());
+  EXPECT_EQ(3, vector[2].GetId());
 
   // test iterator
   int64_t counter = 0;
-  for(auto i : vector) {
-    EXPECT_EQ(counter++  + 1, i);
+  for(auto& el : vector) {
+    EXPECT_EQ(counter++  + 1, el.GetId());
   }
   EXPECT_EQ(counter, 3);
 
@@ -41,16 +70,16 @@ TEST(TransactionalVectorTest, All) {
   vector.Commit();
 
   EXPECT_EQ(2u, vector.size());
-  EXPECT_EQ(3, vector[0]);
-  EXPECT_EQ(2, vector[1]);
+  EXPECT_EQ(3, vector[0].GetId());
+  EXPECT_EQ(2, vector[1].GetId());
 
   // test iterator
   counter = 0;
-  for(auto i : vector) {
+  for(auto& el : vector) {
     if(!counter++) {
-      EXPECT_EQ(3, i);
+      EXPECT_EQ(3, el.GetId());
     } else {
-      EXPECT_EQ(2, i);
+      EXPECT_EQ(2, el.GetId());
     }
   }
   EXPECT_EQ(counter, 2);
@@ -65,7 +94,7 @@ TEST(TransactionalVectorTest, All) {
   // push_back
   vector.push_back(9);
   EXPECT_EQ(1u, vector.size());
-  EXPECT_EQ(9, vector[0]);
+  EXPECT_EQ(9, vector[0].GetId());
 
   vector.DelayedPushBack(10);
   EXPECT_EQ(1u, vector.size());
@@ -78,7 +107,7 @@ TEST(TransactionalVectorTest, All) {
 }
 
 TEST(TransactionalVectorTest, DelayedRemove) {
-  TransactionalVector<int> vector;
+  TransactionalVector<TestObject> vector;
   for (uint64_t i = 0; i < 10; i++) {
     vector.push_back(i);
   }
@@ -98,23 +127,23 @@ TEST(TransactionalVectorTest, DelayedRemove) {
   EXPECT_EQ(5, updated_indices[9]);
   EXPECT_EQ(3, updated_indices[7]);
 
-  EXPECT_EQ(0, vector[0]);
-  EXPECT_EQ(1, vector[1]);
-  EXPECT_EQ(2, vector[2]);
-  EXPECT_EQ(7, vector[3]);
-  EXPECT_EQ(4, vector[4]);
-  EXPECT_EQ(9, vector[5]);
-  EXPECT_EQ(6, vector[6]);
+  EXPECT_EQ(0, vector[0].GetId());
+  EXPECT_EQ(1, vector[1].GetId());
+  EXPECT_EQ(2, vector[2].GetId());
+  EXPECT_EQ(7, vector[3].GetId());
+  EXPECT_EQ(4, vector[4].GetId());
+  EXPECT_EQ(9, vector[5].GetId());
+  EXPECT_EQ(6, vector[6].GetId());
 }
 
-void PushBackElements(TransactionalVector<int> *vector, size_t start_value,
+void PushBackElements(TransactionalVector<TestObject> *vector, size_t start_value,
                       size_t num_elements) {
   for (size_t i = start_value; i < start_value + num_elements; i++) {
     vector->DelayedPushBack(i);
   }
 }
 
-void RemoveElements(TransactionalVector<int> *vector, size_t start_value,
+void RemoveElements(TransactionalVector<TestObject> *vector, size_t start_value,
                     size_t num_elements) {
   for (size_t i = start_value; i < start_value + num_elements; i++) {
     vector->DelayedRemove(i);
@@ -122,7 +151,7 @@ void RemoveElements(TransactionalVector<int> *vector, size_t start_value,
 }
 
 TEST(TransactionalVectorTest, ThreadSafety) {
-  TransactionalVector<int> vector;
+  TransactionalVector<TestObject> vector;
 
   std::thread t1(PushBackElements, &vector, 0, 100);
   std::thread t2(PushBackElements, &vector, 100, 101);
@@ -144,7 +173,7 @@ TEST(TransactionalVectorTest, ThreadSafety) {
 
   int sum = 0;
   for (size_t i = 0; i < vector.size(); i++) {
-    sum += vector[i];
+    sum += vector[i].GetId();
   }
 
   EXPECT_EQ(19280, sum);

@@ -432,6 +432,20 @@ TEST(SimulationObjectUtilTest, ThisMD) {
   EXPECT_EQ(321, t.SomeFunction());
 }
 
+TEST(SimulationObjectUtilTest, GetSoPtr) {
+  Rm()->Clear();
+  for(uint64_t i = 0; i < 10; i++) {
+    Rm()->template New<Neuron>();
+  }
+
+  EXPECT_EQ(10u, Rm()->GetNumSimObjects());
+
+  auto neurons = Rm()->template Get<Neuron>();
+  for(uint64_t i = 0; i < 10; i++) {
+    EXPECT_EQ(i, (*neurons)[i].GetSoPtr().GetElementIdx());
+  }
+}
+
 // }  // namespace simulation_object_util_test_internal
 }  // namespace bdm
 

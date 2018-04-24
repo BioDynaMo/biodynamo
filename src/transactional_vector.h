@@ -68,8 +68,10 @@ class TransactionalVector {
   ///         `size()`
   uint64_t DelayedPushBack(const T& element) {
     std::lock_guard<std::recursive_mutex> lock(mutex_);
+    uint64_t idx = data_.size();
     data_.push_back(element);
-    return data_.size() - 1;
+    data_[idx].SetElementIdx(idx);
+    return idx;
   }
 
   /// Safe method to remove an element from this vector
@@ -107,6 +109,7 @@ class TransactionalVector {
         // invalidates pointer of last element
         uint32_t old_index = data_.size() - 1;
         std::swap(data_[idx], data_[old_index]);
+        data_[idx].SetElementIdx(idx);
         data_.pop_back();
         updated_indices[old_index] = idx;
       } else {  // idx points to last element
@@ -126,7 +129,9 @@ class TransactionalVector {
   void push_back(const T& element) {  // NOLINT
     std::lock_guard<std::recursive_mutex> lock(mutex_);
     if (data_.size() == size_) {
+      uint64_t idx = size_;
       data_.push_back(element);
+      data_[idx].SetElementIdx(idx);
       size_++;
     } else {
       throw std::logic_error("There are uncommited delayed additions to this container");

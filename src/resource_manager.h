@@ -40,7 +40,7 @@ class SoHandle {
       : type_idx_(type_idx), element_idx_(element_idx) {}
   uint16_t GetTypeIdx() const { return type_idx_; }
   uint32_t GetElementIdx() const { return element_idx_; }
-  void SetElementIdx(uint32_t element_idx) { element_idx_ = element_idx_; }
+  void SetElementIdx(uint32_t element_idx) { element_idx_ = element_idx; }
 
   bool operator==(const SoHandle& other) const {
     return type_idx_ == other.type_idx_ && element_idx_ == other.element_idx_;
