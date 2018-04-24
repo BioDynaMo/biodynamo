@@ -84,6 +84,8 @@ TEST(SimulationBackupTest, Backup) {
   EXPECT_EQ(1u, restored_rm->Get<Cell>()->size());
   // Writing and reading ResourceManager is tested in resource_manager_test.cc
 
+  delete restored_rm;
+
   remove(ROOTFILE);
 }
 
