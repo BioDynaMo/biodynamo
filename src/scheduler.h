@@ -167,7 +167,9 @@ class Scheduler {
     }
     rm->ApplyOnAllTypes(diffusion_);
     rm->ApplyOnAllTypes(biology_);
-    rm->ApplyOnAllTypes(physics_);  // Bounding box applied at the end
+    if (Param::run_mechanical_interactions_) {
+      rm->ApplyOnAllTypes(physics_);  // Bounding box applied at the end
+    }
     rm->ApplyOnAllTypesParallel(commit_);
 
     const auto& update_info = commit_->GetUpdateInfo();
