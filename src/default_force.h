@@ -3,11 +3,11 @@
 
 #include <algorithm>
 #include <cmath>
-#include <TError.h>
 
 #include "backend.h"
 #include "shape.h"
 #include "math_util.h"
+#include "log.h"
 #include "random.h"
 
 namespace bdm {
@@ -60,7 +60,7 @@ class DefaultForce {
   }
 
   std::array<double, 3> GetForce(...) const {
-    Fatal("DefaultForce", "DefaultForce only supports sphere or cylinder shapes");
+    Log::Fatal("DefaultForce", "DefaultForce only supports sphere or cylinder shapes");
     return {0, 0, 0};
   }
 

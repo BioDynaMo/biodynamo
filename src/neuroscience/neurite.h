@@ -7,13 +7,13 @@
 #include "math_util.h"
 #include "matrix.h"
 #include "param.h"
+#include "log.h"
 #include "random.h"
 #include "simulation_object.h"
 #include "simulation_object_util.h"
 #include <typeinfo>  // TODO remove
 #include <iostream>  // TODO remove
 
-#include "TError.h"
 
 namespace bdm {
 namespace neuroscience {

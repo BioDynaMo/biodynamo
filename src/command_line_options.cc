@@ -1,5 +1,4 @@
 #include "command_line_options.h"
-#include <TError.h>
 #include <stdlib.h>
 #include <iostream>
 #include <sstream>
