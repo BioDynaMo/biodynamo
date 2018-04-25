@@ -7,11 +7,12 @@
 namespace bdm {
 namespace neuroscience {
 
-// TODO
+/// Default compile time parameter for neuroscience module.
+/// Users need to specify the type of Neuron and Neurite they are using.
 template <typename TBackend = Soa>
 struct DefaultCompileTimeParam {
-  using TNeuron = Neuron;
-  using TNeurite = Neurite;
+  using Neuron = ::bdm::neuroscience::Neuron;
+  using Neurite = ::bdm::neuroscience::Neurite;
 };
 
 }  // namespace neuroscience

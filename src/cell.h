@@ -40,14 +40,14 @@ extern const BmEvent gCellDivision;
 // BDM_SIM_OBJECT(BaseSimObject, bdm::SimulationObject) {
 //   BDM_SIM_OBJECT_HEADER(BaseSimObjectExt, 1, biology_modules_);
 //  public:
-//   using TBiologyModuleVariant = typename TCompileTimeParam::BiologyModules;
+//   using BiologyModules = typename TCompileTimeParam::BiologyModules;
 //
 //   BaseSimObjectExt() {}
 //
 //   /// Add a biology module to this cell
 //   /// @tparam TBiologyModule type of the biology module. Must be in the set
 //   of
-//   ///         types specified in `TBiologyModuleVariant`
+//   ///         types specified in `BiologyModules`
 //   template <typename TBiologyModule>
 //   void AddBiologyModule(TBiologyModule && module) {
 //     biology_modules_[kIdx].emplace_back(module);
@@ -55,8 +55,8 @@ extern const BmEvent gCellDivision;
 //
 //   /// Execute all biology modules
 //   void RunBiologyModules() {
-//     RunVisitor<TMostDerived<Backend>>
-//     visitor(static_cast<TMostDerived<Backend>*>(this));
+//     RunVisitor<MostDerived<Backend>>
+//     visitor(static_cast<MostDerived<Backend>*>(this));
 //     for (auto& module : biology_modules_[kIdx]) {
 //       visit(visitor, module);
 //     }
@@ -64,7 +64,7 @@ extern const BmEvent gCellDivision;
 //
 //  protected:
 //   /// collection of biology modules which define the internal behavior
-//   vec<std::vector<TBiologyModuleVariant>> biology_modules_ = {{}};
+//   vec<std::vector<BiologyModules>> biology_modules_ = {{}};
 //
 // /// Copies biology modules to destination and removes them from
 // /// `biology_modules_` if the biology modules are marked for the specific
@@ -76,8 +76,8 @@ extern const BmEvent gCellDivision;
 // /// @param[in]  skip_removal skip the removal of biology modules. Default
 // ///             value is false.
 // void BiologyModuleEventHandler(BmEvent event,
-// std::vector<TBiologyModuleVariant>* destination, bool skip_removal = false) {
-//   CopyVisitor<std::vector<TBiologyModuleVariant>> visitor(event,
+// std::vector<BiologyModules>* destination, bool skip_removal = false) {
+//   CopyVisitor<std::vector<BiologyModules>> visitor(event,
 //   destination);
 //   for (auto& module : biology_modules_[kIdx]) {
 //     visit(visitor, module);
@@ -112,7 +112,7 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
 
   static constexpr Shape GetShape() { return Shape::kSphere; }
 
-  using TBiologyModuleVariant = typename TCompileTimeParam::BiologyModules;
+  using BiologyModules = typename TCompileTimeParam::BiologyModules;
   CellExt() : density_(1.0) {}
   explicit CellExt(double diameter) : diameter_(diameter), density_(1.0) {
     UpdateVolume();
@@ -124,7 +124,7 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
 
   /// Add a biology module to this cell
   /// @tparam TBiologyModule type of the biology module. Must be in the set of
-  ///         types specified in `TBiologyModuleVariant`
+  ///         types specified in `BiologyModules`
   template <typename TBiologyModule>
   void AddBiologyModule(TBiologyModule && module);
 
@@ -203,7 +203,7 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
   /// Forward call to `DivideImpl`
   /// @see `DivideImpl`
   MostDerivedSoPtr Divide(double volume_ratio, double phi, double theta) {
-    auto&& daughter = Rm()->template New<MostDerived>().GetSoPtr();
+    auto&& daughter = Rm()->template New<MostDerivedScalar>().GetSoPtr();
     ThisMD()->DivideImpl(&daughter, volume_ratio, phi, theta);
     return daughter;
   }
@@ -270,7 +270,7 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
         position_[kIdx][2] + d_2 * axis_of_division[2]};
     daughter.SetPosition(new_position);
 
-    std::vector<TBiologyModuleVariant> branch_biology_modules;
+    std::vector<BiologyModules> branch_biology_modules;
     BiologyModuleEventHandler(gCellDivision, &branch_biology_modules);
     daughter.SetBiologyModules(std::move(branch_biology_modules));
 
@@ -339,7 +339,7 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
     tractor_force_[kIdx] = tractor_force;
   }
 
-  void SetBiologyModules(std::vector<TBiologyModuleVariant> && bms) {
+  void SetBiologyModules(std::vector<BiologyModules> && bms) {
     biology_modules_[kIdx] = bms;
   }
 
@@ -403,7 +403,7 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
   static constexpr array<double, 3> kZAxis = {{0.0, 0.0, 1.0}};
 
   /// collection of biology modules which define the internal behavior
-  vec<std::vector<TBiologyModuleVariant>> biology_modules_;
+  vec<std::vector<BiologyModules>> biology_modules_;
 
   /// Grid box index
   vec<uint32_t> box_idx_;
@@ -418,9 +418,9 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
   /// @param[in]  skip_removal skip the removal of biology modules. Default
   ///             value is false.
   void BiologyModuleEventHandler(
-      BmEvent event, std::vector<TBiologyModuleVariant> * destination,
+      BmEvent event, std::vector<BiologyModules> * destination,
       bool skip_removal = false) {
-    CopyVisitor<std::vector<TBiologyModuleVariant>> visitor(event, destination);
+    CopyVisitor<std::vector<BiologyModules>> visitor(event, destination);
     for (auto& module : biology_modules_[kIdx]) {
       visit(visitor, module);
     }
@@ -453,8 +453,8 @@ BDM_SO_DEFINE(template <typename TBiologyModule>
 }
 
 BDM_SO_DEFINE(inline void CellExt)::RunBiologyModules() {
-  RunVisitor<TMostDerived<Backend>> visitor(
-      static_cast<TMostDerived<Backend>*>(this));
+  RunVisitor<MostDerived<Backend>> visitor(
+      static_cast<MostDerived<Backend>*>(this));
   for (auto& module : biology_modules_[kIdx]) {
     visit(visitor, module);
   }

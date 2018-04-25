@@ -236,12 +236,12 @@ TEST(ResourceManagerTest, RmFunction) {
   EXPECT_EQ(ResourceManager<>::Get(), Rm());
 }
 
-template <typename Backend, typename TA, typename TB>
+template <typename TBackend, typename TA, typename TB>
 void RunGetTypeIndexTest() {
-  using CTParam = CompileTimeParam<Backend, TA, TB>;
-  using TRm = ResourceManager<CTParam>;
-  EXPECT_EQ(0u, TRm::template GetTypeIndex<TA>());
-  EXPECT_EQ(1u, TRm::template GetTypeIndex<TB>());
+  using CTParam = CompileTimeParam<TBackend, TA, TB>;
+  using Rm = ResourceManager<CTParam>;
+  EXPECT_EQ(0u, Rm::template GetTypeIndex<TA>());
+  EXPECT_EQ(1u, Rm::template GetTypeIndex<TB>());
 }
 
 TEST(ResourceManagerTest, GetTypeIndexSoa) {
@@ -254,10 +254,10 @@ TEST(ResourceManagerTest, GetTypeIndexAos) {
   RunGetTypeIndexTest<Scalar, SoaA, SoaB>();
 }
 
-template <typename Backend, typename TA, typename TB>
+template <typename TBackend, typename TA, typename TB>
 void RunPushBackTest() {
   const double kEpsilon = abs_error<double>::value;
-  using CTParam = CompileTimeParam<Backend, TA, TB>;
+  using CTParam = CompileTimeParam<TBackend, TA, TB>;
   auto rm = ResourceManager<CTParam>::Get();
   rm->Clear();
 
@@ -290,10 +290,10 @@ TEST(ResourceManagerTest, push_backAos) {
   RunPushBackTest<Scalar, SoaA, SoaB>();
 }
 
-template <typename Backend, typename TA, typename TB>
+template <typename TBackend, typename TA, typename TB>
 void RunNewTest() {
   const double kEpsilon = abs_error<double>::value;
-  using CTParam = CompileTimeParam<Backend, TA, TB>;
+  using CTParam = CompileTimeParam<TBackend, TA, TB>;
   auto rm = ResourceManager<CTParam>::Get();
   rm->Clear();
 

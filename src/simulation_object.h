@@ -37,7 +37,7 @@ class SoaSimulationObject {
   friend class SoaSimulationObject;
 
   template <typename TTBackend>
-  using TMostDerived = typename TDerived::template type<
+  using MostDerived = typename TDerived::template type<
       typename TCompileTimeParam::template Self<TTBackend>, TDerived>;
 
   template <typename TBackend>
@@ -81,7 +81,7 @@ class SoaSimulationObject {
   size_t TotalSize() const { return total_size_; }
 
   /// Thread safe version of std::vector::push_back
-  void push_back(const TMostDerived<Scalar> &element) {  // NOLINT
+  void push_back(const MostDerived<Scalar> &element) {  // NOLINT
     std::lock_guard<std::recursive_mutex> lock(mutex_);
     if (total_size_ == size_) {
       PushBackImpl(element);
@@ -186,7 +186,7 @@ class SoaSimulationObject {
                                  std::vector<size_t>>::type to_be_removed_;
 
   /// Append a scalar element
-  virtual void PushBackImpl(const TMostDerived<Scalar> &other) { total_size_++; }
+  virtual void PushBackImpl(const MostDerived<Scalar> &other) { total_size_++; }
 
   /// Swap element with last element if and remove last element
   virtual void SwapAndPopBack(size_t index, size_t size) {}
@@ -215,7 +215,7 @@ template <typename TCompileTimeParam, typename TDerived>
 class ScalarSimulationObject {
  public:
   template <typename TTBackend>
-  using TMostDerived = typename TDerived::template type<
+  using MostDerived = typename TDerived::template type<
       typename TCompileTimeParam::template Self<TTBackend>, TDerived>;
 
   ScalarSimulationObject() : element_idx_(0) {}
@@ -239,7 +239,7 @@ class ScalarSimulationObject {
   uint32_t element_idx_ = 0;
 
   /// Append a scalar element
-  virtual void PushBackImpl(const TMostDerived<Scalar> &other) {}
+  virtual void PushBackImpl(const MostDerived<Scalar> &other) {}
 
   /// Swap element with last element if and remove last element
   virtual void SwapAndPopBack(size_t index, size_t size) {}

@@ -10,26 +10,12 @@
 
 namespace bdm {
 
-namespace neuroscience {
-BDM_SIM_OBJECT(SpecializedNeurite, bdm::neuroscience::Neurite) {
-  BDM_SIM_OBJECT_HEADER(SpecializedNeuriteExt, 1, foo_);
-
- public:
-  SpecializedNeuriteExt() {}
-
- private:
-  vec<int> foo_;
-};
-}
-
 template <typename TBackend>
 struct CompileTimeParam
     : public DefaultCompileTimeParam<TBackend>,
       public neuroscience::DefaultCompileTimeParam<TBackend> {
-  using TNeuron = neuroscience::Neuron;
-  using TNeurite = neuroscience::SpecializedNeurite;
   using AtomicTypes = VariadicTypedef<neuroscience::Neuron,
-                                      neuroscience::SpecializedNeurite>;
+                                      neuroscience::Neurite>;
 };
 
 namespace neuroscience {
@@ -45,13 +31,13 @@ TEST(NeuronTest, Soa) {
   SoaNeuron neuron;
   SoaNeuron sneuron;
   typename Neuron::template Self<Soa> soan;
-  typename CompileTimeParam<>::TNeuron soan1;
+  typename CompileTimeParam<>::Neuron soan1;
 }
 
 
 struct UpdateReferencesNeuron : Neuron {
   void AddDaughters() {
-    using SoPtr = typename Neuron::template ToSoPtr<SpecializedNeurite>;
+    using SoPtr = typename Neuron::template ToSoPtr<Neurite>;
     daughters_[Neuron::kIdx].push_back(SoPtr());
     daughters_[Neuron::kIdx].push_back(SoPtr());
     daughters_[Neuron::kIdx].push_back(SoPtr());
@@ -79,7 +65,7 @@ TEST(NeuronTest, UpdateReferences) {
 /// Test that the references of mother, daughter_left_ and daughter_right_
 /// are updated correctly
 TEST(NeuriteTest, UpdateReferences) {
-  SpecializedNeurite neurite;
+  Neurite neurite;
 
   auto dl = neurite.GetDaughterLeft();
   dl.SetElementIdx(12);
@@ -159,7 +145,7 @@ TEST(NeuronTest, ExtendNewNeuriteSphericalCoordinates) {
   EXPECT_TRUE(neurite.GetMother().IsNeuron());
 
   EXPECT_EQ(1u, rm->Get<Neuron>()->size());
-  EXPECT_EQ(1u, rm->Get<SpecializedNeurite>()->size());
+  EXPECT_EQ(1u, rm->Get<Neurite>()->size());
 }
 
 TEST(NeuronTest, ExtendNewNeurite) {
@@ -195,7 +181,7 @@ TEST(NeuronTest, ExtendNewNeurite) {
   EXPECT_TRUE(neurite.GetMother().IsNeuron());
 
   EXPECT_EQ(1u, rm->Get<Neuron>()->size());
-  EXPECT_EQ(1u, rm->Get<SpecializedNeurite>()->size());
+  EXPECT_EQ(1u, rm->Get<Neurite>()->size());
 }
 
 TEST(NeuronTest, ExtendNeuriteAndElongate) {
@@ -255,7 +241,7 @@ TEST(NeuronTest, ExtendNeuriteAndElongate) {
   EXPECT_TRUE(proximal_segment.GetMother().IsNeuron());
 
   EXPECT_EQ(1u, rm->Get<Neuron>()->size());
-  EXPECT_EQ(2u, rm->Get<SpecializedNeurite>()->size());
+  EXPECT_EQ(2u, rm->Get<Neurite>()->size());
 }
 
 TEST(NeuriteTest, PartialRetraction) {
@@ -303,7 +289,7 @@ TEST(NeuriteTest, PartialRetraction) {
   EXPECT_TRUE(neurite_segment.GetMother().IsNeuron());
 
   EXPECT_EQ(1u, rm->Get<Neuron>()->size());
-  EXPECT_EQ(1u, rm->Get<SpecializedNeurite>()->size());
+  EXPECT_EQ(1u, rm->Get<Neurite>()->size());
 }
 
 TEST(NeuriteTest, TotalRetraction) {
@@ -334,7 +320,7 @@ TEST(NeuriteTest, TotalRetraction) {
 
   // verify
   EXPECT_EQ(1u, rm->Get<Neuron>()->size());
-  EXPECT_EQ(0u, rm->Get<SpecializedNeurite>()->size());
+  EXPECT_EQ(0u, rm->Get<Neurite>()->size());
   EXPECT_EQ(0u, neuron.GetDaughters().size());
 }
 
@@ -430,7 +416,7 @@ TEST(NeuriteTest, Branch) {
 
   rm->ApplyOnAllTypes(commit);
   EXPECT_EQ(1u, rm->Get<Neuron>()->size());
-  EXPECT_EQ(4u, rm->Get<SpecializedNeurite>()->size());
+  EXPECT_EQ(4u, rm->Get<Neurite>()->size());
 }
 
 TEST(NeuriteTest, RightDaughterRetraction) {
@@ -499,7 +485,7 @@ TEST(NeuriteTest, RightDaughterRetraction) {
 
   rm->ApplyOnAllTypes(commit);
   EXPECT_EQ(1u, rm->Get<Neuron>()->size());
-  EXPECT_EQ(4u, rm->Get<SpecializedNeurite>()->size());
+  EXPECT_EQ(4u, rm->Get<Neurite>()->size());
 }
 
 TEST(NeuriteTest, RightDaughterTotalRetraction) {
@@ -547,7 +533,7 @@ TEST(NeuriteTest, RightDaughterTotalRetraction) {
 
   rm->ApplyOnAllTypes(commit);
   EXPECT_EQ(1u, rm->Get<Neuron>()->size());
-  EXPECT_EQ(3u, rm->Get<SpecializedNeurite>()->size());
+  EXPECT_EQ(3u, rm->Get<Neurite>()->size());
 }
 
 TEST(NeuriteTest, LeftDaughterRetraction) {
@@ -616,7 +602,7 @@ TEST(NeuriteTest, LeftDaughterRetraction) {
 
   rm->ApplyOnAllTypes(commit);
   EXPECT_EQ(1u, rm->Get<Neuron>()->size());
-  EXPECT_EQ(4u, rm->Get<SpecializedNeurite>()->size());
+  EXPECT_EQ(4u, rm->Get<Neurite>()->size());
 }
 
 TEST(NeuriteTest, RetractAllDendrites) {
@@ -647,7 +633,7 @@ TEST(NeuriteTest, RetractAllDendrites) {
   }
 
   // retract all dendrite
-  auto all_ns = rm->Get<SpecializedNeurite>();
+  auto all_ns = rm->Get<Neurite>();
   while (all_ns->size() != 0) {
     for (uint32_t j = 0; j < all_ns->size(); j++) {
       auto&& neurite_segment = (*all_ns)[j];
@@ -663,7 +649,7 @@ TEST(NeuriteTest, RetractAllDendrites) {
   // verify
   rm->ApplyOnAllTypes(commit);
   EXPECT_EQ(1u, rm->Get<Neuron>()->size());
-  EXPECT_EQ(0u, rm->Get<SpecializedNeurite>()->size());
+  EXPECT_EQ(0u, rm->Get<Neurite>()->size());
 }
 
 TEST(NeuriteTest, Bifurcate) {
@@ -750,14 +736,14 @@ TEST(NeuriteTest, Bifurcate) {
 
   rm->ApplyOnAllTypes(commit);
   EXPECT_EQ(1u, rm->Get<Neuron>()->size());
-  EXPECT_EQ(3u, rm->Get<SpecializedNeurite>()->size());
+  EXPECT_EQ(3u, rm->Get<Neurite>()->size());
 }
 
 TEST(DISABLED_NeuronNeuriteTest, Displacement) {
   auto* rm = Rm();
   rm->Clear();
   auto* neurons = rm->template Get<Neuron>();
-  auto* neurite_segments = rm->template Get<SpecializedNeurite>();
+  auto* neurite_segments = rm->template Get<Neurite>();
 
   // Cell 1
   // auto&& cell1 = rm->template New<Cell>();

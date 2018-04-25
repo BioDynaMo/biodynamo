@@ -286,14 +286,12 @@ struct Capsule;
   /** Templated type alias to create the most derived type with a specific */  \
   /** backend. */                                                             \
   template <typename TTBackend>                                                \
-  using TMostDerived = typename TDerived::template type<                       \
+  using MostDerived = typename TDerived::template type<                       \
       typename TCompileTimeParam::template Self<TTBackend>, TDerived>;         \
   /** MostDerived type with scalar backend */                                  \
-  using MostDerived = TMostDerived<Scalar>;                                    \
-  /** MostDerived type with simulation backend */                              \
-  using MostDerivedSB = TMostDerived<SimBackend>;             \
-  /** MostDerived SoPointer type */ \
-  using MostDerivedSoPtr = SoPointer<MostDerivedSB, SimBackend>; \
+  using MostDerivedScalar = MostDerived<Scalar>;                                    \
+  /** MostDerived SoPointer type with simulation backend */ \
+  using MostDerivedSoPtr = SoPointer<MostDerived<SimBackend>, SimBackend>; \
                                                                                \
   /** Templated type alias to obtain the same type as `this`, but with */      \
   /** different backend. */                                                    \
@@ -328,7 +326,7 @@ struct Capsule;
   \
   template <typename TResourceManager = ResourceManager<>> \
   SoHandle GetSoHandle() const { \
-    auto type_idx = TResourceManager::template GetTypeIndex<MostDerived>(); \
+    auto type_idx = TResourceManager::template GetTypeIndex<MostDerivedScalar>(); \
     return SoHandle(type_idx, Base::GetElementIdx()); \
   }\
                                                                                \
@@ -348,12 +346,12 @@ struct Capsule;
   }                                                                            \
   \
   MostDerivedSoPtr GetSoPtr() { \
-    auto* container = Rm()->template Get<MostDerived>();\
+    auto* container = Rm()->template Get<MostDerivedScalar>();\
     return MostDerivedSoPtr(container, Base::GetElementIdx());\
   } \
   \
   void RemoveFromSimulation() { \
-    auto container = Rm()->template Get<MostDerived>();\
+    auto container = Rm()->template Get<MostDerivedScalar>();\
     container->DelayedRemove(Base::GetElementIdx());\
   } \
                                                                                \
@@ -438,7 +436,7 @@ struct Capsule;
  protected:                                                                    \
   /** Equivalent to std::vector<> push_back - it adds the scalar values to */  \
   /** all data members */                                                      \
-  void PushBackImpl(const TMostDerived<Scalar>& other) override {              \
+  void PushBackImpl(const MostDerived<Scalar>& other) override {              \
     BDM_SIM_OBJECT_PUSH_BACK_BODY(__VA_ARGS__);                                \
     Base::PushBackImpl(other);                                                 \
   }                                                                            \
@@ -462,8 +460,8 @@ struct Capsule;
  /** Can be used to call the method of the subclass without virtual functions */\
  /** e.g. `ThisMD()->Method()` */\
  /** (CRTP - static polymorphism) */ \
- TMostDerived<Backend>* ThisMD() { return static_cast<TMostDerived<Backend>*>(this); } \
- const TMostDerived<Backend>* ThisMD() const { return static_cast<TMostDerived<Backend>*>(this); } \
+ MostDerived<Backend>* ThisMD() { return static_cast<MostDerived<Backend>*>(this); } \
+ const MostDerived<Backend>* ThisMD() const { return static_cast<MostDerived<Backend>*>(this); } \
 \
   BDM_ROOT_CLASS_DEF_OVERRIDE(class_name, class_version_id)
 

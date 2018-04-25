@@ -16,9 +16,8 @@ BDM_SIM_OBJECT(Neuron, bdm::Cell) {
   BDM_SIM_OBJECT_HEADER(NeuronExt, 1, daughters_, daughters_coord_);
 
  public:
-  // TODO rename
-  using TNeurite = typename TCompileTimeParam::TNeurite;
-  using TNeuriteSoPtr = ToSoPtr<TNeurite>;
+  using Neurite = typename TCompileTimeParam::Neurite;
+  using NeuriteSoPtr = ToSoPtr<Neurite>;
 
   NeuronExt() {}
 
@@ -29,9 +28,9 @@ BDM_SIM_OBJECT(Neuron, bdm::Cell) {
   /// new_index)
   void UpdateReferences(
       const std::vector<std::unordered_map<uint32_t, uint32_t>>& update_info) {
-    // Neuron only stores TNeurites
-    using TRm = std::remove_pointer_t<decltype(Rm())>;
-    constexpr int neurite_type_idx = TRm::template GetTypeIndex<TNeurite>();
+    // Neuron only stores Neurites
+    using Rm = std::remove_pointer_t<decltype(Rm())>;
+    constexpr int neurite_type_idx = Rm::template GetTypeIndex<Neurite>();
     const auto& neurite_updates = update_info[neurite_type_idx];
     for (auto& daugther : daughters_[kIdx]) {
       // `this` required, because declaration in dependent base are not found
@@ -40,27 +39,33 @@ BDM_SIM_OBJECT(Neuron, bdm::Cell) {
     }
   }
 
-  // *************************************************************************************
+  // ***************************************************************************
   //      METHODS FOR NEURON TREE STRUCTURE *
-  // *************************************************************************************
+  // ***************************************************************************
 
-  /// TODO documentation
-  TNeuriteSoPtr ExtendNewNeurite(const std::array<double, 3>& direction) {
+  /// Extends a new neurites with default diameter
+  /// @param direction direciton of the new neurite
+  /// @return SoPointer of new neurite
+  NeuriteSoPtr ExtendNewNeurite(const std::array<double, 3>& direction) {
     auto dir = Math::Add(direction, Base::position_[kIdx]);
     auto angles = Base::TransformCoordinatesGlobalToPolar(dir);
     return ExtendNewNeurite(Param::kNeuriteDefaultDiameter, angles[2],
                             angles[1]);
   }
 
-  TNeuriteSoPtr ExtendNewNeurite(double diameter, double phi, double theta) {
+  /// Extends a new neurites
+  /// @param diameter the diameter of the new neurite
+  /// @param phi the angle from the z-axis
+  /// @param theta the angle from the x-axis around the z-axis
+  /// @return SoPointer of new neurite
+  NeuriteSoPtr ExtendNewNeurite(double diameter, double phi, double theta) {
     // TODO should this take immediate effect? or delayed + commit?
-    auto neurite = Rm()->template New<TNeurite>();
+    auto neurite = Rm()->template New<Neurite>();
 
-    std::vector<typename Base::TBiologyModuleVariant> neurite_bms;
+    std::vector<typename Base::BiologyModules> neurite_bms;
     Base::BiologyModuleEventHandler(gExtendNeurite, &neurite_bms);
     neurite.SetBiologyModules(std::move(neurite_bms));
 
-    // TODO remove comment: code from PhysicalSphere::addNewPhysicalCylinder
     double radius = 0.5 * Base::diameter_[kIdx];
     double new_length = Param::kNeuriteDefaultActualLength;
     // position in bdm.cells coord
@@ -76,20 +81,19 @@ BDM_SIM_OBJECT(Neuron, bdm::Cell) {
             z_coord * Base::kZAxis[2]};
 
     // positions & axis in cartesian coord
-    // TODO rename variables
-    auto new_cyl_begin_location = Math::Add(
+    auto new_begin_location = Math::Add(
         Base::position_[kIdx], Math::ScalarMult(radius, axis_direction));
-    auto new_cyl_spring_axis = Math::ScalarMult(new_length, axis_direction);
+    auto new_spring_axis = Math::ScalarMult(new_length, axis_direction);
 
-    auto new_position =
-        Math::Add(new_cyl_begin_location, new_cyl_spring_axis);
+    auto new_mass_location =
+        Math::Add(new_begin_location, new_spring_axis);
 
     // set attributes of new neurite segment
     neurite.SetDiameter(diameter);
     neurite.UpdateVolume();
-    neurite.SetSpringAxis(new_cyl_spring_axis);
+    neurite.SetSpringAxis(new_spring_axis);
 
-    neurite.SetMassLocation(new_position);  // TODO rename variable
+    neurite.SetMassLocation(new_mass_location);
     neurite.SetActualLength(new_length);
     neurite.SetRestingLengthForDesiredTension(Param::kNeuriteDefaultTension);
     neurite.UpdateLocalCoordinateAxis();
@@ -104,7 +108,7 @@ BDM_SIM_OBJECT(Neuron, bdm::Cell) {
     return neurite_soptr;
   }
 
-  void RemoveDaughter(const ToSoPtr<TNeurite> daughter) {
+  void RemoveDaughter(const ToSoPtr<Neurite> daughter) {
     auto it = std::find(std::begin(daughters_[kIdx]),
                         std::end(daughters_[kIdx]), daughter);
     assert(it != std::end(daughters_[kIdx]) &&
@@ -132,8 +136,8 @@ BDM_SIM_OBJECT(Neuron, bdm::Cell) {
                 xyz[2] * Base::kZAxis[2]};
   }
 
-  void UpdateRelative(const ToSoPtr<TNeurite>& old_rel,
-                      const ToSoPtr<TNeurite>& new_rel) {
+  void UpdateRelative(const ToSoPtr<Neurite>& old_rel,
+                      const ToSoPtr<Neurite>& new_rel) {
     auto coord = daughters_coord_[kIdx][old_rel.Get().GetElementIdx()];
     auto it = std::find(std::begin(daughters_[kIdx]),
                         std::end(daughters_[kIdx]), old_rel);
@@ -143,12 +147,12 @@ BDM_SIM_OBJECT(Neuron, bdm::Cell) {
     daughters_coord_[kIdx][new_rel.Get().GetElementIdx()] = coord;
   }
 
-  const std::vector<ToSoPtr<TNeurite>>& GetDaughters() const {
+  const std::vector<ToSoPtr<Neurite>>& GetDaughters() const {
     return daughters_[kIdx];
   }
 
  protected:
-  vec<std::vector<ToSoPtr<TNeurite>>> daughters_ = {{}};
+  vec<std::vector<ToSoPtr<Neurite>>> daughters_ = {{}};
 
   /// Daughter attachment points in local coordinates
   /// Key: element index of neurite segement
