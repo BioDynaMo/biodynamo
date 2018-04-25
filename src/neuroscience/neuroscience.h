@@ -5,5 +5,4 @@
 #include "neuroscience/neurite.h"
 #include "neuroscience/neuron.h"
 
-
 #endif  // NEUROSCIENCE_NEUROSCIENCE_H_

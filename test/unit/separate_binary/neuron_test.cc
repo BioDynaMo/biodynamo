@@ -14,8 +14,8 @@ template <typename TBackend>
 struct CompileTimeParam
     : public DefaultCompileTimeParam<TBackend>,
       public neuroscience::DefaultCompileTimeParam<TBackend> {
-  using AtomicTypes = VariadicTypedef<neuroscience::Neuron,
-                                      neuroscience::Neurite>;
+  using AtomicTypes =
+      VariadicTypedef<neuroscience::Neuron, neuroscience::Neurite>;
 };
 
 namespace neuroscience {
@@ -34,7 +34,6 @@ TEST(NeuronTest, Soa) {
   typename CompileTimeParam<>::Neuron soan1;
 }
 
-
 struct UpdateReferencesNeuron : Neuron {
   void AddDaughters() {
     using SoPtr = typename Neuron::template ToSoPtr<Neurite>;
@@ -51,7 +50,8 @@ TEST(NeuronTest, UpdateReferences) {
   UpdateReferencesNeuron neuron;
   neuron.AddDaughters();
 
-  std::vector<std::unordered_map<uint32_t, uint32_t>> updates = {{}, {{9, 3}, {5, 1}}};
+  std::vector<std::unordered_map<uint32_t, uint32_t>> updates = {
+      {}, {{9, 3}, {5, 1}}};
 
   neuron.UpdateReferences(updates);
 

@@ -23,7 +23,8 @@ namespace bdm {
 
 BDM_SIM_OBJECT(ContainerTestClass, bdm::SimulationObject) {
   BDM_SIM_OBJECT_HEADER(ContainerTestClassExt, 1, dm1_, dm2_);
-public:
+
+ public:
   ContainerTestClassExt() {}
   ContainerTestClassExt(int i, double d) {
     dm1_[kIdx] = i;
@@ -37,7 +38,7 @@ public:
   const vec<double>& GetVecDm2() const { return dm2_; }
   uint64_t GetTotalSize() const { return Base::TotalSize(); }
 
-private:
+ private:
   vec<int> dm1_;
   vec<double> dm2_;
 };
@@ -56,8 +57,8 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
     return daughter;
   }
 
-  void DivideImpl(MostDerivedSoPtr* daughter_soptr, double volume_ratio,
-                          double phi, double theta) {
+  void DivideImpl(MostDerivedSoPtr * daughter_soptr, double volume_ratio,
+                  double phi, double theta) {
     auto&& daughter = daughter_soptr->Get();
     daughter.SetPosition({5, 4, 3});
     diameter_[kIdx] = 1.123;
@@ -102,8 +103,8 @@ BDM_SIM_OBJECT(Neuron, bdm::Cell) {
 
   NeuronExt() = default;
 
-  void DivideImpl(MostDerivedSoPtr* daughter_soptr, double volume_ratio,
-                          double phi, double theta) {
+  void DivideImpl(MostDerivedSoPtr * daughter_soptr, double volume_ratio,
+                  double phi, double theta) {
     auto&& daughter = daughter_soptr->Get();
     // auto neuron = static_cast<Self<Scalar>*>(daughter);
     daughter.neurites_[daughter.kIdx].push_back(Neurite(987));
@@ -146,8 +147,7 @@ struct CompileTimeParam {
 
   /// Defines backend used in ResourceManager
   using SimulationBackend = Soa;
-  using AtomicTypes =
-      VariadicTypedef<Neuron>;
+  using AtomicTypes = VariadicTypedef<Neuron>;
 };
 
 // namespace simulation_object_util_test_internal {

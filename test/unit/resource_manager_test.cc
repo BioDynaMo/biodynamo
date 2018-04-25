@@ -1,7 +1,7 @@
 // I/O related code must be in header file
-#include "unit/io_test.h"
 #include "unit/resource_manager_test.h"
 #include "cell.h"
+#include "unit/io_test.h"
 
 namespace bdm {
 namespace resource_manager_test_internal {
@@ -359,7 +359,7 @@ TEST(SoHandleTest, EqualsOperator) {
 
 TEST_F(IOTest, SoHandle) {
   SoHandle h(12, 34);
-  SoHandle *restored = nullptr;
+  SoHandle* restored = nullptr;
 
   BackupAndRestore(h, &restored);
 

@@ -24,11 +24,14 @@ template <typename TRm = ResourceManager<>>
 class DisplacementOp {
  public:
   DisplacementOp() {
-    TRm::Get()->template ApplyOnAllTypes([this](auto* container, uint16_t type_idx) {
+    TRm::Get()->template ApplyOnAllTypes([this](auto* container,
+                                                uint16_t type_idx) {
       using Container = std::remove_pointer_t<decltype(container)>;
       using SimObject = typename Container::value_type;
       if (SimObject::GetShape() != Shape::kSphere) {
-        Log::Warning("DisplacementOp", "Currently GPU implementation only supports Spheres shapes. Therefore, the CPU implementation will be used.");
+        Log::Warning("DisplacementOp",
+                     "Currently GPU implementation only supports Spheres "
+                     "shapes. Therefore, the CPU implementation will be used.");
         this->force_cpu_implementation_ = true;
       }
     });

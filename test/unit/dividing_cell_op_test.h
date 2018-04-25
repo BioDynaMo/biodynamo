@@ -2,8 +2,8 @@
 #define UNIT_DIVIDING_CELL_OP_TEST_H_
 
 #include <omp.h>
-#include "dividing_cell_op.h"
 #include "cell.h"
+#include "dividing_cell_op.h"
 #include "gtest/gtest.h"
 #include "unit/test_util.h"
 
@@ -42,7 +42,6 @@ void RunTest() {
   // volume of two daughter cells must be equal to volume of the mother
   EXPECT_NEAR(volume_mother, (*cells)[0].GetVolume() + (*cells)[2].GetVolume(),
               abs_error<double>::value);
-
 }
 
 }  // namespace dividing_cell_op_test_internal

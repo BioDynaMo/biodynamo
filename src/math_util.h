@@ -19,7 +19,8 @@ struct Math {
   /// @param b the second vector
   /// @return a + b
   template <typename T, std::size_t N>
-  static std::array<T, N> Add(const std::array<T, N>& a, const std::array<T, N>& b) {
+  static std::array<T, N> Add(const std::array<T, N>& a,
+                              const std::array<T, N>& b) {
     std::array<T, N> result;
     for (size_t i = 0; i < N; i++) {
       result[i] = a[i] + b[i];
@@ -32,7 +33,8 @@ struct Math {
   /// @param b
   /// @return a-b
   template <typename T, std::size_t N>
-  static std::array<T, N> Subtract(const std::array<T, N>& a, const std::array<T, N>& b) {
+  static std::array<T, N> Subtract(const std::array<T, N>& a,
+                                   const std::array<T, N>& b) {
     std::array<T, N> result;
     for (size_t i = 0; i < N; i++) {
       result[i] = a[i] - b[i];
@@ -110,8 +112,9 @@ struct Math {
   /// @param a
   /// @param b
   /// @return result the cross product of a and b (a x b)
-  template<std::size_t N>
-  static std::array<double, N> CrossProduct(const std::array<double, N>& a, const std::array<double, N>& b) {
+  template <std::size_t N>
+  static std::array<double, N> CrossProduct(const std::array<double, N>& a,
+                                            const std::array<double, N>& b) {
     std::array<double, N> result;
     result[0] = a[1] * b[2] - a[2] * b[1];
     result[1] = a[2] * b[0] - a[0] * b[2];
@@ -123,7 +126,8 @@ struct Math {
   /// no length check.
   /// @param a vector
   /// @return a perpendicular vector
-  static std::array<double, 3> Perp3(const std::array<double, 3>& a, double random) {
+  static std::array<double, 3> Perp3(const std::array<double, 3>& a,
+                                     double random) {
     std::array<double, 3> vect_perp;
     if (a[0] == 0.0) {
       vect_perp[0] = 1.0;
@@ -147,18 +151,20 @@ struct Math {
   /// @param[in] theta  the amplitude of rotation (in radian)
   /// @param[in] axis   (also a vector)
   /// @return the vector after rotation
-  static std::array<double, 3> RotAroundAxis(const std::array<double, 3>& vector, double theta,
-                                             const std::array<double, 3>& axis) {
+  static std::array<double, 3> RotAroundAxis(
+      const std::array<double, 3>& vector, double theta,
+      const std::array<double, 3>& axis) {
     auto naxis = Normalize(axis);
 
     auto temp_1 = Math::ScalarMult(Math::Dot(vector, naxis), naxis);
-    auto temp_2 = Math::ScalarMult(std::cos(-theta), Math::Subtract(vector, temp_1));
-    auto temp_3 = Math::ScalarMult(std::sin(-theta), CrossProduct(vector, naxis));
+    auto temp_2 =
+        Math::ScalarMult(std::cos(-theta), Math::Subtract(vector, temp_1));
+    auto temp_3 =
+        Math::ScalarMult(std::sin(-theta), CrossProduct(vector, naxis));
 
     return {
-      temp_1[0] + temp_2[0] + temp_3[0],
-      temp_1[1] + temp_2[1] + temp_3[1],
-      temp_1[2] + temp_2[2] + temp_3[2],
+        temp_1[0] + temp_2[0] + temp_3[0], temp_1[1] + temp_2[1] + temp_3[1],
+        temp_1[2] + temp_2[2] + temp_3[2],
     };
   }
 
@@ -166,7 +172,8 @@ struct Math {
   /// @param a the first vector
   /// @param b the second vector
   /// @return the angle between them.
-  static double AngleRadian(const std::array<double, 3>& a, const std::array<double, 3>& b) {
+  static double AngleRadian(const std::array<double, 3>& a,
+                            const std::array<double, 3>& b) {
     return std::acos(Math::Dot(a, b) / (Math::Norm(a) * Math::Norm(b)));
   }
 
@@ -174,10 +181,11 @@ struct Math {
   /// @param a
   /// @param b
   /// @return the projection of a onto b
-  static std::array<double, 3> ProjectionOnto(const std::array<double, 3>& a, const std::array<double, 3>& b) {
-   double k = Math::Dot(a, b) / Math::Dot(b, b);
-   return Math::ScalarMult(k, b);
- }
+  static std::array<double, 3> ProjectionOnto(const std::array<double, 3>& a,
+                                              const std::array<double, 3>& b) {
+    double k = Math::Dot(a, b) / Math::Dot(b, b);
+    return Math::ScalarMult(k, b);
+  }
 };
 
 }  // namespace bdm

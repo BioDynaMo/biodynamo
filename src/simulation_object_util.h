@@ -37,17 +37,20 @@ using std::is_same;
 ///     // Usage:
 ///     ToBackend<Neuron, Soa> neurons;
 template <typename TSoScalar, typename TBackend>
-using ToBackend = decltype(ADLHelper(std::declval<TSoScalar*>(), std::declval<TBackend>()));
+using ToBackend =
+    decltype(ADLHelper(std::declval<TSoScalar*>(), std::declval<TBackend>()));
 
 /// Templated type trait that converts the given type to a scalar backend.\n
 /// Shorter version of `ToBackend<SomeType, Scalar>`.
 template <typename TSoScalar>
-using ToScalar = decltype(ADLHelper(std::declval<TSoScalar*>(), std::declval<Scalar>()));
+using ToScalar =
+    decltype(ADLHelper(std::declval<TSoScalar*>(), std::declval<Scalar>()));
 
 /// Templated type trait that converts the given type to a soa backend.\n
 /// Shorter version of `ToBackend<SomeType, Soa>`.
 template <typename TSoScalar>
-using ToSoa = decltype(ADLHelper(std::declval<TSoScalar*>(), std::declval<Soa>()));
+using ToSoa =
+    decltype(ADLHelper(std::declval<TSoScalar*>(), std::declval<Soa>()));
 
 /// This type trait is need to encapsulate the derived type and pass it into
 /// simulation objects. Inside `BDM_SIM_OBJECT` a template specialization is
@@ -82,12 +85,12 @@ struct Capsule;
 ///      as template argument for `TBase` (takes two template arguments itself)
 /// Furthermore, it creates template spezializations for `ToBackend` and
 /// `Capsule`
-#define BDM_SIM_OBJECT(sim_object, base_class)                                  \
+#define BDM_SIM_OBJECT(sim_object, base_class)                                 \
   template <typename TCompileTimeParam = CompileTimeParam<>,                   \
             typename TDerived = char,                                          \
             template <typename, typename> class TBase =                        \
                 base_class##_TCTParam_TDerived>                                \
-  class sim_object##Ext;                                                      \
+  class sim_object##Ext;                                                       \
                                                                                \
   template <template <typename TCompileTimeParam, typename TDerived,           \
                       template <typename, typename> class TBase> class TSoExt> \
@@ -110,14 +113,14 @@ struct Capsule;
       sim_object##Ext<CompileTimeParam<Soa>, Capsule<sim_object##Ext>>;        \
                                                                                \
   /** Functions used to associate a return type with a number of parameter */  \
-  /** types: e.g. `SoaCell ADLHelper(Cell, Soa);`*/  \
-  /** These functions can then be used to implement `bdm::ToBackend` */  \
+  /** types: e.g. `SoaCell ADLHelper(Cell, Soa);`*/                            \
+  /** These functions can then be used to implement `bdm::ToBackend` */        \
   /** This technique is called argument dependant look-up and required to */   \
-  /** find this association in different namespaces */   \
+  /** find this association in different namespaces */                         \
   sim_object ADLHelper(sim_object*, Scalar);                                   \
   Soa##sim_object ADLHelper(sim_object*, Soa);                                 \
-  sim_object ADLHelper(Soa##sim_object*, Scalar); \
-  Soa##sim_object ADLHelper(Soa##sim_object*, Soa); \
+  sim_object ADLHelper(Soa##sim_object*, Scalar);                              \
+  Soa##sim_object ADLHelper(Soa##sim_object*, Soa);                            \
                                                                                \
   template <typename TCompileTimeParam>                                        \
   using sim_object##Test =                                                     \
@@ -150,12 +153,12 @@ struct Capsule;
 /// \param base_class
 /// \param compile_time_param
 /// \see BDM_SIM_OBJECT
-#define BDM_SIM_OBJECT_TEST(sim_object, base_class, compile_time_param)         \
+#define BDM_SIM_OBJECT_TEST(sim_object, base_class, compile_time_param)        \
   template <typename TCompileTimeParam = compile_time_param<>,                 \
             typename TDerived = char,                                          \
             template <typename, typename> class TBase =                        \
                 base_class##_TCTParam_TDerived>                                \
-  class sim_object##Ext;                                                      \
+  class sim_object##Ext;                                                       \
                                                                                \
   template <template <typename TCompileTimeParam, typename TDerived,           \
                       template <typename, typename> class TBase> class TSoExt> \
@@ -176,17 +179,17 @@ struct Capsule;
       sim_object##Ext<compile_time_param<Scalar>, Capsule<sim_object##Ext>>;   \
   using Soa##sim_object =                                                      \
       sim_object##Ext<compile_time_param<Soa>, Capsule<sim_object##Ext>>;      \
-      \
+                                                                               \
   /** Functions used to associate a return type with a number of parameter */  \
-  /** types: e.g. `SoaCell ADLHelper(Cell, Soa);`*/  \
-  /** These functions can then be used to implement `bdm::ToBackend` */  \
+  /** types: e.g. `SoaCell ADLHelper(Cell, Soa);`*/                            \
+  /** These functions can then be used to implement `bdm::ToBackend` */        \
   /** This technique is called argument dependant look-up and required to */   \
-  /** find this association in different namespaces */   \
+  /** find this association in different namespaces */                         \
   sim_object ADLHelper(sim_object*, Scalar);                                   \
   Soa##sim_object ADLHelper(sim_object*, Soa);                                 \
-  sim_object ADLHelper(Soa##sim_object*, Scalar); \
-  Soa##sim_object ADLHelper(Soa##sim_object*, Soa); \
-      \
+  sim_object ADLHelper(Soa##sim_object*, Scalar);                              \
+  Soa##sim_object ADLHelper(Soa##sim_object*, Soa);                            \
+                                                                               \
   template <typename TCompileTimeParam>                                        \
   using sim_object##Test =                                                     \
       sim_object##Ext<TCompileTimeParam, Capsule<sim_object##Ext>>;            \
@@ -280,18 +283,18 @@ struct Capsule;
                                                                                \
   template <typename T>                                                        \
   using vec = typename Backend::template vec<T>;                               \
-  \
-  using SimBackend = typename TCompileTimeParam::SimulationBackend;\
+                                                                               \
+  using SimBackend = typename TCompileTimeParam::SimulationBackend;            \
                                                                                \
   /** Templated type alias to create the most derived type with a specific */  \
-  /** backend. */                                                             \
+  /** backend. */                                                              \
   template <typename TTBackend>                                                \
-  using MostDerived = typename TDerived::template type<                       \
+  using MostDerived = typename TDerived::template type<                        \
       typename TCompileTimeParam::template Self<TTBackend>, TDerived>;         \
   /** MostDerived type with scalar backend */                                  \
-  using MostDerivedScalar = MostDerived<Scalar>;                                    \
-  /** MostDerived SoPointer type with simulation backend */ \
-  using MostDerivedSoPtr = SoPointer<MostDerived<SimBackend>, SimBackend>; \
+  using MostDerivedScalar = MostDerived<Scalar>;                               \
+  /** MostDerived SoPointer type with simulation backend */                    \
+  using MostDerivedSoPtr = SoPointer<MostDerived<SimBackend>, SimBackend>;     \
                                                                                \
   /** Templated type alias to obtain the same type as `this`, but with */      \
   /** different backend. */                                                    \
@@ -299,15 +302,16 @@ struct Capsule;
   using Self =                                                                 \
       class_name<typename TCompileTimeParam::template Self<TTBackend>,         \
                  TDerived, TBase>;                                             \
-                 \
-  /** Templated type alias to convert an external type to the simulation  */ \
-  /** backend.  */\
-  template <typename T>\
-  using ToSimBackend = decltype(ADLHelper(std::declval<T*>(), std::declval<SimBackend>()));\
-\
+                                                                               \
+  /** Templated type alias to convert an external type to the simulation  */   \
+  /** backend.  */                                                             \
+  template <typename T>                                                        \
+  using ToSimBackend =                                                         \
+      decltype(ADLHelper(std::declval<T*>(), std::declval<SimBackend>()));     \
+                                                                               \
   /** Templated type alias to get a `SoPointer` for the given external type */ \
-  template <typename T> \
-  using ToSoPtr = SoPointer<ToSimBackend<T>, SimBackend>;\
+  template <typename T>                                                        \
+  using ToSoPtr = SoPointer<ToSimBackend<T>, SimBackend>;                      \
                                                                                \
   template <typename, typename, template <typename, typename> class>           \
   friend class class_name;                                                     \
@@ -315,20 +319,21 @@ struct Capsule;
   /** Only used for Soa backends to be consistent with  */                     \
   /** e.g. `std::vector<T>::value_type`. */                                    \
   using value_type = Self<Soa>;                                                \
-  \
-  /** Returns the ResourceManager */ \
-  /** Avoids the "invalid use of incomplete type" error caused if the  */ \
-  /** global `Rm()` function in resource_manager.h would be used */ \
-  template <typename TResourceManager = ResourceManager<>> \
-  TResourceManager* Rm() { \
-    return TResourceManager::Get(); \
-  } \
-  \
-  template <typename TResourceManager = ResourceManager<>> \
-  SoHandle GetSoHandle() const { \
-    auto type_idx = TResourceManager::template GetTypeIndex<MostDerivedScalar>(); \
-    return SoHandle(type_idx, Base::GetElementIdx()); \
-  }\
+                                                                               \
+  /** Returns the ResourceManager */                                           \
+  /** Avoids the "invalid use of incomplete type" error caused if the  */      \
+  /** global `Rm()` function in resource_manager.h would be used */            \
+  template <typename TResourceManager = ResourceManager<>>                     \
+  TResourceManager* Rm() {                                                     \
+    return TResourceManager::Get();                                            \
+  }                                                                            \
+                                                                               \
+  template <typename TResourceManager = ResourceManager<>>                     \
+  SoHandle GetSoHandle() const {                                               \
+    auto type_idx =                                                            \
+        TResourceManager::template GetTypeIndex<MostDerivedScalar>();          \
+    return SoHandle(type_idx, Base::GetElementIdx());                          \
+  }                                                                            \
                                                                                \
   explicit class_name(TRootIOCtor* io_ctor) {}                                 \
                                                                                \
@@ -344,16 +349,16 @@ struct Capsule;
     }                                                                          \
     return ret_value;                                                          \
   }                                                                            \
-  \
-  MostDerivedSoPtr GetSoPtr() { \
-    auto* container = Rm()->template Get<MostDerivedScalar>();\
-    return MostDerivedSoPtr(container, Base::GetElementIdx());\
-  } \
-  \
-  void RemoveFromSimulation() { \
-    auto container = Rm()->template Get<MostDerivedScalar>();\
-    container->DelayedRemove(Base::GetElementIdx());\
-  } \
+                                                                               \
+  MostDerivedSoPtr GetSoPtr() {                                                \
+    auto* container = Rm()->template Get<MostDerivedScalar>();                 \
+    return MostDerivedSoPtr(container, Base::GetElementIdx());                 \
+  }                                                                            \
+                                                                               \
+  void RemoveFromSimulation() {                                                \
+    auto container = Rm()->template Get<MostDerivedScalar>();                  \
+    container->DelayedRemove(Base::GetElementIdx());                           \
+  }                                                                            \
                                                                                \
   /** Returns the Scalar name of the container minus the "Ext"     */          \
   static const std::string GetScalarTypeName() {                               \
@@ -426,17 +431,16 @@ struct Capsule;
   /** @return  index of the added element in `data_`. Will be bigger than*/    \
   /**          `size()` */                                                     \
   template <typename T = Backend>                                              \
-  uint64_t DelayedPushBack(                                                    \
-      const Self<Scalar>& other) {                                           \
+  uint64_t DelayedPushBack(const Self<Scalar>& other) {                        \
     std::lock_guard<std::recursive_mutex> lock(Base::mutex_);                  \
-    PushBackImpl(other); \
-    return Base::TotalSize() - 1;                                                      \
+    PushBackImpl(other);                                                       \
+    return Base::TotalSize() - 1;                                              \
   }                                                                            \
                                                                                \
  protected:                                                                    \
   /** Equivalent to std::vector<> push_back - it adds the scalar values to */  \
   /** all data members */                                                      \
-  void PushBackImpl(const MostDerived<Scalar>& other) override {              \
+  void PushBackImpl(const MostDerived<Scalar>& other) override {               \
     BDM_SIM_OBJECT_PUSH_BACK_BODY(__VA_ARGS__);                                \
     Base::PushBackImpl(other);                                                 \
   }                                                                            \
@@ -449,20 +453,24 @@ struct Capsule;
   }                                                                            \
                                                                                \
   /** Remove last element from each data member */                             \
-  void PopBack() override {                           \
-    BDM_SIM_OBJECT_POP_BACK_BODY(__VA_ARGS__);                               \
-    Base::PopBack();                                                \
+  void PopBack() override {                                                    \
+    BDM_SIM_OBJECT_POP_BACK_BODY(__VA_ARGS__);                                 \
+    Base::PopBack();                                                           \
   }                                                                            \
                                                                                \
  private:                                                                      \
- \
- /** Cast `this` to the most derived type */ \
- /** Can be used to call the method of the subclass without virtual functions */\
- /** e.g. `ThisMD()->Method()` */\
- /** (CRTP - static polymorphism) */ \
- MostDerived<Backend>* ThisMD() { return static_cast<MostDerived<Backend>*>(this); } \
- const MostDerived<Backend>* ThisMD() const { return static_cast<MostDerived<Backend>*>(this); } \
-\
+  /** Cast `this` to the most derived type */                                  \
+  /** Can be used to call the method of the subclass without virtual functions \
+   */                                                                          \
+  /** e.g. `ThisMD()->Method()` */                                             \
+  /** (CRTP - static polymorphism) */                                          \
+  MostDerived<Backend>* ThisMD() {                                             \
+    return static_cast<MostDerived<Backend>*>(this);                           \
+  }                                                                            \
+  const MostDerived<Backend>* ThisMD() const {                                 \
+    return static_cast<MostDerived<Backend>*>(this);                           \
+  }                                                                            \
+                                                                               \
   BDM_ROOT_CLASS_DEF_OVERRIDE(class_name, class_version_id)
 
 /// Get the diffusion grid which holds the substance of specified name

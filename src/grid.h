@@ -324,9 +324,10 @@ class Grid {
       has_grown_ = true;
     }
     if (max_gd > threshold_dimensions_[1]) {
-      Log::Info("Grid", "Your simulation objects are getting near the edge of "
-                   "the simulation space. Be aware of boundary conditions that "
-                   "may come into play!");
+      Log::Info("Grid",
+                "Your simulation objects are getting near the edge of "
+                "the simulation space. Be aware of boundary conditions that "
+                "may come into play!");
       threshold_dimensions_[1] = max_gd;
       has_grown_ = true;
     }

@@ -85,8 +85,7 @@ BDM_SIM_OBJECT(Neuron, bdm::Cell) {
         Base::position_[kIdx], Math::ScalarMult(radius, axis_direction));
     auto new_spring_axis = Math::ScalarMult(new_length, axis_direction);
 
-    auto new_mass_location =
-        Math::Add(new_begin_location, new_spring_axis);
+    auto new_mass_location = Math::Add(new_begin_location, new_spring_axis);
 
     // set attributes of new neurite segment
     neurite.SetDiameter(diameter);

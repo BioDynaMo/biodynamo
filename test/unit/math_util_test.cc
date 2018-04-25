@@ -99,8 +99,8 @@ TEST(MathUtilTest, CrossProduct) {
 }
 
 TEST(MathUtilTest, RotAroundAxis) {
-  std::array<double, 3> axis = {1.0,1.0,0.0};
-  std::array<double, 3> vector = {4,5,6};
+  std::array<double, 3> axis = {1.0, 1.0, 0.0};
+  std::array<double, 3> vector = {4, 5, 6};
   double theta = Math::kPi;
 
   auto&& result = Math::RotAroundAxis(vector, theta, axis);
@@ -108,27 +108,29 @@ TEST(MathUtilTest, RotAroundAxis) {
 }
 
 TEST(MathUtilTest, Perp3) {
-  std::array<double, 3> vector = {4,5,6};
+  std::array<double, 3> vector = {4, 5, 6};
   double random = 1.1234;
 
   auto&& result = Math::Perp3(vector, random);
-  EXPECT_ARR_NEAR(result, {0.83614150897258999, -0.010824848782715613, -0.54840696532946365});
+  EXPECT_ARR_NEAR(result, {0.83614150897258999, -0.010824848782715613,
+                           -0.54840696532946365});
 }
 
 TEST(MathUtilTest, AngleRadian) {
-  std::array<double, 3> a = {1,2,3};
-  std::array<double, 3> b = {9,8,7};
+  std::array<double, 3> a = {1, 2, 3};
+  std::array<double, 3> b = {9, 8, 7};
 
   double result = Math::AngleRadian(a, b);
   EXPECT_NEAR(0.489306575615854, result, abs_error<double>::value);
 }
 
 TEST(MathUtilTest, ProjectionOnto) {
-  std::array<double, 3> a = {1,2,3};
-  std::array<double, 3> b = {9,8,7};
+  std::array<double, 3> a = {1, 2, 3};
+  std::array<double, 3> b = {9, 8, 7};
 
   auto result = Math::ProjectionOnto(a, b);
-  EXPECT_ARR_NEAR(result, {{2.134020618556701, 1.8969072164948453, 1.6597938144329896}});
+  EXPECT_ARR_NEAR(
+      result, {{2.134020618556701, 1.8969072164948453, 1.6597938144329896}});
 }
 
 }  // namespace bdm

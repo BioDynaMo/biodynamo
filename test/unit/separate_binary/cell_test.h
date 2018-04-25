@@ -61,8 +61,8 @@ BDM_SIM_OBJECT(TestCell, bdm::Cell) {
     EXPECT_NEAR(-2.4980915447965089, result[2], abs_error<double>::value);
   }
 
-  const std::vector<Variant<GrowthModule, MovementModule>>& GetAllBiologyModules()
-      const {
+  const std::vector<Variant<GrowthModule, MovementModule>>&
+  GetAllBiologyModules() const {
     return Base::biology_modules_[kIdx];
   }
 
@@ -71,8 +71,8 @@ BDM_SIM_OBJECT(TestCell, bdm::Cell) {
   double expected_phi_;
   double expected_theta_;
 
-  void DivideImpl(MostDerivedSoPtr* daughter, double volume_ratio,
-                  double phi, double theta) {
+  void DivideImpl(MostDerivedSoPtr * daughter, double volume_ratio, double phi,
+                  double theta) {
     if (check_input_parameters_) {
       EXPECT_NEAR(expected_volume_ratio_, volume_ratio, 1e-8);
       EXPECT_NEAR(expected_phi_, phi, 1e-8);
@@ -84,7 +84,9 @@ BDM_SIM_OBJECT(TestCell, bdm::Cell) {
   }
 
   /// forwards call to BiologyModuleEventHandler which is protected
-  void CallBiologyModuleEventHandler(BmEvent event, std::vector<Variant<GrowthModule, MovementModule>>* destination) {
+  void CallBiologyModuleEventHandler(
+      BmEvent event,
+      std::vector<Variant<GrowthModule, MovementModule>> * destination) {
     Base::BiologyModuleEventHandler(event, destination);
   }
 
@@ -100,7 +102,8 @@ struct CompileTimeParam {
   using Self = CompileTimeParam<TTBackend>;
   using Backend = TBackend;
   using SimulationBackend = Soa;
-  using BiologyModules = Variant<cell_test_internal::GrowthModule, cell_test_internal::MovementModule>;
+  using BiologyModules = Variant<cell_test_internal::GrowthModule,
+                                 cell_test_internal::MovementModule>;
   using AtomicTypes = VariadicTypedef<cell_test_internal::TestCell>;
 };
 

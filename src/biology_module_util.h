@@ -65,7 +65,8 @@ struct BaseBiologyModule {
   /// Default ctor sets `copy_mask_` and remove_mask_` to 0; meaning that
   /// `Copy` and `Remove` will always return false
   BaseBiologyModule() : copy_mask_(0), remove_mask_(0) {}
-  explicit BaseBiologyModule(BmEvent copy_event, BmEvent remove_event = 0) : copy_mask_(copy_event), remove_mask_(remove_event) {}
+  explicit BaseBiologyModule(BmEvent copy_event, BmEvent remove_event = 0)
+      : copy_mask_(copy_event), remove_mask_(remove_event) {}
 
   BaseBiologyModule(std::initializer_list<BmEvent> copy_events,
                     std::initializer_list<BmEvent> remove_events = {}) {
@@ -158,7 +159,7 @@ struct RemoveVisitor {
 
   template <typename T>
   void operator()(const T& from) {
-    return_value_ =  from.Remove(kEvent);
+    return_value_ = from.Remove(kEvent);
   }
 
   const BmEvent kEvent;

@@ -16,7 +16,7 @@ enum Substances { kSubstance };
 TEST(DiffusionInitTest, GaussianBand) {
   Param::Reset();
   ResourceManager<>::Get()->Clear();
-  
+
   Param::bound_space_ = true;
   Param::min_bound_ = 0;
   Param::max_bound_ = 250;

@@ -417,9 +417,9 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
   /// @param[out] destination distination for the new biology modules
   /// @param[in]  skip_removal skip the removal of biology modules. Default
   ///             value is false.
-  void BiologyModuleEventHandler(
-      BmEvent event, std::vector<BiologyModules> * destination,
-      bool skip_removal = false) {
+  void BiologyModuleEventHandler(BmEvent event,
+                                 std::vector<BiologyModules> * destination,
+                                 bool skip_removal = false) {
     CopyVisitor<std::vector<BiologyModules>> visitor(event, destination);
     for (auto& module : biology_modules_[kIdx]) {
       visit(visitor, module);

@@ -1,9 +1,9 @@
 #ifndef IO_TEST_H_
 #define IO_TEST_H_
 
+#include <gtest/gtest.h>
 #include "io_util.h"
 #include "param.h"
-#include <gtest/gtest.h>
 
 namespace bdm {
 
@@ -26,8 +26,8 @@ namespace bdm {
 class IOTest : public ::testing::Test {
  public:
   static constexpr char const* kRootFile = "io-test.root";
- protected:
 
+ protected:
   virtual void SetUp() {
     Param::Reset();
     remove(kRootFile);
@@ -37,8 +37,6 @@ class IOTest : public ::testing::Test {
     Param::Reset();
     // remove(kRootFile);
   }
-
-
 };
 
 /// Writes backup to file and reads it back into restored

@@ -1,8 +1,8 @@
 #ifndef UNIT_DISPLACEMENT_OP_TEST_H_
 #define UNIT_DISPLACEMENT_OP_TEST_H_
 
-#include "displacement_op.h"
 #include "cell.h"
+#include "displacement_op.h"
 #include "grid.h"
 #include "unit/test_util.h"
 

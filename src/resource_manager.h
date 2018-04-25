@@ -119,8 +119,6 @@ struct ConvertToContainerTuple {
           type;  // NOLINT
 };
 
-
-
 /// Forward declaration for concrete compile time parameter.
 /// Will be used as default template parameter.
 template <typename TBackend = Soa>
@@ -289,10 +287,10 @@ class ResourceManager {
 
   /// Remove elements from each type
   void Clear() {
-    ApplyOnAllTypes(
-        [](auto* container, uint16_t type_idx) {
-          std::cout << container << std::endl;
-          container->clear(); });
+    ApplyOnAllTypes([](auto* container, uint16_t type_idx) {
+      std::cout << container << std::endl;
+      container->clear();
+    });
   }
 
   template <typename TSo>
@@ -312,7 +310,8 @@ class ResourceManager {
   /// @param args arguments which will be forwarded to the TScalarSo constructor
   /// @remarks Note that this function is not thread safe.
   template <typename TScalarSo, typename... Args, typename TBackend = Backend>
-  typename std::enable_if<std::is_same<TBackend, Soa>::value, typename TScalarSo::template Self<SoaRef>>::type
+  typename std::enable_if<std::is_same<TBackend, Soa>::value,
+                          typename TScalarSo::template Self<SoaRef>>::type
   New(Args... args) {
     auto container = Get<TScalarSo>();
     container->push_back(TScalarSo(std::forward<Args>(args)...));
@@ -320,7 +319,8 @@ class ResourceManager {
   }
 
   template <typename TScalarSo, typename... Args, typename TBackend = Backend>
-  typename std::enable_if<std::is_same<TBackend, Scalar>::value, TScalarSo&>::type
+  typename std::enable_if<std::is_same<TBackend, Scalar>::value,
+                          TScalarSo&>::type
   New(Args... args) {
     auto container = Get<TScalarSo>();
     container->push_back(TScalarSo(std::forward<Args>(args)...));

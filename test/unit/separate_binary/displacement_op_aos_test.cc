@@ -1,6 +1,6 @@
 #include "compile_time_param.h"
-#include "unit/displacement_op_test.h"
 #include "gtest/gtest.h"
+#include "unit/displacement_op_test.h"
 
 namespace bdm {
 

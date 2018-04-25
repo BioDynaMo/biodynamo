@@ -173,8 +173,9 @@ class Scheduler {
     rm->ApplyOnAllTypesParallel(commit_);
 
     const auto& update_info = commit_->GetUpdateInfo();
-    auto update_references = [&update_info](auto* sim_objects, uint16_t type_idx) {
-      #pragma omp parallel for
+    auto update_references = [&update_info](auto* sim_objects,
+                                            uint16_t type_idx) {
+#pragma omp parallel for
       for (uint64_t i = 0; i < sim_objects->size(); i++) {
         (*sim_objects)[i].UpdateReferences(update_info);
       }

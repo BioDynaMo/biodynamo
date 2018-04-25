@@ -13,12 +13,12 @@ namespace simulation_object_aos_test_internal {
 
 TEST(SimulationObjectTest, AosGetElementIndex) {
   Rm()->Clear();
-  for(uint64_t i = 0; i < 10; i++) {
+  for (uint64_t i = 0; i < 10; i++) {
     Rm()->template New<Cell>(1);
   }
   EXPECT_EQ(10u, Rm()->GetNumSimObjects());
   auto cells = Rm()->template Get<Cell>();
-  for(uint64_t i = 0; i < 10; i++) {
+  for (uint64_t i = 0; i < 10; i++) {
     EXPECT_EQ(i, (*cells)[i].GetElementIdx());
   }
 }

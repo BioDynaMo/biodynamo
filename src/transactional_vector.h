@@ -29,14 +29,15 @@ class TransactionalVector {
   /// This method shortens the path to the direct route from 9 -> 5.
   /// @param all_updates vector of pairs (old index, new index). \n
   ///        The pair stores (old index, new index).
-  static void ShortcutUpdatedIndices(std::unordered_map<uint32_t, uint32_t>* all_updates) {
+  static void ShortcutUpdatedIndices(
+      std::unordered_map<uint32_t, uint32_t>* all_updates) {
     std::vector<uint32_t> delete_keys;
     for (auto it = all_updates->begin(); it != all_updates->end(); ++it) {
       uint32_t intermediate = it->second;
 
       while (true) {
         auto search = all_updates->find(intermediate);
-        if(search != all_updates->end()) {
+        if (search != all_updates->end()) {
           intermediate = search->second;
           delete_keys.push_back(search->first);
         } else {
@@ -105,7 +106,7 @@ class TransactionalVector {
     std::sort(to_be_removed_.begin(), to_be_removed_.end(), descending);
     for (size_t idx : to_be_removed_) {
       assert(idx < data_.size() && "Removed index outside array boundaries");
-      if (idx < data_.size() - 1) { // idx does not point to last element
+      if (idx < data_.size() - 1) {  // idx does not point to last element
         // invalidates pointer of last element
         uint32_t old_index = data_.size() - 1;
         std::swap(data_[idx], data_[old_index]);
@@ -134,7 +135,8 @@ class TransactionalVector {
       data_[idx].SetElementIdx(idx);
       size_++;
     } else {
-      throw std::logic_error("There are uncommited delayed additions to this container");
+      throw std::logic_error(
+          "There are uncommited delayed additions to this container");
     }
   }
 

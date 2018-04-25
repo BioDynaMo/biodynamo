@@ -7,11 +7,11 @@
 #include "backend.h"
 #include "gtest/gtest.h"
 #include "io_util.h"
+#include "simulation_object_util.h"
 #include "type_util.h"
 #include "unit/default_ctparam.h"
 #include "unit/test_util.h"
 #include "variadic_template_parameter_util.h"
-#include "simulation_object_util.h"
 
 #define ROOTFILE "bdmFile.root"
 
@@ -21,11 +21,9 @@ namespace resource_manager_test_internal {
 BDM_SIM_OBJECT(A, bdm::SimulationObject) {
   BDM_SIM_OBJECT_HEADER(AExt, 1, data_);
 
-public:
+ public:
   AExt() {}  // for ROOT I/O
-  explicit AExt(int data) {
-    data_[kIdx] = data;
-  }
+  explicit AExt(int data) { data_[kIdx] = data; }
 
   int GetData() { return data_[kIdx]; }
   void SetData(int data) { data_[kIdx] = data; }
@@ -36,18 +34,15 @@ public:
 BDM_SIM_OBJECT(B, bdm::SimulationObject) {
   BDM_SIM_OBJECT_HEADER(BExt, 1, data_);
 
-public:
+ public:
   BExt() {}  // for ROOT I/O
-  explicit BExt(double data) {
-    data_[kIdx] = data;
-  }
+  explicit BExt(double data) { data_[kIdx] = data; }
 
   double GetData() { return data_[kIdx]; }
   void SetData(double data) { data_[kIdx] = data; }
 
   vec<double> data_;
 };
-
 
 template <typename TBackend, typename... Types>
 struct CompileTimeParam {
@@ -56,7 +51,8 @@ struct CompileTimeParam {
 };
 
 // FIXME this tests cause the following errors:
-// runBiodynamoTestsMain_dict dictionary forward declarations' payload:78:202: error: no template named 'AExt'
+// runBiodynamoTestsMain_dict dictionary forward declarations' payload:78:202:
+// error: no template named 'AExt'
 // see rootcling_impl.cxx:L3668 GenerateFwdDeclString
 template <typename Backend, typename TA, typename TB>
 inline void RunIOTest() {

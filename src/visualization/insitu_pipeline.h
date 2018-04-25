@@ -136,9 +136,9 @@ class InSituPipeline : public vtkCPPipeline {
           scale_mode = 4;
         } else if (shapes_[object_name] != Shape::kSphere) {
           Log::Warning("CreatePipeline",
-                  "We currently support only spherical and cylindrical "
-                  "shaped objects for visualization. Received value %d",
-                  shapes_[object_name]);
+                       "We currently support only spherical and cylindrical "
+                       "shaped objects for visualization. Received value %d",
+                       shapes_[object_name]);
         }
 
         // Create a Glyph filter

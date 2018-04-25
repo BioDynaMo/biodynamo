@@ -132,8 +132,8 @@ class NeuronNeuriteAdapter {
     neuron_ptr_.Get().UpdateRelative(old_neurite_soptr, new_neurite_soptr);
   }
 
-  auto RemoveFromSimulation()
-      -> decltype(std::declval<TNeuriteSoPtr>().Get().RemoveFromSimulation()) const {
+  auto RemoveFromSimulation() -> decltype(
+      std::declval<TNeuriteSoPtr>().Get().RemoveFromSimulation()) const {
     assert(IsNeurite() && "This function call is only allowed for a Neurite");
     return neurite_ptr_.Get().RemoveFromSimulation();
   }
@@ -210,7 +210,8 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
       const std::vector<std::unordered_map<uint32_t, uint32_t>>& update_info) {
     using Rm = std::remove_pointer_t<decltype(Rm())>;
 
-    constexpr int neurite_type_idx = Rm::template GetTypeIndex<MostDerivedScalar>();
+    constexpr int neurite_type_idx =
+        Rm::template GetTypeIndex<MostDerivedScalar>();
     const auto& neurite_updates = update_info[neurite_type_idx];
 
     this->UpdateReference(&daughter_right_[kIdx], neurite_updates);
@@ -232,7 +233,7 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
 
   const std::array<double, 3> GetPosition() const {
     return Math::Subtract(mass_location_[kIdx],
-                            Math::ScalarMult(0.5, spring_axis_[kIdx]));
+                          Math::ScalarMult(0.5, spring_axis_[kIdx]));
   }
 
   void SetPosition(const std::array<double, 3>& position) {
@@ -635,7 +636,7 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
       factor = 0;
     }
     return Math::Add(Math::ScalarMult(factor, spring_axis_[kIdx]),
-                       force_to_transmit_to_proximal_mass_[kIdx]);
+                     force_to_transmit_to_proximal_mass_[kIdx]);
   }
 
   // ***************************************************************************
@@ -741,7 +742,7 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
   }
 
   // ***************************************************************************
-   //   Physics
+  //   Physics
   // ***************************************************************************
 
   // TODO documentation
@@ -825,7 +826,6 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
       std::array<double, 4> force_from_neighbor =
           force.GetForce(this, &neighbor);
 
-
       if (std::abs(force_from_neighbor[3]) < 1E-10) {  // TODO hard coded value
         // (if all the force is transmitted to the (distal end) point mass)
         force_on_my_point_mass[0] += force_from_neighbor[0];
@@ -856,8 +856,7 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
     // TEST : anti-kink
     if (anti_kink) {
       double KK = 5;
-      if (daughter_left_[kIdx] != nullptr &&
-          daughter_right_[kIdx] == nullptr) {
+      if (daughter_left_[kIdx] != nullptr && daughter_right_[kIdx] == nullptr) {
         if (daughter_left_[kIdx].Get().GetDaughterLeft() != nullptr) {
           auto downstream = daughter_left_[kIdx].Get().GetDaughterLeft().Get();
           double rresting = daughter_left_[kIdx].Get().GetRestingLength() +
@@ -868,8 +867,8 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
 
           force_on_my_point_mass =
               Math::Add(force_on_my_point_mass,
-                          Math::ScalarMult(KK * (rresting - aactual),
-                                             Math::Normalize(down_to_me)));
+                        Math::ScalarMult(KK * (rresting - aactual),
+                                         Math::Normalize(down_to_me)));
         }
       }
 
@@ -883,8 +882,8 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
 
         force_on_my_point_mass =
             Math::Add(force_on_my_point_mass,
-                        Math::ScalarMult(KK * (rresting - aactual),
-                                           Math::Normalize(down_to_me)));
+                      Math::ScalarMult(KK * (rresting - aactual),
+                                       Math::Normalize(down_to_me)));
       }
     }
 
@@ -1236,7 +1235,7 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
         << ", " << std::endl;
     str << "volume_:          " << n.volume_[n.kIdx] << std::endl;
     str << "diameter_:        " << n.diameter_[n.kIdx] << std::endl;
-    str << "is_axon_:  " << n.is_axon_[n.kIdx]  << std::endl;
+    str << "is_axon_:  " << n.is_axon_[n.kIdx] << std::endl;
     str << "branch_order_:    " << n.branch_order_[n.kIdx] << std::endl;
     str << "actual_length_:   " << n.actual_length_[n.kIdx] << std::endl;
     str << "tension_:  " << n.tension_[n.kIdx] << std::endl;
@@ -1277,9 +1276,9 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
   /// @param[out] destination distination for the new biology modules
   /// @param[in]  skip_removal skip the removal of biology modules. Default
   ///             value is false.
-  void BiologyModuleEventHandler(
-      BmEvent event, std::vector<BiologyModules> * destination,
-      bool skip_removal = false) {
+  void BiologyModuleEventHandler(BmEvent event,
+                                 std::vector<BiologyModules> * destination,
+                                 bool skip_removal = false) {
     CopyVisitor<std::vector<BiologyModules>> visitor(event, destination);
     for (auto& module : biology_modules_[kIdx]) {
       visit(visitor, module);
@@ -1380,9 +1379,9 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
     auto new_neurite_element = Rm()->template New<MostDerivedScalar>();
 
     // TODO reformulate to mass_location_
-    auto new_position = Math::Subtract(
-        mass_location_[kIdx],
-        Math::ScalarMult(distal_portion, spring_axis_[kIdx]));
+    auto new_position =
+        Math::Subtract(mass_location_[kIdx],
+                       Math::ScalarMult(distal_portion, spring_axis_[kIdx]));
 
     new_neurite_element.SetPosition(new_position);
     new_neurite_element.Copy(*static_cast<MostDerived<Backend>*>(this));
@@ -1467,8 +1466,7 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
       dir = Math::Add(Math::Normalize(direction), Math::Normalize(p));
     }
     // location of mass and computation center
-    auto new_spring_axis =
-        Math::ScalarMult(length, Math::Normalize(direction));
+    auto new_spring_axis = Math::ScalarMult(length, Math::Normalize(direction));
     new_branch.SetMassLocation(
         Math::Add(mass_location_[kIdx], new_spring_axis));
     new_branch.SetSpringAxis(new_spring_axis);

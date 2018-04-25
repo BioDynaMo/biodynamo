@@ -87,7 +87,8 @@ class SoaSimulationObject {
       PushBackImpl(element);
       size_++;
     } else {
-      throw std::logic_error("There are uncommited delayed additions to this container");
+      throw std::logic_error(
+          "There are uncommited delayed additions to this container");
     }
   }
 
@@ -195,11 +196,11 @@ class SoaSimulationObject {
   virtual void PopBack() {}
 
  private:
-   /// vector of indices with elements which should be removed
-   /// to_be_removed_ is of type vector<size_t>& if Backend == SoaRef;
-   /// otherwise vector<size_t>
-   typename type_ternary_operator<is_same<Backend, SoaRef>::value,
-                                 size_t&, size_t>::type total_size_ = 0;
+  /// vector of indices with elements which should be removed
+  /// to_be_removed_ is of type vector<size_t>& if Backend == SoaRef;
+  /// otherwise vector<size_t>
+  typename type_ternary_operator<is_same<Backend, SoaRef>::value, size_t &,
+                                 size_t>::type total_size_ = 0;
 
   /// size_ is of type size_t& if Backend == SoaRef; otherwise size_t
   typename type_ternary_operator<is_same<Backend, SoaRef>::value, size_t &,
@@ -219,16 +220,14 @@ class ScalarSimulationObject {
       typename TCompileTimeParam::template Self<TTBackend>, TDerived>;
 
   ScalarSimulationObject() : element_idx_(0) {}
-  ScalarSimulationObject(const ScalarSimulationObject& other) :
-   element_idx_(other.element_idx_) {}
+  ScalarSimulationObject(const ScalarSimulationObject &other)
+      : element_idx_(other.element_idx_) {}
 
   virtual ~ScalarSimulationObject() {}
 
   std::size_t size() const { return 1; }  // NOLINT
 
-  uint32_t GetElementIdx() const {
-    return element_idx_;
-  }
+  uint32_t GetElementIdx() const { return element_idx_; }
 
   // assign the array index of this object in the ResourceManager
   void SetElementIdx(uint32_t element_idx) { element_idx_ = element_idx; }
@@ -288,8 +287,10 @@ class SimulationObject
 
   /// Empty default implementation to update references of simulation objects
   /// that changed its memory position.
-  /// @param update_info vector index = type_id, map stores (old_index -> new_index)
-  void UpdateReferences(const std::vector<std::unordered_map<uint32_t, uint32_t>>& update_info) {}
+  /// @param update_info vector index = type_id, map stores (old_index ->
+  /// new_index)
+  void UpdateReferences(
+      const std::vector<std::unordered_map<uint32_t, uint32_t>> &update_info) {}
 
   /// Implementation to update a single reference if `reference.GetElementIdx()`
   /// is a key in `updates`.
@@ -299,9 +300,10 @@ class SimulationObject
   /// @param updates map that contains the update information
   ///        (old_index -> new_index) for a specific simulation object type
   template <typename TReference>
-  void UpdateReference(TReference* reference, const std::unordered_map<uint32_t, uint32_t>& updates) {
+  void UpdateReference(TReference *reference,
+                       const std::unordered_map<uint32_t, uint32_t> &updates) {
     auto search = updates.find(reference->GetElementIdx());
-    if(search != updates.end()) {
+    if (search != updates.end()) {
       reference->SetElementIdx(search->second);
     }
   }

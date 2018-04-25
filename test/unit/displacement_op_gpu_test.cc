@@ -4,8 +4,8 @@
 #include "gpu/gpu_helper.h"
 #include "grid.h"
 #include "gtest/gtest.h"
-#include "unit/test_util.h"
 #include "unit/default_ctparam.h"
+#include "unit/test_util.h"
 
 namespace bdm {
 namespace displacement_op_gpu_test_internal {

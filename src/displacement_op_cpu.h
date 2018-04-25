@@ -29,7 +29,8 @@ class DisplacementOpCpu {
 
 #pragma omp parallel for shared(grid) firstprivate(squared_radius)
     for (size_t i = 0; i < sim_objects->size(); i++) {
-      sim_object_movements[i] = (*sim_objects)[i].CalculateDisplacement(&grid, squared_radius);
+      sim_object_movements[i] =
+          (*sim_objects)[i].CalculateDisplacement(&grid, squared_radius);
     }
 
 // Set new positions after all updates have been calculated

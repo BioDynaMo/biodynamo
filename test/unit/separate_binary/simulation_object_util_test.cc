@@ -401,15 +401,11 @@ BDM_SIM_OBJECT(TestThisMD, SimulationObject) {
   BDM_SIM_OBJECT_HEADER(TestThisMDExt, 0, foo_);
 
  public:
-   TestThisMDExt() {}
+  TestThisMDExt() {}
 
-  int AnotherFunction() {
-    return 123;
-  }
+  int AnotherFunction() { return 123; }
 
-  int SomeFunction() {
-    return ThisMD()->AnotherFunction();
-  }
+  int SomeFunction() { return ThisMD()->AnotherFunction(); }
 
   vec<int> foo_;
 };
@@ -418,11 +414,9 @@ BDM_SIM_OBJECT(TestThisMDSubclass, TestThisMD) {
   BDM_SIM_OBJECT_HEADER(TestThisMDSubclassExt, 0, foo_);
 
  public:
-   TestThisMDSubclassExt() {}
+  TestThisMDSubclassExt() {}
 
-  int AnotherFunction() {
-    return 321;
-  }
+  int AnotherFunction() { return 321; }
 
   vec<int> foo_;
 };
@@ -434,14 +428,14 @@ TEST(SimulationObjectUtilTest, ThisMD) {
 
 TEST(SimulationObjectUtilTest, GetSoPtr) {
   Rm()->Clear();
-  for(uint64_t i = 0; i < 10; i++) {
+  for (uint64_t i = 0; i < 10; i++) {
     Rm()->template New<Neuron>();
   }
 
   EXPECT_EQ(10u, Rm()->GetNumSimObjects());
 
   auto neurons = Rm()->template Get<Neuron>();
-  for(uint64_t i = 0; i < 10; i++) {
+  for (uint64_t i = 0; i < 10; i++) {
     EXPECT_EQ(i, (*neurons)[i].GetSoPtr().GetElementIdx());
   }
 }

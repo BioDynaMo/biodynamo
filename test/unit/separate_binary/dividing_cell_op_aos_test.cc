@@ -10,9 +10,7 @@ struct CompileTimeParam : public DefaultCompileTimeParam<TBackend> {
 
 namespace dividing_cell_op_test_internal {
 
-TEST(DividingCellOpTest, ComputeAos) {
-  RunTest();
-}
+TEST(DividingCellOpTest, ComputeAos) { RunTest(); }
 
 }  // namespace dividing_cell_op_test_internal
 }  // namespace bdm

@@ -408,7 +408,8 @@ class CatalystAdaptor {
   std::vector<bool> dg_is_initialized_;
   std::unordered_map<std::string, Shape> shapes_;
   std::vector<std::string> so_scalar_names_;
-  /// This variable is used to generate the simulation info json during the first
+  /// This variable is used to generate the simulation info json during the
+  /// first
   /// invocation of `ExportVisualization`
   bool sim_info_json_generated_ = false;
   static constexpr char const* kSimulationInfoJson = "simulation_info.json";
@@ -540,16 +541,16 @@ class CatalystAdaptor {
                "trying to use it.");
   }
 
-private:
+ private:
   friend class CatalystAdaptorTest_GenerateSimulationInfoJson_Test;
   friend class CatalystAdaptorTest_GenerateParaviewState_Test;
 
   static void GenerateSimulationInfoJson(
-    const std::unordered_map<std::string, Shape>& shapes) {
-      Log::Fatal("CatalystAdaptor::GenerateSimulationInfoJson",
-                 "Simulation was compiled without ParaView support, but you are "
-                 "trying to use it.");
-    }
+      const std::unordered_map<std::string, Shape>& shapes) {
+    Log::Fatal("CatalystAdaptor::GenerateSimulationInfoJson",
+               "Simulation was compiled without ParaView support, but you are "
+               "trying to use it.");
+  }
 
   static void GenerateParaviewState() {
     Log::Fatal("CatalystAdaptor::GenerateParaviewState",

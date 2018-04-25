@@ -5,10 +5,10 @@
 #include <cmath>
 
 #include "backend.h"
-#include "shape.h"
-#include "math_util.h"
 #include "log.h"
+#include "math_util.h"
 #include "random.h"
+#include "shape.h"
 
 namespace bdm {
 
@@ -21,46 +21,47 @@ class DefaultForce {
 
   template <typename TLhs, typename TRhs>
   typename std::enable_if<TLhs::GetShape() == kSphere &&
-                 TRhs::GetShape() == kSphere,
-                 std::array<double, 3>>::type
+                              TRhs::GetShape() == kSphere,
+                          std::array<double, 3>>::type
   GetForce(const TLhs* lhs, const TRhs* rhs) const {
-     std::array<double, 3> result;
-     ForceBetweenSpheres(lhs, rhs, &result);
-     return result;
+    std::array<double, 3> result;
+    ForceBetweenSpheres(lhs, rhs, &result);
+    return result;
   }
 
   template <typename TLhs, typename TRhs>
   typename std::enable_if<TLhs::GetShape() == kSphere &&
-                 TRhs::GetShape() == kCylinder,
-                 std::array<double, 3>>::type
+                              TRhs::GetShape() == kCylinder,
+                          std::array<double, 3>>::type
   GetForce(const TLhs* lhs, const TRhs* rhs) const {
-     std::array<double, 3> result;
-     ForceOnASphereFromACylinder(lhs, rhs, &result);
-     return result;
+    std::array<double, 3> result;
+    ForceOnASphereFromACylinder(lhs, rhs, &result);
+    return result;
   }
 
   template <typename TLhs, typename TRhs>
   typename std::enable_if<TLhs::GetShape() == kCylinder &&
-                 TRhs::GetShape() == kSphere,
-                 std::array<double, 4>>::type
+                              TRhs::GetShape() == kSphere,
+                          std::array<double, 4>>::type
   GetForce(const TLhs* lhs, const TRhs* rhs) const {
-     std::array<double, 4> result;
-     ForceOnACylinderFromASphere(lhs, rhs, &result);
-     return result;
+    std::array<double, 4> result;
+    ForceOnACylinderFromASphere(lhs, rhs, &result);
+    return result;
   }
 
   template <typename TLhs, typename TRhs>
   typename std::enable_if<TLhs::GetShape() == kCylinder &&
-                 TRhs::GetShape() == kCylinder,
-                 std::array<double, 4>>::type
+                              TRhs::GetShape() == kCylinder,
+                          std::array<double, 4>>::type
   GetForce(const TLhs* lhs, const TRhs* rhs) const {
-     std::array<double, 4> result;
-     ForceBetweenCylinders(lhs, rhs, &result);
-     return result;
+    std::array<double, 4> result;
+    ForceBetweenCylinders(lhs, rhs, &result);
+    return result;
   }
 
   std::array<double, 3> GetForce(...) const {
-    Log::Fatal("DefaultForce", "DefaultForce only supports sphere or cylinder shapes");
+    Log::Fatal("DefaultForce",
+               "DefaultForce only supports sphere or cylinder shapes");
     return {0, 0, 0};
   }
 
@@ -135,13 +136,16 @@ class DefaultForce {
     // we only consider the interaction between the sphere and the point mass
     // (i.e. distal point) of the cylinder - that we treat as a sphere.
     if (actualLength < r) {
-      //move back sphere center by 1 cylinder radius from pD
+      // move back sphere center by 1 cylinder radius from pD
       // vector_x = rc * (axis[0]/actualLength)
       // vector_y = rc * (axis[1]/actualLength)
       // vector_z = rc * (axis[2]/actualLength)
       double rc = 0.5 * d;
-      std::array<double, 3> dvec={rc*(axis[0]/actualLength), rc*(axis[1]/actualLength), rc*(axis[2]/actualLength)}; // displacement vector
-      std::array<double, 3> npD = {pD[0]-dvec[0], pD[1]-dvec[1], pD[2]-dvec[2]}; // new sphere center
+      std::array<double, 3> dvec = {
+          rc * (axis[0] / actualLength), rc * (axis[1] / actualLength),
+          rc * (axis[2] / actualLength)};  // displacement vector
+      std::array<double, 3> npD = {pD[0] - dvec[0], pD[1] - dvec[1],
+                                   pD[2] - dvec[2]};  // new sphere center
       *result = ComputeForceOfASphereOnASphere(npD, rc, c, r);
       return;
     }

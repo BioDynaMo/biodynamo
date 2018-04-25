@@ -17,7 +17,7 @@ class CommitOp {
   auto& GetUpdateInfo() const { return update_info_; }
 
  private:
-   std::vector<std::unordered_map<uint32_t, uint32_t>> update_info_;
+  std::vector<std::unordered_map<uint32_t, uint32_t>> update_info_;
 };
 
 }  // namespace bdm

@@ -1,13 +1,12 @@
 #include "transactional_vector.h"
 #include <thread>
-#include "gtest/gtest.h"
-#include "simulation_object_util.h"
-#include "simulation_object.h"
 #include "compile_time_param.h"
+#include "gtest/gtest.h"
+#include "simulation_object.h"
+#include "simulation_object_util.h"
 
 namespace bdm {
 namespace transactional_vector_test_internal {
-
 
 BDM_SIM_OBJECT(TestObject, bdm::SimulationObject) {
   BDM_SIM_OBJECT_HEADER(TestObjectExt, 1, id_);
@@ -29,7 +28,8 @@ BDM_SIM_OBJECT(TestObject, bdm::SimulationObject) {
 template <typename TBackend>
 struct CompileTimeParam : public DefaultCompileTimeParam<TBackend> {
   using SimulationBackend = Scalar;
-  using AtomicTypes = VariadicTypedef<transactional_vector_test_internal::TestObject>;
+  using AtomicTypes =
+      VariadicTypedef<transactional_vector_test_internal::TestObject>;
 };
 
 namespace transactional_vector_test_internal {
@@ -55,8 +55,8 @@ TEST(TransactionalVectorTest, All) {
 
   // test iterator
   int64_t counter = 0;
-  for(auto& el : vector) {
-    EXPECT_EQ(counter++  + 1, el.GetId());
+  for (auto& el : vector) {
+    EXPECT_EQ(counter++ + 1, el.GetId());
   }
   EXPECT_EQ(counter, 3);
 
@@ -75,8 +75,8 @@ TEST(TransactionalVectorTest, All) {
 
   // test iterator
   counter = 0;
-  for(auto& el : vector) {
-    if(!counter++) {
+  for (auto& el : vector) {
+    if (!counter++) {
       EXPECT_EQ(3, el.GetId());
     } else {
       EXPECT_EQ(2, el.GetId());
@@ -136,14 +136,14 @@ TEST(TransactionalVectorTest, DelayedRemove) {
   EXPECT_EQ(6, vector[6].GetId());
 }
 
-void PushBackElements(TransactionalVector<TestObject> *vector, size_t start_value,
-                      size_t num_elements) {
+void PushBackElements(TransactionalVector<TestObject>* vector,
+                      size_t start_value, size_t num_elements) {
   for (size_t i = start_value; i < start_value + num_elements; i++) {
     vector->DelayedPushBack(i);
   }
 }
 
-void RemoveElements(TransactionalVector<TestObject> *vector, size_t start_value,
+void RemoveElements(TransactionalVector<TestObject>* vector, size_t start_value,
                     size_t num_elements) {
   for (size_t i = start_value; i < start_value + num_elements; i++) {
     vector->DelayedRemove(i);
