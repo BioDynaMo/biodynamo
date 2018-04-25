@@ -36,7 +36,7 @@ struct MovementModule {
   template <typename T>
   void Run(T* t) {
     const auto& position = t->GetPosition();
-    t->SetPosition(Matrix::Add(position, velocity_));
+    t->SetPosition(Math::Add(position, velocity_));
   }
 
   bool Copy(BmEvent event) const { return false; }

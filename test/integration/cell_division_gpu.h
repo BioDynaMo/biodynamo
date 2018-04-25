@@ -5,7 +5,6 @@
 
 #include "biodynamo.h"
 #include "math_util.h"
-#include "matrix.h"
 
 namespace bdm {
 

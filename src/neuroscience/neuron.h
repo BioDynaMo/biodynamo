@@ -46,7 +46,7 @@ BDM_SIM_OBJECT(Neuron, bdm::Cell) {
 
   /// TODO documentation
   TNeuriteSoPtr ExtendNewNeurite(const std::array<double, 3>& direction) {
-    auto dir = Matrix::Add(direction, Base::position_[kIdx]);
+    auto dir = Math::Add(direction, Base::position_[kIdx]);
     auto angles = Base::TransformCoordinatesGlobalToPolar(dir);
     return ExtendNewNeurite(Param::kNeuriteDefaultDiameter, angles[2],
                             angles[1]);
@@ -77,12 +77,12 @@ BDM_SIM_OBJECT(Neuron, bdm::Cell) {
 
     // positions & axis in cartesian coord
     // TODO rename variables
-    auto new_cyl_begin_location = Matrix::Add(
-        Base::position_[kIdx], Matrix::ScalarMult(radius, axis_direction));
-    auto new_cyl_spring_axis = Matrix::ScalarMult(new_length, axis_direction);
+    auto new_cyl_begin_location = Math::Add(
+        Base::position_[kIdx], Math::ScalarMult(radius, axis_direction));
+    auto new_cyl_spring_axis = Math::ScalarMult(new_length, axis_direction);
 
     auto new_position =
-        Matrix::Add(new_cyl_begin_location, new_cyl_spring_axis);
+        Math::Add(new_cyl_begin_location, new_cyl_spring_axis);
 
     // set attributes of new neurite segment
     neurite.SetDiameter(diameter);
@@ -120,7 +120,7 @@ BDM_SIM_OBJECT(Neuron, bdm::Cell) {
     std::array<double, 3> xyz = daughters_coord_[kIdx][daughter_element_idx];
 
     double radius = Base::diameter_[kIdx] * .5;
-    xyz = Matrix::ScalarMult(radius, xyz);
+    xyz = Math::ScalarMult(radius, xyz);
 
     const auto& pos = Base::position_[kIdx];
 

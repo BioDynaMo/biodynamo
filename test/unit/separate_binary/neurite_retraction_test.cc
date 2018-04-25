@@ -115,7 +115,7 @@ namespace bdm {
             previous_direction = ne.GetSpringAxis();
             direction = {gTRandom.Uniform(-10, 10), gTRandom.Uniform(-10, 10), gTRandom.Uniform(0, 5)};
 
-            std::array<double, 3> step_direction = Matrix::Add(previous_direction, direction);
+            std::array<double, 3> step_direction = Math::Add(previous_direction, direction);
 
             ne.ElongateTerminalEnd(10, step_direction);
   //          ne.SetDiameter(ne.GetDiameter()-diamReducSpeed);

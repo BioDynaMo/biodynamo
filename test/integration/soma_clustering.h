@@ -5,7 +5,6 @@
 
 #include "biodynamo.h"
 #include "math_util.h"
-#include "matrix.h"
 
 namespace bdm {
 
@@ -60,10 +59,10 @@ struct Chemotaxis : public BaseBiologyModule {
 
     if (cell->GetCellType() == 1) {
       dg_1_->GetGradient(position, &gradient_1_);
-      diff_gradient = Matrix::ScalarMult(5, gradient_1_);
+      diff_gradient = Math::ScalarMult(5, gradient_1_);
     } else {
       dg_0_->GetGradient(position, &gradient_0_);
-      diff_gradient = Matrix::ScalarMult(5, gradient_0_);
+      diff_gradient = Math::ScalarMult(5, gradient_0_);
     }
 
     cell->UpdatePosition(diff_gradient);

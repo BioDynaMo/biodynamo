@@ -5,7 +5,6 @@
 #include <cmath>
 #include <numeric>
 #include <vector>
-#include "matrix.h"
 
 #include "random.h"
 
@@ -14,6 +13,60 @@ namespace bdm {
 struct Math {
   /// value of pi
   static constexpr double kPi = 3.141592653589793238462643383279502884;
+
+  /// Add two vectors
+  /// @param a the first vector
+  /// @param b the second vector
+  /// @return a + b
+  template <typename T, std::size_t N>
+  static std::array<T, N> Add(const std::array<T, N>& a, const std::array<T, N>& b) {
+    std::array<T, N> result;
+    for (size_t i = 0; i < N; i++) {
+      result[i] = a[i] + b[i];
+    }
+    return result;
+  }
+
+  /// Subtract two vectors
+  /// @param a
+  /// @param b
+  /// @return a-b
+  template <typename T, std::size_t N>
+  static std::array<T, N> Subtract(const std::array<T, N>& a, const std::array<T, N>& b) {
+    std::array<T, N> result;
+    for (size_t i = 0; i < N; i++) {
+      result[i] = a[i] - b[i];
+    }
+    return result;
+  }
+
+  /// Compute the inner product (also called dot product) of two vectors.
+  /// @param a
+  /// @param b
+  /// @return a.b
+  template <typename T, std::size_t N>
+  static T Dot(const std::array<T, N>& a, const std::array<T, N>& b) {
+    T product = 0;
+    for (size_t i = 0; i < N; i++) {
+      product += a[i] * b[i];
+    }
+    return product;
+  }
+
+  /// Multiplication of (all the elements of) a vector by a scalar value.
+  ///
+  /// @param  k a scalar
+  /// @param  a the vector we want to multiply
+  /// @return k * a
+  template <std::size_t N>
+  static std::array<double, N> ScalarMult(double k,
+                                          const std::array<double, N>& a) {
+    std::array<double, N> result;
+    for (size_t i = 0; i < N; i++) {
+      result[i] = a[i] * k;
+    }
+    return result;
+  }
 
   template <typename T>
   static T Sum(const std::vector<T>& v) {
@@ -98,9 +151,9 @@ struct Math {
                                              const std::array<double, 3>& axis) {
     auto naxis = Normalize(axis);
 
-    auto temp_1 = Matrix::ScalarMult(Matrix::Dot(vector, naxis), naxis);
-    auto temp_2 = Matrix::ScalarMult(std::cos(-theta), Matrix::Subtract(vector, temp_1));
-    auto temp_3 = Matrix::ScalarMult(std::sin(-theta), CrossProduct(vector, naxis));
+    auto temp_1 = Math::ScalarMult(Math::Dot(vector, naxis), naxis);
+    auto temp_2 = Math::ScalarMult(std::cos(-theta), Math::Subtract(vector, temp_1));
+    auto temp_3 = Math::ScalarMult(std::sin(-theta), CrossProduct(vector, naxis));
 
     return {
       temp_1[0] + temp_2[0] + temp_3[0],
@@ -114,7 +167,7 @@ struct Math {
   /// @param b the second vector
   /// @return the angle between them.
   static double AngleRadian(const std::array<double, 3>& a, const std::array<double, 3>& b) {
-    return std::acos(Matrix::Dot(a, b) / (Math::Norm(a) * Math::Norm(b)));
+    return std::acos(Math::Dot(a, b) / (Math::Norm(a) * Math::Norm(b)));
   }
 
   /// Returns the projection of the first vector onto the second one.
@@ -122,8 +175,8 @@ struct Math {
   /// @param b
   /// @return the projection of a onto b
   static std::array<double, 3> ProjectionOnto(const std::array<double, 3>& a, const std::array<double, 3>& b) {
-   double k = Matrix::Dot(a, b) / Matrix::Dot(b, b);
-   return Matrix::ScalarMult(k, b);
+   double k = Math::Dot(a, b) / Math::Dot(b, b);
+   return Math::ScalarMult(k, b);
  }
 };
 

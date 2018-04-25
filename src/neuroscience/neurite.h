@@ -5,7 +5,6 @@
 #include "default_force.h"
 #include "log.h"
 #include "math_util.h"
-#include "matrix.h"
 #include "param.h"
 #include "random.h"
 #include "shape.h"
@@ -245,12 +244,12 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
     UpdateVolume();
   }
   const std::array<double, 3> GetPosition() const {
-    return Matrix::Subtract(mass_location_[kIdx],
-                            Matrix::ScalarMult(0.5, spring_axis_[kIdx]));
+    return Math::Subtract(mass_location_[kIdx],
+                            Math::ScalarMult(0.5, spring_axis_[kIdx]));
   }
   void SetPosition(const std::array<double, 3>& position) {
     mass_location_[kIdx] =
-        Matrix::Add(position, Matrix::ScalarMult(0.5, spring_axis_[kIdx]));
+        Math::Add(position, Math::ScalarMult(0.5, spring_axis_[kIdx]));
   }
   // TODO reevaluate if method is required or data member should be used
   /// return end of cylinder position
@@ -349,9 +348,9 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
       // cf removeproximalCylinder()
       resting_length_[kIdx] = spring_constant_[kIdx] * actual_length_[kIdx] /
                               (tension_[kIdx] + spring_constant_[kIdx]);
-      spring_axis_[kIdx] = Matrix::ScalarMult(factor, spring_axis_[kIdx]);
+      spring_axis_[kIdx] = Math::ScalarMult(factor, spring_axis_[kIdx]);
 
-      mass_location_[kIdx] = Matrix::Add(
+      mass_location_[kIdx] = Math::Add(
           mother_[kIdx].OriginOf(Base::GetElementIdx()), spring_axis_[kIdx]);
       UpdateVolume();  // and update concentration of internal stuff.
     } else if (mother_[kIdx].IsNeurite() &&
@@ -381,7 +380,7 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
   /// @param direction
   void ElongateTerminalEnd(double speed,
                            const std::array<double, 3>& direction) {
-    double temp = Matrix::Dot(direction, spring_axis_[kIdx]);
+    double temp = Math::Dot(direction, spring_axis_[kIdx]);
     if (temp > 0) {
       MovePointMass(speed, direction);
     }
@@ -437,7 +436,7 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
   MostDerivedSoPtr Branch(double diameter) {
     auto rand_noise = gRandom.NextNoise(0.1);
     auto growth_direction =
-        Math::Perp3(Matrix::Add(GetUnitaryAxisDirectionVector(), rand_noise),
+        Math::Perp3(Math::Add(GetUnitaryAxisDirectionVector(), rand_noise),
                     gRandom.NextDouble());
     growth_direction = Math::Normalize(growth_direction);
     return Branch(diameter, growth_direction);
@@ -449,7 +448,7 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
     double branch_diameter = diameter_[kIdx];
     auto rand_noise = gRandom.NextNoise(0.1);
     auto growth_direction =
-        Math::Perp3(Matrix::Add(GetUnitaryAxisDirectionVector(), rand_noise),
+        Math::Perp3(Math::Add(GetUnitaryAxisDirectionVector(), rand_noise),
                     gRandom.NextDouble());
     return Branch(branch_diameter, growth_direction);
   }
@@ -508,27 +507,27 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
     auto dir_2 = direction_2;
     if (Math::AngleRadian(spring_axis_[kIdx], direction_1) > Math::kPi / 2.0) {
       auto proj = Math::ProjectionOnto(direction_1, spring_axis_[kIdx]);
-      proj = Matrix::ScalarMult(-1, proj);
-      dir_1 = Matrix::Add(direction_1, proj);
+      proj = Math::ScalarMult(-1, proj);
+      dir_1 = Math::Add(direction_1, proj);
     }
     if (Math::AngleRadian(spring_axis_[kIdx], direction_2) > Math::kPi / 2.0) {
       auto proj = Math::ProjectionOnto(direction_2, spring_axis_[kIdx]);
-      proj = Matrix::ScalarMult(-1, proj);
-      dir_2 = Matrix::Add(direction_2, proj);
+      proj = Math::ScalarMult(-1, proj);
+      dir_2 = Math::Add(direction_2, proj);
     }
 
     // mass location and spring axis
     new_branch_l.SetSpringAxis(
-        Matrix::ScalarMult(length, Math::Normalize(dir_1)));
+        Math::ScalarMult(length, Math::Normalize(dir_1)));
     new_branch_l.SetMassLocation(
-        Matrix::Add(mass_location_[kIdx], new_branch_l.GetSpringAxis()));
+        Math::Add(mass_location_[kIdx], new_branch_l.GetSpringAxis()));
     new_branch_l
         .UpdateLocalCoordinateAxis();  // (important so that x_axis_ is correct)
 
     new_branch_r.SetSpringAxis(
-        Matrix::ScalarMult(length, Math::Normalize(dir_2)));
+        Math::ScalarMult(length, Math::Normalize(dir_2)));
     new_branch_r.SetMassLocation(
-        Matrix::Add(mass_location_[kIdx], new_branch_r.GetSpringAxis()));
+        Math::Add(mass_location_[kIdx], new_branch_r.GetSpringAxis()));
     new_branch_r.UpdateLocalCoordinateAxis();
 
     // physics of tension :
@@ -654,7 +653,7 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
     if (factor < 0) {
       factor = 0;
     }
-    return Matrix::Add(Matrix::ScalarMult(factor, spring_axis_[kIdx]),
+    return Math::Add(Math::ScalarMult(factor, spring_axis_[kIdx]),
                        force_to_transmit_to_proximal_mass_[kIdx]);
   }
 
@@ -709,8 +708,8 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
 
     // scaling for integration step
     double length = speed * Param::simulation_time_step_;
-    auto displacement = Matrix::ScalarMult(length, Math::Normalize(direction));
-    auto new_mass_location = Matrix::Add(displacement, mass_location_[kIdx]);
+    auto displacement = Math::ScalarMult(length, Math::Normalize(direction));
+    auto new_mass_location = Math::Add(displacement, mass_location_[kIdx]);
     // here I have to define the actual length ..........
     // auto& relative_pos = mother_[kIdx].GetPosition();
     auto relative_ml =
@@ -720,10 +719,10 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
     std::cout << "spring_axis_ " << spring_axis_[kIdx][0] << ", "
               << spring_axis_[kIdx][1] << ", " << spring_axis_[kIdx][2]
               << std::endl;
-    spring_axis_[kIdx] = Matrix::Subtract(new_mass_location, relative_ml);
+    spring_axis_[kIdx] = Math::Subtract(new_mass_location, relative_ml);
     mass_location_[kIdx] = new_mass_location;
     actual_length_[kIdx] =
-        std::sqrt(Matrix::Dot(spring_axis_[kIdx], spring_axis_[kIdx]));
+        std::sqrt(Math::Dot(spring_axis_[kIdx], spring_axis_[kIdx]));
     // process of elongation : setting tension to 0 increases the resting length
     // :
     SetRestingLengthForDesiredTension(0.0);
@@ -796,8 +795,8 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
         -tension_[kIdx] / actual_length_[kIdx];  // the minus sign is important
                                                  // because the spring axis goes
                                                  // in the opposite direction
-    force_on_my_point_mass = Matrix::Add(
-        force_on_my_point_mass, Matrix::ScalarMult(factor, spring_axis_[kIdx]));
+    force_on_my_point_mass = Math::Add(
+        force_on_my_point_mass, Math::ScalarMult(factor, spring_axis_[kIdx]));
 
     // 2) Force transmitted by daugthers (if they exist)
     if (!daughter_left_[kIdx].IsNullPtr()) {
@@ -805,14 +804,14 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
           daughter_left_[kIdx].Get().ForceTransmittedFromDaugtherToMother(
               GetSoPtr());
       force_on_my_point_mass =
-          Matrix::Add(force_on_my_point_mass, force_from_daughter);
+          Math::Add(force_on_my_point_mass, force_from_daughter);
     }
     if (!daughter_right_[kIdx].IsNullPtr()) {
       auto force_from_daughter =
           daughter_right_[kIdx].Get().ForceTransmittedFromDaugtherToMother(
               GetSoPtr());
       force_on_my_point_mass =
-          Matrix::Add(force_on_my_point_mass, force_from_daughter);
+          Math::Add(force_on_my_point_mass, force_from_daughter);
     }
 
     // 3) Object avoidance force
@@ -895,12 +894,12 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
           double rresting = daughter_left_[kIdx].Get().GetRestingLength() +
                             downstream.GetRestingLength();
           auto down_to_me =
-              Matrix::Subtract(GetMassLocation(), downstream.GetMassLocation());
+              Math::Subtract(GetMassLocation(), downstream.GetMassLocation());
           double aactual = Math::Norm(down_to_me);
 
           force_on_my_point_mass =
-              Matrix::Add(force_on_my_point_mass,
-                          Matrix::ScalarMult(KK * (rresting - aactual),
+              Math::Add(force_on_my_point_mass,
+                          Math::ScalarMult(KK * (rresting - aactual),
                                              Math::Normalize(down_to_me)));
         }
       }
@@ -910,12 +909,12 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
         auto mother_cyl = mother_[kIdx].GetNeuriteSoPtr().Get();
         double rresting = GetRestingLength() + mother_cyl.GetRestingLength();
         auto down_to_me =
-            Matrix::Subtract(GetMassLocation(), mother_cyl.ProximalEnd());
+            Math::Subtract(GetMassLocation(), mother_cyl.ProximalEnd());
         double aactual = Math::Norm(down_to_me);
 
         force_on_my_point_mass =
-            Matrix::Add(force_on_my_point_mass,
-                        Matrix::ScalarMult(KK * (rresting - aactual),
+            Math::Add(force_on_my_point_mass,
+                        Math::ScalarMult(KK * (rresting - aactual),
                                            Math::Normalize(down_to_me)));
       }
     }
@@ -943,12 +942,12 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
     // So, what follows is only executed if we do actually move :
 
     //  6.3) Since there's going be a move, we calculate it
-    auto displacement = Matrix::ScalarMult(h_over_m, force_on_my_point_mass);
+    auto displacement = Math::ScalarMult(h_over_m, force_on_my_point_mass);
     double displacement_norm = force_norm * h_over_m;
 
     //  6.4) There is an upper bound for the movement.
     if (displacement_norm > Param::simulation_max_displacement_) {
-      displacement = Matrix::ScalarMult(
+      displacement = Math::ScalarMult(
           Param::simulation_max_displacement_ / displacement_norm,
           displacement);
     }
@@ -958,7 +957,7 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
 
   void ApplyDisplacement(const std::array<double, 3>& displacement) {
     // move of our mass
-    SetMassLocation(Matrix::Add(GetMassLocation(), displacement));
+    SetMassLocation(Math::Add(GetMassLocation(), displacement));
     // Recompute length, tension and re-center the computation node, and
     // redefine axis
     UpdateDependentPhysicalVariables();
@@ -1001,7 +1000,7 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
       // info, but this should almost never happen....
       z_axis_[kIdx] = Math::Perp3(x_axis_[kIdx], gRandom.NextDouble());
     } else {
-      z_axis_[kIdx] = Matrix::ScalarMult((1 / norm_of_z), z_axis_[kIdx]);
+      z_axis_[kIdx] = Math::ScalarMult((1 / norm_of_z), z_axis_[kIdx]);
     }
     y_axis_[kIdx] = Math::CrossProduct(z_axis_[kIdx], x_axis_[kIdx]);
   }
@@ -1054,9 +1053,9 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
   /// @param position in global coordinates
   std::array<double, 3> TransformCoordinatesGlobalToLocal(
       const std::array<double, 3>& position) const {
-    auto pos = Matrix::Subtract(position, ProximalEnd());
-    return {Matrix::Dot(pos, x_axis_[kIdx]), Matrix::Dot(pos, y_axis_[kIdx]),
-            Matrix::Dot(pos, z_axis_[kIdx])};
+    auto pos = Math::Subtract(position, ProximalEnd());
+    return {Math::Dot(pos, x_axis_[kIdx]), Math::Dot(pos, y_axis_[kIdx]),
+            Math::Dot(pos, z_axis_[kIdx])};
   }
 
   /// L -> G
@@ -1073,7 +1072,7 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
             position[2] * z_axis_[kIdx][1],
         position[0] * x_axis_[kIdx][2] + position[1] * y_axis_[kIdx][2] +
             position[2] * z_axis_[kIdx][2]};
-    return Matrix::Add(glob, ProximalEnd());
+    return Math::Add(glob, ProximalEnd());
   }
 
   ///  L -> P
@@ -1190,7 +1189,7 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
   /// @return a normalized spring axis
   std::array<double, 3> GetUnitaryAxisDirectionVector() const {
     double factor = 1.0 / actual_length_[kIdx];
-    return Matrix::ScalarMult(factor, spring_axis_[kIdx]);
+    return Math::ScalarMult(factor, spring_axis_[kIdx]);
   }
 
   /// Should return yes if the PhysicalCylinder is considered a terminal branch.
@@ -1201,7 +1200,7 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
   /// axis.
   /// Is mainly used for paint
   std::array<double, 3> ProximalEnd() const {
-    return Matrix::Subtract(mass_location_[kIdx], spring_axis_[kIdx]);
+    return Math::Subtract(mass_location_[kIdx], spring_axis_[kIdx]);
   }
 
   /// Returns the position of the distal end == position_
@@ -1242,9 +1241,9 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
   /// method at the end.
   void UpdateDependentPhysicalVariables() {
     auto relative_ml = mother_[kIdx].OriginOf(Base::GetElementIdx());
-    spring_axis_[kIdx] = Matrix::Subtract(mass_location_[kIdx], relative_ml);
+    spring_axis_[kIdx] = Math::Subtract(mass_location_[kIdx], relative_ml);
     actual_length_[kIdx] =
-        std::sqrt(Matrix::Dot(spring_axis_[kIdx], spring_axis_[kIdx]));
+        std::sqrt(Math::Dot(spring_axis_[kIdx], spring_axis_[kIdx]));
     if (std::abs(actual_length_[kIdx] - resting_length_[kIdx]) > 1e-13) {
       tension_[kIdx] = spring_constant_[kIdx] *
                        (actual_length_[kIdx] - resting_length_[kIdx]) /
@@ -1426,9 +1425,9 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
     auto new_neurite_element = Rm()->template New<MostDerived>();
 
     // TODO reformulate to mass_location_
-    auto new_position = Matrix::Subtract(
+    auto new_position = Math::Subtract(
         mass_location_[kIdx],
-        Matrix::ScalarMult(distal_portion, spring_axis_[kIdx]));
+        Math::ScalarMult(distal_portion, spring_axis_[kIdx]));
 
     new_neurite_element.SetPosition(new_position);
     new_neurite_element.Copy(*static_cast<TMostDerived<Backend>*>(this));
@@ -1484,7 +1483,7 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
     // and want to
     // compute restingLength, and not the opposite...)
     // T = k*(A-R)/R --> R = k*A/(T+K)
-    spring_axis_[kIdx] = Matrix::Subtract(
+    spring_axis_[kIdx] = Math::Subtract(
         mass_location_[kIdx], mother_[kIdx].OriginOf(Base::GetElementIdx()));
     actual_length_[kIdx] = Math::Norm(spring_axis_[kIdx]);
     resting_length_[kIdx] = spring_constant_[kIdx] * actual_length_[kIdx] /
@@ -1510,13 +1509,13 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
         angle_with_side_branch > 2.35) {  // 45-135 degrees
       auto p = Math::CrossProduct(spring_axis_[kIdx], direction);
       p = Math::CrossProduct(p, spring_axis_[kIdx]);
-      dir = Matrix::Add(Math::Normalize(direction), Math::Normalize(p));
+      dir = Math::Add(Math::Normalize(direction), Math::Normalize(p));
     }
     // location of mass and computation center
     auto new_spring_axis =
-        Matrix::ScalarMult(length, Math::Normalize(direction));
+        Math::ScalarMult(length, Math::Normalize(direction));
     new_branch.SetMassLocation(
-        Matrix::Add(mass_location_[kIdx], new_spring_axis));
+        Math::Add(mass_location_[kIdx], new_spring_axis));
     new_branch.SetSpringAxis(new_spring_axis);
     // physics
     new_branch.SetActualLength(length);

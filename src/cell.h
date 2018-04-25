@@ -14,7 +14,6 @@
 #include "default_force.h"
 #include "inline_vector.h"
 #include "math_util.h"
-#include "matrix.h"
 #include "param.h"
 #include "shape.h"
 #include "simulation_object.h"
@@ -182,7 +181,7 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
   /// @param axis specifies direction of division
   MostDerivedSoPtr Divide(const array<double, 3>& axis) {
     auto polarcoord =
-        TransformCoordinatesGlobalToPolar(Matrix::Add(axis, position_[kIdx]));
+        TransformCoordinatesGlobalToPolar(Math::Add(axis, position_[kIdx]));
     return ThisMD()->Divide(0.9 + 0.2 * gRandom.NextDouble(), polarcoord[1],
                             polarcoord[2]);
   }
@@ -197,7 +196,7 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
   /// @param axis specifies direction of division
   MostDerivedSoPtr Divide(double volume_ratio, const array<double, 3>& axis) {
     auto polarcoord =
-        TransformCoordinatesGlobalToPolar(Matrix::Add(axis, position_[kIdx]));
+        TransformCoordinatesGlobalToPolar(Math::Add(axis, position_[kIdx]));
     return ThisMD()->Divide(volume_ratio, polarcoord[1], polarcoord[2]);
   }
 
@@ -565,10 +564,10 @@ BDM_SO_DEFINE(inline void CellExt)::ApplyDisplacement(
 
 BDM_SO_DEFINE(inline array<double, 3> CellExt)::
     TransformCoordinatesGlobalToPolar(const array<double, 3>& pos) const {
-  auto vector_to_point = Matrix::Subtract(pos, position_[kIdx]);
-  array<double, 3> local_cartesian{Matrix::Dot(kXAxis, vector_to_point),
-                                   Matrix::Dot(kYAxis, vector_to_point),
-                                   Matrix::Dot(kZAxis, vector_to_point)};
+  auto vector_to_point = Math::Subtract(pos, position_[kIdx]);
+  array<double, 3> local_cartesian{Math::Dot(kXAxis, vector_to_point),
+                                   Math::Dot(kYAxis, vector_to_point),
+                                   Math::Dot(kZAxis, vector_to_point)};
   double radius = std::sqrt(local_cartesian[0] * local_cartesian[0] +
                             local_cartesian[1] * local_cartesian[1] +
                             local_cartesian[2] * local_cartesian[2]);

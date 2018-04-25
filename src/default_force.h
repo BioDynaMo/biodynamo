@@ -157,7 +157,7 @@ class DefaultForce {
     // "segment")
     //    It is the projection of the vector pP->c onto the vector pP->pD
     //    (=axis)
-    auto pPc = Matrix::Subtract(c, pP);
+    auto pPc = Math::Subtract(c, pP);
 
     //    projection of pPc onto axis = (pPc.axis)/norm(axis)^2  * axis
     //    length of the projection = (pPc.axis)/norm(axis)
@@ -277,12 +277,12 @@ class DefaultForce {
       }
 
     } else {
-      P1 = Matrix::Add(A, Matrix::ScalarMult(0.5, Matrix::Subtract(B, A)));
-      P2 = Matrix::Add(C, Matrix::ScalarMult(0.5, Matrix::Subtract(D, C)));
+      P1 = Math::Add(A, Math::ScalarMult(0.5, Math::Subtract(B, A)));
+      P2 = Math::Add(C, Math::ScalarMult(0.5, Math::Subtract(D, C)));
     }
 
     // W put a virtual sphere on the two cylinders
-    auto force = Matrix::ScalarMult(
+    auto force = Math::ScalarMult(
         10, ComputeForceOfASphereOnASphere(P1, d1 / 2.0, P2, d2 / 2.0));
 
     *result = {force[0], force[1], force[2], K};

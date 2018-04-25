@@ -5,6 +5,42 @@
 
 namespace bdm {
 
+TEST(MathUtilTest, Add) {
+  std::array<double, 3> a = {0.5, 0.7, 1.2};
+  std::array<double, 3> b = {0.6, 1.5, 2.1};
+  auto result = Math::Add(a, b);
+
+  EXPECT_NEAR(1.1, result[0], abs_error<double>::value);
+  EXPECT_NEAR(2.2, result[1], abs_error<double>::value);
+  EXPECT_NEAR(3.3, result[2], abs_error<double>::value);
+}
+
+TEST(MathUtilTest, Subtract) {
+  std::array<double, 3> a = {0.6, 1.5, 2.1};
+  std::array<double, 3> b = {0.5, 0.7, 0.8};
+  auto result = Math::Subtract(a, b);
+
+  EXPECT_NEAR(0.1, result[0], abs_error<double>::value);
+  EXPECT_NEAR(0.8, result[1], abs_error<double>::value);
+  EXPECT_NEAR(1.3, result[2], abs_error<double>::value);
+}
+
+TEST(MathUtilTest, Dot) {
+  std::array<double, 3> a = {0.5, 0.7, 0.8};
+  std::array<double, 3> b = {0.6, 1.5, 2.1};
+  double result = Math::Dot(a, b);
+
+  EXPECT_NEAR(3.03, result, abs_error<double>::value);
+}
+
+TEST(MathUtilTest, ScalarMult) {
+  std::array<double, 3> a = {0.5, 0.7, 0.8};
+  double k = 3.2;
+  auto result = Math::ScalarMult(k, a);
+
+  EXPECT_ARR_NEAR(result, {1.6, 2.24, 2.56});
+}
+
 TEST(MathUtilTest, Norm) {
   std::array<double, 3> vector = {1.1, 2.2, 3.3};
   auto result = Math::Norm(vector);
