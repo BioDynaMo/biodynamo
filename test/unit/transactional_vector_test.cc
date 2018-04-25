@@ -16,7 +16,7 @@ BDM_SIM_OBJECT(TestObject, bdm::SimulationObject) {
   TestObjectExt(int id) { id_[kIdx] = id; }
   int GetId() { return id_[kIdx]; }
 
-  bool operator<(const Self<Backend>& other) {
+  bool operator<(const Self<Backend>& other) const {
     return id_[kIdx] < other.id_[kIdx];
   }
 
