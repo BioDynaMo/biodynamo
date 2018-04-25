@@ -195,7 +195,6 @@ class ResourceManager {
   /// Default constructor. Unfortunately needs to be public although it is
   /// a singleton to be able to use ROOT I/O
   ResourceManager() {
-    std::cout << "ResourceManager created: " << this << std::endl; // TODO remove
     // Soa container contain one element upon construction
     Clear();
   }

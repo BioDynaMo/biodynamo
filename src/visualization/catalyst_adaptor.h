@@ -408,7 +408,8 @@ class CatalystAdaptor {
   std::vector<bool> dg_is_initialized_;
   std::unordered_map<std::string, Shape> shapes_;
   std::vector<std::string> so_scalar_names_;
-  // TODO add documentation
+  /// This variable is used to generate the simulation info json during the first
+  /// invocation of `ExportVisualization`
   bool sim_info_json_generated_ = false;
   static constexpr char const* kSimulationInfoJson = "simulation_info.json";
 

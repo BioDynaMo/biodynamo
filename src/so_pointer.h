@@ -37,11 +37,6 @@ class SoPointer {
   uint32_t GetElementIdx() const { return element_idx_; }
   void SetElementIdx(uint32_t element_idx) { element_idx_ = element_idx; }
 
-  /// TODO change to operator `so_ptr == nullptr` or `so_ptr != nullptr`
-  bool IsNullPtr() const {
-    return element_idx_ == std::numeric_limits<uint64_t>::max();
-  }
-
   /// Equals operator that enables the following statement `so_ptr == nullptr;`
   bool operator==(std::nullptr_t) const {
     return element_idx_ == std::numeric_limits<uint64_t>::max();
@@ -72,7 +67,7 @@ class SoPointer {
   auto& Get(
       typename std::enable_if<std::is_same<TTBackend, Scalar>::value>::type* p =
           0) {
-    assert(!IsNullPtr());
+    assert(*this != nullptr);
     return (*so_container_)[element_idx_];
     // return (*rm->Get<TSoSimBackend>())[element_idx_];
   }
@@ -81,14 +76,14 @@ class SoPointer {
   const auto& Get(
       typename std::enable_if<std::is_same<TTBackend, Scalar>::value>::type* p =
           0) const {
-    assert(!IsNullPtr());
+    assert(*this != nullptr);
     return (*so_container_)[element_idx_];
   }
 
   template <typename TTBackend = TBackend>
   auto Get(typename std::enable_if<std::is_same<TTBackend, Soa>::value>::type*
                p = 0) {
-    assert(!IsNullPtr());
+    assert(*this != nullptr);
     return (*so_container_)[element_idx_];
   }
 
@@ -96,7 +91,7 @@ class SoPointer {
   const auto Get(
       typename std::enable_if<std::is_same<TTBackend, Soa>::value>::type* p =
           0) const {
-    assert(!IsNullPtr());
+    assert(*this != nullptr);
     return (*so_container_)[element_idx_];
   }
 

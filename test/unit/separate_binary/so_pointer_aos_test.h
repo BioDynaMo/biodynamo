@@ -20,15 +20,15 @@ void SoPointerTest(T* sim_objects) {
   using SO = typename T::value_type;
 
   SoPointer<SO, TBackend> null_so_pointer;
-  EXPECT_TRUE(null_so_pointer.IsNullPtr());
+  EXPECT_TRUE(null_so_pointer == nullptr);
 
   SoPointer<SO, TBackend> so_ptr(sim_objects, 0);
 
-  EXPECT_FALSE(so_ptr.IsNullPtr());
+  EXPECT_FALSE(so_ptr == nullptr);
   EXPECT_EQ(123u, so_ptr.Get().GetId());
 
   so_ptr = nullptr;
-  EXPECT_TRUE(so_ptr.IsNullPtr());
+  EXPECT_TRUE(so_ptr == nullptr);
 }
 
 BDM_SIM_OBJECT(SoPointerTestClass, bdm::SimulationObject) {

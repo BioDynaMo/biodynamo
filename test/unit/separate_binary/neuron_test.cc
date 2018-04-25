@@ -154,8 +154,8 @@ TEST(NeuronTest, ExtendNewNeuriteSphericalCoordinates) {
   EXPECT_NEAR(0, neurite.GetTension(), kEpsilon);
   EXPECT_NEAR(10, neurite.GetSpringConstant(), kEpsilon);
   EXPECT_NEAR(1, neurite.GetRestingLength(), kEpsilon);
-  EXPECT_TRUE(neurite.GetDaughterLeft().IsNullPtr());
-  EXPECT_TRUE(neurite.GetDaughterRight().IsNullPtr());
+  EXPECT_TRUE(neurite.GetDaughterLeft() == nullptr);
+  EXPECT_TRUE(neurite.GetDaughterRight() == nullptr);
   EXPECT_TRUE(neurite.GetMother().IsNeuron());
 
   EXPECT_EQ(1u, rm->Get<Neuron>()->size());
@@ -190,8 +190,8 @@ TEST(NeuronTest, ExtendNewNeurite) {
   EXPECT_NEAR(0, neurite.GetTension(), kEpsilon);
   EXPECT_NEAR(10, neurite.GetSpringConstant(), kEpsilon);
   EXPECT_NEAR(1, neurite.GetRestingLength(), kEpsilon);
-  EXPECT_TRUE(neurite.GetDaughterLeft().IsNullPtr());
-  EXPECT_TRUE(neurite.GetDaughterRight().IsNullPtr());
+  EXPECT_TRUE(neurite.GetDaughterLeft() == nullptr);
+  EXPECT_TRUE(neurite.GetDaughterRight() == nullptr);
   EXPECT_TRUE(neurite.GetMother().IsNeuron());
 
   EXPECT_EQ(1u, rm->Get<Neuron>()->size());
@@ -231,8 +231,8 @@ TEST(NeuronTest, ExtendNeuriteAndElongate) {
   EXPECT_NEAR(0, neurite_segment.GetTension(), kEpsilon);
   EXPECT_NEAR(10, neurite_segment.GetSpringConstant(), kEpsilon);
   EXPECT_NEAR(7.5, neurite_segment.GetRestingLength(), kEpsilon);
-  EXPECT_TRUE(neurite_segment.GetDaughterLeft().IsNullPtr());
-  EXPECT_TRUE(neurite_segment.GetDaughterRight().IsNullPtr());
+  EXPECT_TRUE(neurite_segment.GetDaughterLeft() == nullptr);
+  EXPECT_TRUE(neurite_segment.GetDaughterRight() == nullptr);
   EXPECT_TRUE(neurite_segment.GetMother().IsNeurite());
 
   //   proximal segment
@@ -250,8 +250,8 @@ TEST(NeuronTest, ExtendNeuriteAndElongate) {
   EXPECT_NEAR(0, proximal_segment.GetTension(), kEpsilon);
   EXPECT_NEAR(10, proximal_segment.GetSpringConstant(), kEpsilon);
   EXPECT_NEAR(13.5, proximal_segment.GetRestingLength(), kEpsilon);
-  EXPECT_FALSE(proximal_segment.GetDaughterLeft().IsNullPtr());
-  EXPECT_TRUE(proximal_segment.GetDaughterRight().IsNullPtr());
+  EXPECT_TRUE(proximal_segment.GetDaughterLeft() != nullptr);
+  EXPECT_TRUE(proximal_segment.GetDaughterRight() == nullptr);
   EXPECT_TRUE(proximal_segment.GetMother().IsNeuron());
 
   EXPECT_EQ(1u, rm->Get<Neuron>()->size());
@@ -298,8 +298,8 @@ TEST(NeuriteTest, PartialRetraction) {
   EXPECT_NEAR(0, neurite_segment.GetTension(), kEpsilon);
   EXPECT_NEAR(10, neurite_segment.GetSpringConstant(), kEpsilon);
   EXPECT_NEAR(7, neurite_segment.GetRestingLength(), kEpsilon);
-  EXPECT_TRUE(neurite_segment.GetDaughterLeft().IsNullPtr());
-  EXPECT_TRUE(neurite_segment.GetDaughterRight().IsNullPtr());
+  EXPECT_TRUE(neurite_segment.GetDaughterLeft() == nullptr);
+  EXPECT_TRUE(neurite_segment.GetDaughterRight() == nullptr);
   EXPECT_TRUE(neurite_segment.GetMother().IsNeuron());
 
   EXPECT_EQ(1u, rm->Get<Neuron>()->size());
@@ -379,8 +379,8 @@ TEST(NeuriteTest, Branch) {
   EXPECT_NEAR(0, neurite_segment.GetTension(), kEpsilon);
   EXPECT_NEAR(10, neurite_segment.GetSpringConstant(), kEpsilon);
   EXPECT_NEAR(3.6005289288510043, neurite_segment.GetRestingLength(), kEpsilon);
-  EXPECT_TRUE(neurite_segment.GetDaughterLeft().IsNullPtr());
-  EXPECT_TRUE(neurite_segment.GetDaughterRight().IsNullPtr());
+  EXPECT_TRUE(neurite_segment.GetDaughterLeft() == nullptr);
+  EXPECT_TRUE(neurite_segment.GetDaughterRight() == nullptr);
   EXPECT_TRUE(neurite_segment.GetMother().IsNeurite());
 
   //  proximal segment
@@ -404,8 +404,8 @@ TEST(NeuriteTest, Branch) {
   EXPECT_NEAR(10, proximal_segment.GetSpringConstant(), kEpsilon);
   EXPECT_NEAR(3.6005289288510043, proximal_segment.GetRestingLength(),
               kEpsilon);
-  EXPECT_FALSE(proximal_segment.GetDaughterLeft().IsNullPtr());
-  EXPECT_FALSE(proximal_segment.GetDaughterRight().IsNullPtr());
+  EXPECT_TRUE(proximal_segment.GetDaughterLeft() != nullptr);
+  EXPECT_TRUE(proximal_segment.GetDaughterRight() != nullptr);
   EXPECT_TRUE(proximal_segment.GetMother().IsNeurite());
 
   //  new branch
@@ -424,8 +424,8 @@ TEST(NeuriteTest, Branch) {
   EXPECT_NEAR(0, branch.GetTension(), kEpsilon);
   EXPECT_NEAR(10, branch.GetSpringConstant(), kEpsilon);
   EXPECT_NEAR(1, branch.GetRestingLength(), kEpsilon);
-  EXPECT_TRUE(branch.GetDaughterLeft().IsNullPtr());
-  EXPECT_TRUE(branch.GetDaughterRight().IsNullPtr());
+  EXPECT_TRUE(branch.GetDaughterLeft() == nullptr);
+  EXPECT_TRUE(branch.GetDaughterRight() == nullptr);
   EXPECT_TRUE(branch.GetMother().IsNeurite());
 
   rm->ApplyOnAllTypes(commit);
@@ -493,8 +493,8 @@ TEST(NeuriteTest, RightDaughterRetraction) {
   EXPECT_NEAR(0, branch.GetTension(), kEpsilon);
   EXPECT_NEAR(10, branch.GetSpringConstant(), kEpsilon);
   EXPECT_NEAR(6.90360233225697, branch.GetRestingLength(), kEpsilon);
-  EXPECT_TRUE(branch.GetDaughterLeft().IsNullPtr());
-  EXPECT_TRUE(branch.GetDaughterRight().IsNullPtr());
+  EXPECT_TRUE(branch.GetDaughterLeft() == nullptr);
+  EXPECT_TRUE(branch.GetDaughterRight() == nullptr);
   EXPECT_TRUE(branch.GetMother().IsNeurite());
 
   rm->ApplyOnAllTypes(commit);
@@ -536,7 +536,7 @@ TEST(NeuriteTest, RightDaughterTotalRetraction) {
   auto proximal_segment = neurite_segment.GetMother().GetNeuriteSoPtr().Get();
   auto right_daughter_ps = proximal_segment.GetDaughterRight().Get();
   // right_daughter_ps == branch
-  while (!proximal_segment.GetDaughterRight().IsNullPtr()) {
+  while (proximal_segment.GetDaughterRight() != nullptr) {
     right_daughter_ps.RetractTerminalEnd(10);
     right_daughter_ps.RunDiscretization();
   }
@@ -610,8 +610,8 @@ TEST(NeuriteTest, LeftDaughterRetraction) {
   EXPECT_NEAR(0, branch.GetTension(), kEpsilon);
   EXPECT_NEAR(10, branch.GetSpringConstant(), kEpsilon);
   EXPECT_NEAR(10.903602332257, branch.GetRestingLength(), kEpsilon);
-  EXPECT_TRUE(branch.GetDaughterLeft().IsNullPtr());
-  EXPECT_TRUE(branch.GetDaughterRight().IsNullPtr());
+  EXPECT_TRUE(branch.GetDaughterLeft() == nullptr);
+  EXPECT_TRUE(branch.GetDaughterRight() == nullptr);
   EXPECT_TRUE(branch.GetMother().IsNeurite());
 
   rm->ApplyOnAllTypes(commit);
@@ -696,8 +696,8 @@ TEST(NeuriteTest, Bifurcate) {
   EXPECT_NEAR(0, neurite_segment.GetTension(), kEpsilon);
   EXPECT_NEAR(10, neurite_segment.GetSpringConstant(), kEpsilon);
   EXPECT_NEAR(1, neurite_segment.GetRestingLength(), kEpsilon);
-  EXPECT_FALSE(neurite_segment.GetDaughterLeft().IsNullPtr());
-  EXPECT_FALSE(neurite_segment.GetDaughterRight().IsNullPtr());
+  EXPECT_TRUE(neurite_segment.GetDaughterLeft() != nullptr);
+  EXPECT_TRUE(neurite_segment.GetDaughterRight() != nullptr);
   EXPECT_TRUE(neurite_segment.GetMother().IsNeuron());
 
   //  left branch
@@ -720,8 +720,8 @@ TEST(NeuriteTest, Bifurcate) {
   EXPECT_NEAR(0, branch_l.GetTension(), kEpsilon);
   EXPECT_NEAR(10, branch_l.GetSpringConstant(), kEpsilon);
   EXPECT_NEAR(1, branch_l.GetRestingLength(), kEpsilon);
-  EXPECT_TRUE(branch_l.GetDaughterLeft().IsNullPtr());
-  EXPECT_TRUE(branch_l.GetDaughterRight().IsNullPtr());
+  EXPECT_TRUE(branch_l.GetDaughterLeft() == nullptr);
+  EXPECT_TRUE(branch_l.GetDaughterRight() == nullptr);
   EXPECT_TRUE(branch_l.GetMother().IsNeurite());
 
   //  right branch
@@ -744,8 +744,8 @@ TEST(NeuriteTest, Bifurcate) {
   EXPECT_NEAR(0, branch_r.GetTension(), kEpsilon);
   EXPECT_NEAR(10, branch_r.GetSpringConstant(), kEpsilon);
   EXPECT_NEAR(1, branch_r.GetRestingLength(), kEpsilon);
-  EXPECT_TRUE(branch_r.GetDaughterLeft().IsNullPtr());
-  EXPECT_TRUE(branch_r.GetDaughterRight().IsNullPtr());
+  EXPECT_TRUE(branch_r.GetDaughterLeft() == nullptr);
+  EXPECT_TRUE(branch_r.GetDaughterRight() == nullptr);
   EXPECT_TRUE(branch_r.GetMother().IsNeurite());
 
   rm->ApplyOnAllTypes(commit);

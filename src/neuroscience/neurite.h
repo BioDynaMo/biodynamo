@@ -82,8 +82,8 @@ class NeuronNeuriteAdapter {
     return neuron_ptr_.Get().OriginOf(daughter_element_idx);
   }
 
-  bool IsNeuron() const { return !neuron_ptr_.IsNullPtr(); }
-  bool IsNeurite() const { return !neurite_ptr_.IsNullPtr(); }
+  bool IsNeuron() const { return neuron_ptr_ != nullptr; }
+  bool IsNeurite() const { return neurite_ptr_ != nullptr; }
 
   // TODO LB reference?
   Self GetMother() {
@@ -331,7 +331,7 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
   /// @param speed the retraction speed in microns / h
   void RetractTerminalEnd(double speed) {
     // check if is a terminal branch
-    if (!daughter_left_[kIdx].IsNullPtr()) {
+    if (daughter_left_[kIdx] != nullptr) {
       return;
     }
     // scaling for integration step
@@ -354,7 +354,7 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
           mother_[kIdx].OriginOf(Base::GetElementIdx()), spring_axis_[kIdx]);
       UpdateVolume();  // and update concentration of internal stuff.
     } else if (mother_[kIdx].IsNeurite() &&
-               mother_[kIdx].GetDaughterRight().IsNullPtr()) {
+               mother_[kIdx].GetDaughterRight() == nullptr) {
       // if actual_length_ < length and mother is a PhysicalCylinder with no
       // other daughter : merge with mother
       RemoveProximalCylinder();  // also updates volume_...
@@ -390,7 +390,7 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
   /// not a terminal
   /// branch and if there is not already a second daughter.
   bool BranchPermitted() const {
-    return !daughter_left_[kIdx].IsNullPtr() && daughter_right_.IsNullPtr();
+    return daughter_left_[kIdx] != nullptr && daughter_right_ == nullptr;
   }
 
   /// Makes a side branch, i.e. splits this neurite element into two and puts a
@@ -457,7 +457,7 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
   /// neurite element
   /// has no daughter and the actual length is bigger than the minimum required.
   bool BifurcationPermitted() const {
-    return (daughter_left_[kIdx].IsNullPtr() &&
+    return (daughter_left_[kIdx] == nullptr &&
             actual_length_[kIdx] > Param::kNeuriteMinimalBifurcationLength);
   }
 
@@ -487,7 +487,7 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
       const std::array<double, 3>& direction_2) {
     // 1) physical bifurcation
     // check it is a terminal branch
-    if (!daughter_left_[kIdx].IsNullPtr()) {
+    if (daughter_left_[kIdx] != nullptr) {
       Fatal("Neurites",
             "Bifurcation only allowed on a terminal neurite segment");
     }
@@ -666,7 +666,7 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
   ///   * too short fuse it with the proximal element or even delete it
   void RunDiscretization() {
     if (actual_length_[kIdx] > Param::kNeuriteMaxLength) {
-      if (daughter_left_[kIdx].IsNullPtr()) {  // if terminal branch :
+      if (daughter_left_[kIdx] == nullptr) {  // if terminal branch :
         InsertProximalCylinder(0.1);
       } else if (mother_[kIdx].IsNeuron()) {  // if initial branch :
         InsertProximalCylinder(0.9);
@@ -677,8 +677,8 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
                mother_[kIdx].IsNeurite() &&
                mother_[kIdx].GetRestingLength() <
                    Param::kNeuriteMaxLength - resting_length_[kIdx] - 1 &&
-               mother_[kIdx].GetDaughterRight().IsNullPtr() &&
-               !daughter_left_[kIdx].IsNullPtr()) {
+               mother_[kIdx].GetDaughterRight() == nullptr &&
+               daughter_left_[kIdx] != nullptr) {
       // if the previous branch is removed, we first remove its associated
       // NeuriteElement
       mother_[kIdx].RemoveFromSimulation();
@@ -702,7 +702,7 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
   ///
   void MovePointMass(double speed, const std::array<double, 3>& direction) {
     // check if is a terminal branch
-    if (!daughter_left_[kIdx].IsNullPtr()) {
+    if (daughter_left_[kIdx] != nullptr) {
       return;
     }
 
@@ -781,7 +781,7 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
                                               double squared_radius) {
     // decide first if we have to split or fuse this cylinder. Usually only
     // terminal branches (growth cone) do
-    if (daughter_left_[kIdx].IsNullPtr()) {
+    if (daughter_left_[kIdx] == nullptr) {
       RunDiscretization();
     }
 
@@ -799,14 +799,14 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
         force_on_my_point_mass, Math::ScalarMult(factor, spring_axis_[kIdx]));
 
     // 2) Force transmitted by daugthers (if they exist)
-    if (!daughter_left_[kIdx].IsNullPtr()) {
+    if (daughter_left_[kIdx] != nullptr) {
       auto force_from_daughter =
           daughter_left_[kIdx].Get().ForceTransmittedFromDaugtherToMother(
               GetSoPtr());
       force_on_my_point_mass =
           Math::Add(force_on_my_point_mass, force_from_daughter);
     }
-    if (!daughter_right_[kIdx].IsNullPtr()) {
+    if (daughter_right_[kIdx] != nullptr) {
       auto force_from_daughter =
           daughter_right_[kIdx].Get().ForceTransmittedFromDaugtherToMother(
               GetSoPtr());
@@ -887,9 +887,9 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
     // TEST : anti-kink
     if (anti_kink) {
       double KK = 5;
-      if (!daughter_left_[kIdx].IsNullPtr() &&
-          daughter_right_[kIdx].IsNullPtr()) {
-        if (!daughter_left_[kIdx].Get().GetDaughterLeft().IsNullPtr()) {
+      if (daughter_left_[kIdx] != nullptr &&
+          daughter_right_[kIdx] == nullptr) {
+        if (daughter_left_[kIdx].Get().GetDaughterLeft() != nullptr) {
           auto downstream = daughter_left_[kIdx].Get().GetDaughterLeft().Get();
           double rresting = daughter_left_[kIdx].Get().GetRestingLength() +
                             downstream.GetRestingLength();
@@ -904,7 +904,7 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
         }
       }
 
-      if (!daughter_left_[kIdx].IsNullPtr() && mother_[kIdx].IsNeurite()) {
+      if (daughter_left_[kIdx] != nullptr && mother_[kIdx].IsNeurite()) {
         // TODO rename mother_cyl
         auto mother_cyl = mother_[kIdx].GetNeuriteSoPtr().Get();
         double rresting = GetRestingLength() + mother_cyl.GetRestingLength();
@@ -966,14 +966,14 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
     // FIXME this whole block might be superfluous - ApplyDisplacement is called
     // For the relatives: recompute the lenght, tension etc. (why for mother?
     // have to think about that)
-    if (!daughter_left_[kIdx].IsNullPtr()) {
+    if (daughter_left_[kIdx] != nullptr) {
       auto left = daughter_left_[kIdx].Get();
       // FIXME this is problematic for the distributed version. it modifies a
       // "neightbor"
       left.UpdateDependentPhysicalVariables();
       left.UpdateLocalCoordinateAxis();
     }
-    if (!daughter_right_[kIdx].IsNullPtr()) {
+    if (daughter_right_[kIdx] != nullptr) {
       // FIXME this is problematic for the distributed version. it modifies a
       // "neightbor"
       auto right = daughter_right_[kIdx].Get();
@@ -1194,7 +1194,7 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
 
   /// Should return yes if the PhysicalCylinder is considered a terminal branch.
   /// @return is it a terminal branch
-  bool IsTerminal() const { return daughter_left_[kIdx].IsNullPtr(); }
+  bool IsTerminal() const { return daughter_left_[kIdx] == nullptr; }
 
   /// retuns the position of the proximal end, ie the position minus the spring
   /// axis.
@@ -1216,7 +1216,7 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
   double LengthToProximalBranchingPoint() const {
     double length = actual_length_;
     if (mother_->IsNeurite()) {
-      if (mother_->GetDaughterRight().IsNullPtr()) {
+      if (mother_->GetDaughterRight() == nullptr) {
         length += mother_->LengthToProximalBranchingPoint();
       }
     }
@@ -1465,7 +1465,7 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
     // The mother is removed if (a) it is a neurite segment and (b) it has no
     // other daughter than
     if (!mother_[kIdx].IsNeurite() ||
-        !mother_[kIdx].GetDaughterRight().IsNullPtr()) {
+        mother_[kIdx].GetDaughterRight() != nullptr) {
       return;
     }
     // The guy we gonna remove
