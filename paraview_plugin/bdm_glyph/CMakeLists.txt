@@ -10,5 +10,5 @@ ADD_PARAVIEW_PLUGIN(
   BDMGlyphFilter              #<--Name for the plugin
   "1.0"                       #<--Version string
   SERVER_MANAGER_XML bdm_glyph_filter.xml  #<-- server manager xml
-  SERVER_MANAGER_SOURCES bdm_glyph_filter.cc bdm_glyph.cc #<-- source files for the new classes
+  SERVER_MANAGER_SOURCES BDMGlyphFilter.cc BDMGlyph.cc #<-- source files for the new classes
 )

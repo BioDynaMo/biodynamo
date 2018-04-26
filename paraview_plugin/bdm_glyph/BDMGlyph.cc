@@ -1,7 +1,7 @@
 /*=========================================================================
 
   Program:   Visualization Toolkit
-  Module:    bdm_glyph.cc
+  Module:    BDMGlyph.cc
 
   Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen
   All rights reserved.

@@ -1,7 +1,7 @@
 /*=========================================================================
 
   Program:   ParaView
-  Module:    bdm_glyph_filter.cc
+  Module:    BDMGlyphFilter.cc
 
   Copyright (c) Kitware, Inc.
   All rights reserved.
