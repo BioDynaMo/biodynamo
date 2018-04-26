@@ -13,15 +13,16 @@ inline double DegreesToRadians(double degrees) {
   return degrees / 180 * Math::kPi;
 }
 
-using neuroscience::Neurite;
-using neuroscience::Neuron;
-
 template <typename TBackend>
 struct CompileTimeParam
     : public DefaultCompileTimeParam<TBackend>,
-      public neuroscience::DefaultCompileTimeParam<TBackend> {
-  using AtomicTypes = VariadicTypedef<Cell, Neuron, Neurite>;
+      public experimental::neuroscience::DefaultCompileTimeParam<TBackend> {
+  using AtomicTypes = VariadicTypedef<Cell, experimental::neuroscience::Neuron,
+                                      experimental::neuroscience::Neurite>;
 };
+
+namespace experimental {
+namespace neuroscience {
 
 TEST(MechanicalInteraction, StraightxCylinderGrowth) {
   Param::Reset();
@@ -485,6 +486,8 @@ TEST(MechanicalInteraction, BranchCylinderGrowth) {
   }
 }
 
+}  // end namespace neuroscience
+}  // end namespace experimental
 }  // end namespace bdm
 
 int main(int argc, char** argv) {

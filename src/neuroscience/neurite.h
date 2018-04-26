@@ -17,6 +17,7 @@
 #include "simulation_object_util.h"
 
 namespace bdm {
+namespace experimental {
 namespace neuroscience {
 
 // Declare biology module events for neurites
@@ -1492,6 +1493,7 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
 };
 
 }  // namespace neuroscience
+}  // namespace experimental
 }  // namespace bdm
 
 #endif  // NEUROSCIENCE_NEURITE_H_

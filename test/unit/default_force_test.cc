@@ -11,12 +11,12 @@
 
 namespace bdm {
 
-using neuroscience::Neurite;
+using experimental::neuroscience::Neurite;
 
 template <typename TBackend>
 struct CompileTimeParam
     : public DefaultCompileTimeParam<TBackend>,
-      public neuroscience::DefaultCompileTimeParam<TBackend> {};
+      public experimental::neuroscience::DefaultCompileTimeParam<TBackend> {};
 
 /// Tests the forces that are created between the reference sphere and its
 /// overlapping neighbors

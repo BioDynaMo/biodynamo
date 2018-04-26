@@ -9,15 +9,16 @@
 
 namespace bdm {
 
-using neuroscience::Neurite;
-using neuroscience::Neuron;
-
 template <typename TBackend>
 struct CompileTimeParam
     : public DefaultCompileTimeParam<TBackend>,
-      public neuroscience::DefaultCompileTimeParam<TBackend> {
-  using AtomicTypes = VariadicTypedef<Cell, Neuron, Neurite>;
+      public experimental::neuroscience::DefaultCompileTimeParam<TBackend> {
+  using AtomicTypes = VariadicTypedef<Cell, experimental::neuroscience::Neuron,
+                                      experimental::neuroscience::Neurite>;
 };
+
+namespace experimental {
+namespace neuroscience {
 
 // TODO(jean) Fix this test
 TEST(DISABLED_NeuriteBehaviour, StraightxCylinderGrowthRetract) {
@@ -135,6 +136,8 @@ TEST(DISABLED_NeuriteBehaviour, BranchingGrowth) {
   }
 }  // end test
 
+}  // end namespace neuroscience
+}  // end namespace experimental
 }  // end namespace bdm
 
 int main(int argc, char** argv) {

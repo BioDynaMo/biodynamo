@@ -13,11 +13,12 @@ namespace bdm {
 template <typename TBackend>
 struct CompileTimeParam
     : public DefaultCompileTimeParam<TBackend>,
-      public neuroscience::DefaultCompileTimeParam<TBackend> {
-  using AtomicTypes =
-      VariadicTypedef<neuroscience::Neuron, neuroscience::Neurite>;
+      public experimental::neuroscience::DefaultCompileTimeParam<TBackend> {
+  using AtomicTypes = VariadicTypedef<experimental::neuroscience::Neuron,
+                                      experimental::neuroscience::Neurite>;
 };
 
+namespace experimental {
 namespace neuroscience {
 
 TEST(NeuronTest, Scalar) {
@@ -805,6 +806,7 @@ TEST(DISABLED_NeuronNeuriteTest, Displacement) {
 }
 
 }  // namespace neuroscience
+}  // namespace experimental
 }  // namespace bdm
 
 int main(int argc, char** argv) {

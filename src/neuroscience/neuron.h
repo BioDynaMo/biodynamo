@@ -9,6 +9,7 @@
 #include "simulation_object_util.h"
 
 namespace bdm {
+namespace experimental {
 namespace neuroscience {
 
 extern const BmEvent gExtendNeurite;
@@ -162,6 +163,7 @@ BDM_SIM_OBJECT(Neuron, bdm::Cell) {
 };
 
 }  // namespace neuroscience
+}  // namespace experimental
 }  // namespace bdm
 
 #endif  // NEUROSCIENCE_NEURON_H_

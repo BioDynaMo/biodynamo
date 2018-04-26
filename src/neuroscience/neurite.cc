@@ -1,6 +1,7 @@
 #include "neuroscience/neurite.h"
 
 namespace bdm {
+namespace experimental {
 namespace neuroscience {
 
 const BmEvent gNeuriteElongation =
@@ -13,4 +14,5 @@ const BmEvent gNeuriteSideCylinderExtension =
     UniqueBmEventFactory::Get()->NewUniqueBmEvent();
 
 }  // namespace neuroscience
+}  // namespace experimental
 }  // namespace bdm

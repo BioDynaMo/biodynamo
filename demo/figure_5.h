@@ -7,13 +7,13 @@
 
 namespace bdm {
 
-using neuroscience::Neuron;
-using neuroscience::Neurite;
+using experimental::neuroscience::Neuron;
+using experimental::neuroscience::Neurite;
 
 template <typename TBackend>
 struct CompileTimeParam
     : public DefaultCompileTimeParam<TBackend>,
-      public neuroscience::DefaultCompileTimeParam<TBackend> {
+      public experimental::neuroscience::DefaultCompileTimeParam<TBackend> {
   // using BiologyModules = Variant<TestBehaviour>;
   using AtomicTypes = VariadicTypedef<Cell, Neuron, Neurite>;
 };
