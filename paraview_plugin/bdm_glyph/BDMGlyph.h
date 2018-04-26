@@ -1,19 +1,19 @@
-#ifndef PARAVIEW_PLUGIN_GLYPHEXT_VTKGLYPH3DEXT_H_
-#define PARAVIEW_PLUGIN_GLYPHEXT_VTKGLYPH3DEXT_H_
+#ifndef PARAVIEW_PLUGIN_BDM_GLYPH_BDMGLYPH_H_
+#define PARAVIEW_PLUGIN_BDM_GLYPH_BDMGLYPH_H_
 
 #include "vtkGlyph3D.h"
 
 #define VTK_SCALE_BY_NORMAL 4
 
-class VTK_EXPORT vtkGlyph3DExt : public vtkGlyph3D {
+class VTK_EXPORT BDMGlyph : public vtkGlyph3D {
  public:
-  static vtkGlyph3DExt* New();
-  vtkTypeMacro(vtkGlyph3DExt, vtkGlyph3D);
+  static BDMGlyph* New();
+  vtkTypeMacro(BDMGlyph, vtkGlyph3D);
   void PrintSelf(ostream& os, vtkIndent indent) VTK_OVERRIDE;  // NOLINT
 
  protected:
-  vtkGlyph3DExt();
-  ~vtkGlyph3DExt();
+  BDMGlyph();
+  ~BDMGlyph();
 
   //@{
   /**
@@ -28,8 +28,8 @@ class VTK_EXPORT vtkGlyph3DExt : public vtkGlyph3D {
                vtkDataArray* inVectors) VTK_OVERRIDE;
 
  private:
-  vtkGlyph3DExt(const vtkGlyph3DExt&) VTK_DELETE_FUNCTION;
-  void operator=(const vtkGlyph3DExt&) VTK_DELETE_FUNCTION;
+  BDMGlyph(const BDMGlyph&) VTK_DELETE_FUNCTION;
+  void operator=(const BDMGlyph&) VTK_DELETE_FUNCTION;
 };
 
-#endif  // PARAVIEW_PLUGIN_GLYPHEXT_VTKGLYPH3DEXT_H_
+#endif  // PARAVIEW_PLUGIN_BDM_GLYPH_BDMGLYPH_H_

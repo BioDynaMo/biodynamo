@@ -1,9 +1,9 @@
 <ServerManagerConfiguration>
   <ProxyGroup name="filters">
     <!-- ==================================================================== -->
-    <SourceProxy class="vtkPVGlyphFilterExt"
+    <SourceProxy class="BDMGlyphFilter"
                  name="BDMGlyph">
-      <Documentation long_help="This filter produces a glyph at each point of in input data set. The glyphs can be oriented and scaled by point attributes of the input dataset."
+      <Documentation long_help="This filter produces a glyph at each point of the input data set. The glyphs can be oriented and scaled (independently along each dimension) by point attributes of the input dataset."
                      short_help="Generate a glyph at each point of the input data set.">
 The Glyph filter generates a glyph (i.e., an arrow, cone, cube,
 cylinder, line, sphere, or 2D glyph) at each point in the input

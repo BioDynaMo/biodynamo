@@ -51,11 +51,11 @@ class InSituPipeline : public vtkCPPipeline {
 #ifdef __APPLE__
     std::string plugin_path = std::string(std::getenv("ParaView_DIR")) +
                               "/../../../bin/paraview.app/Contents/MacOS/"
-                              "plugins/libvtkPVGlyphFilterExt.dylib";
+                              "plugins/libBDMGlyphFilter.dylib";
 #else
     std::string plugin_path =
         std::string(std::getenv("ParaView_DIR")) +
-        "/../../paraview-5.4/plugins/libvtkPVGlyphFilterExt.so";
+        "/../../paraview-5.4/plugins/libBDMGlyphFilter.so";
 #endif
     // Load custom plugin to enable cylinder glyph scaling
     if (!plugin_manager_->LoadLocalPlugin(plugin_path.c_str())) {
