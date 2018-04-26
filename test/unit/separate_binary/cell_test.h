@@ -1,5 +1,5 @@
-#ifndef UNIT_CELL_TEST_H_
-#define UNIT_CELL_TEST_H_
+#ifndef UNIT_SEPARATE_BINARY_CELL_TEST_H_
+#define UNIT_SEPARATE_BINARY_CELL_TEST_H_
 
 #include <vector>
 
@@ -166,4 +166,4 @@ inline void RunIOTest() {
 }  // namespace cell_test_internal
 }  // namespace bdm
 
-#endif  // UNIT_CELL_TEST_H_
+#endif  // UNIT_SEPARATE_BINARY_CELL_TEST_H_

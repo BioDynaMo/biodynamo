@@ -92,7 +92,7 @@ class CatalystAdaptor {
 
     void operator()(std::vector<std::array<double, 3>>* dm,
                     const std::string& name) {
-      if (name == "position_") {  // TODO performance
+      if (name == "position_") {  // TODO(lukas) performance
         vtkNew<vtkDoubleArray> vtk_array;
         vtk_array->SetName(name.c_str());
         auto ptr = dm->data()->data();

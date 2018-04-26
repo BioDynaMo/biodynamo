@@ -1,5 +1,5 @@
-#ifndef IO_TEST_H_
-#define IO_TEST_H_
+#ifndef UNIT_IO_TEST_H_
+#define UNIT_IO_TEST_H_
 
 #include <gtest/gtest.h>
 #include "io_util.h"
@@ -54,4 +54,4 @@ void BackupAndRestore(const T& backup, T** restored) {
 
 }  // namespace bdm
 
-#endif  // IO_TEST_H_
+#endif  // UNIT_IO_TEST_H_

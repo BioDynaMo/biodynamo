@@ -123,11 +123,11 @@ class DefaultForce {
   void ForceOnACylinderFromASphere(const TCylinder* cylinder,
                                    const TSphere* sphere,
                                    std::array<double, 4>* result) const {
-    auto pP = cylinder->ProximalEnd();
-    auto pD = cylinder->DistalEnd();
+    auto proximal_end = cylinder->ProximalEnd();
+    auto distal_end = cylinder->DistalEnd();
     auto axis = cylinder->GetSpringAxis();
-    double actualLength =
-        Math::Norm(axis);  // TODO use cylinder.GetActualLength() ??
+    // TODO(neurites) use cylinder.GetActualLength() ??
+    double actual_length = Math::Norm(axis);
     double d = cylinder->GetDiameter();
     auto c = sphere->GetPosition();
     double r = 0.5 * sphere->GetDiameter();
@@ -135,18 +135,19 @@ class DefaultForce {
     // I. If the cylinder is small with respect to the sphere:
     // we only consider the interaction between the sphere and the point mass
     // (i.e. distal point) of the cylinder - that we treat as a sphere.
-    if (actualLength < r) {
-      // move back sphere center by 1 cylinder radius from pD
-      // vector_x = rc * (axis[0]/actualLength)
-      // vector_y = rc * (axis[1]/actualLength)
-      // vector_z = rc * (axis[2]/actualLength)
+    if (actual_length < r) {
+      // move back sphere center by 1 cylinder radius from distal_end
+      // vector_x = rc * (axis[0]/actual_length)
+      // vector_y = rc * (axis[1]/actual_length)
+      // vector_z = rc * (axis[2]/actual_length)
       double rc = 0.5 * d;
       std::array<double, 3> dvec = {
-          rc * (axis[0] / actualLength), rc * (axis[1] / actualLength),
-          rc * (axis[2] / actualLength)};  // displacement vector
-      std::array<double, 3> npD = {pD[0] - dvec[0], pD[1] - dvec[1],
-                                   pD[2] - dvec[2]};  // new sphere center
-      *result = ComputeForceOfASphereOnASphere(npD, rc, c, r);
+          rc * (axis[0] / actual_length), rc * (axis[1] / actual_length),
+          rc * (axis[2] / actual_length)};  // displacement vector
+      std::array<double, 3> npd = {
+          distal_end[0] - dvec[0], distal_end[1] - dvec[1],
+          distal_end[2] - dvec[2]};  // new sphere center
+      *result = ComputeForceOfASphereOnASphere(npd, rc, c, r);
       return;
     }
 
@@ -157,39 +158,49 @@ class DefaultForce {
     // the two ends of the cylinder: the distal (point mass of the segment) and
     // the proximal (point mass of the mother of the segment).
 
-    // 1)   Finding cc : the closest point to c on the line pPpD ("line" and not
-    // "segment")
-    //    It is the projection of the vector pP->c onto the vector pP->pD
+    // 1)   Finding cc : the closest point to c on the line proximal_end
+    // proximal_end
+    // ("line" and not "segment")
+    //    It is the projection of the vector proximal_end->c onto the vector
+    //    proximal_end->distal_end
     //    (=axis)
-    auto pPc = Math::Subtract(c, pP);
+    auto proximal_end_closest = Math::Subtract(c, proximal_end);
 
-    //    projection of pPc onto axis = (pPc.axis)/norm(axis)^2  * axis
-    //    length of the projection = (pPc.axis)/norm(axis)
+    //    projection of proximal_end_closest onto axis =
+    //    (proximal_end_closest.axis)/norm(axis)^2  * axis
+    //    length of the projection = (proximal_end_closest.axis)/norm(axis)
 
-    double pPcDotAxis = pPc[0] * axis[0] + pPc[1] * axis[1] + pPc[2] * axis[2];
-    double K = pPcDotAxis / (actualLength * actualLength);
-    //    cc = pP + K* axis
-    std::array<double, 3> cc{pP[0] + K * axis[0], pP[1] + K * axis[1],
-                             pP[2] + K * axis[2]};
+    double proximal_end_closest_axis = proximal_end_closest[0] * axis[0] +
+                                       proximal_end_closest[1] * axis[1] +
+                                       proximal_end_closest[2] * axis[2];
+    double k = proximal_end_closest_axis / (actual_length * actual_length);
+    //    cc = proximal_end + k* axis
+    std::array<double, 3> cc{proximal_end[0] + k * axis[0],
+                             proximal_end[1] + k * axis[1],
+                             proximal_end[2] + k * axis[2]};
 
-    // 2) Look if c -and hence cc- is (a) between pP and pD, (b) before pP or
-    // (c) after pD
-    double proportionTransmitedToProximalEnd;
-    if (K <= 1.0 && K >= 0.0) {
-      //    a)  if cc (the closest point to c on the line pPpD) is between pP
-      //    and pD
+    // 2) Look if c -and hence cc- is (a) between proximal_end and distal_end,
+    // (b) before proximal_end or
+    // (c) after distal_end
+    double proportion_to_proximal_end;
+    if (k <= 1.0 && k >= 0.0) {
+      //    a)  if cc (the closest point to c on the line pPpD) is between
+      //    proximal_end
+      //    and distal_end
       //      the force is distributed to the two nodes
-      proportionTransmitedToProximalEnd = 1.0 - K;
-    } else if (K < 0) {
-      //    b)  if the closest point to c on the line pPpD is before pP
+      proportion_to_proximal_end = 1.0 - k;
+    } else if (k < 0) {
+      //    b)  if the closest point to c on the line pPpD is before
+      //    proximal_end
       //      the force is only on the proximal end (the mother point mass)
-      proportionTransmitedToProximalEnd = 1.0;
-      cc = pP;
-    } else {  // if(K>1)
-      //    c) if cc is after pD, the force is only on the distal end (the
+      proportion_to_proximal_end = 1.0;
+      cc = proximal_end;
+    } else {  // if(k>1)
+      //    c) if cc is after distal_end, the force is only on the distal end
+      //    (the
       //    segment's point mass).
-      proportionTransmitedToProximalEnd = 0.0;
-      cc = pD;
+      proportion_to_proximal_end = 0.0;
+      cc = distal_end;
     }
 
     // 3)   If the smallest distance between the cylinder and the center of the
@@ -202,7 +213,7 @@ class DefaultForce {
       return;
     }
     auto force = ComputeForceOfASphereOnASphere(cc, d * 0.5, c, r);
-    *result = {force[0], force[1], force[2], proportionTransmitedToProximalEnd};
+    *result = {force[0], force[1], force[2], proportion_to_proximal_end};
     return;
   }
 
@@ -221,26 +232,26 @@ class DefaultForce {
   void ForceBetweenCylinders(const TCylinderLhs* cylinder1,
                              const TCylinderRhs* cylinder2,
                              std::array<double, 4>* result) const {
-    auto A = cylinder1->ProximalEnd();
-    auto B = cylinder1->GetMassLocation();
+    auto a = cylinder1->ProximalEnd();
+    auto b = cylinder1->GetMassLocation();
     double d1 = cylinder1->GetDiameter();
-    auto C = cylinder2->ProximalEnd();
-    auto D = cylinder2->GetMassLocation();
+    auto c = cylinder2->ProximalEnd();
+    auto d = cylinder2->GetMassLocation();
     double d2 = cylinder2->GetDiameter();
 
-    double K = 0.5;  // part devoted to the distal node
+    double k = 0.5;  // part devoted to the distal node
 
     //  looking for closest point on them
     // (based on http://local.wasp.uwa.edu.au/~pbourke/geometry/lineline3d/)
-    double p13x = A[0] - C[0];
-    double p13y = A[1] - C[1];
-    double p13z = A[2] - C[2];
-    double p43x = D[0] - C[0];
-    double p43y = D[1] - C[1];
-    double p43z = D[2] - C[2];
-    double p21x = B[0] - A[0];
-    double p21y = B[1] - A[1];
-    double p21z = B[2] - A[2];
+    double p13x = a[0] - c[0];
+    double p13y = a[1] - c[1];
+    double p13z = a[2] - c[2];
+    double p43x = d[0] - c[0];
+    double p43y = d[1] - c[1];
+    double p43z = d[2] - c[2];
+    double p21x = b[0] - a[0];
+    double p21y = b[1] - a[1];
+    double p21z = b[2] - a[2];
 
     double d1343 = p13x * p43x + p13y * p43y + p13z * p43z;
     double d4321 = p21x * p43x + p21y * p43y + p21z * p43z;
@@ -248,48 +259,48 @@ class DefaultForce {
     double d4343 = p43x * p43x + p43y * p43y + p43z * p43z;
     double d2121 = p21x * p21x + p21y * p21y + p21z * p21z;
 
-    std::array<double, 3> P1, P2;
+    std::array<double, 3> p1, p2;
 
     double denom = d2121 * d4343 - d4321 * d4321;
 
     // if the two segments are not ABSOLUTLY parallel
-    if (denom > 0.000000000001) {  /// TODO hardcoded value
+    if (denom > 0.000000000001) {  /// TODO(neurites) hardcoded value
       double numer = d1343 * d4321 - d1321 * d4343;
 
       double mua = numer / denom;
       double mub = (d1343 + mua * d4321) / d4343;
 
       if (mua < 0) {
-        P1 = A;
-        K = 1;
+        p1 = a;
+        k = 1;
       } else if (mua > 1) {
-        P1 = B;
-        K = 0;
+        p1 = b;
+        k = 0;
       } else {
-        P1 = std::array<double, 3>{A[0] + mua * p21x, A[1] + mua * p21y,
-                                   A[2] + mua * p21z};
-        K = 1 - mua;
+        p1 = std::array<double, 3>{a[0] + mua * p21x, a[1] + mua * p21y,
+                                   a[2] + mua * p21z};
+        k = 1 - mua;
       }
 
       if (mub < 0) {
-        P2 = C;
+        p2 = c;
       } else if (mub > 1) {
-        P2 = D;
+        p2 = d;
       } else {
-        P2 = std::array<double, 3>{C[0] + mub * p43x, C[1] + mub * p43y,
-                                   C[2] + mub * p43z};
+        p2 = std::array<double, 3>{c[0] + mub * p43x, c[1] + mub * p43y,
+                                   c[2] + mub * p43z};
       }
 
     } else {
-      P1 = Math::Add(A, Math::ScalarMult(0.5, Math::Subtract(B, A)));
-      P2 = Math::Add(C, Math::ScalarMult(0.5, Math::Subtract(D, C)));
+      p1 = Math::Add(a, Math::ScalarMult(0.5, Math::Subtract(b, a)));
+      p2 = Math::Add(c, Math::ScalarMult(0.5, Math::Subtract(d, c)));
     }
 
     // W put a virtual sphere on the two cylinders
     auto force = Math::ScalarMult(
-        10, ComputeForceOfASphereOnASphere(P1, d1 / 2.0, P2, d2 / 2.0));
+        10, ComputeForceOfASphereOnASphere(p1, d1 / 2.0, p2, d2 / 2.0));
 
-    *result = {force[0], force[1], force[2], K};
+    *result = {force[0], force[1], force[2], k};
   }
 
   std::array<double, 4> ComputeForceOfASphereOnASphere(
@@ -307,7 +318,8 @@ class DefaultForce {
       return std::array<double, 4>{0.0, 0.0, 0.0, 0.0};
     }
     // to avoid a division by 0 if the centers are (almost) at the same location
-    if (distance_between_centers < 0.00000001) {  // TODO hard coded values
+    if (distance_between_centers <
+        0.00000001) {  // TODO(neurites) hard coded values
       auto force2on1 = gRandom.NextNoise(3.0);
       return std::array<double, 4>{force2on1[0], force2on1[1], force2on1[2],
                                    0.0};

@@ -74,7 +74,7 @@ class SoHandle {
   ClassDefNV(SoHandle, 1);
 };
 
-constexpr SoHandle gNullSoHandle;
+constexpr SoHandle kNullSoHandle;
 
 namespace detail {
 
@@ -101,7 +101,7 @@ struct ToIndex;
 
 template <typename TSo, typename... Types>
 struct ToIndex<TSo, VariadicTypedef<Types...>> {
-  static constexpr uint16_t value = GetIndex<TSo, Types...>();
+  static constexpr uint16_t value = GetIndex<TSo, Types...>();  // NOLINT
 };
 
 }  // namespace detail

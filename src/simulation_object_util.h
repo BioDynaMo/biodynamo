@@ -460,8 +460,7 @@ struct Capsule;
                                                                                \
  private:                                                                      \
   /** Cast `this` to the most derived type */                                  \
-  /** Can be used to call the method of the subclass without virtual functions \
-   */                                                                          \
+  /** Used to call the method of the subclass without virtual functions */     \
   /** e.g. `ThisMD()->Method()` */                                             \
   /** (CRTP - static polymorphism) */                                          \
   MostDerived<Backend>* ThisMD() {                                             \

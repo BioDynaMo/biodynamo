@@ -1,6 +1,11 @@
 #ifndef NEUROSCIENCE_NEURITE_H_
 #define NEUROSCIENCE_NEURITE_H_
 
+#include <set>
+#include <string>
+#include <unordered_map>
+#include <vector>
+
 #include "biology_module_util.h"
 #include "default_force.h"
 #include "log.h"
@@ -33,14 +38,14 @@ class NeuronNeuriteAdapter {
   NeuronNeuriteAdapter() {}
 
   template <typename T>
-  NeuronNeuriteAdapter(
+  NeuronNeuriteAdapter(  // NOLINT
       T&& soptr,
       typename std::enable_if<is_same<T, TNeuronSoPtr>::value>::type* p = 0) {
     neuron_ptr_ = soptr;
   }
 
   template <typename T>
-  NeuronNeuriteAdapter(
+  NeuronNeuriteAdapter(  // NOLINT
       T&& soptr,
       typename std::enable_if<is_same<T, TNeuriteSoPtr>::value>::type* p = 0) {
     neurite_ptr_ = soptr;
@@ -85,7 +90,7 @@ class NeuronNeuriteAdapter {
   bool IsNeuron() const { return neuron_ptr_ != nullptr; }
   bool IsNeurite() const { return neurite_ptr_ != nullptr; }
 
-  // TODO LB reference?
+  // TODO(neurites) LB reference?
   Self GetMother() {
     assert(IsNeurite() && "This function call is only allowed for a Neurite");
     return neurite_ptr_.Get().GetMother();
@@ -125,7 +130,7 @@ class NeuronNeuriteAdapter {
       neurite_ptr_.Get().UpdateRelative(old_rel, new_rel);
       return;
     }
-    // TODO improve
+    // TODO(neurites) improve
     auto old_neurite_soptr = old_rel.GetNeuriteSoPtr();
     auto new_neurite_soptr = new_rel.GetNeuriteSoPtr();
     assert(IsNeuron() && "Initialization error: neither neuron nor neurite");
@@ -210,8 +215,7 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
       const std::vector<std::unordered_map<uint32_t, uint32_t>>& update_info) {
     using Rm = std::remove_pointer_t<decltype(Rm())>;
 
-    constexpr int neurite_type_idx =
-        Rm::template GetTypeIndex<MostDerivedScalar>();
+    int neurite_type_idx = Rm::template GetTypeIndex<MostDerivedScalar>();
     const auto& neurite_updates = update_info[neurite_type_idx];
 
     this->UpdateReference(&daughter_right_[kIdx], neurite_updates);
@@ -220,7 +224,7 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
       this->UpdateReference(&(mother_[kIdx].GetNeuriteSoPtr()),
                             neurite_updates);
     } else if (mother_[kIdx].IsNeuron()) {
-      constexpr int neuron_type_idx = Rm::template GetTypeIndex<Neuron>();
+      const int neuron_type_idx = Rm::template GetTypeIndex<Neuron>();
       const auto& neuron_updates = update_info[neuron_type_idx];
       this->UpdateReference(&(mother_[kIdx].GetNeuronSoPtr()), neuron_updates);
     }
@@ -297,12 +301,12 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
     biology_modules_[kIdx] = bms;
   }
 
-  // TODO arrange in order end
+  // TODO(neurites) arrange in order end
 
-  // TODO should be generated
+  // TODO(neurites) should be generated
   double* GetPositionPtr() { return &(mass_location_[0][0]); }  // FIXME
   double* GetDiameterPtr() { return &(diameter_[0]); }
-  /// TODO generated end`
+  /// TODO(neurites) generated end`
 
   /// Retracts the neurite segment, if it is a terminal one.
   /// Branch retraction by moving the distal end toward the
@@ -388,7 +392,7 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
   MostDerivedSoPtr Branch(double new_branch_diameter,
                           const std::array<double, 3>& direction) {
     // create a new neurite element for side branch
-    double length = 1.0;  // TODO hard coded value
+    double length = 1.0;  // TODO(neurites) hard coded value
 
     // we first split this neurite segment into two pieces
     auto proximal_ns = InsertProximalCylinder().Get();
@@ -399,7 +403,7 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
 
     new_branch.SetDiameter(diameter_[kIdx]);
     new_branch.SetBranchOrder(branch_order_[kIdx] + 1);
-    // TODO : Caution : doesn't change the value distally on the main branch
+    // Caution : doesn't change the value distally on the main branch
 
     std::vector<BiologyModules> branch_biology_modules;
     BiologyModuleEventHandler(gNeuriteBifurcation, &branch_biology_modules);
@@ -525,7 +529,7 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
         Param::kNeuriteDefaultTension);
 
     // set local coordinate axis in the new branches
-    // TODO again?? alreay done a few lines up
+    // TODO(neurites) again?? alreay done a few lines up
     new_branch_l.UpdateLocalCoordinateAxis();
     new_branch_r.UpdateLocalCoordinateAxis();
 
@@ -552,7 +556,7 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
     return {new_branch_l.GetSoPtr(), new_branch_r.GetSoPtr()};
   }
 
-  // TODO documentation
+  // TODO(neurites) documentation
   std::array<MostDerivedSoPtr, 2> Bifurcate(
       const std::array<double, 3>& direction_1,
       const std::array<double, 3>& direction_2) {
@@ -563,7 +567,7 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
     return Bifurcate(l, d, d, direction_1, direction_2);
   }
 
-  // TODO documentation
+  // TODO(neurites) documentation
   std::array<MostDerivedSoPtr, 2> Bifurcate() {
     // initial default length :
     double l = Param::kNeuriteDefaultActualLength;
@@ -585,7 +589,7 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
   //      METHODS FOR NEURON TREE STRUCTURE *
   // ***************************************************************************
 
-  // TODO documentation
+  // TODO(neurites) documentation
   void RemoveDaughter(const MostDerivedSoPtr& daughter) {
     // If there is another daughter than the one we want to remove,
     // we have to be sure that it will be the daughterLeft->
@@ -602,7 +606,7 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
     Fatal("Neurite", "Given object is not a daughter!");
   }
 
-  // TODO add documentation
+  // TODO(neurites) add documentation
   void UpdateRelative(const NeuriteOrNeuron& old_relative,
                       const NeuriteOrNeuron& new_relative) {
     if (old_relative == mother_[kIdx]) {
@@ -666,7 +670,7 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
       mother_[kIdx].RemoveFromSimulation();
       // then we remove it
       RemoveProximalCylinder();
-      // TODO LB: what about ourselves??
+      // TODO(neurites) LB: what about ourselves??
     }
   }
 
@@ -722,8 +726,8 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
   /// @param speed cubic micron/ h
   void ChangeVolume(double speed) {
     // scaling for integration step
-    double dV = speed * Param::simulation_time_step_;
-    volume_[kIdx] += dV;
+    double delta = speed * Param::simulation_time_step_;
+    volume_[kIdx] += delta;
 
     if (volume_[kIdx] <
         5.2359877E-7) {  // minimum volume_, corresponds to minimal diameter_
@@ -736,8 +740,8 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
   /// @param speed micron/ h
   void ChangeDiameter(double speed) {
     // scaling for integration step
-    double dD = speed * Param::simulation_time_step_;
-    diameter_[kIdx] += dD;
+    double delta = speed * Param::simulation_time_step_;
+    diameter_[kIdx] += delta;
     UpdateVolume();
   }
 
@@ -745,7 +749,7 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
   //   Physics
   // ***************************************************************************
 
-  // TODO documentation
+  // TODO(neurites) documentation
   template <typename TGrid>
   std::array<double, 3> CalculateDisplacement(TGrid * grid,
                                               double squared_radius) {
@@ -826,7 +830,8 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
       std::array<double, 4> force_from_neighbor =
           force.GetForce(this, &neighbor);
 
-      if (std::abs(force_from_neighbor[3]) < 1E-10) {  // TODO hard coded value
+      if (std::abs(force_from_neighbor[3]) <
+          1E-10) {  // TODO(neurites) hard coded value
         // (if all the force is transmitted to the (distal end) point mass)
         force_on_my_point_mass[0] += force_from_neighbor[0];
         force_on_my_point_mass[1] += force_from_neighbor[1];
@@ -855,7 +860,7 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
     bool anti_kink = false;
     // TEST : anti-kink
     if (anti_kink) {
-      double KK = 5;
+      double kk = 5;
       if (daughter_left_[kIdx] != nullptr && daughter_right_[kIdx] == nullptr) {
         if (daughter_left_[kIdx].Get().GetDaughterLeft() != nullptr) {
           auto downstream = daughter_left_[kIdx].Get().GetDaughterLeft().Get();
@@ -867,13 +872,13 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
 
           force_on_my_point_mass =
               Math::Add(force_on_my_point_mass,
-                        Math::ScalarMult(KK * (rresting - aactual),
+                        Math::ScalarMult(kk * (rresting - aactual),
                                          Math::Normalize(down_to_me)));
         }
       }
 
       if (daughter_left_[kIdx] != nullptr && mother_[kIdx].IsNeurite()) {
-        // TODO rename mother_cyl
+        // TODO(neurites) rename mother_cyl
         auto mother_cyl = mother_[kIdx].GetNeuriteSoPtr().Get();
         double rresting = GetRestingLength() + mother_cyl.GetRestingLength();
         auto down_to_me =
@@ -882,7 +887,7 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
 
         force_on_my_point_mass =
             Math::Add(force_on_my_point_mass,
-                      Math::ScalarMult(KK * (rresting - aactual),
+                      Math::ScalarMult(kk * (rresting - aactual),
                                        Math::Normalize(down_to_me)));
       }
     }
@@ -915,7 +920,7 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
     return displacement;
   }
 
-  // TODO documentation
+  // TODO(neurites) documentation
   void ApplyDisplacement(const std::array<double, 3>& displacement) {
     // move of our mass
     SetMassLocation(Math::Add(GetMassLocation(), displacement));
@@ -955,7 +960,7 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
     x_axis_[kIdx] = Math::Normalize(spring_axis_[kIdx]);
     z_axis_[kIdx] = Math::CrossProduct(x_axis_[kIdx], y_axis_[kIdx]);
     double norm_of_z = Math::Norm(z_axis_[kIdx]);
-    if (norm_of_z < 1E-10) {  // TODO use parameter
+    if (norm_of_z < 1E-10) {  // TODO(neurites) use parameter
       // If new x_axis_ and old y_axis_ are aligned, we cannot use this scheme;
       // we start by re-defining new perp vectors. Ok, we loose the previous
       // info, but this should almost never happen....
@@ -1213,7 +1218,6 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
     UpdateVolume();
   }
 
-  // TODO
   friend std::ostream& operator<<(std::ostream& str, const Self<Backend>& n) {
     auto pos = n.GetPosition();
     str << "MassLocation:     " << n.mass_location_[n.kIdx][0] << ", "
@@ -1250,7 +1254,7 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
 
  protected:
   void Copy(const MostDerived<Backend>& rhs) {
-    // TODO adherence
+    // TODO(neurites) adherence
     adherence_[kIdx] = rhs.GetAdherence();
     //  density_
     SetDiameter(rhs.GetDiameter());  // also updates voluume
@@ -1261,7 +1265,7 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
     spring_axis_[kIdx] = rhs.GetSpringAxis();
     branch_order_[kIdx] = rhs.GetBranchOrder();
     spring_constant_[kIdx] = rhs.GetSpringConstant();
-    // TODO what about actual length, tension and resting_length_ ??
+    // TODO(neurites) what about actual length, tension and resting_length_ ??
   }
 
   /// collection of biology modules which define the internal behavior
@@ -1284,8 +1288,9 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
       visit(visitor, module);
     }
 
-    if (skip_removal)
+    if (skip_removal) {
       return;
+    }
 
     RemoveVisitor remove_visitor(event);
     for (auto it = biology_modules_[kIdx].begin();
@@ -1356,7 +1361,7 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
   vec<double> resting_length_ = {spring_constant_[kIdx] * actual_length_[kIdx] /
                                  (tension_[kIdx] + spring_constant_[kIdx])};
 
-  // TODO rename
+  // TODO(neurites) rename
   /// Divides the neurite segment into two neurite segment of equal length.
   /// The one in which the method is called becomes the distal half.
   /// A new neurite segment is instantiated and becomes the proximal part. All
@@ -1366,7 +1371,7 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
     return InsertProximalCylinder(0.5);
   }
 
-  // TODO rename function
+  // TODO(neurites) rename function
   /// Divides the neurite segment into two neurite segment (in fact, into two
   /// instances of the derived class).
   /// The one in which the method is called becomes the distal half, and it's
@@ -1378,7 +1383,7 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
   MostDerivedSoPtr InsertProximalCylinder(double distal_portion) {
     auto new_neurite_element = Rm()->template New<MostDerivedScalar>();
 
-    // TODO reformulate to mass_location_
+    // TODO(neurites) reformulate to mass_location_
     auto new_position =
         Math::Subtract(mass_location_[kIdx],
                        Math::ScalarMult(distal_portion, spring_axis_[kIdx]));
@@ -1404,7 +1409,7 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
     new_neurite_element.UpdateLocalCoordinateAxis();
 
     std::vector<BiologyModules> new_biology_modules;
-    // TODO what about gNeuriteSideCylinderExtension ??
+    // TODO(neurites) what about gNeuriteSideCylinderExtension ??
     BiologyModuleEventHandler(gNeuriteElongation, &new_biology_modules);
     new_neurite_element.SetBiologyModules(std::move(new_biology_modules));
 
@@ -1412,7 +1417,7 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
     return new_neurite_element.GetSoPtr();
   }
 
-  // TODO rename function
+  // TODO(neurites) rename function
   /// Merges two neurite elements together. The one in which the method is
   /// called phagocytes it's mother.
   void RemoveProximalCylinder() {
@@ -1423,7 +1428,7 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
       return;
     }
     // The guy we gonna remove
-    // TODO rename to neurite (no cylinder)
+    // TODO(neurites) rename to neurite (no cylinder)
     auto proximal_cylinder = mother_[kIdx].GetNeuriteSoPtr().Get();
 
     // Re-organisation of the PhysicalObject tree structure: by-passing
@@ -1450,7 +1455,7 @@ BDM_SIM_OBJECT(Neurite, bdm::SimulationObject) {
     proximal_cylinder.RemoveFromSimulation();
   }
 
-  // TODO rename function
+  // TODO(neurites) rename function
   MostDerivedSoPtr ExtendSideCylinder(double length,
                                       const std::array<double, 3>& direction) {
     auto new_branch = Rm()->template New<MostDerivedScalar>();

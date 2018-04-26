@@ -1,5 +1,5 @@
-#ifndef INTEGRATION_FIGURE_5_
-#define INTEGRATION_FIGURE_5_
+#ifndef DEMO_FIGURE_5_H_
+#define DEMO_FIGURE_5_H_
 
 #include <unistd.h>
 #include "biodynamo.h"
@@ -18,14 +18,14 @@ struct CompileTimeParam
   using AtomicTypes = VariadicTypedef<Cell, Neuron, Neurite>;
 };
 
-// TODO move to math_util
+// TODO(neurites) move to math_util
 inline double DegreesToRadians(double degrees) {
   return degrees / 180 * Math::kPi;
 }
 
 inline int Simulate(int argc, const char** argv) {
   InitializeBioDynamo(argc, argv);
-  gErrorIgnoreLevel = kWarning;  // TODO make command line argument
+  gErrorIgnoreLevel = kWarning;  // TODO(neurites) make command line argument
 
   // hard code parameters to avoid parameter file
   Param::export_visualization_ = true;
@@ -41,7 +41,7 @@ inline int Simulate(int argc, const char** argv) {
   neuron.SetPosition({0, 0, -100});
   neuron.SetMass(1);
   neuron.SetDiameter(10);
-  // TODO neuron set color to solid red
+  // TODO(neurites) neuron set color to solid red
 
   //    creating a single neurite
   // auto ne = neuron.ExtendNewNeurite(2.0, 0, 0).Get();
@@ -66,19 +66,19 @@ inline int Simulate(int argc, const char** argv) {
   cell_b.SetPosition({10, 0, 0});
   cell_b.SetMass(3);
   cell_b.SetDiameter(10);
-  // TODO cell_b->SetColor(Param::kYellowSolid);
+  // TODO(neurites) cell_b->SetColor(Param::kYellowSolid);
 
   auto cell_c = Rm()->New<Cell>();
   cell_c.SetPosition({-10, 0, 100});
   cell_c.SetMass(3);
   cell_c.SetDiameter(10);
-  // TODO cell_c->SetColor(Param::kYellowSolid);
+  // TODO(neurites) cell_c->SetColor(Param::kYellowSolid);
 
   auto cell_d = Rm()->New<Cell>();
   cell_d.SetPosition({10, 0, 160});
   cell_d.SetMass(2);
   cell_d.SetDiameter(10);
-  // TODO cell_d->SetColor(Param::kYellowSolid);
+  // TODO(neurites) cell_d->SetColor(Param::kYellowSolid);
 
   // 4) setting a large diameter OR letting them grow
   for (int i = 0; i < 15; i++) {
@@ -96,4 +96,4 @@ inline int Simulate(int argc, const char** argv) {
 
 }  // namespace bdm
 
-#endif  // INTEGRATION_FIGURE_5_
+#endif  // DEMO_FIGURE_5_H_

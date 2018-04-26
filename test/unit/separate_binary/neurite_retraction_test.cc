@@ -57,7 +57,7 @@ TEST(DISABLED_NeuriteBehaviour, StraightxCylinderGrowthRetract) {
   }
 
   std::cout << "\n---- start retraction" << std::endl;
-  double myNeuriteLength = ne.GetLength();
+  double neurite_length = ne.GetLength();
 
   for (int j = 0; j < 10000; j++) {
     ne.RetractTerminalEnd(10);
@@ -70,12 +70,12 @@ TEST(DISABLED_NeuriteBehaviour, StraightxCylinderGrowthRetract) {
       EXPECT_NEAR(neAxis[1], 0, abs_error<double>::value);
       EXPECT_NEAR(neAxis[2], 0, abs_error<double>::value);
     }
-    myNeuriteLength = ne.GetLength();
-    std::cout << "neurite length: " << myNeuriteLength << std::endl;
+    neurite_length = ne.GetLength();
+    std::cout << "neurite length: " << neurite_length << std::endl;
   }
 
-  myNeuriteLength = ne.GetLength();
-  std::cout << "final neurite length: " << myNeuriteLength << std::endl;
+  neurite_length = ne.GetLength();
+  std::cout << "final neurite length: " << neurite_length << std::endl;
 }
 
 // TODO(jean) fix test
@@ -87,8 +87,8 @@ TEST(DISABLED_NeuriteBehaviour, BranchingGrowth) {
   // Param::live_visualization_ = true;
   // Param::export_visualization_ = true;
 
-  double diamReducSpeed = 0.001;
-  double branchingFactor = 0.005;
+  double diam_reduc_speed = 0.001;
+  double branching_factor = 0.005;
 
   auto neuron = Rm()->New<Neuron>();
   neuron.SetPosition({0, 0, 0});
@@ -107,11 +107,11 @@ TEST(DISABLED_NeuriteBehaviour, BranchingGrowth) {
 
   for (int i = 0; i < 200; i++) {
     auto my_neurites = Rm()->template Get<Neurite>();
-    int nbOfNeurites = my_neurites->size();
+    int num_neurites = my_neurites->size();
 
-    for (int neuriteNb = 0; neuriteNb < nbOfNeurites;
-         neuriteNb++) {  // for each neurite in simulation
-      auto ne = (*my_neurites)[neuriteNb];
+    for (int neurite_nb = 0; neurite_nb < num_neurites;
+         neurite_nb++) {  // for each neurite in simulation
+      auto ne = (*my_neurites)[neurite_nb];
 
       if (ne.IsTerminal() && ne.GetDiameter() > 0.5) {
         previous_direction = ne.GetSpringAxis();
@@ -122,10 +122,10 @@ TEST(DISABLED_NeuriteBehaviour, BranchingGrowth) {
             Math::Add(previous_direction, direction);
 
         ne.ElongateTerminalEnd(10, step_direction);
-        //          ne.SetDiameter(ne.GetDiameter()-diamReducSpeed);
+        //          ne.SetDiameter(ne.GetDiameter()-diam_reduc_speed);
         ne.SetDiameter(1);
 
-        if (gTRandom.Uniform(0, 1) < branchingFactor * ne.GetDiameter()) {
+        if (gTRandom.Uniform(0, 1) < branching_factor * ne.GetDiameter()) {
           ne.Bifurcate();
         }
         //            ne.RunDiscretization();

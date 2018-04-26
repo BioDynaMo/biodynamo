@@ -1,13 +1,13 @@
-#ifndef UNIT_SEPARATE_BINARY_SO_POINTER_TEST_H_
-#define UNIT_SEPARATE_BINARY_SO_POINTER_TEST_H_
+#ifndef UNIT_SEPARATE_BINARY_SO_POINTER_AOS_TEST_H_
+#define UNIT_SEPARATE_BINARY_SO_POINTER_AOS_TEST_H_
+
+#include <gtest/gtest.h>
 
 #include "compile_time_param.h"
 #include "simulation_backup.h"
 #include "simulation_object.h"
 #include "so_pointer.h"
 #include "unit/io_test.h"
-
-#include <gtest/gtest.h>
 
 namespace bdm {
 namespace so_pointer_aos_test_internal {
@@ -95,4 +95,4 @@ inline void IOTestSoPointerRmContainerAos() {
 
 }  // namespace bdm
 
-#endif  // UNIT_SEPARATE_BINARY_SO_POINTER_TEST_H_
+#endif  // UNIT_SEPARATE_BINARY_SO_POINTER_AOS_TEST_H_

@@ -155,7 +155,7 @@ struct CopyVisitor {
 /// simulation object after an event.
 struct RemoveVisitor {
   /// @param event that lead to the remove operation - e.g. cell division:
-  RemoveVisitor(BmEvent event) : kEvent(event) {}
+  explicit RemoveVisitor(BmEvent event) : kEvent(event) {}
 
   template <typename T>
   void operator()(const T& from) {

@@ -132,7 +132,7 @@ struct ReadContainerFunctor {
             typename TRm = ResourceManager<>>
   typename std::enable_if<
       std::is_same<TTBackend, typename TRm::Backend>::value>::type
-  operator()(TBuffer& R__b, TContainer** container, uint64_t) {
+  operator()(TBuffer& R__b, TContainer** container, uint64_t) {  // NOLINT
     int state;
     R__b >> state;
     if (state == ContainerPointerState::kPointIntoRm) {
@@ -153,7 +153,7 @@ struct ReadContainerFunctor {
   /// Backends not matching, `SoPointer<..>::container is certainly not pointing
   /// into `ResourceManager<>`
   template <typename TContainer>
-  void operator()(TBuffer& R__b, TContainer** container, ...) {
+  void operator()(TBuffer& R__b, TContainer** container, ...) {  // NOLINT
     int state;
     R__b >> state;
     if (state == ContainerPointerState::kSeparate) {
@@ -176,7 +176,7 @@ struct WriteContainerFunctor {
             typename TRm = ResourceManager<>>
   typename std::enable_if<
       std::is_same<TTBackend, typename TRm::Backend>::value>::type
-  operator()(TBuffer& R__b, const TContainer* container, uint64_t) {
+  operator()(TBuffer& R__b, const TContainer* container, uint64_t) {  // NOLINT
     if (container == nullptr) {
       // write nullptr
       R__b << ContainerPointerState::kNullPtr;
@@ -198,7 +198,7 @@ struct WriteContainerFunctor {
   /// Backends not matching, `SoPointer<..>::container is certainly not pointing
   /// into `ResourceManager<>`
   template <typename TContainer>
-  void operator()(TBuffer& R__b, const TContainer* container, ...) {
+  void operator()(TBuffer& R__b, const TContainer* container, ...) {  // NOLINT
     if (container != nullptr) {
       R__b << ContainerPointerState::kSeparate;
       R__b << container;

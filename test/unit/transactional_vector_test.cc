@@ -12,7 +12,7 @@ BDM_SIM_OBJECT(TestObject, bdm::SimulationObject) {
   BDM_SIM_OBJECT_HEADER(TestObjectExt, 1, id_);
 
  public:
-  TestObjectExt(int id) { id_[kIdx] = id; }
+  TestObjectExt(int id) { id_[kIdx] = id; }  // NOLINT
   int GetId() { return id_[kIdx]; }
 
   bool operator<(const Self<Backend>& other) const {

@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <unordered_map>
+#include <vector>
 #include "cell.h"
 #include "resource_manager.h"
 #include "simulation_object_util.h"
@@ -21,7 +22,7 @@ BDM_SIM_OBJECT(Neuron, bdm::Cell) {
 
   NeuronExt() {}
 
-  NeuronExt(const std::array<double, 3>& position) : Base(position) {}
+  explicit NeuronExt(const std::array<double, 3>& position) : Base(position) {}
 
   /// Update references of simulation objects that changed its memory position.
   /// @param update_info vector index = type_id, map stores (old_index ->
@@ -30,7 +31,7 @@ BDM_SIM_OBJECT(Neuron, bdm::Cell) {
       const std::vector<std::unordered_map<uint32_t, uint32_t>>& update_info) {
     // Neuron only stores Neurites
     using Rm = std::remove_pointer_t<decltype(Rm())>;
-    constexpr int neurite_type_idx = Rm::template GetTypeIndex<Neurite>();
+    const int neurite_type_idx = Rm::template GetTypeIndex<Neurite>();
     const auto& neurite_updates = update_info[neurite_type_idx];
     for (auto& daugther : daughters_[kIdx]) {
       // `this` required, because declaration in dependent base are not found
@@ -59,7 +60,7 @@ BDM_SIM_OBJECT(Neuron, bdm::Cell) {
   /// @param theta the angle from the x-axis around the z-axis
   /// @return SoPointer of new neurite
   NeuriteSoPtr ExtendNewNeurite(double diameter, double phi, double theta) {
-    // TODO should this take immediate effect? or delayed + commit?
+    // TODO(neurites) should this take immediate effect? or delayed + commit?
     auto neurite = Rm()->template New<Neurite>();
 
     std::vector<typename Base::BiologyModules> neurite_bms;
