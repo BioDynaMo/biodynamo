@@ -7,6 +7,7 @@ set(BDM_VERSION 0.1.0)
 
 # Options. Turn on with 'cmake -Dmyvarname=ON'.
 option(test "Build all tests." ON) # Makes boolean 'test' available.
+option(demo "Build all demos." ON)
 if(APPLE)
    # valgrind currently broken on macOS 10.12
    option(valgrind "Enable valgrind tests and make build compatible with valgrind tool." OFF)
@@ -270,26 +271,28 @@ add_custom_target(snap-package
   WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
   COMMENT "Build snap package")
 
-# -------------------- build cell_division_module executable -------------------
-bdm_add_executable(cell_division_module
-                   SOURCES demo/cell_division_module.cc
-                   HEADERS demo/cell_division_module.h
-                   LIBRARIES biodynamo)
+if(demo)
+  # -------------------- build cell_division_module executable -----------------
+  bdm_add_executable(cell_division_module
+                     SOURCES demo/cell_division_module.cc
+                     HEADERS demo/cell_division_module.h
+                     LIBRARIES biodynamo)
 
-# -------------------- build cell_diffusion_module executable ------------------
-bdm_add_executable(diffusion_module
-                   SOURCES demo/diffusion_module.cc
-                   HEADERS demo/diffusion_module.h
-                   LIBRARIES biodynamo)
+  # -------------------- build cell_diffusion_module executable ----------------
+  bdm_add_executable(diffusion_module
+                     SOURCES demo/diffusion_module.cc
+                     HEADERS demo/diffusion_module.h
+                     LIBRARIES biodynamo)
 
-# --------------------- build gene_regulation executable ------------------
-bdm_add_executable(gene_regulation
-                   SOURCES demo/gene_regulation.cc 
-                   HEADERS demo/gene_regulation.h
-                   LIBRARIES biodynamo)
+  # --------------------- build gene_regulation executable ---------------------
+  bdm_add_executable(gene_regulation
+                     SOURCES demo/gene_regulation.cc
+                     HEADERS demo/gene_regulation.h
+                     LIBRARIES biodynamo)
 
-# -------------------- build cell_diffusion_module executable ------------------
-bdm_add_executable(figure5
-                   SOURCES demo/figure_5.cc
-                   HEADERS demo/figure_5.h
-                   LIBRARIES biodynamo)
+  # -------------------- build cell_diffusion_module executable ----------------
+  bdm_add_executable(figure5
+                     SOURCES demo/figure_5.cc
+                     HEADERS demo/figure_5.h
+                     LIBRARIES biodynamo)
+endif()
