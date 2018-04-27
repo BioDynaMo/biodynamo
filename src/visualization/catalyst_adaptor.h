@@ -237,10 +237,6 @@ class CatalystAdaptor {
       pipeline_ = new InSituPipeline();
       g_processor_->AddPipeline(pipeline_);
     }
-
-    if (Param::export_visualization_) {
-      GenerateParaviewState();
-    }
   }
 
   /// Cleans up allocated memory
@@ -384,7 +380,6 @@ class CatalystAdaptor {
     data_description->SetTimeData(time, step);
 
     CreateVtkObjects(data_description);
-
     if (!sim_info_json_generated_) {
       GenerateSimulationInfoJson(shapes_);
       sim_info_json_generated_ = true;
@@ -501,7 +496,8 @@ class CatalystAdaptor {
     int ret_code = system(python_cmd.str().c_str());
     if (ret_code) {
       Log::Fatal("CatalystAdaptor::GenerateParaviewState",
-                 "Error during generation of ParaView state");
+                 "Error during generation of ParaView state\n",
+                 "Command\n", python_cmd.str());
     }
   }
 };
