@@ -349,7 +349,7 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
                mother_[kIdx].GetDaughterRight() == nullptr) {
       // if actual_length_ < length and mother is a neurite element with no
       // other daughter : merge with mother
-      RemoveProximalCylinder();  // also updates volume_...
+      RemoveProximalNeuriteElement();  // also updates volume_...
       RetractTerminalEnd(speed / Param::simulation_time_step_);
     } else {
       // if mother is neurite element with other daughter or is not a neurite
@@ -394,10 +394,10 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
     double length = 1.0;  // TODO(neurites) hard coded value
 
     // we first split this neurite element into two pieces
-    auto proximal_ns = InsertProximalCylinder().Get();
+    auto proximal_ns = InsertProximalNeuriteElement().Get();
 
     // then append a "daughter right" between the two
-    auto new_branch_soptr = proximal_ns.ExtendSideCylinder(length, direction);
+    auto new_branch_soptr = proximal_ns.ExtendSideNeuriteElement(length, direction);
     auto new_branch = new_branch_soptr.Get();
 
     new_branch.SetDiameter(diameter_[kIdx]);
@@ -482,7 +482,6 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
     }
     auto new_branch_l = Rm()->template New<MostDerivedScalar>();
     auto new_branch_r = Rm()->template New<MostDerivedScalar>();
-    // create the cylinders
     new_branch_l.Copy(*static_cast<MostDerived<Backend>*>(this));
     new_branch_r.Copy(*static_cast<MostDerived<Backend>*>(this));
     // set family relations
@@ -652,11 +651,11 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
   void RunDiscretization() {
     if (actual_length_[kIdx] > Param::kNeuriteMaxLength) {
       if (daughter_left_[kIdx] == nullptr) {  // if terminal branch :
-        InsertProximalCylinder(0.1);
+        InsertProximalNeuriteElement(0.1);
       } else if (mother_[kIdx].IsNeuronSoma()) {  // if initial branch :
-        InsertProximalCylinder(0.9);
+        InsertProximalNeuriteElement(0.9);
       } else {
-        InsertProximalCylinder(0.5);
+        InsertProximalNeuriteElement(0.5);
       }
     } else if (actual_length_[kIdx] < Param::kNeuriteMinLength &&
                mother_[kIdx].IsNeuriteElement() &&
@@ -668,7 +667,7 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
       // NeuriteElement
       mother_[kIdx].RemoveFromSimulation();
       // then we remove it
-      RemoveProximalCylinder();
+      RemoveProximalNeuriteElement();
       // TODO(neurites) LB: what about ourselves??
     }
   }
@@ -877,11 +876,10 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
       }
 
       if (daughter_left_[kIdx] != nullptr && mother_[kIdx].IsNeuriteElement()) {
-        // TODO(neurites) rename mother_cyl
-        auto mother_cyl = mother_[kIdx].GetNeuriteElementSoPtr().Get();
-        double rresting = GetRestingLength() + mother_cyl.GetRestingLength();
+        auto mother = mother_[kIdx].GetNeuriteElementSoPtr().Get();
+        double rresting = GetRestingLength() + mother.GetRestingLength();
         auto down_to_me =
-            Math::Subtract(GetMassLocation(), mother_cyl.ProximalEnd());
+            Math::Subtract(GetMassLocation(), mother.ProximalEnd());
         double aactual = Math::Norm(down_to_me);
 
         force_on_my_point_mass =
@@ -1360,17 +1358,15 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
   vec<double> resting_length_ = {spring_constant_[kIdx] * actual_length_[kIdx] /
                                  (tension_[kIdx] + spring_constant_[kIdx])};
 
-  // TODO(neurites) rename
   /// Divides the neurite element into two neurite element of equal length.
   /// The one in which the method is called becomes the distal half.
   /// A new neurite element is instantiated and becomes the proximal part. All
   /// characteristics are transmitted.
   /// @return SoPointer of new neurite element
-  MostDerivedSoPtr InsertProximalCylinder() {
-    return InsertProximalCylinder(0.5);
+  MostDerivedSoPtr InsertProximalNeuriteElement() {
+    return InsertProximalNeuriteElement(0.5);
   }
 
-  // TODO(neurites) rename function
   /// Divides the neurite element into two neurite element (in fact, into two
   /// instances of the derived class).
   /// The one in which the method is called becomes the distal half, and it's
@@ -1379,7 +1375,7 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
   /// mother). All characteristics are transmitted
   /// @param distal_portion the fraction of the total old length devoted to the
   /// distal half (should be between 0 and 1).
-  MostDerivedSoPtr InsertProximalCylinder(double distal_portion) {
+  MostDerivedSoPtr InsertProximalNeuriteElement(double distal_portion) {
     auto new_neurite_element = Rm()->template New<MostDerivedScalar>();
 
     // TODO(neurites) reformulate to mass_location_
@@ -1416,10 +1412,9 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
     return new_neurite_element.GetSoPtr();
   }
 
-  // TODO(neurites) rename function
   /// Merges two neurite elements together. The one in which the method is
   /// called phagocytes it's mother.
-  void RemoveProximalCylinder() {
+  void RemoveProximalNeuriteElement() {
     // The mother is removed if (a) it is a neurite element and (b) it has no
     // other daughter than
     if (!mother_[kIdx].IsNeuriteElement() ||
@@ -1427,12 +1422,11 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
       return;
     }
     // The guy we gonna remove
-    // TODO(neurites) rename to neurite (no cylinder)
-    auto proximal_cylinder = mother_[kIdx].GetNeuriteElementSoPtr().Get();
+    auto proximal_ne = mother_[kIdx].GetNeuriteElementSoPtr().Get();
 
     // Re-organisation of the PhysicalObject tree structure: by-passing
     // proximalCylinder
-    proximal_cylinder.GetMother().UpdateRelative(mother_[kIdx],
+    proximal_ne.GetMother().UpdateRelative(mother_[kIdx],
                                                  NeuriteOrNeuron(GetSoPtr()));
     SetMother(mother_[kIdx].GetMother());
 
@@ -1451,11 +1445,10 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
     // and local coord
     UpdateLocalCoordinateAxis();
 
-    proximal_cylinder.RemoveFromSimulation();
+    proximal_ne.RemoveFromSimulation();
   }
 
-  // TODO(neurites) rename function
-  MostDerivedSoPtr ExtendSideCylinder(double length,
+  MostDerivedSoPtr ExtendSideNeuriteElement(double length,
                                       const std::array<double, 3>& direction) {
     auto new_branch = Rm()->template New<MostDerivedScalar>();
     new_branch.Copy(*static_cast<MostDerived<Backend>*>(this));
