@@ -35,8 +35,6 @@ TEST(MechanicalInteraction, StraightxCylinderGrowth) {
 
   auto ne = neuron.ExtendNewNeurite({1, 0, 0}).Get();
 
-  auto& grid = Grid<>::GetInstance();
-  grid.Initialize();
   Scheduler<> scheduler;
 
   std::array<double, 3> ne_axis = ne.GetSpringAxis();
@@ -70,8 +68,6 @@ TEST(MechanicalInteraction, StraightyCylinderGrowth) {
 
   auto ne = neuron.ExtendNewNeurite({0, 1, 0}).Get();
 
-  auto& grid = Grid<>::GetInstance();
-  grid.Initialize();
   Scheduler<> scheduler;
 
   std::array<double, 3> ne_axis = ne.GetSpringAxis();
@@ -105,8 +101,6 @@ TEST(MechanicalInteraction, StraightzCylinderGrowth) {
 
   auto ne = neuron.ExtendNewNeurite({0, 0, 1}).Get();
 
-  auto& grid = Grid<>::GetInstance();
-  grid.Initialize();
   Scheduler<> scheduler;
 
   std::array<double, 3> ne_axis = ne.GetSpringAxis();
@@ -140,8 +134,6 @@ TEST(MechanicalInteraction, DiagonalxyCylinderGrowth) {
 
   auto ne = neuron.ExtendNewNeurite({1, 1, 0}).Get();
 
-  auto& grid = Grid<>::GetInstance();
-  grid.Initialize();
   Scheduler<> scheduler;
 
   std::array<double, 3> ne_axis = ne.GetSpringAxis();
@@ -175,8 +167,6 @@ TEST(MechanicalInteraction, DiagonalxyzCylinderGrowth) {
 
   auto ne = neuron.ExtendNewNeurite({1, 1, 1}).Get();
 
-  auto& grid = Grid<>::GetInstance();
-  grid.Initialize();
   Scheduler<> scheduler;
 
   std::array<double, 3> ne_axis = ne.GetSpringAxis();
@@ -216,8 +206,6 @@ TEST(MechanicalInteraction, DiagonalSpecialDirectionCylinderGrowth) {
   //    DegreesToRadians(63.4349)).Get();
   auto ne = neuron.ExtendNewNeurite({1, 1, 1}).Get();
 
-  auto& grid = Grid<>::GetInstance();
-  grid.Initialize();
   Scheduler<> scheduler;
 
   std::array<double, 3> ne_axis = ne.GetSpringAxis();
@@ -256,8 +244,6 @@ TEST(MechanicalInteraction, StraightCylinderGrowthObstacle) {
 
   auto ne = neuron.ExtendNewNeurite({0, 0, 1}).Get();
 
-  auto& grid = Grid<>::GetInstance();
-  grid.Initialize();
   Scheduler<> scheduler;
 
   std::array<double, 3> ne_axis = ne.GetSpringAxis();
@@ -297,8 +283,6 @@ TEST(DISABLED_MechanicalInteraction, NotStraightCylinderGrowthObstacle) {
 
   auto ne = neuron.ExtendNewNeurite({0, 0, 1}).Get();
 
-  auto& grid = Grid<>::GetInstance();
-  grid.Initialize();
   Scheduler<> scheduler;
 
   std::array<double, 3> ne_axis = ne.GetSpringAxis();
@@ -331,8 +315,6 @@ TEST(MechanicalInteraction, DoubleStraightCylinderGrowth) {
   auto ne = neuron.ExtendNewNeurite({0, 1, 0}).Get();
   auto ne2 = neuron.ExtendNewNeurite({1, 0, 0}).Get();
 
-  auto& grid = Grid<>::GetInstance();
-  grid.Initialize();
   Scheduler<> scheduler;
 
   std::array<double, 3> ne_axis = ne.GetSpringAxis();
@@ -383,8 +365,6 @@ TEST(MechanicalInteraction, BifurcationCylinderGrowth) {
 
   auto ne = neuron.ExtendNewNeurite({0, 0, 1}).Get();
 
-  auto& grid = Grid<>::GetInstance();
-  grid.Initialize();
   Scheduler<> scheduler;
 
   std::array<double, 3> ne_axis = ne.GetSpringAxis();
@@ -443,8 +423,6 @@ TEST(MechanicalInteraction, BranchCylinderGrowth) {
 
   auto ne = neuron.ExtendNewNeurite({0, 0, 1}).Get();
 
-  auto& grid = Grid<>::GetInstance();
-  grid.Initialize();
   Scheduler<> scheduler;
 
   std::array<double, 3> ne_axis = ne.GetSpringAxis();

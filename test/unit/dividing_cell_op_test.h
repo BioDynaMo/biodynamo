@@ -19,8 +19,8 @@ void RunTest() {
   // TODO(lukas) remove after https://trello.com/c/sKoOTgJM has been resolved
   omp_set_num_threads(1);  // and Rm::New<...> uses delayed push back
   cells->reserve(10);
-  rm->template New<Cell>(41.0);
-  rm->template New<Cell>(19.0);
+  cells->push_back(Cell(41.0));
+  cells->push_back(Cell(19.0));
 
   EXPECT_EQ(2u, cells->size());
 
@@ -28,6 +28,8 @@ void RunTest() {
 
   DividingCellOp op;
   op(cells, 0);
+
+  cells->Commit();
 
   ASSERT_EQ(3u, cells->size());
   EXPECT_NEAR(19.005288996600001, (*cells)[1].GetDiameter(),

@@ -30,7 +30,7 @@ void RunTest() {
   cell2.SetMass(1.1);
   cell2.SetPosition({0, 5, 0});
 
-  std::cout << cells->size() << std::endl;
+  rm->template Get<Cell>()->Commit();
 
   auto& grid = Grid<>::GetInstance();
   grid.Initialize();

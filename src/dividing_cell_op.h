@@ -24,7 +24,6 @@ class DividingCellOp {
         cell.Divide();
       }
     }
-    cells->Commit();
   }
 };
 

@@ -287,9 +287,8 @@ class ResourceManager {
 
   /// Remove elements from each type
   void Clear() {
-    ApplyOnAllTypes([](auto* container, uint16_t type_idx) {
-      container->clear();
-    });
+    ApplyOnAllTypes(
+        [](auto* container, uint16_t type_idx) { container->clear(); });
   }
 
   template <typename TSo>
@@ -313,8 +312,9 @@ class ResourceManager {
                           typename TScalarSo::template Self<SoaRef>>::type
   New(Args... args) {
     auto container = Get<TScalarSo>();
-    container->push_back(TScalarSo(std::forward<Args>(args)...));
-    return (*container)[container->size() - 1];
+    auto idx =
+        container->DelayedPushBack(TScalarSo(std::forward<Args>(args)...));
+    return (*container)[idx];
   }
 
   template <typename TScalarSo, typename... Args, typename TBackend = Backend>
@@ -322,8 +322,9 @@ class ResourceManager {
                           TScalarSo&>::type
   New(Args... args) {
     auto container = Get<TScalarSo>();
-    container->push_back(TScalarSo(std::forward<Args>(args)...));
-    return (*container)[container->size() - 1];
+    auto idx =
+        container->DelayedPushBack(TScalarSo(std::forward<Args>(args)...));
+    return (*container)[idx];
   }
 
   /// Returns the number of simulation object types

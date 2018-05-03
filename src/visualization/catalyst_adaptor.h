@@ -496,8 +496,8 @@ class CatalystAdaptor {
     int ret_code = system(python_cmd.str().c_str());
     if (ret_code) {
       Log::Fatal("CatalystAdaptor::GenerateParaviewState",
-                 "Error during generation of ParaView state\n",
-                 "Command\n", python_cmd.str());
+                 "Error during generation of ParaView state\n", "Command\n",
+                 python_cmd.str());
     }
   }
 };

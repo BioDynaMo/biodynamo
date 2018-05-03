@@ -429,12 +429,12 @@ TEST(SimulationObjectUtilTest, ThisMD) {
 TEST(SimulationObjectUtilTest, GetSoPtr) {
   Rm()->Clear();
   for (uint64_t i = 0; i < 10; i++) {
-    Rm()->template New<Neuron>();
+    Rm()->New<Neuron>();
   }
-
+  Rm()->Get<Neuron>()->Commit();
   EXPECT_EQ(10u, Rm()->GetNumSimObjects());
 
-  auto neurons = Rm()->template Get<Neuron>();
+  auto neurons = Rm()->Get<Neuron>();
   for (uint64_t i = 0; i < 10; i++) {
     EXPECT_EQ(i, (*neurons)[i].GetSoPtr().GetElementIdx());
   }

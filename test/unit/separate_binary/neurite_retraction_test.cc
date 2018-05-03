@@ -107,7 +107,7 @@ TEST(DISABLED_NeuriteBehaviour, BranchingGrowth) {
   std::array<double, 3> direction;
 
   for (int i = 0; i < 200; i++) {
-    auto my_neurites = Rm()->template Get<Neurite>();
+    auto my_neurites = Rm()->Get<Neurite>();
     int num_neurites = my_neurites->size();
 
     for (int neurite_nb = 0; neurite_nb < num_neurites;

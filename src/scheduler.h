@@ -95,6 +95,8 @@ class Scheduler {
       total_steps_ = restore_point_;
     }
 
+    CommitChangesAndUpdateReferences();
+
     grid_->Initialize();
     if (Param::bound_space_) {
       auto rm = TResourceManager::Get();
@@ -170,17 +172,7 @@ class Scheduler {
     if (Param::run_mechanical_interactions_) {
       rm->ApplyOnAllTypes(physics_);  // Bounding box applied at the end
     }
-    rm->ApplyOnAllTypesParallel(commit_);
-
-    const auto& update_info = commit_->GetUpdateInfo();
-    auto update_references = [&update_info](auto* sim_objects,
-                                            uint16_t type_idx) {
-#pragma omp parallel for
-      for (uint64_t i = 0; i < sim_objects->size(); i++) {
-        (*sim_objects)[i].UpdateReferences(update_info);
-      }
-    };
-    rm->ApplyOnAllTypes(update_references);
+    CommitChangesAndUpdateReferences();
   }
 
  private:
@@ -197,6 +189,21 @@ class Scheduler {
   OpTimer<BoundSpace> bound_space_ = OpTimer<BoundSpace>("bound_space");
 
   TGrid* grid_;
+
+  void CommitChangesAndUpdateReferences() {
+    auto* rm = TResourceManager::Get();
+    rm->ApplyOnAllTypesParallel(commit_);
+
+    const auto& update_info = commit_->GetUpdateInfo();
+    auto update_references = [&update_info](auto* sim_objects,
+                                            uint16_t type_idx) {
+#pragma omp parallel for
+      for (uint64_t i = 0; i < sim_objects->size(); i++) {
+        (*sim_objects)[i].UpdateReferences(update_info);
+      }
+    };
+    rm->ApplyOnAllTypes(update_references);
+  }
 };
 
 }  // namespace bdm

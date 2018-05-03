@@ -29,12 +29,13 @@ TEST(SimulationObjectUtilAosTest, RemoveFromSimulation) {
 TEST(SimulationObjectUtilAosTest, GetSoPtr) {
   Rm()->Clear();
   for (uint64_t i = 0; i < 10; i++) {
-    Rm()->template New<Cell>(1);
+    Rm()->New<Cell>(1);
   }
 
+  Rm()->Get<Cell>()->Commit();
   EXPECT_EQ(10u, Rm()->GetNumSimObjects());
 
-  auto cells = Rm()->template Get<Cell>();
+  auto cells = Rm()->Get<Cell>();
   for (uint64_t i = 0; i < 10; i++) {
     EXPECT_EQ(i, (*cells)[i].GetSoPtr().GetElementIdx());
   }

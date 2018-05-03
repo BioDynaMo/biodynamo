@@ -57,10 +57,10 @@ TEST(NeuronTest, UpdateReferences) {
   neuron.UpdateReferences(updates);
 
   const auto& daughters = neuron.GetDaughters();
-  ASSERT_EQ(3, daughters.size());
-  EXPECT_EQ(3, daughters[0].GetElementIdx());
-  EXPECT_EQ(7, daughters[1].GetElementIdx());
-  EXPECT_EQ(1, daughters[2].GetElementIdx());
+  ASSERT_EQ(3u, daughters.size());
+  EXPECT_EQ(3u, daughters[0].GetElementIdx());
+  EXPECT_EQ(7u, daughters[1].GetElementIdx());
+  EXPECT_EQ(1u, daughters[2].GetElementIdx());
 }
 
 /// Test that the references of mother, daughter_left_ and daughter_right_
@@ -86,9 +86,9 @@ TEST(NeuriteTest, UpdateReferences) {
 
   neurite.UpdateReferences(updates);
 
-  EXPECT_EQ(1, neurite.GetDaughterLeft().GetElementIdx());
-  EXPECT_EQ(2, neurite.GetDaughterRight().GetElementIdx());
-  EXPECT_EQ(56, neurite.GetMother().GetNeuronSoPtr().GetElementIdx());
+  EXPECT_EQ(1u, neurite.GetDaughterLeft().GetElementIdx());
+  EXPECT_EQ(2u, neurite.GetDaughterRight().GetElementIdx());
+  EXPECT_EQ(56u, neurite.GetMother().GetNeuronSoPtr().GetElementIdx());
   EXPECT_EQ(neurite.GetMother().GetNeuriteSoPtr(), nullptr);
 
   // also test if mother is neurite
@@ -99,9 +99,9 @@ TEST(NeuriteTest, UpdateReferences) {
 
   neurite.UpdateReferences(updates);
 
-  EXPECT_EQ(1, neurite.GetDaughterLeft().GetElementIdx());
-  EXPECT_EQ(2, neurite.GetDaughterRight().GetElementIdx());
-  EXPECT_EQ(3, neurite.GetMother().GetNeuriteSoPtr().GetElementIdx());
+  EXPECT_EQ(1u, neurite.GetDaughterLeft().GetElementIdx());
+  EXPECT_EQ(2u, neurite.GetDaughterRight().GetElementIdx());
+  EXPECT_EQ(3u, neurite.GetMother().GetNeuriteSoPtr().GetElementIdx());
   EXPECT_EQ(neurite.GetMother().GetNeuronSoPtr(), nullptr);
 }
 
@@ -109,6 +109,7 @@ TEST(NeuronTest, ExtendNewNeuriteSphericalCoordinates) {
   auto* rm = Rm();
   Rm()->Clear();
   const double kEpsilon = abs_error<double>::value;
+  auto commit = [](auto* container, uint16_t type_idx) { container->Commit(); };
 
   // create neuron
   std::array<double, 3> origin = {0, 0, 0};
@@ -119,6 +120,8 @@ TEST(NeuronTest, ExtendNewNeuriteSphericalCoordinates) {
   auto neurite =
       neuron.ExtendNewNeurite(10, Math::kPi / 8, Math::kPi / 3).Get();
   neurite.SetDiameter(2);
+
+  Rm()->ApplyOnAllTypes(commit);
 
   // verify
   EXPECT_ARR_NEAR(neurite.GetPosition(),
@@ -153,6 +156,7 @@ TEST(NeuronTest, ExtendNewNeurite) {
   auto* rm = Rm();
   Rm()->Clear();
   const double kEpsilon = abs_error<double>::value;
+  auto commit = [](auto* container, uint16_t type_idx) { container->Commit(); };
 
   // create neuron
   std::array<double, 3> origin = {0, 0, 0};
@@ -162,6 +166,8 @@ TEST(NeuronTest, ExtendNewNeurite) {
   // new neurite
   auto neurite = neuron.ExtendNewNeurite({0, 0, 1}).Get();
   neurite.SetDiameter(2);
+
+  Rm()->ApplyOnAllTypes(commit);
 
   // verify
   EXPECT_ARR_NEAR(neurite.GetPosition(), {0, 0, 10.5});
@@ -189,6 +195,7 @@ TEST(NeuronTest, ExtendNeuriteAndElongate) {
   auto* rm = Rm();
   Rm()->Clear();
   const double kEpsilon = abs_error<double>::value;
+  auto commit = [](auto* container, uint16_t type_idx) { container->Commit(); };
   std::array<double, 3> origin = {0, 0, 0};
 
   auto neuron = rm->New<Neuron>(origin);
@@ -202,6 +209,8 @@ TEST(NeuronTest, ExtendNeuriteAndElongate) {
     neurite_segment.ElongateTerminalEnd(10, {0, 0, 1});
     neurite_segment.RunDiscretization();
   }
+
+  Rm()->ApplyOnAllTypes(commit);
 
   // verify
   //   distal segment
@@ -614,6 +623,7 @@ TEST(NeuriteTest, RetractAllDendrites) {
 
   auto neuron = rm->New<Neuron>(origin);
   neuron.SetDiameter(20);
+  rm->ApplyOnAllTypes(commit);
 
   auto neurite_segment = neuron.ExtendNewNeurite({1, 0, 0}).Get();
   neurite_segment.SetDiameter(2);
@@ -622,6 +632,7 @@ TEST(NeuriteTest, RetractAllDendrites) {
   for (int i = 0; i < 200; ++i) {
     neurite_segment.ElongateTerminalEnd(10, {1, 1, 0});
     neurite_segment.RunDiscretization();
+    rm->ApplyOnAllTypes(commit);
   }
 
   auto branch = neurite_segment.Branch().Get();
@@ -631,6 +642,7 @@ TEST(NeuriteTest, RetractAllDendrites) {
     neurite_segment.RunDiscretization();
     branch.ElongateTerminalEnd(10, {0, 1, 0});
     branch.RunDiscretization();
+    rm->ApplyOnAllTypes(commit);
   }
 
   // retract all dendrite
