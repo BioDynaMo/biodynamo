@@ -4,14 +4,14 @@
 #include "compile_time_param.h"
 #include "gtest/gtest.h"
 #include "neuroscience/compile_time_param.h"
-#include "neuroscience/neurite.h"
+#include "neuroscience/neurite_element.h"
 #include "unit/test_util.h"
 
 #include "biodynamo.h"
 
 namespace bdm {
 
-using experimental::neuroscience::Neurite;
+using experimental::neuroscience::NeuriteElement;
 
 template <typename TBackend>
 struct CompileTimeParam
@@ -79,7 +79,7 @@ TEST(DefaultForce, AllAtSamePositionSphere) {
 /// Tests the forces that are created between the reference sphere and its
 /// overlapping cylinder
 TEST(DefaultForce, GeneralSphereCylinder) {
-  Neurite cylinder;
+  NeuriteElement cylinder;
   cylinder.SetMassLocation({2, 0, 0});
   cylinder.SetSpringAxis({-5, -1, -3});  // -> proximal end = {7, 1, 3}
   cylinder.SetDiameter(4);
@@ -102,14 +102,14 @@ TEST(DefaultForce, GeneralSphereCylinder) {
 }
 
 TEST(DISABLED_DefaultForce, GeneralCylinder) {
-  Neurite cylinder1;
+  NeuriteElement cylinder1;
   cylinder1.SetMassLocation({0, 0, 0});
   cylinder1.SetSpringAxis({-5, 0, 0});  // -> proximal end = {5, 0, 0}
   cylinder1.SetDiameter(4);
 
   EXPECT_ARR_NEAR({5, 0, 0}, cylinder1.ProximalEnd());
 
-  Neurite cylinder2;
+  NeuriteElement cylinder2;
   cylinder2.SetMassLocation({1, -2, 1});
   cylinder2.SetSpringAxis({-10, -4, -0.5});  // -> proximal end = {11, 2, 1.5}
   cylinder2.SetDiameter(6);
@@ -134,14 +134,14 @@ TEST(DISABLED_DefaultForce, GeneralCylinder) {
 }
 
 TEST(DefaultForce, CylinderIntersectingAxis) {
-  Neurite cylinder1;
+  NeuriteElement cylinder1;
   cylinder1.SetMassLocation({0, 0, 0});
   cylinder1.SetSpringAxis({-5, 0, 0});  // -> proximal end = {5, 0, 0}
   cylinder1.SetDiameter(4);
 
   EXPECT_ARR_NEAR({5, 0, 0}, cylinder1.ProximalEnd());
 
-  Neurite cylinder2;
+  NeuriteElement cylinder2;
   cylinder2.SetMassLocation({2, -2, 0});
   cylinder2.SetSpringAxis({0, -4, 0});  // -> proximal end = {2, 2, 0}
   cylinder2.SetDiameter(6);
@@ -165,14 +165,14 @@ TEST(DefaultForce, CylinderIntersectingAxis) {
 }
 
 TEST(DefaultForce, NotTouchingParallelCylinders) {
-  Neurite cylinder1;
+  NeuriteElement cylinder1;
   cylinder1.SetMassLocation({0, 0, 0});
   cylinder1.SetSpringAxis({-5, 0, 0});  // -> proximal end = {5, 0, 0}
   cylinder1.SetDiameter(4);
 
   EXPECT_ARR_NEAR({5, 0, 0}, cylinder1.ProximalEnd());
 
-  Neurite cylinder2;
+  NeuriteElement cylinder2;
   cylinder2.SetMassLocation({0, -5, 0});
   cylinder2.SetSpringAxis({-5, 0, 0});  // -> proximal end = {5, -5, 0}
   cylinder2.SetDiameter(6);
@@ -203,7 +203,7 @@ TEST(DefaultForce, SphereSmallCylinderHorizontal) {
   Cell sphere({0, 0, 0});
   sphere.SetDiameter(50);
 
-  Neurite cylinder;
+  NeuriteElement cylinder;
   cylinder.SetMassLocation({-4, 24.5, 0});
   cylinder.SetSpringAxis({-8, 0, 0});  // -> proximal end = {4, 24.5, 0}
   cylinder.SetDiameter(4);
@@ -230,7 +230,7 @@ TEST(DefaultForce, SphereSmallCylinderVertical) {
   sphere.SetDiameter(50);
   ResourceManager<>::Get()->push_back(sphere);
 
-  Neurite cylinder;
+  NeuriteElement cylinder;
   cylinder.SetMassLocation({0, 24, 0});
   cylinder.SetSpringAxis({0, -8, 0});  // -> proximal end = {0, 32, 0}
   cylinder.SetDiameter(4);
@@ -255,7 +255,7 @@ TEST(DefaultForce, SphereSmallCylinderVertical2) {
   sphere.SetDiameter(50);
   ResourceManager<>::Get()->push_back(sphere);
 
-  Neurite cylinder;
+  NeuriteElement cylinder;
   cylinder.SetMassLocation({0, -24, 0});
   cylinder.SetSpringAxis({0, 8, 0});  // -> proximal end = {0, -32, 0}
   cylinder.SetDiameter(4);
@@ -282,7 +282,7 @@ TEST(DefaultForce, SphereLongCylinderHorizontalCenter) {
   Cell sphere({0, 0, 0});
   sphere.SetDiameter(10);
 
-  Neurite cylinder;
+  NeuriteElement cylinder;
   cylinder.SetMassLocation({-10, 14.5, 0});
   cylinder.SetSpringAxis({-20, 0, 0});  // -> proximal end = {10, 14.5, 0}
   cylinder.SetDiameter(20);
@@ -311,7 +311,7 @@ TEST(DefaultForce, SphereLongCylinderHorizontalpP) {
   Cell sphere({0, 0, 0});
   sphere.SetDiameter(10);
 
-  Neurite cylinder;
+  NeuriteElement cylinder;
   cylinder.SetMassLocation({-19.5, 14.5, 0});
   cylinder.SetSpringAxis({-20, 0, 0});  // -> proximal end = {0.5, 14.5, 0}
   cylinder.SetDiameter(20);
@@ -340,7 +340,7 @@ TEST(DefaultForce, SphereLongCylinderHorizontalpD) {
   Cell sphere({0, 0, 0});
   sphere.SetDiameter(10);
 
-  Neurite cylinder;
+  NeuriteElement cylinder;
   cylinder.SetMassLocation({-0.5, 14.5, 0});
   cylinder.SetSpringAxis({-20, 0, 0});  // -> proximal end = {19.5, 14.5, 0}
   cylinder.SetDiameter(20);

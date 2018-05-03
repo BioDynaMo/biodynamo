@@ -1,4 +1,4 @@
-#include "neuroscience/neuron.h"
+#include "neuroscience/neuron_soma.h"
 #include "gtest/gtest.h"
 
 #include "compile_time_param.h"
@@ -14,41 +14,41 @@ template <typename TBackend>
 struct CompileTimeParam
     : public DefaultCompileTimeParam<TBackend>,
       public experimental::neuroscience::DefaultCompileTimeParam<TBackend> {
-  using AtomicTypes = VariadicTypedef<experimental::neuroscience::Neuron,
-                                      experimental::neuroscience::Neurite>;
+  using AtomicTypes = VariadicTypedef<experimental::neuroscience::NeuronSoma,
+                                      experimental::neuroscience::NeuriteElement>;
 };
 
 namespace experimental {
 namespace neuroscience {
 
-TEST(NeuronTest, Scalar) {
-  Neurite neurite;
-  Neuron neuron;
-  typename Neuron::template Self<Scalar> neuron1;
-  Neuron sneuron;
+TEST(NeuronSomaTest, Scalar) {
+  NeuriteElement neurite;
+  NeuronSoma neuron;
+  typename NeuronSoma::template Self<Scalar> neuron1;
+  NeuronSoma sneuron;
 }
 
-TEST(NeuronTest, Soa) {
-  SoaNeuron neuron;
-  SoaNeuron sneuron;
-  typename Neuron::template Self<Soa> soan;
-  typename CompileTimeParam<>::Neuron soan1;
+TEST(NeuronSomaTest, Soa) {
+  SoaNeuronSoma neuron;
+  SoaNeuronSoma sneuron;
+  typename NeuronSoma::template Self<Soa> soan;
+  typename CompileTimeParam<>::NeuronSoma soan1;
 }
 
-struct UpdateReferencesNeuron : Neuron {
+struct UpdateReferencesNeuronSoma : NeuronSoma {
   void AddDaughters() {
-    using SoPtr = typename Neuron::template ToSoPtr<Neurite>;
-    daughters_[Neuron::kIdx].push_back(SoPtr());
-    daughters_[Neuron::kIdx].push_back(SoPtr());
-    daughters_[Neuron::kIdx].push_back(SoPtr());
-    daughters_[Neuron::kIdx][0].SetElementIdx(9);
-    daughters_[Neuron::kIdx][1].SetElementIdx(7);
-    daughters_[Neuron::kIdx][2].SetElementIdx(5);
+    using SoPtr = typename NeuronSoma::template ToSoPtr<NeuriteElement>;
+    daughters_[NeuronSoma::kIdx].push_back(SoPtr());
+    daughters_[NeuronSoma::kIdx].push_back(SoPtr());
+    daughters_[NeuronSoma::kIdx].push_back(SoPtr());
+    daughters_[NeuronSoma::kIdx][0].SetElementIdx(9);
+    daughters_[NeuronSoma::kIdx][1].SetElementIdx(7);
+    daughters_[NeuronSoma::kIdx][2].SetElementIdx(5);
   }
 };
 
-TEST(NeuronTest, UpdateReferences) {
-  UpdateReferencesNeuron neuron;
+TEST(NeuronSomaTest, UpdateReferences) {
+  UpdateReferencesNeuronSoma neuron;
   neuron.AddDaughters();
 
   std::vector<std::unordered_map<uint32_t, uint32_t>> updates = {
@@ -65,8 +65,8 @@ TEST(NeuronTest, UpdateReferences) {
 
 /// Test that the references of mother, daughter_left_ and daughter_right_
 /// are updated correctly
-TEST(NeuriteTest, UpdateReferences) {
-  Neurite neurite;
+TEST(NeuriteElementTest, UpdateReferences) {
+  NeuriteElement neurite;
 
   auto dl = neurite.GetDaughterLeft();
   dl.SetElementIdx(12);
@@ -77,7 +77,7 @@ TEST(NeuriteTest, UpdateReferences) {
   neurite.SetDaughterRight(dr);
 
   auto mother = neurite.GetMother();
-  mother.GetNeuronSoPtr().SetElementIdx(89);
+  mother.GetNeuronSomaSoPtr().SetElementIdx(89);
   neurite.SetMother(mother);
 
   std::vector<std::unordered_map<uint32_t, uint32_t>> updates;
@@ -88,24 +88,24 @@ TEST(NeuriteTest, UpdateReferences) {
 
   EXPECT_EQ(1u, neurite.GetDaughterLeft().GetElementIdx());
   EXPECT_EQ(2u, neurite.GetDaughterRight().GetElementIdx());
-  EXPECT_EQ(56u, neurite.GetMother().GetNeuronSoPtr().GetElementIdx());
-  EXPECT_EQ(neurite.GetMother().GetNeuriteSoPtr(), nullptr);
+  EXPECT_EQ(56u, neurite.GetMother().GetNeuronSomaSoPtr().GetElementIdx());
+  EXPECT_EQ(neurite.GetMother().GetNeuriteElementSoPtr(), nullptr);
 
   // also test if mother is neurite
   //   reset mother
-  mother.GetNeuronSoPtr() = nullptr;
-  mother.GetNeuriteSoPtr().SetElementIdx(36);
+  mother.GetNeuronSomaSoPtr() = nullptr;
+  mother.GetNeuriteElementSoPtr().SetElementIdx(36);
   neurite.SetMother(mother);
 
   neurite.UpdateReferences(updates);
 
   EXPECT_EQ(1u, neurite.GetDaughterLeft().GetElementIdx());
   EXPECT_EQ(2u, neurite.GetDaughterRight().GetElementIdx());
-  EXPECT_EQ(3u, neurite.GetMother().GetNeuriteSoPtr().GetElementIdx());
-  EXPECT_EQ(neurite.GetMother().GetNeuronSoPtr(), nullptr);
+  EXPECT_EQ(3u, neurite.GetMother().GetNeuriteElementSoPtr().GetElementIdx());
+  EXPECT_EQ(neurite.GetMother().GetNeuronSomaSoPtr(), nullptr);
 }
 
-TEST(NeuronTest, ExtendNewNeuriteSphericalCoordinates) {
+TEST(NeuronSomaTest, ExtendNewNeuriteElementSphericalCoordinates) {
   auto* rm = Rm();
   Rm()->Clear();
   const double kEpsilon = abs_error<double>::value;
@@ -113,7 +113,7 @@ TEST(NeuronTest, ExtendNewNeuriteSphericalCoordinates) {
 
   // create neuron
   std::array<double, 3> origin = {0, 0, 0};
-  auto neuron = rm->New<Neuron>(origin);
+  auto neuron = rm->New<NeuronSoma>(origin);
   neuron.SetDiameter(20);
 
   // new neurite
@@ -146,13 +146,13 @@ TEST(NeuronTest, ExtendNewNeuriteSphericalCoordinates) {
   EXPECT_NEAR(1, neurite.GetRestingLength(), kEpsilon);
   EXPECT_TRUE(neurite.GetDaughterLeft() == nullptr);
   EXPECT_TRUE(neurite.GetDaughterRight() == nullptr);
-  EXPECT_TRUE(neurite.GetMother().IsNeuron());
+  EXPECT_TRUE(neurite.GetMother().IsNeuronSoma());
 
-  EXPECT_EQ(1u, rm->Get<Neuron>()->size());
-  EXPECT_EQ(1u, rm->Get<Neurite>()->size());
+  EXPECT_EQ(1u, rm->Get<NeuronSoma>()->size());
+  EXPECT_EQ(1u, rm->Get<NeuriteElement>()->size());
 }
 
-TEST(NeuronTest, ExtendNewNeurite) {
+TEST(NeuronSomaTest, ExtendNewNeurite) {
   auto* rm = Rm();
   Rm()->Clear();
   const double kEpsilon = abs_error<double>::value;
@@ -160,7 +160,7 @@ TEST(NeuronTest, ExtendNewNeurite) {
 
   // create neuron
   std::array<double, 3> origin = {0, 0, 0};
-  auto neuron = rm->New<Neuron>(origin);
+  auto neuron = rm->New<NeuronSoma>(origin);
   neuron.SetDiameter(20);
 
   // new neurite
@@ -185,20 +185,20 @@ TEST(NeuronTest, ExtendNewNeurite) {
   EXPECT_NEAR(1, neurite.GetRestingLength(), kEpsilon);
   EXPECT_TRUE(neurite.GetDaughterLeft() == nullptr);
   EXPECT_TRUE(neurite.GetDaughterRight() == nullptr);
-  EXPECT_TRUE(neurite.GetMother().IsNeuron());
+  EXPECT_TRUE(neurite.GetMother().IsNeuronSoma());
 
-  EXPECT_EQ(1u, rm->Get<Neuron>()->size());
-  EXPECT_EQ(1u, rm->Get<Neurite>()->size());
+  EXPECT_EQ(1u, rm->Get<NeuronSoma>()->size());
+  EXPECT_EQ(1u, rm->Get<NeuriteElement>()->size());
 }
 
-TEST(NeuronTest, ExtendNeuriteAndElongate) {
+TEST(NeuronSomaTest, ExtendNeuriteAndElongate) {
   auto* rm = Rm();
   Rm()->Clear();
   const double kEpsilon = abs_error<double>::value;
   auto commit = [](auto* container, uint16_t type_idx) { container->Commit(); };
   std::array<double, 3> origin = {0, 0, 0};
 
-  auto neuron = rm->New<Neuron>(origin);
+  auto neuron = rm->New<NeuronSoma>(origin);
   neuron.SetDiameter(20);
 
   auto neurite_segment = neuron.ExtendNewNeurite({0, 0, 1}).Get();
@@ -229,10 +229,10 @@ TEST(NeuronTest, ExtendNeuriteAndElongate) {
   EXPECT_NEAR(7.5, neurite_segment.GetRestingLength(), kEpsilon);
   EXPECT_TRUE(neurite_segment.GetDaughterLeft() == nullptr);
   EXPECT_TRUE(neurite_segment.GetDaughterRight() == nullptr);
-  EXPECT_TRUE(neurite_segment.GetMother().IsNeurite());
+  EXPECT_TRUE(neurite_segment.GetMother().IsNeuriteElement());
 
   //   proximal segment
-  auto proximal_segment = neurite_segment.GetMother().GetNeuriteSoPtr().Get();
+  auto proximal_segment = neurite_segment.GetMother().GetNeuriteElementSoPtr().Get();
   EXPECT_ARR_NEAR(proximal_segment.GetMassLocation(), {0, 0, 23.5});
   EXPECT_ARR_NEAR(proximal_segment.GetPosition(), {0, 0, 16.75});
   EXPECT_ARR_NEAR(proximal_segment.GetXAxis(), {0, 0, 1});
@@ -248,20 +248,20 @@ TEST(NeuronTest, ExtendNeuriteAndElongate) {
   EXPECT_NEAR(13.5, proximal_segment.GetRestingLength(), kEpsilon);
   EXPECT_TRUE(proximal_segment.GetDaughterLeft() != nullptr);
   EXPECT_TRUE(proximal_segment.GetDaughterRight() == nullptr);
-  EXPECT_TRUE(proximal_segment.GetMother().IsNeuron());
+  EXPECT_TRUE(proximal_segment.GetMother().IsNeuronSoma());
 
-  EXPECT_EQ(1u, rm->Get<Neuron>()->size());
-  EXPECT_EQ(2u, rm->Get<Neurite>()->size());
+  EXPECT_EQ(1u, rm->Get<NeuronSoma>()->size());
+  EXPECT_EQ(2u, rm->Get<NeuriteElement>()->size());
 }
 
-TEST(NeuriteTest, PartialRetraction) {
+TEST(NeuriteElementTest, PartialRetraction) {
   auto* rm = Rm();
   Rm()->Clear();
   const double kEpsilon = abs_error<double>::value;
   std::array<double, 3> origin = {0, 0, 0};
   auto commit = [](auto* container, uint16_t type_idx) { container->Commit(); };
 
-  auto neuron = rm->New<Neuron>(origin);
+  auto neuron = rm->New<NeuronSoma>(origin);
   neuron.SetDiameter(20);
 
   auto neurite_segment = neuron.ExtendNewNeurite({0, 0, 1}).Get();
@@ -296,19 +296,19 @@ TEST(NeuriteTest, PartialRetraction) {
   EXPECT_NEAR(7, neurite_segment.GetRestingLength(), kEpsilon);
   EXPECT_TRUE(neurite_segment.GetDaughterLeft() == nullptr);
   EXPECT_TRUE(neurite_segment.GetDaughterRight() == nullptr);
-  EXPECT_TRUE(neurite_segment.GetMother().IsNeuron());
+  EXPECT_TRUE(neurite_segment.GetMother().IsNeuronSoma());
 
-  EXPECT_EQ(1u, rm->Get<Neuron>()->size());
-  EXPECT_EQ(1u, rm->Get<Neurite>()->size());
+  EXPECT_EQ(1u, rm->Get<NeuronSoma>()->size());
+  EXPECT_EQ(1u, rm->Get<NeuriteElement>()->size());
 }
 
-TEST(NeuriteTest, TotalRetraction) {
+TEST(NeuriteElementTest, TotalRetraction) {
   auto* rm = Rm();
   Rm()->Clear();
   std::array<double, 3> origin = {0, 0, 0};
   auto commit = [](auto* container, uint16_t type_idx) { container->Commit(); };
 
-  auto neuron = rm->New<Neuron>(origin);
+  auto neuron = rm->New<NeuronSoma>(origin);
   neuron.SetDiameter(20);
 
   auto neurite_segment = neuron.ExtendNewNeurite({0, 0, 1}).Get();
@@ -329,19 +329,19 @@ TEST(NeuriteTest, TotalRetraction) {
   }
 
   // verify
-  EXPECT_EQ(1u, rm->Get<Neuron>()->size());
-  EXPECT_EQ(0u, rm->Get<Neurite>()->size());
+  EXPECT_EQ(1u, rm->Get<NeuronSoma>()->size());
+  EXPECT_EQ(0u, rm->Get<NeuriteElement>()->size());
   EXPECT_EQ(0u, neuron.GetDaughters().size());
 }
 
-TEST(NeuriteTest, Branch) {
+TEST(NeuriteElementTest, Branch) {
   auto* rm = Rm();
   Rm()->Clear();
   const double kEpsilon = abs_error<double>::value;
   std::array<double, 3> origin = {0, 0, 0};
   auto commit = [](auto* container, uint16_t type_idx) { container->Commit(); };
 
-  auto neuron = rm->New<Neuron>(origin);
+  auto neuron = rm->New<NeuronSoma>(origin);
   neuron.SetDiameter(20);
 
   auto neurite_segment = neuron.ExtendNewNeurite({0, 0, 1}).Get();
@@ -377,10 +377,10 @@ TEST(NeuriteTest, Branch) {
   EXPECT_NEAR(3.6005289288510043, neurite_segment.GetRestingLength(), kEpsilon);
   EXPECT_TRUE(neurite_segment.GetDaughterLeft() == nullptr);
   EXPECT_TRUE(neurite_segment.GetDaughterRight() == nullptr);
-  EXPECT_TRUE(neurite_segment.GetMother().IsNeurite());
+  EXPECT_TRUE(neurite_segment.GetMother().IsNeuriteElement());
 
   //  proximal segment
-  auto proximal_segment = neurite_segment.GetMother().GetNeuriteSoPtr().Get();
+  auto proximal_segment = neurite_segment.GetMother().GetNeuriteElementSoPtr().Get();
   EXPECT_ARR_NEAR(proximal_segment.GetMassLocation(),
                   {0, 11.621299948800891, 22.571299948800885});
   EXPECT_ARR_NEAR(proximal_segment.GetPosition(),
@@ -402,7 +402,7 @@ TEST(NeuriteTest, Branch) {
               kEpsilon);
   EXPECT_TRUE(proximal_segment.GetDaughterLeft() != nullptr);
   EXPECT_TRUE(proximal_segment.GetDaughterRight() != nullptr);
-  EXPECT_TRUE(proximal_segment.GetMother().IsNeurite());
+  EXPECT_TRUE(proximal_segment.GetMother().IsNeuriteElement());
 
   //  new branch
   EXPECT_ARR_NEAR(branch.GetMassLocation(),
@@ -422,21 +422,21 @@ TEST(NeuriteTest, Branch) {
   EXPECT_NEAR(1, branch.GetRestingLength(), kEpsilon);
   EXPECT_TRUE(branch.GetDaughterLeft() == nullptr);
   EXPECT_TRUE(branch.GetDaughterRight() == nullptr);
-  EXPECT_TRUE(branch.GetMother().IsNeurite());
+  EXPECT_TRUE(branch.GetMother().IsNeuriteElement());
 
   rm->ApplyOnAllTypes(commit);
-  EXPECT_EQ(1u, rm->Get<Neuron>()->size());
-  EXPECT_EQ(4u, rm->Get<Neurite>()->size());
+  EXPECT_EQ(1u, rm->Get<NeuronSoma>()->size());
+  EXPECT_EQ(4u, rm->Get<NeuriteElement>()->size());
 }
 
-TEST(NeuriteTest, RightDaughterRetraction) {
+TEST(NeuriteElementTest, RightDaughterRetraction) {
   auto* rm = Rm();
   Rm()->Clear();
   const double kEpsilon = abs_error<double>::value;
   std::array<double, 3> origin = {0, 0, 0};
   auto commit = [](auto* container, uint16_t type_idx) { container->Commit(); };
 
-  auto neuron = rm->New<Neuron>(origin);
+  auto neuron = rm->New<NeuronSoma>(origin);
   neuron.SetDiameter(20);
 
   auto neurite_segment = neuron.ExtendNewNeurite({0, 0, 1}).Get();
@@ -460,7 +460,7 @@ TEST(NeuriteTest, RightDaughterRetraction) {
   EXPECT_NEAR(11.6792669065954, neurite_segment.GetLength(), kEpsilon);
   EXPECT_NEAR(10.9036023322569, branch.GetLength(), kEpsilon);
 
-  auto proximal_segment = neurite_segment.GetMother().GetNeuriteSoPtr().Get();
+  auto proximal_segment = neurite_segment.GetMother().GetNeuriteElementSoPtr().Get();
   auto right_daughter_ps = proximal_segment.GetDaughterRight().Get();
   for (int i = 0; i < 40; ++i) {
     right_daughter_ps.RetractTerminalEnd(10);
@@ -491,21 +491,21 @@ TEST(NeuriteTest, RightDaughterRetraction) {
   EXPECT_NEAR(6.90360233225697, branch.GetRestingLength(), kEpsilon);
   EXPECT_TRUE(branch.GetDaughterLeft() == nullptr);
   EXPECT_TRUE(branch.GetDaughterRight() == nullptr);
-  EXPECT_TRUE(branch.GetMother().IsNeurite());
+  EXPECT_TRUE(branch.GetMother().IsNeuriteElement());
 
   rm->ApplyOnAllTypes(commit);
-  EXPECT_EQ(1u, rm->Get<Neuron>()->size());
-  EXPECT_EQ(4u, rm->Get<Neurite>()->size());
+  EXPECT_EQ(1u, rm->Get<NeuronSoma>()->size());
+  EXPECT_EQ(4u, rm->Get<NeuriteElement>()->size());
 }
 
-TEST(NeuriteTest, RightDaughterTotalRetraction) {
+TEST(NeuriteElementTest, RightDaughterTotalRetraction) {
   auto* rm = Rm();
   Rm()->Clear();
   const double kEpsilon = abs_error<double>::value;
   std::array<double, 3> origin = {0, 0, 0};
   auto commit = [](auto* container, uint16_t type_idx) { container->Commit(); };
 
-  auto neuron = rm->New<Neuron>(origin);
+  auto neuron = rm->New<NeuronSoma>(origin);
   neuron.SetDiameter(20);
 
   auto neurite_segment = neuron.ExtendNewNeurite({0, 0, 1}).Get();
@@ -529,7 +529,7 @@ TEST(NeuriteTest, RightDaughterTotalRetraction) {
   EXPECT_NEAR(11.6792669065954, neurite_segment.GetLength(), kEpsilon);
   EXPECT_NEAR(10.9036023322569, branch.GetLength(), kEpsilon);
 
-  auto proximal_segment = neurite_segment.GetMother().GetNeuriteSoPtr().Get();
+  auto proximal_segment = neurite_segment.GetMother().GetNeuriteElementSoPtr().Get();
   auto right_daughter_ps = proximal_segment.GetDaughterRight().Get();
   // right_daughter_ps == branch
   while (proximal_segment.GetDaughterRight() != nullptr) {
@@ -542,18 +542,18 @@ TEST(NeuriteTest, RightDaughterTotalRetraction) {
   EXPECT_NEAR(0.103602332256979, branch.GetLength(), kEpsilon);
 
   rm->ApplyOnAllTypes(commit);
-  EXPECT_EQ(1u, rm->Get<Neuron>()->size());
-  EXPECT_EQ(3u, rm->Get<Neurite>()->size());
+  EXPECT_EQ(1u, rm->Get<NeuronSoma>()->size());
+  EXPECT_EQ(3u, rm->Get<NeuriteElement>()->size());
 }
 
-TEST(NeuriteTest, LeftDaughterRetraction) {
+TEST(NeuriteElementTest, LeftDaughterRetraction) {
   auto* rm = Rm();
   Rm()->Clear();
   const double kEpsilon = abs_error<double>::value;
   std::array<double, 3> position = {0, 0, 0};
   auto commit = [](auto* container, uint16_t type_idx) { container->Commit(); };
 
-  auto neuron = rm->New<Neuron>(position);
+  auto neuron = rm->New<NeuronSoma>(position);
   neuron.SetDiameter(20);
 
   auto neurite_segment = neuron.ExtendNewNeurite({0, 0, 1}).Get();
@@ -577,7 +577,7 @@ TEST(NeuriteTest, LeftDaughterRetraction) {
   EXPECT_NEAR(13.2486948956586, neurite_segment.GetLength(), kEpsilon);
   EXPECT_NEAR(10.903602332257, branch.GetLength(), kEpsilon);
 
-  auto proximal_segment = neurite_segment.GetMother().GetNeuriteSoPtr().Get();
+  auto proximal_segment = neurite_segment.GetMother().GetNeuriteElementSoPtr().Get();
   auto left_daughter_ps = proximal_segment.GetDaughterLeft().Get();
   for (int i = 0; i < 10; ++i) {
     left_daughter_ps.RetractTerminalEnd(10);
@@ -608,20 +608,20 @@ TEST(NeuriteTest, LeftDaughterRetraction) {
   EXPECT_NEAR(10.903602332257, branch.GetRestingLength(), kEpsilon);
   EXPECT_TRUE(branch.GetDaughterLeft() == nullptr);
   EXPECT_TRUE(branch.GetDaughterRight() == nullptr);
-  EXPECT_TRUE(branch.GetMother().IsNeurite());
+  EXPECT_TRUE(branch.GetMother().IsNeuriteElement());
 
   rm->ApplyOnAllTypes(commit);
-  EXPECT_EQ(1u, rm->Get<Neuron>()->size());
-  EXPECT_EQ(4u, rm->Get<Neurite>()->size());
+  EXPECT_EQ(1u, rm->Get<NeuronSoma>()->size());
+  EXPECT_EQ(4u, rm->Get<NeuriteElement>()->size());
 }
 
-TEST(NeuriteTest, RetractAllDendrites) {
+TEST(NeuriteElementTest, RetractAllDendrites) {
   auto* rm = Rm();
   Rm()->Clear();
   std::array<double, 3> origin = {0, 0, 0};
   auto commit = [](auto* container, uint16_t type_idx) { container->Commit(); };
 
-  auto neuron = rm->New<Neuron>(origin);
+  auto neuron = rm->New<NeuronSoma>(origin);
   neuron.SetDiameter(20);
   rm->ApplyOnAllTypes(commit);
 
@@ -646,7 +646,7 @@ TEST(NeuriteTest, RetractAllDendrites) {
   }
 
   // retract all dendrite
-  auto all_ns = rm->Get<Neurite>();
+  auto all_ns = rm->Get<NeuriteElement>();
   while (all_ns->size() != 0) {
     for (uint32_t j = 0; j < all_ns->size(); j++) {
       auto&& neurite_segment = (*all_ns)[j];
@@ -661,18 +661,18 @@ TEST(NeuriteTest, RetractAllDendrites) {
 
   // verify
   rm->ApplyOnAllTypes(commit);
-  EXPECT_EQ(1u, rm->Get<Neuron>()->size());
-  EXPECT_EQ(0u, rm->Get<Neurite>()->size());
+  EXPECT_EQ(1u, rm->Get<NeuronSoma>()->size());
+  EXPECT_EQ(0u, rm->Get<NeuriteElement>()->size());
 }
 
-TEST(NeuriteTest, Bifurcate) {
+TEST(NeuriteElementTest, Bifurcate) {
   auto* rm = Rm();
   Rm()->Clear();
   const double kEpsilon = abs_error<double>::value;
   std::array<double, 3> origin = {0, 0, 0};
   auto commit = [](auto* container, uint16_t type_idx) { container->Commit(); };
 
-  auto neuron = rm->New<Neuron>(origin);
+  auto neuron = rm->New<NeuronSoma>(origin);
   neuron.SetDiameter(20);
 
   auto neurite_segment = neuron.ExtendNewNeurite({0, 0, 1}).Get();
@@ -697,7 +697,7 @@ TEST(NeuriteTest, Bifurcate) {
   EXPECT_NEAR(1, neurite_segment.GetRestingLength(), kEpsilon);
   EXPECT_TRUE(neurite_segment.GetDaughterLeft() != nullptr);
   EXPECT_TRUE(neurite_segment.GetDaughterRight() != nullptr);
-  EXPECT_TRUE(neurite_segment.GetMother().IsNeuron());
+  EXPECT_TRUE(neurite_segment.GetMother().IsNeuronSoma());
 
   //  left branch
   auto branch_l = bifurcation[0].Get();
@@ -721,7 +721,7 @@ TEST(NeuriteTest, Bifurcate) {
   EXPECT_NEAR(1, branch_l.GetRestingLength(), kEpsilon);
   EXPECT_TRUE(branch_l.GetDaughterLeft() == nullptr);
   EXPECT_TRUE(branch_l.GetDaughterRight() == nullptr);
-  EXPECT_TRUE(branch_l.GetMother().IsNeurite());
+  EXPECT_TRUE(branch_l.GetMother().IsNeuriteElement());
 
   //  right branch
   auto branch_r = bifurcation[1].Get();
@@ -745,18 +745,18 @@ TEST(NeuriteTest, Bifurcate) {
   EXPECT_NEAR(1, branch_r.GetRestingLength(), kEpsilon);
   EXPECT_TRUE(branch_r.GetDaughterLeft() == nullptr);
   EXPECT_TRUE(branch_r.GetDaughterRight() == nullptr);
-  EXPECT_TRUE(branch_r.GetMother().IsNeurite());
+  EXPECT_TRUE(branch_r.GetMother().IsNeuriteElement());
 
   rm->ApplyOnAllTypes(commit);
-  EXPECT_EQ(1u, rm->Get<Neuron>()->size());
-  EXPECT_EQ(3u, rm->Get<Neurite>()->size());
+  EXPECT_EQ(1u, rm->Get<NeuronSoma>()->size());
+  EXPECT_EQ(3u, rm->Get<NeuriteElement>()->size());
 }
 
-TEST(DISABLED_NeuronNeuriteTest, Displacement) {
+TEST(DISABLED_NeuronSomaNeuriteElementTest, Displacement) {
   auto* rm = Rm();
   rm->Clear();
-  auto* neurons = rm->template Get<Neuron>();
-  auto* neurite_segments = rm->template Get<Neurite>();
+  auto* neurons = rm->template Get<NeuronSoma>();
+  auto* neurite_segments = rm->template Get<NeuriteElement>();
 
   // Cell 1
   // auto&& cell1 = rm->template New<Cell>();

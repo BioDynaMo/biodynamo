@@ -1,5 +1,5 @@
-#ifndef NEUROSCIENCE_NEURON_H_
-#define NEUROSCIENCE_NEURON_H_
+#ifndef NEUROSCIENCE_NEURON_SOMA_H_
+#define NEUROSCIENCE_NEURON_SOMA_H_
 
 #include <algorithm>
 #include <unordered_map>
@@ -14,25 +14,25 @@ namespace neuroscience {
 
 extern const BmEvent gExtendNeurite;
 
-BDM_SIM_OBJECT(Neuron, bdm::Cell) {
-  BDM_SIM_OBJECT_HEADER(NeuronExt, 1, daughters_, daughters_coord_);
+BDM_SIM_OBJECT(NeuronSoma, bdm::Cell) {
+  BDM_SIM_OBJECT_HEADER(NeuronSomaExt, 1, daughters_, daughters_coord_);
 
  public:
-  using Neurite = typename TCompileTimeParam::Neurite;
-  using NeuriteSoPtr = ToSoPtr<Neurite>;
+  using NeuriteElement = typename TCompileTimeParam::NeuriteElement;
+  using NeuriteElementSoPtr = ToSoPtr<NeuriteElement>;
 
-  NeuronExt() {}
+  NeuronSomaExt() {}
 
-  explicit NeuronExt(const std::array<double, 3>& position) : Base(position) {}
+  explicit NeuronSomaExt(const std::array<double, 3>& position) : Base(position) {}
 
   /// Update references of simulation objects that changed its memory position.
   /// @param update_info vector index = type_id, map stores (old_index ->
   /// new_index)
   void UpdateReferences(
       const std::vector<std::unordered_map<uint32_t, uint32_t>>& update_info) {
-    // Neuron only stores Neurites
+    // NeuronSoma only stores NeuriteElements
     using Rm = std::remove_pointer_t<decltype(Rm())>;
-    const int neurite_type_idx = Rm::template GetTypeIndex<Neurite>();
+    const int neurite_type_idx = Rm::template GetTypeIndex<NeuriteElement>();
     const auto& neurite_updates = update_info[neurite_type_idx];
     for (auto& daugther : daughters_[kIdx]) {
       // `this` required, because declaration in dependent base are not found
@@ -48,7 +48,7 @@ BDM_SIM_OBJECT(Neuron, bdm::Cell) {
   /// Extends a new neurites with default diameter
   /// @param direction direciton of the new neurite
   /// @return SoPointer of new neurite
-  NeuriteSoPtr ExtendNewNeurite(const std::array<double, 3>& direction) {
+  NeuriteElementSoPtr ExtendNewNeurite(const std::array<double, 3>& direction) {
     auto dir = Math::Add(direction, Base::position_[kIdx]);
     auto angles = Base::TransformCoordinatesGlobalToPolar(dir);
     return ExtendNewNeurite(Param::kNeuriteDefaultDiameter, angles[2],
@@ -60,9 +60,9 @@ BDM_SIM_OBJECT(Neuron, bdm::Cell) {
   /// @param phi the angle from the z-axis
   /// @param theta the angle from the x-axis around the z-axis
   /// @return SoPointer of new neurite
-  NeuriteSoPtr ExtendNewNeurite(double diameter, double phi, double theta) {
+  NeuriteElementSoPtr ExtendNewNeurite(double diameter, double phi, double theta) {
     // TODO(neurites) should this take immediate effect? or delayed + commit?
-    auto neurite = Rm()->template New<Neurite>();
+    auto neurite = Rm()->template New<NeuriteElement>();
 
     std::vector<typename Base::BiologyModules> neurite_bms;
     Base::BiologyModuleEventHandler(gExtendNeurite, &neurite_bms);
@@ -109,7 +109,7 @@ BDM_SIM_OBJECT(Neuron, bdm::Cell) {
     return neurite_soptr;
   }
 
-  void RemoveDaughter(const ToSoPtr<Neurite> daughter) {
+  void RemoveDaughter(const ToSoPtr<NeuriteElement> daughter) {
     auto it = std::find(std::begin(daughters_[kIdx]),
                         std::end(daughters_[kIdx]), daughter);
     assert(it != std::end(daughters_[kIdx]) &&
@@ -137,8 +137,8 @@ BDM_SIM_OBJECT(Neuron, bdm::Cell) {
                 xyz[2] * Base::kZAxis[2]};
   }
 
-  void UpdateRelative(const ToSoPtr<Neurite>& old_rel,
-                      const ToSoPtr<Neurite>& new_rel) {
+  void UpdateRelative(const ToSoPtr<NeuriteElement>& old_rel,
+                      const ToSoPtr<NeuriteElement>& new_rel) {
     auto coord = daughters_coord_[kIdx][old_rel.Get().GetElementIdx()];
     auto it = std::find(std::begin(daughters_[kIdx]),
                         std::end(daughters_[kIdx]), old_rel);
@@ -148,12 +148,12 @@ BDM_SIM_OBJECT(Neuron, bdm::Cell) {
     daughters_coord_[kIdx][new_rel.Get().GetElementIdx()] = coord;
   }
 
-  const std::vector<ToSoPtr<Neurite>>& GetDaughters() const {
+  const std::vector<ToSoPtr<NeuriteElement>>& GetDaughters() const {
     return daughters_[kIdx];
   }
 
  protected:
-  vec<std::vector<ToSoPtr<Neurite>>> daughters_ = {{}};
+  vec<std::vector<ToSoPtr<NeuriteElement>>> daughters_ = {{}};
 
   /// Daughter attachment points in local coordinates
   /// Key: element index of neurite segement
@@ -166,4 +166,4 @@ BDM_SIM_OBJECT(Neuron, bdm::Cell) {
 }  // namespace experimental
 }  // namespace bdm
 
-#endif  // NEUROSCIENCE_NEURON_H_
+#endif  // NEUROSCIENCE_NEURON_SOMA_H_

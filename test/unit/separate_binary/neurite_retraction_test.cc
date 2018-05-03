@@ -3,8 +3,8 @@
 #include "cell.h"
 #include "gtest/gtest.h"
 #include "neuroscience/compile_time_param.h"
-#include "neuroscience/neurite.h"
-#include "neuroscience/neuron.h"
+#include "neuroscience/neurite_element.h"
+#include "neuroscience/neuron_soma.h"
 #include "unit/test_util.h"
 
 namespace bdm {
@@ -13,21 +13,21 @@ template <typename TBackend>
 struct CompileTimeParam
     : public DefaultCompileTimeParam<TBackend>,
       public experimental::neuroscience::DefaultCompileTimeParam<TBackend> {
-  using AtomicTypes = VariadicTypedef<Cell, experimental::neuroscience::Neuron,
-                                      experimental::neuroscience::Neurite>;
+  using AtomicTypes = VariadicTypedef<Cell, experimental::neuroscience::NeuronSoma,
+                                      experimental::neuroscience::NeuriteElement>;
 };
 
 namespace experimental {
 namespace neuroscience {
 
 // TODO(jean) Fix this test
-TEST(DISABLED_NeuriteBehaviour, StraightxCylinderGrowthRetract) {
+TEST(DISABLED_NeuriteElementBehaviour, StraightxCylinderGrowthRetract) {
   Param::Reset();
   Rm()->Clear();
 
   Param::live_visualization_ = true;
 
-  auto neuron = Rm()->New<Neuron>();
+  auto neuron = Rm()->New<NeuronSoma>();
   neuron.SetPosition({0, 0, 0});
   neuron.SetMass(1);
   neuron.SetDiameter(10);
@@ -80,7 +80,7 @@ TEST(DISABLED_NeuriteBehaviour, StraightxCylinderGrowthRetract) {
 }
 
 // TODO(jean) fix test
-TEST(DISABLED_NeuriteBehaviour, BranchingGrowth) {
+TEST(DISABLED_NeuriteElementBehaviour, BranchingGrowth) {
   Param::Reset();
   Rm()->Clear();
 
@@ -91,7 +91,7 @@ TEST(DISABLED_NeuriteBehaviour, BranchingGrowth) {
   double diam_reduc_speed = 0.001;
   double branching_factor = 0.005;
 
-  auto neuron = Rm()->New<Neuron>();
+  auto neuron = Rm()->New<NeuronSoma>();
   neuron.SetPosition({0, 0, 0});
   neuron.SetMass(1);
   neuron.SetDiameter(10);
@@ -107,7 +107,7 @@ TEST(DISABLED_NeuriteBehaviour, BranchingGrowth) {
   std::array<double, 3> direction;
 
   for (int i = 0; i < 200; i++) {
-    auto my_neurites = Rm()->Get<Neurite>();
+    auto my_neurites = Rm()->Get<NeuriteElement>();
     int num_neurites = my_neurites->size();
 
     for (int neurite_nb = 0; neurite_nb < num_neurites;

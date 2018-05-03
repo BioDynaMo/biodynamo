@@ -1,4 +1,4 @@
-#include "neuroscience/neuron.h"
+#include "neuroscience/neuron_soma.h"
 
 namespace bdm {
 namespace experimental {

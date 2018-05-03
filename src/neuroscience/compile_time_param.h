@@ -1,19 +1,20 @@
 #ifndef NEUROSCIENCE_COMPILE_TIME_PARAM_H_
 #define NEUROSCIENCE_COMPILE_TIME_PARAM_H_
 
-#include "neuroscience/neurite.h"
-#include "neuroscience/neuron.h"
+#include "neuroscience/neurite_element.h"
+#include "neuroscience/neuron_soma.h"
 
 namespace bdm {
 namespace experimental {
 namespace neuroscience {
 
 /// Default compile time parameter for neuroscience module.
-/// Users need to specify the type of Neuron and Neurite they are using.
+/// Users need to specify the type of NeuronSoma and NeuriteElement they are
+/// using.
 template <typename TBackend = Soa>
 struct DefaultCompileTimeParam {
-  using Neuron = ::bdm::experimental::neuroscience::Neuron;
-  using Neurite = ::bdm::experimental::neuroscience::Neurite;
+  using NeuronSoma = ::bdm::experimental::neuroscience::NeuronSoma;
+  using NeuriteElement = ::bdm::experimental::neuroscience::NeuriteElement;
 };
 
 }  // namespace neuroscience

@@ -1,4 +1,4 @@
-#include "neuroscience/neurite.h"
+#include "neuroscience/neurite_element.h"
 
 namespace bdm {
 namespace experimental {
