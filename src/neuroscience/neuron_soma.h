@@ -23,7 +23,8 @@ BDM_SIM_OBJECT(NeuronSoma, bdm::Cell) {
 
   NeuronSomaExt() {}
 
-  explicit NeuronSomaExt(const std::array<double, 3>& position) : Base(position) {}
+  explicit NeuronSomaExt(const std::array<double, 3>& position)
+      : Base(position) {}
 
   /// Update references of simulation objects that changed its memory position.
   /// @param update_info vector index = type_id, map stores (old_index ->
@@ -60,7 +61,8 @@ BDM_SIM_OBJECT(NeuronSoma, bdm::Cell) {
   /// @param phi the angle from the z-axis
   /// @param theta the angle from the x-axis around the z-axis
   /// @return SoPointer of new neurite
-  NeuriteElementSoPtr ExtendNewNeurite(double diameter, double phi, double theta) {
+  NeuriteElementSoPtr ExtendNewNeurite(double diameter, double phi,
+                                       double theta) {
     // TODO(neurites) should this take immediate effect? or delayed + commit?
     auto neurite = Rm()->template New<NeuriteElement>();
 

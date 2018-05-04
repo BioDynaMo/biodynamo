@@ -1,8 +1,7 @@
 #ifndef DIVIDING_CELL_OP_H_
 #define DIVIDING_CELL_OP_H_
 
-#include "backend.h"
-#include "simulation_object_util.h"
+#include <cstdint>
 
 namespace bdm {
 

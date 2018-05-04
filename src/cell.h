@@ -347,8 +347,8 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
   /// @param phi azimuthal angle (polar coordinate)
   /// @param theta polar angle (polar coordinate)
   /// @see \link simulation_object_util.h Divide \endlink
-  void DivideImpl(MostDerivedSoPtr daughter, double volume_ratio,
-                  double phi, double theta) {
+  void DivideImpl(MostDerivedSoPtr daughter, double volume_ratio, double phi,
+                  double theta) {
     // A) Defining some values
     // ..................................................................
     // defining the two radii s.t total volume is conserved

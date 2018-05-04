@@ -1,5 +1,5 @@
-#include "neuroscience/neuron_soma.h"
 #include "gtest/gtest.h"
+#include "neuroscience/neuron_soma.h"
 
 #include "compile_time_param.h"
 #include "displacement_op.h"
@@ -14,8 +14,9 @@ template <typename TBackend>
 struct CompileTimeParam
     : public DefaultCompileTimeParam<TBackend>,
       public experimental::neuroscience::DefaultCompileTimeParam<TBackend> {
-  using AtomicTypes = VariadicTypedef<experimental::neuroscience::NeuronSoma,
-                                      experimental::neuroscience::NeuriteElement>;
+  using AtomicTypes =
+      VariadicTypedef<experimental::neuroscience::NeuronSoma,
+                      experimental::neuroscience::NeuriteElement>;
 };
 
 namespace experimental {
@@ -373,7 +374,8 @@ TEST(NeuriteElementTest, Branch) {
   EXPECT_NEAR(3.6005289288510043, neurite_element->GetActualLength(), kEpsilon);
   EXPECT_NEAR(0, neurite_element->GetTension(), kEpsilon);
   EXPECT_NEAR(10, neurite_element->GetSpringConstant(), kEpsilon);
-  EXPECT_NEAR(3.6005289288510043, neurite_element->GetRestingLength(), kEpsilon);
+  EXPECT_NEAR(3.6005289288510043, neurite_element->GetRestingLength(),
+              kEpsilon);
   EXPECT_TRUE(neurite_element->GetDaughterLeft() == nullptr);
   EXPECT_TRUE(neurite_element->GetDaughterRight() == nullptr);
   EXPECT_TRUE(neurite_element->GetMother().IsNeuriteElement());
@@ -394,7 +396,8 @@ TEST(NeuriteElementTest, Branch) {
   EXPECT_NEAR(11.311395231915842, proximal_element->GetVolume(), kEpsilon);
   EXPECT_NEAR(2, proximal_element->GetDiameter(), kEpsilon);
   EXPECT_NEAR(0, proximal_element->GetBranchOrder(), kEpsilon);
-  EXPECT_NEAR(3.6005289288510043, proximal_element->GetActualLength(), kEpsilon);
+  EXPECT_NEAR(3.6005289288510043, proximal_element->GetActualLength(),
+              kEpsilon);
   EXPECT_NEAR(0, proximal_element->GetTension(), kEpsilon);
   EXPECT_NEAR(10, proximal_element->GetSpringConstant(), kEpsilon);
   EXPECT_NEAR(3.6005289288510043, proximal_element->GetRestingLength(),
@@ -475,7 +478,8 @@ TEST(NeuriteElementTest, RightDaughterRetraction) {
                   {0, 17.9175034106028, 25.4028272980485});
   EXPECT_ARR_NEAR(branch->GetPosition(),
                   {0, 14.769401679701861, 23.987063623424685});
-  EXPECT_ARR_NEAR(branch->GetXAxis(), {0, 0.912017112049318, 0.410152151438001});
+  EXPECT_ARR_NEAR(branch->GetXAxis(),
+                  {0, 0.912017112049318, 0.410152151438001});
   EXPECT_ARR_NEAR(branch->GetYAxis(),
                   {0, 0.410152151438001, -0.912017112049318});
   EXPECT_ARR_NEAR(branch->GetZAxis(), {-1, 0, 0});
@@ -592,7 +596,8 @@ TEST(NeuriteElementTest, LeftDaughterRetraction) {
                   {0, 21.5655718588001, 27.0434359038005});
   EXPECT_ARR_NEAR(branch->GetPosition(),
                   {0, 16.59343590380049, 24.807367926300685});
-  EXPECT_ARR_NEAR(branch->GetXAxis(), {0, 0.912017112049318, 0.410152151438001});
+  EXPECT_ARR_NEAR(branch->GetXAxis(),
+                  {0, 0.912017112049318, 0.410152151438001});
   EXPECT_ARR_NEAR(branch->GetYAxis(),
                   {0, 0.410152151438001, -0.912017112049318});
   EXPECT_ARR_NEAR(branch->GetZAxis(), {-1, 0, 0});

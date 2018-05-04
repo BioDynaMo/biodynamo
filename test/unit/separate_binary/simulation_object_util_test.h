@@ -57,8 +57,8 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
     return daughter;
   }
 
-  void DivideImpl(MostDerivedSoPtr daughter, double volume_ratio,
-                  double phi, double theta) {
+  void DivideImpl(MostDerivedSoPtr daughter, double volume_ratio, double phi,
+                  double theta) {
     daughter->SetPosition({5, 4, 3});
     diameter_[kIdx] = 1.123;
   }
@@ -102,8 +102,8 @@ BDM_SIM_OBJECT(Neuron, bdm::Cell) {
 
   NeuronExt() = default;
 
-  void DivideImpl(MostDerivedSoPtr daughter, double volume_ratio,
-                  double phi, double theta) {
+  void DivideImpl(MostDerivedSoPtr daughter, double volume_ratio, double phi,
+                  double theta) {
     daughter->neurites_[daughter->kIdx].push_back(Neurite(987));
     Base::DivideImpl(daughter, volume_ratio, phi, theta);
   }

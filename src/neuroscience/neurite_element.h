@@ -30,7 +30,8 @@ extern const BmEvent gNeuriteSideCylinderExtension;
 /// Therefore, this class acts as an intermediate layer that forwards function
 /// calls to the correct object.
 /// @tparam TNeuronSomaSoPtr   type of NeuronSoma simulation object pointer
-/// @tparam TNeuriteElementSoPtr  type of NeuriteElement simulation object pointer.
+/// @tparam TNeuriteElementSoPtr  type of NeuriteElement simulation object
+/// pointer.
 template <typename TNeuronSomaSoPtr, typename TNeuriteElementSoPtr>
 class NeuronNeuriteAdapter {
  public:
@@ -41,14 +42,16 @@ class NeuronNeuriteAdapter {
   template <typename T>
   NeuronNeuriteAdapter(  // NOLINT
       T&& soptr,
-      typename std::enable_if<is_same<T, TNeuronSomaSoPtr>::value>::type* p = 0) {
+      typename std::enable_if<is_same<T, TNeuronSomaSoPtr>::value>::type* p =
+          0) {
     neuron_ptr_ = soptr;
   }
 
   template <typename T>
   NeuronNeuriteAdapter(  // NOLINT
       T&& soptr,
-      typename std::enable_if<is_same<T, TNeuriteElementSoPtr>::value>::type* p = 0) {
+      typename std::enable_if<is_same<T, TNeuriteElementSoPtr>::value>::type*
+          p = 0) {
     neurite_ptr_ = soptr;
   }
 
@@ -66,7 +69,9 @@ class NeuronNeuriteAdapter {
 
   const TNeuronSomaSoPtr& GetNeuronSomaSoPtr() const { return neuron_ptr_; }
 
-  const TNeuriteElementSoPtr& GetNeuriteElementSoPtr() const { return neurite_ptr_; }
+  const TNeuriteElementSoPtr& GetNeuriteElementSoPtr() const {
+    return neurite_ptr_;
+  }
 
   TNeuronSomaSoPtr& GetNeuronSomaSoPtr() { return neuron_ptr_; }
 
@@ -76,7 +81,8 @@ class NeuronNeuriteAdapter {
     if (IsNeuriteElement()) {
       return neurite_ptr_->GetPosition();
     }
-    assert(IsNeuronSoma() && "Initialization error: neither neuron nor neurite");
+    assert(IsNeuronSoma() &&
+           "Initialization error: neither neuron nor neurite");
     return neuron_ptr_->GetPosition();
   }
 
@@ -84,7 +90,8 @@ class NeuronNeuriteAdapter {
     if (IsNeuriteElement()) {
       return neurite_ptr_->OriginOf(daughter_element_idx);
     }
-    assert(IsNeuronSoma() && "Initialization error: neither neuron nor neurite");
+    assert(IsNeuronSoma() &&
+           "Initialization error: neither neuron nor neurite");
     return neuron_ptr_->OriginOf(daughter_element_idx);
   }
 
@@ -93,25 +100,29 @@ class NeuronNeuriteAdapter {
 
   // TODO(neurites) LB reference?
   Self GetMother() {
-    assert(IsNeuriteElement() && "This function call is only allowed for a NeuriteElement");
+    assert(IsNeuriteElement() &&
+           "This function call is only allowed for a NeuriteElement");
     return neurite_ptr_->GetMother();
   }
 
-  auto GetDaughterLeft()
-      -> decltype(std::declval<TNeuriteElementSoPtr>()->GetDaughterLeft()) const {
-    assert(IsNeuriteElement() && "This function call is only allowed for a NeuriteElement");
+  auto GetDaughterLeft() -> decltype(
+      std::declval<TNeuriteElementSoPtr>()->GetDaughterLeft()) const {
+    assert(IsNeuriteElement() &&
+           "This function call is only allowed for a NeuriteElement");
     return neurite_ptr_->GetDaughterLeft();
   }
 
   auto GetDaughterRight() -> decltype(
       std::declval<TNeuriteElementSoPtr>()->GetDaughterRight()) const {
-    assert(IsNeuriteElement() && "This function call is only allowed for a NeuriteElement");
+    assert(IsNeuriteElement() &&
+           "This function call is only allowed for a NeuriteElement");
     return neurite_ptr_->GetDaughterRight();
   }
 
   auto GetRestingLength() -> decltype(
       std::declval<TNeuriteElementSoPtr>()->GetRestingLength()) const {
-    assert(IsNeuriteElement() && "This function call is only allowed for a NeuriteElement");
+    assert(IsNeuriteElement() &&
+           "This function call is only allowed for a NeuriteElement");
     return neurite_ptr_->GetRestingLength();
   }
 
@@ -120,7 +131,8 @@ class NeuronNeuriteAdapter {
       neurite_ptr_->UpdateDependentPhysicalVariables();
       return;
     }
-    assert(IsNeuronSoma() && "Initialization error: neither neuron nor neurite");
+    assert(IsNeuronSoma() &&
+           "Initialization error: neither neuron nor neurite");
     neuron_ptr_->UpdateVolume();
   }
 
@@ -134,13 +146,15 @@ class NeuronNeuriteAdapter {
     // TODO(neurites) improve
     auto old_neurite_soptr = old_rel.GetNeuriteElementSoPtr();
     auto new_neurite_soptr = new_rel.GetNeuriteElementSoPtr();
-    assert(IsNeuronSoma() && "Initialization error: neither neuron nor neurite");
+    assert(IsNeuronSoma() &&
+           "Initialization error: neither neuron nor neurite");
     neuron_ptr_->UpdateRelative(old_neurite_soptr, new_neurite_soptr);
   }
 
   auto RemoveFromSimulation() -> decltype(
       std::declval<TNeuriteElementSoPtr>()->RemoveFromSimulation()) const {
-    assert(IsNeuriteElement() && "This function call is only allowed for a NeuriteElement");
+    assert(IsNeuriteElement() &&
+           "This function call is only allowed for a NeuriteElement");
     return neurite_ptr_->RemoveFromSimulation();
   }
 
@@ -149,18 +163,21 @@ class NeuronNeuriteAdapter {
       neurite_ptr_->RemoveDaughter(mother);
       return;
     }
-    assert(IsNeuronSoma() && "Initialization error: neither neuron nor neurite");
+    assert(IsNeuronSoma() &&
+           "Initialization error: neither neuron nor neurite");
     neuron_ptr_->RemoveDaughter(mother);
   }
 
   bool operator==(
-      const NeuronNeuriteAdapter<TNeuronSomaSoPtr, TNeuriteElementSoPtr> other) const {
+      const NeuronNeuriteAdapter<TNeuronSomaSoPtr, TNeuriteElementSoPtr> other)
+      const {
     return neuron_ptr_ == other.neuron_ptr_ &&
            neurite_ptr_ == other.neurite_ptr_;
   }
 
   bool operator!=(
-      const NeuronNeuriteAdapter<TNeuronSomaSoPtr, TNeuriteElementSoPtr> other) const {
+      const NeuronNeuriteAdapter<TNeuronSomaSoPtr, TNeuriteElementSoPtr> other)
+      const {
     return !(*this == other);
   }
 
@@ -185,9 +202,9 @@ class NeuronNeuriteAdapter {
 /// proximal node are transmitted to the mother element
 BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
   BDM_SIM_OBJECT_HEADER(
-      NeuriteElementExt, 1, biology_modules_, mass_location_, volume_, diameter_,
-      adherence_, x_axis_, y_axis_, z_axis_, box_idx_, is_axon_, mother_,
-      daughter_left_, daughter_right_, branch_order_,
+      NeuriteElementExt, 1, biology_modules_, mass_location_, volume_,
+      diameter_, adherence_, x_axis_, y_axis_, z_axis_, box_idx_, is_axon_,
+      mother_, daughter_left_, daughter_right_, branch_order_,
       force_to_transmit_to_proximal_mass_, spring_axis_, actual_length_,
       tension_, spring_constant_, resting_length_);
 
@@ -225,7 +242,8 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
     } else if (mother_[kIdx].IsNeuronSoma()) {
       const int neuron_type_idx = Rm::template GetTypeIndex<NeuronSoma>();
       const auto& neuron_updates = update_info[neuron_type_idx];
-      this->UpdateReference(&(mother_[kIdx].GetNeuronSomaSoPtr()), neuron_updates);
+      this->UpdateReference(&(mother_[kIdx].GetNeuronSomaSoPtr()),
+                            neuron_updates);
     }
   }
 
@@ -793,7 +811,8 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
       using NeighborBackend =
           typename std::decay<decltype(neighbor)>::type::Backend;
       using NeighborNeuriteElement = MostDerived<NeighborBackend>;
-      using NeighborNeuronSoma = typename NeuronSoma::template Self<NeighborBackend>;
+      using NeighborNeuronSoma =
+          typename NeuronSoma::template Self<NeighborBackend>;
 
       // TODO(lukas) once we switch to C++17 use if constexpr.
       // As a consequence the reinterpret_cast won't be needed anymore.
@@ -816,7 +835,8 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
                               std::decay_t<decltype(neighbor)>>::value) {
         // if neighbor is NeuronSoma
         // if it is a direct relative, we don't take it into account
-        auto n_soptr = reinterpret_cast<NeighborNeuronSoma*>(&neighbor)->GetSoPtr();
+        auto n_soptr =
+            reinterpret_cast<NeighborNeuronSoma*>(&neighbor)->GetSoPtr();
         if (this->GetMother().IsNeuronSoma() &&
             this->GetMother().GetNeuronSomaSoPtr() == n_soptr) {
           return;
@@ -1239,9 +1259,10 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
     str << "tension_:  " << n.tension_[n.kIdx] << std::endl;
     str << "spring_constant_: " << n.spring_constant_[n.kIdx] << std::endl;
     str << "resting_length_:  " << n.resting_length_[n.kIdx] << std::endl;
-    auto mother = n.mother_[n.kIdx].IsNeuronSoma()
-                      ? "neuron"
-                      : (n.mother_[n.kIdx].IsNeuriteElement() ? "neurite" : "nullptr");
+    auto mother =
+        n.mother_[n.kIdx].IsNeuronSoma()
+            ? "neuron"
+            : (n.mother_[n.kIdx].IsNeuriteElement() ? "neurite" : "nullptr");
     str << "mother_           " << mother << std::endl;
     return str;
   }
@@ -1424,7 +1445,7 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
     // Re-organisation of the PhysicalObject tree structure: by-passing
     // proximalCylinder
     proximal_ne->GetMother().UpdateRelative(mother_[kIdx],
-                                                 NeuriteOrNeuron(GetSoPtr()));
+                                            NeuriteOrNeuron(GetSoPtr()));
     SetMother(mother_[kIdx].GetMother());
 
     // Keeping the same tension :
@@ -1445,8 +1466,8 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
     proximal_ne->RemoveFromSimulation();
   }
 
-  MostDerivedSoPtr ExtendSideNeuriteElement(double length,
-                                      const std::array<double, 3>& direction) {
+  MostDerivedSoPtr ExtendSideNeuriteElement(
+      double length, const std::array<double, 3>& direction) {
     auto new_branch = Rm()->template New<MostDerivedScalar>();
     new_branch.Copy(*static_cast<MostDerived<Backend>*>(this));
 

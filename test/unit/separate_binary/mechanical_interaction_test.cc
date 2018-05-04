@@ -17,8 +17,9 @@ template <typename TBackend>
 struct CompileTimeParam
     : public DefaultCompileTimeParam<TBackend>,
       public experimental::neuroscience::DefaultCompileTimeParam<TBackend> {
-  using AtomicTypes = VariadicTypedef<Cell, experimental::neuroscience::NeuronSoma,
-                                      experimental::neuroscience::NeuriteElement>;
+  using AtomicTypes =
+      VariadicTypedef<Cell, experimental::neuroscience::NeuronSoma,
+                      experimental::neuroscience::NeuriteElement>;
 };
 
 namespace experimental {

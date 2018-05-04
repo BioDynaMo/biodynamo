@@ -60,14 +60,16 @@ class SoPointer {
   }
 
   template <typename TTBackend = TBackend>
-  typename std::enable_if<std::is_same<TTBackend, Scalar>::value, TSoSimBackend&>::type
+  typename std::enable_if<std::is_same<TTBackend, Scalar>::value,
+                          TSoSimBackend&>::type
   operator->() {
     assert(*this != nullptr);
     return (*so_container_)[element_idx_];
   }
 
   template <typename TTBackend = TBackend>
-  typename std::enable_if<std::is_same<TTBackend, Scalar>::value, const TSoSimBackend&>::type
+  typename std::enable_if<std::is_same<TTBackend, Scalar>::value,
+                          const TSoSimBackend&>::type
   operator->() const {
     assert(*this != nullptr);
     return (*so_container_)[element_idx_];
@@ -81,20 +83,23 @@ class SoPointer {
   }
 
   template <typename TTBackend = TBackend>
-  typename std::enable_if<std::is_same<TTBackend, Soa>::value, const SoSoaRef>::type
+  typename std::enable_if<std::is_same<TTBackend, Soa>::value,
+                          const SoSoaRef>::type
   operator->() const {
     assert(*this != nullptr);
     return (*so_container_)[element_idx_];
   }
 
   // template <typename TTBackend = TBackend>
-  // auto operator->(typename std::enable_if<std::is_same<TTBackend, Soa>::value, void>::type) {
+  // auto operator->(typename std::enable_if<std::is_same<TTBackend,
+  // Soa>::value, void>::type) {
   //   assert(*this != nullptr);
   //   return (*so_container_)[element_idx_];
   // }
   //
   // template <typename TTBackend = TBackend>
-  // const auto operator->(typename std::enable_if<std::is_same<TTBackend, Soa>::value, void>::type) const {
+  // const auto operator->(typename std::enable_if<std::is_same<TTBackend,
+  // Soa>::value, void>::type) const {
   //   assert(*this != nullptr);
   //   return (*so_container_)[element_idx_];
   // }

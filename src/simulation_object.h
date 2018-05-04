@@ -313,12 +313,12 @@ class SimulationObject
 
   Self<Backend> &operator=(const Self<Scalar> &) { return *this; }
 
-  MostDerived<Backend>* operator->() {
-    return static_cast<MostDerived<Backend>*>(this);
+  MostDerived<Backend> *operator->() {
+    return static_cast<MostDerived<Backend> *>(this);
   }
 
-  const MostDerived<Backend>* operator->() const {
-    return static_cast<const MostDerived<Backend>*>(this);
+  const MostDerived<Backend> *operator->() const {
+    return static_cast<const MostDerived<Backend> *>(this);
   }
 
   BDM_ROOT_CLASS_DEF_OVERRIDE(SimulationObject, 1);
