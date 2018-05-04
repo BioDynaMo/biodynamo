@@ -27,6 +27,9 @@ struct OpTimer {
     }
   }
 
+  TOp* operator->() { return &operation_; }
+  const TOp* operator->() const { return &operation_; }
+
  private:
   string timer_msg_;
   TOp operation_;

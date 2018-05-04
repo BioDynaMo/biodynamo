@@ -31,9 +31,9 @@ struct RegulateGenes : public BaseBiologyModule {
   ///
   /// \param initial_concentration
   void AddGene(std::function<double(double, double)> first_derivative,
-               double initial_concentration_) {
+               double initial_concentration) {
     first_derivatives_.push_back(first_derivative);
-    concentrations_.push_back(initial_concentration_);
+    concentrations_.push_back(initial_concentration);
   }
 
   const std::vector<double>& GetConcentrations() const {

@@ -48,23 +48,22 @@ $cmake \
 -DPARAVIEW_ENABLE_MPI:BOOL=ON \
 -DPARAVIEW_INSTALL_DEVELOPMENT_FILES:BOOL=ON \
  ../paraview
- 
+
 ## Step 4:
 make -j4
 sudo make install
 
-
 ## Step 5:
-cd <biodynamo-github-dir>/custom-plugins
-cd GlyphExt ("or any other plugin you want to include")
+cd <biodynamo-github-dir>/paraview_plugin
+cd bdm_glyph ("or any other plugin you want to include")
 mkdir build && cd build
 cmake .. && make
 
 (Linux)
-cp libvtkPVGlyphFilterExt.so <paraview-install-dir/lib/paraview-5.4/plugins
+cp libBDMGlyphFilter.so <paraview-install-dir/lib/paraview-5.4/plugins
 
 (Mac OS)
-cp libvtkPVGlyphFilterExt.dylib <paraview-install-dir/bin/paraview.app/Contents/MacOS/plugins
+cp libBDMGlyphFilter.dylib <paraview-install-dir/bin/paraview.app/Contents/MacOS/plugins
 
 
 ## Step 6:

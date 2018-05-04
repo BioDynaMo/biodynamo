@@ -33,13 +33,14 @@ namespace bdm {
 /// second specifies the element within this vector.
 class SoHandle {
  public:
-  SoHandle() noexcept
+  constexpr SoHandle() noexcept
       : type_idx_(std::numeric_limits<decltype(type_idx_)>::max()),
         element_idx_(std::numeric_limits<decltype(element_idx_)>::max()) {}
   SoHandle(uint16_t type_idx, uint32_t element_idx)
       : type_idx_(type_idx), element_idx_(element_idx) {}
   uint16_t GetTypeIdx() const { return type_idx_; }
   uint32_t GetElementIdx() const { return element_idx_; }
+  void SetElementIdx(uint32_t element_idx) { element_idx_ = element_idx; }
 
   bool operator==(const SoHandle& other) const {
     return type_idx_ == other.type_idx_ && element_idx_ == other.element_idx_;
@@ -63,11 +64,17 @@ class SoHandle {
   }
 
  private:
+  // TODO(lukas) add using TypeIdx_t = uint16_t and
+  // using ElementIdx_t = uint32_t
   uint16_t type_idx_;
   /// changed element index to uint32_t after issues with std::atomic with
   /// size 16 -> max element_idx: 4.294.967.296
   uint32_t element_idx_;
+
+  ClassDefNV(SoHandle, 1);
 };
+
+constexpr SoHandle kNullSoHandle;
 
 namespace detail {
 
@@ -85,6 +92,16 @@ struct ConvertToContainerTuple<Backend, VariadicTypedef<Types...>> {
   template <typename T>
   using ToBackend = typename T::template Self<Backend>;
   using type = std::tuple<Container<ToBackend<Types>>...>;  // NOLINT
+};
+
+/// Type trait to obtain the index of a type within a tuple.
+/// Required to extract variadic types from withi a `VariadicTypedef`
+template <typename TSo, typename... Types>
+struct ToIndex;
+
+template <typename TSo, typename... Types>
+struct ToIndex<TSo, VariadicTypedef<Types...>> {
+  static constexpr uint16_t value = GetIndex<TSo, Types...>();  // NOLINT
 };
 
 }  // namespace detail
@@ -196,11 +213,13 @@ class ResourceManager {
   ///                          std::cout << element << std::endl;
   ///                       });
   template <typename TFunction>
-  void ApplyOnElement(SoHandle handle, TFunction&& function) {
+  auto ApplyOnElement(SoHandle handle, TFunction&& function) {
     auto type_idx = handle.GetTypeIdx();
     auto element_idx = handle.GetElementIdx();
-    ::bdm::Apply(&data_, type_idx,
-                 [&](auto* container) { function((*container)[element_idx]); });
+    return ::bdm::Apply(&data_, type_idx, [&](auto* container) -> decltype(
+                                              function((*container)[0])) {
+      return function((*container)[element_idx]);
+    });
   }
 
   /// Apply a function on all container types
@@ -211,6 +230,21 @@ class ResourceManager {
   ///                        });
   template <typename TFunction>
   void ApplyOnAllTypes(TFunction&& function) {
+    // runtime dispatch - TODO(lukas) replace with c++17 std::apply
+    for (uint16_t i = 0; i < std::tuple_size<decltype(data_)>::value; i++) {
+      ::bdm::Apply(&data_, i, [&](auto* container) { function(container, i); });
+    }
+  }
+
+  /// Apply a function on all container types. Function invocations are
+  /// parallelized
+  /// @param function that will be called with each container as a parameter
+  ///
+  ///     rm->ApplyOnAllTypes([](auto* container, uint16_t type_idx) {
+  ///                          std::cout << container->size() << std::endl;
+  ///                        });
+  template <typename TFunction>
+  void ApplyOnAllTypesParallel(TFunction&& function) {
     // runtime dispatch - TODO(lukas) replace with c++17 std::apply
     for (uint16_t i = 0; i < std::tuple_size<decltype(data_)>::value; i++) {
       ::bdm::Apply(&data_, i, [&](auto* container) { function(container, i); });
@@ -269,9 +303,38 @@ class ResourceManager {
   std::vector<cl::Program>* GetOpenCLProgramList() { return &opencl_programs_; }
 #endif
 
+  /// Create a new simulation object and return a reference to it.
+  /// @tparam TScalarSo simulation object type with scalar backend
+  /// @param args arguments which will be forwarded to the TScalarSo constructor
+  /// @remarks Note that this function is not thread safe.
+  template <typename TScalarSo, typename... Args, typename TBackend = Backend>
+  typename std::enable_if<std::is_same<TBackend, Soa>::value,
+                          typename TScalarSo::template Self<SoaRef>>::type
+  New(Args... args) {
+    auto container = Get<TScalarSo>();
+    auto idx =
+        container->DelayedPushBack(TScalarSo(std::forward<Args>(args)...));
+    return (*container)[idx];
+  }
+
+  template <typename TScalarSo, typename... Args, typename TBackend = Backend>
+  typename std::enable_if<std::is_same<TBackend, Scalar>::value,
+                          TScalarSo&>::type
+  New(Args... args) {
+    auto container = Get<TScalarSo>();
+    auto idx =
+        container->DelayedPushBack(TScalarSo(std::forward<Args>(args)...));
+    return (*container)[idx];
+  }
+
   /// Returns the number of simulation object types
   static constexpr size_t NumberOfTypes() {
     return std::tuple_size<decltype(data_)>::value;
+  }
+
+  template <typename TSo>
+  static constexpr uint16_t GetTypeIndex() {
+    return detail::ToIndex<TSo, Types>::value;
   }
 
  private:
@@ -297,6 +360,12 @@ class ResourceManager {
 template <typename T>
 std::unique_ptr<ResourceManager<T>> ResourceManager<T>::instance_ =
     std::unique_ptr<ResourceManager<T>>(new ResourceManager<T>());
+
+/// Returns the ResourceManager
+template <typename TResourceManager = ResourceManager<>>
+TResourceManager* Rm() {
+  return TResourceManager::Get();
+}
 
 }  // namespace bdm
 

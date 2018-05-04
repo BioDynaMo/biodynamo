@@ -10,6 +10,7 @@ STRIP_FROM_PATH        = "@PROJECT_SOURCE_DIR@/src"
 INPUT                  = "@PROJECT_SOURCE_DIR@/src" \
                          "@PROJECT_SOURCE_DIR@/doc/reference_manual" \
                          "@PROJECT_SOURCE_DIR@/README.md"
+INCLUDE_PATH           = "@PROJECT_SOURCE_DIR@/src"
 FILE_PATTERNS          = *.h \
                          *.cc \
                          *.md
@@ -25,6 +26,8 @@ LATEX_OUTPUT           = "@PROJECT_BINARY_DIR@/doc/latex"
 GENERATE_LATEX         = NO
 CALL_GRAPH             = YES
 CALLER_GRAPH           = YES
+VERBATIM_HEADERS       = YES
+SOURCE_BROWSER         = YES
 
 QUIET                  = YES
 # DOT_IMAGE_FORMAT       = svg

@@ -7,6 +7,7 @@
 #include "io_util.h"
 #include "scheduler.h"
 #include "unistd.h"
+#include "unit/default_ctparam.h"
 #include "unit/test_util.h"
 
 #define ROOTFILE "bdmFile.root"
@@ -106,7 +107,7 @@ inline void RunBackupTest() {
   Param::backup_interval_ = 1;
   // one simulation step takes 350 ms -> backup should be created every three
   // steps
-  scheduler.Simulate(7);
+  scheduler.Simulate(4);
   remove(ROOTFILE);
 }
 

@@ -1,7 +1,7 @@
 /*=========================================================================
 
   Program:   ParaView
-  Module:    vtkPVGlyphFilterExt.h
+  Module:    BDMGlyphFilter.h
 
   Copyright (c) Kitware, Inc.
   All rights reserved.
@@ -13,12 +13,12 @@
 
 =========================================================================*/
 /**
- * @class   vtkPVGlyphFilterExt
+ * @class   BDMGlyphFilter
  * @brief   extended API for vtkGlyph3DP for better control
  * over glyph placement.
  *
  *
- * vtkPVGlyphFilterExt extends vtkGlyph3DP for adding control over which points
+ * BDMGlyphFilter extends vtkGlyph3DP for adding control over which points
  * are
  * glyphed using \c GlyphMode. Three modes are now provided:
  * \li ALL_POINTS: all points in the input dataset are glyphed. This same as
@@ -45,16 +45,15 @@
  * across all ranks for generating identical sample points.
 */
 
-#ifndef PARAVIEW_PLUGIN_GLYPHEXT_VTKPVGLYPHFILTEREXT_H_
-#define PARAVIEW_PLUGIN_GLYPHEXT_VTKPVGLYPHFILTEREXT_H_
+#ifndef PARAVIEW_PLUGIN_BDM_GLYPH_BDMGLYPHFILTER_H_
+#define PARAVIEW_PLUGIN_BDM_GLYPH_BDMGLYPHFILTER_H_
 
-#include "vtkGlyph3DExt.h"
+#include "BDMGlyph.h"
 #include "vtkPVVTKExtensionsDefaultModule.h"  // needed for exports
 
 class vtkMultiProcessController;
 
-class VTKPVVTKEXTENSIONSDEFAULT_EXPORT vtkPVGlyphFilterExt
-    : public vtkGlyph3DExt {
+class VTKPVVTKEXTENSIONSDEFAULT_EXPORT BDMGlyphFilter : public BDMGlyph {
  public:
   enum GlyphModeType {
     ALL_POINTS,
@@ -62,9 +61,9 @@ class VTKPVVTKEXTENSIONSDEFAULT_EXPORT vtkPVGlyphFilterExt
     SPATIALLY_UNIFORM_DISTRIBUTION
   };
 
-  vtkTypeMacro(vtkPVGlyphFilterExt, vtkGlyph3DExt);
+  vtkTypeMacro(BDMGlyphFilter, BDMGlyph);
   void PrintSelf(ostream& os, vtkIndent indent) VTK_OVERRIDE;  // NOLINT
-  static vtkPVGlyphFilterExt* New();
+  static BDMGlyphFilter* New();
 
   //@{
   /**
@@ -118,8 +117,8 @@ class VTKPVVTKEXTENSIONSDEFAULT_EXPORT vtkPVGlyphFilterExt
                              vtkInformationVector*) VTK_OVERRIDE;
 
  protected:
-  vtkPVGlyphFilterExt();
-  ~vtkPVGlyphFilterExt();
+  BDMGlyphFilter();
+  ~BDMGlyphFilter();
   //@}
 
   // Standard Pipeline methods
@@ -174,11 +173,11 @@ class VTKPVVTKEXTENSIONSDEFAULT_EXPORT vtkPVGlyphFilterExt
   vtkMultiProcessController* Controller;
 
  private:
-  vtkPVGlyphFilterExt(const vtkPVGlyphFilterExt&) VTK_DELETE_FUNCTION;
-  void operator=(const vtkPVGlyphFilterExt&) VTK_DELETE_FUNCTION;
+  BDMGlyphFilter(const BDMGlyphFilter&) VTK_DELETE_FUNCTION;
+  void operator=(const BDMGlyphFilter&) VTK_DELETE_FUNCTION;
 
   class vtkInternals;
   vtkInternals* Internals;
 };
 
-#endif  // PARAVIEW_PLUGIN_GLYPHEXT_VTKPVGLYPHFILTEREXT_H_
+#endif  // PARAVIEW_PLUGIN_BDM_GLYPH_BDMGLYPHFILTER_H_

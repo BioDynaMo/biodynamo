@@ -6,6 +6,7 @@
 #include <sstream>
 #include <string>
 #include <type_traits>
+#include <unordered_map>
 #include <vector>
 #include "log.h"
 
@@ -33,7 +34,7 @@
 #include <vtkXMLPImageDataWriter.h>
 #include <vtkXMLPUnstructuredGridWriter.h>
 
-#include "visualization/simple_pipeline.h"
+#include "visualization/insitu_pipeline.h"
 
 #endif  // defined(USE_CATALYST) && !defined(__ROOTCLING__)
 
@@ -91,12 +92,37 @@ class CatalystAdaptor {
 
     void operator()(std::vector<std::array<double, 3>>* dm,
                     const std::string& name) {
-      vtkNew<vtkDoubleArray> vtk_array;
-      vtk_array->SetName(name.c_str());
-      auto ptr = dm->data()->data();
-      vtk_array->SetNumberOfComponents(3);
-      vtk_array->SetArray(ptr, static_cast<vtkIdType>(3 * num_cells), 1);
-      (*vtk_data)[type_idx]->GetPointData()->AddArray(vtk_array.GetPointer());
+      if (name == "position_") {  // TODO(lukas) performance
+        vtkNew<vtkDoubleArray> vtk_array;
+        vtk_array->SetName(name.c_str());
+        auto ptr = dm->data()->data();
+        vtk_array->SetNumberOfComponents(3);
+        vtk_array->SetArray(ptr, static_cast<vtkIdType>(3 * num_cells), 1);
+
+        vtkNew<vtkPoints> points;
+        points->SetData(vtk_array.GetPointer());
+        (*vtk_data)[type_idx]->SetPoints(points.GetPointer());
+      } else if (name == "mass_location_") {
+        // create points with position {0, 0, 0}
+        // BDMGlyph will rotate and translate
+        vtkNew<vtkPoints> points;
+        points->SetNumberOfPoints(num_cells);
+        (*vtk_data)[type_idx]->SetPoints(points.GetPointer());
+
+        vtkNew<vtkDoubleArray> vtk_array;
+        vtk_array->SetName(name.c_str());
+        auto ptr = dm->data()->data();
+        vtk_array->SetNumberOfComponents(3);
+        vtk_array->SetArray(ptr, static_cast<vtkIdType>(3 * num_cells), 1);
+        (*vtk_data)[type_idx]->GetPointData()->AddArray(vtk_array.GetPointer());
+      } else {
+        vtkNew<vtkDoubleArray> vtk_array;
+        vtk_array->SetName(name.c_str());
+        auto ptr = dm->data()->data();
+        vtk_array->SetNumberOfComponents(3);
+        vtk_array->SetArray(ptr, static_cast<vtkIdType>(3 * num_cells), 1);
+        (*vtk_data)[type_idx]->GetPointData()->AddArray(vtk_array.GetPointer());
+      }
     }
 
     void operator()(std::vector<std::array<int, 3>>* dm,
@@ -127,32 +153,26 @@ class CatalystAdaptor {
   ///
   template <typename TContainer>
   void BuildCellsVTKStructures(TContainer* sim_objects, uint16_t type_idx) {
+    auto& scalar_name = TContainer::GetScalarTypeName();
     if (so_is_initialized_[type_idx] == false) {
       vtk_so_grids_.push_back(vtkUnstructuredGrid::New());
       so_is_initialized_[type_idx] = true;
-      shapes_.push_back(sim_objects->GetShape());
+      shapes_[scalar_name] = sim_objects->GetShape();
+      so_scalar_names_.push_back(scalar_name);
     }
 
     auto num_cells = sim_objects->size();
-    auto& scalar_name = TContainer::GetScalarTypeName();
-    auto& scalar_list = Param::visualize_sim_objects_[scalar_name];
 
-    if (!scalar_list.empty()) {
+    auto required_dm = TContainer::GetRequiredVisDataMembers();
+    sim_objects->ForEachDataMemberIn(
+        required_dm, AddCellAttributeData(type_idx, num_cells, &vtk_so_grids_));
+
+    auto& additional_dm = Param::visualize_sim_objects_[scalar_name];
+    if (!additional_dm.empty()) {
       sim_objects->ForEachDataMemberIn(
-          scalar_list,
+          additional_dm,
           AddCellAttributeData(type_idx, num_cells, &vtk_so_grids_));
     }
-
-    vtkNew<vtkDoubleArray> position_array;
-    position_array->SetName("Positions");
-    position_array->SetNumberOfComponents(3);
-    position_array->SetArray(sim_objects->GetPositionPtr(),
-                             static_cast<vtkIdType>(num_cells * 3), 1);
-
-    // The positions of the cells need to be vtkPoints
-    vtkNew<vtkPoints> points;
-    points->SetData(position_array.GetPointer());
-    vtk_so_grids_[type_idx]->SetPoints(points.GetPointer());
   }
 
   /// Builds the VTK grid structure for given diffusion grid
@@ -214,12 +234,8 @@ class CatalystAdaptor {
       pipeline->Initialize(script.c_str());
       g_processor_->AddPipeline(pipeline.GetPointer());
     } else {
-      pipeline_ = new vtkCPVTKPipeline();
+      pipeline_ = new InSituPipeline();
       g_processor_->AddPipeline(pipeline_);
-    }
-
-    if (Param::export_visualization_) {
-      GenerateSimulationInfoJson();
     }
   }
 
@@ -248,16 +264,16 @@ class CatalystAdaptor {
   /// @param[in]  step  The step
   ///
   void WriteToFile(size_t step) {
+    uint64_t counter = 0;
     for (auto vtk_so : vtk_so_grids_) {
       vtkNew<vtkXMLPUnstructuredGridWriter> cells_writer;
+      std::string filename =
+          so_scalar_names_[counter] + "_data_" + std::to_string(step) + ".pvtu";
 
-      // TODO(ahmad): generate unique name for each container of cells
-      std::string cells_filename =
-          "cells_data_" + std::to_string(step) + ".pvtu";
-
-      cells_writer->SetFileName(cells_filename.c_str());
+      cells_writer->SetFileName(filename.c_str());
       cells_writer->SetInputData(vtk_so);
       cells_writer->Update();
+      counter++;
     }
 
     auto& dgrids = TResourceManager::Get()->GetDiffusionGrids();
@@ -364,6 +380,10 @@ class CatalystAdaptor {
     data_description->SetTimeData(time, step);
 
     CreateVtkObjects(data_description);
+    if (!sim_info_json_generated_) {
+      GenerateSimulationInfoJson(shapes_);
+      sim_info_json_generated_ = true;
+    }
 
     if (last_time_step == true) {
       data_description->ForceOutputOn();
@@ -376,13 +396,17 @@ class CatalystAdaptor {
 
  private:
   vtkCPProcessor* g_processor_ = nullptr;
-  vtkCPVTKPipeline* pipeline_ = nullptr;
+  InSituPipeline* pipeline_ = nullptr;
   std::vector<vtkImageData*> vtk_dgrids_;
   std::vector<vtkUnstructuredGrid*> vtk_so_grids_;
   std::vector<bool> so_is_initialized_;
   std::vector<bool> dg_is_initialized_;
-  std::vector<Shape> shapes_;
-
+  std::unordered_map<std::string, Shape> shapes_;
+  std::vector<std::string> so_scalar_names_;
+  /// This variable is used to generate the simulation info json during the
+  /// first
+  /// invocation of `ExportVisualization`
+  bool sim_info_json_generated_ = false;
   static constexpr char const* kSimulationInfoJson = "simulation_info.json";
 
   friend class CatalystAdaptorTest_GenerateSimulationInfoJson_Test;
@@ -392,24 +416,38 @@ class CatalystAdaptor {
   /// information on the C++ side to a python script which generates the
   /// ParaView state file. The Json file is generated inside this function
   /// \see GenerateParaviewState
-  static void GenerateSimulationInfoJson() {
+  static void GenerateSimulationInfoJson(
+      const std::unordered_map<std::string, Shape>& shapes) {
     // simulation objects
     std::stringstream sim_objects;
     uint64_t num_sim_objects = Param::visualize_sim_objects_.size();
     uint64_t counter = 0;
     for (const auto& entry : Param::visualize_sim_objects_) {
-      auto so_name = entry.first;
-      // TODO(lukas) remove next line after export file names have been
-      // generalized
-      so_name = "cell";
+      std::string so_name = entry.first;
 
-      sim_objects << "    { \"name\":\"" << so_name << "\", ";
-      // TODO(lukas) generalize
-      sim_objects << "\"glyph\":\"Glyph\", \"shape\":\"Sphere\", "
-                     "\"scaling_attribute\":\"diameter_\" }";
-      if (counter != num_sim_objects - 1) {
-        sim_objects << "," << std::endl;
+      sim_objects << "    {" << std::endl
+                  << "      \"name\":\"" << so_name << "\"," << std::endl;
+      if (shapes.at(so_name) == Shape::kSphere) {
+        sim_objects << "      \"glyph\":\"Glyph\"," << std::endl
+                    << "      \"shape\":\"Sphere\"," << std::endl
+                    << "      \"scaling_attribute\":\"diameter_\"" << std::endl;
+      } else if (shapes.at(so_name) == kCylinder) {
+        sim_objects << "      \"glyph\":\"BDMGlyph\"," << std::endl
+                    << "      \"shape\":\"Cylinder\"," << std::endl
+                    << "      \"x_scaling_attribute\":\"diameter_\","
+                    << std::endl
+                    << "      \"y_scaling_attribute\":\"actual_length_\","
+                    << std::endl
+                    << "      \"z_scaling_attribute\":\"diameter_\","
+                    << std::endl
+                    << "      \"Vectors\":\"spring_axis_\"," << std::endl
+                    << "      \"MassLocation\":\"mass_location_\"" << std::endl;
       }
+      sim_objects << "    }";
+      if (counter != num_sim_objects - 1) {
+        sim_objects << ",";
+      }
+      sim_objects << std::endl;
       counter++;
     }
 
@@ -439,8 +477,7 @@ class CatalystAdaptor {
           << "\"" << std::endl
           << "  }," << std::endl
           << "  \"sim_objects\": [" << std::endl
-          << sim_objects.str() << std::endl
-          << "  ]," << std::endl
+          << sim_objects.str() << "  ]," << std::endl
           << "  \"extracellular_substances\": [" << std::endl
           << substances.str() << std::endl
           << "  ]" << std::endl
@@ -459,7 +496,8 @@ class CatalystAdaptor {
     int ret_code = system(python_cmd.str().c_str());
     if (ret_code) {
       Log::Fatal("CatalystAdaptor::GenerateParaviewState",
-                 "Error during generation of ParaView state");
+                 "Error during generation of ParaView state\n", "Command\n",
+                 python_cmd.str());
     }
   }
 };
@@ -495,6 +533,23 @@ class CatalystAdaptor {
 
   void ExportVisualization(double step, size_t time_step, bool last_time_step) {
     Log::Fatal("CatalystAdaptor::ExportVisualization",
+               "Simulation was compiled without ParaView support, but you are "
+               "trying to use it.");
+  }
+
+ private:
+  friend class CatalystAdaptorTest_GenerateSimulationInfoJson_Test;
+  friend class CatalystAdaptorTest_GenerateParaviewState_Test;
+
+  static void GenerateSimulationInfoJson(
+      const std::unordered_map<std::string, Shape>& shapes) {
+    Log::Fatal("CatalystAdaptor::GenerateSimulationInfoJson",
+               "Simulation was compiled without ParaView support, but you are "
+               "trying to use it.");
+  }
+
+  static void GenerateParaviewState() {
+    Log::Fatal("CatalystAdaptor::GenerateParaviewState",
                "Simulation was compiled without ParaView support, but you are "
                "trying to use it.");
   }

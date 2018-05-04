@@ -73,7 +73,7 @@ void Apply(TTuple* t, size_t index, TFunction&& f) {
 /// Return the index of the first occurence of type T within the variadic
 /// template parameter Types.
 template <typename T, typename... Types>
-inline size_t GetIndex() {
+inline constexpr size_t GetIndex() {
   return bdm::detail::template GetIndexImpl<T, 0, Types...>::GetValue();
 }
 

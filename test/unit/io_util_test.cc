@@ -2,9 +2,9 @@
 
 namespace bdm {
 
-TEST(IOTest, InvalidRead) { RunInvalidReadTest(); }
+TEST(IOUtilTest, InvalidRead) { RunInvalidReadTest(); }
 
-TEST(IOTest, RuntimeVars) {
+TEST(IOUtilTest, RuntimeVars) {
   RuntimeVariables this_machine;
 
   SysInfo_t si = this_machine.GetSystemInfo();
@@ -30,16 +30,6 @@ TEST(IOTest, RuntimeVars) {
   }
 
   remove(ROOTFILE);
-}
-
-TEST(IOTest, DividingCellAos) {
-  TransactionalVector<Cell> cells;
-  RunTestDivCell(&cells);
-}
-
-TEST(IOTest, DividingCellSoa) {
-  auto cells = Cell::NewEmptySoa();
-  RunTestDivCell(&cells);
 }
 
 }  // namespace bdm

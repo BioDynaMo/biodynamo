@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include "displacement_op.h"
+#include "bound_space_op.h"
 #include "gpu/displacement_op_cuda_kernel.h"
 #include "log.h"
 #include "resource_manager.h"

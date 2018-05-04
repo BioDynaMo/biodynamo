@@ -3,7 +3,7 @@
     <class pattern="bdm::*<*>"/>
     <class pattern="bdm::*Module"/>
     <class pattern="bdm::*Behaviour"/>
-    <class name="bdm::simulation_object_util_test_internal::Neurite" />
+    <class name="bdm::Neurite" />
     <class pattern="std::vector<bdm::*<*>>"/>
     <class pattern="std::tuple<bdm::*<*>"/>
     <class name="bdm::DiffusionGrid" />
@@ -30,8 +30,33 @@
     <!-- genreflex generates wrong code:
          SimulationObjectVector<ResourceManager...> -->
     <class pattern="bdm::SimulationObjectVector*" />
+    <class name="bdm::resource_manager_test_internal::AExt<bdm::CompileTimeParam<bdm::Scalar>, bdm::resource_manager_test_internal::Capsule<AExt>, bdm::SimulationObject_TCTParam_TDerived>::Base" />
+    <class name="bdm::resource_manager_test_internal::AExt<bdm::CompileTimeParam<bdm::Scalar>, bdm::resource_manager_test_internal::Capsule<AExt>, bdm::SimulationObject_TCTParam_TDerived>::Backend" />
+    <class name="bdm::resource_manager_test_internal::AExt<bdm::CompileTimeParam<bdm::Scalar>, bdm::resource_manager_test_internal::Capsule<AExt>, bdm::SimulationObject_TCTParam_TDerived>::SimBackend" />
+    <class name="bdm::resource_manager_test_internal::AExt<bdm::CompileTimeParam<bdm::Scalar>, bdm::resource_manager_test_internal::Capsule<AExt>, bdm::SimulationObject_TCTParam_TDerived>::MostDerivedScalar" />
+    <class name="bdm::resource_manager_test_internal::AExt<bdm::CompileTimeParam<bdm::Scalar>, bdm::resource_manager_test_internal::Capsule<AExt>, bdm::SimulationObject_TCTParam_TDerived>::value_type" />
+    <class name="bdm::resource_manager_test_internal::AExt<bdm::CompileTimeParam<bdm::Soa>, bdm::resource_manager_test_internal::Capsule<AExt>, bdm::SimulationObject_TCTParam_TDerived>::Base" />
+    <class name="bdm::resource_manager_test_internal::AExt<bdm::CompileTimeParam<bdm::Soa>, bdm::resource_manager_test_internal::Capsule<AExt>, bdm::SimulationObject_TCTParam_TDerived>::Backend" />
+    <class name="bdm::resource_manager_test_internal::AExt<bdm::CompileTimeParam<bdm::Soa>, bdm::resource_manager_test_internal::Capsule<AExt>, bdm::SimulationObject_TCTParam_TDerived>::SimBackend" />
+    <class name="bdm::resource_manager_test_internal::AExt<bdm::CompileTimeParam<bdm::Soa>, bdm::resource_manager_test_internal::Capsule<AExt>, bdm::SimulationObject_TCTParam_TDerived>::MostDerivedScalar" />
+    <class name="bdm::resource_manager_test_internal::AExt<bdm::CompileTimeParam<bdm::Soa>, bdm::resource_manager_test_internal::Capsule<AExt>, bdm::SimulationObject_TCTParam_TDerived>::value_type" />
+    <class name="bdm::resource_manager_test_internal::BExt<bdm::CompileTimeParam<bdm::Scalar>, bdm::resource_manager_test_internal::Capsule<BExt>, bdm::SimulationObject_TCTParam_TDerived>::Base" />
+    <class name="bdm::resource_manager_test_internal::BExt<bdm::CompileTimeParam<bdm::Scalar>, bdm::resource_manager_test_internal::Capsule<BExt>, bdm::SimulationObject_TCTParam_TDerived>::Backend" />
+    <class name="bdm::resource_manager_test_internal::BExt<bdm::CompileTimeParam<bdm::Scalar>, bdm::resource_manager_test_internal::Capsule<BExt>, bdm::SimulationObject_TCTParam_TDerived>::SimBackend" />
+    <class name="bdm::resource_manager_test_internal::BExt<bdm::CompileTimeParam<bdm::Scalar>, bdm::resource_manager_test_internal::Capsule<BExt>, bdm::SimulationObject_TCTParam_TDerived>::MostDerivedScalar" />
+    <class name="bdm::resource_manager_test_internal::BExt<bdm::CompileTimeParam<bdm::Scalar>, bdm::resource_manager_test_internal::Capsule<BExt>, bdm::SimulationObject_TCTParam_TDerived>::value_type" />
+    <class name="bdm::resource_manager_test_internal::BExt<bdm::CompileTimeParam<bdm::Soa>, bdm::resource_manager_test_internal::Capsule<BExt>, bdm::SimulationObject_TCTParam_TDerived>::Base" />
+    <class name="bdm::resource_manager_test_internal::BExt<bdm::CompileTimeParam<bdm::Soa>, bdm::resource_manager_test_internal::Capsule<BExt>, bdm::SimulationObject_TCTParam_TDerived>::Backend" />
+    <class name="bdm::resource_manager_test_internal::BExt<bdm::CompileTimeParam<bdm::Soa>, bdm::resource_manager_test_internal::Capsule<BExt>, bdm::SimulationObject_TCTParam_TDerived>::SimBackend" />
+    <class name="bdm::resource_manager_test_internal::BExt<bdm::CompileTimeParam<bdm::Soa>, bdm::resource_manager_test_internal::Capsule<BExt>, bdm::SimulationObject_TCTParam_TDerived>::MostDerivedScalar" />
+    <class name="bdm::resource_manager_test_internal::BExt<bdm::CompileTimeParam<bdm::Soa>, bdm::resource_manager_test_internal::Capsule<BExt>, bdm::SimulationObject_TCTParam_TDerived>::value_type" />
+    <class name="bdm::resource_manager_test_internal::CompileTimeParam<bdm::Scalar, bdm::resource_manager_test_internal::AExt<bdm::CompileTimeParam<bdm::Scalar>, bdm::resource_manager_test_internal::Capsule<AExt>, bdm::SimulationObject_TCTParam_TDerived>, bdm::resource_manager_test_internal::BExt<bdm::CompileTimeParam<bdm::Scalar>, bdm::resource_manager_test_internal::Capsule<BExt>, bdm::SimulationObject_TCTParam_TDerived> >::SimulationBackend" />
+    <class name="bdm::resource_manager_test_internal::CompileTimeParam<bdm::Scalar, bdm::resource_manager_test_internal::AExt<bdm::CompileTimeParam<bdm::Soa>, bdm::resource_manager_test_internal::Capsule<AExt>, bdm::SimulationObject_TCTParam_TDerived>, bdm::resource_manager_test_internal::BExt<bdm::CompileTimeParam<bdm::Soa>, bdm::resource_manager_test_internal::Capsule<BExt>, bdm::SimulationObject_TCTParam_TDerived> >::SimulationBackend" />
+    <class name="bdm::resource_manager_test_internal::CompileTimeParam<bdm::Soa, bdm::resource_manager_test_internal::AExt<bdm::CompileTimeParam<bdm::Scalar>, bdm::resource_manager_test_internal::Capsule<AExt>, bdm::SimulationObject_TCTParam_TDerived>, bdm::resource_manager_test_internal::BExt<bdm::CompileTimeParam<bdm::Scalar>, bdm::resource_manager_test_internal::Capsule<BExt>, bdm::SimulationObject_TCTParam_TDerived> >::SimulationBackend" />
+    <class name="bdm::resource_manager_test_internal::CompileTimeParam<bdm::Soa, bdm::resource_manager_test_internal::AExt<bdm::CompileTimeParam<bdm::Soa>, bdm::resource_manager_test_internal::Capsule<AExt>, bdm::SimulationObject_TCTParam_TDerived>, bdm::resource_manager_test_internal::BExt<bdm::CompileTimeParam<bdm::Soa>, bdm::resource_manager_test_internal::Capsule<BExt>, bdm::SimulationObject_TCTParam_TDerived> >::SimulationBackend" />
     <!-- list of classes with dictionary in libbiodynamo
          -> all selected classes from libbiodynamo-selection.xml -->
+    <class name="bdm::SoHandle" />
     <class name="bdm::RuntimeVariables"/>
     <class name="bdm::NullBiologyModule"/>
     <class name="bdm::BaseBiologyModule"/>
@@ -40,6 +65,8 @@
     <!-- list of template classes with custom streamers -->
     <class pattern="bdm::Variant*" />
     <class pattern="std::__1::vector<bdm::Variant<*>>" />
+    <class pattern="bdm::SoPointer*" />
+    <class pattern="std::__1::vector<bdm::SoPointer<*>>" />
     <class pattern="std::__1::tuple<*>::_*" />
   </exclusion>
 </lcgdict>

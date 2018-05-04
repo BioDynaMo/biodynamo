@@ -4,6 +4,7 @@
 #include "cell.h"
 #include "gtest/gtest.h"
 #include "io_util.h"
+#include "unit/default_ctparam.h"
 #include "unit/test_util.h"
 
 #define ROOTFILE "bdmFile.root"
@@ -82,6 +83,8 @@ TEST(SimulationBackupTest, Backup) {
                         restored_rm);
   EXPECT_EQ(1u, restored_rm->Get<Cell>()->size());
   // Writing and reading ResourceManager is tested in resource_manager_test.cc
+
+  delete restored_rm;
 
   remove(ROOTFILE);
 }

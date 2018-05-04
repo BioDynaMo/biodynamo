@@ -1,7 +1,7 @@
 /*=========================================================================
 
   Program:   Visualization Toolkit
-  Module:    vtkGlyph3DExt.cc
+  Module:    BDMGlyph.cc
 
   Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen
   All rights reserved.
@@ -12,7 +12,7 @@
      PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
-#include "vtkGlyph3DExt.h"
+#include "BDMGlyph.h"
 
 #include "vtkCell.h"
 #include "vtkCellData.h"
@@ -33,28 +33,39 @@
 #include "vtkUniformGrid.h"
 #include "vtkUnsignedCharArray.h"
 
-vtkStandardNewMacro(vtkGlyph3DExt);
+vtkStandardNewMacro(BDMGlyph);
 
 //----------------------------------------------------------------------------
-vtkGlyph3DExt::vtkGlyph3DExt() {}
+BDMGlyph::BDMGlyph() {
+  // by default process active point scalars
+  this->SetInputArrayToProcess(4, 0, 0, vtkDataObject::FIELD_ASSOCIATION_POINTS,
+                               vtkDataSetAttributes::SCALARS);
+  // by default process active point scalars
+  this->SetInputArrayToProcess(5, 0, 0, vtkDataObject::FIELD_ASSOCIATION_POINTS,
+                               vtkDataSetAttributes::SCALARS);
+  // by default process active point scalars
+  this->SetInputArrayToProcess(6, 0, 0, vtkDataObject::FIELD_ASSOCIATION_POINTS,
+                               vtkDataSetAttributes::SCALARS);
+  // by default process active point scalars
+  this->SetInputArrayToProcess(7, 0, 0, vtkDataObject::FIELD_ASSOCIATION_POINTS,
+                               vtkDataSetAttributes::VECTORS);
+}
 
 //----------------------------------------------------------------------------
-vtkGlyph3DExt::~vtkGlyph3DExt() {}
+BDMGlyph::~BDMGlyph() {}
 
 //----------------------------------------------------------------------------
-bool vtkGlyph3DExt::Execute(vtkDataSet *input,
-                            vtkInformationVector *sourceVector,
-                            vtkPolyData *output) {
+bool BDMGlyph::Execute(vtkDataSet *input, vtkInformationVector *sourceVector,
+                       vtkPolyData *output) {
   vtkDataArray *inSScalars = this->GetInputArrayToProcess(0, input);
   vtkDataArray *inVectors = this->GetInputArrayToProcess(1, input);
   return this->Execute(input, sourceVector, output, inSScalars, inVectors);
 }
 
 //----------------------------------------------------------------------------
-bool vtkGlyph3DExt::Execute(vtkDataSet *input,
-                            vtkInformationVector *sourceVector,
-                            vtkPolyData *output, vtkDataArray *inSScalars,
-                            vtkDataArray *inVectors) {
+bool BDMGlyph::Execute(vtkDataSet *input, vtkInformationVector *sourceVector,
+                       vtkPolyData *output, vtkDataArray *inSScalars,
+                       vtkDataArray *inVectors) {
   assert(input && output);
   if (input == NULL || output == NULL) {
     // nothing to do.
@@ -66,6 +77,7 @@ bool vtkGlyph3DExt::Execute(vtkDataSet *input,
 
   vtkPointData *pd;
   vtkDataArray *inCScalars;  // Scalars for Coloring
+  vtkDataArray *x_scaling, *y_scaling, *z_scaling, *end_position = NULL;
   unsigned char *inGhostLevels = 0;
   vtkDataArray *inNormals, *sourceNormals = NULL;
   vtkDataArray *sourceTCoords = NULL;
@@ -73,13 +85,17 @@ bool vtkGlyph3DExt::Execute(vtkDataSet *input,
   vtkPoints *sourcePts = NULL;
   vtkSmartPointer<vtkPoints> transformedSourcePts =
       vtkSmartPointer<vtkPoints>::New();
+  vtkSmartPointer<vtkPoints> transformedSourcePts2 =
+      vtkSmartPointer<vtkPoints>::New();
   vtkPoints *newPts;
   vtkDataArray *newScalars = NULL;
   vtkDataArray *newVectors = NULL;
   vtkDataArray *newNormals = NULL;
   vtkDataArray *newTCoords = NULL;
-  double x[3], v[3], vNew[3], s = 0.0, vMag = 0.0, value, tc[3], n[3];
+  double x[3], v[3], vNew[3], ep[3], s = 0.0, vMag = 0.0, value, tc[3],
+                                     xs = 0.0, ys = 0.0, zs = 0.0;
   vtkTransform *trans = vtkTransform::New();
+  vtkTransform *trans2 = vtkTransform::New();
   vtkNew<vtkIdList> pointIdList;
   vtkIdList *cellPts;
   int npts;
@@ -106,6 +122,10 @@ bool vtkGlyph3DExt::Execute(vtkDataSet *input,
   pd = input->GetPointData();
   inNormals = this->GetInputArrayToProcess(2, input);
   inCScalars = this->GetInputArrayToProcess(3, input);
+  x_scaling = this->GetInputArrayToProcess(4, input);
+  y_scaling = this->GetInputArrayToProcess(5, input);
+  z_scaling = this->GetInputArrayToProcess(6, input);
+  end_position = this->GetInputArrayToProcess(7, input);
   if (inCScalars == NULL) {
     inCScalars = inSScalars;
   }
@@ -126,6 +146,7 @@ bool vtkGlyph3DExt::Execute(vtkDataSet *input,
     vtkDebugMacro(<< "No points to glyph!");
     pts->Delete();
     trans->Delete();
+    trans2->Delete();
     return 1;
   }
 
@@ -150,6 +171,7 @@ bool vtkGlyph3DExt::Execute(vtkDataSet *input,
       vtkErrorMacro(<< "Indexing on but don't have data to index with");
       pts->Delete();
       trans->Delete();
+      trans2->Delete();
       return true;
     } else {
       vtkWarningMacro(<< "Turning indexing off: no data to index with");
@@ -287,7 +309,9 @@ bool vtkGlyph3DExt::Execute(vtkDataSet *input,
   }
 
   transformedSourcePts->SetDataTypeToDouble();
+  transformedSourcePts2->SetDataTypeToDouble();
   transformedSourcePts->Allocate(numSourcePts);
+  transformedSourcePts2->Allocate(numSourcePts);
 
   // Traverse all Input points, transforming Source points and copying
   // point attributes.
@@ -320,6 +344,7 @@ bool vtkGlyph3DExt::Execute(vtkDataSet *input,
                       << " has more than 3 components.\n");
         pts->Delete();
         trans->Delete();
+        trans2->Delete();
         if (newPts) {
           newPts->Delete();
         }
@@ -344,30 +369,21 @@ bool vtkGlyph3DExt::Execute(vtkDataSet *input,
       }
     }
 
-    if (haveNormals && inNormals) {
-      if (inNormals->GetNumberOfComponents() > 3) {
-        vtkErrorMacro(<< "vtkDataArray " << inNormals->GetName()
-                      << " has more than 3 components.\n");
-        pts->Delete();
-        trans->Delete();
-        if (newPts) {
-          newPts->Delete();
-        }
-        if (newVectors) {
-          newVectors->Delete();
-        }
-        return false;
+    if (x_scaling || y_scaling || z_scaling) {
+      if (x_scaling) {
+        xs = x_scaling->GetComponent(inPtId, 0);
+      }
+      if (y_scaling) {
+        ys = y_scaling->GetComponent(inPtId, 0);
+      }
+      if (z_scaling) {
+        zs = z_scaling->GetComponent(inPtId, 0);
       }
 
-      n[0] = 0;
-      n[1] = 0;
-      n[2] = 0;
-      inNormals->GetTuple(inPtId, n);
-
       if (this->ScaleMode == VTK_SCALE_BY_NORMAL) {
-        scalex = n[0];
-        scaley = n[1];
-        scalez = n[2];
+        scalex = xs;
+        scaley = ys;
+        scalez = zs;
       }
     }
 
@@ -434,6 +450,7 @@ bool vtkGlyph3DExt::Execute(vtkDataSet *input,
 
     // Now begin copying/transforming glyph
     trans->Identity();
+    trans2->Identity();
 
     // Copy all topology (transformation independent)
     for (cellId = 0; cellId < numSourceCells; cellId++) {
@@ -448,7 +465,7 @@ bool vtkGlyph3DExt::Execute(vtkDataSet *input,
 
     // translate Source to Input point
     input->GetPoint(inPtId, x);
-    trans->Translate(x[0], x[1], x[2]);
+    // trans->Translate(x[0], x[1], x[2]);
 
     if (haveVectors) {
       // Copy Input vector
@@ -456,17 +473,18 @@ bool vtkGlyph3DExt::Execute(vtkDataSet *input,
         newVectors->InsertTuple(i + ptIncr, v);
       }
       if (this->Orient && (vMag > 0.0)) {
-        // if there is no y or z component
-        if (v[1] == 0.0 && v[2] == 0.0) {
-          if (v[0] < 0) {
-            // just flip x if we need to
-            trans->RotateWXYZ(180.0, 0, 1, 0);
+        double rotation_axis[3] = {v[0] / vMag, v[1] / vMag + 1, v[2] / vMag};
+        trans->RotateWXYZ(180.0, rotation_axis);
+        // trans->RotateX(45.0);
+
+        if (end_position) {
+          double middle_position[3];
+          end_position->GetTuple(inPtId, ep);
+          for (uint64_t i = 0; i < 3; i++) {
+            middle_position[i] = ep[i] - v[i] / 2.0;
           }
-        } else {
-          vNew[0] = (v[0] + vMag) / 2.0;
-          vNew[1] = v[1] / 2.0;
-          vNew[2] = v[2] / 2.0;
-          trans->RotateWXYZ(180.0, vNew[0], vNew[1], vNew[2]);
+          trans2->Translate(middle_position[0], middle_position[1],
+                            middle_position[2]);
         }
       }
     }
@@ -520,10 +538,14 @@ bool vtkGlyph3DExt::Execute(vtkDataSet *input,
     // multiply points and normals by resulting matrix
     if (this->SourceTransform) {
       transformedSourcePts->Reset();
+      transformedSourcePts2->Reset();
       this->SourceTransform->TransformPoints(sourcePts, transformedSourcePts);
-      trans->TransformPoints(transformedSourcePts, newPts);
+      trans->TransformPoints(transformedSourcePts, transformedSourcePts2);
+      trans2->TransformPoints(transformedSourcePts2, newPts);
     } else {
-      trans->TransformPoints(sourcePts, newPts);
+      transformedSourcePts->Reset();
+      trans->TransformPoints(sourcePts, transformedSourcePts);
+      trans2->TransformPoints(transformedSourcePts, newPts);
     }
 
     if (haveNormals) {
@@ -593,6 +615,6 @@ bool vtkGlyph3DExt::Execute(vtkDataSet *input,
 }
 
 //----------------------------------------------------------------------------
-void vtkGlyph3DExt::PrintSelf(ostream &os, vtkIndent indent) {
+void BDMGlyph::PrintSelf(ostream &os, vtkIndent indent) {
   this->Superclass::PrintSelf(os, indent);
 }

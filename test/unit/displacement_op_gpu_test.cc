@@ -4,6 +4,7 @@
 #include "gpu/gpu_helper.h"
 #include "grid.h"
 #include "gtest/gtest.h"
+#include "unit/default_ctparam.h"
 #include "unit/test_util.h"
 
 namespace bdm {
@@ -20,7 +21,7 @@ void RunTest() {
   cell.SetDiameter(9);
   cell.SetMass(1.4);
   cell.SetPosition({0, 0, 0});
-  cell.SetMassLocation({0, 0, 0});
+  cell.SetPosition({0, 0, 0});
   cells->push_back(cell);
 
   // Cell 2
@@ -28,7 +29,7 @@ void RunTest() {
   cell.SetDiameter(11);
   cell.SetMass(1.1);
   cell.SetPosition({0, 5, 0});
-  cell.SetMassLocation({0, 5, 0});
+  cell.SetPosition({0, 5, 0});
   cells->push_back(cell);
 
   auto& grid = Grid<>::GetInstance();

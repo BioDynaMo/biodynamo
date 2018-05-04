@@ -12,6 +12,7 @@
 #endif
 #endif
 
+#include "bound_space_op.h"
 #include "gpu/gpu_helper.h"
 #include "grid.h"
 #include "resource_manager.h"

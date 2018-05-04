@@ -46,4 +46,6 @@ const std::string SimulationBackup::kSimulationStepName =
     "completed_simulation_steps";
 const std::string SimulationBackup::kRuntimeVariableName = "runtime_variable";
 
+std::vector<std::function<void()>> SimulationBackup::after_restore_event_ = {};
+
 }  // namespace bdm

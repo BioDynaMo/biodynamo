@@ -4,6 +4,7 @@
 #include "gtest/gtest.h"
 #include "model_initializer.h"
 #include "substance_initializers.h"
+#include "unit/default_ctparam.h"
 #include "unit/test_util.h"
 
 #include "Math/DistFunc.h"
@@ -15,10 +16,11 @@ enum Substances { kSubstance };
 TEST(DiffusionInitTest, GaussianBand) {
   Param::Reset();
   ResourceManager<>::Get()->Clear();
-  
+
   Param::bound_space_ = true;
   Param::min_bound_ = 0;
   Param::max_bound_ = 250;
+  Rm()->Clear();
 
   // Create one cell at a random position
   auto construct = [](const std::array<double, 3>& position) {
@@ -72,6 +74,8 @@ TEST(DiffusionInitTest, GaussianBand) {
               kEps);
   EXPECT_NEAR(ROOT::Math::normal_pdf(130, 50, 125), conc[dgrid->GetBoxIndex(f)],
               kEps);
+
+  Param::Reset();
 }
 
 }  // namespace bdm

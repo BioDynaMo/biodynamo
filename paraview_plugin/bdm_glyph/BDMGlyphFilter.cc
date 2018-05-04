@@ -1,7 +1,7 @@
 /*=========================================================================
 
   Program:   ParaView
-  Module:    vtkPVGlyphFilterExt.cc
+  Module:    BDMGlyphFilter.cc
 
   Copyright (c) Kitware, Inc.
   All rights reserved.
@@ -12,7 +12,7 @@
      PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
-#include "vtkPVGlyphFilterExt.h"
+#include "BDMGlyphFilter.h"
 
 // VTK includes
 #include "vtkAppendPolyData.h"
@@ -43,7 +43,7 @@
 #include <set>
 #include <vector>
 
-class vtkPVGlyphFilterExt::vtkInternals {
+class BDMGlyphFilter::vtkInternals {
   vtkBoundingBox Bounds;
   double NearestPointRadius;
   std::vector<vtkTuple<double, 3> > Points;
@@ -90,10 +90,10 @@ class vtkPVGlyphFilterExt::vtkInternals {
   //---------------------------------------------------------------------------
   // Update internal datastructures for the given dataset. This will collect
   // bounds information for all datasets for SPATIALLY_UNIFORM_DISTRIBUTION.
-  void UpdateWithDataset(vtkDataSet* ds, vtkPVGlyphFilterExt* self) {
+  void UpdateWithDataset(vtkDataSet* ds, BDMGlyphFilter* self) {
     assert(ds != NULL && self != NULL);
     if (self->GetGlyphMode() !=
-        vtkPVGlyphFilterExt::SPATIALLY_UNIFORM_DISTRIBUTION) {
+        BDMGlyphFilter::SPATIALLY_UNIFORM_DISTRIBUTION) {
       // nothing to do.
       return;
     }
@@ -111,9 +111,9 @@ class vtkPVGlyphFilterExt::vtkInternals {
   // information among all ranks.
   // Subsquently, we also build the list of random sample points using the
   // synchronized bounds.
-  void SynchronizeGlobalInformation(vtkPVGlyphFilterExt* self) {
+  void SynchronizeGlobalInformation(BDMGlyphFilter* self) {
     if (self->GetGlyphMode() !=
-        vtkPVGlyphFilterExt::SPATIALLY_UNIFORM_DISTRIBUTION) {
+        BDMGlyphFilter::SPATIALLY_UNIFORM_DISTRIBUTION) {
       return;  // nothing to do.
     }
 
@@ -172,16 +172,16 @@ class vtkPVGlyphFilterExt::vtkInternals {
 
   //---------------------------------------------------------------------------
   inline bool IsPointVisible(vtkDataSet* ds, vtkIdType ptId,
-                             vtkPVGlyphFilterExt* self) {
+                             BDMGlyphFilter* self) {
     assert(ds != NULL && self != NULL);
     switch (self->GetGlyphMode()) {
-      case vtkPVGlyphFilterExt::ALL_POINTS:
+      case BDMGlyphFilter::ALL_POINTS:
         return true;
 
-      case vtkPVGlyphFilterExt::EVERY_NTH_POINT:
+      case BDMGlyphFilter::EVERY_NTH_POINT:
         return self->GetStride() <= 1 || (ptId % self->GetStride()) == 0;
 
-      case vtkPVGlyphFilterExt::SPATIALLY_UNIFORM_DISTRIBUTION:
+      case BDMGlyphFilter::SPATIALLY_UNIFORM_DISTRIBUTION:
         // This will initialize the point locator and build the list of PointIds
         // that should be glyphed.
         this->SetupLocator(ds);
@@ -209,29 +209,27 @@ class vtkPVGlyphFilterExt::vtkInternals {
   }
 };
 
-vtkStandardNewMacro(vtkPVGlyphFilterExt);
-vtkCxxSetObjectMacro(vtkPVGlyphFilterExt, Controller,
-                     vtkMultiProcessController);
+vtkStandardNewMacro(BDMGlyphFilter);
+vtkCxxSetObjectMacro(BDMGlyphFilter, Controller, vtkMultiProcessController);
 //-----------------------------------------------------------------------------
-vtkPVGlyphFilterExt::vtkPVGlyphFilterExt()
-    : GlyphMode(vtkPVGlyphFilterExt::ALL_POINTS),
+BDMGlyphFilter::BDMGlyphFilter()
+    : GlyphMode(BDMGlyphFilter::ALL_POINTS),
       MaximumNumberOfSamplePoints(5000),
       Seed(1),
       Stride(1),
       Controller(0),
-      Internals(new vtkPVGlyphFilterExt::vtkInternals()) {
+      Internals(new BDMGlyphFilter::vtkInternals()) {
   this->SetController(vtkMultiProcessController::GetGlobalController());
 }
 
 //-----------------------------------------------------------------------------
-vtkPVGlyphFilterExt::~vtkPVGlyphFilterExt() {
+BDMGlyphFilter::~BDMGlyphFilter() {
   this->SetController(NULL);
   delete this->Internals;
 }
 
 //----------------------------------------------------------------------------
-int vtkPVGlyphFilterExt::FillInputPortInformation(int port,
-                                                  vtkInformation* info) {
+int BDMGlyphFilter::FillInputPortInformation(int port, vtkInformation* info) {
   if (!this->Superclass::FillInputPortInformation(port, info)) {
     return 0;
   }
@@ -245,17 +243,17 @@ int vtkPVGlyphFilterExt::FillInputPortInformation(int port,
 }
 
 //----------------------------------------------------------------------------
-int vtkPVGlyphFilterExt::FillOutputPortInformation(int vtkNotUsed(port),
-                                                   vtkInformation* info) {
+int BDMGlyphFilter::FillOutputPortInformation(int vtkNotUsed(port),
+                                              vtkInformation* info) {
   // now add our info
   info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataObject");
   return 1;
 }
 
 //----------------------------------------------------------------------------
-int vtkPVGlyphFilterExt::ProcessRequest(vtkInformation* request,
-                                        vtkInformationVector** inputVector,
-                                        vtkInformationVector* outputVector) {
+int BDMGlyphFilter::ProcessRequest(vtkInformation* request,
+                                   vtkInformationVector** inputVector,
+                                   vtkInformationVector* outputVector) {
   if (request->Has(vtkDemandDrivenPipeline::REQUEST_DATA_OBJECT())) {
     return this->RequestDataObject(request, inputVector, outputVector);
   }
@@ -264,9 +262,9 @@ int vtkPVGlyphFilterExt::ProcessRequest(vtkInformation* request,
 }
 
 //----------------------------------------------------------------------------
-int vtkPVGlyphFilterExt::RequestDataObject(vtkInformation*,
-                                           vtkInformationVector** inputVector,
-                                           vtkInformationVector* outputVector) {
+int BDMGlyphFilter::RequestDataObject(vtkInformation*,
+                                      vtkInformationVector** inputVector,
+                                      vtkInformationVector* outputVector) {
   if (vtkCompositeDataSet::GetData(inputVector[0], 0)) {
     vtkMultiBlockDataSet* mds = vtkMultiBlockDataSet::GetData(outputVector, 0);
     if (mds == NULL) {
@@ -288,9 +286,9 @@ int vtkPVGlyphFilterExt::RequestDataObject(vtkInformation*,
 }
 
 //----------------------------------------------------------------------------
-int vtkPVGlyphFilterExt::RequestData(vtkInformation* vtkNotUsed(request),
-                                     vtkInformationVector** inputVector,
-                                     vtkInformationVector* outputVector) {
+int BDMGlyphFilter::RequestData(vtkInformation* vtkNotUsed(request),
+                                vtkInformationVector** inputVector,
+                                vtkInformationVector* outputVector) {
   vtkInformationVector* sourceVector = inputVector[1];
 
   this->Internals->Reset();
@@ -363,13 +361,13 @@ int vtkPVGlyphFilterExt::RequestData(vtkInformation* vtkNotUsed(request),
 }
 
 //-----------------------------------------------------------------------------
-int vtkPVGlyphFilterExt::IsPointVisible(vtkDataSet* ds, vtkIdType ptId) {
+int BDMGlyphFilter::IsPointVisible(vtkDataSet* ds, vtkIdType ptId) {
   return (this->Superclass::IsPointVisible(ds, ptId) != 0) &&
          (this->Internals->IsPointVisible(ds, ptId, this));
 }
 
 //-----------------------------------------------------------------------------
-bool vtkPVGlyphFilterExt::IsInputArrayToProcessValid(vtkDataSet* input) {
+bool BDMGlyphFilter::IsInputArrayToProcessValid(vtkDataSet* input) {
   // confirm that both scalars and vectors are being used by the Glyph filter,
   // otherwise, the mismatch in array association for the two is not an issue.
   if (!this->NeedsScalars() || !this->NeedsVectors()) {
@@ -401,7 +399,7 @@ bool vtkPVGlyphFilterExt::IsInputArrayToProcessValid(vtkDataSet* input) {
 }
 
 //-----------------------------------------------------------------------------
-bool vtkPVGlyphFilterExt::NeedsScalars() {
+bool BDMGlyphFilter::NeedsScalars() {
   if (this->ScaleMode == VTK_SCALE_BY_SCALAR) {
     return true;
   }
@@ -415,7 +413,7 @@ bool vtkPVGlyphFilterExt::NeedsScalars() {
 }
 
 //-----------------------------------------------------------------------------
-bool vtkPVGlyphFilterExt::NeedsVectors() {
+bool BDMGlyphFilter::NeedsVectors() {
   if (this->ScaleMode == VTK_SCALE_BY_VECTOR ||
       this->ScaleMode == VTK_SCALE_BY_VECTORCOMPONENTS ||
       this->ScaleMode == VTK_SCALE_BY_NORMAL) {
@@ -434,7 +432,7 @@ bool vtkPVGlyphFilterExt::NeedsVectors() {
 }
 
 //-----------------------------------------------------------------------------
-bool vtkPVGlyphFilterExt::UseCellCenters(vtkDataSet* input) {
+bool BDMGlyphFilter::UseCellCenters(vtkDataSet* input) {
   int inSScalarsAssociation = this->GetInputArrayAssociation(0, input);
   int inVectorsAssociation = this->GetInputArrayAssociation(1, input);
   return inSScalarsAssociation == vtkDataObject::FIELD_ASSOCIATION_CELLS ||
@@ -442,9 +440,9 @@ bool vtkPVGlyphFilterExt::UseCellCenters(vtkDataSet* input) {
 }
 
 //-----------------------------------------------------------------------------
-bool vtkPVGlyphFilterExt::ExecuteWithCellCenters(
-    vtkDataSet* input, vtkInformationVector* sourceVector,
-    vtkPolyData* output) {
+bool BDMGlyphFilter::ExecuteWithCellCenters(vtkDataSet* input,
+                                            vtkInformationVector* sourceVector,
+                                            vtkPolyData* output) {
   vtkNew<vtkCellCenters> cellCenters;
   cellCenters->SetInputData(input);
   cellCenters->Update();
@@ -457,7 +455,7 @@ bool vtkPVGlyphFilterExt::ExecuteWithCellCenters(
 }
 
 //-----------------------------------------------------------------------------
-void vtkPVGlyphFilterExt::PrintSelf(ostream& os, vtkIndent indent) {
+void BDMGlyphFilter::PrintSelf(ostream& os, vtkIndent indent) {
   this->Superclass::PrintSelf(os, indent);
   os << indent << "GlyphMode: ";
   switch (this->GlyphMode) {

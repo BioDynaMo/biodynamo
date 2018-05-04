@@ -5,7 +5,6 @@
 
 #include "biodynamo.h"
 #include "math_util.h"
-#include "matrix.h"
 
 namespace bdm {
 
@@ -45,9 +44,7 @@ inline void RunTest(bool* result) {
 // division, random numbers are used. Within a single executable these numbers
 // vary. Also within the threads this needs to be enforced
 #pragma omp parallel
-  {
-    gRandom.SetSeed(1);
-  }
+  { gRandom.SetSeed(1); }
 
   size_t cells_per_dim = 2;
   auto construct = [](const std::array<double, 3>& position) {

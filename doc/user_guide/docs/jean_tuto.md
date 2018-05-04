@@ -191,7 +191,7 @@ To do that, we can extend the existing `Cell` class in order to add a new data m
 We will do that directly in our tutorial.h file by writing
 ``` C++
   // Define my custom cell MyCell, which extends Cell by adding extra data members: cell_colour
-  BDM_SIM_OBJECT(MyCell, Cell) { // our object extends the Cell object
+  BDM_SIM_OBJECT(MyCell, bdm::Cell) { // our object extends the Cell object
     BDM_SIM_OBJECT_HEADER(MyCellExt, 1, cell_colour_); // create the header with our new data member
 
     public:
@@ -443,7 +443,7 @@ inline int Simulate(int argc, const char** argv) {
 namespace bdm {
 
   // 0. Define my custom cell MyCell, which extends Cell by adding extra data members: cell_color and can_divide
-  BDM_SIM_OBJECT(MyCell, Cell) { // our object extends the Cell object
+  BDM_SIM_OBJECT(MyCell, bdm::Cell) { // our object extends the Cell object
     BDM_SIM_OBJECT_HEADER(MyCellExt, 1, can_divide_, cell_colour_); // create the header with our new data member
 
     public:

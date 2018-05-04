@@ -25,33 +25,7 @@ from paraview.simple import *
 def ExtractIterationFromFilename(x): return int(x.split('_')[-1].split('.')[0])
 
 # ------------------------------------------------------------------------------
-def ProcessSimulationObject(so_info):
-    so_name = so_info['name']
-    # determine pvtu files
-    files = glob.glob('./{0}s_data*.pvtu'.format(so_name))
-    if len(files) == 0:
-        print('No data files found for simulation object {0}'.format(so_name))
-        sys.exit(1)
-
-    files.sort(cmp=lambda x, y: ExtractIterationFromFilename(x) - ExtractIterationFromFilename(y))
-
-
-    # create a new 'XML Partitioned Unstructured Grid Reader'
-    so_data = XMLPartitionedUnstructuredGridReader(FileName=files)
-    # following line was in trace, but seems to be superfluous
-    # so_data.PointArrayStatus = ['diameter_', 'volume_']
-
-    # rename data source
-    so_data_name = '{0}-data'.format(so_name)
-    RenameSource(so_data_name, so_data)
-
-    # get active view
-    renderView1 = GetActiveViewOrCreate('RenderView')
-    # get animation scene
-    animationScene1 = GetAnimationScene()
-    # update animation scene based on data timesteps
-    animationScene1.UpdateAnimationUsingDataTimeSteps()
-
+def ProcessSphere(so_info, so_data, render_view):
     # create a new 'Glyph'
     glyph_type = str(so_info['shape'])
     glyph1 = Glyph(Input=so_data, GlyphType=glyph_type)
@@ -65,7 +39,7 @@ def ProcessSimulationObject(so_info):
     glyph1.GlyphMode = 'All Points'
     #
     # # show data in view
-    glyph1Display = Show(glyph1, renderView1)
+    glyph1Display = Show(glyph1, render_view)
     # # trace defaults for the display properties.
     glyph1Display.Representation = 'Surface'
     glyph1Display.ColorArrayName = [None, '']
@@ -90,7 +64,7 @@ def ProcessSimulationObject(so_info):
     # glyph1Display.SetScalarBarVisibility(renderView1, True)
 
     # update the view to ensure updated data information
-    renderView1.Update()
+    render_view.Update()
 
     # Properties modified on glyph1
     # ignored if set earlier
@@ -98,10 +72,139 @@ def ProcessSimulationObject(so_info):
     RenameSource('{0}s'.format(so_info['name']), glyph1)
 
     # update the view to ensure updated data information
-    renderView1.Update()
+    render_view.Update()
+
+# ------------------------------------------------------------------------------
+def ProcessCylinder(so_info, so_data, render_view):
+    glyph_type = str(so_info['shape'])
+    bDMGlyph1 = BDMGlyph(Input=so_data, GlyphType=glyph_type)
+    bDMGlyph1.Scalars = ['POINTS', 'None']
+    bDMGlyph1.Vectors = ['POINTS', 'None']
+    bDMGlyph1.XScaling = ['POINTS', 'None']
+    bDMGlyph1.YScaling = ['POINTS', 'None']
+    bDMGlyph1.ZScaling = ['POINTS', 'None']
+    bDMGlyph1.MassLocation = ['POINTS', 'None']
+    bDMGlyph1.ScaleFactor = 0.1
+    bDMGlyph1.GlyphTransform = 'Transform2'
+
+    # show data in view
+    bDMGlyph1Display = Show(bDMGlyph1, render_view)
+    # trace defaults for the display properties.
+    bDMGlyph1Display.Representation = 'Surface'
+    bDMGlyph1Display.ColorArrayName = [None, '']
+    bDMGlyph1Display.OSPRayScaleArray = 'actual_length_'
+    bDMGlyph1Display.OSPRayScaleFunction = 'PiecewiseFunction'
+    bDMGlyph1Display.SelectOrientationVectors = 'None'
+    bDMGlyph1Display.ScaleFactor = 0.010000000149011612
+    bDMGlyph1Display.SelectScaleArray = 'None'
+    bDMGlyph1Display.GlyphType = glyph_type
+    bDMGlyph1Display.GlyphTableIndexArray = 'None'
+    bDMGlyph1Display.DataAxesGrid = 'GridAxesRepresentation'
+    bDMGlyph1Display.PolarAxes = 'PolarAxesRepresentation'
+    bDMGlyph1Display.GaussianRadius = 0.005000000074505806
+    bDMGlyph1Display.SetScaleArray = ['POINTS', 'actual_length_']
+    bDMGlyph1Display.ScaleTransferFunction = 'PiecewiseFunction'
+    bDMGlyph1Display.OpacityArray = ['POINTS', 'actual_length_']
+    bDMGlyph1Display.OpacityTransferFunction = 'PiecewiseFunction'
+
+    # update the view to ensure updated data information
+    render_view.Update()
+
+    # Properties modified on bDMGlyph1
+    bDMGlyph1.XScaling = ['POINTS', 'diameter_']
+
+    # update the view to ensure updated data information
+    render_view.Update()
+
+    # Properties modified on bDMGlyph1
+    bDMGlyph1.YScaling = ['POINTS', 'diameter_']
+
+    # update the view to ensure updated data information
+    render_view.Update()
+
+    # Properties modified on bDMGlyph1
+    bDMGlyph1.YScaling = ['POINTS', 'actual_length_']
+
+    # update the view to ensure updated data information
+    render_view.Update()
+
+    # Properties modified on bDMGlyph1
+    bDMGlyph1.ZScaling = ['POINTS', 'diameter_']
+
+    # update the view to ensure updated data information
+    render_view.Update()
+
+    # Properties modified on bDMGlyph1
+    bDMGlyph1.MassLocation = ['POINTS', 'mass_location_']
+
+    # update the view to ensure updated data information
+    render_view.Update()
+
+    # Properties modified on bDMGlyph1
+    bDMGlyph1.Vectors = ['POINTS', 'spring_axis_']
+
+    # update the view to ensure updated data information
+    render_view.Update()
+
+    # Properties modified on bDMGlyph1
+    bDMGlyph1.GlyphType = 'Cylinder'
+
+    # update the view to ensure updated data information
+    render_view.Update()
+
+    # Properties modified on bDMGlyph1
+    bDMGlyph1.ScaleMode = 'normal'
+
+    # update the view to ensure updated data information
+    render_view.Update()
+
+    # Properties modified on bDMGlyph1
+    bDMGlyph1.ScaleFactor = 1.0
+
+    # update the view to ensure updated data information
+    render_view.Update()
+
+    bDMGlyph1.GlyphMode = 'All Points'
+    RenameSource('{0}s'.format(so_info['name']), bDMGlyph1)
+
+    render_view.Update()
+
+# ------------------------------------------------------------------------------
+def ProcessSimulationObject(so_info):
+    so_name = so_info['name']
+    # determine pvtu files
+    files = glob.glob('./{0}_data*.pvtu'.format(so_name))
+    if len(files) == 0:
+        print('No data files found for simulation object {0}'.format(so_name))
+        sys.exit(1)
+
+    files.sort(cmp=lambda x, y: ExtractIterationFromFilename(x) - ExtractIterationFromFilename(y))
+
+
+    # create a new 'XML Partitioned Unstructured Grid Reader'
+    so_data = XMLPartitionedUnstructuredGridReader(FileName=files)
+    # following line was in trace, but seems to be superfluous
+    # so_data.PointArrayStatus = ['diameter_', 'volume_']
+
+    # rename data source
+    so_data_name = '{0}-data'.format(so_name)
+    RenameSource(so_data_name, so_data)
+
+    # get active view
+    render_view = GetActiveViewOrCreate('RenderView')
+    # get animation scene
+    animation_scene = GetAnimationScene()
+    # update animation scene based on data timesteps
+    animation_scene.UpdateAnimationUsingDataTimeSteps()
+
+    shape = str(so_info['shape'])
+    if shape == "Sphere":
+        ProcessSphere(so_info, so_data, render_view)
+    elif shape == "Cylinder":
+        ProcessCylinder(so_info, so_data, render_view)
 
     # reset view to fit data
-    renderView1.ResetCamera()
+    render_view.ResetCamera()
 
 # ------------------------------------------------------------------------------
 def AddDiffusionGradientGlyph(substance_name, substance_data, render_view):

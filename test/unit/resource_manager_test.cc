@@ -1,6 +1,7 @@
 // I/O related code must be in header file
 #include "unit/resource_manager_test.h"
 #include "cell.h"
+#include "unit/io_test.h"
 
 namespace bdm {
 namespace resource_manager_test_internal {
@@ -10,88 +11,88 @@ namespace resource_manager_test_internal {
 /// been added inside the ResourceManager
 /// @tparam A type one: scalar or soa backend
 /// @tparam B type two: scalar or soa backend
-template <typename Backend, typename A, typename B>
+template <typename Backend, typename TA, typename TB>
 inline void RunGetTest() {
   const double kEpsilon = abs_error<double>::value;
-  using CTParam = CompileTimeParam<Backend, A, B>;
+  using CTParam = CompileTimeParam<Backend, TA, TB>;
   auto rm = ResourceManager<CTParam>::Get();
   rm->Clear();
 
   // template specifier needed because A is dependant type
-  auto a_vector = rm->template Get<A>();
+  auto a_vector = rm->template Get<TA>();
   EXPECT_EQ(0u, a_vector->size());
-  a_vector->push_back(AScalar(12));
-  a_vector->push_back(AScalar(34));
-  EXPECT_EQ(12, (*rm->template Get<A>())[0].GetData());
-  EXPECT_EQ(34, (*rm->template Get<A>())[1].GetData());
-  EXPECT_EQ(2u, rm->template Get<A>()->size());
+  a_vector->push_back(A(12));
+  a_vector->push_back(A(34));
+  EXPECT_EQ(12, (*rm->template Get<TA>())[0].GetData());
+  EXPECT_EQ(34, (*rm->template Get<TA>())[1].GetData());
+  EXPECT_EQ(2u, rm->template Get<TA>()->size());
 
-  auto b_vector = rm->template Get<B>();
+  auto b_vector = rm->template Get<TB>();
   EXPECT_EQ(0u, b_vector->size());
-  b_vector->push_back(BScalar(3.14));
-  b_vector->push_back(BScalar(6.28));
-  EXPECT_NEAR(3.14, (*rm->template Get<B>())[0].GetData(), kEpsilon);
-  EXPECT_NEAR(6.28, (*rm->template Get<B>())[1].GetData(), kEpsilon);
-  EXPECT_EQ(2u, rm->template Get<B>()->size());
+  b_vector->push_back(B(3.14));
+  b_vector->push_back(B(6.28));
+  EXPECT_NEAR(3.14, (*rm->template Get<TB>())[0].GetData(), kEpsilon);
+  EXPECT_NEAR(6.28, (*rm->template Get<TB>())[1].GetData(), kEpsilon);
+  EXPECT_EQ(2u, rm->template Get<TB>()->size());
 }
 
 TEST(ResourceManagerTest, GetAos) {
-  RunGetTest<Scalar, AScalar, BScalar>();
-  RunGetTest<Scalar, ASoa, BSoa>();
+  RunGetTest<Scalar, A, B>();
+  RunGetTest<Scalar, SoaA, SoaB>();
 }
 
 TEST(ResourceManagerTest, GetSoa) {
-  RunGetTest<Soa, AScalar, BScalar>();
-  RunGetTest<Soa, ASoa, BSoa>();
+  RunGetTest<Soa, A, B>();
+  RunGetTest<Soa, SoaA, SoaB>();
 }
 
-template <typename Backend, typename A, typename B>
+template <typename Backend, typename TA, typename TB>
 inline void RunApplyOnElementTest() {
   const double kEpsilon = abs_error<double>::value;
-  using CTParam = CompileTimeParam<Backend, A, B>;
+  using CTParam = CompileTimeParam<Backend, TA, TB>;
   auto rm = ResourceManager<CTParam>::Get();
   rm->Clear();
 
-  auto a_collection = rm->template Get<A>();
-  a_collection->push_back(AScalar(12));
-  a_collection->push_back(AScalar(34));
+  auto a_collection = rm->template Get<TA>();
+  a_collection->push_back(A(12));
+  a_collection->push_back(A(34));
   rm->ApplyOnElement(SoHandle(0, 1),
-                     [](auto& element) { EXPECT_EQ(34, element.GetData()); });
+                     [](auto&& element) { EXPECT_EQ(34, element.GetData()); });
 
-  auto b_collection = rm->template Get<B>();
-  b_collection->push_back(BScalar(3.14));
-  b_collection->push_back(BScalar(6.28));
-  rm->ApplyOnElement(SoHandle(1, 0), [&](auto& element) {
+  auto b_collection = rm->template Get<TB>();
+  b_collection->push_back(B(3.14));
+  b_collection->push_back(B(6.28));
+  rm->ApplyOnElement(SoHandle(1, 0), [&](auto&& element) {
     EXPECT_NEAR(3.14, element.GetData(), kEpsilon);
   });
 }
 
 TEST(ResourceManagerTest, ApplyOnElementAos) {
-  RunApplyOnElementTest<Scalar, AScalar, BScalar>();
-  RunApplyOnElementTest<Scalar, ASoa, BSoa>();
+  RunApplyOnElementTest<Scalar, A, B>();
+  RunApplyOnElementTest<Scalar, SoaA, SoaB>();
 }
 
 TEST(ResourceManagerTest, ApplyOnElementSoa) {
-  RunApplyOnElementTest<Soa, AScalar, BScalar>();
-  RunApplyOnElementTest<Soa, ASoa, BSoa>();
+  RunApplyOnElementTest<Soa, A, B>();
+  RunApplyOnElementTest<Soa, SoaA, SoaB>();
 }
 
-template <typename Backend, typename A, typename B>
+template <typename Backend, typename TA, typename TB>
 void RunApplyOnAllElementsTest() {
   const double kEpsilon = abs_error<double>::value;
-  using CTParam = CompileTimeParam<Backend, A, B>;
+  using CTParam = CompileTimeParam<Backend, TA, TB>;
   auto rm = ResourceManager<CTParam>::Get();
   rm->Clear();
 
-  auto a_collection = rm->template Get<A>();
-  a_collection->push_back(AScalar(12));
-  a_collection->push_back(AScalar(34));
+  auto a_collection = rm->template Get<TA>();
+  a_collection->push_back(A(12));
+  a_collection->push_back(A(34));
 
-  auto b_collection = rm->template Get<B>();
-  b_collection->push_back(BScalar(3.14));
-  b_collection->push_back(BScalar(6.28));
+  auto b_collection = rm->template Get<TB>();
+  b_collection->push_back(B(3.14));
+  b_collection->push_back(B(6.28));
   size_t counter = 0;
-  rm->ApplyOnAllElements([&](auto& element, SoHandle&& handle) {  // NOLINT
+  rm->ApplyOnAllElements([&](auto&& element, SoHandle&& handle) {  // NOLINT
     counter++;
     switch (counter) {
       case 1:
@@ -113,44 +114,44 @@ void RunApplyOnAllElementsTest() {
 }
 
 TEST(ResourceManagerTest, ApplyOnAllElementsAos) {
-  RunApplyOnAllElementsTest<Scalar, AScalar, BScalar>();
-  RunApplyOnAllElementsTest<Scalar, ASoa, BSoa>();
+  RunApplyOnAllElementsTest<Scalar, A, B>();
+  RunApplyOnAllElementsTest<Scalar, SoaA, SoaB>();
 }
 
 TEST(ResourceManagerTest, ApplyOnAllElementsSoa) {
-  RunApplyOnAllElementsTest<Soa, ASoa, BSoa>();
-  RunApplyOnAllElementsTest<Soa, AScalar, BScalar>();
+  RunApplyOnAllElementsTest<Soa, SoaA, SoaB>();
+  RunApplyOnAllElementsTest<Soa, A, B>();
 }
 
-template <typename Backend, typename A, typename B>
+template <typename Backend, typename TA, typename TB>
 void RunGetNumSimObjects() {
-  using CTParam = CompileTimeParam<Backend, A, B>;
+  using CTParam = CompileTimeParam<Backend, TA, TB>;
   auto rm = ResourceManager<CTParam>::Get();
   rm->Clear();
 
-  auto a_collection = rm->template Get<A>();
-  a_collection->push_back(AScalar(12));
-  a_collection->push_back(AScalar(34));
-  a_collection->push_back(AScalar(59));
+  auto a_collection = rm->template Get<TA>();
+  a_collection->push_back(A(12));
+  a_collection->push_back(A(34));
+  a_collection->push_back(A(59));
 
-  auto b_collection = rm->template Get<B>();
-  b_collection->push_back(BScalar(3.14));
-  b_collection->push_back(BScalar(6.28));
+  auto b_collection = rm->template Get<TB>();
+  b_collection->push_back(B(3.14));
+  b_collection->push_back(B(6.28));
 
   EXPECT_EQ(5u, rm->GetNumSimObjects());
 }
 
 TEST(ResourceManagerTest, GetNumSimObjectsAos) {
-  RunGetNumSimObjects<Scalar, AScalar, BScalar>();
-  RunGetNumSimObjects<Scalar, ASoa, BSoa>();
+  RunGetNumSimObjects<Scalar, A, B>();
+  RunGetNumSimObjects<Scalar, SoaA, SoaB>();
 }
 
 TEST(ResourceManagerTest, GetNumSimObjectsSoa) {
-  RunGetNumSimObjects<Soa, ASoa, BSoa>();
-  RunGetNumSimObjects<Soa, AScalar, BScalar>();
+  RunGetNumSimObjects<Soa, SoaA, SoaB>();
+  RunGetNumSimObjects<Soa, A, B>();
 }
 
-// This test uses Cells since ASoa, BSoa are strippted down simulatio objects
+// This test uses Cells since SoaA, SoaB are strippted down simulatio objects
 // and are themselves not thread safe.
 template <typename Backend>
 void RunApplyOnAllElementsParallelTest() {
@@ -185,19 +186,19 @@ TEST(ResourceManagerTest, ApplyOnAllElementsParallelSoa) {
   RunApplyOnAllElementsParallelTest<Soa>();
 }
 
-template <typename Backend, typename A, typename B>
+template <typename Backend, typename TA, typename TB>
 void RunApplyOnAllTypesTest() {
   const double kEpsilon = abs_error<double>::value;
-  using CTParam = CompileTimeParam<Backend, A, B>;
+  using CTParam = CompileTimeParam<Backend, TA, TB>;
   auto rm = ResourceManager<CTParam>::Get();
   rm->Clear();
 
-  auto a_collection = rm->template Get<A>();
-  a_collection->push_back(AScalar(12));
+  auto a_collection = rm->template Get<TA>();
+  a_collection->push_back(A(12));
 
-  auto b_collection = rm->template Get<B>();
-  b_collection->push_back(BScalar(3.14));
-  b_collection->push_back(BScalar(6.28));
+  auto b_collection = rm->template Get<TB>();
+  b_collection->push_back(B(3.14));
+  b_collection->push_back(B(6.28));
   size_t counter = 0;
   rm->ApplyOnAllTypes([&](auto* container, uint16_t type_idx) {
     counter++;
@@ -218,36 +219,58 @@ void RunApplyOnAllTypesTest() {
 }
 
 TEST(ResourceManagerTest, ApplyOnAllTypesAos) {
-  RunApplyOnAllTypesTest<Scalar, AScalar, BScalar>();
-  RunApplyOnAllTypesTest<Scalar, ASoa, BSoa>();
+  RunApplyOnAllTypesTest<Scalar, A, B>();
+  RunApplyOnAllTypesTest<Scalar, SoaA, SoaB>();
 }
 
 TEST(ResourceManagerTest, ApplyOnAllTypesSoa) {
-  RunApplyOnAllTypesTest<Soa, AScalar, BScalar>();
-  RunApplyOnAllTypesTest<Soa, ASoa, BSoa>();
+  RunApplyOnAllTypesTest<Soa, A, B>();
+  RunApplyOnAllTypesTest<Soa, SoaA, SoaB>();
 }
 
 TEST(ResourceManagerTest, IOAos) { RunIOAosTest(); }
 
-TEST(ResourceManagerTest, IOSoa) { RunSoaTest(); }
+TEST(ResourceManagerTest, IOSoa) { RunIOSoaTest(); }
 
-template <typename Backend, typename A, typename B>
+TEST(ResourceManagerTest, RmFunction) {
+  EXPECT_EQ(ResourceManager<>::Get(), Rm());
+}
+
+template <typename TBackend, typename TA, typename TB>
+void RunGetTypeIndexTest() {
+  using CTParam = CompileTimeParam<TBackend, TA, TB>;
+  using Rm = ResourceManager<CTParam>;
+  EXPECT_EQ(0u, Rm::template GetTypeIndex<TA>());
+  EXPECT_EQ(1u, Rm::template GetTypeIndex<TB>());
+}
+
+TEST(ResourceManagerTest, GetTypeIndexSoa) {
+  RunGetTypeIndexTest<Soa, A, B>();
+  RunGetTypeIndexTest<Soa, SoaA, SoaB>();
+}
+
+TEST(ResourceManagerTest, GetTypeIndexAos) {
+  RunGetTypeIndexTest<Scalar, A, B>();
+  RunGetTypeIndexTest<Scalar, SoaA, SoaB>();
+}
+
+template <typename TBackend, typename TA, typename TB>
 void RunPushBackTest() {
   const double kEpsilon = abs_error<double>::value;
-  using CTParam = CompileTimeParam<Backend, A, B>;
+  using CTParam = CompileTimeParam<TBackend, TA, TB>;
   auto rm = ResourceManager<CTParam>::Get();
   rm->Clear();
 
-  rm->push_back(AScalar(12));
-  rm->push_back(AScalar(34));
+  rm->push_back(A(12));
+  rm->push_back(A(34));
 
-  rm->push_back(BScalar(3.14));
-  rm->push_back(BScalar(6.28));
+  rm->push_back(B(3.14));
+  rm->push_back(B(6.28));
 
-  rm->push_back(AScalar(87));
+  rm->push_back(A(87));
 
-  auto as = rm->template Get<A>();
-  auto bs = rm->template Get<B>();
+  auto as = rm->template Get<TA>();
+  auto bs = rm->template Get<TB>();
 
   EXPECT_EQ((*as)[0].GetData(), 12);
   EXPECT_EQ((*as)[1].GetData(), 34);
@@ -258,16 +281,63 @@ void RunPushBackTest() {
 }
 
 TEST(ResourceManagerTest, push_backSoa) {
-  RunPushBackTest<Soa, AScalar, BScalar>();
-  RunPushBackTest<Soa, ASoa, BSoa>();
+  RunPushBackTest<Soa, A, B>();
+  RunPushBackTest<Soa, SoaA, SoaB>();
 }
 
 TEST(ResourceManagerTest, push_backAos) {
-  RunPushBackTest<Scalar, AScalar, BScalar>();
-  RunPushBackTest<Scalar, ASoa, BSoa>();
+  RunPushBackTest<Scalar, A, B>();
+  RunPushBackTest<Scalar, SoaA, SoaB>();
 }
 
-TEST(SoHandle, EqualsOperator) {
+template <typename TBackend, typename TA, typename TB>
+void RunNewTest() {
+  const double kEpsilon = abs_error<double>::value;
+  using CTParam = CompileTimeParam<TBackend, TA, TB>;
+  auto rm = ResourceManager<CTParam>::Get();
+  rm->Clear();
+
+  auto&& a0 = rm->template New<A>(12);
+  auto&& a1 = rm->template New<A>(34);
+
+  auto&& b0 = rm->template New<B>(3.14);
+  auto&& b1 = rm->template New<B>(6.28);
+
+  auto&& a2 = rm->template New<A>(87);
+
+  EXPECT_EQ(a0.GetData(), 12);
+  EXPECT_EQ(a1.GetData(), 34);
+  EXPECT_EQ(a2.GetData(), 87);
+
+  EXPECT_NEAR(b0.GetData(), 3.14, kEpsilon);
+  EXPECT_NEAR(b1.GetData(), 6.28, kEpsilon);
+
+  auto&& as = rm->template Get<TA>();
+  auto&& bs = rm->template Get<TB>();
+
+  EXPECT_EQ((*as)[0].GetData(), 12);
+  EXPECT_EQ((*as)[1].GetData(), 34);
+  EXPECT_EQ((*as)[2].GetData(), 87);
+
+  EXPECT_NEAR((*bs)[0].GetData(), 3.14, kEpsilon);
+  EXPECT_NEAR((*bs)[1].GetData(), 6.28, kEpsilon);
+
+  // modify return value of new
+  a1.SetData(321);
+  EXPECT_EQ((*as)[1].GetData(), 321);
+}
+
+TEST(ResourceManagerTest, NewSoa) {
+  RunNewTest<Soa, A, B>();
+  RunNewTest<Soa, SoaA, SoaB>();
+}
+
+TEST(ResourceManagerTest, NewAos) {
+  RunNewTest<Scalar, A, B>();
+  RunNewTest<Scalar, SoaA, SoaB>();
+}
+
+TEST(SoHandleTest, EqualsOperator) {
   EXPECT_EQ(SoHandle(0, 0), SoHandle(0, 0));
   EXPECT_EQ(SoHandle(1, 0), SoHandle(1, 0));
   EXPECT_EQ(SoHandle(0, 1), SoHandle(0, 1));
@@ -285,6 +355,16 @@ TEST(SoHandle, EqualsOperator) {
   EXPECT_FALSE(SoHandle(1, 1) == SoHandle(0, 0));
   EXPECT_FALSE(SoHandle(1, 1) == SoHandle(1, 0));
   EXPECT_FALSE(SoHandle(1, 1) == SoHandle(0, 1));
+}
+
+TEST_F(IOTest, SoHandle) {
+  SoHandle h(12, 34);
+  SoHandle* restored = nullptr;
+
+  BackupAndRestore(h, &restored);
+
+  EXPECT_EQ(12u, restored->GetTypeIdx());
+  EXPECT_EQ(34u, restored->GetElementIdx());
 }
 
 }  // namespace resource_manager_test_internal

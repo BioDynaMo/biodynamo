@@ -7,7 +7,7 @@
 #include <vector>
 
 #include <Rtypes.h>
-#include "compile_time_param.h"
+// #include "compile_time_param.h"
 #include "gtest/gtest.h"
 #include "io_util.h"
 #include "simulation_object.h"
@@ -19,9 +19,31 @@
   friend class test_case_name##_##test_name##_Test
 
 namespace bdm {
-namespace simulation_object_util_test_internal {
+// namespace simulation_object_util_test_internal {
 
-BDM_SIM_OBJECT(Cell, SimulationObject) {
+BDM_SIM_OBJECT(ContainerTestClass, bdm::SimulationObject) {
+  BDM_SIM_OBJECT_HEADER(ContainerTestClassExt, 1, dm1_, dm2_);
+
+ public:
+  ContainerTestClassExt() {}
+  ContainerTestClassExt(int i, double d) {
+    dm1_[kIdx] = i;
+    dm2_[kIdx] = d;
+  }
+
+  const int GetDm1() const { return dm1_[kIdx]; }
+  const double GetDm2() const { return dm2_[kIdx]; }
+
+  const vec<int>& GetVecDm1() const { return dm1_; }
+  const vec<double>& GetVecDm2() const { return dm2_; }
+  uint64_t GetTotalSize() const { return Base::TotalSize(); }
+
+ private:
+  vec<int> dm1_;
+  vec<double> dm2_;
+};
+
+BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
   BDM_SIM_OBJECT_HEADER(CellExt, 1, position_, diameter_);
 
  public:
@@ -29,19 +51,23 @@ BDM_SIM_OBJECT(Cell, SimulationObject) {
 
   CellExt() : position_{{1, 2, 3}} {}
 
-  void Divide(Self<Scalar> * daughter, double volume_ratio, double phi,
-              double theta) {
-    DivideImpl(daughter, volume_ratio, phi, theta);
+  MostDerivedSoPtr Divide(double volume_ratio, double phi, double theta) {
+    auto daughter = Rm()->template New<MostDerivedScalar>().GetSoPtr();
+    ThisMD()->DivideImpl(daughter, volume_ratio, phi, theta);
+    return daughter;
   }
 
-  virtual void DivideImpl(void* daughter_vptr, double volume_ratio, double phi,
-                          double theta) {
-    auto daughter = static_cast<Self<Scalar>*>(daughter_vptr);
-    daughter->position_[kIdx] = {5, 4, 3};
+  void DivideImpl(MostDerivedSoPtr daughter, double volume_ratio, double phi,
+                  double theta) {
+    daughter->SetPosition({5, 4, 3});
     diameter_[kIdx] = 1.123;
   }
 
   const std::array<double, 3>& GetPosition() const { return position_[kIdx]; }
+  void SetPosition(const std::array<double, 3>& position) const {
+    position_[kIdx] = position;
+  }
+
   double GetDiameter() const { return diameter_[kIdx]; }
 
   void SetDiameter(double diameter) { diameter_[kIdx] = diameter; }
@@ -66,7 +92,7 @@ class Neurite {
 };
 
 // add Neurites to BaseCell
-BDM_SIM_OBJECT(Neuron, Cell) {
+BDM_SIM_OBJECT(Neuron, bdm::Cell) {
   BDM_SIM_OBJECT_HEADER(NeuronExt, 1, neurites_);
 
  public:
@@ -76,10 +102,9 @@ BDM_SIM_OBJECT(Neuron, Cell) {
 
   NeuronExt() = default;
 
-  void DivideImpl(void* daughter, double volume_ratio, double phi, double theta)
-      override {
-    auto neuron = static_cast<Self<Scalar>*>(daughter);
-    neuron->neurites_[kIdx].push_back(Neurite(987));
+  void DivideImpl(MostDerivedSoPtr daughter, double volume_ratio, double phi,
+                  double theta) {
+    daughter->neurites_[daughter->kIdx].push_back(Neurite(987));
     Base::DivideImpl(daughter, volume_ratio, phi, theta);
   }
 
@@ -96,7 +121,7 @@ BDM_SIM_OBJECT(Neuron, Cell) {
 
 // -----------------------------------------------------------------------------
 // SOA object for IO test
-BDM_SIM_OBJECT(TestObject, SimulationObject) {
+BDM_SIM_OBJECT(TestObject, bdm::SimulationObject) {
   BDM_SIM_OBJECT_HEADER(TestObjectExt, 1, id_);
 
  public:
@@ -108,16 +133,21 @@ BDM_SIM_OBJECT(TestObject, SimulationObject) {
   vec<int> id_;
 };
 
-}  // namespace simulation_object_util_test_internal
+// }  // namespace simulation_object_util_test_internal
 
 // has to be defined in namespace bdm
 template <typename TBackend>
-struct CompileTimeParam : public DefaultCompileTimeParam<TBackend> {
-  using AtomicTypes =
-      VariadicTypedef<simulation_object_util_test_internal::Neuron>;
+struct CompileTimeParam {
+  template <typename TTBackend>
+  using Self = CompileTimeParam<TTBackend>;
+  using Backend = TBackend;
+
+  /// Defines backend used in ResourceManager
+  using SimulationBackend = Soa;
+  using AtomicTypes = VariadicTypedef<Neuron>;
 };
 
-namespace simulation_object_util_test_internal {
+// namespace simulation_object_util_test_internal {
 
 inline void RunSoaIOTest() {
   remove(ROOTFILE);
@@ -144,7 +174,7 @@ inline void RunSoaIOTest() {
   remove(ROOTFILE);
 }
 
-}  // namespace simulation_object_util_test_internal
+// }  // namespace simulation_object_util_test_internal
 }  // namespace bdm
 
 #endif  // UNIT_SEPARATE_BINARY_SIMULATION_OBJECT_UTIL_TEST_H_

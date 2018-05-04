@@ -96,11 +96,11 @@
   static const char* Class_Name();                                           \
   static Version_t Class_Version() { return class_version_id; }              \
   static TClass* Dictionary();                                               \
-  virtual TClass* IsA() const { return class_name::Class(); }                \
-  virtual void ShowMembers(TMemberInspector& insp) const {                   \
+  TClass* IsA() const { return class_name::Class(); }                        \
+  void ShowMembers(TMemberInspector& insp) const {                           \
     ::ROOT::Class_ShowMembers(class_name::Class(), this, insp);              \
   }                                                                          \
-  virtual void Streamer(TBuffer&);                                           \
+  void Streamer(TBuffer&);                                                   \
   void StreamerNVirtual(TBuffer& ClassDef_StreamerNVirtual_b) {              \
     class_name::Streamer(ClassDef_StreamerNVirtual_b);                       \
   }                                                                          \
