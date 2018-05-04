@@ -26,6 +26,7 @@ template <typename TSoSimBackend, typename TBackend>
 class SoPointer {
   /// Determine correct container
   using Container = typename TBackend::template Container<TSoSimBackend>;
+  using SoSoaRef = typename TSoSimBackend::template Self<SoaRef>;
 
  public:
   SoPointer(Container* container, uint64_t element_idx)
@@ -58,42 +59,45 @@ class SoPointer {
     return *this;
   }
 
-  /// Method to return the object it points to. Unfortunately, it is not
-  /// possible to use `operator->`, which would lead to a nice syntax like:
-  /// `so_ptr->SomeFunction()`. `operator->` must return a pointer which is
-  /// not possible for Soa backends (`operator[]` returns a temporary SoaRef
-  /// object).
   template <typename TTBackend = TBackend>
-  auto& Get(
-      typename std::enable_if<std::is_same<TTBackend, Scalar>::value>::type* p =
-          0) {
-    assert(*this != nullptr);
-    return (*so_container_)[element_idx_];
-    // return (*rm->Get<TSoSimBackend>())[element_idx_];
-  }
-
-  template <typename TTBackend = TBackend>
-  const auto& Get(
-      typename std::enable_if<std::is_same<TTBackend, Scalar>::value>::type* p =
-          0) const {
+  typename std::enable_if<std::is_same<TTBackend, Scalar>::value, TSoSimBackend&>::type
+  operator->() {
     assert(*this != nullptr);
     return (*so_container_)[element_idx_];
   }
 
   template <typename TTBackend = TBackend>
-  auto Get(typename std::enable_if<std::is_same<TTBackend, Soa>::value>::type*
-               p = 0) {
+  typename std::enable_if<std::is_same<TTBackend, Scalar>::value, const TSoSimBackend&>::type
+  operator->() const {
     assert(*this != nullptr);
     return (*so_container_)[element_idx_];
   }
 
   template <typename TTBackend = TBackend>
-  const auto Get(
-      typename std::enable_if<std::is_same<TTBackend, Soa>::value>::type* p =
-          0) const {
+  typename std::enable_if<std::is_same<TTBackend, Soa>::value, SoSoaRef>::type
+  operator->() {
     assert(*this != nullptr);
     return (*so_container_)[element_idx_];
   }
+
+  template <typename TTBackend = TBackend>
+  typename std::enable_if<std::is_same<TTBackend, Soa>::value, const SoSoaRef>::type
+  operator->() const {
+    assert(*this != nullptr);
+    return (*so_container_)[element_idx_];
+  }
+
+  // template <typename TTBackend = TBackend>
+  // auto operator->(typename std::enable_if<std::is_same<TTBackend, Soa>::value, void>::type) {
+  //   assert(*this != nullptr);
+  //   return (*so_container_)[element_idx_];
+  // }
+  //
+  // template <typename TTBackend = TBackend>
+  // const auto operator->(typename std::enable_if<std::is_same<TTBackend, Soa>::value, void>::type) const {
+  //   assert(*this != nullptr);
+  //   return (*so_container_)[element_idx_];
+  // }
 
   friend std::ostream& operator<<(
       std::ostream& str, const SoPointer<TSoSimBackend, TBackend>& so_ptr) {

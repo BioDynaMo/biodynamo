@@ -139,13 +139,13 @@ BDM_SIM_OBJECT(NeuronSoma, bdm::Cell) {
 
   void UpdateRelative(const ToSoPtr<NeuriteElement>& old_rel,
                       const ToSoPtr<NeuriteElement>& new_rel) {
-    auto coord = daughters_coord_[kIdx][old_rel.Get().GetElementIdx()];
+    auto coord = daughters_coord_[kIdx][old_rel->GetElementIdx()];
     auto it = std::find(std::begin(daughters_[kIdx]),
                         std::end(daughters_[kIdx]), old_rel);
     assert(it != std::end(daughters_[kIdx]) &&
            "old_element_idx could not be found in daughters_ vector");
     *it = new_rel;
-    daughters_coord_[kIdx][new_rel.Get().GetElementIdx()] = coord;
+    daughters_coord_[kIdx][new_rel->GetElementIdx()] = coord;
   }
 
   const std::vector<ToSoPtr<NeuriteElement>>& GetDaughters() const {

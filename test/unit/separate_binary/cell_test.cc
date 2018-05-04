@@ -24,7 +24,7 @@ TEST(CellTest, DivideVolumeRatioPhiTheta) {
   mother.AddBiologyModule(MovementModule({1, 2, 3}));
   mother.SetBoxIdx(123);
 
-  auto&& daughter = mother.Divide(0.75, 0.12, 0.34).Get();
+  auto daughter = mother.Divide(0.75, 0.12, 0.34);
 
   const double kEpsilon = abs_error<double>::value;
 
@@ -47,32 +47,32 @@ TEST(CellTest, DivideVolumeRatioPhiTheta) {
   EXPECT_EQ(123u, mother.GetBoxIdx());
 
   // verify daughter data members
-  EXPECT_NEAR(5.1007671803056471, daughter.GetPosition()[0], kEpsilon);
-  EXPECT_NEAR(6.0356450677701252, daughter.GetPosition()[1], kEpsilon);
-  EXPECT_NEAR(7.8864362820123803, daughter.GetPosition()[2], kEpsilon);
+  EXPECT_NEAR(5.1007671803056471, daughter->GetPosition()[0], kEpsilon);
+  EXPECT_NEAR(6.0356450677701252, daughter->GetPosition()[1], kEpsilon);
+  EXPECT_NEAR(7.8864362820123803, daughter->GetPosition()[2], kEpsilon);
 
-  EXPECT_NEAR(0, daughter.GetTractorForce()[0], kEpsilon);
-  EXPECT_NEAR(0, daughter.GetTractorForce()[1], kEpsilon);
-  EXPECT_NEAR(0, daughter.GetTractorForce()[2], kEpsilon);
+  EXPECT_NEAR(0, daughter->GetTractorForce()[0], kEpsilon);
+  EXPECT_NEAR(0, daughter->GetTractorForce()[1], kEpsilon);
+  EXPECT_NEAR(0, daughter->GetTractorForce()[2], kEpsilon);
 
-  EXPECT_NEAR(7.5394744112915388, daughter.GetDiameter(), kEpsilon);
+  EXPECT_NEAR(7.5394744112915388, daughter->GetDiameter(), kEpsilon);
   // differs slightly from the value in branch validation due to more precise
   // value of PI
-  EXPECT_NEAR(224.39947525641387, daughter.GetVolume(), kEpsilon);
-  EXPECT_NEAR(1.1, daughter.GetAdherence(), kEpsilon);
-  EXPECT_NEAR(2.1428571428571437, daughter.GetMass(), kEpsilon);
+  EXPECT_NEAR(224.39947525641387, daughter->GetVolume(), kEpsilon);
+  EXPECT_NEAR(1.1, daughter->GetAdherence(), kEpsilon);
+  EXPECT_NEAR(2.1428571428571437, daughter->GetMass(), kEpsilon);
 
   // biology modules mother
   EXPECT_EQ(1u, mother.GetAllBiologyModules().size());
-  EXPECT_EQ(1u, daughter.GetAllBiologyModules().size());
-  if (get_if<GrowthModule>(&(daughter.GetAllBiologyModules()[0])) == nullptr) {
+  EXPECT_EQ(1u, daughter->GetAllBiologyModules().size());
+  if (get_if<GrowthModule>(&(daughter->GetAllBiologyModules()[0])) == nullptr) {
     FAIL() << "Variant type at position 0 is not a GrowthModule";
   }
 
-  EXPECT_EQ(123u, daughter.GetBoxIdx());
+  EXPECT_EQ(123u, daughter->GetBoxIdx());
 
   // additional check
-  EXPECT_NEAR(5, mother.GetMass() + daughter.GetMass(), kEpsilon);
+  EXPECT_NEAR(5, mother.GetMass() + daughter->GetMass(), kEpsilon);
 }
 
 TEST(CellTest, Divide) {

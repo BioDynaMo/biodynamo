@@ -53,14 +53,13 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
 
   MostDerivedSoPtr Divide(double volume_ratio, double phi, double theta) {
     auto daughter = Rm()->template New<MostDerivedScalar>().GetSoPtr();
-    ThisMD()->DivideImpl(&daughter, volume_ratio, phi, theta);
+    ThisMD()->DivideImpl(daughter, volume_ratio, phi, theta);
     return daughter;
   }
 
-  void DivideImpl(MostDerivedSoPtr * daughter_soptr, double volume_ratio,
+  void DivideImpl(MostDerivedSoPtr daughter, double volume_ratio,
                   double phi, double theta) {
-    auto&& daughter = daughter_soptr->Get();
-    daughter.SetPosition({5, 4, 3});
+    daughter->SetPosition({5, 4, 3});
     diameter_[kIdx] = 1.123;
   }
 
@@ -103,12 +102,10 @@ BDM_SIM_OBJECT(Neuron, bdm::Cell) {
 
   NeuronExt() = default;
 
-  void DivideImpl(MostDerivedSoPtr * daughter_soptr, double volume_ratio,
+  void DivideImpl(MostDerivedSoPtr daughter, double volume_ratio,
                   double phi, double theta) {
-    auto&& daughter = daughter_soptr->Get();
-    // auto neuron = static_cast<Self<Scalar>*>(daughter);
-    daughter.neurites_[daughter.kIdx].push_back(Neurite(987));
-    Base::DivideImpl(daughter_soptr, volume_ratio, phi, theta);
+    daughter->neurites_[daughter->kIdx].push_back(Neurite(987));
+    Base::DivideImpl(daughter, volume_ratio, phi, theta);
   }
 
   const std::vector<Neurite>& GetNeurites() const { return neurites_[kIdx]; }

@@ -41,6 +41,10 @@ void RunTest() {
   // more detailed division test can be found in `cell_test.h`
   EXPECT_GT(41, (*cells)[0].GetDiameter());
   EXPECT_GT(41, (*cells)[2].GetDiameter());
+
+  std::cout << (*cells)[0].GetVolume() << std::endl;
+  std::cout << (*cells)[2].GetVolume() << std::endl;
+
   // volume of two daughter cells must be equal to volume of the mother
   EXPECT_NEAR(volume_mother, (*cells)[0].GetVolume() + (*cells)[2].GetVolume(),
               abs_error<double>::value);

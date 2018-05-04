@@ -204,7 +204,7 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
   /// @see `DivideImpl`
   MostDerivedSoPtr Divide(double volume_ratio, double phi, double theta) {
     auto daughter = Rm()->template New<MostDerivedScalar>().GetSoPtr();
-    ThisMD()->DivideImpl(&daughter, volume_ratio, phi, theta);
+    ThisMD()->DivideImpl(daughter, volume_ratio, phi, theta);
     return daughter;
   }
 
@@ -347,9 +347,8 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
   /// @param phi azimuthal angle (polar coordinate)
   /// @param theta polar angle (polar coordinate)
   /// @see \link simulation_object_util.h Divide \endlink
-  void DivideImpl(MostDerivedSoPtr * daughter_soptr, double volume_ratio,
+  void DivideImpl(MostDerivedSoPtr daughter, double volume_ratio,
                   double phi, double theta) {
-    auto&& daughter = daughter_soptr->Get();
     // A) Defining some values
     // ..................................................................
     // defining the two radii s.t total volume is conserved
@@ -377,12 +376,12 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
     double d_2 = total_length_of_displacement / (volume_ratio + 1);
     double d_1 = total_length_of_displacement - d_2;
 
-    daughter.SetAdherence(adherence_[kIdx]);
-    daughter.SetDensity(density_[kIdx]);
+    daughter->SetAdherence(adherence_[kIdx]);
+    daughter->SetDensity(density_[kIdx]);
 
     double mother_volume = volume_[kIdx];
     double new_volume = mother_volume / (volume_ratio + 1);
-    daughter.SetVolume(mother_volume - new_volume);
+    daughter->SetVolume(mother_volume - new_volume);
     SetVolume(new_volume);
 
     // position
@@ -390,11 +389,11 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
         position_[kIdx][0] + d_2 * axis_of_division[0],
         position_[kIdx][1] + d_2 * axis_of_division[1],
         position_[kIdx][2] + d_2 * axis_of_division[2]};
-    daughter.SetPosition(new_position);
+    daughter->SetPosition(new_position);
 
     std::vector<BiologyModules> branch_biology_modules;
     BiologyModuleEventHandler(gCellDivision, &branch_biology_modules);
-    daughter.SetBiologyModules(std::move(branch_biology_modules));
+    daughter->SetBiologyModules(std::move(branch_biology_modules));
 
     // E) This sphere becomes the 1st daughter
     // move these cells on opposite direction
@@ -402,7 +401,7 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
     position_[kIdx][1] -= d_1 * axis_of_division[1];
     position_[kIdx][2] -= d_1 * axis_of_division[2];
 
-    daughter.SetBoxIdx(box_idx_[kIdx]);
+    daughter->SetBoxIdx(box_idx_[kIdx]);
 
     // G) TODO(lukas) Copy the intracellular and membrane bound Substances
   }

@@ -264,12 +264,12 @@ TEST(SimulationObjectUtilTest, Soa_DivideWithResourceManager) {
   Neuron neuron;
   neurons->push_back(neuron);
 
-  auto&& new_neuron = (*neurons)[0].Divide(1.0, 2.0, 3.0).Get();
+  auto new_neuron = (*neurons)[0].Divide(1.0, 2.0, 3.0);
 
-  EXPECT_EQ(987u, new_neuron.GetNeurites()[0].id_);
-  EXPECT_EQ(5, new_neuron.GetPosition()[0]);
-  EXPECT_EQ(4, new_neuron.GetPosition()[1]);
-  EXPECT_EQ(3, new_neuron.GetPosition()[2]);
+  EXPECT_EQ(987u, new_neuron->GetNeurites()[0].id_);
+  EXPECT_EQ(5, new_neuron->GetPosition()[0]);
+  EXPECT_EQ(4, new_neuron->GetPosition()[1]);
+  EXPECT_EQ(3, new_neuron->GetPosition()[2]);
 
   // commit invalidates new_neuron
   neurons->Commit();

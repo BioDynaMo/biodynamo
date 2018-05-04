@@ -32,13 +32,11 @@ TEST(DISABLED_NeuriteElementBehaviour, StraightxCylinderGrowthRetract) {
   neuron.SetMass(1);
   neuron.SetDiameter(10);
 
-  auto ne = neuron.ExtendNewNeurite({1, 0, 0}).Get();
+  auto ne = neuron.ExtendNewNeurite({1, 0, 0});
 
-  auto& grid = Grid<>::GetInstance();
-  grid.Initialize();
   Scheduler<> scheduler;
 
-  std::array<double, 3> neAxis = ne.GetSpringAxis();
+  std::array<double, 3> neAxis = ne->GetSpringAxis();
 
   EXPECT_NEAR(neAxis[0], 1, abs_error<double>::value);
   EXPECT_NEAR(neAxis[1], 0, abs_error<double>::value);
@@ -46,11 +44,11 @@ TEST(DISABLED_NeuriteElementBehaviour, StraightxCylinderGrowthRetract) {
 
   std::array<double, 3> direction = {1, 0, 0};
   for (int i = 0; i < 100; i++) {
-    ne.ElongateTerminalEnd(300, direction);
-    ne.RunDiscretization();
+    ne->ElongateTerminalEnd(300, direction);
+    ne->RunDiscretization();
     scheduler.Simulate(1);
     if (i % 10 == 0) {
-      neAxis = ne.GetSpringAxis();
+      neAxis = ne->GetSpringAxis();
 
       EXPECT_NEAR(neAxis[1], 0, abs_error<double>::value);
       EXPECT_NEAR(neAxis[2], 0, abs_error<double>::value);
@@ -58,24 +56,24 @@ TEST(DISABLED_NeuriteElementBehaviour, StraightxCylinderGrowthRetract) {
   }
 
   std::cout << "\n---- start retraction" << std::endl;
-  double neurite_length = ne.GetLength();
+  double neurite_length = ne->GetLength();
 
   for (int j = 0; j < 10000; j++) {
-    ne.RetractTerminalEnd(10);
-    ne.RunDiscretization();
+    ne->RetractTerminalEnd(10);
+    ne->RunDiscretization();
     scheduler.Simulate(1);
     std::cout << "retraction step: " << j << std::endl;
     if (j % 10 == 0) {
-      neAxis = ne.GetSpringAxis();
+      neAxis = ne->GetSpringAxis();
 
       EXPECT_NEAR(neAxis[1], 0, abs_error<double>::value);
       EXPECT_NEAR(neAxis[2], 0, abs_error<double>::value);
     }
-    neurite_length = ne.GetLength();
+    neurite_length = ne->GetLength();
     std::cout << "neurite length: " << neurite_length << std::endl;
   }
 
-  neurite_length = ne.GetLength();
+  neurite_length = ne->GetLength();
   std::cout << "final neurite length: " << neurite_length << std::endl;
 }
 
@@ -96,8 +94,8 @@ TEST(DISABLED_NeuriteElementBehaviour, BranchingGrowth) {
   neuron.SetMass(1);
   neuron.SetDiameter(10);
 
-  auto ne = neuron.ExtendNewNeurite({0, 0, 1}).Get();
-  ne.SetDiameter(1);
+  auto ne = neuron.ExtendNewNeurite({0, 0, 1});
+  ne->SetDiameter(1);
 
   auto& grid = Grid<>::GetInstance();
   grid.Initialize();
@@ -114,22 +112,22 @@ TEST(DISABLED_NeuriteElementBehaviour, BranchingGrowth) {
          neurite_nb++) {  // for each neurite in simulation
       auto ne = (*my_neurites)[neurite_nb];
 
-      if (ne.IsTerminal() && ne.GetDiameter() > 0.5) {
-        previous_direction = ne.GetSpringAxis();
+      if (ne->IsTerminal() && ne->GetDiameter() > 0.5) {
+        previous_direction = ne->GetSpringAxis();
         direction = {gTRandom.Uniform(-10, 10), gTRandom.Uniform(-10, 10),
                      gTRandom.Uniform(0, 5)};
 
         std::array<double, 3> step_direction =
             Math::Add(previous_direction, direction);
 
-        ne.ElongateTerminalEnd(10, step_direction);
-        //          ne.SetDiameter(ne.GetDiameter()-diam_reduc_speed);
-        ne.SetDiameter(1);
+        ne->ElongateTerminalEnd(10, step_direction);
+        //          ne->SetDiameter(ne->GetDiameter()-diam_reduc_speed);
+        ne->SetDiameter(1);
 
-        if (gTRandom.Uniform(0, 1) < branching_factor * ne.GetDiameter()) {
-          ne.Bifurcate();
+        if (gTRandom.Uniform(0, 1) < branching_factor * ne->GetDiameter()) {
+          ne->Bifurcate();
         }
-        //            ne.RunDiscretization();
+        //            ne->RunDiscretization();
       }
     }
     scheduler.Simulate(1);

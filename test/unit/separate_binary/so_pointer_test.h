@@ -25,7 +25,7 @@ void SoPointerTest(T* sim_objects) {
   SoPointer<SO, TBackend> so_ptr(sim_objects, 0);
 
   EXPECT_TRUE(so_ptr != nullptr);
-  EXPECT_EQ(123u, so_ptr.Get().GetId());
+  EXPECT_EQ(123u, so_ptr->GetId());
 
   so_ptr = nullptr;
   EXPECT_TRUE(so_ptr == nullptr);
@@ -73,7 +73,7 @@ inline void IOTestSoPointerAnyContainerAos() {
 
   EXPECT_TRUE(*restored != nullptr);
   EXPECT_EQ(1u, restored->GetElementIdx());
-  EXPECT_EQ(456u, restored->Get().GetId());
+  EXPECT_EQ(456u, (*restored)->GetId());
 }
 
 inline void IOTestSoPointerAnyContainerSoa() {
@@ -89,7 +89,7 @@ inline void IOTestSoPointerAnyContainerSoa() {
 
   EXPECT_TRUE(*restored != nullptr);
   EXPECT_EQ(1u, restored->GetElementIdx());
-  EXPECT_EQ(456u, restored->Get().GetId());
+  EXPECT_EQ(456u, (*restored)->GetId());
 }
 
 inline void IOTestSoPointerRmContainerSoa() {
@@ -112,11 +112,11 @@ inline void IOTestSoPointerRmContainerSoa() {
   EXPECT_TRUE(rm_before != Rm());
 
   auto* restored_sim_objects = Rm()->Get<SoPointerTestClass>();
-  EXPECT_EQ(123u, (*restored_sim_objects)[1].GetMySoPtr().Get().GetId());
+  EXPECT_EQ(123u, (*restored_sim_objects)[1].GetMySoPtr()->GetId());
   // change id of first element
   (*restored_sim_objects)[0].SetId(987);
   // id should have changed
-  EXPECT_EQ(987u, (*restored_sim_objects)[1].GetMySoPtr().Get().GetId());
+  EXPECT_EQ(987u, (*restored_sim_objects)[1].GetMySoPtr()->GetId());
 }
 
 inline void IOTestSoPointerNullptrAos() {

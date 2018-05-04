@@ -71,7 +71,7 @@ BDM_SIM_OBJECT(TestCell, bdm::Cell) {
   double expected_phi_;
   double expected_theta_;
 
-  void DivideImpl(MostDerivedSoPtr * daughter, double volume_ratio, double phi,
+  void DivideImpl(MostDerivedSoPtr daughter, double volume_ratio, double phi,
                   double theta) {
     if (check_input_parameters_) {
       EXPECT_NEAR(expected_volume_ratio_, volume_ratio, 1e-8);

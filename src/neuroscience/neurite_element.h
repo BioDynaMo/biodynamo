@@ -74,18 +74,18 @@ class NeuronNeuriteAdapter {
 
   const std::array<double, 3> GetPosition() const {
     if (IsNeuriteElement()) {
-      return neurite_ptr_.Get().GetPosition();
+      return neurite_ptr_->GetPosition();
     }
     assert(IsNeuronSoma() && "Initialization error: neither neuron nor neurite");
-    return neuron_ptr_.Get().GetPosition();
+    return neuron_ptr_->GetPosition();
   }
 
   std::array<double, 3> OriginOf(uint32_t daughter_element_idx) const {
     if (IsNeuriteElement()) {
-      return neurite_ptr_.Get().OriginOf(daughter_element_idx);
+      return neurite_ptr_->OriginOf(daughter_element_idx);
     }
     assert(IsNeuronSoma() && "Initialization error: neither neuron nor neurite");
-    return neuron_ptr_.Get().OriginOf(daughter_element_idx);
+    return neuron_ptr_->OriginOf(daughter_element_idx);
   }
 
   bool IsNeuronSoma() const { return neuron_ptr_ != nullptr; }
@@ -94,63 +94,63 @@ class NeuronNeuriteAdapter {
   // TODO(neurites) LB reference?
   Self GetMother() {
     assert(IsNeuriteElement() && "This function call is only allowed for a NeuriteElement");
-    return neurite_ptr_.Get().GetMother();
+    return neurite_ptr_->GetMother();
   }
 
   auto GetDaughterLeft()
-      -> decltype(std::declval<TNeuriteElementSoPtr>().Get().GetDaughterLeft()) const {
+      -> decltype(std::declval<TNeuriteElementSoPtr>()->GetDaughterLeft()) const {
     assert(IsNeuriteElement() && "This function call is only allowed for a NeuriteElement");
-    return neurite_ptr_.Get().GetDaughterLeft();
+    return neurite_ptr_->GetDaughterLeft();
   }
 
   auto GetDaughterRight() -> decltype(
-      std::declval<TNeuriteElementSoPtr>().Get().GetDaughterRight()) const {
+      std::declval<TNeuriteElementSoPtr>()->GetDaughterRight()) const {
     assert(IsNeuriteElement() && "This function call is only allowed for a NeuriteElement");
-    return neurite_ptr_.Get().GetDaughterRight();
+    return neurite_ptr_->GetDaughterRight();
   }
 
   auto GetRestingLength() -> decltype(
-      std::declval<TNeuriteElementSoPtr>().Get().GetRestingLength()) const {
+      std::declval<TNeuriteElementSoPtr>()->GetRestingLength()) const {
     assert(IsNeuriteElement() && "This function call is only allowed for a NeuriteElement");
-    return neurite_ptr_.Get().GetRestingLength();
+    return neurite_ptr_->GetRestingLength();
   }
 
   void UpdateDependentPhysicalVariables() {
     if (IsNeuriteElement()) {
-      neurite_ptr_.Get().UpdateDependentPhysicalVariables();
+      neurite_ptr_->UpdateDependentPhysicalVariables();
       return;
     }
     assert(IsNeuronSoma() && "Initialization error: neither neuron nor neurite");
-    neuron_ptr_.Get().UpdateVolume();
+    neuron_ptr_->UpdateVolume();
   }
 
   template <typename TNeuronOrNeurite>
   void UpdateRelative(const TNeuronOrNeurite& old_rel,
                       const TNeuronOrNeurite& new_rel) {
     if (IsNeuriteElement()) {
-      neurite_ptr_.Get().UpdateRelative(old_rel, new_rel);
+      neurite_ptr_->UpdateRelative(old_rel, new_rel);
       return;
     }
     // TODO(neurites) improve
     auto old_neurite_soptr = old_rel.GetNeuriteElementSoPtr();
     auto new_neurite_soptr = new_rel.GetNeuriteElementSoPtr();
     assert(IsNeuronSoma() && "Initialization error: neither neuron nor neurite");
-    neuron_ptr_.Get().UpdateRelative(old_neurite_soptr, new_neurite_soptr);
+    neuron_ptr_->UpdateRelative(old_neurite_soptr, new_neurite_soptr);
   }
 
   auto RemoveFromSimulation() -> decltype(
-      std::declval<TNeuriteElementSoPtr>().Get().RemoveFromSimulation()) const {
+      std::declval<TNeuriteElementSoPtr>()->RemoveFromSimulation()) const {
     assert(IsNeuriteElement() && "This function call is only allowed for a NeuriteElement");
-    return neurite_ptr_.Get().RemoveFromSimulation();
+    return neurite_ptr_->RemoveFromSimulation();
   }
 
   void RemoveDaughter(const TNeuriteElementSoPtr& mother) {
     if (IsNeuriteElement()) {
-      neurite_ptr_.Get().RemoveDaughter(mother);
+      neurite_ptr_->RemoveDaughter(mother);
       return;
     }
     assert(IsNeuronSoma() && "Initialization error: neither neuron nor neurite");
-    neuron_ptr_.Get().RemoveDaughter(mother);
+    neuron_ptr_->RemoveDaughter(mother);
   }
 
   bool operator==(
@@ -394,21 +394,20 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
     double length = 1.0;  // TODO(neurites) hard coded value
 
     // we first split this neurite element into two pieces
-    auto proximal_ns = InsertProximalNeuriteElement().Get();
+    auto proximal_ns = InsertProximalNeuriteElement();
 
     // then append a "daughter right" between the two
-    auto new_branch_soptr = proximal_ns.ExtendSideNeuriteElement(length, direction);
-    auto new_branch = new_branch_soptr.Get();
+    auto new_branch = proximal_ns->ExtendSideNeuriteElement(length, direction);
 
-    new_branch.SetDiameter(diameter_[kIdx]);
-    new_branch.SetBranchOrder(branch_order_[kIdx] + 1);
+    new_branch->SetDiameter(diameter_[kIdx]);
+    new_branch->SetBranchOrder(branch_order_[kIdx] + 1);
     // Caution : doesn't change the value distally on the main branch
 
     std::vector<BiologyModules> branch_biology_modules;
     BiologyModuleEventHandler(gNeuriteBifurcation, &branch_biology_modules);
-    new_branch.SetBiologyModules(std::move(branch_biology_modules));
+    new_branch->SetBiologyModules(std::move(branch_biology_modules));
 
-    return new_branch_soptr;
+    return new_branch;
   }
 
   /// Makes a side branch, i.e. splits this neurite element into two and puts a
@@ -773,14 +772,14 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
     // 2) Force transmitted by daugthers (if they exist)
     if (daughter_left_[kIdx] != nullptr) {
       auto force_from_daughter =
-          daughter_left_[kIdx].Get().ForceTransmittedFromDaugtherToMother(
+          daughter_left_[kIdx]->ForceTransmittedFromDaugtherToMother(
               GetSoPtr());
       force_on_my_point_mass =
           Math::Add(force_on_my_point_mass, force_from_daughter);
     }
     if (daughter_right_[kIdx] != nullptr) {
       auto force_from_daughter =
-          daughter_right_[kIdx].Get().ForceTransmittedFromDaugtherToMother(
+          daughter_right_[kIdx]->ForceTransmittedFromDaugtherToMother(
               GetSoPtr());
       force_on_my_point_mass =
           Math::Add(force_on_my_point_mass, force_from_daughter);
@@ -810,7 +809,7 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
             n_soptr == this->GetDaughterRight() ||
             (this->GetMother().IsNeuriteElement() &&
              this->GetMother().GetNeuriteElementSoPtr() == n_soptr) ||
-            n_soptr.Get().GetMother() == this->GetMother()) {
+            n_soptr->GetMother() == this->GetMother()) {
           return;
         }
       } else if (std::is_same<NeighborNeuronSoma,
@@ -860,12 +859,12 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
     if (anti_kink) {
       double kk = 5;
       if (daughter_left_[kIdx] != nullptr && daughter_right_[kIdx] == nullptr) {
-        if (daughter_left_[kIdx].Get().GetDaughterLeft() != nullptr) {
-          auto downstream = daughter_left_[kIdx].Get().GetDaughterLeft().Get();
-          double rresting = daughter_left_[kIdx].Get().GetRestingLength() +
-                            downstream.GetRestingLength();
+        if (daughter_left_[kIdx]->GetDaughterLeft() != nullptr) {
+          auto downstream = daughter_left_[kIdx]->GetDaughterLeft();
+          double rresting = daughter_left_[kIdx]->GetRestingLength() +
+                            downstream->GetRestingLength();
           auto down_to_me =
-              Math::Subtract(GetMassLocation(), downstream.GetMassLocation());
+              Math::Subtract(GetMassLocation(), downstream->GetMassLocation());
           double aactual = Math::Norm(down_to_me);
 
           force_on_my_point_mass =
@@ -876,10 +875,10 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
       }
 
       if (daughter_left_[kIdx] != nullptr && mother_[kIdx].IsNeuriteElement()) {
-        auto mother = mother_[kIdx].GetNeuriteElementSoPtr().Get();
-        double rresting = GetRestingLength() + mother.GetRestingLength();
+        auto mother = mother_[kIdx].GetNeuriteElementSoPtr();
+        double rresting = GetRestingLength() + mother->GetRestingLength();
         auto down_to_me =
-            Math::Subtract(GetMassLocation(), mother.ProximalEnd());
+            Math::Subtract(GetMassLocation(), mother->ProximalEnd());
         double aactual = Math::Norm(down_to_me);
 
         force_on_my_point_mass =
@@ -930,18 +929,16 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
     // For the relatives: recompute the lenght, tension etc. (why for mother?
     // have to think about that)
     if (daughter_left_[kIdx] != nullptr) {
-      auto left = daughter_left_[kIdx].Get();
       // FIXME this is problematic for the distributed version. it modifies a
       // "neightbor"
-      left.UpdateDependentPhysicalVariables();
-      left.UpdateLocalCoordinateAxis();
+      daughter_left_[kIdx]->UpdateDependentPhysicalVariables();
+      daughter_left_[kIdx]->UpdateLocalCoordinateAxis();
     }
     if (daughter_right_[kIdx] != nullptr) {
       // FIXME this is problematic for the distributed version. it modifies a
       // "neightbor"
-      auto right = daughter_right_[kIdx].Get();
-      right.UpdateDependentPhysicalVariables();
-      right.UpdateLocalCoordinateAxis();
+      daughter_right_[kIdx]->UpdateDependentPhysicalVariables();
+      daughter_right_[kIdx]->UpdateLocalCoordinateAxis();
     }
   }
 
@@ -1422,11 +1419,11 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
       return;
     }
     // The guy we gonna remove
-    auto proximal_ne = mother_[kIdx].GetNeuriteElementSoPtr().Get();
+    auto proximal_ne = mother_[kIdx].GetNeuriteElementSoPtr();
 
     // Re-organisation of the PhysicalObject tree structure: by-passing
     // proximalCylinder
-    proximal_ne.GetMother().UpdateRelative(mother_[kIdx],
+    proximal_ne->GetMother().UpdateRelative(mother_[kIdx],
                                                  NeuriteOrNeuron(GetSoPtr()));
     SetMother(mother_[kIdx].GetMother());
 
@@ -1445,7 +1442,7 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
     // and local coord
     UpdateLocalCoordinateAxis();
 
-    proximal_ne.RemoveFromSimulation();
+    proximal_ne->RemoveFromSimulation();
   }
 
   MostDerivedSoPtr ExtendSideNeuriteElement(double length,
