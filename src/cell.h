@@ -74,23 +74,17 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
     return modules;
   }
 
-  /// Divide the cell. Of the two daughter cells, one is this one (but smaller,
-  /// with half GeneSubstances etc.),
-  /// and the other one is given as parameter and initialzed accordingly. Both
-  /// cells have more or less the same volume,
-  /// the axis of division is random.
-  /// @param daughter - second daughter cell = scalar instance which will be
-  /// initialized in this method
+  /// Divide the cell. Of the two daughter cells, one is this one
+  /// and the other one will be returned by this function.
+  /// Both cells have more or less the same volume, the axis of division is
+  /// random.
   MostDerivedSoPtr Divide() {
     return ThisMD()->Divide(0.9 + 0.2 * gRandom.NextDouble());
   }
 
-  /// Divide the cell. Of the two daughter cells, one is this one (but smaller,
-  /// with half GeneSubstances etc.),
-  /// and the other one is given as parameter and initialzed accordingly. The
-  /// axis of division is random.
-  /// @param daughter second daughter cell = scalar instance which will be
-  /// initialized in this method
+  /// Divide the cell. Of the two daughter cells, one is this one
+  /// and the other one will be returned by this function.
+  /// The axis of division is random.
   /// @param volume_ratio the ratio (Volume daughter 1)/(Volume daughter 2). 1.0
   /// gives equal cells.
   MostDerivedSoPtr Divide(double volume_ratio) {
@@ -101,11 +95,8 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
     return ThisMD()->Divide(volume_ratio, phi, theta);
   }
 
-  /// Divide the cell. Of the two daughter cells, one is this one (but smaller,
-  /// with half GeneSubstances etc.),
-  /// and the other one is is given as parameter and initialzed accordingly.
-  /// @param daughter second daughter cell = scalar instance which will be
-  /// initialized in this method
+  /// Divide the cell. Of the two daughter cells, one is this one
+  /// and the other one will be returned by this function.
   /// @param axis specifies direction of division
   MostDerivedSoPtr Divide(const array<double, 3>& axis) {
     auto polarcoord =
@@ -114,11 +105,8 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
                             polarcoord[2]);
   }
 
-  /// Divide the cell. Of the two daughter cells, one is this one (but smaller,
-  /// with half GeneSubstances etc.),
-  /// and the other one is instantiated de novo and is returned.
-  /// @param daughter second daughter cell = scalar instance which will be
-  /// initialized in this method
+  /// Divide the cell. Of the two daughter cells, one is this one
+  /// and the other one will be returned by this function.
   /// @param volume_ratio the ratio (Volume daughter 1)/(Volume daughter 2). 1.0
   /// gives equal cells.
   /// @param axis specifies direction of division
@@ -263,7 +251,7 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
   /// When mother cell divides, by definition:\n
   /// 1) the mother cell becomes the 1st daughter cell\n
   /// 2) the new cell becomes the 2nd daughter cell and inherits a equal or
-  /// bigger volume than the 1st
+  ///    bigger volume than the 1st
   ///    daughter cell, which means that this cell will eventually inherit more
   ///    differentiating factors
   ///    and will be recorded in the left side of the lineage tree.

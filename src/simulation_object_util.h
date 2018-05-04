@@ -317,7 +317,7 @@ struct Capsule;
   friend class class_name;                                                     \
                                                                                \
   /** Only used for Soa backends to be consistent with  */                     \
-  /** e.g. `std::vector<T>::value_type`. */                                    \
+  /** e.g. `std::vector::value_type`. */                                       \
   using value_type = Self<Soa>;                                                \
                                                                                \
   /** Returns the ResourceManager */                                           \
@@ -427,7 +427,7 @@ struct Capsule;
   /** Safe method to add an element to this vector. */                         \
   /** Does not invalidate, iterators, pointers or references. */               \
   /** Changes do not take effect until they are commited.*/                    \
-  /** @param element that should be added to the vector*/                      \
+  /** @param other element that should be added to the vector*/                \
   /** @return  index of the added element in `data_`. Will be bigger than*/    \
   /**          `size()` */                                                     \
   template <typename T = Backend>                                              \

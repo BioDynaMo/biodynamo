@@ -159,8 +159,8 @@ struct ReadContainerFunctor {
     }
   }
 
-  /// Backends not matching, `SoPointer<..>::container is certainly not pointing
-  /// into `ResourceManager<>`
+  /// Backends not matching, `SoPointer::so_container_` is certainly not
+  /// pointing into `ResourceManager<>`
   template <typename TContainer>
   void operator()(TBuffer& R__b, TContainer** container, ...) {  // NOLINT
     int state;
@@ -204,7 +204,7 @@ struct WriteContainerFunctor {
     }
   }
 
-  /// Backends not matching, `SoPointer<..>::container is certainly not pointing
+  /// Backends not matching, `SoPointer::so_container_ is certainly not pointing
   /// into `ResourceManager<>`
   template <typename TContainer>
   void operator()(TBuffer& R__b, const TContainer* container, ...) {  // NOLINT

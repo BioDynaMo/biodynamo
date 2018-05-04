@@ -125,6 +125,7 @@ struct Math {
   /// Returns a vector of norm 1 perpendicular to a 3D vector. As usual there is
   /// no length check.
   /// @param a vector
+  /// @param random
   /// @return a perpendicular vector
   static std::array<double, 3> Perp3(const std::array<double, 3>& a,
                                      double random) {
