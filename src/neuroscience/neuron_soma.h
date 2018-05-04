@@ -63,7 +63,6 @@ BDM_SIM_OBJECT(NeuronSoma, bdm::Cell) {
   /// @return SoPointer of new neurite
   NeuriteElementSoPtr ExtendNewNeurite(double diameter, double phi,
                                        double theta) {
-    // TODO(neurites) should this take immediate effect? or delayed + commit?
     auto neurite = Rm()->template New<NeuriteElement>();
 
     std::vector<typename Base::BiologyModules> neurite_bms;
