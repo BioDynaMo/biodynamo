@@ -2,14 +2,14 @@ import os
 import subprocess as sp
 from print_command import Print
 from build_command import BuildCommand
-
+from util import GetBinaryName
 
 ## The BioDynaMo CLI command to run a simulation
 ##
 ## @param      sim_name  The simulation name
 ##
 def RunCommand(args, debug=False):
-    sim_name = os.getcwd().split("/")[-1]
+    sim_name = GetBinaryName()
     args_str = ' '.join(args)
     cmd = "./build/" + sim_name
 

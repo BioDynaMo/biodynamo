@@ -2,16 +2,26 @@ language: c++
 
 matrix:
   include:
+    # Default build on osx
     - os: osx
       compiler: clang
+      env: SCRIPT=./travis.sh
+    # Default build on linux
     - os: linux
       compiler: gcc
       dist: trusty
       sudo: required
       group: edge
+      env: SCRIPT=./travis.sh
+    # Test development installation on linux
+    - os: linux
+      dist: trusty
+      sudo: required
+      group: edge
+      env: SCRIPT="script/dev/test_ubuntu_16.04_install_script/host.sh $TRAVIS_BRANCH"
 
 script:
-  - ./travis.sh
+  - $SCRIPT
 
 services:
   - docker

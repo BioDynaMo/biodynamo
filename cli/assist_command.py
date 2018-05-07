@@ -3,6 +3,7 @@ import subprocess as sp
 from print_command import Print
 from build_command import BuildCommand
 from run_command import RunCommand
+from util import GetBinaryName
 
 def query_yes_no(question, default="yes"):
     """Ask a yes/no question via input() and return their answer.
@@ -160,7 +161,7 @@ def CreateDebugBranch(sim_name):
 
 
 def AssistCommand():
-    sim_name = os.getcwd().split("/")[-1]
+    sim_name = GetBinaryName()
     if UncommittedFiles():
         return
 
