@@ -1,6 +1,8 @@
 #ifndef BIODYNAMO_H_
 #define BIODYNAMO_H_
 
+#include <string>
+
 #include "biology_module/grow_divide.h"
 #include "biology_module/regulate_genes.h"
 #include "biology_module_util.h"
@@ -17,7 +19,16 @@
 
 namespace bdm {
 
-void InitializeBioDynamo(int argc, const char** argv);
+/// This method should be called before any other biodynamo related code.
+/// Parses the configuration file
+/// @param executable_name sets parameter `Param::executable_name_`.
+void InitializeBiodynamo(const std::string& executable_name);
+
+/// This method should be called before any other biodynamo related code.
+/// Parses command line parameters and the configuration file
+/// @param argc argument count from main function
+/// @param argv argument vector from main function
+void InitializeBiodynamo(int argc, const char** argv);
 
 }  // namespace bdm
 

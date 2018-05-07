@@ -19,7 +19,7 @@ std::string ExtractExecutableName(const char* path) {
   }
 }
 
-void InitializeBioDynamo(int argc, const char** argv) {
+void InitializeBiodynamo(int argc, const char** argv) {
   // Removing this line causes an unexplainable segfault due to setting the
   // gErrorIngoreLevel global parameter of ROOT. We need to log at least one
   // thing before setting that parameter.
@@ -35,7 +35,7 @@ void InitializeBioDynamo(int argc, const char** argv) {
     auto config = cpptoml::parse_file(kConfigFileParentDir);
     Param::AssignFromConfig(config);
   } else {
-    Log::Warning("InitializeBioDynamo",
+    Log::Warning("InitializeBiodynamo",
                  "Config file %s not found in `.` or `../` directory.",
                  kConfigFile);
   }
@@ -43,6 +43,11 @@ void InitializeBioDynamo(int argc, const char** argv) {
     Param::backup_file_ = options.backup_file_;
     Param::restore_file_ = options.restore_file_;
   }
+}
+
+void InitializeBiodynamo(const std::string& executable_name) {
+  const char* argv[1] = {executable_name.c_str()};
+  InitializeBiodynamo(1, argv);
 }
 
 }  // namespace bdm

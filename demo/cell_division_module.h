@@ -20,7 +20,7 @@ struct CompileTimeParam : public DefaultCompileTimeParam<Backend> {
 
 inline int Simulate(int argc, const char** argv) {
   // 2. Initialize BioDynaMo
-  InitializeBioDynamo(argc, argv);
+  InitializeBiodynamo(argc, argv);
 
   // 3. Define initial model - in this example: 3D grid of cells
   size_t cells_per_dim = 128;

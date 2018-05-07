@@ -23,7 +23,7 @@ template <typename Backend>
 struct CompileTimeParam : public DefaultCompileTimeParam<Backend> {};
 
 inline int Simulate(int argc, const char** argv) {
-  InitializeBioDynamo(argc, argv);
+  InitializeBiodynamo(argc, argv);
 
   // 3. Define initial model
   // Create an artificial bounds for the simulation space

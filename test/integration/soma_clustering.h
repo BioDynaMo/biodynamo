@@ -223,7 +223,7 @@ static bool GetCriterion(double spatial_range, int target_n) {
 }
 
 inline int Simulate(int argc, const char** argv) {
-  InitializeBioDynamo(argc, argv);
+  InitializeBiodynamo(argc, argv);
 
   // 3. Define initial model
 

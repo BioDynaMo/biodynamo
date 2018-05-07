@@ -386,7 +386,7 @@ namespace bdm {
 
 template <typename TResourceManager = ResourceManager<>>
 inline int Simulate(int argc, const char** argv) {
-  InitializeBioDynamo(argc, argv);
+  InitializeBiodynamo(argc, argv);
 
   size_t nb_of_cells=2400; // number of cells in the simulation
   int cube_dim = 100; // cube of 100*100*100
@@ -509,7 +509,7 @@ namespace bdm {
 template <typename TResourceManager = ResourceManager<>>
 
 inline int Simulate(int argc, const char** argv) {
-  InitializeBioDynamo(argc, argv);
+  InitializeBiodynamo(argc, argv);
 
   size_t nb_of_cells=2400; // number of cells in the simulation
   int cube_dim = 100; // cube of 100*100*100

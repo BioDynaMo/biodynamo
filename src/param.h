@@ -288,7 +288,7 @@ struct Param {
   static void Reset();
 
  private:
-  friend void InitializeBioDynamo(int, const char**);
+  friend void InitializeBiodynamo(int, const char**);
 
   /// Assign values from config file to static variables
   static void AssignFromConfig(const std::shared_ptr<cpptoml::table>&);

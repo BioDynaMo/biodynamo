@@ -10,7 +10,7 @@ template <typename Backend>
 struct CompileTimeParam : public DefaultCompileTimeParam<Backend> {};
 
 inline int Simulate(int argc, const char** argv) {
-  InitializeBioDynamo(argc, argv);
+  InitializeBiodynamo(argc, argv);
 
   // Define initial model - in this example: single cell at origin
   Cell cell({0, 0, 0});

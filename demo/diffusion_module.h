@@ -63,7 +63,7 @@ struct CompileTimeParam : public DefaultCompileTimeParam<Backend> {
 
 inline int Simulate(int argc, const char** argv) {
   // 3. Initialize BioDynaMo
-  InitializeBioDynamo(argc, argv);
+  InitializeBiodynamo(argc, argv);
 
   Param::backup_interval_ = 1;
   // 4a. Define initial model - in this example: two cells

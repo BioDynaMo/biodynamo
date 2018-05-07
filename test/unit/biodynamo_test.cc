@@ -43,7 +43,6 @@ const char* gConfigContent =
     "statistics = true\n";
 
 void ValidateNonCLIParameter() {
-  EXPECT_EQ("binary_name", Param::executable_name_);
   EXPECT_EQ(3600u, Param::backup_interval_);
   EXPECT_EQ(0.0125, Param::simulation_time_step_);
   EXPECT_EQ(2.0, Param::simulation_max_displacement_);
@@ -92,25 +91,46 @@ void ValidateNonCLIParameter() {
   EXPECT_TRUE(Param::statistics_);
 }
 
-TEST(BiodynamoTest, InitializeBioDynamo) {
+TEST(BiodynamoTest, InitializeBiodynamo) {
   remove(gConfigFileName);
+  Param::Reset();
 
   std::ofstream config_file(gConfigFileName);
   config_file << gConfigContent;
   config_file.close();
 
   const char* argv[1] = {"./binary_name"};
-  InitializeBioDynamo(1, argv);
+  InitializeBiodynamo(1, argv);
 
   EXPECT_EQ("backup.root", Param::backup_file_);
   EXPECT_EQ("restore.root", Param::restore_file_);
+  EXPECT_EQ("binary_name", Param::executable_name_);
   ValidateNonCLIParameter();
 
   Param::Reset();
   remove(gConfigFileName);
 }
 
-TEST(BiodynamoTest, InitializeBioDynamoWithCLIArguments) {
+TEST(BiodynamoTest, InitializeBiodynamoVoid) {
+  remove(gConfigFileName);
+  Param::Reset();
+
+  std::ofstream config_file(gConfigFileName);
+  config_file << gConfigContent;
+  config_file.close();
+
+  InitializeBiodynamo("my-simulation");
+
+  EXPECT_EQ("backup.root", Param::backup_file_);
+  EXPECT_EQ("restore.root", Param::restore_file_);
+  EXPECT_EQ("my-simulation", Param::executable_name_);
+  ValidateNonCLIParameter();
+
+  Param::Reset();
+  remove(gConfigFileName);
+}
+
+TEST(BiodynamoTest, InitializeBiodynamoWithCLIArguments) {
   remove(gConfigFileName);
 
   std::ofstream config_file(gConfigFileName);
@@ -119,34 +139,39 @@ TEST(BiodynamoTest, InitializeBioDynamoWithCLIArguments) {
 
   const char* argv[5] = {"./binary_name", "-b", "mybackup.root", "-r",
                          "myrestore.root"};
-  InitializeBioDynamo(5, argv);
+  InitializeBiodynamo(5, argv);
 
   // the following two parameters should contain the values from the command
   // line arguments.
   EXPECT_EQ("mybackup.root", Param::backup_file_);
   EXPECT_EQ("myrestore.root", Param::restore_file_);
+  EXPECT_EQ("binary_name", Param::executable_name_);
   ValidateNonCLIParameter();
 
   Param::Reset();
   remove(gConfigFileName);
 }
 
-TEST(BiodynamoTest, InitializeBioDynaMoExecutableName) {
+TEST(BiodynamoTest, InitializeBiodynamoExecutableName) {
   // same working dir
   const char* argv0[1] = {"./binary_name"};
-  InitializeBioDynamo(1, argv0);
+  InitializeBiodynamo(1, argv0);
   EXPECT_EQ("binary_name", Param::executable_name_);
   Param::Reset();
 
   // in PATH
   const char* argv1[1] = {"binary_name"};
-  InitializeBioDynamo(1, argv1);
+  InitializeBiodynamo(1, argv1);
   EXPECT_EQ("binary_name", Param::executable_name_);
   Param::Reset();
 
   // binary dir != working dir
   const char* argv2[1] = {"./build/binary_name"};
-  InitializeBioDynamo(1, argv2);
+  InitializeBiodynamo(1, argv2);
+  EXPECT_EQ("binary_name", Param::executable_name_);
+  Param::Reset();
+
+  InitializeBiodynamo("binary_name");
   EXPECT_EQ("binary_name", Param::executable_name_);
   Param::Reset();
 }

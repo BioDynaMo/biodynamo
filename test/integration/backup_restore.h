@@ -24,7 +24,7 @@ struct CompileTimeParam : public DefaultCompileTimeParam<TBackend> {
 };
 
 inline int Simulate(int argc, const char** argv) {
-  InitializeBioDynamo(argc, argv);
+  InitializeBiodynamo(argc, argv);
 
   Param::Reset();
 
