@@ -18,7 +18,7 @@ double Param::min_bound_ = 0;
 double Param::max_bound_ = 100;
 bool Param::leaking_edges_ = false;
 bool Param::calculate_gradients_ = true;
-size_t Param::total_steps_ = 0;
+uint64_t Param::total_steps_ = 0;
 Param::NumericalODESolver Param::numerical_ode_solver_ =
     Param::NumericalODESolver::kEuler;
 

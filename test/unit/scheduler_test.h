@@ -23,7 +23,7 @@ class TestSchedulerRestore : public Scheduler<> {
     return TestSchedulerRestore();
   }
 
-  void Execute() override { execute_calls++; }
+  void Execute(bool last_iteration) override { execute_calls++; }
 
   unsigned execute_calls = 0;
 
@@ -39,7 +39,7 @@ class TestSchedulerBackup : public Scheduler<> {
     return TestSchedulerBackup();
   }
 
-  void Execute() override {
+  void Execute(bool last_iteration) override {
     // sleep
     usleep(350000);
     // backup should be created every second -> every three iterations

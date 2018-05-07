@@ -80,78 +80,30 @@ class Scheduler {
     }
   }
 
-  void Simulate(unsigned steps) {
-    // TODO(lukas) backup and restore should work for every simulation object in
-    // ResourceManager
-    if (backup_.RestoreEnabled() && restore_point_ > total_steps_ + steps) {
-      total_steps_ += steps;
+  void Simulate(uint64_t steps) {
+    if (Restore(&steps)) {
       return;
-    } else if (backup_.RestoreEnabled() && restore_point_ > total_steps_ &&
-               restore_point_ < total_steps_ + steps) {
-      // Restore
-      backup_.Restore();
-
-      steps = total_steps_ + steps - restore_point_;
-      total_steps_ = restore_point_;
     }
 
-    CommitChangesAndUpdateReferences();
-
-    grid_->Initialize();
-    if (Param::bound_space_) {
-      auto rm = TResourceManager::Get();
-      rm->ApplyOnAllTypes(bound_space_);
-    }
-    int lbound = grid_->GetDimensionThresholds()[0];
-    int rbound = grid_->GetDimensionThresholds()[1];
-    for (auto& dgrid : TResourceManager::Get()->GetDiffusionGrids()) {
-      // Create data structures, whose size depend on the grid dimensions
-      dgrid->Initialize({lbound, rbound, lbound, rbound, lbound, rbound},
-                        grid_->GetBoxLength());
-      // Initialize data structures with user-defined values
-      dgrid->RunInitializers();
-    }
+    Initialize();
 
     for (unsigned step = 0; step < steps; step++) {
-      // Visualize
-      if (Param::live_visualization_) {
-        double time = Param::simulation_time_step_ * total_steps_;
-        visualization_->CoProcess(time, total_steps_, step == steps - 1);
-      }
-      if (Param::export_visualization_) {
-        double time = Param::simulation_time_step_ * total_steps_;
-        visualization_->ExportVisualization(time, total_steps_,
-                                            step == steps - 1);
-      }
-
-      // Simulate
-      Execute();
+      Execute(step == steps - 1);
 
       total_steps_++;
-
-      // Backup
-      using std::chrono::seconds;
-      using std::chrono::duration_cast;
-      if (backup_.BackupEnabled() &&
-          duration_cast<seconds>(Clock::now() - last_backup_).count() >=
-              Param::backup_interval_) {
-        last_backup_ = Clock::now();
-        backup_.Backup(total_steps_);
-      }
-      if (Param::show_simulation_step_ &&
-          total_steps_ % Param::simulation_step_freq_ == 0) {
-        std::cout << "step " << total_steps_ << std::endl;
-      }
+      Backup();
     }
   }
 
  protected:
   /// Executes one step.
   /// This design makes testing more convenient
-  virtual void Execute() {
+  virtual void Execute(bool last_iteration) {
     auto rm = TResourceManager::Get();
     assert(rm->GetNumSimObjects() > 0 &&
            "This simulation does not contain any simulation objects.");
+
+    visualization_->Visualize(last_iteration);
 
     {
       if (Param::statistics_) {
@@ -177,8 +129,8 @@ class Scheduler {
 
  private:
   SimulationBackup backup_;
-  size_t& total_steps_ = Param::total_steps_;
-  size_t restore_point_;
+  uint64_t& total_steps_ = Param::total_steps_;
+  uint64_t restore_point_;
   std::chrono::time_point<Clock> last_backup_ = Clock::now();
   CatalystAdaptor<>* visualization_ = nullptr;
 
@@ -189,6 +141,38 @@ class Scheduler {
   OpTimer<BoundSpace> bound_space_ = OpTimer<BoundSpace>("bound_space");
 
   TGrid* grid_;
+
+  /// Backup the simulation. Backup interval based on `Param::backup_interval_`
+  void Backup() {
+    using std::chrono::seconds;
+    using std::chrono::duration_cast;
+    if (backup_.BackupEnabled() &&
+        duration_cast<seconds>(Clock::now() - last_backup_).count() >=
+            Param::backup_interval_) {
+      last_backup_ = Clock::now();
+      backup_.Backup(total_steps_);
+    }
+  }
+
+  /// Restore the simulation if requested at the right time
+  /// @param steps number of simulation steps for a `Simulate` call
+  /// @return if `Simulate` should return early
+  bool Restore(uint64_t* steps) {
+    if (backup_.RestoreEnabled() && restore_point_ > total_steps_ + *steps) {
+      total_steps_ += *steps;
+      // restore requested, but not last backup was not done during this call to
+      // Simualte. Therefore, we skip it.
+      return true;
+    } else if (backup_.RestoreEnabled() && restore_point_ > total_steps_ &&
+               restore_point_ < total_steps_ + *steps) {
+      // Restore
+      backup_.Restore();
+
+      *steps = total_steps_ + *steps - restore_point_;
+      total_steps_ = restore_point_;
+    }
+    return false;
+  }
 
   void CommitChangesAndUpdateReferences() {
     auto* rm = TResourceManager::Get();
@@ -203,6 +187,28 @@ class Scheduler {
       }
     };
     rm->ApplyOnAllTypes(update_references);
+  }
+
+  // TODO(lukas, ahmad) After https://trello.com/c/0D6sHCK4 has been resolved
+  // think about a better solution, because some operations are executed twice
+  // if Simulate is called with one timestep.
+  void Initialize() {
+    CommitChangesAndUpdateReferences();
+
+    grid_->Initialize();
+    if (Param::bound_space_) {
+      auto rm = TResourceManager::Get();
+      rm->ApplyOnAllTypes(bound_space_);
+    }
+    int lbound = grid_->GetDimensionThresholds()[0];
+    int rbound = grid_->GetDimensionThresholds()[1];
+    for (auto& dgrid : TResourceManager::Get()->GetDiffusionGrids()) {
+      // Create data structures, whose size depend on the grid dimensions
+      dgrid->Initialize({lbound, rbound, lbound, rbound, lbound, rbound},
+                        grid_->GetBoxLength());
+      // Initialize data structures with user-defined values
+      dgrid->RunInitializers();
+    }
   }
 };
 

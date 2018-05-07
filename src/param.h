@@ -38,7 +38,7 @@ struct Param {
   static std::string executable_name_;
 
   /// Variable which is tracking current step of simulation
-  static size_t total_steps_;
+  static uint64_t total_steps_;
 
   /// Variable which specifies method using for solving differential equation
   /// {"Euler", "RK4"}.

@@ -342,6 +342,18 @@ class CatalystAdaptor {
     }
   }
 
+  /// Visualize one timestep based on the configuration in `Param`
+  void Visualize(bool last_iteration) {
+    if (Param::live_visualization_) {
+      double time = Param::simulation_time_step_ * Param::total_steps_;
+      CoProcess(time, Param::total_steps_, last_iteration);
+    }
+    if (Param::export_visualization_) {
+      double time = Param::simulation_time_step_ * Param::total_steps_;
+      ExportVisualization(time, Param::total_steps_, last_iteration);
+    }
+  }
+
   /// Applies the pipeline to the simulation objects during live visualization
   ///
   /// @param[in]  time            The simulation time
@@ -521,6 +533,12 @@ class CatalystAdaptor {
 
   void Finalize() {
     Log::Fatal("CatalystAdaptor::Finalize",
+               "Simulation was compiled without ParaView support, but you are "
+               "trying to use it.");
+  }
+
+  void Visualize(bool last_iteration) {
+    Log::Fatal("CatalystAdaptor::Visualize",
                "Simulation was compiled without ParaView support, but you are "
                "trying to use it.");
   }
