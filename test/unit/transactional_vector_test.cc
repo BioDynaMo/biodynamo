@@ -179,5 +179,23 @@ TEST(TransactionalVectorTest, ThreadSafety) {
   EXPECT_EQ(19280, sum);
 }
 
+TEST(TransactionalVectorTest, Clear) {
+  TransactionalVector<TestObject> vector;
+  for (uint64_t i = 0; i < 10; i++) {
+    vector.push_back(i);
+  }
+
+  EXPECT_EQ(10u, vector.size());
+
+  vector.DelayedRemove(5);
+
+  EXPECT_EQ(10u, vector.size());
+  vector.clear();
+
+  // this would segfault if `TransactionalVector::to_be_removed_` will not be
+  // cleared
+  vector.Commit();
+}
+
 }  // namespace transactional_vector_test_internal
 }  // namespace bdm

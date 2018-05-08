@@ -150,6 +150,7 @@ class TransactionalVector {
   void clear() {  // NOLINT
     std::lock_guard<std::recursive_mutex> lock(mutex_);
     data_.clear();
+    to_be_removed_.clear();
     size_ = 0;
   }
 

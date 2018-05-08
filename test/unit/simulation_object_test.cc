@@ -20,5 +20,25 @@ TEST(SimulationObjectTest, SoaGetElementIndex) {
   }
 }
 
+TEST(SimulationObjectTest, Clear) {
+  Rm()->Clear();
+  for (uint64_t i = 0; i < 10; i++) {
+    Rm()->New<Cell>(1);
+  }
+  auto* cells = Rm()->Get<Cell>();
+  cells->Commit();
+
+  EXPECT_EQ(10u, cells->size());
+
+  cells->DelayedRemove(5);
+
+  EXPECT_EQ(10u, cells->size());
+  cells->clear();
+
+  // this would segfault if `TransactionalVector::to_be_removed_` will not be
+  // cleared
+  cells->Commit();
+}
+
 }  // namespace simulation_object_test_internal
 }  // namespace bdm

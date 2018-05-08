@@ -107,6 +107,7 @@ class SoaSimulationObject {
   void clear() {  // NOLINT
     total_size_ = 0;
     size_ = 0;
+    to_be_removed_.clear();
   }
 
   /// This method commits changes made by `DelayedPushBack` and `DelayedRemove`.
