@@ -93,11 +93,11 @@ class DisplacementOpCuda {
 #pragma omp parallel for
     for (size_t i = 0; i < cells->size(); i++) {
       auto&& cell = (*cells)[i];
-      cell.UpdateMassLocation(cell_movements[i]);
+      cell.UpdatePosition(cell_movements[i]);
       if (Param::bound_space_) {
         ApplyBoundingBox(&cell, Param::min_bound_, Param::max_bound_);
       }
-      cell.SetPosition(cell.GetMassLocation());
+      cell.SetPosition(cell.GetPosition());
 
       // Reset biological movement to 0.
       cell.SetTractorForce({0, 0, 0});

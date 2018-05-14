@@ -218,43 +218,47 @@ class CatalystAdaptor {
   /// @param[in]  script  The Python script that contains the pipeline
   ///
   inline void Initialize(const std::string& script) {
-    if (g_processor_ == nullptr) {
-      g_processor_ = vtkCPProcessor::New();
-      g_processor_->Initialize();
+    if (Param::live_visualization_ || Param::export_visualization_) {
+      if (g_processor_ == nullptr) {
+        g_processor_ = vtkCPProcessor::New();
+        g_processor_->Initialize();
 
-      auto rm = TResourceManager::Get();
-      so_is_initialized_.resize(rm->NumberOfTypes());
-      dg_is_initialized_.resize(rm->GetDiffusionGrids().size());
-    } else {
-      g_processor_->RemoveAllPipelines();
-    }
+        auto rm = TResourceManager::Get();
+        so_is_initialized_.resize(rm->NumberOfTypes());
+        dg_is_initialized_.resize(rm->GetDiffusionGrids().size());
+      } else {
+        g_processor_->RemoveAllPipelines();
+      }
 
-    if (Param::python_catalyst_pipeline_) {
-      vtkNew<vtkCPPythonScriptPipeline> pipeline;
-      pipeline->Initialize(script.c_str());
-      g_processor_->AddPipeline(pipeline.GetPointer());
-    } else {
-      pipeline_ = new InSituPipeline();
-      g_processor_->AddPipeline(pipeline_);
+      if (Param::python_catalyst_pipeline_) {
+        vtkNew<vtkCPPythonScriptPipeline> pipeline;
+        pipeline->Initialize(script.c_str());
+        g_processor_->AddPipeline(pipeline.GetPointer());
+      } else {
+        pipeline_ = new InSituPipeline();
+        g_processor_->AddPipeline(pipeline_);
+      }
     }
   }
 
   /// Cleans up allocated memory
   inline void Finalize() {
-    if (g_processor_) {
-      g_processor_->Delete();
-      g_processor_ = nullptr;
-    }
-    for (auto sog : vtk_so_grids_) {
-      sog->Delete();
-      sog = nullptr;
-    }
-    for (auto dg : vtk_dgrids_) {
-      dg->Delete();
-      dg = nullptr;
-    }
-    if (Param::export_visualization_) {
-      GenerateParaviewState();
+    if (Param::live_visualization_ || Param::export_visualization_) {
+      if (g_processor_) {
+        g_processor_->Delete();
+        g_processor_ = nullptr;
+      }
+      for (auto sog : vtk_so_grids_) {
+        sog->Delete();
+        sog = nullptr;
+      }
+      for (auto dg : vtk_dgrids_) {
+        dg->Delete();
+        dg = nullptr;
+      }
+      if (Param::export_visualization_) {
+        GenerateParaviewState();
+      }
     }
   }
 
@@ -526,33 +530,43 @@ class CatalystAdaptor {
   }
 
   void Initialize(const std::string& script) {
-    Log::Fatal("CatalystAdaptor::Initialize",
-               "Simulation was compiled without ParaView support, but you are "
-               "trying to use it.");
+    if (Param::live_visualization_ || Param::export_visualization_) {
+      Log::Fatal("CatalystAdaptor::Initialize",
+                "Simulation was compiled without ParaView support, but you are "
+                "trying to use it.");
+    }
   }
 
   void Finalize() {
-    Log::Fatal("CatalystAdaptor::Finalize",
-               "Simulation was compiled without ParaView support, but you are "
-               "trying to use it.");
+    if (Param::live_visualization_ || Param::export_visualization_) {
+      Log::Fatal("CatalystAdaptor::Finalize",
+                "Simulation was compiled without ParaView support, but you are "
+                "trying to use it.");
+    }
   }
 
   void Visualize(bool last_iteration) {
-    Log::Fatal("CatalystAdaptor::Visualize",
-               "Simulation was compiled without ParaView support, but you are "
-               "trying to use it.");
+    if (Param::live_visualization_ || Param::export_visualization_) {
+      Log::Fatal("CatalystAdaptor::Visualize",
+                "Simulation was compiled without ParaView support, but you are "
+                "trying to use it.");
+    }
   }
 
   void CoProcess(double time, size_t time_step, bool last_time_step) {
-    Log::Fatal("CatalystAdaptor::CoProcess",
-               "Simulation was compiled without ParaView support, but you are "
-               "trying to use it.");
+    if (Param::live_visualization_ || Param::export_visualization_) {
+      Log::Fatal("CatalystAdaptor::CoProcess",
+                "Simulation was compiled without ParaView support, but you are "
+                "trying to use it.");
+    }
   }
 
   void ExportVisualization(double step, size_t time_step, bool last_time_step) {
-    Log::Fatal("CatalystAdaptor::ExportVisualization",
-               "Simulation was compiled without ParaView support, but you are "
-               "trying to use it.");
+    if (Param::live_visualization_ || Param::export_visualization_) {
+      Log::Fatal("CatalystAdaptor::ExportVisualization",
+                "Simulation was compiled without ParaView support, but you are "
+                "trying to use it.");
+    }
   }
 
  private:

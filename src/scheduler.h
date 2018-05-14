@@ -34,49 +34,17 @@ class Scheduler {
       restore_point_ = backup_.GetSimulationStepsFromBackup();
     }
     visualization_ = CatalystAdaptor<>::GetInstance();
-    if (Param::live_visualization_ || Param::export_visualization_) {
-      visualization_->Initialize(BDM_SRC_DIR
-                                 "/visualization/simple_pipeline.py");
-    }
+    visualization_->Initialize(BDM_SRC_DIR
+                                "/visualization/simple_pipeline.py");
     if (Param::use_gpu_) {
       InitializeGPUEnvironment<>();
     }
   }
 
   virtual ~Scheduler() {
-    if (Param::live_visualization_ || Param::export_visualization_) {
-      visualization_->Finalize();
-    }
+    visualization_->Finalize();
     if (Param::statistics_) {
       std::cout << gStatistics << std::endl;
-    }
-  }
-
-  template <typename Lambda>
-  void SimulateTill(Lambda stopping_condition) {
-    grid_->Initialize();
-
-    while (!stopping_condition()) {
-      // Simulate
-      Execute();
-
-      // Visualize
-      if (Param::live_visualization_) {
-        double time = Param::simulation_time_step_ * total_steps_;
-        visualization_->CoProcess(time, total_steps_, false);
-      }
-
-      total_steps_++;
-
-      // Backup
-      using std::chrono::seconds;
-      using std::chrono::duration_cast;
-      if (backup_.BackupEnabled() &&
-          duration_cast<seconds>(Clock::now() - last_backup_).count() >=
-              Param::backup_interval_) {
-        last_backup_ = Clock::now();
-        backup_.Backup(total_steps_);
-      }
     }
   }
 
