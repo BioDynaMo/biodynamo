@@ -31,10 +31,9 @@ cd test-sim
 biodynamo run &>all
 
 # extract ouput
-cat all | tail -n4 | head -n2 >actual
+cat all | tail -n3 | head -n1 >actual
 
 # create file with expected output
-echo "Info: Initializing BiodynaMo..." > expected
 echo "Simulation completed successfully!" >> expected
 
 diff expected actual

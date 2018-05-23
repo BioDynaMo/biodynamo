@@ -180,7 +180,7 @@ function(build_libbiodynamo TARGET)
 
   # generate shared library
   add_library(${TARGET} SHARED $<TARGET_OBJECTS:${TARGET}-objectlib> ${DICT_FILE})
-  add_dependencies(${TARGET} ${TARGET}-dict)
+  add_dependencies(${TARGET} ${TARGET}-dict update-version-info)
   target_link_libraries(${TARGET} ${ARG_LIBRARIES})
 endfunction(build_libbiodynamo)
 

@@ -80,6 +80,7 @@ endif()
 include(BioDynaMo)
 include(ExternalProject)
 include(cmake/doxygen.cmake)
+include(Versioning)
 
 # -------------------- set default build type and compiler flags ---------------
 if(coverage)
@@ -115,6 +116,7 @@ include_directories("${CMAKE_SOURCE_DIR}/test")
 include_directories("${CMAKE_SOURCE_DIR}/third_party")
 include_directories("${CMAKE_SOURCE_DIR}/demo")
 include_directories("${MPARK_LIB}")
+include_directories("${CMAKE_CURRENT_BINARY_DIR}/version")
 
 # Fix for rootcling not able to find omp.h. We cannot include the entire include
 # directory of the compiler (where omp.h is in), because rootcling starts using
@@ -263,12 +265,9 @@ include(cmake/Installation.cmake)
 include(cmake/CppStyleGuideChecks.cmake)
 
 # -------------------- build snap package --------------------------------------
-# create snapcraft config file
-configure_file("cmake/snapcraft.yaml.in" "snapcraft.yaml" @ONLY)
-
 add_custom_target(snap-package
-  COMMAND ../cmake/build_snap_package.sh ${CMAKE_INSTALL_PREFIX}
-  WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+  COMMAND ../../cmake/snap/build_snap_package.sh ${CMAKE_INSTALL_PREFIX}
+  WORKING_DIRECTORY ${SNAP_DIR}
   COMMENT "Build snap package")
 
 if(demo)

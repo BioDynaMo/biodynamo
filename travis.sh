@@ -111,6 +111,11 @@ ${CXX} -v
 cd $BDM_DIR
 
 cloc .
+
+# git describe does not work if last commit tag is not checked out
+git fetch --unshallow
+git fetch origin $TRAVIS_BRANCH
+
 # add master branch
 # https://github.com/travis-ci/travis-ci/issues/6069
 git remote set-branches --add origin master

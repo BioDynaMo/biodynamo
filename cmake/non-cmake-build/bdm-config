@@ -5,6 +5,7 @@ import os
 import subprocess
 import sys
 import shutil
+from version import Version
 
 def SetupCMakeProject(cmake_project_dir):
     """This function sets up a CMake project that is used to extract the
@@ -99,6 +100,9 @@ if __name__ == '__main__':
                              'This flag deletes the cache. This might be needed ' +
                              'if the compiler changes. This flag cannot be combined ' +
                              'with other arguments')
+    parser.add_argument('-v', '--version',
+                        action='store_true',
+                        help='Display BioDynaMo version')
 
     if len(sys.argv) == 1:
         parser.print_help()
@@ -163,3 +167,6 @@ if __name__ == '__main__':
 
     if args.cmakedir:
         print(build_info["cmakedir"])
+
+    elif args.version:
+        print(Version.string())

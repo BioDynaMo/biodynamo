@@ -43,4 +43,5 @@ if [ "$RETURN_VAL" == "0" ]; then
   exit $RETURN_VAL
 else
   echo "Install test FAILED"
+  exit 1
 fi

@@ -1,7 +1,7 @@
-# Configuration file to generate snap packages
+# Configuration file to generate snap package
 
 name:  biodynamo
-version: '@BDM_VERSION@'
+version: '@VERSION@'
 summary: A high-performance platform for large-scale biological simulations
 description: |
    BioDynaMo makes it possible to easily create, run, and visualize 3D
@@ -15,11 +15,12 @@ confinement: classic
 parts:
   biodynamo:
     plugin: dump
-    source: @CMAKE_INSTALL_PREFIX@
-    prepare: |
+    source: /opt/biodynamo
+    override-build: |
       find biodynamo/bin/ -type f -name "*.py" -exec sed -i 's|"git"|"/snap/biodynamo/current/usr/bin/git"|g' {} +
       find biodynamo/bin/ -type f -name "*.py" -exec sed -i 's|"make"|"/snap/biodynamo/current/usr/bin/make"|g' {} +
       find biodynamo/bin/ -type f -name "*.py" -exec sed -i 's|"cmake"|"/snap/biodynamo/current/usr/bin/cmake"|g' {} +
+      snapcraftctl build
     stage-packages:
        - g++-5
        - git
@@ -34,25 +35,28 @@ parts:
 
   root:
     plugin: dump
-    source: https://cernbox.cern.ch/index.php/s/1ekMudArMqFhcXt/download?path=%2F&files=root_v6.11.01_Linux-ubuntu16-x86_64-gcc5.4_263508429d.tar.gz
-    prepare: mkdir -p dependencies/root && mv * dependencies/root 2>/dev/null ; true
+    source: root_v6.11.01_Linux-ubuntu16-x86_64-gcc5.4_263508429d.tar.gz
+    override-build: |
+      mkdir -p /tmp/dependencies/root && mv * /tmp/dependencies/root && mv /tmp/dependencies .
+      snapcraftctl build
 
   qt:
     plugin: dump
-    source: https://cernbox.cern.ch/index.php/s/1ekMudArMqFhcXt/download?path=%2F&files=Qt5.9.1_ubuntu16_gcc5.4.tar.gz
-    prepare: |
-      mkdir -p dependencies/qt && mv * dependencies/qt 2>/dev/null ; true
+    source: Qt5.9.1_ubuntu16_gcc5.4.tar.gz
+    override-build: |
       # patch qt to avoid libprotobuf error for paraview
-      rm dependencies/qt/plugins/platformthemes/libqgtk3.so
-      echo "" > dependencies/qt/lib/cmake/Qt5Gui/Qt5Gui_QGtk3ThemePlugin.cmake
+      rm plugins/platformthemes/libqgtk3.so
+      echo "" > lib/cmake/Qt5Gui/Qt5Gui_QGtk3ThemePlugin.cmake
+      mkdir -p /tmp/dependencies/qt && mv * /tmp/dependencies/qt && mv /tmp/dependencies .
+      snapcraftctl build
 
   paraview:
     plugin: dump
-    source: https://cernbox.cern.ch/index.php/s/1ekMudArMqFhcXt/download?path=%2F&files=paraview-5.4.1_ubuntu16_gcc5.4.tar.gz
-    prepare: |
-      mkdir -p dependencies/paraview && mv * dependencies/paraview 2>/dev/null ; true
-      find dependencies/paraview/lib/cmake/ -type f -name "*.cmake" -exec sed -i 's|/usr/lib/x86_64-linux-gnu/|/snap/biodynamo/current/usr/lib/x86_64-linux-gnu/|g' {} +
-    install: |
+    source: paraview-5.4.1_ubuntu16_gcc5.4.tar.gz
+    override-build: |
+      find lib/cmake/ -type f -name "*.cmake" -exec sed -i 's|/usr/lib/x86_64-linux-gnu/|/snap/biodynamo/current/usr/lib/x86_64-linux-gnu/|g' {} +
+      mkdir -p /tmp/dependencies/paraview && mv * /tmp/dependencies/paraview && mv /tmp/dependencies .
+      snapcraftctl build
       ln -s $SNAP/usr/lib/x86_64-linux-gnu/libpython2.7.so.1 $SNAPCRAFT_PART_INSTALL/usr/lib/x86_64-linux-gnu/libpython2.7.so
     stage-packages:
       - libpython2.7

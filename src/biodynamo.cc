@@ -2,6 +2,7 @@
 #include <string>
 #include "command_line_options.h"
 #include "cpptoml/cpptoml.h"
+#include "version.h"
 
 namespace bdm {
 
@@ -23,7 +24,7 @@ void InitializeBiodynamo(int argc, const char** argv) {
   // Removing this line causes an unexplainable segfault due to setting the
   // gErrorIngoreLevel global parameter of ROOT. We need to log at least one
   // thing before setting that parameter.
-  Log::Info("", "Initializing BiodynaMo...");
+  Log::Info("", "Initializing BiodynaMo ", Version::String());
   Param::executable_name_ = ExtractExecutableName(argv[0]);
   auto options = bdm::DefaultSimulationOptionParser(argc, argv);
   constexpr auto kConfigFile = "bdm.toml";

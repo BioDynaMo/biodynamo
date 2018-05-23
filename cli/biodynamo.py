@@ -6,6 +6,7 @@ from new_command import NewCommand
 from build_command import BuildCommand
 from run_command import RunCommand
 from assist_command import AssistCommand
+from version import Version
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='biodynamo',
@@ -16,6 +17,9 @@ if __name__ == '__main__':
         epilog='')
 
     sp = parser.add_subparsers(dest='cmd')
+    parser.add_argument('-v', '--version',
+                        action='store_true',
+                        help='Display BioDynaMo version')
 
     assist_sp = sp.add_parser('assist', help='Use this command if you need help from the '
                                  'BiodynaMo developers. This command helps you '
@@ -65,5 +69,8 @@ if __name__ == '__main__':
             assist_sp.print_help()
             sys.exit()
         AssistCommand()
+    elif args.version:
+        print(Version.string())
+        sys.exit()
     else:
         parser.print_help()
