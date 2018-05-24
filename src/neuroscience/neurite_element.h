@@ -808,20 +808,14 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
     auto calculate_neighbor_forces = [this, &force_on_my_point_mass,
                                       &force_on_my_mothers_point_mass](
         auto&& neighbor, SoHandle neighbor_handle) {
-      using NeighborBackend =
-          typename std::decay<decltype(neighbor)>::type::Backend;
-      using NeighborNeuriteElement = MostDerived<NeighborBackend>;
-      using NeighborNeuronSoma =
-          typename NeuronSoma::template Self<NeighborBackend>;
 
       // TODO(lukas) once we switch to C++17 use if constexpr.
       // As a consequence the reinterpret_cast won't be needed anymore.
-
       // if neighbor is a NeuriteElement
-      if (std::is_same<NeighborNeuriteElement,
-                       std::decay_t<decltype(neighbor)>>::value) {
-        auto n_soptr =
-            reinterpret_cast<NeighborNeuriteElement*>(&neighbor)->GetSoPtr();
+      if (neighbor.IsSoType(this)) {
+        auto&& neighbor_rc =
+            neighbor.template ReinterpretCast<MostDerivedScalar>();
+        auto n_soptr = neighbor_rc.GetSoPtr();
         // if it is a direct relative, or sister branch, we don't take it into
         // account
         if (n_soptr == this->GetDaughterLeft() ||
@@ -831,12 +825,11 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
             n_soptr->GetMother() == this->GetMother()) {
           return;
         }
-      } else if (std::is_same<NeighborNeuronSoma,
-                              std::decay_t<decltype(neighbor)>>::value) {
+      } else if (neighbor.template IsSoType<NeuronSoma>()) {
         // if neighbor is NeuronSoma
         // if it is a direct relative, we don't take it into account
-        auto n_soptr =
-            reinterpret_cast<NeighborNeuronSoma*>(&neighbor)->GetSoPtr();
+        auto&& neighbor_rc = neighbor.template ReinterpretCast<NeuronSoma>();
+        auto n_soptr = neighbor_rc.GetSoPtr();
         if (this->GetMother().IsNeuronSoma() &&
             this->GetMother().GetNeuronSomaSoPtr() == n_soptr) {
           return;

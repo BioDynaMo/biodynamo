@@ -440,6 +440,35 @@ TEST(SimulationObjectUtilTest, GetSoPtr) {
   }
 }
 
+TEST(SimulationObjectUtilTest, IsSoType) {
+  Neuron neuron;
+
+  EXPECT_TRUE(neuron.template IsSoType<Neuron>());
+  EXPECT_TRUE(neuron.template IsSoType<SoaNeuron>());
+  EXPECT_FALSE(neuron.template IsSoType<Cell>());
+  EXPECT_FALSE(neuron.template IsSoType<SoaCell>());
+
+  EXPECT_TRUE(neuron.IsSoType(&neuron));
+  SoaNeuron soaneuron;
+  EXPECT_TRUE(neuron.IsSoType(&soaneuron));
+  Cell cell;
+  EXPECT_FALSE(neuron.IsSoType(&cell));
+  SoaCell soacell;
+  EXPECT_FALSE(neuron.IsSoType(&soacell));
+}
+
+TEST(SimulationObjectUtilTest, ReinterpretCast) {
+  Cell cell;
+
+  auto&& neuron_rc1 = cell.template ReinterpretCast<Neuron>();
+  bool r1 = std::is_same<Neuron, std::decay_t<decltype(neuron_rc1)>>::value;
+  EXPECT_TRUE(r1);
+
+  auto&& neuron_rc2 = cell.template ReinterpretCast<SoaNeuron>();
+  bool r2 = std::is_same<Neuron, std::decay_t<decltype(neuron_rc2)>>::value;
+  EXPECT_TRUE(r2);
+}
+
 // }  // namespace simulation_object_util_test_internal
 }  // namespace bdm
 

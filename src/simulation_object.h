@@ -289,6 +289,35 @@ class SimulationObject
       SimulationObject<typename TCompileTimeParam::template Self<TTBackend>,
                        TDerived>;
 
+  /// This function determines if the type of this simulation object is the same
+  /// as `TSo` without taking the backend into account.
+  /// @tparam TSo Simulation object type with any backend
+  template <typename TSo>
+  static constexpr bool IsSoType() {
+    using TSoScalar = typename TSo::template Self<Scalar>;
+    return std::is_same<MostDerived<Scalar>, TSoScalar>::value;
+  }
+
+  /// This function determines if the type of this simulation object is the same
+  /// as `object` without taking the backend into account.
+  /// @param object simulation object can have any backend
+  template <typename TSo>
+  static constexpr bool IsSoType(const TSo *object) {
+    using Type = std::decay_t<std::remove_pointer_t<decltype(object)>>;
+    using ScalarType = typename Type::template Self<Scalar>;
+    return std::is_same<MostDerived<Scalar>, ScalarType>::value;
+  }
+
+  /// Casts this to a simulation object of type `TSo` with the current `Backend`
+  /// This function is used to simulate if constexpr functionality and won't be
+  /// needed after we swith to C++17
+  /// @tparam TSo target simulaton object type with any backend
+  template <typename TSo>
+  constexpr auto &&ReinterpretCast() {
+    using TargetType = typename TSo::template Self<Backend>;
+    return reinterpret_cast<TargetType &&>(*this);
+  }
+
   /// Empty default implementation to update references of simulation objects
   /// that changed its memory position.
   /// @param update_info vector index = type_id, map stores (old_index ->

@@ -28,7 +28,7 @@ class Version {
  public:
   /// Returns version string as obtained from `git describe --tags`
   /// e.g.: v0.1.0-10-g91aade4`
-  /// vMAJOR.MINOR.PATH-ADDITIONAL_COMMITS-gCOMMIT_ID
+  /// vMAJOR.MINOR.PATCH-ADDITIONAL_COMMITS-gCOMMIT_ID
   static const char *String() { return "@VERSION@"; }
   static uint64_t Code() { return BDM_VERSION_CODE; }
 };
