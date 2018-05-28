@@ -16,6 +16,8 @@
 #include "gpu/gpu_helper.h"
 #include "grid.h"
 #include "resource_manager.h"
+#include "shape.h"
+#include "type_util.h"
 
 namespace bdm {
 
@@ -30,7 +32,8 @@ class DisplacementOpOpenCL {
   ~DisplacementOpOpenCL() {}
 
   template <typename TContainer>
-  void operator()(TContainer* cells, uint16_t type_idx) const {
+  typename std::enable_if<is_soa_sphere<TContainer>::value>::type operator()(
+      TContainer* cells, uint16_t type_idx) const {
 #ifdef USE_OPENCL
     auto& grid = TGrid::GetInstance();
     auto rm = TResourceManager::Get();
@@ -152,16 +155,24 @@ class DisplacementOpOpenCL {
 #pragma omp parallel for
     for (size_t i = 0; i < cells->size(); i++) {
       auto&& cell = (*cells)[i];
-      cell.UpdateMassLocation(cell_movements[i]);
+      cell.UpdatePosition(cell_movements[i]);
       if (Param::bound_space_) {
         ApplyBoundingBox(&cell, Param::min_bound_, Param::max_bound_);
       }
-      cell.SetPosition(cell.GetMassLocation());
+      cell.SetPosition(cell.GetPosition());
 
       // Reset biological movement to 0.
       cell.SetTractorForce({0, 0, 0});
     }
 #endif
+  }
+
+  template <typename TContainer>
+  typename std::enable_if<!is_soa_sphere<TContainer>::value>::type operator()(
+      TContainer* cells, uint16_t type_idx) {
+    Fatal("DisplacementOpCuda",
+          "You tried to compile GPU-specific function calls for a non-SOA data "
+          "structure or non-spherical simulation object.");
   }
 };
 

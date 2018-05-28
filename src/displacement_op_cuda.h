@@ -7,6 +7,8 @@
 #include "gpu/displacement_op_cuda_kernel.h"
 #include "log.h"
 #include "resource_manager.h"
+#include "shape.h"
+#include "type_util.h"
 
 namespace bdm {
 
@@ -20,7 +22,8 @@ class DisplacementOpCuda {
   ~DisplacementOpCuda() {}
 
   template <typename TContainer>
-  void operator()(TContainer* cells, uint16_t type_idx) {
+  typename std::enable_if<is_soa_sphere<TContainer>::value>::type operator()(
+      TContainer* cells, uint16_t type_idx) {
     auto& grid = TGrid::GetInstance();
 
     std::vector<std::array<double, 3>> cell_movements(cells->size());
@@ -102,6 +105,14 @@ class DisplacementOpCuda {
       // Reset biological movement to 0.
       cell.SetTractorForce({0, 0, 0});
     }
+  }
+
+  template <typename TContainer>
+  typename std::enable_if<!is_soa_sphere<TContainer>::value>::type operator()(
+      TContainer* cells, uint16_t type_idx) {
+    Fatal("DisplacementOpCuda",
+          "You tried to compile GPU-specific function calls for a non-SOA data "
+          "structure or non-spherical simulation object.");
   }
 
  private:

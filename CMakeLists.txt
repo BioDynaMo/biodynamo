@@ -154,6 +154,8 @@ if (OPENCL_FOUND)
   endif()
 endif()
 
+set(CMAKE_SUPPRESS_DEVELOPER_WARNINGS 1 CACHE BOOL "Suppress cmake development warnings")
+
 if (CUDA_FOUND)
   add_definitions("-DUSE_CUDA")
   # Compile CUDA kernels into shared library

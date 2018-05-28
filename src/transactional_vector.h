@@ -10,6 +10,8 @@
 
 namespace bdm {
 
+struct Scalar;
+
 /// TransactionalVector has methods to add and remove elements which must be
 /// commited before the changes take effect (`DelayedPushBack` and
 /// `DelayedRemove`). Hence, it is possible to safely add and remove elements
@@ -22,6 +24,8 @@ class TransactionalVector {
   using iterator = typename std::vector<T>::iterator;
   using const_iterator = typename std::vector<T>::const_iterator;
   using value_type = T;
+  /// TODO: This is to support calls like TSimObject::Backend
+  using Backend = Scalar;
 
   /// If elements are reordered, SoHandle and SoPointer need to be updated to
   /// point to the new memory location. Elements can be reordered several
