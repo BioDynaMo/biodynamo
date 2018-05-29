@@ -2,11 +2,12 @@
 
 # This script generates ROOT dictionaries for NON CMake builds
 
-if [ $# -lt 3 ]; then
+if [ $# -lt 4 ]; then
     echo "Wrong number of arguments"
-    echo "Usage: bdm_code_generation DICTIONARY BDM_CONFIG header1.h [header2.h ...]"
+    echo "Usage: bdm_code_generation DICTIONARY BDM_CONFIG [CXX_FLAGS] -h header1.h [header2.h ...]"
     echo "   DICTIONARY file name of the dictionary that gets generated"
     echo "              (e.g., my-sim_dict.cc)"
+    echo "   CXX_FLAGS  additional CXX flags (optional)"
     echo "   BDM_CONFIG bdm config command. Used to pass optional compiler and build type"
     echo "              (e.g., \"bdm-config --cxx-compiler=g++ --build-type=Release\")"
     echo "   HEADERS    at least one header file containing the biodynamo definitions"
@@ -17,6 +18,15 @@ DICT=$1
 shift
 BDM_CONFIG=$1
 shift
+if [ $1 != "-h" ]; then
+  ADDITIONAL_CXX_FLAGS=$1
+  shift
+  while [ $1 != "-h" ]; do
+    ADDITIONAL_CXX_FLAGS="$ADDITIONAL_CXX_FLAGS $1"
+    shift
+  done
+fi
+shift
 HEADERS=$@
 
 SELECTIONFILE=$(${BDM_CONFIG} --cmakedir)/selection.xml
@@ -25,4 +35,4 @@ CXX_INCLUDES=$(${BDM_CONFIG} --cxxincludes)
 
 CXX_DEFINES=$(${BDM_CONFIG} --cxxdefines)
 
-genreflex ${HEADERS} -o ${DICT} --select=${SELECTIONFILE} ${CXX_DEFINES} ${CXX_INCLUDES}
+genreflex ${HEADERS} -o ${DICT} --select=${SELECTIONFILE} ${CXX_DEFINES} ${CXX_INCLUDES} $ADDITIONAL_CXX_FLAGS
