@@ -32,7 +32,7 @@ TEST(DiffusionInitTest, GaussianBand) {
                                       construct);
 
   // Define the substances in our simulation
-  ModelInitializer::DefineSubstance(kSubstance, "Substance", 0.5, 0.1, 1);
+  ModelInitializer::DefineSubstance(kSubstance, "Substance", 0.5, 0.1, 25);
 
   // Initialize the substance according to a GaussianBand along the x-axis
   ModelInitializer::InitializeSubstance(kSubstance, "Substance",
@@ -46,8 +46,7 @@ TEST(DiffusionInitTest, GaussianBand) {
   auto& dgrid = ResourceManager<>::Get()->GetDiffusionGrids()[0];
 
   // Create data structures, whose size depend on the grid dimensions
-  dgrid->Initialize({lbound, rbound, lbound, rbound, lbound, rbound},
-                    grid_.GetBoxLength());
+  dgrid->Initialize({lbound, rbound, lbound, rbound, lbound, rbound});
   // Initialize data structures with user-defined values
   dgrid->RunInitializers();
 

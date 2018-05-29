@@ -22,14 +22,16 @@ enum Substances { kSubstance };
 template <typename Backend>
 struct CompileTimeParam : public DefaultCompileTimeParam<Backend> {};
 
+inline bool is_close(double c, double v) { return (std::fabs(c - v) < 1e-9); }
+
 inline int Simulate(int argc, const char** argv) {
   InitializeBiodynamo(argc, argv);
 
   // 3. Define initial model
   // Create an artificial bounds for the simulation space
   Param::bound_space_ = true;
-  Param::min_bound_ = 0;
-  Param::max_bound_ = 250;
+  Param::min_bound_ = -100;
+  Param::max_bound_ = 100;
 
   // Create one cell at a random position
   auto construct = [](const std::array<double, 3>& position) {
@@ -43,13 +45,24 @@ inline int Simulate(int argc, const char** argv) {
   // 3. Define the substances in our simulation
   // Order: substance id, substance_name, diffusion_coefficient, decay_constant,
   // resolution
-  ModelInitializer::DefineSubstance(kSubstance, "Substance", 0.5, 0.1, 1);
+  ModelInitializer::DefineSubstance(kSubstance, "Substance", 0.5, 0, 1);
+  ModelInitializer::DefineSubstance(1, "Substance_1", 0.5, 0, 4);
 
   // Order: substance id, substance name, initialization model, along which axis
   // (0 = x, 1 = y, 2 = z). See the documentation of `GaussianBand` for
   // information about its arguments
-  ModelInitializer::InitializeSubstance(kSubstance, "Substance",
-                                        GaussianBand(120, 5, Axis::kXAxis));
+  // ModelInitializer::InitializeSubstance(kSubstance, "Substance",
+  //                                       GaussianBand(120, 5, Axis::kXAxis));
+
+  auto point_source = [](double x, double y, double z) {
+    if (is_close(x, 0) && is_close(y, 0) && is_close(z, 0)) {
+      return 50.0;
+    }
+    return 0.0;
+  };
+
+  ModelInitializer::InitializeSubstance(kSubstance, "Substance", point_source);
+  ModelInitializer::InitializeSubstance(1, "Substance_1", point_source);
 
   // auto initer_y = [](double x, double y, double z) {
   //   return ROOT::Math::normal_pdf(y, 5, 120);

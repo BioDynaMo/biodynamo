@@ -36,11 +36,7 @@ class DiffusionOp {
         dg->Update(grid.GetDimensionThresholds());
       }
 
-      if (Param::leaking_edges_) {
-        dg->DiffuseWithLeakingEdge();
-      } else {
-        dg->DiffuseWithClosedEdge();
-      }
+      dg->DiffuseEuler();
 
       if (Param::calculate_gradients_) {
         dg->CalculateGradient();

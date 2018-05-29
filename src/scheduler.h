@@ -34,8 +34,7 @@ class Scheduler {
       restore_point_ = backup_.GetSimulationStepsFromBackup();
     }
     visualization_ = CatalystAdaptor<>::GetInstance();
-    visualization_->Initialize(BDM_SRC_DIR
-                                "/visualization/simple_pipeline.py");
+    visualization_->Initialize(BDM_SRC_DIR "/visualization/simple_pipeline.py");
     if (Param::use_gpu_) {
       InitializeGPUEnvironment<>();
     }
@@ -172,8 +171,7 @@ class Scheduler {
     int rbound = grid_->GetDimensionThresholds()[1];
     for (auto& dgrid : TResourceManager::Get()->GetDiffusionGrids()) {
       // Create data structures, whose size depend on the grid dimensions
-      dgrid->Initialize({lbound, rbound, lbound, rbound, lbound, rbound},
-                        grid_->GetBoxLength());
+      dgrid->Initialize({lbound, rbound, lbound, rbound, lbound, rbound});
       // Initialize data structures with user-defined values
       dgrid->RunInitializers();
     }

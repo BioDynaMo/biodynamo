@@ -16,7 +16,7 @@ bool Param::run_mechanical_interactions_ = true;
 bool Param::bound_space_ = false;
 double Param::min_bound_ = 0;
 double Param::max_bound_ = 100;
-bool Param::leaking_edges_ = false;
+bool Param::leaking_edges_ = true;
 bool Param::calculate_gradients_ = true;
 uint64_t Param::total_steps_ = 0;
 Param::NumericalODESolver Param::numerical_ode_solver_ =
@@ -169,7 +169,7 @@ void Param::Reset() {
   bound_space_ = false;
   min_bound_ = 0;
   max_bound_ = 100;
-  leaking_edges_ = false;
+  leaking_edges_ = true;
   calculate_gradients_ = true;
   total_steps_ = 0;
   numerical_ode_solver_ = NumericalODESolver::kEuler;

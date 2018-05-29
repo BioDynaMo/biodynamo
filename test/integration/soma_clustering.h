@@ -91,9 +91,11 @@ struct SubstanceSecretion : public BaseBiologyModule {
     }
     auto& secretion_position = cell->GetPosition();
     if (cell->GetCellType() == 1) {
-      dg_1_->IncreaseConcentrationBy(secretion_position, 1);
+      dg_1_->IncreaseConcentrationBy(secretion_position,
+                                     1 / dg_1_->GetBoxVolume());
     } else {
-      dg_0_->IncreaseConcentrationBy(secretion_position, 1);
+      dg_0_->IncreaseConcentrationBy(secretion_position,
+                                     1 / dg_0_->GetBoxVolume());
     }
   }
 
@@ -262,13 +264,12 @@ inline int Simulate(int argc, const char** argv) {
 
   // 3. Define the substances that cells may secrete
   // Order: substance_name, diffusion_coefficient, decay_constant, resolution
-  ModelInitializer::DefineSubstance(kSubstance_0, "Substance_0", 0.5, 0.1, 1);
-  ModelInitializer::DefineSubstance(kSubstance_1, "Substance_1", 0.5, 0.1, 1);
+  ModelInitializer::DefineSubstance(kSubstance_0, "Substance_0", 0.5, 0.1, 25);
+  ModelInitializer::DefineSubstance(kSubstance_1, "Substance_1", 0.5, 0.1, 25);
 
   // 4. Run simulation for N timesteps
   Scheduler<> scheduler;
-
-  scheduler.Simulate(1001);
+  scheduler.Simulate(3001);
 
   double spatial_range = 5;
   auto crit = GetCriterion(spatial_range, num_cells / 8);

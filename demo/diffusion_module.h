@@ -48,7 +48,7 @@ struct KaliumSecretion : public BaseBiologyModule {
   void Run(T* cell) {
     static auto dg = GetDiffusionGrid(kKalium);
     array<double, 3> secretion_position = {50, 50, 50};
-    dg->IncreaseConcentrationBy(secretion_position, 4);
+    dg->IncreaseConcentrationBy(secretion_position, 4 / dg->GetBoxVolume());
   }
 
   ClassDefNV(KaliumSecretion, 1);
@@ -66,6 +66,7 @@ inline int Simulate(int argc, const char** argv) {
   InitializeBiodynamo(argc, argv);
 
   Param::backup_interval_ = 1;
+
   // 4a. Define initial model - in this example: two cells
   auto construct = [](const std::array<double, 3>& position) {
     Cell cell(position);
@@ -92,10 +93,9 @@ inline int Simulate(int argc, const char** argv) {
   ModelInitializer::CreateCells(positions, construct);
 
   // 4b. Define the substances that cells may secrete
-  ModelInitializer::DefineSubstance(kKalium, "Kalium", 0.4, 0, 5);
+  ModelInitializer::DefineSubstance(kKalium, "Kalium", 0.4, 0, 25);
 
   // 5. Run simulation for N timesteps
-  Param::live_visualization_ = true;
   Scheduler<> scheduler;
   scheduler.Simulate(3500);
   return 0;

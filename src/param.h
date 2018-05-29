@@ -126,11 +126,11 @@ struct Param {
 
   /// Allow substances to leak out of the simulation space. In this way
   /// the substance concentration will not be blocked by an artificial border\n
-  /// Default value: `false` (closed edges by default)\n
+  /// Default value: `true`\n
   /// TOML config file:
   ///
   ///     [simulation]
-  ///     leaking_edges = false
+  ///     leaking_edges = true
   static bool leaking_edges_;
 
   /// Calculate the diffusion gradient for each substance.\n

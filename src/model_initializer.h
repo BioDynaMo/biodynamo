@@ -160,7 +160,7 @@ struct ModelInitializer {
   template <typename TResourceManager = ResourceManager<>>
   static void DefineSubstance(int substance_id, std::string substance_name,
                               double diffusion_coeff, double decay_constant,
-                              int resolution) {
+                              int resolution = 10) {
     assert(resolution > 0 && "Resolution needs to be a positive integer value");
     auto rm = TResourceManager::Get();
     DiffusionGrid* d_grid =

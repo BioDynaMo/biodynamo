@@ -3,6 +3,7 @@
 
 #include <assert.h>
 
+#include <Rtypes.h>
 #include <algorithm>
 #include <array>
 #include <cmath>
@@ -11,9 +12,8 @@
 #include <string>
 #include <vector>
 
-#include <Rtypes.h>
-
 #include "math_util.h"
+#include "param.h"
 
 namespace bdm {
 
@@ -25,7 +25,7 @@ class DiffusionGrid {
  public:
   DiffusionGrid() {}
   DiffusionGrid(int substance_id, std::string substance_name, double dc,
-                double mu, int resolution)
+                double mu, int resolution = 10)
       : substance_(substance_id),
         substance_name_(substance_name),
         dc_({{1 - dc, dc / 6, dc / 6, dc / 6, dc / 6, dc / 6, dc / 6}}),
@@ -40,36 +40,22 @@ class DiffusionGrid {
   /// @param[in]  grid_dimensions  The grid dimensions
   /// @param[in]  box_length       The box length
   ///
-  void Initialize(const std::array<int32_t, 6>& grid_dimensions,
-                  uint32_t box_length) {
+  void Initialize(const std::array<int32_t, 6>& grid_dimensions) {
     // Get grid properties from neighbor grid
     grid_dimensions_ = grid_dimensions;
     assert(resolution_ > 0 && "The resolution cannot be zero!");
-    box_length_ = box_length / resolution_;
+
+    num_boxes_axis_[0] = resolution_;
+    num_boxes_axis_[1] = resolution_;
+    num_boxes_axis_[2] = resolution_;
+
+    box_length_ = (grid_dimensions_[1] - grid_dimensions_[0]) /
+                  static_cast<double>(resolution_);
+
+    box_volume_ = box_length_ * box_length_ * box_length_;
 
     assert(box_length_ > 0 &&
            "Box length of diffusion grid must be greater than zero!");
-
-    // If the grid is not perfectly divisible along each dimension by the
-    // resolution, extend the grid so that it is
-    for (int i = 0; i < 3; i++) {
-      int dimension_length =
-          grid_dimensions_[2 * i + 1] - grid_dimensions_[2 * i];
-      int r = dimension_length % box_length_;
-      if (r != 0) {
-        // std::abs for the case that box_length_ > dimension_length
-        grid_dimensions_[2 * i + 1] += (box_length_ - r);
-      }
-    }
-
-    // Calculate how many boxes fit along each dimension
-    for (int i = 0; i < 3; i++) {
-      int dimension_length =
-          grid_dimensions_[2 * i + 1] - grid_dimensions_[2 * i];
-      assert((dimension_length % box_length_ == 0) &&
-             "The grid dimensions are not a multiple of its box length");
-      num_boxes_axis_[i] = dimension_length / box_length_;
-    }
 
     // Set the parity of the number of boxes along the dimensions (since all
     // dimensions are the same, we just take the x-axis here)
@@ -126,66 +112,67 @@ class DiffusionGrid {
   /// @param[in]  threshold_dimensions  The threshold values
   ///
   void Update(const std::array<int32_t, 2>& threshold_dimensions) {
-    // Extend the grid dimensions such that each dimension ranges from
+    // Update the grid dimensions such that each dimension ranges from
     // {treshold_dimensions[0] - treshold_dimensions[1]}
     auto min_gd = threshold_dimensions[0];
     auto max_gd = threshold_dimensions[1];
     grid_dimensions_ = {min_gd, max_gd, min_gd, max_gd, min_gd, max_gd};
 
     // If the grid is not perfectly divisible along each dimension by the
-    // resolution, extend the grid so that it is
+    // box length, extend the grid so that it is
+    int dimension_length = max_gd - min_gd;
     for (int i = 0; i < 3; i++) {
-      int dimension_length =
-          grid_dimensions_[2 * i + 1] - grid_dimensions_[2 * i];
-      int r = dimension_length % box_length_;
-      if (r != 0) {
+      int r = fmod(dimension_length, box_length_);
+      if (r > 1e-9) {
         // std::abs for the case that box_length_ > dimension_length
         grid_dimensions_[2 * i + 1] += (box_length_ - r);
       }
     }
 
-    // Store the old number of boxes along each axis for comparison
-    array<size_t, 3> tmp_num_boxes_axis = num_boxes_axis_;
+    // Calculate by how many boxes each dimension has grown
+    int new_dimension_length = grid_dimensions_[1] - grid_dimensions_[0];
+    int new_num_boxes = std::ceil(new_dimension_length / box_length_);
+    int growth = new_num_boxes - num_boxes_axis_[0];
 
-    // Calculate how many boxes fit along each dimension
-    for (int i = 0; i < 3; i++) {
-      int dimension_length =
-          grid_dimensions_[2 * i + 1] - grid_dimensions_[2 * i];
-      assert((dimension_length % box_length_ == 0) &&
-             "The grid dimensions are not a multiple of its box length");
-      num_boxes_axis_[i] = dimension_length / box_length_;
-    }
+    if (growth > 0) {
+      // Store the old number of boxes along each axis for comparison
+      array<size_t, 3> tmp_num_boxes_axis = num_boxes_axis_;
 
-    // We need to maintain the parity of the number of boxes along each
-    // dimension,
-    // otherwise copying of the substances to the increases grid will not be
-    // symmetrically done; resulting in shifting of boxes
-    // We add a box in the negative direction, because the only way the parity
-    // could have changed is because of adding a box in the positive direction
-    // (due to the grid not being perfectly divisible; see above)
-    if (num_boxes_axis_[0] % 2 != parity_) {
-      for (int i = 0; i < 3; i++) {
-        grid_dimensions_[2 * i] -= box_length_;
-        num_boxes_axis_[i]++;
+      // Increase number of boxes along axis accordingly
+      num_boxes_axis_[0] += growth;
+      num_boxes_axis_[1] += growth;
+      num_boxes_axis_[2] += growth;
+
+      // We need to maintain the parity of the number of boxes along each
+      // dimension, otherwise copying of the substances to the increases grid
+      // will not be symmetrically done; resulting in shifting of boxes
+      // We add a box in the negative direction, because the only way the parity
+      // could have changed is because of adding a box in the positive direction
+      // (due to the grid not being perfectly divisible; see above)
+      if (num_boxes_axis_[0] % 2 != parity_) {
+        for (int i = 0; i < 3; i++) {
+          grid_dimensions_[2 * i] -= box_length_;
+          num_boxes_axis_[i]++;
+        }
       }
+
+      // Temporarily save previous grid data
+      std::vector<double> tmp_c1 = c1_;
+      std::vector<double> tmp_gradients = gradients_;
+
+      c1_.clear();
+      c2_.clear();
+      gradients_.clear();
+
+      total_num_boxes_ =
+          num_boxes_axis_[0] * num_boxes_axis_[1] * num_boxes_axis_[2];
+
+      CopyOldData(tmp_c1, tmp_gradients, tmp_num_boxes_axis);
+
+      assert(total_num_boxes_ >= tmp_num_boxes_axis[0] * tmp_num_boxes_axis[1] *
+                                     tmp_num_boxes_axis[2] &&
+             "The diffusion grid tried to shrink! It can only become larger");
     }
-
-    // Temporarily save previous grid data
-    std::vector<double> tmp_c1 = c1_;
-    std::vector<double> tmp_gradients = gradients_;
-
-    c1_.clear();
-    c2_.clear();
-    gradients_.clear();
-
-    total_num_boxes_ =
-        num_boxes_axis_[0] * num_boxes_axis_[1] * num_boxes_axis_[2];
-
-    CopyOldData(tmp_c1, tmp_gradients, tmp_num_boxes_axis);
-
-    assert(total_num_boxes_ >= tmp_num_boxes_axis[0] * tmp_num_boxes_axis[1] *
-                                   tmp_num_boxes_axis[2] &&
-           "The diffusion grid tried to shrink! It can only become larger");
   }
 
   /// Copies the concentration and gradients values to the new
@@ -378,6 +365,66 @@ class DiffusionGrid {
     c1_.swap(c2_);
   }
 
+  void DiffuseEuler() {
+    const auto nx = num_boxes_axis_[0];
+    const auto ny = num_boxes_axis_[1];
+    const auto nz = num_boxes_axis_[2];
+
+    const double ibl2 = 1 / (box_length_ * box_length_);
+    const double d = 1 - dc_[0];
+    // TODO(ahmad): this probably needs to scale with Param::simulation_timestep
+    const double dt = 1;
+
+#define YBF 16
+#pragma omp parallel for collapse(2)
+    for (size_t yy = 0; yy < ny; yy += YBF) {
+      for (size_t z = 0; z < nz; z++) {
+        size_t ymax = yy + YBF;
+        if (ymax >= ny) {
+          ymax = ny;
+        }
+        for (size_t y = yy; y < ymax; y++) {
+          size_t x = 0;
+          int c, n, s, b, t;
+          c = x + y * nx + z * nx * ny;
+          // x = 0
+          c2_[c] = 0;
+#pragma omp simd
+          for (x = 1; x < nx - 1; x++) {
+            ++c;
+            ++n;
+            ++s;
+            ++b;
+            ++t;
+
+            if (y == 0 || y == (ny - 1) || z == 0 || z == (nz - 1)) {
+              c2_[c] = 0;
+              continue;
+            }
+
+            n = c - nx;
+            s = c + nx;
+            b = c - nx * ny;
+            t = c + nx * ny;
+            c2_[c] = (c1_[c] +
+                      d * dt * (c1_[c - 1] - 2 * c1_[c] + c1_[c + 1]) * ibl2 +
+                      d * dt * (c1_[s] - 2 * c1_[c] + c1_[n]) * ibl2 +
+                      d * dt * (c1_[b] - 2 * c1_[c] + c1_[t]) * ibl2) *
+                     (1 - mu_);
+          }
+          ++c;
+          ++n;
+          ++s;
+          ++b;
+          ++t;
+          // x = n - 1
+          c2_[c] = 0;
+        }  // tile ny
+      }    // tile nz
+    }      // block ny
+    c1_.swap(c2_);
+  }
+
   /// Calculates the gradient for each box in the diffusion grid.
   /// The gradient is calculated in each direction (x, y, z) as following:
   ///
@@ -387,7 +434,7 @@ class DiffusionGrid {
   ///
   /// At the edges the gradient is the same as the box next to it
   void CalculateGradient() {
-    double gd = 1 / (static_cast<double>(box_length_) * 2);
+    double gd = 1 / (box_length_ * 2);
 
     auto nx = num_boxes_axis_[0];
     auto ny = num_boxes_axis_[1];
@@ -483,6 +530,15 @@ class DiffusionGrid {
     }
   }
 
+  std::array<uint32_t, 3> GetBoxCoordinates(
+      const array<double, 3>& position) const {
+    std::array<uint32_t, 3> box_coord;
+    box_coord[0] = (floor(position[0]) - grid_dimensions_[0]) / box_length_;
+    box_coord[1] = (floor(position[1]) - grid_dimensions_[2]) / box_length_;
+    box_coord[2] = (floor(position[2]) - grid_dimensions_[4]) / box_length_;
+    return box_coord;
+  }
+
   size_t GetBoxIndex(const array<uint32_t, 3>& box_coord) const {
     size_t ret = box_coord[2] * num_boxes_axis_[0] * num_boxes_axis_[1] +
                  box_coord[1] * num_boxes_axis_[0] + box_coord[0];
@@ -491,11 +547,7 @@ class DiffusionGrid {
 
   /// Calculates the box index of the substance at specified position
   size_t GetBoxIndex(const array<double, 3>& position) const {
-    array<uint32_t, 3> box_coord;
-    box_coord[0] = (floor(position[0]) - grid_dimensions_[0]) / box_length_;
-    box_coord[1] = (floor(position[1]) - grid_dimensions_[2]) / box_length_;
-    box_coord[2] = (floor(position[2]) - grid_dimensions_[4]) / box_length_;
-
+    auto box_coord = GetBoxCoordinates(position);
     return GetBoxIndex(box_coord);
   }
 
@@ -513,7 +565,7 @@ class DiffusionGrid {
 
   size_t GetNumBoxes() { return total_num_boxes_; }
 
-  int GetBoxLength() { return box_length_; }
+  double GetBoxLength() { return box_length_; }
 
   int GetSubstanceId() { return substance_; }
 
@@ -531,6 +583,8 @@ class DiffusionGrid {
 
   int GetResolution() { return resolution_; }
 
+  double GetBoxVolume() { return box_volume_; }
+
   // void AddGaussianLayer(double mean, double sigma, int selected) {
   //   mean_.push_back(mean);
   //   sigma_.push_back(sigma);
@@ -547,8 +601,10 @@ class DiffusionGrid {
   int substance_;
   /// The name of the substance of this grid
   std::string substance_name_;
-  /// The length of a box
-  uint32_t box_length_;
+  /// The side length of each box
+  double box_length_;
+  /// the volume of each box
+  double box_volume_;
   /// The array of concentration values
   std::vector<double> c1_;
   /// An extra concentration data buffer for faster value updating
@@ -556,7 +612,7 @@ class DiffusionGrid {
   /// The array of gradients (x, y, z)
   std::vector<double> gradients_;
   /// The maximum concentration value that a box can have
-  double concentration_threshold_ = 1;
+  double concentration_threshold_ = 1e15;
   /// The diffusion coefficients [cc, cw, ce, cs, cn, cb, ct]
   array<double, 7> dc_;
   /// The decay constant
@@ -570,7 +626,7 @@ class DiffusionGrid {
   /// Flag to determine if this grid has been initialized
   bool initialized_ = false;
   /// The resolution of the diffusion grid
-  int resolution_ = 1;
+  int resolution_;
   /// If false, grid dimensions are even; if true, they are odd
   bool parity_ = false;
   /// A list of functions that initialize this diffusion grid
