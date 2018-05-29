@@ -504,6 +504,51 @@ TEST(MechanicalInteraction, getNeuronTest) {
   EXPECT_FALSE(ne4->GetNeuronSomaOfNeurite() == ne3->GetNeuronSomaOfNeurite());
 }
 
+TEST(MechanicalInteraction, getNeuronTest) {
+  Param::Reset();
+  Rm()->Clear();
+
+  auto neuron = Rm()->New<NeuronSoma>();
+  neuron.SetPosition({0, 0, 0});
+  neuron.SetMass(1);
+  neuron.SetDiameter(10);
+  auto ne = neuron.ExtendNewNeurite({0, 0, 1});
+  auto ne2 = neuron.ExtendNewNeurite({1, 0, 0});
+
+  Scheduler<> scheduler;
+
+  for (int i = 0; i < 10; i++) {
+    ne->ElongateTerminalEnd(100, ne->GetSpringAxis());
+    ne->RunDiscretization();
+    scheduler.Simulate(1);
+  }
+
+  auto ne3 = ne->Branch(0.5, {0.5, 0, 1});
+
+  auto neuron2 = Rm()->New<NeuronSoma>();
+  neuron2.SetPosition({20, 0, 0});
+  neuron2.SetMass(1);
+  neuron2.SetDiameter(10);
+  auto ne4 = neuron2.ExtendNewNeurite({0, 0, 1});
+
+  for (int i = 0; i < 100; i++) {
+    ne->ElongateTerminalEnd(100, ne->GetSpringAxis());
+    ne3->ElongateTerminalEnd(100, ne3->GetSpringAxis());
+    ne4->ElongateTerminalEnd(100, ne4->GetSpringAxis());
+    ne->RunDiscretization();
+    ne3->RunDiscretization();
+    ne4->RunDiscretization();
+
+    scheduler.Simulate(1);
+  }
+
+  EXPECT_TRUE(neuron.GetSoPtr() == ne->GetNeuronSomaOfNeurite());
+  EXPECT_TRUE(ne->GetNeuronSomaOfNeurite() == ne2->GetNeuronSomaOfNeurite());
+  EXPECT_TRUE(ne->GetNeuronSomaOfNeurite() == ne3->GetNeuronSomaOfNeurite());
+  EXPECT_TRUE(neuron2->GetSoPtr() == ne4->GetNeuronSomaOfNeurite());
+  EXPECT_FALSE(ne4->GetNeuronSomaOfNeurite() == ne3->GetNeuronSomaOfNeurite());
+}
+
 }  // end namespace neuroscience
 }  // end namespace experimental
 }  // end namespace bdm
