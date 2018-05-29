@@ -965,6 +965,12 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
     //  6.3) Since there's going be a move, we calculate it
     auto displacement = Math::ScalarMult(h_over_m, force_on_my_point_mass);
     double displacement_norm = force_norm * h_over_m;
+    if (daughter_left_[kIdx] != nullptr && mother_[kIdx].IsNeuriteElement()) {
+      auto mother = mother_[kIdx].GetNeuriteElementSoPtr();
+      if (mother->GetDaughterLeft()!=nullptr && mother->GetDaughterRight()!=nullptr) {
+        displacement = Math::ScalarMult(0.1, force_on_my_point_mass);;
+      }
+    }
 
     //  6.4) There is an upper bound for the movement.
     auto* param = Simulation_t::GetActive()->GetParam();
