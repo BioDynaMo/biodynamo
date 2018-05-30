@@ -358,7 +358,6 @@ TEST(MechanicalInteraction, DoubleStraightCylinderGrowth) {
   }
 }
 
-// TODO(jean) Fix test
 TEST(MechanicalInteraction, BifurcationCylinderGrowth) {
   Simulation<> simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
@@ -389,33 +388,25 @@ TEST(MechanicalInteraction, BifurcationCylinderGrowth) {
     scheduler.Simulate(1);
   }
 
-  //    auto&& ne2=ne->Bifurcate();
   auto branches = ne->Bifurcate();
   auto branch_l = branches[0];
   auto branch_r = branches[1];
 
-  for (int i = 0; i < 20; i++) {
+  for (int i = 0; i < 200; i++) {
     branch_r->ElongateTerminalEnd(100, direction);
     branch_r->RunDiscretization();
-
-    if (i < 5) {
-      branch_l->ElongateTerminalEnd(100, direction2);
-      branch_l->RunDiscretization();
-    }
-
+    branch_l->ElongateTerminalEnd(100, direction2);
+    branch_l->RunDiscretization();
     scheduler.Simulate(1);
-
-    //      if (i%10==0) {
-    //        ne_axis = ne->GetSpringAxis();
-    //        ne_axis_2 = ne2->GetSpringAxis();
-
-    //        EXPECT_NEAR(ne_axis[0], 0, abs_error<double>::value);
-    //        EXPECT_NEAR(ne_axis_2[1], 0, abs_error<double>::value);
-    //      }
   }
+  ne_axis = branch_l->GetSpringAxis();
+  ne_axis_2 = branch_r->GetSpringAxis();
+
+  EXPECT_NEAR(ne_axis[0], ne_axis_2[1], abs_error<double>::value);
+  EXPECT_NEAR(ne_axis[1], ne_axis_2[0], abs_error<double>::value);
+  EXPECT_NEAR(ne_axis[2], ne_axis_2[2], abs_error<double>::value);
 }
 
-// TODO(jean) Fix test
 TEST(MechanicalInteraction, BranchCylinderGrowth) {
   Simulation<> simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
@@ -431,10 +422,6 @@ TEST(MechanicalInteraction, BranchCylinderGrowth) {
 
   std::array<double, 3> ne_axis = ne->GetSpringAxis();
 
-  EXPECT_NEAR(ne_axis[0], 0, abs_error<double>::value);
-  EXPECT_NEAR(ne_axis[1], 0, abs_error<double>::value);
-  EXPECT_NEAR(ne_axis[2], 1, abs_error<double>::value);
-
   std::array<double, 3> direction = {0, 0.5, 1};
   std::array<double, 3> direction2 = {0.5, 0, 1};
 
@@ -444,27 +431,25 @@ TEST(MechanicalInteraction, BranchCylinderGrowth) {
     scheduler.Simulate(1);
   }
 
-  //    dynamic_cast<Neurite>(ne->Branch(0.5, direction2));
-  // auto ne2 = ne->Branch(0.5, direction2);
-  ne->Branch(0.5, direction2);
+  auto ne2 = ne->Branch(0.5, direction2);
+
+  EXPECT_NEAR(ne_axis[0], 0, abs_error<double>::value);
+  EXPECT_NEAR(ne_axis[1], 0, abs_error<double>::value);
+  EXPECT_NEAR(ne_axis[2], 1, abs_error<double>::value);
 
   for (int i = 0; i < 100; i++) {
     ne->ElongateTerminalEnd(100, direction);
-    //      ne2->ElongateTerminalEnd(100, direction2);
-
+    ne2->ElongateTerminalEnd(100, direction2);
     ne->RunDiscretization();
-    //      ne2->RunDiscretization();
+    ne2->RunDiscretization();
 
     scheduler.Simulate(1);
-
-    //     if (i%10==0) {
-    //       ne_axis = ne->GetSpringAxis();
-    //       ne_axis_2 = ne2->GetSpringAxis();
-    //
-    //       EXPECT_NEAR(ne_axis[0], 0, abs_error<double>::value);
-    //       EXPECT_NEAR(ne_axis_2[1], 0, abs_error<double>::value);
-    //     }
   }
+
+  ne_axis = ne->GetSpringAxis();
+  ne_axis_2 = ne2->GetSpringAxis();
+  EXPECT_NEAR(ne_axis[0], 0, abs_error<double>::value);
+  EXPECT_NEAR(ne_axis_2[1], 0, abs_error<double>::value);
 }
 
 TEST(MechanicalInteraction, getNeuronTest) {
