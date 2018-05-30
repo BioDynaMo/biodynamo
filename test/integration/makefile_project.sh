@@ -1,5 +1,5 @@
 #!/bin/bash
-
+set -x
 # get path of this script
 pushd `dirname $0` > /dev/null
 SCRIPTPATH=`pwd`

@@ -1,0 +1,30 @@
+FROM ubuntu:16.04
+
+# lsb-release and lsb-core required to determine operating system
+# man required by ROOT
+RUN apt-get update && apt-get install -y \
+  git \
+  sudo \
+  lsb-release \
+  lsb-core \
+  man
+
+RUN git config --system user.name "Test User" && \
+    git config --system user.email user@test.com
+
+# update user id and group id such that mapped volumes can be accessed with the
+# same rights as on the host. Files created by the container can also be
+# accessed on the host without chowning.
+ARG HOST_UID
+ARG HOST_GID
+
+RUN groupadd -g $HOST_GID testuser && \
+    useradd -u $HOST_UID -g $HOST_GID -m -c "Testuser" testuser && \
+    passwd --delete testuser && \
+    echo "testuser ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+
+USER testuser
+
+# preserve the environment variable BDM_LOCAL_CERNBOX when calling scripts with
+# sudo
+RUN echo "Defaults env_keep += \"BDM_LOCAL_CERNBOX\"" | sudo tee -a /etc/sudoers

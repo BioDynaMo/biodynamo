@@ -70,10 +70,6 @@ function(bdm_generate_dictionary TARGET)
   foreach( d ${incdirs})
     set(includedirs ${includedirs} -I${d})
   endforeach()
-  # header install path on linux
-  set(includedirs ${includedirs} -I/snap/biodynamo/current/biodynamo/include)
-  # header install path on osx
-  set(includedirs ${includedirs} -I/usr/local/include/biodynamo)
   #---Get preprocessor definitions--------------------------
   get_directory_property(defs COMPILE_DEFINITIONS)
   foreach( d ${defs})

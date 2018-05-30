@@ -5,9 +5,8 @@ markdown_extensions:
   - codehilite
 pages:
     - Home: index.md
-    - Getting Started:
-      - Installation: installation.md
-      - Usage: usage.md
+    - Installation: installation.md
+    - First Steps: first_steps.md
     - Tutorials:
       - Hello World: hello_world.md
       - Visualization: visualization.md

@@ -74,7 +74,6 @@ if __name__ == '__main__':
     if UpdateVersionInfo(destdir+"/last_version", version):
         GenerateFile(scriptpath+'/version.h', destdir+'/version.h', version, major, minor, patch, additional_commits)
         GenerateFile(scriptpath+'/version.py', destdir+'/version.py', version, major, minor, patch, additional_commits)
-        GenerateFile(scriptpath+'/../snap/snapcraft.yaml.in', sys.argv[2]+'/build-snap/snapcraft.yaml', version, major, minor, patch, additional_commits)
 
         # cache last version
         with open(destdir+"/last_version", 'w') as f:

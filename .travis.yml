@@ -2,23 +2,36 @@ language: c++
 
 matrix:
   include:
-    # Default build on osx
-    - os: osx
-      compiler: clang
-      env: SCRIPT=./travis.sh
     # Default build on linux
     - os: linux
       compiler: gcc
       dist: trusty
       sudo: required
       group: edge
-      env: SCRIPT=./travis.sh
+      env: SCRIPT="cmake/travis-ci/default_build.sh ."
+    # Default build on osx
+    - os: osx
+      compiler: clang
+      env: SCRIPT="cmake/travis-ci/default_build.sh ."
     # Test development installation on linux
     - os: linux
       dist: trusty
       sudo: required
       group: edge
-      env: SCRIPT="script/dev/test_ubuntu_16.04_install_script/host.sh $TRAVIS_BRANCH"
+      env: SCRIPT="cmake/travis-ci/installation_test.sh . ubuntu-16.04"
+    # Test development installation on osx
+    - os: osx
+      env: SCRIPT="cmake/travis-ci/installation_test.sh . osx"
+
+before_install:
+ - |
+  # workaround for https://github.com/travis-ci/travis-ci/issues/6307
+  # taken from https://github.com/libproxy/libproxy/commit/e6591b251ad42a207bcc752a53fdf2e2981c7bad#diff-354f30a63fb0907d4ad57269548329e3R16
+  # remove once fixed
+  if [ "$TRAVIS_OS_NAME" == "osx" ]; then
+    command curl -sSL https://rvm.io/mpapis.asc | gpg --import -
+    rvm get stable
+  fi
 
 script:
   - $SCRIPT

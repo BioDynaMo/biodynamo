@@ -6,7 +6,7 @@ export Qt5_DIR=/opt/biodynamo/third_party/qt/lib/cmake/Qt5
 export LD_LIBRARY_PATH=/opt/biodynamo/third_party/qt/lib:/usr/lib/openmpi/lib:${LD_LIBRARY_PATH}
 export PYTHONPATH=/opt/biodynamo/third_party/paraview/lib/paraview-5.4/site-packages:/opt/biodynamo/third_party/paraview/lib/paraview-5.4/site-packages/vtk
 export QT_QPA_PLATFORM_PLUGIN_PATH=/opt/biodynamo/third_party/qt/plugins
-export PATH=/opt/biodynamo/third_party/paraview/bin:${PATH}
+export PATH=/opt/biodynamo/third_party/cmake-3.6.3/bin:/opt/biodynamo/third_party/paraview/bin:${PATH}
 
 # required environment variables for out of source simulations
 #   used by cmake to find BioDynaMoConfig.cmake
@@ -16,9 +16,3 @@ export BDM_CMAKE_DIR=/opt/biodynamo/biodynamo/share/cmake
 export BDM_SRC_DIR=/opt/biodynamo/biodynamo/include
 export PATH=/opt/biodynamo/biodynamo/bin:$PATH
 export LD_LIBRARY_PATH=/opt/biodynamo/biodynamo/lib:$LD_LIBRARY_PATH
-
-# Define alias to achieve same CLI API as the linux snap package.
-# This simplifies the documentation
-alias biodynamo.paraview=paraview
-alias biodynamo.git=git
-alias biodynamo.cmake=cmake

@@ -128,14 +128,6 @@ extracellular diffusion
 
 ### Build and run the simulation
 
-!!! note "Note (for Mac OS users)"
-    In order for the CLI to be available in your shell environment
-    it is necessary to run the following command:
-
-    ```
-    source biodynamo.env
-    ```
-
 Run the following commands to build and run the simulation.
 
 ``` sh

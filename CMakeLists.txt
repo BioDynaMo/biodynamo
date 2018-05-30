@@ -16,6 +16,12 @@ else()
 endif()
 option(coverage "Enable test coverage report generation. Sets build type to coverage" OFF)
 
+# detect if the biodynamo environment has been sourced
+if(NOT DEFINED ENV{BDM_CMAKE_DIR})
+  execute_process(COMMAND rm -rf ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles)
+  message(FATAL_ERROR "The BioDynaMo environment is not set up correctly. Please call $use_biodynamo and retry this command.")
+endif()
+
 set(BDM_CMAKE_DIR cmake)
 
 if(UNIX AND NOT APPLE)
@@ -265,12 +271,6 @@ include(cmake/Installation.cmake)
 
 # -------------------- add targets for code style and submission checks --------
 include(cmake/CppStyleGuideChecks.cmake)
-
-# -------------------- build snap package --------------------------------------
-add_custom_target(snap-package
-  COMMAND ../../cmake/snap/build_snap_package.sh ${CMAKE_INSTALL_PREFIX}
-  WORKING_DIRECTORY ${SNAP_DIR}
-  COMMENT "Build snap package")
 
 if(demo)
   # -------------------- build cell_division_module executable -----------------

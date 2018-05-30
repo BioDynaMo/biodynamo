@@ -1,4 +1,5 @@
 #include "biodynamo.h"
+#include <cstdlib>
 #include <string>
 #include "command_line_options.h"
 #include "cpptoml/cpptoml.h"
@@ -25,6 +26,15 @@ void InitializeBiodynamo(int argc, const char** argv) {
   // gErrorIngoreLevel global parameter of ROOT. We need to log at least one
   // thing before setting that parameter.
   Log::Info("", "Initializing BiodynaMo ", Version::String());
+
+  // detect if the biodynamo environment has been sourced
+  if (std::getenv("BDM_CMAKE_DIR") == nullptr) {
+    Log::Fatal("InitializeBiodynamo",
+               "The BioDynaMo environment is not set up correctly. Please call "
+               "$use_biodynamo "
+               "and retry this command.");
+  }
+
   Param::executable_name_ = ExtractExecutableName(argv[0]);
   auto options = bdm::DefaultSimulationOptionParser(argc, argv);
   constexpr auto kConfigFile = "bdm.toml";

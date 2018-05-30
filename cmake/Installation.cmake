@@ -39,10 +39,10 @@ mark_as_advanced(${CMAKE_INSTALL_BINDIR}
                  ${CMAKE_INSTALL_DATADIR}
                  ${CMAKE_INSTALL_CMAKEDATADIR})
 
+# TODO(lukas) add logic to detect correct env script (distinguishing LINUX and
+# APPLE might not be enough in the future)
 if(LINUX)
-  install(FILES cmake/biodynamo_linux.env DESTINATION ${CMAKE_INSTALL_BINDIR} RENAME biodynamo.env)
-  install(FILES cmake/get-biodynamo-env-path.sh DESTINATION ${CMAKE_INSTALL_BINDIR}
-          PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+  install(FILES cmake/installation/common/biodynamo_linux_env.sh DESTINATION .)
 elseif(APPLE)
   install(FILES cmake/biodynamo_macos.env DESTINATION ${CMAKE_INSTALL_BINDIR} RENAME biodynamo.env)
 endif()

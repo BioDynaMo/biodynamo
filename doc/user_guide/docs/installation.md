@@ -1,70 +1,36 @@
-# Getting Started
+# Installation
 
-There are two types of installations of BioDynaMo: the **user installation** and
-the **developers installation**. Currently supported platforms are Linux and
-Mac OS X. Below you will find instructions on how to install each installation
-type for the supported platforms.
-
-!!! note
-	The installation will also include the visualization software (ParaView).
-	Therefore it is not	necessary to install ParaView yourself.
-
-## User Installation
-
-The user installation is intended for those that want to make use of the
-existing features of BioDynaMo and only focus on implementing biological models
-with those features.
-
-### Linux
+To install BioDynaMo for the first time execute the following commands.
+The installation will also install all required packages including Paraview.
 
 ``` sh
-wget https://github.com/BioDynaMo/biodynamo/releases/download/v0.1.0/biodynamo_0.1.0_amd64.snap
-sudo snap install --dangerous --classic biodynamo_0.1.0_amd64.snap
-```
-
-### Mac OS
-
-``` sh
-brew install Biodynamo/biodynamo/biodynamo
-```
-
-
-## Developer Installation
-
-The development installation is intended for those that want to make changes to
-BioDynaMo itself, by creating new features or extending existing ones.
-
-### Linux
-
-``` sh
-git clone https://github.com/BioDynaMo/biodynamo
+git clone https://github.com/BioDynaMo/biodynamo.git
 cd biodynamo
-
-sudo script/install_prerequesites_ubuntu_16.04.sh
-
-# source biodynamo environment
-source /opt/biodynamo/biodynamo_dev.env
-
-mkdir build && cd build
-cmake .. && make -j4
-sudo make install
+./install.sh .
 ```
 
-### Mac OS
+!!! important
 
-!!! note
-	The developement installation requires you to have homebrew installed
+    1. After the installation you need to restart your terminal.
+      In every new terminal execute `$use_biodynamo` to use BioDynaMo!
+
+    2. BioDynaMo uses a customized version of ParaView.
+	     Therefore, you should not install ParaView separately.
+
+## Update Installation
+
+The following commands update your BioDynaMo installation:
 
 ``` sh
-git clone https://github.com/BioDynaMo/biodynamo
-cd biodynamo
-
-script/install_prerequesites_macos.sh
-
-# source biodynamo environment
-source /opt/biodynamo/biodynamo_dev.env
-
-mkdir build && cd build
-cmake .. && make -j4
-sudo make install
+cd path/to/biodynamo
+# make sure you are on the master branch
+git checkout master
+# get latest changes
+git pull origin master
+./install.sh .
 ```
+
+## Supported platforms
+
+*  Ubuntu 16.04
+*  Mac OSX

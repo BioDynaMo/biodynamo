@@ -17,14 +17,9 @@ endif()
 if(DEFINED ENV{BDM_CMAKE_DIR})
     set(BDM_CMAKE_DIR $ENV{BDM_CMAKE_DIR})
     add_definitions(-DBDM_SRC_DIR=\"$ENV{BDM_SRC_DIR}\")
-elseif(LINUX)
-    set(BDM_CMAKE_DIR "/snap/biodynamo/current/biodynamo/share/cmake")
-    # escaped quotes are mandatory
-    add_definitions(-DBDM_SRC_DIR=\"/snap/biodynamo/current/biodynamo/include\")
-elseif(APPLE)
-    set(BDM_CMAKE_DIR "/usr/local/share/biodynamo/cmake")
-    # escaped quotes are mandatory
-    add_definitions(-DBDM_SRC_DIR=\"/usr/local/include/biodynamo\")
+else()
+  execute_process(COMMAND rm -rf ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles)
+  message(FATAL_ERROR "The BioDynaMo environment is not set up correctly. Please call $use_biodynamo and retry this command.")
 endif()
 
 # -------------------- find packages ------------------------------------------
@@ -65,7 +60,7 @@ if (OPENCL_FOUND)
   else()
     message(WARNING "OpenCL C++ bindings not found. Please install to make use of OpenCL. "
       "If you think you have installed the C++ bindings correctly, please check if one "
-      "of the following environmentals is set correctly (vendor specific): 
+      "of the following environmentals is set correctly (vendor specific):
       - AMD: \t\tAMDAPPSDKROOT
       - NVIDIA: \tCUDA_PATH
       - INTEL: \tINTELOPENCLSDK")
@@ -102,17 +97,12 @@ set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} biodynamo ${ROOT_LIBRARIES}
     vtkIOParallelXML vtkPVVTKExtensionsDefault vtkPVServerManagerRendering)
 
 # packaged install
-if(DEFINED ENV{BDM_CMAKE_DIR} AND LINUX)
+if(LINUX)
   include_directories("$ENV{BDM_CMAKE_DIR}/../../include")
   link_directories("$ENV{BDM_CMAKE_DIR}/../../lib")
-elseif(DEFINED ENV{BDM_CMAKE_DIR} AND APPLE)
+elseif(APPLE)
   include_directories("$ENV{BDM_CMAKE_DIR}/../../../include/biodynamo")
   link_directories("$ENV{BDM_CMAKE_DIR}/../../../lib/biodynamo")
-elseif(LINUX)
-  include_directories("/snap/biodynamo/current/biodynamo/include")
-  include_directories("/snap/biodynamo/current/usr/include")
-  link_directories("/snap/biodynamo/current/biodynamo/lib")
-elseif(APPLE)
-  include_directories("/usr/local/include/biodynamo")
-  link_directories("/usr/local/lib/biodynamo")
+else()
+  message(FATAL_ERROR "Unsupported operating system.")
 endif()

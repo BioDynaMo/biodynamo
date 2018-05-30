@@ -31,14 +31,6 @@ biodynamo build
 
 ### Step 3: Run your simulation
 
-!!! note "Note (for Mac OS users)"
-	In order for the CLI to be available in your shell environment
-	it is necessary to run the following command:
-
-	```
-	source biodynamo.env
-	```
-
 ``` sh
 biodynamo run
 ```

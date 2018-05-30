@@ -1,6 +1,12 @@
 . /opt/biodynamo/third_party/root/bin/thisroot.sh
-export CC=/usr/local/opt/llvm/bin/clang
-export CXX=/usr/local/opt/llvm/bin/clang++
+
+export LLVMDIR="/usr/local/opt/llvm"
+export CC=$LLVMDIR/bin/clang
+export CXX=$LLVMDIR/bin/clang++
+export CXXFLAGS=-I$LLVMDIR/include
+export LDFLAGS=-L$LLVMDIR/lib
+export PATH=$LLVMDIR/bin:$PATH
+
 export ParaView_DIR=/opt/biodynamo/third_party/paraview/lib/cmake/paraview-5.4
 export Qt5_DIR=/usr/local/opt/qt/lib/cmake/Qt5
 export DYLD_LIBRARY_PATH=$LLVMDIR/lib:$DYLD_LIBRARY_PATH
