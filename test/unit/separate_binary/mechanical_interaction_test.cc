@@ -363,7 +363,6 @@ TEST(MechanicalInteraction, DoubleStraightCylinderGrowth) {
   }
 }
 
-// TODO(jean) Fix test
 TEST(MechanicalInteraction, BifurcationCylinderGrowth) {
   Simulation<> simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
@@ -414,7 +413,6 @@ TEST(MechanicalInteraction, BifurcationCylinderGrowth) {
   EXPECT_NEAR(ne_axis[2], ne_axis_2[2], abs_error<double>::value);
 }
 
-// TODO(jean) Fix test
 TEST(MechanicalInteraction, BranchCylinderGrowth) {
   Simulation<> simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
