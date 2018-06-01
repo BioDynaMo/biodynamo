@@ -57,8 +57,8 @@ TEST(DISABLED_NeuriteElementBehaviour, StraightxCylinderGrowthRetract) {
   EXPECT_NEAR(neAxis[2], 0, abs_error<double>::value);
 
   std::array<double, 3> direction = {1, 0, 0};
-  for (int i = 0; i < 100; i++) {
-    ne->ElongateTerminalEnd(300, direction);
+  for (int i = 0; i < 50; i++) {
+    ne->ElongateTerminalEnd(100, direction);
     ne->RunDiscretization();
     scheduler.Simulate(1);
     if (i % 10 == 0) {
@@ -72,8 +72,8 @@ TEST(DISABLED_NeuriteElementBehaviour, StraightxCylinderGrowthRetract) {
   std::cout << "\n---- start retraction" << std::endl;
   double neurite_length = ne->GetLength();
 
-  for (int j = 0; j < 10000; j++) {
-    ne->RetractTerminalEnd(10);
+  for (int j = 0; j < 500; j++) {
+    ne->RetractTerminalEnd(50);
     ne->RunDiscretization();
     scheduler.Simulate(1);
     std::cout << "retraction step: " << j << std::endl;
@@ -124,6 +124,8 @@ TEST(DISABLED_NeuriteElementBehaviour, BranchingGrowth) {
          neurite_nb++) {  // for each neurite in simulation
       auto ne = (*my_neurites)[neurite_nb];
 
+      EXPECT_TRUE(ne->GetAxis()[2]>0);
+
       if (ne->IsTerminal() && ne->GetDiameter() > 0.5) {
         previous_direction = ne->GetSpringAxis();
         direction = {random->Uniform(-10, 10), random->Uniform(-10, 10),
@@ -138,7 +140,6 @@ TEST(DISABLED_NeuriteElementBehaviour, BranchingGrowth) {
         if (random->Uniform(0, 1) < branching_factor * ne->GetDiameter()) {
           ne->Bifurcate();
         }
-        //            ne->RunDiscretization();
       }
     }
     scheduler.Simulate(1);
