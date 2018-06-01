@@ -1,17 +1,20 @@
-/*=========================================================================
+// -----------------------------------------------------------------------------
+//
+// Copyright (C) The BioDynaMo Project.
+// All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+//
+// See the LICENSE file distributed with this work for details.
+// See the NOTICE file distributed with this work for additional information
+// regarding copyright ownership.
+//
+// -----------------------------------------------------------------------------
 
-  Program:   Visualization Toolkit
-  Module:    BDMGlyph.cc
 
-  Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen
-  All rights reserved.
-  See Copyright.txt or http://www.kitware.com/Copyright.htm for details.
+// Based on default Kitware glyph
 
-     This software is distributed WITHOUT ANY WARRANTY; without even
-     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-     PURPOSE.  See the above copyright notice for more information.
-
-=========================================================================*/
 #include "BDMGlyph.h"
 
 #include "vtkCell.h"

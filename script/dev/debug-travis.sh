@@ -1,4 +1,17 @@
 #!/bin/bash
+# -----------------------------------------------------------------------------
+#
+# Copyright (C) The BioDynaMo Project.
+# All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+#
+# See the LICENSE file distributed with this work for details.
+# See the NOTICE file distributed with this work for additional information
+# regarding copyright ownership.
+#
+# -----------------------------------------------------------------------------
 
 # This script requests a debug build in Travis CI. The build is determined by
 # the Travis Job ID, which can be found in the job description of the failing

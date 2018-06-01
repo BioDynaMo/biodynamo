@@ -1,4 +1,17 @@
 #!/bin/bash
+# -----------------------------------------------------------------------------
+#
+# Copyright (C) The BioDynaMo Project.
+# All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+#
+# See the LICENSE file distributed with this work for details.
+# See the NOTICE file distributed with this work for additional information
+# regarding copyright ownership.
+#
+# -----------------------------------------------------------------------------
 
 SCRIPTPATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
@@ -32,7 +45,7 @@ elif [[ "$#" -ne 0 ]]; then
       if [[ $f == *"test/"* ]]; then
         root_dir=test
       fi
-      $SCRIPTPATH/cpplint.py --root=$root_dir --linelength=80 --filter=-build/c++11,-legal/copyright,-whitespace/line_length $f
+      $SCRIPTPATH/cpplint.py --root=$root_dir --linelength=80 --filter=-build/c++11,-whitespace/line_length $f
       if [ $? != 0 ]; then
         # Errors found in last source file
         return_value=1
@@ -51,7 +64,7 @@ fi
 files=$($git_cmd | grep "^\(src\|include\)/.*" | grep "\(\.h\|\.cc\)$")
 num_files=$(echo "$files" | sed '/^$/d' | wc -l)
 if [ $num_files != "0" ]; then
-  echo "$files" | xargs $SCRIPTPATH/cpplint.py --root=src --linelength=80 --filter=-build/c++11,-legal/copyright,-whitespace/line_length
+  echo "$files" | xargs $SCRIPTPATH/cpplint.py --root=src --linelength=80 --filter=-build/c++11,-whitespace/line_length
 else
   echo "Nothing to be checked for directory src"
 fi
@@ -60,7 +73,7 @@ fi
 files=$($git_cmd | grep "^test/.*" | grep "\(\.h\|\.cc\)$")
 num_files=$(echo "$files" | sed '/^$/d' | wc -l)
 if [ $num_files != "0" ]; then
-  echo "$files" | xargs $SCRIPTPATH/cpplint.py --root=test --linelength=80 --filter=-build/c++11,-legal/copyright,-whitespace/line_length
+  echo "$files" | xargs $SCRIPTPATH/cpplint.py --root=test --linelength=80 --filter=-build/c++11,-whitespace/line_length
 else
   echo "Nothing to be checked for directory test"
 fi

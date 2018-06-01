@@ -1,17 +1,19 @@
-/*=========================================================================
+// -----------------------------------------------------------------------------
+//
+// Copyright (C) The BioDynaMo Project.
+// All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+//
+// See the LICENSE file distributed with this work for details.
+// See the NOTICE file distributed with this work for additional information
+// regarding copyright ownership.
+//
+// -----------------------------------------------------------------------------
 
-  Program:   ParaView
-  Module:    BDMGlyphFilter.h
+// Based on default Kitware glyph
 
-  Copyright (c) Kitware, Inc.
-  All rights reserved.
-  See Copyright.txt or http://www.paraview.org/HTML/Copyright.html for details.
-
-     This software is distributed WITHOUT ANY WARRANTY; without even
-     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-     PURPOSE.  See the above copyright notice for more information.
-
-=========================================================================*/
 /**
  * @class   BDMGlyphFilter
  * @brief   extended API for vtkGlyph3DP for better control
@@ -44,7 +46,6 @@
  * collected
  * across all ranks for generating identical sample points.
 */
-
 #ifndef PARAVIEW_PLUGIN_BDM_GLYPH_BDMGLYPHFILTER_H_
 #define PARAVIEW_PLUGIN_BDM_GLYPH_BDMGLYPHFILTER_H_
 

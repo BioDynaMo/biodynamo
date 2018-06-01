@@ -1,3 +1,17 @@
+# -----------------------------------------------------------------------------
+#
+# Copyright (C) The BioDynaMo Project.
+# All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+#
+# See the LICENSE file distributed with this work for details.
+# See the NOTICE file distributed with this work for additional information
+# regarding copyright ownership.
+#
+# -----------------------------------------------------------------------------
+
 BUILD_TYPE=Release
 # To avoid the repitition of the --cxx-compiler and --build-type arguments, store it in
 # a variable. These two options can be omitted: bdm-config will then use the default

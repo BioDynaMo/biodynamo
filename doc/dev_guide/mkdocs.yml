@@ -27,7 +27,7 @@ repo_name: BioDynaMo/biodynamo
 repo_url: https://github.com/BioDynaMo/biodynamo
 edit_uri: ""
 
-# copyright: 'Copyright &copy; '
+copyright: 'Copyright &copy; The BioDynaMo Project. All Rights Reserved.'
 
 theme:
   name: material
