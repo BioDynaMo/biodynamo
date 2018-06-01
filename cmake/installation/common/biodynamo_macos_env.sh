@@ -24,3 +24,6 @@ export CMAKE_PREFIX_PATH=/opt/biodynamo/cmake:$CMAKE_PREFIX_PATH
 export BDM_CMAKE_DIR=/opt/biodynamo/share/biodynamo/cmake
 export BDM_SRC_DIR=/opt/biodynamo/include/biodynamo
 export PATH=/opt/biodynamo/bin:$PATH
+
+# user install mkdocs
+export PATH=$PATH:~/Library/Python/2.7/bin

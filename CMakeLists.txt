@@ -85,7 +85,7 @@ endif()
 # -------------------- includes -----------------------------------------------
 include(BioDynaMo)
 include(ExternalProject)
-include(cmake/doxygen.cmake)
+include(Documentation)
 include(Versioning)
 
 # -------------------- set default build type and compiler flags ---------------

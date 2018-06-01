@@ -44,7 +44,7 @@ mark_as_advanced(${CMAKE_INSTALL_BINDIR}
 if(LINUX)
   install(FILES cmake/installation/common/biodynamo_linux_env.sh DESTINATION .)
 elseif(APPLE)
-  install(FILES cmake/biodynamo_macos.env DESTINATION ${CMAKE_INSTALL_BINDIR} RENAME biodynamo.env)
+  install(FILES cmake/installation/common/biodynamo_macos_env.sh DESTINATION ${CMAKE_INSTALL_BINDIR} RENAME biodynamo.env)
 endif()
 # biodynamo cli
 install(FILES cli/biodynamo.py DESTINATION ${CMAKE_INSTALL_BINDIR} RENAME biodynamo

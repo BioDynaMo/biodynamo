@@ -46,3 +46,7 @@ ${CXX} -v || true
 
 cd build
 make check-submission
+
+if [ $TRAVIS_BRANCH = "master" ] && [ $TRAVIS_OS_NAME = "linux" ]; then
+  ../cmake/travis-ci/deploy.sh
+fi

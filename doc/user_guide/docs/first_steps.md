@@ -40,9 +40,6 @@ starting point for your simulation. The `src` directory contains the files with
 the source code that defines the simulation. You can edit and add the code that
 describes your model in this folder.
 
-To find out about the features that BioDynaMo offers, please check out the [Documentation](documentation.md).
-For example projects, see the [Exercises](hello_world.md)
-
 #### 3. Run the simulation
 
 Building the simulation and running it can be done with the command:

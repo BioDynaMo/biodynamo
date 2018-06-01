@@ -55,6 +55,9 @@ function Install {
   sudo apt-get -y install gcc-5 g++-5 make cmake
   sudo apt-get -y install clang-3.9 clang-format-3.9 clang-tidy-3.9 libomp-dev
   sudo apt-get -y install doxygen graphviz
+  sudo apt-get -y install python-pip
+  pip install --user mkdocs
+  pip install --user mkdocs-material
 
   # copy environment script
   BDM_ENVIRONMENT_FILE=$BDM_INSTALL_DIR/biodynamo_env.sh

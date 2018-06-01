@@ -8,7 +8,6 @@ PROJECT_NAME           = "@CMAKE_PROJECT_NAME@"
 PROJECT_NUMBER         = @VERSION_MAJOR@.@VERSION_MINOR@.@VERSION_PATCH@
 STRIP_FROM_PATH        = "@PROJECT_SOURCE_DIR@/src"
 INPUT                  = "@PROJECT_SOURCE_DIR@/src" \
-                         "@PROJECT_SOURCE_DIR@/doc/reference_manual" \
                          "@PROJECT_SOURCE_DIR@/README.md"
 INCLUDE_PATH           = "@PROJECT_SOURCE_DIR@/src"
 FILE_PATTERNS          = *.h \
@@ -21,8 +20,7 @@ EXTRACT_PRIVATE        = YES
 EXTRACT_ALL            = YES
 ENABLE_PREPROCESSING   = YES
 MACRO_EXPANSION        = YES
-HTML_OUTPUT            = "@PROJECT_BINARY_DIR@/doc/html"
-LATEX_OUTPUT           = "@PROJECT_BINARY_DIR@/doc/latex"
+HTML_OUTPUT            = "@PROJECT_BINARY_DIR@/doc/api"
 GENERATE_LATEX         = NO
 CALL_GRAPH             = YES
 CALLER_GRAPH           = YES

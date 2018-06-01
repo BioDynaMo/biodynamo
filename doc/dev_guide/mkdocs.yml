@@ -1,4 +1,4 @@
-site_name: BioDynaMo User Documentation
+site_name: BioDynaMo Developer Documentation
 markdown_extensions:
   - codehilite
   - admonition
@@ -34,8 +34,8 @@ theme:
   favicon: images/bdm_logo.png
   logo: images/bdm_logo.png
   palette:
-    primary: green
-    accent: green
+    primary: indigo
+    accent: indigo
   # feature:
   #   tabs: true
 
@@ -48,15 +48,6 @@ extra:
 
 pages:
     - Welcome: index.md
-    - Installation: installation.md
-    - First Steps: first_steps.md
-    - Tutorials:
-      - Hello World: hello_world.md
-      - Visualization: visualization.md
-      - Diffusion: diffusion.md
-      - Tumor Concept: jean_tuto.md
-      # - Soma Clustering: soma_clustering.md
-    - Documentation:
-      - Substance Initialization: substance_initializers.md
-      - GPU Acceleration: gpu_acceleration.md
-    - Contact: contact.md
+    - Build BioDynaMo: build.md
+    - Code Quality: code_quality.md
+    - Contribute: contribute.md

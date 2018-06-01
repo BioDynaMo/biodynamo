@@ -54,6 +54,8 @@ echo "Start installation of prerequisites..."
   sudo apt-get -y install cloc
   sudo apt-get -y install libiomp-dev
   sudo apt-get -y install clang-3.9 clang-format-3.9 clang-tidy-3.9
+  pip install --user mkdocs
+  pip install --user mkdocs-material
 
   InstallCmake
 

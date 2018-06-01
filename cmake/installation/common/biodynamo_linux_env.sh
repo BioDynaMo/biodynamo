@@ -16,3 +16,7 @@ export BDM_CMAKE_DIR=/opt/biodynamo/biodynamo/share/cmake
 export BDM_SRC_DIR=/opt/biodynamo/biodynamo/include
 export PATH=/opt/biodynamo/biodynamo/bin:$PATH
 export LD_LIBRARY_PATH=/opt/biodynamo/biodynamo/lib:$LD_LIBRARY_PATH
+
+# user install mkdocs
+export PATH=$PATH:~/.local/bin
+export PYTHONPATH=~/.local/lib/python2.7/site-packages:$PYTHONPATH

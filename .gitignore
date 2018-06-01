@@ -68,6 +68,9 @@ Doxyfile
 doc/html
 doc/latex
 
+#------------------- mkdocs --------------------
+site/
+
 #------------------- Python --------------------
 # Byte-compiled / optimized / DLL files
 __pycache__/

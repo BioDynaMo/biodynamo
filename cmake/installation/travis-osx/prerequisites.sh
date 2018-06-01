@@ -41,8 +41,14 @@ function Install {
   brew install cloc
   brew install qt
   brew upgrade python3 || true
+  brew install python@2 || true
+
   brew install llvm  # get clang 5.0
   brew upgrade cmake || true
+  #  for mkdocs
+  export PATH=$PATH:~/Library/Python/2.7/bin
+  pip2 install --user mkdocs
+  pip2 install --user mkdocs-material
 
   # copy environment script
   BDM_ENVIRONMENT_FILE=$BDM_INSTALL_DIR/biodynamo_env.sh
