@@ -15,6 +15,8 @@
 #ifndef VERSION_H_
 #define VERSION_H_
 
+#include <cstdint>
+
 /// Version string as obtained from `git describe --tags`
 /// e.g.: v0.1.0-10-g91aade4
 /// vMAJOR.MINOR.PATH-ADDITIONAL_COMMITS-gCOMMIT_ID

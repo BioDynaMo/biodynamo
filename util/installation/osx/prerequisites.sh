@@ -16,7 +16,8 @@
 if [[ $# -ne 1 ]]; then
   echo "ERROR: Wrong number of arguments.
 Description:
-  This script installs the currently checked out version of biodynamo
+    This script installs the the prerequisites of BioDynaMo, but not BioDynaMo
+    itself. Script install.sh installs both prerequisites and BioDynaMo.
 Arguments:
   \$1 path to the biodynamo project directory"
   exit 1
@@ -26,5 +27,5 @@ set -e
 
 BDM_PROJECT_DIR=$1
 
-# no OS specifics -> use common install script
-$BDM_PROJECT_DIR/cmake/installation/common/install.sh . travis-osx
+# use travis-osx prerequisites script
+$BDM_PROJECT_DIR/util/installation/travis-osx/prerequisites.sh .

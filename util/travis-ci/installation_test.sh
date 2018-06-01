@@ -35,7 +35,7 @@ set -e -x
 git fetch --unshallow &>/dev/null || true
 
 if [ $BDM_OS != "osx" ]; then
-  script/dev/run_inside_docker.sh \
+  util/run_inside_docker.sh \
     $BDM_PROJECT_DIR $BDM_OS \
     test/installation_test.sh $BDM_PROJECT_DIR
 else

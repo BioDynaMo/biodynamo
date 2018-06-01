@@ -19,7 +19,7 @@ pushd `dirname $0` > /dev/null
 SCRIPTPATH=`pwd`
 popd > /dev/null
 
-export PATH=$PATH:$SCRIPTPATH/../../cmake/non-cmake-build
+export PATH=$PATH:$SCRIPTPATH/../../util/makefile-build
 
 cd $SCRIPTPATH/../../demo/makefile_project
 make clean

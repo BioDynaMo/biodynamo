@@ -55,7 +55,7 @@ endif()
 # since building the coverage report requires different compiler flags building
 # it in a separate directory keeps the current build directory in good order
 add_custom_target(coverage-build
-  COMMAND "${CMAKE_SOURCE_DIR}/housekeeping/create-coverage-report.sh" ${PROJECT_SOURCE_DIR} ${CMAKE_BINARY_DIR}
+  COMMAND "${CMAKE_SOURCE_DIR}/util/housekeeping/create-coverage-report.sh" ${PROJECT_SOURCE_DIR} ${CMAKE_BINARY_DIR}
   COMMENT "Generate coverage report in separate directory
      Open the following file in your browser: ${CMAKE_BINARY_DIR}/coverage/coverage/index.html")
 
@@ -74,7 +74,7 @@ function(bdm_add_test_executable TEST_TARGET)
 
   # add valgrind test
   if (valgrind AND NOT coverage AND NOT ${TEST_TARGET} STREQUAL "runBiodynamoTests_mechanical_interaction_test")
-    add_test(NAME "valgrind_${TEST_TARGET}" COMMAND valgrind --leak-resolution=high --tool=memcheck --leak-check=full --show-leak-kinds=all --gen-suppressions=all --show-reachable=no --suppressions=${CMAKE_BINARY_DIR}/../valgrind-biod.supp --error-exitcode=1 ./${TEST_TARGET} -- --gtest_filter=-*DeathTest.*:IOTest.InvalidRead)
+    add_test(NAME "valgrind_${TEST_TARGET}" COMMAND valgrind --leak-resolution=high --tool=memcheck --leak-check=full --show-leak-kinds=all --gen-suppressions=all --show-reachable=no --suppressions=${CMAKE_BINARY_DIR}/../util/valgrind-bdm.supp --error-exitcode=1 ./${TEST_TARGET} -- --gtest_filter=-*DeathTest.*:IOTest.InvalidRead)
   endif()
 
   add_dependencies(check ${TEST_TARGET})

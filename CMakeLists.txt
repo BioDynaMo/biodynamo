@@ -94,7 +94,7 @@ if(coverage)
 elseif(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE RelWithDebInfo)
 endif()
-include(cmake/SetCompilerFlags.cmake)
+include(SetCompilerFlags)
 
 # -------------------- set rpath options ---------------------------------------
 # When building, use the RPATH
@@ -198,7 +198,7 @@ configure_file("cmake/UseBioDynaMo.cmake.in" "UseBioDynaMo.cmake" @ONLY)
 if (test)
   enable_testing()
 
-  include(cmake/Testing.cmake)
+  include(Testing)
 
   # unit tests
   #   main test executable
@@ -267,10 +267,10 @@ if (test)
 endif()
 
 # -------------------- Install configuration -----------------------------------
-include(cmake/Installation.cmake)
+include(Installation)
 
 # -------------------- add targets for code style and submission checks --------
-include(cmake/CppStyleGuideChecks.cmake)
+include(CppStyleGuideChecks)
 
 if(demo)
   # -------------------- build cell_division_module executable -----------------

@@ -1,3 +1,4 @@
+#!/bin/bash
 # -----------------------------------------------------------------------------
 #
 # Copyright (C) The BioDynaMo Project.
@@ -11,8 +12,6 @@
 # regarding copyright ownership.
 #
 # -----------------------------------------------------------------------------
-
-#!/bin/bash
 
 if [[ $# -ne 1 ]]; then
   echo "ERROR: Wrong number of arguments.
@@ -28,4 +27,4 @@ set -e
 BDM_PROJECT_DIR=$1
 
 # no OS specifics -> use common install script
-$BDM_PROJECT_DIR/cmake/installation/common/install.sh . travis-linux
+$BDM_PROJECT_DIR/util/installation/common/install.sh . travis-osx

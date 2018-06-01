@@ -44,7 +44,7 @@ EOF
 
 # reload shell and source biodynamo
 set +e +x
-. $BDM_PROJECT_DIR/cmake/installation/common/util.sh
+. $BDM_PROJECT_DIR/util/installation/common/util.sh
 . $(BashrcFile)
 $use_biodynamo
 set -e -x
@@ -61,5 +61,5 @@ cd build
 make check-submission
 
 if [ $TRAVIS_BRANCH = "master" ] && [ $TRAVIS_OS_NAME = "linux" ]; then
-  ../cmake/travis-ci/deploy.sh
+  ../util/travis-ci/deploy.sh
 fi

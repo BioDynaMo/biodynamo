@@ -43,14 +43,14 @@ shift
 BDM_SCRIPT_ARGUMENTS=$@
 
 # include util functions
-. $BDM_PROJECT_DIR/cmake/installation/common/util.sh
-. $BDM_PROJECT_DIR/cmake/installation/common/echo.sh
+. $BDM_PROJECT_DIR/util/installation/common/util.sh
+. $BDM_PROJECT_DIR/util/installation/common/echo.sh
 
 # check if BDM_OS is valid
-CheckOsSupported $BDM_PROJECT_DIR/cmake/installation $BDM_OS
+CheckOsSupported $BDM_PROJECT_DIR/util/installation $BDM_OS
 
 # check if BDM_OS supports docker
-BDM_PATH_TO_DOCKERFILE=$BDM_PROJECT_DIR/cmake/installation/$BDM_OS
+BDM_PATH_TO_DOCKERFILE=$BDM_PROJECT_DIR/util/installation/$BDM_OS
 if [ ! -f "${BDM_PATH_TO_DOCKERFILE}/Dockerfile" ]; then
   echo "Could not find a Docker file in ${BDM_PATH_TO_DOCKERFILE}"
   echo "${BDM_OS} does not support Docker at the moment."

@@ -41,7 +41,7 @@ EOF
 
 # reload shell and source biodynamo
 set +e +x
-. $BDM_PROJECT_DIR/cmake/installation/common/util.sh
+. $BDM_PROJECT_DIR/util/installation/common/util.sh
 . $(BashrcFile)
 $use_biodynamo
 set -e -x

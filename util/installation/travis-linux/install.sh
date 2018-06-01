@@ -1,4 +1,3 @@
-#!/bin/bash
 # -----------------------------------------------------------------------------
 #
 # Copyright (C) The BioDynaMo Project.
@@ -13,22 +12,20 @@
 #
 # -----------------------------------------------------------------------------
 
-# Generates website files for user guide and pushes changes to branch "gh-pages"
-# Run this script after you made changes to the user guide's source code
-# Website: https://biodynamo.github.io/biodynamo/
+#!/bin/bash
 
-# get path of this script
-pushd `dirname $0` > /dev/null
-SCRIPTPATH=`pwd`
+if [[ $# -ne 1 ]]; then
+  echo "ERROR: Wrong number of arguments.
+Description:
+  This script installs the currently checked out version of biodynamo
+Arguments:
+  \$1 path to the biodynamo project directory"
+  exit 1
+fi
 
-# go to user guide directory (contains mkdocs.yml)
-pushd $SCRIPTPATH/../../doc/user_guide > /dev/null
+set -e
 
-# deploy mkdocs to github pages
-mkdocs gh-deploy
+BDM_PROJECT_DIR=$1
 
-rm -rf site
-
-# go back to original directory
-popd > /dev/null
-popd > /dev/null
+# no OS specifics -> use common install script
+$BDM_PROJECT_DIR/util/installation/common/install.sh . travis-linux

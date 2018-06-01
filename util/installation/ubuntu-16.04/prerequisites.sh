@@ -33,7 +33,7 @@ BDM_OS=ubuntu-16.04
 BDM_INSTALL_DIR=/opt/biodynamo
 
 # include util functions
-. $BDM_PROJECT_DIR/cmake/installation/common/util.sh
+. $BDM_PROJECT_DIR/util/installation/common/util.sh
 
 function InstallCmake {
   local URL="https://cmake.org/files/v3.6/cmake-3.6.3-Linux-x86_64.tar.gz"
@@ -75,7 +75,7 @@ function Install {
 
   # copy environment script
   BDM_ENVIRONMENT_FILE=$BDM_INSTALL_DIR/biodynamo_env.sh
-  sudo cp $BDM_PROJECT_DIR/cmake/installation/common/biodynamo_linux_env.sh $BDM_ENVIRONMENT_FILE
+  sudo cp $BDM_PROJECT_DIR/util/installation/common/biodynamo_linux_env.sh $BDM_ENVIRONMENT_FILE
 
   # install CMake higher than the required version
   CMAKE_VERSION_R=3.3

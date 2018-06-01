@@ -56,9 +56,9 @@ mark_as_advanced(${CMAKE_INSTALL_BINDIR}
 # TODO(lukas) add logic to detect correct env script (distinguishing LINUX and
 # APPLE might not be enough in the future)
 if(LINUX)
-  install(FILES cmake/installation/common/biodynamo_linux_env.sh DESTINATION .)
+  install(FILES util/installation/common/biodynamo_linux_env.sh DESTINATION .)
 elseif(APPLE)
-  install(FILES cmake/installation/common/biodynamo_macos_env.sh DESTINATION ${CMAKE_INSTALL_BINDIR} RENAME biodynamo.env)
+  install(FILES util/installation/common/biodynamo_macos_env.sh DESTINATION ${CMAKE_INSTALL_BINDIR} RENAME biodynamo.env)
 endif()
 # biodynamo cli
 install(FILES cli/biodynamo.py DESTINATION ${CMAKE_INSTALL_BINDIR} RENAME biodynamo
@@ -68,10 +68,10 @@ install(DIRECTORY cli/ DESTINATION ${CMAKE_INSTALL_BINDIR}
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/version/version.py"
         DESTINATION ${CMAKE_INSTALL_BINDIR})
 # bdm-config
-install(FILES cmake/non-cmake-build/bdm-config DESTINATION ${CMAKE_INSTALL_BINDIR}
+install(FILES util/makefile-build/bdm-config DESTINATION ${CMAKE_INSTALL_BINDIR}
         PERMISSIONS OWNER_READ OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
-# bdm_code_generation
-install(FILES cmake/non-cmake-build/bdm_code_generation DESTINATION ${CMAKE_INSTALL_BINDIR}
+# bdm-code-generation
+install(FILES util/makefile-build/bdm-code-generation DESTINATION ${CMAKE_INSTALL_BINDIR}
         PERMISSIONS OWNER_READ OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
 # libbiodynamo.so
 install(TARGETS biodynamo LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})

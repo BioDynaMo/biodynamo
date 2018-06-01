@@ -84,7 +84,7 @@ function DetectOs {
 # This function checks if the given operating system is supported. If not, it
 # prints an error message, a list of supported systems; and exits the script
 # Arguments:
-#   $1 path to biodynamo installation src folder (cmake/installation)
+#   $1 path to biodynamo installation src folder (util/installation)
 #   $2 OS identifier e.g. ubuntu-16.04 (see DetectOs)
 function CheckOsSupported {
   if [[ $# -ne 2 ]]; then
@@ -254,7 +254,7 @@ function CallOSSpecificScript {
   local BDM_SCRIPT_FILE=$1
   shift
 
-  local BDM_INSTALL_SRC=$BDM_PROJECT_DIR/cmake/installation
+  local BDM_INSTALL_SRC=$BDM_PROJECT_DIR/util/installation
 
   # detect os
   local BDM_OS=$(DetectOs)

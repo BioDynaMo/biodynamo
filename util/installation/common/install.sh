@@ -29,7 +29,7 @@ BDM_PROJECT_DIR=$1
 BDM_OS=$2
 
 # include util functions
-. $BDM_PROJECT_DIR/cmake/installation/common/util.sh
+. $BDM_PROJECT_DIR/util/installation/common/util.sh
 
 # check if this script is run with sudo
 RequireSudo
@@ -41,7 +41,7 @@ if [ ! -d "$BDM_INSTALL_DIR" ]; then
 fi
 
 # install prerequisites
-BDM_INSTALL_OS_SRC=$BDM_PROJECT_DIR/cmake/installation/$BDM_OS
+BDM_INSTALL_OS_SRC=$BDM_PROJECT_DIR/util/installation/$BDM_OS
 $BDM_INSTALL_OS_SRC/prerequisites.sh $BDM_PROJECT_DIR
 
 # reload shell and source biodynamo

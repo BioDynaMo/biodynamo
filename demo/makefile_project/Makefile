@@ -27,7 +27,7 @@ all: my-simulation
 # BioDynaMo generate code: pass all headers that contain BioDynaMo code to the
 # code generator
 bdm_generated_code.cc: $(HEADER)
-	bdm_code_generation $@ "$(BDM_CONFIG)" -h $?
+	bdm-code-generation $@ "$(BDM_CONFIG)" -h $?
 
 # Compile all source files
 %.o: %.cc

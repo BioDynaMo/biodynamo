@@ -14,6 +14,7 @@
 # -----------------------------------------------------------------------------
 
 SCRIPTPATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+CPPLINT=$SCRIPTPATH/../../third_party/cpplint/cpplint.py
 
 function help {
   echo "runCppLint.py help|--help|-h|<mode>|<wildcard>
@@ -45,7 +46,7 @@ elif [[ "$#" -ne 0 ]]; then
       if [[ $f == *"test/"* ]]; then
         root_dir=test
       fi
-      $SCRIPTPATH/cpplint.py --root=$root_dir --linelength=80 --filter=-build/c++11,-whitespace/line_length $f
+      $CPPLINT --root=$root_dir --linelength=80 --filter=-build/c++11,-whitespace/line_length $f
       if [ $? != 0 ]; then
         # Errors found in last source file
         return_value=1
@@ -64,7 +65,7 @@ fi
 files=$($git_cmd | grep "^\(src\|include\)/.*" | grep "\(\.h\|\.cc\)$")
 num_files=$(echo "$files" | sed '/^$/d' | wc -l)
 if [ $num_files != "0" ]; then
-  echo "$files" | xargs $SCRIPTPATH/cpplint.py --root=src --linelength=80 --filter=-build/c++11,-whitespace/line_length
+  echo "$files" | xargs $CPPLINT --root=src --linelength=80 --filter=-build/c++11,-whitespace/line_length
 else
   echo "Nothing to be checked for directory src"
 fi
@@ -73,7 +74,7 @@ fi
 files=$($git_cmd | grep "^test/.*" | grep "\(\.h\|\.cc\)$")
 num_files=$(echo "$files" | sed '/^$/d' | wc -l)
 if [ $num_files != "0" ]; then
-  echo "$files" | xargs $SCRIPTPATH/cpplint.py --root=test --linelength=80 --filter=-build/c++11,-whitespace/line_length
+  echo "$files" | xargs $CPPLINT --root=test --linelength=80 --filter=-build/c++11,-whitespace/line_length
 else
   echo "Nothing to be checked for directory test"
 fi

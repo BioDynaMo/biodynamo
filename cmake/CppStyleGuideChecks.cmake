@@ -12,7 +12,7 @@
 #
 # -----------------------------------------------------------------------------
 
-set(BUILD_SUPPORT_DIR "${CMAKE_SOURCE_DIR}/housekeeping")
+set(BUILD_SUPPORT_DIR "${CMAKE_SOURCE_DIR}/util/housekeeping")
 
 # define commands to obtain source file lists
 set(ALL_SRC_FILES "${BUILD_SUPPORT_DIR}/get-all-src-files.sh")
@@ -70,7 +70,7 @@ endfunction(add_clang_tidy_target)
 
 function(add_cpplint_target make_target_id get_files_cmd)
   add_custom_target(${make_target_id}
-    COMMAND ${BUILD_SUPPORT_DIR}/cpplint/runCppLint.sh `${get_files_cmd} ${PROJECT_SOURCE_DIR}`
+    COMMAND ${BUILD_SUPPORT_DIR}/run-cpplint.sh `${get_files_cmd} ${PROJECT_SOURCE_DIR}`
     WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
     COMMENT "Run cpplint on selected files. Fails if errors are found.")
 endfunction(add_cpplint_target)

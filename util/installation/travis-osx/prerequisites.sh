@@ -31,7 +31,7 @@ BDM_OS=travis-osx
 BDM_INSTALL_DIR=/opt/biodynamo
 
 # include util functions
-. $BDM_PROJECT_DIR/cmake/installation/common/util.sh
+. $BDM_PROJECT_DIR/util/installation/common/util.sh
 
 function Install {
 
@@ -65,7 +65,7 @@ function Install {
 
   # copy environment script
   BDM_ENVIRONMENT_FILE=$BDM_INSTALL_DIR/biodynamo_env.sh
-  sudo cp $BDM_PROJECT_DIR/cmake/installation/common/biodynamo_macos_env.sh $BDM_ENVIRONMENT_FILE
+  sudo cp $BDM_PROJECT_DIR/util/installation/common/biodynamo_macos_env.sh $BDM_ENVIRONMENT_FILE
 
   # install third_party dependencies
   DownloadTarFromCBAndExtract $BDM_OS root.tar.gz $THIRD_PARTY_DIR

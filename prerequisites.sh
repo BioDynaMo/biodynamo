@@ -33,7 +33,7 @@ set -e
 BDM_PROJECT_DIR=$1
 
 # include util functions
-. $BDM_PROJECT_DIR/cmake/installation/common/util.sh
+. $BDM_PROJECT_DIR/util/installation/common/util.sh
 
 # call install script for the detected OS
 CallOSSpecificScript $BDM_PROJECT_DIR prerequisites.sh $BDM_PROJECT_DIR

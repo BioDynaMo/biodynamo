@@ -32,7 +32,7 @@ BDM_OS=travis-linux
 BDM_INSTALL_DIR=/opt/biodynamo
 
 # include util functions
-. $BDM_PROJECT_DIR/cmake/installation/common/util.sh
+. $BDM_PROJECT_DIR/util/installation/common/util.sh
 
 function InstallCmake {
   local URL="https://cmake.org/files/v3.6/cmake-3.6.3-Linux-x86_64.tar.gz"
@@ -84,7 +84,7 @@ echo "Start installation of prerequisites..."
 
   # copy environment script
   BDM_ENVIRONMENT_FILE=$BDM_INSTALL_DIR/biodynamo_env.sh
-  sudo cp $BDM_PROJECT_DIR/cmake/installation/common/biodynamo_linux_env.sh $BDM_ENVIRONMENT_FILE
+  sudo cp $BDM_PROJECT_DIR/util/installation/common/biodynamo_linux_env.sh $BDM_ENVIRONMENT_FILE
 
   UpdateSourceBdmVariable $BDM_ENVIRONMENT_FILE
 

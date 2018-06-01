@@ -27,4 +27,4 @@ set -e
 BDM_PROJECT_DIR=$1
 
 # no OS specifics -> use common install script
-$BDM_PROJECT_DIR/cmake/installation/common/install.sh . ubuntu-16.04
+$BDM_PROJECT_DIR/util/installation/common/install.sh . ubuntu-16.04
