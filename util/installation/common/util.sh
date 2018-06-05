@@ -13,11 +13,11 @@
 #
 # -----------------------------------------------------------------------------
 
-# This file contains functiom=ns required in various install scripts.
+# This file contains functions required in various install scripts.
 # (Thus reducing code duplication)
 
 # This function checks if a script is run with sudo rights. If not, it will exit
-# with -1 return code
+# with -1 return code.
 function RequireSudo {
   # Workaround for: https://github.com/travis-ci/travis-ci/issues/9608
   if [ "$TRAVIS_OS_NAME" != "osx" ]; then
@@ -32,7 +32,7 @@ function RequireSudo {
 }
 
 # This function prompts a user with a yes, no questions. If answered with `yes`
-# it executes the given function, otherwise it calls exit
+# it executes the given function, otherwise it calls exit.
 # Arguments:
 #   $1 Message displayed to the user. The function appends "(y/n)" to the message
 #   $2 The function that should be executed if the user replies with `yes`
@@ -53,8 +53,8 @@ function PromptUser {
   done
 }
 
-# Detects the linux flavour using `lsb_release`
-# Returns a lower case version of `distributor-release`
+# Detects the linux flavour using `lsb_release`.
+# Returns a lower case version of `distributor-release`.
 function DetectLinuxFlavour {
   DISTRIBUTOR=$(lsb_release -si)
   RELEASE=$(lsb_release -sr)
@@ -63,8 +63,8 @@ function DetectLinuxFlavour {
 }
 
 # Function that detects the OS
-# Returns linux flavour or macos.
-# This function prints an error and exits if is not linux or macos
+# Returns linux flavour or osx.
+# This function prints an error and exits if is not linux or macos.
 function DetectOs {
   # detect operating system
   if [ $TRAVIS ]; then
@@ -82,7 +82,7 @@ function DetectOs {
 }
 
 # This function checks if the given operating system is supported. If not, it
-# prints an error message, a list of supported systems; and exits the script
+# prints an error message, a list of supported systems; and exits the script.
 # Arguments:
 #   $1 path to biodynamo installation src folder (util/installation)
 #   $2 OS identifier e.g. ubuntu-16.04 (see DetectOs)
@@ -107,7 +107,7 @@ function CheckOsSupported {
   fi
 }
 
-# Download a tar file extracts the contents into the destination folder
+# Download a tar file extracts the contents into the destination folder.
 # Arguments:
 #   $1 url
 #   $2 destination directory in which the archive will be extracted
@@ -135,9 +135,9 @@ function DownloadTarAndExtract {
   fi
 }
 
-# Returns a CERNBox download link
+# Returns a CERNBox download link.
 # If the environment variable BDM_LOCAL_CERNBOX is set to a local copy of CERNBox,
-# this function returns a local path to the requested file
+# this function returns a local path to the requested file.
 # Arguments:
 #   $1 directory
 #   $2 file
@@ -154,7 +154,7 @@ function CernboxLink {
 }
 
 # Download a tar file from CERNBox and extracts the contents into the
-# destination folder
+# destination folder.
 # Arguments:
 #   $1 CERNBox directory e.g. ubuntu-16.04
 #   $2 File e.g. root.tar.gz
@@ -176,10 +176,14 @@ function DownloadTarFromCBAndExtract {
 
 # Returns the number of CPU cores including hyperthreads
 function CPUCount {
-  grep -c ^processor /proc/cpuinfo
+  if [ `uname` = "Darwin" ]; then
+    sysctl -n hw.ncpu
+  else
+    grep -c ^processor /proc/cpuinfo
+  fi
 }
 
-# Updates the use_biodynamo variable in the bashrc file
+# Updates the use_biodynamo variable in the bashrc file.
 # Arguments:
 #   $1 path to biodynamo environment file
 function UpdateSourceBdmVariable {
@@ -220,9 +224,8 @@ function CleanBuild {
   cmake $BDM_CMAKE_FLAGS .. && make -j$(CPUCount) && sudo make install
 }
 
-# Return absolute path
-# If absolute path is given as paramter it is returned as is. Otherwise it gets
-# converted
+# Return absolute path.
+# If absolute path is given as paramter it is returned as is. Otherwise it gets converted.
 # Arguments:
 #  $1 path (absolute or relative)
 function GetAbsolutePath {
@@ -285,7 +288,7 @@ function BashrcFile {
   fi
 }
 
-# Print message that tells the user to reload the bash and call $use_biodynamo
+# Print message that tells the user to reload the bash and call $use_biodynamo.
 function EchoFinishThisStep {
   local BDM_BASHRC=$(BashrcFile)
   echo "To complete this step please restart your shell or execute"
