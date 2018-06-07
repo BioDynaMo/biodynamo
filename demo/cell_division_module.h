@@ -51,8 +51,8 @@ inline int Simulate(int argc, const char** argv) {
   ModelInitializer::Grid3D(cells_per_dim, 20, construct);
 
   // 4. Run simulation for one timestep
-  Scheduler<> scheduler;
-  scheduler.Simulate(1);
+  auto* scheduler = simulation.GetScheduler();
+  scheduler->Simulate(1);
   return 0;
 }
 

@@ -22,7 +22,10 @@ template <typename T>
 ResourceManager<T>* BdmSim<T>::GetRm() { return rm_; }
 
 template <typename T>
-Grid<typename BdmSim<T>::Self>* BdmSim<T>::GetGrid() { return grid_; }
+Grid<BdmSim<T>>* BdmSim<T>::GetGrid() { return grid_; }
+
+template <typename T>
+Scheduler<BdmSim<T>>* BdmSim<T>::GetScheduler() { return scheduler_; }
 
 template <typename T>
 void BdmSim<T>::Activate() {
@@ -38,10 +41,12 @@ BdmSim<T>* BdmSim<T>::GetBdm() {
 
 template <typename T>
 template <typename TResourceManager,
-          typename TGrid>
+          typename TGrid,
+          typename TScheduler>
 void BdmSim<T>::Init() {
   rm_ = new TResourceManager();
   grid_ = new TGrid();
+  scheduler_ = new TScheduler();
 }
 
 template <typename T>
