@@ -29,16 +29,19 @@
 #include "param.h"
 #include "shape.h"
 
+#include "bdm.h"
+
 namespace bdm {
 
 using std::array;
 
 /// Defines the 3D physical interactions between physical objects
-template <typename TRm = ResourceManager<>>
+template <typename TBdmSim = BdmSim<>>
 class DisplacementOp {
  public:
   DisplacementOp() {
-    TRm::Get()->template ApplyOnAllTypes([this](auto* container,
+    auto* sim = TBdmSim::GetBdm();
+    sim->GetRm()->template ApplyOnAllTypes([this](auto* container,
                                                 uint16_t type_idx) {
       using Container = std::remove_pointer_t<decltype(container)>;
       using SimObject = typename Container::value_type;
