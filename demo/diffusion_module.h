@@ -77,7 +77,7 @@ struct CompileTimeParam : public DefaultCompileTimeParam<Backend> {
 
 inline int Simulate(int argc, const char** argv) {
   // 3. Initialize BioDynaMo
-  InitializeBiodynamo(argc, argv);
+  BdmSim<> simulation(argc, argv);
 
   Param::backup_interval_ = 1;
 
@@ -110,8 +110,7 @@ inline int Simulate(int argc, const char** argv) {
   ModelInitializer::DefineSubstance(kKalium, "Kalium", 0.4, 0, 25);
 
   // 5. Run simulation for N timesteps
-  Scheduler<> scheduler;
-  scheduler.Simulate(3500);
+  simulation.GetScheduler()->Simulate(3500);
   return 0;
 }
 

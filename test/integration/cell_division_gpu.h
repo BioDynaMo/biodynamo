@@ -49,10 +49,10 @@ struct CompileTimeParam : public DefaultCompileTimeParam<Backend> {
 };
 
 inline void RunTest(bool* result) {
-  auto rm = ResourceManager<>::Get();
+  BdmSim<> simulation("cell_division_gpu");
+  auto* rm = simulation.GetRm();
   rm->Clear();
   auto cells = rm->template Get<Cell>();
-// Param::Reset();
 
 // We need to give every test the same seed for the RNG, because in the cell
 // division, random numbers are used. Within a single executable these numbers
@@ -83,8 +83,7 @@ inline void RunTest(bool* result) {
 
   // Run for 10 timesteps. In step 2 a division should take place. In step 3
   // these new cells are instantiated
-  Scheduler<> scheduler;
-  scheduler.Simulate(10);
+  simulation.GetScheduler()->Simulate(10);
 
   EXPECT_ARR_NEAR(
       (*cells)[0].GetPosition(),

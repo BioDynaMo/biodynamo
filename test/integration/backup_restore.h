@@ -38,7 +38,7 @@ struct CompileTimeParam : public DefaultCompileTimeParam<TBackend> {
 };
 
 inline int Simulate(int argc, const char** argv) {
-  InitializeBiodynamo(argc, argv);
+  BdmSim<> simulation(argc, argv);
 
   Param::Reset();
 
@@ -52,7 +52,7 @@ inline int Simulate(int argc, const char** argv) {
     cells->push_back(cell);
   }
 
-  Scheduler<> scheduler;
+  auto* scheduler = simulation.GetScheduler();
 
   // will perform backup after iteration 3
   scheduler.Simulate(3);  // 1050 ms

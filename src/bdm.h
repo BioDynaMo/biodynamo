@@ -18,7 +18,9 @@ struct BdmSim {
   /// This function returns the currently active BdmSim simulation.
   static BdmSim<TCTParam>* GetBdm();
 
-  BdmSim();
+  /// Creation of a new simulation automatically activates it!
+  BdmSim(int argc, const char** argv);
+  BdmSim(const std::string& executable_name);
   ~BdmSim();
 
   // thread_local int random_;
@@ -39,10 +41,22 @@ struct BdmSim {
   Grid<Self>* grid_ = nullptr;
   Scheduler<Self>* scheduler_ = nullptr;
 
+  // TODO
   template <typename TResourceManager = ResourceManager<>,
             typename TGrid = Grid<Self>,
             typename TScheduler = Scheduler<Self>>
-  void Init();
+  void InitializeMembers();
+
+  /// Return only the executable name given the path
+  /// @param path path and filename of the executable
+  /// e.g. `executable`, `./executable`, './build/executable'
+  /// @return `executable`
+  std::string ExtractExecutableName(const char* path);
+
+  /// This function parses command line parameters and the configuration file.
+  /// @param argc argument count from main function
+  /// @param argv argument vector from main function
+  void InitializeSimulation(int argc, const char** argv);
 };
 
 }  // namespace bdm

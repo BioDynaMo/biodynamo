@@ -39,7 +39,7 @@ struct CompileTimeParam : public DefaultCompileTimeParam<Backend> {};
 inline bool is_close(double c, double v) { return (std::fabs(c - v) < 1e-9); }
 
 inline int Simulate(int argc, const char** argv) {
-  InitializeBiodynamo(argc, argv);
+  BdmSim<> simulation(argc, argv);
 
   // 3. Define initial model
   // Create an artificial bounds for the simulation space
@@ -83,8 +83,7 @@ inline int Simulate(int argc, const char** argv) {
   // };
 
   // 4. Run simulation for N timesteps
-  Scheduler<> scheduler;
-  scheduler.Simulate(20);
+  simulation.GetScheduler()->Simulate(20);
 
   return 0;
 }

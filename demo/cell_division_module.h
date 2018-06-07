@@ -33,10 +33,8 @@ struct CompileTimeParam : public DefaultCompileTimeParam<Backend> {
 };
 
 inline int Simulate(int argc, const char** argv) {
-  // 2. Initialize BioDynaMo
-  BdmSim<> simulation;
-  simulation.Activate();
-  InitializeBiodynamo(argc, argv);
+  // 2. Create new simulation
+  BdmSim<> simulation(argc, argv);
 
   // 3. Define initial model - in this example: 3D grid of cells
   size_t cells_per_dim = 128;
@@ -51,8 +49,7 @@ inline int Simulate(int argc, const char** argv) {
   ModelInitializer::Grid3D(cells_per_dim, 20, construct);
 
   // 4. Run simulation for one timestep
-  auto* scheduler = simulation.GetScheduler();
-  scheduler->Simulate(1);
+  simulation.GetScheduler()->Simulate(1);
   return 0;
 }
 

@@ -35,7 +35,7 @@ struct CompileTimeParam : public DefaultCompileTimeParam<Backend> {
 
 inline int Simulate(int argc, const char** argv) {
   // 2. Initialize BioDynaMo
-  InitializeBiodynamo(argc, argv);
+  BdmSim<> simulation(argc, argv);
 
   // 3. Initialize RegulateGenes module.
   // To add functions to the module use RegulateGenes::AddGene() function.
@@ -74,8 +74,7 @@ inline int Simulate(int argc, const char** argv) {
   ModelInitializer::CreateCells(positions, construct);
 
   // 5. Run simulation
-  Scheduler<> scheduler;
-  scheduler.Simulate(10);
+  simulation.GetScheduler()->Simulate(10);
 
   // 6. Output concentration values for each gene
   auto&& cell = (*(ResourceManager<>::Get()->Get<Cell>()))[0];

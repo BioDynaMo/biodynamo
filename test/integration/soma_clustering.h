@@ -239,7 +239,7 @@ static bool GetCriterion(double spatial_range, int target_n) {
 }
 
 inline int Simulate(int argc, const char** argv) {
-  InitializeBiodynamo(argc, argv);
+  BdmSim<> simulation(argc, argv);
 
   // 3. Define initial model
 
@@ -282,8 +282,7 @@ inline int Simulate(int argc, const char** argv) {
   ModelInitializer::DefineSubstance(kSubstance_1, "Substance_1", 0.5, 0.1, 25);
 
   // 4. Run simulation for N timesteps
-  Scheduler<> scheduler;
-  scheduler.Simulate(3001);
+  simulation.GetScheduler()->Simulate(3001);
 
   double spatial_range = 5;
   auto crit = GetCriterion(spatial_range, num_cells / 8);

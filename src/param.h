@@ -302,7 +302,8 @@ struct Param {
   static void Reset();
 
  private:
-  friend void InitializeBiodynamo(int, const char**);
+  template <typename T>
+  friend struct BdmSim;
 
   /// Assign values from config file to static variables
   static void AssignFromConfig(const std::shared_ptr<cpptoml::table>&);
