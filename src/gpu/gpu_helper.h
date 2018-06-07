@@ -35,7 +35,7 @@
 
 #include "log.h"
 #include "param.h"
-#include "resource_manager.h"
+#include "bdm.h"
 
 namespace bdm {
 
@@ -76,9 +76,10 @@ static void FindGpuDevicesCuda() {
 #endif
 
 #ifdef USE_OPENCL
-template <typename TResourceManager = ResourceManager<>>
+template <typename TBdmSim = BdmSim<>>
 static void CompileOpenCLKernels() {
-  auto rm = TResourceManager::Get();
+  auto* sim = TBdmSim::GetBdm();
+  auto* rm = sim->GetRm();
   std::vector<cl::Program>* all_programs = rm->GetOpenCLProgramList();
   cl::Context* context = rm->GetOpenCLContext();
   std::vector<cl::Device>* devices = rm->GetOpenCLDeviceList();
@@ -120,12 +121,13 @@ static void CompileOpenCLKernels() {
   }
 }
 
-template <typename TResourceManager = ResourceManager<>>
+template <typename TBdmSim = BdmSim<>>
 static void FindGpuDevicesOpenCL() {
   try {
     // We keep the context and device list in the resource manager to be
     // accessible elsewhere to create command queues and buffers from
-    auto rm = TResourceManager::Get();
+    auto* sim = TBdmSim::GetBdm();
+    auto* rm = sim->GetRm();
     cl::Context* context = rm->GetOpenCLContext();
     cl::CommandQueue* queue = rm->GetOpenCLCommandQueue();
     std::vector<cl::Device>* devices = rm->GetOpenCLDeviceList();
@@ -199,7 +201,7 @@ static void FindGpuDevicesOpenCL() {
 }
 #endif
 
-template <typename TResourceManager = ResourceManager<>>
+template <typename TBdmSim = BdmSim<>>
 static void InitializeGPUEnvironment() {
   if (Param::use_opencl_) {
 #ifdef USE_OPENCL

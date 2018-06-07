@@ -30,6 +30,7 @@
 #include "simulation_object_util.h"
 #include "variadic_template_parameter_util.h"
 #include "vtune.h"
+#include "bdm_imp.h"
 
 namespace bdm {
 

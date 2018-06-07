@@ -34,6 +34,8 @@ struct CompileTimeParam : public DefaultCompileTimeParam<Backend> {
 
 inline int Simulate(int argc, const char** argv) {
   // 2. Initialize BioDynaMo
+  BdmSim<> simulation;
+  simulation.Activate();
   InitializeBiodynamo(argc, argv);
 
   // 3. Define initial model - in this example: 3D grid of cells

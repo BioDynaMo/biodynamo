@@ -3,51 +3,47 @@
 
 namespace bdm {
 
-template <typename> struct ResourceManager;
+// forward declarations
+template <typename > struct ResourceManager;
+template <typename> struct Grid;
 
-// // TODO move
-// template <typename TCTParam = CompileTimeParam<>>
-// struct BdmSim;
-//
-// static BdmSim<>* gBdm = nullptr;
 
 template <typename TCTParam = CompileTimeParam<>>
 struct BdmSim {
+  using Self = BdmSim<TCTParam>;
+  using ResourceManager_t = ResourceManager<>;  // NOLINT
 
-  ~BdmSim() {
-    delete rm_;
-  }
+  BdmSim();
 
-  ResourceManager<TCTParam>* GetRm() { return rm_; }
+  ~BdmSim();
 
-  ResourceManager<TCTParam>* rm_ = new ResourceManager<TCTParam>();
+  ResourceManager<TCTParam>* GetRm();
+
+  Grid<Self>* GetGrid();
 
   // thread_local int random_;
-  void Activate() const {
-    active_ = this;
-    // TODO reset certain components
-  }
+  void Activate();
 
   static BdmSim<TCTParam>* active_;
 
   /// This function returns the currently active BdmSim simulation.
-  static BdmSim<TCTParam>* GetBdm() {
-    return active_;
-  }
+  static BdmSim<TCTParam>* GetBdm();
 
   // parameter
   // random numbers
   // Grid
   // scheduler
   // visualization
-};
 
-template <typename T>
-BdmSim<T>* BdmSim<T>::active_ = nullptr;
-// template <typename TBdm = BdmSim<>>
-// TBdm* Bdm() {
-//   return gBdm;
-// }
+ private:
+  ResourceManager<>* rm_ = nullptr;
+  Grid<Self>* grid_ = nullptr;
+  // Scheduler<>* scheduler_ = new Scheduler<>();
+
+  template <typename TResourceManager = ResourceManager<>,
+            typename TGrid = Grid<Self>>
+  void Init();
+};
 
 }  // namespace bdm
 

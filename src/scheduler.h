@@ -31,18 +31,17 @@
 #include "log.h"
 #include "param.h"
 #include "visualization/catalyst_adaptor.h"
+#include "bdm.h"
 
 namespace bdm {
 
-template <typename TResourceManager = ResourceManager<>,
-          typename TGrid = Grid<>>
+template <typename TBdmSim = BdmSim<>>
 class Scheduler {
  public:
   using Clock = std::chrono::high_resolution_clock;
 
   Scheduler()
-      : backup_(SimulationBackup(Param::backup_file_, Param::restore_file_)),
-        grid_(&TGrid::GetInstance()) {
+      : backup_(SimulationBackup(Param::backup_file_, Param::restore_file_)) {
     total_steps_ = 0;
     if (backup_.RestoreEnabled()) {
       restore_point_ = backup_.GetSimulationStepsFromBackup();
@@ -80,7 +79,10 @@ class Scheduler {
   /// Executes one step.
   /// This design makes testing more convenient
   virtual void Execute(bool last_iteration) {
-    auto rm = TResourceManager::Get();
+    auto* sim = TBdmSim::GetBdm();
+    auto* rm = sim->GetRm();
+    auto* grid = sim->GetGrid();
+
     assert(rm->GetNumSimObjects() > 0 &&
            "This simulation does not contain any simulation objects.");
 
@@ -89,9 +91,9 @@ class Scheduler {
     {
       if (Param::statistics_) {
         Timing timing("neighbors", &gStatistics);
-        grid_->UpdateGrid();
+        grid->UpdateGrid();
       } else {
-        grid_->UpdateGrid();
+        grid->UpdateGrid();
       }
     }
     // TODO(ahmad): should we only do it here and not after we run the physics?
@@ -115,13 +117,11 @@ class Scheduler {
   std::chrono::time_point<Clock> last_backup_ = Clock::now();
   CatalystAdaptor<>* visualization_ = nullptr;
 
-  OpTimer<CommitOp<>> commit_ = OpTimer<CommitOp<>>("commit");
-  OpTimer<DiffusionOp<>> diffusion_ = OpTimer<DiffusionOp<>>("diffusion");
+  OpTimer<CommitOp> commit_ = OpTimer<CommitOp>("commit");
+  OpTimer<DiffusionOp> diffusion_ = OpTimer<DiffusionOp>("diffusion");
   OpTimer<BiologyModuleOp> biology_ = OpTimer<BiologyModuleOp>("biology");
   OpTimer<DisplacementOp<>> physics_ = OpTimer<DisplacementOp<>>("physics");
   OpTimer<BoundSpace> bound_space_ = OpTimer<BoundSpace>("bound_space");
-
-  TGrid* grid_;
 
   /// Backup the simulation. Backup interval based on `Param::backup_interval_`
   void Backup() {
@@ -156,7 +156,8 @@ class Scheduler {
   }
 
   void CommitChangesAndUpdateReferences() {
-    auto* rm = TResourceManager::Get();
+    auto* sim = TBdmSim::GetBdm();
+    auto* rm = sim->GetRm();
     rm->ApplyOnAllTypesParallel(commit_);
 
     const auto& update_info = commit_->GetUpdateInfo();
@@ -176,14 +177,17 @@ class Scheduler {
   void Initialize() {
     CommitChangesAndUpdateReferences();
 
-    grid_->Initialize();
+    auto* sim = TBdmSim::GetBdm();
+    auto* grid = sim->GetGrid();
+    auto* rm = sim->GetRm();
+
+    grid->Initialize();
     if (Param::bound_space_) {
-      auto rm = TResourceManager::Get();
       rm->ApplyOnAllTypes(bound_space_);
     }
-    int lbound = grid_->GetDimensionThresholds()[0];
-    int rbound = grid_->GetDimensionThresholds()[1];
-    for (auto& dgrid : TResourceManager::Get()->GetDiffusionGrids()) {
+    int lbound = grid->GetDimensionThresholds()[0];
+    int rbound = grid->GetDimensionThresholds()[1];
+    for (auto& dgrid : rm->GetDiffusionGrids()) {
       // Create data structures, whose size depend on the grid dimensions
       dgrid->Initialize({lbound, rbound, lbound, rbound, lbound, rbound});
       // Initialize data structures with user-defined values

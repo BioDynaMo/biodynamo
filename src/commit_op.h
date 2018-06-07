@@ -16,11 +16,9 @@
 #define COMMIT_OP_H_
 
 #include <vector>
-#include "resource_manager.h"
 
 namespace bdm {
 
-template <typename TResourceManager = ResourceManager<>>
 class CommitOp {
  public:
   CommitOp() {}

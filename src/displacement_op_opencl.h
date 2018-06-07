@@ -38,8 +38,7 @@ namespace bdm {
 using std::array;
 
 /// Defines the 3D physical interactions between physical objects
-template <typename TGrid = Grid<>,
-          typename TResourceManager = ResourceManager<>>
+template <typename TBdmSim = BdmSim<>>
 class DisplacementOpOpenCL {
  public:
   DisplacementOpOpenCL() {}
@@ -49,8 +48,9 @@ class DisplacementOpOpenCL {
   typename std::enable_if<is_soa_sphere<TContainer>::value>::type operator()(
       TContainer* cells, uint16_t type_idx) const {
 #ifdef USE_OPENCL
-    auto& grid = TGrid::GetInstance();
-    auto rm = TResourceManager::Get();
+    auto* sim = TBdmSim::GetBdm();
+    auto* grid = sim->GetGrid();
+    auto* rm = sim->GetRm();
     auto context = rm->GetOpenCLContext();
     auto queue = rm->GetOpenCLCommandQueue();
     auto programs = rm->GetOpenCLProgramList();
@@ -64,14 +64,14 @@ class DisplacementOpOpenCL {
     std::array<cl_uint, 3> num_boxes_axis;
     std::array<cl_int, 3> grid_dimensions;
     cl_double squared_radius =
-        grid.GetLargestObjectSize() * grid.GetLargestObjectSize();
+        grid->GetLargestObjectSize() * grid->GetLargestObjectSize();
 
     // We need to create a mass vector, because it is not stored by default in
     // a cell container
     cells->FillMassVector(&mass);
-    grid.GetSuccessors(&successors);
-    grid.GetBoxInfo(&gpu_starts, &gpu_lengths);
-    grid.GetGridInfo(&box_length, &num_boxes_axis, &grid_dimensions);
+    grid->GetSuccessors(&successors);
+    grid->GetBoxInfo(&gpu_starts, &gpu_lengths);
+    grid->GetGridInfo(&box_length, &num_boxes_axis, &grid_dimensions);
 
     // Allocate GPU buffers
     cl::Buffer positions_arg(*context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR,
