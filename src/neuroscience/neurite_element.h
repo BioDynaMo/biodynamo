@@ -243,9 +243,9 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
   /// new_index)
   void UpdateReferences(
       const std::vector<std::unordered_map<uint32_t, uint32_t>>& update_info) {
-    using Rm = std::remove_pointer_t<decltype(Rm())>;
+    auto* rm = BdmSim_t::GetBdm()->GetRm();
 
-    int neurite_type_idx = Rm::template GetTypeIndex<MostDerivedScalar>();
+    int neurite_type_idx = rm->template GetTypeIndex<MostDerivedScalar>();
     const auto& neurite_updates = update_info[neurite_type_idx];
 
     this->UpdateReference(&daughter_right_[kIdx], neurite_updates);
@@ -254,7 +254,7 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
       this->UpdateReference(&(mother_[kIdx].GetNeuriteElementSoPtr()),
                             neurite_updates);
     } else if (mother_[kIdx].IsNeuronSoma()) {
-      const int neuron_type_idx = Rm::template GetTypeIndex<NeuronSoma>();
+      const int neuron_type_idx = rm->template GetTypeIndex<NeuronSoma>();
       const auto& neuron_updates = update_info[neuron_type_idx];
       this->UpdateReference(&(mother_[kIdx].GetNeuronSomaSoPtr()),
                             neuron_updates);
@@ -511,8 +511,9 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
       Fatal("NeuriteElements",
             "Bifurcation only allowed on a terminal neurite element");
     }
-    auto new_branch_l = Rm()->template New<MostDerivedScalar>();
-    auto new_branch_r = Rm()->template New<MostDerivedScalar>();
+    auto* rm = BdmSim_t::GetBdm()->GetRm();
+    auto new_branch_l = rm->template New<MostDerivedScalar>();
+    auto new_branch_r = rm->template New<MostDerivedScalar>();
     new_branch_l.Copy(*static_cast<MostDerived<Backend>*>(this));
     new_branch_r.Copy(*static_cast<MostDerived<Backend>*>(this));
     // set family relations
@@ -1401,7 +1402,8 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
   /// @param distal_portion the fraction of the total old length devoted to the
   /// distal half (should be between 0 and 1).
   MostDerivedSoPtr InsertProximalNeuriteElement(double distal_portion) {
-    auto new_neurite_element = Rm()->template New<MostDerivedScalar>();
+    auto* rm = BdmSim_t::GetBdm()->GetRm();
+    auto new_neurite_element = rm->template New<MostDerivedScalar>();
 
     // TODO(neurites) reformulate to mass_location_
     auto new_position =
@@ -1475,7 +1477,8 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
 
   MostDerivedSoPtr ExtendSideNeuriteElement(
       double length, const std::array<double, 3>& direction) {
-    auto new_branch = Rm()->template New<MostDerivedScalar>();
+    auto* rm = BdmSim_t::GetBdm()->GetRm();
+    auto new_branch = rm->template New<MostDerivedScalar>();
     new_branch.Copy(*static_cast<MostDerived<Backend>*>(this));
 
     auto dir = direction;

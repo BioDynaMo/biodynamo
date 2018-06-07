@@ -37,6 +37,7 @@
 #include "diffusion_grid.h"
 #include "tuple_util.h"
 #include "variadic_template_parameter_util.h"
+#include "bdm.h"
 
 namespace bdm {
 
@@ -133,11 +134,6 @@ struct ConvertToContainerTuple {
           type;  // NOLINT
 };
 
-/// Forward declaration for concrete compile time parameter.
-/// Will be used as default template parameter.
-template <typename TBackend = Soa>
-struct CompileTimeParam;
-
 /// ResourceManager holds a container for each atomic type in the simulation.
 /// It provides methods to get a certain container, execute a function on a
 /// a certain element, all elements of a certain type or all elements inside
@@ -161,8 +157,9 @@ class ResourceManager {
   template <typename T>
   using ToBackend = typename T::template Self<Backend>;
 
+  // FIXME remove
   /// Singleton pattern - return the only instance with this template parameters
-  static ResourceManager<TCompileTimeParam>* Get() { return instance_.get(); }
+  // static ResourceManager<TCompileTimeParam>* Get() { return instance_.get(); }
 
   /// Return the container of this Type
   /// @tparam Type atomic type whose container should be returned
@@ -191,6 +188,9 @@ class ResourceManager {
         return dg;
       }
     }
+    assert(false &&
+             "You tried to access a diffusion grid that does not exist! "
+             "Did you specify the correct substance name?");
     return nullptr;
   }
 
@@ -374,12 +374,6 @@ class ResourceManager {
 template <typename T>
 std::unique_ptr<ResourceManager<T>> ResourceManager<T>::instance_ =
     std::unique_ptr<ResourceManager<T>>(new ResourceManager<T>());
-
-/// Returns the ResourceManager
-template <typename TResourceManager = ResourceManager<>>
-TResourceManager* Rm() {
-  return TResourceManager::Get();
-}
 
 }  // namespace bdm
 

@@ -8,11 +8,14 @@ template <typename > struct ResourceManager;
 template <typename> struct Grid;
 template <typename> struct Scheduler;
 
+struct Soa;
+template <typename TBackend = Soa>
+struct CompileTimeParam;
 
 template <typename TCTParam = CompileTimeParam<>>
 struct BdmSim {
   using Self = BdmSim<TCTParam>;
-  using ResourceManager_t = ResourceManager<>;  // NOLINT
+  using ResourceManager_t = ResourceManager<TCTParam>;  // NOLINT
 
 
   /// This function returns the currently active BdmSim simulation.
@@ -37,12 +40,12 @@ struct BdmSim {
  private:
   static BdmSim<TCTParam>* active_;
 
-  ResourceManager<>* rm_ = nullptr;
+  ResourceManager<TCTParam>* rm_ = nullptr;
   Grid<Self>* grid_ = nullptr;
   Scheduler<Self>* scheduler_ = nullptr;
 
   // TODO
-  template <typename TResourceManager = ResourceManager<>,
+  template <typename TResourceManager = ResourceManager<TCTParam>,
             typename TGrid = Grid<Self>,
             typename TScheduler = Scheduler<Self>>
   void InitializeMembers();

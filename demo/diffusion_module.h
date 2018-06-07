@@ -35,9 +35,10 @@ enum Substances { kKalium };
 struct Chemotaxis : public BaseBiologyModule {
   Chemotaxis() : BaseBiologyModule(gAllBmEvents) {}
 
-  template <typename T>
+  template <typename T, typename TBdmSim = BdmSim<>>
   void Run(T* cell) {
-    static auto dg = GetDiffusionGrid(kKalium);
+    auto* rm = TBdmSim::GetBdm()->GetRm();
+    auto* dg = rm->GetDiffusionGrid(kKalium);
     dg->SetConcentrationThreshold(1e15);
 
     auto& position = cell->GetPosition();
@@ -58,9 +59,10 @@ struct Chemotaxis : public BaseBiologyModule {
 struct KaliumSecretion : public BaseBiologyModule {
   KaliumSecretion() : BaseBiologyModule() {}
 
-  template <typename T>
+  template <typename T, typename TBdmSim = BdmSim<>>
   void Run(T* cell) {
-    static auto dg = GetDiffusionGrid(kKalium);
+    auto* rm = TBdmSim::GetBdm()->GetRm();
+    auto* dg = rm->GetDiffusionGrid(kKalium);
     array<double, 3> secretion_position = {50, 50, 50};
     dg->IncreaseConcentrationBy(secretion_position, 4 / dg->GetBoxVolume());
   }

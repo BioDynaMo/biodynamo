@@ -20,8 +20,8 @@ BdmSim<T>* BdmSim<T>::GetBdm() {
 
 template <typename T>
 BdmSim<T>::BdmSim(int argc, const char** argv) {
-  InitializeMembers();
   Activate();
+  InitializeMembers();
   InitializeSimulation(argc, argv);
 }
 
@@ -68,7 +68,7 @@ void BdmSim<T>::InitializeSimulation(int argc, const char** argv) {
   // Removing this line causes an unexplainable segfault due to setting the
   // gErrorIngoreLevel global parameter of ROOT. We need to log at least one
   // thing before setting that parameter.
-  Log::Info("", "Initialize new simulation using BiodynaMo ", Version::String());
+  Log::Info("", "Initialize new simulation using BioDynaMo ", Version::String());
 
   // detect if the biodynamo environment has been sourced
   if (std::getenv("BDM_CMAKE_DIR") == nullptr) {

@@ -77,7 +77,8 @@ inline int Simulate(int argc, const char** argv) {
   simulation.GetScheduler()->Simulate(10);
 
   // 6. Output concentration values for each gene
-  auto&& cell = (*(ResourceManager<>::Get()->Get<Cell>()))[0];
+  auto* rm = simulation.GetRm();
+  auto&& cell = (*(rm->Get<Cell>()))[0];
   const auto* regulate_genes = cell.GetBiologyModules<RegulateGenes>()[0];
   const auto& concentrations = regulate_genes->GetConcentrations();
   std::cout << "Gene concentrations after " << Param::total_steps_

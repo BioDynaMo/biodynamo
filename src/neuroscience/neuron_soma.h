@@ -46,8 +46,8 @@ BDM_SIM_OBJECT(NeuronSoma, bdm::Cell) {
   void UpdateReferences(
       const std::vector<std::unordered_map<uint32_t, uint32_t>>& update_info) {
     // NeuronSoma only stores NeuriteElements
-    using Rm = std::remove_pointer_t<decltype(Rm())>;
-    const int neurite_type_idx = Rm::template GetTypeIndex<NeuriteElement>();
+    auto* rm = BdmSim_t::GetBdm()->GetRm();
+    const int neurite_type_idx = rm->template GetTypeIndex<NeuriteElement>();
     const auto& neurite_updates = update_info[neurite_type_idx];
     for (auto& daugther : daughters_[kIdx]) {
       // `this` required, because declaration in dependent base are not found
@@ -77,7 +77,8 @@ BDM_SIM_OBJECT(NeuronSoma, bdm::Cell) {
   /// @return SoPointer of new neurite
   NeuriteElementSoPtr ExtendNewNeurite(double diameter, double phi,
                                        double theta) {
-    auto neurite = Rm()->template New<NeuriteElement>();
+    auto* rm = BdmSim_t::GetBdm()->GetRm();
+    auto neurite = rm->template New<NeuriteElement>();
 
     std::vector<typename Base::BiologyModules> neurite_bms;
     Base::BiologyModuleEventHandler(gExtendNeurite, &neurite_bms);

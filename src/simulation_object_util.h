@@ -32,6 +32,7 @@
 #include "root_util.h"
 #include "so_pointer.h"
 #include "type_util.h"
+#include "bdm.h"
 
 namespace bdm {
 
@@ -334,14 +335,6 @@ struct Capsule;
   /** e.g. `std::vector::value_type`. */                                       \
   using value_type = Self<Soa>;                                                \
                                                                                \
-  /** Returns the ResourceManager */                                           \
-  /** Avoids the "invalid use of incomplete type" error caused if the  */      \
-  /** global `Rm()` function in resource_manager.h would be used */            \
-  template <typename TResourceManager = ResourceManager<>>                     \
-  TResourceManager* Rm() {                                                     \
-    return TResourceManager::Get();                                            \
-  }                                                                            \
-                                                                               \
   template <typename TResourceManager = ResourceManager<>>                     \
   SoHandle GetSoHandle() const {                                               \
     auto type_idx =                                                            \
@@ -364,13 +357,17 @@ struct Capsule;
     return ret_value;                                                          \
   }                                                                            \
                                                                                \
+  using BdmSim_t = BdmSim<typename TCompileTimeParam::template Self<Soa>>; \
+  \
   MostDerivedSoPtr GetSoPtr() {                                                \
-    auto* container = Rm()->template Get<MostDerivedScalar>();                 \
+    auto* rm = BdmSim_t::GetBdm()->GetRm(); \
+    auto* container = rm->template Get<MostDerivedScalar>();                 \
     return MostDerivedSoPtr(container, Base::GetElementIdx());                 \
   }                                                                            \
                                                                                \
   void RemoveFromSimulation() {                                                \
-    auto container = Rm()->template Get<MostDerivedScalar>();                  \
+    auto* rm = BdmSim_t::GetBdm()->GetRm(); \
+    auto container = rm->template Get<MostDerivedScalar>();                  \
     container->DelayedRemove(Base::GetElementIdx());                           \
   }                                                                            \
                                                                                \
@@ -485,22 +482,6 @@ struct Capsule;
   }                                                                            \
                                                                                \
   BDM_ROOT_CLASS_DEF_OVERRIDE(class_name, class_version_id)
-
-/// Get the diffusion grid which holds the substance of specified name
-template <typename TResourceManager = ResourceManager<>>
-static DiffusionGrid* GetDiffusionGrid(int substance_id) {
-  auto dg = TResourceManager::Get()->GetDiffusionGrid(substance_id);
-  assert(dg != nullptr &&
-         "Tried to get non-existing diffusion grid. Did you specify the "
-         "correct substance name?");
-  return dg;
-}
-
-/// Get the total number of simulation objects
-template <typename TResourceManager = ResourceManager<>>
-static size_t GetNumSimObjects() {
-  return TResourceManager::Get()->GetNumSimObjects();
-}
 
 }  // namespace bdm
 

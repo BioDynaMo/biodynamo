@@ -20,7 +20,7 @@
 #include <string>
 #include <vector>
 
-#include "resource_manager.h"
+#include "bdm.h"
 
 #include "io_util.h"
 #include "log.h"
@@ -48,7 +48,7 @@ class SimulationBackup {
   SimulationBackup(const std::string& backup_file,
                    const std::string& restore_file);
 
-  template <typename TResourceManager = ResourceManager<>>
+  template <typename TBdmSim = BdmSim<>>
   void Backup(size_t completed_simulation_steps) {
     if (!backup_) {
       Log::Fatal("SimulationBackup",
@@ -63,8 +63,8 @@ class SimulationBackup {
     // Backup
     {
       TFileRaii f(tmp_file.str(), "UPDATE");
-      f.Get()->WriteObject(TResourceManager::Get(),
-                           kResouceManagerName.c_str());
+      auto* rm = TBdmSim::GetBdm()->GetRm();
+      f.Get()->WriteObject(rm, kResouceManagerName.c_str());
       IntegralTypeWrapper<size_t> wrapper(completed_simulation_steps);
       f.Get()->WriteObject(&wrapper, kSimulationStepName.c_str());
       RuntimeVariables rv;
@@ -78,7 +78,7 @@ class SimulationBackup {
     rename(tmp_file.str().c_str(), backup_file_.c_str());
   }
 
-  template <typename TResourceManager = ResourceManager<>>
+  template <typename TBdmSim = BdmSim<>>
   void Restore() {
     if (!restore_) {
       Log::Fatal("SimulationBackup",
@@ -94,10 +94,11 @@ class SimulationBackup {
       Log::Warning("SimulationBackup",
                    "Restoring simulation executed on a different system!");
     }
-    TResourceManager* restored_rm = nullptr;
-    file.Get()->GetObject(kResouceManagerName.c_str(), restored_rm);
-    TResourceManager::instance_ =
-        std::unique_ptr<TResourceManager>(restored_rm);
+    // FIXME
+    // TResourceManager* restored_rm = nullptr;
+    // file.Get()->GetObject(kResouceManagerName.c_str(), restored_rm);
+    // TResourceManager::instance_ =
+    //     std::unique_ptr<TResourceManager>(restored_rm);
     // TODO(lukas) random number generator, statics (e.g. Param)
 
     // call all after restore events

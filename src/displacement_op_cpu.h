@@ -20,9 +20,9 @@
 #include <vector>
 
 #include "bound_space_op.h"
-#include "grid.h"
 #include "math_util.h"
 #include "param.h"
+#include "bdm.h"
 
 namespace bdm {
 
@@ -32,19 +32,19 @@ class DisplacementOpCpu {
   DisplacementOpCpu() {}
   ~DisplacementOpCpu() {}
 
-  template <typename TContainer>
+  template <typename TContainer, typename TBdmSim = BdmSim<>>
   void operator()(TContainer* sim_objects, uint16_t type_idx) const {
     std::vector<array<double, 3>> sim_object_movements;
     sim_object_movements.reserve(sim_objects->size());
 
-    auto& grid = TGrid::GetInstance();
-    auto search_radius = grid.GetLargestObjectSize();
+    auto* grid = TBdmSim::GetBdm()->GetGrid();
+    auto search_radius = grid->GetLargestObjectSize();
     double squared_radius = search_radius * search_radius;
 
 #pragma omp parallel for shared(grid) firstprivate(squared_radius)
     for (size_t i = 0; i < sim_objects->size(); i++) {
       sim_object_movements[i] =
-          (*sim_objects)[i].CalculateDisplacement(&grid, squared_radius);
+          (*sim_objects)[i].CalculateDisplacement(grid, squared_radius);
     }
 
 // Set new positions after all updates have been calculated
@@ -58,7 +58,7 @@ class DisplacementOpCpu {
       sim_object.ApplyDisplacement(sim_object_movements[i]);
       if (Param::bound_space_) {
         ApplyBoundingBox(&sim_object, Param::min_bound_, Param::max_bound_);
-        grid.SetDimensionThresholds(Param::min_bound_, Param::max_bound_);
+        grid->SetDimensionThresholds(Param::min_bound_, Param::max_bound_);
       }
     }
   }

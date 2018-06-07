@@ -25,7 +25,7 @@
 #include "log.h"
 
 #include "param.h"
-#include "resource_manager.h"
+#include "bdm.h"
 
 // check for ROOTCLING was necessary, due to ambigous reference to namespace
 // detail when using ROOT I/O
@@ -57,7 +57,7 @@ namespace bdm {
 #if defined(USE_CATALYST) && !defined(__ROOTCLING__)
 
 /// The class that bridges the simulation code with ParaView
-template <typename TResourceManager = ResourceManager<>>
+template <typename TBdmSim = BdmSim<>>
 class CatalystAdaptor {
  public:
   static CatalystAdaptor* GetInstance() {
@@ -237,7 +237,7 @@ class CatalystAdaptor {
         g_processor_ = vtkCPProcessor::New();
         g_processor_->Initialize();
 
-        auto rm = TResourceManager::Get();
+        auto* rm = TBdmSim::GetBdm()->GetRm();
         so_is_initialized_.resize(rm->NumberOfTypes());
         dg_is_initialized_.resize(rm->GetDiffusionGrids().size());
       } else {
@@ -294,7 +294,8 @@ class CatalystAdaptor {
       counter++;
     }
 
-    auto& dgrids = TResourceManager::Get()->GetDiffusionGrids();
+    auto* rm = TBdmSim::GetBdm()->GetRm();
+    auto& dgrids = rm->GetDiffusionGrids();
 
     size_t idx = 0;
     for (auto vtk_dg : vtk_dgrids_) {
@@ -317,7 +318,7 @@ class CatalystAdaptor {
   void CreateVtkObjects(
       vtkNew<vtkCPDataDescription>& data_description) {  // NOLINT
     // Add simulation objects to the visualization if requested
-    auto rm = TResourceManager::Get();
+    auto* rm = TBdmSim::GetBdm()->GetRm();
     rm->ApplyOnAllTypes([&, this](auto* sim_objects, uint16_t type_idx) {
       auto so_name =
           std::decay<decltype(*sim_objects)>::type::GetScalarTypeName().c_str();
@@ -535,7 +536,7 @@ class CatalystAdaptor {
 #else
 
 /// False front (to ignore Catalyst in gtests)
-template <typename TResourceManager = ResourceManager<>>
+template <typename TBdmSim = BdmSim<>>
 class CatalystAdaptor {
  public:
   static CatalystAdaptor* GetInstance() {

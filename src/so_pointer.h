@@ -22,6 +22,7 @@
 
 #include "backend.h"
 #include "simulation_backup.h"
+#include "bdm.h"
 
 namespace bdm {
 
@@ -152,20 +153,23 @@ template <typename TSoSimBackend, typename TBackend>
 struct ReadContainerFunctor {
   /// Backends between SoPointer and ResourceManager are matching
   template <typename TContainer, typename TTBackend = TBackend,
-            typename TRm = ResourceManager<>>
+            typename TBdmSim = BdmSim<>>
   typename std::enable_if<
-      std::is_same<TTBackend, typename TRm::Backend>::value>::type
+      std::is_same<TTBackend, typename TBdmSim::ResourceManager_t::Backend>::value>::type
   operator()(TBuffer& R__b, TContainer** container, uint64_t) {  // NOLINT
     int state;
     R__b >> state;
     if (state == ContainerPointerState::kPointIntoRm) {
       R__b >> *container;
-      // if a whole simulation is restored from a ROOT file, `TRm::Get` is not
-      // updated to the new `ResourceManager` yet. Therefore, we must delay this
-      // call. It will be executed after the restore operation has been
+      // if a whole simulation is restored from a ROOT file, `TBdmSim::Get` is
+      // not updated to the new `ResourceManager` yet. Therefore, we must delay
+      // this call. It will be executed after the restore operation has been
       // completed.
       SimulationBackup::after_restore_event_.push_back(
-          [=]() { *container = TRm::Get()->template Get<TSoSimBackend>(); });
+          [=]() {
+            auto* rm = TBdmSim::GetBdm()->GetRm();
+            *container = rm->template Get<TSoSimBackend>();
+          });
     } else if (state == ContainerPointerState::kSeparate) {
       R__b >> *container;
     } else {
@@ -196,15 +200,16 @@ template <typename TSoSimBackend, typename TBackend>
 struct WriteContainerFunctor {
   /// Backends between SoPointer and ResourceManager are matching
   template <typename TContainer, typename TTBackend = TBackend,
-            typename TRm = ResourceManager<>>
+            typename TBdmSim = BdmSim<>>
   typename std::enable_if<
-      std::is_same<TTBackend, typename TRm::Backend>::value>::type
+      std::is_same<TTBackend, typename TBdmSim::ResourceManager_t::Backend>::value>::type
   operator()(TBuffer& R__b, const TContainer* container, uint64_t) {  // NOLINT
+    auto* rm = TBdmSim::GetBdm()->GetRm();
     if (container == nullptr) {
       // write nullptr
       R__b << ContainerPointerState::kNullPtr;
       R__b << container;
-    } else if (TRm::Get()->Get()->template Get<TSoSimBackend>() == container) {
+    } else if (rm->template Get<TSoSimBackend>() == container) {
       R__b << ContainerPointerState::kPointIntoRm;
       // skip container inside ResourceManager and write nullptr instead
       // ROOT does not recognise that the container points inside the

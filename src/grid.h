@@ -151,7 +151,7 @@ class Grid {
 
     template <typename TGrid = Grid<TBdmSim>>
     Iterator begin() const {  // NOLINT
-      return Iterator(&(TGrid::GetInstance()), this);
+      return Iterator(TBdmSim::GetBdm()->GetGrid(), this);
     }
   };
 
@@ -241,12 +241,6 @@ class Grid {
   }
 
   virtual ~Grid() {}
-
-  /// Gets the singleton instance
-  static Grid<TBdmSim>& GetInstance() {
-    static Grid<TBdmSim> kGrid;
-    return kGrid;
-  }
 
   /// Clears the grid
   void ClearGrid() {
