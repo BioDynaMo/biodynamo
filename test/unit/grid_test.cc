@@ -93,9 +93,8 @@ TEST(GridTest, SetupGrid) {
 }
 
 template <typename TContainer>
-void RunUpdateGridTest(TContainer* cells) {
-  BdmSim<> simulation("GridTest_RunUpdateGridTest");
-  auto* grid = simulation.GetGrid();
+void RunUpdateGridTest(TContainer* cells, BdmSim<>* simulation) {
+  auto* grid = simulation->GetGrid();
 
   // Update the grid
   grid->UpdateGrid();
@@ -165,7 +164,7 @@ TEST(GridTest, UpdateGrid) {
 
   EXPECT_EQ(62u, cells->size());
 
-  RunUpdateGridTest(cells);
+  RunUpdateGridTest(cells, &simulation);
 }
 
 TEST(GridTest, NoRaceConditionDuringUpdate) {
@@ -189,7 +188,7 @@ TEST(GridTest, NoRaceConditionDuringUpdate) {
   // run 100 times to increase possibility of race condition due to different
   // scheduling of threads
   for (uint16_t i = 0; i < 100; i++) {
-    RunUpdateGridTest(cells);
+    RunUpdateGridTest(cells, &simulation);
   }
 }
 

@@ -20,6 +20,7 @@
 #include "io_util.h"
 #include "unit/default_ctparam.h"
 #include "unit/test_util.h"
+#include "bdm_imp.h"
 
 #define ROOTFILE "bdmFile.root"
 

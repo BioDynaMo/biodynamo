@@ -19,6 +19,7 @@
 #include "displacement_op.h"
 #include "grid.h"
 #include "unit/test_util.h"
+#include "bdm_imp.h"
 
 namespace bdm {
 namespace displacement_op_test_internal {

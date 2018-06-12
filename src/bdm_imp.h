@@ -27,11 +27,18 @@ BdmSim<T>::BdmSim(int argc, const char** argv) {
 
 template <typename T>
 BdmSim<T>::BdmSim(const std::string& executable_name) {
-  // FIXME implement
+  Activate();
+  InitializeMembers();
+  const char* argv[1] = {executable_name.c_str()};
+  InitializeSimulation(1, argv);
 }
 
 template <typename T>
 BdmSim<T>::~BdmSim() {
+  if (active_ == this) {
+    active_ = nullptr;
+    // FIXME anything else; catalyst adaptor?
+  }
   delete rm_;
   delete grid_;
   delete scheduler_;

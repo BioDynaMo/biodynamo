@@ -120,7 +120,7 @@ class Scheduler {
   OpTimer<CommitOp> commit_ = OpTimer<CommitOp>("commit");
   OpTimer<DiffusionOp> diffusion_ = OpTimer<DiffusionOp>("diffusion");
   OpTimer<BiologyModuleOp> biology_ = OpTimer<BiologyModuleOp>("biology");
-  OpTimer<DisplacementOp<>> physics_ = OpTimer<DisplacementOp<>>("physics");
+  OpTimer<DisplacementOp<TBdmSim>> physics_ = OpTimer<DisplacementOp<TBdmSim>>("physics");
   OpTimer<BoundSpace> bound_space_ = OpTimer<BoundSpace>("bound_space");
 
   /// Backup the simulation. Backup interval based on `Param::backup_interval_`

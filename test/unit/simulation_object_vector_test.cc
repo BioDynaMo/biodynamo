@@ -14,6 +14,10 @@
 
 #include "simulation_object_vector_test.h"
 
+// FIXME investigate: without default_ctparam -> incomplete type error
+#include "default_ctparam.h"
+#include "bdm_imp.h"
+
 namespace bdm {
 namespace simulation_object_vector_test_internal {
 

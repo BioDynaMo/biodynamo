@@ -28,6 +28,8 @@ TEST(CellTest, TransformCoordinatesGlobalToPolar) {
 }
 
 TEST(CellTest, DivideVolumeRatioPhiTheta) {
+  BdmSim<> simulation(typeid(*this).name());
+
   TestCell mother;
   mother.SetPosition({5, 6, 7});
   mother.SetTractorForce({0, 0, 0});
@@ -91,6 +93,8 @@ TEST(CellTest, DivideVolumeRatioPhiTheta) {
 }
 
 TEST(CellTest, Divide) {
+  BdmSim<> simulation(typeid(*this).name());
+
   TestCell cell;
   gRandom.SetSeed(42);
 
@@ -103,6 +107,8 @@ TEST(CellTest, Divide) {
 }
 
 TEST(CellTest, DivideVolumeRatio) {
+  BdmSim<> simulation(typeid(*this).name());
+
   TestCell cell;
   gRandom.SetSeed(42);
 
@@ -115,6 +121,8 @@ TEST(CellTest, DivideVolumeRatio) {
 }
 
 TEST(CellTest, DivideAxis) {
+  BdmSim<> simulation(typeid(*this).name());
+
   TestCell cell;
   cell.SetPosition({1, 2, 3});
   gRandom.SetSeed(42);
@@ -128,6 +136,8 @@ TEST(CellTest, DivideAxis) {
 }
 
 TEST(CellTest, DivideVolumeRatioAxis) {
+  BdmSim<> simulation(typeid(*this).name());
+
   TestCell cell;
   cell.SetPosition({1, 2, 3});
   gRandom.SetSeed(42);
@@ -141,6 +151,8 @@ TEST(CellTest, DivideVolumeRatioAxis) {
 }
 
 TEST(CellTest, BiologyModule) {
+  BdmSim<> simulation(typeid(*this).name());
+
   TestCell cell;
   double diameter = cell.GetDiameter();
   auto position = cell.GetPosition();
@@ -157,6 +169,8 @@ TEST(CellTest, BiologyModule) {
 }
 
 TEST(CellTest, GetBiologyModulesTest) {
+  BdmSim<> simulation(typeid(*this).name());
+
   // create cell and add bioogy modules
   TestCell cell;
   cell.AddBiologyModule(GrowthModule());
@@ -174,6 +188,8 @@ TEST(CellTest, GetBiologyModulesTest) {
 }
 
 TEST(CellTest, BiologyModuleEventHandler) {
+  BdmSim<> simulation(typeid(*this).name());
+
   TestCell cell;
 
   cell.AddBiologyModule(MovementModule({1, 2, 3}));

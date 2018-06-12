@@ -42,6 +42,19 @@ BDM_SIM_OBJECT(A, bdm::SimulationObject) {
   int GetData() { return data_[kIdx]; }
   void SetData(int data) { data_[kIdx] = data; }
 
+  // FIXME
+  std::array<double, 3> GetPosition() const { return {0, 0, 0}; };
+  void SetPosition(const std::array<double, 3>&) {}
+  void ApplyDisplacement(const std::array<double, 3>&) {}
+  template <typename TGrid>
+  std::array<double, 3> CalculateDisplacement(TGrid * grid,
+                                              double squared_radius) { return {0, 0, 0}; };
+  void RunBiologyModules() {}
+  void SetBoxIdx(uint64_t) {}
+  double GetDiameter() {}
+  static std::set<std::string> GetRequiredVisDataMembers() { return {"diameter_", "position_"}; };
+  static constexpr Shape GetShape() { return Shape::kSphere; }
+
   vec<int> data_;
 };
 
@@ -54,6 +67,19 @@ BDM_SIM_OBJECT(B, bdm::SimulationObject) {
 
   double GetData() { return data_[kIdx]; }
   void SetData(double data) { data_[kIdx] = data; }
+
+  // FIXME
+  std::array<double, 3> GetPosition() const { return {0, 0, 0}; };
+  void SetPosition(const std::array<double, 3>&) {}
+  void ApplyDisplacement(const std::array<double, 3>&) {}
+  template <typename TGrid>
+  std::array<double, 3> CalculateDisplacement(TGrid * grid,
+                                              double squared_radius) { return {0, 0, 0}; };
+  void RunBiologyModules() {}
+  void SetBoxIdx(uint64_t) {}
+  double GetDiameter() {}
+  static std::set<std::string> GetRequiredVisDataMembers() { return {"diameter_", "position_"}; };
+  static constexpr Shape GetShape() { return Shape::kSphere; }
 
   vec<double> data_;
 };

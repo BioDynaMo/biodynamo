@@ -21,6 +21,7 @@
 #include "unit/default_ctparam.h"
 #include "unit/test_util.h"
 #include "variadic_template_parameter_util.h"
+#include "bdm_imp.h"
 
 namespace bdm {
 namespace model_initializer_test_internal {

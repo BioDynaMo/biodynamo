@@ -753,7 +753,7 @@ class Grid {
   ///     // Usage
   ///     SoHandle current_element = ...;
   ///     SoHandle next_element = successors_[current_element];
-  SimulationObjectVector<SoHandle> successors_;
+  SimulationObjectVector<SoHandle, TBdmSim> successors_;
   /// Determines which boxes to search neighbors in (see enum Adjacency)
   Adjacency adjacency_;
   /// The size of the largest object in the simulation

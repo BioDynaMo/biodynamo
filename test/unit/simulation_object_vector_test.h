@@ -39,6 +39,19 @@ BDM_SIM_OBJECT_TEST(A, SimulationObject, CompileTimeParam1) {
   AExt() {}
   explicit AExt(int id) { id_[kIdx] = id; }
 
+  // FIXME
+  std::array<double, 3> GetPosition() const { return {0, 0, 0}; };
+  void SetPosition(const std::array<double, 3>&) {}
+  void ApplyDisplacement(const std::array<double, 3>&) {}
+  template <typename TGrid>
+  std::array<double, 3> CalculateDisplacement(TGrid * grid,
+                                              double squared_radius) { return {0, 0, 0}; };
+  void RunBiologyModules() {}
+  void SetBoxIdx(uint64_t) {}
+  double GetDiameter() {}
+  static std::set<std::string> GetRequiredVisDataMembers() { return {"diameter_", "position_"}; };
+  static constexpr Shape GetShape() { return Shape::kSphere; }
+
  private:
   vec<int> id_;
 };
@@ -50,6 +63,19 @@ BDM_SIM_OBJECT_TEST(B, SimulationObject, CompileTimeParam1) {
   BExt() {}
 
   explicit BExt(int id) { id_[kIdx] = id; }
+
+  // FIXME
+  std::array<double, 3> GetPosition() const { return {0, 0, 0}; };
+  void SetPosition(const std::array<double, 3>&) {}
+  void ApplyDisplacement(const std::array<double, 3>&) {}
+  template <typename TGrid>
+  std::array<double, 3> CalculateDisplacement(TGrid * grid,
+                                              double squared_radius) { return {0, 0, 0}; };
+  void RunBiologyModules() {}
+  void SetBoxIdx(uint64_t) {}
+  double GetDiameter() {}
+  static std::set<std::string> GetRequiredVisDataMembers() { return {"diameter_", "position_"}; };
+  static constexpr Shape GetShape() { return Shape::kSphere; }
 
  private:
   vec<int> id_;

@@ -64,6 +64,8 @@ struct UpdateReferencesNeuronSoma : NeuronSoma {
 };
 
 TEST(NeuronSomaTest, UpdateReferences) {
+  BdmSim<> simulation(typeid(*this).name());
+
   UpdateReferencesNeuronSoma neuron;
   neuron.AddDaughters();
 
@@ -82,6 +84,8 @@ TEST(NeuronSomaTest, UpdateReferences) {
 /// Test that the references of mother, daughter_left_ and daughter_right_
 /// are updated correctly
 TEST(NeuriteElementTest, UpdateReferences) {
+  BdmSim<> simulation(typeid(*this).name());
+  
   NeuriteElement neurite;
 
   auto dl = neurite.GetDaughterLeft();

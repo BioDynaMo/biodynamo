@@ -20,7 +20,6 @@
 #include <vector>
 
 #include "bdm.h"
-#include "cell.h"
 #include "diffusion_grid.h"
 #include "grid.h"
 #include "inline_vector.h"
