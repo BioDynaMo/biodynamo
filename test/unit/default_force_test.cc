@@ -22,6 +22,7 @@
 #include "unit/test_util.h"
 
 #include "biodynamo.h"
+#include "bdm_imp.h"
 
 namespace bdm {
 
@@ -240,9 +241,12 @@ TEST(DefaultForce, SphereSmallCylinderHorizontal) {
 // sphere-cylinder interaction is done vertically at the tip of the cylinder
 // (mass location)
 TEST(DefaultForce, SphereSmallCylinderVertical) {
+  BdmSim<> simulation(typeid(*this).name());
+  auto* rm = simulation.GetRm();
+
   Cell sphere({0, 0, 0});
   sphere.SetDiameter(50);
-  ResourceManager<>::Get()->push_back(sphere);
+  rm->push_back(sphere);
 
   NeuriteElement cylinder;
   cylinder.SetMassLocation({0, 24, 0});
@@ -265,9 +269,12 @@ TEST(DefaultForce, SphereSmallCylinderVertical) {
 
 // opposit case of Vertical: cylinder is below the cell
 TEST(DefaultForce, SphereSmallCylinderVertical2) {
+  BdmSim<> simulation(typeid(*this).name());
+  auto* rm = simulation.GetRm();
+
   Cell sphere({0, 0, 0});
   sphere.SetDiameter(50);
-  ResourceManager<>::Get()->push_back(sphere);
+  rm->push_back(sphere);
 
   NeuriteElement cylinder;
   cylinder.SetMassLocation({0, -24, 0});

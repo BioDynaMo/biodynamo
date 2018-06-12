@@ -14,6 +14,7 @@
 
 #include "unit/dividing_cell_op_test.h"
 #include "unit/default_ctparam.h"
+#include "bdm_imp.h"
 
 namespace bdm {
 namespace dividing_cell_op_test_internal {

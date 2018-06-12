@@ -12,6 +12,7 @@
 //
 // -----------------------------------------------------------------------------
 
+#include <typeinfo>
 #include "biology_module/grow_divide.h"
 #include "gtest/gtest.h"
 #include "resource_manager.h"
@@ -21,9 +22,8 @@
 namespace bdm {
 
 TEST(GrowDivideTest, Grow) {
-  auto rm = ResourceManager<>::Get();
-  rm->Clear();
-  Param::Reset();
+  BdmSim<> simulation(typeid(*this).name());
+  auto* rm = simulation.GetRm();
 
   Cell cell;
   cell.SetDiameter(40);
@@ -38,9 +38,8 @@ TEST(GrowDivideTest, Grow) {
 }
 
 TEST(GrowDivideTest, Divide) {
-  auto rm = ResourceManager<>::Get();
-  rm->Clear();
-  Param::Reset();
+  BdmSim<> simulation(typeid(*this).name());
+  auto* rm = simulation.GetRm();
 
   Cell cell;
   cell.SetDiameter(41);

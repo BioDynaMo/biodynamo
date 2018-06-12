@@ -19,6 +19,7 @@
 #include "io_util.h"
 #include "unit/default_ctparam.h"
 #include "unit/test_util.h"
+#include "bdm_imp.h"
 
 #include <fstream>
 
@@ -40,8 +41,10 @@ void CellFactory(TContainer* cells,
 // Test if the dimensions of the diffusion grid are corresponding to the
 // neighbor grid dimensions
 TEST(DiffusionTest, GridDimensions) {
-  auto rm = ResourceManager<>::Get();
-  rm->Clear();
+  BdmSim<> simulation(typeid(*this).name());
+  auto* rm = simulation.GetRm();
+  auto* grid = simulation.GetGrid();
+
   auto cells = rm->Get<Cell>();
 
   std::vector<std::array<double, 3>> positions;
@@ -51,9 +54,8 @@ TEST(DiffusionTest, GridDimensions) {
 
   DiffusionGrid* d_grid = new DiffusionGrid(0, "Kalium", 0.4, 0, 1);
 
-  auto& grid = Grid<>::GetInstance();
-  grid.Initialize();
-  d_grid->Initialize(grid.GetDimensions());
+  grid->Initialize();
+  d_grid->Initialize(grid->GetDimensions());
 
   auto dims = d_grid->GetDimensions();
 
@@ -70,8 +72,10 @@ TEST(DiffusionTest, GridDimensions) {
 // Test if the dimension of the diffusion grid update correctly with the
 // neighbor grid dimensions (we expect the diffusion grid to stay cube-shaped)
 TEST(DiffusionTest, UpdateGrid) {
-  auto rm = ResourceManager<>::Get();
-  rm->Clear();
+  BdmSim<> simulation(typeid(*this).name());
+  auto* rm = simulation.GetRm();
+  auto* grid = simulation.GetGrid();
+
   auto cells = rm->Get<Cell>();
 
   std::vector<std::array<double, 3>> positions;
@@ -81,18 +85,17 @@ TEST(DiffusionTest, UpdateGrid) {
 
   DiffusionGrid* d_grid = new DiffusionGrid(0, "Kalium", 0.4, 0, 6);
 
-  auto& grid = Grid<>::GetInstance();
-  grid.Initialize();
-  d_grid->Initialize(grid.GetDimensions());
+  grid->Initialize();
+  d_grid->Initialize(grid->GetDimensions());
 
   std::vector<std::array<double, 3>> positions_2;
   positions_2.push_back({-30, -10, -10});
   positions_2.push_back({90, 150, 90});
   CellFactory(cells, positions_2);
 
-  grid.UpdateGrid();
+  grid->UpdateGrid();
 
-  d_grid->Update(grid.GetDimensionThresholds());
+  d_grid->Update(grid->GetDimensionThresholds());
 
   auto d_dims = d_grid->GetDimensions();
 
@@ -109,8 +112,10 @@ TEST(DiffusionTest, UpdateGrid) {
 // Test if the diffusion grid does not change if the neighbor grid dimensions
 // do not change
 TEST(DiffusionTest, FalseUpdateGrid) {
-  auto rm = ResourceManager<>::Get();
-  rm->Clear();
+  BdmSim<> simulation(typeid(*this).name());
+  auto* rm = simulation.GetRm();
+  auto* grid = simulation.GetGrid();
+
   auto cells = rm->Get<Cell>();
 
   std::vector<std::array<double, 3>> positions;
@@ -120,10 +125,9 @@ TEST(DiffusionTest, FalseUpdateGrid) {
 
   DiffusionGrid* d_grid = new DiffusionGrid(0, "Kalium", 0.4, 0);
 
-  auto& grid = Grid<>::GetInstance();
-  grid.Initialize();
-  d_grid->Initialize(grid.GetDimensions());
-  d_grid->Update(grid.GetDimensionThresholds());
+  grid->Initialize();
+  d_grid->Initialize(grid->GetDimensions());
+  d_grid->Update(grid->GetDimensionThresholds());
 
   auto dims = d_grid->GetDimensions();
 
@@ -134,7 +138,7 @@ TEST(DiffusionTest, FalseUpdateGrid) {
   EXPECT_EQ(140, dims[3]);
   EXPECT_EQ(140, dims[5]);
 
-  d_grid->Update(grid.GetDimensionThresholds());
+  d_grid->Update(grid->GetDimensionThresholds());
 
   dims = d_grid->GetDimensions();
 
@@ -151,8 +155,9 @@ TEST(DiffusionTest, FalseUpdateGrid) {
 // Create a 5x5x5 diffusion grid, with a substance being
 // added at center box 2,2,2, causing a symmetrical diffusion
 TEST(DiffusionTest, LeakingEdge) {
-  auto rm = ResourceManager<>::Get();
-  rm->Clear();
+  BdmSim<> simulation(typeid(*this).name());
+  auto* rm = simulation.GetRm();
+  auto* grid = simulation.GetGrid();
 
   DiffusionGrid* d_grid = new DiffusionGrid(0, "Kalium", 0.4, 0, 5);
 

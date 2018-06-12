@@ -15,6 +15,7 @@
 #include "unit/displacement_op_test.h"
 #include "gtest/gtest.h"
 #include "unit/default_ctparam.h"
+#include "bdm_imp.h"
 
 namespace bdm {
 namespace displacement_op_test_internal {
@@ -32,8 +33,10 @@ namespace displacement_op_test_internal {
 TEST(DisplacementOpTest, ComputeSoa) { RunTest(); }
 
 TEST(DisplacementOpTest, ComputeSoaNew) {
-  auto rm = ResourceManager<>::Get();
-  rm->Clear();
+  BdmSim<> simulation(typeid(*this).name());
+  auto* rm = simulation.GetRm();
+  auto* grid = simulation.GetGrid();
+
   auto cells = rm->template Get<Cell>();
 
   double space = 20;
@@ -49,9 +52,8 @@ TEST(DisplacementOpTest, ComputeSoaNew) {
     }
   }
 
-  auto& grid = Grid<>::GetInstance();
-  grid.ClearGrid();
-  grid.Initialize();
+  grid->ClearGrid();
+  grid->Initialize();
 
   // execute operation
   DisplacementOp<> op;

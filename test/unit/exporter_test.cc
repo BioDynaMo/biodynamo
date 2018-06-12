@@ -17,6 +17,7 @@
 #include "gtest/gtest.h"
 #include "unit/default_ctparam.h"
 #include "unit/test_util.h"
+#include "bdm_imp.h"
 
 namespace bdm {
 

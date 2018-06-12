@@ -14,6 +14,7 @@
 
 #include "unit/biology_module_op_test.h"
 #include "gtest/gtest.h"
+#include "bdm_imp.h"
 
 namespace bdm {
 namespace biology_module_op_test_internal {

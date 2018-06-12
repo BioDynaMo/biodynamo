@@ -27,8 +27,8 @@ namespace model_initializer_test_internal {
 
 // Tests if pos_0 cubic 3D grid of cells is correctly initialized
 TEST(ModelInitializerTest, Grid3DCube) {
-  auto rm = ResourceManager<>::Get();
-  rm->Clear();
+  BdmSim<> simulation(typeid(*this).name());
+  auto* rm = simulation.GetRm();
 
   ModelInitializer::Grid3D(2, 12, [](const std::array<double, 3>& pos) {
     Cell cell(pos);
@@ -49,8 +49,8 @@ TEST(ModelInitializerTest, Grid3DCube) {
 
 // Tests if pos_0 cuboid 3D grid of cells is correctly initialized
 TEST(ModelInitializerTest, Grid3DCuboid) {
-  auto rm = ResourceManager<>::Get();
-  rm->Clear();
+  BdmSim<> simulation(typeid(*this).name());
+  auto* rm = simulation.GetRm();
 
   std::array<size_t, 3> grid_dimensions = {2, 3, 4};
 
@@ -73,8 +73,8 @@ TEST(ModelInitializerTest, Grid3DCuboid) {
 }
 
 TEST(ModelInitializerTest, CreateCells) {
-  auto rm = ResourceManager<>::Get();
-  rm->Clear();
+  BdmSim<> simulation(typeid(*this).name());
+  auto* rm = simulation.GetRm();
 
   std::vector<std::array<double, 3>> positions;
   positions.push_back({1, 2, 3});
@@ -95,8 +95,8 @@ TEST(ModelInitializerTest, CreateCells) {
 }
 
 TEST(ModelInitializerTest, CreateCellsRandom) {
-  auto rm = ResourceManager<>::Get();
-  rm->Clear();
+  BdmSim<> simulation(typeid(*this).name());
+  auto* rm = simulation.GetRm();
 
   ModelInitializer::CreateCellsRandom(-100, 100, 10,
                                       [](const std::array<double, 3>& pos) {

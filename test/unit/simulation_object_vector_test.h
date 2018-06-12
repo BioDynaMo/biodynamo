@@ -66,11 +66,12 @@ struct CompileTimeParam1 {
 };
 
 inline void RunTest() {
-  // setup resource manager
-  using Rm = ResourceManager<CompileTimeParam1<Soa>>;
-  auto rm = Rm::Get();
+  std::string sim_name("simulation_object_vector_test_RunInitializerTest");
+  using BdmSim = BdmSim<CompileTimeParam1<Soa>>;
+  BdmSim simulation(sim_name);
+  auto* rm = simulation.GetRm();
 
-  ASSERT_EQ(2u, Rm::NumberOfTypes());
+  ASSERT_EQ(2u, rm->NumberOfTypes());
 
   auto as = rm->Get<A>();
   as->push_back(A(3));
@@ -81,7 +82,7 @@ inline void RunTest() {
   bs->push_back(B(8));
   bs->push_back(B(9));
 
-  SimulationObjectVector<int, Rm> vector;
+  SimulationObjectVector<int, BdmSim> vector;
   EXPECT_EQ(0, vector[SoHandle(0, 0)]);
   EXPECT_EQ(0, vector[SoHandle(0, 1)]);
   EXPECT_EQ(0, vector[SoHandle(0, 2)]);
@@ -110,11 +111,12 @@ struct DefaultCompileTimeParam1 {
 // Tests if SimulationObjectVector::Initialize does indeed initialize the
 // object correctly (i.e. set the data_ member to the default values)
 inline void RunInitializeTest() {
-  // setup resource manager
-  using Rm = ResourceManager<CompileTimeParam1<Soa>>;
-  auto rm = Rm::Get();
+  std::string sim_name("simulation_object_vector_test_RunInitializerTest");
+  using BdmSim = BdmSim<CompileTimeParam1<Soa>>;
+  BdmSim simulation(sim_name);
+  auto* rm = simulation.GetRm();
 
-  ASSERT_EQ(2u, Rm::NumberOfTypes());
+  ASSERT_EQ(2u, rm->NumberOfTypes());
 
   // Add some simulation objects, which shall be of type 0
   auto as = rm->Get<A>();
@@ -132,7 +134,7 @@ inline void RunInitializeTest() {
   auto max32 = std::numeric_limits<uint32_t>::max();
 
   // Check if the initial state is obtained after the push backs
-  SimulationObjectVector<SoHandle, Rm> vector;
+  SimulationObjectVector<SoHandle, BdmSim> vector;
   EXPECT_EQ(SoHandle(max16, max32), vector[SoHandle(0, 0)]);
   EXPECT_EQ(SoHandle(max16, max32), vector[SoHandle(0, 1)]);
   EXPECT_EQ(SoHandle(max16, max32), vector[SoHandle(0, 2)]);

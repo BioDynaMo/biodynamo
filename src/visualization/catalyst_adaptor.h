@@ -25,6 +25,8 @@
 #include "log.h"
 
 #include "param.h"
+#include "resource_manager.h"
+#include "shape.h"
 #include "bdm.h"
 
 // check for ROOTCLING was necessary, due to ambigous reference to namespace

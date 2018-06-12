@@ -14,6 +14,7 @@
 
 #include "gtest/gtest.h"
 
+#include "bdm_imp.h"
 #include "cell.h"
 #include "compile_time_param.h"
 
@@ -27,8 +28,9 @@ struct CompileTimeParam : public DefaultCompileTimeParam<TBackend> {
 namespace simulation_object_util_test_aos_internal {
 
 TEST(SimulationObjectUtilAosTest, RemoveFromSimulation) {
-  auto rm = ResourceManager<>::Get();
-  rm->Clear();
+  BdmSim<> simulation(typeid(*this).name());
+  auto* rm = simulation.GetRm();
+
   auto* cells = rm->Get<Cell>();
 
   cells->push_back(Cell());
@@ -41,15 +43,17 @@ TEST(SimulationObjectUtilAosTest, RemoveFromSimulation) {
 }
 
 TEST(SimulationObjectUtilAosTest, GetSoPtr) {
-  Rm()->Clear();
+  BdmSim<> simulation(typeid(*this).name());
+  auto* rm = simulation.GetRm();
+
   for (uint64_t i = 0; i < 10; i++) {
-    Rm()->New<Cell>(1);
+    rm->New<Cell>(1);
   }
 
-  Rm()->Get<Cell>()->Commit();
-  EXPECT_EQ(10u, Rm()->GetNumSimObjects());
+  rm->Get<Cell>()->Commit();
+  EXPECT_EQ(10u, rm->GetNumSimObjects());
 
-  auto cells = Rm()->Get<Cell>();
+  auto cells = rm->Get<Cell>();
   for (uint64_t i = 0; i < 10; i++) {
     EXPECT_EQ(i, (*cells)[i].GetSoPtr().GetElementIdx());
   }

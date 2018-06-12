@@ -65,8 +65,8 @@ TEST(SimulationBackupDeathTest, BackupNoBackupFileSpecified) {
 
 TEST(SimulationBackupTest, Backup) {
   remove(ROOTFILE);
-  auto rm = ResourceManager<>::Get();
-  rm->Clear();
+  BdmSim<> simulation(typeid(*this).name());
+  auto* rm = simulation.GetRm();
 
   auto cells = rm->template Get<Cell>();
   cells->push_back(Cell());
@@ -119,8 +119,8 @@ TEST(SimulationBackupDeathTest, RestoreFileDoesNotExist) {
 
 TEST(SimulationBackupTest, BackupAndRestore) {
   remove(ROOTFILE);
-  auto rm = ResourceManager<>::Get();
-  rm->Clear();
+  BdmSim<> simulation(typeid(*this).name());
+  auto* rm = simulation.GetRm();
 
   auto cells = rm->Get<Cell>();
   cells->push_back(Cell());
@@ -139,7 +139,7 @@ TEST(SimulationBackupTest, BackupAndRestore) {
 
   //   ResourceManager
   restore.Restore();
-  EXPECT_EQ(1u, ResourceManager<>::Get()->Get<Cell>()->size());
+  EXPECT_EQ(1u, rm->Get<Cell>()->size());
 
   remove(ROOTFILE);
 }

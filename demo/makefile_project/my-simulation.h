@@ -29,7 +29,7 @@ inline int Simulate(int argc, const char** argv) {
   // Define initial model - in this example: single cell at origin
   Cell cell({0, 0, 0});
   cell.SetDiameter(30);
-  ResourceManager<>::Get()->push_back(cell);
+  simulation.GetRm()->push_back(cell);
 
   // Run simulation for one timestep
   simulation.GetScheduler()->Simulate(1);

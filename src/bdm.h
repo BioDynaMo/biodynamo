@@ -1,6 +1,8 @@
 #ifndef FOO
 #define FOO
 
+#include <string>
+
 namespace bdm {
 
 // forward declarations

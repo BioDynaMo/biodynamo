@@ -17,6 +17,7 @@
 #include "gtest/gtest.h"
 #include "unit/default_ctparam.h"
 #include "unit/test_util.h"
+#include "bdm_imp.h"
 
 namespace bdm {
 
@@ -36,13 +37,14 @@ void CellFactory(TContainer* cells, size_t cells_per_dim) {
 }
 
 TEST(GridTest, SetupGrid) {
-  auto rm = ResourceManager<>::Get();
-  rm->Clear();
+  BdmSim<> simulation(typeid(*this).name());
+  auto* rm = simulation.GetRm();
+  auto* grid = simulation.GetGrid();
+
   auto cells = rm->Get<Cell>();
   CellFactory(cells, 4);
 
-  auto& grid = Grid<>::GetInstance();
-  grid.Initialize();
+  grid->Initialize();
 
   std::vector<std::vector<SoHandle>> neighbors(cells->size());
 
@@ -56,7 +58,7 @@ TEST(GridTest, SetupGrid) {
       }
     };
 
-    grid.ForEachNeighborWithinRadius(fill_neighbor_list, cell, SoHandle(0, i),
+    grid->ForEachNeighborWithinRadius(fill_neighbor_list, cell, SoHandle(0, i),
                                      1201);
   }
 
@@ -92,10 +94,11 @@ TEST(GridTest, SetupGrid) {
 
 template <typename TContainer>
 void RunUpdateGridTest(TContainer* cells) {
-  auto& grid = Grid<>::GetInstance();
+  BdmSim<> simulation("GridTest_RunUpdateGridTest");
+  auto* grid = simulation.GetGrid();
 
   // Update the grid
-  grid.UpdateGrid();
+  grid->UpdateGrid();
 
   std::vector<std::vector<SoHandle>> neighbors(cells->size());
 
@@ -109,7 +112,7 @@ void RunUpdateGridTest(TContainer* cells) {
       }
     };
 
-    grid.ForEachNeighborWithinRadius(fill_neighbor_list, cell, SoHandle(0, i),
+    grid->ForEachNeighborWithinRadius(fill_neighbor_list, cell, SoHandle(0, i),
                                      1201);
   }
 
@@ -146,13 +149,14 @@ void RunUpdateGridTest(TContainer* cells) {
 }
 
 TEST(GridTest, UpdateGrid) {
-  auto rm = ResourceManager<>::Get();
-  rm->Clear();
+  BdmSim<> simulation(typeid(*this).name());
+  auto* rm = simulation.GetRm();
+  auto* grid = simulation.GetGrid();
+
   auto cells = rm->Get<Cell>();
   CellFactory(cells, 4);
 
-  auto& grid = Grid<>::GetInstance();
-  grid.Initialize();
+  grid->Initialize();
 
   // Remove cells 1 and 42 (they are swapped with the last two cells)
   cells->DelayedRemove(1);
@@ -165,16 +169,17 @@ TEST(GridTest, UpdateGrid) {
 }
 
 TEST(GridTest, NoRaceConditionDuringUpdate) {
-  auto rm = ResourceManager<>::Get();
-  rm->Clear();
+  BdmSim<> simulation(typeid(*this).name());
+  auto* rm = simulation.GetRm();
+  auto* grid = simulation.GetGrid();
+
   auto cells = rm->Get<Cell>();
   CellFactory(cells, 4);
 
   // make sure that there are multiple cells per box
   (*cells)[0].SetDiameter(60);
 
-  auto& grid = Grid<>::GetInstance();
-  grid.Initialize();
+  grid->Initialize();
 
   // Remove cells 1 and 42 (they are swapped with the last two cells)
   cells->DelayedRemove(1);
@@ -189,13 +194,14 @@ TEST(GridTest, NoRaceConditionDuringUpdate) {
 }
 
 TEST(GridTest, GetBoxIndex) {
-  auto rm = ResourceManager<>::Get();
-  rm->Clear();
+  BdmSim<> simulation(typeid(*this).name());
+  auto* rm = simulation.GetRm();
+  auto* grid = simulation.GetGrid();
+
   auto cells = rm->Get<Cell>();
   CellFactory(cells, 3);
 
-  auto& grid = Grid<>::GetInstance();
-  grid.Initialize();
+  grid->Initialize();
 
   std::array<double, 3> position_0 = {{0, 0, 0}};
   std::array<double, 3> position_1 = {{1e-15, 1e-15, 1e-15}};
@@ -205,9 +211,9 @@ TEST(GridTest, GetBoxIndex) {
   size_t expected_idx_1 = 21;
   size_t expected_idx_2 = 20;
 
-  size_t idx_0 = grid.GetBoxIndex(position_0);
-  size_t idx_1 = grid.GetBoxIndex(position_1);
-  size_t idx_2 = grid.GetBoxIndex(position_2);
+  size_t idx_0 = grid->GetBoxIndex(position_0);
+  size_t idx_1 = grid->GetBoxIndex(position_1);
+  size_t idx_2 = grid->GetBoxIndex(position_2);
 
   EXPECT_EQ(expected_idx_0, idx_0);
   EXPECT_EQ(expected_idx_1, idx_1);
@@ -215,51 +221,54 @@ TEST(GridTest, GetBoxIndex) {
 }
 
 TEST(GridTest, GridDimensions) {
-  auto rm = ResourceManager<>::Get();
-  rm->Clear();
+  BdmSim<> simulation(typeid(*this).name());
+  auto* rm = simulation.GetRm();
+  auto* grid = simulation.GetGrid();
+
   auto cells = rm->Get<Cell>();
   CellFactory(cells, 3);
 
-  auto& grid = Grid<>::GetInstance();
-  grid.Initialize();
+  grid->Initialize();
 
   std::array<int32_t, 6> expected_dim_0 = {{-30, 90, -30, 90, -30, 90}};
-  auto& dim_0 = grid.GetDimensions();
+  auto& dim_0 = grid->GetDimensions();
 
   EXPECT_EQ(expected_dim_0, dim_0);
 
   ((*cells)[0]).SetPosition({{100, 0, 0}});
-  grid.UpdateGrid();
+  grid->UpdateGrid();
   std::array<int32_t, 6> expected_dim_1 = {{-30, 150, -30, 90, -30, 90}};
-  auto& dim_1 = grid.GetDimensions();
+  auto& dim_1 = grid->GetDimensions();
 
   EXPECT_EQ(expected_dim_1, dim_1);
 }
 
 TEST(GridTest, GetBoxCoordinates) {
-  auto rm = ResourceManager<>::Get();
-  rm->Clear();
+  BdmSim<> simulation(typeid(*this).name());
+  auto* rm = simulation.GetRm();
+  auto* grid = simulation.GetGrid();
+
   auto cells = rm->Get<Cell>();
   CellFactory(cells, 3);
 
   // expecting a 4 * 4 * 4 grid
-  auto& grid = Grid<>::GetInstance();
-  grid.Initialize();
+  grid->Initialize();
 
-  EXPECT_ARR_EQ({3, 0, 0}, grid.GetBoxCoordinates(3));
-  EXPECT_ARR_EQ({1, 2, 0}, grid.GetBoxCoordinates(9));
-  EXPECT_ARR_EQ({1, 2, 3}, grid.GetBoxCoordinates(57));
+  EXPECT_ARR_EQ({3, 0, 0}, grid->GetBoxCoordinates(3));
+  EXPECT_ARR_EQ({1, 2, 0}, grid->GetBoxCoordinates(9));
+  EXPECT_ARR_EQ({1, 2, 3}, grid->GetBoxCoordinates(57));
 }
 
 void RunNoRaceConditionForEachPairTest() {
-  auto rm = ResourceManager<>::Get();
-  rm->Clear();
+  BdmSim<> simulation("GridTest_RunNoRaceConditionForEachPairTest");
+  auto* rm = simulation.GetRm();
+  auto* grid = simulation.GetGrid();
+
   auto cells = rm->Get<Cell>();
   CellFactory(cells, 3);
 
   // expecting a 4 * 4 * 4 grid
-  auto& grid = Grid<>::GetInstance();
-  grid.Initialize();
+  grid->Initialize();
 
   std::vector<int> result(cells->size());
 
@@ -269,7 +278,7 @@ void RunNoRaceConditionForEachPairTest() {
   };
 
   // space between cells is 20 -> 20^2 + 1 = 401
-  grid.ForEachNeighborPairWithinRadius(lambda, 401);
+  grid->ForEachNeighborPairWithinRadius(lambda, 401);
 
   EXPECT_EQ(3, result[0]);
   EXPECT_EQ(4, result[1]);

@@ -60,11 +60,12 @@ struct Chemotaxis : public BaseBiologyModule {
   // Daughter cells inherit this biology module
   Chemotaxis() : BaseBiologyModule(gAllBmEvents) {}
 
-  template <typename T>
+  template <typename T, typename TBdmSim = BdmSim<>>
   void Run(T* cell) {
     if (!init_) {
-      dg_0_ = GetDiffusionGrid(kSubstance_0);
-      dg_1_ = GetDiffusionGrid(kSubstance_1);
+      auto* rm = TBdmSim::GetBdm()->GetRm();
+      dg_0_ = rm->GetDiffusionGrid(kSubstance_0);
+      dg_1_ = rm->GetDiffusionGrid(kSubstance_1);
       init_ = true;
     }
 
@@ -96,11 +97,12 @@ struct SubstanceSecretion : public BaseBiologyModule {
   // Daughter cells inherit this biology module
   SubstanceSecretion() : BaseBiologyModule(gAllBmEvents) {}
 
-  template <typename T>
+  template <typename T, typename TBdmSim = BdmSim<>>
   void Run(T* cell) {
     if (!init_) {
-      dg_0_ = GetDiffusionGrid(kSubstance_0);
-      dg_1_ = GetDiffusionGrid(kSubstance_1);
+      auto* rm = TBdmSim::GetBdm()->GetRm();
+      dg_0_ = rm->GetDiffusionGrid(kSubstance_0);
+      dg_1_ = rm->GetDiffusionGrid(kSubstance_1);
       init_ = true;
     }
     auto& secretion_position = cell->GetPosition();
@@ -130,9 +132,9 @@ struct CompileTimeParam : public DefaultCompileTimeParam<Backend> {
 // Returns 0 if the cell locations within a subvolume of the total system,
 // comprising approximately target_n cells, are arranged as clusters, and 1
 // otherwise.
-template <typename TResourceManager = ResourceManager<>>
+template <typename TBdmSim = BdmSim<>>
 static bool GetCriterion(double spatial_range, int target_n) {
-  auto rm = TResourceManager::Get();
+  auto* rm = TBdmSim::GetBdm()->GetRm();
   auto my_cells = rm->template Get<MyCell>();
   int n = my_cells->size();
 

@@ -14,6 +14,7 @@
 
 #include "fixed_size_vector.h"
 #include "gtest/gtest.h"
+#include "bdm_imp.h"
 
 namespace bdm {
 

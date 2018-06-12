@@ -17,6 +17,7 @@
 #include "gtest/gtest.h"
 #include "unit/separate_binary/cell_test.h"
 #include "unit/test_util.h"
+#include "bdm_imp.h"
 
 namespace bdm {
 namespace cell_test_internal {

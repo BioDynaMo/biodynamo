@@ -20,13 +20,16 @@
 #include "gtest/gtest.h"
 #include "unit/default_ctparam.h"
 #include "unit/test_util.h"
+#include "bdm_imp.h"
 
 namespace bdm {
 namespace displacement_op_gpu_test_internal {
 
 void RunTest() {
-  auto rm = ResourceManager<>::Get();
-  rm->Clear();
+  BdmSim<> simulation("displacement_op_gpu_test_RunTest");
+  auto* rm = simulation.GetRm();
+  auto* grid = simulation.GetGrid();
+
   auto cells = rm->template Get<Cell>();
 
   // Cell 1
@@ -46,8 +49,7 @@ void RunTest() {
   cell.SetPosition({0, 5, 0});
   cells->push_back(cell);
 
-  auto& grid = Grid<>::GetInstance();
-  grid.Initialize();
+  grid->Initialize();
 
   // execute operation
   DisplacementOp<> op;
@@ -107,8 +109,10 @@ TEST(DisplacementOpGpuTest, ComputeSoaOpenCL) {
 #endif
 
 void RunTest2() {
-  auto rm = ResourceManager<>::Get();
-  rm->Clear();
+  BdmSim<> simulation("DisplacementOpGpuTest_RunTest2");
+  auto* rm = simulation.GetRm();
+  auto* grid = simulation.GetGrid();
+
   auto cells = rm->template Get<Cell>();
 
   double space = 20;
@@ -124,9 +128,8 @@ void RunTest2() {
     }
   }
 
-  auto& grid = Grid<>::GetInstance();
-  grid.ClearGrid();
-  grid.Initialize();
+  grid->ClearGrid();
+  grid->Initialize();
 
   // execute operation
   DisplacementOp<> op;

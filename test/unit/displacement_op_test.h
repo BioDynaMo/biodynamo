@@ -23,10 +23,11 @@
 namespace bdm {
 namespace displacement_op_test_internal {
 
-template <typename TRm = ResourceManager<>>
+template <typename TBdmSim = BdmSim<>>
 void RunTest() {
-  auto rm = TRm::Get();
-  rm->Clear();
+  TBdmSim simulation("displacement_op_test_RunTest");
+  auto* rm = simulation.GetRm();
+
   auto* cells = rm->template Get<Cell>();
 
   // Cell 1
@@ -46,8 +47,7 @@ void RunTest() {
 
   rm->template Get<Cell>()->Commit();
 
-  auto& grid = Grid<>::GetInstance();
-  grid.Initialize();
+  simulation.GetGrid()->Initialize();
 
   // execute operation
   DisplacementOp<> op;

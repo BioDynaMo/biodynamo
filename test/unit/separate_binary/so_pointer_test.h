@@ -17,6 +17,7 @@
 
 #include <gtest/gtest.h>
 
+#include "bdm_imp.h"
 #include "compile_time_param.h"
 #include "simulation_backup.h"
 #include "simulation_object.h"
@@ -57,6 +58,19 @@ BDM_SIM_OBJECT(SoPointerTestClass, bdm::SimulationObject) {
 
   MostDerivedSoPtr GetMySoPtr() const { return my_so_ptr_[kIdx]; }
   void SetMySoPtr(MostDerivedSoPtr so_ptr) { my_so_ptr_[kIdx] = so_ptr; }
+
+  // FIXME
+  std::array<double, 3> GetPosition() const { return {0, 0, 0}; };
+  void SetPosition(const std::array<double, 3>&) {}
+  void ApplyDisplacement(const std::array<double, 3>&) {}
+  template <typename TGrid>
+  std::array<double, 3> CalculateDisplacement(TGrid * grid,
+                                              double squared_radius) { return {0, 0, 0}; };
+  void RunBiologyModules() {}
+  void SetBoxIdx(uint64_t) {}
+  double GetDiameter() {}
+  static std::set<std::string> GetRequiredVisDataMembers() { return {"diameter_", "position_"}; };
+  static constexpr Shape GetShape() { return Shape::kSphere; }
 
   vec<MostDerivedSoPtr> my_so_ptr_ = {{}};
 
@@ -107,15 +121,15 @@ inline void IOTestSoPointerAnyContainerSoa() {
 }
 
 inline void IOTestSoPointerRmContainerSoa() {
-  Rm()->Clear();
-  auto&& so1 = Rm()->New<SoPointerTestClass>(123);
-  auto&& so2 = Rm()->New<SoPointerTestClass>(456);
+  BdmSim<> simulation("placeholder");
+  auto* rm = simulation.GetRm();
+
+  auto&& so1 = rm->New<SoPointerTestClass>(123);
+  auto&& so2 = rm->New<SoPointerTestClass>(456);
 
   auto soptr = so1.GetSoPtr();
   EXPECT_EQ(0u, soptr.GetElementIdx());
   so2.SetMySoPtr(soptr);
-
-  auto* rm_before = Rm();
 
   SimulationBackup backup(IOTest::kRootFile, "");
   backup.Backup(1);
@@ -123,9 +137,9 @@ inline void IOTestSoPointerRmContainerSoa() {
   SimulationBackup restore("", IOTest::kRootFile);
   restore.Restore();
 
-  EXPECT_TRUE(rm_before != Rm());
+  EXPECT_TRUE(rm != simulation.GetRm());
 
-  auto* restored_sim_objects = Rm()->Get<SoPointerTestClass>();
+  auto* restored_sim_objects = rm->Get<SoPointerTestClass>();
   EXPECT_EQ(123u, (*restored_sim_objects)[1].GetMySoPtr()->GetId());
   // change id of first element
   (*restored_sim_objects)[0].SetId(987);

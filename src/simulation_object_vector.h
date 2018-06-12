@@ -16,6 +16,7 @@
 #define SIMULATION_OBJECT_VECTOR_H_
 
 #include <vector>
+#include "resource_manager.h"  // SoHandle
 #include "bdm.h"
 
 namespace bdm {

@@ -13,6 +13,7 @@
 // -----------------------------------------------------------------------------
 
 #include "unit/io_util_test.h"
+#include "bdm_imp.h"
 
 namespace bdm {
 

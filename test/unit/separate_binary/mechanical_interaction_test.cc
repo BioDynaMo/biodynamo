@@ -20,6 +20,7 @@
 #include "neuroscience/neurite_element.h"
 #include "neuroscience/neuron_soma.h"
 #include "unit/test_util.h"
+#include "bdm_imp.h"
 
 namespace bdm {
 
@@ -40,10 +41,10 @@ namespace experimental {
 namespace neuroscience {
 
 TEST(MechanicalInteraction, StraightxCylinderGrowth) {
-  Param::Reset();
-  Rm()->Clear();
+  BdmSim<> simulation(typeid(*this).name());
+  auto* rm = simulation.GetRm();
 
-  auto neuron = Rm()->New<NeuronSoma>();
+  auto neuron = rm->New<NeuronSoma>();
   neuron.SetPosition({0, 0, 0});
   neuron.SetMass(1);
   neuron.SetDiameter(10);
@@ -73,10 +74,10 @@ TEST(MechanicalInteraction, StraightxCylinderGrowth) {
 }
 
 TEST(MechanicalInteraction, StraightyCylinderGrowth) {
-  Param::Reset();
-  Rm()->Clear();
+  BdmSim<> simulation(typeid(*this).name());
+  auto* rm = simulation.GetRm();
 
-  auto neuron = Rm()->New<NeuronSoma>();
+  auto neuron = rm->New<NeuronSoma>();
   neuron.SetPosition({0, 0, 0});
   neuron.SetMass(1);
   neuron.SetDiameter(10);
@@ -106,10 +107,10 @@ TEST(MechanicalInteraction, StraightyCylinderGrowth) {
 }
 
 TEST(MechanicalInteraction, StraightzCylinderGrowth) {
-  Param::Reset();
-  Rm()->Clear();
+  BdmSim<> simulation(typeid(*this).name());
+  auto* rm = simulation.GetRm();
 
-  auto neuron = Rm()->New<NeuronSoma>();
+  auto neuron = rm->New<NeuronSoma>();
   neuron.SetPosition({0, 0, 0});
   neuron.SetMass(1);
   neuron.SetDiameter(10);
@@ -139,10 +140,10 @@ TEST(MechanicalInteraction, StraightzCylinderGrowth) {
 }
 
 TEST(MechanicalInteraction, DiagonalxyCylinderGrowth) {
-  Param::Reset();
-  Rm()->Clear();
+  BdmSim<> simulation(typeid(*this).name());
+  auto* rm = simulation.GetRm();
 
-  auto neuron = Rm()->New<NeuronSoma>();
+  auto neuron = rm->New<NeuronSoma>();
   neuron.SetPosition({0, 0, 0});
   neuron.SetMass(1);
   neuron.SetDiameter(10);
@@ -170,12 +171,12 @@ TEST(MechanicalInteraction, DiagonalxyCylinderGrowth) {
 }
 
 TEST(MechanicalInteraction, DiagonalxyzCylinderGrowth) {
-  Param::Reset();
-  Rm()->Clear();
+  BdmSim<> simulation(typeid(*this).name());
+  auto* rm = simulation.GetRm();
 
   // Param::live_visualization_ = true;
 
-  auto neuron = Rm()->New<NeuronSoma>();
+  auto neuron = rm->New<NeuronSoma>();
   neuron.SetPosition({0, 0, 0});
   neuron.SetMass(1);
   neuron.SetDiameter(10);
@@ -207,12 +208,12 @@ TEST(MechanicalInteraction, DiagonalxyzCylinderGrowth) {
 }
 
 TEST(MechanicalInteraction, DiagonalSpecialDirectionCylinderGrowth) {
-  Param::Reset();
-  Rm()->Clear();
+  BdmSim<> simulation(typeid(*this).name());
+  auto* rm = simulation.GetRm();
 
   // Param::live_visualization_ = true;
 
-  auto neuron = Rm()->New<NeuronSoma>();
+  auto neuron = rm->New<NeuronSoma>();
   neuron.SetPosition({0, 0, 0});
   neuron.SetMass(1);
   neuron.SetDiameter(10);
@@ -244,15 +245,15 @@ TEST(MechanicalInteraction, DiagonalSpecialDirectionCylinderGrowth) {
 }
 
 TEST(MechanicalInteraction, StraightCylinderGrowthObstacle) {
-  Param::Reset();
-  Rm()->Clear();
+  BdmSim<> simulation(typeid(*this).name());
+  auto* rm = simulation.GetRm();
 
-  auto neuron = Rm()->New<NeuronSoma>();
+  auto neuron = rm->New<NeuronSoma>();
   neuron.SetPosition({0, 0, 0});
   neuron.SetMass(1);
   neuron.SetDiameter(10);
 
-  auto neuron2 = Rm()->New<NeuronSoma>();
+  auto neuron2 = rm->New<NeuronSoma>();
   neuron2.SetPosition({0, 0, 30});
   neuron2.SetMass(1);
   neuron2.SetDiameter(10);
@@ -283,15 +284,15 @@ TEST(MechanicalInteraction, StraightCylinderGrowthObstacle) {
 
 // TODO(jean) Fix test
 TEST(DISABLED_MechanicalInteraction, NotStraightCylinderGrowthObstacle) {
-  Param::Reset();
-  Rm()->Clear();
+  BdmSim<> simulation(typeid(*this).name());
+  auto* rm = simulation.GetRm();
 
-  auto neuron = Rm()->New<NeuronSoma>();
+  auto neuron = rm->New<NeuronSoma>();
   neuron.SetPosition({0, 0, 0});
   neuron.SetMass(1);
   neuron.SetDiameter(10);
 
-  auto neuron2 = Rm()->New<NeuronSoma>();
+  auto neuron2 = rm->New<NeuronSoma>();
   neuron2.SetPosition({0, 0, 30});
   neuron2.SetMass(1);
   neuron2.SetDiameter(10);
@@ -319,10 +320,10 @@ TEST(DISABLED_MechanicalInteraction, NotStraightCylinderGrowthObstacle) {
 }
 
 TEST(MechanicalInteraction, DoubleStraightCylinderGrowth) {
-  Param::Reset();
-  Rm()->Clear();
+  BdmSim<> simulation(typeid(*this).name());
+  auto* rm = simulation.GetRm();
 
-  auto neuron = Rm()->New<NeuronSoma>();
+  auto neuron = rm->New<NeuronSoma>();
   neuron.SetPosition({0, 0, 0});
   neuron.SetMass(1);
   neuron.SetDiameter(10);
@@ -367,13 +368,13 @@ TEST(MechanicalInteraction, DoubleStraightCylinderGrowth) {
 }
 
 TEST(MechanicalInteraction, BifurcationCylinderGrowth) {
-  Param::Reset();
-  Rm()->Clear();
+  BdmSim<> simulation(typeid(*this).name());
+  auto* rm = simulation.GetRm();
 
   gErrorIgnoreLevel = kWarning;
   // Param::export_visualization_ = true;
 
-  auto neuron = Rm()->New<NeuronSoma>();
+  auto neuron = rm->New<NeuronSoma>();
   neuron.SetPosition({0, 0, 0});
   neuron.SetMass(1);
   neuron.SetDiameter(10);
@@ -426,12 +427,12 @@ TEST(MechanicalInteraction, BifurcationCylinderGrowth) {
 }
 
 TEST(MechanicalInteraction, BranchCylinderGrowth) {
-  Param::Reset();
-  Rm()->Clear();
+  BdmSim<> simulation(typeid(*this).name());
+  auto* rm = simulation.GetRm();
 
   // Param::export_visualization_ = true;
 
-  auto neuron = Rm()->New<NeuronSoma>();
+  auto neuron = rm->New<NeuronSoma>();
   neuron.SetPosition({0, 0, 0});
   neuron.SetMass(1);
   neuron.SetDiameter(10);

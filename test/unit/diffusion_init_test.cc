@@ -20,6 +20,7 @@
 #include "substance_initializers.h"
 #include "unit/default_ctparam.h"
 #include "unit/test_util.h"
+#include "bdm_imp.h"
 
 #include "Math/DistFunc.h"
 
@@ -28,13 +29,12 @@ namespace bdm {
 enum Substances { kSubstance };
 
 TEST(DiffusionInitTest, GaussianBand) {
-  Param::Reset();
-  ResourceManager<>::Get()->Clear();
+  BdmSim<> simulation(typeid(*this).name());
+  auto* rm = simulation.GetRm();
 
   Param::bound_space_ = true;
   Param::min_bound_ = 0;
   Param::max_bound_ = 250;
-  Rm()->Clear();
 
   // Create one cell at a random position
   auto construct = [](const std::array<double, 3>& position) {
@@ -52,12 +52,11 @@ TEST(DiffusionInitTest, GaussianBand) {
   ModelInitializer::InitializeSubstance(kSubstance, "Substance",
                                         GaussianBand(125, 50, Axis::kXAxis));
 
-  auto& grid_ = Grid<>::GetInstance();
-  grid_.Initialize();
+  simulation.GetGrid()->Initialize();
 
   int lbound = Param::min_bound_;
   int rbound = Param::max_bound_;
-  auto& dgrid = ResourceManager<>::Get()->GetDiffusionGrids()[0];
+  auto& dgrid = rm->GetDiffusionGrids()[0];
 
   // Create data structures, whose size depend on the grid dimensions
   dgrid->Initialize({lbound, rbound, lbound, rbound, lbound, rbound});

@@ -72,17 +72,18 @@ class TestSchedulerBackup : public Scheduler<> {
 };
 
 inline void RunRestoreTest() {
-  ResourceManager<>::Get()->Clear();
+  BdmSim<> simulation("SchedulerTest_RunRestoreTest");
+  auto* rm = simulation.GetRm();
   remove(ROOTFILE);
 
   // create backup that will be restored later on
   Cell cell;
   cell.SetDiameter(10);  // important for grid to determine box size
-  ResourceManager<>::Get()->Get<Cell>()->push_back(cell);
+  rm->Get<Cell>()->push_back(cell);
   SimulationBackup backup(ROOTFILE, "");
   backup.Backup(149);
-  ResourceManager<>::Get()->Clear();
-  EXPECT_EQ(0u, ResourceManager<>::Get()->Get<Cell>()->size());
+  rm->Clear();
+  EXPECT_EQ(0u, rm->Get<Cell>()->size());
 
   // start restore validation
   auto scheduler = TestSchedulerRestore::Create(ROOTFILE);
@@ -90,32 +91,33 @@ inline void RunRestoreTest() {
   // should be ignored
   scheduler.Simulate(100);
   EXPECT_EQ(0u, scheduler.execute_calls);
-  EXPECT_EQ(0u, ResourceManager<>::Get()->Get<Cell>()->size());
+  EXPECT_EQ(0u, rm->Get<Cell>()->size());
 
   // Restore should happen within this call
   scheduler.Simulate(100);
   //   only 51 steps should be simulated
   EXPECT_EQ(51u, scheduler.execute_calls);
-  EXPECT_EQ(1u, ResourceManager<>::Get()->Get<Cell>()->size());
+  EXPECT_EQ(1u, rm->Get<Cell>()->size());
 
   // add element to see if if restore happens again
-  ResourceManager<>::Get()->Get<Cell>()->push_back(Cell());
+  rm->Get<Cell>()->push_back(Cell());
 
   // normal simulation - no restore
   scheduler.Simulate(100);
   EXPECT_EQ(151u, scheduler.execute_calls);
-  EXPECT_EQ(2u, ResourceManager<>::Get()->Get<Cell>()->size());
+  EXPECT_EQ(2u, rm->Get<Cell>()->size());
 
   remove(ROOTFILE);
 }
 
 inline void RunBackupTest() {
-  ResourceManager<>::Get()->Clear();
+  BdmSim<> simulation("SchedulerTest_RunBackupTest");
+  auto* rm = simulation.GetRm();
   remove(ROOTFILE);
 
   Cell cell;
   cell.SetDiameter(10);  // important for grid to determine box size
-  ResourceManager<>::Get()->Get<Cell>()->push_back(cell);
+  rm->Get<Cell>()->push_back(cell);
 
   auto scheduler = TestSchedulerBackup::Create(ROOTFILE);
   Param::backup_interval_ = 1;

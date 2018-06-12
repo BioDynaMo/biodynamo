@@ -16,6 +16,7 @@
 #include <gtest/gtest.h>
 #include "io_util.h"
 #include "unit/test_util.h"
+#include "bdm_imp.h"
 
 // TODO(lukas) move file to unit/visualization
 

@@ -30,6 +30,7 @@
     <!-- genreflex generates wrong code:
          SimulationObjectVector<ResourceManager...> -->
     <class pattern="bdm::SimulationObjectVector*" />
+    <class pattern="*::BdmSim_t" />
     <class name="bdm::resource_manager_test_internal::AExt<bdm::CompileTimeParam<bdm::Scalar>, bdm::resource_manager_test_internal::Capsule<AExt>, bdm::SimulationObject_TCTParam_TDerived>::Base" />
     <class name="bdm::resource_manager_test_internal::AExt<bdm::CompileTimeParam<bdm::Scalar>, bdm::resource_manager_test_internal::Capsule<AExt>, bdm::SimulationObject_TCTParam_TDerived>::Backend" />
     <class name="bdm::resource_manager_test_internal::AExt<bdm::CompileTimeParam<bdm::Scalar>, bdm::resource_manager_test_internal::Capsule<AExt>, bdm::SimulationObject_TCTParam_TDerived>::SimBackend" />
