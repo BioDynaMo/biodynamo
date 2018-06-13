@@ -32,7 +32,7 @@ namespace bdm {
 class SimulationBackup {
  public:
   // object names for root file
-  static const std::string kResouceManagerName;
+  static const std::string kBdmSimName;
   static const std::string kSimulationStepName;
   static const std::string kRuntimeVariableName;
 
@@ -63,8 +63,8 @@ class SimulationBackup {
     // Backup
     {
       TFileRaii f(tmp_file.str(), "UPDATE");
-      auto* rm = TBdmSim::GetBdm()->GetRm();
-      f.Get()->WriteObject(rm, kResouceManagerName.c_str());
+      auto* simulation = TBdmSim::GetBdm();
+      f.Get()->WriteObject(simulation, kBdmSimName.c_str());
       IntegralTypeWrapper<size_t> wrapper(completed_simulation_steps);
       f.Get()->WriteObject(&wrapper, kSimulationStepName.c_str());
       RuntimeVariables rv;
@@ -94,12 +94,9 @@ class SimulationBackup {
       Log::Warning("SimulationBackup",
                    "Restoring simulation executed on a different system!");
     }
-    // FIXME
-    // TResourceManager* restored_rm = nullptr;
-    // file.Get()->GetObject(kResouceManagerName.c_str(), restored_rm);
-    // TResourceManager::instance_ =
-    //     std::unique_ptr<TResourceManager>(restored_rm);
-    // TODO(lukas) random number generator, statics (e.g. Param)
+    TBdmSim* restored_simulation = nullptr;
+    file.Get()->GetObject(kBdmSimName.c_str(), restored_simulation);
+    *TBdmSim::GetBdm() = std::move(*restored_simulation);
 
     // call all after restore events
     for (auto&& event : after_restore_event_) {

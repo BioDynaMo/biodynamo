@@ -58,7 +58,8 @@ namespace bdm {
 
 #if defined(USE_CATALYST) && !defined(__ROOTCLING__)
 
-/// The class that bridges the simulation code with ParaView
+/// The class that bridges the simulation code with ParaView.
+/// Requires that simulation objects use the Soa memory layout.
 template <typename TBdmSim = BdmSim<>>
 class CatalystAdaptor {
  public:
@@ -317,13 +318,14 @@ class CatalystAdaptor {
   ///
   /// @param      data_description  The data description
   ///
-  void CreateVtkObjects(
+  template <typename TTBdmSim = BdmSim<>>
+  typename std::enable_if<std::is_same<typename TTBdmSim::ResourceManager_t::Backend, Soa>::value>::type
+  CreateVtkObjects(
       vtkNew<vtkCPDataDescription>& data_description) {  // NOLINT
     // Add simulation objects to the visualization if requested
     auto* rm = TBdmSim::GetBdm()->GetRm();
     rm->ApplyOnAllTypes([&, this](auto* sim_objects, uint16_t type_idx) {
-      auto so_name =
-          std::decay<decltype(*sim_objects)>::type::GetScalarTypeName().c_str();
+      auto so_name = sim_objects->GetScalarTypeName().c_str();
 
       data_description->AddInput(so_name);
 
@@ -361,6 +363,14 @@ class CatalystAdaptor {
         idx++;
       }
     }
+  }
+
+  template <typename TTBdmSim = BdmSim<>>
+  typename std::enable_if<!std::is_same<typename TTBdmSim::ResourceManager_t::Backend, Soa>::value>::type
+  CreateVtkObjects(
+    vtkNew<vtkCPDataDescription>& data_description) {  // NOLINT
+      Fatal("CatalystAdaptor",
+            "At the moment, CatalystAdaptor supports only simulation objects with Soa backend!");
   }
 
   /// Visualize one timestep based on the configuration in `Param`

@@ -157,10 +157,6 @@ class ResourceManager {
   template <typename T>
   using ToBackend = typename T::template Self<Backend>;
 
-  // FIXME remove
-  /// Singleton pattern - return the only instance with this template parameters
-  // static ResourceManager<TCompileTimeParam>* Get() { return instance_.get(); }
-
   /// Return the container of this Type
   /// @tparam Type atomic type whose container should be returned
   ///         invariant to the Backend. This means that even if ResourceManager
@@ -352,8 +348,6 @@ class ResourceManager {
   }
 
  private:
-  static std::unique_ptr<ResourceManager<TCompileTimeParam>> instance_;
-
   /// creates one container for each type in Types.
   /// Container type is determined based on the specified Backend
   typename ConvertToContainerTuple<Backend, Types>::type data_;
@@ -370,10 +364,6 @@ class ResourceManager {
   friend class SimulationBackup;
   ClassDefNV(ResourceManager, 1);
 };
-
-template <typename T>
-std::unique_ptr<ResourceManager<T>> ResourceManager<T>::instance_ =
-    std::unique_ptr<ResourceManager<T>>(new ResourceManager<T>());
 
 }  // namespace bdm
 

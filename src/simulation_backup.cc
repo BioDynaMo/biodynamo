@@ -55,7 +55,7 @@ bool SimulationBackup::BackupEnabled() { return backup_; }
 
 bool SimulationBackup::RestoreEnabled() { return restore_; }
 
-const std::string SimulationBackup::kResouceManagerName = "resource_manager";
+const std::string SimulationBackup::kBdmSimName = "simulation";
 const std::string SimulationBackup::kSimulationStepName =
     "completed_simulation_steps";
 const std::string SimulationBackup::kRuntimeVariableName = "runtime_variable";

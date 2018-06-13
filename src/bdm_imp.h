@@ -21,16 +21,32 @@ BdmSim<T>* BdmSim<T>::GetBdm() {
 template <typename T>
 BdmSim<T>::BdmSim(int argc, const char** argv) {
   Activate();
+  InitializeRuntimeParams(argc, argv);
   InitializeMembers();
-  InitializeSimulation(argc, argv);
 }
 
 template <typename T>
 BdmSim<T>::BdmSim(const std::string& executable_name) {
   Activate();
-  InitializeMembers();
   const char* argv[1] = {executable_name.c_str()};
-  InitializeSimulation(1, argv);
+  InitializeRuntimeParams(1, argv);
+  InitializeMembers();
+}
+
+template <typename T>
+BdmSim<T>& BdmSim<T>::operator=(BdmSim<T>&& other) {
+  delete rm_;
+  delete grid_;
+  delete scheduler_;
+
+  rm_ = other.rm_;
+  grid_ = other.grid_;
+  scheduler_ = other.scheduler_;
+
+  other.rm_ = nullptr;
+  other.grid_ = nullptr;
+  other.scheduler_ = nullptr;
+  return *this;
 }
 
 template <typename T>
@@ -71,7 +87,15 @@ void BdmSim<T>::InitializeMembers() {
 }
 
 template <typename T>
-void BdmSim<T>::InitializeSimulation(int argc, const char** argv) {
+template <typename TGrid,
+          typename TScheduler>
+void BdmSim<T>::TRootIoCtorInitializeMembers() {
+  grid_ = new TGrid();
+  scheduler_ = new TScheduler();
+}
+
+template <typename T>
+void BdmSim<T>::InitializeRuntimeParams(int argc, const char** argv) {
   // Removing this line causes an unexplainable segfault due to setting the
   // gErrorIngoreLevel global parameter of ROOT. We need to log at least one
   // thing before setting that parameter.
@@ -79,7 +103,7 @@ void BdmSim<T>::InitializeSimulation(int argc, const char** argv) {
 
   // detect if the biodynamo environment has been sourced
   if (std::getenv("BDM_CMAKE_DIR") == nullptr) {
-    Log::Fatal("BdmSim::InitializeSimulation",
+    Log::Fatal("BdmSim::InitializeRuntimeParams",
                "The BioDynaMo environment is not set up correctly. Please call "
                "$use_biodynamo "
                "and retry this command.");
@@ -96,7 +120,7 @@ void BdmSim<T>::InitializeSimulation(int argc, const char** argv) {
     auto config = cpptoml::parse_file(kConfigFileParentDir);
     Param::AssignFromConfig(config);
   } else {
-    Log::Warning("BdmSim::InitializeSimulation",
+    Log::Warning("BdmSim::InitializeRuntimeParams",
                  "Config file %s not found in `.` or `../` directory.",
                  kConfigFile);
   }

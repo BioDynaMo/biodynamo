@@ -76,6 +76,7 @@ inline void RunRestoreTest() {
   BdmSim<> simulation("SchedulerTest_RunRestoreTest");
   auto* rm = simulation.GetRm();
   remove(ROOTFILE);
+  Param::Reset();
 
   // create backup that will be restored later on
   Cell cell;
@@ -93,9 +94,12 @@ inline void RunRestoreTest() {
   scheduler.Simulate(100);
   EXPECT_EQ(0u, scheduler.execute_calls);
   EXPECT_EQ(0u, rm->Get<Cell>()->size());
+  std::cout << Param::total_steps_ << std::endl;
 
   // Restore should happen within this call
   scheduler.Simulate(100);
+  // update rm, because it changes after a restore
+  rm = simulation.GetRm();
   //   only 51 steps should be simulated
   EXPECT_EQ(51u, scheduler.execute_calls);
   EXPECT_EQ(1u, rm->Get<Cell>()->size());
@@ -112,6 +116,7 @@ inline void RunRestoreTest() {
 }
 
 inline void RunBackupTest() {
+  Param::Reset();
   BdmSim<> simulation("SchedulerTest_RunBackupTest");
   auto* rm = simulation.GetRm();
   remove(ROOTFILE);

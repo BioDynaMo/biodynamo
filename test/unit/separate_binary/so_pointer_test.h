@@ -136,8 +136,10 @@ inline void IOTestSoPointerRmContainerSoa(BdmSim<>* simulation) {
   SimulationBackup restore("", IOTest::kRootFile);
   restore.Restore();
 
+  // ResourceManager instance should have changed
   EXPECT_TRUE(rm != simulation->GetRm());
 
+  rm = simulation->GetRm();
   auto* restored_sim_objects = rm->Get<SoPointerTestClass>();
   EXPECT_EQ(123u, (*restored_sim_objects)[1].GetMySoPtr()->GetId());
   // change id of first element

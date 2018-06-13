@@ -92,14 +92,13 @@ TEST(SimulationBackupTest, Backup) {
   file.Get()->GetObject(SimulationBackup::kSimulationStepName.c_str(), wrapper);
   EXPECT_EQ(26u, wrapper->Get());
 
-  // ResourceManager
-  ResourceManager<>* restored_rm = nullptr;
-  file.Get()->GetObject(SimulationBackup::kResouceManagerName.c_str(),
-                        restored_rm);
-  EXPECT_EQ(1u, restored_rm->Get<Cell>()->size());
-  // Writing and reading ResourceManager is tested in resource_manager_test.cc
-
-  delete restored_rm;
+  // BdmSim
+  BdmSim<>* restored_simulation = nullptr;
+  file.Get()->GetObject(SimulationBackup::kBdmSimName.c_str(),
+                        restored_simulation);
+  EXPECT_EQ(1u, restored_simulation->GetRm()->Get<Cell>()->size());
+  // FIXME update test file name
+  // Writing and reading BdmSim is tested in bdm_sim_test.cc
 
   remove(ROOTFILE);
 }
@@ -130,16 +129,18 @@ TEST(SimulationBackupTest, BackupAndRestore) {
   SimulationBackup backup(ROOTFILE, "");
   backup.Backup(iterations);
 
-  rm->Clear();
-
   // restore
   SimulationBackup restore("", ROOTFILE);
   //   iterations
-  auto restored_iterationa = restore.GetSimulationStepsFromBackup();
-  EXPECT_EQ(26u, restored_iterationa);
-
-  //   ResourceManager
+  auto restored_iterations = restore.GetSimulationStepsFromBackup();
+  EXPECT_EQ(26u, restored_iterations);
   restore.Restore();
+
+  //   ResourceManager should have changed
+  EXPECT_TRUE(rm != simulation.GetRm());
+
+  //   get new ResourceManager
+  rm = simulation.GetRm();
   EXPECT_EQ(1u, rm->Get<Cell>()->size());
 
   remove(ROOTFILE);

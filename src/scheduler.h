@@ -42,7 +42,7 @@ class Scheduler {
 
   Scheduler()
       : backup_(SimulationBackup(Param::backup_file_, Param::restore_file_)) {
-    total_steps_ = 0;
+    // total_steps_ = 0;
     if (backup_.RestoreEnabled()) {
       restore_point_ = backup_.GetSimulationStepsFromBackup();
     }
@@ -148,7 +148,6 @@ class Scheduler {
                restore_point_ < total_steps_ + *steps) {
       // Restore
       backup_.Restore();
-
       *steps = total_steps_ + *steps - restore_point_;
       total_steps_ = restore_point_;
     }

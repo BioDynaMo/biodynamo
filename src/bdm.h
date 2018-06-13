@@ -2,6 +2,7 @@
 #define FOO
 
 #include <string>
+#include <Rtypes.h>
 
 namespace bdm {
 
@@ -19,14 +20,19 @@ struct BdmSim {
   using Self = BdmSim<TCTParam>;
   using ResourceManager_t = ResourceManager<TCTParam>;  // NOLINT
 
-
   /// This function returns the currently active BdmSim simulation.
   static BdmSim<TCTParam>* GetBdm();
 
   /// Creation of a new simulation automatically activates it!
+  // FIXME move to bdm_imp.h
+  BdmSim(TRootIOCtor*) {
+    TRootIoCtorInitializeMembers();
+  }
   BdmSim(int argc, const char** argv);
   BdmSim(const std::string& executable_name);
   ~BdmSim();
+
+  BdmSim& operator=(BdmSim&& other);
 
   // thread_local int random_;
   void Activate();
@@ -43,14 +49,18 @@ struct BdmSim {
   static BdmSim<TCTParam>* active_;
 
   ResourceManager<TCTParam>* rm_ = nullptr;
-  Grid<Self>* grid_ = nullptr;
-  Scheduler<Self>* scheduler_ = nullptr;
+  Grid<Self>* grid_ = nullptr; //!
+  Scheduler<Self>* scheduler_ = nullptr;  //!
 
   // TODO
   template <typename TResourceManager = ResourceManager<TCTParam>,
             typename TGrid = Grid<Self>,
             typename TScheduler = Scheduler<Self>>
   void InitializeMembers();
+
+  template <typename TGrid = Grid<Self>,
+            typename TScheduler = Scheduler<Self>>
+  void TRootIoCtorInitializeMembers();
 
   /// Return only the executable name given the path
   /// @param path path and filename of the executable
@@ -61,7 +71,9 @@ struct BdmSim {
   /// This function parses command line parameters and the configuration file.
   /// @param argc argument count from main function
   /// @param argv argument vector from main function
-  void InitializeSimulation(int argc, const char** argv);
+  void InitializeRuntimeParams(int argc, const char** argv);
+
+  ClassDefNV(BdmSim, 1);
 };
 
 }  // namespace bdm

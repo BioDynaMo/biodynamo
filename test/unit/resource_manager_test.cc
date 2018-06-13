@@ -300,6 +300,13 @@ void RunNewTest() {
   using CTParam = CompileTimeParam<TBackend, TA, TB>;
   ResourceManager<CTParam> rm;
 
+  auto* as = rm.template Get<TA>();
+  auto* bs = rm.template Get<TB>();
+  // TODO(lukas) Remove reserves after https://trello.com/c/sKoOTgJM has been
+  // resolved
+  as->reserve(5);
+  bs->reserve(5);
+
   auto&& a0 = rm.template New<A>(12);
   auto&& a1 = rm.template New<A>(34);
 
@@ -314,9 +321,6 @@ void RunNewTest() {
 
   EXPECT_NEAR(b0.GetData(), 3.14, kEpsilon);
   EXPECT_NEAR(b1.GetData(), 6.28, kEpsilon);
-
-  auto&& as = rm.template Get<TA>();
-  auto&& bs = rm.template Get<TB>();
 
   EXPECT_EQ((*as)[0].GetData(), 12);
   EXPECT_EQ((*as)[1].GetData(), 34);
