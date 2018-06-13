@@ -12,6 +12,7 @@
 
 #include "param.h"
 #include "resource_manager.h"
+#include "shape.h"
 
 // check for ROOTCLING was necessary, due to ambigous reference to namespace
 // detail when using ROOT I/O
@@ -61,9 +62,9 @@ class CatalystAdaptor {
     auto grid_dimensions = dg->GetDimensions();
     auto box_length = dg->GetBoxLength();
 
-    double origin_x = grid_dimensions[0];
-    double origin_y = grid_dimensions[2];
-    double origin_z = grid_dimensions[4];
+    float origin_x = grid_dimensions[0];
+    float origin_y = grid_dimensions[2];
+    float origin_z = grid_dimensions[4];
     vtk_dgrids_[idx]->SetOrigin(origin_x, origin_y, origin_z);
     vtk_dgrids_[idx]->SetDimensions(num_boxes[0], num_boxes[1], num_boxes[2]);
     vtk_dgrids_[idx]->SetSpacing(box_length, box_length, box_length);
@@ -74,7 +75,7 @@ class CatalystAdaptor {
                          std::vector<vtkUnstructuredGrid*>* vd)
         : type_idx(ti), num_cells(nc), vtk_data(vd) {}
 
-    void operator()(std::vector<double>* dm, const std::string& name) {
+    void operator()(std::vector<float>* dm, const std::string& name) {
       vtkNew<vtkDoubleArray> vtk_array;
       vtk_array->SetName(name.c_str());
       auto ptr = dm->data();
@@ -90,7 +91,7 @@ class CatalystAdaptor {
       (*vtk_data)[type_idx]->GetPointData()->AddArray(vtk_array.GetPointer());
     }
 
-    void operator()(std::vector<std::array<double, 3>>* dm,
+    void operator()(std::vector<std::array<float, 3>>* dm,
                     const std::string& name) {
       if (name == "position_") {  // TODO(lukas) performance
         vtkNew<vtkDoubleArray> vtk_array;
@@ -349,11 +350,11 @@ class CatalystAdaptor {
   /// Visualize one timestep based on the configuration in `Param`
   void Visualize(bool last_iteration) {
     if (Param::live_visualization_) {
-      double time = Param::simulation_time_step_ * Param::total_steps_;
+      float time = Param::simulation_time_step_ * Param::total_steps_;
       CoProcess(time, Param::total_steps_, last_iteration);
     }
     if (Param::export_visualization_) {
-      double time = Param::simulation_time_step_ * Param::total_steps_;
+      float time = Param::simulation_time_step_ * Param::total_steps_;
       ExportVisualization(time, Param::total_steps_, last_iteration);
     }
   }
@@ -364,7 +365,7 @@ class CatalystAdaptor {
   /// @param[in]  step            The time step duration
   /// @param[in]  last_time_step  Last time step or not
   ///
-  inline void CoProcess(double time, size_t step, bool last_time_step) {
+  inline void CoProcess(float time, size_t step, bool last_time_step) {
     vtkNew<vtkCPDataDescription> data_description;
     data_description->SetTimeData(time, step);
 
@@ -390,7 +391,7 @@ class CatalystAdaptor {
   /// @param[in]  step            The time step
   /// @param[in]  last_time_step  The last time step
   ///
-  inline void ExportVisualization(double time, size_t step,
+  inline void ExportVisualization(float time, size_t step,
                                   bool last_time_step) {
     vtkNew<vtkCPDataDescription> data_description;
     data_description->SetTimeData(time, step);
@@ -553,7 +554,7 @@ class CatalystAdaptor {
     }
   }
 
-  void CoProcess(double time, size_t time_step, bool last_time_step) {
+  void CoProcess(float time, size_t time_step, bool last_time_step) {
     if (Param::live_visualization_ || Param::export_visualization_) {
       Log::Fatal("CatalystAdaptor::CoProcess",
                 "Simulation was compiled without ParaView support, but you are "
@@ -561,7 +562,7 @@ class CatalystAdaptor {
     }
   }
 
-  void ExportVisualization(double step, size_t time_step, bool last_time_step) {
+  void ExportVisualization(float step, size_t time_step, bool last_time_step) {
     if (Param::live_visualization_ || Param::export_visualization_) {
       Log::Fatal("CatalystAdaptor::ExportVisualization",
                 "Simulation was compiled without ParaView support, but you are "

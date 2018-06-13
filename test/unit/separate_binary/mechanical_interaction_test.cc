@@ -9,7 +9,7 @@
 
 namespace bdm {
 
-inline double DegreesToRadians(double degrees) {
+inline float DegreesToRadians(float degrees) {
   return degrees / 180 * Math::kPi;
 }
 
@@ -38,13 +38,13 @@ TEST(MechanicalInteraction, StraightxCylinderGrowth) {
 
   Scheduler<> scheduler;
 
-  std::array<double, 3> ne_axis = ne->GetSpringAxis();
+  std::array<float, 3> ne_axis = ne->GetSpringAxis();
 
-  EXPECT_NEAR(ne_axis[0], 1, abs_error<double>::value);
-  EXPECT_NEAR(ne_axis[1], 0, abs_error<double>::value);
-  EXPECT_NEAR(ne_axis[2], 0, abs_error<double>::value);
+  EXPECT_NEAR(ne_axis[0], 1, abs_error<float>::value);
+  EXPECT_NEAR(ne_axis[1], 0, abs_error<float>::value);
+  EXPECT_NEAR(ne_axis[2], 0, abs_error<float>::value);
 
-  std::array<double, 3> direction = {1, 0, 0};
+  std::array<float, 3> direction = {1, 0, 0};
   for (int i = 0; i < 100; i++) {
     ne->ElongateTerminalEnd(300, direction);
     ne->RunDiscretization();
@@ -52,8 +52,8 @@ TEST(MechanicalInteraction, StraightxCylinderGrowth) {
     if (i % 10 == 0) {
       ne_axis = ne->GetSpringAxis();
 
-      EXPECT_NEAR(ne_axis[1], 0, abs_error<double>::value);
-      EXPECT_NEAR(ne_axis[2], 0, abs_error<double>::value);
+      EXPECT_NEAR(ne_axis[1], 0, abs_error<float>::value);
+      EXPECT_NEAR(ne_axis[2], 0, abs_error<float>::value);
     }
   }
 }
@@ -71,13 +71,13 @@ TEST(MechanicalInteraction, StraightyCylinderGrowth) {
 
   Scheduler<> scheduler;
 
-  std::array<double, 3> ne_axis = ne->GetSpringAxis();
+  std::array<float, 3> ne_axis = ne->GetSpringAxis();
 
-  EXPECT_NEAR(ne_axis[0], 0, abs_error<double>::value);
-  EXPECT_NEAR(ne_axis[1], 1, abs_error<double>::value);
-  EXPECT_NEAR(ne_axis[2], 0, abs_error<double>::value);
+  EXPECT_NEAR(ne_axis[0], 0, abs_error<float>::value);
+  EXPECT_NEAR(ne_axis[1], 1, abs_error<float>::value);
+  EXPECT_NEAR(ne_axis[2], 0, abs_error<float>::value);
 
-  std::array<double, 3> direction = {0, 1, 0};
+  std::array<float, 3> direction = {0, 1, 0};
   for (int i = 0; i < 100; i++) {
     ne->ElongateTerminalEnd(300, direction);
     ne->RunDiscretization();
@@ -85,8 +85,8 @@ TEST(MechanicalInteraction, StraightyCylinderGrowth) {
     if (i % 10 == 0) {
       ne_axis = ne->GetSpringAxis();
 
-      EXPECT_NEAR(ne_axis[0], 0, abs_error<double>::value);
-      EXPECT_NEAR(ne_axis[2], 0, abs_error<double>::value);
+      EXPECT_NEAR(ne_axis[0], 0, abs_error<float>::value);
+      EXPECT_NEAR(ne_axis[2], 0, abs_error<float>::value);
     }
   }
 }
@@ -104,13 +104,13 @@ TEST(MechanicalInteraction, StraightzCylinderGrowth) {
 
   Scheduler<> scheduler;
 
-  std::array<double, 3> ne_axis = ne->GetSpringAxis();
+  std::array<float, 3> ne_axis = ne->GetSpringAxis();
 
-  EXPECT_NEAR(ne_axis[0], 0, abs_error<double>::value);
-  EXPECT_NEAR(ne_axis[1], 0, abs_error<double>::value);
-  EXPECT_NEAR(ne_axis[2], 1, abs_error<double>::value);
+  EXPECT_NEAR(ne_axis[0], 0, abs_error<float>::value);
+  EXPECT_NEAR(ne_axis[1], 0, abs_error<float>::value);
+  EXPECT_NEAR(ne_axis[2], 1, abs_error<float>::value);
 
-  std::array<double, 3> direction = {0, 0, 1};
+  std::array<float, 3> direction = {0, 0, 1};
   for (int i = 0; i < 100; i++) {
     ne->ElongateTerminalEnd(300, direction);
     ne->RunDiscretization();
@@ -118,8 +118,8 @@ TEST(MechanicalInteraction, StraightzCylinderGrowth) {
     if (i % 10 == 0) {
       ne_axis = ne->GetSpringAxis();
 
-      EXPECT_NEAR(ne_axis[0], 0, abs_error<double>::value);
-      EXPECT_NEAR(ne_axis[1], 0, abs_error<double>::value);
+      EXPECT_NEAR(ne_axis[0], 0, abs_error<float>::value);
+      EXPECT_NEAR(ne_axis[1], 0, abs_error<float>::value);
     }
   }
 }
@@ -137,11 +137,11 @@ TEST(MechanicalInteraction, DiagonalxyCylinderGrowth) {
 
   Scheduler<> scheduler;
 
-  std::array<double, 3> ne_axis = ne->GetSpringAxis();
+  std::array<float, 3> ne_axis = ne->GetSpringAxis();
 
-  EXPECT_NEAR(ne_axis[2], 0, abs_error<double>::value);
+  EXPECT_NEAR(ne_axis[2], 0, abs_error<float>::value);
 
-  std::array<double, 3> direction = {1, 1, 0};
+  std::array<float, 3> direction = {1, 1, 0};
   for (int i = 0; i < 100; i++) {
     ne->ElongateTerminalEnd(300, direction);
     ne->RunDiscretization();
@@ -149,8 +149,8 @@ TEST(MechanicalInteraction, DiagonalxyCylinderGrowth) {
     if (i % 10 == 0) {
       ne_axis = ne->GetSpringAxis();
 
-      EXPECT_NEAR(ne_axis[0], ne_axis[1], abs_error<double>::value);
-      EXPECT_NEAR(ne_axis[2], 0, abs_error<double>::value);
+      EXPECT_NEAR(ne_axis[0], ne_axis[1], abs_error<float>::value);
+      EXPECT_NEAR(ne_axis[2], 0, abs_error<float>::value);
     }
   }
 }
@@ -170,13 +170,13 @@ TEST(MechanicalInteraction, DiagonalxyzCylinderGrowth) {
 
   Scheduler<> scheduler;
 
-  std::array<double, 3> ne_axis = ne->GetSpringAxis();
+  std::array<float, 3> ne_axis = ne->GetSpringAxis();
 
-  EXPECT_NEAR(ne_axis[0], 0.57735026918962584, abs_error<double>::value);
-  EXPECT_NEAR(ne_axis[1], 0.57735026918962584, abs_error<double>::value);
-  EXPECT_NEAR(ne_axis[2], 0.57735026918962584, abs_error<double>::value);
+  EXPECT_NEAR(ne_axis[0], 0.57735026918962584, abs_error<float>::value);
+  EXPECT_NEAR(ne_axis[1], 0.57735026918962584, abs_error<float>::value);
+  EXPECT_NEAR(ne_axis[2], 0.57735026918962584, abs_error<float>::value);
 
-  std::array<double, 3> direction = {1, 1, 1};
+  std::array<float, 3> direction = {1, 1, 1};
   for (int i = 0; i < 37; i++) {
     ne->ElongateTerminalEnd(300, direction);
     ne->RunDiscretization();
@@ -187,8 +187,8 @@ TEST(MechanicalInteraction, DiagonalxyzCylinderGrowth) {
     std::cout << "xz spring axis: " << ne_axis[0] << " ; " << ne_axis[2]
               << std::endl;
 
-    EXPECT_NEAR(ne_axis[0], ne_axis[1], abs_error<double>::value);
-    EXPECT_NEAR(ne_axis[0], ne_axis[2], abs_error<double>::value);
+    EXPECT_NEAR(ne_axis[0], ne_axis[1], abs_error<float>::value);
+    EXPECT_NEAR(ne_axis[0], ne_axis[2], abs_error<float>::value);
   }
 }
 
@@ -209,14 +209,14 @@ TEST(MechanicalInteraction, DiagonalSpecialDirectionCylinderGrowth) {
 
   Scheduler<> scheduler;
 
-  std::array<double, 3> ne_axis = ne->GetSpringAxis();
+  std::array<float, 3> ne_axis = ne->GetSpringAxis();
 
-  EXPECT_NEAR(ne_axis[0], 0.57735026918962584, abs_error<double>::value);
-  EXPECT_NEAR(ne_axis[1], 0.57735026918962584, abs_error<double>::value);
-  EXPECT_NEAR(ne_axis[2], 0.57735026918962584, abs_error<double>::value);
+  EXPECT_NEAR(ne_axis[0], 0.57735026918962584, abs_error<float>::value);
+  EXPECT_NEAR(ne_axis[1], 0.57735026918962584, abs_error<float>::value);
+  EXPECT_NEAR(ne_axis[2], 0.57735026918962584, abs_error<float>::value);
 
-  //    std::array<double, 3> direction = { 1.5, 2.3, 3.8 };
-  std::array<double, 3> direction = {2, 1, 1};
+  //    std::array<float, 3> direction = { 1.5, 2.3, 3.8 };
+  std::array<float, 3> direction = {2, 1, 1};
 
   for (int i = 0; i < 98; i++) {
     ne->ElongateTerminalEnd(300, direction);
@@ -247,13 +247,13 @@ TEST(MechanicalInteraction, StraightCylinderGrowthObstacle) {
 
   Scheduler<> scheduler;
 
-  std::array<double, 3> ne_axis = ne->GetSpringAxis();
+  std::array<float, 3> ne_axis = ne->GetSpringAxis();
 
-  EXPECT_NEAR(ne_axis[0], 0, abs_error<double>::value);
-  EXPECT_NEAR(ne_axis[1], 0, abs_error<double>::value);
-  EXPECT_NEAR(ne_axis[2], 1, abs_error<double>::value);
+  EXPECT_NEAR(ne_axis[0], 0, abs_error<float>::value);
+  EXPECT_NEAR(ne_axis[1], 0, abs_error<float>::value);
+  EXPECT_NEAR(ne_axis[2], 1, abs_error<float>::value);
 
-  std::array<double, 3> direction = {0, 0, 1};
+  std::array<float, 3> direction = {0, 0, 1};
   for (int i = 0; i < 100; i++) {
     ne->ElongateTerminalEnd(100, direction);
     ne->RunDiscretization();
@@ -261,8 +261,8 @@ TEST(MechanicalInteraction, StraightCylinderGrowthObstacle) {
     if (i % 10 == 0) {
       ne_axis = ne->GetSpringAxis();
 
-      EXPECT_NEAR(ne_axis[0], 0, abs_error<double>::value);
-      EXPECT_NEAR(ne_axis[1], 0, abs_error<double>::value);
+      EXPECT_NEAR(ne_axis[0], 0, abs_error<float>::value);
+      EXPECT_NEAR(ne_axis[1], 0, abs_error<float>::value);
     }
   }
 }
@@ -286,13 +286,13 @@ TEST(DISABLED_MechanicalInteraction, NotStraightCylinderGrowthObstacle) {
 
   Scheduler<> scheduler;
 
-  std::array<double, 3> ne_axis = ne->GetSpringAxis();
+  std::array<float, 3> ne_axis = ne->GetSpringAxis();
 
-  EXPECT_NEAR(ne_axis[0], 0, abs_error<double>::value);
-  EXPECT_NEAR(ne_axis[1], 0, abs_error<double>::value);
-  EXPECT_NEAR(ne_axis[2], 1, abs_error<double>::value);
+  EXPECT_NEAR(ne_axis[0], 0, abs_error<float>::value);
+  EXPECT_NEAR(ne_axis[1], 0, abs_error<float>::value);
+  EXPECT_NEAR(ne_axis[2], 1, abs_error<float>::value);
 
-  std::array<double, 3> direction = {0.01, 0, 1};
+  std::array<float, 3> direction = {0.01, 0, 1};
   for (int i = 0; i < 100; i++) {
     ne->ElongateTerminalEnd(100, direction);
     ne->RunDiscretization();
@@ -300,8 +300,8 @@ TEST(DISABLED_MechanicalInteraction, NotStraightCylinderGrowthObstacle) {
   }
 
   ne_axis = ne->GetSpringAxis();
-  EXPECT_NEAR(ne_axis[0], 0, abs_error<double>::value);
-  EXPECT_NEAR(ne_axis[1], 0, abs_error<double>::value);
+  EXPECT_NEAR(ne_axis[0], 0, abs_error<float>::value);
+  EXPECT_NEAR(ne_axis[1], 0, abs_error<float>::value);
 }
 
 TEST(MechanicalInteraction, DoubleStraightCylinderGrowth) {
@@ -318,19 +318,19 @@ TEST(MechanicalInteraction, DoubleStraightCylinderGrowth) {
 
   Scheduler<> scheduler;
 
-  std::array<double, 3> ne_axis = ne->GetSpringAxis();
-  std::array<double, 3> ne_axis_2 = ne2->GetSpringAxis();
+  std::array<float, 3> ne_axis = ne->GetSpringAxis();
+  std::array<float, 3> ne_axis_2 = ne2->GetSpringAxis();
 
-  EXPECT_NEAR(ne_axis[0], 0, abs_error<double>::value);
-  EXPECT_NEAR(ne_axis[1], 1, abs_error<double>::value);
-  EXPECT_NEAR(ne_axis[2], 0, abs_error<double>::value);
+  EXPECT_NEAR(ne_axis[0], 0, abs_error<float>::value);
+  EXPECT_NEAR(ne_axis[1], 1, abs_error<float>::value);
+  EXPECT_NEAR(ne_axis[2], 0, abs_error<float>::value);
 
-  EXPECT_NEAR(ne_axis_2[0], 1, abs_error<double>::value);
-  EXPECT_NEAR(ne_axis_2[1], 0, abs_error<double>::value);
-  EXPECT_NEAR(ne_axis_2[2], 0, abs_error<double>::value);
+  EXPECT_NEAR(ne_axis_2[0], 1, abs_error<float>::value);
+  EXPECT_NEAR(ne_axis_2[1], 0, abs_error<float>::value);
+  EXPECT_NEAR(ne_axis_2[2], 0, abs_error<float>::value);
 
-  std::array<double, 3> direction = {0, 1, 0};
-  std::array<double, 3> direction2 = {1, 0, 0};
+  std::array<float, 3> direction = {0, 1, 0};
+  std::array<float, 3> direction2 = {1, 0, 0};
 
   for (int i = 0; i < 100; i++) {
     ne->ElongateTerminalEnd(300, direction);
@@ -343,11 +343,11 @@ TEST(MechanicalInteraction, DoubleStraightCylinderGrowth) {
       ne_axis = ne->GetSpringAxis();
       ne_axis_2 = ne2->GetSpringAxis();
 
-      EXPECT_NEAR(ne_axis[0], 0, abs_error<double>::value);
-      EXPECT_NEAR(ne_axis[2], 0, abs_error<double>::value);
+      EXPECT_NEAR(ne_axis[0], 0, abs_error<float>::value);
+      EXPECT_NEAR(ne_axis[2], 0, abs_error<float>::value);
 
-      EXPECT_NEAR(ne_axis_2[1], 0, abs_error<double>::value);
-      EXPECT_NEAR(ne_axis_2[2], 0, abs_error<double>::value);
+      EXPECT_NEAR(ne_axis_2[1], 0, abs_error<float>::value);
+      EXPECT_NEAR(ne_axis_2[2], 0, abs_error<float>::value);
     }
   }
 }
@@ -368,15 +368,15 @@ TEST(MechanicalInteraction, BifurcationCylinderGrowth) {
 
   Scheduler<> scheduler;
 
-  std::array<double, 3> ne_axis = ne->GetSpringAxis();
-  std::array<double, 3> ne_axis_2;
+  std::array<float, 3> ne_axis = ne->GetSpringAxis();
+  std::array<float, 3> ne_axis_2;
 
-  EXPECT_NEAR(ne_axis[0], 0, abs_error<double>::value);
-  EXPECT_NEAR(ne_axis[1], 0, abs_error<double>::value);
-  EXPECT_NEAR(ne_axis[2], 1, abs_error<double>::value);
+  EXPECT_NEAR(ne_axis[0], 0, abs_error<float>::value);
+  EXPECT_NEAR(ne_axis[1], 0, abs_error<float>::value);
+  EXPECT_NEAR(ne_axis[2], 1, abs_error<float>::value);
 
-  std::array<double, 3> direction = {0, 0.5, 1};
-  std::array<double, 3> direction2 = {0.5, 0, 1};
+  std::array<float, 3> direction = {0, 0.5, 1};
+  std::array<float, 3> direction2 = {0.5, 0, 1};
 
   for (int i = 0; i < 10; i++) {
     ne->ElongateTerminalEnd(100, {0, 0, 1});
@@ -405,8 +405,8 @@ TEST(MechanicalInteraction, BifurcationCylinderGrowth) {
     //        ne_axis = ne->GetSpringAxis();
     //        ne_axis_2 = ne2->GetSpringAxis();
 
-    //        EXPECT_NEAR(ne_axis[0], 0, abs_error<double>::value);
-    //        EXPECT_NEAR(ne_axis_2[1], 0, abs_error<double>::value);
+    //        EXPECT_NEAR(ne_axis[0], 0, abs_error<float>::value);
+    //        EXPECT_NEAR(ne_axis_2[1], 0, abs_error<float>::value);
     //      }
   }
 }
@@ -426,15 +426,15 @@ TEST(MechanicalInteraction, BranchCylinderGrowth) {
 
   Scheduler<> scheduler;
 
-  std::array<double, 3> ne_axis = ne->GetSpringAxis();
-  std::array<double, 3> ne_axis_2;
+  std::array<float, 3> ne_axis = ne->GetSpringAxis();
+  std::array<float, 3> ne_axis_2;
 
-  EXPECT_NEAR(ne_axis[0], 0, abs_error<double>::value);
-  EXPECT_NEAR(ne_axis[1], 0, abs_error<double>::value);
-  EXPECT_NEAR(ne_axis[2], 1, abs_error<double>::value);
+  EXPECT_NEAR(ne_axis[0], 0, abs_error<float>::value);
+  EXPECT_NEAR(ne_axis[1], 0, abs_error<float>::value);
+  EXPECT_NEAR(ne_axis[2], 1, abs_error<float>::value);
 
-  std::array<double, 3> direction = {0, 0.5, 1};
-  std::array<double, 3> direction2 = {0.5, 0, 1};
+  std::array<float, 3> direction = {0, 0.5, 1};
+  std::array<float, 3> direction2 = {0.5, 0, 1};
 
   for (int i = 0; i < 10; i++) {
     ne->ElongateTerminalEnd(100, {0, 0, 1});
@@ -459,8 +459,8 @@ TEST(MechanicalInteraction, BranchCylinderGrowth) {
     //       ne_axis = ne->GetSpringAxis();
     //       ne_axis_2 = ne2->GetSpringAxis();
     //
-    //       EXPECT_NEAR(ne_axis[0], 0, abs_error<double>::value);
-    //       EXPECT_NEAR(ne_axis_2[1], 0, abs_error<double>::value);
+    //       EXPECT_NEAR(ne_axis[0], 0, abs_error<float>::value);
+    //       EXPECT_NEAR(ne_axis_2[1], 0, abs_error<float>::value);
     //     }
   }
 }

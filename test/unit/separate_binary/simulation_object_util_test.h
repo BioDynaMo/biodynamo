@@ -26,55 +26,55 @@ BDM_SIM_OBJECT(ContainerTestClass, bdm::SimulationObject) {
 
  public:
   ContainerTestClassExt() {}
-  ContainerTestClassExt(int i, double d) {
+  ContainerTestClassExt(int i, float d) {
     dm1_[kIdx] = i;
     dm2_[kIdx] = d;
   }
 
   const int GetDm1() const { return dm1_[kIdx]; }
-  const double GetDm2() const { return dm2_[kIdx]; }
+  const float GetDm2() const { return dm2_[kIdx]; }
 
   const vec<int>& GetVecDm1() const { return dm1_; }
-  const vec<double>& GetVecDm2() const { return dm2_; }
+  const vec<float>& GetVecDm2() const { return dm2_; }
   uint64_t GetTotalSize() const { return Base::TotalSize(); }
 
  private:
   vec<int> dm1_;
-  vec<double> dm2_;
+  vec<float> dm2_;
 };
 
 BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
   BDM_SIM_OBJECT_HEADER(CellExt, 1, position_, diameter_);
 
  public:
-  explicit CellExt(const std::array<double, 3>& pos) : position_{{pos}} {}
+  explicit CellExt(const std::array<float, 3>& pos) : position_{{pos}} {}
 
   CellExt() : position_{{1, 2, 3}} {}
 
-  MostDerivedSoPtr Divide(double volume_ratio, double phi, double theta) {
+  MostDerivedSoPtr Divide(float volume_ratio, float phi, float theta) {
     auto daughter = Rm()->template New<MostDerivedScalar>().GetSoPtr();
     ThisMD()->DivideImpl(daughter, volume_ratio, phi, theta);
     return daughter;
   }
 
-  void DivideImpl(MostDerivedSoPtr daughter, double volume_ratio, double phi,
-                  double theta) {
+  void DivideImpl(MostDerivedSoPtr daughter, float volume_ratio, float phi,
+                  float theta) {
     daughter->SetPosition({5, 4, 3});
     diameter_[kIdx] = 1.123;
   }
 
-  const std::array<double, 3>& GetPosition() const { return position_[kIdx]; }
-  void SetPosition(const std::array<double, 3>& position) const {
+  const std::array<float, 3>& GetPosition() const { return position_[kIdx]; }
+  void SetPosition(const std::array<float, 3>& position) const {
     position_[kIdx] = position;
   }
 
-  double GetDiameter() const { return diameter_[kIdx]; }
+  float GetDiameter() const { return diameter_[kIdx]; }
 
-  void SetDiameter(double diameter) { diameter_[kIdx] = diameter; }
+  void SetDiameter(float diameter) { diameter_[kIdx] = diameter; }
 
  protected:
-  vec<std::array<double, 3>> position_;
-  vec<double> diameter_ = {6.28};
+  vec<std::array<float, 3>> position_;
+  vec<float> diameter_ = {6.28};
 };
 
 // -----------------------------------------------------------------------------
@@ -102,8 +102,8 @@ BDM_SIM_OBJECT(Neuron, bdm::Cell) {
 
   NeuronExt() = default;
 
-  void DivideImpl(MostDerivedSoPtr daughter, double volume_ratio, double phi,
-                  double theta) {
+  void DivideImpl(MostDerivedSoPtr daughter, float volume_ratio, float phi,
+                  float theta) {
     daughter->neurites_[daughter->kIdx].push_back(Neurite(987));
     Base::DivideImpl(daughter, volume_ratio, phi, theta);
   }

@@ -24,7 +24,7 @@ inline int Simulate(int argc, const char** argv) {
 
   // 3. Define initial model - in this example: 3D grid of cells
   size_t cells_per_dim = 128;
-  auto construct = [](const std::array<double, 3>& position) {
+  auto construct = [](const std::array<float, 3>& position) {
     Cell cell(position);
     cell.SetDiameter(30);
     cell.SetAdherence(0.4);
@@ -36,7 +36,7 @@ inline int Simulate(int argc, const char** argv) {
 
   // 4. Run simulation for one timestep
   Scheduler<> scheduler;
-  scheduler.Simulate(1);
+  scheduler.Simulate(100);
   return 0;
 }
 

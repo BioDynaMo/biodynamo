@@ -14,8 +14,8 @@ namespace bdm {
 // interactions properly handle the creation of new cells.
 // -----------------------------------------------------------------------------
 
-inline void EXPECT_ARR_NEAR(const std::array<double, 3>& actual,
-                            const std::array<double, 3>& expected, bool* ret) {
+inline void EXPECT_ARR_NEAR(const std::array<float, 3>& actual,
+                            const std::array<float, 3>& expected, bool* ret) {
   for (size_t i = 0; i < actual.size(); i++) {
     if (std::fabs(expected[i] - actual[i]) > 1e-9) {
       *ret = false;
@@ -47,7 +47,7 @@ inline void RunTest(bool* result) {
   { gRandom.SetSeed(1); }
 
   size_t cells_per_dim = 2;
-  auto construct = [](const std::array<double, 3>& position) {
+  auto construct = [](const std::array<float, 3>& position) {
     Cell cell(position);
     cell.SetDiameter(30);
     cell.SetAdherence(0.4);
@@ -57,9 +57,9 @@ inline void RunTest(bool* result) {
   };
 
   for (size_t x = 0; x < cells_per_dim; x++) {
-    double x_pos = x * 20.0;
+    float x_pos = x * 20.0;
     for (size_t y = 0; y < cells_per_dim; y++) {
-      double y_pos = y * 20.0;
+      float y_pos = y * 20.0;
       for (size_t z = 0; z < cells_per_dim; z++) {
         auto new_simulation_object = construct({x_pos, y_pos, z * 20.0});
         cells->push_back(new_simulation_object);

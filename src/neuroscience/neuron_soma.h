@@ -23,7 +23,7 @@ BDM_SIM_OBJECT(NeuronSoma, bdm::Cell) {
 
   NeuronSomaExt() {}
 
-  explicit NeuronSomaExt(const std::array<double, 3>& position)
+  explicit NeuronSomaExt(const std::array<float, 3>& position)
       : Base(position) {}
 
   /// Update references of simulation objects that changed its memory position.
@@ -49,7 +49,7 @@ BDM_SIM_OBJECT(NeuronSoma, bdm::Cell) {
   /// Extends a new neurites with default diameter
   /// @param direction direciton of the new neurite
   /// @return SoPointer of new neurite
-  NeuriteElementSoPtr ExtendNewNeurite(const std::array<double, 3>& direction) {
+  NeuriteElementSoPtr ExtendNewNeurite(const std::array<float, 3>& direction) {
     auto dir = Math::Add(direction, Base::position_[kIdx]);
     auto angles = Base::TransformCoordinatesGlobalToPolar(dir);
     return ExtendNewNeurite(Param::kNeuriteDefaultDiameter, angles[2],
@@ -61,21 +61,21 @@ BDM_SIM_OBJECT(NeuronSoma, bdm::Cell) {
   /// @param phi the angle from the z-axis
   /// @param theta the angle from the x-axis around the z-axis
   /// @return SoPointer of new neurite
-  NeuriteElementSoPtr ExtendNewNeurite(double diameter, double phi,
-                                       double theta) {
+  NeuriteElementSoPtr ExtendNewNeurite(float diameter, float phi,
+                                       float theta) {
     auto neurite = Rm()->template New<NeuriteElement>();
 
     std::vector<typename Base::BiologyModules> neurite_bms;
     Base::BiologyModuleEventHandler(gExtendNeurite, &neurite_bms);
     neurite.SetBiologyModules(std::move(neurite_bms));
 
-    double radius = 0.5 * Base::diameter_[kIdx];
-    double new_length = Param::kNeuriteDefaultActualLength;
+    float radius = 0.5 * Base::diameter_[kIdx];
+    float new_length = Param::kNeuriteDefaultActualLength;
     // position in bdm.cells coord
-    double x_coord = std::sin(theta) * std::cos(phi);
-    double y_coord = std::sin(theta) * std::sin(phi);
-    double z_coord = std::cos(theta);
-    std::array<double, 3> axis_direction{
+    float x_coord = std::sin(theta) * std::cos(phi);
+    float y_coord = std::sin(theta) * std::sin(phi);
+    float z_coord = std::cos(theta);
+    std::array<float, 3> axis_direction{
         x_coord * Base::kXAxis[0] + y_coord * Base::kYAxis[0] +
             z_coord * Base::kZAxis[0],
         x_coord * Base::kXAxis[1] + y_coord * Base::kYAxis[1] +
@@ -122,10 +122,10 @@ BDM_SIM_OBJECT(NeuronSoma, bdm::Cell) {
   /// attached.
   /// @param daughter_element_idx element_idx of the daughter
   /// @return the coord
-  std::array<double, 3> OriginOf(uint32_t daughter_element_idx) const {
-    std::array<double, 3> xyz = daughters_coord_[kIdx][daughter_element_idx];
+  std::array<float, 3> OriginOf(uint32_t daughter_element_idx) const {
+    std::array<float, 3> xyz = daughters_coord_[kIdx][daughter_element_idx];
 
-    double radius = Base::diameter_[kIdx] * .5;
+    float radius = Base::diameter_[kIdx] * .5;
     xyz = Math::ScalarMult(radius, xyz);
 
     const auto& pos = Base::position_[kIdx];
@@ -159,7 +159,7 @@ BDM_SIM_OBJECT(NeuronSoma, bdm::Cell) {
   /// Daughter attachment points in local coordinates
   /// Key: element index of neurite segement
   /// Value: position
-  vec<std::unordered_map<uint32_t, std::array<double, 3>>> daughters_coord_ = {
+  vec<std::unordered_map<uint32_t, std::array<float, 3>>> daughters_coord_ = {
       {}};
 };
 

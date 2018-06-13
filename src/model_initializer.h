@@ -16,7 +16,7 @@ struct ModelInitializer {
   /// ResourceManager. Type of the simulation object is determined by the return
   /// type of parameter cell_builder.
   ///
-  ///     ModelInitializer::Grid3D(8, 10, [](const std::array<double, 3>& pos){
+  ///     ModelInitializer::Grid3D(8, 10, [](const std::array<float, 3>& pos){
   ///     return Cell(pos); });
   /// @param      cells_per_dim  number of simulation objects on each axis.
   ///                            Number of generated simulation objects =
@@ -26,10 +26,10 @@ struct ModelInitializer {
   ///                            20), ... }`
   /// @param      cell_builder   function containing the logic to instantiate a
   ///                            new simulation object. Takes `const
-  ///                            std::array<double, 3>&` as input parameter
+  ///                            std::array<float, 3>&` as input parameter
   ///
   template <typename Function, typename TResourceManager = ResourceManager<>>
-  static void Grid3D(size_t cells_per_dim, double space,
+  static void Grid3D(size_t cells_per_dim, float space,
                      Function cell_builder) {
     auto rm = TResourceManager::Get();
     // Determine simulation object type which is returned by the cell_builder
@@ -54,7 +54,7 @@ struct ModelInitializer {
   /// ResourceManager. Type of the simulation object is determined by the return
   /// type of parameter cell_builder.
   ///
-  ///     ModelInitializer::Grid3D({8,6,4}, 10, [](const std::array<double, 3>&
+  ///     ModelInitializer::Grid3D({8,6,4}, 10, [](const std::array<float, 3>&
   ///     pos){ return Cell(pos); });
   /// @param      cells_per_dim  number of simulation objects on each axis.
   ///                            Number of generated simulation objects =
@@ -65,10 +65,10 @@ struct ModelInitializer {
   ///                            20), ... }`
   /// @param      cell_builder   function containing the logic to instantiate a
   ///                            new simulation object. Takes `const
-  ///                            std::array<double, 3>&` as input parameter
+  ///                            std::array<float, 3>&` as input parameter
   ///
   template <typename Function, typename TResourceManager = ResourceManager<>>
-  static void Grid3D(const std::array<size_t, 3>& cells_per_dim, double space,
+  static void Grid3D(const std::array<size_t, 3>& cells_per_dim, float space,
                      Function cell_builder) {
     auto rm = TResourceManager::Get();
     // Determine simulation object type which is returned by the cell_builder
@@ -95,10 +95,10 @@ struct ModelInitializer {
   /// @param      positions     positions of the simulation objects to be
   /// @param      cell_builder  function containing the logic to instantiate a
   ///                           new simulation object. Takes `const
-  ///                           std::array<double, 3>&` as input parameter
+  ///                           std::array<float, 3>&` as input parameter
   ///
   template <typename Function, typename TResourceManager = ResourceManager<>>
-  static void CreateCells(const std::vector<std::array<double, 3>>& positions,
+  static void CreateCells(const std::vector<std::array<float, 3>>& positions,
                           Function cell_builder) {
     auto rm = TResourceManager::Get();
     // Determine simulation object type which is returned by the cell_builder
@@ -123,10 +123,10 @@ struct ModelInitializer {
   /// @param[in]  num_cells     The number cells
   /// @param[in]  cell_builder  function containing the logic to instantiate a
   ///                           new simulation object. Takes `const
-  ///                           std::array<double, 3>&` as input parameter
+  ///                           std::array<float, 3>&` as input parameter
   ///
   template <typename Function, typename TResourceManager = ResourceManager<>>
-  static void CreateCellsRandom(double min, double max, int num_cells,
+  static void CreateCellsRandom(float min, float max, int num_cells,
                                 Function cell_builder) {
     auto rm = TResourceManager::Get();
     // Determine simulation object type which is returned by the cell_builder
@@ -139,9 +139,9 @@ struct ModelInitializer {
     // should be used, so this should go someplace accessible for other
     // classes / functions
     for (int i = 0; i < num_cells; i++) {
-      double x = gTRandom.Uniform(min, max);
-      double y = gTRandom.Uniform(min, max);
-      double z = gTRandom.Uniform(min, max);
+      float x = gTRandom.Uniform(min, max);
+      float y = gTRandom.Uniform(min, max);
+      float z = gTRandom.Uniform(min, max);
       auto new_simulation_object = cell_builder({x, y, z});
       container->push_back(new_simulation_object);
     }
@@ -159,7 +159,7 @@ struct ModelInitializer {
   ///
   template <typename TResourceManager = ResourceManager<>>
   static void DefineSubstance(int substance_id, std::string substance_name,
-                              double diffusion_coeff, double decay_constant,
+                              float diffusion_coeff, float decay_constant,
                               int resolution) {
     assert(resolution > 0 && "Resolution needs to be a positive integer value");
     auto rm = TResourceManager::Get();

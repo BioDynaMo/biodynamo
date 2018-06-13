@@ -24,8 +24,8 @@ using std::array;
 class DiffusionGrid {
  public:
   DiffusionGrid() {}
-  DiffusionGrid(int substance_id, std::string substance_name, double dc,
-                double mu, int resolution)
+  DiffusionGrid(int substance_id, std::string substance_name, float dc,
+                float mu, int resolution)
       : substance_(substance_id),
         substance_name_(substance_name),
         dc_({{1 - dc, dc / 6, dc / 6, dc / 6, dc / 6, dc / 6, dc / 6}}),
@@ -96,11 +96,11 @@ class DiffusionGrid {
     // Apply all functions that initialize this diffusion grid
     for (size_t f = 0; f < initializers_.size(); f++) {
       for (size_t x = 0; x < num_boxes_axis_[0]; x++) {
-        double real_x = grid_dimensions_[0] + x * box_length_;
+        float real_x = grid_dimensions_[0] + x * box_length_;
         for (size_t y = 0; y < num_boxes_axis_[1]; y++) {
-          double real_y = grid_dimensions_[2] + y * box_length_;
+          float real_y = grid_dimensions_[2] + y * box_length_;
           for (size_t z = 0; z < num_boxes_axis_[2]; z++) {
-            double real_z = grid_dimensions_[4] + z * box_length_;
+            float real_z = grid_dimensions_[4] + z * box_length_;
             std::array<uint32_t, 3> box_coord;
             box_coord[0] = x;
             box_coord[1] = y;
@@ -171,8 +171,8 @@ class DiffusionGrid {
     }
 
     // Temporarily save previous grid data
-    std::vector<double> tmp_c1 = c1_;
-    std::vector<double> tmp_gradients = gradients_;
+    std::vector<float> tmp_c1 = c1_;
+    std::vector<float> tmp_gradients = gradients_;
 
     c1_.clear();
     c2_.clear();
@@ -200,8 +200,8 @@ class DiffusionGrid {
   /// If the dimensions would be increased from 2x2 to 3x3, it will still
   /// be increased to 4x4 in order for GetBoxIndex to function correctly
   ///
-  void CopyOldData(const std::vector<double>& old_c1,
-                   const std::vector<double>& old_gradients,
+  void CopyOldData(const std::vector<float>& old_c1,
+                   const std::vector<float>& old_gradients,
                    const array<size_t, 3>& old_num_boxes_axis) {
     // Allocate more memory for the grid data arrays
     c1_.resize(total_num_boxes_);
@@ -387,7 +387,7 @@ class DiffusionGrid {
   ///
   /// At the edges the gradient is the same as the box next to it
   void CalculateGradient() {
-    double gd = 1 / (static_cast<double>(box_length_) * 2);
+    float gd = 1 / (static_cast<float>(box_length_) * 2);
 
     auto nx = num_boxes_axis_[0];
     auto ny = num_boxes_axis_[1];
@@ -443,14 +443,14 @@ class DiffusionGrid {
   }
 
   /// Increase the concentration at specified position with specified amount
-  void IncreaseConcentrationBy(const array<double, 3>& position,
-                               double amount) {
+  void IncreaseConcentrationBy(const array<float, 3>& position,
+                               float amount) {
     auto idx = GetBoxIndex(position);
     IncreaseConcentrationBy(idx, amount);
   }
 
   /// Increase the concentration at specified box with specified amount
-  void IncreaseConcentrationBy(size_t idx, double amount) {
+  void IncreaseConcentrationBy(size_t idx, float amount) {
     assert(idx < total_num_boxes_ &&
            "Cell position is out of diffusion grid bounds");
     c1_[idx] += amount;
@@ -460,13 +460,13 @@ class DiffusionGrid {
   }
 
   /// Get the concentration at specified position
-  double GetConcentration(const array<double, 3>& position) {
+  float GetConcentration(const array<float, 3>& position) {
     return c1_[GetBoxIndex(position)];
   }
 
   /// Get the (normalized) gradient at specified position
-  void GetGradient(const array<double, 3>& position,
-                   array<double, 3>* gradient) {
+  void GetGradient(const array<float, 3>& position,
+                   array<float, 3>* gradient) {
     auto idx = GetBoxIndex(position);
     assert(idx < total_num_boxes_ &&
            "Cell position is out of diffusion grid bounds");
@@ -490,7 +490,7 @@ class DiffusionGrid {
   }
 
   /// Calculates the box index of the substance at specified position
-  size_t GetBoxIndex(const array<double, 3>& position) const {
+  size_t GetBoxIndex(const array<float, 3>& position) const {
     array<uint32_t, 3> box_coord;
     box_coord[0] = (floor(position[0]) - grid_dimensions_[0]) / box_length_;
     box_coord[1] = (floor(position[1]) - grid_dimensions_[2]) / box_length_;
@@ -499,15 +499,15 @@ class DiffusionGrid {
     return GetBoxIndex(box_coord);
   }
 
-  void SetDecayConstant(double mu) { mu_ = mu; }
+  void SetDecayConstant(float mu) { mu_ = mu; }
 
-  void SetConcentrationThreshold(double t) { concentration_threshold_ = t; }
+  void SetConcentrationThreshold(float t) { concentration_threshold_ = t; }
 
-  double GetConcentrationThreshold() { return concentration_threshold_; }
+  float GetConcentrationThreshold() { return concentration_threshold_; }
 
-  double* GetAllConcentrations() { return c1_.data(); }
+  float* GetAllConcentrations() { return c1_.data(); }
 
-  double* GetAllGradients() { return gradients_.data(); }
+  float* GetAllGradients() { return gradients_.data(); }
 
   const array<size_t, 3>& GetNumBoxesArray() { return num_boxes_axis_; }
 
@@ -519,19 +519,19 @@ class DiffusionGrid {
 
   std::string GetSubstanceName() { return substance_name_; }
 
-  double GetDecayConstant() { return mu_; }
+  float GetDecayConstant() { return mu_; }
 
   int32_t* GetDimensionsPtr() { return grid_dimensions_.data(); }
 
   array<int32_t, 6>& GetDimensions() { return grid_dimensions_; }
 
-  array<double, 7>& GetDiffusionCoefficients() { return dc_; }
+  array<float, 7>& GetDiffusionCoefficients() { return dc_; }
 
   bool IsInitialized() { return initialized_; }
 
   int GetResolution() { return resolution_; }
 
-  // void AddGaussianLayer(double mean, double sigma, int selected) {
+  // void AddGaussianLayer(float mean, float sigma, int selected) {
   //   mean_.push_back(mean);
   //   sigma_.push_back(sigma);
   //   selected_.push_back(selected);
@@ -550,17 +550,17 @@ class DiffusionGrid {
   /// The length of a box
   uint32_t box_length_;
   /// The array of concentration values
-  std::vector<double> c1_;
+  std::vector<float> c1_;
   /// An extra concentration data buffer for faster value updating
-  std::vector<double> c2_;
+  std::vector<float> c2_;
   /// The array of gradients (x, y, z)
-  std::vector<double> gradients_;
+  std::vector<float> gradients_;
   /// The maximum concentration value that a box can have
-  double concentration_threshold_ = 1;
+  float concentration_threshold_ = 1;
   /// The diffusion coefficients [cc, cw, ce, cs, cn, cb, ct]
-  array<double, 7> dc_;
+  array<float, 7> dc_;
   /// The decay constant
-  double mu_ = 0;
+  float mu_ = 0;
   /// The grid dimensions of the diffusion grid
   array<int32_t, 6> grid_dimensions_;
   /// The number of boxes at each axis [x, y, z]
@@ -574,7 +574,7 @@ class DiffusionGrid {
   /// If false, grid dimensions are even; if true, they are odd
   bool parity_ = false;
   /// A list of functions that initialize this diffusion grid
-  std::vector<std::function<double(double, double, double)>> initializers_;
+  std::vector<std::function<float(float, float, float)>> initializers_;
 
   ClassDefNV(DiffusionGrid, 1);
 };

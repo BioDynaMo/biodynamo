@@ -77,7 +77,7 @@ class NeuronNeuriteAdapter {
 
   TNeuriteElementSoPtr& GetNeuriteElementSoPtr() { return neurite_ptr_; }
 
-  const std::array<double, 3> GetPosition() const {
+  const std::array<float, 3> GetPosition() const {
     if (IsNeuriteElement()) {
       return neurite_ptr_->GetPosition();
     }
@@ -86,7 +86,7 @@ class NeuronNeuriteAdapter {
     return neuron_ptr_->GetPosition();
   }
 
-  std::array<double, 3> OriginOf(uint32_t daughter_element_idx) const {
+  std::array<float, 3> OriginOf(uint32_t daughter_element_idx) const {
     if (IsNeuriteElement()) {
       return neurite_ptr_->OriginOf(daughter_element_idx);
     }
@@ -247,41 +247,41 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
     }
   }
 
-  void SetDiameter(double diameter) {
+  void SetDiameter(float diameter) {
     diameter_[kIdx] = diameter;
     UpdateVolume();
   }
 
-  const std::array<double, 3> GetPosition() const {
+  const std::array<float, 3> GetPosition() const {
     return Math::Subtract(mass_location_[kIdx],
                           Math::ScalarMult(0.5, spring_axis_[kIdx]));
   }
 
-  void SetPosition(const std::array<double, 3>& position) {
+  void SetPosition(const std::array<float, 3>& position) {
     mass_location_[kIdx] =
         Math::Add(position, Math::ScalarMult(0.5, spring_axis_[kIdx]));
   }
 
   /// return end of neurite element position
-  const std::array<double, 3>& GetMassLocation() const {
+  const std::array<float, 3>& GetMassLocation() const {
     return mass_location_[kIdx];
   }
 
-  void SetMassLocation(const std::array<double, 3>& mass_location) {
+  void SetMassLocation(const std::array<float, 3>& mass_location) {
     mass_location_[kIdx] = mass_location;
   }
 
-  double GetAdherence() const { return adherence_[kIdx]; }
+  float GetAdherence() const { return adherence_[kIdx]; }
 
-  void SetAdherence(double adherence) { adherence_[kIdx] = adherence; }
+  void SetAdherence(float adherence) { adherence_[kIdx] = adherence; }
 
-  const std::array<double, 3>& GetXAxis() const { return x_axis_[kIdx]; }
-  const std::array<double, 3>& GetYAxis() const { return y_axis_[kIdx]; }
-  const std::array<double, 3>& GetZAxis() const { return z_axis_[kIdx]; }
+  const std::array<float, 3>& GetXAxis() const { return x_axis_[kIdx]; }
+  const std::array<float, 3>& GetYAxis() const { return y_axis_[kIdx]; }
+  const std::array<float, 3>& GetZAxis() const { return z_axis_[kIdx]; }
 
-  double GetVolume() const { return volume_[kIdx]; }
+  float GetVolume() const { return volume_[kIdx]; }
 
-  double GetDiameter() const { return diameter_[kIdx]; }
+  float GetDiameter() const { return diameter_[kIdx]; }
 
   uint64_t GetBoxIdx() const { return box_idx_[kIdx]; }
 
@@ -291,7 +291,7 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
   /// attached.
   /// @param daughter_element_idx element_idx of the daughter
   /// @return the coord
-  std::array<double, 3> OriginOf(uint32_t daughter_element_idx) const {
+  std::array<float, 3> OriginOf(uint32_t daughter_element_idx) const {
     return mass_location_[kIdx];
   }
 
@@ -321,8 +321,8 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
   // TODO(neurites) arrange in order end
 
   // TODO(neurites) should be generated
-  double* GetPositionPtr() { return &(mass_location_[0][0]); }  // FIXME
-  double* GetDiameterPtr() { return &(diameter_[0]); }
+  float* GetPositionPtr() { return &(mass_location_[0][0]); }  // FIXME
+  float* GetDiameterPtr() { return &(diameter_[0]); }
   /// TODO(neurites) generated end`
 
   /// Retracts the neurite element, if it is a terminal one.
@@ -339,7 +339,7 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
   ///   * If it is shorter and either the previous neurite element has another
   ///   daughter or the mother is not a neurite element, it disappears.
   /// @param speed the retraction speed in microns / h
-  void RetractTerminalEnd(double speed) {
+  void RetractTerminalEnd(float speed) {
     // check if is a terminal branch
     if (daughter_left_[kIdx] != nullptr) {
       return;
@@ -352,8 +352,8 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
       // (putting a limit on how short a branch can be is absolutely necessary
       //  otherwise the tension might explode)
 
-      double new_actual_length = actual_length_[kIdx] - speed;
-      double factor = new_actual_length / actual_length_[kIdx];
+      float new_actual_length = actual_length_[kIdx] - speed;
+      float factor = new_actual_length / actual_length_[kIdx];
       actual_length_[kIdx] = new_actual_length;
       // cf removeproximalCylinder()
       resting_length_[kIdx] = spring_constant_[kIdx] * actual_length_[kIdx] /
@@ -387,9 +387,9 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
   /// possible).
   /// @param speed
   /// @param direction
-  void ElongateTerminalEnd(double speed,
-                           const std::array<double, 3>& direction) {
-    double temp = Math::Dot(direction, spring_axis_[kIdx]);
+  void ElongateTerminalEnd(float speed,
+                           const std::array<float, 3>& direction) {
+    float temp = Math::Dot(direction, spring_axis_[kIdx]);
     if (temp > 0) {
       MovePointMass(speed, direction);
     }
@@ -406,10 +406,10 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
   /// @param new_branch_diameter
   /// @param direction growth direction, but will be automatically corrected if
   /// not at least 45 degrees from the cylinder's axis.
-  MostDerivedSoPtr Branch(double new_branch_diameter,
-                          const std::array<double, 3>& direction) {
+  MostDerivedSoPtr Branch(float new_branch_diameter,
+                          const std::array<float, 3>& direction) {
     // create a new neurite element for side branch
-    double length = 1.0;  // TODO(neurites) hard coded value
+    float length = 1.0;  // TODO(neurites) hard coded value
 
     // we first split this neurite element into two pieces
     auto proximal_ns = InsertProximalNeuriteElement();
@@ -432,14 +432,14 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
   /// daughter right at the proximal half.
   /// @param direction growth direction, but will be automatically corrected if
   /// not at least 45 degrees from the cylinder's axis.
-  MostDerivedSoPtr Branch(const std::array<double, 3>& direction) {
+  MostDerivedSoPtr Branch(const std::array<float, 3>& direction) {
     return Branch(diameter_[kIdx], direction);
   }
 
   /// Makes a side branch, i.e. splits this neurite element into two and puts a
   /// daughter right at the proximal half.
   /// @param diameter of the side branch
-  MostDerivedSoPtr Branch(double diameter) {
+  MostDerivedSoPtr Branch(float diameter) {
     auto rand_noise = gRandom.NextNoise(0.1);
     auto growth_direction =
         Math::Perp3(Math::Add(GetUnitaryAxisDirectionVector(), rand_noise),
@@ -451,7 +451,7 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
   /// Makes a side branch, i.e. splits this neurite element into two and puts a
   /// daughter right at the proximal half.
   MostDerivedSoPtr Branch() {
-    double branch_diameter = diameter_[kIdx];
+    float branch_diameter = diameter_[kIdx];
     auto rand_noise = gRandom.NextNoise(0.1);
     auto growth_direction =
         Math::Perp3(Math::Add(GetUnitaryAxisDirectionVector(), rand_noise),
@@ -475,9 +475,9 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
   /// @param direction_2
   /// @return SoPointer to new neurite elements
   std::array<MostDerivedSoPtr, 2> Bifurcate(
-      double diameter_1, double diameter_2,
-      const std::array<double, 3>& direction_1,
-      const std::array<double, 3>& direction_2);
+      float diameter_1, float diameter_2,
+      const std::array<float, 3>& direction_1,
+      const std::array<float, 3>& direction_2);
 
   /// Bifurcation of a growth come (only works for terminal segments).
   /// Note : angles are corrected if they are pointing backward.
@@ -488,9 +488,9 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
   /// @param direction_2
   /// @return SoPointer to new neurite elements
   std::array<MostDerivedSoPtr, 2> Bifurcate(
-      double length, double diameter_1, double diameter_2,
-      const std::array<double, 3>& direction_1,
-      const std::array<double, 3>& direction_2) {
+      float length, float diameter_1, float diameter_2,
+      const std::array<float, 3>& direction_1,
+      const std::array<float, 3>& direction_2) {
     // 1) physical bifurcation
     // check it is a terminal branch
     if (daughter_left_[kIdx] != nullptr) {
@@ -573,25 +573,25 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
 
   // TODO(neurites) documentation
   std::array<MostDerivedSoPtr, 2> Bifurcate(
-      const std::array<double, 3>& direction_1,
-      const std::array<double, 3>& direction_2) {
+      const std::array<float, 3>& direction_1,
+      const std::array<float, 3>& direction_2) {
     // initial default length :
-    double l = Param::kNeuriteDefaultActualLength;
+    float l = Param::kNeuriteDefaultActualLength;
     // diameters :
-    double d = diameter_[kIdx];
+    float d = diameter_[kIdx];
     return Bifurcate(l, d, d, direction_1, direction_2);
   }
 
   // TODO(neurites) documentation
   std::array<MostDerivedSoPtr, 2> Bifurcate() {
     // initial default length :
-    double l = Param::kNeuriteDefaultActualLength;
+    float l = Param::kNeuriteDefaultActualLength;
     // diameters :
-    double d = diameter_[kIdx];
+    float d = diameter_[kIdx];
     // direction : (60 degrees between branches)
-    double random = gRandom.NextDouble();
+    float random = gRandom.NextDouble();
     auto perp_plane = Math::Perp3(spring_axis_[kIdx], random);
-    double angle_between_branches = Math::kPi / 3.0;
+    float angle_between_branches = Math::kPi / 3.0;
     auto direction_1 = Math::RotAroundAxis(
         spring_axis_[kIdx], angle_between_branches * 0.5, perp_plane);
     auto direction_2 = Math::RotAroundAxis(
@@ -640,7 +640,7 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
   /// Returns the total force that this `NeuriteElement` exerts on it's mother.
   /// It is the sum of the spring force and the part of the inter-object force
   /// computed earlier in `CalculateDisplacement`
-  std::array<double, 3> ForceTransmittedFromDaugtherToMother(
+  std::array<float, 3> ForceTransmittedFromDaugtherToMother(
       const NeuriteOrNeuron& mother) {
     if (mother_[kIdx] != mother) {
       Fatal("NeuriteElement", "Given object is not the mother!");
@@ -650,7 +650,7 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
     // earlier.
     // (The reason for dividing by the actualLength is to normalize the
     // direction : T = T * axis/ (axis length)
-    double factor = tension_[kIdx] / actual_length_[kIdx];
+    float factor = tension_[kIdx] / actual_length_[kIdx];
     if (factor < 0) {
       factor = 0;
     }
@@ -700,14 +700,14 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
   ///
   /// @param speed      of the growth rate (microns/hours).
   /// @param direction  the 3D direction of movement.
-  void MovePointMass(double speed, const std::array<double, 3>& direction) {
+  void MovePointMass(float speed, const std::array<float, 3>& direction) {
     // check if is a terminal branch
     if (daughter_left_[kIdx] != nullptr) {
       return;
     }
 
     // scaling for integration step
-    double length = speed * Param::simulation_time_step_;
+    float length = speed * Param::simulation_time_step_;
     auto displacement = Math::ScalarMult(length, Math::Normalize(direction));
     auto new_mass_location = Math::Add(displacement, mass_location_[kIdx]);
     // here I have to define the actual length ..........
@@ -726,7 +726,7 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
     UpdateLocalCoordinateAxis();
   }
 
-  void SetRestingLengthForDesiredTension(double tension) {
+  void SetRestingLengthForDesiredTension(float tension) {
     tension_[kIdx] = tension;
     if (tension == 0.0) {
       resting_length_[kIdx] = actual_length_[kIdx];
@@ -739,9 +739,9 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
 
   /// Progressive modification of the volume. Updates the diameter.
   /// @param speed cubic micron/ h
-  void ChangeVolume(double speed) {
+  void ChangeVolume(float speed) {
     // scaling for integration step
-    double delta = speed * Param::simulation_time_step_;
+    float delta = speed * Param::simulation_time_step_;
     volume_[kIdx] += delta;
 
     if (volume_[kIdx] <
@@ -753,9 +753,9 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
 
   /// Progressive modification of the diameter. Updates the volume.
   /// @param speed micron/ h
-  void ChangeDiameter(double speed) {
+  void ChangeDiameter(float speed) {
     // scaling for integration step
-    double delta = speed * Param::simulation_time_step_;
+    float delta = speed * Param::simulation_time_step_;
     diameter_[kIdx] += delta;
     UpdateVolume();
   }
@@ -766,21 +766,21 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
 
   // TODO(neurites) documentation
   template <typename TGrid>
-  std::array<double, 3> CalculateDisplacement(TGrid * grid,
-                                              double squared_radius) {
+  std::array<float, 3> CalculateDisplacement(TGrid * grid,
+                                              float squared_radius) {
     // decide first if we have to split or fuse this cylinder. Usually only
     // terminal branches (growth cone) do
     if (daughter_left_[kIdx] == nullptr) {
       RunDiscretization();
     }
 
-    std::array<double, 3> force_on_my_point_mass{0, 0, 0};
-    std::array<double, 3> force_on_my_mothers_point_mass{0, 0, 0};
+    std::array<float, 3> force_on_my_point_mass{0, 0, 0};
+    std::array<float, 3> force_on_my_mothers_point_mass{0, 0, 0};
 
     // 1) Spring force
     //   Only the spring of this cylinder. The daughters spring also act on this
     //    mass, but they are treated in point (2)
-    double factor =
+    float factor =
         -tension_[kIdx] / actual_length_[kIdx];  // the minus sign is important
                                                  // because the spring axis goes
                                                  // in the opposite direction
@@ -844,7 +844,7 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
       }
 
       DefaultForce force;
-      std::array<double, 4> force_from_neighbor =
+      std::array<float, 4> force_from_neighbor =
           force.GetForce(this, &neighbor);
 
       if (std::abs(force_from_neighbor[3]) <
@@ -855,7 +855,7 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
         force_on_my_point_mass[2] += force_from_neighbor[2];
       } else {
         // (if there is a part transmitted to the proximal end)
-        double part_for_point_mass = 1.0 - force_from_neighbor[3];
+        float part_for_point_mass = 1.0 - force_from_neighbor[3];
         force_on_my_point_mass[0] +=
             force_from_neighbor[0] * part_for_point_mass;
         force_on_my_point_mass[1] +=
@@ -877,15 +877,15 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
     bool anti_kink = false;
     // TEST : anti-kink
     if (anti_kink) {
-      double kk = 5;
+      float kk = 5;
       if (daughter_left_[kIdx] != nullptr && daughter_right_[kIdx] == nullptr) {
         if (daughter_left_[kIdx]->GetDaughterLeft() != nullptr) {
           auto downstream = daughter_left_[kIdx]->GetDaughterLeft();
-          double rresting = daughter_left_[kIdx]->GetRestingLength() +
+          float rresting = daughter_left_[kIdx]->GetRestingLength() +
                             downstream->GetRestingLength();
           auto down_to_me =
               Math::Subtract(GetMassLocation(), downstream->GetMassLocation());
-          double aactual = Math::Norm(down_to_me);
+          float aactual = Math::Norm(down_to_me);
 
           force_on_my_point_mass =
               Math::Add(force_on_my_point_mass,
@@ -896,10 +896,10 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
 
       if (daughter_left_[kIdx] != nullptr && mother_[kIdx].IsNeuriteElement()) {
         auto mother = mother_[kIdx].GetNeuriteElementSoPtr();
-        double rresting = GetRestingLength() + mother->GetRestingLength();
+        float rresting = GetRestingLength() + mother->GetRestingLength();
         auto down_to_me =
             Math::Subtract(GetMassLocation(), mother->ProximalEnd());
-        double aactual = Math::Norm(down_to_me);
+        float aactual = Math::Norm(down_to_me);
 
         force_on_my_point_mass =
             Math::Add(force_on_my_point_mass,
@@ -912,10 +912,10 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
     force_to_transmit_to_proximal_mass_[kIdx] = force_on_my_mothers_point_mass;
     //  6.1) Define movement scale
     // FIXME
-    // double h = Param::simulation_time_step_;
-    // double h_over_m = h / GetMass();
-    double h_over_m = 1.0;
-    double force_norm = Math::Norm(force_on_my_point_mass);
+    // float h = Param::simulation_time_step_;
+    // float h_over_m = h / GetMass();
+    float h_over_m = 1.0;
+    float force_norm = Math::Norm(force_on_my_point_mass);
     //  6.2) If is F not strong enough -> no movements
     if (force_norm < adherence_[kIdx]) {
       return {0, 0, 0};
@@ -924,7 +924,7 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
 
     //  6.3) Since there's going be a move, we calculate it
     auto displacement = Math::ScalarMult(h_over_m, force_on_my_point_mass);
-    double displacement_norm = force_norm * h_over_m;
+    float displacement_norm = force_norm * h_over_m;
 
     //  6.4) There is an upper bound for the movement.
     if (displacement_norm > Param::simulation_max_displacement_) {
@@ -937,7 +937,7 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
   }
 
   // TODO(neurites) documentation
-  void ApplyDisplacement(const std::array<double, 3>& displacement) {
+  void ApplyDisplacement(const std::array<float, 3>& displacement) {
     // move of our mass
     SetMassLocation(Math::Add(GetMassLocation(), displacement));
     // Recompute length, tension and re-center the computation node, and
@@ -973,7 +973,7 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
     // y (new) = z(new) cross x(new)
     x_axis_[kIdx] = Math::Normalize(spring_axis_[kIdx]);
     z_axis_[kIdx] = Math::CrossProduct(x_axis_[kIdx], y_axis_[kIdx]);
-    double norm_of_z = Math::Norm(z_axis_[kIdx]);
+    float norm_of_z = Math::Norm(z_axis_[kIdx]);
     if (norm_of_z < 1E-10) {  // TODO(neurites) use parameter
       // If new x_axis_ and old y_axis_ are aligned, we cannot use this scheme;
       // we start by re-defining new perp vectors. Ok, we loose the previous
@@ -1031,8 +1031,8 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
   /// of a point expressed in global cartesian coordinates
   /// ([1,0,0],[0,1,0],[0,0,1]).
   /// @param position in global coordinates
-  std::array<double, 3> TransformCoordinatesGlobalToLocal(
-      const std::array<double, 3>& position) const {
+  std::array<float, 3> TransformCoordinatesGlobalToLocal(
+      const std::array<float, 3>& position) const {
     auto pos = Math::Subtract(position, ProximalEnd());
     return {Math::Dot(pos, x_axis_[kIdx]), Math::Dot(pos, y_axis_[kIdx]),
             Math::Dot(pos, z_axis_[kIdx])};
@@ -1043,9 +1043,9 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
   /// ([1,0,0],[0,1,0],[0,0,1])
   /// of a point expressed in the local coordinate system (xAxis, yXis, zAxis).
   /// @param position in local coordinates
-  std::array<double, 3> TransformCoordinatesLocalToGlobal(
-      const std::array<double, 3>& position) const {
-    std::array<double, 3> glob{
+  std::array<float, 3> TransformCoordinatesLocalToGlobal(
+      const std::array<float, 3>& position) const {
+    std::array<float, 3> glob{
         position[0] * x_axis_[kIdx][0] + position[1] * y_axis_[kIdx][0] +
             position[2] * z_axis_[kIdx][0],
         position[0] * x_axis_[kIdx][1] + position[1] * y_axis_[kIdx][1] +
@@ -1059,8 +1059,8 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
   /// Returns the position in cylindrical coordinates (h,theta,r)
   /// of a point expressed in the local coordinate system (xAxis, yXis, zAxis).
   /// @param position in local coordinates
-  std::array<double, 3> TransformCoordinatesLocalToPolar(
-      const std::array<double, 3>& position) const {
+  std::array<float, 3> TransformCoordinatesLocalToPolar(
+      const std::array<float, 3>& position) const {
     return {position[0], std::atan2(position[2], position[1]),
             std::sqrt(position[1] * position[1] + position[2] * position[2])};
   }
@@ -1069,27 +1069,27 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
   /// Returns the position in the local coordinate system (xAxis, yXis, zAxis)
   /// of a point expressed in cylindrical coordinates (h,theta,r).
   /// @param position in local coordinates
-  std::array<double, 3> TransformCoordinatesPolarToLocal(
-      const std::array<double, 3>& position) const {
+  std::array<float, 3> TransformCoordinatesPolarToLocal(
+      const std::array<float, 3>& position) const {
     return {position[0], position[2] * std::cos(position[1]),
             position[2] * std::sin(position[1])};
   }
 
   /// P -> G :    P -> L, then L -> G
-  std::array<double, 3> TransformCoordinatesPolarToGlobal(
-      const std::array<double, 2>& position) const {
+  std::array<float, 3> TransformCoordinatesPolarToGlobal(
+      const std::array<float, 2>& position) const {
     // the position is in cylindrical coord (h,theta,r)
     // with r being implicit (half the diameter_)
     // We thus have h (along x_axis_) and theta (the angle from the y_axis_).
-    double r = 0.5 * diameter_;
-    std::array<double, 3> polar_position{position[0], position[1], r};
+    float r = 0.5 * diameter_;
+    std::array<float, 3> polar_position{position[0], position[1], r};
     auto local = TransformCoordinatesPolarToLocal(polar_position);
     return TransformCoordinatesLocalToGlobal(local);
   }
 
   /// G -> L :    G -> L, then L -> P
-  std::array<double, 3> TransformCoordinatesGlobalToPolar(
-      const std::array<double, 3>& position) const {
+  std::array<float, 3> TransformCoordinatesGlobalToPolar(
+      const std::array<float, 3>& position) const {
     auto local = TransformCoordinatesGlobalToLocal(position);
     return TransformCoordinatesLocalToPolar(local);
   }
@@ -1133,42 +1133,42 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
 
   void SetBranchOrder(int branch_order) { branch_order_[kIdx] = branch_order; }
 
-  double GetActualLength() const { return actual_length_[kIdx]; }
+  float GetActualLength() const { return actual_length_[kIdx]; }
 
   /// Should not be used, since the actual length depends on the geometry.
-  void SetActualLength(double actual_length) {
+  void SetActualLength(float actual_length) {
     actual_length_[kIdx] = actual_length;
   }
 
-  double GetRestingLength() const { return resting_length_[kIdx]; }
+  float GetRestingLength() const { return resting_length_[kIdx]; }
 
-  void SetRestingLength(double resting_length) {
+  void SetRestingLength(float resting_length) {
     resting_length_[kIdx] = resting_length;
   }
 
-  const std::array<double, 3>& GetSpringAxis() const {
+  const std::array<float, 3>& GetSpringAxis() const {
     return spring_axis_[kIdx];
   }
 
-  void SetSpringAxis(const std::array<double, 3>& axis) {
+  void SetSpringAxis(const std::array<float, 3>& axis) {
     spring_axis_[kIdx] = axis;
   }
 
-  double GetSpringConstant() const { return spring_constant_[kIdx]; }
+  float GetSpringConstant() const { return spring_constant_[kIdx]; }
 
-  void SetSpringConstant(double spring_constant) {
+  void SetSpringConstant(float spring_constant) {
     spring_constant_[kIdx] = spring_constant;
   }
 
-  double GetTension() const { return tension_[kIdx]; }
+  float GetTension() const { return tension_[kIdx]; }
 
-  void SetTension(double tension) { tension_[kIdx] = tension; }
+  void SetTension(float tension) { tension_[kIdx] = tension; }
 
   /// NOT A "REAL" GETTER
   /// Gets a vector of length 1, with the same direction as the SpringAxis.
   /// @return a normalized spring axis
-  std::array<double, 3> GetUnitaryAxisDirectionVector() const {
-    double factor = 1.0 / actual_length_[kIdx];
+  std::array<float, 3> GetUnitaryAxisDirectionVector() const {
+    float factor = 1.0 / actual_length_[kIdx];
     return Math::ScalarMult(factor, spring_axis_[kIdx]);
   }
 
@@ -1179,12 +1179,12 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
   /// retuns the position of the proximal end, ie the position minus the spring
   /// axis.
   /// Is mainly used for paint
-  std::array<double, 3> ProximalEnd() const {
+  std::array<float, 3> ProximalEnd() const {
     return Math::Subtract(mass_location_[kIdx], spring_axis_[kIdx]);
   }
 
   /// Returns the position of the distal end == position_
-  const std::array<double, 3>& DistalEnd() const {
+  const std::array<float, 3>& DistalEnd() const {
     return mass_location_[kIdx];
   }
 
@@ -1193,8 +1193,8 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
   /// called) before the previous branching point. Used to decide if long enough
   /// to bifurcate or branch,
   /// independently of the discretization.
-  double LengthToProximalBranchingPoint() const {
-    double length = actual_length_;
+  float LengthToProximalBranchingPoint() const {
+    float length = actual_length_;
     if (mother_->IsNeuriteElement()) {
       if (mother_->GetDaughterRight() == nullptr) {
         length += mother_->LengthToProximalBranchingPoint();
@@ -1203,10 +1203,10 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
     return length;
   }
 
-  double GetLength() const { return actual_length_[kIdx]; }
+  float GetLength() const { return actual_length_[kIdx]; }
 
   /// Returns the axis direction of a neurite element
-  const std::array<double, 3>& GetAxis() const {
+  const std::array<float, 3>& GetAxis() const {
     // local coordinate x_axis_ is equal to cylinder axis
     return x_axis_[kIdx];
   }
@@ -1324,16 +1324,16 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
   // resolved
   /// position_ is middle point of cylinder_
   /// mass_location_ is distal end of the cylinder
-  vec<std::array<double, 3>> mass_location_ = {{0.0, 0.0, 0.0}};
-  vec<double> volume_;
-  vec<double> diameter_ = {{Param::kNeuriteDefaultDiameter}};
-  vec<double> adherence_;
+  vec<std::array<float, 3>> mass_location_ = {{0.0, 0.0, 0.0}};
+  vec<float> volume_;
+  vec<float> diameter_ = {{Param::kNeuriteDefaultDiameter}};
+  vec<float> adherence_;
   /// First axis of the local coordinate system equal to cylinder axis
-  vec<array<double, 3>> x_axis_ = {{1.0, 0.0, 0.0}};
+  vec<array<float, 3>> x_axis_ = {{1.0, 0.0, 0.0}};
   /// Second axis of the local coordinate system.
-  vec<array<double, 3>> y_axis_ = {{0.0, 1.0, 0.0}};
+  vec<array<float, 3>> y_axis_ = {{0.0, 1.0, 0.0}};
   /// Third axis of the local coordinate system.
-  vec<array<double, 3>> z_axis_ = {{0.0, 0.0, 1.0}};
+  vec<array<float, 3>> z_axis_ = {{0.0, 0.0, 1.0}};
   /// Grid box index
   vec<uint64_t> box_idx_;
 
@@ -1355,25 +1355,25 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
   vec<int> branch_order_ = {0};
 
   /// The part of the inter-object force transmitted to the mother (parent node)
-  vec<std::array<double, 3>> force_to_transmit_to_proximal_mass_ = {{0, 0, 0}};
+  vec<std::array<float, 3>> force_to_transmit_to_proximal_mass_ = {{0, 0, 0}};
 
   /// from the attachment point to the mass location
   /// (proximal -> distal).
-  vec<std::array<double, 3>> spring_axis_ = {{0, 0, 0}};
+  vec<std::array<float, 3>> spring_axis_ = {{0, 0, 0}};
 
   /// Real length of the PhysicalCylinder (norm of the springAxis).
-  vec<double> actual_length_ = {Param::kNeuriteDefaultActualLength};
+  vec<float> actual_length_ = {Param::kNeuriteDefaultActualLength};
 
   /// Tension in the cylinder spring.
-  vec<double> tension_ = {Param::kNeuriteDefaultTension};
+  vec<float> tension_ = {Param::kNeuriteDefaultTension};
 
   /// Spring constant per distance unit (springConstant restingLength  = "real"
   /// spring constant).
-  vec<double> spring_constant_ = {Param::kNeuriteDefaultSpringConstant};
+  vec<float> spring_constant_ = {Param::kNeuriteDefaultSpringConstant};
 
   /// The length of the internal spring where tension would be zero.
   /// T = k*(A-R)/R --> R = k*A/(T+K)
-  vec<double> resting_length_ = {spring_constant_[kIdx] * actual_length_[kIdx] /
+  vec<float> resting_length_ = {spring_constant_[kIdx] * actual_length_[kIdx] /
                                  (tension_[kIdx] + spring_constant_[kIdx])};
 
   /// Divides the neurite element into two neurite element of equal length.
@@ -1393,7 +1393,7 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
   /// mother). All characteristics are transmitted
   /// @param distal_portion the fraction of the total old length devoted to the
   /// distal half (should be between 0 and 1).
-  MostDerivedSoPtr InsertProximalNeuriteElement(double distal_portion) {
+  MostDerivedSoPtr InsertProximalNeuriteElement(float distal_portion) {
     auto new_neurite_element = Rm()->template New<MostDerivedScalar>();
 
     // TODO(neurites) reformulate to mass_location_
@@ -1467,12 +1467,12 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
   }
 
   MostDerivedSoPtr ExtendSideNeuriteElement(
-      double length, const std::array<double, 3>& direction) {
+      float length, const std::array<float, 3>& direction) {
     auto new_branch = Rm()->template New<MostDerivedScalar>();
     new_branch.Copy(*static_cast<MostDerived<Backend>*>(this));
 
     auto dir = direction;
-    double angle_with_side_branch =
+    float angle_with_side_branch =
         Math::AngleRadian(spring_axis_[kIdx], direction);
     if (angle_with_side_branch < 0.78 ||
         angle_with_side_branch > 2.35) {  // 45-135 degrees

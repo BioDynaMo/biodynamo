@@ -1,10 +1,9 @@
 #include "samples/common/inc/helper_math.h"
 #include "gpu/displacement_op_cuda_kernel.h"
 
-#include "assert.h"
-
 #define GpuErrchk(ans) { GpuAssert((ans), __FILE__, __LINE__); }
-inline void GpuAssert(cudaError_t code, const char *file, int line, bool abort=true) {
+inline void GpuAssert(cudaError_t code, const char *file, int line, bool abort=true)
+{
    if (code != cudaSuccess)
    {
       fprintf(stderr,"GPUassert: %s %s %d\n", cudaGetErrorString(code), file, line);
@@ -15,7 +14,14 @@ inline void GpuAssert(cudaError_t code, const char *file, int line, bool abort=t
    }
 }
 
-__device__ int3 GetBoxCoordinates2(float3 pos, int32_t* grid_dimensions, uint32_t box_length) {
+// __device__ float squared_euclidian_distance(float3 my_position, float3 nb_position) {
+//   const float dx = positions[3*idx + 0] - positions[3*nidx + 0];
+//   const float dy = positions[3*idx + 1] - positions[3*nidx + 1];
+//   const float dz = positions[3*idx + 2] - positions[3*nidx + 2];
+//   return (dx * dx + dy * dy + dz * dz);
+// }
+
+__device__ int3 get_box_coordinates(float3 pos, int32_t* grid_dimensions, uint32_t box_length) {
   int3 box_coords;
   box_coords.x = (floor(pos.x) - grid_dimensions[0]) / box_length;
   box_coords.y = (floor(pos.y) - grid_dimensions[1]) / box_length;
@@ -23,17 +29,67 @@ __device__ int3 GetBoxCoordinates2(float3 pos, int32_t* grid_dimensions, uint32_
   return box_coords;
 }
 
-__device__ int3 GetBoxCoordinates(uint32_t box_idx, uint32_t* num_boxes_axis) {
+__device__ int3 get_box_coordinates_2(uint32_t box_idx, uint32_t* num_boxes_axis_) {
   int3 box_coord;
-  box_coord.z = box_idx / (num_boxes_axis[0]*num_boxes_axis[1]);
-  uint32_t remainder = box_idx % (num_boxes_axis[0]*num_boxes_axis[1]);
-  box_coord.y = remainder / num_boxes_axis[0];
-  box_coord.x = remainder % num_boxes_axis[0];
+  box_coord.z = box_idx / (num_boxes_axis_[0]*num_boxes_axis_[1]);
+  uint32_t remainder = box_idx % (num_boxes_axis_[0]*num_boxes_axis_[1]);
+  box_coord.y = remainder / num_boxes_axis_[0];
+  box_coord.x = remainder % num_boxes_axis_[0];
   return box_coord;
 }
 
-__device__ uint32_t GetBoxId(int3 bc, uint32_t* num_boxes_axis) {
+__device__ uint32_t get_box_id_2(int3 bc, uint32_t* num_boxes_axis) {
   return bc.z * num_boxes_axis[0]*num_boxes_axis[1] + bc.y * num_boxes_axis[0] + bc.x;
+}
+
+__device__ uint32_t get_box_id(float3 pos, uint32_t* num_boxes_axis, int32_t* grid_dimensions, uint32_t box_length) {
+  int3 box_coords = get_box_coordinates(pos, grid_dimensions, box_length);
+  return get_box_id_2(box_coords, num_boxes_axis);
+}
+
+__device__ void compute_force(const float3& my_position, float my_diameter, float* positions, float* diameters, uint32_t nidx, float3& result) {
+  float r1 = 0.5 * my_diameter;
+  float r2 = 0.5 * diameters[nidx];
+  // We take virtual bigger radii to have a distant interaction, to get a desired density.
+  float additional_radius = 10.0 * 0.15;
+  r1 += additional_radius;
+  r2 += additional_radius;
+
+  float3 comp;
+  comp.x = my_position.x - positions[3*nidx + 0];
+  comp.y = my_position.y - positions[3*nidx + 1];
+  comp.z = my_position.z - positions[3*nidx + 2];
+  float center_distance = length(comp);
+
+  // the overlap distance (how much one penetrates in the other)
+  float delta = r1 + r2 - center_distance;
+
+  if (delta < 0) {
+    return;
+  }
+
+  // to avoid a division by 0 if the centers are (almost) at the same location
+  if (center_distance < 0.00000001) {
+    result += make_float3(42.0, 42.0, 42.0);
+    return;
+  }
+
+  // printf("Colliding cell [%d] and [%d]\n", idx, nidx);
+  // printf("Delta for neighbor [%d] = %f\n", nidx, delta);
+
+  // the force itself
+  float r = (r1 * r2) / (r1 + r2);
+  float gamma = 1; // attraction coeff
+  float k = 2;     // repulsion coeff
+  float f = k * delta - gamma * sqrt(r * delta);
+
+  float module = f / center_distance;
+  result += module*comp;
+  // result.x += module * comp.x;
+  // result.y += module * comp.y;
+  // result.z += module * comp.z;
+  // printf("%f, %f, %f\n", module * comp1, module * comp2, module * comp3);
+  // printf("Force between cell (%u) [%f, %f, %f] & cell (%u) [%f, %f, %f] = %f, %f, %f\n", idx, positions[3*idx + 0], positions[3*idx + 1], positions[3*idx + 2], nidx, positions[3*nidx + 0], positions[3*nidx + 1], positions[3*nidx + 2], module * comp1, module * comp2, module * comp3);
 }
 
 __device__ void GetMooreBoxIds(uint32_t box_idx, uint32_t* ret, uint32_t* num_boxes_axis) {
@@ -48,129 +104,67 @@ __device__ void GetMooreBoxIds(uint32_t box_idx, uint32_t* ret, uint32_t* num_bo
     make_int3(-1, 0, 1),   make_int3(0, 0, 1),   make_int3(1, 0, 1),
     make_int3(-1, 1, 1),   make_int3(0, 1, 1),   make_int3(1, 1, 1)};
 
-  int3 box_coords = GetBoxCoordinates(box_idx, num_boxes_axis);
+  int3 box_coords = get_box_coordinates_2(box_idx, num_boxes_axis);
   for (unsigned i = 0; i < 27; i++) {
-    ret[i] = GetBoxId(box_coords + moore_offset[i], num_boxes_axis);
+    ret[i] = get_box_id_2(box_coords + moore_offset[i], num_boxes_axis);
   }
 }
 
-__device__ void CheckAdherence(uint32_t cidx, float* result,
-              float timestep, float max_displacement, float* mass, float* adherence) {
-  // Mass needs to non-zero!
-  // float mh = timestep / mass[cidx];
-
-  // if (length(collision_force) > adherence[cidx]) {
-  //   result[3*cidx + 0] += collision_force.x * mh;
-  //   result[3*cidx + 1] += collision_force.y * mh;
-  //   result[3*cidx + 2] += collision_force.z * mh;
-
-  //   if (length(collision_force) * mh > max_displacement) {
-  //     result[3*cidx + 0] = max_displacement;
-  //     result[3*cidx + 1] = max_displacement;
-  //     result[3*cidx + 2] = max_displacement;
-  //   }
-  // }
-}
-
-__device__ void ComputeForce(uint32_t cidx, uint32_t nidx, float3* positions,
-      float* diameters, float3* force) {
-  float r1 = 0.5 * diameters[cidx];
-  float r2 = 0.5 * diameters[nidx];
-  // We take virtual bigger radii to have a distant interaction, to get a desired density.
-  const float additional_radius = 10.0 * 0.15;
-  r1 += additional_radius;
-  r2 += additional_radius;
-
-  float3 comp = positions[cidx] - positions[nidx];
-  float center_distance = length(comp);
-
-  // the overlap distance (how much one penetrates in the other)
-  float delta = r1 + r2 - center_distance;
-
-  // to avoid a division by 0 if the centers are (almost) at the same location
-  if (delta < 0) { return; }
-
-  if (center_distance < 0.00000001) {
-    *force = make_float3(42, 42, 42);
-  }
-
-  // the force itself
-  float r = (r1 * r2) / (r1 + r2);
-  float gamma = 1; // attraction coeff
-  float k = 2;     // repulsion coeff
-  float f = k * delta - gamma * sqrt(r * delta);
-
-  float module = f / center_distance;
-  *force = module * comp;
-}
-
-// Create arrays of cell data for each box
-// Create packages of these arrays for the 27 Moore boxes
-// Create dictionary <local_id, real_id> of each cell
-// kernel1<<<num_boxes, 1>>>(all_pos, all_diameter, box_starts, box_lengths, successors, *cache_location)
 __constant__ bdm::SimParams params;
 
 __global__ void collide(
-        float* positions,
-        float* diameters,
-        float* tractor_force,
-        float* adherence,
-        uint32_t* box_id,
-        float* mass,
-        uint32_t* starts,
-        uint16_t* lengths,
-        uint32_t* successors,
-        float* result) {
-  __shared__ float3 shared_pos[27*4];
-  __shared__ float3 shared_res[27*4];
-  __shared__ float  shared_dia[27*4];
+       float* positions,
+       float* diameters,
+       float* tractor_force,
+       float* adherence,
+       uint32_t* box_id,
+       float* mass,
+       uint32_t* starts,
+       uint16_t* lengths,
+       uint32_t* successors,
+       float* result) {
   __shared__ uint32_t moore_boxes[27];
-  __shared__ uint32_t i;
-  // unique block index inside a 3D block grid
-  const unsigned long long int blockId = blockIdx.x
-                                       + blockIdx.y * gridDim.x
-                                       + blockIdx.z * gridDim.x * gridDim.y;
-  if (blockIdx.x > 0 && blockIdx.x < gridDim.x && blockIdx.y > 0 && blockIdx.y < gridDim.y && blockIdx.z > 0 && blockIdx.z < gridDim.z) {
-    if (threadIdx.x == 0) {
-      i = 0;
-      uint32_t cidx = starts[blockId];
-      for (uint32_t nb = 0; nb < lengths[blockId]; nb++) {
-        shared_pos[i] = make_float3(positions[3*cidx], positions[3*cidx+1], positions[3*cidx+2]);
-        shared_dia[i] = diameters[cidx];
-        cidx = successors[cidx];
-        i++;
-      }
-      GetMooreBoxIds(blockId, &moore_boxes[0], params.num_boxes_axis);
-    }
+  uint32_t tidx = blockIdx.x * blockDim.x + threadIdx.x;
+  if (tidx < params.num_objects) {
+    float3 collision_force = make_float3(
+                                params.timestep * tractor_force[3*tidx + 0],
+                                params.timestep * tractor_force[3*tidx + 1],
+                                params.timestep * tractor_force[3*tidx + 2]);
 
-    if (threadIdx.x < 27 && (threadIdx.x != 12)) {
-      uint32_t bidx = moore_boxes[threadIdx.x];
-      if (bidx < gridDim.x * gridDim.y * gridDim.z) {
-        uint32_t cidx = starts[bidx];
-        for (uint32_t nb = 0; nb < lengths[bidx]; nb++) {  // for all cells per box
-          int li = atomicAdd(&i, 1);
-          shared_pos[li] = make_float3(positions[3 * cidx], positions[3 * cidx + 1], positions[3 * cidx + 2]);
-          shared_dia[li] = diameters[cidx];
-          cidx = successors[cidx];
+    float3 my_position;
+    my_position = make_float3(positions[3 * tidx], positions[3 * tidx + 1],
+      positions[3 * tidx + 2]);
+    float my_diameter = diameters[tidx];
+
+    GetMooreBoxIds(box_id[tidx], &moore_boxes[0], params.num_boxes_axis);
+    for (int i = 0; i < 27; i++) {
+      uint32_t bidx = moore_boxes[i];
+      uint32_t nidx = starts[bidx];
+      for (uint16_t nb = 0; nb < lengths[bidx]; nb++) {
+        if (nidx != tidx) {
+          if (dot(my_position, make_float3(positions[3 * nidx], positions[3 * nidx + 1],
+            positions[3 * nidx + 2])) < params.squared_radius) {
+            compute_force(my_position, my_diameter, positions, diameters, nidx, collision_force);
+          }
         }
+        // traverse linked-list
+        nidx = successors[nidx];
       }
     }
 
-    __syncthreads();
-    // the local id of a thread within a block [0, blockDim.x - 1]
-    uint32_t nb_idx = threadIdx.x;
+    // Mass needs to non-zero!
+    float mh = params.timestep / mass[tidx];
 
-    shared_res[nb_idx] = make_float3(0, 0, 0);
+    if (length(collision_force) > adherence[tidx]) {
+      result[3*tidx + 0] = collision_force.x * mh;
+      result[3*tidx + 1] = collision_force.y * mh;
+      result[3*tidx + 2] = collision_force.z * mh;
 
-    for (uint32_t cc = 0; cc < lengths[blockId]; cc++) {  // for all cells in middle box
-      if (nb_idx < i && cc != nb_idx) {
-        ComputeForce(cc, nb_idx, &shared_pos[0], &shared_dia[0], &shared_res[0]);
-        // CheckAdherence(cidx, result, timestep[0], max_displacement[0], mass, adherence);
+      if (length(collision_force) * mh > params.max_displacement) {
+        result[3*tidx + 0] = params.max_displacement;
+        result[3*tidx + 1] = params.max_displacement;
+        result[3*tidx + 2] = params.max_displacement;
       }
-    }
-
-    if (threadIdx.x < i) {
-
     }
   }
 }
@@ -205,14 +199,14 @@ void bdm::DisplacementOpCudaKernel::LaunchDisplacementKernel(float* positions, f
   GpuErrchk(cudaMemcpy(d_successors_, 		successors, host_params.num_objects * sizeof(uint32_t), cudaMemcpyHostToDevice));
 
   cudaMemcpyToSymbol(params, &host_params, sizeof(SimParams));
-  int blockSize;
-  dim3 gridSize;
 
-  gridSize.x = host_params.num_boxes_axis[0];
-  gridSize.y = host_params.num_boxes_axis[1];
-  gridSize.z = host_params.num_boxes_axis[2];
+  int blockSize = 128;
+  int minGridSize;
+  int gridSize;
 
-  blockSize = 27*4;
+  // Get a near-optimal occupancy with the following thread organization
+  cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, collide, 0, host_params.num_objects);
+  gridSize = (host_params.num_objects + blockSize - 1) / blockSize;
 
   // printf("gridSize = %d  |  blockSize = %d\n", gridSize, blockSize);
   collide<<<gridSize, blockSize>>>(d_positions_, d_diameters_, d_tractor_force_,

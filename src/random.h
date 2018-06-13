@@ -18,11 +18,11 @@ class Random {
 
   int NextInt();
 
-  double NextDouble();
+  float NextDouble();
 
-  double NextGaussian(double mean, double standard_deviation);
+  float NextGaussian(float mean, float standard_deviation);
 
-  std::array<double, 3> NextNoise(double k);
+  std::array<float, 3> NextNoise(float k);
 
   template <typename Backend>
   std::array<typename Backend::real_v, 3> NextNoise(
@@ -39,12 +39,12 @@ class Random {
 
  private:
   int64_t seed_ = 0;
-  double next_next_gaussian_ = 0.0;
+  float next_next_gaussian_ = 0.0;
   bool have_next_next_gaussian_ = false;
 
   int Next(int i);
 
-  double NextGaussian();
+  float NextGaussian();
 
   bool CompareAndSet(int64_t* current, int64_t expected, int64_t update);
 };

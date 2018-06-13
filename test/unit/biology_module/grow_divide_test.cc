@@ -19,7 +19,7 @@ TEST(GrowDivideTest, Grow) {
 
   rm->Get<Cell>()->Commit();
 
-  EXPECT_NEAR(33513.321638291127, cell.GetVolume(), abs_error<double>::value);
+  EXPECT_NEAR(33513.321638291127, cell.GetVolume(), abs_error<float>::value);
   EXPECT_EQ(0u, rm->Get<Cell>()->size());
 }
 

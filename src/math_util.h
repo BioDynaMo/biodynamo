@@ -12,7 +12,7 @@ namespace bdm {
 
 struct Math {
   /// value of pi
-  static constexpr double kPi = 3.141592653589793238462643383279502884;
+  static constexpr float kPi = 3.141592653589793238462643383279502884;
 
   /// Add two vectors
   /// @param a the first vector
@@ -61,9 +61,9 @@ struct Math {
   /// @param  a the vector we want to multiply
   /// @return k * a
   template <std::size_t N>
-  static std::array<double, N> ScalarMult(double k,
-                                          const std::array<double, N>& a) {
-    std::array<double, N> result;
+  static std::array<float, N> ScalarMult(float k,
+                                          const std::array<float, N>& a) {
+    std::array<float, N> result;
     for (size_t i = 0; i < N; i++) {
       result[i] = a[i] * k;
     }
@@ -78,8 +78,8 @@ struct Math {
   /// Returns the euclidean norm of a vector.
   /// @param a vector
   /// @return it's norm
-  static double Norm(const std::array<double, 3>& a) {
-    double norm = std::sqrt(a[0] * a[0] + a[1] * a[1] + a[2] * a[2]);
+  static float Norm(const std::array<float, 3>& a) {
+    float norm = std::sqrt(a[0] * a[0] + a[1] * a[1] + a[2] * a[2]);
     if (norm == 0.0) {
       norm = 1.0;
     }
@@ -89,9 +89,9 @@ struct Math {
   /// Normalizes a vector.
   /// @param a a vector
   /// @return the vector divided by its norm
-  static std::array<double, 3> Normalize(const std::array<double, 3>& a) {
+  static std::array<float, 3> Normalize(const std::array<float, 3>& a) {
     const auto&& norm = Norm(a);
-    std::array<double, 3> ret;
+    std::array<float, 3> ret;
     ret[0] = a[0] / norm;
     ret[1] = a[1] / norm;
     ret[2] = a[2] / norm;
@@ -99,9 +99,9 @@ struct Math {
   }
 
   // Helper function that returns distance (L2 norm) between two positions in 3D
-  static double GetL2Distance(const std::array<double, 3>& pos1,
-                              const std::array<double, 3>& pos2) {
-    std::array<double, 3> dist_array;
+  static float GetL2Distance(const std::array<float, 3>& pos1,
+                              const std::array<float, 3>& pos2) {
+    std::array<float, 3> dist_array;
     dist_array[0] = pos2[0] - pos1[0];
     dist_array[1] = pos2[1] - pos1[1];
     dist_array[2] = pos2[2] - pos1[2];
@@ -113,9 +113,9 @@ struct Math {
   /// @param b
   /// @return result the cross product of a and b (a x b)
   template <std::size_t N>
-  static std::array<double, N> CrossProduct(const std::array<double, N>& a,
-                                            const std::array<double, N>& b) {
-    std::array<double, N> result;
+  static std::array<float, N> CrossProduct(const std::array<float, N>& a,
+                                            const std::array<float, N>& b) {
+    std::array<float, N> result;
     result[0] = a[1] * b[2] - a[2] * b[1];
     result[1] = a[2] * b[0] - a[0] * b[2];
     result[2] = a[0] * b[1] - a[1] * b[0];
@@ -127,9 +127,9 @@ struct Math {
   /// @param a vector
   /// @param random
   /// @return a perpendicular vector
-  static std::array<double, 3> Perp3(const std::array<double, 3>& a,
-                                     double random) {
-    std::array<double, 3> vect_perp;
+  static std::array<float, 3> Perp3(const std::array<float, 3>& a,
+                                     float random) {
+    std::array<float, 3> vect_perp;
     if (a[0] == 0.0) {
       vect_perp[0] = 1.0;
       vect_perp[1] = 0.0;
@@ -152,9 +152,9 @@ struct Math {
   /// @param[in] theta  the amplitude of rotation (in radian)
   /// @param[in] axis   (also a vector)
   /// @return the vector after rotation
-  static std::array<double, 3> RotAroundAxis(
-      const std::array<double, 3>& vector, double theta,
-      const std::array<double, 3>& axis) {
+  static std::array<float, 3> RotAroundAxis(
+      const std::array<float, 3>& vector, float theta,
+      const std::array<float, 3>& axis) {
     auto naxis = Normalize(axis);
 
     auto temp_1 = Math::ScalarMult(Math::Dot(vector, naxis), naxis);
@@ -173,8 +173,8 @@ struct Math {
   /// @param a the first vector
   /// @param b the second vector
   /// @return the angle between them.
-  static double AngleRadian(const std::array<double, 3>& a,
-                            const std::array<double, 3>& b) {
+  static float AngleRadian(const std::array<float, 3>& a,
+                            const std::array<float, 3>& b) {
     return std::acos(Math::Dot(a, b) / (Math::Norm(a) * Math::Norm(b)));
   }
 
@@ -182,9 +182,9 @@ struct Math {
   /// @param a
   /// @param b
   /// @return the projection of a onto b
-  static std::array<double, 3> ProjectionOnto(const std::array<double, 3>& a,
-                                              const std::array<double, 3>& b) {
-    double k = Math::Dot(a, b) / Math::Dot(b, b);
+  static std::array<float, 3> ProjectionOnto(const std::array<float, 3>& a,
+                                              const std::array<float, 3>& b) {
+    float k = Math::Dot(a, b) / Math::Dot(b, b);
     return Math::ScalarMult(k, b);
   }
 };

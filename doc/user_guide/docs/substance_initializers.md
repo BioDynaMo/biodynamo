@@ -4,7 +4,7 @@ in your simulation. In this tutorial we shal take a look on how to do so.
 ### Tutorial by example
 
 Go into the `test/integration` directory and open the source file
-`substance_initialization.h` in your favorite editor. 
+`substance_initialization.h` in your favorite editor.
 
 #### 1. List the substance(s)
 
@@ -29,7 +29,7 @@ Param::max_bound_ = 250;
 We create one cell with diameter 10, at a random location
 
 ``` C++
-auto construct = [](const std::array<double, 3>& position) {
+auto construct = [](const std::array<float, 3>& position) {
   Cell cell(position);
   cell.SetDiameter(10);
   return cell;
@@ -77,22 +77,22 @@ Let's take a look at an existing substance initializer.
 #### Option 1: Functors
 ```C++
 struct GaussianBand {
-  double mean_;
-  double sigma_;
+  float mean_;
+  float sigma_;
   uint8_t axis_;
 
-  GaussianBand(double mean, double sigma, uint8_t axis) {
+  GaussianBand(float mean, float sigma, uint8_t axis) {
     mean_ = mean;
     sigma_ = sigma;
     axis_ = axis;
   }
 
-  double operator()(double x, double y, double z) {
+  float operator()(float x, float y, float z) {
     switch(axis_) {
       case Axis::kXAxis: return ROOT::Math::normal_pdf(x, sigma_, mean_);
       case Axis::kYAxis: return ROOT::Math::normal_pdf(y, sigma_, mean_);
       case Axis::kZAxis: return ROOT::Math::normal_pdf(z, sigma_, mean_);
-      default: throw std::logic_error("You have chosen an non-existing axis!"); 
+      default: throw std::logic_error("You have chosen an non-existing axis!");
     }
   }
 };
@@ -114,7 +114,7 @@ nice to use. We can accomplish exactly the same result as the above example with
 the following lambda:
 
 ```C+++
-auto gaussian_band = [](double x, double y, double z) {
+auto gaussian_band = [](float x, float y, float z) {
   return ROOT::Math::normal_pdf(x, 5, 120);
 };
 ```

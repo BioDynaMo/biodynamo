@@ -42,10 +42,10 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
 
   using BiologyModules = typename TCompileTimeParam::BiologyModules;
   CellExt() : density_(1.0) {}
-  explicit CellExt(double diameter) : diameter_(diameter), density_(1.0) {
+  explicit CellExt(float diameter) : diameter_(diameter), density_(1.0) {
     UpdateVolume();
   }
-  explicit CellExt(const array<double, 3>& position)
+  explicit CellExt(const array<float, 3>& position)
       : position_(position), density_{1.0} {}
 
   virtual ~CellExt() {}
@@ -87,18 +87,18 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
   /// The axis of division is random.
   /// @param volume_ratio the ratio (Volume daughter 1)/(Volume daughter 2). 1.0
   /// gives equal cells.
-  MostDerivedSoPtr Divide(double volume_ratio) {
+  MostDerivedSoPtr Divide(float volume_ratio) {
     // find random point on sphere (based on :
     // http://mathworld.wolfram.com/SpherePointPicking.html)
-    double theta = 2 * Math::kPi * gRandom.NextDouble();
-    double phi = std::acos(2 * gRandom.NextDouble() - 1);
+    float theta = 2 * Math::kPi * gRandom.NextDouble();
+    float phi = std::acos(2 * gRandom.NextDouble() - 1);
     return ThisMD()->Divide(volume_ratio, phi, theta);
   }
 
   /// Divide the cell. Of the two daughter cells, one is this one
   /// and the other one will be returned by this function.
   /// @param axis specifies direction of division
-  MostDerivedSoPtr Divide(const array<double, 3>& axis) {
+  MostDerivedSoPtr Divide(const array<float, 3>& axis) {
     auto polarcoord =
         TransformCoordinatesGlobalToPolar(Math::Add(axis, position_[kIdx]));
     return ThisMD()->Divide(0.9 + 0.2 * gRandom.NextDouble(), polarcoord[1],
@@ -110,7 +110,7 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
   /// @param volume_ratio the ratio (Volume daughter 1)/(Volume daughter 2). 1.0
   /// gives equal cells.
   /// @param axis specifies direction of division
-  MostDerivedSoPtr Divide(double volume_ratio, const array<double, 3>& axis) {
+  MostDerivedSoPtr Divide(float volume_ratio, const array<float, 3>& axis) {
     auto polarcoord =
         TransformCoordinatesGlobalToPolar(Math::Add(axis, position_[kIdx]));
     return ThisMD()->Divide(volume_ratio, polarcoord[1], polarcoord[2]);
@@ -118,63 +118,63 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
 
   /// Forward call to `DivideImpl`
   /// @see `DivideImpl`
-  MostDerivedSoPtr Divide(double volume_ratio, double phi, double theta) {
+  MostDerivedSoPtr Divide(float volume_ratio, float phi, float theta) {
     auto daughter = Rm()->template New<MostDerivedScalar>().GetSoPtr();
     ThisMD()->DivideImpl(daughter, volume_ratio, phi, theta);
     return daughter;
   }
 
-  double GetAdherence() const { return adherence_[kIdx]; }
+  float GetAdherence() const { return adherence_[kIdx]; }
 
-  double GetDiameter() const { return diameter_[kIdx]; }
+  float GetDiameter() const { return diameter_[kIdx]; }
 
-  double GetMass() const { return density_[kIdx] * volume_[kIdx]; }
+  float GetMass() const { return density_[kIdx] * volume_[kIdx]; }
 
-  double GetDensity() const { return density_[kIdx]; }
+  float GetDensity() const { return density_[kIdx]; }
 
-  const array<double, 3>& GetPosition() const { return position_[kIdx]; }
+  const array<float, 3>& GetPosition() const { return position_[kIdx]; }
 
   // this only works for SOA backend
-  double* GetPositionPtr() { return position_.data()->data(); }
-  double* GetDiameterPtr() { return diameter_.data(); }
-  double* GetTractorForcePtr() { return tractor_force_.data()->data(); }
-  double* GetAdherencePtr() { return adherence_.data(); }
+  float* GetPositionPtr() { return position_.data()->data(); }
+  float* GetDiameterPtr() { return diameter_.data(); }
+  float* GetTractorForcePtr() { return tractor_force_.data()->data(); }
+  float* GetAdherencePtr() { return adherence_.data(); }
   uint32_t* GetBoxIdPtr() { return box_idx_.data(); }
 
-  void FillMassVector(std::vector<double> * mass) {
+  void FillMassVector(std::vector<float> * mass) {
     for (size_t i = 0; i < diameter_.size(); i++) {
       (*mass)[i] = density_[i] * volume_[i];
     }
   }
   // End TODO
 
-  const array<double, 3>& GetTractorForce() const {
+  const array<float, 3>& GetTractorForce() const {
     return tractor_force_[kIdx];
   }
 
-  double GetVolume() const { return volume_[kIdx]; }
+  float GetVolume() const { return volume_[kIdx]; }
 
-  void SetAdherence(double adherence) { adherence_[kIdx] = adherence; }
+  void SetAdherence(float adherence) { adherence_[kIdx] = adherence; }
 
-  void SetDiameter(double diameter) {
+  void SetDiameter(float diameter) {
     diameter_[kIdx] = diameter;
     UpdateVolume();
   }
 
-  void SetVolume(double volume) {
+  void SetVolume(float volume) {
     volume_[kIdx] = volume;
     UpdateDiameter();
   }
 
-  void SetMass(double mass) { density_[kIdx] = mass / volume_[kIdx]; }
+  void SetMass(float mass) { density_[kIdx] = mass / volume_[kIdx]; }
 
-  void SetDensity(double density) { density_[kIdx] = density; }
+  void SetDensity(float density) { density_[kIdx] = density; }
 
-  void SetPosition(const array<double, 3>& position) {
+  void SetPosition(const array<float, 3>& position) {
     position_[kIdx] = position;
   }
 
-  void SetTractorForce(const array<double, 3>& tractor_force) {
+  void SetTractorForce(const array<float, 3>& tractor_force) {
     tractor_force_[kIdx] = tractor_force;
   }
 
@@ -182,9 +182,9 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
     biology_modules_[kIdx] = bms;
   }
 
-  void ChangeVolume(double speed) {
+  void ChangeVolume(float speed) {
     // scaling for integration step
-    double delta = speed * Param::simulation_time_step_;
+    float delta = speed * Param::simulation_time_step_;
     volume_[kIdx] += delta;
     if (volume_[kIdx] < 5.2359877E-7) {
       volume_[kIdx] = 5.2359877E-7;
@@ -202,17 +202,17 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
     volume_[kIdx] = Math::kPi / 6 * std::pow(diameter_[kIdx], 3);
   }
 
-  void UpdatePosition(const array<double, 3>& delta) {
+  void UpdatePosition(const array<float, 3>& delta) {
     position_[kIdx][0] += delta[0];
     position_[kIdx][1] += delta[1];
     position_[kIdx][2] += delta[2];
   }
 
   template <typename TGrid>
-  std::array<double, 3> CalculateDisplacement(TGrid * grid,
-                                              double squared_radius);
+  std::array<float, 3> CalculateDisplacement(TGrid * grid,
+                                              float squared_radius);
 
-  void ApplyDisplacement(const std::array<double, 3>& displacement);
+  void ApplyDisplacement(const std::array<float, 3>& displacement);
 
   uint32_t GetBoxIdx() const { return box_idx_[kIdx]; }
 
@@ -224,22 +224,22 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
   /// ([1,0,0],[0,1,0],[0,0,1]).
   /// @param coord: position in absolute coordinates - [x,y,z] cartesian values
   /// @return the position in local coordinates
-  array<double, 3> TransformCoordinatesGlobalToPolar(
-      const array<double, 3>& coord) const;
+  array<float, 3> TransformCoordinatesGlobalToPolar(
+      const array<float, 3>& coord) const;
 
-  vec<array<double, 3>> position_;
-  vec<array<double, 3>> tractor_force_;
-  vec<double> diameter_;
-  vec<double> volume_;
-  vec<double> adherence_;
-  vec<double> density_;
+  vec<array<float, 3>> position_;
+  vec<array<float, 3>> tractor_force_;
+  vec<float> diameter_;
+  vec<float> volume_;
+  vec<float> adherence_;
+  vec<float> density_;
 
   /// First axis of the local coordinate system.
-  static constexpr array<double, 3> kXAxis = {{1.0, 0.0, 0.0}};
+  static constexpr array<float, 3> kXAxis = {{1.0, 0.0, 0.0}};
   /// Second axis of the local coordinate system.
-  static constexpr array<double, 3> kYAxis = {{0.0, 1.0, 0.0}};
+  static constexpr array<float, 3> kYAxis = {{0.0, 1.0, 0.0}};
   /// Third axis of the local coordinate system.
-  static constexpr array<double, 3> kZAxis = {{0.0, 0.0, 1.0}};
+  static constexpr array<float, 3> kZAxis = {{0.0, 0.0, 1.0}};
 
   /// collection of biology modules which define the internal behavior
   vec<std::vector<BiologyModules>> biology_modules_;
@@ -263,21 +263,21 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
   /// @param phi azimuthal angle (polar coordinate)
   /// @param theta polar angle (polar coordinate)
   /// @see \link simulation_object_util.h Divide \endlink
-  void DivideImpl(MostDerivedSoPtr daughter, double volume_ratio, double phi,
-                  double theta) {
+  void DivideImpl(MostDerivedSoPtr daughter, float volume_ratio, float phi,
+                  float theta) {
     // A) Defining some values
     // ..................................................................
     // defining the two radii s.t total volume is conserved
     // * radius^3 = r1^3 + r2^3 ;
     // * volume_ratio = r2^3 / r1^3
-    double radius = diameter_[kIdx] * 0.5;
+    float radius = diameter_[kIdx] * 0.5;
 
     // define an axis for division (along which the nuclei will move)
-    double x_coord = std::cos(theta) * std::sin(phi);
-    double y_coord = std::sin(theta) * std::sin(phi);
-    double z_coord = std::cos(phi);
-    double total_length_of_displacement = radius / 4.0;
-    array<double, 3> axis_of_division{
+    float x_coord = std::cos(theta) * std::sin(phi);
+    float y_coord = std::sin(theta) * std::sin(phi);
+    float z_coord = std::cos(phi);
+    float total_length_of_displacement = radius / 4.0;
+    array<float, 3> axis_of_division{
         total_length_of_displacement *
             (x_coord * kXAxis[0] + y_coord * kYAxis[0] + z_coord * kZAxis[0]),
         total_length_of_displacement *
@@ -289,19 +289,19 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
     //  1) d2/d1= v2/v1 = volume_ratio (each sphere is shifted inver.
     //  proportionally to its volume)
     //  2) d1 + d2 = TOTAL_LENGTH_OF_DISPLACEMENT
-    double d_2 = total_length_of_displacement / (volume_ratio + 1);
-    double d_1 = total_length_of_displacement - d_2;
+    float d_2 = total_length_of_displacement / (volume_ratio + 1);
+    float d_1 = total_length_of_displacement - d_2;
 
     daughter->SetAdherence(adherence_[kIdx]);
     daughter->SetDensity(density_[kIdx]);
 
-    double mother_volume = volume_[kIdx];
-    double new_volume = mother_volume / (volume_ratio + 1);
+    float mother_volume = volume_[kIdx];
+    float new_volume = mother_volume / (volume_ratio + 1);
     daughter->SetVolume(mother_volume - new_volume);
     SetVolume(new_volume);
 
     // position
-    array<double, 3> new_position{
+    array<float, 3> new_position{
         position_[kIdx][0] + d_2 * axis_of_division[0],
         position_[kIdx][1] + d_2 * axis_of_division[1],
         position_[kIdx][2] + d_2 * axis_of_division[2]};
@@ -358,9 +358,9 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
 
 // ----------------------------------------------------------------------------
 // Implementation -------------------------------------------------------------
-BDM_SO_DEFINE(constexpr array<double, 3> CellExt)::kXAxis;
-BDM_SO_DEFINE(constexpr array<double, 3> CellExt)::kYAxis;
-BDM_SO_DEFINE(constexpr array<double, 3> CellExt)::kZAxis;
+BDM_SO_DEFINE(constexpr array<float, 3> CellExt)::kXAxis;
+BDM_SO_DEFINE(constexpr array<float, 3> CellExt)::kYAxis;
+BDM_SO_DEFINE(constexpr array<float, 3> CellExt)::kZAxis;
 
 BDM_SO_DEFINE(template <typename TBiologyModule>
               inline void CellExt)::AddBiologyModule(TBiologyModule&& module) {
@@ -375,9 +375,9 @@ BDM_SO_DEFINE(inline void CellExt)::RunBiologyModules() {
   }
 }
 
-BDM_SO_DEFINE(template <typename TGrid> inline std::array<double, 3>
+BDM_SO_DEFINE(template <typename TGrid> inline std::array<float, 3>
                   CellExt)::CalculateDisplacement(TGrid* grid,
-                                                  double squared_radius) {
+                                                  float squared_radius) {
   // Basically, the idea is to make the sum of all the forces acting
   // on the Point mass. It is stored in translationForceOnPointMass.
   // There is also a computation of the torque (only applied
@@ -398,8 +398,8 @@ BDM_SO_DEFINE(template <typename TGrid> inline std::array<double, 3>
   bool physical_translation = false;
   // bool physical_rotation = false;
 
-  double h = Param::simulation_time_step_;
-  std::array<double, 3> movement_at_next_step{0, 0, 0};
+  float h = Param::simulation_time_step_;
+  std::array<float, 3> movement_at_next_step{0, 0, 0};
 
   // BIOLOGY :
   // 0) Start with tractor force : What the biology defined as active
@@ -410,9 +410,9 @@ BDM_SO_DEFINE(template <typename TGrid> inline std::array<double, 3>
 
   // PHYSICS
   // the physics force to move the point mass
-  std::array<double, 3> translation_force_on_point_mass{0, 0, 0};
+  std::array<float, 3> translation_force_on_point_mass{0, 0, 0};
   // the physics force to rotate the cell
-  // std::array<double, 3> rotation_force { 0, 0, 0 };
+  // std::array<float, 3> rotation_force { 0, 0, 0 };
 
   // 1) "artificial force" to maintain the sphere in the ecm simulation
   // boundaries--------
@@ -437,7 +437,7 @@ BDM_SO_DEFINE(template <typename TGrid> inline std::array<double, 3>
 
   // 4) PhysicalBonds
   // How the physics influences the next displacement
-  double norm_of_force = std::sqrt(
+  float norm_of_force = std::sqrt(
       translation_force_on_point_mass[0] * translation_force_on_point_mass[0] +
       translation_force_on_point_mass[1] * translation_force_on_point_mass[1] +
       translation_force_on_point_mass[2] * translation_force_on_point_mass[2]);
@@ -448,7 +448,7 @@ BDM_SO_DEFINE(template <typename TGrid> inline std::array<double, 3>
   physical_translation = norm_of_force > GetAdherence();
 
   assert(GetMass() != 0 && "The mass of a cell was found to be zero!");
-  double mh = h / GetMass();
+  float mh = h / GetMass();
   // adding the physics translation (scale by weight) if important enough
   if (physical_translation) {
     // We scale the move with mass and time step
@@ -471,19 +471,19 @@ BDM_SO_DEFINE(template <typename TGrid> inline std::array<double, 3>
 }
 
 BDM_SO_DEFINE(inline void CellExt)::ApplyDisplacement(
-    const std::array<double, 3>& displacement) {
+    const std::array<float, 3>& displacement) {
   UpdatePosition(displacement);
   // Reset biological movement to 0.
   SetTractorForce({0, 0, 0});
 }
 
-BDM_SO_DEFINE(inline array<double, 3> CellExt)::
-    TransformCoordinatesGlobalToPolar(const array<double, 3>& pos) const {
+BDM_SO_DEFINE(inline array<float, 3> CellExt)::
+    TransformCoordinatesGlobalToPolar(const array<float, 3>& pos) const {
   auto vector_to_point = Math::Subtract(pos, position_[kIdx]);
-  array<double, 3> local_cartesian{Math::Dot(kXAxis, vector_to_point),
+  array<float, 3> local_cartesian{Math::Dot(kXAxis, vector_to_point),
                                    Math::Dot(kYAxis, vector_to_point),
                                    Math::Dot(kZAxis, vector_to_point)};
-  double radius = std::sqrt(local_cartesian[0] * local_cartesian[0] +
+  float radius = std::sqrt(local_cartesian[0] * local_cartesian[0] +
                             local_cartesian[1] * local_cartesian[1] +
                             local_cartesian[2] * local_cartesian[2]);
   return {radius, std::acos(local_cartesian[2] / radius),

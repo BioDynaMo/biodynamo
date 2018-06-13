@@ -13,7 +13,7 @@ namespace resource_manager_test_internal {
 /// @tparam B type two: scalar or soa backend
 template <typename Backend, typename TA, typename TB>
 inline void RunGetTest() {
-  const double kEpsilon = abs_error<double>::value;
+  const float kEpsilon = abs_error<float>::value;
   using CTParam = CompileTimeParam<Backend, TA, TB>;
   auto rm = ResourceManager<CTParam>::Get();
   rm->Clear();
@@ -48,7 +48,7 @@ TEST(ResourceManagerTest, GetSoa) {
 
 template <typename Backend, typename TA, typename TB>
 inline void RunApplyOnElementTest() {
-  const double kEpsilon = abs_error<double>::value;
+  const float kEpsilon = abs_error<float>::value;
   using CTParam = CompileTimeParam<Backend, TA, TB>;
   auto rm = ResourceManager<CTParam>::Get();
   rm->Clear();
@@ -79,7 +79,7 @@ TEST(ResourceManagerTest, ApplyOnElementSoa) {
 
 template <typename Backend, typename TA, typename TB>
 void RunApplyOnAllElementsTest() {
-  const double kEpsilon = abs_error<double>::value;
+  const float kEpsilon = abs_error<float>::value;
   using CTParam = CompileTimeParam<Backend, TA, TB>;
   auto rm = ResourceManager<CTParam>::Get();
   rm->Clear();
@@ -165,7 +165,7 @@ void RunApplyOnAllElementsParallelTest() {
   cells->push_back(Cell(9.42));
 
   rm->ApplyOnAllElementsParallel([](auto&& element, SoHandle handle) {
-    const double kEpsilon = abs_error<double>::value;
+    const float kEpsilon = abs_error<float>::value;
     if (handle == SoHandle(0, 0)) {
       EXPECT_EQ(3.14, element.GetDiameter());
     } else if (handle == SoHandle(0, 1)) {
@@ -188,7 +188,7 @@ TEST(ResourceManagerTest, ApplyOnAllElementsParallelSoa) {
 
 template <typename Backend, typename TA, typename TB>
 void RunApplyOnAllTypesTest() {
-  const double kEpsilon = abs_error<double>::value;
+  const float kEpsilon = abs_error<float>::value;
   using CTParam = CompileTimeParam<Backend, TA, TB>;
   auto rm = ResourceManager<CTParam>::Get();
   rm->Clear();
@@ -256,7 +256,7 @@ TEST(ResourceManagerTest, GetTypeIndexAos) {
 
 template <typename TBackend, typename TA, typename TB>
 void RunPushBackTest() {
-  const double kEpsilon = abs_error<double>::value;
+  const float kEpsilon = abs_error<float>::value;
   using CTParam = CompileTimeParam<TBackend, TA, TB>;
   auto rm = ResourceManager<CTParam>::Get();
   rm->Clear();
@@ -292,7 +292,7 @@ TEST(ResourceManagerTest, push_backAos) {
 
 template <typename TBackend, typename TA, typename TB>
 void RunNewTest() {
-  const double kEpsilon = abs_error<double>::value;
+  const float kEpsilon = abs_error<float>::value;
   using CTParam = CompileTimeParam<TBackend, TA, TB>;
   auto rm = ResourceManager<CTParam>::Get();
   rm->Clear();

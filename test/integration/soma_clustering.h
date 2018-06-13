@@ -29,7 +29,7 @@ BDM_SIM_OBJECT(MyCell, bdm::Cell) {
   MyCellExt() {}
   // TODO(ahmad): this needs to be explicitely stated, otherwise empty
   // implementation
-  MyCellExt(const std::array<double, 3>& position) : Base(position) {}
+  MyCellExt(const std::array<float, 3>& position) : Base(position) {}
 
   void SetCellType(int t) { cell_type_[kIdx] = t; }
   int GetCellType() const { return cell_type_[kIdx]; }
@@ -55,7 +55,7 @@ struct Chemotaxis : public BaseBiologyModule {
     }
 
     auto& position = cell->GetPosition();
-    std::array<double, 3> diff_gradient;
+    std::array<float, 3> diff_gradient;
 
     if (cell->GetCellType() == 1) {
       dg_1_->GetGradient(position, &gradient_1_);
@@ -72,8 +72,8 @@ struct Chemotaxis : public BaseBiologyModule {
   bool init_ = false;
   DiffusionGrid* dg_0_ = nullptr;
   DiffusionGrid* dg_1_ = nullptr;
-  std::array<double, 3> gradient_0_;
-  std::array<double, 3> gradient_1_;
+  std::array<float, 3> gradient_0_;
+  std::array<float, 3> gradient_1_;
   ClassDefNV(Chemotaxis, 1);
 };
 
@@ -115,7 +115,7 @@ struct CompileTimeParam : public DefaultCompileTimeParam<Backend> {
 // comprising approximately target_n cells, are arranged as clusters, and 1
 // otherwise.
 template <typename TResourceManager = ResourceManager<>>
-static bool GetCriterion(double spatial_range, int target_n) {
+static bool GetCriterion(float spatial_range, int target_n) {
   auto rm = TResourceManager::Get();
   auto my_cells = rm->template Get<MyCell>();
   int n = my_cells->size();
@@ -123,7 +123,7 @@ static bool GetCriterion(double spatial_range, int target_n) {
   // number of cells that are close (i.e. within a distance of
   // spatial_range)
   int num_close = 0;
-  double curr_dist;
+  float curr_dist;
   // number of cells of the same type, and that are close (i.e.
   // within a distance of spatial_range)
   int same_type_close = 0;
@@ -131,11 +131,11 @@ static bool GetCriterion(double spatial_range, int target_n) {
   // within a distance of spatial_range)
   int diff_type_close = 0;
 
-  std::vector<array<double, 3>> pos_sub_vol(n);
+  std::vector<array<float, 3>> pos_sub_vol(n);
   std::vector<int> types_sub_vol(n);
 
   // Define the subvolume to be the first octant of a cube
-  double sub_vol_max = Param::max_bound_ / 2;
+  float sub_vol_max = Param::max_bound_ / 2;
 
   // The number of cells within the subvolume
   int num_cells_sub_vol = 0;
@@ -162,8 +162,8 @@ static bool GetCriterion(double spatial_range, int target_n) {
 
   // If there are not enough cells within the subvolume, the correctness
   // criterion is not fulfilled
-  if (((static_cast<double>((num_cells_sub_vol))) /
-       static_cast<double>(target_n)) < 0.25) {
+  if (((static_cast<float>((num_cells_sub_vol))) /
+       static_cast<float>(target_n)) < 0.25) {
     std::cout << "not enough cells in subvolume: " << num_cells_sub_vol
               << std::endl;
     return false;
@@ -171,8 +171,8 @@ static bool GetCriterion(double spatial_range, int target_n) {
 
   // If there are too many cells within the subvolume, the correctness
   // criterion is not fulfilled
-  if (((static_cast<double>((num_cells_sub_vol))) /
-       static_cast<double>(target_n)) > 4) {
+  if (((static_cast<float>((num_cells_sub_vol))) /
+       static_cast<float>(target_n)) > 4) {
     std::cout << "too many cells in subvolume: " << num_cells_sub_vol
               << std::endl;
     return false;
@@ -194,8 +194,8 @@ static bool GetCriterion(double spatial_range, int target_n) {
     }
   }
 
-  double correctness_coefficient =
-      (static_cast<double>(diff_type_close)) / (num_close + 1.0);
+  float correctness_coefficient =
+      (static_cast<float>(diff_type_close)) / (num_close + 1.0);
 
   // check if there are many cells of opposite types located within a close
   // distance, indicative of bad clustering
@@ -207,8 +207,8 @@ static bool GetCriterion(double spatial_range, int target_n) {
 
   // check if clusters are large enough, i.e. whether cells have more than 100
   // cells of the same type located nearby
-  double avg_neighbors =
-      (static_cast<double>(same_type_close / num_cells_sub_vol));
+  float avg_neighbors =
+      (static_cast<float>(same_type_close / num_cells_sub_vol));
   std::cout << "average neighbors in subvolume: " << avg_neighbors << std::endl;
   if (avg_neighbors < 5) {
     std::cout << "cells in subvolume do not have enough neighbors: "
@@ -237,7 +237,7 @@ inline int Simulate(int argc, const char** argv) {
   gTRandom.SetSeed(4357);
 
   // Construct num_cells/2 cells of type 1
-  auto construct_0 = [](const std::array<double, 3>& position) {
+  auto construct_0 = [](const std::array<float, 3>& position) {
     MyCell cell(position);
     cell.SetDiameter(10);
     cell.SetCellType(1);
@@ -249,7 +249,7 @@ inline int Simulate(int argc, const char** argv) {
                                       num_cells / 2, construct_0);
 
   // Construct num_cells/2 cells of type -1
-  auto construct_1 = [](const std::array<double, 3>& position) {
+  auto construct_1 = [](const std::array<float, 3>& position) {
     MyCell cell(position);
     cell.SetDiameter(10);
     cell.SetCellType(-1);
@@ -270,7 +270,7 @@ inline int Simulate(int argc, const char** argv) {
 
   scheduler.Simulate(1001);
 
-  double spatial_range = 5;
+  float spatial_range = 5;
   auto crit = GetCriterion(spatial_range, num_cells / 8);
   return !crit;
 }

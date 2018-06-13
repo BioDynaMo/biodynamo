@@ -26,7 +26,7 @@ TEST(CellTest, DivideVolumeRatioPhiTheta) {
 
   auto daughter = mother.Divide(0.75, 0.12, 0.34);
 
-  const double kEpsilon = abs_error<double>::value;
+  const float kEpsilon = abs_error<float>::value;
 
   // verify mother data members
   EXPECT_NEAR(4.9244246147707642, mother.GetPosition()[0], kEpsilon);
@@ -127,7 +127,7 @@ TEST(CellTest, DivideVolumeRatioAxis) {
 
 TEST(CellTest, BiologyModule) {
   TestCell cell;
-  double diameter = cell.GetDiameter();
+  float diameter = cell.GetDiameter();
   auto position = cell.GetPosition();
 
   cell.AddBiologyModule(MovementModule({1, 2, 3}));
@@ -135,10 +135,10 @@ TEST(CellTest, BiologyModule) {
 
   cell.RunBiologyModules();
 
-  EXPECT_NEAR(diameter + 0.5, cell.GetDiameter(), abs_error<double>::value);
-  EXPECT_NEAR(position[0] + 1, cell.GetPosition()[0], abs_error<double>::value);
-  EXPECT_NEAR(position[1] + 2, cell.GetPosition()[1], abs_error<double>::value);
-  EXPECT_NEAR(position[2] + 3, cell.GetPosition()[2], abs_error<double>::value);
+  EXPECT_NEAR(diameter + 0.5, cell.GetDiameter(), abs_error<float>::value);
+  EXPECT_NEAR(position[0] + 1, cell.GetPosition()[0], abs_error<float>::value);
+  EXPECT_NEAR(position[1] + 2, cell.GetPosition()[1], abs_error<float>::value);
+  EXPECT_NEAR(position[2] + 3, cell.GetPosition()[2], abs_error<float>::value);
 }
 
 TEST(CellTest, GetBiologyModulesTest) {

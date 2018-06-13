@@ -42,37 +42,37 @@ void RunTest() {
   // check results
   // cell 1
   auto final_position = (*cells)[0].GetPosition();
-  EXPECT_NEAR(0, final_position[0], abs_error<double>::value);
+  EXPECT_NEAR(0, final_position[0], abs_error<float>::value);
   EXPECT_NEAR(-0.07797206232558615, final_position[1],
-              abs_error<double>::value);
-  EXPECT_NEAR(0, final_position[2], abs_error<double>::value);
+              abs_error<float>::value);
+  EXPECT_NEAR(0, final_position[2], abs_error<float>::value);
   // cell 2
   final_position = (*cells)[1].GetPosition();
-  EXPECT_NEAR(0, final_position[0], abs_error<double>::value);
-  EXPECT_NEAR(5.0992371702325645, final_position[1], abs_error<double>::value);
-  EXPECT_NEAR(0, final_position[2], abs_error<double>::value);
+  EXPECT_NEAR(0, final_position[0], abs_error<float>::value);
+  EXPECT_NEAR(5.0992371702325645, final_position[1], abs_error<float>::value);
+  EXPECT_NEAR(0, final_position[2], abs_error<float>::value);
 
   // check if tractor_force has been reset to zero
   // cell 1
   auto final_tf = (*cells)[0].GetTractorForce();
-  EXPECT_NEAR(0, final_tf[0], abs_error<double>::value);
-  EXPECT_NEAR(0, final_tf[1], abs_error<double>::value);
-  EXPECT_NEAR(0, final_tf[2], abs_error<double>::value);
+  EXPECT_NEAR(0, final_tf[0], abs_error<float>::value);
+  EXPECT_NEAR(0, final_tf[1], abs_error<float>::value);
+  EXPECT_NEAR(0, final_tf[2], abs_error<float>::value);
   // cell 2
   final_tf = (*cells)[1].GetTractorForce();
-  EXPECT_NEAR(0, final_tf[0], abs_error<double>::value);
-  EXPECT_NEAR(0, final_tf[1], abs_error<double>::value);
-  EXPECT_NEAR(0, final_tf[2], abs_error<double>::value);
+  EXPECT_NEAR(0, final_tf[0], abs_error<float>::value);
+  EXPECT_NEAR(0, final_tf[1], abs_error<float>::value);
+  EXPECT_NEAR(0, final_tf[2], abs_error<float>::value);
 
   // remaining fields should remain unchanged
   // cell 1
-  EXPECT_NEAR(0.3, (*cells)[0].GetAdherence(), abs_error<double>::value);
-  EXPECT_NEAR(9, (*cells)[0].GetDiameter(), abs_error<double>::value);
-  EXPECT_NEAR(1.4, (*cells)[0].GetMass(), abs_error<double>::value);
+  EXPECT_NEAR(0.3, (*cells)[0].GetAdherence(), abs_error<float>::value);
+  EXPECT_NEAR(9, (*cells)[0].GetDiameter(), abs_error<float>::value);
+  EXPECT_NEAR(1.4, (*cells)[0].GetMass(), abs_error<float>::value);
   // cell 2
-  EXPECT_NEAR(0.4, (*cells)[1].GetAdherence(), abs_error<double>::value);
-  EXPECT_NEAR(11, (*cells)[1].GetDiameter(), abs_error<double>::value);
-  EXPECT_NEAR(1.1, (*cells)[1].GetMass(), abs_error<double>::value);
+  EXPECT_NEAR(0.4, (*cells)[1].GetAdherence(), abs_error<float>::value);
+  EXPECT_NEAR(11, (*cells)[1].GetDiameter(), abs_error<float>::value);
+  EXPECT_NEAR(1.1, (*cells)[1].GetMass(), abs_error<float>::value);
 }
 
 #ifdef USE_CUDA
@@ -97,7 +97,7 @@ void RunTest2() {
   rm->Clear();
   auto cells = rm->template Get<Cell>();
 
-  double space = 20;
+  float space = 20;
   for (size_t i = 0; i < 3; i++) {
     for (size_t j = 0; j < 3; j++) {
       for (size_t k = 0; k < 3; k++) {

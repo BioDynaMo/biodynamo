@@ -15,7 +15,7 @@ namespace bdm {
 namespace cell_test_internal {
 
 struct GrowthModule : public BaseBiologyModule {
-  double growth_rate_ = 0.5;
+  float growth_rate_ = 0.5;
   GrowthModule() : BaseBiologyModule(gCellDivision) {}
 
   template <typename T>
@@ -27,10 +27,10 @@ struct GrowthModule : public BaseBiologyModule {
 };
 
 struct MovementModule {
-  std::array<double, 3> velocity_;
+  std::array<float, 3> velocity_;
 
   MovementModule() : velocity_({{0, 0, 0}}) {}
-  explicit MovementModule(const std::array<double, 3>& velocity)
+  explicit MovementModule(const std::array<float, 3>& velocity)
       : velocity_(velocity) {}
 
   template <typename T>
@@ -52,13 +52,13 @@ BDM_SIM_OBJECT(TestCell, bdm::Cell) {
   TestCellExt() {}
 
   void TestTransformCoordinatesGlobalToPolar() {
-    array<double, 3> coord = {1, 2, 3};
+    array<float, 3> coord = {1, 2, 3};
     Base::SetPosition({9, 8, 7});
     auto result = Base::TransformCoordinatesGlobalToPolar(coord);
 
-    EXPECT_NEAR(10.770329614269007, result[0], abs_error<double>::value);
-    EXPECT_NEAR(1.9513027039072615, result[1], abs_error<double>::value);
-    EXPECT_NEAR(-2.4980915447965089, result[2], abs_error<double>::value);
+    EXPECT_NEAR(10.770329614269007, result[0], abs_error<float>::value);
+    EXPECT_NEAR(1.9513027039072615, result[1], abs_error<float>::value);
+    EXPECT_NEAR(-2.4980915447965089, result[2], abs_error<float>::value);
   }
 
   const std::vector<Variant<GrowthModule, MovementModule>>&
@@ -67,12 +67,12 @@ BDM_SIM_OBJECT(TestCell, bdm::Cell) {
   }
 
   bool check_input_parameters_ = false;
-  double expected_volume_ratio_;
-  double expected_phi_;
-  double expected_theta_;
+  float expected_volume_ratio_;
+  float expected_phi_;
+  float expected_theta_;
 
-  void DivideImpl(MostDerivedSoPtr daughter, double volume_ratio, double phi,
-                  double theta) {
+  void DivideImpl(MostDerivedSoPtr daughter, float volume_ratio, float phi,
+                  float theta) {
     if (check_input_parameters_) {
       EXPECT_NEAR(expected_volume_ratio_, volume_ratio, 1e-8);
       EXPECT_NEAR(expected_phi_, phi, 1e-8);
@@ -131,7 +131,7 @@ inline void RunIOTest() {
   GetPersistentObject(ROOTFILE, "cell", restored_cell);
 
   // validate
-  const double kEpsilon = abs_error<double>::value;
+  const float kEpsilon = abs_error<float>::value;
   EXPECT_NEAR(5, restored_cell->GetPosition()[0], kEpsilon);
   EXPECT_NEAR(6, restored_cell->GetPosition()[1], kEpsilon);
   EXPECT_NEAR(7, restored_cell->GetPosition()[2], kEpsilon);

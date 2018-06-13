@@ -37,13 +37,13 @@ TEST(DISABLED_NeuriteElementBehaviour, StraightxCylinderGrowthRetract) {
 
   Scheduler<> scheduler;
 
-  std::array<double, 3> neAxis = ne->GetSpringAxis();
+  std::array<float, 3> neAxis = ne->GetSpringAxis();
 
-  EXPECT_NEAR(neAxis[0], 1, abs_error<double>::value);
-  EXPECT_NEAR(neAxis[1], 0, abs_error<double>::value);
-  EXPECT_NEAR(neAxis[2], 0, abs_error<double>::value);
+  EXPECT_NEAR(neAxis[0], 1, abs_error<float>::value);
+  EXPECT_NEAR(neAxis[1], 0, abs_error<float>::value);
+  EXPECT_NEAR(neAxis[2], 0, abs_error<float>::value);
 
-  std::array<double, 3> direction = {1, 0, 0};
+  std::array<float, 3> direction = {1, 0, 0};
   for (int i = 0; i < 100; i++) {
     ne->ElongateTerminalEnd(300, direction);
     ne->RunDiscretization();
@@ -51,13 +51,13 @@ TEST(DISABLED_NeuriteElementBehaviour, StraightxCylinderGrowthRetract) {
     if (i % 10 == 0) {
       neAxis = ne->GetSpringAxis();
 
-      EXPECT_NEAR(neAxis[1], 0, abs_error<double>::value);
-      EXPECT_NEAR(neAxis[2], 0, abs_error<double>::value);
+      EXPECT_NEAR(neAxis[1], 0, abs_error<float>::value);
+      EXPECT_NEAR(neAxis[2], 0, abs_error<float>::value);
     }
   }
 
   std::cout << "\n---- start retraction" << std::endl;
-  double neurite_length = ne->GetLength();
+  float neurite_length = ne->GetLength();
 
   for (int j = 0; j < 10000; j++) {
     ne->RetractTerminalEnd(10);
@@ -67,8 +67,8 @@ TEST(DISABLED_NeuriteElementBehaviour, StraightxCylinderGrowthRetract) {
     if (j % 10 == 0) {
       neAxis = ne->GetSpringAxis();
 
-      EXPECT_NEAR(neAxis[1], 0, abs_error<double>::value);
-      EXPECT_NEAR(neAxis[2], 0, abs_error<double>::value);
+      EXPECT_NEAR(neAxis[1], 0, abs_error<float>::value);
+      EXPECT_NEAR(neAxis[2], 0, abs_error<float>::value);
     }
     neurite_length = ne->GetLength();
     std::cout << "neurite length: " << neurite_length << std::endl;
@@ -87,8 +87,8 @@ TEST(DISABLED_NeuriteElementBehaviour, BranchingGrowth) {
   // Param::live_visualization_ = true;
   // Param::export_visualization_ = true;
 
-  double diam_reduc_speed = 0.001;
-  double branching_factor = 0.005;
+  float diam_reduc_speed = 0.001;
+  float branching_factor = 0.005;
 
   auto neuron = Rm()->New<NeuronSoma>();
   neuron.SetPosition({0, 0, 0});
@@ -102,8 +102,8 @@ TEST(DISABLED_NeuriteElementBehaviour, BranchingGrowth) {
   grid.Initialize();
   Scheduler<> scheduler;
 
-  std::array<double, 3> previous_direction;
-  std::array<double, 3> direction;
+  std::array<float, 3> previous_direction;
+  std::array<float, 3> direction;
 
   for (int i = 0; i < 200; i++) {
     auto my_neurites = Rm()->Get<NeuriteElement>();
@@ -118,7 +118,7 @@ TEST(DISABLED_NeuriteElementBehaviour, BranchingGrowth) {
         direction = {gTRandom.Uniform(-10, 10), gTRandom.Uniform(-10, 10),
                      gTRandom.Uniform(0, 5)};
 
-        std::array<double, 3> step_direction =
+        std::array<float, 3> step_direction =
             Math::Add(previous_direction, direction);
 
         ne->ElongateTerminalEnd(10, step_direction);

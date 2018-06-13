@@ -38,15 +38,15 @@ class DisplacementOpOpenCL {
     auto queue = rm->GetOpenCLCommandQueue();
     auto programs = rm->GetOpenCLProgramList();
 
-    std::vector<cl_double> mass(cells->size());
-    std::vector<array<cl_double, 3>> cell_movements(cells->size());
+    std::vector<cl_float> mass(cells->size());
+    std::vector<array<cl_float, 3>> cell_movements(cells->size());
     std::vector<cl_uint> gpu_starts;
     std::vector<cl_ushort> gpu_lengths;
     std::vector<cl_uint> successors(cells->size());
     cl_uint box_length;
     std::array<cl_uint, 3> num_boxes_axis;
     std::array<cl_int, 3> grid_dimensions;
-    cl_double squared_radius =
+    cl_float squared_radius =
         grid.GetLargestObjectSize() * grid.GetLargestObjectSize();
 
     // We need to create a mass vector, because it is not stored by default in
@@ -58,25 +58,25 @@ class DisplacementOpOpenCL {
 
     // Allocate GPU buffers
     cl::Buffer positions_arg(*context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR,
-                             cells->size() * 3 * sizeof(cl_double),
+                             cells->size() * 3 * sizeof(cl_float),
                              cells->GetPositionPtr());
     cl::Buffer diameters_arg(*context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR,
-                             cells->size() * sizeof(cl_double),
+                             cells->size() * sizeof(cl_float),
                              cells->GetDiameterPtr());
     cl::Buffer tractor_force_arg(
         *context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR,
-        cells->size() * 3 * sizeof(cl_double), cells->GetTractorForcePtr());
+        cells->size() * 3 * sizeof(cl_float), cells->GetTractorForcePtr());
     cl::Buffer adherence_arg(*context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR,
-                             cells->size() * sizeof(cl_double),
+                             cells->size() * sizeof(cl_float),
                              cells->GetAdherencePtr());
     cl::Buffer box_id_arg(*context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR,
                           cells->size() * sizeof(cl_uint),
                           cells->GetBoxIdPtr());
     cl::Buffer mass_arg(*context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR,
-                        cells->size() * sizeof(cl_double), mass.data());
+                        cells->size() * sizeof(cl_float), mass.data());
     cl::Buffer cell_movements_arg(
         *context, CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR,
-        cells->size() * 3 * sizeof(cl_double), cell_movements.data()->data());
+        cells->size() * 3 * sizeof(cl_float), cell_movements.data()->data());
     cl::Buffer starts_arg(*context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR,
                           gpu_starts.size() * sizeof(cl_uint),
                           gpu_starts.data());
@@ -138,7 +138,7 @@ class DisplacementOpOpenCL {
 
     try {
       queue->enqueueReadBuffer(cell_movements_arg, CL_TRUE, 0,
-                               cells->size() * 3 * sizeof(cl_double),
+                               cells->size() * 3 * sizeof(cl_float),
                                cell_movements.data()->data());
     } catch (const cl::Error& err) {
       Log::Error("DisplacementOpOpenCL", err.what(), "(", err.err(), ") = ",
@@ -152,11 +152,11 @@ class DisplacementOpOpenCL {
 #pragma omp parallel for
     for (size_t i = 0; i < cells->size(); i++) {
       auto&& cell = (*cells)[i];
-      cell.UpdateMassLocation(cell_movements[i]);
+      cell.UpdatePosition(cell_movements[i]);
       if (Param::bound_space_) {
         ApplyBoundingBox(&cell, Param::min_bound_, Param::max_bound_);
       }
-      cell.SetPosition(cell.GetMassLocation());
+      cell.SetPosition(cell.GetPosition());
 
       // Reset biological movement to 0.
       cell.SetTractorForce({0, 0, 0});

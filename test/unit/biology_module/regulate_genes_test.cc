@@ -13,13 +13,13 @@ TEST(RegulateGenesTest, EulerTest) {
   Param::numerical_ode_solver_ = Param::NumericalODESolver::kEuler;
   Param::total_steps_ = 1;
 
-  auto func1 = [](double curr_time, double last_concentration) {
+  auto func1 = [](float curr_time, float last_concentration) {
     return curr_time * last_concentration;
   };
-  auto func2 = [](double curr_time, double last_concentration) {
+  auto func2 = [](float curr_time, float last_concentration) {
     return curr_time * last_concentration + 1;
   };
-  auto func3 = [](double curr_time, double last_concentration) {
+  auto func3 = [](float curr_time, float last_concentration) {
     return curr_time * last_concentration + 2;
   };
 
@@ -45,7 +45,7 @@ TEST(RegulateGenesTest, RK4Test) {
 
   RegulateGenes regulate_genes;
   regulate_genes.AddGene(
-      [](double curr_time, double last_concentration) {
+      [](float curr_time, float last_concentration) {
         return 1 - curr_time * last_concentration;
       },
       1);

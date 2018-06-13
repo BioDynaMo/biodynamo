@@ -10,7 +10,7 @@ namespace bdm {
 /// the specified threshold and divides the object afterwards.
 struct GrowDivide : public BaseBiologyModule {
   GrowDivide() : BaseBiologyModule(gAllBmEvents) {}
-  GrowDivide(double threshold, double growth_rate,
+  GrowDivide(float threshold, float growth_rate,
              std::initializer_list<BmEvent> event_list)
       : BaseBiologyModule(event_list),
         threshold_(threshold),
@@ -26,8 +26,8 @@ struct GrowDivide : public BaseBiologyModule {
   }
 
  private:
-  double threshold_ = 40;
-  double growth_rate_ = 300;
+  float threshold_ = 40;
+  float growth_rate_ = 300;
   ClassDefNV(GrowDivide, 1);
 };
 

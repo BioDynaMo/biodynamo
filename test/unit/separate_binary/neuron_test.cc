@@ -109,11 +109,11 @@ TEST(NeuriteElementTest, UpdateReferences) {
 TEST(NeuronSomaTest, ExtendNewNeuriteElementSphericalCoordinates) {
   auto* rm = Rm();
   Rm()->Clear();
-  const double kEpsilon = abs_error<double>::value;
+  const float kEpsilon = abs_error<float>::value;
   auto commit = [](auto* container, uint16_t type_idx) { container->Commit(); };
 
   // create neuron
-  std::array<double, 3> origin = {0, 0, 0};
+  std::array<float, 3> origin = {0, 0, 0};
   auto neuron = rm->New<NeuronSoma>(origin);
   neuron.SetDiameter(20);
 
@@ -155,11 +155,11 @@ TEST(NeuronSomaTest, ExtendNewNeuriteElementSphericalCoordinates) {
 TEST(NeuronSomaTest, ExtendNewNeurite) {
   auto* rm = Rm();
   Rm()->Clear();
-  const double kEpsilon = abs_error<double>::value;
+  const float kEpsilon = abs_error<float>::value;
   auto commit = [](auto* container, uint16_t type_idx) { container->Commit(); };
 
   // create neuron
-  std::array<double, 3> origin = {0, 0, 0};
+  std::array<float, 3> origin = {0, 0, 0};
   auto neuron = rm->New<NeuronSoma>(origin);
   neuron.SetDiameter(20);
 
@@ -194,9 +194,9 @@ TEST(NeuronSomaTest, ExtendNewNeurite) {
 TEST(NeuronSomaTest, ExtendNeuriteAndElongate) {
   auto* rm = Rm();
   Rm()->Clear();
-  const double kEpsilon = abs_error<double>::value;
+  const float kEpsilon = abs_error<float>::value;
   auto commit = [](auto* container, uint16_t type_idx) { container->Commit(); };
-  std::array<double, 3> origin = {0, 0, 0};
+  std::array<float, 3> origin = {0, 0, 0};
 
   auto neuron = rm->New<NeuronSoma>(origin);
   neuron.SetDiameter(20);
@@ -257,8 +257,8 @@ TEST(NeuronSomaTest, ExtendNeuriteAndElongate) {
 TEST(NeuriteElementTest, PartialRetraction) {
   auto* rm = Rm();
   Rm()->Clear();
-  const double kEpsilon = abs_error<double>::value;
-  std::array<double, 3> origin = {0, 0, 0};
+  const float kEpsilon = abs_error<float>::value;
+  std::array<float, 3> origin = {0, 0, 0};
   auto commit = [](auto* container, uint16_t type_idx) { container->Commit(); };
 
   auto neuron = rm->New<NeuronSoma>(origin);
@@ -305,7 +305,7 @@ TEST(NeuriteElementTest, PartialRetraction) {
 TEST(NeuriteElementTest, TotalRetraction) {
   auto* rm = Rm();
   Rm()->Clear();
-  std::array<double, 3> origin = {0, 0, 0};
+  std::array<float, 3> origin = {0, 0, 0};
   auto commit = [](auto* container, uint16_t type_idx) { container->Commit(); };
 
   auto neuron = rm->New<NeuronSoma>(origin);
@@ -337,8 +337,8 @@ TEST(NeuriteElementTest, TotalRetraction) {
 TEST(NeuriteElementTest, Branch) {
   auto* rm = Rm();
   Rm()->Clear();
-  const double kEpsilon = abs_error<double>::value;
-  std::array<double, 3> origin = {0, 0, 0};
+  const float kEpsilon = abs_error<float>::value;
+  std::array<float, 3> origin = {0, 0, 0};
   auto commit = [](auto* container, uint16_t type_idx) { container->Commit(); };
 
   auto neuron = rm->New<NeuronSoma>(origin);
@@ -434,8 +434,8 @@ TEST(NeuriteElementTest, Branch) {
 TEST(NeuriteElementTest, RightDaughterRetraction) {
   auto* rm = Rm();
   Rm()->Clear();
-  const double kEpsilon = abs_error<double>::value;
-  std::array<double, 3> origin = {0, 0, 0};
+  const float kEpsilon = abs_error<float>::value;
+  std::array<float, 3> origin = {0, 0, 0};
   auto commit = [](auto* container, uint16_t type_idx) { container->Commit(); };
 
   auto neuron = rm->New<NeuronSoma>(origin);
@@ -504,8 +504,8 @@ TEST(NeuriteElementTest, RightDaughterRetraction) {
 TEST(NeuriteElementTest, RightDaughterTotalRetraction) {
   auto* rm = Rm();
   Rm()->Clear();
-  const double kEpsilon = abs_error<double>::value;
-  std::array<double, 3> origin = {0, 0, 0};
+  const float kEpsilon = abs_error<float>::value;
+  std::array<float, 3> origin = {0, 0, 0};
   auto commit = [](auto* container, uint16_t type_idx) { container->Commit(); };
 
   auto neuron = rm->New<NeuronSoma>(origin);
@@ -552,8 +552,8 @@ TEST(NeuriteElementTest, RightDaughterTotalRetraction) {
 TEST(NeuriteElementTest, LeftDaughterRetraction) {
   auto* rm = Rm();
   Rm()->Clear();
-  const double kEpsilon = abs_error<double>::value;
-  std::array<double, 3> position = {0, 0, 0};
+  const float kEpsilon = abs_error<float>::value;
+  std::array<float, 3> position = {0, 0, 0};
   auto commit = [](auto* container, uint16_t type_idx) { container->Commit(); };
 
   auto neuron = rm->New<NeuronSoma>(position);
@@ -622,7 +622,7 @@ TEST(NeuriteElementTest, LeftDaughterRetraction) {
 TEST(NeuriteElementTest, RetractAllDendrites) {
   auto* rm = Rm();
   Rm()->Clear();
-  std::array<double, 3> origin = {0, 0, 0};
+  std::array<float, 3> origin = {0, 0, 0};
   auto commit = [](auto* container, uint16_t type_idx) { container->Commit(); };
 
   auto neuron = rm->New<NeuronSoma>(origin);
@@ -672,8 +672,8 @@ TEST(NeuriteElementTest, RetractAllDendrites) {
 TEST(NeuriteElementTest, Bifurcate) {
   auto* rm = Rm();
   Rm()->Clear();
-  const double kEpsilon = abs_error<double>::value;
-  std::array<double, 3> origin = {0, 0, 0};
+  const float kEpsilon = abs_error<float>::value;
+  std::array<float, 3> origin = {0, 0, 0};
   auto commit = [](auto* container, uint16_t type_idx) { container->Commit(); };
 
   auto neuron = rm->New<NeuronSoma>(origin);
@@ -787,38 +787,38 @@ TEST(DISABLED_NeuronSomaNeuriteElementTest, Displacement) {
   // // check results
   // // cell 1
   // auto final_position = (*cells)[0].GetPosition();
-  // EXPECT_NEAR(0, final_position[0], abs_error<double>::value);
+  // EXPECT_NEAR(0, final_position[0], abs_error<float>::value);
   // EXPECT_NEAR(-0.07797206232558615, final_position[1],
-  //             abs_error<double>::value);
-  // EXPECT_NEAR(0, final_position[2], abs_error<double>::value);
+  //             abs_error<float>::value);
+  // EXPECT_NEAR(0, final_position[2], abs_error<float>::value);
   // // cell 2
   // final_position = (*cells)[1].GetPosition();
-  // EXPECT_NEAR(0, final_position[0], abs_error<double>::value);
+  // EXPECT_NEAR(0, final_position[0], abs_error<float>::value);
   // EXPECT_NEAR(5.0992371702325645, final_position[1],
-  // abs_error<double>::value);
-  // EXPECT_NEAR(0, final_position[2], abs_error<double>::value);
+  // abs_error<float>::value);
+  // EXPECT_NEAR(0, final_position[2], abs_error<float>::value);
   //
   // // check if tractor_force has been reset to zero
   // // cell 1
   // auto final_tf = (*cells)[0].GetTractorForce();
-  // EXPECT_NEAR(0, final_tf[0], abs_error<double>::value);
-  // EXPECT_NEAR(0, final_tf[1], abs_error<double>::value);
-  // EXPECT_NEAR(0, final_tf[2], abs_error<double>::value);
+  // EXPECT_NEAR(0, final_tf[0], abs_error<float>::value);
+  // EXPECT_NEAR(0, final_tf[1], abs_error<float>::value);
+  // EXPECT_NEAR(0, final_tf[2], abs_error<float>::value);
   // // cell 2
   // final_tf = (*cells)[1].GetTractorForce();
-  // EXPECT_NEAR(0, final_tf[0], abs_error<double>::value);
-  // EXPECT_NEAR(0, final_tf[1], abs_error<double>::value);
-  // EXPECT_NEAR(0, final_tf[2], abs_error<double>::value);
+  // EXPECT_NEAR(0, final_tf[0], abs_error<float>::value);
+  // EXPECT_NEAR(0, final_tf[1], abs_error<float>::value);
+  // EXPECT_NEAR(0, final_tf[2], abs_error<float>::value);
   //
   // // remaining fields should remain unchanged
   // // cell 1
-  // EXPECT_NEAR(0.3, (*cells)[0].GetAdherence(), abs_error<double>::value);
-  // EXPECT_NEAR(9, (*cells)[0].GetDiameter(), abs_error<double>::value);
-  // EXPECT_NEAR(1.4, (*cells)[0].GetMass(), abs_error<double>::value);
+  // EXPECT_NEAR(0.3, (*cells)[0].GetAdherence(), abs_error<float>::value);
+  // EXPECT_NEAR(9, (*cells)[0].GetDiameter(), abs_error<float>::value);
+  // EXPECT_NEAR(1.4, (*cells)[0].GetMass(), abs_error<float>::value);
   // // cell 2
-  // EXPECT_NEAR(0.4, (*cells)[1].GetAdherence(), abs_error<double>::value);
-  // EXPECT_NEAR(11, (*cells)[1].GetDiameter(), abs_error<double>::value);
-  // EXPECT_NEAR(1.1, (*cells)[1].GetMass(), abs_error<double>::value);
+  // EXPECT_NEAR(0.4, (*cells)[1].GetAdherence(), abs_error<float>::value);
+  // EXPECT_NEAR(11, (*cells)[1].GetDiameter(), abs_error<float>::value);
+  // EXPECT_NEAR(1.1, (*cells)[1].GetMass(), abs_error<float>::value);
 }
 
 }  // namespace neuroscience

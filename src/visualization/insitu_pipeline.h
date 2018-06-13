@@ -244,7 +244,7 @@ class InSituPipeline : public vtkCPPipeline {
     }
 
     // Get the time information from the data
-    double time = data_description->GetTime();
+    float time = data_description->GetTime();
     vtkIdType time_step = data_description->GetTimeStep();
 
     // Go into the main loop for visualization

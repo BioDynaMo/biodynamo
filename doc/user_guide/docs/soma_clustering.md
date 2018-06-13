@@ -14,7 +14,7 @@ git checkout newcastle
 
 ### Inspect the code
 
-Go into the `soma_clustering` directory and open the source file `src/soma_clustering.h` in your favorite editor. 
+Go into the `soma_clustering` directory and open the source file `src/soma_clustering.h` in your favorite editor.
 We can note the following things from its content:
 
 #### 1. Creating a custom simulation object
@@ -27,7 +27,7 @@ BDM_SIM_OBJECT(MyCell, bdm::Cell) {
 
  public:
   MyCellExt() {}
-  MyCellExt(const std::array<double, 3>& position) : Base(position) {}
+  MyCellExt(const std::array<float, 3>& position) : Base(position) {}
 
   void SetCellType(int t) { cell_type_[kIdx] = t; }
   int GetCellType() const { return cell_type_[kIdx]; }

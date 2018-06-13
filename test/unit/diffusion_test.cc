@@ -12,7 +12,7 @@ namespace bdm {
 
 template <typename TContainer>
 void CellFactory(TContainer* cells,
-                 const std::vector<std::array<double, 3>>& positions) {
+                 const std::vector<std::array<float, 3>>& positions) {
   cells->reserve(positions.size());
   for (size_t i = 0; i < positions.size(); i++) {
     Cell cell({positions[i][0], positions[i][1], positions[i][2]});
@@ -28,7 +28,7 @@ TEST(DiffusionTest, GridDimensions) {
   rm->Clear();
   auto cells = rm->Get<Cell>();
 
-  std::vector<std::array<double, 3>> positions;
+  std::vector<std::array<float, 3>> positions;
   positions.push_back({-10, -10, -10});
   positions.push_back({90, 90, 90});
   CellFactory(cells, positions);
@@ -58,7 +58,7 @@ TEST(DiffusionTest, UpdateGrid) {
   rm->Clear();
   auto cells = rm->Get<Cell>();
 
-  std::vector<std::array<double, 3>> positions;
+  std::vector<std::array<float, 3>> positions;
   positions.push_back({-10, -10, -10});
   positions.push_back({90, 90, 90});
   CellFactory(cells, positions);
@@ -69,7 +69,7 @@ TEST(DiffusionTest, UpdateGrid) {
   grid.Initialize();
   d_grid->Initialize(grid.GetDimensions(), grid.GetBoxLength());
 
-  std::vector<std::array<double, 3>> positions_2;
+  std::vector<std::array<float, 3>> positions_2;
   positions_2.push_back({-30, -10, -10});
   positions_2.push_back({90, 150, 90});
   CellFactory(cells, positions_2);
@@ -97,7 +97,7 @@ TEST(DiffusionTest, FalseUpdateGrid) {
   rm->Clear();
   auto cells = rm->Get<Cell>();
 
-  std::vector<std::array<double, 3>> positions;
+  std::vector<std::array<float, 3>> positions;
   positions.push_back({-10, -10, -10});
   positions.push_back({90, 90, 90});
   CellFactory(cells, positions);
@@ -139,7 +139,7 @@ TEST(DiffusionTest, LeakingEdge) {
   rm->Clear();
   auto cells = rm->Get<Cell>();
 
-  std::vector<std::array<double, 3>> positions;
+  std::vector<std::array<float, 3>> positions;
   positions.push_back({0, 0, 0});
   positions.push_back({60, 60, 60});
   CellFactory(cells, positions);
@@ -177,7 +177,7 @@ TEST(DiffusionTest, LeakingEdge) {
   array<uint32_t, 3> rand2_a = {4, 4, 2};
   array<uint32_t, 3> rand2_b = {0, 0, 2};
 
-  auto kEps = abs_error<double>::value;
+  auto kEps = abs_error<float>::value;
 
   EXPECT_NEAR(9.7267657389657938, conc[d_grid->GetBoxIndex(c)], kEps);
   EXPECT_NEAR(3.7281869469803648, conc[d_grid->GetBoxIndex(e)], kEps);
@@ -223,7 +223,7 @@ TEST(DiffusionTest, ClosedEdge) {
   rm->Clear();
   auto cells = rm->Get<Cell>();
 
-  std::vector<std::array<double, 3>> positions;
+  std::vector<std::array<float, 3>> positions;
   positions.push_back({0, 0, 0});
   positions.push_back({60, 60, 60});
   CellFactory(cells, positions);
@@ -261,7 +261,7 @@ TEST(DiffusionTest, ClosedEdge) {
   array<uint32_t, 3> rand2_a = {4, 4, 2};
   array<uint32_t, 3> rand2_b = {0, 0, 2};
 
-  auto kEps = abs_error<double>::value;
+  auto kEps = abs_error<float>::value;
 
   EXPECT_NEAR(11.717698164878922, conc[d_grid->GetBoxIndex(c)], kEps);
   EXPECT_NEAR(5.7977258086605303, conc[d_grid->GetBoxIndex(e)], kEps);
@@ -304,7 +304,7 @@ TEST(DiffusionTest, CopyOldData) {
   rm->Clear();
   auto cells = rm->Get<Cell>();
 
-  std::vector<std::array<double, 3>> positions;
+  std::vector<std::array<float, 3>> positions;
   positions.push_back({0, 0, 0});
   positions.push_back({60, 60, 60});
   CellFactory(cells, positions);
@@ -327,7 +327,7 @@ TEST(DiffusionTest, CopyOldData) {
   }
 
   // Increase the diffusion grid to a 7x7x7
-  std::vector<std::array<double, 3>> positions_2;
+  std::vector<std::array<float, 3>> positions_2;
   positions_2.push_back({100, 60, 60});
   CellFactory(cells, positions_2);
 
@@ -350,7 +350,7 @@ TEST(DiffusionTest, CopyOldData) {
   array<uint32_t, 3> rand2_a = {5, 5, 3};
   array<uint32_t, 3> rand2_b = {1, 1, 3};
 
-  auto kEps = abs_error<double>::value;
+  auto kEps = abs_error<float>::value;
 
   EXPECT_NEAR(9.7267657389657938, conc[d_grid->GetBoxIndex(c)], kEps);
   EXPECT_NEAR(3.7281869469803648, conc[d_grid->GetBoxIndex(e)], kEps);
@@ -412,7 +412,7 @@ TEST(DiffusionTest, IOTest) {
   DiffusionGrid* restored_d_grid = nullptr;
   GetPersistentObject(ROOTFILE, "dgrid", restored_d_grid);
 
-  auto kEps = abs_error<double>::value;
+  auto kEps = abs_error<float>::value;
 
   EXPECT_EQ("Kalium", restored_d_grid->GetSubstanceName());
   EXPECT_EQ(5, restored_d_grid->GetBoxLength());

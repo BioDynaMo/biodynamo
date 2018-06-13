@@ -32,7 +32,7 @@ inline int Simulate(int argc, const char** argv) {
   Param::max_bound_ = 250;
 
   // Create one cell at a random position
-  auto construct = [](const std::array<double, 3>& position) {
+  auto construct = [](const std::array<float, 3>& position) {
     Cell cell(position);
     cell.SetDiameter(10);
     return cell;
@@ -51,7 +51,7 @@ inline int Simulate(int argc, const char** argv) {
   ModelInitializer::InitializeSubstance(kSubstance, "Substance",
                                         GaussianBand(120, 5, Axis::kXAxis));
 
-  // auto initer_y = [](double x, double y, double z) {
+  // auto initer_y = [](float x, float y, float z) {
   //   return ROOT::Math::normal_pdf(y, 5, 120);
   // };
 

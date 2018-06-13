@@ -22,7 +22,7 @@ TEST(DisplacementOpTest, ComputeSoaNew) {
   rm->Clear();
   auto cells = rm->template Get<Cell>();
 
-  double space = 20;
+  float space = 20;
   for (size_t i = 0; i < 3; i++) {
     for (size_t j = 0; j < 3; j++) {
       for (size_t k = 0; k < 3; k++) {

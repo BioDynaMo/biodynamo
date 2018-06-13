@@ -21,19 +21,19 @@ enum Axis { kXAxis, kYAxis, kZAxis };
 /// An initializer that uniformly initializes the concentration of a diffusion
 /// grid based on the input value and the range (along the specified axis).
 struct Uniform {
-  double min_;
-  double max_;
-  double value_;
+  float min_;
+  float max_;
+  float value_;
   uint8_t axis_;
 
-  Uniform(double min, double max, double value, uint8_t axis) {
+  Uniform(float min, float max, float value, uint8_t axis) {
     min_ = min;
     max_ = max;
     value_ = value;
     axis_ = axis;
   }
 
-  double operator()(double x, double y, double z) {
+  float operator()(float x, float y, float z) {
     switch (axis_) {
       case Axis::kXAxis: {
         if (x >= min_ && x <= max_) {
@@ -65,8 +65,8 @@ struct Uniform {
 /// that follows the normal probability density function:
 /// ( 1/( sigma * sqrt(2*pi) ))*e^( (-(x - mean )^2) / (2*sigma^2))
 struct GaussianBand {
-  double mean_;
-  double sigma_;
+  float mean_;
+  float sigma_;
   uint8_t axis_;
 
   /// @brief      The constructor
@@ -77,7 +77,7 @@ struct GaussianBand {
   /// @param[in]  axis   The axis along which you want the Gaussian distribution
   ///                    to be oriented to
   ///
-  GaussianBand(double mean, double sigma, uint8_t axis) {
+  GaussianBand(float mean, float sigma, uint8_t axis) {
     mean_ = mean;
     sigma_ = sigma;
     axis_ = axis;
@@ -90,7 +90,7 @@ struct GaussianBand {
   /// @param[in]  y     The y coordinate
   /// @param[in]  z     The z coordinate
   ///
-  double operator()(double x, double y, double z) {
+  float operator()(float x, float y, float z) {
     switch (axis_) {
       case Axis::kXAxis:
         return ROOT::Math::normal_pdf(x, sigma_, mean_);
@@ -109,7 +109,7 @@ struct GaussianBand {
 /// probability density function:
 /// {e^( - lambda ) * lambda ^x )} / x!
 struct PoissonBand {
-  double lambda_;
+  float lambda_;
   uint8_t axis_;
 
   /// @brief      The constructor
@@ -118,7 +118,7 @@ struct PoissonBand {
   /// @param[in]  axis   The axis along which you want the Poisson distribution
   ///                    to be oriented to
   ///
-  PoissonBand(double lambda, uint8_t axis) {
+  PoissonBand(float lambda, uint8_t axis) {
     lambda_ = lambda;
     axis_ = axis;
   }
@@ -130,7 +130,7 @@ struct PoissonBand {
   /// @param[in]  y     The y coordinate
   /// @param[in]  z     The z coordinate
   ///
-  double operator()(double x, double y, double z) {
+  float operator()(float x, float y, float z) {
     switch (axis_) {
       case Axis::kXAxis:
         return ROOT::Math::poisson_pdf(x, lambda_);

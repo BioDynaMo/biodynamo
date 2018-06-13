@@ -23,8 +23,8 @@ class DisplacementOpCuda {
   void operator()(TContainer* cells, uint16_t type_idx) {
     auto& grid = TGrid::GetInstance();
 
-    std::vector<std::array<double, 3>> cell_movements(cells->size());
-    std::vector<double> mass(cells->size());
+    std::vector<std::array<float, 3>> cell_movements(cells->size());
+    std::vector<float> mass(cells->size());
     std::vector<uint32_t> starts;
     std::vector<uint16_t> lengths;
     std::vector<uint32_t> successors(cells->size());
@@ -32,7 +32,7 @@ class DisplacementOpCuda {
     uint32_t num_objects = cells->size();
     std::array<uint32_t, 3> num_boxes_axis;
     std::array<int32_t, 3> grid_dimensions;
-    double squared_radius =
+    float squared_radius =
         grid.GetLargestObjectSize() * grid.GetLargestObjectSize();
 
     // We need to create a mass vector, because it is not stored by default in
@@ -78,14 +78,25 @@ class DisplacementOpCuda {
       }
     }
 
+    SimParams host_params;
+    host_params.num_objects = num_objects;
+    host_params.grid_dimensions[0] = grid_dimensions[0];
+    host_params.grid_dimensions[1] = grid_dimensions[1];
+    host_params.grid_dimensions[2] = grid_dimensions[2];
+    host_params.num_boxes_axis[0] = num_boxes_axis[0];
+    host_params.num_boxes_axis[1] = num_boxes_axis[1];
+    host_params.num_boxes_axis[2] = num_boxes_axis[2];
+    host_params.box_length = box_length;
+    host_params.timestep = Param::simulation_time_step_;
+    host_params.squared_radius = squared_radius;
+    host_params.max_displacement = Param::simulation_max_displacement_;
+
     cdo_->LaunchDisplacementKernel(
         cells->GetPositionPtr(), cells->GetDiameterPtr(),
         cells->GetTractorForcePtr(), cells->GetAdherencePtr(),
-        cells->GetBoxIdPtr(), mass.data(), &(Param::simulation_time_step_),
-        &(Param::simulation_max_displacement_), &squared_radius, &num_objects,
-        starts.data(), lengths.data(), successors.data(), &box_length,
-        num_boxes_axis.data(), grid_dimensions.data(),
-        cell_movements.data()->data());
+        cells->GetBoxIdPtr(), mass.data(), starts.data(),
+        lengths.data(), successors.data(), cell_movements.data()->data(),
+        host_params);
 
 // set new positions after all updates have been calculated
 // otherwise some cells would see neighbors with already updated positions

@@ -36,12 +36,12 @@ BDM_SIM_OBJECT(B, bdm::SimulationObject) {
 
  public:
   BExt() {}  // for ROOT I/O
-  explicit BExt(double data) { data_[kIdx] = data; }
+  explicit BExt(float data) { data_[kIdx] = data; }
 
-  double GetData() { return data_[kIdx]; }
-  void SetData(double data) { data_[kIdx] = data; }
+  float GetData() { return data_[kIdx]; }
+  void SetData(float data) { data_[kIdx] = data; }
 
-  vec<double> data_;
+  vec<float> data_;
 };
 
 template <typename TBackend, typename... Types>
@@ -56,7 +56,7 @@ struct CompileTimeParam {
 // see rootcling_impl.cxx:L3668 GenerateFwdDeclString
 template <typename Backend, typename TA, typename TB>
 inline void RunIOTest() {
-  const double kEpsilon = abs_error<double>::value;
+  const float kEpsilon = abs_error<float>::value;
   using CTParam = CompileTimeParam<Backend, TA, TB>;
   auto rm = ResourceManager<CTParam>::Get();
   rm->Clear();

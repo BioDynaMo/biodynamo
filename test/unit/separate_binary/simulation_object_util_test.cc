@@ -120,7 +120,7 @@ TEST(SimulationObjectUtilTest, NonDefaultConstructor) {
   neurites.push_back(Neurite(2));
   neurites.push_back(Neurite(3));
 
-  Neuron neuron(neurites, std::array<double, 3>{4, 5, 6});
+  Neuron neuron(neurites, std::array<float, 3>{4, 5, 6});
 
   EXPECT_EQ(6.28, neuron.GetDiameter());
   auto& position = neuron.GetPosition();
@@ -149,10 +149,10 @@ TEST(SimulationObjectUtilTest, Soa_push_back_AndSubscriptOperator) {
   neurites.push_back(Neurite(2));
   neurites.push_back(Neurite(3));
 
-  Neuron neuron1(neurites, std::array<double, 3>{4, 5, 6});
+  Neuron neuron1(neurites, std::array<float, 3>{4, 5, 6});
 
   neurites.push_back(Neurite(4));
-  Neuron neuron2(neurites, std::array<double, 3>{9, 8, 7});
+  Neuron neuron2(neurites, std::array<float, 3>{9, 8, 7});
 
   auto neurons = Neuron::NewEmptySoa();
   neurons.push_back(neuron1);
@@ -204,10 +204,10 @@ TEST(SimulationObjectUtilTest, Soa_AssignmentOperator) {
   neurites.push_back(Neurite(2));
   neurites.push_back(Neurite(3));
 
-  Neuron neuron1(neurites, std::array<double, 3>{4, 5, 6});
+  Neuron neuron1(neurites, std::array<float, 3>{4, 5, 6});
 
   neurites.push_back(Neurite(4));
-  Neuron new_neuron1(neurites, std::array<double, 3>{9, 8, 7});
+  Neuron new_neuron1(neurites, std::array<float, 3>{9, 8, 7});
   new_neuron1.SetDiameter(123);
 
   auto neurons = Neuron::NewEmptySoa();
@@ -302,7 +302,7 @@ TEST(SimulationObjectUtilTest, Soa_IO) { RunSoaIOTest(); }
 
 TEST(SimulationObjectUtilTest, ForEachDataMember) {
   std::vector<Neurite> neurites;
-  Neuron neuron1(neurites, std::array<double, 3>{4, 5, 6});
+  Neuron neuron1(neurites, std::array<float, 3>{4, 5, 6});
 
   auto neurons = Neuron::NewEmptySoa();
   neurons.push_back(neuron1);
@@ -323,7 +323,7 @@ TEST(SimulationObjectUtilTest, ForEachDataMember) {
 
 TEST(SimulationObjectUtilTest, ForEachDataMemberIn) {
   std::vector<Neurite> neurites;
-  Neuron neuron1(neurites, std::array<double, 3>{4, 5, 6});
+  Neuron neuron1(neurites, std::array<float, 3>{4, 5, 6});
 
   auto neurons = Neuron::NewEmptySoa();
   neurons.push_back(neuron1);
@@ -344,7 +344,7 @@ TEST(SimulationObjectUtilTest, ForEachDataMemberIn) {
 }
 
 struct VerifyPosition {
-  void operator()(std::vector<std::array<double, 3>>* data_member,
+  void operator()(std::vector<std::array<float, 3>>* data_member,
                   const std::string& dm_name) {
     ASSERT_EQ(1u, data_member->size());
     if (dm_name == "position_") {
@@ -363,7 +363,7 @@ struct VerifyPosition {
 // for one data member check if the pointer contains the right data
 TEST(SimulationObjectUtilTest, ForEachDataMemberInDetailed) {
   std::vector<Neurite> neurites;
-  Neuron neuron1(neurites, std::array<double, 3>{4, 5, 6});
+  Neuron neuron1(neurites, std::array<float, 3>{4, 5, 6});
 
   auto neurons = Neuron::NewEmptySoa();
   neurons.push_back(neuron1);

@@ -24,7 +24,7 @@ void RunTest() {
 
   EXPECT_EQ(2u, cells->size());
 
-  double volume_mother = (*cells)[0].GetVolume();
+  float volume_mother = (*cells)[0].GetVolume();
 
   DividingCellOp op;
   op(cells, 0);
@@ -33,9 +33,9 @@ void RunTest() {
 
   ASSERT_EQ(3u, cells->size());
   EXPECT_NEAR(19.005288996600001, (*cells)[1].GetDiameter(),
-              abs_error<double>::value);
+              abs_error<float>::value);
   EXPECT_NEAR(3594.3640018287319, (*cells)[1].GetVolume(),
-              abs_error<double>::value);
+              abs_error<float>::value);
 
   // cell got divided so it must be smaller than before
   // more detailed division test can be found in `cell_test.h`
@@ -44,7 +44,7 @@ void RunTest() {
 
   // volume of two daughter cells must be equal to volume of the mother
   EXPECT_NEAR(volume_mother, (*cells)[0].GetVolume() + (*cells)[2].GetVolume(),
-              abs_error<double>::value);
+              abs_error<float>::value);
 }
 
 }  // namespace dividing_cell_op_test_internal

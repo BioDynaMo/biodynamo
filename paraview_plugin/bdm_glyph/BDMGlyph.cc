@@ -92,7 +92,7 @@ bool BDMGlyph::Execute(vtkDataSet *input, vtkInformationVector *sourceVector,
   vtkDataArray *newVectors = NULL;
   vtkDataArray *newNormals = NULL;
   vtkDataArray *newTCoords = NULL;
-  double x[3], v[3], vNew[3], ep[3], s = 0.0, vMag = 0.0, value, tc[3],
+  float x[3], v[3], vNew[3], ep[3], s = 0.0, vMag = 0.0, value, tc[3],
                                      xs = 0.0, ys = 0.0, zs = 0.0;
   vtkTransform *trans = vtkTransform::New();
   vtkTransform *trans2 = vtkTransform::New();
@@ -102,7 +102,7 @@ bool BDMGlyph::Execute(vtkDataSet *input, vtkInformationVector *sourceVector,
   vtkIdList *pts;
   vtkIdType ptIncr, cellIncr, cellId;
   int haveVectors, haveNormals, haveTCoords = 0;
-  double scalex, scaley, scalez, den;
+  float scalex, scaley, scalez, den;
   vtkPointData *outputPD = output->GetPointData();
   vtkCellData *outputCD = output->GetCellData();
   int numberOfSources = this->GetNumberOfInputConnections(1);
@@ -321,7 +321,7 @@ bool BDMGlyph::Execute(vtkDataSet *input, vtkInformationVector *sourceVector,
   for (inPtId = 0; inPtId < numPts; inPtId++) {
     scalex = scaley = scalez = 1.0;
     if (!(inPtId % 10000)) {
-      this->UpdateProgress(static_cast<double>(inPtId) / numPts);
+      this->UpdateProgress(static_cast<float>(inPtId) / numPts);
       if (this->GetAbortExecute()) {
         break;
       }
@@ -473,12 +473,12 @@ bool BDMGlyph::Execute(vtkDataSet *input, vtkInformationVector *sourceVector,
         newVectors->InsertTuple(i + ptIncr, v);
       }
       if (this->Orient && (vMag > 0.0)) {
-        double rotation_axis[3] = {v[0] / vMag, v[1] / vMag + 1, v[2] / vMag};
+        float rotation_axis[3] = {v[0] / vMag, v[1] / vMag + 1, v[2] / vMag};
         trans->RotateWXYZ(180.0, rotation_axis);
         // trans->RotateX(45.0);
 
         if (end_position) {
-          double middle_position[3];
+          float middle_position[3];
           end_position->GetTuple(inPtId, ep);
           for (uint64_t i = 0; i < 3; i++) {
             middle_position[i] = ep[i] - v[i] / 2.0;

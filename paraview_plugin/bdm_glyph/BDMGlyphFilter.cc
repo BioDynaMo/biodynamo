@@ -45,8 +45,8 @@
 
 class BDMGlyphFilter::vtkInternals {
   vtkBoundingBox Bounds;
-  double NearestPointRadius;
-  std::vector<vtkTuple<double, 3> > Points;
+  float NearestPointRadius;
+  std::vector<vtkTuple<float, 3> > Points;
   std::vector<vtkIdType> PointIds;
   size_t NextPointId;
 
@@ -63,11 +63,11 @@ class BDMGlyphFilter::vtkInternals {
 
     this->PointIds.clear();
     std::set<vtkIdType> pointset;
-    for (std::vector<vtkTuple<double, 3> >::iterator
+    for (std::vector<vtkTuple<float, 3> >::iterator
              iter = this->Points.begin(),
              end = this->Points.end();
          iter != end; ++iter) {
-      double dist2;
+      float dist2;
       vtkIdType ptId = this->Locator->FindClosestPointWithinRadius(
           this->NearestPointRadius, iter->GetData(), dist2);
       if (ptId >= 0) {
@@ -99,7 +99,7 @@ class BDMGlyphFilter::vtkInternals {
     }
 
     // collect local bounds information.
-    double bds[6];
+    float bds[6];
     ds->GetBounds(bds);
     if (vtkBoundingBox::IsValid(bds)) {
       this->Bounds.AddBounds(bds);
@@ -119,13 +119,13 @@ class BDMGlyphFilter::vtkInternals {
 
     vtkMultiProcessController* controller = self->GetController();
     if (controller && controller->GetNumberOfProcesses() > 1) {
-      double local_min[3] = {VTK_DOUBLE_MAX, VTK_DOUBLE_MAX, VTK_DOUBLE_MAX};
-      double local_max[3] = {VTK_DOUBLE_MIN, VTK_DOUBLE_MIN, VTK_DOUBLE_MIN};
+      float local_min[3] = {VTK_DOUBLE_MAX, VTK_DOUBLE_MAX, VTK_DOUBLE_MAX};
+      float local_max[3] = {VTK_DOUBLE_MIN, VTK_DOUBLE_MIN, VTK_DOUBLE_MIN};
       if (this->Bounds.IsValid()) {
         this->Bounds.GetMinPoint(local_min[0], local_min[1], local_min[2]);
         this->Bounds.GetMaxPoint(local_max[0], local_max[1], local_max[2]);
       }
-      double global_min[3], global_max[3];
+      float global_min[3], global_max[3];
 
       controller->AllReduce(local_min, global_min, 3, vtkCommunicator::MIN_OP);
       controller->AllReduce(local_max, global_max, 3, vtkCommunicator::MAX_OP);
@@ -143,7 +143,7 @@ class BDMGlyphFilter::vtkInternals {
     randomGenerator->SetSeed(self->GetSeed());
     this->Points.resize(self->GetMaximumNumberOfSamplePoints());
     for (vtkIdType cc = 0; cc < self->GetMaximumNumberOfSamplePoints(); cc++) {
-      vtkTuple<double, 3>& tuple = this->Points[cc];
+      vtkTuple<float, 3>& tuple = this->Points[cc];
       randomGenerator->Next();
       tuple[0] = randomGenerator->GetRangeValue(this->Bounds.GetMinPoint()[0],
                                                 this->Bounds.GetMaxPoint()[0]);
@@ -157,13 +157,13 @@ class BDMGlyphFilter::vtkInternals {
 
     // we use diagonal, instead of actual length for each side to avoid the
     // issue with one of the lengths being 0.
-    double side = std::sqrt(this->Bounds.GetDiagonalLength());
-    double volume = side * side * side;
+    float side = std::sqrt(this->Bounds.GetDiagonalLength());
+    float volume = side * side * side;
     if (volume > 0.0) {
       assert(volume > 0.0);
       assert(self->GetMaximumNumberOfSamplePoints() > 0);
-      double volumePerGlyph = volume / self->GetMaximumNumberOfSamplePoints();
-      double delta = std::pow(volumePerGlyph, 1.0 / 3.0);
+      float volumePerGlyph = volume / self->GetMaximumNumberOfSamplePoints();
+      float delta = std::pow(volumePerGlyph, 1.0 / 3.0);
       this->NearestPointRadius = std::pow(2 * delta, 1.0 / 2.0) / 2.0;
     } else {
       this->NearestPointRadius = 0.0001;

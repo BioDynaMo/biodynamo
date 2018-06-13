@@ -16,13 +16,13 @@ void Random::SetSeed(int64_t seed) {
 
 int Random::NextInt() { return std::rand(); }
 
-double Random::NextDouble() {
-  return static_cast<double>((static_cast<int64_t>(Next(26)) << 27) +
+float Random::NextDouble() {
+  return static_cast<float>((static_cast<int64_t>(Next(26)) << 27) +
                              static_cast<int64_t>(Next(27))) *
          1.1102230246251565E-16;
 }
 
-double Random::NextGaussian(double mean, double standard_deviation) {
+float Random::NextGaussian(float mean, float standard_deviation) {
   return mean + standard_deviation * NextGaussian();
 }
 
@@ -47,26 +47,26 @@ bool Random::CompareAndSet(int64_t* current, int64_t expected, int64_t update) {
   return false;
 }
 
-double Random::NextGaussian() {
+float Random::NextGaussian() {
   if (have_next_next_gaussian_) {
     have_next_next_gaussian_ = false;
     return next_next_gaussian_;
   } else {
-    double v1, v2, s;
+    float v1, v2, s;
     do {
       v1 = 2 * NextDouble() - 1;  // between -1.0 and 1.0
       v2 = 2 * NextDouble() - 1;  // between -1.0 and 1.0
       s = v1 * v1 + v2 * v2;
     } while (s >= 1 || s == 0);
-    double multiplier = std::sqrt(-2 * std::log(s) / s);
+    float multiplier = std::sqrt(-2 * std::log(s) / s);
     next_next_gaussian_ = v2 * multiplier;
     have_next_next_gaussian_ = true;
     return v1 * multiplier;
   }
 }
 
-std::array<double, 3> Random::NextNoise(double k) {
-  std::array<double, 3> ret;
+std::array<float, 3> Random::NextNoise(float k) {
+  std::array<float, 3> ret;
   ret[0] = -k + 2 * k * NextDouble();
   ret[1] = -k + 2 * k * NextDouble();
   ret[2] = -k + 2 * k * NextDouble();

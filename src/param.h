@@ -13,23 +13,23 @@ namespace bdm {
 struct Param {
   // FIXME Neurites
   /// Initial value of the restingLength before any specification.
-  static constexpr double kNeuriteDefaultActualLength = 1.0;
+  static constexpr float kNeuriteDefaultActualLength = 1.0;
   /// Diameter of an unspecified (= axon/dendrite) neurite when extends from the
   /// somaElement
-  static constexpr double kNeuriteDefaultDiameter = 1.0;
-  static constexpr double kNeuriteMinimalBifurcationLength = 0;
+  static constexpr float kNeuriteDefaultDiameter = 1.0;
+  static constexpr float kNeuriteMinimalBifurcationLength = 0;
   /// Spring constant
-  static constexpr double kNeuriteDefaultSpringConstant = 10;  // 10;
+  static constexpr float kNeuriteDefaultSpringConstant = 10;  // 10;
   /// Threshold the force acting on a neurite has to reach before a move is made
   /// ( = static friction).
-  static constexpr double kNeuriteDefaultAdherence = 0.1;
+  static constexpr float kNeuriteDefaultAdherence = 0.1;
   /// Rest to the movement ( = kinetic friction).
-  static constexpr double kNeuriteDefaultMass = 1;
+  static constexpr float kNeuriteDefaultMass = 1;
 
-  static constexpr double kNeuriteDefaultTension = 0.0;
+  static constexpr float kNeuriteDefaultTension = 0.0;
 
-  static constexpr double kNeuriteMinLength = 2.0;
-  static constexpr double kNeuriteMaxLength = 15;
+  static constexpr float kNeuriteMinLength = 2.0;
+  static constexpr float kNeuriteMaxLength = 15;
 
   // simulation values ---------------------------------------------------------
   /// Name of the simulation executable\n
@@ -77,7 +77,7 @@ struct Param {
   ///
   ///     [simulation]
   ///     time_step = 0.0125
-  static double simulation_time_step_;
+  static float simulation_time_step_;
 
   /// Maximum jump that a point mass can do in one time step. Useful to
   /// stabilize the simulation\n
@@ -86,7 +86,7 @@ struct Param {
   ///
   ///     [simulation]
   ///     max_displacement = 3.0
-  static double simulation_max_displacement_;
+  static float simulation_max_displacement_;
 
   /// Calculate mechanical interactions between simulation objects.\n
   /// Default value: `true`\n
@@ -113,7 +113,7 @@ struct Param {
   ///
   ///     [simulation]
   ///     min_bound = 0
-  static double min_bound_;
+  static float min_bound_;
 
   /// Maximum allowed value for x-, y- and z-position if simulation space is
   /// bound (@see `bound_space_`).\n
@@ -122,7 +122,7 @@ struct Param {
   ///
   ///     [simulation]
   ///     max_bound = 100
-  static double max_bound_;
+  static float max_bound_;
 
   /// Allow substances to leak out of the simulation space. In this way
   /// the substance concentration will not be blocked by an artificial border\n

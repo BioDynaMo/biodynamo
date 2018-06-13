@@ -20,12 +20,12 @@ class DisplacementOpCpu {
 
   template <typename TContainer>
   void operator()(TContainer* sim_objects, uint16_t type_idx) const {
-    std::vector<array<double, 3>> sim_object_movements;
+    std::vector<array<float, 3>> sim_object_movements;
     sim_object_movements.reserve(sim_objects->size());
 
     auto& grid = TGrid::GetInstance();
     auto search_radius = grid.GetLargestObjectSize();
-    double squared_radius = search_radius * search_radius;
+    float squared_radius = search_radius * search_radius;
 
 #pragma omp parallel for shared(grid) firstprivate(squared_radius)
     for (size_t i = 0; i < sim_objects->size(); i++) {

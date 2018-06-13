@@ -190,7 +190,7 @@ Bugs Fixed 8-7-12:
  *     Even @c = characters will work, but don't do that.
  * @li [optional] long options may be abbreviated as long as the abbreviation is unambiguous.
  *     You can set a minimum length for abbreviations.
- * @li [optional] long options may begin with a single minus. The double minus form is always
+ * @li [optional] long options may begin with a single minus. The float minus form is always
  *     accepted, too.
  * @li a long option may take an argument either separate (<code> --option arg </code>) or
  *     attached (<code> --option=arg </code>). In the attached form the equals sign is mandatory.
@@ -1144,7 +1144,7 @@ public:
    *               because the ambiguity check does not consider short options and abbreviated
    *               single minus long options will take precedence over short options.
    * @param single_minus_longopt Passing @c true for this option allows long options to begin with
-   *               a single minus. The double minus form will still be recognized. Note that
+   *               a single minus. The float minus form will still be recognized. Note that
    *               single minus long options take precedence over short options and short option
    *               groups. E.g. @c -file would be interpreted as @c --file and not as
    *               <code> -f -i -l -e </code> (assuming a long option named @c "file" exists).

@@ -16,7 +16,7 @@ TEST(ModelInitializerTest, Grid3DCube) {
   auto rm = ResourceManager<>::Get();
   rm->Clear();
 
-  ModelInitializer::Grid3D(2, 12, [](const std::array<double, 3>& pos) {
+  ModelInitializer::Grid3D(2, 12, [](const std::array<float, 3>& pos) {
     Cell cell(pos);
     return cell;
   });
@@ -41,7 +41,7 @@ TEST(ModelInitializerTest, Grid3DCuboid) {
   std::array<size_t, 3> grid_dimensions = {2, 3, 4};
 
   ModelInitializer::Grid3D(grid_dimensions, 12,
-                           [](const std::array<double, 3>& pos) {
+                           [](const std::array<float, 3>& pos) {
                              Cell cell(pos);
                              return cell;
                            });
@@ -62,13 +62,13 @@ TEST(ModelInitializerTest, CreateCells) {
   auto rm = ResourceManager<>::Get();
   rm->Clear();
 
-  std::vector<std::array<double, 3>> positions;
+  std::vector<std::array<float, 3>> positions;
   positions.push_back({1, 2, 3});
   positions.push_back({101, 202, 303});
   positions.push_back({-12, -32, 4});
 
   ModelInitializer::CreateCells(positions,
-                                [](const std::array<double, 3>& pos) {
+                                [](const std::array<float, 3>& pos) {
                                   Cell cell(pos);
                                   return cell;
                                 });
@@ -85,7 +85,7 @@ TEST(ModelInitializerTest, CreateCellsRandom) {
   rm->Clear();
 
   ModelInitializer::CreateCellsRandom(-100, 100, 10,
-                                      [](const std::array<double, 3>& pos) {
+                                      [](const std::array<float, 3>& pos) {
                                         Cell cell(pos);
                                         return cell;
                                       });

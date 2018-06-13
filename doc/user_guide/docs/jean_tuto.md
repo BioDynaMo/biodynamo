@@ -1,6 +1,6 @@
 # BioDynaMo short tutorial
 
-Written by Jean de Montigny  
+Written by Jean de Montigny
 
 ## Introduction
 
@@ -37,11 +37,11 @@ auto rm = TResourceManager::Get();
 auto cells = rm->template Get<Cell>();
 ```
 
-Because we want 2400 cells randomly distributed, it is mandatory to have an random number generator to generate x, y and z coordinate of each cell. For that, we will declare three double (x_coord, y_coord and z_coord) and use the gTRandom.Uniform random engine
+Because we want 2400 cells randomly distributed, it is mandatory to have an random number generator to generate x, y and z coordinate of each cell. For that, we will declare three float (x_coord, y_coord and z_coord) and use the gTRandom.Uniform random engine
 ``` C++
   size_t nb_of_cells=2400; // number of cells in the simulation
   int cube_dim = 100; // cube of 100*100*100
-  double x_coord, y_coord, z_coord;
+  float x_coord, y_coord, z_coord;
   cells->reserve(nb_of_cells); // allocate the correct number of cell in our cells structure before cell creation
 ```
 
@@ -138,7 +138,7 @@ We can note that instead of creating a configuration file, you can do the same b
     Param::visualization_export_interval_ = 2; // export visualization files every 2 steps
     Param::visualize_sim_objects_["Cell"] = std::set<std::string>{ "diameter_" }; // add the data member diameter_ to the visualization objects
 ```
-Once again, it is important to note that if you want to change any visualization parameter using this second method, you will have to compile again your code. That is not the case using a configuration file.  
+Once again, it is important to note that if you want to change any visualization parameter using this second method, you will have to compile again your code. That is not the case using a configuration file.
 
 We will first see live visualization then the export visualization. In both cases, simply run Paraview using the console line command `paraview &`. This windows should appears
 
@@ -185,7 +185,7 @@ In both cases, even if we can now visualize our cell, they have all the same col
 
 ### Adding layers colour
 
-In this chapter, we will modify our code in order to create a better colouring for our simulation.  
+In this chapter, we will modify our code in order to create a better colouring for our simulation.
 A good idea would be to create a colouring depending on the y axis coordinate. By this way, we could display several layers of cell, and have an other colour for our cancerous cells.
 To do that, we can extend the existing `Cell` class in order to add a new data member `cell_colour`.
 We will do that directly in our tutorial.h file by writing
@@ -196,7 +196,7 @@ We will do that directly in our tutorial.h file by writing
 
     public:
       MyCellExt() {}
-      MyCellExt(const std::array<double, 3>& position) : Base(position) {} // our creator
+      MyCellExt(const std::array<float, 3>& position) : Base(position) {} // our creator
       // getter and setter for our new data member
       void SetCelColour(int cellColour) { cell_colour_[kIdx] = cellColour; }
       int GetCellColour() { return cell_colour_[kIdx]; }
@@ -213,7 +213,7 @@ Don't forget to add this new object to your compile time parameters (inside "str
     using AtomicTypes = VariadicTypedef<MyCell>;
 ```
 
-Each cell (implementing our new object `MyCell`) of the modelling is now able to have a value cell\_colour\_ that we will choose and use to display different colours!  
+Each cell (implementing our new object `MyCell`) of the modelling is now able to have a value cell\_colour\_ that we will choose and use to display different colours!
 In order to create cells with this attribute, we need to replace all Cell object by MyCell during cells creation (inside the `Simulate()` method). for example
 ``` C++
 //  auto cells = rm->template Get<Cell>(); // previous structure containing Cell objects
@@ -280,17 +280,17 @@ This is of course just an example of what you can do with the threshold filters.
 ### Adding some complexity
 
 We now have all we want to visualise our modelling in the best conditions, but this modelling itself is a bit limited. We should add some movements to it as well as a new mechanism to complexify cells division.
-To add cell movement, we will modify the `Run()` method of our biology module `GrowthModule`, and use the function `UpdateMassLocation()`. To generate the direction's random numbers we will again use the `gTRandom.Uniform()` function which allow us to generate a random number between two specified numbers.  
+To add cell movement, we will modify the `Run()` method of our biology module `GrowthModule`, and use the function `UpdateMassLocation()`. To generate the direction's random numbers we will again use the `gTRandom.Uniform()` function which allow us to generate a random number between two specified numbers.
 We choose here to give stochastic movement only to growing cells, so we will write the movement just after the volume change
 ``` C++
-    array<double, 3> cell_movements{gTRandom.Uniform(-2, 2), gTRandom.Uniform(-2, 2), gTRandom.Uniform(-2, 2)}; // create an array of 3 ramdom numbers between -2 and 2
+    array<float, 3> cell_movements{gTRandom.Uniform(-2, 2), gTRandom.Uniform(-2, 2), gTRandom.Uniform(-2, 2)}; // create an array of 3 ramdom numbers between -2 and 2
     cell->UpdateMassLocation(cell_movements); // update the cell mass location, ie move the cell
     cell->SetPosition(cell->GetMassLocation()); // set the cell position
     cell->SetTractorForce({0, 0, 0}); // avoid unwanted movements after our cell displacement
 ```
 
-Using the previous chapters, you should now be able to visualise cell movement during their growth.  
-This is great, but every cancerous cell grows and divides indefinitely, and that is a bit too much. We will now add a mechanism to reduce the probability to divide, and assuring that a cancerous cell that didn't divide, will never divide any more.  
+Using the previous chapters, you should now be able to visualise cell movement during their growth.
+This is great, but every cancerous cell grows and divides indefinitely, and that is a bit too much. We will now add a mechanism to reduce the probability to divide, and assuring that a cancerous cell that didn't divide, will never divide any more.
 To add a probability to divide of 0.8, simply write
 ``` C++
     if (gTRandom.Uniform(0, 1) < 0.8){
@@ -390,7 +390,7 @@ inline int Simulate(int argc, const char** argv) {
 
   size_t nb_of_cells=2400; // number of cells in the simulation
   int cube_dim = 100; // cube of 100*100*100
-  double x_coord, y_coord, z_coord;
+  float x_coord, y_coord, z_coord;
 
   auto rm = TResourceManager::Get(); // set up resource manager
   auto cells = rm->template Get<Cell>(); // create a structure to contain cells
@@ -448,7 +448,7 @@ namespace bdm {
 
     public:
       MyCellExt() {}
-      MyCellExt(const std::array<double, 3>& position) : Base(position) {} // our creator
+      MyCellExt(const std::array<float, 3>& position) : Base(position) {} // our creator
 
       // getter and setter for our new data member
       void SetCanDivide(bool d) { can_divide_[kIdx] = d; }
@@ -476,7 +476,7 @@ namespace bdm {
       if (cell->GetDiameter() < 8) {
         cell->ChangeVolume(400);
 
-        array<double, 3> cell_movements{gTRandom.Uniform(-2, 2), gTRandom.Uniform(-2, 2), gTRandom.Uniform(-2, 2)}; // create an array of 3 ramdom numbers between -2 and 2
+        array<float, 3> cell_movements{gTRandom.Uniform(-2, 2), gTRandom.Uniform(-2, 2), gTRandom.Uniform(-2, 2)}; // create an array of 3 ramdom numbers between -2 and 2
         cell->UpdateMassLocation(cell_movements); // update the cell mass location, ie move the cell
         cell->SetPosition(cell->GetMassLocation()); // set the cell position
         //Reset biological movement to 0.
@@ -513,7 +513,7 @@ inline int Simulate(int argc, const char** argv) {
 
   size_t nb_of_cells=2400; // number of cells in the simulation
   int cube_dim = 100; // cube of 100*100*100
-  double x_coord, y_coord, z_coord;
+  float x_coord, y_coord, z_coord;
 
   auto rm = TResourceManager::Get(); // set up resource manager
   auto cells = rm->template Get<MyCell>(); // create a structure to contain cells

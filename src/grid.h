@@ -249,7 +249,7 @@ class Grid {
     ClearGrid();
 
     auto inf = Constant::kInfinity;
-    array<double, 6> tmp_dim = {{inf, -inf, inf, -inf, inf, -inf}};
+    array<float, 6> tmp_dim = {{inf, -inf, inf, -inf, inf, -inf}};
     CalculateGridDimensions(&tmp_dim);
     RoundOffGridDimensions(tmp_dim);
 
@@ -335,23 +335,23 @@ class Grid {
 
   /// Calculates what the grid dimensions need to be in order to contain all the
   /// simulation objects
-  void CalculateGridDimensions(array<double, 6>* ret_grid_dimensions) {
+  void CalculateGridDimensions(array<float, 6>* ret_grid_dimensions) {
     auto rm = TResourceManager::Get();
 
     const auto max_threads = omp_get_max_threads();
 
-    std::vector<std::array<double, 6>*> all_grid_dimensions(max_threads,
+    std::vector<std::array<float, 6>*> all_grid_dimensions(max_threads,
                                                             nullptr);
-    std::vector<double*> all_largest_object_size(max_threads, nullptr);
+    std::vector<float*> all_largest_object_size(max_threads, nullptr);
 
 #pragma omp parallel
     {
       auto thread_id = omp_get_thread_num();
-      auto* grid_dimensions = new std::array<double, 6>;
+      auto* grid_dimensions = new std::array<float, 6>;
       *grid_dimensions = {{Constant::kInfinity, -Constant::kInfinity,
                            Constant::kInfinity, -Constant::kInfinity,
                            Constant::kInfinity, -Constant::kInfinity}};
-      double* largest_object_size = new double;
+      float* largest_object_size = new float;
       *largest_object_size = 0;
       all_grid_dimensions[thread_id] = grid_dimensions;
       all_largest_object_size[thread_id] = largest_object_size;
@@ -404,7 +404,7 @@ class Grid {
     }
   }
 
-  void RoundOffGridDimensions(const array<double, 6>& grid_dimensions) {
+  void RoundOffGridDimensions(const array<float, 6>& grid_dimensions) {
     assert(grid_dimensions_[0] > -9.999999999);
     assert(grid_dimensions_[2] > -9.999999999);
     assert(grid_dimensions_[4] > -9.999999999);
@@ -427,12 +427,12 @@ class Grid {
   ///
   /// @return     The distance between the two points
   ///
-  inline double SquaredEuclideanDistance(
-      const std::array<double, 3>& pos1,
-      const std::array<double, 3>& pos2) const {
-    const double dx = pos2[0] - pos1[0];
-    const double dy = pos2[1] - pos1[1];
-    const double dz = pos2[2] - pos1[2];
+  inline float SquaredEuclideanDistance(
+      const std::array<float, 3>& pos1,
+      const std::array<float, 3>& pos2) const {
+    const float dx = pos2[0] - pos1[0];
+    const float dy = pos2[1] - pos1[1];
+    const float dz = pos2[2] - pos1[2];
     return (dx * dx + dy * dy + dz * dz);
   }
 
@@ -478,7 +478,7 @@ class Grid {
   template <typename Lambda, typename SO>
   void ForEachNeighborWithinRadius(const Lambda& lambda, const SO& query,
                                    const SoHandle& simulation_object_id,
-                                   double squared_radius) {
+                                   float squared_radius) {
     const auto& position = query.GetPosition();
     auto idx = query.GetBoxIdx();
 
@@ -513,7 +513,7 @@ class Grid {
   ///     }, squared_radius);
   ///
   ///     // using lhs_id and rhs_id to index into an array is thread-safe
-  ///     SimulationObjectVector<std::array<double, 3>> total_force;
+  ///     SimulationObjectVector<std::array<float, 3>> total_force;
   ///     grid.ForEachNeighborPairWithinRadius([&](auto&& lhs, SoHandle lhs_id,
   ///                                          auto&& rhs, SoHandle rhs_id) {
   ///       auto force = ...;
@@ -531,7 +531,7 @@ class Grid {
   ///     // which can be solved by using std::atomic<int> counter; instead
   template <typename TLambda>
   void ForEachNeighborPairWithinRadius(const TLambda& lambda,
-                                       double squared_radius) const {
+                                       float squared_radius) const {
     uint32_t z_start = 0, y_start = 0;
     auto rm = TResourceManager::Get();
     // use special iteration pattern to avoid race conditions between neighbors
@@ -581,7 +581,7 @@ class Grid {
       {
         FixedSizeVector<size_t, 14> box_indices;
         CircularBuffer<InlineVector<SoHandle, 4>, 14> cached_so_handles;
-        CircularBuffer<InlineVector<std::array<double, 3>, 4>, 14>
+        CircularBuffer<InlineVector<std::array<float, 3>, 4>, 14>
             cached_positions;
 
 #pragma omp for collapse(2) schedule(dynamic, 1) firstprivate(z_start, y_start)
@@ -632,7 +632,7 @@ class Grid {
   ///
   /// @return     The box index.
   ///
-  size_t GetBoxIndex(const array<double, 3>& position) const {
+  size_t GetBoxIndex(const array<float, 3>& position) const {
     array<uint32_t, 3> box_coord;
     box_coord[0] = (floor(position[0]) - grid_dimensions_[0]) / box_length_;
     box_coord[1] = (floor(position[1]) - grid_dimensions_[2]) / box_length_;
@@ -647,7 +647,7 @@ class Grid {
   }
 
   /// Gets the size of the largest object in the grid
-  double GetLargestObjectSize() const { return largest_object_size_; }
+  float GetLargestObjectSize() const { return largest_object_size_; }
 
   array<int32_t, 6>& GetDimensions() { return grid_dimensions_; }
 
@@ -746,7 +746,7 @@ class Grid {
   /// Determines which boxes to search neighbors in (see enum Adjacency)
   Adjacency adjacency_;
   /// The size of the largest object in the simulation
-  double largest_object_size_ = 0;
+  float largest_object_size_ = 0;
   /// Cube which contains all simulation objects
   /// {x_min, x_max, y_min, y_max, z_min, z_max}
   std::array<int32_t, 6> grid_dimensions_;
@@ -949,7 +949,7 @@ class Grid {
   void CachePositions(
       const CircularBuffer<InlineVector<SoHandle, 4>, 14>& so_handles,
       TResourceManager* rm,
-      CircularBuffer<InlineVector<std::array<double, 3>, 4>, 14>* pos_cache)
+      CircularBuffer<InlineVector<std::array<float, 3>, 4>, 14>* pos_cache)
       const {
     for (uint64_t i = 0; i < 14; i++) {
       const auto& current_box_sos = so_handles[i];
@@ -998,7 +998,7 @@ class Grid {
   void UpdateCachedPositions(
       const CircularBuffer<InlineVector<SoHandle, 4>, 14>& so_handles,
       TResourceManager* rm,
-      CircularBuffer<InlineVector<std::array<double, 3>, 4>, 14>* positions)
+      CircularBuffer<InlineVector<std::array<float, 3>, 4>, 14>* positions)
       const {
     for (uint64_t i = 9; i < 14; i++) {
       const auto& current_box_sos = so_handles[i];
@@ -1030,9 +1030,9 @@ class Grid {
   void ForEachNeighborPairWithCenterBox(
       const TLambda& lambda, TResourceManager* rm,
       const CircularBuffer<InlineVector<SoHandle, 4>, 14>& so_handles,
-      const CircularBuffer<InlineVector<std::array<double, 3>, 4>, 14>&
+      const CircularBuffer<InlineVector<std::array<float, 3>, 4>, 14>&
           positions,
-      uint64_t center_box_idx, double squared_radius) const {
+      uint64_t center_box_idx, float squared_radius) const {
     const auto& soh_center_box = so_handles[center_box_idx];
     const auto& pos_center_box = positions[center_box_idx];
     if (soh_center_box.size() == 0) {

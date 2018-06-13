@@ -8,14 +8,14 @@ namespace bdm {
 
 template <typename T>
 struct abs_error {
-  static_assert(std::is_same<T, double>::value || std::is_same<T, float>::value,
-                "abs_error<T> may only be used with T = { float, double }");
-  static constexpr double value = 1e-24;
+  static_assert(std::is_same<T, float>::value || std::is_same<T, float>::value,
+                "abs_error<T> may only be used with T = { float, float }");
+  static constexpr float value = 1e-24;
 };
 
 template <>
 struct abs_error<float> {
-  static constexpr double value = 1e-6;
+  static constexpr float value = 1e-6;
 };
 
 template <>
@@ -31,16 +31,16 @@ void EXPECT_ARR_EQ(const std::array<T, N>& expected,  // NOLINT
   }
 }
 
-/// Helper macro to compare two double arrays of size three
+/// Helper macro to compare two float arrays of size three
 /// parameter actual and expected have been switched for better readability
 ///
 ///      EXPECT_ARR_NEAR(cells[0].GetPosition(), {123.12345, 10, 123.2345677});
 ///      EXPECT_ARR_NEAR(cells[1].GetPosition(), {1, 2, 3});
 #define EXPECT_ARR_NEAR(...)                                         \
-  [](const std::array<double, 3>& actual,                            \
-     const std::array<double, 3>& expected) {                        \
+  [](const std::array<float, 3>& actual,                            \
+     const std::array<float, 3>& expected) {                        \
     for (size_t i = 0; i < actual.size(); i++) {                     \
-      EXPECT_NEAR(expected[i], actual[i], abs_error<double>::value); \
+      EXPECT_NEAR(expected[i], actual[i], abs_error<float>::value); \
     }                                                                \
   }(__VA_ARGS__);
 

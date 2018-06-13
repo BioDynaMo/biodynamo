@@ -27,7 +27,7 @@ struct Chemotaxis : public BaseBiologyModule {
     dg->SetConcentrationThreshold(1e15);
 
     auto& position = cell->GetPosition();
-    std::array<double, 3> gradient;
+    std::array<float, 3> gradient;
     dg->GetGradient(position, &gradient);
     gradient[0] *= 0.5;
     gradient[1] *= 0.5;
@@ -47,7 +47,7 @@ struct KaliumSecretion : public BaseBiologyModule {
   template <typename T>
   void Run(T* cell) {
     static auto dg = GetDiffusionGrid(kKalium);
-    array<double, 3> secretion_position = {50, 50, 50};
+    array<float, 3> secretion_position = {50, 50, 50};
     dg->IncreaseConcentrationBy(secretion_position, 4);
   }
 
@@ -67,7 +67,7 @@ inline int Simulate(int argc, const char** argv) {
 
   Param::backup_interval_ = 1;
   // 4a. Define initial model - in this example: two cells
-  auto construct = [](const std::array<double, 3>& position) {
+  auto construct = [](const std::array<float, 3>& position) {
     Cell cell(position);
     cell.SetDiameter(30);
     cell.SetAdherence(0.4);
@@ -80,7 +80,7 @@ inline int Simulate(int argc, const char** argv) {
     }
     return cell;
   };
-  std::vector<std::array<double, 3>> positions;
+  std::vector<std::array<float, 3>> positions;
   positions.push_back({0, 0, 0});
   positions.push_back({100, 0, 0});
   positions.push_back({0, 100, 0});

@@ -8,7 +8,7 @@ namespace bdm {
 
 template <typename TContainer>
 void CellFactory(TContainer* cells, size_t cells_per_dim) {
-  const double space = 20;
+  const float space = 20;
   cells->reserve(cells_per_dim * cells_per_dim * cells_per_dim);
   for (size_t i = 0; i < cells_per_dim; i++) {
     for (size_t j = 0; j < cells_per_dim; j++) {
@@ -183,9 +183,9 @@ TEST(GridTest, GetBoxIndex) {
   auto& grid = Grid<>::GetInstance();
   grid.Initialize();
 
-  std::array<double, 3> position_0 = {{0, 0, 0}};
-  std::array<double, 3> position_1 = {{1e-15, 1e-15, 1e-15}};
-  std::array<double, 3> position_2 = {{-1e-15, 1e-15, 1e-15}};
+  std::array<float, 3> position_0 = {{0, 0, 0}};
+  std::array<float, 3> position_1 = {{1e-15, 1e-15, 1e-15}};
+  std::array<float, 3> position_2 = {{-1e-15, 1e-15, 1e-15}};
 
   size_t expected_idx_0 = 21;
   size_t expected_idx_1 = 21;

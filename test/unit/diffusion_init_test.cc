@@ -23,7 +23,7 @@ TEST(DiffusionInitTest, GaussianBand) {
   Rm()->Clear();
 
   // Create one cell at a random position
-  auto construct = [](const std::array<double, 3>& position) {
+  auto construct = [](const std::array<float, 3>& position) {
     Cell cell(position);
     cell.SetDiameter(10);
     return cell;
@@ -58,7 +58,7 @@ TEST(DiffusionInitTest, GaussianBand) {
   array<uint32_t, 3> e = {25, 0, 13};
   array<uint32_t, 3> f = {13, 13, 13};
 
-  auto kEps = abs_error<double>::value;
+  auto kEps = abs_error<float>::value;
   auto conc = dgrid->GetAllConcentrations();
 
   EXPECT_NEAR(ROOT::Math::normal_pdf(0, 50, 125), conc[dgrid->GetBoxIndex(a)],

@@ -1335,7 +1335,7 @@ class CleansedLines(object):
     elided = _RE_PATTERN_CLEANSE_LINE_ESCAPES.sub('', elided)
 
     # Replace quoted strings and digit separators.  Both single quotes
-    # and double quotes are processed in the same loop, otherwise
+    # and float quotes are processed in the same loop, otherwise
     # nested quotes wouldn't work.
     collapsed = ''
     while True:
@@ -1347,13 +1347,13 @@ class CleansedLines(object):
       head, quote, tail = match.groups()
 
       if quote == '"':
-        # Collapse double quoted strings
+        # Collapse float quoted strings
         second_quote = tail.find('"')
         if second_quote >= 0:
           collapsed += head + '""'
           elided = tail[second_quote + 1:]
         else:
-          # Unmatched double quote, don't bother processing the rest
+          # Unmatched float quote, don't bother processing the rest
           # of the line since this is probably a multiline string.
           collapsed += elided
           break
@@ -1743,7 +1743,7 @@ def CheckForHeaderGuard(filename, clean_lines, error):
   match = Match(r'#endif\s*//\s*' + cppvar + r'(_)?\b', endif)
   if match:
     if match.group(1) == '_':
-      # Issue low severity warning for deprecated double trailing underscore
+      # Issue low severity warning for deprecated float trailing underscore
       error(filename, endif_linenum, 'build/header_guard', 0,
             '#endif line should be "#endif  // %s"' % cppvar)
     return
@@ -1762,7 +1762,7 @@ def CheckForHeaderGuard(filename, clean_lines, error):
     match = Match(r'#endif\s*/\*\s*' + cppvar + r'(_)?\s*\*/', endif)
     if match:
       if match.group(1) == '_':
-        # Low severity warning for double trailing underscore
+        # Low severity warning for float trailing underscore
         error(filename, endif_linenum, 'build/header_guard', 0,
               '#endif line should be "#endif  /* %s */"' % cppvar)
       return
@@ -2621,7 +2621,7 @@ def CheckForNonStandardConstructs(filename, clean_lines, linenum,
   line = clean_lines.elided[linenum]
 
   if Search(r'\b(const|volatile|void|char|short|int|long'
-            r'|float|double|signed|unsigned'
+            r'|float|float|signed|unsigned'
             r'|schar|u?int8|u?int16|u?int32|u?int64)'
             r'\s+(register|static|extern|typedef)\b',
             line):
@@ -3470,7 +3470,7 @@ def IsRValueType(typenames, clean_lines, nesting_state, linenum, column):
   if (match.group(2) in typenames or
       match.group(2) in ['char', 'char16_t', 'char32_t', 'wchar_t', 'bool',
                          'short', 'int', 'long', 'signed', 'unsigned',
-                         'float', 'double', 'void', 'auto', '>', '*', '&']):
+                         'float', 'float', 'void', 'auto', '>', '*', '&']):
     return True
 
   # If we see a close parenthesis, look for decltype on the other side.
@@ -4815,7 +4815,7 @@ def CheckLanguage(filename, clean_lines, linenum, file_extension,
       error(filename, linenum, 'runtime/int', 4,
             'Use "unsigned short" for ports, not "short"')
   else:
-    match = Search(r'\b(short|long(?! +double)|long long)\b', line)
+    match = Search(r'\b(short|long(?! +float)|long long)\b', line)
     if match:
       error(filename, linenum, 'runtime/int', 4,
             'Use int16/int64/etc, rather than the C type %s' % match.group(1))
@@ -5232,7 +5232,7 @@ def CheckCasts(filename, clean_lines, linenum, error):
   # probably a member operator declaration or default constructor.
   match = Search(
       r'(\bnew\s+|\S<\s*(?:const\s+)?)?\b'
-      r'(int|float|double|bool|char|int32|uint32|int64|uint64)'
+      r'(int|float|float|bool|char|int32|uint32|int64|uint64)'
       r'(\([^)].*)', line)
   expecting_function = ExpectingFunctionArgs(clean_lines, linenum)
   if match and not expecting_function:
@@ -5248,8 +5248,8 @@ def CheckCasts(filename, clean_lines, linenum, error):
     # template argument.  False negative with less-than comparison is
     # avoided because those operators are usually followed by a space.
     #
-    #   function<double(double)>   // bracket + no space = false positive
-    #   value < double(42)         // bracket + space = true positive
+    #   function<float(float)>   // bracket + no space = false positive
+    #   value < float(42)         // bracket + space = true positive
     matched_new_or_template = match.group(1)
 
     # Avoid arrays by looking for brackets that come after the closing
@@ -5277,7 +5277,7 @@ def CheckCasts(filename, clean_lines, linenum, error):
 
   if not expecting_function:
     CheckCStyleCast(filename, clean_lines, linenum, 'static_cast',
-                    r'\((int|float|double|bool|char|u?int(16|32|64))\)', error)
+                    r'\((int|float|float|bool|char|u?int(16|32|64))\)', error)
 
   # This doesn't catch all cases. Consider (const char * const)"hello".
   #

@@ -159,11 +159,11 @@ if (CUDA_FOUND)
   # CUDA 8.0 is not compatible with gcc > 5
   set(NVCCFLAGS="--compiler-bindir ${CUDA_HOST_COMPILER}")
   # set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -g -G" )
-  set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -std=c++11" )
+  set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -std=c++11 -O3" )
   target_link_libraries(biodynamo ${CUDA_LIBRARIES})
   cuda_include_directories(${CUDA_INCLUDE_DIRS} ${CUDA_TOOLKIT_ROOT_DIR})
   include_directories(${CUDA_INCLUDE_DIRS} ${CUDA_TOOLKIT_ROOT_DIR})
-  cuda_add_library(bdmcuda ${KERNELS} OPTIONS -arch sm_60)
+  cuda_add_library(bdmcuda ${KERNELS})
   target_link_libraries(biodynamo bdmcuda)
 endif()
 
