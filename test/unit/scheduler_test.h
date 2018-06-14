@@ -98,8 +98,6 @@ inline void RunRestoreTest() {
 
   // Restore should happen within this call
   scheduler.Simulate(100);
-  // update rm, because it changes after a restore
-  rm = simulation.GetRm();
   //   only 51 steps should be simulated
   EXPECT_EQ(51u, scheduler.execute_calls);
   EXPECT_EQ(1u, rm->Get<Cell>()->size());

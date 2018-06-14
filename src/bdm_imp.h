@@ -35,17 +35,21 @@ BdmSim<T>::BdmSim(const std::string& executable_name) {
 
 template <typename T>
 BdmSim<T>& BdmSim<T>::operator=(BdmSim<T>&& other) {
-  delete rm_;
-  delete grid_;
-  delete scheduler_;
-
-  rm_ = other.rm_;
-  grid_ = other.grid_;
-  scheduler_ = other.scheduler_;
-
-  other.rm_ = nullptr;
-  other.grid_ = nullptr;
-  other.scheduler_ = nullptr;
+  // delete rm_;
+  // delete grid_;
+  // delete scheduler_;
+  //
+  // rm_ = other.rm_;
+  // grid_ = other.grid_;
+  // scheduler_ = other.scheduler_;
+  //
+  // other.rm_ = nullptr;
+  // other.grid_ = nullptr;
+  // other.scheduler_ = nullptr;
+  *rm_ = std::move(*other.rm_);
+  // *grid_ = std::move(*other.grid_);
+  // delete grid_;
+  // grid_ = other.grid_;
   return *this;
 }
 
@@ -91,7 +95,7 @@ template <typename TGrid,
           typename TScheduler>
 void BdmSim<T>::TRootIoCtorInitializeMembers() {
   grid_ = new TGrid();
-  scheduler_ = new TScheduler();
+  // scheduler_ = new TScheduler();
 }
 
 template <typename T>

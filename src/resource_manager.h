@@ -157,6 +157,36 @@ class ResourceManager {
   template <typename T>
   using ToBackend = typename T::template Self<Backend>;
 
+  /// Returns the number of simulation object types
+  static constexpr size_t NumberOfTypes() {
+    return std::tuple_size<decltype(data_)>::value;
+  }
+
+  template <typename TSo>
+  static constexpr uint16_t GetTypeIndex() {
+    return detail::ToIndex<TSo, Types>::value;
+  }
+
+  /// Default constructor. Unfortunately needs to be public although it is
+  /// a singleton to be able to use ROOT I/O
+  ResourceManager() {
+    // Soa container contain one element upon construction
+    Clear();
+  }
+
+  /// Free the memory that was reserved for the diffusion grids
+  virtual ~ResourceManager() {
+    for (auto grid : diffusion_grids_) {
+      delete grid;
+    }
+  }
+
+  ResourceManager& operator=(ResourceManager&& other) {
+    data_ = std::move(other.data_);
+    diffusion_grids_ = std::move(other.diffusion_grids_);
+    return *this;
+  }
+
   /// Return the container of this Type
   /// @tparam Type atomic type whose container should be returned
   ///         invariant to the Backend. This means that even if ResourceManager
@@ -198,20 +228,6 @@ class ResourceManager {
                    [&](auto* container) { num_so += container->size(); });
     }
     return num_so;
-  }
-
-  /// Default constructor. Unfortunately needs to be public although it is
-  /// a singleton to be able to use ROOT I/O
-  ResourceManager() {
-    // Soa container contain one element upon construction
-    Clear();
-  }
-
-  /// Free the memory that was reserved for the diffusion grids
-  virtual ~ResourceManager() {
-    for (auto grid : diffusion_grids_) {
-      delete grid;
-    }
   }
 
   /// Apply a function on a certain element
@@ -335,16 +351,6 @@ class ResourceManager {
     auto idx =
         container->DelayedPushBack(TScalarSo(std::forward<Args>(args)...));
     return (*container)[idx];
-  }
-
-  /// Returns the number of simulation object types
-  static constexpr size_t NumberOfTypes() {
-    return std::tuple_size<decltype(data_)>::value;
-  }
-
-  template <typename TSo>
-  static constexpr uint16_t GetTypeIndex() {
-    return detail::ToIndex<TSo, Types>::value;
   }
 
  private:

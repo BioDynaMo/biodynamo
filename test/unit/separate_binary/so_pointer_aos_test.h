@@ -105,10 +105,13 @@ inline void IOTestSoPointerRmContainerAos() {
   SimulationBackup backup(IOTest::kRootFile, "");
   backup.Backup(1);
 
+  // to see if objects are restorec correctly, clear RessourceManager
+  rm->Clear();
+
   SimulationBackup restore("", IOTest::kRootFile);
   restore.Restore();
 
-  EXPECT_TRUE(rm != simulation.GetRm());
+  EXPECT_EQ(rm, simulation.GetRm());
 
   auto* restored_sim_objects = rm->Get<SoPointerTestClass>();
   EXPECT_EQ(123u, (*restored_sim_objects)[1].GetMySoPtr()->GetId());

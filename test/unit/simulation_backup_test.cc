@@ -136,8 +136,8 @@ TEST(SimulationBackupTest, BackupAndRestore) {
   EXPECT_EQ(26u, restored_iterations);
   restore.Restore();
 
-  //   ResourceManager should have changed
-  EXPECT_TRUE(rm != simulation.GetRm());
+  //   ResourceManager should not have changed
+  EXPECT_EQ(rm, simulation.GetRm());
 
   //   get new ResourceManager
   rm = simulation.GetRm();

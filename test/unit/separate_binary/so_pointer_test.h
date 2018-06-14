@@ -133,11 +133,14 @@ inline void IOTestSoPointerRmContainerSoa(BdmSim<>* simulation) {
   SimulationBackup backup(IOTest::kRootFile, "");
   backup.Backup(1);
 
+  // to see if objects are restorec correctly, clear RessourceManager
+  rm->Clear();
+
   SimulationBackup restore("", IOTest::kRootFile);
   restore.Restore();
 
-  // ResourceManager instance should have changed
-  EXPECT_TRUE(rm != simulation->GetRm());
+  // ResourceManager instance should not have changed
+  EXPECT_EQ(rm, simulation->GetRm());
 
   rm = simulation->GetRm();
   auto* restored_sim_objects = rm->Get<SoPointerTestClass>();

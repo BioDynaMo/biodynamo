@@ -150,6 +150,7 @@ class Scheduler {
       backup_.Restore();
       *steps = total_steps_ + *steps - restore_point_;
       total_steps_ = restore_point_;
+      Log::Info("Scheduler", "Restored simulation from ", Param::restore_file_);
     }
     return false;
   }

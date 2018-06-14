@@ -258,6 +258,12 @@ struct Capsule;
 #define BDM_SIM_OBJECT_ASSIGNMENT_OP_BODY_ITERATOR(data_member) \
   data_member[kIdx] = rhs.data_member[0];
 
+#define BDM_SIM_OBJECT_ASSIGNMENT_OP_MOVE_BODY(...) \
+  EVAL(LOOP(BDM_SIM_OBJECT_ASSIGNMENT_OP_MOVE_BODY_ITERATOR, __VA_ARGS__))
+
+#define BDM_SIM_OBJECT_ASSIGNMENT_OP_MOVE_BODY_ITERATOR(data_member) \
+  data_member = std::move(rhs.data_member);
+
 #define BDM_SIM_OBJECT_FOREACHDM_BODY(...) \
   EVAL(LOOP(BDM_SIM_OBJECT_FOREACHDM_BODY_ITERATOR, __VA_ARGS__))
 
@@ -343,6 +349,7 @@ struct Capsule;
   }                                                                            \
                                                                                \
   explicit class_name(TRootIOCtor* io_ctor) {}                                 \
+  class_name(const class_name& io_ctor) = default;                                 \
                                                                                \
   /** Create new empty object with SOA memory layout. */                       \
   /** Calling Self<Soa> soa; will have already one instance inside -- */       \
@@ -435,6 +442,13 @@ struct Capsule;
     return *this;                                                              \
   }                                                                            \
                                                                                \
+   Self<Backend>& operator=(Self<Backend>&& rhs) {                                         \
+     std::cout << #class_name " move assignment operator" << std::endl; \
+     BDM_SIM_OBJECT_ASSIGNMENT_OP_MOVE_BODY(__VA_ARGS__)                             \
+     Base::operator=(std::move(rhs));                                                      \
+     return *this;                                                              \
+   }                                                                            \
+   \
   /** Safe method to add an element to this vector. */                         \
   /** Does not invalidate, iterators, pointers or references. */               \
   /** Changes do not take effect until they are commited.*/                    \
