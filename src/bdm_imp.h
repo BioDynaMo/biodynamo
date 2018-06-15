@@ -1,6 +1,8 @@
 #ifndef FOO_1_
 #define FOO_1_
 
+#include <cmath>
+#include <omp.h>
 #include "resource_manager.h"
 #include "grid.h"
 #include "scheduler.h"
@@ -36,6 +38,8 @@ BdmSim<T>::BdmSim(const std::string& executable_name) {
   InitializeMembers();
 }
 
+
+// TODO rename to restore
 template <typename T>
 BdmSim<T>& BdmSim<T>::operator=(BdmSim<T>&& other) {
   // delete rm_;
@@ -49,6 +53,19 @@ BdmSim<T>& BdmSim<T>::operator=(BdmSim<T>&& other) {
   // other.rm_ = nullptr;
   // other.grid_ = nullptr;
   // other.scheduler_ = nullptr;
+  if(random_.size() != other.random_.size()) {
+    Log::Warning("BdmSim", "The restore file (",  param_->restore_file_,
+    ") was run with a different number of threads. Can't restore complete random number generator state." );
+    uint64_t min = std::min(random_.size(), other.random_.size());
+    for (uint64_t i = 0; i < min; i++) {
+      *(random_[i]) = *(other.random_[i]);
+    }
+  } else {
+    for (uint64_t i = 0; i < random_.size(); i++) {
+      *(random_[i]) = *(other.random_[i]);
+    }
+  }
+
   *param_ = *other.param_;
   *rm_ = std::move(*other.rm_);
   // *grid_ = std::move(*other.grid_);
@@ -63,6 +80,9 @@ BdmSim<T>::~BdmSim() {
   delete grid_;
   delete scheduler_;
   delete param_;
+  for (auto* r : random_) {
+    delete r;
+  }
   if (active_ == this) {
     active_ = nullptr;
     // FIXME anything else; catalyst adaptor?
@@ -89,6 +109,9 @@ template <typename T>
 Scheduler<BdmSim<T>>* BdmSim<T>::GetScheduler() { return scheduler_; }
 
 template <typename T>
+TRandom3* BdmSim<T>::GetRandom() { return random_[omp_get_thread_num()]; }
+
+template <typename T>
 void BdmSim<T>::ReplaceScheduler(Scheduler<BdmSim<T>>* scheduler) {  // TODO use unique_ptr to make ownership transformation explicit
   delete scheduler_;
   scheduler_ = scheduler;
@@ -99,11 +122,16 @@ template <typename TResourceManager,
           typename TGrid,
           typename TScheduler>
 void BdmSim<T>::InitializeMembers() {
+  random_.resize(omp_get_max_threads());
+  for (uint64_t i = 0; i < random_.size(); i++) {
+    random_[i] = new TRandom3();
+  }
   rm_ = new TResourceManager();
   grid_ = new TGrid();
   scheduler_ = new TScheduler();
 }
 
+// TODO not needed -> remove
 template <typename T>
 template <typename TGrid,
           typename TScheduler>

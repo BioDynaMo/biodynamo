@@ -256,7 +256,9 @@ inline int Simulate(int argc, const char** argv) {
   param->run_mechanical_interactions_ = false;
   int num_cells = 20000;
 
-  gTRandom.SetSeed(4357);
+  // set seed for each thread local random number generator
+  #pragma omp parallel
+  simulation.GetRandom()->SetSeed(4357);
 
   // Construct num_cells/2 cells of type 1
   auto construct_0 = [](const std::array<double, 3>& position) {

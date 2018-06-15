@@ -157,10 +157,11 @@ struct ModelInitializer {
     // TODO(ahmad): throughout simulation only one random number generator
     // should be used, so this should go someplace accessible for other
     // classes / functions
+    auto* random = sim->GetRandom();
     for (int i = 0; i < num_cells; i++) {
-      double x = gTRandom.Uniform(min, max);
-      double y = gTRandom.Uniform(min, max);
-      double z = gTRandom.Uniform(min, max);
+      double x = random->Uniform(min, max);
+      double y = random->Uniform(min, max);
+      double z = random->Uniform(min, max);
       auto new_simulation_object = cell_builder({x, y, z});
       container->push_back(new_simulation_object);
     }

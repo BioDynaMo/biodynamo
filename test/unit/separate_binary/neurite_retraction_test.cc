@@ -116,6 +116,7 @@ TEST(DISABLED_NeuriteElementBehaviour, BranchingGrowth) {
   std::array<double, 3> previous_direction;
   std::array<double, 3> direction;
 
+  auto* random = simulation.GetRandom();
   for (int i = 0; i < 200; i++) {
     auto my_neurites = rm->Get<NeuriteElement>();
     int num_neurites = my_neurites->size();
@@ -126,8 +127,8 @@ TEST(DISABLED_NeuriteElementBehaviour, BranchingGrowth) {
 
       if (ne->IsTerminal() && ne->GetDiameter() > 0.5) {
         previous_direction = ne->GetSpringAxis();
-        direction = {gTRandom.Uniform(-10, 10), gTRandom.Uniform(-10, 10),
-                     gTRandom.Uniform(0, 5)};
+        direction = {random->Uniform(-10, 10), random->Uniform(-10, 10),
+                     random->Uniform(0, 5)};
 
         std::array<double, 3> step_direction =
             Math::Add(previous_direction, direction);
@@ -136,7 +137,7 @@ TEST(DISABLED_NeuriteElementBehaviour, BranchingGrowth) {
         //          ne->SetDiameter(ne->GetDiameter()-diam_reduc_speed);
         ne->SetDiameter(1);
 
-        if (gTRandom.Uniform(0, 1) < branching_factor * ne->GetDiameter()) {
+        if (random->Uniform(0, 1) < branching_factor * ne->GetDiameter()) {
           ne->Bifurcate();
         }
         //            ne->RunDiscretization();
