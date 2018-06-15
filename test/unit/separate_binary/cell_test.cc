@@ -96,7 +96,9 @@ TEST(CellTest, Divide) {
   BdmSim<> simulation(typeid(*this).name());
 
   TestCell cell;
-  gRandom.SetSeed(42);
+
+  #pragma omp parallel
+  simulation.GetRandom()->SetSeed(42);
 
   cell.check_input_parameters_ = true;
   cell.expected_volume_ratio_ = 1.0455127360065737;
@@ -109,9 +111,10 @@ TEST(CellTest, Divide) {
 TEST(CellTest, DivideVolumeRatio) {
   BdmSim<> simulation(typeid(*this).name());
 
-  TestCell cell;
-  gRandom.SetSeed(42);
+  #pragma omp parallel
+  simulation.GetRandom()->SetSeed(42);
 
+  TestCell cell;
   cell.check_input_parameters_ = true;
   cell.expected_volume_ratio_ = 0.59;
   cell.expected_phi_ = 1.1956088797871529;
@@ -123,9 +126,11 @@ TEST(CellTest, DivideVolumeRatio) {
 TEST(CellTest, DivideAxis) {
   BdmSim<> simulation(typeid(*this).name());
 
+  #pragma omp parallel
+  simulation.GetRandom()->SetSeed(42);
+
   TestCell cell;
   cell.SetPosition({1, 2, 3});
-  gRandom.SetSeed(42);
 
   cell.check_input_parameters_ = true;
   cell.expected_volume_ratio_ = 1.0455127360065737;
@@ -138,9 +143,11 @@ TEST(CellTest, DivideAxis) {
 TEST(CellTest, DivideVolumeRatioAxis) {
   BdmSim<> simulation(typeid(*this).name());
 
+  #pragma omp parallel
+  simulation.GetRandom()->SetSeed(42);
+
   TestCell cell;
   cell.SetPosition({1, 2, 3});
-  gRandom.SetSeed(42);
 
   cell.check_input_parameters_ = true;
   cell.expected_volume_ratio_ = 0.456;

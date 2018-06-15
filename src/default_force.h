@@ -18,6 +18,7 @@
 #include <algorithm>
 #include <cmath>
 
+#include "bdm.h"
 #include "backend.h"
 #include "log.h"
 #include "math_util.h"
@@ -80,7 +81,7 @@ class DefaultForce {
   }
 
  private:
-  template <typename TSphereLhs, typename TSphereRhs>
+  template <typename TSphereLhs, typename TSphereRhs, typename TBdmSim = BdmSim<>>
   void ForceBetweenSpheres(const TSphereLhs* sphere_lhs,
                            const TSphereRhs* sphere_rhs,
                            std::array<double, 3>* result) const {
@@ -117,6 +118,7 @@ class DefaultForce {
     // to avoid a division by 0 if the centers are (almost) at the same
     //  location
     if (center_distance < 0.00000001) {
+      auto* random = TBdmSim::GetBdm()->GetRandom();
       auto force2on1 = gRandom.NextNoise(3.0);
       *result = force2on1;
       return;
@@ -317,6 +319,7 @@ class DefaultForce {
     *result = {force[0], force[1], force[2], k};
   }
 
+  template <typename TBdmSim = BdmSim<>>
   std::array<double, 4> ComputeForceOfASphereOnASphere(
       const std::array<double, 3>& c1, double r1,
       const std::array<double, 3>& c2, double r2) const {
@@ -334,6 +337,7 @@ class DefaultForce {
     // to avoid a division by 0 if the centers are (almost) at the same location
     if (distance_between_centers <
         0.00000001) {  // TODO(neurites) hard coded values
+      auto* random = TBdmSim::GetBdm()->GetRandom();
       auto force2on1 = gRandom.NextNoise(3.0);
       return std::array<double, 4>{force2on1[0], force2on1[1], force2on1[2],
                                    0.0};

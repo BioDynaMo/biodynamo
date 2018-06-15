@@ -455,10 +455,11 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
   /// daughter right at the proximal half.
   /// @param diameter of the side branch
   MostDerivedSoPtr Branch(double diameter) {
+    auto* random = BdmSim_t::GetBdm()->GetRandom();
     auto rand_noise = gRandom.NextNoise(0.1);
     auto growth_direction =
         Math::Perp3(Math::Add(GetUnitaryAxisDirectionVector(), rand_noise),
-                    gRandom.NextDouble());
+                    random->Uniform(0, 1));
     growth_direction = Math::Normalize(growth_direction);
     return Branch(diameter, growth_direction);
   }
@@ -466,11 +467,12 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
   /// Makes a side branch, i.e. splits this neurite element into two and puts a
   /// daughter right at the proximal half.
   MostDerivedSoPtr Branch() {
+    auto* random = BdmSim_t::GetBdm()->GetRandom();
     double branch_diameter = diameter_[kIdx];
     auto rand_noise = gRandom.NextNoise(0.1);
     auto growth_direction =
         Math::Perp3(Math::Add(GetUnitaryAxisDirectionVector(), rand_noise),
-                    gRandom.NextDouble());
+                    random->Uniform(0, 1));
     return Branch(branch_diameter, growth_direction);
   }
 
@@ -605,8 +607,9 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
     // diameters :
     double d = diameter_[kIdx];
     // direction : (60 degrees between branches)
-    double random = gRandom.NextDouble();
-    auto perp_plane = Math::Perp3(spring_axis_[kIdx], random);
+    auto* random = BdmSim_t::GetBdm()->GetRandom();
+    double random_val = random->Uniform(0, 1);
+    auto perp_plane = Math::Perp3(spring_axis_[kIdx], random_val);
     double angle_between_branches = Math::kPi / 3.0;
     auto direction_1 = Math::RotAroundAxis(
         spring_axis_[kIdx], angle_between_branches * 0.5, perp_plane);
@@ -991,7 +994,8 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
       // If new x_axis_ and old y_axis_ are aligned, we cannot use this scheme;
       // we start by re-defining new perp vectors. Ok, we loose the previous
       // info, but this should almost never happen....
-      z_axis_[kIdx] = Math::Perp3(x_axis_[kIdx], gRandom.NextDouble());
+      auto* random = BdmSim_t::GetBdm()->GetRandom();
+      z_axis_[kIdx] = Math::Perp3(x_axis_[kIdx], random->Uniform(0, 1));
     } else {
       z_axis_[kIdx] = Math::ScalarMult((1 / norm_of_z), z_axis_[kIdx]);
     }

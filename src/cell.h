@@ -93,7 +93,8 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
   /// Both cells have more or less the same volume, the axis of division is
   /// random.
   MostDerivedSoPtr Divide() {
-    return ThisMD()->Divide(0.9 + 0.2 * gRandom.NextDouble());
+    auto* random = BdmSim_t::GetBdm()->GetRandom();
+    return ThisMD()->Divide(0.9 + 0.2 * random->Uniform(0, 1));
   }
 
   /// Divide the cell. Of the two daughter cells, one is this one
@@ -104,8 +105,9 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
   MostDerivedSoPtr Divide(double volume_ratio) {
     // find random point on sphere (based on :
     // http://mathworld.wolfram.com/SpherePointPicking.html)
-    double theta = 2 * Math::kPi * gRandom.NextDouble();
-    double phi = std::acos(2 * gRandom.NextDouble() - 1);
+    auto* random = BdmSim_t::GetBdm()->GetRandom();
+    double theta = 2 * Math::kPi * random->Uniform(0, 1);
+    double phi = std::acos(2 * random->Uniform(0, 1) - 1);
     return ThisMD()->Divide(volume_ratio, phi, theta);
   }
 
@@ -113,9 +115,10 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
   /// and the other one will be returned by this function.
   /// @param axis specifies direction of division
   MostDerivedSoPtr Divide(const array<double, 3>& axis) {
+    auto* random = BdmSim_t::GetBdm()->GetRandom();
     auto polarcoord =
         TransformCoordinatesGlobalToPolar(Math::Add(axis, position_[kIdx]));
-    return ThisMD()->Divide(0.9 + 0.2 * gRandom.NextDouble(), polarcoord[1],
+    return ThisMD()->Divide(0.9 + 0.2 * random->Uniform(0, 1), polarcoord[1],
                             polarcoord[2]);
   }
 
