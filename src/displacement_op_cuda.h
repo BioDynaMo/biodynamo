@@ -23,13 +23,14 @@
 #include "resource_manager.h"
 #include "shape.h"
 #include "type_util.h"
+#include "bdm.h"
 
 namespace bdm {
 
 using std::array;
 
 /// Defines the 3D physical interactions between physical objects
-template <typename TGrid = Grid<>>
+template <typename TBdmSim = BdmSim<>>
 class DisplacementOpCuda {
  public:
   DisplacementOpCuda() {}
@@ -38,7 +39,9 @@ class DisplacementOpCuda {
   template <typename TContainer>
   typename std::enable_if<is_soa_sphere<TContainer>::value>::type operator()(
       TContainer* cells, uint16_t type_idx) {
-    auto& grid = TGrid::GetInstance();
+    auto* sim = TBdmSim::GetBdm();
+    auto* grid = sim->GetGrid();
+    auto* param = sim->GetParam();
 
     std::vector<std::array<double, 3>> cell_movements(cells->size());
     std::vector<double> mass(cells->size());
@@ -50,14 +53,14 @@ class DisplacementOpCuda {
     std::array<uint32_t, 3> num_boxes_axis;
     std::array<int32_t, 3> grid_dimensions;
     double squared_radius =
-        grid.GetLargestObjectSize() * grid.GetLargestObjectSize();
+        grid->GetLargestObjectSize() * grid->GetLargestObjectSize();
 
     // We need to create a mass vector, because it is not stored by default in
     // a cell container
     cells->FillMassVector(&mass);
-    grid.GetSuccessors(&successors);
-    grid.GetBoxInfo(&starts, &lengths);
-    grid.GetGridInfo(&box_length, &num_boxes_axis, &grid_dimensions);
+    grid->GetSuccessors(&successors);
+    grid->GetBoxInfo(&starts, &lengths);
+    grid->GetGridInfo(&box_length, &num_boxes_axis, &grid_dimensions);
 
     // If this is the first time we perform physics on GPU using CUDA
     if (cdo_ == nullptr) {
@@ -98,8 +101,8 @@ class DisplacementOpCuda {
     cdo_->LaunchDisplacementKernel(
         cells->GetPositionPtr(), cells->GetDiameterPtr(),
         cells->GetTractorForcePtr(), cells->GetAdherencePtr(),
-        cells->GetBoxIdPtr(), mass.data(), &(Param::simulation_time_step_),
-        &(Param::simulation_max_displacement_), &squared_radius, &num_objects,
+        cells->GetBoxIdPtr(), mass.data(), &(param->simulation_time_step_),
+        &(param->simulation_max_displacement_), &squared_radius, &num_objects,
         starts.data(), lengths.data(), successors.data(), &box_length,
         num_boxes_axis.data(), grid_dimensions.data(),
         cell_movements.data()->data());
@@ -111,8 +114,8 @@ class DisplacementOpCuda {
     for (size_t i = 0; i < cells->size(); i++) {
       auto&& cell = (*cells)[i];
       cell.UpdatePosition(cell_movements[i]);
-      if (Param::bound_space_) {
-        ApplyBoundingBox(&cell, Param::min_bound_, Param::max_bound_);
+      if (param->bound_space_) {
+        ApplyBoundingBox(&cell, param->min_bound_, param->max_bound_);
       }
       cell.SetPosition(cell.GetPosition());
 

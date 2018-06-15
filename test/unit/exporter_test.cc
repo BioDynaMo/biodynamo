@@ -22,6 +22,8 @@
 namespace bdm {
 
 TEST(ExportTest, ExportToFile) {
+  BdmSim<> simulation(typeid(*this).name());
+  
   // set up cells and their positions
   Cell cell1;
   cell1.SetPosition({0.5, 1, 0});

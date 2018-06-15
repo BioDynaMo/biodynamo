@@ -10,6 +10,7 @@ namespace bdm {
 template <typename > struct ResourceManager;
 template <typename> struct Grid;
 template <typename> struct Scheduler;
+struct Param;
 
 struct Soa;
 template <typename TBackend = Soa>
@@ -17,7 +18,7 @@ struct CompileTimeParam;
 
 template <typename TCTParam = CompileTimeParam<>>
 struct BdmSim {
-  using Self = BdmSim<TCTParam>;
+  using Self = BdmSim<TCTParam>; // TODO remove not needed
   using ResourceManager_t = ResourceManager<TCTParam>;  // NOLINT
 
   /// This function returns the currently active BdmSim simulation.
@@ -38,8 +39,14 @@ struct BdmSim {
   void Activate();
 
   ResourceManager<TCTParam>* GetRm();
+  Param* GetParam();
   Grid<Self>* GetGrid();
   Scheduler<Self>* GetScheduler();
+
+  /// Replaces the scheduler for this simulation.
+  /// Existing scheduler will be deleted! Therefore, pointers to the old
+  /// scheduler (obtained with `GetScheduler()`) will be invalidated.
+  void ReplaceScheduler(Scheduler<Self>*);
 
   // parameter
   // random numbers
@@ -49,6 +56,7 @@ struct BdmSim {
   static BdmSim<TCTParam>* active_;
 
   ResourceManager<TCTParam>* rm_ = nullptr;
+  Param* param_ = nullptr;
   Grid<Self>* grid_ = nullptr; //!
   Scheduler<Self>* scheduler_ = nullptr;  //!
 

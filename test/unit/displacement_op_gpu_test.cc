@@ -25,10 +25,18 @@
 namespace bdm {
 namespace displacement_op_gpu_test_internal {
 
-void RunTest() {
+enum ExecutionMode { kCpu, kCuda, kOpenCl };
+
+void RunTest(ExecutionMode mode) {
   BdmSim<> simulation("displacement_op_gpu_test_RunTest");
   auto* rm = simulation.GetRm();
   auto* grid = simulation.GetGrid();
+  auto* param = simulation.GetParam();
+
+  switch(mode) {
+    case kOpenCl: param->use_opencl_ = true;
+    case kCuda: param->use_gpu_ = true;
+  }
 
   auto cells = rm->template Get<Cell>();
 
@@ -93,25 +101,26 @@ void RunTest() {
 
 #ifdef USE_CUDA
 TEST(DisplacementOpGpuTest, ComputeSoaCuda) {
-  Param::use_gpu_ = true;
-  InitializeGPUEnvironment();
-  RunTest();
+  RunTest(kCuda);
 }
 #endif
 
 #ifdef USE_OPENCL
 TEST(DisplacementOpGpuTest, ComputeSoaOpenCL) {
-  Param::use_gpu_ = true;
-  Param::use_opencl_ = true;
-  InitializeGPUEnvironment();
-  RunTest();
+  RunTest(kOpenCl);
 }
 #endif
 
-void RunTest2() {
+void RunTest2(ExecutionMode mode) {
   BdmSim<> simulation("DisplacementOpGpuTest_RunTest2");
   auto* rm = simulation.GetRm();
   auto* grid = simulation.GetGrid();
+  auto* param = simulation.GetParam();
+
+  switch(mode) {
+    case kOpenCl: param->use_opencl_ = true;
+    case kCuda: param->use_gpu_ = true;
+  }
 
   auto cells = rm->template Get<Cell>();
 
@@ -168,17 +177,13 @@ void RunTest2() {
 
 #ifdef USE_CUDA
 TEST(DisplacementOpGpuTest, ComputeSoaNewCuda) {
-  Param::use_opencl_ = false;
-  InitializeGPUEnvironment();
-  RunTest2();
+  RunTest2(kCuda);
 }
 #endif
 
 #ifdef USE_OPENCL
 TEST(DisplacementOpGpuTest, ComputeSoaNewOpenCL) {
-  Param::use_opencl_ = true;
-  InitializeGPUEnvironment();
-  RunTest2();
+  RunTest2(kOpenCl);
 }
 #endif
 

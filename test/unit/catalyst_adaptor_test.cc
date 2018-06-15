@@ -16,6 +16,7 @@
 #include <gtest/gtest.h>
 #include "io_util.h"
 #include "unit/test_util.h"
+#include "unit/default_ctparam.h"
 #include "bdm_imp.h"
 
 // TODO(lukas) move file to unit/visualization
@@ -30,7 +31,6 @@ class CatalystAdaptorTest : public ::testing::Test {
   static constexpr char const* kParaviewState = "MySimulation.pvsm";
 
   virtual void TearDown() {
-    Param::Reset();
     remove(kSimulationInfoJson);
     remove(kParaviewState);
   }
@@ -38,26 +38,27 @@ class CatalystAdaptorTest : public ::testing::Test {
 
 /// Tests if simulation_info.json is generated correctly during initialization.
 TEST_F(CatalystAdaptorTest, GenerateSimulationInfoJson) {
+  BdmSim<> simulation(typeid(*this).name());
+  auto* param = simulation.GetParam();
+
   // remove files to avoid false positive test results
   remove(kSimulationInfoJson);
   remove(kParaviewState);
 
   // set-up Param values
-  Param::export_visualization_ = true;
-  Param::visualize_sim_objects_.clear();
-  Param::visualize_sim_objects_["cell"] = {};
-  Param::visualize_sim_objects_["neurite"] = {};
-  Param::visualize_diffusion_.clear();
-  Param::visualize_diffusion_.push_back({"sodium", true, true});
-  Param::executable_name_ = kSimulationName;
+  param->export_visualization_ = true;
+  param->visualize_sim_objects_.clear();
+  param->visualize_sim_objects_["cell"] = {};
+  param->visualize_sim_objects_["neurite"] = {};
+  param->visualize_diffusion_.clear();
+  param->visualize_diffusion_.push_back({"sodium", true, true});
+  param->executable_name_ = kSimulationName;
 
   std::unordered_map<std::string, Shape> shapes;
   shapes["cell"] = kSphere;
   shapes["neurite"] = kCylinder;
 
   CatalystAdaptor<>::GenerateSimulationInfoJson(shapes);
-
-  Param::Reset();
 
   ASSERT_TRUE(FileExists(kSimulationInfoJson));
 
@@ -96,6 +97,10 @@ TEST_F(CatalystAdaptorTest, GenerateSimulationInfoJson) {
 )STR";
 
   EXPECT_EQ(expected, buffer.str());
+
+  // turn off export_visualization_ to avoid Paraview state generation once
+  // simulation gets destructed
+  param->export_visualization_ = false;
 }
 
 /// Tests if the catalyst state is generated.

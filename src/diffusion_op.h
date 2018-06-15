@@ -37,12 +37,13 @@ class DiffusionOp {
   void operator()(TContainer* cells, uint16_t type_idx) {
     auto* sim = TBdmSim::GetBdm();
     auto* grid = sim->GetGrid();
+    auto* param = sim->GetParam();
     auto& diffusion_grids = sim->GetRm()->GetDiffusionGrids();
     for (auto dg : diffusion_grids) {
       // Update the diffusion grid dimension if the neighbor grid dimensions
       // have changed. If the space is bound, we do not need to update the
       // dimensions, because these should not be changing anyway
-      if (grid->HasGrown() && !Param::bound_space_) {
+      if (grid->HasGrown() && !param->bound_space_) {
         Log::Info("DiffusionOp",
                   "Your simulation objects are getting near the edge of the "
                   "simulation space. Be aware of boundary conditions that may "
@@ -52,7 +53,7 @@ class DiffusionOp {
 
       dg->DiffuseEuler();
 
-      if (Param::calculate_gradients_) {
+      if (param->calculate_gradients_) {
         dg->CalculateGradient();
       }
     }

@@ -18,6 +18,7 @@
 #include <vector>
 
 #include <Rtypes.h>
+#include "bdm.h"
 #include "biology_module_util.h"
 #include "param.h"
 
@@ -56,18 +57,23 @@ struct RegulateGenes : public BaseBiologyModule {
 
   /// Method Run() contains the implementation for Runge-Khutta and Euler
   /// methods for solving ODE.
-  template <typename T>
+  template <typename T, typename TBdmSim = BdmSim<>>
   void Run(T* cell) {
-    const auto& timestep = Param::simulation_time_step_;
-    const auto absolute_time = Param::total_steps_ * timestep;
+    auto* sim = TBdmSim::GetBdm();
+    auto* param = sim->GetParam();
+    auto* scheduler = sim->GetScheduler();
 
-    if (Param::numerical_ode_solver_ == Param::NumericalODESolver::kEuler) {
+    const auto& timestep = param->simulation_time_step_;
+    uint64_t simulated_steps = scheduler->GetSimulatedSteps();
+    const auto absolute_time = simulated_steps * timestep;
+
+    if (param->numerical_ode_solver_ == Param::NumericalODESolver::kEuler) {
       // Euler
       for (uint64_t i = 0; i < first_derivatives_.size(); i++) {
         double slope = first_derivatives_[i](absolute_time, concentrations_[i]);
         concentrations_[i] += slope * timestep;
       }
-    } else if (Param::numerical_ode_solver_ ==
+    } else if (param->numerical_ode_solver_ ==
                Param::NumericalODESolver::kRK4) {
       // Runge-Kutta 4
       for (uint64_t i = 0; i < first_derivatives_.size(); i++) {

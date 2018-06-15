@@ -20,8 +20,10 @@ namespace scheduler_test_internal {
 TEST(SchedulerTest, NoRestoreFile) {
   BdmSim<> simulation(typeid(*this).name());
   auto* rm = simulation.GetRm();
+  auto* param = simulation.GetParam();
 
-  Param::show_simulation_step_ = false;
+  param->restore_file_ = "";
+
   remove(ROOTFILE);
 
   Cell cell;
@@ -29,7 +31,7 @@ TEST(SchedulerTest, NoRestoreFile) {
   rm->Get<Cell>()->push_back(cell);
 
   // start restore validation
-  auto scheduler = TestSchedulerRestore::Create("");
+  TestSchedulerRestore scheduler;
   scheduler.Simulate(100);
   EXPECT_EQ(100u, scheduler.execute_calls);
   EXPECT_EQ(1u, rm->Get<Cell>()->size());

@@ -81,8 +81,9 @@ inline int Simulate(int argc, const char** argv) {
   auto&& cell = (*(rm->Get<Cell>()))[0];
   const auto* regulate_genes = cell.GetBiologyModules<RegulateGenes>()[0];
   const auto& concentrations = regulate_genes->GetConcentrations();
-  std::cout << "Gene concentrations after " << Param::total_steps_
-            << " time steps" << std::endl;
+  // FIXME
+  // std::cout << "Gene concentrations after " << Param::total_steps_
+  //           << " time steps" << std::endl;
   for (double concentration : concentrations) {
     std::cout << concentration << std::endl;
   }

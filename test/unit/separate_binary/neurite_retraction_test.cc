@@ -41,8 +41,6 @@ TEST(DISABLED_NeuriteElementBehaviour, StraightxCylinderGrowthRetract) {
   BdmSim<> simulation(typeid(*this).name());
   auto* rm = simulation.GetRm();
 
-  Param::live_visualization_ = true;
-
   auto neuron = rm->New<NeuronSoma>();
   neuron.SetPosition({0, 0, 0});
   neuron.SetMass(1);
@@ -97,10 +95,9 @@ TEST(DISABLED_NeuriteElementBehaviour, StraightxCylinderGrowthRetract) {
 TEST(DISABLED_NeuriteElementBehaviour, BranchingGrowth) {
   BdmSim<> simulation(typeid(*this).name());
   auto* rm = simulation.GetRm();
+  auto* param = simulation.GetParam();
 
-  Param::run_mechanical_interactions_ = true;
-  // Param::live_visualization_ = true;
-  // Param::export_visualization_ = true;
+  param->run_mechanical_interactions_ = true;
 
   double diam_reduc_speed = 0.001;
   double branching_factor = 0.005;

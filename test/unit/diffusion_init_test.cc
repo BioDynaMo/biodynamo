@@ -31,10 +31,11 @@ enum Substances { kSubstance };
 TEST(DiffusionInitTest, GaussianBand) {
   BdmSim<> simulation(typeid(*this).name());
   auto* rm = simulation.GetRm();
+  auto* param = simulation.GetParam();
 
-  Param::bound_space_ = true;
-  Param::min_bound_ = 0;
-  Param::max_bound_ = 250;
+  param->bound_space_ = true;
+  param->min_bound_ = 0;
+  param->max_bound_ = 250;
 
   // Create one cell at a random position
   auto construct = [](const std::array<double, 3>& position) {
@@ -42,7 +43,7 @@ TEST(DiffusionInitTest, GaussianBand) {
     cell.SetDiameter(10);
     return cell;
   };
-  ModelInitializer::CreateCellsRandom(Param::min_bound_, Param::max_bound_, 1,
+  ModelInitializer::CreateCellsRandom(param->min_bound_, param->max_bound_, 1,
                                       construct);
 
   // Define the substances in our simulation
@@ -54,8 +55,8 @@ TEST(DiffusionInitTest, GaussianBand) {
 
   simulation.GetGrid()->Initialize();
 
-  int lbound = Param::min_bound_;
-  int rbound = Param::max_bound_;
+  int lbound = param->min_bound_;
+  int rbound = param->max_bound_;
   auto& dgrid = rm->GetDiffusionGrids()[0];
 
   // Create data structures, whose size depend on the grid dimensions
@@ -86,8 +87,6 @@ TEST(DiffusionInitTest, GaussianBand) {
               kEps);
   EXPECT_NEAR(ROOT::Math::normal_pdf(130, 50, 125), conc[dgrid->GetBoxIndex(f)],
               kEps);
-
-  Param::Reset();
 }
 
 }  // namespace bdm

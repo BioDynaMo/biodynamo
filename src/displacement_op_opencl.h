@@ -51,6 +51,8 @@ class DisplacementOpOpenCL {
     auto* sim = TBdmSim::GetBdm();
     auto* grid = sim->GetGrid();
     auto* rm = sim->GetRm();
+    auto* param = sim->GetParam();
+
     auto context = rm->GetOpenCLContext();
     auto queue = rm->GetOpenCLCommandQueue();
     auto programs = rm->GetOpenCLProgramList();
@@ -120,8 +122,8 @@ class DisplacementOpOpenCL {
     collide.setArg(3, adherence_arg);
     collide.setArg(4, box_id_arg);
     collide.setArg(5, mass_arg);
-    collide.setArg(6, Param::simulation_time_step_);
-    collide.setArg(7, Param::simulation_max_displacement_);
+    collide.setArg(6, param->simulation_time_step_);
+    collide.setArg(7, param->simulation_max_displacement_);
     collide.setArg(8, squared_radius);
 
     collide.setArg(9, static_cast<cl_int>(cells->size()));
@@ -170,8 +172,8 @@ class DisplacementOpOpenCL {
     for (size_t i = 0; i < cells->size(); i++) {
       auto&& cell = (*cells)[i];
       cell.UpdatePosition(cell_movements[i]);
-      if (Param::bound_space_) {
-        ApplyBoundingBox(&cell, Param::min_bound_, Param::max_bound_);
+      if (param->bound_space_) {
+        ApplyBoundingBox(&cell, param->min_bound_, param->max_bound_);
       }
       cell.SetPosition(cell.GetPosition());
 

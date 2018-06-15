@@ -19,6 +19,7 @@
 
 #include "gtest/gtest.h"
 
+#include "bdm_imp.h"
 #include "backend.h"
 #include "cell.h"
 #include "compile_time_param.h"
@@ -29,10 +30,7 @@
 namespace bdm {
 namespace simulation_object_vector_test_internal {
 
-template <typename TBackend = Soa>
-struct CompileTimeParam1;
-
-BDM_SIM_OBJECT_TEST(A, SimulationObject, CompileTimeParam1) {
+BDM_SIM_OBJECT(A, SimulationObject) {
   BDM_SIM_OBJECT_HEADER(AExt, 1, id_);
 
  public:
@@ -56,7 +54,7 @@ BDM_SIM_OBJECT_TEST(A, SimulationObject, CompileTimeParam1) {
   vec<int> id_;
 };
 
-BDM_SIM_OBJECT_TEST(B, SimulationObject, CompileTimeParam1) {
+BDM_SIM_OBJECT(B, SimulationObject) {
   BDM_SIM_OBJECT_HEADER(BExt, 1, id_);
 
  public:
@@ -81,20 +79,19 @@ BDM_SIM_OBJECT_TEST(B, SimulationObject, CompileTimeParam1) {
   vec<int> id_;
 };
 
-template <typename TBackend>
-struct CompileTimeParam1 {
-  template <typename TTBackend>
-  using Self = CompileTimeParam1<TTBackend>;
-  using Backend = TBackend;
+}  // namespace simulation_object_vector_test_internal
 
+template <typename TBackend>
+struct CompileTimeParam : public DefaultCompileTimeParam<TBackend> {
   using SimulationBackend = Soa;
-  using AtomicTypes = VariadicTypedef<A, B>;
+  using AtomicTypes = VariadicTypedef<simulation_object_vector_test_internal::A, simulation_object_vector_test_internal::B>;
 };
+
+namespace simulation_object_vector_test_internal {
 
 inline void RunTest() {
   std::string sim_name("simulation_object_vector_test_RunInitializerTest");
-  using BdmSim = BdmSim<CompileTimeParam1<Soa>>;
-  BdmSim simulation(sim_name);
+  BdmSim<> simulation(sim_name);
   auto* rm = simulation.GetRm();
 
   ASSERT_EQ(2u, rm->NumberOfTypes());
@@ -108,7 +105,7 @@ inline void RunTest() {
   bs->push_back(B(8));
   bs->push_back(B(9));
 
-  SimulationObjectVector<int, BdmSim> vector;
+  SimulationObjectVector<int, BdmSim<>> vector;
   EXPECT_EQ(0, vector[SoHandle(0, 0)]);
   EXPECT_EQ(0, vector[SoHandle(0, 1)]);
   EXPECT_EQ(0, vector[SoHandle(0, 2)]);
@@ -122,24 +119,11 @@ inline void RunTest() {
   EXPECT_EQ(5, vector[SoHandle(0, 2)]);
 }
 
-template <typename TBackend = Soa>
-struct DefaultCompileTimeParam1 {
-  template <typename TTBackend>
-  using Self = CompileTimeParam<TTBackend>;
-  using Backend = TBackend;
-
-  /// Defines backend used in ResourceManager
-  using SimulationBackend = Soa;
-  using BiologyModules = Variant<NullBiologyModule>;
-  using AtomicTypes = VariadicTypedef<Cell>;
-};
-
 // Tests if SimulationObjectVector::Initialize does indeed initialize the
 // object correctly (i.e. set the data_ member to the default values)
 inline void RunInitializeTest() {
   std::string sim_name("simulation_object_vector_test_RunInitializerTest");
-  using BdmSim = BdmSim<CompileTimeParam1<Soa>>;
-  BdmSim simulation(sim_name);
+  BdmSim<> simulation(sim_name);
   auto* rm = simulation.GetRm();
 
   ASSERT_EQ(2u, rm->NumberOfTypes());
@@ -160,7 +144,7 @@ inline void RunInitializeTest() {
   auto max32 = std::numeric_limits<uint32_t>::max();
 
   // Check if the initial state is obtained after the push backs
-  SimulationObjectVector<SoHandle, BdmSim> vector;
+  SimulationObjectVector<SoHandle> vector;
   EXPECT_EQ(SoHandle(max16, max32), vector[SoHandle(0, 0)]);
   EXPECT_EQ(SoHandle(max16, max32), vector[SoHandle(0, 1)]);
   EXPECT_EQ(SoHandle(max16, max32), vector[SoHandle(0, 2)]);

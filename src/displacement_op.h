@@ -58,14 +58,15 @@ class DisplacementOp {
 
   template <typename TContainer>
   void operator()(TContainer* cells, uint16_t type_idx) {
-    if (Param::use_gpu_ && !force_cpu_implementation_) {
+    auto* param = TBdmSim::GetBdm()->GetParam();
+    if (param->use_gpu_ && !force_cpu_implementation_) {
 #ifdef USE_OPENCL
-      if (Param::use_opencl_) {
+      if (param->use_opencl_) {
         opencl_(cells, type_idx);
       }
 #endif
 #ifdef USE_CUDA
-      if (!Param::use_opencl_) {
+      if (!param->use_opencl_) {
         cuda_(cells, type_idx);
       }
 #endif

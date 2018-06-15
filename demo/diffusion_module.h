@@ -81,7 +81,7 @@ inline int Simulate(int argc, const char** argv) {
   // 3. Initialize BioDynaMo
   BdmSim<> simulation(argc, argv);
 
-  Param::backup_interval_ = 1;
+  simulation.GetParam()->backup_interval_ = 1;
 
   // 4a. Define initial model - in this example: two cells
   auto construct = [](const std::array<double, 3>& position) {

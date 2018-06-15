@@ -5,6 +5,7 @@
 #include "grid.h"
 #include "scheduler.h"
 #include "version.h"
+#include "param.h"
 #include "command_line_options.h"
 #include "cpptoml/cpptoml.h"
 
@@ -21,6 +22,7 @@ BdmSim<T>* BdmSim<T>::GetBdm() {
 template <typename T>
 BdmSim<T>::BdmSim(int argc, const char** argv) {
   Activate();
+  param_ = new Param();
   InitializeRuntimeParams(argc, argv);
   InitializeMembers();
 }
@@ -28,6 +30,7 @@ BdmSim<T>::BdmSim(int argc, const char** argv) {
 template <typename T>
 BdmSim<T>::BdmSim(const std::string& executable_name) {
   Activate();
+  param_ = new Param();
   const char* argv[1] = {executable_name.c_str()};
   InitializeRuntimeParams(1, argv);
   InitializeMembers();
@@ -46,6 +49,7 @@ BdmSim<T>& BdmSim<T>::operator=(BdmSim<T>&& other) {
   // other.rm_ = nullptr;
   // other.grid_ = nullptr;
   // other.scheduler_ = nullptr;
+  *param_ = *other.param_;
   *rm_ = std::move(*other.rm_);
   // *grid_ = std::move(*other.grid_);
   // delete grid_;
@@ -55,13 +59,14 @@ BdmSim<T>& BdmSim<T>::operator=(BdmSim<T>&& other) {
 
 template <typename T>
 BdmSim<T>::~BdmSim() {
+  delete rm_;
+  delete grid_;
+  delete scheduler_;
+  delete param_;
   if (active_ == this) {
     active_ = nullptr;
     // FIXME anything else; catalyst adaptor?
   }
-  delete rm_;
-  delete grid_;
-  delete scheduler_;
 }
 
 template <typename T>
@@ -75,10 +80,19 @@ template <typename T>
 ResourceManager<T>* BdmSim<T>::GetRm() { return rm_; }
 
 template <typename T>
+Param* BdmSim<T>::GetParam() { return param_; }
+
+template <typename T>
 Grid<BdmSim<T>>* BdmSim<T>::GetGrid() { return grid_; }
 
 template <typename T>
 Scheduler<BdmSim<T>>* BdmSim<T>::GetScheduler() { return scheduler_; }
+
+template <typename T>
+void BdmSim<T>::ReplaceScheduler(Scheduler<BdmSim<T>>* scheduler) {  // TODO use unique_ptr to make ownership transformation explicit
+  delete scheduler_;
+  scheduler_ = scheduler;
+}
 
 template <typename T>
 template <typename TResourceManager,
@@ -95,7 +109,6 @@ template <typename TGrid,
           typename TScheduler>
 void BdmSim<T>::TRootIoCtorInitializeMembers() {
   grid_ = new TGrid();
-  // scheduler_ = new TScheduler();
 }
 
 template <typename T>
@@ -113,24 +126,24 @@ void BdmSim<T>::InitializeRuntimeParams(int argc, const char** argv) {
                "and retry this command.");
   }
 
-  Param::executable_name_ = ExtractExecutableName(argv[0]);
+  param_->executable_name_ = ExtractExecutableName(argv[0]);
   auto options = bdm::DefaultSimulationOptionParser(argc, argv);
   constexpr auto kConfigFile = "bdm.toml";
   constexpr auto kConfigFileParentDir = "../bdm.toml";
   if (FileExists(kConfigFile)) {
     auto config = cpptoml::parse_file(kConfigFile);
-    Param::AssignFromConfig(config);
+    param_->AssignFromConfig(config);
   } else if (FileExists(kConfigFileParentDir)) {
     auto config = cpptoml::parse_file(kConfigFileParentDir);
-    Param::AssignFromConfig(config);
+    param_->AssignFromConfig(config);
   } else {
     Log::Warning("BdmSim::InitializeRuntimeParams",
                  "Config file %s not found in `.` or `../` directory.",
                  kConfigFile);
   }
   if (options.backup_file_ != "") {
-    Param::backup_file_ = options.backup_file_;
-    Param::restore_file_ = options.restore_file_;
+    param_->backup_file_ = options.backup_file_;
+    param_->restore_file_ = options.restore_file_;
   }
 }
 

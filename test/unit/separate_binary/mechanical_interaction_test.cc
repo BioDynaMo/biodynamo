@@ -174,8 +174,6 @@ TEST(MechanicalInteraction, DiagonalxyzCylinderGrowth) {
   BdmSim<> simulation(typeid(*this).name());
   auto* rm = simulation.GetRm();
 
-  // Param::live_visualization_ = true;
-
   auto neuron = rm->New<NeuronSoma>();
   neuron.SetPosition({0, 0, 0});
   neuron.SetMass(1);
@@ -210,8 +208,6 @@ TEST(MechanicalInteraction, DiagonalxyzCylinderGrowth) {
 TEST(MechanicalInteraction, DiagonalSpecialDirectionCylinderGrowth) {
   BdmSim<> simulation(typeid(*this).name());
   auto* rm = simulation.GetRm();
-
-  // Param::live_visualization_ = true;
 
   auto neuron = rm->New<NeuronSoma>();
   neuron.SetPosition({0, 0, 0});
@@ -372,7 +368,6 @@ TEST(MechanicalInteraction, BifurcationCylinderGrowth) {
   auto* rm = simulation.GetRm();
 
   gErrorIgnoreLevel = kWarning;
-  // Param::export_visualization_ = true;
 
   auto neuron = rm->New<NeuronSoma>();
   neuron.SetPosition({0, 0, 0});
@@ -429,8 +424,6 @@ TEST(MechanicalInteraction, BifurcationCylinderGrowth) {
 TEST(MechanicalInteraction, BranchCylinderGrowth) {
   BdmSim<> simulation(typeid(*this).name());
   auto* rm = simulation.GetRm();
-
-  // Param::export_visualization_ = true;
 
   auto neuron = rm->New<NeuronSoma>();
   neuron.SetPosition({0, 0, 0});

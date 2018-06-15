@@ -37,7 +37,9 @@ class DisplacementOpCpu {
     std::vector<array<double, 3>> sim_object_movements;
     sim_object_movements.reserve(sim_objects->size());
 
-    auto* grid = TBdmSim::GetBdm()->GetGrid();
+    auto* sim = TBdmSim::GetBdm();
+    auto* grid = sim->GetGrid();
+
     auto search_radius = grid->GetLargestObjectSize();
     double squared_radius = search_radius * search_radius;
 
@@ -52,13 +54,14 @@ class DisplacementOpCpu {
 // which would lead to inconsistencies
 // FIXME there are still inconsistencies if there are more than one simulation
 //  object types!
+    auto* param = sim->GetParam();
 #pragma omp parallel for
     for (size_t i = 0; i < sim_objects->size(); i++) {
       auto&& sim_object = (*sim_objects)[i];
       sim_object.ApplyDisplacement(sim_object_movements[i]);
-      if (Param::bound_space_) {
-        ApplyBoundingBox(&sim_object, Param::min_bound_, Param::max_bound_);
-        grid->SetDimensionThresholds(Param::min_bound_, Param::max_bound_);
+      if (param->bound_space_) {
+        ApplyBoundingBox(&sim_object, param->min_bound_, param->max_bound_);
+        grid->SetDimensionThresholds(param->min_bound_, param->max_bound_);
       }
     }
   }

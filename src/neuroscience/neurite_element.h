@@ -359,7 +359,8 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
       return;
     }
     // scaling for integration step
-    speed *= Param::simulation_time_step_;
+    auto* param = BdmSim_t::GetBdm()->GetParam();
+    speed *= param->simulation_time_step_;
 
     if (actual_length_[kIdx] > speed + 0.1) {
       // if actual_length_ > length : retraction keeping the same tension
@@ -382,7 +383,7 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
       // if actual_length_ < length and mother is a neurite element with no
       // other daughter : merge with mother
       RemoveProximalNeuriteElement();  // also updates volume_...
-      RetractTerminalEnd(speed / Param::simulation_time_step_);
+      RetractTerminalEnd(speed / param->simulation_time_step_);
     } else {
       // if mother is neurite element with other daughter or is not a neurite
       // segment: disappear.
@@ -722,7 +723,8 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
     }
 
     // scaling for integration step
-    double length = speed * Param::simulation_time_step_;
+    auto* param = BdmSim_t::GetBdm()->GetParam();
+    double length = speed * param->simulation_time_step_;
     auto displacement = Math::ScalarMult(length, Math::Normalize(direction));
     auto new_mass_location = Math::Add(displacement, mass_location_[kIdx]);
     // here I have to define the actual length ..........
@@ -756,7 +758,8 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
   /// @param speed cubic micron/ h
   void ChangeVolume(double speed) {
     // scaling for integration step
-    double delta = speed * Param::simulation_time_step_;
+    auto* param = BdmSim_t::GetBdm()->GetParam();
+    double delta = speed * param->simulation_time_step_;
     volume_[kIdx] += delta;
 
     if (volume_[kIdx] <
@@ -770,7 +773,8 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
   /// @param speed micron/ h
   void ChangeDiameter(double speed) {
     // scaling for integration step
-    double delta = speed * Param::simulation_time_step_;
+    auto* param = BdmSim_t::GetBdm()->GetParam();
+    double delta = speed * param->simulation_time_step_;
     diameter_[kIdx] += delta;
     UpdateVolume();
   }
@@ -935,9 +939,10 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
     double displacement_norm = force_norm * h_over_m;
 
     //  6.4) There is an upper bound for the movement.
-    if (displacement_norm > Param::simulation_max_displacement_) {
+    auto* param = BdmSim_t::GetBdm()->GetParam();
+    if (displacement_norm > param->simulation_max_displacement_) {
       displacement = Math::ScalarMult(
-          Param::simulation_max_displacement_ / displacement_norm,
+          param->simulation_max_displacement_ / displacement_norm,
           displacement);
     }
 

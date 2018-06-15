@@ -199,7 +199,8 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
 
   void ChangeVolume(double speed) {
     // scaling for integration step
-    double delta = speed * Param::simulation_time_step_;
+    auto* param = BdmSim_t::GetBdm()->GetParam();
+    double delta = speed * param->simulation_time_step_;
     volume_[kIdx] += delta;
     if (volume_[kIdx] < 5.2359877E-7) {
       volume_[kIdx] = 5.2359877E-7;
@@ -413,7 +414,8 @@ BDM_SO_DEFINE(template <typename TGrid> inline std::array<double, 3>
   bool physical_translation = false;
   // bool physical_rotation = false;
 
-  double h = Param::simulation_time_step_;
+  auto* param = BdmSim_t::GetBdm()->GetParam();
+  double h = param->simulation_time_step_;
   std::array<double, 3> movement_at_next_step{0, 0, 0};
 
   // BIOLOGY :
@@ -475,11 +477,12 @@ BDM_SO_DEFINE(template <typename TGrid> inline std::array<double, 3>
 
     // but we want to avoid huge jumps in the simulation, so there are
     // maximum distances possible
-    if (norm_of_force * mh > Param::simulation_max_displacement_) {
+    auto* param = BdmSim_t::GetBdm()->GetParam();
+    if (norm_of_force * mh > param->simulation_max_displacement_) {
       const auto& norm = Math::Normalize(movement_at_next_step);
-      movement_at_next_step[0] = norm[0] * Param::simulation_max_displacement_;
-      movement_at_next_step[1] = norm[1] * Param::simulation_max_displacement_;
-      movement_at_next_step[2] = norm[2] * Param::simulation_max_displacement_;
+      movement_at_next_step[0] = norm[0] * param->simulation_max_displacement_;
+      movement_at_next_step[1] = norm[1] * param->simulation_max_displacement_;
+      movement_at_next_step[2] = norm[2] * param->simulation_max_displacement_;
     }
   }
   return movement_at_next_step;

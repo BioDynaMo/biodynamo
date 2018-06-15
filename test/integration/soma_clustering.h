@@ -134,7 +134,9 @@ struct CompileTimeParam : public DefaultCompileTimeParam<Backend> {
 // otherwise.
 template <typename TBdmSim = BdmSim<>>
 static bool GetCriterion(double spatial_range, int target_n) {
-  auto* rm = TBdmSim::GetBdm()->GetRm();
+  auto* sim = TBdmSim::GetBdm();
+  auto* rm = sim->GetRm();
+
   auto my_cells = rm->template Get<MyCell>();
   int n = my_cells->size();
 
@@ -153,7 +155,8 @@ static bool GetCriterion(double spatial_range, int target_n) {
   std::vector<int> types_sub_vol(n);
 
   // Define the subvolume to be the first octant of a cube
-  double sub_vol_max = Param::max_bound_ / 2;
+  auto* param = sim->GetParam();
+  double sub_vol_max = param->max_bound_ / 2;
 
   // The number of cells within the subvolume
   int num_cells_sub_vol = 0;
@@ -242,14 +245,15 @@ static bool GetCriterion(double spatial_range, int target_n) {
 
 inline int Simulate(int argc, const char** argv) {
   BdmSim<> simulation(argc, argv);
+  auto* param = simulation.GetParam();
 
   // 3. Define initial model
 
   // Create an artificial bounds for the simulation space
-  Param::bound_space_ = true;
-  Param::min_bound_ = 0;
-  Param::max_bound_ = 250;
-  Param::run_mechanical_interactions_ = false;
+  param->bound_space_ = true;
+  param->min_bound_ = 0;
+  param->max_bound_ = 250;
+  param->run_mechanical_interactions_ = false;
   int num_cells = 20000;
 
   gTRandom.SetSeed(4357);
@@ -263,7 +267,7 @@ inline int Simulate(int argc, const char** argv) {
     cell.AddBiologyModule(Chemotaxis());
     return cell;
   };
-  ModelInitializer::CreateCellsRandom(Param::min_bound_, Param::max_bound_,
+  ModelInitializer::CreateCellsRandom(param->min_bound_, param->max_bound_,
                                       num_cells / 2, construct_0);
 
   // Construct num_cells/2 cells of type -1
@@ -275,7 +279,7 @@ inline int Simulate(int argc, const char** argv) {
     cell.AddBiologyModule(Chemotaxis());
     return cell;
   };
-  ModelInitializer::CreateCellsRandom(Param::min_bound_, Param::max_bound_,
+  ModelInitializer::CreateCellsRandom(param->min_bound_, param->max_bound_,
                                       num_cells / 2, construct_1);
 
   // 3. Define the substances that cells may secrete

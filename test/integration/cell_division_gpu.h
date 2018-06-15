@@ -48,11 +48,19 @@ struct CompileTimeParam : public DefaultCompileTimeParam<Backend> {
   using BiologyModules = Variant<GrowDivide>;
 };
 
-inline void RunTest(bool* result) {
+enum ExecutionMode { kCpu, kCuda, kOpenCl };
+
+inline void RunTest(bool* result, ExecutionMode mode) {
   BdmSim<> simulation("cell_division_gpu");
   auto* rm = simulation.GetRm();
+  auto* param = simulation.GetParam();
   rm->Clear();
   auto cells = rm->template Get<Cell>();
+
+  switch(mode) {
+    case kOpenCl: param->use_opencl_ = true;
+    case kCuda: param->use_gpu_ = true;
+  }
 
 // We need to give every test the same seed for the RNG, because in the cell
 // division, random numbers are used. Within a single executable these numbers
@@ -120,6 +128,7 @@ inline void RunTest(bool* result) {
 }
 
 inline int Simulate(int argc, const char** argv) {
+
   bool result = true;
 
   // TODO(ahmad): after Trello card ("Fix inconsistency in cell state due to
@@ -128,17 +137,13 @@ inline int Simulate(int argc, const char** argv) {
   omp_set_num_threads(1);
 
   // Run CPU version
-  RunTest(&result);
+  RunTest(&result, kCpu);
 
   // Run GPU (CUDA) version
-  Param::use_gpu_ = true;
-  InitializeGPUEnvironment<>();
-  RunTest(&result);
+  RunTest(&result, kCuda);
 
   // Run GPU (OpenCL) version
-  Param::use_opencl_ = true;
-  InitializeGPUEnvironment<>();
-  RunTest(&result);
+  RunTest(&result, kOpenCl);
 
   return !result;
 }

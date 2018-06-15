@@ -40,10 +40,9 @@ struct CompileTimeParam : public DefaultCompileTimeParam<TBackend> {
 inline int Simulate(int argc, const char** argv) {
   BdmSim<> simulation(argc, argv);
   auto* rm = simulation.GetRm();
+  auto* param = simulation.GetParam();
 
-  Param::Reset();
-
-  Param::backup_interval_ = 1;
+  param->backup_interval_ = 1;
 
   auto cells = rm->Get<Cell>();
   for (size_t i = 0; i < 10; i++) {

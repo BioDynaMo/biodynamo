@@ -11,5 +11,6 @@
     <class name="bdm::GrowDivide"/>
     <class name="bdm::IntegralTypeWrapper<size_t> "/>
     <class name="bdm::RegulateGenes" />
+    <class name="bdm::Param" />
   </selection>
 </lcgdict>

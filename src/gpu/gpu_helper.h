@@ -47,7 +47,10 @@ static const char* GetErrorString(cl_int error);
 #endif
 
 #ifdef USE_CUDA
+template <typename TBdmSim = BdmSim<>>
 static void FindGpuDevicesCuda() {
+  auto* param = TBdmSim::GetBdm()->GetParam();
+
   int n_devices = 0;
 
   cudaGetDeviceCount(&n_devices);
@@ -55,7 +58,7 @@ static void FindGpuDevicesCuda() {
     Log::Error("FindGpuDevicesCuda",
                "No CUDA-compatible GPU found on this machine! Switching to the "
                "CPU version...");
-    Param::use_gpu_ = false;
+    param->use_gpu_ = false;
     return;
   }
 
@@ -68,10 +71,10 @@ static void FindGpuDevicesCuda() {
     Log::Info("", "  [", i, "] ", prop.name);
   }
 
-  cudaSetDevice(Param::preferred_gpu_);
+  cudaSetDevice(param->preferred_gpu_);
   cudaDeviceProp prop;
-  cudaGetDeviceProperties(&prop, Param::preferred_gpu_);
-  Log::Info("", "Selected GPU [", Param::preferred_gpu_, "]: ", prop.name);
+  cudaGetDeviceProperties(&prop, param->preferred_gpu_);
+  Log::Info("", "Selected GPU [", param->preferred_gpu_, "]: ", prop.name);
 }
 #endif
 
@@ -80,6 +83,8 @@ template <typename TBdmSim = BdmSim<>>
 static void CompileOpenCLKernels() {
   auto* sim = TBdmSim::GetBdm();
   auto* rm = sim->GetRm();
+  auto* param = sim->GetParam();
+
   std::vector<cl::Program>* all_programs = rm->GetOpenCLProgramList();
   cl::Context* context = rm->GetOpenCLContext();
   std::vector<cl::Device>* devices = rm->GetOpenCLDeviceList();
@@ -104,7 +109,7 @@ static void CompileOpenCLKernels() {
   Log::Info("", "Compiling OpenCL kernels...");
 
   std::string options;
-  if (Param::opencl_debug_) {
+  if (param->opencl_debug_) {
     Log::Info("", "Building OpenCL kernels with debugging symbols");
     options = "-g -O0";
   } else {
@@ -128,6 +133,8 @@ static void FindGpuDevicesOpenCL() {
     // accessible elsewhere to create command queues and buffers from
     auto* sim = TBdmSim::GetBdm();
     auto* rm = sim->GetRm();
+    auto* param = sim->GetParam();
+
     cl::Context* context = rm->GetOpenCLContext();
     cl::CommandQueue* queue = rm->GetOpenCLCommandQueue();
     std::vector<cl::Device>* devices = rm->GetOpenCLDeviceList();
@@ -170,7 +177,7 @@ static void FindGpuDevicesOpenCL() {
       Log::Warning("FindGpuDevicesOpenCL",
                    "No OpenCL-compatible GPU found on this machine! Switching "
                    "to the CPU version...");
-      Param::use_gpu_ = false;
+      param->use_gpu_ = false;
       return;
     }
 
@@ -183,12 +190,12 @@ static void FindGpuDevicesOpenCL() {
       Log::Info("", "  [", i, "] ", (*devices)[i].getInfo<CL_DEVICE_NAME>());
     }
 
-    Log::Info("", "Selected GPU [", Param::preferred_gpu_, "]: ",
-              (*devices)[Param::preferred_gpu_].getInfo<CL_DEVICE_NAME>());
+    Log::Info("", "Selected GPU [", param->preferred_gpu_, "]: ",
+              (*devices)[param->preferred_gpu_].getInfo<CL_DEVICE_NAME>());
 
     // Create command queue for that GPU
     cl_int queue_err;
-    *queue = cl::CommandQueue(*context, (*devices)[Param::preferred_gpu_],
+    *queue = cl::CommandQueue(*context, (*devices)[param->preferred_gpu_],
                               CL_QUEUE_PROFILING_ENABLE, &queue_err);
     ClOk(queue_err);
 
@@ -203,7 +210,8 @@ static void FindGpuDevicesOpenCL() {
 
 template <typename TBdmSim = BdmSim<>>
 static void InitializeGPUEnvironment() {
-  if (Param::use_opencl_) {
+  auto* param = TBdmSim::GetBdm()->GetParam();
+  if (param->use_opencl_) {
 #ifdef USE_OPENCL
     FindGpuDevicesOpenCL<>();
 #else
@@ -211,7 +219,7 @@ static void InitializeGPUEnvironment() {
               "You tried to use the GPU (OpenCL) version of BioDynaMo, but no "
               "OpenCL installation was detected on this machine. Switching to "
               "the CPU version...");
-    Param::use_gpu_ = false;
+    param->use_gpu_ = false;
 #endif
   } else {
 #ifdef USE_CUDA
@@ -221,7 +229,7 @@ static void InitializeGPUEnvironment() {
               "You tried to use the GPU (CUDA) version of BioDynaMo, but no "
               "CUDA installation was detected on this machine. Switching to "
               "the CPU version...");
-    Param::use_gpu_ = false;
+    param->use_gpu_ = false;
 #endif
   }
 }

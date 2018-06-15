@@ -40,22 +40,25 @@ class Scheduler {
  public:
   using Clock = std::chrono::high_resolution_clock;
 
-  Scheduler()
-      : backup_(SimulationBackup(Param::backup_file_, Param::restore_file_)) {
-    // total_steps_ = 0;
-    if (backup_.RestoreEnabled()) {
-      restore_point_ = backup_.GetSimulationStepsFromBackup();
+  Scheduler() {
+    auto* param = TBdmSim::GetBdm()->GetParam();
+    backup_ = new SimulationBackup(param->backup_file_, param->restore_file_);
+    if (backup_->RestoreEnabled()) {
+      restore_point_ = backup_->GetSimulationStepsFromBackup();
     }
-    visualization_ = CatalystAdaptor<>::GetInstance();
+    visualization_ = new CatalystAdaptor<>();
     visualization_->Initialize(BDM_SRC_DIR "/visualization/simple_pipeline.py");
-    if (Param::use_gpu_) {
+    if (param->use_gpu_) {
       InitializeGPUEnvironment<>();
     }
   }
 
   virtual ~Scheduler() {
+    delete backup_;
     visualization_->Finalize();
-    if (Param::statistics_) {
+    delete visualization_;
+    auto* param = TBdmSim::GetBdm()->GetParam();
+    if (param->statistics_) {
       std::cout << gStatistics << std::endl;
     }
   }
@@ -75,21 +78,27 @@ class Scheduler {
     }
   }
 
+  /// This function returns the numer of simulated steps (=iterations).
+  uint64_t GetSimulatedSteps() const { return total_steps_; }
+
  protected:
+   uint64_t total_steps_ = 0;
+
   /// Executes one step.
   /// This design makes testing more convenient
   virtual void Execute(bool last_iteration) {
     auto* sim = TBdmSim::GetBdm();
     auto* rm = sim->GetRm();
     auto* grid = sim->GetGrid();
+    auto* param = sim->GetParam();
 
     assert(rm->GetNumSimObjects() > 0 &&
            "This simulation does not contain any simulation objects.");
 
-    visualization_->Visualize(last_iteration);
+    visualization_->Visualize(total_steps_, last_iteration);
 
     {
-      if (Param::statistics_) {
+      if (param->statistics_) {
         Timing timing("neighbors", &gStatistics);
         grid->UpdateGrid();
       } else {
@@ -99,20 +108,19 @@ class Scheduler {
     // TODO(ahmad): should we only do it here and not after we run the physics?
     // We need it here, because we need to update the threshold values before
     // we update the diffusion grid
-    if (Param::bound_space_) {
+    if (param->bound_space_) {
       rm->ApplyOnAllTypes(bound_space_);
     }
     rm->ApplyOnAllTypes(diffusion_);
     rm->ApplyOnAllTypes(biology_);
-    if (Param::run_mechanical_interactions_) {
+    if (param->run_mechanical_interactions_) {
       rm->ApplyOnAllTypes(physics_);  // Bounding box applied at the end
     }
     CommitChangesAndUpdateReferences();
   }
 
  private:
-  SimulationBackup backup_;
-  uint64_t& total_steps_ = Param::total_steps_;
+  SimulationBackup* backup_ = nullptr;
   uint64_t restore_point_;
   std::chrono::time_point<Clock> last_backup_ = Clock::now();
   CatalystAdaptor<>* visualization_ = nullptr;
@@ -127,11 +135,12 @@ class Scheduler {
   void Backup() {
     using std::chrono::seconds;
     using std::chrono::duration_cast;
-    if (backup_.BackupEnabled() &&
+    auto* param = TBdmSim::GetBdm()->GetParam();
+    if (backup_->BackupEnabled() &&
         duration_cast<seconds>(Clock::now() - last_backup_).count() >=
-            Param::backup_interval_) {
+            param->backup_interval_) {
       last_backup_ = Clock::now();
-      backup_.Backup(total_steps_);
+      backup_->Backup(total_steps_);
     }
   }
 
@@ -139,18 +148,23 @@ class Scheduler {
   /// @param steps number of simulation steps for a `Simulate` call
   /// @return if `Simulate` should return early
   bool Restore(uint64_t* steps) {
-    if (backup_.RestoreEnabled() && restore_point_ > total_steps_ + *steps) {
+    if (backup_->RestoreEnabled() && restore_point_ > total_steps_ + *steps) {
       total_steps_ += *steps;
       // restore requested, but not last backup was not done during this call to
       // Simualte. Therefore, we skip it.
       return true;
-    } else if (backup_.RestoreEnabled() && restore_point_ > total_steps_ &&
+    } else if (backup_->RestoreEnabled() && restore_point_ > total_steps_ &&
                restore_point_ < total_steps_ + *steps) {
       // Restore
-      backup_.Restore();
+      backup_->Restore();
+      std::cout << total_steps_ << std::endl;
       *steps = total_steps_ + *steps - restore_point_;
       total_steps_ = restore_point_;
-      Log::Info("Scheduler", "Restored simulation from ", Param::restore_file_);
+      auto* param = TBdmSim::GetBdm()->GetParam();
+      Log::Info("Scheduler", "Restored simulation from ", param->restore_file_);
+      std::cout << total_steps_ << std::endl;
+      std::cout << *steps << std::endl;
+      std::cout << restore_point_ << std::endl;
     }
     return false;
   }
@@ -180,9 +194,10 @@ class Scheduler {
     auto* sim = TBdmSim::GetBdm();
     auto* grid = sim->GetGrid();
     auto* rm = sim->GetRm();
+    auto* param = sim->GetParam();
 
     grid->Initialize();
-    if (Param::bound_space_) {
+    if (param->bound_space_) {
       rm->ApplyOnAllTypes(bound_space_);
     }
     int lbound = grid->GetDimensionThresholds()[0];

@@ -19,43 +19,6 @@
 
 namespace bdm {
 
-// simulation group
-std::string Param::executable_name_ = "biodynamo_simulation";
-std::string Param::backup_file_ = "";
-std::string Param::restore_file_ = "";
-uint32_t Param::backup_interval_ = 1800;
-double Param::simulation_time_step_ = 0.01;
-double Param::simulation_max_displacement_ = 3.0;
-bool Param::run_mechanical_interactions_ = true;
-bool Param::bound_space_ = false;
-double Param::min_bound_ = 0;
-double Param::max_bound_ = 100;
-bool Param::leaking_edges_ = true;
-bool Param::calculate_gradients_ = true;
-uint64_t Param::total_steps_ = 0;
-Param::NumericalODESolver Param::numerical_ode_solver_ =
-    Param::NumericalODESolver::kEuler;
-
-// visualization group
-bool Param::live_visualization_ = false;
-bool Param::export_visualization_ = false;
-uint32_t Param::visualization_export_interval_ = 1;
-std::unordered_map<std::string, std::set<std::string>>
-    Param::visualize_sim_objects_;
-std::vector<Param::VisualizeDiffusion> Param::visualize_diffusion_;
-
-// development group
-bool Param::show_simulation_step_ = true;
-uint32_t Param::simulation_step_freq_ = 10;
-bool Param::statistics_ = false;
-bool Param::python_catalyst_pipeline_ = false;
-
-// experimental group
-bool Param::use_gpu_ = false;
-bool Param::use_opencl_ = false;
-bool Param::opencl_debug_ = false;
-int Param::preferred_gpu_ = 0;
-
 #define BDM_ASSIGN_CONFIG_VALUE(variable, config_key)                        \
   {                                                                          \
     if (config->contains_qualified(config_key)) {                            \
@@ -185,7 +148,6 @@ void Param::Reset() {
   max_bound_ = 100;
   leaking_edges_ = true;
   calculate_gradients_ = true;
-  total_steps_ = 0;
   numerical_ode_solver_ = NumericalODESolver::kEuler;
 
   // visualization group
