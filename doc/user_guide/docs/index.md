@@ -2,8 +2,10 @@
 
 ## What is BioDynaMo?
 
-The BioDynaMo project aims at a general platform for computer simulations of
-biological tissue dynamics, such as for example brain development. Since these
-scientific investigations require extensive computer resources, this platform
-should be executable on hybrid cloud computing systems, allowing for the efficient
-use of state-of-the-art computing technology.
+BioDynaMo is a platform through which life scientists
+can easily create, run, and visualise three-dimensional
+biological simulations. Built on top of the latest computing
+technologies, the BioDynaMo platform will enable users to
+perform simulations of previously unachievable scale and
+complexity, making it possible to tackle challenging scientific
+research questions.
