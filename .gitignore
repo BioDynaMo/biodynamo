@@ -17,7 +17,7 @@ cx3d-cpp.iml
 .settings/
 
 #----------------- VS Code ------------------
-.vscode/.*
+.vscode/*
 
 #----------------- GNU global ------------------
 GPATH

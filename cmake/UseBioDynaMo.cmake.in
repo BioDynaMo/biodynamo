@@ -12,6 +12,10 @@
 #
 # -----------------------------------------------------------------------------
 
+# Options. Turn on with 'cmake -Dmyvarname=ON'.
+option(cuda "Enable CUDA code generation for GPU acceleration" OFF)
+option(opencl "Build OpenCL code generation for GPU acceleration" OFF)
+
 # This file contains the build setup for simulation projects outside the
 # biodynamo repository
 # Usage:
@@ -53,8 +57,12 @@ else()
 endif()
 find_package(Git)
 find_package(ROOT REQUIRED COMPONENTS Geom Gui)
-find_package(CUDA)
-find_package(OpenCL)
+if(cuda)
+  find_package(CUDA)
+endif()
+if(opencl)
+  find_package(OpenCL)
+endif()
 
 find_package(ParaView 5.3 QUIET OPTIONAL_COMPONENTS vtkPVPythonCatalyst)
 if(${ParaView_FOUND})

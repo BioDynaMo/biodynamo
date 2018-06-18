@@ -8,6 +8,8 @@ set(BDM_VERSION 0.1.0)
 # Options. Turn on with 'cmake -Dmyvarname=ON'.
 option(test "Build all tests." ON) # Makes boolean 'test' available.
 option(demo "Build all demos." ON)
+option(cuda "Enable CUDA code generation for GPU acceleration" OFF)
+option(opencl "Build OpenCL code generation for GPU acceleration" OFF)
 if(APPLE)
    # valgrind currently broken on macOS 10.12
    option(valgrind "Enable valgrind tests and make build compatible with valgrind tool." OFF)
@@ -51,8 +53,12 @@ if (test)
   find_package(Threads REQUIRED)
 endif()
 
-find_package(CUDA)
-find_package(OpenCL)
+if(cuda)
+  find_package(CUDA)
+endif()
+if(opencl)
+  find_package(OpenCL)
+endif()
 find_package(Git)
 find_package(ROOT REQUIRED COMPONENTS Geom Gui)
 
@@ -147,34 +153,49 @@ if(${VTune_FOUND})
   target_link_libraries(biodynamo ${VTUNE_LIBRARIES})
 endif()
 
-# Link to OpenCL
+# Check if OpenCL C++ bindings are installed
 if (OPENCL_FOUND)
   if (NOT OPENCL_HAS_CXX)
-    message(WARNING "OpenCL C++ bindings not found. Please install to make use of OpenCL. "
+    message(FATAL_ERROR "OpenCL C++ bindings not found. Please install to make use of OpenCL. "
       "If you think you have installed the C++ bindings correctly, please check if one "
       "of the following environmentals is set correctly (vendor specific):
       - AMD: \t\tAMDAPPSDKROOT
       - NVIDIA: \tCUDA_PATH
       - INTEL: \tINTELOPENCLSDK")
-    set(OPENCL_FOUND FALSE)
   endif()
 endif()
 
 set(CMAKE_SUPPRESS_DEVELOPER_WARNINGS 1 CACHE BOOL "Suppress cmake development warnings")
 
 if (CUDA_FOUND)
-  add_definitions("-DUSE_CUDA")
-  # Compile CUDA kernels into shared library
-  set(CUDA_HOST_COMPILER "/usr/bin/")
-  # CUDA 8.0 is not compatible with gcc > 5
-  set(NVCCFLAGS="--compiler-bindir ${CUDA_HOST_COMPILER}")
-  # set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -g -G" )
-  set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -std=c++11" )
-  target_link_libraries(biodynamo ${CUDA_LIBRARIES})
-  cuda_include_directories(${CUDA_INCLUDE_DIRS} ${CUDA_TOOLKIT_ROOT_DIR})
-  include_directories(${CUDA_INCLUDE_DIRS} ${CUDA_TOOLKIT_ROOT_DIR})
-  cuda_add_library(bdmcuda ${KERNELS} OPTIONS -arch sm_60)
-  target_link_libraries(biodynamo bdmcuda)
+  # Check if the necessary CUDA headers files are installed on this machine
+  set(EXTRA_CUDA_HEADERS "${CUDA_TOOLKIT_ROOT_DIR}/samples/common/inc/helper_math.h")
+  if(NOT EXISTS ${EXTRA_CUDA_HEADERS})
+    message(FATAL_ERROR "Could not find ${EXTRA_CUDA_HEADERS} "
+                        "Please make sure you installed CUDA correctly")
+  else()
+    add_definitions("-DUSE_CUDA")
+
+    # Detect CUDA architecture and get best NVCC flags
+    if(NOT COMMAND CUDA_SELECT_NVCC_ARCH_FLAGS)
+      INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/cmake/select_compute_arch.cmake)
+    endif()
+    CUDA_SELECT_NVCC_ARCH_FLAGS(NVCC_FLAGS_EXTRA $ENV{TORCH_CUDA_ARCH_LIST})
+    list(APPEND CUDA_NVCC_FLAGS ${NVCC_FLAGS_EXTRA})
+
+    set(CUDA_HOST_COMPILER "/usr/bin/")
+    set(NVCCFLAGS "--compiler-bindir ${CUDA_HOST_COMPILER}")
+    if(CMAKE_BUILD_TYPE MATCHES DEBUG)
+      set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -g -G -O1" )
+    endif()
+    set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -std=c++11")
+
+    target_link_libraries(biodynamo ${CUDA_LIBRARIES})
+    cuda_include_directories(${CUDA_INCLUDE_DIRS} ${CUDA_TOOLKIT_ROOT_DIR})
+    include_directories(${CUDA_INCLUDE_DIRS} ${CUDA_TOOLKIT_ROOT_DIR})
+    cuda_add_library(bdmcuda ${KERNELS})
+    target_link_libraries(biodynamo bdmcuda)
+  endif()
 endif()
 
 # add custom clean target for shared library
