@@ -17,6 +17,7 @@ struct Soa;
 template <typename TBackend = Soa>
 struct CompileTimeParam;
 
+/// only one active simulation at a time...
 template <typename TCTParam = CompileTimeParam<>>
 struct BdmSim {
   using Self = BdmSim<TCTParam>; // TODO remove not needed
@@ -28,10 +29,10 @@ struct BdmSim {
   /// Creation of a new simulation automatically activates it!
   // FIXME move to bdm_imp.h
   BdmSim(TRootIOCtor*) {
-    TRootIoCtorInitializeMembers();
+    //TRootIoCtorInitializeMembers(); FIXME can it be removed?
   }
   BdmSim(int argc, const char** argv);
-  BdmSim(const std::string& executable_name);
+  BdmSim(const std::string& simulation_name);
   ~BdmSim();
 
   BdmSim& operator=(BdmSim&& other);
@@ -47,6 +48,8 @@ struct BdmSim {
   /// Returns a thread local random number generator
   NewRandom* GetRandom();
 
+  std::string GetSimulationId() const;
+
   /// Replaces the scheduler for this simulation.
   /// Existing scheduler will be deleted! Therefore, pointers to the old
   /// scheduler (obtained with `GetScheduler()`) will be invalidated.
@@ -55,6 +58,7 @@ struct BdmSim {
 
  private:
   static BdmSim<TCTParam>* active_;
+  static std::atomic<uint64_t> sim_counter_;
 
   /// random number generator for each thread
   std::vector<NewRandom*> random_;
@@ -63,6 +67,15 @@ struct BdmSim {
   Param* param_ = nullptr;
   Grid<Self>* grid_ = nullptr; //!
   Scheduler<Self>* scheduler_ = nullptr;  //!
+  std::string simulation_name_;
+  /// This id is unique for each simulation within the same process
+  uint64_t id_ = 0; //!
+  /// cached value where `id_` is appended to `simulation_name_` if `id_` is not zero.
+  /// e.g. `simulation_name_ = "my-sim"` and `id_ = 0` -> "my-sim"
+  /// e.g. `simulation_name_ = "my-sim"` and `id_ = 4` -> "my-sim4"
+  std::string simulation_id_; //!
+
+  void Initialize(int argc, const char** argv);
 
   // TODO
   template <typename TResourceManager = ResourceManager<TCTParam>,
@@ -78,12 +91,14 @@ struct BdmSim {
   /// @param path path and filename of the executable
   /// e.g. `executable`, `./executable`, './build/executable'
   /// @return `executable`
-  std::string ExtractExecutableName(const char* path);
+  std::string ExtractSimulationName(const char* path);
 
   /// This function parses command line parameters and the configuration file.
   /// @param argc argument count from main function
   /// @param argv argument vector from main function
   void InitializeRuntimeParams(int argc, const char** argv);
+
+  void InitializeSimulationId(int argc, const char** argv);
 
   ClassDefNV(BdmSim, 1);
 };

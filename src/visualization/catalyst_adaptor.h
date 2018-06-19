@@ -463,7 +463,8 @@ class CatalystAdaptor {
   /// \see GenerateParaviewState
   static void GenerateSimulationInfoJson(
       const std::unordered_map<std::string, Shape>& shapes) {
-    auto* param = TBdmSim::GetBdm()->GetParam();
+    auto* sim = TBdmSim::GetBdm();
+    auto* param = sim->GetParam();
     // simulation objects
     std::stringstream sim_objects;
     uint64_t num_sim_objects = param->visualize_sim_objects_.size();
@@ -517,7 +518,7 @@ class CatalystAdaptor {
     ofstr.open(kSimulationInfoJson);
     ofstr << "{" << std::endl
           << "  \"simulation\": {" << std::endl
-          << "    \"name\":\"" << param->executable_name_ << "\"," << std::endl
+          << "    \"name\":\"" << sim->GetSimulationId() << "\"," << std::endl
           << "    \"result_dir\":\""
           << "."
           << "\"" << std::endl

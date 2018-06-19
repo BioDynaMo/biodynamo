@@ -47,10 +47,6 @@ struct Param {
   static constexpr double kNeuriteMaxLength = 15;
 
   // simulation values ---------------------------------------------------------
-  /// Name of the simulation executable\n
-  /// Default value: biodynamo_simulation\n
-  /// Cannot be changed using the TOML config file
-  std::string executable_name_ = "biodynamo_simulation";
 
   /// Variable which specifies method using for solving differential equation
   /// {"Euler", "RK4"}.
@@ -200,6 +196,7 @@ struct Param {
   ///       # The former block can be repeated for further simulation objects
   ///       [[visualize_sim_object]]
   ///       name = "Neurite"
+  //
   std::unordered_map<std::string, std::set<std::string>>
       visualize_sim_objects_;
 
@@ -298,9 +295,6 @@ struct Param {
   ///     [experimental]
   ///     preferred_gpu = 0
   int preferred_gpu_ = 0;
-
-  /// Resets the variables to its default values
-  void Reset();
 
  private:
   template <typename T>

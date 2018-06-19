@@ -1,6 +1,7 @@
 #ifndef FOO_1_
 #define FOO_1_
 
+#include <sstream>
 #include <cmath>
 #include <omp.h>
 #include "resource_manager.h"
@@ -23,21 +24,14 @@ BdmSim<T>* BdmSim<T>::GetBdm() {
 
 template <typename T>
 BdmSim<T>::BdmSim(int argc, const char** argv) {
-  Activate();
-  param_ = new Param();
-  InitializeRuntimeParams(argc, argv);
-  InitializeMembers();
+  Initialize(argc, argv);
 }
 
 template <typename T>
-BdmSim<T>::BdmSim(const std::string& executable_name) {
-  Activate();
-  param_ = new Param();
-  const char* argv[1] = {executable_name.c_str()};
-  InitializeRuntimeParams(1, argv);
-  InitializeMembers();
+BdmSim<T>::BdmSim(const std::string& simulation_name) {
+  const char* argv[1] = {simulation_name.c_str()};
+  Initialize(1, argv);
 }
-
 
 // TODO rename to restore
 template <typename T>
@@ -112,9 +106,22 @@ template <typename T>
 NewRandom* BdmSim<T>::GetRandom() { return random_[omp_get_thread_num()]; }
 
 template <typename T>
+std::string BdmSim<T>::GetSimulationId() const {
+  return simulation_id_;
+}
+
+template <typename T>
 void BdmSim<T>::ReplaceScheduler(Scheduler<BdmSim<T>>* scheduler) {  // TODO use unique_ptr to make ownership transformation explicit
   delete scheduler_;
   scheduler_ = scheduler;
+}
+
+template <typename T>
+void BdmSim<T>::Initialize(int argc, const char** argv) {
+  Activate();
+  InitializeRuntimeParams(argc, argv);
+  InitializeSimulationId(argc, argv);
+  InitializeMembers();
 }
 
 template <typename T>
@@ -141,6 +148,8 @@ void BdmSim<T>::TRootIoCtorInitializeMembers() {
 
 template <typename T>
 void BdmSim<T>::InitializeRuntimeParams(int argc, const char** argv) {
+  param_ = new Param();
+
   // Removing this line causes an unexplainable segfault due to setting the
   // gErrorIngoreLevel global parameter of ROOT. We need to log at least one
   // thing before setting that parameter.
@@ -154,7 +163,6 @@ void BdmSim<T>::InitializeRuntimeParams(int argc, const char** argv) {
                "and retry this command.");
   }
 
-  param_->executable_name_ = ExtractExecutableName(argv[0]);
   auto options = bdm::DefaultSimulationOptionParser(argc, argv);
   constexpr auto kConfigFile = "bdm.toml";
   constexpr auto kConfigFileParentDir = "../bdm.toml";
@@ -175,9 +183,20 @@ void BdmSim<T>::InitializeRuntimeParams(int argc, const char** argv) {
   }
 }
 
+template <typename T>
+void BdmSim<T>::InitializeSimulationId(int argc, const char** argv) {
+  simulation_name_ = ExtractSimulationName(argv[0]);
+  std::stringstream stream;
+  stream << simulation_name_;
+  if (id_ > 0) {
+    stream << id_;
+  }
+  simulation_id_ = stream.str();
+}
+
 
 template <typename T>
-std::string BdmSim<T>::ExtractExecutableName(const char* path) {
+std::string BdmSim<T>::ExtractSimulationName(const char* path) {
   std::string s(path);
   auto pos = s.find_last_of("/");
   if (pos == std::string::npos) {

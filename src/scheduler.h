@@ -157,14 +157,10 @@ class Scheduler {
                restore_point_ < total_steps_ + *steps) {
       // Restore
       backup_->Restore();
-      std::cout << total_steps_ << std::endl;
       *steps = total_steps_ + *steps - restore_point_;
       total_steps_ = restore_point_;
       auto* param = TBdmSim::GetBdm()->GetParam();
       Log::Info("Scheduler", "Restored simulation from ", param->restore_file_);
-      std::cout << total_steps_ << std::endl;
-      std::cout << *steps << std::endl;
-      std::cout << restore_point_ << std::endl;
     }
     return false;
   }

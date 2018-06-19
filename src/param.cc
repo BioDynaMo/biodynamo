@@ -134,40 +134,4 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
   BDM_ASSIGN_CONFIG_VALUE(preferred_gpu_, "experimental.preferred_gpu");
 }
 
-void Param::Reset() {
-  // simulation group
-  executable_name_ = "biodynamo_simulation";
-  backup_file_ = "";
-  restore_file_ = "";
-  backup_interval_ = 1800;
-  simulation_time_step_ = 0.01;
-  simulation_max_displacement_ = 3.0;
-  run_mechanical_interactions_ = true;
-  bound_space_ = false;
-  min_bound_ = 0;
-  max_bound_ = 100;
-  leaking_edges_ = true;
-  calculate_gradients_ = true;
-  numerical_ode_solver_ = NumericalODESolver::kEuler;
-
-  // visualization group
-  live_visualization_ = false;
-  export_visualization_ = false;
-  visualization_export_interval_ = 1;
-  visualize_sim_objects_.clear();
-  visualize_diffusion_.clear();
-
-  // development group
-  statistics_ = false;
-  python_catalyst_pipeline_ = false;
-  show_simulation_step_ = true;
-  simulation_step_freq_ = 10;
-
-  // experimental group
-  use_gpu_ = false;
-  use_opencl_ = false;
-  opencl_debug_ = false;
-  preferred_gpu_ = 0;
-}
-
 }  // namespace bdm

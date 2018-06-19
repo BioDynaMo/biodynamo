@@ -443,7 +443,6 @@ struct Capsule;
   }                                                                            \
                                                                                \
    Self<Backend>& operator=(Self<Backend>&& rhs) {                                         \
-     std::cout << #class_name " move assignment operator" << std::endl; \
      BDM_SIM_OBJECT_ASSIGNMENT_OP_MOVE_BODY(__VA_ARGS__)                             \
      Base::operator=(std::move(rhs));                                                      \
      return *this;                                                              \

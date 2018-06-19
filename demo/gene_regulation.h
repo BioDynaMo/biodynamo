@@ -74,16 +74,16 @@ inline int Simulate(int argc, const char** argv) {
   ModelInitializer::CreateCells(positions, construct);
 
   // 5. Run simulation
-  simulation.GetScheduler()->Simulate(10);
+  auto* scheduler = simulation.GetScheduler();
+  scheduler->Simulate(10);
 
   // 6. Output concentration values for each gene
   auto* rm = simulation.GetRm();
   auto&& cell = (*(rm->Get<Cell>()))[0];
   const auto* regulate_genes = cell.GetBiologyModules<RegulateGenes>()[0];
   const auto& concentrations = regulate_genes->GetConcentrations();
-  // FIXME
-  // std::cout << "Gene concentrations after " << Param::total_steps_
-  //           << " time steps" << std::endl;
+  std::cout << "Gene concentrations after " << scheduler->GetSimulatedSteps()
+            << " time steps" << std::endl;
   for (double concentration : concentrations) {
     std::cout << concentration << std::endl;
   }

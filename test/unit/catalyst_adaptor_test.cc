@@ -52,7 +52,6 @@ TEST_F(CatalystAdaptorTest, GenerateSimulationInfoJson) {
   param->visualize_sim_objects_["neurite"] = {};
   param->visualize_diffusion_.clear();
   param->visualize_diffusion_.push_back({"sodium", true, true});
-  param->executable_name_ = kSimulationName;
 
   std::unordered_map<std::string, Shape> shapes;
   shapes["cell"] = kSphere;
@@ -69,7 +68,7 @@ TEST_F(CatalystAdaptorTest, GenerateSimulationInfoJson) {
 
   const char* expected = R"STR({
   "simulation": {
-    "name":"MySimulation",
+    "name":"N3bdm51CatalystAdaptorTest_GenerateSimulationInfoJson_TestE",
     "result_dir":"."
   },
   "sim_objects": [
