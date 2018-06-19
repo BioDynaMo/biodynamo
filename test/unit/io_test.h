@@ -43,13 +43,12 @@ class IOTest : public ::testing::Test {
 
  protected:
   virtual void SetUp() {
-    simulation_ = new BdmSim<>(typeid(*this).name());
     remove(kRootFile);
+    simulation_ = new BdmSim<>(typeid(*this).name());
   }
 
   virtual void TearDown() {
     delete simulation_;
-    // remove(kRootFile);
   }
 
   BdmSim<>* simulation_;

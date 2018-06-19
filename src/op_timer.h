@@ -33,7 +33,7 @@ struct OpTimer {
 
   template <typename Container, typename TBdmSim = BdmSim<>>
   void operator()(Container* cells, uint16_t type_idx) {
-    auto* param = TBdmSim::GetBdm()->GetParam();
+    auto* param = TBdmSim::GetActive()->GetParam();
     if (param->statistics_) {
       Timing timer(timer_msg_, &gStatistics);
       operation_(cells, type_idx);

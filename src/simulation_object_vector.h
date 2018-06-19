@@ -27,7 +27,7 @@ template <typename T, typename TBdmSim = BdmSim<>>
 class SimulationObjectVector {
  public:
   SimulationObjectVector() {
-    auto* sim = TBdmSim::GetBdm();
+    auto* sim = TBdmSim::GetActive();
     auto* rm = sim->GetRm();
     data_.resize(rm->NumberOfTypes());
     Initialize();
@@ -41,7 +41,7 @@ class SimulationObjectVector {
   /// elements.
   void Initialize() {
     clear();
-    auto* sim = TBdmSim::GetBdm();
+    auto* sim = TBdmSim::GetActive();
     auto* rm = sim->GetRm();
     rm->ApplyOnAllTypes([&](auto* sim_objects, uint16_t type_idx) {
       data_[type_idx].resize(sim_objects->size());

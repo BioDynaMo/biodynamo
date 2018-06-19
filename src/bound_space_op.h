@@ -48,7 +48,7 @@ class BoundSpace {
     // otherwise some sim_objects would see neighbors with already updated
     // positions
     // which would lead to inconsistencies
-    auto* sim = TBdmSim::GetBdm();
+    auto* sim = TBdmSim::GetActive();
     auto* grid = sim->GetGrid();
     auto* param = sim->GetParam();
 #pragma omp parallel for

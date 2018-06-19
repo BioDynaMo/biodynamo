@@ -118,7 +118,7 @@ class DefaultForce {
     // to avoid a division by 0 if the centers are (almost) at the same
     //  location
     if (center_distance < 0.00000001) {
-      auto* random = TBdmSim::GetBdm()->GetRandom();
+      auto* random = TBdmSim::GetActive()->GetRandom();
       auto force2on1 = random->template UniformArray<3>(-3.0, 3.0);
       *result = force2on1;
       return;
@@ -337,7 +337,7 @@ class DefaultForce {
     // to avoid a division by 0 if the centers are (almost) at the same location
     if (distance_between_centers <
         0.00000001) {  // TODO(neurites) hard coded values
-      auto* random = TBdmSim::GetBdm()->GetRandom();
+      auto* random = TBdmSim::GetActive()->GetRandom();
       auto force2on1 = random->template UniformArray<3>(-3.0, 3.0);
       return std::array<double, 4>{force2on1[0], force2on1[1], force2on1[2],
                                    0.0};

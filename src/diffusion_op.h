@@ -35,7 +35,7 @@ class DiffusionOp {
 
   template <typename TContainer, typename TBdmSim = BdmSim<>>
   void operator()(TContainer* cells, uint16_t type_idx) {
-    auto* sim = TBdmSim::GetBdm();
+    auto* sim = TBdmSim::GetActive();
     auto* grid = sim->GetGrid();
     auto* param = sim->GetParam();
     auto& diffusion_grids = sim->GetRm()->GetDiffusionGrids();

@@ -39,7 +39,7 @@ class DisplacementOpCuda {
   template <typename TContainer>
   typename std::enable_if<is_soa_sphere<TContainer>::value>::type operator()(
       TContainer* cells, uint16_t type_idx) {
-    auto* sim = TBdmSim::GetBdm();
+    auto* sim = TBdmSim::GetActive();
     auto* grid = sim->GetGrid();
     auto* param = sim->GetParam();
 

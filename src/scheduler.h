@@ -41,13 +41,12 @@ class Scheduler {
   using Clock = std::chrono::high_resolution_clock;
 
   Scheduler() {
-    auto* param = TBdmSim::GetBdm()->GetParam();
+    auto* param = TBdmSim::GetActive()->GetParam();
     backup_ = new SimulationBackup(param->backup_file_, param->restore_file_);
     if (backup_->RestoreEnabled()) {
       restore_point_ = backup_->GetSimulationStepsFromBackup();
     }
-    visualization_ = new CatalystAdaptor<>();
-    visualization_->Initialize(BDM_SRC_DIR "/visualization/simple_pipeline.py");
+    visualization_ = new CatalystAdaptor<>(BDM_SRC_DIR "/visualization/simple_pipeline.py");
     if (param->use_gpu_) {
       InitializeGPUEnvironment<>();
     }
@@ -55,9 +54,8 @@ class Scheduler {
 
   virtual ~Scheduler() {
     delete backup_;
-    visualization_->Finalize();
     delete visualization_;
-    auto* param = TBdmSim::GetBdm()->GetParam();
+    auto* param = TBdmSim::GetActive()->GetParam();
     if (param->statistics_) {
       std::cout << gStatistics << std::endl;
     }
@@ -87,7 +85,7 @@ class Scheduler {
   /// Executes one step.
   /// This design makes testing more convenient
   virtual void Execute(bool last_iteration) {
-    auto* sim = TBdmSim::GetBdm();
+    auto* sim = TBdmSim::GetActive();
     auto* rm = sim->GetRm();
     auto* grid = sim->GetGrid();
     auto* param = sim->GetParam();
@@ -135,7 +133,7 @@ class Scheduler {
   void Backup() {
     using std::chrono::seconds;
     using std::chrono::duration_cast;
-    auto* param = TBdmSim::GetBdm()->GetParam();
+    auto* param = TBdmSim::GetActive()->GetParam();
     if (backup_->BackupEnabled() &&
         duration_cast<seconds>(Clock::now() - last_backup_).count() >=
             param->backup_interval_) {
@@ -159,14 +157,14 @@ class Scheduler {
       backup_->Restore();
       *steps = total_steps_ + *steps - restore_point_;
       total_steps_ = restore_point_;
-      auto* param = TBdmSim::GetBdm()->GetParam();
+      auto* param = TBdmSim::GetActive()->GetParam();
       Log::Info("Scheduler", "Restored simulation from ", param->restore_file_);
     }
     return false;
   }
 
   void CommitChangesAndUpdateReferences() {
-    auto* sim = TBdmSim::GetBdm();
+    auto* sim = TBdmSim::GetActive();
     auto* rm = sim->GetRm();
     rm->ApplyOnAllTypesParallel(commit_);
 
@@ -187,7 +185,7 @@ class Scheduler {
   void Initialize() {
     CommitChangesAndUpdateReferences();
 
-    auto* sim = TBdmSim::GetBdm();
+    auto* sim = TBdmSim::GetActive();
     auto* grid = sim->GetGrid();
     auto* rm = sim->GetRm();
     auto* param = sim->GetParam();

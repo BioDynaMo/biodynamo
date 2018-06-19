@@ -37,7 +37,7 @@ class DisplacementOpCpu {
     std::vector<array<double, 3>> sim_object_movements;
     sim_object_movements.reserve(sim_objects->size());
 
-    auto* sim = TBdmSim::GetBdm();
+    auto* sim = TBdmSim::GetActive();
     auto* grid = sim->GetGrid();
 
     auto search_radius = grid->GetLargestObjectSize();

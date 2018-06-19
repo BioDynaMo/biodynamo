@@ -40,7 +40,7 @@ template <typename TBdmSim = BdmSim<>>
 class DisplacementOp {
  public:
   DisplacementOp() {
-    auto* sim = TBdmSim::GetBdm();
+    auto* sim = TBdmSim::GetActive();
     sim->GetRm()->template ApplyOnAllTypes([this](auto* container,
                                                 uint16_t type_idx) {
       using Container = std::remove_pointer_t<decltype(container)>;
@@ -58,7 +58,7 @@ class DisplacementOp {
 
   template <typename TContainer>
   void operator()(TContainer* cells, uint16_t type_idx) {
-    auto* param = TBdmSim::GetBdm()->GetParam();
+    auto* param = TBdmSim::GetActive()->GetParam();
     if (param->use_gpu_ && !force_cpu_implementation_) {
 #ifdef USE_OPENCL
       if (param->use_opencl_) {

@@ -167,7 +167,7 @@ struct ReadContainerFunctor {
       // completed.
       SimulationBackup::after_restore_event_.push_back(
           [=]() {
-            auto* rm = TBdmSim::GetBdm()->GetRm();
+            auto* rm = TBdmSim::GetActive()->GetRm();
             *container = rm->template Get<TSoSimBackend>();
           });
     } else if (state == ContainerPointerState::kSeparate) {
@@ -204,7 +204,7 @@ struct WriteContainerFunctor {
   typename std::enable_if<
       std::is_same<TTBackend, typename TBdmSim::ResourceManager_t::Backend>::value>::type
   operator()(TBuffer& R__b, const TContainer* container, uint64_t) {  // NOLINT
-    auto* rm = TBdmSim::GetBdm()->GetRm();
+    auto* rm = TBdmSim::GetActive()->GetRm();
     if (container == nullptr) {
       // write nullptr
       R__b << ContainerPointerState::kNullPtr;

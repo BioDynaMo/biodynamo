@@ -46,7 +46,7 @@ struct ModelInitializer {
   template <typename Function, typename TBdmSim = BdmSim<>>
   static void Grid3D(size_t cells_per_dim, double space,
                      Function cell_builder) {
-    auto* sim = TBdmSim::GetBdm();
+    auto* sim = TBdmSim::GetActive();
     auto* rm = sim->GetRm();
     // Determine simulation object type which is returned by the cell_builder
     using FunctionReturnType = decltype(cell_builder({0, 0, 0}));
@@ -86,7 +86,7 @@ struct ModelInitializer {
   template <typename Function, typename TBdmSim = BdmSim<>>
   static void Grid3D(const std::array<size_t, 3>& cells_per_dim, double space,
                      Function cell_builder) {
-    auto* sim = TBdmSim::GetBdm();
+    auto* sim = TBdmSim::GetActive();
     auto* rm = sim->GetRm();
     // Determine simulation object type which is returned by the cell_builder
     using FunctionReturnType = decltype(cell_builder({0, 0, 0}));
@@ -117,7 +117,7 @@ struct ModelInitializer {
   template <typename Function, typename TBdmSim = BdmSim<>>
   static void CreateCells(const std::vector<std::array<double, 3>>& positions,
                           Function cell_builder) {
-    auto* sim = TBdmSim::GetBdm();
+    auto* sim = TBdmSim::GetActive();
     auto* rm = sim->GetRm();
     // Determine simulation object type which is returned by the cell_builder
     using FunctionReturnType = decltype(cell_builder({0, 0, 0}));
@@ -146,7 +146,7 @@ struct ModelInitializer {
   template <typename Function, typename TBdmSim = BdmSim<>>
   static void CreateCellsRandom(double min, double max, int num_cells,
                                 Function cell_builder) {
-    auto* sim = TBdmSim::GetBdm();
+    auto* sim = TBdmSim::GetActive();
     auto* rm = sim->GetRm();
     // Determine simulation object type which is returned by the cell_builder
     using FunctionReturnType = decltype(cell_builder({0, 0, 0}));
@@ -182,7 +182,7 @@ struct ModelInitializer {
                               double diffusion_coeff, double decay_constant,
                               int resolution = 10) {
     assert(resolution > 0 && "Resolution needs to be a positive integer value");
-    auto* sim = TBdmSim::GetBdm();
+    auto* sim = TBdmSim::GetActive();
     auto* rm = sim->GetRm();
     DiffusionGrid* d_grid =
         new DiffusionGrid(substance_id, substance_name, diffusion_coeff,
@@ -194,7 +194,7 @@ struct ModelInitializer {
   template <typename TBdmSim = BdmSim<>, typename F>
   static void InitializeSubstance(int substance_id, std::string substance_name,
                                   F function) {
-    auto* sim = TBdmSim::GetBdm();
+    auto* sim = TBdmSim::GetActive();
     auto* rm = sim->GetRm();
     auto diffusion_grid = rm->GetDiffusionGrid(substance_id);
     diffusion_grid->AddInitializer(function);

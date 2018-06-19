@@ -15,12 +15,18 @@
 namespace bdm {
 
 template <typename T>
+std::atomic<uint64_t> BdmSim<T>::sim_counter_;
+
+template <typename T>
 BdmSim<T>* BdmSim<T>::active_ = nullptr;
 
 template <typename T>
-BdmSim<T>* BdmSim<T>::GetBdm() {
+BdmSim<T>* BdmSim<T>::GetActive() {
   return active_;
 }
+
+template <typename T>
+BdmSim<T>::BdmSim(TRootIOCtor*) {}
 
 template <typename T>
 BdmSim<T>::BdmSim(int argc, const char** argv) {
@@ -33,43 +39,38 @@ BdmSim<T>::BdmSim(const std::string& simulation_name) {
   Initialize(1, argv);
 }
 
-// TODO rename to restore
 template <typename T>
-BdmSim<T>& BdmSim<T>::operator=(BdmSim<T>&& other) {
-  // delete rm_;
-  // delete grid_;
-  // delete scheduler_;
-  //
-  // rm_ = other.rm_;
-  // grid_ = other.grid_;
-  // scheduler_ = other.scheduler_;
-  //
-  // other.rm_ = nullptr;
-  // other.grid_ = nullptr;
-  // other.scheduler_ = nullptr;
-  if(random_.size() != other.random_.size()) {
+void BdmSim<T>::Restore(BdmSim<T>&& restored) {
+  // random_
+  if(random_.size() != restored.random_.size()) {
     Log::Warning("BdmSim", "The restore file (",  param_->restore_file_,
     ") was run with a different number of threads. Can't restore complete random number generator state." );
-    uint64_t min = std::min(random_.size(), other.random_.size());
+    uint64_t min = std::min(random_.size(), restored.random_.size());
     for (uint64_t i = 0; i < min; i++) {
-      *(random_[i]) = *(other.random_[i]);
+      *(random_[i]) = *(restored.random_[i]);
     }
   } else {
     for (uint64_t i = 0; i < random_.size(); i++) {
-      *(random_[i]) = *(other.random_[i]);
+      *(random_[i]) = *(restored.random_[i]);
     }
   }
 
-  *param_ = *other.param_;
-  *rm_ = std::move(*other.rm_);
-  // *grid_ = std::move(*other.grid_);
-  // delete grid_;
-  // grid_ = other.grid_;
-  return *this;
+  // param and rm
+  *param_ = *restored.param_;
+  *rm_ = std::move(*restored.rm_);
+
+  // simulation_name_ and simulation_id_
+  InitializeSimulationId(restored.simulation_name_);
 }
 
 template <typename T>
 BdmSim<T>::~BdmSim() {
+  BdmSim<>* tmp = nullptr;
+  if (active_ != this) {
+    tmp = active_;
+  }
+  active_ = this;
+
   delete rm_;
   delete grid_;
   delete scheduler_;
@@ -77,17 +78,12 @@ BdmSim<T>::~BdmSim() {
   for (auto* r : random_) {
     delete r;
   }
-  if (active_ == this) {
-    active_ = nullptr;
-    // FIXME anything else; catalyst adaptor?
-  }
+  active_ = tmp;
 }
 
 template <typename T>
 void BdmSim<T>::Activate() {
   active_ = this;
-  // TODO reset certain components
-  // e.g. CatalystAdaptor
 }
 
 template <typename T>
@@ -103,7 +99,7 @@ template <typename T>
 Scheduler<BdmSim<T>>* BdmSim<T>::GetScheduler() { return scheduler_; }
 
 template <typename T>
-NewRandom* BdmSim<T>::GetRandom() { return random_[omp_get_thread_num()]; }
+Random* BdmSim<T>::GetRandom() { return random_[omp_get_thread_num()]; }
 
 template <typename T>
 std::string BdmSim<T>::GetSimulationId() const {
@@ -118,9 +114,10 @@ void BdmSim<T>::ReplaceScheduler(Scheduler<BdmSim<T>>* scheduler) {  // TODO use
 
 template <typename T>
 void BdmSim<T>::Initialize(int argc, const char** argv) {
+  id_ = sim_counter_++;
   Activate();
   InitializeRuntimeParams(argc, argv);
-  InitializeSimulationId(argc, argv);
+  InitializeSimulationId(ExtractSimulationName(argv[0]));
   InitializeMembers();
 }
 
@@ -131,19 +128,11 @@ template <typename TResourceManager,
 void BdmSim<T>::InitializeMembers() {
   random_.resize(omp_get_max_threads());
   for (uint64_t i = 0; i < random_.size(); i++) {
-    random_[i] = new NewRandom();
+    random_[i] = new Random();
   }
   rm_ = new TResourceManager();
   grid_ = new TGrid();
   scheduler_ = new TScheduler();
-}
-
-// TODO not needed -> remove
-template <typename T>
-template <typename TGrid,
-          typename TScheduler>
-void BdmSim<T>::TRootIoCtorInitializeMembers() {
-  grid_ = new TGrid();
 }
 
 template <typename T>
@@ -184,8 +173,8 @@ void BdmSim<T>::InitializeRuntimeParams(int argc, const char** argv) {
 }
 
 template <typename T>
-void BdmSim<T>::InitializeSimulationId(int argc, const char** argv) {
-  simulation_name_ = ExtractSimulationName(argv[0]);
+void BdmSim<T>::InitializeSimulationId(const std::string& simulation_name) {
+  simulation_name_ = simulation_name;
   std::stringstream stream;
   stream << simulation_name_;
   if (id_ > 0) {

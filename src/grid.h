@@ -151,7 +151,7 @@ class Grid {
 
     template <typename TGrid = Grid<TBdmSim>>
     Iterator begin() const {  // NOLINT
-      return Iterator(TBdmSim::GetBdm()->GetGrid(), this);
+      return Iterator(TBdmSim::GetActive()->GetGrid(), this);
     }
   };
 
@@ -313,7 +313,7 @@ class Grid {
     successors_.Initialize();
 
     // Assign simulation objects to boxes
-    auto* rm = TBdmSim::GetBdm()->GetRm();
+    auto* rm = TBdmSim::GetActive()->GetRm();
     rm->ApplyOnAllElementsParallel([this](auto&& sim_object, SoHandle id) {
       const auto& position = sim_object.GetPosition();
       auto idx = this->GetBoxIndex(position);
@@ -347,7 +347,7 @@ class Grid {
   /// Calculates what the grid dimensions need to be in order to contain all the
   /// simulation objects
   void CalculateGridDimensions(array<double, 6>* ret_grid_dimensions) {
-    auto* rm = TBdmSim::GetBdm()->GetRm();
+    auto* rm = TBdmSim::GetActive()->GetRm();
 
     const auto max_threads = omp_get_max_threads();
 
@@ -497,7 +497,7 @@ class Grid {
     GetMooreBoxes(&neighbor_boxes, idx);
 
     NeighborIterator ni(neighbor_boxes);
-    auto* rm = TBdmSim::GetBdm()->GetRm();
+    auto* rm = TBdmSim::GetActive()->GetRm();
     while (!ni.IsAtEnd()) {
       // Do something with neighbor object
       SoHandle neighbor_handle = *ni;
@@ -544,7 +544,7 @@ class Grid {
   void ForEachNeighborPairWithinRadius(const TLambda& lambda,
                                        double squared_radius) const {
     uint32_t z_start = 0, y_start = 0;
-    auto* rm = TBdmSim::GetBdm()->GetRm();
+    auto* rm = TBdmSim::GetActive()->GetRm();
     // use special iteration pattern to avoid race conditions between neighbors
     // main iteration will be done over rows of boxes. In order to avoid two
     // threads accessing the same box, one has to use a margin reagion of two

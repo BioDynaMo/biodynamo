@@ -330,7 +330,7 @@ class ParaviewExporter : public Exporter<TContainer> {
   /// This .pvd can be read by Paraview for visualization.
   void ExportSummary(string filename, uint64_t num_iterations) override {
     std::ofstream pvd(filename + ".pvd");
-    auto* param = TBdmSim::GetBdm()->GetParam();
+    auto* param = TBdmSim::GetActive()->GetParam();
 
     pvd << "<?xml version=\"1.0\"?>" << endl;
     pvd << "<VTKFile type=\"Collection\" version=\"0.1\" "

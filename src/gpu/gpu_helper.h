@@ -49,7 +49,7 @@ static const char* GetErrorString(cl_int error);
 #ifdef USE_CUDA
 template <typename TBdmSim = BdmSim<>>
 static void FindGpuDevicesCuda() {
-  auto* param = TBdmSim::GetBdm()->GetParam();
+  auto* param = TBdmSim::GetActive()->GetParam();
 
   int n_devices = 0;
 
@@ -81,7 +81,7 @@ static void FindGpuDevicesCuda() {
 #ifdef USE_OPENCL
 template <typename TBdmSim = BdmSim<>>
 static void CompileOpenCLKernels() {
-  auto* sim = TBdmSim::GetBdm();
+  auto* sim = TBdmSim::GetActive();
   auto* rm = sim->GetRm();
   auto* param = sim->GetParam();
 
@@ -131,7 +131,7 @@ static void FindGpuDevicesOpenCL() {
   try {
     // We keep the context and device list in the resource manager to be
     // accessible elsewhere to create command queues and buffers from
-    auto* sim = TBdmSim::GetBdm();
+    auto* sim = TBdmSim::GetActive();
     auto* rm = sim->GetRm();
     auto* param = sim->GetParam();
 
@@ -210,7 +210,7 @@ static void FindGpuDevicesOpenCL() {
 
 template <typename TBdmSim = BdmSim<>>
 static void InitializeGPUEnvironment() {
-  auto* param = TBdmSim::GetBdm()->GetParam();
+  auto* param = TBdmSim::GetActive()->GetParam();
   if (param->use_opencl_) {
 #ifdef USE_OPENCL
     FindGpuDevicesOpenCL<>();

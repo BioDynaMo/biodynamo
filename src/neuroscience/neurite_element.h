@@ -243,7 +243,7 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
   /// new_index)
   void UpdateReferences(
       const std::vector<std::unordered_map<uint32_t, uint32_t>>& update_info) {
-    auto* rm = BdmSim_t::GetBdm()->GetRm();
+    auto* rm = BdmSim_t::GetActive()->GetRm();
 
     int neurite_type_idx = rm->template GetTypeIndex<MostDerivedScalar>();
     const auto& neurite_updates = update_info[neurite_type_idx];
@@ -359,7 +359,7 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
       return;
     }
     // scaling for integration step
-    auto* param = BdmSim_t::GetBdm()->GetParam();
+    auto* param = BdmSim_t::GetActive()->GetParam();
     speed *= param->simulation_time_step_;
 
     if (actual_length_[kIdx] > speed + 0.1) {
@@ -455,7 +455,7 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
   /// daughter right at the proximal half.
   /// @param diameter of the side branch
   MostDerivedSoPtr Branch(double diameter) {
-    auto* random = BdmSim_t::GetBdm()->GetRandom();
+    auto* random = BdmSim_t::GetActive()->GetRandom();
     auto rand_noise = random->template UniformArray<3>(-0.1, 0.1);
     auto growth_direction =
         Math::Perp3(Math::Add(GetUnitaryAxisDirectionVector(), rand_noise),
@@ -467,7 +467,7 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
   /// Makes a side branch, i.e. splits this neurite element into two and puts a
   /// daughter right at the proximal half.
   MostDerivedSoPtr Branch() {
-    auto* random = BdmSim_t::GetBdm()->GetRandom();
+    auto* random = BdmSim_t::GetActive()->GetRandom();
     double branch_diameter = diameter_[kIdx];
     auto rand_noise = random->template UniformArray<3>(-0.1, 0.1);
     auto growth_direction =
@@ -514,7 +514,7 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
       Fatal("NeuriteElements",
             "Bifurcation only allowed on a terminal neurite element");
     }
-    auto* rm = BdmSim_t::GetBdm()->GetRm();
+    auto* rm = BdmSim_t::GetActive()->GetRm();
     auto new_branch_l = rm->template New<MostDerivedScalar>();
     auto new_branch_r = rm->template New<MostDerivedScalar>();
     new_branch_l.Copy(*static_cast<MostDerived<Backend>*>(this));
@@ -607,7 +607,7 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
     // diameters :
     double d = diameter_[kIdx];
     // direction : (60 degrees between branches)
-    auto* random = BdmSim_t::GetBdm()->GetRandom();
+    auto* random = BdmSim_t::GetActive()->GetRandom();
     double random_val = random->Uniform(0, 1);
     auto perp_plane = Math::Perp3(spring_axis_[kIdx], random_val);
     double angle_between_branches = Math::kPi / 3.0;
@@ -726,7 +726,7 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
     }
 
     // scaling for integration step
-    auto* param = BdmSim_t::GetBdm()->GetParam();
+    auto* param = BdmSim_t::GetActive()->GetParam();
     double length = speed * param->simulation_time_step_;
     auto displacement = Math::ScalarMult(length, Math::Normalize(direction));
     auto new_mass_location = Math::Add(displacement, mass_location_[kIdx]);
@@ -761,7 +761,7 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
   /// @param speed cubic micron/ h
   void ChangeVolume(double speed) {
     // scaling for integration step
-    auto* param = BdmSim_t::GetBdm()->GetParam();
+    auto* param = BdmSim_t::GetActive()->GetParam();
     double delta = speed * param->simulation_time_step_;
     volume_[kIdx] += delta;
 
@@ -776,7 +776,7 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
   /// @param speed micron/ h
   void ChangeDiameter(double speed) {
     // scaling for integration step
-    auto* param = BdmSim_t::GetBdm()->GetParam();
+    auto* param = BdmSim_t::GetActive()->GetParam();
     double delta = speed * param->simulation_time_step_;
     diameter_[kIdx] += delta;
     UpdateVolume();
@@ -942,7 +942,7 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
     double displacement_norm = force_norm * h_over_m;
 
     //  6.4) There is an upper bound for the movement.
-    auto* param = BdmSim_t::GetBdm()->GetParam();
+    auto* param = BdmSim_t::GetActive()->GetParam();
     if (displacement_norm > param->simulation_max_displacement_) {
       displacement = Math::ScalarMult(
           param->simulation_max_displacement_ / displacement_norm,
@@ -994,7 +994,7 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
       // If new x_axis_ and old y_axis_ are aligned, we cannot use this scheme;
       // we start by re-defining new perp vectors. Ok, we loose the previous
       // info, but this should almost never happen....
-      auto* random = BdmSim_t::GetBdm()->GetRandom();
+      auto* random = BdmSim_t::GetActive()->GetRandom();
       z_axis_[kIdx] = Math::Perp3(x_axis_[kIdx], random->Uniform(0, 1));
     } else {
       z_axis_[kIdx] = Math::ScalarMult((1 / norm_of_z), z_axis_[kIdx]);
@@ -1411,7 +1411,7 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
   /// @param distal_portion the fraction of the total old length devoted to the
   /// distal half (should be between 0 and 1).
   MostDerivedSoPtr InsertProximalNeuriteElement(double distal_portion) {
-    auto* rm = BdmSim_t::GetBdm()->GetRm();
+    auto* rm = BdmSim_t::GetActive()->GetRm();
     auto new_neurite_element = rm->template New<MostDerivedScalar>();
 
     // TODO(neurites) reformulate to mass_location_
@@ -1486,7 +1486,7 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
 
   MostDerivedSoPtr ExtendSideNeuriteElement(
       double length, const std::array<double, 3>& direction) {
-    auto* rm = BdmSim_t::GetBdm()->GetRm();
+    auto* rm = BdmSim_t::GetActive()->GetRm();
     auto new_branch = rm->template New<MostDerivedScalar>();
     new_branch.Copy(*static_cast<MostDerived<Backend>*>(this));
 

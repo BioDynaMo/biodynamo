@@ -367,13 +367,13 @@ struct Capsule;
   using BdmSim_t = BdmSim<typename TCompileTimeParam::template Self<Soa>>; \
   \
   MostDerivedSoPtr GetSoPtr() {                                                \
-    auto* rm = BdmSim_t::GetBdm()->GetRm(); \
+    auto* rm = BdmSim_t::GetActive()->GetRm(); \
     auto* container = rm->template Get<MostDerivedScalar>();                 \
     return MostDerivedSoPtr(container, Base::GetElementIdx());                 \
   }                                                                            \
                                                                                \
   void RemoveFromSimulation() {                                                \
-    auto* rm = BdmSim_t::GetBdm()->GetRm(); \
+    auto* rm = BdmSim_t::GetActive()->GetRm(); \
     auto container = rm->template Get<MostDerivedScalar>();                  \
     container->DelayedRemove(Base::GetElementIdx());                           \
   }                                                                            \

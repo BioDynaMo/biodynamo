@@ -63,6 +63,62 @@ namespace bdm {
 template <typename TBdmSim = BdmSim<>>
 class CatalystAdaptor {
  public:
+   /// Initializes Catalyst with the predefined pipeline and allocates memory
+   /// for the VTK grid structures
+   ///
+   /// @param[in]  script  The Python script that contains the pipeline
+   ///
+   CatalystAdaptor(const std::string& script) {
+     auto* param = TBdmSim::GetActive()->GetParam();
+     if (param->live_visualization_ || param->export_visualization_) {
+       if (g_processor_ == nullptr) {
+         g_processor_ = vtkCPProcessor::New();
+         g_processor_->Initialize();
+
+         auto* rm = TBdmSim::GetActive()->GetRm();
+         so_is_initialized_.resize(rm->NumberOfTypes());
+         dg_is_initialized_.resize(rm->GetDiffusionGrids().size());
+       } else {
+         g_processor_->RemoveAllPipelines();
+       }
+
+       if (param->python_catalyst_pipeline_) {
+         vtkNew<vtkCPPythonScriptPipeline> pipeline;
+         pipeline->Initialize(script.c_str());
+         g_processor_->AddPipeline(pipeline.GetPointer());
+       } else {
+        //  pipeline_ = new InSituPipeline();
+        //  g_processor_->AddPipeline(pipeline_);
+       }
+     }
+     std::cout << "constructed " << this << std::endl;
+   }
+
+   ~CatalystAdaptor() {
+     std::cout << "destructing " << this << std::endl;
+     auto* param = TBdmSim::GetActive()->GetParam();
+     if (g_processor_) {
+       g_processor_->Finalize();
+       g_processor_->Delete();
+       g_processor_ = nullptr;
+     }
+     if(pipeline_) {
+       delete pipeline_;
+       pipeline_ = nullptr;
+     }
+     for (auto sog : vtk_so_grids_) {
+       sog->Delete();
+       sog = nullptr;
+     }
+     for (auto dg : vtk_dgrids_) {
+       dg->Delete();
+       dg = nullptr;
+     }
+     if (param->export_visualization_ && sim_info_json_generated_) {
+       GenerateParaviewState();
+     }
+   }
+
   /// Sets the properties of the diffusion VTK grid structures
   ///
   /// @param      dg    The diffusion grid
@@ -179,7 +235,7 @@ class CatalystAdaptor {
     sim_objects->ForEachDataMemberIn(
         required_dm, AddCellAttributeData(type_idx, num_cells, &vtk_so_grids_));
 
-    auto* param = TBdmSim::GetBdm()->GetParam();
+    auto* param = TBdmSim::GetActive()->GetParam();
     auto& additional_dm = param->visualize_sim_objects_[scalar_name];
     if (!additional_dm.empty()) {
       sim_objects->ForEachDataMemberIn(
@@ -209,71 +265,16 @@ class CatalystAdaptor {
       vtkNew<vtkDoubleArray> concentration_array;
       concentration_array->SetName("Substance Concentration");
       auto co_ptr = dg->GetAllConcentrations();
-      concentration_array->SetArray(co_ptr, static_cast<vtkIdType>(total_boxes),
-                                    1);
-      vtk_dgrids_[idx]->GetPointData()->AddArray(
-          concentration_array.GetPointer());
+      concentration_array->SetArray(co_ptr, static_cast<vtkIdType>(total_boxes), 1);
+      vtk_dgrids_[idx]->GetPointData()->AddArray(concentration_array.GetPointer());
     }
     if (vd.gradient_) {
       vtkNew<vtkDoubleArray> gradient_array;
       gradient_array->SetName("Diffusion Gradient");
       gradient_array->SetNumberOfComponents(3);
       auto gr_ptr = dg->GetAllGradients();
-      gradient_array->SetArray(gr_ptr, static_cast<vtkIdType>(total_boxes * 3),
-                               1);
+      gradient_array->SetArray(gr_ptr, static_cast<vtkIdType>(total_boxes * 3), 1);
       vtk_dgrids_[idx]->GetPointData()->AddArray(gradient_array.GetPointer());
-    }
-  }
-
-  /// Initializes Catalyst with the predefined pipeline and allocates memory
-  /// for the VTK grid structures
-  ///
-  /// @param[in]  script  The Python script that contains the pipeline
-  ///
-  inline void Initialize(const std::string& script) {
-    auto* param = TBdmSim::GetBdm()->GetParam();
-    if (param->live_visualization_ || param->export_visualization_) {
-      if (g_processor_ == nullptr) {
-        g_processor_ = vtkCPProcessor::New();
-        g_processor_->Initialize();
-
-        auto* rm = TBdmSim::GetBdm()->GetRm();
-        so_is_initialized_.resize(rm->NumberOfTypes());
-        dg_is_initialized_.resize(rm->GetDiffusionGrids().size());
-      } else {
-        g_processor_->RemoveAllPipelines();
-      }
-
-      if (param->python_catalyst_pipeline_) {
-        vtkNew<vtkCPPythonScriptPipeline> pipeline;
-        pipeline->Initialize(script.c_str());
-        g_processor_->AddPipeline(pipeline.GetPointer());
-      } else {
-        pipeline_ = new InSituPipeline();
-        g_processor_->AddPipeline(pipeline_);
-      }
-    }
-  }
-
-  /// Cleans up allocated memory
-  inline void Finalize() {
-    auto* param = TBdmSim::GetBdm()->GetParam();
-    if (param->live_visualization_ || param->export_visualization_) {
-      if (g_processor_) {
-        g_processor_->Delete();
-        g_processor_ = nullptr;
-      }
-      for (auto sog : vtk_so_grids_) {
-        sog->Delete();
-        sog = nullptr;
-      }
-      for (auto dg : vtk_dgrids_) {
-        dg->Delete();
-        dg = nullptr;
-      }
-      if (param->export_visualization_) {
-        GenerateParaviewState();
-      }
     }
   }
 
@@ -295,7 +296,7 @@ class CatalystAdaptor {
       counter++;
     }
 
-    auto* rm = TBdmSim::GetBdm()->GetRm();
+    auto* rm = TBdmSim::GetActive()->GetRm();
     auto& dgrids = rm->GetDiffusionGrids();
 
     size_t idx = 0;
@@ -321,7 +322,7 @@ class CatalystAdaptor {
   CreateVtkObjects(
       vtkNew<vtkCPDataDescription>& data_description) {  // NOLINT
     // Add simulation objects to the visualization if requested
-    auto* sim = TBdmSim::GetBdm();
+    auto* sim = TBdmSim::GetActive();
     auto* rm = sim->GetRm();
     auto* param = sim->GetParam();
     rm->ApplyOnAllTypes([&, this](auto* sim_objects, uint16_t type_idx) {
@@ -375,7 +376,7 @@ class CatalystAdaptor {
 
   /// Visualize one timestep based on the configuration in `Param`
   void Visualize(uint64_t total_steps, bool last_iteration) {
-    auto* param = TBdmSim::GetBdm()->GetParam();
+    auto* param = TBdmSim::GetActive()->GetParam();
     if (param->live_visualization_) {
       double time = param->simulation_time_step_ * total_steps;
       CoProcess(time, total_steps, last_iteration);
@@ -433,7 +434,7 @@ class CatalystAdaptor {
       data_description->ForceOutputOn();
     }
 
-    auto* param = TBdmSim::GetBdm()->GetParam();
+    auto* param = TBdmSim::GetActive()->GetParam();
     if (step % param->visualization_export_interval_ == 0) {
       WriteToFile(step);
     }
@@ -463,7 +464,7 @@ class CatalystAdaptor {
   /// \see GenerateParaviewState
   static void GenerateSimulationInfoJson(
       const std::unordered_map<std::string, Shape>& shapes) {
-    auto* sim = TBdmSim::GetBdm();
+    auto* sim = TBdmSim::GetActive();
     auto* param = sim->GetParam();
     // simulation objects
     std::stringstream sim_objects;
@@ -555,13 +556,8 @@ class CatalystAdaptor {
 template <typename TBdmSim = BdmSim<>>
 class CatalystAdaptor {
  public:
-  static CatalystAdaptor* GetInstance() {
-    static CatalystAdaptor kInstance;
-    return &kInstance;
-  }
-
-  void Initialize(const std::string& script) {
-    auto* param = TBdmSim::GetBdm()->GetParam();
+  CatalystAdaptor(const std::string& script) {
+    auto* param = TBdmSim::GetActive()->GetParam();
     if (param->live_visualization_ || param->export_visualization_) {
       Log::Fatal("CatalystAdaptor::Initialize",
                 "Simulation was compiled without ParaView support, but you are "
@@ -569,17 +565,8 @@ class CatalystAdaptor {
     }
   }
 
-  void Finalize() {
-    auto* param = TBdmSim::GetBdm()->GetParam();
-    if (param->live_visualization_ || param->export_visualization_) {
-      Log::Fatal("CatalystAdaptor::Finalize",
-                "Simulation was compiled without ParaView support, but you are "
-                "trying to use it.");
-    }
-  }
-
   void Visualize(uint64_t, bool) {
-    auto* param = TBdmSim::GetBdm()->GetParam();
+    auto* param = TBdmSim::GetActive()->GetParam();
     if (param->live_visualization_ || param->export_visualization_) {
       Log::Fatal("CatalystAdaptor::Visualize",
                 "Simulation was compiled without ParaView support, but you are "
@@ -588,7 +575,7 @@ class CatalystAdaptor {
   }
 
   void CoProcess(double time, size_t time_step, bool last_time_step) {
-    auto* param = TBdmSim::GetBdm()->GetParam();
+    auto* param = TBdmSim::GetActive()->GetParam();
     if (param->live_visualization_ || param->export_visualization_) {
       Log::Fatal("CatalystAdaptor::CoProcess",
                 "Simulation was compiled without ParaView support, but you are "
@@ -597,7 +584,7 @@ class CatalystAdaptor {
   }
 
   void ExportVisualization(double step, size_t time_step, bool last_time_step) {
-    auto* param = TBdmSim::GetBdm()->GetParam();
+    auto* param = TBdmSim::GetActive()->GetParam();
     if (param->live_visualization_ || param->export_visualization_) {
       Log::Fatal("CatalystAdaptor::ExportVisualization",
                 "Simulation was compiled without ParaView support, but you are "

@@ -63,7 +63,7 @@ class SimulationBackup {
     // Backup
     {
       TFileRaii f(tmp_file.str(), "UPDATE");
-      auto* simulation = TBdmSim::GetBdm();
+      auto* simulation = TBdmSim::GetActive();
       f.Get()->WriteObject(simulation, kBdmSimName.c_str());
       IntegralTypeWrapper<size_t> wrapper(completed_simulation_steps);
       f.Get()->WriteObject(&wrapper, kSimulationStepName.c_str());
@@ -96,7 +96,7 @@ class SimulationBackup {
     }
     TBdmSim* restored_simulation = nullptr;
     file.Get()->GetObject(kBdmSimName.c_str(), restored_simulation);
-    *TBdmSim::GetBdm() = std::move(*restored_simulation);
+    TBdmSim::GetActive()->Restore(std::move(*restored_simulation));
 
     // call all after restore events
     for (auto&& event : after_restore_event_) {

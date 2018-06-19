@@ -59,7 +59,7 @@ struct RegulateGenes : public BaseBiologyModule {
   /// methods for solving ODE.
   template <typename T, typename TBdmSim = BdmSim<>>
   void Run(T* cell) {
-    auto* sim = TBdmSim::GetBdm();
+    auto* sim = TBdmSim::GetActive();
     auto* param = sim->GetParam();
     auto* scheduler = sim->GetScheduler();
 
