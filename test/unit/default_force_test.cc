@@ -77,6 +77,9 @@ TEST(DefaultForce, AllNonOverlappingSphere) {
 /// Tests the special case that neighbor and reference cell
 /// are at the same position -> should return random force
 TEST(DefaultForce, AllAtSamePositionSphere) {
+  // simulation object required for random number generator
+  BdmSim<> simulation(typeid(*this).name());
+
   Cell cell({0, 0, 0});
   cell.SetDiameter(8);
   Cell nb({0, 0, 0});
@@ -149,6 +152,9 @@ TEST(DISABLED_DefaultForce, GeneralCylinder) {
 }
 
 TEST(DefaultForce, CylinderIntersectingAxis) {
+  // simulation object required for random number generator
+  BdmSim<> simulation(typeid(*this).name());
+  
   NeuriteElement cylinder1;
   cylinder1.SetMassLocation({0, 0, 0});
   cylinder1.SetSpringAxis({-5, 0, 0});  // -> proximal end = {5, 0, 0}

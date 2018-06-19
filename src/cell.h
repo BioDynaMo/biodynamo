@@ -94,7 +94,7 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
   /// random.
   MostDerivedSoPtr Divide() {
     auto* random = BdmSim_t::GetBdm()->GetRandom();
-    return ThisMD()->Divide(0.9 + 0.2 * random->Uniform(0, 1));
+    return ThisMD()->Divide(random->Uniform(0.9, 1.1));
   }
 
   /// Divide the cell. Of the two daughter cells, one is this one
@@ -118,7 +118,7 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
     auto* random = BdmSim_t::GetBdm()->GetRandom();
     auto polarcoord =
         TransformCoordinatesGlobalToPolar(Math::Add(axis, position_[kIdx]));
-    return ThisMD()->Divide(0.9 + 0.2 * random->Uniform(0, 1), polarcoord[1],
+    return ThisMD()->Divide(random->Uniform(0.9, 1.1), polarcoord[1],
                             polarcoord[2]);
   }
 

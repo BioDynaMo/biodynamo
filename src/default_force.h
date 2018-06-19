@@ -119,7 +119,7 @@ class DefaultForce {
     //  location
     if (center_distance < 0.00000001) {
       auto* random = TBdmSim::GetBdm()->GetRandom();
-      auto force2on1 = gRandom.NextNoise(3.0);
+      auto force2on1 = random->template UniformArray<3>(-3.0, 3.0);
       *result = force2on1;
       return;
     }
@@ -338,7 +338,7 @@ class DefaultForce {
     if (distance_between_centers <
         0.00000001) {  // TODO(neurites) hard coded values
       auto* random = TBdmSim::GetBdm()->GetRandom();
-      auto force2on1 = gRandom.NextNoise(3.0);
+      auto force2on1 = random->template UniformArray<3>(-3.0, 3.0);
       return std::array<double, 4>{force2on1[0], force2on1[1], force2on1[2],
                                    0.0};
     } else {

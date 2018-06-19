@@ -19,8 +19,29 @@
 
 namespace bdm {
 
+NewRandom::NewRandom() {}
+
+NewRandom& NewRandom::operator=(const NewRandom& other) {
+  generator_ = other.generator_;
+  return *this;
+}
+
+double NewRandom::Uniform(double max) { return generator_.Uniform(max); }
+double NewRandom::Uniform(double min, double max) {
+  return generator_.Uniform(min, max);
+}
+
+double NewRandom::Gaus(double mean, double sigma) {
+  return generator_.Gaus(mean, sigma);
+}
+
+void NewRandom::SetSeed(double seed) { generator_.SetSeed(seed); }
+double NewRandom::GetSeed() const { return generator_.GetSeed(); }
+
+
+// -----------------------------------------------------------------------------
+
 thread_local Random gRandom;
-thread_local TRandom3 gTRandom;
 
 void Random::SetSeed(int64_t seed) {
   seed_ = (seed ^ 25214903917L) & 281474976710655L;

@@ -58,6 +58,7 @@ inline void RunTest(bool* result, ExecutionMode mode) {
   auto cells = rm->template Get<Cell>();
 
   switch(mode) {
+    case kCpu: break;
     case kOpenCl: param->use_opencl_ = true;
     case kCuda: param->use_gpu_ = true;
   }

@@ -3,7 +3,7 @@
 
 #include <string>
 #include <Rtypes.h>
-#include <TRandom3.h>
+#include "random.h"
 
 namespace bdm {
 
@@ -45,7 +45,7 @@ struct BdmSim {
   Scheduler<Self>* GetScheduler();
 
   /// Returns a thread local random number generator
-  TRandom3* GetRandom();
+  NewRandom* GetRandom();
 
   /// Replaces the scheduler for this simulation.
   /// Existing scheduler will be deleted! Therefore, pointers to the old
@@ -57,7 +57,7 @@ struct BdmSim {
   static BdmSim<TCTParam>* active_;
 
   /// random number generator for each thread
-  std::vector<TRandom3*> random_;
+  std::vector<NewRandom*> random_;
 
   ResourceManager<TCTParam>* rm_ = nullptr;
   Param* param_ = nullptr;

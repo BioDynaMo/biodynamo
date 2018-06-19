@@ -109,7 +109,7 @@ template <typename T>
 Scheduler<BdmSim<T>>* BdmSim<T>::GetScheduler() { return scheduler_; }
 
 template <typename T>
-TRandom3* BdmSim<T>::GetRandom() { return random_[omp_get_thread_num()]; }
+NewRandom* BdmSim<T>::GetRandom() { return random_[omp_get_thread_num()]; }
 
 template <typename T>
 void BdmSim<T>::ReplaceScheduler(Scheduler<BdmSim<T>>* scheduler) {  // TODO use unique_ptr to make ownership transformation explicit
@@ -124,7 +124,7 @@ template <typename TResourceManager,
 void BdmSim<T>::InitializeMembers() {
   random_.resize(omp_get_max_threads());
   for (uint64_t i = 0; i < random_.size(); i++) {
-    random_[i] = new TRandom3();
+    random_[i] = new NewRandom();
   }
   rm_ = new TResourceManager();
   grid_ = new TGrid();

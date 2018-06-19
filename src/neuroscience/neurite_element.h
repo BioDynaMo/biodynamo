@@ -456,7 +456,7 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
   /// @param diameter of the side branch
   MostDerivedSoPtr Branch(double diameter) {
     auto* random = BdmSim_t::GetBdm()->GetRandom();
-    auto rand_noise = gRandom.NextNoise(0.1);
+    auto rand_noise = random->template UniformArray<3>(-0.1, 0.1);
     auto growth_direction =
         Math::Perp3(Math::Add(GetUnitaryAxisDirectionVector(), rand_noise),
                     random->Uniform(0, 1));
@@ -469,7 +469,7 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
   MostDerivedSoPtr Branch() {
     auto* random = BdmSim_t::GetBdm()->GetRandom();
     double branch_diameter = diameter_[kIdx];
-    auto rand_noise = gRandom.NextNoise(0.1);
+    auto rand_noise = random->template UniformArray<3>(-0.1, 0.1);
     auto growth_direction =
         Math::Perp3(Math::Add(GetUnitaryAxisDirectionVector(), rand_noise),
                     random->Uniform(0, 1));

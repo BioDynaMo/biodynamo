@@ -19,8 +19,49 @@
 #include <cstdio>
 
 #include <TRandom3.h>
+#include <Rtypes.h>
 
 namespace bdm {
+
+/// Decorator for TRandom3
+class NewRandom {
+ public:
+  NewRandom();
+  NewRandom& operator=(const NewRandom& other);
+
+  double Uniform(double max = 1.0);
+  double Uniform(double min, double max = 1.0);
+
+  template <uint64_t N>
+  std::array<double, N> UniformArray(double max = 1.0) {
+    std::array<double, N> ret;
+    for (uint64_t i = 0; i < N; i++) {
+      ret[i] = Uniform(0, max);
+    }
+    return ret;
+  }
+
+  template <uint64_t N>
+  std::array<double, N> UniformArray(double min, double max = 1.0) {
+    std::array<double, N> ret;
+    for (uint64_t i = 0; i < N; i++) {
+      ret[i] = Uniform(min, max);
+    }
+    return ret;
+  }
+
+  double Gaus(double mean = 0.0, double sigma = 1.0);
+
+  void SetSeed(double seed);
+  double GetSeed() const;
+
+ private:
+  TRandom3 generator_;
+  ClassDefNV(NewRandom, 1);
+};
+
+// -----------------------------------------------------------------------------
+
 
 /// C++ implementation of the Java default random number generator
 /// (java.util.Random)
@@ -64,7 +105,9 @@ class Random {
 };
 
 extern thread_local Random gRandom;
-extern thread_local TRandom3 gTRandom;
+
+
+
 
 }  // namespace bdm
 

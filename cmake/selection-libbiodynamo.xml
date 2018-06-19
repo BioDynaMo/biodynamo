@@ -12,5 +12,6 @@
     <class name="bdm::IntegralTypeWrapper<size_t> "/>
     <class name="bdm::RegulateGenes" />
     <class name="bdm::Param" />
+    <class name="bdm::NewRandom" />
   </selection>
 </lcgdict>

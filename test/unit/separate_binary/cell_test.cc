@@ -100,12 +100,12 @@ TEST(CellTest, Divide) {
   #pragma omp parallel
   simulation.GetRandom()->SetSeed(42);
 
-  cell.check_input_parameters_ = true;
-  cell.expected_volume_ratio_ = 1.0455127360065737;
-  cell.expected_phi_ = 1.9633629889829609;
-  cell.expected_theta_ = 4.2928196812086608;
-
+  cell.capture_input_parameters_ = true;
   cell.Divide();
+
+  EXPECT_NEAR(cell.captured_volume_ratio_, 1.0, 0.1);  // (0.9 - 1.1)
+  EXPECT_NEAR(cell.captured_theta_, Math::kPi, Math::kPi);  // (0 - 2 PI)
+  EXPECT_NEAR(cell.captured_phi_, Math::kPi / 2, Math::kPi / 2); // (0 - PI)
 }
 
 TEST(CellTest, DivideVolumeRatio) {
@@ -115,12 +115,13 @@ TEST(CellTest, DivideVolumeRatio) {
   simulation.GetRandom()->SetSeed(42);
 
   TestCell cell;
-  cell.check_input_parameters_ = true;
-  cell.expected_volume_ratio_ = 0.59;
-  cell.expected_phi_ = 1.1956088797871529;
-  cell.expected_theta_ = 4.5714174264720571;
-
+  cell.capture_input_parameters_ = true;
   cell.Divide(0.59);
+
+  const double kEpsilon = abs_error<double>::value;
+  EXPECT_NEAR(cell.captured_volume_ratio_, 0.59, kEpsilon);
+  EXPECT_NEAR(cell.captured_theta_, Math::kPi, Math::kPi);  // (0 - 2 PI)
+  EXPECT_NEAR(cell.captured_phi_, Math::kPi / 2, Math::kPi / 2); // (0 - PI)
 }
 
 TEST(CellTest, DivideAxis) {
@@ -132,12 +133,13 @@ TEST(CellTest, DivideAxis) {
   TestCell cell;
   cell.SetPosition({1, 2, 3});
 
-  cell.check_input_parameters_ = true;
-  cell.expected_volume_ratio_ = 1.0455127360065737;
-  cell.expected_phi_ = 1.0442265974045177;
-  cell.expected_theta_ = 0.72664234068172562;
-
+  cell.capture_input_parameters_ = true;
   cell.Divide({9, 8, 7});
+
+  const double kEpsilon = abs_error<double>::value;
+  EXPECT_NEAR(cell.captured_volume_ratio_, 1.0, 0.1);  // (0.9 - 1.1)
+  EXPECT_NEAR(cell.captured_phi_, 1.0442265974045177, kEpsilon);
+  EXPECT_NEAR(cell.captured_theta_, 0.72664234068172562, kEpsilon);
 }
 
 TEST(CellTest, DivideVolumeRatioAxis) {
@@ -149,12 +151,13 @@ TEST(CellTest, DivideVolumeRatioAxis) {
   TestCell cell;
   cell.SetPosition({1, 2, 3});
 
-  cell.check_input_parameters_ = true;
-  cell.expected_volume_ratio_ = 0.456;
-  cell.expected_phi_ = 1.0442265974045177;
-  cell.expected_theta_ = 0.72664234068172562;
-
+  cell.capture_input_parameters_ = true;
   cell.Divide(0.456, {9, 8, 7});
+
+  const double kEpsilon = abs_error<double>::value;
+  EXPECT_NEAR(cell.captured_volume_ratio_, 0.456, kEpsilon);
+  EXPECT_NEAR(cell.captured_phi_, 1.0442265974045177, kEpsilon);
+  EXPECT_NEAR(cell.captured_theta_, 0.72664234068172562, kEpsilon);
 }
 
 TEST(CellTest, BiologyModule) {
