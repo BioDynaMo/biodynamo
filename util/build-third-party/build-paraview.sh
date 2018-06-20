@@ -105,13 +105,15 @@ Qt5_DIR=$QT_CMAKE_DIR cmake \
 make -j$(CPUCount)
 make install -j$(CPUCount)
 
-## Step 6: patch vtkkwProcessXML-pv5.5
-# make install does not set the rpath corretcly
-install_name_tool -add_rpath "@loader_path/../../qt/lib" bin/vtkkwProcessXML-pv5.5
-install_name_tool -add_rpath "@loader_path/../../../../../qt/lib" bin/vtkkwProcessXML-pv5.5
-install_name_tool -add_rpath "@loader_path/../lib" bin/vtkkwProcessXML-pv5.5
+if [ `uname` = "Darwin" ]; then
+  ## Patch vtkkwProcessXML-pv5.5
+  # make install does not set the rpath correctly on OSX
+  install_name_tool -add_rpath "@loader_path/../../qt/lib" bin/vtkkwProcessXML-pv5.5
+  install_name_tool -add_rpath "@loader_path/../../../../../qt/lib" bin/vtkkwProcessXML-pv5.5
+  install_name_tool -add_rpath "@loader_path/../lib" bin/vtkkwProcessXML-pv5.5
+fi
 
-## Step 5: tar the install directory
+## tar the install directory
 cd ../paraview-install
 tar -zcf paraview.tar.gz *
 

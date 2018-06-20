@@ -16,21 +16,14 @@
 if [[ $# -ne 0 ]]; then
   echo "ERROR: Wrong number of arguments.
 Description:
-  This script builds all third party dependencies.
-  The archives will be stored in BDM_PROJECT_DIR/build
+  This script installs/updates the currently checked out version of biodynamo
 No Arguments"
   exit 1
 fi
 
-set -e -x
+set -e
 
-SCRIPTPATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+BDM_PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../.."
 
-PARAVIEW_VERSION=v5.5.1
-ROOT_VERSION=263508429d
-
-# root
-$SCRIPTPATH/build-root.sh $ROOT_VERSION
-
-# paraview and qt
-$SCRIPTPATH/build-paraview.sh $PARAVIEW_VERSION
+# no OS specifics -> use common install script
+$BDM_PROJECT_DIR/util/installation/common/install.sh ubuntu-18.04

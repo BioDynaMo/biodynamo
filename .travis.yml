@@ -13,12 +13,18 @@ matrix:
     - os: osx
       compiler: clang
       env: SCRIPT="util/travis-ci/default-build.sh"
-    # Test development installation on linux
+    # Test development installation on ubuntu-16.04
     - os: linux
       dist: trusty
       sudo: required
       group: edge
       env: SCRIPT="util/travis-ci/installation-test.sh ubuntu-16.04"
+    # Test development installation on ubuntu-18.04
+    - os: linux
+      dist: trusty
+      sudo: required
+      group: edge
+      env: SCRIPT="util/travis-ci/installation-test.sh ubuntu-18.04"
     # Test development installation on osx
     - os: osx
       env: SCRIPT="util/travis-ci/installation-test.sh osx"

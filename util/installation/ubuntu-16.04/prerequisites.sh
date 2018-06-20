@@ -27,10 +27,13 @@ set -e
 
 # set parameter
 BDM_PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../.."
-BDM_OS=ubuntu-16.04
 
 # include util functions
 . $BDM_PROJECT_DIR/util/installation/common/util.sh
+
+# Don't hardcode ubuntu-16.04 here, so we can reuse this script from
+# e.g. ubuntu-18.04
+BDM_OS=$(DetectOs)
 
 function InstallCmake {
   local URL="https://cmake.org/files/v3.6/cmake-3.6.3-Linux-x86_64.tar.gz"
@@ -40,7 +43,7 @@ function InstallCmake {
 
 function InstallPackages {
   INSTALL_PACKAGES="freeglut3-dev  git valgrind python python3 python2.7-dev lcov \
-  gcc-5 g++-5 make cmake clang-3.9 clang-format-3.9 clang-tidy-3.9 libomp-dev \
+  gcc g++ make cmake clang-3.9 clang-format-3.9 clang-tidy-3.9 libomp-dev \
   doxygen graphviz python-pip"
 
   ADD_REPOSITORY='deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-3.9 main'

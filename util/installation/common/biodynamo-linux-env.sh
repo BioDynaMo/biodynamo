@@ -28,8 +28,8 @@ export LD_LIBRARY_PATH=${BDM_INSTALL_DIR}/biodynamo/lib:$LD_LIBRARY_PATH
 
 # ParaView
 export ParaView_DIR=${BDM_INSTALL_DIR}/third_party/paraview/lib/cmake/paraview-5.5
-export ParaView_LIB_DIR=${BDM_INSTALL_DIR}/third_party/paraview/lib/paraview-5.5
-export PYTHONPATH=${ParaView_LIB_DIR}/site-packages:${ParaView_LIB_DIR}/site-packages/vtk
+export ParaView_LIB_DIR=${BDM_INSTALL_DIR}/third_party/paraview/lib
+export PYTHONPATH=${ParaView_LIB_DIR}/python2.7/site-packages
 export PV_PLUGIN_PATH=${BDM_INSTALL_DIR}/biodynamo/lib:$PV_PLUGIN_PATH
 export PATH=${BDM_INSTALL_DIR}/third_party/paraview/bin:${PATH}
 export LD_LIBRARY_PATH=${ParaView_LIB_DIR}:${LD_LIBRARY_PATH}
@@ -47,7 +47,12 @@ export PYTHONPATH=~/.local/lib/python2.7/site-packages:$PYTHONPATH
 export PATH=${BDM_INSTALL_DIR}/third_party/cmake-3.6.3/bin:${PATH}
 
 # Compiler
-export CC=gcc-5
-export CXX=g++-5
+if command -v g++-5 &>/dev/null; then
+  export CC=gcc-5
+  export CXX=g++-5
+else
+  export CC=gcc
+  export CXX=g++
+fi
 
 echo "You have successfully sourced BioDynaMo's environment."

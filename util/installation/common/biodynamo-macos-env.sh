@@ -28,8 +28,8 @@ export DYLD_LIBRARY_PATH=${BDM_INSTALL_DIR}/biodynamo/lib:$DYLD_LIBRARY_PATH
 
 # Paraview
 export ParaView_DIR=${BDM_INSTALL_DIR}/third_party/paraview/lib/cmake/paraview-5.5
-export ParaView_LIB_DIR=${BDM_INSTALL_DIR}/third_party/paraview/lib/paraview-5.5
-export PYTHONPATH=${ParaView_LIB_DIR}/site-packages:${ParaView_LIB_DIR}/site-packages/vtk
+export ParaView_LIB_DIR=${BDM_INSTALL_DIR}/third_party/paraview/lib
+export PYTHONPATH=${ParaView_LIB_DIR}/python2.7/site-packages
 export PV_PLUGIN_PATH=${BDM_INSTALL_DIR}/biodynamo/lib:$PV_PLUGIN_PATH
 export PATH=${BDM_INSTALL_DIR}/third_party/paraview/bin:${PATH}
 export DYLD_LIBRARY_PATH=${ParaView_LIB_DIR}:$DYLD_LIBRARY_PATH
