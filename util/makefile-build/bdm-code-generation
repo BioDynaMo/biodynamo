@@ -44,7 +44,7 @@ HEADERS=$@
 
 SELECTIONFILE=$(${BDM_CONFIG} --cmakedir)/selection.xml
 
-CXX_INCLUDES=$(${BDM_CONFIG} --cxxincludes)
+CXX_INCLUDES=$(${BDM_CONFIG} --cxxincludes | sed 's|-isystem |-I|g')
 
 CXX_DEFINES=$(${BDM_CONFIG} --cxxdefines)
 

@@ -8,20 +8,20 @@ matrix:
       dist: trusty
       sudo: required
       group: edge
-      env: SCRIPT="util/travis-ci/default_build.sh ."
+      env: SCRIPT="util/travis-ci/default-build.sh"
     # Default build on osx
     - os: osx
       compiler: clang
-      env: SCRIPT="util/travis-ci/default_build.sh ."
+      env: SCRIPT="util/travis-ci/default-build.sh"
     # Test development installation on linux
     - os: linux
       dist: trusty
       sudo: required
       group: edge
-      env: SCRIPT="util/travis-ci/installation_test.sh . ubuntu-16.04"
+      env: SCRIPT="util/travis-ci/installation-test.sh ubuntu-16.04"
     # Test development installation on osx
     - os: osx
-      env: SCRIPT="util/travis-ci/installation_test.sh . osx"
+      env: SCRIPT="util/travis-ci/installation-test.sh osx"
 
 before_install:
  - |

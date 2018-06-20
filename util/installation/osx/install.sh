@@ -13,18 +13,17 @@
 #
 # -----------------------------------------------------------------------------
 
-if [[ $# -ne 1 ]]; then
+if [[ $# -ne 0 ]]; then
   echo "ERROR: Wrong number of arguments.
 Description:
-  This script installs the currently checked out version of biodynamo
-Arguments:
-  \$1 path to the biodynamo project directory"
+  This script installs/updates the currently checked out version of biodynamo
+No Arguments"
   exit 1
 fi
 
 set -e
 
-BDM_PROJECT_DIR=$1
+BDM_PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../.."
 
 # no OS specifics -> use common install script
-$BDM_PROJECT_DIR/util/installation/common/install.sh . osx
+$BDM_PROJECT_DIR/util/installation/common/install.sh osx

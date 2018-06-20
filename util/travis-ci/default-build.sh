@@ -13,19 +13,18 @@
 #
 # -----------------------------------------------------------------------------
 
-if [[ $# -ne 1 ]]; then
+if [[ $# -ne 0 ]]; then
   echo "Wrong number of arguments.
 Description:
   Run a travis default_build
 Usage:
-  default_build.sh BDM_PROJECT_DIR
-Arguments:
-  BDM_PROJECT_DIR path to the biodynamo project directory
-  "
+  default-build.sh
+No Arguments
+"
   exit 1
 fi
 
-BDM_PROJECT_DIR=$1
+BDM_PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../.."
 
 set -e -x
 
@@ -38,15 +37,14 @@ git fetch --unshallow &>/dev/null || true
 # https://github.com/travis-ci/travis-ci/issues/6069
 git remote set-branches --add origin master
 
-$BDM_PROJECT_DIR/install.sh . << EOF
+$BDM_PROJECT_DIR/install.sh << EOF
 y
+Y
 EOF
 
 # reload shell and source biodynamo
 set +e +x
-. $BDM_PROJECT_DIR/util/installation/common/util.sh
-. $(BashrcFile)
-$use_biodynamo
+source ~/.bdm/biodynamo-env.sh
 set -e -x
 
 # print lines-of-code statistic

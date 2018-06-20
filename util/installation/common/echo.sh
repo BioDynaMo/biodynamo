@@ -39,3 +39,7 @@ function EchoWarning {
 function EchoNewStep {
   echo -e "${BDM_ECHO_BOLD}${BDM_ECHO_BLUE}$@${BDM_ECHO_RESET}"
 }
+
+function EchoInfo {
+  echo -e "${BDM_ECHO_PURPLE}$@${BDM_ECHO_RESET}"
+}

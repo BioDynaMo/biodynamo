@@ -10,14 +10,13 @@ To build BioDynaMo from source execute the following commands:
 git clone https://github.com/BioDynaMo/biodynamo
 cd biodynamo
 
-./prerequesites.sh .
-
-# restart your terminal and continue with:
-$use_biodynamo
+./prerequesites.sh
+# follow the instructions of the script:
+source <path-to-bdm-installation>/biodynamo-env.sh
 
 mkdir build && cd build
 cmake .. && make -j4
-sudo make install
+make install
 ```
 
 ## CMake Build Options

@@ -4,7 +4,7 @@ Setting up a simulation and running it is done with the BioDynaMo command line
 interface (CLI). Open a new terminal and execute:
 
 ``` sh
-$use_biodynamo
+source <path-to-bdm-installation>/biodynamo-env.sh
 ```
 
 This command must be executed whenever you want to use BioDynaMo in a new

@@ -45,7 +45,7 @@ void InitializeBiodynamo(int argc, const char** argv) {
   if (std::getenv("BDM_CMAKE_DIR") == nullptr) {
     Log::Fatal("InitializeBiodynamo",
                "The BioDynaMo environment is not set up correctly. Please call "
-               "$use_biodynamo "
+               "'source <path-to-bdm-installation>/biodynamo-env.sh' "
                "and retry this command.");
   }
 

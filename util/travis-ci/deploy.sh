@@ -19,7 +19,7 @@
 # https://gist.github.com/willprice/e07efd73fb7f13f917ea
 
 # NB: DO NOT USE -x here. It would leak the github token to the terminal
-set -e
+set -e +x
 
 if [ "$TRAVIS_BRANCH" != "master" ] || [ "$TRAVIS_OS_NAME" != "linux" ]; then
   exit 0

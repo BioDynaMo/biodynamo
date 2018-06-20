@@ -63,19 +63,17 @@ class InSituPipeline : public vtkCPPipeline {
     controller_ = vtkSMParaViewPipelineControllerWithRendering::New();
     plugin_manager_ = vtkSMPluginManager::New();
 #ifdef __APPLE__
-    std::string plugin_path = std::string(std::getenv("ParaView_DIR")) +
-                              "/../../../bin/paraview.app/Contents/MacOS/"
-                              "plugins/libBDMGlyphFilter.dylib";
+    std::string plugin_path = std::string(std::getenv("BDM_INSTALL_DIR")) +
+                              "/biodynamo/lib/libBDMGlyphFilter.dylib";
 #else
-    std::string plugin_path =
-        std::string(std::getenv("ParaView_DIR")) +
-        "/../../paraview-5.4/plugins/libBDMGlyphFilter.so";
+    std::string plugin_path = std::string(std::getenv("BDM_INSTALL_DIR")) +
+                              "/biodynamo/lib/libBDMGlyphFilter.so";
 #endif
     // Load custom plugin to enable cylinder glyph scaling
     if (!plugin_manager_->LoadLocalPlugin(plugin_path.c_str())) {
       Fatal("LoadLocalPlugin",
-            "Was unable to load our custom visualzation plugin. Do you have "
-            "ParaView_DIR set in your environmental variables?");
+            "Was unable to load our custom visualzation plugin. Have you "
+            "sourced the BioDynaMo environment?");
     }
   }
 

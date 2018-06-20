@@ -14,68 +14,90 @@
 # -----------------------------------------------------------------------------
 
 # This script installs the required packages for ubuntu 16.04
-
-if [[ $# -ne 1 ]]; then
+if [[ $# -ne 0 ]]; then
   echo "ERROR: Wrong number of arguments.
 Description:
-  This script installs the the prerequisites of BioDynaMo, but not BioDynaMo
+  This script installs the prerequisites of BioDynaMo, but not BioDynaMo
   itself. Script install.sh installs both prerequisites and BioDynaMo.
-Arguments:
-  \$1 path to the biodynamo project directory"
+No Arguments"
   exit 1
 fi
 
 set -e
 
 # set parameter
-BDM_PROJECT_DIR=$1
+BDM_PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../.."
 BDM_OS=ubuntu-16.04
-BDM_INSTALL_DIR=/opt/biodynamo
 
 # include util functions
 . $BDM_PROJECT_DIR/util/installation/common/util.sh
 
 function InstallCmake {
   local URL="https://cmake.org/files/v3.6/cmake-3.6.3-Linux-x86_64.tar.gz"
-  DownloadTarAndExtract $URL $THIRD_PARTY_DIR/cmake-3.6.3 1
+  DownloadTarAndExtract $URL $1/cmake-3.6.3 1
   # cmake/bin is added to PATH in the biodynamo environment script
+}
+
+function InstallPackages {
+  INSTALL_PACKAGES="freeglut3-dev  git valgrind python python3 python2.7-dev lcov \
+  gcc-5 g++-5 make cmake clang-3.9 clang-format-3.9 clang-tidy-3.9 libomp-dev \
+  doxygen graphviz python-pip"
+
+  ADD_REPOSITORY='deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-3.9 main'
+
+  EchoInfo "This script uses apt to install:"
+  for p in $INSTALL_PACKAGES; do
+    EchoInfo "  $p"
+  done | column
+  EchoInfo ""
+  EchoInfo "It adds the repository:"
+  EchoInfo "  $ADD_REPOSITORY"
+  EchoInfo ""
+  EchoInfo "It uses pip to install mkdocs and mkdocs-material."
+  EchoInfo ""
+  EchoInfo "Open \"util/installation/ubuntu-16.04/prerequisites.sh\" for more information."
+  EchoInfo ""
+  EchoInfo "These commands require sudo rights. If you are sure that these packages have already been installed, you can skip this step."
+  EchoInfo ""
+  EchoInfo "Do you want to perform these changes? (yes/no/skip)?"
+
+  # ask user if she really wants to perform this changes
+  unset INSTALL
+  while true; do
+    read -p "" yn
+    case $yn in
+      [Yy]* ) echo "Installing packages..." ; INSTALL=true; break;;
+      [Ss]* ) echo "Skipping package installation"; break;;
+      [Nn]* ) echo "Aborting"; exit 1;;
+          * ) echo "Please answer yes, no or skip.";;
+    esac
+  done
+
+  if [ $INSTALL ]; then
+    # add repository for clang-3.9
+    wget -O - http://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
+    sudo apt-add-repository -y "$ADD_REPOSITORY"
+    sudo apt-get update
+
+    # install packages
+    sudo apt-get -y install $INSTALL_PACKAGES
+    pip install --user mkdocs
+    pip install --user mkdocs-material
+  fi
+
 }
 
 function Install {
   echo "Start installation of prerequisites..."
 
+  export BDM_INSTALL_DIR=$(SelectInstallDir)
+  PrepareInstallDir $BDM_INSTALL_DIR
   THIRD_PARTY_DIR=$BDM_INSTALL_DIR/third_party
 
-  # Remove everything in ${THIRD_PARTY_DIR} if it exists already.
-  # Might contain outdated dependencies
-  if [ -d "${THIRD_PARTY_DIR}" ]; then
-    sudo rm -rf "${THIRD_PARTY_DIR}/*"
-  else
-    sudo mkdir -p $THIRD_PARTY_DIR
-  fi
-
-  # install `apt-add-repository and wget if not already installed
-  # (missing on docker image)
-  sudo apt-get install -y software-properties-common wget
-
-  # add repository for clang-3.9
-  wget -O - http://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
-  sudo apt-add-repository -y "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-3.9 main"
-  sudo apt-get update
-
-  # install packages
-  sudo apt-get -y install freeglut3-dev
-  sudo apt-get -y install git valgrind python python3 python2.7-dev lcov
-  sudo apt-get -y install gcc-5 g++-5 make cmake
-  sudo apt-get -y install clang-3.9 clang-format-3.9 clang-tidy-3.9 libomp-dev
-  sudo apt-get -y install doxygen graphviz
-  sudo apt-get -y install python-pip
-  pip install --user mkdocs
-  pip install --user mkdocs-material
+  InstallPackages
 
   # copy environment script
-  BDM_ENVIRONMENT_FILE=$BDM_INSTALL_DIR/biodynamo_env.sh
-  sudo cp $BDM_PROJECT_DIR/util/installation/common/biodynamo_linux_env.sh $BDM_ENVIRONMENT_FILE
+  CopyEnvironmentScript $BDM_PROJECT_DIR/util/installation/common/biodynamo-linux-env.sh $BDM_INSTALL_DIR
 
   # install CMake higher than the required version
   CMAKE_VERSION_R=3.3
@@ -84,34 +106,25 @@ function Install {
     rv=( ${CMAKE_VERSION_R//./ } )
     iv=( ${CMAKE_VERSION_I//./ } )
     if ! ((${iv[0]} >= ${rv[0]} && ${iv[1]} >= ${rv[0]})); then
-      InstallCmake
+      InstallCmake $THIRD_PARTY_DIR
     fi
   else
-    InstallCmake
+    InstallCmake $THIRD_PARTY_DIR
   fi
 
-  DownloadTarFromCBAndExtract $BDM_OS root.tar.gz $THIRD_PARTY_DIR
+  DownloadTarFromCBAndExtract $BDM_OS root.tar.gz $THIRD_PARTY_DIR/root
   DownloadTarFromCBAndExtract $BDM_OS paraview.tar.gz $THIRD_PARTY_DIR/paraview
   DownloadTarFromCBAndExtract $BDM_OS qt.tar.gz $THIRD_PARTY_DIR/qt
 
   # temporal workaround to avoid libprotobuf error for paraview
   # use only until patched archive has been uploaded
-  sudo rm $THIRD_PARTY_DIR/qt/plugins/platformthemes/libqgtk3.so
-  sudo rm $THIRD_PARTY_DIR/qt/lib/cmake/Qt5Gui/Qt5Gui_QGtk3ThemePlugin.cmake
-  sudo touch $THIRD_PARTY_DIR/qt/lib/cmake/Qt5Gui/Qt5Gui_QGtk3ThemePlugin.cmake
+  rm $THIRD_PARTY_DIR/qt/plugins/platformthemes/libqgtk3.so
+  rm $THIRD_PARTY_DIR/qt/lib/cmake/Qt5Gui/Qt5Gui_QGtk3ThemePlugin.cmake
+  touch $THIRD_PARTY_DIR/qt/lib/cmake/Qt5Gui/Qt5Gui_QGtk3ThemePlugin.cmake
 
-  UpdateSourceBdmVariable $BDM_ENVIRONMENT_FILE
-
-  echo "Installation of prerequisites finished successfully!"
-  EchoFinishThisStep
+  EchoSuccess "Installation of prerequisites finished successfully!"
+  EchoFinishThisStep $BDM_INSTALL_DIR
   echo ""
 }
 
-RequireSudo
-
-# ask user if she really wants to perform this changes
-PromptUser "This script adds the following package repository:
-'deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-3.9 main'
-and installs the required packages. Open this file with an editor to see which
-packages will be installed.
-Do you want to continue?" Install
+Install

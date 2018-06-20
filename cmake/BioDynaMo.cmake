@@ -207,3 +207,16 @@ function(generate_rootlogon)
 
   file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/rootlogon.C" ${CONTENT})
 endfunction(generate_rootlogon)
+
+# generates a target to build the biodynamo paraview plugin
+function(build_paraview_plugin)
+  set(PV_PLUGIN_BINDIR ${CMAKE_CURRENT_BINARY_DIR}/paraview-plugin)
+  file(MAKE_DIRECTORY ${PV_PLUGIN_BINDIR})
+
+  add_custom_target(paraview-plugin
+    ALL
+    COMMAND cmake ../../paraview_plugin/bdm_glyph && cmake --build . --target all
+    WORKING_DIRECTORY ${PV_PLUGIN_BINDIR}
+    COMMENT "Build bdm paraview plugin")
+
+endfunction(build_paraview_plugin)

@@ -6,13 +6,14 @@ The installation will also install all required packages including Paraview.
 ``` sh
 git clone https://github.com/BioDynaMo/biodynamo.git
 cd biodynamo
-./install.sh .
+./install.sh
 ```
 
 !!! important
 
     1. After the installation you need to restart your terminal.
-      In every new terminal execute `$use_biodynamo` to use BioDynaMo!
+      In every new terminal execute `source <path-to-bdm-installation>/biodynamo-env.sh`
+      to use BioDynaMo!
 
     2. BioDynaMo uses a customized version of ParaView.
 	     Therefore, you should not install ParaView separately.
@@ -27,7 +28,7 @@ cd path/to/biodynamo
 git checkout master
 # get latest changes
 git pull origin master
-./install.sh .
+./install.sh
 ```
 
 ## Supported platforms

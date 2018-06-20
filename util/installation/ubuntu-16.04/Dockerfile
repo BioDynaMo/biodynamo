@@ -21,7 +21,9 @@ RUN apt-get update && apt-get install -y \
   sudo \
   lsb-release \
   lsb-core \
-  man
+  man \
+  software-properties-common \
+  wget
 
 RUN git config --system user.name "Test User" && \
     git config --system user.email user@test.com

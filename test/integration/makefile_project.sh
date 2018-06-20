@@ -24,7 +24,7 @@ export PATH=$PATH:$SCRIPTPATH/../../util/makefile-build
 cd $SCRIPTPATH/../../demo/makefile_project
 make clean
 
-if [ "$TRAVIS_OS_NAME" = "osx" ]; then
+if [ `uname` = "Darwin" ]; then
   # following line creates the cache for bdm-config
   # without it the make call fails on Travis OSX
   bdm-config --cxxflag

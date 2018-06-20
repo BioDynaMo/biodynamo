@@ -13,21 +13,20 @@
 #
 # -----------------------------------------------------------------------------
 
-if [ $# -ne 1 ]; then
+if [ $# -ne 0 ]; then
   echo "Wrong number of arguments.
 Description:
   Run installation tests
 Usage:
-  installation_test.sh BDM_PROJECT_DIR
-Arguments:
-  BDM_PROJECT_DIR path to the biodynamo project directory
+  installation-test.sh
+No Arguments
   "
   exit 1
 fi
 
 set -e -x
 
-BDM_PROJECT_DIR=$1
+BDM_PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/.."
 cd $BDM_PROJECT_DIR
 
 # speed-up build by disabling tests and demos
@@ -35,15 +34,14 @@ export BDM_CMAKE_FLAGS="-Dtest=off -Ddemo=off"
 
 # Currently we are inside the biodynamo project directory, mapped as volume
 # from the host
-./install.sh . << EOF
+./install.sh << EOF
+y
 y
 EOF
 
 # reload shell and source biodynamo
 set +e +x
-. $BDM_PROJECT_DIR/util/installation/common/util.sh
-. $(BashrcFile)
-$use_biodynamo
+source ~/.bdm/biodynamo-env.sh
 set -e -x
 
 # verify if out of source builds work

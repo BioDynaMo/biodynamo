@@ -13,27 +13,24 @@
 #
 # -----------------------------------------------------------------------------
 
-# This script installs the prerequisites of BioDynaMo, but not BioDynaMo
-# itself. Script install.sh installs both prerequisites and BioDynaMo.
-# Arguments:
-#  $1 path to the biodynamo project directory
-
 if [[ $# -ne 0 ]]; then
   echo "ERROR: Wrong number of arguments.
 Description:
-  This script installs the prerequisites of BioDynaMo, but not BioDynaMo
-  itself. Script install.sh installs both prerequisites and BioDynaMo.
-No Arguments
-"
+  This script builds all third party dependencies.
+  The archives will be stored in BDM_PROJECT_DIR/build
+No Arguments"
   exit 1
 fi
 
-set -e
+set -e -x
 
-BDM_PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPTPATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# include util functions
-. $BDM_PROJECT_DIR/util/installation/common/util.sh
+PARAVIEW_VERSION=v5.5.1
+ROOT_VERSION=v6-13-08
 
-# call install script for the detected OS
-CallOSSpecificScript $BDM_PROJECT_DIR prerequisites.sh
+# root
+$SCRIPTPATH/build-root.sh $ROOT_VERSION
+
+# paraview and qt
+$SCRIPTPATH/build-paraview.sh $PARAVIEW_VERSION

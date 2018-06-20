@@ -21,6 +21,8 @@ RUN echo "Defaults env_keep += \"BDM_LOCAL_CERNBOX\"" | sudo tee -a /etc/sudoers
 ENV TRAVIS=1
 ENV TRAVIS_OS_NAME="linux"
 
+RUN git config --system user.name "Test User" && \
+    git config --system user.email user@test.com
 
 # update user id and group id such that mapped volumes can be accessed with the
 # same rights as on the host. Files created by the container can also be

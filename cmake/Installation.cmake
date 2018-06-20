@@ -20,33 +20,26 @@
 # simulations. (The path to the development install is known and can be
 # hardcoded )
 if (NOT CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "/opt/biodynamo" CACHE PATH "BioDynaMo install prefix" FORCE)
+  set(CMAKE_INSTALL_PREFIX $ENV{BDM_INSTALL_DIR} CACHE PATH "BioDynaMo install prefix" FORCE)
 elseif(CMAKE_INSTALL_PREFIX STREQUAL "/usr/local")
-  message(WARNING "Changing default CMAKE_PREFIX_PATH to /opt/biodynamo")
-  set(CMAKE_INSTALL_PREFIX "/opt/biodynamo" CACHE PATH "BioDynaMo install prefix" FORCE)
-elseif( CMAKE_INSTALL_PREFIX AND NOT CMAKE_INSTALL_PREFIX STREQUAL "/opt/biodynamo" )
-  message(FATAL_ERROR "CMAKE_INSTALL_PREFIX must be /opt/biodynamo")
+  message(WARNING "Changing default CMAKE_PREFIX_PATH to $ENV{BDM_INSTALL_DIR}")
+  set(CMAKE_INSTALL_PREFIX $ENV{BDM_INSTALL_DIR} CACHE PATH "BioDynaMo install prefix" FORCE)
+elseif( CMAKE_INSTALL_PREFIX AND NOT CMAKE_INSTALL_PREFIX STREQUAL "$ENV{BDM_INSTALL_DIR}" )
+  message(FATAL_ERROR "CMAKE_INSTALL_PREFIX must be $ENV{BDM_INSTALL_DIR}")
 endif()
 
 # set install directories
-if(LINUX)
-  set(CMAKE_INSTALL_BINDIR        "biodynamo/bin"                  CACHE PATH "User executables (bin)")
-  set(CMAKE_INSTALL_INCLUDEDIR    "biodynamo/include"              CACHE PATH "C/C++ header files (include)")
-  set(CMAKE_INSTALL_LIBDIR        "biodynamo/lib"                  CACHE PATH "Object code libraries (lib)")
-  set(CMAKE_INSTALL_CMAKEDIR      "cmake"                          CACHE PATH "CMake files required from external projects")
-  set(CMAKE_INSTALL_DATADIR       "biodynamo/share"                CACHE PATH "Read-only architecture-independent data (share)")
-  set(CMAKE_INSTALL_CMAKEDATADIR  "${CMAKE_INSTALL_DATADIR}/cmake" CACHE PATH "Build related files (DATADIR/cmake)")
-elseif(APPLE)
-  set(CMAKE_INSTALL_BINDIR        "bin"                            CACHE PATH "User executables (bin)")
-  set(CMAKE_INSTALL_INCLUDEDIR    "include/biodynamo"              CACHE PATH "C/C++ header files (include)")
-  set(CMAKE_INSTALL_LIBDIR        "lib/biodynamo"                  CACHE PATH "Object code libraries (lib)")
-  set(CMAKE_INSTALL_DATADIR       "share/biodynamo"                CACHE PATH "Read-only architecture-independent data (share)")
-  set(CMAKE_INSTALL_CMAKEDIR      "${CMAKE_INSTALL_DATADIR}/cmake" CACHE PATH "CMake files required from external projects")
-  set(CMAKE_INSTALL_CMAKEDATADIR  "${CMAKE_INSTALL_DATADIR}/cmake" CACHE PATH "Build related files (DATADIR/cmake)")
-endif()
+set(CMAKE_INSTALL_ROOT          "biodynamo"                      CACHE PATH "Install root")
+set(CMAKE_INSTALL_BINDIR        "${CMAKE_INSTALL_ROOT}/bin"      CACHE PATH "User executables (bin)")
+set(CMAKE_INSTALL_INCLUDEDIR    "${CMAKE_INSTALL_ROOT}/include"  CACHE PATH "C/C++ header files (include)")
+set(CMAKE_INSTALL_LIBDIR        "${CMAKE_INSTALL_ROOT}/lib"      CACHE PATH "Object code libraries (lib)")
+set(CMAKE_INSTALL_CMAKEDIR      "${CMAKE_INSTALL_ROOT}/cmake"    CACHE PATH "CMake files required from external projects")
+set(CMAKE_INSTALL_DATADIR       "${CMAKE_INSTALL_ROOT}/share"    CACHE PATH "Read-only architecture-independent data (share)")
+set(CMAKE_INSTALL_CMAKEDATADIR  "${CMAKE_INSTALL_DATADIR}/cmake" CACHE PATH "Build related files (DATADIR/cmake)")
 
 # hide them from configuration tools
-mark_as_advanced(${CMAKE_INSTALL_BINDIR}
+mark_as_advanced(${CMAKE_INSTALL_ROOT}
+                 ${CMAKE_INSTALL_BINDIR}
                  ${CMAKE_INSTALL_INCLUDEDIR}
                  ${CMAKE_INSTALL_LIBDIR}
                  ${CMAKE_INSTALL_CMAKEDIR}
@@ -56,10 +49,11 @@ mark_as_advanced(${CMAKE_INSTALL_BINDIR}
 # TODO(lukas) add logic to detect correct env script (distinguishing LINUX and
 # APPLE might not be enough in the future)
 if(LINUX)
-  install(FILES util/installation/common/biodynamo_linux_env.sh DESTINATION .)
+  configure_file(util/installation/common/biodynamo-linux-env.sh ${CMAKE_CURRENT_BINARY_DIR}/biodynamo-env.sh @ONLY)
 elseif(APPLE)
-  install(FILES util/installation/common/biodynamo_macos_env.sh DESTINATION ${CMAKE_INSTALL_BINDIR} RENAME biodynamo.env)
+  configure_file(util/installation/common/biodynamo-macos-env.sh ${CMAKE_CURRENT_BINARY_DIR}/biodynamo-env.sh @ONLY)
 endif()
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/biodynamo-env.sh DESTINATION .)
 # biodynamo cli
 install(FILES cli/biodynamo.py DESTINATION ${CMAKE_INSTALL_BINDIR} RENAME biodynamo
         PERMISSIONS OWNER_READ OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
@@ -106,4 +100,10 @@ install(FILES ${CMAKE_BINARY_DIR}/UseBioDynaMo.cmake DESTINATION ${CMAKE_INSTALL
 # CMake files required from external projects
 install(FILES cmake/BioDynaMoConfig.cmake DESTINATION ${CMAKE_INSTALL_CMAKEDIR})
 
-# TODO copy of copyright information and distribution license
+if(LINUX)
+  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/paraview-plugin/libBDMGlyphFilter.so DESTINATION ${CMAKE_INSTALL_LIBDIR})
+elseif(APPLE)
+  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/paraview-plugin/libBDMGlyphFilter.dylib DESTINATION ${CMAKE_INSTALL_LIBDIR})
+endif()
+
+install(FILES LICENSE NOTICE DESTINATION ${CMAKE_INSTALL_ROOT})

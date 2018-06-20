@@ -13,47 +13,39 @@
 #
 # -----------------------------------------------------------------------------
 
-if [[ $# -ne 2 ]]; then
+if [[ $# -ne 1 ]]; then
   echo "ERROR: Wrong number of arguments.
 Description:
-  This script installs the currently checked out version of biodynamo
+  This script installs/updates the currently checked out version of biodynamo
 Arguments:
-  \$1 path to the biodynamo project directory
-  \$2 OS id"
+  \$1 OS id"
   exit 1
 fi
 
 set -e
 
-BDM_PROJECT_DIR=$1
-BDM_OS=$2
+BDM_OS=$1
+# remove argument so when we source prerequisites it won't complain about
+# wrong number of arguments
+shift
+
+BDM_PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../.."
 
 # include util functions
 . $BDM_PROJECT_DIR/util/installation/common/util.sh
 
-# check if this script is run with sudo
-RequireSudo
-
-# remove whole install dir
-BDM_INSTALL_DIR=/opt/biodynamo
-if [ ! -d "$BDM_INSTALL_DIR" ]; then
-  sudo rm -rf $BDM_INSTALL_DIR
-fi
-
-# install prerequisites
+# # install prerequisites
 BDM_INSTALL_OS_SRC=$BDM_PROJECT_DIR/util/installation/$BDM_OS
-$BDM_INSTALL_OS_SRC/prerequisites.sh $BDM_PROJECT_DIR
+# source script so BDM_INSTALL_DIR will be available in this script
+. $BDM_INSTALL_OS_SRC/prerequisites.sh
 
-# reload shell and source biodynamo
-set +e
-. $(BashrcFile)
-$use_biodynamo
-set -e
+# source biodynamo environment
+source $BDM_INSTALL_DIR/biodynamo-env.sh
 
 # perform a clean release build
 BUILD_DIR=$BDM_PROJECT_DIR/build
 CleanBuild $BUILD_DIR
 
-
-echo "Installation of BioDynaMo finished successfully!"
-EchoFinishThisStep
+# print final steps
+EchoSuccess "Installation of BioDynaMo finished successfully!"
+EchoFinishThisStep $BDM_INSTALL_DIR

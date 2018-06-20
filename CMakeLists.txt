@@ -21,7 +21,7 @@ option(coverage "Enable test coverage report generation. Sets build type to cove
 # detect if the biodynamo environment has been sourced
 if(NOT DEFINED ENV{BDM_CMAKE_DIR})
   execute_process(COMMAND rm -rf ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles)
-  message(FATAL_ERROR "The BioDynaMo environment is not set up correctly. Please call $use_biodynamo and retry this command.")
+  message(FATAL_ERROR "The BioDynaMo environment is not set up correctly. Please call 'source <path-to-bdm-installation>/biodynamo-env.sh' and retry this command.")
 endif()
 
 set(BDM_CMAKE_DIR cmake)
@@ -107,12 +107,6 @@ include(SetCompilerFlags)
 set(CMAKE_SKIP_BUILD_RPATH FALSE) # don't skip the full RPATH for the build tree
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
-if(APPLE)
-  set(CMAKE_INSTALL_RPATH
-  "/usr/local/lib/paraview-5.4"
-  "/usr/local/opt/qt5/lib"
-  "/usr/local/lib/biodynamo")
-endif()
 
 # -------------------- setup mpark variant library -----------------------------
 set(MPARK_LIB "${CMAKE_CURRENT_BINARY_DIR}/mpark/")
@@ -206,7 +200,7 @@ add_dependencies(bdmclean libbdmclean)
 
 generate_rootlogon()
 if (${ParaView_FOUND})
-  link_directories($ENV{ParaView_DIR}/../../paraview-5.4)
+  link_directories($ENV{ParaView_LIB_DIR})
   target_link_libraries(biodynamo vtkPVPythonCatalyst vtkIOParallelXML
     vtkPVVTKExtensionsDefault vtkPVServerManagerRendering)
 endif()
@@ -214,6 +208,7 @@ endif()
 # create cmake files used by external builds
 configure_file("cmake/UseBioDynaMo.cmake.in" "UseBioDynaMo.cmake" @ONLY)
 
+build_paraview_plugin()
 
 # -------------------- build test project  ------------------------------------
 if (test)

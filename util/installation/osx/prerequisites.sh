@@ -13,19 +13,18 @@
 #
 # -----------------------------------------------------------------------------
 
-if [[ $# -ne 1 ]]; then
+if [[ $# -ne 0 ]]; then
   echo "ERROR: Wrong number of arguments.
 Description:
-    This script installs the the prerequisites of BioDynaMo, but not BioDynaMo
+    This script installs the prerequisites of BioDynaMo, but not BioDynaMo
     itself. Script install.sh installs both prerequisites and BioDynaMo.
-Arguments:
-  \$1 path to the biodynamo project directory"
+No Arguments"
   exit 1
 fi
 
 set -e
 
-BDM_PROJECT_DIR=$1
+BDM_PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../.."
 
 # use travis-osx prerequisites script
-$BDM_PROJECT_DIR/util/installation/travis-osx/prerequisites.sh .
+. $BDM_PROJECT_DIR/util/installation/travis-osx/prerequisites.sh

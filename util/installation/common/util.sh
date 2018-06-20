@@ -16,8 +16,13 @@
 # This file contains functions required in various install scripts.
 # (Thus reducing code duplication)
 
-# This function checks if a script is run with sudo rights. If not, it will exit
-# with -1 return code.
+SCRIPTPATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+#include echo.sh
+. $SCRIPTPATH/echo.sh
+
+# This function asks the user for the sudo password and keeps it in the cache
+# for the duration of the script execution.
 function RequireSudo {
   # Workaround for: https://github.com/travis-ci/travis-ci/issues/9608
   if [ "$TRAVIS_OS_NAME" != "osx" ]; then
@@ -29,28 +34,6 @@ function RequireSudo {
     # https://github.com/mathiasbynens/dotfiles/blob/master/.macos
     while true; do sudo -n true; sleep 10; kill -0 "$$" || exit; done 2>/dev/null &
   fi
-}
-
-# This function prompts a user with a yes, no questions. If answered with `yes`
-# it executes the given function, otherwise it calls exit.
-# Arguments:
-#   $1 Message displayed to the user. The function appends "(y/n)" to the message
-#   $2 The function that should be executed if the user replies with `yes`
-function PromptUser {
-  if [[ $# -ne 2 ]]; then
-    echo "ERROR in PromptUser: Wrong number of arguments"
-    exit 1
-  fi
-
-  # https://stackoverflow.com/questions/226703/how-do-i-prompt-for-yes-no-cancel-input-in-a-linux-shell-script
-  while true; do
-    read -p "$1 (y/n) " yn
-    case $yn in
-      [Yy]* ) $2; exit;;
-      [Nn]* ) exit 1;;
-          * ) echo "Please answer yes or no.";;
-    esac
-  done
 }
 
 # Detects the linux flavour using `lsb_release`.
@@ -124,13 +107,13 @@ function DownloadTarAndExtract {
 
   local TMP_DEST=/tmp/$RANDOM
 
-  rm $TMP_DEST || true
-  sudo mkdir -p $DEST
+  rm $TMP_DEST 2>/dev/null || true
+  mkdir -p $DEST
   if [ $BDM_LOCAL_CERNBOX ]  && [[ "$URL" = /* ]]; then
-    sudo tar -xzf $URL --strip=$STRIP_COMP -C $DEST
+    tar -xzf $URL --strip=$STRIP_COMP -C $DEST
   else
     wget --progress=dot:giga -O $TMP_DEST $URL
-    sudo tar -xzf $TMP_DEST --strip=$STRIP_COMP -C $DEST
+    tar -xzf $TMP_DEST --strip=$STRIP_COMP -C $DEST
     rm $TMP_DEST
   fi
 }
@@ -183,23 +166,6 @@ function CPUCount {
   fi
 }
 
-# Updates the use_biodynamo variable in the bashrc file.
-# Arguments:
-#   $1 path to biodynamo environment file
-function UpdateSourceBdmVariable {
-  if [[ $# -ne 1 ]]; then
-    echo "ERROR in UpdateSourceBdmVariable: Wrong number of arguments"
-    exit 1
-  fi
-
-  local BDM_BASHRC=$(BashrcFile)
-  local TMP_BASHRC=$(BashrcFile)_$RANDOM
-  touch $BDM_BASHRC
-  echo "use_biodynamo='source ${1}'" > $TMP_BASHRC
-  cat $BDM_BASHRC | grep -v "use_biodynamo" >> $TMP_BASHRC
-  mv $TMP_BASHRC $BDM_BASHRC
-}
-
 # This function performs a clean build in the given build directory.
 # Creates the build dir if it does not exist.
 # CMake flags can be added by setting the environment variable BDM_CMAKE_FLAGS.
@@ -215,13 +181,13 @@ function CleanBuild {
   local BUILD_DIR=$1
 
   if [ -d "${BUILD_DIR}" ]; then
-    sudo rm -rf $BUILD_DIR/*
+    rm -rf $BUILD_DIR/*
   else
     mkdir -p $BUILD_DIR
   fi
   cd $BUILD_DIR
   echo "CMAKEFLAGS $BDM_CMAKE_FLAGS"
-  cmake $BDM_CMAKE_FLAGS .. && make -j$(CPUCount) && sudo make install
+  cmake $BDM_CMAKE_FLAGS .. && make -j$(CPUCount) && make install
 }
 
 # Return absolute path.
@@ -288,11 +254,110 @@ function BashrcFile {
   fi
 }
 
-# Print message that tells the user to reload the bash and call $use_biodynamo.
+# Print message that tells the user to reload the bash and source the environment.
+# Arguments:
+#   $1 biodynamo install directory
 function EchoFinishThisStep {
-  local BDM_BASHRC=$(BashrcFile)
-  echo "To complete this step please restart your shell or execute"
-  echo "    . $BDM_BASHRC"
-  echo "In every terminal you want to build or use BioDynamo execute:"
-  echo "    \$use_biodynamo"
+  if [[ $# -ne 1 ]]; then
+    echo "ERROR in EchoFinishThisStep: Wrong number of arguments"
+    exit 1
+  fi
+
+  EchoInfo "To complete this step execute:"
+  EchoInfo "    ${BDM_ECHO_BOLD}${BDM_ECHO_UNDERLINE}source $1/biodynamo-env.sh"
+  EchoInfo "This command must be executed in every terminal before you build or use BioDynaMo."
+  EchoInfo "To avoid this additional step add it to your $(BashrcFile) file:"
+  EchoInfo "    echo \"source $1/biodynamo-env.sh\" >> $(BashrcFile)"
+}
+
+# This function prompts the user for the biodynamo installation direcotory
+# providing an option to accept a default.
+function SelectInstallDir {
+  if [[ $# -ne 0 ]]; then
+    echo "ERROR in SelectInstallDir: Wrong number of arguments"
+    exit 1
+  fi
+
+  local DEFAULT=~/.bdm
+  local MSG="Do you want to use the default installation directory ($DEFAULT) ?"
+  while true; do
+    read -p "$MSG (y/n) " yn
+    case $yn in
+      [Yy]* )
+        echo $DEFAULT
+        break
+      ;;
+      [Nn]* )
+        read -p "Please enter the biodynamo installation directory: " INSTALL_DIR
+        # check if the user entered a path relative to home ~/
+        # this is not automaticall expanded
+        case "$INSTALL_DIR" in "~/"*)
+          INSTALL_DIR="${HOME}/${INSTALL_DIR#"~/"}"
+        esac
+        echo $INSTALL_DIR
+        break
+      ;;
+      * ) echo "Please answer yes or no.";;
+    esac
+  done
+}
+
+# This function checks if the given directory is valid, if it needs to be
+# created, or if containing files need to be removed.
+# Arguments:
+#   $1 biodynamo install directory
+function PrepareInstallDir {
+  if [[ $# -ne 1 ]]; then
+    echo "ERROR in PrepareInstallDir: Wrong number of arguments"
+    exit 1
+  fi
+
+  local BDM_INSTALL_DIR=$1
+
+  if [[ $BDM_INSTALL_DIR == "" ]] || [[ $BDM_INSTALL_DIR == / ]] || [[ $BDM_INSTALL_DIR == /usr* ]]; then
+    echo "ERROR: Invalid installation directory: $BDM_INSTALL_DIR"
+    exit 1
+  elif [ ! -d $BDM_INSTALL_DIR ]; then
+    # Install directory does not exist
+    echo "installdir " $BDM_INSTALL_DIR
+    mkdir -p $BDM_INSTALL_DIR
+  elif [ ! -z "$(ls -A $BDM_INSTALL_DIR)" ]; then
+    # Install directory is not empty
+    MSG="The chosen installation directory is not empty!
+The installation process will remove all files in $BDM_INSTALL_DIR! Do you want to continue?"
+    while true; do
+      read -p "$MSG (y/n) " yn
+      case $yn in
+        [Yy]* )
+          rm -rf $BDM_INSTALL_DIR/*
+          break
+        ;;
+        [Nn]* )
+        exit 1;;
+        * ) echo "Please answer yes or no.";;
+      esac
+    done
+  fi
+}
+
+# This function copies the environment script to the install path and
+# corrects the BDM_INSTALL_DIR environment variable inside the script.
+# Arguments:
+#   $1 environment source script
+#   $2 biodynamo install directory
+function CopyEnvironmentScript {
+  if [[ $# -ne 2 ]]; then
+    echo "ERROR in CopyEnvironmentScript: Wrong number of arguments"
+    exit 1
+  fi
+
+  local ENV_SRC=$1
+  local BDM_INSTALL_DIR=$2
+
+  local ENV_DEST=$BDM_INSTALL_DIR/biodynamo-env.sh
+
+  local TMP_ENV=${ENV_DEST}_$RANDOM
+
+  cat $ENV_SRC | sed "s|export BDM_INSTALL_DIR=@CMAKE_INSTALL_PREFIX@|export BDM_INSTALL_DIR=${BDM_INSTALL_DIR}|g" >$TMP_ENV
+  mv $TMP_ENV $ENV_DEST
 }

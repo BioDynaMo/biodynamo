@@ -13,14 +13,13 @@
 #
 # -----------------------------------------------------------------------------
 
-if [[ $# -lt 3 ]]; then
+if [[ $# -lt 2 ]]; then
   echo "Wrong number of arguments.
 Description:
   Run a script inside a docker container
 Usage:
-  run_inside_docker.sh BDM_PROJECT_DIR CONTAINER_OS SCRIPT [SCRIPT_ARGUMENTS]
+  run-inside-docker.sh CONTAINER_OS SCRIPT [SCRIPT_ARGUMENTS]
 Arguments:
-  BDM_PROJECT_DIR path to the biodynamo project directory
   CONTAINER_OS OS id of the container
   SCRIPT absolute path to script that should be executed inside the container
          or relative path to BDM_PROJECT_DIR.
@@ -34,17 +33,16 @@ fi
 set -e
 
 # save arguements in variables
-BDM_PROJECT_DIR=$1
-shift
 BDM_OS=$1
 shift
 BDM_SCRIPT=$1
 shift
 BDM_SCRIPT_ARGUMENTS=$@
 
+BDM_PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/.."
+
 # include util functions
 . $BDM_PROJECT_DIR/util/installation/common/util.sh
-. $BDM_PROJECT_DIR/util/installation/common/echo.sh
 
 # check if BDM_OS is valid
 CheckOsSupported $BDM_PROJECT_DIR/util/installation $BDM_OS
@@ -56,8 +54,6 @@ if [ ! -f "${BDM_PATH_TO_DOCKERFILE}/Dockerfile" ]; then
   echo "${BDM_OS} does not support Docker at the moment."
   exit 1
 fi
-
-RequireSudo
 
 BDM_CONTAINER=bdmdev-${BDM_OS}
 
