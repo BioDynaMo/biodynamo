@@ -20,8 +20,6 @@
 
 namespace bdm {
 
-
-
 class BdmSimTest : public ::testing::Test {
  public:
    static constexpr char* gConfigFileName = "bdm.toml";
@@ -38,7 +36,7 @@ class BdmSimTest : public ::testing::Test {
        "max_bound =  200\n"
        "\n"
        "[visualization]\n"
-       "live = true\n"
+       "live = false\n"
        "export = true\n"
        "export_interval = 100\n"
        "\n"
@@ -66,23 +64,18 @@ class BdmSimTest : public ::testing::Test {
   virtual void SetUp() {
     remove(gConfigFileName);
     remove("restore.root");
-    CreateEmptyFile("restore.root");
+    CreateEmptyRestoreFile("restore.root");
+    BdmSim<>::sim_counter_ = 0;
   }
 
   virtual void TearDown() {
     remove(gConfigFileName);
   }
 
-  /// Creates an empty file. \n
-  /// Needed, because BioDynaMo throws an fatal exception if it is initialized
-  /// with a restore file that does not exist.
-  void CreateEmptyFile(const std::string& filename) {
-    // std::fstream s(filename, s.binary | s.out);
-    // if (!s.is_open()) {
-    //   std::cout << "failed to open " << filename << '\n';
-    // } else {
-    //   s << "";
-    // }
+  /// Creates an empty file restore file. \n
+  /// It is needed, because BioDynaMo throws a fatal exception if it is
+  /// initialized with a restore file that does not exist.
+  void CreateEmptyRestoreFile(const std::string& filename) {
     SimulationBackup b(filename, "");
     b.Backup(0);
   }
@@ -95,7 +88,7 @@ class BdmSimTest : public ::testing::Test {
     EXPECT_TRUE(param->bound_space_);
     EXPECT_EQ(-100, param->min_bound_);
     EXPECT_EQ(200, param->max_bound_);
-    EXPECT_TRUE(param->live_visualization_);
+    EXPECT_FALSE(param->live_visualization_);
     EXPECT_TRUE(param->export_visualization_);
     EXPECT_EQ(100u, param->visualization_export_interval_);
 
@@ -137,8 +130,6 @@ class BdmSimTest : public ::testing::Test {
   }
 };
 
-
-
 TEST_F(BdmSimTest, InitializeRuntimeParams) {
   std::ofstream config_file(gConfigFileName);
   config_file << gConfigContent;
@@ -173,7 +164,7 @@ TEST_F(BdmSimTest, InitializeRuntimeParamsWithCLIArguments) {
   config_file << gConfigContent;
   config_file.close();
 
-  CreateEmptyFile("myrestore.root");
+  CreateEmptyRestoreFile("myrestore.root");
   const char* argv[5] = {"./binary_name", "-b", "mybackup.root", "-r",
                          "myrestore.root"};
   BdmSim<> simulation(5, argv);
@@ -197,15 +188,15 @@ TEST_F(BdmSimTest, InitializeRuntimeParamsSimulationName) {
   // in PATH
   const char* argv1[1] = {"binary_name"};
   BdmSim<> simulation1(1, argv1);
-  EXPECT_EQ("binary_name", simulation1.GetSimulationId());
+  EXPECT_EQ("binary_name1", simulation1.GetSimulationId());
 
   // binary dir != working dir
   const char* argv2[1] = {"./build/binary_name"};
   BdmSim<> simulation2(1, argv2);
-  EXPECT_EQ("binary_name", simulation2.GetSimulationId());
+  EXPECT_EQ("binary_name2", simulation2.GetSimulationId());
 
   BdmSim<> simulation3("binary_name");
-  EXPECT_EQ("binary_name", simulation3.GetSimulationId());
+  EXPECT_EQ("binary_name3", simulation3.GetSimulationId());
 }
 
 TEST_F(BdmSimTest, SimulationId) {

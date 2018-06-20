@@ -68,7 +68,7 @@ TEST_F(CatalystAdaptorTest, GenerateSimulationInfoJson) {
 
   const char* expected = R"STR({
   "simulation": {
-    "name":"N3bdm51CatalystAdaptorTest_GenerateSimulationInfoJson_TestE",
+    "name":"N3bdm51CatalystAdaptorTest_GenerateSimulationInfoJson_TestE23",
     "result_dir":"."
   },
   "sim_objects": [
@@ -96,10 +96,6 @@ TEST_F(CatalystAdaptorTest, GenerateSimulationInfoJson) {
 )STR";
 
   EXPECT_EQ(expected, buffer.str());
-
-  // turn off export_visualization_ to avoid Paraview state generation once
-  // simulation gets destructed
-  param->export_visualization_ = false;
 }
 
 /// Tests if the catalyst state is generated.

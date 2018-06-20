@@ -16,6 +16,7 @@ struct Param;
 struct Soa;
 template <typename TBackend = Soa>
 struct CompileTimeParam;
+struct BdmSimTest;
 
 /// This is the central BioDynaMo object. It containes pointers to e.g. the
 /// ResourceManager, the scheduler, parameters, ... \n
@@ -108,6 +109,8 @@ struct BdmSim {
 
   /// This function initialzes `simulation_name_` and `simulatio_id_`
   void InitializeSimulationId(const std::string& simulation_name);
+
+  friend BdmSimTest;
 
   ClassDefNV(BdmSim, 1);
 };

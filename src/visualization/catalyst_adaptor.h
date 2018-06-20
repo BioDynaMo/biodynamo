@@ -86,22 +86,21 @@ class CatalystAdaptor {
          vtkNew<vtkCPPythonScriptPipeline> pipeline;
          pipeline->Initialize(script.c_str());
          g_processor_->AddPipeline(pipeline.GetPointer());
-       } else {
-        //  pipeline_ = new InSituPipeline();
-        //  g_processor_->AddPipeline(pipeline_);
+       } else if (param->live_visualization_){
+         pipeline_ = new InSituPipeline();
+         g_processor_->AddPipeline(pipeline_);
        }
      }
-     std::cout << "constructed " << this << std::endl;
    }
 
    ~CatalystAdaptor() {
-     std::cout << "destructing " << this << std::endl;
      auto* param = TBdmSim::GetActive()->GetParam();
-     if (g_processor_) {
-       g_processor_->Finalize();
-       g_processor_->Delete();
-       g_processor_ = nullptr;
-     }
+     // TODO remove
+    //  if (g_processor_) {
+    //    g_processor_->Finalize();
+    //    g_processor_->Delete();
+    //    g_processor_ = nullptr;
+    //  }
      if(pipeline_) {
        delete pipeline_;
        pipeline_ = nullptr;
@@ -379,7 +378,7 @@ class CatalystAdaptor {
     auto* param = TBdmSim::GetActive()->GetParam();
     if (param->live_visualization_) {
       double time = param->simulation_time_step_ * total_steps;
-      CoProcess(time, total_steps, last_iteration);
+      LiveVisualization(time, total_steps, last_iteration);
     }
     if (param->export_visualization_) {
       double time = param->simulation_time_step_ * total_steps;
@@ -393,7 +392,7 @@ class CatalystAdaptor {
   /// @param[in]  step            The time step duration
   /// @param[in]  last_time_step  Last time step or not
   ///
-  inline void CoProcess(double time, size_t step, bool last_time_step) {
+  void LiveVisualization(double time, size_t step, bool last_time_step) {
     vtkNew<vtkCPDataDescription> data_description;
     data_description->SetTimeData(time, step);
 
@@ -441,8 +440,11 @@ class CatalystAdaptor {
   }
 
  private:
-  vtkCPProcessor* g_processor_ = nullptr;
+   // FIXME memory leak
+  static vtkCPProcessor* g_processor_;
+  /// only needed for live visualization
   InSituPipeline* pipeline_ = nullptr;
+
   std::vector<vtkImageData*> vtk_dgrids_;
   std::vector<vtkUnstructuredGrid*> vtk_so_grids_;
   std::vector<bool> so_is_initialized_;
@@ -450,8 +452,7 @@ class CatalystAdaptor {
   std::unordered_map<std::string, Shape> shapes_;
   std::vector<std::string> so_scalar_names_;
   /// This variable is used to generate the simulation info json during the
-  /// first
-  /// invocation of `ExportVisualization`
+  /// first invocation of `ExportVisualization`
   bool sim_info_json_generated_ = false;
   static constexpr char const* kSimulationInfoJson = "simulation_info.json";
 
@@ -550,6 +551,9 @@ class CatalystAdaptor {
   }
 };
 
+template <typename T>
+vtkCPProcessor* CatalystAdaptor<T>::g_processor_ = nullptr;
+
 #else
 
 /// False front (to ignore Catalyst in gtests)
@@ -574,10 +578,10 @@ class CatalystAdaptor {
     }
   }
 
-  void CoProcess(double time, size_t time_step, bool last_time_step) {
+  void LiveVisualization(double time, size_t time_step, bool last_time_step) {
     auto* param = TBdmSim::GetActive()->GetParam();
     if (param->live_visualization_ || param->export_visualization_) {
-      Log::Fatal("CatalystAdaptor::CoProcess",
+      Log::Fatal("CatalystAdaptor::LiveVisualization",
                 "Simulation was compiled without ParaView support, but you are "
                 "trying to use it.");
     }
