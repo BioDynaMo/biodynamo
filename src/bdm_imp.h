@@ -102,12 +102,12 @@ template <typename T>
 Random* BdmSim<T>::GetRandom() { return random_[omp_get_thread_num()]; }
 
 template <typename T>
-std::string BdmSim<T>::GetSimulationId() const {
+const std::string& BdmSim<T>::GetSimulationId() const {
   return simulation_id_;
 }
 
 template <typename T>
-void BdmSim<T>::ReplaceScheduler(Scheduler<BdmSim<T>>* scheduler) {  // TODO use unique_ptr to make ownership transformation explicit
+void BdmSim<T>::ReplaceScheduler(Scheduler<BdmSim>* scheduler) {
   delete scheduler_;
   scheduler_ = scheduler;
 }

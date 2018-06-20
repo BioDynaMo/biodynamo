@@ -57,13 +57,13 @@ struct BdmSim {
   Random* GetRandom();
 
   /// @see `simulation_id_`
-  std::string GetSimulationId() const;
+  const std::string& GetSimulationId() const;
 
   /// Replaces the scheduler for this simulation.
   /// Existing scheduler will be deleted! Therefore, pointers to the old
-  /// scheduler (obtained with `GetScheduler()`) will be invalidated.
+  /// scheduler (obtained with `GetScheduler()`) will be invalidated. \n
+  /// BdmSim will take ownership of the passed pointer
   void ReplaceScheduler(Scheduler<BdmSim>*);
-
 
  private:
   /// Currently active simulation

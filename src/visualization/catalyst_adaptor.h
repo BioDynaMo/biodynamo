@@ -22,8 +22,8 @@
 #include <type_traits>
 #include <unordered_map>
 #include <vector>
-#include "log.h"
 
+#include "log.h"
 #include "param.h"
 #include "resource_manager.h"
 #include "shape.h"
@@ -69,7 +69,8 @@ class CatalystAdaptor {
    /// @param[in]  script  The Python script that contains the pipeline
    ///
    CatalystAdaptor(const std::string& script) {
-     auto* param = TBdmSim::GetActive()->GetParam();
+     auto* sim = TBdmSim::GetActive();
+     auto* param = sim->GetParam();
      if (param->live_visualization_ || param->export_visualization_) {
        if (g_processor_ == nullptr) {
          g_processor_ = vtkCPProcessor::New();
@@ -82,7 +83,10 @@ class CatalystAdaptor {
          g_processor_->RemoveAllPipelines();
        }
 
-       if (param->python_catalyst_pipeline_) {
+       if (param->live_visualization_ && !pipeline_) {
+         Log::Warning("CatalystAdaptor", "Live visualization does not support multiple simulations. Turning off live visualization for ", sim->GetSimulationId());
+         param->live_visualization_ = false;
+       } else if (param->python_catalyst_pipeline_) {
          vtkNew<vtkCPPythonScriptPipeline> pipeline;
          pipeline->Initialize(script.c_str());
          g_processor_->AddPipeline(pipeline.GetPointer());
@@ -95,12 +99,6 @@ class CatalystAdaptor {
 
    ~CatalystAdaptor() {
      auto* param = TBdmSim::GetActive()->GetParam();
-     // TODO remove
-    //  if (g_processor_) {
-    //    g_processor_->Finalize();
-    //    g_processor_->Delete();
-    //    g_processor_ = nullptr;
-    //  }
      if(pipeline_) {
        delete pipeline_;
        pipeline_ = nullptr;
@@ -440,7 +438,6 @@ class CatalystAdaptor {
   }
 
  private:
-   // FIXME memory leak
   static vtkCPProcessor* g_processor_;
   /// only needed for live visualization
   InSituPipeline* pipeline_ = nullptr;
