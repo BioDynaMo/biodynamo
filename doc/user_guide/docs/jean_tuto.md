@@ -549,9 +549,7 @@ inline int Simulate(int argc, const char** argv) {
 
   // Run simulation
   Scheduler<> scheduler;
-  for (int i=0; i<400; i++){
-    scheduler.Simulate(1);
-  }
+  scheduler.Simulate(500);
 
   std::cout << "Simulation completed successfully!" << std::endl;
   return 0;
