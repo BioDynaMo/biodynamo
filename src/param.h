@@ -298,7 +298,7 @@ struct Param {
 
  private:
   template <typename T>
-  friend struct BdmSim;
+  friend struct Simulation;
 
   /// Assign values from config file to variables
   void AssignFromConfig(const std::shared_ptr<cpptoml::table>&);

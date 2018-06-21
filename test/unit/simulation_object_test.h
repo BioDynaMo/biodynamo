@@ -18,7 +18,7 @@
 #include "gtest/gtest.h"
 #include "simulation_object.h"
 #include "simulation_object_util.h"
-#include "bdm_imp.h"
+#include "simulation_implementation.h"
 
 namespace bdm {
 namespace simulation_object_test_internal {

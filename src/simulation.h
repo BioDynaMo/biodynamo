@@ -1,5 +1,18 @@
-#ifndef FOO
-#define FOO
+// -----------------------------------------------------------------------------
+//
+// Copyright (C) The BioDynaMo Project.
+// All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+//
+// See the LICENSE file distributed with this work for details.
+// See the NOTICE file distributed with this work for additional information
+// regarding copyright ownership.
+//
+// -----------------------------------------------------------------------------
+#ifndef SIMULATION_H_
+#define SIMULATION_H_
 
 #include <string>
 #include <Rtypes.h>
@@ -16,84 +29,84 @@ struct Param;
 struct Soa;
 template <typename TBackend = Soa>
 struct CompileTimeParam;
-struct BdmSimTest;
+struct SimulationTest;
 
 /// This is the central BioDynaMo object. It containes pointers to e.g. the
 /// ResourceManager, the scheduler, parameters, ... \n
 /// It is possible to create multiple objects, but only one can be active at
 /// the same time. Creating a new simulation object automatically activates it.
 template <typename TCTParam = CompileTimeParam<>>
-struct BdmSim {
+struct Simulation {
   using ResourceManager_t = ResourceManager<TCTParam>;  // NOLINT
 
-  /// This function returns the currently active BdmSim simulation.
-  static BdmSim<TCTParam>* GetActive();
+  /// This function returns the currently active Simulation simulation.
+  static Simulation<TCTParam>* GetActive();
 
-  BdmSim(TRootIOCtor*);
+  Simulation(TRootIOCtor*);
   /// Constructor that takes the arguments from `main` to parse command line
   ///  options. The simulation name is extracted from the executable name.
   /// Creation of a new simulation automatically activates it.
-  BdmSim(int argc, const char** argv);
+  Simulation(int argc, const char** argv);
   /// Alternative constructor, if the arguments from function `main` are not
   /// available, or if a different simulation name should be chosen. \n
   /// Command line options are not parsed.\n
   /// Creation of a new simulation automatically activates it.
-  BdmSim(const std::string& simulation_name);
-  ~BdmSim();
+  Simulation(const std::string& simulation_name);
+  ~Simulation();
 
   /// Copies / moves values from a restored simulation into this object.
   /// Thus, pointers to `rm_`, `param_`, ... are not invalidated.
-  void Restore(BdmSim&& restored);
+  void Restore(Simulation&& restored);
 
   /// Activates this simulation.
   void Activate();
 
   ResourceManager<TCTParam>* GetRm();
   Param* GetParam();
-  Grid<BdmSim>* GetGrid();
-  Scheduler<BdmSim>* GetScheduler();
+  Grid<Simulation>* GetGrid();
+  Scheduler<Simulation>* GetScheduler();
 
   /// Returns a thread local random number generator
   Random* GetRandom();
 
-  /// @see `simulation_id_`
-  const std::string& GetSimulationId() const;
+  /// @see `unique_name_`
+  const std::string& GetUniqueName() const;
 
   /// Replaces the scheduler for this simulation.
   /// Existing scheduler will be deleted! Therefore, pointers to the old
   /// scheduler (obtained with `GetScheduler()`) will be invalidated. \n
-  /// BdmSim will take ownership of the passed pointer
-  void ReplaceScheduler(Scheduler<BdmSim>*);
+  /// Simulation will take ownership of the passed pointer
+  void ReplaceScheduler(Scheduler<Simulation>*);
 
  private:
   /// Currently active simulation
-  static BdmSim<TCTParam>* active_;
+  static Simulation<TCTParam>* active_;
   /// Number of simulations in this process
-  static std::atomic<uint64_t> sim_counter_;
+  static std::atomic<uint64_t> counter_;
 
   /// random number generator for each thread
   std::vector<Random*> random_;
 
   ResourceManager<TCTParam>* rm_ = nullptr;
   Param* param_ = nullptr;
-  std::string simulation_name_;
-  Grid<BdmSim>* grid_ = nullptr; //!
-  Scheduler<BdmSim>* scheduler_ = nullptr;  //!
+  std::string name_;
+  Grid<Simulation>* grid_ = nullptr; //!
+  Scheduler<Simulation>* scheduler_ = nullptr;  //!
   /// This id is unique for each simulation within the same process
   uint64_t id_ = 0; //!
-  /// cached value where `id_` is appended to `simulation_name_` if `id_` is
+  /// cached value where `id_` is appended to `name_` if `id_` is
   /// not zero.
-  /// e.g. `simulation_name_ = "my-sim"` and `id_ = 0` -> "my-sim"
-  /// e.g. `simulation_name_ = "my-sim"` and `id_ = 4` -> "my-sim4"
-  std::string simulation_id_; //!
+  /// e.g. `name_ = "my-sim"` and `id_ = 0` -> "my-sim"
+  /// e.g. `name_ = "my-sim"` and `id_ = 4` -> "my-sim4"
+  std::string unique_name_; //!
 
-  /// Initialize BdmSim
+  /// Initialize Simulation
   void Initialize(int argc, const char** argv);
 
-  /// Initialize data members that have a dependency on BdmSim
+  /// Initialize data members that have a dependency on Simulation
   template <typename TResourceManager = ResourceManager<TCTParam>,
-            typename TGrid = Grid<BdmSim>,
-            typename TScheduler = Scheduler<BdmSim>>
+            typename TGrid = Grid<Simulation>,
+            typename TScheduler = Scheduler<Simulation>>
   void InitializeMembers();
 
   /// Return only the executable name given the path
@@ -107,14 +120,14 @@ struct BdmSim {
   /// @param argv argument vector from main function
   void InitializeRuntimeParams(int argc, const char** argv);
 
-  /// This function initialzes `simulation_name_` and `simulatio_id_`
-  void InitializeSimulationId(const std::string& simulation_name);
+  /// This function initialzes `name_` and `simulatio_id_`
+  void InitializeUniqueName(const std::string& simulation_name);
 
-  friend BdmSimTest;
+  friend SimulationTest;
 
-  ClassDefNV(BdmSim, 1);
+  ClassDefNV(Simulation, 1);
 };
 
 }  // namespace bdm
 
-#endif // FOO
+#endif  // SIMULATION_H_

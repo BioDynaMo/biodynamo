@@ -32,7 +32,7 @@
 #include "root_util.h"
 #include "so_pointer.h"
 #include "type_util.h"
-#include "bdm.h"
+#include "simulation.h"
 
 namespace bdm {
 
@@ -364,16 +364,16 @@ struct Capsule;
     return ret_value;                                                          \
   }                                                                            \
                                                                                \
-  using BdmSim_t = BdmSim<typename TCompileTimeParam::template Self<Soa>>; \
+  using Simulation_t = Simulation<typename TCompileTimeParam::template Self<Soa>>; \
   \
   MostDerivedSoPtr GetSoPtr() {                                                \
-    auto* rm = BdmSim_t::GetActive()->GetRm(); \
+    auto* rm = Simulation_t::GetActive()->GetRm(); \
     auto* container = rm->template Get<MostDerivedScalar>();                 \
     return MostDerivedSoPtr(container, Base::GetElementIdx());                 \
   }                                                                            \
                                                                                \
   void RemoveFromSimulation() {                                                \
-    auto* rm = BdmSim_t::GetActive()->GetRm(); \
+    auto* rm = Simulation_t::GetActive()->GetRm(); \
     auto container = rm->template Get<MostDerivedScalar>();                  \
     container->DelayedRemove(Base::GetElementIdx());                           \
   }                                                                            \

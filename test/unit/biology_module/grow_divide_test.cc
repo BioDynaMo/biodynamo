@@ -18,12 +18,12 @@
 #include "resource_manager.h"
 #include "unit/default_ctparam.h"
 #include "unit/test_util.h"
-#include "bdm_imp.h"
+#include "simulation_implementation.h"
 
 namespace bdm {
 
 TEST(GrowDivideTest, Grow) {
-  BdmSim<> simulation(typeid(*this).name());
+  Simulation<> simulation(typeid(*this).name());
   auto* rm = simulation.GetRm();
 
   Cell cell;
@@ -39,7 +39,7 @@ TEST(GrowDivideTest, Grow) {
 }
 
 TEST(GrowDivideTest, Divide) {
-  BdmSim<> simulation(typeid(*this).name());
+  Simulation<> simulation(typeid(*this).name());
   auto* rm = simulation.GetRm();
 
   Cell cell;

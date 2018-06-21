@@ -14,7 +14,7 @@
 
 #include "compile_time_param.h"
 #include "unit/dividing_cell_op_test.h"
-#include "bdm_imp.h"
+#include "simulation_implementation.h"
 
 namespace bdm {
 

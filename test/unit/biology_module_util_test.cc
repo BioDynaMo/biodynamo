@@ -13,7 +13,7 @@
 // -----------------------------------------------------------------------------
 
 #include "unit/biology_module_util_test.h"
-#include "bdm_imp.h"
+#include "simulation_implementation.h"
 
 namespace bdm {
 namespace biology_module_util_test_internal {

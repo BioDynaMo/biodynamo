@@ -20,7 +20,7 @@
 #include "neuroscience/neurite_element.h"
 #include "neuroscience/neuron_soma.h"
 #include "unit/test_util.h"
-#include "bdm_imp.h"
+#include "simulation_implementation.h"
 
 namespace bdm {
 
@@ -41,7 +41,7 @@ namespace experimental {
 namespace neuroscience {
 
 TEST(MechanicalInteraction, StraightxCylinderGrowth) {
-  BdmSim<> simulation(typeid(*this).name());
+  Simulation<> simulation(typeid(*this).name());
   auto* rm = simulation.GetRm();
 
   auto neuron = rm->New<NeuronSoma>();
@@ -74,7 +74,7 @@ TEST(MechanicalInteraction, StraightxCylinderGrowth) {
 }
 
 TEST(MechanicalInteraction, StraightyCylinderGrowth) {
-  BdmSim<> simulation(typeid(*this).name());
+  Simulation<> simulation(typeid(*this).name());
   auto* rm = simulation.GetRm();
 
   auto neuron = rm->New<NeuronSoma>();
@@ -107,7 +107,7 @@ TEST(MechanicalInteraction, StraightyCylinderGrowth) {
 }
 
 TEST(MechanicalInteraction, StraightzCylinderGrowth) {
-  BdmSim<> simulation(typeid(*this).name());
+  Simulation<> simulation(typeid(*this).name());
   auto* rm = simulation.GetRm();
 
   auto neuron = rm->New<NeuronSoma>();
@@ -140,7 +140,7 @@ TEST(MechanicalInteraction, StraightzCylinderGrowth) {
 }
 
 TEST(MechanicalInteraction, DiagonalxyCylinderGrowth) {
-  BdmSim<> simulation(typeid(*this).name());
+  Simulation<> simulation(typeid(*this).name());
   auto* rm = simulation.GetRm();
 
   auto neuron = rm->New<NeuronSoma>();
@@ -171,7 +171,7 @@ TEST(MechanicalInteraction, DiagonalxyCylinderGrowth) {
 }
 
 TEST(MechanicalInteraction, DiagonalxyzCylinderGrowth) {
-  BdmSim<> simulation(typeid(*this).name());
+  Simulation<> simulation(typeid(*this).name());
   auto* rm = simulation.GetRm();
 
   auto neuron = rm->New<NeuronSoma>();
@@ -206,7 +206,7 @@ TEST(MechanicalInteraction, DiagonalxyzCylinderGrowth) {
 }
 
 TEST(MechanicalInteraction, DiagonalSpecialDirectionCylinderGrowth) {
-  BdmSim<> simulation(typeid(*this).name());
+  Simulation<> simulation(typeid(*this).name());
   auto* rm = simulation.GetRm();
 
   auto neuron = rm->New<NeuronSoma>();
@@ -241,7 +241,7 @@ TEST(MechanicalInteraction, DiagonalSpecialDirectionCylinderGrowth) {
 }
 
 TEST(MechanicalInteraction, StraightCylinderGrowthObstacle) {
-  BdmSim<> simulation(typeid(*this).name());
+  Simulation<> simulation(typeid(*this).name());
   auto* rm = simulation.GetRm();
 
   auto neuron = rm->New<NeuronSoma>();
@@ -280,7 +280,7 @@ TEST(MechanicalInteraction, StraightCylinderGrowthObstacle) {
 
 // TODO(jean) Fix test
 TEST(DISABLED_MechanicalInteraction, NotStraightCylinderGrowthObstacle) {
-  BdmSim<> simulation(typeid(*this).name());
+  Simulation<> simulation(typeid(*this).name());
   auto* rm = simulation.GetRm();
 
   auto neuron = rm->New<NeuronSoma>();
@@ -316,7 +316,7 @@ TEST(DISABLED_MechanicalInteraction, NotStraightCylinderGrowthObstacle) {
 }
 
 TEST(MechanicalInteraction, DoubleStraightCylinderGrowth) {
-  BdmSim<> simulation(typeid(*this).name());
+  Simulation<> simulation(typeid(*this).name());
   auto* rm = simulation.GetRm();
 
   auto neuron = rm->New<NeuronSoma>();
@@ -364,7 +364,7 @@ TEST(MechanicalInteraction, DoubleStraightCylinderGrowth) {
 }
 
 TEST(MechanicalInteraction, BifurcationCylinderGrowth) {
-  BdmSim<> simulation(typeid(*this).name());
+  Simulation<> simulation(typeid(*this).name());
   auto* rm = simulation.GetRm();
 
   gErrorIgnoreLevel = kWarning;
@@ -422,7 +422,7 @@ TEST(MechanicalInteraction, BifurcationCylinderGrowth) {
 }
 
 TEST(MechanicalInteraction, BranchCylinderGrowth) {
-  BdmSim<> simulation(typeid(*this).name());
+  Simulation<> simulation(typeid(*this).name());
   auto* rm = simulation.GetRm();
 
   auto neuron = rm->New<NeuronSoma>();

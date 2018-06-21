@@ -51,7 +51,7 @@ struct CompileTimeParam : public DefaultCompileTimeParam<Backend> {
 enum ExecutionMode { kCpu, kCuda, kOpenCl };
 
 inline void RunTest(bool* result, ExecutionMode mode) {
-  BdmSim<> simulation("cell_division_gpu");
+  Simulation<> simulation("cell_division_gpu");
   auto* rm = simulation.GetRm();
   auto* param = simulation.GetParam();
   rm->Clear();

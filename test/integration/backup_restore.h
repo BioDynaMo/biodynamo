@@ -38,7 +38,7 @@ struct CompileTimeParam : public DefaultCompileTimeParam<TBackend> {
 };
 
 inline int Simulate(int argc, const char** argv) {
-  BdmSim<> simulation(argc, argv);
+  Simulation<> simulation(argc, argv);
   auto* rm = simulation.GetRm();
   auto* param = simulation.GetParam();
 

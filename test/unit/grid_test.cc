@@ -17,7 +17,7 @@
 #include "gtest/gtest.h"
 #include "unit/default_ctparam.h"
 #include "unit/test_util.h"
-#include "bdm_imp.h"
+#include "simulation_implementation.h"
 
 namespace bdm {
 
@@ -37,7 +37,7 @@ void CellFactory(TContainer* cells, size_t cells_per_dim) {
 }
 
 TEST(GridTest, SetupGrid) {
-  BdmSim<> simulation(typeid(*this).name());
+  Simulation<> simulation(typeid(*this).name());
   auto* rm = simulation.GetRm();
   auto* grid = simulation.GetGrid();
 
@@ -93,7 +93,7 @@ TEST(GridTest, SetupGrid) {
 }
 
 template <typename TContainer>
-void RunUpdateGridTest(TContainer* cells, BdmSim<>* simulation) {
+void RunUpdateGridTest(TContainer* cells, Simulation<>* simulation) {
   auto* grid = simulation->GetGrid();
 
   // Update the grid
@@ -148,7 +148,7 @@ void RunUpdateGridTest(TContainer* cells, BdmSim<>* simulation) {
 }
 
 TEST(GridTest, UpdateGrid) {
-  BdmSim<> simulation(typeid(*this).name());
+  Simulation<> simulation(typeid(*this).name());
   auto* rm = simulation.GetRm();
   auto* grid = simulation.GetGrid();
 
@@ -168,7 +168,7 @@ TEST(GridTest, UpdateGrid) {
 }
 
 TEST(GridTest, NoRaceConditionDuringUpdate) {
-  BdmSim<> simulation(typeid(*this).name());
+  Simulation<> simulation(typeid(*this).name());
   auto* rm = simulation.GetRm();
   auto* grid = simulation.GetGrid();
 
@@ -193,7 +193,7 @@ TEST(GridTest, NoRaceConditionDuringUpdate) {
 }
 
 TEST(GridTest, GetBoxIndex) {
-  BdmSim<> simulation(typeid(*this).name());
+  Simulation<> simulation(typeid(*this).name());
   auto* rm = simulation.GetRm();
   auto* grid = simulation.GetGrid();
 
@@ -220,7 +220,7 @@ TEST(GridTest, GetBoxIndex) {
 }
 
 TEST(GridTest, GridDimensions) {
-  BdmSim<> simulation(typeid(*this).name());
+  Simulation<> simulation(typeid(*this).name());
   auto* rm = simulation.GetRm();
   auto* grid = simulation.GetGrid();
 
@@ -243,7 +243,7 @@ TEST(GridTest, GridDimensions) {
 }
 
 TEST(GridTest, GetBoxCoordinates) {
-  BdmSim<> simulation(typeid(*this).name());
+  Simulation<> simulation(typeid(*this).name());
   auto* rm = simulation.GetRm();
   auto* grid = simulation.GetGrid();
 
@@ -259,7 +259,7 @@ TEST(GridTest, GetBoxCoordinates) {
 }
 
 void RunNoRaceConditionForEachPairTest() {
-  BdmSim<> simulation("GridTest_RunNoRaceConditionForEachPairTest");
+  Simulation<> simulation("GridTest_RunNoRaceConditionForEachPairTest");
   auto* rm = simulation.GetRm();
   auto* grid = simulation.GetGrid();
 

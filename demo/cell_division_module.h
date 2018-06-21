@@ -34,7 +34,7 @@ struct CompileTimeParam : public DefaultCompileTimeParam<Backend> {
 
 inline int Simulate(int argc, const char** argv) {
   // 2. Create new simulation
-  BdmSim<> simulation(argc, argv);
+  Simulation<> simulation(argc, argv);
 
   // 3. Define initial model - in this example: 3D grid of cells
   size_t cells_per_dim = 128;

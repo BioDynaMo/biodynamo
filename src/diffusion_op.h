@@ -19,7 +19,7 @@
 #include <utility>
 #include <vector>
 
-#include "bdm.h"
+#include "simulation.h"
 #include "diffusion_grid.h"
 #include "grid.h"
 #include "inline_vector.h"
@@ -33,9 +33,9 @@ class DiffusionOp {
   DiffusionOp() {}
   virtual ~DiffusionOp() {}
 
-  template <typename TContainer, typename TBdmSim = BdmSim<>>
+  template <typename TContainer, typename TSimulation = Simulation<>>
   void operator()(TContainer* cells, uint16_t type_idx) {
-    auto* sim = TBdmSim::GetActive();
+    auto* sim = TSimulation::GetActive();
     auto* grid = sim->GetGrid();
     auto* param = sim->GetParam();
     auto& diffusion_grids = sim->GetRm()->GetDiffusionGrids();

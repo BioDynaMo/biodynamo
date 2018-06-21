@@ -12,7 +12,7 @@
 //
 // -----------------------------------------------------------------------------
 
-#include "bdm_imp.h"
+#include "simulation_implementation.h"
 #include "cell.h"
 #include "compile_time_param.h"
 #include "unit/simulation_object_test.h"
@@ -27,7 +27,7 @@ struct CompileTimeParam : public DefaultCompileTimeParam<TBackend> {
 namespace simulation_object_aos_test_internal {
 
 TEST(SimulationObjectTest, AosGetElementIndex) {
-  BdmSim<> simulation(typeid(*this).name());
+  Simulation<> simulation(typeid(*this).name());
   auto* rm = simulation.GetRm();
 
   rm->Clear();

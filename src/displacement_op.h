@@ -29,18 +29,18 @@
 #include "param.h"
 #include "shape.h"
 
-#include "bdm.h"
+#include "simulation.h"
 
 namespace bdm {
 
 using std::array;
 
 /// Defines the 3D physical interactions between physical objects
-template <typename TBdmSim = BdmSim<>>
+template <typename TSimulation = Simulation<>>
 class DisplacementOp {
  public:
   DisplacementOp() {
-    auto* sim = TBdmSim::GetActive();
+    auto* sim = TSimulation::GetActive();
     sim->GetRm()->template ApplyOnAllTypes([this](auto* container,
                                                 uint16_t type_idx) {
       using Container = std::remove_pointer_t<decltype(container)>;
@@ -58,7 +58,7 @@ class DisplacementOp {
 
   template <typename TContainer>
   void operator()(TContainer* cells, uint16_t type_idx) {
-    auto* param = TBdmSim::GetActive()->GetParam();
+    auto* param = TSimulation::GetActive()->GetParam();
     if (param->use_gpu_ && !force_cpu_implementation_) {
 #ifdef USE_OPENCL
       if (param->use_opencl_) {

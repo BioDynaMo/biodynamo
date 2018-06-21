@@ -23,7 +23,7 @@
 #include "unistd.h"
 #include "unit/default_ctparam.h"
 #include "unit/test_util.h"
-#include "bdm_imp.h"
+#include "simulation_implementation.h"
 
 #define ROOTFILE "bdmFile.root"
 
@@ -59,7 +59,7 @@ class TestSchedulerBackup : public Scheduler<> {
 };
 
 inline void RunRestoreTest() {
-  BdmSim<> simulation("SchedulerTest_RunRestoreTest");
+  Simulation<> simulation("SchedulerTest_RunRestoreTest");
   auto* rm = simulation.GetRm();
   auto* param = simulation.GetParam();
   param->restore_file_ = ROOTFILE;
@@ -100,7 +100,7 @@ inline void RunRestoreTest() {
 }
 
 inline void RunBackupTest() {
-  BdmSim<> simulation("SchedulerTest_RunBackupTest");
+  Simulation<> simulation("SchedulerTest_RunBackupTest");
   auto* rm = simulation.GetRm();
   auto* param = simulation.GetParam();
 

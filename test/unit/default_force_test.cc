@@ -22,7 +22,7 @@
 #include "unit/test_util.h"
 
 #include "biodynamo.h"
-#include "bdm_imp.h"
+#include "simulation_implementation.h"
 
 namespace bdm {
 
@@ -78,7 +78,7 @@ TEST(DefaultForce, AllNonOverlappingSphere) {
 /// are at the same position -> should return random force
 TEST(DefaultForce, AllAtSamePositionSphere) {
   // simulation object required for random number generator
-  BdmSim<> simulation(typeid(*this).name());
+  Simulation<> simulation(typeid(*this).name());
 
   Cell cell({0, 0, 0});
   cell.SetDiameter(8);
@@ -153,7 +153,7 @@ TEST(DISABLED_DefaultForce, GeneralCylinder) {
 
 TEST(DefaultForce, CylinderIntersectingAxis) {
   // simulation object required for random number generator
-  BdmSim<> simulation(typeid(*this).name());
+  Simulation<> simulation(typeid(*this).name());
   
   NeuriteElement cylinder1;
   cylinder1.SetMassLocation({0, 0, 0});
@@ -247,7 +247,7 @@ TEST(DefaultForce, SphereSmallCylinderHorizontal) {
 // sphere-cylinder interaction is done vertically at the tip of the cylinder
 // (mass location)
 TEST(DefaultForce, SphereSmallCylinderVertical) {
-  BdmSim<> simulation(typeid(*this).name());
+  Simulation<> simulation(typeid(*this).name());
   auto* rm = simulation.GetRm();
 
   Cell sphere({0, 0, 0});
@@ -275,7 +275,7 @@ TEST(DefaultForce, SphereSmallCylinderVertical) {
 
 // opposit case of Vertical: cylinder is below the cell
 TEST(DefaultForce, SphereSmallCylinderVertical2) {
-  BdmSim<> simulation(typeid(*this).name());
+  Simulation<> simulation(typeid(*this).name());
   auto* rm = simulation.GetRm();
 
   Cell sphere({0, 0, 0});

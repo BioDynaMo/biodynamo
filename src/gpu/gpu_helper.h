@@ -35,7 +35,7 @@
 
 #include "log.h"
 #include "param.h"
-#include "bdm.h"
+#include "simulation.h"
 
 namespace bdm {
 
@@ -47,9 +47,9 @@ static const char* GetErrorString(cl_int error);
 #endif
 
 #ifdef USE_CUDA
-template <typename TBdmSim = BdmSim<>>
+template <typename TSimulation = Simulation<>>
 static void FindGpuDevicesCuda() {
-  auto* param = TBdmSim::GetActive()->GetParam();
+  auto* param = TSimulation::GetActive()->GetParam();
 
   int n_devices = 0;
 
@@ -79,9 +79,9 @@ static void FindGpuDevicesCuda() {
 #endif
 
 #ifdef USE_OPENCL
-template <typename TBdmSim = BdmSim<>>
+template <typename TSimulation = Simulation<>>
 static void CompileOpenCLKernels() {
-  auto* sim = TBdmSim::GetActive();
+  auto* sim = TSimulation::GetActive();
   auto* rm = sim->GetRm();
   auto* param = sim->GetParam();
 
@@ -126,12 +126,12 @@ static void CompileOpenCLKernels() {
   }
 }
 
-template <typename TBdmSim = BdmSim<>>
+template <typename TSimulation = Simulation<>>
 static void FindGpuDevicesOpenCL() {
   try {
     // We keep the context and device list in the resource manager to be
     // accessible elsewhere to create command queues and buffers from
-    auto* sim = TBdmSim::GetActive();
+    auto* sim = TSimulation::GetActive();
     auto* rm = sim->GetRm();
     auto* param = sim->GetParam();
 
@@ -208,9 +208,9 @@ static void FindGpuDevicesOpenCL() {
 }
 #endif
 
-template <typename TBdmSim = BdmSim<>>
+template <typename TSimulation = Simulation<>>
 static void InitializeGPUEnvironment() {
-  auto* param = TBdmSim::GetActive()->GetParam();
+  auto* param = TSimulation::GetActive()->GetParam();
   if (param->use_opencl_) {
 #ifdef USE_OPENCL
     FindGpuDevicesOpenCL<>();

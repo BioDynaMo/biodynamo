@@ -60,10 +60,10 @@ struct Chemotaxis : public BaseBiologyModule {
   // Daughter cells inherit this biology module
   Chemotaxis() : BaseBiologyModule(gAllBmEvents) {}
 
-  template <typename T, typename TBdmSim = BdmSim<>>
+  template <typename T, typename TSimulation = Simulation<>>
   void Run(T* cell) {
     if (!init_) {
-      auto* rm = TBdmSim::GetActive()->GetRm();
+      auto* rm = TSimulation::GetActive()->GetRm();
       dg_0_ = rm->GetDiffusionGrid(kSubstance_0);
       dg_1_ = rm->GetDiffusionGrid(kSubstance_1);
       init_ = true;
@@ -97,10 +97,10 @@ struct SubstanceSecretion : public BaseBiologyModule {
   // Daughter cells inherit this biology module
   SubstanceSecretion() : BaseBiologyModule(gAllBmEvents) {}
 
-  template <typename T, typename TBdmSim = BdmSim<>>
+  template <typename T, typename TSimulation = Simulation<>>
   void Run(T* cell) {
     if (!init_) {
-      auto* rm = TBdmSim::GetActive()->GetRm();
+      auto* rm = TSimulation::GetActive()->GetRm();
       dg_0_ = rm->GetDiffusionGrid(kSubstance_0);
       dg_1_ = rm->GetDiffusionGrid(kSubstance_1);
       init_ = true;
@@ -132,9 +132,9 @@ struct CompileTimeParam : public DefaultCompileTimeParam<Backend> {
 // Returns 0 if the cell locations within a subvolume of the total system,
 // comprising approximately target_n cells, are arranged as clusters, and 1
 // otherwise.
-template <typename TBdmSim = BdmSim<>>
+template <typename TSimulation = Simulation<>>
 static bool GetCriterion(double spatial_range, int target_n) {
-  auto* sim = TBdmSim::GetActive();
+  auto* sim = TSimulation::GetActive();
   auto* rm = sim->GetRm();
 
   auto my_cells = rm->template Get<MyCell>();
@@ -244,7 +244,7 @@ static bool GetCriterion(double spatial_range, int target_n) {
 }
 
 inline int Simulate(int argc, const char** argv) {
-  BdmSim<> simulation(argc, argv);
+  Simulation<> simulation(argc, argv);
   auto* param = simulation.GetParam();
 
   // 3. Define initial model

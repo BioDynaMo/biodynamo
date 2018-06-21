@@ -22,7 +22,7 @@
 #include "simulation_object.h"
 #include "so_pointer.h"
 #include "unit/io_test.h"
-#include "bdm_imp.h"
+#include "simulation_implementation.h"
 
 namespace bdm {
 namespace so_pointer_aos_test_internal {
@@ -90,7 +90,7 @@ struct CompileTimeParam : public DefaultCompileTimeParam<TBackend> {
 
 namespace so_pointer_aos_test_internal {
 
-inline void IOTestSoPointerRmContainerAos(BdmSim<>* simulation) {
+inline void IOTestSoPointerRmContainerAos(Simulation<>* simulation) {
   auto* rm = simulation->GetRm();
   // TODO(lukas) Remove after https://trello.com/c/sKoOTgJM has been resolved
   rm->Get<SoPointerTestClass>()->reserve(2);

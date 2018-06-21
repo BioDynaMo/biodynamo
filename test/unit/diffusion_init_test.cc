@@ -20,7 +20,7 @@
 #include "substance_initializers.h"
 #include "unit/default_ctparam.h"
 #include "unit/test_util.h"
-#include "bdm_imp.h"
+#include "simulation_implementation.h"
 
 #include "Math/DistFunc.h"
 
@@ -29,7 +29,7 @@ namespace bdm {
 enum Substances { kSubstance };
 
 TEST(DiffusionInitTest, GaussianBand) {
-  BdmSim<> simulation(typeid(*this).name());
+  Simulation<> simulation(typeid(*this).name());
   auto* rm = simulation.GetRm();
   auto* param = simulation.GetParam();
 

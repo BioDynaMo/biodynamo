@@ -18,7 +18,7 @@
 #include <vector>
 
 #include <Rtypes.h>
-#include "bdm.h"
+#include "simulation.h"
 #include "biology_module_util.h"
 #include "param.h"
 
@@ -57,9 +57,9 @@ struct RegulateGenes : public BaseBiologyModule {
 
   /// Method Run() contains the implementation for Runge-Khutta and Euler
   /// methods for solving ODE.
-  template <typename T, typename TBdmSim = BdmSim<>>
+  template <typename T, typename TSimulation = Simulation<>>
   void Run(T* cell) {
-    auto* sim = TBdmSim::GetActive();
+    auto* sim = TSimulation::GetActive();
     auto* param = sim->GetParam();
     auto* scheduler = sim->GetScheduler();
 

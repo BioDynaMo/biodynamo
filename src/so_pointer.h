@@ -22,7 +22,7 @@
 
 #include "backend.h"
 #include "simulation_backup.h"
-#include "bdm.h"
+#include "simulation.h"
 
 namespace bdm {
 
@@ -153,21 +153,21 @@ template <typename TSoSimBackend, typename TBackend>
 struct ReadContainerFunctor {
   /// Backends between SoPointer and ResourceManager are matching
   template <typename TContainer, typename TTBackend = TBackend,
-            typename TBdmSim = BdmSim<>>
+            typename TSimulation = Simulation<>>
   typename std::enable_if<
-      std::is_same<TTBackend, typename TBdmSim::ResourceManager_t::Backend>::value>::type
+      std::is_same<TTBackend, typename TSimulation::ResourceManager_t::Backend>::value>::type
   operator()(TBuffer& R__b, TContainer** container, uint64_t) {  // NOLINT
     int state;
     R__b >> state;
     if (state == ContainerPointerState::kPointIntoRm) {
       R__b >> *container;
-      // if a whole simulation is restored from a ROOT file, `TBdmSim::Get` is
+      // if a whole simulation is restored from a ROOT file, `TSimulation::Get` is
       // not updated to the new `ResourceManager` yet. Therefore, we must delay
       // this call. It will be executed after the restore operation has been
       // completed.
       SimulationBackup::after_restore_event_.push_back(
           [=]() {
-            auto* rm = TBdmSim::GetActive()->GetRm();
+            auto* rm = TSimulation::GetActive()->GetRm();
             *container = rm->template Get<TSoSimBackend>();
           });
     } else if (state == ContainerPointerState::kSeparate) {
@@ -200,11 +200,11 @@ template <typename TSoSimBackend, typename TBackend>
 struct WriteContainerFunctor {
   /// Backends between SoPointer and ResourceManager are matching
   template <typename TContainer, typename TTBackend = TBackend,
-            typename TBdmSim = BdmSim<>>
+            typename TSimulation = Simulation<>>
   typename std::enable_if<
-      std::is_same<TTBackend, typename TBdmSim::ResourceManager_t::Backend>::value>::type
+      std::is_same<TTBackend, typename TSimulation::ResourceManager_t::Backend>::value>::type
   operator()(TBuffer& R__b, const TContainer* container, uint64_t) {  // NOLINT
-    auto* rm = TBdmSim::GetActive()->GetRm();
+    auto* rm = TSimulation::GetActive()->GetRm();
     if (container == nullptr) {
       // write nullptr
       R__b << ContainerPointerState::kNullPtr;

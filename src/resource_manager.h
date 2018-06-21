@@ -37,7 +37,7 @@
 #include "diffusion_grid.h"
 #include "tuple_util.h"
 #include "variadic_template_parameter_util.h"
-#include "bdm.h"
+#include "simulation.h"
 
 namespace bdm {
 

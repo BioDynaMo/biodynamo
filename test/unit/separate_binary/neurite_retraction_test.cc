@@ -20,7 +20,7 @@
 #include "neuroscience/neurite_element.h"
 #include "neuroscience/neuron_soma.h"
 #include "unit/test_util.h"
-#include "bdm_imp.h"
+#include "simulation_implementation.h"
 
 namespace bdm {
 
@@ -38,7 +38,7 @@ namespace neuroscience {
 
 // TODO(jean) Fix this test
 TEST(DISABLED_NeuriteElementBehaviour, StraightxCylinderGrowthRetract) {
-  BdmSim<> simulation(typeid(*this).name());
+  Simulation<> simulation(typeid(*this).name());
   auto* rm = simulation.GetRm();
 
   auto neuron = rm->New<NeuronSoma>();
@@ -93,7 +93,7 @@ TEST(DISABLED_NeuriteElementBehaviour, StraightxCylinderGrowthRetract) {
 
 // TODO(jean) fix test
 TEST(DISABLED_NeuriteElementBehaviour, BranchingGrowth) {
-  BdmSim<> simulation(typeid(*this).name());
+  Simulation<> simulation(typeid(*this).name());
   auto* rm = simulation.GetRm();
   auto* param = simulation.GetParam();
 

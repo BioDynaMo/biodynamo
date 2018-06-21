@@ -31,17 +31,17 @@
 #include "log.h"
 #include "param.h"
 #include "visualization/catalyst_adaptor.h"
-#include "bdm.h"
+#include "simulation.h"
 
 namespace bdm {
 
-template <typename TBdmSim = BdmSim<>>
+template <typename TSimulation = Simulation<>>
 class Scheduler {
  public:
   using Clock = std::chrono::high_resolution_clock;
 
   Scheduler() {
-    auto* param = TBdmSim::GetActive()->GetParam();
+    auto* param = TSimulation::GetActive()->GetParam();
     backup_ = new SimulationBackup(param->backup_file_, param->restore_file_);
     if (backup_->RestoreEnabled()) {
       restore_point_ = backup_->GetSimulationStepsFromBackup();
@@ -55,7 +55,7 @@ class Scheduler {
   virtual ~Scheduler() {
     delete backup_;
     delete visualization_;
-    auto* param = TBdmSim::GetActive()->GetParam();
+    auto* param = TSimulation::GetActive()->GetParam();
     if (param->statistics_) {
       std::cout << gStatistics << std::endl;
     }
@@ -85,7 +85,7 @@ class Scheduler {
   /// Executes one step.
   /// This design makes testing more convenient
   virtual void Execute(bool last_iteration) {
-    auto* sim = TBdmSim::GetActive();
+    auto* sim = TSimulation::GetActive();
     auto* rm = sim->GetRm();
     auto* grid = sim->GetGrid();
     auto* param = sim->GetParam();
@@ -126,14 +126,14 @@ class Scheduler {
   OpTimer<CommitOp> commit_ = OpTimer<CommitOp>("commit");
   OpTimer<DiffusionOp> diffusion_ = OpTimer<DiffusionOp>("diffusion");
   OpTimer<BiologyModuleOp> biology_ = OpTimer<BiologyModuleOp>("biology");
-  OpTimer<DisplacementOp<TBdmSim>> physics_ = OpTimer<DisplacementOp<TBdmSim>>("physics");
+  OpTimer<DisplacementOp<TSimulation>> physics_ = OpTimer<DisplacementOp<TSimulation>>("physics");
   OpTimer<BoundSpace> bound_space_ = OpTimer<BoundSpace>("bound_space");
 
   /// Backup the simulation. Backup interval based on `Param::backup_interval_`
   void Backup() {
     using std::chrono::seconds;
     using std::chrono::duration_cast;
-    auto* param = TBdmSim::GetActive()->GetParam();
+    auto* param = TSimulation::GetActive()->GetParam();
     if (backup_->BackupEnabled() &&
         duration_cast<seconds>(Clock::now() - last_backup_).count() >=
             param->backup_interval_) {
@@ -157,14 +157,14 @@ class Scheduler {
       backup_->Restore();
       *steps = total_steps_ + *steps - restore_point_;
       total_steps_ = restore_point_;
-      auto* param = TBdmSim::GetActive()->GetParam();
+      auto* param = TSimulation::GetActive()->GetParam();
       Log::Info("Scheduler", "Restored simulation from ", param->restore_file_);
     }
     return false;
   }
 
   void CommitChangesAndUpdateReferences() {
-    auto* sim = TBdmSim::GetActive();
+    auto* sim = TSimulation::GetActive();
     auto* rm = sim->GetRm();
     rm->ApplyOnAllTypesParallel(commit_);
 
@@ -185,7 +185,7 @@ class Scheduler {
   void Initialize() {
     CommitChangesAndUpdateReferences();
 
-    auto* sim = TBdmSim::GetActive();
+    auto* sim = TSimulation::GetActive();
     auto* grid = sim->GetGrid();
     auto* rm = sim->GetRm();
     auto* param = sim->GetParam();

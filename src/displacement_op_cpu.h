@@ -22,11 +22,11 @@
 #include "bound_space_op.h"
 #include "math_util.h"
 #include "param.h"
-#include "bdm.h"
+#include "simulation.h"
 
 namespace bdm {
 
-template <typename TBdmSim = BdmSim<>>
+template <typename TSimulation = Simulation<>>
 class DisplacementOpCpu {
  public:
   DisplacementOpCpu() {}
@@ -37,7 +37,7 @@ class DisplacementOpCpu {
     std::vector<array<double, 3>> sim_object_movements;
     sim_object_movements.reserve(sim_objects->size());
 
-    auto* sim = TBdmSim::GetActive();
+    auto* sim = TSimulation::GetActive();
     auto* grid = sim->GetGrid();
 
     auto search_radius = grid->GetLargestObjectSize();

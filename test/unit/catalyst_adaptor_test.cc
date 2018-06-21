@@ -17,7 +17,7 @@
 #include "io_util.h"
 #include "unit/test_util.h"
 #include "unit/default_ctparam.h"
-#include "bdm_imp.h"
+#include "simulation_implementation.h"
 
 // TODO(lukas) move file to unit/visualization
 
@@ -38,7 +38,7 @@ class CatalystAdaptorTest : public ::testing::Test {
 
 /// Tests if simulation_info.json is generated correctly during initialization.
 TEST_F(CatalystAdaptorTest, GenerateSimulationInfoJson) {
-  BdmSim<> simulation(typeid(*this).name());
+  Simulation<> simulation(typeid(*this).name());
   auto* param = simulation.GetParam();
 
   // remove files to avoid false positive test results

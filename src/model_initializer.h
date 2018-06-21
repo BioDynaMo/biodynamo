@@ -22,7 +22,7 @@
 #include "diffusion_grid.h"
 #include "random.h"
 #include "resource_manager.h"
-#include "bdm.h"
+#include "simulation.h"
 
 namespace bdm {
 
@@ -43,10 +43,10 @@ struct ModelInitializer {
   ///                            new simulation object. Takes `const
   ///                            std::array<double, 3>&` as input parameter
   ///
-  template <typename Function, typename TBdmSim = BdmSim<>>
+  template <typename Function, typename TSimulation = Simulation<>>
   static void Grid3D(size_t cells_per_dim, double space,
                      Function cell_builder) {
-    auto* sim = TBdmSim::GetActive();
+    auto* sim = TSimulation::GetActive();
     auto* rm = sim->GetRm();
     // Determine simulation object type which is returned by the cell_builder
     using FunctionReturnType = decltype(cell_builder({0, 0, 0}));
@@ -83,10 +83,10 @@ struct ModelInitializer {
   ///                            new simulation object. Takes `const
   ///                            std::array<double, 3>&` as input parameter
   ///
-  template <typename Function, typename TBdmSim = BdmSim<>>
+  template <typename Function, typename TSimulation = Simulation<>>
   static void Grid3D(const std::array<size_t, 3>& cells_per_dim, double space,
                      Function cell_builder) {
-    auto* sim = TBdmSim::GetActive();
+    auto* sim = TSimulation::GetActive();
     auto* rm = sim->GetRm();
     // Determine simulation object type which is returned by the cell_builder
     using FunctionReturnType = decltype(cell_builder({0, 0, 0}));
@@ -114,10 +114,10 @@ struct ModelInitializer {
   ///                           new simulation object. Takes `const
   ///                           std::array<double, 3>&` as input parameter
   ///
-  template <typename Function, typename TBdmSim = BdmSim<>>
+  template <typename Function, typename TSimulation = Simulation<>>
   static void CreateCells(const std::vector<std::array<double, 3>>& positions,
                           Function cell_builder) {
-    auto* sim = TBdmSim::GetActive();
+    auto* sim = TSimulation::GetActive();
     auto* rm = sim->GetRm();
     // Determine simulation object type which is returned by the cell_builder
     using FunctionReturnType = decltype(cell_builder({0, 0, 0}));
@@ -143,10 +143,10 @@ struct ModelInitializer {
   ///                           new simulation object. Takes `const
   ///                           std::array<double, 3>&` as input parameter
   ///
-  template <typename Function, typename TBdmSim = BdmSim<>>
+  template <typename Function, typename TSimulation = Simulation<>>
   static void CreateCellsRandom(double min, double max, int num_cells,
                                 Function cell_builder) {
-    auto* sim = TBdmSim::GetActive();
+    auto* sim = TSimulation::GetActive();
     auto* rm = sim->GetRm();
     // Determine simulation object type which is returned by the cell_builder
     using FunctionReturnType = decltype(cell_builder({0, 0, 0}));
@@ -177,12 +177,12 @@ struct ModelInitializer {
   /// @param[in]  decay_constant   The decay constant
   /// @param[in]  resolution       The resolution of the diffusion grid
   ///
-  template <typename TBdmSim = BdmSim<>>
+  template <typename TSimulation = Simulation<>>
   static void DefineSubstance(int substance_id, std::string substance_name,
                               double diffusion_coeff, double decay_constant,
                               int resolution = 10) {
     assert(resolution > 0 && "Resolution needs to be a positive integer value");
-    auto* sim = TBdmSim::GetActive();
+    auto* sim = TSimulation::GetActive();
     auto* rm = sim->GetRm();
     DiffusionGrid* d_grid =
         new DiffusionGrid(substance_id, substance_name, diffusion_coeff,
@@ -191,10 +191,10 @@ struct ModelInitializer {
     diffusion_grids.push_back(d_grid);
   }
 
-  template <typename TBdmSim = BdmSim<>, typename F>
+  template <typename TSimulation = Simulation<>, typename F>
   static void InitializeSubstance(int substance_id, std::string substance_name,
                                   F function) {
-    auto* sim = TBdmSim::GetActive();
+    auto* sim = TSimulation::GetActive();
     auto* rm = sim->GetRm();
     auto diffusion_grid = rm->GetDiffusionGrid(substance_id);
     diffusion_grid->AddInitializer(function);

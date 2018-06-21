@@ -83,7 +83,7 @@ class CircularBuffer {
 };
 
 /// A class that represents Cartesian 3D grid
-template <typename TBdmSim = BdmSim<>>
+template <typename TSimulation = Simulation<>>
 class Grid {
  public:
   /// A single unit cube of the grid
@@ -142,16 +142,16 @@ class Grid {
       const SoHandle& operator*() const { return current_value_; }
 
       /// Pointer to the neighbor grid; for accessing the successor_ list
-      Grid<TBdmSim>* grid_;
+      Grid<TSimulation>* grid_;
       /// The current simulation object to be considered
       SoHandle current_value_;
       /// The remain number of simulation objects to consider
       int countdown_ = 0;
     };
 
-    template <typename TGrid = Grid<TBdmSim>>
+    template <typename TGrid = Grid<TSimulation>>
     Iterator begin() const {  // NOLINT
-      return Iterator(TBdmSim::GetActive()->GetGrid(), this);
+      return Iterator(TSimulation::GetActive()->GetGrid(), this);
     }
   };
 
@@ -221,7 +221,7 @@ class Grid {
     kHigh    /**< The closest 26  neighboring boxes */
   };
 
-  using ResourceManager_t = typename TBdmSim::ResourceManager_t;
+  using ResourceManager_t = typename TSimulation::ResourceManager_t;
 
   Grid() {}
 
@@ -313,7 +313,7 @@ class Grid {
     successors_.Initialize();
 
     // Assign simulation objects to boxes
-    auto* rm = TBdmSim::GetActive()->GetRm();
+    auto* rm = TSimulation::GetActive()->GetRm();
     rm->ApplyOnAllElementsParallel([this](auto&& sim_object, SoHandle id) {
       const auto& position = sim_object.GetPosition();
       auto idx = this->GetBoxIndex(position);
@@ -347,7 +347,7 @@ class Grid {
   /// Calculates what the grid dimensions need to be in order to contain all the
   /// simulation objects
   void CalculateGridDimensions(array<double, 6>* ret_grid_dimensions) {
-    auto* rm = TBdmSim::GetActive()->GetRm();
+    auto* rm = TSimulation::GetActive()->GetRm();
 
     const auto max_threads = omp_get_max_threads();
 
@@ -497,7 +497,7 @@ class Grid {
     GetMooreBoxes(&neighbor_boxes, idx);
 
     NeighborIterator ni(neighbor_boxes);
-    auto* rm = TBdmSim::GetActive()->GetRm();
+    auto* rm = TSimulation::GetActive()->GetRm();
     while (!ni.IsAtEnd()) {
       // Do something with neighbor object
       SoHandle neighbor_handle = *ni;
@@ -544,7 +544,7 @@ class Grid {
   void ForEachNeighborPairWithinRadius(const TLambda& lambda,
                                        double squared_radius) const {
     uint32_t z_start = 0, y_start = 0;
-    auto* rm = TBdmSim::GetActive()->GetRm();
+    auto* rm = TSimulation::GetActive()->GetRm();
     // use special iteration pattern to avoid race conditions between neighbors
     // main iteration will be done over rows of boxes. In order to avoid two
     // threads accessing the same box, one has to use a margin reagion of two
@@ -753,7 +753,7 @@ class Grid {
   ///     // Usage
   ///     SoHandle current_element = ...;
   ///     SoHandle next_element = successors_[current_element];
-  SimulationObjectVector<SoHandle, TBdmSim> successors_;
+  SimulationObjectVector<SoHandle, TSimulation> successors_;
   /// Determines which boxes to search neighbors in (see enum Adjacency)
   Adjacency adjacency_;
   /// The size of the largest object in the simulation

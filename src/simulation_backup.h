@@ -20,7 +20,7 @@
 #include <string>
 #include <vector>
 
-#include "bdm.h"
+#include "simulation.h"
 
 #include "io_util.h"
 #include "log.h"
@@ -32,7 +32,7 @@ namespace bdm {
 class SimulationBackup {
  public:
   // object names for root file
-  static const std::string kBdmSimName;
+  static const std::string kSimulationName;
   static const std::string kSimulationStepName;
   static const std::string kRuntimeVariableName;
 
@@ -48,7 +48,7 @@ class SimulationBackup {
   SimulationBackup(const std::string& backup_file,
                    const std::string& restore_file);
 
-  template <typename TBdmSim = BdmSim<>>
+  template <typename TSimulation = Simulation<>>
   void Backup(size_t completed_simulation_steps) {
     if (!backup_) {
       Log::Fatal("SimulationBackup",
@@ -63,8 +63,8 @@ class SimulationBackup {
     // Backup
     {
       TFileRaii f(tmp_file.str(), "UPDATE");
-      auto* simulation = TBdmSim::GetActive();
-      f.Get()->WriteObject(simulation, kBdmSimName.c_str());
+      auto* simulation = TSimulation::GetActive();
+      f.Get()->WriteObject(simulation, kSimulationName.c_str());
       IntegralTypeWrapper<size_t> wrapper(completed_simulation_steps);
       f.Get()->WriteObject(&wrapper, kSimulationStepName.c_str());
       RuntimeVariables rv;
@@ -78,7 +78,7 @@ class SimulationBackup {
     rename(tmp_file.str().c_str(), backup_file_.c_str());
   }
 
-  template <typename TBdmSim = BdmSim<>>
+  template <typename TSimulation = Simulation<>>
   void Restore() {
     if (!restore_) {
       Log::Fatal("SimulationBackup",
@@ -94,9 +94,9 @@ class SimulationBackup {
       Log::Warning("SimulationBackup",
                    "Restoring simulation executed on a different system!");
     }
-    TBdmSim* restored_simulation = nullptr;
-    file.Get()->GetObject(kBdmSimName.c_str(), restored_simulation);
-    TBdmSim::GetActive()->Restore(std::move(*restored_simulation));
+    TSimulation* restored_simulation = nullptr;
+    file.Get()->GetObject(kSimulationName.c_str(), restored_simulation);
+    TSimulation::GetActive()->Restore(std::move(*restored_simulation));
 
     // call all after restore events
     for (auto&& event : after_restore_event_) {

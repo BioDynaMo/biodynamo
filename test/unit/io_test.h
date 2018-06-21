@@ -44,14 +44,14 @@ class IOTest : public ::testing::Test {
  protected:
   virtual void SetUp() {
     remove(kRootFile);
-    simulation_ = new BdmSim<>(typeid(*this).name());
+    simulation_ = new Simulation<>(typeid(*this).name());
   }
 
   virtual void TearDown() {
     delete simulation_;
   }
 
-  BdmSim<>* simulation_;
+  Simulation<>* simulation_;
 };
 
 /// Writes backup to file and reads it back into restored

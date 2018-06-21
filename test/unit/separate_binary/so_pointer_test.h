@@ -17,7 +17,7 @@
 
 #include <gtest/gtest.h>
 
-#include "bdm_imp.h"
+#include "simulation_implementation.h"
 #include "compile_time_param.h"
 #include "simulation_backup.h"
 #include "simulation_object.h"
@@ -120,7 +120,7 @@ inline void IOTestSoPointerAnyContainerSoa() {
   EXPECT_EQ(456u, (*restored)->GetId());
 }
 
-inline void IOTestSoPointerRmContainerSoa(BdmSim<>* simulation) {
+inline void IOTestSoPointerRmContainerSoa(Simulation<>* simulation) {
   auto* rm = simulation->GetRm();
 
   auto&& so1 = rm->New<SoPointerTestClass>(123);

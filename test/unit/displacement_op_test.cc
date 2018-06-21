@@ -15,7 +15,7 @@
 #include "unit/displacement_op_test.h"
 #include "gtest/gtest.h"
 #include "unit/default_ctparam.h"
-#include "bdm_imp.h"
+#include "simulation_implementation.h"
 
 namespace bdm {
 namespace displacement_op_test_internal {
@@ -33,7 +33,7 @@ namespace displacement_op_test_internal {
 TEST(DisplacementOpTest, ComputeSoa) { RunTest(); }
 
 TEST(DisplacementOpTest, ComputeSoaNew) {
-  BdmSim<> simulation(typeid(*this).name());
+  Simulation<> simulation(typeid(*this).name());
   auto* rm = simulation.GetRm();
   auto* grid = simulation.GetGrid();
 

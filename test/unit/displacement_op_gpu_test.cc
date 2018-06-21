@@ -20,7 +20,7 @@
 #include "gtest/gtest.h"
 #include "unit/default_ctparam.h"
 #include "unit/test_util.h"
-#include "bdm_imp.h"
+#include "simulation_implementation.h"
 
 namespace bdm {
 namespace displacement_op_gpu_test_internal {
@@ -28,7 +28,7 @@ namespace displacement_op_gpu_test_internal {
 enum ExecutionMode { kCpu, kCuda, kOpenCl };
 
 void RunTest(ExecutionMode mode) {
-  BdmSim<> simulation("displacement_op_gpu_test_RunTest");
+  Simulation<> simulation("displacement_op_gpu_test_RunTest");
   auto* rm = simulation.GetRm();
   auto* grid = simulation.GetGrid();
   auto* param = simulation.GetParam();
@@ -112,7 +112,7 @@ TEST(DisplacementOpGpuTest, ComputeSoaOpenCL) {
 #endif
 
 void RunTest2(ExecutionMode mode) {
-  BdmSim<> simulation("DisplacementOpGpuTest_RunTest2");
+  Simulation<> simulation("DisplacementOpGpuTest_RunTest2");
   auto* rm = simulation.GetRm();
   auto* grid = simulation.GetGrid();
   auto* param = simulation.GetParam();

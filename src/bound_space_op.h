@@ -15,7 +15,7 @@
 #ifndef BOUND_SPACE_OP_H_
 #define BOUND_SPACE_OP_H_
 
-#include "bdm.h"
+#include "simulation.h"
 
 namespace bdm {
 
@@ -42,13 +42,13 @@ class BoundSpace {
   BoundSpace() {}
   ~BoundSpace() {}
 
-  template <typename TContainer, typename TBdmSim = BdmSim<>>
+  template <typename TContainer, typename TSimulation = Simulation<>>
   void operator()(TContainer* sim_objects, uint16_t type_idx) const {
     // set new positions after all updates have been calculated
     // otherwise some sim_objects would see neighbors with already updated
     // positions
     // which would lead to inconsistencies
-    auto* sim = TBdmSim::GetActive();
+    auto* sim = TSimulation::GetActive();
     auto* grid = sim->GetGrid();
     auto* param = sim->GetParam();
 #pragma omp parallel for

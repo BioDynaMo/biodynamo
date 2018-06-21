@@ -30,6 +30,6 @@
 #include "simulation_object_util.h"
 #include "variadic_template_parameter_util.h"
 #include "vtune.h"
-#include "bdm_imp.h"
+#include "simulation_implementation.h"
 
 #endif  // BIODYNAMO_H_

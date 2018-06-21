@@ -35,9 +35,9 @@ enum Substances { kKalium };
 struct Chemotaxis : public BaseBiologyModule {
   Chemotaxis() : BaseBiologyModule(gAllBmEvents) {}
 
-  template <typename T, typename TBdmSim = BdmSim<>>
+  template <typename T, typename TSimulation = Simulation<>>
   void Run(T* cell) {
-    auto* rm = TBdmSim::GetActive()->GetRm();
+    auto* rm = TSimulation::GetActive()->GetRm();
     auto* dg = rm->GetDiffusionGrid(kKalium);
     dg->SetConcentrationThreshold(1e15);
 
@@ -59,9 +59,9 @@ struct Chemotaxis : public BaseBiologyModule {
 struct KaliumSecretion : public BaseBiologyModule {
   KaliumSecretion() : BaseBiologyModule() {}
 
-  template <typename T, typename TBdmSim = BdmSim<>>
+  template <typename T, typename TSimulation = Simulation<>>
   void Run(T* cell) {
-    auto* rm = TBdmSim::GetActive()->GetRm();
+    auto* rm = TSimulation::GetActive()->GetRm();
     auto* dg = rm->GetDiffusionGrid(kKalium);
     array<double, 3> secretion_position = {50, 50, 50};
     dg->IncreaseConcentrationBy(secretion_position, 4 / dg->GetBoxVolume());
@@ -79,7 +79,7 @@ struct CompileTimeParam : public DefaultCompileTimeParam<Backend> {
 
 inline int Simulate(int argc, const char** argv) {
   // 3. Initialize BioDynaMo
-  BdmSim<> simulation(argc, argv);
+  Simulation<> simulation(argc, argv);
 
   simulation.GetParam()->backup_interval_ = 1;
 

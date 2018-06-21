@@ -39,7 +39,7 @@ struct CompileTimeParam : public DefaultCompileTimeParam<Backend> {};
 inline bool is_close(double c, double v) { return (std::fabs(c - v) < 1e-9); }
 
 inline int Simulate(int argc, const char** argv) {
-  BdmSim<> simulation(argc, argv);
+  Simulation<> simulation(argc, argv);
   auto* param = simulation.GetParam();
 
   // 3. Define initial model

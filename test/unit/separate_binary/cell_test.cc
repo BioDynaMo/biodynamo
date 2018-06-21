@@ -17,7 +17,7 @@
 #include "gtest/gtest.h"
 #include "unit/separate_binary/cell_test.h"
 #include "unit/test_util.h"
-#include "bdm_imp.h"
+#include "simulation_implementation.h"
 
 namespace bdm {
 namespace cell_test_internal {
@@ -28,7 +28,7 @@ TEST(CellTest, TransformCoordinatesGlobalToPolar) {
 }
 
 TEST(CellTest, DivideVolumeRatioPhiTheta) {
-  BdmSim<> simulation(typeid(*this).name());
+  Simulation<> simulation(typeid(*this).name());
 
   TestCell mother;
   mother.SetPosition({5, 6, 7});
@@ -93,7 +93,7 @@ TEST(CellTest, DivideVolumeRatioPhiTheta) {
 }
 
 TEST(CellTest, Divide) {
-  BdmSim<> simulation(typeid(*this).name());
+  Simulation<> simulation(typeid(*this).name());
 
   TestCell cell;
 
@@ -109,7 +109,7 @@ TEST(CellTest, Divide) {
 }
 
 TEST(CellTest, DivideVolumeRatio) {
-  BdmSim<> simulation(typeid(*this).name());
+  Simulation<> simulation(typeid(*this).name());
 
   #pragma omp parallel
   simulation.GetRandom()->SetSeed(42);
@@ -125,7 +125,7 @@ TEST(CellTest, DivideVolumeRatio) {
 }
 
 TEST(CellTest, DivideAxis) {
-  BdmSim<> simulation(typeid(*this).name());
+  Simulation<> simulation(typeid(*this).name());
 
   #pragma omp parallel
   simulation.GetRandom()->SetSeed(42);
@@ -143,7 +143,7 @@ TEST(CellTest, DivideAxis) {
 }
 
 TEST(CellTest, DivideVolumeRatioAxis) {
-  BdmSim<> simulation(typeid(*this).name());
+  Simulation<> simulation(typeid(*this).name());
 
   #pragma omp parallel
   simulation.GetRandom()->SetSeed(42);
@@ -161,7 +161,7 @@ TEST(CellTest, DivideVolumeRatioAxis) {
 }
 
 TEST(CellTest, BiologyModule) {
-  BdmSim<> simulation(typeid(*this).name());
+  Simulation<> simulation(typeid(*this).name());
 
   TestCell cell;
   double diameter = cell.GetDiameter();
@@ -179,7 +179,7 @@ TEST(CellTest, BiologyModule) {
 }
 
 TEST(CellTest, GetBiologyModulesTest) {
-  BdmSim<> simulation(typeid(*this).name());
+  Simulation<> simulation(typeid(*this).name());
 
   // create cell and add bioogy modules
   TestCell cell;
@@ -198,7 +198,7 @@ TEST(CellTest, GetBiologyModulesTest) {
 }
 
 TEST(CellTest, BiologyModuleEventHandler) {
-  BdmSim<> simulation(typeid(*this).name());
+  Simulation<> simulation(typeid(*this).name());
 
   TestCell cell;
 

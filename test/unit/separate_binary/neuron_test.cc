@@ -18,7 +18,7 @@
 #include "compile_time_param.h"
 #include "displacement_op.h"
 #include "neuroscience/compile_time_param.h"
-#include "bdm_imp.h"
+#include "simulation_implementation.h"
 
 #include "unit/test_util.h"
 // FIXME move to neuroscience directory
@@ -64,7 +64,7 @@ struct UpdateReferencesNeuronSoma : NeuronSoma {
 };
 
 TEST(NeuronSomaTest, UpdateReferences) {
-  BdmSim<> simulation(typeid(*this).name());
+  Simulation<> simulation(typeid(*this).name());
 
   UpdateReferencesNeuronSoma neuron;
   neuron.AddDaughters();
@@ -84,7 +84,7 @@ TEST(NeuronSomaTest, UpdateReferences) {
 /// Test that the references of mother, daughter_left_ and daughter_right_
 /// are updated correctly
 TEST(NeuriteElementTest, UpdateReferences) {
-  BdmSim<> simulation(typeid(*this).name());
+  Simulation<> simulation(typeid(*this).name());
   
   NeuriteElement neurite;
 
@@ -126,7 +126,7 @@ TEST(NeuriteElementTest, UpdateReferences) {
 }
 
 TEST(NeuronSomaTest, ExtendNewNeuriteElementSphericalCoordinates) {
-  BdmSim<> simulation(typeid(*this).name());
+  Simulation<> simulation(typeid(*this).name());
   auto* rm = simulation.GetRm();
 
   const double kEpsilon = abs_error<double>::value;
@@ -173,7 +173,7 @@ TEST(NeuronSomaTest, ExtendNewNeuriteElementSphericalCoordinates) {
 }
 
 TEST(NeuronSomaTest, ExtendNewNeurite) {
-  BdmSim<> simulation(typeid(*this).name());
+  Simulation<> simulation(typeid(*this).name());
   auto* rm = simulation.GetRm();
 
   const double kEpsilon = abs_error<double>::value;
@@ -213,7 +213,7 @@ TEST(NeuronSomaTest, ExtendNewNeurite) {
 }
 
 TEST(NeuronSomaTest, ExtendNeuriteAndElongate) {
-  BdmSim<> simulation(typeid(*this).name());
+  Simulation<> simulation(typeid(*this).name());
   auto* rm = simulation.GetRm();
 
   const double kEpsilon = abs_error<double>::value;
@@ -277,7 +277,7 @@ TEST(NeuronSomaTest, ExtendNeuriteAndElongate) {
 }
 
 TEST(NeuriteElementTest, PartialRetraction) {
-  BdmSim<> simulation(typeid(*this).name());
+  Simulation<> simulation(typeid(*this).name());
   auto* rm = simulation.GetRm();
 
   const double kEpsilon = abs_error<double>::value;
@@ -326,7 +326,7 @@ TEST(NeuriteElementTest, PartialRetraction) {
 }
 
 TEST(NeuriteElementTest, TotalRetraction) {
-  BdmSim<> simulation(typeid(*this).name());
+  Simulation<> simulation(typeid(*this).name());
   auto* rm = simulation.GetRm();
 
   std::array<double, 3> origin = {0, 0, 0};
@@ -359,7 +359,7 @@ TEST(NeuriteElementTest, TotalRetraction) {
 }
 
 TEST(NeuriteElementTest, Branch) {
-  BdmSim<> simulation(typeid(*this).name());
+  Simulation<> simulation(typeid(*this).name());
   auto* rm = simulation.GetRm();
 
   const double kEpsilon = abs_error<double>::value;
@@ -457,7 +457,7 @@ TEST(NeuriteElementTest, Branch) {
 }
 
 TEST(NeuriteElementTest, RightDaughterRetraction) {
-  BdmSim<> simulation(typeid(*this).name());
+  Simulation<> simulation(typeid(*this).name());
   auto* rm = simulation.GetRm();
 
   const double kEpsilon = abs_error<double>::value;
@@ -528,7 +528,7 @@ TEST(NeuriteElementTest, RightDaughterRetraction) {
 }
 
 TEST(NeuriteElementTest, RightDaughterTotalRetraction) {
-  BdmSim<> simulation(typeid(*this).name());
+  Simulation<> simulation(typeid(*this).name());
   auto* rm = simulation.GetRm();
 
   const double kEpsilon = abs_error<double>::value;
@@ -577,7 +577,7 @@ TEST(NeuriteElementTest, RightDaughterTotalRetraction) {
 }
 
 TEST(NeuriteElementTest, LeftDaughterRetraction) {
-  BdmSim<> simulation(typeid(*this).name());
+  Simulation<> simulation(typeid(*this).name());
   auto* rm = simulation.GetRm();
 
   const double kEpsilon = abs_error<double>::value;
@@ -648,7 +648,7 @@ TEST(NeuriteElementTest, LeftDaughterRetraction) {
 }
 
 TEST(NeuriteElementTest, RetractAllDendrites) {
-  BdmSim<> simulation(typeid(*this).name());
+  Simulation<> simulation(typeid(*this).name());
   auto* rm = simulation.GetRm();
 
   std::array<double, 3> origin = {0, 0, 0};
@@ -699,7 +699,7 @@ TEST(NeuriteElementTest, RetractAllDendrites) {
 }
 
 TEST(NeuriteElementTest, Bifurcate) {
-  BdmSim<> simulation(typeid(*this).name());
+  Simulation<> simulation(typeid(*this).name());
   auto* rm = simulation.GetRm();
 
   const double kEpsilon = abs_error<double>::value;
@@ -787,7 +787,7 @@ TEST(NeuriteElementTest, Bifurcate) {
 }
 
 TEST(DISABLED_NeuronSomaNeuriteElementTest, Displacement) {
-  BdmSim<> simulation(typeid(*this).name());
+  Simulation<> simulation(typeid(*this).name());
   auto* rm = simulation.GetRm();
 
   auto* neurons = rm->template Get<NeuronSoma>();

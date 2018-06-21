@@ -24,9 +24,9 @@
 namespace bdm {
 namespace dividing_cell_op_test_internal {
 
-template <typename TCell, typename TBdmSim = BdmSim<>>
+template <typename TCell, typename TSimulation = Simulation<>>
 void RunTest() {
-  TBdmSim simulation("dividing_cell_op_test_RunTest");
+  TSimulation simulation("dividing_cell_op_test_RunTest");
   auto* rm = simulation.GetRm();
 
   auto* cells = rm->template Get<TCell>();

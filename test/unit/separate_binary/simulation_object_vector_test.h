@@ -19,7 +19,7 @@
 
 #include "gtest/gtest.h"
 
-#include "bdm_imp.h"
+#include "simulation_implementation.h"
 #include "backend.h"
 #include "cell.h"
 #include "compile_time_param.h"
@@ -91,7 +91,7 @@ namespace simulation_object_vector_test_internal {
 
 inline void RunTest() {
   std::string sim_name("simulation_object_vector_test_RunInitializerTest");
-  BdmSim<> simulation(sim_name);
+  Simulation<> simulation(sim_name);
   auto* rm = simulation.GetRm();
 
   ASSERT_EQ(2u, rm->NumberOfTypes());
@@ -105,7 +105,7 @@ inline void RunTest() {
   bs->push_back(B(8));
   bs->push_back(B(9));
 
-  SimulationObjectVector<int, BdmSim<>> vector;
+  SimulationObjectVector<int, Simulation<>> vector;
   EXPECT_EQ(0, vector[SoHandle(0, 0)]);
   EXPECT_EQ(0, vector[SoHandle(0, 1)]);
   EXPECT_EQ(0, vector[SoHandle(0, 2)]);
@@ -123,7 +123,7 @@ inline void RunTest() {
 // object correctly (i.e. set the data_ member to the default values)
 inline void RunInitializeTest() {
   std::string sim_name("simulation_object_vector_test_RunInitializerTest");
-  BdmSim<> simulation(sim_name);
+  Simulation<> simulation(sim_name);
   auto* rm = simulation.GetRm();
 
   ASSERT_EQ(2u, rm->NumberOfTypes());

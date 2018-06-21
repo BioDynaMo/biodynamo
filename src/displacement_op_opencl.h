@@ -38,7 +38,7 @@ namespace bdm {
 using std::array;
 
 /// Defines the 3D physical interactions between physical objects
-template <typename TBdmSim = BdmSim<>>
+template <typename TSimulation = Simulation<>>
 class DisplacementOpOpenCL {
  public:
   DisplacementOpOpenCL() {}
@@ -48,7 +48,7 @@ class DisplacementOpOpenCL {
   typename std::enable_if<is_soa_sphere<TContainer>::value>::type operator()(
       TContainer* cells, uint16_t type_idx) const {
 #ifdef USE_OPENCL
-    auto* sim = TBdmSim::GetActive();
+    auto* sim = TSimulation::GetActive();
     auto* grid = sim->GetGrid();
     auto* rm = sim->GetRm();
     auto* param = sim->GetParam();

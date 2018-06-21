@@ -12,7 +12,7 @@
 //
 // -----------------------------------------------------------------------------
 
-#include "bdm_imp.h"
+#include "simulation_implementation.h"
 #include "unit/default_ctparam.h"
 
 #include <fstream>
@@ -20,7 +20,7 @@
 
 namespace bdm {
 
-class BdmSimTest : public ::testing::Test {
+class SimulationTest : public ::testing::Test {
  public:
    static constexpr char* gConfigFileName = "bdm.toml";
    static constexpr char* gConfigContent =
@@ -65,7 +65,7 @@ class BdmSimTest : public ::testing::Test {
     remove(gConfigFileName);
     remove("restore.root");
     CreateEmptyRestoreFile("restore.root");
-    BdmSim<>::sim_counter_ = 0;
+    Simulation<>::counter_ = 0;
   }
 
   virtual void TearDown() {
@@ -130,36 +130,36 @@ class BdmSimTest : public ::testing::Test {
   }
 };
 
-TEST_F(BdmSimTest, InitializeRuntimeParams) {
+TEST_F(SimulationTest, InitializeRuntimeParams) {
   std::ofstream config_file(gConfigFileName);
   config_file << gConfigContent;
   config_file.close();
 
   const char* argv[1] = {"./binary_name"};
-  BdmSim<> simulation(1, argv);
+  Simulation<> simulation(1, argv);
   auto* param = simulation.GetParam();
 
   EXPECT_EQ("backup.root", param->backup_file_);
   EXPECT_EQ("restore.root", param->restore_file_);
-  EXPECT_EQ("binary_name", simulation.GetSimulationId());
+  EXPECT_EQ("binary_name", simulation.GetUniqueName());
   ValidateNonCLIParameter(param);
 }
 
-TEST_F(BdmSimTest, InitializeRuntimeParams2) {
+TEST_F(SimulationTest, InitializeRuntimeParams2) {
   std::ofstream config_file(gConfigFileName);
   config_file << gConfigContent;
   config_file.close();
 
-  BdmSim<> simulation("my-simulation");
+  Simulation<> simulation("my-simulation");
   auto* param = simulation.GetParam();
 
   EXPECT_EQ("backup.root", param->backup_file_);
   EXPECT_EQ("restore.root", param->restore_file_);
-  EXPECT_EQ("my-simulation", simulation.GetSimulationId());
+  EXPECT_EQ("my-simulation", simulation.GetUniqueName());
   ValidateNonCLIParameter(param);
 }
 
-TEST_F(BdmSimTest, InitializeRuntimeParamsWithCLIArguments) {
+TEST_F(SimulationTest, InitializeRuntimeParamsWithCLIArguments) {
   std::ofstream config_file(gConfigFileName);
   config_file << gConfigContent;
   config_file.close();
@@ -167,44 +167,44 @@ TEST_F(BdmSimTest, InitializeRuntimeParamsWithCLIArguments) {
   CreateEmptyRestoreFile("myrestore.root");
   const char* argv[5] = {"./binary_name", "-b", "mybackup.root", "-r",
                          "myrestore.root"};
-  BdmSim<> simulation(5, argv);
+  Simulation<> simulation(5, argv);
   auto* param = simulation.GetParam();
 
   // the following two parameters should contain the values from the command
   // line arguments.
   EXPECT_EQ("mybackup.root", param->backup_file_);
   EXPECT_EQ("myrestore.root", param->restore_file_);
-  EXPECT_EQ("binary_name", simulation.GetSimulationId());
+  EXPECT_EQ("binary_name", simulation.GetUniqueName());
   ValidateNonCLIParameter(param);
   remove("myrestore.root");
 }
 
-TEST_F(BdmSimTest, InitializeRuntimeParamsSimulationName) {
+TEST_F(SimulationTest, InitializeRuntimeParamsSimulationName) {
   // same working dir
   const char* argv0[1] = {"./binary_name"};
-  BdmSim<> simulation0(1, argv0);
-  EXPECT_EQ("binary_name", simulation0.GetSimulationId());
+  Simulation<> simulation0(1, argv0);
+  EXPECT_EQ("binary_name", simulation0.GetUniqueName());
 
   // in PATH
   const char* argv1[1] = {"binary_name"};
-  BdmSim<> simulation1(1, argv1);
-  EXPECT_EQ("binary_name1", simulation1.GetSimulationId());
+  Simulation<> simulation1(1, argv1);
+  EXPECT_EQ("binary_name1", simulation1.GetUniqueName());
 
   // binary dir != working dir
   const char* argv2[1] = {"./build/binary_name"};
-  BdmSim<> simulation2(1, argv2);
-  EXPECT_EQ("binary_name2", simulation2.GetSimulationId());
+  Simulation<> simulation2(1, argv2);
+  EXPECT_EQ("binary_name2", simulation2.GetUniqueName());
 
-  BdmSim<> simulation3("binary_name");
-  EXPECT_EQ("binary_name3", simulation3.GetSimulationId());
+  Simulation<> simulation3("binary_name");
+  EXPECT_EQ("binary_name3", simulation3.GetUniqueName());
 }
 
-TEST_F(BdmSimTest, SimulationId) {
-  BdmSim<> simulation("my-simulation");
-  BdmSim<> simulation1("my-simulation");
+TEST_F(SimulationTest, SimulationId) {
+  Simulation<> simulation("my-simulation");
+  Simulation<> simulation1("my-simulation");
 
-  EXPECT_EQ("my-simulation", simulation.GetSimulationId());
-  EXPECT_EQ("my-simulation1", simulation1.GetSimulationId());
+  EXPECT_EQ("my-simulation", simulation.GetUniqueName());
+  EXPECT_EQ("my-simulation1", simulation1.GetUniqueName());
 }
 
 }  // namespace bdm

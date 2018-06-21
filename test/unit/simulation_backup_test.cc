@@ -20,7 +20,7 @@
 #include "io_util.h"
 #include "unit/default_ctparam.h"
 #include "unit/test_util.h"
-#include "bdm_imp.h"
+#include "simulation_implementation.h"
 
 #define ROOTFILE "bdmFile.root"
 
@@ -66,7 +66,7 @@ TEST(SimulationBackupDeathTest, BackupNoBackupFileSpecified) {
 
 TEST(SimulationBackupTest, Backup) {
   remove(ROOTFILE);
-  BdmSim<> simulation(typeid(*this).name());
+  Simulation<> simulation(typeid(*this).name());
   auto* rm = simulation.GetRm();
 
   auto cells = rm->template Get<Cell>();
@@ -92,13 +92,13 @@ TEST(SimulationBackupTest, Backup) {
   file.Get()->GetObject(SimulationBackup::kSimulationStepName.c_str(), wrapper);
   EXPECT_EQ(26u, wrapper->Get());
 
-  // BdmSim
-  BdmSim<>* restored_simulation = nullptr;
-  file.Get()->GetObject(SimulationBackup::kBdmSimName.c_str(),
+  // Simulation
+  Simulation<>* restored_simulation = nullptr;
+  file.Get()->GetObject(SimulationBackup::kSimulationName.c_str(),
                         restored_simulation);
   EXPECT_EQ(1u, restored_simulation->GetRm()->Get<Cell>()->size());
   // FIXME update test file name
-  // Writing and reading BdmSim is tested in bdm_sim_test.cc
+  // Writing and reading Simulation is tested in bdm_sim_test.cc
 
   remove(ROOTFILE);
 }
@@ -119,7 +119,7 @@ TEST(SimulationBackupDeathTest, RestoreFileDoesNotExist) {
 
 TEST(SimulationBackupTest, BackupAndRestore) {
   remove(ROOTFILE);
-  BdmSim<> simulation(typeid(*this).name());
+  Simulation<> simulation(typeid(*this).name());
   auto* rm = simulation.GetRm();
 
   auto cells = rm->Get<Cell>();

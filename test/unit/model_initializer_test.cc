@@ -21,14 +21,14 @@
 #include "unit/default_ctparam.h"
 #include "unit/test_util.h"
 #include "variadic_template_parameter_util.h"
-#include "bdm_imp.h"
+#include "simulation_implementation.h"
 
 namespace bdm {
 namespace model_initializer_test_internal {
 
 // Tests if pos_0 cubic 3D grid of cells is correctly initialized
 TEST(ModelInitializerTest, Grid3DCube) {
-  BdmSim<> simulation(typeid(*this).name());
+  Simulation<> simulation(typeid(*this).name());
   auto* rm = simulation.GetRm();
 
   ModelInitializer::Grid3D(2, 12, [](const std::array<double, 3>& pos) {
@@ -50,7 +50,7 @@ TEST(ModelInitializerTest, Grid3DCube) {
 
 // Tests if pos_0 cuboid 3D grid of cells is correctly initialized
 TEST(ModelInitializerTest, Grid3DCuboid) {
-  BdmSim<> simulation(typeid(*this).name());
+  Simulation<> simulation(typeid(*this).name());
   auto* rm = simulation.GetRm();
 
   std::array<size_t, 3> grid_dimensions = {2, 3, 4};
@@ -74,7 +74,7 @@ TEST(ModelInitializerTest, Grid3DCuboid) {
 }
 
 TEST(ModelInitializerTest, CreateCells) {
-  BdmSim<> simulation(typeid(*this).name());
+  Simulation<> simulation(typeid(*this).name());
   auto* rm = simulation.GetRm();
 
   std::vector<std::array<double, 3>> positions;
@@ -96,7 +96,7 @@ TEST(ModelInitializerTest, CreateCells) {
 }
 
 TEST(ModelInitializerTest, CreateCellsRandom) {
-  BdmSim<> simulation(typeid(*this).name());
+  Simulation<> simulation(typeid(*this).name());
   auto* rm = simulation.GetRm();
 
   ModelInitializer::CreateCellsRandom(-100, 100, 10,

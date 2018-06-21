@@ -19,7 +19,7 @@
 #include "io_util.h"
 #include "unit/default_ctparam.h"
 #include "unit/test_util.h"
-#include "bdm_imp.h"
+#include "simulation_implementation.h"
 
 #include <fstream>
 
@@ -41,7 +41,7 @@ void CellFactory(TContainer* cells,
 // Test if the dimensions of the diffusion grid are corresponding to the
 // neighbor grid dimensions
 TEST(DiffusionTest, GridDimensions) {
-  BdmSim<> simulation(typeid(*this).name());
+  Simulation<> simulation(typeid(*this).name());
   auto* rm = simulation.GetRm();
   auto* grid = simulation.GetGrid();
 
@@ -72,7 +72,7 @@ TEST(DiffusionTest, GridDimensions) {
 // Test if the dimension of the diffusion grid update correctly with the
 // neighbor grid dimensions (we expect the diffusion grid to stay cube-shaped)
 TEST(DiffusionTest, UpdateGrid) {
-  BdmSim<> simulation(typeid(*this).name());
+  Simulation<> simulation(typeid(*this).name());
   auto* rm = simulation.GetRm();
   auto* grid = simulation.GetGrid();
 
@@ -112,7 +112,7 @@ TEST(DiffusionTest, UpdateGrid) {
 // Test if the diffusion grid does not change if the neighbor grid dimensions
 // do not change
 TEST(DiffusionTest, FalseUpdateGrid) {
-  BdmSim<> simulation(typeid(*this).name());
+  Simulation<> simulation(typeid(*this).name());
   auto* rm = simulation.GetRm();
   auto* grid = simulation.GetGrid();
 
@@ -155,7 +155,7 @@ TEST(DiffusionTest, FalseUpdateGrid) {
 // Create a 5x5x5 diffusion grid, with a substance being
 // added at center box 2,2,2, causing a symmetrical diffusion
 TEST(DiffusionTest, LeakingEdge) {
-  BdmSim<> simulation(typeid(*this).name());
+  Simulation<> simulation(typeid(*this).name());
   auto* rm = simulation.GetRm();
   auto* grid = simulation.GetGrid();
 

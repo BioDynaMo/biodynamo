@@ -19,14 +19,14 @@
 #include "displacement_op.h"
 #include "grid.h"
 #include "unit/test_util.h"
-#include "bdm_imp.h"
+#include "simulation_implementation.h"
 
 namespace bdm {
 namespace displacement_op_test_internal {
 
-template <typename TBdmSim = BdmSim<>>
+template <typename TSimulation = Simulation<>>
 void RunTest() {
-  TBdmSim simulation("displacement_op_test_RunTest");
+  TSimulation simulation("displacement_op_test_RunTest");
   auto* rm = simulation.GetRm();
 
   auto* cells = rm->template Get<Cell>();

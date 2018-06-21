@@ -1,5 +1,18 @@
-#ifndef FOO_1_
-#define FOO_1_
+// -----------------------------------------------------------------------------
+//
+// Copyright (C) The BioDynaMo Project.
+// All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+//
+// See the LICENSE file distributed with this work for details.
+// See the NOTICE file distributed with this work for additional information
+// regarding copyright ownership.
+//
+// -----------------------------------------------------------------------------
+#ifndef SIMULATION_IMPLEMENTATION_H_
+#define SIMULATION_IMPLEMENTATION_H_
 
 #include <sstream>
 #include <cmath>
@@ -15,35 +28,35 @@
 namespace bdm {
 
 template <typename T>
-std::atomic<uint64_t> BdmSim<T>::sim_counter_;
+std::atomic<uint64_t> Simulation<T>::counter_;
 
 template <typename T>
-BdmSim<T>* BdmSim<T>::active_ = nullptr;
+Simulation<T>* Simulation<T>::active_ = nullptr;
 
 template <typename T>
-BdmSim<T>* BdmSim<T>::GetActive() {
+Simulation<T>* Simulation<T>::GetActive() {
   return active_;
 }
 
 template <typename T>
-BdmSim<T>::BdmSim(TRootIOCtor*) {}
+Simulation<T>::Simulation(TRootIOCtor*) {}
 
 template <typename T>
-BdmSim<T>::BdmSim(int argc, const char** argv) {
+Simulation<T>::Simulation(int argc, const char** argv) {
   Initialize(argc, argv);
 }
 
 template <typename T>
-BdmSim<T>::BdmSim(const std::string& simulation_name) {
+Simulation<T>::Simulation(const std::string& simulation_name) {
   const char* argv[1] = {simulation_name.c_str()};
   Initialize(1, argv);
 }
 
 template <typename T>
-void BdmSim<T>::Restore(BdmSim<T>&& restored) {
+void Simulation<T>::Restore(Simulation<T>&& restored) {
   // random_
   if(random_.size() != restored.random_.size()) {
-    Log::Warning("BdmSim", "The restore file (",  param_->restore_file_,
+    Log::Warning("Simulation", "The restore file (",  param_->restore_file_,
     ") was run with a different number of threads. Can't restore complete random number generator state." );
     uint64_t min = std::min(random_.size(), restored.random_.size());
     for (uint64_t i = 0; i < min; i++) {
@@ -59,13 +72,13 @@ void BdmSim<T>::Restore(BdmSim<T>&& restored) {
   *param_ = *restored.param_;
   *rm_ = std::move(*restored.rm_);
 
-  // simulation_name_ and simulation_id_
-  InitializeSimulationId(restored.simulation_name_);
+  // name_ and unique_name_
+  InitializeUniqueName(restored.name_);
 }
 
 template <typename T>
-BdmSim<T>::~BdmSim() {
-  BdmSim<>* tmp = nullptr;
+Simulation<T>::~Simulation() {
+  Simulation<>* tmp = nullptr;
   if (active_ != this) {
     tmp = active_;
   }
@@ -82,42 +95,42 @@ BdmSim<T>::~BdmSim() {
 }
 
 template <typename T>
-void BdmSim<T>::Activate() {
+void Simulation<T>::Activate() {
   active_ = this;
 }
 
 template <typename T>
-ResourceManager<T>* BdmSim<T>::GetRm() { return rm_; }
+ResourceManager<T>* Simulation<T>::GetRm() { return rm_; }
 
 template <typename T>
-Param* BdmSim<T>::GetParam() { return param_; }
+Param* Simulation<T>::GetParam() { return param_; }
 
 template <typename T>
-Grid<BdmSim<T>>* BdmSim<T>::GetGrid() { return grid_; }
+Grid<Simulation<T>>* Simulation<T>::GetGrid() { return grid_; }
 
 template <typename T>
-Scheduler<BdmSim<T>>* BdmSim<T>::GetScheduler() { return scheduler_; }
+Scheduler<Simulation<T>>* Simulation<T>::GetScheduler() { return scheduler_; }
 
 template <typename T>
-Random* BdmSim<T>::GetRandom() { return random_[omp_get_thread_num()]; }
+Random* Simulation<T>::GetRandom() { return random_[omp_get_thread_num()]; }
 
 template <typename T>
-const std::string& BdmSim<T>::GetSimulationId() const {
-  return simulation_id_;
+const std::string& Simulation<T>::GetUniqueName() const {
+  return unique_name_;
 }
 
 template <typename T>
-void BdmSim<T>::ReplaceScheduler(Scheduler<BdmSim>* scheduler) {
+void Simulation<T>::ReplaceScheduler(Scheduler<Simulation>* scheduler) {
   delete scheduler_;
   scheduler_ = scheduler;
 }
 
 template <typename T>
-void BdmSim<T>::Initialize(int argc, const char** argv) {
-  id_ = sim_counter_++;
+void Simulation<T>::Initialize(int argc, const char** argv) {
+  id_ = counter_++;
   Activate();
   InitializeRuntimeParams(argc, argv);
-  InitializeSimulationId(ExtractSimulationName(argv[0]));
+  InitializeUniqueName(ExtractSimulationName(argv[0]));
   InitializeMembers();
 }
 
@@ -125,7 +138,7 @@ template <typename T>
 template <typename TResourceManager,
           typename TGrid,
           typename TScheduler>
-void BdmSim<T>::InitializeMembers() {
+void Simulation<T>::InitializeMembers() {
   random_.resize(omp_get_max_threads());
   for (uint64_t i = 0; i < random_.size(); i++) {
     random_[i] = new Random();
@@ -136,7 +149,7 @@ void BdmSim<T>::InitializeMembers() {
 }
 
 template <typename T>
-void BdmSim<T>::InitializeRuntimeParams(int argc, const char** argv) {
+void Simulation<T>::InitializeRuntimeParams(int argc, const char** argv) {
   param_ = new Param();
 
   // Removing this line causes an unexplainable segfault due to setting the
@@ -146,7 +159,7 @@ void BdmSim<T>::InitializeRuntimeParams(int argc, const char** argv) {
 
   // detect if the biodynamo environment has been sourced
   if (std::getenv("BDM_CMAKE_DIR") == nullptr) {
-    Log::Fatal("BdmSim::InitializeRuntimeParams",
+    Log::Fatal("Simulation::InitializeRuntimeParams",
                "The BioDynaMo environment is not set up correctly. Please call "
                "$use_biodynamo "
                "and retry this command.");
@@ -162,7 +175,7 @@ void BdmSim<T>::InitializeRuntimeParams(int argc, const char** argv) {
     auto config = cpptoml::parse_file(kConfigFileParentDir);
     param_->AssignFromConfig(config);
   } else {
-    Log::Warning("BdmSim::InitializeRuntimeParams",
+    Log::Warning("Simulation::InitializeRuntimeParams",
                  "Config file %s not found in `.` or `../` directory.",
                  kConfigFile);
   }
@@ -173,19 +186,19 @@ void BdmSim<T>::InitializeRuntimeParams(int argc, const char** argv) {
 }
 
 template <typename T>
-void BdmSim<T>::InitializeSimulationId(const std::string& simulation_name) {
-  simulation_name_ = simulation_name;
+void Simulation<T>::InitializeUniqueName(const std::string& simulation_name) {
+  name_ = simulation_name;
   std::stringstream stream;
-  stream << simulation_name_;
+  stream << name_;
   if (id_ > 0) {
     stream << id_;
   }
-  simulation_id_ = stream.str();
+  unique_name_ = stream.str();
 }
 
 
 template <typename T>
-std::string BdmSim<T>::ExtractSimulationName(const char* path) {
+std::string Simulation<T>::ExtractSimulationName(const char* path) {
   std::string s(path);
   auto pos = s.find_last_of("/");
   if (pos == std::string::npos) {
@@ -197,4 +210,4 @@ std::string BdmSim<T>::ExtractSimulationName(const char* path) {
 
 }  // namespace bdm
 
-#endif // FOO_1_
+#endif  // SIMULATION_IMPLEMENTATION_H_

@@ -23,14 +23,14 @@
 #include "resource_manager.h"
 #include "shape.h"
 #include "type_util.h"
-#include "bdm.h"
+#include "simulation.h"
 
 namespace bdm {
 
 using std::array;
 
 /// Defines the 3D physical interactions between physical objects
-template <typename TBdmSim = BdmSim<>>
+template <typename TSimulation = Simulation<>>
 class DisplacementOpCuda {
  public:
   DisplacementOpCuda() {}
@@ -39,7 +39,7 @@ class DisplacementOpCuda {
   template <typename TContainer>
   typename std::enable_if<is_soa_sphere<TContainer>::value>::type operator()(
       TContainer* cells, uint16_t type_idx) {
-    auto* sim = TBdmSim::GetActive();
+    auto* sim = TSimulation::GetActive();
     auto* grid = sim->GetGrid();
     auto* param = sim->GetParam();
 

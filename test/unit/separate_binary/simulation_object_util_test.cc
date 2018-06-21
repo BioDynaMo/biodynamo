@@ -15,7 +15,7 @@
 #include "gtest/gtest.h"
 
 #include "unit/separate_binary/simulation_object_util_test.h"
-#include "bdm_imp.h"
+#include "simulation_implementation.h"
 
 namespace bdm {
 // namespace simulation_object_util_test_internal {
@@ -272,7 +272,7 @@ TEST(SimulationObjectUtilTest, Soa_DelayedRemove) {
 // Tests overloaded Divide function which adds new daughter cell to the
 // container managed by the ResourceManager with default template parameters
 TEST(SimulationObjectUtilTest, Soa_DivideWithResourceManager) {
-  BdmSim<> simulation(typeid(*this).name());
+  Simulation<> simulation(typeid(*this).name());
   auto* rm = simulation.GetRm();
 
   auto neurons = rm->Get<Neuron>();
@@ -299,7 +299,7 @@ TEST(SimulationObjectUtilTest, Soa_DivideWithResourceManager) {
 }
 
 TEST(SimulationObjectUtilTest, RemoveFromSimulation) {
-  BdmSim<> simulation(typeid(*this).name());
+  Simulation<> simulation(typeid(*this).name());
   auto* rm = simulation.GetRm();
 
   auto neurons = rm->Get<Neuron>();
@@ -443,7 +443,7 @@ TEST(SimulationObjectUtilTest, ThisMD) {
 }
 
 TEST(SimulationObjectUtilTest, GetSoPtr) {
-  BdmSim<> simulation(typeid(*this).name());
+  Simulation<> simulation(typeid(*this).name());
   auto* rm = simulation.GetRm();
 
   for (uint64_t i = 0; i < 10; i++) {

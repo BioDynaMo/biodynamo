@@ -35,7 +35,7 @@ struct CompileTimeParam : public DefaultCompileTimeParam<Backend> {
 
 inline int Simulate(int argc, const char** argv) {
   // 2. Initialize BioDynaMo
-  BdmSim<> simulation(argc, argv);
+  Simulation<> simulation(argc, argv);
 
   // 3. Initialize RegulateGenes module.
   // To add functions to the module use RegulateGenes::AddGene() function.
