@@ -18,7 +18,7 @@ namespace bdm {
 namespace scheduler_test_internal {
 
 TEST(SchedulerTest, NoRestoreFile) {
-  Simulation<> simulation(typeid(*this).name());
+  Simulation<> simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
   auto* param = simulation.GetParam();
 

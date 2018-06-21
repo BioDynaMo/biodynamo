@@ -19,6 +19,7 @@
 #include "io_util.h"
 #include "param.h"
 #include "simulation.h"
+#include "unit/test_util.h"
 
 namespace bdm {
 
@@ -45,7 +46,7 @@ class IOTest : public ::testing::Test {
  protected:
   virtual void SetUp() {
     remove(kRootFile);
-    simulation_ = new Simulation<>(typeid(*this).name());
+    simulation_ = new Simulation<>(TEST_NAME);
   }
 
   virtual void TearDown() {

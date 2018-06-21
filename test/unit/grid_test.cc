@@ -37,7 +37,7 @@ void CellFactory(TContainer* cells, size_t cells_per_dim) {
 }
 
 TEST(GridTest, SetupGrid) {
-  Simulation<> simulation(typeid(*this).name());
+  Simulation<> simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
   auto* grid = simulation.GetGrid();
 
@@ -148,7 +148,7 @@ void RunUpdateGridTest(TContainer* cells, Simulation<>* simulation) {
 }
 
 TEST(GridTest, UpdateGrid) {
-  Simulation<> simulation(typeid(*this).name());
+  Simulation<> simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
   auto* grid = simulation.GetGrid();
 
@@ -168,7 +168,7 @@ TEST(GridTest, UpdateGrid) {
 }
 
 TEST(GridTest, NoRaceConditionDuringUpdate) {
-  Simulation<> simulation(typeid(*this).name());
+  Simulation<> simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
   auto* grid = simulation.GetGrid();
 
@@ -193,7 +193,7 @@ TEST(GridTest, NoRaceConditionDuringUpdate) {
 }
 
 TEST(GridTest, GetBoxIndex) {
-  Simulation<> simulation(typeid(*this).name());
+  Simulation<> simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
   auto* grid = simulation.GetGrid();
 
@@ -220,7 +220,7 @@ TEST(GridTest, GetBoxIndex) {
 }
 
 TEST(GridTest, GridDimensions) {
-  Simulation<> simulation(typeid(*this).name());
+  Simulation<> simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
   auto* grid = simulation.GetGrid();
 
@@ -243,7 +243,7 @@ TEST(GridTest, GridDimensions) {
 }
 
 TEST(GridTest, GetBoxCoordinates) {
-  Simulation<> simulation(typeid(*this).name());
+  Simulation<> simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
   auto* grid = simulation.GetGrid();
 

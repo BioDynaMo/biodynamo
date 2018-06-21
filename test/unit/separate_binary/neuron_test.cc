@@ -64,7 +64,7 @@ struct UpdateReferencesNeuronSoma : NeuronSoma {
 };
 
 TEST(NeuronSomaTest, UpdateReferences) {
-  Simulation<> simulation(typeid(*this).name());
+  Simulation<> simulation(TEST_NAME);
 
   UpdateReferencesNeuronSoma neuron;
   neuron.AddDaughters();
@@ -84,7 +84,7 @@ TEST(NeuronSomaTest, UpdateReferences) {
 /// Test that the references of mother, daughter_left_ and daughter_right_
 /// are updated correctly
 TEST(NeuriteElementTest, UpdateReferences) {
-  Simulation<> simulation(typeid(*this).name());
+  Simulation<> simulation(TEST_NAME);
   
   NeuriteElement neurite;
 
@@ -126,7 +126,7 @@ TEST(NeuriteElementTest, UpdateReferences) {
 }
 
 TEST(NeuronSomaTest, ExtendNewNeuriteElementSphericalCoordinates) {
-  Simulation<> simulation(typeid(*this).name());
+  Simulation<> simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
 
   const double kEpsilon = abs_error<double>::value;
@@ -173,7 +173,7 @@ TEST(NeuronSomaTest, ExtendNewNeuriteElementSphericalCoordinates) {
 }
 
 TEST(NeuronSomaTest, ExtendNewNeurite) {
-  Simulation<> simulation(typeid(*this).name());
+  Simulation<> simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
 
   const double kEpsilon = abs_error<double>::value;
@@ -213,7 +213,7 @@ TEST(NeuronSomaTest, ExtendNewNeurite) {
 }
 
 TEST(NeuronSomaTest, ExtendNeuriteAndElongate) {
-  Simulation<> simulation(typeid(*this).name());
+  Simulation<> simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
 
   const double kEpsilon = abs_error<double>::value;
@@ -277,7 +277,7 @@ TEST(NeuronSomaTest, ExtendNeuriteAndElongate) {
 }
 
 TEST(NeuriteElementTest, PartialRetraction) {
-  Simulation<> simulation(typeid(*this).name());
+  Simulation<> simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
 
   const double kEpsilon = abs_error<double>::value;
@@ -326,7 +326,7 @@ TEST(NeuriteElementTest, PartialRetraction) {
 }
 
 TEST(NeuriteElementTest, TotalRetraction) {
-  Simulation<> simulation(typeid(*this).name());
+  Simulation<> simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
 
   std::array<double, 3> origin = {0, 0, 0};
@@ -359,7 +359,7 @@ TEST(NeuriteElementTest, TotalRetraction) {
 }
 
 TEST(NeuriteElementTest, Branch) {
-  Simulation<> simulation(typeid(*this).name());
+  Simulation<> simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
 
   const double kEpsilon = abs_error<double>::value;
@@ -457,7 +457,7 @@ TEST(NeuriteElementTest, Branch) {
 }
 
 TEST(NeuriteElementTest, RightDaughterRetraction) {
-  Simulation<> simulation(typeid(*this).name());
+  Simulation<> simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
 
   const double kEpsilon = abs_error<double>::value;
@@ -528,7 +528,7 @@ TEST(NeuriteElementTest, RightDaughterRetraction) {
 }
 
 TEST(NeuriteElementTest, RightDaughterTotalRetraction) {
-  Simulation<> simulation(typeid(*this).name());
+  Simulation<> simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
 
   const double kEpsilon = abs_error<double>::value;
@@ -577,7 +577,7 @@ TEST(NeuriteElementTest, RightDaughterTotalRetraction) {
 }
 
 TEST(NeuriteElementTest, LeftDaughterRetraction) {
-  Simulation<> simulation(typeid(*this).name());
+  Simulation<> simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
 
   const double kEpsilon = abs_error<double>::value;
@@ -648,7 +648,7 @@ TEST(NeuriteElementTest, LeftDaughterRetraction) {
 }
 
 TEST(NeuriteElementTest, RetractAllDendrites) {
-  Simulation<> simulation(typeid(*this).name());
+  Simulation<> simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
 
   std::array<double, 3> origin = {0, 0, 0};
@@ -699,7 +699,7 @@ TEST(NeuriteElementTest, RetractAllDendrites) {
 }
 
 TEST(NeuriteElementTest, Bifurcate) {
-  Simulation<> simulation(typeid(*this).name());
+  Simulation<> simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
 
   const double kEpsilon = abs_error<double>::value;
@@ -787,7 +787,7 @@ TEST(NeuriteElementTest, Bifurcate) {
 }
 
 TEST(DISABLED_NeuronSomaNeuriteElementTest, Displacement) {
-  Simulation<> simulation(typeid(*this).name());
+  Simulation<> simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
 
   auto* neurons = rm->template Get<NeuronSoma>();

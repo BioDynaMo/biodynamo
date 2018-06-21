@@ -19,6 +19,7 @@
 #include "simulation_object.h"
 #include "simulation_object_util.h"
 #include "simulation_implementation.h"
+#include "unit/test_util.h"
 
 namespace bdm {
 namespace simulation_object_test_internal {

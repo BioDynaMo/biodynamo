@@ -66,7 +66,7 @@ TEST(SimulationBackupDeathTest, BackupNoBackupFileSpecified) {
 
 TEST(SimulationBackupTest, Backup) {
   remove(ROOTFILE);
-  Simulation<> simulation(typeid(*this).name());
+  Simulation<> simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
 
   auto cells = rm->template Get<Cell>();
@@ -119,7 +119,7 @@ TEST(SimulationBackupDeathTest, RestoreFileDoesNotExist) {
 
 TEST(SimulationBackupTest, BackupAndRestore) {
   remove(ROOTFILE);
-  Simulation<> simulation(typeid(*this).name());
+  Simulation<> simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
 
   auto cells = rm->Get<Cell>();

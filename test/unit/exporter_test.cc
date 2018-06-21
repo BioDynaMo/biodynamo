@@ -22,7 +22,7 @@
 namespace bdm {
 
 TEST(ExportTest, ExportToFile) {
-  Simulation<> simulation(typeid(*this).name());
+  Simulation<> simulation(TEST_NAME);
   
   // set up cells and their positions
   Cell cell1;

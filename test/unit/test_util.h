@@ -58,6 +58,10 @@ void EXPECT_ARR_EQ(const std::array<T, N>& expected,  // NOLINT
     }                                                                \
   }(__VA_ARGS__);
 
+/// Mangled test name.\n
+/// Only works within test class, since the implementation relies on `this`.
+#define TEST_NAME typeid(*this).name()
+
 }  // namespace bdm
 
 #endif  // UNIT_TEST_UTIL_H_

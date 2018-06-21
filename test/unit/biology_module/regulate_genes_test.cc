@@ -18,6 +18,7 @@
 #include "biology_module/regulate_genes.h"
 #include "gtest/gtest.h"
 #include "unit/default_ctparam.h"
+#include "unit/test_util.h"
 #include "simulation_implementation.h"
 
 namespace bdm {
@@ -31,7 +32,7 @@ struct TestScheduler : public Scheduler<> {
 };
 
 TEST(RegulateGenesTest, EulerTest) {
-  Simulation<> simulation(typeid(*this).name());
+  Simulation<> simulation(TEST_NAME);
   auto* param = simulation.GetParam();
   auto* scheduler = new TestScheduler();
   simulation.ReplaceScheduler(scheduler);
@@ -65,7 +66,7 @@ TEST(RegulateGenesTest, EulerTest) {
 // Example 1 from:
 // https://ece.uwaterloo.ca/~dwharder/NumericalAnalysis/14IVPs/rk/examples.html
 TEST(RegulateGenesTest, RK4Test) {
-  Simulation<> simulation(typeid(*this).name());
+  Simulation<> simulation(TEST_NAME);
   auto* param = simulation.GetParam();
   auto* scheduler = simulation.GetScheduler();
 

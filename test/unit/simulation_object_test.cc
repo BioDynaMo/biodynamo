@@ -22,7 +22,7 @@ namespace simulation_object_test_internal {
 TEST(SimulationObjectTest, push_backAndClear) { RunPushBackAndClearTest(); }
 
 TEST(SimulationObjectTest, SoaGetElementIndex) {
-  Simulation<> simulation(typeid(*this).name());
+  Simulation<> simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
 
   for (uint64_t i = 0; i < 10; i++) {
@@ -37,7 +37,7 @@ TEST(SimulationObjectTest, SoaGetElementIndex) {
 }
 
 TEST(SimulationObjectTest, Clear) {
-  Simulation<> simulation(typeid(*this).name());
+  Simulation<> simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
 
   for (uint64_t i = 0; i < 10; i++) {

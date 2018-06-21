@@ -29,7 +29,7 @@ namespace bdm {
 enum Substances { kSubstance };
 
 TEST(DiffusionInitTest, GaussianBand) {
-  Simulation<> simulation(typeid(*this).name());
+  Simulation<> simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
   auto* param = simulation.GetParam();
 

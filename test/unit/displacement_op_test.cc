@@ -33,7 +33,7 @@ namespace displacement_op_test_internal {
 TEST(DisplacementOpTest, ComputeSoa) { RunTest(); }
 
 TEST(DisplacementOpTest, ComputeSoaNew) {
-  Simulation<> simulation(typeid(*this).name());
+  Simulation<> simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
   auto* grid = simulation.GetGrid();
 

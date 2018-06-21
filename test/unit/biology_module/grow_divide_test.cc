@@ -23,7 +23,7 @@
 namespace bdm {
 
 TEST(GrowDivideTest, Grow) {
-  Simulation<> simulation(typeid(*this).name());
+  Simulation<> simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
 
   Cell cell;
@@ -39,7 +39,7 @@ TEST(GrowDivideTest, Grow) {
 }
 
 TEST(GrowDivideTest, Divide) {
-  Simulation<> simulation(typeid(*this).name());
+  Simulation<> simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
 
   Cell cell;
