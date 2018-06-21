@@ -35,6 +35,9 @@ struct SimulationTest;
 /// ResourceManager, the scheduler, parameters, ... \n
 /// It is possible to create multiple objects, but only one can be active at
 /// the same time. Creating a new simulation object automatically activates it.
+/// Implementation for `Simulation` can be found in file:
+/// `simulation_implementation.h`. It must be separate to avoid circular
+/// dependencies. It can't be defined in a source file, because it is templated.
 template <typename TCTParam = CompileTimeParam<>>
 struct Simulation {
   using ResourceManager_t = ResourceManager<TCTParam>;  // NOLINT
@@ -72,6 +75,10 @@ struct Simulation {
   /// @see `unique_name_`
   const std::string& GetUniqueName() const;
 
+  /// Returns the output directory for this specific simulation
+
+  const std::string& GetOutputDir() const;
+
   /// Replaces the scheduler for this simulation.
   /// Existing scheduler will be deleted! Therefore, pointers to the old
   /// scheduler (obtained with `GetScheduler()`) will be invalidated. \n
@@ -99,6 +106,9 @@ struct Simulation {
   /// e.g. `name_ = "my-sim"` and `id_ = 0` -> "my-sim"
   /// e.g. `name_ = "my-sim"` and `id_ = 4` -> "my-sim4"
   std::string unique_name_; //!
+  /// cached value where `unique_name_` is appended to `Param::kOutputDir`
+  std::string output_dir_; //!
+
 
   /// Initialize Simulation
   void Initialize(int argc, const char** argv);
@@ -120,7 +130,7 @@ struct Simulation {
   /// @param argv argument vector from main function
   void InitializeRuntimeParams(int argc, const char** argv);
 
-  /// This function initialzes `name_` and `simulatio_id_`
+  /// This function initialzes `unique_name_`
   void InitializeUniqueName(const std::string& simulation_name);
 
   friend SimulationTest;

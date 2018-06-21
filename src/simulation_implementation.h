@@ -17,15 +17,20 @@
 #include <sstream>
 #include <cmath>
 #include <omp.h>
+#include <cpptoml/cpptoml.h>
 #include "resource_manager.h"
 #include "grid.h"
 #include "scheduler.h"
 #include "version.h"
 #include "param.h"
 #include "command_line_options.h"
-#include "cpptoml/cpptoml.h"
+#include "string_util.h"
 
 namespace bdm {
+
+/// Implementation for `Simulation`:
+/// It must be separate to avoid circular dependencies.
+/// It can't be defined in a source file, because it is templated.
 
 template <typename T>
 std::atomic<uint64_t> Simulation<T>::counter_;
@@ -132,6 +137,7 @@ void Simulation<T>::Initialize(int argc, const char** argv) {
   InitializeRuntimeParams(argc, argv);
   InitializeUniqueName(ExtractSimulationName(argv[0]));
   InitializeMembers();
+  output_dir_ = Concat(Param::kOutputDir, "/", unique_name_);
 }
 
 template <typename T>
@@ -195,7 +201,6 @@ void Simulation<T>::InitializeUniqueName(const std::string& simulation_name) {
   }
   unique_name_ = stream.str();
 }
-
 
 template <typename T>
 std::string Simulation<T>::ExtractSimulationName(const char* path) {

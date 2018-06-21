@@ -53,12 +53,14 @@ struct Param {
   enum NumericalODESolver { kEuler = 1, kRK4 = 2 };
   NumericalODESolver numerical_ode_solver_ = NumericalODESolver::kEuler;
 
+  static constexpr const char* kOutputDir = "output";
+
   /// Backup file name for full simulation backups\n
   /// Default value: `""` (no backups will be made)\n
   /// TOML config file:
   ///
   ///     [simulation]
-  ///     backup_file = <path>/<filename>.root
+  ///     backup_file = <filename>.root
   /// Command line argument: `-b, --backup`
   std::string backup_file_ = "";
 
@@ -67,7 +69,7 @@ struct Param {
   /// TOML config file:
   ///
   ///     [simulation]
-  ///     restore_file = <path>/<filename>.root
+  ///     restore_file = <filename>.root
   /// Command line argument: `-r, --restore`
   std::string restore_file_ = "";
 
