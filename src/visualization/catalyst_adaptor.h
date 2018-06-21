@@ -517,7 +517,7 @@ class CatalystAdaptor {
           << "  \"simulation\": {" << std::endl
           << "    \"name\":\"" << sim->GetUniqueName() << "\"," << std::endl
           << "    \"result_dir\":\""
-          << "."
+          << sim->GetOutputDir()
           << "\"" << std::endl
           << "  }," << std::endl
           << "  \"sim_objects\": [" << std::endl

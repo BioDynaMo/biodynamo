@@ -30,6 +30,7 @@ struct Soa;
 template <typename TBackend = Soa>
 struct CompileTimeParam;
 struct SimulationTest;
+struct CatalystAdaptorTest;
 
 /// This is the central BioDynaMo object. It containes pointers to e.g. the
 /// ResourceManager, the scheduler, parameters, ... \n
@@ -133,7 +134,11 @@ struct Simulation {
   /// This function initialzes `unique_name_`
   void InitializeUniqueName(const std::string& simulation_name);
 
+  /// Initializes `output_dir_` and creates dir if it does not exist.
+  void InitializeOutputDir();
+
   friend SimulationTest;
+  friend CatalystAdaptorTest;
 
   ClassDefNV(Simulation, 1);
 };

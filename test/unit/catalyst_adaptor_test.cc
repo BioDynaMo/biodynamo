@@ -26,11 +26,20 @@ namespace bdm {
 /// Test fixture for catalyst adaptor test to eliminate side effects
 class CatalystAdaptorTest : public ::testing::Test {
  protected:
-  static constexpr char const* kSimulationInfoJson = "simulation_info.json";
-  static constexpr char const* kSimulationName = "MySimulation";
-  static constexpr char const* kParaviewState = "MySimulation.pvsm";
+   static constexpr char const* kSimulationName = "MySimulation";
+  static constexpr char const* kSimulationInfoJson = "output/MySimulation/simulation_info.json";
+  static constexpr char const* kParaviewState = "output/MySimulation/MySimulation.pvsm";
+  Simulation<>* simulation_;
+
+  virtual void SetUp() {
+    Simulation<>::counter_ = 0;
+    simulation_ = new Simulation<>(kSimulationName);
+    remove(kSimulationInfoJson);
+    remove(kParaviewState);
+  }
 
   virtual void TearDown() {
+    delete simulation_;
     remove(kSimulationInfoJson);
     remove(kParaviewState);
   }
@@ -38,12 +47,7 @@ class CatalystAdaptorTest : public ::testing::Test {
 
 /// Tests if simulation_info.json is generated correctly during initialization.
 TEST_F(CatalystAdaptorTest, GenerateSimulationInfoJson) {
-  Simulation<> simulation(typeid(*this).name());
-  auto* param = simulation.GetParam();
-
-  // remove files to avoid false positive test results
-  remove(kSimulationInfoJson);
-  remove(kParaviewState);
+  auto* param = simulation_->GetParam();
 
   // set-up Param values
   param->export_visualization_ = true;
@@ -68,8 +72,8 @@ TEST_F(CatalystAdaptorTest, GenerateSimulationInfoJson) {
 
   const char* expected = R"STR({
   "simulation": {
-    "name":"N3bdm51CatalystAdaptorTest_GenerateSimulationInfoJson_TestE23",
-    "result_dir":"."
+    "name":"MySimulation",
+    "result_dir":"output/MySimulation"
   },
   "sim_objects": [
     {
@@ -100,15 +104,15 @@ TEST_F(CatalystAdaptorTest, GenerateSimulationInfoJson) {
 
 /// Tests if the catalyst state is generated.
 TEST_F(CatalystAdaptorTest, GenerateParaviewState) {
+
   // before we can call finalize we need to modify the json object
   // we need to remove entries for sim_objects and extracellular_substances
   // because there are no corresponding data files available.
   // Therefore the script would fail.
-  remove(kSimulationInfoJson);
   const char* empty_json = R"STR({
   "simulation": {
     "name":"MySimulation",
-    "result_dir":"."
+    "result_dir":"output/MySimulation"
   },
   "sim_objects": [],
   "extracellular_substances": []

@@ -56,20 +56,22 @@ struct Param {
   static constexpr const char* kOutputDir = "output";
 
   /// Backup file name for full simulation backups\n
+  /// Path is relative to working directory.\n
   /// Default value: `""` (no backups will be made)\n
   /// TOML config file:
   ///
   ///     [simulation]
-  ///     backup_file = <filename>.root
+  ///     backup_file = <path>/<filename>.root
   /// Command line argument: `-b, --backup`
   std::string backup_file_ = "";
 
   /// File name to restore simulation from\n
+  /// Path is relative to working directory.\n
   /// Default value: `""` (no restore will be made)\n
   /// TOML config file:
   ///
   ///     [simulation]
-  ///     restore_file = <filename>.root
+  ///     restore_file = <path>/<filename>.root
   /// Command line argument: `-r, --restore`
   std::string restore_file_ = "";
 

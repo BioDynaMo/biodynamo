@@ -25,6 +25,7 @@
 #include "param.h"
 #include "command_line_options.h"
 #include "string_util.h"
+#include "log.h"
 
 namespace bdm {
 
@@ -79,6 +80,7 @@ void Simulation<T>::Restore(Simulation<T>&& restored) {
 
   // name_ and unique_name_
   InitializeUniqueName(restored.name_);
+  InitializeOutputDir();
 }
 
 template <typename T>
@@ -139,10 +141,10 @@ template <typename T>
 void Simulation<T>::Initialize(int argc, const char** argv) {
   id_ = counter_++;
   Activate();
-  InitializeRuntimeParams(argc, argv);
   InitializeUniqueName(ExtractSimulationName(argv[0]));
+  InitializeOutputDir();
+  InitializeRuntimeParams(argc, argv);
   InitializeMembers();
-  output_dir_ = Concat(Param::kOutputDir, "/", unique_name_);
 }
 
 template <typename T>
@@ -215,6 +217,18 @@ std::string Simulation<T>::ExtractSimulationName(const char* path) {
     return s;
   } else {
     return s.substr(pos + 1, s.length() - 1);
+  }
+}
+
+template <typename T>
+void Simulation<T>::InitializeOutputDir() {
+  if (unique_name_ == "") {
+    output_dir_ = Param::kOutputDir;
+  } else {
+    output_dir_ = Concat(Param::kOutputDir, "/", unique_name_);
+  }
+  if (system(Concat("mkdir -p ", output_dir_).c_str())) {
+      Log::Fatal("Simulation", "Failed to make output directory ", output_dir_);
   }
 }
 

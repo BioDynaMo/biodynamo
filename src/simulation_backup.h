@@ -45,6 +45,8 @@ class SimulationBackup {
   /// updated.
   static std::vector<std::function<void()>> after_restore_event_;
 
+  /// If `backup_file` is an empty string no backups will be made
+  /// If `restore_file` is an empty string no restore will be made
   SimulationBackup(const std::string& backup_file,
                    const std::string& restore_file);
 
@@ -97,6 +99,7 @@ class SimulationBackup {
     TSimulation* restored_simulation = nullptr;
     file.Get()->GetObject(kSimulationName.c_str(), restored_simulation);
     TSimulation::GetActive()->Restore(std::move(*restored_simulation));
+    Log::Info("Scheduler", "Restored simulation from ", restore_file_);
 
     // call all after restore events
     for (auto&& event : after_restore_event_) {

@@ -13,17 +13,17 @@
 // -----------------------------------------------------------------------------
 
 #include "simulation_implementation.h"
-#include "unit/default_ctparam.h"
-
 #include <fstream>
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
+
+#include "unit/default_ctparam.h"
 
 namespace bdm {
 
 class SimulationTest : public ::testing::Test {
  public:
-   static constexpr char* gConfigFileName = "bdm.toml";
-   static constexpr char* gConfigContent =
+   static constexpr const char* gConfigFileName = "bdm.toml";
+   static constexpr const char* gConfigContent =
        "[simulation]\n"
        "backup_file = \"backup.root\"\n"
        "restore_file = \"restore.root\"\n"
@@ -199,12 +199,22 @@ TEST_F(SimulationTest, InitializeRuntimeParamsSimulationName) {
   EXPECT_EQ("binary_name3", simulation3.GetUniqueName());
 }
 
-TEST_F(SimulationTest, SimulationId) {
+TEST_F(SimulationTest, SimulationId_OuputDir) {
   Simulation<> simulation("my-simulation");
   Simulation<> simulation1("my-simulation");
 
   EXPECT_EQ("my-simulation", simulation.GetUniqueName());
+  EXPECT_EQ("output/my-simulation", simulation.GetOutputDir());
+
   EXPECT_EQ("my-simulation1", simulation1.GetUniqueName());
+  EXPECT_EQ("output/my-simulation1", simulation1.GetOutputDir());
+}
+
+TEST_F(SimulationTest, SimulationId_OuputDir2) {
+  Simulation<> simulation("");
+
+  EXPECT_EQ("", simulation.GetUniqueName());
+  EXPECT_EQ("output", simulation.GetOutputDir());
 }
 
 }  // namespace bdm

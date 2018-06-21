@@ -157,8 +157,6 @@ class Scheduler {
       backup_->Restore();
       *steps = total_steps_ + *steps - restore_point_;
       total_steps_ = restore_point_;
-      auto* param = TSimulation::GetActive()->GetParam();
-      Log::Info("Scheduler", "Restored simulation from ", param->restore_file_);
     }
     return false;
   }
