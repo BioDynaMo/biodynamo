@@ -47,12 +47,12 @@ struct Simulation {
 
   Simulation(TRootIOCtor*);
   /// Constructor that takes the arguments from `main` to parse command line
-  ///  options. The simulation name is extracted from the executable name.
+  /// arguments. The simulation name is extracted from the executable name.
   /// Creation of a new simulation automatically activates it.
   Simulation(int argc, const char** argv);
   /// Alternative constructor, if the arguments from function `main` are not
   /// available, or if a different simulation name should be chosen. \n
-  /// Command line options are not parsed.\n
+  /// Command line arguments are not parsed!\n
   /// Creation of a new simulation automatically activates it.
   Simulation(const std::string& simulation_name);
   ~Simulation();

@@ -187,7 +187,7 @@ def ProcessCylinder(so_info, so_data, render_view):
 def ProcessSimulationObject(so_info):
     so_name = so_info['name']
     # determine pvtu files
-    files = glob.glob('./{0}_data*.pvtu'.format(so_name))
+    files = glob.glob('./{0}-*.pvtu'.format(so_name))
     if len(files) == 0:
         print('No data files found for simulation object {0}'.format(so_name))
         sys.exit(1)
@@ -258,7 +258,7 @@ def AddDiffusionGradientGlyph(substance_name, substance_data, render_view):
 def ProcessExtracellularSubstance(substance_info):
     substance_name = substance_info['name']
     # determine pvti files
-    files = glob.glob('./{0}*.pvti'.format(substance_name))
+    files = glob.glob('./{0}-*.pvti'.format(substance_name))
     if len(files) == 0:
         print('No data files found for substance {0}'.format(substance_name))
         sys.exit(1)

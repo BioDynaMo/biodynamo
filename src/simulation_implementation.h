@@ -125,6 +125,11 @@ const std::string& Simulation<T>::GetUniqueName() const {
 }
 
 template <typename T>
+const std::string& Simulation<T>::GetOutputDir() const {
+  return output_dir_;
+}
+
+template <typename T>
 void Simulation<T>::ReplaceScheduler(Scheduler<Simulation>* scheduler) {
   delete scheduler_;
   scheduler_ = scheduler;

@@ -282,28 +282,26 @@ class CatalystAdaptor {
   ///
   void WriteToFile(size_t step) {
     uint64_t counter = 0;
+    auto* sim = TSimulation::GetActive();
     for (auto vtk_so : vtk_so_grids_) {
       vtkNew<vtkXMLPUnstructuredGridWriter> cells_writer;
-      std::string filename =
-          so_scalar_names_[counter] + "_data_" + std::to_string(step) + ".pvtu";
-
+      auto filename = Concat(sim->GetOutputDir(), "/", so_scalar_names_[counter], "-", step, ".pvtu");
       cells_writer->SetFileName(filename.c_str());
       cells_writer->SetInputData(vtk_so);
       cells_writer->Update();
       counter++;
     }
 
-    auto* rm = TSimulation::GetActive()->GetResourceManager();
+    auto* rm = sim->GetResourceManager();
     auto& dgrids = rm->GetDiffusionGrids();
 
     size_t idx = 0;
     for (auto vtk_dg : vtk_dgrids_) {
       vtkNew<vtkXMLPImageDataWriter> dgrid_writer;
 
-      std::string dgrid_filename = dgrids[idx]->GetSubstanceName() + "_" +
-                                   std::to_string(step) + ".pvti";
-
-      dgrid_writer->SetFileName(dgrid_filename.c_str());
+      const auto& substance_name = dgrids[idx]->GetSubstanceName();
+      auto filename = Concat(sim->GetOutputDir(), "/", substance_name, "-", step, ".pvti");
+      dgrid_writer->SetFileName(filename.c_str());
       dgrid_writer->SetInputData(vtk_dg);
       dgrid_writer->Update();
       idx++;
@@ -514,7 +512,7 @@ class CatalystAdaptor {
 
     // write to file
     std::ofstream ofstr;
-    ofstr.open(kSimulationInfoJson);
+    ofstr.open(Concat(sim->GetOutputDir(), "/", kSimulationInfoJson));
     ofstr << "{" << std::endl
           << "  \"simulation\": {" << std::endl
           << "    \"name\":\"" << sim->GetUniqueName() << "\"," << std::endl
@@ -535,10 +533,11 @@ class CatalystAdaptor {
   /// Therefore, the user can load the visualization simply by opening the pvsm
   /// file and does not have to perform a lot of manual steps.
   static void GenerateParaviewState() {
+    auto* sim = TSimulation::GetActive();
     std::stringstream python_cmd;
     python_cmd << "pvpython "
                << BDM_SRC_DIR "/visualization/generate_pv_state.py "
-               << kSimulationInfoJson;
+               << sim->GetOutputDir() << "/" << kSimulationInfoJson;
     int ret_code = system(python_cmd.str().c_str());
     if (ret_code) {
       Log::Fatal("CatalystAdaptor::GenerateParaviewState",
