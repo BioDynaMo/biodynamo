@@ -27,7 +27,7 @@ namespace dividing_cell_op_test_internal {
 template <typename TCell, typename TSimulation = Simulation<>>
 void RunTest() {
   TSimulation simulation("dividing_cell_op_test_RunTest");
-  auto* rm = simulation.GetRm();
+  auto* rm = simulation.GetResourceManager();
 
   auto* cells = rm->template Get<TCell>();
   // TODO(lukas) remove after https://trello.com/c/sKoOTgJM has been resolved

@@ -29,7 +29,7 @@ enum ExecutionMode { kCpu, kCuda, kOpenCl };
 
 void RunTest(ExecutionMode mode) {
   Simulation<> simulation("displacement_op_gpu_test_RunTest");
-  auto* rm = simulation.GetRm();
+  auto* rm = simulation.GetResourceManager();
   auto* grid = simulation.GetGrid();
   auto* param = simulation.GetParam();
 
@@ -113,7 +113,7 @@ TEST(DisplacementOpGpuTest, ComputeSoaOpenCL) {
 
 void RunTest2(ExecutionMode mode) {
   Simulation<> simulation("DisplacementOpGpuTest_RunTest2");
-  auto* rm = simulation.GetRm();
+  auto* rm = simulation.GetResourceManager();
   auto* grid = simulation.GetGrid();
   auto* param = simulation.GetParam();
 

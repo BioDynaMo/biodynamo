@@ -92,7 +92,7 @@ namespace simulation_object_vector_test_internal {
 inline void RunTest() {
   std::string sim_name("simulation_object_vector_test_RunInitializerTest");
   Simulation<> simulation(sim_name);
-  auto* rm = simulation.GetRm();
+  auto* rm = simulation.GetResourceManager();
 
   ASSERT_EQ(2u, rm->NumberOfTypes());
 
@@ -124,7 +124,7 @@ inline void RunTest() {
 inline void RunInitializeTest() {
   std::string sim_name("simulation_object_vector_test_RunInitializerTest");
   Simulation<> simulation(sim_name);
-  auto* rm = simulation.GetRm();
+  auto* rm = simulation.GetResourceManager();
 
   ASSERT_EQ(2u, rm->NumberOfTypes());
 

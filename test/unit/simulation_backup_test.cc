@@ -67,7 +67,7 @@ TEST(SimulationBackupDeathTest, BackupNoBackupFileSpecified) {
 TEST(SimulationBackupTest, Backup) {
   remove(ROOTFILE);
   Simulation<> simulation(typeid(*this).name());
-  auto* rm = simulation.GetRm();
+  auto* rm = simulation.GetResourceManager();
 
   auto cells = rm->template Get<Cell>();
   cells->push_back(Cell());
@@ -96,7 +96,7 @@ TEST(SimulationBackupTest, Backup) {
   Simulation<>* restored_simulation = nullptr;
   file.Get()->GetObject(SimulationBackup::kSimulationName.c_str(),
                         restored_simulation);
-  EXPECT_EQ(1u, restored_simulation->GetRm()->Get<Cell>()->size());
+  EXPECT_EQ(1u, restored_simulation->GetResourceManager()->Get<Cell>()->size());
   // FIXME update test file name
   // Writing and reading Simulation is tested in bdm_sim_test.cc
 
@@ -120,7 +120,7 @@ TEST(SimulationBackupDeathTest, RestoreFileDoesNotExist) {
 TEST(SimulationBackupTest, BackupAndRestore) {
   remove(ROOTFILE);
   Simulation<> simulation(typeid(*this).name());
-  auto* rm = simulation.GetRm();
+  auto* rm = simulation.GetResourceManager();
 
   auto cells = rm->Get<Cell>();
   cells->push_back(Cell());
@@ -137,10 +137,10 @@ TEST(SimulationBackupTest, BackupAndRestore) {
   restore.Restore();
 
   //   ResourceManager should not have changed
-  EXPECT_EQ(rm, simulation.GetRm());
+  EXPECT_EQ(rm, simulation.GetResourceManager());
 
   //   get new ResourceManager
-  rm = simulation.GetRm();
+  rm = simulation.GetResourceManager();
   EXPECT_EQ(1u, rm->Get<Cell>()->size());
 
   remove(ROOTFILE);

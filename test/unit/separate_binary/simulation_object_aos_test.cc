@@ -28,7 +28,7 @@ namespace simulation_object_aos_test_internal {
 
 TEST(SimulationObjectTest, AosGetElementIndex) {
   Simulation<> simulation(typeid(*this).name());
-  auto* rm = simulation.GetRm();
+  auto* rm = simulation.GetResourceManager();
 
   rm->Clear();
   for (uint64_t i = 0; i < 10; i++) {

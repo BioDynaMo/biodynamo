@@ -121,7 +121,7 @@ inline void IOTestSoPointerAnyContainerSoa() {
 }
 
 inline void IOTestSoPointerRmContainerSoa(Simulation<>* simulation) {
-  auto* rm = simulation->GetRm();
+  auto* rm = simulation->GetResourceManager();
 
   auto&& so1 = rm->New<SoPointerTestClass>(123);
   auto&& so2 = rm->New<SoPointerTestClass>(456);
@@ -140,9 +140,9 @@ inline void IOTestSoPointerRmContainerSoa(Simulation<>* simulation) {
   restore.Restore();
 
   // ResourceManager instance should not have changed
-  EXPECT_EQ(rm, simulation->GetRm());
+  EXPECT_EQ(rm, simulation->GetResourceManager());
 
-  rm = simulation->GetRm();
+  rm = simulation->GetResourceManager();
   auto* restored_sim_objects = rm->Get<SoPointerTestClass>();
   EXPECT_EQ(123u, (*restored_sim_objects)[1].GetMySoPtr()->GetId());
   // change id of first element

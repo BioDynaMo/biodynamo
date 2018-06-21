@@ -42,7 +42,7 @@ namespace neuroscience {
 
 TEST(MechanicalInteraction, StraightxCylinderGrowth) {
   Simulation<> simulation(typeid(*this).name());
-  auto* rm = simulation.GetRm();
+  auto* rm = simulation.GetResourceManager();
 
   auto neuron = rm->New<NeuronSoma>();
   neuron.SetPosition({0, 0, 0});
@@ -75,7 +75,7 @@ TEST(MechanicalInteraction, StraightxCylinderGrowth) {
 
 TEST(MechanicalInteraction, StraightyCylinderGrowth) {
   Simulation<> simulation(typeid(*this).name());
-  auto* rm = simulation.GetRm();
+  auto* rm = simulation.GetResourceManager();
 
   auto neuron = rm->New<NeuronSoma>();
   neuron.SetPosition({0, 0, 0});
@@ -108,7 +108,7 @@ TEST(MechanicalInteraction, StraightyCylinderGrowth) {
 
 TEST(MechanicalInteraction, StraightzCylinderGrowth) {
   Simulation<> simulation(typeid(*this).name());
-  auto* rm = simulation.GetRm();
+  auto* rm = simulation.GetResourceManager();
 
   auto neuron = rm->New<NeuronSoma>();
   neuron.SetPosition({0, 0, 0});
@@ -141,7 +141,7 @@ TEST(MechanicalInteraction, StraightzCylinderGrowth) {
 
 TEST(MechanicalInteraction, DiagonalxyCylinderGrowth) {
   Simulation<> simulation(typeid(*this).name());
-  auto* rm = simulation.GetRm();
+  auto* rm = simulation.GetResourceManager();
 
   auto neuron = rm->New<NeuronSoma>();
   neuron.SetPosition({0, 0, 0});
@@ -172,7 +172,7 @@ TEST(MechanicalInteraction, DiagonalxyCylinderGrowth) {
 
 TEST(MechanicalInteraction, DiagonalxyzCylinderGrowth) {
   Simulation<> simulation(typeid(*this).name());
-  auto* rm = simulation.GetRm();
+  auto* rm = simulation.GetResourceManager();
 
   auto neuron = rm->New<NeuronSoma>();
   neuron.SetPosition({0, 0, 0});
@@ -207,7 +207,7 @@ TEST(MechanicalInteraction, DiagonalxyzCylinderGrowth) {
 
 TEST(MechanicalInteraction, DiagonalSpecialDirectionCylinderGrowth) {
   Simulation<> simulation(typeid(*this).name());
-  auto* rm = simulation.GetRm();
+  auto* rm = simulation.GetResourceManager();
 
   auto neuron = rm->New<NeuronSoma>();
   neuron.SetPosition({0, 0, 0});
@@ -242,7 +242,7 @@ TEST(MechanicalInteraction, DiagonalSpecialDirectionCylinderGrowth) {
 
 TEST(MechanicalInteraction, StraightCylinderGrowthObstacle) {
   Simulation<> simulation(typeid(*this).name());
-  auto* rm = simulation.GetRm();
+  auto* rm = simulation.GetResourceManager();
 
   auto neuron = rm->New<NeuronSoma>();
   neuron.SetPosition({0, 0, 0});
@@ -281,7 +281,7 @@ TEST(MechanicalInteraction, StraightCylinderGrowthObstacle) {
 // TODO(jean) Fix test
 TEST(DISABLED_MechanicalInteraction, NotStraightCylinderGrowthObstacle) {
   Simulation<> simulation(typeid(*this).name());
-  auto* rm = simulation.GetRm();
+  auto* rm = simulation.GetResourceManager();
 
   auto neuron = rm->New<NeuronSoma>();
   neuron.SetPosition({0, 0, 0});
@@ -317,7 +317,7 @@ TEST(DISABLED_MechanicalInteraction, NotStraightCylinderGrowthObstacle) {
 
 TEST(MechanicalInteraction, DoubleStraightCylinderGrowth) {
   Simulation<> simulation(typeid(*this).name());
-  auto* rm = simulation.GetRm();
+  auto* rm = simulation.GetResourceManager();
 
   auto neuron = rm->New<NeuronSoma>();
   neuron.SetPosition({0, 0, 0});
@@ -365,7 +365,7 @@ TEST(MechanicalInteraction, DoubleStraightCylinderGrowth) {
 
 TEST(MechanicalInteraction, BifurcationCylinderGrowth) {
   Simulation<> simulation(typeid(*this).name());
-  auto* rm = simulation.GetRm();
+  auto* rm = simulation.GetResourceManager();
 
   gErrorIgnoreLevel = kWarning;
 
@@ -423,7 +423,7 @@ TEST(MechanicalInteraction, BifurcationCylinderGrowth) {
 
 TEST(MechanicalInteraction, BranchCylinderGrowth) {
   Simulation<> simulation(typeid(*this).name());
-  auto* rm = simulation.GetRm();
+  auto* rm = simulation.GetResourceManager();
 
   auto neuron = rm->New<NeuronSoma>();
   neuron.SetPosition({0, 0, 0});

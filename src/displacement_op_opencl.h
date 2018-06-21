@@ -50,7 +50,7 @@ class DisplacementOpOpenCL {
 #ifdef USE_OPENCL
     auto* sim = TSimulation::GetActive();
     auto* grid = sim->GetGrid();
-    auto* rm = sim->GetRm();
+    auto* rm = sim->GetResourceManager();
     auto* param = sim->GetParam();
 
     auto context = rm->GetOpenCLContext();

@@ -46,7 +46,7 @@ BDM_SIM_OBJECT(NeuronSoma, bdm::Cell) {
   void UpdateReferences(
       const std::vector<std::unordered_map<uint32_t, uint32_t>>& update_info) {
     // NeuronSoma only stores NeuriteElements
-    auto* rm = Simulation_t::GetActive()->GetRm();
+    auto* rm = Simulation_t::GetActive()->GetResourceManager();
     const int neurite_type_idx = rm->template GetTypeIndex<NeuriteElement>();
     const auto& neurite_updates = update_info[neurite_type_idx];
     for (auto& daugther : daughters_[kIdx]) {
@@ -77,7 +77,7 @@ BDM_SIM_OBJECT(NeuronSoma, bdm::Cell) {
   /// @return SoPointer of new neurite
   NeuriteElementSoPtr ExtendNewNeurite(double diameter, double phi,
                                        double theta) {
-    auto* rm = Simulation_t::GetActive()->GetRm();
+    auto* rm = Simulation_t::GetActive()->GetResourceManager();
     auto neurite = rm->template New<NeuriteElement>();
 
     std::vector<typename Base::BiologyModules> neurite_bms;

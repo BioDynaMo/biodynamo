@@ -39,7 +39,7 @@ namespace neuroscience {
 // TODO(jean) Fix this test
 TEST(DISABLED_NeuriteElementBehaviour, StraightxCylinderGrowthRetract) {
   Simulation<> simulation(typeid(*this).name());
-  auto* rm = simulation.GetRm();
+  auto* rm = simulation.GetResourceManager();
 
   auto neuron = rm->New<NeuronSoma>();
   neuron.SetPosition({0, 0, 0});
@@ -94,7 +94,7 @@ TEST(DISABLED_NeuriteElementBehaviour, StraightxCylinderGrowthRetract) {
 // TODO(jean) fix test
 TEST(DISABLED_NeuriteElementBehaviour, BranchingGrowth) {
   Simulation<> simulation(typeid(*this).name());
-  auto* rm = simulation.GetRm();
+  auto* rm = simulation.GetResourceManager();
   auto* param = simulation.GetParam();
 
   param->run_mechanical_interactions_ = true;

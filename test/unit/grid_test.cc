@@ -38,7 +38,7 @@ void CellFactory(TContainer* cells, size_t cells_per_dim) {
 
 TEST(GridTest, SetupGrid) {
   Simulation<> simulation(typeid(*this).name());
-  auto* rm = simulation.GetRm();
+  auto* rm = simulation.GetResourceManager();
   auto* grid = simulation.GetGrid();
 
   auto cells = rm->Get<Cell>();
@@ -149,7 +149,7 @@ void RunUpdateGridTest(TContainer* cells, Simulation<>* simulation) {
 
 TEST(GridTest, UpdateGrid) {
   Simulation<> simulation(typeid(*this).name());
-  auto* rm = simulation.GetRm();
+  auto* rm = simulation.GetResourceManager();
   auto* grid = simulation.GetGrid();
 
   auto cells = rm->Get<Cell>();
@@ -169,7 +169,7 @@ TEST(GridTest, UpdateGrid) {
 
 TEST(GridTest, NoRaceConditionDuringUpdate) {
   Simulation<> simulation(typeid(*this).name());
-  auto* rm = simulation.GetRm();
+  auto* rm = simulation.GetResourceManager();
   auto* grid = simulation.GetGrid();
 
   auto cells = rm->Get<Cell>();
@@ -194,7 +194,7 @@ TEST(GridTest, NoRaceConditionDuringUpdate) {
 
 TEST(GridTest, GetBoxIndex) {
   Simulation<> simulation(typeid(*this).name());
-  auto* rm = simulation.GetRm();
+  auto* rm = simulation.GetResourceManager();
   auto* grid = simulation.GetGrid();
 
   auto cells = rm->Get<Cell>();
@@ -221,7 +221,7 @@ TEST(GridTest, GetBoxIndex) {
 
 TEST(GridTest, GridDimensions) {
   Simulation<> simulation(typeid(*this).name());
-  auto* rm = simulation.GetRm();
+  auto* rm = simulation.GetResourceManager();
   auto* grid = simulation.GetGrid();
 
   auto cells = rm->Get<Cell>();
@@ -244,7 +244,7 @@ TEST(GridTest, GridDimensions) {
 
 TEST(GridTest, GetBoxCoordinates) {
   Simulation<> simulation(typeid(*this).name());
-  auto* rm = simulation.GetRm();
+  auto* rm = simulation.GetResourceManager();
   auto* grid = simulation.GetGrid();
 
   auto cells = rm->Get<Cell>();
@@ -260,7 +260,7 @@ TEST(GridTest, GetBoxCoordinates) {
 
 void RunNoRaceConditionForEachPairTest() {
   Simulation<> simulation("GridTest_RunNoRaceConditionForEachPairTest");
-  auto* rm = simulation.GetRm();
+  auto* rm = simulation.GetResourceManager();
   auto* grid = simulation.GetGrid();
 
   auto cells = rm->Get<Cell>();

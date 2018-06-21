@@ -29,7 +29,7 @@ namespace simulation_object_util_test_aos_internal {
 
 TEST(SimulationObjectUtilAosTest, RemoveFromSimulation) {
   Simulation<> simulation(typeid(*this).name());
-  auto* rm = simulation.GetRm();
+  auto* rm = simulation.GetResourceManager();
 
   auto* cells = rm->Get<Cell>();
 
@@ -44,7 +44,7 @@ TEST(SimulationObjectUtilAosTest, RemoveFromSimulation) {
 
 TEST(SimulationObjectUtilAosTest, GetSoPtr) {
   Simulation<> simulation(typeid(*this).name());
-  auto* rm = simulation.GetRm();
+  auto* rm = simulation.GetResourceManager();
 
   for (uint64_t i = 0; i < 10; i++) {
     rm->New<Cell>(1);

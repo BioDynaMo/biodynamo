@@ -24,7 +24,7 @@ namespace bdm {
 
 TEST(GrowDivideTest, Grow) {
   Simulation<> simulation(typeid(*this).name());
-  auto* rm = simulation.GetRm();
+  auto* rm = simulation.GetResourceManager();
 
   Cell cell;
   cell.SetDiameter(40);
@@ -40,7 +40,7 @@ TEST(GrowDivideTest, Grow) {
 
 TEST(GrowDivideTest, Divide) {
   Simulation<> simulation(typeid(*this).name());
-  auto* rm = simulation.GetRm();
+  auto* rm = simulation.GetResourceManager();
 
   Cell cell;
   cell.SetDiameter(41);

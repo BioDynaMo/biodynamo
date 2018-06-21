@@ -52,7 +52,7 @@ enum ExecutionMode { kCpu, kCuda, kOpenCl };
 
 inline void RunTest(bool* result, ExecutionMode mode) {
   Simulation<> simulation("cell_division_gpu");
-  auto* rm = simulation.GetRm();
+  auto* rm = simulation.GetResourceManager();
   auto* param = simulation.GetParam();
   rm->Clear();
   auto cells = rm->template Get<Cell>();

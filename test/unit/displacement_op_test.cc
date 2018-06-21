@@ -34,7 +34,7 @@ TEST(DisplacementOpTest, ComputeSoa) { RunTest(); }
 
 TEST(DisplacementOpTest, ComputeSoaNew) {
   Simulation<> simulation(typeid(*this).name());
-  auto* rm = simulation.GetRm();
+  auto* rm = simulation.GetResourceManager();
   auto* grid = simulation.GetGrid();
 
   auto cells = rm->template Get<Cell>();

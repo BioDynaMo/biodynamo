@@ -42,7 +42,7 @@ void CellFactory(TContainer* cells,
 // neighbor grid dimensions
 TEST(DiffusionTest, GridDimensions) {
   Simulation<> simulation(typeid(*this).name());
-  auto* rm = simulation.GetRm();
+  auto* rm = simulation.GetResourceManager();
   auto* grid = simulation.GetGrid();
 
   auto cells = rm->Get<Cell>();
@@ -73,7 +73,7 @@ TEST(DiffusionTest, GridDimensions) {
 // neighbor grid dimensions (we expect the diffusion grid to stay cube-shaped)
 TEST(DiffusionTest, UpdateGrid) {
   Simulation<> simulation(typeid(*this).name());
-  auto* rm = simulation.GetRm();
+  auto* rm = simulation.GetResourceManager();
   auto* grid = simulation.GetGrid();
 
   auto cells = rm->Get<Cell>();
@@ -113,7 +113,7 @@ TEST(DiffusionTest, UpdateGrid) {
 // do not change
 TEST(DiffusionTest, FalseUpdateGrid) {
   Simulation<> simulation(typeid(*this).name());
-  auto* rm = simulation.GetRm();
+  auto* rm = simulation.GetResourceManager();
   auto* grid = simulation.GetGrid();
 
   auto cells = rm->Get<Cell>();
@@ -156,7 +156,7 @@ TEST(DiffusionTest, FalseUpdateGrid) {
 // added at center box 2,2,2, causing a symmetrical diffusion
 TEST(DiffusionTest, LeakingEdge) {
   Simulation<> simulation(typeid(*this).name());
-  auto* rm = simulation.GetRm();
+  auto* rm = simulation.GetResourceManager();
   auto* grid = simulation.GetGrid();
 
   DiffusionGrid* d_grid = new DiffusionGrid(0, "Kalium", 0.4, 0, 5);

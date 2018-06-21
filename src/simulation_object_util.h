@@ -367,13 +367,13 @@ struct Capsule;
   using Simulation_t = Simulation<typename TCompileTimeParam::template Self<Soa>>; \
   \
   MostDerivedSoPtr GetSoPtr() {                                                \
-    auto* rm = Simulation_t::GetActive()->GetRm(); \
+    auto* rm = Simulation_t::GetActive()->GetResourceManager(); \
     auto* container = rm->template Get<MostDerivedScalar>();                 \
     return MostDerivedSoPtr(container, Base::GetElementIdx());                 \
   }                                                                            \
                                                                                \
   void RemoveFromSimulation() {                                                \
-    auto* rm = Simulation_t::GetActive()->GetRm(); \
+    auto* rm = Simulation_t::GetActive()->GetResourceManager(); \
     auto container = rm->template Get<MostDerivedScalar>();                  \
     container->DelayedRemove(Base::GetElementIdx());                           \
   }                                                                            \

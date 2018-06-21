@@ -61,7 +61,7 @@ struct Simulation {
   /// Activates this simulation.
   void Activate();
 
-  ResourceManager<TCTParam>* GetRm();
+  ResourceManager<TCTParam>* GetResourceManager();
   Param* GetParam();
   Grid<Simulation>* GetGrid();
   Scheduler<Simulation>* GetScheduler();

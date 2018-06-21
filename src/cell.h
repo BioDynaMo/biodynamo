@@ -136,7 +136,7 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
   /// Forward call to `DivideImpl`
   /// @see `DivideImpl`
   MostDerivedSoPtr Divide(double volume_ratio, double phi, double theta) {
-    auto* rm = Simulation_t::GetActive()->GetRm();
+    auto* rm = Simulation_t::GetActive()->GetResourceManager();
     auto daughter = rm->template New<MostDerivedScalar>().GetSoPtr();
     ThisMD()->DivideImpl(daughter, volume_ratio, phi, theta);
     return daughter;

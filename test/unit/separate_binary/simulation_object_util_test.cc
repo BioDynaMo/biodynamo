@@ -273,7 +273,7 @@ TEST(SimulationObjectUtilTest, Soa_DelayedRemove) {
 // container managed by the ResourceManager with default template parameters
 TEST(SimulationObjectUtilTest, Soa_DivideWithResourceManager) {
   Simulation<> simulation(typeid(*this).name());
-  auto* rm = simulation.GetRm();
+  auto* rm = simulation.GetResourceManager();
 
   auto neurons = rm->Get<Neuron>();
   Neuron neuron;
@@ -300,7 +300,7 @@ TEST(SimulationObjectUtilTest, Soa_DivideWithResourceManager) {
 
 TEST(SimulationObjectUtilTest, RemoveFromSimulation) {
   Simulation<> simulation(typeid(*this).name());
-  auto* rm = simulation.GetRm();
+  auto* rm = simulation.GetResourceManager();
 
   auto neurons = rm->Get<Neuron>();
 
@@ -444,7 +444,7 @@ TEST(SimulationObjectUtilTest, ThisMD) {
 
 TEST(SimulationObjectUtilTest, GetSoPtr) {
   Simulation<> simulation(typeid(*this).name());
-  auto* rm = simulation.GetRm();
+  auto* rm = simulation.GetResourceManager();
 
   for (uint64_t i = 0; i < 10; i++) {
     rm->New<Neuron>();

@@ -39,7 +39,7 @@ struct CompileTimeParam : public DefaultCompileTimeParam<TBackend> {
 
 inline int Simulate(int argc, const char** argv) {
   Simulation<> simulation(argc, argv);
-  auto* rm = simulation.GetRm();
+  auto* rm = simulation.GetResourceManager();
   auto* param = simulation.GetParam();
 
   param->backup_interval_ = 1;

@@ -60,7 +60,7 @@ class TestSchedulerBackup : public Scheduler<> {
 
 inline void RunRestoreTest() {
   Simulation<> simulation("SchedulerTest_RunRestoreTest");
-  auto* rm = simulation.GetRm();
+  auto* rm = simulation.GetResourceManager();
   auto* param = simulation.GetParam();
   param->restore_file_ = ROOTFILE;
   remove(ROOTFILE);
@@ -101,7 +101,7 @@ inline void RunRestoreTest() {
 
 inline void RunBackupTest() {
   Simulation<> simulation("SchedulerTest_RunBackupTest");
-  auto* rm = simulation.GetRm();
+  auto* rm = simulation.GetResourceManager();
   auto* param = simulation.GetParam();
 
   param->backup_file_ = ROOTFILE;

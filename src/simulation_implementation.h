@@ -100,7 +100,7 @@ void Simulation<T>::Activate() {
 }
 
 template <typename T>
-ResourceManager<T>* Simulation<T>::GetRm() { return rm_; }
+ResourceManager<T>* Simulation<T>::GetResourceManager() { return rm_; }
 
 template <typename T>
 Param* Simulation<T>::GetParam() { return param_; }

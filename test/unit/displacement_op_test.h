@@ -27,7 +27,7 @@ namespace displacement_op_test_internal {
 template <typename TSimulation = Simulation<>>
 void RunTest() {
   TSimulation simulation("displacement_op_test_RunTest");
-  auto* rm = simulation.GetRm();
+  auto* rm = simulation.GetResourceManager();
 
   auto* cells = rm->template Get<Cell>();
 

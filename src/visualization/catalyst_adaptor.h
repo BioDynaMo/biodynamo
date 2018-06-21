@@ -76,7 +76,7 @@ class CatalystAdaptor {
          g_processor_ = vtkCPProcessor::New();
          g_processor_->Initialize();
 
-         auto* rm = TSimulation::GetActive()->GetRm();
+         auto* rm = TSimulation::GetActive()->GetResourceManager();
          so_is_initialized_.resize(rm->NumberOfTypes());
          dg_is_initialized_.resize(rm->GetDiffusionGrids().size());
        } else {
@@ -293,7 +293,7 @@ class CatalystAdaptor {
       counter++;
     }
 
-    auto* rm = TSimulation::GetActive()->GetRm();
+    auto* rm = TSimulation::GetActive()->GetResourceManager();
     auto& dgrids = rm->GetDiffusionGrids();
 
     size_t idx = 0;
@@ -320,7 +320,7 @@ class CatalystAdaptor {
       vtkNew<vtkCPDataDescription>& data_description) {  // NOLINT
     // Add simulation objects to the visualization if requested
     auto* sim = TSimulation::GetActive();
-    auto* rm = sim->GetRm();
+    auto* rm = sim->GetResourceManager();
     auto* param = sim->GetParam();
     rm->ApplyOnAllTypes([&, this](auto* sim_objects, uint16_t type_idx) {
       auto so_name = sim_objects->GetScalarTypeName().c_str();

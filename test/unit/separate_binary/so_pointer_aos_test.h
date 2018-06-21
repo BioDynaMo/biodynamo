@@ -91,7 +91,7 @@ struct CompileTimeParam : public DefaultCompileTimeParam<TBackend> {
 namespace so_pointer_aos_test_internal {
 
 inline void IOTestSoPointerRmContainerAos(Simulation<>* simulation) {
-  auto* rm = simulation->GetRm();
+  auto* rm = simulation->GetResourceManager();
   // TODO(lukas) Remove after https://trello.com/c/sKoOTgJM has been resolved
   rm->Get<SoPointerTestClass>()->reserve(2);
   auto&& so1 = rm->New<SoPointerTestClass>(123);
@@ -110,7 +110,7 @@ inline void IOTestSoPointerRmContainerAos(Simulation<>* simulation) {
   SimulationBackup restore("", IOTest::kRootFile);
   restore.Restore();
 
-  EXPECT_EQ(rm, simulation->GetRm());
+  EXPECT_EQ(rm, simulation->GetResourceManager());
 
   auto* restored_sim_objects = rm->Get<SoPointerTestClass>();
   EXPECT_EQ(123u, (*restored_sim_objects)[1].GetMySoPtr()->GetId());

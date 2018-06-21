@@ -63,7 +63,7 @@ struct Chemotaxis : public BaseBiologyModule {
   template <typename T, typename TSimulation = Simulation<>>
   void Run(T* cell) {
     if (!init_) {
-      auto* rm = TSimulation::GetActive()->GetRm();
+      auto* rm = TSimulation::GetActive()->GetResourceManager();
       dg_0_ = rm->GetDiffusionGrid(kSubstance_0);
       dg_1_ = rm->GetDiffusionGrid(kSubstance_1);
       init_ = true;
@@ -100,7 +100,7 @@ struct SubstanceSecretion : public BaseBiologyModule {
   template <typename T, typename TSimulation = Simulation<>>
   void Run(T* cell) {
     if (!init_) {
-      auto* rm = TSimulation::GetActive()->GetRm();
+      auto* rm = TSimulation::GetActive()->GetResourceManager();
       dg_0_ = rm->GetDiffusionGrid(kSubstance_0);
       dg_1_ = rm->GetDiffusionGrid(kSubstance_1);
       init_ = true;
@@ -135,7 +135,7 @@ struct CompileTimeParam : public DefaultCompileTimeParam<Backend> {
 template <typename TSimulation = Simulation<>>
 static bool GetCriterion(double spatial_range, int target_n) {
   auto* sim = TSimulation::GetActive();
-  auto* rm = sim->GetRm();
+  auto* rm = sim->GetResourceManager();
 
   auto my_cells = rm->template Get<MyCell>();
   int n = my_cells->size();

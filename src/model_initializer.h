@@ -47,7 +47,7 @@ struct ModelInitializer {
   static void Grid3D(size_t cells_per_dim, double space,
                      Function cell_builder) {
     auto* sim = TSimulation::GetActive();
-    auto* rm = sim->GetRm();
+    auto* rm = sim->GetResourceManager();
     // Determine simulation object type which is returned by the cell_builder
     using FunctionReturnType = decltype(cell_builder({0, 0, 0}));
 
@@ -87,7 +87,7 @@ struct ModelInitializer {
   static void Grid3D(const std::array<size_t, 3>& cells_per_dim, double space,
                      Function cell_builder) {
     auto* sim = TSimulation::GetActive();
-    auto* rm = sim->GetRm();
+    auto* rm = sim->GetResourceManager();
     // Determine simulation object type which is returned by the cell_builder
     using FunctionReturnType = decltype(cell_builder({0, 0, 0}));
 
@@ -118,7 +118,7 @@ struct ModelInitializer {
   static void CreateCells(const std::vector<std::array<double, 3>>& positions,
                           Function cell_builder) {
     auto* sim = TSimulation::GetActive();
-    auto* rm = sim->GetRm();
+    auto* rm = sim->GetResourceManager();
     // Determine simulation object type which is returned by the cell_builder
     using FunctionReturnType = decltype(cell_builder({0, 0, 0}));
 
@@ -147,7 +147,7 @@ struct ModelInitializer {
   static void CreateCellsRandom(double min, double max, int num_cells,
                                 Function cell_builder) {
     auto* sim = TSimulation::GetActive();
-    auto* rm = sim->GetRm();
+    auto* rm = sim->GetResourceManager();
     // Determine simulation object type which is returned by the cell_builder
     using FunctionReturnType = decltype(cell_builder({0, 0, 0}));
 
@@ -183,7 +183,7 @@ struct ModelInitializer {
                               int resolution = 10) {
     assert(resolution > 0 && "Resolution needs to be a positive integer value");
     auto* sim = TSimulation::GetActive();
-    auto* rm = sim->GetRm();
+    auto* rm = sim->GetResourceManager();
     DiffusionGrid* d_grid =
         new DiffusionGrid(substance_id, substance_name, diffusion_coeff,
                           decay_constant, resolution);
@@ -195,7 +195,7 @@ struct ModelInitializer {
   static void InitializeSubstance(int substance_id, std::string substance_name,
                                   F function) {
     auto* sim = TSimulation::GetActive();
-    auto* rm = sim->GetRm();
+    auto* rm = sim->GetResourceManager();
     auto diffusion_grid = rm->GetDiffusionGrid(substance_id);
     diffusion_grid->AddInitializer(function);
   }

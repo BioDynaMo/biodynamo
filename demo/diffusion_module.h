@@ -37,7 +37,7 @@ struct Chemotaxis : public BaseBiologyModule {
 
   template <typename T, typename TSimulation = Simulation<>>
   void Run(T* cell) {
-    auto* rm = TSimulation::GetActive()->GetRm();
+    auto* rm = TSimulation::GetActive()->GetResourceManager();
     auto* dg = rm->GetDiffusionGrid(kKalium);
     dg->SetConcentrationThreshold(1e15);
 
@@ -61,7 +61,7 @@ struct KaliumSecretion : public BaseBiologyModule {
 
   template <typename T, typename TSimulation = Simulation<>>
   void Run(T* cell) {
-    auto* rm = TSimulation::GetActive()->GetRm();
+    auto* rm = TSimulation::GetActive()->GetResourceManager();
     auto* dg = rm->GetDiffusionGrid(kKalium);
     array<double, 3> secretion_position = {50, 50, 50};
     dg->IncreaseConcentrationBy(secretion_position, 4 / dg->GetBoxVolume());

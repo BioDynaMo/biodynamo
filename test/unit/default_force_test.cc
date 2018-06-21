@@ -248,7 +248,7 @@ TEST(DefaultForce, SphereSmallCylinderHorizontal) {
 // (mass location)
 TEST(DefaultForce, SphereSmallCylinderVertical) {
   Simulation<> simulation(typeid(*this).name());
-  auto* rm = simulation.GetRm();
+  auto* rm = simulation.GetResourceManager();
 
   Cell sphere({0, 0, 0});
   sphere.SetDiameter(50);
@@ -276,7 +276,7 @@ TEST(DefaultForce, SphereSmallCylinderVertical) {
 // opposit case of Vertical: cylinder is below the cell
 TEST(DefaultForce, SphereSmallCylinderVertical2) {
   Simulation<> simulation(typeid(*this).name());
-  auto* rm = simulation.GetRm();
+  auto* rm = simulation.GetResourceManager();
 
   Cell sphere({0, 0, 0});
   sphere.SetDiameter(50);

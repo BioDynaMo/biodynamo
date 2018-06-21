@@ -38,7 +38,7 @@ class DiffusionOp {
     auto* sim = TSimulation::GetActive();
     auto* grid = sim->GetGrid();
     auto* param = sim->GetParam();
-    auto& diffusion_grids = sim->GetRm()->GetDiffusionGrids();
+    auto& diffusion_grids = sim->GetResourceManager()->GetDiffusionGrids();
     for (auto dg : diffusion_grids) {
       // Update the diffusion grid dimension if the neighbor grid dimensions
       // have changed. If the space is bound, we do not need to update the

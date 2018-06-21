@@ -19,7 +19,7 @@ namespace scheduler_test_internal {
 
 TEST(SchedulerTest, NoRestoreFile) {
   Simulation<> simulation(typeid(*this).name());
-  auto* rm = simulation.GetRm();
+  auto* rm = simulation.GetResourceManager();
   auto* param = simulation.GetParam();
 
   param->restore_file_ = "";

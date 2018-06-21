@@ -30,7 +30,7 @@ enum Substances { kSubstance };
 
 TEST(DiffusionInitTest, GaussianBand) {
   Simulation<> simulation(typeid(*this).name());
-  auto* rm = simulation.GetRm();
+  auto* rm = simulation.GetResourceManager();
   auto* param = simulation.GetParam();
 
   param->bound_space_ = true;

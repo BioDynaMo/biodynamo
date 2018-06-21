@@ -82,7 +82,7 @@ static void FindGpuDevicesCuda() {
 template <typename TSimulation = Simulation<>>
 static void CompileOpenCLKernels() {
   auto* sim = TSimulation::GetActive();
-  auto* rm = sim->GetRm();
+  auto* rm = sim->GetResourceManager();
   auto* param = sim->GetParam();
 
   std::vector<cl::Program>* all_programs = rm->GetOpenCLProgramList();
@@ -132,7 +132,7 @@ static void FindGpuDevicesOpenCL() {
     // We keep the context and device list in the resource manager to be
     // accessible elsewhere to create command queues and buffers from
     auto* sim = TSimulation::GetActive();
-    auto* rm = sim->GetRm();
+    auto* rm = sim->GetResourceManager();
     auto* param = sim->GetParam();
 
     cl::Context* context = rm->GetOpenCLContext();

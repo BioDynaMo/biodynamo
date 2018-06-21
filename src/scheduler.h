@@ -86,7 +86,7 @@ class Scheduler {
   /// This design makes testing more convenient
   virtual void Execute(bool last_iteration) {
     auto* sim = TSimulation::GetActive();
-    auto* rm = sim->GetRm();
+    auto* rm = sim->GetResourceManager();
     auto* grid = sim->GetGrid();
     auto* param = sim->GetParam();
 
@@ -165,7 +165,7 @@ class Scheduler {
 
   void CommitChangesAndUpdateReferences() {
     auto* sim = TSimulation::GetActive();
-    auto* rm = sim->GetRm();
+    auto* rm = sim->GetResourceManager();
     rm->ApplyOnAllTypesParallel(commit_);
 
     const auto& update_info = commit_->GetUpdateInfo();
@@ -187,7 +187,7 @@ class Scheduler {
 
     auto* sim = TSimulation::GetActive();
     auto* grid = sim->GetGrid();
-    auto* rm = sim->GetRm();
+    auto* rm = sim->GetResourceManager();
     auto* param = sim->GetParam();
 
     grid->Initialize();
