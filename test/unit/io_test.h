@@ -18,6 +18,7 @@
 #include <gtest/gtest.h>
 #include "io_util.h"
 #include "param.h"
+#include "simulation.h"
 
 namespace bdm {
 
