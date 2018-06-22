@@ -26,7 +26,7 @@ namespace detail {
 ///
 /// @param[in]  ss    the stringstream that holds the message
 ///
-static void ConcatNextPart(std::ostringstream* ss) {}
+inline void ConcatNextPart(std::ostringstream* ss) {}
 
 /// @brief Appends the next part of the message
 ///
@@ -35,7 +35,7 @@ static void ConcatNextPart(std::ostringstream* ss) {}
 /// @param[in]  parts the rest of the parts, waiting to be appended
 ///
 template <typename T, typename... Args>
-static void ConcatNextPart(std::ostringstream* ss, const T& arg,
+inline void ConcatNextPart(std::ostringstream* ss, const T& arg,
                            const Args&... parts) {
   *ss << arg;
   ConcatNextPart(ss, parts...);
@@ -52,7 +52,7 @@ static void ConcatNextPart(std::ostringstream* ss, const T& arg,
 /// @returns  A unique string pointer to the message
 ///
 template <typename... Args>
-static std::string Concat(const Args&... parts) {
+inline std::string Concat(const Args&... parts) {
   std::ostringstream message;
   detail::ConcatNextPart(&message, parts...);
   return message.str();

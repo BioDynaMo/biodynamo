@@ -99,7 +99,6 @@ TEST(DISABLED_NeuriteElementBehaviour, BranchingGrowth) {
 
   param->run_mechanical_interactions_ = true;
 
-  double diam_reduc_speed = 0.001;
   double branching_factor = 0.005;
 
   auto neuron = rm->New<NeuronSoma>();
@@ -134,7 +133,6 @@ TEST(DISABLED_NeuriteElementBehaviour, BranchingGrowth) {
             Math::Add(previous_direction, direction);
 
         ne->ElongateTerminalEnd(10, step_direction);
-        //          ne->SetDiameter(ne->GetDiameter()-diam_reduc_speed);
         ne->SetDiameter(1);
 
         if (random->Uniform(0, 1) < branching_factor * ne->GetDiameter()) {

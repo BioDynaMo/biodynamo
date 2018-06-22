@@ -68,7 +68,6 @@ TEST(RegulateGenesTest, EulerTest) {
 TEST(RegulateGenesTest, RK4Test) {
   Simulation<> simulation(TEST_NAME);
   auto* param = simulation.GetParam();
-  auto* scheduler = simulation.GetScheduler();
 
   param->numerical_ode_solver_ = param->NumericalODESolver::kRK4;
   // simulation steps is zero by default

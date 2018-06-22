@@ -37,7 +37,8 @@ BDM_SIM_OBJECT(A, SimulationObject) {
   AExt() {}
   explicit AExt(int id) { id_[kIdx] = id; }
 
-  // FIXME
+  // TODO(lukas) after ROOT-9321 has been resolved: create test base class,
+  // derive from it and remove these functions
   std::array<double, 3> GetPosition() const { return {0, 0, 0}; };
   void SetPosition(const std::array<double, 3>&) {}
   void ApplyDisplacement(const std::array<double, 3>&) {}
@@ -46,9 +47,10 @@ BDM_SIM_OBJECT(A, SimulationObject) {
                                               double squared_radius) { return {0, 0, 0}; };
   void RunBiologyModules() {}
   void SetBoxIdx(uint64_t) {}
-  double GetDiameter() {}
+  double GetDiameter() { return 3.14; }
   static std::set<std::string> GetRequiredVisDataMembers() { return {"diameter_", "position_"}; };
   static constexpr Shape GetShape() { return Shape::kSphere; }
+  // TODO(lukas) end remove
 
  private:
   vec<int> id_;
@@ -62,7 +64,8 @@ BDM_SIM_OBJECT(B, SimulationObject) {
 
   explicit BExt(int id) { id_[kIdx] = id; }
 
-  // FIXME
+  // TODO(lukas) after ROOT-9321 has been resolved: create test base class,
+  // derive from it and remove these functions
   std::array<double, 3> GetPosition() const { return {0, 0, 0}; };
   void SetPosition(const std::array<double, 3>&) {}
   void ApplyDisplacement(const std::array<double, 3>&) {}
@@ -71,9 +74,11 @@ BDM_SIM_OBJECT(B, SimulationObject) {
                                               double squared_radius) { return {0, 0, 0}; };
   void RunBiologyModules() {}
   void SetBoxIdx(uint64_t) {}
-  double GetDiameter() {}
+  double GetDiameter() { return 3.14; }
   static std::set<std::string> GetRequiredVisDataMembers() { return {"diameter_", "position_"}; };
   static constexpr Shape GetShape() { return Shape::kSphere; }
+  // TODO(lukas) end remove
+
 
  private:
   vec<int> id_;

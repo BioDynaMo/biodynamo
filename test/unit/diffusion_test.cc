@@ -156,8 +156,6 @@ TEST(DiffusionTest, FalseUpdateGrid) {
 // added at center box 2,2,2, causing a symmetrical diffusion
 TEST(DiffusionTest, LeakingEdge) {
   Simulation<> simulation(TEST_NAME);
-  auto* rm = simulation.GetResourceManager();
-  auto* grid = simulation.GetGrid();
 
   DiffusionGrid* d_grid = new DiffusionGrid(0, "Kalium", 0.4, 0, 5);
 

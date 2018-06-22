@@ -379,7 +379,6 @@ TEST(MechanicalInteraction, BifurcationCylinderGrowth) {
   Scheduler<> scheduler;
 
   std::array<double, 3> ne_axis = ne->GetSpringAxis();
-  std::array<double, 3> ne_axis_2;
 
   EXPECT_NEAR(ne_axis[0], 0, abs_error<double>::value);
   EXPECT_NEAR(ne_axis[1], 0, abs_error<double>::value);
@@ -435,7 +434,6 @@ TEST(MechanicalInteraction, BranchCylinderGrowth) {
   Scheduler<> scheduler;
 
   std::array<double, 3> ne_axis = ne->GetSpringAxis();
-  std::array<double, 3> ne_axis_2;
 
   EXPECT_NEAR(ne_axis[0], 0, abs_error<double>::value);
   EXPECT_NEAR(ne_axis[1], 0, abs_error<double>::value);
@@ -452,7 +450,8 @@ TEST(MechanicalInteraction, BranchCylinderGrowth) {
 
   //    std::cout << "---- branch cylinder ----" << std::endl;
   //    dynamic_cast<Neurite>(ne->Branch(0.5, direction2));
-  auto ne2 = ne->Branch(0.5, direction2);
+  // auto ne2 = ne->Branch(0.5, direction2);
+  ne->Branch(0.5, direction2);
 
   for (int i = 0; i < 100; i++) {
     ne->ElongateTerminalEnd(100, direction);

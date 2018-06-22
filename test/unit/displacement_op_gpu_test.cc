@@ -25,7 +25,7 @@
 namespace bdm {
 namespace displacement_op_gpu_test_internal {
 
-enum ExecutionMode { kCpu, kCuda, kOpenCl };
+enum ExecutionMode { kCuda, kOpenCl };
 
 void RunTest(ExecutionMode mode) {
   Simulation<> simulation("displacement_op_gpu_test_RunTest");

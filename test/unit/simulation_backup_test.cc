@@ -97,8 +97,7 @@ TEST(SimulationBackupTest, Backup) {
   file.Get()->GetObject(SimulationBackup::kSimulationName.c_str(),
                         restored_simulation);
   EXPECT_EQ(1u, restored_simulation->GetResourceManager()->Get<Cell>()->size());
-  // FIXME update test file name
-  // Writing and reading Simulation is tested in bdm_sim_test.cc
+  // Writing and reading Simulation is tested in simulation_test.cc
 
   remove(ROOTFILE);
 }
