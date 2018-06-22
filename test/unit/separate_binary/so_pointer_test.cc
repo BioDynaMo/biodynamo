@@ -13,6 +13,7 @@
 // -----------------------------------------------------------------------------
 
 #include "unit/separate_binary/so_pointer_test.h"
+#include "simulation_implementation.h"
 
 namespace bdm {
 namespace so_pointer_test_internal {

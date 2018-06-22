@@ -15,8 +15,10 @@
 #include "simulation_implementation.h"
 #include <fstream>
 #include <gtest/gtest.h>
+#include <omp.h>
 
 #include "unit/default_ctparam.h"
+#include "unit/io_test.h"
 
 namespace bdm {
 
@@ -70,6 +72,7 @@ class SimulationTest : public ::testing::Test {
 
   virtual void TearDown() {
     remove(gConfigFileName);
+    remove("restore.root");
   }
 
   /// Creates an empty file restore file. \n
@@ -215,6 +218,85 @@ TEST_F(SimulationTest, SimulationId_OuputDir2) {
 
   EXPECT_EQ("", simulation.GetUniqueName());
   EXPECT_EQ("output", simulation.GetOutputDir());
+}
+
+TEST_F(IOTest, Simulation) {
+  // change state of each data member in Simulation
+  auto* rm = simulation_->GetResourceManager();
+  auto* param = simulation_->GetParam();
+  rm->New<Cell>();
+  rm->New<Cell>();
+  rm->Get<Cell>()->Commit();
+  param->simulation_time_step_ = 3.14;
+  #pragma omp parallel
+  {
+    auto* r = simulation_->GetRandom();
+    r->SetSeed(42);
+    r->Uniform(12, 34);
+  }
+
+  Simulation<>* restored;
+  BackupAndRestore(*simulation_, &restored);
+  EXPECT_EQ(2u, restored->GetResourceManager()->GetNumSimObjects());
+
+  // store next random number for later comparison
+  std::vector<double> next_rand;
+  next_rand.resize(omp_get_max_threads());
+  #pragma omp parallel
+  {
+    auto* r = simulation_->GetRandom();
+    next_rand[omp_get_thread_num()] = r->Uniform(12, 34);
+  }
+
+  // change state to see if call to Simulation::Restore was successful
+  rm->Clear();
+  param->simulation_time_step_ = 6.28;
+  // check if rm is really empty to avoid false positive test results
+  EXPECT_EQ(0u, rm->GetNumSimObjects());
+
+  // assign restored simulation to current one
+  simulation_->Restore(std::move(*restored));
+  delete restored;
+
+  // Validate results;
+  // From each data member in simulation do one check
+  // For more detailed iotest see the repective classes
+  // rm and param should still be valid!
+  const double kEpsilon = abs_error<double>::value;
+  EXPECT_EQ(2u, rm->GetNumSimObjects());
+  EXPECT_NEAR(3.14, param->simulation_time_step_, kEpsilon);
+  #pragma omp parallel
+  {
+    auto* r = simulation_->GetRandom();
+    EXPECT_NEAR(next_rand[omp_get_thread_num()], r->Uniform(12, 34), kEpsilon);
+  }
+}
+
+// The Param IOTest is located here to reuse the infrastructure used to test
+// parsing parameters.
+TEST_F(SimulationTest, ParamIOTest) {
+  std::ofstream config_file(gConfigFileName);
+  config_file << gConfigContent;
+  config_file.close();
+
+  Simulation<> simulation(TEST_NAME);
+  auto* param = simulation.GetParam();
+
+  Param* restored;
+  BackupAndRestore(*param, &restored);
+  const char* root_file = "param.root";
+  remove(root_file);
+  // write to root file
+  WritePersistentObject(root_file, "param", *param, "new");
+
+  // read back
+  GetPersistentObject(root_file, "param", restored);
+  // NB visualize_sim_objects_ is currently not backed up due to a ROOT error
+  restored->visualize_sim_objects_ = param->visualize_sim_objects_;
+
+  ValidateNonCLIParameter(restored);
+  remove(root_file);
+  delete restored;
 }
 
 }  // namespace bdm

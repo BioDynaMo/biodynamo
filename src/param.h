@@ -53,6 +53,7 @@ struct Param {
   enum NumericalODESolver { kEuler = 1, kRK4 = 2 };
   NumericalODESolver numerical_ode_solver_ = NumericalODESolver::kEuler;
 
+  /// Output directory relative to working directory
   static constexpr const char* kOutputDir = "output";
 
   /// Backup file name for full simulation backups\n
@@ -186,6 +187,7 @@ struct Param {
   /// With this parameter it is also possible to extend the number of data
   /// members that are sent to the visualization engine.
   /// Default value: empty (no simulation object will be visualized)\n
+  /// NB: This data member is not backed up, due to a ROOT error.
   /// TOML config file:
   ///
   ///     [visualization]
@@ -200,9 +202,8 @@ struct Param {
   ///       # The former block can be repeated for further simulation objects
   ///       [[visualize_sim_object]]
   ///       name = "Neurite"
-  //
   std::unordered_map<std::string, std::set<std::string>>
-      visualize_sim_objects_;
+      visualize_sim_objects_; //!
 
   struct VisualizeDiffusion {
     std::string name_;

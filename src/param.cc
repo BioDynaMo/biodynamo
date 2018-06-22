@@ -19,6 +19,8 @@
 
 namespace bdm {
 
+constexpr const char* Param::kOutputDir;
+
 #define BDM_ASSIGN_CONFIG_VALUE(variable, config_key)                        \
   {                                                                          \
     if (config->contains_qualified(config_key)) {                            \

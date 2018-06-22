@@ -58,8 +58,8 @@ class IOTest : public ::testing::Test {
 
 /// Writes backup to file and reads it back into restored
 /// Outside the test fixture so it can be called in a function from the header.
-/// TEST_F can't be added a header due to multiple references linking error
-/// and must be placed in a source file.
+/// TEST_F can't be used inside a header due to multiple references linking
+/// error and must be placed in a source file.
 template <typename T>
 void BackupAndRestore(const T& backup, T** restored) {
   // write to root file

@@ -167,6 +167,8 @@ class ResourceManager {
     return detail::ToIndex<TSo, Types>::value;
   }
 
+  ResourceManager(TRootIOCtor* ) {}
+
   /// Default constructor. Unfortunately needs to be public although it is
   /// a singleton to be able to use ROOT I/O
   ResourceManager() {

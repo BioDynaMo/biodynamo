@@ -550,6 +550,9 @@ class CatalystAdaptor {
 template <typename T>
 vtkCPProcessor* CatalystAdaptor<T>::g_processor_ = nullptr;
 
+template <typename T>
+constexpr const char* CatalystAdaptor<T>::kSimulationInfoJson;
+
 #else
 
 /// False front (to ignore Catalyst in gtests)

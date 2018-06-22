@@ -121,17 +121,21 @@ inline void RunIOTest() {
   // backup
   WritePersistentObject(ROOTFILE, "rm", rm, "new");
 
+  rm.Clear();
+
   // restore
   ResourceManager<CTParam>* restored_rm = nullptr;
   GetPersistentObject(ROOTFILE, "rm", restored_rm);
 
   // validate
+  EXPECT_EQ(5u, restored_rm->GetNumSimObjects());
+
   ASSERT_EQ(3u, restored_rm->template Get<TA>()->size());
   EXPECT_EQ(12, (*restored_rm->template Get<TA>())[0].GetData());
   EXPECT_EQ(34, (*restored_rm->template Get<TA>())[1].GetData());
   EXPECT_EQ(42, (*restored_rm->template Get<TA>())[2].GetData());
 
-  ASSERT_EQ(2u, rm.template Get<TB>()->size());
+  ASSERT_EQ(2u, restored_rm->template Get<TB>()->size());
   EXPECT_NEAR(3.14, (*restored_rm->template Get<TB>())[0].GetData(), kEpsilon);
   EXPECT_NEAR(6.28, (*restored_rm->template Get<TB>())[1].GetData(), kEpsilon);
 
