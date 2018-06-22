@@ -103,8 +103,8 @@ struct Simulation {
   /// This id is unique for each simulation within the same process
   uint64_t id_ = 0; //!
   /// cached value where `id_` is appended to `name_` if `id_` is
-  /// not zero.
-  /// e.g. `name_ = "my-sim"` and `id_ = 0` -> "my-sim"
+  /// not zero.\n
+  /// e.g. `name_ = "my-sim"` and `id_ = 0` -> "my-sim"\n
   /// e.g. `name_ = "my-sim"` and `id_ = 4` -> "my-sim4"
   std::string unique_name_; //!
   /// cached value where `unique_name_` is appended to `Param::kOutputDir`
