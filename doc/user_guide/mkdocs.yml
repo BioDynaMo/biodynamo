@@ -59,4 +59,5 @@ pages:
     - Documentation:
       - Substance Initialization: substance_initializers.md
       - GPU Acceleration: gpu_acceleration.md
+    - Changelog: changelog.md
     - Contact: contact.md
