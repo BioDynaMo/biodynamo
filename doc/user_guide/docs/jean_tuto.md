@@ -7,6 +7,7 @@ Written by Jean de Montigny
 BioDynaMo is platform for computer simulations of biological dynamics. You can learn more about BioDynaMo by accessing its official website.
 
 This Tutorial in designed for user with limited knowledge of C++ language and will teach you the basics of BioDynaMo:
+
 * Create, build and run a new project
 * Create cells with a specific behaviour through a biological module
 * Extend an existing structure
