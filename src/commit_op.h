@@ -15,6 +15,7 @@
 #ifndef COMMIT_OP_H_
 #define COMMIT_OP_H_
 
+#include <unordered_map>
 #include <vector>
 
 namespace bdm {

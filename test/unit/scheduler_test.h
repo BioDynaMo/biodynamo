@@ -15,15 +15,17 @@
 #ifndef UNIT_SCHEDULER_TEST_H_
 #define UNIT_SCHEDULER_TEST_H_
 
-#include <string>
-#include "cell.h"
-#include "gtest/gtest.h"
-#include "io_util.h"
 #include "scheduler.h"
-#include "unistd.h"
+
+#include <string>
+#include <unistd.h>
+#include <gtest/gtest.h>
+
+#include "cell.h"
+#include "io_util.h"
+#include "simulation_implementation.h"
 #include "unit/default_ctparam.h"
 #include "unit/test_util.h"
-#include "simulation_implementation.h"
 
 #define ROOTFILE "bdmFile.root"
 
@@ -32,8 +34,6 @@ namespace scheduler_test_internal {
 
 class TestSchedulerRestore : public Scheduler<> {
  public:
-  TestSchedulerRestore() : Scheduler<>() {}
-
   void Execute(bool last_iteration) override { execute_calls++; }
 
   unsigned execute_calls = 0;
@@ -41,8 +41,6 @@ class TestSchedulerRestore : public Scheduler<> {
 
 class TestSchedulerBackup : public Scheduler<> {
  public:
-  TestSchedulerBackup() : Scheduler<>() {}
-
   void Execute(bool last_iteration) override {
     // sleep
     usleep(350000);
