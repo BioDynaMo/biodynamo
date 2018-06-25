@@ -16,6 +16,7 @@
 #include "unit/resource_manager_test.h"
 #include "cell.h"
 #include "unit/io_test.h"
+#include "simulation_implementation.h"
 
 namespace bdm {
 namespace resource_manager_test_internal {
