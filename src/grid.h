@@ -35,10 +35,6 @@
 
 namespace bdm {
 
-// TODO(lukas) remove
-using std::array;
-using std::fmod;
-
 /// FIFO data structure. Stores max N number of objects.
 /// Adding more elements will overwrite the oldest ones.
 template <typename T, uint64_t N>
@@ -260,7 +256,7 @@ class Grid {
     ClearGrid();
 
     auto inf = Constant::kInfinity;
-    array<double, 6> tmp_dim = {{inf, -inf, inf, -inf, inf, -inf}};
+    std::array<double, 6> tmp_dim = {{inf, -inf, inf, -inf, inf, -inf}};
     CalculateGridDimensions(&tmp_dim);
     RoundOffGridDimensions(tmp_dim);
 
@@ -346,7 +342,7 @@ class Grid {
 
   /// Calculates what the grid dimensions need to be in order to contain all the
   /// simulation objects
-  void CalculateGridDimensions(array<double, 6>* ret_grid_dimensions) {
+  void CalculateGridDimensions(std::array<double, 6>* ret_grid_dimensions) {
     auto* rm = TSimulation::GetActive()->GetResourceManager();
 
     const auto max_threads = omp_get_max_threads();
@@ -415,7 +411,7 @@ class Grid {
     }
   }
 
-  void RoundOffGridDimensions(const array<double, 6>& grid_dimensions) {
+  void RoundOffGridDimensions(const std::array<double, 6>& grid_dimensions) {
     assert(grid_dimensions_[0] > -9.999999999);
     assert(grid_dimensions_[2] > -9.999999999);
     assert(grid_dimensions_[4] > -9.999999999);
@@ -598,7 +594,8 @@ class Grid {
 #pragma omp for collapse(2) schedule(dynamic, 1) firstprivate(z_start, y_start)
         for (uint32_t z = z_start; z < num_boxes_axis_[2] - 1; z += 3) {
           for (uint32_t y = y_start; y < num_boxes_axis_[1] - 1; y += 3) {
-            auto current_box_idx = GetBoxIndex(array<uint32_t, 3>{1, y, z});
+            auto current_box_idx =
+                GetBoxIndex(std::array<uint32_t, 3>{1, y, z});
 
             box_indices.clear();
             cached_so_handles.clear();
@@ -643,8 +640,8 @@ class Grid {
   ///
   /// @return     The box index.
   ///
-  size_t GetBoxIndex(const array<double, 3>& position) const {
-    array<uint32_t, 3> box_coord;
+  size_t GetBoxIndex(const std::array<double, 3>& position) const {
+    std::array<uint32_t, 3> box_coord;
     box_coord[0] = (floor(position[0]) - grid_dimensions_[0]) / box_length_;
     box_coord[1] = (floor(position[1]) - grid_dimensions_[2]) / box_length_;
     box_coord[2] = (floor(position[2]) - grid_dimensions_[4]) / box_length_;
@@ -660,11 +657,13 @@ class Grid {
   /// Gets the size of the largest object in the grid
   double GetLargestObjectSize() const { return largest_object_size_; }
 
-  array<int32_t, 6>& GetDimensions() { return grid_dimensions_; }
+  std::array<int32_t, 6>& GetDimensions() { return grid_dimensions_; }
 
-  array<int32_t, 2>& GetDimensionThresholds() { return threshold_dimensions_; }
+  std::array<int32_t, 2>& GetDimensionThresholds() {
+    return threshold_dimensions_;
+  }
 
-  array<uint32_t, 3>& GetNumBoxes() { return num_boxes_axis_; }
+  std::array<uint32_t, 3>& GetNumBoxes() { return num_boxes_axis_; }
 
   uint32_t GetBoxLength() { return box_length_; }
 
@@ -745,7 +744,7 @@ class Grid {
   /// Length of a Box
   uint32_t box_length_ = 1;
   /// Stores the number of boxes for each axis
-  array<uint32_t, 3> num_boxes_axis_ = {{0}};
+  std::array<uint32_t, 3> num_boxes_axis_ = {{0}};
   /// Number of boxes in the xy plane (=num_boxes_axis_[0] * num_boxes_axis_[1])
   size_t num_boxes_xy_ = 0;
   /// Implements linked list - array index = key, value: next element
@@ -925,7 +924,7 @@ class Grid {
   ///
   /// @return     The box index.
   ///
-  size_t GetBoxIndex(const array<uint32_t, 3>& box_coord) const {
+  size_t GetBoxIndex(const std::array<uint32_t, 3>& box_coord) const {
     return box_coord[2] * num_boxes_xy_ + box_coord[1] * num_boxes_axis_[0] +
            box_coord[0];
   }

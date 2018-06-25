@@ -31,8 +31,6 @@
 
 namespace bdm {
 
-using std::array;
-
 /// A class that computes the diffusion of extracellular substances
 /// It maintains the concentration and gradient of a single substance
 class DiffusionGrid {
@@ -150,7 +148,7 @@ class DiffusionGrid {
 
     if (growth > 0) {
       // Store the old number of boxes along each axis for comparison
-      array<size_t, 3> tmp_num_boxes_axis = num_boxes_axis_;
+      std::array<size_t, 3> tmp_num_boxes_axis = num_boxes_axis_;
 
       // Increase number of boxes along axis accordingly
       num_boxes_axis_[0] += growth;
@@ -203,7 +201,7 @@ class DiffusionGrid {
   ///
   void CopyOldData(const std::vector<double>& old_c1,
                    const std::vector<double>& old_gradients,
-                   const array<size_t, 3>& old_num_boxes_axis) {
+                   const std::array<size_t, 3>& old_num_boxes_axis) {
     // Allocate more memory for the grid data arrays
     c1_.resize(total_num_boxes_);
     c2_.resize(total_num_boxes_);
@@ -504,7 +502,7 @@ class DiffusionGrid {
   }
 
   /// Increase the concentration at specified position with specified amount
-  void IncreaseConcentrationBy(const array<double, 3>& position,
+  void IncreaseConcentrationBy(const std::array<double, 3>& position,
                                double amount) {
     auto idx = GetBoxIndex(position);
     IncreaseConcentrationBy(idx, amount);
@@ -521,13 +519,13 @@ class DiffusionGrid {
   }
 
   /// Get the concentration at specified position
-  double GetConcentration(const array<double, 3>& position) {
+  double GetConcentration(const std::array<double, 3>& position) {
     return c1_[GetBoxIndex(position)];
   }
 
   /// Get the (normalized) gradient at specified position
-  void GetGradient(const array<double, 3>& position,
-                   array<double, 3>* gradient) {
+  void GetGradient(const std::array<double, 3>& position,
+                   std::array<double, 3>* gradient) {
     auto idx = GetBoxIndex(position);
     assert(idx < total_num_boxes_ &&
            "Cell position is out of diffusion grid bounds");
@@ -545,7 +543,7 @@ class DiffusionGrid {
   }
 
   std::array<uint32_t, 3> GetBoxCoordinates(
-      const array<double, 3>& position) const {
+      const std::array<double, 3>& position) const {
     std::array<uint32_t, 3> box_coord;
     box_coord[0] = (floor(position[0]) - grid_dimensions_[0]) / box_length_;
     box_coord[1] = (floor(position[1]) - grid_dimensions_[2]) / box_length_;
@@ -553,14 +551,14 @@ class DiffusionGrid {
     return box_coord;
   }
 
-  size_t GetBoxIndex(const array<uint32_t, 3>& box_coord) const {
+  size_t GetBoxIndex(const std::array<uint32_t, 3>& box_coord) const {
     size_t ret = box_coord[2] * num_boxes_axis_[0] * num_boxes_axis_[1] +
                  box_coord[1] * num_boxes_axis_[0] + box_coord[0];
     return ret;
   }
 
   /// Calculates the box index of the substance at specified position
-  size_t GetBoxIndex(const array<double, 3>& position) const {
+  size_t GetBoxIndex(const std::array<double, 3>& position) const {
     auto box_coord = GetBoxCoordinates(position);
     return GetBoxIndex(box_coord);
   }
@@ -575,7 +573,7 @@ class DiffusionGrid {
 
   double* GetAllGradients() { return gradients_.data(); }
 
-  const array<size_t, 3>& GetNumBoxesArray() { return num_boxes_axis_; }
+  const std::array<size_t, 3>& GetNumBoxesArray() { return num_boxes_axis_; }
 
   size_t GetNumBoxes() { return total_num_boxes_; }
 
@@ -589,9 +587,9 @@ class DiffusionGrid {
 
   int32_t* GetDimensionsPtr() { return grid_dimensions_.data(); }
 
-  array<int32_t, 6>& GetDimensions() { return grid_dimensions_; }
+  std::array<int32_t, 6>& GetDimensions() { return grid_dimensions_; }
 
-  array<double, 7>& GetDiffusionCoefficients() { return dc_; }
+  std::array<double, 7>& GetDiffusionCoefficients() { return dc_; }
 
   bool IsInitialized() { return initialized_; }
 
@@ -628,13 +626,13 @@ class DiffusionGrid {
   /// The maximum concentration value that a box can have
   double concentration_threshold_ = 1e15;
   /// The diffusion coefficients [cc, cw, ce, cs, cn, cb, ct]
-  array<double, 7> dc_ = {{0}};
+  std::array<double, 7> dc_ = {{0}};
   /// The decay constant
   double mu_ = 0;
   /// The grid dimensions of the diffusion grid
-  array<int32_t, 6> grid_dimensions_ = {{0}};
+  std::array<int32_t, 6> grid_dimensions_ = {{0}};
   /// The number of boxes at each axis [x, y, z]
-  array<size_t, 3> num_boxes_axis_ = {{0}};
+  std::array<size_t, 3> num_boxes_axis_ = {{0}};
   /// The total number of boxes in the diffusion grid
   size_t total_num_boxes_ = 0;
   /// Flag to determine if this grid has been initialized

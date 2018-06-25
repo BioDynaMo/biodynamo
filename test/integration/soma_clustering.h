@@ -151,7 +151,7 @@ static bool GetCriterion(double spatial_range, int target_n) {
   // within a distance of spatial_range)
   int diff_type_close = 0;
 
-  std::vector<array<double, 3>> pos_sub_vol(n);
+  std::vector<std::array<double, 3>> pos_sub_vol(n);
   std::vector<int> types_sub_vol(n);
 
   // Define the subvolume to be the first octant of a cube

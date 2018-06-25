@@ -64,12 +64,12 @@ TEST(DiffusionInitTest, GaussianBand) {
   // Initialize data structures with user-defined values
   dgrid->RunInitializers();
 
-  array<uint32_t, 3> a = {0, 0, 0};
-  array<uint32_t, 3> b = {25, 0, 0};
-  array<uint32_t, 3> c = {13, 0, 0};
-  array<uint32_t, 3> d = {0, 13, 0};
-  array<uint32_t, 3> e = {25, 0, 13};
-  array<uint32_t, 3> f = {13, 13, 13};
+  std::array<uint32_t, 3> a = {0, 0, 0};
+  std::array<uint32_t, 3> b = {25, 0, 0};
+  std::array<uint32_t, 3> c = {13, 0, 0};
+  std::array<uint32_t, 3> d = {0, 13, 0};
+  std::array<uint32_t, 3> e = {25, 0, 13};
+  std::array<uint32_t, 3> f = {13, 13, 13};
 
   auto kEps = abs_error<double>::value;
   auto conc = dgrid->GetAllConcentrations();

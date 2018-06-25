@@ -7,6 +7,14 @@
 # reports, e.g. due to ROOT's runtime type information that must
 # survive until the end of the process and thus leaks.
 
+{
+   OSMesa
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:malloc
+   obj:/usr/lib/x86_64-linux-gnu/libOSMesa.so.8.0.0
+}
+
 ######### Suppress OpenMP possible lost warning
 {
    ignore_openmp_possible_lost_warning

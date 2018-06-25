@@ -174,17 +174,17 @@ TEST(DiffusionTest, LeakingEdge) {
   auto conc = d_grid->GetAllConcentrations();
   auto grad = d_grid->GetAllGradients();
 
-  array<uint32_t, 3> c = {2, 2, 2};
-  array<uint32_t, 3> w = {1, 2, 2};
-  array<uint32_t, 3> e = {3, 2, 2};
-  array<uint32_t, 3> n = {2, 1, 2};
-  array<uint32_t, 3> s = {2, 3, 2};
-  array<uint32_t, 3> t = {2, 2, 1};
-  array<uint32_t, 3> b = {2, 2, 3};
-  array<uint32_t, 3> rand1_a = {0, 0, 0};
-  array<uint32_t, 3> rand1_b = {4, 4, 4};
-  array<uint32_t, 3> rand2_a = {4, 4, 2};
-  array<uint32_t, 3> rand2_b = {0, 0, 2};
+  std::array<uint32_t, 3> c = {2, 2, 2};
+  std::array<uint32_t, 3> w = {1, 2, 2};
+  std::array<uint32_t, 3> e = {3, 2, 2};
+  std::array<uint32_t, 3> n = {2, 1, 2};
+  std::array<uint32_t, 3> s = {2, 3, 2};
+  std::array<uint32_t, 3> t = {2, 2, 1};
+  std::array<uint32_t, 3> b = {2, 2, 3};
+  std::array<uint32_t, 3> rand1_a = {0, 0, 0};
+  std::array<uint32_t, 3> rand1_b = {4, 4, 4};
+  std::array<uint32_t, 3> rand2_a = {4, 4, 2};
+  std::array<uint32_t, 3> rand2_b = {0, 0, 2};
 
   auto kEps = abs_error<double>::value;
 
@@ -237,17 +237,17 @@ TEST(DiffusionTest, ClosedEdge) {
   auto conc = d_grid->GetAllConcentrations();
   auto grad = d_grid->GetAllGradients();
 
-  array<uint32_t, 3> c = {2, 2, 2};
-  array<uint32_t, 3> w = {1, 2, 2};
-  array<uint32_t, 3> e = {3, 2, 2};
-  array<uint32_t, 3> n = {2, 1, 2};
-  array<uint32_t, 3> s = {2, 3, 2};
-  array<uint32_t, 3> t = {2, 2, 1};
-  array<uint32_t, 3> b = {2, 2, 3};
-  array<uint32_t, 3> rand1_a = {0, 0, 0};
-  array<uint32_t, 3> rand1_b = {4, 4, 4};
-  array<uint32_t, 3> rand2_a = {4, 4, 2};
-  array<uint32_t, 3> rand2_b = {0, 0, 2};
+  std::array<uint32_t, 3> c = {2, 2, 2};
+  std::array<uint32_t, 3> w = {1, 2, 2};
+  std::array<uint32_t, 3> e = {3, 2, 2};
+  std::array<uint32_t, 3> n = {2, 1, 2};
+  std::array<uint32_t, 3> s = {2, 3, 2};
+  std::array<uint32_t, 3> t = {2, 2, 1};
+  std::array<uint32_t, 3> b = {2, 2, 3};
+  std::array<uint32_t, 3> rand1_a = {0, 0, 0};
+  std::array<uint32_t, 3> rand1_b = {4, 4, 4};
+  std::array<uint32_t, 3> rand2_a = {4, 4, 2};
+  std::array<uint32_t, 3> rand2_b = {0, 0, 2};
 
   auto kEps = abs_error<double>::value;
 
@@ -304,17 +304,17 @@ TEST(DiffusionTest, CopyOldData) {
   auto conc = d_grid->GetAllConcentrations();
   auto grad = d_grid->GetAllGradients();
 
-  array<uint32_t, 3> c = {3, 3, 3};
-  array<uint32_t, 3> w = {2, 3, 3};
-  array<uint32_t, 3> e = {4, 3, 3};
-  array<uint32_t, 3> n = {3, 2, 3};
-  array<uint32_t, 3> s = {3, 4, 3};
-  array<uint32_t, 3> t = {3, 3, 2};
-  array<uint32_t, 3> b = {3, 3, 4};
-  array<uint32_t, 3> rand1_a = {1, 1, 1};
-  array<uint32_t, 3> rand1_b = {5, 5, 5};
-  array<uint32_t, 3> rand2_a = {5, 5, 3};
-  array<uint32_t, 3> rand2_b = {1, 1, 3};
+  std::array<uint32_t, 3> c = {3, 3, 3};
+  std::array<uint32_t, 3> w = {2, 3, 3};
+  std::array<uint32_t, 3> e = {4, 3, 3};
+  std::array<uint32_t, 3> n = {3, 2, 3};
+  std::array<uint32_t, 3> s = {3, 4, 3};
+  std::array<uint32_t, 3> t = {3, 3, 2};
+  std::array<uint32_t, 3> b = {3, 3, 4};
+  std::array<uint32_t, 3> rand1_a = {1, 1, 1};
+  std::array<uint32_t, 3> rand1_b = {5, 5, 5};
+  std::array<uint32_t, 3> rand2_a = {5, 5, 3};
+  std::array<uint32_t, 3> rand2_b = {1, 1, 3};
 
   auto kEps = abs_error<double>::value;
 
@@ -445,7 +445,7 @@ TEST(DiffusionTest, Convergence) {
   auto conc4 = d_grid4->GetAllConcentrations();
   auto conc8 = d_grid8->GetAllConcentrations();
 
-  array<double, 3> marker = {10.0, 10.0, 10.0};
+  std::array<double, 3> marker = {10.0, 10.0, 10.0};
 
   int tot = 100;
   for (int t = 0; t < tot; t++) {

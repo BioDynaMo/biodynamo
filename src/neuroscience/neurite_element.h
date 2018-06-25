@@ -1345,11 +1345,11 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
   vec<double> diameter_ = {{Param::kNeuriteDefaultDiameter}};
   vec<double> adherence_;
   /// First axis of the local coordinate system equal to cylinder axis
-  vec<array<double, 3>> x_axis_ = {{1.0, 0.0, 0.0}};
+  vec<std::array<double, 3>> x_axis_ = {{1.0, 0.0, 0.0}};
   /// Second axis of the local coordinate system.
-  vec<array<double, 3>> y_axis_ = {{0.0, 1.0, 0.0}};
+  vec<std::array<double, 3>> y_axis_ = {{0.0, 1.0, 0.0}};
   /// Third axis of the local coordinate system.
-  vec<array<double, 3>> z_axis_ = {{0.0, 0.0, 1.0}};
+  vec<std::array<double, 3>> z_axis_ = {{0.0, 0.0, 1.0}};
   /// Grid box index
   vec<uint64_t> box_idx_;
 

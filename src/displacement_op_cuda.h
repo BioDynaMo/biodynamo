@@ -27,8 +27,6 @@
 
 namespace bdm {
 
-using std::array;
-
 /// Defines the 3D physical interactions between physical objects
 template <typename TSimulation = Simulation<>>
 class DisplacementOpCuda {

@@ -34,7 +34,7 @@ class DisplacementOpCpu {
 
   template <typename TContainer>
   void operator()(TContainer* sim_objects, uint16_t type_idx) const {
-    std::vector<array<double, 3>> sim_object_movements;
+    std::vector<std::array<double, 3>> sim_object_movements;
     sim_object_movements.reserve(sim_objects->size());
 
     auto* sim = TSimulation::GetActive();

@@ -35,8 +35,6 @@
 
 namespace bdm {
 
-using std::array;
-
 /// Defines the 3D physical interactions between physical objects
 template <typename TSimulation = Simulation<>>
 class DisplacementOpOpenCL {
@@ -58,7 +56,7 @@ class DisplacementOpOpenCL {
     auto programs = rm->GetOpenCLProgramList();
 
     std::vector<cl_double> mass(cells->size());
-    std::vector<array<cl_double, 3>> cell_movements(cells->size());
+    std::vector<std::array<cl_double, 3>> cell_movements(cells->size());
     std::vector<cl_uint> gpu_starts;
     std::vector<cl_ushort> gpu_lengths;
     std::vector<cl_uint> successors(cells->size());

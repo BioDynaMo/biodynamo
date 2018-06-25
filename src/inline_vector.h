@@ -24,14 +24,12 @@
 
 namespace bdm {
 
-using std::size_t;
-
 /// This containes stores up to N elements without heap allocations
 /// If further elements are added elements are stored on the heap
 /// Container grows in a geometric sequence
 /// Elements are contiguous in memory exept the transition from internal
 /// to heap allocated memory (between index N-1 and N)
-template <typename T, size_t N>
+template <typename T, std::size_t N>
 class InlineVector {
  public:
   explicit InlineVector(TRootIOCtor* io_ctor) {}  // Constructor for ROOT I/O
@@ -66,12 +64,12 @@ class InlineVector {
 
   /// Returns the number of elements that the container has currently
   /// allocated space for.
-  size_t capacity() const { return capacity_; }  // NOLINT
+  std::size_t capacity() const { return capacity_; }  // NOLINT
 
   /// Removes all elements from the container.
   /// Leaves capacity() unchanged.
   void clear() {  // NOLINT
-    for (size_t i = 0; i < size_; i++) {
+    for (std::size_t i = 0; i < size_; i++) {
       (*this)[i].~T();
     }
     size_ = 0;
@@ -84,7 +82,7 @@ class InlineVector {
   /// If new_cap is greater than `capacity()`, all iterators and references,
   /// including the past-the-end iterator, are invalidated.
   /// Otherwise, no iterators or references are invalidated.
-  void reserve(size_t new_capacity) {  // NOLINT
+  void reserve(std::size_t new_capacity) {  // NOLINT
     if (new_capacity > capacity_) {
       T* new_heap_data = new T[new_capacity];
       if (heap_data_ != nullptr) {
@@ -97,7 +95,7 @@ class InlineVector {
   }
 
   /// \brief returns the number of elements in this container
-  size_t size() const { return size_; }  // NOLINT
+  std::size_t size() const { return size_; }  // NOLINT
 
   /// adds elements to this container and allocates additional memory on the
   /// heap if required
@@ -107,7 +105,7 @@ class InlineVector {
     } else {
       // allocate heap memory
       if (size_ == capacity_) {
-        size_t new_capacity = capacity_ * kGrowFactor;
+        std::size_t new_capacity = capacity_ * kGrowFactor;
         reserve(new_capacity);
       }
       heap_data_[size_ - N] = element;
@@ -118,7 +116,7 @@ class InlineVector {
 
   std::vector<T> make_std_vector() const {  // NOLINT
     std::vector<T> std_vector(size_);
-    for (size_t i = 0; i < size_; i++) {
+    for (std::size_t i = 0; i < size_; i++) {
       std_vector[i] = (*this)[i];
     }
     return std_vector;
@@ -155,7 +153,7 @@ class InlineVector {
     return *this;
   }
 
-  T& operator[](size_t index) {
+  T& operator[](std::size_t index) {
     if (index < N) {
       return data_[index];
     } else {
@@ -163,7 +161,7 @@ class InlineVector {
     }
   }
 
-  const T& operator[](size_t index) const {
+  const T& operator[](std::size_t index) const {
     if (index < N) {
       return data_[index];
     } else {
@@ -176,14 +174,14 @@ class InlineVector {
       return false;
     }
     // inline data
-    for (size_t i = 0; i < std::min(size_, N); i++) {
+    for (std::size_t i = 0; i < std::min(size_, N); i++) {
       if (data_[i] != other.data_[i]) {
         return false;
       }
     }
     // heap data
     if (size_ > N) {
-      for (size_t i = 0; i < size_ - N; i++) {
+      for (std::size_t i = 0; i < size_ - N; i++) {
         if (heap_data_[i] != other.heap_data_[i]) {
           return false;
         }
@@ -194,7 +192,7 @@ class InlineVector {
 
   friend std::ostream& operator<<(std::ostream& out,
                                   const InlineVector<T, N>& other) {
-    for (size_t i = 0; i < other.size_; i++) {
+    for (std::size_t i = 0; i < other.size_; i++) {
       out << other[i] << ", ";
     }
     return out;
@@ -207,8 +205,8 @@ class InlineVector {
   std::array<T, N> data_;
   Int_t heap_size_ = 0;     // needed to help ROOT with array size
   T* heap_data_ = nullptr;  //[heap_size_]  // NOLINT
-  size_t size_ = 0;
-  size_t capacity_ = N;
+  std::size_t size_ = 0;
+  std::size_t capacity_ = N;
   BDM_ROOT_CLASS_DEF(InlineVector, 1);  // NOLINT
 };
 

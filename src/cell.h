@@ -35,8 +35,6 @@
 
 namespace bdm {
 
-using std::array;
-
 /// Declare new biology module event for cell division
 extern const BmEvent gCellDivision;
 
@@ -59,7 +57,7 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
   explicit CellExt(double diameter) : diameter_(diameter), density_(1.0) {
     UpdateVolume();
   }
-  explicit CellExt(const array<double, 3>& position)
+  explicit CellExt(const std::array<double, 3>& position)
       : position_(position), density_{1.0} {}
 
   virtual ~CellExt() {}
@@ -114,7 +112,7 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
   /// Divide the cell. Of the two daughter cells, one is this one
   /// and the other one will be returned by this function.
   /// @param axis specifies direction of division
-  MostDerivedSoPtr Divide(const array<double, 3>& axis) {
+  MostDerivedSoPtr Divide(const std::array<double, 3>& axis) {
     auto* random = Simulation_t::GetActive()->GetRandom();
     auto polarcoord =
         TransformCoordinatesGlobalToPolar(Math::Add(axis, position_[kIdx]));
@@ -127,7 +125,8 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
   /// @param volume_ratio the ratio (Volume daughter 1)/(Volume daughter 2). 1.0
   /// gives equal cells.
   /// @param axis specifies direction of division
-  MostDerivedSoPtr Divide(double volume_ratio, const array<double, 3>& axis) {
+  MostDerivedSoPtr Divide(double volume_ratio,
+                          const std::array<double, 3>& axis) {
     auto polarcoord =
         TransformCoordinatesGlobalToPolar(Math::Add(axis, position_[kIdx]));
     return ThisMD()->Divide(volume_ratio, polarcoord[1], polarcoord[2]);
@@ -150,7 +149,7 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
 
   double GetDensity() const { return density_[kIdx]; }
 
-  const array<double, 3>& GetPosition() const { return position_[kIdx]; }
+  const std::array<double, 3>& GetPosition() const { return position_[kIdx]; }
 
   // this only works for SOA backend
   double* GetPositionPtr() { return position_.data()->data(); }
@@ -166,7 +165,7 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
   }
   // End TODO
 
-  const array<double, 3>& GetTractorForce() const {
+  const std::array<double, 3>& GetTractorForce() const {
     return tractor_force_[kIdx];
   }
 
@@ -188,11 +187,11 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
 
   void SetDensity(double density) { density_[kIdx] = density; }
 
-  void SetPosition(const array<double, 3>& position) {
+  void SetPosition(const std::array<double, 3>& position) {
     position_[kIdx] = position;
   }
 
-  void SetTractorForce(const array<double, 3>& tractor_force) {
+  void SetTractorForce(const std::array<double, 3>& tractor_force) {
     tractor_force_[kIdx] = tractor_force;
   }
 
@@ -221,7 +220,7 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
     volume_[kIdx] = Math::kPi / 6 * std::pow(diameter_[kIdx], 3);
   }
 
-  void UpdatePosition(const array<double, 3>& delta) {
+  void UpdatePosition(const std::array<double, 3>& delta) {
     position_[kIdx][0] += delta[0];
     position_[kIdx][1] += delta[1];
     position_[kIdx][2] += delta[2];
@@ -243,22 +242,22 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
   /// ([1,0,0],[0,1,0],[0,0,1]).
   /// @param coord: position in absolute coordinates - [x,y,z] cartesian values
   /// @return the position in local coordinates
-  array<double, 3> TransformCoordinatesGlobalToPolar(
-      const array<double, 3>& coord) const;
+  std::array<double, 3> TransformCoordinatesGlobalToPolar(
+      const std::array<double, 3>& coord) const;
 
-  vec<array<double, 3>> position_;
-  vec<array<double, 3>> tractor_force_;
+  vec<std::array<double, 3>> position_;
+  vec<std::array<double, 3>> tractor_force_;
   vec<double> diameter_;
   vec<double> volume_;
   vec<double> adherence_;
   vec<double> density_;
 
   /// First axis of the local coordinate system.
-  static constexpr array<double, 3> kXAxis = {{1.0, 0.0, 0.0}};
+  static constexpr std::array<double, 3> kXAxis = {{1.0, 0.0, 0.0}};
   /// Second axis of the local coordinate system.
-  static constexpr array<double, 3> kYAxis = {{0.0, 1.0, 0.0}};
+  static constexpr std::array<double, 3> kYAxis = {{0.0, 1.0, 0.0}};
   /// Third axis of the local coordinate system.
-  static constexpr array<double, 3> kZAxis = {{0.0, 0.0, 1.0}};
+  static constexpr std::array<double, 3> kZAxis = {{0.0, 0.0, 1.0}};
 
   /// collection of biology modules which define the internal behavior
   vec<std::vector<BiologyModules>> biology_modules_;
@@ -296,7 +295,7 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
     double y_coord = std::sin(theta) * std::sin(phi);
     double z_coord = std::cos(phi);
     double total_length_of_displacement = radius / 4.0;
-    array<double, 3> axis_of_division{
+    std::array<double, 3> axis_of_division{
         total_length_of_displacement *
             (x_coord * kXAxis[0] + y_coord * kYAxis[0] + z_coord * kZAxis[0]),
         total_length_of_displacement *
@@ -320,7 +319,7 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
     SetVolume(new_volume);
 
     // position
-    array<double, 3> new_position{
+    std::array<double, 3> new_position{
         position_[kIdx][0] + d_2 * axis_of_division[0],
         position_[kIdx][1] + d_2 * axis_of_division[1],
         position_[kIdx][2] + d_2 * axis_of_division[2]};
@@ -377,9 +376,9 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
 
 // ----------------------------------------------------------------------------
 // Implementation -------------------------------------------------------------
-BDM_SO_DEFINE(constexpr array<double, 3> CellExt)::kXAxis;
-BDM_SO_DEFINE(constexpr array<double, 3> CellExt)::kYAxis;
-BDM_SO_DEFINE(constexpr array<double, 3> CellExt)::kZAxis;
+BDM_SO_DEFINE(constexpr std::array<double, 3> CellExt)::kXAxis;
+BDM_SO_DEFINE(constexpr std::array<double, 3> CellExt)::kYAxis;
+BDM_SO_DEFINE(constexpr std::array<double, 3> CellExt)::kZAxis;
 
 BDM_SO_DEFINE(template <typename TBiologyModule>
               inline void CellExt)::AddBiologyModule(TBiologyModule&& module) {
@@ -498,12 +497,12 @@ BDM_SO_DEFINE(inline void CellExt)::ApplyDisplacement(
   SetTractorForce({0, 0, 0});
 }
 
-BDM_SO_DEFINE(inline array<double, 3> CellExt)::
-    TransformCoordinatesGlobalToPolar(const array<double, 3>& pos) const {
+BDM_SO_DEFINE(inline std::array<double, 3> CellExt)::
+    TransformCoordinatesGlobalToPolar(const std::array<double, 3>& pos) const {
   auto vector_to_point = Math::Subtract(pos, position_[kIdx]);
-  array<double, 3> local_cartesian{Math::Dot(kXAxis, vector_to_point),
-                                   Math::Dot(kYAxis, vector_to_point),
-                                   Math::Dot(kZAxis, vector_to_point)};
+  std::array<double, 3> local_cartesian{Math::Dot(kXAxis, vector_to_point),
+                                        Math::Dot(kYAxis, vector_to_point),
+                                        Math::Dot(kZAxis, vector_to_point)};
   double radius = std::sqrt(local_cartesian[0] * local_cartesian[0] +
                             local_cartesian[1] * local_cartesian[1] +
                             local_cartesian[2] * local_cartesian[2]);

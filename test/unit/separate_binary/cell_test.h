@@ -66,7 +66,7 @@ BDM_SIM_OBJECT(TestCell, bdm::Cell) {
   TestCellExt() {}
 
   void TestTransformCoordinatesGlobalToPolar() {
-    array<double, 3> coord = {1, 2, 3};
+    std::array<double, 3> coord = {1, 2, 3};
     Base::SetPosition({9, 8, 7});
     auto result = Base::TransformCoordinatesGlobalToPolar(coord);
 

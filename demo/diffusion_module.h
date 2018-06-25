@@ -63,7 +63,7 @@ struct KaliumSecretion : public BaseBiologyModule {
   void Run(T* cell) {
     auto* rm = TSimulation::GetActive()->GetResourceManager();
     auto* dg = rm->GetDiffusionGrid(kKalium);
-    array<double, 3> secretion_position = {50, 50, 50};
+    std::array<double, 3> secretion_position = {50, 50, 50};
     dg->IncreaseConcentrationBy(secretion_position, 4 / dg->GetBoxVolume());
   }
 

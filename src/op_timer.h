@@ -21,15 +21,13 @@
 
 namespace bdm {
 
-using std::string;
-
 static TimingAggregator gStatistics;
 
 /// \brief Decorator for `Operations` to measure runtime
 template <typename TOp>
 struct OpTimer {
-  explicit OpTimer(string timer_msg) : timer_msg_(timer_msg) {}
-  explicit OpTimer(string timer_msg, const TOp& op)
+  explicit OpTimer(std::string timer_msg) : timer_msg_(timer_msg) {}
+  explicit OpTimer(std::string timer_msg, const TOp& op)
       : timer_msg_(timer_msg), operation_(op) {}
 
   template <typename Container, typename TSimulation = Simulation<>>
@@ -47,7 +45,7 @@ struct OpTimer {
   const TOp* operator->() const { return &operation_; }
 
  private:
-  string timer_msg_;
+  std::string timer_msg_;
   TOp operation_;
 };
 
