@@ -306,4 +306,11 @@ if(demo)
                      SOURCES demo/gene_regulation.cc
                      HEADERS demo/gene_regulation.h
                      LIBRARIES biodynamo)
+
+
+  # --------------------- build multiple_simulations executable ---------------------
+  bdm_add_executable(multiple_simulations
+                     SOURCES demo/multiple_simulations.cc
+                     HEADERS demo/multiple_simulations.h
+                     LIBRARIES biodynamo)
 endif()

@@ -68,51 +68,68 @@ class CatalystAdaptor {
    ///
    /// @param[in]  script  The Python script that contains the pipeline
    ///
-   CatalystAdaptor(const std::string& script) {
-     auto* sim = TSimulation::GetActive();
-     auto* param = sim->GetParam();
-     if (param->live_visualization_ || param->export_visualization_) {
-       if (g_processor_ == nullptr) {
-         g_processor_ = vtkCPProcessor::New();
-         g_processor_->Initialize();
-
-         auto* rm = TSimulation::GetActive()->GetResourceManager();
-         so_is_initialized_.resize(rm->NumberOfTypes());
-         dg_is_initialized_.resize(rm->GetDiffusionGrids().size());
-       } else {
-         g_processor_->RemoveAllPipelines();
-       }
-
-       if (param->live_visualization_ && !pipeline_) {
-         Log::Warning("CatalystAdaptor", "Live visualization does not support multiple simulations. Turning off live visualization for ", sim->GetUniqueName());
-         param->live_visualization_ = false;
-       } else if (param->python_catalyst_pipeline_) {
-         vtkNew<vtkCPPythonScriptPipeline> pipeline;
-         pipeline->Initialize(script.c_str());
-         g_processor_->AddPipeline(pipeline.GetPointer());
-       } else if (param->live_visualization_){
-         pipeline_ = new InSituPipeline();
-         g_processor_->AddPipeline(pipeline_);
-       }
-     }
+   CatalystAdaptor(const std::string& script) : python_script_(script) {
+     counter_++;
    }
 
    ~CatalystAdaptor() {
      auto* param = TSimulation::GetActive()->GetParam();
+     counter_--;
+
      if(pipeline_) {
-       delete pipeline_;
+       g_processor_->RemovePipeline(pipeline_);
+       pipeline_->Delete();
        pipeline_ = nullptr;
      }
-     for (auto sog : vtk_so_grids_) {
+     for (auto* sog : vtk_so_grids_) {
        sog->Delete();
        sog = nullptr;
      }
-     for (auto dg : vtk_dgrids_) {
+     for (auto* dg : vtk_dgrids_) {
        dg->Delete();
        dg = nullptr;
      }
+
+     if(counter_ == 0 && g_processor_) {
+       g_processor_->RemoveAllPipelines();
+       g_processor_->Finalize();
+       g_processor_->Delete();
+       g_processor_ = nullptr;
+     }
      if (param->export_visualization_ && sim_info_json_generated_) {
-       GenerateParaviewState();
+       // FIXME remove comment in next line
+       //  GenerateParaviewState();
+     }
+   }
+
+   /// Parameters might be set after the constructor has been called.
+   /// Therefore, we defer initialization to the first invocation of
+   /// `Visualize`.
+   void Initialize() {
+     auto* sim = TSimulation::GetActive();
+     auto* param = sim->GetParam();
+
+     if (param->live_visualization_ || param->export_visualization_) {
+       if (g_processor_ == nullptr) {
+         g_processor_ = vtkCPProcessor::New();
+         g_processor_->Initialize();
+       }
+
+       auto* rm = TSimulation::GetActive()->GetResourceManager();
+       so_is_initialized_.resize(rm->NumberOfTypes());
+       dg_is_initialized_.resize(rm->GetDiffusionGrids().size());
+
+       if (param->live_visualization_ && g_processor_->GetNumberOfPipelines() != 0) {
+         Log::Warning("CatalystAdaptor", "Live visualization does not support multiple simulations. Turning off live visualization for ", sim->GetUniqueName());
+         param->live_visualization_ = false;
+       } else if (param->python_catalyst_pipeline_) {
+         vtkNew<vtkCPPythonScriptPipeline> pipeline;
+         pipeline->Initialize(python_script_.c_str());
+         g_processor_->AddPipeline(pipeline.GetPointer());
+       } else {  // TODO(ahmad) pipline also needed for export visualization??
+         pipeline_ = new InSituPipeline();
+         g_processor_->AddPipeline(pipeline_);
+       }
      }
    }
 
@@ -371,6 +388,11 @@ class CatalystAdaptor {
 
   /// Visualize one timestep based on the configuration in `Param`
   void Visualize(uint64_t total_steps, bool last_iteration) {
+    if (!initialized_) {
+      Initialize();
+      initialized_ = true;
+    }
+
     auto* param = TSimulation::GetActive()->GetParam();
     if (param->live_visualization_) {
       double time = param->simulation_time_step_ * total_steps;
@@ -437,8 +459,12 @@ class CatalystAdaptor {
 
  private:
   static vtkCPProcessor* g_processor_;
+  static std::atomic<uint64_t> counter_;
+
   /// only needed for live visualization
   InSituPipeline* pipeline_ = nullptr;
+  std::string python_script_;
+  bool initialized_ = false;
 
   std::vector<vtkImageData*> vtk_dgrids_;
   std::vector<vtkUnstructuredGrid*> vtk_so_grids_;
@@ -552,6 +578,9 @@ vtkCPProcessor* CatalystAdaptor<T>::g_processor_ = nullptr;
 
 template <typename T>
 constexpr const char* CatalystAdaptor<T>::kSimulationInfoJson;
+
+template <typename T>
+std::atomic<uint64_t>  CatalystAdaptor<T>::counter_;
 
 #else
 

@@ -36,7 +36,7 @@ import os.path
 import sys
 from paraview.simple import *
 
-def ExtractIterationFromFilename(x): return int(x.split('_')[-1].split('.')[0])
+def ExtractIterationFromFilename(x): return int(x.split('-')[-1].split('.')[0])
 
 # ------------------------------------------------------------------------------
 def ProcessSphere(so_info, so_data, render_view):
@@ -184,10 +184,10 @@ def ProcessCylinder(so_info, so_data, render_view):
     render_view.Update()
 
 # ------------------------------------------------------------------------------
-def ProcessSimulationObject(so_info):
+def ProcessSimulationObject(result_dir, so_info):
     so_name = so_info['name']
     # determine pvtu files
-    files = glob.glob('./{0}-*.pvtu'.format(so_name))
+    files = glob.glob('{0}/{1}-*.pvtu'.format(result_dir, so_name))
     if len(files) == 0:
         print('No data files found for simulation object {0}'.format(so_name))
         sys.exit(1)
@@ -255,10 +255,10 @@ def AddDiffusionGradientGlyph(substance_name, substance_data, render_view):
 
 
 # ------------------------------------------------------------------------------
-def ProcessExtracellularSubstance(substance_info):
+def ProcessExtracellularSubstance(result_dir, substance_info):
     substance_name = substance_info['name']
     # determine pvti files
-    files = glob.glob('./{0}-*.pvti'.format(substance_name))
+    files = glob.glob('{0}/{1}-*.pvti'.format(result_dir, substance_name))
     if len(files) == 0:
         print('No data files found for substance {0}'.format(substance_name))
         sys.exit(1)
@@ -308,15 +308,15 @@ def BuildParaviewState(build_info):
     if result_dir != "" and not os.path.exists(result_dir):
         print('Simulation result directory "{0}" does not exist'.format(result_dir))
         sys.exit(1)
-    os.chdir(result_dir)
 
     # simulation objects
     for so_info in build_info['sim_objects']:
-        ProcessSimulationObject(so_info)
+        ProcessSimulationObject(result_dir, so_info)
     # extracellular substances
     for substance_info in build_info['extracellular_substances']:
-        ProcessExtracellularSubstance(substance_info)
+        ProcessExtracellularSubstance(result_dir, substance_info)
 
+    os.chdir(result_dir)
     SaveState('{0}.pvsm'.format(sim_info['name']))
 
 
