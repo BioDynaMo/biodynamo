@@ -21,16 +21,16 @@
 namespace bdm {
 
 // forward declarations
-template <typename > struct ResourceManager;
-template <typename> struct Grid;
-template <typename> struct Scheduler;
+template <typename > class ResourceManager;
+template <typename> class Grid;
+template <typename> class Scheduler;
 struct Param;
 
 struct Soa;
 template <typename TBackend = Soa>
 struct CompileTimeParam;
-struct SimulationTest;
-struct CatalystAdaptorTest;
+class SimulationTest;
+class CatalystAdaptorTest;
 
 /// This is the central BioDynaMo object. It containes pointers to e.g. the
 /// ResourceManager, the scheduler, parameters, ... \n
