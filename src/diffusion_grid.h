@@ -37,7 +37,7 @@ using std::array;
 /// It maintains the concentration and gradient of a single substance
 class DiffusionGrid {
  public:
-  DiffusionGrid(TRootIOCtor* p) {}
+  explicit DiffusionGrid(TRootIOCtor* p) {}
   DiffusionGrid(int substance_id, std::string substance_name, double dc,
                 double mu, int resolution = 10)
       : substance_(substance_id),

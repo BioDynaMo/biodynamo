@@ -135,7 +135,7 @@ class InlineVector {
           delete[] heap_data_;
         }
         heap_data_ = new T[capacity_ - N];
-        if(size_ > N) {
+        if (size_ > N) {
           std::copy_n(other.heap_data_, size_ - N, heap_data_);
         }
       }
