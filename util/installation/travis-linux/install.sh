@@ -25,5 +25,7 @@ set -e
 
 BDM_PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../.."
 
+export BDM_CMAKE_FLAGS="-Dcuda=on -Dopencl=on"
+
 # no OS specifics -> use common install script
 $BDM_PROJECT_DIR/util/installation/common/install.sh travis-linux

@@ -32,6 +32,13 @@ BDM_OS=travis-linux
 # include util functions
 . $BDM_PROJECT_DIR/util/installation/common/util.sh
 
+# Download and install CUDA SDK, which enables both CUDA and OpenCL builds
+# From CUDA >= 9.0 there is no Ubuntu 14.04 support, so we install CUDA 8 on travis
+function InstallCuda {
+  wget --progress=dot:giga "https://developer.nvidia.com/compute/cuda/8.0/Prod2/local_installers/cuda-repo-ubuntu1404-8-0-local-ga2_8.0.61-1_amd64-deb"
+  sudo dpkg -i cuda-repo-ubuntu1404-8-0-local-ga2_8.0.61-1_amd64-deb
+}
+
 function InstallCmake {
   local URL="https://cmake.org/files/v3.6/cmake-3.6.3-Linux-x86_64.tar.gz"
   DownloadTarAndExtract $URL $1/cmake-3.6.3 1
@@ -40,7 +47,7 @@ function InstallCmake {
 
 function InstallPackages {
   INSTALL_PACKAGES="freeglut3-dev gcc-5 g++-5 valgrind doxygen graphviz cloc  \
-  libiomp-dev clang-3.9 clang-format-3.9 clang-tidy-3.9"
+  libiomp-dev clang-3.9 clang-format-3.9 clang-tidy-3.9 cuda"
 
   ADD_REPOSITORY='deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-3.9 main'
 
@@ -95,6 +102,7 @@ function Install {
   PrepareInstallDir $BDM_INSTALL_DIR
   THIRD_PARTY_DIR=$BDM_INSTALL_DIR/third_party
 
+  InstallCuda
   InstallPackages
 
   # copy environment script
