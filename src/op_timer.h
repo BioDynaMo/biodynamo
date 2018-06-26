@@ -16,6 +16,7 @@
 #define OP_TIMER_H_
 
 #include <string>
+#include "simulation.h"
 #include "timing.h"
 
 namespace bdm {

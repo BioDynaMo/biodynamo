@@ -17,18 +17,16 @@
 
 #include "biology_module/regulate_genes.h"
 #include "gtest/gtest.h"
+#include "simulation_implementation.h"
 #include "unit/default_ctparam.h"
 #include "unit/test_util.h"
-#include "simulation_implementation.h"
 
 namespace bdm {
 namespace regulate_genes_test_internal {
 
 struct TestCell {};
 struct TestScheduler : public Scheduler<> {
-  void SetSimulationSteps(uint64_t total_steps) {
-    total_steps_ = total_steps;
-  }
+  void SetSimulationSteps(uint64_t total_steps) { total_steps_ = total_steps; }
 };
 
 TEST(RegulateGenesTest, EulerTest) {

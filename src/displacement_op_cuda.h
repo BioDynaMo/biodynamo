@@ -22,8 +22,8 @@
 #include "log.h"
 #include "resource_manager.h"
 #include "shape.h"
-#include "type_util.h"
 #include "simulation.h"
+#include "type_util.h"
 
 namespace bdm {
 

@@ -15,9 +15,9 @@
 #include "visualization/catalyst_adaptor.h"
 #include <gtest/gtest.h>
 #include "io_util.h"
-#include "unit/test_util.h"
-#include "unit/default_ctparam.h"
 #include "simulation_implementation.h"
+#include "unit/default_ctparam.h"
+#include "unit/test_util.h"
 
 // TODO(lukas) move file to unit/visualization
 
@@ -26,9 +26,11 @@ namespace bdm {
 /// Test fixture for catalyst adaptor test to eliminate side effects
 class CatalystAdaptorTest : public ::testing::Test {
  protected:
-   static constexpr char const* kSimulationName = "MySimulation";
-  static constexpr char const* kSimulationInfoJson = "output/MySimulation/simulation_info.json";
-  static constexpr char const* kParaviewState = "output/MySimulation/MySimulation.pvsm";
+  static constexpr char const* kSimulationName = "MySimulation";
+  static constexpr char const* kSimulationInfoJson =
+      "output/MySimulation/simulation_info.json";
+  static constexpr char const* kParaviewState =
+      "output/MySimulation/MySimulation.pvsm";
   Simulation<>* simulation_;
 
   virtual void SetUp() {
@@ -104,7 +106,6 @@ TEST_F(CatalystAdaptorTest, GenerateSimulationInfoJson) {
 
 /// Tests if the catalyst state is generated.
 TEST_F(CatalystAdaptorTest, GenerateParaviewState) {
-
   // before we can call finalize we need to modify the json object
   // we need to remove entries for sim_objects and extracellular_substances
   // because there are no corresponding data files available.

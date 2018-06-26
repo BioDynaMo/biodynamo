@@ -15,9 +15,9 @@
 #include "grid.h"
 #include "cell.h"
 #include "gtest/gtest.h"
+#include "simulation_implementation.h"
 #include "unit/default_ctparam.h"
 #include "unit/test_util.h"
-#include "simulation_implementation.h"
 
 namespace bdm {
 
@@ -59,7 +59,7 @@ TEST(GridTest, SetupGrid) {
     };
 
     grid->ForEachNeighborWithinRadius(fill_neighbor_list, cell, SoHandle(0, i),
-                                     1201);
+                                      1201);
   }
 
   std::vector<SoHandle> expected_0 = {
@@ -112,7 +112,7 @@ void RunUpdateGridTest(TContainer* cells, Simulation<>* simulation) {
     };
 
     grid->ForEachNeighborWithinRadius(fill_neighbor_list, cell, SoHandle(0, i),
-                                     1201);
+                                      1201);
   }
 
   std::vector<SoHandle> expected_0 = {SoHandle(0, 4),  SoHandle(0, 5),

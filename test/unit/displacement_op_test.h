@@ -18,8 +18,8 @@
 #include "cell.h"
 #include "displacement_op.h"
 #include "grid.h"
-#include "unit/test_util.h"
 #include "simulation_implementation.h"
+#include "unit/test_util.h"
 
 namespace bdm {
 namespace displacement_op_test_internal {

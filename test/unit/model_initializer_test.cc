@@ -18,10 +18,10 @@
 #include "cell.h"
 #include "gtest/gtest.h"
 #include "resource_manager.h"
+#include "simulation_implementation.h"
 #include "unit/default_ctparam.h"
 #include "unit/test_util.h"
 #include "variadic_template_parameter_util.h"
-#include "simulation_implementation.h"
 
 namespace bdm {
 namespace model_initializer_test_internal {

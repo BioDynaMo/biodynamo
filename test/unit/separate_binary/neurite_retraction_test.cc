@@ -19,8 +19,8 @@
 #include "neuroscience/compile_time_param.h"
 #include "neuroscience/neurite_element.h"
 #include "neuroscience/neuron_soma.h"
-#include "unit/test_util.h"
 #include "simulation_implementation.h"
+#include "unit/test_util.h"
 
 namespace bdm {
 

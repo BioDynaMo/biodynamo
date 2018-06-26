@@ -14,8 +14,8 @@
 
 #include "unit/displacement_op_test.h"
 #include "gtest/gtest.h"
-#include "unit/default_ctparam.h"
 #include "simulation_implementation.h"
+#include "unit/default_ctparam.h"
 
 namespace bdm {
 namespace displacement_op_test_internal {

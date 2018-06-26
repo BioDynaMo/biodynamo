@@ -17,7 +17,9 @@
 namespace bdm {
 namespace so_pointer_aos_test_internal {
 
-TEST_F(IOTest, SoPointerRmContainer_Aos) { IOTestSoPointerRmContainerAos(simulation_); }
+TEST_F(IOTest, SoPointerRmContainer_Aos) {
+  IOTestSoPointerRmContainerAos(simulation_);
+}
 
 }  // namespace so_pointer_aos_test_internal
 }  // namespace bdm

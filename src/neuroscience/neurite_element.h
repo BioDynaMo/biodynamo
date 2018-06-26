@@ -830,7 +830,6 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
     auto calculate_neighbor_forces = [this, &force_on_my_point_mass,
                                       &force_on_my_mothers_point_mass](
         auto&& neighbor, SoHandle neighbor_handle) {
-
       // TODO(lukas) once we switch to C++17 use if constexpr.
       // As a consequence the reinterpret_cast won't be needed anymore.
       // if neighbor is a NeuriteElement

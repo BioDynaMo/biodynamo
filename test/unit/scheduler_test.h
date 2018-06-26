@@ -17,9 +17,9 @@
 
 #include "scheduler.h"
 
-#include <string>
-#include <unistd.h>
 #include <gtest/gtest.h>
+#include <unistd.h>
+#include <string>
 
 #include "cell.h"
 #include "io_util.h"

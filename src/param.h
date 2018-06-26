@@ -15,12 +15,12 @@
 #ifndef PARAM_H_
 #define PARAM_H_
 
+#include <Rtypes.h>
 #include <cinttypes>
 #include <set>
 #include <string>
 #include <unordered_map>
 #include <vector>
-#include <Rtypes.h>
 #include "cpptoml/cpptoml.h"
 
 namespace bdm {
@@ -203,7 +203,7 @@ struct Param {
   ///       [[visualize_sim_object]]
   ///       name = "Neurite"
   std::unordered_map<std::string, std::set<std::string>>
-      visualize_sim_objects_; //!
+      visualize_sim_objects_;  //!
 
   struct VisualizeDiffusion {
     std::string name_;

@@ -18,9 +18,9 @@
 #include "gpu/gpu_helper.h"
 #include "grid.h"
 #include "gtest/gtest.h"
+#include "simulation_implementation.h"
 #include "unit/default_ctparam.h"
 #include "unit/test_util.h"
-#include "simulation_implementation.h"
 
 namespace bdm {
 namespace displacement_op_gpu_test_internal {
@@ -33,9 +33,11 @@ void RunTest(ExecutionMode mode) {
   auto* grid = simulation.GetGrid();
   auto* param = simulation.GetParam();
 
-  switch(mode) {
-    case kOpenCl: param->use_opencl_ = true;
-    case kCuda: param->use_gpu_ = true;
+  switch (mode) {
+    case kOpenCl:
+      param->use_opencl_ = true;
+    case kCuda:
+      param->use_gpu_ = true;
   }
 
   // Do this explicitly because this normally is only called in
@@ -104,15 +106,11 @@ void RunTest(ExecutionMode mode) {
 }
 
 #ifdef USE_CUDA
-TEST(DisplacementOpGpuTest, ComputeSoaCuda) {
-  RunTest(kCuda);
-}
+TEST(DisplacementOpGpuTest, ComputeSoaCuda) { RunTest(kCuda); }
 #endif
 
 #ifdef USE_OPENCL
-TEST(DisplacementOpGpuTest, ComputeSoaOpenCL) {
-  RunTest(kOpenCl);
-}
+TEST(DisplacementOpGpuTest, ComputeSoaOpenCL) { RunTest(kOpenCl); }
 #endif
 
 void RunTest2(ExecutionMode mode) {
@@ -121,11 +119,13 @@ void RunTest2(ExecutionMode mode) {
   auto* grid = simulation.GetGrid();
   auto* param = simulation.GetParam();
 
-  switch(mode) {
-    case kOpenCl: param->use_opencl_ = true;
-    case kCuda: param->use_gpu_ = true;
+  switch (mode) {
+    case kOpenCl:
+      param->use_opencl_ = true;
+    case kCuda:
+      param->use_gpu_ = true;
   }
-  
+
   // Do this explicitly because this normally is only called in
   // Scheduler::Initialize(), but in this test we call DisplacementOp directly.
   InitializeGPUEnvironment<>();
@@ -184,15 +184,11 @@ void RunTest2(ExecutionMode mode) {
 }
 
 #ifdef USE_CUDA
-TEST(DisplacementOpGpuTest, ComputeSoaNewCuda) {
-  RunTest2(kCuda);
-}
+TEST(DisplacementOpGpuTest, ComputeSoaNewCuda) { RunTest2(kCuda); }
 #endif
 
 #ifdef USE_OPENCL
-TEST(DisplacementOpGpuTest, ComputeSoaNewOpenCL) {
-  RunTest2(kOpenCl);
-}
+TEST(DisplacementOpGpuTest, ComputeSoaNewOpenCL) { RunTest2(kOpenCl); }
 #endif
 
 }  // namespace displacement_op_gpu_test_internal

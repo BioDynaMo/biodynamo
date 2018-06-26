@@ -256,8 +256,8 @@ inline int Simulate(int argc, const char** argv) {
   param->run_mechanical_interactions_ = false;
   int num_cells = 20000;
 
-  // set seed for each thread local random number generator
-  #pragma omp parallel
+// set seed for each thread local random number generator
+#pragma omp parallel
   simulation.GetRandom()->SetSeed(4357);
 
   // Construct num_cells/2 cells of type 1

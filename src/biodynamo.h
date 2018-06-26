@@ -27,9 +27,9 @@
 #include "resource_manager.h"
 #include "scheduler.h"
 #include "shape.h"
+#include "simulation_implementation.h"
 #include "simulation_object_util.h"
 #include "variadic_template_parameter_util.h"
 #include "vtune.h"
-#include "simulation_implementation.h"
 
 #endif  // BIODYNAMO_H_

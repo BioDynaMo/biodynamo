@@ -12,10 +12,10 @@
 //
 // -----------------------------------------------------------------------------
 
-#include "simulation_implementation.h"
-#include <fstream>
 #include <gtest/gtest.h>
 #include <omp.h>
+#include <fstream>
+#include "simulation_implementation.h"
 
 #include "unit/default_ctparam.h"
 #include "unit/io_test.h"
@@ -24,54 +24,54 @@ namespace bdm {
 
 class SimulationTest : public ::testing::Test {
  public:
-   static constexpr const char* gConfigFileName = "bdm.toml";
-   static constexpr const char* gConfigContent =
-       "[simulation]\n"
-       "backup_file = \"backup.root\"\n"
-       "restore_file = \"restore.root\"\n"
-       "backup_interval = 3600\n"
-       "time_step = 0.0125\n"
-       "max_displacement = 2.0\n"
-       "run_mechanical_interactions = false\n"
-       "bound_space = true\n"
-       "min_bound = -100\n"
-       "max_bound =  200\n"
-       "\n"
-       "[visualization]\n"
-       "live = false\n"
-       "export = true\n"
-       "export_interval = 100\n"
-       "\n"
-       "  [[visualize_sim_object]]\n"
-       "  name = \"Cell\"\n"
-       "\n"
-       "  [[visualize_sim_object]]\n"
-       "  name = \"Neurite\"\n"
-       "  additional_data_members = [ \"spring_axis_\", \"tension_\" ]\n"
-       "\n"
-       "\n"
-       "  [[visualize_diffusion]]\n"
-       "  name = \"Na\"\n"
-       "  concentration = false\n"
-       "  gradient = true\n"
-       "\n"
-       "  [[visualize_diffusion]]\n"
-       "  name = \"K\"\n"
-       "\n"
-       "[development]\n"
-       "# this is a comment\n"
-       "statistics = true\n";
+  static constexpr const char* kConfigFileName = "bdm.toml";
+  static constexpr const char* kConfigContent =
+      "[simulation]\n"
+      "backup_file = \"backup.root\"\n"
+      "restore_file = \"restore.root\"\n"
+      "backup_interval = 3600\n"
+      "time_step = 0.0125\n"
+      "max_displacement = 2.0\n"
+      "run_mechanical_interactions = false\n"
+      "bound_space = true\n"
+      "min_bound = -100\n"
+      "max_bound =  200\n"
+      "\n"
+      "[visualization]\n"
+      "live = false\n"
+      "export = true\n"
+      "export_interval = 100\n"
+      "\n"
+      "  [[visualize_sim_object]]\n"
+      "  name = \"Cell\"\n"
+      "\n"
+      "  [[visualize_sim_object]]\n"
+      "  name = \"Neurite\"\n"
+      "  additional_data_members = [ \"spring_axis_\", \"tension_\" ]\n"
+      "\n"
+      "\n"
+      "  [[visualize_diffusion]]\n"
+      "  name = \"Na\"\n"
+      "  concentration = false\n"
+      "  gradient = true\n"
+      "\n"
+      "  [[visualize_diffusion]]\n"
+      "  name = \"K\"\n"
+      "\n"
+      "[development]\n"
+      "# this is a comment\n"
+      "statistics = true\n";
 
  protected:
   virtual void SetUp() {
-    remove(gConfigFileName);
+    remove(kConfigFileName);
     remove("restore.root");
     CreateEmptyRestoreFile("restore.root");
     Simulation<>::counter_ = 0;
   }
 
   virtual void TearDown() {
-    remove(gConfigFileName);
+    remove(kConfigFileName);
     remove("restore.root");
   }
 
@@ -134,8 +134,8 @@ class SimulationTest : public ::testing::Test {
 };
 
 TEST_F(SimulationTest, InitializeRuntimeParams) {
-  std::ofstream config_file(gConfigFileName);
-  config_file << gConfigContent;
+  std::ofstream config_file(kConfigFileName);
+  config_file << kConfigContent;
   config_file.close();
 
   const char* argv[1] = {"./binary_name"};
@@ -149,8 +149,8 @@ TEST_F(SimulationTest, InitializeRuntimeParams) {
 }
 
 TEST_F(SimulationTest, InitializeRuntimeParams2) {
-  std::ofstream config_file(gConfigFileName);
-  config_file << gConfigContent;
+  std::ofstream config_file(kConfigFileName);
+  config_file << kConfigContent;
   config_file.close();
 
   Simulation<> simulation("my-simulation");
@@ -163,8 +163,8 @@ TEST_F(SimulationTest, InitializeRuntimeParams2) {
 }
 
 TEST_F(SimulationTest, InitializeRuntimeParamsWithCLIArguments) {
-  std::ofstream config_file(gConfigFileName);
-  config_file << gConfigContent;
+  std::ofstream config_file(kConfigFileName);
+  config_file << kConfigContent;
   config_file.close();
 
   CreateEmptyRestoreFile("myrestore.root");
@@ -228,7 +228,7 @@ TEST_F(IOTest, Simulation) {
   rm->New<Cell>();
   rm->Get<Cell>()->Commit();
   param->simulation_time_step_ = 3.14;
-  #pragma omp parallel
+#pragma omp parallel
   {
     auto* r = simulation_->GetRandom();
     r->SetSeed(42);
@@ -242,7 +242,7 @@ TEST_F(IOTest, Simulation) {
   // store next random number for later comparison
   std::vector<double> next_rand;
   next_rand.resize(omp_get_max_threads());
-  #pragma omp parallel
+#pragma omp parallel
   {
     auto* r = simulation_->GetRandom();
     next_rand[omp_get_thread_num()] = r->Uniform(12, 34);
@@ -265,7 +265,7 @@ TEST_F(IOTest, Simulation) {
   const double kEpsilon = abs_error<double>::value;
   EXPECT_EQ(2u, rm->GetNumSimObjects());
   EXPECT_NEAR(3.14, param->simulation_time_step_, kEpsilon);
-  #pragma omp parallel
+#pragma omp parallel
   {
     auto* r = simulation_->GetRandom();
     EXPECT_NEAR(next_rand[omp_get_thread_num()], r->Uniform(12, 34), kEpsilon);
@@ -275,8 +275,8 @@ TEST_F(IOTest, Simulation) {
 // The Param IOTest is located here to reuse the infrastructure used to test
 // parsing parameters.
 TEST_F(SimulationTest, ParamIOTest) {
-  std::ofstream config_file(gConfigFileName);
-  config_file << gConfigContent;
+  std::ofstream config_file(kConfigFileName);
+  config_file << kConfigContent;
   config_file.close();
 
   Simulation<> simulation(TEST_NAME);

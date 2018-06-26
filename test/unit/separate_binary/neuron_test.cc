@@ -85,7 +85,7 @@ TEST(NeuronSomaTest, UpdateReferences) {
 /// are updated correctly
 TEST(NeuriteElementTest, UpdateReferences) {
   Simulation<> simulation(TEST_NAME);
-  
+
   NeuriteElement neurite;
 
   auto dl = neurite.GetDaughterLeft();

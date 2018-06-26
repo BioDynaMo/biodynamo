@@ -36,7 +36,9 @@ TEST_F(IOTest, SoPointerAnyContainer_Aos) { IOTestSoPointerAnyContainerAos(); }
 
 TEST_F(IOTest, SoPointerAnyContainer_Soa) { IOTestSoPointerAnyContainerSoa(); }
 
-TEST_F(IOTest, SoPointerRmContainer_Soa) { IOTestSoPointerRmContainerSoa(simulation_); }
+TEST_F(IOTest, SoPointerRmContainer_Soa) {
+  IOTestSoPointerRmContainerSoa(simulation_);
+}
 
 TEST_F(IOTest, SoPointerNullptr_Aos) { IOTestSoPointerNullptrAos(); }
 

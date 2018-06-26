@@ -154,7 +154,7 @@ TEST(DISABLED_DefaultForce, GeneralCylinder) {
 TEST(DefaultForce, CylinderIntersectingAxis) {
   // simulation object required for random number generator
   Simulation<> simulation(TEST_NAME);
-  
+
   NeuriteElement cylinder1;
   cylinder1.SetMassLocation({0, 0, 0});
   cylinder1.SetSpringAxis({-5, 0, 0});  // -> proximal end = {5, 0, 0}

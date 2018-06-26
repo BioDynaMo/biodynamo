@@ -19,11 +19,11 @@
 #include <utility>
 #include <vector>
 
-#include "simulation.h"
 #include "diffusion_grid.h"
 #include "grid.h"
 #include "inline_vector.h"
 #include "resource_manager.h"
+#include "simulation.h"
 
 namespace bdm {
 

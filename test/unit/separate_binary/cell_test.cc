@@ -15,9 +15,9 @@
 #include "cell.h"
 #include <typeinfo>
 #include "gtest/gtest.h"
+#include "simulation_implementation.h"
 #include "unit/separate_binary/cell_test.h"
 #include "unit/test_util.h"
-#include "simulation_implementation.h"
 
 namespace bdm {
 namespace cell_test_internal {
@@ -97,21 +97,21 @@ TEST(CellTest, Divide) {
 
   TestCell cell;
 
-  #pragma omp parallel
+#pragma omp parallel
   simulation.GetRandom()->SetSeed(42);
 
   cell.capture_input_parameters_ = true;
   cell.Divide();
 
-  EXPECT_NEAR(cell.captured_volume_ratio_, 1.0, 0.1);  // (0.9 - 1.1)
-  EXPECT_NEAR(cell.captured_theta_, Math::kPi, Math::kPi);  // (0 - 2 PI)
-  EXPECT_NEAR(cell.captured_phi_, Math::kPi / 2, Math::kPi / 2); // (0 - PI)
+  EXPECT_NEAR(cell.captured_volume_ratio_, 1.0, 0.1);             // (0.9 - 1.1)
+  EXPECT_NEAR(cell.captured_theta_, Math::kPi, Math::kPi);        // (0 - 2 PI)
+  EXPECT_NEAR(cell.captured_phi_, Math::kPi / 2, Math::kPi / 2);  // (0 - PI)
 }
 
 TEST(CellTest, DivideVolumeRatio) {
   Simulation<> simulation(TEST_NAME);
 
-  #pragma omp parallel
+#pragma omp parallel
   simulation.GetRandom()->SetSeed(42);
 
   TestCell cell;
@@ -120,14 +120,14 @@ TEST(CellTest, DivideVolumeRatio) {
 
   const double kEpsilon = abs_error<double>::value;
   EXPECT_NEAR(cell.captured_volume_ratio_, 0.59, kEpsilon);
-  EXPECT_NEAR(cell.captured_theta_, Math::kPi, Math::kPi);  // (0 - 2 PI)
-  EXPECT_NEAR(cell.captured_phi_, Math::kPi / 2, Math::kPi / 2); // (0 - PI)
+  EXPECT_NEAR(cell.captured_theta_, Math::kPi, Math::kPi);        // (0 - 2 PI)
+  EXPECT_NEAR(cell.captured_phi_, Math::kPi / 2, Math::kPi / 2);  // (0 - PI)
 }
 
 TEST(CellTest, DivideAxis) {
   Simulation<> simulation(TEST_NAME);
 
-  #pragma omp parallel
+#pragma omp parallel
   simulation.GetRandom()->SetSeed(42);
 
   TestCell cell;
@@ -145,7 +145,7 @@ TEST(CellTest, DivideAxis) {
 TEST(CellTest, DivideVolumeRatioAxis) {
   Simulation<> simulation(TEST_NAME);
 
-  #pragma omp parallel
+#pragma omp parallel
   simulation.GetRandom()->SetSeed(42);
 
   TestCell cell;

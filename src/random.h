@@ -18,8 +18,8 @@
 #include <array>
 #include <cstdio>
 
-#include <TRandom3.h>
 #include <Rtypes.h>
+#include <TRandom3.h>
 
 namespace bdm {
 

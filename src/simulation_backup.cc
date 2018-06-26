@@ -34,7 +34,8 @@ SimulationBackup::SimulationBackup(const std::string& backup_file,
   if (restore_file_ == "") {
     restore_ = false;
   } else if (!FileExists(restore_file_)) {
-    Log::Fatal("SimulationBackup", "Given restore file does not exist: ", restore_file_);
+    Log::Fatal("SimulationBackup", "Given restore file does not exist: ",
+               restore_file_);
   }
 }
 

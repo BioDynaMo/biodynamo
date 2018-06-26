@@ -30,9 +30,9 @@
 #include "macros.h"
 #include "resource_manager.h"
 #include "root_util.h"
+#include "simulation.h"
 #include "so_pointer.h"
 #include "type_util.h"
-#include "simulation.h"
 
 namespace bdm {
 
@@ -349,7 +349,7 @@ struct Capsule;
   }                                                                            \
                                                                                \
   explicit class_name(TRootIOCtor* io_ctor) {}                                 \
-  class_name(const class_name& io_ctor) = default;                                 \
+  class_name(const class_name& io_ctor) = default;                             \
                                                                                \
   /** Create new empty object with SOA memory layout. */                       \
   /** Calling Self<Soa> soa; will have already one instance inside -- */       \
@@ -364,17 +364,18 @@ struct Capsule;
     return ret_value;                                                          \
   }                                                                            \
                                                                                \
-  using Simulation_t = Simulation<typename TCompileTimeParam::template Self<Soa>>; \
-  \
+  using Simulation_t =                                                         \
+      Simulation<typename TCompileTimeParam::template Self<Soa>>;              \
+                                                                               \
   MostDerivedSoPtr GetSoPtr() {                                                \
-    auto* rm = Simulation_t::GetActive()->GetResourceManager(); \
-    auto* container = rm->template Get<MostDerivedScalar>();                 \
+    auto* rm = Simulation_t::GetActive()->GetResourceManager();                \
+    auto* container = rm->template Get<MostDerivedScalar>();                   \
     return MostDerivedSoPtr(container, Base::GetElementIdx());                 \
   }                                                                            \
                                                                                \
   void RemoveFromSimulation() {                                                \
-    auto* rm = Simulation_t::GetActive()->GetResourceManager(); \
-    auto container = rm->template Get<MostDerivedScalar>();                  \
+    auto* rm = Simulation_t::GetActive()->GetResourceManager();                \
+    auto container = rm->template Get<MostDerivedScalar>();                    \
     container->DelayedRemove(Base::GetElementIdx());                           \
   }                                                                            \
                                                                                \
@@ -442,12 +443,12 @@ struct Capsule;
     return *this;                                                              \
   }                                                                            \
                                                                                \
-   Self<Backend>& operator=(Self<Backend>&& rhs) {                                         \
-     BDM_SIM_OBJECT_ASSIGNMENT_OP_MOVE_BODY(__VA_ARGS__)                             \
-     Base::operator=(std::move(rhs));                                                      \
-     return *this;                                                              \
-   }                                                                            \
-   \
+  Self<Backend>& operator=(Self<Backend>&& rhs) {                              \
+    BDM_SIM_OBJECT_ASSIGNMENT_OP_MOVE_BODY(__VA_ARGS__)                        \
+    Base::operator=(std::move(rhs));                                           \
+    return *this;                                                              \
+  }                                                                            \
+                                                                               \
   /** Safe method to add an element to this vector. */                         \
   /** Does not invalidate, iterators, pointers or references. */               \
   /** Changes do not take effect until they are commited.*/                    \

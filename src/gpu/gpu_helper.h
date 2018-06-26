@@ -216,10 +216,11 @@ static void InitializeGPUEnvironment() {
 #ifdef USE_OPENCL
     FindGpuDevicesOpenCL<>();
 #else
-    Log::Warning("InitializeGPUEnvironment",
-              "You tried to use the GPU (OpenCL) version of BioDynaMo, but no "
-              "OpenCL installation was detected on this machine. Switching to "
-              "the CPU version...");
+    Log::Warning(
+        "InitializeGPUEnvironment",
+        "You tried to use the GPU (OpenCL) version of BioDynaMo, but no "
+        "OpenCL installation was detected on this machine. Switching to "
+        "the CPU version...");
     param->use_gpu_ = false;
 #endif
   } else {
@@ -227,9 +228,9 @@ static void InitializeGPUEnvironment() {
     FindGpuDevicesCuda();
 #else
     Log::Warning("InitializeGPUEnvironment",
-              "You tried to use the GPU (CUDA) version of BioDynaMo, but no "
-              "CUDA installation was detected on this machine. Switching to "
-              "the CPU version...");
+                 "You tried to use the GPU (CUDA) version of BioDynaMo, but no "
+                 "CUDA installation was detected on this machine. Switching to "
+                 "the CPU version...");
     param->use_gpu_ = false;
 #endif
   }

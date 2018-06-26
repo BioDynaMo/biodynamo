@@ -18,9 +18,9 @@
 #include "cell.h"
 #include "gtest/gtest.h"
 #include "io_util.h"
+#include "simulation_implementation.h"
 #include "unit/default_ctparam.h"
 #include "unit/test_util.h"
-#include "simulation_implementation.h"
 
 #define ROOTFILE "bdmFile.root"
 

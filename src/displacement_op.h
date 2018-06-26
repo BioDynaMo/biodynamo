@@ -42,8 +42,7 @@ class DisplacementOp {
   DisplacementOp() {
     auto* sim = TSimulation::GetActive();
     auto* rm = sim->GetResourceManager();
-    rm->template ApplyOnAllTypes([this](auto* container,
-                                                uint16_t type_idx) {
+    rm->template ApplyOnAllTypes([this](auto* container, uint16_t type_idx) {
       using Container = std::remove_pointer_t<decltype(container)>;
       using SimObject = typename Container::value_type;
       if (SimObject::GetShape() != Shape::kSphere) {

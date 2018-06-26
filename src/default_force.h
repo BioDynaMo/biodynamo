@@ -18,12 +18,12 @@
 #include <algorithm>
 #include <cmath>
 
-#include "simulation.h"
 #include "backend.h"
 #include "log.h"
 #include "math_util.h"
 #include "random.h"
 #include "shape.h"
+#include "simulation.h"
 
 namespace bdm {
 
@@ -81,7 +81,8 @@ class DefaultForce {
   }
 
  private:
-  template <typename TSphereLhs, typename TSphereRhs, typename TSimulation = Simulation<>>
+  template <typename TSphereLhs, typename TSphereRhs,
+            typename TSimulation = Simulation<>>
   void ForceBetweenSpheres(const TSphereLhs* sphere_lhs,
                            const TSphereRhs* sphere_rhs,
                            std::array<double, 3>* result) const {

@@ -18,9 +18,9 @@
 #include <vector>
 
 #include <Rtypes.h>
-#include "simulation.h"
 #include "biology_module_util.h"
 #include "param.h"
+#include "simulation.h"
 
 namespace bdm {
 

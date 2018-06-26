@@ -1,3 +1,16 @@
+// -----------------------------------------------------------------------------
+//
+// Copyright (C) The BioDynaMo Project.
+// All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+//
+// See the LICENSE file distributed with this work for details.
+// See the NOTICE file distributed with this work for additional information
+// regarding copyright ownership.
+//
+// -----------------------------------------------------------------------------
 #ifndef MY_SIMULATION_H_
 #define MY_SIMULATION_H_
 
@@ -23,6 +36,6 @@ inline int Simulate(int argc, const char** argv) {
   return 0;
 }
 
-} // namespace bdm
+}  // namespace bdm
 
-#endif // MY_SIMULATION_H_
+#endif  // MY_SIMULATION_H_

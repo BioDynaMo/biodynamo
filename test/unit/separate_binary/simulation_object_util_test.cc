@@ -14,9 +14,9 @@
 
 #include "gtest/gtest.h"
 
+#include "simulation_implementation.h"
 #include "unit/separate_binary/simulation_object_util_test.h"
 #include "unit/test_util.h"
-#include "simulation_implementation.h"
 
 namespace bdm {
 // namespace simulation_object_util_test_internal {

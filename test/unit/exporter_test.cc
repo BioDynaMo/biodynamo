@@ -15,15 +15,15 @@
 #include "exporter.h"
 #include "cell.h"
 #include "gtest/gtest.h"
+#include "simulation_implementation.h"
 #include "unit/default_ctparam.h"
 #include "unit/test_util.h"
-#include "simulation_implementation.h"
 
 namespace bdm {
 
 TEST(ExportTest, ExportToFile) {
   Simulation<> simulation(TEST_NAME);
-  
+
   // set up cells and their positions
   Cell cell1;
   cell1.SetPosition({0.5, 1, 0});

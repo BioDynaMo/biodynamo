@@ -30,8 +30,8 @@
 
 #include "log.h"
 #include "param.h"
-#include "visualization/catalyst_adaptor.h"
 #include "simulation.h"
+#include "visualization/catalyst_adaptor.h"
 
 namespace bdm {
 
@@ -46,7 +46,8 @@ class Scheduler {
     if (backup_->RestoreEnabled()) {
       restore_point_ = backup_->GetSimulationStepsFromBackup();
     }
-    visualization_ = new CatalystAdaptor<>(BDM_SRC_DIR "/visualization/simple_pipeline.py");
+    visualization_ =
+        new CatalystAdaptor<>(BDM_SRC_DIR "/visualization/simple_pipeline.py");
   }
 
   virtual ~Scheduler() {
@@ -77,7 +78,7 @@ class Scheduler {
   uint64_t GetSimulatedSteps() const { return total_steps_; }
 
  protected:
-   uint64_t total_steps_ = 0;
+  uint64_t total_steps_ = 0;
 
   /// Executes one step.
   /// This design makes testing more convenient
@@ -118,13 +119,14 @@ class Scheduler {
   SimulationBackup* backup_ = nullptr;
   uint64_t restore_point_;
   std::chrono::time_point<Clock> last_backup_ = Clock::now();
-  CatalystAdaptor<>* visualization_ = nullptr; //!
+  CatalystAdaptor<>* visualization_ = nullptr;  //!
   bool is_gpu_environment_initialized_ = false;
 
   OpTimer<CommitOp> commit_ = OpTimer<CommitOp>("commit");
   OpTimer<DiffusionOp> diffusion_ = OpTimer<DiffusionOp>("diffusion");
   OpTimer<BiologyModuleOp> biology_ = OpTimer<BiologyModuleOp>("biology");
-  OpTimer<DisplacementOp<TSimulation>> physics_ = OpTimer<DisplacementOp<TSimulation>>("physics");
+  OpTimer<DisplacementOp<TSimulation>> physics_ =
+      OpTimer<DisplacementOp<TSimulation>>("physics");
   OpTimer<BoundSpace> bound_space_ = OpTimer<BoundSpace>("bound_space");
 
   /// Backup the simulation. Backup interval based on `Param::backup_interval_`

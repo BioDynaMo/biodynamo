@@ -57,17 +57,20 @@ inline void RunTest(bool* result, ExecutionMode mode) {
   rm->Clear();
   auto cells = rm->template Get<Cell>();
 
-  switch(mode) {
-    case kCpu: break;
-    case kOpenCl: param->use_opencl_ = true;
-    case kCuda: param->use_gpu_ = true;
+  switch (mode) {
+    case kCpu:
+      break;
+    case kOpenCl:
+      param->use_opencl_ = true;
+    case kCuda:
+      param->use_gpu_ = true;
   }
 
 // We need to give every test the same seed for the RNG, because in the cell
 // division, random numbers are used. Within a single executable these numbers
 // vary. Also within the threads this needs to be enforced
 #pragma omp parallel
-   simulation.GetRandom()->SetSeed(1);
+  simulation.GetRandom()->SetSeed(1);
 
   size_t cells_per_dim = 2;
   auto construct = [](const std::array<double, 3>& position) {
@@ -129,7 +132,6 @@ inline void RunTest(bool* result, ExecutionMode mode) {
 }
 
 inline int Simulate(int argc, const char** argv) {
-
   bool result = true;
 
   // TODO(ahmad): after Trello card ("Fix inconsistency in cell state due to

@@ -17,10 +17,10 @@
 #include "grid.h"
 #include "gtest/gtest.h"
 #include "model_initializer.h"
+#include "simulation_implementation.h"
 #include "substance_initializers.h"
 #include "unit/default_ctparam.h"
 #include "unit/test_util.h"
-#include "simulation_implementation.h"
 
 #include "Math/DistFunc.h"
 

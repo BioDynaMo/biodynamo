@@ -14,16 +14,20 @@
 #ifndef SIMULATION_H_
 #define SIMULATION_H_
 
-#include <string>
 #include <Rtypes.h>
+#include <string>
+#include <vector>
 #include "random.h"
 
 namespace bdm {
 
 // forward declarations
-template <typename > class ResourceManager;
-template <typename> class Grid;
-template <typename> class Scheduler;
+template <typename>
+class ResourceManager;
+template <typename>
+class Grid;
+template <typename>
+class Scheduler;
 struct Param;
 
 struct Soa;
@@ -46,16 +50,18 @@ struct Simulation {
   /// This function returns the currently active Simulation simulation.
   static Simulation<TCTParam>* GetActive();
 
-  Simulation(TRootIOCtor*);
+  explicit Simulation(TRootIOCtor* p);
   /// Constructor that takes the arguments from `main` to parse command line
   /// arguments. The simulation name is extracted from the executable name.
   /// Creation of a new simulation automatically activates it.
   Simulation(int argc, const char** argv);
+
   /// Alternative constructor, if the arguments from function `main` are not
   /// available, or if a different simulation name should be chosen. \n
   /// Command line arguments are not parsed!\n
   /// Creation of a new simulation automatically activates it.
-  Simulation(const std::string& simulation_name);
+  explicit Simulation(const std::string& simulation_name);
+
   ~Simulation();
 
   /// Copies / moves values from a restored simulation into this object.
@@ -66,8 +72,11 @@ struct Simulation {
   void Activate();
 
   ResourceManager<TCTParam>* GetResourceManager();
+
   Param* GetParam();
+
   Grid<Simulation>* GetGrid();
+
   Scheduler<Simulation>* GetScheduler();
 
   /// Returns a thread local random number generator
@@ -77,7 +86,6 @@ struct Simulation {
   const std::string& GetUniqueName() const;
 
   /// Returns the output directory for this specific simulation
-
   const std::string& GetOutputDir() const;
 
   /// Replaces the scheduler for this simulation.
@@ -98,18 +106,17 @@ struct Simulation {
   ResourceManager<TCTParam>* rm_ = nullptr;
   Param* param_ = nullptr;
   std::string name_;
-  Grid<Simulation>* grid_ = nullptr; //!
+  Grid<Simulation>* grid_ = nullptr;            //!
   Scheduler<Simulation>* scheduler_ = nullptr;  //!
   /// This id is unique for each simulation within the same process
-  uint64_t id_ = 0; //!
+  uint64_t id_ = 0;  //!
   /// cached value where `id_` is appended to `name_` if `id_` is
   /// not zero.\n
   /// e.g. `name_ = "my-sim"` and `id_ = 0` -> "my-sim"\n
   /// e.g. `name_ = "my-sim"` and `id_ = 4` -> "my-sim4"
-  std::string unique_name_; //!
+  std::string unique_name_;  //!
   /// cached value where `unique_name_` is appended to `Param::kOutputDir`
-  std::string output_dir_; //!
-
+  std::string output_dir_;  //!
 
   /// Initialize Simulation
   void Initialize(int argc, const char** argv);

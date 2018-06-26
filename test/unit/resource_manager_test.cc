@@ -15,8 +15,8 @@
 // I/O related code must be in header file
 #include "unit/resource_manager_test.h"
 #include "cell.h"
-#include "unit/io_test.h"
 #include "simulation_implementation.h"
+#include "unit/io_test.h"
 
 namespace bdm {
 namespace resource_manager_test_internal {
@@ -71,7 +71,7 @@ inline void RunApplyOnElementTest() {
   a_collection->push_back(A(12));
   a_collection->push_back(A(34));
   rm.ApplyOnElement(SoHandle(0, 1),
-                     [](auto&& element) { EXPECT_EQ(34, element.GetData()); });
+                    [](auto&& element) { EXPECT_EQ(34, element.GetData()); });
 
   auto b_collection = rm.template Get<TB>();
   b_collection->push_back(B(3.14));

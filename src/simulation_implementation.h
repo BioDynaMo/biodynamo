@@ -14,18 +14,20 @@
 #ifndef SIMULATION_IMPLEMENTATION_H_
 #define SIMULATION_IMPLEMENTATION_H_
 
-#include <sstream>
-#include <cmath>
-#include <omp.h>
 #include <cpptoml/cpptoml.h>
-#include "resource_manager.h"
-#include "grid.h"
-#include "scheduler.h"
-#include "version.h"
-#include "param.h"
+#include <omp.h>
+#include <algorithm>
+#include <cmath>
+#include <sstream>
+#include <string>
 #include "command_line_options.h"
-#include "string_util.h"
+#include "grid.h"
 #include "log.h"
+#include "param.h"
+#include "resource_manager.h"
+#include "scheduler.h"
+#include "string_util.h"
+#include "version.h"
 
 namespace bdm {
 
@@ -45,7 +47,7 @@ Simulation<T>* Simulation<T>::GetActive() {
 }
 
 template <typename T>
-Simulation<T>::Simulation(TRootIOCtor*) {}
+Simulation<T>::Simulation(TRootIOCtor* p) {}
 
 template <typename T>
 Simulation<T>::Simulation(int argc, const char** argv) {
@@ -61,9 +63,10 @@ Simulation<T>::Simulation(const std::string& simulation_name) {
 template <typename T>
 void Simulation<T>::Restore(Simulation<T>&& restored) {
   // random_
-  if(random_.size() != restored.random_.size()) {
-    Log::Warning("Simulation", "The restore file (",  param_->restore_file_,
-    ") was run with a different number of threads. Can't restore complete random number generator state." );
+  if (random_.size() != restored.random_.size()) {
+    Log::Warning("Simulation", "The restore file (", param_->restore_file_,
+                 ") was run with a different number of threads. Can't restore "
+                 "complete random number generator state.");
     uint64_t min = std::min(random_.size(), restored.random_.size());
     for (uint64_t i = 0; i < min; i++) {
       *(random_[i]) = *(restored.random_[i]);
@@ -107,19 +110,29 @@ void Simulation<T>::Activate() {
 }
 
 template <typename T>
-ResourceManager<T>* Simulation<T>::GetResourceManager() { return rm_; }
+ResourceManager<T>* Simulation<T>::GetResourceManager() {
+  return rm_;
+}
 
 template <typename T>
-Param* Simulation<T>::GetParam() { return param_; }
+Param* Simulation<T>::GetParam() {
+  return param_;
+}
 
 template <typename T>
-Grid<Simulation<T>>* Simulation<T>::GetGrid() { return grid_; }
+Grid<Simulation<T>>* Simulation<T>::GetGrid() {
+  return grid_;
+}
 
 template <typename T>
-Scheduler<Simulation<T>>* Simulation<T>::GetScheduler() { return scheduler_; }
+Scheduler<Simulation<T>>* Simulation<T>::GetScheduler() {
+  return scheduler_;
+}
 
 template <typename T>
-Random* Simulation<T>::GetRandom() { return random_[omp_get_thread_num()]; }
+Random* Simulation<T>::GetRandom() {
+  return random_[omp_get_thread_num()];
+}
 
 template <typename T>
 const std::string& Simulation<T>::GetUniqueName() const {
@@ -148,9 +161,7 @@ void Simulation<T>::Initialize(int argc, const char** argv) {
 }
 
 template <typename T>
-template <typename TResourceManager,
-          typename TGrid,
-          typename TScheduler>
+template <typename TResourceManager, typename TGrid, typename TScheduler>
 void Simulation<T>::InitializeMembers() {
   random_.resize(omp_get_max_threads());
   for (uint64_t i = 0; i < random_.size(); i++) {
@@ -168,7 +179,8 @@ void Simulation<T>::InitializeRuntimeParams(int argc, const char** argv) {
   // Removing this line causes an unexplainable segfault due to setting the
   // gErrorIngoreLevel global parameter of ROOT. We need to log at least one
   // thing before setting that parameter.
-  Log::Info("", "Initialize new simulation using BioDynaMo ", Version::String());
+  Log::Info("", "Initialize new simulation using BioDynaMo ",
+            Version::String());
 
   // detect if the biodynamo environment has been sourced
   if (std::getenv("BDM_CMAKE_DIR") == nullptr) {
@@ -228,7 +240,7 @@ void Simulation<T>::InitializeOutputDir() {
     output_dir_ = Concat(Param::kOutputDir, "/", unique_name_);
   }
   if (system(Concat("mkdir -p ", output_dir_).c_str())) {
-      Log::Fatal("Simulation", "Failed to make output directory ", output_dir_);
+    Log::Fatal("Simulation", "Failed to make output directory ", output_dir_);
   }
 }
 

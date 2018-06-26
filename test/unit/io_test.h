@@ -49,9 +49,7 @@ class IOTest : public ::testing::Test {
     simulation_ = new Simulation<>(TEST_NAME);
   }
 
-  virtual void TearDown() {
-    delete simulation_;
-  }
+  virtual void TearDown() { delete simulation_; }
 
   Simulation<>* simulation_;
 };

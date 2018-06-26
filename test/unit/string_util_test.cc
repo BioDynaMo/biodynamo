@@ -16,7 +16,7 @@
 #include <gtest/gtest.h>
 
 namespace bdm {
-  
+
 TEST(StringUtilTest, Concat) {
   EXPECT_EQ("foobarbaz", Concat("foo", "bar", "baz"));
   EXPECT_EQ("foo bar baz", Concat("foo", " bar ", "baz"));

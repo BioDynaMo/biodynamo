@@ -12,8 +12,8 @@
 //
 // -----------------------------------------------------------------------------
 
-#ifndef STRING_UTIL_H
-#define STRING_UTIL_H
+#ifndef STRING_UTIL_H_
+#define STRING_UTIL_H_
 
 #include <sstream>
 #include <string>
@@ -60,4 +60,4 @@ inline std::string Concat(const Args&... parts) {
 
 }  // namespace bdm
 
-#endif  // STRING_UTIL_H
+#endif  // STRING_UTIL_H_

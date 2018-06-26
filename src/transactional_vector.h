@@ -78,7 +78,7 @@ class TransactionalVector {
   TransactionalVector& operator=(TransactionalVector&& other) {
     data_ = std::move(other.data_);
     size_ = other.size_;
-    to_be_removed_  = std::move(other.to_be_removed_);
+    to_be_removed_ = std::move(other.to_be_removed_);
     return *this;
   }
 

@@ -49,11 +49,13 @@ class DisplacementOpCpu {
           (*sim_objects)[i].CalculateDisplacement(grid, squared_radius);
     }
 
-// Set new positions after all updates have been calculated
-// otherwise some sim_objects would see neighbors with already updated positions
-// which would lead to inconsistencies
-// FIXME there are still inconsistencies if there are more than one simulation
-//  object types!
+    // Set new positions after all updates have been calculated
+    // otherwise some sim_objects would see neighbors with already updated
+    // positions
+    // which would lead to inconsistencies
+    // FIXME there are still inconsistencies if there are more than one
+    // simulation
+    //  object types!
     auto* param = sim->GetParam();
 #pragma omp parallel for
     for (size_t i = 0; i < sim_objects->size(); i++) {

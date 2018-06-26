@@ -15,8 +15,8 @@
 #ifndef MULTIPLE_SIMULATIONS_H_
 #define MULTIPLE_SIMULATIONS_H_
 
-#include "biodynamo.h"
 #include <vector>
+#include "biodynamo.h"
 
 namespace bdm {
 
@@ -37,7 +37,7 @@ inline int Simulate(int argc, const char** argv) {
   // Create two simulations
   std::vector<Simulation<>*> simulations;
   simulations.push_back(new Simulation<>(argc, argv));
-  // simulations.push_back(new Simulation<>(argc, argv));
+  simulations.push_back(new Simulation<>(argc, argv));
 
   // Initialize the model for each simulation
   for (auto* sim : simulations) {
@@ -45,11 +45,13 @@ inline int Simulate(int argc, const char** argv) {
     // Only one simulation can be active at any given time.
     sim->Activate();
 
+    // Create initial model
     auto* rm = sim->GetResourceManager();
     auto&& cell = rm->New<Cell>(30);
     cell.AddBiologyModule(Divide());
     rm->Get<Cell>()->Commit();
 
+    // Turn on export visualization
     auto* param = sim->GetParam();
     param->export_visualization_ = true;
     param->visualize_sim_objects_["Cell"] = {};

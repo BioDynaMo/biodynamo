@@ -21,8 +21,8 @@
 #include <type_traits>
 
 #include "backend.h"
-#include "simulation_backup.h"
 #include "simulation.h"
+#include "simulation_backup.h"
 
 namespace bdm {
 
@@ -154,22 +154,22 @@ struct ReadContainerFunctor {
   /// Backends between SoPointer and ResourceManager are matching
   template <typename TContainer, typename TTBackend = TBackend,
             typename TSimulation = Simulation<>>
-  typename std::enable_if<
-      std::is_same<TTBackend, typename TSimulation::ResourceManager_t::Backend>::value>::type
+  typename std::enable_if<std::is_same<
+      TTBackend, typename TSimulation::ResourceManager_t::Backend>::value>::type
   operator()(TBuffer& R__b, TContainer** container, uint64_t) {  // NOLINT
     int state;
     R__b >> state;
     if (state == ContainerPointerState::kPointIntoRm) {
       R__b >> *container;
-      // if a whole simulation is restored from a ROOT file, `TSimulation::Get` is
+      // if a whole simulation is restored from a ROOT file, `TSimulation::Get`
+      // is
       // not updated to the new `ResourceManager` yet. Therefore, we must delay
       // this call. It will be executed after the restore operation has been
       // completed.
-      SimulationBackup::after_restore_event_.push_back(
-          [=]() {
-            auto* rm = TSimulation::GetActive()->GetResourceManager();
-            *container = rm->template Get<TSoSimBackend>();
-          });
+      SimulationBackup::after_restore_event_.push_back([=]() {
+        auto* rm = TSimulation::GetActive()->GetResourceManager();
+        *container = rm->template Get<TSoSimBackend>();
+      });
     } else if (state == ContainerPointerState::kSeparate) {
       R__b >> *container;
     } else {
@@ -201,8 +201,8 @@ struct WriteContainerFunctor {
   /// Backends between SoPointer and ResourceManager are matching
   template <typename TContainer, typename TTBackend = TBackend,
             typename TSimulation = Simulation<>>
-  typename std::enable_if<
-      std::is_same<TTBackend, typename TSimulation::ResourceManager_t::Backend>::value>::type
+  typename std::enable_if<std::is_same<
+      TTBackend, typename TSimulation::ResourceManager_t::Backend>::value>::type
   operator()(TBuffer& R__b, const TContainer* container, uint64_t) {  // NOLINT
     auto* rm = TSimulation::GetActive()->GetResourceManager();
     if (container == nullptr) {
