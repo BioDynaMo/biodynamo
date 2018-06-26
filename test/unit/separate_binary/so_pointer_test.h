@@ -19,6 +19,7 @@
 
 #include "compile_time_param.h"
 #include "simulation_backup.h"
+#include "simulation_implementation.h"
 #include "simulation_object.h"
 #include "so_pointer.h"
 #include "unit/io_test.h"
@@ -57,6 +58,25 @@ BDM_SIM_OBJECT(SoPointerTestClass, bdm::SimulationObject) {
 
   MostDerivedSoPtr GetMySoPtr() const { return my_so_ptr_[kIdx]; }
   void SetMySoPtr(MostDerivedSoPtr so_ptr) { my_so_ptr_[kIdx] = so_ptr; }
+
+  // TODO(lukas) after ROOT-9321 has been resolved: create test base class,
+  // derive from it and remove these functions
+  std::array<double, 3> GetPosition() const { return {0, 0, 0}; }
+  void SetPosition(const std::array<double, 3>&) {}
+  void ApplyDisplacement(const std::array<double, 3>&) {}
+  template <typename TGrid>
+  std::array<double, 3> CalculateDisplacement(TGrid * grid,
+                                              double squared_radius) {
+    return {0, 0, 0};
+  }
+  void RunBiologyModules() {}
+  void SetBoxIdx(uint64_t) {}
+  double GetDiameter() { return 3.14; }
+  static std::set<std::string> GetRequiredVisDataMembers() {
+    return {"diameter_", "position_"};
+  }
+  static constexpr Shape GetShape() { return Shape::kSphere; }
+  // TODO(lukas) end remove
 
   vec<MostDerivedSoPtr> my_so_ptr_ = {{}};
 
@@ -106,26 +126,30 @@ inline void IOTestSoPointerAnyContainerSoa() {
   EXPECT_EQ(456u, (*restored)->GetId());
 }
 
-inline void IOTestSoPointerRmContainerSoa() {
-  Rm()->Clear();
-  auto&& so1 = Rm()->New<SoPointerTestClass>(123);
-  auto&& so2 = Rm()->New<SoPointerTestClass>(456);
+inline void IOTestSoPointerRmContainerSoa(Simulation<>* simulation) {
+  auto* rm = simulation->GetResourceManager();
+
+  auto&& so1 = rm->New<SoPointerTestClass>(123);
+  auto&& so2 = rm->New<SoPointerTestClass>(456);
 
   auto soptr = so1.GetSoPtr();
   EXPECT_EQ(0u, soptr.GetElementIdx());
   so2.SetMySoPtr(soptr);
 
-  auto* rm_before = Rm();
-
   SimulationBackup backup(IOTest::kRootFile, "");
   backup.Backup(1);
+
+  // to see if objects are restorec correctly, clear RessourceManager
+  rm->Clear();
 
   SimulationBackup restore("", IOTest::kRootFile);
   restore.Restore();
 
-  EXPECT_TRUE(rm_before != Rm());
+  // ResourceManager instance should not have changed
+  EXPECT_EQ(rm, simulation->GetResourceManager());
 
-  auto* restored_sim_objects = Rm()->Get<SoPointerTestClass>();
+  rm = simulation->GetResourceManager();
+  auto* restored_sim_objects = rm->Get<SoPointerTestClass>();
   EXPECT_EQ(123u, (*restored_sim_objects)[1].GetMySoPtr()->GetId());
   // change id of first element
   (*restored_sim_objects)[0].SetId(987);

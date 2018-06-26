@@ -18,6 +18,7 @@
 #include "compile_time_param.h"
 #include "displacement_op.h"
 #include "neuroscience/compile_time_param.h"
+#include "simulation_implementation.h"
 
 #include "unit/test_util.h"
 // FIXME move to neuroscience directory
@@ -63,6 +64,8 @@ struct UpdateReferencesNeuronSoma : NeuronSoma {
 };
 
 TEST(NeuronSomaTest, UpdateReferences) {
+  Simulation<> simulation(TEST_NAME);
+
   UpdateReferencesNeuronSoma neuron;
   neuron.AddDaughters();
 
@@ -81,6 +84,8 @@ TEST(NeuronSomaTest, UpdateReferences) {
 /// Test that the references of mother, daughter_left_ and daughter_right_
 /// are updated correctly
 TEST(NeuriteElementTest, UpdateReferences) {
+  Simulation<> simulation(TEST_NAME);
+
   NeuriteElement neurite;
 
   auto dl = neurite.GetDaughterLeft();
@@ -121,8 +126,9 @@ TEST(NeuriteElementTest, UpdateReferences) {
 }
 
 TEST(NeuronSomaTest, ExtendNewNeuriteElementSphericalCoordinates) {
-  auto* rm = Rm();
-  Rm()->Clear();
+  Simulation<> simulation(TEST_NAME);
+  auto* rm = simulation.GetResourceManager();
+
   const double kEpsilon = abs_error<double>::value;
   auto commit = [](auto* container, uint16_t type_idx) { container->Commit(); };
 
@@ -135,7 +141,7 @@ TEST(NeuronSomaTest, ExtendNewNeuriteElementSphericalCoordinates) {
   auto neurite = neuron.ExtendNewNeurite(10, Math::kPi / 8, Math::kPi / 3);
   neurite->SetDiameter(2);
 
-  Rm()->ApplyOnAllTypes(commit);
+  rm->ApplyOnAllTypes(commit);
 
   // verify
   EXPECT_ARR_NEAR(neurite->GetPosition(),
@@ -167,8 +173,9 @@ TEST(NeuronSomaTest, ExtendNewNeuriteElementSphericalCoordinates) {
 }
 
 TEST(NeuronSomaTest, ExtendNewNeurite) {
-  auto* rm = Rm();
-  Rm()->Clear();
+  Simulation<> simulation(TEST_NAME);
+  auto* rm = simulation.GetResourceManager();
+
   const double kEpsilon = abs_error<double>::value;
   auto commit = [](auto* container, uint16_t type_idx) { container->Commit(); };
 
@@ -181,7 +188,7 @@ TEST(NeuronSomaTest, ExtendNewNeurite) {
   auto neurite = neuron.ExtendNewNeurite({0, 0, 1});
   neurite->SetDiameter(2);
 
-  Rm()->ApplyOnAllTypes(commit);
+  rm->ApplyOnAllTypes(commit);
 
   // verify
   EXPECT_ARR_NEAR(neurite->GetPosition(), {0, 0, 10.5});
@@ -206,8 +213,9 @@ TEST(NeuronSomaTest, ExtendNewNeurite) {
 }
 
 TEST(NeuronSomaTest, ExtendNeuriteAndElongate) {
-  auto* rm = Rm();
-  Rm()->Clear();
+  Simulation<> simulation(TEST_NAME);
+  auto* rm = simulation.GetResourceManager();
+
   const double kEpsilon = abs_error<double>::value;
   auto commit = [](auto* container, uint16_t type_idx) { container->Commit(); };
   std::array<double, 3> origin = {0, 0, 0};
@@ -224,7 +232,7 @@ TEST(NeuronSomaTest, ExtendNeuriteAndElongate) {
     neurite_element->RunDiscretization();
   }
 
-  Rm()->ApplyOnAllTypes(commit);
+  rm->ApplyOnAllTypes(commit);
 
   // verify
   //   distal segment
@@ -269,8 +277,9 @@ TEST(NeuronSomaTest, ExtendNeuriteAndElongate) {
 }
 
 TEST(NeuriteElementTest, PartialRetraction) {
-  auto* rm = Rm();
-  Rm()->Clear();
+  Simulation<> simulation(TEST_NAME);
+  auto* rm = simulation.GetResourceManager();
+
   const double kEpsilon = abs_error<double>::value;
   std::array<double, 3> origin = {0, 0, 0};
   auto commit = [](auto* container, uint16_t type_idx) { container->Commit(); };
@@ -317,8 +326,9 @@ TEST(NeuriteElementTest, PartialRetraction) {
 }
 
 TEST(NeuriteElementTest, TotalRetraction) {
-  auto* rm = Rm();
-  Rm()->Clear();
+  Simulation<> simulation(TEST_NAME);
+  auto* rm = simulation.GetResourceManager();
+
   std::array<double, 3> origin = {0, 0, 0};
   auto commit = [](auto* container, uint16_t type_idx) { container->Commit(); };
 
@@ -349,8 +359,9 @@ TEST(NeuriteElementTest, TotalRetraction) {
 }
 
 TEST(NeuriteElementTest, Branch) {
-  auto* rm = Rm();
-  Rm()->Clear();
+  Simulation<> simulation(TEST_NAME);
+  auto* rm = simulation.GetResourceManager();
+
   const double kEpsilon = abs_error<double>::value;
   std::array<double, 3> origin = {0, 0, 0};
   auto commit = [](auto* container, uint16_t type_idx) { container->Commit(); };
@@ -446,8 +457,9 @@ TEST(NeuriteElementTest, Branch) {
 }
 
 TEST(NeuriteElementTest, RightDaughterRetraction) {
-  auto* rm = Rm();
-  Rm()->Clear();
+  Simulation<> simulation(TEST_NAME);
+  auto* rm = simulation.GetResourceManager();
+
   const double kEpsilon = abs_error<double>::value;
   std::array<double, 3> origin = {0, 0, 0};
   auto commit = [](auto* container, uint16_t type_idx) { container->Commit(); };
@@ -516,8 +528,9 @@ TEST(NeuriteElementTest, RightDaughterRetraction) {
 }
 
 TEST(NeuriteElementTest, RightDaughterTotalRetraction) {
-  auto* rm = Rm();
-  Rm()->Clear();
+  Simulation<> simulation(TEST_NAME);
+  auto* rm = simulation.GetResourceManager();
+
   const double kEpsilon = abs_error<double>::value;
   std::array<double, 3> origin = {0, 0, 0};
   auto commit = [](auto* container, uint16_t type_idx) { container->Commit(); };
@@ -564,8 +577,9 @@ TEST(NeuriteElementTest, RightDaughterTotalRetraction) {
 }
 
 TEST(NeuriteElementTest, LeftDaughterRetraction) {
-  auto* rm = Rm();
-  Rm()->Clear();
+  Simulation<> simulation(TEST_NAME);
+  auto* rm = simulation.GetResourceManager();
+
   const double kEpsilon = abs_error<double>::value;
   std::array<double, 3> position = {0, 0, 0};
   auto commit = [](auto* container, uint16_t type_idx) { container->Commit(); };
@@ -634,8 +648,9 @@ TEST(NeuriteElementTest, LeftDaughterRetraction) {
 }
 
 TEST(NeuriteElementTest, RetractAllDendrites) {
-  auto* rm = Rm();
-  Rm()->Clear();
+  Simulation<> simulation(TEST_NAME);
+  auto* rm = simulation.GetResourceManager();
+
   std::array<double, 3> origin = {0, 0, 0};
   auto commit = [](auto* container, uint16_t type_idx) { container->Commit(); };
 
@@ -684,8 +699,9 @@ TEST(NeuriteElementTest, RetractAllDendrites) {
 }
 
 TEST(NeuriteElementTest, Bifurcate) {
-  auto* rm = Rm();
-  Rm()->Clear();
+  Simulation<> simulation(TEST_NAME);
+  auto* rm = simulation.GetResourceManager();
+
   const double kEpsilon = abs_error<double>::value;
   std::array<double, 3> origin = {0, 0, 0};
   auto commit = [](auto* container, uint16_t type_idx) { container->Commit(); };
@@ -771,8 +787,9 @@ TEST(NeuriteElementTest, Bifurcate) {
 }
 
 TEST(DISABLED_NeuronSomaNeuriteElementTest, Displacement) {
-  auto* rm = Rm();
-  rm->Clear();
+  Simulation<> simulation(TEST_NAME);
+  auto* rm = simulation.GetResourceManager();
+
   auto* neurons = rm->template Get<NeuronSoma>();
   auto* neurite_segments = rm->template Get<NeuriteElement>();
 
@@ -790,8 +807,7 @@ TEST(DISABLED_NeuronSomaNeuriteElementTest, Displacement) {
   // cell2.SetMass(1.1);
   // cell2.SetPosition({0, 5, 0});
 
-  auto& grid = Grid<>::GetInstance();
-  grid.Initialize();
+  simulation.GetGrid()->Initialize();
 
   // execute operation
   DisplacementOp<> op;

@@ -48,17 +48,29 @@ struct CompileTimeParam : public DefaultCompileTimeParam<Backend> {
   using BiologyModules = Variant<GrowDivide>;
 };
 
-inline void RunTest(bool* result) {
-  auto rm = ResourceManager<>::Get();
+enum ExecutionMode { kCpu, kCuda, kOpenCl };
+
+inline void RunTest(bool* result, ExecutionMode mode) {
+  Simulation<> simulation("cell_division_gpu");
+  auto* rm = simulation.GetResourceManager();
+  auto* param = simulation.GetParam();
   rm->Clear();
   auto cells = rm->template Get<Cell>();
-// Param::Reset();
+
+  switch (mode) {
+    case kCpu:
+      break;
+    case kOpenCl:
+      param->use_opencl_ = true;
+    case kCuda:
+      param->use_gpu_ = true;
+  }
 
 // We need to give every test the same seed for the RNG, because in the cell
 // division, random numbers are used. Within a single executable these numbers
 // vary. Also within the threads this needs to be enforced
 #pragma omp parallel
-  { gRandom.SetSeed(1); }
+  simulation.GetRandom()->SetSeed(1);
 
   size_t cells_per_dim = 2;
   auto construct = [](const std::array<double, 3>& position) {
@@ -83,8 +95,7 @@ inline void RunTest(bool* result) {
 
   // Run for 10 timesteps. In step 2 a division should take place. In step 3
   // these new cells are instantiated
-  Scheduler<> scheduler;
-  scheduler.Simulate(10);
+  simulation.GetScheduler()->Simulate(10);
 
   EXPECT_ARR_NEAR(
       (*cells)[0].GetPosition(),
@@ -129,17 +140,13 @@ inline int Simulate(int argc, const char** argv) {
   omp_set_num_threads(1);
 
   // Run CPU version
-  RunTest(&result);
+  RunTest(&result, kCpu);
 
   // Run GPU (CUDA) version
-  Param::use_gpu_ = true;
-  InitializeGPUEnvironment<>();
-  RunTest(&result);
+  RunTest(&result, kCuda);
 
   // Run GPU (OpenCL) version
-  Param::use_opencl_ = true;
-  InitializeGPUEnvironment<>();
-  RunTest(&result);
+  RunTest(&result, kOpenCl);
 
   return !result;
 }

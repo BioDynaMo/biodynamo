@@ -25,6 +25,7 @@
 #include "backend.h"
 #include "log.h"
 #include "param.h"
+#include "simulation.h"
 
 namespace bdm {
 
@@ -195,7 +196,7 @@ class NeuroMLExporter : public Exporter<TContainer> {
   void ExportSummary(string filename, uint64_t num_iterations) override {}
 };
 
-template <typename TContainer>
+template <typename TContainer, typename TSimulation = Simulation<>>
 class ParaviewExporter : public Exporter<TContainer> {
  public:
   void ExportIteration(const TContainer &cells, string filename,
@@ -329,6 +330,7 @@ class ParaviewExporter : public Exporter<TContainer> {
   /// This .pvd can be read by Paraview for visualization.
   void ExportSummary(string filename, uint64_t num_iterations) override {
     std::ofstream pvd(filename + ".pvd");
+    auto *param = TSimulation::GetActive()->GetParam();
 
     pvd << "<?xml version=\"1.0\"?>" << endl;
     pvd << "<VTKFile type=\"Collection\" version=\"0.1\" "
@@ -337,7 +339,7 @@ class ParaviewExporter : public Exporter<TContainer> {
     pvd << "<Collection>" << endl;
     /// iterate for all (time) steps
     for (uint64_t i = 0; i < num_iterations; i++) {
-      pvd << "<DataSet timestep=\"" << (i * Param::simulation_time_step_)
+      pvd << "<DataSet timestep=\"" << (i * param->simulation_time_step_)
           << "\" group=\"\" part=\"0\" file=\"" << filename << '-' << i
           << ".vtu\">";
       pvd << endl;

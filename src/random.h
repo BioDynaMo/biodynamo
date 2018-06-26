@@ -18,53 +18,55 @@
 #include <array>
 #include <cstdio>
 
+#include <Rtypes.h>
 #include <TRandom3.h>
 
 namespace bdm {
 
-/// C++ implementation of the Java default random number generator
-/// (java.util.Random)
+/// Decorator for ROOT's TRandom3
 class Random {
  public:
-  Random() {}
+  Random();
+  Random& operator=(const Random& other);
 
-  void SetSeed(int64_t seed);
+  /// Forwards call to TRandom3::Uniform
+  double Uniform(double max = 1.0);
+  /// Forwards call to TRandom3::Uniform
+  double Uniform(double min, double max);
 
-  int NextInt();
-
-  double NextDouble();
-
-  double NextGaussian(double mean, double standard_deviation);
-
-  std::array<double, 3> NextNoise(double k);
-
-  template <typename Backend>
-  std::array<typename Backend::real_v, 3> NextNoise(
-      const typename Backend::real_v& k) {
-    std::array<typename Backend::real_v, 3> ret;
-    for (size_t i = 0; i < Backend::kVecLen; i++) {
-      // todo not most cache friendly way
-      ret[0][i] = -k[i] + 2 * k[i] * NextDouble();
-      ret[1][i] = -k[i] + 2 * k[i] * NextDouble();
-      ret[2][i] = -k[i] + 2 * k[i] * NextDouble();
+  /// Returns an array of uniform random numbers in the interval (0, max)
+  template <uint64_t N>
+  std::array<double, N> UniformArray(double max = 1.0) {
+    std::array<double, N> ret;
+    for (uint64_t i = 0; i < N; i++) {
+      ret[i] = Uniform(max);
     }
     return ret;
   }
 
+  /// Returns an array of uniform random numbers in the interval (min, max)
+  template <uint64_t N>
+  std::array<double, N> UniformArray(double min, double max) {
+    std::array<double, N> ret;
+    for (uint64_t i = 0; i < N; i++) {
+      ret[i] = Uniform(min, max);
+    }
+    return ret;
+  }
+
+  /// Forwards call to TRandom3::Gaus
+  double Gaus(double mean = 0.0, double sigma = 1.0);
+
+  /// Forwards call to TRandom3::SetSeed
+  void SetSeed(double seed);
+
+  /// Forwards call to TRandom3::GetSeed
+  double GetSeed() const;
+
  private:
-  int64_t seed_ = 0;
-  double next_next_gaussian_ = 0.0;
-  bool have_next_next_gaussian_ = false;
-
-  int Next(int i);
-
-  double NextGaussian();
-
-  bool CompareAndSet(int64_t* current, int64_t expected, int64_t update);
+  TRandom3 generator_;
+  ClassDefNV(Random, 1);
 };
-
-extern thread_local Random gRandom;
-extern thread_local TRandom3 gTRandom;
 
 }  // namespace bdm
 

@@ -18,6 +18,8 @@
 #include <gtest/gtest.h>
 #include "io_util.h"
 #include "param.h"
+#include "simulation.h"
+#include "unit/test_util.h"
 
 namespace bdm {
 
@@ -43,20 +45,19 @@ class IOTest : public ::testing::Test {
 
  protected:
   virtual void SetUp() {
-    Param::Reset();
     remove(kRootFile);
+    simulation_ = new Simulation<>(TEST_NAME);
   }
 
-  virtual void TearDown() {
-    Param::Reset();
-    // remove(kRootFile);
-  }
+  virtual void TearDown() { delete simulation_; }
+
+  Simulation<>* simulation_;
 };
 
 /// Writes backup to file and reads it back into restored
 /// Outside the test fixture so it can be called in a function from the header.
-/// TEST_F can't be added a header due to multiple references linking error
-/// and must be placed in a source file.
+/// TEST_F can't be used inside a header due to multiple references linking
+/// error and must be placed in a source file.
 template <typename T>
 void BackupAndRestore(const T& backup, T** restored) {
   // write to root file

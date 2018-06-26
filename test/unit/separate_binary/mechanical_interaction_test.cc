@@ -19,6 +19,7 @@
 #include "neuroscience/compile_time_param.h"
 #include "neuroscience/neurite_element.h"
 #include "neuroscience/neuron_soma.h"
+#include "simulation_implementation.h"
 #include "unit/test_util.h"
 
 namespace bdm {
@@ -40,10 +41,10 @@ namespace experimental {
 namespace neuroscience {
 
 TEST(MechanicalInteraction, StraightxCylinderGrowth) {
-  Param::Reset();
-  Rm()->Clear();
+  Simulation<> simulation(TEST_NAME);
+  auto* rm = simulation.GetResourceManager();
 
-  auto neuron = Rm()->New<NeuronSoma>();
+  auto neuron = rm->New<NeuronSoma>();
   neuron.SetPosition({0, 0, 0});
   neuron.SetMass(1);
   neuron.SetDiameter(10);
@@ -73,10 +74,10 @@ TEST(MechanicalInteraction, StraightxCylinderGrowth) {
 }
 
 TEST(MechanicalInteraction, StraightyCylinderGrowth) {
-  Param::Reset();
-  Rm()->Clear();
+  Simulation<> simulation(TEST_NAME);
+  auto* rm = simulation.GetResourceManager();
 
-  auto neuron = Rm()->New<NeuronSoma>();
+  auto neuron = rm->New<NeuronSoma>();
   neuron.SetPosition({0, 0, 0});
   neuron.SetMass(1);
   neuron.SetDiameter(10);
@@ -106,10 +107,10 @@ TEST(MechanicalInteraction, StraightyCylinderGrowth) {
 }
 
 TEST(MechanicalInteraction, StraightzCylinderGrowth) {
-  Param::Reset();
-  Rm()->Clear();
+  Simulation<> simulation(TEST_NAME);
+  auto* rm = simulation.GetResourceManager();
 
-  auto neuron = Rm()->New<NeuronSoma>();
+  auto neuron = rm->New<NeuronSoma>();
   neuron.SetPosition({0, 0, 0});
   neuron.SetMass(1);
   neuron.SetDiameter(10);
@@ -139,10 +140,10 @@ TEST(MechanicalInteraction, StraightzCylinderGrowth) {
 }
 
 TEST(MechanicalInteraction, DiagonalxyCylinderGrowth) {
-  Param::Reset();
-  Rm()->Clear();
+  Simulation<> simulation(TEST_NAME);
+  auto* rm = simulation.GetResourceManager();
 
-  auto neuron = Rm()->New<NeuronSoma>();
+  auto neuron = rm->New<NeuronSoma>();
   neuron.SetPosition({0, 0, 0});
   neuron.SetMass(1);
   neuron.SetDiameter(10);
@@ -170,12 +171,10 @@ TEST(MechanicalInteraction, DiagonalxyCylinderGrowth) {
 }
 
 TEST(MechanicalInteraction, DiagonalxyzCylinderGrowth) {
-  Param::Reset();
-  Rm()->Clear();
+  Simulation<> simulation(TEST_NAME);
+  auto* rm = simulation.GetResourceManager();
 
-  // Param::live_visualization_ = true;
-
-  auto neuron = Rm()->New<NeuronSoma>();
+  auto neuron = rm->New<NeuronSoma>();
   neuron.SetPosition({0, 0, 0});
   neuron.SetMass(1);
   neuron.SetDiameter(10);
@@ -207,12 +206,10 @@ TEST(MechanicalInteraction, DiagonalxyzCylinderGrowth) {
 }
 
 TEST(MechanicalInteraction, DiagonalSpecialDirectionCylinderGrowth) {
-  Param::Reset();
-  Rm()->Clear();
+  Simulation<> simulation(TEST_NAME);
+  auto* rm = simulation.GetResourceManager();
 
-  // Param::live_visualization_ = true;
-
-  auto neuron = Rm()->New<NeuronSoma>();
+  auto neuron = rm->New<NeuronSoma>();
   neuron.SetPosition({0, 0, 0});
   neuron.SetMass(1);
   neuron.SetDiameter(10);
@@ -244,15 +241,15 @@ TEST(MechanicalInteraction, DiagonalSpecialDirectionCylinderGrowth) {
 }
 
 TEST(MechanicalInteraction, StraightCylinderGrowthObstacle) {
-  Param::Reset();
-  Rm()->Clear();
+  Simulation<> simulation(TEST_NAME);
+  auto* rm = simulation.GetResourceManager();
 
-  auto neuron = Rm()->New<NeuronSoma>();
+  auto neuron = rm->New<NeuronSoma>();
   neuron.SetPosition({0, 0, 0});
   neuron.SetMass(1);
   neuron.SetDiameter(10);
 
-  auto neuron2 = Rm()->New<NeuronSoma>();
+  auto neuron2 = rm->New<NeuronSoma>();
   neuron2.SetPosition({0, 0, 30});
   neuron2.SetMass(1);
   neuron2.SetDiameter(10);
@@ -283,15 +280,15 @@ TEST(MechanicalInteraction, StraightCylinderGrowthObstacle) {
 
 // TODO(jean) Fix test
 TEST(DISABLED_MechanicalInteraction, NotStraightCylinderGrowthObstacle) {
-  Param::Reset();
-  Rm()->Clear();
+  Simulation<> simulation(TEST_NAME);
+  auto* rm = simulation.GetResourceManager();
 
-  auto neuron = Rm()->New<NeuronSoma>();
+  auto neuron = rm->New<NeuronSoma>();
   neuron.SetPosition({0, 0, 0});
   neuron.SetMass(1);
   neuron.SetDiameter(10);
 
-  auto neuron2 = Rm()->New<NeuronSoma>();
+  auto neuron2 = rm->New<NeuronSoma>();
   neuron2.SetPosition({0, 0, 30});
   neuron2.SetMass(1);
   neuron2.SetDiameter(10);
@@ -319,10 +316,10 @@ TEST(DISABLED_MechanicalInteraction, NotStraightCylinderGrowthObstacle) {
 }
 
 TEST(MechanicalInteraction, DoubleStraightCylinderGrowth) {
-  Param::Reset();
-  Rm()->Clear();
+  Simulation<> simulation(TEST_NAME);
+  auto* rm = simulation.GetResourceManager();
 
-  auto neuron = Rm()->New<NeuronSoma>();
+  auto neuron = rm->New<NeuronSoma>();
   neuron.SetPosition({0, 0, 0});
   neuron.SetMass(1);
   neuron.SetDiameter(10);
@@ -367,13 +364,12 @@ TEST(MechanicalInteraction, DoubleStraightCylinderGrowth) {
 }
 
 TEST(MechanicalInteraction, BifurcationCylinderGrowth) {
-  Param::Reset();
-  Rm()->Clear();
+  Simulation<> simulation(TEST_NAME);
+  auto* rm = simulation.GetResourceManager();
 
   gErrorIgnoreLevel = kWarning;
-  // Param::export_visualization_ = true;
 
-  auto neuron = Rm()->New<NeuronSoma>();
+  auto neuron = rm->New<NeuronSoma>();
   neuron.SetPosition({0, 0, 0});
   neuron.SetMass(1);
   neuron.SetDiameter(10);
@@ -383,7 +379,6 @@ TEST(MechanicalInteraction, BifurcationCylinderGrowth) {
   Scheduler<> scheduler;
 
   std::array<double, 3> ne_axis = ne->GetSpringAxis();
-  std::array<double, 3> ne_axis_2;
 
   EXPECT_NEAR(ne_axis[0], 0, abs_error<double>::value);
   EXPECT_NEAR(ne_axis[1], 0, abs_error<double>::value);
@@ -426,12 +421,10 @@ TEST(MechanicalInteraction, BifurcationCylinderGrowth) {
 }
 
 TEST(MechanicalInteraction, BranchCylinderGrowth) {
-  Param::Reset();
-  Rm()->Clear();
+  Simulation<> simulation(TEST_NAME);
+  auto* rm = simulation.GetResourceManager();
 
-  // Param::export_visualization_ = true;
-
-  auto neuron = Rm()->New<NeuronSoma>();
+  auto neuron = rm->New<NeuronSoma>();
   neuron.SetPosition({0, 0, 0});
   neuron.SetMass(1);
   neuron.SetDiameter(10);
@@ -441,7 +434,6 @@ TEST(MechanicalInteraction, BranchCylinderGrowth) {
   Scheduler<> scheduler;
 
   std::array<double, 3> ne_axis = ne->GetSpringAxis();
-  std::array<double, 3> ne_axis_2;
 
   EXPECT_NEAR(ne_axis[0], 0, abs_error<double>::value);
   EXPECT_NEAR(ne_axis[1], 0, abs_error<double>::value);
@@ -458,7 +450,8 @@ TEST(MechanicalInteraction, BranchCylinderGrowth) {
 
   //    std::cout << "---- branch cylinder ----" << std::endl;
   //    dynamic_cast<Neurite>(ne->Branch(0.5, direction2));
-  auto ne2 = ne->Branch(0.5, direction2);
+  // auto ne2 = ne->Branch(0.5, direction2);
+  ne->Branch(0.5, direction2);
 
   for (int i = 0; i < 100; i++) {
     ne->ElongateTerminalEnd(100, direction);

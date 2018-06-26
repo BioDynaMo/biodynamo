@@ -18,15 +18,32 @@
 #include "gpu/gpu_helper.h"
 #include "grid.h"
 #include "gtest/gtest.h"
+#include "simulation_implementation.h"
 #include "unit/default_ctparam.h"
 #include "unit/test_util.h"
 
 namespace bdm {
 namespace displacement_op_gpu_test_internal {
 
-void RunTest() {
-  auto rm = ResourceManager<>::Get();
-  rm->Clear();
+enum ExecutionMode { kCuda, kOpenCl };
+
+void RunTest(ExecutionMode mode) {
+  Simulation<> simulation("displacement_op_gpu_test_RunTest");
+  auto* rm = simulation.GetResourceManager();
+  auto* grid = simulation.GetGrid();
+  auto* param = simulation.GetParam();
+
+  switch (mode) {
+    case kOpenCl:
+      param->use_opencl_ = true;
+    case kCuda:
+      param->use_gpu_ = true;
+  }
+
+  // Do this explicitly because this normally is only called in
+  // Scheduler::Initialize(), but in this test we call DisplacementOp directly.
+  InitializeGPUEnvironment<>();
+
   auto cells = rm->template Get<Cell>();
 
   // Cell 1
@@ -46,8 +63,7 @@ void RunTest() {
   cell.SetPosition({0, 5, 0});
   cells->push_back(cell);
 
-  auto& grid = Grid<>::GetInstance();
-  grid.Initialize();
+  grid->Initialize();
 
   // execute operation
   DisplacementOp<> op;
@@ -90,25 +106,30 @@ void RunTest() {
 }
 
 #ifdef USE_CUDA
-TEST(DisplacementOpGpuTest, ComputeSoaCuda) {
-  Param::use_gpu_ = true;
-  InitializeGPUEnvironment();
-  RunTest();
-}
+TEST(DisplacementOpGpuTest, ComputeSoaCuda) { RunTest(kCuda); }
 #endif
 
 #ifdef USE_OPENCL
-TEST(DisplacementOpGpuTest, ComputeSoaOpenCL) {
-  Param::use_gpu_ = true;
-  Param::use_opencl_ = true;
-  InitializeGPUEnvironment();
-  RunTest();
-}
+TEST(DisplacementOpGpuTest, ComputeSoaOpenCL) { RunTest(kOpenCl); }
 #endif
 
-void RunTest2() {
-  auto rm = ResourceManager<>::Get();
-  rm->Clear();
+void RunTest2(ExecutionMode mode) {
+  Simulation<> simulation("DisplacementOpGpuTest_RunTest2");
+  auto* rm = simulation.GetResourceManager();
+  auto* grid = simulation.GetGrid();
+  auto* param = simulation.GetParam();
+
+  switch (mode) {
+    case kOpenCl:
+      param->use_opencl_ = true;
+    case kCuda:
+      param->use_gpu_ = true;
+  }
+
+  // Do this explicitly because this normally is only called in
+  // Scheduler::Initialize(), but in this test we call DisplacementOp directly.
+  InitializeGPUEnvironment<>();
+
   auto cells = rm->template Get<Cell>();
 
   double space = 20;
@@ -124,9 +145,8 @@ void RunTest2() {
     }
   }
 
-  auto& grid = Grid<>::GetInstance();
-  grid.ClearGrid();
-  grid.Initialize();
+  grid->ClearGrid();
+  grid->Initialize();
 
   // execute operation
   DisplacementOp<> op;
@@ -164,19 +184,11 @@ void RunTest2() {
 }
 
 #ifdef USE_CUDA
-TEST(DisplacementOpGpuTest, ComputeSoaNewCuda) {
-  Param::use_opencl_ = false;
-  InitializeGPUEnvironment();
-  RunTest2();
-}
+TEST(DisplacementOpGpuTest, ComputeSoaNewCuda) { RunTest2(kCuda); }
 #endif
 
 #ifdef USE_OPENCL
-TEST(DisplacementOpGpuTest, ComputeSoaNewOpenCL) {
-  Param::use_opencl_ = true;
-  InitializeGPUEnvironment();
-  RunTest2();
-}
+TEST(DisplacementOpGpuTest, ComputeSoaNewOpenCL) { RunTest2(kOpenCl); }
 #endif
 
 }  // namespace displacement_op_gpu_test_internal

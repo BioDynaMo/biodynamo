@@ -42,9 +42,9 @@ class InlineVector {
     size_ = other.size_;
     capacity_ = other.capacity_;
     if (other.heap_data_ != nullptr) {
-      heap_size_ = capacity_ - N;
+      heap_size_ = size_ - N;
       heap_data_ = new T[heap_size_];
-      std::copy_n(other.heap_data_, capacity_ - N, heap_data_);
+      std::copy_n(other.heap_data_, size_ - N, heap_data_);
     }
   }
 
@@ -129,12 +129,15 @@ class InlineVector {
       data_ = other.data_;
       size_ = other.size_;
       capacity_ = other.capacity_;
+      heap_size_ = size_ - N;
       if (other.heap_data_ != nullptr) {
         if (heap_data_ != nullptr) {
           delete[] heap_data_;
         }
         heap_data_ = new T[capacity_ - N];
-        std::copy_n(other.heap_data_, capacity_ - N, heap_data_);
+        if (size_ > N) {
+          std::copy_n(other.heap_data_, size_ - N, heap_data_);
+        }
       }
     }
     return *this;
@@ -145,6 +148,7 @@ class InlineVector {
       data_ = std::move(other.data_);
       size_ = other.size_;
       capacity_ = other.capacity_;
+      heap_size_ = other.heap_size_;
       heap_data_ = other.heap_data_;
       other.heap_data_ = nullptr;
     }

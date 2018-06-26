@@ -35,6 +35,7 @@
 
 #include "backend.h"
 #include "diffusion_grid.h"
+#include "simulation.h"
 #include "tuple_util.h"
 #include "variadic_template_parameter_util.h"
 
@@ -133,11 +134,6 @@ struct ConvertToContainerTuple {
           type;  // NOLINT
 };
 
-/// Forward declaration for concrete compile time parameter.
-/// Will be used as default template parameter.
-template <typename TBackend = Soa>
-struct CompileTimeParam;
-
 /// ResourceManager holds a container for each atomic type in the simulation.
 /// It provides methods to get a certain container, execute a function on a
 /// a certain element, all elements of a certain type or all elements inside
@@ -161,8 +157,37 @@ class ResourceManager {
   template <typename T>
   using ToBackend = typename T::template Self<Backend>;
 
-  /// Singleton pattern - return the only instance with this template parameters
-  static ResourceManager<TCompileTimeParam>* Get() { return instance_.get(); }
+  /// Returns the number of simulation object types
+  static constexpr size_t NumberOfTypes() {
+    return std::tuple_size<decltype(data_)>::value;
+  }
+
+  template <typename TSo>
+  static constexpr uint16_t GetTypeIndex() {
+    return detail::ToIndex<TSo, Types>::value;
+  }
+
+  explicit ResourceManager(TRootIOCtor* r) {}
+
+  /// Default constructor. Unfortunately needs to be public although it is
+  /// a singleton to be able to use ROOT I/O
+  ResourceManager() {
+    // Soa container contain one element upon construction
+    Clear();
+  }
+
+  /// Free the memory that was reserved for the diffusion grids
+  virtual ~ResourceManager() {
+    for (auto* grid : diffusion_grids_) {
+      delete grid;
+    }
+  }
+
+  ResourceManager& operator=(ResourceManager&& other) {
+    data_ = std::move(other.data_);
+    diffusion_grids_ = std::move(other.diffusion_grids_);
+    return *this;
+  }
 
   /// Return the container of this Type
   /// @tparam Type atomic type whose container should be returned
@@ -191,6 +216,9 @@ class ResourceManager {
         return dg;
       }
     }
+    assert(false &&
+           "You tried to access a diffusion grid that does not exist! "
+           "Did you specify the correct substance name?");
     return nullptr;
   }
 
@@ -202,20 +230,6 @@ class ResourceManager {
                    [&](auto* container) { num_so += container->size(); });
     }
     return num_so;
-  }
-
-  /// Default constructor. Unfortunately needs to be public although it is
-  /// a singleton to be able to use ROOT I/O
-  ResourceManager() {
-    // Soa container contain one element upon construction
-    Clear();
-  }
-
-  /// Free the memory that was reserved for the diffusion grids
-  virtual ~ResourceManager() {
-    for (auto grid : diffusion_grids_) {
-      delete grid;
-    }
   }
 
   /// Apply a function on a certain element
@@ -341,19 +355,7 @@ class ResourceManager {
     return (*container)[idx];
   }
 
-  /// Returns the number of simulation object types
-  static constexpr size_t NumberOfTypes() {
-    return std::tuple_size<decltype(data_)>::value;
-  }
-
-  template <typename TSo>
-  static constexpr uint16_t GetTypeIndex() {
-    return detail::ToIndex<TSo, Types>::value;
-  }
-
  private:
-  static std::unique_ptr<ResourceManager<TCompileTimeParam>> instance_;
-
   /// creates one container for each type in Types.
   /// Container type is determined based on the specified Backend
   typename ConvertToContainerTuple<Backend, Types>::type data_;
@@ -370,16 +372,6 @@ class ResourceManager {
   friend class SimulationBackup;
   ClassDefNV(ResourceManager, 1);
 };
-
-template <typename T>
-std::unique_ptr<ResourceManager<T>> ResourceManager<T>::instance_ =
-    std::unique_ptr<ResourceManager<T>>(new ResourceManager<T>());
-
-/// Returns the ResourceManager
-template <typename TResourceManager = ResourceManager<>>
-TResourceManager* Rm() {
-  return TResourceManager::Get();
-}
 
 }  // namespace bdm
 

@@ -14,6 +14,7 @@
 
 #include "compile_time_param.h"
 #include "gtest/gtest.h"
+#include "simulation_implementation.h"
 #include "unit/displacement_op_test.h"
 
 namespace bdm {

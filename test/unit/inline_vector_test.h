@@ -29,6 +29,8 @@ namespace inline_vector_test_internal {
 
 // IO related code must be in a header file.
 inline void RunIOTest() {
+  remove(ROOTFILE);
+
   InlineVector<int, 8> neighbor;
   for (int i = 0; i < 15; i++) {
     neighbor.push_back(i);
@@ -40,12 +42,11 @@ inline void RunIOTest() {
     aoi_vector.push_back(neighbor);
   }
 
-  WritePersistentObject(ROOTFILE, "InlineVector", neighbor, "RECREATE");
-  WritePersistentObject(ROOTFILE, "S_InlineVector", aoi_scalar, "UPDATE");
-  WritePersistentObject(ROOTFILE, "V_InlineVector", aoi_vector, "UPDATE");
+  WritePersistentObject(ROOTFILE, "InlineVector", neighbor, "new");
+  WritePersistentObject(ROOTFILE, "S_InlineVector", aoi_scalar, "update");
+  WritePersistentObject(ROOTFILE, "V_InlineVector", aoi_vector, "update");
 
   InlineVector<int, 8>* neighbor_r = nullptr;
-
   OneElementArray<InlineVector<int, 8>>* aoi_scalar_r = nullptr;
   std::vector<InlineVector<int, 8>>* aoi_vector_r = nullptr;
 
@@ -68,6 +69,10 @@ inline void RunIOTest() {
       FAIL();
     }
   }
+
+  delete neighbor_r;
+  delete aoi_scalar_r;
+  delete aoi_vector_r;
 
   remove(ROOTFILE);
 }

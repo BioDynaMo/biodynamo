@@ -30,6 +30,7 @@
 #include "macros.h"
 #include "resource_manager.h"
 #include "root_util.h"
+#include "simulation.h"
 #include "so_pointer.h"
 #include "type_util.h"
 
@@ -257,6 +258,12 @@ struct Capsule;
 #define BDM_SIM_OBJECT_ASSIGNMENT_OP_BODY_ITERATOR(data_member) \
   data_member[kIdx] = rhs.data_member[0];
 
+#define BDM_SIM_OBJECT_ASSIGNMENT_OP_MOVE_BODY(...) \
+  EVAL(LOOP(BDM_SIM_OBJECT_ASSIGNMENT_OP_MOVE_BODY_ITERATOR, __VA_ARGS__))
+
+#define BDM_SIM_OBJECT_ASSIGNMENT_OP_MOVE_BODY_ITERATOR(data_member) \
+  data_member = std::move(rhs.data_member);
+
 #define BDM_SIM_OBJECT_FOREACHDM_BODY(...) \
   EVAL(LOOP(BDM_SIM_OBJECT_FOREACHDM_BODY_ITERATOR, __VA_ARGS__))
 
@@ -334,14 +341,6 @@ struct Capsule;
   /** e.g. `std::vector::value_type`. */                                       \
   using value_type = Self<Soa>;                                                \
                                                                                \
-  /** Returns the ResourceManager */                                           \
-  /** Avoids the "invalid use of incomplete type" error caused if the  */      \
-  /** global `Rm()` function in resource_manager.h would be used */            \
-  template <typename TResourceManager = ResourceManager<>>                     \
-  TResourceManager* Rm() {                                                     \
-    return TResourceManager::Get();                                            \
-  }                                                                            \
-                                                                               \
   template <typename TResourceManager = ResourceManager<>>                     \
   SoHandle GetSoHandle() const {                                               \
     auto type_idx =                                                            \
@@ -350,6 +349,7 @@ struct Capsule;
   }                                                                            \
                                                                                \
   explicit class_name(TRootIOCtor* io_ctor) {}                                 \
+  class_name(const class_name& io_ctor) = default;                             \
                                                                                \
   /** Create new empty object with SOA memory layout. */                       \
   /** Calling Self<Soa> soa; will have already one instance inside -- */       \
@@ -364,13 +364,18 @@ struct Capsule;
     return ret_value;                                                          \
   }                                                                            \
                                                                                \
+  using Simulation_t =                                                         \
+      Simulation<typename TCompileTimeParam::template Self<Soa>>;              \
+                                                                               \
   MostDerivedSoPtr GetSoPtr() {                                                \
-    auto* container = Rm()->template Get<MostDerivedScalar>();                 \
+    auto* rm = Simulation_t::GetActive()->GetResourceManager();                \
+    auto* container = rm->template Get<MostDerivedScalar>();                   \
     return MostDerivedSoPtr(container, Base::GetElementIdx());                 \
   }                                                                            \
                                                                                \
   void RemoveFromSimulation() {                                                \
-    auto container = Rm()->template Get<MostDerivedScalar>();                  \
+    auto* rm = Simulation_t::GetActive()->GetResourceManager();                \
+    auto container = rm->template Get<MostDerivedScalar>();                    \
     container->DelayedRemove(Base::GetElementIdx());                           \
   }                                                                            \
                                                                                \
@@ -438,6 +443,12 @@ struct Capsule;
     return *this;                                                              \
   }                                                                            \
                                                                                \
+  Self<Backend>& operator=(Self<Backend>&& rhs) {                              \
+    BDM_SIM_OBJECT_ASSIGNMENT_OP_MOVE_BODY(__VA_ARGS__)                        \
+    Base::operator=(std::move(rhs));                                           \
+    return *this;                                                              \
+  }                                                                            \
+                                                                               \
   /** Safe method to add an element to this vector. */                         \
   /** Does not invalidate, iterators, pointers or references. */               \
   /** Changes do not take effect until they are commited.*/                    \
@@ -485,22 +496,6 @@ struct Capsule;
   }                                                                            \
                                                                                \
   BDM_ROOT_CLASS_DEF_OVERRIDE(class_name, class_version_id)
-
-/// Get the diffusion grid which holds the substance of specified name
-template <typename TResourceManager = ResourceManager<>>
-static DiffusionGrid* GetDiffusionGrid(int substance_id) {
-  auto dg = TResourceManager::Get()->GetDiffusionGrid(substance_id);
-  assert(dg != nullptr &&
-         "Tried to get non-existing diffusion grid. Did you specify the "
-         "correct substance name?");
-  return dg;
-}
-
-/// Get the total number of simulation objects
-template <typename TResourceManager = ResourceManager<>>
-static size_t GetNumSimObjects() {
-  return TResourceManager::Get()->GetNumSimObjects();
-}
 
 }  // namespace bdm
 

@@ -38,13 +38,13 @@ struct CompileTimeParam : public DefaultCompileTimeParam<TBackend> {
 };
 
 inline int Simulate(int argc, const char** argv) {
-  InitializeBiodynamo(argc, argv);
+  Simulation<> simulation(argc, argv);
+  auto* rm = simulation.GetResourceManager();
+  auto* param = simulation.GetParam();
 
-  Param::Reset();
+  param->backup_interval_ = 1;
 
-  Param::backup_interval_ = 1;
-
-  auto cells = ResourceManager<>::Get()->Get<Cell>();
+  auto cells = rm->Get<Cell>();
   for (size_t i = 0; i < 10; i++) {
     Cell cell({100.0 * i, 100.0 * i, 100.0 * i});  // no colliding cells
     cell.SetDiameter(i);
@@ -52,20 +52,20 @@ inline int Simulate(int argc, const char** argv) {
     cells->push_back(cell);
   }
 
-  Scheduler<> scheduler;
+  auto* scheduler = simulation.GetScheduler();
 
   // will perform backup after iteration 3
-  scheduler.Simulate(3);  // 1050 ms
+  scheduler->Simulate(3);  // 1050 ms
 
   // application crash will happen inside this call
-  scheduler.Simulate(11);  // 3850 ms
+  scheduler->Simulate(11);  // 3850 ms
 
   // another call to Simulate after recovery
-  scheduler.Simulate(2);
+  scheduler->Simulate(2);
 
   // check result
   // NB: original cells pointer has been invalidated due to restore
-  cells = ResourceManager<>::Get()->Get<Cell>();
+  cells = rm->Get<Cell>();
   for (size_t i = 0; i < 10; i++) {
     if ((*cells)[i].GetDiameter() != 16 + i) {
       std::cerr << "Test failure: result incorrect" << std::endl;

@@ -15,6 +15,8 @@
 #include "visualization/catalyst_adaptor.h"
 #include <gtest/gtest.h>
 #include "io_util.h"
+#include "simulation_implementation.h"
+#include "unit/default_ctparam.h"
 #include "unit/test_util.h"
 
 // TODO(lukas) move file to unit/visualization
@@ -24,12 +26,22 @@ namespace bdm {
 /// Test fixture for catalyst adaptor test to eliminate side effects
 class CatalystAdaptorTest : public ::testing::Test {
  protected:
-  static constexpr char const* kSimulationInfoJson = "simulation_info.json";
   static constexpr char const* kSimulationName = "MySimulation";
-  static constexpr char const* kParaviewState = "MySimulation.pvsm";
+  static constexpr char const* kSimulationInfoJson =
+      "output/MySimulation/simulation_info.json";
+  static constexpr char const* kParaviewState =
+      "output/MySimulation/MySimulation.pvsm";
+  Simulation<>* simulation_;
+
+  virtual void SetUp() {
+    Simulation<>::counter_ = 0;
+    simulation_ = new Simulation<>(kSimulationName);
+    remove(kSimulationInfoJson);
+    remove(kParaviewState);
+  }
 
   virtual void TearDown() {
-    Param::Reset();
+    delete simulation_;
     remove(kSimulationInfoJson);
     remove(kParaviewState);
   }
@@ -37,26 +49,21 @@ class CatalystAdaptorTest : public ::testing::Test {
 
 /// Tests if simulation_info.json is generated correctly during initialization.
 TEST_F(CatalystAdaptorTest, GenerateSimulationInfoJson) {
-  // remove files to avoid false positive test results
-  remove(kSimulationInfoJson);
-  remove(kParaviewState);
+  auto* param = simulation_->GetParam();
 
   // set-up Param values
-  Param::export_visualization_ = true;
-  Param::visualize_sim_objects_.clear();
-  Param::visualize_sim_objects_["cell"] = {};
-  Param::visualize_sim_objects_["neurite"] = {};
-  Param::visualize_diffusion_.clear();
-  Param::visualize_diffusion_.push_back({"sodium", true, true});
-  Param::executable_name_ = kSimulationName;
+  param->export_visualization_ = true;
+  param->visualize_sim_objects_.clear();
+  param->visualize_sim_objects_["cell"] = {};
+  param->visualize_sim_objects_["neurite"] = {};
+  param->visualize_diffusion_.clear();
+  param->visualize_diffusion_.push_back({"sodium", true, true});
 
   std::unordered_map<std::string, Shape> shapes;
   shapes["cell"] = kSphere;
   shapes["neurite"] = kCylinder;
 
   CatalystAdaptor<>::GenerateSimulationInfoJson(shapes);
-
-  Param::Reset();
 
   ASSERT_TRUE(FileExists(kSimulationInfoJson));
 
@@ -68,7 +75,7 @@ TEST_F(CatalystAdaptorTest, GenerateSimulationInfoJson) {
   const char* expected = R"STR({
   "simulation": {
     "name":"MySimulation",
-    "result_dir":"."
+    "result_dir":"output/MySimulation"
   },
   "sim_objects": [
     {
@@ -103,11 +110,10 @@ TEST_F(CatalystAdaptorTest, GenerateParaviewState) {
   // we need to remove entries for sim_objects and extracellular_substances
   // because there are no corresponding data files available.
   // Therefore the script would fail.
-  remove(kSimulationInfoJson);
   const char* empty_json = R"STR({
   "simulation": {
     "name":"MySimulation",
-    "result_dir":"."
+    "result_dir":"output/MySimulation"
   },
   "sim_objects": [],
   "extracellular_substances": []

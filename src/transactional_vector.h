@@ -73,6 +73,14 @@ class TransactionalVector {
   }
 
   TransactionalVector() {}
+  TransactionalVector(const TransactionalVector&) = default;
+
+  TransactionalVector& operator=(TransactionalVector&& other) {
+    data_ = std::move(other.data_);
+    size_ = other.size_;
+    to_be_removed_ = std::move(other.to_be_removed_);
+    return *this;
+  }
 
   /// Returns the vector's size. Uncommited changes are not taken into account
   size_t size() const {  // NOLINT

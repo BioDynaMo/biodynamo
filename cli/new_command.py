@@ -41,13 +41,14 @@ def CleanupOnError(sim_name):
         Print.error("Error: Failed to remove folder {0}".format(sim_name))
     sys.exit(1)
 
-def DownloadTemplateRepository(sim_name):
-    Print.new_step("Download template repository")
+def CopyTemplate(sim_name):
+    Print.new_step("Copy simulation template")
     try:
-        sp.check_output(["git", "clone", "https://github.com/BioDynaMo/simulation-templates.git", sim_name])
-        sp.check_output(["rm", "-rf", sim_name+"/.git"])
+        src_path = "{0}/biodynamo/simulation-template".format(os.environ['BDM_INSTALL_DIR'])
+        sp.check_output(["cp", "-R", src_path, "."])
+        sp.check_output(["mv", "simulation-template", sim_name])
     except sp.CalledProcessError as err:
-        Print.error("Error while downloading the template project from BioDynaMo")
+        Print.error("Error while copying the template project.")
         # Do not use CleanupOnError here
         # One failure could be an already existing directory
         # we must not remove it
@@ -138,12 +139,13 @@ def CreateNewGithubRepository(sim_name):
         CleanupOnError(sim_name)
 
 def NewCommand(sim_name, no_github):
-    print("Info: This command requires a Github.com account.")
-    print("      Please have your account details ready, or ")
-    print("      go over to https://github.com/join to sign up.")
+    if not no_github:
+        print("Info: This command requires a Github.com account.")
+        print("      Please have your account details ready, or ")
+        print("      go over to https://github.com/join to sign up.")
 
     ValidateSimName(sim_name)
-    DownloadTemplateRepository(sim_name)
+    CopyTemplate(sim_name)
     CustomizeFiles(sim_name)
     InitializeNewGitRepo(sim_name)
     if(not no_github):

@@ -15,6 +15,7 @@
 // I/O related code must be in header file
 #include "unit/resource_manager_test.h"
 #include "cell.h"
+#include "simulation_implementation.h"
 #include "unit/io_test.h"
 
 namespace bdm {
@@ -29,25 +30,24 @@ template <typename Backend, typename TA, typename TB>
 inline void RunGetTest() {
   const double kEpsilon = abs_error<double>::value;
   using CTParam = CompileTimeParam<Backend, TA, TB>;
-  auto rm = ResourceManager<CTParam>::Get();
-  rm->Clear();
+  ResourceManager<CTParam> rm;
 
   // template specifier needed because A is dependant type
-  auto a_vector = rm->template Get<TA>();
+  auto a_vector = rm.template Get<TA>();
   EXPECT_EQ(0u, a_vector->size());
   a_vector->push_back(A(12));
   a_vector->push_back(A(34));
-  EXPECT_EQ(12, (*rm->template Get<TA>())[0].GetData());
-  EXPECT_EQ(34, (*rm->template Get<TA>())[1].GetData());
-  EXPECT_EQ(2u, rm->template Get<TA>()->size());
+  EXPECT_EQ(12, (*rm.template Get<TA>())[0].GetData());
+  EXPECT_EQ(34, (*rm.template Get<TA>())[1].GetData());
+  EXPECT_EQ(2u, rm.template Get<TA>()->size());
 
-  auto b_vector = rm->template Get<TB>();
+  auto b_vector = rm.template Get<TB>();
   EXPECT_EQ(0u, b_vector->size());
   b_vector->push_back(B(3.14));
   b_vector->push_back(B(6.28));
-  EXPECT_NEAR(3.14, (*rm->template Get<TB>())[0].GetData(), kEpsilon);
-  EXPECT_NEAR(6.28, (*rm->template Get<TB>())[1].GetData(), kEpsilon);
-  EXPECT_EQ(2u, rm->template Get<TB>()->size());
+  EXPECT_NEAR(3.14, (*rm.template Get<TB>())[0].GetData(), kEpsilon);
+  EXPECT_NEAR(6.28, (*rm.template Get<TB>())[1].GetData(), kEpsilon);
+  EXPECT_EQ(2u, rm.template Get<TB>()->size());
 }
 
 TEST(ResourceManagerTest, GetAos) {
@@ -64,19 +64,19 @@ template <typename Backend, typename TA, typename TB>
 inline void RunApplyOnElementTest() {
   const double kEpsilon = abs_error<double>::value;
   using CTParam = CompileTimeParam<Backend, TA, TB>;
-  auto rm = ResourceManager<CTParam>::Get();
-  rm->Clear();
+  ResourceManager<CTParam> rm;
+  rm.Clear();
 
-  auto a_collection = rm->template Get<TA>();
+  auto a_collection = rm.template Get<TA>();
   a_collection->push_back(A(12));
   a_collection->push_back(A(34));
-  rm->ApplyOnElement(SoHandle(0, 1),
-                     [](auto&& element) { EXPECT_EQ(34, element.GetData()); });
+  rm.ApplyOnElement(SoHandle(0, 1),
+                    [](auto&& element) { EXPECT_EQ(34, element.GetData()); });
 
-  auto b_collection = rm->template Get<TB>();
+  auto b_collection = rm.template Get<TB>();
   b_collection->push_back(B(3.14));
   b_collection->push_back(B(6.28));
-  rm->ApplyOnElement(SoHandle(1, 0), [&](auto&& element) {
+  rm.ApplyOnElement(SoHandle(1, 0), [&](auto&& element) {
     EXPECT_NEAR(3.14, element.GetData(), kEpsilon);
   });
 }
@@ -95,18 +95,17 @@ template <typename Backend, typename TA, typename TB>
 void RunApplyOnAllElementsTest() {
   const double kEpsilon = abs_error<double>::value;
   using CTParam = CompileTimeParam<Backend, TA, TB>;
-  auto rm = ResourceManager<CTParam>::Get();
-  rm->Clear();
+  ResourceManager<CTParam> rm;
 
-  auto a_collection = rm->template Get<TA>();
+  auto a_collection = rm.template Get<TA>();
   a_collection->push_back(A(12));
   a_collection->push_back(A(34));
 
-  auto b_collection = rm->template Get<TB>();
+  auto b_collection = rm.template Get<TB>();
   b_collection->push_back(B(3.14));
   b_collection->push_back(B(6.28));
   size_t counter = 0;
-  rm->ApplyOnAllElements([&](auto&& element, SoHandle&& handle) {  // NOLINT
+  rm.ApplyOnAllElements([&](auto&& element, SoHandle&& handle) {  // NOLINT
     counter++;
     switch (counter) {
       case 1:
@@ -140,19 +139,18 @@ TEST(ResourceManagerTest, ApplyOnAllElementsSoa) {
 template <typename Backend, typename TA, typename TB>
 void RunGetNumSimObjects() {
   using CTParam = CompileTimeParam<Backend, TA, TB>;
-  auto rm = ResourceManager<CTParam>::Get();
-  rm->Clear();
+  ResourceManager<CTParam> rm;
 
-  auto a_collection = rm->template Get<TA>();
+  auto a_collection = rm.template Get<TA>();
   a_collection->push_back(A(12));
   a_collection->push_back(A(34));
   a_collection->push_back(A(59));
 
-  auto b_collection = rm->template Get<TB>();
+  auto b_collection = rm.template Get<TB>();
   b_collection->push_back(B(3.14));
   b_collection->push_back(B(6.28));
 
-  EXPECT_EQ(5u, rm->GetNumSimObjects());
+  EXPECT_EQ(5u, rm.GetNumSimObjects());
 }
 
 TEST(ResourceManagerTest, GetNumSimObjectsAos) {
@@ -170,15 +168,14 @@ TEST(ResourceManagerTest, GetNumSimObjectsSoa) {
 template <typename Backend>
 void RunApplyOnAllElementsParallelTest() {
   using CTParam = CompileTimeParam<Backend, Cell>;
-  auto rm = ResourceManager<CTParam>::Get();
-  rm->Clear();
+  ResourceManager<CTParam> rm;
 
-  auto cells = rm->template Get<Cell>();
+  auto cells = rm.template Get<Cell>();
   cells->push_back(Cell(3.14));
   cells->push_back(Cell(6.28));
   cells->push_back(Cell(9.42));
 
-  rm->ApplyOnAllElementsParallel([](auto&& element, SoHandle handle) {
+  rm.ApplyOnAllElementsParallel([](auto&& element, SoHandle handle) {
     const double kEpsilon = abs_error<double>::value;
     if (handle == SoHandle(0, 0)) {
       EXPECT_EQ(3.14, element.GetDiameter());
@@ -204,17 +201,16 @@ template <typename Backend, typename TA, typename TB>
 void RunApplyOnAllTypesTest() {
   const double kEpsilon = abs_error<double>::value;
   using CTParam = CompileTimeParam<Backend, TA, TB>;
-  auto rm = ResourceManager<CTParam>::Get();
-  rm->Clear();
+  ResourceManager<CTParam> rm;
 
-  auto a_collection = rm->template Get<TA>();
+  auto a_collection = rm.template Get<TA>();
   a_collection->push_back(A(12));
 
-  auto b_collection = rm->template Get<TB>();
+  auto b_collection = rm.template Get<TB>();
   b_collection->push_back(B(3.14));
   b_collection->push_back(B(6.28));
   size_t counter = 0;
-  rm->ApplyOnAllTypes([&](auto* container, uint16_t type_idx) {
+  rm.ApplyOnAllTypes([&](auto* container, uint16_t type_idx) {
     counter++;
     switch (counter) {
       case 1:
@@ -246,10 +242,6 @@ TEST(ResourceManagerTest, IOAos) { RunIOAosTest(); }
 
 TEST(ResourceManagerTest, IOSoa) { RunIOSoaTest(); }
 
-TEST(ResourceManagerTest, RmFunction) {
-  EXPECT_EQ(ResourceManager<>::Get(), Rm());
-}
-
 template <typename TBackend, typename TA, typename TB>
 void RunGetTypeIndexTest() {
   using CTParam = CompileTimeParam<TBackend, TA, TB>;
@@ -272,19 +264,18 @@ template <typename TBackend, typename TA, typename TB>
 void RunPushBackTest() {
   const double kEpsilon = abs_error<double>::value;
   using CTParam = CompileTimeParam<TBackend, TA, TB>;
-  auto rm = ResourceManager<CTParam>::Get();
-  rm->Clear();
+  ResourceManager<CTParam> rm;
 
-  rm->push_back(A(12));
-  rm->push_back(A(34));
+  rm.push_back(A(12));
+  rm.push_back(A(34));
 
-  rm->push_back(B(3.14));
-  rm->push_back(B(6.28));
+  rm.push_back(B(3.14));
+  rm.push_back(B(6.28));
 
-  rm->push_back(A(87));
+  rm.push_back(A(87));
 
-  auto as = rm->template Get<TA>();
-  auto bs = rm->template Get<TB>();
+  auto as = rm.template Get<TA>();
+  auto bs = rm.template Get<TB>();
 
   EXPECT_EQ((*as)[0].GetData(), 12);
   EXPECT_EQ((*as)[1].GetData(), 34);
@@ -308,16 +299,22 @@ template <typename TBackend, typename TA, typename TB>
 void RunNewTest() {
   const double kEpsilon = abs_error<double>::value;
   using CTParam = CompileTimeParam<TBackend, TA, TB>;
-  auto rm = ResourceManager<CTParam>::Get();
-  rm->Clear();
+  ResourceManager<CTParam> rm;
 
-  auto&& a0 = rm->template New<A>(12);
-  auto&& a1 = rm->template New<A>(34);
+  auto* as = rm.template Get<TA>();
+  auto* bs = rm.template Get<TB>();
+  // TODO(lukas) Remove reserves after https://trello.com/c/sKoOTgJM has been
+  // resolved
+  as->reserve(5);
+  bs->reserve(5);
 
-  auto&& b0 = rm->template New<B>(3.14);
-  auto&& b1 = rm->template New<B>(6.28);
+  auto&& a0 = rm.template New<A>(12);
+  auto&& a1 = rm.template New<A>(34);
 
-  auto&& a2 = rm->template New<A>(87);
+  auto&& b0 = rm.template New<B>(3.14);
+  auto&& b1 = rm.template New<B>(6.28);
+
+  auto&& a2 = rm.template New<A>(87);
 
   EXPECT_EQ(a0.GetData(), 12);
   EXPECT_EQ(a1.GetData(), 34);
@@ -325,9 +322,6 @@ void RunNewTest() {
 
   EXPECT_NEAR(b0.GetData(), 3.14, kEpsilon);
   EXPECT_NEAR(b1.GetData(), 6.28, kEpsilon);
-
-  auto&& as = rm->template Get<TA>();
-  auto&& bs = rm->template Get<TB>();
 
   EXPECT_EQ((*as)[0].GetData(), 12);
   EXPECT_EQ((*as)[1].GetData(), 34);

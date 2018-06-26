@@ -24,11 +24,11 @@
 namespace bdm {
 namespace dividing_cell_op_test_internal {
 
-template <typename TCell, typename TRm = ResourceManager<>>
+template <typename TCell, typename TSimulation = Simulation<>>
 void RunTest() {
-  Param::Reset();
-  auto rm = TRm::Get();
-  rm->Clear();
+  TSimulation simulation("dividing_cell_op_test_RunTest");
+  auto* rm = simulation.GetResourceManager();
+
   auto* cells = rm->template Get<TCell>();
   // TODO(lukas) remove after https://trello.com/c/sKoOTgJM has been resolved
   omp_set_num_threads(1);  // and Rm::New<...> uses delayed push back

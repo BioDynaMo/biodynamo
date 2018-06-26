@@ -18,15 +18,17 @@
 #include "cell.h"
 #include "displacement_op.h"
 #include "grid.h"
+#include "simulation_implementation.h"
 #include "unit/test_util.h"
 
 namespace bdm {
 namespace displacement_op_test_internal {
 
-template <typename TRm = ResourceManager<>>
+template <typename TSimulation = Simulation<>>
 void RunTest() {
-  auto rm = TRm::Get();
-  rm->Clear();
+  TSimulation simulation("displacement_op_test_RunTest");
+  auto* rm = simulation.GetResourceManager();
+
   auto* cells = rm->template Get<Cell>();
 
   // Cell 1
@@ -46,8 +48,7 @@ void RunTest() {
 
   rm->template Get<Cell>()->Commit();
 
-  auto& grid = Grid<>::GetInstance();
-  grid.Initialize();
+  simulation.GetGrid()->Initialize();
 
   // execute operation
   DisplacementOp<> op;

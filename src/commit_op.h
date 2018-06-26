@@ -15,12 +15,11 @@
 #ifndef COMMIT_OP_H_
 #define COMMIT_OP_H_
 
+#include <unordered_map>
 #include <vector>
-#include "resource_manager.h"
 
 namespace bdm {
 
-template <typename TResourceManager = ResourceManager<>>
 class CommitOp {
  public:
   CommitOp() {}

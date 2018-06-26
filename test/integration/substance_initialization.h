@@ -39,13 +39,14 @@ struct CompileTimeParam : public DefaultCompileTimeParam<Backend> {};
 inline bool is_close(double c, double v) { return (std::fabs(c - v) < 1e-9); }
 
 inline int Simulate(int argc, const char** argv) {
-  InitializeBiodynamo(argc, argv);
+  Simulation<> simulation(argc, argv);
+  auto* param = simulation.GetParam();
 
   // 3. Define initial model
   // Create an artificial bounds for the simulation space
-  Param::bound_space_ = true;
-  Param::min_bound_ = -100;
-  Param::max_bound_ = 100;
+  param->bound_space_ = true;
+  param->min_bound_ = -100;
+  param->max_bound_ = 100;
 
   // Create one cell at a random position
   auto construct = [](const std::array<double, 3>& position) {
@@ -53,7 +54,7 @@ inline int Simulate(int argc, const char** argv) {
     cell.SetDiameter(10);
     return cell;
   };
-  ModelInitializer::CreateCellsRandom(Param::min_bound_, Param::max_bound_, 1,
+  ModelInitializer::CreateCellsRandom(param->min_bound_, param->max_bound_, 1,
                                       construct);
 
   // 3. Define the substances in our simulation
@@ -83,8 +84,7 @@ inline int Simulate(int argc, const char** argv) {
   // };
 
   // 4. Run simulation for N timesteps
-  Scheduler<> scheduler;
-  scheduler.Simulate(20);
+  simulation.GetScheduler()->Simulate(20);
 
   return 0;
 }

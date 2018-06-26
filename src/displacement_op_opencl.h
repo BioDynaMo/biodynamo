@@ -38,8 +38,7 @@ namespace bdm {
 using std::array;
 
 /// Defines the 3D physical interactions between physical objects
-template <typename TGrid = Grid<>,
-          typename TResourceManager = ResourceManager<>>
+template <typename TSimulation = Simulation<>>
 class DisplacementOpOpenCL {
  public:
   DisplacementOpOpenCL() {}
@@ -49,8 +48,11 @@ class DisplacementOpOpenCL {
   typename std::enable_if<is_soa_sphere<TContainer>::value>::type operator()(
       TContainer* cells, uint16_t type_idx) const {
 #ifdef USE_OPENCL
-    auto& grid = TGrid::GetInstance();
-    auto rm = TResourceManager::Get();
+    auto* sim = TSimulation::GetActive();
+    auto* grid = sim->GetGrid();
+    auto* rm = sim->GetResourceManager();
+    auto* param = sim->GetParam();
+
     auto context = rm->GetOpenCLContext();
     auto queue = rm->GetOpenCLCommandQueue();
     auto programs = rm->GetOpenCLProgramList();
@@ -64,14 +66,14 @@ class DisplacementOpOpenCL {
     std::array<cl_uint, 3> num_boxes_axis;
     std::array<cl_int, 3> grid_dimensions;
     cl_double squared_radius =
-        grid.GetLargestObjectSize() * grid.GetLargestObjectSize();
+        grid->GetLargestObjectSize() * grid->GetLargestObjectSize();
 
     // We need to create a mass vector, because it is not stored by default in
     // a cell container
     cells->FillMassVector(&mass);
-    grid.GetSuccessors(&successors);
-    grid.GetBoxInfo(&gpu_starts, &gpu_lengths);
-    grid.GetGridInfo(&box_length, &num_boxes_axis, &grid_dimensions);
+    grid->GetSuccessors(&successors);
+    grid->GetBoxInfo(&gpu_starts, &gpu_lengths);
+    grid->GetGridInfo(&box_length, &num_boxes_axis, &grid_dimensions);
 
     // Allocate GPU buffers
     cl::Buffer positions_arg(*context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR,
@@ -120,8 +122,8 @@ class DisplacementOpOpenCL {
     collide.setArg(3, adherence_arg);
     collide.setArg(4, box_id_arg);
     collide.setArg(5, mass_arg);
-    collide.setArg(6, Param::simulation_time_step_);
-    collide.setArg(7, Param::simulation_max_displacement_);
+    collide.setArg(6, param->simulation_time_step_);
+    collide.setArg(7, param->simulation_max_displacement_);
     collide.setArg(8, squared_radius);
 
     collide.setArg(9, static_cast<cl_int>(cells->size()));
@@ -170,8 +172,8 @@ class DisplacementOpOpenCL {
     for (size_t i = 0; i < cells->size(); i++) {
       auto&& cell = (*cells)[i];
       cell.UpdatePosition(cell_movements[i]);
-      if (Param::bound_space_) {
-        ApplyBoundingBox(&cell, Param::min_bound_, Param::max_bound_);
+      if (param->bound_space_) {
+        ApplyBoundingBox(&cell, param->min_bound_, param->max_bound_);
       }
       cell.SetPosition(cell.GetPosition());
 

@@ -18,6 +18,7 @@
 #include "cell.h"
 #include "gtest/gtest.h"
 #include "io_util.h"
+#include "simulation_implementation.h"
 #include "unit/default_ctparam.h"
 #include "unit/test_util.h"
 
@@ -65,8 +66,8 @@ TEST(SimulationBackupDeathTest, BackupNoBackupFileSpecified) {
 
 TEST(SimulationBackupTest, Backup) {
   remove(ROOTFILE);
-  auto rm = ResourceManager<>::Get();
-  rm->Clear();
+  Simulation<> simulation(TEST_NAME);
+  auto* rm = simulation.GetResourceManager();
 
   auto cells = rm->template Get<Cell>();
   cells->push_back(Cell());
@@ -91,14 +92,12 @@ TEST(SimulationBackupTest, Backup) {
   file.Get()->GetObject(SimulationBackup::kSimulationStepName.c_str(), wrapper);
   EXPECT_EQ(26u, wrapper->Get());
 
-  // ResourceManager
-  ResourceManager<>* restored_rm = nullptr;
-  file.Get()->GetObject(SimulationBackup::kResouceManagerName.c_str(),
-                        restored_rm);
-  EXPECT_EQ(1u, restored_rm->Get<Cell>()->size());
-  // Writing and reading ResourceManager is tested in resource_manager_test.cc
-
-  delete restored_rm;
+  // Simulation
+  Simulation<>* restored_simulation = nullptr;
+  file.Get()->GetObject(SimulationBackup::kSimulationName.c_str(),
+                        restored_simulation);
+  EXPECT_EQ(1u, restored_simulation->GetResourceManager()->Get<Cell>()->size());
+  // Writing and reading Simulation is tested in simulation_test.cc
 
   remove(ROOTFILE);
 }
@@ -119,8 +118,8 @@ TEST(SimulationBackupDeathTest, RestoreFileDoesNotExist) {
 
 TEST(SimulationBackupTest, BackupAndRestore) {
   remove(ROOTFILE);
-  auto rm = ResourceManager<>::Get();
-  rm->Clear();
+  Simulation<> simulation(TEST_NAME);
+  auto* rm = simulation.GetResourceManager();
 
   auto cells = rm->Get<Cell>();
   cells->push_back(Cell());
@@ -129,17 +128,19 @@ TEST(SimulationBackupTest, BackupAndRestore) {
   SimulationBackup backup(ROOTFILE, "");
   backup.Backup(iterations);
 
-  rm->Clear();
-
   // restore
   SimulationBackup restore("", ROOTFILE);
   //   iterations
-  auto restored_iterationa = restore.GetSimulationStepsFromBackup();
-  EXPECT_EQ(26u, restored_iterationa);
-
-  //   ResourceManager
+  auto restored_iterations = restore.GetSimulationStepsFromBackup();
+  EXPECT_EQ(26u, restored_iterations);
   restore.Restore();
-  EXPECT_EQ(1u, ResourceManager<>::Get()->Get<Cell>()->size());
+
+  //   ResourceManager should not have changed
+  EXPECT_EQ(rm, simulation.GetResourceManager());
+
+  //   get new ResourceManager
+  rm = simulation.GetResourceManager();
+  EXPECT_EQ(1u, rm->Get<Cell>()->size());
 
   remove(ROOTFILE);
 }

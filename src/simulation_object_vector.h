@@ -16,17 +16,20 @@
 #define SIMULATION_OBJECT_VECTOR_H_
 
 #include <vector>
-#include "resource_manager.h"
+#include "resource_manager.h"  // SoHandle
+#include "simulation.h"
 
 namespace bdm {
 
 /// Two dimensional vector. Creates one vector for each simulation type
 /// Use this vector if you need one object of type T for each simulation object
-template <typename T, typename TResourceManager = ResourceManager<>>
+template <typename T, typename TSimulation = Simulation<>>
 class SimulationObjectVector {
  public:
   SimulationObjectVector() {
-    data_.resize(TResourceManager::NumberOfTypes());
+    auto* sim = TSimulation::GetActive();
+    auto* rm = sim->GetResourceManager();
+    data_.resize(rm->NumberOfTypes());
     Initialize();
   }
 
@@ -38,7 +41,8 @@ class SimulationObjectVector {
   /// elements.
   void Initialize() {
     clear();
-    auto rm = TResourceManager::Get();
+    auto* sim = TSimulation::GetActive();
+    auto* rm = sim->GetResourceManager();
     rm->ApplyOnAllTypes([&](auto* sim_objects, uint16_t type_idx) {
       data_[type_idx].resize(sim_objects->size());
     });

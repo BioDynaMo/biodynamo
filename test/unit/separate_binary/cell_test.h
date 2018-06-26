@@ -80,17 +80,17 @@ BDM_SIM_OBJECT(TestCell, bdm::Cell) {
     return Base::biology_modules_[kIdx];
   }
 
-  bool check_input_parameters_ = false;
-  double expected_volume_ratio_;
-  double expected_phi_;
-  double expected_theta_;
+  bool capture_input_parameters_ = false;
+  double captured_volume_ratio_ = 0.0;
+  double captured_phi_ = 0.0;
+  double captured_theta_ = 0.0;
 
   void DivideImpl(MostDerivedSoPtr daughter, double volume_ratio, double phi,
                   double theta) {
-    if (check_input_parameters_) {
-      EXPECT_NEAR(expected_volume_ratio_, volume_ratio, 1e-8);
-      EXPECT_NEAR(expected_phi_, phi, 1e-8);
-      EXPECT_NEAR(expected_theta_, theta, 1e-8);
+    if (capture_input_parameters_) {
+      captured_volume_ratio_ = volume_ratio;
+      captured_phi_ = phi;
+      captured_theta_ = theta;
     } else {
       // forward call to implementation in CellExt
       Base::DivideImpl(daughter, volume_ratio, phi, theta);
@@ -173,6 +173,7 @@ inline void RunIOTest() {
 
   EXPECT_EQ(123u, restored_cell->GetBoxIdx());
 
+  delete restored_cell;
   // delete root file
   remove(ROOTFILE);
 }

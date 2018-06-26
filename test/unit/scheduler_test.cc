@@ -18,27 +18,31 @@ namespace bdm {
 namespace scheduler_test_internal {
 
 TEST(SchedulerTest, NoRestoreFile) {
-  Param::show_simulation_step_ = false;
-  ResourceManager<>::Get()->Clear();
+  Simulation<> simulation(TEST_NAME);
+  auto* rm = simulation.GetResourceManager();
+  auto* param = simulation.GetParam();
+
+  param->restore_file_ = "";
+
   remove(ROOTFILE);
 
   Cell cell;
   cell.SetDiameter(10);  // important for grid to determine box size
-  ResourceManager<>::Get()->Get<Cell>()->push_back(cell);
+  rm->Get<Cell>()->push_back(cell);
 
   // start restore validation
-  auto scheduler = TestSchedulerRestore::Create("");
+  TestSchedulerRestore scheduler;
   scheduler.Simulate(100);
   EXPECT_EQ(100u, scheduler.execute_calls);
-  EXPECT_EQ(1u, ResourceManager<>::Get()->Get<Cell>()->size());
+  EXPECT_EQ(1u, rm->Get<Cell>()->size());
 
   scheduler.Simulate(100);
   EXPECT_EQ(200u, scheduler.execute_calls);
-  EXPECT_EQ(1u, ResourceManager<>::Get()->Get<Cell>()->size());
+  EXPECT_EQ(1u, rm->Get<Cell>()->size());
 
   scheduler.Simulate(100);
   EXPECT_EQ(300u, scheduler.execute_calls);
-  EXPECT_EQ(1u, ResourceManager<>::Get()->Get<Cell>()->size());
+  EXPECT_EQ(1u, rm->Get<Cell>()->size());
 }
 
 TEST(SchedulerTest, Restore) { RunRestoreTest(); }

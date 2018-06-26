@@ -83,6 +83,14 @@ class SoaSimulationObject {
 
   virtual ~SoaSimulationObject() {}
 
+  SoaSimulationObject &operator=(SoaSimulationObject &&other) {
+    // mutex_ = std::move(other.mutex_);
+    to_be_removed_ = std::move(other.to_be_removed_);
+    total_size_ = other.total_size_;
+    size_ = other.size_;
+    return *this;
+  }
+
   uint32_t GetElementIdx() const { return kIdx; }
 
   /// Returns the vector's size. Uncommited changes are not taken into account
@@ -238,6 +246,11 @@ class ScalarSimulationObject {
   ScalarSimulationObject(const ScalarSimulationObject &other)
       : element_idx_(other.element_idx_) {}
 
+  ScalarSimulationObject &operator=(ScalarSimulationObject &&other) {
+    element_idx_ = other.element_idx_;
+    return *this;
+  }
+
   virtual ~ScalarSimulationObject() {}
 
   std::size_t size() const { return 1; }  // NOLINT
@@ -289,6 +302,7 @@ class SimulationObject
   friend class SimulationObject;
 
   SimulationObject() : Base() {}
+  SimulationObject(const SimulationObject &) = default;
 
   template <typename T>
   SimulationObject(T *other, size_t idx) : Base(other, idx) {}
@@ -356,6 +370,11 @@ class SimulationObject
   }
 
   Self<Backend> &operator=(const Self<Scalar> &) { return *this; }
+
+  SimulationObject &operator=(SimulationObject &&other) {
+    Base::operator=(std::move(other));
+    return *this;
+  }
 
   MostDerived<Backend> *operator->() {
     return static_cast<MostDerived<Backend> *>(this);

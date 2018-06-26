@@ -29,17 +29,20 @@
 #include "param.h"
 #include "shape.h"
 
+#include "simulation.h"
+
 namespace bdm {
 
 using std::array;
 
 /// Defines the 3D physical interactions between physical objects
-template <typename TRm = ResourceManager<>>
+template <typename TSimulation = Simulation<>>
 class DisplacementOp {
  public:
   DisplacementOp() {
-    TRm::Get()->template ApplyOnAllTypes([this](auto* container,
-                                                uint16_t type_idx) {
+    auto* sim = TSimulation::GetActive();
+    auto* rm = sim->GetResourceManager();
+    rm->template ApplyOnAllTypes([this](auto* container, uint16_t type_idx) {
       using Container = std::remove_pointer_t<decltype(container)>;
       using SimObject = typename Container::value_type;
       if (SimObject::GetShape() != Shape::kSphere) {
@@ -55,14 +58,15 @@ class DisplacementOp {
 
   template <typename TContainer>
   void operator()(TContainer* cells, uint16_t type_idx) {
-    if (Param::use_gpu_ && !force_cpu_implementation_) {
+    auto* param = TSimulation::GetActive()->GetParam();
+    if (param->use_gpu_ && !force_cpu_implementation_) {
 #ifdef USE_OPENCL
-      if (Param::use_opencl_) {
+      if (param->use_opencl_) {
         opencl_(cells, type_idx);
       }
 #endif
 #ifdef USE_CUDA
-      if (!Param::use_opencl_) {
+      if (!param->use_opencl_) {
         cuda_(cells, type_idx);
       }
 #endif

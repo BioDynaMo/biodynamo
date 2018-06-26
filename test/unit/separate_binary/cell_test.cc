@@ -15,6 +15,7 @@
 #include "cell.h"
 #include <typeinfo>
 #include "gtest/gtest.h"
+#include "simulation_implementation.h"
 #include "unit/separate_binary/cell_test.h"
 #include "unit/test_util.h"
 
@@ -27,6 +28,8 @@ TEST(CellTest, TransformCoordinatesGlobalToPolar) {
 }
 
 TEST(CellTest, DivideVolumeRatioPhiTheta) {
+  Simulation<> simulation(TEST_NAME);
+
   TestCell mother;
   mother.SetPosition({5, 6, 7});
   mother.SetTractorForce({0, 0, 0});
@@ -90,56 +93,76 @@ TEST(CellTest, DivideVolumeRatioPhiTheta) {
 }
 
 TEST(CellTest, Divide) {
+  Simulation<> simulation(TEST_NAME);
+
   TestCell cell;
-  gRandom.SetSeed(42);
 
-  cell.check_input_parameters_ = true;
-  cell.expected_volume_ratio_ = 1.0455127360065737;
-  cell.expected_phi_ = 1.9633629889829609;
-  cell.expected_theta_ = 4.2928196812086608;
+#pragma omp parallel
+  simulation.GetRandom()->SetSeed(42);
 
+  cell.capture_input_parameters_ = true;
   cell.Divide();
+
+  EXPECT_NEAR(cell.captured_volume_ratio_, 1.0, 0.1);             // (0.9 - 1.1)
+  EXPECT_NEAR(cell.captured_theta_, Math::kPi, Math::kPi);        // (0 - 2 PI)
+  EXPECT_NEAR(cell.captured_phi_, Math::kPi / 2, Math::kPi / 2);  // (0 - PI)
 }
 
 TEST(CellTest, DivideVolumeRatio) {
+  Simulation<> simulation(TEST_NAME);
+
+#pragma omp parallel
+  simulation.GetRandom()->SetSeed(42);
+
   TestCell cell;
-  gRandom.SetSeed(42);
-
-  cell.check_input_parameters_ = true;
-  cell.expected_volume_ratio_ = 0.59;
-  cell.expected_phi_ = 1.1956088797871529;
-  cell.expected_theta_ = 4.5714174264720571;
-
+  cell.capture_input_parameters_ = true;
   cell.Divide(0.59);
+
+  const double kEpsilon = abs_error<double>::value;
+  EXPECT_NEAR(cell.captured_volume_ratio_, 0.59, kEpsilon);
+  EXPECT_NEAR(cell.captured_theta_, Math::kPi, Math::kPi);        // (0 - 2 PI)
+  EXPECT_NEAR(cell.captured_phi_, Math::kPi / 2, Math::kPi / 2);  // (0 - PI)
 }
 
 TEST(CellTest, DivideAxis) {
+  Simulation<> simulation(TEST_NAME);
+
+#pragma omp parallel
+  simulation.GetRandom()->SetSeed(42);
+
   TestCell cell;
   cell.SetPosition({1, 2, 3});
-  gRandom.SetSeed(42);
 
-  cell.check_input_parameters_ = true;
-  cell.expected_volume_ratio_ = 1.0455127360065737;
-  cell.expected_phi_ = 1.0442265974045177;
-  cell.expected_theta_ = 0.72664234068172562;
-
+  cell.capture_input_parameters_ = true;
   cell.Divide({9, 8, 7});
+
+  const double kEpsilon = abs_error<double>::value;
+  EXPECT_NEAR(cell.captured_volume_ratio_, 1.0, 0.1);  // (0.9 - 1.1)
+  EXPECT_NEAR(cell.captured_phi_, 1.0442265974045177, kEpsilon);
+  EXPECT_NEAR(cell.captured_theta_, 0.72664234068172562, kEpsilon);
 }
 
 TEST(CellTest, DivideVolumeRatioAxis) {
+  Simulation<> simulation(TEST_NAME);
+
+#pragma omp parallel
+  simulation.GetRandom()->SetSeed(42);
+
   TestCell cell;
   cell.SetPosition({1, 2, 3});
-  gRandom.SetSeed(42);
 
-  cell.check_input_parameters_ = true;
-  cell.expected_volume_ratio_ = 0.456;
-  cell.expected_phi_ = 1.0442265974045177;
-  cell.expected_theta_ = 0.72664234068172562;
-
+  cell.capture_input_parameters_ = true;
   cell.Divide(0.456, {9, 8, 7});
+
+  const double kEpsilon = abs_error<double>::value;
+  EXPECT_NEAR(cell.captured_volume_ratio_, 0.456, kEpsilon);
+  EXPECT_NEAR(cell.captured_phi_, 1.0442265974045177, kEpsilon);
+  EXPECT_NEAR(cell.captured_theta_, 0.72664234068172562, kEpsilon);
 }
 
 TEST(CellTest, BiologyModule) {
+  Simulation<> simulation(TEST_NAME);
+
   TestCell cell;
   double diameter = cell.GetDiameter();
   auto position = cell.GetPosition();
@@ -156,6 +179,8 @@ TEST(CellTest, BiologyModule) {
 }
 
 TEST(CellTest, GetBiologyModulesTest) {
+  Simulation<> simulation(TEST_NAME);
+
   // create cell and add bioogy modules
   TestCell cell;
   cell.AddBiologyModule(GrowthModule());
@@ -173,6 +198,8 @@ TEST(CellTest, GetBiologyModulesTest) {
 }
 
 TEST(CellTest, BiologyModuleEventHandler) {
+  Simulation<> simulation(TEST_NAME);
+
   TestCell cell;
 
   cell.AddBiologyModule(MovementModule({1, 2, 3}));

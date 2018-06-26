@@ -27,23 +27,9 @@
 #include "resource_manager.h"
 #include "scheduler.h"
 #include "shape.h"
+#include "simulation_implementation.h"
 #include "simulation_object_util.h"
 #include "variadic_template_parameter_util.h"
 #include "vtune.h"
-
-namespace bdm {
-
-/// This method should be called before any other biodynamo related code.
-/// Parses the configuration file
-/// @param executable_name sets parameter `Param::executable_name_`.
-void InitializeBiodynamo(const std::string& executable_name);
-
-/// This method should be called before any other biodynamo related code.
-/// Parses command line parameters and the configuration file
-/// @param argc argument count from main function
-/// @param argv argument vector from main function
-void InitializeBiodynamo(int argc, const char** argv);
-
-}  // namespace bdm
 
 #endif  // BIODYNAMO_H_

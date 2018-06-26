@@ -22,6 +22,7 @@
 #include "unit/test_util.h"
 
 #include "biodynamo.h"
+#include "simulation_implementation.h"
 
 namespace bdm {
 
@@ -76,6 +77,9 @@ TEST(DefaultForce, AllNonOverlappingSphere) {
 /// Tests the special case that neighbor and reference cell
 /// are at the same position -> should return random force
 TEST(DefaultForce, AllAtSamePositionSphere) {
+  // simulation object required for random number generator
+  Simulation<> simulation(TEST_NAME);
+
   Cell cell({0, 0, 0});
   cell.SetDiameter(8);
   Cell nb({0, 0, 0});
@@ -148,6 +152,9 @@ TEST(DISABLED_DefaultForce, GeneralCylinder) {
 }
 
 TEST(DefaultForce, CylinderIntersectingAxis) {
+  // simulation object required for random number generator
+  Simulation<> simulation(TEST_NAME);
+
   NeuriteElement cylinder1;
   cylinder1.SetMassLocation({0, 0, 0});
   cylinder1.SetSpringAxis({-5, 0, 0});  // -> proximal end = {5, 0, 0}
@@ -240,9 +247,12 @@ TEST(DefaultForce, SphereSmallCylinderHorizontal) {
 // sphere-cylinder interaction is done vertically at the tip of the cylinder
 // (mass location)
 TEST(DefaultForce, SphereSmallCylinderVertical) {
+  Simulation<> simulation(TEST_NAME);
+  auto* rm = simulation.GetResourceManager();
+
   Cell sphere({0, 0, 0});
   sphere.SetDiameter(50);
-  ResourceManager<>::Get()->push_back(sphere);
+  rm->push_back(sphere);
 
   NeuriteElement cylinder;
   cylinder.SetMassLocation({0, 24, 0});
@@ -265,9 +275,12 @@ TEST(DefaultForce, SphereSmallCylinderVertical) {
 
 // opposit case of Vertical: cylinder is below the cell
 TEST(DefaultForce, SphereSmallCylinderVertical2) {
+  Simulation<> simulation(TEST_NAME);
+  auto* rm = simulation.GetResourceManager();
+
   Cell sphere({0, 0, 0});
   sphere.SetDiameter(50);
-  ResourceManager<>::Get()->push_back(sphere);
+  rm->push_back(sphere);
 
   NeuriteElement cylinder;
   cylinder.SetMassLocation({0, -24, 0});

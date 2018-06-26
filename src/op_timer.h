@@ -16,6 +16,7 @@
 #define OP_TIMER_H_
 
 #include <string>
+#include "simulation.h"
 #include "timing.h"
 
 namespace bdm {
@@ -31,9 +32,10 @@ struct OpTimer {
   explicit OpTimer(string timer_msg, const TOp& op)
       : timer_msg_(timer_msg), operation_(op) {}
 
-  template <typename Container>
+  template <typename Container, typename TSimulation = Simulation<>>
   void operator()(Container* cells, uint16_t type_idx) {
-    if (Param::statistics_) {
+    auto* param = TSimulation::GetActive()->GetParam();
+    if (param->statistics_) {
       Timing timer(timer_msg_, &gStatistics);
       operation_(cells, type_idx);
     } else {

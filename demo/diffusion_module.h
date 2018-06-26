@@ -35,9 +35,10 @@ enum Substances { kKalium };
 struct Chemotaxis : public BaseBiologyModule {
   Chemotaxis() : BaseBiologyModule(gAllBmEvents) {}
 
-  template <typename T>
+  template <typename T, typename TSimulation = Simulation<>>
   void Run(T* cell) {
-    static auto dg = GetDiffusionGrid(kKalium);
+    auto* rm = TSimulation::GetActive()->GetResourceManager();
+    auto* dg = rm->GetDiffusionGrid(kKalium);
     dg->SetConcentrationThreshold(1e15);
 
     auto& position = cell->GetPosition();
@@ -58,9 +59,10 @@ struct Chemotaxis : public BaseBiologyModule {
 struct KaliumSecretion : public BaseBiologyModule {
   KaliumSecretion() : BaseBiologyModule() {}
 
-  template <typename T>
+  template <typename T, typename TSimulation = Simulation<>>
   void Run(T* cell) {
-    static auto dg = GetDiffusionGrid(kKalium);
+    auto* rm = TSimulation::GetActive()->GetResourceManager();
+    auto* dg = rm->GetDiffusionGrid(kKalium);
     array<double, 3> secretion_position = {50, 50, 50};
     dg->IncreaseConcentrationBy(secretion_position, 4 / dg->GetBoxVolume());
   }
@@ -77,9 +79,9 @@ struct CompileTimeParam : public DefaultCompileTimeParam<Backend> {
 
 inline int Simulate(int argc, const char** argv) {
   // 3. Initialize BioDynaMo
-  InitializeBiodynamo(argc, argv);
+  Simulation<> simulation(argc, argv);
 
-  Param::backup_interval_ = 1;
+  simulation.GetParam()->backup_interval_ = 1;
 
   // 4a. Define initial model - in this example: two cells
   auto construct = [](const std::array<double, 3>& position) {
@@ -110,8 +112,7 @@ inline int Simulate(int argc, const char** argv) {
   ModelInitializer::DefineSubstance(kKalium, "Kalium", 0.4, 0, 25);
 
   // 5. Run simulation for N timesteps
-  Scheduler<> scheduler;
-  scheduler.Simulate(3500);
+  simulation.GetScheduler()->Simulate(3500);
   return 0;
 }
 

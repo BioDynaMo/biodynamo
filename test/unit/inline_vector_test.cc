@@ -14,6 +14,7 @@
 
 #include "unit/inline_vector_test.h"
 #include <new>
+#include "simulation_implementation.h"
 
 size_t operator_new_calls_ = 0;
 

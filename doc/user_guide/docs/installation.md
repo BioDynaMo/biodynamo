@@ -33,5 +33,5 @@ git pull origin master
 
 ## Supported platforms
 
-*  Ubuntu 16.04
+*  Ubuntu 16.04, 18.04
 *  Mac OSX

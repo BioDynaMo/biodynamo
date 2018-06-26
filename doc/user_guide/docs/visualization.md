@@ -39,14 +39,6 @@ Now we need to open ParaView:
 !!! warning
 	Make sure you start ParaView from the project directory. Otherwise, ParaView might not find the exported files.
 
-#### On Linux:
-
-``` sh
-biodynamo.paraview
-```
-
-#### On Mac OS:
-
 ``` sh
 paraview
 ```
@@ -55,7 +47,7 @@ Select "File->Load State" as shown below:
 
 ![ParaView Load State](images/pv_load_state.png)
 
-Navigate to your simulation directory and select the `pvsm` file.
+Navigate to your simulation output directory and select the `pvsm` file.
 
 ![ParaView Select *.pvsm](images/pv_load_state_2.png)
 

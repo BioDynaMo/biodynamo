@@ -15,6 +15,7 @@
 #ifndef PARAM_H_
 #define PARAM_H_
 
+#include <Rtypes.h>
 #include <cinttypes>
 #include <set>
 #include <string>
@@ -46,36 +47,34 @@ struct Param {
   static constexpr double kNeuriteMaxLength = 15;
 
   // simulation values ---------------------------------------------------------
-  /// Name of the simulation executable\n
-  /// Default value: biodynamo_simulation\n
-  /// Cannot be changed using the TOML config file
-  static std::string executable_name_;
-
-  /// Variable which is tracking current step of simulation
-  static uint64_t total_steps_;
 
   /// Variable which specifies method using for solving differential equation
   /// {"Euler", "RK4"}.
   enum NumericalODESolver { kEuler = 1, kRK4 = 2 };
-  static NumericalODESolver numerical_ode_solver_;
+  NumericalODESolver numerical_ode_solver_ = NumericalODESolver::kEuler;
+
+  /// Output directory relative to working directory
+  static constexpr const char* kOutputDir = "output";
 
   /// Backup file name for full simulation backups\n
+  /// Path is relative to working directory.\n
   /// Default value: `""` (no backups will be made)\n
   /// TOML config file:
   ///
   ///     [simulation]
   ///     backup_file = <path>/<filename>.root
   /// Command line argument: `-b, --backup`
-  static std::string backup_file_;
+  std::string backup_file_ = "";
 
   /// File name to restore simulation from\n
+  /// Path is relative to working directory.\n
   /// Default value: `""` (no restore will be made)\n
   /// TOML config file:
   ///
   ///     [simulation]
   ///     restore_file = <path>/<filename>.root
   /// Command line argument: `-r, --restore`
-  static std::string restore_file_;
+  std::string restore_file_ = "";
 
   /// Specifies the interval (in seconds) in which backups will be performed.\n
   /// Default Value: `1800` (every half an hour)\n
@@ -83,7 +82,7 @@ struct Param {
   ///
   ///     [simulation]
   ///     backup_interval = 1800  # backup every half an hour
-  static uint32_t backup_interval_;
+  uint32_t backup_interval_ = 1800;
 
   /// Time between two simulation steps, in hours.
   /// Default value: `0.01`\n
@@ -91,7 +90,7 @@ struct Param {
   ///
   ///     [simulation]
   ///     time_step = 0.0125
-  static double simulation_time_step_;
+  double simulation_time_step_ = 0.01;
 
   /// Maximum jump that a point mass can do in one time step. Useful to
   /// stabilize the simulation\n
@@ -100,7 +99,7 @@ struct Param {
   ///
   ///     [simulation]
   ///     max_displacement = 3.0
-  static double simulation_max_displacement_;
+  double simulation_max_displacement_ = 3.0;
 
   /// Calculate mechanical interactions between simulation objects.\n
   /// Default value: `true`\n
@@ -108,7 +107,7 @@ struct Param {
   ///
   ///     [simulation]
   ///     run_mechanical_interactions = true
-  static bool run_mechanical_interactions_;
+  bool run_mechanical_interactions_ = true;
 
   /// Enforce an artificial cubic bounds around the simulation space.
   /// Simulation objects cannot move outside this cube. Dimensions of this cube
@@ -118,7 +117,7 @@ struct Param {
   ///
   ///     [simulation]
   ///     bound_space = false
-  static bool bound_space_;
+  bool bound_space_ = false;
 
   /// Minimum allowed value for x-, y- and z-position if simulation space is
   /// bound (@see `bound_space_`).\n
@@ -127,7 +126,7 @@ struct Param {
   ///
   ///     [simulation]
   ///     min_bound = 0
-  static double min_bound_;
+  double min_bound_ = 0;
 
   /// Maximum allowed value for x-, y- and z-position if simulation space is
   /// bound (@see `bound_space_`).\n
@@ -136,7 +135,7 @@ struct Param {
   ///
   ///     [simulation]
   ///     max_bound = 100
-  static double max_bound_;
+  double max_bound_ = 100;
 
   /// Allow substances to leak out of the simulation space. In this way
   /// the substance concentration will not be blocked by an artificial border\n
@@ -145,14 +144,14 @@ struct Param {
   ///
   ///     [simulation]
   ///     leaking_edges = true
-  static bool leaking_edges_;
+  bool leaking_edges_ = true;
 
   /// Calculate the diffusion gradient for each substance.\n
   /// TOML config file:
   ///
   ///     [simulation]
   ///     calculate_gradients = true
-  static bool calculate_gradients_;
+  bool calculate_gradients_ = true;
 
   // visualization values ------------------------------------------------------
 
@@ -162,7 +161,7 @@ struct Param {
   ///
   ///     [visualization]
   ///     live = false
-  static bool live_visualization_;
+  bool live_visualization_ = false;
 
   /// Write data to file for post-simulation visualization
   /// Defaut value: `false`\n
@@ -170,7 +169,7 @@ struct Param {
   ///
   ///     [visualization]
   ///     export = false
-  static bool export_visualization_;
+  bool export_visualization_ = false;
 
   /// If `export_visualization_` is set to true, this parameter specifies
   /// how often it should be exported. 1 = every timestep, 10: every 10
@@ -180,7 +179,7 @@ struct Param {
   ///
   ///     [visualization]
   ///     export_interval = 1
-  static uint32_t visualization_export_interval_;
+  uint32_t visualization_export_interval_ = 1;
 
   /// Specifies which simulation objects should be visualized. \n
   /// Every simulation object defines the minimum set of data members which
@@ -188,6 +187,7 @@ struct Param {
   /// With this parameter it is also possible to extend the number of data
   /// members that are sent to the visualization engine.
   /// Default value: empty (no simulation object will be visualized)\n
+  /// NB: This data member is not backed up, due to a ROOT error.
   /// TOML config file:
   ///
   ///     [visualization]
@@ -202,8 +202,8 @@ struct Param {
   ///       # The former block can be repeated for further simulation objects
   ///       [[visualize_sim_object]]
   ///       name = "Neurite"
-  static std::unordered_map<std::string, std::set<std::string>>
-      visualize_sim_objects_;
+  std::unordered_map<std::string, std::set<std::string>>
+      visualize_sim_objects_;  //!
 
   struct VisualizeDiffusion {
     std::string name_;
@@ -211,7 +211,7 @@ struct Param {
     bool gradient_ = false;
   };
 
-  /// Spefifies if for which substances extracellular diffusion should be
+  /// Spceifies for which substances extracellular diffusion should be
   /// visualized.\n
   /// Default value: empty (no diffusion will be visualized)\n
   /// TOML config file:
@@ -233,7 +233,7 @@ struct Param {
   ///       [[visualize_diffusion]]
   ///       name = "K"
   ///       # default values: concentration = true and gradient = false
-  static std::vector<VisualizeDiffusion> visualize_diffusion_;
+  std::vector<VisualizeDiffusion> visualize_diffusion_;
 
   // development values --------------------------------------------------------
   /// Statistics of profiling data; keeps track of the execution time of each
@@ -243,7 +243,7 @@ struct Param {
   ///
   ///     [development]
   ///     statistics = false
-  static bool statistics_;
+  bool statistics_ = false;
 
   /// Use the python script (simple_pipeline.py) to do Live Visualization with
   /// ParaView. If false, we use the C++ pipeline
@@ -251,14 +251,14 @@ struct Param {
   /// TOML config file:
   ///     [development]
   ///     python_catalyst_pipeline_ = false
-  static bool python_catalyst_pipeline_;
+  bool python_catalyst_pipeline_ = false;
 
   /// Display the current simulation step in the terminal output
   /// Default value: `true`\n
   /// TOML config file:
   ///     [development]
   ///     show_simulation_step = true
-  static bool show_simulation_step_;
+  bool show_simulation_step_ = true;
 
   /// Sets the frequency at which the current simulation step is displayed.
   /// Display every `simulation_step_freq_` steps.
@@ -266,14 +266,17 @@ struct Param {
   /// TOML config file:
   ///     [development]
   ///     simulation_step_freq = false
-  static uint32_t simulation_step_freq_;
+  uint32_t simulation_step_freq_ = 10;
+
+  // ---------------------------------------------------------------------------
+  // experimental group
 
   /// Run the simulation partially on the GPU for improved performance.
   /// Default value: `false`\n
   /// TOML config file:
   ///     [experimental]
   ///     use_gpu = false
-  static bool use_gpu_;
+  bool use_gpu_ = false;
 
   /// When both CUDA and OpenCL are available on a machine, the preference to
   /// OpenCL can be set with this flag, as per default CUDA is used.
@@ -281,7 +284,7 @@ struct Param {
   /// TOML config file:
   ///     [experimental]
   ///     use_opencl = false
-  static bool use_opencl_;
+  bool use_opencl_ = false;
 
   /// Compile OpenCL kernels with debugging symbols, for debugging on CPU
   /// targets with GNU gdb.
@@ -289,23 +292,23 @@ struct Param {
   /// TOML config file:
   ///     [experimental]
   ///     opencl_debug_ = false
-  static bool opencl_debug_;
+  bool opencl_debug_ = false;
 
   /// Set the index of the preferred GPU you wish to use.
   /// Default value: `0`\n
   /// TOML config file:
   ///     [experimental]
   ///     preferred_gpu = 0
-  static int preferred_gpu_;
-
-  /// Resets the static variables to its default values
-  static void Reset();
+  int preferred_gpu_ = 0;
 
  private:
-  friend void InitializeBiodynamo(int, const char**);
+  template <typename T>
+  friend struct Simulation;
 
-  /// Assign values from config file to static variables
-  static void AssignFromConfig(const std::shared_ptr<cpptoml::table>&);
+  /// Assign values from config file to variables
+  void AssignFromConfig(const std::shared_ptr<cpptoml::table>&);
+
+  ClassDefNV(Param, 1);
 };
 
 }  // namespace bdm

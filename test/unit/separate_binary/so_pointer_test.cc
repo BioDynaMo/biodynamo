@@ -13,6 +13,7 @@
 // -----------------------------------------------------------------------------
 
 #include "unit/separate_binary/so_pointer_test.h"
+#include "simulation_implementation.h"
 
 namespace bdm {
 namespace so_pointer_test_internal {
@@ -35,7 +36,9 @@ TEST_F(IOTest, SoPointerAnyContainer_Aos) { IOTestSoPointerAnyContainerAos(); }
 
 TEST_F(IOTest, SoPointerAnyContainer_Soa) { IOTestSoPointerAnyContainerSoa(); }
 
-TEST_F(IOTest, SoPointerRmContainer_Soa) { IOTestSoPointerRmContainerSoa(); }
+TEST_F(IOTest, SoPointerRmContainer_Soa) {
+  IOTestSoPointerRmContainerSoa(simulation_);
+}
 
 TEST_F(IOTest, SoPointerNullptr_Aos) { IOTestSoPointerNullptrAos(); }
 

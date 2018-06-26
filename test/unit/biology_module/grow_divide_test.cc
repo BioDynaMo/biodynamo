@@ -13,17 +13,18 @@
 // -----------------------------------------------------------------------------
 
 #include "biology_module/grow_divide.h"
+#include <typeinfo>
 #include "gtest/gtest.h"
 #include "resource_manager.h"
+#include "simulation_implementation.h"
 #include "unit/default_ctparam.h"
 #include "unit/test_util.h"
 
 namespace bdm {
 
 TEST(GrowDivideTest, Grow) {
-  auto rm = ResourceManager<>::Get();
-  rm->Clear();
-  Param::Reset();
+  Simulation<> simulation(TEST_NAME);
+  auto* rm = simulation.GetResourceManager();
 
   Cell cell;
   cell.SetDiameter(40);
@@ -38,9 +39,8 @@ TEST(GrowDivideTest, Grow) {
 }
 
 TEST(GrowDivideTest, Divide) {
-  auto rm = ResourceManager<>::Get();
-  rm->Clear();
-  Param::Reset();
+  Simulation<> simulation(TEST_NAME);
+  auto* rm = simulation.GetResourceManager();
 
   Cell cell;
   cell.SetDiameter(41);

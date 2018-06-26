@@ -20,7 +20,7 @@
 #include <string>
 #include <vector>
 
-#include "resource_manager.h"
+#include "simulation.h"
 
 #include "io_util.h"
 #include "log.h"
@@ -32,7 +32,7 @@ namespace bdm {
 class SimulationBackup {
  public:
   // object names for root file
-  static const std::string kResouceManagerName;
+  static const std::string kSimulationName;
   static const std::string kSimulationStepName;
   static const std::string kRuntimeVariableName;
 
@@ -45,10 +45,12 @@ class SimulationBackup {
   /// updated.
   static std::vector<std::function<void()>> after_restore_event_;
 
+  /// If `backup_file` is an empty string no backups will be made
+  /// If `restore_file` is an empty string no restore will be made
   SimulationBackup(const std::string& backup_file,
                    const std::string& restore_file);
 
-  template <typename TResourceManager = ResourceManager<>>
+  template <typename TSimulation = Simulation<>>
   void Backup(size_t completed_simulation_steps) {
     if (!backup_) {
       Log::Fatal("SimulationBackup",
@@ -63,8 +65,8 @@ class SimulationBackup {
     // Backup
     {
       TFileRaii f(tmp_file.str(), "UPDATE");
-      f.Get()->WriteObject(TResourceManager::Get(),
-                           kResouceManagerName.c_str());
+      auto* simulation = TSimulation::GetActive();
+      f.Get()->WriteObject(simulation, kSimulationName.c_str());
       IntegralTypeWrapper<size_t> wrapper(completed_simulation_steps);
       f.Get()->WriteObject(&wrapper, kSimulationStepName.c_str());
       RuntimeVariables rv;
@@ -78,7 +80,7 @@ class SimulationBackup {
     rename(tmp_file.str().c_str(), backup_file_.c_str());
   }
 
-  template <typename TResourceManager = ResourceManager<>>
+  template <typename TSimulation = Simulation<>>
   void Restore() {
     if (!restore_) {
       Log::Fatal("SimulationBackup",
@@ -94,11 +96,10 @@ class SimulationBackup {
       Log::Warning("SimulationBackup",
                    "Restoring simulation executed on a different system!");
     }
-    TResourceManager* restored_rm = nullptr;
-    file.Get()->GetObject(kResouceManagerName.c_str(), restored_rm);
-    TResourceManager::instance_ =
-        std::unique_ptr<TResourceManager>(restored_rm);
-    // TODO(lukas) random number generator, statics (e.g. Param)
+    TSimulation* restored_simulation = nullptr;
+    file.Get()->GetObject(kSimulationName.c_str(), restored_simulation);
+    TSimulation::GetActive()->Restore(std::move(*restored_simulation));
+    Log::Info("Scheduler", "Restored simulation from ", restore_file_);
 
     // call all after restore events
     for (auto&& event : after_restore_event_) {

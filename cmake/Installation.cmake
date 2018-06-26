@@ -99,6 +99,8 @@ install(FILES cmake/RootUseFile.cmake DESTINATION ${CMAKE_INSTALL_CMAKEDATADIR})
 install(FILES ${CMAKE_BINARY_DIR}/UseBioDynaMo.cmake DESTINATION ${CMAKE_INSTALL_CMAKEDATADIR})
 # CMake files required from external projects
 install(FILES cmake/BioDynaMoConfig.cmake DESTINATION ${CMAKE_INSTALL_CMAKEDIR})
+#simulation template
+install(DIRECTORY util/simulation-template DESTINATION "biodynamo/" FILES_MATCHING PATTERN "*")
 
 if(LINUX)
   install(FILES ${CMAKE_CURRENT_BINARY_DIR}/paraview-plugin/libBDMGlyphFilter.so DESTINATION ${CMAKE_INSTALL_LIBDIR})

@@ -19,6 +19,7 @@
 #include "neuroscience/compile_time_param.h"
 #include "neuroscience/neurite_element.h"
 #include "neuroscience/neuron_soma.h"
+#include "simulation_implementation.h"
 #include "unit/test_util.h"
 
 namespace bdm {
@@ -37,12 +38,10 @@ namespace neuroscience {
 
 // TODO(jean) Fix this test
 TEST(DISABLED_NeuriteElementBehaviour, StraightxCylinderGrowthRetract) {
-  Param::Reset();
-  Rm()->Clear();
+  Simulation<> simulation(TEST_NAME);
+  auto* rm = simulation.GetResourceManager();
 
-  Param::live_visualization_ = true;
-
-  auto neuron = Rm()->New<NeuronSoma>();
+  auto neuron = rm->New<NeuronSoma>();
   neuron.SetPosition({0, 0, 0});
   neuron.SetMass(1);
   neuron.SetDiameter(10);
@@ -94,17 +93,15 @@ TEST(DISABLED_NeuriteElementBehaviour, StraightxCylinderGrowthRetract) {
 
 // TODO(jean) fix test
 TEST(DISABLED_NeuriteElementBehaviour, BranchingGrowth) {
-  Param::Reset();
-  Rm()->Clear();
+  Simulation<> simulation(TEST_NAME);
+  auto* rm = simulation.GetResourceManager();
+  auto* param = simulation.GetParam();
 
-  Param::run_mechanical_interactions_ = true;
-  // Param::live_visualization_ = true;
-  // Param::export_visualization_ = true;
+  param->run_mechanical_interactions_ = true;
 
-  double diam_reduc_speed = 0.001;
   double branching_factor = 0.005;
 
-  auto neuron = Rm()->New<NeuronSoma>();
+  auto neuron = rm->New<NeuronSoma>();
   neuron.SetPosition({0, 0, 0});
   neuron.SetMass(1);
   neuron.SetDiameter(10);
@@ -112,15 +109,15 @@ TEST(DISABLED_NeuriteElementBehaviour, BranchingGrowth) {
   auto ne = neuron.ExtendNewNeurite({0, 0, 1});
   ne->SetDiameter(1);
 
-  auto& grid = Grid<>::GetInstance();
-  grid.Initialize();
+  simulation.GetGrid()->Initialize();
   Scheduler<> scheduler;
 
   std::array<double, 3> previous_direction;
   std::array<double, 3> direction;
 
+  auto* random = simulation.GetRandom();
   for (int i = 0; i < 200; i++) {
-    auto my_neurites = Rm()->Get<NeuriteElement>();
+    auto my_neurites = rm->Get<NeuriteElement>();
     int num_neurites = my_neurites->size();
 
     for (int neurite_nb = 0; neurite_nb < num_neurites;
@@ -129,17 +126,16 @@ TEST(DISABLED_NeuriteElementBehaviour, BranchingGrowth) {
 
       if (ne->IsTerminal() && ne->GetDiameter() > 0.5) {
         previous_direction = ne->GetSpringAxis();
-        direction = {gTRandom.Uniform(-10, 10), gTRandom.Uniform(-10, 10),
-                     gTRandom.Uniform(0, 5)};
+        direction = {random->Uniform(-10, 10), random->Uniform(-10, 10),
+                     random->Uniform(0, 5)};
 
         std::array<double, 3> step_direction =
             Math::Add(previous_direction, direction);
 
         ne->ElongateTerminalEnd(10, step_direction);
-        //          ne->SetDiameter(ne->GetDiameter()-diam_reduc_speed);
         ne->SetDiameter(1);
 
-        if (gTRandom.Uniform(0, 1) < branching_factor * ne->GetDiameter()) {
+        if (random->Uniform(0, 1) < branching_factor * ne->GetDiameter()) {
           ne->Bifurcate();
         }
         //            ne->RunDiscretization();

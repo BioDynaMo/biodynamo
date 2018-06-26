@@ -93,7 +93,8 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
   /// Both cells have more or less the same volume, the axis of division is
   /// random.
   MostDerivedSoPtr Divide() {
-    return ThisMD()->Divide(0.9 + 0.2 * gRandom.NextDouble());
+    auto* random = Simulation_t::GetActive()->GetRandom();
+    return ThisMD()->Divide(random->Uniform(0.9, 1.1));
   }
 
   /// Divide the cell. Of the two daughter cells, one is this one
@@ -104,8 +105,9 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
   MostDerivedSoPtr Divide(double volume_ratio) {
     // find random point on sphere (based on :
     // http://mathworld.wolfram.com/SpherePointPicking.html)
-    double theta = 2 * Math::kPi * gRandom.NextDouble();
-    double phi = std::acos(2 * gRandom.NextDouble() - 1);
+    auto* random = Simulation_t::GetActive()->GetRandom();
+    double theta = 2 * Math::kPi * random->Uniform(0, 1);
+    double phi = std::acos(2 * random->Uniform(0, 1) - 1);
     return ThisMD()->Divide(volume_ratio, phi, theta);
   }
 
@@ -113,9 +115,10 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
   /// and the other one will be returned by this function.
   /// @param axis specifies direction of division
   MostDerivedSoPtr Divide(const array<double, 3>& axis) {
+    auto* random = Simulation_t::GetActive()->GetRandom();
     auto polarcoord =
         TransformCoordinatesGlobalToPolar(Math::Add(axis, position_[kIdx]));
-    return ThisMD()->Divide(0.9 + 0.2 * gRandom.NextDouble(), polarcoord[1],
+    return ThisMD()->Divide(random->Uniform(0.9, 1.1), polarcoord[1],
                             polarcoord[2]);
   }
 
@@ -133,7 +136,8 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
   /// Forward call to `DivideImpl`
   /// @see `DivideImpl`
   MostDerivedSoPtr Divide(double volume_ratio, double phi, double theta) {
-    auto daughter = Rm()->template New<MostDerivedScalar>().GetSoPtr();
+    auto* rm = Simulation_t::GetActive()->GetResourceManager();
+    auto daughter = rm->template New<MostDerivedScalar>().GetSoPtr();
     ThisMD()->DivideImpl(daughter, volume_ratio, phi, theta);
     return daughter;
   }
@@ -198,7 +202,8 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
 
   void ChangeVolume(double speed) {
     // scaling for integration step
-    double delta = speed * Param::simulation_time_step_;
+    auto* param = Simulation_t::GetActive()->GetParam();
+    double delta = speed * param->simulation_time_step_;
     volume_[kIdx] += delta;
     if (volume_[kIdx] < 5.2359877E-7) {
       volume_[kIdx] = 5.2359877E-7;
@@ -412,7 +417,8 @@ BDM_SO_DEFINE(template <typename TGrid> inline std::array<double, 3>
   bool physical_translation = false;
   // bool physical_rotation = false;
 
-  double h = Param::simulation_time_step_;
+  auto* param = Simulation_t::GetActive()->GetParam();
+  double h = param->simulation_time_step_;
   std::array<double, 3> movement_at_next_step{0, 0, 0};
 
   // BIOLOGY :
@@ -474,11 +480,12 @@ BDM_SO_DEFINE(template <typename TGrid> inline std::array<double, 3>
 
     // but we want to avoid huge jumps in the simulation, so there are
     // maximum distances possible
-    if (norm_of_force * mh > Param::simulation_max_displacement_) {
+    auto* param = Simulation_t::GetActive()->GetParam();
+    if (norm_of_force * mh > param->simulation_max_displacement_) {
       const auto& norm = Math::Normalize(movement_at_next_step);
-      movement_at_next_step[0] = norm[0] * Param::simulation_max_displacement_;
-      movement_at_next_step[1] = norm[1] * Param::simulation_max_displacement_;
-      movement_at_next_step[2] = norm[2] * Param::simulation_max_displacement_;
+      movement_at_next_step[0] = norm[0] * param->simulation_max_displacement_;
+      movement_at_next_step[1] = norm[1] * param->simulation_max_displacement_;
+      movement_at_next_step[2] = norm[2] * param->simulation_max_displacement_;
     }
   }
   return movement_at_next_step;

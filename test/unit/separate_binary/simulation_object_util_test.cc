@@ -14,7 +14,9 @@
 
 #include "gtest/gtest.h"
 
+#include "simulation_implementation.h"
 #include "unit/separate_binary/simulation_object_util_test.h"
+#include "unit/test_util.h"
 
 namespace bdm {
 // namespace simulation_object_util_test_internal {
@@ -271,8 +273,8 @@ TEST(SimulationObjectUtilTest, Soa_DelayedRemove) {
 // Tests overloaded Divide function which adds new daughter cell to the
 // container managed by the ResourceManager with default template parameters
 TEST(SimulationObjectUtilTest, Soa_DivideWithResourceManager) {
-  auto rm = ResourceManager<>::Get();
-  rm->Clear();
+  Simulation<> simulation(TEST_NAME);
+  auto* rm = simulation.GetResourceManager();
 
   auto neurons = rm->Get<Neuron>();
   Neuron neuron;
@@ -298,8 +300,9 @@ TEST(SimulationObjectUtilTest, Soa_DivideWithResourceManager) {
 }
 
 TEST(SimulationObjectUtilTest, RemoveFromSimulation) {
-  auto rm = ResourceManager<>::Get();
-  rm->Clear();
+  Simulation<> simulation(TEST_NAME);
+  auto* rm = simulation.GetResourceManager();
+
   auto neurons = rm->Get<Neuron>();
 
   Neuron neuron;
@@ -441,14 +444,16 @@ TEST(SimulationObjectUtilTest, ThisMD) {
 }
 
 TEST(SimulationObjectUtilTest, GetSoPtr) {
-  Rm()->Clear();
-  for (uint64_t i = 0; i < 10; i++) {
-    Rm()->New<Neuron>();
-  }
-  Rm()->Get<Neuron>()->Commit();
-  EXPECT_EQ(10u, Rm()->GetNumSimObjects());
+  Simulation<> simulation(TEST_NAME);
+  auto* rm = simulation.GetResourceManager();
 
-  auto neurons = Rm()->Get<Neuron>();
+  for (uint64_t i = 0; i < 10; i++) {
+    rm->New<Neuron>();
+  }
+  rm->Get<Neuron>()->Commit();
+  EXPECT_EQ(10u, rm->GetNumSimObjects());
+
+  auto neurons = rm->Get<Neuron>();
   for (uint64_t i = 0; i < 10; i++) {
     EXPECT_EQ(i, (*neurons)[i].GetSoPtr().GetElementIdx());
   }

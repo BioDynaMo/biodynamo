@@ -12,8 +12,8 @@
 //
 // -----------------------------------------------------------------------------
 
-#ifndef UNIT_SIMULATION_OBJECT_VECTOR_TEST_H_
-#define UNIT_SIMULATION_OBJECT_VECTOR_TEST_H_
+#ifndef UNIT_SEPARATE_BINARY_SIMULATION_OBJECT_VECTOR_TEST_H_
+#define UNIT_SEPARATE_BINARY_SIMULATION_OBJECT_VECTOR_TEST_H_
 
 #include <limits>
 
@@ -22,6 +22,7 @@
 #include "backend.h"
 #include "cell.h"
 #include "compile_time_param.h"
+#include "simulation_implementation.h"
 #include "simulation_object.h"
 #include "simulation_object_util.h"
 #include "simulation_object_vector.h"
@@ -29,21 +30,37 @@
 namespace bdm {
 namespace simulation_object_vector_test_internal {
 
-template <typename TBackend = Soa>
-struct CompileTimeParam1;
-
-BDM_SIM_OBJECT_TEST(A, SimulationObject, CompileTimeParam1) {
+BDM_SIM_OBJECT(A, SimulationObject) {
   BDM_SIM_OBJECT_HEADER(AExt, 1, id_);
 
  public:
   AExt() {}
   explicit AExt(int id) { id_[kIdx] = id; }
 
+  // TODO(lukas) after ROOT-9321 has been resolved: create test base class,
+  // derive from it and remove these functions
+  std::array<double, 3> GetPosition() const { return {0, 0, 0}; }
+  void SetPosition(const std::array<double, 3>&) {}
+  void ApplyDisplacement(const std::array<double, 3>&) {}
+  template <typename TGrid>
+  std::array<double, 3> CalculateDisplacement(TGrid * grid,
+                                              double squared_radius) {
+    return {0, 0, 0};
+  }
+  void RunBiologyModules() {}
+  void SetBoxIdx(uint64_t) {}
+  double GetDiameter() { return 3.14; }
+  static std::set<std::string> GetRequiredVisDataMembers() {
+    return {"diameter_", "position_"};
+  }
+  static constexpr Shape GetShape() { return Shape::kSphere; }
+  // TODO(lukas) end remove
+
  private:
   vec<int> id_;
 };
 
-BDM_SIM_OBJECT_TEST(B, SimulationObject, CompileTimeParam1) {
+BDM_SIM_OBJECT(B, SimulationObject) {
   BDM_SIM_OBJECT_HEADER(BExt, 1, id_);
 
  public:
@@ -51,26 +68,47 @@ BDM_SIM_OBJECT_TEST(B, SimulationObject, CompileTimeParam1) {
 
   explicit BExt(int id) { id_[kIdx] = id; }
 
+  // TODO(lukas) after ROOT-9321 has been resolved: create test base class,
+  // derive from it and remove these functions
+  std::array<double, 3> GetPosition() const { return {0, 0, 0}; }
+  void SetPosition(const std::array<double, 3>&) {}
+  void ApplyDisplacement(const std::array<double, 3>&) {}
+  template <typename TGrid>
+  std::array<double, 3> CalculateDisplacement(TGrid * grid,
+                                              double squared_radius) {
+    return {0, 0, 0};
+  }
+  void RunBiologyModules() {}
+  void SetBoxIdx(uint64_t) {}
+  double GetDiameter() { return 3.14; }
+  static std::set<std::string> GetRequiredVisDataMembers() {
+    return {"diameter_", "position_"};
+  }
+  static constexpr Shape GetShape() { return Shape::kSphere; }
+  // TODO(lukas) end remove
+
  private:
   vec<int> id_;
 };
 
-template <typename TBackend>
-struct CompileTimeParam1 {
-  template <typename TTBackend>
-  using Self = CompileTimeParam1<TTBackend>;
-  using Backend = TBackend;
+}  // namespace simulation_object_vector_test_internal
 
+template <typename TBackend>
+struct CompileTimeParam : public DefaultCompileTimeParam<TBackend> {
   using SimulationBackend = Soa;
-  using AtomicTypes = VariadicTypedef<A, B>;
+  using AtomicTypes =
+      VariadicTypedef<simulation_object_vector_test_internal::A,
+                      simulation_object_vector_test_internal::B>;
 };
 
-inline void RunTest() {
-  // setup resource manager
-  using Rm = ResourceManager<CompileTimeParam1<Soa>>;
-  auto rm = Rm::Get();
+namespace simulation_object_vector_test_internal {
 
-  ASSERT_EQ(2u, Rm::NumberOfTypes());
+inline void RunTest() {
+  std::string sim_name("simulation_object_vector_test_RunInitializerTest");
+  Simulation<> simulation(sim_name);
+  auto* rm = simulation.GetResourceManager();
+
+  ASSERT_EQ(2u, rm->NumberOfTypes());
 
   auto as = rm->Get<A>();
   as->push_back(A(3));
@@ -81,7 +119,7 @@ inline void RunTest() {
   bs->push_back(B(8));
   bs->push_back(B(9));
 
-  SimulationObjectVector<int, Rm> vector;
+  SimulationObjectVector<int, Simulation<>> vector;
   EXPECT_EQ(0, vector[SoHandle(0, 0)]);
   EXPECT_EQ(0, vector[SoHandle(0, 1)]);
   EXPECT_EQ(0, vector[SoHandle(0, 2)]);
@@ -95,26 +133,14 @@ inline void RunTest() {
   EXPECT_EQ(5, vector[SoHandle(0, 2)]);
 }
 
-template <typename TBackend = Soa>
-struct DefaultCompileTimeParam1 {
-  template <typename TTBackend>
-  using Self = CompileTimeParam<TTBackend>;
-  using Backend = TBackend;
-
-  /// Defines backend used in ResourceManager
-  using SimulationBackend = Soa;
-  using BiologyModules = Variant<NullBiologyModule>;
-  using AtomicTypes = VariadicTypedef<Cell>;
-};
-
 // Tests if SimulationObjectVector::Initialize does indeed initialize the
 // object correctly (i.e. set the data_ member to the default values)
 inline void RunInitializeTest() {
-  // setup resource manager
-  using Rm = ResourceManager<CompileTimeParam1<Soa>>;
-  auto rm = Rm::Get();
+  std::string sim_name("simulation_object_vector_test_RunInitializerTest");
+  Simulation<> simulation(sim_name);
+  auto* rm = simulation.GetResourceManager();
 
-  ASSERT_EQ(2u, Rm::NumberOfTypes());
+  ASSERT_EQ(2u, rm->NumberOfTypes());
 
   // Add some simulation objects, which shall be of type 0
   auto as = rm->Get<A>();
@@ -132,7 +158,7 @@ inline void RunInitializeTest() {
   auto max32 = std::numeric_limits<uint32_t>::max();
 
   // Check if the initial state is obtained after the push backs
-  SimulationObjectVector<SoHandle, Rm> vector;
+  SimulationObjectVector<SoHandle> vector;
   EXPECT_EQ(SoHandle(max16, max32), vector[SoHandle(0, 0)]);
   EXPECT_EQ(SoHandle(max16, max32), vector[SoHandle(0, 1)]);
   EXPECT_EQ(SoHandle(max16, max32), vector[SoHandle(0, 2)]);
@@ -161,4 +187,4 @@ inline void RunInitializeTest() {
 }  // namespace simulation_object_vector_test_internal
 }  // namespace bdm
 
-#endif  // UNIT_SIMULATION_OBJECT_VECTOR_TEST_H_
+#endif  // UNIT_SEPARATE_BINARY_SIMULATION_OBJECT_VECTOR_TEST_H_

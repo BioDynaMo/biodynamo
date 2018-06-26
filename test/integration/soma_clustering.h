@@ -60,11 +60,12 @@ struct Chemotaxis : public BaseBiologyModule {
   // Daughter cells inherit this biology module
   Chemotaxis() : BaseBiologyModule(gAllBmEvents) {}
 
-  template <typename T>
+  template <typename T, typename TSimulation = Simulation<>>
   void Run(T* cell) {
     if (!init_) {
-      dg_0_ = GetDiffusionGrid(kSubstance_0);
-      dg_1_ = GetDiffusionGrid(kSubstance_1);
+      auto* rm = TSimulation::GetActive()->GetResourceManager();
+      dg_0_ = rm->GetDiffusionGrid(kSubstance_0);
+      dg_1_ = rm->GetDiffusionGrid(kSubstance_1);
       init_ = true;
     }
 
@@ -96,11 +97,12 @@ struct SubstanceSecretion : public BaseBiologyModule {
   // Daughter cells inherit this biology module
   SubstanceSecretion() : BaseBiologyModule(gAllBmEvents) {}
 
-  template <typename T>
+  template <typename T, typename TSimulation = Simulation<>>
   void Run(T* cell) {
     if (!init_) {
-      dg_0_ = GetDiffusionGrid(kSubstance_0);
-      dg_1_ = GetDiffusionGrid(kSubstance_1);
+      auto* rm = TSimulation::GetActive()->GetResourceManager();
+      dg_0_ = rm->GetDiffusionGrid(kSubstance_0);
+      dg_1_ = rm->GetDiffusionGrid(kSubstance_1);
       init_ = true;
     }
     auto& secretion_position = cell->GetPosition();
@@ -130,9 +132,11 @@ struct CompileTimeParam : public DefaultCompileTimeParam<Backend> {
 // Returns 0 if the cell locations within a subvolume of the total system,
 // comprising approximately target_n cells, are arranged as clusters, and 1
 // otherwise.
-template <typename TResourceManager = ResourceManager<>>
+template <typename TSimulation = Simulation<>>
 static bool GetCriterion(double spatial_range, int target_n) {
-  auto rm = TResourceManager::Get();
+  auto* sim = TSimulation::GetActive();
+  auto* rm = sim->GetResourceManager();
+
   auto my_cells = rm->template Get<MyCell>();
   int n = my_cells->size();
 
@@ -151,7 +155,8 @@ static bool GetCriterion(double spatial_range, int target_n) {
   std::vector<int> types_sub_vol(n);
 
   // Define the subvolume to be the first octant of a cube
-  double sub_vol_max = Param::max_bound_ / 2;
+  auto* param = sim->GetParam();
+  double sub_vol_max = param->max_bound_ / 2;
 
   // The number of cells within the subvolume
   int num_cells_sub_vol = 0;
@@ -239,18 +244,21 @@ static bool GetCriterion(double spatial_range, int target_n) {
 }
 
 inline int Simulate(int argc, const char** argv) {
-  InitializeBiodynamo(argc, argv);
+  Simulation<> simulation(argc, argv);
+  auto* param = simulation.GetParam();
 
   // 3. Define initial model
 
   // Create an artificial bounds for the simulation space
-  Param::bound_space_ = true;
-  Param::min_bound_ = 0;
-  Param::max_bound_ = 250;
-  Param::run_mechanical_interactions_ = false;
+  param->bound_space_ = true;
+  param->min_bound_ = 0;
+  param->max_bound_ = 250;
+  param->run_mechanical_interactions_ = false;
   int num_cells = 20000;
 
-  gTRandom.SetSeed(4357);
+// set seed for each thread local random number generator
+#pragma omp parallel
+  simulation.GetRandom()->SetSeed(4357);
 
   // Construct num_cells/2 cells of type 1
   auto construct_0 = [](const std::array<double, 3>& position) {
@@ -261,7 +269,7 @@ inline int Simulate(int argc, const char** argv) {
     cell.AddBiologyModule(Chemotaxis());
     return cell;
   };
-  ModelInitializer::CreateCellsRandom(Param::min_bound_, Param::max_bound_,
+  ModelInitializer::CreateCellsRandom(param->min_bound_, param->max_bound_,
                                       num_cells / 2, construct_0);
 
   // Construct num_cells/2 cells of type -1
@@ -273,7 +281,7 @@ inline int Simulate(int argc, const char** argv) {
     cell.AddBiologyModule(Chemotaxis());
     return cell;
   };
-  ModelInitializer::CreateCellsRandom(Param::min_bound_, Param::max_bound_,
+  ModelInitializer::CreateCellsRandom(param->min_bound_, param->max_bound_,
                                       num_cells / 2, construct_1);
 
   // 3. Define the substances that cells may secrete
@@ -282,8 +290,7 @@ inline int Simulate(int argc, const char** argv) {
   ModelInitializer::DefineSubstance(kSubstance_1, "Substance_1", 0.5, 0.1, 25);
 
   // 4. Run simulation for N timesteps
-  Scheduler<> scheduler;
-  scheduler.Simulate(3001);
+  simulation.GetScheduler()->Simulate(3001);
 
   double spatial_range = 5;
   auto crit = GetCriterion(spatial_range, num_cells / 8);

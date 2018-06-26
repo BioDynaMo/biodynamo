@@ -15,7 +15,7 @@
 #ifndef BOUND_SPACE_OP_H_
 #define BOUND_SPACE_OP_H_
 
-#include "grid.h"
+#include "simulation.h"
 
 namespace bdm {
 
@@ -42,19 +42,21 @@ class BoundSpace {
   BoundSpace() {}
   ~BoundSpace() {}
 
-  template <typename TContainer>
+  template <typename TContainer, typename TSimulation = Simulation<>>
   void operator()(TContainer* sim_objects, uint16_t type_idx) const {
     // set new positions after all updates have been calculated
     // otherwise some sim_objects would see neighbors with already updated
     // positions
     // which would lead to inconsistencies
-    auto& grid = Grid<>::GetInstance();
+    auto* sim = TSimulation::GetActive();
+    auto* grid = sim->GetGrid();
+    auto* param = sim->GetParam();
 #pragma omp parallel for
     for (size_t i = 0; i < sim_objects->size(); i++) {
       auto&& sim_object = (*sim_objects)[i];
-      if (Param::bound_space_) {
-        ApplyBoundingBox(&sim_object, Param::min_bound_, Param::max_bound_);
-        grid.SetDimensionThresholds(Param::min_bound_, Param::max_bound_);
+      if (param->bound_space_) {
+        ApplyBoundingBox(&sim_object, param->min_bound_, param->max_bound_);
+        grid->SetDimensionThresholds(param->min_bound_, param->max_bound_);
       }
     }
   }

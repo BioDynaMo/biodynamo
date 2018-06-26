@@ -14,7 +14,9 @@
 
 #include "cell.h"
 #include "compile_time_param.h"
+#include "simulation_implementation.h"
 #include "unit/simulation_object_test.h"
+#include "unit/test_util.h"
 
 namespace bdm {
 
@@ -26,13 +28,16 @@ struct CompileTimeParam : public DefaultCompileTimeParam<TBackend> {
 namespace simulation_object_aos_test_internal {
 
 TEST(SimulationObjectTest, AosGetElementIndex) {
-  Rm()->Clear();
+  Simulation<> simulation(TEST_NAME);
+  auto* rm = simulation.GetResourceManager();
+
+  rm->Clear();
   for (uint64_t i = 0; i < 10; i++) {
-    Rm()->New<Cell>(1);
+    rm->New<Cell>(1);
   }
-  Rm()->Get<Cell>()->Commit();
-  EXPECT_EQ(10u, Rm()->GetNumSimObjects());
-  auto cells = Rm()->Get<Cell>();
+  rm->Get<Cell>()->Commit();
+  EXPECT_EQ(10u, rm->GetNumSimObjects());
+  auto cells = rm->Get<Cell>();
   for (uint64_t i = 0; i < 10; i++) {
     EXPECT_EQ(i, (*cells)[i].GetElementIdx());
   }

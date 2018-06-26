@@ -22,10 +22,12 @@
 #include <type_traits>
 #include <unordered_map>
 #include <vector>
-#include "log.h"
 
+#include "log.h"
 #include "param.h"
 #include "resource_manager.h"
+#include "shape.h"
+#include "simulation.h"
 
 // check for ROOTCLING was necessary, due to ambigous reference to namespace
 // detail when using ROOT I/O
@@ -56,13 +58,82 @@ namespace bdm {
 
 #if defined(USE_CATALYST) && !defined(__ROOTCLING__)
 
-/// The class that bridges the simulation code with ParaView
-template <typename TResourceManager = ResourceManager<>>
+/// The class that bridges the simulation code with ParaView.
+/// Requires that simulation objects use the Soa memory layout.
+template <typename TSimulation = Simulation<>>
 class CatalystAdaptor {
  public:
-  static CatalystAdaptor* GetInstance() {
-    static CatalystAdaptor kInstance;
-    return &kInstance;
+  /// Initializes Catalyst with the predefined pipeline and allocates memory
+  /// for the VTK grid structures
+  ///
+  /// @param[in]  script  The Python script that contains the pipeline
+  ///
+  explicit CatalystAdaptor(const std::string& script) : python_script_(script) {
+    counter_++;
+  }
+
+  ~CatalystAdaptor() {
+    auto* param = TSimulation::GetActive()->GetParam();
+    counter_--;
+
+    if (pipeline_) {
+      g_processor_->RemovePipeline(pipeline_);
+      pipeline_->Delete();
+      pipeline_ = nullptr;
+    }
+    for (auto* sog : vtk_so_grids_) {
+      sog->Delete();
+      sog = nullptr;
+    }
+    for (auto* dg : vtk_dgrids_) {
+      dg->Delete();
+      dg = nullptr;
+    }
+
+    if (counter_ == 0 && g_processor_) {
+      g_processor_->RemoveAllPipelines();
+      g_processor_->Finalize();
+      g_processor_->Delete();
+      g_processor_ = nullptr;
+    }
+    if (param->export_visualization_ && sim_info_json_generated_) {
+      GenerateParaviewState();
+    }
+  }
+
+  /// Parameters might be set after the constructor has been called.
+  /// Therefore, we defer initialization to the first invocation of
+  /// `Visualize`.
+  void Initialize() {
+    auto* sim = TSimulation::GetActive();
+    auto* param = sim->GetParam();
+
+    if (param->live_visualization_ || param->export_visualization_) {
+      if (g_processor_ == nullptr) {
+        g_processor_ = vtkCPProcessor::New();
+        g_processor_->Initialize();
+      }
+
+      auto* rm = TSimulation::GetActive()->GetResourceManager();
+      so_is_initialized_.resize(rm->NumberOfTypes());
+      dg_is_initialized_.resize(rm->GetDiffusionGrids().size());
+
+      if (param->live_visualization_ &&
+          g_processor_->GetNumberOfPipelines() != 0) {
+        Log::Warning("CatalystAdaptor",
+                     "Live visualization does not support multiple "
+                     "simulations. Turning off live visualization for ",
+                     sim->GetUniqueName());
+        param->live_visualization_ = false;
+      } else if (param->python_catalyst_pipeline_) {
+        vtkNew<vtkCPPythonScriptPipeline> pipeline;
+        pipeline->Initialize(python_script_.c_str());
+        g_processor_->AddPipeline(pipeline.GetPointer());
+      } else {  // TODO(ahmad) pipline also needed for export visualization??
+        pipeline_ = new InSituPipeline();
+        g_processor_->AddPipeline(pipeline_);
+      }
+    }
   }
 
   /// Sets the properties of the diffusion VTK grid structures
@@ -181,7 +252,8 @@ class CatalystAdaptor {
     sim_objects->ForEachDataMemberIn(
         required_dm, AddCellAttributeData(type_idx, num_cells, &vtk_so_grids_));
 
-    auto& additional_dm = Param::visualize_sim_objects_[scalar_name];
+    auto* param = TSimulation::GetActive()->GetParam();
+    auto& additional_dm = param->visualize_sim_objects_[scalar_name];
     if (!additional_dm.empty()) {
       sim_objects->ForEachDataMemberIn(
           additional_dm,
@@ -226,56 +298,6 @@ class CatalystAdaptor {
     }
   }
 
-  /// Initializes Catalyst with the predefined pipeline and allocates memory
-  /// for the VTK grid structures
-  ///
-  /// @param[in]  script  The Python script that contains the pipeline
-  ///
-  inline void Initialize(const std::string& script) {
-    if (Param::live_visualization_ || Param::export_visualization_) {
-      if (g_processor_ == nullptr) {
-        g_processor_ = vtkCPProcessor::New();
-        g_processor_->Initialize();
-
-        auto rm = TResourceManager::Get();
-        so_is_initialized_.resize(rm->NumberOfTypes());
-        dg_is_initialized_.resize(rm->GetDiffusionGrids().size());
-      } else {
-        g_processor_->RemoveAllPipelines();
-      }
-
-      if (Param::python_catalyst_pipeline_) {
-        vtkNew<vtkCPPythonScriptPipeline> pipeline;
-        pipeline->Initialize(script.c_str());
-        g_processor_->AddPipeline(pipeline.GetPointer());
-      } else {
-        pipeline_ = new InSituPipeline();
-        g_processor_->AddPipeline(pipeline_);
-      }
-    }
-  }
-
-  /// Cleans up allocated memory
-  inline void Finalize() {
-    if (Param::live_visualization_ || Param::export_visualization_) {
-      if (g_processor_) {
-        g_processor_->Delete();
-        g_processor_ = nullptr;
-      }
-      for (auto sog : vtk_so_grids_) {
-        sog->Delete();
-        sog = nullptr;
-      }
-      for (auto dg : vtk_dgrids_) {
-        dg->Delete();
-        dg = nullptr;
-      }
-      if (Param::export_visualization_) {
-        GenerateParaviewState();
-      }
-    }
-  }
-
   /// Helper function to write simulation objects to file. It loops through the
   /// vectors of VTK grid structures and calls the internal VTK writer methods
   ///
@@ -283,27 +305,28 @@ class CatalystAdaptor {
   ///
   void WriteToFile(size_t step) {
     uint64_t counter = 0;
+    auto* sim = TSimulation::GetActive();
     for (auto vtk_so : vtk_so_grids_) {
       vtkNew<vtkXMLPUnstructuredGridWriter> cells_writer;
-      std::string filename =
-          so_scalar_names_[counter] + "_data_" + std::to_string(step) + ".pvtu";
-
+      auto filename = Concat(sim->GetOutputDir(), "/",
+                             so_scalar_names_[counter], "-", step, ".pvtu");
       cells_writer->SetFileName(filename.c_str());
       cells_writer->SetInputData(vtk_so);
       cells_writer->Update();
       counter++;
     }
 
-    auto& dgrids = TResourceManager::Get()->GetDiffusionGrids();
+    auto* rm = sim->GetResourceManager();
+    auto& dgrids = rm->GetDiffusionGrids();
 
     size_t idx = 0;
     for (auto vtk_dg : vtk_dgrids_) {
       vtkNew<vtkXMLPImageDataWriter> dgrid_writer;
 
-      std::string dgrid_filename = dgrids[idx]->GetSubstanceName() + "_" +
-                                   std::to_string(step) + ".pvti";
-
-      dgrid_writer->SetFileName(dgrid_filename.c_str());
+      const auto& substance_name = dgrids[idx]->GetSubstanceName();
+      auto filename =
+          Concat(sim->GetOutputDir(), "/", substance_name, "-", step, ".pvti");
+      dgrid_writer->SetFileName(filename.c_str());
       dgrid_writer->SetInputData(vtk_dg);
       dgrid_writer->Update();
       idx++;
@@ -314,13 +337,16 @@ class CatalystAdaptor {
   ///
   /// @param      data_description  The data description
   ///
-  void CreateVtkObjects(
-      vtkNew<vtkCPDataDescription>& data_description) {  // NOLINT
+  template <typename TTSimulation = Simulation<>>
+  typename std::enable_if<std::is_same<
+      typename TTSimulation::ResourceManager_t::Backend, Soa>::value>::type
+  CreateVtkObjects(vtkNew<vtkCPDataDescription>& data_description) {  // NOLINT
     // Add simulation objects to the visualization if requested
-    auto rm = TResourceManager::Get();
+    auto* sim = TSimulation::GetActive();
+    auto* rm = sim->GetResourceManager();
+    auto* param = sim->GetParam();
     rm->ApplyOnAllTypes([&, this](auto* sim_objects, uint16_t type_idx) {
-      auto so_name =
-          std::decay<decltype(*sim_objects)>::type::GetScalarTypeName().c_str();
+      auto so_name = sim_objects->GetScalarTypeName().c_str();
 
       data_description->AddInput(so_name);
 
@@ -335,9 +361,9 @@ class CatalystAdaptor {
     });
 
     // Add all diffusion grids to the visualization if requested
-    if (!Param::visualize_diffusion_.empty()) {
+    if (!param->visualize_diffusion_.empty()) {
       uint16_t idx = 0;
-      for (auto& vd : Param::visualize_diffusion_) {
+      for (auto& vd : param->visualize_diffusion_) {
         auto dg = rm->GetDiffusionGrid(vd.name_);
         if (dg == nullptr) {
           Log::Warning("Visualize Diffusion", "The substance with the name ",
@@ -360,15 +386,30 @@ class CatalystAdaptor {
     }
   }
 
+  template <typename TTSimulation = Simulation<>>
+  typename std::enable_if<!std::is_same<
+      typename TTSimulation::ResourceManager_t::Backend, Soa>::value>::type
+  CreateVtkObjects(vtkNew<vtkCPDataDescription>& data_description) {  // NOLINT
+    Fatal("CatalystAdaptor",
+          "At the moment, CatalystAdaptor supports only simulation objects "
+          "with Soa backend!");
+  }
+
   /// Visualize one timestep based on the configuration in `Param`
-  void Visualize(bool last_iteration) {
-    if (Param::live_visualization_) {
-      double time = Param::simulation_time_step_ * Param::total_steps_;
-      CoProcess(time, Param::total_steps_, last_iteration);
+  void Visualize(uint64_t total_steps, bool last_iteration) {
+    if (!initialized_) {
+      Initialize();
+      initialized_ = true;
     }
-    if (Param::export_visualization_) {
-      double time = Param::simulation_time_step_ * Param::total_steps_;
-      ExportVisualization(time, Param::total_steps_, last_iteration);
+
+    auto* param = TSimulation::GetActive()->GetParam();
+    if (param->live_visualization_) {
+      double time = param->simulation_time_step_ * total_steps;
+      LiveVisualization(time, total_steps, last_iteration);
+    }
+    if (param->export_visualization_) {
+      double time = param->simulation_time_step_ * total_steps;
+      ExportVisualization(time, total_steps, last_iteration);
     }
   }
 
@@ -378,7 +419,7 @@ class CatalystAdaptor {
   /// @param[in]  step            The time step duration
   /// @param[in]  last_time_step  Last time step or not
   ///
-  inline void CoProcess(double time, size_t step, bool last_time_step) {
+  void LiveVisualization(double time, size_t step, bool last_time_step) {
     vtkNew<vtkCPDataDescription> data_description;
     data_description->SetTimeData(time, step);
 
@@ -419,14 +460,21 @@ class CatalystAdaptor {
       data_description->ForceOutputOn();
     }
 
-    if (step % Param::visualization_export_interval_ == 0) {
+    auto* param = TSimulation::GetActive()->GetParam();
+    if (step % param->visualization_export_interval_ == 0) {
       WriteToFile(step);
     }
   }
 
  private:
-  vtkCPProcessor* g_processor_ = nullptr;
+  static vtkCPProcessor* g_processor_;
+  static std::atomic<uint64_t> counter_;
+
+  /// only needed for live visualization
   InSituPipeline* pipeline_ = nullptr;
+  std::string python_script_;
+  bool initialized_ = false;
+
   std::vector<vtkImageData*> vtk_dgrids_;
   std::vector<vtkUnstructuredGrid*> vtk_so_grids_;
   std::vector<bool> so_is_initialized_;
@@ -434,8 +482,7 @@ class CatalystAdaptor {
   std::unordered_map<std::string, Shape> shapes_;
   std::vector<std::string> so_scalar_names_;
   /// This variable is used to generate the simulation info json during the
-  /// first
-  /// invocation of `ExportVisualization`
+  /// first invocation of `ExportVisualization`
   bool sim_info_json_generated_ = false;
   static constexpr char const* kSimulationInfoJson = "simulation_info.json";
 
@@ -448,11 +495,13 @@ class CatalystAdaptor {
   /// \see GenerateParaviewState
   static void GenerateSimulationInfoJson(
       const std::unordered_map<std::string, Shape>& shapes) {
+    auto* sim = TSimulation::GetActive();
+    auto* param = sim->GetParam();
     // simulation objects
     std::stringstream sim_objects;
-    uint64_t num_sim_objects = Param::visualize_sim_objects_.size();
+    uint64_t num_sim_objects = param->visualize_sim_objects_.size();
     uint64_t counter = 0;
-    for (const auto& entry : Param::visualize_sim_objects_) {
+    for (const auto& entry : param->visualize_sim_objects_) {
       std::string so_name = entry.first;
 
       sim_objects << "    {" << std::endl
@@ -483,12 +532,12 @@ class CatalystAdaptor {
 
     // extracellular substances
     std::stringstream substances;
-    uint64_t num_substances = Param::visualize_diffusion_.size();
+    uint64_t num_substances = param->visualize_diffusion_.size();
     for (uint64_t i = 0; i < num_substances; i++) {
-      substances << "    { \"name\":\"" << Param::visualize_diffusion_[i].name_
+      substances << "    { \"name\":\"" << param->visualize_diffusion_[i].name_
                  << "\", ";
       std::string has_gradient =
-          Param::visualize_diffusion_[i].gradient_ ? "true" : "false";
+          param->visualize_diffusion_[i].gradient_ ? "true" : "false";
       substances << "\"has_gradient\":\"" << has_gradient << "\" }";
 
       if (i != num_substances - 1) {
@@ -498,13 +547,11 @@ class CatalystAdaptor {
 
     // write to file
     std::ofstream ofstr;
-    ofstr.open(kSimulationInfoJson);
+    ofstr.open(Concat(sim->GetOutputDir(), "/", kSimulationInfoJson));
     ofstr << "{" << std::endl
           << "  \"simulation\": {" << std::endl
-          << "    \"name\":\"" << Param::executable_name_ << "\"," << std::endl
-          << "    \"result_dir\":\""
-          << "."
-          << "\"" << std::endl
+          << "    \"name\":\"" << sim->GetUniqueName() << "\"," << std::endl
+          << "    \"result_dir\":\"" << sim->GetOutputDir() << "\"" << std::endl
           << "  }," << std::endl
           << "  \"sim_objects\": [" << std::endl
           << sim_objects.str() << "  ]," << std::endl
@@ -519,10 +566,11 @@ class CatalystAdaptor {
   /// Therefore, the user can load the visualization simply by opening the pvsm
   /// file and does not have to perform a lot of manual steps.
   static void GenerateParaviewState() {
+    auto* sim = TSimulation::GetActive();
     std::stringstream python_cmd;
     python_cmd << "pvpython "
                << BDM_SRC_DIR "/visualization/generate_pv_state.py "
-               << kSimulationInfoJson;
+               << sim->GetOutputDir() << "/" << kSimulationInfoJson;
     int ret_code = system(python_cmd.str().c_str());
     if (ret_code) {
       Log::Fatal("CatalystAdaptor::GenerateParaviewState",
@@ -532,54 +580,58 @@ class CatalystAdaptor {
   }
 };
 
+template <typename T>
+vtkCPProcessor* CatalystAdaptor<T>::g_processor_ = nullptr;
+
+template <typename T>
+constexpr const char* CatalystAdaptor<T>::kSimulationInfoJson;
+
+template <typename T>
+std::atomic<uint64_t> CatalystAdaptor<T>::counter_;
+
 #else
 
 /// False front (to ignore Catalyst in gtests)
-template <typename TResourceManager = ResourceManager<>>
+template <typename TSimulation = Simulation<>>
 class CatalystAdaptor {
  public:
-  static CatalystAdaptor* GetInstance() {
-    static CatalystAdaptor kInstance;
-    return &kInstance;
-  }
-
-  void Initialize(const std::string& script) {
-    if (Param::live_visualization_ || Param::export_visualization_) {
-      Log::Fatal("CatalystAdaptor::Initialize",
-                "Simulation was compiled without ParaView support, but you are "
-                "trying to use it.");
+  explicit CatalystAdaptor(const std::string& script) {
+    auto* param = TSimulation::GetActive()->GetParam();
+    if (param->live_visualization_ || param->export_visualization_) {
+      Log::Fatal(
+          "CatalystAdaptor::Initialize",
+          "Simulation was compiled without ParaView support, but you are "
+          "trying to use it.");
     }
   }
 
-  void Finalize() {
-    if (Param::live_visualization_ || Param::export_visualization_) {
-      Log::Fatal("CatalystAdaptor::Finalize",
-                "Simulation was compiled without ParaView support, but you are "
-                "trying to use it.");
+  void Visualize(uint64_t, bool) {
+    auto* param = TSimulation::GetActive()->GetParam();
+    if (param->live_visualization_ || param->export_visualization_) {
+      Log::Fatal(
+          "CatalystAdaptor::Visualize",
+          "Simulation was compiled without ParaView support, but you are "
+          "trying to use it.");
     }
   }
 
-  void Visualize(bool last_iteration) {
-    if (Param::live_visualization_ || Param::export_visualization_) {
-      Log::Fatal("CatalystAdaptor::Visualize",
-                "Simulation was compiled without ParaView support, but you are "
-                "trying to use it.");
-    }
-  }
-
-  void CoProcess(double time, size_t time_step, bool last_time_step) {
-    if (Param::live_visualization_ || Param::export_visualization_) {
-      Log::Fatal("CatalystAdaptor::CoProcess",
-                "Simulation was compiled without ParaView support, but you are "
-                "trying to use it.");
+  void LiveVisualization(double time, size_t time_step, bool last_time_step) {
+    auto* param = TSimulation::GetActive()->GetParam();
+    if (param->live_visualization_ || param->export_visualization_) {
+      Log::Fatal(
+          "CatalystAdaptor::LiveVisualization",
+          "Simulation was compiled without ParaView support, but you are "
+          "trying to use it.");
     }
   }
 
   void ExportVisualization(double step, size_t time_step, bool last_time_step) {
-    if (Param::live_visualization_ || Param::export_visualization_) {
-      Log::Fatal("CatalystAdaptor::ExportVisualization",
-                "Simulation was compiled without ParaView support, but you are "
-                "trying to use it.");
+    auto* param = TSimulation::GetActive()->GetParam();
+    if (param->live_visualization_ || param->export_visualization_) {
+      Log::Fatal(
+          "CatalystAdaptor::ExportVisualization",
+          "Simulation was compiled without ParaView support, but you are "
+          "trying to use it.");
     }
   }
 

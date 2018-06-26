@@ -23,3 +23,8 @@ TEST(SimulationObjectVector, InitializeSuccessors) { RunInitializeTest(); }
 
 }  // namespace simulation_object_vector_test_internal
 }  // namespace bdm
+
+int main(int argc, char** argv) {
+  ::testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
+}

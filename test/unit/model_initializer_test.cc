@@ -18,6 +18,7 @@
 #include "cell.h"
 #include "gtest/gtest.h"
 #include "resource_manager.h"
+#include "simulation_implementation.h"
 #include "unit/default_ctparam.h"
 #include "unit/test_util.h"
 #include "variadic_template_parameter_util.h"
@@ -27,8 +28,8 @@ namespace model_initializer_test_internal {
 
 // Tests if pos_0 cubic 3D grid of cells is correctly initialized
 TEST(ModelInitializerTest, Grid3DCube) {
-  auto rm = ResourceManager<>::Get();
-  rm->Clear();
+  Simulation<> simulation(TEST_NAME);
+  auto* rm = simulation.GetResourceManager();
 
   ModelInitializer::Grid3D(2, 12, [](const std::array<double, 3>& pos) {
     Cell cell(pos);
@@ -49,8 +50,8 @@ TEST(ModelInitializerTest, Grid3DCube) {
 
 // Tests if pos_0 cuboid 3D grid of cells is correctly initialized
 TEST(ModelInitializerTest, Grid3DCuboid) {
-  auto rm = ResourceManager<>::Get();
-  rm->Clear();
+  Simulation<> simulation(TEST_NAME);
+  auto* rm = simulation.GetResourceManager();
 
   std::array<size_t, 3> grid_dimensions = {2, 3, 4};
 
@@ -73,8 +74,8 @@ TEST(ModelInitializerTest, Grid3DCuboid) {
 }
 
 TEST(ModelInitializerTest, CreateCells) {
-  auto rm = ResourceManager<>::Get();
-  rm->Clear();
+  Simulation<> simulation(TEST_NAME);
+  auto* rm = simulation.GetResourceManager();
 
   std::vector<std::array<double, 3>> positions;
   positions.push_back({1, 2, 3});
@@ -95,8 +96,8 @@ TEST(ModelInitializerTest, CreateCells) {
 }
 
 TEST(ModelInitializerTest, CreateCellsRandom) {
-  auto rm = ResourceManager<>::Get();
-  rm->Clear();
+  Simulation<> simulation(TEST_NAME);
+  auto* rm = simulation.GetResourceManager();
 
   ModelInitializer::CreateCellsRandom(-100, 100, 10,
                                       [](const std::array<double, 3>& pos) {

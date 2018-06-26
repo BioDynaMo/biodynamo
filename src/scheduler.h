@@ -30,33 +30,31 @@
 
 #include "log.h"
 #include "param.h"
+#include "simulation.h"
 #include "visualization/catalyst_adaptor.h"
 
 namespace bdm {
 
-template <typename TResourceManager = ResourceManager<>,
-          typename TGrid = Grid<>>
+template <typename TSimulation = Simulation<>>
 class Scheduler {
  public:
   using Clock = std::chrono::high_resolution_clock;
 
-  Scheduler()
-      : backup_(SimulationBackup(Param::backup_file_, Param::restore_file_)),
-        grid_(&TGrid::GetInstance()) {
-    total_steps_ = 0;
-    if (backup_.RestoreEnabled()) {
-      restore_point_ = backup_.GetSimulationStepsFromBackup();
+  Scheduler() {
+    auto* param = TSimulation::GetActive()->GetParam();
+    backup_ = new SimulationBackup(param->backup_file_, param->restore_file_);
+    if (backup_->RestoreEnabled()) {
+      restore_point_ = backup_->GetSimulationStepsFromBackup();
     }
-    visualization_ = CatalystAdaptor<>::GetInstance();
-    visualization_->Initialize(BDM_SRC_DIR "/visualization/simple_pipeline.py");
-    if (Param::use_gpu_) {
-      InitializeGPUEnvironment<>();
-    }
+    visualization_ =
+        new CatalystAdaptor<>(BDM_SRC_DIR "/visualization/simple_pipeline.py");
   }
 
   virtual ~Scheduler() {
-    visualization_->Finalize();
-    if (Param::statistics_) {
+    delete backup_;
+    delete visualization_;
+    auto* param = TSimulation::GetActive()->GetParam();
+    if (param->statistics_) {
       std::cout << gStatistics << std::endl;
     }
   }
@@ -76,62 +74,71 @@ class Scheduler {
     }
   }
 
+  /// This function returns the numer of simulated steps (=iterations).
+  uint64_t GetSimulatedSteps() const { return total_steps_; }
+
  protected:
+  uint64_t total_steps_ = 0;
+
   /// Executes one step.
   /// This design makes testing more convenient
   virtual void Execute(bool last_iteration) {
-    auto rm = TResourceManager::Get();
+    auto* sim = TSimulation::GetActive();
+    auto* rm = sim->GetResourceManager();
+    auto* grid = sim->GetGrid();
+    auto* param = sim->GetParam();
+
     assert(rm->GetNumSimObjects() > 0 &&
            "This simulation does not contain any simulation objects.");
 
-    visualization_->Visualize(last_iteration);
+    visualization_->Visualize(total_steps_, last_iteration);
 
     {
-      if (Param::statistics_) {
+      if (param->statistics_) {
         Timing timing("neighbors", &gStatistics);
-        grid_->UpdateGrid();
+        grid->UpdateGrid();
       } else {
-        grid_->UpdateGrid();
+        grid->UpdateGrid();
       }
     }
     // TODO(ahmad): should we only do it here and not after we run the physics?
     // We need it here, because we need to update the threshold values before
     // we update the diffusion grid
-    if (Param::bound_space_) {
+    if (param->bound_space_) {
       rm->ApplyOnAllTypes(bound_space_);
     }
     rm->ApplyOnAllTypes(diffusion_);
     rm->ApplyOnAllTypes(biology_);
-    if (Param::run_mechanical_interactions_) {
+    if (param->run_mechanical_interactions_) {
       rm->ApplyOnAllTypes(physics_);  // Bounding box applied at the end
     }
     CommitChangesAndUpdateReferences();
   }
 
  private:
-  SimulationBackup backup_;
-  uint64_t& total_steps_ = Param::total_steps_;
+  SimulationBackup* backup_ = nullptr;
   uint64_t restore_point_;
   std::chrono::time_point<Clock> last_backup_ = Clock::now();
-  CatalystAdaptor<>* visualization_ = nullptr;
+  CatalystAdaptor<>* visualization_ = nullptr;  //!
+  bool is_gpu_environment_initialized_ = false;
 
-  OpTimer<CommitOp<>> commit_ = OpTimer<CommitOp<>>("commit");
-  OpTimer<DiffusionOp<>> diffusion_ = OpTimer<DiffusionOp<>>("diffusion");
+  OpTimer<CommitOp> commit_ = OpTimer<CommitOp>("commit");
+  OpTimer<DiffusionOp> diffusion_ = OpTimer<DiffusionOp>("diffusion");
   OpTimer<BiologyModuleOp> biology_ = OpTimer<BiologyModuleOp>("biology");
-  OpTimer<DisplacementOp<>> physics_ = OpTimer<DisplacementOp<>>("physics");
+  OpTimer<DisplacementOp<TSimulation>> physics_ =
+      OpTimer<DisplacementOp<TSimulation>>("physics");
   OpTimer<BoundSpace> bound_space_ = OpTimer<BoundSpace>("bound_space");
-
-  TGrid* grid_;
 
   /// Backup the simulation. Backup interval based on `Param::backup_interval_`
   void Backup() {
     using std::chrono::seconds;
     using std::chrono::duration_cast;
-    if (backup_.BackupEnabled() &&
+    auto* param = TSimulation::GetActive()->GetParam();
+    if (backup_->BackupEnabled() &&
         duration_cast<seconds>(Clock::now() - last_backup_).count() >=
-            Param::backup_interval_) {
+            param->backup_interval_) {
       last_backup_ = Clock::now();
-      backup_.Backup(total_steps_);
+      backup_->Backup(total_steps_);
     }
   }
 
@@ -139,16 +146,15 @@ class Scheduler {
   /// @param steps number of simulation steps for a `Simulate` call
   /// @return if `Simulate` should return early
   bool Restore(uint64_t* steps) {
-    if (backup_.RestoreEnabled() && restore_point_ > total_steps_ + *steps) {
+    if (backup_->RestoreEnabled() && restore_point_ > total_steps_ + *steps) {
       total_steps_ += *steps;
       // restore requested, but not last backup was not done during this call to
       // Simualte. Therefore, we skip it.
       return true;
-    } else if (backup_.RestoreEnabled() && restore_point_ > total_steps_ &&
+    } else if (backup_->RestoreEnabled() && restore_point_ > total_steps_ &&
                restore_point_ < total_steps_ + *steps) {
       // Restore
-      backup_.Restore();
-
+      backup_->Restore();
       *steps = total_steps_ + *steps - restore_point_;
       total_steps_ = restore_point_;
     }
@@ -156,7 +162,8 @@ class Scheduler {
   }
 
   void CommitChangesAndUpdateReferences() {
-    auto* rm = TResourceManager::Get();
+    auto* sim = TSimulation::GetActive();
+    auto* rm = sim->GetResourceManager();
     rm->ApplyOnAllTypesParallel(commit_);
 
     const auto& update_info = commit_->GetUpdateInfo();
@@ -176,14 +183,23 @@ class Scheduler {
   void Initialize() {
     CommitChangesAndUpdateReferences();
 
-    grid_->Initialize();
-    if (Param::bound_space_) {
-      auto rm = TResourceManager::Get();
+    auto* sim = TSimulation::GetActive();
+    auto* grid = sim->GetGrid();
+    auto* rm = sim->GetResourceManager();
+    auto* param = sim->GetParam();
+
+    if (!is_gpu_environment_initialized_ && param->use_gpu_) {
+      InitializeGPUEnvironment<>();
+      is_gpu_environment_initialized_ = true;
+    }
+
+    grid->Initialize();
+    if (param->bound_space_) {
       rm->ApplyOnAllTypes(bound_space_);
     }
-    int lbound = grid_->GetDimensionThresholds()[0];
-    int rbound = grid_->GetDimensionThresholds()[1];
-    for (auto& dgrid : TResourceManager::Get()->GetDiffusionGrids()) {
+    int lbound = grid->GetDimensionThresholds()[0];
+    int rbound = grid->GetDimensionThresholds()[1];
+    for (auto& dgrid : rm->GetDiffusionGrids()) {
       // Create data structures, whose size depend on the grid dimensions
       dgrid->Initialize({lbound, rbound, lbound, rbound, lbound, rbound});
       // Initialize data structures with user-defined values
