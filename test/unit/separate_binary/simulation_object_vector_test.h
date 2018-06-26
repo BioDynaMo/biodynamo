@@ -50,6 +50,14 @@ BDM_SIM_OBJECT(A, SimulationObject) {
   double GetDiameter() { return 3.14; }
   static std::set<std::string> GetRequiredVisDataMembers() { return {"diameter_", "position_"}; };
   static constexpr Shape GetShape() { return Shape::kSphere; }
+  double* GetPositionPtr() { return nullptr; }
+  double* GetDiameterPtr() { return nullptr; }
+  double* GetTractorForcePtr() { return nullptr; }
+  double* GetAdherencePtr() { return nullptr; }
+  uint32_t* GetBoxIdPtr() { return nullptr; }
+  void FillMassVector(std::vector<double> * mass) {}
+  void UpdatePosition(std::array<double, 3>) {}
+  void SetTractorForce(std::array<double, 3>) {}
   // TODO(lukas) end remove
 
  private:
@@ -77,6 +85,14 @@ BDM_SIM_OBJECT(B, SimulationObject) {
   double GetDiameter() { return 3.14; }
   static std::set<std::string> GetRequiredVisDataMembers() { return {"diameter_", "position_"}; };
   static constexpr Shape GetShape() { return Shape::kSphere; }
+  double* GetPositionPtr() { return nullptr; }
+  double* GetDiameterPtr() { return nullptr; }
+  double* GetTractorForcePtr() { return nullptr; }
+  double* GetAdherencePtr() { return nullptr; }
+  uint32_t* GetBoxIdPtr() { return nullptr; }
+  void FillMassVector(std::vector<double> * mass) {}
+  void UpdatePosition(std::array<double, 3>) {}
+  void SetTractorForce(std::array<double, 3>) {}
   // TODO(lukas) end remove
 
 

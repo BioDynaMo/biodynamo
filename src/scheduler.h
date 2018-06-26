@@ -47,9 +47,6 @@ class Scheduler {
       restore_point_ = backup_->GetSimulationStepsFromBackup();
     }
     visualization_ = new CatalystAdaptor<>(BDM_SRC_DIR "/visualization/simple_pipeline.py");
-    if (param->use_gpu_) {
-      InitializeGPUEnvironment<>();
-    }
   }
 
   virtual ~Scheduler() {
@@ -122,6 +119,7 @@ class Scheduler {
   uint64_t restore_point_;
   std::chrono::time_point<Clock> last_backup_ = Clock::now();
   CatalystAdaptor<>* visualization_ = nullptr; //!
+  bool is_gpu_environment_initialized_ = false;
 
   OpTimer<CommitOp> commit_ = OpTimer<CommitOp>("commit");
   OpTimer<DiffusionOp> diffusion_ = OpTimer<DiffusionOp>("diffusion");
@@ -187,6 +185,11 @@ class Scheduler {
     auto* grid = sim->GetGrid();
     auto* rm = sim->GetResourceManager();
     auto* param = sim->GetParam();
+
+    if (!is_gpu_environment_initialized_ && param->use_gpu_) {
+      InitializeGPUEnvironment<>();
+      is_gpu_environment_initialized_ = true;
+    }
 
     grid->Initialize();
     if (param->bound_space_) {

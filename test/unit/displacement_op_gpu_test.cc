@@ -38,6 +38,10 @@ void RunTest(ExecutionMode mode) {
     case kCuda: param->use_gpu_ = true;
   }
 
+  // Do this explicitly because this normally is only called in
+  // Scheduler::Initialize(), but in this test we call DisplacementOp directly.
+  InitializeGPUEnvironment<>();
+
   auto cells = rm->template Get<Cell>();
 
   // Cell 1
@@ -121,6 +125,10 @@ void RunTest2(ExecutionMode mode) {
     case kOpenCl: param->use_opencl_ = true;
     case kCuda: param->use_gpu_ = true;
   }
+  
+  // Do this explicitly because this normally is only called in
+  // Scheduler::Initialize(), but in this test we call DisplacementOp directly.
+  InitializeGPUEnvironment<>();
 
   auto cells = rm->template Get<Cell>();
 

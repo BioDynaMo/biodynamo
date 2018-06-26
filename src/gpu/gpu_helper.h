@@ -190,8 +190,9 @@ static void FindGpuDevicesOpenCL() {
       Log::Info("", "  [", i, "] ", (*devices)[i].getInfo<CL_DEVICE_NAME>());
     }
 
-    Log::Info("", "Selected GPU [", param->preferred_gpu_, "]: ",
-              (*devices)[param->preferred_gpu_].getInfo<CL_DEVICE_NAME>());
+    int selected_gpu = param->preferred_gpu_;
+    Log::Info("", "Selected GPU [", selected_gpu, "]: ",
+              (*devices)[selected_gpu].getInfo<CL_DEVICE_NAME>());
 
     // Create command queue for that GPU
     cl_int queue_err;
@@ -215,7 +216,7 @@ static void InitializeGPUEnvironment() {
 #ifdef USE_OPENCL
     FindGpuDevicesOpenCL<>();
 #else
-    Log::Info("InitializeGPUEnvironment",
+    Log::Warning("InitializeGPUEnvironment",
               "You tried to use the GPU (OpenCL) version of BioDynaMo, but no "
               "OpenCL installation was detected on this machine. Switching to "
               "the CPU version...");
@@ -225,7 +226,7 @@ static void InitializeGPUEnvironment() {
 #ifdef USE_CUDA
     FindGpuDevicesCuda();
 #else
-    Log::Info("InitializeGPUEnvironment",
+    Log::Warning("InitializeGPUEnvironment",
               "You tried to use the GPU (CUDA) version of BioDynaMo, but no "
               "CUDA installation was detected on this machine. Switching to "
               "the CPU version...");
