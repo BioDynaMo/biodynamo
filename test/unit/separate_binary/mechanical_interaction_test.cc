@@ -24,10 +24,6 @@
 
 namespace bdm {
 
-inline double DegreesToRadians(double degrees) {
-  return degrees / 180 * Math::kPi;
-}
-
 template <typename TBackend>
 struct CompileTimeParam
     : public DefaultCompileTimeParam<TBackend>,
@@ -50,6 +46,7 @@ TEST(MechanicalInteraction, StraightxCylinderGrowth) {
   neuron.SetDiameter(10);
 
   auto ne = neuron.ExtendNewNeurite({1, 0, 0});
+  ne->SetDiameter(2);
 
   Scheduler<> scheduler;
 
@@ -83,6 +80,7 @@ TEST(MechanicalInteraction, StraightyCylinderGrowth) {
   neuron.SetDiameter(10);
 
   auto ne = neuron.ExtendNewNeurite({0, 1, 0});
+  ne->SetDiameter(2);
 
   Scheduler<> scheduler;
 
@@ -116,6 +114,7 @@ TEST(MechanicalInteraction, StraightzCylinderGrowth) {
   neuron.SetDiameter(10);
 
   auto ne = neuron.ExtendNewNeurite({0, 0, 1});
+  ne->SetDiameter(2);
 
   Scheduler<> scheduler;
 
@@ -149,6 +148,7 @@ TEST(MechanicalInteraction, DiagonalxyCylinderGrowth) {
   neuron.SetDiameter(10);
 
   auto ne = neuron.ExtendNewNeurite({1, 1, 0});
+  ne->SetDiameter(2);
 
   Scheduler<> scheduler;
 
@@ -180,6 +180,7 @@ TEST(MechanicalInteraction, DiagonalxyzCylinderGrowth) {
   neuron.SetDiameter(10);
 
   auto ne = neuron.ExtendNewNeurite({1, 1, 1});
+  ne->SetDiameter(1);
 
   Scheduler<> scheduler;
 
@@ -212,6 +213,7 @@ TEST(MechanicalInteraction, DiagonalSpecialDirectionCylinderGrowth) {
   neuron.SetDiameter(10);
 
   auto ne = neuron.ExtendNewNeurite({1, 1, 1});
+  ne->SetDiameter(2);
 
   Scheduler<> scheduler;
 
@@ -249,6 +251,7 @@ TEST(MechanicalInteraction, StraightCylinderGrowthObstacle) {
   neuron2.SetDiameter(10);
 
   auto ne = neuron.ExtendNewNeurite({0, 0, 1});
+  ne->SetDiameter(2);
 
   Scheduler<> scheduler;
 
@@ -321,6 +324,8 @@ TEST(MechanicalInteraction, DoubleStraightCylinderGrowth) {
 
   auto ne = neuron.ExtendNewNeurite({0, 1, 0});
   auto ne2 = neuron.ExtendNewNeurite({1, 0, 0});
+  ne->SetDiameter(2);
+  ne2->SetDiameter(3);
 
   Scheduler<> scheduler;
 
@@ -370,6 +375,7 @@ TEST(MechanicalInteraction, BifurcationCylinderGrowth) {
   neuron.SetDiameter(10);
 
   auto ne = neuron.ExtendNewNeurite({0, 0, 1});
+  ne->SetDiameter(2);
 
   Scheduler<> scheduler;
 
@@ -417,6 +423,7 @@ TEST(MechanicalInteraction, BranchCylinderGrowth) {
   neuron.SetDiameter(10);
 
   auto ne = neuron.ExtendNewNeurite({0, 0, 1});
+  ne->SetDiameter(2);
 
   Scheduler<> scheduler;
 
