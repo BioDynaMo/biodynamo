@@ -1,6 +1,6 @@
 # Changelog
 
-## 22.06.2018: Commit-Id
+## 26.06.2018 `gba4fe1f`
 
 * Add support for multiple simulations per process. Only one simulation
 can be active at the same time. Introduces new class `Simulation` (see [API](https://biodynamo.github.io/api/structbdm_1_1Simulation.html)).
