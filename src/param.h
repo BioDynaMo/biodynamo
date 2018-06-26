@@ -29,6 +29,7 @@ struct Param {
   // FIXME Neurites
   /// Initial value of the restingLength before any specification.
   static constexpr double kNeuriteDefaultActualLength = 1.0;
+  static constexpr double kNeuriteDefaultDensity = 1.0;
   /// Diameter of an unspecified (= axon/dendrite) neurite when extends from the
   /// somaElement
   static constexpr double kNeuriteDefaultDiameter = 1.0;
