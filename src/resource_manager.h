@@ -35,9 +35,9 @@
 
 #include "backend.h"
 #include "diffusion_grid.h"
-#include "simulation.h"
 #include "tuple_util.h"
 #include "variadic_template_parameter_util.h"
+#include "simulation.h"
 
 namespace bdm {
 
@@ -178,7 +178,7 @@ class ResourceManager {
 
   /// Free the memory that was reserved for the diffusion grids
   virtual ~ResourceManager() {
-    for (auto grid : diffusion_grids_) {
+    for (auto* grid : diffusion_grids_) {
       delete grid;
     }
   }
@@ -217,8 +217,8 @@ class ResourceManager {
       }
     }
     assert(false &&
-           "You tried to access a diffusion grid that does not exist! "
-           "Did you specify the correct substance name?");
+             "You tried to access a diffusion grid that does not exist! "
+             "Did you specify the correct substance name?");
     return nullptr;
   }
 

@@ -81,9 +81,9 @@ BDM_SIM_OBJECT(TestCell, bdm::Cell) {
   }
 
   bool capture_input_parameters_ = false;
-  double captured_volume_ratio_;
-  double captured_phi_;
-  double captured_theta_;
+  double captured_volume_ratio_ = 0.0;
+  double captured_phi_ = 0.0;
+  double captured_theta_ = 0.0;
 
   void DivideImpl(MostDerivedSoPtr daughter, double volume_ratio, double phi,
                   double theta) {
@@ -173,6 +173,7 @@ inline void RunIOTest() {
 
   EXPECT_EQ(123u, restored_cell->GetBoxIdx());
 
+  delete restored_cell;
   // delete root file
   remove(ROOTFILE);
 }

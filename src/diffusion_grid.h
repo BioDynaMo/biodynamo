@@ -37,7 +37,7 @@ using std::array;
 /// It maintains the concentration and gradient of a single substance
 class DiffusionGrid {
  public:
-  DiffusionGrid() {}
+  DiffusionGrid(TRootIOCtor* p) {}
   DiffusionGrid(int substance_id, std::string substance_name, double dc,
                 double mu, int resolution = 10)
       : substance_(substance_id),
@@ -612,27 +612,27 @@ class DiffusionGrid {
 
  private:
   /// The id of the substance of this grid
-  int substance_;
+  int substance_ = 0;
   /// The name of the substance of this grid
-  std::string substance_name_;
+  std::string substance_name_ = "";
   /// The side length of each box
-  double box_length_;
+  double box_length_ = 0;
   /// the volume of each box
-  double box_volume_;
+  double box_volume_ = 0;
   /// The array of concentration values
-  std::vector<double> c1_;
+  std::vector<double> c1_ = {};
   /// An extra concentration data buffer for faster value updating
-  std::vector<double> c2_;
+  std::vector<double> c2_ = {};
   /// The array of gradients (x, y, z)
-  std::vector<double> gradients_;
+  std::vector<double> gradients_ = {};
   /// The maximum concentration value that a box can have
   double concentration_threshold_ = 1e15;
   /// The diffusion coefficients [cc, cw, ce, cs, cn, cb, ct]
-  array<double, 7> dc_;
+  array<double, 7> dc_ = {{0}};
   /// The decay constant
   double mu_ = 0;
   /// The grid dimensions of the diffusion grid
-  array<int32_t, 6> grid_dimensions_;
+  array<int32_t, 6> grid_dimensions_ = {{0}};
   /// The number of boxes at each axis [x, y, z]
   array<size_t, 3> num_boxes_axis_ = {{0}};
   /// The total number of boxes in the diffusion grid
@@ -640,11 +640,11 @@ class DiffusionGrid {
   /// Flag to determine if this grid has been initialized
   bool initialized_ = false;
   /// The resolution of the diffusion grid
-  int resolution_;
+  int resolution_ = 0;
   /// If false, grid dimensions are even; if true, they are odd
   bool parity_ = false;
   /// A list of functions that initialize this diffusion grid
-  std::vector<std::function<double(double, double, double)>> initializers_;
+  std::vector<std::function<double(double, double, double)>> initializers_ = {};
 
   ClassDefNV(DiffusionGrid, 1);
 };

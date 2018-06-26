@@ -49,15 +49,11 @@ BDM_SIM_OBJECT(A, bdm::SimulationObject) {
   void ApplyDisplacement(const std::array<double, 3>&) {}
   template <typename TGrid>
   std::array<double, 3> CalculateDisplacement(TGrid * grid,
-                                              double squared_radius) {
-    return {0, 0, 0};
-  }
+                                              double squared_radius) { return {0, 0, 0}; }
   void RunBiologyModules() {}
   void SetBoxIdx(uint64_t) {}
   double GetDiameter() { return 3.14; }
-  static std::set<std::string> GetRequiredVisDataMembers() {
-    return {"diameter_", "position_"};
-  }
+  static std::set<std::string> GetRequiredVisDataMembers() { return {"diameter_", "position_"}; }
   static constexpr Shape GetShape() { return Shape::kSphere; }
   // TODO(lukas) end remove
 
@@ -81,17 +77,14 @@ BDM_SIM_OBJECT(B, bdm::SimulationObject) {
   void ApplyDisplacement(const std::array<double, 3>&) {}
   template <typename TGrid>
   std::array<double, 3> CalculateDisplacement(TGrid * grid,
-                                              double squared_radius) {
-    return {0, 0, 0};
-  }
+                                              double squared_radius) { return {0, 0, 0}; }
   void RunBiologyModules() {}
   void SetBoxIdx(uint64_t) {}
   double GetDiameter() { return 3.14; }
-  static std::set<std::string> GetRequiredVisDataMembers() {
-    return {"diameter_", "position_"};
-  }
+  static std::set<std::string> GetRequiredVisDataMembers() { return {"diameter_", "position_"}; }
   static constexpr Shape GetShape() { return Shape::kSphere; }
   // TODO(lukas) end remove
+
 
   vec<double> data_;
 };
@@ -159,6 +152,8 @@ inline void RunIOTest() {
             restored_rm->GetDiffusionGrids()[0]->GetDiffusionCoefficients()[0]);
   EXPECT_EQ(0.8,
             restored_rm->GetDiffusionGrids()[1]->GetDiffusionCoefficients()[0]);
+
+  delete restored_rm;
 
   remove(ROOTFILE);
 }
