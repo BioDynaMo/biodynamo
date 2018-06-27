@@ -26,7 +26,8 @@ CALL_GRAPH             = YES
 CALLER_GRAPH           = YES
 VERBATIM_HEADERS       = YES
 SOURCE_BROWSER         = YES
-
-QUIET                  = YES
-# DOT_IMAGE_FORMAT       = svg
+HAVE_DOT               = YES
+UML_LOOK               = YES
+DOT_IMAGE_FORMAT       = svg
+# QUIET                  = YES
 # INTERACTIVE_SVG        = YES
