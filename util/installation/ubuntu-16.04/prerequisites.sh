@@ -77,6 +77,7 @@ function InstallPackages {
   done
 
   if [ $INSTALL ]; then
+    sudo -v
     # add repository for clang-3.9
     wget -O - http://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
     sudo apt-add-repository -y "$ADD_REPOSITORY"

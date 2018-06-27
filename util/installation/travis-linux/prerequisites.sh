@@ -74,6 +74,7 @@ function InstallPackages {
   done
 
   if [ $INSTALL ]; then
+    sudo -v
     sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test  # gcc-5
     # add repository for clang-3.9
     wget -O - http://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
