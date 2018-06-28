@@ -394,6 +394,9 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
       mass_location_[kIdx] = Math::Add(
           mother_[kIdx].OriginOf(Base::GetElementIdx()), spring_axis_[kIdx]);
       UpdateVolume();  // and update concentration of internal stuff.
+    } else if (mother_[kIdx].IsNeuronSoma()) {
+     mother_[kIdx].RemoveDaughter(GetSoPtr());
+     RemoveFromSimulation();
     } else if (mother_[kIdx].IsNeuriteElement() &&
                mother_[kIdx].GetDaughterRight() == nullptr) {
       // if actual_length_ < length and mother is a neurite element with no
