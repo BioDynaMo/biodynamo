@@ -72,32 +72,32 @@ TEST(DISABLED_NeuriteElementBehaviour, StraightxCylinderGrowthRetract) {
   std::cout << "\n---- start retraction" << std::endl;
   double neurite_length = ne->GetLength();
 
-  while (ne!=nullptr) {
-    ne->RunDiscretization();
-    neurite_length = ne->GetLength();
-    std::cout << "neurite length: " << neurite_length << std::endl;
-    ne->RetractTerminalEnd(50);
-    EXPECT_NEAR(neAxis[1], 0, abs_error<double>::value);
-    EXPECT_NEAR(neAxis[2], 0, abs_error<double>::value);
-  }
-
-  // for (int j = 0; j < 500; j++) {
-  //   ne->RetractTerminalEnd(50);
+  // while (ne!=nullptr) {
   //   ne->RunDiscretization();
-  //   scheduler.Simulate(1);
-  //   std::cout << "retraction step: " << j << std::endl;
-  //   if (j % 10 == 0) {
-  //     neAxis = ne->GetSpringAxis();
-  //
-  //     EXPECT_NEAR(neAxis[1], 0, abs_error<double>::value);
-  //     EXPECT_NEAR(neAxis[2], 0, abs_error<double>::value);
-  //   }
   //   neurite_length = ne->GetLength();
   //   std::cout << "neurite length: " << neurite_length << std::endl;
+  //   ne->RetractTerminalEnd(50);
+  //   EXPECT_NEAR(neAxis[1], 0, abs_error<double>::value);
+  //   EXPECT_NEAR(neAxis[2], 0, abs_error<double>::value);
   // }
-  //
-  // neurite_length = ne->GetLength();
-  // std::cout << "final neurite length: " << neurite_length << std::endl;
+
+  for (int j = 0; j < 500; j++) {
+    std::cout << "retraction step: " << j << std::endl;
+    if (ne!=nullptr){
+      ne->RetractTerminalEnd(50);
+      ne->RunDiscretization();
+      scheduler.Simulate(1);
+      if (j % 10 == 0) {
+        neAxis = ne->GetSpringAxis();
+
+        EXPECT_NEAR(neAxis[1], 0, abs_error<double>::value);
+        EXPECT_NEAR(neAxis[2], 0, abs_error<double>::value);
+      }
+      neurite_length = ne->GetLength();
+      std::cout << "neurite length: " << neurite_length << std::endl;
+    }
+  }
+  std::cout << "ook" << neurite_length << std::endl;
 }
 
 // TODO(jean) fix test
