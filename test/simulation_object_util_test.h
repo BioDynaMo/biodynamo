@@ -7,6 +7,7 @@
 #include <vector>
 
 #include <Rtypes.h>
+#include <gtest/gtest.h>
 
 #include "io_util.h"
 #include "simulation_object.h"
