@@ -8,6 +8,9 @@
     <class pattern="std::tuple<bdm::*<*>"/>
     <class name="bdm::DiffusionGrid" />
     <class name="bdm::KaliumSecretion" />
+    <class name="bdm::ClientMiddlewareMessageHeader" />
+    <class name="bdm::WorkerMiddlewareMessageHeader" />
+    <class name="bdm::AppMessageHeader" />
     <class name="bdm::DivisionAndMovementModule," />
     <class name="bdm::SubstanceSecretion" />
     <class name="bdm::Chemotaxis" />
