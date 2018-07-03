@@ -44,6 +44,9 @@ if [ `uname` = "Linux" ]; then
 
   sudo apt install -y libxt-dev freeglut3-dev
 
+  # libzmqpp
+  sudo apt-get install --quiet libzmq5 libzmq3-dev
+
   # update cmake
   URL="https://cmake.org/files/v3.6/cmake-3.6.3-Linux-x86_64.tar.gz"
   DownloadTarAndExtract $URL $WORKING_DIR/cmake-3.6.3 1
