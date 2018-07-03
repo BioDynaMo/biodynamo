@@ -117,5 +117,9 @@ include(${ROOT_USE_FILE})
 set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} biodynamo ${ROOT_LIBRARIES} vtkPVPythonCatalyst
     vtkIOParallelXML vtkPVVTKExtensionsDefault vtkPVServerManagerRendering)
 
+# libzmqpp
+include("$ENV{BDM_INSTALL_DIR/third_party/libzmqpp/include")
+link_directories("$ENV{BDM_INSTALL_DIR/third_party/libzmqpp/lib")
+
 include_directories("$ENV{BDM_CMAKE_DIR}/../../include")
 link_directories("$ENV{BDM_CMAKE_DIR}/../../lib")

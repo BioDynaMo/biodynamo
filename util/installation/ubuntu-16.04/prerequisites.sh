@@ -44,7 +44,8 @@ function InstallCmake {
 function InstallPackages {
   INSTALL_PACKAGES="freeglut3-dev  git valgrind python python3 python2.7-dev lcov \
   gcc g++ make cmake clang-3.9 clang-format-3.9 clang-tidy-3.9 libomp-dev \
-  doxygen graphviz python-pip"
+  doxygen graphviz python-pip \
+  libzmq5"
 
   ADD_REPOSITORY='deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-3.9 main'
 
@@ -119,6 +120,7 @@ function Install {
   DownloadTarFromCBAndExtract $BDM_OS root.tar.gz $THIRD_PARTY_DIR/root
   DownloadTarFromCBAndExtract $BDM_OS paraview.tar.gz $THIRD_PARTY_DIR/paraview
   DownloadTarFromCBAndExtract $BDM_OS qt.tar.gz $THIRD_PARTY_DIR/qt
+  DownloadTarFromCBAndExtract $BDM_OS libzmqpp.tar.gz $THIRD_PARTY_DIR/libzmqpp
 
   # temporal workaround to avoid libprotobuf error for paraview
   # use only until patched archive has been uploaded

@@ -34,3 +34,5 @@ $SCRIPTPATH/build-root.sh $ROOT_VERSION
 
 # paraview and qt
 $SCRIPTPATH/build-paraview.sh $PARAVIEW_VERSION
+
+$SCRIPTPATH/build-libzmqpp.sh

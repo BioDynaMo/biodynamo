@@ -53,12 +53,12 @@ PN=libzmqpp
 VERSION=4.2.0
 SUFFIX=.tar.gz
 DEST_FILE="${PN}-${VERSION}.${SUFFIX}"
-SRC_URL=https://github.com/zeromq/zmqpp/archive/4.2.0.zip
+SRC_URL="https://github.com/zeromq/zmqpp/archive/${VERSION}.zip"
 wget --progress=dot:giga -O "${DEST_FILE}" "${SRC_URL}"
 if [ `uname` = "Linux" ]; then
   unzip "${DEST_FILE}"
   cd "zmqpp-${VERSION}"
-  mkdir build
+  mkdir -p build
   cd build
   cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="${INSTALL_DIR}" ../
   make install
