@@ -45,7 +45,7 @@ function InstallPackages {
   INSTALL_PACKAGES="freeglut3-dev  git valgrind python python3 python2.7-dev lcov \
   gcc g++ make cmake clang-3.9 clang-format-3.9 clang-tidy-3.9 libomp-dev \
   doxygen graphviz python-pip \
-  libzmq5"
+  libzmq5 libzmq3-dev"
 
   ADD_REPOSITORY='deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-3.9 main'
 
