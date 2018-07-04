@@ -118,8 +118,10 @@ set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} biodynamo ${ROOT_LIBRARIES}
     vtkIOParallelXML vtkPVVTKExtensionsDefault vtkPVServerManagerRendering)
 
 # libzmqpp
-include_directories("$ENV{BDM_INSTALL_DIR}/third_party/libzmqpp/include")
-link_directories("$ENV{BDM_INSTALL_DIR}/third_party/libzmqpp/lib")
+if (LINUX)
+  include_directories("$ENV{BDM_INSTALL_DIR}/third_party/libzmqpp/include")
+  link_directories("$ENV{BDM_INSTALL_DIR}/third_party/libzmqpp/lib")
+endif()
 
 include_directories("$ENV{BDM_CMAKE_DIR}/../../include")
 link_directories("$ENV{BDM_CMAKE_DIR}/../../lib")
