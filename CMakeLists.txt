@@ -315,6 +315,11 @@ if(demo)
                      LIBRARIES biodynamo)
 
   # --------------------- build distribution benchmarks ------------------
+  if (LINUX)
+    include_directories("$ENV{BDM_INSTALL_DIR}/third_party/libzmqpp/include")
+    link_directories("$ENV{BDM_INSTALL_DIR}/third_party/libzmqpp/lib")
+  endif()
+
   file(GLOB DISTR_BENCHMARK_SOURCES demo/distribution/*.cc)
   set(DISTR_BENCHMARK_PATH "demo/distribution/benchmarks")
 
