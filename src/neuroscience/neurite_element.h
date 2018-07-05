@@ -951,15 +951,16 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
       return {0, 0, 0};
     }
     // if this or its mother is a branching point, displacement have to be reduced to avoid kink behaviour
+    auto* param = Simulation_t::GetActive()->GetParam();
     if (mother_[kIdx].IsNeuriteElement()) {
       auto mother = mother_[kIdx].GetNeuriteElementSoPtr();
       if (mother->GetDaughterLeft()!=nullptr && mother->GetDaughterRight()!=nullptr) {
-        double h = Param::simulation_time_step_;
+        double h = param->simulation_time_step_;
         h_over_m = h / GetMass();
       }
     }
     if (daughter_left_[kIdx] != nullptr && daughter_right_[kIdx] != nullptr) {
-      double h = Param::simulation_time_step_;
+      double h = param->simulation_time_step_;
       h_over_m = h / GetMass();
     }
 
@@ -980,7 +981,6 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
     }
 
     //  6.4) There is an upper bound for the movement.
-    auto* param = Simulation_t::GetActive()->GetParam();
     if (displacement_norm > param->simulation_max_displacement_) {
       displacement = Math::ScalarMult(
           param->simulation_max_displacement_ / displacement_norm,

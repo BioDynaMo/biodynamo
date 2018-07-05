@@ -100,8 +100,7 @@ TEST(DISABLED_NeuriteElementBehaviour, StraightxCylinderGrowthRetract) {
   std::cout << "ook" << neurite_length << std::endl;
 }
 
-// TODO(jean) fix test
-TEST(DISABLED_NeuriteElementBehaviour, BranchingGrowth) {
+TEST(NeuriteElementBehaviour, BranchingGrowth) {
   Simulation<> simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
   auto* param = simulation.GetParam();
@@ -118,7 +117,6 @@ TEST(DISABLED_NeuriteElementBehaviour, BranchingGrowth) {
   auto ne = neuron.ExtendNewNeurite({0, 0, 1});
   ne->SetDiameter(1);
 
-  simulation.GetGrid()->Initialize();
   Scheduler<> scheduler;
 
   std::array<double, 3> previous_direction;
