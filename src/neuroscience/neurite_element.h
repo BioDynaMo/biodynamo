@@ -217,8 +217,8 @@ class NeuronNeuriteAdapter {
 BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
   BDM_SIM_OBJECT_HEADER(
       NeuriteElementExt, 1, biology_modules_, mass_location_, volume_,
-      diameter_, adherence_, x_axis_, y_axis_, z_axis_, box_idx_, is_axon_,
-      mother_, daughter_left_, daughter_right_, branch_order_,
+      diameter_, adherence_, density_, x_axis_, y_axis_, z_axis_, box_idx_,
+      is_axon_, mother_, daughter_left_, daughter_right_, branch_order_,
       force_to_transmit_to_proximal_mass_, spring_axis_, actual_length_,
       tension_, spring_constant_, resting_length_);
 
@@ -266,6 +266,8 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
     UpdateVolume();
   }
 
+  void SetDensity(double density) { density_[kIdx] = density; }
+
   const std::array<double, 3> GetPosition() const {
     return Math::Subtract(mass_location_[kIdx],
                           Math::ScalarMult(0.5, spring_axis_[kIdx]));
@@ -296,6 +298,18 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
   double GetVolume() const { return volume_[kIdx]; }
 
   double GetDiameter() const { return diameter_[kIdx]; }
+
+  double GetDensity() const { return density_[kIdx]; }
+
+  double GetMass() const { return density_[kIdx] * volume_[kIdx]; }
+
+  ToSoPtr<NeuronSoma> GetNeuronSomaOfNeurite() const {
+    auto mother = mother_[kIdx];
+    while (!mother.IsNeuronSoma()) {
+      mother = mother.GetMother();
+    }
+    return mother.GetNeuronSomaSoPtr();
+  }
 
   uint64_t GetBoxIdx() const { return box_idx_[kIdx]; }
 
@@ -378,6 +392,9 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
       mass_location_[kIdx] = Math::Add(
           mother_[kIdx].OriginOf(Base::GetElementIdx()), spring_axis_[kIdx]);
       UpdateVolume();  // and update concentration of internal stuff.
+    } else if (mother_[kIdx].IsNeuronSoma()) {
+      mother_[kIdx].RemoveDaughter(GetSoPtr());
+      RemoveFromSimulation();
     } else if (mother_[kIdx].IsNeuriteElement() &&
                mother_[kIdx].GetDaughterRight() == nullptr) {
       // if actual_length_ < length and mother is a neurite element with no
@@ -925,15 +942,28 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
     // 5) define the force that will be transmitted to the mother
     force_to_transmit_to_proximal_mass_[kIdx] = force_on_my_mothers_point_mass;
     //  6.1) Define movement scale
-    // FIXME
-    // double h = Param::simulation_time_step_;
-    // double h_over_m = h / GetMass();
     double h_over_m = 1.0;
     double force_norm = Math::Norm(force_on_my_point_mass);
     //  6.2) If is F not strong enough -> no movements
     if (force_norm < adherence_[kIdx]) {
       return {0, 0, 0};
     }
+    // if this or its mother is a branching point, displacement have to be
+    // reduced to avoid kink behaviour
+    auto* param = Simulation_t::GetActive()->GetParam();
+    if (mother_[kIdx].IsNeuriteElement()) {
+      auto mother = mother_[kIdx].GetNeuriteElementSoPtr();
+      if (mother->GetDaughterLeft() != nullptr &&
+          mother->GetDaughterRight() != nullptr) {
+        double h = param->simulation_time_step_;
+        h_over_m = h / GetMass();
+      }
+    }
+    if (daughter_left_[kIdx] != nullptr && daughter_right_[kIdx] != nullptr) {
+      double h = param->simulation_time_step_;
+      h_over_m = h / GetMass();
+    }
+
     // So, what follows is only executed if we do actually move :
 
     //  6.3) Since there's going be a move, we calculate it
@@ -941,7 +971,6 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
     double displacement_norm = force_norm * h_over_m;
 
     //  6.4) There is an upper bound for the movement.
-    auto* param = Simulation_t::GetActive()->GetParam();
     if (displacement_norm > param->simulation_max_displacement_) {
       displacement = Math::ScalarMult(
           param->simulation_max_displacement_ / displacement_norm,
@@ -1343,6 +1372,7 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
   vec<std::array<double, 3>> mass_location_ = {{0.0, 0.0, 0.0}};
   vec<double> volume_;
   vec<double> diameter_ = {{Param::kNeuriteDefaultDiameter}};
+  vec<double> density_ = {{Param::kNeuriteDefaultDensity}};
   vec<double> adherence_;
   /// First axis of the local coordinate system equal to cylinder axis
   vec<std::array<double, 3>> x_axis_ = {{1.0, 0.0, 0.0}};
