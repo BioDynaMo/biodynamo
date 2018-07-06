@@ -13,6 +13,25 @@
 #
 # -----------------------------------------------------------------------------
 
+# Compiles and runs the simulation code contained in $1.
+#
+#   $1 the directory containing the simulation code
+function run_simulation() {
+  pushd "$1"
+  log_dir=$(mktemp -d)
+  log=$(mktemp --tmpdir="${log_dir}")
+  expected="Simulation completed successfully!"
+  biodynamo run > "${log}"
+  actual=$(tail -n3 "${log}" | head -n1)
+  popd
+
+  if [ "${actual}" != "${expected}" ]; then
+    exit 1
+  fi
+
+  rm -rf "${log_dir}"
+}
+
 if [ $# -ne 0 ]; then
   echo "Wrong number of arguments.
 Description:
@@ -44,17 +63,21 @@ set +e +x
 source ~/.bdm/biodynamo-env.sh
 set -e -x
 
+# Run all the demos.
+DEMOS=(
+    cell_division
+    diffusion
+    gene_regulation
+    multiple_simulations
+)
+for demo_dir in "${DEMOS[@]}"
+do
+  run_simulation "demo/${demo_dir}"
+done
+
 # verify if out of source builds work
 cd ~
 biodynamo new test-sim --no-github
-cd test-sim
-biodynamo run &>all
+run_simulation test-sim
 
-# extract ouput
-cat all | tail -n3 | head -n1 >actual
-
-# create file with expected output
-echo "Simulation completed successfully!" >> expected
-
-diff expected actual
 exit $?

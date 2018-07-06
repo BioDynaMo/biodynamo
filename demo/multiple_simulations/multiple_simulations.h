@@ -69,6 +69,7 @@ inline int Simulate(int argc, const char** argv) {
     delete sim;
   }
 
+  std::cout << "Simulation completed successfully!\n";
   return 0;
 }
 

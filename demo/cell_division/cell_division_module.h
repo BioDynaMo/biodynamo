@@ -50,6 +50,8 @@ inline int Simulate(int argc, const char** argv) {
 
   // 4. Run simulation for one timestep
   simulation.GetScheduler()->Simulate(1);
+
+  std::cout << "Simulation completed successfully!\n";
   return 0;
 }
 

@@ -88,6 +88,7 @@ inline int Simulate(int argc, const char** argv) {
     std::cout << concentration << std::endl;
   }
 
+  std::cout << "Simulation completed successfully!\n";
   return 0;
 }
 
