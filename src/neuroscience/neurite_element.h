@@ -217,8 +217,8 @@ class NeuronNeuriteAdapter {
 BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
   BDM_SIM_OBJECT_HEADER(
       NeuriteElementExt, 1, biology_modules_, mass_location_, volume_,
-      diameter_, adherence_, density_, x_axis_, y_axis_, z_axis_, box_idx_, is_axon_,
-      mother_, daughter_left_, daughter_right_, branch_order_,
+      diameter_, adherence_, density_, x_axis_, y_axis_, z_axis_, box_idx_,
+      is_axon_, mother_, daughter_left_, daughter_right_, branch_order_,
       force_to_transmit_to_proximal_mass_, spring_axis_, actual_length_,
       tension_, spring_constant_, resting_length_);
 
@@ -266,9 +266,7 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
     UpdateVolume();
   }
 
-  void SetDensity(double density) {
-    density_[kIdx] = density;
-  }
+  void SetDensity(double density) { density_[kIdx] = density; }
 
   const std::array<double, 3> GetPosition() const {
     return Math::Subtract(mass_location_[kIdx],
@@ -395,8 +393,8 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
           mother_[kIdx].OriginOf(Base::GetElementIdx()), spring_axis_[kIdx]);
       UpdateVolume();  // and update concentration of internal stuff.
     } else if (mother_[kIdx].IsNeuronSoma()) {
-     mother_[kIdx].RemoveDaughter(GetSoPtr());
-     RemoveFromSimulation();
+      mother_[kIdx].RemoveDaughter(GetSoPtr());
+      RemoveFromSimulation();
     } else if (mother_[kIdx].IsNeuriteElement() &&
                mother_[kIdx].GetDaughterRight() == nullptr) {
       // if actual_length_ < length and mother is a neurite element with no
@@ -950,11 +948,13 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
     if (force_norm < adherence_[kIdx]) {
       return {0, 0, 0};
     }
-    // if this or its mother is a branching point, displacement have to be reduced to avoid kink behaviour
+    // if this or its mother is a branching point, displacement have to be
+    // reduced to avoid kink behaviour
     auto* param = Simulation_t::GetActive()->GetParam();
     if (mother_[kIdx].IsNeuriteElement()) {
       auto mother = mother_[kIdx].GetNeuriteElementSoPtr();
-      if (mother->GetDaughterLeft()!=nullptr && mother->GetDaughterRight()!=nullptr) {
+      if (mother->GetDaughterLeft() != nullptr &&
+          mother->GetDaughterRight() != nullptr) {
         double h = param->simulation_time_step_;
         h_over_m = h / GetMass();
       }
