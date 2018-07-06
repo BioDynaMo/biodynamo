@@ -307,7 +307,7 @@ TEST(MechanicalInteraction, NotStraightCylinderGrowthObstacle) {
   }
 
   ne_axis = ne->GetSpringAxis();
-  ASSERT_TRUE(ne->GetMassLocation()[0] > 5);
+  ASSERT_GT(ne->GetMassLocation()[0], 5);
   ASSERT_TRUE(ne_axis[0] < 0.1);
   EXPECT_NEAR(ne_axis[1], 0, abs_error<double>::value);
 }

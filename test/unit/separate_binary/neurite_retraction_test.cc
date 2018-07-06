@@ -131,7 +131,7 @@ TEST(NeuriteElementBehaviour, BranchingGrowth) {
          neurite_nb++) {  // for each neurite in simulation
       auto ne = (*my_neurites)[neurite_nb];
 
-      EXPECT_TRUE(ne->GetAxis()[2] > 0);
+      EXPECT_GT(ne->GetAxis()[2], 0);
 
       if (ne->IsTerminal() && ne->GetDiameter() > 0.5) {
         previous_direction = ne->GetSpringAxis();
