@@ -287,30 +287,3 @@ include(Installation)
 
 # -------------------- add targets for code style and submission checks --------
 include(CppStyleGuideChecks)
-
-if(demo)
-  # -------------------- build cell_division_module executable -----------------
-  bdm_add_executable(cell_division_module
-                     SOURCES demo/cell_division_module.cc
-                     HEADERS demo/cell_division_module.h
-                     LIBRARIES biodynamo)
-
-  # -------------------- build cell_diffusion_module executable ----------------
-  bdm_add_executable(diffusion_module
-                     SOURCES demo/diffusion_module.cc
-                     HEADERS demo/diffusion_module.h
-                     LIBRARIES biodynamo)
-
-  # --------------------- build gene_regulation executable ---------------------
-  bdm_add_executable(gene_regulation
-                     SOURCES demo/gene_regulation.cc
-                     HEADERS demo/gene_regulation.h
-                     LIBRARIES biodynamo)
-
-
-  # --------------------- build multiple_simulations executable ---------------------
-  bdm_add_executable(multiple_simulations
-                     SOURCES demo/multiple_simulations.cc
-                     HEADERS demo/multiple_simulations.h
-                     LIBRARIES biodynamo)
-endif()
