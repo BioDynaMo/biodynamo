@@ -21,7 +21,7 @@ function run_simulation() {
   log_dir=$(mktemp -d)
   log=$(mktemp --tmpdir="${log_dir}")
   expected="Simulation completed successfully!"
-  biodynamo run > "${log}"
+  biodynamo run | tee "${log}"
   actual=$(tail -n3 "${log}" | head -n1)
   popd
 
