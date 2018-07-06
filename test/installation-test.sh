@@ -28,12 +28,11 @@ set -e -x
 
 BDM_PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/.."
 cd $BDM_PROJECT_DIR
+# Currently we are inside the biodynamo project directory, mapped as volume
+# from the host
 
 # speed-up build by disabling tests and demos
 export BDM_CMAKE_FLAGS="-Dtest=off -Ddemo=off"
-
-# Currently we are inside the biodynamo project directory, mapped as volume
-# from the host
 ./install.sh << EOF
 y
 y

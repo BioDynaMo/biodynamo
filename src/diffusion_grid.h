@@ -597,12 +597,6 @@ class DiffusionGrid {
 
   double GetBoxVolume() { return box_volume_; }
 
-  // void AddGaussianLayer(double mean, double sigma, int selected) {
-  //   mean_.push_back(mean);
-  //   sigma_.push_back(sigma);
-  //   selected_.push_back(selected);
-  // }
-
   template <typename F>
   void AddInitializer(F function) {
     initializers_.push_back(function);

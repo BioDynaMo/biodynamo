@@ -30,7 +30,7 @@ export LD_LIBRARY_PATH=${BDM_INSTALL_DIR}/biodynamo/lib:$LD_LIBRARY_PATH
 export ParaView_DIR=${BDM_INSTALL_DIR}/third_party/paraview/lib/cmake/paraview-5.5
 export ParaView_LIB_DIR=${BDM_INSTALL_DIR}/third_party/paraview/lib
 export PYTHONPATH=${ParaView_LIB_DIR}/python2.7/site-packages
-export PV_PLUGIN_PATH=${BDM_INSTALL_DIR}/biodynamo/lib:$PV_PLUGIN_PATH
+export PV_PLUGIN_PATH=${BDM_INSTALL_DIR}/biodynamo/lib/pv_plugin
 export PATH=${BDM_INSTALL_DIR}/third_party/paraview/bin:${PATH}
 export LD_LIBRARY_PATH=${ParaView_LIB_DIR}:${LD_LIBRARY_PATH}
 

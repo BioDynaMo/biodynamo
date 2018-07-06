@@ -63,7 +63,7 @@ cd paraview
 git submodule update --init --recursive
 git checkout $PV_VERSION
 git submodule update --init --recursive
-if [ $PV_VERSION = "v5.5.1" ]; then
+if [ $PV_VERSION = "v5.5.2" ]; then
   # fix qt 5.11 compilation issue:
   # https://gitlab.kitware.com/paraview/paraview/merge_requests/2474
   git cherry-pick 931c779d
@@ -90,20 +90,27 @@ cd ../paraview-build
 # 2. ParaView libraries -> Qt libraries
 # 3. ParaView binaries / libraries -> ParaView libraries
 
+if [ `uname` = "Darwin" ]; then
+  OSX_CMAKE_OPTIONS='-DPARAVIEW_DO_UNIX_STYLE_INSTALLS:BOOL=ON
+                     -DCMAKE_MACOSX_RPATH:BOOL=ON
+                     -DCMAKE_INSTALL_RPATH:STRING=@loader_path/../../qt/lib;@loader_path/../../../../../qt/lib;@loader_path/../lib'
+fi
+
+
 Qt5_DIR=$QT_CMAKE_DIR cmake \
-  -DPARAVIEW_DO_UNIX_STYLE_INSTALLS:BOOL=ON \
-  -DCMAKE_MACOSX_RPATH:BOOL=ON \
   -DCMAKE_INSTALL_PREFIX="../paraview-install" \
   -DCMAKE_BUILD_TYPE:STRING="Release" \
   -DPARAVIEW_ENABLE_PYTHON:BOOL=ON \
   -DPARAVIEW_ENABLE_MPI:BOOL=OFF \
   -DPARAVIEW_INSTALL_DEVELOPMENT_FILES:BOOL=ON \
-  -DCMAKE_INSTALL_RPATH:STRING="@loader_path/../../qt/lib;@loader_path/../../../../../qt/lib;@loader_path/../lib" \
+  $OSX_CMAKE_OPTIONS \
    ../paraview
 
 ## Step 4: compile and install
 make -j$(CPUCount)
 make install -j$(CPUCount)
+
+cd ../paraview-install
 
 if [ `uname` = "Darwin" ]; then
   ## Patch vtkkwProcessXML-pv5.5
@@ -114,7 +121,6 @@ if [ `uname` = "Darwin" ]; then
 fi
 
 ## tar the install directory
-cd ../paraview-install
 tar -zcf paraview.tar.gz *
 
 # After untarring the directory tree should like like this:
@@ -124,5 +130,5 @@ tar -zcf paraview.tar.gz *
 #   |-- lib
 #   |-- share
 
-# Step 5: mv to destination directory
-mv paraview.tar.gz $DEST_DIR
+# Step 5: cp to destination directory
+cp paraview.tar.gz $DEST_DIR

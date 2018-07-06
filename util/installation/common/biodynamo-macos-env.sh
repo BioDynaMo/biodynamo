@@ -30,7 +30,7 @@ export DYLD_LIBRARY_PATH=${BDM_INSTALL_DIR}/biodynamo/lib:$DYLD_LIBRARY_PATH
 export ParaView_DIR=${BDM_INSTALL_DIR}/third_party/paraview/lib/cmake/paraview-5.5
 export ParaView_LIB_DIR=${BDM_INSTALL_DIR}/third_party/paraview/lib
 export PYTHONPATH=${ParaView_LIB_DIR}/python2.7/site-packages
-export PV_PLUGIN_PATH=${BDM_INSTALL_DIR}/biodynamo/lib:$PV_PLUGIN_PATH
+export PV_PLUGIN_PATH=${BDM_INSTALL_DIR}/biodynamo/lib/pv_plugin
 export PATH=${BDM_INSTALL_DIR}/third_party/paraview/bin:${PATH}
 export DYLD_LIBRARY_PATH=${ParaView_LIB_DIR}:$DYLD_LIBRARY_PATH
 
@@ -49,6 +49,5 @@ export CXX=$LLVMDIR/bin/clang++
 export CXXFLAGS=-I$LLVMDIR/include
 export LDFLAGS=-L$LLVMDIR/lib
 export PATH=$LLVMDIR/bin:$PATH
-export DYLD_LIBRARY_PATH=$LLVMDIR/lib:$DYLD_LIBRARY_PATH
 
 echo "You have successfully sourced BioDynaMo's environment."

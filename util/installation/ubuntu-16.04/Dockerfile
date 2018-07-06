@@ -23,7 +23,8 @@ RUN apt-get update && apt-get install -y \
   lsb-core \
   man \
   software-properties-common \
-  wget
+  wget \
+  xvfb
 
 RUN git config --system user.name "Test User" && \
     git config --system user.email user@test.com

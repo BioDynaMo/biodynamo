@@ -14,23 +14,14 @@
 # -----------------------------------------------------------------------------
 
 if [[ $# -ne 0 ]]; then
-  echo "ERROR: Wrong number of arguments.
-Description:
-  This script builds all third party dependencies.
-  The archives will be stored in BDM_PROJECT_DIR/build
-No Arguments"
+  echo "ERROR: No arguments expected
+  Description:
+    Run installation test inside a headless docker container."
   exit 1
 fi
 
-set -e -x
+# start x virtual framebuffer for headless environments.
+export DISPLAY=:99.0
+util/xvfb-initd.sh start
 
-SCRIPTPATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-
-PARAVIEW_VERSION=v5.5.2
-ROOT_VERSION=263508429d
-
-# root
-$SCRIPTPATH/build-root.sh $ROOT_VERSION
-
-# paraview and qt
-$SCRIPTPATH/build-paraview.sh $PARAVIEW_VERSION
+test/installation-test.sh

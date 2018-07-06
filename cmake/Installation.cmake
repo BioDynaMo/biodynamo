@@ -33,6 +33,7 @@ set(CMAKE_INSTALL_ROOT          "biodynamo"                      CACHE PATH "Ins
 set(CMAKE_INSTALL_BINDIR        "${CMAKE_INSTALL_ROOT}/bin"      CACHE PATH "User executables (bin)")
 set(CMAKE_INSTALL_INCLUDEDIR    "${CMAKE_INSTALL_ROOT}/include"  CACHE PATH "C/C++ header files (include)")
 set(CMAKE_INSTALL_LIBDIR        "${CMAKE_INSTALL_ROOT}/lib"      CACHE PATH "Object code libraries (lib)")
+set(CMAKE_INSTALL_PVPLUGINDIR   "${CMAKE_INSTALL_ROOT}/lib/pv_plugin" CACHE PATH "ParaView libraries") # Must be in separate dir!
 set(CMAKE_INSTALL_CMAKEDIR      "${CMAKE_INSTALL_ROOT}/cmake"    CACHE PATH "CMake files required from external projects")
 set(CMAKE_INSTALL_DATADIR       "${CMAKE_INSTALL_ROOT}/share"    CACHE PATH "Read-only architecture-independent data (share)")
 set(CMAKE_INSTALL_CMAKEDATADIR  "${CMAKE_INSTALL_DATADIR}/cmake" CACHE PATH "Build related files (DATADIR/cmake)")
@@ -103,9 +104,9 @@ install(FILES cmake/BioDynaMoConfig.cmake DESTINATION ${CMAKE_INSTALL_CMAKEDIR})
 install(DIRECTORY util/simulation-template DESTINATION "biodynamo/" FILES_MATCHING PATTERN "*")
 
 if(LINUX)
-  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/paraview-plugin/libBDMGlyphFilter.so DESTINATION ${CMAKE_INSTALL_LIBDIR})
+  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/paraview-plugin/libBDMGlyphFilter.so DESTINATION ${CMAKE_INSTALL_PVPLUGINDIR})
 elseif(APPLE)
-  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/paraview-plugin/libBDMGlyphFilter.dylib DESTINATION ${CMAKE_INSTALL_LIBDIR})
+  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/paraview-plugin/libBDMGlyphFilter.dylib DESTINATION ${CMAKE_INSTALL_PVPLUGINDIR})
 endif()
 
 install(FILES LICENSE NOTICE DESTINATION ${CMAKE_INSTALL_ROOT})
