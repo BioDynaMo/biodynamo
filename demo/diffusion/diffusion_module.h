@@ -113,6 +113,8 @@ inline int Simulate(int argc, const char** argv) {
 
   // 5. Run simulation for N timesteps
   simulation.GetScheduler()->Simulate(3500);
+
+  std::cout << "Simulation completed successfully!\n";
   return 0;
 }
 
