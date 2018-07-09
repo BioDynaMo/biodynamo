@@ -71,22 +71,22 @@ TEST(DiffusionInitTest, GaussianBand) {
   std::array<uint32_t, 3> e = {25, 0, 13};
   std::array<uint32_t, 3> f = {13, 13, 13};
 
-  auto kEps = abs_error<double>::value;
+  auto eps = abs_error<double>::value;
   auto conc = dgrid->GetAllConcentrations();
 
   EXPECT_NEAR(ROOT::Math::normal_pdf(0, 50, 125), conc[dgrid->GetBoxIndex(a)],
-              kEps);
+              eps);
   EXPECT_NEAR(ROOT::Math::normal_pdf(250, 50, 125), conc[dgrid->GetBoxIndex(b)],
-              kEps);
+              eps);
   EXPECT_NEAR(ROOT::Math::normal_pdf(130, 50, 125), conc[dgrid->GetBoxIndex(c)],
-              kEps);
+              eps);
   EXPECT_NEAR(ROOT::Math::normal_pdf(0, 50, 125), conc[dgrid->GetBoxIndex(d)],
-              kEps);
+              eps);
   // Should be symmetric, so the two ends should have the same value
   EXPECT_NEAR(ROOT::Math::normal_pdf(0, 50, 125), conc[dgrid->GetBoxIndex(e)],
-              kEps);
+              eps);
   EXPECT_NEAR(ROOT::Math::normal_pdf(130, 50, 125), conc[dgrid->GetBoxIndex(f)],
-              kEps);
+              eps);
 }
 
 }  // namespace bdm

@@ -290,7 +290,7 @@ inline int Simulate(int argc, const char** argv) {
   ModelInitializer::DefineSubstance(kSubstance_1, "Substance_1", 0.5, 0.1, 25);
 
   // 4. Run simulation for N timesteps
-  simulation.GetScheduler()->Simulate(3001);
+  simulation.GetScheduler()->Simulate(1501);
 
   double spatial_range = 5;
   auto crit = GetCriterion(spatial_range, num_cells / 8);

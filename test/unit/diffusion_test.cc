@@ -19,9 +19,17 @@
 #include "grid.h"
 #include "gtest/gtest.h"
 #include "io_util.h"
+#include "model_initializer.h"
 #include "simulation_implementation.h"
+#include "substance_initializers.h"
+#include "test_util.h"
 #include "unit/default_ctparam.h"
 #include "unit/test_util.h"
+#include "visualization/catalyst_adaptor.h"
+
+#include <vtkImageData.h>
+#include <vtkXMLImageDataReader.h>
+#include <fstream>
 
 #define ROOTFILE "bdmFile.root"
 
@@ -186,7 +194,7 @@ TEST(DiffusionTest, LeakingEdge) {
   std::array<uint32_t, 3> rand2_a = {4, 4, 2};
   std::array<uint32_t, 3> rand2_b = {0, 0, 2};
 
-  auto kEps = abs_error<double>::value;
+  auto eps = abs_error<double>::value;
 
   double v1 = 9.7267657389657938;
   double v2 = 3.7281869469803648;
@@ -194,25 +202,25 @@ TEST(DiffusionTest, LeakingEdge) {
   double v4 = 0.32563083857294983;
   double v5 = 0.10776198271458182;
 
-  EXPECT_NEAR(v1, conc[d_grid->GetBoxIndex(c)], kEps);
-  EXPECT_NEAR(v2, conc[d_grid->GetBoxIndex(e)], kEps);
-  EXPECT_NEAR(v2, conc[d_grid->GetBoxIndex(w)], kEps);
-  EXPECT_NEAR(v2, conc[d_grid->GetBoxIndex(n)], kEps);
-  EXPECT_NEAR(v2, conc[d_grid->GetBoxIndex(s)], kEps);
-  EXPECT_NEAR(v2, conc[d_grid->GetBoxIndex(t)], kEps);
-  EXPECT_NEAR(v2, conc[d_grid->GetBoxIndex(b)], kEps);
-  EXPECT_NEAR(v3, conc[d_grid->GetBoxIndex(rand1_a)], kEps);
-  EXPECT_NEAR(v3, conc[d_grid->GetBoxIndex(rand1_b)], kEps);
-  EXPECT_NEAR(v4, conc[d_grid->GetBoxIndex(rand2_a)], kEps);
-  EXPECT_NEAR(v4, conc[d_grid->GetBoxIndex(rand2_b)], kEps);
+  EXPECT_NEAR(v1, conc[d_grid->GetBoxIndex(c)], eps);
+  EXPECT_NEAR(v2, conc[d_grid->GetBoxIndex(e)], eps);
+  EXPECT_NEAR(v2, conc[d_grid->GetBoxIndex(w)], eps);
+  EXPECT_NEAR(v2, conc[d_grid->GetBoxIndex(n)], eps);
+  EXPECT_NEAR(v2, conc[d_grid->GetBoxIndex(s)], eps);
+  EXPECT_NEAR(v2, conc[d_grid->GetBoxIndex(t)], eps);
+  EXPECT_NEAR(v2, conc[d_grid->GetBoxIndex(b)], eps);
+  EXPECT_NEAR(v3, conc[d_grid->GetBoxIndex(rand1_a)], eps);
+  EXPECT_NEAR(v3, conc[d_grid->GetBoxIndex(rand1_b)], eps);
+  EXPECT_NEAR(v4, conc[d_grid->GetBoxIndex(rand2_a)], eps);
+  EXPECT_NEAR(v4, conc[d_grid->GetBoxIndex(rand2_b)], eps);
 
-  EXPECT_NEAR(0.0, grad[3 * (d_grid->GetBoxIndex(c)) + 1], kEps);
-  EXPECT_NEAR(-v5, grad[3 * (d_grid->GetBoxIndex(e)) + 0], kEps);
-  EXPECT_NEAR(v5, grad[3 * (d_grid->GetBoxIndex(w)) + 0], kEps);
-  EXPECT_NEAR(v5, grad[3 * (d_grid->GetBoxIndex(n)) + 1], kEps);
-  EXPECT_NEAR(-v5, grad[3 * (d_grid->GetBoxIndex(s)) + 1], kEps);
-  EXPECT_NEAR(v5, grad[3 * (d_grid->GetBoxIndex(t)) + 2], kEps);
-  EXPECT_NEAR(-v5, grad[3 * (d_grid->GetBoxIndex(b)) + 2], kEps);
+  EXPECT_NEAR(0.0, grad[3 * (d_grid->GetBoxIndex(c)) + 1], eps);
+  EXPECT_NEAR(-v5, grad[3 * (d_grid->GetBoxIndex(e)) + 0], eps);
+  EXPECT_NEAR(v5, grad[3 * (d_grid->GetBoxIndex(w)) + 0], eps);
+  EXPECT_NEAR(v5, grad[3 * (d_grid->GetBoxIndex(n)) + 1], eps);
+  EXPECT_NEAR(-v5, grad[3 * (d_grid->GetBoxIndex(s)) + 1], eps);
+  EXPECT_NEAR(v5, grad[3 * (d_grid->GetBoxIndex(t)) + 2], eps);
+  EXPECT_NEAR(-v5, grad[3 * (d_grid->GetBoxIndex(b)) + 2], eps);
 
   delete d_grid;
 }
@@ -249,7 +257,7 @@ TEST(DiffusionTest, ClosedEdge) {
   std::array<uint32_t, 3> rand2_a = {4, 4, 2};
   std::array<uint32_t, 3> rand2_b = {0, 0, 2};
 
-  auto kEps = abs_error<double>::value;
+  auto eps = abs_error<double>::value;
 
   double v1 = 11.717698164878922;
   double v2 = 5.7977258086605303;
@@ -257,25 +265,25 @@ TEST(DiffusionTest, ClosedEdge) {
   double v4 = 2.7287519978558121;
   double v5 = 0.10218091352733083;
 
-  EXPECT_NEAR(v1, conc[d_grid->GetBoxIndex(c)], kEps);
-  EXPECT_NEAR(v2, conc[d_grid->GetBoxIndex(e)], kEps);
-  EXPECT_NEAR(v2, conc[d_grid->GetBoxIndex(w)], kEps);
-  EXPECT_NEAR(v2, conc[d_grid->GetBoxIndex(n)], kEps);
-  EXPECT_NEAR(v2, conc[d_grid->GetBoxIndex(s)], kEps);
-  EXPECT_NEAR(v2, conc[d_grid->GetBoxIndex(t)], kEps);
-  EXPECT_NEAR(v2, conc[d_grid->GetBoxIndex(b)], kEps);
-  EXPECT_NEAR(v3, conc[d_grid->GetBoxIndex(rand1_a)], kEps);
-  EXPECT_NEAR(v3, conc[d_grid->GetBoxIndex(rand1_b)], kEps);
-  EXPECT_NEAR(v4, conc[d_grid->GetBoxIndex(rand2_a)], kEps);
-  EXPECT_NEAR(v4, conc[d_grid->GetBoxIndex(rand2_b)], kEps);
+  EXPECT_NEAR(v1, conc[d_grid->GetBoxIndex(c)], eps);
+  EXPECT_NEAR(v2, conc[d_grid->GetBoxIndex(e)], eps);
+  EXPECT_NEAR(v2, conc[d_grid->GetBoxIndex(w)], eps);
+  EXPECT_NEAR(v2, conc[d_grid->GetBoxIndex(n)], eps);
+  EXPECT_NEAR(v2, conc[d_grid->GetBoxIndex(s)], eps);
+  EXPECT_NEAR(v2, conc[d_grid->GetBoxIndex(t)], eps);
+  EXPECT_NEAR(v2, conc[d_grid->GetBoxIndex(b)], eps);
+  EXPECT_NEAR(v3, conc[d_grid->GetBoxIndex(rand1_a)], eps);
+  EXPECT_NEAR(v3, conc[d_grid->GetBoxIndex(rand1_b)], eps);
+  EXPECT_NEAR(v4, conc[d_grid->GetBoxIndex(rand2_a)], eps);
+  EXPECT_NEAR(v4, conc[d_grid->GetBoxIndex(rand2_b)], eps);
 
-  EXPECT_NEAR(0.0, grad[3 * (d_grid->GetBoxIndex(c)) + 1], kEps);
-  EXPECT_NEAR(-v5, grad[3 * (d_grid->GetBoxIndex(e)) + 0], kEps);
-  EXPECT_NEAR(v5, grad[3 * (d_grid->GetBoxIndex(w)) + 0], kEps);
-  EXPECT_NEAR(v5, grad[3 * (d_grid->GetBoxIndex(n)) + 1], kEps);
-  EXPECT_NEAR(-v5, grad[3 * (d_grid->GetBoxIndex(s)) + 1], kEps);
-  EXPECT_NEAR(v5, grad[3 * (d_grid->GetBoxIndex(t)) + 2], kEps);
-  EXPECT_NEAR(-v5, grad[3 * (d_grid->GetBoxIndex(b)) + 2], kEps);
+  EXPECT_NEAR(0.0, grad[3 * (d_grid->GetBoxIndex(c)) + 1], eps);
+  EXPECT_NEAR(-v5, grad[3 * (d_grid->GetBoxIndex(e)) + 0], eps);
+  EXPECT_NEAR(v5, grad[3 * (d_grid->GetBoxIndex(w)) + 0], eps);
+  EXPECT_NEAR(v5, grad[3 * (d_grid->GetBoxIndex(n)) + 1], eps);
+  EXPECT_NEAR(-v5, grad[3 * (d_grid->GetBoxIndex(s)) + 1], eps);
+  EXPECT_NEAR(v5, grad[3 * (d_grid->GetBoxIndex(t)) + 2], eps);
+  EXPECT_NEAR(-v5, grad[3 * (d_grid->GetBoxIndex(b)) + 2], eps);
 
   delete d_grid;
 }
@@ -316,7 +324,7 @@ TEST(DiffusionTest, CopyOldData) {
   std::array<uint32_t, 3> rand2_a = {5, 5, 3};
   std::array<uint32_t, 3> rand2_b = {1, 1, 3};
 
-  auto kEps = abs_error<double>::value;
+  auto eps = abs_error<double>::value;
 
   double v1 = 9.7267657389657938;
   double v2 = 3.7281869469803648;
@@ -324,25 +332,25 @@ TEST(DiffusionTest, CopyOldData) {
   double v4 = 0.32563083857294983;
   double v5 = 0.10776198271458182;
 
-  EXPECT_NEAR(v1, conc[d_grid->GetBoxIndex(c)], kEps);
-  EXPECT_NEAR(v2, conc[d_grid->GetBoxIndex(e)], kEps);
-  EXPECT_NEAR(v2, conc[d_grid->GetBoxIndex(w)], kEps);
-  EXPECT_NEAR(v2, conc[d_grid->GetBoxIndex(n)], kEps);
-  EXPECT_NEAR(v2, conc[d_grid->GetBoxIndex(s)], kEps);
-  EXPECT_NEAR(v2, conc[d_grid->GetBoxIndex(t)], kEps);
-  EXPECT_NEAR(v2, conc[d_grid->GetBoxIndex(b)], kEps);
-  EXPECT_NEAR(v3, conc[d_grid->GetBoxIndex(rand1_a)], kEps);
-  EXPECT_NEAR(v3, conc[d_grid->GetBoxIndex(rand1_b)], kEps);
-  EXPECT_NEAR(v4, conc[d_grid->GetBoxIndex(rand2_a)], kEps);
-  EXPECT_NEAR(v4, conc[d_grid->GetBoxIndex(rand2_b)], kEps);
+  EXPECT_NEAR(v1, conc[d_grid->GetBoxIndex(c)], eps);
+  EXPECT_NEAR(v2, conc[d_grid->GetBoxIndex(e)], eps);
+  EXPECT_NEAR(v2, conc[d_grid->GetBoxIndex(w)], eps);
+  EXPECT_NEAR(v2, conc[d_grid->GetBoxIndex(n)], eps);
+  EXPECT_NEAR(v2, conc[d_grid->GetBoxIndex(s)], eps);
+  EXPECT_NEAR(v2, conc[d_grid->GetBoxIndex(t)], eps);
+  EXPECT_NEAR(v2, conc[d_grid->GetBoxIndex(b)], eps);
+  EXPECT_NEAR(v3, conc[d_grid->GetBoxIndex(rand1_a)], eps);
+  EXPECT_NEAR(v3, conc[d_grid->GetBoxIndex(rand1_b)], eps);
+  EXPECT_NEAR(v4, conc[d_grid->GetBoxIndex(rand2_a)], eps);
+  EXPECT_NEAR(v4, conc[d_grid->GetBoxIndex(rand2_b)], eps);
 
-  EXPECT_NEAR(0.0, grad[3 * (d_grid->GetBoxIndex(c)) + 1], kEps);
-  EXPECT_NEAR(-v5, grad[3 * (d_grid->GetBoxIndex(e)) + 0], kEps);
-  EXPECT_NEAR(v5, grad[3 * (d_grid->GetBoxIndex(w)) + 0], kEps);
-  EXPECT_NEAR(v5, grad[3 * (d_grid->GetBoxIndex(n)) + 1], kEps);
-  EXPECT_NEAR(-v5, grad[3 * (d_grid->GetBoxIndex(s)) + 1], kEps);
-  EXPECT_NEAR(v5, grad[3 * (d_grid->GetBoxIndex(t)) + 2], kEps);
-  EXPECT_NEAR(-v5, grad[3 * (d_grid->GetBoxIndex(b)) + 2], kEps);
+  EXPECT_NEAR(0.0, grad[3 * (d_grid->GetBoxIndex(c)) + 1], eps);
+  EXPECT_NEAR(-v5, grad[3 * (d_grid->GetBoxIndex(e)) + 0], eps);
+  EXPECT_NEAR(v5, grad[3 * (d_grid->GetBoxIndex(w)) + 0], eps);
+  EXPECT_NEAR(v5, grad[3 * (d_grid->GetBoxIndex(n)) + 1], eps);
+  EXPECT_NEAR(-v5, grad[3 * (d_grid->GetBoxIndex(s)) + 1], eps);
+  EXPECT_NEAR(v5, grad[3 * (d_grid->GetBoxIndex(t)) + 2], eps);
+  EXPECT_NEAR(-v5, grad[3 * (d_grid->GetBoxIndex(b)) + 2], eps);
 
   delete d_grid;
 }
@@ -367,19 +375,19 @@ TEST(DiffusionTest, IOTest) {
   DiffusionGrid* restored_d_grid = nullptr;
   GetPersistentObject(ROOTFILE, "dgrid", restored_d_grid);
 
-  auto kEps = abs_error<double>::value;
+  auto eps = abs_error<double>::value;
 
   EXPECT_EQ("Kalium", restored_d_grid->GetSubstanceName());
   EXPECT_EQ(10, restored_d_grid->GetBoxLength());
   EXPECT_EQ(42, restored_d_grid->GetConcentrationThreshold());
-  EXPECT_NEAR(0.4, restored_d_grid->GetDiffusionCoefficients()[0], kEps);
-  EXPECT_NEAR(0.1, restored_d_grid->GetDiffusionCoefficients()[1], kEps);
-  EXPECT_NEAR(0.1, restored_d_grid->GetDiffusionCoefficients()[2], kEps);
-  EXPECT_NEAR(0.1, restored_d_grid->GetDiffusionCoefficients()[3], kEps);
-  EXPECT_NEAR(0.1, restored_d_grid->GetDiffusionCoefficients()[4], kEps);
-  EXPECT_NEAR(0.1, restored_d_grid->GetDiffusionCoefficients()[5], kEps);
-  EXPECT_NEAR(0.1, restored_d_grid->GetDiffusionCoefficients()[6], kEps);
-  EXPECT_NEAR(0.01, restored_d_grid->GetDecayConstant(), kEps);
+  EXPECT_NEAR(0.4, restored_d_grid->GetDiffusionCoefficients()[0], eps);
+  EXPECT_NEAR(0.1, restored_d_grid->GetDiffusionCoefficients()[1], eps);
+  EXPECT_NEAR(0.1, restored_d_grid->GetDiffusionCoefficients()[2], eps);
+  EXPECT_NEAR(0.1, restored_d_grid->GetDiffusionCoefficients()[3], eps);
+  EXPECT_NEAR(0.1, restored_d_grid->GetDiffusionCoefficients()[4], eps);
+  EXPECT_NEAR(0.1, restored_d_grid->GetDiffusionCoefficients()[5], eps);
+  EXPECT_NEAR(0.1, restored_d_grid->GetDiffusionCoefficients()[6], eps);
+  EXPECT_NEAR(0.01, restored_d_grid->GetDecayConstant(), eps);
   EXPECT_EQ(-50, restored_d_grid->GetDimensions()[0]);
   EXPECT_EQ(-50, restored_d_grid->GetDimensions()[2]);
   EXPECT_EQ(-50, restored_d_grid->GetDimensions()[4]);
@@ -471,17 +479,80 @@ TEST(DiffusionTest, Convergence) {
   auto real_val8 =
       CalculateAnalyticalSolution(init, rc8[0], rc8[1], rc8[2], diff_coef, tot);
 
-  auto error2 = std::abs(real_val2 - conc2[d_grid2->GetBoxIndex(marker)]);
-  auto error4 = std::abs(real_val4 - conc4[d_grid4->GetBoxIndex(marker)]);
-  auto error8 = std::abs(real_val8 - conc8[d_grid8->GetBoxIndex(marker)]);
+  auto error2 = std::abs(real_val2 - conc2[d_grid2->GetBoxIndex(marker)]) /
+                std::abs(real_val2);
+  auto error4 = std::abs(real_val4 - conc4[d_grid4->GetBoxIndex(marker)]) /
+                std::abs(real_val4);
+  auto error8 = std::abs(real_val8 - conc8[d_grid8->GetBoxIndex(marker)]) /
+                std::abs(real_val8);
 
   EXPECT_TRUE(error4 < error2);
   EXPECT_TRUE(error8 < error4);
-  EXPECT_NEAR(real_val8, conc8[d_grid8->GetBoxIndex(marker)], 0.02);
+  EXPECT_NEAR(error8, 0.01, 0.005);
 
   delete d_grid2;
   delete d_grid4;
   delete d_grid8;
+}
+
+TEST(DiffusionTest, ModelInitializer) {
+  Simulation<> sim(TEST_NAME);
+  auto* rm = sim.GetResourceManager();
+
+  enum Substances { kSubstance_0, kSubstance_1, kSubstance_2 };
+
+  // Define the substances in a different order than the enum
+  ModelInitializer::DefineSubstance(kSubstance_0, "Substance_0", 0.5, 0);
+  ModelInitializer::DefineSubstance(kSubstance_2, "Substance_2", 0.5, 0);
+  ModelInitializer::DefineSubstance(kSubstance_1, "Substance_1", 0.5, 0);
+
+  // Initialize one of the substances
+  double mean = 0;
+  double sigma = 5;
+  ModelInitializer::InitializeSubstance(kSubstance_1, "Substance_1",
+                                        GaussianBand(mean, sigma, kXAxis));
+
+  int l = -100;
+  int r = 100;
+  rm->GetDiffusionGrids()[kSubstance_0]->Initialize({l, r, l, r, l, r});
+  rm->GetDiffusionGrids()[kSubstance_1]->Initialize({l, r, l, r, l, r});
+  rm->GetDiffusionGrids()[kSubstance_2]->Initialize({l, r, l, r, l, r});
+  rm->GetDiffusionGrids()[kSubstance_0]->RunInitializers();
+  rm->GetDiffusionGrids()[kSubstance_1]->RunInitializers();
+  rm->GetDiffusionGrids()[kSubstance_2]->RunInitializers();
+
+  Param::VisualizeDiffusion vd;
+  vd.name_ = "Substance_1";
+
+  auto* param = sim.GetParam();
+  param->export_visualization_ = true;
+  param->visualize_diffusion_.push_back(vd);
+
+  // Write diffusion visualization to file
+  CatalystAdaptor<> adaptor("");
+  adaptor.Visualize(1, true);
+  adaptor.WriteToFile(0);
+
+  // Read back from file
+  vtkSmartPointer<vtkXMLImageDataReader> reader =
+      vtkSmartPointer<vtkXMLImageDataReader>::New();
+  auto filename = Concat(sim.GetOutputDir(), "/Substance_1-0_0.vti");
+  if (!FileExists(filename.c_str())) {
+    std::cout << filename << " was not generated!" << std::endl;
+    FAIL();
+  }
+  reader->SetFileName(filename.c_str());
+  reader->Update();
+  vtkImageData* vtk_dgrid = reader->GetOutput();
+  vtkAbstractArray* abstract_array =
+      vtk_dgrid->GetPointData()->GetArray("Substance Concentration");
+  vtkDoubleArray* conc = vtkArrayDownCast<vtkDoubleArray>(abstract_array);
+
+  double expected = ROOT::Math::normal_pdf(0, sigma, mean);
+  std::array<double, 3> marker = {0, 0, 0};
+  size_t idx = rm->GetDiffusionGrids()[kSubstance_1]->GetBoxIndex(marker);
+  EXPECT_NEAR(expected, conc->GetTuple(idx)[0], 1e-9);
+  remove(filename.c_str());
 }
 
 }  // namespace bdm

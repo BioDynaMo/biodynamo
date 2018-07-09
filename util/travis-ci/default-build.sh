@@ -30,6 +30,10 @@ set -e -x
 
 echo ${TRAVIS_OS_NAME}
 
+# start x virtual framebuffer for headless environments.
+export DISPLAY=:99.0
+util/xvfb-initd.sh start
+
 # git describe does not work if last commit tag is not checked out
 git fetch --unshallow &>/dev/null || true
 

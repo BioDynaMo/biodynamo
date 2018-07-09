@@ -281,7 +281,7 @@ def ProcessExtracellularSubstance(result_dir, substance_info):
     # get display properties
     substance_display = GetDisplayProperties(substance_data, view=renderView1)
     # set scalar coloring
-    ColorBy(substance_display, ('POINTS', 'Diffusion Gradient', 'Magnitude'))
+    ColorBy(substance_display, ('POINTS', 'Substance Concentration', 'Magnitude'))
     # rescale color and/or opacity maps used to include current data range
     substance_display.RescaleTransferFunctionToDataRange(True, True)
     # change representation type
