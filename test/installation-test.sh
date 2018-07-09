@@ -76,6 +76,15 @@ do
   rm -rf "${demo_dir}"
 done
 
+# makefile_project
+demo_dir=$(mktemp -d)
+biodynamo demo makefile_project "${demo_dir}"
+pushd "${demo_dir}/makefile_project"
+make
+./my-simulation | grep 'Simulation completed successfully!'
+popd
+rm -rf "${demo_dir}"
+
 # verify if out of source builds work
 cd ~
 biodynamo new test-sim --no-github
