@@ -77,13 +77,7 @@ do
 done
 
 # makefile_project
-demo_dir=$(mktemp -d)
-biodynamo demo makefile_project "${demo_dir}"
-pushd "${demo_dir}/makefile_project"
-make
-./my-simulation | grep 'Simulation completed successfully!'
-popd
-rm -rf "${demo_dir}"
+"${BDM_PROJECT_DIR}/test/integration/makefile_project.sh"
 
 # verify if out of source builds work
 cd ~

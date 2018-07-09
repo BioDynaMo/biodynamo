@@ -14,14 +14,12 @@
 # -----------------------------------------------------------------------------
 
 set -x
-# get path of this script
-pushd `dirname $0` > /dev/null
-SCRIPTPATH=`pwd`
-popd > /dev/null
 
-export PATH=$PATH:$SCRIPTPATH/../../util/makefile-build
+temp_dir=$(mktemp -d)
+trap "rm -rf \"${temp_dir}\"" EXIT
 
-cd $SCRIPTPATH/../../demo/makefile_project
+biodynamo demo makefile_project "${temp_dir}"
+cd "${temp_dir}/makefile_project"
 make clean
 
 if [ `uname` = "Darwin" ]; then
