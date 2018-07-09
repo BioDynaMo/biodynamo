@@ -18,8 +18,7 @@
 #   $1 the directory containing the simulation code
 function run_simulation() {
   pushd "$1"
-  log_dir=$(mktemp -d)
-  log=$(mktemp --tmpdir="${log_dir}")
+  log=$(mktemp)
   expected="Simulation completed successfully!"
   biodynamo run | tee "${log}"
   actual=$(tail -n3 "${log}" | head -n1)
@@ -29,7 +28,7 @@ function run_simulation() {
     exit 1
   fi
 
-  rm -rf "${log_dir}"
+  rm -rf "${log}"
 }
 
 if [ $# -ne 0 ]; then
