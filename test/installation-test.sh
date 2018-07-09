@@ -68,9 +68,12 @@ DEMOS=(
     gene_regulation
     multiple_simulations
 )
-for demo_dir in "${DEMOS[@]}"
+for demo_name in "${DEMOS[@]}"
 do
-  run_simulation "demo/${demo_dir}"
+  demo_dir=$(mktemp -d)
+  biodynamo demo "${demo_name}" "${demo_dir}"
+  run_simulation "${demo_dir}/${demo_name}"
+  rm -rf "${demo_dir}"
 done
 
 # verify if out of source builds work
