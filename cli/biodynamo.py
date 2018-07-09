@@ -16,10 +16,11 @@
 
 import argparse
 import sys
-from new_command import NewCommand
-from build_command import BuildCommand
-from run_command import RunCommand
 from assist_command import AssistCommand
+from build_command import BuildCommand
+from demo_command import DemoCommand
+from new_command import NewCommand
+from run_command import RunCommand
 from version import Version
 
 if __name__ == '__main__':
@@ -51,6 +52,9 @@ if __name__ == '__main__':
 
     clean_sp = sp.add_parser('clean', help='Removes all build files')
 
+    demo_sp = sp.add_parser('demo', help='Creates pre-built demos.')
+    demo_sp.add_argument('demo_name', help='Name of the demo, such as "diffusion".')
+
     new_sp = sp.add_parser('new', help='Creates a new simulation project. Downloads '
     'a template project from BioDynaMo, renames it to the given simulation name, '
     'creates a new Github repository and configures git.')
@@ -76,6 +80,12 @@ if __name__ == '__main__':
             clean_sp.print_help()
             sys.exit()
         BuildCommand(clean=True, build=False)
+    elif args.cmd == 'demo':
+        if not unknown:
+            destination = None
+        else:
+            destination = unknown[0]
+        DemoCommand(args.demo_name, destination)
     elif args.cmd == 'run':
         RunCommand(args=unknown)
     elif args.cmd == 'assist':
