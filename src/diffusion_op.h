@@ -22,6 +22,7 @@
 #include "diffusion_grid.h"
 #include "grid.h"
 #include "inline_vector.h"
+#include "param.h"
 #include "resource_manager.h"
 #include "simulation.h"
 
@@ -51,7 +52,11 @@ class DiffusionOp {
         dg->Update(grid->GetDimensionThresholds());
       }
 
-      dg->DiffuseEuler();
+      if (param->leaking_edges_) {
+        dg->DiffuseEulerLeakingEdge();
+      } else {
+        dg->DiffuseEuler();
+      }
 
       if (param->calculate_gradients_) {
         dg->CalculateGradient();

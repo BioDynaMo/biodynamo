@@ -78,7 +78,11 @@ class InSituPipeline : public vtkCPPipeline {
     }
   }
 
-  virtual ~InSituPipeline() {}
+  virtual ~InSituPipeline() {
+    // Do not delete proxy_manager_, session_manager_
+    plugin_manager_->Delete();
+    controller_->Delete();
+  }
 
   void Initialize(const std::unordered_map<std::string, Shape>& shapes) {
     shapes_ = shapes;

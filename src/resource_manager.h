@@ -210,6 +210,8 @@ class ResourceManager {
   }
 
   /// Return the diffusion grid which holds the substance of specified name
+  /// Caution: using this function in a tight loop will result in a slow
+  /// simulation. Use `GetDiffusionGrid(size_t)` in those cases.
   DiffusionGrid* GetDiffusionGrid(std::string substance_name) {
     for (auto dg : diffusion_grids_) {
       if (dg->GetSubstanceName() == substance_name) {

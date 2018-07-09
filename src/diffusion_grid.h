@@ -91,13 +91,17 @@ class DiffusionGrid {
       return;
     }
 
+    auto nx = num_boxes_axis_[0];
+    auto ny = num_boxes_axis_[1];
+    auto nz = num_boxes_axis_[2];
+
     // Apply all functions that initialize this diffusion grid
     for (size_t f = 0; f < initializers_.size(); f++) {
-      for (size_t x = 0; x < num_boxes_axis_[0]; x++) {
+      for (size_t x = 0; x < nx; x++) {
         double real_x = grid_dimensions_[0] + x * box_length_;
-        for (size_t y = 0; y < num_boxes_axis_[1]; y++) {
+        for (size_t y = 0; y < ny; y++) {
           double real_y = grid_dimensions_[2] + y * box_length_;
-          for (size_t z = 0; z < num_boxes_axis_[2]; z++) {
+          for (size_t z = 0; z < nz; z++) {
             double real_z = grid_dimensions_[4] + z * box_length_;
             std::array<uint32_t, 3> box_coord;
             box_coord[0] = x;
@@ -399,8 +403,6 @@ class DiffusionGrid {
           size_t x = 0;
           int c, n, s, b, t;
           c = x + y * nx + z * nx * ny;
-          // x = 0
-          c2_[c] = 0;
 #pragma omp simd
           for (x = 1; x < nx - 1; x++) {
             ++c;
@@ -410,7 +412,6 @@ class DiffusionGrid {
             ++t;
 
             if (y == 0 || y == (ny - 1) || z == 0 || z == (nz - 1)) {
-              c2_[c] = 0;
               continue;
             }
 
@@ -429,8 +430,82 @@ class DiffusionGrid {
           ++s;
           ++b;
           ++t;
-          // x = n - 1
-          c2_[c] = 0;
+        }  // tile ny
+      }    // tile nz
+    }      // block ny
+    c1_.swap(c2_);
+  }
+
+  void DiffuseEulerLeakingEdge() {
+    const auto nx = num_boxes_axis_[0];
+    const auto ny = num_boxes_axis_[1];
+    const auto nz = num_boxes_axis_[2];
+
+    const double ibl2 = 1 / (box_length_ * box_length_);
+    const double d = 1 - dc_[0];
+    std::array<int, 4> l;
+    // TODO(ahmad): this probably needs to scale with Param::simulation_timestep
+    const double dt = 1;
+
+#define YBF 16
+#pragma omp parallel for collapse(2)
+    for (size_t yy = 0; yy < ny; yy += YBF) {
+      for (size_t z = 0; z < nz; z++) {
+        size_t ymax = yy + YBF;
+        if (ymax >= ny) {
+          ymax = ny;
+        }
+        for (size_t y = yy; y < ymax; y++) {
+          size_t x = 0;
+          int c, n, s, b, t;
+          c = x + y * nx + z * nx * ny;
+          n = (y == 0) ? c : c - nx;
+          s = (y == ny - 1) ? c : c + nx;
+          b = (z == 0) ? c : c - nx * ny;
+          t = (z == nz - 1) ? c : c + nx * ny;
+          c2_[c] = (c1_[c] + d * dt * (0 - 2 * c1_[c] + c1_[c + 1]) * ibl2 +
+                    d * dt * (c1_[s] - 2 * c1_[c] + c1_[n]) * ibl2 +
+                    d * dt * (c1_[b] - 2 * c1_[c] + c1_[t]) * ibl2) *
+                   (1 - mu_);
+#pragma omp simd
+          for (x = 1; x < nx - 1; x++) {
+            ++c;
+            ++n;
+            ++s;
+            ++b;
+            ++t;
+
+            l.fill(1);
+
+            if (y == 0) {
+              l[0] = 0;
+            }
+            if (y == ny - 1) {
+              l[1] = 0;
+            }
+            if (z == 0) {
+              l[2] = 0;
+            }
+            if (z == nz - 1) {
+              l[3] = 0;
+            }
+
+            c2_[c] =
+                (c1_[c] +
+                 d * dt * (c1_[c - 1] - 2 * c1_[c] + c1_[c + 1]) * ibl2 +
+                 d * dt * (l[0] * c1_[s] - 2 * c1_[c] + l[1] * c1_[n]) * ibl2 +
+                 d * dt * (l[2] * c1_[b] - 2 * c1_[c] + l[3] * c1_[t]) * ibl2) *
+                (1 - mu_);
+          }
+          ++c;
+          ++n;
+          ++s;
+          ++b;
+          ++t;
+          c2_[c] = (c1_[c] + d * dt * (c1_[c - 1] - 2 * c1_[c] + 0) * ibl2 +
+                    d * dt * (c1_[s] - 2 * c1_[c] + c1_[n]) * ibl2 +
+                    d * dt * (c1_[b] - 2 * c1_[c] + c1_[t]) * ibl2) *
+                   (1 - mu_);
         }  // tile ny
       }    // tile nz
     }      // block ny
@@ -493,7 +568,7 @@ class DiffusionGrid {
           }
 
           // Let the gradient point from low to high concentration
-          gradients_[3 * c] = (c1_[w] - c1_[e]) * gd;
+          gradients_[3 * c + 0] = (c1_[w] - c1_[e]) * gd;
           gradients_[3 * c + 1] = (c1_[n] - c1_[s]) * gd;
           gradients_[3 * c + 2] = (c1_[t] - c1_[b]) * gd;
         }

@@ -178,7 +178,7 @@ struct ModelInitializer {
   /// @param[in]  resolution       The resolution of the diffusion grid
   ///
   template <typename TSimulation = Simulation<>>
-  static void DefineSubstance(int substance_id, std::string substance_name,
+  static void DefineSubstance(size_t substance_id, std::string substance_name,
                               double diffusion_coeff, double decay_constant,
                               int resolution = 10) {
     assert(resolution > 0 && "Resolution needs to be a positive integer value");
@@ -188,12 +188,16 @@ struct ModelInitializer {
         new DiffusionGrid(substance_id, substance_name, diffusion_coeff,
                           decay_constant, resolution);
     auto& diffusion_grids = rm->GetDiffusionGrids();
-    diffusion_grids.push_back(d_grid);
+
+    if (substance_id + 1 > diffusion_grids.size()) {
+      diffusion_grids.resize(substance_id + 1);
+    }
+    diffusion_grids[substance_id] = d_grid;
   }
 
   template <typename TSimulation = Simulation<>, typename F>
-  static void InitializeSubstance(int substance_id, std::string substance_name,
-                                  F function) {
+  static void InitializeSubstance(size_t substance_id,
+                                  std::string substance_name, F function) {
     auto* sim = TSimulation::GetActive();
     auto* rm = sim->GetResourceManager();
     auto diffusion_grid = rm->GetDiffusionGrid(substance_id);
