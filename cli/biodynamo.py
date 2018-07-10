@@ -53,7 +53,6 @@ if __name__ == '__main__':
     clean_sp = sp.add_parser('clean', help='Removes all build files')
 
     demo_sp = sp.add_parser('demo', help='Creates pre-built demos.')
-    demo_sp.add_argument('demo_name', help='Name of the demo, such as "diffusion".')
 
     new_sp = sp.add_parser('new', help='Creates a new simulation project. Downloads '
     'a template project from BioDynaMo, renames it to the given simulation name, '
@@ -81,11 +80,13 @@ if __name__ == '__main__':
             sys.exit()
         BuildCommand(clean=True, build=False)
     elif args.cmd == 'demo':
-        if not unknown:
-            destination = None
-        else:
-            destination = unknown[0]
-        DemoCommand(args.demo_name, destination)
+        demo_name = None
+        destination = None
+        if len(unknown) >= 1:
+            demo_name = unknown[0]
+        if len(unknown) >= 2:
+            destination = unknown[1]
+        DemoCommand(demo_name, destination)
     elif args.cmd == 'run':
         RunCommand(args=unknown)
     elif args.cmd == 'assist':

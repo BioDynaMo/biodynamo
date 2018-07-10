@@ -24,9 +24,13 @@ KNOWN_DEMOS = os.listdir(DEMO_DIR)
 
 
 def DemoCommand(demo_name, destination=None):
+    if not demo_name:
+        print('Usage: biodynamo demo <demo name> [target directory]')
+        print('Known demos:\n  {}'.format('\n  '.join(KNOWN_DEMOS)))
+        return
     if demo_name not in KNOWN_DEMOS:
-        Print.error('Demo name "{}" is not known amongst {}.'.format(
-                demo_name, KNOWN_DEMOS))
+        Print.error('Demo name "{}" is not known.'.format(demo_name))
+        print('Known demos:\n  {}'.format('\n  '.join(KNOWN_DEMOS)))
         sys.exit(1)
     if destination is None:
         destination = '.'
@@ -42,5 +46,3 @@ def DemoCommand(demo_name, destination=None):
 
     Print.success('The demo "{}" has been created in "{}".'.format(
             demo_name, destination))
-    print('To compile and run this simulation, run '
-            '"cd {} && biodynamo run"'.format(destination))
