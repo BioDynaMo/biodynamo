@@ -3,24 +3,13 @@ It is the process of extracellular substances diffusing through space. The const
 that govern the diffusion process can be set by the user. Let's go through an
 example where diffusion plays a role.
 
-### Download the code from Github
+### Copy the demo code
 
-If you are still in the `hello_world` directory.
+`diffusion` is one of many installed demos in BioDynaMo. It can be copied out
+with `biodynamo demo`.
 
-#### On Linux:
-
-``` sh
-biodynamo.git clone https://github.com/BioDynaMo/simulation-templates.git
-cd simulation-templates
-biodynamo.git checkout newcastle
-```
-
-#### On Mac OS:
-
-``` sh
-git clone https://github.com/BioDynaMo/simulation-templates.git
-cd simulation-templates
-git checkout newcastle
+```sh
+biodynamo demo diffusion .
 ```
 
 ### Inspect the code
