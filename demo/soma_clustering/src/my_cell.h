@@ -15,6 +15,8 @@
 #ifndef MY_CELL_H_
 #define MY_CELL_H_
 
+#include <biodynamo.h>
+
 namespace bdm {
 
 // Define my custom cell, which extends Cell by adding an extra
