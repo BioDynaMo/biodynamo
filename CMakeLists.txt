@@ -7,7 +7,6 @@ set(BDM_VERSION 0.1.0)
 
 # Options. Turn on with 'cmake -Dmyvarname=ON'.
 option(test "Build all tests." ON) # Makes boolean 'test' available.
-option(demo "Build all demos." ON)
 option(cuda "Enable CUDA code generation for GPU acceleration" OFF)
 option(opencl "Build OpenCL code generation for GPU acceleration" OFF)
 if(APPLE)
@@ -120,7 +119,6 @@ include(${ROOT_USE_FILE})
 include_directories("${CMAKE_SOURCE_DIR}/src")
 include_directories("${CMAKE_SOURCE_DIR}/test")
 include_directories("${CMAKE_SOURCE_DIR}/third_party")
-include_directories("${CMAKE_SOURCE_DIR}/demo")
 include_directories("${MPARK_LIB}")
 include_directories("${CMAKE_CURRENT_BINARY_DIR}/version")
 
