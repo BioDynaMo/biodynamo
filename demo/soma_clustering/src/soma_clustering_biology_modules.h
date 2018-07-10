@@ -53,8 +53,8 @@ struct Chemotaxis : public BaseBiologyModule {
   bool init_ = false;
   DiffusionGrid* dg_0_ = nullptr;
   DiffusionGrid* dg_1_ = nullptr;
-  std::array<double, 3> gradient_0_;
-  std::array<double, 3> gradient_1_;
+  std::array<double, 3> gradient_0_{};
+  std::array<double, 3> gradient_1_{};
   ClassDefNV(Chemotaxis, 1);
 };
 
