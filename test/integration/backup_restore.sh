@@ -13,11 +13,24 @@
 #
 # -----------------------------------------------------------------------------
 
+set -e -x
+
+SOURCE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+tmp_dir=$(mktemp -d)
+trap "rm -rf \"${tmp_dir}\"" EXIT
+
+cd "${tmp_dir}"
+cp -r "${SOURCE}/backup_restore" .
+cd backup_restore
+
+cmake .
+make -j4
+
 BACKUP_RESTORE_FILE="backup_restore.root"
-rm $BACKUP_RESTORE_FILE
 
 # start simulation
-./backup-restore -b $BACKUP_RESTORE_FILE &
+./backup_restore -b $BACKUP_RESTORE_FILE &
 
 # simulate crash of simulation after 5 seconds
 SIMULATION_PID=$!
@@ -31,11 +44,10 @@ for i in {0..5}; do
   sleep 1
 done
 kill -9 $SIMULATION_PID
+sleep 1
 
 # restart after artificial crash
-./backup-restore -b $BACKUP_RESTORE_FILE -r $BACKUP_RESTORE_FILE
+./backup_restore -b $BACKUP_RESTORE_FILE -r $BACKUP_RESTORE_FILE
 RETURN_CODE=$?
-
-rm $BACKUP_RESTORE_FILE
 
 exit $RETURN_CODE

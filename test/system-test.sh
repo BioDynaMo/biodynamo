@@ -13,24 +13,6 @@
 #
 # -----------------------------------------------------------------------------
 
-# Compiles and runs the simulation code contained in $1.
-#
-#   $1 the directory containing the simulation code
-function run_simulation() {
-  pushd "$1"
-  log=$(mktemp)
-  expected="Simulation completed successfully!"
-  biodynamo run | tee "${log}"
-  actual=$(tail -n3 "${log}" | head -n1)
-  popd
-
-  if [ "${actual}" != "${expected}" ]; then
-    exit 1
-  fi
-
-  rm -rf "${log}"
-}
-
 if [ $# -ne 0 ]; then
   echo "Wrong number of arguments.
 Description:
@@ -44,20 +26,24 @@ fi
 
 set -e -x
 
-BDM_PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/.."
+source $(dirname "$BASH_SOURCE[0]")/util.inc
 
-# Run all the CMake demos.
-DEMOS=$(find "${BDM_PROJECT_DIR}/demo" -name CMakeLists.txt \
-          -exec sh -c 'basename $(dirname {})' \;)
-for demo_name in ${DEMOS[@]}  # No quotation.
+for demo_name in ${CMAKE_DEMOS[@]}  # No quotation.
 do
-  demo_dir=$(mktemp -d)
-  biodynamo demo "${demo_name}" "${demo_dir}"
-  run_simulation "${demo_dir}/${demo_name}"
-  rm -rf "${demo_dir}"
+  if [ -f "${BDM_PROJECT_DIR}/test/integration/${demo_name}.sh" ]; then
+    # We have a specialized test, run it.
+    "${BDM_PROJECT_DIR}/test/integration/${demo_name}.sh"
+  else
+    # Otherwise, just build and run with biodynamo run.
+    demo_dir=$(mktemp -d)
+    biodynamo demo "${demo_name}" "${demo_dir}"
+    run_cmake_simulation "${demo_dir}/${demo_name}"
+    rm -rf "${demo_dir}"
+  fi
 done
 
-# makefile_project
+# Other specialized tests.
+"${BDM_PROJECT_DIR}/test/integration/backup_restore.sh"
 "${BDM_PROJECT_DIR}/test/integration/makefile_project.sh"
 
 exit $?

@@ -26,7 +26,8 @@ fi
 
 set -e -x
 
-BDM_PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/.."
+source $(dirname "$BASH_SOURCE[0]")/util.inc
+
 cd $BDM_PROJECT_DIR
 # Currently we are inside the biodynamo project directory, mapped as volume
 # from the host
@@ -49,6 +50,6 @@ test/system-test.sh
 # verify if out of source builds work
 cd ~
 biodynamo new test-sim --no-github
-run_simulation test-sim
+run_cmake_simulation test-sim
 
 exit $?

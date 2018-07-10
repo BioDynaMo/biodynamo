@@ -244,37 +244,11 @@ if (test)
 
   # integration tests
   if (NOT coverage)
-    #   backup-restore
-    bdm_add_executable(backup-restore
-                      SOURCES test/integration/backup_restore.cc
-                      HEADERS test/integration/backup_restore.h
-                      LIBRARIES biodynamo)
-    add_dependencies(check backup-restore)
-    add_test(NAME "integration-backup-restore"
-             COMMAND ${CMAKE_SOURCE_DIR}/test/integration/backup_restore.sh)
-    bdm_add_executable(soma_clustering
-                      SOURCES test/integration/soma_clustering.cc
-                      HEADERS test/integration/soma_clustering.h
-                      LIBRARIES biodynamo)
-    add_dependencies(check soma_clustering)
-    add_test(NAME "integration-soma-clustering"
-             COMMAND ${CMAKE_SOURCE_DIR}/build/soma_clustering)
-    bdm_add_executable(substance_initialization
-                      SOURCES test/integration/substance_initialization.cc
-                      HEADERS test/integration/substance_initialization.h
-                      LIBRARIES biodynamo)
-    add_dependencies(check substance_initialization)
-    add_test(NAME "integration-substance-initialization"
-             COMMAND ${CMAKE_SOURCE_DIR}/build/substance_initialization)
-
-    #   makefile project
-    add_test(NAME "makefile-project"
-             COMMAND ${CMAKE_SOURCE_DIR}/test/integration/makefile_project.sh)
-    bdm_add_executable(cell_division_gpu
-                      SOURCES test/integration/cell_division_gpu.cc
-                      HEADERS test/integration/cell_division_gpu.h
-                      LIBRARIES biodynamo)
     if(OPENCL_FOUND OR CUDA_FOUND)
+      bdm_add_executable(cell_division_gpu
+                         SOURCES test/integration/cell_division_gpu.cc
+                         HEADERS test/integration/cell_division_gpu.h
+                         LIBRARIES biodynamo)
       add_dependencies(check cell_division_gpu)
       add_test(NAME "integration-cell-division-gpu"
                COMMAND ${CMAKE_SOURCE_DIR}/build/cell_division_gpu)
