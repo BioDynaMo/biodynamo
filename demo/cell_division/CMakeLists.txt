@@ -18,9 +18,10 @@ project(cell_division)
 
 find_package(BioDynaMo REQUIRED)
 include("${BDM_USE_FILE}")
+include_directories("src")
 
-file(GLOB_RECURSE HEADERS *.h)
-file(GLOB_RECURSE SOURCES *.cc)
+file(GLOB_RECURSE HEADERS src/*.h)
+file(GLOB_RECURSE SOURCES src/*.cc)
 
 bdm_add_executable(cell_division
                    HEADERS "${HEADERS}"
