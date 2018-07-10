@@ -30,9 +30,10 @@ source $(dirname "$BASH_SOURCE[0]")/util.inc
 
 for demo_name in ${CMAKE_DEMOS[@]}  # No quotation.
 do
-  if [ -f "${BDM_PROJECT_DIR}/test/integration/${demo_name}.sh" ]; then
+  specialized_test="${BDM_PROJECT_DIR}/test/system/${demo_name}.sh"
+  if [ -f "${specialized_test}" ]; then
     # We have a specialized test, run it.
-    "${BDM_PROJECT_DIR}/test/integration/${demo_name}.sh"
+    "${specialized_test}"
   else
     # Otherwise, just build and run with biodynamo run.
     demo_dir=$(mktemp -d)
@@ -43,7 +44,7 @@ do
 done
 
 # Other specialized tests.
-"${BDM_PROJECT_DIR}/test/integration/backup_restore.sh"
-"${BDM_PROJECT_DIR}/test/integration/makefile_project.sh"
+"${BDM_PROJECT_DIR}/test/system/backup_restore.sh"
+"${BDM_PROJECT_DIR}/test/system/makefile_project.sh"
 
 exit $?
