@@ -40,4 +40,4 @@ my-simulation: bdm_generated_code.o my-simulation.o
 clean:
 	@# Delete the bdm-config cache
 	bdm-config --clean
-	rm *o bdm_generated_code.cc *_rdict.pcm my-simulation
+	rm -rf *o bdm_generated_code.cc *_rdict.pcm my-simulation
