@@ -13,23 +13,5 @@
 #
 # -----------------------------------------------------------------------------
 
-set -x
-# get path of this script
-pushd `dirname $0` > /dev/null
-SCRIPTPATH=`pwd`
-popd > /dev/null
-
-export PATH=$PATH:$SCRIPTPATH/../../util/makefile-build
-
-cd $SCRIPTPATH/../../demo/makefile_project
-make clean
-
-if [ `uname` = "Darwin" ]; then
-  # following line creates the cache for bdm-config
-  # without it the make call fails on Travis OSX
-  bdm-config --cxxflag
-fi
-
-make
-./my-simulation 2>/dev/null | grep '^Simulation completed successfully!$'
-exit $?
+# This script is to prevent the test from being run by test/system-test.sh.
+# This particular test is hooked up in $BDM_PROJECT_DIR/CMakeLists.txt.

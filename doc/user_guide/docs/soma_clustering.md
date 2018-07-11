@@ -3,13 +3,12 @@ example, we create two types of cells. Each type of cell secretes a specific sub
 and moves along the gradient of its corresponding substance. This will form clusters
 of cells that are of the same type.
 
-### Download the code from Github
+### Copy out the demo code
 
-If you have not done already, download the code from github:
+Soma clustering is one of many installed demos. It can be copied to a target directory:
 
 ``` sh
-git clone https://github.com/BioDynaMo/simulation-templates.git
-git checkout newcastle
+biodynamo demo soma_clustering .
 ```
 
 ### Inspect the code

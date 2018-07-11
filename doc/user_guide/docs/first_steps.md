@@ -52,6 +52,29 @@ All your source code will be compiled and linked against the BioDynaMo libraries
 will be created and run. It is at this point you might encounter compilation errors.
 You will need to fix them before the simulation can actually run.
 
+## Try out some demos
+
+There are some demos in the installation. They can be listed with the command:
+
+```sh
+biodynamo demo
+```
+
+Each of these demos can be copied out to a directory and executed with two `biodynamo` commands:
+
+```sh
+biodynamo demo <name> [target]
+cd <destination>  # as printed out by the previous command
+biodynamo run
+```
+
+For example, to run the demo `cell_division`, we can do:
+
+```sh
+biodynamo demo cell_division /tmp
+cd /tmp/cell_division
+biodynamo run
+```
 
 ## Request assistance
 

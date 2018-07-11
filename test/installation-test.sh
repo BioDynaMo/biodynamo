@@ -26,13 +26,14 @@ fi
 
 set -e -x
 
-BDM_PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/.."
+source $(dirname "$BASH_SOURCE[0]")/util.inc
+
 cd $BDM_PROJECT_DIR
 # Currently we are inside the biodynamo project directory, mapped as volume
 # from the host
 
 # speed-up build by disabling tests and demos
-export BDM_CMAKE_FLAGS="-Dtest=off -Ddemo=off"
+export BDM_CMAKE_FLAGS="-Dtest=off"
 ./install.sh << EOF
 y
 y
@@ -43,17 +44,12 @@ set +e +x
 source ~/.bdm/biodynamo-env.sh
 set -e -x
 
+# run system test.
+test/system-test.sh
+
 # verify if out of source builds work
 cd ~
 biodynamo new test-sim --no-github
-cd test-sim
-biodynamo run &>all
+run_cmake_simulation test-sim
 
-# extract ouput
-cat all | tail -n3 | head -n1 >actual
-
-# create file with expected output
-echo "Simulation completed successfully!" >> expected
-
-diff expected actual
 exit $?

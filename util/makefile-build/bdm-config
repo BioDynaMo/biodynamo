@@ -62,7 +62,7 @@ def ExtractInformation(tmp_cmake_dir, cmake_output):
         first_whitespace = content.find(" ")
         # remove compiler
         content = content[first_whitespace:]
-        remove = " CMakeFiles/extract-build-info.dir/empty.cc.o  -o extract-build-info  "
+        remove = " CMakeFiles/extract-build-info.dir/empty.cc.o  -o extract-build-info "
         linkflags = content.replace(remove, "").strip()
 
     cmakedir=""

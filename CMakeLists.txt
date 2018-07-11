@@ -7,7 +7,6 @@ set(BDM_VERSION 0.1.0)
 
 # Options. Turn on with 'cmake -Dmyvarname=ON'.
 option(test "Build all tests." ON) # Makes boolean 'test' available.
-option(demo "Build all demos." ON)
 option(cuda "Enable CUDA code generation for GPU acceleration" OFF)
 option(opencl "Build OpenCL code generation for GPU acceleration" OFF)
 if(APPLE)
@@ -120,7 +119,6 @@ include(${ROOT_USE_FILE})
 include_directories("${CMAKE_SOURCE_DIR}/src")
 include_directories("${CMAKE_SOURCE_DIR}/test")
 include_directories("${CMAKE_SOURCE_DIR}/third_party")
-include_directories("${CMAKE_SOURCE_DIR}/demo")
 include_directories("${MPARK_LIB}")
 include_directories("${CMAKE_CURRENT_BINARY_DIR}/version")
 
@@ -244,39 +242,13 @@ if (test)
 
   # integration tests
   if (NOT coverage)
-    #   backup-restore
-    bdm_add_executable(backup-restore
-                      SOURCES test/integration/backup_restore.cc
-                      HEADERS test/integration/backup_restore.h
-                      LIBRARIES biodynamo)
-    add_dependencies(check backup-restore)
-    add_test(NAME "integration-backup-restore"
-             COMMAND ${CMAKE_SOURCE_DIR}/test/integration/backup_restore.sh)
-    bdm_add_executable(soma_clustering
-                      SOURCES test/integration/soma_clustering.cc
-                      HEADERS test/integration/soma_clustering.h
-                      LIBRARIES biodynamo)
-    add_dependencies(check soma_clustering)
-    add_test(NAME "integration-soma-clustering"
-             COMMAND ${CMAKE_SOURCE_DIR}/build/soma_clustering)
-    bdm_add_executable(substance_initialization
-                      SOURCES test/integration/substance_initialization.cc
-                      HEADERS test/integration/substance_initialization.h
-                      LIBRARIES biodynamo)
-    add_dependencies(check substance_initialization)
-    add_test(NAME "integration-substance-initialization"
-             COMMAND ${CMAKE_SOURCE_DIR}/build/substance_initialization)
-
-    #   makefile project
-    add_test(NAME "makefile-project"
-             COMMAND ${CMAKE_SOURCE_DIR}/test/integration/makefile_project.sh)
-    bdm_add_executable(cell_division_gpu
-                      SOURCES test/integration/cell_division_gpu.cc
-                      HEADERS test/integration/cell_division_gpu.h
-                      LIBRARIES biodynamo)
     if(OPENCL_FOUND OR CUDA_FOUND)
+      bdm_add_executable(cell_division_gpu
+                         SOURCES test/system/cell_division_gpu.cc
+                         HEADERS test/system/cell_division_gpu.h
+                         LIBRARIES biodynamo)
       add_dependencies(check cell_division_gpu)
-      add_test(NAME "integration-cell-division-gpu"
+      add_test(NAME "system-cell-division-gpu"
                COMMAND ${CMAKE_SOURCE_DIR}/build/cell_division_gpu)
     endif()
   endif()
@@ -287,30 +259,3 @@ include(Installation)
 
 # -------------------- add targets for code style and submission checks --------
 include(CppStyleGuideChecks)
-
-if(demo)
-  # -------------------- build cell_division_module executable -----------------
-  bdm_add_executable(cell_division_module
-                     SOURCES demo/cell_division_module.cc
-                     HEADERS demo/cell_division_module.h
-                     LIBRARIES biodynamo)
-
-  # -------------------- build cell_diffusion_module executable ----------------
-  bdm_add_executable(diffusion_module
-                     SOURCES demo/diffusion_module.cc
-                     HEADERS demo/diffusion_module.h
-                     LIBRARIES biodynamo)
-
-  # --------------------- build gene_regulation executable ---------------------
-  bdm_add_executable(gene_regulation
-                     SOURCES demo/gene_regulation.cc
-                     HEADERS demo/gene_regulation.h
-                     LIBRARIES biodynamo)
-
-
-  # --------------------- build multiple_simulations executable ---------------------
-  bdm_add_executable(multiple_simulations
-                     SOURCES demo/multiple_simulations.cc
-                     HEADERS demo/multiple_simulations.h
-                     LIBRARIES biodynamo)
-endif()
