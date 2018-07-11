@@ -62,6 +62,6 @@ ${CXX} -v || true
 cd build
 make check-submission
 
-if [ $TRAVIS_BRANCH = "master" ] && [ $TRAVIS_OS_NAME = "linux" ]; then
+if [ $TRAVIS_BRANCH = "master" ] && [ $TRAVIS_OS_NAME = "linux" ] && [ $TRAVIS_PULL_REQUEST = "false" ]; then
   ../util/travis-ci/deploy.sh
 fi
