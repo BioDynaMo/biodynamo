@@ -103,7 +103,7 @@ install(FILES cmake/BioDynaMoConfig.cmake DESTINATION ${CMAKE_INSTALL_CMAKEDIR})
 #simulation template
 install(DIRECTORY util/simulation-template DESTINATION "biodynamo/" FILES_MATCHING PATTERN "*")
 # Demos.
-install(DIRECTORY demo DESTINATION "biodynamo/")
+install(DIRECTORY demo DESTINATION "biodynamo/" PATTERN "build/" EXCLUDE)
 
 if(LINUX)
   install(FILES ${CMAKE_CURRENT_BINARY_DIR}/paraview-plugin/libBDMGlyphFilter.so DESTINATION ${CMAKE_INSTALL_PVPLUGINDIR})

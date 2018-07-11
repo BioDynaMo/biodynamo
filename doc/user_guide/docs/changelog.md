@@ -1,6 +1,13 @@
 # Changelog
 
-## 26.06.2018 `gba4fe1f`
+## 11.09.2018 `82e7e15`
+
+* Add `biodynamo demo` command to try out the demos
+`biodynamo demo` lists all the available demos
+`biodynamo demo <demo-name> <dir>` sets up the demo `<demo-name>` in directory `<dir>`.
+If `<dir>` is not specified, it defaults to the current working directory.
+
+## 26.06.2018 `ba4fe1f`
 
 * Add support for multiple simulations per process. Only one simulation
 can be active at the same time. Introduces new class `Simulation` (see [API](https://biodynamo.github.io/api/structbdm_1_1Simulation.html)).
