@@ -26,7 +26,7 @@ BDM_SIM_OBJECT(MyCell, Cell) {
 
  public:
   MyCellExt() {}
-  MyCellExt(const std::array<double, 3>& position) : Base(position) {}
+  explicit MyCellExt(const std::array<double, 3>& position) : Base(position) {}
 
   void SetCellType(int t) { cell_type_[kIdx] = t; }
   int GetCellType() const { return cell_type_[kIdx]; }

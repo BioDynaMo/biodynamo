@@ -31,12 +31,12 @@ struct Chemotaxis : public BaseBiologyModule {
   void Run(T* cell) {
     auto* sim = TSimulation::GetActive();
     auto* rm = sim->GetResourceManager();
-    static auto* dg = rm->GetDiffusionGrid(kKalium);
-    dg->SetConcentrationThreshold(1e15);
+    static auto* kDg = rm->GetDiffusionGrid(kKalium);
+    kDg->SetConcentrationThreshold(1e15);
 
     auto& position = cell->GetPosition();
     std::array<double, 3> gradient;
-    dg->GetGradient(position, &gradient);
+    kDg->GetGradient(position, &gradient);
     gradient[0] *= 0.5;
     gradient[1] *= 0.5;
     gradient[2] *= 0.5;
@@ -56,9 +56,9 @@ struct KaliumSecretion : public BaseBiologyModule {
   void Run(T* cell) {
     auto* sim = TSimulation::GetActive();
     auto* rm = sim->GetResourceManager();
-    static auto* dg = rm->GetDiffusionGrid(kKalium);
+    static auto* kDg = rm->GetDiffusionGrid(kKalium);
     double amount = 4;
-    dg->IncreaseConcentrationBy(cell->GetPosition(), amount);
+    kDg->IncreaseConcentrationBy(cell->GetPosition(), amount);
   }
 
   ClassDefNV(KaliumSecretion, 1);

@@ -23,24 +23,24 @@ namespace bdm {
 // members: cell_color and can_divide
 BDM_SIM_OBJECT(MyCell, Cell) {  // our object extends the Cell object
                                 // create the header with our new data member
-  BDM_SIM_OBJECT_HEADER(MyCellExt, 1, can_divide_, cell_colour_);
+  BDM_SIM_OBJECT_HEADER(MyCellExt, 1, can_divide_, cell_color_);
 
  public:
   MyCellExt() {}
-  MyCellExt(const std::array<double, 3>& position) : Base(position) {}
+  explicit MyCellExt(const std::array<double, 3>& position) : Base(position) {}
 
   // getter and setter for our new data member
   void SetCanDivide(bool d) { can_divide_[kIdx] = d; }
   bool GetCanDivide() const { return can_divide_[kIdx]; }
 
-  void SetCellColour(int cellColour) { cell_colour_[kIdx] = cellColour; }
-  int GetCellColour() const { return cell_colour_[kIdx]; }
+  void SetCellColor(int cell_color) { cell_color_[kIdx] = cell_color; }
+  int GetCellColor() const { return cell_color_[kIdx]; }
 
  private:
   // declare new data member and define their type
   // private data can only be accessed by public function and not directly
   vec<bool> can_divide_;
-  vec<int> cell_colour_;
+  vec<int> cell_color_;
 };
 
 // 1. Define growth behaviour
@@ -63,8 +63,8 @@ struct GrowthModule : public BaseBiologyModule {
 
       if (cell->GetCanDivide() && random->Uniform(0, 1) < 0.8) {
         auto&& daughter = cell->Divide();
-        // daughter take the cell_colour_ value of her mother
-        daughter->SetCellColour(cell->GetCellColour());
+        // daughter take the cell_color_ value of her mother
+        daughter->SetCellColor(cell->GetCellColor());
         daughter->SetCanDivide(true);  // the daughter will be able to divide
       } else {
         cell->SetCanDivide(false);  // this cell won't divide anymore
@@ -116,7 +116,7 @@ inline int Simulate(int argc, const char** argv) {
     // set cell parameters
     cell.SetDiameter(7.5);
     // will vary from 0 to 5. so 6 different layers depending on y_coord
-    cell.SetCellColour((int)(y_coord / param->max_bound_ * 6));
+    cell.SetCellColor(static_cast<int>((y_coord / param->max_bound_ * 6)));
 
     cells->push_back(cell);  // put the created cell in our cells structure
   }
@@ -124,7 +124,7 @@ inline int Simulate(int argc, const char** argv) {
   // create a cancerous cell, containing the BiologyModule GrowthModule
   MyCell cell({20, 50, 50});
   cell.SetDiameter(6);
-  cell.SetCellColour(8);
+  cell.SetCellColor(8);
   cell.SetCanDivide(true);
   cell.AddBiologyModule(GrowthModule());
   cells->push_back(cell);  // put the created cell in our cells structure

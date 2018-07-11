@@ -19,7 +19,7 @@
 
 namespace bdm {
 
-enum Substances { kSubstance_0, kSubstance_1 };
+enum Substances { kSubstance0, kSubstance1 };
 
 // Define displacement behavior:
 // Cells move along the diffusion gradient (from low concentration to high)
@@ -30,8 +30,8 @@ struct Chemotaxis : public BaseBiologyModule {
   void Run(T* cell) {
     if (!init_) {
       auto* rm = TSimulation::GetActive()->GetResourceManager();
-      dg_0_ = rm->GetDiffusionGrid(kSubstance_0);
-      dg_1_ = rm->GetDiffusionGrid(kSubstance_1);
+      dg_0_ = rm->GetDiffusionGrid(kSubstance0);
+      dg_1_ = rm->GetDiffusionGrid(kSubstance1);
       init_ = true;
     }
 
@@ -66,8 +66,8 @@ struct SubstanceSecretion : public BaseBiologyModule {
   void Run(T* cell) {
     if (!init_) {
       auto* rm = TSimulation::GetActive()->GetResourceManager();
-      dg_0_ = rm->GetDiffusionGrid(kSubstance_0);
-      dg_1_ = rm->GetDiffusionGrid(kSubstance_1);
+      dg_0_ = rm->GetDiffusionGrid(kSubstance0);
+      dg_1_ = rm->GetDiffusionGrid(kSubstance1);
       init_ = true;
     }
     auto& secretion_position = cell->GetPosition();

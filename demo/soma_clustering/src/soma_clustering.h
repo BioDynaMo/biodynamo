@@ -55,7 +55,7 @@ inline int Simulate(int argc, const char** argv) {
   param->run_mechanical_interactions_ = false;
   int num_cells = 20000;
 
-  #pragma omp parallel
+#pragma omp parallel
   simulation.GetRandom()->SetSeed(4357);
 
   // Construct num_cells/2 cells of type 1
@@ -84,8 +84,8 @@ inline int Simulate(int argc, const char** argv) {
 
   // Define the substances that cells may secrete
   // Order: substance_name, diffusion_coefficient, decay_constant, resolution
-  ModelInitializer::DefineSubstance(kSubstance_0, "Substance_0", 0.5, 0.1, 20);
-  ModelInitializer::DefineSubstance(kSubstance_1, "Substance_1", 0.5, 0.1, 20);
+  ModelInitializer::DefineSubstance(kSubstance0, "Substance_0", 0.5, 0.1, 20);
+  ModelInitializer::DefineSubstance(kSubstance1, "Substance_1", 0.5, 0.1, 20);
 
   // Run simulation for N timesteps
   simulation.GetScheduler()->Simulate(1000);

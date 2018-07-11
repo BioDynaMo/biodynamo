@@ -134,6 +134,6 @@ static bool GetCriterion(double spatial_range, int target_n) {
   return true;
 }
 
-}  // namespace bdn
+}  // namespace bdm
 
 #endif  // VALIDATION_CRITERION_H_
