@@ -33,7 +33,7 @@ cd $BDM_PROJECT_DIR
 # from the host
 
 # speed-up build by disabling tests and demos
-export BDM_CMAKE_FLAGS="-Dtest=off -Ddemo=off"
+export BDM_CMAKE_FLAGS="-Dtest=off"
 ./install.sh << EOF
 y
 y
