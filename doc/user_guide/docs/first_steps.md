@@ -24,14 +24,12 @@ biodynamo new <enter_name>
 ```
 
 This command creates a new Git repository for you with the name specified
-in the `<enter_name>` placeholder. It will ask you to login with your Github
-credentials to make your project files remotely accessible. You will see a folder appear with the same
+in the `<enter_name>` placeholder. You will see a folder appear with the same
 name, containing some template files to get you started.
 
 !!! tip
-	If you wish not to have your Github account linked to your project you can
-	append the `--no-github` option to the command. You will however not be able
-	to use the `biodynamo assist` command as explained below.
+	If you wish to have your Github account linked to your project you can
+	append the `--github` option to the command. `biodynamo assist` command requires `--github`
 
 #### 2. Implement your model
 

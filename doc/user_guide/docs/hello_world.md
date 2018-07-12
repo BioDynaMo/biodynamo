@@ -12,9 +12,6 @@ Run the following command to create a new project called "hello_world":
 biodynamo new hello_world
 ```
 
-Log in with your Github account when prompted. Or append `--no-github` if you
-do not want this.
-
 ### Step 2: Build your simulation
 
 Go into the newly created directory `hello_world` with:

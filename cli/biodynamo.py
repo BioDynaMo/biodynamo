@@ -54,11 +54,11 @@ if __name__ == '__main__':
 
     demo_sp = sp.add_parser('demo', help='Creates pre-built demos.')
 
-    new_sp = sp.add_parser('new', help='Creates a new simulation project. Downloads '
-    'a template project from BioDynaMo, renames it to the given simulation name, '
-    'creates a new Github repository and configures git.')
+    new_sp = sp.add_parser('new', help='Creates a new simulation project. Creates '
+    'a template project, renames it to the given simulation name, '
+    'configures git.')
     new_sp.add_argument('SIMULATION_NAME', type=str, help='simulation name help')
-    new_sp.add_argument('--no-github', action='store_true', help='Do not create a Github repository.'    )
+    new_sp.add_argument('--github', action='store_true', help='Create a Github repository.'    )
 
     run_sp = sp.add_parser('run', help='Executes the simulation')
 
@@ -68,7 +68,7 @@ if __name__ == '__main__':
         if len(unknown) != 0:
             new_sp.print_help()
             sys.exit()
-        NewCommand(args.SIMULATION_NAME, args.no_github)
+        NewCommand(args.SIMULATION_NAME, args.github)
     elif args.cmd == 'build':
         if len(unknown) != 0:
             build_sp.print_help()

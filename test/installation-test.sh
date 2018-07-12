@@ -49,7 +49,7 @@ test/system-test.sh
 
 # verify if out of source builds work
 cd ~
-biodynamo new test-sim --no-github
+biodynamo new test-sim
 run_cmake_simulation test-sim
 
 exit $?

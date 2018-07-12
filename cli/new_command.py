@@ -138,8 +138,8 @@ def CreateNewGithubRepository(sim_name):
         Print.error("Error: Setting remote github url ({0}) failed.".format(repo_url))
         CleanupOnError(sim_name)
 
-def NewCommand(sim_name, no_github):
-    if not no_github:
+def NewCommand(sim_name, github):
+    if github:
         print("Info: This command requires a Github.com account.")
         print("      Please have your account details ready, or ")
         print("      go over to https://github.com/join to sign up.")
@@ -148,7 +148,7 @@ def NewCommand(sim_name, no_github):
     CopyTemplate(sim_name)
     CustomizeFiles(sim_name)
     InitializeNewGitRepo(sim_name)
-    if(not no_github):
+    if github:
         CreateNewGithubRepository(sim_name)
 
     Print.success(sim_name + " has been created successfully!")
