@@ -134,7 +134,6 @@ you also can say to Paraview to visualise a particular parameter of ours cells, 
 ``` C++
     [[visualize_sim_object]]
     name = "Cell"
-    additional_data_members = [ "diameter_" ]
 ```
 Because those visualisation parameters are not in the source code, you don’t need to compile your code again.
 We can note that instead of creating a configuration file, you can do the same by adding directly in our Simulate function the lines
@@ -243,7 +242,7 @@ This new simulation is now functional, however before running it, we need to tel
 ``` C++
     [[visualize_sim_object]]
         name = "MyCell"
-        additional_data_members = [ "diameter_" , "cell_colour_" ]
+        additional_data_members = [ "cell_colour_" ]
 ```
 
 With those changes, we are now able to colourise our different layers. All you have to do, after displaying cells and creating the _Glyph_ filter (chapter 3.1) is to select your _Glyph_ filter and to select cell\_colour\_ in the _Coloring_ section.
