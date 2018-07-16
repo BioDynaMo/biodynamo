@@ -43,10 +43,11 @@ auto* cells = rm->template Get<Cell>(); // create a structure to contain cells
 Because we want 2400 cells randomly distributed, it is mandatory to have an random number generator to generate x, y and z coordinate of each cell. For that, we will declare three double (x_coord, y_coord and z_coord) and use the included random engine. Still inside the Simulate method, write:
 ``` C++
 auto* random = simulation.GetRandom(); // set up the random engine
+auto* param = simulation.GetParam(); // set up param
 
   size_t nb_of_cells=2400; // number of cells in the simulation
-  Param::min_bound_ = 0;
-  Param::max_bound_ = 100; // cube of 100*100*100
+  param->min_bound_ = 0;
+  param->max_bound_ = 100; // cube of 100*100*100
   double x_coord, y_coord, z_coord;
 
   cells->reserve(nb_of_cells); // allocate the correct number of cell in our cells structure before cell creation
@@ -142,10 +143,10 @@ you also can say to Paraview to visualise a particular parameter of ours cells, 
 Because those visualisation parameters are not in the source code, you don’t need to compile your code again.
 We can note that instead of creating a configuration file, you can do the same by adding directly in our Simulate function the lines
 ``` C++
-    Param::live_visualization_ = true; // allows live visualisation
-    Param::export_visualization_ = true; // allows export of visualisation files
-    Param::visualization_export_interval_ = 2; // export visualisation files every 2 steps
-    Param::visualize_sim_objects_["Cell"] = std::set<std::string>{ "diameter_" }; // add the data member diameter_ to the visualisation objects
+    param->live_visualization_ = true; // allows live visualisation
+    param->export_visualization_ = true; // allows export of visualisation files
+    param->visualization_export_interval_ = 2; // export visualisation files every 2 steps
+    param->visualize_sim_objects_["Cell"] = std::set<std::string>{ "diameter_" }; // add the data member diameter_ to the visualisation objects
 ```
 Once again, it is important to note that if you want to change any visualisation parameter using this second method, you will have to compile again your code. That is not the case using a configuration file. Hence, using the toml file is highly recommended.  
 
