@@ -1,6 +1,6 @@
 # Changelog
 
-## 12.06.2018 ``
+## 16.07.2018 `3bac827`
 
 Change github option for `biodynamo new`. Previously it was opt-out (`--no-github`).
 This commit changes it to opt-in (`--github`).
@@ -10,7 +10,7 @@ This commit changes it to opt-in (`--github`).
 | `biodynamo new --no-github`         | `biodynamo new` |
 | `biodynamo new`                     | `biodynamo new --github` |
 
-## 11.06.2018 `82e7e15`
+## 11.07.2018 `82e7e15`
 
 * Add `biodynamo demo` command to try out the demos
 `biodynamo demo` lists all the available demos
