@@ -208,17 +208,18 @@ class CatalystAdaptor {
         points->SetData(vtk_array.GetPointer());
         vtk_data->SetPoints(points.GetPointer());
       } else if (name == "mass_location_") {
-        // create points with position {0, 0, 0}
-        // BDMGlyph will rotate and translate
-        vtkNew<vtkPoints> points;
-        points->SetNumberOfPoints(num_cells);
-        vtk_data->SetPoints(points.GetPointer());
-
         vtkNew<vtkDoubleArray> vtk_array;
         vtk_array->SetName(name.c_str());
         auto ptr = dm->data()->data();
         vtk_array->SetNumberOfComponents(3);
         vtk_array->SetArray(ptr, static_cast<vtkIdType>(3 * num_cells), 1);
+
+        // create points with position {0, 0, 0}
+        // BDMGlyph will rotate and translate
+        vtkNew<vtkPoints> points;
+        points->SetData(vtk_array.GetPointer());
+        // points->SetNumberOfPoints(num_cells);
+        vtk_data->SetPoints(points.GetPointer());
         vtk_data->GetPointData()->AddArray(vtk_array.GetPointer());
       } else {
         vtkNew<vtkDoubleArray> vtk_array;
@@ -256,8 +257,7 @@ class CatalystAdaptor {
   /// @tparam     TContainer   { Container that holds the simulation objects }
   ///
   template <typename TContainer>
-  void BuildCellsVTKStructures(TContainer* sim_objects, uint16_t type_idx,
-                               int idx) {
+  void BuildCellsVTKStructures(TContainer* sim_objects, int idx) {
     auto& scalar_name = TContainer::GetScalarTypeName();
     if (!vtk_so_grids_[idx].is_initialized) {
       vtk_so_grids_[idx].data = vtkUnstructuredGrid::New();
@@ -271,7 +271,7 @@ class CatalystAdaptor {
     auto required_dm = TContainer::GetRequiredVisDataMembers();
     sim_objects->ForEachDataMemberIn(
         required_dm,
-        AddCellAttributeData(num_cells, vtk_so_grids_[type_idx].data));
+        AddCellAttributeData(num_cells, vtk_so_grids_[idx].data));
 
     auto* param = TSimulation::GetActive()->GetParam();
     auto& additional_dm = param->visualize_sim_objects_[scalar_name];
@@ -327,12 +327,11 @@ class CatalystAdaptor {
   /// @param[in]  step  The step
   ///
   void WriteToFile(size_t step) {
-    uint64_t counter = 0;
     auto* sim = TSimulation::GetActive();
     for (auto vtk_so : vtk_so_grids_) {
       vtkNew<vtkXMLPUnstructuredGridWriter> cells_writer;
       auto filename = Concat(sim->GetOutputDir(), "/",
-                             vtk_so_grids_[counter].name, "-", step, ".pvtu");
+                             vtk_so.name, "-", step, ".pvtu");
       cells_writer->SetFileName(filename.c_str());
       cells_writer->SetInputData(vtk_so.data);
       cells_writer->Update();
@@ -378,9 +377,9 @@ class CatalystAdaptor {
         // initialized (with a python script)
         if ((g_processor_->RequestDataDescription(
                 data_description.GetPointer())) != 0) {
-          this->BuildCellsVTKStructures(sim_objects, type_idx, so_idx);
+          this->BuildCellsVTKStructures(sim_objects, so_idx);
           data_description->GetInputDescriptionByName(so_name.c_str())
-              ->SetGrid(vtk_so_grids_[type_idx].data);
+              ->SetGrid(vtk_so_grids_[so_idx].data);
         }
         so_idx++;
       }

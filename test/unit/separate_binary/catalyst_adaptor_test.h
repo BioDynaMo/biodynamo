@@ -49,7 +49,7 @@ class CatalystAdaptorTest : public ::testing::Test {
   }
 };
 
-BDM_SIM_OBJECT(MyCell, bdm::Cell) {
+BDM_SIM_OBJECT(MyCell, Cell) {
   BDM_SIM_OBJECT_HEADER(MyCellExt, 1, dummmy_);
 
  public:
@@ -67,7 +67,7 @@ BDM_SIM_OBJECT(MyNeuron, Cell) {
 
 template <typename Backend>
 struct CompileTimeParam : public DefaultCompileTimeParam<Backend> {
-  using AtomicTypes = VariadicTypedef<MyCell, MyNeuron>;
+  using AtomicTypes = VariadicTypedef<Cell, MyCell, MyNeuron>;
 };
 
 }  // namespace bdm

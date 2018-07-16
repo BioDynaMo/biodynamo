@@ -104,6 +104,7 @@ TEST(NeuriteElementBehaviour, BranchingGrowth) {
   Simulation<> simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
   auto* param = simulation.GetParam();
+  auto* scheduler = simulation.GetScheduler();
 
   param->run_mechanical_interactions_ = true;
 
@@ -117,7 +118,10 @@ TEST(NeuriteElementBehaviour, BranchingGrowth) {
   auto ne = neuron.ExtendNewNeurite({0, 0, 1});
   ne->SetDiameter(1);
 
-  Scheduler<> scheduler;
+  param->export_visualization_ = true;
+  param->visualize_sim_objects_["Cell"] = {};
+  param->visualize_sim_objects_["NeuronSoma"] = {};
+  param->visualize_sim_objects_["NeuriteElement"] = {};
 
   std::array<double, 3> previous_direction;
   std::array<double, 3> direction;
@@ -149,7 +153,7 @@ TEST(NeuriteElementBehaviour, BranchingGrowth) {
         }
       }
     }
-    scheduler.Simulate(1);
+    scheduler->Simulate(1);
   }
 }  // end test
 

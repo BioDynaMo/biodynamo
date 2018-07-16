@@ -94,6 +94,7 @@ TEST_F(CatalystAdaptorTest, CheckVisualizationSelection) {
   enum Substances { kSubstance0, kSubstance1, kSubstance2 };
 
   // Create two types of cells
+  auto my_cell = rm->New<MyCell>();
   auto cell = rm->New<MyCell>();
   auto neuron = rm->New<MyNeuron>();
 
@@ -118,6 +119,7 @@ TEST_F(CatalystAdaptorTest, CheckVisualizationSelection) {
 
   // We select MyCell for export
   param->visualize_sim_objects_["MyCell"] = {};
+  param->visualize_sim_objects_["Cell"] = {};
 
   // Write diffusion visualization to file
   CatalystAdaptor<> adaptor("");
@@ -129,9 +131,11 @@ TEST_F(CatalystAdaptorTest, CheckVisualizationSelection) {
   auto filename1 = Concat(sim.GetOutputDir(), "/Substance_1-0_0.vti");
   auto filename2 = Concat(sim.GetOutputDir(), "/Substance_1-0.pvti");
   auto filename3 = Concat(sim.GetOutputDir(), "/MyCell-0.pvtu");
+  auto filename4 = Concat(sim.GetOutputDir(), "/Cell-0.pvtu");
   needed_files.push_back(filename1);
   needed_files.push_back(filename2);
   needed_files.push_back(filename3);
+  needed_files.push_back(filename4);
 
   for (auto& file : needed_files) {
     if (!FileExists(file.c_str())) {
