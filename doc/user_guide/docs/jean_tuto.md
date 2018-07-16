@@ -20,6 +20,7 @@ You can access the installation page by clicking [here](https://biodynamo.github
 ### Structure creation
 
 As BioDynaMo is written is C++, it needs a particular structure. Fortunately, this procedure is really easy with BioDynaMo. To create a new project, you just need to run the command `biodynamo new <project>`. If you wish not to have your Github account linked to your project you can append the `--no-github` option to the command. Try opening a terminal and running the command `biodynamo new tutorial`. This will create a folder named tutorial in your current directory, containing everything that BioDynaMo needs. Inside tutorial/src, two files with the basic structure already written have been created: tutorial.cc and tutorial.h. tutorial.cc will only contain the call to the header tutorial.h which will be the core of our work. You can easily compile your code using the command `biodynamo build` and run your simulation by typing the command `biodynamo run`.
+You can also directly use `biodynamo demo tumor_concept` to try this demo.
 
 ## Cells and biology Module
 
@@ -27,12 +28,7 @@ The structure build in the previous chapter only creates a single cell. In this 
 
 ### Creating cells
 
-To do so, we will work only on the `Simulate` function of the tutorial.h file. First, before the Simulate method, we will tell BioDynaMo to use the ResourceManager by adding the line
-``` C++
-template <typename TResourceManager = ResourceManager <>>
-```
-
-This ResourceManager will be used to create cells. Inside the Simulate method, we need to define a resource manager and a structure to contain our cells:
+To do so, we will work only on the `Simulate` function of the tutorial.h file. Inside the Simulate method, we need to define a resource manager and a structure to contain our cells:
 ``` C++
 Simulation<> simulation(argc, argv);
 auto* rm = simulation.GetResourceManager(); // set up resource manager
@@ -224,7 +220,7 @@ Don't forget to add this new object to your compile time parameters (inside "str
 ```
 
 Each cell (implementing our new object `MyCell`) of the modelling is now able to have a value cell\_colour\_ that we will choose and use to display different colours!  
-In order to create cells with this attribute, we need to replace all Cell object by MyCell during cells creation (inside the `Simulate()` method). for example
+In order to create cells with this attribute, we need to replace all Cell object by MyCell during cells creation (inside the `Simulate()` method). For example
 ``` C++
 //  auto* cells = rm->template Get<Cell>(); // previous structure containing Cell objects
   auto* cells = rm->template Get<MyCell>(); // new structure containing MyCell objects
@@ -320,11 +316,10 @@ To do that, we will create a new MyCell boolean attribute called can\_divide\_. 
 BDM_SIM_OBJECT_HEADER(MyCellExt, 1, can_divide_, cell_colour_);
 ```
 
-and create three methods, `SetCanDivide()`, `GetCanDivide()` and `GetCanDividePtr()`.
+and create two methods, `SetCanDivide()` and `GetCanDivide()`.
 ``` C++
     void SetCanDivide(bool d) { can_divide_[kIdx] = d; }
     bool GetCanDivide() { return can_divide_[kIdx]; }
-    bool* GetCanDividePtr() { return can_divide_.data(); }
 ```
 
 Then, as for cell\_colour\_, declare this data member as private
@@ -345,7 +340,7 @@ Finally, don't forget to set the daughter can\_divide\_ value to true after a ce
       }
 ```
 
-The tutorial.h code corresponding to this chapter is accessible at the end of this tutorial.
+Codes corresponding to this chapter is accessible [here](https://github.com/BioDynaMo/biodynamo/tree/master/demo/tumor_concept).
 
 You now have all the BioDynaMo cell basic knowledge to construct your own modelling!
 
@@ -354,14 +349,6 @@ You now have all the BioDynaMo cell basic knowledge to construct your own modell
 Coming soon.
 
 ## Code
-
-### tutorial.cc
-
-``` C++
-#include "tutorial.h"
-
-int main(int argc, const char** argv) { return bdm::Simulate(argc, argv); }
-```
 
 ### tutorial.h - chapter 2.2
 
@@ -396,7 +383,7 @@ namespace bdm {
     using BiologyModules = Variant<GrowthModule>;  // add GrowthModule
   };
 
-  template <typename TResourceManager = ResourceManager<>>
+
   inline int Simulate(int argc, const char** argv) {
     Simulation<> simulation(argc, argv);
     auto* rm = simulation.GetResourceManager(); // set up resource manager
@@ -451,150 +438,4 @@ namespace bdm {
 }  // namespace bdm
 
 #endif // TUTORIAL_H_
-```
-
-### tutorial.h - chapter 3.4
-
-``` C++
-#ifndef TUTORIAL_H_
-#define TUTORIAL_H_
-
-#include "biodynamo.h"
-
-namespace bdm {
-
-  // 0. Define my custom cell MyCell, which extends Cell by adding extra data
-  // members: cell_color and can_divide
-  BDM_SIM_OBJECT(MyCell, Cell) {  // our object extends the Cell object
-    // create the header with our new data member
-    BDM_SIM_OBJECT_HEADER(MyCellExt, 1, can_divide_, cell_colour_);
-
-  public:
-    MyCellExt() {}
-    MyCellExt(const std::array<double, 3>& position) : Base(position) {}
-
-    // getter and setter for our new data member
-    void SetCanDivide(bool d) { can_divide_[kIdx] = d; }
-    bool GetCanDivide() const { return can_divide_[kIdx]; }
-
-    void SetCellColour(int cellColour) { cell_colour_[kIdx] = cellColour; }
-    int GetCellColour() const { return cell_colour_[kIdx]; }
-
-  private:
-    // declare new data member and define their type
-    // private data can only be accessed by public function and not directly
-    vec<bool> can_divide_;
-    vec<int> cell_colour_;
-  };
-
-  // 1. Define growth behaviour
-  struct GrowthModule : public BaseBiologyModule {
-    GrowthModule() : BaseBiologyModule(gAllBmEvents) {}
-
-    template <typename T, typename TSimulation = Simulation<>>
-    void Run(T* cell) {
-      auto* random = TSimulation::GetActive()->GetRandom();
-      if (cell->GetDiameter() < 8) {
-        cell->ChangeVolume(400);
-        // create an array of 3 random numbers between -2 and 2
-        std::array<double, 3> cell_movements =
-        random->template UniformArray<3>(-2, 2);
-        // update the cell mass location, ie move the cell
-        cell->UpdatePosition(cell_movements);
-      }
-      else {  //
-        if (cell->GetCanDivide() && random->Uniform(0, 1) < 0.8) {
-          auto&& daughter = cell->Divide();
-          // daughter take the cell_colour_ value of her mother
-          daughter->SetCellColour(cell->GetCellColour());
-          daughter->SetCanDivide(true);  // the daughter will be able to divide
-        } else {
-          cell->SetCanDivide(false);  // this cell won't divide anymore
-        }
-      }
-    }
-
-    ClassDefNV(GrowthModule, 1);
-  };
-
-  // Define compile time parameter
-  template <typename Backend>
-  struct CompileTimeParam : public DefaultCompileTimeParam<Backend> {
-    using BiologyModules = Variant<GrowthModule>;  // add GrowthModule
-    using AtomicTypes = VariadicTypedef<MyCell>;   // use MyCell object
-  };
-
-  template <typename TResourceManager = ResourceManager<>>
-
-  inline int Simulate(int argc, const char** argv) {
-    Simulation<> simulation(argc, argv);
-    auto* rm = simulation.GetResourceManager();
-    auto* param = simulation.GetParam();
-    auto* random = simulation.GetRandom();
-
-    size_t nb_of_cells = 2400;  // number of cells in the simulation
-    double x_coord, y_coord, z_coord;
-
-    param->bound_space_ = true;
-    param->min_bound_ = 0;
-    param->max_bound_ = 100;  // cube of 100*100*100
-
-    // create a structure to contain cells
-    auto* cells = rm->template Get<MyCell>();
-    // allocate the correct number of cell in our cells structure before
-    // cell creation
-    cells->reserve(nb_of_cells);
-
-    for (size_t i = 0; i < nb_of_cells; ++i) {
-      // our modelling will be a cell cube of 100*100*100
-      // random double between 0 and 100
-      x_coord = random->Uniform(param->min_bound_, param->max_bound_);
-      y_coord = random->Uniform(param->min_bound_, param->max_bound_);
-      z_coord = random->Uniform(param->min_bound_, param->max_bound_);
-
-      // creating the cell at position x, y, z
-      MyCell cell({x_coord, y_coord, z_coord});
-      // set cell parameters
-      cell.SetDiameter(7.5);
-      // will vary from 0 to 5. so 6 different layers depending on y_coord
-      cell.SetCellColour((int)(y_coord / param->max_bound_ * 6));
-
-      cells->push_back(cell);  // put the created cell in our cells structure
-    }
-
-    // create a cancerous cell, containing the BiologyModule GrowthModule
-    MyCell cell({20, 50, 50});
-    cell.SetDiameter(6);
-    cell.SetCellColour(8);
-    cell.SetCanDivide(true);
-    cell.AddBiologyModule(GrowthModule());
-    cells->push_back(cell);  // put the created cell in our cells structure
-
-    cells->Commit();  // commit cells
-
-    // Run simulation
-    simulation.GetScheduler()->Simulate(500);
-
-    std::cout << "Simulation completed successfully!" << std::endl;
-    return 0;
-  }
-
-}  // namespace bdm
-
-#endif // TUTORIAL_H_
-```
-
-### bdm.toml - chapter 3.4
-```
-[simulation]
-run_mechanical_interactions = true
-
-[visualization]
-live = false
-export = true
-export_interval = 2
-
-    [[visualize_sim_object]]
-        name = "MyCell"
-        additional_data_members = [ "diameter_" , "cell_colour_" ]
 ```
