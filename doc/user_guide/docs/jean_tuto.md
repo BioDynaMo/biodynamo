@@ -118,7 +118,7 @@ Run running it using `biodynamo run`. This code is now able to create and simula
 
 ## Visualisation using Paraview
 
-In the previous chapter we created a simulation of a great number of cell, also containing dividing cancerous cells, but we were not able to visualise anything! In this chapter, we will set up a visualisation using Paraview (included in the BioDynaMo package). Dedicated page about visualisation can be accessed [here] (https://biodynamo.github.io/user/visualization/)
+In the previous chapter we created a simulation of a great number of cell, also containing dividing cancerous cells, but we were not able to visualise anything! In this chapter, we will set up a visualisation using Paraview (included in the BioDynaMo package). Dedicated page about visualisation can be accessed [here](https://biodynamo.github.io/user/visualization/)
 
 ### Paraview
 
