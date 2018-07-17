@@ -5,7 +5,7 @@
 # https://www.tty1.net/blog/2014/cmake-doxygen_en.html
 
 PROJECT_NAME           = "@CMAKE_PROJECT_NAME@"
-PROJECT_NUMBER         = @VERSION_MAJOR@.@VERSION_MINOR@.@VERSION_PATCH@
+PROJECT_NUMBER         = ""
 STRIP_FROM_PATH        = "@PROJECT_SOURCE_DIR@/src"
 INPUT                  = "@PROJECT_SOURCE_DIR@/src" \
                          "@PROJECT_SOURCE_DIR@/README.md"
@@ -29,5 +29,5 @@ SOURCE_BROWSER         = YES
 HAVE_DOT               = YES
 UML_LOOK               = YES
 DOT_IMAGE_FORMAT       = svg
-# QUIET                  = YES
+QUIET                  = YES
 # INTERACTIVE_SVG        = YES

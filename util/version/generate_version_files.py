@@ -49,6 +49,7 @@ def GenerateFile(template_file, dest_file, version, major, minor, patch, additio
     content = content.replace("@VERSION_MINOR@", minor)
     content = content.replace("@VERSION_PATCH@", patch)
     content = content.replace("@VERSION_ADDITIONAL_COMMITS@", additional_commits)
+    content = content.replace("PROJECT_NUMBER         = \"\"", "PROJECT_NUMBER         = \"" + version + "\"")
 
     with open(dest_file, 'w') as f:
         f.write(content)
@@ -81,12 +82,14 @@ if __name__ == '__main__':
     # Update files
     scriptpath = os.path.dirname(__file__)
     destdir = sys.argv[2] + "/version"
+    builddir = sys.argv[2]
     if not os.path.exists(destdir):
         os.makedirs(destdir)
 
     if UpdateVersionInfo(destdir+"/last_version", version):
         GenerateFile(scriptpath+'/version.h', destdir+'/version.h', version, major, minor, patch, additional_commits)
         GenerateFile(scriptpath+'/version.py', destdir+'/version.py', version, major, minor, patch, additional_commits)
+        GenerateFile(builddir+'/Doxyfile', builddir+'/Doxyfile', version, major, minor, patch, additional_commits)
 
         # cache last version
         with open(destdir+"/last_version", 'w') as f:
