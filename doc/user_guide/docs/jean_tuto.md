@@ -19,7 +19,8 @@ You can access the installation page by clicking [here](https://biodynamo.github
 
 ### Structure creation
 
-As BioDynaMo is written is C++, it needs a particular structure. Fortunately, this procedure is really easy with BioDynaMo. To create a new project, you just need to run the command `biodynamo new <project>`. If you wish to have your Github account linked to your project you can append the `--github` option to the command. Try opening a terminal and running the command `biodynamo new tutorial`. This will create a folder named tutorial in your current directory, containing everything that BioDynaMo needs. Inside tutorial/src, two files with the basic structure already written have been created: tutorial.cc and tutorial.h. tutorial.cc will only contain the call to the header tutorial.h which will be the core of our work. You can easily run your code by typing the command `biodynamo run`.
+As BioDynaMo is written is C++, it needs a particular structure. Fortunately, this procedure is really easy with BioDynaMo. To create a new project, you just need to run the command `biodynamo new <project>`. If you wish to have your Github account linked to your project you can append the `--github` option to the command. Try opening a terminal and running the command `biodynamo new tutorial`. This will create a folder named tutorial in your current directory, containing everything that BioDynaMo needs. Inside tutorial/src, two files with the basic structure already written have been created: tutorial.cc and tutorial.h. tutorial.cc will only contain the call to the header tutorial.h which will be the core of our work. You can easily compile your code using the command `biodynamo build` and run your simulation by typing the command `biodynamo run`.
+You can also directly use `biodynamo demo tumor_concept` to try this demo.
 
 ## Cells and biology Module
 
@@ -27,23 +28,24 @@ The structure build in the previous chapter only creates a single cell. In this 
 
 ### Creating cells
 
-To do so, we will work only on the `Simulate` function of the tutorial.h file. First, before the Simulate method, we will tell BioDynaMo to use the ResourceManager by adding the line
+To do so, we will work only on the `Simulate` function of the tutorial.h file. Inside the Simulate method, we need to define a resource manager and a structure to contain our cells:
 ``` C++
-template <typename TResourceManager = ResourceManager <>>
+Simulation<> simulation(argc, argv);
+auto* rm = simulation.GetResourceManager(); // set up resource manager
+
+auto* cells = rm->template Get<Cell>(); // create a structure to contain cells
 ```
 
-This ResourceManager will be used to create cells. Inside the Simulate method, we need to define a resource manager and a structure to contain our cells:
+Because we want 2400 cells randomly distributed, it is mandatory to have an random number generator to generate x, y and z coordinate of each cell. For that, we will declare three double (x_coord, y_coord and z_coord) and use the included random engine. Still inside the Simulate method, write:
 ``` C++
-auto rm = TResourceManager::Get(); // set up resource manager
-auto cells = rm->template Get<Cell>(); // create a structure to contain cells
-```
+auto* random = simulation.GetRandom(); // set up the random engine
+auto* param = simulation.GetParam(); // set up param
 
-Because we want 2400 cells randomly distributed, it is mandatory to have an random number generator to generate x, y and z coordinate of each cell. For that, we will declare three double (x_coord, y_coord and z_coord) and use the gTRandom.Uniform random engine
-``` C++
   size_t nb_of_cells=2400; // number of cells in the simulation
-  Param::min_bound_ = 0;
-  Param::max_bound_ = 100; // cube of 100*100*100
+  param->min_bound_ = 0;
+  param->max_bound_ = 100; // cube of 100*100*100
   double x_coord, y_coord, z_coord;
+
   cells->reserve(nb_of_cells); // allocate the correct number of cell in our cells structure before cell creation
 ```
 
@@ -51,21 +53,23 @@ Then, with a simple loop from 0 to the number of cells, we will be able to fill 
 ``` C++
   for (size_t i = 0; i < nb_of_cells; ++i) {
     // our modelling will be a cell cube of 100*100*100
-    x_coord=gTRandom.Uniform(0, Param::max_bound); // random double between 0 and 100
-    y_coord=gTRandom.Uniform(0, Param::max_bound);
-    z_coord=gTRandom.Uniform(0, Param::max_bound);
-    Cell cell({x_coord, y_coord, z_coord}); // creating the cell at position x, y, z
+    // random double between min_bound and max_bound ( 0 and 100)
+    x_coord = random->Uniform(param->min_bound_, param->max_bound_);
+    y_coord = random->Uniform(param->min_bound_, param->max_bound_);
+    z_coord = random->Uniform(param->min_bound_, param->max_bound_);
+    // creating the cell at position x, y, z
+    Cell cell({x_coord, y_coord, z_coord});
     // set cell parameters
     cell.SetDiameter(7.5);
 
     cells->push_back(cell); // put the created cell in our cells structure
   }
+  cells->Commit();  // commit cells
 ```
 
 We now have our structure containing all the 2400 cells! The code in charge of running our modelling is already written and will simulate it for only one step. Lets change this to simulate for 100 steps.
 ``` C++
-Scheduler<> scheduler;
-scheduler.Simulate(100);
+simulation.GetScheduler()->Simulate(200);
 ```
 
 ### Biology module
@@ -102,7 +106,7 @@ After creating our GrowthModule, we need to add this Biology module to the compi
   };
 ```
 
-Of course, we need to create at least one cell that contain our GrowthModule in our Simulate method
+Of course, we need to create at least one new cell that contains our GrowthModule in our Simulate method
 ``` C++
   Cell cell ({20, 50, 50});
   cell.SetDiameter(6);
@@ -110,18 +114,18 @@ Of course, we need to create at least one cell that contain our GrowthModule in 
   cells->push_back(cell);
 ```
 
-This code is now able to create and simulate 2 400 normal cells and 1 cancerous cell that will grow and divide! Complete codes for tutorial.cc and tutorial.h of this chapter are accessible at the end of this tutorial.
+Run running it using `biodynamo run`. This code is now able to create and simulate 2 400 normal cells and 1 cancerous cell that will grow and divide! Complete codes for tutorial.cc and tutorial.h of this chapter are accessible at the end of this tutorial.
 
 ## Visualisation using Paraview
 
-In the previous chapter we created a simulation of a great number of cell, also containing dividing cancerous cells, but we were not able to visualise anything! In this chapter, we will set up a visualisation using Paraview (included in the BioDynaMo package).
+In the previous chapter we created a simulation of a great number of cell, also containing dividing cancerous cells, but we were not able to visualise anything! In this chapter, we will set up a visualisation using Paraview (included in the BioDynaMo package). Dedicated page about visualisation can be accessed [here](https://biodynamo.github.io/user/visualization/)
 
 ### Paraview
 
 [Paraview](https://www.paraview.org/) is an open source application for interactive and scientific visualisation. First of all, we need to tell BioDynaMo that we will use Paraview and so that we want the visualisation to be enable. To do that, we need to create a configuration file `bdm.toml` in the tutorial folder. Visualisation is of course not the only configuration we can do using this file. You can allow live visualisation and/or export visualisation (here every 2 simulation step) by adding in bdm.toml
 ``` C++
 [visualization]
-live = true
+live = false
 export = false
 export_interval = 2
 ```
@@ -130,25 +134,32 @@ you also can say to Paraview to visualise a particular parameter of ours cells, 
 ``` C++
     [[visualize_sim_object]]
     name = "Cell"
-    additional_data_members = [ "diameter_" ]
 ```
 Because those visualisation parameters are not in the source code, you don’t need to compile your code again.
 We can note that instead of creating a configuration file, you can do the same by adding directly in our Simulate function the lines
 ``` C++
-    Param::live_visualization_ = true; // allows live visualisation
-    Param::export_visualization_ = true; // allows export of visualisation files
-    Param::visualization_export_interval_ = 2; // export visualisation files every 2 steps
-    Param::visualize_sim_objects_["Cell"] = std::set<std::string>{ "diameter_" }; // add the data member diameter_ to the visualisation objects
+    param->live_visualization_ = true; // allows live visualisation
+    param->export_visualization_ = true; // allows export of visualisation files
+    param->visualization_export_interval_ = 2; // export visualisation files every 2 steps
+    param->visualize_sim_objects_["Cell"] = std::set<std::string>{ "diameter_" }; // add the data member diameter_ to the visualisation objects
 ```
 Once again, it is important to note that if you want to change any visualisation parameter using this second method, you will have to compile again your code. That is not the case using a configuration file. Hence, using the toml file is highly recommended.  
 
-We will first see live visualisation then the export visualisation. In both cases, simply run Paraview using the console line command `paraview &`. This windows should appears
+We will first see export visualisation then the live visualisation. In both cases, simply run Paraview using the console line command `paraview &`. This windows should appears
 
 ![Open ParaView](images/jean_tutorial/paraview1.png)
 
+#### Export Visualisation (recommended)
+
+In the configuration file (bdm.toml), turn the export parameter to true then run your modelling. You’ll notice the creation of several new files with the following file extensions `*.pvsm, *.pvtu, *.vtu, *pvti, *.vti` in the folder output/tutorial. Open ParaView and load the generated state file as described in [Section Visualization](visualization.md#export-visualization-files) (file -> load state)
+
+A major advantage of export visualisation, in addition of not impacting the simulation time, is that you can visualise your modelling freely in time. using the arrows in the top menu, you can choose respectively to go back to the beginning of the simulation, go one step back, run normally, go one step further or go to the end of the simulation. You also can see witch step you are currently visualising (remember that this step number is the number of your modelling step divided by the export\_interval you choose in your configuration file).
+
+![Paraview time](images/jean_tutorial/paraview17.png)
+
 #### Live visualisation
 
-Click on the _Catalyst_ top menu, and select _Connect_ This windows should appears
+To use live visualisation, turn the live option of your configuration file to true, then click on the _Catalyst_ top menu, and select _Connect_ . This windows should appears
 
 ![Connect ParaView](images/jean_tutorial/paraview2.png)
 
@@ -158,7 +169,7 @@ Click OK, then this windows should appears
 
 Your Paraview is now accepting connections! Click OK, go back to the _Catalyst_ menu, and select _Pause Simulation_. Using the same console, launch your tutorial simulation. You now notice that the programme stop right before running the simulation, because we used the Paraview _Pause Simulation_.
 
-![terminal accetped connection](images/jean_tutorial/paraview4.png)
+![terminal accepted connection](images/jean_tutorial/paraview4.png)
 
 Go back to Paraview. You notice that new objects have appeared in the _Pipeline Browser_ section. Click on the round shape in front of _Cells Glyph_.
 
@@ -174,14 +185,6 @@ You can now go to the _Catalyst_ menu, and select _Continue_. The simulation wil
 ![Cell display correct diam](images/jean_tutorial/paraview7-4.png)
 
 Even if live visualisation is particularly useful to set or tune a simulation, it is capital to note that it also drastically slows down the simulation! One way to avoid this major problem is to export visualisation files and read then after the modelling is done.
-
-#### Export Visualisation
-
-In the configuration file (bdm.toml), turn the export parameter to true then run your modelling. You’ll notice the creation of several new files with the following file extensions `*.pvsm, *.pvtu, *.vtu, *pvti, *.vti`. Open ParaView and load the generated state file as described in [Section Visualization](visualization.md#export-visualization-files).
-
-A major advantage of export visualisation, in addition of not impacting the simulation time, is that you can visualise your modelling freely in time. using the arrows in the top menu, you can choose respectively to go back to the beginning of the simulation, go one step back, run normally, go one step further or go to the end of the simulation. You also can see witch step you are currently visualising (remember that this step number is the number of your modelling step divided by the export\_interval you choose in your configuration file).
-
-![Paraview time](images/jean_tutorial/paraview17.png)
 
 In both cases, even if we can now visualise our cell, they have all the same colour, which can be a bit confusing and doesn't allow us to visualise properly what is going on.
 
@@ -216,10 +219,10 @@ Don't forget to add this new object to your compile time parameters (inside "str
 ```
 
 Each cell (implementing our new object `MyCell`) of the modelling is now able to have a value cell\_colour\_ that we will choose and use to display different colours!  
-In order to create cells with this attribute, we need to replace all Cell object by MyCell during cells creation (inside the `Simulate()` method). for example
+In order to create cells with this attribute, we need to replace all Cell object by MyCell during cells creation (inside the `Simulate()` method). For example
 ``` C++
-//  auto cells = rm->template Get<Cell>(); // previous structure containing Cell objects
-  auto cells = rm->template Get<MyCell>(); // new structure containing MyCell objects
+//  auto* cells = rm->template Get<Cell>(); // previous structure containing Cell objects
+  auto* cells = rm->template Get<MyCell>(); // new structure containing MyCell objects
 [...]
 //     Cell cell({x_coord, y_coord, z_coord}); // creats a cell as a Cell object; so doesn't contain cell_colour_
     MyCell cell({x_coord, y_coord, z_coord}); // creats a cell as a MyCell object; so contains cell_colour_
@@ -232,14 +235,14 @@ Now that we are creating cells implementing MyCell, we can set the cancerous cel
 
 Do the same for the regular cells, setting the value depending on the y axis value. One possibility is to write
 ``` C++
-    cell.SetCellColour((int) y_coord/Param::max_bound_*6); // will vary from 0 to 5. so 6 different layers depending on y_coord
+    cell.SetCellColour((int)(y_coord / param->max_bound_ * 6)); // will vary from 0 to 5. so 6 different layers depending on y_coord
 ```
 
 This new simulation is now functional, however before running it, we need to tell BioDynamo to communicates all cell\_colour\_ values. Do do that, we will modify the configuration file bdm.toml by modifying the visualize\_sim\_object
 ``` C++
     [[visualize_sim_object]]
         name = "MyCell"
-        additional_data_members = [ "diameter_" , "cell_colour_" ]
+        additional_data_members = [ "cell_colour_" ]
 ```
 
 With those changes, we are now able to colourise our different layers. All you have to do, after displaying cells and creating the _Glyph_ filter (chapter 3.1) is to select your _Glyph_ filter and to select cell\_colour\_ in the _Coloring_ section.
@@ -257,7 +260,7 @@ However, there still is a little problem. The attribute cell\_colour\_ is not tr
 To enable dividing cells to transmit its colour - meaning its cell\_colour\_ attribute value - we have to modify a little our biology module.
 ``` C++
 //        cell->Divide(); // old
-        auto daughter = cell->Divide(); // we now have access to the daughter
+        auto&& daughter = cell->Divide(); // we now have access to the daughter
         daughter->SetCellColour(cell->GetCellColour()); // daughter cell_colour_ is setted to her mother cell_colour_ value
 ```
 
@@ -282,19 +285,25 @@ This is of course just an example of what you can do with the threshold filters.
 ### Adding some complexity
 
 We now have all we want to visualise our modelling in the best conditions, but this modelling itself is a bit limited. We should add some movements to it as well as a new mechanism to complexify cell division.
-To add cell movement, we will modify the `Run()` method of our biology module `GrowthModule`, and use the function `UpdatePosition()`. To generate the direction's random numbers we will again use the `gTRandom.Uniform()` function which allow us to generate a random number between two specified numbers.  
+To add cell movement, we will modify the `Run()` method of our biology module `GrowthModule`, and use the function `UpdatePosition()`. To generate the direction's random numbers we will again use the `Uniform()` function which allow us to generate a random number between two specified numbers. First, we need to add `TSimulation` to the template and to define the random engine.  
+``` C++
+template <typename T, typename TSimulation = Simulation<>>
+void Run(T* cell) {
+  auto* random = TSimulation::GetActive()->GetRandom();
+```
+
 We choose here to give stochastic movement only to growing cells, so we will write the movement just after the volume change
 ``` C++
-    array<double, 3> cell_movements{gTRandom.Uniform(-2, 2), gTRandom.Uniform(-2, 2), gTRandom.Uniform(-2, 2)}; // create an array of 3 random numbers between -2 and 2
+    // create an array of 3 random numbers between -2 and 2
+    std::array<double, 3> cell_movements = random->template UniformArray<3>(-2, 2);
     cell->UpdatePosition(cell_movements); // update the cell mass location, ie move the cell
-    cell->SetPosition(cell->GetPosition()); // set the cell position
 ```
 
 Using the previous chapters, you should now be able to visualise cell movement during their growth.  
 This is great, but every cancerous cell grows and divides indefinitely, and that is a bit too much. We will now add a mechanism to reduce the probability to divide, and assuring that a cancerous cell that didn't divide, will never divide any more.  
 To add a 0.8 probability to divide, simply write
 ``` C++
-    if (gTRandom.Uniform(0, 1) < 0.8){
+    if (random->Uniform(0, 1) < 0.8) {
       auto daughter = cell->Divide();
       daughter->SetCellColour(cell->GetCellColour());
     }
@@ -306,11 +315,10 @@ To do that, we will create a new MyCell boolean attribute called can\_divide\_. 
 BDM_SIM_OBJECT_HEADER(MyCellExt, 1, can_divide_, cell_colour_);
 ```
 
-and create three methods, `SetCanDivide()`, `GetCanDivide()` and `GetCanDividePtr()`.
+and create two methods, `SetCanDivide()` and `GetCanDivide()`.
 ``` C++
     void SetCanDivide(bool d) { can_divide_[kIdx] = d; }
     bool GetCanDivide() { return can_divide_[kIdx]; }
-    bool* GetCanDividePtr() { return can_divide_.data(); }
 ```
 
 Then, as for cell\_colour\_, declare this data member as private
@@ -319,19 +327,19 @@ Then, as for cell\_colour\_, declare this data member as private
 ```
 
 Now that we got a new attribute can\_divide\_, we need to change the `Run()` method to prevent cells that failed the 80% test to divide again.
-Finaly, don't forget to set the daughter can\_divide\_ value to true after a cell division.
+Finally, don't forget to set the daughter can\_divide\_ value to true after a cell division.
 ``` C++
-        if (gTRandom.Uniform(0, 1) <0.8 && cell->GetCanDivide()){
-          auto daughter = cell->Divide();
-          daughter->SetCellColour(cell->GetCellColour()); // daughter take the cell_colour_ value of her mother
-          daughter->SetCanDivide(true); // the daughter will be able to divide
-        }
-        else {
-          cell->SetCanDivide(false); // this cell won't divide anymore
-        }
+      if (cell->GetCanDivide() && random->Uniform(0, 1) < 0.8) {
+        auto&& daughter = cell->Divide();
+        // daughter take the cell_colour_ value of her mother
+        daughter->SetCellColour(cell->GetCellColour());
+        daughter->SetCanDivide(true);  // the daughter will be able to divide
+      } else {
+        cell->SetCanDivide(false);  // this cell won't divide anymore
+      }
 ```
 
-The tutorial.h code corresponding to this chapter is accessible at the end of this tutorial.
+Codes corresponding to this chapter is accessible [here](https://github.com/BioDynaMo/biodynamo/tree/master/demo/tumor_concept).
 
 You now have all the BioDynaMo cell basic knowledge to construct your own modelling!
 
@@ -341,14 +349,6 @@ Coming soon.
 
 ## Code
 
-### tutorial.cc
-
-``` C++
-#include "tutorial.h"
-
-int main(int argc, const char** argv) { return bdm::Simulate(argc, argv); }
-```
-
 ### tutorial.h - chapter 2.2
 
 ``` C++
@@ -356,21 +356,19 @@ int main(int argc, const char** argv) { return bdm::Simulate(argc, argv); }
 #define TUTORIAL_H_
 
 #include "biodynamo.h"
-//using namespace std;
 
 namespace bdm {
 
-// 1. Define growth behaviour
+  // 1. Define growth behaviour
   struct GrowthModule : public BaseBiologyModule {
-  GrowthModule() : BaseBiologyModule(gAllBmEvents) {}
+    GrowthModule() : BaseBiologyModule(gAllBmEvents) {}
 
     template <typename T>
-      void Run(T* cell) {
-
+    void Run(T* cell) {
       if (cell->GetDiameter() < 8) {
         cell->ChangeVolume(400);
       }
-      else{
+      else {
         cell->Divide();
       }
     }
@@ -378,185 +376,65 @@ namespace bdm {
     ClassDefNV(GrowthModule, 1);
   };
 
-// Define compile time parameter
+  // Define compile time parameter
   template <typename Backend>
-    struct CompileTimeParam : public DefaultCompileTimeParam<Backend> {
-  using BiologyModules = Variant<GrowthModule>;
+  struct CompileTimeParam : public DefaultCompileTimeParam<Backend> {
+    using BiologyModules = Variant<GrowthModule>;  // add GrowthModule
   };
 
 
-template <typename TResourceManager = ResourceManager<>>
-inline int Simulate(int argc, const char** argv) {
-  InitializeBiodynamo(argc, argv);
+  inline int Simulate(int argc, const char** argv) {
+    Simulation<> simulation(argc, argv);
+    auto* rm = simulation.GetResourceManager(); // set up resource manager
+    auto* param = simulation.GetParam(); // set up params
+    auto* random = simulation.GetRandom(); // set up the random engine
 
-  size_t nb_of_cells=2400; // number of cells in the simulation
-  Param::min_bound_ = 0;
-  Param::max_bound_ = 100; // cube of 100*100*100
-  double x_coord, y_coord, z_coord;
+    size_t nb_of_cells = 2400;  // number of cells in the simulation
+    double x_coord, y_coord, z_coord;
 
-  auto rm = TResourceManager::Get(); // set up resource manager
-  auto cells = rm->template Get<Cell>(); // create a structure to contain cells
-  cells->reserve(nb_of_cells); // allocate the correct number of cell in our cells structure before cell creation
+    param->bound_space_ = true;
+    param->min_bound_ = 0;
+    param->max_bound_ = 100;  // cube of 100*100*100
+    param->run_mechanical_interactions_ = true;
 
-  for (size_t i = 0; i < nb_of_cells; ++i) {
-    // our modelling will be a cell cube of 100*100*100
-    x_coord=gTRandom.Uniform(0, Param::max_bound); // random double between 0 and 100
-    y_coord=gTRandom.Uniform(0, Param::max_bound);
-    z_coord=gTRandom.Uniform(0, Param::max_bound);
+    // create a structure to contain cells
+    auto* cells = rm->template Get<Cell>();
+    // allocate the correct number of cell in our cells structure before
+    // cell creation
+    cells->reserve(nb_of_cells);
 
-    Cell cell({x_coord, y_coord, z_coord}); // creating the cell at position x, y, z
-    // set cell parameters
-    cell.SetDiameter(7.5);
+    for (size_t i = 0; i < nb_of_cells; ++i) {
+      // our modelling will be a cell cube of 100*100*100
+      // random double between 0 and 100
+      x_coord = random->Uniform(param->min_bound_, param->max_bound_);
+      y_coord = random->Uniform(param->min_bound_, param->max_bound_);
+      z_coord = random->Uniform(param->min_bound_, param->max_bound_);
 
-    cells->push_back(cell); // put the created cell in our cells structure
-  }
+      // creating the cell at position x, y, z
+      Cell cell({x_coord, y_coord, z_coord});
+      // set cell parameters
+      cell.SetDiameter(7.5);
 
-  // create a cancerous cell, containing the BiologyModule GrowthModule
-  Cell cell({20, 50, 50});
-  cell.SetDiameter(6);
-  cell.AddBiologyModule(GrowthModule());
-  cells->push_back(cell); // put the created cell in our cells structure
-
-  cells->Commit(); // commit cells
-
-  // Run simulation
-  Scheduler<> scheduler;
-  scheduler.Simulate(500);
-
-  std::cout << "Simulation completed successfully!" << std::endl;
-  return 0;
-}
-
-} // namespace bdm
-
-#endif // TUTORIAL_H_
-```
-
-### tutorial.h - chapter 3.4
-
-``` C++
-#ifndef TUTORIAL_H_
-#define TUTORIAL_H_
-
-#include "biodynamo.h"
-#include "random.h"
-//using namespace std;
-
-namespace bdm {
-
-  // 0. Define my custom cell MyCell, which extends Cell by adding extra data members: cell_color and can_divide
-  BDM_SIM_OBJECT(MyCell, Cell) { // our object extends the Cell object
-    BDM_SIM_OBJECT_HEADER(MyCellExt, 1, can_divide_, cell_colour_); // create the header with our new data member
-
-    public:
-      MyCellExt() {}
-      MyCellExt(const std::array<double, 3>& position) : Base(position) {} // our creator
-
-      // getter and setter for our new data member
-      void SetCanDivide(bool d) { can_divide_[kIdx] = d; }
-      bool GetCanDivide() { return can_divide_[kIdx]; }
-      bool* GetCanDividePtr() { return can_divide_.data(); }
-
-      void SetCellColour(int cellColour) { cell_colour_[kIdx] = cellColour; }
-      int GetCellColour() { return cell_colour_[kIdx]; }
-      int* GetCellColourPtr() { return cell_colour_.data(); }
-
-    private:
-      // declare new data member and define their type
-      // private data can only be accessed by public function and not directly
-      vec<bool> can_divide_;
-      vec<int> cell_colour_;
-  };
-
-// 1. Define growth behaviour
-  struct GrowthModule : public BaseBiologyModule {
-  GrowthModule() : BaseBiologyModule(gAllBmEvents) {}
-
-    template <typename T>
-      void Run(T* cell) {
-
-      if (cell->GetDiameter() < 8) {
-        cell->ChangeVolume(400);
-
-        array<double, 3> cell_movements{gTRandom.Uniform(-2, 2), gTRandom.Uniform(-2, 2), gTRandom.Uniform(-2, 2)}; // create an array of 3 random numbers between -2 and 2
-        cell->UpdatePosition(cell_movements); // update the cell mass location, ie move the cell
-        cell->SetPosition(cell->GetPosition()); // set the cell position
-      }
-
-      else { // if diameter > 8
-
-        if (gTRandom.Uniform(0, 1) <0.8 && cell->GetCanDivide()){
-          auto daughter = cell->Divide();
-          daughter->SetCellColour(cell->GetCellColour()); // daughter take the cell_colour_ value of her mother
-          daughter->SetCanDivide(true); // the daughter will be able to divide
-        }
-        else {
-          cell->SetCanDivide(false); // this cell won't divide anymore
-        }
-      }
+      cells->push_back(cell);  // put the created cell in our cells structure
     }
 
-    ClassDefNV(GrowthModule, 1);
-  };
+    // create a cancerous cell, containing the BiologyModule GrowthModule
+    Cell cell({20, 50, 50});
+    cell.SetDiameter(6);
+    cell.AddBiologyModule(GrowthModule());
+    cells->push_back(cell);  // put the created cell in our cells structure
 
-// Define compile time parameter
-  template <typename Backend>
-    struct CompileTimeParam : public DefaultCompileTimeParam<Backend> {
-  using BiologyModules = Variant<GrowthModule>; // add GrowthModule
-  using AtomicTypes = VariadicTypedef<MyCell>; // use MyCell object
-  };
+    cells->Commit();  // commit cells
 
-template <typename TResourceManager = ResourceManager<>>
+    // Run simulation
+    std::cout << "simulating" << std::endl;
+    simulation.GetScheduler()->Simulate(200);
 
-inline int Simulate(int argc, const char** argv) {
-  InitializeBiodynamo(argc, argv);
+    std::cout << "Simulation completed successfully!" << std::endl;
+    return 0;
+  } // end simulate
 
-  size_t nb_of_cells=2400; // number of cells in the simulation
-  double x_coord, y_coord, z_coord;
-
-  Param::bound_space_ = true;
-  Param::min_bound_ = 0;
-  Param::max_bound_ = 100; // cube of 100*100*100
-  Param::run_mechanical_interactions_ = true;
-
-  auto rm = TResourceManager::Get(); // set up resource manager
-  auto cells = rm->template Get<MyCell>(); // create a structure to contain cells
-  cells->reserve(nb_of_cells); // allocate the correct number of cell in our cells structure before cell creation
-
-  for (size_t i = 0; i < nb_of_cells; ++i) {
-    // our modelling will be a cell cube of 100*100*100
-    x_coord=gTRandom.Uniform(Param::min_bound_, Param::max_bound_); // random double between 0 and 100
-    y_coord=gTRandom.Uniform(Param::min_bound_, Param::max_bound_);
-    z_coord=gTRandom.Uniform(Param::min_bound_, Param::max_bound_);
-
-    MyCell cell({x_coord, y_coord, z_coord}); // creating the cell at position x, y, z
-    // set cell parameters
-    cell.SetDiameter(7.5);
-    cell.SetCellColour((int) (y_coord/Param::max_bound_*6)); // will vary from 0 to 5. so 6 different layers depending on y_coord
-
-    cells->push_back(cell); // put the created cell in our cells structure
-  }
-
-  // create a cancerous cell, containing the BiologyModule GrowthModule
-  MyCell cell({20, 50, 50});
-  cell.SetDiameter(6);
-  cell.SetCellColour(8);
-  cell.SetCanDivide(true);
-  cell.AddBiologyModule(GrowthModule());
-  cells->push_back(cell); // put the created cell in our cells structure
-
-  cells->Commit(); // commit cells
-
-
-  // Run simulation
-  Scheduler<> scheduler;
-  scheduler.Simulate(500);
-
-  std::cout << "Simulation completed successfully!" << std::endl;
-  return 0;
-}
-
-} // namespace bdm
+}  // namespace bdm
 
 #endif // TUTORIAL_H_
 ```

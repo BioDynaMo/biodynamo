@@ -82,7 +82,6 @@ struct CompileTimeParam : public DefaultCompileTimeParam<Backend> {
   using AtomicTypes = VariadicTypedef<MyCell>;   // use MyCell object
 };
 
-template <typename TResourceManager = ResourceManager<>>
 
 inline int Simulate(int argc, const char** argv) {
   Simulation<> simulation(argc, argv);
