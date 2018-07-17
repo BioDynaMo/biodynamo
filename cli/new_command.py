@@ -101,7 +101,7 @@ def InitializeNewGitRepo(sim_name):
     except sp.CalledProcessError as err:
         # User name not set
         print("Your git user e-mail is not set.")
-        response = input("Please enter your e-mail address that you have used to sign-up for github: ")
+        response = input("Please enter your e-mail address: ")
         out = sp.check_output(["git", "config", "user.email", response], cwd=sim_name)
 
     sp.check_output(["git", "add", "."], cwd=sim_name)

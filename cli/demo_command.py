@@ -17,6 +17,7 @@ import shutil
 import sys
 
 from print_command import Print
+from new_command import InitializeNewGitRepo
 
 
 DEMO_DIR = os.path.join(os.environ['BDM_INSTALL_DIR'], 'biodynamo', 'demo')
@@ -43,6 +44,8 @@ def DemoCommand(demo_name, destination=None):
     src_dir = os.path.join(DEMO_DIR, demo_name)
     print('Copying files from "{}" to "{}"...'.format(src_dir, destination))
     shutil.copytree(src_dir, destination)
+
+    InitializeNewGitRepo(destination)
 
     Print.success('The demo "{}" has been created in "{}".'.format(
             demo_name, destination))
