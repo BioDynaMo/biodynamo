@@ -160,14 +160,18 @@ function(bdm_add_executable TARGET)
 
   # generate executable
   add_executable(${TARGET} $<TARGET_OBJECTS:${TARGET}-objectlib> ${DICT_SRCS})
+  add_library(${TARGET}-ray SHARED $<TARGET_OBJECTS:${TARGET}-objectlib> ${DICT_SRCS})
   add_dependencies(${TARGET} ${TARGET}-dict ${TARGET}-custom-streamer-dict)
+  add_dependencies(${TARGET}-ray ${TARGET}-dict ${TARGET}-custom-streamer-dict)
   if (OPENCL_FOUND)
     # Do this here; we don't want libbiodynamo.so to contain any OpenCL symbols
     set(ARG_LIBRARIES ${ARG_LIBRARIES} ${OPENCL_LIBRARIES})
     target_compile_definitions(${TARGET}-objectlib PUBLIC -DUSE_OPENCL)
     target_compile_definitions(${TARGET} PUBLIC -DUSE_OPENCL)
+    target_compile_definitions(${TARGET}-ray PUBLIC -DUSE_OPENCL)
   endif()
   target_link_libraries(${TARGET} ${ARG_LIBRARIES})
+  target_link_libraries(${TARGET}-ray ${ARG_LIBRARIES})
 endfunction(bdm_add_executable)
 
 # function bdm_add_executable( TARGET
