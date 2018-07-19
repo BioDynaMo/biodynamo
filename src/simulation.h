@@ -62,7 +62,7 @@ struct Simulation {
   /// Creation of a new simulation automatically activates it.
   explicit Simulation(const std::string& simulation_name);
 
-  ~Simulation();
+  virtual ~Simulation();
 
   /// Copies / moves values from a restored simulation into this object.
   /// Thus, pointers to `rm_`, `param_`, ... are not invalidated.
@@ -77,7 +77,7 @@ struct Simulation {
 
   Grid<Simulation>* GetGrid();
 
-  Scheduler<Simulation>* GetScheduler();
+  virtual Scheduler<Simulation>* GetScheduler();
 
   /// Returns a thread local random number generator
   Random* GetRandom();

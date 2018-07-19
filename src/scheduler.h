@@ -59,7 +59,7 @@ class Scheduler {
     }
   }
 
-  void Simulate(uint64_t steps) {
+  virtual void Simulate(uint64_t steps) {
     if (Restore(&steps)) {
       return;
     }
