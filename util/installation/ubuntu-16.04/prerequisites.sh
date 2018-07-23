@@ -119,6 +119,9 @@ function Install {
   DownloadTarFromCBAndExtract $BDM_OS root.tar.gz $THIRD_PARTY_DIR/root
   DownloadTarFromCBAndExtract $BDM_OS paraview.tar.gz $THIRD_PARTY_DIR/paraview
   DownloadTarFromCBAndExtract $BDM_OS qt.tar.gz $THIRD_PARTY_DIR/qt
+  DownloadTarFromCBAndExtract $BDM_OS ray.tar.gz $THIRD_PARTY_DIR
+  pip install --user "${THIRD_PARTY_DIR}/ray/ray-0.5.0-cp27-cp27mu-linux_x86_64.whl"
+  rm "${THIRD_PARTY_DIR}/ray/ray-0.5.0-cp27-cp27mu-linux_x86_64.whl"
 
   # temporal workaround to avoid libprotobuf error for paraview
   # use only until patched archive has been uploaded
