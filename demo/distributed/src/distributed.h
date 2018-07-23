@@ -69,6 +69,7 @@ class RayScheduler : public Scheduler<Simulation<>> {
         std::cout << buffers[0].data->data()[i];
       }
     }
+    std::cout << '\n';
     plasma.Release(id);
     super::Simulate(steps);
   }
