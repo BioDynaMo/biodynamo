@@ -72,7 +72,13 @@ def main(args):
                         help='The ip:port address of Redis server if this is a part of a cluster. '
                              'If this is not specified, and the mode is "ray", a new Ray cluster '
                              'will be started.')
-    args, unknowns = parser.parse_known_args()
+    for i in range(1, len(sys.argv)):
+        arg = sys.argv[i]
+        if arg == '--':
+            args = parser.parse_args(sys.argv[1:i])
+            unknowns = sys.argv[i + 1:]
+    else:
+        args, unknowns = parser.parse_known_args()
     if args.mode == 'ray':
         run_with_ray(args.library, args.redis_address, unknowns)
 
