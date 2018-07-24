@@ -15,6 +15,8 @@
 #ifndef DEMO_DISTRIBUTED_DISTRIBUTED_H_
 #define DEMO_DISTRIBUTED_DISTRIBUTED_H_
 
+#include <memory>
+
 #include "biodynamo.h"
 #include "common/event_loop.h"
 #include "local_scheduler/local_scheduler_client.h"
@@ -23,6 +25,9 @@
 extern std::string g_local_scheduler_socket_name;
 extern std::string g_object_store_socket_name;
 extern std::string g_object_store_manager_socket_name;
+
+constexpr char kSimulationStartMarker[] = "aaaaaaaaaaaaaaaaaaaa";
+constexpr char kSimulationEndMarker[] = "bbbbbbbbbbbbbbbbbbbb";
 
 namespace bdm {
 
@@ -42,45 +47,94 @@ struct CompileTimeParam : public DefaultCompileTimeParam<Backend> {
 class RayScheduler : public Scheduler<Simulation<>> {
  public:
   using super = Scheduler<Simulation<>>;
+
+  /// Initiates a distributed simulation and waits for its completion.
+  ///
+  /// This method will:
+  ///
+  /// #. RAIIs necessary Ray resources such as object store, local scheduler.
+  /// #. Initially distributes the cells to volumes via Plasma objects.
+  ///    Each main volume will be accompanied by 8 * 3 = 24 halo (margin)
+  ///    volumes. Each of the volume will have a determined ID.
+  /// #. Put the number of steps to the kSimulationStartMarker object.
+  /// #. Waits for the kSimulationEndMarker object.
+  ///
+  /// From the Python side, it will take the number of steps, construct a chain
+  /// of remote calls to actually run each step based on the ID of the regions,
+  /// and finally mark the end of the simulation.
+  ///
+  /// \param steps number of steps to simulate.
   virtual void Simulate(uint64_t steps) override {
     std::cout << "In RayScheduler::Simulate\n";
-    conn_ = LocalSchedulerConnection_init(
+    local_scheduler_.reset(LocalSchedulerConnection_init(
         g_local_scheduler_socket_name.c_str(),
         UniqueID::from_random(),
         false,
         false
-    );
-    if (!conn_) {
-      std::cerr << "Cannot create new local scheduler connection.\n";
+    ));
+    if (!local_scheduler_) {
+      std::cerr << "Cannot create new local scheduler connection to \""
+                << g_local_scheduler_socket_name
+                << "\". Simulation aborted.\n";
       return;
     }
-    plasma.Connect(g_object_store_socket_name.c_str(),
-                   g_object_store_manager_socket_name.c_str());
-    bool is_in = false;
-    plasma::ObjectID id = plasma::UniqueID::from_binary("aaaaaaaaaaaaaaaaaaaa");
-    plasma.Contains(id, &is_in);
-    std::vector<plasma::ObjectBuffer> buffers;
-    std::cout << "Getting the object\n";
-    plasma.Get({id}, -1, &buffers);
-    std::cout << "Done " << is_in << " size " << buffers.size() << '\n';
-    if (buffers.size() > 0) {
-      size_t size = buffers[0].data->size();
-      for (int i = 0; i < size; ++i) {
-        std::cout << buffers[0].data->data()[i];
-      }
+    arrow::Status s = object_store_.Connect(
+        g_object_store_socket_name.c_str(),
+        g_object_store_manager_socket_name.c_str());
+    if (!s.ok()) {
+      std::cerr << "Cannot connect to object store (\""
+                << g_object_store_socket_name
+                << "\", \""
+                << g_object_store_manager_socket_name
+                << "\"). " << s << " Simulation aborted.\n";
+      return;
     }
-    std::cout << '\n';
-    plasma.Release(id);
-    super::Simulate(steps);
+    std::shared_ptr<Buffer> buffer;
+    s = object_store_.Create(plasma::ObjectID::from_binary(kSimulationStartMarker),
+                             sizeof(steps),
+                             nullptr,
+                             0,
+                             &buffer);
+    if (!s.ok()) {
+      std::cerr << "Cannot create simulation start marker. " << s <<
+                   " Simulation aborted\n";
+      return;
+    }
+    memcpy(buffer->mutable_data(), &steps, sizeof(steps));
+    s = object_store_.Seal(plasma::ObjectID::from_binary(kSimulationStartMarker));
+    if (!s.ok()) {
+      std::cerr << "Cannot seal simulation start marker. " << s <<
+                   "Simulation aborted\n";
+      return;
+    }
+    s = object_store_.Release(plasma::ObjectID::from_binary(kSimulationStartMarker));
+    if (!s.ok()) {
+      std::cerr << "Cannot release simulation start marker. " << s <<
+                   "Simulation aborted\n";
+      return;
+    }
+    Partition();
+    std::vector<plasma::ObjectBuffer> _ignored;
+    std::cout << "Waiting for end of simulation...\n";
+    s = object_store_.Get({plasma::ObjectID::from_binary(kSimulationEndMarker)},
+                          -1,
+                          &_ignored);
+    if (!s.ok()) {
+      std::cerr << "Error waiting for simulation end marker. " << s << '\n';
+      return;
+    }
+  }
+
+  virtual void Partition() {
+    std::cout << "In RayScheduler::Partition\n";
   }
 
   virtual ~RayScheduler() {
-    LocalSchedulerConnection_free(conn_);
   }
 
  private:
-  LocalSchedulerConnection *conn_;
-  plasma::PlasmaClient plasma;
+  std::unique_ptr<LocalSchedulerConnection> local_scheduler_ = nullptr;
+  plasma::PlasmaClient object_store_;
 };
 
 class RaySimulation : public Simulation<> {
@@ -116,7 +170,7 @@ inline int Simulate(int argc, const char** argv) {
   ModelInitializer::Grid3D(cells_per_dim, 20, construct);
 
   // 4. Run simulation for one timestep
-  simulation.GetScheduler()->Simulate(1);
+  simulation.GetScheduler()->Simulate(42);
 
   std::cout << "Simulation completed successfully!\n";
   return 0;

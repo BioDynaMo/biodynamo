@@ -4,10 +4,13 @@ import argparse
 import ctypes
 import logging
 import os
+import struct
 import sys
 import time
 
 import ray
+import pyarrow
+from pyarrow import plasma  # Can only do this after importing ray.
 
 
 SIMULATION_START_MARKER = b'a' * 20
@@ -45,12 +48,18 @@ def initialize_simulation(library, argv):
     main_argv = (ctypes.c_char_p * len(argv))()
     main_argv[:] = argv
     dll.main(len(argv), main_argv)
-    return None
 
 
 @ray.remote
-def simulate(nr_steps):
-    pass
+def simulate():
+    ray.worker.global_worker.plasma_client.fetch(
+            [plasma.ObjectID(SIMULATION_START_MARKER)])
+    [num_steps_blob] = ray.worker.global_worker.plasma_client.get_buffers(
+            [plasma.ObjectID(SIMULATION_START_MARKER)])
+    [num_steps] = struct.unpack('<Q', num_steps_blob)
+    print('C++ says it has received {} steps'.format(num_steps))
+    ray.worker.global_worker.put_object(ray.ObjectID(SIMULATION_END_MARKER), '')
+    time.sleep(1)
 
 
 def main(args):
@@ -71,12 +80,9 @@ def main(args):
 def run_with_ray(source_library, redis_address, argv):
     address_info = ray.init(redis_address=redis_address)
     logging.debug(address_info)
-    if redis_address is None:
-        # We only run `main` on the head node.
-        sim_name = os.path.basename(source_library).lstrip('lib').rstrip('.so')
-        a = initialize_simulation.remote(os.path.abspath(source_library), [sim_name] + argv)
-    ray.worker.global_worker.put_object(ray.ObjectID(SIMULATION_START_MARKER), 'hello from python')
-    ray.get(simulate.remote(a))
+    sim_name = os.path.basename(source_library).lstrip('lib').rstrip('.so')
+    initialize_simulation.remote(os.path.abspath(source_library), [sim_name] + argv)
+    ray.get(simulate.remote())
 
 
 if __name__ == '__main__':
