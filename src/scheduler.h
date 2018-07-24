@@ -164,6 +164,7 @@ class Scheduler {
   void CommitChangesAndUpdateReferences() {
     auto* sim = TSimulation::GetActive();
     auto* rm = sim->GetResourceManager();
+    commit_->Reset();
     rm->ApplyOnAllTypesParallel(commit_);
 
     const auto& update_info = commit_->GetUpdateInfo();

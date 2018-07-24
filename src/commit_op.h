@@ -30,6 +30,8 @@ class CommitOp {
     update_info_.emplace_back(sim_objects->Commit());
   }
 
+  void Reset() { update_info_.clear(); }
+
   auto& GetUpdateInfo() const { return update_info_; }
 
  private:
