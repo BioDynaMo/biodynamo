@@ -82,6 +82,7 @@ TEST(NeuriteElementBehaviour, BranchingGrowth) {
   auto* rm = simulation.GetResourceManager();
   auto* param = simulation.GetParam();
   auto* scheduler = simulation.GetScheduler();
+  auto* random = simulation.GetRandom();
 
   param->run_mechanical_interactions_ = true;
 
@@ -95,15 +96,9 @@ TEST(NeuriteElementBehaviour, BranchingGrowth) {
   auto ne = neuron.ExtendNewNeurite({0, 0, 1});
   ne->SetDiameter(1);
 
-  param->live_visualization_ = true;
-  param->visualize_sim_objects_["Cell"] = {};
-  param->visualize_sim_objects_["NeuronSoma"] = {};
-  param->visualize_sim_objects_["NeuriteElement"] = {};
-
   std::array<double, 3> previous_direction;
   std::array<double, 3> direction;
 
-  auto* random = simulation.GetRandom();
   for (int i = 0; i < 200; i++) {
     auto my_neurites = rm->Get<NeuriteElement>();
     int num_neurites = my_neurites->size();
@@ -137,8 +132,6 @@ TEST(NeuriteElementBehaviour, BranchingGrowth) {
     auto my_neurites = rm->Get<NeuriteElement>();
     int num_neurites = my_neurites->size();
 
-    std::cout << num_neurites << " neurites in simulation" << std::endl;
-
     for (int neurite_nb = 0; neurite_nb < num_neurites;
          neurite_nb++) {  // for each neurite in simulation
       auto ne = (*my_neurites)[neurite_nb];
@@ -146,6 +139,8 @@ TEST(NeuriteElementBehaviour, BranchingGrowth) {
     }
     scheduler->Simulate(1);
   }
+
+  EXPECT_NEAR(rm->Get<NeuriteElement>()->size(), 0, abs_error<double>::value);  
 
 }  // end test
 
