@@ -36,10 +36,13 @@ struct CompileTimeParam
 namespace experimental {
 namespace neuroscience {
 
-// TODO(jean) Fix this test
-TEST(DISABLED_NeuriteElementBehaviour, StraightxCylinderGrowthRetract) {
+TEST(NeuriteElementBehaviour, StraightxCylinderGrowthRetract) {
   Simulation<> simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
+  auto* param = simulation.GetParam();
+  auto* scheduler = simulation.GetScheduler();
+
+  param->run_mechanical_interactions_ = true;
 
   auto neuron = rm->New<NeuronSoma>();
   neuron.SetPosition({0, 0, 0});
@@ -48,56 +51,30 @@ TEST(DISABLED_NeuriteElementBehaviour, StraightxCylinderGrowthRetract) {
 
   auto ne = neuron.ExtendNewNeurite({1, 0, 0});
 
-  Scheduler<> scheduler;
-
   std::array<double, 3> neAxis = ne->GetSpringAxis();
 
   EXPECT_NEAR(neAxis[0], 1, abs_error<double>::value);
   EXPECT_NEAR(neAxis[1], 0, abs_error<double>::value);
   EXPECT_NEAR(neAxis[2], 0, abs_error<double>::value);
 
-  std::array<double, 3> direction = {1, 0, 0};
   for (int i = 0; i < 50; i++) {
-    ne->ElongateTerminalEnd(100, direction);
+    ne->ElongateTerminalEnd(100, {1, 0, 0});
     ne->RunDiscretization();
-    scheduler.Simulate(1);
+    scheduler->Simulate(1);
     if (i % 10 == 0) {
       neAxis = ne->GetSpringAxis();
-
       EXPECT_NEAR(neAxis[1], 0, abs_error<double>::value);
       EXPECT_NEAR(neAxis[2], 0, abs_error<double>::value);
     }
   }
 
-  std::cout << "\n---- start retraction" << std::endl;
-  double neurite_length = ne->GetLength();
+  while (rm->Get<NeuriteElement>()->size() != 0) {
+    ne->RetractTerminalEnd(50);
+    scheduler->Simulate(1);
 
-  // while (ne!=nullptr) {
-  //   ne->RunDiscretization();
-  //   neurite_length = ne->GetLength();
-  //   std::cout << "neurite length: " << neurite_length << std::endl;
-  //   ne->RetractTerminalEnd(50);
-  //   EXPECT_NEAR(neAxis[1], 0, abs_error<double>::value);
-  //   EXPECT_NEAR(neAxis[2], 0, abs_error<double>::value);
-  // }
-
-  for (int j = 0; j < 500; j++) {
-    std::cout << "retraction step: " << j << std::endl;
-    if (ne != nullptr) {
-      ne->RetractTerminalEnd(50);
-      ne->RunDiscretization();
-      scheduler.Simulate(1);
-      if (j % 10 == 0) {
-        neAxis = ne->GetSpringAxis();
-
-        EXPECT_NEAR(neAxis[1], 0, abs_error<double>::value);
-        EXPECT_NEAR(neAxis[2], 0, abs_error<double>::value);
-      }
-      neurite_length = ne->GetLength();
-      std::cout << "neurite length: " << neurite_length << std::endl;
-    }
+    EXPECT_NEAR(neAxis[1], 0, abs_error<double>::value);
+    EXPECT_NEAR(neAxis[2], 0, abs_error<double>::value);
   }
-  std::cout << "ook" << neurite_length << std::endl;
 }
 
 TEST(NeuriteElementBehaviour, BranchingGrowth) {
@@ -105,6 +82,7 @@ TEST(NeuriteElementBehaviour, BranchingGrowth) {
   auto* rm = simulation.GetResourceManager();
   auto* param = simulation.GetParam();
   auto* scheduler = simulation.GetScheduler();
+  auto* random = simulation.GetRandom();
 
   param->run_mechanical_interactions_ = true;
 
@@ -118,15 +96,9 @@ TEST(NeuriteElementBehaviour, BranchingGrowth) {
   auto ne = neuron.ExtendNewNeurite({0, 0, 1});
   ne->SetDiameter(1);
 
-  param->export_visualization_ = true;
-  param->visualize_sim_objects_["Cell"] = {};
-  param->visualize_sim_objects_["NeuronSoma"] = {};
-  param->visualize_sim_objects_["NeuriteElement"] = {};
-
   std::array<double, 3> previous_direction;
   std::array<double, 3> direction;
 
-  auto* random = simulation.GetRandom();
   for (int i = 0; i < 200; i++) {
     auto my_neurites = rm->Get<NeuriteElement>();
     int num_neurites = my_neurites->size();
@@ -155,6 +127,19 @@ TEST(NeuriteElementBehaviour, BranchingGrowth) {
     }
     scheduler->Simulate(1);
   }
+
+  while (rm->Get<NeuriteElement>()->size() != 0) {
+    auto my_neurites = rm->Get<NeuriteElement>();
+    int num_neurites = my_neurites->size();
+
+    for (int neurite_nb = 0; neurite_nb < num_neurites;
+         neurite_nb++) {  // for each neurite in simulation
+      auto ne = (*my_neurites)[neurite_nb];
+      ne->RetractTerminalEnd(50);
+    }
+    scheduler->Simulate(1);
+  }
+  EXPECT_NEAR(rm->Get<NeuriteElement>()->size(), 0, abs_error<double>::value);
 }  // end test
 
 }  // end namespace neuroscience
