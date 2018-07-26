@@ -139,9 +139,7 @@ TEST(NeuriteElementBehaviour, BranchingGrowth) {
     }
     scheduler->Simulate(1);
   }
-
-  EXPECT_NEAR(rm->Get<NeuriteElement>()->size(), 0, abs_error<double>::value);  
-
+  EXPECT_NEAR(rm->Get<NeuriteElement>()->size(), 0, abs_error<double>::value);
 }  // end test
 
 }  // end namespace neuroscience
