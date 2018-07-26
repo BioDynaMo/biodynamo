@@ -42,6 +42,7 @@ struct CompileTimeParam : public DefaultCompileTimeParam<Backend> {
   // use predefined biology module GrowDivide
   using BiologyModules = Variant<GrowDivide>;
   // use default Backend and AtomicTypes
+  using SimulationBackend = Scalar;
 };
 
 class Surface {
