@@ -72,7 +72,7 @@ def simulate():
     [num_steps] = struct.unpack('<Q', num_steps_blob)
     print('C++ says it has received {} steps'.format(num_steps))
     ray.worker.global_worker.put_object(ray.ObjectID(SIMULATION_END_MARKER), '')
-    time.sleep(1)
+    time.sleep(10)
 
 
 def main(args):

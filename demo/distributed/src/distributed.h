@@ -16,6 +16,7 @@
 #define DEMO_DISTRIBUTED_DISTRIBUTED_H_
 
 #include <memory>
+#include <TBufferFile.h>
 
 #include "biodynamo.h"
 #include "common/event_loop.h"
@@ -177,7 +178,7 @@ class RayScheduler : public Scheduler<Simulation<>> {
   using ResourceManagerPtr = std::shared_ptr<ResourceManager<>>;
   using SurfaceToVolume = std::pair<Surface, ResourceManagerPtr>;
 
-  static std::array<uint8_t, 20> hash_volume_surface(long step, long box,
+  static std::string hash_volume_surface(long step, long box,
       Surface surface = SurfaceEnum::kNone) {
     SHA256_CTX ctx;
     sha256_init(&ctx);
@@ -186,13 +187,11 @@ class RayScheduler : public Scheduler<Simulation<>> {
     sha256_update(&ctx, reinterpret_cast<const BYTE*>(&box), 8);
     if (surface != SurfaceEnum::kNone) {
       long s = surface;
-      sha256_update(&ctx, reinterpret_cast<const BYTE *>(s), 8);
+      sha256_update(&ctx, reinterpret_cast<const BYTE *>(&s), 8);
     }
-    BYTE hash[SHA256_BLOCK_SIZE];
-    sha256_final(&ctx, hash);
-    std::array<uint8_t, 20> ret;
-    memcpy(ret.data(), hash + SHA256_BLOCK_SIZE - 20, 20);
-    return ret;
+    std::string hash(SHA256_BLOCK_SIZE, '\x00');
+    sha256_final(&ctx, reinterpret_cast<unsigned char*>(&hash[0]));
+    return hash.substr(SHA256_BLOCK_SIZE - 20);
   }
 
   /// Allocates memory for the main volume, its 6 surfaces, and 12 edges.
@@ -380,6 +379,47 @@ class RayScheduler : public Scheduler<Simulation<>> {
     return ret;
   };
 
+  arrow::Status StorePartition(
+      long step,
+      long box,
+      const std::array<SurfaceToVolume, 19>& node) {
+    for (const SurfaceToVolume& sv : node) {
+      Surface surface = sv.first;
+      ResourceManagerPtr rm = sv.second;
+      TBufferFile buff(TBufferFile::EMode::kWrite);
+      buff.WriteObject(rm.get());
+      size_t size = buff.BufferSize();
+      std::string hash = hash_volume_surface(step, box, surface);
+      plasma::ObjectID key = plasma::ObjectID::from_binary(hash);
+      std::shared_ptr<Buffer> buffer;
+      arrow::Status s = object_store_.Create(
+          key,
+          size,
+          nullptr,
+          0,
+          &buffer);
+      if (!s.ok()) {
+        std::cerr << "Cannot push volume for box " << box << " in step "
+                  << step << ". " << s << '\n';
+        return s;
+      }
+      memcpy(buffer->mutable_data(), buff.Buffer(), size);
+      s = object_store_.Seal(key);
+      if (!s.ok()) {
+        std::cerr << "Cannot seal box " << box << " in step "
+                   << step << ". " << s << '\n';
+        return s;
+      }
+      s = object_store_.Release(key);
+      if (!s.ok()) {
+        std::cerr << "Cannot release box " << box << " in step "
+                  << step << ". " << s << '\n';
+        return s;
+      }
+    }
+    return arrow::Status();
+  }
+
   /// Partitions cells into 3D volumes and their corresponding halo volumes.
   ///
   /// This should be a separate class so that the partitioning logic is
@@ -432,6 +472,17 @@ class RayScheduler : public Scheduler<Simulation<>> {
     std::cout << "Total " << rm->GetNumSimObjects() << '\n';
     std::cout << "Node 1 " << node_1[0].second->GetNumSimObjects() << '\n';
     std::cout << "Node 2 " << node_2[0].second->GetNumSimObjects() << '\n';
+
+    arrow::Status s = StorePartition(0, 0, node_1);
+    if (!s.ok()) {
+      std::cerr << "Cannot store partition 0.\n";
+      return;
+    }
+    s = StorePartition(0, 1, node_2);
+    if (!s.ok()) {
+      std::cerr << "Cannot store partition 1.\n";
+      return;
+    }
   }
 
   virtual ~RayScheduler() {
