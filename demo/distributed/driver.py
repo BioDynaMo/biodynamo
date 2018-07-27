@@ -2,6 +2,7 @@
 
 import argparse
 import ctypes
+import hashlib
 import logging
 import os
 import struct
@@ -15,6 +16,17 @@ from pyarrow import plasma  # Can only do this after importing ray.
 
 SIMULATION_START_MARKER = b'a' * 20
 SIMULATION_END_MARKER = b'b' * 20
+SIMULATION_ID = None
+
+
+def hash(args):
+    h = hashlib.sha2()
+    for item in args:
+        if isinstance(item, str):
+            h.update(item)
+        if isinstance(item, int):
+            h.update(struct.pack('<Q', item))
+    return h.digest()[-20:]
 
 
 def get_node_info():
@@ -38,7 +50,8 @@ def load_bdm_library(path):
     except AttributeError:
         raise RuntimeError('There must be a function bdm_setup_ray in the library.')
     scheduler, store, manager = get_node_info()
-    dll.bdm_setup_ray(scheduler, store, manager)
+    global SIMULATION_ID
+    dll.bdm_setup_ray(scheduler, store, manager, SIMULATION_ID)
     return dll
 
 
@@ -84,6 +97,8 @@ def main(args):
 
 
 def run_with_ray(source_library, redis_address, argv):
+    global SIMULATION_ID
+    SIMULATION_ID = ray.utils.random_string()
     address_info = ray.init(redis_address=redis_address)
     logging.debug(address_info)
     sim_name = os.path.basename(source_library).lstrip('lib').rstrip('.so')

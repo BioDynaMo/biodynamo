@@ -21,10 +21,12 @@
 #include "common/event_loop.h"
 #include "local_scheduler/local_scheduler_client.h"
 #include "plasma/client.h"
+#include "sha256.h"
 
 extern std::string g_local_scheduler_socket_name;
 extern std::string g_object_store_socket_name;
 extern std::string g_object_store_manager_socket_name;
+extern std::string g_simulation_id;
 
 constexpr char kSimulationStartMarker[] = "aaaaaaaaaaaaaaaaaaaa";
 constexpr char kSimulationEndMarker[] = "bbbbbbbbbbbbbbbbbbbb";
@@ -68,6 +70,10 @@ class Surface {
         (value_ == 8 && other.value_ == 1) ||
         (value_ == 16 && other.value_ == 4) ||
         (value_ == 32 && other.value_ == 8);
+  }
+
+  constexpr operator long() const {
+    return value_;
   }
 
  private:
@@ -170,6 +176,24 @@ class RayScheduler : public Scheduler<Simulation<>> {
 
   using ResourceManagerPtr = std::shared_ptr<ResourceManager<>>;
   using SurfaceToVolume = std::pair<Surface, ResourceManagerPtr>;
+
+  static std::array<uint8_t, 20> hash_volume_surface(long step, long box,
+      Surface surface = SurfaceEnum::kNone) {
+    SHA256_CTX ctx;
+    sha256_init(&ctx);
+    sha256_update(&ctx, reinterpret_cast<const BYTE*>(g_simulation_id.data()), 20);
+    sha256_update(&ctx, reinterpret_cast<const BYTE*>(&step), 8);
+    sha256_update(&ctx, reinterpret_cast<const BYTE*>(&box), 8);
+    if (surface != SurfaceEnum::kNone) {
+      long s = surface;
+      sha256_update(&ctx, reinterpret_cast<const BYTE *>(s), 8);
+    }
+    BYTE hash[SHA256_BLOCK_SIZE];
+    sha256_final(&ctx, hash);
+    std::array<uint8_t, 20> ret;
+    memcpy(ret.data(), hash + SHA256_BLOCK_SIZE - 20, 20);
+    return ret;
+  }
 
   /// Allocates memory for the main volume, its 6 surfaces, and 12 edges.
   static std::array<SurfaceToVolume, 19> AllocVolumes() {
@@ -320,26 +344,35 @@ class RayScheduler : public Scheduler<Simulation<>> {
   static ResourceManagerPtr FindResourceManager(
       const std::array<SurfaceToVolume, 19>& map,
       Surface s) {
+    for (const SurfaceToVolume& entry : map) {
+      if (entry.first == s) {
+        return entry.second;
+      }
+    }
+    // This must never happen.
+    assert(false);
     return nullptr;
   }
 
   std::array<SurfaceToVolume, 19> CreateVolumesForBox(
       ResourceManager<>* rm,
+      int step,
+      int box,
       const std::array<double, 3>& left_front_bottom,
       const std::array<double, 3>& right_back_top) {
     std::array<SurfaceToVolume, 19> ret = AllocVolumes();
     auto f = [&](const auto& element, bdm::SoHandle) {
       std::array<double, 3> pos = element.GetPosition();
       if (is_in(pos, left_front_bottom, right_back_top)) {
-        ResourceManagerPtr node = ret[0].second;
-        node->push_back(element);
+        ResourceManagerPtr volume_rm = ret[0].second;
+        volume_rm->push_back(element);
         for (Surface s : FindContainingSurfaces(
             pos, left_front_bottom, right_back_top, {1, 1, 1})) {
           if (s == SurfaceEnum::kNone) {
             break;
           }
-          ResourceManagerPtr sub_rm = FindResourceManager(ret, s);
-          //sub_rm->push_back(element);
+          ResourceManagerPtr surface_rm = FindResourceManager(ret, s);
+          surface_rm->push_back(element);
         }
       }
     };
@@ -386,10 +419,14 @@ class RayScheduler : public Scheduler<Simulation<>> {
     double mid_x = min_x + (max_x - min_x) / 2;
     std::array<SurfaceToVolume, 19> node_1 = CreateVolumesForBox(
         rm,
+        0,
+        0,
         {min_x, min_y, min_z},
         {mid_x, max_y, max_z});
     std::array<SurfaceToVolume, 19> node_2 = CreateVolumesForBox(
         rm,
+        0,
+        1,
         {mid_x, min_y, min_z},
         {max_x, max_y, max_z});
     std::cout << "Total " << rm->GetNumSimObjects() << '\n';
