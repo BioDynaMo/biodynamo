@@ -195,6 +195,17 @@ TEST(SimulationObjectUtilTest, Soa_push_back_AndSubscriptOperator) {
   EXPECT_EQ(8, position2[1]);
   EXPECT_EQ(7, position2[2]);
   EXPECT_EQ(3u, neurons[1].GetNeurites().size());
+
+  // Test soa.push_back(soa_ref)
+  auto neurons2 = Neuron::NewEmptySoa();
+  neurons2.push_back(neurons[1]);
+
+  EXPECT_EQ(6.28, neurons2[0].GetDiameter());
+  auto& pos = neurons2[0].GetPosition();
+  EXPECT_EQ(9, pos[0]);
+  EXPECT_EQ(8, pos[1]);
+  EXPECT_EQ(7, pos[2]);
+  EXPECT_EQ(3u, neurons2[0].GetNeurites().size());
 }
 
 TEST(SimulationObjectUtilTest, Soa_clear) {

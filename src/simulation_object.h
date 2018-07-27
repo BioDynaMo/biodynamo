@@ -103,7 +103,8 @@ class SoaSimulationObject {
   size_t TotalSize() const { return total_size_; }
 
   /// Thread safe version of std::vector::push_back
-  void push_back(const MostDerived<Scalar> &element) {  // NOLINT
+  template <typename TTBackend>
+  void push_back(const MostDerived<TTBackend> &element) {  // NOLINT
     std::lock_guard<std::recursive_mutex> lock(mutex_);
     if (total_size_ == size_) {
       PushBackImpl(element);
@@ -212,6 +213,9 @@ class SoaSimulationObject {
   /// Append a scalar element
   virtual void PushBackImpl(const MostDerived<Scalar> &other) { total_size_++; }
 
+  /// Append a soa ref element
+  virtual void PushBackImpl(const MostDerived<SoaRef> &other) { total_size_++; }
+
   /// Swap element with last element if and remove last element
   virtual void SwapAndPopBack(size_t index, size_t size) {}
 
@@ -267,6 +271,9 @@ class ScalarSimulationObject {
 
   /// Append a scalar element
   virtual void PushBackImpl(const MostDerived<Scalar> &other) {}
+
+  /// Append a SoaRef element
+  virtual void PushBackImpl(const MostDerived<SoaRef> &other) {}
 
   /// Swap element with last element if and remove last element
   virtual void SwapAndPopBack(size_t index, size_t size) {}

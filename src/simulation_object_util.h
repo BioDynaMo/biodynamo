@@ -220,7 +220,7 @@ struct Capsule;
   EVAL(LOOP(BDM_SIM_OBJECT_PUSH_BACK_BODY_ITERATOR, __VA_ARGS__))
 
 #define BDM_SIM_OBJECT_PUSH_BACK_BODY_ITERATOR(data_member) \
-  data_member.push_back(other.data_member[0]);
+  data_member.push_back(other.data_member[other.kIdx]);
 
 #define BDM_SIM_OBJECT_POP_BACK_BODY(...) \
   EVAL(LOOP(BDM_SIM_OBJECT_POP_BACK_BODY_ITERATOR, __VA_ARGS__))
@@ -470,6 +470,12 @@ struct Capsule;
     Base::PushBackImpl(other);                                                 \
   }                                                                            \
                                                                                \
+  /** Equivalent to std::vector<> push_back - it adds the scalar values to */  \
+  /** all data members */                                                      \
+  void PushBackImpl(const MostDerived<SoaRef>& other) override {               \
+    BDM_SIM_OBJECT_PUSH_BACK_BODY(__VA_ARGS__);                                \
+    Base::PushBackImpl(other);                                                 \
+  }                                                                            \
   /** Swap element with last element and remove last element from each */      \
   /** data member */                                                           \
   void SwapAndPopBack(size_t index, size_t size) override {                    \
