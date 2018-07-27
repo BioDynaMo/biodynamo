@@ -353,6 +353,16 @@ class SimulationObject
     return reinterpret_cast<TargetType &&>(*this);
   }
 
+  /// Casts this to a simulation object of type `TSo` with the current `Backend`
+  /// This function is used to simulate if constexpr functionality and won't be
+  /// needed after we swith to C++17
+  /// @tparam TSo target simulaton object type with any backend
+  template <typename TSo>
+  constexpr auto &&ReinterpretCast(const TSo *object) {
+    using TargetType = typename TSo::template Self<Backend>;
+    return reinterpret_cast<TargetType &&>(*this);
+  }
+
   /// Empty default implementation to update references of simulation objects
   /// that changed its memory position.
   /// @param update_info vector index = type_id, map stores (old_index ->

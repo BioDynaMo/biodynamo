@@ -497,6 +497,17 @@ TEST(SimulationObjectUtilTest, ReinterpretCast) {
   auto&& neuron_rc2 = cell.template ReinterpretCast<SoaNeuron>();
   bool r2 = std::is_same<Neuron, std::decay_t<decltype(neuron_rc2)>>::value;
   EXPECT_TRUE(r2);
+
+  Neuron neuron;
+  SoaNeuron soa;
+
+  auto&& neuron_rc3 = cell.template ReinterpretCast(&neuron);
+  bool r3 = std::is_same<Neuron, std::decay_t<decltype(neuron_rc3)>>::value;
+  EXPECT_TRUE(r3);
+
+  auto&& neuron_rc4 = cell.template ReinterpretCast(&soa);
+  bool r4 = std::is_same<Neuron, std::decay_t<decltype(neuron_rc4)>>::value;
+  EXPECT_TRUE(r4);
 }
 
 // }  // namespace simulation_object_util_test_internal
