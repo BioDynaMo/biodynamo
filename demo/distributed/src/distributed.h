@@ -139,6 +139,9 @@ class RayScheduler : public Scheduler<Simulation<>> {
                 << "\"). " << s << " Simulation aborted.\n";
       return;
     }
+
+    Partition();
+
     std::shared_ptr<Buffer> buffer;
     s = object_store_.Create(plasma::ObjectID::from_binary(kSimulationStartMarker),
                              sizeof(steps),
@@ -163,7 +166,7 @@ class RayScheduler : public Scheduler<Simulation<>> {
                    "Simulation aborted\n";
       return;
     }
-    Partition();
+
     std::vector<plasma::ObjectBuffer> _ignored;
     std::cout << "Waiting for end of simulation...\n";
     s = object_store_.Get({plasma::ObjectID::from_binary(kSimulationEndMarker)},
