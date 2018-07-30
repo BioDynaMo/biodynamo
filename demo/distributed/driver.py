@@ -56,23 +56,60 @@ def load_bdm_library(path):
 
 
 @ray.remote
-def initialize_simulation(library, argv):
+def simulate(library, argv):
+    # First create a simulation graph.
+    build_simulation_graph.remote()
+    # Then kick start it.
     dll = load_bdm_library(library)
     main_argv = (ctypes.c_char_p * len(argv))()
     main_argv[:] = argv
-    dll.main(len(argv), main_argv)
+    dll.main(len(argv), main_argv)  # This blocks until the end of the simulation.
 
 
 @ray.remote
-def simulate():
+def wait_for_start_signal():
     ray.worker.global_worker.plasma_client.fetch(
             [plasma.ObjectID(SIMULATION_START_MARKER)])
     [num_steps_blob] = ray.worker.global_worker.plasma_client.get_buffers(
             [plasma.ObjectID(SIMULATION_START_MARKER)])
     [num_steps] = struct.unpack('<Q', num_steps_blob)
     print('C++ says it has received {} steps'.format(num_steps))
+    return num_steps
+
+
+@ray.remote
+def partition(num_nodes=2):
+    # We are not actually doing any work here.
+    # We only return dummy Python objects so that Ray
+    # can build up a dependency graph.
+    return [None] * 19 * num_nodes
+
+
+@ray.remote(num_return_vals=19)
+def simulation_step(step_num, node_id, *dependencies):
+    time.sleep(0.1)
+    print('step', step_num, node_id)
+    return [None] * 19
+
+
+@ray.remote
+def build_simulation_graph():
+    num_nodes = 2
+    partitions = partition._submit(args=[num_nodes], num_return_vals=19 * num_nodes)
+    node_0 = partitions[:19]
+    node_1 = partitions[19:]
+    num_steps = ray.get(wait_for_start_signal.remote())
+    for step in range(num_steps):
+        node_0 = simulation_step.remote(step, 0, node_0[0])
+        node_1 = simulation_step.remote(step, 1, node_1[0])
+    ray.get(node_0)
+    ray.get(node_1)
+    ray.get(send_end_signal.remote())
+
+
+@ray.remote
+def send_end_signal(*dependencies):
     ray.worker.global_worker.put_object(ray.ObjectID(SIMULATION_END_MARKER), '')
-    time.sleep(10)
 
 
 def main(args):
@@ -102,8 +139,7 @@ def run_with_ray(source_library, redis_address, argv):
     address_info = ray.init(redis_address=redis_address)
     logging.debug(address_info)
     sim_name = os.path.basename(source_library).lstrip('lib').rstrip('.so')
-    initialize_simulation.remote(os.path.abspath(source_library), [sim_name] + argv)
-    ray.get(simulate.remote())
+    ray.get(simulate.remote(os.path.abspath(source_library), [sim_name] + argv))
 
 
 if __name__ == '__main__':
