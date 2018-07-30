@@ -19,8 +19,8 @@ SIMULATION_END_MARKER = b'b' * 20
 SIMULATION_ID = None
 
 
-def hash(args):
-    h = hashlib.sha2()
+def hash(*args):
+    h = hashlib.sha256()
     for item in args:
         if isinstance(item, str):
             h.update(item)
