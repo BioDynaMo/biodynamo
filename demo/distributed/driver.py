@@ -18,6 +18,8 @@ SIMULATION_START_MARKER = b'a' * 20
 SIMULATION_END_MARKER = b'b' * 20
 SIMULATION_ID = None
 
+DLL_PATH = None
+
 
 def hash(*args):
     h = hashlib.sha256()
@@ -32,7 +34,7 @@ def hash(*args):
 def get_node_info():
     node_ip = ray.worker.services.get_node_ip_address()
     info = ray.global_state.client_table()[node_ip]
-    logging.error('Node info: %s', info)
+    logging.debug('Node info: %s', info)
     for d in info:
         client_type = d.get('ClientType')
         if client_type == 'local_scheduler':
@@ -43,7 +45,9 @@ def get_node_info():
     return local_scheduler_socket_name, store_socket_name, manager_socket_name
 
 
-def load_bdm_library(path):
+def load_bdm_library(path=None):
+    if path is None:
+        path = DLL_PATH
     dll = ctypes.CDLL(path)
     try:
         dll.bdm_setup_ray
@@ -87,8 +91,9 @@ def partition(num_nodes=2):
 
 @ray.remote(num_return_vals=19)
 def simulation_step(step_num, node_id, *dependencies):
-    time.sleep(0.1)
     print('step', step_num, node_id)
+    dll = load_bdm_library()
+    dll.simulate_step(step_num, node_id)
     return [None] * 19
 
 
@@ -136,6 +141,8 @@ def main(args):
 def run_with_ray(source_library, redis_address, argv):
     global SIMULATION_ID
     SIMULATION_ID = ray.utils.random_string()
+    global DLL_PATH
+    DLL_PATH = source_library
     address_info = ray.init(redis_address=redis_address)
     logging.debug(address_info)
     sim_name = os.path.basename(source_library).lstrip('lib').rstrip('.so')

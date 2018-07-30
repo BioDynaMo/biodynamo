@@ -94,9 +94,30 @@ class SurfaceEnum {
   static constexpr Surface kTop{32};
 };
 
+static std::string hash_volume_surface(long step, long box,
+                                       Surface surface = SurfaceEnum::kNone) {
+  SHA256_CTX ctx;
+  sha256_init(&ctx);
+  sha256_update(&ctx, reinterpret_cast<const BYTE*>(g_simulation_id.data()), 20);
+  sha256_update(&ctx, reinterpret_cast<const BYTE*>(&step), 8);
+  sha256_update(&ctx, reinterpret_cast<const BYTE*>(&box), 8);
+  if (surface != SurfaceEnum::kNone) {
+    long s = surface;
+    sha256_update(&ctx, reinterpret_cast<const BYTE *>(&s), 8);
+  }
+  std::string hash(SHA256_BLOCK_SIZE, '\x00');
+  sha256_final(&ctx, reinterpret_cast<unsigned char*>(&hash[0]));
+  return hash.substr(SHA256_BLOCK_SIZE - 20);
+}
+
 class RayScheduler : public Scheduler<Simulation<>> {
  public:
   using super = Scheduler<Simulation<>>;
+
+  void SimulateStep(int64_t step, int64_t node) {
+    Initialize();
+    ResourceManagerPtr rm = ReassembleVolumes(step, node);
+  }
 
   /// Initiates a distributed simulation and waits for its completion.
   ///
@@ -115,31 +136,12 @@ class RayScheduler : public Scheduler<Simulation<>> {
   ///
   /// \param steps number of steps to simulate.
   virtual void Simulate(uint64_t steps) override {
-    std::cout << "In RayScheduler::Simulate\n";
-    local_scheduler_.reset(LocalSchedulerConnection_init(
-        g_local_scheduler_socket_name.c_str(),
-        UniqueID::from_random(),
-        false,
-        false
-    ));
-    if (!local_scheduler_) {
-      std::cerr << "Cannot create new local scheduler connection to \""
-                << g_local_scheduler_socket_name
-                << "\". Simulation aborted.\n";
-      return;
-    }
-    arrow::Status s = object_store_.Connect(
-        g_object_store_socket_name.c_str(),
-        g_object_store_manager_socket_name.c_str());
+    arrow::Status s = Initialize();
     if (!s.ok()) {
-      std::cerr << "Cannot connect to object store (\""
-                << g_object_store_socket_name
-                << "\", \""
-                << g_object_store_manager_socket_name
-                << "\"). " << s << " Simulation aborted.\n";
+      std::cerr << "Cannot make connection to local scheduler or object store. "
+                << s << " Simulation aborted.\n";
       return;
     }
-
     Partition();
 
     std::shared_ptr<Buffer> buffer;
@@ -157,13 +159,13 @@ class RayScheduler : public Scheduler<Simulation<>> {
     s = object_store_.Seal(plasma::ObjectID::from_binary(kSimulationStartMarker));
     if (!s.ok()) {
       std::cerr << "Cannot seal simulation start marker. " << s <<
-                   "Simulation aborted\n";
+                   " Simulation aborted\n";
       return;
     }
     s = object_store_.Release(plasma::ObjectID::from_binary(kSimulationStartMarker));
     if (!s.ok()) {
       std::cerr << "Cannot release simulation start marker. " << s <<
-                   "Simulation aborted\n";
+                   " Simulation aborted\n";
       return;
     }
 
@@ -180,22 +182,6 @@ class RayScheduler : public Scheduler<Simulation<>> {
 
   using ResourceManagerPtr = std::shared_ptr<ResourceManager<>>;
   using SurfaceToVolume = std::pair<Surface, ResourceManagerPtr>;
-
-  static std::string hash_volume_surface(long step, long box,
-      Surface surface = SurfaceEnum::kNone) {
-    SHA256_CTX ctx;
-    sha256_init(&ctx);
-    sha256_update(&ctx, reinterpret_cast<const BYTE*>(g_simulation_id.data()), 20);
-    sha256_update(&ctx, reinterpret_cast<const BYTE*>(&step), 8);
-    sha256_update(&ctx, reinterpret_cast<const BYTE*>(&box), 8);
-    if (surface != SurfaceEnum::kNone) {
-      long s = surface;
-      sha256_update(&ctx, reinterpret_cast<const BYTE *>(&s), 8);
-    }
-    std::string hash(SHA256_BLOCK_SIZE, '\x00');
-    sha256_final(&ctx, reinterpret_cast<unsigned char*>(&hash[0]));
-    return hash.substr(SHA256_BLOCK_SIZE - 20);
-  }
 
   /// Allocates memory for the main volume, its 6 surfaces, and 12 edges.
   static std::array<SurfaceToVolume, 19> AllocVolumes() {
@@ -423,6 +409,59 @@ class RayScheduler : public Scheduler<Simulation<>> {
     return arrow::Status();
   }
 
+  ResourceManagerPtr ReassembleVolumes(int64_t step, int64_t node) {
+    std::string whole = hash_volume_surface(step, node);
+    std::string front = hash_volume_surface(step, node, SurfaceEnum::kLeft);
+    std::string front_top = hash_volume_surface(step, node, SurfaceEnum::kFront | SurfaceEnum::kTop);
+    std::string front_bottom = hash_volume_surface(step, node, SurfaceEnum::kFront | SurfaceEnum::kBottom);
+    std::string front_left = hash_volume_surface(step, node, SurfaceEnum::kFront | SurfaceEnum::kLeft);
+    std::string front_right = hash_volume_surface(step, node, SurfaceEnum::kFront | SurfaceEnum::kRight);
+    std::string top = hash_volume_surface(step, node, SurfaceEnum::kTop);
+    std::string top_left = hash_volume_surface(step, node, SurfaceEnum::kTop | SurfaceEnum::kLeft);
+    std::string top_right = hash_volume_surface(step, node, SurfaceEnum::kTop | SurfaceEnum::kRight);
+    std::string top_back = hash_volume_surface(step, node, SurfaceEnum::kTop | SurfaceEnum::kBack);
+    std::string back = hash_volume_surface(step, node, SurfaceEnum::kBack);
+    std::string back_left = hash_volume_surface(step, node, SurfaceEnum::kBack | SurfaceEnum::kLeft);
+    std::string back_right = hash_volume_surface(step, node, SurfaceEnum::kBack | SurfaceEnum::kRight);
+    std::string back_bottom = hash_volume_surface(step, node, SurfaceEnum::kBack | SurfaceEnum::kBottom);
+    std::string bottom = hash_volume_surface(step, node, SurfaceEnum::kBottom);
+    std::string bottom_left = hash_volume_surface(step, node, SurfaceEnum::kBottom | SurfaceEnum::kLeft);
+    std::string bottom_right = hash_volume_surface(step, node, SurfaceEnum::kBottom | SurfaceEnum::kRight);
+    std::string left = hash_volume_surface(step, node, SurfaceEnum::kLeft);
+    std::string right = hash_volume_surface(step, node, SurfaceEnum::kRight);
+
+    // First create an RM for the main volume.
+    plasma::ObjectID key = plasma::ObjectID::from_binary(
+        hash_volume_surface(step, node));
+    arrow::Status s;
+    s = object_store_.Fetch(1, &key);
+    if (!s.ok()) {
+      std::cerr << "Cannot fetch \"" << key.hex() << "\". " << s << '\n';
+      return nullptr;
+    }
+    std::vector<plasma::ObjectBuffer> buffers;
+    s = object_store_.Get({key}, -1, &buffers);
+    if (!s.ok()) {
+      std::cerr << "Cannot get \"" << key.hex() << "\". " << s << '\n';
+      return nullptr;
+    }
+    ResourceManagerPtr ret;
+    TBufferFile f(TBufferFile::EMode::kRead,
+        buffers[0].data->size(),
+        buffers[0].data->mutable_data());
+    ret.reset(reinterpret_cast<ResourceManager<>*>(f.ReadObjectAny(ResourceManager<>::Class())));
+    object_store_.Release(key);
+    // Then add from the border regions.
+    // TODO: Make this more generic. Right now, this assumes two nodes.
+    if (node == 0) {
+      //AddFromVolume(rm, step, node, SurfaceEnum::kRight);
+    } else {
+      //AddFromVolume(rm, step, node, SurfaceEnum::kLeft);
+    }
+
+    return ret;
+  }
+
   /// Partitions cells into 3D volumes and their corresponding halo volumes.
   ///
   /// This should be a separate class so that the partitioning logic is
@@ -492,6 +531,38 @@ class RayScheduler : public Scheduler<Simulation<>> {
   }
 
  private:
+  arrow::Status Initialize() {
+    if (initialized_) {
+      return arrow::Status();
+    }
+    local_scheduler_.reset(LocalSchedulerConnection_init(
+        g_local_scheduler_socket_name.c_str(),
+        UniqueID::from_random(),
+        false,
+        false
+    ));
+    if (!local_scheduler_) {
+      std::cerr << "Cannot create new local scheduler connection to \""
+                << g_local_scheduler_socket_name
+                << "\"\n";
+      return arrow::Status(arrow::StatusCode::IOError, "Cannot connect");
+    }
+    arrow::Status s = object_store_.Connect(
+        g_object_store_socket_name.c_str(),
+        g_object_store_manager_socket_name.c_str());
+    if (!s.ok()) {
+      std::cerr << "Cannot connect to object store (\""
+                << g_object_store_socket_name
+                << "\", \""
+                << g_object_store_manager_socket_name
+                << "\"). " << s << '\n';
+      return s;
+    }
+    initialized_ = true;
+    return arrow::Status();
+  }
+
+  bool initialized_ = false;
   std::unique_ptr<LocalSchedulerConnection> local_scheduler_ = nullptr;
   plasma::PlasmaClient object_store_;
 };
@@ -499,6 +570,7 @@ class RayScheduler : public Scheduler<Simulation<>> {
 class RaySimulation : public Simulation<> {
  public:
   using super = Simulation<>;
+  RaySimulation() : super(g_simulation_id) {}
   RaySimulation(int argc, const char **argv) : super(argc, argv) {}
   virtual ~RaySimulation() {}
   virtual Scheduler<Simulation>* GetScheduler() override {
@@ -517,7 +589,7 @@ inline int Simulate(int argc, const char** argv) {
   RaySimulation simulation(argc, argv);
 
   // 3. Define initial model - in this example: 3D grid of cells
-  size_t cells_per_dim = 128;
+  size_t cells_per_dim = 16;
   auto construct = [](const std::array<double, 3> &position) {
     Cell cell(position);
     cell.SetDiameter(30);
