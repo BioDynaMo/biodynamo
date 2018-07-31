@@ -94,6 +94,9 @@ struct Simulation {
   /// Simulation will take ownership of the passed pointer
   void ReplaceScheduler(Scheduler<Simulation>*);
 
+ protected:
+  ResourceManager<TCTParam>* rm_ = nullptr;
+
  private:
   /// Currently active simulation
   static Simulation<TCTParam>* active_;
@@ -103,7 +106,6 @@ struct Simulation {
   /// random number generator for each thread
   std::vector<Random*> random_;
 
-  ResourceManager<TCTParam>* rm_ = nullptr;
   Param* param_ = nullptr;
   std::string name_;
   Grid<Simulation>* grid_ = nullptr;            //!

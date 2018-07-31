@@ -90,10 +90,10 @@ def partition(num_nodes=2):
 
 
 @ray.remote(num_return_vals=19)
-def simulation_step(step_num, node_id, *dependencies):
+def simulation_step(step_num, node_id, last_iter, *dependencies):
     print('step', step_num, node_id)
     dll = load_bdm_library()
-    dll.simulate_step(step_num, node_id)
+    dll.simulate_step(step_num, node_id, last_iter)
     return [None] * 19
 
 
@@ -105,8 +105,8 @@ def build_simulation_graph():
     node_1 = partitions[19:]
     num_steps = ray.get(wait_for_start_signal.remote())
     for step in range(num_steps):
-        node_0 = simulation_step.remote(step, 0, node_0[0])
-        node_1 = simulation_step.remote(step, 1, node_1[0])
+        node_0 = simulation_step.remote(step, 0, step == num_steps - 1, node_0[0])
+        node_1 = simulation_step.remote(step, 1, step == num_steps - 1, node_1[0])
     ray.get(node_0)
     ray.get(node_1)
     ray.get(send_end_signal.remote())

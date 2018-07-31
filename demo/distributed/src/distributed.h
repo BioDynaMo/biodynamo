@@ -110,14 +110,14 @@ static std::string hash_volume_surface(long step, long box,
   return hash.substr(SHA256_BLOCK_SIZE - 20);
 }
 
+using ResourceManagerPtr = std::shared_ptr<ResourceManager<>>;
+using SurfaceToVolume = std::pair<Surface, ResourceManagerPtr>;
+
 class RayScheduler : public Scheduler<Simulation<>> {
  public:
   using super = Scheduler<Simulation<>>;
 
-  void SimulateStep(int64_t step, int64_t node) {
-    Initialize();
-    ResourceManagerPtr rm = ReassembleVolumes(step, node);
-  }
+  void SimulateStep(long step, long node, bool last_iteration);
 
   /// Initiates a distributed simulation and waits for its completion.
   ///
@@ -179,9 +179,6 @@ class RayScheduler : public Scheduler<Simulation<>> {
       return;
     }
   }
-
-  using ResourceManagerPtr = std::shared_ptr<ResourceManager<>>;
-  using SurfaceToVolume = std::pair<Surface, ResourceManagerPtr>;
 
   /// Allocates memory for the main volume, its 6 surfaces, and 12 edges.
   static std::array<SurfaceToVolume, 19> AllocVolumes() {
@@ -377,7 +374,7 @@ class RayScheduler : public Scheduler<Simulation<>> {
       ResourceManagerPtr rm = sv.second;
       TBufferFile buff(TBufferFile::EMode::kWrite);
       buff.WriteObject(rm.get());
-      size_t size = buff.BufferSize();
+      const size_t size = buff.BufferSize();
       std::string hash = hash_volume_surface(step, box, surface);
       plasma::ObjectID key = plasma::ObjectID::from_binary(hash);
       std::shared_ptr<Buffer> buffer;
@@ -409,58 +406,25 @@ class RayScheduler : public Scheduler<Simulation<>> {
     return arrow::Status();
   }
 
-  ResourceManagerPtr ReassembleVolumes(int64_t step, int64_t node) {
-    std::string whole = hash_volume_surface(step, node);
-    std::string front = hash_volume_surface(step, node, SurfaceEnum::kLeft);
-    std::string front_top = hash_volume_surface(step, node, SurfaceEnum::kFront | SurfaceEnum::kTop);
-    std::string front_bottom = hash_volume_surface(step, node, SurfaceEnum::kFront | SurfaceEnum::kBottom);
-    std::string front_left = hash_volume_surface(step, node, SurfaceEnum::kFront | SurfaceEnum::kLeft);
-    std::string front_right = hash_volume_surface(step, node, SurfaceEnum::kFront | SurfaceEnum::kRight);
-    std::string top = hash_volume_surface(step, node, SurfaceEnum::kTop);
-    std::string top_left = hash_volume_surface(step, node, SurfaceEnum::kTop | SurfaceEnum::kLeft);
-    std::string top_right = hash_volume_surface(step, node, SurfaceEnum::kTop | SurfaceEnum::kRight);
-    std::string top_back = hash_volume_surface(step, node, SurfaceEnum::kTop | SurfaceEnum::kBack);
-    std::string back = hash_volume_surface(step, node, SurfaceEnum::kBack);
-    std::string back_left = hash_volume_surface(step, node, SurfaceEnum::kBack | SurfaceEnum::kLeft);
-    std::string back_right = hash_volume_surface(step, node, SurfaceEnum::kBack | SurfaceEnum::kRight);
-    std::string back_bottom = hash_volume_surface(step, node, SurfaceEnum::kBack | SurfaceEnum::kBottom);
-    std::string bottom = hash_volume_surface(step, node, SurfaceEnum::kBottom);
-    std::string bottom_left = hash_volume_surface(step, node, SurfaceEnum::kBottom | SurfaceEnum::kLeft);
-    std::string bottom_right = hash_volume_surface(step, node, SurfaceEnum::kBottom | SurfaceEnum::kRight);
-    std::string left = hash_volume_surface(step, node, SurfaceEnum::kLeft);
-    std::string right = hash_volume_surface(step, node, SurfaceEnum::kRight);
+  ResourceManager<>* ReassembleVolumes(int64_t step, int64_t node);
 
-    // First create an RM for the main volume.
-    plasma::ObjectID key = plasma::ObjectID::from_binary(
-        hash_volume_surface(step, node));
+  std::vector<plasma::ObjectBuffer> FetchAndGetVolume(const plasma::ObjectID& key) {
     arrow::Status s;
     s = object_store_.Fetch(1, &key);
     if (!s.ok()) {
       std::cerr << "Cannot fetch \"" << key.hex() << "\". " << s << '\n';
-      return nullptr;
+      return {};
     }
     std::vector<plasma::ObjectBuffer> buffers;
     s = object_store_.Get({key}, -1, &buffers);
     if (!s.ok()) {
       std::cerr << "Cannot get \"" << key.hex() << "\". " << s << '\n';
-      return nullptr;
+      return buffers;
     }
-    ResourceManagerPtr ret;
-    TBufferFile f(TBufferFile::EMode::kRead,
-        buffers[0].data->size(),
-        buffers[0].data->mutable_data());
-    ret.reset(reinterpret_cast<ResourceManager<>*>(f.ReadObjectAny(ResourceManager<>::Class())));
-    object_store_.Release(key);
-    // Then add from the border regions.
-    // TODO: Make this more generic. Right now, this assumes two nodes.
-    if (node == 0) {
-      //AddFromVolume(rm, step, node, SurfaceEnum::kRight);
-    } else {
-      //AddFromVolume(rm, step, node, SurfaceEnum::kLeft);
-    }
-
-    return ret;
+    return buffers;
   }
+
+  arrow::Status AddFromVolume(ResourceManager<>* rm, long step, long node, Surface surface);
 
   /// Partitions cells into 3D volumes and their corresponding halo volumes.
   ///
@@ -570,7 +534,7 @@ class RayScheduler : public Scheduler<Simulation<>> {
 class RaySimulation : public Simulation<> {
  public:
   using super = Simulation<>;
-  RaySimulation() : super(g_simulation_id) {}
+  RaySimulation() : super(plasma::ObjectID::from_binary(g_simulation_id).hex()) {}
   RaySimulation(int argc, const char **argv) : super(argc, argv) {}
   virtual ~RaySimulation() {}
   virtual Scheduler<Simulation>* GetScheduler() override {
@@ -579,6 +543,9 @@ class RaySimulation : public Simulation<> {
       scheduler_set_ = true;
     }
     return super::GetScheduler();
+  }
+  virtual void ReplaceResourceManager(ResourceManager<>* rm) {
+    rm_ = rm;
   }
  private:
   bool scheduler_set_ = false;
