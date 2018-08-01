@@ -110,6 +110,128 @@ static std::string hash_volume_surface(long step, long box,
   return hash.substr(SHA256_BLOCK_SIZE - 20);
 }
 
+using Point3D = std::array<double, 3>;
+using Box = std::pair<Point3D, Point3D>;
+using Boxes = std::vector<Box>;
+using NeighborSurface = std::pair<int, Surface>;
+using NeighborSurfaces = std::vector<NeighborSurface>;
+
+class Partitioner {
+ public:
+  constexpr Partitioner(
+      const Point3D &left_front_bottom,
+      const Point3D &right_back_top)
+      : left_front_bottom_(left_front_bottom), right_back_top_(right_back_top) {}
+
+  /// Constructs a partitioner with simulation objects contained in rm.
+  Partitioner(ResourceManager<>* rm) {
+    double min_x = std::numeric_limits<double>::max();
+    double max_x = std::numeric_limits<double>::min();
+    double min_y = std::numeric_limits<double>::max();
+    double max_y = std::numeric_limits<double>::min();
+    double min_z = std::numeric_limits<double>::max();
+    double max_z = std::numeric_limits<double>::min();
+    auto f = [&](auto element, bdm::SoHandle) {
+      std::array<double, 3> pos = element.GetPosition();
+      min_x = std::min(min_x, pos[0]);
+      max_x = std::max(max_x, pos[0]);
+      min_y = std::min(min_y, pos[1]);
+      max_y = std::max(max_y, pos[1]);
+      min_z = std::min(min_z, pos[2]);
+      max_z = std::max(max_z, pos[2]);
+    };
+    // Could parallel this min/max finding.
+    rm->ApplyOnAllElements(f);
+    max_x += 1e-9;
+    max_y += 1e-9;
+    max_z += 1e-9;
+    left_front_bottom_ = {min_x, min_y, min_z};
+    right_back_top_ = {max_x, max_y, max_z};
+  }
+
+  virtual ~Partitioner() {}
+
+  /// Partitions the given box into smaller ones.
+  virtual Boxes Partition() const;
+
+  /// Retrieves the coordinates of the box indexed by boxIndex.
+  ///
+  /// This is basically the same as Partition()[boxIndex] but may be more
+  /// optimized in concrete partitioner implementations.
+  virtual Box GetLocation(int boxIndex) const {
+    assert(boxIndex >= 0);
+    Boxes boxes = Partition();
+    assert(boxIndex < boxes.size());
+    return boxes[boxIndex];
+  }
+
+  /// Returns the box index containing point.
+  virtual int Locate(Point3D point) const;
+
+  /// Returns all surfaces surrounding the box indexed by boxIndex.
+  ///
+  /// There could be 6 full surfaces, and 12 edges neighboring a box.
+  virtual NeighborSurfaces GetNeighborSurfaces(int boxIndex) const;
+
+ protected:
+  Point3D left_front_bottom_;
+  Point3D right_back_top_;
+};
+
+class HypercubePartitioner : public Partitioner {
+ public:
+  using super = Partitioner;
+  HypercubePartitioner(
+      const Point3D &left_front_bottom,
+      const Point3D &right_back_top,
+      int power)
+      : super(left_front_bottom, right_back_top), power_(power) {
+    // Only support 2 boxes at the moment.
+    assert(power == 1);
+    mid_x_ = left_front_bottom_[0] + (right_back_top_[0] - left_front_bottom_[0]) / 2;
+  }
+
+  HypercubePartitioner(ResourceManager<>* rm, int power)
+      : super(rm), power_(power) {
+    assert(power == 1);
+    mid_x_ = left_front_bottom_[0] + (right_back_top_[0] - left_front_bottom_[0]) / 2;
+  }
+
+  virtual Boxes Partition() const override {
+    return {
+        GetLocation(0),
+        GetLocation(1),
+    };
+  }
+
+  virtual Box GetLocation(int boxIndex) const override {
+    assert(boxIndex >= 0 && boxIndex <= 1);
+    if (boxIndex == 0) {
+      return {left_front_bottom_, {mid_x_, right_back_top_[1], right_back_top_[2]}};
+    }
+    return {{mid_x_, left_front_bottom_[1], left_front_bottom_[2]}, right_back_top_};
+  }
+
+  virtual int Locate(Point3D point) const override {
+    assert(is_in(point, left_front_bottom_, right_back_top_));
+    if (point[0] < mid_x_) {
+      return 0;
+    }
+    return 1;
+  }
+
+  virtual NeighborSurfaces GetNeighborSurfaces(int boxIndex) const override {
+    assert(boxIndex >= 0 && boxIndex <= 1);
+    if (boxIndex == 0) {
+      return {{1, SurfaceEnum::kLeft}};
+    }
+    return {{0, SurfaceEnum::kRight}};
+  }
+ private:
+  int power_;
+  double mid_x_;
+};
+
 using ResourceManagerPtr = std::shared_ptr<ResourceManager<>>;
 using SurfaceToVolume = std::pair<Surface, ResourceManagerPtr>;
 
