@@ -15,6 +15,7 @@
 #ifndef DEMO_DISTRIBUTED_DISTRIBUTED_H_
 #define DEMO_DISTRIBUTED_DISTRIBUTED_H_
 
+#include <cassert>
 #include <memory>
 #include <TBufferFile.h>
 
@@ -189,7 +190,7 @@ class Partitioner {
   virtual Box GetLocation(BoxId boxIndex) const {
     assert(boxIndex >= 0);
     Boxes boxes = Partition();
-    assert(boxIndex < boxes.size());
+    assert(static_cast<size_t>(boxIndex) < boxes.size());
     return boxes[boxIndex];
   }
 
@@ -198,7 +199,7 @@ class Partitioner {
 
   /// Returns all surfaces surrounding the box indexed by boxIndex.
   ///
-  /// There could be 6 full surfaces, and 12 edges neighboring a box.
+  /// There could be 6 full surfaces, 12 edges, and 8 corners neighboring a box.
   virtual NeighborSurfaces GetNeighborSurfaces(BoxId boxIndex) const = 0;
 
  protected:
@@ -275,9 +276,10 @@ class RayScheduler : public Scheduler<Simulation<>> {
   ///
   /// #. RAIIs necessary Ray resources such as object store, local scheduler.
   /// #. Initially distributes the cells to volumes via Plasma objects.
-  ///    Each main volume will be accompanied by 6 + 12 = 18 halo (margin)
+  ///    Each main volume will be accompanied by 6 + 12 + 8 = 26 halo (margin)
   ///    volumes. Each of the volume will have a determined ID.
-  /// #. Put the number of steps to the kSimulationStartMarker object.
+  /// #. Put the number of steps and bounding box to the kSimulationStartMarker
+  ///    object.
   /// #. Waits for the kSimulationEndMarker object.
   ///
   /// From the Python side, it will take the number of steps, construct a chain
@@ -335,12 +337,12 @@ class RayScheduler : public Scheduler<Simulation<>> {
     }
   }
 
-  /// Allocates memory for the main volume, its 6 surfaces, and 12 edges.
-  static std::array<SurfaceToVolume, 19> AllocVolumes() {
+  /// Allocates memory for the main volume, its 6 surfaces, 12 edges, 8 corners.
+  static std::array<SurfaceToVolume, 27> AllocVolumes() {
     const std::array<Surface, 6> surface_list =
         {SurfaceEnum::kLeft, SurfaceEnum::kFront, SurfaceEnum::kBottom,
          SurfaceEnum::kRight, SurfaceEnum::kBack, SurfaceEnum::kTop};
-    std::array<SurfaceToVolume, 19> ret;
+    std::array<SurfaceToVolume, 27> ret;
     ret[0].second.reset(new ResourceManager<>());
     size_t i = 1;
     for (size_t outer = 0; outer < surface_list.size(); ++outer) {
@@ -356,6 +358,15 @@ class RayScheduler : public Scheduler<Simulation<>> {
         ret[i].first = full_surface | adjacent_surface;
         ret[i].second.reset(new ResourceManager<>());
         ++i;
+        for (size_t innermost = inner + 1; innermost < surface_list.size(); ++innermost) {
+          const Surface &third = surface_list[innermost];
+          if (full_surface.conflict(third) || adjacent_surface.conflict(third)) {
+            continue;
+          }
+          ret[i].first = full_surface | adjacent_surface | third;
+          ret[i].second.reset(new ResourceManager<>());
+          i++;
+        }
       }
     }
     assert(i == ret.size());
@@ -364,18 +375,18 @@ class RayScheduler : public Scheduler<Simulation<>> {
 
   /// Returns a list of border surfaces that this_point belongs to.
   ///
-  /// A point may belong to 1 to 3 of the 6 surfaces, and/or some of the 12
-  /// edges (could be 0, 1, 2, or 3 edges).
+  /// A point may belong to at most 3 of the 6 surfaces, at most 3 of the 12
+  /// edges, and at most 1 corner.
   ///
   /// \param this_point the point location that we want to find surfaces for
   /// \param box the (left_front_bottom, right_back_top) coordinates
   /// \param xyz_halos the margins corresponding to x-, y-, and z-axis
   /// \return list of Surfaces, terminating in Surface::kNone
-  static std::array<Surface, 6> FindContainingSurfaces(
+  static std::array<Surface, 7> FindContainingSurfaces(
       const Point3D& this_point,
       const Box& box,
       const std::array<double, 3>& xyz_halos) {
-    std::array<Surface, 6> ret;
+    std::array<Surface, 7> ret;
     // Ensure that the halo is within the region.
     assert(xyz_halos[0] >= 0);
     assert(xyz_halos[1] >= 0);
@@ -385,89 +396,110 @@ class RayScheduler : public Scheduler<Simulation<>> {
     assert(left_front_bottom[0] + xyz_halos[0] < right_back_top[0]);
     assert(left_front_bottom[1] + xyz_halos[1] < right_back_top[1]);
     assert(left_front_bottom[2] + xyz_halos[2] < right_back_top[2]);
+
     if (!is_in(this_point, left_front_bottom, right_back_top)) {
       return ret;
     }
-    int i = 0;
-    if (is_in(this_point, left_front_bottom, {
-        right_back_top[0], left_front_bottom[1] + xyz_halos[1], right_back_top[2]})) {
+
+    const double left = left_front_bottom[0];
+    const double left_plus = left_front_bottom[0] + xyz_halos[0];
+    const double right = right_back_top[0];
+    const double right_minus = right_back_top[0] - xyz_halos[0];
+    const double front = left_front_bottom[1];
+    const double front_plus = left_front_bottom[1] + xyz_halos[1];
+    const double back = right_back_top[1];
+    const double back_minus = right_back_top[1] - xyz_halos[1];
+    const double bottom = left_front_bottom[2];
+    const double bottom_plus = left_front_bottom[2] + xyz_halos[2];
+    const double top = right_back_top[2];
+    const double top_minus = right_back_top[2] - xyz_halos[2];
+    size_t i = 0;
+
+    if (is_in(this_point, left_front_bottom, {right, front_plus, top})) {
       ret[i++] = SurfaceEnum::kFront;
     }
-    if (is_in(this_point, left_front_bottom, {
-        right_back_top[0], left_front_bottom[1] + xyz_halos[1], left_front_bottom[2] + xyz_halos[2]})) {
+    if (is_in(this_point, left_front_bottom, {right, front_plus, bottom_plus})) {
       ret[i++] = SurfaceEnum::kFront | SurfaceEnum::kBottom;
     }
-    if (is_in(this_point, left_front_bottom, {
-        left_front_bottom[0] + xyz_halos[0], left_front_bottom[1] + xyz_halos[1], right_back_top[2]})) {
+    if (is_in(this_point, left_front_bottom, {left_plus, front_plus, bottom_plus})) {
+      ret[i++] = SurfaceEnum::kFront | SurfaceEnum::kBottom | SurfaceEnum::kLeft;
+    }
+    if (is_in(this_point, {right_minus, front, bottom}, {right, front_plus, bottom_plus})) {
+      ret[i++] = SurfaceEnum::kFront | SurfaceEnum::kBottom | SurfaceEnum::kRight;
+    }
+    if (is_in(this_point, left_front_bottom, {left_plus, front_plus, top})) {
       ret[i++] = SurfaceEnum::kFront | SurfaceEnum::kLeft;
     }
-    if (is_in(this_point, {left_front_bottom[0], left_front_bottom[1], right_back_top[2] - xyz_halos[2]},
-              {right_back_top[0], left_front_bottom[1] + xyz_halos[1], right_back_top[2]})) {
+    if (is_in(this_point, {left, front, top_minus}, {left_plus, front_plus, top})) {
+      ret[i++] = SurfaceEnum::kFront | SurfaceEnum::kLeft | SurfaceEnum::kTop;
+    }
+    if (is_in(this_point, {left, front, top_minus}, {right, front_plus, top})) {
       ret[i++] = SurfaceEnum::kFront | SurfaceEnum::kTop;
     }
-    if (is_in(this_point, {right_back_top[0] - xyz_halos[0], left_front_bottom[1], left_front_bottom[2]},
-              {right_back_top[0], left_front_bottom[1] + xyz_halos[1], right_back_top[2]})) {
+    if (is_in(this_point, {right_minus, front, top_minus}, {right, front_plus, top})) {
+      ret[i++] = SurfaceEnum::kFront | SurfaceEnum::kTop | SurfaceEnum::kRight;
+    }
+    if (is_in(this_point, {right_minus, front, bottom}, {right, front_plus, top})) {
       ret[i++] = SurfaceEnum::kFront | SurfaceEnum::kRight;
     }
-    if (is_in(this_point, {left_front_bottom[0], left_front_bottom[1], right_back_top[2] - xyz_halos[2]},
-              {right_back_top})) {
+    if (is_in(this_point, {left, front, top_minus}, right_back_top)) {
       ret[i++] = SurfaceEnum::kTop;
     }
-    if (is_in(this_point, {left_front_bottom[0], left_front_bottom[1], right_back_top[2] - xyz_halos[2]},
-              {left_front_bottom[0] + xyz_halos[0], right_back_top[1], right_back_top[2]})) {
+    if (is_in(this_point, {left, front, top_minus}, {left_plus, back, top})) {
       ret[i++] = SurfaceEnum::kTop | SurfaceEnum::kLeft;
     }
-    if (is_in(this_point, {right_back_top[0] - xyz_halos[0], left_front_bottom[1], right_back_top[2] - xyz_halos[2]},
-              right_back_top)) {
+    if (is_in(this_point, {left, back_minus, top_minus}, {left_plus, back, top})) {
+      ret[i++] = SurfaceEnum::kTop | SurfaceEnum::kLeft | SurfaceEnum::kBack;
+    }
+    if (is_in(this_point, {right_minus, front, top_minus}, right_back_top)) {
       ret[i++] = SurfaceEnum::kTop | SurfaceEnum::kRight;
     }
-    if (is_in(this_point, {left_front_bottom[0], right_back_top[1] - xyz_halos[1], right_back_top[2] - xyz_halos[2]},
-              right_back_top)) {
+    if (is_in(this_point, {right_minus, back_minus, top_minus}, right_back_top)) {
+      ret[i++] = SurfaceEnum::kTop | SurfaceEnum::kRight | SurfaceEnum::kBack;
+    }
+    if (is_in(this_point, {left, back_minus, top_minus}, right_back_top)) {
       ret[i++] = SurfaceEnum::kTop | SurfaceEnum::kBack;
     }
-    if (is_in(this_point, {left_front_bottom[0], right_back_top[1] - xyz_halos[1], left_front_bottom[2]},
-              right_back_top)) {
+    if (is_in(this_point, {left, back_minus, bottom}, right_back_top)) {
       ret[i++] = SurfaceEnum::kBack;
     }
-    if (is_in(this_point, {left_front_bottom[0], right_back_top[1] - xyz_halos[1], left_front_bottom[2]},
-              {left_front_bottom[0] + xyz_halos[0], right_back_top[1], right_back_top[2]})) {
+    if (is_in(this_point, {left, back_minus, bottom}, {left_plus, back, top})) {
       ret[i++] = SurfaceEnum::kBack | SurfaceEnum::kLeft;
     }
-    if (is_in(this_point, {right_back_top[0] - xyz_halos[0], right_back_top[1] - xyz_halos[1], left_front_bottom[2]},
-              right_back_top)) {
+    if (is_in(this_point, {right_minus, back_minus, bottom}, right_back_top)) {
       ret[i++] = SurfaceEnum::kBack | SurfaceEnum::kRight;
     }
-    if (is_in(this_point, {left_front_bottom[0], right_back_top[1] - xyz_halos[1], left_front_bottom[2]},
-              {right_back_top[0], right_back_top[1], left_front_bottom[2] + xyz_halos[2]})) {
+    if (is_in(this_point, {left, back_minus, bottom}, {right, back, bottom_plus})) {
       ret[i++] = SurfaceEnum::kBack | SurfaceEnum::kBottom;
     }
-    if (is_in(this_point, left_front_bottom,
-              {right_back_top[0], right_back_top[1], left_front_bottom[2] + xyz_halos[2]})) {
+    if (is_in(this_point, {left, back_minus, bottom}, {left_plus, back, bottom_plus})) {
+      ret[i++] = SurfaceEnum::kBack | SurfaceEnum::kBottom | SurfaceEnum::kLeft;
+    }
+    if (is_in(this_point, {right_minus, back_minus, bottom}, {right, back, bottom_plus})) {
+      ret[i++] = SurfaceEnum::kBack | SurfaceEnum::kBottom | SurfaceEnum::kRight;
+    }
+    if (is_in(this_point, left_front_bottom, {right, back, bottom_plus})) {
       ret[i++] = SurfaceEnum::kBottom;
     }
-    if (is_in(this_point, left_front_bottom,
-              {left_front_bottom[0] + xyz_halos[0], right_back_top[1], left_front_bottom[2] + xyz_halos[2]})) {
+    if (is_in(this_point, left_front_bottom, {left_plus, back, bottom_plus})) {
       ret[i++] = SurfaceEnum::kBottom | SurfaceEnum::kLeft;
     }
-    if (is_in(this_point, {right_back_top[0] - xyz_halos[0], left_front_bottom[1], left_front_bottom[2]},
-              {right_back_top[0], right_back_top[1], left_front_bottom[2] + xyz_halos[2]})) {
+    if (is_in(this_point, {right_minus, front, bottom}, {right, back, bottom_plus})) {
       ret[i++] = SurfaceEnum::kBottom | SurfaceEnum::kRight;
     }
-    if (is_in(this_point, left_front_bottom,
-              {left_front_bottom[0] + xyz_halos[0], right_back_top[1], right_back_top[2]})) {
+    if (is_in(this_point, left_front_bottom, {left_plus, back, top})) {
       ret[i++] = SurfaceEnum::kLeft;
     }
-    if (is_in(this_point, {right_back_top[0] - xyz_halos[0], left_front_bottom[1], left_front_bottom[2]},
-              right_back_top)) {
+    if (is_in(this_point, {right_minus, front, bottom}, right_back_top)) {
       ret[i++] = SurfaceEnum::kRight;
     }
-    assert(i <= 6);
+    assert(i <= ret.size());
     return ret;
   }
 
   /// Returns the ResourceManager for the specified surface.
   static ResourceManagerPtr FindResourceManager(
-      const std::array<SurfaceToVolume, 19>& map,
+      const std::array<SurfaceToVolume, 27>& map,
       Surface s) {
     for (const SurfaceToVolume& entry : map) {
       if (entry.first == s) {
@@ -479,10 +511,10 @@ class RayScheduler : public Scheduler<Simulation<>> {
     return nullptr;
   }
 
-  std::array<SurfaceToVolume, 19> CreateVolumesForBox(
+  std::array<SurfaceToVolume, 27> CreateVolumesForBox(
       ResourceManager<>* rm,
       const Box& box) {
-    std::array<SurfaceToVolume, 19> ret = AllocVolumes();
+    std::array<SurfaceToVolume, 27> ret = AllocVolumes();
     auto f = [&](const auto& element, bdm::SoHandle) {
       Point3D pos = element.GetPosition();
       if (is_in(pos, box)) {
@@ -505,7 +537,7 @@ class RayScheduler : public Scheduler<Simulation<>> {
   arrow::Status StorePartition(
       long step,
       long box,
-      const std::array<SurfaceToVolume, 19>& node) {
+      const std::array<SurfaceToVolume, 27>& node) {
     for (const SurfaceToVolume& sv : node) {
       Surface surface = sv.first;
       ResourceManagerPtr rm = sv.second;
@@ -513,7 +545,7 @@ class RayScheduler : public Scheduler<Simulation<>> {
       buff.WriteObject(rm.get());
       const size_t size = buff.BufferSize();
       std::string hash = hash_volume_surface(step, box, surface);
-      plasma::ObjectID key = plasma::ObjectID::from_binary(hash);
+      const plasma::ObjectID key = plasma::ObjectID::from_binary(hash);
       std::shared_ptr<Buffer> buffer;
       arrow::Status s = object_store_.Create(
           key,
@@ -522,7 +554,8 @@ class RayScheduler : public Scheduler<Simulation<>> {
           0,
           &buffer);
       if (!s.ok()) {
-        std::cerr << "Cannot push volume for box " << box << " in step "
+        std::cerr << "Cannot push volume surface " << static_cast<long>(surface)
+                  << " for box " << box << " in step "
                   << step << ". " << s << '\n';
         return s;
       }
@@ -568,9 +601,9 @@ class RayScheduler : public Scheduler<Simulation<>> {
     ResourceManager<> *rm = sim->GetResourceManager();
 
     HypercubePartitioner partitioner(rm, 1);
-    std::array<SurfaceToVolume, 19> node_1 = CreateVolumesForBox(
+    std::array<SurfaceToVolume, 27> node_1 = CreateVolumesForBox(
         rm, partitioner.GetLocation(0));
-    std::array<SurfaceToVolume, 19> node_2 = CreateVolumesForBox(
+    std::array<SurfaceToVolume, 27> node_2 = CreateVolumesForBox(
         rm, partitioner.GetLocation(1));
     std::cout << "Total " << rm->GetNumSimObjects() << '\n';
     std::cout << "Node 1 " << node_1[0].second->GetNumSimObjects() << '\n';
