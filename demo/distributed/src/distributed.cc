@@ -57,7 +57,13 @@ void RayScheduler::SimulateStep(long step, long node, bool last_iteration, const
   RaySimulation* sim = reinterpret_cast<RaySimulation*>(Simulation<>::GetActive());
   sim->ReplaceResourceManager(rm);
   Execute(last_iteration);
-
+  std::unique_ptr<Partitioner> partitioner(new HypercubePartitioner(
+      bound.first, bound.second, 1));
+  arrow::Status s = StorePartition(
+      step + 1, node, CreateVolumesForBox(rm, partitioner->GetLocation(node)));
+  if (!s.ok()) {
+    std::cerr << "Cannot store volumes for node " << node << " in step " << step << ".\n";
+  }
 }
 
 ResourceManager<>* RayScheduler::ReassembleVolumes(int64_t step, int64_t node, const Box& bound) {
