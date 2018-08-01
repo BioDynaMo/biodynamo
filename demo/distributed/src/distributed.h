@@ -267,7 +267,7 @@ class RayScheduler : public Scheduler<Simulation<>> {
  public:
   using super = Scheduler<Simulation<>>;
 
-  void SimulateStep(long step, long node, bool last_iteration);
+  void SimulateStep(long step, long node, bool last_iteration, const Box& bound);
 
   /// Initiates a distributed simulation and waits for its completion.
   ///
@@ -549,7 +549,7 @@ class RayScheduler : public Scheduler<Simulation<>> {
     return arrow::Status();
   }
 
-  ResourceManager<>* ReassembleVolumes(int64_t step, int64_t node);
+  ResourceManager<>* ReassembleVolumes(int64_t step, int64_t node, const Box& bound);
 
   std::vector<plasma::ObjectBuffer> FetchAndGetVolume(const plasma::ObjectID& key) {
     arrow::Status s;

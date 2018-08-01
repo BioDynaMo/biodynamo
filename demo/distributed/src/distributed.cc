@@ -41,16 +41,17 @@ extern "C" void bdm_setup_ray(const char *local_scheduler_socket_name,
   g_simulation_id = std::string(simulation_id, 20);
 }
 
-extern "C" void simulate_step(int64_t step, int64_t node, bool last_iteration) {
+extern "C" void simulate_step(int64_t step, int64_t node, bool last_iteration,
+    double left, double front, double bottom, double right, double back, double top) {
   RaySimulation* simulation = new RaySimulation();
   RayScheduler* scheduler = reinterpret_cast<RayScheduler*>(simulation->GetScheduler());
-  scheduler->SimulateStep(step, node, last_iteration);
+  scheduler->SimulateStep(step, node, last_iteration, {{left, front, bottom}, {right, back, top}});
   delete simulation;
 }
 
-void RayScheduler::SimulateStep(long step, long node, bool last_iteration) {
+void RayScheduler::SimulateStep(long step, long node, bool last_iteration, const Box& bound) {
   Initialize();
-  ResourceManager<>* rm = ReassembleVolumes(step, node);
+  ResourceManager<>* rm = ReassembleVolumes(step, node, bound);
   std::cout << "Node " << node << " has " << rm->GetNumSimObjects()
             << " sim objects.\n";
   RaySimulation* sim = reinterpret_cast<RaySimulation*>(Simulation<>::GetActive());
@@ -59,7 +60,7 @@ void RayScheduler::SimulateStep(long step, long node, bool last_iteration) {
 
 }
 
-ResourceManager<>* RayScheduler::ReassembleVolumes(int64_t step, int64_t node) {
+ResourceManager<>* RayScheduler::ReassembleVolumes(int64_t step, int64_t node, const Box& bound) {
   std::string whole = hash_volume_surface(step, node);
   std::string front = hash_volume_surface(step, node, SurfaceEnum::kLeft);
   std::string front_top = hash_volume_surface(step, node, SurfaceEnum::kFront | SurfaceEnum::kTop);
@@ -97,19 +98,13 @@ ResourceManager<>* RayScheduler::ReassembleVolumes(int64_t step, int64_t node) {
   object_store_.Release(key);
 
   // Then add from the border regions.
-  // TODO: Make this more generic. Right now, this assumes two nodes.
-  if (node == 0) {
-    arrow::Status s = AddFromVolume(ret, step, 1, SurfaceEnum::kLeft);
+  std::unique_ptr<Partitioner> partitioner(new HypercubePartitioner(
+      bound.first, bound.second, 1));
+  for (const auto& ns : partitioner->GetNeighborSurfaces(node)) {
+    arrow::Status s = AddFromVolume(ret, step, ns.first, ns.second);
     if (!s.ok()) {
       delete ret;
       std::cerr << "Cannot add halos in step " << step << " from box 1.\n";
-      return nullptr;
-    }
-  } else {
-    arrow::Status s = AddFromVolume(ret, step, 0, SurfaceEnum::kRight);
-    if (!s.ok()) {
-      delete ret;
-      std::cerr << "Cannot add halos in step " << step << " from box 0.\n";
       return nullptr;
     }
   }

@@ -80,7 +80,7 @@ def wait_for_start_signal():
     info = json.loads(json_blob.to_pybytes())
     num_steps = info['steps']
     print('C++ says it has received {} steps'.format(num_steps))
-    return num_steps
+    return num_steps, info['bounding_box']
 
 
 @ray.remote
@@ -92,10 +92,11 @@ def partition(num_nodes=2):
 
 
 @ray.remote(num_return_vals=19)
-def simulation_step(step_num, node_id, last_iter, *dependencies):
+def simulation_step(step_num, node_id, last_iter, bounding_box, *dependencies):
     print('step', step_num, node_id)
     dll = load_bdm_library()
-    dll.simulate_step(step_num, node_id, last_iter)
+    dll.simulate_step(step_num, node_id, last_iter,
+                      *[ctypes.c_double(x) for x in bounding_box])
     return [None] * 19
 
 
@@ -105,10 +106,10 @@ def build_simulation_graph():
     partitions = partition._submit(args=[num_nodes], num_return_vals=19 * num_nodes)
     node_0 = partitions[:19]
     node_1 = partitions[19:]
-    num_steps = ray.get(wait_for_start_signal.remote())
+    num_steps, bounding_box = ray.get(wait_for_start_signal.remote())
     for step in range(num_steps):
-        node_0 = simulation_step.remote(step, 0, step == num_steps - 1, node_0[0])
-        node_1 = simulation_step.remote(step, 1, step == num_steps - 1, node_1[0])
+        node_0 = simulation_step.remote(step, 0, step == num_steps - 1, bounding_box, node_0[0])
+        node_1 = simulation_step.remote(step, 1, step == num_steps - 1, bounding_box, node_1[0])
     ray.get(node_0)
     ray.get(node_1)
     ray.get(send_end_signal.remote())
