@@ -672,7 +672,7 @@ inline int Simulate(int argc, const char** argv) {
   size_t cells_per_dim = 16;
   auto construct = [](const std::array<double, 3> &position) {
     Cell cell(position);
-    cell.SetDiameter(30);
+    cell.SetDiameter(10);
     cell.SetAdherence(0.4);
     cell.SetMass(1.0);
     cell.AddBiologyModule(GrowDivide());
