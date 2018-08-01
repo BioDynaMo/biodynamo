@@ -323,12 +323,6 @@ class RayScheduler : public Scheduler<Simulation<>> {
                    " Simulation aborted\n";
       return;
     }
-    s = object_store_.Release(plasma::ObjectID::from_binary(kSimulationStartMarker));
-    if (!s.ok()) {
-      std::cerr << "Cannot release simulation start marker. " << s <<
-                   " Simulation aborted\n";
-      return;
-    }
 
     std::vector<plasma::ObjectBuffer> _ignored;
     std::cout << "Waiting for end of simulation...\n";
@@ -537,12 +531,6 @@ class RayScheduler : public Scheduler<Simulation<>> {
       if (!s.ok()) {
         std::cerr << "Cannot seal box " << box << " in step "
                    << step << ". " << s << '\n';
-        return s;
-      }
-      s = object_store_.Release(key);
-      if (!s.ok()) {
-        std::cerr << "Cannot release box " << box << " in step "
-                  << step << ". " << s << '\n';
         return s;
       }
     }
