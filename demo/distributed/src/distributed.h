@@ -175,7 +175,7 @@ class Partitioner {
   virtual ~Partitioner() {}
 
   /// Partitions the given box into smaller ones.
-  virtual Boxes Partition() const;
+  virtual Boxes Partition() const = 0;
 
   /// Retrieves the coordinates of the box indexed by boxIndex.
   ///
@@ -189,12 +189,12 @@ class Partitioner {
   }
 
   /// Returns the box index containing point.
-  virtual BoxId Locate(Point3D point) const;
+  virtual BoxId Locate(Point3D point) const = 0;
 
   /// Returns all surfaces surrounding the box indexed by boxIndex.
   ///
   /// There could be 6 full surfaces, and 12 edges neighboring a box.
-  virtual NeighborSurfaces GetNeighborSurfaces(BoxId boxIndex) const;
+  virtual NeighborSurfaces GetNeighborSurfaces(BoxId boxIndex) const = 0;
 
  protected:
   Point3D left_front_bottom_;
