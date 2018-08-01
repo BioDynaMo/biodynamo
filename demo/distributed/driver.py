@@ -5,7 +5,7 @@ import ctypes
 import hashlib
 import logging
 import os
-import struct
+import json
 import sys
 import time
 
@@ -74,9 +74,11 @@ def simulate(library, argv):
 def wait_for_start_signal():
     ray.worker.global_worker.plasma_client.fetch(
             [plasma.ObjectID(SIMULATION_START_MARKER)])
-    [num_steps_blob] = ray.worker.global_worker.plasma_client.get_buffers(
+    [json_blob] = ray.worker.global_worker.plasma_client.get_buffers(
             [plasma.ObjectID(SIMULATION_START_MARKER)])
-    [num_steps] = struct.unpack('<Q', num_steps_blob)
+    logging.debug('Received JSON: %s', json_blob.to_pybytes())
+    info = json.loads(json_blob.to_pybytes())
+    num_steps = info['steps']
     print('C++ says it has received {} steps'.format(num_steps))
     return num_steps
 

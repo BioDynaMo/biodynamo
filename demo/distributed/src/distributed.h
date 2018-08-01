@@ -177,6 +177,11 @@ class Partitioner {
   /// Partitions the given box into smaller ones.
   virtual Boxes Partition() const = 0;
 
+  /// Returns the bounding box by left_front_bottom and right_back_top.
+  Box GetBoundingBox() const {
+    return {left_front_bottom_, right_back_top_};
+  }
+
   /// Retrieves the coordinates of the box indexed by boxIndex.
   ///
   /// This is basically the same as Partition()[boxIndex] but may be more
@@ -287,11 +292,22 @@ class RayScheduler : public Scheduler<Simulation<>> {
                 << s << " Simulation aborted.\n";
       return;
     }
-    Partition();
 
+    Box bound;
+    Partition(&bound);
+
+    std::ostringstream json_stream;
+    json_stream
+        << "{\n"
+        << "  \"steps\": " << steps << ",\n"
+        << "  \"bounding_box\": [" << std::setprecision(9) << std::fixed
+        << bound.first[0] << ", " << bound.first[1] << ", " << bound.first[2] << ", "
+        << bound.second[0] << ", " << bound.second[1] << ", " << bound.second[2] << "]\n"
+        << "}";
+    std::string json = json_stream.str();
     std::shared_ptr<Buffer> buffer;
     s = object_store_.Create(plasma::ObjectID::from_binary(kSimulationStartMarker),
-                             sizeof(steps),
+                             json.size(),
                              nullptr,
                              0,
                              &buffer);
@@ -300,7 +316,7 @@ class RayScheduler : public Scheduler<Simulation<>> {
                    " Simulation aborted\n";
       return;
     }
-    memcpy(buffer->mutable_data(), &steps, sizeof(steps));
+    memcpy(buffer->mutable_data(), json.data(), json.size());
     s = object_store_.Seal(plasma::ObjectID::from_binary(kSimulationStartMarker));
     if (!s.ok()) {
       std::cerr << "Cannot seal simulation start marker. " << s <<
@@ -556,7 +572,9 @@ class RayScheduler : public Scheduler<Simulation<>> {
   /// Partitions cells into 3D volumes and their corresponding halo volumes.
   ///
   /// The results of the partitioning are stored in the object store directly.
-  virtual void Partition() {
+  ///
+  /// \param boundingBox output argument to receive the bounding box of the world
+  virtual void Partition(Box* boundingBox) {
     std::cout << "In RayScheduler::Partition\n";
     Simulation<> *sim = Simulation<>::GetActive();
     ResourceManager<> *rm = sim->GetResourceManager();
@@ -579,6 +597,10 @@ class RayScheduler : public Scheduler<Simulation<>> {
     if (!s.ok()) {
       std::cerr << "Cannot store partition 1.\n";
       return;
+    }
+
+    if (boundingBox != nullptr) {
+      *boundingBox = partitioner.GetBoundingBox();
     }
   }
 
