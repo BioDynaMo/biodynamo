@@ -112,8 +112,31 @@ static std::string hash_volume_surface(long step, long box,
 
 using Point3D = std::array<double, 3>;
 using Box = std::pair<Point3D, Point3D>;
+using BoxId = int;
 using Boxes = std::vector<Box>;
-using NeighborSurface = std::pair<int, Surface>;
+
+/// Returns true if pos is in a bounded box.
+///
+/// /param pos the location to check
+/// /param left_front_bottom (inclusive)
+/// /param right_back_top (exclusive)
+static inline bool is_in(const Point3D& pos,
+                         const Point3D& left_front_bottom,
+                         const Point3D& right_back_top) {
+  double x = pos[0];
+  double y = pos[1];
+  double z = pos[2];
+  return x >= left_front_bottom[0] && x < right_back_top[0] &&
+      y >= left_front_bottom[1] && y < right_back_top[1] &&
+      z >= left_front_bottom[2] && z < right_back_top[2];
+}
+
+static inline bool is_in(const Point3D& pos,
+                         const Box& box) {
+  return is_in(pos, box.first, box.second);
+}
+
+using NeighborSurface = std::pair<BoxId, Surface>;
 using NeighborSurfaces = std::vector<NeighborSurface>;
 
 class Partitioner {
@@ -158,7 +181,7 @@ class Partitioner {
   ///
   /// This is basically the same as Partition()[boxIndex] but may be more
   /// optimized in concrete partitioner implementations.
-  virtual Box GetLocation(int boxIndex) const {
+  virtual Box GetLocation(BoxId boxIndex) const {
     assert(boxIndex >= 0);
     Boxes boxes = Partition();
     assert(boxIndex < boxes.size());
@@ -166,12 +189,12 @@ class Partitioner {
   }
 
   /// Returns the box index containing point.
-  virtual int Locate(Point3D point) const;
+  virtual BoxId Locate(Point3D point) const;
 
   /// Returns all surfaces surrounding the box indexed by boxIndex.
   ///
   /// There could be 6 full surfaces, and 12 edges neighboring a box.
-  virtual NeighborSurfaces GetNeighborSurfaces(int boxIndex) const;
+  virtual NeighborSurfaces GetNeighborSurfaces(BoxId boxIndex) const;
 
  protected:
   Point3D left_front_bottom_;
@@ -204,7 +227,7 @@ class HypercubePartitioner : public Partitioner {
     };
   }
 
-  virtual Box GetLocation(int boxIndex) const override {
+  virtual Box GetLocation(BoxId boxIndex) const override {
     assert(boxIndex >= 0 && boxIndex <= 1);
     if (boxIndex == 0) {
       return {left_front_bottom_, {mid_x_, right_back_top_[1], right_back_top_[2]}};
@@ -212,7 +235,7 @@ class HypercubePartitioner : public Partitioner {
     return {{mid_x_, left_front_bottom_[1], left_front_bottom_[2]}, right_back_top_};
   }
 
-  virtual int Locate(Point3D point) const override {
+  virtual BoxId Locate(Point3D point) const override {
     assert(is_in(point, left_front_bottom_, right_back_top_));
     if (point[0] < mid_x_) {
       return 0;
@@ -220,7 +243,7 @@ class HypercubePartitioner : public Partitioner {
     return 1;
   }
 
-  virtual NeighborSurfaces GetNeighborSurfaces(int boxIndex) const override {
+  virtual NeighborSurfaces GetNeighborSurfaces(BoxId boxIndex) const override {
     assert(boxIndex >= 0 && boxIndex <= 1);
     if (boxIndex == 0) {
       return {{1, SurfaceEnum::kLeft}};
@@ -329,41 +352,26 @@ class RayScheduler : public Scheduler<Simulation<>> {
     return ret;
   }
 
-  /// Returns true if pos is in a bounded box.
-  ///
-  /// /param pos the location to check
-  /// /param left_front_bottom (inclusive)
-  /// /param right_back_top (exclusive)
-  static inline bool is_in(const std::array<double, 3>& pos,
-                           const std::array<double, 3>& left_front_bottom,
-                           const std::array<double, 3>& right_back_top) {
-    double x = pos[0];
-    double y = pos[1];
-    double z = pos[2];
-    return x >= left_front_bottom[0] && x < right_back_top[0] &&
-        y >= left_front_bottom[1] && y < right_back_top[1] &&
-        z >= left_front_bottom[2] && z < right_back_top[2];
-  }
   /// Returns a list of border surfaces that this_point belongs to.
   ///
   /// A point may belong to 1 to 3 of the 6 surfaces, and/or some of the 12
   /// edges (could be 0, 1, 2, or 3 edges).
   ///
   /// \param this_point the point location that we want to find surfaces for
-  /// \param left_front_bottom one anchor of the box
-  /// \param right_back_top the other anchor of the box
+  /// \param box the (left_front_bottom, right_back_top) coordinates
   /// \param xyz_halos the margins corresponding to x-, y-, and z-axis
   /// \return list of Surfaces, terminating in Surface::kNone
   static std::array<Surface, 6> FindContainingSurfaces(
-      const std::array<double, 3>& this_point,
-      const std::array<double, 3>& left_front_bottom,
-      const std::array<double, 3>& right_back_top,
+      const Point3D& this_point,
+      const Box& box,
       const std::array<double, 3>& xyz_halos) {
     std::array<Surface, 6> ret;
     // Ensure that the halo is within the region.
     assert(xyz_halos[0] >= 0);
     assert(xyz_halos[1] >= 0);
     assert(xyz_halos[2] >= 0);
+    Point3D left_front_bottom = box.first;
+    Point3D right_back_top = box.second;
     assert(left_front_bottom[0] + xyz_halos[0] < right_back_top[0]);
     assert(left_front_bottom[1] + xyz_halos[1] < right_back_top[1]);
     assert(left_front_bottom[2] + xyz_halos[2] < right_back_top[2]);
@@ -463,18 +471,15 @@ class RayScheduler : public Scheduler<Simulation<>> {
 
   std::array<SurfaceToVolume, 19> CreateVolumesForBox(
       ResourceManager<>* rm,
-      int step,
-      int box,
-      const std::array<double, 3>& left_front_bottom,
-      const std::array<double, 3>& right_back_top) {
+      const Box& box) {
     std::array<SurfaceToVolume, 19> ret = AllocVolumes();
     auto f = [&](const auto& element, bdm::SoHandle) {
-      std::array<double, 3> pos = element.GetPosition();
-      if (is_in(pos, left_front_bottom, right_back_top)) {
+      Point3D pos = element.GetPosition();
+      if (is_in(pos, box)) {
         ResourceManagerPtr volume_rm = ret[0].second;
         volume_rm->push_back(element);
         for (Surface s : FindContainingSurfaces(
-            pos, left_front_bottom, right_back_top, {1, 1, 1})) {
+            pos, box, {1, 1, 1})) {
           if (s == SurfaceEnum::kNone) {
             break;
           }
@@ -550,53 +555,17 @@ class RayScheduler : public Scheduler<Simulation<>> {
 
   /// Partitions cells into 3D volumes and their corresponding halo volumes.
   ///
-  /// This should be a separate class so that the partitioning logic is
-  /// independent of the scheduler.
-  ///
   /// The results of the partitioning are stored in the object store directly.
   virtual void Partition() {
     std::cout << "In RayScheduler::Partition\n";
     Simulation<> *sim = Simulation<>::GetActive();
     ResourceManager<> *rm = sim->GetResourceManager();
 
-    double min_x = std::numeric_limits<double>::max();
-    double max_x = std::numeric_limits<double>::min();
-    double min_y = std::numeric_limits<double>::max();
-    double max_y = std::numeric_limits<double>::min();
-    double min_z = std::numeric_limits<double>::max();
-    double max_z = std::numeric_limits<double>::min();
-    auto f = [&](auto element, bdm::SoHandle) {
-      std::array<double, 3> pos = element.GetPosition();
-      min_x = std::min(min_x, pos[0]);
-      max_x = std::max(max_x, pos[0]);
-      min_y = std::min(min_y, pos[1]);
-      max_y = std::max(max_y, pos[1]);
-      min_z = std::min(min_z, pos[2]);
-      max_z = std::max(max_z, pos[2]);
-    };
-    rm->ApplyOnAllElements(f);
-    max_x += 1e-9;
-    max_y += 1e-9;
-    max_z += 1e-9;
-
-    std::cout << "min\tmax\n";
-    std::cout << min_x << '\t' << max_x << '\n';
-    std::cout << min_y << '\t' << max_y << '\n';
-    std::cout << min_z << '\t' << max_z << '\n';
-
-    double mid_x = min_x + (max_x - min_x) / 2;
+    HypercubePartitioner partitioner(rm, 1);
     std::array<SurfaceToVolume, 19> node_1 = CreateVolumesForBox(
-        rm,
-        0,
-        0,
-        {min_x, min_y, min_z},
-        {mid_x, max_y, max_z});
+        rm, partitioner.GetLocation(0));
     std::array<SurfaceToVolume, 19> node_2 = CreateVolumesForBox(
-        rm,
-        0,
-        1,
-        {mid_x, min_y, min_z},
-        {max_x, max_y, max_z});
+        rm, partitioner.GetLocation(1));
     std::cout << "Total " << rm->GetNumSimObjects() << '\n';
     std::cout << "Node 1 " << node_1[0].second->GetNumSimObjects() << '\n';
     std::cout << "Node 2 " << node_2[0].second->GetNumSimObjects() << '\n';
