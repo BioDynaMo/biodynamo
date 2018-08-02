@@ -67,26 +67,6 @@ void RayScheduler::SimulateStep(long step, long node, bool last_iteration, const
 }
 
 ResourceManager<>* RayScheduler::ReassembleVolumes(int64_t step, int64_t node, const Box& bound) {
-  std::string whole = hash_volume_surface(step, node);
-  std::string front = hash_volume_surface(step, node, SurfaceEnum::kLeft);
-  std::string front_top = hash_volume_surface(step, node, SurfaceEnum::kFront | SurfaceEnum::kTop);
-  std::string front_bottom = hash_volume_surface(step, node, SurfaceEnum::kFront | SurfaceEnum::kBottom);
-  std::string front_left = hash_volume_surface(step, node, SurfaceEnum::kFront | SurfaceEnum::kLeft);
-  std::string front_right = hash_volume_surface(step, node, SurfaceEnum::kFront | SurfaceEnum::kRight);
-  std::string top = hash_volume_surface(step, node, SurfaceEnum::kTop);
-  std::string top_left = hash_volume_surface(step, node, SurfaceEnum::kTop | SurfaceEnum::kLeft);
-  std::string top_right = hash_volume_surface(step, node, SurfaceEnum::kTop | SurfaceEnum::kRight);
-  std::string top_back = hash_volume_surface(step, node, SurfaceEnum::kTop | SurfaceEnum::kBack);
-  std::string back = hash_volume_surface(step, node, SurfaceEnum::kBack);
-  std::string back_left = hash_volume_surface(step, node, SurfaceEnum::kBack | SurfaceEnum::kLeft);
-  std::string back_right = hash_volume_surface(step, node, SurfaceEnum::kBack | SurfaceEnum::kRight);
-  std::string back_bottom = hash_volume_surface(step, node, SurfaceEnum::kBack | SurfaceEnum::kBottom);
-  std::string bottom = hash_volume_surface(step, node, SurfaceEnum::kBottom);
-  std::string bottom_left = hash_volume_surface(step, node, SurfaceEnum::kBottom | SurfaceEnum::kLeft);
-  std::string bottom_right = hash_volume_surface(step, node, SurfaceEnum::kBottom | SurfaceEnum::kRight);
-  std::string left = hash_volume_surface(step, node, SurfaceEnum::kLeft);
-  std::string right = hash_volume_surface(step, node, SurfaceEnum::kRight);
-
   // First create an RM for the main volume.
   plasma::ObjectID key = plasma::ObjectID::from_binary(hash_volume_surface(
       step, node, SurfaceEnum::kNone));
