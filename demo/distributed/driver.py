@@ -53,9 +53,10 @@ def load_bdm_library(path=None):
         dll.bdm_setup_ray
     except AttributeError:
         raise RuntimeError('There must be a function bdm_setup_ray in the library.')
-    scheduler, store, manager = get_node_info()
-    global SIMULATION_ID
-    dll.bdm_setup_ray(scheduler, store, manager, SIMULATION_ID, ARGS.partitioning_scheme)
+    if ARGS.mode == 'ray':
+      scheduler, store, manager = get_node_info()
+      global SIMULATION_ID
+      dll.bdm_setup_ray(scheduler, store, manager, SIMULATION_ID, ARGS.partitioning_scheme)
     return dll
 
 
@@ -146,6 +147,16 @@ def main(args):
     ARGS = args
     if ARGS.mode == 'ray':
         run_with_ray(args.library, args.redis_address, unknowns)
+    else:
+        run_normally(args.library, unknowns)
+
+
+def run_normally(library, argv):
+    dll = load_bdm_library(library)
+    main_argv = (ctypes.c_char_p * (len(argv) + 1))()
+    main_argv[0] = library
+    main_argv[1:] = argv
+    dll.main(len(main_argv), main_argv)  # This blocks until the end of the simulation.
 
 
 def run_with_ray(source_library, redis_address, argv):

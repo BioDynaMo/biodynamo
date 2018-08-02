@@ -17,6 +17,8 @@
 
 int main(int argc, const char** argv) { return bdm::Simulate(argc, argv); }
 
+bool g_under_ray = false;
+
 namespace {
 
 using namespace bdm;
@@ -32,6 +34,7 @@ extern "C" void bdm_setup_ray(const char *local_scheduler_socket_name,
                               const char *object_store_manager_socket_name,
                               const char *simulation_id,
                               const char *partitioning_scheme) {
+  g_under_ray = true;
   g_local_scheduler_socket_name = local_scheduler_socket_name;
   g_object_store_socket_name = object_store_socket_name;
   g_object_store_manager_socket_name = object_store_manager_socket_name;

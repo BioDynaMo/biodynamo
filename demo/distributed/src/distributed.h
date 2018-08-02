@@ -27,6 +27,7 @@
 
 constexpr char kSimulationStartMarker[] = "aaaaaaaaaaaaaaaaaaaa";
 constexpr char kSimulationEndMarker[] = "bbbbbbbbbbbbbbbbbbbb";
+extern bool g_under_ray;
 
 namespace bdm {
 
@@ -118,7 +119,12 @@ class RaySimulation : public Simulation<> {
 
 inline int Simulate(int argc, const char** argv) {
   // 2. Create new simulation
-  RaySimulation simulation(argc, argv);
+  std::unique_ptr<Simulation<>> simulation;
+  if (!g_under_ray) {
+    simulation.reset(new Simulation<>(argc, argv));
+  } else {
+    simulation.reset(new RaySimulation(argc, argv));
+  }
 
   // 3. Define initial model - in this example: 3D grid of cells
   size_t cells_per_dim = 16;
@@ -133,7 +139,7 @@ inline int Simulate(int argc, const char** argv) {
   ModelInitializer::Grid3D(cells_per_dim, 20, construct);
 
   // 4. Run simulation for one timestep
-  simulation.GetScheduler()->Simulate(42);
+  simulation->GetScheduler()->Simulate(42);
 
   std::cout << "Simulation completed successfully!\n";
   return 0;
