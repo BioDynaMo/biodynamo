@@ -32,6 +32,8 @@ namespace bdm {
 
 using ResourceManagerPtr = std::shared_ptr<ResourceManager<>>;
 using SurfaceToVolume = std::pair<Surface, ResourceManagerPtr>;
+// Not a map, but a constant size linear array.
+using SurfaceToVolumeMap = std::array<SurfaceToVolume, 27>;
 
 class RayScheduler : public Scheduler<Simulation<>> {
  public:
@@ -68,7 +70,7 @@ class RayScheduler : public Scheduler<Simulation<>> {
   arrow::Status StoreVolumes(
       long step,
       long box,
-      const std::array<SurfaceToVolume, 27>& volumes);
+      const SurfaceToVolumeMap& volumes);
 
   /// Add all simulation objects from `box`'s `surface` in `step` to `rm`.
   arrow::Status AddFromVolume(ResourceManager<>* rm, long step, long box, Surface surface);

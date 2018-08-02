@@ -85,11 +85,11 @@ static std::unique_ptr<Partitioner> CreatePartitioner() {
 }
 
 /// Allocates memory for the main volume, its 6 surfaces, 12 edges, 8 corners.
-static std::array<SurfaceToVolume, 27> AllocVolumes() {
+static SurfaceToVolumeMap AllocVolumes() {
   const std::array<Surface, 6> surface_list =
       {SurfaceEnum::kLeft, SurfaceEnum::kFront, SurfaceEnum::kBottom,
        SurfaceEnum::kRight, SurfaceEnum::kBack, SurfaceEnum::kTop};
-  std::array<SurfaceToVolume, 27> ret;
+  SurfaceToVolumeMap ret;
   ret[0].second.reset(new ResourceManager<>());
   size_t i = 1;
   for (size_t outer = 0; outer < surface_list.size(); ++outer) {
@@ -246,7 +246,7 @@ static std::array<Surface, 7> FindContainingSurfaces(
 
 /// Returns the ResourceManager for the specified surface.
 static ResourceManagerPtr FindResourceManager(
-    const std::array<SurfaceToVolume, 27> &map,
+    const SurfaceToVolumeMap &map,
     Surface s) {
   for (const SurfaceToVolume &entry : map) {
     if (entry.first == s) {
@@ -258,10 +258,10 @@ static ResourceManagerPtr FindResourceManager(
   return nullptr;
 }
 
-static std::array<SurfaceToVolume, 27> CreateVolumesForBox(
+static SurfaceToVolumeMap CreateVolumesForBox(
     ResourceManager<> *rm,
     const Box &box) {
-  std::array<SurfaceToVolume, 27> ret = AllocVolumes();
+  SurfaceToVolumeMap ret = AllocVolumes();
   auto f = [&](const auto &element, bdm::SoHandle) {
     Point3D pos = element.GetPosition();
     if (is_in(pos, box)) {
@@ -296,9 +296,10 @@ void RayScheduler::InitiallyPartition(Box *boundingBox) {
   Boxes boxes = partitioner->Partition();
   for (size_t i = 0; i < boxes.size(); ++i) {
     const Box &box = boxes[i];
-    std::array<SurfaceToVolume, 27> volumes = CreateVolumesForBox(rm, box);
+    SurfaceToVolumeMap volumes = CreateVolumesForBox(rm, box);
+    ResourceManagerPtr main_rm = FindResourceManager(volumes, Surface());
     std::cout << "Box " << i
-              << " has " << volumes[0].second->GetNumSimObjects()
+              << " has " << main_rm->GetNumSimObjects()
               << " simulation objects.\n";
     arrow::Status s = StoreVolumes(0, i, volumes);
     if (!s.ok()) {
@@ -434,7 +435,7 @@ arrow::Status RayScheduler::MaybeInitializeConnection() {
 }
 
 arrow::Status RayScheduler::StoreVolumes(
-    long step, long box, const std::array<SurfaceToVolume, 27> &volumes) {
+    long step, long box, const SurfaceToVolumeMap &volumes) {
   for (const SurfaceToVolume &sv : volumes) {
     Surface surface = sv.first;
     ResourceManagerPtr rm = sv.second;
