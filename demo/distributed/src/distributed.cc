@@ -55,14 +55,14 @@ extern "C" void simulate_step(int64_t step, int64_t node, bool last_iteration,
 void RayScheduler::SimulateStep(long step, long node, bool last_iteration, const Box& bound) {
   Initialize();
   ResourceManager<>* rm = ReassembleVolumes(step, node, bound);
-  std::cout << "Node " << node << " has " << rm->GetNumSimObjects()
-            << " sim objects.\n";
+  std::cout << "Box " << node << " has " << rm->GetNumSimObjects()
+            << " simulation objects.\n";
   RaySimulation* sim = reinterpret_cast<RaySimulation*>(Simulation<>::GetActive());
   sim->ReplaceResourceManager(rm);
   Execute(last_iteration);
   std::unique_ptr<Partitioner> partitioner(CreatePartitioner());
   partitioner->InitializeWithBoundingBox(bound.first, bound.second);
-  arrow::Status s = StorePartition(
+  arrow::Status s = StoreVolumes(
       step + 1, node, CreateVolumesForBox(rm, partitioner->GetLocation(node)));
   if (!s.ok()) {
     std::cerr << "Cannot store volumes for node " << node << " in step " << step << ".\n";

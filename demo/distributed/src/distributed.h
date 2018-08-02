@@ -628,7 +628,7 @@ class RayScheduler : public Scheduler<Simulation<>> {
     return ret;
   };
 
-  arrow::Status StorePartition(
+  arrow::Status StoreVolumes(
       long step,
       long box,
       const std::array<SurfaceToVolume, 27>& node) {
@@ -693,26 +693,22 @@ class RayScheduler : public Scheduler<Simulation<>> {
     std::cout << "In RayScheduler::Partition\n";
     Simulation<> *sim = Simulation<>::GetActive();
     ResourceManager<> *rm = sim->GetResourceManager();
+    std::cout << "Total " << rm->GetNumSimObjects() << '\n';
 
     std::unique_ptr<Partitioner> partitioner = CreatePartitioner();
     partitioner->InitializeWithResourceManager(rm);
-    std::array<SurfaceToVolume, 27> node_1 = CreateVolumesForBox(
-        rm, partitioner->GetLocation(0));
-    std::array<SurfaceToVolume, 27> node_2 = CreateVolumesForBox(
-        rm, partitioner->GetLocation(1));
-    std::cout << "Total " << rm->GetNumSimObjects() << '\n';
-    std::cout << "Node 1 " << node_1[0].second->GetNumSimObjects() << '\n';
-    std::cout << "Node 2 " << node_2[0].second->GetNumSimObjects() << '\n';
-
-    arrow::Status s = StorePartition(0, 0, node_1);
-    if (!s.ok()) {
-      std::cerr << "Cannot store partition 0.\n";
-      return;
-    }
-    s = StorePartition(0, 1, node_2);
-    if (!s.ok()) {
-      std::cerr << "Cannot store partition 1.\n";
-      return;
+    Boxes boxes = partitioner->Partition();
+    for (size_t i = 0; i < boxes.size(); ++i) {
+      const Box& box = boxes[i];
+      std::array<SurfaceToVolume, 27> volumes = CreateVolumesForBox(rm, box);
+      std::cout << "Box " << i
+                << " has " << volumes[0].second->GetNumSimObjects()
+                << " simulation objects.\n";
+      arrow::Status s = StoreVolumes(0, i, volumes);
+      if (!s.ok()) {
+        std::cerr << "Cannot store box " << i << ".\n";
+        return;
+      }
     }
 
     if (boundingBox != nullptr) {
