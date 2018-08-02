@@ -18,13 +18,6 @@
 int main(int argc, const char** argv) { return bdm::Simulate(argc, argv); }
 
 using namespace bdm;
-constexpr Surface SurfaceEnum::kNone;
-constexpr Surface SurfaceEnum::kLeft;
-constexpr Surface SurfaceEnum::kRight;
-constexpr Surface SurfaceEnum::kTop;
-constexpr Surface SurfaceEnum::kBottom;
-constexpr Surface SurfaceEnum::kFront;
-constexpr Surface SurfaceEnum::kBack;
 
 std::string g_local_scheduler_socket_name;
 std::string g_object_store_socket_name;
