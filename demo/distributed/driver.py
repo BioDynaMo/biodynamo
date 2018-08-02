@@ -55,7 +55,7 @@ def load_bdm_library(path=None):
         raise RuntimeError('There must be a function bdm_setup_ray in the library.')
     scheduler, store, manager = get_node_info()
     global SIMULATION_ID
-    dll.bdm_setup_ray(scheduler, store, manager, SIMULATION_ID)
+    dll.bdm_setup_ray(scheduler, store, manager, SIMULATION_ID, ARGS.partitioning_scheme)
     return dll
 
 
@@ -131,6 +131,10 @@ def main(args):
                         help='The ip:port address of Redis server if this is a part of a cluster. '
                              'If this is not specified, and the mode is "ray", a new Ray cluster '
                              'will be started.')
+    parser.add_argument('-p', '--partitioning_scheme', choices=['2-1-1', '3-3-3'], default='2-1-1',
+                        help='The partitioning scheme. 2-1-1 partitions 2 boxes along the x-axis. '
+                             '3-3-3 partitions 27 boxes along x-, y-, and z- axis. This argument '
+                             'is only effective in Ray mode.')
     for i in range(1, len(sys.argv)):
         arg = sys.argv[i]
         if arg == '--':

@@ -30,15 +30,18 @@ std::string g_local_scheduler_socket_name;
 std::string g_object_store_socket_name;
 std::string g_object_store_manager_socket_name;
 std::string g_simulation_id;
+std::string g_partitioning_scheme;
 
 extern "C" void bdm_setup_ray(const char *local_scheduler_socket_name,
                               const char *object_store_socket_name,
                               const char *object_store_manager_socket_name,
-                              const char *simulation_id) {
+                              const char *simulation_id,
+                              const char *partitioning_scheme) {
   g_local_scheduler_socket_name = local_scheduler_socket_name;
   g_object_store_socket_name = object_store_socket_name;
   g_object_store_manager_socket_name = object_store_manager_socket_name;
   g_simulation_id = std::string(simulation_id, 20);
+  g_partitioning_scheme = std::string(partitioning_scheme);
 }
 
 extern "C" void simulate_step(int64_t step, int64_t node, bool last_iteration,
@@ -57,8 +60,8 @@ void RayScheduler::SimulateStep(long step, long node, bool last_iteration, const
   RaySimulation* sim = reinterpret_cast<RaySimulation*>(Simulation<>::GetActive());
   sim->ReplaceResourceManager(rm);
   Execute(last_iteration);
-  std::unique_ptr<Partitioner> partitioner(new HypercubePartitioner(
-      bound.first, bound.second, 1));
+  std::unique_ptr<Partitioner> partitioner(CreatePartitioner());
+  partitioner->InitializeWithBoundingBox(bound.first, bound.second);
   arrow::Status s = StorePartition(
       step + 1, node, CreateVolumesForBox(rm, partitioner->GetLocation(node)));
   if (!s.ok()) {
@@ -84,8 +87,8 @@ ResourceManager<>* RayScheduler::ReassembleVolumes(int64_t step, int64_t node, c
   object_store_.Release(key);
 
   // Then add from the border regions.
-  std::unique_ptr<Partitioner> partitioner(new HypercubePartitioner(
-      bound.first, bound.second, 1));
+  std::unique_ptr<Partitioner> partitioner(CreatePartitioner());
+  partitioner->InitializeWithBoundingBox(bound.first, bound.second);
   for (const auto& ns : partitioner->GetNeighborSurfaces(node)) {
     arrow::Status s = AddFromVolume(ret, step, ns.first, ns.second);
     if (!s.ok()) {

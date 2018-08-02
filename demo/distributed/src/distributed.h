@@ -29,6 +29,7 @@ extern std::string g_local_scheduler_socket_name;
 extern std::string g_object_store_socket_name;
 extern std::string g_object_store_manager_socket_name;
 extern std::string g_simulation_id;
+extern std::string g_partitioning_scheme;
 
 constexpr char kSimulationStartMarker[] = "aaaaaaaaaaaaaaaaaaaa";
 constexpr char kSimulationEndMarker[] = "bbbbbbbbbbbbbbbbbbbb";
@@ -152,13 +153,16 @@ using NeighborSurfaces = std::vector<NeighborSurface>;
 
 class Partitioner {
  public:
-  constexpr Partitioner(
+  /// Initializes a partitioner with the bounding box.
+  virtual void InitializeWithBoundingBox(
       const Point3D &left_front_bottom,
-      const Point3D &right_back_top)
-      : left_front_bottom_(left_front_bottom), right_back_top_(right_back_top) {}
+      const Point3D &right_back_top) {
+    left_front_bottom_ = left_front_bottom;
+    right_back_top_ = right_back_top;
+  }
 
-  /// Constructs a partitioner with simulation objects contained in rm.
-  Partitioner(ResourceManager<>* rm) {
+  /// Initializes a partitioner with simulation objects contained in rm.
+  virtual void InitializeWithResourceManager(ResourceManager<>* rm) {
     double min_x = std::numeric_limits<double>::max();
     double max_x = std::numeric_limits<double>::min();
     double min_y = std::numeric_limits<double>::max();
@@ -179,8 +183,9 @@ class Partitioner {
     max_x += 1e-9;
     max_y += 1e-9;
     max_z += 1e-9;
-    left_front_bottom_ = {min_x, min_y, min_z};
-    right_back_top_ = {max_x, max_y, max_z};
+
+    InitializeWithBoundingBox({min_x, min_y, min_z},
+                              {max_x, max_y, max_z});
   }
 
   virtual ~Partitioner() {}
@@ -220,20 +225,15 @@ class Partitioner {
 class HypercubePartitioner : public Partitioner {
  public:
   using super = Partitioner;
-  HypercubePartitioner(
-      const Point3D &left_front_bottom,
-      const Point3D &right_back_top,
-      int power)
-      : super(left_front_bottom, right_back_top), power_(power) {
+  HypercubePartitioner(int power)
+      : power_(power) {
     // Only support 2 boxes at the moment.
     assert(power == 1);
-    mid_x_ = left_front_bottom_[0] + (right_back_top_[0] - left_front_bottom_[0]) / 2;
   }
 
-  HypercubePartitioner(ResourceManager<>* rm, int power)
-      : super(rm), power_(power) {
-    assert(power == 1);
-    mid_x_ = left_front_bottom_[0] + (right_back_top_[0] - left_front_bottom_[0]) / 2;
+  virtual void InitializeWithBoundingBox(const Point3D& lfb, const Point3D& rbt) {
+    super::InitializeWithBoundingBox(lfb, rbt);
+    mid_x_ = lfb[0] + (rbt[0] - lfb[0]) / 2;
   }
 
   virtual Boxes Partition() const override {
@@ -270,6 +270,17 @@ class HypercubePartitioner : public Partitioner {
   int power_;
   double mid_x_;
 };
+
+static std::unique_ptr<Partitioner> CreatePartitioner() {
+  if (g_partitioning_scheme == "2-1-1") {
+    return std::unique_ptr<Partitioner>(new HypercubePartitioner(1));
+  } else if (g_partitioning_scheme == "3-3-3") {
+    // TODO
+  }
+  // Must never happen.
+  assert(false);
+  return nullptr;
+}
 
 using ResourceManagerPtr = std::shared_ptr<ResourceManager<>>;
 using SurfaceToVolume = std::pair<Surface, ResourceManagerPtr>;
@@ -616,11 +627,12 @@ class RayScheduler : public Scheduler<Simulation<>> {
     Simulation<> *sim = Simulation<>::GetActive();
     ResourceManager<> *rm = sim->GetResourceManager();
 
-    HypercubePartitioner partitioner(rm, 1);
+    std::unique_ptr<Partitioner> partitioner = CreatePartitioner();
+    partitioner->InitializeWithResourceManager(rm);
     std::array<SurfaceToVolume, 27> node_1 = CreateVolumesForBox(
-        rm, partitioner.GetLocation(0));
+        rm, partitioner->GetLocation(0));
     std::array<SurfaceToVolume, 27> node_2 = CreateVolumesForBox(
-        rm, partitioner.GetLocation(1));
+        rm, partitioner->GetLocation(1));
     std::cout << "Total " << rm->GetNumSimObjects() << '\n';
     std::cout << "Node 1 " << node_1[0].second->GetNumSimObjects() << '\n';
     std::cout << "Node 2 " << node_2[0].second->GetNumSimObjects() << '\n';
@@ -637,7 +649,7 @@ class RayScheduler : public Scheduler<Simulation<>> {
     }
 
     if (boundingBox != nullptr) {
-      *boundingBox = partitioner.GetBoundingBox();
+      *boundingBox = partitioner->GetBoundingBox();
     }
   }
 
