@@ -44,18 +44,18 @@ extern "C" void bdm_setup_ray(const char *local_scheduler_socket_name,
   g_partitioning_scheme = std::string(partitioning_scheme);
 }
 
-extern "C" void simulate_step(int64_t step, int64_t node, bool last_iteration,
+extern "C" void simulate_step(long step, long box, bool last_iteration,
     double left, double front, double bottom, double right, double back, double top) {
   RaySimulation* simulation = new RaySimulation();
   RayScheduler* scheduler = reinterpret_cast<RayScheduler*>(simulation->GetScheduler());
-  scheduler->SimulateStep(step, node, last_iteration, {{left, front, bottom}, {right, back, top}});
+  scheduler->SimulateStep(step, box, last_iteration, {{left, front, bottom}, {right, back, top}});
   delete simulation;
 }
 
-void RayScheduler::SimulateStep(long step, long node, bool last_iteration, const Box& bound) {
+void RayScheduler::SimulateStep(long step, long box, bool last_iteration, const Box& bound) {
   Initialize();
-  ResourceManager<>* rm = ReassembleVolumes(step, node, bound);
-  std::cout << "Box " << node << " has " << rm->GetNumSimObjects()
+  ResourceManager<>* rm = ReassembleVolumes(step, box, bound);
+  std::cout << "Box " << box << " has " << rm->GetNumSimObjects()
             << " simulation objects.\n";
   RaySimulation* sim = reinterpret_cast<RaySimulation*>(Simulation<>::GetActive());
   sim->ReplaceResourceManager(rm);
@@ -63,20 +63,20 @@ void RayScheduler::SimulateStep(long step, long node, bool last_iteration, const
   std::unique_ptr<Partitioner> partitioner(CreatePartitioner());
   partitioner->InitializeWithBoundingBox(bound.first, bound.second);
   arrow::Status s = StoreVolumes(
-      step + 1, node, CreateVolumesForBox(rm, partitioner->GetLocation(node)));
+      step + 1, box, CreateVolumesForBox(rm, partitioner->GetLocation(box)));
   if (!s.ok()) {
-    std::cerr << "Cannot store volumes for node " << node << " in step " << step << ".\n";
+    std::cerr << "Cannot store volumes for box " << box << " in step " << step << ".\n";
   }
 }
 
-ResourceManager<>* RayScheduler::ReassembleVolumes(int64_t step, int64_t node, const Box& bound) {
+ResourceManager<>* RayScheduler::ReassembleVolumes(long step, long box, const Box& bound) {
   // First create an RM for the main volume.
   plasma::ObjectID key = plasma::ObjectID::from_binary(hash_volume_surface(
-      step, node, SurfaceEnum::kNone));
+      step, box, SurfaceEnum::kNone));
   std::vector<plasma::ObjectBuffer> buffers = FetchAndGetVolume(key);
   if (buffers.empty()) {
     std::cerr << "Cannot fetch and get volume for step " << step << " from "
-              << node << ".\n";
+              << box << ".\n";
     return nullptr;
   }
 
@@ -89,7 +89,7 @@ ResourceManager<>* RayScheduler::ReassembleVolumes(int64_t step, int64_t node, c
   // Then add from the border regions.
   std::unique_ptr<Partitioner> partitioner(CreatePartitioner());
   partitioner->InitializeWithBoundingBox(bound.first, bound.second);
-  for (const auto& ns : partitioner->GetNeighborSurfaces(node)) {
+  for (const auto& ns : partitioner->GetNeighborSurfaces(box)) {
     arrow::Status s = AddFromVolume(ret, step, ns.first, ns.second);
     if (!s.ok()) {
       delete ret;
@@ -101,13 +101,13 @@ ResourceManager<>* RayScheduler::ReassembleVolumes(int64_t step, int64_t node, c
   return ret;
 }
 
-arrow::Status RayScheduler::AddFromVolume(ResourceManager<>* rm, long step, long node, Surface surface) {
+arrow::Status RayScheduler::AddFromVolume(ResourceManager<>* rm, long step, long box, Surface surface) {
   plasma::ObjectID key = plasma::ObjectID::from_binary(hash_volume_surface(
-      step, node, surface));
+      step, box, surface));
   std::vector<plasma::ObjectBuffer> buffers = FetchAndGetVolume(key);
   if (buffers.empty()) {
     std::cerr << "Cannot fetch and get volume for step " << step << " from "
-              << node << ".\n";
+              << box << ".\n";
     return arrow::Status(arrow::StatusCode::IOError, "Cannot fetch and get");
   }
   ResourceManagerPtr subvolume_rm;

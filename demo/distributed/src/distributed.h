@@ -356,7 +356,7 @@ class RayScheduler : public Scheduler<Simulation<>> {
  public:
   using super = Scheduler<Simulation<>>;
 
-  void SimulateStep(long step, long node, bool last_iteration, const Box& bound);
+  void SimulateStep(long step, long box, bool last_iteration, const Box& bound);
 
   /// Initiates a distributed simulation and waits for its completion.
   ///
@@ -424,7 +424,7 @@ class RayScheduler : public Scheduler<Simulation<>> {
     wait_request.type = plasma::ObjectRequestType::PLASMA_QUERY_ANYWHERE;
     int _ignored;
     s = object_store_.Wait(
-        1, &wait_request, 1,std::numeric_limits<int64_t>::max(), &_ignored);
+        1, &wait_request, 1, std::numeric_limits<int64_t>::max(), &_ignored);
     if (!s.ok()) {
       std::cerr << "Error waiting for simulation end marker. " << s << '\n';
       return;
@@ -631,8 +631,8 @@ class RayScheduler : public Scheduler<Simulation<>> {
   arrow::Status StoreVolumes(
       long step,
       long box,
-      const std::array<SurfaceToVolume, 27>& node) {
-    for (const SurfaceToVolume& sv : node) {
+      const std::array<SurfaceToVolume, 27>& volumes) {
+    for (const SurfaceToVolume& sv : volumes) {
       Surface surface = sv.first;
       ResourceManagerPtr rm = sv.second;
       TBufferFile buff(TBufferFile::EMode::kWrite);
@@ -664,7 +664,7 @@ class RayScheduler : public Scheduler<Simulation<>> {
     return arrow::Status();
   }
 
-  ResourceManager<>* ReassembleVolumes(int64_t step, int64_t node, const Box& bound);
+  ResourceManager<>* ReassembleVolumes(long step, long box, const Box& bound);
 
   std::vector<plasma::ObjectBuffer> FetchAndGetVolume(const plasma::ObjectID& key) {
     arrow::Status s;
@@ -682,7 +682,7 @@ class RayScheduler : public Scheduler<Simulation<>> {
     return buffers;
   }
 
-  arrow::Status AddFromVolume(ResourceManager<>* rm, long step, long node, Surface surface);
+  arrow::Status AddFromVolume(ResourceManager<>* rm, long step, long box, Surface surface);
 
   /// Partitions cells into 3D volumes and their corresponding halo volumes.
   ///
