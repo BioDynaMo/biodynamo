@@ -66,8 +66,10 @@ class RayScheduler : public Scheduler<Simulation<>> {
   }
 
  private:
+  /// Establishes connections to Ray's lcoal scheduler and Plasma object store.
   arrow::Status MaybeInitializeConnection();
 
+  /// Stores `volumes` in the object store for `box` in `step`.
   arrow::Status StoreVolumes(
       long step,
       long box,

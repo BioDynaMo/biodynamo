@@ -76,6 +76,7 @@ static std::string hash_volume_surface(long step, long box,
   return hash.substr(SHA256_BLOCK_SIZE - 20);
 }
 
+/// Returns a partitioner depending on the scheme in `g_partitioning_scheme`.
 static std::unique_ptr<Partitioner> CreatePartitioner() {
   if (g_partitioning_scheme == "2-1-1") {
     return std::unique_ptr<Partitioner>(new CubePartitioner({2, 1, 1}));
