@@ -386,16 +386,17 @@ void RayScheduler::Simulate(uint64_t steps) {
   }
 }
 
-void RayScheduler::SimulateStep(long step, long box, bool last_iteration, const Box &bound) {
+void RayScheduler::SimulateStep(
+    long step, long box, bool last_iteration, const Box &bound) {
   MaybeInitializeConnection();
-  ResourceManager<> *rm = ReassembleVolumes(step, box, bound);
+  std::unique_ptr<Partitioner> partitioner(CreatePartitioner());
+  partitioner->InitializeWithBoundingBox(bound.first, bound.second);
+  ResourceManager<> *rm = ReassembleVolumes(step, box, partitioner.get());
   std::cout << "Box " << box << " has " << rm->GetNumSimObjects()
             << " simulation objects.\n";
   RaySimulation *sim = reinterpret_cast<RaySimulation *>(Simulation<>::GetActive());
   sim->ReplaceResourceManager(rm);
   Execute(last_iteration);
-  std::unique_ptr<Partitioner> partitioner(CreatePartitioner());
-  partitioner->InitializeWithBoundingBox(bound.first, bound.second);
   arrow::Status s = StoreVolumes(
       step + 1, box, CreateVolumesForBox(rm, partitioner->GetLocation(box)));
   if (!s.ok()) {
@@ -468,7 +469,8 @@ arrow::Status RayScheduler::StoreVolumes(
   return arrow::Status();
 }
 
-ResourceManager<> *RayScheduler::ReassembleVolumes(long step, long box, const Box &bound) {
+ResourceManager<> *RayScheduler::ReassembleVolumes(
+    long step, long box, const Partitioner* partitioner) {
   // First create an RM for the main volume.
   plasma::ObjectID key = plasma::ObjectID::from_binary(hash_volume_surface(
       step, box, SurfaceEnum::kNone));
@@ -486,8 +488,6 @@ ResourceManager<> *RayScheduler::ReassembleVolumes(long step, long box, const Bo
   object_store_.Release(key);
 
   // Then add from the border regions.
-  std::unique_ptr<Partitioner> partitioner(CreatePartitioner());
-  partitioner->InitializeWithBoundingBox(bound.first, bound.second);
   for (const auto &ns : partitioner->GetNeighborSurfaces(box)) {
     arrow::Status s = AddFromVolume(ret, step, ns.first, ns.second);
     if (!s.ok()) {

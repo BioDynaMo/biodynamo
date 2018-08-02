@@ -75,8 +75,10 @@ class RayScheduler : public Scheduler<Simulation<>> {
   /// Add all simulation objects from `box`'s `surface` in `step` to `rm`.
   arrow::Status AddFromVolume(ResourceManager<>* rm, long step, long box, Surface surface);
 
-  /// Reassembles all volumes required to simulate `box` in `step`.
-  ResourceManager<>* ReassembleVolumes(long step, long box, const Box& bound);
+  /// Reassembles all volumes required to simulate `box` in `step` according to
+  /// `partitioner`.
+  ResourceManager<>* ReassembleVolumes(
+      long step, long box, const Partitioner* partitioner);
 
   /// Calls Plasma `Fetch` and `Get` on `key`.
   std::vector<plasma::ObjectBuffer> FetchAndGetVolume(
