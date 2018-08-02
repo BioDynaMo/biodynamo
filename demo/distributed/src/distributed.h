@@ -222,60 +222,127 @@ class Partitioner {
   Point3D right_back_top_;
 };
 
-class HypercubePartitioner : public Partitioner {
+class CubePartitioner : public Partitioner {
  public:
-  using super = Partitioner;
-  HypercubePartitioner(int power)
-      : power_(power) {
-    // Only support 2 boxes at the moment.
-    assert(power == 1);
-  }
-
-  virtual void InitializeWithBoundingBox(const Point3D& lfb, const Point3D& rbt) {
-    super::InitializeWithBoundingBox(lfb, rbt);
-    mid_x_ = lfb[0] + (rbt[0] - lfb[0]) / 2;
+  CubePartitioner(const std::array<int, 3>& axial_factors) :
+      axial_factors_(axial_factors) {
+    assert(axial_factors[0] >= 1);
+    assert(axial_factors[1] >= 1);
+    assert(axial_factors[2] >= 1);
+    assert(axial_factors[0] * axial_factors[1] >= 1);
+    assert(axial_factors[0] * axial_factors[1] * axial_factors[2] >= 1);
   }
 
   virtual Boxes Partition() const override {
-    return {
-        GetLocation(0),
-        GetLocation(1),
-    };
+    Boxes ret;
+    double x_range = right_back_top_[0] - left_front_bottom_[0];
+    double y_range = right_back_top_[1] - left_front_bottom_[1];
+    double z_range = right_back_top_[2] - left_front_bottom_[2];
+    for (int z_factor = 0; z_factor < axial_factors_[1]; ++z_factor) {
+      double z_start = left_front_bottom_[2] + z_range * z_factor / axial_factors_[2];
+      double z_end = left_front_bottom_[2] + z_range * (z_factor + 1) / axial_factors_[2];
+      for (int y_factor = 0; y_factor < axial_factors_[1]; ++y_factor) {
+        double y_start = left_front_bottom_[1] + y_range * y_factor / axial_factors_[1];
+        double y_end = left_front_bottom_[1] + y_range * (y_factor + 1) / axial_factors_[1];
+        for (int x_factor = 0; x_factor < axial_factors_[0]; ++x_factor) {
+          double x_start = left_front_bottom_[0] + x_range * x_factor / axial_factors_[0];
+          double x_end = left_front_bottom_[0] + x_range * (x_factor + 1) / axial_factors_[0];
+          ret.push_back({{x_start, y_start, z_start}, {x_end, y_end, z_end}});
+        }
+      }
+    }
+    return ret;
   }
 
   virtual Box GetLocation(BoxId boxIndex) const override {
-    assert(boxIndex >= 0 && boxIndex <= 1);
-    if (boxIndex == 0) {
-      return {left_front_bottom_, {mid_x_, right_back_top_[1], right_back_top_[2]}};
-    }
-    return {{mid_x_, left_front_bottom_[1], left_front_bottom_[2]}, right_back_top_};
+    assert(boxIndex >= 0);
+    assert(boxIndex < axial_factors_[0] * axial_factors_[1] * axial_factors_[2]);
+    int z_index = boxIndex / (axial_factors_[0] * axial_factors_[1]);
+    int yx = boxIndex % (axial_factors_[0] * axial_factors_[1]);
+    int y_index = yx / axial_factors_[0];
+    int x_index = yx % axial_factors_[0];
+    double x_range = right_back_top_[0] - left_front_bottom_[0];
+    double y_range = right_back_top_[1] - left_front_bottom_[1];
+    double z_range = right_back_top_[2] - left_front_bottom_[2];
+    return {{x_range * x_index / axial_factors_[0],
+             y_range * y_index / axial_factors_[1],
+             z_range * z_index / axial_factors_[2]},
+            {x_range * (x_index + 1) / axial_factors_[0],
+             y_range * (y_index + 1) / axial_factors_[1],
+             z_range * (z_index + 1) / axial_factors_[2]}};
   }
 
   virtual BoxId Locate(Point3D point) const override {
-    assert(is_in(point, left_front_bottom_, right_back_top_));
-    if (point[0] < mid_x_) {
-      return 0;
-    }
-    return 1;
+    double x_step = (right_back_top_[0] - left_front_bottom_[0]) / axial_factors_[0];
+    double y_step = (right_back_top_[1] - left_front_bottom_[1]) / axial_factors_[1];
+    double z_step = (right_back_top_[2] - left_front_bottom_[2]) / axial_factors_[2];
+    int x_index = std::floor((point[0] - left_front_bottom_[0]) / x_step);
+    int y_index = std::floor((point[1] - left_front_bottom_[1]) / y_step);
+    int z_index = std::floor((point[2] - left_front_bottom_[2]) / z_step);
+    BoxId ret = z_index * (axial_factors_[0] * axial_factors_[1]) +
+        y_index * axial_factors_[0] + x_index;
+    assert(ret >= 0);
+    assert(ret < axial_factors_[0] * axial_factors_[1] * axial_factors_[2]);
+    return ret;
   }
 
   virtual NeighborSurfaces GetNeighborSurfaces(BoxId boxIndex) const override {
-    assert(boxIndex >= 0 && boxIndex <= 1);
-    if (boxIndex == 0) {
-      return {{1, SurfaceEnum::kLeft}};
+    assert(boxIndex >= 0);
+    assert(boxIndex < axial_factors_[0] * axial_factors_[1] * axial_factors_[2]);
+    int z_index = boxIndex / (axial_factors_[0] * axial_factors_[1]);
+    int yx = boxIndex % (axial_factors_[0] * axial_factors_[1]);
+    int y_index = yx / axial_factors_[0];
+    int x_index = yx % axial_factors_[0];
+    std::vector<std::pair<int, Surface>> x_neighbor_surfaces{{0, SurfaceEnum::kNone}};
+    std::vector<std::pair<int, Surface>> y_neighbor_surfaces{{0, SurfaceEnum::kNone}};
+    std::vector<std::pair<int, Surface>> z_neighbor_surfaces{{0, SurfaceEnum::kNone}};
+    // We will see if there's any box adjacent to this box.
+    // If there is, we take the adjacent surface of that box.
+    // For e.g. if there's a box to the left, we take its right surface.
+    if (x_index - 1 >= 0) {
+      x_neighbor_surfaces.push_back({-1, SurfaceEnum::kRight});
     }
-    return {{0, SurfaceEnum::kRight}};
+    if (x_index + 1 < axial_factors_[0]) {
+      x_neighbor_surfaces.push_back({1, SurfaceEnum::kLeft});
+    }
+    if (y_index - 1 >= 0) {
+      y_neighbor_surfaces.push_back({-1, SurfaceEnum::kBack});
+    }
+    if (y_index + 1 < axial_factors_[1]) {
+      y_neighbor_surfaces.push_back({1, SurfaceEnum::kFront});
+    }
+    if (z_index - 1 >= 0) {
+      z_neighbor_surfaces.push_back({-1, SurfaceEnum::kTop});
+    }
+    if (z_index + 1 < axial_factors_[2]) {
+      z_neighbor_surfaces.push_back({1, SurfaceEnum::kBottom});
+    }
+    NeighborSurfaces ret;
+    for (const std::pair<int, Surface>& xs : x_neighbor_surfaces) {
+      for (const std::pair<int, Surface>& ys : y_neighbor_surfaces) {
+        for (const std::pair<int, Surface>& zs : z_neighbor_surfaces) {
+          Surface surface = xs.second | ys.second | zs.second;
+          if (surface == SurfaceEnum::kNone) {
+            continue;
+          }
+          BoxId box = (x_index + xs.first) +
+              (y_index + ys.first) * axial_factors_[0] +
+              (z_index + zs.first) * (axial_factors_[0] + axial_factors_[1]);
+          ret.push_back({box, surface});
+        }
+      }
+    }
+    return ret;
   }
  private:
-  int power_;
-  double mid_x_;
+  std::array<int, 3> axial_factors_;
 };
 
 static std::unique_ptr<Partitioner> CreatePartitioner() {
   if (g_partitioning_scheme == "2-1-1") {
-    return std::unique_ptr<Partitioner>(new HypercubePartitioner(1));
+    return std::unique_ptr<Partitioner>(new CubePartitioner({2, 1, 1}));
   } else if (g_partitioning_scheme == "3-3-3") {
-    // TODO
+    return std::unique_ptr<Partitioner>(new CubePartitioner({3, 3, 3}));
   }
   // Must never happen.
   assert(false);
