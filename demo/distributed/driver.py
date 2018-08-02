@@ -18,7 +18,7 @@ SIMULATION_START_MARKER = b'a' * 20
 SIMULATION_END_MARKER = b'b' * 20
 SIMULATION_ID = None
 
-DLL_PATH = None
+ARGS = None
 
 
 def hash(*args):
@@ -47,7 +47,7 @@ def get_node_info():
 
 def load_bdm_library(path=None):
     if path is None:
-        path = DLL_PATH
+        path = ARGS.library
     dll = ctypes.CDLL(path)
     try:
         dll.bdm_setup_ray
@@ -138,15 +138,15 @@ def main(args):
             unknowns = sys.argv[i + 1:]
     else:
         args, unknowns = parser.parse_known_args()
-    if args.mode == 'ray':
+    global ARGS
+    ARGS = args
+    if ARGS.mode == 'ray':
         run_with_ray(args.library, args.redis_address, unknowns)
 
 
 def run_with_ray(source_library, redis_address, argv):
     global SIMULATION_ID
     SIMULATION_ID = ray.utils.random_string()
-    global DLL_PATH
-    DLL_PATH = source_library
     address_info = ray.init(redis_address=redis_address)
     logging.debug(address_info)
     sim_name = os.path.basename(source_library).lstrip('lib').rstrip('.so')
