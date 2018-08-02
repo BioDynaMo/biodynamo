@@ -80,7 +80,7 @@ plasma::ObjectID id_for_surface(long step, long box,
 }
 
 /// Returns a partitioner depending on the scheme in `g_partitioning_scheme`.
-static std::unique_ptr<Partitioner> CreatePartitioner() {
+std::unique_ptr<Partitioner> CreatePartitioner() {
   if (g_partitioning_scheme == "2-1-1") {
     return std::unique_ptr<Partitioner>(new CubePartitioner({2, 1, 1}));
   } else if (g_partitioning_scheme == "3-3-3") {
@@ -92,7 +92,7 @@ static std::unique_ptr<Partitioner> CreatePartitioner() {
 }
 
 /// Allocates memory for the main volume, its 6 surfaces, 12 edges, 8 corners.
-static SurfaceToVolumeMap AllocVolumes() {
+SurfaceToVolumeMap AllocVolumes() {
   const std::array<Surface, 6> surface_list =
       {SurfaceEnum::kLeft, SurfaceEnum::kFront, SurfaceEnum::kBottom,
        SurfaceEnum::kRight, SurfaceEnum::kBack, SurfaceEnum::kTop};
@@ -136,7 +136,7 @@ static SurfaceToVolumeMap AllocVolumes() {
 /// \param box the (left_front_bottom, right_back_top) coordinates
 /// \param xyz_halos the margins corresponding to x-, y-, and z-axis
 /// \return list of Surfaces, terminating in Surface::kNone
-static std::array<Surface, 7> FindContainingSurfaces(
+std::array<Surface, 7> FindContainingSurfaces(
     const Point3D &this_point,
     const Box &box,
     const std::array<double, 3> &xyz_halos) {
@@ -252,7 +252,7 @@ static std::array<Surface, 7> FindContainingSurfaces(
 }
 
 /// Returns the ResourceManager for the specified surface.
-static ResourceManagerPtr FindResourceManager(
+ResourceManagerPtr FindResourceManager(
     const SurfaceToVolumeMap &map,
     Surface s) {
   for (const SurfaceToVolume &entry : map) {
@@ -265,7 +265,7 @@ static ResourceManagerPtr FindResourceManager(
   return nullptr;
 }
 
-static SurfaceToVolumeMap CreateVolumesForBox(
+SurfaceToVolumeMap CreateVolumesForBox(
     ResourceManager<> *rm,
     const Box &box) {
   SurfaceToVolumeMap ret = AllocVolumes();
