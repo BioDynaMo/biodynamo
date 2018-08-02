@@ -72,10 +72,10 @@ def simulate(library, argv):
 
 @ray.remote
 def wait_for_start_signal():
-    ray.worker.global_worker.plasma_client.fetch(
-            [plasma.ObjectID(SIMULATION_START_MARKER)])
+    start_key = plasma.ObjectID(hash(SIMULATION_ID, SIMULATION_START_MARKER))
+    ray.worker.global_worker.plasma_client.fetch([start_key])
     [json_blob] = ray.worker.global_worker.plasma_client.get_buffers(
-            [plasma.ObjectID(SIMULATION_START_MARKER)])
+            [start_key])
     logging.debug('Received JSON: %s', json_blob.to_pybytes())
     info = json.loads(json_blob.to_pybytes())
     num_steps = info['steps']
@@ -117,7 +117,8 @@ def build_simulation_graph():
 
 @ray.remote
 def send_end_signal(*dependencies):
-    ray.worker.global_worker.put_object(ray.ObjectID(SIMULATION_END_MARKER), '')
+    ray.worker.global_worker.put_object(ray.ObjectID(
+        hash(SIMULATION_ID, SIMULATION_END_MARKER)), '')
 
 
 def main(args):

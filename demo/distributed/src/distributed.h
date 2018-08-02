@@ -95,6 +95,16 @@ class SurfaceEnum {
   static constexpr Surface kTop{32};
 };
 
+static std::string hash_event(std::string event) {
+  SHA256_CTX ctx;
+  sha256_init(&ctx);
+  sha256_update(&ctx, reinterpret_cast<const BYTE*>(g_simulation_id.data()), 20);
+  sha256_update(&ctx, reinterpret_cast<const BYTE*>(event.data()), event.size());
+  std::string hash(SHA256_BLOCK_SIZE, '\x00');
+  sha256_final(&ctx, reinterpret_cast<unsigned char*>(&hash[0]));
+  return hash.substr(SHA256_BLOCK_SIZE - 20);
+}
+
 static std::string hash_volume_surface(long step, long box,
                                        Surface surface = SurfaceEnum::kNone) {
   SHA256_CTX ctx;
@@ -308,7 +318,9 @@ class RayScheduler : public Scheduler<Simulation<>> {
         << "}";
     std::string json = json_stream.str();
     std::shared_ptr<Buffer> buffer;
-    s = object_store_.Create(plasma::ObjectID::from_binary(kSimulationStartMarker),
+    plasma::ObjectID start_key = plasma::ObjectID::from_binary(
+        hash_event(kSimulationStartMarker));
+    s = object_store_.Create(start_key,
                              json.size(),
                              nullptr,
                              0,
@@ -319,18 +331,22 @@ class RayScheduler : public Scheduler<Simulation<>> {
       return;
     }
     memcpy(buffer->mutable_data(), json.data(), json.size());
-    s = object_store_.Seal(plasma::ObjectID::from_binary(kSimulationStartMarker));
+    s = object_store_.Seal(start_key);
     if (!s.ok()) {
       std::cerr << "Cannot seal simulation start marker. " << s <<
                    " Simulation aborted\n";
       return;
     }
 
-    std::vector<plasma::ObjectBuffer> _ignored;
     std::cout << "Waiting for end of simulation...\n";
-    s = object_store_.Get({plasma::ObjectID::from_binary(kSimulationEndMarker)},
-                          -1,
-                          &_ignored);
+    plasma::ObjectID end_key = plasma::ObjectID::from_binary(
+        hash_event(kSimulationEndMarker));
+    plasma::ObjectRequest wait_request;
+    wait_request.object_id = end_key;
+    wait_request.type = plasma::ObjectRequestType::PLASMA_QUERY_ANYWHERE;
+    int _ignored;
+    s = object_store_.Wait(
+        1, &wait_request, 1,std::numeric_limits<int64_t>::max(), &_ignored);
     if (!s.ok()) {
       std::cerr << "Error waiting for simulation end marker. " << s << '\n';
       return;
