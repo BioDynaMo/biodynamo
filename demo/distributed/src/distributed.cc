@@ -50,18 +50,21 @@ extern "C" void simulate_step(long step, long box, bool last_iteration,
   delete simulation;
 }
 
-static std::string hash_event(std::string event) {
+/// Returns an ObjectID for `event` under `g_simulation_id` namespace.
+plasma::ObjectID id_for_event(std::string event) {
   SHA256_CTX ctx;
   sha256_init(&ctx);
   sha256_update(&ctx, reinterpret_cast<const BYTE *>(g_simulation_id.data()), 20);
   sha256_update(&ctx, reinterpret_cast<const BYTE *>(event.data()), event.size());
   std::string hash(SHA256_BLOCK_SIZE, '\x00');
   sha256_final(&ctx, reinterpret_cast<unsigned char *>(&hash[0]));
-  return hash.substr(SHA256_BLOCK_SIZE - 20);
+  return plasma::ObjectID::from_binary(hash.substr(SHA256_BLOCK_SIZE - 20));
 }
 
-static std::string hash_volume_surface(long step, long box,
-                                       Surface surface = SurfaceEnum::kNone) {
+/// Returns an ObjectID for `step`, `box` and `surface` under `g_simulation_id`
+/// namespace.
+plasma::ObjectID id_for_surface(long step, long box,
+                                Surface surface = SurfaceEnum::kNone) {
   SHA256_CTX ctx;
   sha256_init(&ctx);
   sha256_update(&ctx, reinterpret_cast<const BYTE *>(g_simulation_id.data()), 20);
@@ -73,7 +76,7 @@ static std::string hash_volume_surface(long step, long box,
   }
   std::string hash(SHA256_BLOCK_SIZE, '\x00');
   sha256_final(&ctx, reinterpret_cast<unsigned char *>(&hash[0]));
-  return hash.substr(SHA256_BLOCK_SIZE - 20);
+  return plasma::ObjectID::from_binary(hash.substr(SHA256_BLOCK_SIZE - 20));
 }
 
 /// Returns a partitioner depending on the scheme in `g_partitioning_scheme`.
@@ -355,8 +358,7 @@ void RayScheduler::Simulate(uint64_t steps) {
       << "}";
   std::string json = json_stream.str();
   std::shared_ptr<Buffer> buffer;
-  plasma::ObjectID start_key = plasma::ObjectID::from_binary(
-      hash_event(kSimulationStartMarker));
+  plasma::ObjectID start_key = id_for_event(kSimulationStartMarker);
   s = object_store_.Create(start_key,
                            json.size(),
                            nullptr,
@@ -376,8 +378,7 @@ void RayScheduler::Simulate(uint64_t steps) {
   }
 
   std::cout << "Waiting for end of simulation...\n";
-  plasma::ObjectID end_key = plasma::ObjectID::from_binary(
-      hash_event(kSimulationEndMarker));
+  plasma::ObjectID end_key = id_for_event(kSimulationEndMarker);
   plasma::ObjectRequest wait_request;
   wait_request.object_id = end_key;
   wait_request.type = plasma::ObjectRequestType::PLASMA_QUERY_ANYWHERE;
@@ -447,8 +448,7 @@ arrow::Status RayScheduler::StoreVolumes(
     TBufferFile buff(TBufferFile::EMode::kWrite);
     buff.WriteObject(rm.get());
     const size_t size = buff.BufferSize();
-    std::string hash = hash_volume_surface(step, box, surface);
-    const plasma::ObjectID key = plasma::ObjectID::from_binary(hash);
+    const plasma::ObjectID key = id_for_surface(step, box, surface);
     std::shared_ptr<Buffer> buffer;
     arrow::Status s = object_store_.Create(
         key,
@@ -476,8 +476,7 @@ arrow::Status RayScheduler::StoreVolumes(
 ResourceManager<> *RayScheduler::ReassembleVolumes(
     long step, long box, const Partitioner* partitioner) {
   // First create an RM for the main volume.
-  plasma::ObjectID key = plasma::ObjectID::from_binary(hash_volume_surface(
-      step, box, SurfaceEnum::kNone));
+  plasma::ObjectID key = id_for_surface(step, box, SurfaceEnum::kNone);
   std::vector<plasma::ObjectBuffer> buffers = FetchAndGetVolume(key);
   if (buffers.empty()) {
     std::cerr << "Cannot fetch and get volume for step " << step << " from "
@@ -505,8 +504,7 @@ ResourceManager<> *RayScheduler::ReassembleVolumes(
 }
 
 arrow::Status RayScheduler::AddFromVolume(ResourceManager<> *rm, long step, long box, Surface surface) {
-  plasma::ObjectID key = plasma::ObjectID::from_binary(hash_volume_surface(
-      step, box, surface));
+  plasma::ObjectID key = id_for_surface(step, box, surface);
   std::vector<plasma::ObjectBuffer> buffers = FetchAndGetVolume(key);
   if (buffers.empty()) {
     std::cerr << "Cannot fetch and get volume for step " << step << " from "
