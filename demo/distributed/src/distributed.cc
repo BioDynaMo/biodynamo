@@ -54,14 +54,14 @@ extern "C" void bdm_simulate_step(
 
 /// Returns a partitioner depending on the scheme in `g_partitioning_scheme`.
 std::unique_ptr<Partitioner> CreatePartitioner() {
-  if (g_partitioning_scheme == "2-1-1") {
-    return std::unique_ptr<Partitioner>(new CubePartitioner({2, 1, 1}));
-  } else if (g_partitioning_scheme == "3-3-3") {
-    return std::unique_ptr<Partitioner>(new CubePartitioner({3, 3, 3}));
+  int x, y, z;
+  if (sscanf(g_partitioning_scheme.c_str(), "%d-%d-%d", &x, &y, &z) != 3 ||
+      x < 1 || y < 1 || z < 1) {
+    std::cerr << "Invalid partitioning scheme \""
+              << g_partitioning_scheme << "\".\n";
+    return nullptr;
   }
-  // Must never happen.
-  assert(false);
-  return nullptr;
+  return std::unique_ptr<Partitioner>(new CubePartitioner({x, y, z}));
 }
 
 extern "C" int bdm_get_box_count() {

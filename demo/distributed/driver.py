@@ -4,9 +4,10 @@ import argparse
 import collections
 import ctypes
 import hashlib
+import json
 import logging
 import os
-import json
+import re
 import sys
 import time
 
@@ -192,7 +193,7 @@ def main(args):
                         help='The ip:port address of Redis server if this is a part of a cluster. '
                              'If this is not specified, and the mode is "ray", a new Ray cluster '
                              'will be started.')
-    parser.add_argument('-p', '--partitioning_scheme', choices=['2-1-1', '3-3-3'], default='2-1-1',
+    parser.add_argument('-p', '--partitioning_scheme', default='2-1-1',
                         help='The partitioning scheme. 2-1-1 partitions 2 boxes along the x-axis. '
                              '3-3-3 partitions 27 boxes along x-, y-, and z- axis. This argument '
                              'is only effective in Ray mode.')
@@ -219,7 +220,13 @@ def run_normally(library, argv):
     dll.main(len(main_argv), main_argv)  # This blocks until the end of the simulation.
 
 
+def check_partitioning_scheme():
+    if re.match(r'^\d+-\d+-\d+$', ARGS.partitioning_scheme) is None:
+        raise ValueError('Invalid partitioning scheme.')
+
+
 def run_with_ray(source_library, redis_address, argv):
+    check_partitioning_scheme()
     global SIMULATION_ID
     SIMULATION_ID = ray.utils.random_string()
     address_info = ray.init(redis_address=redis_address)
