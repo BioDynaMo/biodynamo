@@ -109,6 +109,9 @@ class Partitioner {
 
   virtual ~Partitioner() {}
 
+  /// Returns the number of boxes that would be partitioned into.
+  virtual int GetBoxCount() const = 0;
+
   /// Partitions the given box into smaller ones.
   virtual Boxes Partition() const = 0;
 
@@ -150,6 +153,10 @@ class CubePartitioner : public Partitioner {
     assert(axial_factors[2] >= 1);
     assert(axial_factors[0] * axial_factors[1] >= 1);
     assert(axial_factors[0] * axial_factors[1] * axial_factors[2] >= 1);
+  }
+
+  virtual int GetBoxCount() const override {
+    return axial_factors_[0] * axial_factors_[1] * axial_factors_[2];
   }
 
   virtual Boxes Partition() const override;

@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import argparse
+import collections
 import ctypes
 import hashlib
 import logging
@@ -85,35 +86,94 @@ def wait_for_start_signal():
 
 
 @ray.remote
-def partition(num_nodes=2):
+def partition(num_boxes):
     # We are not actually doing any work here.
     # We only return dummy Python objects so that Ray
     # can build up a dependency graph.
-    return [None] * 19 * num_nodes
+    return [None] * (27 * num_boxes)
 
 
-@ray.remote(num_return_vals=19)
+# At the end of each simulation step, there will be 27 regions stored in Plasma.
+@ray.remote(num_return_vals=27, max_calls=4)
 def simulation_step(step_num, node_id, last_iter, bounding_box, *dependencies):
     print('step', step_num, node_id)
     dll = load_bdm_library()
-    dll.simulate_step(step_num, node_id, last_iter,
-                      *[ctypes.c_double(x) for x in bounding_box])
-    return [None] * 19
+    dll.bdm_simulate_step(step_num, node_id, last_iter,
+                          *[ctypes.c_double(x) for x in bounding_box])
+    return [None] * 27
+
+
+NeighborSurface = collections.namedtuple('NeighborSurface', 'box surface')
+
+
+LEFT = 1
+FRONT = 2
+BOTTOM = 4
+RIGHT = 8
+BACK = 16
+TOP = 32
+# This needs to match C++, but we're using dummy values so that's not needed now.
+SURFACE_TO_INDEX = {
+        0: 0,
+        LEFT: 1,
+        LEFT | FRONT: 2,
+        LEFT | FRONT | TOP: 3,
+        LEFT | FRONT | BOTTOM: 4,
+        LEFT | BACK: 5,
+        LEFT | BACK | TOP: 6,
+        LEFT | BACK | BOTTOM: 7,
+        LEFT | TOP: 8,
+        LEFT | BOTTOM: 9,
+        RIGHT: 10,
+        RIGHT | FRONT: 11,
+        RIGHT | FRONT | TOP: 12,
+        RIGHT | FRONT | BOTTOM: 13,
+        RIGHT | BACK: 14,
+        RIGHT | BACK | TOP : 15,
+        RIGHT | BACK | BOTTOM: 16,
+        RIGHT | TOP: 17,
+        RIGHT | BOTTOM: 18,
+        FRONT: 19,
+        FRONT | TOP: 20,
+        FRONT | BOTTOM: 21,
+        BACK: 22,
+        BACK | TOP: 23,
+        BACK | BOTTOM: 24,
+        TOP: 25,
+        BOTTOM: 26,
+}
 
 
 @ray.remote
 def build_simulation_graph():
-    num_nodes = 2
-    partitions = partition._submit(args=[num_nodes], num_return_vals=19 * num_nodes)
-    node_0 = partitions[:19]
-    node_1 = partitions[19:]
+    dll = load_bdm_library()
+    num_boxes = dll.bdm_get_box_count()
+    print('C++ says there are {} boxes'.format(num_boxes))
+
+    # Build a neighbor map. Each box will have a list of neighbor surfaces.
+    neighbor_map = collections.defaultdict(list)  # type Dict[int, List[NeighborSurface]]
+    # Each box has at most 26 neighbors, each is a 2-int (box id, surface).
+    neighbors = (ctypes.c_int * (26 * 2))()
+    for box in xrange(num_boxes):
+        neighbor_count = dll.bdm_get_neighbor_surfaces(box, neighbors)
+        for i in range(neighbor_count):
+            neighbor_map[box].append(NeighborSurface(
+                    neighbors[i * 2], SURFACE_TO_INDEX[neighbors[i * 2 + 1]]))
+        box += 1
+
+    partitions = partition._submit(args=[num_boxes], num_return_vals=27 * num_boxes)
+    last_step = {box: partitions[box * 27 : box * 27 + 27] for box in neighbor_map}
+    this_step = collections.defaultdict(list)
+
     num_steps, bounding_box = ray.get(wait_for_start_signal.remote())
-    for step in range(num_steps):
-        node_0 = simulation_step.remote(step, 0, step == num_steps - 1, bounding_box, node_0[0])
-        node_1 = simulation_step.remote(step, 1, step == num_steps - 1, bounding_box, node_1[0])
-    ray.get(node_0)
-    ray.get(node_1)
-    ray.get(send_end_signal.remote())
+    for step in xrange(num_steps):
+        for box in xrange(num_boxes):
+            deps = [last_step[x.box][x.surface] for x in neighbor_map[box]]
+            this_step[box] = simulation_step.remote(
+                    step, box, step == (num_steps - 1), bounding_box, *deps)
+        last_step, this_step = this_step, last_step
+
+    ray.get(send_end_signal.remote(*[last_step[i][0] for i in neighbor_map]))
 
 
 @ray.remote

@@ -42,12 +42,41 @@ extern "C" void bdm_setup_ray(const char *local_scheduler_socket_name,
   g_partitioning_scheme = std::string(partitioning_scheme);
 }
 
-extern "C" void simulate_step(long step, long box, bool last_iteration,
-                              double left, double front, double bottom, double right, double back, double top) {
+extern "C" void bdm_simulate_step(
+    long step, long box, bool last_iteration,
+    double left, double front, double bottom,
+    double right, double back, double top) {
   RaySimulation *simulation = new RaySimulation();
   RayScheduler *scheduler = reinterpret_cast<RayScheduler *>(simulation->GetScheduler());
   scheduler->SimulateStep(step, box, last_iteration, {{left, front, bottom}, {right, back, top}});
   delete simulation;
+}
+
+/// Returns a partitioner depending on the scheme in `g_partitioning_scheme`.
+std::unique_ptr<Partitioner> CreatePartitioner() {
+  if (g_partitioning_scheme == "2-1-1") {
+    return std::unique_ptr<Partitioner>(new CubePartitioner({2, 1, 1}));
+  } else if (g_partitioning_scheme == "3-3-3") {
+    return std::unique_ptr<Partitioner>(new CubePartitioner({3, 3, 3}));
+  }
+  // Must never happen.
+  assert(false);
+  return nullptr;
+}
+
+extern "C" int bdm_get_box_count() {
+  std::unique_ptr<Partitioner> partitioner = CreatePartitioner();
+  return partitioner->GetBoxCount();
+}
+
+extern "C" int bdm_get_neighbor_surfaces(int box, int *out) {
+  std::unique_ptr<Partitioner> partitioner = CreatePartitioner();
+  int i = 0;
+  for (NeighborSurface ns : partitioner->GetNeighborSurfaces(box)) {
+    out[i++] = ns.first;
+    out[i++] = ns.second;
+  }
+  return i / 2;
 }
 
 /// Returns an ObjectID for `event` under `g_simulation_id` namespace.
@@ -77,18 +106,6 @@ plasma::ObjectID id_for_surface(long step, long box,
   std::string hash(SHA256_BLOCK_SIZE, '\x00');
   sha256_final(&ctx, reinterpret_cast<unsigned char *>(&hash[0]));
   return plasma::ObjectID::from_binary(hash.substr(SHA256_BLOCK_SIZE - 20));
-}
-
-/// Returns a partitioner depending on the scheme in `g_partitioning_scheme`.
-std::unique_ptr<Partitioner> CreatePartitioner() {
-  if (g_partitioning_scheme == "2-1-1") {
-    return std::unique_ptr<Partitioner>(new CubePartitioner({2, 1, 1}));
-  } else if (g_partitioning_scheme == "3-3-3") {
-    return std::unique_ptr<Partitioner>(new CubePartitioner({3, 3, 3}));
-  }
-  // Must never happen.
-  assert(false);
-  return nullptr;
 }
 
 /// Allocates memory for the main volume, its 6 surfaces, 12 edges, 8 corners.
