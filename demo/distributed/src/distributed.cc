@@ -488,7 +488,6 @@ ResourceManager<> *RayScheduler::ReassembleVolumes(
   TBufferFile f(TBufferFile::EMode::kRead, buffers[0].data->size(),
                 const_cast<uint8_t *>(buffers[0].data->data()), false);
   ret = reinterpret_cast<ResourceManager<> *>(f.ReadObjectAny(ResourceManager<>::Class()));
-  object_store_.Release(key);
 
   // Then add from the border regions.
   for (const auto &ns : partitioner->GetNeighborSurfaces(box)) {
@@ -516,7 +515,6 @@ arrow::Status RayScheduler::AddFromVolume(ResourceManager<> *rm, long step, long
                 const_cast<uint8_t *>(buffers[0].data->data()), false);
   subvolume_rm.reset(reinterpret_cast<ResourceManager<> *>(
                          f.ReadObjectAny(ResourceManager<>::Class())));
-  object_store_.Release(key);
 
   auto func = [&](const auto &element, bdm::SoHandle) {
     rm->push_back(element);
