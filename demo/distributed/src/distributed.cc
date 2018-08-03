@@ -23,6 +23,9 @@ namespace {
 
 using namespace bdm;
 
+constexpr int kPlasmaTimeout = 30000;  // 30 seconds in ms.
+constexpr int kPlasmaAttempts = 3;  // Try to Get() 3 times.
+
 std::string g_local_scheduler_socket_name;
 std::string g_object_store_socket_name;
 std::string g_object_store_manager_socket_name;
@@ -346,12 +349,19 @@ std::vector<plasma::ObjectBuffer> RayScheduler::FetchAndGetVolume(
     return {};
   }
   std::vector<plasma::ObjectBuffer> buffers;
-  s = object_store_.Get({key}, -1, &buffers);
-  if (!s.ok()) {
-    std::cerr << "Cannot get \"" << key.hex() << "\". " << s << '\n';
+  int attempts = 0;
+  while (attempts < kPlasmaAttempts) {
+    s = object_store_.Get({key}, kPlasmaTimeout, &buffers);
+    if (!s.ok() || buffers.empty() || buffers[0].data == nullptr) {
+      std::cerr << "Trying to fetch and get " << key.hex() << " again.\n";
+      ++attempts;
+      buffers.clear();
+      continue;
+    }
     return buffers;
   }
-  return buffers;
+  std::cerr << "Cannot get \"" << key.hex() << "\". " << s << '\n';
+  return {};
 }
 
 void RayScheduler::Simulate(uint64_t steps) {
