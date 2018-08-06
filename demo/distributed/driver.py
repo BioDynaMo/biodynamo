@@ -70,15 +70,19 @@ def simulate(library, argv):
     dll = load_bdm_library(library)
     main_argv = (ctypes.c_char_p * len(argv))()
     main_argv[:] = argv
+    print('Calling main')
     dll.main(len(argv), main_argv)  # This blocks until the end of the simulation.
+    print('Main completed')
 
 
 @ray.remote
 def wait_for_start_signal():
+    print('Waiting for start signal')
     start_key = plasma.ObjectID(hash(SIMULATION_ID, SIMULATION_START_MARKER))
     ray.worker.global_worker.plasma_client.fetch([start_key])
     [json_blob] = ray.worker.global_worker.plasma_client.get_buffers(
             [start_key])
+    print('Got start signal')
     logging.debug('Received JSON: %s', json_blob.to_pybytes())
     info = json.loads(json_blob.to_pybytes())
     num_steps = info['steps']
@@ -233,6 +237,7 @@ def run_with_ray(source_library, redis_address, argv):
     logging.debug(address_info)
     sim_name = os.path.basename(source_library).lstrip('lib').rstrip('.so')
     ray.get(simulate.remote(os.path.abspath(source_library), [sim_name] + argv))
+    print('Simulation completed successfully!')
 
 
 if __name__ == '__main__':
