@@ -20,7 +20,6 @@ ExternalProject_Add(
   CMAKE_CACHE_ARGS
     -DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}
     -DCMAKE_C_COMPILER:FILEPATH=${CMAKE_C_COMPILER}
-    -DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=ON
   INSTALL_COMMAND "" # Disable install step
   # Ugly but necessary, in future versions one can use ${binary_dir}
   # in BUILD_BYPRODUCTS
