@@ -36,7 +36,8 @@ class RayScheduler : public Scheduler<Simulation<>> {
   using super = Scheduler<Simulation<>>;
 
   /// Runs one simulation timestep for `box` in `step` with global `bound`.
-  void SimulateStep(int64_t step, int64_t box, bool last_iteration, const Box& bound);
+  void SimulateStep(int64_t step, int64_t box, bool last_iteration,
+                    const Box& bound);
 
   /// Initiates a distributed simulation and waits for its completion.
   ///
@@ -57,30 +58,28 @@ class RayScheduler : public Scheduler<Simulation<>> {
   /// \param steps number of steps to simulate.
   virtual void Simulate(uint64_t steps) override;
 
-  virtual ~RayScheduler() {
-  }
+  virtual ~RayScheduler() {}
 
  private:
   /// Establishes connections to Ray's local scheduler and Plasma object store.
   arrow::Status MaybeInitializeConnection();
 
   /// Stores `volumes` in the object store for `box` in `step`.
-  arrow::Status StoreVolumes(
-      int64_t step,
-      int64_t box,
-      const SurfaceToVolumeMap& volumes);
+  arrow::Status StoreVolumes(int64_t step, int64_t box,
+                             const SurfaceToVolumeMap& volumes);
 
-  void DisassembleResourceManager(
-      ResourceManager<>* rm, const Partitioner* partitioner,
-      int64_t step, int64_t box);
+  void DisassembleResourceManager(ResourceManager<>* rm,
+                                  const Partitioner* partitioner, int64_t step,
+                                  int64_t box);
 
   /// Add all simulation objects from `box`'s `surface` in `step` to `rm`.
-  arrow::Status AddFromVolume(ResourceManager<>* rm, int64_t step, int64_t box, Surface surface);
+  arrow::Status AddFromVolume(ResourceManager<>* rm, int64_t step, int64_t box,
+                              Surface surface);
 
   /// Reassembles all volumes required to simulate `box` in `step` according to
   /// `partitioner`.
-  ResourceManager<>* ReassembleVolumes(
-      int64_t step, int64_t box, const Partitioner* partitioner);
+  ResourceManager<>* ReassembleVolumes(int64_t step, int64_t box,
+                                       const Partitioner* partitioner);
 
   /// Calls Plasma `Fetch` and `Get` on `key`.
   std::vector<plasma::ObjectBuffer> FetchAndGetVolume(
@@ -90,7 +89,8 @@ class RayScheduler : public Scheduler<Simulation<>> {
   ///
   /// The results of the partitioning are stored in the object store directly.
   ///
-  /// \param boundingBox output argument to receive the bounding box of the world
+  /// \param boundingBox output argument to receive the bounding box of the
+  /// world
   virtual void InitiallyPartition(Box* boundingBox);
 
   bool initialized_ = false;
@@ -102,7 +102,7 @@ class RaySimulation : public Simulation<> {
  public:
   using super = Simulation<>;
   RaySimulation();
-  RaySimulation(int argc, const char **argv) : super(argc, argv) {}
+  RaySimulation(int argc, const char** argv) : super(argc, argv) {}
   virtual ~RaySimulation() {}
   virtual Scheduler<Simulation>* GetScheduler() override {
     if (!scheduler_set_) {
@@ -111,9 +111,8 @@ class RaySimulation : public Simulation<> {
     }
     return super::GetScheduler();
   }
-  virtual void ReplaceResourceManager(ResourceManager<>* rm) {
-    rm_ = rm;
-  }
+  virtual void ReplaceResourceManager(ResourceManager<>* rm) { rm_ = rm; }
+
  private:
   bool scheduler_set_ = false;
 };

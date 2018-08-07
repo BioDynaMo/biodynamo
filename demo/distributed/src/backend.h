@@ -21,7 +21,7 @@ namespace bdm {
 
 /// Defines the storage backend used by BioDynaMo. This file should be included
 /// at the very top.
-template<typename Backend>
+template <typename Backend>
 struct CompileTimeParam : public DefaultCompileTimeParam<Backend> {
   // use predefined biology module GrowDivide
   using BiologyModules = Variant<GrowDivide>;
@@ -29,6 +29,6 @@ struct CompileTimeParam : public DefaultCompileTimeParam<Backend> {
   using SimulationBackend = Scalar;
 };
 
-} // namespace bdm
+}  // namespace bdm
 
 #endif  // DEMO_DISTRIBUTED_BACKEND_H_

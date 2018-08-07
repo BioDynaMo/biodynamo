@@ -23,30 +23,28 @@ class Surface {
  public:
   Surface() : Surface(0) {}
 
-  constexpr Surface intersect(const Surface &s) const {
+  constexpr Surface intersect(const Surface& s) const {
     return Surface(value_ | s.value_);
   }
 
-  constexpr bool operator==(const Surface &other) const {
+  constexpr bool operator==(const Surface& other) const {
     return value_ == other.value_;
   }
 
-  constexpr Surface operator|(const Surface &other) const {
+  constexpr Surface operator|(const Surface& other) const {
     return intersect(other);
   }
 
-  constexpr bool conflict(const Surface &other) const {
+  constexpr bool conflict(const Surface& other) const {
     return (value_ == 1 && other.value_ == 8) ||
-        (value_ == 2 && other.value_ == 16) ||
-        (value_ == 4 && other.value_ == 32) ||
-        (value_ == 8 && other.value_ == 1) ||
-        (value_ == 16 && other.value_ == 4) ||
-        (value_ == 32 && other.value_ == 8);
+           (value_ == 2 && other.value_ == 16) ||
+           (value_ == 4 && other.value_ == 32) ||
+           (value_ == 8 && other.value_ == 1) ||
+           (value_ == 16 && other.value_ == 4) ||
+           (value_ == 32 && other.value_ == 8);
   }
 
-  constexpr operator int() const {
-    return value_;
-  }
+  constexpr operator int() const { return value_; }
 
  private:
   constexpr explicit Surface(int v) : value_(v) {}
@@ -75,19 +73,17 @@ using Boxes = std::vector<Box>;
 /// /param pos the location to check
 /// /param left_front_bottom (inclusive)
 /// /param right_back_top (exclusive)
-static inline bool is_in(const Point3D& pos,
-                         const Point3D& left_front_bottom,
+static inline bool is_in(const Point3D& pos, const Point3D& left_front_bottom,
                          const Point3D& right_back_top) {
   double x = pos[0];
   double y = pos[1];
   double z = pos[2];
   return x >= left_front_bottom[0] && x < right_back_top[0] &&
-      y >= left_front_bottom[1] && y < right_back_top[1] &&
-      z >= left_front_bottom[2] && z < right_back_top[2];
+         y >= left_front_bottom[1] && y < right_back_top[1] &&
+         z >= left_front_bottom[2] && z < right_back_top[2];
 }
 
-static inline bool is_in(const Point3D& pos,
-                         const Box& box) {
+static inline bool is_in(const Point3D& pos, const Box& box) {
   return is_in(pos, box.first, box.second);
 }
 
@@ -97,9 +93,8 @@ using NeighborSurfaces = std::vector<NeighborSurface>;
 class Partitioner {
  public:
   /// Initializes a partitioner with the bounding box.
-  virtual void InitializeWithBoundingBox(
-      const Point3D &left_front_bottom,
-      const Point3D &right_back_top) {
+  virtual void InitializeWithBoundingBox(const Point3D& left_front_bottom,
+                                         const Point3D& right_back_top) {
     left_front_bottom_ = left_front_bottom;
     right_back_top_ = right_back_top;
   }
@@ -116,9 +111,7 @@ class Partitioner {
   virtual Boxes Partition() const = 0;
 
   /// Returns the bounding box by left_front_bottom and right_back_top.
-  Box GetBoundingBox() const {
-    return {left_front_bottom_, right_back_top_};
-  }
+  Box GetBoundingBox() const { return {left_front_bottom_, right_back_top_}; }
 
   /// Retrieves the coordinates of the box indexed by boxIndex.
   ///
@@ -146,8 +139,8 @@ class Partitioner {
 
 class CubePartitioner : public Partitioner {
  public:
-  CubePartitioner(const std::array<int, 3>& axial_factors) :
-      axial_factors_(axial_factors) {
+  CubePartitioner(const std::array<int, 3>& axial_factors)
+      : axial_factors_(axial_factors) {
     assert(axial_factors[0] >= 1);
     assert(axial_factors[1] >= 1);
     assert(axial_factors[2] >= 1);
@@ -166,6 +159,7 @@ class CubePartitioner : public Partitioner {
   virtual BoxId Locate(Point3D point) const override;
 
   virtual NeighborSurfaces GetNeighborSurfaces(BoxId boxIndex) const override;
+
  private:
   std::array<int, 3> axial_factors_;
 };

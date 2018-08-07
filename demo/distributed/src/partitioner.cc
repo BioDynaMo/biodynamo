@@ -24,7 +24,7 @@ constexpr Surface SurfaceEnum::kBottom;
 constexpr Surface SurfaceEnum::kFront;
 constexpr Surface SurfaceEnum::kBack;
 
-void Partitioner::InitializeWithResourceManager(ResourceManager<> *rm) {
+void Partitioner::InitializeWithResourceManager(ResourceManager<>* rm) {
   double min_x = std::numeric_limits<double>::max();
   double max_x = std::numeric_limits<double>::min();
   double min_y = std::numeric_limits<double>::max();
@@ -46,8 +46,7 @@ void Partitioner::InitializeWithResourceManager(ResourceManager<> *rm) {
   max_y += 1e-9;
   max_z += 1e-9;
 
-  InitializeWithBoundingBox({min_x, min_y, min_z},
-                            {max_x, max_y, max_z});
+  InitializeWithBoundingBox({min_x, min_y, min_z}, {max_x, max_y, max_z});
 }
 
 Boxes CubePartitioner::Partition() const {
@@ -56,14 +55,20 @@ Boxes CubePartitioner::Partition() const {
   double y_range = right_back_top_[1] - left_front_bottom_[1];
   double z_range = right_back_top_[2] - left_front_bottom_[2];
   for (int z_factor = 0; z_factor < axial_factors_[1]; ++z_factor) {
-    double z_start = left_front_bottom_[2] + z_range * z_factor / axial_factors_[2];
-    double z_end = left_front_bottom_[2] + z_range * (z_factor + 1) / axial_factors_[2];
+    double z_start =
+        left_front_bottom_[2] + z_range * z_factor / axial_factors_[2];
+    double z_end =
+        left_front_bottom_[2] + z_range * (z_factor + 1) / axial_factors_[2];
     for (int y_factor = 0; y_factor < axial_factors_[1]; ++y_factor) {
-      double y_start = left_front_bottom_[1] + y_range * y_factor / axial_factors_[1];
-      double y_end = left_front_bottom_[1] + y_range * (y_factor + 1) / axial_factors_[1];
+      double y_start =
+          left_front_bottom_[1] + y_range * y_factor / axial_factors_[1];
+      double y_end =
+          left_front_bottom_[1] + y_range * (y_factor + 1) / axial_factors_[1];
       for (int x_factor = 0; x_factor < axial_factors_[0]; ++x_factor) {
-        double x_start = left_front_bottom_[0] + x_range * x_factor / axial_factors_[0];
-        double x_end = left_front_bottom_[0] + x_range * (x_factor + 1) / axial_factors_[0];
+        double x_start =
+            left_front_bottom_[0] + x_range * x_factor / axial_factors_[0];
+        double x_end = left_front_bottom_[0] +
+                       x_range * (x_factor + 1) / axial_factors_[0];
         ret.push_back({{x_start, y_start, z_start}, {x_end, y_end, z_end}});
       }
     }
@@ -90,14 +95,17 @@ Box CubePartitioner::GetLocation(BoxId boxIndex) const {
 }
 
 BoxId CubePartitioner::Locate(Point3D point) const {
-  double x_step = (right_back_top_[0] - left_front_bottom_[0]) / axial_factors_[0];
-  double y_step = (right_back_top_[1] - left_front_bottom_[1]) / axial_factors_[1];
-  double z_step = (right_back_top_[2] - left_front_bottom_[2]) / axial_factors_[2];
+  double x_step =
+      (right_back_top_[0] - left_front_bottom_[0]) / axial_factors_[0];
+  double y_step =
+      (right_back_top_[1] - left_front_bottom_[1]) / axial_factors_[1];
+  double z_step =
+      (right_back_top_[2] - left_front_bottom_[2]) / axial_factors_[2];
   int x_index = std::floor((point[0] - left_front_bottom_[0]) / x_step);
   int y_index = std::floor((point[1] - left_front_bottom_[1]) / y_step);
   int z_index = std::floor((point[2] - left_front_bottom_[2]) / z_step);
   BoxId ret = z_index * (axial_factors_[0] * axial_factors_[1]) +
-      y_index * axial_factors_[0] + x_index;
+              y_index * axial_factors_[0] + x_index;
   assert(ret >= 0);
   assert(ret < GetBoxCount());
   return ret;
@@ -110,9 +118,12 @@ NeighborSurfaces CubePartitioner::GetNeighborSurfaces(BoxId boxIndex) const {
   int yx = boxIndex % (axial_factors_[0] * axial_factors_[1]);
   int y_index = yx / axial_factors_[0];
   int x_index = yx % axial_factors_[0];
-  std::vector<std::pair<int, Surface>> x_neighbor_surfaces{{0, SurfaceEnum::kNone}};
-  std::vector<std::pair<int, Surface>> y_neighbor_surfaces{{0, SurfaceEnum::kNone}};
-  std::vector<std::pair<int, Surface>> z_neighbor_surfaces{{0, SurfaceEnum::kNone}};
+  std::vector<std::pair<int, Surface>> x_neighbor_surfaces{
+      {0, SurfaceEnum::kNone}};
+  std::vector<std::pair<int, Surface>> y_neighbor_surfaces{
+      {0, SurfaceEnum::kNone}};
+  std::vector<std::pair<int, Surface>> z_neighbor_surfaces{
+      {0, SurfaceEnum::kNone}};
   // We will see if there's any box adjacent to this box.
   // If there is, we take the adjacent surface of that box.
   // For e.g. if there's a box to the left, we take its right surface.
@@ -142,8 +153,8 @@ NeighborSurfaces CubePartitioner::GetNeighborSurfaces(BoxId boxIndex) const {
         if (surface == SurfaceEnum::kNone) {
           continue;
         }
-        BoxId box = (x_index + xs.first) +
-            (y_index + ys.first) * axial_factors_[0] +
+        BoxId box =
+            (x_index + xs.first) + (y_index + ys.first) * axial_factors_[0] +
             (z_index + zs.first) * (axial_factors_[0] + axial_factors_[1]);
         ret.push_back({box, surface});
       }
