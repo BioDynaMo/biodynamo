@@ -70,6 +70,10 @@ class RayScheduler : public Scheduler<Simulation<>> {
       long box,
       const SurfaceToVolumeMap& volumes);
 
+  void DisassembleResourceManager(
+      ResourceManager<>* rm, const Partitioner* partitioner,
+      int64_t step, int64_t box);
+
   /// Add all simulation objects from `box`'s `surface` in `step` to `rm`.
   arrow::Status AddFromVolume(ResourceManager<>* rm, long step, long box, Surface surface);
 

@@ -12,6 +12,7 @@
 //
 // -----------------------------------------------------------------------------
 
+#include <chrono>
 #include <string>
 #include <TBufferFile.h>
 
@@ -420,6 +421,22 @@ void RayScheduler::Simulate(uint64_t steps) {
   }
 }
 
+/// Partitions `rm` and stores them.
+void RayScheduler::DisassembleResourceManager(
+    ResourceManager<>* rm, const Partitioner* partitioner,
+    int64_t step, int64_t box) {
+  auto start = std::chrono::high_resolution_clock::now();
+  arrow::Status s = StoreVolumes(
+      step, box, CreateVolumesForBox(rm, partitioner->GetLocation(box)));
+  if (!s.ok()) {
+    std::cerr << "Cannot store volumes for box " << box << " in step " << step << ".\n";
+  } else {
+    auto end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> elapsed = end - start;
+    std::cout << "Disassemble time " << elapsed.count() << '\n';
+  }
+}
+
 void RayScheduler::SimulateStep(
     long step, long box, bool last_iteration, const Box &bound) {
   MaybeInitializeConnection();
@@ -431,11 +448,7 @@ void RayScheduler::SimulateStep(
   RaySimulation *sim = reinterpret_cast<RaySimulation *>(Simulation<>::GetActive());
   sim->ReplaceResourceManager(rm);
   Execute(last_iteration);
-  arrow::Status s = StoreVolumes(
-      step + 1, box, CreateVolumesForBox(rm, partitioner->GetLocation(box)));
-  if (!s.ok()) {
-    std::cerr << "Cannot store volumes for box " << box << " in step " << step << ".\n";
-  }
+  DisassembleResourceManager(rm, partitioner.get(), step + 1, box);
 }
 
 arrow::Status RayScheduler::MaybeInitializeConnection() {
@@ -499,11 +512,14 @@ arrow::Status RayScheduler::StoreVolumes(
       return s;
     }
   }
+
   return arrow::Status();
 }
 
 ResourceManager<> *RayScheduler::ReassembleVolumes(
     long step, long box, const Partitioner* partitioner) {
+  auto start = std::chrono::high_resolution_clock::now();
+
   // First create an RM for the main volume.
   plasma::ObjectID key = id_for_surface(step, box, SurfaceEnum::kNone);
   std::vector<plasma::ObjectBuffer> buffers = FetchAndGetVolume(key);
@@ -527,6 +543,10 @@ ResourceManager<> *RayScheduler::ReassembleVolumes(
       return nullptr;
     }
   }
+
+  auto end = std::chrono::high_resolution_clock::now();
+  std::chrono::duration<double> elapsed = end - start;
+  std::cout << "Reassemble time " << elapsed.count() << '\n';
 
   return ret;
 }
