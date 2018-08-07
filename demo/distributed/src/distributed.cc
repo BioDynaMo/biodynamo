@@ -439,13 +439,15 @@ void RayScheduler::DisassembleResourceManager(ResourceManager<> *rm,
               << ".\n";
   } else {
     auto end = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double> elapsed = end - start;
-    std::cout << "Disassemble time " << elapsed.count() << '\n';
+    std::chrono::milliseconds elapsed =
+        std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    std::cout << "Disassemble time " << elapsed.count() << " ms\n";
   }
 }
 
 void RayScheduler::SimulateStep(int64_t step, int64_t box, bool last_iteration,
                                 const Box &bound) {
+
   MaybeInitializeConnection();
   std::unique_ptr<Partitioner> partitioner(CreatePartitioner());
   partitioner->InitializeWithBoundingBox(bound.first, bound.second);
@@ -455,8 +457,14 @@ void RayScheduler::SimulateStep(int64_t step, int64_t box, bool last_iteration,
   RaySimulation *sim =
       reinterpret_cast<RaySimulation *>(Simulation<>::GetActive());
   sim->ReplaceResourceManager(rm);
+  auto start = std::chrono::high_resolution_clock::now();
   Execute(last_iteration);
+  auto end = std::chrono::high_resolution_clock::now();
+  std::chrono::milliseconds elapsed =
+      std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+  std::cout << "Execute time " << elapsed.count() << " ms\n";
   DisassembleResourceManager(rm, partitioner.get(), step + 1, box);
+
 }
 
 arrow::Status RayScheduler::MaybeInitializeConnection() {
@@ -532,6 +540,8 @@ ResourceManager<> *RayScheduler::ReassembleVolumes(
   ret = reinterpret_cast<ResourceManager<> *>(
       f.ReadObjectAny(ResourceManager<>::Class()));
 
+  auto end_main = std::chrono::high_resolution_clock::now();
+
   // Then add from the border regions.
   for (const auto &ns : partitioner->GetNeighborSurfaces(box)) {
     arrow::Status s = AddFromVolume(ret, step, ns.first, ns.second);
@@ -542,9 +552,14 @@ ResourceManager<> *RayScheduler::ReassembleVolumes(
     }
   }
 
-  auto end = std::chrono::high_resolution_clock::now();
-  std::chrono::duration<double> elapsed = end - start;
-  std::cout << "Reassemble time " << elapsed.count() << '\n';
+  auto end_all = std::chrono::high_resolution_clock::now();
+
+  std::chrono::milliseconds elapsed =
+      std::chrono::duration_cast<std::chrono::milliseconds>(end_main - start);
+  std::cout << "Reassemble without halos time " << elapsed.count() << " ms\n";
+  elapsed =
+      std::chrono::duration_cast<std::chrono::milliseconds>(end_all - start);
+  std::cout << "Reassemble with halos time " << elapsed.count() << " ms\n";
 
   return ret;
 }

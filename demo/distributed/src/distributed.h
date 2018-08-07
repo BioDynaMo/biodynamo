@@ -46,8 +46,10 @@ inline int Simulate(int argc, const char** argv) {
   ModelInitializer::Grid3D(cells_per_dim, 20, construct);
 
   // 4. Run simulation for one timestep
-  simulation->GetScheduler()->Simulate(42);
-
+  {
+    Timing timer("Simulate time");
+    simulation->GetScheduler()->Simulate(10);
+  }
   std::cout << "Simulation completed successfully!\n";
   return 0;
 }
