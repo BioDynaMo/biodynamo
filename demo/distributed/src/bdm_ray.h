@@ -36,7 +36,7 @@ class RayScheduler : public Scheduler<Simulation<>> {
   using super = Scheduler<Simulation<>>;
 
   /// Runs one simulation timestep for `box` in `step` with global `bound`.
-  void SimulateStep(long step, long box, bool last_iteration, const Box& bound);
+  void SimulateStep(int64_t step, int64_t box, bool last_iteration, const Box& bound);
 
   /// Initiates a distributed simulation and waits for its completion.
   ///
@@ -66,8 +66,8 @@ class RayScheduler : public Scheduler<Simulation<>> {
 
   /// Stores `volumes` in the object store for `box` in `step`.
   arrow::Status StoreVolumes(
-      long step,
-      long box,
+      int64_t step,
+      int64_t box,
       const SurfaceToVolumeMap& volumes);
 
   void DisassembleResourceManager(
@@ -75,12 +75,12 @@ class RayScheduler : public Scheduler<Simulation<>> {
       int64_t step, int64_t box);
 
   /// Add all simulation objects from `box`'s `surface` in `step` to `rm`.
-  arrow::Status AddFromVolume(ResourceManager<>* rm, long step, long box, Surface surface);
+  arrow::Status AddFromVolume(ResourceManager<>* rm, int64_t step, int64_t box, Surface surface);
 
   /// Reassembles all volumes required to simulate `box` in `step` according to
   /// `partitioner`.
   ResourceManager<>* ReassembleVolumes(
-      long step, long box, const Partitioner* partitioner);
+      int64_t step, int64_t box, const Partitioner* partitioner);
 
   /// Calls Plasma `Fetch` and `Get` on `key`.
   std::vector<plasma::ObjectBuffer> FetchAndGetVolume(

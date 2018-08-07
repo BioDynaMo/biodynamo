@@ -49,7 +49,7 @@ extern "C" void bdm_setup_ray(const char *local_scheduler_socket_name,
 }
 
 extern "C" void bdm_simulate_step(
-    long step, long box, bool last_iteration,
+    int64_t step, int64_t box, bool last_iteration,
     double left, double front, double bottom,
     double right, double back, double top) {
   RaySimulation *simulation = new RaySimulation();
@@ -98,7 +98,7 @@ plasma::ObjectID id_for_event(std::string event) {
 
 /// Returns an ObjectID for `step`, `box` and `surface` under `g_simulation_id`
 /// namespace.
-plasma::ObjectID id_for_surface(long step, long box,
+plasma::ObjectID id_for_surface(int64_t step, int64_t box,
                                 Surface surface = SurfaceEnum::kNone) {
   SHA256_CTX ctx;
   sha256_init(&ctx);
@@ -106,7 +106,7 @@ plasma::ObjectID id_for_surface(long step, long box,
   sha256_update(&ctx, reinterpret_cast<const BYTE *>(&step), 8);
   sha256_update(&ctx, reinterpret_cast<const BYTE *>(&box), 8);
   if (surface != SurfaceEnum::kNone) {
-    long s = surface;
+    int64_t s = surface;
     sha256_update(&ctx, reinterpret_cast<const BYTE *>(&s), 8);
   }
   std::string hash(SHA256_BLOCK_SIZE, '\x00');
@@ -438,7 +438,7 @@ void RayScheduler::DisassembleResourceManager(
 }
 
 void RayScheduler::SimulateStep(
-    long step, long box, bool last_iteration, const Box &bound) {
+    int64_t step, int64_t box, bool last_iteration, const Box &bound) {
   MaybeInitializeConnection();
   std::unique_ptr<Partitioner> partitioner(CreatePartitioner());
   partitioner->InitializeWithBoundingBox(bound.first, bound.second);
@@ -483,7 +483,7 @@ arrow::Status RayScheduler::MaybeInitializeConnection() {
 }
 
 arrow::Status RayScheduler::StoreVolumes(
-    long step, long box, const SurfaceToVolumeMap &volumes) {
+    int64_t step, int64_t box, const SurfaceToVolumeMap &volumes) {
   for (const SurfaceToVolume &sv : volumes) {
     Surface surface = sv.first;
     ResourceManagerPtr rm = sv.second;
@@ -517,7 +517,7 @@ arrow::Status RayScheduler::StoreVolumes(
 }
 
 ResourceManager<> *RayScheduler::ReassembleVolumes(
-    long step, long box, const Partitioner* partitioner) {
+    int64_t step, int64_t box, const Partitioner* partitioner) {
   auto start = std::chrono::high_resolution_clock::now();
 
   // First create an RM for the main volume.
@@ -551,7 +551,7 @@ ResourceManager<> *RayScheduler::ReassembleVolumes(
   return ret;
 }
 
-arrow::Status RayScheduler::AddFromVolume(ResourceManager<> *rm, long step, long box, Surface surface) {
+arrow::Status RayScheduler::AddFromVolume(ResourceManager<> *rm, int64_t step, int64_t box, Surface surface) {
   plasma::ObjectID key = id_for_surface(step, box, surface);
   std::vector<plasma::ObjectBuffer> buffers = FetchAndGetVolume(key);
   if (buffers.empty()) {

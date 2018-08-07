@@ -44,7 +44,7 @@ class Surface {
         (value_ == 32 && other.value_ == 8);
   }
 
-  constexpr operator long() const {
+  constexpr operator int() const {
     return value_;
   }
 
