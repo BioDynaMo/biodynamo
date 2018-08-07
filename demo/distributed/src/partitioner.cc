@@ -76,11 +76,11 @@ Boxes CubePartitioner::Partition() const {
   return ret;
 }
 
-Box CubePartitioner::GetLocation(BoxId boxIndex) const {
-  assert(boxIndex >= 0);
-  assert(boxIndex < GetBoxCount());
-  int z_index = boxIndex / (axial_factors_[0] * axial_factors_[1]);
-  int yx = boxIndex % (axial_factors_[0] * axial_factors_[1]);
+Box CubePartitioner::GetLocation(BoxId box_index) const {
+  assert(box_index >= 0);
+  assert(box_index < GetBoxCount());
+  int z_index = box_index / (axial_factors_[0] * axial_factors_[1]);
+  int yx = box_index % (axial_factors_[0] * axial_factors_[1]);
   int y_index = yx / axial_factors_[0];
   int x_index = yx % axial_factors_[0];
   double x_range = right_back_top_[0] - left_front_bottom_[0];
@@ -111,11 +111,11 @@ BoxId CubePartitioner::Locate(Point3D point) const {
   return ret;
 }
 
-NeighborSurfaces CubePartitioner::GetNeighborSurfaces(BoxId boxIndex) const {
-  assert(boxIndex >= 0);
-  assert(boxIndex < GetBoxCount());
-  int z_index = boxIndex / (axial_factors_[0] * axial_factors_[1]);
-  int yx = boxIndex % (axial_factors_[0] * axial_factors_[1]);
+NeighborSurfaces CubePartitioner::GetNeighborSurfaces(BoxId box_index) const {
+  assert(box_index >= 0);
+  assert(box_index < GetBoxCount());
+  int z_index = box_index / (axial_factors_[0] * axial_factors_[1]);
+  int yx = box_index % (axial_factors_[0] * axial_factors_[1]);
   int y_index = yx / axial_factors_[0];
   int x_index = yx % axial_factors_[0];
   std::vector<std::pair<int, Surface>> x_neighbor_surfaces{

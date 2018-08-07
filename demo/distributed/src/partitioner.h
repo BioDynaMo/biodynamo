@@ -23,7 +23,7 @@ class Surface {
  public:
   Surface() : Surface(0) {}
 
-  constexpr Surface intersect(const Surface& s) const {
+  constexpr Surface Intersect(const Surface& s) const {
     return Surface(value_ | s.value_);
   }
 
@@ -32,10 +32,10 @@ class Surface {
   }
 
   constexpr Surface operator|(const Surface& other) const {
-    return intersect(other);
+    return Intersect(other);
   }
 
-  constexpr bool conflict(const Surface& other) const {
+  constexpr bool Conflict(const Surface& other) const {
     return (value_ == 1 && other.value_ == 8) ||
            (value_ == 2 && other.value_ == 16) ||
            (value_ == 4 && other.value_ == 32) ||
@@ -73,18 +73,14 @@ using Boxes = std::vector<Box>;
 /// /param pos the location to check
 /// /param left_front_bottom (inclusive)
 /// /param right_back_top (exclusive)
-static inline bool is_in(const Point3D& pos, const Point3D& left_front_bottom,
-                         const Point3D& right_back_top) {
+static inline bool IsIn(const Point3D& pos, const Point3D& left_front_bottom,
+                        const Point3D& right_back_top) {
   double x = pos[0];
   double y = pos[1];
   double z = pos[2];
   return x >= left_front_bottom[0] && x < right_back_top[0] &&
          y >= left_front_bottom[1] && y < right_back_top[1] &&
          z >= left_front_bottom[2] && z < right_back_top[2];
-}
-
-static inline bool is_in(const Point3D& pos, const Box& box) {
-  return is_in(pos, box.first, box.second);
 }
 
 using NeighborSurface = std::pair<BoxId, Surface>;
@@ -113,24 +109,24 @@ class Partitioner {
   /// Returns the bounding box by left_front_bottom and right_back_top.
   Box GetBoundingBox() const { return {left_front_bottom_, right_back_top_}; }
 
-  /// Retrieves the coordinates of the box indexed by boxIndex.
+  /// Retrieves the coordinates of the box indexed by box_index.
   ///
-  /// This is basically the same as Partition()[boxIndex] but may be more
+  /// This is basically the same as Partition()[box_index] but may be more
   /// optimized in concrete partitioner implementations.
-  virtual Box GetLocation(BoxId boxIndex) const {
-    assert(boxIndex >= 0);
+  virtual Box GetLocation(BoxId box_index) const {
+    assert(box_index >= 0);
     Boxes boxes = Partition();
-    assert(static_cast<size_t>(boxIndex) < boxes.size());
-    return boxes[boxIndex];
+    assert(static_cast<size_t>(box_index) < boxes.size());
+    return boxes[box_index];
   }
 
   /// Returns the box index containing point.
   virtual BoxId Locate(Point3D point) const = 0;
 
-  /// Returns all surfaces surrounding the box indexed by boxIndex.
+  /// Returns all surfaces surrounding the box indexed by box_index.
   ///
   /// There could be 6 full surfaces, 12 edges, and 8 corners neighboring a box.
-  virtual NeighborSurfaces GetNeighborSurfaces(BoxId boxIndex) const = 0;
+  virtual NeighborSurfaces GetNeighborSurfaces(BoxId box_index) const = 0;
 
  protected:
   Point3D left_front_bottom_;
@@ -139,7 +135,7 @@ class Partitioner {
 
 class CubePartitioner : public Partitioner {
  public:
-  CubePartitioner(const std::array<int, 3>& axial_factors)
+  explicit CubePartitioner(const std::array<int, 3>& axial_factors)
       : axial_factors_(axial_factors) {
     assert(axial_factors[0] >= 1);
     assert(axial_factors[1] >= 1);
@@ -154,11 +150,11 @@ class CubePartitioner : public Partitioner {
 
   virtual Boxes Partition() const override;
 
-  virtual Box GetLocation(BoxId boxIndex) const override;
+  virtual Box GetLocation(BoxId box_index) const override;
 
   virtual BoxId Locate(Point3D point) const override;
 
-  virtual NeighborSurfaces GetNeighborSurfaces(BoxId boxIndex) const override;
+  virtual NeighborSurfaces GetNeighborSurfaces(BoxId box_index) const override;
 
  private:
   std::array<int, 3> axial_factors_;

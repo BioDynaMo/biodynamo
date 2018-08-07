@@ -89,9 +89,9 @@ class RayScheduler : public Scheduler<Simulation<>> {
   ///
   /// The results of the partitioning are stored in the object store directly.
   ///
-  /// \param boundingBox output argument to receive the bounding box of the
+  /// \param bounding_box output argument to receive the bounding box of the
   /// world
-  virtual void InitiallyPartition(Box* boundingBox);
+  virtual void InitiallyPartition(Box* bounding_box);
 
   bool initialized_ = false;
   std::unique_ptr<LocalSchedulerConnection> local_scheduler_ = nullptr;

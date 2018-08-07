@@ -134,7 +134,7 @@ SurfaceToVolumeMap AllocVolumes() {
     ++i;
     for (size_t inner = outer + 1; inner < surface_list.size(); ++inner) {
       const Surface &adjacent_surface = surface_list[inner];
-      if (full_surface.conflict(adjacent_surface)) {
+      if (full_surface.Conflict(adjacent_surface)) {
         continue;
       }
       ret[i].first = full_surface | adjacent_surface;
@@ -143,7 +143,7 @@ SurfaceToVolumeMap AllocVolumes() {
       for (size_t innermost = inner + 1; innermost < surface_list.size();
            ++innermost) {
         const Surface &third = surface_list[innermost];
-        if (full_surface.conflict(third) || adjacent_surface.conflict(third)) {
+        if (full_surface.Conflict(third) || adjacent_surface.Conflict(third)) {
           continue;
         }
         ret[i].first = full_surface | adjacent_surface | third;
@@ -179,7 +179,7 @@ std::array<Surface, 7> FindContainingSurfaces(
   assert(left_front_bottom[1] + xyz_halos[1] < right_back_top[1]);
   assert(left_front_bottom[2] + xyz_halos[2] < right_back_top[2]);
 
-  if (!is_in(this_point, left_front_bottom, right_back_top)) {
+  if (!IsIn(this_point, left_front_bottom, right_back_top)) {
     return ret;
   }
 
@@ -197,92 +197,92 @@ std::array<Surface, 7> FindContainingSurfaces(
   const double top_minus = right_back_top[2] - xyz_halos[2];
   size_t i = 0;
 
-  if (is_in(this_point, left_front_bottom, {right, front_plus, top})) {
+  if (IsIn(this_point, left_front_bottom, {right, front_plus, top})) {
     ret[i++] = SurfaceEnum::kFront;
   }
-  if (is_in(this_point, left_front_bottom, {right, front_plus, bottom_plus})) {
+  if (IsIn(this_point, left_front_bottom, {right, front_plus, bottom_plus})) {
     ret[i++] = SurfaceEnum::kFront | SurfaceEnum::kBottom;
   }
-  if (is_in(this_point, left_front_bottom,
+  if (IsIn(this_point, left_front_bottom,
             {left_plus, front_plus, bottom_plus})) {
     ret[i++] = SurfaceEnum::kFront | SurfaceEnum::kBottom | SurfaceEnum::kLeft;
   }
-  if (is_in(this_point, {right_minus, front, bottom},
+  if (IsIn(this_point, {right_minus, front, bottom},
             {right, front_plus, bottom_plus})) {
     ret[i++] = SurfaceEnum::kFront | SurfaceEnum::kBottom | SurfaceEnum::kRight;
   }
-  if (is_in(this_point, left_front_bottom, {left_plus, front_plus, top})) {
+  if (IsIn(this_point, left_front_bottom, {left_plus, front_plus, top})) {
     ret[i++] = SurfaceEnum::kFront | SurfaceEnum::kLeft;
   }
-  if (is_in(this_point, {left, front, top_minus},
+  if (IsIn(this_point, {left, front, top_minus},
             {left_plus, front_plus, top})) {
     ret[i++] = SurfaceEnum::kFront | SurfaceEnum::kLeft | SurfaceEnum::kTop;
   }
-  if (is_in(this_point, {left, front, top_minus}, {right, front_plus, top})) {
+  if (IsIn(this_point, {left, front, top_minus}, {right, front_plus, top})) {
     ret[i++] = SurfaceEnum::kFront | SurfaceEnum::kTop;
   }
-  if (is_in(this_point, {right_minus, front, top_minus},
+  if (IsIn(this_point, {right_minus, front, top_minus},
             {right, front_plus, top})) {
     ret[i++] = SurfaceEnum::kFront | SurfaceEnum::kTop | SurfaceEnum::kRight;
   }
-  if (is_in(this_point, {right_minus, front, bottom},
+  if (IsIn(this_point, {right_minus, front, bottom},
             {right, front_plus, top})) {
     ret[i++] = SurfaceEnum::kFront | SurfaceEnum::kRight;
   }
-  if (is_in(this_point, {left, front, top_minus}, right_back_top)) {
+  if (IsIn(this_point, {left, front, top_minus}, right_back_top)) {
     ret[i++] = SurfaceEnum::kTop;
   }
-  if (is_in(this_point, {left, front, top_minus}, {left_plus, back, top})) {
+  if (IsIn(this_point, {left, front, top_minus}, {left_plus, back, top})) {
     ret[i++] = SurfaceEnum::kTop | SurfaceEnum::kLeft;
   }
-  if (is_in(this_point, {left, back_minus, top_minus},
+  if (IsIn(this_point, {left, back_minus, top_minus},
             {left_plus, back, top})) {
     ret[i++] = SurfaceEnum::kTop | SurfaceEnum::kLeft | SurfaceEnum::kBack;
   }
-  if (is_in(this_point, {right_minus, front, top_minus}, right_back_top)) {
+  if (IsIn(this_point, {right_minus, front, top_minus}, right_back_top)) {
     ret[i++] = SurfaceEnum::kTop | SurfaceEnum::kRight;
   }
-  if (is_in(this_point, {right_minus, back_minus, top_minus}, right_back_top)) {
+  if (IsIn(this_point, {right_minus, back_minus, top_minus}, right_back_top)) {
     ret[i++] = SurfaceEnum::kTop | SurfaceEnum::kRight | SurfaceEnum::kBack;
   }
-  if (is_in(this_point, {left, back_minus, top_minus}, right_back_top)) {
+  if (IsIn(this_point, {left, back_minus, top_minus}, right_back_top)) {
     ret[i++] = SurfaceEnum::kTop | SurfaceEnum::kBack;
   }
-  if (is_in(this_point, {left, back_minus, bottom}, right_back_top)) {
+  if (IsIn(this_point, {left, back_minus, bottom}, right_back_top)) {
     ret[i++] = SurfaceEnum::kBack;
   }
-  if (is_in(this_point, {left, back_minus, bottom}, {left_plus, back, top})) {
+  if (IsIn(this_point, {left, back_minus, bottom}, {left_plus, back, top})) {
     ret[i++] = SurfaceEnum::kBack | SurfaceEnum::kLeft;
   }
-  if (is_in(this_point, {right_minus, back_minus, bottom}, right_back_top)) {
+  if (IsIn(this_point, {right_minus, back_minus, bottom}, right_back_top)) {
     ret[i++] = SurfaceEnum::kBack | SurfaceEnum::kRight;
   }
-  if (is_in(this_point, {left, back_minus, bottom},
+  if (IsIn(this_point, {left, back_minus, bottom},
             {right, back, bottom_plus})) {
     ret[i++] = SurfaceEnum::kBack | SurfaceEnum::kBottom;
   }
-  if (is_in(this_point, {left, back_minus, bottom},
+  if (IsIn(this_point, {left, back_minus, bottom},
             {left_plus, back, bottom_plus})) {
     ret[i++] = SurfaceEnum::kBack | SurfaceEnum::kBottom | SurfaceEnum::kLeft;
   }
-  if (is_in(this_point, {right_minus, back_minus, bottom},
+  if (IsIn(this_point, {right_minus, back_minus, bottom},
             {right, back, bottom_plus})) {
     ret[i++] = SurfaceEnum::kBack | SurfaceEnum::kBottom | SurfaceEnum::kRight;
   }
-  if (is_in(this_point, left_front_bottom, {right, back, bottom_plus})) {
+  if (IsIn(this_point, left_front_bottom, {right, back, bottom_plus})) {
     ret[i++] = SurfaceEnum::kBottom;
   }
-  if (is_in(this_point, left_front_bottom, {left_plus, back, bottom_plus})) {
+  if (IsIn(this_point, left_front_bottom, {left_plus, back, bottom_plus})) {
     ret[i++] = SurfaceEnum::kBottom | SurfaceEnum::kLeft;
   }
-  if (is_in(this_point, {right_minus, front, bottom},
+  if (IsIn(this_point, {right_minus, front, bottom},
             {right, back, bottom_plus})) {
     ret[i++] = SurfaceEnum::kBottom | SurfaceEnum::kRight;
   }
-  if (is_in(this_point, left_front_bottom, {left_plus, back, top})) {
+  if (IsIn(this_point, left_front_bottom, {left_plus, back, top})) {
     ret[i++] = SurfaceEnum::kLeft;
   }
-  if (is_in(this_point, {right_minus, front, bottom}, right_back_top)) {
+  if (IsIn(this_point, {right_minus, front, bottom}, right_back_top)) {
     ret[i++] = SurfaceEnum::kRight;
   }
   assert(i <= ret.size());
@@ -306,7 +306,7 @@ SurfaceToVolumeMap CreateVolumesForBox(ResourceManager<> *rm, const Box &box) {
   SurfaceToVolumeMap ret = AllocVolumes();
   auto f = [&](const auto &element, bdm::SoHandle) {
     Point3D pos = element.GetPosition();
-    if (is_in(pos, box)) {
+    if (IsIn(pos, box.first, box.second)) {
       ResourceManagerPtr volume_rm = ret[0].second;
       volume_rm->push_back(element);
       for (Surface s : FindContainingSurfaces(pos, box, {1, 1, 1})) {
@@ -326,7 +326,7 @@ SurfaceToVolumeMap CreateVolumesForBox(ResourceManager<> *rm, const Box &box) {
 
 namespace bdm {
 
-void RayScheduler::InitiallyPartition(Box *boundingBox) {
+void RayScheduler::InitiallyPartition(Box *bounding_box) {
   std::cout << "In RayScheduler::InitiallyPartition\n";
   Simulation<> *sim = Simulation<>::GetActive();
   ResourceManager<> *rm = sim->GetResourceManager();
@@ -348,8 +348,8 @@ void RayScheduler::InitiallyPartition(Box *boundingBox) {
     }
   }
 
-  if (boundingBox != nullptr) {
-    *boundingBox = partitioner->GetBoundingBox();
+  if (bounding_box != nullptr) {
+    *bounding_box = partitioner->GetBoundingBox();
   }
 }
 
