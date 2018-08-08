@@ -180,7 +180,7 @@ def build_simulation_graph():
         box += 1
 
     partitions = partition._submit(args=[num_boxes], num_return_vals=27 * num_boxes)
-    last_step = {box: partitions[box * 27 : box * 27 + 27] for box in neighbor_map}
+    last_step = {box: partitions[box * 27 : box * 27 + 27] for box in xrange(num_boxes)}
     this_step = collections.defaultdict(list)
 
     num_steps, bounding_box = ray.get(wait_for_start_signal.remote())
