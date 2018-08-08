@@ -220,6 +220,7 @@ def main(args):
         if arg == '--':
             args = parser.parse_args(sys.argv[1:i])
             unknowns = sys.argv[i + 1:]
+            break
     else:
         args, unknowns = parser.parse_known_args()
     global ARGS
