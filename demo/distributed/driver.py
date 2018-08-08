@@ -186,7 +186,8 @@ def build_simulation_graph():
     num_steps, bounding_box = ray.get(wait_for_start_signal.remote())
     for step in xrange(num_steps):
         for box in xrange(num_boxes):
-            deps = [last_step[x.box][x.surface] for x in neighbor_map[box]]
+            deps = [last_step[box][0]]
+            deps.extend(last_step[x.box][x.surface] for x in neighbor_map[box])
             this_step[box] = simulation_step.remote(
                     step, box, step == (num_steps - 1), bounding_box, *deps)
         last_step, this_step = this_step, last_step
