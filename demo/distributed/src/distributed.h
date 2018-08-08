@@ -35,6 +35,12 @@ inline int Simulate(int argc, const char** argv) {
 
   // 3. Define initial model - in this example: 3D grid of cells
   size_t cells_per_dim = 16;
+  if (argc > 1) {
+    if (sscanf(argv[1], "%lu", &cells_per_dim) != 1) {
+      std::cerr << "argv[1] is not a decimal number and is ignored.\n";
+    }
+  }
+  std::cout << "cells_per_dim " << cells_per_dim << '\n';
   auto construct = [](const std::array<double, 3>& position) {
     Cell cell(position);
     cell.SetDiameter(10);
@@ -45,10 +51,17 @@ inline int Simulate(int argc, const char** argv) {
   };
   ModelInitializer::Grid3D(cells_per_dim, 20, construct);
 
-  // 4. Run simulation for one timestep
+  // 4. Run simulation for some steps.
+  size_t step_count = 50;
+  if (argc > 2) {
+    if (sscanf(argv[2], "%lu", &step_count) != 1) {
+      std::cerr << "argv[2] is not a decimal number and is ignored.\n";
+    }
+  }
+  std::cout << "step_count " << step_count << '\n';
   {
     Timing timer("Simulate time");
-    simulation->GetScheduler()->Simulate(10);
+    simulation->GetScheduler()->Simulate(step_count);
   }
   std::cout << "Simulation completed successfully!\n";
   return 0;
