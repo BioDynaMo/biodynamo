@@ -516,6 +516,12 @@ arrow::Status RayScheduler::StoreVolumes(int64_t step, int64_t box,
                 << '\n';
       return s;
     }
+    s = object_store_.Release(key);
+    if (!s.ok()) {
+      std::cerr << "Cannot release box " << box << " in step " << step << ". "
+                << s << '\n';
+      return s;
+    }
   }
 
   return arrow::Status();
