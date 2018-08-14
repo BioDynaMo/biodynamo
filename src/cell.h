@@ -23,7 +23,7 @@
 #include <type_traits>
 #include <vector>
 
-#include "backend.h"
+// #include "backend.h"
 #include "biology_module_util.h"
 #include "default_force.h"
 #include "inline_vector.h"
@@ -38,10 +38,27 @@ namespace bdm {
 /// Declare new biology module event for cell division
 extern const BmEvent gCellDivision;
 
-BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
-  BDM_SIM_OBJECT_HEADER(CellExt, 1, position_, tractor_force_, diameter_,
-                        volume_, adherence_, density_, biology_modules_,
-                        box_idx_);
+// BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
+
+template <typename TCompileTimeParam = CompileTimeParam, typename TDerived = DerivedPlaceholder>
+class CellExt;
+
+template <template <typename, typename> class>
+struct Capsule;
+
+template <>
+struct Capsule<CellExt> {
+  template <typename TCompileTimeParam, typename TDerived>
+  using type = CellExt<TCompileTimeParam, TDerived>;
+};
+
+using Cell = CellExt<CompileTimeParam, Capsule<CellExt>>;
+
+template <typename TCompileTimeParam, typename TDerived>
+class CellExt : public SimulationObjectExt<TCompileTimeParam, TDerived> {
+    BDM_SIM_OBJECT_HEADER(CellExt, 1, position_, tractor_force_, diameter_,
+                          volume_, adherence_, density_, biology_modules_,
+                          box_idx_);
 
  public:
   /// Returns the data members that are required to visualize this simulation
@@ -53,6 +70,7 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
   static constexpr Shape GetShape() { return Shape::kSphere; }
 
   using BiologyModules = typename TCompileTimeParam::BiologyModules;
+
   CellExt() : density_(1.0) {}
   explicit CellExt(double diameter) : diameter_(diameter), density_(1.0) {
     UpdateVolume();
@@ -76,9 +94,9 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
   template <typename TBiologyModule>
   std::vector<const TBiologyModule*> GetBiologyModules() const {
     std::vector<const TBiologyModule*> modules;
-    for (unsigned int i = 0; i < biology_modules_[kIdx].size(); i++) {
+    for (unsigned int i = 0; i < biology_modules_.size(); i++) {
       const TBiologyModule* module =
-          get_if<TBiologyModule>(&biology_modules_[kIdx][i]);
+          get_if<TBiologyModule>(&biology_modules_[i]);
       if (module != nullptr) {
         modules.push_back(module);
       }
@@ -115,7 +133,7 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
   MostDerivedSoPtr Divide(const std::array<double, 3>& axis) {
     auto* random = Simulation_t::GetActive()->GetRandom();
     auto polarcoord =
-        TransformCoordinatesGlobalToPolar(Math::Add(axis, position_[kIdx]));
+        TransformCoordinatesGlobalToPolar(Math::Add(axis, position_));
     return ThisMD()->Divide(random->Uniform(0.9, 1.1), polarcoord[1],
                             polarcoord[2]);
   }
@@ -128,7 +146,7 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
   MostDerivedSoPtr Divide(double volume_ratio,
                           const std::array<double, 3>& axis) {
     auto polarcoord =
-        TransformCoordinatesGlobalToPolar(Math::Add(axis, position_[kIdx]));
+        TransformCoordinatesGlobalToPolar(Math::Add(axis, position_));
     return ThisMD()->Divide(volume_ratio, polarcoord[1], polarcoord[2]);
   }
 
@@ -136,94 +154,94 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
   /// @see `DivideImpl`
   MostDerivedSoPtr Divide(double volume_ratio, double phi, double theta) {
     auto* rm = Simulation_t::GetActive()->GetResourceManager();
-    auto daughter = rm->template New<MostDerivedScalar>().GetSoPtr();
+    auto daughter = rm->template New<MostDerived>().GetSoPtr();
     ThisMD()->DivideImpl(daughter, volume_ratio, phi, theta);
     return daughter;
   }
 
-  double GetAdherence() const { return adherence_[kIdx]; }
+  double GetAdherence() const { return adherence_; }
 
-  double GetDiameter() const { return diameter_[kIdx]; }
+  double GetDiameter() const { return diameter_; }
 
-  double GetMass() const { return density_[kIdx] * volume_[kIdx]; }
+  double GetMass() const { return density_ * volume_; }
 
-  double GetDensity() const { return density_[kIdx]; }
+  double GetDensity() const { return density_; }
 
-  const std::array<double, 3>& GetPosition() const { return position_[kIdx]; }
+  const std::array<double, 3>& GetPosition() const { return position_; }
 
   // this only works for SOA backend
-  double* GetPositionPtr() { return position_.data()->data(); }
-  double* GetDiameterPtr() { return diameter_.data(); }
-  double* GetTractorForcePtr() { return tractor_force_.data()->data(); }
-  double* GetAdherencePtr() { return adherence_.data(); }
-  uint32_t* GetBoxIdPtr() { return box_idx_.data(); }
-
-  void FillMassVector(std::vector<double> * mass) {
-    for (size_t i = 0; i < diameter_.size(); i++) {
-      (*mass)[i] = density_[i] * volume_[i];
-    }
-  }
+  // double* GetPositionPtr() { return position_.data()->data(); }
+  // double* GetDiameterPtr() { return diameter_.data(); }
+  // double* GetTractorForcePtr() { return tractor_force_.data()->data(); }
+  // double* GetAdherencePtr() { return adherence_.data(); }
+  // uint32_t* GetBoxIdPtr() { return box_idx_.data(); }
+  //
+  // void FillMassVector(std::vector<double> * mass) {
+  //   for (size_t i = 0; i < diameter_.size(); i++) {
+  //     (*mass)[i] = density_[i] * volume_[i];
+  //   }
+  // }
   // End TODO
 
   const std::array<double, 3>& GetTractorForce() const {
-    return tractor_force_[kIdx];
+    return tractor_force_;
   }
 
-  double GetVolume() const { return volume_[kIdx]; }
+  double GetVolume() const { return volume_; }
 
-  void SetAdherence(double adherence) { adherence_[kIdx] = adherence; }
+  void SetAdherence(double adherence) { adherence_ = adherence; }
 
   void SetDiameter(double diameter) {
-    diameter_[kIdx] = diameter;
+    diameter_ = diameter;
     UpdateVolume();
   }
 
   void SetVolume(double volume) {
-    volume_[kIdx] = volume;
+    volume_ = volume;
     UpdateDiameter();
   }
 
-  void SetMass(double mass) { density_[kIdx] = mass / volume_[kIdx]; }
+  void SetMass(double mass) { density_ = mass / volume_; }
 
-  void SetDensity(double density) { density_[kIdx] = density; }
+  void SetDensity(double density) { density_ = density; }
 
   void SetPosition(const std::array<double, 3>& position) {
-    position_[kIdx] = position;
+    position_ = position;
   }
 
   void SetTractorForce(const std::array<double, 3>& tractor_force) {
-    tractor_force_[kIdx] = tractor_force;
+    tractor_force_ = tractor_force;
   }
 
   void SetBiologyModules(std::vector<BiologyModules> && bms) {
-    biology_modules_[kIdx] = bms;
+    biology_modules_ = bms;
   }
 
   void ChangeVolume(double speed) {
     // scaling for integration step
     auto* param = Simulation_t::GetActive()->GetParam();
     double delta = speed * param->simulation_time_step_;
-    volume_[kIdx] += delta;
-    if (volume_[kIdx] < 5.2359877E-7) {
-      volume_[kIdx] = 5.2359877E-7;
+    volume_ += delta;
+    if (volume_ < 5.2359877E-7) {
+      volume_ = 5.2359877E-7;
     }
     UpdateDiameter();
   }
 
   void UpdateDiameter() {
     // V = (4/3)*pi*r^3 = (pi/6)*diameter^3
-    diameter_[kIdx] = std::cbrt(volume_[kIdx] * 6 / Math::kPi);
+    diameter_ = std::cbrt(volume_ * 6 / Math::kPi);
   }
 
   void UpdateVolume() {
     // V = (4/3)*pi*r^3 = (pi/6)*diameter^3
-    volume_[kIdx] = Math::kPi / 6 * std::pow(diameter_[kIdx], 3);
+    volume_ = Math::kPi / 6 * std::pow(diameter_, 3);
   }
 
   void UpdatePosition(const std::array<double, 3>& delta) {
-    position_[kIdx][0] += delta[0];
-    position_[kIdx][1] += delta[1];
-    position_[kIdx][2] += delta[2];
+    position_[0] += delta[0];
+    position_[1] += delta[1];
+    position_[2] += delta[2];
   }
 
   template <typename TGrid>
@@ -232,9 +250,9 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
 
   void ApplyDisplacement(const std::array<double, 3>& displacement);
 
-  uint32_t GetBoxIdx() const { return box_idx_[kIdx]; }
+  uint32_t GetBoxIdx() const { return box_idx_; }
 
-  void SetBoxIdx(uint32_t idx) { box_idx_[kIdx] = idx; }
+  void SetBoxIdx(uint32_t idx) { box_idx_ = idx; }
 
  protected:
   /// Returns the position in the polar coordinate system (cylindrical or
@@ -245,12 +263,12 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
   std::array<double, 3> TransformCoordinatesGlobalToPolar(
       const std::array<double, 3>& coord) const;
 
-  vec<std::array<double, 3>> position_;
-  vec<std::array<double, 3>> tractor_force_;
-  vec<double> diameter_;
-  vec<double> volume_;
-  vec<double> adherence_;
-  vec<double> density_;
+  std::array<double, 3> position_;
+  std::array<double, 3> tractor_force_;
+  double diameter_;
+  double volume_;
+  double adherence_;
+  double density_;
 
   /// First axis of the local coordinate system.
   static constexpr std::array<double, 3> kXAxis = {{1.0, 0.0, 0.0}};
@@ -260,10 +278,10 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
   static constexpr std::array<double, 3> kZAxis = {{0.0, 0.0, 1.0}};
 
   /// collection of biology modules which define the internal behavior
-  vec<std::vector<BiologyModules>> biology_modules_;
+  std::vector<BiologyModules> biology_modules_;
 
   /// Grid box index
-  vec<uint32_t> box_idx_;
+  uint32_t box_idx_;
 
   /// Divide mother cell in two daughter cells\n
   /// When mother cell divides, by definition:\n
@@ -288,7 +306,7 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
     // defining the two radii s.t total volume is conserved
     // * radius^3 = r1^3 + r2^3 ;
     // * volume_ratio = r2^3 / r1^3
-    double radius = diameter_[kIdx] * 0.5;
+    double radius = diameter_ * 0.5;
 
     // define an axis for division (along which the nuclei will move)
     double x_coord = std::cos(theta) * std::sin(phi);
@@ -310,19 +328,19 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
     double d_2 = total_length_of_displacement / (volume_ratio + 1);
     double d_1 = total_length_of_displacement - d_2;
 
-    daughter->SetAdherence(adherence_[kIdx]);
-    daughter->SetDensity(density_[kIdx]);
+    daughter->SetAdherence(adherence_);
+    daughter->SetDensity(density_);
 
-    double mother_volume = volume_[kIdx];
+    double mother_volume = volume_;
     double new_volume = mother_volume / (volume_ratio + 1);
     daughter->SetVolume(mother_volume - new_volume);
     SetVolume(new_volume);
 
     // position
     std::array<double, 3> new_position{
-        position_[kIdx][0] + d_2 * axis_of_division[0],
-        position_[kIdx][1] + d_2 * axis_of_division[1],
-        position_[kIdx][2] + d_2 * axis_of_division[2]};
+        position_[0] + d_2 * axis_of_division[0],
+        position_[1] + d_2 * axis_of_division[1],
+        position_[2] + d_2 * axis_of_division[2]};
     daughter->SetPosition(new_position);
 
     std::vector<BiologyModules> branch_biology_modules;
@@ -331,11 +349,11 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
 
     // E) This sphere becomes the 1st daughter
     // move these cells on opposite direction
-    position_[kIdx][0] -= d_1 * axis_of_division[0];
-    position_[kIdx][1] -= d_1 * axis_of_division[1];
-    position_[kIdx][2] -= d_1 * axis_of_division[2];
+    position_[0] -= d_1 * axis_of_division[0];
+    position_[1] -= d_1 * axis_of_division[1];
+    position_[2] -= d_1 * axis_of_division[2];
 
-    daughter->SetBoxIdx(box_idx_[kIdx]);
+    daughter->SetBoxIdx(box_idx_);
 
     // G) TODO(lukas) Copy the intracellular and membrane bound Substances
   }
@@ -353,7 +371,7 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
                                  std::vector<BiologyModules> * destination,
                                  bool skip_removal = false) {
     CopyVisitor<std::vector<BiologyModules>> visitor(event, destination);
-    for (auto& module : biology_modules_[kIdx]) {
+    for (auto& module : biology_modules_) {
       visit(visitor, module);
     }
 
@@ -362,11 +380,11 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
     }
 
     RemoveVisitor remove_visitor(event);
-    for (auto it = biology_modules_[kIdx].begin();
-         it != biology_modules_[kIdx].end();) {
+    for (auto it = biology_modules_.begin();
+         it != biology_modules_.end();) {
       visit(remove_visitor, *it);
       if (remove_visitor.return_value_) {
-        it = biology_modules_[kIdx].erase(it);
+        it = biology_modules_.erase(it);
       } else {
         ++it;
       }
@@ -382,13 +400,13 @@ BDM_SO_DEFINE(constexpr std::array<double, 3> CellExt)::kZAxis;
 
 BDM_SO_DEFINE(template <typename TBiologyModule>
               inline void CellExt)::AddBiologyModule(TBiologyModule&& module) {
-  biology_modules_[kIdx].emplace_back(module);
+  biology_modules_.emplace_back(module);
 }
 
 BDM_SO_DEFINE(inline void CellExt)::RunBiologyModules() {
-  RunVisitor<MostDerived<Backend>> visitor(
-      static_cast<MostDerived<Backend>*>(this));
-  for (auto& module : biology_modules_[kIdx]) {
+  RunVisitor<MostDerived> visitor(
+      static_cast<MostDerived*>(this));
+  for (auto& module : biology_modules_) {
     visit(visitor, module);
   }
 }
@@ -499,7 +517,7 @@ BDM_SO_DEFINE(inline void CellExt)::ApplyDisplacement(
 
 BDM_SO_DEFINE(inline std::array<double, 3> CellExt)::
     TransformCoordinatesGlobalToPolar(const std::array<double, 3>& pos) const {
-  auto vector_to_point = Math::Subtract(pos, position_[kIdx]);
+  auto vector_to_point = Math::Subtract(pos, position_);
   std::array<double, 3> local_cartesian{Math::Dot(kXAxis, vector_to_point),
                                         Math::Dot(kYAxis, vector_to_point),
                                         Math::Dot(kZAxis, vector_to_point)};

@@ -33,7 +33,6 @@
 #endif
 #endif
 
-#include "backend.h"
 #include "diffusion_grid.h"
 #include "simulation.h"
 #include "tuple_util.h"
@@ -94,19 +93,13 @@ constexpr SoHandle kNullSoHandle;
 namespace detail {
 
 /// \see bdm::ConvertToContainerTuple, VariadicTypedef
-template <typename Backend, typename... Types>
+template <typename... Types>
 struct ConvertToContainerTuple {};
 
 /// \see bdm::ConvertToContainerTuple, VariadicTypedef
-template <typename Backend, typename... Types>
-struct ConvertToContainerTuple<Backend, VariadicTypedef<Types...>> {
-  // Helper alias to get the container type associated with Backend
-  template <typename T>
-  using Container = typename Backend::template Container<T>;
-  // Helper type alias to get a type with certain Backend
-  template <typename T>
-  using ToBackend = typename T::template Self<Backend>;
-  using type = std::tuple<Container<ToBackend<Types>>...>;  // NOLINT
+template <typename... Types>
+struct ConvertToContainerTuple<VariadicTypedef<Types...>> {
+  using type = std::tuple<TransactionalVector<Types>...>;  // NOLINT
 };
 
 /// Type trait to obtain the index of a type within a tuple.
@@ -123,15 +116,12 @@ struct ToIndex<TSo, VariadicTypedef<Types...>> {
 
 /// Create a tuple of types in the parameter pack and wrap each type with
 /// container.
-/// @tparam Backend in which the variadic types should be stored in
 /// @tparam TVariadicTypedefWrapper type that wraps a VariadicTypedef
 /// which in turn contains the variadic template parameters
 /// \see VariadicTypedefWrapper
-template <typename Backend, typename TVariadicTypedef>
+template <typename TVariadicTypedef>
 struct ConvertToContainerTuple {
-  typedef
-      typename detail::ConvertToContainerTuple<Backend, TVariadicTypedef>::type
-          type;  // NOLINT
+  using type = typename detail::ConvertToContainerTuple<TVariadicTypedef>::type;
 };
 
 /// ResourceManager holds a container for each atomic type in the simulation.
@@ -145,17 +135,10 @@ struct ConvertToContainerTuple {
 /// This makes user code easier since atomic types can be specified as scalars.
 /// @tparam TCompileTimeParam type that containes the compile time parameter for
 /// a specific simulation. ResourceManager extracts Backend and AtomicTypes.
-template <typename TCompileTimeParam = CompileTimeParam<>>
+template <typename TCompileTimeParam = CompileTimeParam>
 class ResourceManager {
  public:
-  using Backend = typename TCompileTimeParam::SimulationBackend;
   using Types = typename TCompileTimeParam::AtomicTypes;
-  /// Determine Container based on the Backend
-  template <typename T>
-  using TypeContainer = typename Backend::template Container<T>;
-  /// Helper type alias to get a type with certain Backend
-  template <typename T>
-  using ToBackend = typename T::template Self<Backend>;
 
   /// Returns the number of simulation object types
   static constexpr size_t NumberOfTypes() {
@@ -194,9 +177,9 @@ class ResourceManager {
   ///         invariant to the Backend. This means that even if ResourceManager
   ///         stores e.g. `SoaCell`, Type can be `Cell` and still returns the
   ///         correct container.
-  template <typename Type>
-  TypeContainer<ToBackend<Type>>* Get() {
-    return &std::get<TypeContainer<ToBackend<Type>>>(data_);
+  template <typename TType>
+  TransactionalVector<TType>* Get() {
+    return &std::get<TransactionalVector<TType>>(data_);
   }
 
   /// Return the container of diffusion grids
@@ -337,30 +320,17 @@ class ResourceManager {
   /// @tparam TScalarSo simulation object type with scalar backend
   /// @param args arguments which will be forwarded to the TScalarSo constructor
   /// @remarks Note that this function is not thread safe.
-  template <typename TScalarSo, typename... Args, typename TBackend = Backend>
-  typename std::enable_if<std::is_same<TBackend, Soa>::value,
-                          typename TScalarSo::template Self<SoaRef>>::type
-  New(Args... args) {
-    auto container = Get<TScalarSo>();
-    auto idx =
-        container->DelayedPushBack(TScalarSo(std::forward<Args>(args)...));
-    return (*container)[idx];
-  }
-
-  template <typename TScalarSo, typename... Args, typename TBackend = Backend>
-  typename std::enable_if<std::is_same<TBackend, Scalar>::value,
-                          TScalarSo&>::type
-  New(Args... args) {
-    auto container = Get<TScalarSo>();
-    auto idx =
-        container->DelayedPushBack(TScalarSo(std::forward<Args>(args)...));
+  template <typename TSo, typename... Args>
+  TSo& New(Args... args) {
+    auto* container = Get<TSo>();
+    auto idx = container->DelayedPushBack(TSo(std::forward<Args>(args)...));
     return (*container)[idx];
   }
 
  private:
   /// creates one container for each type in Types.
   /// Container type is determined based on the specified Backend
-  typename ConvertToContainerTuple<Backend, Types>::type data_;
+  typename ConvertToContainerTuple<Types>::type data_;
   std::vector<DiffusionGrid*> diffusion_grids_;
 
 #ifdef USE_OPENCL

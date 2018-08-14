@@ -30,15 +30,7 @@ namespace bdm {
 /// `BDM_DEFAULT_COMPILE_TIME_PARAM()`
 /// NB Can't be used in tests because CompileTimeParam is hardcoded in Self
 /// alias
-/// @tparam TBackend required to use simulation objects with different Backend
-template <typename TBackend = Soa>
 struct DefaultCompileTimeParam {
-  template <typename TTBackend>
-  using Self = CompileTimeParam<TTBackend>;
-  using Backend = TBackend;
-
-  /// Defines backend used in ResourceManager
-  using SimulationBackend = Soa;
   using BiologyModules = Variant<NullBiologyModule>;
   using AtomicTypes = VariadicTypedef<Cell>;
 };
@@ -47,7 +39,7 @@ struct DefaultCompileTimeParam {
 /// Caution: This call must be made from namespace `::bdm`. Otherwise,
 /// the forward declared `struct bdm::CompileTimeParam` will not be defined.
 #define BDM_DEFAULT_COMPILE_TIME_PARAM() \
-  struct CompileTimeParam : public DefaultCompileTimeParam<> {};
+  struct CompileTimeParam : public DefaultCompileTimeParam {};
 
 }  // namespace bdm
 

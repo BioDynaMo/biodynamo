@@ -30,8 +30,6 @@ template <typename>
 class Scheduler;
 struct Param;
 
-struct Soa;
-template <typename TBackend = Soa>
 struct CompileTimeParam;
 class SimulationTest;
 class CatalystAdaptorTest;
@@ -43,7 +41,7 @@ class CatalystAdaptorTest;
 /// Implementation for `Simulation` can be found in file:
 /// `simulation_implementation.h`. It must be separate to avoid circular
 /// dependencies. It can't be defined in a source file, because it is templated.
-template <typename TCTParam = CompileTimeParam<>>
+template <typename TCTParam = CompileTimeParam>
 struct Simulation {
   using ResourceManager_t = ResourceManager<TCTParam>;  // NOLINT
 

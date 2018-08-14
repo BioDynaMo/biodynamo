@@ -352,82 +352,79 @@ class CatalystAdaptor {
   ///
   /// @param      data_description  The data description
   ///
-  template <typename TTSimulation = Simulation<>>
-  typename std::enable_if<std::is_same<
-      typename TTSimulation::ResourceManager_t::Backend, Soa>::value>::type
-  CreateVtkObjects(vtkNew<vtkCPDataDescription>& data_description) {  // NOLINT
-    // Add simulation objects to the visualization if requested
-    auto* sim = TSimulation::GetActive();
-    auto* rm = sim->GetResourceManager();
-    auto* param = sim->GetParam();
+  // template <typename TTSimulation = Simulation<>>
+  // typename std::enable_if<std::is_same<
+  //     typename TTSimulation::ResourceManager_t::Backend, Soa>::value>::type
+  // CreateVtkObjects(vtkNew<vtkCPDataDescription>& data_description) {  // NOLINT
+  //   // Add simulation objects to the visualization if requested
+  //   auto* sim = TSimulation::GetActive();
+  //   auto* rm = sim->GetResourceManager();
+  //   auto* param = sim->GetParam();
+  //
+  //   // Create as many visualization objects as registered in configuration
+  //   vtk_so_grids_.resize(param->visualize_sim_objects_.size());
+  //   unsigned so_idx = 0;
+  //
+  //   rm->ApplyOnAllTypes([&, this](auto* sim_objects, uint16_t type_idx) {
+  //     auto so_name = sim_objects->GetScalarTypeName();
+  //
+  //     if (param->visualize_sim_objects_.find(so_name) !=
+  //         param->visualize_sim_objects_.end()) {
+  //       data_description->AddInput(so_name.c_str());
+  //
+  //       // If we segfault at here it probably means that there is a problem with
+  //       // the pipeline (either the C++ pipeline or Python pipeline)
+  //       // We do not need to RequestDataDescription in Export Mode, because we
+  //       // do not make use of Catalyst CoProcessing capabilities
+  //       if (exclusive_export_viz ||
+  //           (g_processor_->RequestDataDescription(
+  //               data_description.GetPointer())) != 0) {
+  //         this->BuildCellsVTKStructures(sim_objects, so_idx);
+  //         data_description->GetInputDescriptionByName(so_name.c_str())
+  //             ->SetGrid(vtk_so_grids_[so_idx].data);
+  //       }
+  //       so_idx++;
+  //     }
+  //   });
+  //
+  //   if (so_idx != param->visualize_sim_objects_.size()) {
+  //     Log::Fatal("Visualize Simulation Objects",
+  //                "One or more simulation objects were not selected for "
+  //                "visualization, even though you registered them for "
+  //                "visualization. Please make sure the names in the "
+  //                "configuration file match the ones in the simulation.");
+  //   }
+  //
+  //   // Create as many visualization objects as registered in configuration
+  //   vtk_dgrids_.resize(param->visualize_diffusion_.size());
+  //
+  //   // Add all diffusion grids to the visualization if requested
+  //   if (!param->visualize_diffusion_.empty()) {
+  //     uint16_t idx = 0;
+  //     for (auto& vd : param->visualize_diffusion_) {
+  //       auto dg = rm->GetDiffusionGrid(vd.name_);
+  //       if (dg == nullptr) {
+  //         Log::Fatal("Visualize Diffusion", "The substance with the name ",
+  //                    vd.name_,
+  //                    " was not found in the list of defined substances. "
+  //                    "Did you spell the name correctly during "
+  //                    "configuration?");
+  //       }
+  //       data_description->AddInput(dg->GetSubstanceName().c_str());
+  //       if (exclusive_export_viz ||
+  //           g_processor_->RequestDataDescription(
+  //               data_description.GetPointer()) != 0) {
+  //         this->BuildDiffusionGridVTKStructures(dg, idx, vd);
+  //         data_description
+  //             ->GetInputDescriptionByName(dg->GetSubstanceName().c_str())
+  //             ->SetGrid(vtk_dgrids_[idx].data);
+  //       }
+  //       idx++;
+  //     }
+  //   }
+  // }
 
-    // Create as many visualization objects as registered in configuration
-    vtk_so_grids_.resize(param->visualize_sim_objects_.size());
-    unsigned so_idx = 0;
-
-    rm->ApplyOnAllTypes([&, this](auto* sim_objects, uint16_t type_idx) {
-      auto so_name = sim_objects->GetScalarTypeName();
-
-      if (param->visualize_sim_objects_.find(so_name) !=
-          param->visualize_sim_objects_.end()) {
-        data_description->AddInput(so_name.c_str());
-
-        // If we segfault at here it probably means that there is a problem with
-        // the pipeline (either the C++ pipeline or Python pipeline)
-        // We do not need to RequestDataDescription in Export Mode, because we
-        // do not make use of Catalyst CoProcessing capabilities
-        if (exclusive_export_viz ||
-            (g_processor_->RequestDataDescription(
-                data_description.GetPointer())) != 0) {
-          this->BuildCellsVTKStructures(sim_objects, so_idx);
-          data_description->GetInputDescriptionByName(so_name.c_str())
-              ->SetGrid(vtk_so_grids_[so_idx].data);
-        }
-        so_idx++;
-      }
-    });
-
-    if (so_idx != param->visualize_sim_objects_.size()) {
-      Log::Fatal("Visualize Simulation Objects",
-                 "One or more simulation objects were not selected for "
-                 "visualization, even though you registered them for "
-                 "visualization. Please make sure the names in the "
-                 "configuration file match the ones in the simulation.");
-    }
-
-    // Create as many visualization objects as registered in configuration
-    vtk_dgrids_.resize(param->visualize_diffusion_.size());
-
-    // Add all diffusion grids to the visualization if requested
-    if (!param->visualize_diffusion_.empty()) {
-      uint16_t idx = 0;
-      for (auto& vd : param->visualize_diffusion_) {
-        auto dg = rm->GetDiffusionGrid(vd.name_);
-        if (dg == nullptr) {
-          Log::Fatal("Visualize Diffusion", "The substance with the name ",
-                     vd.name_,
-                     " was not found in the list of defined substances. "
-                     "Did you spell the name correctly during "
-                     "configuration?");
-        }
-        data_description->AddInput(dg->GetSubstanceName().c_str());
-        if (exclusive_export_viz ||
-            g_processor_->RequestDataDescription(
-                data_description.GetPointer()) != 0) {
-          this->BuildDiffusionGridVTKStructures(dg, idx, vd);
-          data_description
-              ->GetInputDescriptionByName(dg->GetSubstanceName().c_str())
-              ->SetGrid(vtk_dgrids_[idx].data);
-        }
-        idx++;
-      }
-    }
-  }
-
-  template <typename TTSimulation = Simulation<>>
-  typename std::enable_if<!std::is_same<
-      typename TTSimulation::ResourceManager_t::Backend, Soa>::value>::type
-  CreateVtkObjects(vtkNew<vtkCPDataDescription>& data_description) {  // NOLINT
+  void CreateVtkObjects(vtkNew<vtkCPDataDescription>& data_description) {  // NOLINT
     Fatal("CatalystAdaptor",
           "At the moment, CatalystAdaptor supports only simulation objects "
           "with Soa backend!");
@@ -443,7 +440,7 @@ class CatalystAdaptor {
     vtkNew<vtkCPDataDescription> data_description;
     data_description->SetTimeData(time, step);
 
-    CreateVtkObjects(data_description);
+    // CreateVtkObjects(data_description);
 
     if (last_time_step == true) {
       data_description->ForceOutputOn();
@@ -639,7 +636,7 @@ class CatalystAdaptor {
           "trying to use it.");
     }
   }
-  
+
  private:
   friend class CatalystAdaptorTest_GenerateSimulationInfoJson_Test;
   friend class CatalystAdaptorTest_GenerateParaviewState_Test;

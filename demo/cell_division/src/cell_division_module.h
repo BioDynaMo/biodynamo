@@ -25,8 +25,7 @@ namespace bdm {
 // -----------------------------------------------------------------------------
 
 // 1. Define compile time parameter
-template <typename Backend>
-struct CompileTimeParam : public DefaultCompileTimeParam<Backend> {
+struct CompileTimeParam : public DefaultCompileTimeParam {
   // use predefined biology module GrowDivide
   using BiologyModules = Variant<GrowDivide>;
   // use default Backend and AtomicTypes
