@@ -54,7 +54,7 @@ Boxes CubePartitioner::Partition() const {
   double x_range = right_back_top_[0] - left_front_bottom_[0];
   double y_range = right_back_top_[1] - left_front_bottom_[1];
   double z_range = right_back_top_[2] - left_front_bottom_[2];
-  for (int z_factor = 0; z_factor < axial_factors_[1]; ++z_factor) {
+  for (int z_factor = 0; z_factor < axial_factors_[2]; ++z_factor) {
     double z_start =
         left_front_bottom_[2] + z_range * z_factor / axial_factors_[2];
     double z_end =
