@@ -155,7 +155,7 @@ NeighborSurfaces CubePartitioner::GetNeighborSurfaces(BoxId box_index) const {
         }
         BoxId box =
             (x_index + xs.first) + (y_index + ys.first) * axial_factors_[0] +
-            (z_index + zs.first) * (axial_factors_[0] + axial_factors_[1]);
+            (z_index + zs.first) * (axial_factors_[0] * axial_factors_[1]);
         ret.push_back({box, surface});
       }
     }
