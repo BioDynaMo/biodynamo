@@ -37,6 +37,7 @@ ROOT="${WORKDIR}/${PN}"
 DEST_DIR="${BDM_PROJECT_DIR}/build"
 
 function fetch() {
+    mkdir -p "${DISTDIR}"
     wget -c "${SRC_URI}" -O "${DISTDIR}/$(basename "${SRC_URI}")"
 }
 
@@ -48,6 +49,12 @@ function pkg_setup() {
 
 function src_unpack() {
     unzip -d "${WORKDIR}" "${DISTDIR}/$(basename "${SRC_URI}")"
+}
+
+function src_prepare() {
+    pushd "${WORKDIR}/ray-${P}"
+    git apply "${BDM_PROJECT_DIR}/util/build-third-party/ray/0001-Support-pre-assigning-return-IDs-to-remote-funcs.patch"
+    popd
 }
 
 function src_compile() {
@@ -93,6 +100,7 @@ function src_install() {
 fetch
 pkg_setup
 src_unpack
+src_prepare
 src_compile
 src_install
 pushd "${ROOT}/.."

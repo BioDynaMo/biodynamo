@@ -1,0 +1,314 @@
+From 0c160046bd93d3baa733eed4a78b214584756f71 Mon Sep 17 00:00:00 2001
+From: Nam Nguyen <nam@cern.ch>
+Date: Wed, 15 Aug 2018 13:36:12 +0200
+Subject: [PATCH] Support pre-assigning return IDs to remote funcs.
+
+---
+ python/ray/remote_function.py             |  2 ++
+ python/ray/worker.py                      | 11 ++++++++++-
+ src/common/lib/python/common_extension.cc | 18 +++++++++++++++---
+ src/common/task.cc                        | 24 ++++++++++++++++++------
+ src/common/task.h                         |  3 ++-
+ src/common/test/example_task.h            |  2 +-
+ src/common/test/task_tests.cc             | 18 +++++++++---------
+ 7 files changed, 57 insertions(+), 21 deletions(-)
+
+diff --git a/python/ray/remote_function.py b/python/ray/remote_function.py
+index 6451469..9098cb7 100644
+--- a/python/ray/remote_function.py
++++ b/python/ray/remote_function.py
+@@ -108,6 +108,7 @@ class RemoteFunction(object):
+                 args=None,
+                 kwargs=None,
+                 num_return_vals=None,
++                return_ids=None,
+                 num_cpus=None,
+                 num_gpus=None,
+                 resources=None):
+@@ -136,6 +137,7 @@ class RemoteFunction(object):
+             ray.ObjectID(self._function_id),
+             args,
+             num_return_vals=num_return_vals,
++            return_ids=return_ids,
+             resources=resources)
+         if len(object_ids) == 1:
+             return object_ids[0]
+diff --git a/python/ray/worker.py b/python/ray/worker.py
+index 17fd411..c2057c5 100644
+--- a/python/ray/worker.py
++++ b/python/ray/worker.py
+@@ -394,6 +394,9 @@ class Worker(object):
+                         timeout, self.serialization_context)
+                 return results
+             except pyarrow.lib.ArrowInvalid as e:
++                # BioDynaMo specific. This is probably the ROOT header.
++                if 'Expected to read 980247650 metadata bytes, but only read' in str(e):
++                    return [None] * len(object_ids)
+                 # TODO(ekl): the local scheduler could include relevant
+                 # metadata in the task kill case for a better error message
+                 invalid_error = RayTaskError(
+@@ -526,6 +529,7 @@ class Worker(object):
+                     actor_creation_dummy_object_id=None,
+                     execution_dependencies=None,
+                     num_return_vals=None,
++                    return_ids=None,
+                     resources=None,
+                     driver_id=None):
+         """Submit a remote task to the scheduler.
+@@ -594,6 +598,9 @@ class Worker(object):
+             if driver_id is None:
+                 driver_id = self.task_driver_id
+ 
++            if return_ids is None:
++                return_ids = []
++
+             if resources is None:
+                 raise ValueError("The resources dictionary is required.")
+             for value in resources.values():
+@@ -613,7 +620,7 @@ class Worker(object):
+                 num_return_vals, self.current_task_id, self.task_index,
+                 actor_creation_id, actor_creation_dummy_object_id, actor_id,
+                 actor_handle_id, actor_counter, is_actor_checkpoint_method,
+-                execution_dependencies, resources, self.use_raylet)
++                execution_dependencies, resources, self.use_raylet, return_ids)
+             # Increment the worker's task index to track how many tasks have
+             # been submitted by the current task so far.
+             self.task_index += 1
+@@ -831,6 +838,8 @@ class Worker(object):
+                 passed into this function.
+         """
+         for i in range(len(object_ids)):
++            if isinstance(outputs[i], plasma.ObjectID):
++                continue
+             if isinstance(outputs[i], ray.actor.ActorHandle):
+                 raise Exception("Returning an actor handle from a remote "
+                                 "function is not allowed).")
+diff --git a/src/common/lib/python/common_extension.cc b/src/common/lib/python/common_extension.cc
+index 3117816..74957db 100644
+--- a/src/common/lib/python/common_extension.cc
++++ b/src/common/lib/python/common_extension.cc
+@@ -329,15 +329,16 @@ static int PyTask_init(PyTask *self, PyObject *args, PyObject *kwds) {
+   PyObject *resource_map = nullptr;
+   // True if we should use the raylet code path and false otherwise.
+   PyObject *use_raylet_object = nullptr;
++  PyObject *return_ids = nullptr;
+   if (!PyArg_ParseTuple(
+-          args, "O&O&OiO&i|O&O&O&O&iOOOO", &PyObjectToUniqueID, &driver_id,
++          args, "O&O&OiO&i|O&O&O&O&iOOOOO", &PyObjectToUniqueID, &driver_id,
+           &PyObjectToUniqueID, &function_id, &arguments, &num_returns,
+           &PyObjectToUniqueID, &parent_task_id, &parent_counter,
+           &PyObjectToUniqueID, &actor_creation_id, &PyObjectToUniqueID,
+           &actor_creation_dummy_object_id, &PyObjectToUniqueID, &actor_id,
+           &PyObjectToUniqueID, &actor_handle_id, &actor_counter,
+           &is_actor_checkpoint_method_object, &execution_arguments,
+-          &resource_map, &use_raylet_object)) {
++          &resource_map, &use_raylet_object, &return_ids)) {
+     return -1;
+   }
+ 
+@@ -404,12 +405,23 @@ static int PyTask_init(PyTask *self, PyObject *args, PyObject *kwds) {
+   if (!use_raylet) {
+     // The non-raylet code path.
+ 
++    std::vector<std::string> c_return_ids;
++    if (return_ids) {
++      RAY_CHECK(PyList_Check(return_ids));
++      for (Py_ssize_t i = 0; i < PyList_Size(return_ids); ++i) {
++        PyObject *s = PyList_GetItem(return_ids, i);
++        RAY_CHECK(PyString_CheckExact(s));
++        c_return_ids.push_back(
++            std::string(PyString_AsString(s), PyString_Size(s)));
++      }
++    }
++
+     // Construct the task specification.
+     TaskSpec_start_construct(
+         g_task_builder, driver_id, parent_task_id, parent_counter,
+         actor_creation_id, actor_creation_dummy_object_id, actor_id,
+         actor_handle_id, actor_counter, is_actor_checkpoint_method, function_id,
+-        num_returns);
++        num_returns, c_return_ids);
+     // Add the task arguments.
+     for (Py_ssize_t i = 0; i < num_args; ++i) {
+       PyObject *arg = PyList_GetItem(arguments, i);
+diff --git a/src/common/task.cc b/src/common/task.cc
+index 60110fe..a84f83c 100644
+--- a/src/common/task.cc
++++ b/src/common/task.cc
+@@ -44,7 +44,8 @@ class TaskBuilder {
+              int64_t actor_counter,
+              bool is_actor_checkpoint_method,
+              FunctionID function_id,
+-             int64_t num_returns) {
++             int64_t num_returns,
++             const std::vector<std::string> return_ids) {
+     driver_id_ = driver_id;
+     parent_task_id_ = parent_task_id;
+     parent_counter_ = parent_counter;
+@@ -56,6 +57,7 @@ class TaskBuilder {
+     is_actor_checkpoint_method_ = is_actor_checkpoint_method;
+     function_id_ = function_id;
+     num_returns_ = num_returns;
++    return_ids_ = return_ids;
+ 
+     /* Compute hashes. */
+     sha256_init(&ctx);
+@@ -102,9 +104,17 @@ class TaskBuilder {
+     memcpy(&task_id, buff, sizeof(task_id));
+     /* Add return object IDs. */
+     std::vector<flatbuffers::Offset<flatbuffers::String>> returns;
+-    for (int64_t i = 0; i < num_returns_; i++) {
+-      ObjectID return_id = task_compute_return_id(task_id, i);
+-      returns.push_back(to_flatbuf(fbb, return_id));
++    if (return_ids_.empty()) {
++      for (int64_t i = 0; i < num_returns_; i++) {
++        ObjectID return_id = task_compute_return_id(task_id, i);
++        returns.push_back(to_flatbuf(fbb, return_id));
++      }
++    } else {
++      RAY_CHECK(static_cast<size_t>(num_returns_) == return_ids_.size());
++      for (const std::string& id : return_ids_) {
++        ObjectID return_id = ObjectID::from_binary(id);
++        returns.push_back(to_flatbuf(fbb, return_id));
++      }
+     }
+     /* Create TaskInfo. */
+     auto message = CreateTaskInfo(
+@@ -144,6 +154,7 @@ class TaskBuilder {
+   bool is_actor_checkpoint_method_;
+   FunctionID function_id_;
+   int64_t num_returns_;
++  std::vector<std::string> return_ids_;
+   std::unordered_map<std::string, double> resource_map_;
+ };
+ 
+@@ -188,11 +199,12 @@ void TaskSpec_start_construct(TaskBuilder *builder,
+                               int64_t actor_counter,
+                               bool is_actor_checkpoint_method,
+                               FunctionID function_id,
+-                              int64_t num_returns) {
++                              int64_t num_returns,
++                              std::vector<std::string> return_ids) {
+   builder->Start(driver_id, parent_task_id, parent_counter, actor_creation_id,
+                  actor_creation_dummy_object_id, actor_id, actor_handle_id,
+                  actor_counter, is_actor_checkpoint_method, function_id,
+-                 num_returns);
++                 num_returns, return_ids);
+ }
+ 
+ TaskSpec *TaskSpec_finish_construct(TaskBuilder *builder, int64_t *size) {
+diff --git a/src/common/task.h b/src/common/task.h
+index 3984cfd..9cf573d 100644
+--- a/src/common/task.h
++++ b/src/common/task.h
+@@ -220,7 +220,8 @@ void TaskSpec_start_construct(TaskBuilder *B,
+                               int64_t actor_counter,
+                               bool is_actor_checkpoint_method,
+                               FunctionID function_id,
+-                              int64_t num_returns);
++                              int64_t num_returns,
++                              const std::vector<std::string> return_ids);
+ 
+ /**
+  * Finish constructing a task_spec. This computes the task ID and the object IDs
+diff --git a/src/common/test/example_task.h b/src/common/test/example_task.h
+index f90cab6..1ec63ee 100644
+--- a/src/common/test/example_task.h
++++ b/src/common/test/example_task.h
+@@ -15,7 +15,7 @@ static inline TaskExecutionSpec example_task_execution_spec_with_args(
+   FunctionID func_id = FunctionID::from_random();
+   TaskSpec_start_construct(g_task_builder, UniqueID::nil(), parent_task_id, 0,
+                            ActorID::nil(), ObjectID::nil(), ActorID::nil(),
+-                           ActorID::nil(), 0, false, func_id, num_returns);
++                           ActorID::nil(), 0, false, func_id, num_returns, {});
+   for (int64_t i = 0; i < num_args; ++i) {
+     ObjectID arg_id;
+     if (arg_ids == NULL) {
+diff --git a/src/common/test/task_tests.cc b/src/common/test/task_tests.cc
+index 2277912..a6ae265 100644
+--- a/src/common/test/task_tests.cc
++++ b/src/common/test/task_tests.cc
+@@ -17,7 +17,7 @@ TEST task_test(void) {
+   TaskBuilder *builder = make_task_builder();
+   TaskSpec_start_construct(builder, DriverID::nil(), parent_task_id, 0,
+                            ActorID::nil(), ObjectID::nil(), ActorID::nil(),
+-                           ActorID::nil(), 0, false, func_id, 2);
++                           ActorID::nil(), 0, false, func_id, 2, {});
+ 
+   UniqueID arg1 = UniqueID::from_random();
+   TaskSpec_args_add_ref(builder, &arg1, 1);
+@@ -57,7 +57,7 @@ TEST deterministic_ids_test(void) {
+   /* Construct a first task. */
+   TaskSpec_start_construct(builder, DriverID::nil(), parent_task_id, 0,
+                            ActorID::nil(), ObjectID::nil(), ActorID::nil(),
+-                           ActorID::nil(), 0, false, func_id, 3);
++                           ActorID::nil(), 0, false, func_id, 3, {});
+   TaskSpec_args_add_ref(builder, &arg1, 1);
+   TaskSpec_args_add_val(builder, arg2, 11);
+   int64_t size1;
+@@ -66,7 +66,7 @@ TEST deterministic_ids_test(void) {
+   /* Construct a second identical task. */
+   TaskSpec_start_construct(builder, DriverID::nil(), parent_task_id, 0,
+                            ActorID::nil(), ObjectID::nil(), ActorID::nil(),
+-                           ActorID::nil(), 0, false, func_id, 3);
++                           ActorID::nil(), 0, false, func_id, 3, {});
+   TaskSpec_args_add_ref(builder, &arg1, 1);
+   TaskSpec_args_add_val(builder, arg2, 11);
+   int64_t size2;
+@@ -87,7 +87,7 @@ TEST deterministic_ids_test(void) {
+   /* Construct a task with a different parent task ID. */
+   TaskSpec_start_construct(builder, DriverID::nil(), TaskID::from_random(), 0,
+                            ActorID::nil(), ObjectID::nil(), ActorID::nil(),
+-                           ActorID::nil(), 0, false, func_id, 3);
++                           ActorID::nil(), 0, false, func_id, 3, {});
+   TaskSpec_args_add_ref(builder, &arg1, 1);
+   TaskSpec_args_add_val(builder, arg2, 11);
+   int64_t size3;
+@@ -96,7 +96,7 @@ TEST deterministic_ids_test(void) {
+   /* Construct a task with a different parent counter. */
+   TaskSpec_start_construct(builder, DriverID::nil(), parent_task_id, 1,
+                            ActorID::nil(), ObjectID::nil(), ActorID::nil(),
+-                           ActorID::nil(), 0, false, func_id, 3);
++                           ActorID::nil(), 0, false, func_id, 3, {});
+   TaskSpec_args_add_ref(builder, &arg1, 1);
+   TaskSpec_args_add_val(builder, arg2, 11);
+   int64_t size4;
+@@ -106,7 +106,7 @@ TEST deterministic_ids_test(void) {
+   TaskSpec_start_construct(builder, DriverID::nil(), parent_task_id, 0,
+                            ActorID::nil(), ObjectID::nil(), ActorID::nil(),
+                            ActorID::nil(), 0, false, FunctionID::from_random(),
+-                           3);
++                           3, {});
+   TaskSpec_args_add_ref(builder, &arg1, 1);
+   TaskSpec_args_add_val(builder, arg2, 11);
+   int64_t size5;
+@@ -115,7 +115,7 @@ TEST deterministic_ids_test(void) {
+   /* Construct a task with a different object ID argument. */
+   TaskSpec_start_construct(builder, DriverID::nil(), parent_task_id, 0,
+                            ActorID::nil(), ObjectID::nil(), ActorID::nil(),
+-                           ActorID::nil(), 0, false, func_id, 3);
++                           ActorID::nil(), 0, false, func_id, 3, {});
+   ObjectID object_id = ObjectID::from_random();
+   TaskSpec_args_add_ref(builder, &object_id, 1);
+   TaskSpec_args_add_val(builder, arg2, 11);
+@@ -125,7 +125,7 @@ TEST deterministic_ids_test(void) {
+   /* Construct a task with a different value argument. */
+   TaskSpec_start_construct(builder, DriverID::nil(), parent_task_id, 0,
+                            ActorID::nil(), ObjectID::nil(), ActorID::nil(),
+-                           ActorID::nil(), 0, false, func_id, 3);
++                           ActorID::nil(), 0, false, func_id, 3, {});
+   TaskSpec_args_add_ref(builder, &arg1, 1);
+   TaskSpec_args_add_val(builder, (uint8_t *) "hello_world", 11);
+   int64_t size7;
+@@ -170,7 +170,7 @@ TEST send_task(void) {
+   FunctionID func_id = FunctionID::from_random();
+   TaskSpec_start_construct(builder, DriverID::nil(), parent_task_id, 0,
+                            ActorID::nil(), ObjectID::nil(), ActorID::nil(),
+-                           ActorID::nil(), 0, false, func_id, 2);
++                           ActorID::nil(), 0, false, func_id, 2, {});
+   ObjectID object_id = ObjectID::from_random();
+   TaskSpec_args_add_ref(builder, &object_id, 1);
+   TaskSpec_args_add_val(builder, (uint8_t *) "Hello", 5);
+-- 
+2.7.4
+
