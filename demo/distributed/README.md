@@ -25,3 +25,12 @@ benchmark.
    worker(s) is/are free to work on tasks.
 3. Overhead of restarting a worker is controlled by the `max_calls` parameter
    to `@ray.remote` decorator.
+
+
+Note on Ray
+===========
+
+The prebuilt Ray bundle is version 0.5.0 and has a custom patch applied. The
+patch is to pre-assign return IDs to remote functions instead of letting Ray
+generate the IDs by hashing. The patch is in
+`$BDM_PROJECT_DIR/util/build-third-party/ray`.
