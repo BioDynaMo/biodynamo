@@ -110,10 +110,8 @@ plasma::ObjectID id_for_surface(int64_t step, int64_t box,
                 20);
   sha256_update(&ctx, reinterpret_cast<const BYTE *>(&step), 8);
   sha256_update(&ctx, reinterpret_cast<const BYTE *>(&box), 8);
-  if (surface != SurfaceEnum::kNone) {
-    int64_t s = surface;
-    sha256_update(&ctx, reinterpret_cast<const BYTE *>(&s), 8);
-  }
+  int64_t s = surface;
+  sha256_update(&ctx, reinterpret_cast<const BYTE *>(&s), 8);
   std::string hash(SHA256_BLOCK_SIZE, '\x00');
   sha256_final(&ctx, reinterpret_cast<unsigned char *>(&hash[0]));
   return plasma::ObjectID::from_binary(hash.substr(SHA256_BLOCK_SIZE - 20));
