@@ -109,7 +109,11 @@ def partition(num_boxes):
     # We are not actually doing any work here.
     # We only return dummy Python objects so that Ray
     # can build up a dependency graph.
-    return [None] * (27 * num_boxes)
+    ret = []
+    for box in xrange(num_boxes):
+        ret.extend(plasma.ObjectID(hash(SIMULATION_ID, 0, box, INDEX_TO_SURFACE[surface]))
+                   for surface in xrange(27))
+    return ret
 
 
 # At the end of each simulation step, there will be 27 regions stored in Plasma.
@@ -119,8 +123,9 @@ def simulation_step(step_num, node_id, last_iter, bounding_box, *dependencies):
     dll = load_bdm_library()
     dll.bdm_simulate_step(step_num, node_id, last_iter,
                           *[ctypes.c_double(x) for x in bounding_box])
-    return [None] * 27
-
+    ret = [plasma.ObjectID(hash(SIMULATION_ID, step_num + 1, node_id, INDEX_TO_SURFACE[surface]))
+           for surface in xrange(27)]
+    return ret
 
 NeighborSurface = collections.namedtuple('NeighborSurface', 'box surface')
 
@@ -178,11 +183,16 @@ def build_simulation_graph():
     for box in xrange(num_boxes):
         neighbor_count = dll.bdm_get_neighbor_surfaces(box, neighbors)
         for i in range(neighbor_count):
-            neighbor_map[box].append(NeighborSurface(
-                    neighbors[i * 2], SURFACE_TO_INDEX[neighbors[i * 2 + 1]]))
-        box += 1
+            ns = NeighborSurface(neighbors[i * 2], neighbors[i * 2 + 1])
+            neighbor_map[box].append(ns)
 
-    partitions = partition._submit(args=[num_boxes], num_return_vals=27 * num_boxes)
+    ret_ids = []
+    for box in xrange(num_boxes):
+        ret_ids.extend(hash(SIMULATION_ID, 0, box, INDEX_TO_SURFACE[surface])
+                       for surface in xrange(27))
+    partitions = partition._submit(
+            args=[num_boxes], num_return_vals=27 * num_boxes, return_ids=ret_ids)
+
     last_step = {box: partitions[box * 27 : box * 27 + 27] for box in xrange(num_boxes)}
     this_step = collections.defaultdict(list)
 
@@ -190,9 +200,14 @@ def build_simulation_graph():
     for step in xrange(num_steps):
         for box in xrange(num_boxes):
             deps = [last_step[box][0]]
-            deps.extend(last_step[x.box][x.surface] for x in neighbor_map[box])
-            this_step[box] = simulation_step.remote(
-                    step, box, step == (num_steps - 1), bounding_box, *deps)
+            deps.extend(last_step[x.box][SURFACE_TO_INDEX[x.surface]] for x in neighbor_map[box])
+            args = [step, box, step == (num_steps - 1), bounding_box]
+            args.extend(deps)
+            ret_ids = [hash(SIMULATION_ID, step + 1, box, INDEX_TO_SURFACE[surface])
+                       for surface in xrange(27)]
+            this_step[box] = simulation_step._submit(
+                    args=args,
+                    return_ids=ret_ids)
         last_step, this_step = this_step, last_step
 
     ray.get(send_end_signal.remote(*[last_step[i][0] for i in neighbor_map]))
