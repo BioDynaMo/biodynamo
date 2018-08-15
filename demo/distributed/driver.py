@@ -21,6 +21,7 @@ import json
 import logging
 import os
 import re
+import struct
 import sys
 import time
 
@@ -130,36 +131,38 @@ BOTTOM = 4
 RIGHT = 8
 BACK = 16
 TOP = 32
-# This needs to match C++, but we're using dummy values so that's not needed now.
+
+# This must match the C++ side (see AllocVolumes).
 SURFACE_TO_INDEX = {
         0: 0,
         LEFT: 1,
         LEFT | FRONT: 2,
-        LEFT | FRONT | TOP: 3,
-        LEFT | FRONT | BOTTOM: 4,
-        LEFT | BACK: 5,
-        LEFT | BACK | TOP: 6,
-        LEFT | BACK | BOTTOM: 7,
-        LEFT | TOP: 8,
-        LEFT | BOTTOM: 9,
-        RIGHT: 10,
-        RIGHT | FRONT: 11,
-        RIGHT | FRONT | TOP: 12,
-        RIGHT | FRONT | BOTTOM: 13,
-        RIGHT | BACK: 14,
-        RIGHT | BACK | TOP : 15,
-        RIGHT | BACK | BOTTOM: 16,
-        RIGHT | TOP: 17,
-        RIGHT | BOTTOM: 18,
-        FRONT: 19,
-        FRONT | TOP: 20,
-        FRONT | BOTTOM: 21,
-        BACK: 22,
-        BACK | TOP: 23,
-        BACK | BOTTOM: 24,
-        TOP: 25,
-        BOTTOM: 26,
+        LEFT | FRONT | BOTTOM: 3,
+        LEFT | FRONT | TOP: 4,
+        LEFT | BOTTOM: 5,
+        LEFT | BOTTOM | BACK: 6,
+        LEFT | BACK: 7,
+        LEFT | BACK | TOP: 8,
+        LEFT | TOP: 9,
+        FRONT: 10,
+        FRONT | BOTTOM: 11,
+        FRONT | BOTTOM | RIGHT: 12,
+        FRONT | RIGHT: 13,
+        FRONT | RIGHT | TOP: 14,
+        FRONT | TOP: 15,
+        BOTTOM: 16,
+        BOTTOM | RIGHT: 17,
+        BOTTOM | RIGHT | BACK: 18,
+        BOTTOM | BACK: 19,
+        RIGHT: 20,
+        RIGHT | BACK: 21,
+        RIGHT | BACK | TOP: 22,
+        RIGHT | TOP: 23,
+        BACK: 24,
+        BACK | TOP: 25,
+        TOP: 26,
 }
+INDEX_TO_SURFACE = {v: k for k, v in SURFACE_TO_INDEX.items()}
 
 
 @ray.remote
