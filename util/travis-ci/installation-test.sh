@@ -31,7 +31,8 @@ BDM_PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../.."
 set -e -x
 
 # git describe does not work if last commit tag is not checked out
-git fetch --unshallow &>/dev/null || true
+git fetch --unshallow || true
+git fetch --tags
 
 if [ $BDM_OS != "osx" ]; then
   util/run-inside-docker.sh $BDM_OS util/travis-ci/docker-installation-test-wrapper.sh

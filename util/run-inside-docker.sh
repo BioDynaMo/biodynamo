@@ -85,19 +85,19 @@ if [[ "$PWD" != $(realpath $BDM_PROJECT_DIR_ABS)* ]]; then
   exit 1
 fi
 
-# BDM_LOCAL_CERNBOX is defined add the environment variable and volume
-if [ $BDM_LOCAL_CERNBOX ]; then
-  BDM_LOCALCB_ENV="--env BDM_LOCAL_CERNBOX=$BDM_LOCAL_CERNBOX"
-  BDM_LOCALCB_VOLUME="--volume $BDM_LOCAL_CERNBOX:$BDM_LOCAL_CERNBOX"
+# BDM_LOCAL_LFS is defined add the environment variable and volume
+if [ $BDM_LOCAL_LFS ]; then
+  BDM_LOCAL_LFS_ENV="--env BDM_LOCAL_LFS=$BDM_LOCAL_LFS"
+  BDM_LOCAL_LFS_VOLUME="--volume $BDM_LOCAL_LFS:$BDM_LOCAL_LFS"
 fi
 sudo docker run \
   --name $BDM_CONTAINER \
   --net=host \
   --env="DISPLAY" \
-  $BDM_LOCALCB_ENV \
+  $BDM_LOCAL_LFS_ENV \
   --volume $BDM_PROJECT_DIR_ABS:$BDM_PROJECT_DIR_ABS \
   --volume /var/run/docker.sock:/var/run/docker.sock \
-  $BDM_LOCALCB_VOLUME \
+  $BDM_LOCAL_LFS_VOLUME \
   --workdir $PWD \
   -dit \
   $BDM_IMAGE \

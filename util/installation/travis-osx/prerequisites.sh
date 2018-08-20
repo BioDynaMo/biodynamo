@@ -32,7 +32,7 @@ BDM_OS=travis-osx
 . $BDM_PROJECT_DIR/util/installation/common/util.sh
 
 function InstallPackages {
-  BREW_INSTALL_PACKAGES="doxygen valgrind cloc llvm python@2"
+  BREW_INSTALL_PACKAGES="doxygen cloc llvm python@2"
   BREW_UPGRADE_PACKAGES="cmake python"
 
   EchoInfo "This script uses brew to install:"

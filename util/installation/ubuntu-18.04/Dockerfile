@@ -42,6 +42,6 @@ RUN groupadd -g $HOST_GID testuser && \
 
 USER testuser
 
-# preserve the environment variable BDM_LOCAL_CERNBOX when calling scripts with
+# preserve the environment variable BDM_LOCAL_LFS when calling scripts with
 # sudo
-RUN echo "Defaults env_keep += \"BDM_LOCAL_CERNBOX\"" | sudo tee -a /etc/sudoers
+RUN echo "Defaults env_keep += \"BDM_LOCAL_LFS\"" | sudo tee -a /etc/sudoers

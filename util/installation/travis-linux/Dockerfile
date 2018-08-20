@@ -14,9 +14,9 @@
 
 FROM travisci/ci-garnet:packer-1496954857
 
-# preserve the environment variable BDM_LOCAL_CERNBOX when calling scripts with
+# preserve the environment variable BDM_LOCAL_LFS when calling scripts with
 # sudo
-RUN echo "Defaults env_keep += \"BDM_LOCAL_CERNBOX\"" | sudo tee -a /etc/sudoers
+RUN echo "Defaults env_keep += \"BDM_LOCAL_LFS\"" | sudo tee -a /etc/sudoers
 
 ENV TRAVIS=1
 ENV TRAVIS_OS_NAME="linux"

@@ -109,7 +109,7 @@ function DownloadTarAndExtract {
 
   rm $TMP_DEST 2>/dev/null || true
   mkdir -p $DEST
-  if [ $BDM_LOCAL_CERNBOX ]  && [[ "$URL" = /* ]]; then
+  if [ $BDM_LOCAL_LFS ]  && [[ "$URL" = /* ]]; then
     tar -xzf $URL --strip=$STRIP_COMP -C $DEST
   else
     wget --progress=dot:giga -O $TMP_DEST $URL
@@ -118,21 +118,21 @@ function DownloadTarAndExtract {
   fi
 }
 
-# Returns a CERNBox download link.
-# If the environment variable BDM_LOCAL_CERNBOX is set to a local copy of CERNBox,
+# Returns a biodynamo lfs download link.
+# If the environment variable BDM_LOCAL_LFS is set to a local copy of LFS,
 # this function returns a local path to the requested file.
 # Arguments:
 #   $1 directory
 #   $2 file
-function CernboxLink {
+function BdmLfsLink {
   if [[ $# -ne 2 ]]; then
-    echo "ERROR in CernboxLink: Wrong number of arguments"
+    echo "ERROR in BdmLfsLink: Wrong number of arguments"
     exit 1
   fi
-  if [ ! $BDM_LOCAL_CERNBOX ]; then
-    echo "https://cernbox.cern.ch/index.php/s/GjoGUe6HGndEgmP/download?path=${1}&files=${2}"
+  if [ ! $BDM_LOCAL_LFS ]; then
+    echo "http://cern.ch/biodynamo-lfs/third-party/${1}/${2}"
   else
-    echo "${BDM_LOCAL_CERNBOX}/${1}/${2}"
+    echo "${BDM_LOCAL_LFS}/${1}/${2}"
   fi
 }
 
@@ -152,7 +152,7 @@ function DownloadTarFromCBAndExtract {
   local FILE=$2
   local DEST=$3
 
-  URL=$(CernboxLink $DIR $FILE)
+  URL=$(BdmLfsLink $DIR $FILE)
 
   DownloadTarAndExtract $URL $DEST
 }

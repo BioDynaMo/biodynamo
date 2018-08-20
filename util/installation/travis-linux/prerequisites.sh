@@ -40,7 +40,7 @@ function InstallCmake {
 
 function InstallPackages {
   INSTALL_PACKAGES="freeglut3-dev gcc-5 g++-5 valgrind doxygen graphviz cloc  \
-  libiomp-dev clang-3.9 clang-format-3.9 clang-tidy-3.9"
+  libiomp-dev clang-3.9 clang-format-3.9 clang-tidy-3.9 python2.7"
 
   ADD_REPOSITORY='deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-3.9 main'
 
@@ -51,6 +51,7 @@ function InstallPackages {
   EchoInfo ""
   EchoInfo "It adds the repository:"
   EchoInfo "  ppa:ubuntu-toolchain-r/test"
+  EchoInfo "  ppa:jonathonf/python-2.7"
   EchoInfo "  $ADD_REPOSITORY"
   EchoInfo ""
   EchoInfo "It uses pip to install mkdocs and mkdocs-material."
@@ -78,6 +79,7 @@ function InstallPackages {
     sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test  # gcc-5
     # add repository for clang-3.9
     wget -O - http://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
+    sudo add-apt-repository ppa:jonathonf/python-2.7 # python 2.7.14
     sudo apt-add-repository -y "$ADD_REPOSITORY"
     sudo apt-get update
 
