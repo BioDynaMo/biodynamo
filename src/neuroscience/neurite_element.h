@@ -702,7 +702,8 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
   ///   * too long: insert another NeuriteElement
   ///   * too short fuse it with the proximal element or even delete it
   void RunDiscretization() {
-    if (actual_length_[kIdx] > Param::kNeuriteMaxLength) {
+    auto* param = Simulation_t::GetActive()->GetParam();
+    if (actual_length_[kIdx] > param->kNeuriteMaxLength) {
       if (daughter_left_[kIdx] == nullptr) {  // if terminal branch :
         InsertProximalNeuriteElement(0.1);
       } else if (mother_[kIdx].IsNeuronSoma()) {  // if initial branch :
@@ -710,10 +711,10 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
       } else {
         InsertProximalNeuriteElement(0.5);
       }
-    } else if (actual_length_[kIdx] < Param::kNeuriteMinLength &&
+    } else if (actual_length_[kIdx] < param->kNeuriteMinLength &&
                mother_[kIdx].IsNeuriteElement() &&
                mother_[kIdx].GetRestingLength() <
-                   Param::kNeuriteMaxLength - resting_length_[kIdx] - 1 &&
+                   param->kNeuriteMaxLength - resting_length_[kIdx] - 1 &&
                mother_[kIdx].GetDaughterRight() == nullptr &&
                daughter_left_[kIdx] != nullptr) {
       // if the previous branch is removed, we first remove its associated
