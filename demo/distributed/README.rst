@@ -34,3 +34,10 @@ The prebuilt Ray bundle is version 0.5.0 and has a custom patch applied. The
 patch is to pre-assign return IDs to remote functions instead of letting Ray
 generate the IDs by hashing. The patch is in
 `$BDM_PROJECT_DIR/util/build-third-party/ray`.
+
+
+Note on Docker and DNS lookup
+=============================
+
+Please see
+https://development.robinwinslow.uk/2016/06/23/fix-docker-networking-dns/.
