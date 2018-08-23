@@ -48,7 +48,7 @@ def hash(*args):
 
 
 def get_node_info():
-    node_ip = ray.worker.services.get_node_ip_address()
+    node_ip = ray.worker.global_worker.node_ip_address
     info = ray.global_state.client_table()[node_ip]
     logging.debug('Node info: %s', info)
     for d in info:
