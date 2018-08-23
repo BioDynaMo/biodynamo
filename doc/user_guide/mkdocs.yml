@@ -55,6 +55,8 @@ pages:
       - Visualization: visualization.md
       - Diffusion: diffusion.md
       - Tumor Concept: jean_tuto.md
+      - Сells moving along the gradient of a substance: cells_moving.md
+      - Сancer growth: cancer_growth.md
       # - Soma Clustering: soma_clustering.md
     - Documentation:
       - Substance Initialization: substance_initializers.md
