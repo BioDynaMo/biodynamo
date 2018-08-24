@@ -1,0 +1,41 @@
+From 409024cacefe6ba56d57ee629639fb18e7b15d02 Mon Sep 17 00:00:00 2001
+From: Nam Nguyen <nam@cern.ch>
+Date: Fri, 24 Aug 2018 11:00:31 +0200
+Subject: [PATCH 2/2] Take blob sizes into account when scheduling.
+
+---
+ src/global_scheduler/global_scheduler_algorithm.cc | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/src/global_scheduler/global_scheduler_algorithm.cc b/src/global_scheduler/global_scheduler_algorithm.cc
+index 7ca1b86..14f0795 100644
+--- a/src/global_scheduler/global_scheduler_algorithm.cc
++++ b/src/global_scheduler/global_scheduler_algorithm.cc
+@@ -115,12 +115,14 @@ double calculate_cost_pending(const GlobalSchedulerState *state,
+                               TaskSpec *task_spec) {
+   /* Calculate how much data is already present on this machine. TODO(rkn): Note
+    * that this information is not being used yet. Fix this. */
+-  locally_available_data_size(state, scheduler->id, task_spec);
++  int64_t locally_available =
++      locally_available_data_size(state, scheduler->id, task_spec);
+   /* TODO(rkn): This logic does not load balance properly when the different
+    * machines have different sizes. Fix this. */
+   double cost_pending = scheduler->num_recent_tasks_sent +
+                         scheduler->info.task_queue_length -
+                         scheduler->info.available_workers;
++  cost_pending -= locally_available;
+   return cost_pending;
+ }
+ 
+@@ -235,7 +237,7 @@ bool handle_task_waiting_cost(GlobalSchedulerState *state,
+ bool handle_task_waiting(GlobalSchedulerState *state,
+                          GlobalSchedulerPolicyState *policy_state,
+                          Task *task) {
+-  return handle_task_waiting_random(state, policy_state, task);
++  return handle_task_waiting_cost(state, policy_state, task);
+ }
+ 
+ void handle_object_available(GlobalSchedulerState *state,
+-- 
+2.7.4
+

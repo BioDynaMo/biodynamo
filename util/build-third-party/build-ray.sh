@@ -54,6 +54,7 @@ function src_unpack() {
 function src_prepare() {
     pushd "${WORKDIR}/ray-${P}"
     git apply "${BDM_PROJECT_DIR}/util/build-third-party/ray/0001-Support-pre-assigning-return-IDs-to-remote-funcs.patch"
+    git apply "${BDM_PROJECT_DIR}/util/build-third-party/ray/0002-Take-blob-sizes-into-account-when-scheduling.patch"
     popd
 }
 
