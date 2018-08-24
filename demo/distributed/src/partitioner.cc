@@ -12,6 +12,9 @@
 //
 // -----------------------------------------------------------------------------
 
+#include <algorithm>
+#include <limits>
+
 #include "partitioner.h"
 
 namespace bdm {

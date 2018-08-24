@@ -12,8 +12,8 @@
 //
 // -----------------------------------------------------------------------------
 
-#ifndef DEMO_DISTRIBUTED_BACKEND_H_
-#define DEMO_DISTRIBUTED_BACKEND_H_
+#ifndef DEMO_DISTRIBUTED_SRC_BACKEND_H_
+#define DEMO_DISTRIBUTED_SRC_BACKEND_H_
 
 #include "biodynamo.h"
 
@@ -31,4 +31,4 @@ struct CompileTimeParam : public DefaultCompileTimeParam<Backend> {
 
 }  // namespace bdm
 
-#endif  // DEMO_DISTRIBUTED_BACKEND_H_
+#endif  // DEMO_DISTRIBUTED_SRC_BACKEND_H_

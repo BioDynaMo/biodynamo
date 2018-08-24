@@ -14,7 +14,9 @@
 
 #include <TBufferFile.h>
 #include <chrono>
+#include <limits>
 #include <string>
+#include <vector>
 
 #include "distributed.h"
 
@@ -22,9 +24,7 @@ int main(int argc, const char **argv) { return bdm::Simulate(argc, argv); }
 
 bool g_under_ray = false;
 
-namespace {
-
-using namespace bdm;
+namespace bdm {
 
 constexpr int kPlasmaTimeout = 30000;  // 30 seconds in ms.
 constexpr int kPlasmaAttempts = 3;     // Try to Get() 3 times.
@@ -202,29 +202,29 @@ std::array<Surface, 7> FindContainingSurfaces(
     ret[i++] = SurfaceEnum::kFront | SurfaceEnum::kBottom;
   }
   if (IsIn(this_point, left_front_bottom,
-            {left_plus, front_plus, bottom_plus})) {
+           {left_plus, front_plus, bottom_plus})) {
     ret[i++] = SurfaceEnum::kFront | SurfaceEnum::kBottom | SurfaceEnum::kLeft;
   }
   if (IsIn(this_point, {right_minus, front, bottom},
-            {right, front_plus, bottom_plus})) {
+           {right, front_plus, bottom_plus})) {
     ret[i++] = SurfaceEnum::kFront | SurfaceEnum::kBottom | SurfaceEnum::kRight;
   }
   if (IsIn(this_point, left_front_bottom, {left_plus, front_plus, top})) {
     ret[i++] = SurfaceEnum::kFront | SurfaceEnum::kLeft;
   }
   if (IsIn(this_point, {left, front, top_minus},
-            {left_plus, front_plus, top})) {
+           {left_plus, front_plus, top})) {
     ret[i++] = SurfaceEnum::kFront | SurfaceEnum::kLeft | SurfaceEnum::kTop;
   }
   if (IsIn(this_point, {left, front, top_minus}, {right, front_plus, top})) {
     ret[i++] = SurfaceEnum::kFront | SurfaceEnum::kTop;
   }
   if (IsIn(this_point, {right_minus, front, top_minus},
-            {right, front_plus, top})) {
+           {right, front_plus, top})) {
     ret[i++] = SurfaceEnum::kFront | SurfaceEnum::kTop | SurfaceEnum::kRight;
   }
   if (IsIn(this_point, {right_minus, front, bottom},
-            {right, front_plus, top})) {
+           {right, front_plus, top})) {
     ret[i++] = SurfaceEnum::kFront | SurfaceEnum::kRight;
   }
   if (IsIn(this_point, {left, front, top_minus}, right_back_top)) {
@@ -233,8 +233,7 @@ std::array<Surface, 7> FindContainingSurfaces(
   if (IsIn(this_point, {left, front, top_minus}, {left_plus, back, top})) {
     ret[i++] = SurfaceEnum::kTop | SurfaceEnum::kLeft;
   }
-  if (IsIn(this_point, {left, back_minus, top_minus},
-            {left_plus, back, top})) {
+  if (IsIn(this_point, {left, back_minus, top_minus}, {left_plus, back, top})) {
     ret[i++] = SurfaceEnum::kTop | SurfaceEnum::kLeft | SurfaceEnum::kBack;
   }
   if (IsIn(this_point, {right_minus, front, top_minus}, right_back_top)) {
@@ -256,15 +255,15 @@ std::array<Surface, 7> FindContainingSurfaces(
     ret[i++] = SurfaceEnum::kBack | SurfaceEnum::kRight;
   }
   if (IsIn(this_point, {left, back_minus, bottom},
-            {right, back, bottom_plus})) {
+           {right, back, bottom_plus})) {
     ret[i++] = SurfaceEnum::kBack | SurfaceEnum::kBottom;
   }
   if (IsIn(this_point, {left, back_minus, bottom},
-            {left_plus, back, bottom_plus})) {
+           {left_plus, back, bottom_plus})) {
     ret[i++] = SurfaceEnum::kBack | SurfaceEnum::kBottom | SurfaceEnum::kLeft;
   }
   if (IsIn(this_point, {right_minus, back_minus, bottom},
-            {right, back, bottom_plus})) {
+           {right, back, bottom_plus})) {
     ret[i++] = SurfaceEnum::kBack | SurfaceEnum::kBottom | SurfaceEnum::kRight;
   }
   if (IsIn(this_point, left_front_bottom, {right, back, bottom_plus})) {
@@ -274,7 +273,7 @@ std::array<Surface, 7> FindContainingSurfaces(
     ret[i++] = SurfaceEnum::kBottom | SurfaceEnum::kLeft;
   }
   if (IsIn(this_point, {right_minus, front, bottom},
-            {right, back, bottom_plus})) {
+           {right, back, bottom_plus})) {
     ret[i++] = SurfaceEnum::kBottom | SurfaceEnum::kRight;
   }
   if (IsIn(this_point, left_front_bottom, {left_plus, back, top})) {
@@ -318,11 +317,7 @@ SurfaceToVolumeMap CreateVolumesForBox(ResourceManager<> *rm, const Box &box) {
   };
   rm->ApplyOnAllElements(f);
   return ret;
-};
-
-}  // namespace
-
-namespace bdm {
+}
 
 void RayScheduler::InitiallyPartition(Box *bounding_box) {
   std::cout << "In RayScheduler::InitiallyPartition\n";
@@ -445,7 +440,6 @@ void RayScheduler::DisassembleResourceManager(ResourceManager<> *rm,
 
 void RayScheduler::SimulateStep(int64_t step, int64_t box, bool last_iteration,
                                 const Box &bound) {
-
   MaybeInitializeConnection();
   std::unique_ptr<Partitioner> partitioner(CreatePartitioner());
   partitioner->InitializeWithBoundingBox(bound.first, bound.second);
@@ -462,7 +456,6 @@ void RayScheduler::SimulateStep(int64_t step, int64_t box, bool last_iteration,
       std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
   std::cout << "Execute time " << elapsed.count() << " ms\n";
   DisassembleResourceManager(rm, partitioner.get(), step + 1, box);
-
 }
 
 arrow::Status RayScheduler::MaybeInitializeConnection() {
@@ -502,9 +495,9 @@ arrow::Status RayScheduler::StoreVolumes(int64_t step, int64_t box,
     std::shared_ptr<Buffer> buffer;
     arrow::Status s = object_store_.Create(key, size, nullptr, 0, &buffer);
     if (!s.ok()) {
-      std::cerr << "Cannot push volume surface " << static_cast<long>(surface)
-                << " for box " << box << " in step " << step << ". " << s
-                << '\n';
+      std::cerr << "Cannot push volume surface "
+                << static_cast<int64_t>(surface) << " for box " << box
+                << " in step " << step << ". " << s << '\n';
       return s;
     }
     memcpy(buffer->mutable_data(), buff.Buffer(), size);

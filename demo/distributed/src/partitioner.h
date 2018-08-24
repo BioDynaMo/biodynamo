@@ -12,8 +12,11 @@
 //
 // -----------------------------------------------------------------------------
 
-#ifndef DEMO_DISTRIBUTED_PARTITIONER_H_
-#define DEMO_DISTRIBUTED_PARTITIONER_H_
+#ifndef DEMO_DISTRIBUTED_SRC_PARTITIONER_H_
+#define DEMO_DISTRIBUTED_SRC_PARTITIONER_H_
+
+#include <utility>
+#include <vector>
 
 #include "backend.h"
 
@@ -144,21 +147,21 @@ class CubePartitioner : public Partitioner {
     assert(axial_factors[0] * axial_factors[1] * axial_factors[2] >= 1);
   }
 
-  virtual int GetBoxCount() const override {
+  int GetBoxCount() const override {
     return axial_factors_[0] * axial_factors_[1] * axial_factors_[2];
   }
 
-  virtual Boxes Partition() const override;
+  Boxes Partition() const override;
 
-  virtual Box GetLocation(BoxId box_index) const override;
+  Box GetLocation(BoxId box_index) const override;
 
-  virtual BoxId Locate(Point3D point) const override;
+  BoxId Locate(Point3D point) const override;
 
-  virtual NeighborSurfaces GetNeighborSurfaces(BoxId box_index) const override;
+  NeighborSurfaces GetNeighborSurfaces(BoxId box_index) const override;
 
  private:
   std::array<int, 3> axial_factors_;
 };
 
 }  // namespace bdm
-#endif  // DEMO_DISTRIBUTED_PARTITIONER_H_
+#endif  // DEMO_DISTRIBUTED_SRC_PARTITIONER_H_

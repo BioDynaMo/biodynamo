@@ -12,11 +12,14 @@
 //
 // -----------------------------------------------------------------------------
 
-#ifndef DEMO_DISTRIBUTED_BDM_RAY_H_
-#define DEMO_DISTRIBUTED_BDM_RAY_H_
+#ifndef DEMO_DISTRIBUTED_SRC_BDM_RAY_H_
+#define DEMO_DISTRIBUTED_SRC_BDM_RAY_H_
 
 #include <local_scheduler/local_scheduler_client.h>
 #include <plasma/client.h>
+
+#include <utility>
+#include <vector>
 
 #include "backend.h"
 #include "partitioner.h"
@@ -56,7 +59,7 @@ class RayScheduler : public Scheduler<Simulation<>> {
   /// and finally mark the end of the simulation.
   ///
   /// \param steps number of steps to simulate.
-  virtual void Simulate(uint64_t steps) override;
+  void Simulate(uint64_t steps) override;
 
   virtual ~RayScheduler() {}
 
@@ -104,7 +107,7 @@ class RaySimulation : public Simulation<> {
   RaySimulation();
   RaySimulation(int argc, const char** argv) : super(argc, argv) {}
   virtual ~RaySimulation() {}
-  virtual Scheduler<Simulation>* GetScheduler() override {
+  Scheduler<Simulation>* GetScheduler() override {
     if (!scheduler_set_) {
       ReplaceScheduler(new RayScheduler());
       scheduler_set_ = true;
@@ -119,4 +122,4 @@ class RaySimulation : public Simulation<> {
 
 }  // namespace bdm
 
-#endif  // DEMO_DISTRIBUTED_BDM_RAY_H_
+#endif  // DEMO_DISTRIBUTED_SRC_BDM_RAY_H_

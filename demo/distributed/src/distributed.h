@@ -12,8 +12,8 @@
 //
 // -----------------------------------------------------------------------------
 
-#ifndef DEMO_DISTRIBUTED_DISTRIBUTED_H_
-#define DEMO_DISTRIBUTED_DISTRIBUTED_H_
+#ifndef DEMO_DISTRIBUTED_SRC_DISTRIBUTED_H_
+#define DEMO_DISTRIBUTED_SRC_DISTRIBUTED_H_
 
 // 1. Define the backend.
 #include "backend.h"
@@ -68,4 +68,4 @@ inline int Simulate(int argc, const char** argv) {
 }
 
 }  // namespace bdm
-#endif  // DEMO_DISTRIBUTED_DISTRIBUTED_H_
+#endif  // DEMO_DISTRIBUTED_SRC_DISTRIBUTED_H_
