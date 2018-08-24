@@ -25,6 +25,7 @@ export LD_LIBRARY_PATH=${BDM_INSTALL_DIR}/biodynamo/lib:$LD_LIBRARY_PATH
 
 # ROOT
 . ${BDM_INSTALL_DIR}/third_party/root/bin/thisroot.sh
+export ROOT_INCLUDE_PATH="${ROOT_INCLUDE_PATH:+${ROOT_INCLUDE_PATH}:}${BDM_INSTALL_DIR}/biodynamo/include"
 
 # ParaView
 export ParaView_DIR=${BDM_INSTALL_DIR}/third_party/paraview/lib/cmake/paraview-5.5
