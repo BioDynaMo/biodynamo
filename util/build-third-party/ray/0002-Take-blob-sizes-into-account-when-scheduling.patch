@@ -1,14 +1,14 @@
-From 409024cacefe6ba56d57ee629639fb18e7b15d02 Mon Sep 17 00:00:00 2001
+From 65a9448079937d79e5bb6a890d8f15e4ce094098 Mon Sep 17 00:00:00 2001
 From: Nam Nguyen <nam@cern.ch>
 Date: Fri, 24 Aug 2018 11:00:31 +0200
 Subject: [PATCH 2/2] Take blob sizes into account when scheduling.
 
 ---
- src/global_scheduler/global_scheduler_algorithm.cc | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+ src/global_scheduler/global_scheduler_algorithm.cc | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
 
 diff --git a/src/global_scheduler/global_scheduler_algorithm.cc b/src/global_scheduler/global_scheduler_algorithm.cc
-index 7ca1b86..14f0795 100644
+index 7ca1b86..b93ca1b 100644
 --- a/src/global_scheduler/global_scheduler_algorithm.cc
 +++ b/src/global_scheduler/global_scheduler_algorithm.cc
 @@ -115,12 +115,14 @@ double calculate_cost_pending(const GlobalSchedulerState *state,
@@ -27,15 +27,16 @@ index 7ca1b86..14f0795 100644
    return cost_pending;
  }
  
-@@ -235,7 +237,7 @@ bool handle_task_waiting_cost(GlobalSchedulerState *state,
+@@ -235,6 +237,9 @@ bool handle_task_waiting_cost(GlobalSchedulerState *state,
  bool handle_task_waiting(GlobalSchedulerState *state,
                           GlobalSchedulerPolicyState *policy_state,
                           Task *task) {
--  return handle_task_waiting_random(state, policy_state, task);
-+  return handle_task_waiting_cost(state, policy_state, task);
++  if (state->local_schedulers.size() > 1) {
++    return handle_task_waiting_cost(state, policy_state, task);
++  }
+   return handle_task_waiting_random(state, policy_state, task);
  }
  
- void handle_object_available(GlobalSchedulerState *state,
 -- 
 2.7.4
 
