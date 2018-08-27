@@ -69,6 +69,7 @@ class RayScheduler : public Scheduler<Simulation<>> {
 
   /// Stores `volumes` in the object store for `box` in `step`.
   arrow::Status StoreVolumes(int64_t step, int64_t box,
+                             const Partitioner* partitioner,
                              const SurfaceToVolumeMap& volumes);
 
   void DisassembleResourceManager(ResourceManager<>* rm,

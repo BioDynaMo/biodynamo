@@ -299,10 +299,14 @@ ResourceManagerPtr FindResourceManager(const SurfaceToVolumeMap &map,
   return nullptr;
 }
 
-SurfaceToVolumeMap CreateVolumesForBox(ResourceManager<> *rm, const Box &box) {
+SurfaceToVolumeMap CreateVolumesForBox(
+    ResourceManager<> *rm, BoxId box_id, const Partitioner* partitioner) {
   SurfaceToVolumeMap ret = AllocVolumes();
+  std::array<Surface, 27> needed_surfaces =
+      partitioner->GetRequiredSurfaces(box_id);
   auto f = [&](const auto &element, bdm::SoHandle) {
     Point3D pos = element.GetPosition();
+    const Box box = partitioner->GetLocation(box_id);
     if (IsIn(pos, box.first, box.second)) {
       ResourceManagerPtr volume_rm = ret[0].second;
       volume_rm->push_back(element);
@@ -310,8 +314,15 @@ SurfaceToVolumeMap CreateVolumesForBox(ResourceManager<> *rm, const Box &box) {
         if (s == SurfaceEnum::kNone) {
           break;
         }
-        ResourceManagerPtr surface_rm = FindResourceManager(ret, s);
-        surface_rm->push_back(element);
+        size_t i = 0;
+        while (needed_surfaces[i] != SurfaceEnum::kNone &&
+            needed_surfaces[i] != s) {
+          ++i;
+        }
+        if (needed_surfaces[i] == s) {
+          ResourceManagerPtr surface_rm = FindResourceManager(ret, s);
+          surface_rm->push_back(element);
+        }
       }
     }
   };
@@ -329,12 +340,11 @@ void RayScheduler::InitiallyPartition(Box *bounding_box) {
   partitioner->InitializeWithResourceManager(rm);
   Boxes boxes = partitioner->Partition();
   for (size_t i = 0; i < boxes.size(); ++i) {
-    const Box &box = boxes[i];
-    SurfaceToVolumeMap volumes = CreateVolumesForBox(rm, box);
+    SurfaceToVolumeMap volumes = CreateVolumesForBox(rm, i, partitioner.get());
     ResourceManagerPtr main_rm = FindResourceManager(volumes, Surface());
     std::cout << "Box " << i << " has " << main_rm->GetNumSimObjects()
               << " simulation objects.\n";
-    arrow::Status s = StoreVolumes(0, i, volumes);
+    arrow::Status s = StoreVolumes(0, i, partitioner.get(), volumes);
     if (!s.ok()) {
       std::cerr << "Cannot store box " << i << ".\n";
       return;
@@ -426,7 +436,7 @@ void RayScheduler::DisassembleResourceManager(ResourceManager<> *rm,
                                               int64_t step, int64_t box) {
   auto start = std::chrono::high_resolution_clock::now();
   arrow::Status s = StoreVolumes(
-      step, box, CreateVolumesForBox(rm, partitioner->GetLocation(box)));
+      step, box, partitioner, CreateVolumesForBox(rm, box, partitioner));
   if (!s.ok()) {
     std::cerr << "Cannot store volumes for box " << box << " in step " << step
               << ".\n";
@@ -484,10 +494,12 @@ arrow::Status RayScheduler::MaybeInitializeConnection() {
 }
 
 arrow::Status RayScheduler::StoreVolumes(int64_t step, int64_t box,
+                                         const Partitioner* partitioner,
                                          const SurfaceToVolumeMap &volumes) {
-  for (const SurfaceToVolume &sv : volumes) {
-    Surface surface = sv.first;
-    ResourceManagerPtr rm = sv.second;
+  std::array<Surface, 27> needed_surfaces =
+      partitioner->GetRequiredSurfaces(box);
+  for (const Surface& surface : needed_surfaces) {
+    ResourceManagerPtr rm = FindResourceManager(volumes, surface);
     TBufferFile buff(TBufferFile::EMode::kWrite);
     buff.WriteObject(rm.get());
     const size_t size = buff.BufferSize();
@@ -512,6 +524,9 @@ arrow::Status RayScheduler::StoreVolumes(int64_t step, int64_t box,
       std::cerr << "Cannot release box " << box << " in step " << step << ". "
                 << s << '\n';
       return s;
+    }
+    if (surface == SurfaceEnum::kNone) {
+      break;
     }
   }
 

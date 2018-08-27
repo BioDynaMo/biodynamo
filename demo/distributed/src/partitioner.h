@@ -47,6 +47,29 @@ class Surface {
            (value_ == 32 && other.value_ == 8);
   }
 
+  constexpr Surface Opposite() const {
+    int r = 0;
+    if ((value_ & 1) == 1) {
+      r |= 8;
+    }
+    if ((value_ & 2) == 2) {
+      r |= 16;
+    }
+    if ((value_ & 4) == 4) {
+      r |= 32;
+    }
+    if ((value_ & 8) == 8) {
+      r |= 1;
+    }
+    if ((value_ & 16) == 16) {
+      r |= 2;
+    }
+    if ((value_ & 32) == 32) {
+      r |= 4;
+    }
+    return Surface(r);
+  }
+
   constexpr operator int() const { return value_; }
 
  private:
@@ -130,6 +153,24 @@ class Partitioner {
   ///
   /// There could be 6 full surfaces, 12 edges, and 8 corners neighboring a box.
   virtual NeighborSurfaces GetNeighborSurfaces(BoxId box_index) const = 0;
+
+  /// Returns all surfaces that are required from the specified box.
+  ///
+  /// SurfaceEnum::kNone always appears at least one, and always after all other
+  /// surfaces in the returned array.
+  virtual std::array<Surface, 27> GetRequiredSurfaces(BoxId box_index) const {
+    const NeighborSurfaces nss = GetNeighborSurfaces(box_index);
+    std::array<Surface, 27> ret;
+    size_t i = 0;
+    for (const NeighborSurface& ns : nss) {
+      const Surface& s = ns.second;
+      if (s != SurfaceEnum::kNone) {
+        ret[i++] = s.Opposite();
+      }
+    }
+    assert(i < ret.size());
+    return ret;
+  }
 
  protected:
   Point3D left_front_bottom_;
