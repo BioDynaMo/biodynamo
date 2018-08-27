@@ -25,11 +25,13 @@ include_directories("$ENV{BDM_INSTALL_DIR}/third_party/ray/include/ray/gcs/forma
 link_directories("$ENV{BDM_INSTALL_DIR}/third_party/ray/lib")
 include_directories("src")
 
-file(GLOB_RECURSE HEADERS src/*.h)
 file(GLOB_RECURSE SOURCES src/*.cc)
 
 bdm_add_ray_library(distributed-ray
-                    HEADERS "${HEADERS}"
+                    HEADERS "src/backend.h"
+                            "src/bdm_ray.h"
+                            "src/distributed.h"
+                            "src/partitioner.h"
                     SOURCES "${SOURCES}"
                     LIBRARIES "${BDM_REQUIRED_LIBRARIES}"
                               "-lboost_system"
