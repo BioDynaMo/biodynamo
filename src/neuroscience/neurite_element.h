@@ -1373,8 +1373,8 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
   vec<std::array<double, 3>> mass_location_ = {{0.0, 0.0, 0.0}};
   vec<double> volume_;
   vec<double> diameter_ = {{Param::kNeuriteDefaultDiameter}};
-  vec<double> density_ = {{Param::kNeuriteDefaultDensity}};
   vec<double> adherence_;
+  vec<double> density_ = {{Param::kNeuriteDefaultDensity}};
   /// First axis of the local coordinate system equal to cylinder axis
   vec<std::array<double, 3>> x_axis_ = {{1.0, 0.0, 0.0}};
   /// Second axis of the local coordinate system.
