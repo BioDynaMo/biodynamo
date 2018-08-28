@@ -52,6 +52,12 @@ class DiffusionOp {
         dg->Update(grid->GetDimensionThresholds());
       }
 
+      std::array<double, 7> dc = dg->GetDiffusionCoefficients();
+      if (dg->GetDecayConstant() == 0 && dc[1] == 0 && dc[2] == 0 &&
+          dc[3] == 0 && dc[4] == 0 && dc[5] == 0 && dc[6] == 0) {
+        return;
+      }
+
       if (param->leaking_edges_) {
         dg->DiffuseEulerLeakingEdge();
       } else {
