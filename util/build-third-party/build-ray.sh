@@ -37,13 +37,17 @@ ROOT="${WORKDIR}/${PN}"
 DEST_DIR="${BDM_PROJECT_DIR}/build"
 
 function fetch() {
-    mkdir -p "${DISTDIR}"
+    if [ ! -d "${WORKDIR}" ]; then
+        WORKING_DIR="${WORKDIR}"
+        source "${BDM_PROJECT_DIR}/util/installation/common/util.sh"
+        source "${BDM_PROJECT_DIR}/util/build-third-party/third-party-prerequisites.sh"
+    fi
     wget -c "${SRC_URI}" -O "${DISTDIR}/$(basename "${SRC_URI}")"
 }
 
 function pkg_setup() {
     sudo apt-get install -y cmake pkg-config build-essential curl libtool unzip
-    sudo apt-get install -y flex bison python python-dev
+    sudo apt-get install -y flex bison python python-dev python-pip python-numpy
     pip install cython
 }
 
@@ -60,7 +64,7 @@ function src_prepare() {
 
 function src_compile() {
     pushd "${WORKDIR}/ray-${P}/python"
-    python setup.py bdist_wheel
+    INCLUDE_UI=1 python setup.py bdist_wheel
     popd
 }
 
