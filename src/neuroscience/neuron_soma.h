@@ -66,8 +66,9 @@ BDM_SIM_OBJECT(NeuronSoma, bdm::Cell) {
   NeuriteElementSoPtr ExtendNewNeurite(const std::array<double, 3>& direction) {
     auto dir = Math::Add(direction, Base::position_[kIdx]);
     auto angles = Base::TransformCoordinatesGlobalToPolar(dir);
-    return ExtendNewNeurite(Param::kNeuriteDefaultDiameter, angles[2],
-                            angles[1]);
+    return ExtendNewNeurite(
+        Simulation_t::GetActive()->GetParam()->neurite_default_diameter_,
+        angles[2], angles[1]);
   }
 
   /// Extends a new neurites
@@ -85,7 +86,8 @@ BDM_SIM_OBJECT(NeuronSoma, bdm::Cell) {
     neurite.SetBiologyModules(std::move(neurite_bms));
 
     double radius = 0.5 * Base::diameter_[kIdx];
-    double new_length = Param::kNeuriteDefaultActualLength;
+    double new_length =
+        Simulation_t::GetActive()->GetParam()->neurite_default_actual_length_;
     // position in bdm.cells coord
     double x_coord = std::sin(theta) * std::cos(phi);
     double y_coord = std::sin(theta) * std::sin(phi);
@@ -112,7 +114,8 @@ BDM_SIM_OBJECT(NeuronSoma, bdm::Cell) {
 
     neurite.SetMassLocation(new_mass_location);
     neurite.SetActualLength(new_length);
-    neurite.SetRestingLengthForDesiredTension(Param::kNeuriteDefaultTension);
+    neurite.SetRestingLengthForDesiredTension(
+        Simulation_t::GetActive()->GetParam()->neurite_default_tension_);
     neurite.UpdateLocalCoordinateAxis();
 
     // family relations
