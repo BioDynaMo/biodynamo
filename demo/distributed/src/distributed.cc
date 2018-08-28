@@ -501,7 +501,7 @@ arrow::Status RayScheduler::StoreVolumes(int64_t step, int64_t box,
   for (const Surface& surface : needed_surfaces) {
     ResourceManagerPtr rm = FindResourceManager(volumes, surface);
     TBufferFile buff(TBufferFile::EMode::kWrite);
-    buff.WriteObject(rm.get());
+    buff.WriteObjectAny(rm.get(), ResourceManager<>::Class());
     const size_t size = buff.BufferSize();
     const plasma::ObjectID key = id_for_surface(step, box, surface);
     std::shared_ptr<Buffer> buffer;
