@@ -498,7 +498,9 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
   /// minimum required.
   bool BifurcationPermitted() const {
     return (daughter_left_[kIdx] == nullptr &&
-            actual_length_[kIdx] > Param::kNeuriteMinimalBifurcationLength);
+            actual_length_[kIdx] > Simulation_t::GetActive()
+                                       ->GetParam()
+                                       ->neurite_minimal_bifurcation_length_);
   }
 
   /// Bifurcation of a growth come (only works for terminal segments).
@@ -532,6 +534,7 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
             "Bifurcation only allowed on a terminal neurite element");
     }
     auto* rm = Simulation_t::GetActive()->GetResourceManager();
+    auto* param = Simulation_t::GetActive()->GetParam();
     auto new_branch_l = rm->template New<MostDerivedScalar>();
     auto new_branch_r = rm->template New<MostDerivedScalar>();
     new_branch_l.Copy(*static_cast<MostDerived<Backend>*>(this));
@@ -574,9 +577,9 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
     new_branch_l.SetActualLength(length);
     new_branch_r.SetActualLength(length);
     new_branch_r.SetRestingLengthForDesiredTension(
-        Param::kNeuriteDefaultTension);
+        param->neurite_default_tension_);
     new_branch_l.SetRestingLengthForDesiredTension(
-        Param::kNeuriteDefaultTension);
+        param->neurite_default_tension_);
 
     // set local coordinate axis in the new branches
     // TODO(neurites) again?? alreay done a few lines up
@@ -611,7 +614,8 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
       const std::array<double, 3>& direction_1,
       const std::array<double, 3>& direction_2) {
     // initial default length :
-    double l = Param::kNeuriteDefaultActualLength;
+    double l =
+        Simulation_t::GetActive()->GetParam()->neurite_default_actual_length_;
     // diameters :
     double d = diameter_[kIdx];
     return Bifurcate(l, d, d, direction_1, direction_2);
@@ -620,7 +624,8 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
   // TODO(neurites) documentation
   std::array<MostDerivedSoPtr, 2> Bifurcate() {
     // initial default length :
-    double l = Param::kNeuriteDefaultActualLength;
+    double l =
+        Simulation_t::GetActive()->GetParam()->neurite_default_actual_length_;
     // diameters :
     double d = diameter_[kIdx];
     // direction : (60 degrees between branches)
@@ -703,7 +708,7 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
   ///   * too short fuse it with the proximal element or even delete it
   void RunDiscretization() {
     auto* param = Simulation_t::GetActive()->GetParam();
-    if (actual_length_[kIdx] > param->kNeuriteMaxLength) {
+    if (actual_length_[kIdx] > param->neurite_max_length_) {
       if (daughter_left_[kIdx] == nullptr) {  // if terminal branch :
         InsertProximalNeuriteElement(0.1);
       } else if (mother_[kIdx].IsNeuronSoma()) {  // if initial branch :
@@ -711,10 +716,10 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
       } else {
         InsertProximalNeuriteElement(0.5);
       }
-    } else if (actual_length_[kIdx] < param->kNeuriteMinLength &&
+    } else if (actual_length_[kIdx] < param->neurite_min_length_ &&
                mother_[kIdx].IsNeuriteElement() &&
                mother_[kIdx].GetRestingLength() <
-                   param->kNeuriteMaxLength - resting_length_[kIdx] - 1 &&
+                   param->neurite_max_length_ - resting_length_[kIdx] - 1 &&
                mother_[kIdx].GetDaughterRight() == nullptr &&
                daughter_left_[kIdx] != nullptr) {
       // if the previous branch is removed, we first remove its associated
@@ -1372,9 +1377,11 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
   /// mass_location_ is distal end of the cylinder
   vec<std::array<double, 3>> mass_location_ = {{0.0, 0.0, 0.0}};
   vec<double> volume_;
-  vec<double> diameter_ = {{Param::kNeuriteDefaultDiameter}};
+  vec<double> diameter_ = {
+      {Simulation_t::GetActive()->GetParam()->neurite_default_diameter_}};
   vec<double> adherence_;
-  vec<double> density_ = {{Param::kNeuriteDefaultDensity}};
+  vec<double> density_ = {
+      {Simulation_t::GetActive()->GetParam()->neurite_default_density_}};
   /// First axis of the local coordinate system equal to cylinder axis
   vec<std::array<double, 3>> x_axis_ = {{1.0, 0.0, 0.0}};
   /// Second axis of the local coordinate system.
@@ -1409,14 +1416,17 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
   vec<std::array<double, 3>> spring_axis_ = {{0, 0, 0}};
 
   /// Real length of the PhysicalCylinder (norm of the springAxis).
-  vec<double> actual_length_ = {Param::kNeuriteDefaultActualLength};
+  vec<double> actual_length_ = {
+      Simulation_t::GetActive()->GetParam()->neurite_default_actual_length_};
 
   /// Tension in the cylinder spring.
-  vec<double> tension_ = {Param::kNeuriteDefaultTension};
+  vec<double> tension_ = {
+      Simulation_t::GetActive()->GetParam()->neurite_default_tension_};
 
   /// Spring constant per distance unit (springConstant restingLength  = "real"
   /// spring constant).
-  vec<double> spring_constant_ = {Param::kNeuriteDefaultSpringConstant};
+  vec<double> spring_constant_ = {
+      Simulation_t::GetActive()->GetParam()->neurite_default_spring_constant_};
 
   /// The length of the internal spring where tension would be zero.
   /// T = k*(A-R)/R --> R = k*A/(T+K)
@@ -1517,6 +1527,7 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
   MostDerivedSoPtr ExtendSideNeuriteElement(
       double length, const std::array<double, 3>& direction) {
     auto* rm = Simulation_t::GetActive()->GetResourceManager();
+    auto* param = Simulation_t::GetActive()->GetParam();
     auto new_branch = rm->template New<MostDerivedScalar>();
     new_branch.Copy(*static_cast<MostDerived<Backend>*>(this));
 
@@ -1536,8 +1547,9 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
     new_branch.SetSpringAxis(new_spring_axis);
     // physics
     new_branch.SetActualLength(length);
-    new_branch.SetRestingLengthForDesiredTension(Param::kNeuriteDefaultTension);
-    new_branch.SetDiameter(Param::kNeuriteDefaultDiameter);
+    new_branch.SetRestingLengthForDesiredTension(
+        param->neurite_default_tension_);
+    new_branch.SetDiameter(param->neurite_default_diameter_);
     new_branch.UpdateLocalCoordinateAxis();
     // family relations
     new_branch.SetMother(GetSoPtr());
