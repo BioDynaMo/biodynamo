@@ -205,6 +205,11 @@ class Scheduler {
       dgrid->Initialize({lbound, rbound, lbound, rbound, lbound, rbound});
       // Initialize data structures with user-defined values
       dgrid->RunInitializers();
+      // check if substance won't evolve over time, so CalculateGradient won't
+      // be called each step, so needs to be run here
+      if (param->calculate_gradients_ && dgrid->IsFixedSubstance()) {
+        dgrid->CalculateGradient();
+      }
     }
   }
 };
