@@ -36,4 +36,23 @@ TEST(is_soaTest, All) {
   EXPECT_TRUE(is_soa<SoaRef>::value);
 }
 
+TEST(TestRawType, All) {
+  {
+    bool result = std::is_same<int, raw_type<int*>>::value;
+    EXPECT_TRUE(result);
+  }
+  {
+    bool result = std::is_same<int, raw_type<int&>>::value;
+    EXPECT_TRUE(result);
+  }
+  {
+    bool result = std::is_same<int, raw_type<int&&>>::value;
+    EXPECT_TRUE(result);
+  }
+  {
+    bool result = std::is_same<int, raw_type<int*&>>::value;
+    EXPECT_TRUE(result);
+  }
+}
+
 }  // namespace bdm

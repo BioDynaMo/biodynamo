@@ -1,5 +1,24 @@
 # Changelog
 
+## 27.08.2018 ``
+
+Add the concept of [Events](event).
+This is an important change to support extensibility. Now, there is a clear
+way to tell BioDynaMo what should happen with a new data member for a specific
+event.
+
+| Old                                 | New                                    |
+| ----------------------------------- | -------------------------------------- |
+| `gAllBmEvents`                      | `gAllEventIds` |
+| `gNullEvent`                        | `gNullEventId` |
+| `gCellDivision`                     | `CellDivisionEvent::kEventId` |
+| `gNeuriteElongation`                | `SplitNeuriteElementEvent::kEventId` |
+| `gNeuriteBranching`                 | `NeuriteBranchingEvent::kEventId` |
+| `gNeuriteBifurcation`               | `NeuriteBifurcationEvent::kEventId` |
+| `gNeuriteSideCylinderExtension`     | `SideNeuriteExtensionEvent::kEventId` |
+|                                     | Simulation objects and biology modules must have an event constructor and event handler function in order to support an event. |
+
+
 ## 16.07.2018 `3bac827`
 
 Change github option for `biodynamo new`. Previously it was opt-out (`--no-github`).

@@ -12,8 +12,11 @@
 //
 // -----------------------------------------------------------------------------
 
-#include "cell.h"
+#include "event/cell_division_event.h"
 
 namespace bdm {
-const BmEvent gCellDivision = UniqueBmEventFactory::Get()->NewUniqueBmEvent();
-}
+
+const EventId CellDivisionEvent::kEventId =
+    UniqueEventIdFactory::Get()->NewUniqueEventId();
+
+}  // namespace bdm

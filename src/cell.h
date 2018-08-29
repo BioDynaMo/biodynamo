@@ -26,6 +26,8 @@
 #include "backend.h"
 #include "biology_module_util.h"
 #include "default_force.h"
+#include "event/cell_division_event.h"
+#include "event/event.h"
 #include "inline_vector.h"
 #include "math_util.h"
 #include "param.h"
@@ -35,15 +37,18 @@
 
 namespace bdm {
 
-/// Declare new biology module event for cell division
-extern const BmEvent gCellDivision;
-
 BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
-  BDM_SIM_OBJECT_HEADER(CellExt, 1, position_, tractor_force_, diameter_,
-                        volume_, adherence_, density_, biology_modules_,
-                        box_idx_);
+  BDM_SIM_OBJECT_HEADER(CellExt, 1, biology_modules_, position_, tractor_force_,
+                        diameter_, volume_, adherence_, density_, box_idx_);
 
  public:
+  /// First axis of the local coordinate system.
+  static constexpr std::array<double, 3> kXAxis = {{1.0, 0.0, 0.0}};
+  /// Second axis of the local coordinate system.
+  static constexpr std::array<double, 3> kYAxis = {{0.0, 1.0, 0.0}};
+  /// Third axis of the local coordinate system.
+  static constexpr std::array<double, 3> kZAxis = {{0.0, 0.0, 1.0}};
+
   /// Returns the data members that are required to visualize this simulation
   /// object.
   static std::set<std::string> GetRequiredVisDataMembers() {
@@ -59,6 +64,75 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
   }
   explicit CellExt(const std::array<double, 3>& position)
       : position_(position), density_{1.0} {}
+
+  /// This constructor is used to create daughter 2 for a cell division event
+  /// \see CellDivisionEvent
+  template <typename TMother>
+  CellExt(const CellDivisionEvent& event, TMother* mother) {
+    auto* daughter = ThisMD();  // FIXME
+    // A) Defining some values
+    // ..................................................................
+    // defining the two radii s.t total volume is conserved
+    // * radius^3 = r1^3 + r2^3 ;
+    // * volume_ratio = r2^3 / r1^3
+    double radius = mother->GetDiameter() * 0.5;
+
+    // define an axis for division (along which the nuclei will move)
+    double x_coord = std::cos(event.theta_) * std::sin(event.phi_);
+    double y_coord = std::sin(event.theta_) * std::sin(event.phi_);
+    double z_coord = std::cos(event.phi_);
+    double total_length_of_displacement = radius / 4.0;
+
+    const auto kXAxis = mother->kXAxis;
+    const auto kYAxis = mother->kYAxis;
+    const auto kZAxis = mother->kZAxis;
+    std::array<double, 3> axis_of_division{
+        total_length_of_displacement *
+            (x_coord * kXAxis[0] + y_coord * kYAxis[0] + z_coord * kZAxis[0]),
+        total_length_of_displacement *
+            (x_coord * kXAxis[1] + y_coord * kYAxis[1] + z_coord * kZAxis[1]),
+        total_length_of_displacement *
+            (x_coord * kXAxis[2] + y_coord * kYAxis[2] + z_coord * kZAxis[2])};
+
+    // two equations for the center displacement :
+    //  1) d2/d1= v2/v1 = volume_ratio (each sphere is shifted inver.
+    //  proportionally to its volume)
+    //  2) d1 + d2 = TOTAL_LENGTH_OF_DISPLACEMENT
+    double d_2 = total_length_of_displacement / (event.volume_ratio_ + 1);
+    double d_1 = total_length_of_displacement - d_2;
+
+    double mother_volume = mother->GetVolume();
+    double new_volume = mother_volume / (event.volume_ratio_ + 1);
+    daughter->SetVolume(mother_volume - new_volume);
+
+    // position
+    auto mother_pos = mother->GetPosition();
+    std::array<double, 3> new_position{
+        mother_pos[0] + d_2 * axis_of_division[0],
+        mother_pos[1] + d_2 * axis_of_division[1],
+        mother_pos[2] + d_2 * axis_of_division[2]};
+    daughter->SetPosition(new_position);
+
+    // biology modules
+    auto& mother_bms = mother->biology_modules_[mother->kIdx];
+    // copy biology_modules_ to me
+    auto& my_bms = biology_modules_[kIdx];
+    CopyBiologyModules(event, &mother_bms, &my_bms);
+
+    // E) This sphere becomes the 1st daughter
+    // move these cells on opposite direction
+    mother_pos[0] -= d_1 * axis_of_division[0];
+    mother_pos[1] -= d_1 * axis_of_division[1];
+    mother_pos[2] -= d_1 * axis_of_division[2];
+    // update mother here and not in EventHandler to avoid recomputation
+    mother->SetPosition(mother_pos);
+    mother->SetVolume(new_volume);
+
+    daughter->SetAdherence(mother->GetAdherence());
+    daughter->SetDensity(mother->GetDensity());
+    daughter->SetBoxIdx(mother->GetBoxIdx());
+    // G) TODO(lukas) Copy the intracellular and membrane bound Substances
+  }
 
   virtual ~CellExt() {}
 
@@ -86,20 +160,20 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
     return modules;
   }
 
-  /// Divide the cell. Of the two daughter cells, one is this one
-  /// and the other one will be returned by this function.
-  /// Both cells have more or less the same volume, the axis of division is
-  /// random.
+  /// \brief Divide this cell.
+  ///
+  /// CellDivisionEvent::volume_ratio_ will be between 0.9 and 1.1\n
+  /// The axis of division is random.
+  /// \see CellDivisionEvent
   MostDerivedSoPtr Divide() {
     auto* random = Simulation_t::GetActive()->GetRandom();
     return ThisMD()->Divide(random->Uniform(0.9, 1.1));
   }
 
-  /// Divide the cell. Of the two daughter cells, one is this one
-  /// and the other one will be returned by this function.
+  /// \brief Divide this cell.
+  ///
   /// The axis of division is random.
-  /// @param volume_ratio the ratio (Volume daughter 1)/(Volume daughter 2). 1.0
-  /// gives equal cells.
+  /// \see CellDivisionEvent
   MostDerivedSoPtr Divide(double volume_ratio) {
     // find random point on sphere (based on :
     // http://mathworld.wolfram.com/SpherePointPicking.html)
@@ -109,9 +183,10 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
     return ThisMD()->Divide(volume_ratio, phi, theta);
   }
 
-  /// Divide the cell. Of the two daughter cells, one is this one
-  /// and the other one will be returned by this function.
-  /// @param axis specifies direction of division
+  /// \brief Divide this cell.
+  ///
+  /// CellDivisionEvent::volume_ratio_ will be between 0.9 and 1.1\n
+  /// \see CellDivisionEvent
   MostDerivedSoPtr Divide(const std::array<double, 3>& axis) {
     auto* random = Simulation_t::GetActive()->GetRandom();
     auto polarcoord =
@@ -120,11 +195,9 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
                             polarcoord[2]);
   }
 
-  /// Divide the cell. Of the two daughter cells, one is this one
-  /// and the other one will be returned by this function.
-  /// @param volume_ratio the ratio (Volume daughter 1)/(Volume daughter 2). 1.0
-  /// gives equal cells.
-  /// @param axis specifies direction of division
+  /// \brief Divide this cell.
+  ///
+  /// \see CellDivisionEvent
   MostDerivedSoPtr Divide(double volume_ratio,
                           const std::array<double, 3>& axis) {
     auto polarcoord =
@@ -132,13 +205,15 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
     return ThisMD()->Divide(volume_ratio, polarcoord[1], polarcoord[2]);
   }
 
-  /// Forward call to `DivideImpl`
-  /// @see `DivideImpl`
+  /// \brief Divide this cell.
+  ///
+  /// \see CellDivisionEvent
   MostDerivedSoPtr Divide(double volume_ratio, double phi, double theta) {
     auto* rm = Simulation_t::GetActive()->GetResourceManager();
-    auto daughter = rm->template New<MostDerivedScalar>().GetSoPtr();
-    ThisMD()->DivideImpl(daughter, volume_ratio, phi, theta);
-    return daughter;
+    CellDivisionEvent event{volume_ratio, phi, theta};
+    auto&& daughter = rm->template New<MostDerivedScalar>(event, ThisMD());
+    ThisMD()->EventHandler(event, &daughter);
+    return daughter.GetSoPtr();
   }
 
   double GetAdherence() const { return adherence_[kIdx]; }
@@ -195,10 +270,6 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
     tractor_force_[kIdx] = tractor_force;
   }
 
-  void SetBiologyModules(std::vector<BiologyModules> && bms) {
-    biology_modules_[kIdx] = bms;
-  }
-
   void ChangeVolume(double speed) {
     // scaling for integration step
     auto* param = Simulation_t::GetActive()->GetParam();
@@ -236,6 +307,11 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
 
   void SetBoxIdx(uint32_t idx) { box_idx_[kIdx] = idx; }
 
+  // FIXME make protected after ROOT issue has been resolved and all
+  // biology_modules_ are in one class.
+  /// collection of biology modules which define the internal behavior
+  vec<std::vector<BiologyModules>> biology_modules_;
+
  protected:
   /// Returns the position in the polar coordinate system (cylindrical or
   /// spherical) of a point expressed in global cartesian coordinates
@@ -252,125 +328,21 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
   vec<double> adherence_;
   vec<double> density_;
 
-  /// First axis of the local coordinate system.
-  static constexpr std::array<double, 3> kXAxis = {{1.0, 0.0, 0.0}};
-  /// Second axis of the local coordinate system.
-  static constexpr std::array<double, 3> kYAxis = {{0.0, 1.0, 0.0}};
-  /// Third axis of the local coordinate system.
-  static constexpr std::array<double, 3> kZAxis = {{0.0, 0.0, 1.0}};
-
-  /// collection of biology modules which define the internal behavior
-  vec<std::vector<BiologyModules>> biology_modules_;
-
   /// Grid box index
   vec<uint32_t> box_idx_;
 
-  /// Divide mother cell in two daughter cells\n
-  /// When mother cell divides, by definition:\n
-  /// 1) the mother cell becomes the 1st daughter cell\n
-  /// 2) the new cell becomes the 2nd daughter cell and inherits a equal or
-  ///    bigger volume than the 1st
-  ///    daughter cell, which means that this cell will eventually inherit more
-  ///    differentiating factors
-  ///    and will be recorded in the left side of the lineage tree.
+  /// \brief EventHandler to modify the data members of this cell
+  /// after a cell division.
   ///
-  /// @param daughter second daughter cell = scalar instance which will be
-  /// initialized in this method
-  /// @param volume_ratio the ratio (Volume daughter 1)/(Volume daughter 2). 1.0
-  /// gives equal cells.
-  /// @param phi azimuthal angle (polar coordinate)
-  /// @param theta polar angle (polar coordinate)
-  /// @see \link simulation_object_util.h Divide \endlink
-  void DivideImpl(MostDerivedSoPtr daughter, double volume_ratio, double phi,
-                  double theta) {
-    // A) Defining some values
-    // ..................................................................
-    // defining the two radii s.t total volume is conserved
-    // * radius^3 = r1^3 + r2^3 ;
-    // * volume_ratio = r2^3 / r1^3
-    double radius = diameter_[kIdx] * 0.5;
-
-    // define an axis for division (along which the nuclei will move)
-    double x_coord = std::cos(theta) * std::sin(phi);
-    double y_coord = std::sin(theta) * std::sin(phi);
-    double z_coord = std::cos(phi);
-    double total_length_of_displacement = radius / 4.0;
-    std::array<double, 3> axis_of_division{
-        total_length_of_displacement *
-            (x_coord * kXAxis[0] + y_coord * kYAxis[0] + z_coord * kZAxis[0]),
-        total_length_of_displacement *
-            (x_coord * kXAxis[1] + y_coord * kYAxis[1] + z_coord * kZAxis[1]),
-        total_length_of_displacement *
-            (x_coord * kXAxis[2] + y_coord * kYAxis[2] + z_coord * kZAxis[2])};
-
-    // two equations for the center displacement :
-    //  1) d2/d1= v2/v1 = volume_ratio (each sphere is shifted inver.
-    //  proportionally to its volume)
-    //  2) d1 + d2 = TOTAL_LENGTH_OF_DISPLACEMENT
-    double d_2 = total_length_of_displacement / (volume_ratio + 1);
-    double d_1 = total_length_of_displacement - d_2;
-
-    daughter->SetAdherence(adherence_[kIdx]);
-    daughter->SetDensity(density_[kIdx]);
-
-    double mother_volume = volume_[kIdx];
-    double new_volume = mother_volume / (volume_ratio + 1);
-    daughter->SetVolume(mother_volume - new_volume);
-    SetVolume(new_volume);
-
-    // position
-    std::array<double, 3> new_position{
-        position_[kIdx][0] + d_2 * axis_of_division[0],
-        position_[kIdx][1] + d_2 * axis_of_division[1],
-        position_[kIdx][2] + d_2 * axis_of_division[2]};
-    daughter->SetPosition(new_position);
-
-    std::vector<BiologyModules> branch_biology_modules;
-    BiologyModuleEventHandler(gCellDivision, &branch_biology_modules);
-    daughter->SetBiologyModules(std::move(branch_biology_modules));
-
-    // E) This sphere becomes the 1st daughter
-    // move these cells on opposite direction
-    position_[kIdx][0] -= d_1 * axis_of_division[0];
-    position_[kIdx][1] -= d_1 * axis_of_division[1];
-    position_[kIdx][2] -= d_1 * axis_of_division[2];
-
-    daughter->SetBoxIdx(box_idx_[kIdx]);
-
-    // G) TODO(lukas) Copy the intracellular and membrane bound Substances
-  }
-
-  /// Copies biology modules to destination and removes them from
-  /// `biology_modules_` if the biology modules are marked for the specific
-  /// event. @see BaseBiologyModule
-  /// @param[in]  event biology module event - used to determine wether a BM
-  ///                   should be copied to destination or removed from
-  ///                   from `biology_modules_`
-  /// @param[out] destination distination for the new biology modules
-  /// @param[in]  skip_removal skip the removal of biology modules. Default
-  ///             value is false.
-  void BiologyModuleEventHandler(BmEvent event,
-                                 std::vector<BiologyModules> * destination,
-                                 bool skip_removal = false) {
-    CopyVisitor<std::vector<BiologyModules>> visitor(event, destination);
-    for (auto& module : biology_modules_[kIdx]) {
-      visit(visitor, module);
-    }
-
-    if (skip_removal) {
-      return;
-    }
-
-    RemoveVisitor remove_visitor(event);
-    for (auto it = biology_modules_[kIdx].begin();
-         it != biology_modules_[kIdx].end();) {
-      visit(remove_visitor, *it);
-      if (remove_visitor.return_value_) {
-        it = biology_modules_[kIdx].erase(it);
-      } else {
-        ++it;
-      }
-    }
+  /// Performs the transition mother to daughter 1
+  /// \param event contains parameters for cell division
+  /// \param daughter_2 pointer to new cell (=daughter 2)
+  /// \see CellDivisionEvent
+  template <typename TDaughter>
+  void EventHandler(const CellDivisionEvent& event, TDaughter* daughter_2) {
+    // call event handler for biology modules
+    auto* daughter_bms = &(daughter_2->biology_modules_[daughter_2->kIdx]);
+    BiologyModuleEventHandler(event, &(biology_modules_[kIdx]), daughter_bms);
   }
 };
 

@@ -24,64 +24,70 @@ enum Substances { kSubstance0, kSubstance1 };
 // Define displacement behavior:
 // Cells move along the diffusion gradient (from low concentration to high)
 struct Chemotaxis : public BaseBiologyModule {
-  Chemotaxis() : BaseBiologyModule(gAllBmEvents) {}
+  Chemotaxis() : BaseBiologyModule(gAllEventIds) {}
+
+  /// Empty default event constructor, because Chemotaxis does not have state.
+  template <typename TEvent, typename TBm>
+  Chemotaxis(const TEvent& event, TBm* other, uint64_t new_oid = 0) {}
+
+  /// Empty default event handler, because Chemotaxis does not have state.
+  template <typename TEvent, typename... TBms>
+  void EventHandler(const TEvent&, TBms*...) {}
 
   template <typename T, typename TSimulation = Simulation<>>
   void Run(T* cell) {
-    if (!init_) {
-      auto* rm = TSimulation::GetActive()->GetResourceManager();
-      dg_0_ = rm->GetDiffusionGrid(kSubstance0);
-      dg_1_ = rm->GetDiffusionGrid(kSubstance1);
-      init_ = true;
+    auto* rm = TSimulation::GetActive()->GetResourceManager();
+
+    DiffusionGrid* dg = nullptr;
+    if (cell->GetCellType() == 1) {
+      dg = rm->GetDiffusionGrid(kSubstance0);
+    } else {
+      dg = rm->GetDiffusionGrid(kSubstance1);
     }
 
     auto& position = cell->GetPosition();
+    std::array<double, 3> gradient;
     std::array<double, 3> diff_gradient;
 
-    if (cell->GetCellType() == 1) {
-      dg_1_->GetGradient(position, &gradient_1_);
-      diff_gradient = Math::ScalarMult(5, gradient_1_);
-    } else {
-      dg_0_->GetGradient(position, &gradient_0_);
-      diff_gradient = Math::ScalarMult(5, gradient_0_);
-    }
-
+    dg->GetGradient(position, &gradient);
+    diff_gradient = Math::ScalarMult(5, gradient);
     cell->UpdatePosition(diff_gradient);
   }
 
  private:
-  bool init_ = false;
-  DiffusionGrid* dg_0_ = nullptr;
-  DiffusionGrid* dg_1_ = nullptr;
-  std::array<double, 3> gradient_0_{};
-  std::array<double, 3> gradient_1_{};
   ClassDefNV(Chemotaxis, 1);
 };
 
 // Define secretion behavior:
 struct SubstanceSecretion : public BaseBiologyModule {
-  SubstanceSecretion() : BaseBiologyModule(gAllBmEvents) {}
+  SubstanceSecretion() : BaseBiologyModule(gAllEventIds) {}
+
+  /// Empty default event constructor, because SubstanceSecretion does not have
+  /// state.
+  template <typename TEvent, typename TBm>
+  SubstanceSecretion(const TEvent& event, TBm* other, uint64_t new_oid = 0) {}
+
+  /// Empty default event handler, because SubstanceSecretion does not have
+  /// state.
+  template <typename TEvent, typename... TBms>
+  void EventHandler(const TEvent&, TBms*...) {}
 
   template <typename T, typename TSimulation = Simulation<>>
   void Run(T* cell) {
-    if (!init_) {
-      auto* rm = TSimulation::GetActive()->GetResourceManager();
-      dg_0_ = rm->GetDiffusionGrid(kSubstance0);
-      dg_1_ = rm->GetDiffusionGrid(kSubstance1);
-      init_ = true;
-    }
-    auto& secretion_position = cell->GetPosition();
+    auto* rm = TSimulation::GetActive()->GetResourceManager();
+
+    DiffusionGrid* dg = nullptr;
     if (cell->GetCellType() == 1) {
-      dg_1_->IncreaseConcentrationBy(secretion_position, 1);
+      dg = rm->GetDiffusionGrid(kSubstance0);
     } else {
-      dg_0_->IncreaseConcentrationBy(secretion_position, 1);
+      dg = rm->GetDiffusionGrid(kSubstance1);
     }
+
+    auto& secretion_position = cell->GetPosition();
+    dg->IncreaseConcentrationBy(secretion_position, 1);
   }
 
  private:
-  bool init_ = false;
-  DiffusionGrid* dg_0_ = nullptr;
-  DiffusionGrid* dg_1_ = nullptr;
   ClassDefNV(SubstanceSecretion, 1);
 };
 

@@ -32,9 +32,20 @@ namespace bdm {
 ///  The user determines which method is picked in particular simulation
 /// through variable `Param::numerical_ode_solver_`.
 struct RegulateGenes : public BaseBiologyModule {
-  RegulateGenes() : BaseBiologyModule(gAllBmEvents) {}
+  RegulateGenes() : BaseBiologyModule(gAllEventIds) {}
 
-  explicit RegulateGenes(BmEvent event) : BaseBiologyModule(event) {}
+  explicit RegulateGenes(EventId event) : BaseBiologyModule(event) {}
+
+  /// Default event constructor
+  template <typename TEvent, typename TBm>
+  RegulateGenes(const TEvent& event, TBm* other, uint64_t new_oid = 0) {
+    concentrations_ = other->concentrations_;
+    first_derivatives_ = other->first_derivatives_;
+  }
+
+  /// Empty default event handler.
+  template <typename TEvent, typename... TBms>
+  void EventHandler(const TEvent&, TBms*...) {}
 
   /// AddGene adds a new differential equation.
   /// \param first_derivative differential equation in the form:

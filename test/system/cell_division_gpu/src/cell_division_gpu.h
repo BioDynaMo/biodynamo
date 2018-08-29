@@ -12,8 +12,8 @@
 //
 // -----------------------------------------------------------------------------
 
-#ifndef INTEGRATION_CELL_DIVISION_GPU_H_
-#define INTEGRATION_CELL_DIVISION_GPU_H_
+#ifndef SYSTEM_CELL_DIVISION_GPU_SRC_CELL_DIVISION_GPU_H_
+#define SYSTEM_CELL_DIVISION_GPU_SRC_CELL_DIVISION_GPU_H_
 
 #include <array>
 
@@ -78,7 +78,7 @@ inline void RunTest(bool* result, ExecutionMode mode) {
     cell.SetDiameter(30);
     cell.SetAdherence(0.4);
     cell.SetMass(1.0);
-    cell.AddBiologyModule(GrowDivide(30.05, 5000, {gAllBmEvents}));
+    cell.AddBiologyModule(GrowDivide(30.05, 5000, {gAllEventIds}));
     return cell;
   };
 
@@ -153,4 +153,4 @@ inline int Simulate(int argc, const char** argv) {
 
 }  // namespace bdm
 
-#endif  // INTEGRATION_CELL_DIVISION_GPU_H_
+#endif  // SYSTEM_CELL_DIVISION_GPU_SRC_CELL_DIVISION_GPU_H_

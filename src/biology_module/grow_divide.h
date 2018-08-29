@@ -17,18 +17,31 @@
 
 #include <Rtypes.h>
 #include "biology_module_util.h"
+#include "event/cell_division_event.h"
 
 namespace bdm {
 
 /// This biology module grows the simulation object until the diameter reaches
 /// the specified threshold and divides the object afterwards.
 struct GrowDivide : public BaseBiologyModule {
-  GrowDivide() : BaseBiologyModule(gAllBmEvents) {}
+  GrowDivide() : BaseBiologyModule(gAllEventIds) {}
   GrowDivide(double threshold, double growth_rate,
-             std::initializer_list<BmEvent> event_list)
+             std::initializer_list<EventId> event_list)
       : BaseBiologyModule(event_list),
         threshold_(threshold),
         growth_rate_(growth_rate) {}
+
+  /// Default event constructor
+  template <typename TEvent, typename TBm>
+  GrowDivide(const TEvent& event, TBm* other, uint64_t new_oid = 0) {
+    threshold_ = other->threshold_;
+    growth_rate_ = other->growth_rate_;
+  }
+
+  /// Default event handler (exising biology module won't be modified on
+  /// any event)
+  template <typename TEvent, typename... TBms>
+  void EventHandler(const TEvent&, TBms*...) {}
 
   template <typename T>
   void Run(T* cell) {
@@ -40,9 +53,9 @@ struct GrowDivide : public BaseBiologyModule {
   }
 
  private:
+  ClassDefNV(GrowDivide, 1);
   double threshold_ = 40;
   double growth_rate_ = 300;
-  ClassDefNV(GrowDivide, 1);
 };
 
 }  // namespace bdm

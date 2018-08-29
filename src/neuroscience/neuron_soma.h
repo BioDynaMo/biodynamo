@@ -19,14 +19,13 @@
 #include <unordered_map>
 #include <vector>
 #include "cell.h"
+#include "neuroscience/event/new_neurite_extension_event.h"
 #include "resource_manager.h"
 #include "simulation_object_util.h"
 
 namespace bdm {
 namespace experimental {
 namespace neuroscience {
-
-extern const BmEvent gExtendNeurite;
 
 BDM_SIM_OBJECT(NeuronSoma, bdm::Cell) {
   BDM_SIM_OBJECT_HEADER(NeuronSomaExt, 1, daughters_, daughters_coord_);
@@ -39,6 +38,36 @@ BDM_SIM_OBJECT(NeuronSoma, bdm::Cell) {
 
   explicit NeuronSomaExt(const std::array<double, 3>& position)
       : Base(position) {}
+
+  /// \brief This constructor is used to create daughter 2 for a cell division
+  /// event.
+  ///
+  /// Please note that  this implementation does not allow division of neuron
+  /// somas with already attached neurite elements.
+  ///
+  /// \see CellDivisionEvent
+  template <typename TMother>
+  NeuronSomaExt(const CellDivisionEvent& event, TMother* mother)
+      : Base(event, mother) {
+    if (mother->daughters_[mother->kIdx].size() != 0) {
+      Fatal("NeuronSoma",
+            "Dividing a neuron soma with attached neurites is not supported "
+            "in the default implementation! If you want to change this "
+            "behavior derive from this class and overwrite this constructor.");
+    }
+  }
+
+  /// \brief EventHandler to modify the data members of this neuron soma
+  /// after a cell division event.
+  ///
+  /// Performs the transition mother to daughter 1
+  /// \param event contains parameters for cell division
+  /// \param daughter_2 pointer to new cell ( = daughter 2)
+  /// \see CellDivisionEvent
+  template <typename TDaughter>
+  void EventHandler(const CellDivisionEvent& event, TDaughter* daughter_2) {
+    Base::EventHandler(event, daughter_2);
+  }
 
   /// Update references of simulation objects that changed its memory position.
   /// @param update_info vector index = type_id, map stores (old_index ->
@@ -60,9 +89,10 @@ BDM_SIM_OBJECT(NeuronSoma, bdm::Cell) {
   //      METHODS FOR NEURON TREE STRUCTURE *
   // ***************************************************************************
 
-  /// Extends a new neurites with default diameter
-  /// @param direction direciton of the new neurite
-  /// @return SoPointer of new neurite
+  /// \brief Extend a new neurite from this soma.
+  ///
+  /// Uses default diameter for new neurite
+  /// \see NewNeuriteExtensionEvent
   NeuriteElementSoPtr ExtendNewNeurite(const std::array<double, 3>& direction) {
     auto dir = Math::Add(direction, Base::position_[kIdx]);
     auto angles = Base::TransformCoordinatesGlobalToPolar(dir);
@@ -70,59 +100,16 @@ BDM_SIM_OBJECT(NeuronSoma, bdm::Cell) {
                             angles[1]);
   }
 
-  /// Extends a new neurites
-  /// @param diameter the diameter of the new neurite
-  /// @param phi the angle from the z-axis
-  /// @param theta the angle from the x-axis around the z-axis
-  /// @return SoPointer of new neurite
+  /// \brief Extend a new neurite from this soma.
+  ///
+  /// \see NewNeuriteExtensionEvent
   NeuriteElementSoPtr ExtendNewNeurite(double diameter, double phi,
                                        double theta) {
     auto* rm = Simulation_t::GetActive()->GetResourceManager();
-    auto neurite = rm->template New<NeuriteElement>();
-
-    std::vector<typename Base::BiologyModules> neurite_bms;
-    Base::BiologyModuleEventHandler(gExtendNeurite, &neurite_bms);
-    neurite.SetBiologyModules(std::move(neurite_bms));
-
-    double radius = 0.5 * Base::diameter_[kIdx];
-    double new_length = Param::kNeuriteDefaultActualLength;
-    // position in bdm.cells coord
-    double x_coord = std::sin(theta) * std::cos(phi);
-    double y_coord = std::sin(theta) * std::sin(phi);
-    double z_coord = std::cos(theta);
-    std::array<double, 3> axis_direction{
-        x_coord * Base::kXAxis[0] + y_coord * Base::kYAxis[0] +
-            z_coord * Base::kZAxis[0],
-        x_coord * Base::kXAxis[1] + y_coord * Base::kYAxis[1] +
-            z_coord * Base::kZAxis[1],
-        x_coord * Base::kXAxis[2] + y_coord * Base::kYAxis[2] +
-            z_coord * Base::kZAxis[2]};
-
-    // positions & axis in cartesian coord
-    auto new_begin_location = Math::Add(
-        Base::position_[kIdx], Math::ScalarMult(radius, axis_direction));
-    auto new_spring_axis = Math::ScalarMult(new_length, axis_direction);
-
-    auto new_mass_location = Math::Add(new_begin_location, new_spring_axis);
-
-    // set attributes of new neurite segment
-    neurite.SetDiameter(diameter);
-    neurite.UpdateVolume();
-    neurite.SetSpringAxis(new_spring_axis);
-
-    neurite.SetMassLocation(new_mass_location);
-    neurite.SetActualLength(new_length);
-    neurite.SetRestingLengthForDesiredTension(Param::kNeuriteDefaultTension);
-    neurite.UpdateLocalCoordinateAxis();
-
-    // family relations
-    auto neurite_soptr = neurite.GetSoPtr();
-    daughters_[kIdx].push_back(neurite_soptr);
-    neurite.SetMother(GetSoPtr());
-    daughters_coord_[kIdx][neurite.GetElementIdx()] = {x_coord, y_coord,
-                                                       z_coord};
-
-    return neurite_soptr;
+    NewNeuriteExtensionEvent event = {diameter, phi, theta};
+    auto&& neurite = rm->template New<NeuriteElement>(event, ThisMD());
+    ThisMD()->EventHandler(event, &neurite);
+    return neurite.GetSoPtr();
   }
 
   void RemoveDaughter(const ToSoPtr<NeuriteElement> daughter) {
@@ -133,7 +120,7 @@ BDM_SIM_OBJECT(NeuronSoma, bdm::Cell) {
     daughters_[kIdx].erase(it);
   }
 
-  /// Returns the absolute coordinates of the location where the dauther is
+  /// Returns the absolute coordinates of the location where the daughter is
   /// attached.
   /// @param daughter_element_idx element_idx of the daughter
   /// @return the coord
@@ -176,6 +163,31 @@ BDM_SIM_OBJECT(NeuronSoma, bdm::Cell) {
   /// Value: position
   vec<std::unordered_map<uint32_t, std::array<double, 3>>> daughters_coord_ = {
       {}};
+
+  /// \brief EventHandler to modify the data members of this soma
+  /// after a new neurite extension event.
+  ///
+  /// Performs the transition mother to daughter 1
+  /// \param event contains parameters for new neurite extension
+  /// \param neurite pointer to new neurite
+  /// \see NewNeuriteExtensionEvent
+  template <typename TNeurite>
+  void EventHandler(const NewNeuriteExtensionEvent& event, TNeurite* neurite) {
+    // call event handler for biology modules
+    auto* neurite_bms = &(neurite->biology_modules_[neurite->kIdx]);
+    BiologyModuleEventHandler(event, &(Base::biology_modules_[kIdx]),
+                              neurite_bms);
+
+    double theta = event.theta_;
+    double phi = event.phi_;
+    double x_coord = std::sin(theta) * std::cos(phi);
+    double y_coord = std::sin(theta) * std::sin(phi);
+    double z_coord = std::cos(theta);
+
+    daughters_[kIdx].push_back(neurite->GetSoPtr());
+    daughters_coord_[kIdx][neurite->GetElementIdx()] = {x_coord, y_coord,
+                                                        z_coord};
+  }
 };
 
 }  // namespace neuroscience

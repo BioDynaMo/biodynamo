@@ -15,83 +15,31 @@
 #ifndef BIOLOGY_MODULE_UTIL_H_
 #define BIOLOGY_MODULE_UTIL_H_
 
-#include <limits>
-#include <mutex>
+#include "event/event.h"
+#include "type_util.h"
 #include "variant.h"
-
-#include "log.h"
 
 namespace bdm {
 
-/// BmEvent is used inside biology modules to determine if a biology module
-/// should be copied if a new simulation object is created.
-/// Possible events are cell division, neurite branching, ...\n
-/// BmEvents invariant: the number of bits set to 1 must be 1.
-///
-///     // This is how a new event can be defined:
-///     // Declare new event in header file
-///     extern const BmEvent gCellDivision;
-///     // Define it in source file
-///     const BmEvent gCellDivision =
-///     UniqueBmEventFactory::Get()->NewUniqueBmEvent();
-using BmEvent = uint64_t;
-
-/// Biology module event representing the union of all events.\n
-/// Used to create a biology module  which is copied for every event.
-/// @see `BaseBiologyModule`
-const BmEvent gAllBmEvents = std::numeric_limits<uint64_t>::max();
-
-/// Biology module event representing the null element = empty set of events.
-/// @see `BaseBiologyModule`
-const BmEvent gNullEvent = 0;
-
-/// This class generates unique ids for biology module events satisfying the
-/// BmEvent invariant. Thread safe.
-class UniqueBmEventFactory {
- public:
-  UniqueBmEventFactory(const UniqueBmEventFactory&) = delete;
-
-  static UniqueBmEventFactory* Get() {
-    static UniqueBmEventFactory kInstance;
-    return &kInstance;
-  }
-
-  BmEvent NewUniqueBmEvent() {
-    std::lock_guard<std::recursive_mutex> lock(mutex_);
-    constexpr uint64_t kOne = 1;
-    if (counter_ == 64) {
-      Log::Fatal("UniqueBmEventFactory",
-                 "BioDynaMo only supports 64 unique BmEvents."
-                 " You requested a 65th one.");
-    }
-    return kOne << counter_++;
-  }
-
- private:
-  UniqueBmEventFactory() {}
-  std::recursive_mutex mutex_;
-  uint64_t counter_ = 0;
-};
-
-/// BaseBiologyModule encapsulates logic to decide for which BmEvents
+/// BaseBiologyModule encapsulates logic to decide for which EventIds
 /// a biology module should be copied or removed
 struct BaseBiologyModule {
   /// Default ctor sets `copy_mask_` and remove_mask_` to 0; meaning that
   /// `Copy` and `Remove` will always return false
   BaseBiologyModule() : copy_mask_(0), remove_mask_(0) {}
-  explicit BaseBiologyModule(BmEvent copy_event, BmEvent remove_event = 0)
+  explicit BaseBiologyModule(EventId copy_event, EventId remove_event = 0)
       : copy_mask_(copy_event), remove_mask_(remove_event) {}
 
-  BaseBiologyModule(std::initializer_list<BmEvent> copy_events,
-                    std::initializer_list<BmEvent> remove_events = {}) {
+  BaseBiologyModule(std::initializer_list<EventId> copy_events,
+                    std::initializer_list<EventId> remove_events = {}) {
     // copy mask
     copy_mask_ = 0;
-    for (BmEvent event : copy_events) {
+    for (EventId event : copy_events) {
       copy_mask_ |= event;
     }
     // delete mask
     remove_mask_ = 0;
-    for (BmEvent event : remove_events) {
+    for (EventId event : remove_events) {
       remove_mask_ |= event;
     }
   }
@@ -101,15 +49,15 @@ struct BaseBiologyModule {
 
   /// Function returns whether the biology module should be copied for the
   /// given event.
-  bool Copy(BmEvent event) const { return (event & copy_mask_) != 0; }
+  bool Copy(EventId event) const { return (event & copy_mask_) != 0; }
 
   /// Function returns whether the biology module should be removed for the
   /// given event.
-  bool Remove(BmEvent event) const { return (event & remove_mask_) != 0; }
+  bool Remove(EventId event) const { return (event & remove_mask_) != 0; }
 
  private:
-  BmEvent copy_mask_;
-  BmEvent remove_mask_;
+  EventId copy_mask_;
+  EventId remove_mask_;
   ClassDefNV(BaseBiologyModule, 2);
 };
 
@@ -117,6 +65,16 @@ struct BaseBiologyModule {
 /// Variant implementation does not allow `Variant<>`
 /// -> `Variant<NullBiologyModule>`
 struct NullBiologyModule : public BaseBiologyModule {
+  NullBiologyModule() {}
+
+  // Ctor for any event
+  template <typename TEvent, typename TBm>
+  NullBiologyModule(const TEvent& event, TBm* other, uint64_t new_oid = 0) {}
+
+  // empty event handler (exising biology module won't be modified on any event)
+  template <typename TEvent, typename... TBms>
+  void EventHandler(const TEvent&, TBms*...) {}
+
   template <typename T>
   void Run(T* t) {}
 
@@ -141,46 +99,72 @@ struct RunVisitor {
   TSimulationObject* const kSimulationObject;
 };
 
-/// \brief Visitor to copy biology modules from one structure to another
-/// @tparam TVector type of the destination container where the biology modules
-///         are stored
-template <typename TVector>
-struct CopyVisitor {
-  /// @param event that lead to the copy operation - e.g. cell division:
-  ///        biology modules should be copied from mother to daughter cell
-  /// @param vector biology module vector in which the copied module will be
-  ///        inserted
-  CopyVisitor(BmEvent event, TVector* vector)
-      : kEvent(event), vector_(vector) {}
+/// @brief Function to copy biology modules from one structure to another
+/// @param event event will be passed on to biology module to determine
+///        whether it should be copied to destination
+/// @param src  source vector of biology modules
+/// @param dest destination vector of biology modules
+/// @tparam TBiologyModules std::vector<Variant<[list of biology modules]>>
+template <typename TEvent, typename TBiologyModules>
+void CopyBiologyModules(const TEvent& event, TBiologyModules* src,
+                        TBiologyModules* dest) {
+  auto copy = [&](auto& bm) {
+    if (bm.Copy(event.kEventId)) {
+      raw_type<decltype(bm)> new_bm(event, &bm);
+      dest->emplace_back(std::move(new_bm));
+    }
+  };
+  for (auto& module : *src) {
+    visit(copy, module);
+  }
+}
 
-  template <typename T>
-  void operator()(const T& from) const {
-    if (from.Copy(kEvent)) {
-      T copy(from);  // NOLINT
-      vector_->emplace_back(std::move(copy));
+/// @brief Function to invoke the EventHandler of the biology module or remove
+///                  it from `current`.
+/// Forwards the event handler call to each biology modules of the triggered
+/// simulation object and removes biology modules if they are flagged.
+template <typename TEvent, typename TBiologyModules1,
+          typename... TBiologyModules>
+void BiologyModuleEventHandler(const TEvent& event, TBiologyModules1* current,
+                               TBiologyModules*... bms) {
+  // call event handler for biology modules
+  uint64_t cnt = 0;
+  auto call_bm_event_handler = [&](auto& bm) {
+    using BiologyModuleType = raw_type<decltype(bm)>;
+
+    /// return nullptr of condition is false or pointer to object in variant
+    auto extract = [](bool condition, auto* variant) -> BiologyModuleType* {
+      if (condition) {
+        return get_if<BiologyModuleType>(variant);
+      }
+      return nullptr;
+    };
+
+    if (!bm.Remove(event.kEventId)) {
+      bool copy = bm.Copy(event.kEventId);
+      bm.EventHandler(event, extract(copy, &((*bms)[cnt]))...);
+      cnt += copy ? 1 : 0;
+    }
+  };
+  for (auto& el : *current) {
+    visit(call_bm_event_handler, el);
+  }
+
+  // remove biology modules from current
+  bool remove;
+  auto remove_from_current = [&](auto& bm) {
+    remove = bm.Remove(event.kEventId);
+  };
+  for (auto it = current->begin(); it != current->end();) {
+    remove = false;
+    visit(remove_from_current, *it);
+    if (remove) {
+      it = current->erase(it);
+    } else {
+      ++it;
     }
   }
-
-  const BmEvent kEvent;
-  TVector* vector_;
-};
-
-/// \brief Visitor to query if a biology module should be removed from a
-/// simulation object after an event.
-struct RemoveVisitor {
-  /// @param event that lead to the remove operation - e.g. cell division:
-  explicit RemoveVisitor(BmEvent event) : kEvent(event) {}
-
-  template <typename T>
-  void operator()(const T& from) {
-    return_value_ = from.Remove(kEvent);
-  }
-
-  const BmEvent kEvent;
-  /// Function `visit` does not forward the return value of the function
-  /// operator. Therefore, this workaround is necessary.
-  bool return_value_ = 0;
-};
+}
 
 }  // namespace bdm
 

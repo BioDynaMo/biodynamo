@@ -57,6 +57,7 @@ pages:
       - Tumor Concept: jean_tuto.md
       # - Soma Clustering: soma_clustering.md
     - Documentation:
+      - Event: event.md
       - Substance Initialization: substance_initializers.md
       - GPU Acceleration: gpu_acceleration.md
     - Changelog: changelog.md

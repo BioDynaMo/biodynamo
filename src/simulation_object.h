@@ -27,6 +27,7 @@
 #include "log.h"
 
 #include "backend.h"
+#include "event/event.h"
 #include "root_util.h"
 #include "simulation_object_util.h"
 #include "type_util.h"
@@ -259,6 +260,8 @@ class ScalarSimulationObject {
 
   std::size_t size() const { return 1; }  // NOLINT
 
+  /// NB: Cannot be used in the Constructur, because the ResourceManager`
+  /// didn't initialize `element_idx_` yet.
   uint32_t GetElementIdx() const { return element_idx_; }
 
   // assign the array index of this object in the ResourceManager

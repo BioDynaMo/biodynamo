@@ -337,19 +337,16 @@ struct Capsule;
   template <typename, typename, template <typename, typename> class>           \
   friend class class_name;                                                     \
                                                                                \
+  /** friend event handler to give it access to private members */             \
+  template <typename TEvent, typename TFirst, typename... TRemaining>          \
+  friend struct EventHandler;                                                  \
+                                                                               \
   /** Only used for Soa backends to be consistent with  */                     \
   /** e.g. `std::vector::value_type`. */                                       \
   using value_type = Self<Soa>;                                                \
                                                                                \
-  template <typename TResourceManager = ResourceManager<>>                     \
-  SoHandle GetSoHandle() const {                                               \
-    auto type_idx =                                                            \
-        TResourceManager::template GetTypeIndex<MostDerivedScalar>();          \
-    return SoHandle(type_idx, Base::GetElementIdx());                          \
-  }                                                                            \
-                                                                               \
-  explicit class_name(TRootIOCtor* io_ctor) {}                                 \
-  class_name(const class_name& io_ctor) = default;                             \
+  using Simulation_t =                                                         \
+      Simulation<typename TCompileTimeParam::template Self<Soa>>;              \
                                                                                \
   /** Create new empty object with SOA memory layout. */                       \
   /** Calling Self<Soa> soa; will have already one instance inside -- */       \
@@ -364,9 +361,31 @@ struct Capsule;
     return ret_value;                                                          \
   }                                                                            \
                                                                                \
-  using Simulation_t =                                                         \
-      Simulation<typename TCompileTimeParam::template Self<Soa>>;              \
+  /** Returns the Scalar name of the container minus the "Ext"     */          \
+  static const std::string GetScalarTypeName() {                               \
+    static std::string kScalarType = #class_name;                              \
+    return kScalarType.substr(0, kScalarType.size() - 3);                      \
+  }                                                                            \
                                                                                \
+  explicit class_name(TRootIOCtor* io_ctor) {}                                 \
+  class_name(const class_name& other) = default;                               \
+                                                                               \
+  /** Constructor to create SOA reference object */                            \
+  template <typename T>                                                        \
+  class_name(T* other, size_t idx)                                             \
+      : Base(other, idx),                                                      \
+        REMOVE_TRAILING_COMMAS(BDM_SIM_OBJECT_CPY_CTOR_INIT(__VA_ARGS__)) {}   \
+                                                                               \
+  template <typename TResourceManager = ResourceManager<>>                     \
+  SoHandle GetSoHandle() const {                                               \
+    auto type_idx =                                                            \
+        TResourceManager::template GetTypeIndex<MostDerivedScalar>();          \
+    return SoHandle(type_idx, Base::GetElementIdx());                          \
+  }                                                                            \
+                                                                               \
+  /** Return simulation object pointer */                                      \
+  /** NB: Cannot be used in a constructor, because `Base::element_idx_` has */ \
+  /** not been set by the ResourceManager yet */                               \
   MostDerivedSoPtr GetSoPtr() {                                                \
     auto* rm = Simulation_t::GetActive()->GetResourceManager();                \
     auto* container = rm->template Get<MostDerivedScalar>();                   \
@@ -378,18 +397,6 @@ struct Capsule;
     auto container = rm->template Get<MostDerivedScalar>();                    \
     container->DelayedRemove(Base::GetElementIdx());                           \
   }                                                                            \
-                                                                               \
-  /** Returns the Scalar name of the container minus the "Ext"     */          \
-  static const std::string GetScalarTypeName() {                               \
-    static std::string kScalarType = #class_name;                              \
-    return kScalarType.substr(0, kScalarType.size() - 3);                      \
-  }                                                                            \
-                                                                               \
-  /** Constructor to create SOA reference object */                            \
-  template <typename T>                                                        \
-  class_name(T* other, size_t idx)                                             \
-      : Base(other, idx),                                                      \
-        REMOVE_TRAILING_COMMAS(BDM_SIM_OBJECT_CPY_CTOR_INIT(__VA_ARGS__)) {}   \
                                                                                \
   /** Executes the given function for all data members             */          \
   /**  Function could be a lambda in the following form:           */          \
@@ -488,6 +495,12 @@ struct Capsule;
     BDM_SIM_OBJECT_POP_BACK_BODY(__VA_ARGS__);                                 \
     Base::PopBack();                                                           \
   }                                                                            \
+                                                                               \
+  /** Cast `this` to the base class pointer (one level up) */                  \
+  Base* UpCast() { return static_cast<Base*>(this); }                          \
+                                                                               \
+  /** Cast `this` to the base class pointer (one level up) */                  \
+  const Base* UpCast() const { return static_cast<const Base*>(this); }        \
                                                                                \
  private:                                                                      \
   /** Cast `this` to the most derived type */                                  \

@@ -22,6 +22,8 @@
 #include "biology_module_util.h"
 #include "cell.h"
 #include "compile_time_param.h"
+#include "event/cell_division_event.h"
+#include "event/event.h"
 #include "model_initializer.h"
 #include "param.h"
 #include "resource_manager.h"

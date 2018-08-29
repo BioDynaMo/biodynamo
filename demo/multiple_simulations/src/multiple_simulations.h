@@ -22,6 +22,16 @@ namespace bdm {
 
 /// BiologyModule that divides the simulation object at each time step
 struct Divide : BaseBiologyModule {
+  Divide() {}
+
+  /// Empty default event constructor, because Divide does not have state.
+  template <typename TEvent, typename TBm>
+  Divide(const TEvent& event, TBm* other, uint64_t new_oid = 0) {}
+
+  /// Empty default event handler, because Divide does not have state.
+  template <typename TEvent, typename... TBms>
+  void EventHandler(const TEvent&, TBms*...) {}
+
   template <typename TSo>
   void Run(TSo* sim_object) {
     sim_object->Divide();

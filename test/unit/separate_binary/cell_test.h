@@ -19,6 +19,7 @@
 
 #include "biology_module_util.h"
 #include "cell.h"
+#include "event/cell_division_event.h"
 #include "gtest/gtest.h"
 #include "io_util.h"
 #include "unit/test_util.h"
@@ -30,7 +31,17 @@ namespace cell_test_internal {
 
 struct GrowthModule : public BaseBiologyModule {
   double growth_rate_ = 0.5;
-  GrowthModule() : BaseBiologyModule(gCellDivision) {}
+  GrowthModule() : BaseBiologyModule(CellDivisionEvent::kEventId) {}
+
+  // Ctor for any event
+  template <typename TEvent, typename TBm>
+  GrowthModule(const TEvent& event, TBm* other, uint64_t new_oid = 0) {
+    growth_rate_ = other->growth_rate_;
+  }
+
+  // empty event handler (exising biology module won't be modified on any event)
+  template <typename TEvent, typename... TBms>
+  void EventHandler(const TEvent&, TBms*...) {}
 
   template <typename T>
   void Run(T* t) {
@@ -47,14 +58,26 @@ struct MovementModule {
   explicit MovementModule(const std::array<double, 3>& velocity)
       : velocity_(velocity) {}
 
+  // Ctor for any event
+  template <typename TEvent, typename TBm>
+  MovementModule(const TEvent& event, TBm* other, uint64_t new_oid = 0) {
+    velocity_ = other->velocity_;
+  }
+
+  // empty event handler (exising biology module won't be modified on any event)
+  template <typename TEvent, typename... TBms>
+  void EventHandler(const TEvent&, TBms*...) {}
+
   template <typename T>
   void Run(T* t) {
     const auto& position = t->GetPosition();
     t->SetPosition(Math::Add(position, velocity_));
   }
 
-  bool Copy(BmEvent event) const { return false; }
-  bool Remove(BmEvent event) const { return event == gCellDivision; }
+  bool Copy(EventId event) const { return false; }
+  bool Remove(EventId event) const {
+    return event == CellDivisionEvent::kEventId;
+  }
   ClassDefNV(MovementModule, 1);
 };
 
@@ -64,6 +87,16 @@ BDM_SIM_OBJECT(TestCell, bdm::Cell) {
 
  public:
   TestCellExt() {}
+
+  // Ctor for CellDivisionEvent
+  TestCellExt(CellDivisionEvent event, TestCellExt * mother)
+      : Base(event, mother) {
+    if (mother->capture_input_parameters_) {
+      mother->captured_volume_ratio_ = event.volume_ratio_;
+      mother->captured_phi_ = event.phi_;
+      mother->captured_theta_ = event.theta_;
+    }
+  }
 
   void TestTransformCoordinatesGlobalToPolar() {
     std::array<double, 3> coord = {1, 2, 3};
@@ -84,25 +117,6 @@ BDM_SIM_OBJECT(TestCell, bdm::Cell) {
   double captured_volume_ratio_ = 0.0;
   double captured_phi_ = 0.0;
   double captured_theta_ = 0.0;
-
-  void DivideImpl(MostDerivedSoPtr daughter, double volume_ratio, double phi,
-                  double theta) {
-    if (capture_input_parameters_) {
-      captured_volume_ratio_ = volume_ratio;
-      captured_phi_ = phi;
-      captured_theta_ = theta;
-    } else {
-      // forward call to implementation in CellExt
-      Base::DivideImpl(daughter, volume_ratio, phi, theta);
-    }
-  }
-
-  /// forwards call to BiologyModuleEventHandler which is protected
-  void CallBiologyModuleEventHandler(
-      BmEvent event,
-      std::vector<Variant<GrowthModule, MovementModule>> * destination) {
-    Base::BiologyModuleEventHandler(event, destination);
-  }
 
   vec<bool> placeholder_;  // BDM_SIM_OBJECT_HEADER needs at least one member
   FRIEND_TEST(CellTest, DivideVolumeRatioPhiTheta);

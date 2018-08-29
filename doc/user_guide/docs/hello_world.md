@@ -52,7 +52,7 @@ struct CompileTimeParam : public DefaultCompileTimeParam<Backend> {
 And add the following line to the `construct` function:
 
 ``` C++
-cell.AddBiologyModule(GrowDivide(32, 3000, {gAllBmEvents}));
+cell.AddBiologyModule(GrowDivide(32, 3000, {gAllEventIds}));
 ```
 
 Rebuild and rerun the simulation to have the cell division take effect. visit the

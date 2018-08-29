@@ -77,7 +77,7 @@ simulation.GetScheduler()->Simulate(200);
 In the previous chapter, we created a great number of cells. However, those cells don’t do anything! We will here create a cancerous cell that will grow and divide when it reaches a certain diameter. For this, we will define a new biology module structure GrowthModule that will be applied to cell elements, and we will make this GrowthModule copied into the cell daughter (so the daughter will also contain an instance of the biology module GrowthModule)
 ``` C++
   struct GrowthModule : public BaseBiologyModule {
-  GrowthModule() : BaseBiologyModule(gAllBmEvents) {}
+  GrowthModule() : BaseBiologyModule(gAllEventIds) {}
 
     template <typename T>
       void Run(T* cell) {
@@ -361,7 +361,7 @@ namespace bdm {
 
   // 1. Define growth behaviour
   struct GrowthModule : public BaseBiologyModule {
-    GrowthModule() : BaseBiologyModule(gAllBmEvents) {}
+    GrowthModule() : BaseBiologyModule(gAllEventIds) {}
 
     template <typename T>
     void Run(T* cell) {

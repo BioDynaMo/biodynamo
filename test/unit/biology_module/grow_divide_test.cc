@@ -29,7 +29,7 @@ TEST(GrowDivideTest, Grow) {
   Cell cell;
   cell.SetDiameter(40);
 
-  GrowDivide gd(40, 300, {gAllBmEvents});
+  GrowDivide gd(40, 300, {gAllEventIds});
   gd.Run(&cell);
 
   rm->Get<Cell>()->Commit();
@@ -45,7 +45,7 @@ TEST(GrowDivideTest, Divide) {
   Cell cell;
   cell.SetDiameter(41);
 
-  GrowDivide gd(40, 300, {gAllBmEvents});
+  GrowDivide gd(40, 300, {gAllEventIds});
   gd.Run(&cell);
 
   rm->Get<Cell>()->Commit();

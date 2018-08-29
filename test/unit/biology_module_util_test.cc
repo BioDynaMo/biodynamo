@@ -20,62 +20,112 @@ namespace biology_module_util_test_internal {
 
 TEST(BiologyModuleUtilTest, RunVisitor) { RunRunVisitor(); }
 
-TEST(BiologyModuleUtilTest, CopyVisitorCopy) {
-  std::vector<Variant<CopyTestBiologyModule>> destination_module_vector;
-  CopyVisitor<std::vector<Variant<CopyTestBiologyModule>>> visitor(
-      gCellDivision, &destination_module_vector);
+TEST(BiologyModuleUtilTest, CopyBiologyModules) {
+  // set-up
+  std::vector<Variant<CopyTestBiologyModule>> src;
+  std::vector<Variant<CopyTestBiologyModule>> dest;
+
+  CellDivisionEvent event;
 
   CopyTestBiologyModule module;
-  module.expected_event_ = gCellDivision;
+  module.expected_event_ = event.kEventId;
   Variant<CopyTestBiologyModule> variant = module;
+  src.emplace_back(module);
 
-  gCopyCtorCalled = false;
-  visit(visitor, variant);
-  EXPECT_EQ(1u, destination_module_vector.size());
-  EXPECT_TRUE(gCopyCtorCalled);
+  gCellDivisionEventCtorCalled = false;
+
+  // call
+  CopyBiologyModules(event, &src, &dest);
+
+  // verify
+  EXPECT_EQ(1u, dest.size());
+  EXPECT_TRUE(gCellDivisionEventCtorCalled);
+  bool foo = get_if<CopyTestBiologyModule>(&dest[0])->copy_;
+  EXPECT_TRUE(foo);
 }
 
-TEST(BiologyModuleUtilTest, CopyVisitorIsNotCopied) {
-  std::vector<Variant<CopyTestBiologyModule>> destination_module_vector;
-  CopyVisitor<std::vector<Variant<CopyTestBiologyModule>>> visitor(
-      gCellDivision, &destination_module_vector);
+TEST(BiologyModuleUtilTest, CopyBiologyModulesIsNotCopied) {
+  // set-up
+  std::vector<Variant<CopyTestBiologyModule>> src;
+  std::vector<Variant<CopyTestBiologyModule>> dest;
+
+  CellDivisionEvent event;
 
   CopyTestBiologyModule module;
-  module.expected_event_ = gCellDivision;
-  module.copy_return_value_ = false;
+  module.expected_event_ = event.kEventId;
+  module.copy_ = false;
   Variant<CopyTestBiologyModule> variant = module;
+  src.emplace_back(module);
 
-  gCopyCtorCalled = false;
-  visit(visitor, variant);
-  EXPECT_EQ(0u, destination_module_vector.size());
-  EXPECT_FALSE(gCopyCtorCalled);
+  gCellDivisionEventCtorCalled = false;
+
+  // call
+  CopyBiologyModules(event, &src, &dest);
+
+  // verify
+  EXPECT_EQ(0u, dest.size());
+  EXPECT_FALSE(gCellDivisionEventCtorCalled);
 }
 
-TEST(BiologyModuleUtilTest, RemoveVisitor) {
-  RemoveTestBiologyModule bm;
-  bm.expected_event_ = gCellDivision;
-  Variant<RemoveTestBiologyModule> variant = bm;
+TEST(BiologyModuleUtilTest, Remove) {
+  // set-up
+  std::vector<Variant<RemoveTestBiologyModule>> bms1;
+  std::vector<Variant<RemoveTestBiologyModule>> bms2;
 
-  RemoveVisitor visitor(gCellDivision);
+  CellDivisionEvent event;
 
-  visit(visitor, variant);
-  EXPECT_TRUE(visitor.return_value_);
+  RemoveTestBiologyModule module;
+  module.expected_event_ = event.kEventId;
+  Variant<RemoveTestBiologyModule> variant = module;
+  bms1.emplace_back(module);
+  bms2.emplace_back(module);
+
+  // call
+  BiologyModuleEventHandler(event, &bms1, &bms2);
+
+  // verify
+  EXPECT_EQ(0u, bms1.size());
+  EXPECT_EQ(1u, bms2.size());
+}
+
+TEST(BiologyModuleUtilTest, EventHandler) {
+  // set-up
+  std::vector<Variant<EventHandlerBm>> bms1;
+  std::vector<Variant<EventHandlerBm>> bms2;
+
+  CellDivisionEvent event;
+
+  EventHandlerBm module;
+  module.expected_event_ = event.kEventId;
+  Variant<EventHandlerBm> variant = module;
+  bms1.emplace_back(module);
+  bms2.emplace_back(module);
+
+  gCellDivisionEventEventHandlerCalled = false;
+
+  // call
+  BiologyModuleEventHandler(event, &bms1, &bms2);
+
+  // verify
+  EXPECT_EQ(1u, bms1.size());
+  EXPECT_EQ(1u, bms2.size());
+  EXPECT_TRUE(gCellDivisionEventEventHandlerCalled);
 }
 
 TEST(BaseBiologyModuleTest, CopyNever) {
   BaseBiologyModule bbm;
 
   for (uint64_t i = 0; i < 64; i++) {
-    BmEvent e = 1 << i;
+    EventId e = 1 << i;
     EXPECT_FALSE(bbm.Copy(e));
   }
 }
 
 TEST(BaseBiologyModuleTest, CopyAlways) {
-  BaseBiologyModule bbm(gAllBmEvents);
+  BaseBiologyModule bbm(gAllEventIds);
 
   for (uint64_t i = 0; i < 64; i++) {
-    BmEvent e = 1 << i;
+    EventId e = 1 << i;
     EXPECT_TRUE(bbm.Copy(e));
   }
 }
@@ -85,7 +135,7 @@ TEST(BaseBiologyModuleTest, CopyOnSingleEvent) {
   BaseBiologyModule bbm(one << 5);
 
   for (uint64_t i = 0; i < 64; i++) {
-    BmEvent e = one << i;
+    EventId e = one << i;
     if (i != 5) {
       EXPECT_FALSE(bbm.Copy(e));
     } else {
@@ -99,7 +149,7 @@ TEST(BaseBiologyModuleTest, CopyOnEventList) {
   BaseBiologyModule bbm({one << 5, one << 19, one << 49});
 
   for (uint64_t i = 0; i < 64; i++) {
-    BmEvent e = one << i;
+    EventId e = one << i;
     if (i != 5 && i != 19 && i != 49) {
       EXPECT_FALSE(bbm.Copy(e));
     } else {
@@ -110,33 +160,33 @@ TEST(BaseBiologyModuleTest, CopyOnEventList) {
 
 TEST(BaseBiologyModuleTest, RemoveNever) {
   BaseBiologyModule bbm;
-  BmEvent any = 1;
-  BaseBiologyModule bbm1(any, gNullEvent);
+  EventId any = 1;
+  BaseBiologyModule bbm1(any, gNullEventId);
 
   for (uint64_t i = 0; i < 64; i++) {
-    BmEvent e = 1 << i;
+    EventId e = 1 << i;
     EXPECT_FALSE(bbm.Remove(e));
     EXPECT_FALSE(bbm1.Remove(e));
   }
 }
 
 TEST(BaseBiologyModuleTest, RemoveAlways) {
-  BmEvent any = 1;
-  BaseBiologyModule bbm(any, gAllBmEvents);
+  EventId any = 1;
+  BaseBiologyModule bbm(any, gAllEventIds);
 
   for (uint64_t i = 0; i < 64; i++) {
-    BmEvent e = 1 << i;
+    EventId e = 1 << i;
     EXPECT_TRUE(bbm.Remove(e));
   }
 }
 
 TEST(BaseBiologyModuleTest, RemoveOnSingleEvent) {
   uint64_t one = 1;
-  BmEvent any = 1;
+  EventId any = 1;
   BaseBiologyModule bbm(any, one << 5);
 
   for (uint64_t i = 0; i < 64; i++) {
-    BmEvent e = one << i;
+    EventId e = one << i;
     if (i != 5) {
       EXPECT_FALSE(bbm.Remove(e));
     } else {
@@ -147,11 +197,11 @@ TEST(BaseBiologyModuleTest, RemoveOnSingleEvent) {
 
 TEST(BaseBiologyModuleTest, RemoveOnEventList) {
   uint64_t one = 1;
-  BmEvent any = 1;
+  EventId any = 1;
   BaseBiologyModule bbm({any}, {one << 5, one << 19, one << 49});
 
   for (uint64_t i = 0; i < 64; i++) {
-    BmEvent e = one << i;
+    EventId e = one << i;
     if (i != 5 && i != 19 && i != 49) {
       EXPECT_FALSE(bbm.Remove(e));
     } else {
@@ -160,11 +210,11 @@ TEST(BaseBiologyModuleTest, RemoveOnEventList) {
   }
 }
 
-TEST(UniqueBmEventFactoryTest, All) {
-  auto uef = UniqueBmEventFactory::Get();
+TEST(UniqueEventIdFactoryTest, All) {
+  auto uef = UniqueEventIdFactory::Get();
 
-  auto event_id_1 = uef->NewUniqueBmEvent();
-  auto event_id_2 = uef->NewUniqueBmEvent();
+  auto event_id_1 = uef->NewUniqueEventId();
+  auto event_id_2 = uef->NewUniqueEventId();
 
   EXPECT_EQ(event_id_1, event_id_2 >> 1);
 }

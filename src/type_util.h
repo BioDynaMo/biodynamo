@@ -54,6 +54,10 @@ struct is_soa_sphere {       // NOLINT
       is_soa<typename TSimObject::Backend>::value;
 };
 
+/// Type trait that converts `T*`, `T&`, `T&&`, `T*&` to `T`
+template <typename T>
+using raw_type = std::remove_pointer_t<std::decay_t<T>>;  // NOLINT
+
 }  // namespace bdm
 
 #endif  // TYPE_UTIL_H_

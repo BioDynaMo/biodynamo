@@ -12,8 +12,8 @@
 //
 // -----------------------------------------------------------------------------
 
-#ifndef INTEGRATION_BACKUP_RESTORE_H_
-#define INTEGRATION_BACKUP_RESTORE_H_
+#ifndef SYSTEM_BACKUP_RESTORE_SRC_BACKUP_RESTORE_H_
+#define SYSTEM_BACKUP_RESTORE_SRC_BACKUP_RESTORE_H_
 
 #include <unistd.h>
 #include "biodynamo.h"
@@ -21,7 +21,7 @@
 namespace bdm {
 
 struct TestBehaviour : public BaseBiologyModule {
-  TestBehaviour() : BaseBiologyModule(gAllBmEvents) {}
+  TestBehaviour() : BaseBiologyModule(gAllEventIds) {}
 
   template <typename T>
   void Run(T* cell) {
@@ -81,4 +81,4 @@ inline int Simulate(int argc, const char** argv) {
 
 }  // namespace bdm
 
-#endif  // INTEGRATION_BACKUP_RESTORE_H_
+#endif  // SYSTEM_BACKUP_RESTORE_SRC_BACKUP_RESTORE_H_

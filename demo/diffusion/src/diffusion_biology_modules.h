@@ -25,7 +25,15 @@ enum Substances { kKalium };
 // Define displacement behavior:
 // Cells move along the diffusion gradient (from low concentration to high)
 struct Chemotaxis : public BaseBiologyModule {
-  Chemotaxis() : BaseBiologyModule(gAllBmEvents) {}
+  Chemotaxis() : BaseBiologyModule(gAllEventIds) {}
+
+  /// Empty default event constructor, because Chemotaxis does not have state.
+  template <typename TEvent, typename TBm>
+  Chemotaxis(const TEvent& event, TBm* other, uint64_t new_oid = 0) {}
+
+  /// Empty default event handler, because Chemotaxis does not have state.
+  template <typename TEvent, typename... TBms>
+  void EventHandler(const TEvent&, TBms*...) {}
 
   template <typename T, typename TSimulation = Simulation<>>
   void Run(T* cell) {
@@ -44,6 +52,7 @@ struct Chemotaxis : public BaseBiologyModule {
     cell->UpdatePosition(gradient);
   }
 
+ private:
   ClassDefNV(Chemotaxis, 1);
 };
 
@@ -51,6 +60,15 @@ struct Chemotaxis : public BaseBiologyModule {
 // One cell is assigned to secrete Kalium artificially at one location
 struct KaliumSecretion : public BaseBiologyModule {
   KaliumSecretion() : BaseBiologyModule() {}
+
+  /// Empty default event constructor, because KaliumSecretion does not have
+  /// state.
+  template <typename TEvent, typename TBm>
+  KaliumSecretion(const TEvent& event, TBm* other, uint64_t new_oid = 0) {}
+
+  /// Empty default event handler, because KaliumSecretion does not have state.
+  template <typename TEvent, typename... TBms>
+  void EventHandler(const TEvent&, TBms*...) {}
 
   template <typename T, typename TSimulation = Simulation<>>
   void Run(T* cell) {
@@ -61,6 +79,7 @@ struct KaliumSecretion : public BaseBiologyModule {
     kDg->IncreaseConcentrationBy(cell->GetPosition(), amount);
   }
 
+ private:
   ClassDefNV(KaliumSecretion, 1);
 };
 

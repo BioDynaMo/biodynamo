@@ -32,9 +32,13 @@ void visit(TFunction&& function, TVariant&& variant_wrapper) {  // NOLINT
   mpark::visit(function, variant_wrapper.data_);
 }
 
-/// Wrapper for mpark::get_if
+// /// Wrapper for mpark::get_if
 template <typename T, typename TVariant>
-const T* get_if(TVariant* variant_wrapper) {  // NOLINT
+T* get_if(TVariant* variant_wrapper) {  // NOLINT
+  return mpark::get_if<T>(&(variant_wrapper->data_));
+}
+template <typename T, typename TVariant>
+const T* get_if(const TVariant* variant_wrapper) {  // NOLINT
   return mpark::get_if<T>(&(variant_wrapper->data_));
 }
 
@@ -66,7 +70,10 @@ class Variant {
                     TVariant&& variant_wrapper);
 
   template <typename T, typename TVariant>
-  friend const T* get_if(TVariant* variant_wrapper);  // NOLINT
+  friend T* get_if(TVariant* variant_wrapper);  // NOLINT
+
+  template <typename T, typename TVariant>
+  friend const T* get_if(const TVariant* variant_wrapper);  // NOLINT
 
   BDM_TEMPLATE_CLASS_DEF_CUSTOM_STREAMER(Variant, 1);
 };

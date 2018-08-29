@@ -207,7 +207,10 @@ TEST(CellTest, BiologyModuleEventHandler) {
 
   std::vector<Variant<GrowthModule, MovementModule>> destination;
 
-  cell.CallBiologyModuleEventHandler(gCellDivision, &destination);
+  auto& src = cell->biology_modules_[cell->kIdx];
+  CellDivisionEvent event;
+  CopyBiologyModules(event, &src, &destination);
+  BiologyModuleEventHandler(event, &src, &destination);
 
   const auto& bms = cell.GetAllBiologyModules();
   ASSERT_EQ(1u, bms.size());

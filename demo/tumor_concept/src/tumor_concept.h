@@ -29,6 +29,20 @@ BDM_SIM_OBJECT(MyCell, Cell) {  // our object extends the Cell object
   MyCellExt() {}
   explicit MyCellExt(const std::array<double, 3>& position) : Base(position) {}
 
+  /// If MyCell divides, daughter 2 copies the data members from the mother
+  template <typename TMother>
+  MyCellExt(const CellDivisionEvent& event, TMother* mother)
+      : Base(event, mother) {
+    can_divide_[kIdx] = mother->can_divide_[mother->kIdx];
+    cell_color_[kIdx] = mother->cell_color_[mother->kIdx];
+  }
+
+  /// If a cell divides, daughter keeps the same state from its mother.
+  template <typename TDaughter>
+  void EventHandler(const CellDivisionEvent& event, TDaughter* daughter) {
+    Base::EventHandler(event, daughter);
+  }
+
   // getter and setter for our new data member
   void SetCanDivide(bool d) { can_divide_[kIdx] = d; }
   bool GetCanDivide() const { return can_divide_[kIdx]; }
@@ -45,7 +59,15 @@ BDM_SIM_OBJECT(MyCell, Cell) {  // our object extends the Cell object
 
 // 1. Define growth behaviour
 struct GrowthModule : public BaseBiologyModule {
-  GrowthModule() : BaseBiologyModule(gAllBmEvents) {}
+  GrowthModule() : BaseBiologyModule(gAllEventIds) {}
+
+  /// Empty default event constructor, because GrowthModule does not have state.
+  template <typename TEvent, typename TBm>
+  GrowthModule(const TEvent& event, TBm* other, uint64_t new_oid = 0) {}
+
+  /// Empty default event handler, because GrowthModule does not have state.
+  template <typename TEvent, typename... TBms>
+  void EventHandler(const TEvent&, TBms*...) {}
 
   template <typename T, typename TSimulation = Simulation<>>
   void Run(T* cell) {
@@ -72,6 +94,7 @@ struct GrowthModule : public BaseBiologyModule {
     }
   }
 
+ private:
   ClassDefNV(GrowthModule, 1);
 };
 
@@ -81,7 +104,6 @@ struct CompileTimeParam : public DefaultCompileTimeParam<Backend> {
   using BiologyModules = Variant<GrowthModule>;  // add GrowthModule
   using AtomicTypes = VariadicTypedef<MyCell>;   // use MyCell object
 };
-
 
 inline int Simulate(int argc, const char** argv) {
   Simulation<> simulation(argc, argv);
