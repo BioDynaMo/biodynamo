@@ -167,15 +167,15 @@ std::array<Surface, 7> FindContainingSurfaces(
     const Point3D &this_point, const Box &box,
     const std::array<double, 3> &xyz_halos) {
   std::array<Surface, 7> ret;
-  // Ensure that the halo is within the region.
+  // Ensure that the halo is within the region, and non-overlapping.
   assert(xyz_halos[0] >= 0);
   assert(xyz_halos[1] >= 0);
   assert(xyz_halos[2] >= 0);
   Point3D left_front_bottom = box.first;
   Point3D right_back_top = box.second;
-  assert(left_front_bottom[0] + xyz_halos[0] < right_back_top[0]);
-  assert(left_front_bottom[1] + xyz_halos[1] < right_back_top[1]);
-  assert(left_front_bottom[2] + xyz_halos[2] < right_back_top[2]);
+  assert(left_front_bottom[0] + 2 * xyz_halos[0] < right_back_top[0]);
+  assert(left_front_bottom[1] + 2 * xyz_halos[1] < right_back_top[1]);
+  assert(left_front_bottom[2] + 2 * xyz_halos[2] < right_back_top[2]);
 
   if (!IsIn(this_point, left_front_bottom, right_back_top)) {
     return ret;
