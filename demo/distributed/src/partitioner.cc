@@ -89,12 +89,14 @@ Box CubePartitioner::GetLocation(BoxId box_index) const {
   double x_range = right_back_top_[0] - left_front_bottom_[0];
   double y_range = right_back_top_[1] - left_front_bottom_[1];
   double z_range = right_back_top_[2] - left_front_bottom_[2];
-  return {{x_range * x_index / axial_factors_[0],
-           y_range * y_index / axial_factors_[1],
-           z_range * z_index / axial_factors_[2]},
-          {x_range * (x_index + 1) / axial_factors_[0],
-           y_range * (y_index + 1) / axial_factors_[1],
-           z_range * (z_index + 1) / axial_factors_[2]}};
+  return {
+    {left_front_bottom_[0] + x_range * x_index / axial_factors_[0],
+     left_front_bottom_[1] + y_range * y_index / axial_factors_[1],
+     left_front_bottom_[2] + z_range * z_index / axial_factors_[2]},
+    {left_front_bottom_[0] + x_range * (x_index + 1) / axial_factors_[0],
+     left_front_bottom_[1] + y_range * (y_index + 1) / axial_factors_[1],
+     left_front_bottom_[2] + z_range * (z_index + 1) / axial_factors_[2]}
+  };
 }
 
 BoxId CubePartitioner::Locate(Point3D point) const {
