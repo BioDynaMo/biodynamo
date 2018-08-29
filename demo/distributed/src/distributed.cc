@@ -177,109 +177,154 @@ std::array<Surface, 7> FindContainingSurfaces(
   assert(left_front_bottom[1] + 2 * xyz_halos[1] < right_back_top[1]);
   assert(left_front_bottom[2] + 2 * xyz_halos[2] < right_back_top[2]);
 
-  if (!IsIn(this_point, left_front_bottom, right_back_top)) {
-    return ret;
-  }
-
   const double left = left_front_bottom[0];
-  const double left_plus = left_front_bottom[0] + xyz_halos[0];
+  const double left_minus = left - xyz_halos[0];
+  const double left_plus = left + xyz_halos[0];
   const double right = right_back_top[0];
-  const double right_minus = right_back_top[0] - xyz_halos[0];
+  const double right_minus = right - xyz_halos[0];
+  const double right_plus = right + xyz_halos[0];
   const double front = left_front_bottom[1];
-  const double front_plus = left_front_bottom[1] + xyz_halos[1];
+  const double front_minus = front - xyz_halos[1];
+  const double front_plus = front + xyz_halos[1];
   const double back = right_back_top[1];
-  const double back_minus = right_back_top[1] - xyz_halos[1];
+  const double back_minus = back - xyz_halos[1];
+  const double back_plus = back + xyz_halos[1];
   const double bottom = left_front_bottom[2];
-  const double bottom_plus = left_front_bottom[2] + xyz_halos[2];
+  const double bottom_minus = bottom - xyz_halos[2];
+  const double bottom_plus = bottom + xyz_halos[2];
   const double top = right_back_top[2];
-  const double top_minus = right_back_top[2] - xyz_halos[2];
+  const double top_minus = top - xyz_halos[2];
+  const double top_plus = top + xyz_halos[2];
   size_t i = 0;
 
-  if (IsIn(this_point, left_front_bottom, {right, front_plus, top})) {
+  if (IsIn(this_point,
+           {left_minus, front_minus, bottom_minus},
+           {right_plus, front_plus, top_plus})) {
     ret[i++] = SurfaceEnum::kFront;
   }
-  if (IsIn(this_point, left_front_bottom, {right, front_plus, bottom_plus})) {
+  if (IsIn(this_point,
+           {left_minus, front_minus, bottom_minus},
+           {right_plus, front_plus, bottom_plus})) {
     ret[i++] = SurfaceEnum::kFront | SurfaceEnum::kBottom;
   }
-  if (IsIn(this_point, left_front_bottom,
+  if (IsIn(this_point,
+           {left_minus, front_minus, bottom_minus},
            {left_plus, front_plus, bottom_plus})) {
     ret[i++] = SurfaceEnum::kFront | SurfaceEnum::kBottom | SurfaceEnum::kLeft;
   }
-  if (IsIn(this_point, {right_minus, front, bottom},
-           {right, front_plus, bottom_plus})) {
+  if (IsIn(this_point,
+           {right_minus, front_minus, bottom_minus},
+           {right_plus, front_plus, bottom_plus})) {
     ret[i++] = SurfaceEnum::kFront | SurfaceEnum::kBottom | SurfaceEnum::kRight;
   }
-  if (IsIn(this_point, left_front_bottom, {left_plus, front_plus, top})) {
+  if (IsIn(this_point,
+           {left_minus, front_minus, bottom_minus},
+           {left_plus, front_plus, top_plus})) {
     ret[i++] = SurfaceEnum::kFront | SurfaceEnum::kLeft;
   }
-  if (IsIn(this_point, {left, front, top_minus},
-           {left_plus, front_plus, top})) {
+  if (IsIn(this_point,
+           {left_minus, front_minus, top_minus},
+           {left_plus, front_plus, top_plus})) {
     ret[i++] = SurfaceEnum::kFront | SurfaceEnum::kLeft | SurfaceEnum::kTop;
   }
-  if (IsIn(this_point, {left, front, top_minus}, {right, front_plus, top})) {
+  if (IsIn(this_point,
+           {left_minus, front_minus, top_minus},
+           {right_plus, front_plus, top_plus})) {
     ret[i++] = SurfaceEnum::kFront | SurfaceEnum::kTop;
   }
-  if (IsIn(this_point, {right_minus, front, top_minus},
-           {right, front_plus, top})) {
+  if (IsIn(this_point,
+           {right_minus, front_minus, top_minus},
+           {right_plus, front_plus, top_plus})) {
     ret[i++] = SurfaceEnum::kFront | SurfaceEnum::kTop | SurfaceEnum::kRight;
   }
-  if (IsIn(this_point, {right_minus, front, bottom},
-           {right, front_plus, top})) {
+  if (IsIn(this_point,
+           {right_minus, front_minus, bottom_minus},
+           {right_plus, front_plus, top_plus})) {
     ret[i++] = SurfaceEnum::kFront | SurfaceEnum::kRight;
   }
-  if (IsIn(this_point, {left, front, top_minus}, right_back_top)) {
+  if (IsIn(this_point,
+           {left_minus, front_minus, top_minus},
+           {right_plus, back_plus, top_plus})) {
     ret[i++] = SurfaceEnum::kTop;
   }
-  if (IsIn(this_point, {left, front, top_minus}, {left_plus, back, top})) {
+  if (IsIn(this_point,
+           {left_minus, front_minus, top_minus},
+           {left_plus, back_plus, top_plus})) {
     ret[i++] = SurfaceEnum::kTop | SurfaceEnum::kLeft;
   }
-  if (IsIn(this_point, {left, back_minus, top_minus}, {left_plus, back, top})) {
+  if (IsIn(this_point,
+           {left_minus, back_minus, top_minus},
+           {left_plus, back_plus, top_plus})) {
     ret[i++] = SurfaceEnum::kTop | SurfaceEnum::kLeft | SurfaceEnum::kBack;
   }
-  if (IsIn(this_point, {right_minus, front, top_minus}, right_back_top)) {
+  if (IsIn(this_point,
+           {right_minus, front_minus, top_minus},
+           {right_plus, back_plus, top_plus})) {
     ret[i++] = SurfaceEnum::kTop | SurfaceEnum::kRight;
   }
-  if (IsIn(this_point, {right_minus, back_minus, top_minus}, right_back_top)) {
+  if (IsIn(this_point,
+           {right_minus, back_minus, top_minus},
+           {right_plus, back_plus, top_plus})) {
     ret[i++] = SurfaceEnum::kTop | SurfaceEnum::kRight | SurfaceEnum::kBack;
   }
-  if (IsIn(this_point, {left, back_minus, top_minus}, right_back_top)) {
+  if (IsIn(this_point,
+           {left_minus, back_minus, top_minus},
+           {right_plus, back_plus, top_plus})) {
     ret[i++] = SurfaceEnum::kTop | SurfaceEnum::kBack;
   }
-  if (IsIn(this_point, {left, back_minus, bottom}, right_back_top)) {
+  if (IsIn(this_point,
+           {left_minus, back_minus, bottom_minus},
+           {right_plus, back_plus, top_plus})) {
     ret[i++] = SurfaceEnum::kBack;
   }
-  if (IsIn(this_point, {left, back_minus, bottom}, {left_plus, back, top})) {
+  if (IsIn(this_point,
+           {left_minus, back_minus, bottom_minus},
+           {left_plus, back_plus, top_plus})) {
     ret[i++] = SurfaceEnum::kBack | SurfaceEnum::kLeft;
   }
-  if (IsIn(this_point, {right_minus, back_minus, bottom}, right_back_top)) {
+  if (IsIn(this_point,
+           {right_minus, back_minus, bottom_minus},
+           {right_plus, back_plus, top_plus})) {
     ret[i++] = SurfaceEnum::kBack | SurfaceEnum::kRight;
   }
-  if (IsIn(this_point, {left, back_minus, bottom},
-           {right, back, bottom_plus})) {
+  if (IsIn(this_point,
+           {left_minus, back_minus, bottom_minus},
+           {right_plus, back_plus, bottom_plus})) {
     ret[i++] = SurfaceEnum::kBack | SurfaceEnum::kBottom;
   }
-  if (IsIn(this_point, {left, back_minus, bottom},
-           {left_plus, back, bottom_plus})) {
+  if (IsIn(this_point,
+           {left_minus, back_minus, bottom_minus},
+           {left_plus, back_plus, bottom_plus})) {
     ret[i++] = SurfaceEnum::kBack | SurfaceEnum::kBottom | SurfaceEnum::kLeft;
   }
-  if (IsIn(this_point, {right_minus, back_minus, bottom},
-           {right, back, bottom_plus})) {
+  if (IsIn(this_point,
+           {right_minus, back_minus, bottom_minus},
+           {right_plus, back_plus, bottom_plus})) {
     ret[i++] = SurfaceEnum::kBack | SurfaceEnum::kBottom | SurfaceEnum::kRight;
   }
-  if (IsIn(this_point, left_front_bottom, {right, back, bottom_plus})) {
+  if (IsIn(this_point,
+           {left_minus, front_minus, bottom_minus},
+           {right_plus, back_plus, bottom_plus})) {
     ret[i++] = SurfaceEnum::kBottom;
   }
-  if (IsIn(this_point, left_front_bottom, {left_plus, back, bottom_plus})) {
+  if (IsIn(this_point,
+           {left_minus, front_minus, bottom_minus},
+           {left_plus, back_plus, bottom_plus})) {
     ret[i++] = SurfaceEnum::kBottom | SurfaceEnum::kLeft;
   }
-  if (IsIn(this_point, {right_minus, front, bottom},
-           {right, back, bottom_plus})) {
+  if (IsIn(this_point,
+           {right_minus, front_minus, bottom_minus},
+           {right_plus, back_plus, bottom_plus})) {
     ret[i++] = SurfaceEnum::kBottom | SurfaceEnum::kRight;
   }
-  if (IsIn(this_point, left_front_bottom, {left_plus, back, top})) {
+  if (IsIn(this_point,
+           {left_minus, front_minus, bottom_minus},
+           {left_plus, back_plus, top_plus})) {
     ret[i++] = SurfaceEnum::kLeft;
   }
-  if (IsIn(this_point, {right_minus, front, bottom}, right_back_top)) {
+  if (IsIn(this_point,
+           {right_minus, front_minus, bottom_minus},
+           {right_plus, back_plus, top_plus})) {
     ret[i++] = SurfaceEnum::kRight;
   }
   assert(i <= ret.size());
@@ -299,30 +344,45 @@ ResourceManagerPtr FindResourceManager(const SurfaceToVolumeMap &map,
   return nullptr;
 }
 
-SurfaceToVolumeMap CreateVolumesForBox(
-    ResourceManager<> *rm, BoxId box_id, const Partitioner* partitioner) {
+SurfaceToVolumeMap RayScheduler::CreateVolumesForBox(
+    ResourceManager<> *rm, BoxId box_id, const Partitioner* partitioner,
+    bool with_migrations) {
   SurfaceToVolumeMap ret = AllocVolumes();
   std::array<Surface, 27> needed_surfaces =
       partitioner->GetRequiredSurfaces(box_id);
-  auto f = [&](const auto &element, bdm::SoHandle) {
-    Point3D pos = element.GetPosition();
-    const Box box = partitioner->GetLocation(box_id);
-    if (IsIn(pos, box.first, box.second)) {
+  const Box box = partitioner->GetLocation(box_id);
+  StepContext type_counts;
+  auto f = [&](const auto &element, bdm::SoHandle handle) {
+    const auto type_idx = handle.GetTypeIdx();
+    const auto cell_idx = type_counts.IncrementCount(handle.GetTypeIdx());
+    // We do not care about cells that were originally outside of the main box.
+    if (!step_context_.ShouldManage(type_idx, cell_idx)) {
+      return;
+    }
+    const Point3D pos = element.GetPosition();
+    const bool is_in_box = IsIn(pos, box.first, box.second);
+    // We do not care about cells outside the box if no migrations.
+    if (!with_migrations && !is_in_box) {
+      return;
+    }
+    // The main box.
+    if (is_in_box) {
       ResourceManagerPtr volume_rm = ret[0].second;
       volume_rm->push_back(element);
-      for (Surface s : FindContainingSurfaces(pos, box, {1, 1, 1})) {
-        if (s == SurfaceEnum::kNone) {
-          break;
-        }
-        size_t i = 0;
-        while (needed_surfaces[i] != SurfaceEnum::kNone &&
-            needed_surfaces[i] != s) {
-          ++i;
-        }
-        if (needed_surfaces[i] == s) {
-          ResourceManagerPtr surface_rm = FindResourceManager(ret, s);
-          surface_rm->push_back(element);
-        }
+    }
+    // And the halo regions.
+    for (Surface s : FindContainingSurfaces(pos, box, {1, 1, 1})) {
+      if (s == SurfaceEnum::kNone) {
+        break;
+      }
+      size_t i = 0;
+      while (needed_surfaces[i] != SurfaceEnum::kNone &&
+          needed_surfaces[i] != s) {
+        ++i;
+      }
+      if (needed_surfaces[i] == s) {
+        ResourceManagerPtr surface_rm = FindResourceManager(ret, s);
+        surface_rm->push_back(element);
       }
     }
   };
@@ -334,13 +394,16 @@ void RayScheduler::InitiallyPartition(Box *bounding_box) {
   std::cout << "In RayScheduler::InitiallyPartition\n";
   Simulation<> *sim = Simulation<>::GetActive();
   ResourceManager<> *rm = sim->GetResourceManager();
+  step_context_.SetCounts(rm);
   std::cout << "Total " << rm->GetNumSimObjects() << '\n';
 
   std::unique_ptr<Partitioner> partitioner = CreatePartitioner();
   partitioner->InitializeWithResourceManager(rm);
   Boxes boxes = partitioner->Partition();
   for (size_t i = 0; i < boxes.size(); ++i) {
-    SurfaceToVolumeMap volumes = CreateVolumesForBox(rm, i, partitioner.get());
+    SurfaceToVolumeMap volumes =
+        CreateVolumesForBox(rm, i, partitioner.get(),
+            /* with_migrations */ false);
     ResourceManagerPtr main_rm = FindResourceManager(volumes, Surface());
     std::cout << "Box " << i << " has " << main_rm->GetNumSimObjects()
               << " simulation objects.\n";
@@ -435,8 +498,9 @@ void RayScheduler::DisassembleResourceManager(ResourceManager<> *rm,
                                               const Partitioner *partitioner,
                                               int64_t step, int64_t box) {
   auto start = std::chrono::high_resolution_clock::now();
-  arrow::Status s = StoreVolumes(
-      step, box, partitioner, CreateVolumesForBox(rm, box, partitioner));
+  SurfaceToVolumeMap volumes = CreateVolumesForBox(
+      rm, box, partitioner, /* with_migrations */ true);
+  arrow::Status s = StoreVolumes(step, box, partitioner, volumes);
   if (!s.ok()) {
     std::cerr << "Cannot store volumes for box " << box << " in step " << step
               << ".\n";
@@ -534,15 +598,15 @@ arrow::Status RayScheduler::StoreVolumes(int64_t step, int64_t box,
 }
 
 ResourceManager<> *RayScheduler::ReassembleVolumes(
-    int64_t step, int64_t box, const Partitioner *partitioner) {
+    int64_t step, int64_t box_id, const Partitioner *partitioner) {
   auto start = std::chrono::high_resolution_clock::now();
 
   // First create an RM for the main volume.
-  plasma::ObjectID key = id_for_surface(step, box, SurfaceEnum::kNone);
+  plasma::ObjectID key = id_for_surface(step, box_id, SurfaceEnum::kNone);
   std::vector<plasma::ObjectBuffer> buffers = FetchAndGetVolume(key);
   if (buffers.empty()) {
     std::cerr << "Cannot fetch and get volume for step " << step << " from "
-              << box << ".\n";
+              << box_id << ".\n";
     return nullptr;
   }
 
@@ -551,17 +615,54 @@ ResourceManager<> *RayScheduler::ReassembleVolumes(
                 const_cast<uint8_t *>(buffers[0].data->data()), false);
   ret = reinterpret_cast<ResourceManager<> *>(
       f.ReadObjectAny(ResourceManager<>::Class()));
+  step_context_.SetCounts(ret);
 
   auto end_main = std::chrono::high_resolution_clock::now();
 
-  // Then add from the border regions.
-  for (const auto &ns : partitioner->GetNeighborSurfaces(box)) {
-    arrow::Status s = AddFromVolume(ret, step, ns.first, ns.second);
-    if (!s.ok()) {
+  // Then add from the border regions. Three steps.
+  // First, fetch all halo regions.
+  std::array<ResourceManagerPtr, 26> neighbor_rms;
+  size_t region_count = 0;
+  for (const auto &ns : partitioner->GetNeighborSurfaces(box_id)) {
+    plasma::ObjectID key = id_for_surface(step, ns.first, ns.second);
+    std::vector<plasma::ObjectBuffer> buffers = FetchAndGetVolume(key);
+    if (buffers.empty()) {
+      std::cerr << "Cannot fetch and get volume for step " << step << " from "
+                << box_id << ".\n";
       delete ret;
-      std::cerr << "Cannot add halos in step " << step << " from box 1.\n";
       return nullptr;
     }
+    ResourceManagerPtr subvolume_rm;
+    TBufferFile f(TBufferFile::EMode::kRead, buffers[0].data->size(),
+                  const_cast<uint8_t *>(buffers[0].data->data()), false);
+    subvolume_rm.reset(reinterpret_cast<ResourceManager<> *>(
+                           f.ReadObjectAny(ResourceManager<>::Class())));
+    neighbor_rms[region_count++] = subvolume_rm;
+  }
+  assert(region_count <= neighbor_rms.size());
+
+  // Second, add simulation objects that are in the main region.
+  const Box box = partitioner->GetLocation(box_id);
+  auto add_main = [&](const auto& element, SoHandle handle) {
+    if (IsIn(element.GetPosition(), box.first, box.second)) {
+      ret->push_back(element);
+      step_context_.IncrementCount(handle.GetTypeIdx());
+    }
+  };
+  for (size_t i = 0; i < region_count; ++i) {
+    ResourceManagerPtr subvolume_rm = neighbor_rms[i];
+    subvolume_rm->ApplyOnAllElements(add_main);
+  }
+
+  // Third, add remaining simulation objects.
+  auto add_remaining = [&](const auto& element, SoHandle) {
+    if (!IsIn(element.GetPosition(), box.first, box.second)) {
+      ret->push_back(element);
+    }
+  };
+  for (size_t i = 0; i < region_count; ++i) {
+    ResourceManagerPtr subvolume_rm = neighbor_rms[i];
+    subvolume_rm->ApplyOnAllElements(add_remaining);
   }
 
   auto end_all = std::chrono::high_resolution_clock::now();
@@ -574,30 +675,6 @@ ResourceManager<> *RayScheduler::ReassembleVolumes(
   std::cout << "Reassemble with halos time " << elapsed.count() << " ms\n";
 
   return ret;
-}
-
-arrow::Status RayScheduler::AddFromVolume(ResourceManager<> *rm, int64_t step,
-                                          int64_t box, Surface surface) {
-  plasma::ObjectID key = id_for_surface(step, box, surface);
-  std::vector<plasma::ObjectBuffer> buffers = FetchAndGetVolume(key);
-  if (buffers.empty()) {
-    std::cerr << "Cannot fetch and get volume for step " << step << " from "
-              << box << ".\n";
-    return arrow::Status(arrow::StatusCode::IOError, "Cannot fetch and get");
-  }
-  ResourceManagerPtr subvolume_rm;
-  TBufferFile f(TBufferFile::EMode::kRead, buffers[0].data->size(),
-                const_cast<uint8_t *>(buffers[0].data->data()), false);
-  subvolume_rm.reset(reinterpret_cast<ResourceManager<> *>(
-      f.ReadObjectAny(ResourceManager<>::Class())));
-
-  auto func = [&](const auto &element, bdm::SoHandle) {
-    rm->push_back(element);
-  };
-
-  subvolume_rm->ApplyOnAllElements(func);
-
-  return arrow::Status();
 }
 
 RaySimulation::RaySimulation()

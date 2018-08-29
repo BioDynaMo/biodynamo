@@ -34,6 +34,40 @@ using SurfaceToVolume = std::pair<Surface, ResourceManagerPtr>;
 // Not a map, but a constant size linear array.
 using SurfaceToVolumeMap = std::array<SurfaceToVolume, 27>;
 
+/// Stores the context of a simulation step.
+///
+/// Right now, the stored context only contains the number of simulation objects
+/// (SO's) that are originally, at reassembling time, within the box under
+/// consideration. These SOs are stored at the beginning of the re-assembled
+/// ResourceManager.
+class StepContext {
+ public:
+  StepContext() {
+    for (size_t i = 0; i < managed_counts_.size(); ++i) {
+      managed_counts_[i] = 0;
+    }
+  }
+
+  void SetCounts(ResourceManager<>* rm) {
+    auto func = [&](const auto& container, auto idx) {
+      managed_counts_[idx] = container->size();
+    };
+    rm->ApplyOnAllTypes(func);
+  }
+
+  uint32_t IncrementCount(uint16_t type_idx) {
+    return managed_counts_[type_idx]++;
+  }
+
+  bool ShouldManage(uint16_t type_idx, uint32_t element_idx) const {
+    return element_idx < managed_counts_[type_idx];
+  }
+
+ private:
+  using TypeCounts = std::array<uint32_t, ResourceManager<>::NumberOfTypes()>;
+  TypeCounts managed_counts_;
+};
+
 class RayScheduler : public Scheduler<Simulation<>> {
  public:
   using super = Scheduler<Simulation<>>;
@@ -67,6 +101,25 @@ class RayScheduler : public Scheduler<Simulation<>> {
   /// Establishes connections to Ray's local scheduler and Plasma object store.
   arrow::Status MaybeInitializeConnection();
 
+  /// Copies simulation objects from `rm` to a SurfaceToVolumeMap for `box_id`.
+  ///
+  /// Only the SOs that are managed by this box (those that *were* originally
+  /// inside the box, at reassembling time) may be copied. If `with_migrations`
+  /// is on, the managed SOs that have migrated outside the box will be copied.
+  ///
+  /// \param rm the ResourceManager containing all SOs to be copied. This
+  ///           ResourceManager can contain so many more SOs than the actual
+  ///           number of managed SOs.
+  /// \param box_id the identifier of the main box
+  /// \param partitioner the partitioner to find neighboring surfaces of the
+  ///                    main box
+  /// \param with_migrations if `true`, copy managed SOs that have moved
+  ///                        outside the box
+  /// \return a map of Surface to ResourceManager
+  SurfaceToVolumeMap CreateVolumesForBox(
+      ResourceManager<> *rm, BoxId box_id, const Partitioner* partitioner,
+      bool with_migrations);
+
   /// Stores `volumes` in the object store for `box` in `step`.
   arrow::Status StoreVolumes(int64_t step, int64_t box,
                              const Partitioner* partitioner,
@@ -75,10 +128,6 @@ class RayScheduler : public Scheduler<Simulation<>> {
   void DisassembleResourceManager(ResourceManager<>* rm,
                                   const Partitioner* partitioner, int64_t step,
                                   int64_t box);
-
-  /// Add all simulation objects from `box`'s `surface` in `step` to `rm`.
-  arrow::Status AddFromVolume(ResourceManager<>* rm, int64_t step, int64_t box,
-                              Surface surface);
 
   /// Reassembles all volumes required to simulate `box` in `step` according to
   /// `partitioner`.
@@ -100,6 +149,7 @@ class RayScheduler : public Scheduler<Simulation<>> {
   bool initialized_ = false;
   std::unique_ptr<LocalSchedulerConnection> local_scheduler_ = nullptr;
   plasma::PlasmaClient object_store_;
+  StepContext step_context_;
 };
 
 class RaySimulation : public Simulation<> {
