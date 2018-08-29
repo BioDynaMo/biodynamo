@@ -34,6 +34,13 @@
 
 namespace bdm {
 
+/// Required to pass derived type to base class
+template <template <typename, typename> class T>
+struct Capsule {
+  template <typename TCompileTimeParam, typename TDerived>
+  using type = T<TCompileTimeParam, TDerived>;
+};
+
 /// Contains code required by all simulation objects
 template <typename TCompileTimeParam, typename TDerived>
 class SimulationObject {

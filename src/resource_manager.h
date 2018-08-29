@@ -37,6 +37,7 @@
 #include "simulation.h"
 #include "tuple_util.h"
 #include "variadic_template_parameter_util.h"
+#include "transactional_vector.h"
 
 namespace bdm {
 

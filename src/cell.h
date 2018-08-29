@@ -40,21 +40,12 @@ extern const BmEvent gCellDivision;
 
 // BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
 
-template <typename TCompileTimeParam = CompileTimeParam, typename TDerived = DerivedPlaceholder>
+template <typename, typename>
 class CellExt;
-
-template <template <typename, typename> class>
-struct Capsule;
-
-template <>
-struct Capsule<CellExt> {
-  template <typename TCompileTimeParam, typename TDerived>
-  using type = CellExt<TCompileTimeParam, TDerived>;
-};
 
 using Cell = CellExt<CompileTimeParam, Capsule<CellExt>>;
 
-template <typename TCompileTimeParam, typename TDerived>
+template <typename TCompileTimeParam = CompileTimeParam, typename TDerived = Capsule<CellExt>>
 class CellExt : public SimulationObjectExt<TCompileTimeParam, TDerived> {
     BDM_SIM_OBJECT_HEADER(CellExt, 1, position_, tractor_force_, diameter_,
                           volume_, adherence_, density_, biology_modules_,
