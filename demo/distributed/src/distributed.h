@@ -43,7 +43,7 @@ inline int Simulate(int argc, const char** argv) {
   std::cout << "cells_per_dim " << cells_per_dim << '\n';
   auto construct = [](const std::array<double, 3>& position) {
     Cell cell(position);
-    cell.SetDiameter(10);
+    cell.SetDiameter(30);
     cell.SetAdherence(0.4);
     cell.SetMass(1.0);
     cell.AddBiologyModule(GrowDivide());

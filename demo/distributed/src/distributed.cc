@@ -35,6 +35,20 @@ std::string g_object_store_manager_socket_name;
 std::string g_simulation_id;
 std::string g_partitioning_scheme;
 
+Box g_global_box = {
+    {
+        std::numeric_limits<double>::max(),
+        std::numeric_limits<double>::max(),
+        std::numeric_limits<double>::max()
+    },
+    {
+        std::numeric_limits<double>::min(),
+        std::numeric_limits<double>::min(),
+        std::numeric_limits<double>::min()
+    }
+};
+Point3D g_halo_xyz = {30, 30, 30};
+
 extern "C" void bdm_setup_ray(const char *local_scheduler_socket_name,
                               const char *object_store_socket_name,
                               const char *object_store_manager_socket_name,
@@ -58,6 +72,23 @@ extern "C" void bdm_simulate_step(int64_t step, int64_t box,
   scheduler->SimulateStep(step, box, last_iteration,
                           {{left, front, bottom}, {right, back, top}});
   delete simulation;
+}
+
+extern "C" void bdm_set_global_space(
+    double left, double front, double bottom,
+    double right, double back, double top,
+    double x, double y, double z) {
+  assert(x >= 0);
+  assert(y >= 0);
+  assert(z >= 0);
+  assert(left < right);
+  assert(front < back);
+  assert(bottom < top);
+  assert(left + 2 * x < right);
+  assert(front + 2 * y < back);
+  assert(bottom + 2 * z < top);
+  g_global_box = {{left, front, bottom}, {right, back, top}};
+  g_halo_xyz = {x, y, z};
 }
 
 /// Returns a partitioner depending on the scheme in `g_partitioning_scheme`.
@@ -173,6 +204,9 @@ std::array<Surface, 7> FindContainingSurfaces(
   assert(xyz_halos[2] >= 0);
   Point3D left_front_bottom = box.first;
   Point3D right_back_top = box.second;
+  assert(left_front_bottom[0] < right_back_top[0]);
+  assert(left_front_bottom[1] < right_back_top[1]);
+  assert(left_front_bottom[2] < right_back_top[2]);
   assert(left_front_bottom[0] + 2 * xyz_halos[0] < right_back_top[0]);
   assert(left_front_bottom[1] + 2 * xyz_halos[1] < right_back_top[1]);
   assert(left_front_bottom[2] + 2 * xyz_halos[2] < right_back_top[2]);
@@ -371,7 +405,7 @@ SurfaceToVolumeMap RayScheduler::CreateVolumesForBox(
       volume_rm->push_back(element);
     }
     // And the halo regions.
-    for (Surface s : FindContainingSurfaces(pos, box, {1, 1, 1})) {
+    for (Surface s : FindContainingSurfaces(pos, box, g_halo_xyz)) {
       if (s == SurfaceEnum::kNone) {
         break;
       }
@@ -398,7 +432,12 @@ void RayScheduler::InitiallyPartition(Box *bounding_box) {
   std::cout << "Total " << rm->GetNumSimObjects() << '\n';
 
   std::unique_ptr<Partitioner> partitioner = CreatePartitioner();
-  partitioner->InitializeWithResourceManager(rm);
+  if (g_global_box.first[0] >= g_global_box.second[0]) {
+    partitioner->InitializeWithResourceManager(rm);
+  } else {
+    partitioner->InitializeWithBoundingBox(
+        g_global_box.first, g_global_box.second);
+  }
   Boxes boxes = partitioner->Partition();
   for (size_t i = 0; i < boxes.size(); ++i) {
     SurfaceToVolumeMap volumes =
@@ -498,8 +537,12 @@ void RayScheduler::DisassembleResourceManager(ResourceManager<> *rm,
                                               const Partitioner *partitioner,
                                               int64_t step, int64_t box) {
   auto start = std::chrono::high_resolution_clock::now();
+  std::cout << "Disassemble input " << box << " has "
+            << rm->GetNumSimObjects() << ".\n";
   SurfaceToVolumeMap volumes = CreateVolumesForBox(
       rm, box, partitioner, /* with_migrations */ true);
+  std::cout << "Disassemble main box " << box << " has "
+            << volumes[0].second->GetNumSimObjects() << ".\n";
   arrow::Status s = StoreVolumes(step, box, partitioner, volumes);
   if (!s.ok()) {
     std::cerr << "Cannot store volumes for box " << box << " in step " << step
@@ -518,7 +561,7 @@ void RayScheduler::SimulateStep(int64_t step, int64_t box, bool last_iteration,
   std::unique_ptr<Partitioner> partitioner(CreatePartitioner());
   partitioner->InitializeWithBoundingBox(bound.first, bound.second);
   ResourceManager<> *rm = ReassembleVolumes(step, box, partitioner.get());
-  std::cout << "Box " << box << " has " << rm->GetNumSimObjects()
+  std::cout << "Reassemble output " << box << " has " << rm->GetNumSimObjects()
             << " simulation objects.\n";
   RaySimulation *sim =
       reinterpret_cast<RaySimulation *>(Simulation<>::GetActive());
@@ -616,6 +659,8 @@ ResourceManager<> *RayScheduler::ReassembleVolumes(
   ret = reinterpret_cast<ResourceManager<> *>(
       f.ReadObjectAny(ResourceManager<>::Class()));
   step_context_.SetCounts(ret);
+  std::cout << "Reassemble main box " << box_id << " has "
+            << ret->GetNumSimObjects() << ".\n";
 
   auto end_main = std::chrono::high_resolution_clock::now();
 

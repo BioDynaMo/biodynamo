@@ -70,9 +70,14 @@ def load_bdm_library(path=None):
     except AttributeError:
         raise RuntimeError('There must be a function bdm_setup_ray in the library.')
     if ARGS.mode == 'ray':
-      scheduler, store, manager = get_node_info()
-      global SIMULATION_ID
-      dll.bdm_setup_ray(scheduler, store, manager, SIMULATION_ID, ARGS.partitioning_scheme)
+        scheduler, store, manager = get_node_info()
+        global SIMULATION_ID
+        dll.bdm_setup_ray(scheduler, store, manager, SIMULATION_ID, ARGS.partitioning_scheme)
+        if ARGS.bounding_box:
+            args = ARGS.bounding_box + ARGS.halo
+        else:
+            args = [0] * 6 + ARGS.halo
+        dll.bdm_set_global_space(*[ctypes.c_double(x) for x in args])
     return dll
 
 
@@ -233,6 +238,12 @@ def main(args):
                         help='The partitioning scheme. 2-1-1 partitions 2 boxes along the x-axis. '
                              '3-3-3 partitions 27 boxes along x-, y-, and z- axis. This argument '
                              'is only effective in Ray mode.')
+    parser.add_argument('-b', '--bounding_box', nargs=6, type=float,
+                        help='The global bounding box given in a pair of (left, front, bottom), '
+                             '(right, back, top) coordinates, flatten as a list of floats i.e. '
+                             '"-b -30 -30 -30 330 330 330"', metavar='VALUE')
+    parser.add_argument('--halo', nargs=3, default=[30, 30, 30], type=float,
+                        help='X Y Z margins.', metavar='VALUE')
     for i in range(1, len(sys.argv)):
         arg = sys.argv[i]
         if arg == '--':
