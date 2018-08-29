@@ -1,6 +1,6 @@
 # Changelog
 
-## 27.08.2018 ``
+## 29.08.2018 [`a373fca`](https://github.com/BioDynaMo/biodynamo/commit/a373fcaad5b50d2ec8ad5a9d8a218adf7850fcc6)
 
 Add the concept of [Events](event).
 This is an important change to support extensibility. Now, there is a clear
