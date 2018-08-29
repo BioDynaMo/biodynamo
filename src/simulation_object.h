@@ -34,19 +34,21 @@
 
 namespace bdm {
 
+struct DerivedPlaceholder;
+
 /// Required to pass derived type to base class
-template <template <typename, typename> class T>
-struct Capsule {
-  template <typename TCompileTimeParam, typename TDerived>
-  using type = T<TCompileTimeParam, TDerived>;
-};
+// template <template <typename, typename> class T>
+// struct Capsule {
+//   template <typename TCompileTimeParam, typename TDerived>
+//   using type = T<TCompileTimeParam, TDerived>;
+// };
 
 /// Contains code required by all simulation objects
-template <typename TCompileTimeParam, typename TDerived>
+template <typename TCompileTimeParam = CompileTimeParam, typename TDerived = DerivedPlaceholder>
 class SimulationObject {
  public:
-  using MostDerived = typename TDerived::template type<TCompileTimeParam, TDerived>;;
-  using MostDerivedSoPtr = SoPointer<TDerived>;
+  using MostDerived = typename type_ternary_operator<std::is_same<TDerived, DerivedPlaceholder>::value, SimulationObject<>, TDerived>::type;
+  using MostDerivedSoPtr = SoPointer<MostDerived>;
 
   SimulationObject() {}
   SimulationObject(const SimulationObject &) = default;

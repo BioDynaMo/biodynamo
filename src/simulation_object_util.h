@@ -61,8 +61,6 @@ namespace bdm {
 ///      as template argument for `TBase` (takes two template arguments itself)
 /// Furthermore, it creates template spezializations for `ToBackend` and
 /// `Capsule`
-struct DerivedPlaceholder;
-
 #define BDM_SIM_OBJECT(sim_object, base_class)                                \
   template <typename TCompileTimeParam,                                       \
             typename TDerived = DerivedPlaceholder>                           \
@@ -123,11 +121,13 @@ struct DerivedPlaceholder;
 /// @param  ...: List of all data members of this class
 #define BDM_SIM_OBJECT_HEADER(class_name, class_version_id, ...)             \
  public:                                                                     \
-  using Base = bdm::SimulationObjectExt<TCompileTimeParam, TDerived>;        \
                                                                              \
   /** reduce verbosity by defining a local alias */                          \
-  using MostDerived = typename TDerived::template type<TCompileTimeParam, TDerived>;      \
-  using MostDerivedSoPtr = SoPointer<class_name>;                            \
+  /** TODO using MostDerived = typename TDerived::template type<TCompileTimeParam, TDerived>; **/      \
+  using MostDerived = typename type_ternary_operator<std::is_same<TDerived, DerivedPlaceholder>::value, class_name<>, TDerived>::type;      \
+  using MostDerivedSoPtr = SoPointer<MostDerived>;                            \
+                                                                             \
+  using Base = bdm::SimulationObjectExt<TCompileTimeParam, MostDerived>;        \
                                                                              \
   template <typename TResourceManager = ResourceManager<>>                   \
   SoHandle GetSoHandle() const {                                             \
