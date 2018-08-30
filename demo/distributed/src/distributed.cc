@@ -658,7 +658,6 @@ ResourceManager<> *RayScheduler::ReassembleVolumes(
                 const_cast<uint8_t *>(buffers[0].data->data()), false);
   ret = reinterpret_cast<ResourceManager<> *>(
       f.ReadObjectAny(ResourceManager<>::Class()));
-  step_context_.SetCounts(ret);
   std::cout << "Reassemble main box " << box_id << " has "
             << ret->GetNumSimObjects() << ".\n";
 
@@ -691,13 +690,14 @@ ResourceManager<> *RayScheduler::ReassembleVolumes(
   auto add_main = [&](const auto& element, SoHandle handle) {
     if (IsIn(element.GetPosition(), box.first, box.second)) {
       ret->push_back(element);
-      step_context_.IncrementCount(handle.GetTypeIdx());
     }
   };
   for (size_t i = 0; i < region_count; ++i) {
     ResourceManagerPtr subvolume_rm = neighbor_rms[i];
     subvolume_rm->ApplyOnAllElements(add_main);
   }
+
+  step_context_.SetCounts(ret);
 
   // Third, add remaining simulation objects.
   auto add_remaining = [&](const auto& element, SoHandle) {

@@ -42,12 +42,14 @@ using SurfaceToVolumeMap = std::array<SurfaceToVolume, 27>;
 /// ResourceManager.
 class StepContext {
  public:
+  /// Constructs a zero'd context.
   StepContext() {
     for (size_t i = 0; i < managed_counts_.size(); ++i) {
       managed_counts_[i] = 0;
     }
   }
 
+  /// Obtains the counts from resource manager `rm`.
   void SetCounts(ResourceManager<>* rm) {
     auto func = [&](const auto& container, auto idx) {
       managed_counts_[idx] = container->size();
@@ -55,10 +57,12 @@ class StepContext {
     rm->ApplyOnAllTypes(func);
   }
 
+  /// Increments the count for `type_idx` and returns the previous count.
   uint32_t IncrementCount(uint16_t type_idx) {
     return managed_counts_[type_idx]++;
   }
 
+  /// Returns true if the `element_idx` in `type_idx` should be managed.
   bool ShouldManage(uint16_t type_idx, uint32_t element_idx) const {
     return element_idx < managed_counts_[type_idx];
   }
