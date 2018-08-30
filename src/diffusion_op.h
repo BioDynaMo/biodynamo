@@ -52,12 +52,6 @@ class DiffusionOp {
         dg->Update(grid->GetDimensionThresholds());
       }
 
-      // check if diffusion coefficient and decay constant are 0
-      // i.e. if we don't need to calculate diffusion and gradient update
-      if (dg->IsFixedSubstance()) {
-        return;
-      }
-
       if (param->leaking_edges_) {
         dg->DiffuseEulerLeakingEdge();
       } else {

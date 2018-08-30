@@ -382,6 +382,12 @@ class DiffusionGrid {
   }
 
   void DiffuseEuler() {
+    // check if diffusion coefficient and decay constant are 0
+    // i.e. if we don't need to calculate diffusion update
+    if (IsFixedSubstance()) {
+      return;
+    }
+
     const auto nx = num_boxes_axis_[0];
     const auto ny = num_boxes_axis_[1];
     const auto nz = num_boxes_axis_[2];
@@ -437,6 +443,12 @@ class DiffusionGrid {
   }
 
   void DiffuseEulerLeakingEdge() {
+    // check if diffusion coefficient and decay constant are 0
+    // i.e. if we don't need to calculate diffusion update
+    if (IsFixedSubstance()) {
+      return;
+    }
+
     const auto nx = num_boxes_axis_[0];
     const auto ny = num_boxes_axis_[1];
     const auto nz = num_boxes_axis_[2];
@@ -521,6 +533,13 @@ class DiffusionGrid {
   ///
   /// At the edges the gradient is the same as the box next to it
   void CalculateGradient() {
+    // check if gradient has been calculated once
+    // and if diffusion coefficient and decay constant are 0
+    // i.e. if we don't need to calculate gradient update
+    if (init_gradient_ && IsFixedSubstance()) {
+      return;
+    }
+
     double gd = 1 / (box_length_ * 2);
 
     auto nx = num_boxes_axis_[0];
@@ -573,6 +592,9 @@ class DiffusionGrid {
           gradients_[3 * c + 2] = (c1_[t] - c1_[b]) * gd;
         }
       }
+    }
+    if (!init_gradient_) {
+      init_gradient_ = true;
     }
   }
 
@@ -718,6 +740,8 @@ class DiffusionGrid {
   bool parity_ = false;
   /// A list of functions that initialize this diffusion grid
   std::vector<std::function<double(double, double, double)>> initializers_ = {};
+
+  bool init_gradient_ = false;
 
   ClassDefNV(DiffusionGrid, 1);
 };
