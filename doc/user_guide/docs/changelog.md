@@ -1,6 +1,6 @@
 # Changelog
 
-## 18.09.1028 [`TODO`]()
+## 18.09.1028 [`3a380e4`](https://github.com/BioDynaMo/biodynamo/commit/3a380e451ed1d691a6b8dce4c46d82e7faaf5ddc)
 
 Refactor [parameters](parameter).
 
@@ -20,7 +20,7 @@ Refactor [parameters](parameter).
 *  Rename `AtomicTypes` to `SimObjectTypes`
 
 Please have a look at the changes of the demos to
-see which lines need to be changed in your simulation after [this commit TODO add link]().
+see which lines need to be changed in your simulation after [this commit](https://github.com/BioDynaMo/biodynamo/commit/3a380e451ed1d691a6b8dce4c46d82e7faaf5ddc).
 
 ## 29.08.2018 [`a373fca`](https://github.com/BioDynaMo/biodynamo/commit/a373fcaad5b50d2ec8ad5a9d8a218adf7850fcc6)
 
