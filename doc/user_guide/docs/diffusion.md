@@ -31,13 +31,18 @@ coding style we will prepend the substance's name with the letter "k".
 
 Open the `src/diffusion.h` source file.
 
-In order for BioDynaMo to anticipate the biology modules that you want to use in
-the simulation, we need to declare them in our `CompileTimeParameters` as such:
+We need to tell BioDynaMo that we want to use the BiologyModules `Chemotaxis`
+and `KaliumSecretion` for our cells. We can do that by defining it in the compile
+time parameters.
 
 ``` C++
-template <typename Backend>
-struct CompileTimeParam : public DefaultCompileTimeParam<Backend> {
-  using BiologyModules = Variant<Chemotaxis, KaliumSecretion>;
+BDM_CTPARAM() {
+  BDM_CTPARAM_HEADER();
+
+  // Override default BiologyModules for Cell
+  BDM_CTPARAM_FOR(bdm, Cell) {
+    using BiologyModules = CTList<Chemotaxis, KaliumSecretion>;
+  };
 };
 ```
 

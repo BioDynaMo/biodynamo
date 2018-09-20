@@ -28,17 +28,17 @@ namespace displacement_op_gpu_test_internal {
 enum ExecutionMode { kCuda, kOpenCl };
 
 void RunTest(ExecutionMode mode) {
-  Simulation<> simulation("displacement_op_gpu_test_RunTest");
+  auto set_param = [&](auto* param) {
+    switch (mode) {
+      case kOpenCl:
+        param->use_opencl_ = true;
+      case kCuda:
+        param->use_gpu_ = true;
+    }
+  };
+  Simulation<> simulation("displacement_op_gpu_test_RunTest", set_param);
   auto* rm = simulation.GetResourceManager();
   auto* grid = simulation.GetGrid();
-  auto* param = simulation.GetParam();
-
-  switch (mode) {
-    case kOpenCl:
-      param->use_opencl_ = true;
-    case kCuda:
-      param->use_gpu_ = true;
-  }
 
   // Do this explicitly because this normally is only called in
   // Scheduler::Initialize(), but in this test we call DisplacementOp directly.
@@ -114,17 +114,17 @@ TEST(DisplacementOpGpuTest, ComputeSoaOpenCL) { RunTest(kOpenCl); }
 #endif
 
 void RunTest2(ExecutionMode mode) {
-  Simulation<> simulation("DisplacementOpGpuTest_RunTest2");
+  auto set_param = [&](auto* param) {
+    switch (mode) {
+      case kOpenCl:
+        param->use_opencl_ = true;
+      case kCuda:
+        param->use_gpu_ = true;
+    }
+  };
+  Simulation<> simulation("DisplacementOpGpuTest_RunTest2", set_param);
   auto* rm = simulation.GetResourceManager();
   auto* grid = simulation.GetGrid();
-  auto* param = simulation.GetParam();
-
-  switch (mode) {
-    case kOpenCl:
-      param->use_opencl_ = true;
-    case kCuda:
-      param->use_gpu_ = true;
-  }
 
   // Do this explicitly because this normally is only called in
   // Scheduler::Initialize(), but in this test we call DisplacementOp directly.

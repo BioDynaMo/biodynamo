@@ -33,19 +33,20 @@ enum Substances { kSubstance };
 
 // 2. Use default compile-time parameters to let the compiler know we are not
 // using any new biology modules or cell types
-template <typename Backend>
-struct CompileTimeParam : public DefaultCompileTimeParam<Backend> {};
+BDM_CTPARAM() { BDM_CTPARAM_HEADER(); };
 
 inline int Simulate(int argc, const char** argv) {
-  Simulation<> simulation(argc, argv);
+  auto set_param = [](auto* param) {
+    // Create an artificial bounds for the simulation space
+    param->bound_space_ = true;
+    param->min_bound_ = -100;
+    param->max_bound_ = 100;
+  };
+
+  Simulation<> simulation(argc, argv, set_param);
   auto* param = simulation.GetParam();
 
   // 3. Define initial model
-  // Create an artificial bounds for the simulation space
-  param->bound_space_ = true;
-  param->min_bound_ = -100;
-  param->max_bound_ = 100;
-
   // Create one cell at a random position
   auto construct = [](const std::array<double, 3>& position) {
     Cell cell(position);

@@ -43,28 +43,31 @@ inline void ExpectArrayNear(const std::array<double, 3>& actual,
 }
 
 // 2. Define compile time parameter
-template <typename Backend>
-struct CompileTimeParam : public DefaultCompileTimeParam<Backend> {
-  using BiologyModules = Variant<GrowDivide>;
+BDM_CTPARAM() {
+  BDM_CTPARAM_HEADER();
+
+  BDM_CTPARAM_FOR(bdm, Cell) { using BiologyModules = CTList<GrowDivide>; };
 };
 
 enum ExecutionMode { kCpu, kCuda, kOpenCl };
 
 inline void RunTest(bool* result, ExecutionMode mode) {
-  Simulation<> simulation("cell_division_gpu");
+  auto set_param = [&](auto* param) {
+    switch (mode) {
+      case kCpu:
+        break;
+      case kOpenCl:
+        param->use_opencl_ = true;
+      case kCuda:
+        param->use_gpu_ = true;
+    }
+  };
+
+  Simulation<> simulation("cell_division_gpu", set_param);
   auto* rm = simulation.GetResourceManager();
   auto* param = simulation.GetParam();
   rm->Clear();
   auto cells = rm->template Get<Cell>();
-
-  switch (mode) {
-    case kCpu:
-      break;
-    case kOpenCl:
-      param->use_opencl_ = true;
-    case kCuda:
-      param->use_gpu_ = true;
-  }
 
 // We need to give every test the same seed for the RNG, because in the cell
 // division, random numbers are used. Within a single executable these numbers

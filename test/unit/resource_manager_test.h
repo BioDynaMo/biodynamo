@@ -19,13 +19,13 @@
 
 #include <vector>
 #include "backend.h"
+#include "compile_time_list.h"
 #include "gtest/gtest.h"
 #include "io_util.h"
 #include "simulation_object_util.h"
 #include "type_util.h"
 #include "unit/default_ctparam.h"
 #include "unit/test_util.h"
-#include "variadic_template_parameter_util.h"
 
 #define ROOTFILE "bdmFile.root"
 
@@ -99,7 +99,7 @@ BDM_SIM_OBJECT(B, bdm::SimulationObject) {
 template <typename TBackend, typename... Types>
 struct CompileTimeParam {
   using SimulationBackend = TBackend;
-  using AtomicTypes = VariadicTypedef<Types...>;
+  using SimObjectTypes = CTList<Types...>;
 };
 
 // FIXME this tests cause the following errors:

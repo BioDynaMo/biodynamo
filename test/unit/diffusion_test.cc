@@ -29,7 +29,6 @@
 
 #include <vtkImageData.h>
 #include <vtkXMLImageDataReader.h>
-#include <fstream>
 
 #define ROOTFILE "bdmFile.root"
 
@@ -496,7 +495,14 @@ TEST(DiffusionTest, Convergence) {
 }
 
 TEST(DiffusionTest, ModelInitializer) {
-  Simulation<> sim(TEST_NAME);
+  auto set_param = [](auto* param) {
+    Param::VisualizeDiffusion vd;
+    vd.name_ = "Substance_1";
+
+    param->export_visualization_ = true;
+    param->visualize_diffusion_.push_back(vd);
+  };
+  Simulation<> sim(TEST_NAME, set_param);
   auto* rm = sim.GetResourceManager();
 
   enum Substances { kSubstance_0, kSubstance_1, kSubstance_2 };
@@ -520,13 +526,6 @@ TEST(DiffusionTest, ModelInitializer) {
   rm->GetDiffusionGrids()[kSubstance_0]->RunInitializers();
   rm->GetDiffusionGrids()[kSubstance_1]->RunInitializers();
   rm->GetDiffusionGrids()[kSubstance_2]->RunInitializers();
-
-  Param::VisualizeDiffusion vd;
-  vd.name_ = "Substance_1";
-
-  auto* param = sim.GetParam();
-  param->export_visualization_ = true;
-  param->visualize_diffusion_.push_back(vd);
 
   // Write diffusion visualization to file
   CatalystAdaptor<> adaptor("");

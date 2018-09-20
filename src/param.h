@@ -26,27 +26,6 @@
 namespace bdm {
 
 struct Param {
-  // FIXME Neurites
-  /// Initial value of the restingLength before any specification.
-  static constexpr double kNeuriteDefaultActualLength = 1.0;
-  static constexpr double kNeuriteDefaultDensity = 1.0;
-  /// Diameter of an unspecified (= axon/dendrite) neurite when extends from the
-  /// somaElement
-  static constexpr double kNeuriteDefaultDiameter = 1.0;
-  static constexpr double kNeuriteMinimalBifurcationLength = 0;
-  /// Spring constant
-  static constexpr double kNeuriteDefaultSpringConstant = 10;  // 10;
-  /// Threshold the force acting on a neurite has to reach before a move is made
-  /// ( = static friction).
-  static constexpr double kNeuriteDefaultAdherence = 0.1;
-  /// Rest to the movement ( = kinetic friction).
-  static constexpr double kNeuriteDefaultMass = 1;
-
-  static constexpr double kNeuriteDefaultTension = 0.0;
-
-  static constexpr double kNeuriteMinLength = 2.0;
-  static constexpr double kNeuriteMaxLength = 15;
-
   // simulation values ---------------------------------------------------------
 
   /// Variable which specifies method using for solving differential equation
@@ -54,8 +33,14 @@ struct Param {
   enum NumericalODESolver { kEuler = 1, kRK4 = 2 };
   NumericalODESolver numerical_ode_solver_ = NumericalODESolver::kEuler;
 
-  /// Output directory relative to working directory
-  static constexpr const char* kOutputDir = "output";
+  /// Ouput Directory name used to store visualization and other files.\n
+  /// Path is relative to working directory.\n
+  /// Default value: `"output"`\n
+  /// TOML config file:
+  ///
+  ///     [simulation]
+  ///     ouput_dir = "output"
+  std::string output_dir_ = "output";
 
   /// Backup file name for full simulation backups\n
   /// Path is relative to working directory.\n
@@ -302,13 +287,11 @@ struct Param {
   ///     preferred_gpu = 0
   int preferred_gpu_ = 0;
 
- private:
-  template <typename T>
-  friend struct Simulation;
-
+ protected:
   /// Assign values from config file to variables
   void AssignFromConfig(const std::shared_ptr<cpptoml::table>&);
 
+ private:
   ClassDefNV(Param, 1);
 };
 

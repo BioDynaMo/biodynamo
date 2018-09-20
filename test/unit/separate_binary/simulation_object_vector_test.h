@@ -93,12 +93,10 @@ BDM_SIM_OBJECT(B, SimulationObject) {
 
 }  // namespace simulation_object_vector_test_internal
 
-template <typename TBackend>
-struct CompileTimeParam : public DefaultCompileTimeParam<TBackend> {
-  using SimulationBackend = Soa;
-  using AtomicTypes =
-      VariadicTypedef<simulation_object_vector_test_internal::A,
-                      simulation_object_vector_test_internal::B>;
+BDM_CTPARAM() {
+  BDM_CTPARAM_HEADER();
+  using SimObjectTypes = CTList<simulation_object_vector_test_internal::A,
+                                simulation_object_vector_test_internal::B>;
 };
 
 namespace simulation_object_vector_test_internal {

@@ -15,6 +15,7 @@
 #include <gtest/gtest.h>
 #include <omp.h>
 #include <fstream>
+#include <type_traits>
 #include "simulation_implementation.h"
 
 #include "unit/default_ctparam.h"
@@ -27,6 +28,7 @@ class SimulationTest : public ::testing::Test {
   static constexpr const char* kConfigFileName = "bdm.toml";
   static constexpr const char* kConfigContent =
       "[simulation]\n"
+      "output_dir = \"result-dir\"\n"
       "backup_file = \"backup.root\"\n"
       "restore_file = \"restore.root\"\n"
       "backup_interval = 3600\n"
@@ -79,11 +81,14 @@ class SimulationTest : public ::testing::Test {
   /// It is needed, because BioDynaMo throws a fatal exception if it is
   /// initialized with a restore file that does not exist.
   void CreateEmptyRestoreFile(const std::string& filename) {
+    Simulation<> sim("CreateEmptyRestoreFile");
     SimulationBackup b(filename, "");
     b.Backup(0);
+    Simulation<>::counter_ = 0;
   }
 
-  void ValidateNonCLIParameter(Param* param) {
+  void ValidateNonCLIParameter(const Param* param) {
+    EXPECT_EQ("result-dir", param->output_dir_);
     EXPECT_EQ(3600u, param->backup_interval_);
     EXPECT_EQ(0.0125, param->simulation_time_step_);
     EXPECT_EQ(2.0, param->simulation_max_displacement_);
@@ -222,21 +227,23 @@ TEST_F(SimulationTest, SimulationId_OuputDir2) {
 
 TEST_F(IOTest, Simulation) {
   // change state of each data member in Simulation
-  auto* rm = simulation_->GetResourceManager();
-  auto* param = simulation_->GetParam();
+
+  auto set_param = [](auto* param) { param->simulation_time_step_ = 3.14; };
+  Simulation<> sim(TEST_NAME, set_param);
+  auto* rm = sim.GetResourceManager();
+  auto* param = sim.GetParam();
   rm->New<Cell>();
   rm->New<Cell>();
   rm->Get<Cell>()->Commit();
-  param->simulation_time_step_ = 3.14;
 #pragma omp parallel
   {
-    auto* r = simulation_->GetRandom();
+    auto* r = sim.GetRandom();
     r->SetSeed(42);
     r->Uniform(12, 34);
   }
 
   Simulation<>* restored;
-  BackupAndRestore(*simulation_, &restored);
+  BackupAndRestore(sim, &restored);
   EXPECT_EQ(2u, restored->GetResourceManager()->GetNumSimObjects());
 
   // store next random number for later comparison
@@ -244,18 +251,18 @@ TEST_F(IOTest, Simulation) {
   next_rand.resize(omp_get_max_threads());
 #pragma omp parallel
   {
-    auto* r = simulation_->GetRandom();
+    auto* r = sim.GetRandom();
     next_rand[omp_get_thread_num()] = r->Uniform(12, 34);
   }
 
   // change state to see if call to Simulation::Restore was successful
   rm->Clear();
-  param->simulation_time_step_ = 6.28;
+  const_cast<CompileTimeParam<>::Param*>(param)->simulation_time_step_ = 6.28;
   // check if rm is really empty to avoid false positive test results
   EXPECT_EQ(0u, rm->GetNumSimObjects());
 
   // assign restored simulation to current one
-  simulation_->Restore(std::move(*restored));
+  sim.Restore(std::move(*restored));
   delete restored;
 
   // Validate results;
@@ -267,7 +274,7 @@ TEST_F(IOTest, Simulation) {
   EXPECT_NEAR(3.14, param->simulation_time_step_, kEpsilon);
 #pragma omp parallel
   {
-    auto* r = simulation_->GetRandom();
+    auto* r = sim.GetRandom();
     EXPECT_NEAR(next_rand[omp_get_thread_num()], r->Uniform(12, 34), kEpsilon);
   }
 }
@@ -282,7 +289,7 @@ TEST_F(SimulationTest, ParamIOTest) {
   Simulation<> simulation(TEST_NAME);
   auto* param = simulation.GetParam();
 
-  Param* restored;
+  CompileTimeParam<>::Param* restored;
   BackupAndRestore(*param, &restored);
   const char* root_file = "param.root";
   remove(root_file);

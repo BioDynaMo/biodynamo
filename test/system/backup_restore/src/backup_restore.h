@@ -32,17 +32,16 @@ struct TestBehaviour : public BaseBiologyModule {
   ClassDefNV(TestBehaviour, 1);
 };
 
-template <typename TBackend>
-struct CompileTimeParam : public DefaultCompileTimeParam<TBackend> {
-  using BiologyModules = Variant<TestBehaviour>;
+BDM_CTPARAM() {
+  BDM_CTPARAM_HEADER();
+
+  BDM_CTPARAM_FOR(bdm, Cell) { using BiologyModules = CTList<TestBehaviour>; };
 };
 
 inline int Simulate(int argc, const char** argv) {
-  Simulation<> simulation(argc, argv);
+  auto set_param = [](auto* param) { param->backup_interval_ = 1; };
+  Simulation<> simulation(argc, argv, set_param);
   auto* rm = simulation.GetResourceManager();
-  auto* param = simulation.GetParam();
-
-  param->backup_interval_ = 1;
 
   auto cells = rm->Get<Cell>();
   for (size_t i = 0; i < 10; i++) {

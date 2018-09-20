@@ -19,6 +19,7 @@
 
 #include "biology_module_util.h"
 #include "cell.h"
+#include "compile_time_param.h"
 #include "event/cell_division_event.h"
 #include "gtest/gtest.h"
 #include "io_util.h"
@@ -124,15 +125,14 @@ BDM_SIM_OBJECT(TestCell, bdm::Cell) {
 
 }  // namespace cell_test_internal
 
-template <typename TBackend>
-struct CompileTimeParam {
-  template <typename TTBackend>
-  using Self = CompileTimeParam<TTBackend>;
-  using Backend = TBackend;
-  using SimulationBackend = Soa;
-  using BiologyModules = Variant<cell_test_internal::GrowthModule,
-                                 cell_test_internal::MovementModule>;
-  using AtomicTypes = VariadicTypedef<cell_test_internal::TestCell>;
+BDM_CTPARAM() {
+  BDM_CTPARAM_HEADER();
+
+  using SimObjectTypes = CTList<cell_test_internal::TestCell>;
+  BDM_DEFAULT_CTPARAM_FOR(cell_test_internal::TestCell) {
+    using BiologyModules = CTList<cell_test_internal::GrowthModule,
+                                  cell_test_internal::MovementModule>;
+  };
 };
 
 namespace cell_test_internal {

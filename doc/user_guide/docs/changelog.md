@@ -1,5 +1,27 @@
 # Changelog
 
+## 18.09.1028 [`TODO`]()
+
+Refactor [parameters](parameter).
+
+*  Add functionality to define compile time parameters for a specific simulation
+   object. This was necessary due to compile time errors of neurite biology modules.
+   (Although they were not used for neurons, the compiler tried to compile them)
+   This replaces the reinterpret cast workaround.
+*  `Simulation<>::GetActive()->GetParam()` returns const pointer
+   Runtime parameter should not be changed during the simulation. This simplifies
+   the distributed runtime.
+*  Add macros to simplify definition of compile time parameter.
+*  All compile time parameter that take more than one type will be defined using
+   `CTList`. No more distinction between `Variant` and `VariadicTypedef`.
+*  Improve modularity. Each module can have its own parameter class.
+   All parameter classes will be combined into `CompileTimeParam::Param`.
+*  Make all runtime parameters non static.
+*  Rename `AtomicTypes` to `SimObjectTypes`
+
+Please have a look at the changes of the demos to
+see which lines need to be changed in your simulation after [this commit TODO add link]().
+
 ## 29.08.2018 [`a373fca`](https://github.com/BioDynaMo/biodynamo/commit/a373fcaad5b50d2ec8ad5a9d8a218adf7850fcc6)
 
 Add the concept of [Events](event).

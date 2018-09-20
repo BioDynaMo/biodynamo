@@ -17,6 +17,10 @@
 
 #include "cpp_magic.h"
 
+/// TODO
+#define LOOP(operation, ...) \
+  IF(HAS_ARGS(__VA_ARGS__))(DEFER2(_LOOP_NE)()(operation, __VA_ARGS__))
+
 /// loops over variadic macro arguments and calls the specified operation
 /// processes one argument in each iteration
 /// e.g. LOOP(OP, a, b) will lead to:
@@ -24,11 +28,11 @@
 /// OP(b)
 /// For a more detailed explanation see `MAP` macro in `third_party/cpp_magic.h`
 // clang-format off
-#define LOOP(operation, first, ...)                          \
+#define LOOP_NE(operation, first, ...)                          \
   operation(first)                                           \
   IF(HAS_ARGS(__VA_ARGS__))(                                 \
-    DEFER2(_LOOP)()(operation, __VA_ARGS__))
-#define _LOOP() LOOP
+    DEFER2(_LOOP_NE)()(operation, __VA_ARGS__))
+#define _LOOP_NE() LOOP_NE
 // clang-format on
 
 /// loops over variadic macro arguments and calls the specified operation

@@ -39,11 +39,11 @@ BDM_SIM_OBJECT(TestObject, bdm::SimulationObject) {
 
 }  // namespace transactional_vector_test_internal
 
-template <typename TBackend>
-struct CompileTimeParam : public DefaultCompileTimeParam<TBackend> {
+BDM_CTPARAM() {
+  BDM_CTPARAM_HEADER();
+
   using SimulationBackend = Scalar;
-  using AtomicTypes =
-      VariadicTypedef<transactional_vector_test_internal::TestObject>;
+  using SimObjectTypes = CTList<transactional_vector_test_internal::TestObject>;
 };
 
 namespace transactional_vector_test_internal {

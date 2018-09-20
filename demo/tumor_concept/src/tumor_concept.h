@@ -99,25 +99,29 @@ struct GrowthModule : public BaseBiologyModule {
 };
 
 // Define compile time parameter
-template <typename Backend>
-struct CompileTimeParam : public DefaultCompileTimeParam<Backend> {
-  using BiologyModules = Variant<GrowthModule>;  // add GrowthModule
-  using AtomicTypes = VariadicTypedef<MyCell>;   // use MyCell object
+BDM_CTPARAM() {
+  BDM_CTPARAM_HEADER();
+  using SimObjectTypes = CTList<MyCell>;  // use MyCell object
+
+  // Override default BiologyModules for Cell
+  BDM_CTPARAM_FOR(bdm, MyCell) { using BiologyModules = CTList<GrowthModule>; };
 };
 
 inline int Simulate(int argc, const char** argv) {
-  Simulation<> simulation(argc, argv);
+  auto set_param = [](auto* param) {
+    param->bound_space_ = true;
+    param->min_bound_ = 0;
+    param->max_bound_ = 100;  // cube of 100*100*100
+    param->run_mechanical_interactions_ = true;
+  };
+
+  Simulation<> simulation(argc, argv, set_param);
   auto* rm = simulation.GetResourceManager();
   auto* param = simulation.GetParam();
   auto* random = simulation.GetRandom();
 
   size_t nb_of_cells = 2400;  // number of cells in the simulation
   double x_coord, y_coord, z_coord;
-
-  param->bound_space_ = true;
-  param->min_bound_ = 0;
-  param->max_bound_ = 100;  // cube of 100*100*100
-  param->run_mechanical_interactions_ = true;
 
   // create a structure to contain cells
   auto* cells = rm->template Get<MyCell>();

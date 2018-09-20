@@ -25,29 +25,6 @@
 // TODO(lukas) move file to unit/visualization
 
 namespace bdm {
-/// Test fixture for catalyst adaptor test to eliminate side effects
-class CatalystAdaptorTest : public ::testing::Test {
- protected:
-  static constexpr char const* kSimulationName = "MySimulation";
-  static constexpr char const* kSimulationInfoJson =
-      "output/MySimulation/simulation_info.json";
-  static constexpr char const* kParaviewState =
-      "output/MySimulation/MySimulation.pvsm";
-  Simulation<>* simulation_;
-
-  virtual void SetUp() {
-    Simulation<>::counter_ = 0;
-    simulation_ = new Simulation<>(kSimulationName);
-    remove(kSimulationInfoJson);
-    remove(kParaviewState);
-  }
-
-  virtual void TearDown() {
-    delete simulation_;
-    remove(kSimulationInfoJson);
-    remove(kParaviewState);
-  }
-};
 
 BDM_SIM_OBJECT(MyCell, Cell) {
   BDM_SIM_OBJECT_HEADER(MyCellExt, 1, dummmy_);
@@ -65,9 +42,32 @@ BDM_SIM_OBJECT(MyNeuron, Cell) {
   vec<int> dummmy_;
 };
 
-template <typename Backend>
-struct CompileTimeParam : public DefaultCompileTimeParam<Backend> {
-  using AtomicTypes = VariadicTypedef<Cell, MyCell, MyNeuron>;
+BDM_CTPARAM() {
+  BDM_CTPARAM_HEADER();
+  BDM_DEFAULT_CTPARAM_FOR(MyCell){};
+  BDM_DEFAULT_CTPARAM_FOR(MyNeuron){};
+  using SimObjectTypes = CTList<Cell, MyCell, MyNeuron>;
+};
+
+/// Test fixture for catalyst adaptor test to eliminate side effects
+class CatalystAdaptorTest : public ::testing::Test {
+ protected:
+  static constexpr char const* kSimulationName = "MySimulation";
+  static constexpr char const* kSimulationInfoJson =
+      "output/MySimulation/simulation_info.json";
+  static constexpr char const* kParaviewState =
+      "output/MySimulation/MySimulation.pvsm";
+
+  virtual void SetUp() {
+    Simulation<>::counter_ = 0;
+    remove(kSimulationInfoJson);
+    remove(kParaviewState);
+  }
+
+  virtual void TearDown() {
+    remove(kSimulationInfoJson);
+    remove(kParaviewState);
+  }
 };
 
 }  // namespace bdm

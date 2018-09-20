@@ -16,23 +16,13 @@
 
 #include "log.h"
 #include "param.h"
+#include "util/cpptoml.h"
 
 namespace bdm {
 
-constexpr const char* Param::kOutputDir;
-
-#define BDM_ASSIGN_CONFIG_VALUE(variable, config_key)                        \
-  {                                                                          \
-    if (config->contains_qualified(config_key)) {                            \
-      auto value = config->get_qualified_as<decltype(variable)>(config_key); \
-      if (value) {                                                           \
-        variable = *value;                                                   \
-      }                                                                      \
-    }                                                                        \
-  }
-
 void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
   // simulation group
+  BDM_ASSIGN_CONFIG_VALUE(output_dir_, "simulation.output_dir");
   BDM_ASSIGN_CONFIG_VALUE(backup_file_, "simulation.backup_file");
   BDM_ASSIGN_CONFIG_VALUE(restore_file_, "simulation.restore_file");
   BDM_ASSIGN_CONFIG_VALUE(backup_interval_, "simulation.backup_interval");

@@ -19,8 +19,7 @@
 
 namespace bdm {
 
-template <typename TBackend>
-struct CompileTimeParam : public DefaultCompileTimeParam<TBackend> {};
+BDM_CTPARAM() { BDM_CTPARAM_HEADER(); };
 
 }  // namespace bdm
 

@@ -151,7 +151,7 @@ class CatalystAdaptor {
   InSituPipeline* pipeline_ = nullptr;
   std::string python_script_;
   bool initialized_ = false;
-  bool exclusive_export_viz = false;
+  bool exclusive_export_viz_ = false;
   std::vector<VtkSOGrid> vtk_so_grids_;
   std::vector<VtkDiffusionGrid> vtk_dgrids_;
   std::unordered_map<std::string, Shape> shapes_;
@@ -173,7 +173,7 @@ class CatalystAdaptor {
     auto* sim = TSimulation::GetActive();
     auto* param = sim->GetParam();
 
-    exclusive_export_viz =
+    exclusive_export_viz_ =
         param->export_visualization_ && !param->live_visualization_;
     if (param->live_visualization_ || param->export_visualization_) {
       if (g_processor_ == nullptr) {
@@ -183,16 +183,15 @@ class CatalystAdaptor {
 
       if (param->live_visualization_ &&
           g_processor_->GetNumberOfPipelines() != 0) {
-        Log::Warning("CatalystAdaptor",
-                     "Live visualization does not support multiple "
-                     "simulations. Turning off live visualization for ",
-                     sim->GetUniqueName());
-        param->live_visualization_ = false;
+        Log::Fatal("CatalystAdaptor",
+                   "Live visualization does not support multiple "
+                   "simulations. Turning off live visualization for ",
+                   sim->GetUniqueName());
       } else if (param->python_catalyst_pipeline_) {
         vtkNew<vtkCPPythonScriptPipeline> pipeline;
         pipeline->Initialize(python_script_.c_str());
         g_processor_->AddPipeline(pipeline.GetPointer());
-      } else if (!exclusive_export_viz) {
+      } else if (!exclusive_export_viz_) {
         pipeline_ = new InSituPipeline();
         g_processor_->AddPipeline(pipeline_);
       }
@@ -305,7 +304,7 @@ class CatalystAdaptor {
                                      AddCellAttributeData(num_cells, vsg.data));
 
     auto* param = TSimulation::GetActive()->GetParam();
-    auto& additional_dm = param->visualize_sim_objects_[scalar_name];
+    auto& additional_dm = param->visualize_sim_objects_.at(scalar_name);
     if (!additional_dm.empty()) {
       sim_objects->ForEachDataMemberIn(
           additional_dm, AddCellAttributeData(num_cells, vsg.data));
@@ -376,7 +375,7 @@ class CatalystAdaptor {
         // the pipeline (either the C++ pipeline or Python pipeline)
         // We do not need to RequestDataDescription in Export Mode, because we
         // do not make use of Catalyst CoProcessing capabilities
-        if (exclusive_export_viz ||
+        if (exclusive_export_viz_ ||
             (g_processor_->RequestDataDescription(
                 data_description.GetPointer())) != 0) {
           this->BuildCellsVTKStructures(sim_objects, so_idx);
@@ -411,7 +410,7 @@ class CatalystAdaptor {
                      "configuration?");
         }
         data_description->AddInput(dg->GetSubstanceName().c_str());
-        if (exclusive_export_viz ||
+        if (exclusive_export_viz_ ||
             g_processor_->RequestDataDescription(
                 data_description.GetPointer()) != 0) {
           this->BuildDiffusionGridVTKStructures(dg, idx, vd);
@@ -639,7 +638,7 @@ class CatalystAdaptor {
           "trying to use it.");
     }
   }
-  
+
  private:
   friend class CatalystAdaptorTest_GenerateSimulationInfoJson_Test;
   friend class CatalystAdaptorTest_GenerateParaviewState_Test;

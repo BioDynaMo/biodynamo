@@ -57,22 +57,25 @@ class TestSchedulerBackup : public Scheduler<> {
 };
 
 inline void RunRestoreTest() {
-  Simulation<> simulation("SchedulerTest_RunRestoreTest");
-  auto* rm = simulation.GetResourceManager();
-  auto* param = simulation.GetParam();
-  param->restore_file_ = ROOTFILE;
-  remove(ROOTFILE);
+  {
+    Simulation<> simulation("SchedulerTest_RunRestoreTest");
+    auto* rm = simulation.GetResourceManager();
+    remove(ROOTFILE);
 
-  // create backup that will be restored later on
-  Cell cell;
-  cell.SetDiameter(10);  // important for grid to determine box size
-  rm->Get<Cell>()->push_back(cell);
-  SimulationBackup backup(ROOTFILE, "");
-  backup.Backup(149);
-  rm->Clear();
-  EXPECT_EQ(0u, rm->Get<Cell>()->size());
+    // create backup that will be restored later on
+    Cell cell;
+    cell.SetDiameter(10);  // important for grid to determine box size
+    rm->Get<Cell>()->push_back(cell);
+    SimulationBackup backup(ROOTFILE, "");
+    backup.Backup(149);
+    rm->Clear();
+    EXPECT_EQ(0u, rm->Get<Cell>()->size());
+  }
 
   // start restore validation
+  auto set_param = [](auto* param) { param->restore_file_ = ROOTFILE; };
+  Simulation<> simulation("SchedulerTest_RunRestoreTest", set_param);
+  auto* rm = simulation.GetResourceManager();
   TestSchedulerRestore scheduler;
   // 149 simulation steps have already been calculated. Therefore, this call
   // should be ignored
@@ -98,11 +101,13 @@ inline void RunRestoreTest() {
 }
 
 inline void RunBackupTest() {
-  Simulation<> simulation("SchedulerTest_RunBackupTest");
-  auto* rm = simulation.GetResourceManager();
-  auto* param = simulation.GetParam();
+  auto set_param = [](auto* param) {
+    param->backup_file_ = ROOTFILE;
+    param->backup_interval_ = 1;
+  };
 
-  param->backup_file_ = ROOTFILE;
+  Simulation<> simulation("SchedulerTest_RunBackupTest", set_param);
+  auto* rm = simulation.GetResourceManager();
 
   remove(ROOTFILE);
 
@@ -111,7 +116,7 @@ inline void RunBackupTest() {
   rm->Get<Cell>()->push_back(cell);
 
   TestSchedulerBackup scheduler;
-  param->backup_interval_ = 1;
+
   // one simulation step takes 350 ms -> backup should be created every three
   // steps
   scheduler.Simulate(4);

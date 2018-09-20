@@ -12,6 +12,7 @@
     <class name="bdm::IntegralTypeWrapper<size_t> "/>
     <class name="bdm::RegulateGenes" />
     <class name="bdm::Param" />
+    <class name="bdm::experimental::neuroscience::Param" />
     <class name="bdm::Random" />
   </selection>
 </lcgdict>

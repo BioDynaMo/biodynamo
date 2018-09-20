@@ -26,8 +26,8 @@ namespace displacement_op_test_internal {
 //   using Self = SoaCompileTimeParam<TTBackend>;
 //   using Backend = TBackend;
 //   using SimulationBackend = Soa;
-//   using BiologyModules = Variant<NullBiologyModule>;
-//   using AtomicTypes = VariadicTypedef<Cell>;
+//   using BiologyModules = CTList<NullBiologyModule>;
+//   using SimObjectTypes = CTList<Cell>;
 // };
 
 TEST(DisplacementOpTest, ComputeSoa) { RunTest(); }

@@ -30,12 +30,13 @@ struct TestScheduler : public Scheduler<> {
 };
 
 TEST(RegulateGenesTest, EulerTest) {
-  Simulation<> simulation(TEST_NAME);
-  auto* param = simulation.GetParam();
+  auto set_param = [](auto* param) {
+    param->numerical_ode_solver_ = Param::NumericalODESolver::kEuler;
+  };
+  Simulation<> simulation(TEST_NAME, set_param);
   auto* scheduler = new TestScheduler();
   simulation.ReplaceScheduler(scheduler);
 
-  param->numerical_ode_solver_ = param->NumericalODESolver::kEuler;
   scheduler->SetSimulationSteps(1);
 
   auto func1 = [](double curr_time, double last_concentration) {
@@ -64,12 +65,11 @@ TEST(RegulateGenesTest, EulerTest) {
 // Example 1 from:
 // https://ece.uwaterloo.ca/~dwharder/NumericalAnalysis/14IVPs/rk/examples.html
 TEST(RegulateGenesTest, RK4Test) {
-  Simulation<> simulation(TEST_NAME);
-  auto* param = simulation.GetParam();
-
-  param->numerical_ode_solver_ = param->NumericalODESolver::kRK4;
-  // simulation steps is zero by default
-  param->simulation_time_step_ = 1;
+  auto set_param = [](auto* param) {
+    param->numerical_ode_solver_ = Param::NumericalODESolver::kRK4;
+    param->simulation_time_step_ = 1;
+  };
+  Simulation<> simulation(TEST_NAME, set_param);
 
   RegulateGenes regulate_genes;
   regulate_genes.AddGene(

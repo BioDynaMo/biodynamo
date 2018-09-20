@@ -27,10 +27,11 @@ using std::vector;
 using std::string;
 
 // 1. Define compile time parameter
-template <typename Backend>
-struct CompileTimeParam : public DefaultCompileTimeParam<Backend> {
-  using BiologyModules = Variant<RegulateGenes>;
-  using AtomicTypes = VariadicTypedef<Cell>;
+BDM_CTPARAM() {
+  BDM_CTPARAM_HEADER();
+
+  // Override default BiologyModules for Cell
+  BDM_CTPARAM_FOR(bdm, Cell) { using BiologyModules = CTList<RegulateGenes>; };
 };
 
 inline int Simulate(int argc, const char** argv) {

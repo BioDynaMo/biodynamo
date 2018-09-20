@@ -40,12 +40,14 @@ You should see "Simulation completed succesfully" as the output.
 Let's make the simulation more interesting by adding a biological behavior to the
 cell: cell division. Open the `src/hello_world.h`
 
-Replace the `CompileTimeParameters` struct with the following one:
+Replace the line starting with `BDM_CTPARAM()` with the following one:
 
 ``` C++
-template <typename Backend>
-struct CompileTimeParam : public DefaultCompileTimeParam<Backend> {
-  using BiologyModules = Variant<GrowDivide>;
+BDM_CTPARAM() {
+  BDM_CTPARAM_HEADER();
+
+  // Override default BiologyModules for Cell
+  BDM_CTPARAM_FOR(bdm, Cell) { using BiologyModules = CTList<GrowDivide>; };
 };
 ```
 

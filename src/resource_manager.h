@@ -34,10 +34,10 @@
 #endif
 
 #include "backend.h"
+#include "compile_time_list.h"
 #include "diffusion_grid.h"
 #include "simulation.h"
 #include "tuple_util.h"
-#include "variadic_template_parameter_util.h"
 
 namespace bdm {
 
@@ -93,13 +93,13 @@ constexpr SoHandle kNullSoHandle;
 
 namespace detail {
 
-/// \see bdm::ConvertToContainerTuple, VariadicTypedef
+/// \see bdm::ConvertToContainerTuple, CTList
 template <typename Backend, typename... Types>
 struct ConvertToContainerTuple {};
 
-/// \see bdm::ConvertToContainerTuple, VariadicTypedef
+/// \see bdm::ConvertToContainerTuple, CTList
 template <typename Backend, typename... Types>
-struct ConvertToContainerTuple<Backend, VariadicTypedef<Types...>> {
+struct ConvertToContainerTuple<Backend, CTList<Types...>> {
   // Helper alias to get the container type associated with Backend
   template <typename T>
   using Container = typename Backend::template Container<T>;
@@ -110,12 +110,12 @@ struct ConvertToContainerTuple<Backend, VariadicTypedef<Types...>> {
 };
 
 /// Type trait to obtain the index of a type within a tuple.
-/// Required to extract variadic types from withi a `VariadicTypedef`
+/// Required to extract variadic types from withi a `CTList`
 template <typename TSo, typename... Types>
 struct ToIndex;
 
 template <typename TSo, typename... Types>
-struct ToIndex<TSo, VariadicTypedef<Types...>> {
+struct ToIndex<TSo, CTList<Types...>> {
   static constexpr uint16_t value = GetIndex<TSo, Types...>();  // NOLINT
 };
 
@@ -124,32 +124,32 @@ struct ToIndex<TSo, VariadicTypedef<Types...>> {
 /// Create a tuple of types in the parameter pack and wrap each type with
 /// container.
 /// @tparam Backend in which the variadic types should be stored in
-/// @tparam TVariadicTypedefWrapper type that wraps a VariadicTypedef
+/// @tparam TCTList type that wraps a CTList
 /// which in turn contains the variadic template parameters
-/// \see VariadicTypedefWrapper
-template <typename Backend, typename TVariadicTypedef>
+/// \see CTList
+template <typename Backend, typename TCTList>
 struct ConvertToContainerTuple {
-  typedef
-      typename detail::ConvertToContainerTuple<Backend, TVariadicTypedef>::type
-          type;  // NOLINT
+  typedef typename detail::ConvertToContainerTuple<Backend, TCTList>::type
+      type;  // NOLINT
 };
 
 /// ResourceManager holds a container for each atomic type in the simulation.
 /// It provides methods to get a certain container, execute a function on a
 /// a certain element, all elements of a certain type or all elements inside
 /// the ResourceManager. Elements are uniquely identified with its SoHandle.
-/// Furthermore, the types specified in AtomicTypes are backend invariant
+/// Furthermore, the types specified in SimObjectTypes are backend invariant
 /// Hence it doesn't matter which version of the Backend is specified.
 /// ResourceManager internally uses the TBackendWrapper parameter to convert
-/// all atomic types to the desired backend.
-/// This makes user code easier since atomic types can be specified as scalars.
+/// all SimObjectTypes to the desired backend.
+/// This makes user code easier since SimObjectTypes can be specified as
+/// scalars.
 /// @tparam TCompileTimeParam type that containes the compile time parameter for
-/// a specific simulation. ResourceManager extracts Backend and AtomicTypes.
+/// a specific simulation. ResourceManager extracts Backend and SimObjectTypes.
 template <typename TCompileTimeParam = CompileTimeParam<>>
 class ResourceManager {
  public:
   using Backend = typename TCompileTimeParam::SimulationBackend;
-  using Types = typename TCompileTimeParam::AtomicTypes;
+  using Types = typename TCompileTimeParam::SimObjectTypes;
   /// Determine Container based on the Backend
   template <typename T>
   using TypeContainer = typename Backend::template Container<T>;

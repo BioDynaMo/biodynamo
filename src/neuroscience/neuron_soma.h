@@ -20,6 +20,7 @@
 #include <vector>
 #include "cell.h"
 #include "neuroscience/event/new_neurite_extension_event.h"
+#include "neuroscience/param.h"
 #include "resource_manager.h"
 #include "simulation_object_util.h"
 
@@ -96,7 +97,8 @@ BDM_SIM_OBJECT(NeuronSoma, bdm::Cell) {
   NeuriteElementSoPtr ExtendNewNeurite(const std::array<double, 3>& direction) {
     auto dir = Math::Add(direction, Base::position_[kIdx]);
     auto angles = Base::TransformCoordinatesGlobalToPolar(dir);
-    return ExtendNewNeurite(Param::kNeuriteDefaultDiameter, angles[2],
+    auto* param = Simulation_t::GetActive()->GetParam();
+    return ExtendNewNeurite(param->neurite_default_diameter_, angles[2],
                             angles[1]);
   }
 

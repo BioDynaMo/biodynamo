@@ -12,6 +12,7 @@
     <class name="bdm::DivisionAndMovementModule," />
     <class name="bdm::SubstanceSecretion" />
     <class name="bdm::Chemotaxis" />
+    <class pattern="bdm::CompileTimeParam<*>::Param" />
     <class pattern="std::__1::vector<bdm::*<*>>" />
     <class pattern="std::__1::tuple<bdm::*<*>" />
     <class pattern="bdm::resource_manager_test_internal::*" />

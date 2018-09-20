@@ -29,7 +29,7 @@
 #include "neuroscience/event/new_neurite_extension_event.h"
 #include "neuroscience/event/side_neurite_extension_event.h"
 #include "neuroscience/event/split_neurite_element_event.h"
-#include "param.h"
+#include "neuroscience/param.h"
 #include "random.h"
 #include "shape.h"
 #include "simulation_object.h"
@@ -235,7 +235,15 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
 
   static constexpr Shape GetShape() { return kCylinder; }
 
-  NeuriteElementExt() {}
+  NeuriteElementExt() {
+    auto* param = Simulation_t::GetActive()->GetParam();
+    tension_[kIdx] = param->neurite_default_tension_;
+    diameter_[kIdx] = param->neurite_default_diameter_;
+    actual_length_[kIdx] = param->neurite_default_actual_length_;
+    density_[kIdx] = param->neurite_default_density_;
+    spring_constant_[kIdx] = param->neurite_default_spring_constant_;
+    adherence_[kIdx] = param->neurite_default_adherence_;
+  }
 
   /// \brief This constructor is used to create a new neurite for a new neurite
   /// extension event.
@@ -243,6 +251,14 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
   /// \see NewNeuriteExtensionEvent
   template <typename TNeuronSoma>
   NeuriteElementExt(const NewNeuriteExtensionEvent& event, TNeuronSoma* soma) {
+    auto* param = Simulation_t::GetActive()->GetParam();
+    tension_[kIdx] = param->neurite_default_tension_;
+    diameter_[kIdx] = param->neurite_default_diameter_;
+    actual_length_[kIdx] = param->neurite_default_actual_length_;
+    density_[kIdx] = param->neurite_default_density_;
+    spring_constant_[kIdx] = param->neurite_default_spring_constant_;
+    adherence_[kIdx] = param->neurite_default_adherence_;
+
     double diameter = event.diameter_;
     double phi = event.phi_;
     double theta = event.theta_;
@@ -253,7 +269,7 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
     CopyBiologyModules(event, &soma_bms, &my_bms);
 
     double radius = 0.5 * soma->GetDiameter();
-    double new_length = Param::kNeuriteDefaultActualLength;
+    double new_length = param->neurite_default_actual_length_;
     // position in bdm.cells coord
     double x_coord = std::sin(theta) * std::cos(phi);
     double y_coord = std::sin(theta) * std::sin(phi);
@@ -280,7 +296,7 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
 
     SetMassLocation(new_mass_location);
     actual_length_[kIdx] = new_length;
-    SetRestingLengthForDesiredTension(Param::kNeuriteDefaultTension);
+    SetRestingLengthForDesiredTension(param->neurite_default_tension_);
     UpdateLocalCoordinateAxis();
 
     // family relations
@@ -299,6 +315,14 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
   template <typename TNeuriteElement>
   NeuriteElementExt(const NeuriteBifurcationEvent& event,
                     TNeuriteElement* mother, uint64_t new_oid) {
+    auto* param = Simulation_t::GetActive()->GetParam();
+    tension_[kIdx] = param->neurite_default_tension_;
+    diameter_[kIdx] = param->neurite_default_diameter_;
+    actual_length_[kIdx] = param->neurite_default_actual_length_;
+    density_[kIdx] = param->neurite_default_density_;
+    spring_constant_[kIdx] = param->neurite_default_spring_constant_;
+    adherence_[kIdx] = param->neurite_default_adherence_;
+
     // detemine if we should create a left or right branch
     // extract parameter from event
     double length = event.length_;
@@ -334,7 +358,7 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
 
     // physics of tension :
     actual_length_[kIdx] = length;
-    SetRestingLengthForDesiredTension(Param::kNeuriteDefaultTension);
+    SetRestingLengthForDesiredTension(param->neurite_default_tension_);
 
     // set local coordinate axis in the new branches
     // TODO(neurites) again?? alreay done a few lines up
@@ -476,7 +500,9 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
     return mass_location_[kIdx];
   }
 
-  using BiologyModules = typename TCompileTimeParam::BiologyModules;
+  using BiologyModules =
+      typename TCompileTimeParam::template CTMap<MostDerivedScalar,
+                                                 0>::BiologyModules::Variant_t;
 
   /// Add a biology module to this cell
   /// @tparam TBiologyModule type of the biology module. Must be in the set of
@@ -639,8 +665,9 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
   /// neurite element has no daughter and the actual length is bigger than the
   /// minimum required.
   bool BifurcationPermitted() const {
+    auto* param = Simulation_t::GetActive()->GetParam();
     return (daughter_left_[kIdx] == nullptr &&
-            actual_length_[kIdx] > Param::kNeuriteMinimalBifurcationLength);
+            actual_length_[kIdx] > param->neurite_minimial_bifurcation_length_);
   }
 
   /// \brief Growth cone bifurcation.
@@ -682,7 +709,8 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
       const std::array<double, 3>& direction_1,
       const std::array<double, 3>& direction_2) {
     // initial default length :
-    double l = Param::kNeuriteDefaultActualLength;
+    auto* param = Simulation_t::GetActive()->GetParam();
+    double l = param->neurite_default_actual_length_;
     // diameters :
     double d = diameter_[kIdx];
     return Bifurcate(l, d, d, direction_1, direction_2);
@@ -693,7 +721,8 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
   /// \see NeuriteBifurcationEvent
   std::array<MostDerivedSoPtr, 2> Bifurcate() {
     // initial default length :
-    double l = Param::kNeuriteDefaultActualLength;
+    auto* param = Simulation_t::GetActive()->GetParam();
+    double l = param->neurite_default_actual_length_;
     // diameters :
     double d = diameter_[kIdx];
     // direction : (60 degrees between branches)
@@ -775,7 +804,8 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
   ///   * too long: insert another NeuriteElement
   ///   * too short fuse it with the proximal element or even delete it
   void RunDiscretization() {
-    if (actual_length_[kIdx] > Param::kNeuriteMaxLength) {
+    auto* param = Simulation_t::GetActive()->GetParam();
+    if (actual_length_[kIdx] > param->neurite_max_length_) {
       if (daughter_left_[kIdx] == nullptr) {  // if terminal branch :
         SplitNeuriteElement(0.1);
       } else if (mother_[kIdx].IsNeuronSoma()) {  // if initial branch :
@@ -783,10 +813,10 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
       } else {
         SplitNeuriteElement(0.5);
       }
-    } else if (actual_length_[kIdx] < Param::kNeuriteMinLength &&
+    } else if (actual_length_[kIdx] < param->neurite_min_length_ &&
                mother_[kIdx].IsNeuriteElement() &&
                mother_[kIdx].GetRestingLength() <
-                   Param::kNeuriteMaxLength - resting_length_[kIdx] - 1 &&
+                   param->neurite_max_length_ - resting_length_[kIdx] - 1 &&
                mother_[kIdx].GetDaughterRight() == nullptr &&
                daughter_left_[kIdx] != nullptr) {
       // if the previous branch is removed, we first remove its associated
@@ -1504,10 +1534,10 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
   /// position_ is middle point of cylinder_
   /// mass_location_ is distal end of the cylinder
   vec<std::array<double, 3>> mass_location_ = {{0.0, 0.0, 0.0}};
-  vec<double> volume_;
-  vec<double> diameter_ = {{Param::kNeuriteDefaultDiameter}};
-  vec<double> density_ = {{Param::kNeuriteDefaultDensity}};
-  vec<double> adherence_;
+  vec<double> volume_ = {{}};
+  vec<double> diameter_ = {{}};
+  vec<double> density_ = {{}};
+  vec<double> adherence_ = {{}};
   /// First axis of the local coordinate system equal to cylinder axis
   vec<std::array<double, 3>> x_axis_ = {{1.0, 0.0, 0.0}};
   /// Second axis of the local coordinate system.
@@ -1515,7 +1545,7 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
   /// Third axis of the local coordinate system.
   vec<std::array<double, 3>> z_axis_ = {{0.0, 0.0, 1.0}};
   /// Grid box index
-  vec<uint64_t> box_idx_;
+  vec<uint64_t> box_idx_ = {{}};
 
   vec<bool> is_axon_ = {{false}};
 
@@ -1525,10 +1555,10 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
 
   /// First child node in the neuron tree structure (can only be a Neurite
   /// element)
-  vec<MostDerivedSoPtr> daughter_left_;
+  vec<MostDerivedSoPtr> daughter_left_ = {{}};
   /// Second child node in the neuron tree structure. (can only be a Neurite
   /// element)
-  vec<MostDerivedSoPtr> daughter_right_;
+  vec<MostDerivedSoPtr> daughter_right_ = {{}};
 
   /// number of branching points from here to the soma (root of the neuron
   /// tree-structure).
@@ -1542,14 +1572,14 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
   vec<std::array<double, 3>> spring_axis_ = {{0, 0, 0}};
 
   /// Real length of the PhysicalCylinder (norm of the springAxis).
-  vec<double> actual_length_ = {Param::kNeuriteDefaultActualLength};
+  vec<double> actual_length_ = {{}};
 
   /// Tension in the cylinder spring.
-  vec<double> tension_ = {Param::kNeuriteDefaultTension};
+  vec<double> tension_ = {{}};
 
   /// Spring constant per distance unit (springConstant restingLength  = "real"
   /// spring constant).
-  vec<double> spring_constant_ = {Param::kNeuriteDefaultSpringConstant};
+  vec<double> spring_constant_ = {{}};
 
   /// The length of the internal spring where tension would be zero.
   /// T = k*(A-R)/R --> R = k*A/(T+K)
@@ -1628,6 +1658,14 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
   /// \see SplitNeuriteElementEvent, NeuriteBranchingEvent
   template <typename TEvent, typename TNeuriteElement>
   void InitializeSplitOrBranching(const TEvent& event, TNeuriteElement* other) {
+    auto* param = Simulation_t::GetActive()->GetParam();
+    tension_[kIdx] = param->neurite_default_tension_;
+    diameter_[kIdx] = param->neurite_default_diameter_;
+    actual_length_[kIdx] = param->neurite_default_actual_length_;
+    density_[kIdx] = param->neurite_default_density_;
+    spring_constant_[kIdx] = param->neurite_default_spring_constant_;
+    adherence_[kIdx] = param->neurite_default_adherence_;
+
     double distal_portion = event.distal_portion_;
 
     const auto& other_ml = other->GetMassLocation();
@@ -1661,6 +1699,14 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
   template <typename TEvent, typename TNeuriteElement>
   void InitializeSideExtensionOrBranching(const TEvent& event,
                                           TNeuriteElement* mother) {
+    auto* param = Simulation_t::GetActive()->GetParam();
+    tension_[kIdx] = param->neurite_default_tension_;
+    diameter_[kIdx] = param->neurite_default_diameter_;
+    actual_length_[kIdx] = param->neurite_default_actual_length_;
+    density_[kIdx] = param->neurite_default_density_;
+    spring_constant_[kIdx] = param->neurite_default_spring_constant_;
+    adherence_[kIdx] = param->neurite_default_adherence_;
+
     double length = event.length_;
     double diameter = event.diameter_;
     const auto& direction = event.direction_;
@@ -1685,8 +1731,8 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
     SetSpringAxis(new_spring_axis);
     // physics
     SetActualLength(length);
-    SetRestingLengthForDesiredTension(Param::kNeuriteDefaultTension);
-    SetDiameter(Param::kNeuriteDefaultDiameter);
+    SetRestingLengthForDesiredTension(param->neurite_default_tension_);
+    SetDiameter(param->neurite_default_diameter_);
     UpdateLocalCoordinateAxis();
     // family relations
     SetMother(mother->GetSoPtr());

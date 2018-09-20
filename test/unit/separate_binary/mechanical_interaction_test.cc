@@ -15,22 +15,22 @@
 #include "backend.h"
 #include "biodynamo.h"
 #include "cell.h"
+#include "compile_time_param.h"
 #include "gtest/gtest.h"
 #include "neuroscience/compile_time_param.h"
 #include "neuroscience/neurite_element.h"
 #include "neuroscience/neuron_soma.h"
+#include "neuroscience/param.h"
 #include "simulation_implementation.h"
 #include "unit/test_util.h"
 
 namespace bdm {
 
-template <typename TBackend>
-struct CompileTimeParam
-    : public DefaultCompileTimeParam<TBackend>,
-      public experimental::neuroscience::DefaultCompileTimeParam<TBackend> {
-  using AtomicTypes =
-      VariadicTypedef<Cell, experimental::neuroscience::NeuronSoma,
-                      experimental::neuroscience::NeuriteElement>;
+BDM_CTPARAM(experimental::neuroscience) {
+  BDM_CTPARAM_HEADER(experimental::neuroscience);
+
+  using SimObjectTypes = CTList<Cell, experimental::neuroscience::NeuronSoma,
+                                experimental::neuroscience::NeuriteElement>;
 };
 
 namespace experimental {

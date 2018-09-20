@@ -4,15 +4,17 @@ namespace bdm {
 
 /// Tests if simulation_info.json is generated correctly during initialization.
 TEST_F(CatalystAdaptorTest, GenerateSimulationInfoJson) {
-  auto* param = simulation_->GetParam();
+  auto set_param = [](auto* param) {
+    // set-up Param values
+    param->export_visualization_ = true;
+    param->visualize_sim_objects_.clear();
+    param->visualize_sim_objects_["cell"] = {};
+    param->visualize_sim_objects_["neurite"] = {};
+    param->visualize_diffusion_.clear();
+    param->visualize_diffusion_.push_back({"sodium", true, true});
+  };
 
-  // set-up Param values
-  param->export_visualization_ = true;
-  param->visualize_sim_objects_.clear();
-  param->visualize_sim_objects_["cell"] = {};
-  param->visualize_sim_objects_["neurite"] = {};
-  param->visualize_diffusion_.clear();
-  param->visualize_diffusion_.push_back({"sodium", true, true});
+  Simulation<> simulation(kSimulationName, set_param);
 
   std::unordered_map<std::string, Shape> shapes;
   shapes["cell"] = kSphere;
@@ -61,6 +63,7 @@ TEST_F(CatalystAdaptorTest, GenerateSimulationInfoJson) {
 
 /// Tests if the catalyst state is generated.
 TEST_F(CatalystAdaptorTest, GenerateParaviewState) {
+  Simulation<> simulation("MySimulation");
   // before we can call finalize we need to modify the json object
   // we need to remove entries for sim_objects and extracellular_substances
   // because there are no corresponding data files available.
@@ -88,7 +91,20 @@ TEST_F(CatalystAdaptorTest, GenerateParaviewState) {
 /// Test if the objects that we want to output for visualization are indeed
 /// the only ones (no more, no less).
 TEST_F(CatalystAdaptorTest, CheckVisualizationSelection) {
-  Simulation<> sim(TEST_NAME);
+  auto set_param = [](auto* param) {
+    param->export_visualization_ = true;
+
+    // We selection Substance_1 for export
+    Param::VisualizeDiffusion vd;
+    vd.name_ = "Substance_1";
+    param->visualize_diffusion_.push_back(vd);
+
+    // We select MyCell for export
+    param->visualize_sim_objects_["MyCell"] = {};
+    param->visualize_sim_objects_["Cell"] = {};
+  };
+
+  Simulation<> sim(TEST_NAME, set_param);
   auto* rm = sim.GetResourceManager();
 
   enum Substances { kSubstance0, kSubstance1, kSubstance2 };
@@ -108,18 +124,6 @@ TEST_F(CatalystAdaptorTest, CheckVisualizationSelection) {
   rm->GetDiffusionGrids()[kSubstance0]->Initialize({l, r, l, r, l, r});
   rm->GetDiffusionGrids()[kSubstance1]->Initialize({l, r, l, r, l, r});
   rm->GetDiffusionGrids()[kSubstance2]->Initialize({l, r, l, r, l, r});
-
-  auto* param = sim.GetParam();
-  param->export_visualization_ = true;
-
-  // We selection Substance_1 for export
-  Param::VisualizeDiffusion vd;
-  vd.name_ = "Substance_1";
-  param->visualize_diffusion_.push_back(vd);
-
-  // We select MyCell for export
-  param->visualize_sim_objects_["MyCell"] = {};
-  param->visualize_sim_objects_["Cell"] = {};
 
   // Write diffusion visualization to file
   CatalystAdaptor<> adaptor("");

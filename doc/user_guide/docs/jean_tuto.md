@@ -100,10 +100,15 @@ We are now able to add any code in the Run() method, that will be executed at ea
 
 After creating our GrowthModule, we need to add this Biology module to the compile time parameter, to tell BioDynaMo to use this new BiologyModule
 ``` C++
-  template <typename Backend>
-    struct CompileTimeParam : public DefaultCompileTimeParam<Backend> {
-      using BiologyModules = Variant<GrowthModule>; // add GrowthModule
+BDM_CTPARAM() {
+  BDM_CTPARAM_HEADER();
+  using SimObjectTypes = CTList<MyCell>;  // use MyCell object
+
+  // Override default BiologyModules for Cell
+  BDM_CTPARAM_FOR(bdm, MyCell) {
+    using BiologyModules = CTList<GrowthModule>;
   };
+};
 ```
 
 Of course, we need to create at least one new cell that contains our GrowthModule in our Simulate method
@@ -136,12 +141,15 @@ you also can say to Paraview to visualise a particular parameter of ours cells, 
     name = "Cell"
 ```
 Because those visualisation parameters are not in the source code, you don’t need to compile your code again.
-We can note that instead of creating a configuration file, you can do the same by adding directly in our Simulate function the lines
+We can note that instead of creating a configuration file, you can do the same by creating this lambda function and passing it to the constructor of `Simulation`
 ``` C++
-    param->live_visualization_ = true; // allows live visualisation
-    param->export_visualization_ = true; // allows export of visualisation files
-    param->visualization_export_interval_ = 2; // export visualisation files every 2 steps
-    param->visualize_sim_objects_["Cell"] = std::set<std::string>{ "diameter_" }; // add the data member diameter_ to the visualisation objects
+auto set_param = [](auto* param) {
+  param->live_visualization_ = true; // allows live visualisation
+  param->export_visualization_ = true; // allows export of visualisation files
+  param->visualization_export_interval_ = 2; // export visualisation files every 2 steps
+  param->visualize_sim_objects_["Cell"] = std::set<std::string>{ "diameter_" }; // add the data member diameter_ to the visualisation objects
+}
+Simulation<> simulation(argc, argv, set_param);
 ```
 Once again, it is important to note that if you want to change any visualisation parameter using this second method, you will have to compile again your code. That is not the case using a configuration file. Hence, using the toml file is highly recommended.  
 
@@ -213,9 +221,9 @@ We will do that directly in our tutorial.h file by writing
   };
 ```
 
-Don't forget to add this new object to your compile time parameters (inside "struct CompileTimeParam") so BioDynaMo know that we want to use our custom `MyCell` object. This is done by adding the line
+Don't forget to add this new object to your compile time parameters so BioDynaMo knows that we want to use our custom `MyCell` object. This is done by adding the line
 ``` C++
-    using AtomicTypes = VariadicTypedef<MyCell>;
+    using SimObjectTypes = CTList<MyCell>;
 ```
 
 Each cell (implementing our new object `MyCell`) of the modelling is now able to have a value cell\_colour\_ that we will choose and use to display different colours!  
@@ -377,25 +385,32 @@ namespace bdm {
   };
 
   // Define compile time parameter
-  template <typename Backend>
-  struct CompileTimeParam : public DefaultCompileTimeParam<Backend> {
-    using BiologyModules = Variant<GrowthModule>;  // add GrowthModule
+  BDM_CTPARAM() {
+    BDM_CTPARAM_HEADER();
+    using SimObjectTypes = CTList<MyCell>;  // use MyCell object
+
+    // Override default BiologyModules for Cell
+    BDM_CTPARAM_FOR(bdm, MyCell) {
+      using BiologyModules = CTList<GrowthModule>;
+    };
   };
 
 
   inline int Simulate(int argc, const char** argv) {
-    Simulation<> simulation(argc, argv);
+    auto set_param = [](auto* param) {
+      param->bound_space_ = true;
+      param->min_bound_ = 0;
+      param->max_bound_ = 100;  // cube of 100*100*100
+      param->run_mechanical_interactions_ = true;
+    };
+
+    Simulation<> simulation(argc, argv, set_param);
     auto* rm = simulation.GetResourceManager(); // set up resource manager
     auto* param = simulation.GetParam(); // set up params
     auto* random = simulation.GetRandom(); // set up the random engine
 
     size_t nb_of_cells = 2400;  // number of cells in the simulation
     double x_coord, y_coord, z_coord;
-
-    param->bound_space_ = true;
-    param->min_bound_ = 0;
-    param->max_bound_ = 100;  // cube of 100*100*100
-    param->run_mechanical_interactions_ = true;
 
     // create a structure to contain cells
     auto* cells = rm->template Get<Cell>();

@@ -18,11 +18,9 @@ namespace bdm {
 namespace scheduler_test_internal {
 
 TEST(SchedulerTest, NoRestoreFile) {
-  Simulation<> simulation(TEST_NAME);
+  auto set_param = [](auto* param) { param->restore_file_ = ""; };
+  Simulation<> simulation(TEST_NAME, set_param);
   auto* rm = simulation.GetResourceManager();
-  auto* param = simulation.GetParam();
-
-  param->restore_file_ = "";
 
   remove(ROOTFILE);
 

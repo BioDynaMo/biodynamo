@@ -21,7 +21,7 @@
 #include <vector>
 
 #include <Rtypes.h>
-// #include "compile_time_param.h"
+#include "compile_time_param.h"
 #include "gtest/gtest.h"
 #include "io_util.h"
 #include "simulation_object.h"
@@ -76,13 +76,13 @@ BDM_SIM_OBJECT(ContainerTestClass, bdm::SimulationObject) {
   vec<double> dm2_;
 };
 
-BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
-  BDM_SIM_OBJECT_HEADER(CellExt, 1, position_, diameter_);
+BDM_SIM_OBJECT(MyCell, bdm::SimulationObject) {
+  BDM_SIM_OBJECT_HEADER(MyCellExt, 1, position_, diameter_);
 
  public:
-  explicit CellExt(const std::array<double, 3>& pos) : position_{{pos}} {}
+  explicit MyCellExt(const std::array<double, 3>& pos) : position_{{pos}} {}
 
-  CellExt() : position_{{1, 2, 3}} {}
+  MyCellExt() : position_{{1, 2, 3}} {}
 
   MostDerivedSoPtr Divide(double volume_ratio, double phi, double theta) {
     auto* rm = Simulation_t::GetActive()->GetResourceManager();
@@ -126,7 +126,7 @@ class Neurite {
 };
 
 // add Neurites to BaseCell
-BDM_SIM_OBJECT(Neuron, bdm::Cell) {
+BDM_SIM_OBJECT(Neuron, bdm::MyCell) {
   BDM_SIM_OBJECT_HEADER(NeuronExt, 1, neurites_);
 
  public:
@@ -186,15 +186,9 @@ BDM_SIM_OBJECT(TestObject, bdm::SimulationObject) {
 // }  // namespace simulation_object_util_test_internal
 
 // has to be defined in namespace bdm
-template <typename TBackend>
-struct CompileTimeParam {
-  template <typename TTBackend>
-  using Self = CompileTimeParam<TTBackend>;
-  using Backend = TBackend;
-
-  /// Defines backend used in ResourceManager
-  using SimulationBackend = Soa;
-  using AtomicTypes = VariadicTypedef<Neuron>;
+BDM_CTPARAM() {
+  BDM_CTPARAM_HEADER();
+  using SimObjectTypes = CTList<Neuron>;
 };
 
 // namespace simulation_object_util_test_internal {

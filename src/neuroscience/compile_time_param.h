@@ -26,9 +26,16 @@ namespace neuroscience {
 /// Users need to specify the type of NeuronSoma and NeuriteElement they are
 /// using.
 template <typename TBackend = Soa>
-struct DefaultCompileTimeParam {
+struct DefaultCTParam {
   using NeuronSoma = ::bdm::experimental::neuroscience::NeuronSoma;
   using NeuriteElement = ::bdm::experimental::neuroscience::NeuriteElement;
+
+  // must be empty. otherwise ambigous with other specializations
+  template <typename TSimObject, int Dummy>
+  struct CTMap {};
+
+  BDM_DEFAULT_CTPARAM_FOR(NeuronSoma){};
+  BDM_DEFAULT_CTPARAM_FOR(NeuriteElement){};
 };
 
 }  // namespace neuroscience

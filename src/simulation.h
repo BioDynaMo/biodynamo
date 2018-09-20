@@ -46,6 +46,7 @@ class CatalystAdaptorTest;
 template <typename TCTParam = CompileTimeParam<>>
 struct Simulation {
   using ResourceManager_t = ResourceManager<TCTParam>;  // NOLINT
+  using Param_t = typename TCTParam::Param;
 
   /// This function returns the currently active Simulation simulation.
   static Simulation<TCTParam>* GetActive();
@@ -62,6 +63,13 @@ struct Simulation {
   /// Creation of a new simulation automatically activates it.
   explicit Simulation(const std::string& simulation_name);
 
+  template <typename TSetParamLambda>
+  Simulation(int argc, const char** argv, const TSetParamLambda& set_param);
+
+  template <typename TSetParamLambda>
+  Simulation(const std::string& simulation_name,
+             const TSetParamLambda& set_param);
+
   ~Simulation();
 
   /// Copies / moves values from a restored simulation into this object.
@@ -73,7 +81,7 @@ struct Simulation {
 
   ResourceManager<TCTParam>* GetResourceManager();
 
-  Param* GetParam();
+  const Param_t* GetParam() const;
 
   Grid<Simulation>* GetGrid();
 
@@ -104,7 +112,7 @@ struct Simulation {
   std::vector<Random*> random_;
 
   ResourceManager<TCTParam>* rm_ = nullptr;
-  Param* param_ = nullptr;
+  Param_t* param_ = nullptr;
   std::string name_;
   Grid<Simulation>* grid_ = nullptr;            //!
   Scheduler<Simulation>* scheduler_ = nullptr;  //!
@@ -115,11 +123,13 @@ struct Simulation {
   /// e.g. `name_ = "my-sim"` and `id_ = 0` -> "my-sim"\n
   /// e.g. `name_ = "my-sim"` and `id_ = 4` -> "my-sim4"
   std::string unique_name_;  //!
-  /// cached value where `unique_name_` is appended to `Param::kOutputDir`
+  /// cached value where `unique_name_` is appended to `Param::output_dir_`
   std::string output_dir_;  //!
 
   /// Initialize Simulation
-  void Initialize(int argc, const char** argv);
+  template <typename TSetParamLambda>
+  void Initialize(int argc, const char** argv,
+                  const TSetParamLambda& set_param);
 
   /// Initialize data members that have a dependency on Simulation
   template <typename TResourceManager = ResourceManager<TCTParam>,
@@ -136,7 +146,9 @@ struct Simulation {
   /// This function parses command line parameters and the configuration file.
   /// @param argc argument count from main function
   /// @param argv argument vector from main function
-  void InitializeRuntimeParams(int argc, const char** argv);
+  template <typename TSetParamLambda>
+  void InitializeRuntimeParams(int argc, const char** argv,
+                               const TSetParamLambda& set_param);
 
   /// This function initialzes `unique_name_`
   void InitializeUniqueName(const std::string& simulation_name);

@@ -23,5 +23,6 @@
 #include "neuroscience/event/split_neurite_element_event.h"
 #include "neuroscience/neurite_element.h"
 #include "neuroscience/neuron_soma.h"
+#include "neuroscience/param.h"
 
 #endif  // NEUROSCIENCE_NEUROSCIENCE_H_

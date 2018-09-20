@@ -50,14 +50,26 @@ template <typename T>
 Simulation<T>::Simulation(TRootIOCtor* p) {}
 
 template <typename T>
-Simulation<T>::Simulation(int argc, const char** argv) {
-  Initialize(argc, argv);
+Simulation<T>::Simulation(int argc, const char** argv)
+    : Simulation(argc, argv, [](auto* param) {}) {}
+
+template <typename T>
+Simulation<T>::Simulation(const std::string& simulation_name)
+    : Simulation(simulation_name, [](auto* param) {}) {}
+
+template <typename T>
+template <typename TSetParamLambda>
+Simulation<T>::Simulation(int argc, const char** argv,
+                          const TSetParamLambda& set_param) {
+  Initialize(argc, argv, set_param);
 }
 
 template <typename T>
-Simulation<T>::Simulation(const std::string& simulation_name) {
+template <typename TSetParamLambda>
+Simulation<T>::Simulation(const std::string& simulation_name,
+                          const TSetParamLambda& set_param) {
   const char* argv[1] = {simulation_name.c_str()};
-  Initialize(1, argv);
+  Initialize(1, argv, set_param);
 }
 
 template <typename T>
@@ -115,7 +127,7 @@ ResourceManager<T>* Simulation<T>::GetResourceManager() {
 }
 
 template <typename T>
-Param* Simulation<T>::GetParam() {
+const typename Simulation<T>::Param_t* Simulation<T>::GetParam() const {
   return param_;
 }
 
@@ -151,12 +163,14 @@ void Simulation<T>::ReplaceScheduler(Scheduler<Simulation>* scheduler) {
 }
 
 template <typename T>
-void Simulation<T>::Initialize(int argc, const char** argv) {
+template <typename TSetParamLambda>
+void Simulation<T>::Initialize(int argc, const char** argv,
+                               const TSetParamLambda& set_param) {
   id_ = counter_++;
   Activate();
   InitializeUniqueName(ExtractSimulationName(argv[0]));
+  InitializeRuntimeParams(argc, argv, set_param);
   InitializeOutputDir();
-  InitializeRuntimeParams(argc, argv);
   InitializeMembers();
 }
 
@@ -173,8 +187,10 @@ void Simulation<T>::InitializeMembers() {
 }
 
 template <typename T>
-void Simulation<T>::InitializeRuntimeParams(int argc, const char** argv) {
-  param_ = new Param();
+template <typename TSetParamLambda>
+void Simulation<T>::InitializeRuntimeParams(int argc, const char** argv,
+                                            const TSetParamLambda& set_param) {
+  param_ = new Param_t();
 
   // Removing this line causes an unexplainable segfault due to setting the
   // gErrorIngoreLevel global parameter of ROOT. We need to log at least one
@@ -208,6 +224,7 @@ void Simulation<T>::InitializeRuntimeParams(int argc, const char** argv) {
     param_->backup_file_ = options.backup_file_;
     param_->restore_file_ = options.restore_file_;
   }
+  set_param(param_);
 }
 
 template <typename T>
@@ -235,9 +252,9 @@ std::string Simulation<T>::ExtractSimulationName(const char* path) {
 template <typename T>
 void Simulation<T>::InitializeOutputDir() {
   if (unique_name_ == "") {
-    output_dir_ = Param::kOutputDir;
+    output_dir_ = param_->output_dir_;
   } else {
-    output_dir_ = Concat(Param::kOutputDir, "/", unique_name_);
+    output_dir_ = Concat(param_->output_dir_, "/", unique_name_);
   }
   if (system(Concat("mkdir -p ", output_dir_).c_str())) {
     Log::Fatal("Simulation", "Failed to make output directory ", output_dir_);

@@ -44,14 +44,7 @@ class IOTest : public ::testing::Test {
   static constexpr char const* kRootFile = "io-test.root";
 
  protected:
-  virtual void SetUp() {
-    remove(kRootFile);
-    simulation_ = new Simulation<>(TEST_NAME);
-  }
-
-  virtual void TearDown() { delete simulation_; }
-
-  Simulation<>* simulation_;
+  virtual void SetUp() { remove(kRootFile); }
 };
 
 /// Writes backup to file and reads it back into restored

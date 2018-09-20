@@ -37,22 +37,29 @@ namespace bdm {
 // -----------------------------------------------------------------------------
 
 // Define compile time parameter
-template <typename Backend>
-struct CompileTimeParam : public DefaultCompileTimeParam<Backend> {
-  using BiologyModules = Variant<Chemotaxis, SubstanceSecretion>;
-  using AtomicTypes = VariadicTypedef<MyCell>;
+BDM_CTPARAM() {
+  BDM_CTPARAM_HEADER();
+  using SimObjectTypes = CTList<MyCell>;
+
+  // Override default BiologyModules for Cell
+  BDM_CTPARAM_FOR(bdm, MyCell) {
+    using BiologyModules = CTList<Chemotaxis, SubstanceSecretion>;
+  };
 };
 
 inline int Simulate(int argc, const char** argv) {
-  Simulation<> simulation(argc, argv);
-  auto* param = simulation.GetParam();
+  auto set_param = [](auto* param) {
+    // Create an artificial bounds for the simulation space
+    param->bound_space_ = true;
+    param->min_bound_ = 0;
+    param->max_bound_ = 250;
+    param->run_mechanical_interactions_ = false;
+  };
+
+  Simulation<> simulation(argc, argv, set_param);
 
   // Define initial model
-  // Create an artificial bounds for the simulation space
-  param->bound_space_ = true;
-  param->min_bound_ = 0;
-  param->max_bound_ = 250;
-  param->run_mechanical_interactions_ = false;
+  auto* param = simulation.GetParam();
   int num_cells = 20000;
 
 #pragma omp parallel

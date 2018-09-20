@@ -19,18 +19,17 @@
 #include "neuroscience/compile_time_param.h"
 #include "neuroscience/neurite_element.h"
 #include "neuroscience/neuron_soma.h"
+#include "neuroscience/param.h"
 #include "simulation_implementation.h"
 #include "unit/test_util.h"
 
 namespace bdm {
 
-template <typename TBackend>
-struct CompileTimeParam
-    : public DefaultCompileTimeParam<TBackend>,
-      public experimental::neuroscience::DefaultCompileTimeParam<TBackend> {
-  using AtomicTypes =
-      VariadicTypedef<Cell, experimental::neuroscience::NeuronSoma,
-                      experimental::neuroscience::NeuriteElement>;
+BDM_CTPARAM(experimental::neuroscience) {
+  BDM_CTPARAM_HEADER(experimental::neuroscience);
+
+  using SimObjectTypes = CTList<Cell, experimental::neuroscience::NeuronSoma,
+                                experimental::neuroscience::NeuriteElement>;
 };
 
 namespace experimental {
@@ -39,10 +38,7 @@ namespace neuroscience {
 TEST(NeuriteElementBehaviour, StraightxCylinderGrowthRetract) {
   Simulation<> simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
-  auto* param = simulation.GetParam();
   auto* scheduler = simulation.GetScheduler();
-
-  param->run_mechanical_interactions_ = true;
 
   auto neuron = rm->New<NeuronSoma>();
   neuron.SetPosition({0, 0, 0});
@@ -80,11 +76,8 @@ TEST(NeuriteElementBehaviour, StraightxCylinderGrowthRetract) {
 TEST(NeuriteElementBehaviour, BranchingGrowth) {
   Simulation<> simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
-  auto* param = simulation.GetParam();
   auto* scheduler = simulation.GetScheduler();
   auto* random = simulation.GetRandom();
-
-  param->run_mechanical_interactions_ = true;
 
   double branching_factor = 0.005;
 

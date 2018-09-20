@@ -14,6 +14,7 @@
 
 #include "unit/separate_binary/so_pointer_test.h"
 #include "simulation_implementation.h"
+#include "unit/io_test.h"
 
 namespace bdm {
 namespace so_pointer_test_internal {
@@ -32,17 +33,30 @@ TEST(SoPointerTest, Soa) {
   SoPointerTest<decltype(sim_objects), Soa>(&sim_objects);
 }
 
-TEST_F(IOTest, SoPointerAnyContainer_Aos) { IOTestSoPointerAnyContainerAos(); }
-
-TEST_F(IOTest, SoPointerAnyContainer_Soa) { IOTestSoPointerAnyContainerSoa(); }
-
-TEST_F(IOTest, SoPointerRmContainer_Soa) {
-  IOTestSoPointerRmContainerSoa(simulation_);
+TEST_F(IOTest, SoPointerAnyContainer_Aos) {
+  Simulation<> simulation(TEST_NAME);
+  IOTestSoPointerAnyContainerAos();
 }
 
-TEST_F(IOTest, SoPointerNullptr_Aos) { IOTestSoPointerNullptrAos(); }
+TEST_F(IOTest, SoPointerAnyContainer_Soa) {
+  Simulation<> simulation(TEST_NAME);
+  IOTestSoPointerAnyContainerSoa();
+}
 
-TEST_F(IOTest, SoPointerNullptr_Soa) { IOTestSoPointerNullptrSoa(); }
+TEST_F(IOTest, SoPointerRmContainer_Soa) {
+  Simulation<> simulation(TEST_NAME);
+  IOTestSoPointerRmContainerSoa(&simulation);
+}
+
+TEST_F(IOTest, SoPointerNullptr_Aos) {
+  Simulation<> simulation(TEST_NAME);
+  IOTestSoPointerNullptrAos();
+}
+
+TEST_F(IOTest, SoPointerNullptr_Soa) {
+  Simulation<> simulation(TEST_NAME);
+  IOTestSoPointerNullptrSoa();
+}
 
 }  // namespace so_pointer_test_internal
 }  // namespace bdm

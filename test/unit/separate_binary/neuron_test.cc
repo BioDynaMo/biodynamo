@@ -18,6 +18,7 @@
 #include "compile_time_param.h"
 #include "displacement_op.h"
 #include "neuroscience/compile_time_param.h"
+#include "neuroscience/param.h"
 #include "simulation_implementation.h"
 
 #include "unit/test_util.h"
@@ -25,19 +26,53 @@
 
 namespace bdm {
 
-template <typename TBackend>
-struct CompileTimeParam
-    : public DefaultCompileTimeParam<TBackend>,
-      public experimental::neuroscience::DefaultCompileTimeParam<TBackend> {
-  using AtomicTypes =
-      VariadicTypedef<experimental::neuroscience::NeuronSoma,
-                      experimental::neuroscience::NeuriteElement>;
+BDM_CTPARAM(experimental::neuroscience) {
+  BDM_CTPARAM_HEADER(experimental::neuroscience);
+
+  using SimObjectTypes = CTList<experimental::neuroscience::NeuronSoma,
+                                experimental::neuroscience::NeuriteElement>;
 };
 
 namespace experimental {
 namespace neuroscience {
 
+// TODO(lukas) move to file neuroscience_param_test.cc
+TEST(neuroscience, ParamParsing) {
+  constexpr const char* kConfigFileName = "bdm.toml";
+  constexpr const char* kConfigContent =
+      "[neuroscience]\n"
+      "neurite_default_actual_length = 2.0\n"
+      "neurite_default_density = 3.0\n"
+      "neurite_default_diameter = 4.0\n"
+      "neurite_default_spring_constant = 5.0\n"
+      "neurite_default_adherence = 6.0\n"
+      "neurite_default_tension = 7.0\n"
+      "neurite_min_length = 8.0\n"
+      "neurite_max_length = 9.0\n"
+      "neurite_minimial_bifurcation_length = 10.0\n";
+
+  std::ofstream config_file(kConfigFileName);
+  config_file << kConfigContent;
+  config_file.close();
+
+  Simulation<> simulation(TEST_NAME);
+  auto* param = simulation.GetParam();
+
+  EXPECT_EQ(2.0, param->neurite_default_actual_length_);
+  EXPECT_EQ(3.0, param->neurite_default_density_);
+  EXPECT_EQ(4.0, param->neurite_default_diameter_);
+  EXPECT_EQ(5.0, param->neurite_default_spring_constant_);
+  EXPECT_EQ(6.0, param->neurite_default_adherence_);
+  EXPECT_EQ(7.0, param->neurite_default_tension_);
+  EXPECT_EQ(8.0, param->neurite_min_length_);
+  EXPECT_EQ(9.0, param->neurite_max_length_);
+  EXPECT_EQ(10.0, param->neurite_minimial_bifurcation_length_);
+
+  remove(kConfigFileName);
+}
+
 TEST(NeuronSomaTest, Scalar) {
+  Simulation<> simulation(TEST_NAME);
   NeuriteElement neurite;
   NeuronSoma neuron;
   typename NeuronSoma::template Self<Scalar> neuron1;
@@ -45,6 +80,7 @@ TEST(NeuronSomaTest, Scalar) {
 }
 
 TEST(NeuronSomaTest, Soa) {
+  Simulation<> simulation(TEST_NAME);
   SoaNeuronSoma neuron;
   SoaNeuronSoma sneuron;
   typename NeuronSoma::template Self<Soa> soan;

@@ -29,13 +29,15 @@ namespace bdm {
 enum Substances { kSubstance };
 
 TEST(DiffusionInitTest, GaussianBand) {
-  Simulation<> simulation(TEST_NAME);
+  auto set_param = [](auto* param) {
+    param->bound_space_ = true;
+    param->min_bound_ = 0;
+    param->max_bound_ = 250;
+  };
+  Simulation<> simulation(TEST_NAME, set_param);
+
   auto* rm = simulation.GetResourceManager();
   auto* param = simulation.GetParam();
-
-  param->bound_space_ = true;
-  param->min_bound_ = 0;
-  param->max_bound_ = 250;
 
   // Create one cell at a random position
   auto construct = [](const std::array<double, 3>& position) {

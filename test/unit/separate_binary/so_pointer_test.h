@@ -87,10 +87,9 @@ BDM_SIM_OBJECT(SoPointerTestClass, bdm::SimulationObject) {
 }  // namespace so_pointer_test_internal
 
 // has to be defined in namespace bdm
-template <typename TBackend>
-struct CompileTimeParam : public DefaultCompileTimeParam<TBackend> {
-  using AtomicTypes =
-      VariadicTypedef<so_pointer_test_internal::SoPointerTestClass>;
+BDM_CTPARAM() {
+  BDM_CTPARAM_HEADER();
+  using SimObjectTypes = CTList<so_pointer_test_internal::SoPointerTestClass>;
 };
 
 namespace so_pointer_test_internal {

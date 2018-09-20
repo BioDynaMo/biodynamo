@@ -19,14 +19,10 @@
 
 namespace bdm {
 
-template <typename TBackend>
-struct CompileTimeParam {
-  template <typename TTBackend>
-  using Self = CompileTimeParam<TTBackend>;
-  using Backend = TBackend;
+BDM_CTPARAM() {
+  BDM_CTPARAM_HEADER();
+
   using SimulationBackend = Scalar;
-  using BiologyModules = Variant<NullBiologyModule>;
-  using AtomicTypes = VariadicTypedef<Cell>;
 };
 
 namespace displacement_op_test_internal {

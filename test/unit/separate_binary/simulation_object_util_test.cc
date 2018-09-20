@@ -22,7 +22,7 @@ namespace bdm {
 // namespace simulation_object_util_test_internal {
 
 // The following tests check if code insertion in new classes works as intended
-// Therefore SimulationObject is extended in two stages: first by CellExt and
+// Therefore SimulationObject is extended in two stages: first by MyCellExt and
 // then by NeuronExt
 
 TEST(SimulationObjectUtilTest, ContainerFunctionality) {
@@ -475,20 +475,20 @@ TEST(SimulationObjectUtilTest, IsSoType) {
 
   EXPECT_TRUE(neuron.template IsSoType<Neuron>());
   EXPECT_TRUE(neuron.template IsSoType<SoaNeuron>());
-  EXPECT_FALSE(neuron.template IsSoType<Cell>());
-  EXPECT_FALSE(neuron.template IsSoType<SoaCell>());
+  EXPECT_FALSE(neuron.template IsSoType<MyCell>());
+  EXPECT_FALSE(neuron.template IsSoType<SoaMyCell>());
 
   EXPECT_TRUE(neuron.IsSoType(&neuron));
   SoaNeuron soaneuron;
   EXPECT_TRUE(neuron.IsSoType(&soaneuron));
-  Cell cell;
+  MyCell cell;
   EXPECT_FALSE(neuron.IsSoType(&cell));
-  SoaCell soacell;
+  SoaMyCell soacell;
   EXPECT_FALSE(neuron.IsSoType(&soacell));
 }
 
 TEST(SimulationObjectUtilTest, ReinterpretCast) {
-  Cell cell;
+  MyCell cell;
 
   auto&& neuron_rc1 = cell.template ReinterpretCast<Neuron>();
   bool r1 = std::is_same<Neuron, std::decay_t<decltype(neuron_rc1)>>::value;

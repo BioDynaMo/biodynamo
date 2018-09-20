@@ -25,11 +25,11 @@ namespace bdm {
 // -----------------------------------------------------------------------------
 
 // 1. Define compile time parameter
-template <typename Backend>
-struct CompileTimeParam : public DefaultCompileTimeParam<Backend> {
-  // use predefined biology module GrowDivide
-  using BiologyModules = Variant<GrowDivide>;
-  // use default Backend and AtomicTypes
+BDM_CTPARAM() {
+  BDM_CTPARAM_HEADER();
+
+  // Override default BiologyModules for Cell
+  BDM_CTPARAM_FOR(bdm, Cell) { using BiologyModules = CTList<GrowDivide>; };
 };
 
 inline int Simulate(int argc, const char** argv) {

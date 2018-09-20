@@ -57,7 +57,9 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
 
   static constexpr Shape GetShape() { return Shape::kSphere; }
 
-  using BiologyModules = typename TCompileTimeParam::BiologyModules;
+  using BiologyModules =
+      typename TCompileTimeParam::template CTMap<MostDerivedScalar,
+                                                 0>::BiologyModules::Variant_t;
   CellExt() : density_(1.0) {}
   explicit CellExt(double diameter) : diameter_(diameter), density_(1.0) {
     UpdateVolume();
@@ -83,16 +85,16 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
     double z_coord = std::cos(event.phi_);
     double total_length_of_displacement = radius / 4.0;
 
-    const auto kXAxis = mother->kXAxis;
-    const auto kYAxis = mother->kYAxis;
-    const auto kZAxis = mother->kZAxis;
+    const auto x_axis = mother->kXAxis;
+    const auto y_axis = mother->kYAxis;
+    const auto z_axis = mother->kZAxis;
     std::array<double, 3> axis_of_division{
         total_length_of_displacement *
-            (x_coord * kXAxis[0] + y_coord * kYAxis[0] + z_coord * kZAxis[0]),
+            (x_coord * x_axis[0] + y_coord * y_axis[0] + z_coord * z_axis[0]),
         total_length_of_displacement *
-            (x_coord * kXAxis[1] + y_coord * kYAxis[1] + z_coord * kZAxis[1]),
+            (x_coord * x_axis[1] + y_coord * y_axis[1] + z_coord * z_axis[1]),
         total_length_of_displacement *
-            (x_coord * kXAxis[2] + y_coord * kYAxis[2] + z_coord * kZAxis[2])};
+            (x_coord * x_axis[2] + y_coord * y_axis[2] + z_coord * z_axis[2])};
 
     // two equations for the center displacement :
     //  1) d2/d1= v2/v1 = volume_ratio (each sphere is shifted inver.

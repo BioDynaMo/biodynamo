@@ -12,7 +12,7 @@
 //
 // -----------------------------------------------------------------------------
 
-#include "unit/biology_module_op_test.h"
+#include "unit/separate_binary/biology_module_op_test.h"
 #include "gtest/gtest.h"
 #include "simulation_implementation.h"
 
@@ -25,3 +25,8 @@ TEST(BiologyModuleOpTest, ComputeSoa) { RunTestSoa(); }
 
 }  // namespace biology_module_op_test_internal
 }  // namespace bdm
+
+int main(int argc, char** argv) {
+  ::testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
+}

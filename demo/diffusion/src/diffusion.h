@@ -29,9 +29,13 @@ namespace bdm {
 // -----------------------------------------------------------------------------
 
 // Define compile time parameter
-template <typename Backend>
-struct CompileTimeParam : public DefaultCompileTimeParam<Backend> {
-  using BiologyModules = Variant<Chemotaxis, KaliumSecretion>;
+BDM_CTPARAM() {
+  BDM_CTPARAM_HEADER();
+
+  // Override default BiologyModules for Cell
+  BDM_CTPARAM_FOR(bdm, Cell) {
+    using BiologyModules = CTList<Chemotaxis, KaliumSecretion>;
+  };
 };
 
 inline int Simulate(int argc, const char** argv) {

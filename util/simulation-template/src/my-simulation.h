@@ -19,8 +19,7 @@
 namespace bdm {
 
 // Define compile time parameter
-template <typename Backend>
-struct CompileTimeParam : public DefaultCompileTimeParam<Backend> {};
+BDM_CTPARAM() { BDM_CTPARAM_HEADER(); };
 
 inline int Simulate(int argc, const char** argv) {
   Simulation<> simulation(argc, argv);
