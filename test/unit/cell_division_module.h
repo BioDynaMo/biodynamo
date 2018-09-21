@@ -23,6 +23,13 @@ namespace bdm {
 // This model creates a grid of 128x128x128 cells. Each cell grows untill a
 // specific volume, after which it proliferates (i.e. divides).
 // -----------------------------------------------------------------------------
+Cell* NewCell(const std::array<double, 3>& position) {
+  return new Cell(position);
+  // static std::vector<Cell> cells;
+  // cells.reserve(128*128*128);
+  // cells.emplace_back(Cell(position));
+  // return &(cells[cells.size()-1]);
+}
 
 inline int Simulate(int argc, const char** argv) {
   // 2. Create new simulation
@@ -31,7 +38,7 @@ inline int Simulate(int argc, const char** argv) {
   // 3. Define initial model - in this example: 3D grid of cells
   size_t cells_per_dim = 128;
   auto construct = [](const std::array<double, 3>& position) {
-    Cell* cell = new Cell(position);
+    Cell* cell = NewCell(position);
     cell->SetDiameter(30);
     cell->SetAdherence(0.4);
     cell->SetMass(1.0);

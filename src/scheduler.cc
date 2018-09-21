@@ -81,9 +81,13 @@ void Scheduler::Execute(bool last_iteration) {
     rm->ApplyOnAllElementsParallel(bound_space_);
   }
   // rm->ApplyOnAllTypes(diffusion_);
-  rm->ApplyOnAllElementsParallel(biology_);
+  {
+    Timing timing("biology", &gStatistics);
+    rm->ApplyOnAllElementsParallel(biology_);
+  }
   if (param->run_mechanical_interactions_) {
-    physics_->Init();
+    Timing timing("physics", &gStatistics);
+    physics_.Init();
     rm->ApplyOnAllElementsParallel(physics_);  // Bounding box applied at the end
   }
   CommitChangesAndUpdateReferences();

@@ -62,12 +62,11 @@ class Scheduler {
   // CatalystAdaptor<>* visualization_ = nullptr;  //!
   bool is_gpu_environment_initialized_ = false;
 
-  // OpTimer<CommitOp> commit_ = OpTimer<CommitOp>("commit");
-  // OpTimer<DiffusionOp> diffusion_ = OpTimer<DiffusionOp>("diffusion");
-  OpTimer<BiologyModuleOp> biology_ = OpTimer<BiologyModuleOp>("biology");
-  OpTimer<DisplacementOpCpu> physics_ =
-      OpTimer<DisplacementOpCpu>("physics");
-  OpTimer<BoundSpace> bound_space_ = OpTimer<BoundSpace>("bound_space");
+  // CommitOp commit_ = CommitOp>("commit");
+  // DiffusionOp diffusion_ = DiffusionOp>("diffusion");
+  BiologyModuleOp biology_;
+  DisplacementOpCpu physics_;
+  BoundSpace bound_space_;
 
   /// Backup the simulation. Backup interval based on `Param::backup_interval_`
   void Backup();
