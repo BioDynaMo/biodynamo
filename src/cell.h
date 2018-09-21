@@ -137,8 +137,7 @@ class Cell : public SimulationObject {
   // /// Add a biology module to this cell
   // /// @tparam TBiologyModule type of the biology module. Must be in the set of
   // ///         types specified in `BiologyModules`
-  // template <typename TBiologyModule>
-  // void AddBiologyModule(TBiologyModule && module);
+  // void AddBiologyModule(BaseBiologyModule* module);
   //
   // /// Execute all biology modules
   // void RunBiologyModules();
@@ -216,13 +215,13 @@ class Cell : public SimulationObject {
 
   double GetAdherence() const { return adherence_; }
 
-  double GetDiameter() const { return diameter_; }
+  double GetDiameter() const override { return diameter_; }
 
   double GetMass() const { return density_ * volume_; }
 
   double GetDensity() const { return density_; }
 
-  const std::array<double, 3>& GetPosition() const { return position_; }
+  const std::array<double, 3>& GetPosition() const override { return position_; }
 
   const std::array<double, 3>& GetTractorForce() const {
     return tractor_force_;
@@ -246,7 +245,7 @@ class Cell : public SimulationObject {
 
   void SetDensity(double density) { density_ = density; }
 
-  void SetPosition(const std::array<double, 3>& position) {
+  void SetPosition(const std::array<double, 3>& position) override {
     position_ = position;
   }
 
@@ -281,13 +280,9 @@ class Cell : public SimulationObject {
     position_[2] += delta[2];
   }
 
-  std::array<double, 3> CalculateDisplacement(double squared_radius) const;
+  std::array<double, 3> CalculateDisplacement(double squared_radius) const override;
 
-  void ApplyDisplacement(const std::array<double, 3>& displacement);
-
-  uint32_t GetBoxIdx() const { return box_idx_; }
-
-  void SetBoxIdx(uint32_t idx) { box_idx_ = idx; }
+  void ApplyDisplacement(const std::array<double, 3>& displacement) override;
 
   // // FIXME make protected after ROOT issue has been resolved and all
   // // biology_modules_ are in one class.

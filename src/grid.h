@@ -143,8 +143,6 @@ class Grid {
     };
 
     Iterator begin() const {  // NOLINT
-      std::cout << "FOO" << std::endl;
-      std::cout << "FOO " << length_ << std::endl;
       return Iterator(Simulation::GetActive()->GetGrid(), this);
     }
   };
