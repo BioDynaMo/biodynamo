@@ -134,29 +134,6 @@ class Cell : public SimulationObject {
 
   virtual ~Cell() {}
 
-  // /// Add a biology module to this cell
-  // /// @tparam TBiologyModule type of the biology module. Must be in the set of
-  // ///         types specified in `BiologyModules`
-  // void AddBiologyModule(BaseBiologyModule* module);
-  //
-  // /// Execute all biology modules
-  // void RunBiologyModules();
-  //
-  // /// Get all biology modules of this cell that match the given type.
-  // /// @tparam TBiologyModule  type of the biology module
-  // template <typename TBiologyModule>
-  // std::vector<const TBiologyModule*> GetBiologyModules() const {
-  //   std::vector<const TBiologyModule*> modules;
-  //   for (unsigned int i = 0; i < biology_modules_.size(); i++) {
-  //     const TBiologyModule* module =
-  //         get_if<TBiologyModule>(&biology_modules_[i]);
-  //     if (module != nullptr) {
-  //       modules.push_back(module);
-  //     }
-  //   }
-  //   return modules;
-  // }
-
   // /// \brief Divide this cell.
   // ///
   // /// CellDivisionEvent::volume_ratio_ will be between 0.9 and 1.1\n

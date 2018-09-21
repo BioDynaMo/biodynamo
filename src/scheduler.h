@@ -18,7 +18,7 @@
 #include <chrono>
 #include <string>
 
-// #include "biology_module_op.h"
+#include "biology_module_op.h"
 #include "bound_space_op.h"
 // #include "commit_op.h"
 // #include "diffusion_op.h"
@@ -64,7 +64,7 @@ class Scheduler {
 
   // OpTimer<CommitOp> commit_ = OpTimer<CommitOp>("commit");
   // OpTimer<DiffusionOp> diffusion_ = OpTimer<DiffusionOp>("diffusion");
-  // OpTimer<BiologyModuleOp> biology_ = OpTimer<BiologyModuleOp>("biology");
+  OpTimer<BiologyModuleOp> biology_ = OpTimer<BiologyModuleOp>("biology");
   OpTimer<DisplacementOpCpu> physics_ =
       OpTimer<DisplacementOpCpu>("physics");
   OpTimer<BoundSpace> bound_space_ = OpTimer<BoundSpace>("bound_space");

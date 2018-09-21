@@ -26,6 +26,7 @@
 
 #include "log.h"
 #include "event/event.h"
+#include "biology_module_util.h"
 
 namespace bdm {
 
@@ -87,12 +88,32 @@ class SimulationObject {
 
   void SetBoxIdx(uint32_t idx) { box_idx_ = idx; }
 
+  /// Add a biology module to this cell
+  /// @tparam TBiologyModule type of the biology module. Must be in the set of
+  ///         types specified in `BiologyModules`
+  void AddBiologyModule(BaseBiologyModule* module) {
+    biology_modules_.push_back(module);
+  }
+
+  /// Execute all biology modules
+  void RunBiologyModules() {
+    for(auto* bm : biology_modules_) {
+      bm->Run(this);
+    }
+  }
+
+  // TODO
+  /// Get all biology modules of this cell that match the given type.
+  /// @tparam TBiologyModule  type of the biology module
+  // std::vector<BaseBiologyModule*> GetBiologyModules()
+
   /// Grid box index
   uint32_t box_idx_;
 
   protected:
    // array index of this object in the ResourceManager
    uint32_t element_idx_ = 0;
+   std::vector<BaseBiologyModule*> biology_modules_;
 
   //  ClassDef(SimulationObject, 1);
 };

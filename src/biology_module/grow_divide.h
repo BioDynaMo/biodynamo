@@ -17,6 +17,7 @@
 
 #include <Rtypes.h>
 #include "biology_module_util.h"
+#include "cell.h"
 #include "event/cell_division_event.h"
 
 namespace bdm {
@@ -43,17 +44,20 @@ struct GrowDivide : public BaseBiologyModule {
   template <typename TEvent, typename... TBms>
   void EventHandler(const TEvent&, TBms*...) {}
 
-  template <typename T>
-  void Run(T* cell) {
-    if (cell->GetDiameter() <= threshold_) {
-      cell->ChangeVolume(growth_rate_);
+  void Run(SimulationObject* so) override {
+    if(Cell* cell = dynamic_cast<Cell*>(so)) {
+      if (cell->GetDiameter() <= threshold_) {
+        cell->ChangeVolume(growth_rate_);
+      } else {
+        // cell->Divide();
+      }
     } else {
-      cell->Divide();
+      Fatal("GrowDivide", "SimulationObject must be a Cell!");
     }
   }
 
  private:
-  ClassDefNV(GrowDivide, 1);
+  // ClassDefNV(GrowDivide, 1);
   double threshold_ = 40;
   double growth_rate_ = 300;
 };

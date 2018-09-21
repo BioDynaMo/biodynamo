@@ -17,9 +17,9 @@
 
 #include <string>
 
-// #include "biology_module/grow_divide.h"
+#include "biology_module/grow_divide.h"
 // #include "biology_module/regulate_genes.h"
-// #include "biology_module_util.h"
+#include "biology_module_util.h"
 #include "cell.h"
 #include "event/cell_division_event.h"
 #include "event/event.h"

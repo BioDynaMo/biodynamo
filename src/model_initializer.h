@@ -48,8 +48,6 @@ struct ModelInitializer {
                      Function cell_builder) {
     auto* sim = Simulation::GetActive();
     auto* rm = sim->GetResourceManager();
-    // Determine simulation object type which is returned by the cell_builder
-    using FunctionReturnType = decltype(cell_builder({0, 0, 0}));
 
     for (size_t x = 0; x < cells_per_dim; x++) {
       auto x_pos = x * space;

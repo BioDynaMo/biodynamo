@@ -81,7 +81,7 @@ void Scheduler::Execute(bool last_iteration) {
     rm->ApplyOnAllElementsParallel(bound_space_);
   }
   // rm->ApplyOnAllTypes(diffusion_);
-  // rm->ApplyOnAllTypes(biology_);
+  rm->ApplyOnAllElementsParallel(biology_);
   if (param->run_mechanical_interactions_) {
     physics_->Init();
     rm->ApplyOnAllElementsParallel(physics_);  // Bounding box applied at the end

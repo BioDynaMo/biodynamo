@@ -35,7 +35,7 @@ inline int Simulate(int argc, const char** argv) {
     cell->SetDiameter(30);
     cell->SetAdherence(0.4);
     cell->SetMass(1.0);
-    // cell.AddBiologyModule(GrowDivide());
+    cell->AddBiologyModule(new GrowDivide());
     return cell;
   };
   ModelInitializer::Grid3D(cells_per_dim, 20, construct);
@@ -43,16 +43,8 @@ inline int Simulate(int argc, const char** argv) {
   // 4. Run simulation for one timestep
   simulation.GetScheduler()->Simulate(1);
 
-  // auto* rm = simulation.GetResourceManager();
-  // rm->ApplyOnAllElements([](auto* so) {
-  //   auto pos = so->GetPosition();
-  //   std::cout << "pos: " << pos[0] << " " << pos[1] << " " << pos[2] << std::endl;
-  //   std::cout << "dia: " << so->GetDiameter() << std::endl;
-  //   std::cout << "bid: " << so->GetBoxIdx() << std::endl;
-  // });
-  //
-  // auto* grid = simulation.GetGrid();
-  // std::cout << rm->GetNumSimObjects() << std::endl;
+  auto* rm = simulation.GetResourceManager();
+  std::cout << rm->GetNumSimObjects() << std::endl;
 
   std::cout << "Simulation completed successfully!\n";
 
