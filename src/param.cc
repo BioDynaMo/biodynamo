@@ -124,6 +124,8 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
   BDM_ASSIGN_CONFIG_VALUE(use_opencl_, "experimental.use_opencl");
   BDM_ASSIGN_CONFIG_VALUE(opencl_debug_, "experimental.opencl_debug");
   BDM_ASSIGN_CONFIG_VALUE(preferred_gpu_, "experimental.preferred_gpu");
+
+  experimental::neuroscience::Param::AssignFromConfig(config);
 }
 
 }  // namespace bdm

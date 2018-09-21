@@ -24,6 +24,7 @@
 #include "random.h"
 #include "shape.h"
 #include "simulation.h"
+#include "simulation_object.h"
 
 namespace bdm {
 
@@ -34,57 +35,51 @@ class DefaultForce {
   DefaultForce(const DefaultForce&) = delete;
   DefaultForce& operator=(const DefaultForce&) = delete;
 
-  template <typename TLhs, typename TRhs>
-  typename std::enable_if<TLhs::GetShape() == kSphere &&
-                              TRhs::GetShape() == kSphere,
-                          std::array<double, 3>>::type
-  GetForce(const TLhs* lhs, const TRhs* rhs) const {
+  std::array<double, 3> GetForce(const SimulationObject* lhs, const SimulationObject* rhs) const {
     std::array<double, 3> result;
     ForceBetweenSpheres(lhs, rhs, &result);
     return result;
   }
-
-  template <typename TLhs, typename TRhs>
-  typename std::enable_if<TLhs::GetShape() == kSphere &&
-                              TRhs::GetShape() == kCylinder,
-                          std::array<double, 3>>::type
-  GetForce(const TLhs* lhs, const TRhs* rhs) const {
-    std::array<double, 3> result;
-    ForceOnASphereFromACylinder(lhs, rhs, &result);
-    return result;
-  }
-
-  template <typename TLhs, typename TRhs>
-  typename std::enable_if<TLhs::GetShape() == kCylinder &&
-                              TRhs::GetShape() == kSphere,
-                          std::array<double, 4>>::type
-  GetForce(const TLhs* lhs, const TRhs* rhs) const {
-    std::array<double, 4> result;
-    ForceOnACylinderFromASphere(lhs, rhs, &result);
-    return result;
-  }
-
-  template <typename TLhs, typename TRhs>
-  typename std::enable_if<TLhs::GetShape() == kCylinder &&
-                              TRhs::GetShape() == kCylinder,
-                          std::array<double, 4>>::type
-  GetForce(const TLhs* lhs, const TRhs* rhs) const {
-    std::array<double, 4> result;
-    ForceBetweenCylinders(lhs, rhs, &result);
-    return result;
-  }
-
-  std::array<double, 3> GetForce(...) const {
-    Log::Fatal("DefaultForce",
-               "DefaultForce only supports sphere or cylinder shapes");
-    return {0, 0, 0};
-  }
+  //
+  // template <typename TLhs, typename TRhs>
+  // typename std::enable_if<TLhs::GetShape() == kSphere &&
+  //                             TRhs::GetShape() == kCylinder,
+  //                         std::array<double, 3>>::type
+  // GetForce(const TLhs* lhs, const TRhs* rhs) const {
+  //   std::array<double, 3> result;
+  //   ForceOnASphereFromACylinder(lhs, rhs, &result);
+  //   return result;
+  // }
+  //
+  // template <typename TLhs, typename TRhs>
+  // typename std::enable_if<TLhs::GetShape() == kCylinder &&
+  //                             TRhs::GetShape() == kSphere,
+  //                         std::array<double, 4>>::type
+  // GetForce(const TLhs* lhs, const TRhs* rhs) const {
+  //   std::array<double, 4> result;
+  //   ForceOnACylinderFromASphere(lhs, rhs, &result);
+  //   return result;
+  // }
+  //
+  // template <typename TLhs, typename TRhs>
+  // typename std::enable_if<TLhs::GetShape() == kCylinder &&
+  //                             TRhs::GetShape() == kCylinder,
+  //                         std::array<double, 4>>::type
+  // GetForce(const TLhs* lhs, const TRhs* rhs) const {
+  //   std::array<double, 4> result;
+  //   ForceBetweenCylinders(lhs, rhs, &result);
+  //   return result;
+  // }
+  //
+  // std::array<double, 3> GetForce(...) const {
+  //   Log::Fatal("DefaultForce",
+  //              "DefaultForce only supports sphere or cylinder shapes");
+  //   return {0, 0, 0};
+  // }
 
  private:
-  template <typename TSphereLhs, typename TSphereRhs,
-            typename TSimulation = Simulation<>>
-  void ForceBetweenSpheres(const TSphereLhs* sphere_lhs,
-                           const TSphereRhs* sphere_rhs,
+  void ForceBetweenSpheres(const SimulationObject* sphere_lhs,
+                           const SimulationObject* sphere_rhs,
                            std::array<double, 3>* result) const {
     const std::array<double, 3>& ref_mass_location = sphere_lhs->GetPosition();
     double ref_diameter = sphere_lhs->GetDiameter();
@@ -119,7 +114,7 @@ class DefaultForce {
     // to avoid a division by 0 if the centers are (almost) at the same
     //  location
     if (center_distance < 0.00000001) {
-      auto* random = TSimulation::GetActive()->GetRandom();
+      auto* random = Simulation::GetActive()->GetRandom();
       auto force2on1 = random->template UniformArray<3>(-3.0, 3.0);
       *result = force2on1;
       return;
@@ -320,7 +315,6 @@ class DefaultForce {
     *result = {force[0], force[1], force[2], k};
   }
 
-  template <typename TSimulation = Simulation<>>
   std::array<double, 4> ComputeForceOfASphereOnASphere(
       const std::array<double, 3>& c1, double r1,
       const std::array<double, 3>& c2, double r2) const {
@@ -338,7 +332,7 @@ class DefaultForce {
     // to avoid a division by 0 if the centers are (almost) at the same location
     if (distance_between_centers <
         0.00000001) {  // TODO(neurites) hard coded values
-      auto* random = TSimulation::GetActive()->GetRandom();
+      auto* random = Simulation::GetActive()->GetRandom();
       auto force2on1 = random->template UniformArray<3>(-3.0, 3.0);
       return std::array<double, 4>{force2on1[0], force2on1[1], force2on1[2],
                                    0.0};

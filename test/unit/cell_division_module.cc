@@ -12,24 +12,6 @@
 //
 // -----------------------------------------------------------------------------
 
-#ifndef BIODYNAMO_H_
-#define BIODYNAMO_H_
+#include "unit/cell_division_module.h"
 
-#include <string>
-
-// #include "biology_module/grow_divide.h"
-// #include "biology_module/regulate_genes.h"
-// #include "biology_module_util.h"
-#include "cell.h"
-#include "event/cell_division_event.h"
-#include "event/event.h"
-#include "model_initializer.h"
-#include "param.h"
-#include "resource_manager.h"
-#include "scheduler.h"
-#include "shape.h"
-// #include "simulation_implementation.h"
-// #include "simulation_object_util.h"
-// #include "vtune.h"
-
-#endif  // BIODYNAMO_H_
+int main(int argc, const char** argv) { return bdm::Simulate(argc, argv); }

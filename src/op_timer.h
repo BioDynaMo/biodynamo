@@ -18,6 +18,7 @@
 #include <string>
 #include "simulation.h"
 #include "timing.h"
+#include "simulation_object.h"
 
 namespace bdm {
 
@@ -30,14 +31,13 @@ struct OpTimer {
   explicit OpTimer(std::string timer_msg, const TOp& op)
       : timer_msg_(timer_msg), operation_(op) {}
 
-  template <typename Container, typename TSimulation = Simulation<>>
-  void operator()(Container* cells, uint16_t type_idx) {
-    auto* param = TSimulation::GetActive()->GetParam();
+  void operator()(SimulationObject* cells) {
+    auto* param = Simulation::GetActive()->GetParam();
     if (param->statistics_) {
       Timing timer(timer_msg_, &gStatistics);
-      operation_(cells, type_idx);
+      operation_(cells);
     } else {
-      operation_(cells, type_idx);
+      operation_(cells);
     }
   }
 

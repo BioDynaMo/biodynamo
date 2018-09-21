@@ -158,7 +158,7 @@ class TransactionalVector {
     if (data_.size() == size_) {
       uint64_t idx = size_;
       data_.push_back(element);
-      data_[idx].SetElementIdx(idx);
+      data_[idx]->SetElementIdx(idx);
       size_++;
     } else {
       throw std::logic_error(

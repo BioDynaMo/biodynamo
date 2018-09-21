@@ -22,10 +22,11 @@
 #include <unordered_map>
 #include <vector>
 #include "cpptoml/cpptoml.h"
+#include "neuroscience/param.h"
 
 namespace bdm {
 
-struct Param {
+struct Param : public experimental::neuroscience::Param {
   // simulation values ---------------------------------------------------------
 
   /// Variable which specifies method using for solving differential equation
@@ -287,7 +288,6 @@ struct Param {
   ///     preferred_gpu = 0
   int preferred_gpu_ = 0;
 
- protected:
   /// Assign values from config file to variables
   void AssignFromConfig(const std::shared_ptr<cpptoml::table>&);
 

@@ -31,7 +31,9 @@
 #include "inline_vector.h"
 #include "log.h"
 #include "param.h"
-#include "simulation_object_vector.h"
+#include "resource_manager.h"
+#include "simulation.h"
+// #include "simulation_object_vector.h"
 
 namespace bdm {
 
@@ -79,7 +81,6 @@ class CircularBuffer {
 };
 
 /// A class that represents Cartesian 3D grid
-template <typename TSimulation = Simulation<>>
 class Grid {
  public:
   /// A single unit cube of the grid
@@ -106,11 +107,7 @@ class Grid {
     ///
     /// @param[in]  obj_id       The object's identifier
     /// @param      successors   The successors
-    ///
-    /// @tparam     TSuccessors  Type of successors
-    ///
-    template <typename TSimulationObjectVector>
-    void AddObject(SoHandle obj_id, TSimulationObjectVector* successors) {
+    void AddObject(SoHandle obj_id, std::vector<SoHandle>* successors) {
       length_++;
       auto old_start = std::atomic_exchange(&start_, obj_id);
       if (old_start != SoHandle()) {
@@ -138,16 +135,17 @@ class Grid {
       const SoHandle& operator*() const { return current_value_; }
 
       /// Pointer to the neighbor grid; for accessing the successor_ list
-      Grid<TSimulation>* grid_;
+      Grid* grid_;
       /// The current simulation object to be considered
       SoHandle current_value_;
       /// The remain number of simulation objects to consider
       int countdown_ = 0;
     };
 
-    template <typename TGrid = Grid<TSimulation>>
     Iterator begin() const {  // NOLINT
-      return Iterator(TSimulation::GetActive()->GetGrid(), this);
+      std::cout << "FOO" << std::endl;
+      std::cout << "FOO " << length_ << std::endl;
+      return Iterator(Simulation::GetActive()->GetGrid(), this);
     }
   };
 
@@ -216,8 +214,6 @@ class Grid {
     kMedium, /**< The closest 18  neighboring boxes */
     kHigh    /**< The closest 26  neighboring boxes */
   };
-
-  using ResourceManager_t = typename TSimulation::ResourceManager_t;
 
   Grid() {}
 
@@ -306,16 +302,17 @@ class Grid {
       boxes_.resize(total_num_boxes, Box());
     }
 
-    successors_.Initialize();
+    auto* rm = Simulation::GetActive()->GetResourceManager();
+    successors_.clear();
+    successors_.resize(rm->GetNumSimObjects());
 
     // Assign simulation objects to boxes
-    auto* rm = TSimulation::GetActive()->GetResourceManager();
-    rm->ApplyOnAllElementsParallel([this](auto&& sim_object, SoHandle id) {
-      const auto& position = sim_object.GetPosition();
+    rm->ApplyOnAllElementsParallel([this](auto* sim_object) {
+      const auto& position = sim_object->GetPosition();
       auto idx = this->GetBoxIndex(position);
       auto box = this->GetBoxPointer(idx);
-      box->AddObject(id, &successors_);
-      sim_object.SetBoxIdx(idx);
+      box->AddObject(sim_object->GetSoHandle(), &successors_);
+      sim_object->SetBoxIdx(idx);
     });
   }
 
@@ -343,7 +340,7 @@ class Grid {
   /// Calculates what the grid dimensions need to be in order to contain all the
   /// simulation objects
   void CalculateGridDimensions(std::array<double, 6>* ret_grid_dimensions) {
-    auto* rm = TSimulation::GetActive()->GetResourceManager();
+    auto* rm = Simulation::GetActive()->GetResourceManager();
 
     const auto max_threads = omp_get_max_threads();
 
@@ -363,10 +360,8 @@ class Grid {
       all_grid_dimensions[thread_id] = grid_dimensions;
       all_largest_object_size[thread_id] = largest_object_size;
 
-      rm->ApplyOnAllTypes([&](auto* sim_objects, uint16_t type_idx) {
-#pragma omp for
-        for (size_t i = 0; i < sim_objects->size(); i++) {
-          const auto& position = (*sim_objects)[i].GetPosition();
+      rm->ApplyOnAllElementsParallel([&](auto* so) {
+          const auto& position = so->GetPosition();
           for (size_t j = 0; j < 3; j++) {
             if (position[j] < (*grid_dimensions)[2 * j]) {
               (*grid_dimensions)[2 * j] = position[j];
@@ -375,11 +370,10 @@ class Grid {
               (*grid_dimensions)[2 * j + 1] = position[j];
             }
           }
-          auto diameter = (*sim_objects)[i].GetDiameter();
+          auto diameter = so->GetDiameter();
           if (diameter > *largest_object_size) {
             *largest_object_size = diameter;
           }
-        }
       });
 
 #pragma omp master
@@ -493,13 +487,13 @@ class Grid {
     GetMooreBoxes(&neighbor_boxes, idx);
 
     NeighborIterator ni(neighbor_boxes);
-    auto* rm = TSimulation::GetActive()->GetResourceManager();
+    auto* rm = Simulation::GetActive()->GetResourceManager();
     while (!ni.IsAtEnd()) {
       // Do something with neighbor object
       SoHandle neighbor_handle = *ni;
       if (neighbor_handle != simulation_object_id) {
-        rm->ApplyOnElement(neighbor_handle, [&](auto&& sim_object) {
-          const auto& neighbor_position = sim_object.GetPosition();
+        rm->ApplyOnElement(neighbor_handle, [&](auto* sim_object) {
+          const auto& neighbor_position = sim_object->GetPosition();
           if (this->SquaredEuclideanDistance(position, neighbor_position) <
               squared_radius) {
             lambda(sim_object, neighbor_handle);
@@ -540,7 +534,7 @@ class Grid {
   void ForEachNeighborPairWithinRadius(const TLambda& lambda,
                                        double squared_radius) const {
     uint32_t z_start = 0, y_start = 0;
-    auto* rm = TSimulation::GetActive()->GetResourceManager();
+    auto* rm = Simulation::GetActive()->GetResourceManager();
     // use special iteration pattern to avoid race conditions between neighbors
     // main iteration will be done over rows of boxes. In order to avoid two
     // threads accessing the same box, one has to use a margin reagion of two
@@ -686,14 +680,14 @@ class Grid {
   ///
   /// @tparam     TUint32     A uint32 type (could also be cl_uint)
   ///
-  template <typename TUint32>
-  void GetSuccessors(std::vector<TUint32>* successors) {
-    uint16_t type = 0;
-    for (size_t i = 0; i < successors_.size(type); i++) {
-      auto sh = SoHandle(type, i);
-      (*successors)[i] = successors_[sh].GetElementIdx();
-    }
-  }
+  // template <typename TUint32>
+  // void GetSuccessors(std::vector<TUint32>* successors) {
+  //   uint16_t type = 0;
+  //   for (size_t i = 0; i < successors_.size(type); i++) {
+  //     auto sh = SoHandle(type, i);
+  //     (*successors)[i] = successors_[sh].GetElementIdx();
+  //   }
+  // }
 
   /// @brief      Gets information about the grid boxes (i.e. which simulation
   ///             objects reside in each box, wich can be retrieved in
@@ -705,17 +699,17 @@ class Grid {
   /// @tparam     TUint32      A uint32 type (could also be cl_uint)
   /// @tparam     TUint16      A uint32 type (could also be cl_ushort)
   ///
-  template <typename TUint32, typename TUint16>
-  void GetBoxInfo(std::vector<TUint32>* starts, std::vector<TUint16>* lengths) {
-    starts->resize(boxes_.size());
-    lengths->resize(boxes_.size());
-    size_t i = 0;
-    for (auto& box : boxes_) {
-      (*starts)[i] = box.start_.load().GetElementIdx();
-      (*lengths)[i] = box.length_;
-      i++;
-    }
-  }
+  // template <typename TUint32, typename TUint16>
+  // void GetBoxInfo(std::vector<TUint32>* starts, std::vector<TUint16>* lengths) {
+  //   starts->resize(boxes_.size());
+  //   lengths->resize(boxes_.size());
+  //   size_t i = 0;
+  //   for (auto& box : boxes_) {
+  //     (*starts)[i] = box.start_.load().GetElementIdx();
+  //     (*lengths)[i] = box.length_;
+  //     i++;
+  //   }
+  // }
 
   /// @brief      Gets the information about the grid
   ///
@@ -752,7 +746,7 @@ class Grid {
   ///     // Usage
   ///     SoHandle current_element = ...;
   ///     SoHandle next_element = successors_[current_element];
-  SimulationObjectVector<SoHandle, TSimulation> successors_;
+  std::vector<SoHandle> successors_;
   /// Determines which boxes to search neighbors in (see enum Adjacency)
   Adjacency adjacency_;
   /// The size of the largest object in the simulation
@@ -958,7 +952,7 @@ class Grid {
   /// them in a CircularBuffer
   void CachePositions(
       const CircularBuffer<InlineVector<SoHandle, 4>, 14>& so_handles,
-      ResourceManager_t* rm,
+      ResourceManager* rm,
       CircularBuffer<InlineVector<std::array<double, 3>, 4>, 14>* pos_cache)
       const {
     for (uint64_t i = 0; i < 14; i++) {
@@ -966,7 +960,7 @@ class Grid {
       auto current_pos = pos_cache->End();
       for (uint64_t j = 0; j < current_box_sos.size(); j++) {
         rm->ApplyOnElement(current_box_sos[j], [&](auto&& element) {
-          current_pos->push_back(element.GetPosition());
+          current_pos->push_back(element->GetPosition());
         });
       }
       pos_cache->Increment();
@@ -1007,7 +1001,7 @@ class Grid {
   ///        in `BW FNW NW BNW C B FN N BN E BE FNE NE BNE` form.
   void UpdateCachedPositions(
       const CircularBuffer<InlineVector<SoHandle, 4>, 14>& so_handles,
-      ResourceManager_t* rm,
+      ResourceManager* rm,
       CircularBuffer<InlineVector<std::array<double, 3>, 4>, 14>* positions)
       const {
     for (uint64_t i = 9; i < 14; i++) {
@@ -1016,7 +1010,7 @@ class Grid {
       current_pos->clear();
       for (uint64_t j = 0; j < current_box_sos.size(); j++) {
         rm->ApplyOnElement(current_box_sos[j], [&](auto&& element) {
-          current_pos->push_back(element.GetPosition());
+          current_pos->push_back(element->GetPosition());
         });
       }
       positions->Increment();
@@ -1038,7 +1032,7 @@ class Grid {
   ///        squared_radius
   template <typename TLambda>
   void ForEachNeighborPairWithCenterBox(
-      const TLambda& lambda, ResourceManager_t* rm,
+      const TLambda& lambda, ResourceManager* rm,
       const CircularBuffer<InlineVector<SoHandle, 4>, 14>& so_handles,
       const CircularBuffer<InlineVector<std::array<double, 3>, 4>, 14>&
           positions,

@@ -17,22 +17,18 @@
 #include <Rtypes.h>
 #include <string>
 #include <vector>
+#include <functional>
 #include "random.h"
+#include "param.h"
 
 namespace bdm {
 
 // forward declarations
-template <typename>
 class ResourceManager;
-template <typename>
 class Grid;
-template <typename>
 class Scheduler;
 struct Param;
 
-struct Soa;
-template <typename TBackend = Soa>
-struct CompileTimeParam;
 class SimulationTest;
 class CatalystAdaptorTest;
 
@@ -43,13 +39,9 @@ class CatalystAdaptorTest;
 /// Implementation for `Simulation` can be found in file:
 /// `simulation_implementation.h`. It must be separate to avoid circular
 /// dependencies. It can't be defined in a source file, because it is templated.
-template <typename TCTParam = CompileTimeParam<>>
 struct Simulation {
-  using ResourceManager_t = ResourceManager<TCTParam>;  // NOLINT
-  using Param_t = typename TCTParam::Param;
-
   /// This function returns the currently active Simulation simulation.
-  static Simulation<TCTParam>* GetActive();
+  static Simulation* GetActive();
 
   explicit Simulation(TRootIOCtor* p);
   /// Constructor that takes the arguments from `main` to parse command line
@@ -63,12 +55,10 @@ struct Simulation {
   /// Creation of a new simulation automatically activates it.
   explicit Simulation(const std::string& simulation_name);
 
-  template <typename TSetParamLambda>
-  Simulation(int argc, const char** argv, const TSetParamLambda& set_param);
+  Simulation(int argc, const char** argv, const std::function<void(Param*)>& set_param);
 
-  template <typename TSetParamLambda>
   Simulation(const std::string& simulation_name,
-             const TSetParamLambda& set_param);
+             const std::function<void(Param*)>& set_param);
 
   ~Simulation();
 
@@ -79,13 +69,13 @@ struct Simulation {
   /// Activates this simulation.
   void Activate();
 
-  ResourceManager<TCTParam>* GetResourceManager();
+  ResourceManager* GetResourceManager();
 
-  const Param_t* GetParam() const;
+  const Param* GetParam() const;
 
-  Grid<Simulation>* GetGrid();
+  Grid* GetGrid();
 
-  Scheduler<Simulation>* GetScheduler();
+  Scheduler* GetScheduler();
 
   /// Returns a thread local random number generator
   Random* GetRandom();
@@ -100,22 +90,22 @@ struct Simulation {
   /// Existing scheduler will be deleted! Therefore, pointers to the old
   /// scheduler (obtained with `GetScheduler()`) will be invalidated. \n
   /// Simulation will take ownership of the passed pointer
-  void ReplaceScheduler(Scheduler<Simulation>*);
+  void ReplaceScheduler(Scheduler*);
 
  private:
   /// Currently active simulation
-  static Simulation<TCTParam>* active_;
+  static Simulation* active_;
   /// Number of simulations in this process
   static std::atomic<uint64_t> counter_;
 
   /// random number generator for each thread
   std::vector<Random*> random_;
 
-  ResourceManager<TCTParam>* rm_ = nullptr;
-  Param_t* param_ = nullptr;
+  ResourceManager* rm_ = nullptr;
+  Param* param_ = nullptr;
   std::string name_;
-  Grid<Simulation>* grid_ = nullptr;            //!
-  Scheduler<Simulation>* scheduler_ = nullptr;  //!
+  Grid* grid_ = nullptr;            //!
+  Scheduler* scheduler_ = nullptr;  //!
   /// This id is unique for each simulation within the same process
   uint64_t id_ = 0;  //!
   /// cached value where `id_` is appended to `name_` if `id_` is
@@ -127,14 +117,10 @@ struct Simulation {
   std::string output_dir_;  //!
 
   /// Initialize Simulation
-  template <typename TSetParamLambda>
   void Initialize(int argc, const char** argv,
-                  const TSetParamLambda& set_param);
+                  const std::function<void(Param*)>& set_param);
 
   /// Initialize data members that have a dependency on Simulation
-  template <typename TResourceManager = ResourceManager<TCTParam>,
-            typename TGrid = Grid<Simulation>,
-            typename TScheduler = Scheduler<Simulation>>
   void InitializeMembers();
 
   /// Return only the executable name given the path
@@ -146,9 +132,8 @@ struct Simulation {
   /// This function parses command line parameters and the configuration file.
   /// @param argc argument count from main function
   /// @param argv argument vector from main function
-  template <typename TSetParamLambda>
   void InitializeRuntimeParams(int argc, const char** argv,
-                               const TSetParamLambda& set_param);
+                               const std::function<void(Param*)>& set_param);
 
   /// This function initialzes `unique_name_`
   void InitializeUniqueName(const std::string& simulation_name);

@@ -16,11 +16,13 @@
 #define BOUND_SPACE_OP_H_
 
 #include "simulation.h"
+#include "simulation_object.h"
+#include "grid.h"
+#include "param.h"
 
 namespace bdm {
 
-template <typename TSO>
-void ApplyBoundingBox(TSO* sim_object, double lb, double rb) {
+inline void ApplyBoundingBox(SimulationObject* sim_object, double lb, double rb) {
   // Need to create a small distance from the positive edge of each dimension;
   // otherwise it will fall out of the boundary of the simulation space
   double eps = 1e-10;
@@ -42,22 +44,17 @@ class BoundSpace {
   BoundSpace() {}
   ~BoundSpace() {}
 
-  template <typename TContainer, typename TSimulation = Simulation<>>
-  void operator()(TContainer* sim_objects, uint16_t type_idx) const {
+  void operator()(SimulationObject* sim_object) const {
     // set new positions after all updates have been calculated
     // otherwise some sim_objects would see neighbors with already updated
     // positions
     // which would lead to inconsistencies
-    auto* sim = TSimulation::GetActive();
+    auto* sim = Simulation::GetActive();
     auto* grid = sim->GetGrid();
     auto* param = sim->GetParam();
-#pragma omp parallel for
-    for (size_t i = 0; i < sim_objects->size(); i++) {
-      auto&& sim_object = (*sim_objects)[i];
-      if (param->bound_space_) {
-        ApplyBoundingBox(&sim_object, param->min_bound_, param->max_bound_);
-        grid->SetDimensionThresholds(param->min_bound_, param->max_bound_);
-      }
+    if (param->bound_space_) {
+      ApplyBoundingBox(sim_object, param->min_bound_, param->max_bound_);
+      grid->SetDimensionThresholds(param->min_bound_, param->max_bound_);  // FIXME what's this?
     }
   }
 };
