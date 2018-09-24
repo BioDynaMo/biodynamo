@@ -105,9 +105,8 @@ struct RunVisitor {
 /// @param src  source vector of biology modules
 /// @param dest destination vector of biology modules
 /// @tparam TBiologyModules std::vector<Variant<[list of biology modules]>>
-template <typename TEvent, typename TBiologyModules>
-void CopyBiologyModules(const TEvent& event, TBiologyModules* src,
-                        TBiologyModules* dest) {
+template <typename TEvent, typename TSrcBms, typename TDestBms>
+void CopyBiologyModules(const TEvent& event, TSrcBms* src, TDestBms* dest) {
   auto copy = [&](auto& bm) {
     if (bm.Copy(event.kEventId)) {
       raw_type<decltype(bm)> new_bm(event, &bm);

@@ -20,26 +20,32 @@
 #include <iostream>
 #include <tuple>
 
+#include "log.h"
 #include "mpark/variant.hpp"
 #include "root_util.h"
 #include "tuple_util.h"
 
 namespace bdm {
 
-/// Wrapper for mpark::visit
+/// Use same interface for bdm::Variant as std::variant
+/// \see std::visit
 template <typename TFunction, typename TVariant>
 void visit(TFunction&& function, TVariant&& variant_wrapper) {  // NOLINT
-  mpark::visit(function, variant_wrapper.data_);
+  variant_wrapper.Visit(function);
 }
 
-// /// Wrapper for mpark::get_if
+/// Use same interface for bdm::Variant as std::variant
+/// \see std::get_if
 template <typename T, typename TVariant>
 T* get_if(TVariant* variant_wrapper) {  // NOLINT
-  return mpark::get_if<T>(&(variant_wrapper->data_));
+  return variant_wrapper->template GetIf<T>();
 }
+
+/// Use same interface for bdm::Variant as std::variant
+/// \see std::get_if
 template <typename T, typename TVariant>
 const T* get_if(const TVariant* variant_wrapper) {  // NOLINT
-  return mpark::get_if<T>(&(variant_wrapper->data_));
+  return variant_wrapper->template GetIf<T>();
 }
 
 /// Wrapper for mpark::variant.
@@ -49,16 +55,71 @@ template <typename... Types>
 class Variant {
  public:
   template <typename T>
-  Variant(const T& value) : data_(value) {}  // NOLINT
+  Variant(  // NOLINT
+      const T& value,
+      typename std::enable_if<GetIndex<T, Types...>() != -1>::type* p = nullptr)
+      : data_(value) {}
+
+  template <typename T>
+  Variant(const T& value,  // NOLINT
+          typename std::enable_if<GetIndex<T, Types...>() == -1>::type* p =
+              nullptr) {
+    Log::Fatal(
+        "Variant",
+        "You called the constructor with a type that is not in Types...");
+  }
 
   Variant() {}
 
   virtual ~Variant() {}
 
   template <typename T>
-  Variant<Types...>& operator=(const T& value) {
+  typename std::enable_if<GetIndex<T, Types...>() != -1,
+                          Variant<Types...>&>::type
+  operator=(const T& value) {
     data_ = value;
     return *this;
+  }
+
+  template <typename T>
+  typename std::enable_if<GetIndex<T, Types...>() == -1,
+                          Variant<Types...>&>::type
+  operator=(const T& value) {
+    Log::Fatal("Variant",
+               "You called the assignment operator with a type that is not in "
+               "Types...");
+    return *this;
+  }
+
+  template <typename T>
+  typename std::enable_if<GetIndex<T, Types...>() != -1, T*>::type GetIf() {
+    return mpark::get_if<T>(&(data_));
+  }
+
+  template <typename T>
+  typename std::enable_if<GetIndex<T, Types...>() == -1, T*>::type GetIf() {
+    Log::Fatal("Variant",
+               "You called GetIf with a type that is not in Types...");
+    return nullptr;
+  }
+
+  template <typename T>
+  typename std::enable_if<GetIndex<T, Types...>() != -1, const T*>::type GetIf()
+      const {
+    return mpark::get_if<T>(&(data_));
+  }
+
+  template <typename T>
+  typename std::enable_if<GetIndex<T, Types...>() == -1, const T*>::type GetIf()
+      const {
+    Log::Fatal("Variant",
+               "You called `GetIf const` with a type that is not in Types...");
+    return nullptr;
+  }
+
+  template <typename TFunction>
+  void Visit(TFunction&& function) {
+    mpark::visit(function, data_);
   }
 
  private:
@@ -94,7 +155,7 @@ struct StreamerWriteFunctor {
   template <typename T>
   typename std::enable_if<!std::is_fundamental<T>::value>::type operator()(
       T& t) {  // NOLINT
-    auto type_id = GetIndex<T, Types...>();
+    int type_id = GetIndex<T, Types...>();
     *buffer_ << type_id;
     buffer_->WriteClassBuffer(T::Class(), &t);
   }
@@ -134,7 +195,7 @@ struct StreamerReadFunctor {
 template <typename... Types>
 inline void Variant<Types...>::Streamer(TBuffer& R__b) {  // NOLINT
   if (R__b.IsReading()) {
-    size_t type_id;
+    int type_id;
     R__b >> type_id;
 
     static std::tuple<Types...> kTuple;

@@ -53,13 +53,19 @@ struct GetIndexImpl;
 
 template <typename T, size_t Counter, typename FirstType>
 struct GetIndexImpl<T, Counter, FirstType> {
-  size_t static constexpr GetValue() { return Counter; }
+  int static constexpr GetValue() {
+    if (std::is_same<T, FirstType>::value) {
+      return Counter;
+    } else {
+      return -1;
+    }
+  }
 };
 
 template <typename T, size_t Counter, typename FirstType,
           typename... RemainingTypes>
 struct GetIndexImpl<T, Counter, FirstType, RemainingTypes...> {
-  size_t static constexpr GetValue() {
+  int static constexpr GetValue() {
     // TODO(lukas) after changing to c++17: change to if constexpr (...)
     if (std::is_same<T, FirstType>::value) {
       return Counter;
@@ -87,7 +93,7 @@ void Apply(TTuple* t, size_t index, TFunction&& f) {
 /// Return the index of the first occurence of type T within the variadic
 /// template parameter Types.
 template <typename T, typename... Types>
-inline constexpr size_t GetIndex() {
+inline constexpr int GetIndex() {
   return bdm::detail::template GetIndexImpl<T, 0, Types...>::GetValue();
 }
 
