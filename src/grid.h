@@ -358,7 +358,10 @@ class Grid {
       all_grid_dimensions[thread_id] = grid_dimensions;
       all_largest_object_size[thread_id] = largest_object_size;
 
-      rm->ApplyOnAllElementsParallel([&](auto* so) {
+      rm->Apply([&](auto* sim_objects) {
+#pragma omp for
+        for (size_t i = 0; i < sim_objects->size(); i++) {
+          auto* so = (*sim_objects)[i];
           const auto& position = so->GetPosition();
           for (size_t j = 0; j < 3; j++) {
             if (position[j] < (*grid_dimensions)[2 * j]) {
@@ -372,6 +375,7 @@ class Grid {
           if (diameter > *largest_object_size) {
             *largest_object_size = diameter;
           }
+        }
       });
 
 #pragma omp master

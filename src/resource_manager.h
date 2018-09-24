@@ -171,6 +171,13 @@ class ResourceManager {
     }
   }
 
+
+  // TODO
+  template <typename TFunction>
+  void Apply(TFunction&& function) {
+    function(&data_);
+  }
+
   /// Apply a function on all elements in every container
   /// Function invocations are parallelized
   /// \see ApplyOnAllElements
