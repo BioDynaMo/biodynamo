@@ -23,18 +23,6 @@ constexpr std::array<double, 3> Cell::kXAxis;
 constexpr std::array<double, 3> Cell::kYAxis;
 constexpr std::array<double, 3> Cell::kZAxis;
 
-// BDM_SO_DEFINE(template <typename TBiologyModule>
-              // inline void CellExt)::AddBiologyModule(TBiologyModule&& module) {
-  // biology_modules_.emplace_back(module);
-// }
-// void Cell::RunBiologyModules() {
-//   RunVisitor<MostDerived> visitor(
-//       static_cast<MostDerived*>(this));
-//   for (auto& module : biology_modules_) {
-//     visit(visitor, module);
-//   }
-// }
-
 std::array<double, 3> Cell::CalculateDisplacement(double squared_radius) const {
   // Basically, the idea is to make the sum of all the forces acting
   // on the Point mass. It is stored in translationForceOnPointMass.

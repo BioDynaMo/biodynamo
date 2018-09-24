@@ -33,23 +33,25 @@ struct GrowDivide : public BaseBiologyModule {
         growth_rate_(growth_rate) {}
 
   /// Default event constructor
-  template <typename TEvent, typename TBm>
-  GrowDivide(const TEvent& event, TBm* other, uint64_t new_oid = 0) {
+  GrowDivide(const Event& event, GrowDivide* other, uint64_t new_oid = 0) {
     threshold_ = other->threshold_;
     growth_rate_ = other->growth_rate_;
   }
 
+  BaseBiologyModule* New(const Event& event, BaseBiologyModule* other, uint64_t new_oid = 0) const {
+    return new GrowDivide(event, dynamic_cast<GrowDivide*>(other), new_oid);
+  }
+
   /// Default event handler (exising biology module won't be modified on
   /// any event)
-  template <typename TEvent, typename... TBms>
-  void EventHandler(const TEvent&, TBms*...) {}
+  void EventHandler(const Event&, BaseBiologyModule* other) override {}
 
   void Run(SimulationObject* so) override {
     if(Cell* cell = dynamic_cast<Cell*>(so)) {
       if (cell->GetDiameter() <= threshold_) {
         cell->ChangeVolume(growth_rate_);
       } else {
-        // cell->Divide();
+        cell->Divide();
       }
     } else {
       Fatal("GrowDivide", "SimulationObject must be a Cell!");

@@ -35,8 +35,10 @@ namespace neuroscience {
 /// and the corresponding event handler
 /// NeuriteElementExt::EventHandler(const NeuriteBifurcationEvent& event, TDaughter* left, TDaughter* right)
 // clang-format on
-struct NeuriteBifurcationEvent {
+struct NeuriteBifurcationEvent : public Event {
   static const EventId kEventId;
+
+  virtual ~NeuriteBifurcationEvent() {}
 
   /// length of new branches
   double length_;

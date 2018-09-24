@@ -33,8 +33,10 @@ namespace neuroscience {
 /// and the corresponding event handler
 /// NeuriteElementExt::EventHandler(const SplitNeuriteElementEvent& event, TNeurite* proximal)
 // clang-format on
-struct SplitNeuriteElementEvent {
+struct SplitNeuriteElementEvent : public Event {
   static const EventId kEventId;
+
+  virtual ~SplitNeuriteElementEvent() {}
 
   /// The fraction of the total old length devoted to the distal half
   /// (should be between 0 and 1).

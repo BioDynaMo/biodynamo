@@ -36,6 +36,13 @@ const EventId gAllEventIds = std::numeric_limits<uint64_t>::max();
 /// @see `BaseBiologyModule`
 const EventId gNullEventId = 0;
 
+// TODO
+struct Event {
+  virtual ~Event();
+
+  virtual EventId GetEventId() const = 0;
+};
+
 /// This class generates unique ids for biology module events satisfying the
 /// EventId invariant. Thread safe.
 class UniqueEventIdFactory {

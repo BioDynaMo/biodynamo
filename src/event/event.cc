@@ -16,6 +16,8 @@
 
 namespace bdm {
 
+Event::~Event() {}
+
 const EventId CellDivisionEvent::kEventId =
     UniqueEventIdFactory::Get()->NewUniqueEventId();
 

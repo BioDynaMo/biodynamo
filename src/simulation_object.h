@@ -30,19 +30,18 @@
 
 namespace bdm {
 
-/// Required to pass derived type to base class
-// template <template <typename, typename> class T>
-// struct Capsule {
-//   template <typename TCompileTimeParam, typename TDerived>
-//   using type = T<TCompileTimeParam, TDerived>;
-// };
-
 /// Contains code required by all simulation objects
 class SimulationObject {
  public:
   SimulationObject() {}
   SimulationObject(const SimulationObject &) = default;
   virtual ~SimulationObject() {}
+
+  // TODO used to "fall down" to most derived type
+  virtual SimulationObject* New(const Event&, SimulationObject* other, uint64_t new_oid = 0) const = 0;
+
+  virtual void EventHandler(const Event&, SimulationObject* so1) {}
+  virtual void EventHandler(const Event&, SimulationObject* so1, SimulationObject* so2) {}
 
   /// NB: Cannot be used in the Constructur, because the ResourceManager`
   /// didn't initialize `element_idx_` yet.
