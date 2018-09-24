@@ -33,7 +33,7 @@
 // #endif
 // #endif
 
-// #include "diffusion_grid.h"
+#include "diffusion_grid.h"
 // #include "simulation.h"
 #include "simulation_object.h"
 #include "transactional_vector.h"
@@ -87,29 +87,29 @@ class ResourceManager {
   }
 
   /// Return the container of diffusion grids
-  // std::vector<DiffusionGrid*>& GetDiffusionGrids() { return diffusion_grids_; }
+  std::vector<DiffusionGrid*>& GetDiffusionGrids() { return diffusion_grids_; }
 
   /// Return the diffusion grid which holds the substance of specified id
-  // DiffusionGrid* GetDiffusionGrid(size_t substance_id) {
-  //   assert(substance_id < diffusion_grids_.size() &&
-  //          "You tried to access a diffusion grid that does not exist!");
-  //   return diffusion_grids_[substance_id];
-  // }
+  DiffusionGrid* GetDiffusionGrid(size_t substance_id) {
+    assert(substance_id < diffusion_grids_.size() &&
+           "You tried to access a diffusion grid that does not exist!");
+    return diffusion_grids_[substance_id];
+  }
 
   /// Return the diffusion grid which holds the substance of specified name
   /// Caution: using this function in a tight loop will result in a slow
   /// simulation. Use `GetDiffusionGrid(size_t)` in those cases.
-  // DiffusionGrid* GetDiffusionGrid(std::string substance_name) {
-  //   for (auto dg : diffusion_grids_) {
-  //     if (dg->GetSubstanceName() == substance_name) {
-  //       return dg;
-  //     }
-  //   }
-  //   assert(false &&
-  //          "You tried to access a diffusion grid that does not exist! "
-  //          "Did you specify the correct substance name?");
-  //   return nullptr;
-  // }
+  DiffusionGrid* GetDiffusionGrid(std::string substance_name) {
+    for (auto dg : diffusion_grids_) {
+      if (dg->GetSubstanceName() == substance_name) {
+        return dg;
+      }
+    }
+    assert(false &&
+           "You tried to access a diffusion grid that does not exist! "
+           "Did you specify the correct substance name?");
+    return nullptr;
+  }
 
   /// Returns the total number of simulation objects
   size_t GetNumSimObjects() {
@@ -212,7 +212,7 @@ class ResourceManager {
   /// creates one container for each type in Types.
   /// Container type is determined based on the specified Backend
   TransactionalVector<SimulationObject*> data_;
-  // std::vector<DiffusionGrid*> diffusion_grids_;
+  std::vector<DiffusionGrid*> diffusion_grids_;
 
 // #ifdef USE_OPENCL
 //   cl::Context opencl_context_;             //!

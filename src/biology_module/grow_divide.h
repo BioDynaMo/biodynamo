@@ -38,7 +38,7 @@ struct GrowDivide : public BaseBiologyModule {
     growth_rate_ = other->growth_rate_;
   }
 
-  BaseBiologyModule* New(const Event& event, BaseBiologyModule* other, uint64_t new_oid = 0) const {
+  BaseBiologyModule* New(const Event& event, BaseBiologyModule* other, uint64_t new_oid = 0) const override {
     return new GrowDivide(event, dynamic_cast<GrowDivide*>(other), new_oid);
   }
 

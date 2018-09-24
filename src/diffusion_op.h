@@ -34,13 +34,12 @@ class DiffusionOp {
   DiffusionOp() {}
   virtual ~DiffusionOp() {}
 
-  template <typename TContainer, typename TSimulation = Simulation<>>
-  void operator()(TContainer* cells, uint16_t type_idx) {
-    auto* sim = TSimulation::GetActive();
+  void operator()() {
+    auto* sim = Simulation::GetActive();
     auto* grid = sim->GetGrid();
     auto* param = sim->GetParam();
     auto& diffusion_grids = sim->GetResourceManager()->GetDiffusionGrids();
-    for (auto dg : diffusion_grids) {
+    for (auto* dg : diffusion_grids) {
       // Update the diffusion grid dimension if the neighbor grid dimensions
       // have changed. If the space is bound, we do not need to update the
       // dimensions, because these should not be changing anyway

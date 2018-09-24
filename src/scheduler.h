@@ -21,7 +21,7 @@
 #include "biology_module_op.h"
 #include "bound_space_op.h"
 // #include "commit_op.h"
-// #include "diffusion_op.h"
+#include "diffusion_op.h"
 #include "displacement_op_cpu.h"
 // #include "gpu/gpu_helper.h"
 #include "op_timer.h"
@@ -63,7 +63,7 @@ class Scheduler {
   bool is_gpu_environment_initialized_ = false;
 
   // CommitOp commit_ = CommitOp>("commit");
-  // DiffusionOp diffusion_ = DiffusionOp>("diffusion");
+  DiffusionOp diffusion_;
   BiologyModuleOp biology_;
   DisplacementOpCpu physics_;
   BoundSpace bound_space_;

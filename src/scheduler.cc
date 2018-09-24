@@ -80,7 +80,10 @@ void Scheduler::Execute(bool last_iteration) {
   if (param->bound_space_) {
     rm->ApplyOnAllElementsParallel(bound_space_);
   }
-  // rm->ApplyOnAllTypes(diffusion_);
+  {
+    Timing timing("diffusion", &gStatistics);
+    diffusion_();
+  }
   {
     Timing timing("biology", &gStatistics);
     rm->ApplyOnAllElementsParallel(biology_);
@@ -163,12 +166,12 @@ void Scheduler::Initialize() {
   }
   int lbound = grid->GetDimensionThresholds()[0];
   int rbound = grid->GetDimensionThresholds()[1];
-  // for (auto& dgrid : rm->GetDiffusionGrids()) {
-  //   // Create data structures, whose size depend on the grid dimensions
-  //   dgrid->Initialize({lbound, rbound, lbound, rbound, lbound, rbound});
-  //   // Initialize data structures with user-defined values
-  //   dgrid->RunInitializers();
-  // }
+  for (auto& dgrid : rm->GetDiffusionGrids()) {
+    // Create data structures, whose size depend on the grid dimensions
+    dgrid->Initialize({lbound, rbound, lbound, rbound, lbound, rbound});
+    // Initialize data structures with user-defined values
+    dgrid->RunInitializers();
+  }
 }
 
 }  // namespace bdm

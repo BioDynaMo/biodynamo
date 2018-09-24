@@ -23,9 +23,8 @@ namespace bdm {
 // Returns 0 if the cell locations within a subvolume of the total system,
 // comprising approximately target_n cells, are arranged as clusters, and 1
 // otherwise.
-template <typename TSimulation = Simulation<>>
 static bool GetCriterion(double spatial_range, int target_n) {
-  auto* sim = TSimulation::GetActive();
+  auto* sim = Simulation::GetActive();
   auto* rm = sim->GetResourceManager();
   auto* param = sim->GetParam();
 
@@ -53,10 +52,10 @@ static bool GetCriterion(double spatial_range, int target_n) {
 
   // the locations of all cells within the subvolume are copied
   // to pos_sub_vol
-  auto foo = [](SimulationObject* so) {
+  auto foo = [&](SimulationObject* so) {
     if(auto* my_cell = dynamic_cast<MyCell*>(so)) {
-      auto& pos = my_cell.GetPosition();
-      auto type = my_cell].GetCellType();
+      auto& pos = my_cell->GetPosition();
+      auto type = my_cell->GetCellType();
 
       if ((fabs(pos[0] - 0.5) < sub_vol_max) &&
           (fabs(pos[1] - 0.5) < sub_vol_max) &&

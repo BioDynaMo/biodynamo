@@ -139,6 +139,7 @@ class Cell : public SimulationObject {
       return new Cell(*sd_event, dynamic_cast<Cell*>(other));
     } else {
       Fatal("Cell", "Cell only supports CellDivisionEvent.");
+      return nullptr;
     }
   }
 
@@ -151,7 +152,7 @@ class Cell : public SimulationObject {
   /// \see CellDivisionEvent
   void EventHandler(const Event& event, SimulationObject* daughter_2) override {
     // call event handler for biology modules
-    if (auto* sd_event = dynamic_cast<const CellDivisionEvent*>(&event)) {
+    if (dynamic_cast<const CellDivisionEvent*>(&event)) {
       auto* daughter_bms = &(dynamic_cast<Cell*>(daughter_2)->biology_modules_);
       BiologyModuleEventHandler(event, &(biology_modules_), daughter_bms);
     } else {

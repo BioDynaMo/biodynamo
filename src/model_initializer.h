@@ -127,77 +127,70 @@ struct ModelInitializer {
   //   container->Commit();
   // }
   //
-  // /// Adds simulation objects with random positions to the ResourceManager.
-  // /// Type of the simulation object is determined by the return type of
-  // /// parameter cell_builder.
-  // ///
-  // /// @param[in]  min           The minimum position value
-  // /// @param[in]  max           The maximum position value
-  // /// @param[in]  num_cells     The number cells
-  // /// @param[in]  cell_builder  function containing the logic to instantiate a
-  // ///                           new simulation object. Takes `const
-  // ///                           std::array<double, 3>&` as input parameter
-  // ///
-  // template <typename Function, typename TSimulation = Simulation<>>
-  // static void CreateCellsRandom(double min, double max, int num_cells,
-  //                               Function cell_builder) {
-  //   auto* sim = TSimulation::GetActive();
-  //   auto* rm = sim->GetResourceManager();
-  //   // Determine simulation object type which is returned by the cell_builder
-  //   using FunctionReturnType = decltype(cell_builder({0, 0, 0}));
-  //
-  //   auto container = rm->template Get<FunctionReturnType>();
-  //   container->reserve(num_cells);
-  //
-  //   // TODO(ahmad): throughout simulation only one random number generator
-  //   // should be used, so this should go someplace accessible for other
-  //   // classes / functions
-  //   auto* random = sim->GetRandom();
-  //   for (int i = 0; i < num_cells; i++) {
-  //     double x = random->Uniform(min, max);
-  //     double y = random->Uniform(min, max);
-  //     double z = random->Uniform(min, max);
-  //     auto new_simulation_object = cell_builder({x, y, z});
-  //     container->push_back(new_simulation_object);
-  //   }
-  //   container->Commit();
-  // }
-  //
-  // /// Allows cells to secrete the specified substance. Diffusion throughout the
-  // /// simulation space is automatically taken care of by the DiffusionGrid class
-  // ///
-  // /// @param[in]  substance_id     The substance identifier
-  // /// @param[in]  substance_name   The substance name
-  // /// @param[in]  diffusion_coeff  The diffusion coefficient
-  // /// @param[in]  decay_constant   The decay constant
-  // /// @param[in]  resolution       The resolution of the diffusion grid
-  // ///
-  // template <typename TSimulation = Simulation<>>
-  // static void DefineSubstance(size_t substance_id, std::string substance_name,
-  //                             double diffusion_coeff, double decay_constant,
-  //                             int resolution = 10) {
-  //   assert(resolution > 0 && "Resolution needs to be a positive integer value");
-  //   auto* sim = TSimulation::GetActive();
-  //   auto* rm = sim->GetResourceManager();
-  //   DiffusionGrid* d_grid =
-  //       new DiffusionGrid(substance_id, substance_name, diffusion_coeff,
-  //                         decay_constant, resolution);
-  //   auto& diffusion_grids = rm->GetDiffusionGrids();
-  //
-  //   if (substance_id + 1 > diffusion_grids.size()) {
-  //     diffusion_grids.resize(substance_id + 1);
-  //   }
-  //   diffusion_grids[substance_id] = d_grid;
-  // }
-  //
-  // template <typename TSimulation = Simulation<>, typename F>
-  // static void InitializeSubstance(size_t substance_id,
-  //                                 std::string substance_name, F function) {
-  //   auto* sim = TSimulation::GetActive();
-  //   auto* rm = sim->GetResourceManager();
-  //   auto diffusion_grid = rm->GetDiffusionGrid(substance_id);
-  //   diffusion_grid->AddInitializer(function);
-  // }
+  /// Adds simulation objects with random positions to the ResourceManager.
+  /// Type of the simulation object is determined by the return type of
+  /// parameter cell_builder.
+  ///
+  /// @param[in]  min           The minimum position value
+  /// @param[in]  max           The maximum position value
+  /// @param[in]  num_cells     The number cells
+  /// @param[in]  cell_builder  function containing the logic to instantiate a
+  ///                           new simulation object. Takes `const
+  ///                           std::array<double, 3>&` as input parameter
+  ///
+  template <typename Function>
+  static void CreateCellsRandom(double min, double max, int num_cells,
+                                Function cell_builder) {
+    auto* sim = Simulation::GetActive();
+    auto* rm = sim->GetResourceManager();
+
+    // TODO(ahmad): throughout simulation only one random number generator
+    // should be used, so this should go someplace accessible for other
+    // classes / functions
+    auto* random = sim->GetRandom();
+    for (int i = 0; i < num_cells; i++) {
+      double x = random->Uniform(min, max);
+      double y = random->Uniform(min, max);
+      double z = random->Uniform(min, max);
+      auto* new_simulation_object = cell_builder({x, y, z});
+      rm->push_back(new_simulation_object);
+    }
+  }
+
+  /// Allows cells to secrete the specified substance. Diffusion throughout the
+  /// simulation space is automatically taken care of by the DiffusionGrid class
+  ///
+  /// @param[in]  substance_id     The substance identifier
+  /// @param[in]  substance_name   The substance name
+  /// @param[in]  diffusion_coeff  The diffusion coefficient
+  /// @param[in]  decay_constant   The decay constant
+  /// @param[in]  resolution       The resolution of the diffusion grid
+  ///
+  static void DefineSubstance(size_t substance_id, std::string substance_name,
+                              double diffusion_coeff, double decay_constant,
+                              int resolution = 10) {
+    assert(resolution > 0 && "Resolution needs to be a positive integer value");
+    auto* sim = Simulation::GetActive();
+    auto* rm = sim->GetResourceManager();
+    DiffusionGrid* d_grid =
+        new DiffusionGrid(substance_id, substance_name, diffusion_coeff,
+                          decay_constant, resolution);
+    auto& diffusion_grids = rm->GetDiffusionGrids();
+
+    if (substance_id + 1 > diffusion_grids.size()) {
+      diffusion_grids.resize(substance_id + 1);
+    }
+    diffusion_grids[substance_id] = d_grid;
+  }
+
+  template <typename F>
+  static void InitializeSubstance(size_t substance_id,
+                                  std::string substance_name, F function) {
+    auto* sim = Simulation::GetActive();
+    auto* rm = sim->GetResourceManager();
+    auto diffusion_grid = rm->GetDiffusionGrid(substance_id);
+    diffusion_grid->AddInitializer(function);
+  }
 };
 
 }  // namespace bdm
