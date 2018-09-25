@@ -32,8 +32,9 @@ Cell* NewCell(const std::array<double, 3>& position) {
 }
 
 inline int Simulate(int argc, const char** argv) {
+  auto set_param = [](auto* param) { param->statistics_ = true; };
   // 2. Create new simulation
-  Simulation simulation(argc, argv);
+  Simulation simulation(argc, argv, set_param);
 
   // 3. Define initial model - in this example: 3D grid of cells
   size_t cells_per_dim = 128;

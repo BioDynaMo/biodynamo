@@ -43,6 +43,7 @@ inline int Simulate(int argc, const char** argv) {
     param->min_bound_ = 0;
     param->max_bound_ = 250;
     param->run_mechanical_interactions_ = false;
+    param->statistics_ = true;
   };
 
   Simulation simulation(argc, argv, set_param);

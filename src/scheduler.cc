@@ -74,25 +74,22 @@ void Scheduler::Execute(bool last_iteration) {
       grid->UpdateGrid();
     }
   }
-  // TODO(ahmad): should we only do it here and not after we run the physics?
-  // We need it here, because we need to update the threshold values before
-  // we update the diffusion grid
-  if (param->bound_space_) {
-    rm->ApplyOnAllElementsParallel(bound_space_);
-  }
-  {
-    Timing timing("diffusion", &gStatistics);
-    diffusion_();
-  }
-  {
-    Timing timing("biology", &gStatistics);
-    rm->ApplyOnAllElementsParallel(biology_);
-  }
-  if (param->run_mechanical_interactions_) {
-    Timing timing("physics", &gStatistics);
-    physics_.Init();
-    rm->ApplyOnAllElementsParallel(physics_);  // Bounding box applied at the end
-  }
+  auto run = [&](SimulationObject* so){
+    // TODO(ahmad): should we only do it here and not after we run the physics?
+    // We need it here, because we need to update the threshold values before
+    // we update the diffusion grid
+    if (param->bound_space_) {
+      bound_space_(so);
+    }
+    biology_(so);
+    if (param->run_mechanical_interactions_) {
+      physics_(so);  // Bounding box applied at the end
+    }
+  };
+  Timing timing("all", &gStatistics);
+  diffusion_();
+  physics_.Init();
+  rm->ApplyOnAllElementsParallel(run);
   CommitChangesAndUpdateReferences();
 }
 
