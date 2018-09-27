@@ -303,7 +303,7 @@ class Cell : public SimulationObject {
       const std::array<double, 3>& coord) const;
 
   std::array<double, 3> position_ = {{0, 0, 0}};
-  std::array<double, 3> tractor_force_;
+  std::array<double, 3> tractor_force_ = {{0, 0, 0}};
   double diameter_;
   double volume_;
   double adherence_;

@@ -50,7 +50,7 @@ class DisplacementOpCpu {
     sim_object->ApplyDisplacement(displacement);
     if (param->bound_space_) {
       ApplyBoundingBox(sim_object, param->min_bound_, param->max_bound_);
-      grid->SetDimensionThresholds(param->min_bound_, param->max_bound_);
+      // grid->SetDimensionThresholds(param->min_bound_, param->max_bound_); FIXME
     }
   }
 };

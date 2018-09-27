@@ -129,6 +129,7 @@ class ResourceManager {
   ///                       });
   template <typename TFunction>
   auto ApplyOnElement(SoHandle handle, TFunction&& function) {
+    assert(handle >= 0 && handle < data_.size());
     return function(data_[handle]);
   }
 
@@ -198,6 +199,7 @@ class ResourceManager {
   }
 
   void push_back(SimulationObject* so) {  // NOLINT
+    so->SetElementIdx(data_.size());
     data_.push_back(so);
   }
 
@@ -212,16 +214,16 @@ class ResourceManager {
   /// @tparam TScalarSo simulation object type with scalar backend
   /// @param args arguments which will be forwarded to the TScalarSo constructor
   /// @remarks Note that this function is not thread safe.
-  template <typename TSo, typename... Args>
-  TSo* New(Args... args) {
-    auto idx = data_.DelayedPushBack(TSo(std::forward<Args>(args)...));
-    return data_[idx];
-  }
+  // template <typename TSo, typename... Args>
+  // TSo* New(Args... args) {
+  //   auto idx = data_.DelayedPushBack(TSo(std::forward<Args>(args)...));
+  //   return data_[idx];
+  // }
 
  private:
   /// creates one container for each type in Types.
   /// Container type is determined based on the specified Backend
-  TransactionalVector<SimulationObject*> data_;
+  std::vector<SimulationObject*> data_;
   std::vector<DiffusionGrid*> diffusion_grids_;
 
 // #ifdef USE_OPENCL
