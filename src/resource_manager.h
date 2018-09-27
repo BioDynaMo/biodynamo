@@ -75,9 +75,12 @@ class ResourceManager {
 
   /// Free the memory that was reserved for the diffusion grids
   virtual ~ResourceManager() {
-    // for (auto* grid : diffusion_grids_) {
-      // delete grid;
-    // }
+    for (auto* grid : diffusion_grids_) {
+      delete grid;
+    }
+    for(auto* so : data_) {
+      delete so;
+    }
   }
 
   ResourceManager& operator=(ResourceManager&& other) {

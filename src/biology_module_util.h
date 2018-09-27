@@ -47,6 +47,8 @@ struct BaseBiologyModule {
   BaseBiologyModule(const BaseBiologyModule& other)
       : copy_mask_(other.copy_mask_), remove_mask_(other.remove_mask_) {}
 
+  virtual ~BaseBiologyModule() {}
+
   virtual BaseBiologyModule* New(const Event&, BaseBiologyModule* other, uint64_t new_oid = 0) const = 0;
 
   virtual void EventHandler(const Event&, BaseBiologyModule* bm) {}

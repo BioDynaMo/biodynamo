@@ -35,7 +35,11 @@ class SimulationObject {
  public:
   SimulationObject() {}
   SimulationObject(const SimulationObject &) = default;
-  virtual ~SimulationObject() {}
+  virtual ~SimulationObject() {
+    for(auto* bm : biology_modules_) {
+      delete bm;
+    }
+  }
 
   // TODO used to "fall down" to most derived type
   virtual SimulationObject* New(const Event&, SimulationObject* other, uint64_t new_oid = 0) const = 0;

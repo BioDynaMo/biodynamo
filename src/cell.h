@@ -302,7 +302,7 @@ class Cell : public SimulationObject {
   std::array<double, 3> TransformCoordinatesGlobalToPolar(
       const std::array<double, 3>& coord) const;
 
-  std::array<double, 3> position_;
+  std::array<double, 3> position_ = {{0, 0, 0}};
   std::array<double, 3> tractor_force_;
   double diameter_;
   double volume_;
