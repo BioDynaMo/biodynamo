@@ -221,12 +221,13 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
       force_to_transmit_to_proximal_mass_, spring_axis_, actual_length_,
       tension_, spring_constant_, resting_length_);
 
+ public:
   using NeuronSoma = typename TCompileTimeParam::NeuronSoma;
+  using NeuronSomaSoPtr = ToSoPtr<NeuronSoma>;
 
   using NeuriteOrNeuron =
       NeuronNeuriteAdapter<ToSoPtr<NeuronSoma>, MostDerivedSoPtr>;
 
- public:
   /// Returns the data members that are required to visualize this simulation
   /// object.
   static std::set<std::string> GetRequiredVisDataMembers() {
