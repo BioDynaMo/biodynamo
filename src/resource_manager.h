@@ -78,9 +78,9 @@ class ResourceManager {
     for (auto* grid : diffusion_grids_) {
       delete grid;
     }
-    for(auto* so : data_) {
-      delete so;
-    }
+    // for(auto* so : data_) {
+    //   delete so;
+    // }
   }
 
   ResourceManager& operator=(ResourceManager&& other) {

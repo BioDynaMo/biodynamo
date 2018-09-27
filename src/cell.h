@@ -58,11 +58,11 @@ class Cell : public SimulationObject {
   static constexpr Shape GetShape() { return Shape::kSphere; }
 
   Cell() : density_(1.0) {}
-  explicit Cell(double diameter) : diameter_(diameter), density_(1.0) {
-    UpdateVolume();
-  }
+  // explicit Cell(double diameter) : diameter_(diameter), density_(1.0) {
+  //   UpdateVolume();
+  // }
   explicit Cell(const std::array<double, 3>& position)
-      : position_(position), density_{1.0} {}
+      : SimulationObject(position), density_{1.0} {}
 
   /// This constructor is used to create daughter 2 for a cell division event
   /// \see CellDivisionEvent
@@ -219,13 +219,9 @@ class Cell : public SimulationObject {
 
   double GetAdherence() const { return adherence_; }
 
-  double GetDiameter() const override { return diameter_; }
-
   double GetMass() const { return density_ * volume_; }
 
   double GetDensity() const { return density_; }
-
-  const std::array<double, 3>& GetPosition() const override { return position_; }
 
   const std::array<double, 3>& GetTractorForce() const {
     return tractor_force_;
@@ -248,10 +244,6 @@ class Cell : public SimulationObject {
   void SetMass(double mass) { density_ = mass / volume_; }
 
   void SetDensity(double density) { density_ = density; }
-
-  void SetPosition(const std::array<double, 3>& position) override {
-    position_ = position;
-  }
 
   void SetTractorForce(const std::array<double, 3>& tractor_force) {
     tractor_force_ = tractor_force;
@@ -302,9 +294,7 @@ class Cell : public SimulationObject {
   std::array<double, 3> TransformCoordinatesGlobalToPolar(
       const std::array<double, 3>& coord) const;
 
-  std::array<double, 3> position_ = {{0, 0, 0}};
   std::array<double, 3> tractor_force_ = {{0, 0, 0}};
-  double diameter_;
   double volume_;
   double adherence_;
   double density_;

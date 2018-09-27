@@ -34,6 +34,8 @@ namespace bdm {
 class SimulationObject {
  public:
   SimulationObject() {}
+  explicit SimulationObject(const std::array<double, 3>& position)
+      : position_(position) {}
   SimulationObject(const SimulationObject &) = default;
   virtual ~SimulationObject() {
     for(auto* bm : biology_modules_) {
@@ -80,9 +82,9 @@ class SimulationObject {
   }
 
   // FIXME remove virtual and move data member here
-  virtual const std::array<double, 3>& GetPosition() const = 0;
-  virtual double GetDiameter() const = 0;
-  virtual void SetPosition(const std::array<double, 3>&) = 0;
+  const std::array<double, 3>& GetPosition() const {return position_; };
+  double GetDiameter() const { return diameter_; };
+  void SetPosition(const std::array<double, 3>& position) {position_ = position; };
 
   virtual std::array<double, 3> CalculateDisplacement(double squared_radius) const = 0;
   virtual void ApplyDisplacement(const std::array<double, 3>& displacement) = 0;
@@ -115,6 +117,8 @@ class SimulationObject {
 
   protected:
    // array index of this object in the ResourceManager
+   std::array<double, 3> position_ = {{0, 0, 0}};
+   double diameter_;
    uint32_t element_idx_ = 0;
    std::vector<BaseBiologyModule*> biology_modules_;
 
