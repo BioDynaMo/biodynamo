@@ -250,7 +250,8 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
   ///
   /// \see NewNeuriteExtensionEvent
   template <typename TNeuronSoma>
-  NeuriteElementExt(const NewNeuriteExtensionEvent& event, TNeuronSoma* soma) {
+  NeuriteElementExt(const NewNeuriteExtensionEvent& event, TNeuronSoma* soma,
+                    uint64_t new_oid = 0) {
     auto* param = Simulation_t::GetActive()->GetParam();
     tension_[kIdx] = param->neurite_default_tension_;
     diameter_[kIdx] = param->neurite_default_diameter_;
@@ -383,7 +384,7 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
   /// \see SideNeuriteExtensionEvent
   template <typename TNeuriteElement>
   NeuriteElementExt(const SideNeuriteExtensionEvent& event,
-                    TNeuriteElement* mother) {
+                    TNeuriteElement* mother, uint64_t new_oid = 0) {
     InitializeSideExtensionOrBranching(event, mother);
   }
 
@@ -393,7 +394,7 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
   /// \see SplitNeuriteElementEvent
   template <typename TNeuriteElement>
   NeuriteElementExt(const SplitNeuriteElementEvent& event,
-                    TNeuriteElement* other) {
+                    TNeuriteElement* other, uint64_t new_oid = 0) {
     InitializeSplitOrBranching(event, other);
   }
 
