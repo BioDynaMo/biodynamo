@@ -27,6 +27,13 @@ struct BaseBiologyModule {
   /// Default ctor sets `copy_mask_` and remove_mask_` to 0; meaning that
   /// `Copy` and `Remove` will always return false
   BaseBiologyModule() : copy_mask_(0), remove_mask_(0) {}
+
+  template <typename TEvent, typename TBm>
+  BaseBiologyModule(const TEvent& event, TBm* other, uint64_t new_oid = 0){
+    copy_mask_ = other->copy_mask_;
+    remove_mask_ = other->remove_mask_;
+  }
+
   explicit BaseBiologyModule(EventId copy_event, EventId remove_event = 0)
       : copy_mask_(copy_event), remove_mask_(remove_event) {}
 
@@ -46,6 +53,9 @@ struct BaseBiologyModule {
 
   BaseBiologyModule(const BaseBiologyModule& other)
       : copy_mask_(other.copy_mask_), remove_mask_(other.remove_mask_) {}
+
+  template <typename TEvent, typename... TBms>
+  void EventHandler(const TEvent&, TBms*...) {}
 
   /// Function returns whether the biology module should be copied for the
   /// given event.
