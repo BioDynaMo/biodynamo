@@ -48,7 +48,7 @@ BDM_SIM_OBJECT(NeuronSoma, bdm::Cell) {
   ///
   /// \see CellDivisionEvent
   template <typename TMother>
-  NeuronSomaExt(const CellDivisionEvent& event, TMother* mother)
+  NeuronSomaExt(const CellDivisionEvent& event, TMother* mother, uint64_t new_oid = 0)
       : Base(event, mother) {
     if (mother->daughters_[mother->kIdx].size() != 0) {
       Fatal("NeuronSoma",
