@@ -53,7 +53,7 @@ struct Chemotaxis : public BaseBiologyModule {
   }
 
  private:
-  ClassDefNV(Chemotaxis, 1);
+  BDM_CLASS_DEF_NV(Chemotaxis, 1);
 };
 
 // Define secretion behavior:
@@ -80,7 +80,7 @@ struct KaliumSecretion : public BaseBiologyModule {
   }
 
  private:
-  ClassDefNV(KaliumSecretion, 1);
+  BDM_CLASS_DEF_NV(KaliumSecretion, 1);
 };
 
 }  // namespace bdm

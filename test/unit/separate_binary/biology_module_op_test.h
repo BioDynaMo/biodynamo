@@ -38,7 +38,7 @@ struct GrowthModule : public BaseBiologyModule {
     t->SetDiameter(t->GetDiameter() + growth_rate_);
   }
 
-  ClassDefNV(GrowthModule, 1);
+  BDM_CLASS_DEF_NV(GrowthModule, 1);
 };
 
 }  // namespace biology_module_op_test_internal

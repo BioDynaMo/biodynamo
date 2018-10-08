@@ -30,6 +30,7 @@ If you change the value of these switches, you might have to delete `CMakeCache.
 | Option          | Default Value | Description  |
 | --------------- | ------------- | ------------ |
 | `test`       | `on` | build the test executables; precondition for e.g. `valgrind` and `coverage` |
+| `dict`       | `on` | build ROOT dictionaries. These are compulsory to use backups. Turning them off reduces compilation time. |
 | `cuda`       | `off` | enable CUDA code generation for GPU acceleration |
 | `opencl`        | `off` | enable OpenCL code generation for GPU acceleration |
 | `valgrind`      | `on` | enable memory leak checks |

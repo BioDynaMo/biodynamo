@@ -14,10 +14,10 @@
 #ifndef SIMULATION_H_
 #define SIMULATION_H_
 
-#include <Rtypes.h>
 #include <string>
 #include <vector>
 #include "random.h"
+#include "root_util.h"
 
 namespace bdm {
 
@@ -159,7 +159,7 @@ struct Simulation {
   friend SimulationTest;
   friend CatalystAdaptorTest;
 
-  ClassDefNV(Simulation, 1);
+  BDM_CLASS_DEF_NV(Simulation, 1);
 };
 
 }  // namespace bdm

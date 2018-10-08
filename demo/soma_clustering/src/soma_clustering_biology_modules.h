@@ -55,7 +55,7 @@ struct Chemotaxis : public BaseBiologyModule {
   }
 
  private:
-  ClassDefNV(Chemotaxis, 1);
+  BDM_CLASS_DEF_NV(Chemotaxis, 1);
 };
 
 // Define secretion behavior:
@@ -88,7 +88,7 @@ struct SubstanceSecretion : public BaseBiologyModule {
   }
 
  private:
-  ClassDefNV(SubstanceSecretion, 1);
+  BDM_CLASS_DEF_NV(SubstanceSecretion, 1);
 };
 
 }  // namespace bdm

@@ -46,7 +46,7 @@ struct RunTestBiologyModule {
   }
 
   TSimulationObject* expected_run_parameter_ = nullptr;
-  ClassDefNV(RunTestBiologyModule, 1);
+  BDM_CLASS_DEF_NV(RunTestBiologyModule, 1);
 };
 
 /// Helper class to test copy visitor
@@ -77,7 +77,7 @@ struct CopyTestBiologyModule {
 
   EventId expected_event_;
   bool copy_ = true;
-  ClassDefNV(CopyTestBiologyModule, 1);
+  BDM_CLASS_DEF_NV(CopyTestBiologyModule, 1);
 };
 
 /// Helper class to test remove visitor
@@ -106,7 +106,7 @@ struct RemoveTestBiologyModule {
   }
 
   EventId expected_event_;
-  ClassDefNV(RemoveTestBiologyModule, 1);
+  BDM_CLASS_DEF_NV(RemoveTestBiologyModule, 1);
 };
 
 /// Helper class to test if the EventHandler is called
@@ -130,7 +130,7 @@ struct EventHandlerBm {
   }
 
   EventId expected_event_;
-  ClassDefNV(EventHandlerBm, 1);
+  BDM_CLASS_DEF_NV(EventHandlerBm, 1);
 };
 
 struct TestSimulationObject {};

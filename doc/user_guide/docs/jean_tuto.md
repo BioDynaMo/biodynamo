@@ -84,7 +84,7 @@ In the previous chapter, we created a great number of cells. However, those cell
         // code to be executed each at simulation step
       }
 
-    ClassDefNV(GrowthModule, 1);
+    BDM_CLASS_DEF_NV(GrowthModule, 1);
   };
 ```
 
@@ -381,7 +381,7 @@ namespace bdm {
       }
     }
 
-    ClassDefNV(GrowthModule, 1);
+    BDM_CLASS_DEF_NV(GrowthModule, 1);
   };
 
   // Define compile time parameter

@@ -17,7 +17,6 @@
 
 #include <assert.h>
 
-#include <Rtypes.h>
 #include <algorithm>
 #include <array>
 #include <cmath>
@@ -25,6 +24,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include "root_util.h"
 
 #include "math_util.h"
 #include "param.h"
@@ -702,7 +702,7 @@ class DiffusionGrid {
   // retrun true if substance concentration and gradient don't evolve over time
   bool IsFixedSubstance() {
     return (mu_ == 0 && dc_[1] == 0 && dc_[2] == 0 && dc_[3] == 0 &&
-          dc_[4] == 0 && dc_[5] == 0 && dc_[6] == 0);
+            dc_[4] == 0 && dc_[5] == 0 && dc_[6] == 0);
   }
 
  private:
@@ -743,7 +743,7 @@ class DiffusionGrid {
   // turn to true after gradient initialization
   bool init_gradient_ = false;
 
-  ClassDefNV(DiffusionGrid, 1);
+  BDM_CLASS_DEF_NV(DiffusionGrid, 1);
 };
 
 }  // namespace bdm

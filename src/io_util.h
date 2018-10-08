@@ -17,9 +17,9 @@
 
 #include <string>
 
-#include <Rtypes.h>
 #include <TFile.h>
 #include <TSystem.h>
+#include "root_util.h"
 
 namespace bdm {
 
@@ -42,7 +42,7 @@ class RuntimeVariables {
 
  private:
   SysInfo_t sysinfo_;
-  ClassDefNV(RuntimeVariables, 1);  // NOLINT
+  BDM_CLASS_DEF_NV(RuntimeVariables, 1);  // NOLINT
 };
 
 /// Automatically close a TFile object using RAII pattern
@@ -68,7 +68,7 @@ class IntegralTypeWrapper {
 
  private:
   T data_;
-  ClassDefNV(IntegralTypeWrapper, 1);
+  BDM_CLASS_DEF_NV(IntegralTypeWrapper, 1);
 };
 
 bool FileExists(const std::string& file_name);

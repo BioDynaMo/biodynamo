@@ -17,9 +17,9 @@
 
 #include <vector>
 
-#include <Rtypes.h>
 #include "biology_module_util.h"
 #include "param.h"
+#include "root_util.h"
 #include "simulation.h"
 
 namespace bdm {
@@ -113,7 +113,7 @@ struct RegulateGenes : public BaseBiologyModule {
   /// New functions can be added through method AddGene()
   std::vector<std::function<double(double, double)>> first_derivatives_ = {};
 
-  ClassDefNV(RegulateGenes, 1);
+  BDM_CLASS_DEF_NV(RegulateGenes, 1);
 };
 
 }  // namespace bdm

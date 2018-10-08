@@ -288,7 +288,8 @@ struct Capsule;
 ///          -> class_name: `Foo` \n
 ///         `template <typename T> class Foo {};` \n
 ///          -> class_name: `Foo` \n
-/// @param   class_version_id required for ROOT I/O (see ROOT ClassDef Macro).
+/// @param   class_version_id required for ROOT I/O (see ROOT BDM_CLASS_DEF
+/// Macro).
 ///          Every time the layout of the class is changed, class_version_id
 ///          must be incremented by one. The class_version_id should be greater
 ///          or equal to 1.

@@ -15,13 +15,13 @@
 #ifndef PARAM_H_
 #define PARAM_H_
 
-#include <Rtypes.h>
 #include <cinttypes>
 #include <set>
 #include <string>
 #include <unordered_map>
 #include <vector>
 #include "cpptoml/cpptoml.h"
+#include "root_util.h"
 
 namespace bdm {
 
@@ -292,7 +292,7 @@ struct Param {
   void AssignFromConfig(const std::shared_ptr<cpptoml::table>&);
 
  private:
-  ClassDefNV(Param, 1);
+  BDM_CLASS_DEF_NV(Param, 1);
 };
 
 }  // namespace bdm

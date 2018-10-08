@@ -15,10 +15,10 @@
 #ifndef VARIANT_H_
 #define VARIANT_H_
 
-#include <Rtypes.h>
 #include <TBuffer.h>
 #include <iostream>
 #include <tuple>
+#include "root_util.h"
 
 #include "log.h"
 #include "mpark/variant.hpp"

@@ -67,7 +67,11 @@ function(bdm_add_test_executable TEST_TARGET)
                      SOURCES ${ARG_SOURCES}
                      HEADERS ${ARG_HEADERS}
                      LIBRARIES libgtest biodynamo)
-  add_dependencies(${TEST_TARGET}-objectlib gtest)
+  if(dict)
+    add_dependencies(${TEST_TARGET}-objectlib gtest)
+  else()
+    add_dependencies(${TEST_TARGET} gtest)
+  endif()
 
   # execute all tests with command: make test
   add_test(NAME ${TEST_TARGET} COMMAND ${TEST_TARGET})

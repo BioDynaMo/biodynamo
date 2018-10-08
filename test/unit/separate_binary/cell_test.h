@@ -49,7 +49,7 @@ struct GrowthModule : public BaseBiologyModule {
     t->SetDiameter(t->GetDiameter() + growth_rate_);
   }
 
-  ClassDefNV(GrowthModule, 1);
+  BDM_CLASS_DEF_NV(GrowthModule, 1);
 };
 
 struct MovementModule {
@@ -79,7 +79,7 @@ struct MovementModule {
   bool Remove(EventId event) const {
     return event == CellDivisionEvent::kEventId;
   }
-  ClassDefNV(MovementModule, 1);
+  BDM_CLASS_DEF_NV(MovementModule, 1);
 };
 
 /// Class used to get access to protected members

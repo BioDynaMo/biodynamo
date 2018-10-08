@@ -20,10 +20,10 @@
 #include <array>
 #include <vector>
 
-#include <Rtypes.h>
 #include "compile_time_param.h"
 #include "gtest/gtest.h"
 #include "io_util.h"
+#include "root_util.h"
 #include "simulation_object.h"
 #include "transactional_vector.h"
 
@@ -122,7 +122,7 @@ class Neurite {
   std::size_t id_;
 
  private:
-  ClassDef(Neurite, 1);  // NOLINT
+  BDM_CLASS_DEF(Neurite, 1);  // NOLINT
 };
 
 // add Neurites to BaseCell

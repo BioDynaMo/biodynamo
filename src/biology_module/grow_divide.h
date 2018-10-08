@@ -15,9 +15,9 @@
 #ifndef BIOLOGY_MODULE_GROW_DIVIDE_H_
 #define BIOLOGY_MODULE_GROW_DIVIDE_H_
 
-#include <Rtypes.h>
 #include "biology_module_util.h"
 #include "event/cell_division_event.h"
+#include "root_util.h"
 
 namespace bdm {
 
@@ -53,7 +53,7 @@ struct GrowDivide : public BaseBiologyModule {
   }
 
  private:
-  ClassDefNV(GrowDivide, 1);
+  BDM_CLASS_DEF_NV(GrowDivide, 1);
   double threshold_ = 40;
   double growth_rate_ = 300;
 };

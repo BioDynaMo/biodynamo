@@ -6,9 +6,10 @@ project(BioDynaMo)
 set(BDM_VERSION 0.1.0)
 
 # Options. Turn on with 'cmake -Dmyvarname=ON'.
-option(test "Build all tests." ON) # Makes boolean 'test' available.
-option(cuda "Enable CUDA code generation for GPU acceleration" OFF)
+option(test   "Build all tests." ON) # Makes boolean 'test' available.
+option(cuda   "Enable CUDA code generation for GPU acceleration" OFF)
 option(opencl "Build OpenCL code generation for GPU acceleration" OFF)
+option(dict   "Build with ROOT dictionaries" ON)
 if(APPLE)
    # valgrind currently broken on macOS 10.12
    option(valgrind "Enable valgrind tests and make build compatible with valgrind tool." OFF)
@@ -60,7 +61,9 @@ if(opencl)
 endif()
 find_package(Git)
 find_package(ROOT REQUIRED COMPONENTS Geom Gui)
-
+if (dict)
+  add_definitions("-DUSE_DICT")
+endif()
 find_package(ClangTools)
 if ("$ENV{CMAKE_EXPORT_COMPILE_COMMANDS}" STREQUAL "1" OR CLANG_TIDY_FOUND)
   # Generate a Clang compile_commands.json "compilation database" file for use

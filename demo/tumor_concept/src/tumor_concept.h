@@ -95,7 +95,7 @@ struct GrowthModule : public BaseBiologyModule {
   }
 
  private:
-  ClassDefNV(GrowthModule, 1);
+  BDM_CLASS_DEF_NV(GrowthModule, 1);
 };
 
 // Define compile time parameter

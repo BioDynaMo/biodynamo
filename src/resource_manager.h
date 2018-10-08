@@ -15,7 +15,6 @@
 #ifndef RESOURCE_MANAGER_H_
 #define RESOURCE_MANAGER_H_
 
-#include <Rtypes.h>
 #include <limits>
 #include <memory>
 #include <ostream>
@@ -23,6 +22,7 @@
 #include <tuple>
 #include <utility>
 #include <vector>
+#include "root_util.h"
 
 #ifdef USE_OPENCL
 #define __CL_ENABLE_EXCEPTIONS
@@ -86,7 +86,7 @@ class SoHandle {
   /// size 16 -> max element_idx: 4.294.967.296
   uint32_t element_idx_;
 
-  ClassDefNV(SoHandle, 1);
+  BDM_CLASS_DEF_NV(SoHandle, 1);
 };
 
 constexpr SoHandle kNullSoHandle;
@@ -372,7 +372,7 @@ class ResourceManager {
 #endif
 
   friend class SimulationBackup;
-  ClassDefNV(ResourceManager, 1);
+  BDM_CLASS_DEF_NV(ResourceManager, 1);
 };
 
 }  // namespace bdm

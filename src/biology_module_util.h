@@ -58,7 +58,7 @@ struct BaseBiologyModule {
  private:
   EventId copy_mask_;
   EventId remove_mask_;
-  ClassDefNV(BaseBiologyModule, 2);
+  BDM_CLASS_DEF_NV(BaseBiologyModule, 2);
 };
 
 /// \brief Used for simulation objects where biology modules are not used.
@@ -78,7 +78,7 @@ struct NullBiologyModule : public BaseBiologyModule {
   template <typename T>
   void Run(T* t) {}
 
-  ClassDefNV(NullBiologyModule, 1);
+  BDM_CLASS_DEF_NV(NullBiologyModule, 1);
 };
 
 /// \brief Visitor to execute the `Run` method of a biology module

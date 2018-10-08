@@ -29,7 +29,7 @@ struct TestBehaviour : public BaseBiologyModule {
     cell->SetDiameter(cell->GetDiameter() + 1);
   }
 
-  ClassDefNV(TestBehaviour, 1);
+  BDM_CLASS_DEF_NV(TestBehaviour, 1);
 };
 
 BDM_CTPARAM() {

@@ -18,8 +18,8 @@
 #include <array>
 #include <cstdio>
 
-#include <Rtypes.h>
 #include <TRandom3.h>
+#include "root_util.h"
 
 namespace bdm {
 
@@ -65,7 +65,7 @@ class Random {
 
  private:
   TRandom3 generator_;
-  ClassDefNV(Random, 1);
+  BDM_CLASS_DEF_NV(Random, 1);
 };
 
 }  // namespace bdm
