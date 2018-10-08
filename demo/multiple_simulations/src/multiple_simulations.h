@@ -28,9 +28,7 @@ struct Divide : BaseBiologyModule {
   template <typename TEvent, typename TBm>
   Divide(const TEvent& event, TBm* other, uint64_t new_oid = 0) {}
 
-  /// Empty default event handler, because Divide does not have state.
-  template <typename TEvent, typename... TBms>
-  void EventHandler(const TEvent&, TBms*...) {}
+  /// event handler not needed, because Chemotaxis does not have state.
 
   template <typename TSo>
   void Run(TSo* sim_object) {
