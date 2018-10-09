@@ -28,7 +28,8 @@ struct Chemotaxis : public BaseBiologyModule {
 
   /// Empty default event constructor, because Chemotaxis does not have state.
   template <typename TEvent, typename TBm>
-  Chemotaxis(const TEvent& event, TBm* other, uint64_t new_oid = 0) : BaseBiologyModule(event, other, new_oid) {}
+  Chemotaxis(const TEvent& event, TBm* other, uint64_t new_oid = 0)
+      : BaseBiologyModule(event, other, new_oid) {}
 
   /// event handler not needed, because Chemotaxis does not have state.
 
@@ -63,7 +64,8 @@ struct SubstanceSecretion : public BaseBiologyModule {
   /// Empty default event constructor, because SubstanceSecretion does not have
   /// state.
   template <typename TEvent, typename TBm>
-  SubstanceSecretion(const TEvent& event, TBm* other, uint64_t new_oid = 0) : BaseBiologyModule(event, other, new_oid) {}
+  SubstanceSecretion(const TEvent& event, TBm* other, uint64_t new_oid = 0)
+      : BaseBiologyModule(event, other, new_oid) {}
 
   /// event handler not needed, because Chemotaxis does not have state.
 

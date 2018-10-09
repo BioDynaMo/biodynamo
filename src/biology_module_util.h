@@ -29,7 +29,7 @@ struct BaseBiologyModule {
   BaseBiologyModule() : copy_mask_(0), remove_mask_(0) {}
 
   template <typename TEvent, typename TBm>
-  BaseBiologyModule(const TEvent& event, TBm* other, uint64_t new_oid = 0){
+  BaseBiologyModule(const TEvent& event, TBm* other, uint64_t new_oid = 0) {
     copy_mask_ = other->copy_mask_;
     remove_mask_ = other->remove_mask_;
   }

@@ -702,7 +702,7 @@ class DiffusionGrid {
   // retrun true if substance concentration and gradient don't evolve over time
   bool IsFixedSubstance() {
     return (mu_ == 0 && dc_[1] == 0 && dc_[2] == 0 && dc_[3] == 0 &&
-          dc_[4] == 0 && dc_[5] == 0 && dc_[6] == 0);
+            dc_[4] == 0 && dc_[5] == 0 && dc_[6] == 0);
   }
 
  private:

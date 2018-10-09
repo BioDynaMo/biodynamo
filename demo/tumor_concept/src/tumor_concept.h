@@ -63,7 +63,8 @@ struct GrowthModule : public BaseBiologyModule {
 
   /// Empty default event constructor, because GrowthModule does not have state.
   template <typename TEvent, typename TBm>
-  GrowthModule(const TEvent& event, TBm* other, uint64_t new_oid = 0) : BaseBiologyModule(event, other, new_oid) {}
+  GrowthModule(const TEvent& event, TBm* other, uint64_t new_oid = 0)
+      : BaseBiologyModule(event, other, new_oid) {}
 
   /// event handler not needed, because Chemotaxis does not have state.
 
