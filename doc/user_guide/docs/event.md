@@ -71,8 +71,8 @@ ratio defined in `CellDivisionEvent`.
 ```c++
 BDM_SIM_OBJECT(MyCell, Cell) {
  public:
-  MyCellExt(const CellDivisionEvent& event, MyCellExt* mother)
-    : Base(event, mother) {
+  MyCellExt(const TEvent& event, TOther* other, uint64_t new_oid = 0)
+       : Base(event, other, new_oid) {
     new_data_member_[kIdx] = mother->new_data_member_[mother->kIdx] * event.volume_ratio;
   }
 

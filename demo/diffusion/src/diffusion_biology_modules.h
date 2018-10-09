@@ -31,9 +31,7 @@ struct Chemotaxis : public BaseBiologyModule {
   template <typename TEvent, typename TBm>
   Chemotaxis(const TEvent& event, TBm* other, uint64_t new_oid = 0) {}
 
-  /// Empty default event handler, because Chemotaxis does not have state.
-  template <typename TEvent, typename... TBms>
-  void EventHandler(const TEvent&, TBms*...) {}
+  /// event handler not needed, because Chemotaxis does not have state.
 
   template <typename T, typename TSimulation = Simulation<>>
   void Run(T* cell) {
@@ -66,9 +64,7 @@ struct KaliumSecretion : public BaseBiologyModule {
   template <typename TEvent, typename TBm>
   KaliumSecretion(const TEvent& event, TBm* other, uint64_t new_oid = 0) {}
 
-  /// Empty default event handler, because KaliumSecretion does not have state.
-  template <typename TEvent, typename... TBms>
-  void EventHandler(const TEvent&, TBms*...) {}
+  /// event handler not needed, because Chemotaxis does not have state.
 
   template <typename T, typename TSimulation = Simulation<>>
   void Run(T* cell) {

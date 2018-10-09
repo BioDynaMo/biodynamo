@@ -28,6 +28,18 @@ BDM_SIM_OBJECT(MyCell, Cell) {
   MyCellExt() {}
   explicit MyCellExt(const std::array<double, 3>& position) : Base(position) {}
 
+  /// Default event constructor
+  template <typename TEvent, typename TOther>
+  MyCellExt(const TEvent& event, TOther* other, uint64_t new_oid = 0)
+      : Base(event, other, new_oid) {}
+
+  /// Default event handler (exising biology module won't be modified on
+  /// any event)
+  template <typename TEvent, typename... TOthers>
+  void EventHandler(const TEvent& event, TOthers*... others) {
+    Base::EventHandler(event, others...);
+  }
+
   void SetCellType(int t) { cell_type_[kIdx] = t; }
   int GetCellType() const { return cell_type_[kIdx]; }
 

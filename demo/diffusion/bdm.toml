@@ -1,0 +1,6 @@
+[visualization]
+export = true
+export_interval = 2
+
+[[visualize_sim_object]]
+  name = "Cell"
