@@ -955,7 +955,7 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
       // TODO(lukas) once we switch to C++17 use if constexpr.
       // As a consequence the reinterpret_cast won't be needed anymore.
       // if neighbor is a NeuriteElement
-      if (neighbor.IsSoType(this)) {
+      if (neighbor.template IsSoType<MostDerivedScalar>()) {
         auto&& neighbor_rc =
             neighbor.template ReinterpretCast<MostDerivedScalar>();
         auto n_soptr = neighbor_rc.GetSoPtr();
