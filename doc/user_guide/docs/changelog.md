@@ -1,6 +1,22 @@
 # Changelog
 
-## 18.09.1028 [`3a380e4`](https://github.com/BioDynaMo/biodynamo/commit/3a380e451ed1d691a6b8dce4c46d82e7faaf5ddc)
+## 08.10.2018 [`8a97cf2`](https://github.com/BioDynaMo/biodynamo/commit/8a97cf21ad3e07be19f764d116eb10cae5c6ab05)
+
+Allow builds without dictionaries to speed up compile time                                 
+
+Early development of a simulation requires fast iteration cycles.                  
+During this stage serialization features are not needed. Thus,                                  
+we support builds without dictionaries.                                     
+
+By default dictionaries will be built. To turn them off, run:                                   
+cmake -Ddict=off ..
+
+| Old                                 | New                                    |
+| ----------------------------------- | -------------------------------------- |
+| ClassDef(...)                       | BDM_CLASS_DEF(...)                     |
+| ClassDefNV(...)                     | BDM_CLASS_DEF_NV(...)                  |
+
+## 18.09.2018 [`3a380e4`](https://github.com/BioDynaMo/biodynamo/commit/3a380e451ed1d691a6b8dce4c46d82e7faaf5ddc)
 
 Refactor [parameters](parameter).
 
