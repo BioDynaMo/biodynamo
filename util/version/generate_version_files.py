@@ -41,6 +41,10 @@ def GetGitDescribeString():
         sys.exit(1)
 
 def GenerateFile(template_file, dest_file, version, major, minor, patch, additional_commits):
+    if not os.path.exists(template_file):
+        print("Warning: File {0} does not exist".format(template_file))
+        return
+
     with open(template_file, 'r') as f:
         content = f.read()
 
