@@ -31,6 +31,7 @@ If you change the value of these switches, you might have to delete `CMakeCache.
 | --------------- | ------------- | ------------ |
 | `test`       | `on` | build the test executables; precondition for e.g. `valgrind` and `coverage` |
 | `dict`       | `on` | build ROOT dictionaries. These are compulsory to use backups. Turning them off reduces compilation time. |
+| `paraview`       | `on` | Enable visualization using ParaView. Visualization cannot be used if this switch is turned off. |
 | `cuda`       | `off` | enable CUDA code generation for GPU acceleration |
 | `opencl`        | `off` | enable OpenCL code generation for GPU acceleration |
 | `valgrind`      | `on` | enable memory leak checks |

@@ -6,10 +6,12 @@ project(BioDynaMo)
 set(BDM_VERSION 0.1.0)
 
 # Options. Turn on with 'cmake -Dmyvarname=ON'.
-option(test   "Build all tests." ON) # Makes boolean 'test' available.
-option(cuda   "Enable CUDA code generation for GPU acceleration" OFF)
-option(opencl "Build OpenCL code generation for GPU acceleration" OFF)
-option(dict   "Build with ROOT dictionaries" ON)
+option(test      "Build all tests." ON) # Makes boolean 'test' available.
+option(cuda      "Enable CUDA code generation for GPU acceleration" OFF)
+option(opencl    "Enable OpenCL code generation for GPU acceleration" OFF)
+option(dict      "Build with ROOT dictionaries" ON)
+option(paraview  "Enable ParaView" ON)
+
 if(APPLE)
    # valgrind currently broken on macOS 10.12
    option(valgrind "Enable valgrind tests and make build compatible with valgrind tool." OFF)
@@ -72,14 +74,16 @@ if ("$ENV{CMAKE_EXPORT_COMPILE_COMMANDS}" STREQUAL "1" OR CLANG_TIDY_FOUND)
   set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 endif()
 
-find_package(ParaView 5.3 QUIET OPTIONAL_COMPONENTS vtkPVPythonCatalyst
-  vtkPVVTKExtensionsDefault vtkPVServerManagerRendering)
-if(${ParaView_FOUND})
-  message(STATUS "Found ParaView")
-  include("${PARAVIEW_USE_FILE}")
-  add_definitions("-DUSE_CATALYST")
-else()
-  message(WARNING "ParaView not found")
+if(paraview)
+  find_package(ParaView 5.3 QUIET OPTIONAL_COMPONENTS vtkPVPythonCatalyst
+    vtkPVVTKExtensionsDefault vtkPVServerManagerRendering)
+  if(${ParaView_FOUND})
+    message(STATUS "Found ParaView")
+    include("${PARAVIEW_USE_FILE}")
+    add_definitions("-DUSE_CATALYST")
+  else()
+    message(WARNING "ParaView not found")
+  endif()
 endif()
 
 find_package(VTune)
