@@ -25,6 +25,12 @@ matrix:
       sudo: required
       group: edge
       env: SCRIPT="util/travis-ci/installation-test.sh ubuntu-18.04"
+    # Test development installation on centos-7.5.1804
+    # - os: linux
+    #   dist: trusty
+    #   sudo: required
+    #   group: edge
+    #   env: SCRIPT="util/travis-ci/installation-test.sh centos-7.5.1804"
     # Test development installation on osx
     - os: osx
       env: SCRIPT="util/travis-ci/installation-test.sh osx"

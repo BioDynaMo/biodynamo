@@ -125,16 +125,7 @@ include_directories("${CMAKE_SOURCE_DIR}/third_party")
 include_directories("${MPARK_LIB}")
 include_directories("${CMAKE_CURRENT_BINARY_DIR}/version")
 
-# Fix for rootcling not able to find omp.h. We cannot include the entire include
-# directory of the compiler (where omp.h is in), because rootcling starts using
-# the intrinsics found in there. Therefore we do a local copy into the build dir.
-execute_process(COMMAND ${CMAKE_CXX_COMPILER} --print-file-name=include/omp.h
-                OUTPUT_VARIABLE OMP_HEADER_PATH)
-# above command returns path with "\n" appended
-string(REGEX REPLACE "\n$" "" OMP_HEADER_PATH "${OMP_HEADER_PATH}")
-execute_process(COMMAND mkdir -p ${CMAKE_SOURCE_DIR}/build/omp)
-execute_process(COMMAND cp ${OMP_HEADER_PATH} ${CMAKE_SOURCE_DIR}/build/omp)
-include_directories("${CMAKE_SOURCE_DIR}/build/omp")
+fix_rootcling_omp_issue()
 
 # build libbiodynamo
 file(GLOB_RECURSE HEADERS "${CMAKE_SOURCE_DIR}/src/*.h")
@@ -204,12 +195,11 @@ if (${ParaView_FOUND})
   link_directories($ENV{ParaView_LIB_DIR})
   target_link_libraries(biodynamo vtkPVPythonCatalyst vtkIOParallelXML
     vtkPVVTKExtensionsDefault vtkPVServerManagerRendering)
+  build_paraview_plugin()
 endif()
 
 # create cmake files used by external builds
 configure_file("cmake/UseBioDynaMo.cmake.in" "UseBioDynaMo.cmake" @ONLY)
-
-build_paraview_plugin()
 
 # -------------------- build test project  ------------------------------------
 if (test)

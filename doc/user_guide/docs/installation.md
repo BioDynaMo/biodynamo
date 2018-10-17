@@ -33,5 +33,9 @@ git pull origin master
 
 ## Supported platforms
 
-*  Ubuntu 16.04, 18.04
+*  **Ubuntu 16.04 (recommended)**, 18.04
 *  Mac OSX
+
+### Experimental
+
+*  CentOS 7.5.1804 (no ParaView support at the moment)

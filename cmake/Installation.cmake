@@ -106,10 +106,12 @@ install(DIRECTORY util/simulation-template DESTINATION "biodynamo/" FILES_MATCHI
 # Demos.
 install(DIRECTORY demo DESTINATION "biodynamo/" PATTERN "build" EXCLUDE)
 
-if(LINUX)
-  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/paraview-plugin/libBDMGlyphFilter.so DESTINATION ${CMAKE_INSTALL_PVPLUGINDIR})
-elseif(APPLE)
-  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/paraview-plugin/libBDMGlyphFilter.dylib DESTINATION ${CMAKE_INSTALL_PVPLUGINDIR})
+if (${ParaView_FOUND})
+  if(LINUX)
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/paraview-plugin/libBDMGlyphFilter.so DESTINATION ${CMAKE_INSTALL_PVPLUGINDIR})
+  elseif(APPLE)
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/paraview-plugin/libBDMGlyphFilter.dylib DESTINATION ${CMAKE_INSTALL_PVPLUGINDIR})
+  endif()
 endif()
 
 install(FILES LICENSE NOTICE DESTINATION ${CMAKE_INSTALL_ROOT})

@@ -231,3 +231,20 @@ function(build_paraview_plugin)
     COMMENT "Build bdm paraview plugin")
 
 endfunction(build_paraview_plugin)
+
+# Fix for rootcling not able to find omp.h. We cannot include the entire include
+# directory of the compiler (where omp.h is in), because rootcling starts using
+# the intrinsics found in there. Therefore we do a local copy into the build dir.
+function(fix_rootcling_omp_issue)
+
+  execute_process(COMMAND ${CMAKE_CXX_COMPILER} --print-file-name=include/omp.h
+                  OUTPUT_VARIABLE OMP_HEADER_PATH)
+  # above command returns path with "\n" appended
+  string(REGEX REPLACE "\n$" "" OMP_HEADER_PATH "${OMP_HEADER_PATH}")
+  execute_process(COMMAND mkdir -p ${CMAKE_SOURCE_DIR}/build/omp)
+  execute_process(COMMAND cp ${OMP_HEADER_PATH} ${CMAKE_SOURCE_DIR}/build/omp)
+  include_directories("${CMAKE_SOURCE_DIR}/build/omp")
+
+endfunction(fix_rootcling_omp_issue)
+
+

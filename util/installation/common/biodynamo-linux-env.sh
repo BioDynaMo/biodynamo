@@ -56,4 +56,13 @@ else
   export CXX=g++
 fi
 
+# CentOs specifics
+if [ `lsb_release -si` == "CentOS" ]; then
+  # python
+  export PATH=/opt/rh/rh-python36/root/bin:/opt/rh/llvm-toolset-7/root/usr/bin/:$PATH
+  # gcc g++
+  export PATH=/opt/rh/devtoolset-7/root/usr/bin:$PATH
+  export LD_LIBRARY_PATH=/opt/rh/devtoolset-7/root/usr/lib64:/opt/rh/devtoolset-7/root/usr/lib:/opt/rh/devtoolset-7/root/usr/lib64/dyninst:/opt/rh/devtoolset-7/root/usr/lib/dyninst:/opt/rh/devtoolset-7/root/usr/lib64:/opt/rh/devtoolset-7/root/usr/lib:$LD_LIBRARY_PATH
+fi
+
 echo "You have successfully sourced BioDynaMo's environment."

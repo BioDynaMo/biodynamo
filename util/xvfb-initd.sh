@@ -7,7 +7,11 @@ PIDFILE=/tmp/cucumber_xvfb_99.pid
 case "$1" in
   start)
     echo -n "Starting virtual X frame buffer: Xvfb"
-    /sbin/start-stop-daemon --start --quiet --pidfile $PIDFILE --make-pidfile --background --exec $XVFB -- $XVFBARGS
+    if [ `lsb_release -si` != "CentOS" ]; then
+	/sbin/start-stop-daemon --start --quiet --pidfile $PIDFILE --make-pidfile --background --exec $XVFB -- $XVFBARGS
+    else 
+      $XVFB $XVFBARGS &
+    fi
     echo "."
     ;;
   stop)

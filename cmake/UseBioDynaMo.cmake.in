@@ -73,6 +73,8 @@ if(${ParaView_FOUND})
   include("${PARAVIEW_USE_FILE}")
   add_definitions("-DUSE_CATALYST")
   link_directories($ENV{ParaView_LIB_DIR})
+  set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} vtkPVPythonCatalyst
+      vtkIOParallelXML vtkPVVTKExtensionsDefault vtkPVServerManagerRendering)
 else()
   message(WARNING "ParaView not found")
 endif()
@@ -118,8 +120,9 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${BDM_CMAKE_DIR}")
 include("${BDM_CMAKE_DIR}/BioDynaMo.cmake")
 include(${ROOT_USE_FILE})
 
-set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} biodynamo ${ROOT_LIBRARIES} vtkPVPythonCatalyst
-    vtkIOParallelXML vtkPVVTKExtensionsDefault vtkPVServerManagerRendering)
+fix_rootcling_omp_issue()
+
+set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} biodynamo ${ROOT_LIBRARIES})
 
 include_directories("$ENV{BDM_CMAKE_DIR}/../../include")
 link_directories("$ENV{BDM_CMAKE_DIR}/../../lib")
