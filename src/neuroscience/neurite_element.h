@@ -1047,26 +1047,12 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
     // 5) define the force that will be transmitted to the mother
     force_to_transmit_to_proximal_mass_[kIdx] = force_on_my_mothers_point_mass;
     //  6.1) Define movement scale
-    double h_over_m = 1.0;
+    auto* param = Simulation_t::GetActive()->GetParam();
+    double h_over_m =  param->simulation_time_step_ / GetMass();
     double force_norm = Math::Norm(force_on_my_point_mass);
     //  6.2) If is F not strong enough -> no movements
     if (force_norm < adherence_[kIdx]) {
       return {0, 0, 0};
-    }
-    // if this or its mother is a branching point, displacement have to be
-    // reduced to avoid kink behaviour
-    auto* param = Simulation_t::GetActive()->GetParam();
-    if (mother_[kIdx].IsNeuriteElement()) {
-      auto mother = mother_[kIdx].GetNeuriteElementSoPtr();
-      if (mother->GetDaughterLeft() != nullptr &&
-          mother->GetDaughterRight() != nullptr) {
-        double h = param->simulation_time_step_;
-        h_over_m = h / GetMass();
-      }
-    }
-    if (daughter_left_[kIdx] != nullptr && daughter_right_[kIdx] != nullptr) {
-      double h = param->simulation_time_step_;
-      h_over_m = h / GetMass();
     }
 
     // So, what follows is only executed if we do actually move :
