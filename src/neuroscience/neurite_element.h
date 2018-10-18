@@ -483,14 +483,6 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
 
   double GetMass() const { return density_[kIdx] * volume_[kIdx]; }
 
-  ToSoPtr<NeuronSoma> GetNeuronSomaOfNeurite() const {
-    auto mother = mother_[kIdx];
-    while (!mother.IsNeuronSoma()) {
-      mother = mother.GetMother();
-    }
-    return mother.GetNeuronSomaSoPtr();
-  }
-
   uint64_t GetBoxIdx() const { return box_idx_[kIdx]; }
 
   void SetBoxIdx(uint64_t idx) { box_idx_[kIdx] = idx; }
