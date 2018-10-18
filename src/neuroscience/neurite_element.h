@@ -244,6 +244,7 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
     density_[kIdx] = param->neurite_default_density_;
     spring_constant_[kIdx] = param->neurite_default_spring_constant_;
     adherence_[kIdx] = param->neurite_default_adherence_;
+    UpdateVolume();
   }
 
   /// \brief This constructor is used to create a new neurite for a new neurite
