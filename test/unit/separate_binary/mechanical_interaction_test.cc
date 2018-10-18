@@ -70,74 +70,6 @@ TEST(MechanicalInteraction, StraightxCylinderGrowth) {
   }
 }
 
-TEST(MechanicalInteraction, StraightyCylinderGrowth) {
-  Simulation<> simulation(TEST_NAME);
-  auto* rm = simulation.GetResourceManager();
-
-  auto neuron = rm->New<NeuronSoma>();
-  neuron.SetPosition({0, 0, 0});
-  neuron.SetMass(1);
-  neuron.SetDiameter(10);
-
-  auto ne = neuron.ExtendNewNeurite({0, 1, 0});
-  ne->SetDiameter(2);
-
-  Scheduler<> scheduler;
-
-  std::array<double, 3> ne_axis = ne->GetSpringAxis();
-
-  EXPECT_NEAR(ne_axis[0], 0, abs_error<double>::value);
-  EXPECT_NEAR(ne_axis[1], 1, abs_error<double>::value);
-  EXPECT_NEAR(ne_axis[2], 0, abs_error<double>::value);
-
-  std::array<double, 3> direction = {0, 1, 0};
-  for (int i = 0; i < 100; i++) {
-    ne->ElongateTerminalEnd(300, direction);
-    ne->RunDiscretization();
-    scheduler.Simulate(1);
-    if (i % 10 == 0) {
-      ne_axis = ne->GetSpringAxis();
-
-      EXPECT_NEAR(ne_axis[0], 0, abs_error<double>::value);
-      EXPECT_NEAR(ne_axis[2], 0, abs_error<double>::value);
-    }
-  }
-}
-
-TEST(MechanicalInteraction, StraightzCylinderGrowth) {
-  Simulation<> simulation(TEST_NAME);
-  auto* rm = simulation.GetResourceManager();
-
-  auto neuron = rm->New<NeuronSoma>();
-  neuron.SetPosition({0, 0, 0});
-  neuron.SetMass(1);
-  neuron.SetDiameter(10);
-
-  auto ne = neuron.ExtendNewNeurite({0, 0, 1});
-  ne->SetDiameter(2);
-
-  Scheduler<> scheduler;
-
-  std::array<double, 3> ne_axis = ne->GetSpringAxis();
-
-  EXPECT_NEAR(ne_axis[0], 0, abs_error<double>::value);
-  EXPECT_NEAR(ne_axis[1], 0, abs_error<double>::value);
-  EXPECT_NEAR(ne_axis[2], 1, abs_error<double>::value);
-
-  std::array<double, 3> direction = {0, 0, 1};
-  for (int i = 0; i < 100; i++) {
-    ne->ElongateTerminalEnd(300, direction);
-    ne->RunDiscretization();
-    scheduler.Simulate(1);
-    if (i % 10 == 0) {
-      ne_axis = ne->GetSpringAxis();
-
-      EXPECT_NEAR(ne_axis[0], 0, abs_error<double>::value);
-      EXPECT_NEAR(ne_axis[1], 0, abs_error<double>::value);
-    }
-  }
-}
-
 TEST(MechanicalInteraction, DiagonalxyCylinderGrowth) {
   Simulation<> simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
@@ -236,13 +168,16 @@ TEST(MechanicalInteraction, DiagonalSpecialDirectionCylinderGrowth) {
   }
 }
 
+// as the dendrite grows exactly at the center of the second cells
+// growth force/direction and repulsive force/direction are equal
+// so the dendrite stop growing
+//FIXME: jean
 TEST(MechanicalInteraction, StraightCylinderGrowthObstacle) {
   Simulation<> simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
 
   auto neuron = rm->New<NeuronSoma>();
   neuron.SetPosition({0, 0, 0});
-  neuron.SetMass(1);
   neuron.SetDiameter(10);
 
   auto neuron2 = rm->New<NeuronSoma>();
@@ -275,18 +210,17 @@ TEST(MechanicalInteraction, StraightCylinderGrowthObstacle) {
   }
 }
 
+//FIXME: jean
 TEST(MechanicalInteraction, NotStraightCylinderGrowthObstacle) {
   Simulation<> simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
 
   auto neuron = rm->New<NeuronSoma>();
   neuron.SetPosition({0, 0, 0});
-  neuron.SetMass(1);
   neuron.SetDiameter(10);
 
   auto neuron2 = rm->New<NeuronSoma>();
   neuron2.SetPosition({0, 0, 30});
-  neuron2.SetMass(1);
   neuron2.SetDiameter(10);
 
   auto ne = neuron.ExtendNewNeurite({0, 0, 1});
@@ -304,62 +238,16 @@ TEST(MechanicalInteraction, NotStraightCylinderGrowthObstacle) {
     ne->ElongateTerminalEnd(100, direction);
     ne->RunDiscretization();
     scheduler.Simulate(1);
+
+    ne_axis = ne->GetSpringAxis();
+
+    EXPECT_NEAR(ne_axis[1], 0, abs_error<double>::value);
   }
 
   ne_axis = ne->GetSpringAxis();
   ASSERT_GT(ne->GetMassLocation()[0], 5);
   ASSERT_TRUE(ne_axis[0] < 0.1);
   EXPECT_NEAR(ne_axis[1], 0, abs_error<double>::value);
-}
-
-TEST(MechanicalInteraction, DoubleStraightCylinderGrowth) {
-  Simulation<> simulation(TEST_NAME);
-  auto* rm = simulation.GetResourceManager();
-
-  auto neuron = rm->New<NeuronSoma>();
-  neuron.SetPosition({0, 0, 0});
-  neuron.SetMass(1);
-  neuron.SetDiameter(10);
-
-  auto ne = neuron.ExtendNewNeurite({0, 1, 0});
-  auto ne2 = neuron.ExtendNewNeurite({1, 0, 0});
-  ne->SetDiameter(2);
-  ne2->SetDiameter(3);
-
-  Scheduler<> scheduler;
-
-  std::array<double, 3> ne_axis = ne->GetSpringAxis();
-  std::array<double, 3> ne_axis_2 = ne2->GetSpringAxis();
-
-  EXPECT_NEAR(ne_axis[0], 0, abs_error<double>::value);
-  EXPECT_NEAR(ne_axis[1], 1, abs_error<double>::value);
-  EXPECT_NEAR(ne_axis[2], 0, abs_error<double>::value);
-
-  EXPECT_NEAR(ne_axis_2[0], 1, abs_error<double>::value);
-  EXPECT_NEAR(ne_axis_2[1], 0, abs_error<double>::value);
-  EXPECT_NEAR(ne_axis_2[2], 0, abs_error<double>::value);
-
-  std::array<double, 3> direction = {0, 1, 0};
-  std::array<double, 3> direction2 = {1, 0, 0};
-
-  for (int i = 0; i < 100; i++) {
-    ne->ElongateTerminalEnd(300, direction);
-    ne->RunDiscretization();
-    ne2->ElongateTerminalEnd(300, direction2);
-    ne2->RunDiscretization();
-
-    scheduler.Simulate(1);
-    if (i % 10 == 0) {
-      ne_axis = ne->GetSpringAxis();
-      ne_axis_2 = ne2->GetSpringAxis();
-
-      EXPECT_NEAR(ne_axis[0], 0, abs_error<double>::value);
-      EXPECT_NEAR(ne_axis[2], 0, abs_error<double>::value);
-
-      EXPECT_NEAR(ne_axis_2[1], 0, abs_error<double>::value);
-      EXPECT_NEAR(ne_axis_2[2], 0, abs_error<double>::value);
-    }
-  }
 }
 
 TEST(MechanicalInteraction, BifurcationCylinderGrowth) {
@@ -458,49 +346,68 @@ TEST(MechanicalInteraction, BranchCylinderGrowth) {
   EXPECT_NEAR(ne_axis_2[1], 0, abs_error<double>::value);
 }
 
-TEST(MechanicalInteraction, getNeuronTest) {
-  Simulation<> simulation(TEST_NAME);
+TEST(MechanicalInteraction, TwoDistinctCylinderEncounter) {
+  auto set_param = [](auto* param) {
+    param->neurite_max_length_ = 2;
+  };
+
+  Simulation<> simulation(TEST_NAME, set_param);
   auto* rm = simulation.GetResourceManager();
 
-  auto neuron = rm->New<NeuronSoma>();
-  neuron.SetPosition({0, 0, 0});
-  neuron.SetMass(1);
-  neuron.SetDiameter(10);
-  auto ne = neuron.ExtendNewNeurite({0, 0, 1});
-  auto ne2 = neuron.ExtendNewNeurite({1, 0, 0});
+  gErrorIgnoreLevel = kWarning;
 
-  Scheduler<> scheduler;
-
-  for (int i = 0; i < 10; i++) {
-    ne->ElongateTerminalEnd(100, ne->GetSpringAxis());
-    ne->RunDiscretization();
-    scheduler.Simulate(1);
-  }
-
-  auto ne3 = ne->Branch(0.5, {0.5, 0, 1});
-
+  auto neuron1 = rm->New<NeuronSoma>();
+  neuron1.SetPosition({0, 0, 0});
+  neuron1.SetMass(1);
+  neuron1.SetDiameter(10);
   auto neuron2 = rm->New<NeuronSoma>();
   neuron2.SetPosition({20, 0, 0});
   neuron2.SetMass(1);
   neuron2.SetDiameter(10);
-  auto ne4 = neuron2.ExtendNewNeurite({0, 0, 1});
 
-  for (int i = 0; i < 100; i++) {
-    ne->ElongateTerminalEnd(100, ne->GetSpringAxis());
-    ne3->ElongateTerminalEnd(100, ne3->GetSpringAxis());
-    ne4->ElongateTerminalEnd(100, ne4->GetSpringAxis());
-    ne->RunDiscretization();
-    ne3->RunDiscretization();
-    ne4->RunDiscretization();
+  auto ne1 = neuron1.ExtendNewNeurite({0, 0, 1});
+  ne1->SetDiameter(2);
+  auto ne2 = neuron2.ExtendNewNeurite({0, 0, 1});
+  ne2->SetDiameter(2);
 
+  Scheduler<> scheduler;
+
+  std::array<double, 3> direction1 = {0.5, 0, 1};
+  std::array<double, 3> direction2 = {-0.5, 0, 1};
+
+  std::array<double, 3> ne1_axis;
+  std::array<double, 3> ne2_axis;
+
+  for (int i = 0; i < 220; i++) {
+    ne1->ElongateTerminalEnd(10, direction1);
+    ne2->ElongateTerminalEnd(10, direction2);
+    ne1->RunDiscretization();
+    ne2->RunDiscretization();
     scheduler.Simulate(1);
+
+    ne1_axis = ne1->GetSpringAxis();
+    ne2_axis = ne2->GetSpringAxis();
+
+    EXPECT_NEAR(ne1_axis[1], 0, abs_error<double>::value);
+    EXPECT_NEAR(ne2_axis[1], 0, abs_error<double>::value);
   }
 
-  EXPECT_TRUE(neuron.GetSoPtr() == ne->GetNeuronSomaOfNeurite());
-  EXPECT_TRUE(ne->GetNeuronSomaOfNeurite() == ne2->GetNeuronSomaOfNeurite());
-  EXPECT_TRUE(ne->GetNeuronSomaOfNeurite() == ne3->GetNeuronSomaOfNeurite());
-  EXPECT_TRUE(neuron2->GetSoPtr() == ne4->GetNeuronSomaOfNeurite());
-  EXPECT_FALSE(ne4->GetNeuronSomaOfNeurite() == ne3->GetNeuronSomaOfNeurite());
+  for (int i = 0; i < 100; i++) {
+    ne1->ElongateTerminalEnd(10, direction1);
+    ne2->ElongateTerminalEnd(10, direction2);
+    ne1->RunDiscretization();
+    ne2->RunDiscretization();
+    scheduler.Simulate(1);
+
+    ne1_axis = ne1->GetSpringAxis();
+    ne2_axis = ne2->GetSpringAxis();
+
+    ASSERT_TRUE(ne1_axis[0] < 0.5);
+    ASSERT_TRUE(ne1_axis[0] < 0.5);
+
+    EXPECT_NEAR(ne1_axis[1], 0, abs_error<double>::value);
+    EXPECT_NEAR(ne2_axis[1], 0, abs_error<double>::value);
+    }
 }
 
 }  // end namespace neuroscience
