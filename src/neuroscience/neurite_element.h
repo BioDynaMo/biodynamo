@@ -940,10 +940,18 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
           Math::Add(force_on_my_point_mass, force_from_daughter);
     }
 
+    std::array<double, 3> force_from_neighbors = {0, 0, 0};
+
+    auto* param = Simulation_t::GetActive()->GetParam();
+    // this value will be used to reduce force for neurite/neurite interactions
+    double h_over_m = 0.01;
+
     // 3) Object avoidance force
+    bool has_neurite_neighbor = false;
     //  (We check for every neighbor object if they touch us, i.e. push us away)
-    auto calculate_neighbor_forces = [this, &force_on_my_point_mass,
-                                      &force_on_my_mothers_point_mass](
+    auto calculate_neighbor_forces = [this, &force_from_neighbors,
+                                      &force_on_my_mothers_point_mass,
+                                      &h_over_m, &has_neurite_neighbor](
         auto&& neighbor, SoHandle neighbor_handle) {
       // TODO(lukas) once we switch to C++17 use if constexpr.
       // As a consequence the reinterpret_cast won't be needed anymore.
@@ -976,21 +984,25 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
       std::array<double, 4> force_from_neighbor =
           force.GetForce(this, &neighbor);
 
+      // hack: if the neighbour is a neurite, we need to reduce the force from
+      // that neighbour in order to avoid kink behaviour
+      if (neighbor.template IsSoType<MostDerivedScalar>()) {
+        force_from_neighbor = Math::ScalarMult(h_over_m, force_from_neighbor);
+        has_neurite_neighbor = true;
+      }
+
       if (std::abs(force_from_neighbor[3]) <
           1E-10) {  // TODO(neurites) hard coded value
         // (if all the force is transmitted to the (distal end) point mass)
-        force_on_my_point_mass[0] += force_from_neighbor[0];
-        force_on_my_point_mass[1] += force_from_neighbor[1];
-        force_on_my_point_mass[2] += force_from_neighbor[2];
+        force_from_neighbors[0] += force_from_neighbor[0];
+        force_from_neighbors[1] += force_from_neighbor[1];
+        force_from_neighbors[2] += force_from_neighbor[2];
       } else {
         // (if there is a part transmitted to the proximal end)
         double part_for_point_mass = 1.0 - force_from_neighbor[3];
-        force_on_my_point_mass[0] +=
-            force_from_neighbor[0] * part_for_point_mass;
-        force_on_my_point_mass[1] +=
-            force_from_neighbor[1] * part_for_point_mass;
-        force_on_my_point_mass[2] +=
-            force_from_neighbor[2] * part_for_point_mass;
+        force_from_neighbors[0] += force_from_neighbor[0] * part_for_point_mass;
+        force_from_neighbors[1] += force_from_neighbor[1] * part_for_point_mass;
+        force_from_neighbors[2] += force_from_neighbor[2] * part_for_point_mass;
         force_on_my_mothers_point_mass[0] +=
             force_from_neighbor[0] * force_from_neighbor[3];
         force_on_my_mothers_point_mass[1] +=
@@ -1003,45 +1015,23 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
     grid->ForEachNeighborWithinRadius(calculate_neighbor_forces, *this,
                                       GetSoHandle(), squared_radius);
 
-    bool anti_kink = false;
-    // TEST : anti-kink
-    if (anti_kink) {
-      double kk = 5;
-      if (daughter_left_[kIdx] != nullptr && daughter_right_[kIdx] == nullptr) {
-        if (daughter_left_[kIdx]->GetDaughterLeft() != nullptr) {
-          auto downstream = daughter_left_[kIdx]->GetDaughterLeft();
-          double rresting = daughter_left_[kIdx]->GetRestingLength() +
-                            downstream->GetRestingLength();
-          auto down_to_me =
-              Math::Subtract(GetMassLocation(), downstream->GetMassLocation());
-          double aactual = Math::Norm(down_to_me);
-
-          force_on_my_point_mass =
-              Math::Add(force_on_my_point_mass,
-                        Math::ScalarMult(kk * (rresting - aactual),
-                                         Math::Normalize(down_to_me)));
-        }
-      }
-
-      if (daughter_left_[kIdx] != nullptr && mother_[kIdx].IsNeuriteElement()) {
-        auto mother = mother_[kIdx].GetNeuriteElementSoPtr();
-        double rresting = GetRestingLength() + mother->GetRestingLength();
-        auto down_to_me =
-            Math::Subtract(GetMassLocation(), mother->ProximalEnd());
-        double aactual = Math::Norm(down_to_me);
-
-        force_on_my_point_mass =
-            Math::Add(force_on_my_point_mass,
-                      Math::ScalarMult(kk * (rresting - aactual),
-                                       Math::Normalize(down_to_me)));
-      }
+    // hack: if the neighbour is a neurite, and as we reduced the force from
+    // that neighbour, we also need to reduce my internal force (from internal
+    // tension and daughters)
+    if (has_neurite_neighbor) {
+      force_on_my_point_mass =
+          Math::ScalarMult(h_over_m, force_on_my_point_mass);
     }
+
+    force_on_my_point_mass =
+        Math::Add(force_on_my_point_mass, force_from_neighbors);
 
     // 5) define the force that will be transmitted to the mother
     force_to_transmit_to_proximal_mass_[kIdx] = force_on_my_mothers_point_mass;
     //  6.1) Define movement scale
-    auto* param = Simulation_t::GetActive()->GetParam();
-    double h_over_m =  param->simulation_time_step_ / GetMass();
+    // auto* param = Simulation_t::GetActive()->GetParam();
+    // double h_over_m =  param->simulation_time_step_ / GetMass();
+    // double h_over_m = 1;
     double force_norm = Math::Norm(force_on_my_point_mass);
     //  6.2) If is F not strong enough -> no movements
     if (force_norm < adherence_[kIdx]) {
@@ -1051,8 +1041,8 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
     // So, what follows is only executed if we do actually move :
 
     //  6.3) Since there's going be a move, we calculate it
-    auto displacement = Math::ScalarMult(h_over_m, force_on_my_point_mass);
-    double displacement_norm = force_norm * h_over_m;
+    auto& displacement = force_on_my_point_mass;
+    double& displacement_norm = force_norm;
 
     //  6.4) There is an upper bound for the movement.
     if (displacement_norm > param->simulation_max_displacement_) {
