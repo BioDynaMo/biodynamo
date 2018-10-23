@@ -21,8 +21,6 @@
 
 namespace bdm {
 
-static TimingAggregator gStatistics;
-
 /// \brief Decorator for `Operations` to measure runtime
 template <typename TOp>
 struct OpTimer {

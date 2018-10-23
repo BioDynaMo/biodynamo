@@ -24,6 +24,8 @@
 
 namespace bdm {
 
+static TimingAggregator gStatistics;
+
 class Timing {
  public:
   typedef std::chrono::high_resolution_clock Clock;
@@ -35,6 +37,17 @@ class Timing {
     auto since_epoch = time.time_since_epoch();
     auto millis = duration_cast<milliseconds>(since_epoch);
     return millis.count();
+  }
+
+  template <typename TFunctor, typename TSimulation = Simulation<>>
+  static void Time(const std::string& description, TFunctor& f) {
+    static bool use_timer_ = TSimulation::GetActive()->GetParam()->statistics_;
+    if (use_timer_) {
+      Timing timing(description, &gStatistics);
+      f();
+    } else {
+      f();
+    }
   }
 
   explicit Timing(const std::string& description = "")
