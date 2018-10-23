@@ -37,11 +37,11 @@ class DiffusionOp {
   template <typename TSimulation = Simulation<>>
   void operator()() {
     auto* sim = TSimulation::GetActive();
+    auto* rm = sim->GetResourceManager();
     auto* grid = sim->GetGrid();
     auto* param = sim->GetParam();
 
-    auto& diffusion_grids = sim->GetResourceManager()->GetDiffusionGrids();
-    for (auto dg : diffusion_grids) {
+    rm->ApplyOnAllDiffusionGrids([&](DiffusionGrid* dg) {
       // Update the diffusion grid dimension if the neighbor grid dimensions
       // have changed. If the space is bound, we do not need to update the
       // dimensions, because these should not be changing anyway
@@ -62,7 +62,7 @@ class DiffusionOp {
       if (param->calculate_gradients_) {
         dg->CalculateGradient();
       }
-    }
+    });
   }
 };
 

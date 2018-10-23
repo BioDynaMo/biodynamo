@@ -534,12 +534,12 @@ TEST(DiffusionTest, ModelInitializer) {
 
   int l = -100;
   int r = 100;
-  rm->GetDiffusionGrids()[kSubstance_0]->Initialize({l, r, l, r, l, r});
-  rm->GetDiffusionGrids()[kSubstance_1]->Initialize({l, r, l, r, l, r});
-  rm->GetDiffusionGrids()[kSubstance_2]->Initialize({l, r, l, r, l, r});
-  rm->GetDiffusionGrids()[kSubstance_0]->RunInitializers();
-  rm->GetDiffusionGrids()[kSubstance_1]->RunInitializers();
-  rm->GetDiffusionGrids()[kSubstance_2]->RunInitializers();
+  rm->GetDiffusionGrid(kSubstance_0)->Initialize({l, r, l, r, l, r});
+  rm->GetDiffusionGrid(kSubstance_1)->Initialize({l, r, l, r, l, r});
+  rm->GetDiffusionGrid(kSubstance_2)->Initialize({l, r, l, r, l, r});
+  rm->GetDiffusionGrid(kSubstance_0)->RunInitializers();
+  rm->GetDiffusionGrid(kSubstance_1)->RunInitializers();
+  rm->GetDiffusionGrid(kSubstance_2)->RunInitializers();
 
   // Write diffusion visualization to file
   CatalystAdaptor<> adaptor("");
@@ -563,7 +563,7 @@ TEST(DiffusionTest, ModelInitializer) {
 
   double expected = ROOT::Math::normal_pdf(0, sigma, mean);
   std::array<double, 3> marker = {0, 0, 0};
-  size_t idx = rm->GetDiffusionGrids()[kSubstance_1]->GetBoxIndex(marker);
+  size_t idx = rm->GetDiffusionGrid(kSubstance_1)->GetBoxIndex(marker);
   EXPECT_NEAR(expected, conc->GetTuple(idx)[0], 1e-9);
   remove(filename.c_str());
 }

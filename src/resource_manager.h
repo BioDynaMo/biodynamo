@@ -20,6 +20,7 @@
 #include <ostream>
 #include <string>
 #include <tuple>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 #include "root_util.h"
@@ -178,8 +179,8 @@ class ResourceManager {
 
   /// Free the memory that was reserved for the diffusion grids
   virtual ~ResourceManager() {
-    for (auto* grid : diffusion_grids_) {
-      delete grid;
+    for (auto& el : diffusion_grids_) {
+      delete el.second;
     }
   }
 
@@ -199,21 +200,41 @@ class ResourceManager {
     return &std::get<TypeContainer<ToBackend<Type>>>(data_);
   }
 
-  /// Return the container of diffusion grids
-  std::vector<DiffusionGrid*>& GetDiffusionGrids() { return diffusion_grids_; }
+  void AddDiffusionGrid(DiffusionGrid* dgrid) {
+    uint64_t substance_id = dgrid->GetSubstanceId();
+    auto search = diffusion_grids_.find(substance_id);
+    if (search != diffusion_grids_.end()) {
+      Log::Fatal("ResourceManager::AddDiffusionGrid",
+                 "You tried to add a diffusion grid with an already existing "
+                 "substance id. Please choose a different substance id.");
+    } else {
+      diffusion_grids_[substance_id] = dgrid;
+    }
+  }
+
+  void RemoveDiffusionGrid(size_t substance_id) {
+    auto search = diffusion_grids_.find(substance_id);
+    if (search != diffusion_grids_.end()) {
+      diffusion_grids_.erase(search);
+    } else {
+      Log::Fatal("ResourceManager::AddDiffusionGrid",
+                 "You tried to remove a diffusion grid that does not exist.");
+    }
+  }
 
   /// Return the diffusion grid which holds the substance of specified id
-  DiffusionGrid* GetDiffusionGrid(size_t substance_id) {
+  DiffusionGrid* GetDiffusionGrid(size_t substance_id) const {
     assert(substance_id < diffusion_grids_.size() &&
            "You tried to access a diffusion grid that does not exist!");
-    return diffusion_grids_[substance_id];
+    return diffusion_grids_.at(substance_id);
   }
 
   /// Return the diffusion grid which holds the substance of specified name
   /// Caution: using this function in a tight loop will result in a slow
   /// simulation. Use `GetDiffusionGrid(size_t)` in those cases.
-  DiffusionGrid* GetDiffusionGrid(std::string substance_name) {
-    for (auto dg : diffusion_grids_) {
+  DiffusionGrid* GetDiffusionGrid(std::string substance_name) const {
+    for (auto& el : diffusion_grids_) {
+      auto& dg = el.second;
       if (dg->GetSubstanceName() == substance_name) {
         return dg;
       }
@@ -222,6 +243,17 @@ class ResourceManager {
            "You tried to access a diffusion grid that does not exist! "
            "Did you specify the correct substance name?");
     return nullptr;
+  }
+
+  /// Execute the given functor for all diffusion grids
+  ///     rm->ApplyOnAllDiffusionGrids([](DiffusionGrid* dgrid) {
+  ///       ...
+  ///     });
+  template <typename TFunctor>
+  void ApplyOnAllDiffusionGrids(TFunctor&& f) const {
+    for (auto& el : diffusion_grids_) {
+      f(el.second);
+    }
   }
 
   /// Returns the total number of simulation objects
@@ -361,7 +393,7 @@ class ResourceManager {
   /// creates one container for each type in Types.
   /// Container type is determined based on the specified Backend
   typename ConvertToContainerTuple<Backend, Types>::type data_;
-  std::vector<DiffusionGrid*> diffusion_grids_;
+  std::unordered_map<uint64_t, DiffusionGrid*> diffusion_grids_;
 
 #ifdef USE_OPENCL
   cl::Context opencl_context_;             //!

@@ -7,7 +7,6 @@
     <class name="bdm::Neurite" />
     <class pattern="std::vector<bdm::*<*>>"/>
     <class pattern="std::tuple<bdm::*<*>"/>
-    <class name="bdm::DiffusionGrid" />
     <class name="bdm::KaliumSecretion" />
     <class name="bdm::DivisionAndMovementModule," />
     <class name="bdm::SubstanceSecretion" />

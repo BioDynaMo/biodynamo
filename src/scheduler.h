@@ -196,12 +196,12 @@ class Scheduler {
     grid->Initialize();
     int lbound = grid->GetDimensionThresholds()[0];
     int rbound = grid->GetDimensionThresholds()[1];
-    for (auto& dgrid : rm->GetDiffusionGrids()) {
+    rm->ApplyOnAllDiffusionGrids([&](DiffusionGrid* dgrid) {
       // Create data structures, whose size depend on the grid dimensions
       dgrid->Initialize({lbound, rbound, lbound, rbound, lbound, rbound});
       // Initialize data structures with user-defined values
       dgrid->RunInitializers();
-    }
+    });
   }
 };
 

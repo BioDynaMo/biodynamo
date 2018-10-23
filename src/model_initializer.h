@@ -187,12 +187,7 @@ struct ModelInitializer {
     DiffusionGrid* d_grid =
         new DiffusionGrid(substance_id, substance_name, diffusion_coeff,
                           decay_constant, resolution);
-    auto& diffusion_grids = rm->GetDiffusionGrids();
-
-    if (substance_id + 1 > diffusion_grids.size()) {
-      diffusion_grids.resize(substance_id + 1);
-    }
-    diffusion_grids[substance_id] = d_grid;
+    rm->AddDiffusionGrid(d_grid);
   }
 
   template <typename TSimulation = Simulation<>, typename F>
