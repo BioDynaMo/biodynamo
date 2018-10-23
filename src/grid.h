@@ -229,9 +229,6 @@ class Grid {
   void Initialize(Adjacency adjacency = kHigh) {
     adjacency_ = adjacency;
 
-    int32_t inf = std::numeric_limits<int32_t>::max();
-    threshold_dimensions_ = {inf, -inf};
-
     UpdateGrid();
     initialized_ = true;
   }
@@ -247,183 +244,108 @@ class Grid {
     num_boxes_xy_ = 0;
     int32_t inf = std::numeric_limits<int32_t>::max();
     grid_dimensions_ = {inf, -inf, inf, -inf, inf, -inf};
+    threshold_dimensions_ = {inf, -inf};
     successors_.clear();
     has_grown_ = false;
   }
 
   /// Updates the grid, as simulation objects may have moved, added or deleted
   void UpdateGrid() {
-    ClearGrid();
+    auto* rm = TSimulation::GetActive()->GetResourceManager();
 
-    auto inf = Constant::kInfinity;
-    std::array<double, 6> tmp_dim = {{inf, -inf, inf, -inf, inf, -inf}};
-    CalculateGridDimensions(&tmp_dim);
-    RoundOffGridDimensions(tmp_dim);
+    if (rm->GetNumSimObjects() != 0) {
+      ClearGrid();
 
-    auto los = ceil(largest_object_size_);
-    assert(los > 0 &&
-           "The largest object size was found to be 0. Please check if your "
-           "cells are correctly initialized.");
-    box_length_ = los;
+      auto inf = Constant::kInfinity;
+      std::array<double, 6> tmp_dim = {{inf, -inf, inf, -inf, inf, -inf}};
+      CalculateGridDimensions(&tmp_dim);
+      RoundOffGridDimensions(tmp_dim);
 
-    for (int i = 0; i < 3; i++) {
-      int dimension_length =
-          grid_dimensions_[2 * i + 1] - grid_dimensions_[2 * i];
-      int r = dimension_length % box_length_;
-      // If the grid is not perfectly divisible along each dimension by the
-      // resolution, extend the grid so that it is
-      if (r != 0) {
-        // std::abs for the case that box_length_ > dimension_length
-        grid_dimensions_[2 * i + 1] += (box_length_ - r);
-      } else {
-        // Else extend the grid dimension with one row, because the outmost
-        // object lies exactly on the border
+      auto los = ceil(largest_object_size_);
+      assert(los > 0 &&
+             "The largest object size was found to be 0. Please check if your "
+             "cells are correctly initialized.");
+      box_length_ = los;
+
+      for (int i = 0; i < 3; i++) {
+        int dimension_length =
+            grid_dimensions_[2 * i + 1] - grid_dimensions_[2 * i];
+        int r = dimension_length % box_length_;
+        // If the grid is not perfectly divisible along each dimension by the
+        // resolution, extend the grid so that it is
+        if (r != 0) {
+          // std::abs for the case that box_length_ > dimension_length
+          grid_dimensions_[2 * i + 1] += (box_length_ - r);
+        } else {
+          // Else extend the grid dimension with one row, because the outmost
+          // object lies exactly on the border
+          grid_dimensions_[2 * i + 1] += box_length_;
+        }
+      }
+
+      // Pad the grid to avoid out of bounds check when search neighbors
+      for (int i = 0; i < 3; i++) {
+        grid_dimensions_[2 * i] -= box_length_;
         grid_dimensions_[2 * i + 1] += box_length_;
       }
-    }
 
-    // Pad the grid to avoid out of bounds check when search neighbors
-    for (int i = 0; i < 3; i++) {
-      grid_dimensions_[2 * i] -= box_length_;
-      grid_dimensions_[2 * i + 1] += box_length_;
-    }
+      // Calculate how many boxes fit along each dimension
+      for (int i = 0; i < 3; i++) {
+        int dimension_length =
+            grid_dimensions_[2 * i + 1] - grid_dimensions_[2 * i];
+        assert((dimension_length % box_length_ == 0) &&
+               "The grid dimensions are not a multiple of its box length");
+        num_boxes_axis_[i] = dimension_length / box_length_;
+      }
 
-    // Calculate how many boxes fit along each dimension
-    for (int i = 0; i < 3; i++) {
-      int dimension_length =
-          grid_dimensions_[2 * i + 1] - grid_dimensions_[2 * i];
-      assert((dimension_length % box_length_ == 0) &&
-             "The grid dimensions are not a multiple of its box length");
-      num_boxes_axis_[i] = dimension_length / box_length_;
-    }
+      num_boxes_xy_ = num_boxes_axis_[0] * num_boxes_axis_[1];
+      auto total_num_boxes = num_boxes_xy_ * num_boxes_axis_[2];
 
-    num_boxes_xy_ = num_boxes_axis_[0] * num_boxes_axis_[1];
-    auto total_num_boxes = num_boxes_xy_ * num_boxes_axis_[2];
+      CheckGridGrowth();
 
-    CheckGridGrowth();
+      if (boxes_.size() != total_num_boxes) {
+        boxes_.resize(total_num_boxes, Box());
+      }
 
-    if (boxes_.size() != total_num_boxes) {
-      boxes_.resize(total_num_boxes, Box());
-    }
+      successors_.Initialize();
 
-    successors_.Initialize();
-
-    // Assign simulation objects to boxes
-    auto* rm = TSimulation::GetActive()->GetResourceManager();
-    rm->ApplyOnAllElementsParallel([this](auto&& sim_object, SoHandle id) {
-      const auto& position = sim_object.GetPosition();
-      auto idx = this->GetBoxIndex(position);
-      auto box = this->GetBoxPointer(idx);
-      box->AddObject(id, &successors_);
-      sim_object.SetBoxIdx(idx);
-    });
-  }
-
-  void CheckGridGrowth() {
-    // Determine if the grid dimensions have changed (changed in the sense that
-    // the grid has grown outwards)
-    auto min_gd =
-        *std::min_element(grid_dimensions_.begin(), grid_dimensions_.end());
-    auto max_gd =
-        *std::max_element(grid_dimensions_.begin(), grid_dimensions_.end());
-    if (min_gd < threshold_dimensions_[0]) {
-      threshold_dimensions_[0] = min_gd;
-      has_grown_ = true;
-    }
-    if (max_gd > threshold_dimensions_[1]) {
-      Log::Info("Grid",
-                "Your simulation objects are getting near the edge of "
-                "the simulation space. Be aware of boundary conditions that "
-                "may come into play!");
-      threshold_dimensions_[1] = max_gd;
-      has_grown_ = true;
-    }
-  }
-
-  /// Calculates what the grid dimensions need to be in order to contain all the
-  /// simulation objects
-  void CalculateGridDimensions(std::array<double, 6>* ret_grid_dimensions) {
-    auto* rm = TSimulation::GetActive()->GetResourceManager();
-
-    const auto max_threads = omp_get_max_threads();
-
-    std::vector<std::array<double, 6>*> all_grid_dimensions(max_threads,
-                                                            nullptr);
-    std::vector<double*> all_largest_object_size(max_threads, nullptr);
-
-#pragma omp parallel
-    {
-      auto thread_id = omp_get_thread_num();
-      auto* grid_dimensions = new std::array<double, 6>;
-      *grid_dimensions = {{Constant::kInfinity, -Constant::kInfinity,
-                           Constant::kInfinity, -Constant::kInfinity,
-                           Constant::kInfinity, -Constant::kInfinity}};
-      double* largest_object_size = new double;
-      *largest_object_size = 0;
-      all_grid_dimensions[thread_id] = grid_dimensions;
-      all_largest_object_size[thread_id] = largest_object_size;
-
-      rm->ApplyOnAllTypes([&](auto* sim_objects, uint16_t type_idx) {
-#pragma omp for
-        for (size_t i = 0; i < sim_objects->size(); i++) {
-          const auto& position = (*sim_objects)[i].GetPosition();
-          for (size_t j = 0; j < 3; j++) {
-            if (position[j] < (*grid_dimensions)[2 * j]) {
-              (*grid_dimensions)[2 * j] = position[j];
-            }
-            if (position[j] > (*grid_dimensions)[2 * j + 1]) {
-              (*grid_dimensions)[2 * j + 1] = position[j];
-            }
-          }
-          auto diameter = (*sim_objects)[i].GetDiameter();
-          if (diameter > *largest_object_size) {
-            *largest_object_size = diameter;
-          }
-        }
+      // Assign simulation objects to boxes
+      rm->ApplyOnAllElementsParallel([this](auto&& sim_object, SoHandle id) {
+        const auto& position = sim_object.GetPosition();
+        auto idx = this->GetBoxIndex(position);
+        auto box = this->GetBoxPointer(idx);
+        box->AddObject(id, &successors_);
+        sim_object.SetBoxIdx(idx);
       });
+    } else {
+      // There are no sim objects in this simulation
+      auto* param = TSimulation::GetActive()->GetParam();
 
-#pragma omp master
-      {
-        for (int i = 0; i < max_threads; i++) {
-          for (size_t j = 0; j < 3; j++) {
-            if ((*all_grid_dimensions[i])[2 * j] <
-                (*ret_grid_dimensions)[2 * j]) {
-              (*ret_grid_dimensions)[2 * j] = (*all_grid_dimensions[i])[2 * j];
-            }
-            if ((*all_grid_dimensions[i])[2 * j + 1] >
-                (*ret_grid_dimensions)[2 * j + 1]) {
-              (*ret_grid_dimensions)[2 * j + 1] =
-                  (*all_grid_dimensions[i])[2 * j + 1];
-            }
-          }
-          if ((*all_largest_object_size[i]) > largest_object_size_) {
-            largest_object_size_ = *(all_largest_object_size[i]);
-          }
-        }
+      bool uninitialized = boxes_.size() == 0;
+      if (uninitialized && param->bound_space_) {
+        // Simulation has never had any simulation objects
+        // Initialize grid dimensions with `Param::min_bound_` and
+        // `Param::max_bound_`
+        // This is required for the DiffusionGrid
+        int min = param->min_bound_;
+        int max = param->max_bound_;
+        grid_dimensions_ = {min, max, min, max, min, max};
+        threshold_dimensions_ = {min, max};
+        has_grown_ = true;
+      } else if (!uninitialized) {
+        // all simulation objects have been removed in the last iteration
+        // grid state remains the same, but we have to set has_grown_ to false
+        // otherwise the DiffusionGrid will attempt to resize
+        has_grown_ = false;
+      } else {
+        Log::Fatal(
+            "Grid",
+            "You tried to initialize an empty simulation without bound space. "
+            "Therefore we cannot determine the size of the simulation space. "
+            "Please add simulation objects, or set Param::bound_space_, "
+            "Param::min_bound_, and Param::max_bound_.");
       }
     }
-
-    for (auto element : all_grid_dimensions) {
-      delete element;
-    }
-    for (auto element : all_largest_object_size) {
-      delete element;
-    }
-  }
-
-  void RoundOffGridDimensions(const std::array<double, 6>& grid_dimensions) {
-    assert(grid_dimensions_[0] > -9.999999999);
-    assert(grid_dimensions_[2] > -9.999999999);
-    assert(grid_dimensions_[4] > -9.999999999);
-    assert(grid_dimensions_[1] < 80);
-    assert(grid_dimensions_[3] < 80);
-    assert(grid_dimensions_[5] < 80);
-    grid_dimensions_[0] = floor(grid_dimensions[0]);
-    grid_dimensions_[2] = floor(grid_dimensions[2]);
-    grid_dimensions_[4] = floor(grid_dimensions[4]);
-    grid_dimensions_[1] = ceil(grid_dimensions[1]);
-    grid_dimensions_[3] = ceil(grid_dimensions[3]);
-    grid_dimensions_[5] = ceil(grid_dimensions[5]);
   }
 
   /// @brief      Calculates the squared euclidian distance between two points
@@ -649,21 +571,18 @@ class Grid {
     return GetBoxIndex(box_coord);
   }
 
-  void SetDimensionThresholds(int32_t min, int32_t max) {
-    threshold_dimensions_[0] = min;
-    threshold_dimensions_[1] = max;
-  }
-
   /// Gets the size of the largest object in the grid
   double GetLargestObjectSize() const { return largest_object_size_; }
 
-  std::array<int32_t, 6>& GetDimensions() { return grid_dimensions_; }
+  const std::array<int32_t, 6>& GetDimensions() const {
+    return grid_dimensions_;
+  }
 
-  std::array<int32_t, 2>& GetDimensionThresholds() {
+  const std::array<int32_t, 2>& GetDimensionThresholds() const {
     return threshold_dimensions_;
   }
 
-  std::array<uint32_t, 3>& GetNumBoxes() { return num_boxes_axis_; }
+  const std::array<uint32_t, 3>& GetNumBoxes() const { return num_boxes_axis_; }
 
   uint32_t GetBoxLength() { return box_length_; }
 
@@ -767,6 +686,113 @@ class Grid {
   bool has_grown_ = false;
   /// Flag to indicate if the grid has been initialized or not
   bool initialized_ = false;
+
+  void CheckGridGrowth() {
+    // Determine if the grid dimensions have changed (changed in the sense that
+    // the grid has grown outwards)
+    auto min_gd =
+        *std::min_element(grid_dimensions_.begin(), grid_dimensions_.end());
+    auto max_gd =
+        *std::max_element(grid_dimensions_.begin(), grid_dimensions_.end());
+    if (min_gd < threshold_dimensions_[0]) {
+      threshold_dimensions_[0] = min_gd;
+      has_grown_ = true;
+    }
+    if (max_gd > threshold_dimensions_[1]) {
+      Log::Info("Grid",
+                "Your simulation objects are getting near the edge of "
+                "the simulation space. Be aware of boundary conditions that "
+                "may come into play!");
+      threshold_dimensions_[1] = max_gd;
+      has_grown_ = true;
+    }
+  }
+
+  /// Calculates what the grid dimensions need to be in order to contain all the
+  /// simulation objects
+  void CalculateGridDimensions(std::array<double, 6>* ret_grid_dimensions) {
+    auto* rm = TSimulation::GetActive()->GetResourceManager();
+
+    const auto max_threads = omp_get_max_threads();
+
+    std::vector<std::array<double, 6>*> all_grid_dimensions(max_threads,
+                                                            nullptr);
+    std::vector<double*> all_largest_object_size(max_threads, nullptr);
+
+#pragma omp parallel
+    {
+      auto thread_id = omp_get_thread_num();
+      auto* grid_dimensions = new std::array<double, 6>;
+      *grid_dimensions = {{Constant::kInfinity, -Constant::kInfinity,
+                           Constant::kInfinity, -Constant::kInfinity,
+                           Constant::kInfinity, -Constant::kInfinity}};
+      double* largest_object_size = new double;
+      *largest_object_size = 0;
+      all_grid_dimensions[thread_id] = grid_dimensions;
+      all_largest_object_size[thread_id] = largest_object_size;
+
+      rm->ApplyOnAllTypes([&](auto* sim_objects, uint16_t type_idx) {
+#pragma omp for
+        for (size_t i = 0; i < sim_objects->size(); i++) {
+          const auto& position = (*sim_objects)[i].GetPosition();
+          for (size_t j = 0; j < 3; j++) {
+            if (position[j] < (*grid_dimensions)[2 * j]) {
+              (*grid_dimensions)[2 * j] = position[j];
+            }
+            if (position[j] > (*grid_dimensions)[2 * j + 1]) {
+              (*grid_dimensions)[2 * j + 1] = position[j];
+            }
+          }
+          auto diameter = (*sim_objects)[i].GetDiameter();
+          if (diameter > *largest_object_size) {
+            *largest_object_size = diameter;
+          }
+        }
+      });
+
+#pragma omp master
+      {
+        for (int i = 0; i < max_threads; i++) {
+          for (size_t j = 0; j < 3; j++) {
+            if ((*all_grid_dimensions[i])[2 * j] <
+                (*ret_grid_dimensions)[2 * j]) {
+              (*ret_grid_dimensions)[2 * j] = (*all_grid_dimensions[i])[2 * j];
+            }
+            if ((*all_grid_dimensions[i])[2 * j + 1] >
+                (*ret_grid_dimensions)[2 * j + 1]) {
+              (*ret_grid_dimensions)[2 * j + 1] =
+                  (*all_grid_dimensions[i])[2 * j + 1];
+            }
+          }
+          if ((*all_largest_object_size[i]) > largest_object_size_) {
+            largest_object_size_ = *(all_largest_object_size[i]);
+          }
+        }
+      }
+    }
+
+    for (auto element : all_grid_dimensions) {
+      delete element;
+    }
+    for (auto element : all_largest_object_size) {
+      delete element;
+    }
+  }
+
+  void RoundOffGridDimensions(const std::array<double, 6>& grid_dimensions) {
+    assert(grid_dimensions_[0] > -9.999999999);
+    assert(grid_dimensions_[2] > -9.999999999);
+    assert(grid_dimensions_[4] > -9.999999999);
+    assert(grid_dimensions_[1] < 80);
+    assert(grid_dimensions_[3] < 80);
+    assert(grid_dimensions_[5] < 80);
+    grid_dimensions_[0] = floor(grid_dimensions[0]);
+    grid_dimensions_[2] = floor(grid_dimensions[2]);
+    grid_dimensions_[4] = floor(grid_dimensions[4]);
+    grid_dimensions_[1] = ceil(grid_dimensions[1]);
+    grid_dimensions_[3] = ceil(grid_dimensions[3]);
+    grid_dimensions_[5] = ceil(grid_dimensions[5]);
+  }
 
   /// @brief      Gets the Moore (i.e adjacent) boxes of the query box
   ///

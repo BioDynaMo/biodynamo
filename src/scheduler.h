@@ -88,11 +88,7 @@ class Scheduler {
     auto* grid = sim->GetGrid();
     auto* param = sim->GetParam();
 
-    assert(rm->GetNumSimObjects() > 0 &&
-           "This simulation does not contain any simulation objects.");
-
     visualization_->Visualize(total_steps_, last_iteration);
-
     {
       if (param->statistics_) {
         Timing timing("neighbors", &gStatistics);
@@ -107,12 +103,12 @@ class Scheduler {
     if (param->bound_space_) {
       rm->ApplyOnAllTypes(bound_space_);
     }
-    rm->ApplyOnAllTypes(diffusion_);
     rm->ApplyOnAllTypes(biology_);
     if (param->run_mechanical_interactions_) {
       rm->ApplyOnAllTypes(physics_);  // Bounding box applied at the end
     }
     CommitChangesAndUpdateReferences();
+    rm->ApplyOnAllTypes(diffusion_);
   }
 
  private:
@@ -194,10 +190,10 @@ class Scheduler {
       is_gpu_environment_initialized_ = true;
     }
 
-    grid->Initialize();
     if (param->bound_space_) {
       rm->ApplyOnAllTypes(bound_space_);
     }
+    grid->Initialize();
     int lbound = grid->GetDimensionThresholds()[0];
     int rbound = grid->GetDimensionThresholds()[1];
     for (auto& dgrid : rm->GetDiffusionGrids()) {

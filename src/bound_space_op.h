@@ -49,14 +49,12 @@ class BoundSpace {
     // positions
     // which would lead to inconsistencies
     auto* sim = TSimulation::GetActive();
-    auto* grid = sim->GetGrid();
     auto* param = sim->GetParam();
 #pragma omp parallel for
     for (size_t i = 0; i < sim_objects->size(); i++) {
       auto&& sim_object = (*sim_objects)[i];
       if (param->bound_space_) {
         ApplyBoundingBox(&sim_object, param->min_bound_, param->max_bound_);
-        grid->SetDimensionThresholds(param->min_bound_, param->max_bound_);
       }
     }
   }
