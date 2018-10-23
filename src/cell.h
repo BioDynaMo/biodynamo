@@ -144,6 +144,18 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
   template <typename TBiologyModule>
   void AddBiologyModule(TBiologyModule && module);
 
+  /// Remove a biology module from this cell
+  template <typename TBiologyModule>
+  void RemoveBiologyModule(TBiologyModule * remove_module) {
+    for (unsigned int i = 0; i < biology_modules_[kIdx].size(); i++) {
+      const TBiologyModule* module =
+          get_if<TBiologyModule>(&biology_modules_[kIdx][i]);
+      if (module == remove_module) {
+        biology_modules_[kIdx].erase(biology_modules_[kIdx].begin() + i);
+      }
+    }
+  }
+
   /// Execute all biology modules
   void RunBiologyModules();
 
@@ -362,8 +374,8 @@ BDM_SO_DEFINE(template <typename TBiologyModule>
 BDM_SO_DEFINE(inline void CellExt)::RunBiologyModules() {
   RunVisitor<MostDerived<Backend>> visitor(
       static_cast<MostDerived<Backend>*>(this));
-  for (auto& module : biology_modules_[kIdx]) {
-    visit(visitor, module);
+  for (uint64_t i = 0; i < biology_modules_[kIdx].size(); i++) {
+    visit(visitor, biology_modules_[kIdx][i]);
   }
 }
 

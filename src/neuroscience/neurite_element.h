@@ -507,6 +507,18 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
     biology_modules_[kIdx].emplace_back(module);
   }
 
+  /// Remove a biology module from this cell
+  template <typename TBiologyModule>
+  void RemoveBiologyModule(TBiologyModule * remove_module) {
+    for (unsigned int i = 0; i < biology_modules_[kIdx].size(); i++) {
+      const TBiologyModule* module =
+          get_if<TBiologyModule>(&biology_modules_[kIdx][i]);
+      if (module == remove_module) {
+        biology_modules_[kIdx].erase(biology_modules_[kIdx].begin() + i);
+      }
+    }
+  }
+
   /// Execute all biology modules
   void RunBiologyModules() {
     RunVisitor<MostDerived<Backend>> visitor(

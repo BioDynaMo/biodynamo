@@ -219,6 +219,31 @@ TEST(CellTest, BiologyModuleEventHandler) {
   EXPECT_TRUE(get_if<GrowthModule>(&destination[0]) != nullptr);
 }
 
+TEST(CellTest, RemoveBiologyModule) {
+  Simulation<> simulation(TEST_NAME);
+
+  TestCell cell;
+
+  cell.AddBiologyModule(MovementModule({1, 2, 3}));
+  cell.AddBiologyModule(RemoveModule());
+  cell.AddBiologyModule(GrowthModule());
+
+  // RemoveModule should remove itself
+  cell.RunBiologyModules();
+
+  const auto& bms = cell.GetAllBiologyModules();
+  ASSERT_EQ(2u, bms.size());
+  EXPECT_TRUE(get_if<MovementModule>(&bms[0]) != nullptr);
+  EXPECT_TRUE(get_if<GrowthModule>(&bms[1]) != nullptr);
+
+  cell.AddBiologyModule(RemoveModule());
+  ASSERT_EQ(3u, bms.size());
+  RemoveModule* to_be_removed =
+      const_cast<RemoveModule*>(get_if<RemoveModule>(&bms[2]));
+  cell.RemoveBiologyModule(to_be_removed);
+  ASSERT_EQ(2u, bms.size());
+}
+
 TEST(CellTest, IO) { RunIOTest(); }
 
 }  // namespace cell_test_internal
