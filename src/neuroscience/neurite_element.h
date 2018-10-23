@@ -1029,9 +1029,6 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
     // 5) define the force that will be transmitted to the mother
     force_to_transmit_to_proximal_mass_[kIdx] = force_on_my_mothers_point_mass;
     //  6.1) Define movement scale
-    // auto* param = Simulation_t::GetActive()->GetParam();
-    // double h_over_m =  param->simulation_time_step_ / GetMass();
-    // double h_over_m = 1;
     double force_norm = Math::Norm(force_on_my_point_mass);
     //  6.2) If is F not strong enough -> no movements
     if (force_norm < adherence_[kIdx]) {

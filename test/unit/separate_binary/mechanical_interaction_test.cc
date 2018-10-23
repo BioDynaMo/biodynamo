@@ -457,9 +457,6 @@ TEST(MechanicalInteraction, TwoDistinctCylinderEncounter) {
     ne1_axis = ne1->GetSpringAxis();
     ne2_axis = ne2->GetSpringAxis();
 
-    // EXPECT_LT(ne1_axis[0], 0.5);
-    // EXPECT_LT(ne1_axis[0], 0.5);
-
     EXPECT_NEAR(ne1_axis[1], 0, abs_error<double>::value);
     EXPECT_NEAR(ne2_axis[1], 0, abs_error<double>::value);
   }
