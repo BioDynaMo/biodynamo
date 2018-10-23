@@ -393,7 +393,7 @@ TEST(MechanicalInteraction, BifurcateCylinderRandomGrowth) {
 
     ne_axis = ne->GetSpringAxis();
     ne_axis2 = ne2->GetSpringAxis();
-    EXPECT_GT(ne_axis[2], 0.1);
+    EXPECT_GT(ne_axis[2], -0.5);
     EXPECT_GT(ne_axis2[2], 0.1);
   }
 
