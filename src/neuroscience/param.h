@@ -28,8 +28,6 @@ namespace experimental {
 namespace neuroscience {
 
 struct Param {
-  double my_parameter_ = 0;
-
   /// Default actual length value of a neurite.\n
   /// Default value: `1.0`\n
   /// TOML config file:
