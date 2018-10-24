@@ -112,6 +112,8 @@ class Scheduler {
     if (param->run_mechanical_interactions_) {
       rm->ApplyOnAllTypes(physics_);  // Bounding box applied at the end
     }
+    rm->ApplyOnAllElementsParallel(
+        [](auto&& sim_object, SoHandle) { sim_object.RunDiscretization(); });
     CommitChangesAndUpdateReferences();
   }
 

@@ -70,6 +70,46 @@ TEST(MechanicalInteraction, StraightxCylinderGrowth) {
   }
 }
 
+TEST(MechanicalInteraction, StraightxCylinderGrowthNoMechanical) {
+  auto set_param = [](auto* param) {
+    param->run_mechanical_interactions_ = false;
+    param->neurite_max_length_ = 2;
+  };
+
+  Simulation<> simulation(TEST_NAME, set_param);
+  auto* rm = simulation.GetResourceManager();
+
+  auto neuron = rm->New<NeuronSoma>();
+  neuron.SetPosition({0, 0, 0});
+  neuron.SetMass(1);
+  neuron.SetDiameter(10);
+
+  auto ne = neuron.ExtendNewNeurite({1, 0, 0});
+  ne->SetDiameter(2);
+
+  Scheduler<> scheduler;
+
+  std::array<double, 3> ne_axis = ne->GetSpringAxis();
+
+  EXPECT_NEAR(ne_axis[0], 1, abs_error<double>::value);
+  EXPECT_NEAR(ne_axis[1], 0, abs_error<double>::value);
+  EXPECT_NEAR(ne_axis[2], 0, abs_error<double>::value);
+
+  std::array<double, 3> direction = {1, 0, 0};
+  for (int i = 0; i < 100; i++) {
+    ne->ElongateTerminalEnd(100, direction);
+    scheduler.Simulate(1);
+    if (i % 10 == 0) {
+      ne_axis = ne->GetSpringAxis();
+      double length = ne->GetActualLength();
+
+      EXPECT_LT(length, 2.1);
+      EXPECT_NEAR(ne_axis[1], 0, abs_error<double>::value);
+      EXPECT_NEAR(ne_axis[2], 0, abs_error<double>::value);
+    }
+  }
+}
+
 TEST(MechanicalInteraction, DiagonalxyCylinderGrowth) {
   Simulation<> simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();

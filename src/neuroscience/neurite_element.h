@@ -798,7 +798,13 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
   /// Checks if this NeuriteElement is either too long or too short.
   ///   * too long: insert another NeuriteElement
   ///   * too short fuse it with the proximal element or even delete it
+  ///
+  /// Only executed for terminal neurite elements.
   void RunDiscretization() {
+    if (daughter_left_[kIdx] != nullptr) {
+      return;
+    }
+
     auto* param = Simulation_t::GetActive()->GetParam();
     if (actual_length_[kIdx] > param->neurite_max_length_) {
       if (daughter_left_[kIdx] == nullptr) {  // if terminal branch :
@@ -905,12 +911,6 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
   template <typename TGrid>
   std::array<double, 3> CalculateDisplacement(TGrid * grid,
                                               double squared_radius) {
-    // decide first if we have to split or fuse this cylinder. Usually only
-    // terminal branches (growth cone) do
-    if (daughter_left_[kIdx] == nullptr) {
-      RunDiscretization();
-    }
-
     std::array<double, 3> force_on_my_point_mass{0, 0, 0};
     std::array<double, 3> force_on_my_mothers_point_mass{0, 0, 0};
 

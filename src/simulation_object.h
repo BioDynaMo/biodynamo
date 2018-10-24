@@ -404,6 +404,8 @@ class SimulationObject
     return static_cast<const MostDerived<Backend> *>(this);
   }
 
+  void RunDiscretization() {}
+
   BDM_ROOT_CLASS_DEF_OVERRIDE(SimulationObject, 1);
 };
 
