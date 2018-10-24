@@ -140,3 +140,23 @@ Then click the Play button at the top of the screen to run the simulation visual
   <source src="https://cernbox.cern.ch/index.php/s/rzl2Kb4uxny4ZXF/download?path=%2F&files=exported_visualization.mp4" type="video/mp4">
   Your browser does not support the video tag.
 </video>
+
+### Diffusion parameter constraints
+The differential equations that describe the diffusion are solved in an
+analytical way using the central difference method as shown in the figure below:
+
+![Central Difference Method](images/diffusion_central_difference_method.png)
+
+Mathematically, the method would allow for unphysical behavior to occur, such as
+negative concentration values. In order to avoid such behavior from happening,
+we impose the following constraint on the parameters:
+
+![Parameter Constraint](images/diffusion_parameters_constraint.png)
+
+Since as a user, you are giving the resolution of the diffusion grid and not the
+distance between the grid points, you can determine this value by dividing the
+longest dimension of your space by the resolution, or by calling the corresponding
+function `DiffusionGrid::GetBoxLength()`.
+
+For more information on the inner workings of the diffusion module, please
+refer to: https://repository.tudelft.nl/islandora/object/uuid%3A2fa2203b-ca26-4aa2-9861-1a4352391e09?collection=education

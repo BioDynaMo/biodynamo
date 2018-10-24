@@ -26,6 +26,7 @@
 #include <vector>
 #include "root_util.h"
 
+#include "log.h"
 #include "math_util.h"
 #include "param.h"
 
@@ -63,6 +64,7 @@ class DiffusionGrid {
 
     box_length_ = (grid_dimensions_[1] - grid_dimensions_[0]) /
                   static_cast<double>(resolution_);
+    ParametersCheck();
 
     box_volume_ = box_length_ * box_length_ * box_length_;
 
@@ -82,6 +84,20 @@ class DiffusionGrid {
     gradients_.resize(3 * total_num_boxes_);
 
     initialized_ = true;
+  }
+
+  void ParametersCheck() {
+    // The 1.0 is to impose floating point operations
+    if ((1.0 * (1 - dc_[0]) * dt_) / (1.0 * box_length_ * box_length_) >=
+        (1.0 / 6)) {
+      Log::Fatal(
+          "DiffusionGrid",
+          "The specified parameters of the diffusion grid with substance [",
+          substance_name_,
+          "] will result in unphysical behavior (diffusion coefficient = ",
+          (1 - dc_[0]), ", resolution = ", resolution_,
+          "). Please refer to the user guide for more information.");
+    }
   }
 
   void RunInitializers() {
@@ -394,8 +410,6 @@ class DiffusionGrid {
 
     const double ibl2 = 1 / (box_length_ * box_length_);
     const double d = 1 - dc_[0];
-    // TODO(ahmad): this probably needs to scale with Param::simulation_timestep
-    const double dt = 1;
 
 #define YBF 16
 #pragma omp parallel for collapse(2)
@@ -426,9 +440,9 @@ class DiffusionGrid {
             b = c - nx * ny;
             t = c + nx * ny;
             c2_[c] = (c1_[c] +
-                      d * dt * (c1_[c - 1] - 2 * c1_[c] + c1_[c + 1]) * ibl2 +
-                      d * dt * (c1_[s] - 2 * c1_[c] + c1_[n]) * ibl2 +
-                      d * dt * (c1_[b] - 2 * c1_[c] + c1_[t]) * ibl2) *
+                      d * dt_ * (c1_[c - 1] - 2 * c1_[c] + c1_[c + 1]) * ibl2 +
+                      d * dt_ * (c1_[s] - 2 * c1_[c] + c1_[n]) * ibl2 +
+                      d * dt_ * (c1_[b] - 2 * c1_[c] + c1_[t]) * ibl2) *
                      (1 - mu_);
           }
           ++c;
@@ -456,8 +470,6 @@ class DiffusionGrid {
     const double ibl2 = 1 / (box_length_ * box_length_);
     const double d = 1 - dc_[0];
     std::array<int, 4> l;
-    // TODO(ahmad): this probably needs to scale with Param::simulation_timestep
-    const double dt = 1;
 
 #define YBF 16
 #pragma omp parallel for collapse(2)
@@ -475,9 +487,9 @@ class DiffusionGrid {
           s = (y == ny - 1) ? c : c + nx;
           b = (z == 0) ? c : c - nx * ny;
           t = (z == nz - 1) ? c : c + nx * ny;
-          c2_[c] = (c1_[c] + d * dt * (0 - 2 * c1_[c] + c1_[c + 1]) * ibl2 +
-                    d * dt * (c1_[s] - 2 * c1_[c] + c1_[n]) * ibl2 +
-                    d * dt * (c1_[b] - 2 * c1_[c] + c1_[t]) * ibl2) *
+          c2_[c] = (c1_[c] + d * dt_ * (0 - 2 * c1_[c] + c1_[c + 1]) * ibl2 +
+                    d * dt_ * (c1_[s] - 2 * c1_[c] + c1_[n]) * ibl2 +
+                    d * dt_ * (c1_[b] - 2 * c1_[c] + c1_[t]) * ibl2) *
                    (1 - mu_);
 #pragma omp simd
           for (x = 1; x < nx - 1; x++) {
@@ -504,9 +516,10 @@ class DiffusionGrid {
 
             c2_[c] =
                 (c1_[c] +
-                 d * dt * (c1_[c - 1] - 2 * c1_[c] + c1_[c + 1]) * ibl2 +
-                 d * dt * (l[0] * c1_[s] - 2 * c1_[c] + l[1] * c1_[n]) * ibl2 +
-                 d * dt * (l[2] * c1_[b] - 2 * c1_[c] + l[3] * c1_[t]) * ibl2) *
+                 d * dt_ * (c1_[c - 1] - 2 * c1_[c] + c1_[c + 1]) * ibl2 +
+                 d * dt_ * (l[0] * c1_[s] - 2 * c1_[c] + l[1] * c1_[n]) * ibl2 +
+                 d * dt_ * (l[2] * c1_[b] - 2 * c1_[c] + l[3] * c1_[t]) *
+                     ibl2) *
                 (1 - mu_);
           }
           ++c;
@@ -514,9 +527,9 @@ class DiffusionGrid {
           ++s;
           ++b;
           ++t;
-          c2_[c] = (c1_[c] + d * dt * (c1_[c - 1] - 2 * c1_[c] + 0) * ibl2 +
-                    d * dt * (c1_[s] - 2 * c1_[c] + c1_[n]) * ibl2 +
-                    d * dt * (c1_[b] - 2 * c1_[c] + c1_[t]) * ibl2) *
+          c2_[c] = (c1_[c] + d * dt_ * (c1_[c - 1] - 2 * c1_[c] + 0) * ibl2 +
+                    d * dt_ * (c1_[s] - 2 * c1_[c] + c1_[n]) * ibl2 +
+                    d * dt_ * (c1_[b] - 2 * c1_[c] + c1_[t]) * ibl2) *
                    (1 - mu_);
         }  // tile ny
       }    // tile nz
@@ -724,6 +737,9 @@ class DiffusionGrid {
   double concentration_threshold_ = 1e15;
   /// The diffusion coefficients [cc, cw, ce, cs, cn, cb, ct]
   std::array<double, 7> dc_ = {{0}};
+  /// The timestep resolution fhe diffusion grid
+  // TODO(ahmad): this probably needs to scale with Param::simulation_timestep
+  double dt_ = 1;
   /// The decay constant
   double mu_ = 0;
   /// The grid dimensions of the diffusion grid
