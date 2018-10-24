@@ -88,15 +88,10 @@ class Scheduler {
     auto* grid = sim->GetGrid();
     auto* param = sim->GetParam();
 
-    visualization_->Visualize(total_steps_, last_iteration);
-    {
-      if (param->statistics_) {
-        Timing timing("neighbors", &gStatistics);
-        grid->UpdateGrid();
-      } else {
-        grid->UpdateGrid();
-      }
-    }
+    Timing::Time("visualize", [&]() {
+      visualization_->Visualize(total_steps_, last_iteration);
+    });
+    Timing::Time("neighbors", [&]() { grid->UpdateGrid(); });
     // TODO(ahmad): should we only do it here and not after we run the physics?
     // We need it here, because we need to update the threshold values before
     // we update the diffusion grid
