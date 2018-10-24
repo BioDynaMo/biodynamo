@@ -215,6 +215,7 @@ class ResourceManager {
   void RemoveDiffusionGrid(size_t substance_id) {
     auto search = diffusion_grids_.find(substance_id);
     if (search != diffusion_grids_.end()) {
+      delete search->second;
       diffusion_grids_.erase(search);
     } else {
       Log::Fatal("ResourceManager::AddDiffusionGrid",
