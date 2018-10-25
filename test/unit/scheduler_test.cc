@@ -47,5 +47,48 @@ TEST(SchedulerTest, Restore) { RunRestoreTest(); }
 
 TEST(SchedulerTest, Backup) { RunBackupTest(); }
 
+TEST(SchedulerTest, EmptySimulationFromBeginning) {
+  auto set_param = [](auto* param) {
+    param->bound_space_ = true;
+    param->min_bound_ = -10;
+    param->max_bound_ = 10;
+  };
+  Simulation<> simulation(TEST_NAME, set_param);
+
+  simulation.GetScheduler()->Simulate(1);
+
+  auto* grid = simulation.GetGrid();
+  std::array<int32_t, 2> expected_dim_threshold = {-10, 10};
+  EXPECT_EQ(expected_dim_threshold, grid->GetDimensionThresholds());
+  std::array<int32_t, 6> expected_dimensions = {-10, 10, -10, 10, -10, 10};
+  EXPECT_EQ(expected_dimensions, grid->GetDimensions());
+}
+
+TEST(SchedulerTest, EmptySimulationAfterFirstIteration) {
+  auto set_param = [](auto* param) {
+    param->bound_space_ = true;
+    param->min_bound_ = -10;
+    param->max_bound_ = 10;
+  };
+  Simulation<> simulation(TEST_NAME, set_param);
+
+  auto* rm = simulation.GetResourceManager();
+  auto* grid = simulation.GetGrid();
+  auto* scheduler = simulation.GetScheduler();
+
+  rm->New<Cell>(10);
+  scheduler->Simulate(1);
+
+  auto max_dimensions = grid->GetDimensionThresholds();
+  auto dimensions = grid->GetDimensions();
+  rm->Get<Cell>()->clear();
+
+  scheduler->Simulate(1);
+
+  EXPECT_EQ(max_dimensions, grid->GetDimensionThresholds());
+  EXPECT_EQ(dimensions, grid->GetDimensions());
+  EXPECT_FALSE(grid->HasGrown());
+}
+
 }  // namespace scheduler_test_internal
 }  // namespace bdm

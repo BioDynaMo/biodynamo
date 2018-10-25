@@ -28,8 +28,8 @@ namespace bdm {
 namespace experimental {
 namespace neuroscience {
 
-BDM_SIM_OBJECT(NeuronSoma, bdm::Cell) {
-  BDM_SIM_OBJECT_HEADER(NeuronSomaExt, 1, daughters_, daughters_coord_);
+BDM_SIM_OBJECT(NeuronSoma, Cell) {
+  BDM_SIM_OBJECT_HEADER(NeuronSoma, Cell, 1, daughters_, daughters_coord_);
 
  public:
   using NeuriteElement = typename TCompileTimeParam::NeuriteElement;
@@ -176,10 +176,8 @@ BDM_SIM_OBJECT(NeuronSoma, bdm::Cell) {
   /// \see NewNeuriteExtensionEvent
   template <typename TNeurite>
   void EventHandler(const NewNeuriteExtensionEvent& event, TNeurite* neurite) {
-    // call event handler for biology modules
-    auto* neurite_bms = &(neurite->biology_modules_[neurite->kIdx]);
-    BiologyModuleEventHandler(event, &(Base::biology_modules_[kIdx]),
-                              neurite_bms);
+    // forward to SimulationObject::EventHandler
+    Base::Base::EventHandler(event, neurite);
 
     double theta = event.theta_;
     double phi = event.phi_;

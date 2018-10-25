@@ -121,9 +121,9 @@ TEST_F(CatalystAdaptorTest, CheckVisualizationSelection) {
 
   int l = -100;
   int r = 100;
-  rm->GetDiffusionGrids()[kSubstance0]->Initialize({l, r, l, r, l, r});
-  rm->GetDiffusionGrids()[kSubstance1]->Initialize({l, r, l, r, l, r});
-  rm->GetDiffusionGrids()[kSubstance2]->Initialize({l, r, l, r, l, r});
+  rm->GetDiffusionGrid(kSubstance0)->Initialize({l, r, l, r, l, r});
+  rm->GetDiffusionGrid(kSubstance1)->Initialize({l, r, l, r, l, r});
+  rm->GetDiffusionGrid(kSubstance2)->Initialize({l, r, l, r, l, r});
 
   // Write diffusion visualization to file
   CatalystAdaptor<> adaptor("");

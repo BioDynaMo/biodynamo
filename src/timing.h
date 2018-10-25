@@ -24,9 +24,31 @@
 
 namespace bdm {
 
+static TimingAggregator gStatistics;
+
 class Timing {
  public:
   typedef std::chrono::high_resolution_clock Clock;
+
+  static int64_t Timestamp() {
+    using std::chrono::milliseconds;
+    using std::chrono::duration_cast;
+    auto time = Clock::now();
+    auto since_epoch = time.time_since_epoch();
+    auto millis = duration_cast<milliseconds>(since_epoch);
+    return millis.count();
+  }
+
+  template <typename TFunctor, typename TSimulation = Simulation<>>
+  static void Time(const std::string& description, TFunctor&& f) {
+    static bool use_timer_ = TSimulation::GetActive()->GetParam()->statistics_;
+    if (use_timer_) {
+      Timing timing(description, &gStatistics);
+      f();
+    } else {
+      f();
+    }
+  }
 
   explicit Timing(const std::string& description = "")
       : start_{Timestamp()}, text_{description} {}
@@ -41,15 +63,6 @@ class Timing {
     } else {
       aggregator_->AddEntry(text_, duration);
     }
-  }
-
-  int64_t Timestamp() {
-    using std::chrono::milliseconds;
-    using std::chrono::duration_cast;
-    auto time = Clock::now();
-    auto since_epoch = time.time_since_epoch();
-    auto millis = duration_cast<milliseconds>(since_epoch);
-    return millis.count();
   }
 
  private:

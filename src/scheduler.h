@@ -88,26 +88,16 @@ class Scheduler {
     auto* grid = sim->GetGrid();
     auto* param = sim->GetParam();
 
-    assert(rm->GetNumSimObjects() > 0 &&
-           "This simulation does not contain any simulation objects.");
-
-    visualization_->Visualize(total_steps_, last_iteration);
-
-    {
-      if (param->statistics_) {
-        Timing timing("neighbors", &gStatistics);
-        grid->UpdateGrid();
-      } else {
-        grid->UpdateGrid();
-      }
-    }
+    Timing::Time("visualize", [&]() {
+      visualization_->Visualize(total_steps_, last_iteration);
+    });
+    Timing::Time("neighbors", [&]() { grid->UpdateGrid(); });
     // TODO(ahmad): should we only do it here and not after we run the physics?
     // We need it here, because we need to update the threshold values before
     // we update the diffusion grid
     if (param->bound_space_) {
       rm->ApplyOnAllTypes(bound_space_);
     }
-    rm->ApplyOnAllTypes(diffusion_);
     rm->ApplyOnAllTypes(biology_);
     if (param->run_mechanical_interactions_) {
       rm->ApplyOnAllTypes(physics_);  // Bounding box applied at the end
@@ -115,6 +105,7 @@ class Scheduler {
     rm->ApplyOnAllElementsParallel(
         [](auto&& sim_object, SoHandle) { sim_object.RunDiscretization(); });
     CommitChangesAndUpdateReferences();
+    Timing::Time("diffusion", diffusion_);
   }
 
  private:
@@ -125,11 +116,11 @@ class Scheduler {
   bool is_gpu_environment_initialized_ = false;
 
   OpTimer<CommitOp> commit_ = OpTimer<CommitOp>("commit");
-  OpTimer<DiffusionOp> diffusion_ = OpTimer<DiffusionOp>("diffusion");
   OpTimer<BiologyModuleOp> biology_ = OpTimer<BiologyModuleOp>("biology");
   OpTimer<DisplacementOp<TSimulation>> physics_ =
       OpTimer<DisplacementOp<TSimulation>>("physics");
   OpTimer<BoundSpace> bound_space_ = OpTimer<BoundSpace>("bound_space");
+  DiffusionOp diffusion_;
 
   /// Backup the simulation. Backup interval based on `Param::backup_interval_`
   void Backup() {
@@ -196,18 +187,18 @@ class Scheduler {
       is_gpu_environment_initialized_ = true;
     }
 
-    grid->Initialize();
     if (param->bound_space_) {
       rm->ApplyOnAllTypes(bound_space_);
     }
+    grid->Initialize();
     int lbound = grid->GetDimensionThresholds()[0];
     int rbound = grid->GetDimensionThresholds()[1];
-    for (auto& dgrid : rm->GetDiffusionGrids()) {
+    rm->ApplyOnAllDiffusionGrids([&](DiffusionGrid* dgrid) {
       // Create data structures, whose size depend on the grid dimensions
       dgrid->Initialize({lbound, rbound, lbound, rbound, lbound, rbound});
       // Initialize data structures with user-defined values
       dgrid->RunInitializers();
-    }
+    });
   }
 };
 

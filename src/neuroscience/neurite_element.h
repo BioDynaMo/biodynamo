@@ -20,7 +20,6 @@
 #include <unordered_map>
 #include <vector>
 
-#include "biology_module_util.h"
 #include "default_force.h"
 #include "log.h"
 #include "math_util.h"
@@ -213,11 +212,11 @@ class NeuronNeuriteAdapter {
 /// All the mass of the neurite element is concentrated at the distal point.
 /// Only the distal end is moved. All the forces that are applied to the
 /// proximal node are transmitted to the mother element
-BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
+BDM_SIM_OBJECT(NeuriteElement, SimulationObject) {
   BDM_SIM_OBJECT_HEADER(
-      NeuriteElementExt, 1, biology_modules_, mass_location_, volume_,
-      diameter_, density_, adherence_, x_axis_, y_axis_, z_axis_, box_idx_,
-      is_axon_, mother_, daughter_left_, daughter_right_, branch_order_,
+      NeuriteElement, SimulationObject, 1, mass_location_, volume_, diameter_,
+      density_, adherence_, x_axis_, y_axis_, z_axis_, box_idx_, is_axon_,
+      mother_, daughter_left_, daughter_right_, branch_order_,
       force_to_transmit_to_proximal_mass_, spring_axis_, actual_length_,
       tension_, spring_constant_, resting_length_);
 
@@ -253,7 +252,8 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
   /// \see NewNeuriteExtensionEvent
   template <typename TNeuronSoma>
   NeuriteElementExt(const NewNeuriteExtensionEvent& event, TNeuronSoma* soma,
-                    uint64_t new_oid = 0) {
+                    uint64_t new_oid = 0)
+      : Base(event, soma, new_oid) {
     auto* param = Simulation_t::GetActive()->GetParam();
     tension_[kIdx] = param->neurite_default_tension_;
     diameter_[kIdx] = param->neurite_default_diameter_;
@@ -265,11 +265,6 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
     double diameter = event.diameter_;
     double phi = event.phi_;
     double theta = event.theta_;
-
-    auto& soma_bms = soma->biology_modules_[soma->kIdx];
-    // copy biology_modules_ to me
-    auto& my_bms = biology_modules_[kIdx];
-    CopyBiologyModules(event, &soma_bms, &my_bms);
 
     double radius = 0.5 * soma->GetDiameter();
     double new_length = param->neurite_default_actual_length_;
@@ -317,7 +312,8 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
   /// \see NeuriteBifurcationEvent
   template <typename TNeuriteElement>
   NeuriteElementExt(const NeuriteBifurcationEvent& event,
-                    TNeuriteElement* mother, uint64_t new_oid) {
+                    TNeuriteElement* mother, uint64_t new_oid)
+      : Base(event, mother, new_oid) {
     auto* param = Simulation_t::GetActive()->GetParam();
     tension_[kIdx] = param->neurite_default_tension_;
     diameter_[kIdx] = param->neurite_default_diameter_;
@@ -371,12 +367,6 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
     diameter_[kIdx] = diameter;
     branch_order_[kIdx] = mother->GetBranchOrder() + 1;
 
-    // 4) the biological modules :
-    auto& mother_bms = mother->biology_modules_[mother->kIdx];
-    // copy biology_modules_ to me
-    auto& my_bms = biology_modules_[kIdx];
-    CopyBiologyModules(event, &mother_bms, &my_bms);
-
     UpdateDependentPhysicalVariables();
   }
 
@@ -386,7 +376,8 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
   /// \see SideNeuriteExtensionEvent
   template <typename TNeuriteElement>
   NeuriteElementExt(const SideNeuriteExtensionEvent& event,
-                    TNeuriteElement* mother, uint64_t new_oid = 0) {
+                    TNeuriteElement* mother, uint64_t new_oid = 0)
+      : Base(event, mother, new_oid) {
     InitializeSideExtensionOrBranching(event, mother);
   }
 
@@ -396,7 +387,8 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
   /// \see SplitNeuriteElementEvent
   template <typename TNeuriteElement>
   NeuriteElementExt(const SplitNeuriteElementEvent& event,
-                    TNeuriteElement* other, uint64_t new_oid = 0) {
+                    TNeuriteElement* other, uint64_t new_oid = 0)
+      : Base(event, other, new_oid) {
     InitializeSplitOrBranching(event, other);
   }
 
@@ -410,7 +402,8 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
   /// \see NeuriteBranchingEvent
   template <typename TNeuriteElement>
   NeuriteElementExt(const NeuriteBranchingEvent& event, TNeuriteElement* other,
-                    uint64_t new_oid) {
+                    uint64_t new_oid)
+      : Base(event, other, new_oid) {
     if (new_oid == 0) {
       InitializeSplitOrBranching(event, other);
     } else {
@@ -495,26 +488,6 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
     return mass_location_[kIdx];
   }
 
-  using BiologyModules =
-      typename TCompileTimeParam::template CTMap<MostDerivedScalar,
-                                                 0>::BiologyModules::Variant_t;
-
-  /// Add a biology module to this cell
-  /// @tparam TBiologyModule type of the biology module. Must be in the set of
-  ///         types specified in `BiologyModules`
-  template <typename TBiologyModule>
-  void AddBiologyModule(TBiologyModule && module) {
-    biology_modules_[kIdx].emplace_back(module);
-  }
-
-  /// Execute all biology modules
-  void RunBiologyModules() {
-    RunVisitor<MostDerived<Backend>> visitor(
-        static_cast<MostDerived<Backend>*>(this));
-    for (auto& module : biology_modules_[kIdx]) {
-      visit(visitor, module);
-    }
-  }
   // TODO(neurites) arrange in order end
 
   // TODO(neurites) should be generated
@@ -1383,11 +1356,6 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
     return str;
   }
 
-  // FIXME make protected after ROOT issue has been resolved and all
-  // biology_modules_ are in one class.
-  /// collection of biology modules which define the internal behavior
-  vec<std::vector<BiologyModules>> biology_modules_;
-
  protected:
   template <typename TBackend>
   void Copy(const MostDerived<TBackend>& rhs) {
@@ -1418,11 +1386,7 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
     SetDaughterLeft(left->GetSoPtr());
     SetDaughterRight(right->GetSoPtr());
 
-    // call event handler for biology modules
-    auto* left_bms = &(left->biology_modules_[left->kIdx]);
-    auto* right_bms = &(right->biology_modules_[right->kIdx]);
-    BiologyModuleEventHandler(event, &(biology_modules_[kIdx]), left_bms,
-                              right_bms);
+    Base::EventHandler(event, left, right);
   }
 
   /// \brief EventHandler to modify the data members of this neurite after
@@ -1433,9 +1397,7 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
   void EventHandler(const SideNeuriteExtensionEvent& event, TDaughter* right) {
     SetDaughterRight(right->GetSoPtr());
 
-    // call event handler for biology modules
-    auto* right_bms = &(right->biology_modules_[right->kIdx]);
-    BiologyModuleEventHandler(event, &(biology_modules_[kIdx]), right_bms);
+    Base::EventHandler(event, right);
   }
 
   /// \brief EventHandler to modify the data members of this neurite element
@@ -1459,9 +1421,7 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
     // UpdateLocalCoordinateAxis has to come after UpdateDepend...
     proximal->UpdateLocalCoordinateAxis();
 
-    // call event handler for biology modules
-    auto* proximal_bms = &(proximal->biology_modules_[proximal->kIdx]);
-    BiologyModuleEventHandler(event, &(biology_modules_[kIdx]), proximal_bms);
+    Base::EventHandler(event, proximal);
   }
 
   /// \brief EventHandler to modify the neurite element that triggered the
@@ -1489,11 +1449,7 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
     // UpdateLocalCoordinateAxis has to come after UpdateDepend...
     proximal->UpdateLocalCoordinateAxis();
 
-    // call event handler for biology modules
-    auto* proximal_bms = &(proximal->biology_modules_[proximal->kIdx]);
-    auto* branch_bms = &(branch->biology_modules_[branch->kIdx]);
-    BiologyModuleEventHandler(event, &(biology_modules_[kIdx]), proximal_bms,
-                              branch_bms);
+    Base::EventHandler(event, proximal, branch);
   }
 
  private:
@@ -1639,7 +1595,6 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
     const auto& other_ml = other->GetMassLocation();
     const auto& other_sa = other->GetSpringAxis();
     const auto& other_rl = other->GetRestingLength();
-    auto& mother_bms = other->biology_modules_[other->kIdx];
 
     // TODO(neurites) reformulate to mass_location_
     auto new_position =
@@ -1654,10 +1609,6 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
 
     // physics
     resting_length_[kIdx] = ((1 - distal_portion) * other_rl);
-
-    // copy biology_modules_ to me
-    auto& my_bms = biology_modules_[kIdx];
-    CopyBiologyModules(event, &mother_bms, &my_bms);
   }
 
   /// Neurite branching is composed of neurite splitting and side neurite
@@ -1704,12 +1655,6 @@ BDM_SIM_OBJECT(NeuriteElement, bdm::SimulationObject) {
     UpdateLocalCoordinateAxis();
     // family relations
     SetMother(mother->GetSoPtr());
-
-    // biological modules
-    auto& mother_bms = mother->biology_modules_[mother->kIdx];
-    // copy biology_modules_ to me
-    auto& my_bms = biology_modules_[kIdx];
-    CopyBiologyModules(event, &mother_bms, &my_bms);
 
     branch_order_[kIdx] = mother->GetBranchOrder() + 1;
 

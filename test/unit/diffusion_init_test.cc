@@ -59,7 +59,7 @@ TEST(DiffusionInitTest, GaussianBand) {
 
   int lbound = param->min_bound_;
   int rbound = param->max_bound_;
-  auto& dgrid = rm->GetDiffusionGrids()[0];
+  auto* dgrid = rm->GetDiffusionGrid(0);
 
   // Create data structures, whose size depend on the grid dimensions
   dgrid->Initialize({lbound, rbound, lbound, rbound, lbound, rbound});

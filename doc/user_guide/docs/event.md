@@ -76,7 +76,7 @@ BDM_SIM_OBJECT(MyCell, Cell) {
     new_data_member_[kIdx] = mother->new_data_member_[mother->kIdx] * event.volume_ratio;
   }
 
-  EventHandler(const CellDivisionEvent& event, MyCellExt* daughter_2) {
+  void EventHandler(const CellDivisionEvent& event, MyCellExt* daughter_2) {
     new_data_member_[kIdx] -= daughter_2->new_data_member_[daughter_2->kIdx];
     Base::EventHandler(event, daughter_2);
   }

@@ -13,7 +13,7 @@ biodynamo demo soma_clustering .
 
 ### Inspect the code
 
-Go into the `soma_clustering` directory and open the source file `src/soma_clustering.h` in your favorite editor. 
+Go into the `soma_clustering` directory and open the source file `src/soma_clustering.h` in your favorite editor.
 We can note the following things from its content:
 
 #### 1. Creating a custom simulation object
@@ -21,8 +21,8 @@ We can note the following things from its content:
 In `src/my_cell.h` we can find the following code:
 
 ``` C++
-BDM_SIM_OBJECT(MyCell, bdm::Cell) {
-  BDM_SIM_OBJECT_HEADER(MyCellExt, 1, cell_type_);
+BDM_SIM_OBJECT(MyCell, Cell) {
+  BDM_SIM_OBJECT_HEADER(MyCell, Cell, 1, cell_type_);
 
  public:
   MyCellExt() {}
@@ -106,5 +106,3 @@ Glyph Mode 		= 'All Points'
 
 And hit Apply. You might need to 'Zoom to Fit'. Hit the Play button on the top of
 the interface to play the simulation over time.
-
-

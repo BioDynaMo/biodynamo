@@ -22,8 +22,8 @@
 namespace bdm {
 namespace transactional_vector_test_internal {
 
-BDM_SIM_OBJECT(TestObject, bdm::SimulationObject) {
-  BDM_SIM_OBJECT_HEADER(TestObjectExt, 1, id_);
+BDM_SIM_OBJECT(TestObject, SimulationObject) {
+  BDM_SIM_OBJECT_HEADER(TestObject, SimulationObject, 1, id_);
 
  public:
   TestObjectExt(int id) { id_[kIdx] = id; }  // NOLINT
@@ -44,6 +44,8 @@ BDM_CTPARAM() {
 
   using SimulationBackend = Scalar;
   using SimObjectTypes = CTList<transactional_vector_test_internal::TestObject>;
+
+  BDM_DEFAULT_CTPARAM_FOR(transactional_vector_test_internal::TestObject){};
 };
 
 namespace transactional_vector_test_internal {

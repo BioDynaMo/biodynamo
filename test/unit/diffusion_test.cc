@@ -422,6 +422,20 @@ double CalculateAnalyticalSolution(double init, double x, double y, double z,
              (pow(z, 2)) / (4 * diff_coef * t));
 }
 
+TEST(DiffusionTest, WrongParameters) {
+  ASSERT_DEATH(
+      {
+        DiffusionGrid d_grid(0, "Kalium", 1, 0.5, 50);
+        d_grid.Initialize({{0, 100, 0, 100, 0, 100}});
+      },
+      ".*unphysical behavior*");
+}
+
+TEST(DiffusionTest, CorrectParameters) {
+  DiffusionGrid d_grid(0, "Kalium", 1, 0.5, 5);
+  d_grid.Initialize({{0, 100, 0, 100, 0, 100}});
+}
+
 TEST(DiffusionTest, Convergence) {
   double diff_coef = 0.5;
   DiffusionGrid* d_grid2 = new DiffusionGrid(0, "Kalium1", diff_coef, 0, 20);
@@ -520,12 +534,12 @@ TEST(DiffusionTest, ModelInitializer) {
 
   int l = -100;
   int r = 100;
-  rm->GetDiffusionGrids()[kSubstance_0]->Initialize({l, r, l, r, l, r});
-  rm->GetDiffusionGrids()[kSubstance_1]->Initialize({l, r, l, r, l, r});
-  rm->GetDiffusionGrids()[kSubstance_2]->Initialize({l, r, l, r, l, r});
-  rm->GetDiffusionGrids()[kSubstance_0]->RunInitializers();
-  rm->GetDiffusionGrids()[kSubstance_1]->RunInitializers();
-  rm->GetDiffusionGrids()[kSubstance_2]->RunInitializers();
+  rm->GetDiffusionGrid(kSubstance_0)->Initialize({l, r, l, r, l, r});
+  rm->GetDiffusionGrid(kSubstance_1)->Initialize({l, r, l, r, l, r});
+  rm->GetDiffusionGrid(kSubstance_2)->Initialize({l, r, l, r, l, r});
+  rm->GetDiffusionGrid(kSubstance_0)->RunInitializers();
+  rm->GetDiffusionGrid(kSubstance_1)->RunInitializers();
+  rm->GetDiffusionGrid(kSubstance_2)->RunInitializers();
 
   // Write diffusion visualization to file
   CatalystAdaptor<> adaptor("");
@@ -549,7 +563,7 @@ TEST(DiffusionTest, ModelInitializer) {
 
   double expected = ROOT::Math::normal_pdf(0, sigma, mean);
   std::array<double, 3> marker = {0, 0, 0};
-  size_t idx = rm->GetDiffusionGrids()[kSubstance_1]->GetBoxIndex(marker);
+  size_t idx = rm->GetDiffusionGrid(kSubstance_1)->GetBoxIndex(marker);
   EXPECT_NEAR(expected, conc->GetTuple(idx)[0], 1e-9);
   remove(filename.c_str());
 }

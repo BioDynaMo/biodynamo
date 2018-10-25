@@ -82,21 +82,43 @@ struct MovementModule {
   BDM_CLASS_DEF_NV(MovementModule, 1);
 };
 
+/// This biology module removes itself the first time it is executed
+struct RemoveModule : public BaseBiologyModule {
+  RemoveModule() {}
+
+  // Ctor for any event
+  template <typename TEvent, typename TBm>
+  RemoveModule(const TEvent& event, TBm* other, uint64_t new_oid = 0) {}
+
+  template <typename TSimObject>
+  void Run(TSimObject* sim_object) {
+    sim_object->RemoveBiologyModule(this);
+  }
+
+  BDM_CLASS_DEF_NV(RemoveModule, 1);
+};
+
 /// Class used to get access to protected members
-BDM_SIM_OBJECT(TestCell, bdm::Cell) {
-  BDM_SIM_OBJECT_HEADER(TestCellExt, 1, placeholder_);
+BDM_SIM_OBJECT(TestCell, Cell) {
+  BDM_SIM_OBJECT_HEADER(TestCell, Cell, 1, placeholder_);
 
  public:
   TestCellExt() {}
 
   // Ctor for CellDivisionEvent
-  TestCellExt(CellDivisionEvent event, TestCellExt * mother)
-      : Base(event, mother) {
+  TestCellExt(CellDivisionEvent event, TestCellExt * mother,
+              uint64_t new_oid = 0)
+      : Base(event, mother, new_oid) {
     if (mother->capture_input_parameters_) {
       mother->captured_volume_ratio_ = event.volume_ratio_;
       mother->captured_phi_ = event.phi_;
       mother->captured_theta_ = event.theta_;
     }
+  }
+
+  template <typename TDaughter>
+  void EventHandler(CellDivisionEvent event, TDaughter * daughter) {
+    Base::EventHandler(event, daughter);
   }
 
   void TestTransformCoordinatesGlobalToPolar() {
@@ -109,8 +131,7 @@ BDM_SIM_OBJECT(TestCell, bdm::Cell) {
     EXPECT_NEAR(-2.4980915447965089, result[2], abs_error<double>::value);
   }
 
-  const std::vector<Variant<GrowthModule, MovementModule>>&
-  GetAllBiologyModules() const {
+  const auto& GetAllBiologyModules() const {
     return Base::biology_modules_[kIdx];
   }
 
@@ -131,7 +152,8 @@ BDM_CTPARAM() {
   using SimObjectTypes = CTList<cell_test_internal::TestCell>;
   BDM_DEFAULT_CTPARAM_FOR(cell_test_internal::TestCell) {
     using BiologyModules = CTList<cell_test_internal::GrowthModule,
-                                  cell_test_internal::MovementModule>;
+                                  cell_test_internal::MovementModule,
+                                  cell_test_internal::RemoveModule>;
   };
 };
 

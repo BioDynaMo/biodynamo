@@ -3,6 +3,8 @@
      Classes from directory test are not included. -->
 <lcgdict>
   <selection>
+    <class name="bdm::DiffusionGrid" />
+    <class name="std::unordered_map<uint64_t, bdm::DiffusionGrid*>" />
     <class name="bdm::SoHandle" />
     <class name="bdm::ScalarSimulationObject"/>
     <class name="bdm::RuntimeVariables"/>

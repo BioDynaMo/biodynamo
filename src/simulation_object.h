@@ -27,6 +27,7 @@
 #include "log.h"
 
 #include "backend.h"
+#include "biology_module_util.h"
 #include "event/event.h"
 #include "root_util.h"
 #include "simulation_object_util.h"
@@ -38,7 +39,7 @@ using std::enable_if;
 using std::is_same;
 
 template <typename TCompileTimeParam, typename TDerived>
-class SimulationObject;
+class ScalarSimulationObject;
 
 /// Contains implementation for SimulationObject that are specific to SOA
 /// backend. The peculiarity of SOA objects is that it is simulation object
@@ -89,6 +90,12 @@ class SoaSimulationObject {
     to_be_removed_ = std::move(other.to_be_removed_);
     total_size_ = other.total_size_;
     size_ = other.size_;
+    return *this;
+  }
+
+  Self<Backend> &operator=(
+      const ScalarSimulationObject<
+          typename TCompileTimeParam::template Self<Scalar>, TDerived> &) {
     return *this;
   }
 
@@ -243,6 +250,7 @@ class SoaSimulationObject {
 template <typename TCompileTimeParam, typename TDerived>
 class ScalarSimulationObject {
  public:
+  using Backend = typename TCompileTimeParam::Backend;
   template <typename TTBackend>
   using MostDerived = typename TDerived::template type<
       typename TCompileTimeParam::template Self<TTBackend>, TDerived>;
@@ -251,12 +259,16 @@ class ScalarSimulationObject {
   ScalarSimulationObject(const ScalarSimulationObject &other)
       : element_idx_(other.element_idx_) {}
 
+  virtual ~ScalarSimulationObject() {}
+
   ScalarSimulationObject &operator=(ScalarSimulationObject &&other) {
     element_idx_ = other.element_idx_;
     return *this;
   }
 
-  virtual ~ScalarSimulationObject() {}
+  ScalarSimulationObject &operator=(const ScalarSimulationObject &) {
+    return *this;
+  }
 
   std::size_t size() const { return 1; }  // NOLINT
 
@@ -299,33 +311,27 @@ struct SimulationObjectImpl {
 
 /// Contains code required by all simulation objects
 template <typename TCompileTimeParam, typename TDerived>
-class SimulationObject
+class SimulationObjectExt
     : public SimulationObjectImpl<TCompileTimeParam, TDerived>::type {
+  // used to fullfill BDM_SIM_OBJECT_HEADER requirement
+  template <typename T, typename U>
+  using SimObjectBaseExt = typename SimulationObjectImpl<T, U>::type;
+
+  BDM_SIM_OBJECT_HEADER(SimulationObject, SimObjectBase, 1, biology_modules_);
+
  public:
-  using Backend = typename TCompileTimeParam::Backend;
-  using Base = typename SimulationObjectImpl<TCompileTimeParam, TDerived>::type;
-  template <typename TTBackend>
-  using MostDerived = typename TDerived::template type<
-      typename TCompileTimeParam::template Self<TTBackend>, TDerived>;
+  SimulationObjectExt() : Base() {}
 
-  template <typename, typename>
-  friend class SimulationObject;
+  template <typename TEvent, typename TOther>
+  SimulationObjectExt(const TEvent &event, TOther *other,
+                      uint64_t new_oid = 0) {
+    // biology modules
+    auto &other_bms = other->biology_modules_[other->kIdx];
+    // copy biology_modules_ to me
+    CopyBiologyModules(event, &other_bms, &biology_modules_[kIdx]);
+  }
 
-  SimulationObject() : Base() {}
-  SimulationObject(const SimulationObject &) = default;
-
-  template <typename T>
-  SimulationObject(T *other, size_t idx) : Base(other, idx) {}
-
-  virtual ~SimulationObject() {}
-
-  /// Used internally to create the same object, but with
-  /// different backend - required since inheritance chain is not known
-  /// inside a mixin.
-  template <typename TTBackend>
-  using Self =
-      SimulationObject<typename TCompileTimeParam::template Self<TTBackend>,
-                       TDerived>;
+  virtual ~SimulationObjectExt() {}
 
   /// This function determines if the type of this simulation object is the same
   /// as `TSo` without taking the backend into account.
@@ -389,13 +395,6 @@ class SimulationObject
     }
   }
 
-  Self<Backend> &operator=(const Self<Scalar> &) { return *this; }
-
-  SimulationObject &operator=(SimulationObject &&other) {
-    Base::operator=(std::move(other));
-    return *this;
-  }
-
   MostDerived<Backend> *operator->() {
     return static_cast<MostDerived<Backend> *>(this);
   }
@@ -406,15 +405,145 @@ class SimulationObject
 
   void RunDiscretization() {}
 
-  BDM_ROOT_CLASS_DEF_OVERRIDE(SimulationObject, 1);
-};
+  // Biology modules
+  using BiologyModules =
+      typename TCompileTimeParam::template CTMap<MostDerivedScalar,
+                                                 0>::BiologyModules::Variant_t;
 
-/// type alias to be consistent with naming convention for simulation object
-/// extension
-/// \see BDM_SIM_OBJECT
-template <typename TCompileTimeParam, typename TDerived>
-using SimulationObject_TCTParam_TDerived =
-    SimulationObject<TCompileTimeParam, TDerived>;
+  /// Add a biology module to this cell
+  /// @tparam TBiologyModule type of the biology module. Must be in the set of
+  ///         types specified in `BiologyModules`
+  template <typename TBiologyModule>
+  void AddBiologyModule(TBiologyModule &&module) {
+    biology_modules_[kIdx].emplace_back(module);
+  }
+
+  /// Remove a biology module from this cell
+  template <typename TBiologyModule>
+  void RemoveBiologyModule(TBiologyModule *remove_module) {
+    for (unsigned int i = 0; i < biology_modules_[kIdx].size(); i++) {
+      const TBiologyModule *module =
+          get_if<TBiologyModule>(&biology_modules_[kIdx][i]);
+      if (module == remove_module) {
+        biology_modules_[kIdx].erase(biology_modules_[kIdx].begin() + i);
+      }
+    }
+  }
+
+  /// Execute all biology modulesq
+  void RunBiologyModules() {
+    RunVisitor<MostDerived<Backend>> visitor(
+        static_cast<MostDerived<Backend> *>(this));
+    for (auto &module : biology_modules_[kIdx]) {
+      visit(visitor, module);
+    }
+  }
+
+  /// Get all biology modules of this cell that match the given type.
+  /// @tparam TBiologyModule  type of the biology module
+  template <typename TBiologyModule>
+  std::vector<const TBiologyModule *> GetBiologyModules() const {
+    std::vector<const TBiologyModule *> modules;
+    for (unsigned int i = 0; i < biology_modules_[kIdx].size(); i++) {
+      const TBiologyModule *module =
+          get_if<TBiologyModule>(&biology_modules_[kIdx][i]);
+      if (module != nullptr) {
+        modules.push_back(module);
+      }
+    }
+    return modules;
+  }
+
+  /// Return all biology modules
+  const auto &GetAllBiologyModules() const { return biology_modules_[kIdx]; }
+
+  template <typename TEvent, typename TOther>
+  void EventHandler(const TEvent &event, TOther *other) {
+    // call event handler for biology modules
+    auto *other_bms = &(other->biology_modules_[other->kIdx]);
+    BiologyModuleEventHandler(event, &(biology_modules_[kIdx]), other_bms);
+  }
+
+  template <typename TEvent, typename TLeft, typename TRight>
+  void EventHandler(const TEvent &event, TLeft *left, TRight *right) {
+    // call event handler for biology modules
+    auto *left_bms = &(left->biology_modules_[left->kIdx]);
+    auto *right_bms = &(right->biology_modules_[right->kIdx]);
+    BiologyModuleEventHandler(event, &(biology_modules_[kIdx]), left_bms,
+                              right_bms);
+  }
+
+ protected:
+  /// collection of biology modules which define the internal behavior
+  vec<std::vector<BiologyModules>> biology_modules_;
+
+ private:
+  /// @brief Function to copy biology modules from one structure to another
+  /// @param event event will be passed on to biology module to determine
+  ///        whether it should be copied to destination
+  /// @param src  source vector of biology modules
+  /// @param dest destination vector of biology modules
+  /// @tparam TBiologyModules std::vector<Variant<[list of biology modules]>>
+  template <typename TEvent, typename TSrcBms, typename TDestBms>
+  void CopyBiologyModules(const TEvent &event, TSrcBms *src, TDestBms *dest) {
+    auto copy = [&](auto &bm) {
+      if (bm.Copy(event.kEventId)) {
+        raw_type<decltype(bm)> new_bm(event, &bm);
+        dest->emplace_back(std::move(new_bm));
+      }
+    };
+    for (auto &module : *src) {
+      visit(copy, module);
+    }
+  }
+
+  /// @brief Function to invoke the EventHandler of the biology module or remove
+  ///                  it from `current`.
+  /// Forwards the event handler call to each biology modules of the triggered
+  /// simulation object and removes biology modules if they are flagged.
+  template <typename TEvent, typename TBiologyModules1,
+            typename... TBiologyModules>
+  void BiologyModuleEventHandler(const TEvent &event, TBiologyModules1 *current,
+                                 TBiologyModules *... bms) {
+    // call event handler for biology modules
+    uint64_t cnt = 0;
+    auto call_bm_event_handler = [&](auto &bm) {
+      using BiologyModuleType = raw_type<decltype(bm)>;
+
+      /// return nullptr of condition is false or pointer to object in variant
+      auto extract = [](bool condition, auto *variant) -> BiologyModuleType * {
+        if (condition) {
+          return get_if<BiologyModuleType>(variant);
+        }
+        return nullptr;
+      };
+
+      if (!bm.Remove(event.kEventId)) {
+        bool copy = bm.Copy(event.kEventId);
+        bm.EventHandler(event, extract(copy, &((*bms)[cnt]))...);
+        cnt += copy ? 1 : 0;
+      }
+    };
+    for (auto &el : *current) {
+      visit(call_bm_event_handler, el);
+    }
+
+    // remove biology modules from current
+    bool remove;
+    auto remove_from_current = [&](auto &bm) {
+      remove = bm.Remove(event.kEventId);
+    };
+    for (auto it = current->begin(); it != current->end();) {
+      remove = false;
+      visit(remove_from_current, *it);
+      if (remove) {
+        it = current->erase(it);
+      } else {
+        ++it;
+      }
+    }
+  }
+};
 
 }  // namespace bdm
 

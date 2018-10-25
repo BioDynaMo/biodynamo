@@ -22,7 +22,7 @@ namespace bdm {
 // Define my custom cell, which extends Cell by adding an extra
 // data member cell_type.
 BDM_SIM_OBJECT(MyCell, Cell) {
-  BDM_SIM_OBJECT_HEADER(MyCellExt, 1, cell_type_);
+  BDM_SIM_OBJECT_HEADER(MyCell, Cell, 1, cell_type_);
 
  public:
   MyCellExt() {}
@@ -33,8 +33,7 @@ BDM_SIM_OBJECT(MyCell, Cell) {
   MyCellExt(const TEvent& event, TOther* other, uint64_t new_oid = 0)
       : Base(event, other, new_oid) {}
 
-  /// Default event handler (exising biology module won't be modified on
-  /// any event)
+  /// Default event handler
   template <typename TEvent, typename... TOthers>
   void EventHandler(const TEvent& event, TOthers*... others) {
     Base::EventHandler(event, others...);

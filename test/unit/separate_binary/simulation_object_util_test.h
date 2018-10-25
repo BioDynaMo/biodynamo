@@ -26,6 +26,7 @@
 #include "root_util.h"
 #include "simulation_object.h"
 #include "transactional_vector.h"
+#include "unit/test_sim_object.h"
 
 #define ROOTFILE "bdmFile.root"
 
@@ -35,8 +36,8 @@
 namespace bdm {
 // namespace simulation_object_util_test_internal {
 
-BDM_SIM_OBJECT(ContainerTestClass, bdm::SimulationObject) {
-  BDM_SIM_OBJECT_HEADER(ContainerTestClassExt, 1, dm1_, dm2_);
+BDM_SIM_OBJECT(ContainerTestClass, TestSimObject) {
+  BDM_SIM_OBJECT_HEADER(ContainerTestClass, TestSimObject, 1, dm1_, dm2_);
 
  public:
   ContainerTestClassExt() {}
@@ -52,32 +53,13 @@ BDM_SIM_OBJECT(ContainerTestClass, bdm::SimulationObject) {
   const vec<double>& GetVecDm2() const { return dm2_; }
   uint64_t GetTotalSize() const { return Base::TotalSize(); }
 
-  // TODO(lukas) after ROOT-9321 has been resolved: create test base class,
-  // derive from it and remove these functions
-  std::array<double, 3> GetPosition() const { return {0, 0, 0}; }
-  void SetPosition(const std::array<double, 3>&) {}
-  void ApplyDisplacement(const std::array<double, 3>&) {}
-  template <typename TGrid>
-  std::array<double, 3> CalculateDisplacement(TGrid * grid,
-                                              double squared_radius) {
-    return {0, 0, 0};
-  }
-  void RunBiologyModules() {}
-  void SetBoxIdx(uint64_t) {}
-  double GetDiameter() { return 3.14; }
-  static std::set<std::string> GetRequiredVisDataMembers() {
-    return {"diameter_", "position_"};
-  }
-  static constexpr Shape GetShape() { return Shape::kSphere; }
-  // TODO(lukas) end remove
-
  private:
   vec<int> dm1_;
   vec<double> dm2_;
 };
 
-BDM_SIM_OBJECT(MyCell, bdm::SimulationObject) {
-  BDM_SIM_OBJECT_HEADER(MyCellExt, 1, position_, diameter_);
+BDM_SIM_OBJECT(MyCell, TestSimObject) {
+  BDM_SIM_OBJECT_HEADER(MyCell, TestSimObject, 1, position_, diameter_);
 
  public:
   explicit MyCellExt(const std::array<double, 3>& pos) : position_{{pos}} {}
@@ -126,8 +108,8 @@ class Neurite {
 };
 
 // add Neurites to BaseCell
-BDM_SIM_OBJECT(Neuron, bdm::MyCell) {
-  BDM_SIM_OBJECT_HEADER(NeuronExt, 1, neurites_);
+BDM_SIM_OBJECT(Neuron, MyCell) {
+  BDM_SIM_OBJECT_HEADER(Neuron, MyCell, 1, neurites_);
 
  public:
   template <class... A>
@@ -144,22 +126,6 @@ BDM_SIM_OBJECT(Neuron, bdm::MyCell) {
 
   const std::vector<Neurite>& GetNeurites() const { return neurites_[kIdx]; }
 
-  // TODO(lukas) after ROOT-9321 has been resolved: create test base class,
-  // derive from it and remove these functions
-  void ApplyDisplacement(const std::array<double, 3>&) {}
-  template <typename TGrid>
-  std::array<double, 3> CalculateDisplacement(TGrid * grid,
-                                              double squared_radius) {
-    return {0, 0, 0};
-  }
-  void RunBiologyModules() {}
-  void SetBoxIdx(uint64_t) {}
-  static std::set<std::string> GetRequiredVisDataMembers() {
-    return {"diameter_", "position_"};
-  }
-  static constexpr Shape GetShape() { return Shape::kSphere; }
-  // TODO(lukas) end remove
-
  private:
   vec<std::vector<Neurite>> neurites_ = {{}};
 
@@ -171,8 +137,8 @@ BDM_SIM_OBJECT(Neuron, bdm::MyCell) {
 
 // -----------------------------------------------------------------------------
 // SOA object for IO test
-BDM_SIM_OBJECT(TestObject, bdm::SimulationObject) {
-  BDM_SIM_OBJECT_HEADER(TestObjectExt, 1, id_);
+BDM_SIM_OBJECT(TestObject, SimulationObject) {
+  BDM_SIM_OBJECT_HEADER(TestObject, SimulationObject, 1, id_);
 
  public:
   TestObjectExt() {}
@@ -183,12 +149,43 @@ BDM_SIM_OBJECT(TestObject, bdm::SimulationObject) {
   vec<int> id_;
 };
 
+BDM_SIM_OBJECT(TestThisMD, SimulationObject) {
+  BDM_SIM_OBJECT_HEADER(TestThisMD, SimulationObject, 0, foo_);
+
+ public:
+  TestThisMDExt() {}
+
+  int AnotherFunction() { return 123; }
+
+  int SomeFunction() { return ThisMD()->AnotherFunction(); }
+
+  vec<int> foo_;
+};
+
+BDM_SIM_OBJECT(TestThisMDSubclass, TestThisMD) {
+  BDM_SIM_OBJECT_HEADER(TestThisMDSubclass, TestThisMD, 0, foo_);
+
+ public:
+  TestThisMDSubclassExt() {}
+
+  int AnotherFunction() { return 321; }
+
+  vec<int> foo_;
+};
+
 // }  // namespace simulation_object_util_test_internal
 
 // has to be defined in namespace bdm
 BDM_CTPARAM() {
   BDM_CTPARAM_HEADER();
   using SimObjectTypes = CTList<Neuron>;
+
+  BDM_DEFAULT_CTPARAM_FOR(TestObject){};
+  BDM_DEFAULT_CTPARAM_FOR(ContainerTestClass){};
+  BDM_DEFAULT_CTPARAM_FOR(Neuron){};
+  BDM_DEFAULT_CTPARAM_FOR(TestThisMD){};
+  BDM_DEFAULT_CTPARAM_FOR(TestThisMDSubclass){};
+  BDM_DEFAULT_CTPARAM_FOR(MyCell){};
 };
 
 // namespace simulation_object_util_test_internal {
