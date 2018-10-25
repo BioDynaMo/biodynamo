@@ -1,5 +1,26 @@
 # Changelog
 
+## 25.10.2018 [`b197542`](https://github.com/BioDynaMo/biodynamo/commit/b197542ef90864c97af899baa8b1ca6d68c71ef7)
+
+Resolve ROOT-9321 by removing TBase template parameter of simulation objects
+
+Motivation:
+  * Workaround for ROOT-9321
+  * Shortens full name of simulation objects
+
+Move duplicated biology module code from `Cell` and `NeuriteELement`
+to `SimulationObject`
+
+Introduce `TestSimObject` to avoid code duplication of special sim
+objects used for unit testing
+
+This requires an additional parameter for the `BDM_SIM_OBJECT_HEADER` macro.
+The base class name must be added as second parameter:
+
+| Old                                 | New                                    |
+| ----------------------------------- | -------------------------------------- |
+| `BDM_SIM_OBJECT_HEADER(Cell, 1, ...)` | `BDM_SIM_OBJECT_HEADER(Cell, `**`SimulationObject`**`, 1, ...)` |
+
 ## 08.10.2018 [`8a97cf2`](https://github.com/BioDynaMo/biodynamo/commit/8a97cf21ad3e07be19f764d116eb10cae5c6ab05)
 
 Allow builds without dictionaries to speed up compile time                                 
@@ -84,8 +105,6 @@ This change causes many API changes -- see subsection below.
 
 * Integrate simulation template for `biodynamo new` into the biodynamo repository to avoid
 inconsistencies with the biodynamo version.
-
-### API changes
 
 | Old                                 | New                                    |
 | ----------------------------------- | -------------------------------------- |
