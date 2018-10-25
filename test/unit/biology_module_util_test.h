@@ -20,11 +20,10 @@
 #include "gtest/gtest.h"
 
 namespace bdm {
-namespace biology_module_util_test_internal {
+
+struct TestSimulationObject {};
 
 static bool gRunMethodCalled = false;
-static bool gCellDivisionEventCtorCalled = false;
-static bool gCellDivisionEventEventHandlerCalled = false;
 
 /// Helper class to test run visitor
 template <typename TSimulationObject>
@@ -49,92 +48,6 @@ struct RunTestBiologyModule {
   BDM_CLASS_DEF_NV(RunTestBiologyModule, 1);
 };
 
-/// Helper class to test copy visitor
-struct CopyTestBiologyModule {
-  CopyTestBiologyModule() {}
-
-  CopyTestBiologyModule(const CellDivisionEvent& event,
-                        CopyTestBiologyModule* other) {
-    gCellDivisionEventCtorCalled = true;
-    expected_event_ = event.kEventId;
-    copy_ = other->copy_;
-  }
-
-  template <typename T>
-  void Run(T* t) {
-    EXPECT_TRUE(false) << "This method should not be called";
-  }
-
-  bool Copy(EventId event) const {
-    EXPECT_EQ(expected_event_, event);
-    return copy_;
-  }
-
-  bool Remove(EventId event) const {
-    EXPECT_TRUE(false) << "This method should not be called";
-    return false;
-  }
-
-  EventId expected_event_;
-  bool copy_ = true;
-  BDM_CLASS_DEF_NV(CopyTestBiologyModule, 1);
-};
-
-/// Helper class to test remove visitor
-struct RemoveTestBiologyModule {
-  RemoveTestBiologyModule() {}
-
-  template <typename T>
-  void Run(T* t) {
-    EXPECT_TRUE(false) << "This method should not be called";
-  }
-
-  bool Copy(EventId event) const {
-    EXPECT_TRUE(false) << "This method should not be called";
-    return false;
-  }
-
-  bool Remove(EventId event) const {
-    EXPECT_EQ(expected_event_, event);
-    return expected_event_ == event;
-  }
-
-  void EventHandler(const CellDivisionEvent& event,
-                    RemoveTestBiologyModule* other) {
-    EXPECT_TRUE(false)
-        << "This method should not be called, since this bm will be removed";
-  }
-
-  EventId expected_event_;
-  BDM_CLASS_DEF_NV(RemoveTestBiologyModule, 1);
-};
-
-/// Helper class to test if the EventHandler is called
-struct EventHandlerBm {
-  EventHandlerBm() {}
-
-  template <typename T>
-  void Run(T* t) {
-    EXPECT_TRUE(false) << "This method should not be called";
-  }
-
-  bool Copy(EventId event) const { return true; }
-
-  bool Remove(EventId event) const {
-    EXPECT_EQ(expected_event_, event);
-    return false;
-  }
-
-  void EventHandler(const CellDivisionEvent& event, EventHandlerBm* other) {
-    gCellDivisionEventEventHandlerCalled = true;
-  }
-
-  EventId expected_event_;
-  BDM_CLASS_DEF_NV(EventHandlerBm, 1);
-};
-
-struct TestSimulationObject {};
-
 inline void RunRunVisitor() {
   TestSimulationObject sim_object;
   RunVisitor<TestSimulationObject> visitor(&sim_object);
@@ -147,7 +60,6 @@ inline void RunRunVisitor() {
   EXPECT_TRUE(gRunMethodCalled);
 }
 
-}  // namespace biology_module_util_test_internal
 }  // namespace bdm
 
 #endif  // UNIT_BIOLOGY_MODULE_UTIL_TEST_H_

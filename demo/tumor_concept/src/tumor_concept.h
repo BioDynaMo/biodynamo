@@ -23,7 +23,7 @@ namespace bdm {
 // members: cell_color and can_divide
 BDM_SIM_OBJECT(MyCell, Cell) {  // our object extends the Cell object
                                 // create the header with our new data member
-  BDM_SIM_OBJECT_HEADER(MyCellExt, 1, can_divide_, cell_color_);
+  BDM_SIM_OBJECT_HEADER(MyCell, Cell, 1, can_divide_, cell_color_);
 
  public:
   MyCellExt() {}

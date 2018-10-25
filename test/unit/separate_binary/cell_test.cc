@@ -207,16 +207,17 @@ TEST(CellTest, BiologyModuleEventHandler) {
 
   std::vector<Variant<GrowthModule, MovementModule>> destination;
 
-  auto& src = cell->biology_modules_[cell->kIdx];
   CellDivisionEvent event;
-  CopyBiologyModules(event, &src, &destination);
-  BiologyModuleEventHandler(event, &src, &destination);
+  TestCell copy(event, &cell, 0);
+  cell.EventHandler(event, &copy);
 
   const auto& bms = cell.GetAllBiologyModules();
   ASSERT_EQ(1u, bms.size());
   EXPECT_TRUE(get_if<GrowthModule>(&bms[0]) != nullptr);
-  ASSERT_EQ(1u, destination.size());
-  EXPECT_TRUE(get_if<GrowthModule>(&destination[0]) != nullptr);
+
+  const auto& copy_bms = copy.GetAllBiologyModules();
+  ASSERT_EQ(1u, copy_bms.size());
+  EXPECT_TRUE(get_if<GrowthModule>(&copy_bms[0]) != nullptr);
 }
 
 TEST(CellTest, RemoveBiologyModule) {

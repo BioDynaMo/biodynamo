@@ -99,20 +99,26 @@ struct RemoveModule : public BaseBiologyModule {
 };
 
 /// Class used to get access to protected members
-BDM_SIM_OBJECT(TestCell, bdm::Cell) {
-  BDM_SIM_OBJECT_HEADER(TestCellExt, 1, placeholder_);
+BDM_SIM_OBJECT(TestCell, Cell) {
+  BDM_SIM_OBJECT_HEADER(TestCell, Cell, 1, placeholder_);
 
  public:
   TestCellExt() {}
 
   // Ctor for CellDivisionEvent
-  TestCellExt(CellDivisionEvent event, TestCellExt * mother)
-      : Base(event, mother) {
+  TestCellExt(CellDivisionEvent event, TestCellExt * mother,
+              uint64_t new_oid = 0)
+      : Base(event, mother, new_oid) {
     if (mother->capture_input_parameters_) {
       mother->captured_volume_ratio_ = event.volume_ratio_;
       mother->captured_phi_ = event.phi_;
       mother->captured_theta_ = event.theta_;
     }
+  }
+
+  template <typename TDaughter>
+  void EventHandler(CellDivisionEvent event, TDaughter * daughter) {
+    Base::EventHandler(event, daughter);
   }
 
   void TestTransformCoordinatesGlobalToPolar() {

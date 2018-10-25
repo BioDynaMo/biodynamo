@@ -165,7 +165,8 @@ class ResourceManager {
 
   template <typename TSo>
   static constexpr uint16_t GetTypeIndex() {
-    return detail::ToIndex<TSo, Types>::value;
+    using TSoScalar = typename TSo::template Self<Scalar>;
+    return detail::ToIndex<TSoScalar, Types>::value;
   }
 
   explicit ResourceManager(TRootIOCtor* r) {}

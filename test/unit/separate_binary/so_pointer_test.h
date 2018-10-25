@@ -23,6 +23,7 @@
 #include "simulation_object.h"
 #include "so_pointer.h"
 #include "unit/io_test.h"
+#include "unit/test_sim_object.h"
 
 namespace bdm {
 namespace so_pointer_test_internal {
@@ -46,8 +47,8 @@ void SoPointerTest(T* sim_objects) {
   EXPECT_TRUE(so_ptr == nullptr);
 }
 
-BDM_SIM_OBJECT(SoPointerTestClass, bdm::SimulationObject) {
-  BDM_SIM_OBJECT_HEADER(SoPointerTestClassExt, 1, my_so_ptr_, id_);
+BDM_SIM_OBJECT(SoPointerTestClass, TestSimObject) {
+  BDM_SIM_OBJECT_HEADER(SoPointerTestClass, TestSimObject, 1, my_so_ptr_, id_);
 
  public:
   SoPointerTestClassExt() {}
@@ -58,25 +59,6 @@ BDM_SIM_OBJECT(SoPointerTestClass, bdm::SimulationObject) {
 
   MostDerivedSoPtr GetMySoPtr() const { return my_so_ptr_[kIdx]; }
   void SetMySoPtr(MostDerivedSoPtr so_ptr) { my_so_ptr_[kIdx] = so_ptr; }
-
-  // TODO(lukas) after ROOT-9321 has been resolved: create test base class,
-  // derive from it and remove these functions
-  std::array<double, 3> GetPosition() const { return {0, 0, 0}; }
-  void SetPosition(const std::array<double, 3>&) {}
-  void ApplyDisplacement(const std::array<double, 3>&) {}
-  template <typename TGrid>
-  std::array<double, 3> CalculateDisplacement(TGrid * grid,
-                                              double squared_radius) {
-    return {0, 0, 0};
-  }
-  void RunBiologyModules() {}
-  void SetBoxIdx(uint64_t) {}
-  double GetDiameter() { return 3.14; }
-  static std::set<std::string> GetRequiredVisDataMembers() {
-    return {"diameter_", "position_"};
-  }
-  static constexpr Shape GetShape() { return Shape::kSphere; }
-  // TODO(lukas) end remove
 
   vec<MostDerivedSoPtr> my_so_ptr_ = {{}};
 
@@ -90,6 +72,10 @@ BDM_SIM_OBJECT(SoPointerTestClass, bdm::SimulationObject) {
 BDM_CTPARAM() {
   BDM_CTPARAM_HEADER();
   using SimObjectTypes = CTList<so_pointer_test_internal::SoPointerTestClass>;
+
+  BDM_DEFAULT_CTPARAM_FOR(so_pointer_test_internal::SoPointerTestClass) {
+    using BiologyModules = CTList<NullBiologyModule>;
+  };
 };
 
 namespace so_pointer_test_internal {

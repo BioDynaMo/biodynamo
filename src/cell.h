@@ -24,7 +24,6 @@
 #include <vector>
 
 #include "backend.h"
-#include "biology_module_util.h"
 #include "default_force.h"
 #include "event/cell_division_event.h"
 #include "event/event.h"
@@ -37,8 +36,8 @@
 
 namespace bdm {
 
-BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
-  BDM_SIM_OBJECT_HEADER(CellExt, 1, biology_modules_, position_, tractor_force_,
+BDM_SIM_OBJECT(Cell, SimulationObject) {
+  BDM_SIM_OBJECT_HEADER(Cell, SimulationObject, 1, position_, tractor_force_,
                         diameter_, volume_, adherence_, density_, box_idx_);
 
  public:
@@ -57,9 +56,6 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
 
   static constexpr Shape GetShape() { return Shape::kSphere; }
 
-  using BiologyModules =
-      typename TCompileTimeParam::template CTMap<MostDerivedScalar,
-                                                 0>::BiologyModules::Variant_t;
   CellExt() : density_(1.0) {}
   explicit CellExt(double diameter) : diameter_(diameter), density_(1.0) {
     UpdateVolume();
@@ -70,7 +66,8 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
   /// This constructor is used to create daughter 2 for a cell division event
   /// \see CellDivisionEvent
   template <typename TMother>
-  CellExt(const CellDivisionEvent& event, TMother* mother) {
+  CellExt(const CellDivisionEvent& event, TMother* mother, uint64_t new_oid = 0)
+      : Base(event, mother, new_oid) {
     auto* daughter = ThisMD();  // FIXME
     // A) Defining some values
     // ..................................................................
@@ -115,12 +112,6 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
         mother_pos[2] + d_2 * axis_of_division[2]};
     daughter->SetPosition(new_position);
 
-    // biology modules
-    auto& mother_bms = mother->biology_modules_[mother->kIdx];
-    // copy biology_modules_ to me
-    auto& my_bms = biology_modules_[kIdx];
-    CopyBiologyModules(event, &mother_bms, &my_bms);
-
     // E) This sphere becomes the 1st daughter
     // move these cells on opposite direction
     mother_pos[0] -= d_1 * axis_of_division[0];
@@ -137,42 +128,6 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
   }
 
   virtual ~CellExt() {}
-
-  /// Add a biology module to this cell
-  /// @tparam TBiologyModule type of the biology module. Must be in the set of
-  ///         types specified in `BiologyModules`
-  template <typename TBiologyModule>
-  void AddBiologyModule(TBiologyModule && module);
-
-  /// Remove a biology module from this cell
-  template <typename TBiologyModule>
-  void RemoveBiologyModule(TBiologyModule * remove_module) {
-    for (unsigned int i = 0; i < biology_modules_[kIdx].size(); i++) {
-      const TBiologyModule* module =
-          get_if<TBiologyModule>(&biology_modules_[kIdx][i]);
-      if (module == remove_module) {
-        biology_modules_[kIdx].erase(biology_modules_[kIdx].begin() + i);
-      }
-    }
-  }
-
-  /// Execute all biology modules
-  void RunBiologyModules();
-
-  /// Get all biology modules of this cell that match the given type.
-  /// @tparam TBiologyModule  type of the biology module
-  template <typename TBiologyModule>
-  std::vector<const TBiologyModule*> GetBiologyModules() const {
-    std::vector<const TBiologyModule*> modules;
-    for (unsigned int i = 0; i < biology_modules_[kIdx].size(); i++) {
-      const TBiologyModule* module =
-          get_if<TBiologyModule>(&biology_modules_[kIdx][i]);
-      if (module != nullptr) {
-        modules.push_back(module);
-      }
-    }
-    return modules;
-  }
 
   /// \brief Divide this cell.
   ///
@@ -321,11 +276,6 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
 
   void SetBoxIdx(uint32_t idx) { box_idx_[kIdx] = idx; }
 
-  // FIXME make protected after ROOT issue has been resolved and all
-  // biology_modules_ are in one class.
-  /// collection of biology modules which define the internal behavior
-  vec<std::vector<BiologyModules>> biology_modules_;
-
  protected:
   /// Returns the position in the polar coordinate system (cylindrical or
   /// spherical) of a point expressed in global cartesian coordinates
@@ -354,9 +304,7 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
   /// \see CellDivisionEvent
   template <typename TDaughter>
   void EventHandler(const CellDivisionEvent& event, TDaughter* daughter_2) {
-    // call event handler for biology modules
-    auto* daughter_bms = &(daughter_2->biology_modules_[daughter_2->kIdx]);
-    BiologyModuleEventHandler(event, &(biology_modules_[kIdx]), daughter_bms);
+    Base::EventHandler(event, daughter_2);
   }
 };
 
@@ -365,19 +313,6 @@ BDM_SIM_OBJECT(Cell, bdm::SimulationObject) {
 BDM_SO_DEFINE(constexpr std::array<double, 3> CellExt)::kXAxis;
 BDM_SO_DEFINE(constexpr std::array<double, 3> CellExt)::kYAxis;
 BDM_SO_DEFINE(constexpr std::array<double, 3> CellExt)::kZAxis;
-
-BDM_SO_DEFINE(template <typename TBiologyModule>
-              inline void CellExt)::AddBiologyModule(TBiologyModule&& module) {
-  biology_modules_[kIdx].emplace_back(module);
-}
-
-BDM_SO_DEFINE(inline void CellExt)::RunBiologyModules() {
-  RunVisitor<MostDerived<Backend>> visitor(
-      static_cast<MostDerived<Backend>*>(this));
-  for (uint64_t i = 0; i < biology_modules_[kIdx].size(); i++) {
-    visit(visitor, biology_modules_[kIdx][i]);
-  }
-}
 
 BDM_SO_DEFINE(template <typename TGrid> inline std::array<double, 3>
                   CellExt)::CalculateDisplacement(TGrid* grid,

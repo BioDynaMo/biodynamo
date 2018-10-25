@@ -204,8 +204,8 @@ To do that, we can extend the existing `Cell` class in order to add a new data m
 We will do that directly in our tutorial.h file by writing
 ``` C++
   // Define my custom cell MyCell, which extends Cell by adding extra data members: cell_colour
-  BDM_SIM_OBJECT(MyCell, bdm::Cell) { // our object extends the Cell object
-    BDM_SIM_OBJECT_HEADER(MyCellExt, 1, cell_colour_); // create the header with our new data member
+  BDM_SIM_OBJECT(MyCell, Cell) { // our object extends the Cell object
+    BDM_SIM_OBJECT_HEADER(MyCell, Cell, 1, cell_colour_); // create the header with our new data member
 
     public:
       MyCellExt() {}
@@ -320,7 +320,7 @@ To add a 0.8 probability to divide, simply write
 Cells will now have only 80% chance to divide. However, it will have 80% chance to divide at every simulation step! We want that if a cell doesn't divide, it will not be able to divide any more.
 To do that, we will create a new MyCell boolean attribute called can\_divide\_. As well as for the cell\_colour\_ attribute (see chapter 3.2), add it our MyCell object header
 ``` C++
-BDM_SIM_OBJECT_HEADER(MyCellExt, 1, can_divide_, cell_colour_);
+BDM_SIM_OBJECT_HEADER(MyCell, Cell, 1, can_divide_, cell_colour_);
 ```
 
 and create two methods, `SetCanDivide()` and `GetCanDivide()`.

@@ -71,8 +71,7 @@ using ToSoa =
 /// simulation objects. Inside `BDM_SIM_OBJECT` a template specialization is
 /// created for each simulation object.
 /// @tparam TSoExt template template parameter of a simulation object
-template <template <typename TCompileTimeParam, typename TDerived,
-                    template <typename, typename> class TBase> class TSoExt>
+template <template <typename TCompileTimeParam, typename TDerived> class TSoExt>
 struct Capsule;
 
 /// Macro to define a new simulation object
@@ -80,8 +79,8 @@ struct Capsule;
 /// @param base_class
 ///
 ///     // Example usage to extend class Cell
-///     BDM_SIM_OBJECT(MyCell, bdm::Cell) {
-///       BDM_SIM_OBJECT_HEADER(MyCellExt, 1, data_member_);
+///     BDM_SIM_OBJECT(MyCell, Cell) {
+///       BDM_SIM_OBJECT_HEADER(MyCell, Cell, 1, data_member_);
 ///      public:
 ///       MyCellExt() {}
 ///       ...
@@ -100,50 +99,41 @@ struct Capsule;
 ///      as template argument for `TBase` (takes two template arguments itself)
 /// Furthermore, it creates template spezializations for `ToBackend` and
 /// `Capsule`
-#define BDM_SIM_OBJECT(sim_object, base_class)                                 \
-  template <typename TCompileTimeParam = CompileTimeParam<>,                   \
-            typename TDerived = char,                                          \
-            template <typename, typename> class TBase =                        \
-                base_class##_TCTParam_TDerived>                                \
-  class sim_object##Ext;                                                       \
-                                                                               \
-  template <template <typename TCompileTimeParam, typename TDerived,           \
-                      template <typename, typename> class TBase> class TSoExt> \
-  struct Capsule;                                                              \
-                                                                               \
-  template <typename TCompileTimeParam, typename TDerived>                     \
-  using sim_object##_TCTParam_TDerived =                                       \
-      sim_object##Ext<TCompileTimeParam, TDerived>;                            \
-                                                                               \
-  template <>                                                                  \
-  struct Capsule<sim_object##Ext> {                                            \
-    template <typename TCompileTimeParam, typename TDerived>                   \
-    using type = sim_object##Ext<TCompileTimeParam, TDerived,                  \
-                                 base_class##_TCTParam_TDerived>;              \
-  };                                                                           \
-                                                                               \
-  using sim_object =                                                           \
-      sim_object##Ext<CompileTimeParam<Scalar>, Capsule<sim_object##Ext>>;     \
-  using Soa##sim_object =                                                      \
-      sim_object##Ext<CompileTimeParam<Soa>, Capsule<sim_object##Ext>>;        \
-                                                                               \
-  /** Functions used to associate a return type with a number of parameter */  \
-  /** types: e.g. `SoaCell ADLHelper(Cell, Soa);`*/                            \
-  /** These functions can then be used to implement `bdm::ToBackend` */        \
-  /** This technique is called argument dependant look-up and required to */   \
-  /** find this association in different namespaces */                         \
-  sim_object ADLHelper(sim_object*, Scalar);                                   \
-  Soa##sim_object ADLHelper(sim_object*, Soa);                                 \
-  sim_object ADLHelper(Soa##sim_object*, Scalar);                              \
-  Soa##sim_object ADLHelper(Soa##sim_object*, Soa);                            \
-                                                                               \
-  template <typename TCompileTimeParam>                                        \
-  using sim_object##Test =                                                     \
-      sim_object##Ext<TCompileTimeParam, Capsule<sim_object##Ext>>;            \
-                                                                               \
-  template <typename TCompileTimeParam, typename TDerived,                     \
-            template <typename, typename> class TBase>                         \
-  class sim_object##Ext : public TBase<TCompileTimeParam, TDerived>
+#define BDM_SIM_OBJECT(sim_object, base_class)                                \
+  template <typename TCompileTimeParam = CompileTimeParam<>,                  \
+            typename TDerived = char>                                         \
+  class sim_object##Ext;                                                      \
+                                                                              \
+  template <template <typename TCTParam, typename TDerived> class TSoExt>     \
+  struct Capsule;                                                             \
+                                                                              \
+  template <>                                                                 \
+  struct Capsule<sim_object##Ext> {                                           \
+    template <typename TCompileTimeParam, typename TDerived>                  \
+    using type = sim_object##Ext<TCompileTimeParam, TDerived>;                \
+  };                                                                          \
+                                                                              \
+  using sim_object =                                                          \
+      sim_object##Ext<CompileTimeParam<Scalar>, Capsule<sim_object##Ext>>;    \
+  using Soa##sim_object =                                                     \
+      sim_object##Ext<CompileTimeParam<Soa>, Capsule<sim_object##Ext>>;       \
+                                                                              \
+  /** Functions used to associate a return type with a number of parameter */ \
+  /** types: e.g. `SoaCell ADLHelper(Cell, Soa);`*/                           \
+  /** These functions can then be used to implement `bdm::ToBackend` */       \
+  /** This technique is called argument dependant look-up and required to */  \
+  /** find this association in different namespaces */                        \
+  sim_object ADLHelper(sim_object*, Scalar);                                  \
+  Soa##sim_object ADLHelper(sim_object*, Soa);                                \
+  sim_object ADLHelper(Soa##sim_object*, Scalar);                             \
+  Soa##sim_object ADLHelper(Soa##sim_object*, Soa);                           \
+                                                                              \
+  template <typename TCompileTimeParam>                                       \
+  using sim_object##Test =                                                    \
+      sim_object##Ext<TCompileTimeParam, Capsule<sim_object##Ext>>;           \
+                                                                              \
+  template <typename TCompileTimeParam, typename TDerived>                    \
+  class sim_object##Ext : public base_class##Ext<TCompileTimeParam, TDerived>
 
 /// Macro to make the out-of-class definition of functions and members
 /// less verbose. Inserts the required template statements.
@@ -157,61 +147,8 @@ struct Capsule;
 ///     };
 ///     BDM_SO_DEFINE(inline void CellExt)::Foo() { ... }
 #define BDM_SO_DEFINE(...)                                 \
-  template <typename TCompileTimeParam, typename TDerived, \
-            template <typename, typename> class TBase>     \
-  __VA_ARGS__<TCompileTimeParam, TDerived, TBase>
-
-/// Macro to define a new simulation object.
-/// For testing purposes it is required to specify the name of the compile
-/// time parameter struct as additional parameter.
-/// \param sim_object
-/// \param base_class
-/// \param compile_time_param
-/// \see BDM_SIM_OBJECT
-#define BDM_SIM_OBJECT_TEST(sim_object, base_class, compile_time_param)        \
-  template <typename TCompileTimeParam = compile_time_param<>,                 \
-            typename TDerived = char,                                          \
-            template <typename, typename> class TBase =                        \
-                base_class##_TCTParam_TDerived>                                \
-  class sim_object##Ext;                                                       \
-                                                                               \
-  template <template <typename TCompileTimeParam, typename TDerived,           \
-                      template <typename, typename> class TBase> class TSoExt> \
-  struct Capsule;                                                              \
-                                                                               \
-  template <typename TCompileTimeParam, typename TDerived>                     \
-  using sim_object##_TCTParam_TDerived =                                       \
-      sim_object##Ext<TCompileTimeParam, TDerived>;                            \
-                                                                               \
-  template <>                                                                  \
-  struct Capsule<sim_object##Ext> {                                            \
-    template <typename TCompileTimeParam, typename TDerived>                   \
-    using type = sim_object##Ext<TCompileTimeParam, TDerived,                  \
-                                 base_class##_TCTParam_TDerived>;              \
-  };                                                                           \
-                                                                               \
-  using sim_object =                                                           \
-      sim_object##Ext<compile_time_param<Scalar>, Capsule<sim_object##Ext>>;   \
-  using Soa##sim_object =                                                      \
-      sim_object##Ext<compile_time_param<Soa>, Capsule<sim_object##Ext>>;      \
-                                                                               \
-  /** Functions used to associate a return type with a number of parameter */  \
-  /** types: e.g. `SoaCell ADLHelper(Cell, Soa);`*/                            \
-  /** These functions can then be used to implement `bdm::ToBackend` */        \
-  /** This technique is called argument dependant look-up and required to */   \
-  /** find this association in different namespaces */                         \
-  sim_object ADLHelper(sim_object*, Scalar);                                   \
-  Soa##sim_object ADLHelper(sim_object*, Soa);                                 \
-  sim_object ADLHelper(Soa##sim_object*, Scalar);                              \
-  Soa##sim_object ADLHelper(Soa##sim_object*, Soa);                            \
-                                                                               \
-  template <typename TCompileTimeParam>                                        \
-  using sim_object##Test =                                                     \
-      sim_object##Ext<TCompileTimeParam, Capsule<sim_object##Ext>>;            \
-                                                                               \
-  template <typename TCompileTimeParam, typename TDerived,                     \
-            template <typename, typename> class TBase>                         \
-  class sim_object##Ext : public TBase<TCompileTimeParam, TDerived>
+  template <typename TCompileTimeParam, typename TDerived> \
+  __VA_ARGS__<TCompileTimeParam, TDerived>
 
 // -----------------------------------------------------------------------------
 // Helper macros used to generate code for all data members of a class
@@ -283,20 +220,17 @@ struct Capsule;
   }
 
 /// Macro to insert required boilerplate code into simulation object
-/// @param  class_name class name witout template specifier e.g. \n
-///         `class Foo {};` \n
-///          -> class_name: `Foo` \n
-///         `template <typename T> class Foo {};` \n
-///          -> class_name: `Foo` \n
+/// @param  class_name scalar class name of the simulation object
+/// @param   base_class scalar class name of the base simulation object
 /// @param   class_version_id required for ROOT I/O (see ROOT BDM_CLASS_DEF
-/// Macro).
+///          Macro).
 ///          Every time the layout of the class is changed, class_version_id
 ///          must be incremented by one. The class_version_id should be greater
 ///          or equal to 1.
 /// @param  ...: List of all data members of this class
-#define BDM_SIM_OBJECT_HEADER(class_name, class_version_id, ...)               \
+#define BDM_SIM_OBJECT_HEADER(class_name, base_class, class_version_id, ...)   \
  public:                                                                       \
-  using Base = TBase<TCompileTimeParam, TDerived>;                             \
+  using Base = base_class##Ext<TCompileTimeParam, TDerived>;                   \
                                                                                \
   /** reduce verbosity by defining a local alias */                            \
   using Base::kIdx;                                                            \
@@ -322,8 +256,8 @@ struct Capsule;
   /** different backend. */                                                    \
   template <typename TTBackend>                                                \
   using Self =                                                                 \
-      class_name<typename TCompileTimeParam::template Self<TTBackend>,         \
-                 TDerived, TBase>;                                             \
+      class_name##Ext<typename TCompileTimeParam::template Self<TTBackend>,    \
+                      TDerived>;                                               \
                                                                                \
   /** Templated type alias to convert an external type to the simulation  */   \
   /** backend.  */                                                             \
@@ -335,8 +269,8 @@ struct Capsule;
   template <typename T>                                                        \
   using ToSoPtr = SoPointer<ToSimBackend<T>, SimBackend>;                      \
                                                                                \
-  template <typename, typename, template <typename, typename> class>           \
-  friend class class_name;                                                     \
+  template <typename, typename>                                                \
+  friend class class_name##Ext;                                                \
                                                                                \
   /** friend event handler to give it access to private members */             \
   template <typename TEvent, typename TFirst, typename... TRemaining>          \
@@ -363,17 +297,14 @@ struct Capsule;
   }                                                                            \
                                                                                \
   /** Returns the Scalar name of the container minus the "Ext"     */          \
-  static const std::string GetScalarTypeName() {                               \
-    static std::string kScalarType = #class_name;                              \
-    return kScalarType.substr(0, kScalarType.size() - 3);                      \
-  }                                                                            \
+  static const std::string GetScalarTypeName() { return #class_name; }         \
                                                                                \
-  explicit class_name(TRootIOCtor* io_ctor) {}                                 \
-  class_name(const class_name& other) = default;                               \
+  explicit class_name##Ext(TRootIOCtor* io_ctor) {}                            \
+  class_name##Ext(const class_name##Ext& other) = default;                     \
                                                                                \
   /** Constructor to create SOA reference object */                            \
   template <typename T>                                                        \
-  class_name(T* other, size_t idx)                                             \
+  class_name##Ext(T* other, size_t idx)                                        \
       : Base(other, idx),                                                      \
         REMOVE_TRAILING_COMMAS(BDM_SIM_OBJECT_CPY_CTOR_INIT(__VA_ARGS__)) {}   \
                                                                                \
@@ -515,7 +446,7 @@ struct Capsule;
     return static_cast<MostDerived<Backend>*>(this);                           \
   }                                                                            \
                                                                                \
-  BDM_ROOT_CLASS_DEF_OVERRIDE(class_name, class_version_id)
+  BDM_ROOT_CLASS_DEF_OVERRIDE(class_name##Ext, class_version_id)
 
 }  // namespace bdm
 

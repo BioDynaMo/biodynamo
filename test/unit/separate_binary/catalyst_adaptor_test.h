@@ -12,6 +12,9 @@
 //
 // -----------------------------------------------------------------------------
 
+#ifndef UNIT_SEPARATE_BINARY_CATALYST_ADAPTOR_TEST_H_
+#define UNIT_SEPARATE_BINARY_CATALYST_ADAPTOR_TEST_H_
+
 #include <gtest/gtest.h>
 #include "cell.h"
 #include "compile_time_param.h"
@@ -27,7 +30,7 @@
 namespace bdm {
 
 BDM_SIM_OBJECT(MyCell, Cell) {
-  BDM_SIM_OBJECT_HEADER(MyCellExt, 1, dummmy_);
+  BDM_SIM_OBJECT_HEADER(MyCell, Cell, 1, dummmy_);
 
  public:
   MyCellExt() {}
@@ -35,7 +38,7 @@ BDM_SIM_OBJECT(MyCell, Cell) {
 };
 
 BDM_SIM_OBJECT(MyNeuron, Cell) {
-  BDM_SIM_OBJECT_HEADER(MyNeuronExt, 1, dummmy_);
+  BDM_SIM_OBJECT_HEADER(MyNeuron, Cell, 1, dummmy_);
 
  public:
   MyNeuronExt() {}
@@ -71,3 +74,5 @@ class CatalystAdaptorTest : public ::testing::Test {
 };
 
 }  // namespace bdm
+
+#endif  // UNIT_SEPARATE_BINARY_CATALYST_ADAPTOR_TEST_H_
