@@ -5,21 +5,28 @@
 Resolve ROOT-9321 by removing TBase template parameter of simulation objects
 
 Motivation:
+
   * Workaround for ROOT-9321
   * Shortens full name of simulation objects
 
 Move duplicated biology module code from `Cell` and `NeuriteELement`
 to `SimulationObject`
 
-Introduce `TestSimObject` to avoid code duplication of special sim
-objects used for unit testing
+This change requires a different signature of `BDM_SIM_OBJECT_HEADER`.
 
-This requires an additional parameter for the `BDM_SIM_OBJECT_HEADER` macro.
-The base class name must be added as second parameter:
+  1. Remove the suffix `Ext` from the first parameter
+  2. Add the base class name as a second parameter.
+
+In other words, copy the parameters from `BDM_SIM_OBJECT` to the beginning of `BDM_SIM_OBJECT_HEADER`
+``` c++
+BDM_SIM_OBJECT(Cell, SimulationObject) {
+  BDM_SIM_OBJECT_HEADER(Cell, SimulationObject, 1, ...)
+```
+
 
 | Old                                 | New                                    |
 | ----------------------------------- | -------------------------------------- |
-| `BDM_SIM_OBJECT_HEADER(Cell, 1, ...)` | `BDM_SIM_OBJECT_HEADER(Cell, `**`SimulationObject`**`, 1, ...)` |
+| `BDM_SIM_OBJECT_HEADER(CellExt, 1, ...)` | `BDM_SIM_OBJECT_HEADER(Cell, `**`SimulationObject`**`, 1, ...)` |
 
 ## 08.10.2018 [`8a97cf2`](https://github.com/BioDynaMo/biodynamo/commit/8a97cf21ad3e07be19f764d116eb10cae5c6ab05)
 
