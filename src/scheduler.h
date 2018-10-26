@@ -23,6 +23,7 @@
 #include "commit_op.h"
 #include "diffusion_op.h"
 #include "displacement_op.h"
+#include "displacement_op_1.h"
 #include "gpu/gpu_helper.h"
 #include "op_timer.h"
 #include "resource_manager.h"
@@ -92,18 +93,27 @@ class Scheduler {
       visualization_->Visualize(total_steps_, last_iteration);
     });
     Timing::Time("neighbors", [&]() { grid->UpdateGrid(); });
-    // TODO(ahmad): should we only do it here and not after we run the physics?
-    // We need it here, because we need to update the threshold values before
-    // we update the diffusion grid
-    if (param->bound_space_) {
-      rm->ApplyOnAllTypes(bound_space_);
-    }
-    rm->ApplyOnAllTypes(biology_);
-    if (param->run_mechanical_interactions_) {
-      rm->ApplyOnAllTypes(physics_);  // Bounding box applied at the end
-    }
-    rm->ApplyOnAllElementsParallel(
-        [](auto&& sim_object, SoHandle) { sim_object.RunDiscretization(); });
+
+    DisplacementOp1<TSimulation> displacement_;
+
+    rm->ApplyOnAllTypes([&](auto* sim_objects, uint16_t type_idx){
+#pragma omp parallel for
+      for (size_t i = 0; i < sim_objects->size(); i++) {
+        auto&& so = (*sim_objects)[i];
+        // TODO(ahmad): should we only do it here and not after we run the physics?
+        // We need it here, because we need to update the threshold values before
+        // we update the diffusion grid
+        if (param->bound_space_) {
+          ApplyBoundingBox(&so, param->min_bound_, param->max_bound_);
+        }
+        so.RunBiologyModules();
+        if (param->run_mechanical_interactions_) {
+          displacement_(so);
+        }
+        so.RunDiscretization();
+      }
+    });
+
     CommitChangesAndUpdateReferences();
     Timing::Time("diffusion", diffusion_);
   }
@@ -116,7 +126,7 @@ class Scheduler {
   bool is_gpu_environment_initialized_ = false;
 
   OpTimer<CommitOp> commit_ = OpTimer<CommitOp>("commit");
-  OpTimer<BiologyModuleOp> biology_ = OpTimer<BiologyModuleOp>("biology");
+  // OpTimer<BiologyModuleOp> biology_ = OpTimer<BiologyModuleOp>("biology");
   OpTimer<DisplacementOp<TSimulation>> physics_ =
       OpTimer<DisplacementOp<TSimulation>>("physics");
   OpTimer<BoundSpace> bound_space_ = OpTimer<BoundSpace>("bound_space");
