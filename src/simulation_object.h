@@ -403,6 +403,8 @@ class SimulationObjectExt
     return static_cast<const MostDerived<Backend> *>(this);
   }
 
+  void RunDiscretization() {}
+
   // Biology modules
   using BiologyModules =
       typename TCompileTimeParam::template CTMap<MostDerivedScalar,

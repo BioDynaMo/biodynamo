@@ -318,7 +318,7 @@ class ResourceManager {
   /// Apply a function on all elements in every container
   /// @param function that will be called with each container as a parameter
   ///
-  ///     rm->ApplyOnAllElements([](auto& element, SoHandle handle) {
+  ///     rm->ApplyOnAllElements([](auto&& element, SoHandle handle) {
   ///                              std::cout << element << std::endl;
   ///                          });
   template <typename TFunction>
