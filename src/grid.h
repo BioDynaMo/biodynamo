@@ -317,6 +317,12 @@ class Grid {
         box->AddObject(id, &successors_);
         sim_object.SetBoxIdx(idx);
       });
+      auto* param = TSimulation::GetActive()->GetParam();
+      if (param->bound_space_) {
+        int min = param->min_bound_;
+        int max = param->max_bound_;
+        threshold_dimensions_ = {min, max};
+      }
     } else {
       // There are no sim objects in this simulation
       auto* param = TSimulation::GetActive()->GetParam();

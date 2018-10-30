@@ -314,6 +314,27 @@ TEST(GridTest, NoRaceConditionForEachPair) {
   }
 }
 
+TEST(GridTest, NonEmptyBoundedTestThresholdDimensions) {
+  auto set_param = [](auto* param) {
+    param->bound_space_ = true;
+    param->min_bound_ = 1;
+    param->max_bound_ = 99;
+  };
+
+  Simulation<> simulation(TEST_NAME, set_param);
+  auto* rm = simulation.GetResourceManager();
+  auto* grid = simulation.GetGrid();
+
+  rm->New<Cell>(10);
+  rm->Get<Cell>()->Commit();
+
+  grid->Initialize();
+
+  auto max_dimensions = grid->GetDimensionThresholds();
+  EXPECT_EQ(1, max_dimensions[0]);
+  EXPECT_EQ(99, max_dimensions[1]);
+}
+
 // TODO(lukas) test with different kind of cells
 
 }  // namespace bdm
