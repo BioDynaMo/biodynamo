@@ -66,7 +66,6 @@ class Scheduler {
     }
 
     Initialize();
-
     for (unsigned step = 0; step < steps; step++) {
       Execute(step == steps - 1);
 
@@ -97,7 +96,7 @@ class Scheduler {
     DisplacementOp1<TSimulation> displacement_;
 
     rm->ApplyOnAllTypes([&](auto* sim_objects, uint16_t type_idx){
-#pragma omp parallel for
+#pragma omp parallel for schedule(dynamic, 100)
       for (size_t i = 0; i < sim_objects->size(); i++) {
         auto&& so = (*sim_objects)[i];
         // TODO(ahmad): should we only do it here and not after we run the physics?
@@ -113,7 +112,6 @@ class Scheduler {
         so.RunDiscretization();
       }
     });
-
     CommitChangesAndUpdateReferences();
     Timing::Time("diffusion", diffusion_);
   }

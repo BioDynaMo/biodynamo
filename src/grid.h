@@ -761,7 +761,7 @@ class Grid {
       all_largest_object_size[thread_id] = largest_object_size;
 
       rm->ApplyOnAllTypes([&](auto* sim_objects, uint16_t type_idx) {
-#pragma omp for
+#pragma omp for schedule(dynamic, 100)
         for (size_t i = 0; i < sim_objects->size(); i++) {
           const auto& position = (*sim_objects)[i].GetPosition();
           for (size_t j = 0; j < 3; j++) {
