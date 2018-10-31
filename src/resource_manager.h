@@ -341,7 +341,7 @@ class ResourceManager {
     // runtime dispatch - TODO(lukas) replace with c++17 std::apply
     for (uint16_t i = 0; i < std::tuple_size<decltype(data_)>::value; i++) {
       ::bdm::Apply(&data_, i, [&](auto* container) {
-#pragma omp parallel for
+#pragma omp parallel for schedule(dynamic, 100)
         for (size_t e = 0; e < container->size(); e++) {
           function((*container)[e], SoHandle(i, e));
         }
