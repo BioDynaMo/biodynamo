@@ -307,7 +307,7 @@ class Grid {
         boxes_.resize(total_num_boxes, Box());
       }
 
-      successors_.Initialize();
+      successors_.Reserve();
 
       // Assign simulation objects to boxes
       rm->ApplyOnAllElementsParallel([this](auto&& sim_object, SoHandle id) {
