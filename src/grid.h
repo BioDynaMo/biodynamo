@@ -371,6 +371,24 @@ class Grid {
     return (dx * dx + dy * dy + dz * dz);
   }
 
+  inline bool WithinSquaredEuclideanDistance(
+      double squared_radius, const std::array<double, 3>& pos1,
+      const std::array<double, 3>& pos2) const {
+    const double dx = pos2[0] - pos1[0];
+    const double dx2 = dx * dx;
+    if (dx2 > squared_radius)
+      return false;
+
+    const double dy = pos2[1] - pos1[1];
+    const double dy2_plus_dx2 = dy * dy + dx2;
+    if (dy2_plus_dx2 > squared_radius)
+      return false;
+
+    const double dz = pos2[2] - pos1[2];
+    const double distance = dz * dz + dy2_plus_dx2;
+    return distance < squared_radius;
+  }
+
   /// @brief      Applies the given lambda to each neighbor
   ///
   /// @param[in]  lambda  The operation as a lambda
@@ -428,8 +446,8 @@ class Grid {
       if (neighbor_handle != simulation_object_id) {
         rm->ApplyOnElement(neighbor_handle, [&](auto&& sim_object) {
           const auto& neighbor_position = sim_object.GetPosition();
-          if (this->SquaredEuclideanDistance(position, neighbor_position) <
-              squared_radius) {
+          if (this->WithinSquaredEuclideanDistance(squared_radius, position,
+                                                   neighbor_position)) {
             lambda(sim_object, neighbor_handle);
           }
         });
@@ -1088,8 +1106,8 @@ class Grid {
           for (size_t c = n + 1; c < soh_center_box.size(); c++) {
             rm->ApplyOnElement(soh_center_box[c], [&, this](auto&& element_c) {
               const auto& pos_c = pos_center_box[c];
-              if (this->SquaredEuclideanDistance(pos_c, pos_n) <
-                  squared_radius) {
+              if (this->WithinSquaredEuclideanDistance(squared_radius, pos_c,
+                                                       pos_n)) {
                 lambda(element_c, soh_center_box[c], element_n,
                        soh_center_box[n]);
               }
@@ -1112,8 +1130,8 @@ class Grid {
           for (size_t c = 0; c < soh_center_box.size(); c++) {
             rm->ApplyOnElement(soh_center_box[c], [&, this](auto&& element_c) {
               const auto& pos_c = pos_center_box[c];
-              if (this->SquaredEuclideanDistance(pos_c, pos_n) <
-                  squared_radius) {
+              if (this->WithinSquaredEuclideanDistance(squared_radius, pos_c,
+                                                       pos_n)) {
                 lambda(element_c, soh_center_box[c], element_n, soh_box[n]);
               }
             });
