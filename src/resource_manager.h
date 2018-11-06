@@ -196,7 +196,7 @@ class ResourceManager {
   /// a singleton to be able to use ROOT I/O
   ResourceManager() {
     // Must be called prior any other function call to libnuma
-    if (auto ret = numa_available() != -1) {
+    if (auto ret = numa_available() == -1) {
         Log::Fatal("ResourceManager", "Call to numa_available failed with return code: ", ret);
     }
     // create a sim object storage instance for each numa node
