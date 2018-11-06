@@ -74,6 +74,12 @@ if ("$ENV{CMAKE_EXPORT_COMPILE_COMMANDS}" STREQUAL "1" OR CLANG_TIDY_FOUND)
   set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 endif()
 
+find_package(Numa REQUIRED)
+if (NUMA_FOUND)
+   include_directories(${NUMA_INCLUDE_DIR})
+   link_directories(${NUMA_LIBRARY_DIR})
+endif()
+
 if(paraview)
   find_package(ParaView 5.3 QUIET OPTIONAL_COMPONENTS vtkPVPythonCatalyst
     vtkPVVTKExtensionsDefault vtkPVServerManagerRendering)
@@ -114,11 +120,13 @@ set(CMAKE_SKIP_BUILD_RPATH FALSE) # don't skip the full RPATH for the build tree
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 
-# -------------------- setup mpark variant library -----------------------------
-set(MPARK_LIB "${CMAKE_CURRENT_BINARY_DIR}/mpark/")
-file(MAKE_DIRECTORY "${MPARK_LIB}/")
+# -------------------- extract third party libraries ---------------------------
+set(EXTRACTED_THIRD_PARTY_LIBS "${CMAKE_CURRENT_BINARY_DIR}/extracted-third-party-libs")
+file(MAKE_DIRECTORY "${EXTRACTED_THIRD_PARTY_LIBS}/")
 execute_process(COMMAND ${CMAKE_COMMAND} -E tar xf "${CMAKE_SOURCE_DIR}/third_party/mpark_4ee0086.zip"
-                WORKING_DIRECTORY "${MPARK_LIB}")
+                WORKING_DIRECTORY "${EXTRACTED_THIRD_PARTY_LIBS}")
+execute_process(COMMAND ${CMAKE_COMMAND} -E tar xf "${CMAKE_SOURCE_DIR}/third_party/libmorton-7ff3866.zip"
+                WORKING_DIRECTORY "${EXTRACTED_THIRD_PARTY_LIBS}")
 
 # -------------------- build shared library libbiodynamo -----------------------
 # add the headers into the project
@@ -126,7 +134,7 @@ include(${ROOT_USE_FILE})
 include_directories("${CMAKE_SOURCE_DIR}/src")
 include_directories("${CMAKE_SOURCE_DIR}/test")
 include_directories("${CMAKE_SOURCE_DIR}/third_party")
-include_directories("${MPARK_LIB}")
+include_directories("${EXTRACTED_THIRD_PARTY_LIBS}")
 include_directories("${CMAKE_CURRENT_BINARY_DIR}/version")
 
 fix_rootcling_omp_issue()
@@ -138,7 +146,7 @@ file(GLOB_RECURSE KERNELS "${CMAKE_SOURCE_DIR}/src/*.cu")
 build_libbiodynamo(biodynamo
                    SOURCES ${LIB_SOURCES}
                    HEADERS ${HEADERS}
-                   LIBRARIES ${ROOT_LIBRARIES})
+                   LIBRARIES ${ROOT_LIBRARIES} ${NUMA_LIBRARIES})
 if(${VTune_FOUND})
   target_link_libraries(biodynamo ${VTUNE_LIBRARIES})
 endif()

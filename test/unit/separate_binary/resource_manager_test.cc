@@ -100,8 +100,8 @@ TEST(ResourceManagerTest, DiffusionGrid) {
 TEST(SoHandleTest, Getters) {
   SoHandle so_handle(1,2,3);
 
-  EXPECT_EQ(1u, so_handle.GetTypeIdx());
-  EXPECT_EQ(2u, so_handle.GetNumaNode());
+  EXPECT_EQ(1u, so_handle.GetNumaNode());
+  EXPECT_EQ(2u, so_handle.GetTypeIdx());
   EXPECT_EQ(3u, so_handle.GetElementIdx());
 }
 

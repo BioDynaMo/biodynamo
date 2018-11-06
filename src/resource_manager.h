@@ -63,7 +63,7 @@ class SoHandle {
         element_idx_(std::numeric_limits<ElementIdx_t>::max()) {}
 
   SoHandle(TypeIdx_t type_idx, ElementIdx_t element_idx)
-      : type_idx_(type_idx), element_idx_(element_idx) {}
+      : numa_node_(0), type_idx_(type_idx), element_idx_(element_idx) {}
 
   SoHandle(NumaNode_t numa_node, TypeIdx_t type_idx, ElementIdx_t element_idx)
       : numa_node_(numa_node), type_idx_(type_idx), element_idx_(element_idx) {}
@@ -196,19 +196,23 @@ class ResourceManager {
   ResourceManager() {
     // create a sim object storage instance for each numa node
     // sim_objects_.resize(numa_num_configured_nodes());  // FIXME
+    numa_nodes_ = numa_num_configured_nodes();
+    sim_objects_ = new TupleOfSOContainers[numa_nodes_];
     // Soa container contain one element upon construction
     Clear();
   }
 
   /// Free the memory that was reserved for the diffusion grids
   virtual ~ResourceManager() {
+    delete[] sim_objects_;
     for (auto& el : diffusion_grids_) {
       delete el.second;
     }
   }
 
   ResourceManager& operator=(ResourceManager&& other) {
-    sim_objects_ = std::move(other.sim_objects_);
+    // FIXME
+    // sim_objects_ = std::move(other.sim_objects_);
     diffusion_grids_ = std::move(other.diffusion_grids_);
     return *this;
   }
@@ -282,13 +286,13 @@ class ResourceManager {
   }
 
   uint16_t GetNumNumaNodes() {
-    return sim_objects_.size();
+    return numa_nodes_;
   }
 
   /// Returns the total number of simulation objects
   size_t GetNumSimObjects() {
     size_t num_so = 0;
-    for(uint16_t n = 0; n < sim_objects_.size(); n++) {
+    for(uint16_t n = 0; n < numa_nodes_; n++) {
       for (uint16_t i = 0; i < std::tuple_size<TupleOfSOContainers>::value; i++) {
         ::bdm::Apply(&sim_objects_[n], i,
                      [&](auto* container) { num_so += container->size(); });
@@ -325,7 +329,7 @@ class ResourceManager {
   ///                        });
   template <typename TFunction>
   void ApplyOnAllTypes(TFunction&& function) {
-    for(uint16_t n = 0; n < sim_objects_.size(); n++) {
+    for(uint16_t n = 0; n < numa_nodes_; n++) {
       // runtime dispatch - TODO(lukas) replace with c++17 std::apply
       for (uint16_t i = 0; i < std::tuple_size<TupleOfSOContainers>::value; i++) {
         ::bdm::Apply(&sim_objects_[n], i, [&](auto* container) { function(container, n, i); });
@@ -343,7 +347,7 @@ class ResourceManager {
   template <typename TFunction>
   void ApplyOnAllTypesParallel(TFunction&& function) {
     // FIXME this is not parallel
-    for(uint16_t n = 0; n < sim_objects_.size(); n++) {
+    for(uint16_t n = 0; n < numa_nodes_; n++) {
       // runtime dispatch - TODO(lukas) replace with c++17 std::apply
       for (uint16_t i = 0; i < std::tuple_size<TupleOfSOContainers>::value; i++) {
         ::bdm::Apply(&sim_objects_[n], i, [&](auto* container) { function(container, n, i); });
@@ -359,7 +363,7 @@ class ResourceManager {
   ///                          });
   template <typename TFunction>
   void ApplyOnAllElements(TFunction&& function) {
-    for(uint16_t n = 0; n < sim_objects_.size(); n++) {
+    for(uint16_t n = 0; n < numa_nodes_; n++) {
       // runtime dispatch - TODO(lukas) replace with c++17 std::apply
       for (uint16_t i = 0; i < std::tuple_size<TupleOfSOContainers>::value; i++) {
         ::bdm::Apply(&sim_objects_[n], i, [&](auto* container) {
@@ -376,7 +380,7 @@ class ResourceManager {
   /// \see ApplyOnAllElements
   template <typename TFunction>
   void ApplyOnAllElementsParallel(TFunction&& function) {
-    for(uint16_t n = 0; n < sim_objects_.size(); n++) {
+    for(uint16_t n = 0; n < numa_nodes_; n++) {
       // runtime dispatch - TODO(lukas) replace with c++17 std::apply
       for (uint16_t i = 0; i < std::tuple_size<TupleOfSOContainers>::value; i++) {
         ::bdm::Apply(&sim_objects_[n], i, [&](auto* container) {
@@ -444,7 +448,8 @@ class ResourceManager {
 
   /// Simulation object storgage. \n
   /// For each NUMA node on this machine create a `TupleOfSOContainers`
-  std::vector<TupleOfSOContainers> sim_objects_;
+  Int_t numa_nodes_ = 0;  // needed to help ROOT with array size
+  TupleOfSOContainers* sim_objects_ = nullptr;  //[numa_nodes_]
 
   std::unordered_map<uint64_t, DiffusionGrid*> diffusion_grids_;
 

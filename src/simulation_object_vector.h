@@ -32,7 +32,7 @@ class SimulationObjectVector {
     auto* rm = sim->GetResourceManager();
     data_.resize(rm->GetNumNumaNodes());
     size_.resize(rm->GetNumNumaNodes());
-    for (uint64_t i = 0; data_.size(); i++) {
+    for (uint64_t i = 0; i < data_.size(); i++) {
       data_[i].resize(rm->NumberOfTypes());
       size_[i].resize(rm->NumberOfTypes());
     }
