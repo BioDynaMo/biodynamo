@@ -26,6 +26,8 @@
 #include <limits>
 #include <vector>
 
+#include <morton/morton.h>
+
 #include "constant.h"
 #include "fixed_size_vector.h"
 #include "inline_vector.h"
@@ -203,6 +205,63 @@ class Grid {
         }
         // a non-empty box has been found
         box_iterator_ = neighbor_boxes_[box_idx_]->begin();
+        return *this;
+      }
+      // all remaining boxes have been empty; reached end
+      is_end_ = true;
+      return *this;
+    }
+  };
+
+  // FIXME
+  struct FoobarIterator {
+    explicit FoobarIterator(
+        const std::vector<std::pair<uint32_t, const Box*>>& neighbor_boxes)
+        : neighbor_boxes_(neighbor_boxes),
+          // start iterator from box 0
+          box_iterator_(neighbor_boxes_[0].second->begin()) {
+      // if first box is empty
+      if (neighbor_boxes_[0].second->IsEmpty()) {
+        ForwardToNonEmptyBox();
+      }
+    }
+
+    bool IsAtEnd() const { return is_end_; }
+
+    const SoHandle& operator*() const { return *box_iterator_; }
+
+    /// Version where empty neighbor boxes are allowed
+    FoobarIterator& operator++() {
+      ++box_iterator_;
+      // if iterator of current box has come to an end, continue with next box
+      if (box_iterator_.IsAtEnd()) {
+        return ForwardToNonEmptyBox();
+      }
+      return *this;
+    }
+
+   private:
+    /// The 27 neighbor boxes that will be searched for simulation objects
+    const std::vector<std::pair<uint32_t, const Box*>>& neighbor_boxes_;
+    /// The box that shall be considered to iterate over for finding simulation
+    /// objects
+    typename Box::Iterator box_iterator_;
+    /// The id of the box to be considered (i.e. value between 0 - 26)
+    uint16_t box_idx_ = 0;
+    /// Flag to indicate that all the neighbor boxes have been searched through
+    bool is_end_ = false;
+
+    /// Forwards the iterator to the next non empty box and returns itself
+    /// If there are no non empty boxes is_end_ is set to true
+    FoobarIterator& ForwardToNonEmptyBox() {
+      // increment box id until non empty box has been found
+      while (++box_idx_ < neighbor_boxes_.size()) {
+        // box is empty or uninitialized (padding box) -> continue
+        if (neighbor_boxes_[box_idx_].second->IsEmpty()) {
+          continue;
+        }
+        // a non-empty box has been found
+        box_iterator_ = neighbor_boxes_[box_idx_].second->begin();
         return *this;
       }
       // all remaining boxes have been empty; reached end
@@ -390,6 +449,38 @@ class Grid {
     const double dz = pos2[2] - pos1[2];
     const double distance = dz * dz + dy2_plus_dx2;
     return distance < squared_radius;
+  }
+
+  // TODO Documentation
+  template <typename Lambda>
+  void IterateZOrder(const Lambda& l) const {
+    // iterate boxes in Z-order / morton order
+    // TODO this is a very quick attempt to test an idea
+    // TODO improve performance of this brute force solution
+    std::vector<std::pair<uint32_t, const Box*>> box_morton_codes;
+    box_morton_codes.resize(boxes_.size());
+    for (uint64_t x = 0; x < num_boxes_axis_[0]; x++) {
+      for (uint64_t y = 0; y < num_boxes_axis_[1]; y++) {
+        for (uint64_t z = 0; z < num_boxes_axis_[2]; z++) {
+          auto box_idx = GetBoxIndex({x, y, z});
+          auto morton = libmorton::morton3D_64_encode(x, y, z);
+          box_morton_codes[box_idx].first = morton;
+          box_morton_codes[box_idx].second = boxes_[box_idx];
+        }
+      }
+    }
+    std::sort(box_morton_codes.begin(), box_morton_codes.end(), [](const auto& lhs, const auto& rhs) {
+      return lhs.first < rhs.first;
+    });
+
+    FoobarIterator ni(box_morton_codes);
+    while (!ni.IsAtEnd()) {
+      // Do something with neighbor object
+      lambda(*ni);
+      ++ni;
+    }
+
+    l(SoHandle());
   }
 
   /// @brief      Applies the given lambda to each neighbor

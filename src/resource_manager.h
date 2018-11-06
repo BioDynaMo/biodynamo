@@ -25,6 +25,7 @@
 #include <vector>
 #include <sched.h>
 #include <numa.h>
+#include <omp.h>
 
 #ifdef USE_OPENCL
 #define __CL_ENABLE_EXCEPTIONS
@@ -194,6 +195,10 @@ class ResourceManager {
   /// Default constructor. Unfortunately needs to be public although it is
   /// a singleton to be able to use ROOT I/O
   ResourceManager() {
+    // Must be called prior any other function call to libnuma
+    if (auto ret = numa_available() != -1) {
+        Log::Fatal("ResourceManager", "Call to numa_available failed with return code: ", ret);
+    }
     // create a sim object storage instance for each numa node
     // sim_objects_.resize(numa_num_configured_nodes());  // FIXME
     numa_nodes_ = numa_num_configured_nodes();
@@ -380,13 +385,24 @@ class ResourceManager {
   /// \see ApplyOnAllElements
   template <typename TFunction>
   void ApplyOnAllElementsParallel(TFunction&& function) {
-    for(uint16_t n = 0; n < numa_nodes_; n++) {
+
+    auto nodes = numa_num_configured_nodes();
+    auto cores = numa_num_configured_cpus();
+    auto cores_per_node = cores / nodes;
+
+    omp_set_nested(1); // TODO move to generatl openmp initialization
+
+    #pragma omp parallel num_threads(nodes)
+    {
+       auto numa_thread_id = omp_get_thread_num();
+       numa_run_on_node(numa_thread_id);
+
       // runtime dispatch - TODO(lukas) replace with c++17 std::apply
       for (uint16_t i = 0; i < std::tuple_size<TupleOfSOContainers>::value; i++) {
-        ::bdm::Apply(&sim_objects_[n], i, [&](auto* container) {
-  #pragma omp parallel for schedule(dynamic, 100)
+        ::bdm::Apply(&sim_objects_[numa_thread_id], i, [&](auto* container) {
+  #pragma omp parallel for schedule(dynamic, 100) num_threads(cores_per_node)
           for (size_t e = 0; e < container->size(); e++) {
-            function((*container)[e], SoHandle(n, i, e));
+            function((*container)[e], SoHandle(numa_thread_id, i, e));
           }
         });
       }
@@ -397,6 +413,49 @@ class ResourceManager {
   void Clear() {
     ApplyOnAllTypes(
         [](auto* container, uint16_t numa_node, uint16_t type_idx) { container->clear(); });
+  }
+
+  void SortAndBalanceNumaNodes() {
+    uint64_t so_per_numa = GetNumSimObjects() / numa_nodes_;
+    uint64_t cnt = 0;
+    uint64_t current_numa = 0;
+
+    // using first touch policy - page will be allocated to the numa domain of
+    // the thread that accesses it first.
+    // alternative, use numa_alloc_onnode.
+    TupleOfSOContainers* so_rearranged = new TupleOfSOContainers[numa_nodes_];
+
+    // TODO reserve memory upfront to be more efficient
+
+    auto rearrange  = [&](const SoHandle& handle) {
+      if(cnt == so_per_numa) {
+        cnt = 0;
+        current_numa++;
+        // change this threads numa domain
+        if(int ret = numa_run_on_node(omp_get_thread_num())) {
+          Log::Fatal("ResourceManager", "Run on numa node failed. Return code: ", ret);
+        }
+      }
+      ApplyOnElement(handle, [&](auto&& sim_object) {
+        ::bdm::Apply(&so_rearranged[current_numa], handle.GetTypeIdx(), [&](auto* container) {
+            container->push_back(sim_object);
+            uint32_t element_idx = container->size() - 1;
+            auto&& so = (*container)[element_idx];
+            so.SetElementIdx(element_idx);
+            so.SetNumaNode(current_numa);
+        });
+      });
+      cnt++;
+    };
+
+    auto* grid = Simulation<TCompileTimeParam>::GetActive()->GetGrid();
+    grid->IterateZOrder(rearrange);
+
+    TupleOfSOContainers* tmp = sim_objects_;
+    for(uint64_t i = 0; i < numa_nodes_; i++) {
+      sim_objects_[i] = so_rearranged[i];
+    }
+    delete[] tmp;
   }
 
   template <typename TSo>
