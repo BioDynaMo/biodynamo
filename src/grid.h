@@ -635,8 +635,9 @@ class Grid {
   template <typename TUint32>
   void GetSuccessors(std::vector<TUint32>* successors) {
     uint16_t type = 0;
-    for (size_t i = 0; i < successors_.size(type); i++) {
-      auto sh = SoHandle(type, i);
+    uint16_t numa_node = 0;
+    for (size_t i = 0; i < successors_.size(numa_node, type); i++) {
+      auto sh = SoHandle(numa_node, type, i);
       (*successors)[i] = successors_[sh].GetElementIdx();
     }
   }
@@ -760,7 +761,7 @@ class Grid {
       all_grid_dimensions[thread_id] = grid_dimensions;
       all_largest_object_size[thread_id] = largest_object_size;
 
-      rm->ApplyOnAllTypes([&](auto* sim_objects, uint16_t type_idx) {
+      rm->ApplyOnAllTypes([&](auto* sim_objects, uint16_t numa_node, uint16_t type_idx) {
 #pragma omp for schedule(dynamic, 100)
         for (size_t i = 0; i < sim_objects->size(); i++) {
           const auto& position = (*sim_objects)[i].GetPosition();

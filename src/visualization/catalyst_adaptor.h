@@ -364,7 +364,7 @@ class CatalystAdaptor {
     vtk_so_grids_.resize(param->visualize_sim_objects_.size());
     unsigned so_idx = 0;
 
-    rm->ApplyOnAllTypes([&, this](auto* sim_objects, uint16_t type_idx) {
+    rm->ApplyOnAllTypes([&, this](auto* sim_objects, uint16_t numa_node, uint16_t type_idx) {
       auto so_name = sim_objects->GetScalarTypeName();
 
       if (param->visualize_sim_objects_.find(so_name) !=

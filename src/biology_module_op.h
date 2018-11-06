@@ -24,7 +24,7 @@ namespace bdm {
 
 struct BiologyModuleOp {
   template <typename TContainer>
-  void operator()(TContainer* cells, uint16_t type_idx) const {
+  void operator()(TContainer* cells, uint16_t numa_node, uint16_t type_idx) const {
 #pragma omp parallel
     {
 // Iterations are data independent, so threads don't need to

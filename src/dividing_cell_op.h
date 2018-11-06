@@ -27,7 +27,7 @@ class DividingCellOp {
   DividingCellOp& operator=(const DividingCellOp&) = delete;
 
   template <typename TContainer>
-  void operator()(TContainer* cells, uint16_t type_idx) const {
+  void operator()(TContainer* cells, uint16_t numa_node, uint16_t type_idx) const {
 #pragma omp parallel for
     for (uint64_t i = 0; i < cells->size(); i++) {
       auto&& cell = (*cells)[i];

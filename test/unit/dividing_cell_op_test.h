@@ -41,7 +41,7 @@ void RunTest() {
   double volume_mother = (*cells)[0].GetVolume();
 
   DividingCellOp op;
-  op(cells, 0);
+  op(cells, 0, 0);
 
   cells->Commit();
 

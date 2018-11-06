@@ -23,7 +23,8 @@
 #include <unordered_map>
 #include <utility>
 #include <vector>
-#include "root_util.h"
+#include <sched.h>
+#include <numa.h>
 
 #ifdef USE_OPENCL
 #define __CL_ENABLE_EXCEPTIONS
@@ -34,6 +35,7 @@
 #endif
 #endif
 
+#include "root_util.h"
 #include "backend.h"
 #include "compile_time_list.h"
 #include "diffusion_grid.h"
@@ -43,30 +45,46 @@
 namespace bdm {
 
 /// Unique identifier of a simulation object. Acts as a type erased pointer.
-/// Has the same type for every simulation object.
-/// The id is split into two parts: Type index and element index.
-/// The first one is used to obtain the container in the ResourceManager, the
-/// second specifies the element within this vector.
+/// Has the same type for every simulation object. \n
+/// Points to the storage location of a sim object inside ResourceManager.\n
+/// The id is split into three parts: Numa node, type index and element index.
+/// The first one is used to obtain the numa storage, the second the correct
+/// container in the ResourceManager, and the third specifies the element within
+/// this vector.
 class SoHandle {
  public:
+   using TypeIdx_t = uint16_t;
+   using NumaNode_t = uint16_t;
+   using ElementIdx_t = uint32_t;
+
   constexpr SoHandle() noexcept
-      : type_idx_(std::numeric_limits<decltype(type_idx_)>::max()),
-        element_idx_(std::numeric_limits<decltype(element_idx_)>::max()) {}
-  SoHandle(uint16_t type_idx, uint32_t element_idx)
+      : numa_node_(std::numeric_limits<NumaNode_t>::max()),
+        type_idx_(std::numeric_limits<TypeIdx_t>::max()),
+        element_idx_(std::numeric_limits<ElementIdx_t>::max()) {}
+
+  SoHandle(TypeIdx_t type_idx, ElementIdx_t element_idx)
       : type_idx_(type_idx), element_idx_(element_idx) {}
-  uint16_t GetTypeIdx() const { return type_idx_; }
-  uint32_t GetElementIdx() const { return element_idx_; }
-  void SetElementIdx(uint32_t element_idx) { element_idx_ = element_idx; }
+
+  SoHandle(NumaNode_t numa_node, TypeIdx_t type_idx, ElementIdx_t element_idx)
+      : numa_node_(numa_node), type_idx_(type_idx), element_idx_(element_idx) {}
+
+  NumaNode_t GetNumaNode() const { return numa_node_; }
+  TypeIdx_t GetTypeIdx() const { return type_idx_; }
+  ElementIdx_t GetElementIdx() const { return element_idx_; }
+  void SetElementIdx(ElementIdx_t element_idx) { element_idx_ = element_idx; }
 
   bool operator==(const SoHandle& other) const {
-    return type_idx_ == other.type_idx_ && element_idx_ == other.element_idx_;
+    return type_idx_ == other.type_idx_ && numa_node_ == other.numa_node_ &&
+           element_idx_ == other.element_idx_;
   }
 
   bool operator!=(const SoHandle& other) const { return !(*this == other); }
 
   bool operator<(const SoHandle& other) const {
-    if (type_idx_ == other.type_idx_) {
+    if (type_idx_ == other.type_idx_ && numa_node_ == other.numa_node_) {
       return element_idx_ < other.element_idx_;
+    } else if (type_idx_ == other.type_idx_) {
+      return numa_node_ < other.numa_node_;
     } else {
       return type_idx_ < other.type_idx_;
     }
@@ -74,18 +92,20 @@ class SoHandle {
 
   friend std::ostream& operator<<(std::ostream& stream,
                                   const SoHandle& handle) {
-    stream << "Type idx: " << handle.type_idx_
+    stream << "Numa node: " << handle.numa_node_
+           << " type idx: " << handle.type_idx_
            << " element idx: " << handle.element_idx_;
     return stream;
   }
 
  private:
-  // TODO(lukas) add using TypeIdx_t = uint16_t and
-  // using ElementIdx_t = uint32_t
-  uint16_t type_idx_;
+  NumaNode_t numa_node_;
+
+  TypeIdx_t type_idx_;
+
   /// changed element index to uint32_t after issues with std::atomic with
   /// size 16 -> max element_idx: 4.294.967.296
-  uint32_t element_idx_;
+  ElementIdx_t element_idx_;
 
   BDM_CLASS_DEF_NV(SoHandle, 1);
 };
@@ -94,13 +114,13 @@ constexpr SoHandle kNullSoHandle;
 
 namespace detail {
 
-/// \see bdm::ConvertToContainerTuple, CTList
+/// \see bdm::ToTupleOfSOContainers, CTList
 template <typename Backend, typename... Types>
-struct ConvertToContainerTuple {};
+struct ToTupleOfSOContainers {};
 
-/// \see bdm::ConvertToContainerTuple, CTList
+/// \see bdm::ToTupleOfSOContainers, CTList
 template <typename Backend, typename... Types>
-struct ConvertToContainerTuple<Backend, CTList<Types...>> {
+struct ToTupleOfSOContainers<Backend, CTList<Types...>> {
   // Helper alias to get the container type associated with Backend
   template <typename T>
   using Container = typename Backend::template Container<T>;
@@ -129,8 +149,8 @@ struct ToIndex<TSo, CTList<Types...>> {
 /// which in turn contains the variadic template parameters
 /// \see CTList
 template <typename Backend, typename TCTList>
-struct ConvertToContainerTuple {
-  typedef typename detail::ConvertToContainerTuple<Backend, TCTList>::type
+struct ToTupleOfSOContainers {
+  typedef typename detail::ToTupleOfSOContainers<Backend, TCTList>::type
       type;  // NOLINT
 };
 
@@ -160,7 +180,7 @@ class ResourceManager {
 
   /// Returns the number of simulation object types
   static constexpr size_t NumberOfTypes() {
-    return std::tuple_size<decltype(data_)>::value;
+    return std::tuple_size<TupleOfSOContainers>::value;
   }
 
   template <typename TSo>
@@ -174,6 +194,8 @@ class ResourceManager {
   /// Default constructor. Unfortunately needs to be public although it is
   /// a singleton to be able to use ROOT I/O
   ResourceManager() {
+    // create a sim object storage instance for each numa node
+    // sim_objects_.resize(numa_num_configured_nodes());  // FIXME
     // Soa container contain one element upon construction
     Clear();
   }
@@ -186,19 +208,20 @@ class ResourceManager {
   }
 
   ResourceManager& operator=(ResourceManager&& other) {
-    data_ = std::move(other.data_);
+    sim_objects_ = std::move(other.sim_objects_);
     diffusion_grids_ = std::move(other.diffusion_grids_);
     return *this;
   }
 
+  // FIXME make private?
   /// Return the container of this Type
   /// @tparam Type atomic type whose container should be returned
   ///         invariant to the Backend. This means that even if ResourceManager
   ///         stores e.g. `SoaCell`, Type can be `Cell` and still returns the
   ///         correct container.
   template <typename Type>
-  TypeContainer<ToBackend<Type>>* Get() {
-    return &std::get<TypeContainer<ToBackend<Type>>>(data_);
+  TypeContainer<ToBackend<Type>>* Get(typename SoHandle::NumaNode_t numa_node = 0) {
+    return &std::get<TypeContainer<ToBackend<Type>>>(sim_objects_[numa_node]);
   }
 
   void AddDiffusionGrid(DiffusionGrid* dgrid) {
@@ -258,12 +281,18 @@ class ResourceManager {
     }
   }
 
+  uint16_t GetNumNumaNodes() {
+    return sim_objects_.size();
+  }
+
   /// Returns the total number of simulation objects
   size_t GetNumSimObjects() {
     size_t num_so = 0;
-    for (uint16_t i = 0; i < std::tuple_size<decltype(data_)>::value; i++) {
-      ::bdm::Apply(&data_, i,
-                   [&](auto* container) { num_so += container->size(); });
+    for(uint16_t n = 0; n < sim_objects_.size(); n++) {
+      for (uint16_t i = 0; i < std::tuple_size<TupleOfSOContainers>::value; i++) {
+        ::bdm::Apply(&sim_objects_[n], i,
+                     [&](auto* container) { num_so += container->size(); });
+      }
     }
     return num_so;
   }
@@ -279,24 +308,28 @@ class ResourceManager {
   template <typename TFunction>
   auto ApplyOnElement(SoHandle handle, TFunction&& function) {
     auto type_idx = handle.GetTypeIdx();
+    auto numa_node = handle.GetNumaNode();
     auto element_idx = handle.GetElementIdx();
-    return ::bdm::Apply(&data_, type_idx, [&](auto* container) -> decltype(
+    return ::bdm::Apply(&sim_objects_[numa_node], type_idx, [&](auto* container) -> decltype(
                                               function((*container)[0])) {
       return function((*container)[element_idx]);
     });
   }
+  // FIXME documentation in this class
 
   /// Apply a function on all container types
   /// @param function that will be called with each container as a parameter
   ///
-  ///     rm->ApplyOnAllTypes([](auto* container, uint16_t type_idx) {
+  ///     rm->ApplyOnAllTypes([](auto* container, typename SoHandle::NumaNode_t numa_node, typename SoHandle::TypeIdx_t type_idx) {
   ///                          std::cout << container->size() << std::endl;
   ///                        });
   template <typename TFunction>
   void ApplyOnAllTypes(TFunction&& function) {
-    // runtime dispatch - TODO(lukas) replace with c++17 std::apply
-    for (uint16_t i = 0; i < std::tuple_size<decltype(data_)>::value; i++) {
-      ::bdm::Apply(&data_, i, [&](auto* container) { function(container, i); });
+    for(uint16_t n = 0; n < sim_objects_.size(); n++) {
+      // runtime dispatch - TODO(lukas) replace with c++17 std::apply
+      for (uint16_t i = 0; i < std::tuple_size<TupleOfSOContainers>::value; i++) {
+        ::bdm::Apply(&sim_objects_[n], i, [&](auto* container) { function(container, n, i); });
+      }
     }
   }
 
@@ -304,14 +337,17 @@ class ResourceManager {
   /// parallelized
   /// @param function that will be called with each container as a parameter
   ///
-  ///     rm->ApplyOnAllTypes([](auto* container, uint16_t type_idx) {
+  ///     rm->ApplyOnAllTypes([](auto* container, typename SoHandle::NumaNode_t numa_node, typename SoHandle::TypeIdx_t type_idx) {
   ///                          std::cout << container->size() << std::endl;
   ///                        });
   template <typename TFunction>
   void ApplyOnAllTypesParallel(TFunction&& function) {
-    // runtime dispatch - TODO(lukas) replace with c++17 std::apply
-    for (uint16_t i = 0; i < std::tuple_size<decltype(data_)>::value; i++) {
-      ::bdm::Apply(&data_, i, [&](auto* container) { function(container, i); });
+    // FIXME this is not parallel
+    for(uint16_t n = 0; n < sim_objects_.size(); n++) {
+      // runtime dispatch - TODO(lukas) replace with c++17 std::apply
+      for (uint16_t i = 0; i < std::tuple_size<TupleOfSOContainers>::value; i++) {
+        ::bdm::Apply(&sim_objects_[n], i, [&](auto* container) { function(container, n, i); });
+      }
     }
   }
 
@@ -323,13 +359,15 @@ class ResourceManager {
   ///                          });
   template <typename TFunction>
   void ApplyOnAllElements(TFunction&& function) {
-    // runtime dispatch - TODO(lukas) replace with c++17 std::apply
-    for (uint16_t i = 0; i < std::tuple_size<decltype(data_)>::value; i++) {
-      ::bdm::Apply(&data_, i, [&](auto* container) {
-        for (size_t e = 0; e < container->size(); e++) {
-          function((*container)[e], SoHandle(i, e));
-        }
-      });
+    for(uint16_t n = 0; n < sim_objects_.size(); n++) {
+      // runtime dispatch - TODO(lukas) replace with c++17 std::apply
+      for (uint16_t i = 0; i < std::tuple_size<TupleOfSOContainers>::value; i++) {
+        ::bdm::Apply(&sim_objects_[n], i, [&](auto* container) {
+          for (size_t e = 0; e < container->size(); e++) {
+            function((*container)[e], SoHandle(n, i, e));
+          }
+        });
+      }
     }
   }
 
@@ -338,26 +376,28 @@ class ResourceManager {
   /// \see ApplyOnAllElements
   template <typename TFunction>
   void ApplyOnAllElementsParallel(TFunction&& function) {
-    // runtime dispatch - TODO(lukas) replace with c++17 std::apply
-    for (uint16_t i = 0; i < std::tuple_size<decltype(data_)>::value; i++) {
-      ::bdm::Apply(&data_, i, [&](auto* container) {
-#pragma omp parallel for schedule(dynamic, 100)
-        for (size_t e = 0; e < container->size(); e++) {
-          function((*container)[e], SoHandle(i, e));
-        }
-      });
+    for(uint16_t n = 0; n < sim_objects_.size(); n++) {
+      // runtime dispatch - TODO(lukas) replace with c++17 std::apply
+      for (uint16_t i = 0; i < std::tuple_size<TupleOfSOContainers>::value; i++) {
+        ::bdm::Apply(&sim_objects_[n], i, [&](auto* container) {
+  #pragma omp parallel for schedule(dynamic, 100)
+          for (size_t e = 0; e < container->size(); e++) {
+            function((*container)[e], SoHandle(n, i, e));
+          }
+        });
+      }
     }
   }
 
   /// Remove elements from each type
   void Clear() {
     ApplyOnAllTypes(
-        [](auto* container, uint16_t type_idx) { container->clear(); });
+        [](auto* container, uint16_t numa_node, uint16_t type_idx) { container->clear(); });
   }
 
   template <typename TSo>
   void push_back(const TSo& so) {  // NOLINT
-    Get<TSo>()->push_back(so);
+    Get<TSo>(0)->push_back(so);
   }
 
 #ifdef USE_OPENCL
@@ -375,9 +415,11 @@ class ResourceManager {
   typename std::enable_if<std::is_same<TBackend, Soa>::value,
                           typename TScalarSo::template Self<SoaRef>>::type
   New(Args... args) {
-    auto container = Get<TScalarSo>();
+    typename SoHandle::NumaNode_t numa_node = 0;
+    auto container = Get<TScalarSo>(numa_node);
     auto idx =
         container->DelayedPushBack(TScalarSo(std::forward<Args>(args)...));
+    (*container)[idx].SetNumaNode(numa_node);
     return (*container)[idx];
   }
 
@@ -385,16 +427,25 @@ class ResourceManager {
   typename std::enable_if<std::is_same<TBackend, Scalar>::value,
                           TScalarSo&>::type
   New(Args... args) {
-    auto container = Get<TScalarSo>();
+    typename SoHandle::NumaNode_t numa_node = 0;
+    auto container = Get<TScalarSo>(numa_node);
     auto idx =
         container->DelayedPushBack(TScalarSo(std::forward<Args>(args)...));
+    (*container)[idx].SetNumaNode(numa_node);
     return (*container)[idx];
   }
 
  private:
-  /// creates one container for each type in Types.
-  /// Container type is determined based on the specified Backend
-  typename ConvertToContainerTuple<Backend, Types>::type data_;
+  /// Conversion of simulation object types from the compile time params
+  /// (`SimObjectTypes`) to a tuple of containers:
+  /// `std::tuple<Container<SimObject1>, Container<SimOBject2>>`\n
+  /// Container type is determined based on the specified simulation backend
+  using TupleOfSOContainers = typename ToTupleOfSOContainers<Backend, Types>::type;
+
+  /// Simulation object storgage. \n
+  /// For each NUMA node on this machine create a `TupleOfSOContainers`
+  std::vector<TupleOfSOContainers> sim_objects_;
+
   std::unordered_map<uint64_t, DiffusionGrid*> diffusion_grids_;
 
 #ifdef USE_OPENCL

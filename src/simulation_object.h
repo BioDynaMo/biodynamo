@@ -317,7 +317,7 @@ class SimulationObjectExt
   template <typename T, typename U>
   using SimObjectBaseExt = typename SimulationObjectImpl<T, U>::type;
 
-  BDM_SIM_OBJECT_HEADER(SimulationObject, SimObjectBase, 1, biology_modules_);
+  BDM_SIM_OBJECT_HEADER(SimulationObject, SimObjectBase, 1, biology_modules_, numa_node_);
 
  public:
   SimulationObjectExt() : Base() {}
@@ -405,6 +405,33 @@ class SimulationObjectExt
 
   void RunDiscretization() {}
 
+  void SetNumaNode(typename SoHandle::NumaNode_t numa_node) {
+    numa_node_[kIdx] = numa_node;
+  }
+
+  template <typename TResourceManager = ResourceManager<>>
+  SoHandle GetSoHandle() const {
+    auto type_idx =
+        TResourceManager::template GetTypeIndex<MostDerivedScalar>();
+    return SoHandle(numa_node_[kIdx], type_idx, Base::GetElementIdx());
+  }
+
+  /// Return simulation object pointer
+  /// NB: Cannot be used in a constructor, because `Base::element_idx_` has
+  /// not been set by the ResourceManager yet
+  MostDerivedSoPtr GetSoPtr() {
+    auto* rm = Simulation_t::GetActive()->GetResourceManager();
+    auto* container = rm->template Get<MostDerivedScalar>(numa_node_[kIdx]);
+    return MostDerivedSoPtr(container, Base::GetElementIdx());
+  }
+
+  void RemoveFromSimulation() {
+    auto* rm = Simulation_t::GetActive()->GetResourceManager();
+    auto container = rm->template Get<MostDerivedScalar>(numa_node_[kIdx]);
+    container->DelayedRemove(Base::GetElementIdx());
+  }
+
+  // ---------------------------------------------------------------------------
   // Biology modules
   using BiologyModules =
       typename TCompileTimeParam::template CTMap<MostDerivedScalar,
@@ -456,6 +483,7 @@ class SimulationObjectExt
 
   /// Return all biology modules
   const auto &GetAllBiologyModules() const { return biology_modules_[kIdx]; }
+  // ---------------------------------------------------------------------------
 
   template <typename TEvent, typename TOther>
   void EventHandler(const TEvent &event, TOther *other) {
@@ -478,6 +506,8 @@ class SimulationObjectExt
   vec<std::vector<BiologyModules>> biology_modules_;
 
  private:
+   vec<typename SoHandle::NumaNode_t> numa_node_ = {{}};
+
   /// @brief Function to copy biology modules from one structure to another
   /// @param event event will be passed on to biology module to determine
   ///        whether it should be copied to destination

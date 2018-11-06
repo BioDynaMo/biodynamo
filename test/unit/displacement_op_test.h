@@ -52,7 +52,7 @@ void RunTest() {
 
   // execute operation
   DisplacementOp<> op;
-  op(cells, 0);
+  op(cells, 0, 0);
 
   // check results
   // cell 1

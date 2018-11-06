@@ -95,13 +95,13 @@ inline void RunApplyOnElementTest() {
   auto a_collection = rm.template Get<TA>();
   a_collection->push_back(TAScalar(12));
   a_collection->push_back(TAScalar(34));
-  rm.ApplyOnElement(SoHandle(0, 1),
+  rm.ApplyOnElement(SoHandle(0, 0, 1),
                     [](auto&& element) { EXPECT_EQ(34, element.GetData()); });
 
   auto b_collection = rm.template Get<TB>();
   b_collection->push_back(TBScalar(3.14));
   b_collection->push_back(TBScalar(6.28));
-  rm.ApplyOnElement(SoHandle(1, 0), [&](auto&& element) {
+  rm.ApplyOnElement(SoHandle(0, 1, 0), [&](auto&& element) {
     EXPECT_NEAR(3.14, element.GetData(), kEpsilon);
   });
 }
@@ -174,11 +174,11 @@ void RunApplyOnAllElementsParallelTest() {
 
   rm.ApplyOnAllElementsParallel([](auto&& element, SoHandle handle) {
     const double kEpsilon = abs_error<double>::value;
-    if (handle == SoHandle(1, 0)) {
+    if (handle == SoHandle(0, 1, 0)) {
       EXPECT_EQ(3.14, element.GetData());
-    } else if (handle == SoHandle(1, 1)) {
+    } else if (handle == SoHandle(0, 1, 1)) {
       EXPECT_EQ(6.28, element.GetData());
-    } else if (handle == SoHandle(1, 2)) {
+    } else if (handle == SoHandle(0, 1, 2)) {
       EXPECT_NEAR(9.42, element.GetData(), kEpsilon);
     } else {
       FAIL();
@@ -200,7 +200,7 @@ void RunApplyOnAllTypesTest() {
   b_collection->push_back(TBScalar(3.14));
   b_collection->push_back(TBScalar(6.28));
   size_t counter = 0;
-  rm.ApplyOnAllTypes([&](auto* container, uint16_t type_idx) {
+  rm.ApplyOnAllTypes([&](auto* container, uint16_t numa_node, uint16_t type_idx) {
     counter++;
     switch (counter) {
       case 1:

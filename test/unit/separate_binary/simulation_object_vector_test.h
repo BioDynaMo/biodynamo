@@ -84,22 +84,21 @@ inline void RunTest() {
   bs->push_back(B(9));
 
   SimulationObjectVector<int> vector;
-  EXPECT_EQ(2u, vector.size());
-  EXPECT_EQ(3u, vector.size(0));
-  EXPECT_EQ(2u, vector.size(1));
+  EXPECT_EQ(3u, vector.size(0, 0));
+  EXPECT_EQ(2u, vector.size(0, 1));
 
   // values are not initialized
-  vector[SoHandle(0, 0)] = 1;
-  vector[SoHandle(0, 1)] = 2;
-  vector[SoHandle(0, 2)] = 3;
-  vector[SoHandle(1, 0)] = 4;
-  vector[SoHandle(1, 1)] = 5;
+  vector[SoHandle(0, 0, 0)] = 1;
+  vector[SoHandle(0, 0, 1)] = 2;
+  vector[SoHandle(0, 0, 2)] = 3;
+  vector[SoHandle(0, 1, 0)] = 4;
+  vector[SoHandle(0, 1, 1)] = 5;
 
-  EXPECT_EQ(1, vector[SoHandle(0, 0)]);
-  EXPECT_EQ(2, vector[SoHandle(0, 1)]);
-  EXPECT_EQ(3, vector[SoHandle(0, 2)]);
-  EXPECT_EQ(4, vector[SoHandle(1, 0)]);
-  EXPECT_EQ(5, vector[SoHandle(1, 1)]);
+  EXPECT_EQ(1, vector[SoHandle(0, 0, 0)]);
+  EXPECT_EQ(2, vector[SoHandle(0, 0, 1)]);
+  EXPECT_EQ(3, vector[SoHandle(0, 0, 2)]);
+  EXPECT_EQ(4, vector[SoHandle(0, 1, 0)]);
+  EXPECT_EQ(5, vector[SoHandle(0, 1, 1)]);
 }
 
 }  // namespace simulation_object_vector_test_internal

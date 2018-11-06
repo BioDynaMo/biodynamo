@@ -166,7 +166,7 @@ TEST(NeuronSomaTest, ExtendNewNeuriteElementSphericalCoordinates) {
   auto* rm = simulation.GetResourceManager();
 
   const double kEpsilon = abs_error<double>::value;
-  auto commit = [](auto* container, uint16_t type_idx) { container->Commit(); };
+  auto commit = [](auto* container, uint16_t numa_node, uint16_t type_idx) { container->Commit(); };
 
   // create neuron
   std::array<double, 3> origin = {0, 0, 0};
@@ -213,7 +213,7 @@ TEST(NeuronSomaTest, ExtendNewNeurite) {
   auto* rm = simulation.GetResourceManager();
 
   const double kEpsilon = abs_error<double>::value;
-  auto commit = [](auto* container, uint16_t type_idx) { container->Commit(); };
+  auto commit = [](auto* container, uint16_t numa_node, uint16_t type_idx) { container->Commit(); };
 
   // create neuron
   std::array<double, 3> origin = {0, 0, 0};
@@ -253,7 +253,7 @@ TEST(NeuronSomaTest, ExtendNeuriteAndElongate) {
   auto* rm = simulation.GetResourceManager();
 
   const double kEpsilon = abs_error<double>::value;
-  auto commit = [](auto* container, uint16_t type_idx) { container->Commit(); };
+  auto commit = [](auto* container, uint16_t numa_node, uint16_t type_idx) { container->Commit(); };
   std::array<double, 3> origin = {0, 0, 0};
 
   auto neuron = rm->New<NeuronSoma>(origin);
@@ -318,7 +318,7 @@ TEST(NeuriteElementTest, PartialRetraction) {
 
   const double kEpsilon = abs_error<double>::value;
   std::array<double, 3> origin = {0, 0, 0};
-  auto commit = [](auto* container, uint16_t type_idx) { container->Commit(); };
+  auto commit = [](auto* container, uint16_t numa_node, uint16_t type_idx) { container->Commit(); };
 
   auto neuron = rm->New<NeuronSoma>(origin);
   neuron.SetDiameter(20);
@@ -366,7 +366,7 @@ TEST(NeuriteElementTest, TotalRetraction) {
   auto* rm = simulation.GetResourceManager();
 
   std::array<double, 3> origin = {0, 0, 0};
-  auto commit = [](auto* container, uint16_t type_idx) { container->Commit(); };
+  auto commit = [](auto* container, uint16_t numa_node, uint16_t type_idx) { container->Commit(); };
 
   auto neuron = rm->New<NeuronSoma>(origin);
   neuron.SetDiameter(20);
@@ -400,7 +400,7 @@ TEST(NeuriteElementTest, Branch) {
 
   const double kEpsilon = abs_error<double>::value;
   std::array<double, 3> origin = {0, 0, 0};
-  auto commit = [](auto* container, uint16_t type_idx) { container->Commit(); };
+  auto commit = [](auto* container, uint16_t numa_node, uint16_t type_idx) { container->Commit(); };
 
   auto neuron = rm->New<NeuronSoma>(origin);
   neuron.SetDiameter(20);
@@ -498,7 +498,7 @@ TEST(NeuriteElementTest, RightDaughterRetraction) {
 
   const double kEpsilon = abs_error<double>::value;
   std::array<double, 3> origin = {0, 0, 0};
-  auto commit = [](auto* container, uint16_t type_idx) { container->Commit(); };
+  auto commit = [](auto* container, uint16_t numa_node, uint16_t type_idx) { container->Commit(); };
 
   auto neuron = rm->New<NeuronSoma>(origin);
   neuron.SetDiameter(20);
@@ -569,7 +569,7 @@ TEST(NeuriteElementTest, RightDaughterTotalRetraction) {
 
   const double kEpsilon = abs_error<double>::value;
   std::array<double, 3> origin = {0, 0, 0};
-  auto commit = [](auto* container, uint16_t type_idx) { container->Commit(); };
+  auto commit = [](auto* container, uint16_t numa_node, uint16_t type_idx) { container->Commit(); };
 
   auto neuron = rm->New<NeuronSoma>(origin);
   neuron.SetDiameter(20);
@@ -618,7 +618,7 @@ TEST(NeuriteElementTest, LeftDaughterRetraction) {
 
   const double kEpsilon = abs_error<double>::value;
   std::array<double, 3> position = {0, 0, 0};
-  auto commit = [](auto* container, uint16_t type_idx) { container->Commit(); };
+  auto commit = [](auto* container, uint16_t numa_node, uint16_t type_idx) { container->Commit(); };
 
   auto neuron = rm->New<NeuronSoma>(position);
   neuron.SetDiameter(20);
@@ -688,7 +688,7 @@ TEST(NeuriteElementTest, RetractAllDendrites) {
   auto* rm = simulation.GetResourceManager();
 
   std::array<double, 3> origin = {0, 0, 0};
-  auto commit = [](auto* container, uint16_t type_idx) { container->Commit(); };
+  auto commit = [](auto* container, uint16_t numa_node, uint16_t type_idx) { container->Commit(); };
 
   auto neuron = rm->New<NeuronSoma>(origin);
   neuron.SetDiameter(20);
@@ -740,7 +740,7 @@ TEST(NeuriteElementTest, Bifurcate) {
 
   const double kEpsilon = abs_error<double>::value;
   std::array<double, 3> origin = {0, 0, 0};
-  auto commit = [](auto* container, uint16_t type_idx) { container->Commit(); };
+  auto commit = [](auto* container, uint16_t numa_node, uint16_t type_idx) { container->Commit(); };
 
   auto neuron = rm->New<NeuronSoma>(origin);
   neuron.SetDiameter(20);
@@ -847,8 +847,8 @@ TEST(DISABLED_NeuronSomaNeuriteElementTest, Displacement) {
 
   // execute operation
   DisplacementOp<> op;
-  op(neurons, 0);
-  op(neurite_segments, 1);
+  op(neurons, 0, 0);
+  op(neurite_segments, 0, 1);
 
   // // check results
   // // cell 1

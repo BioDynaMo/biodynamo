@@ -26,7 +26,7 @@ class CommitOp {
   ~CommitOp() {}
 
   template <typename TSoContainer>
-  void operator()(TSoContainer* sim_objects, uint16_t type_idx) {
+  void operator()(TSoContainer* sim_objects, uint16_t numa_node, uint16_t type_idx) {
     update_info_.emplace_back(sim_objects->Commit());
   }
 

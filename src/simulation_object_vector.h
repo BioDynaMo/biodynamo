@@ -30,8 +30,12 @@ class SimulationObjectVector {
   SimulationObjectVector() {
     auto* sim = TSimulation::GetActive();
     auto* rm = sim->GetResourceManager();
-    data_.resize(rm->NumberOfTypes());
-    size_.resize(rm->NumberOfTypes());
+    data_.resize(rm->GetNumNumaNodes());
+    size_.resize(rm->GetNumNumaNodes());
+    for (uint64_t i = 0; data_.size(); i++) {
+      data_[i].resize(rm->NumberOfTypes());
+      size_[i].resize(rm->NumberOfTypes());
+    }
     Reserve();
   }
 
@@ -45,36 +49,38 @@ class SimulationObjectVector {
     clear();
     auto* sim = TSimulation::GetActive();
     auto* rm = sim->GetResourceManager();
-    rm->ApplyOnAllTypes([&](auto* sim_objects, uint16_t type_idx) {
-      data_[type_idx].reserve(sim_objects->size());
-      size_[type_idx] = sim_objects->size();
+    rm->ApplyOnAllTypes([&](auto* sim_objects, uint16_t numa_node, uint16_t type_idx) {
+      data_[numa_node][type_idx].reserve(sim_objects->size());
+      size_[numa_node][type_idx] = sim_objects->size();
     });
   }
 
   void clear() {  // NOLINT
-    for (auto& vec : data_) {
-      vec.clear();
+    for (auto& numa_node_vec : data_) {
+      for(auto& vec : numa_node_vec) {
+        vec.clear();
+      }
     }
   }
 
   // Returns the number of element types
-  size_t size() { return size_.size(); }  // NOLINT
+  // size_t size() { return size_.size(); }  // NOLINT
 
   // Returns the number of elements of specified type
-  size_t size(uint16_t type_idx) { return size_[type_idx]; }  // NOLINT
+  size_t size(uint16_t numa_node, uint16_t type_idx) { return size_[numa_node][type_idx]; }  // NOLINT
 
   const T& operator[](const SoHandle& handle) const {
-    return data_[handle.GetTypeIdx()][handle.GetElementIdx()];
+    return data_[handle.GetNumaNode()][handle.GetTypeIdx()][handle.GetElementIdx()];
   }
 
   T& operator[](const SoHandle& handle) {
-    return data_[handle.GetTypeIdx()][handle.GetElementIdx()];
+    return data_[handle.GetNumaNode()][handle.GetTypeIdx()][handle.GetElementIdx()];
   }
 
  private:
-  /// one std::vector<T> for each type in ResourceManager
-  std::vector<std::vector<T>> data_;
-  std::vector<int> size_;
+  /// one std::vector<T> for each type in ResourceManager and numa node
+  std::vector<std::vector<std::vector<T>>> data_;
+  std::vector<std::vector<int>> size_;
 };
 
 }  // namespace bdm

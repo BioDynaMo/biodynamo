@@ -535,8 +535,8 @@ BDM_SIM_OBJECT(NeuriteElement, SimulationObject) {
           mother_[kIdx].OriginOf(Base::GetElementIdx()), spring_axis_[kIdx]);
       UpdateVolume();  // and update concentration of internal stuff.
     } else if (mother_[kIdx].IsNeuronSoma()) {
-      mother_[kIdx].RemoveDaughter(GetSoPtr());
-      RemoveFromSimulation();
+      mother_[kIdx].RemoveDaughter(Base::GetSoPtr());
+      Base::RemoveFromSimulation();
     } else if (mother_[kIdx].IsNeuriteElement() &&
                mother_[kIdx].GetDaughterRight() == nullptr) {
       // if actual_length_ < length and mother is a neurite element with no
@@ -546,8 +546,8 @@ BDM_SIM_OBJECT(NeuriteElement, SimulationObject) {
     } else {
       // if mother is neurite element with other daughter or is not a neurite
       // segment: disappear.
-      mother_[kIdx].RemoveDaughter(GetSoPtr());
-      RemoveFromSimulation();
+      mother_[kIdx].RemoveDaughter(Base::GetSoPtr());
+      Base::RemoveFromSimulation();
 
       mother_[kIdx].UpdateDependentPhysicalVariables();
     }
@@ -901,14 +901,14 @@ BDM_SIM_OBJECT(NeuriteElement, SimulationObject) {
     if (daughter_left_[kIdx] != nullptr) {
       auto force_from_daughter =
           daughter_left_[kIdx]->ForceTransmittedFromDaugtherToMother(
-              GetSoPtr());
+              Base::GetSoPtr());
       force_on_my_point_mass =
           Math::Add(force_on_my_point_mass, force_from_daughter);
     }
     if (daughter_right_[kIdx] != nullptr) {
       auto force_from_daughter =
           daughter_right_[kIdx]->ForceTransmittedFromDaugtherToMother(
-              GetSoPtr());
+              Base::GetSoPtr());
       force_on_my_point_mass =
           Math::Add(force_on_my_point_mass, force_from_daughter);
     }
@@ -986,7 +986,7 @@ BDM_SIM_OBJECT(NeuriteElement, SimulationObject) {
     };
 
     grid->ForEachNeighborWithinRadius(calculate_neighbor_forces, *this,
-                                      GetSoHandle(), squared_radius);
+                                      Base::GetSoHandle(), squared_radius);
 
     // hack: if the neighbour is a neurite, and as we reduced the force from
     // that neighbour, we also need to reduce my internal force (from internal
@@ -1412,7 +1412,7 @@ BDM_SIM_OBJECT(NeuriteElement, SimulationObject) {
     resting_length_[kIdx] *= event.distal_portion_;
 
     // family relations
-    mother_[kIdx].UpdateRelative(NeuriteOrNeuron(GetSoPtr()),
+    mother_[kIdx].UpdateRelative(NeuriteOrNeuron(Base::GetSoPtr()),
                                  NeuriteOrNeuron(proximal->GetSoPtr()));
     mother_[kIdx] = proximal->GetSoPtr();
 
@@ -1440,7 +1440,7 @@ BDM_SIM_OBJECT(NeuriteElement, SimulationObject) {
 
     // elongation
     resting_length_[kIdx] *= event.distal_portion_;
-    mother_[kIdx].UpdateRelative(NeuriteOrNeuron(GetSoPtr()),
+    mother_[kIdx].UpdateRelative(NeuriteOrNeuron(Base::GetSoPtr()),
                                  NeuriteOrNeuron(proximal->GetSoPtr()));
     mother_[kIdx] = proximal->GetSoPtr();
 
@@ -1537,7 +1537,7 @@ BDM_SIM_OBJECT(NeuriteElement, SimulationObject) {
     // Re-organisation of the PhysicalObject tree structure: by-passing
     // proximalCylinder
     proximal_ne->GetMother().UpdateRelative(mother_[kIdx],
-                                            NeuriteOrNeuron(GetSoPtr()));
+                                            NeuriteOrNeuron(Base::GetSoPtr()));
     SetMother(mother_[kIdx].GetMother());
 
     // Keeping the same tension :

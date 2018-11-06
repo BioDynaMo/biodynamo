@@ -95,7 +95,7 @@ class Scheduler {
 
     DisplacementOp1<TSimulation> displacement_;
 
-    rm->ApplyOnAllTypes([&](auto* sim_objects, uint16_t type_idx){
+    rm->ApplyOnAllTypes([&](auto* sim_objects, uint16_t numa_node, uint16_t type_idx){
 #pragma omp parallel for schedule(dynamic, 100)
       for (size_t i = 0; i < sim_objects->size(); i++) {
         auto&& so = (*sim_objects)[i];
@@ -170,7 +170,8 @@ class Scheduler {
 
     const auto& update_info = commit_->GetUpdateInfo();
     auto update_references = [&update_info](auto* sim_objects,
-                                            uint16_t type_idx) {
+                                             uint16_t numa_node,
+                                             uint16_t type_idx) {
 #pragma omp parallel for
       for (uint64_t i = 0; i < sim_objects->size(); i++) {
         (*sim_objects)[i].UpdateReferences(update_info);

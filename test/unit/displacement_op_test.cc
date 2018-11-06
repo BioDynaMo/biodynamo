@@ -57,7 +57,7 @@ TEST(DisplacementOpTest, ComputeSoaNew) {
 
   // execute operation
   DisplacementOp<> op;
-  op(cells, 0);
+  op(cells, 0, 0);
 
   // clang-format off
   EXPECT_ARR_NEAR((*cells)[0].GetPosition(), {-0.20160966809506442, -0.20160966809506442, -0.20160966809506442});
