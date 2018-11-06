@@ -441,7 +441,6 @@ class ResourceManager {
             container->push_back(sim_object);
             uint32_t element_idx = container->size() - 1;
             auto&& so = (*container)[element_idx];
-            so.SetElementIdx(element_idx);
             so.SetNumaNode(current_numa);
         });
       });
@@ -451,11 +450,8 @@ class ResourceManager {
     auto* grid = Simulation<TCompileTimeParam>::GetActive()->GetGrid();
     grid->IterateZOrder(rearrange);
 
-    TupleOfSOContainers* tmp = sim_objects_;
-    for(uint64_t i = 0; i < numa_nodes_; i++) {
-      sim_objects_[i] = so_rearranged[i];
-    }
-    delete[] tmp;
+    delete[] sim_objects_;
+    sim_objects_ = so_rearranged;
   }
 
   template <typename TSo>
