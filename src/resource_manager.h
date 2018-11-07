@@ -1,4 +1,4 @@
-// -----------------------------------------------------------------------------
+  // -----------------------------------------------------------------------------
 //
 // Copyright (C) The BioDynaMo Project.
 // All Rights Reserved.
@@ -387,7 +387,7 @@ class ResourceManager {
   void ApplyOnAllElementsParallel(TFunction&& function) {
 
     auto nodes = numa_num_configured_nodes();
-    auto cores = numa_num_configured_cpus();
+    auto cores = numa_num_configured_cpus() / 2;
     auto cores_per_node = cores / nodes;
 
     omp_set_nested(1); // TODO move to generatl openmp initialization
@@ -400,10 +400,15 @@ class ResourceManager {
       // runtime dispatch - TODO(lukas) replace with c++17 std::apply
       for (uint16_t i = 0; i < std::tuple_size<TupleOfSOContainers>::value; i++) {
         ::bdm::Apply(&sim_objects_[numa_thread_id], i, [&](auto* container) {
-  #pragma omp parallel for schedule(dynamic, 100) num_threads(cores_per_node)
+  #pragma omp parallel num_threads(cores_per_node)
+        {
+          //  #pragma omp critical
+          //  std::cout << "numa " << numa_thread_id << " type " << i << " num elements " << container->size() << std::endl;
+           #pragma omp for //schedule(dynamic, 100)
           for (size_t e = 0; e < container->size(); e++) {
             function((*container)[e], SoHandle(numa_thread_id, i, e));
           }
+        }
         });
       }
     }
@@ -415,6 +420,21 @@ class ResourceManager {
         [](auto* container, uint16_t numa_node, uint16_t type_idx) { container->clear(); });
   }
 
+  // https://github.com/osmhpi/pgasus/blob/775a5f90d8f6fa89cfb93eac6de16dcfe27167ce/src/util/mmaphelper.cpp
+  inline static void* align_page(const void *ptr) {
+  	static constexpr uintptr_t PAGE_MASK = ~(uintptr_t(0xFFF));
+  	return (void*) (((uintptr_t)ptr) & PAGE_MASK);
+  }
+
+  int getNumaNodeForMemory(const void *ptr) {
+  	int result, loc;
+  	void *pptr = align_page(ptr);
+
+  	result = numa_move_pages(0, 1, &pptr, nullptr, &loc, 0);
+
+  	return (result != 0) ? -1 : loc;
+  }
+
   void SortAndBalanceNumaNodes() {
     uint64_t so_per_numa = GetNumSimObjects() / numa_nodes_;
     uint64_t cnt = 0;
@@ -423,6 +443,12 @@ class ResourceManager {
     // using first touch policy - page will be allocated to the numa domain of
     // the thread that accesses it first.
     // alternative, use numa_alloc_onnode.
+    int ret = numa_run_on_node(0);
+    if(ret != 0) {
+      Log::Fatal("ResourceManager", "Run on numa node failed. Return code: ", ret);
+    }
+    // std::cout << " sched_getcpu " <<  sched_getcpu()<< " numa of cpu: " << numa_node_of_cpu(sched_getcpu()) << std::endl;
+
     TupleOfSOContainers* so_rearranged = new TupleOfSOContainers[numa_nodes_];
     TupleOfSOContainers* tmp = sim_objects_;
     sim_objects_ = so_rearranged;
@@ -436,9 +462,11 @@ class ResourceManager {
         cnt = 0;
         current_numa++;
         // change this threads numa domain
-        if(int ret = numa_run_on_node(omp_get_thread_num())) {
+        int ret = numa_run_on_node(current_numa);
+        if(ret != 0) {
           Log::Fatal("ResourceManager", "Run on numa node failed. Return code: ", ret);
         }
+        // if (numa_node_of_cpu(sched_getcpu()) != )
       }
       ApplyOnElement(handle, [&](auto&& sim_object) {
         ::bdm::Apply(&so_rearranged[current_numa], handle.GetTypeIdx(), [&](auto* container) {
@@ -446,16 +474,31 @@ class ResourceManager {
             uint32_t element_idx = container->size() - 1;
             auto&& so = (*container)[element_idx];
             so.SetNumaNode(current_numa);
+            so.SetElementIdx(element_idx);
         });
       });
       cnt++;
     };
 
-    auto* grid = Simulation<TCompileTimeParam>::GetActive()->GetGrid();
-    grid->IterateZOrder(rearrange);
+      auto* grid = Simulation<TCompileTimeParam>::GetActive()->GetGrid();
+      grid->IterateZOrder(rearrange);
 
     delete[] sim_objects_;
     sim_objects_ = so_rearranged;
+
+    // checks
+    ApplyOnAllTypes([](auto* container, uint16_t numa, uint16_t type_idx){
+      std::cout << container->size() << std::endl;
+    });
+
+    uint64_t errcnt = 0;
+    ApplyOnAllElements([&errcnt, this](auto&& so, const SoHandle& handle){
+      auto node = getNumaNodeForMemory(&so);
+      if(node != handle.GetNumaNode()) {
+        errcnt++;
+      }
+    });
+    std::cout << "ERROR number " << errcnt << std::endl;
   }
 
   template <typename TSo>
