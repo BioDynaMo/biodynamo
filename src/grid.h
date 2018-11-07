@@ -213,7 +213,7 @@ class Grid {
     }
   };
 
-  // FIXME
+  // FIXME remove
   struct FoobarIterator {
     explicit FoobarIterator(
         const std::vector<std::pair<uint32_t, const Box*>>& neighbor_boxes)
@@ -471,13 +471,30 @@ class Grid {
     std::sort(box_morton_codes.begin(), box_morton_codes.end(), [](const auto& lhs, const auto& rhs) {
       return lhs.first < rhs.first;
     });
+    //
+    // FoobarIterator ni(box_morton_codes);
+    // while (!ni.IsAtEnd()) {
+    //   // Do something with neighbor object
+    //   lambda(*ni);
+    //   ++ni;
+    // }
 
-    FoobarIterator ni(box_morton_codes);
-    while (!ni.IsAtEnd()) {
-      // Do something with neighbor object
-      lambda(*ni);
-      ++ni;
+    uint64_t cnt = 0;
+    for(uint64_t i = 0; i < box_morton_codes.size(); i++) {
+      auto it = box_morton_codes[i].second->begin();
+      while (!it.IsAtEnd()) {
+        // Do something with neighbor object
+          lambda(*it);
+        ++it;
+      }
     }
+
+    // uint64_t cnt = 0;
+    // for(uint64_t i = 0; i < boxes_.size(); i++) {
+    //   for (uint64_t j = 0; j < boxes_[i].length_; j++) {
+    //     lambda(SoHandle(0, 0, cnt++));
+    //   }
+    // }
   }
 
   /// @brief      Applies the given lambda to each neighbor

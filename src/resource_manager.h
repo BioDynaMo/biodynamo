@@ -424,6 +424,10 @@ class ResourceManager {
     // the thread that accesses it first.
     // alternative, use numa_alloc_onnode.
     TupleOfSOContainers* so_rearranged = new TupleOfSOContainers[numa_nodes_];
+    TupleOfSOContainers* tmp = sim_objects_;
+    sim_objects_ = so_rearranged;
+    Clear();
+    sim_objects_ = tmp;
 
     // TODO reserve memory upfront to be more efficient
 
