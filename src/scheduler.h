@@ -88,6 +88,8 @@ class Scheduler {
     auto* grid = sim->GetGrid();
     auto* param = sim->GetParam();
 
+    std::cout << "It " << total_steps_ << " num sos: " << rm->GetNumSimObjects() << std::endl;
+
     Timing::Time("visualize", [&]() {
       visualization_->Visualize(total_steps_, last_iteration);
     });
@@ -95,7 +97,7 @@ class Scheduler {
 
     DisplacementOp1<TSimulation> displacement_;
 
-    rm->ApplyOnAllElementsParallel([&](auto&& so, const SoHandle&){
+    rm->ApplyOnAllElementsParallelDynamic(100, [&](auto&& so, const SoHandle&){
       // TODO(ahmad): should we only do it here and not after we run the physics?
       // We need it here, because we need to update the threshold values before
       // we update the diffusion grid

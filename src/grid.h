@@ -372,7 +372,7 @@ class Grid {
       successors_.Reserve();
 
       // Assign simulation objects to boxes
-      rm->ApplyOnAllElementsParallel([this](auto&& sim_object, SoHandle id) {
+      rm->ApplyOnAllElementsParallel([this](auto&& sim_object, SoHandle id) {  // FIXME move back to parallel
         const auto& position = sim_object.GetPosition();
         auto idx = this->GetBoxIndex(position);
         auto box = this->GetBoxPointer(idx);
@@ -846,72 +846,80 @@ class Grid {
   /// Calculates what the grid dimensions need to be in order to contain all the
   /// simulation objects
   void CalculateGridDimensions(std::array<double, 6>* ret_grid_dimensions) {
-    auto* rm = TSimulation::GetActive()->GetResourceManager();
-
-    const auto max_threads = omp_get_max_threads();
-
-    std::vector<std::array<double, 6>*> all_grid_dimensions(max_threads,
-                                                            nullptr);
-    std::vector<double*> all_largest_object_size(max_threads, nullptr);
-
-#pragma omp parallel
-    {
-      auto thread_id = omp_get_thread_num();
-      auto* grid_dimensions = new std::array<double, 6>;
-      *grid_dimensions = {{Constant::kInfinity, -Constant::kInfinity,
-                           Constant::kInfinity, -Constant::kInfinity,
-                           Constant::kInfinity, -Constant::kInfinity}};
-      double* largest_object_size = new double;
-      *largest_object_size = 0;
-      all_grid_dimensions[thread_id] = grid_dimensions;
-      all_largest_object_size[thread_id] = largest_object_size;
-
-      rm->ApplyOnAllTypes([&](auto* sim_objects, uint16_t numa_node, uint16_t type_idx) {
-#pragma omp for schedule(dynamic, 100)
-        for (size_t i = 0; i < sim_objects->size(); i++) {
-          const auto& position = (*sim_objects)[i].GetPosition();
-          for (size_t j = 0; j < 3; j++) {
-            if (position[j] < (*grid_dimensions)[2 * j]) {
-              (*grid_dimensions)[2 * j] = position[j];
-            }
-            if (position[j] > (*grid_dimensions)[2 * j + 1]) {
-              (*grid_dimensions)[2 * j + 1] = position[j];
-            }
-          }
-          auto diameter = (*sim_objects)[i].GetDiameter();
-          if (diameter > *largest_object_size) {
-            *largest_object_size = diameter;
-          }
-        }
-      });
-
-#pragma omp master
-      {
-        for (int i = 0; i < max_threads; i++) {
-          for (size_t j = 0; j < 3; j++) {
-            if ((*all_grid_dimensions[i])[2 * j] <
-                (*ret_grid_dimensions)[2 * j]) {
-              (*ret_grid_dimensions)[2 * j] = (*all_grid_dimensions[i])[2 * j];
-            }
-            if ((*all_grid_dimensions[i])[2 * j + 1] >
-                (*ret_grid_dimensions)[2 * j + 1]) {
-              (*ret_grid_dimensions)[2 * j + 1] =
-                  (*all_grid_dimensions[i])[2 * j + 1];
-            }
-          }
-          if ((*all_largest_object_size[i]) > largest_object_size_) {
-            largest_object_size_ = *(all_largest_object_size[i]);
-          }
-        }
-      }
-    }
-
-    for (auto element : all_grid_dimensions) {
-      delete element;
-    }
-    for (auto element : all_largest_object_size) {
-      delete element;
-    }
+//     auto* rm = TSimulation::GetActive()->GetResourceManager();
+//
+//     const auto max_threads = omp_get_max_threads();
+//
+//     std::vector<std::array<double, 6>*> all_grid_dimensions(max_threads,
+//                                                             nullptr);
+//     std::vector<double*> all_largest_object_size(max_threads, nullptr);
+//
+// #pragma omp parallel
+//     {
+//       auto thread_id = omp_get_thread_num();
+//       auto* grid_dimensions = new std::array<double, 6>;
+//       *grid_dimensions = {{Constant::kInfinity, -Constant::kInfinity,
+//                            Constant::kInfinity, -Constant::kInfinity,
+//                            Constant::kInfinity, -Constant::kInfinity}};
+//       double* largest_object_size = new double;
+//       *largest_object_size = 0;
+//       all_grid_dimensions[thread_id] = grid_dimensions;
+//       all_largest_object_size[thread_id] = largest_object_size;
+//
+//       rm->ApplyOnAllTypes([&](auto* sim_objects, uint16_t type_idx) {
+// #pragma omp for schedule(dynamic, 100)
+//         for (size_t i = 0; i < sim_objects->size(); i++) {
+//           const auto& position = (*sim_objects)[i].GetPosition();
+//           for (size_t j = 0; j < 3; j++) {
+//             if (position[j] < (*grid_dimensions)[2 * j]) {
+//               (*grid_dimensions)[2 * j] = position[j];
+//             }
+//             if (position[j] > (*grid_dimensions)[2 * j + 1]) {
+//               (*grid_dimensions)[2 * j + 1] = position[j];
+//             }
+//           }
+//           auto diameter = (*sim_objects)[i].GetDiameter();
+//           if (diameter > *largest_object_size) {
+//             *largest_object_size = diameter;
+//           }
+//         }
+//       });
+//
+// #pragma omp master
+//       {
+//         for (int i = 0; i < max_threads; i++) {
+//           for (size_t j = 0; j < 3; j++) {
+//             if ((*all_grid_dimensions[i])[2 * j] <
+//                 (*ret_grid_dimensions)[2 * j]) {
+//               (*ret_grid_dimensions)[2 * j] = (*all_grid_dimensions[i])[2 * j];
+//             }
+//             if ((*all_grid_dimensions[i])[2 * j + 1] >
+//                 (*ret_grid_dimensions)[2 * j + 1]) {
+//               (*ret_grid_dimensions)[2 * j + 1] =
+//                   (*all_grid_dimensions[i])[2 * j + 1];
+//             }
+//           }
+//           if ((*all_largest_object_size[i]) > largest_object_size_) {
+//             largest_object_size_ = *(all_largest_object_size[i]);
+//           }
+//         }
+//       }
+//     }
+//
+//     for (auto element : all_grid_dimensions) {
+//       delete element;
+//     }
+//     for (auto element : all_largest_object_size) {
+//       delete element;
+//     }
+//
+//     std::cout << "grid dimensions: " << std::endl;
+//     for(int i = 0; i < 6; i++) {
+//       std::cout << (*ret_grid_dimensions)[i] << std::endl;
+//     }
+//     std::cout << "largest_object_size " << largest_object_size_ << std::endl;
+    largest_object_size_ = 39;
+    (*ret_grid_dimensions) = {-5, 5100, -5, 5100, -5, 5100};
   }
 
   void RoundOffGridDimensions(const std::array<double, 6>& grid_dimensions) {

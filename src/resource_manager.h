@@ -1,4 +1,4 @@
-  // -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Copyright (C) The BioDynaMo Project.
 // All Rights Reserved.
@@ -26,6 +26,9 @@
 #include <sched.h>
 #include <numa.h>
 #include <omp.h>
+#include <iomanip>  // TODO remove (used for temporary function)
+#include <strstream>  // TODO remove (used for temporary function)
+#include <fstream>  // TODO remove (used for temporary function)
 
 #ifdef USE_OPENCL
 #define __CL_ENABLE_EXCEPTIONS
@@ -41,6 +44,7 @@
 #include "compile_time_list.h"
 #include "diffusion_grid.h"
 #include "simulation.h"
+#include "thread_info.h"
 #include "tuple_util.h"
 
 namespace bdm {
@@ -384,7 +388,7 @@ class ResourceManager {
   /// Function invocations are parallelized
   /// \see ApplyOnAllElements
   template <typename TFunction>
-  void ApplyOnAllElementsParallel(TFunction&& function) {
+  void ApplyOnAllElementsParallelNested(TFunction&& function) {
 
     auto nodes = numa_num_configured_nodes();
     auto cores = numa_num_configured_cpus() / 2;
@@ -414,6 +418,126 @@ class ResourceManager {
     }
   }
 
+  template <typename TFunction>
+  void ApplyOnAllElementsParallel(TFunction&& function) {
+    for (uint16_t t = 0; t < NumberOfTypes(); ++t) {
+      // only needed to get the type of the container
+      ::bdm::Apply(&sim_objects_[0], t, [&](auto* container) {
+        // collect all containers of this type
+        std::vector<decltype(container)> so_containers;
+        so_containers.resize(numa_nodes_);
+        so_containers[0] = container;
+        for(uint16_t n = 1; n < numa_nodes_; n++) {
+          ::bdm::Apply(&sim_objects_[n], t, [&](auto* container) {
+            so_containers[n] = container;
+          });
+        }
+
+        #pragma omp parallel
+        {
+          auto tid = omp_get_thread_num();
+          auto nid = thread_info_.GetNumaNode(tid);
+          auto threads_in_numa = thread_info_.GetThreadsInNumaNode(nid);
+          auto* so_container = so_containers[nid];
+          assert(thread_info_.GetNumaNode(tid) == numa_node_of_cpu(sched_getcpu()));
+
+          // use static scheduling for now
+          auto correction = so_container->size() % threads_in_numa == 0 ? 0 : 1;
+          auto chunk = so_container->size() / threads_in_numa + correction;
+          auto start = thread_info_.GetNumaThreadId(tid) * chunk ;
+          auto end = std::min(so_container->size(), start + chunk);
+
+          // #pragma omp critical
+          // {
+          //   std::cout << "tid             " << tid << std::endl;
+          //   std::cout << "nid             " << nid << std::endl;
+          //   std::cout << "ntid            " << thread_info_.GetNumaThreadId(tid) << std::endl;
+          //   std::cout << "cont size       " << so_container->size() << std::endl;
+          //   std::cout << "threads in numa " << threads_in_numa << std::endl;
+          //   std::cout << "chunk           " << chunk << std::endl;
+          //   std::cout << "start           " << start << std::endl;
+          //   std::cout << "end             " << end << std::endl << std::endl;
+          // }
+
+          for(uint64_t i = start; i < end; ++i) {
+            function((*so_container)[i], SoHandle(nid, t, i));
+          }
+        }
+      });
+    }
+  }
+
+  template <typename TFunction>
+  void ApplyOnAllElementsParallelDynamic(uint64_t chunk, TFunction&& function) {
+    for (uint16_t t = 0; t < NumberOfTypes(); ++t) {
+      // only needed to get the type of the container
+      ::bdm::Apply(&sim_objects_[0], t, [&](auto* container) {
+        // collect all containers of this type
+        std::vector<decltype(container)> so_containers;
+        so_containers.resize(numa_nodes_);
+        so_containers[0] = container;
+        for(uint16_t n = 1; n < numa_nodes_; n++) {
+          ::bdm::Apply(&sim_objects_[n], t, [&](auto* container) {
+            so_containers[n] = container;
+          });
+        }
+
+        // use dynamic scheduling
+        // Unfortunately openmp's built in functionality can't be used, since
+        // threads belong to different numa domains and thus operate on
+        // different containers
+        std::vector<std::atomic<uint64_t>*> counters(numa_nodes_, nullptr);
+        std::vector<uint64_t> max_counters(numa_nodes_);
+        for(uint64_t n = 0; n < numa_nodes_; n++) {
+          counters[n] = new std::atomic<uint64_t>(0);
+          // calculate value max_counters for each numa domain
+          auto correction = so_containers[n]->size() % chunk == 0 ? 0 : 1;
+          max_counters[n] = so_containers[n]->size() / chunk + correction;
+        }
+
+        #pragma omp parallel firstprivate(chunk)
+        {
+          auto tid = omp_get_thread_num();
+          auto nid = thread_info_.GetNumaNode(tid);
+          auto threads_in_numa = thread_info_.GetThreadsInNumaNode(nid);
+          auto* so_container = so_containers[nid];
+          assert(thread_info_.GetNumaNode(tid) == numa_node_of_cpu(sched_getcpu()));
+
+          // dynamic scheduling
+          uint64_t start = 0;
+          uint64_t end = 0;
+          uint64_t old_count = (*(counters[nid]))++;
+          while(old_count <= max_counters[nid]) {
+            start = old_count * chunk ;
+            end = std::min(so_container->size(), start + chunk);
+
+            // #pragma omp critical
+            // {
+            //   std::cout << "tid             " << tid << std::endl;
+            //   std::cout << "nid             " << nid << std::endl;
+            //   std::cout << "cont size       " << so_container->size() << std::endl;
+            //   std::cout << "threads in numa " << threads_in_numa << std::endl;
+            //   std::cout << "old_count       " << old_count << std::endl;
+            //   std::cout << "mac count       " << max_counters[nid] << std::endl;
+            //   std::cout << "start           " << start << std::endl;
+            //   std::cout << "end             " << end << std::endl << std::endl;
+            // }
+
+            for(uint64_t i = start; i < end; ++i) {
+              function((*so_container)[i], SoHandle(nid, t, i));
+            }
+
+            old_count = (*(counters[nid]))++;
+          }
+        }
+
+          for(uint64_t n = 0; n < numa_nodes_; n++) {
+            delete counters[n];
+          }
+      });
+    }
+  }
+
   /// Remove elements from each type
   void Clear() {
     ApplyOnAllTypes(
@@ -435,7 +559,28 @@ class ResourceManager {
   	return (result != 0) ? -1 : loc;
   }
 
+  void PrintThreadCPUBinding(std::string filename) {
+    std::vector<std::string> mapping;
+    #pragma omp parallel
+    {
+      auto tid = omp_get_thread_num();
+      #pragma omp critical
+      {
+        std::stringstream str;
+        str << "tid " << std::setfill('0') << std::setw(3) << tid << " cpu " << std::setfill('0') << std::setw(3) << sched_getcpu() << std::endl;
+        mapping.push_back(str.str());
+      }
+    }
+    std::sort(mapping.begin(), mapping.end());
+    std::ofstream ofs(filename);
+    for(auto& e : mapping) {
+      ofs << e;
+    }
+  }
+
   void SortAndBalanceNumaNodes() {
+    PrintThreadCPUBinding("before");
+
     uint64_t so_per_numa = GetNumSimObjects() / numa_nodes_;
     uint64_t cnt = 0;
     uint64_t current_numa = 0;
@@ -498,7 +643,10 @@ class ResourceManager {
         errcnt++;
       }
     });
+    PrintThreadCPUBinding("after");
     std::cout << "ERROR number " << errcnt << std::endl;
+
+    thread_info_.Renew();
   }
 
   template <typename TSo>
@@ -542,6 +690,8 @@ class ResourceManager {
   }
 
  private:
+   ThreadInfo thread_info_;  //!
+
   /// Conversion of simulation object types from the compile time params
   /// (`SimObjectTypes`) to a tuple of containers:
   /// `std::tuple<Container<SimObject1>, Container<SimOBject2>>`\n
