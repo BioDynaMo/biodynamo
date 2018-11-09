@@ -34,9 +34,10 @@ public:
       // TODO throw exception / fatal
       Log::Fatal("ThreadInfo", "The environmental variable OMP_PROC_BIND must be set to true. On Linux run 'export OMP_PROC_BIND=true' prior to running BioDynaMo");
     }
+    max_threads_ = omp_get_max_threads();
     numa_nodes_ = numa_num_configured_nodes();
-    thread_numa_mapping_.resize(omp_get_max_threads());
-    numa_thread_id_.resize(omp_get_max_threads());
+    thread_numa_mapping_.resize(max_threads_);
+    numa_thread_id_.resize(max_threads_);
     threads_in_numa_.resize(numa_nodes_);
 
     Renew();
@@ -55,6 +56,8 @@ public:
   int GetNumaThreadId(int thread_id) const {
     return numa_thread_id_[thread_id];
   }
+
+  int GetMaxThreads() const { return max_threads_; }
 
   /// TODO document
   /// whenever a thread is scheduled on a different cpu e.g. using `numa_run_on_node` thread info needs to be updated
@@ -82,6 +85,7 @@ public:
   }
 
 private:
+  uint64_t max_threads_;
   uint16_t numa_nodes_;
 
   /// Contains the mapping thread id -> numa node

@@ -589,7 +589,20 @@ class ResourceManager {
   void SortAndBalanceNumaNodes() {
     PrintThreadCPUBinding("before");
 
-    uint64_t so_per_numa = GetNumSimObjects() / numa_nodes_;
+    // balance simulation objects per numa node according to the number of
+    // threads associated with each numa domain
+    std::vector<uint64_t> so_per_numa(numa_nodes_);
+    uint64_t cummulative = 0;
+    for (uint64_t n = 1; n < numa_nodes_; ++n) {
+      auto max_threads = thread_info_.GetMaxThreads();
+      auto threads_in_numa = thread_info_.GetThreadsInNumaNode(n);
+      uint64_t num_so = GetNumSimObjects() * threads_in_numa / max_threads;
+      so_per_numa[n] = num_so;
+      cummulative += num_so;
+    }
+    so_per_numa[0] = GetNumSimObjects() - cummulative;
+
+
     uint64_t cnt = 0;
     uint64_t current_numa = 0;
 
@@ -611,7 +624,7 @@ class ResourceManager {
     // TODO reserve memory upfront to be more efficient
 
     auto rearrange  = [&](const SoHandle& handle) {
-      if(cnt == so_per_numa) {
+      if(cnt == so_per_numa[current_numa]) {
         cnt = 0;
         current_numa++;
         // change this threads numa domain
@@ -627,7 +640,8 @@ class ResourceManager {
             uint32_t element_idx = container->size() - 1;
             auto&& so = (*container)[element_idx];
             so.SetNumaNode(current_numa);
-            so.SetElementIdx(element_idx);
+            // FIXME find solution
+            // so.SetElementIdx(element_idx);
         });
       });
       cnt++;
