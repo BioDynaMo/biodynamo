@@ -97,7 +97,7 @@ class Scheduler {
 
     DisplacementOp1<TSimulation> displacement_;
 
-    rm->ApplyOnAllElementsParallelDynamic(100, [&](auto&& so, const SoHandle&){
+    rm->ApplyOnAllElementsParallelDynamic(1000, [&](auto&& so, const SoHandle&){
       // TODO(ahmad): should we only do it here and not after we run the physics?
       // We need it here, because we need to update the threshold values before
       // we update the diffusion grid

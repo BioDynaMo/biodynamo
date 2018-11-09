@@ -372,7 +372,7 @@ class Grid {
       successors_.Reserve();
 
       // Assign simulation objects to boxes
-      rm->ApplyOnAllElementsParallel([this](auto&& sim_object, SoHandle id) {  // FIXME move back to parallel
+      rm->ApplyOnAllElementsParallelDynamic(1000, [this](auto&& sim_object, SoHandle id) {  // FIXME move back to parallel
         const auto& position = sim_object.GetPosition();
         auto idx = this->GetBoxIndex(position);
         auto box = this->GetBoxPointer(idx);

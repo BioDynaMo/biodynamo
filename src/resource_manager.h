@@ -495,41 +495,49 @@ class ResourceManager {
           max_counters[n] = so_containers[n]->size() / chunk + correction;
         }
 
-        #pragma omp parallel firstprivate(chunk)
+        #pragma omp parallel firstprivate(chunk, numa_nodes_)
         {
           auto tid = omp_get_thread_num();
           auto nid = thread_info_.GetNumaNode(tid);
-          auto threads_in_numa = thread_info_.GetThreadsInNumaNode(nid);
-          auto* so_container = so_containers[nid];
           assert(thread_info_.GetNumaNode(tid) == numa_node_of_cpu(sched_getcpu()));
+
 
           // dynamic scheduling
           uint64_t start = 0;
           uint64_t end = 0;
-          uint64_t old_count = (*(counters[nid]))++;
-          while(old_count <= max_counters[nid]) {
-            start = old_count * chunk ;
-            end = std::min(so_container->size(), start + chunk);
 
-            // #pragma omp critical
-            // {
-            //   std::cout << "tid             " << tid << std::endl;
-            //   std::cout << "nid             " << nid << std::endl;
-            //   std::cout << "cont size       " << so_container->size() << std::endl;
-            //   std::cout << "threads in numa " << threads_in_numa << std::endl;
-            //   std::cout << "old_count       " << old_count << std::endl;
-            //   std::cout << "mac count       " << max_counters[nid] << std::endl;
-            //   std::cout << "start           " << start << std::endl;
-            //   std::cout << "end             " << end << std::endl << std::endl;
-            // }
+          // this loop implements work stealing from other NUMA nodes if there
+          // are imbalances. Each thread starts with its NUMA domain. Once, it
+          // is finished the thread looks for tasks on other domains
+          for(uint64_t n = 0; n < numa_nodes_; n++) {
+            uint64_t current_nid = (nid + n) % numa_nodes_;
 
-            for(uint64_t i = start; i < end; ++i) {
-              function((*so_container)[i], SoHandle(nid, t, i));
-            }
+            auto* so_container = so_containers[current_nid];
+            uint64_t old_count = (*(counters[current_nid]))++;
+            while(old_count <= max_counters[current_nid]) {
+              start = old_count * chunk ;
+              end = std::min(so_container->size(), start + chunk);
 
-            old_count = (*(counters[nid]))++;
+              // #pragma omp critical
+              // {
+              //   std::cout << "tid             " << tid << std::endl;
+              //   std::cout << "nid             " << nid << std::endl;
+              //   std::cout << "current nid     " << current_nid << std::endl;
+              //   std::cout << "cont size       " << so_container->size() << std::endl;
+              //   std::cout << "old_count       " << old_count << std::endl;
+              //   std::cout << "mac count       " << max_counters[current_nid] << std::endl;
+              //   std::cout << "start           " << start << std::endl;
+              //   std::cout << "end             " << end << std::endl << std::endl;
+              // }
+
+              for(uint64_t i = start; i < end; ++i) {
+                function((*so_container)[i], SoHandle(current_nid, t, i));
+              }
+
+              old_count = (*(counters[current_nid]))++;
           }
         }
+      }
 
           for(uint64_t n = 0; n < numa_nodes_; n++) {
             delete counters[n];
