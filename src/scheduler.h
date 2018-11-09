@@ -18,6 +18,8 @@
 #include <chrono>
 #include <string>
 
+#include <TApplication.h>
+
 #include "biology_module_op.h"
 #include "bound_space_op.h"
 #include "commit_op.h"
@@ -32,6 +34,7 @@
 #include "param.h"
 #include "simulation.h"
 #include "visualization/catalyst_adaptor.h"
+#include "visualization/root_adaptor.h"
 
 namespace bdm {
 
@@ -46,13 +49,15 @@ class Scheduler {
     if (backup_->RestoreEnabled()) {
       restore_point_ = backup_->GetSimulationStepsFromBackup();
     }
-    visualization_ =
-        new CatalystAdaptor<>(BDM_SRC_DIR "/visualization/simple_pipeline.py");
+    // visualization_ =
+    //     new CatalystAdaptor<>(BDM_SRC_DIR "/visualization/simple_pipeline.py");
+    app_ = new TApplication("BDMSim", 0, 0);
+    RootAdaptor::GetInstance().Init();
   }
 
   virtual ~Scheduler() {
     delete backup_;
-    delete visualization_;
+    // delete visualization_;
     auto* param = TSimulation::GetActive()->GetParam();
     if (param->statistics_) {
       std::cout << gStatistics << std::endl;
@@ -88,9 +93,12 @@ class Scheduler {
     auto* grid = sim->GetGrid();
     auto* param = sim->GetParam();
 
-    Timing::Time("visualize", [&]() {
-      visualization_->Visualize(total_steps_, last_iteration);
-    });
+    // auto cells = rm->template Get<Cell>();
+    RootAdaptor::GetInstance().Update<TSimulation>();
+
+    // Timing::Time("visualize", [&]() {
+    //   visualization_->Visualize(total_steps_, last_iteration);
+    // });
     Timing::Time("neighbors", [&]() { grid->UpdateGrid(); });
     // TODO(ahmad): should we only do it here and not after we run the physics?
     // We need it here, because we need to update the threshold values before
@@ -107,10 +115,11 @@ class Scheduler {
   }
 
  private:
+  TApplication* app_ = nullptr;
   SimulationBackup* backup_ = nullptr;
   uint64_t restore_point_;
   std::chrono::time_point<Clock> last_backup_ = Clock::now();
-  CatalystAdaptor<>* visualization_ = nullptr;  //!
+  // CatalystAdaptor<>* visualization_ = nullptr;  //!
   bool is_gpu_environment_initialized_ = false;
 
   OpTimer<CommitOp> commit_ = OpTimer<CommitOp>("commit");
