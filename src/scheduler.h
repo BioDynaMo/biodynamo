@@ -88,7 +88,8 @@ class Scheduler {
     auto* grid = sim->GetGrid();
     auto* param = sim->GetParam();
 
-    std::cout << "It " << total_steps_ << " num sos: " << rm->GetNumSimObjects() << std::endl;
+    // FIXME remove
+    // std::cout << "It " << total_steps_ << " num sos: " << rm->GetNumSimObjects() << std::endl;
 
     Timing::Time("visualize", [&]() {
       visualization_->Visualize(total_steps_, last_iteration);
