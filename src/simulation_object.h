@@ -101,6 +101,8 @@ class SoaSimulationObject {
 
   uint32_t GetElementIdx() const { return kIdx; }
 
+  void SetElementIdx(uint32_t element_idx) {}
+
   /// Returns the vector's size. Uncommited changes are not taken into account
   size_t size() const {  // NOLINT
     return size_;

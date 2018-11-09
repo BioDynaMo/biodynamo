@@ -602,7 +602,6 @@ class ResourceManager {
     }
     so_per_numa[0] = GetNumSimObjects() - cummulative;
 
-
     uint64_t cnt = 0;
     uint64_t current_numa = 0;
 
@@ -640,8 +639,7 @@ class ResourceManager {
             uint32_t element_idx = container->size() - 1;
             auto&& so = (*container)[element_idx];
             so.SetNumaNode(current_numa);
-            // FIXME find solution
-            // so.SetElementIdx(element_idx);
+            so.SetElementIdx(element_idx);
         });
       });
       cnt++;
