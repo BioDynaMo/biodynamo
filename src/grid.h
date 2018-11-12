@@ -30,6 +30,7 @@
 #include "fixed_size_vector.h"
 #include "inline_vector.h"
 #include "log.h"
+#include "parallel_resize_vector.h"
 #include "param.h"
 #include "simulation_object_vector.h"
 
@@ -95,10 +96,12 @@ class Grid {
     /// Since box values will be overwritten afterwards it forwards to the
     /// default ctor
     Box(const Box& other) : Box() {}
-    /// Required for boxes_.resize
-    /// Since box values will be overwritten afterwards, implementation is
-    /// missing
-    const Box& operator=(const Box& other) const { return *this; }
+
+    Box& operator=(const Box& other) {
+      start_ = other.start_.load(std::memory_order_relaxed);
+      length_ = other.length_.load(std::memory_order_relaxed);
+      return *this;
+    }
 
     bool IsEmpty() const { return length_ == 0; }
 
@@ -683,7 +686,9 @@ class Grid {
 
  private:
   /// The vector containing all the boxes in the grid
-  std::vector<Box> boxes_;
+  /// Using parallel resize vector to enable parallel initialization and thus
+  /// better scalability.
+  ParallelResizeVector<Box> boxes_;
   /// Length of a Box
   uint32_t box_length_ = 1;
   /// Stores the number of boxes for each axis
