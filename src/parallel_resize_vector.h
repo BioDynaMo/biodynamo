@@ -34,6 +34,11 @@ class ParallelResizeVector {
 
   std::size_t size() const { return size_; }  // NOLINT
 
+  T* data() noexcept { return data_.data(); }              // NOLINT
+  const T* data() const noexcept { return data_.data(); }  // NOLINT
+
+  void swap(ParallelResizeVector& other) { data_.swap(other.data_); }  // NOLINT
+
   std::size_t capacity() const { return data_.capacity(); }  // NOLINT
 
   void push_back(const T& element) {  // NOLINT

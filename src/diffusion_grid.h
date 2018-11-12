@@ -29,6 +29,7 @@
 #include "log.h"
 #include "math_util.h"
 #include "param.h"
+#include "parallel_resize_vector.h"
 
 namespace bdm {
 
@@ -189,8 +190,8 @@ class DiffusionGrid {
       }
 
       // Temporarily save previous grid data
-      std::vector<double> tmp_c1 = c1_;
-      std::vector<double> tmp_gradients = gradients_;
+      ParallelResizeVector<double> tmp_c1 = c1_;
+      ParallelResizeVector<double> tmp_gradients = gradients_;
 
       c1_.clear();
       c2_.clear();
@@ -219,8 +220,8 @@ class DiffusionGrid {
   /// If the dimensions would be increased from 2x2 to 3x3, it will still
   /// be increased to 4x4 in order for GetBoxIndex to function correctly
   ///
-  void CopyOldData(const std::vector<double>& old_c1,
-                   const std::vector<double>& old_gradients,
+  void CopyOldData(const ParallelResizeVector<double>& old_c1,
+                   const ParallelResizeVector<double>& old_gradients,
                    const std::array<size_t, 3>& old_num_boxes_axis) {
     // Allocate more memory for the grid data arrays
     c1_.resize(total_num_boxes_);
@@ -739,11 +740,11 @@ class DiffusionGrid {
   /// the volume of each box
   double box_volume_ = 0;
   /// The array of concentration values
-  std::vector<double> c1_ = {};
+  ParallelResizeVector<double> c1_ = {};
   /// An extra concentration data buffer for faster value updating
-  std::vector<double> c2_ = {};
+  ParallelResizeVector<double> c2_ = {};
   /// The array of gradients (x, y, z)
-  std::vector<double> gradients_ = {};
+  ParallelResizeVector<double> gradients_ = {};
   /// The maximum concentration value that a box can have
   double concentration_threshold_ = 1e15;
   /// The diffusion coefficients [cc, cw, ce, cs, cn, cb, ct]
