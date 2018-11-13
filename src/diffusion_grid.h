@@ -483,24 +483,35 @@ class DiffusionGrid {
           size_t x = 0;
           int c, n, s, b, t;
           c = x + y * nx + z * nx * ny;
-          n = (y == 0) ? c : c - nx;
-          s = (y == ny - 1) ? c : c + nx;
-          b = (z == 0) ? c : c - nx * ny;
-          t = (z == nz - 1) ? c : c + nx * ny;
 
           l.fill(1);
 
           if (y == 0) {
+            n = c;
             l[0] = 0;
+          } else {
+            n = c - nx;
           }
+
           if (y == ny - 1) {
+            s = c;
             l[1] = 0;
+          } else {
+            s = c + nx;
           }
+
           if (z == 0) {
+            b = c;
             l[2] = 0;
+          } else {
+            b = c - nx * ny;
           }
+
           if (z == nz - 1) {
+            t = c;
             l[3] = 0;
+          } else {
+            t = c + nx * ny;
           }
 
           c2_[c] = (c1_[c] + d * dt_ * (0 - 2 * c1_[c] + c1_[c + 1]) * ibl2 +
