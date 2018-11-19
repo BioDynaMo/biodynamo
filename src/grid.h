@@ -460,9 +460,9 @@ class Grid {
     std::vector<std::pair<uint32_t, const Box*>> box_morton_codes;
     box_morton_codes.resize(boxes_.size());
     #pragma omp parallel for collapse(3)
-    for (uint64_t x = 0; x < num_boxes_axis_[0]; x++) {
-      for (uint64_t y = 0; y < num_boxes_axis_[1]; y++) {
-        for (uint64_t z = 0; z < num_boxes_axis_[2]; z++) {
+    for (uint32_t x = 0; x < num_boxes_axis_[0]; x++) {
+      for (uint32_t y = 0; y < num_boxes_axis_[1]; y++) {
+        for (uint32_t z = 0; z < num_boxes_axis_[2]; z++) {
           auto box_idx = GetBoxIndex(std::array<uint32_t, 3>{x, y, z});
           auto morton = libmorton::morton3D_64_encode(x, y, z);
           box_morton_codes[box_idx] = std::pair<uint32_t, const Box*>{morton, &boxes_[box_idx]};
