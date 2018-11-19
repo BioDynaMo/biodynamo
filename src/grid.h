@@ -213,63 +213,6 @@ class Grid {
     }
   };
 
-  // FIXME remove
-  struct FoobarIterator {
-    explicit FoobarIterator(
-        const std::vector<std::pair<uint32_t, const Box*>>& neighbor_boxes)
-        : neighbor_boxes_(neighbor_boxes),
-          // start iterator from box 0
-          box_iterator_(neighbor_boxes_[0].second->begin()) {
-      // if first box is empty
-      if (neighbor_boxes_[0].second->IsEmpty()) {
-        ForwardToNonEmptyBox();
-      }
-    }
-
-    bool IsAtEnd() const { return is_end_; }
-
-    const SoHandle& operator*() const { return *box_iterator_; }
-
-    /// Version where empty neighbor boxes are allowed
-    FoobarIterator& operator++() {
-      ++box_iterator_;
-      // if iterator of current box has come to an end, continue with next box
-      if (box_iterator_.IsAtEnd()) {
-        return ForwardToNonEmptyBox();
-      }
-      return *this;
-    }
-
-   private:
-    /// The 27 neighbor boxes that will be searched for simulation objects
-    const std::vector<std::pair<uint32_t, const Box*>>& neighbor_boxes_;
-    /// The box that shall be considered to iterate over for finding simulation
-    /// objects
-    typename Box::Iterator box_iterator_;
-    /// The id of the box to be considered (i.e. value between 0 - 26)
-    uint16_t box_idx_ = 0;
-    /// Flag to indicate that all the neighbor boxes have been searched through
-    bool is_end_ = false;
-
-    /// Forwards the iterator to the next non empty box and returns itself
-    /// If there are no non empty boxes is_end_ is set to true
-    FoobarIterator& ForwardToNonEmptyBox() {
-      // increment box id until non empty box has been found
-      while (++box_idx_ < neighbor_boxes_.size()) {
-        // box is empty or uninitialized (padding box) -> continue
-        if (neighbor_boxes_[box_idx_].second->IsEmpty()) {
-          continue;
-        }
-        // a non-empty box has been found
-        box_iterator_ = neighbor_boxes_[box_idx_].second->begin();
-        return *this;
-      }
-      // all remaining boxes have been empty; reached end
-      is_end_ = true;
-      return *this;
-    }
-  };
-
   /// Enum that determines the degree of adjacency in search neighbor boxes
   //  todo(ahmad): currently only kHigh is supported (hardcoded 26 several
   //  places)
@@ -451,7 +394,8 @@ class Grid {
     return distance < squared_radius;
   }
 
-  // TODO Documentation
+  /// This method iterates over all elements. Iteration is performed in
+  /// Z-order of boxes. There is no particular order for elements inside a box
   template <typename Lambda>
   void IterateZOrder(const Lambda& lambda) const {
     // iterate boxes in Z-order / morton order
@@ -472,30 +416,17 @@ class Grid {
     std::sort(box_morton_codes.begin(), box_morton_codes.end(), [](const auto& lhs, const auto& rhs) {
       return lhs.first < rhs.first;
     });
-    //
-    // FoobarIterator ni(box_morton_codes);
-    // while (!ni.IsAtEnd()) {
-    //   // Do something with neighbor object
-    //   lambda(*ni);
-    //   ++ni;
-    // }
 
     uint64_t cnt = 0;
     for(uint64_t i = 0; i < box_morton_codes.size(); i++) {
       auto it = box_morton_codes[i].second->begin();
+      std::cout << box_morton_codes[i].first << std::endl;
       while (!it.IsAtEnd()) {
-        // Do something with neighbor object
+          // Do something with neighbor object
           lambda(*it);
         ++it;
       }
     }
-
-    // uint64_t cnt = 0;
-    // for(uint64_t i = 0; i < boxes_.size(); i++) {
-    //   for (uint64_t j = 0; j < boxes_[i].length_; j++) {
-    //     lambda(SoHandle(0, 0, cnt++));
-    //   }
-    // }
   }
 
   /// @brief      Applies the given lambda to each neighbor
