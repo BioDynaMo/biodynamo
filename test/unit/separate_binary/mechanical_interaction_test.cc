@@ -433,8 +433,12 @@ TEST(MechanicalInteraction, BifurcateCylinderRandomGrowth) {
 
     ne_axis = ne->GetSpringAxis();
     ne_axis2 = ne2->GetSpringAxis();
+    // cylinders split before being pushed away, so their daughters (two last
+    // cylinders) attach point is pushed away as well while their terminal end
+    // remain approximately at the same position, pulling them into a more
+    // horizontal position
     EXPECT_GT(ne_axis[2], -0.5);
-    EXPECT_GT(ne_axis2[2], 0.1);
+    EXPECT_GT(ne_axis2[2], 0);
   }
 
   EXPECT_GT(ne->GetMassLocation()[2], 15);
@@ -442,9 +446,7 @@ TEST(MechanicalInteraction, BifurcateCylinderRandomGrowth) {
 }
 
 TEST(MechanicalInteraction, TwoDistinctCylinderEncounter) {
-  auto set_param = [](auto* param) {
-    param->neurite_max_length_ = 2;
-  };
+  auto set_param = [](auto* param) { param->neurite_max_length_ = 2; };
 
   Simulation<> simulation(TEST_NAME, set_param);
   auto* rm = simulation.GetResourceManager();
