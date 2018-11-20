@@ -24,6 +24,7 @@
 #include <cmath>
 #include <iostream>
 #include <limits>
+#include <parallel/algorithm>
 #include <vector>
 
 #include <morton/morton.h>
@@ -328,6 +329,10 @@ class Grid {
         int max = param->max_bound_;
         threshold_dimensions_ = {min, max};
       }
+
+      if(has_grown_) {
+        UpdateBoxZOrder();
+      }
     } else {
       // There are no sim objects in this simulation
       auto* param = TSimulation::GetActive()->GetParam();
@@ -394,35 +399,35 @@ class Grid {
     return distance < squared_radius;
   }
 
-  /// This method iterates over all elements. Iteration is performed in
-  /// Z-order of boxes. There is no particular order for elements inside a box
-  template <typename Lambda>
-  void IterateZOrder(const Lambda& lambda) const {
+  void UpdateBoxZOrder() {
     // iterate boxes in Z-order / morton order
     // TODO this is a very quick attempt to test an idea
     // TODO improve performance of this brute force solution
-    std::vector<std::pair<uint32_t, const Box*>> box_morton_codes;
-    box_morton_codes.resize(boxes_.size());
+    zorder_sorted_boxes_.resize(boxes_.size());
     #pragma omp parallel for collapse(3)
     for (uint32_t x = 0; x < num_boxes_axis_[0]; x++) {
       for (uint32_t y = 0; y < num_boxes_axis_[1]; y++) {
         for (uint32_t z = 0; z < num_boxes_axis_[2]; z++) {
           auto box_idx = GetBoxIndex(std::array<uint32_t, 3>{x, y, z});
           auto morton = libmorton::morton3D_64_encode(x, y, z);
-          box_morton_codes[box_idx] = std::pair<uint32_t, const Box*>{morton, &boxes_[box_idx]};
+          zorder_sorted_boxes_[box_idx] = std::pair<uint32_t, const Box*>{morton, &boxes_[box_idx]};
         }
       }
     }
-    std::sort(box_morton_codes.begin(), box_morton_codes.end(), [](const auto& lhs, const auto& rhs) {
+    __gnu_parallel::sort(zorder_sorted_boxes_.begin(), zorder_sorted_boxes_.end(), [](const auto& lhs, const auto& rhs) {
       return lhs.first < rhs.first;
     });
+  }
 
+  /// This method iterates over all elements. Iteration is performed in
+  /// Z-order of boxes. There is no particular order for elements inside a box.
+  template <typename Lambda>
+  void IterateZOrder(const Lambda& lambda) const {
     uint64_t cnt = 0;
-    for(uint64_t i = 0; i < box_morton_codes.size(); i++) {
-      auto it = box_morton_codes[i].second->begin();
-      std::cout << box_morton_codes[i].first << std::endl;
+    for(uint64_t i = 0; i < zorder_sorted_boxes_.size(); i++) {
+      auto it = zorder_sorted_boxes_[i].second->begin();
       while (!it.IsAtEnd()) {
-          // Do something with neighbor object
+          // Call lambda with SoHandle
           lambda(*it);
         ++it;
       }
@@ -749,10 +754,12 @@ class Grid {
   /// Stores the min / max dimension value that need to be surpassed in order
   /// to trigger a diffusion grid change
   std::array<int32_t, 2> threshold_dimensions_;
-  // Flag to indicate that the grid dimensions have increased
+  /// Flag to indicate that the grid dimensions have increased
   bool has_grown_ = false;
   /// Flag to indicate if the grid has been initialized or not
   bool initialized_ = false;
+  /// stores pairs of <box morton code,  box pointer> sorted by morton code.
+  ParallelResizeVector<std::pair<uint32_t, const Box*>> zorder_sorted_boxes_;
 
   void CheckGridGrowth() {
     // Determine if the grid dimensions have changed (changed in the sense that
