@@ -26,6 +26,7 @@
 #include <sched.h>
 #include <numa.h>
 #include <omp.h>
+#include <future>
 #include <iomanip>  // TODO remove (used for temporary function)
 #include <fstream>  // TODO remove (used for temporary function)
 
@@ -46,6 +47,7 @@
 #include "thread_info.h"
 #include "tuple_util.h"
 #include "timing.h" // TODO remove
+#include "type_util.h"
 
 namespace bdm {
 
@@ -429,7 +431,10 @@ class ResourceManager {
         so_containers[0] = container;
         for(uint16_t n = 1; n < numa_nodes_; n++) {
           ::bdm::Apply(&sim_objects_[n], t, [&](auto* container) {
-            so_containers[n] = container;
+            if(std::is_same<raw_type<decltype(so_containers[n])>, raw_type<decltype(container)>>::value) {
+              auto* tmp = reinterpret_cast<raw_type<decltype(so_containers[n])>*>(container);
+              so_containers[n] = tmp;
+            }
           });
         }
 
@@ -478,7 +483,10 @@ class ResourceManager {
         so_containers[0] = container;
         for(uint16_t n = 1; n < numa_nodes_; n++) {
           ::bdm::Apply(&sim_objects_[n], t, [&](auto* container) {
-            so_containers[n] = container;
+            if(std::is_same<raw_type<decltype(so_containers[n])>, raw_type<decltype(container)>>::value) {
+              auto* tmp = reinterpret_cast<raw_type<decltype(so_containers[n])>*>(container);
+              so_containers[n] = tmp;
+            }
           });
         }
 
@@ -661,25 +669,82 @@ class ResourceManager {
 
         for(uint16_t t = 0; t < NumberOfTypes(); t++) {
           ::bdm::Apply(&so_rearranged[n], t, [&](auto* dest) {
-            // dest->resize(sorted_so_handles[n][t].size());
-            // std::cout << typeid(dest).name() << std::endl;
+
             dest->reserve(sorted_so_handles[n][t].size()); // FIXME
+            std::atomic<bool> resized(false);
+
+            #pragma omp parallel
+            {
+              auto tid = omp_get_thread_num();
+              auto nid = thread_info_.GetNumaNode(tid);
+              if (nid == n) {
+
+                // auto old = std::atomic_exchange(&resized, true);
+                // if (!old) {
+                //   dest->resize(sorted_so_handles[n][t].size());
+                //   // dest->reserve(sorted_so_handles[n][t].size()); // FIXME
+                // }
+                // #pragma omp barrier
+
+                auto threads_in_numa = thread_info_.GetThreadsInNumaNode(nid);
+                auto& sohandles = sorted_so_handles[n][t];
+                assert(thread_info_.GetNumaNode(tid) == numa_node_of_cpu(sched_getcpu()));
+
+                // use static scheduling
+                auto correction = sohandles.size() % threads_in_numa == 0 ? 0 : 1;
+                auto chunk = sohandles.size() / threads_in_numa + correction;
+                auto start = thread_info_.GetNumaThreadId(tid) * chunk ;
+                auto end = std::min(sohandles.size(), start + chunk);
+
+                // #pragma omp critical
+                // {
+                //   std::cout << "tid             " << tid << std::endl;
+                //   std::cout << "nid             " << nid << std::endl;
+                //   std::cout << "ntid            " << thread_info_.GetNumaThreadId(tid) << std::endl;
+                //   std::cout << "cont size       " << sohandles.size() << std::endl;
+                //   std::cout << "threads in numa " << threads_in_numa << std::endl;
+                //   std::cout << "chunk           " << chunk << std::endl;
+                //   std::cout << "start           " << start << std::endl;
+                //   std::cout << "end             " << end << std::endl << std::endl;
+                // }
+
+              for(uint64_t e = start; e < end; e++) {
+                auto& handle = sohandles[e];
+                ApplyOnElement(handle, [&](auto&& sim_object) {
+                  // using SoBackend = typename decltype(sim_object)::Backend;
+                  // using DestValueType = typename decltype(dest)::value_type;
+                  // if(std::is_same<typename DestValueType::template Self<Scalar>, typename decltype(sim_object)::template Self<Scalar>>>::value) {
+                  //     auto* tmp = reinterpret_cast<typename DestValueType::template Self<SoBackend>&&>(sim_object);
+                      // (*dest)[e] = tmp;
+                      (*dest)[e] = sim_object;
+                      auto&& so = (*dest)[e];
+                      so.SetNumaNode(current_numa);
+                      so.SetElementIdx(e);
+                    // }
+                });
+              }
+            }
+          }
 
             // #pragma omp parallel for
-            for(uint64_t e = 0; e < sorted_so_handles[n][t].size(); e++) {
-              auto& handle = sorted_so_handles[n][t][e];
-              ApplyOnElement(handle, [&](auto&& sim_object) {
-                    (*dest)[e] = sim_object;
-                    auto&& so = (*dest)[e];
-                    so.SetNumaNode(current_numa);
-                    so.SetElementIdx(e);
-              });
-            }
+            // for(uint64_t e = 0; e < sorted_so_handles[n][t].size(); e++) {
+            //   auto& handle = sorted_so_handles[n][t][e];
+            //   ApplyOnElement(handle, [&](auto&& sim_object) {
+            //         (*dest)[e] = sim_object;
+            //         auto&& so = (*dest)[e];
+            //         so.SetNumaNode(current_numa);
+            //         so.SetElementIdx(e);
+            //   });
+            // }
         });
         }
       }
 
-    // delete[] sim_objects_; // FIXME use future
+    // TODO for AOS deleting takes around 1s for 3M objects - think about
+    // delaying deletion - does not happen right away.
+    // auto* to_be_deleted = sim_objects_;
+    // std::async(std::launch::async, [=]{ delete[] to_be_deleted; });
+    delete[] sim_objects_;
     sim_objects_ = so_rearranged;
 
     // checks
@@ -697,6 +762,7 @@ class ResourceManager {
     // PrintThreadCPUBinding("after");
     // std::cout << "ERROR number " << errcnt << std::endl;
 
+    // FIXME do we need this? we don't change the scheduling anymore
     thread_info_.Renew();
   }
 

@@ -66,6 +66,10 @@ TEST(ResourceManagerTest, New) {
   RunNewTest<ResourceManager<>, SoaA, SoaB>();
 }
 
+TEST(ResourceManagerTest, SortAndApplyOnAllElementsParallel) {
+  RunSortAndApplyOnAllElementsParallel<A, B>(5);
+}
+
 }  // namespace bdm
 
 int main(int argc, char** argv) {

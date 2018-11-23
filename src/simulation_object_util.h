@@ -352,7 +352,7 @@ struct Capsule;
     return Self<SoaRef>(const_cast<Self<Backend>*>(this), idx);                \
   }                                                                            \
                                                                                \
-  Self<Backend>& operator=(const Self<Scalar>& rhs) {                                         \
+  Self<Backend>& operator=(const Self<Scalar>& rhs) {                          \
     BDM_SIM_OBJECT_ASSIGNMENT_OP_BODY(__VA_ARGS__)                             \
     Base::operator=(rhs);                                                      \
     return *this;                                                              \

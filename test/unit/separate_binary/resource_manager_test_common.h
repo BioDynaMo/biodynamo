@@ -290,6 +290,49 @@ void RunNewTest() {
   EXPECT_EQ((*as)[1].GetData(), 321);
 }
 
+// -----------------------------------------------------------------------------
+template <typename TRm>
+inline void CheckApplyOnAllElements(TRm* rm, uint64_t n) {
+  std::vector<bool> found(2 * n);
+  ASSERT_EQ(2 * n, found.size());
+  for (uint64_t i = 0; i < found.size(); ++i) {
+    found[i] = false;
+  }
+
+  std::atomic<uint64_t> cnt(0);
+  rm->ApplyOnAllElementsParallel([&](auto&& so, const SoHandle&) {
+    size_t index = std::round(so.GetData());
+    #pragma omp critical
+    found[index] = true;
+    cnt++;
+  });
+
+  EXPECT_EQ(2 * n, cnt.load());
+  ASSERT_EQ(2 * n, found.size());
+  for (uint64_t i = 0; i < found.size(); ++i) {
+    if (!found[i]) {
+      FAIL() << "ApplyOnAllElementsParallel was not called for element with data_=" << i;
+    }
+  }
+}
+
+template <typename TA, typename TB, typename TSimulation = Simulation<>>
+inline void RunSortAndApplyOnAllElementsParallel(uint64_t n) {
+  TSimulation simulation("RunSortAndApplyOnAllElementsParallel");
+  auto* rm = simulation.GetResourceManager();
+
+  for(uint64_t i = 0; i < n; ++i) {
+      rm->push_back(TA(i));
+      rm->push_back(TB(i+n));
+  }
+
+  CheckApplyOnAllElements(rm, n);
+
+  // rm->SortAndBalanceNumaNodes();
+  //
+  // CheckApplyOnAllElements(rm, n);
+}
+
 }  // namespace bdm
 
 #endif  // UNIT_SEPARATE_BINARY_RESOURCE_MANAGER_TEST_COMMON_H_
