@@ -423,7 +423,6 @@ class Grid {
   /// Z-order of boxes. There is no particular order for elements inside a box.
   template <typename Lambda>
   void IterateZOrder(const Lambda& lambda) const {
-    uint64_t cnt = 0;
     for(uint64_t i = 0; i < zorder_sorted_boxes_.size(); i++) {
       auto it = zorder_sorted_boxes_[i].second->begin();
       while (!it.IsAtEnd()) {

@@ -352,9 +352,7 @@ struct Capsule;
     return Self<SoaRef>(const_cast<Self<Backend>*>(this), idx);                \
   }                                                                            \
                                                                                \
-  template <typename T = Backend>                                              \
-  typename enable_if<is_same<T, SoaRef>::value, Self<SoaRef>&>::type           \
-  operator=(const Self<Scalar>& rhs) {                                         \
+  Self<Backend>& operator=(const Self<Scalar>& rhs) {                                         \
     BDM_SIM_OBJECT_ASSIGNMENT_OP_BODY(__VA_ARGS__)                             \
     Base::operator=(rhs);                                                      \
     return *this;                                                              \

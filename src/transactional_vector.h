@@ -172,6 +172,14 @@ class TransactionalVector {
     data_.reserve(new_capacity);
   }
 
+  /// Thread safe version of std::vector::resize
+  // FIXME what about to_be_added
+  void resize(size_t new_size) {  // NOLINT
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
+    data_.resize(new_size);
+    size_ = new_size;
+  }  
+
   /// Thread-safe version of std::vector::clear
   void clear() {  // NOLINT
     std::lock_guard<std::recursive_mutex> lock(mutex_);

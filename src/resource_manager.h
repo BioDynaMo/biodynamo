@@ -27,7 +27,6 @@
 #include <numa.h>
 #include <omp.h>
 #include <iomanip>  // TODO remove (used for temporary function)
-#include <strstream>  // TODO remove (used for temporary function)
 #include <fstream>  // TODO remove (used for temporary function)
 
 #ifdef USE_OPENCL
@@ -46,6 +45,7 @@
 #include "simulation.h"
 #include "thread_info.h"
 #include "tuple_util.h"
+#include "timing.h" // TODO remove
 
 namespace bdm {
 
@@ -488,7 +488,7 @@ class ResourceManager {
         // different containers
         std::vector<std::atomic<uint64_t>*> counters(numa_nodes_, nullptr);
         std::vector<uint64_t> max_counters(numa_nodes_);
-        for(uint64_t n = 0; n < numa_nodes_; n++) {
+        for(int n = 0; n < numa_nodes_; n++) {
           counters[n] = new std::atomic<uint64_t>(0);
           // calculate value max_counters for each numa domain
           auto correction = so_containers[n]->size() % chunk == 0 ? 0 : 1;
@@ -509,7 +509,7 @@ class ResourceManager {
           // this loop implements work stealing from other NUMA nodes if there
           // are imbalances. Each thread starts with its NUMA domain. Once, it
           // is finished the thread looks for tasks on other domains
-          for(uint64_t n = 0; n < numa_nodes_; n++) {
+          for(int n = 0; n < numa_nodes_; n++) {
             uint64_t current_nid = (nid + n) % numa_nodes_;
 
             auto* so_container = so_containers[current_nid];
@@ -539,7 +539,7 @@ class ResourceManager {
         }
       }
 
-          for(uint64_t n = 0; n < numa_nodes_; n++) {
+          for(int n = 0; n < numa_nodes_; n++) {
             delete counters[n];
           }
       });
@@ -587,13 +587,13 @@ class ResourceManager {
   }
 
   void SortAndBalanceNumaNodes() {
-    PrintThreadCPUBinding("before");
+    // PrintThreadCPUBinding("before");
 
     // balance simulation objects per numa node according to the number of
     // threads associated with each numa domain
     std::vector<uint64_t> so_per_numa(numa_nodes_);
     uint64_t cummulative = 0;
-    for (uint64_t n = 1; n < numa_nodes_; ++n) {
+    for (int n = 1; n < numa_nodes_; ++n) {
       auto max_threads = thread_info_.GetMaxThreads();
       auto threads_in_numa = thread_info_.GetThreadsInNumaNode(n);
       uint64_t num_so = GetNumSimObjects() * threads_in_numa / max_threads;
@@ -602,8 +602,7 @@ class ResourceManager {
     }
     so_per_numa[0] = GetNumSimObjects() - cummulative;
 
-    uint64_t cnt = 0;
-    uint64_t current_numa = 0;
+
 
     // using first touch policy - page will be allocated to the numa domain of
     // the thread that accesses it first.
@@ -620,51 +619,83 @@ class ResourceManager {
     Clear();
     sim_objects_ = tmp;
 
-    // TODO reserve memory upfront to be more efficient
+    // numa node -> type idx -> vector of SoHandles
+    std::vector<std::vector<std::vector<SoHandle>>> sorted_so_handles;
+    sorted_so_handles.resize(numa_nodes_);
+    for (auto& e : sorted_so_handles) {
+      e.resize(NumberOfTypes());
+    }
+
+    uint64_t cnt = 0;
+    uint64_t current_numa = 0;
 
     auto rearrange  = [&](const SoHandle& handle) {
       if(cnt == so_per_numa[current_numa]) {
         cnt = 0;
         current_numa++;
-        // change this threads numa domain
-        int ret = numa_run_on_node(current_numa);
-        if(ret != 0) {
-          Log::Fatal("ResourceManager", "Run on numa node failed. Return code: ", ret);
-        }
+
         // if (numa_node_of_cpu(sched_getcpu()) != )
       }
-      ApplyOnElement(handle, [&](auto&& sim_object) {
-        ::bdm::Apply(&so_rearranged[current_numa], handle.GetTypeIdx(), [&](auto* container) {
-            container->push_back(sim_object);
-            uint32_t element_idx = container->size() - 1;
-            auto&& so = (*container)[element_idx];
-            so.SetNumaNode(current_numa);
-            so.SetElementIdx(element_idx);
-        });
-      });
+
+      sorted_so_handles[current_numa][handle.GetTypeIdx()].push_back(handle);
       cnt++;
     };
 
+      {
+      Timing t("iteratezorder");
       auto* grid = Simulation<TCompileTimeParam>::GetActive()->GetGrid();
       grid->IterateZOrder(rearrange);
+      }
 
-    delete[] sim_objects_;
+      Timing t("REST");
+      for(int n = 0; n < numa_nodes_; n++) {
+
+        // change this threads numa domain
+        // #pragma omp parallel
+        // {
+        //   int ret = numa_run_on_node(current_numa);
+        //   if(ret != 0) {
+        //     Log::Fatal("ResourceManager", "Run on numa node failed. Return code: ", ret);
+        //   }
+        // }
+
+        for(uint16_t t = 0; t < NumberOfTypes(); t++) {
+          ::bdm::Apply(&so_rearranged[n], t, [&](auto* dest) {
+            // dest->resize(sorted_so_handles[n][t].size());
+            // std::cout << typeid(dest).name() << std::endl;
+            dest->reserve(sorted_so_handles[n][t].size()); // FIXME
+
+            // #pragma omp parallel for
+            for(uint64_t e = 0; e < sorted_so_handles[n][t].size(); e++) {
+              auto& handle = sorted_so_handles[n][t][e];
+              ApplyOnElement(handle, [&](auto&& sim_object) {
+                    (*dest)[e] = sim_object;
+                    auto&& so = (*dest)[e];
+                    so.SetNumaNode(current_numa);
+                    so.SetElementIdx(e);
+              });
+            }
+        });
+        }
+      }
+
+    // delete[] sim_objects_; // FIXME use future
     sim_objects_ = so_rearranged;
 
     // checks
-    ApplyOnAllTypes([](auto* container, uint16_t numa, uint16_t type_idx){
-      std::cout << container->size() << std::endl;
-    });
-
-    uint64_t errcnt = 0;
-    ApplyOnAllElements([&errcnt, this](auto&& so, const SoHandle& handle){
-      auto node = getNumaNodeForMemory(&so);
-      if(node != handle.GetNumaNode()) {
-        errcnt++;
-      }
-    });
-    PrintThreadCPUBinding("after");
-    std::cout << "ERROR number " << errcnt << std::endl;
+    // ApplyOnAllTypes([](auto* container, uint16_t numa, uint16_t type_idx){
+    //   std::cout << container->size() << std::endl;
+    // });
+    //
+    // uint64_t errcnt = 0;
+    // ApplyOnAllElements([&errcnt, this](auto&& so, const SoHandle& handle){
+    //   auto node = getNumaNodeForMemory(&so);
+    //   if(node != handle.GetNumaNode()) {
+    //     errcnt++;
+    //   }
+    // });
+    // PrintThreadCPUBinding("after");
+    // std::cout << "ERROR number " << errcnt << std::endl;
 
     thread_info_.Renew();
   }
