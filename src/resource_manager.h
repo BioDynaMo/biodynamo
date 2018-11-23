@@ -711,16 +711,15 @@ class ResourceManager {
               for(uint64_t e = start; e < end; e++) {
                 auto& handle = sohandles[e];
                 ApplyOnElement(handle, [&](auto&& sim_object) {
-                  // using SoBackend = typename decltype(sim_object)::Backend;
-                  // using DestValueType = typename decltype(dest)::value_type;
-                  // if(std::is_same<typename DestValueType::template Self<Scalar>, typename decltype(sim_object)::template Self<Scalar>>>::value) {
-                  //     auto* tmp = reinterpret_cast<typename DestValueType::template Self<SoBackend>&&>(sim_object);
-                      // (*dest)[e] = tmp;
-                      (*dest)[e] = sim_object;
+                  using SoBackend = typename decltype(sim_object)::Backend;
+                  using DestValueType = typename decltype(dest)::value_type;
+                  if(std::is_same<typename DestValueType::template Self<Scalar>, typename decltype(sim_object)::template Self<Scalar>>>::value) {
+                      auto* tmp = reinterpret_cast<typename DestValueType::template Self<SoBackend>&&>(sim_object);
+                      (*dest)[e] = tmp;
                       auto&& so = (*dest)[e];
                       so.SetNumaNode(current_numa);
                       so.SetElementIdx(e);
-                    // }
+                    }
                 });
               }
             }

@@ -328,9 +328,9 @@ inline void RunSortAndApplyOnAllElementsParallel(uint64_t n) {
 
   CheckApplyOnAllElements(rm, n);
 
-  // rm->SortAndBalanceNumaNodes();
-  //
-  // CheckApplyOnAllElements(rm, n);
+  rm->SortAndBalanceNumaNodes();
+
+  CheckApplyOnAllElements(rm, n);
 }
 
 }  // namespace bdm
