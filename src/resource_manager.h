@@ -596,6 +596,7 @@ class ResourceManager {
 
   void SortAndBalanceNumaNodes() {
     // PrintThreadCPUBinding("before");
+    std::cout << "num sim objects " << GetNumSimObjects() << std::endl;
 
     // balance simulation objects per numa node according to the number of
     // threads associated with each numa domain
@@ -649,10 +650,19 @@ class ResourceManager {
       cnt++;
     };
 
+
       {
       Timing t("iteratezorder");
       auto* grid = Simulation<TCompileTimeParam>::GetActive()->GetGrid();
       grid->IterateZOrder(rearrange);
+      std::cout << "count " << cnt << std::endl;
+
+      // for(int n = 0; n < numa_nodes_; n++) {
+      //   for(uint16_t t = 0; t < NumberOfTypes(); t++) {
+      //     std::cout << "N" << n << " T" << t << " " << sorted_so_handles[n][t].size() << std::endl;
+      //   }
+      // }
+      // std::cout << std::endl;
       }
 
       Timing t("REST");
@@ -670,7 +680,7 @@ class ResourceManager {
         for(uint16_t t = 0; t < NumberOfTypes(); t++) {
           ::bdm::Apply(&so_rearranged[n], t, [&](auto* dest) {
 
-            dest->reserve(sorted_so_handles[n][t].size()); // FIXME
+            // dest->resize(sorted_so_handles[n][t].size()); // FIXME
             std::atomic<bool> resized(false);
 
             #pragma omp parallel
@@ -679,12 +689,11 @@ class ResourceManager {
               auto nid = thread_info_.GetNumaNode(tid);
               if (nid == n) {
 
-                // auto old = std::atomic_exchange(&resized, true);
-                // if (!old) {
-                //   dest->resize(sorted_so_handles[n][t].size());
-                //   // dest->reserve(sorted_so_handles[n][t].size()); // FIXME
-                // }
-                // #pragma omp barrier
+                auto old = std::atomic_exchange(&resized, true);
+                if (!old) {
+                  dest->resize(sorted_so_handles[n][t].size());
+                  // dest->reserve(sorted_so_handles[n][t].size()); // FIXME
+                }
 
                 auto threads_in_numa = thread_info_.GetThreadsInNumaNode(nid);
                 auto& sohandles = sorted_so_handles[n][t];
@@ -703,6 +712,7 @@ class ResourceManager {
                 //   std::cout << "ntid            " << thread_info_.GetNumaThreadId(tid) << std::endl;
                 //   std::cout << "cont size       " << sohandles.size() << std::endl;
                 //   std::cout << "threads in numa " << threads_in_numa << std::endl;
+                //   std::cout << "total num threa " << threads_in_numa << std::endl;
                 //   std::cout << "chunk           " << chunk << std::endl;
                 //   std::cout << "start           " << start << std::endl;
                 //   std::cout << "end             " << end << std::endl << std::endl;
@@ -711,10 +721,20 @@ class ResourceManager {
               for(uint64_t e = start; e < end; e++) {
                 auto& handle = sohandles[e];
                 ApplyOnElement(handle, [&](auto&& sim_object) {
-                  using SoBackend = typename decltype(sim_object)::Backend;
-                  using DestValueType = typename decltype(dest)::value_type;
-                  if(std::is_same<typename DestValueType::template Self<Scalar>, typename decltype(sim_object)::template Self<Scalar>>>::value) {
-                      auto* tmp = reinterpret_cast<typename DestValueType::template Self<SoBackend>&&>(sim_object);
+                  using So = raw_type<decltype(sim_object)>;
+                  using SoBackend = typename So::Backend;
+                  using DestValueType = typename raw_type<decltype(dest)>::value_type;
+                  using DestScalarSoType = typename DestValueType::template Self<Scalar>;
+                  using ScalarSo = typename So::template Self<Scalar>;
+
+                  // std::cout << "ScalarSo   " << typeid(sim_object).name() << std::endl;
+                  // std::cout << "DestScalar " << typeid(typename DestValueType::template Self<SoBackend>&&).name() << std::endl;
+                  // #pragma omp critical
+                  // std::cout << "e          " << e << std::endl
+                  //           << "dest->size " << dest->size() << std::endl << std::endl;
+
+                  if(std::is_same<DestScalarSoType, ScalarSo>::value) {
+                      auto&& tmp = reinterpret_cast<typename DestValueType::template Self<SoBackend>&&>(sim_object);
                       (*dest)[e] = tmp;
                       auto&& so = (*dest)[e];
                       so.SetNumaNode(current_numa);
@@ -747,19 +767,19 @@ class ResourceManager {
     sim_objects_ = so_rearranged;
 
     // checks
-    // ApplyOnAllTypes([](auto* container, uint16_t numa, uint16_t type_idx){
-    //   std::cout << container->size() << std::endl;
-    // });
-    //
-    // uint64_t errcnt = 0;
-    // ApplyOnAllElements([&errcnt, this](auto&& so, const SoHandle& handle){
-    //   auto node = getNumaNodeForMemory(&so);
-    //   if(node != handle.GetNumaNode()) {
-    //     errcnt++;
-    //   }
-    // });
+    ApplyOnAllTypes([](auto* container, uint16_t numa, uint16_t type_idx){
+      std::cout << "N" << numa << " T" << type_idx << " " << container->size() << std::endl;
+    });
+
+    uint64_t errcnt = 0;
+    ApplyOnAllElements([&errcnt, this](auto&& so, const SoHandle& handle){
+      auto node = getNumaNodeForMemory(&so);
+      if(node != handle.GetNumaNode()) {
+        errcnt++;
+      }
+    });
     // PrintThreadCPUBinding("after");
-    // std::cout << "ERROR number " << errcnt << std::endl;
+    std::cout << "ERROR number " << errcnt << std::endl;
 
     // FIXME do we need this? we don't change the scheduling anymore
     thread_info_.Renew();

@@ -292,9 +292,9 @@ void RunNewTest() {
 
 // -----------------------------------------------------------------------------
 template <typename TRm>
-inline void CheckApplyOnAllElements(TRm* rm, uint64_t n) {
-  std::vector<bool> found(2 * n);
-  ASSERT_EQ(2 * n, found.size());
+inline void CheckApplyOnAllElements(TRm* rm, uint64_t num_cells) {
+  std::vector<bool> found(2 * num_cells);
+  ASSERT_EQ(2 * num_cells, found.size());
   for (uint64_t i = 0; i < found.size(); ++i) {
     found[i] = false;
   }
@@ -307,8 +307,8 @@ inline void CheckApplyOnAllElements(TRm* rm, uint64_t n) {
     cnt++;
   });
 
-  EXPECT_EQ(2 * n, cnt.load());
-  ASSERT_EQ(2 * n, found.size());
+  EXPECT_EQ(2 * num_cells, cnt.load());
+  ASSERT_EQ(2 * num_cells, found.size());
   for (uint64_t i = 0; i < found.size(); ++i) {
     if (!found[i]) {
       FAIL() << "ApplyOnAllElementsParallel was not called for element with data_=" << i;
@@ -317,20 +317,88 @@ inline void CheckApplyOnAllElements(TRm* rm, uint64_t n) {
 }
 
 template <typename TA, typename TB, typename TSimulation = Simulation<>>
-inline void RunSortAndApplyOnAllElementsParallel(uint64_t n) {
+inline void RunSortAndApplyOnAllElementsParallel(uint64_t num_cells) {
   TSimulation simulation("RunSortAndApplyOnAllElementsParallel");
   auto* rm = simulation.GetResourceManager();
 
-  for(uint64_t i = 0; i < n; ++i) {
+  for(uint64_t i = 0; i < num_cells; ++i) {
       rm->push_back(TA(i));
-      rm->push_back(TB(i+n));
+      rm->push_back(TB(i+num_cells));
   }
 
-  CheckApplyOnAllElements(rm, n);
+  CheckApplyOnAllElements(rm, num_cells);
 
+  simulation.GetGrid()->UpdateGrid();
   rm->SortAndBalanceNumaNodes();
 
-  CheckApplyOnAllElements(rm, n);
+  CheckApplyOnAllElements(rm, num_cells);
+}
+
+template <typename TA, typename TB, typename TSimulation = Simulation<>>
+inline void RunSortAndApplyOnAllElementsParallel() {
+  int num_threads = omp_get_max_threads();
+
+  RunSortAndApplyOnAllElementsParallel<A, B>(std::min(1, num_threads - 1));
+  RunSortAndApplyOnAllElementsParallel<A, B>(num_threads);
+  RunSortAndApplyOnAllElementsParallel<A, B>(3 * num_threads);
+  RunSortAndApplyOnAllElementsParallel<A, B>(3 * num_threads + 1);
+}
+
+// -----------------------------------------------------------------------------
+template <typename TRm>
+inline void CheckApplyOnAllElementsDynamic(TRm* rm, uint64_t num_cells, uint64_t batch_size) {
+  std::vector<bool> found(2 * num_cells);
+  ASSERT_EQ(2 * num_cells, found.size());
+  for (uint64_t i = 0; i < found.size(); ++i) {
+    found[i] = false;
+  }
+
+  std::atomic<uint64_t> cnt(0);
+  rm->ApplyOnAllElementsParallelDynamic(batch_size, [&](auto&& so, const SoHandle&) {
+    size_t index = std::round(so.GetData());
+    #pragma omp critical
+    found[index] = true;
+    cnt++;
+  });
+
+  EXPECT_EQ(2 * num_cells, cnt.load());
+  ASSERT_EQ(2 * num_cells, found.size());
+  for (uint64_t i = 0; i < found.size(); ++i) {
+    if (!found[i]) {
+      FAIL() << "ApplyOnAllElementsParallel was not called for element with data_=" << i;
+    }
+  }
+}
+
+template <typename TA, typename TB, typename TSimulation = Simulation<>>
+inline void RunSortAndApplyOnAllElementsParallelDynamic(uint64_t num_cells, uint64_t batch_size) {
+  TSimulation simulation("RunSortAndApplyOnAllElementsParallel");
+  auto* rm = simulation.GetResourceManager();
+
+  for(uint64_t i = 0; i < num_cells; ++i) {
+      rm->push_back(TA(i));
+      rm->push_back(TB(i+num_cells));
+  }
+
+  CheckApplyOnAllElementsDynamic(rm, num_cells, batch_size);
+
+  simulation.GetGrid()->UpdateGrid();
+  rm->SortAndBalanceNumaNodes();
+
+  CheckApplyOnAllElementsDynamic(rm, num_cells, batch_size);
+}
+
+template <typename TA, typename TB, typename TSimulation = Simulation<>>
+inline void RunSortAndApplyOnAllElementsParallelDynamic() {
+  int num_threads = omp_get_max_threads();
+  std::vector<int> num_cells = {std::min(1, num_threads - 1), num_threads, 3 * num_threads, 3 * num_threads + 1};
+  std::vector<int> batch_sizes = {std::min(1, num_threads - 1), num_threads, 3 * num_threads, 3 * num_threads + 1};
+
+  for(auto n : num_cells) {
+    for(auto b : batch_sizes) {
+      RunSortAndApplyOnAllElementsParallelDynamic<A, B>(n, b);
+    }
+  }
 }
 
 }  // namespace bdm
