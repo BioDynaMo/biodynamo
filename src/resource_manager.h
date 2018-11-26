@@ -602,8 +602,8 @@ class ResourceManager {
     // threads associated with each numa domain
     std::vector<uint64_t> so_per_numa(numa_nodes_);
     uint64_t cummulative = 0;
+    auto max_threads = thread_info_.GetMaxThreads();
     for (int n = 1; n < numa_nodes_; ++n) {
-      auto max_threads = thread_info_.GetMaxThreads();
       auto threads_in_numa = thread_info_.GetThreadsInNumaNode(n);
       uint64_t num_so = GetNumSimObjects() * threads_in_numa / max_threads;
       so_per_numa[n] = num_so;
@@ -680,8 +680,19 @@ class ResourceManager {
         for(uint16_t t = 0; t < NumberOfTypes(); t++) {
           ::bdm::Apply(&so_rearranged[n], t, [&](auto* dest) {
 
-            dest->resize(sorted_so_handles[n][t].size()); // FIXME
-
+            // FIXME replace resize with reserve and set size
+            std::atomic<bool> resized(false);
+            #pragma omp parallel
+            {
+              auto tid = omp_get_thread_num();
+              auto nid = thread_info_.GetNumaNode(tid);
+              if (nid == n) {
+                auto old = std::atomic_exchange(&resized,true);
+                if(!old) {
+                  dest->resize(sorted_so_handles[n][t].size());
+                }
+              }
+            }
             #pragma omp parallel
             {
               auto tid = omp_get_thread_num();

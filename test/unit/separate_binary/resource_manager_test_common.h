@@ -290,120 +290,212 @@ void RunNewTest() {
   EXPECT_EQ((*as)[1].GetData(), 321);
 }
 
+
+// -----------------------------------------------------------------------------
+// https://github.com/osmhpi/pgasus/blob/775a5f90d8f6fa89cfb93eac6de16dcfe27167ce/src/util/mmaphelper.cpp
+inline static void* AlignPage(const void *ptr) {
+  static constexpr uintptr_t PAGE_MASK = ~(uintptr_t(0xFFF));
+  return (void*) (((uintptr_t)ptr) & PAGE_MASK);
+}
+
+inline int GetNumaNodeForMemory(const void *ptr) {
+  int result, loc;
+  void *pptr = AlignPage(ptr);
+  result = numa_move_pages(0, 1, &pptr, nullptr, &loc, 0);
+  return (result != 0) ? -1 : loc;
+}
+
+inline std::vector<uint64_t> GetSoPerNuma(uint64_t num_sim_objects) {
+  // balance simulation objects per numa node according to the number of
+  // threads associated with each numa domain
+  ThreadInfo ti;
+  uint64_t numa_nodes = ti.GetNumaNodes();
+
+  std::vector<uint64_t> so_per_numa(numa_nodes);
+  uint64_t cummulative = 0;
+  auto max_threads = ti.GetMaxThreads();
+  for (int n = 1; n < numa_nodes; ++n) {
+    auto threads_in_numa = ti.GetThreadsInNumaNode(n);
+    uint64_t num_so = num_sim_objects * threads_in_numa / max_threads;
+    so_per_numa[n] = num_so;
+    cummulative += num_so;
+  }
+  so_per_numa[0] = num_sim_objects - cummulative;
+  return so_per_numa;
+}
+
 // -----------------------------------------------------------------------------
 template <typename TRm>
-inline void CheckApplyOnAllElements(TRm* rm, uint64_t num_cells) {
-  std::vector<bool> found(2 * num_cells);
-  ASSERT_EQ(2 * num_cells, found.size());
+inline void CheckApplyOnAllElements(TRm* rm, uint64_t num_sim_objects, bool numa_checks = false) {
+  std::vector<bool> found(2 * num_sim_objects);
+  ASSERT_EQ(2 * num_sim_objects, found.size());
   for (uint64_t i = 0; i < found.size(); ++i) {
     found[i] = false;
   }
 
   std::atomic<uint64_t> cnt(0);
-  rm->ApplyOnAllElementsParallel([&](auto&& so, const SoHandle&) {
+  ThreadInfo ti;
+  // counts the number of sim objects in each numa domain
+  std::vector<uint64_t> numa_so_cnts;
+  numa_so_cnts.resize(ti.GetNumaNodes());
+  std::atomic<uint64_t> numa_memory_errors(0);
+  std::atomic<uint64_t> numa_thread_errors(0);
+
+  rm->ApplyOnAllElementsParallel([&](auto&& so, const SoHandle& handle) {
     size_t index = std::round(so.GetData());
     #pragma omp critical
     found[index] = true;
+
+    // verify that a thread processes sim objects on the same NUMA node.
+    if (numa_checks && handle.GetNumaNode() != GetNumaNodeForMemory(&so)) {
+      numa_memory_errors++;
+    }
+    if (numa_checks && handle.GetNumaNode() != numa_node_of_cpu(sched_getcpu())) {
+      numa_thread_errors++;
+    }
+
+    #pragma omp critical
+    numa_so_cnts[handle.GetNumaNode()]++;
+
     cnt++;
   });
 
-  std::cout << "AAA       " << cnt.load() << std::endl;
-  std::cout << "num_cells " << num_cells << std::endl;
-
-  EXPECT_EQ(2 * num_cells, cnt.load());
-  ASSERT_EQ(2 * num_cells, found.size());
+  EXPECT_EQ(2 * num_sim_objects, cnt.load());
+  ASSERT_EQ(2 * num_sim_objects, found.size());
   for (uint64_t i = 0; i < found.size(); ++i) {
     if (!found[i]) {
       FAIL() << "ApplyOnAllElementsParallel was not called for element with data_=" << i;
     }
   }
+
+  if (numa_checks) {
+    EXPECT_EQ(0, numa_memory_errors.load());
+    EXPECT_EQ(0, numa_thread_errors.load());
+    auto so_per_numa = GetSoPerNuma(2 * num_sim_objects);
+    for(uint64_t n = 0; n < ti.GetNumaNodes(); ++n) {
+      EXPECT_EQ(so_per_numa[n], numa_so_cnts[n]);
+    }
+  }
 }
 
 template <typename TA, typename TB, typename TSimulation = Simulation<>>
-inline void RunSortAndApplyOnAllElementsParallel(uint64_t num_cells) {
+inline void RunSortAndApplyOnAllElementsParallel(uint64_t num_sim_objects, bool numa_checks = false) {
   TSimulation simulation("RunSortAndApplyOnAllElementsParallel");
   auto* rm = simulation.GetResourceManager();
 
-  for(uint64_t i = 0; i < num_cells; ++i) {
+  for(uint64_t i = 0; i < num_sim_objects; ++i) {
       rm->push_back(TA(i));
-      rm->push_back(TB(i+num_cells));
+      rm->push_back(TB(i+num_sim_objects));
   }
 
-  std::cout << rm->template Get<TA>()->size() << std::endl;
-  std::cout << rm->template Get<TB>()->size() << std::endl;
-
-  CheckApplyOnAllElements(rm, num_cells);
+  CheckApplyOnAllElements(rm, num_sim_objects);
 
   simulation.GetGrid()->UpdateGrid();
   rm->SortAndBalanceNumaNodes();
 
-  CheckApplyOnAllElements(rm, num_cells);
+  CheckApplyOnAllElements(rm, num_sim_objects, numa_checks);
 }
 
 template <typename TA, typename TB, typename TSimulation = Simulation<>>
 inline void RunSortAndApplyOnAllElementsParallel() {
   int num_threads = omp_get_max_threads();
-  std::cout << "NT " << num_threads << std::endl;
+  std::vector<int> num_sim_objects = {std::max(1, num_threads - 1), num_threads, 3 * num_threads, 3 * num_threads + 1};
 
-  RunSortAndApplyOnAllElementsParallel<A, B>(std::max(1, num_threads - 1));
-  RunSortAndApplyOnAllElementsParallel<A, B>(num_threads);
-  RunSortAndApplyOnAllElementsParallel<A, B>(3 * num_threads);
-  RunSortAndApplyOnAllElementsParallel<A, B>(3 * num_threads + 1);
+  for(auto n : num_sim_objects) {
+    RunSortAndApplyOnAllElementsParallel<A, B>(n);
+  }
+
+  RunSortAndApplyOnAllElementsParallel<A, B>(1000, true);
 }
 
 // -----------------------------------------------------------------------------
 template <typename TRm>
-inline void CheckApplyOnAllElementsDynamic(TRm* rm, uint64_t num_cells, uint64_t batch_size) {
-  std::vector<bool> found(2 * num_cells);
-  ASSERT_EQ(2 * num_cells, found.size());
+inline void CheckApplyOnAllElementsDynamic(TRm* rm, uint64_t num_sim_objects, uint64_t batch_size, bool numa_checks = false) {
+  std::vector<bool> found(2 * num_sim_objects);
+  ASSERT_EQ(2 * num_sim_objects, found.size());
   for (uint64_t i = 0; i < found.size(); ++i) {
     found[i] = false;
   }
 
   std::atomic<uint64_t> cnt(0);
-  rm->ApplyOnAllElementsParallelDynamic(batch_size, [&](auto&& so, const SoHandle&) {
+  ThreadInfo ti;
+  // counts the number of sim objects in each numa domain
+  std::vector<uint64_t> numa_so_cnts;
+  numa_so_cnts.resize(ti.GetNumaNodes());
+  std::atomic<uint64_t> numa_memory_errors(0);
+  std::atomic<uint64_t> numa_thread_errors(0);
+
+  rm->ApplyOnAllElementsParallelDynamic(batch_size, [&](auto&& so, const SoHandle& handle) {
     size_t index = std::round(so.GetData());
     #pragma omp critical
     found[index] = true;
+
+    // verify that a thread processes sim objects on the same NUMA node.
+    if (numa_checks && handle.GetNumaNode() != GetNumaNodeForMemory(&so)) {
+      numa_memory_errors++;
+    }
+    if (numa_checks && handle.GetNumaNode() != numa_node_of_cpu(sched_getcpu())) {
+      numa_thread_errors++;
+    }
+
+    #pragma omp critical
+    numa_so_cnts[handle.GetNumaNode()]++;
+
     cnt++;
   });
 
-  EXPECT_EQ(2 * num_cells, cnt.load());
-  ASSERT_EQ(2 * num_cells, found.size());
+  // verify that the function has been called once for each sim object
+  EXPECT_EQ(2 * num_sim_objects, cnt.load());
+  ASSERT_EQ(2 * num_sim_objects, found.size());
   for (uint64_t i = 0; i < found.size(); ++i) {
     if (!found[i]) {
       FAIL() << "ApplyOnAllElementsParallel was not called for element with data_=" << i;
     }
   }
+
+  if (numa_checks) {
+    EXPECT_EQ(0, numa_memory_errors.load());
+    EXPECT_EQ(0, numa_thread_errors.load());
+    auto so_per_numa = GetSoPerNuma(2 * num_sim_objects);
+    for(uint64_t n = 0; n < ti.GetNumaNodes(); ++n) {
+      EXPECT_EQ(so_per_numa[n], numa_so_cnts[n]);
+    }
+  }
 }
 
 template <typename TA, typename TB, typename TSimulation = Simulation<>>
-inline void RunSortAndApplyOnAllElementsParallelDynamic(uint64_t num_cells, uint64_t batch_size) {
+inline void RunSortAndApplyOnAllElementsParallelDynamic(uint64_t num_sim_objects, uint64_t batch_size, bool numa_checks = false) {
   TSimulation simulation("RunSortAndApplyOnAllElementsParallel");
   auto* rm = simulation.GetResourceManager();
 
-  for(uint64_t i = 0; i < num_cells; ++i) {
+  for(uint64_t i = 0; i < num_sim_objects; ++i) {
       rm->push_back(TA(i));
-      rm->push_back(TB(i+num_cells));
+      rm->push_back(TB(i+num_sim_objects));
   }
 
-  CheckApplyOnAllElementsDynamic(rm, num_cells, batch_size);
+  CheckApplyOnAllElementsDynamic(rm, num_sim_objects, batch_size);
 
   simulation.GetGrid()->UpdateGrid();
   rm->SortAndBalanceNumaNodes();
 
-  CheckApplyOnAllElementsDynamic(rm, num_cells, batch_size);
+  CheckApplyOnAllElementsDynamic(rm, num_sim_objects, batch_size, numa_checks);
 }
 
 template <typename TA, typename TB, typename TSimulation = Simulation<>>
-inline void RunSortAndApplyOnAllElementsParallelDynamic() {
+inline void RunSortAndApplyOnAllElementsParallelDynamic(bool numa_checks = false) {
   int num_threads = omp_get_max_threads();
-  std::vector<int> num_cells = {std::max(1, num_threads - 1), num_threads, 3 * num_threads, 3 * num_threads + 1};
+  std::vector<int> num_sim_objects = {std::max(1, num_threads - 1), num_threads, 3 * num_threads, 3 * num_threads + 1};
   std::vector<int> batch_sizes = {std::max(1, num_threads - 1), num_threads, 3 * num_threads, 3 * num_threads + 1};
 
-  for(auto n : num_cells) {
+  for(auto n : num_sim_objects) {
     for(auto b : batch_sizes) {
       RunSortAndApplyOnAllElementsParallelDynamic<A, B>(n, b);
+    }
+  }
+
+  if(numa_checks) {
+    for(auto b : batch_sizes) {
+      RunSortAndApplyOnAllElementsParallelDynamic<A, B>(1000, b, true);
     }
   }
 }
