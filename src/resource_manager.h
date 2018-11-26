@@ -680,21 +680,13 @@ class ResourceManager {
         for(uint16_t t = 0; t < NumberOfTypes(); t++) {
           ::bdm::Apply(&so_rearranged[n], t, [&](auto* dest) {
 
-            // dest->resize(sorted_so_handles[n][t].size()); // FIXME
-            std::atomic<bool> resized(false);
+            dest->resize(sorted_so_handles[n][t].size()); // FIXME
 
             #pragma omp parallel
             {
               auto tid = omp_get_thread_num();
               auto nid = thread_info_.GetNumaNode(tid);
               if (nid == n) {
-
-                auto old = std::atomic_exchange(&resized, true);
-                if (!old) {
-                  dest->resize(sorted_so_handles[n][t].size());
-                  // dest->reserve(sorted_so_handles[n][t].size()); // FIXME
-                }
-
                 auto threads_in_numa = thread_info_.GetThreadsInNumaNode(nid);
                 auto& sohandles = sorted_so_handles[n][t];
                 assert(thread_info_.GetNumaNode(tid) == numa_node_of_cpu(sched_getcpu()));
@@ -735,6 +727,13 @@ class ResourceManager {
 
                   if(std::is_same<DestScalarSoType, ScalarSo>::value) {
                       auto&& tmp = reinterpret_cast<typename DestValueType::template Self<SoBackend>&&>(sim_object);
+                      // FIXME remove
+                      #pragma omp critical
+                      {
+                      if(dest->size() <= e) {
+                        std::cerr << "FATAL " << dest->size() << " " << e << std::endl;
+                      }
+                      }
                       (*dest)[e] = tmp;
                       auto&& so = (*dest)[e];
                       so.SetNumaNode(current_numa);

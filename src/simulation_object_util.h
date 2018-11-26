@@ -189,11 +189,17 @@ struct Capsule;
 #define BDM_SIM_OBJECT_RESERVE_BODY_ITERATOR(new_cap, data_member) \
   data_member.reserve(new_cap);
 
+#define BDM_SIM_OBJECT_RESIZE_BODY(...) \
+  EVAL(LOOP_2_1(BDM_SIM_OBJECT_RESIZE_BODY_ITERATOR, __VA_ARGS__))
+
+#define BDM_SIM_OBJECT_RESIZE_BODY_ITERATOR(new_cap, data_member) \
+  data_member.resize(new_cap);
+
 #define BDM_SIM_OBJECT_ASSIGNMENT_OP_BODY(...) \
   EVAL(LOOP(BDM_SIM_OBJECT_ASSIGNMENT_OP_BODY_ITERATOR, __VA_ARGS__))
 
 #define BDM_SIM_OBJECT_ASSIGNMENT_OP_BODY_ITERATOR(data_member) \
-  data_member[kIdx] = rhs.data_member[0];
+  data_member[kIdx] = rhs.data_member[rhs.kIdx];
 
 #define BDM_SIM_OBJECT_ASSIGNMENT_OP_MOVE_BODY(...) \
   EVAL(LOOP(BDM_SIM_OBJECT_ASSIGNMENT_OP_MOVE_BODY_ITERATOR, __VA_ARGS__))
@@ -346,6 +352,16 @@ struct Capsule;
     BDM_SIM_OBJECT_RESERVE_BODY(new_capacity, __VA_ARGS__)                     \
   }                                                                            \
                                                                                \
+  /** Equivalent to std::vector<> resize */                                    \
+  template <typename T = Backend>                                              \
+  typename enable_if<is_soa<T>::value>::type resize(                           \
+      std::size_t new_size) {                                                  \
+    /* FIXME what about to_be_added */                                         \
+    std::lock_guard<std::recursive_mutex> lock(Base::mutex_);                  \
+    Base::resize(new_size);                                                    \
+    BDM_SIM_OBJECT_RESIZE_BODY(new_size, __VA_ARGS__)                          \
+  }                                                                            \
+                                                                               \
   Self<SoaRef> operator[](size_t idx) { return Self<SoaRef>(this, idx); }      \
                                                                                \
   const Self<SoaRef> operator[](size_t idx) const {                            \
@@ -353,6 +369,12 @@ struct Capsule;
   }                                                                            \
                                                                                \
   Self<Backend>& operator=(const Self<Scalar>& rhs) {                          \
+    BDM_SIM_OBJECT_ASSIGNMENT_OP_BODY(__VA_ARGS__)                             \
+    Base::operator=(rhs);                                                      \
+    return *this;                                                              \
+  }                                                                            \
+                                                                               \
+  Self<Backend>& operator=(const Self<SoaRef>& rhs) {                          \
     BDM_SIM_OBJECT_ASSIGNMENT_OP_BODY(__VA_ARGS__)                             \
     Base::operator=(rhs);                                                      \
     return *this;                                                              \

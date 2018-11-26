@@ -66,12 +66,11 @@ TEST(ResourceManagerTest, New) {
 }
 
 TEST(ResourceManagerTest, SortAndApplyOnAllElementsParallel) {
-  int num_threads = omp_get_max_threads();
+  RunSortAndApplyOnAllElementsParallel<A, B>();
+}
 
-  RunSortAndApplyOnAllElementsParallel<A, B>(std::min(1, num_threads - 1));
-  RunSortAndApplyOnAllElementsParallel<A, B>(num_threads);
-  RunSortAndApplyOnAllElementsParallel<A, B>(3 * num_threads);
-  RunSortAndApplyOnAllElementsParallel<A, B>(3 * num_threads + 1);
+TEST(ResourceManagerTest, SortAndApplyOnAllElementsParallelDynamic) {
+  RunSortAndApplyOnAllElementsParallelDynamic<A, B>();
 }
 
 TEST(ResourceManagerTest, DiffusionGrid) {

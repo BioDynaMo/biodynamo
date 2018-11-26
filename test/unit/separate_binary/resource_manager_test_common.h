@@ -307,6 +307,9 @@ inline void CheckApplyOnAllElements(TRm* rm, uint64_t num_cells) {
     cnt++;
   });
 
+  std::cout << "AAA       " << cnt.load() << std::endl;
+  std::cout << "num_cells " << num_cells << std::endl;
+
   EXPECT_EQ(2 * num_cells, cnt.load());
   ASSERT_EQ(2 * num_cells, found.size());
   for (uint64_t i = 0; i < found.size(); ++i) {
@@ -326,6 +329,9 @@ inline void RunSortAndApplyOnAllElementsParallel(uint64_t num_cells) {
       rm->push_back(TB(i+num_cells));
   }
 
+  std::cout << rm->template Get<TA>()->size() << std::endl;
+  std::cout << rm->template Get<TB>()->size() << std::endl;
+
   CheckApplyOnAllElements(rm, num_cells);
 
   simulation.GetGrid()->UpdateGrid();
@@ -337,8 +343,9 @@ inline void RunSortAndApplyOnAllElementsParallel(uint64_t num_cells) {
 template <typename TA, typename TB, typename TSimulation = Simulation<>>
 inline void RunSortAndApplyOnAllElementsParallel() {
   int num_threads = omp_get_max_threads();
+  std::cout << "NT " << num_threads << std::endl;
 
-  RunSortAndApplyOnAllElementsParallel<A, B>(std::min(1, num_threads - 1));
+  RunSortAndApplyOnAllElementsParallel<A, B>(std::max(1, num_threads - 1));
   RunSortAndApplyOnAllElementsParallel<A, B>(num_threads);
   RunSortAndApplyOnAllElementsParallel<A, B>(3 * num_threads);
   RunSortAndApplyOnAllElementsParallel<A, B>(3 * num_threads + 1);
@@ -391,8 +398,8 @@ inline void RunSortAndApplyOnAllElementsParallelDynamic(uint64_t num_cells, uint
 template <typename TA, typename TB, typename TSimulation = Simulation<>>
 inline void RunSortAndApplyOnAllElementsParallelDynamic() {
   int num_threads = omp_get_max_threads();
-  std::vector<int> num_cells = {std::min(1, num_threads - 1), num_threads, 3 * num_threads, 3 * num_threads + 1};
-  std::vector<int> batch_sizes = {std::min(1, num_threads - 1), num_threads, 3 * num_threads, 3 * num_threads + 1};
+  std::vector<int> num_cells = {std::max(1, num_threads - 1), num_threads, 3 * num_threads, 3 * num_threads + 1};
+  std::vector<int> batch_sizes = {std::max(1, num_threads - 1), num_threads, 3 * num_threads, 3 * num_threads + 1};
 
   for(auto n : num_cells) {
     for(auto b : batch_sizes) {

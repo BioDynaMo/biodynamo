@@ -93,6 +93,17 @@ class SoaSimulationObject {
     return *this;
   }
 
+  SoaSimulationObject& operator=(const Self<SoaRef> &) {
+    return *this;
+  }
+
+  SoaSimulationObject& operator=(const Self<Soa>& other) {
+    to_be_removed_ =other.to_be_removed_;
+    total_size_ = other.total_size_;
+    size_ = other.size_;
+    return *this;
+  }
+
   Self<Backend> &operator=(
       const ScalarSimulationObject<
           typename TCompileTimeParam::template Self<Scalar>, TDerived> &) {
@@ -184,6 +195,13 @@ class SoaSimulationObject {
   /// Equivalent to std::vector<> reserve - it increases the capacity
   /// of all data member containers
   void reserve(size_t new_capacity) {}  // NOLINT
+
+  /// Equivalent to std::vector<> resize
+  void resize(size_t new_size) {  // NOLINT
+    // FIXME what about to_be_added
+    size_ = new_size;
+    total_size_ = new_size;
+  }
 
   template <typename Function>
   void ForEachDataMember(Function l) {}
