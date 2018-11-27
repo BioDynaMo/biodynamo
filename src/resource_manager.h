@@ -222,8 +222,7 @@ class ResourceManager {
   }
 
   ResourceManager& operator=(ResourceManager&& other) {
-    // FIXME
-    // sim_objects_ = std::move(other.sim_objects_);
+    sim_objects_ = std::move(other.sim_objects_);
     diffusion_grids_ = std::move(other.diffusion_grids_);
     return *this;
   }

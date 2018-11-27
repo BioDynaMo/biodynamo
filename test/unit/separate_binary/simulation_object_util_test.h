@@ -59,12 +59,12 @@ BDM_SIM_OBJECT(ContainerTestClass, TestSimObject) {
 };
 
 BDM_SIM_OBJECT(MyCell, TestSimObject) {
-  BDM_SIM_OBJECT_HEADER(MyCell, TestSimObject, 1, position_, diameter_);
+  BDM_SIM_OBJECT_HEADER(MyCell, TestSimObject, 1, diameter_);
 
  public:
-  explicit MyCellExt(const std::array<double, 3>& pos) : position_{{pos}} {}
+  explicit MyCellExt(const std::array<double, 3>& pos) : Base(pos) {}
 
-  MyCellExt() : position_{{1, 2, 3}} {}
+  MyCellExt() : Base({1, 2, 3}) {}
 
   MostDerivedSoPtr Divide(double volume_ratio, double phi, double theta) {
     auto* rm = Simulation_t::GetActive()->GetResourceManager();
@@ -79,17 +79,11 @@ BDM_SIM_OBJECT(MyCell, TestSimObject) {
     diameter_[kIdx] = 1.123;
   }
 
-  const std::array<double, 3>& GetPosition() const { return position_[kIdx]; }
-  void SetPosition(const std::array<double, 3>& position) const {
-    position_[kIdx] = position;
-  }
-
   double GetDiameter() const { return diameter_[kIdx]; }
 
   void SetDiameter(double diameter) { diameter_[kIdx] = diameter; }
 
  protected:
-  vec<std::array<double, 3>> position_;
   vec<double> diameter_ = {6.28};
 };
 

@@ -32,6 +32,7 @@
 #include "shape.h"
 #include "simulation_implementation.h"
 #include "simulation_object_util.h"
+#include "transactional_vector.h"
 #include "vtune.h"
 
 #endif  // BIODYNAMO_H_

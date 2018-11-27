@@ -215,7 +215,8 @@ void RunApplyOnAllTypesTest() {
     }
   });
 
-  EXPECT_EQ(2u, counter);
+  ThreadInfo ti;
+  EXPECT_EQ(ti.GetNumaNodes() * 2u, counter);
 }
 
 template <typename TRm, typename TA, typename TB>
