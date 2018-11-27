@@ -67,11 +67,11 @@ TEST(ResourceManagerTest, New) {
 }
 
 TEST(ResourceManagerTest, SortAndApplyOnAllElementsParallel) {
-  RunSortAndApplyOnAllElementsParallel<A, B>(true);
+  RunSortAndApplyOnAllElementsParallel<A, B>();
 }
 
 TEST(ResourceManagerTest, SortAndApplyOnAllElementsParallelDynamic) {
-  RunSortAndApplyOnAllElementsParallelDynamic<A, B>(true);
+  RunSortAndApplyOnAllElementsParallelDynamic<A, B>();
 }
 
 }  // namespace bdm

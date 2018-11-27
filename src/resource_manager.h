@@ -503,8 +503,6 @@ class ResourceManager {
           max_counters[n] = so_containers[n]->size() / chunk + correction;
         }
 
-        std::cout << std::endl;
-
         #pragma omp parallel firstprivate(chunk, numa_nodes_)
         {
           auto tid = omp_get_thread_num();
@@ -796,12 +794,12 @@ class ResourceManager {
     sim_objects_ = so_rearranged;
 
     // checks
-    std::cout << "after" << std::endl;
-    std::cout << "num sim objects " << GetNumSimObjects() << std::endl;
-    ApplyOnAllTypes([](auto* container, uint16_t numa, uint16_t type_idx){
-      std::cout << "N" << numa << " T" << type_idx << " " << container->size() << std::endl;
-    });
-    std::cout << std::endl;
+    // std::cout << "after" << std::endl;
+    // std::cout << "num sim objects " << GetNumSimObjects() << std::endl;
+    // ApplyOnAllTypes([](auto* container, uint16_t numa, uint16_t type_idx){
+    //   std::cout << "N" << numa << " T" << type_idx << " " << container->size() << std::endl;
+    // });
+    // std::cout << std::endl;
 
     uint64_t errcnt = 0;
     ApplyOnAllElements([&errcnt, this](auto&& so, const SoHandle& handle){
