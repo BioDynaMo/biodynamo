@@ -503,6 +503,8 @@ class ResourceManager {
           max_counters[n] = so_containers[n]->size() / chunk + correction;
         }
 
+        std::cout << std::endl;
+
         #pragma omp parallel firstprivate(chunk, numa_nodes_)
         {
           auto tid = omp_get_thread_num();
@@ -537,13 +539,32 @@ class ResourceManager {
               //   std::cout << "start           " << start << std::endl;
               //   std::cout << "end             " << end << std::endl << std::endl;
               // }
+              // #pragma omp critical
+              // std::cout << omp_get_thread_num() << " " << current_nid << " " << nid << std::endl;
 
               for(uint64_t i = start; i < end; ++i) {
+                // if((*so_container)[i].GetSoHandle().GetNumaNode() != current_nid) {
+                // #pragma omp critical
+                // {
+                // if(getNumaNodeForMemory(&((*so_container)[i])) != current_nid) {
+                //   std::cout << "foo " << getNumaNodeForMemory(&((*so_container)[i])) << " " << (*so_container)[i].GetSoHandle().GetNumaNode() << " " << current_nid << " " << nid << " " << n << " " << (*so_container)[i].GetSoHandle()  << std::endl;
+                // }
+                // }
+                // #pragma omp critical
+                // std::cout << omp_get_thread_num() << " " << current_nid << " " << nid << std::endl;
+
                 function((*so_container)[i], SoHandle(current_nid, t, i));
               }
 
               old_count = (*(counters[current_nid]))++;
           }
+
+          // if(n == 0) {
+          //   #pragma omp critical
+          //   std::cout << "thread starts work stealing " << omp_get_thread_num() << std::endl;
+          // //   usleep(100);
+          // }
+          break; // FIXME remove
         }
       }
 
@@ -596,7 +617,13 @@ class ResourceManager {
 
   void SortAndBalanceNumaNodes() {
     // PrintThreadCPUBinding("before");
-    std::cout << "num sim objects " << GetNumSimObjects() << std::endl;
+    // checks
+    // std::cout << "before" << std::endl;
+    // std::cout << "num sim objects " << GetNumSimObjects() << std::endl;
+    // ApplyOnAllTypes([](auto* container, uint16_t numa, uint16_t type_idx){
+    //   std::cout << "N" << numa << " T" << type_idx << " " << container->size() << std::endl;
+    // });
+    // std::cout << std::endl;
 
     // balance simulation objects per numa node according to the number of
     // threads associated with each numa domain
@@ -655,7 +682,6 @@ class ResourceManager {
       Timing t("iteratezorder");
       auto* grid = Simulation<TCompileTimeParam>::GetActive()->GetGrid();
       grid->IterateZOrder(rearrange);
-      std::cout << "count " << cnt << std::endl;
 
       // for(int n = 0; n < numa_nodes_; n++) {
       //   for(uint16_t t = 0; t < NumberOfTypes(); t++) {
@@ -738,16 +764,9 @@ class ResourceManager {
 
                   if(std::is_same<DestScalarSoType, ScalarSo>::value) {
                       auto&& tmp = reinterpret_cast<typename DestValueType::template Self<SoBackend>&&>(sim_object);
-                      // FIXME remove
-                      #pragma omp critical
-                      {
-                      if(dest->size() <= e) {
-                        std::cerr << "FATAL " << dest->size() << " " << e << std::endl;
-                      }
-                      }
                       (*dest)[e] = tmp;
                       auto&& so = (*dest)[e];
-                      so.SetNumaNode(current_numa);
+                      so.SetNumaNode(n);
                       so.SetElementIdx(e);
                     }
                 });
@@ -777,9 +796,12 @@ class ResourceManager {
     sim_objects_ = so_rearranged;
 
     // checks
+    std::cout << "after" << std::endl;
+    std::cout << "num sim objects " << GetNumSimObjects() << std::endl;
     ApplyOnAllTypes([](auto* container, uint16_t numa, uint16_t type_idx){
       std::cout << "N" << numa << " T" << type_idx << " " << container->size() << std::endl;
     });
+    std::cout << std::endl;
 
     uint64_t errcnt = 0;
     ApplyOnAllElements([&errcnt, this](auto&& so, const SoHandle& handle){

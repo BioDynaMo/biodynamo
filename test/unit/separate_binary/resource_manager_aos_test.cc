@@ -67,7 +67,7 @@ TEST(ResourceManagerTest, New) {
 }
 
 TEST(ResourceManagerTest, SortAndApplyOnAllElementsParallel) {
-  RunSortAndApplyOnAllElementsParallel<A, B>();
+  RunSortAndApplyOnAllElementsParallel<A, B>(true);
 }
 
 TEST(ResourceManagerTest, SortAndApplyOnAllElementsParallelDynamic) {

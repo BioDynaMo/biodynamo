@@ -20,7 +20,7 @@
 namespace bdm {
 
 BDM_SIM_OBJECT(TestSimObject, SimulationObject) {
-  BDM_SIM_OBJECT_HEADER(TestSimObject, SimulationObject, 1, foo_);
+  BDM_SIM_OBJECT_HEADER(TestSimObject, SimulationObject, 1, position_);
 
  public:
   static std::set<std::string> GetRequiredVisDataMembers() {
@@ -40,9 +40,9 @@ BDM_SIM_OBJECT(TestSimObject, SimulationObject) {
     Base::EventHandler(event, daughter);
   }
 
-  std::array<double, 3> GetPosition() const { return {0, 0, 0}; }
+  std::array<double, 3> GetPosition() const { return position_[kIdx]; }
 
-  void SetPosition(const std::array<double, 3>&) {}
+  void SetPosition(const std::array<double, 3>& pos) { position_[kIdx] = pos; }
 
   void ApplyDisplacement(const std::array<double, 3>&) {}
 
@@ -56,7 +56,7 @@ BDM_SIM_OBJECT(TestSimObject, SimulationObject) {
 
   double GetDiameter() const { return 3.14; }
 
-  vec<int> foo_;
+  vec<std::array<double, 3>> position_;
 };
 
 }  // namespace bdm

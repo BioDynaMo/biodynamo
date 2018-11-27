@@ -92,7 +92,8 @@ class Grid {
     /// Next element can be found at `successors_[start_]`
     std::atomic<SoHandle> start_;
     /// length of the linked list (i.e. number of simulation objects)
-    std::atomic<uint16_t> length_;
+    /// uint64_t, because sizeof(Box) = 16, for uint16_t and uint64_t
+    std::atomic<uint64_t> length_;
 
     Box() : start_(SoHandle()), length_(0) {}
     /// Copy Constructor required for boxes_.resize()
