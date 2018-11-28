@@ -353,7 +353,7 @@ TEST(GridTest, IterateZOrder) {
   };
   grid->IterateZOrder(lambda);
 
-  ASSERT_EQ(27, zorder.size());
+  ASSERT_EQ(27u, zorder.size());
   // boxes separated by comments //
   EXPECT_EQ(SoHandle(0, 0, 13), zorder[0]);
   EXPECT_EQ(SoHandle(0, 0, 12), zorder[1]);

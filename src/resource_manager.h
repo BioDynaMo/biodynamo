@@ -514,7 +514,7 @@ class ResourceManager {
           auto nid = thread_info_.GetNumaNode(tid);
           // thread private variables (compilation error with
           // firstprivate(chunk, numa_node_) with some openmp versions clause)
-          auto p_numa_nodes_ = numa_nodes_;
+          auto p_numa_nodes = numa_nodes_;
           auto p_chunk = chunk;
           assert(thread_info_.GetNumaNode(tid) == numa_node_of_cpu(sched_getcpu()));
 
@@ -526,8 +526,8 @@ class ResourceManager {
           // this loop implements work stealing from other NUMA nodes if there
           // are imbalances. Each thread starts with its NUMA domain. Once, it
           // is finished the thread looks for tasks on other domains
-          for(int n = 0; n < p_numa_nodes_; n++) {
-            uint64_t current_nid = (nid + n) % p_numa_nodes_;
+          for(int n = 0; n < p_numa_nodes; n++) {
+            uint64_t current_nid = (nid + n) % p_numa_nodes;
 
             auto* so_container = so_containers[current_nid];
             uint64_t old_count = (*(counters[current_nid]))++;
@@ -564,15 +564,106 @@ class ResourceManager {
               }
 
               old_count = (*(counters[current_nid]))++;
+            }
+        }
+      }
+
+          for(int n = 0; n < numa_nodes_; n++) {
+            delete counters[n];
+          }
+      });
+    }
+  }
+
+  template <typename TFunction>
+  void ApplyOnAllElementsParallelDynamicAlternativeWS(uint64_t chunk, TFunction&& function) {
+    for (uint16_t t = 0; t < NumberOfTypes(); ++t) {
+      // only needed to get the type of the container
+      ::bdm::Apply(&sim_objects_[0], t, [&](auto* container) {
+        // collect all containers of this type
+        std::vector<decltype(container)> so_containers;
+        so_containers.resize(numa_nodes_);
+        so_containers[0] = container;
+        for(uint16_t n = 1; n < numa_nodes_; n++) {
+          ::bdm::Apply(&sim_objects_[n], t, [&](auto* container) {
+            if(std::is_same<raw_type<decltype(so_containers[n])>, raw_type<decltype(container)>>::value) {
+              auto* tmp = reinterpret_cast<raw_type<decltype(so_containers[n])>*>(container);
+              so_containers[n] = tmp;
+            }
+          });
+        }
+
+        // use dynamic scheduling
+        // Unfortunately openmp's built in functionality can't be used, since
+        // threads belong to different numa domains and thus operate on
+        // different containers
+        std::vector<std::atomic<uint64_t>*> counters(numa_nodes_, nullptr);
+        std::vector<uint64_t> max_counters(numa_nodes_);
+        for(int n = 0; n < numa_nodes_; n++) {
+          counters[n] = new std::atomic<uint64_t>(0);
+          // calculate value max_counters for each numa domain
+          auto correction = so_containers[n]->size() % chunk == 0 ? 0 : 1;
+          max_counters[n] = so_containers[n]->size() / chunk + correction;
+        }
+
+        #pragma omp parallel
+        {
+          auto tid = omp_get_thread_num();
+          auto nid = thread_info_.GetNumaNode(tid);
+          // thread private variables (compilation error with
+          // firstprivate(chunk, numa_node_) with some openmp versions clause)
+          auto p_numa_nodes = numa_nodes_;
+          auto p_chunk = chunk;
+          assert(thread_info_.GetNumaNode(tid) == numa_node_of_cpu(sched_getcpu()));
+
+
+          // dynamic scheduling
+          uint64_t start = 0;
+          uint64_t end = 0;
+
+          uint64_t current_nid = nid;
+
+          auto* so_container = so_containers[current_nid];
+          uint64_t old_count = (*(counters[current_nid]))++;
+          while(old_count <= max_counters[current_nid]) {
+            start = old_count * p_chunk ;
+            end = std::min(so_container->size(), start + p_chunk);
+
+            for(uint64_t i = start; i < end; ++i) {
+              function((*so_container)[i], SoHandle(current_nid, t, i));
+            }
+
+            old_count = (*(counters[current_nid]))++;
           }
 
-          // if(n == 0) {
-          //   #pragma omp critical
-          //   std::cout << "thread starts work stealing " << omp_get_thread_num() << std::endl;
-          // //   usleep(100);
-          // }
-          break; // FIXME remove
-        }
+          // work stealing
+          std::set<int> unfinished_numa;
+          for(int n = 0; n < p_numa_nodes; n++) {
+            if (n != nid) {
+              unfinished_numa.insert(n);
+            }
+          }
+
+          while (unfinished_numa.size() != 0) {
+            for(auto it = unfinished_numa.begin(); it != unfinished_numa.end();) {
+              int n = *it;
+              uint64_t current_nid = (nid + n) % p_numa_nodes;
+
+              auto* so_container = so_containers[current_nid];
+              uint64_t old_count = (*(counters[current_nid]))++;
+              if (old_count <= max_counters[current_nid]) {
+                start = old_count * p_chunk ;
+                end = std::min(so_container->size(), start + p_chunk);
+
+                for(uint64_t i = start; i < end; ++i) {
+                  function((*so_container)[i], SoHandle(current_nid, t, i));
+                }
+                ++it;
+              } else {
+                it = unfinished_numa.erase(it);
+              }
+            }
+          }
       }
 
           for(int n = 0; n < numa_nodes_; n++) {
@@ -810,15 +901,15 @@ class ResourceManager {
     // });
     // std::cout << std::endl;
 
-    uint64_t errcnt = 0;
-    ApplyOnAllElements([&errcnt, this](auto&& so, const SoHandle& handle){
-      auto node = getNumaNodeForMemory(&so);
-      if(node != handle.GetNumaNode()) {
-        errcnt++;
-      }
-    });
-    // PrintThreadCPUBinding("after");
-    std::cout << "ERROR number " << errcnt << std::endl;
+    // uint64_t errcnt = 0;
+    // ApplyOnAllElements([&errcnt, this](auto&& so, const SoHandle& handle){
+    //   auto node = getNumaNodeForMemory(&so);
+    //   if(node != handle.GetNumaNode()) {
+    //     errcnt++;
+    //   }
+    // });
+    // // PrintThreadCPUBinding("after");
+    // std::cout << "ERROR number " << errcnt << std::endl;
 
     // FIXME do we need this? we don't change the scheduling anymore
     thread_info_.Renew();
