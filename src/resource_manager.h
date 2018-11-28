@@ -508,10 +508,14 @@ class ResourceManager {
           max_counters[n] = so_containers[n]->size() / chunk + correction;
         }
 
-        #pragma omp parallel firstprivate(chunk, numa_nodes_)
+        #pragma omp parallel
         {
           auto tid = omp_get_thread_num();
           auto nid = thread_info_.GetNumaNode(tid);
+          // thread private variables (compilation error with
+          // firstprivate(chunk, numa_node_) with some openmp versions clause)
+          auto p_numa_nodes_ = numa_nodes_;
+          auto p_chunk = chunk;
           assert(thread_info_.GetNumaNode(tid) == numa_node_of_cpu(sched_getcpu()));
 
 
@@ -522,14 +526,14 @@ class ResourceManager {
           // this loop implements work stealing from other NUMA nodes if there
           // are imbalances. Each thread starts with its NUMA domain. Once, it
           // is finished the thread looks for tasks on other domains
-          for(int n = 0; n < numa_nodes_; n++) {
-            uint64_t current_nid = (nid + n) % numa_nodes_;
+          for(int n = 0; n < p_numa_nodes_; n++) {
+            uint64_t current_nid = (nid + n) % p_numa_nodes_;
 
             auto* so_container = so_containers[current_nid];
             uint64_t old_count = (*(counters[current_nid]))++;
             while(old_count <= max_counters[current_nid]) {
-              start = old_count * chunk ;
-              end = std::min(so_container->size(), start + chunk);
+              start = old_count * p_chunk ;
+              end = std::min(so_container->size(), start + p_chunk);
 
               // #pragma omp critical
               // {
