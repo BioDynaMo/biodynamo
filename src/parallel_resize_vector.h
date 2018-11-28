@@ -16,6 +16,7 @@
 #define PARALLEL_RESIZE_VECTOR_H_
 
 #include <vector>
+#include <iostream>  // FIXME remove
 
 namespace bdm {
 
@@ -30,6 +31,16 @@ class ParallelResizeVector {
   ParallelResizeVector() {}
   ParallelResizeVector(std::initializer_list<T> init)
       : data_(init), size_(init.size()) {}
+  ParallelResizeVector(const ParallelResizeVector& other) {
+    size_ = other.size_;
+    data_.clear();
+    data_.reserve(size_);
+
+#pragma omp parallel for
+    for (std::size_t i = 0; i < size_; i++) {
+      data_[i] = other.data_[i];
+    }
+  }
   ~ParallelResizeVector() {}
 
   std::size_t size() const { return size_; }  // NOLINT
@@ -65,6 +76,18 @@ class ParallelResizeVector {
   void clear() {  // NOLINT
     data_.clear();
     size_ = 0;
+  }
+
+  ParallelResizeVector& operator=(const ParallelResizeVector& other) {
+    size_ = other.size_;
+    data_.clear();
+    data_.reserve(size_);
+
+#pragma omp parallel for
+    for (std::size_t i = 0; i < size_; i++) {
+      data_[i] = other.data_[i];
+    }
+    return *this;
   }
 
   T& operator[](std::size_t index) { return data_[index]; }
