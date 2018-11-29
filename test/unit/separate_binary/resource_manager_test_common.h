@@ -290,6 +290,27 @@ void RunNewTest() {
   EXPECT_EQ((*as)[1].GetData(), 321);
 }
 
+template <typename TA, typename TB, typename TRm = ResourceManager<>>
+void RunGetSimObjectTest() {
+  TRm rm;
+  auto current_uid = SoUidGenerator::Get()->NewSoUid();
+  rm.push_back(TA(0));
+  rm.push_back(TA(1));
+  rm.push_back(TB(2));
+  rm.push_back(TB(3));
+
+  const double kEpsilon = abs_error<double>::value;
+  EXPECT_EQ(0, rm.template GetSimObject<TA>(SoHandle(0, 0)).GetData());
+  EXPECT_EQ(1, rm.template GetSimObject<TA>(SoHandle(0, 1)).GetData());
+  EXPECT_NEAR(2, rm.template GetSimObject<TB>(SoHandle(1, 0)).GetData(), kEpsilon);
+  EXPECT_NEAR(3, rm.template GetSimObject<TB>(SoHandle(1, 1)).GetData(), kEpsilon);
+
+  EXPECT_EQ(0, rm.template GetSimObject<TA>(current_uid +1).GetData());
+  EXPECT_EQ(1, rm.template GetSimObject<TA>(current_uid + 2).GetData());
+  EXPECT_NEAR(2, rm.template GetSimObject<TB>(current_uid + 3).GetData(), kEpsilon);
+  EXPECT_NEAR(3, rm.template GetSimObject<TB>(current_uid + 4).GetData(), kEpsilon);
+}
+
 }  // namespace bdm
 
 #endif  // UNIT_SEPARATE_BINARY_RESOURCE_MANAGER_TEST_COMMON_H_
