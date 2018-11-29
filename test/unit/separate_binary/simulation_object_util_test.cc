@@ -104,6 +104,8 @@ template <typename T>
 void RunDefaultConstructorTest(const T& neuron) {
   EXPECT_EQ(1u, neuron.size());
 
+  auto expected_uid = SoUidGenerator::Get()->NewSoUid() - 1;
+  EXPECT_EQ(expected_uid, neuron.GetUid());
   EXPECT_EQ(6.28, neuron.GetDiameter());
   auto& position = neuron.GetPosition();
   EXPECT_EQ(1, position[0]);
@@ -138,6 +140,8 @@ TEST(SimulationObjectUtilTest, NonDefaultConstructor) {
 
   Neuron neuron(neurites, std::array<double, 3>{4, 5, 6});
 
+  auto expected_uid = SoUidGenerator::Get()->NewSoUid() - 1;
+  EXPECT_EQ(expected_uid, neuron.GetUid());
   EXPECT_EQ(6.28, neuron.GetDiameter());
   auto& position = neuron.GetPosition();
   EXPECT_EQ(4, position[0]);
@@ -341,13 +345,13 @@ TEST(SimulationObjectUtilTest, ForEachDataMember) {
     counter++;
     if (dm_name != "neurites_" && dm_name != "position_" &&
         dm_name != "diameter_" && dm_name != "biology_modules_" &&
-        dm_name != "foo_") {
+        dm_name != "foo_" && dm_name != "uid_") {
       FAIL() << "Data member " << dm_name << "does not exist" << std::endl;
     }
   };
 
   neurons.ForEachDataMember(verify);
-  EXPECT_EQ(5u, counter);
+  EXPECT_EQ(6u, counter);
 }
 
 TEST(SimulationObjectUtilTest, ForEachDataMemberIn) {

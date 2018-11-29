@@ -31,6 +31,7 @@
 #include "event/event.h"
 #include "root_util.h"
 #include "simulation_object_util.h"
+#include "sim_object/so_uid.h"
 #include "type_util.h"
 
 namespace bdm {
@@ -317,14 +318,17 @@ class SimulationObjectExt
   template <typename T, typename U>
   using SimObjectBaseExt = typename SimulationObjectImpl<T, U>::type;
 
-  BDM_SIM_OBJECT_HEADER(SimulationObject, SimObjectBase, 1, biology_modules_);
+  BDM_SIM_OBJECT_HEADER(SimulationObject, SimObjectBase, 1, uid_, biology_modules_);
 
  public:
-  SimulationObjectExt() : Base() {}
+  SimulationObjectExt() : Base() {
+    uid_[kIdx] = SoUidGenerator::Get()->NewSoUid();
+  }
 
   template <typename TEvent, typename TOther>
   SimulationObjectExt(const TEvent &event, TOther *other,
                       uint64_t new_oid = 0) {
+    uid_[kIdx] = SoUidGenerator::Get()->NewSoUid();
     // biology modules
     auto &other_bms = other->biology_modules_[other->kIdx];
     // copy biology_modules_ to me
@@ -405,6 +409,8 @@ class SimulationObjectExt
 
   void RunDiscretization() {}
 
+  SoUid GetUid() const { return uid_[kIdx]; }
+
   // Biology modules
   using BiologyModules =
       typename TCompileTimeParam::template CTMap<MostDerivedScalar,
@@ -474,6 +480,8 @@ class SimulationObjectExt
   }
 
  protected:
+  /// unique id
+  vec<SoUid> uid_ = {{}};
   /// collection of biology modules which define the internal behavior
   vec<std::vector<BiologyModules>> biology_modules_;
 
