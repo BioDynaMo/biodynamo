@@ -802,7 +802,7 @@ class ResourceManager {
         // }
 
         for(uint16_t t = 0; t < NumberOfTypes(); t++) {
-          ::bdm::Apply(&so_rearranged[n], t, [&](auto* dest) {
+          ::bdm::Apply(&so_rearranged[n], t, [&, this](auto* dest) {
 
             // FIXME replace resize with reserve and set size
             std::atomic<bool> resized(false);
@@ -847,7 +847,7 @@ class ResourceManager {
 
               for(uint64_t e = start; e < end; e++) {
                 auto& handle = sohandles[e];
-                ApplyOnElement(handle, [&](auto&& sim_object) {
+                this->ApplyOnElement(handle, [&](auto&& sim_object) {
                   using So = raw_type<decltype(sim_object)>;
                   using SoBackend = typename So::Backend;
                   using DestValueType = typename raw_type<decltype(dest)>::value_type;
