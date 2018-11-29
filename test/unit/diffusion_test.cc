@@ -27,8 +27,10 @@
 #include "unit/test_util.h"
 #include "visualization/catalyst_adaptor.h"
 
+#ifdef USE_CATALYST
 #include <vtkImageData.h>
 #include <vtkXMLImageDataReader.h>
+#endif  // USE_CATALYST
 
 #define ROOTFILE "bdmFile.root"
 
@@ -508,6 +510,8 @@ TEST(DiffusionTest, Convergence) {
   delete d_grid8;
 }
 
+#ifdef USE_CATALYST
+
 TEST(DiffusionTest, ModelInitializer) {
   auto set_param = [](auto* param) {
     Param::VisualizeDiffusion vd;
@@ -567,5 +571,7 @@ TEST(DiffusionTest, ModelInitializer) {
   EXPECT_NEAR(expected, conc->GetTuple(idx)[0], 1e-9);
   remove(filename.c_str());
 }
+
+#endif  // USE_CATALYST
 
 }  // namespace bdm

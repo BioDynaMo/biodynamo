@@ -620,23 +620,25 @@ template <typename TSimulation = Simulation<>>
 class CatalystAdaptor {
  public:
   explicit CatalystAdaptor(const std::string& script) {
-    auto* param = TSimulation::GetActive()->GetParam();
-    if (param->live_visualization_ || param->export_visualization_) {
-      Log::Fatal(
-          "CatalystAdaptor::Initialize",
-          "Simulation was compiled without ParaView support, but you are "
-          "trying to use it.");
-    }
+    // FIXME
+    // auto* param = TSimulation::GetActive()->GetParam();
+    // if (param->live_visualization_ || param->export_visualization_) {
+    //   Log::Fatal(
+    //       "CatalystAdaptor::Initialize",
+    //       "Simulation was compiled without ParaView support, but you are "
+    //       "trying to use it.");
+    // }
   }
 
   void Visualize(uint64_t, bool) {
-    auto* param = TSimulation::GetActive()->GetParam();
-    if (param->live_visualization_ || param->export_visualization_) {
-      Log::Fatal(
-          "CatalystAdaptor::Visualize",
-          "Simulation was compiled without ParaView support, but you are "
-          "trying to use it.");
-    }
+    // FIXME
+    // auto* param = TSimulation::GetActive()->GetParam();
+    // if (param->live_visualization_ || param->export_visualization_) {
+    //   Log::Fatal(
+    //       "CatalystAdaptor::Visualize",
+    //       "Simulation was compiled without ParaView support, but you are "
+    //       "trying to use it.");
+    // }
   }
 
  private:
