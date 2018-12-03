@@ -33,6 +33,7 @@ To do so, we will work only on the `Simulate` function of the tutorial.h file. I
 Simulation<> simulation(argc, argv);
 auto* rm = simulation.GetResourceManager(); // set up resource manager
 
+// FIXME
 auto* cells = rm->template Get<Cell>(); // create a structure to contain cells
 ```
 
@@ -46,6 +47,7 @@ auto* param = simulation.GetParam(); // set up param
   param->max_bound_ = 100; // cube of 100*100*100
   double x_coord, y_coord, z_coord;
 
+  // FIXME
   cells->reserve(nb_of_cells); // allocate the correct number of cell in our cells structure before cell creation
 ```
 
@@ -229,6 +231,7 @@ Don't forget to add this new object to your compile time parameters so BioDynaMo
 Each cell (implementing our new object `MyCell`) of the modelling is now able to have a value cell\_colour\_ that we will choose and use to display different colours!  
 In order to create cells with this attribute, we need to replace all Cell object by MyCell during cells creation (inside the `Simulate()` method). For example
 ``` C++
+  // FIXME
 //  auto* cells = rm->template Get<Cell>(); // previous structure containing Cell objects
   auto* cells = rm->template Get<MyCell>(); // new structure containing MyCell objects
 [...]
@@ -412,6 +415,7 @@ namespace bdm {
     size_t nb_of_cells = 2400;  // number of cells in the simulation
     double x_coord, y_coord, z_coord;
 
+    // FIXME
     // create a structure to contain cells
     auto* cells = rm->template Get<Cell>();
     // allocate the correct number of cell in our cells structure before

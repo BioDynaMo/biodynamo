@@ -65,7 +65,7 @@ inline int Simulate(int argc, const char** argv) {
     auto* rm = sim->GetResourceManager();
     auto&& cell = rm->New<Cell>(30);
     cell.AddBiologyModule(Divide());
-    rm->Get<Cell>()->Commit();
+    rm->Commit();
   }
 
   // For each simulation simulate 5 timesteps

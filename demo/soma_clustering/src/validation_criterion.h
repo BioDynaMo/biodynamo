@@ -29,9 +29,6 @@ static bool GetCriterion(double spatial_range, int target_n) {
   auto* rm = sim->GetResourceManager();
   auto* param = sim->GetParam();
 
-  auto my_cells = rm->template Get<MyCell>();
-  int n = my_cells->size();
-
   // number of cells that are close (i.e. within a distance of
   // spatial_range)
   int num_close = 0;
@@ -54,9 +51,10 @@ static bool GetCriterion(double spatial_range, int target_n) {
 
   // the locations of all cells within the subvolume are copied
   // to pos_sub_vol
+  rm->ApplyOnAllElements([&](auto&& so, const SoHandle&) {
   for (int i1 = 0; i1 < n; i1++) {
-    auto& pos = (*my_cells)[i1].GetPosition();
-    auto type = (*my_cells)[i1].GetCellType();
+    auto& pos = so.GetPosition();
+    auto type = so.GetCellType();
 
     if ((fabs(pos[0] - 0.5) < sub_vol_max) &&
         (fabs(pos[1] - 0.5) < sub_vol_max) &&
@@ -67,7 +65,7 @@ static bool GetCriterion(double spatial_range, int target_n) {
       types_sub_vol[num_cells_sub_vol] = type;
       num_cells_sub_vol++;
     }
-  }
+  });
 
   std::cout << "number of cells in subvolume: " << num_cells_sub_vol
             << std::endl;
