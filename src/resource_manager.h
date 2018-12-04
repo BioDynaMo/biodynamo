@@ -374,6 +374,16 @@ class ResourceManager {
         [](auto* container, uint16_t type_idx) { container->Commit(); });
   }
 
+  void Reserve(size_t capacity) {
+    ApplyOnAllTypes(
+        [=](auto* container, uint16_t type_idx) { container->reserve(capacity); });
+  }
+
+  template <typename TSo>
+  void Reserve(size_t capacity) {
+    Get<TSo>()->reserve(capacity);
+  }
+
   /// Remove elements from each type
   void Clear() {
     ApplyOnAllTypes(
