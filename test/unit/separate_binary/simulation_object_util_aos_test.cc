@@ -56,7 +56,8 @@ TEST(SimulationObjectUtilAosTest, GetSoPtr) {
 
   auto cells = rm->Get<Cell>();
   for (uint64_t i = 0; i < 10; i++) {
-    EXPECT_EQ(i, (*cells)[i].GetSoPtr().GetElementIdx());
+    SoPointer<Cell, Scalar> expected((*cells)[i].GetUid());
+    EXPECT_EQ(expected, (*cells)[i].GetSoPtr());
   }
 }
 

@@ -447,7 +447,8 @@ TEST(SimulationObjectUtilTest, GetSoPtr) {
 
   auto neurons = rm->Get<Neuron>();
   for (uint64_t i = 0; i < 10; i++) {
-    EXPECT_EQ(i, (*neurons)[i].GetSoPtr().GetElementIdx());
+    SoPointer<SoaNeuron, Soa> expected((*neurons)[i].GetUid());
+    EXPECT_EQ(expected, (*neurons)[i].GetSoPtr());
   }
 }
 

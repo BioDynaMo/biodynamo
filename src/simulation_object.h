@@ -376,6 +376,7 @@ class SimulationObjectExt
     return reinterpret_cast<TargetType &&>(*this);
   }
 
+  // FIXME remove
   /// Empty default implementation to update references of simulation objects
   /// that changed its memory position.
   /// @param update_info vector index = type_id, map stores (old_index ->
@@ -393,10 +394,10 @@ class SimulationObjectExt
   template <typename TReference>
   void UpdateReference(TReference *reference,
                        const std::unordered_map<uint32_t, uint32_t> &updates) {
-    auto search = updates.find(reference->GetElementIdx());
-    if (search != updates.end()) {
-      reference->SetElementIdx(search->second);
-    }
+    // auto search = updates.find(reference->GetElementIdx());
+    // if (search != updates.end()) {
+    //   reference->SetElementIdx(search->second);
+    // }
   }
 
   MostDerived<Backend> *operator->() {

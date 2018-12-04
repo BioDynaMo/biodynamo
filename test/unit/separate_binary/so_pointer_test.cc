@@ -19,43 +19,20 @@
 namespace bdm {
 namespace so_pointer_test_internal {
 
-TEST(SoPointerTest, Aos) {
-  TransactionalVector<SoPointerTestClass> sim_objects;
+TEST(SoPointerTest, Basics) {
+  Simulation<> simulation(TEST_NAME);
   SoPointerTestClass so(123);
-  sim_objects.push_back(so);
-  SoPointerTest<decltype(sim_objects), Scalar>(&sim_objects);
+  SoPointerTest<SoPointerTestClass, Soa>(so);
 }
 
-TEST(SoPointerTest, Soa) {
-  auto sim_objects = SoPointerTestClass::NewEmptySoa();
-  SoPointerTestClass so(123);
-  sim_objects.push_back(so);
-  SoPointerTest<decltype(sim_objects), Soa>(&sim_objects);
-}
-
-TEST_F(IOTest, SoPointerAnyContainer_Aos) {
+TEST_F(IOTest, SoPointer) {
   Simulation<> simulation(TEST_NAME);
-  IOTestSoPointerAnyContainerAos();
+  RunIOTest(&simulation);
 }
 
-TEST_F(IOTest, SoPointerAnyContainer_Soa) {
+TEST_F(IOTest, SoPointerNullptr) {
   Simulation<> simulation(TEST_NAME);
-  IOTestSoPointerAnyContainerSoa();
-}
-
-TEST_F(IOTest, SoPointerRmContainer_Soa) {
-  Simulation<> simulation(TEST_NAME);
-  IOTestSoPointerRmContainerSoa(&simulation);
-}
-
-TEST_F(IOTest, SoPointerNullptr_Aos) {
-  Simulation<> simulation(TEST_NAME);
-  IOTestSoPointerNullptrAos();
-}
-
-TEST_F(IOTest, SoPointerNullptr_Soa) {
-  Simulation<> simulation(TEST_NAME);
-  IOTestSoPointerNullptrSoa();
+  IOTestSoPointerNullptr();
 }
 
 }  // namespace so_pointer_test_internal

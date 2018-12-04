@@ -376,7 +376,7 @@ class ResourceManager {
 
   void Reserve(size_t capacity) {
     ApplyOnAllTypes(
-        [=](auto* container, uint16_t type_idx) { container->reserve(capacity); });
+        [&](auto* container, uint16_t type_idx) { container->reserve(capacity); });
   }
 
   template <typename TSo>
@@ -417,6 +417,8 @@ class ResourceManager {
     auto container = Get<TScalarSo>();
     auto idx =
         container->DelayedPushBack(TScalarSo(std::forward<Args>(args)...));
+    auto&& inserted = (*container)[idx];
+    so_storage_location_[inserted.GetUid()] = inserted.GetSoHandle();
     return (*container)[idx];
   }
 
@@ -427,6 +429,8 @@ class ResourceManager {
     auto container = Get<TScalarSo>();
     auto idx =
         container->DelayedPushBack(TScalarSo(std::forward<Args>(args)...));
+    auto&& inserted = (*container)[idx];
+    so_storage_location_[inserted.GetUid()] = inserted.GetSoHandle();
     return (*container)[idx];
   }
 

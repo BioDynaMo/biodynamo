@@ -2,7 +2,5 @@
   <selection>
     <class pattern="bdm::Variant<*>" noStreamer="true" />
     <class pattern="std::__1::vector<bdm::Variant<*>>" noStreamer="true" />
-    <class pattern="bdm::SoPointer<*>" noStreamer="true" />
-    <class pattern="std::__1::vector<bdm::SoPointer<*>>" noStreamer="true" />
   </selection>
 </lcgdict>

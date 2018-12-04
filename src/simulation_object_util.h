@@ -319,9 +319,7 @@ struct Capsule;
   /** NB: Cannot be used in a constructor, because `Base::element_idx_` has */ \
   /** not been set by the ResourceManager yet */                               \
   MostDerivedSoPtr GetSoPtr() {                                                \
-    auto* rm = Simulation_t::GetActive()->GetResourceManager();                \
-    auto* container = rm->template Get<MostDerivedScalar>();                   \
-    return MostDerivedSoPtr(container, Base::GetElementIdx());                 \
+    return MostDerivedSoPtr(Base::uid_[kIdx]);                 \
   }                                                                            \
                                                                                \
   void RemoveFromSimulation() {                                                \
