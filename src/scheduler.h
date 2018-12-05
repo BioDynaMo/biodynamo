@@ -20,7 +20,6 @@
 
 #include "biology_module_op.h"
 #include "bound_space_op.h"
-#include "commit_op.h"
 #include "diffusion_op.h"
 #include "displacement_op.h"
 #include "displacement_op_1.h"
@@ -112,7 +111,7 @@ class Scheduler {
         so.RunDiscretization();
       }
     });
-    CommitChangesAndUpdateReferences();
+    Timing::Time("commit", [&]() { rm->Commit(); });
     Timing::Time("diffusion", diffusion_);
   }
 
@@ -123,8 +122,6 @@ class Scheduler {
   CatalystAdaptor<>* visualization_ = nullptr;  //!
   bool is_gpu_environment_initialized_ = false;
 
-  OpTimer<CommitOp> commit_ = OpTimer<CommitOp>("commit");
-  // OpTimer<BiologyModuleOp> biology_ = OpTimer<BiologyModuleOp>("biology");
   OpTimer<DisplacementOp<TSimulation>> physics_ =
       OpTimer<DisplacementOp<TSimulation>>("physics");
   OpTimer<BoundSpace> bound_space_ = OpTimer<BoundSpace>("bound_space");
@@ -162,33 +159,16 @@ class Scheduler {
     return false;
   }
 
-  void CommitChangesAndUpdateReferences() {
-    auto* sim = TSimulation::GetActive();
-    auto* rm = sim->GetResourceManager();
-    commit_->Reset();
-    rm->ApplyOnAllTypesParallel(commit_);
-
-    const auto& update_info = commit_->GetUpdateInfo();
-    auto update_references = [&update_info](auto* sim_objects,
-                                            uint16_t type_idx) {
-#pragma omp parallel for
-      for (uint64_t i = 0; i < sim_objects->size(); i++) {
-        (*sim_objects)[i].UpdateReferences(update_info);
-      }
-    };
-    rm->ApplyOnAllTypes(update_references);
-  }
-
   // TODO(lukas, ahmad) After https://trello.com/c/0D6sHCK4 has been resolved
   // think about a better solution, because some operations are executed twice
   // if Simulate is called with one timestep.
   void Initialize() {
-    CommitChangesAndUpdateReferences();
-
     auto* sim = TSimulation::GetActive();
     auto* grid = sim->GetGrid();
     auto* rm = sim->GetResourceManager();
     auto* param = sim->GetParam();
+
+    rm->Commit();
 
     if (!is_gpu_environment_initialized_ && param->use_gpu_) {
       InitializeGPUEnvironment<>();

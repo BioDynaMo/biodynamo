@@ -370,8 +370,21 @@ class ResourceManager {
   // TODO remove
   /// Calls commit for each type container
   void Commit() {
-    ApplyOnAllTypes(
-        [](auto* container, uint16_t type_idx) { container->Commit(); });
+    ApplyOnAllTypes([this](auto* container, uint16_t type_idx) {
+      std::vector<std::pair<SoUid, uint32_t>> updates = container->Commit();
+      for(auto& el : updates) {
+        if(el.second == std::numeric_limits<uint32_t>::max()) {
+          // remove
+          auto it = this->so_storage_location_.find(el.first);
+          if (it != this->so_storage_location_.end()) {
+            this->so_storage_location_.erase(it);
+          }
+        } else {
+          // update
+          this->so_storage_location_[el.first] = SoHandle(type_idx, el.second);
+        }
+      }
+    });
   }
 
   void Reserve(size_t capacity) {

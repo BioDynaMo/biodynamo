@@ -71,22 +71,6 @@ BDM_SIM_OBJECT(NeuronSoma, Cell) {
     Base::EventHandler(event, daughter_2);
   }
 
-  /// Update references of simulation objects that changed its memory position.
-  /// @param update_info vector index = type_id, map stores (old_index ->
-  /// new_index)
-  void UpdateReferences(
-      const std::vector<std::unordered_map<uint32_t, uint32_t>>& update_info) {
-    // NeuronSoma only stores NeuriteElements
-    auto* rm = Simulation_t::GetActive()->GetResourceManager();
-    const int neurite_type_idx = rm->template GetTypeIndex<NeuriteElement>();
-    const auto& neurite_updates = update_info[neurite_type_idx];
-    for (auto& daugther : daughters_[kIdx]) {
-      // `this` required, because declaration in dependent base are not found
-      // by unqualified look-up.
-      this->UpdateReference(&daugther, neurite_updates);
-    }
-  }
-
   // ***************************************************************************
   //      METHODS FOR NEURON TREE STRUCTURE *
   // ***************************************************************************

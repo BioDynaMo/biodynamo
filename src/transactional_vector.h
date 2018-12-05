@@ -22,6 +22,8 @@
 #include <unordered_map>
 #include <vector>
 
+#include "sim_object/so_uid.h"
+
 namespace bdm {
 
 struct Scalar;
@@ -47,30 +49,31 @@ class TransactionalVector {
   /// This method shortens the path to the direct route from 9 -> 5.
   /// @param all_updates vector of pairs (old index, new index). \n
   ///        The pair stores (old index, new index).
-  static void ShortcutUpdatedIndices(
-      std::unordered_map<uint32_t, uint32_t>* all_updates) {
-    std::vector<uint32_t> delete_keys;
-    for (auto it = all_updates->begin(); it != all_updates->end(); ++it) {
-      uint32_t intermediate = it->second;
-
-      while (true) {
-        auto search = all_updates->find(intermediate);
-        if (search != all_updates->end()) {
-          intermediate = search->second;
-          delete_keys.push_back(search->first);
-        } else {
-          break;
-        }
-      }
-      // intermediate contains the final new index
-      (*all_updates)[it->first] = intermediate;
-    }
-
-    // delete all intermediate entries
-    for (auto key : delete_keys) {
-      all_updates->erase(all_updates->find(key));
-    }
-  }
+  // FIXME add this to the documentation of Commit
+  // static void ShortcutUpdatedIndices(
+  //     std::unordered_map<uint32_t, uint32_t>* all_updates) {
+  //   std::vector<uint32_t> delete_keys;
+  //   for (auto it = all_updates->begin(); it != all_updates->end(); ++it) {
+  //     uint32_t intermediate = it->second;
+  //
+  //     while (true) {
+  //       auto search = all_updates->find(intermediate);
+  //       if (search != all_updates->end()) {
+  //         intermediate = search->second;
+  //         delete_keys.push_back(search->first);
+  //       } else {
+  //         break;
+  //       }
+  //     }
+  //     // intermediate contains the final new index
+  //     (*all_updates)[it->first] = intermediate;
+  //   }
+  //
+  //   // delete all intermediate entries
+  //   for (auto key : delete_keys) {
+  //     all_updates->erase(all_updates->find(key));
+  //   }
+  // }
 
   TransactionalVector() {}
   TransactionalVector(const TransactionalVector&) = default;
@@ -111,6 +114,9 @@ class TransactionalVector {
     to_be_removed_.push_back(index);
   }
 
+  // FIXME update documentation
+  // There might be multiple reorderings - therefore, when
+  //
   /// This method commits changes made by `DelayedPushBack` and `DelayedRemove`.
   /// CAUTION: \n
   ///   * Commit invalidates pointers and references returned by
@@ -121,9 +127,12 @@ class TransactionalVector {
   /// removed is not the last element it is swapped with the last one.
   /// (CAUTION: this invalidates pointers and references to the last element)
   /// In the next step it can be removed in constant time using pop_back. \n
-  std::unordered_map<uint32_t, uint32_t> Commit() {
+  std::vector<std::pair<SoUid, uint32_t>> Commit() {
     std::lock_guard<std::recursive_mutex> lock(mutex_);
-    std::unordered_map<uint32_t, uint32_t> updated_indices;
+
+    std::vector<std::pair<SoUid, uint32_t>> new_storage_location;
+    new_storage_location.reserve(to_be_removed_.size());
+
     // commit delayed push backs
     size_ = data_.size();
     // commit delayed removes
@@ -135,20 +144,22 @@ class TransactionalVector {
       if (idx < data_.size() - 1) {  // idx does not point to last element
         // invalidates pointer of last element
         uint32_t old_index = data_.size() - 1;
+        new_storage_location.push_back({data_[idx].GetUid(), std::numeric_limits<uint32_t>::max()});
+        new_storage_location.push_back({data_[old_index].GetUid(), idx});
+
         std::swap(data_[idx], data_[old_index]);
         data_[idx].SetElementIdx(idx);
         data_.pop_back();
-        updated_indices[old_index] = idx;
       } else {  // idx points to last element
+        uint32_t idx = data_.size() - 1;
+        new_storage_location.push_back({data_[idx].GetUid(), std::numeric_limits<uint32_t>::max()});
         data_.pop_back();
       }
       size_--;
     }
     to_be_removed_.clear();
 
-    ShortcutUpdatedIndices(&updated_indices);
-
-    return updated_indices;
+    return new_storage_location;
   }
 
   /// Thread safe version of `std::vector::push_back`.

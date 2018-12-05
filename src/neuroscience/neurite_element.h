@@ -411,29 +411,6 @@ BDM_SIM_OBJECT(NeuriteElement, SimulationObject) {
     }
   }
 
-  /// Update references of simulation objects that changed its memory position.
-  /// @param update_info vector index = type_id, map stores (old_index ->
-  /// new_index)
-  void UpdateReferences(
-      const std::vector<std::unordered_map<uint32_t, uint32_t>>& update_info) {
-    auto* rm = Simulation_t::GetActive()->GetResourceManager();
-
-    int neurite_type_idx = rm->template GetTypeIndex<MostDerivedScalar>();
-    const auto& neurite_updates = update_info[neurite_type_idx];
-
-    this->UpdateReference(&daughter_right_[kIdx], neurite_updates);
-    this->UpdateReference(&daughter_left_[kIdx], neurite_updates);
-    if (mother_[kIdx].IsNeuriteElement()) {
-      this->UpdateReference(&(mother_[kIdx].GetNeuriteElementSoPtr()),
-                            neurite_updates);
-    } else if (mother_[kIdx].IsNeuronSoma()) {
-      const int neuron_type_idx = rm->template GetTypeIndex<NeuronSoma>();
-      const auto& neuron_updates = update_info[neuron_type_idx];
-      this->UpdateReference(&(mother_[kIdx].GetNeuronSomaSoPtr()),
-                            neuron_updates);
-    }
-  }
-
   void SetDiameter(double diameter) {
     diameter_[kIdx] = diameter;
     UpdateVolume();

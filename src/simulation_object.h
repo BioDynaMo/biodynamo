@@ -142,6 +142,7 @@ class SoaSimulationObject {
     to_be_removed_.clear();
   }
 
+// FIXME update documentation
   /// This method commits changes made by `DelayedPushBack` and `DelayedRemove`.
   /// CAUTION: \n
   ///   * Commit invalidates pointers and references returned by
@@ -152,9 +153,12 @@ class SoaSimulationObject {
   /// removed is not the last element it is swapped with the last one.
   /// (CAUTION: this invalidates pointers and references to the last element)
   /// In the next step it can be removed in constant time using pop_back. \n
-  std::unordered_map<uint32_t, uint32_t> Commit() {
+  std::vector<std::pair<SoUid, uint32_t>> Commit() {
     std::lock_guard<std::recursive_mutex> lock(mutex_);
-    std::unordered_map<uint32_t, uint32_t> updated_indices;
+
+    std::vector<std::pair<SoUid, uint32_t>> new_storage_location;
+    new_storage_location.reserve(to_be_removed_.size());
+
     // commit delayed push backs
     size_ = total_size_;
     // commit delayed removes
@@ -164,20 +168,20 @@ class SoaSimulationObject {
     for (size_t idx : to_be_removed_) {
       assert(idx < size_ && "Removed index outside array boundaries");
       if (idx < size_ - 1) {
+        // FIXME
+        // new_storage_location.push_back({data_[idx].GetUid(), std::numeric_limits<uint32_t>::max()});
+        // new_storage_location.push_back({data_[size_ - 1].GetUid(), idx});
         SwapAndPopBack(idx, size_);
-        updated_indices[size_ - 1] = idx;
       } else {
+        // new_storage_location.push_back({data_[size_ - 1].GetUid(), std::numeric_limits<uint32_t>::max()});
         PopBack();
       }
       size_--;
     }
     to_be_removed_.clear();
 
-    // use implementation from TransactionalVector to avoid code duplication
-    TransactionalVector<int>::ShortcutUpdatedIndices(&updated_indices);
-
     total_size_ = size_;
-    return updated_indices;
+    return new_storage_location;
   }
 
   /// Equivalent to std::vector<> reserve - it increases the capacity
@@ -374,30 +378,6 @@ class SimulationObjectExt
   constexpr auto &&ReinterpretCast(const TSo *object) {
     using TargetType = typename TSo::template Self<Backend>;
     return reinterpret_cast<TargetType &&>(*this);
-  }
-
-  // FIXME remove
-  /// Empty default implementation to update references of simulation objects
-  /// that changed its memory position.
-  /// @param update_info vector index = type_id, map stores (old_index ->
-  /// new_index)
-  void UpdateReferences(
-      const std::vector<std::unordered_map<uint32_t, uint32_t>> &update_info) {}
-
-  /// Implementation to update a single reference if `reference.GetElementIdx()`
-  /// is a key in `updates`.
-  /// @tparam TReference type of the reference. Must have a `GetElementIdx` and
-  ///         `SetElementIdx` method.
-  /// @param reference reference whos `element_idx` will be updated
-  /// @param updates map that contains the update information
-  ///        (old_index -> new_index) for a specific simulation object type
-  template <typename TReference>
-  void UpdateReference(TReference *reference,
-                       const std::unordered_map<uint32_t, uint32_t> &updates) {
-    // auto search = updates.find(reference->GetElementIdx());
-    // if (search != updates.end()) {
-    //   reference->SetElementIdx(search->second);
-    // }
   }
 
   MostDerived<Backend> *operator->() {
