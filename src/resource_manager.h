@@ -372,18 +372,18 @@ class ResourceManager {
   void Commit() {
     ApplyOnAllTypes([this](auto* container, uint16_t type_idx) {
       std::vector<std::pair<SoUid, uint32_t>> updates = container->Commit();
-      for(auto& el : updates) {
-        if(el.second == std::numeric_limits<uint32_t>::max()) {
-          // remove
-          auto it = this->so_storage_location_.find(el.first);
-          if (it != this->so_storage_location_.end()) {
-            this->so_storage_location_.erase(it);
-          }
-        } else {
-          // update
-          this->so_storage_location_[el.first] = SoHandle(type_idx, el.second);
-        }
-      }
+      // for(auto& el : updates) {
+      //   if(el.second == std::numeric_limits<uint32_t>::max()) {
+      //     // remove
+      //     auto it = this->so_storage_location_.find(el.first);
+      //     if (it != this->so_storage_location_.end()) {
+      //       this->so_storage_location_.erase(it);
+      //     }
+      //   } else {
+      //     // update
+      //     this->so_storage_location_[el.first] = SoHandle(type_idx, el.second);
+      //   }
+      // }
     });
   }
 
@@ -410,6 +410,33 @@ class ResourceManager {
     container->push_back(so);
     auto&& inserted = (*container)[container->size() - 1];
     so_storage_location_[inserted.GetUid()] = inserted.GetSoHandle();
+  }
+
+  // TODO documentation + test
+  void Remove(SoUid uid) {
+    // remove from map
+    auto it = this->so_storage_location_.find(uid);
+    if (it != this->so_storage_location_.end()) {
+      SoHandle soh = it->second;
+      auto type_idx = soh.GetTypeIdx();
+
+      ::bdm::Apply(&data_, type_idx, [&, this](auto* container) {
+          auto element_idx = soh.GetElementIdx();
+          auto last = container->size() - 1;
+          if(element_idx == last) {
+            container->pop_back();
+          } else {
+            (*container)[element_idx] = (*container)[last];
+            (*container)[element_idx].SetElementIdx(element_idx);
+            container->pop_back();
+            SoUid changed_uid = (*container)[element_idx].GetUid();
+            this->so_storage_location_[changed_uid] = SoHandle(type_idx, element_idx);
+          }
+      });
+      so_storage_location_.erase(it);
+
+    }
+
   }
 
 #ifdef USE_OPENCL

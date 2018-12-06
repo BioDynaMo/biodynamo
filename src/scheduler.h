@@ -87,6 +87,12 @@ class Scheduler {
     auto* grid = sim->GetGrid();
     auto* param = sim->GetParam();
 
+    Timing::Time("Set up exec context", [&]() {
+      for(auto* ctxt : sim->GetAllExecCtxts()) {
+        ctxt->SetupIteration();
+      }
+    });
+
     Timing::Time("visualize", [&]() {
       visualization_->Visualize(total_steps_, last_iteration);
     });
@@ -111,7 +117,12 @@ class Scheduler {
         so.RunDiscretization();
       }
     });
-    Timing::Time("commit", [&]() { rm->Commit(); });
+
+    Timing::Time("Tear down exec context", [&]() {
+      for(auto* ctxt : sim->GetAllExecCtxts()) {
+        ctxt->TearDownIteration();
+      }
+    });
     Timing::Time("diffusion", diffusion_);
   }
 

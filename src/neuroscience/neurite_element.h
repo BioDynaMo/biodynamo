@@ -513,7 +513,7 @@ BDM_SIM_OBJECT(NeuriteElement, SimulationObject) {
       UpdateVolume();  // and update concentration of internal stuff.
     } else if (mother_[kIdx].IsNeuronSoma()) {
       mother_[kIdx].RemoveDaughter(GetSoPtr());
-      RemoveFromSimulation();
+      this->RemoveFromSimulation();
     } else if (mother_[kIdx].IsNeuriteElement() &&
                mother_[kIdx].GetDaughterRight() == nullptr) {
       // if actual_length_ < length and mother is a neurite element with no
@@ -524,7 +524,7 @@ BDM_SIM_OBJECT(NeuriteElement, SimulationObject) {
       // if mother is neurite element with other daughter or is not a neurite
       // segment: disappear.
       mother_[kIdx].RemoveDaughter(GetSoPtr());
-      RemoveFromSimulation();
+      this->RemoveFromSimulation();
 
       mother_[kIdx].UpdateDependentPhysicalVariables();
     }

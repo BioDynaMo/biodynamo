@@ -29,6 +29,7 @@ class Grid;
 template <typename>
 class Scheduler;
 struct Param;
+class ApproximateExecCtxt;
 
 struct Soa;
 template <typename TBackend = Soa>
@@ -90,6 +91,12 @@ struct Simulation {
   /// Returns a thread local random number generator
   Random* GetRandom();
 
+  // TODO documentation
+  ApproximateExecCtxt* GetExecCtxt();
+
+  // TODO documentation
+  std::vector<ApproximateExecCtxt*>& GetAllExecCtxts();
+
   /// @see `unique_name_`
   const std::string& GetUniqueName() const;
 
@@ -110,6 +117,9 @@ struct Simulation {
 
   /// random number generator for each thread
   std::vector<Random*> random_;
+
+  /// Execution Context for each thread
+  std::vector<ApproximateExecCtxt*> exec_ctxt_;  //!
 
   ResourceManager<TCTParam>* rm_ = nullptr;
   Param_t* param_ = nullptr;

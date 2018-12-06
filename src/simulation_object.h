@@ -62,7 +62,7 @@ class SoaSimulationObject {
       SoaSimulationObject<typename TCompileTimeParam::template Self<TBackend>,
                           TDerived>;
 
-  SoaSimulationObject() : to_be_removed_(), total_size_(1), size_(1) {}
+  SoaSimulationObject() : total_size_(1), size_(1) {}
 
   /// Detect failing return value optimization (RVO)
   /// Copy-ctor declaration to please compiler, but missing implementation.
@@ -80,7 +80,6 @@ class SoaSimulationObject {
   SoaSimulationObject(T *other, size_t idx)
       : kIdx(idx),
         mutex_(other->mutex_),
-        to_be_removed_(other->to_be_removed_),
         total_size_(other->total_size_),
         size_(other->size_) {}
 
@@ -88,7 +87,13 @@ class SoaSimulationObject {
 
   SoaSimulationObject &operator=(SoaSimulationObject &&other) {
     // mutex_ = std::move(other.mutex_);
-    to_be_removed_ = std::move(other.to_be_removed_);
+    total_size_ = other.total_size_;
+    size_ = other.size_;
+    return *this;
+  }
+
+  SoaSimulationObject &operator=(const SoaSimulationObject& other) {
+    // mutex_ = std::move(other.mutex_);
     total_size_ = other.total_size_;
     size_ = other.size_;
     return *this;
@@ -101,6 +106,8 @@ class SoaSimulationObject {
   }
 
   uint32_t GetElementIdx() const { return kIdx; }
+
+  void SetElementIdx(uint32_t element_idx) {}
 
   /// Returns the vector's size. Uncommited changes are not taken into account
   size_t size() const {  // NOLINT
@@ -124,14 +131,9 @@ class SoaSimulationObject {
     }
   }
 
-  /// Safe method to remove an element from this vector
-  /// Does not invalidate, iterators, pointers or references.
-  /// Changes do not take effect until they are commited.
-  /// Upon commit removal has constant complexity @see Commit
-  /// @param index remove element at the given index
-  void DelayedRemove(size_t index) {
+  void pop_back() {  // NOLINT
     std::lock_guard<std::recursive_mutex> lock(mutex_);
-    to_be_removed_.push_back(index);
+    PopBack();
   }
 
   /// Equivalent to std::vector<> clear - it removes all elements from all
@@ -139,9 +141,9 @@ class SoaSimulationObject {
   void clear() {  // NOLINT
     total_size_ = 0;
     size_ = 0;
-    to_be_removed_.clear();
   }
 
+  // FIXME remove
 // FIXME update documentation
   /// This method commits changes made by `DelayedPushBack` and `DelayedRemove`.
   /// CAUTION: \n
@@ -157,30 +159,30 @@ class SoaSimulationObject {
     std::lock_guard<std::recursive_mutex> lock(mutex_);
 
     std::vector<std::pair<SoUid, uint32_t>> new_storage_location;
-    new_storage_location.reserve(to_be_removed_.size());
+    // new_storage_location.reserve(to_be_removed_.size());
 
     // commit delayed push backs
     size_ = total_size_;
-    // commit delayed removes
-    // sort indices in descending order to prevent out of bounds accesses
-    auto descending = [](auto a, auto b) { return a > b; };
-    std::sort(to_be_removed_.begin(), to_be_removed_.end(), descending);
-    for (size_t idx : to_be_removed_) {
-      assert(idx < size_ && "Removed index outside array boundaries");
-      if (idx < size_ - 1) {
-        // FIXME
-        // new_storage_location.push_back({data_[idx].GetUid(), std::numeric_limits<uint32_t>::max()});
-        // new_storage_location.push_back({data_[size_ - 1].GetUid(), idx});
-        SwapAndPopBack(idx, size_);
-      } else {
-        // new_storage_location.push_back({data_[size_ - 1].GetUid(), std::numeric_limits<uint32_t>::max()});
-        PopBack();
-      }
-      size_--;
-    }
-    to_be_removed_.clear();
-
-    total_size_ = size_;
+    // // commit delayed removes
+    // // sort indices in descending order to prevent out of bounds accesses
+    // auto descending = [](auto a, auto b) { return a > b; };
+    // std::sort(to_be_removed_.begin(), to_be_removed_.end(), descending);
+    // for (size_t idx : to_be_removed_) {
+    //   assert(idx < size_ && "Removed index outside array boundaries");
+    //   if (idx < size_ - 1) {
+    //     // FIXME
+    //     // new_storage_location.push_back({data_[idx].GetUid(), std::numeric_limits<uint32_t>::max()});
+    //     // new_storage_location.push_back({data_[size_ - 1].GetUid(), idx});
+    //     SwapAndPopBack(idx, size_);
+    //   } else {
+    //     // new_storage_location.push_back({data_[size_ - 1].GetUid(), std::numeric_limits<uint32_t>::max()});
+    //     PopBack();
+    //   }
+    //   size_--;
+    // }
+    // to_be_removed_.clear();
+    //
+    // total_size_ = size_;
     return new_storage_location;
   }
 
@@ -216,13 +218,6 @@ class SoaSimulationObject {
                                  std::recursive_mutex &,
                                  std::recursive_mutex>::type mutex_;  //!
 
-  /// vector of indices with elements which should be removed
-  /// to_be_removed_ is of type vector<size_t>& if Backend == SoaRef;
-  /// otherwise vector<size_t>
-  typename type_ternary_operator<is_same<Backend, SoaRef>::value,
-                                 std::vector<size_t> &,
-                                 std::vector<size_t>>::type to_be_removed_;
-
   /// Append a scalar element
   virtual void PushBackImpl(const MostDerived<Scalar> &other) { total_size_++; }
 
@@ -233,12 +228,12 @@ class SoaSimulationObject {
   virtual void SwapAndPopBack(size_t index, size_t size) {}
 
   /// Remove last element
-  virtual void PopBack() {}
+  virtual void PopBack() {
+    size_--;
+    total_size_--;
+  }
 
  private:
-  /// vector of indices with elements which should be removed
-  /// to_be_removed_ is of type vector<size_t>& if Backend == SoaRef;
-  /// otherwise vector<size_t>
   typename type_ternary_operator<is_same<Backend, SoaRef>::value, size_t &,
                                  size_t>::type total_size_ = 0;
 
@@ -443,6 +438,10 @@ class SimulationObjectExt
 
   /// Return all biology modules
   const auto &GetAllBiologyModules() const { return biology_modules_[kIdx]; }
+
+  void RemoveFromSimulation() const {
+    Simulation_t::GetActive()->GetExecCtxt()->RemoveFromSimulation(uid_[kIdx]);
+  }
 
   template <typename TEvent, typename TOther>
   void EventHandler(const TEvent &event, TOther *other) {

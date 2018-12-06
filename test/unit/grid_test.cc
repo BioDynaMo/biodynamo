@@ -21,16 +21,16 @@
 
 namespace bdm {
 
-template <typename TContainer>
-void CellFactory(TContainer* cells, size_t cells_per_dim) {
+template <typename TRm>
+void CellFactory(TRm* rm, size_t cells_per_dim) {
   const double space = 20;
-  cells->reserve(cells_per_dim * cells_per_dim * cells_per_dim);
+  rm->Reserve(cells_per_dim * cells_per_dim * cells_per_dim);
   for (size_t i = 0; i < cells_per_dim; i++) {
     for (size_t j = 0; j < cells_per_dim; j++) {
       for (size_t k = 0; k < cells_per_dim; k++) {
         Cell cell({k * space, j * space, i * space});
         cell.SetDiameter(30);
-        cells->push_back(cell);
+        rm->push_back(cell);
       }
     }
   }
@@ -41,26 +41,24 @@ TEST(GridTest, SetupGrid) {
   auto* rm = simulation.GetResourceManager();
   auto* grid = simulation.GetGrid();
 
-  auto cells = rm->Get<Cell>();
-  CellFactory(cells, 4);
+  CellFactory(rm, 4);
 
   grid->Initialize();
 
-  std::vector<std::vector<SoHandle>> neighbors(cells->size());
+  std::vector<std::vector<SoHandle>> neighbors(rm->GetNumSimObjects());
 
-// Lambda that fills a vector of neighbors for each cell (excluding itself)
-#pragma omp parallel for
-  for (size_t i = 0; i < cells->size(); i++) {
-    auto&& cell = (*cells)[i];
+  // Lambda that fills a vector of neighbors for each cell (excluding itself)
+  rm->ApplyOnAllElements([&](auto&& cell, SoHandle cell_handle) {
+    auto el_idx = cell_handle.GetElementIdx();
     auto fill_neighbor_list = [&](auto&& neighbor, SoHandle handle) {
-      if (i != handle.GetElementIdx()) {
-        neighbors[i].push_back(handle);
+      if (el_idx != handle.GetElementIdx()) {
+        neighbors[el_idx].push_back(handle);
       }
     };
 
-    grid->ForEachNeighborWithinRadius(fill_neighbor_list, cell, SoHandle(0, i),
+    grid->ForEachNeighborWithinRadius(fill_neighbor_list, cell, cell_handle,
                                       1201);
-  }
+  });
 
   std::vector<SoHandle> expected_0 = {
       SoHandle(0, 1),  SoHandle(0, 4),  SoHandle(0, 5), SoHandle(0, 16),
@@ -92,28 +90,27 @@ TEST(GridTest, SetupGrid) {
   EXPECT_EQ(expected_63, neighbors[63]);
 }
 
-template <typename TContainer>
-void RunUpdateGridTest(TContainer* cells, Simulation<>* simulation) {
+void RunUpdateGridTest(Simulation<>* simulation) {
+  auto* rm = simulation->GetResourceManager();
   auto* grid = simulation->GetGrid();
 
   // Update the grid
   grid->UpdateGrid();
 
-  std::vector<std::vector<SoHandle>> neighbors(cells->size());
+  std::vector<std::vector<SoHandle>> neighbors(rm->GetNumSimObjects());
 
-// Lambda that fills a vector of neighbors for each cell (excluding itself)
-#pragma omp parallel for
-  for (size_t i = 0; i < cells->size(); i++) {
-    auto&& cell = (*cells)[i];
+  // Lambda that fills a vector of neighbors for each cell (excluding itself)
+  rm->ApplyOnAllElements([&](auto&& cell, SoHandle cell_handle) {
+    auto el_idx = cell_handle.GetElementIdx();
     auto fill_neighbor_list = [&](auto&& neighbor, SoHandle handle) {
-      if (i != handle.GetElementIdx()) {
-        neighbors[i].push_back(handle);
+      if (el_idx != handle.GetElementIdx()) {
+        neighbors[el_idx].push_back(handle);
       }
     };
 
-    grid->ForEachNeighborWithinRadius(fill_neighbor_list, cell, SoHandle(0, i),
+    grid->ForEachNeighborWithinRadius(fill_neighbor_list, cell, cell_handle,
                                       1201);
-  }
+  });
 
   std::vector<SoHandle> expected_0 = {SoHandle(0, 4),  SoHandle(0, 5),
                                       SoHandle(0, 16), SoHandle(0, 17),
@@ -124,15 +121,15 @@ void RunUpdateGridTest(TContainer* cells, Simulation<>* simulation) {
       SoHandle(0, 17), SoHandle(0, 18), SoHandle(0, 20), SoHandle(0, 21),
       SoHandle(0, 22), SoHandle(0, 24), SoHandle(0, 25), SoHandle(0, 26)};
   std::vector<SoHandle> expected_41 = {
-      SoHandle(0, 1),  SoHandle(0, 20), SoHandle(0, 21), SoHandle(0, 22),
-      SoHandle(0, 24), SoHandle(0, 25), SoHandle(0, 26), SoHandle(0, 28),
-      SoHandle(0, 29), SoHandle(0, 30), SoHandle(0, 36), SoHandle(0, 37),
-      SoHandle(0, 38), SoHandle(0, 40), SoHandle(0, 44), SoHandle(0, 45),
+      SoHandle(0, 20), SoHandle(0, 21), SoHandle(0, 22), SoHandle(0, 24),
+      SoHandle(0, 25), SoHandle(0, 26), SoHandle(0, 28), SoHandle(0, 29),
+      SoHandle(0, 30), SoHandle(0, 36), SoHandle(0, 37), SoHandle(0, 38),
+      SoHandle(0, 40), SoHandle(0, 42), SoHandle(0, 44), SoHandle(0, 45),
       SoHandle(0, 46), SoHandle(0, 52), SoHandle(0, 53), SoHandle(0, 54),
       SoHandle(0, 56), SoHandle(0, 57), SoHandle(0, 58), SoHandle(0, 60),
       SoHandle(0, 61)};
   std::vector<SoHandle> expected_61 = {
-      SoHandle(0, 1),  SoHandle(0, 40), SoHandle(0, 41), SoHandle(0, 44),
+      SoHandle(0, 40), SoHandle(0, 41), SoHandle(0, 42), SoHandle(0, 44),
       SoHandle(0, 45), SoHandle(0, 46), SoHandle(0, 56), SoHandle(0, 57),
       SoHandle(0, 58), SoHandle(0, 60)};
 
@@ -152,19 +149,19 @@ TEST(GridTest, UpdateGrid) {
   auto* rm = simulation.GetResourceManager();
   auto* grid = simulation.GetGrid();
 
-  auto cells = rm->Get<Cell>();
-  CellFactory(cells, 4);
+  CellFactory(rm, 4);
 
   grid->Initialize();
 
   // Remove cells 1 and 42 (they are swapped with the last two cells)
-  cells->DelayedRemove(1);
-  cells->DelayedRemove(42);
-  cells->Commit();
+  auto uid1 = rm->GetSimObject<Cell>(SoHandle(0, 1)).GetUid();
+  auto uid42 = rm->GetSimObject<Cell>(SoHandle(0, 42)).GetUid();
+  rm->Remove(uid1);
+  rm->Remove(uid42);
 
-  EXPECT_EQ(62u, cells->size());
+  EXPECT_EQ(62u, rm->GetNumSimObjects());
 
-  RunUpdateGridTest(cells, &simulation);
+  RunUpdateGridTest(&simulation);
 }
 
 TEST(GridTest, NoRaceConditionDuringUpdate) {
@@ -172,23 +169,23 @@ TEST(GridTest, NoRaceConditionDuringUpdate) {
   auto* rm = simulation.GetResourceManager();
   auto* grid = simulation.GetGrid();
 
-  auto cells = rm->Get<Cell>();
-  CellFactory(cells, 4);
+  CellFactory(rm, 4);
 
   // make sure that there are multiple cells per box
-  (*cells)[0].SetDiameter(60);
+  rm->GetSimObject<Cell>(SoHandle(0, 0)).SetDiameter(60);
 
   grid->Initialize();
 
   // Remove cells 1 and 42 (they are swapped with the last two cells)
-  cells->DelayedRemove(1);
-  cells->DelayedRemove(42);
-  cells->Commit();
+  auto uid1 = rm->GetSimObject<Cell>(SoHandle(0, 1)).GetUid();
+  auto uid42 = rm->GetSimObject<Cell>(SoHandle(0, 42)).GetUid();
+  rm->Remove(uid1);
+  rm->Remove(uid42);
 
   // run 100 times to increase possibility of race condition due to different
   // scheduling of threads
   for (uint16_t i = 0; i < 100; i++) {
-    RunUpdateGridTest(cells, &simulation);
+    RunUpdateGridTest(&simulation);
   }
 }
 
@@ -197,8 +194,7 @@ TEST(GridTest, GetBoxIndex) {
   auto* rm = simulation.GetResourceManager();
   auto* grid = simulation.GetGrid();
 
-  auto cells = rm->Get<Cell>();
-  CellFactory(cells, 3);
+  CellFactory(rm, 3);
 
   grid->Initialize();
 
@@ -224,8 +220,7 @@ TEST(GridTest, GridDimensions) {
   auto* rm = simulation.GetResourceManager();
   auto* grid = simulation.GetGrid();
 
-  auto cells = rm->Get<Cell>();
-  CellFactory(cells, 3);
+  CellFactory(rm, 3);
 
   grid->Initialize();
 
@@ -234,7 +229,7 @@ TEST(GridTest, GridDimensions) {
 
   EXPECT_EQ(expected_dim_0, dim_0);
 
-  ((*cells)[0]).SetPosition({{100, 0, 0}});
+  rm->GetSimObject<Cell>(SoHandle(0, 0)).SetPosition({{100, 0, 0}});
   grid->UpdateGrid();
   std::array<int32_t, 6> expected_dim_1 = {{-30, 150, -30, 90, -30, 90}};
   auto& dim_1 = grid->GetDimensions();
@@ -247,8 +242,7 @@ TEST(GridTest, GetBoxCoordinates) {
   auto* rm = simulation.GetResourceManager();
   auto* grid = simulation.GetGrid();
 
-  auto cells = rm->Get<Cell>();
-  CellFactory(cells, 3);
+  CellFactory(rm, 3);
 
   // expecting a 4 * 4 * 4 grid
   grid->Initialize();
@@ -263,13 +257,12 @@ void RunNoRaceConditionForEachPairTest() {
   auto* rm = simulation.GetResourceManager();
   auto* grid = simulation.GetGrid();
 
-  auto cells = rm->Get<Cell>();
-  CellFactory(cells, 3);
+  CellFactory(rm, 3);
 
   // expecting a 4 * 4 * 4 grid
   grid->Initialize();
 
-  std::vector<int> result(cells->size());
+  std::vector<int> result(rm->GetNumSimObjects());
 
   auto lambda = [&](auto&& lhs, SoHandle lhs_id, auto&& rhs, SoHandle rhs_id) {
     result[lhs_id.GetElementIdx()]++;
@@ -325,8 +318,7 @@ TEST(GridTest, NonEmptyBoundedTestThresholdDimensions) {
   auto* rm = simulation.GetResourceManager();
   auto* grid = simulation.GetGrid();
 
-  rm->New<Cell>(10);
-  rm->Get<Cell>()->Commit();
+  rm->push_back(Cell(10));
 
   grid->Initialize();
 

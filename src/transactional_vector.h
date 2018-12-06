@@ -81,7 +81,6 @@ class TransactionalVector {
   TransactionalVector& operator=(TransactionalVector&& other) {
     data_ = std::move(other.data_);
     size_ = other.size_;
-    to_be_removed_ = std::move(other.to_be_removed_);
     return *this;
   }
 
@@ -104,16 +103,6 @@ class TransactionalVector {
     return idx;
   }
 
-  /// Safe method to remove an element from this vector
-  /// Does not invalidate, iterators, pointers or references.
-  /// Changes do not take effect until they are commited.
-  /// Upon commit removal has constant complexity @see Commit
-  /// @param index remove element at the given index
-  void DelayedRemove(size_t index) {
-    std::lock_guard<std::recursive_mutex> lock(mutex_);
-    to_be_removed_.push_back(index);
-  }
-
   // FIXME update documentation
   // There might be multiple reorderings - therefore, when
   //
@@ -131,33 +120,33 @@ class TransactionalVector {
     std::lock_guard<std::recursive_mutex> lock(mutex_);
 
     std::vector<std::pair<SoUid, uint32_t>> new_storage_location;
-    new_storage_location.reserve(to_be_removed_.size());
-
+    // new_storage_location.reserve(to_be_removed_.size());
+    
     // commit delayed push backs
     size_ = data_.size();
-    // commit delayed removes
-    // sort indices in descending order to prevent out of bounds accesses
-    auto descending = [](auto a, auto b) { return a > b; };
-    std::sort(to_be_removed_.begin(), to_be_removed_.end(), descending);
-    for (size_t idx : to_be_removed_) {
-      assert(idx < data_.size() && "Removed index outside array boundaries");
-      if (idx < data_.size() - 1) {  // idx does not point to last element
-        // invalidates pointer of last element
-        uint32_t old_index = data_.size() - 1;
-        new_storage_location.push_back({data_[idx].GetUid(), std::numeric_limits<uint32_t>::max()});
-        new_storage_location.push_back({data_[old_index].GetUid(), idx});
-
-        std::swap(data_[idx], data_[old_index]);
-        data_[idx].SetElementIdx(idx);
-        data_.pop_back();
-      } else {  // idx points to last element
-        uint32_t idx = data_.size() - 1;
-        new_storage_location.push_back({data_[idx].GetUid(), std::numeric_limits<uint32_t>::max()});
-        data_.pop_back();
-      }
-      size_--;
-    }
-    to_be_removed_.clear();
+    // // commit delayed removes
+    // // sort indices in descending order to prevent out of bounds accesses
+    // auto descending = [](auto a, auto b) { return a > b; };
+    // std::sort(to_be_removed_.begin(), to_be_removed_.end(), descending);
+    // for (size_t idx : to_be_removed_) {
+    //   assert(idx < data_.size() && "Removed index outside array boundaries");
+    //   if (idx < data_.size() - 1) {  // idx does not point to last element
+    //     // invalidates pointer of last element
+    //     uint32_t old_index = data_.size() - 1;
+    //     new_storage_location.push_back({data_[idx].GetUid(), std::numeric_limits<uint32_t>::max()});
+    //     new_storage_location.push_back({data_[old_index].GetUid(), idx});
+    //
+    //     std::swap(data_[idx], data_[old_index]);
+    //     data_[idx].SetElementIdx(idx);
+    //     data_.pop_back();
+    //   } else {  // idx points to last element
+    //     uint32_t idx = data_.size() - 1;
+    //     new_storage_location.push_back({data_[idx].GetUid(), std::numeric_limits<uint32_t>::max()});
+    //     data_.pop_back();
+    //   }
+    //   size_--;
+    // }
+    // to_be_removed_.clear();
 
     return new_storage_location;
   }
@@ -177,6 +166,17 @@ class TransactionalVector {
     }
   }
 
+  // TODO documentation
+  void pop_back() {  // NOLINT
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
+    if (size_ > 0) {
+      data_.pop_back();
+      size_--;
+    } else {
+      throw std::logic_error("This container is empty.");
+    }
+  }
+
   /// Thread safe version of std::vector::reserve
   void reserve(size_t new_capacity) {  // NOLINT
     std::lock_guard<std::recursive_mutex> lock(mutex_);
@@ -187,7 +187,6 @@ class TransactionalVector {
   void clear() {  // NOLINT
     std::lock_guard<std::recursive_mutex> lock(mutex_);
     data_.clear();
-    to_be_removed_.clear();
     size_ = 0;
   }
 
@@ -207,8 +206,6 @@ class TransactionalVector {
   std::recursive_mutex mutex_;  //!
   std::vector<T> data_;
   uint64_t size_ = 0;
-  /// vector of indices with elements which should be removed
-  std::vector<size_t> to_be_removed_;
 };
 
 }  // namespace bdm

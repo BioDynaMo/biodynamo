@@ -57,7 +57,8 @@ TEST(SimulationObjectUtilTest, ContainerFunctionality) {
   EXPECT_EQ(3, vector[2].GetDm1());
   EXPECT_EQ(3.0, vector[2].GetDm2());
 
-  vector.DelayedRemove(0);
+  // FIXME
+  // vector.DelayedRemove(0);
 
   // changes have not been commited yet
   EXPECT_EQ(3u, vector.size());
@@ -77,8 +78,9 @@ TEST(SimulationObjectUtilTest, ContainerFunctionality) {
   EXPECT_EQ(2, vector[1].GetDm1());
   EXPECT_EQ(2.0, vector[1].GetDm2());
 
-  vector.DelayedRemove(0);
-  vector.DelayedRemove(1);
+  // FIXME
+  // vector.DelayedRemove(0);
+  // vector.DelayedRemove(1);
   vector.Commit();
   EXPECT_EQ(0u, vector.size());
   EXPECT_EQ(0u, vector.GetTotalSize());
@@ -263,9 +265,10 @@ TEST(SimulationObjectUtilTest, Soa_DelayedRemove) {
 
   EXPECT_EQ(10u, vector.size());
 
-  vector.DelayedRemove(5);
-  vector.DelayedRemove(8);
-  vector.DelayedRemove(3);
+  // FIXME
+  // vector.DelayedRemove(5);
+  // vector.DelayedRemove(8);
+  // vector.DelayedRemove(3);
 
   EXPECT_EQ(10u, vector.size());
 

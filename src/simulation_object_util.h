@@ -193,7 +193,7 @@ struct Capsule;
   EVAL(LOOP(BDM_SIM_OBJECT_ASSIGNMENT_OP_BODY_ITERATOR, __VA_ARGS__))
 
 #define BDM_SIM_OBJECT_ASSIGNMENT_OP_BODY_ITERATOR(data_member) \
-  data_member[kIdx] = rhs.data_member[0];
+  data_member[kIdx] = rhs.data_member[rhs.kIdx];
 
 #define BDM_SIM_OBJECT_ASSIGNMENT_OP_MOVE_BODY(...) \
   EVAL(LOOP(BDM_SIM_OBJECT_ASSIGNMENT_OP_MOVE_BODY_ITERATOR, __VA_ARGS__))
@@ -315,17 +315,12 @@ struct Capsule;
     return SoHandle(type_idx, Base::GetElementIdx());                          \
   }                                                                            \
                                                                                \
+  /** FIXME move to SimulationObject */                                      \
   /** Return simulation object pointer */                                      \
   /** NB: Cannot be used in a constructor, because `Base::element_idx_` has */ \
   /** not been set by the ResourceManager yet */                               \
   MostDerivedSoPtr GetSoPtr() {                                                \
     return MostDerivedSoPtr(Base::uid_[kIdx]);                 \
-  }                                                                            \
-                                                                               \
-  void RemoveFromSimulation() {                                                \
-    auto* rm = Simulation_t::GetActive()->GetResourceManager();                \
-    auto container = rm->template Get<MostDerivedScalar>();                    \
-    container->DelayedRemove(Base::GetElementIdx());                           \
   }                                                                            \
                                                                                \
   /** Executes the given function for all data members             */          \
@@ -380,9 +375,17 @@ struct Capsule;
     return *this;                                                              \
   }                                                                            \
                                                                                \
-  Self<Backend>& operator=(Self<Backend>&& rhs) {                              \
+  template <typename T = Backend>                                              \
+  typename enable_if<is_same<T, Soa>::value || is_same<T, Scalar>::value, Self<Backend>&>::type           \
+  operator=(Self<Backend>&& rhs) {                              \
     BDM_SIM_OBJECT_ASSIGNMENT_OP_MOVE_BODY(__VA_ARGS__)                        \
     Base::operator=(std::move(rhs));                                           \
+    return *this;                                                              \
+  }                                                                            \
+  \
+  Self<Backend>& operator=(const Self<Backend>& rhs) {                              \
+    BDM_SIM_OBJECT_ASSIGNMENT_OP_BODY(__VA_ARGS__)                        \
+    Base::operator=(rhs);                                           \
     return *this;                                                              \
   }                                                                            \
                                                                                \
@@ -413,7 +416,7 @@ struct Capsule;
     BDM_SIM_OBJECT_PUSH_BACK_BODY(__VA_ARGS__);                                \
     Base::PushBackImpl(other);                                                 \
   }                                                                            \
-  /** Swap element with last element and remove last element from each */      \
+  /** FIXME remove Swap element with last element and remove last element from each */      \
   /** data member */                                                           \
   void SwapAndPopBack(size_t index, size_t size) override {                    \
     BDM_SIM_OBJECT_SWAP_AND_POP_BACK_BODY(__VA_ARGS__);                        \
