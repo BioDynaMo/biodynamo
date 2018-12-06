@@ -408,8 +408,10 @@ class ResourceManager {
   void push_back(const TSo& so) {  // NOLINT
     auto* container = Get<TSo>();
     container->push_back(so);
-    auto&& inserted = (*container)[container->size() - 1];
-    so_storage_location_[inserted.GetUid()] = inserted.GetSoHandle();
+    auto el_idx = container->size() - 1;
+    auto&& inserted = (*container)[el_idx];
+    inserted.SetElementIdx(el_idx);
+    so_storage_location_[inserted.GetUid()] = SoHandle(GetTypeIndex<TSo>(), el_idx);
   }
 
   // TODO documentation + test
@@ -455,11 +457,12 @@ class ResourceManager {
                           typename TScalarSo::template Self<SoaRef>>::type
   New(Args... args) {
     auto container = Get<TScalarSo>();
-    auto idx =
+    auto el_idx =
         container->DelayedPushBack(TScalarSo(std::forward<Args>(args)...));
-    auto&& inserted = (*container)[idx];
-    so_storage_location_[inserted.GetUid()] = inserted.GetSoHandle();
-    return (*container)[idx];
+    auto&& inserted = (*container)[el_idx];
+    inserted.SetElementIdx(el_idx);
+    so_storage_location_[inserted.GetUid()] = SoHandle(GetTypeIndex<TScalarSo>(), el_idx);
+    return (*container)[el_idx];
   }
 
   template <typename TScalarSo, typename... Args, typename TBackend = Backend>
@@ -467,11 +470,12 @@ class ResourceManager {
                           TScalarSo&>::type
   New(Args... args) {
     auto container = Get<TScalarSo>();
-    auto idx =
+    auto el_idx =
         container->DelayedPushBack(TScalarSo(std::forward<Args>(args)...));
-    auto&& inserted = (*container)[idx];
-    so_storage_location_[inserted.GetUid()] = inserted.GetSoHandle();
-    return (*container)[idx];
+    auto&& inserted = (*container)[el_idx];
+    inserted.SetElementIdx(el_idx);
+    so_storage_location_[inserted.GetUid()] = SoHandle(GetTypeIndex<TScalarSo>(), el_idx);
+    return (*container)[el_idx];
   }
 
   /// Return the container of this Type

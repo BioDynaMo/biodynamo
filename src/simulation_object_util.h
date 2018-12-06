@@ -308,21 +308,7 @@ struct Capsule;
       : Base(other, idx),                                                      \
         REMOVE_TRAILING_COMMAS(BDM_SIM_OBJECT_CPY_CTOR_INIT(__VA_ARGS__)) {}   \
                                                                                \
-  template <typename TResourceManager = ResourceManager<>>                     \
-  SoHandle GetSoHandle() const {                                               \
-    auto type_idx =                                                            \
-        TResourceManager::template GetTypeIndex<MostDerivedScalar>();          \
-    return SoHandle(type_idx, Base::GetElementIdx());                          \
-  }                                                                            \
-                                                                               \
-  /** FIXME move to SimulationObject */                                      \
-  /** Return simulation object pointer */                                      \
-  /** NB: Cannot be used in a constructor, because `Base::element_idx_` has */ \
-  /** not been set by the ResourceManager yet */                               \
-  MostDerivedSoPtr GetSoPtr() {                                                \
-    return MostDerivedSoPtr(Base::uid_[kIdx]);                 \
-  }                                                                            \
-                                                                               \
+                                                                           \
   /** Executes the given function for all data members             */          \
   /**  Function could be a lambda in the following form:           */          \
   /**  `[](auto* data_member, const std::string& dm_name) { ... }` */          \

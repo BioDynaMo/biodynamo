@@ -40,12 +40,14 @@ TEST(NeuriteElementBehaviour, StraightxCylinderGrowthRetract) {
   auto* rm = simulation.GetResourceManager();
   auto* scheduler = simulation.GetScheduler();
 
-  auto neuron = rm->New<NeuronSoma>();
+  NeuronSoma neuron;
+  auto neuron_id = neuron.GetUid();
   neuron.SetPosition({0, 0, 0});
   neuron.SetMass(1);
   neuron.SetDiameter(10);
+  rm->push_back(neuron);
 
-  auto ne = neuron.ExtendNewNeurite({1, 0, 0});
+  auto ne = rm->GetSimObject<NeuronSoma>(neuron_id).ExtendNewNeurite({1, 0, 0});
 
   std::array<double, 3> neAxis = ne->GetSpringAxis();
 

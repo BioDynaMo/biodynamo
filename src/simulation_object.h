@@ -387,6 +387,17 @@ class SimulationObjectExt
 
   SoUid GetUid() const { return uid_[kIdx]; }
 
+  SoHandle GetSoHandle() const {
+    auto* rm = Simulation_t::GetActive()->GetResourceManager();
+    auto type_idx = rm->template GetTypeIndex<MostDerivedScalar>();
+    return SoHandle(type_idx, Base::GetElementIdx());
+  }
+
+  /// Return simulation object pointer
+  MostDerivedSoPtr GetSoPtr() const {
+    return MostDerivedSoPtr(uid_[kIdx]);
+  }
+
   // Biology modules
   using BiologyModules =
       typename TCompileTimeParam::template CTMap<MostDerivedScalar,

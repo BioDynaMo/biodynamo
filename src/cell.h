@@ -373,7 +373,7 @@ BDM_SO_DEFINE(template <typename TGrid> inline std::array<double, 3>
   };
 
   grid->ForEachNeighborWithinRadius(calculate_neighbor_forces, *this,
-                                    GetSoHandle(), squared_radius);
+                                    Base::GetSoHandle(), squared_radius);
 
   // 4) PhysicalBonds
   // How the physics influences the next displacement

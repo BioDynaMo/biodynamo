@@ -25,7 +25,9 @@ public:
     remove_.clear();
   }
 
+  template <typename TSimulation = Simulation<>>
   void RemoveFromSimulation(SoUid uid) {
+    auto* rm = TSimulation::GetActive()->GetResourceManager();
     remove_.push_back(uid);
   }
 
