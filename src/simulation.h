@@ -29,6 +29,7 @@ class Grid;
 template <typename>
 class Scheduler;
 struct Param;
+template <typename>
 class ApproximateExecCtxt;
 
 struct Soa;
@@ -92,10 +93,10 @@ struct Simulation {
   Random* GetRandom();
 
   // TODO documentation
-  ApproximateExecCtxt* GetExecCtxt();
+  ApproximateExecCtxt<TCTParam>* GetExecCtxt();
 
   // TODO documentation
-  std::vector<ApproximateExecCtxt*>& GetAllExecCtxts();
+  std::vector<ApproximateExecCtxt<TCTParam>*>& GetAllExecCtxts();
 
   /// @see `unique_name_`
   const std::string& GetUniqueName() const;
@@ -119,7 +120,7 @@ struct Simulation {
   std::vector<Random*> random_;
 
   /// Execution Context for each thread
-  std::vector<ApproximateExecCtxt*> exec_ctxt_;  //!
+  std::vector<ApproximateExecCtxt<TCTParam>*> exec_ctxt_;  //!
 
   ResourceManager<TCTParam>* rm_ = nullptr;
   Param_t* param_ = nullptr;

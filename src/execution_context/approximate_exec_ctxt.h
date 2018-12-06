@@ -19,16 +19,11 @@
 
 namespace bdm {
 
+template <typename TCTParam = CompileTimeParam<>>
 class ApproximateExecCtxt {
 public:
   void SetupIteration() {
     remove_.clear();
-  }
-
-  template <typename TSimulation = Simulation<>>
-  void RemoveFromSimulation(SoUid uid) {
-    auto* rm = TSimulation::GetActive()->GetResourceManager();
-    remove_.push_back(uid);
   }
 
   template <typename TSimulation = Simulation<>>
@@ -38,6 +33,26 @@ public:
       rm->Remove(uid);
     }
     remove_.clear();
+  }
+  //
+  // template <typename TSo, typename TSimBackend = Backend, typename TSimulation = Simulation<>>
+  // auto&& GetSimObject(SoUid uid, typename std::enable_if<std::is_same<TSimBackend, Scalar>::value>::type* ptr = 0) {
+  //   // check if the uid correspons to a new object not yet in the Rm
+  //
+  //   auto* rm = TSimulation::GetActive()->GetResourceManager();
+  //   return rm->template GetSimObject<TSo>(uid_);
+  // }
+
+  // template <typename TSo, typename TSimBackend = Backend>
+  // auto GetSimObject(SoUid uid, typename std::enable_if<std::is_same<TSimBackend, Soa>::value>::type* ptr = 0) {
+  //   auto handle = so_storage_location_[uid];
+  //   return (*Get<TSo>())[handle.GetElementIdx()];
+  // }
+
+  template <typename TSimulation = Simulation<>>
+  void RemoveFromSimulation(SoUid uid) {
+    auto* rm = TSimulation::GetActive()->GetResourceManager();
+    remove_.push_back(uid);
   }
 
 private:

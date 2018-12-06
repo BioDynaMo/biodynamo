@@ -151,12 +151,12 @@ Random* Simulation<T>::GetRandom() {
 }
 
 template <typename T>
-ApproximateExecCtxt* Simulation<T>::GetExecCtxt() {
+ApproximateExecCtxt<T>* Simulation<T>::GetExecCtxt() {
   return exec_ctxt_[omp_get_thread_num()];
 }
 
 template <typename T>
-std::vector<ApproximateExecCtxt*>& Simulation<T>::GetAllExecCtxts() {
+std::vector<ApproximateExecCtxt<T>*>& Simulation<T>::GetAllExecCtxts() {
   return exec_ctxt_;
 }
 
@@ -197,7 +197,7 @@ void Simulation<T>::InitializeMembers() {
   }
   exec_ctxt_.resize(omp_get_max_threads());
   for (uint64_t i = 0; i < exec_ctxt_.size(); i++) {
-    exec_ctxt_[i] = new ApproximateExecCtxt();
+    exec_ctxt_[i] = new ApproximateExecCtxt<T>();
   }
   rm_ = new TResourceManager();
   grid_ = new TGrid();
