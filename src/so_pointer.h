@@ -72,8 +72,8 @@ class SoPointer {
                           TSoSimBackend&>::type
   operator->() {
     assert(*this != nullptr);
-    auto* rm = TSimulation::GetActive()->GetResourceManager();
-    return rm->template GetSimObject<TSoSimBackend>(uid_);
+    auto* ctxt = TSimulation::GetActive()->GetExecCtxt();
+    return ctxt->template GetSimObject<TSoSimBackend>(uid_);
   }
 
   template <typename TTBackend = TBackend, typename TSimulation = Simulation<>>
@@ -81,16 +81,16 @@ class SoPointer {
                           const TSoSimBackend&>::type
   operator->() const {
     assert(*this != nullptr);
-    auto* rm = TSimulation::GetActive()->GetResourceManager();
-    return rm->template GetSimObject<SoSoaRef>(uid_);
+    auto* ctxt = TSimulation::GetActive()->GetExecCtxt();
+    return ctxt->template GetSimObject<SoSoaRef>(uid_);
   }
 
   template <typename TTBackend = TBackend, typename TSimulation = Simulation<>>
   typename std::enable_if<std::is_same<TTBackend, Soa>::value, SoSoaRef>::type
   operator->() {
     assert(*this != nullptr);
-    auto* rm = TSimulation::GetActive()->GetResourceManager();
-    return rm->template GetSimObject<SoSoaRef>(uid_);
+    auto* ctxt = TSimulation::GetActive()->GetExecCtxt();
+    return ctxt->template GetSimObject<SoSoaRef>(uid_);
   }
 
   template <typename TTBackend = TBackend, typename TSimulation = Simulation<>>
@@ -98,8 +98,8 @@ class SoPointer {
                           const SoSoaRef>::type
   operator->() const {
     assert(*this != nullptr);
-    auto* rm = TSimulation::GetActive()->GetResourceManager();
-    return rm->template GetSimObject<SoSoaRef>(uid_);
+    auto* ctxt = TSimulation::GetActive()->GetExecCtxt();
+    return ctxt->template GetSimObject<SoSoaRef>(uid_);
   }
 
   friend std::ostream& operator<<(
