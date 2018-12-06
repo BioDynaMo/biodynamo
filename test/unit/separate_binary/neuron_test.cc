@@ -96,11 +96,13 @@ TEST(NeuronSomaTest, ExtendNewNeuriteElementSphericalCoordinates) {
 
   // create neuron
   std::array<double, 3> origin = {0, 0, 0};
-  auto neuron = rm->New<NeuronSoma>(origin);
+  NeuronSoma neuron(origin);
   neuron.SetDiameter(20);
+  auto neuron_id = neuron.GetUid();
+  rm->push_back(neuron);
 
   // new neurite
-  auto neurite = neuron.ExtendNewNeurite(10, Math::kPi / 8, Math::kPi / 3);
+  auto neurite = rm->GetSimObject<NeuronSoma>(neuron_id).ExtendNewNeurite(10, Math::kPi / 8, Math::kPi / 3);
   neurite->SetDiameter(2);
 
   rm->ApplyOnAllTypes(commit);
@@ -143,11 +145,13 @@ TEST(NeuronSomaTest, ExtendNewNeurite) {
 
   // create neuron
   std::array<double, 3> origin = {0, 0, 0};
-  auto neuron = rm->New<NeuronSoma>(origin);
+  NeuronSoma neuron(origin);
   neuron.SetDiameter(20);
+  auto neuron_id = neuron.GetUid();
+  rm->push_back(neuron);
 
   // new neurite
-  auto neurite = neuron.ExtendNewNeurite({0, 0, 1});
+  auto neurite = rm->GetSimObject<NeuronSoma>(neuron_id).ExtendNewNeurite({0, 0, 1});
   neurite->SetDiameter(2);
 
   rm->ApplyOnAllTypes(commit);
@@ -182,10 +186,12 @@ TEST(NeuronSomaTest, ExtendNeuriteAndElongate) {
   auto commit = [](auto* container, uint16_t type_idx) { container->Commit(); };
   std::array<double, 3> origin = {0, 0, 0};
 
-  auto neuron = rm->New<NeuronSoma>(origin);
+  NeuronSoma neuron(origin);
   neuron.SetDiameter(20);
+  auto neuron_id = neuron.GetUid();
+  rm->push_back(neuron);
 
-  auto neurite_element = neuron.ExtendNewNeurite({0, 0, 1});
+  auto neurite_element = rm->GetSimObject<NeuronSoma>(neuron_id).ExtendNewNeurite({0, 0, 1});
   neurite_element->SetDiameter(2);
 
   // will create a new neurite segment at iteration 139
@@ -241,15 +247,18 @@ TEST(NeuronSomaTest, ExtendNeuriteAndElongate) {
 TEST(NeuriteElementTest, PartialRetraction) {
   Simulation<> simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
+  auto* ctxt = simulation.GetExecCtxt();
 
   const double kEpsilon = abs_error<double>::value;
   std::array<double, 3> origin = {0, 0, 0};
   auto commit = [](auto* container, uint16_t type_idx) { container->Commit(); };
 
-  auto neuron = rm->New<NeuronSoma>(origin);
+  NeuronSoma neuron(origin);
   neuron.SetDiameter(20);
+  auto neuron_id = neuron.GetUid();
+  rm->push_back(neuron);
 
-  auto neurite_element = neuron.ExtendNewNeurite({0, 0, 1});
+  auto neurite_element = rm->GetSimObject<NeuronSoma>(neuron_id).ExtendNewNeurite({0, 0, 1});
   neurite_element->SetDiameter(2);
 
   // will create a new neurite segment at iteration 139
@@ -260,9 +269,11 @@ TEST(NeuriteElementTest, PartialRetraction) {
 
   // will remove the proximal segment
   for (int i = 0; i < 140; ++i) {
+    ctxt->SetupIteration();
     neurite_element->RetractTerminalEnd(10);
     neurite_element->RunDiscretization();
     rm->ApplyOnAllTypes(commit);
+    ctxt->TearDownIteration();
   }
 
   // verify
@@ -290,14 +301,17 @@ TEST(NeuriteElementTest, PartialRetraction) {
 TEST(NeuriteElementTest, TotalRetraction) {
   Simulation<> simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
+  auto* ctxt = simulation.GetExecCtxt();
 
   std::array<double, 3> origin = {0, 0, 0};
   auto commit = [](auto* container, uint16_t type_idx) { container->Commit(); };
 
-  auto neuron = rm->New<NeuronSoma>(origin);
+  NeuronSoma neuron(origin);
   neuron.SetDiameter(20);
+  auto neuron_id = neuron.GetUid();
+  rm->push_back(neuron);
 
-  auto neurite_element = neuron.ExtendNewNeurite({0, 0, 1});
+  auto neurite_element = rm->GetSimObject<NeuronSoma>(neuron_id).ExtendNewNeurite({0, 0, 1});
   neurite_element->SetDiameter(2);
 
   // will create a new neurite segment at iteration 139
@@ -309,9 +323,11 @@ TEST(NeuriteElementTest, TotalRetraction) {
   // will remove the entire neurite
   // neurite_segment will be removed in iteration 209
   for (int i = 0; i < 210; ++i) {
+    ctxt->SetupIteration();
     neurite_element->RetractTerminalEnd(10);
     neurite_element->RunDiscretization();
     rm->ApplyOnAllTypes(commit);
+    ctxt->TearDownIteration();
   }
 
   // verify
@@ -328,10 +344,12 @@ TEST(NeuriteElementTest, Branch) {
   std::array<double, 3> origin = {0, 0, 0};
   auto commit = [](auto* container, uint16_t type_idx) { container->Commit(); };
 
-  auto neuron = rm->New<NeuronSoma>(origin);
+  NeuronSoma neuron(origin);
   neuron.SetDiameter(20);
+  auto neuron_id = neuron.GetUid();
+  rm->push_back(neuron);
 
-  auto neurite_element = neuron.ExtendNewNeurite({0, 0, 1});
+  auto neurite_element = rm->GetSimObject<NeuronSoma>(neuron_id).ExtendNewNeurite({0, 0, 1});
   neurite_element->SetDiameter(2);
 
   // will create a new neurite segment at iteration 139
@@ -426,10 +444,12 @@ TEST(NeuriteElementTest, RightDaughterRetraction) {
   std::array<double, 3> origin = {0, 0, 0};
   auto commit = [](auto* container, uint16_t type_idx) { container->Commit(); };
 
-  auto neuron = rm->New<NeuronSoma>(origin);
+  NeuronSoma neuron(origin);
   neuron.SetDiameter(20);
+  auto neuron_id = neuron.GetUid();
+  rm->push_back(neuron);
 
-  auto neurite_element = neuron.ExtendNewNeurite({0, 0, 1});
+  auto neurite_element = rm->GetSimObject<NeuronSoma>(neuron_id).ExtendNewNeurite({0, 0, 1});
   neurite_element->SetDiameter(2);
 
   // will create a new neurite segment at iteration 139
@@ -492,15 +512,18 @@ TEST(NeuriteElementTest, RightDaughterRetraction) {
 TEST(NeuriteElementTest, RightDaughterTotalRetraction) {
   Simulation<> simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
+  auto* ctxt = simulation.GetExecCtxt();
 
   const double kEpsilon = abs_error<double>::value;
   std::array<double, 3> origin = {0, 0, 0};
   auto commit = [](auto* container, uint16_t type_idx) { container->Commit(); };
 
-  auto neuron = rm->New<NeuronSoma>(origin);
+  NeuronSoma neuron(origin);
   neuron.SetDiameter(20);
+  auto neuron_id = neuron.GetUid();
+  rm->push_back(neuron);
 
-  auto neurite_element = neuron.ExtendNewNeurite({0, 0, 1});
+  auto neurite_element = rm->GetSimObject<NeuronSoma>(neuron_id).ExtendNewNeurite({0, 0, 1});
   neurite_element->SetDiameter(2);
 
   // will create a new neurite segment at iteration 139
@@ -534,6 +557,7 @@ TEST(NeuriteElementTest, RightDaughterTotalRetraction) {
   EXPECT_NEAR(0.103602332256979, branch->GetLength(), kEpsilon);
 
   rm->ApplyOnAllTypes(commit);
+  ctxt->TearDownIteration();
   EXPECT_EQ(1u, rm->Get<NeuronSoma>()->size());
   EXPECT_EQ(3u, rm->Get<NeuriteElement>()->size());
 }
@@ -543,13 +567,15 @@ TEST(NeuriteElementTest, LeftDaughterRetraction) {
   auto* rm = simulation.GetResourceManager();
 
   const double kEpsilon = abs_error<double>::value;
-  std::array<double, 3> position = {0, 0, 0};
+  std::array<double, 3> origin = {0, 0, 0};
   auto commit = [](auto* container, uint16_t type_idx) { container->Commit(); };
 
-  auto neuron = rm->New<NeuronSoma>(position);
+  NeuronSoma neuron(origin);
   neuron.SetDiameter(20);
+  auto neuron_id = neuron.GetUid();
+  rm->push_back(neuron);
 
-  auto neurite_element = neuron.ExtendNewNeurite({0, 0, 1});
+  auto neurite_element = rm->GetSimObject<NeuronSoma>(neuron_id).ExtendNewNeurite({0, 0, 1});
   neurite_element->SetDiameter(2);
 
   // will create a new neurite segment at iteration 139
@@ -612,15 +638,17 @@ TEST(NeuriteElementTest, LeftDaughterRetraction) {
 TEST(NeuriteElementTest, RetractAllDendrites) {
   Simulation<> simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
+  auto* ctxt = simulation.GetExecCtxt();
 
   std::array<double, 3> origin = {0, 0, 0};
   auto commit = [](auto* container, uint16_t type_idx) { container->Commit(); };
 
-  auto neuron = rm->New<NeuronSoma>(origin);
+  NeuronSoma neuron(origin);
   neuron.SetDiameter(20);
-  rm->ApplyOnAllTypes(commit);
+  auto neuron_id = neuron.GetUid();
+  rm->push_back(neuron);
 
-  auto neurite_element = neuron.ExtendNewNeurite({1, 0, 0});
+  auto neurite_element = rm->GetSimObject<NeuronSoma>(neuron_id).ExtendNewNeurite({1, 0, 0});
   neurite_element->SetDiameter(2);
 
   // will create a new neurite segment at iteration 139
@@ -633,29 +661,32 @@ TEST(NeuriteElementTest, RetractAllDendrites) {
   auto branch = neurite_element->Branch();
 
   for (int i = 0; i < 100; ++i) {
+    ctxt->SetupIteration();
     neurite_element->ElongateTerminalEnd(10, {0, 0, 1});
     neurite_element->RunDiscretization();
     branch->ElongateTerminalEnd(10, {0, 1, 0});
     branch->RunDiscretization();
     rm->ApplyOnAllTypes(commit);
+    ctxt->TearDownIteration();
   }
 
   // retract all dendrite
-  auto all_ns = rm->Get<NeuriteElement>();
-  while (all_ns->size() != 0) {
-    for (uint32_t j = 0; j < all_ns->size(); j++) {
-      auto&& neurite_segment = (*all_ns)[j];
-      if (neurite_element->IsTerminal()) {
-        neurite_element->RetractTerminalEnd(10);
-        neurite_element->RunDiscretization();
+  while (rm->Get<NeuriteElement>()->size() != 0) {
+    for (uint32_t j = 0; j < rm->Get<NeuriteElement>()->size(); j++) {
+      auto&& neurite_segment = rm->GetSimObject<NeuriteElement>(SoHandle(1, j));
+      if (neurite_segment.IsTerminal()) {
+        neurite_segment.RetractTerminalEnd(10);
+        neurite_segment.RunDiscretization();
         break;
       }
     }
     rm->ApplyOnAllTypes(commit);
+    ctxt->TearDownIteration();
   }
 
   // verify
   rm->ApplyOnAllTypes(commit);
+  ctxt->TearDownIteration();
   EXPECT_EQ(1u, rm->Get<NeuronSoma>()->size());
   EXPECT_EQ(0u, rm->Get<NeuriteElement>()->size());
 }
@@ -668,10 +699,12 @@ TEST(NeuriteElementTest, Bifurcate) {
   std::array<double, 3> origin = {0, 0, 0};
   auto commit = [](auto* container, uint16_t type_idx) { container->Commit(); };
 
-  auto neuron = rm->New<NeuronSoma>(origin);
+  NeuronSoma neuron(origin);
   neuron.SetDiameter(20);
+  auto neuron_id = neuron.GetUid();
+  rm->push_back(neuron);
 
-  auto neurite_element = neuron.ExtendNewNeurite({0, 0, 1});
+  auto neurite_element =  rm->GetSimObject<NeuronSoma>(neuron_id).ExtendNewNeurite({0, 0, 1});
   neurite_element->SetDiameter(2);
 
   auto bifurcation = neurite_element->Bifurcate({0, 1, 1}, {1, 1, 0});
