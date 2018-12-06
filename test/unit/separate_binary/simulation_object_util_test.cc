@@ -57,49 +57,14 @@ TEST(SimulationObjectUtilTest, ContainerFunctionality) {
   EXPECT_EQ(3, vector[2].GetDm1());
   EXPECT_EQ(3.0, vector[2].GetDm2());
 
-  // FIXME
-  // vector.DelayedRemove(0);
-
-  // changes have not been commited yet
-  EXPECT_EQ(3u, vector.size());
-  EXPECT_EQ(3u, vector.GetVecDm1().size());
-  EXPECT_EQ(3u, vector.GetVecDm2().size());
-  EXPECT_EQ(3u, vector.GetTotalSize());
-
-  vector.Commit();
-
-  EXPECT_EQ(2u, vector.size());
-  EXPECT_EQ(2u, vector.GetVecDm1().size());
-  EXPECT_EQ(2u, vector.GetVecDm2().size());
-  EXPECT_EQ(2u, vector.GetTotalSize());
-
-  EXPECT_EQ(3, vector[0].GetDm1());
-  EXPECT_EQ(3.0, vector[0].GetDm2());
-  EXPECT_EQ(2, vector[1].GetDm1());
-  EXPECT_EQ(2.0, vector[1].GetDm2());
-
-  // FIXME
-  // vector.DelayedRemove(0);
-  // vector.DelayedRemove(1);
-  vector.Commit();
-  EXPECT_EQ(0u, vector.size());
-  EXPECT_EQ(0u, vector.GetTotalSize());
-
   // push_back
   vector.push_back(Scalar(9, 9.0));
-  EXPECT_EQ(1u, vector.size());
-  EXPECT_EQ(1u, vector.GetTotalSize());
-  EXPECT_EQ(9, vector[0].GetDm1());
+  EXPECT_EQ(4u, vector.size());
+  EXPECT_EQ(4u, vector.GetTotalSize());
 
   vector.DelayedPushBack(Scalar(10, 10.0));
-  EXPECT_EQ(1u, vector.size());
-  EXPECT_EQ(2u, vector.GetTotalSize());
-  // clang on Travis OSX image doesn't catch exception
-  // Therefore the following check is commented until this is fixed
-  // try {
-  //   vector.push_back(Scalar(11, 11.0));
-  //   FAIL() << "Should have thrown a logic_error";
-  // } catch(std::logic_error& e) {}
+  EXPECT_EQ(4u, vector.size());
+  EXPECT_EQ(5u, vector.GetTotalSize());
 }
 
 template <typename T>
@@ -257,38 +222,6 @@ TEST(SimulationObjectUtilTest, Soa_AssignmentOperator) {
   EXPECT_EQ(3u, neurons[0].GetNeurites().size());
 }
 
-TEST(SimulationObjectUtilTest, Soa_DelayedRemove) {
-  auto vector = TestObject::NewEmptySoa();
-  for (uint64_t i = 0; i < 10; i++) {
-    vector.push_back(TestObject(i));
-  }
-
-  EXPECT_EQ(10u, vector.size());
-
-  // FIXME
-  // vector.DelayedRemove(5);
-  // vector.DelayedRemove(8);
-  // vector.DelayedRemove(3);
-
-  EXPECT_EQ(10u, vector.size());
-
-  auto updated_indices = vector.Commit();
-
-  EXPECT_EQ(7u, vector.size());
-  ASSERT_EQ(2u, updated_indices.size());
-  // FIXME
-  // EXPECT_EQ(5u, updated_indices[9]);
-  // EXPECT_EQ(3u, updated_indices[7]);
-
-  EXPECT_EQ(0, vector[0].GetId());
-  EXPECT_EQ(1, vector[1].GetId());
-  EXPECT_EQ(2, vector[2].GetId());
-  EXPECT_EQ(7, vector[3].GetId());
-  EXPECT_EQ(4, vector[4].GetId());
-  EXPECT_EQ(9, vector[5].GetId());
-  EXPECT_EQ(6, vector[6].GetId());
-}
-
 // Tests overloaded Divide function which adds new daughter cell to the
 // container managed by the ResourceManager with default template parameters
 TEST(SimulationObjectUtilTest, Soa_DivideWithResourceManager) {
@@ -316,22 +249,6 @@ TEST(SimulationObjectUtilTest, Soa_DivideWithResourceManager) {
   EXPECT_EQ(4, (*neurons)[1].GetPosition()[1]);
   EXPECT_EQ(3, (*neurons)[1].GetPosition()[2]);
   EXPECT_EQ(1.123, (*neurons)[0].GetDiameter());
-}
-
-TEST(SimulationObjectUtilTest, RemoveFromSimulation) {
-  Simulation<> simulation(TEST_NAME);
-  auto* rm = simulation.GetResourceManager();
-
-  auto neurons = rm->Get<Neuron>();
-
-  Neuron neuron;
-  neurons->push_back(Neuron());
-  EXPECT_EQ(1u, neurons->size());
-
-  auto&& to_be_removed = (*neurons)[0];
-  to_be_removed.RemoveFromSimulation();
-  neurons->Commit();
-  EXPECT_EQ(0u, neurons->size());
 }
 
 TEST(SimulationObjectUtilTest, Soa_IO) { RunSoaIOTest(); }
