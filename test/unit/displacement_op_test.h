@@ -24,7 +24,7 @@
 namespace bdm {
 namespace displacement_op_test_internal {
 
-template <typename TSimulation = Simulation<>>
+template <typename TCell = Cell, typename TSimulation = Simulation<>>
 void RunTest() {
   TSimulation simulation("displacement_op_test_RunTest");
   auto* rm = simulation.GetResourceManager();
@@ -32,21 +32,21 @@ void RunTest() {
   auto* cells = rm->template Get<Cell>();
 
   // Cell 1
-  auto&& cell1 = rm->template New<Cell>();
+  TCell cell1;
   cell1.SetAdherence(0.3);
   cell1.SetDiameter(9);
   cell1.SetMass(1.4);
   cell1.SetPosition({0, 0, 0});
   // cell.SetTractorForce(tractor_force);
+  rm->push_back(cell1);
 
   // Cell 2
-  auto&& cell2 = rm->template New<Cell>();
+  TCell cell2;
   cell2.SetAdherence(0.4);
   cell2.SetDiameter(11);
   cell2.SetMass(1.1);
   cell2.SetPosition({0, 5, 0});
-
-  rm->template Get<Cell>()->Commit();
+  rm->push_back(cell2);
 
   simulation.GetGrid()->Initialize();
 

@@ -232,9 +232,8 @@ TEST_F(IOTest, Simulation) {
   Simulation<> sim(TEST_NAME, set_param);
   auto* rm = sim.GetResourceManager();
   auto* param = sim.GetParam();
-  rm->New<Cell>();
-  rm->New<Cell>();
-  rm->Get<Cell>()->Commit();
+  rm->push_back(Cell());
+  rm->push_back(Cell());
 #pragma omp parallel
   {
     auto* r = sim.GetRandom();

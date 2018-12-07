@@ -82,8 +82,9 @@ namespace so_pointer_test_internal {
 
 inline void RunIOTest(Simulation<>* sim) {
   auto* rm = sim->GetResourceManager();
-  auto&& so1 = rm->New<SoPointerTestClass>(123);
-  auto&& so2 = rm->New<SoPointerTestClass>(456);
+  rm->push_back(SoPointerTestClass(123));
+  SoPointerTestClass so2(456);
+  rm->push_back(so2);
 
   SoPointer<SoPointerTestClass, Soa> soptr(so2.GetUid());
   SoPointer<SoPointerTestClass, Soa>* restored;

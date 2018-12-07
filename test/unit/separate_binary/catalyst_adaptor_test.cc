@@ -110,9 +110,9 @@ TEST_F(CatalystAdaptorTest, CheckVisualizationSelection) {
   enum Substances { kSubstance0, kSubstance1, kSubstance2 };
 
   // Create two types of cells
-  auto my_cell = rm->New<MyCell>();
-  auto cell = rm->New<MyCell>();
-  auto neuron = rm->New<MyNeuron>();
+  rm->push_back(MyCell());
+  rm->push_back(MyCell());
+  rm->push_back(MyNeuron());
 
   // Define the substances
   ModelInitializer::DefineSubstance(kSubstance0, "Substance_0", 0.5, 0);

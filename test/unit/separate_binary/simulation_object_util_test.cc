@@ -239,8 +239,7 @@ TEST(SimulationObjectUtilTest, Soa_DivideWithResourceManager) {
   EXPECT_EQ(4, new_neuron->GetPosition()[1]);
   EXPECT_EQ(3, new_neuron->GetPosition()[2]);
 
-  // commit invalidates new_neuron
-  neurons->Commit();
+  simulation.GetExecCtxt()->TearDownIteration();
 
   ASSERT_EQ(2u, neurons->size());
   // new_neuron got invalidated by `Commit()`, but is now accessible in neurons
@@ -361,9 +360,8 @@ TEST(SimulationObjectUtilTest, GetSoPtr) {
   auto* rm = simulation.GetResourceManager();
 
   for (uint64_t i = 0; i < 10; i++) {
-    rm->New<Neuron>();
+    rm->push_back(Neuron());
   }
-  rm->Get<Neuron>()->Commit();
   EXPECT_EQ(10u, rm->GetNumSimObjects());
 
   auto neurons = rm->Get<Neuron>();

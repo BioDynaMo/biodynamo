@@ -33,7 +33,7 @@ TEST(SimulationObjectUtilAosTest, GetSoPtr) {
   auto* rm = simulation.GetResourceManager();
 
   for (uint64_t i = 0; i < 10; i++) {
-    rm->New<Cell>(1);
+    rm->push_back(Cell(1));
   }
 
   rm->Get<Cell>()->Commit();
