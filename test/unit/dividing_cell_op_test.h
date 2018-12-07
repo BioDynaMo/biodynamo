@@ -28,24 +28,26 @@ template <typename TCell, typename TSimulation = Simulation<>>
 void RunTest() {
   TSimulation simulation("dividing_cell_op_test_RunTest");
   auto* rm = simulation.GetResourceManager();
+  auto* ctxt = simulation.GetExecCtxt();
+  ctxt->SetupIteration();
 
   auto* cells = rm->template Get<TCell>();
-  // TODO(lukas) remove after https://trello.com/c/sKoOTgJM has been resolved
-  omp_set_num_threads(1);  // and Rm::New<...> uses delayed push back
-  cells->reserve(10);
-  cells->push_back(TCell(41.0));
-  cells->push_back(TCell(19.0));
 
-  EXPECT_EQ(2u, cells->size());
+  TCell cell_0(41.0);
+  TCell cell_1(19.0);
+  double volume_mother = cell_0.GetVolume();
 
-  double volume_mother = (*cells)[0].GetVolume();
+  rm->push_back(cell_0);
+  rm->push_back(cell_1);
+
+  EXPECT_EQ(2u, rm->GetNumSimObjects());
 
   DividingCellOp op;
   op(cells, 0);
 
-  cells->Commit();
+  ctxt->TearDownIteration();
 
-  ASSERT_EQ(3u, cells->size());
+  ASSERT_EQ(3u, rm->GetNumSimObjects());
   EXPECT_NEAR(19.005288996600001, (*cells)[1].GetDiameter(),
               abs_error<double>::value);
   EXPECT_NEAR(3594.3640018287319, (*cells)[1].GetVolume(),

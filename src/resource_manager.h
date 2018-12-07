@@ -387,18 +387,26 @@ class ResourceManager {
     });
   }
 
+  // TODO documentation + test
   void Reserve(size_t capacity) {
     ApplyOnAllTypes(
         [&](auto* container, uint16_t type_idx) { container->reserve(capacity); });
   }
 
+  // TODO documentation + test
   template <typename TSo>
   void Reserve(size_t capacity) {
     Get<TSo>()->reserve(capacity);
   }
 
+  // TODO documentation + test
+  bool Contains(SoUid uid) const {
+    return so_storage_location_.find(uid) != so_storage_location_.end();
+  }
+
   /// Remove elements from each type
   void Clear() {
+    so_storage_location_.clear();  // FIXME add test that so_storage_location_ is also cleared
     ApplyOnAllTypes(
         [](auto* container, uint16_t type_idx) { container->clear(); });
   }

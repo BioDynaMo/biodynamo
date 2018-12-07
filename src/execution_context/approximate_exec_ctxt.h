@@ -17,6 +17,8 @@
 
 #include <vector>
 
+#include "resource_manager.h"
+
 namespace bdm {
 
 template <typename TCTParam = CompileTimeParam<>>
@@ -25,41 +27,95 @@ public:
   using Backend = typename TCTParam::SimulationBackend;
   using Types = typename TCTParam::SimObjectTypes;
 
+  ApproximateExecCtxt() {
+    // reserve enough memory to hold all new objects during one iteration of
+    // one sim object. If more objects would be created, references would
+    // become invalid.
+    new_sim_objects_.Reserve(10);
+  }
+
   void SetupIteration() {
-    remove_.clear();
+    // first iteration might have uncommited changes
+    TearDownIteration();
   }
 
   template <typename TSimulation = Simulation<>>
   void TearDownIteration() {
+    // FIXME this is probably a critical section
+
+    // new sim objects
     auto* rm = TSimulation::GetActive()->GetResourceManager();
+    new_sim_objects_.ApplyOnAllElements([&](auto&& sim_object, SoHandle){
+      rm->push_back(sim_object);
+    });
+    new_sim_objects_.Clear();
+
+    // removed sim objects
+    // remove them after adding new ones (maybe one has been removed
+    // that was in new_sim_objects_)
     for(auto& uid : remove_) {
       rm->Remove(uid);
     }
     remove_.clear();
   }
 
+  /// Create a new simulation object and return a reference to it.
+  /// @tparam TScalarSo simulation object type with scalar backend
+  /// @param args arguments which will be forwarded to the TScalarSo constructor
+  /// @remarks Note that this function is not thread safe.
+  template <typename TScalarSo, typename... Args, typename TBackend = Backend>
+  typename std::enable_if<std::is_same<TBackend, Soa>::value,
+                          typename TScalarSo::template Self<SoaRef>>::type
+  New(Args... args) {
+    TScalarSo so(std::forward<Args>(args)...);
+    auto uid = so.GetUid();
+    new_sim_objects_.push_back(so);
+    return new_sim_objects_.template GetSimObject<TScalarSo>(uid);
+  }
+
+  template <typename TScalarSo, typename... Args, typename TBackend = Backend>
+  typename std::enable_if<std::is_same<TBackend, Scalar>::value,
+                          TScalarSo&>::type
+  New(Args... args) {
+    TScalarSo so(std::forward<Args>(args)...);
+    auto uid = so.GetUid();
+    new_sim_objects_.push_back(so);
+    return new_sim_objects_.template GetSimObject<TScalarSo>(uid);
+  }
+
   template <typename TSo, typename TSimBackend = Backend, typename TSimulation = Simulation<>>
   auto&& GetSimObject(SoUid uid, typename std::enable_if<std::is_same<TSimBackend, Scalar>::value>::type* ptr = 0) {
     // check if the uid correspons to a new object not yet in the Rm
-
-    auto* rm = TSimulation::GetActive()->GetResourceManager();
-    return rm->template GetSimObject<TSo>(uid);
+    if (new_sim_objects_.Contains(uid)) {
+      return new_sim_objects_.template GetSimObject<TSo>(uid);
+    } else {
+      auto* rm = TSimulation::GetActive()->GetResourceManager();
+      return rm->template GetSimObject<TSo>(uid);
+    }
   }
 
   template <typename TSo, typename TSimBackend = Backend, typename TSimulation = Simulation<>>
   auto GetSimObject(SoUid uid, typename std::enable_if<std::is_same<TSimBackend, Soa>::value>::type* ptr = 0) {
-    auto* rm = TSimulation::GetActive()->GetResourceManager();
-    return rm->template GetSimObject<TSo>(uid);
+    if (new_sim_objects_.Contains(uid)) {
+      return new_sim_objects_.template GetSimObject<TSo>(uid);
+    } else {
+      auto* rm = TSimulation::GetActive()->GetResourceManager();
+      return rm->template GetSimObject<TSo>(uid);
+    }
   }
 
   template <typename TSimulation = Simulation<>>
   void RemoveFromSimulation(SoUid uid) {
-    auto* rm = TSimulation::GetActive()->GetResourceManager();
     remove_.push_back(uid);
   }
 
 private:
   std::vector<SoUid> remove_;
+
+  /// Use seperate ResourceManager to store new objects, before they are added
+  /// to the main ResourceManager. Using a ResourceManager adds
+  /// some memory overhead, but avoids code duplication.
+  ResourceManager<TCTParam> new_sim_objects_;
 };
 
 }  // namespace bdm

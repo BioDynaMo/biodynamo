@@ -178,9 +178,9 @@ BDM_SIM_OBJECT(Cell, SimulationObject) {
   ///
   /// \see CellDivisionEvent
   MostDerivedSoPtr Divide(double volume_ratio, double phi, double theta) {
-    auto* rm = Simulation_t::GetActive()->GetResourceManager();
+    auto* ctxt = Simulation_t::GetActive()->GetExecCtxt();
     CellDivisionEvent event{volume_ratio, phi, theta};
-    auto&& daughter = rm->template New<MostDerivedScalar>(event, ThisMD());
+    auto&& daughter = ctxt->template New<MostDerivedScalar>(event, ThisMD());
     ThisMD()->EventHandler(event, &daughter);
     return daughter.GetSoPtr();
   }

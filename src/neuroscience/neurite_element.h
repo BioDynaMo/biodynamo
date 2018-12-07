@@ -98,13 +98,13 @@ class NeuronNeuriteAdapter {
     return neuron_ptr_->GetPosition();
   }
 
-  std::array<double, 3> OriginOf(uint32_t daughter_element_idx) const {
+  std::array<double, 3> OriginOf(SoUid daughter_uid) const {
     if (IsNeuriteElement()) {
-      return neurite_ptr_->OriginOf(daughter_element_idx);
+      return neurite_ptr_->OriginOf(daughter_uid);
     }
     assert(IsNeuronSoma() &&
            "Initialization error: neither neuron nor neurite");
-    return neuron_ptr_->OriginOf(daughter_element_idx);
+    return neuron_ptr_->OriginOf(daughter_uid);
   }
 
   bool IsNeuronSoma() const { return neuron_ptr_ != nullptr; }
@@ -461,7 +461,7 @@ BDM_SIM_OBJECT(NeuriteElement, SimulationObject) {
   /// attached.
   /// @param daughter_element_idx element_idx of the daughter
   /// @return the coord
-  std::array<double, 3> OriginOf(uint32_t daughter_element_idx) const {
+  std::array<double, 3> OriginOf(SoUid daughter_uid) const {
     return mass_location_[kIdx];
   }
 
@@ -509,7 +509,7 @@ BDM_SIM_OBJECT(NeuriteElement, SimulationObject) {
       spring_axis_[kIdx] = Math::ScalarMult(factor, spring_axis_[kIdx]);
 
       mass_location_[kIdx] = Math::Add(
-          mother_[kIdx].OriginOf(Base::GetElementIdx()), spring_axis_[kIdx]);
+          mother_[kIdx].OriginOf(Base::GetUid()), spring_axis_[kIdx]);
       UpdateVolume();  // and update concentration of internal stuff.
     } else if (mother_[kIdx].IsNeuronSoma()) {
       mother_[kIdx].RemoveDaughter(Base::GetSoPtr());
@@ -561,10 +561,10 @@ BDM_SIM_OBJECT(NeuriteElement, SimulationObject) {
     // create a new neurite element for side branch
     // we first split this neurite element into two pieces
     // then append a "daughter right" between the two
-    auto* rm = Simulation_t::GetActive()->GetResourceManager();
+    auto* ctxt = Simulation_t::GetActive()->GetExecCtxt();
     NeuriteBranchingEvent event = {0.5, length, new_branch_diameter, direction};
-    auto&& proximal = rm->template New<MostDerivedScalar>(event, ThisMD(), 0);
-    auto&& branch = rm->template New<MostDerivedScalar>(event, &proximal, 1);
+    auto&& proximal = ctxt->template New<MostDerivedScalar>(event, ThisMD(), 0);
+    auto&& branch = ctxt->template New<MostDerivedScalar>(event, &proximal, 1);
     ThisMD()->EventHandler(event, &proximal, &branch);
     return branch.GetSoPtr();
   }
@@ -628,13 +628,13 @@ BDM_SIM_OBJECT(NeuriteElement, SimulationObject) {
       Fatal("NeuriteElements",
             "Bifurcation only allowed on a terminal neurite element");
     }
-    auto* rm = Simulation_t::GetActive()->GetResourceManager();
+    auto* ctxt = Simulation_t::GetActive()->GetExecCtxt();
     NeuriteBifurcationEvent event = {length, diameter_1, diameter_2,
                                      direction_1, direction_2};
     auto&& new_branch_l =
-        rm->template New<MostDerivedScalar>(event, ThisMD(), 0);
+        ctxt->template New<MostDerivedScalar>(event, ThisMD(), 0);
     auto&& new_branch_r =
-        rm->template New<MostDerivedScalar>(event, ThisMD(), 1);
+        ctxt->template New<MostDerivedScalar>(event, ThisMD(), 1);
     ThisMD()->EventHandler(event, &new_branch_l, &new_branch_r);
     return {new_branch_l.GetSoPtr(), new_branch_r.GetSoPtr()};
   }
@@ -804,7 +804,7 @@ BDM_SIM_OBJECT(NeuriteElement, SimulationObject) {
     // here I have to define the actual length ..........
     // auto& relative_pos = mother_[kIdx].GetPosition();
     auto relative_ml =
-        mother_[kIdx].OriginOf(Base::GetElementIdx());  //  change to auto&&
+        mother_[kIdx].OriginOf(Base::GetUid());  //  change to auto&&
     spring_axis_[kIdx] = Math::Subtract(new_mass_location, relative_ml);
     mass_location_[kIdx] = new_mass_location;
     actual_length_[kIdx] =
@@ -1283,7 +1283,7 @@ BDM_SIM_OBJECT(NeuriteElement, SimulationObject) {
   /// rL = resting length, aL = actual length. (Note the division by rL.
   /// Otherwise we could have cylinders with big aL and rL = 0).\n
   void UpdateDependentPhysicalVariables() {
-    auto relative_ml = mother_[kIdx].OriginOf(Base::GetElementIdx());
+    auto relative_ml = mother_[kIdx].OriginOf(Base::GetUid());
     spring_axis_[kIdx] = Math::Subtract(mass_location_[kIdx], relative_ml);
     actual_length_[kIdx] =
         std::sqrt(Math::Dot(spring_axis_[kIdx], spring_axis_[kIdx]));
@@ -1491,10 +1491,10 @@ BDM_SIM_OBJECT(NeuriteElement, SimulationObject) {
   ///
   /// \see SplitNeuriteElementEvent
   MostDerivedSoPtr SplitNeuriteElement(double distal_portion = 0.5) {
-    auto* rm = Simulation_t::GetActive()->GetResourceManager();
+    auto* ctxt = Simulation_t::GetActive()->GetExecCtxt();
     SplitNeuriteElementEvent event = {distal_portion};
     auto&& new_proximal_element =
-        rm->template New<MostDerivedScalar>(event, ThisMD());
+        ctxt->template New<MostDerivedScalar>(event, ThisMD());
     ThisMD()->EventHandler(event, &new_proximal_element);
     return new_proximal_element.GetSoPtr();
   }
@@ -1523,7 +1523,7 @@ BDM_SIM_OBJECT(NeuriteElement, SimulationObject) {
     // compute restingLength, and not the opposite...)
     // T = k*(A-R)/R --> R = k*A/(T+K)
     spring_axis_[kIdx] = Math::Subtract(
-        mass_location_[kIdx], mother_[kIdx].OriginOf(Base::GetElementIdx()));
+        mass_location_[kIdx], mother_[kIdx].OriginOf(Base::GetUid()));
     actual_length_[kIdx] = Math::Norm(spring_axis_[kIdx]);
     resting_length_[kIdx] = spring_constant_[kIdx] * actual_length_[kIdx] /
                             (tension_[kIdx] + spring_constant_[kIdx]);
@@ -1546,9 +1546,9 @@ BDM_SIM_OBJECT(NeuriteElement, SimulationObject) {
           "Can't extend a side neurite since daughter_right is not a nullptr!");
     }
 
-    auto* rm = Simulation_t::GetActive()->GetResourceManager();
+    auto* ctxt = Simulation_t::GetActive()->GetExecCtxt();
     SideNeuriteExtensionEvent event = {length, diameter, direction};
-    auto&& new_branch = rm->template New<MostDerivedScalar>(event, ThisMD());
+    auto&& new_branch = ctxt->template New<MostDerivedScalar>(event, ThisMD());
     ThisMD()->EventHandler(event, &new_branch);
     return new_branch.GetSoPtr();
   }

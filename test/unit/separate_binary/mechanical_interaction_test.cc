@@ -40,12 +40,14 @@ TEST(MechanicalInteraction, StraightxCylinderGrowth) {
   Simulation<> simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
 
-  auto neuron = rm->New<NeuronSoma>();
+  NeuronSoma neuron;
+  auto nuid = neuron.GetUid();
   neuron.SetPosition({0, 0, 0});
   neuron.SetMass(1);
   neuron.SetDiameter(10);
+  rm->push_back(neuron);
 
-  auto ne = neuron.ExtendNewNeurite({1, 0, 0});
+  auto ne = rm->GetSimObject<NeuronSoma>(nuid).ExtendNewNeurite({1, 0, 0});
   ne->SetDiameter(2);
 
   Scheduler<> scheduler;
@@ -215,16 +217,20 @@ TEST(MechanicalInteraction, StraightCylinderGrowthObstacle) {
   Simulation<> simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
 
-  auto neuron = rm->New<NeuronSoma>();
+  NeuronSoma neuron;
+  auto nuid = neuron.GetUid();
   neuron.SetPosition({0, 0, 0});
   neuron.SetDiameter(10);
+  rm->push_back(neuron);
 
-  auto neuron2 = rm->New<NeuronSoma>();
+  NeuronSoma neuron2;
+  auto nuid2 = neuron2.GetUid();
   neuron2.SetPosition({0, 0, 30});
   neuron2.SetMass(1);
   neuron2.SetDiameter(10);
+  rm->push_back(neuron2);
 
-  auto ne = neuron.ExtendNewNeurite({0, 0, 1});
+  auto ne = rm->GetSimObject<NeuronSoma>(nuid).ExtendNewNeurite({0, 0, 1});
   ne->SetDiameter(2);
 
   Scheduler<> scheduler;
@@ -234,6 +240,8 @@ TEST(MechanicalInteraction, StraightCylinderGrowthObstacle) {
   EXPECT_NEAR(ne_axis[0], 0, abs_error<double>::value);
   EXPECT_NEAR(ne_axis[1], 0, abs_error<double>::value);
   EXPECT_NEAR(ne_axis[2], 1, abs_error<double>::value);
+
+  simulation.GetExecCtxt()->SetupIteration();
 
   std::array<double, 3> direction = {0, 0, 1};
   for (int i = 0; i < 100; i++) {
