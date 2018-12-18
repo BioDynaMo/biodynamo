@@ -51,7 +51,7 @@ BDM_CTPARAM() {
 };
 ```
 
-And add the following line to the `construct` function:
+And add the following line to the constructor:
 
 ``` C++
 cell.AddBiologyModule(GrowDivide(32, 3000, {gAllEventIds}));
