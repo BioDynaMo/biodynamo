@@ -50,11 +50,10 @@ BDM_CTPARAM() {
   BDM_CTPARAM_FOR(bdm, Cell) { using BiologyModules = CTList<GrowDivide>; };
 };
 ```
-
-And add the following line to the `construct` function:
+Now one needs to add this behaviour to the cell, this can be done by adding the following line to the simulate function after the cell is created.
 
 ``` C++
-cell.AddBiologyModule(GrowDivide(32, 3000, {gAllEventIds}));
+cell.AddBiologyModule(GrowDivide(32, 3000, {gAllEventIds})); // Addidng the biological behaviour to the cell.
 ```
 
 Rebuild and rerun the simulation to have the cell division take effect. visit the
