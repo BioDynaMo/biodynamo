@@ -898,14 +898,14 @@ BDM_SIM_OBJECT(NeuriteElement, SimulationObject) {
     auto calculate_neighbor_forces = [this, &force_from_neighbors,
                                       &force_on_my_mothers_point_mass,
                                       &h_over_m, &has_neurite_neighbor](
-        auto&& neighbor) {
+        const auto* neighbor) {
       // TODO(lukas) once we switch to C++17 use if constexpr.
       // As a consequence the reinterpret_cast won't be needed anymore.
       // if neighbor is a NeuriteElement
-      if (neighbor.template IsSoType<MostDerivedScalar>()) {
-        auto&& neighbor_rc =
-            neighbor.template ReinterpretCast<MostDerivedScalar>();
-        auto n_soptr = neighbor_rc.GetSoPtr();
+      if (neighbor->template IsSoType<MostDerivedScalar>()) {
+        const auto* neighbor_rc =
+            neighbor->template ReinterpretCast<MostDerivedScalar>();
+        auto n_soptr = neighbor_rc->GetSoPtr();
         // if it is a direct relative, or sister branch, we don't take it into
         // account
         if (n_soptr == this->GetDaughterLeft() ||
@@ -915,11 +915,11 @@ BDM_SIM_OBJECT(NeuriteElement, SimulationObject) {
             n_soptr->GetMother() == this->GetMother()) {
           return;
         }
-      } else if (neighbor.template IsSoType<NeuronSoma>()) {
+      } else if (neighbor->template IsSoType<NeuronSoma>()) {
         // if neighbor is NeuronSoma
         // if it is a direct relative, we don't take it into account
-        auto&& neighbor_rc = neighbor.template ReinterpretCast<NeuronSoma>();
-        auto n_soptr = neighbor_rc.GetSoPtr();
+        const auto* neighbor_rc = neighbor->template ReinterpretCast<NeuronSoma>();
+        auto n_soptr = neighbor_rc->GetSoPtr();
         if (this->GetMother().IsNeuronSoma() &&
             this->GetMother().GetNeuronSomaSoPtr() == n_soptr) {
           return;
@@ -928,11 +928,11 @@ BDM_SIM_OBJECT(NeuriteElement, SimulationObject) {
 
       DefaultForce force;
       std::array<double, 4> force_from_neighbor =
-          force.GetForce(this, &neighbor);
+          force.GetForce(this, neighbor);
 
       // hack: if the neighbour is a neurite, we need to reduce the force from
       // that neighbour in order to avoid kink behaviour
-      if (neighbor.template IsSoType<MostDerivedScalar>()) {
+      if (neighbor->template IsSoType<MostDerivedScalar>()) {
         force_from_neighbor = Math::ScalarMult(h_over_m, force_from_neighbor);
         has_neurite_neighbor = true;
       }

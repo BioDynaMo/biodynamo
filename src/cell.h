@@ -354,9 +354,9 @@ BDM_SO_DEFINE(template <typename TGrid> inline std::array<double, 3>
   //  (We check for every neighbor object if they touch us, i.e. push us
   //  away)
 
-  auto calculate_neighbor_forces = [&, this](auto&& neighbor) {
+  auto calculate_neighbor_forces = [&, this](const auto* neighbor) {
     DefaultForce default_force;
-    auto neighbor_force = default_force.GetForce(this, &neighbor);
+    auto neighbor_force = default_force.GetForce(this, neighbor);
     translation_force_on_point_mass[0] += neighbor_force[0];
     translation_force_on_point_mass[1] += neighbor_force[1];
     translation_force_on_point_mass[2] += neighbor_force[2];

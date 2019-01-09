@@ -371,6 +371,16 @@ class SimulationObjectExt
   /// needed after we swith to C++17
   /// @tparam TSo target simulaton object type with any backend
   template <typename TSo>
+  constexpr const auto *ReinterpretCast() const {
+    using TargetType = typename TSo::template Self<Backend>;
+    return reinterpret_cast<const TargetType*>(this);
+  }
+
+  /// Casts this to a simulation object of type `TSo` with the current `Backend`
+  /// This function is used to simulate if constexpr functionality and won't be
+  /// needed after we swith to C++17
+  /// @tparam TSo target simulaton object type with any backend
+  template <typename TSo>
   constexpr auto &&ReinterpretCast(const TSo *object) {
     using TargetType = typename TSo::template Self<Backend>;
     return reinterpret_cast<TargetType &&>(*this);

@@ -448,7 +448,7 @@ class Grid {
           const auto& neighbor_position = sim_object.GetPosition();
           if (this->WithinSquaredEuclideanDistance(squared_radius, position,
                                                    neighbor_position)) {
-            lambda(sim_object);
+            lambda(&sim_object);
           }
         });
       }
@@ -1109,7 +1109,7 @@ class Grid {
               const auto& pos_c = pos_center_box[c];
               if (this->WithinSquaredEuclideanDistance(squared_radius, pos_c,
                                                        pos_n)) {
-                lambda(element_c, element_n);
+                lambda(&element_c, &element_n);
               }
             });
           }
@@ -1132,7 +1132,7 @@ class Grid {
               const auto& pos_c = pos_center_box[c];
               if (this->WithinSquaredEuclideanDistance(squared_radius, pos_c,
                                                        pos_n)) {
-                lambda(element_c, element_n);
+                lambda(&element_c, &element_n);
               }
             });
           }
