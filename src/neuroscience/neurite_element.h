@@ -215,7 +215,7 @@ class NeuronNeuriteAdapter {
 BDM_SIM_OBJECT(NeuriteElement, SimulationObject) {
   BDM_SIM_OBJECT_HEADER(
       NeuriteElement, SimulationObject, 1, mass_location_, volume_, diameter_,
-      density_, adherence_, x_axis_, y_axis_, z_axis_, box_idx_, is_axon_,
+      density_, adherence_, x_axis_, y_axis_, z_axis_, is_axon_,
       mother_, daughter_left_, daughter_right_, branch_order_,
       force_to_transmit_to_proximal_mass_, spring_axis_, actual_length_,
       tension_, spring_constant_, resting_length_);
@@ -452,10 +452,6 @@ BDM_SIM_OBJECT(NeuriteElement, SimulationObject) {
   double GetDensity() const { return density_[kIdx]; }
 
   double GetMass() const { return density_[kIdx] * volume_[kIdx]; }
-
-  uint64_t GetBoxIdx() const { return box_idx_[kIdx]; }
-
-  void SetBoxIdx(uint64_t idx) { box_idx_[kIdx] = idx; }
 
   /// Returns the absolute coordinates of the location where the daughter is
   /// attached.
@@ -1445,8 +1441,6 @@ BDM_SIM_OBJECT(NeuriteElement, SimulationObject) {
   vec<std::array<double, 3>> y_axis_ = {{0.0, 1.0, 0.0}};
   /// Third axis of the local coordinate system.
   vec<std::array<double, 3>> z_axis_ = {{0.0, 0.0, 1.0}};
-  /// Grid box index
-  vec<uint64_t> box_idx_ = {{}};
 
   vec<bool> is_axon_ = {{false}};
 

@@ -38,7 +38,7 @@ namespace bdm {
 
 BDM_SIM_OBJECT(Cell, SimulationObject) {
   BDM_SIM_OBJECT_HEADER(Cell, SimulationObject, 1, position_, tractor_force_,
-                        diameter_, volume_, adherence_, density_, box_idx_);
+                        diameter_, volume_, adherence_, density_);
 
  public:
   /// First axis of the local coordinate system.
@@ -123,7 +123,6 @@ BDM_SIM_OBJECT(Cell, SimulationObject) {
 
     daughter->SetAdherence(mother->GetAdherence());
     daughter->SetDensity(mother->GetDensity());
-    daughter->SetBoxIdx(mother->GetBoxIdx());
     // G) TODO(lukas) Copy the intracellular and membrane bound Substances
   }
 
@@ -200,7 +199,6 @@ BDM_SIM_OBJECT(Cell, SimulationObject) {
   double* GetDiameterPtr() { return diameter_.data(); }
   double* GetTractorForcePtr() { return tractor_force_.data()->data(); }
   double* GetAdherencePtr() { return adherence_.data(); }
-  uint32_t* GetBoxIdPtr() { return box_idx_.data(); }
 
   void FillMassVector(std::vector<double> * mass) {
     for (size_t i = 0; i < diameter_.size(); i++) {
@@ -272,10 +270,6 @@ BDM_SIM_OBJECT(Cell, SimulationObject) {
 
   void ApplyDisplacement(const std::array<double, 3>& displacement);
 
-  uint32_t GetBoxIdx() const { return box_idx_[kIdx]; }
-
-  void SetBoxIdx(uint32_t idx) { box_idx_[kIdx] = idx; }
-
  protected:
   /// Returns the position in the polar coordinate system (cylindrical or
   /// spherical) of a point expressed in global cartesian coordinates
@@ -291,9 +285,6 @@ BDM_SIM_OBJECT(Cell, SimulationObject) {
   vec<double> volume_;
   vec<double> adherence_;
   vec<double> density_;
-
-  /// Grid box index
-  vec<uint32_t> box_idx_;
 
   /// \brief EventHandler to modify the data members of this cell
   /// after a cell division.

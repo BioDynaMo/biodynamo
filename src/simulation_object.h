@@ -317,7 +317,7 @@ class SimulationObjectExt
   template <typename T, typename U>
   using SimObjectBaseExt = typename SimulationObjectImpl<T, U>::type;
 
-  BDM_SIM_OBJECT_HEADER(SimulationObject, SimObjectBase, 1, uid_, biology_modules_);
+  BDM_SIM_OBJECT_HEADER(SimulationObject, SimObjectBase, 1, uid_, box_idx_, biology_modules_);
 
  public:
   SimulationObjectExt() : Base() {
@@ -328,6 +328,7 @@ class SimulationObjectExt
   SimulationObjectExt(const TEvent &event, TOther *other,
                       uint64_t new_oid = 0) {
     uid_[kIdx] = SoUidGenerator::Get()->NewSoUid();
+    box_idx_[kIdx] = other->GetBoxIdx();
     // biology modules
     auto &other_bms = other->biology_modules_[other->kIdx];
     // copy biology_modules_ to me
@@ -386,6 +387,14 @@ class SimulationObjectExt
   void RunDiscretization() {}
 
   SoUid GetUid() const { return uid_[kIdx]; }
+
+  uint32_t GetBoxIdx() const { return box_idx_[kIdx]; }
+
+  void SetBoxIdx(uint32_t idx) { box_idx_[kIdx] = idx; }
+
+  // TODO(ahmad) this only works for SOA backend add check for SOA
+  // used only for cuda and opencl code
+  uint32_t* GetBoxIdPtr() { return box_idx_.data(); }
 
   SoHandle GetSoHandle() const {
     auto* rm = Simulation_t::GetActive()->GetResourceManager();
@@ -473,6 +482,8 @@ class SimulationObjectExt
  protected:
   /// unique id
   vec<SoUid> uid_ = {{}};
+  /// Grid box index
+  vec<uint32_t> box_idx_ = {{}};
   /// collection of biology modules which define the internal behavior
   vec<std::vector<BiologyModules>> biology_modules_;
 
