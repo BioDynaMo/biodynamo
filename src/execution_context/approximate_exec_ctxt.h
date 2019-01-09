@@ -99,7 +99,7 @@ public:
 
   template <typename TSo, typename TSimBackend = Backend, typename TSimulation = Simulation<>>
   auto&& GetSimObject(SoUid uid, typename std::enable_if<std::is_same<TSimBackend, Scalar>::value>::type* ptr = 0) {
-    // check if the uid correspons to a new object not yet in the Rm
+    // check if the uid corresponds to a new object not yet in the Rm
     if (new_sim_objects_.Contains(uid)) {
       return new_sim_objects_.template GetSimObject<TSo>(uid);
     } else {
@@ -116,6 +116,16 @@ public:
       auto* rm = TSimulation::GetActive()->GetResourceManager();
       return rm->template GetSimObject<TSo>(uid);
     }
+  }
+
+  template <typename TSo, typename TSimBackend = Backend, typename TSimulation = Simulation<>>
+  const auto&& GetConstSimObject(SoUid uid, typename std::enable_if<std::is_same<TSimBackend, Scalar>::value>::type* ptr = 0) {
+    return GetSimObject<TSo>(uid);
+  }
+
+  template <typename TSo, typename TSimBackend = Backend, typename TSimulation = Simulation<>>
+  const auto GetConstSimObject(SoUid uid, typename std::enable_if<std::is_same<TSimBackend, Soa>::value>::type* ptr = 0) {
+    return GetSimObject<TSo>(uid);
   }
 
   template <typename TSimulation = Simulation<>>

@@ -82,7 +82,7 @@ class SoPointer {
   operator->() const {
     assert(*this != nullptr);
     auto* ctxt = TSimulation::GetActive()->GetExecCtxt();
-    return ctxt->template GetSimObject<SoSoaRef>(uid_);
+    return ctxt->template GetConstSimObject<SoSoaRef>(uid_);
   }
 
   template <typename TTBackend = TBackend, typename TSimulation = Simulation<>>
@@ -99,7 +99,7 @@ class SoPointer {
   operator->() const {
     assert(*this != nullptr);
     auto* ctxt = TSimulation::GetActive()->GetExecCtxt();
-    return ctxt->template GetSimObject<SoSoaRef>(uid_);
+    return ctxt->template GetConstSimObject<SoSoaRef>(uid_);
   }
 
   friend std::ostream& operator<<(
