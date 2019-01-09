@@ -48,16 +48,16 @@ TEST(GridTest, SetupGrid) {
   std::vector<std::vector<SoHandle>> neighbors(rm->GetNumSimObjects());
 
   // Lambda that fills a vector of neighbors for each cell (excluding itself)
-  rm->ApplyOnAllElements([&](auto&& cell, SoHandle cell_handle) {
-    auto el_idx = cell_handle.GetElementIdx();
-    auto fill_neighbor_list = [&](auto&& neighbor, SoHandle handle) {
+  rm->ApplyOnAllElements([&](auto&& cell, SoHandle) {
+    auto el_idx = cell.GetSoHandle().GetElementIdx();
+    auto fill_neighbor_list = [&](auto&& neighbor) {
+      auto handle = neighbor.GetSoHandle();
       if (el_idx != handle.GetElementIdx()) {
         neighbors[el_idx].push_back(handle);
       }
     };
 
-    grid->ForEachNeighborWithinRadius(fill_neighbor_list, cell, cell_handle,
-                                      1201);
+    grid->ForEachNeighborWithinRadius(fill_neighbor_list, cell, 1201);
   });
 
   std::vector<SoHandle> expected_0 = {
@@ -100,16 +100,16 @@ void RunUpdateGridTest(Simulation<>* simulation) {
   std::vector<std::vector<SoHandle>> neighbors(rm->GetNumSimObjects());
 
   // Lambda that fills a vector of neighbors for each cell (excluding itself)
-  rm->ApplyOnAllElements([&](auto&& cell, SoHandle cell_handle) {
-    auto el_idx = cell_handle.GetElementIdx();
-    auto fill_neighbor_list = [&](auto&& neighbor, SoHandle handle) {
+  rm->ApplyOnAllElements([&](auto&& cell, SoHandle) {
+    auto el_idx = cell.GetSoHandle().GetElementIdx();
+    auto fill_neighbor_list = [&](auto&& neighbor) {
+      auto handle = neighbor.GetSoHandle();
       if (el_idx != handle.GetElementIdx()) {
         neighbors[el_idx].push_back(handle);
       }
     };
 
-    grid->ForEachNeighborWithinRadius(fill_neighbor_list, cell, cell_handle,
-                                      1201);
+    grid->ForEachNeighborWithinRadius(fill_neighbor_list, cell, 1201);
   });
 
   std::vector<SoHandle> expected_0 = {SoHandle(0, 4),  SoHandle(0, 5),
@@ -264,9 +264,9 @@ void RunNoRaceConditionForEachPairTest() {
 
   std::vector<int> result(rm->GetNumSimObjects());
 
-  auto lambda = [&](auto&& lhs, SoHandle lhs_id, auto&& rhs, SoHandle rhs_id) {
-    result[lhs_id.GetElementIdx()]++;
-    result[rhs_id.GetElementIdx()]++;
+  auto lambda = [&](auto&& lhs, auto&& rhs) {
+    result[lhs.GetSoHandle().GetElementIdx()]++;
+    result[rhs.GetSoHandle().GetElementIdx()]++;
   };
 
   // space between cells is 20 -> 20^2 + 1 = 401

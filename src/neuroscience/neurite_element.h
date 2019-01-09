@@ -898,7 +898,7 @@ BDM_SIM_OBJECT(NeuriteElement, SimulationObject) {
     auto calculate_neighbor_forces = [this, &force_from_neighbors,
                                       &force_on_my_mothers_point_mass,
                                       &h_over_m, &has_neurite_neighbor](
-        auto&& neighbor, SoHandle neighbor_handle) {
+        auto&& neighbor) {
       // TODO(lukas) once we switch to C++17 use if constexpr.
       // As a consequence the reinterpret_cast won't be needed anymore.
       // if neighbor is a NeuriteElement
@@ -959,7 +959,7 @@ BDM_SIM_OBJECT(NeuriteElement, SimulationObject) {
     };
 
     grid->ForEachNeighborWithinRadius(calculate_neighbor_forces, *this,
-                                      Base::GetSoHandle(), squared_radius);
+                                      squared_radius);
 
     // hack: if the neighbour is a neurite, and as we reduced the force from
     // that neighbour, we also need to reduce my internal force (from internal

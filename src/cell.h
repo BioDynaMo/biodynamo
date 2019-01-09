@@ -354,8 +354,7 @@ BDM_SO_DEFINE(template <typename TGrid> inline std::array<double, 3>
   //  (We check for every neighbor object if they touch us, i.e. push us
   //  away)
 
-  auto calculate_neighbor_forces = [&, this](auto&& neighbor,
-                                             auto&& neighbor_handle) {
+  auto calculate_neighbor_forces = [&, this](auto&& neighbor) {
     DefaultForce default_force;
     auto neighbor_force = default_force.GetForce(this, &neighbor);
     translation_force_on_point_mass[0] += neighbor_force[0];
@@ -364,7 +363,7 @@ BDM_SO_DEFINE(template <typename TGrid> inline std::array<double, 3>
   };
 
   grid->ForEachNeighborWithinRadius(calculate_neighbor_forces, *this,
-                                    Base::GetSoHandle(), squared_radius);
+                                    squared_radius);
 
   // 4) PhysicalBonds
   // How the physics influences the next displacement

@@ -396,14 +396,12 @@ class Grid {
   ///
   /// @param[in]  lambda  The operation as a lambda
   /// @param      query   The query object
-  /// @param      simulation_object_id
   ///
   /// @tparam     Lambda  The type of the lambda operation
   /// @tparam     SO      The type of the simulation object
   ///
   template <typename Lambda, typename SO>
-  void ForEachNeighbor(const Lambda& lambda, const SO& query,
-                       const SoHandle& simulation_object_id) const {
+  void ForEachNeighbor(const Lambda& lambda, const SO& query) const {
     const auto& position = query.GetPosition();
     auto idx = GetBoxIndex(position);
 
@@ -413,7 +411,7 @@ class Grid {
     NeighborIterator ni(neighbor_boxes);
     while (!ni.IsAtEnd()) {
       // Do something with neighbor object
-      if (*ni != simulation_object_id) {
+      if (*ni != query.GetSoHandle()) {
         lambda(*ni);
       }
       ++ni;
@@ -425,7 +423,6 @@ class Grid {
   ///
   /// @param[in]  lambda  The operation as a lambda
   /// @param      query   The query object
-  /// @param      simulation_object_id
   /// @param[in]  squared_radius  The search radius squared
   ///
   /// @tparam     Lambda      The type of the lambda operation
@@ -433,8 +430,8 @@ class Grid {
   ///
   template <typename Lambda, typename SO>
   void ForEachNeighborWithinRadius(const Lambda& lambda, const SO& query,
-                                   const SoHandle& simulation_object_id,
                                    double squared_radius) {
+    auto so_handle = query.GetSoHandle();
     const auto& position = query.GetPosition();
     auto idx = query.GetBoxIdx();
 
@@ -446,12 +443,12 @@ class Grid {
     while (!ni.IsAtEnd()) {
       // Do something with neighbor object
       SoHandle neighbor_handle = *ni;
-      if (neighbor_handle != simulation_object_id) {
+      if (neighbor_handle != so_handle) {
         rm->ApplyOnElement(neighbor_handle, [&](auto&& sim_object) {
           const auto& neighbor_position = sim_object.GetPosition();
           if (this->WithinSquaredEuclideanDistance(squared_radius, position,
                                                    neighbor_position)) {
-            lambda(sim_object, neighbor_handle);
+            lambda(sim_object);
           }
         });
       }
@@ -470,8 +467,7 @@ class Grid {
   ///
   ///     // using lhs_id and rhs_id to index into an array is thread-safe
   ///     SimulationObjectVector<std::array<double, 3>> total_force;
-  ///     grid.ForEachNeighborPairWithinRadius([&](auto&& lhs, SoHandle lhs_id,
-  ///                                          auto&& rhs, SoHandle rhs_id) {
+  ///     grid.ForEachNeighborPairWithinRadius([&](auto&& lhs, auto&& rhs) {
   ///       auto force = ...;
   ///       total_force[lhs_id] += force;
   ///       total_force[rhs_id] -= force;
@@ -1113,8 +1109,7 @@ class Grid {
               const auto& pos_c = pos_center_box[c];
               if (this->WithinSquaredEuclideanDistance(squared_radius, pos_c,
                                                        pos_n)) {
-                lambda(element_c, soh_center_box[c], element_n,
-                       soh_center_box[n]);
+                lambda(element_c, element_n);
               }
             });
           }
@@ -1137,7 +1132,7 @@ class Grid {
               const auto& pos_c = pos_center_box[c];
               if (this->WithinSquaredEuclideanDistance(squared_radius, pos_c,
                                                        pos_n)) {
-                lambda(element_c, soh_center_box[c], element_n, soh_box[n]);
+                lambda(element_c, element_n);
               }
             });
           }
