@@ -59,6 +59,20 @@ public:
     remove_.clear();
   }
 
+  /// Execute a single operation on a simulation object
+  template <typename TSo, typename TFirstOp>
+  void Execute(TSo&& so, TFirstOp first_op) {
+    first_op(so);
+  }
+
+  /// Execute a series of operations on a simulation object in the order given
+  /// in the argument
+  template <typename TSo, typename TFirstOp, typename... TOps>
+  void Execute(TSo&& so, TFirstOp first_op, TOps... other_ops) {
+    first_op(so);
+    Execute(so, other_ops...);
+  }
+
   /// Create a new simulation object and return a reference to it.
   /// @tparam TScalarSo simulation object type with scalar backend
   /// @param args arguments which will be forwarded to the TScalarSo constructor

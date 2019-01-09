@@ -121,4 +121,38 @@ TEST(ApproximateExecCtxt, NewAndGetSimObject) {
   EXPECT_EQ(789, rm->GetSimObject<Cell>(uid_1).GetDiameter());
 }
 
+TEST(ApproximateExecCtxt, Execute) {
+  Simulation<> sim(TEST_NAME);
+  auto* rm = sim.GetResourceManager();
+  auto* ctxt = sim.GetExecCtxt();
+
+  Cell cell_0;
+  cell_0.SetDiameter(123);
+  auto uid_0 = cell_0.GetUid();
+
+  bool op1_called = false;
+  bool op2_called = false;
+
+  auto op1 = [&](auto&& so) {
+    // op1 must be  called first
+    EXPECT_FALSE(op1_called);
+    EXPECT_FALSE(op2_called);
+    EXPECT_EQ(so.GetUid(), uid_0);
+    op1_called = true;
+  };
+
+  auto op2 = [&](auto&& so) {
+    // op2 must be  called first
+    EXPECT_TRUE(op1_called);
+    EXPECT_FALSE(op2_called);
+    EXPECT_EQ(so.GetUid(), uid_0);
+    op2_called = true;
+  };
+
+  ctxt->Execute(cell_0, op1, op2);
+
+  EXPECT_TRUE(op1_called);
+  EXPECT_TRUE(op2_called);
+}
+
 }  // namespace bdm

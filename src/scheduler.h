@@ -98,23 +98,30 @@ class Scheduler {
     });
     Timing::Time("neighbors", [&]() { grid->UpdateGrid(); });
 
+    // create ops
+    auto bound_space_op = [&](auto&& so) {
+      if (param->bound_space_) {
+        ApplyBoundingBox(&so, param->min_bound_, param->max_bound_);
+      }
+    };
+
+    auto biology_module_op = [&](auto&& so) { so.RunBiologyModules(); };
+    auto discretization_op = [&](auto&& so) { so.RunDiscretization(); };
+
+    // TODO consolidate displacement ops and fix variable name
     DisplacementOp1<TSimulation> displacement_;
+    auto displacement_op = [&](auto&& so) {
+      if (param->run_mechanical_interactions_) {
+        displacement_(so);
+      }
+    };
 
     rm->ApplyOnAllTypes([&](auto* sim_objects, uint16_t type_idx){
 #pragma omp parallel for schedule(dynamic, 100)
       for (size_t i = 0; i < sim_objects->size(); i++) {
         auto&& so = (*sim_objects)[i];
-        // TODO(ahmad): should we only do it here and not after we run the physics?
-        // We need it here, because we need to update the threshold values before
-        // we update the diffusion grid
-        if (param->bound_space_) {
-          ApplyBoundingBox(&so, param->min_bound_, param->max_bound_);
-        }
-        so.RunBiologyModules();
-        if (param->run_mechanical_interactions_) {
-          displacement_(so);
-        }
-        so.RunDiscretization();
+        sim->GetExecCtxt()->Execute(so, bound_space_op, biology_module_op,
+                                    displacement_op, discretization_op);
       }
     });
 
