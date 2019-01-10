@@ -22,7 +22,6 @@
 
 #include "macros.h"
 #include "root_util.h"
-#include "transactional_vector.h"
 
 namespace bdm {
 
@@ -136,7 +135,7 @@ struct Scalar {
 
   /// Data type to store a collection of simulation objects with this backend
   template <typename T>
-  using Container = TransactionalVector<T>;
+  using Container = std::vector<T>;
 };
 
 struct Soa {

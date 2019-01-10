@@ -19,7 +19,6 @@
 #include "biology_module_util.h"
 #include "cell.h"
 #include "compile_time_param.h"
-#include "transactional_vector.h"
 #include "unit/test_util.h"
 
 namespace bdm {
@@ -73,7 +72,7 @@ inline void RunTest(T* cells) {
 }
 
 inline void RunTestAos() {
-  TransactionalVector<CellTest<CompileTimeParam<Scalar>>> cells;
+  std::vector<CellTest<CompileTimeParam<Scalar>>> cells;
   RunTest(&cells);
 }
 

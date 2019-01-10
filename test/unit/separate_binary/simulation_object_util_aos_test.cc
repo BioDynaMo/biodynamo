@@ -36,7 +36,6 @@ TEST(SimulationObjectUtilAosTest, GetSoPtr) {
     rm->push_back(Cell(1));
   }
 
-  rm->Get<Cell>()->Commit();
   EXPECT_EQ(10u, rm->GetNumSimObjects());
 
   auto cells = rm->Get<Cell>();

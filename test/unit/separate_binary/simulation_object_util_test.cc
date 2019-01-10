@@ -30,25 +30,14 @@ TEST(SimulationObjectUtilTest, ContainerFunctionality) {
   auto vector = Scalar::NewEmptySoa();
 
   EXPECT_EQ(0u, vector.size());
-  EXPECT_EQ(0u, vector.GetTotalSize());
 
-  EXPECT_EQ(0u, vector.DelayedPushBack(Scalar(1, 1.0)));
-  EXPECT_EQ(1u, vector.DelayedPushBack(Scalar(2, 2.0)));
-  EXPECT_EQ(2u, vector.DelayedPushBack(Scalar(3, 3.0)));
-
-  // changes have not been commited yet
-  EXPECT_EQ(0u, vector.size());
-  //   but data is already in vector
-  EXPECT_EQ(3u, vector.GetVecDm1().size());
-  EXPECT_EQ(3u, vector.GetVecDm2().size());
-  EXPECT_EQ(3u, vector.GetTotalSize());
-
-  vector.Commit();
+  vector.push_back(Scalar(1, 1.0));
+  vector.push_back(Scalar(2, 2.0));
+  vector.push_back(Scalar(3, 3.0));
 
   EXPECT_EQ(3u, vector.size());
   EXPECT_EQ(3u, vector.GetVecDm1().size());
   EXPECT_EQ(3u, vector.GetVecDm2().size());
-  EXPECT_EQ(3u, vector.GetTotalSize());
 
   EXPECT_EQ(1, vector[0].GetDm1());
   EXPECT_EQ(1.0, vector[0].GetDm2());
@@ -57,14 +46,8 @@ TEST(SimulationObjectUtilTest, ContainerFunctionality) {
   EXPECT_EQ(3, vector[2].GetDm1());
   EXPECT_EQ(3.0, vector[2].GetDm2());
 
-  // push_back
   vector.push_back(Scalar(9, 9.0));
   EXPECT_EQ(4u, vector.size());
-  EXPECT_EQ(4u, vector.GetTotalSize());
-
-  vector.DelayedPushBack(Scalar(10, 10.0));
-  EXPECT_EQ(4u, vector.size());
-  EXPECT_EQ(5u, vector.GetTotalSize());
 }
 
 template <typename T>
@@ -242,7 +225,8 @@ TEST(SimulationObjectUtilTest, Soa_DivideWithResourceManager) {
   simulation.GetExecCtxt()->TearDownIteration();
 
   ASSERT_EQ(2u, neurons->size());
-  // new_neuron got invalidated by `Commit()`, but is now accessible in neurons
+  // new_neuron got invalidated by `TearDownIteration()`, but is now accessible
+  // in neurons
   EXPECT_EQ(987u, (*neurons)[1].GetNeurites()[0].id_);
   EXPECT_EQ(5, (*neurons)[1].GetPosition()[0]);
   EXPECT_EQ(4, (*neurons)[1].GetPosition()[1]);

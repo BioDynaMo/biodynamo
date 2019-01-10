@@ -332,7 +332,6 @@ struct Capsule;
   /** all data members */                                                      \
   template <typename T = Backend>                                              \
   typename enable_if<is_soa<T>::value>::type clear() {                         \
-    std::lock_guard<std::recursive_mutex> lock(Base::mutex_);                  \
     Base::clear();                                                             \
     BDM_SIM_OBJECT_CLEAR_BODY(__VA_ARGS__)                                     \
   }                                                                            \
@@ -342,7 +341,6 @@ struct Capsule;
   template <typename T = Backend>                                              \
   typename enable_if<is_soa<T>::value>::type reserve(                          \
       std::size_t new_capacity) {                                              \
-    std::lock_guard<std::recursive_mutex> lock(Base::mutex_);                  \
     Base::reserve(new_capacity);                                               \
     BDM_SIM_OBJECT_RESERVE_BODY(new_capacity, __VA_ARGS__)                     \
   }                                                                            \
@@ -373,19 +371,6 @@ struct Capsule;
     BDM_SIM_OBJECT_ASSIGNMENT_OP_BODY(__VA_ARGS__)                        \
     Base::operator=(rhs);                                           \
     return *this;                                                              \
-  }                                                                            \
-                                                                               \
-  /** Safe method to add an element to this vector. */                         \
-  /** Does not invalidate, iterators, pointers or references. */               \
-  /** Changes do not take effect until they are commited.*/                    \
-  /** @param other element that should be added to the vector*/                \
-  /** @return  index of the added element in `data_`. Will be bigger than*/    \
-  /**          `size()` */                                                     \
-  template <typename T = Backend>                                              \
-  uint64_t DelayedPushBack(const Self<Scalar>& other) {                        \
-    std::lock_guard<std::recursive_mutex> lock(Base::mutex_);                  \
-    PushBackImpl(other);                                                       \
-    return Base::TotalSize() - 1;                                              \
   }                                                                            \
                                                                                \
  protected:                                                                    \

@@ -185,8 +185,12 @@ class Scheduler {
     auto* grid = sim->GetGrid();
     auto* rm = sim->GetResourceManager();
     auto* param = sim->GetParam();
+    auto* ctxt = sim->GetExecCtxt();
 
-    rm->Commit();
+    // commit all changes
+    for (auto* ctxt : sim->GetAllExecCtxts()) {
+      ctxt->TearDownIteration();
+    }
 
     if (!is_gpu_environment_initialized_ && param->use_gpu_) {
       InitializeGPUEnvironment<>();

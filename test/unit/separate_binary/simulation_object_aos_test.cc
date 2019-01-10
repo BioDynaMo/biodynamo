@@ -34,7 +34,6 @@ TEST(SimulationObjectTest, AosGetElementIndex) {
   for (uint64_t i = 0; i < 10; i++) {
     rm->push_back(Cell(1));
   }
-  rm->Get<Cell>()->Commit();
   EXPECT_EQ(10u, rm->GetNumSimObjects());
   auto cells = rm->Get<Cell>();
   for (uint64_t i = 0; i < 10; i++) {

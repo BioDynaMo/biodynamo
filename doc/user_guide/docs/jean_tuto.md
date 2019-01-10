@@ -66,7 +66,6 @@ Then, with a simple loop from 0 to the number of cells, we will be able to fill 
 
     cells->push_back(cell); // put the created cell in our cells structure
   }
-  cells->Commit();  // commit cells
 ```
 
 We now have our structure containing all the 2400 cells! The code in charge of running our modelling is already written and will simulate it for only one step. Lets change this to simulate for 100 steps.
@@ -442,8 +441,6 @@ namespace bdm {
     cell.SetDiameter(6);
     cell.AddBiologyModule(GrowthModule());
     cells->push_back(cell);  // put the created cell in our cells structure
-
-    cells->Commit();  // commit cells
 
     // Run simulation
     std::cout << "simulating" << std::endl;

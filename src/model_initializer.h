@@ -62,7 +62,6 @@ struct ModelInitializer {
         }
       }
     }
-    rm->Commit();
   }
 
   /// Creates a 3D grid of simulation objects and adds them to the
@@ -101,7 +100,6 @@ struct ModelInitializer {
         }
       }
     }
-    rm->Commit();
   }
 
   /// Adds simulation objects to the ResourceManager. Type of the simulation
@@ -126,7 +124,6 @@ struct ModelInitializer {
           cell_builder({positions[i][0], positions[i][1], positions[i][2]});
       rm->push_back(new_simulation_object);
     }
-    rm->Commit();
   }
 
   /// Adds simulation objects with random positions to the ResourceManager.
@@ -161,7 +158,6 @@ struct ModelInitializer {
       auto new_simulation_object = cell_builder({x, y, z});
       rm->push_back(new_simulation_object);
     }
-    rm->Commit();
   }
 
   /// Allows cells to secrete the specified substance. Diffusion throughout the

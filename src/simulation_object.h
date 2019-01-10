@@ -16,7 +16,6 @@
 #define SIMULATION_OBJECT_H_
 
 #include <algorithm>
-#include <mutex>
 #include <set>
 #include <sstream>
 #include <string>
@@ -45,7 +44,6 @@ class ScalarSimulationObject;
 /// Contains implementation for SimulationObject that are specific to SOA
 /// backend. The peculiarity of SOA objects is that it is simulation object
 /// and container at the same time.
-/// @see TransactionalVector
 template <typename TCompileTimeParam, typename TDerived>
 class SoaSimulationObject {
  public:
@@ -62,7 +60,7 @@ class SoaSimulationObject {
       SoaSimulationObject<typename TCompileTimeParam::template Self<TBackend>,
                           TDerived>;
 
-  SoaSimulationObject() : total_size_(1), size_(1) {}
+  SoaSimulationObject() : size_(1) {}
 
   /// Detect failing return value optimization (RVO)
   /// Copy-ctor declaration to please compiler, but missing implementation.
@@ -79,22 +77,16 @@ class SoaSimulationObject {
   template <typename T>
   SoaSimulationObject(T *other, size_t idx)
       : kIdx(idx),
-        mutex_(other->mutex_),
-        total_size_(other->total_size_),
         size_(other->size_) {}
 
   virtual ~SoaSimulationObject() {}
 
   SoaSimulationObject &operator=(SoaSimulationObject &&other) {
-    // mutex_ = std::move(other.mutex_);
-    total_size_ = other.total_size_;
     size_ = other.size_;
     return *this;
   }
 
   SoaSimulationObject &operator=(const SoaSimulationObject& other) {
-    // mutex_ = std::move(other.mutex_);
-    total_size_ = other.total_size_;
     size_ = other.size_;
     return *this;
   }
@@ -114,76 +106,19 @@ class SoaSimulationObject {
     return size_;
   }
 
-  /// Returns the number of elements in the container including non commited
-  /// additions
-  size_t TotalSize() const { return total_size_; }
-
-  /// Thread safe version of std::vector::push_back
   template <typename TTBackend>
   void push_back(const MostDerived<TTBackend> &element) {  // NOLINT
-    std::lock_guard<std::recursive_mutex> lock(mutex_);
-    if (total_size_ == size_) {
-      PushBackImpl(element);
-      size_++;
-    } else {
-      throw std::logic_error(
-          "There are uncommited delayed additions to this container");
-    }
+    PushBackImpl(element);
   }
 
   void pop_back() {  // NOLINT
-    std::lock_guard<std::recursive_mutex> lock(mutex_);
     PopBack();
   }
 
   /// Equivalent to std::vector<> clear - it removes all elements from all
   /// data members
   void clear() {  // NOLINT
-    total_size_ = 0;
     size_ = 0;
-  }
-
-  // FIXME remove
-// FIXME update documentation
-  /// This method commits changes made by `DelayedPushBack` and `DelayedRemove`.
-  /// CAUTION: \n
-  ///   * Commit invalidates pointers and references returned by
-  ///     `DelayedPushBack`. \n
-  ///   * If memory reallocations are required all pointers or references
-  ///     into this container are invalidated\n
-  /// One removal has constant complexity. If the element which should be
-  /// removed is not the last element it is swapped with the last one.
-  /// (CAUTION: this invalidates pointers and references to the last element)
-  /// In the next step it can be removed in constant time using pop_back. \n
-  std::vector<std::pair<SoUid, uint32_t>> Commit() {
-    std::lock_guard<std::recursive_mutex> lock(mutex_);
-
-    std::vector<std::pair<SoUid, uint32_t>> new_storage_location;
-    // new_storage_location.reserve(to_be_removed_.size());
-
-    // commit delayed push backs
-    size_ = total_size_;
-    // // commit delayed removes
-    // // sort indices in descending order to prevent out of bounds accesses
-    // auto descending = [](auto a, auto b) { return a > b; };
-    // std::sort(to_be_removed_.begin(), to_be_removed_.end(), descending);
-    // for (size_t idx : to_be_removed_) {
-    //   assert(idx < size_ && "Removed index outside array boundaries");
-    //   if (idx < size_ - 1) {
-    //     // FIXME
-    //     // new_storage_location.push_back({data_[idx].GetUid(), std::numeric_limits<uint32_t>::max()});
-    //     // new_storage_location.push_back({data_[size_ - 1].GetUid(), idx});
-    //     SwapAndPopBack(idx, size_);
-    //   } else {
-    //     // new_storage_location.push_back({data_[size_ - 1].GetUid(), std::numeric_limits<uint32_t>::max()});
-    //     PopBack();
-    //   }
-    //   size_--;
-    // }
-    // to_be_removed_.clear();
-    //
-    // total_size_ = size_;
-    return new_storage_location;
   }
 
   /// Equivalent to std::vector<> reserve - it increases the capacity
@@ -214,15 +149,11 @@ class SoaSimulationObject {
  protected:
   const size_t kIdx = 0;
 
-  typename type_ternary_operator<is_same<Backend, SoaRef>::value,
-                                 std::recursive_mutex &,
-                                 std::recursive_mutex>::type mutex_;  //!
-
   /// Append a scalar element
-  virtual void PushBackImpl(const MostDerived<Scalar> &other) { total_size_++; }
+  virtual void PushBackImpl(const MostDerived<Scalar> &other) { size_++; }
 
   /// Append a soa ref element
-  virtual void PushBackImpl(const MostDerived<SoaRef> &other) { total_size_++; }
+  virtual void PushBackImpl(const MostDerived<SoaRef> &other) { size_++; }
 
   /// Swap element with last element if and remove last element
   virtual void SwapAndPopBack(size_t index, size_t size) {}
@@ -230,13 +161,9 @@ class SoaSimulationObject {
   /// Remove last element
   virtual void PopBack() {
     size_--;
-    total_size_--;
   }
 
  private:
-  typename type_ternary_operator<is_same<Backend, SoaRef>::value, size_t &,
-                                 size_t>::type total_size_ = 0;
-
   /// size_ is of type size_t& if Backend == SoaRef; otherwise size_t
   typename type_ternary_operator<is_same<Backend, SoaRef>::value, size_t &,
                                  size_t>::type size_;

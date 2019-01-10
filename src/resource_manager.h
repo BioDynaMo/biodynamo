@@ -367,26 +367,6 @@ class ResourceManager {
     }
   }
 
-  // TODO remove
-  /// Calls commit for each type container
-  void Commit() {
-    ApplyOnAllTypes([this](auto* container, uint16_t type_idx) {
-      std::vector<std::pair<SoUid, uint32_t>> updates = container->Commit();
-      // for(auto& el : updates) {
-      //   if(el.second == std::numeric_limits<uint32_t>::max()) {
-      //     // remove
-      //     auto it = this->so_storage_location_.find(el.first);
-      //     if (it != this->so_storage_location_.end()) {
-      //       this->so_storage_location_.erase(it);
-      //     }
-      //   } else {
-      //     // update
-      //     this->so_storage_location_[el.first] = SoHandle(type_idx, el.second);
-      //   }
-      // }
-    });
-  }
-
   // TODO documentation + test
   void Reserve(size_t capacity) {
     ApplyOnAllTypes(
@@ -457,6 +437,7 @@ class ResourceManager {
 #endif
 
   /// Create a new simulation object and return a reference to it.
+  /// NB: This function is not thread-safe
   /// @tparam TScalarSo simulation object type with scalar backend
   /// @param args arguments which will be forwarded to the TScalarSo constructor
   /// @remarks Note that this function is not thread safe.
@@ -464,9 +445,9 @@ class ResourceManager {
   typename std::enable_if<std::is_same<TBackend, Soa>::value,
                           typename TScalarSo::template Self<SoaRef>>::type
   New(Args... args) {
-    auto container = Get<TScalarSo>();
-    auto el_idx =
-        container->DelayedPushBack(TScalarSo(std::forward<Args>(args)...));
+    auto* container = Get<TScalarSo>();
+    container->push_back(TScalarSo(std::forward<Args>(args)...));
+    auto el_idx = container->size() - 1;
     auto&& inserted = (*container)[el_idx];
     inserted.SetElementIdx(el_idx);
     so_storage_location_[inserted.GetUid()] = SoHandle(GetTypeIndex<TScalarSo>(), el_idx);
@@ -477,9 +458,9 @@ class ResourceManager {
   typename std::enable_if<std::is_same<TBackend, Scalar>::value,
                           TScalarSo&>::type
   New(Args... args) {
-    auto container = Get<TScalarSo>();
-    auto el_idx =
-        container->DelayedPushBack(TScalarSo(std::forward<Args>(args)...));
+    auto* container = Get<TScalarSo>();
+    container->push_back(TScalarSo(std::forward<Args>(args)...));
+    auto el_idx = container->size() - 1;
     auto&& inserted = (*container)[el_idx];
     inserted.SetElementIdx(el_idx);
     so_storage_location_[inserted.GetUid()] = SoHandle(GetTypeIndex<TScalarSo>(), el_idx);

@@ -153,8 +153,6 @@ inline int Simulate(int argc, const char** argv) {
   cell.AddBiologyModule(GrowthModule());
   cells->push_back(cell);  // put the created cell in our cells structure
 
-  cells->Commit();  // commit cells
-
   // Run simulation
   simulation.GetScheduler()->Simulate(500);
 
