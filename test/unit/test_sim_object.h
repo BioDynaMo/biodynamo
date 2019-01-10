@@ -46,9 +46,7 @@ BDM_SIM_OBJECT(TestSimObject, SimulationObject) {
 
   void ApplyDisplacement(const std::array<double, 3>&) {}
 
-  template <typename TGrid>
-  std::array<double, 3> CalculateDisplacement(TGrid * grid,
-                                              double squared_radius) {
+  std::array<double, 3> CalculateDisplacement(double squared_radius) {
     return {0, 0, 0};
   }
 

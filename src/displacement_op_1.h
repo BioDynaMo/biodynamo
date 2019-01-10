@@ -44,10 +44,9 @@ class DisplacementOp1 {
   template <typename TSimObject>
   void operator()(TSimObject&& sim_object) const {
     auto* sim = TSimulation::GetActive();
-    auto* grid = sim->GetGrid();
     auto* param = sim->GetParam();
 
-    const auto& displacement = sim_object.CalculateDisplacement(grid, squared_radius_);
+    const auto& displacement = sim_object.CalculateDisplacement(squared_radius_);
     sim_object.ApplyDisplacement(displacement);
     if (param->bound_space_) {
       ApplyBoundingBox(&sim_object, param->min_bound_, param->max_bound_);

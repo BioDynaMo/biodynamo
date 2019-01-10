@@ -419,7 +419,10 @@ class Grid {
   }
 
   /// @brief      Applies the given lambda to each neighbor or the specified
-  ///             simulation object
+  ///             simulation object.
+  ///
+  /// In simulation code do not use this function directly. Use the same
+  /// function from the exeuction context (e.g. `ApproximateExecCtxt`)
   ///
   /// @param[in]  lambda  The operation as a lambda
   /// @param      query   The query object
@@ -467,17 +470,16 @@ class Grid {
   ///
   ///     // using lhs_id and rhs_id to index into an array is thread-safe
   ///     SimulationObjectVector<std::array<double, 3>> total_force;
-  ///     grid.ForEachNeighborPairWithinRadius([&](auto&& lhs, auto&& rhs) {
+  ///     grid.ForEachNeighborPairWithinRadius([&](const auto* lhs, const auto* rhs) {
   ///       auto force = ...;
-  ///       total_force[lhs_id] += force;
-  ///       total_force[rhs_id] -= force;
+  ///       total_force[lhs->GetUid()] += force;
+  ///       total_force[rhs->GetUid()] -= force;
   ///     }, squared_radius);
   ///
   ///     // the following example leads to a race condition
   ///
   ///     int counter = 0;
-  ///     grid.ForEachNeighborPairWithinRadius([&](auto&& lhs, SoHandle lhs_id,
-  ///                                          auto&& rhs, SoHandle rhs_id) {
+  ///     grid.ForEachNeighborPairWithinRadius([&](const auto* lhs, const auto* rhs) {
   ///       counter++;
   ///     }, squared_radius);
   ///     // which can be solved by using std::atomic<int> counter; instead

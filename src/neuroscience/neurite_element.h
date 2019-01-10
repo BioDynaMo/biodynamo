@@ -854,9 +854,8 @@ BDM_SIM_OBJECT(NeuriteElement, SimulationObject) {
   // ***************************************************************************
 
   // TODO(neurites) documentation
-  template <typename TGrid>
-  std::array<double, 3> CalculateDisplacement(TGrid * grid,
-                                              double squared_radius) {
+  template <typename TSimulation = Simulation<>>
+  std::array<double, 3> CalculateDisplacement(double squared_radius) {
     std::array<double, 3> force_on_my_point_mass{0, 0, 0};
     std::array<double, 3> force_on_my_mothers_point_mass{0, 0, 0};
 
@@ -958,7 +957,8 @@ BDM_SIM_OBJECT(NeuriteElement, SimulationObject) {
       }
     };
 
-    grid->ForEachNeighborWithinRadius(calculate_neighbor_forces, *this,
+    auto* ctxt = TSimulation::GetActive()->GetExecCtxt();
+    ctxt->ForEachNeighborWithinRadius(calculate_neighbor_forces, *this,
                                       squared_radius);
 
     // hack: if the neighbour is a neurite, and as we reduced the force from

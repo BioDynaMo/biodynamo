@@ -97,6 +97,15 @@ public:
     return new_sim_objects_.template GetSimObject<TScalarSo>(uid);
   }
 
+  /// Forwards the call to `Grid::ForEachNeighborWithinRadius`
+  /// Could be used to cache the results.
+  template <typename TLambda, typename TSo, typename TSimulation = Simulation<>>
+  void ForEachNeighborWithinRadius(const TLambda& lambda, const TSo& query,
+                                   double squared_radius) {
+     auto* grid = TSimulation::GetActive()->GetGrid();
+     return grid->template ForEachNeighborWithinRadius(lambda, query, squared_radius);
+  }
+
   template <typename TSo, typename TSimBackend = Backend, typename TSimulation = Simulation<>>
   auto&& GetSimObject(SoUid uid, typename std::enable_if<std::is_same<TSimBackend, Scalar>::value>::type* ptr = 0) {
     // check if the uid corresponds to a new object not yet in the Rm
