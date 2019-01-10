@@ -97,12 +97,12 @@ TEST(NeuriteElementBehaviour, BranchingGrowth) {
   std::array<double, 3> direction;
 
   for (int i = 0; i < 200; i++) {
-    auto my_neurites = rm->Get<NeuriteElement>();
+    const auto* my_neurites = rm->Get<NeuriteElement>();
     int num_neurites = my_neurites->size();
 
-    for (int neurite_nb = 0; neurite_nb < num_neurites;
-         neurite_nb++) {  // for each neurite in simulation
-      auto ne = (*my_neurites)[neurite_nb];
+    // for each neurite in simulation
+    for (int neurite_nb = 0; neurite_nb < num_neurites; neurite_nb++) {
+      auto ne = (*my_neurites)[neurite_nb].GetSoPtr();
 
       EXPECT_GT(ne->GetAxis()[2], 0);
 
@@ -129,9 +129,9 @@ TEST(NeuriteElementBehaviour, BranchingGrowth) {
     auto my_neurites = rm->Get<NeuriteElement>();
     int num_neurites = my_neurites->size();
 
-    for (int neurite_nb = 0; neurite_nb < num_neurites;
-         neurite_nb++) {  // for each neurite in simulation
-      auto ne = (*my_neurites)[neurite_nb];
+    // for each neurite in simulation
+    for (int neurite_nb = 0; neurite_nb < num_neurites; neurite_nb++) {
+      auto ne = (*my_neurites)[neurite_nb].GetSoPtr();
       ne->RetractTerminalEnd(50);
     }
     scheduler->Simulate(1);

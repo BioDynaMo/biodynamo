@@ -22,7 +22,6 @@
 #include "bound_space_op.h"
 #include "diffusion_op.h"
 #include "displacement_op.h"
-#include "displacement_op_1.h"
 #include "gpu/gpu_helper.h"
 #include "op_timer.h"
 #include "resource_manager.h"
@@ -108,14 +107,13 @@ class Scheduler {
     auto biology_module_op = [&](auto&& so) { so.RunBiologyModules(); };
     auto discretization_op = [&](auto&& so) { so.RunDiscretization(); };
 
-    // TODO consolidate displacement ops and fix variable name
-    DisplacementOp1<TSimulation> displacement_;
     auto displacement_op = [&](auto&& so) {
-      if (param->run_mechanical_interactions_) {
+      if (param->run_mechanical_interactions_ && displacement_.UseCpu()) {
         displacement_(so);
       }
     };
 
+    // update all sim objects: run all CPU operations
     rm->ApplyOnAllTypes([&](auto* sim_objects, uint16_t type_idx){
 #pragma omp parallel for schedule(dynamic, 100)
       for (size_t i = 0; i < sim_objects->size(); i++) {
@@ -125,11 +123,19 @@ class Scheduler {
       }
     });
 
+    // update all sim objects: hardware accelerated operations
+    if(param->run_mechanical_interactions_ && !displacement_.UseCpu()) {
+      Timing::Time("displacement (GPU/FPGA)", displacement_);
+    }
+
+    // finish updating sim objects
     Timing::Time("Tear down exec context", [&]() {
       for(auto* ctxt : sim->GetAllExecCtxts()) {
         ctxt->TearDownIteration();
       }
     });
+
+    // update all substances (DiffusionGrids)
     Timing::Time("diffusion", diffusion_);
   }
 
@@ -140,9 +146,8 @@ class Scheduler {
   CatalystAdaptor<>* visualization_ = nullptr;  //!
   bool is_gpu_environment_initialized_ = false;
 
-  OpTimer<DisplacementOp<TSimulation>> physics_ =
-      OpTimer<DisplacementOp<TSimulation>>("physics");
   OpTimer<BoundSpace> bound_space_ = OpTimer<BoundSpace>("bound_space");
+  DisplacementOp<> displacement_;
   DiffusionOp diffusion_;
 
   /// Backup the simulation. Backup interval based on `Param::backup_interval_`

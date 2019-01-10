@@ -36,14 +36,14 @@
 
 namespace bdm {
 
-template <typename TContainer>
-void CellFactory(TContainer* cells,
-                 const std::vector<std::array<double, 3>>& positions) {
-  cells->reserve(positions.size());
+template <typename TSo, typename TSimulation = Simulation<>>
+void CellFactory(const std::vector<std::array<double, 3>>& positions) {
+  auto* rm = TSimulation::GetActive()->GetResourceManager();
+  rm->template Reserve<TSo>(positions.size());
   for (size_t i = 0; i < positions.size(); i++) {
     Cell cell({positions[i][0], positions[i][1], positions[i][2]});
     cell.SetDiameter(30);
-    cells->push_back(cell);
+    rm->push_back(cell);
   }
 }
 
@@ -54,12 +54,10 @@ TEST(DiffusionTest, GridDimensions) {
   auto* rm = simulation.GetResourceManager();
   auto* grid = simulation.GetGrid();
 
-  auto cells = rm->Get<Cell>();
-
   std::vector<std::array<double, 3>> positions;
   positions.push_back({-10, -10, -10});
   positions.push_back({90, 90, 90});
-  CellFactory(cells, positions);
+  CellFactory<Cell>(positions);
 
   DiffusionGrid* d_grid = new DiffusionGrid(0, "Kalium", 0.4, 0, 1);
 
@@ -85,12 +83,10 @@ TEST(DiffusionTest, UpdateGrid) {
   auto* rm = simulation.GetResourceManager();
   auto* grid = simulation.GetGrid();
 
-  auto cells = rm->Get<Cell>();
-
   std::vector<std::array<double, 3>> positions;
   positions.push_back({-10, -10, -10});
   positions.push_back({90, 90, 90});
-  CellFactory(cells, positions);
+  CellFactory<Cell>(positions);
 
   DiffusionGrid* d_grid = new DiffusionGrid(0, "Kalium", 0.4, 0, 6);
 
@@ -100,7 +96,7 @@ TEST(DiffusionTest, UpdateGrid) {
   std::vector<std::array<double, 3>> positions_2;
   positions_2.push_back({-30, -10, -10});
   positions_2.push_back({90, 150, 90});
-  CellFactory(cells, positions_2);
+  CellFactory<Cell>(positions_2);
 
   grid->UpdateGrid();
 
@@ -125,12 +121,10 @@ TEST(DiffusionTest, FalseUpdateGrid) {
   auto* rm = simulation.GetResourceManager();
   auto* grid = simulation.GetGrid();
 
-  auto cells = rm->Get<Cell>();
-
   std::vector<std::array<double, 3>> positions;
   positions.push_back({-10, -10, -10});
   positions.push_back({90, 90, 90});
-  CellFactory(cells, positions);
+  CellFactory<Cell>(positions);
 
   DiffusionGrid* d_grid = new DiffusionGrid(0, "Kalium", 0.4, 0);
 

@@ -26,7 +26,7 @@ TEST(SchedulerTest, NoRestoreFile) {
 
   Cell cell;
   cell.SetDiameter(10);  // important for grid to determine box size
-  rm->Get<Cell>()->push_back(cell);
+  rm->push_back(cell);
 
   // start restore validation
   TestSchedulerRestore scheduler;
@@ -76,12 +76,13 @@ TEST(SchedulerTest, EmptySimulationAfterFirstIteration) {
   auto* grid = simulation.GetGrid();
   auto* scheduler = simulation.GetScheduler();
 
-  rm->New<Cell>(10);
+  Cell cell(10);
+  rm->push_back(cell);
   scheduler->Simulate(1);
 
   auto max_dimensions = grid->GetDimensionThresholds();
   auto dimensions = grid->GetDimensions();
-  rm->Get<Cell>()->clear();
+  rm->Clear();
 
   scheduler->Simulate(1);
 

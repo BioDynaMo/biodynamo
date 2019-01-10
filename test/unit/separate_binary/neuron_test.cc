@@ -780,9 +780,9 @@ TEST(DISABLED_NeuronSomaNeuriteElementTest, Displacement) {
   Simulation<> simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
 
-  auto* neurons = rm->template Get<NeuronSoma>();
-  auto* neurite_segments = rm->template Get<NeuriteElement>();
-
+  // auto* neurons = rm->template Get<NeuronSoma>();
+  // auto* neurite_segments = rm->template Get<NeuriteElement>();
+  //
   // Cell 1
   // auto&& cell1 = rm->template New<Cell>();
   // cell1.SetAdherence(0.3);
@@ -796,14 +796,14 @@ TEST(DISABLED_NeuronSomaNeuriteElementTest, Displacement) {
   // cell2.SetDiameter(11);
   // cell2.SetMass(1.1);
   // cell2.SetPosition({0, 5, 0});
-
-  simulation.GetGrid()->Initialize();
-
+  //
+  // simulation.GetGrid()->Initialize();
+  //
   // execute operation
-  DisplacementOp<> op;
-  op(neurons, 0);
-  op(neurite_segments, 1);
-
+  // DisplacementOp<> op;
+  // op(neurons, 0);
+  // op(neurite_segments, 1);
+  //
   // // check results
   // // cell 1
   // auto final_position = (*cells)[0].GetPosition();

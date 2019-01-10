@@ -69,8 +69,7 @@ TEST(SimulationBackupTest, Backup) {
   Simulation<> simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
 
-  auto cells = rm->template Get<Cell>();
-  cells->push_back(Cell());
+  rm->push_back(Cell());
   size_t iterations = 26;
 
   SimulationBackup backup(ROOTFILE, "");
@@ -121,8 +120,7 @@ TEST(SimulationBackupTest, BackupAndRestore) {
   Simulation<> simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
 
-  auto cells = rm->Get<Cell>();
-  cells->push_back(Cell());
+  rm->push_back(Cell());
   size_t iterations = 26;
 
   SimulationBackup backup(ROOTFILE, "");

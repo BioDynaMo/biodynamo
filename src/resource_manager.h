@@ -198,24 +198,24 @@ class ResourceManager {
 
   template <typename TSo, typename TSimBackend = Backend>
   auto&& GetSimObject(SoHandle handle, typename std::enable_if<std::is_same<TSimBackend, Scalar>::value>::type* ptr = 0) {
-    return (*Get<TSo>())[handle.GetElementIdx()];
+    return (*GetContainer<TSo>())[handle.GetElementIdx()];
   }
 
   template <typename TSo, typename TSimBackend = Backend>
   auto GetSimObject(SoHandle handle, typename std::enable_if<std::is_same<TSimBackend, Soa>::value>::type* ptr = 0) {
-    return (*Get<TSo>())[handle.GetElementIdx()];
+    return (*GetContainer<TSo>())[handle.GetElementIdx()];
   }
 
   template <typename TSo, typename TSimBackend = Backend>
   auto&& GetSimObject(SoUid uid, typename std::enable_if<std::is_same<TSimBackend, Scalar>::value>::type* ptr = 0) {
     auto handle = so_storage_location_[uid];
-    return (*Get<TSo>())[handle.GetElementIdx()];
+    return (*GetContainer<TSo>())[handle.GetElementIdx()];
   }
 
   template <typename TSo, typename TSimBackend = Backend>
   auto GetSimObject(SoUid uid, typename std::enable_if<std::is_same<TSimBackend, Soa>::value>::type* ptr = 0) {
     auto handle = so_storage_location_[uid];
-    return (*Get<TSo>())[handle.GetElementIdx()];
+    return (*GetContainer<TSo>())[handle.GetElementIdx()];
   }
 
 
@@ -376,7 +376,7 @@ class ResourceManager {
   // TODO documentation + test
   template <typename TSo>
   void Reserve(size_t capacity) {
-    Get<TSo>()->reserve(capacity);
+    GetContainer<TSo>()->reserve(capacity);
   }
 
   // TODO documentation + test
@@ -391,10 +391,12 @@ class ResourceManager {
         [](auto* container, uint16_t type_idx) { container->clear(); });
   }
 
-  /// This method is not thread-safe.
+  /// NB: This method is not thread-safe! This function might invalidate
+  /// sim_object references pointing into the ResourceManager. SoPointer are
+  /// not affected.
   template <typename TSo>
   void push_back(const TSo& so) {  // NOLINT
-    auto* container = Get<TSo>();
+    auto* container = GetContainer<TSo>();
     container->push_back(so);
     auto el_idx = container->size() - 1;
     auto&& inserted = (*container)[el_idx];
@@ -436,48 +438,27 @@ class ResourceManager {
   std::vector<cl::Program>* GetOpenCLProgramList() { return &opencl_programs_; }
 #endif
 
-  /// Create a new simulation object and return a reference to it.
-  /// NB: This function is not thread-safe
-  /// @tparam TScalarSo simulation object type with scalar backend
-  /// @param args arguments which will be forwarded to the TScalarSo constructor
-  /// @remarks Note that this function is not thread safe.
-  template <typename TScalarSo, typename... Args, typename TBackend = Backend>
-  typename std::enable_if<std::is_same<TBackend, Soa>::value,
-                          typename TScalarSo::template Self<SoaRef>>::type
-  New(Args... args) {
-    auto* container = Get<TScalarSo>();
-    container->push_back(TScalarSo(std::forward<Args>(args)...));
-    auto el_idx = container->size() - 1;
-    auto&& inserted = (*container)[el_idx];
-    inserted.SetElementIdx(el_idx);
-    so_storage_location_[inserted.GetUid()] = SoHandle(GetTypeIndex<TScalarSo>(), el_idx);
-    return (*container)[el_idx];
-  }
-
-  template <typename TScalarSo, typename... Args, typename TBackend = Backend>
-  typename std::enable_if<std::is_same<TBackend, Scalar>::value,
-                          TScalarSo&>::type
-  New(Args... args) {
-    auto* container = Get<TScalarSo>();
-    container->push_back(TScalarSo(std::forward<Args>(args)...));
-    auto el_idx = container->size() - 1;
-    auto&& inserted = (*container)[el_idx];
-    inserted.SetElementIdx(el_idx);
-    so_storage_location_[inserted.GetUid()] = SoHandle(GetTypeIndex<TScalarSo>(), el_idx);
-    return (*container)[el_idx];
-  }
-
   /// Return the container of this Type
   /// @tparam Type atomic type whose container should be returned
   ///         invariant to the Backend. This means that even if ResourceManager
   ///         stores e.g. `SoaCell`, Type can be `Cell` and still returns the
   ///         correct container.
   template <typename Type>
-  TypeContainer<ToBackend<Type>>* Get() {
+  const TypeContainer<ToBackend<Type>>* Get() {
     return &std::get<TypeContainer<ToBackend<Type>>>(data_);
   }
 
  private:
+  /// Return the container of this Type
+  /// @tparam Type atomic type whose container should be returned
+  ///         invariant to the Backend. This means that even if ResourceManager
+  ///         stores e.g. `SoaCell`, Type can be `Cell` and still returns the
+  ///         correct container.
+  template <typename Type>
+  TypeContainer<ToBackend<Type>>* GetContainer() {
+    return &std::get<TypeContainer<ToBackend<Type>>>(data_);
+  }
+
   /// creates one container for each type in Types.
   /// Container type is determined based on the specified Backend
   typename ConvertToContainerTuple<Backend, Types>::type data_;

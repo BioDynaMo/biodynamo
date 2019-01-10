@@ -29,7 +29,7 @@ void RunTest() {
   TSimulation simulation("displacement_op_test_RunTest");
   auto* rm = simulation.GetResourceManager();
 
-  auto* cells = rm->template Get<Cell>();
+  const auto* cells = rm->template Get<Cell>();
 
   // Cell 1
   TCell cell1;
@@ -52,7 +52,7 @@ void RunTest() {
 
   // execute operation
   DisplacementOp<> op;
-  op(cells, 0);
+  op();
 
   // check results
   // cell 1

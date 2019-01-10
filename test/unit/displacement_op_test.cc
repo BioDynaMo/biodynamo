@@ -37,7 +37,7 @@ TEST(DisplacementOpTest, ComputeSoaNew) {
   auto* rm = simulation.GetResourceManager();
   auto* grid = simulation.GetGrid();
 
-  auto cells = rm->template Get<Cell>();
+  const auto* cells = rm->template Get<Cell>();
 
   double space = 20;
   for (size_t i = 0; i < 3; i++) {
@@ -47,7 +47,7 @@ TEST(DisplacementOpTest, ComputeSoaNew) {
         cell.SetDiameter(30);
         cell.SetAdherence(0.4);
         cell.SetMass(1.0);
-        cells->push_back(cell);
+        rm->push_back(cell);
       }
     }
   }
@@ -57,7 +57,7 @@ TEST(DisplacementOpTest, ComputeSoaNew) {
 
   // execute operation
   DisplacementOp<> op;
-  op(cells, 0);
+  op();
 
   // clang-format off
   EXPECT_ARR_NEAR((*cells)[0].GetPosition(), {-0.20160966809506442, -0.20160966809506442, -0.20160966809506442});

@@ -54,23 +54,35 @@ class DisplacementOp {
 
   ~DisplacementOp() {}
 
-  template <typename TContainer>
-  void operator()(TContainer* cells, uint16_t type_idx) {
+  bool UseCpu() const {
     auto* param = TSimulation::GetActive()->GetParam();
+    return force_cpu_implementation_ || (!param->use_gpu_ && !param->use_opencl_);
+  }
+
+  void operator()() {
+    auto* param = TSimulation::GetActive()->GetParam();
+    auto* rm = TSimulation::GetActive()->GetResourceManager();
     if (param->use_gpu_ && !force_cpu_implementation_) {
 #ifdef USE_OPENCL
       if (param->use_opencl_) {
-        opencl_(cells, type_idx);
+        rm->ApplyOnAllTypes([](auto* cells, uint16_t type_idx) {
+          opencl_(cells, type_idx);
+        });
       }
 #endif
 #ifdef USE_CUDA
       if (!param->use_opencl_) {
-        cuda_(cells, type_idx);
+        rm->ApplyOnAllTypes([](auto* cells, uint16_t type_idx) {
+          cuda_(cells, type_idx);
+        });
       }
 #endif
-    } else {
-      cpu_(cells, type_idx);
     }
+  }
+
+  template <typename TSimObject>
+  void operator()(TSimObject&& sim_object) const {
+    cpu_(sim_object);
   }
 
  private:

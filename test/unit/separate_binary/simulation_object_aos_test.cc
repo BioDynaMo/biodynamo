@@ -35,7 +35,7 @@ TEST(SimulationObjectTest, AosGetElementIndex) {
     rm->push_back(Cell(1));
   }
   EXPECT_EQ(10u, rm->GetNumSimObjects());
-  auto cells = rm->Get<Cell>();
+  const auto* cells = rm->Get<Cell>();
   for (uint64_t i = 0; i < 10; i++) {
     EXPECT_EQ(i, (*cells)[i].GetElementIdx());
   }

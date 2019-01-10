@@ -211,11 +211,11 @@ TEST(SimulationObjectUtilTest, Soa_DivideWithResourceManager) {
   Simulation<> simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
 
-  auto neurons = rm->Get<Neuron>();
   Neuron neuron;
-  neurons->push_back(neuron);
+  auto neuron_id = neuron.GetUid();
+  rm->push_back(neuron);
 
-  auto new_neuron = (*neurons)[0].Divide(1.0, 2.0, 3.0);
+  auto new_neuron = rm->GetSimObject<Neuron>(neuron_id).Divide(1.0, 2.0, 3.0);
 
   EXPECT_EQ(987u, new_neuron->GetNeurites()[0].id_);
   EXPECT_EQ(5, new_neuron->GetPosition()[0]);
@@ -224,6 +224,7 @@ TEST(SimulationObjectUtilTest, Soa_DivideWithResourceManager) {
 
   simulation.GetExecCtxt()->TearDownIteration();
 
+  const auto* neurons = rm->Get<Neuron>();
   ASSERT_EQ(2u, neurons->size());
   // new_neuron got invalidated by `TearDownIteration()`, but is now accessible
   // in neurons
@@ -348,7 +349,7 @@ TEST(SimulationObjectUtilTest, GetSoPtr) {
   }
   EXPECT_EQ(10u, rm->GetNumSimObjects());
 
-  auto neurons = rm->Get<Neuron>();
+  const auto* neurons = rm->Get<Neuron>();
   for (uint64_t i = 0; i < 10; i++) {
     SoPointer<SoaNeuron, Soa> expected((*neurons)[i].GetUid());
     EXPECT_EQ(expected, (*neurons)[i].GetSoPtr());

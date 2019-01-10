@@ -35,16 +35,14 @@ inline void RunIOTest() {
   remove(ROOTFILE);
 
   // setup
-  auto a_vector = rm.Get<A>();
-  EXPECT_EQ(0u, a_vector->size());
-  a_vector->push_back(A(12));
-  a_vector->push_back(A(34));
-  a_vector->push_back(A(42));
+  EXPECT_EQ(0u, rm.Get<A>()->size());
+  rm.push_back(A(12));
+  rm.push_back(A(34));
+  rm.push_back(A(42));
 
-  auto b_vector = rm.Get<B>();
-  EXPECT_EQ(0u, b_vector->size());
-  b_vector->push_back(B(3.14));
-  b_vector->push_back(B(6.28));
+  EXPECT_EQ(0u, rm.Get<B>()->size());
+  rm.push_back(B(3.14));
+  rm.push_back(B(6.28));
 
   DiffusionGrid* dgrid_1 = new DiffusionGrid(0, "Kalium", 0.4, 0, 2);
   DiffusionGrid* dgrid_2 = new DiffusionGrid(1, "Natrium", 0.2, 0.1, 1);

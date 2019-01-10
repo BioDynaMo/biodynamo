@@ -122,11 +122,9 @@ inline int Simulate(int argc, const char** argv) {
   size_t nb_of_cells = 2400;  // number of cells in the simulation
   double x_coord, y_coord, z_coord;
 
-  // create a structure to contain cells
-  auto* cells = rm->template Get<MyCell>();
   // allocate the correct number of cell in our cells structure before
   // cell creation
-  cells->reserve(nb_of_cells);
+  rm->template Reserve<MyCell>(nb_of_cells);
 
   for (size_t i = 0; i < nb_of_cells; ++i) {
     // our modelling will be a cell cube of 100*100*100
@@ -142,7 +140,7 @@ inline int Simulate(int argc, const char** argv) {
     // will vary from 0 to 5. so 6 different layers depending on y_coord
     cell.SetCellColor(static_cast<int>((y_coord / param->max_bound_ * 6)));
 
-    cells->push_back(cell);  // put the created cell in our cells structure
+    rm->push_back(cell);  // put the created cell in our cells structure
   }
 
   // create a cancerous cell, containing the BiologyModule GrowthModule
@@ -151,7 +149,7 @@ inline int Simulate(int argc, const char** argv) {
   cell.SetCellColor(8);
   cell.SetCanDivide(true);
   cell.AddBiologyModule(GrowthModule());
-  cells->push_back(cell);  // put the created cell in our cells structure
+  rm->push_back(cell);  // put the created cell in our cells structure
 
   // Run simulation
   simulation.GetScheduler()->Simulate(500);

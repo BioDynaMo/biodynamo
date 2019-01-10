@@ -36,7 +36,7 @@ TEST(ModelInitializerTest, Grid3DCube) {
     return cell;
   });
 
-  auto cells = rm->Get<Cell>();
+  const auto* cells = rm->Get<Cell>();
   EXPECT_EQ(8u, cells->size());
   EXPECT_ARR_EQ({0, 0, 0}, (*cells)[0].GetPosition());
   EXPECT_ARR_EQ({0, 0, 12}, (*cells)[1].GetPosition());
@@ -61,7 +61,7 @@ TEST(ModelInitializerTest, Grid3DCuboid) {
                              return cell;
                            });
 
-  auto cells = rm->Get<Cell>();
+  const auto* cells = rm->Get<Cell>();
   EXPECT_EQ(24u, cells->size());
   EXPECT_ARR_EQ({0, 0, 0}, (*cells)[0].GetPosition());
   EXPECT_ARR_EQ({0, 0, 12}, (*cells)[1].GetPosition());
@@ -88,7 +88,7 @@ TEST(ModelInitializerTest, CreateCells) {
                                   return cell;
                                 });
 
-  auto cells = rm->Get<Cell>();
+  const auto* cells = rm->Get<Cell>();
   EXPECT_EQ(3u, cells->size());
   EXPECT_ARR_EQ({1, 2, 3}, (*cells)[0].GetPosition());
   EXPECT_ARR_EQ({101, 202, 303}, (*cells)[1].GetPosition());
@@ -104,7 +104,7 @@ TEST(ModelInitializerTest, CreateCellsRandom) {
                                         Cell cell(pos);
                                         return cell;
                                       });
-  auto cells = rm->Get<Cell>();
+  const auto* cells = rm->Get<Cell>();
   EXPECT_EQ(10u, cells->size());
   auto& pos_0 = (*cells)[0].GetPosition();
   auto& pos_1 = (*cells)[1].GetPosition();

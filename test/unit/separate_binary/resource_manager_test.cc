@@ -60,11 +60,6 @@ TEST(ResourceManagerTest, push_back) {
   RunPushBackTest<ResourceManager<>, SoaA, SoaB>();
 }
 
-TEST(ResourceManagerTest, New) {
-  RunNewTest<ResourceManager<>, A, B>();
-  RunNewTest<ResourceManager<>, SoaA, SoaB>();
-}
-
 TEST(ResourceManagerTest, DiffusionGrid) {
   ResourceManager<> rm;
 

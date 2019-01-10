@@ -29,8 +29,9 @@ public:
 
   ApproximateExecCtxt() {
     // reserve enough memory to hold all new objects during one iteration of
-    // one sim object. If more objects would be created, references would
-    // become invalid.
+    // one sim object. If more objects would be created (using `New`),
+    // references would become invalid.
+    // Alternative: use container that doesn't migrate objects.
     new_sim_objects_.Reserve(10);
   }
 
