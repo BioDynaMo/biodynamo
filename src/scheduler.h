@@ -18,7 +18,6 @@
 #include <chrono>
 #include <string>
 
-#include "biology_module_op.h"
 #include "bound_space_op.h"
 #include "diffusion_op.h"
 #include "displacement_op.h"
