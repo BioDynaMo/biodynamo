@@ -57,7 +57,9 @@ TEST(DisplacementOpTest, ComputeSoaNew) {
 
   // execute operation
   DisplacementOp<> op;
-  op();
+  rm->ApplyOnAllElements([&](auto&& sim_object, SoHandle) {
+    op(sim_object);
+  });
 
   // clang-format off
   EXPECT_ARR_NEAR((*cells)[0].GetPosition(), {-0.20160966809506442, -0.20160966809506442, -0.20160966809506442});

@@ -52,7 +52,9 @@ void RunTest() {
 
   // execute operation
   DisplacementOp<> op;
-  op();
+  rm->ApplyOnAllElements([&](auto&& sim_object, SoHandle) {
+    op(sim_object);
+  });
 
   // check results
   // cell 1
