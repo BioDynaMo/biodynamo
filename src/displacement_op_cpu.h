@@ -17,6 +17,7 @@
 
 #include <array>
 #include <cmath>
+#include <limits>
 #include <vector>
 
 #include "bound_space_op.h"
@@ -29,19 +30,24 @@ namespace bdm {
 template <typename TSimulation = Simulation<>>
 class DisplacementOpCpu {
  public:
-  DisplacementOpCpu() {
-    auto* sim = TSimulation::GetActive();
-    auto* grid = sim->GetGrid();
-
-    auto search_radius = grid->GetLargestObjectSize();
-    squared_radius_ = search_radius * search_radius;
-  }
+  DisplacementOpCpu() {}
   ~DisplacementOpCpu() {}
 
   template <typename TSimObject>
-  void operator()(TSimObject&& sim_object) const {
+  void operator()(TSimObject&& sim_object) {
     auto* sim = TSimulation::GetActive();
+    auto* scheduler = sim->GetScheduler();
     auto* param = sim->GetParam();
+
+    // update search radius at beginning of each iteration
+    auto current_iteration = scheduler->GetSimulatedSteps();
+    if (last_iteration != current_iteration) {
+      last_iteration = current_iteration;
+
+      auto* grid = sim->GetGrid();
+      auto search_radius = grid->GetLargestObjectSize();
+      squared_radius_ = search_radius * search_radius;
+    }
 
     const auto& displacement = sim_object.CalculateDisplacement(squared_radius_);
     sim_object.ApplyDisplacement(displacement);
@@ -52,6 +58,7 @@ class DisplacementOpCpu {
 
  private:
   double squared_radius_;
+  uint64_t last_iteration = std::numeric_limits<uint64_t>::max();
 };
 
 }  // namespace bdm
