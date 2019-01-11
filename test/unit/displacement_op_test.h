@@ -66,7 +66,7 @@ void RunTest() {
   // cell 2
   final_position = (*cells)[1].GetPosition();
   EXPECT_NEAR(0, final_position[0], abs_error<double>::value);
-  EXPECT_NEAR(5.0992371702325645, final_position[1], abs_error<double>::value);
+  EXPECT_NEAR(5.0980452768658333, final_position[1], abs_error<double>::value);
   EXPECT_NEAR(0, final_position[2], abs_error<double>::value);
 
   // check if tractor_force has been reset to zero
