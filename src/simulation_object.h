@@ -155,9 +155,6 @@ class SoaSimulationObject {
   /// Append a soa ref element
   virtual void PushBackImpl(const MostDerived<SoaRef> &other) { size_++; }
 
-  /// Swap element with last element if and remove last element
-  virtual void SwapAndPopBack(size_t index, size_t size) {}
-
   /// Remove last element
   virtual void PopBack() {
     size_--;
@@ -216,9 +213,6 @@ class ScalarSimulationObject {
 
   /// Append a SoaRef element
   virtual void PushBackImpl(const MostDerived<SoaRef> &other) {}
-
-  /// Swap element with last element if and remove last element
-  virtual void SwapAndPopBack(size_t index, size_t size) {}
 
   /// Remove last element
   virtual void PopBack() {}

@@ -387,12 +387,6 @@ struct Capsule;
     BDM_SIM_OBJECT_PUSH_BACK_BODY(__VA_ARGS__);                                \
     Base::PushBackImpl(other);                                                 \
   }                                                                            \
-  /** FIXME remove Swap element with last element and remove last element from each */      \
-  /** data member */                                                           \
-  void SwapAndPopBack(size_t index, size_t size) override {                    \
-    BDM_SIM_OBJECT_SWAP_AND_POP_BACK_BODY(__VA_ARGS__);                        \
-    Base::SwapAndPopBack(index, size);                                         \
-  }                                                                            \
                                                                                \
   /** Remove last element from each data member */                             \
   void PopBack() override {                                                    \
