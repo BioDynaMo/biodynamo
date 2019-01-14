@@ -92,10 +92,10 @@ struct Simulation {
   /// Returns a thread local random number generator
   Random* GetRandom();
 
-  // TODO documentation
+  /// Returns a thread local execution context.
   ApproximateExecCtxt<TCTParam>* GetExecCtxt();
 
-  // TODO documentation
+  /// Returns all thread local execution contexts.
   std::vector<ApproximateExecCtxt<TCTParam>*>& GetAllExecCtxts();
 
   /// @see `unique_name_`

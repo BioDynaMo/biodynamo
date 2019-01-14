@@ -19,6 +19,7 @@
 #include "execution_context/approximate_exec_ctxt.h"
 #include "simulation_implementation.h"
 #include "test_util.h"
+#include "model_initializer.h"
 
 namespace bdm {
 
@@ -153,6 +154,55 @@ TEST(ApproximateExecCtxt, Execute) {
 
   EXPECT_TRUE(op1_called);
   EXPECT_TRUE(op2_called);
+}
+
+TEST(ApproximateExecCtxt, ExecuteThreadSafety) {
+  Simulation<> sim(TEST_NAME);
+  auto* rm = sim.GetResourceManager();
+  auto* ctxt = sim.GetExecCtxt();
+
+  // create cells
+  auto construct = [](const std::array<double, 3>& position) {
+    Cell cell(position);
+    cell.SetDiameter(10);
+    return cell;
+  };
+  ModelInitializer::Grid3D(32, 10, construct);
+
+  // initialize
+  for (auto* context : sim.GetAllExecCtxts()) {
+    context->SetupIteration();
+  }
+  sim.GetGrid()->UpdateGrid();
+
+  std::unordered_map<SoUid, uint64_t> num_neighbors;
+
+  // this operation increases the diameter of the current sim_object and of all
+  // its neighbors.
+  auto op = [&](auto&& so) {
+    auto d = so.GetDiameter();
+    so.SetDiameter(d + 1);
+
+    uint64_t nb_counter = 0;
+    auto nb_lambda = [&](const auto* neighbor) {
+      auto non_const_nb  = rm->GetSimObject<Cell>(neighbor->GetUid());
+      auto d1 = non_const_nb.GetDiameter();
+      non_const_nb.SetDiameter(d1 + 1);
+      nb_counter++;
+    };
+    ctxt->ForEachNeighborWithinRadius(nb_lambda, so, 100);
+    #pragma omp critical
+    num_neighbors[so.GetUid()] = nb_counter;
+  };
+
+  rm->ApplyOnAllElementsParallel([&](auto&& so, SoHandle) {
+    ctxt->Execute(so, op);
+  });
+
+  rm->ApplyOnAllElements([&](auto&& so, SoHandle) {
+    // expected diameter: initial value + num_neighbors + 1
+    EXPECT_EQ(num_neighbors[so.GetUid()] + 11, so.GetDiameter());
+  });
 }
 
 }  // namespace bdm

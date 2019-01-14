@@ -25,6 +25,8 @@
 #include <iostream>
 #include <limits>
 #include <vector>
+#include <memory>
+#include <mutex>
 
 #include "constant.h"
 #include "fixed_size_vector.h"
@@ -326,6 +328,10 @@ class Grid {
         int max = param->max_bound_;
         threshold_dimensions_ = {min, max};
       }
+
+      if (nb_mutex_builder_ != nullptr) {
+        nb_mutex_builder_->Update();
+      }
     } else {
       // There are no sim objects in this simulation
       auto* param = TSimulation::GetActive()->GetParam();
@@ -607,7 +613,7 @@ class Grid {
     return threshold_dimensions_;
   }
 
-  const std::array<uint32_t, 3>& GetNumBoxes() const { return num_boxes_axis_; }
+  uint64_t GetNumBoxes() const { return boxes_.size(); }
 
   uint32_t GetBoxLength() { return box_length_; }
 
@@ -682,6 +688,88 @@ class Grid {
     (*grid_dimensions)[2] = grid_dimensions_[4];
   }
 
+  // NeighborMutex ---------------------------------------------------------
+
+  /// This class ensures thread-safety for the ApproximateExecCtxt for the case
+  /// that a simulation object modifies its neighbors.
+  class NeighborMutexBuilder {
+  public:
+    /// The NeighborMutex class is a synchronization primitive that can be
+    /// used to protect sim_objects data from being simultaneously accessed by
+    /// multiple threads.
+    class NeighborMutex {
+      public:
+
+
+        NeighborMutex(uint64_t box_idx, FixedSizeVector<uint64_t, 27>& mutex_indices, NeighborMutexBuilder* guard_builder) :
+          box_idx_(box_idx), mutex_indices_(mutex_indices), guard_builder_(guard_builder) {
+          // Deadlocks occur if mutliple threads try to acquire the same locks,
+          // but in different order.
+          // -> sort to avoid deadlocks - see lock ordering
+          std::sort(mutex_indices_.begin(), mutex_indices_.end());
+        }
+
+        void lock() {
+          for(auto idx : mutex_indices_) {
+            auto& mutex = guard_builder_->mutexes_[idx].mutex_;
+             // acquire lock
+            while (mutex.test_and_set(std::memory_order_acquire)) {
+               ; // spin
+             }
+            // mutex.lock();
+          }
+        }
+
+        void unlock() {
+          for(auto idx : mutex_indices_) {
+            auto& mutex = guard_builder_->mutexes_[idx].mutex_;
+            mutex.clear(std::memory_order_release);
+            // mutex.unlock();
+          }
+        }
+
+      private:
+        uint64_t box_idx_;
+        FixedSizeVector<uint64_t, 27> mutex_indices_;
+        NeighborMutexBuilder* guard_builder_;
+    };
+
+    struct MutexWrapper {
+      MutexWrapper() {}
+      MutexWrapper(const MutexWrapper&) {}
+      std::atomic_flag mutex_ = ATOMIC_FLAG_INIT;
+      // std::mutex mutex_;
+    };
+
+    template <typename TTSimulation = Simulation<>>
+    void Update() {
+      auto* grid = TTSimulation::GetActive()->GetGrid();
+      mutexes_.resize(grid->GetNumBoxes());
+    }
+
+    template <typename TTSimulation = Simulation<>>
+    NeighborMutex GetMutex(uint64_t box_idx) {
+      auto* grid = TTSimulation::GetActive()->GetGrid();
+      FixedSizeVector<uint64_t, 27> box_indices;
+      grid->GetMooreBoxIndices(&box_indices, box_idx);
+      return NeighborMutex(box_idx, box_indices, this);
+    }
+
+   private:
+    /// one mutex for each box in `Grid::boxes_`
+    std::vector<MutexWrapper> mutexes_;
+  };
+
+  void EnableNeighborMutexes() {
+    if(nb_mutex_builder_ == nullptr) {
+      nb_mutex_builder_ = std::make_unique<NeighborMutexBuilder>();
+    }
+  }
+
+  NeighborMutexBuilder* GetNeighborMutexBuilder() {
+    return nb_mutex_builder_.get();
+  }
+
  private:
   /// The vector containing all the boxes in the grid
   /// Using parallel resize vector to enable parallel initialization and thus
@@ -713,6 +801,9 @@ class Grid {
   bool has_grown_ = false;
   /// Flag to indicate if the grid has been initialized or not
   bool initialized_ = false;
+
+  ///
+  std::unique_ptr<NeighborMutexBuilder> nb_mutex_builder_ = nullptr;
 
   void CheckGridGrowth() {
     // Determine if the grid dimensions have changed (changed in the sense that
@@ -821,9 +912,10 @@ class Grid {
     grid_dimensions_[5] = ceil(grid_dimensions[5]);
   }
 
-  /// @brief      Gets the Moore (i.e adjacent) boxes of the query box
+  /// @brief      Gets the Moore (i.e adjacent) boxes of the query boxAlso adds the
+  ///             query box.
   ///
-  /// @param      neighbor_boxes  The neighbor boxes
+  /// @param[out] neighbor_boxes  The neighbor boxes
   /// @param[in]  box_idx         The query box
   ///
   void GetMooreBoxes(FixedSizeVector<const Box*, 27>* neighbor_boxes,
@@ -882,6 +974,55 @@ class Grid {
           GetBoxPointer(box_idx + num_boxes_xy_ + num_boxes_axis_[0] - 1));
       neighbor_boxes->push_back(
           GetBoxPointer(box_idx + num_boxes_xy_ + num_boxes_axis_[0] + 1));
+    }
+  }
+
+  /// @brief      Gets the box indices of all adjacent boxes. Also adds the
+  ///             query box index.
+  ///
+  /// @param[out] box_indices     Result containing all box indices
+  /// @param[in]  box_idx         The query box
+  ///
+  void GetMooreBoxIndices(FixedSizeVector<uint64_t, 27>* box_indices,
+                     size_t box_idx) const {
+    box_indices->push_back(box_idx);
+
+    // Adjacent 6 (top, down, left, right, front and back)
+    if (adjacency_ >= kLow) {
+      box_indices->push_back(box_idx - num_boxes_xy_);
+      box_indices->push_back(box_idx + num_boxes_xy_);
+      box_indices->push_back(box_idx - num_boxes_axis_[0]);
+      box_indices->push_back(box_idx + num_boxes_axis_[0]);
+      box_indices->push_back(box_idx - 1);
+      box_indices->push_back(box_idx + 1);
+    }
+
+    // Adjacent 12
+    if (adjacency_ >= kMedium) {
+      box_indices->push_back(box_idx - num_boxes_xy_ - num_boxes_axis_[0]);
+      box_indices->push_back(box_idx - num_boxes_xy_ - 1);
+      box_indices->push_back(box_idx - num_boxes_axis_[0] - 1);
+      box_indices->push_back(box_idx + num_boxes_xy_ - num_boxes_axis_[0]);
+      box_indices->push_back(box_idx + num_boxes_xy_ - 1);
+      box_indices->push_back(box_idx + num_boxes_axis_[0] - 1);
+      box_indices->push_back(box_idx - num_boxes_xy_ + num_boxes_axis_[0]);
+      box_indices->push_back(box_idx - num_boxes_xy_ + 1);
+      box_indices->push_back(box_idx - num_boxes_axis_[0] + 1);
+      box_indices->push_back(box_idx + num_boxes_xy_ + num_boxes_axis_[0]);
+      box_indices->push_back(box_idx + num_boxes_xy_ + 1);
+      box_indices->push_back(box_idx + num_boxes_axis_[0] + 1);
+    }
+
+    // Adjacent 8
+    if (adjacency_ >= kHigh) {
+      box_indices->push_back(box_idx - num_boxes_xy_ - num_boxes_axis_[0] - 1);
+      box_indices->push_back(box_idx - num_boxes_xy_ - num_boxes_axis_[0] + 1);
+      box_indices->push_back(box_idx - num_boxes_xy_ + num_boxes_axis_[0] - 1);
+      box_indices->push_back(box_idx - num_boxes_xy_ + num_boxes_axis_[0] + 1);
+      box_indices->push_back(box_idx + num_boxes_xy_ - num_boxes_axis_[0] - 1);
+      box_indices->push_back(box_idx + num_boxes_xy_ - num_boxes_axis_[0] + 1);
+      box_indices->push_back(box_idx + num_boxes_xy_ + num_boxes_axis_[0] - 1);
+      box_indices->push_back(box_idx + num_boxes_xy_ + num_boxes_axis_[0] + 1);
     }
   }
 
