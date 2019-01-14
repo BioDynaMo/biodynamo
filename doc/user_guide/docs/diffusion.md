@@ -147,7 +147,9 @@ analytical way using the central difference method as shown in the figure below:
 
 ![Central Difference Method](images/diffusion_central_difference_method.png)
 
-Mathematically, the method would allow for unphysical behavior to occur, such as
+The diffusion coefficient dictates the speed of diffusing a substance through
+space, while with the decay constant one controls the speed at which a substance
+decays. Mathematically, the method would allow for unphysical behavior to occur, such as
 negative concentration values. In order to avoid such behavior from happening,
 we impose the following constraint on the parameters:
 
