@@ -178,6 +178,96 @@ void RunApplyOnAllElementsParallelTest() {
 }
 
 template <typename TRm, typename TA, typename TB>
+void RunRemoveAndContainsTest() {
+  using TAScalar = typename TA::template Self<Scalar>;
+  using TBScalar = typename TB::template Self<Scalar>;
+  TRm rm;
+
+  TAScalar a0(12);
+  auto a0_uid = a0.GetUid();
+  rm.push_back(a0);
+
+  TAScalar a1(34);
+  auto a1_uid = a1.GetUid();
+  rm.push_back(a1);
+
+  TAScalar a2(59);
+  auto a2_uid = a2.GetUid();
+  rm.push_back(a2);
+
+  TBScalar b0(3.14);
+  auto b0_uid = b0.GetUid();
+  rm.push_back(b0);
+
+  TBScalar b1(6.28);
+  auto b1_uid = b1.GetUid();
+  rm.push_back(b1);
+
+  EXPECT_TRUE(rm.Contains(a0_uid));
+  EXPECT_TRUE(rm.Contains(a1_uid));
+  EXPECT_TRUE(rm.Contains(a2_uid));
+  EXPECT_TRUE(rm.Contains(b0_uid));
+  EXPECT_TRUE(rm.Contains(b1_uid));
+
+  rm.Remove(a0_uid);
+  rm.Remove(a1_uid);
+  rm.Remove(a2_uid);
+  rm.Remove(b0_uid);
+  rm.Remove(b1_uid);
+
+  EXPECT_FALSE(rm.Contains(a0_uid));
+  EXPECT_FALSE(rm.Contains(a1_uid));
+  EXPECT_FALSE(rm.Contains(a2_uid));
+  EXPECT_FALSE(rm.Contains(b0_uid));
+  EXPECT_FALSE(rm.Contains(b1_uid));
+
+  EXPECT_EQ(0u, rm.GetNumSimObjects());
+}
+
+template <typename TRm, typename TA, typename TB>
+void RunClearTest() {
+  using TAScalar = typename TA::template Self<Scalar>;
+  using TBScalar = typename TB::template Self<Scalar>;
+  TRm rm;
+
+  TAScalar a0(12);
+  auto a0_uid = a0.GetUid();
+  rm.push_back(a0);
+
+  TAScalar a1(34);
+  auto a1_uid = a1.GetUid();
+  rm.push_back(a1);
+
+  TAScalar a2(59);
+  auto a2_uid = a2.GetUid();
+  rm.push_back(a2);
+
+  TBScalar b0(3.14);
+  auto b0_uid = b0.GetUid();
+  rm.push_back(b0);
+
+  TBScalar b1(6.28);
+  auto b1_uid = b1.GetUid();
+  rm.push_back(b1);
+
+  EXPECT_TRUE(rm.Contains(a0_uid));
+  EXPECT_TRUE(rm.Contains(a1_uid));
+  EXPECT_TRUE(rm.Contains(a2_uid));
+  EXPECT_TRUE(rm.Contains(b0_uid));
+  EXPECT_TRUE(rm.Contains(b1_uid));
+
+  rm.Clear();
+
+  EXPECT_FALSE(rm.Contains(a0_uid));
+  EXPECT_FALSE(rm.Contains(a1_uid));
+  EXPECT_FALSE(rm.Contains(a2_uid));
+  EXPECT_FALSE(rm.Contains(b0_uid));
+  EXPECT_FALSE(rm.Contains(b1_uid));
+
+  EXPECT_EQ(0u, rm.GetNumSimObjects());
+}
+
+template <typename TRm, typename TA, typename TB>
 void RunApplyOnAllTypesTest() {
   const double kEpsilon = abs_error<double>::value;
   using TAScalar = typename TA::template Self<Scalar>;

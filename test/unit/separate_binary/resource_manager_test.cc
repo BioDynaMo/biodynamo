@@ -60,6 +60,16 @@ TEST(ResourceManagerTest, push_back) {
   RunPushBackTest<ResourceManager<>, SoaA, SoaB>();
 }
 
+TEST(ResourceManagerTest, RemoveAndContains) {
+  RunRemoveAndContainsTest<ResourceManager<>, A, B>();
+  RunRemoveAndContainsTest<ResourceManager<>, SoaA, SoaB>();
+}
+
+TEST(ResourceManagerTest, Clear) {
+  RunClearTest<ResourceManager<>, A, B>();
+  RunClearTest<ResourceManager<>, SoaA, SoaB>();
+}
+
 TEST(ResourceManagerTest, DiffusionGrid) {
   ResourceManager<> rm;
 

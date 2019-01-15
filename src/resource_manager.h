@@ -367,26 +367,32 @@ class ResourceManager {
     }
   }
 
-  // TODO documentation + test
+  /// Reserves enough memory to hold `capacity` number of simulation objects for
+  /// each simulation object type.
   void Reserve(size_t capacity) {
     ApplyOnAllTypes(
         [&](auto* container, uint16_t type_idx) { container->reserve(capacity); });
   }
 
-  // TODO documentation + test
+  /// Reserves enough memory to hold `capacity` number of simulation objects for
+  /// the given simulation object type.
   template <typename TSo>
   void Reserve(size_t capacity) {
     GetContainer<TSo>()->reserve(capacity);
   }
 
-  // TODO documentation + test
+  /// Returns true if a sim object with the given uid is stored in this
+  /// ResourceManager.
   bool Contains(SoUid uid) const {
     return so_storage_location_.find(uid) != so_storage_location_.end();
   }
 
-  /// Remove elements from each type
+  /// Remove all simulation objects
+  /// NB: This method is not thread-safe! This function invalidates
+  /// sim_object references pointing into the ResourceManager. SoPointer are
+  /// not affected.
   void Clear() {
-    so_storage_location_.clear();  // FIXME add test that so_storage_location_ is also cleared
+    so_storage_location_.clear();
     ApplyOnAllTypes(
         [](auto* container, uint16_t type_idx) { container->clear(); });
   }
@@ -404,7 +410,10 @@ class ResourceManager {
     so_storage_location_[inserted.GetUid()] = SoHandle(GetTypeIndex<TSo>(), el_idx);
   }
 
-  // TODO documentation + test
+  /// Removes the simulation object with the given uid.\n
+  /// NB: This method is not thread-safe! This function invalidates
+  /// sim_object references pointing into the ResourceManager. SoPointer are
+  /// not affected.
   void Remove(SoUid uid) {
     // remove from map
     auto it = this->so_storage_location_.find(uid);
