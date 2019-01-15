@@ -308,7 +308,6 @@ struct Capsule;
       : Base(other, idx),                                                      \
         REMOVE_TRAILING_COMMAS(BDM_SIM_OBJECT_CPY_CTOR_INIT(__VA_ARGS__)) {}   \
                                                                                \
-                                                                           \
   /** Executes the given function for all data members             */          \
   /**  Function could be a lambda in the following form:           */          \
   /**  `[](auto* data_member, const std::string& dm_name) { ... }` */          \
@@ -360,16 +359,17 @@ struct Capsule;
   }                                                                            \
                                                                                \
   template <typename T = Backend>                                              \
-  typename enable_if<is_same<T, Soa>::value || is_same<T, Scalar>::value, Self<Backend>&>::type           \
-  operator=(Self<Backend>&& rhs) {                              \
+  typename enable_if<is_same<T, Soa>::value || is_same<T, Scalar>::value,      \
+                     Self<Backend>&>::type                                     \
+  operator=(Self<Backend>&& rhs) {                                             \
     BDM_SIM_OBJECT_ASSIGNMENT_OP_MOVE_BODY(__VA_ARGS__)                        \
     Base::operator=(std::move(rhs));                                           \
     return *this;                                                              \
   }                                                                            \
-  \
-  Self<Backend>& operator=(const Self<Backend>& rhs) {                              \
-    BDM_SIM_OBJECT_ASSIGNMENT_OP_BODY(__VA_ARGS__)                        \
-    Base::operator=(rhs);                                           \
+                                                                               \
+  Self<Backend>& operator=(const Self<Backend>& rhs) {                         \
+    BDM_SIM_OBJECT_ASSIGNMENT_OP_BODY(__VA_ARGS__)                             \
+    Base::operator=(rhs);                                                      \
     return *this;                                                              \
   }                                                                            \
                                                                                \

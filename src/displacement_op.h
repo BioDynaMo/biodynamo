@@ -44,9 +44,10 @@ class DisplacementOp {
       using Container = std::remove_pointer_t<decltype(container)>;
       using SimObject = typename Container::value_type;
       if (SimObject::GetShape() != Shape::kSphere) {
-        Log::Warning("DisplacementOp",
-                     "Currently GPU/FPGA implementation only supports spherical "
-                     "shapes. Therefore, the CPU implementation will be used.");
+        Log::Warning(
+            "DisplacementOp",
+            "Currently GPU/FPGA implementation only supports spherical "
+            "shapes. Therefore, the CPU implementation will be used.");
         this->force_cpu_implementation_ = true;
       }
     });
@@ -56,7 +57,8 @@ class DisplacementOp {
 
   bool UseCpu() const {
     auto* param = TSimulation::GetActive()->GetParam();
-    return force_cpu_implementation_ || (!param->use_gpu_ && !param->use_opencl_);
+    return force_cpu_implementation_ ||
+           (!param->use_gpu_ && !param->use_opencl_);
   }
 
   void operator()() {
@@ -65,17 +67,15 @@ class DisplacementOp {
 #ifdef USE_OPENCL
       if (param->use_opencl_) {
         auto* rm = TSimulation::GetActive()->GetResourceManager();
-        rm->ApplyOnAllTypes([](auto* cells, uint16_t type_idx) {
-          opencl_(cells, type_idx);
-        });
+        rm->ApplyOnAllTypes(
+            [](auto* cells, uint16_t type_idx) { opencl_(cells, type_idx); });
       }
 #endif
 #ifdef USE_CUDA
       if (!param->use_opencl_) {
         auto* rm = TSimulation::GetActive()->GetResourceManager();
-        rm->ApplyOnAllTypes([](auto* cells, uint16_t type_idx) {
-          cuda_(cells, type_idx);
-        });
+        rm->ApplyOnAllTypes(
+            [](auto* cells, uint16_t type_idx) { cuda_(cells, type_idx); });
       }
 #endif
     } else {

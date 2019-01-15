@@ -631,7 +631,8 @@ class CatalystAdaptor {
 
   void LiveVisualization(double time, size_t time_step, bool last_time_step) {}
 
-  void ExportVisualization(double step, size_t time_step, bool last_time_step) {}
+  void ExportVisualization(double step, size_t time_step, bool last_time_step) {
+  }
 
   void WriteToFile(size_t step) {}
 

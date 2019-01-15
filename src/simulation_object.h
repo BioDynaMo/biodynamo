@@ -29,8 +29,8 @@
 #include "biology_module_util.h"
 #include "event/event.h"
 #include "root_util.h"
-#include "simulation_object_util.h"
 #include "sim_object/so_uid.h"
+#include "simulation_object_util.h"
 #include "type_util.h"
 
 namespace bdm {
@@ -75,9 +75,7 @@ class SoaSimulationObject {
   explicit SoaSimulationObject(const Self<Soa> &other);
 
   template <typename T>
-  SoaSimulationObject(T *other, size_t idx)
-      : kIdx(idx),
-        size_(other->size_) {}
+  SoaSimulationObject(T *other, size_t idx) : kIdx(idx), size_(other->size_) {}
 
   virtual ~SoaSimulationObject() {}
 
@@ -86,7 +84,7 @@ class SoaSimulationObject {
     return *this;
   }
 
-  SoaSimulationObject &operator=(const SoaSimulationObject& other) {
+  SoaSimulationObject &operator=(const SoaSimulationObject &other) {
     size_ = other.size_;
     return *this;
   }
@@ -156,9 +154,7 @@ class SoaSimulationObject {
   virtual void PushBackImpl(const MostDerived<SoaRef> &other) { size_++; }
 
   /// Remove last element
-  virtual void PopBack() {
-    size_--;
-  }
+  virtual void PopBack() { size_--; }
 
  private:
   /// size_ is of type size_t& if Backend == SoaRef; otherwise size_t
@@ -238,7 +234,8 @@ class SimulationObjectExt
   template <typename T, typename U>
   using SimObjectBaseExt = typename SimulationObjectImpl<T, U>::type;
 
-  BDM_SIM_OBJECT_HEADER(SimulationObject, SimObjectBase, 1, uid_, box_idx_, biology_modules_);
+  BDM_SIM_OBJECT_HEADER(SimulationObject, SimObjectBase, 1, uid_, box_idx_,
+                        biology_modules_);
 
  public:
   SimulationObjectExt() : Base() {
@@ -294,7 +291,7 @@ class SimulationObjectExt
   template <typename TSo>
   constexpr const auto *ReinterpretCast() const {
     using TargetType = typename TSo::template Self<Backend>;
-    return reinterpret_cast<const TargetType*>(this);
+    return reinterpret_cast<const TargetType *>(this);
   }
 
   /// Casts this to a simulation object of type `TSo` with the current `Backend`
@@ -325,18 +322,16 @@ class SimulationObjectExt
 
   // TODO(ahmad) this only works for SOA backend add check for SOA
   // used only for cuda and opencl code
-  uint32_t* GetBoxIdPtr() { return box_idx_.data(); }
+  uint32_t *GetBoxIdPtr() { return box_idx_.data(); }
 
   SoHandle GetSoHandle() const {
-    auto* rm = Simulation_t::GetActive()->GetResourceManager();
+    auto *rm = Simulation_t::GetActive()->GetResourceManager();
     auto type_idx = rm->template GetTypeIndex<MostDerivedScalar>();
     return SoHandle(type_idx, Base::GetElementIdx());
   }
 
   /// Return simulation object pointer
-  MostDerivedSoPtr GetSoPtr() const {
-    return MostDerivedSoPtr(uid_[kIdx]);
-  }
+  MostDerivedSoPtr GetSoPtr() const { return MostDerivedSoPtr(uid_[kIdx]); }
 
   // Biology modules
   using BiologyModules =

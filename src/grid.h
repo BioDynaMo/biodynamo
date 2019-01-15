@@ -24,9 +24,9 @@
 #include <cmath>
 #include <iostream>
 #include <limits>
-#include <vector>
 #include <memory>
 #include <mutex>
+#include <vector>
 
 #include "constant.h"
 #include "fixed_size_vector.h"
@@ -476,7 +476,8 @@ class Grid {
   ///
   ///     // using lhs_id and rhs_id to index into an array is thread-safe
   ///     SimulationObjectVector<std::array<double, 3>> total_force;
-  ///     grid.ForEachNeighborPairWithinRadius([&](const auto* lhs, const auto* rhs) {
+  ///     grid.ForEachNeighborPairWithinRadius([&](const auto* lhs, const auto*
+  ///     rhs) {
   ///       auto force = ...;
   ///       total_force[lhs->GetUid()] += force;
   ///       total_force[rhs->GetUid()] -= force;
@@ -485,7 +486,8 @@ class Grid {
   ///     // the following example leads to a race condition
   ///
   ///     int counter = 0;
-  ///     grid.ForEachNeighborPairWithinRadius([&](const auto* lhs, const auto* rhs) {
+  ///     grid.ForEachNeighborPairWithinRadius([&](const auto* lhs, const auto*
+  ///     rhs) {
   ///       counter++;
   ///     }, squared_radius);
   ///     // which can be solved by using std::atomic<int> counter; instead
@@ -693,41 +695,44 @@ class Grid {
   /// This class ensures thread-safety for the InPlaceExecCtxt for the case
   /// that a simulation object modifies its neighbors.
   class NeighborMutexBuilder {
-  public:
+   public:
     /// The NeighborMutex class is a synchronization primitive that can be
     /// used to protect sim_objects data from being simultaneously accessed by
     /// multiple threads.
     class NeighborMutex {
-      public:
-        NeighborMutex(uint64_t box_idx, FixedSizeVector<uint64_t, 27>& mutex_indices, NeighborMutexBuilder* mutex_builder) :
-          box_idx_(box_idx), mutex_indices_(mutex_indices), mutex_builder_(mutex_builder) {
-          // Deadlocks occur if mutliple threads try to acquire the same locks,
-          // but in different order.
-          // -> sort to avoid deadlocks - see lock ordering
-          std::sort(mutex_indices_.begin(), mutex_indices_.end());
-        }
+     public:
+      NeighborMutex(uint64_t box_idx,
+                    const FixedSizeVector<uint64_t, 27>& mutex_indices,
+                    NeighborMutexBuilder* mutex_builder)
+          : box_idx_(box_idx),
+            mutex_indices_(mutex_indices),
+            mutex_builder_(mutex_builder) {
+        // Deadlocks occur if mutliple threads try to acquire the same locks,
+        // but in different order.
+        // -> sort to avoid deadlocks - see lock ordering
+        std::sort(mutex_indices_.begin(), mutex_indices_.end());
+      }
 
-        void lock() {
-          for(auto idx : mutex_indices_) {
-            auto& mutex = mutex_builder_->mutexes_[idx].mutex_;
-             // acquire lock
-            while (mutex.test_and_set(std::memory_order_acquire)) {
-               ; // spin
-             }
+      void lock() {
+        for (auto idx : mutex_indices_) {
+          auto& mutex = mutex_builder_->mutexes_[idx].mutex_;
+          // acquire lock (and spin if another thread is holding it)
+          while (mutex.test_and_set(std::memory_order_acquire)) {
           }
         }
+      }
 
-        void unlock() {
-          for(auto idx : mutex_indices_) {
-            auto& mutex = mutex_builder_->mutexes_[idx].mutex_;
-            mutex.clear(std::memory_order_release);
-          }
+      void unlock() {
+        for (auto idx : mutex_indices_) {
+          auto& mutex = mutex_builder_->mutexes_[idx].mutex_;
+          mutex.clear(std::memory_order_release);
         }
+      }
 
-      private:
-        uint64_t box_idx_;
-        FixedSizeVector<uint64_t, 27> mutex_indices_;
-        NeighborMutexBuilder* mutex_builder_;
+     private:
+      uint64_t box_idx_;
+      FixedSizeVector<uint64_t, 27> mutex_indices_;
+      NeighborMutexBuilder* mutex_builder_;
     };
 
     /// Used to store mutexes in a vector.
@@ -759,9 +764,7 @@ class Grid {
 
   /// Disable neighbor mutexes management. `GetNeighborMutexBuilder()` will
   /// return a nullptr.
-  void DisableNeighborMutexes() {
-    nb_mutex_builder_ = nullptr;
-  }
+  void DisableNeighborMutexes() { nb_mutex_builder_ = nullptr; }
 
   /// Returns the `NeighborMutexBuilder`. The client use it to create a
   /// `NeighborMutex`. If neighbor mutexes has been disabled by calling
@@ -804,7 +807,8 @@ class Grid {
 
   /// Holds instance of NeighborMutexBuilder if it is enabled.
   /// If `DisableNeighborMutexes` has been called this member set to nullptr.
-  std::unique_ptr<NeighborMutexBuilder> nb_mutex_builder_ = std::make_unique<NeighborMutexBuilder>();
+  std::unique_ptr<NeighborMutexBuilder> nb_mutex_builder_ =
+      std::make_unique<NeighborMutexBuilder>();
 
   void CheckGridGrowth() {
     // Determine if the grid dimensions have changed (changed in the sense that
@@ -913,7 +917,8 @@ class Grid {
     grid_dimensions_[5] = ceil(grid_dimensions[5]);
   }
 
-  /// @brief      Gets the Moore (i.e adjacent) boxes of the query boxAlso adds the
+  /// @brief      Gets the Moore (i.e adjacent) boxes of the query boxAlso adds
+  /// the
   ///             query box.
   ///
   /// @param[out] neighbor_boxes  The neighbor boxes
@@ -985,7 +990,7 @@ class Grid {
   /// @param[in]  box_idx         The query box
   ///
   void GetMooreBoxIndices(FixedSizeVector<uint64_t, 27>* box_indices,
-                     size_t box_idx) const {
+                          size_t box_idx) const {
     box_indices->push_back(box_idx);
 
     // Adjacent 6 (top, down, left, right, front and back)

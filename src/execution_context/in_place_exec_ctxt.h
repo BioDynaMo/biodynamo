@@ -15,12 +15,12 @@
 #ifndef EXECUTION_CONTEXT_IN_PLACE_EXEC_CTXT_H_
 #define EXECUTION_CONTEXT_IN_PLACE_EXEC_CTXT_H_
 
-#include <vector>
 #include <memory>
 #include <mutex>
+#include <vector>
 
-#include "resource_manager.h"
 #include "fixed_size_vector.h"
+#include "resource_manager.h"
 
 namespace bdm {
 
@@ -41,12 +41,13 @@ namespace bdm {
 /// Also removal of sim_object happens at the end of each iteration.
 template <typename TCTParam = CompileTimeParam<>>
 class InPlaceExecCtxt {
-public:
+ public:
   using Backend = typename TCTParam::SimulationBackend;
   using Types = typename TCTParam::SimObjectTypes;
 
   InPlaceExecCtxt() {
-    // FIXME this doesn't work: must hold all new elements for all sim_objects processed by this thread.
+    // FIXME this doesn't work: must hold all new elements for all sim_objects
+    // processed by this thread.
     // reserve enough memory to hold all new objects during one iteration of
     // one sim object. If more objects would be created (using `New`),
     // references would become invalid.
@@ -68,15 +69,14 @@ public:
   void TearDownIteration() {
     // new sim objects
     auto* rm = TSimulation::GetActive()->GetResourceManager();
-    new_sim_objects_.ApplyOnAllElements([&](auto&& sim_object, SoHandle){
-      rm->push_back(sim_object);
-    });
+    new_sim_objects_.ApplyOnAllElements(
+        [&](auto&& sim_object, SoHandle) { rm->push_back(sim_object); });
     new_sim_objects_.Clear();
 
     // removed sim objects
     // remove them after adding new ones (maybe one has been removed
     // that was in new_sim_objects_)
-    for(auto& uid : remove_) {
+    for (auto& uid : remove_) {
       rm->Remove(uid);
     }
     remove_.clear();
@@ -126,12 +126,17 @@ public:
   template <typename TLambda, typename TSo, typename TSimulation = Simulation<>>
   void ForEachNeighborWithinRadius(const TLambda& lambda, const TSo& query,
                                    double squared_radius) {
-     auto* grid = TSimulation::GetActive()->GetGrid();
-     return grid->template ForEachNeighborWithinRadius(lambda, query, squared_radius);
+    auto* grid = TSimulation::GetActive()->GetGrid();
+    return grid->template ForEachNeighborWithinRadius(lambda, query,
+                                                      squared_radius);
   }
 
-  template <typename TSo, typename TSimBackend = Backend, typename TSimulation = Simulation<>>
-  auto&& GetSimObject(SoUid uid, typename std::enable_if<std::is_same<TSimBackend, Scalar>::value>::type* ptr = 0) {
+  template <typename TSo, typename TSimBackend = Backend,
+            typename TSimulation = Simulation<>>
+  auto&& GetSimObject(
+      SoUid uid,
+      typename std::enable_if<std::is_same<TSimBackend, Scalar>::value>::type*
+          ptr = 0) {
     // check if the uid corresponds to a new object not yet in the Rm
     if (new_sim_objects_.Contains(uid)) {
       return new_sim_objects_.template GetSimObject<TSo>(uid);
@@ -141,8 +146,11 @@ public:
     }
   }
 
-  template <typename TSo, typename TSimBackend = Backend, typename TSimulation = Simulation<>>
-  auto GetSimObject(SoUid uid, typename std::enable_if<std::is_same<TSimBackend, Soa>::value>::type* ptr = 0) {
+  template <typename TSo, typename TSimBackend = Backend,
+            typename TSimulation = Simulation<>>
+  auto GetSimObject(SoUid uid,
+                    typename std::enable_if<
+                        std::is_same<TSimBackend, Soa>::value>::type* ptr = 0) {
     if (new_sim_objects_.Contains(uid)) {
       return new_sim_objects_.template GetSimObject<TSo>(uid);
     } else {
@@ -151,13 +159,21 @@ public:
     }
   }
 
-  template <typename TSo, typename TSimBackend = Backend, typename TSimulation = Simulation<>>
-  const auto&& GetConstSimObject(SoUid uid, typename std::enable_if<std::is_same<TSimBackend, Scalar>::value>::type* ptr = 0) {
+  template <typename TSo, typename TSimBackend = Backend,
+            typename TSimulation = Simulation<>>
+  const auto&& GetConstSimObject(
+      SoUid uid,
+      typename std::enable_if<std::is_same<TSimBackend, Scalar>::value>::type*
+          ptr = 0) {
     return GetSimObject<TSo>(uid);
   }
 
-  template <typename TSo, typename TSimBackend = Backend, typename TSimulation = Simulation<>>
-  const auto GetConstSimObject(SoUid uid, typename std::enable_if<std::is_same<TSimBackend, Soa>::value>::type* ptr = 0) {
+  template <typename TSo, typename TSimBackend = Backend,
+            typename TSimulation = Simulation<>>
+  const auto GetConstSimObject(
+      SoUid uid,
+      typename std::enable_if<std::is_same<TSimBackend, Soa>::value>::type*
+          ptr = 0) {
     return GetSimObject<TSo>(uid);
   }
 
@@ -174,7 +190,7 @@ public:
     Simulation<TCTParam>::GetActive()->GetGrid()->DisableNeighborMutexes();
   }
 
-private:
+ private:
   /// Contains unique ids of sim objects that will be removed at the end of each
   /// iteration.
   std::vector<SoUid> remove_;

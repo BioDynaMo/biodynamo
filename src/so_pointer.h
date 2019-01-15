@@ -42,7 +42,7 @@ class SoPointer {
   using SoSoaRef = typename TSoSimBackend::template Self<SoaRef>;
 
  public:
-  SoPointer(SoUid uid) : uid_(uid) {}
+  explicit SoPointer(SoUid uid) : uid_(uid) {}
 
   /// constructs an SoPointer object representing a nullptr
   SoPointer() {}
@@ -56,9 +56,7 @@ class SoPointer {
   /// nullptr;`
   bool operator!=(std::nullptr_t) const { return !this->operator==(nullptr); }
 
-  bool operator==(const SoPointer& other) const {
-    return uid_ == other.uid_;
-  }
+  bool operator==(const SoPointer& other) const { return uid_ == other.uid_; }
 
   /// Assignment operator that changes the internal representation to nullptr.
   /// Makes the following statement possible `so_ptr = nullptr;`

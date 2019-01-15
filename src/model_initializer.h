@@ -51,7 +51,8 @@ struct ModelInitializer {
     // Determine simulation object type which is returned by the cell_builder
     using FunctionReturnType = decltype(cell_builder({0, 0, 0}));
 
-    rm->template Reserve<FunctionReturnType>(cells_per_dim * cells_per_dim * cells_per_dim);
+    rm->template Reserve<FunctionReturnType>(cells_per_dim * cells_per_dim *
+                                             cells_per_dim);
     for (size_t x = 0; x < cells_per_dim; x++) {
       auto x_pos = x * space;
       for (size_t y = 0; y < cells_per_dim; y++) {
@@ -89,7 +90,8 @@ struct ModelInitializer {
     // Determine simulation object type which is returned by the cell_builder
     using FunctionReturnType = decltype(cell_builder({0, 0, 0}));
 
-    rm->template Reserve<FunctionReturnType>(cells_per_dim[0] * cells_per_dim[1] * cells_per_dim[2]);
+    rm->template Reserve<FunctionReturnType>(
+        cells_per_dim[0] * cells_per_dim[1] * cells_per_dim[2]);
     for (size_t x = 0; x < cells_per_dim[0]; x++) {
       auto x_pos = x * space;
       for (size_t y = 0; y < cells_per_dim[1]; y++) {

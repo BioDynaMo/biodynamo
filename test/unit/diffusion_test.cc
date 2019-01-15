@@ -51,7 +51,6 @@ void CellFactory(const std::vector<std::array<double, 3>>& positions) {
 // neighbor grid dimensions
 TEST(DiffusionTest, GridDimensions) {
   Simulation<> simulation(TEST_NAME);
-  auto* rm = simulation.GetResourceManager();
   auto* grid = simulation.GetGrid();
 
   std::vector<std::array<double, 3>> positions;
@@ -80,7 +79,6 @@ TEST(DiffusionTest, GridDimensions) {
 // neighbor grid dimensions (we expect the diffusion grid to stay cube-shaped)
 TEST(DiffusionTest, UpdateGrid) {
   Simulation<> simulation(TEST_NAME);
-  auto* rm = simulation.GetResourceManager();
   auto* grid = simulation.GetGrid();
 
   std::vector<std::array<double, 3>> positions;
@@ -118,7 +116,6 @@ TEST(DiffusionTest, UpdateGrid) {
 // do not change
 TEST(DiffusionTest, FalseUpdateGrid) {
   Simulation<> simulation(TEST_NAME);
-  auto* rm = simulation.GetResourceManager();
   auto* grid = simulation.GetGrid();
 
   std::vector<std::array<double, 3>> positions;

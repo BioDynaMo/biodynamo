@@ -36,7 +36,7 @@ TEST(SimulationObjectTest, Clear) {
   Simulation<> simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
 
-  SoUid remove_uid;
+  SoUid remove_uid = 12345;
 
   for (uint64_t i = 0; i < 10; i++) {
     Cell cell(1);

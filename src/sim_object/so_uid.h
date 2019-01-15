@@ -34,9 +34,7 @@ class SoUidGenerator {
     return &kInstance;
   }
 
-  SoUid NewSoUid() {
-    return counter_++;
-  }
+  SoUid NewSoUid() { return counter_++; }
 
  private:
   SoUidGenerator() : counter_(0) {}

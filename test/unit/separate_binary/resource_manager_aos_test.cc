@@ -71,9 +71,7 @@ TEST(ResourceManagerTest, Clear) {
   RunClearTest<ResourceManager<>, SoaA, SoaB>();
 }
 
-TEST(ResourceManagerTest, RunGetSimObjectTest) {
-  RunGetSimObjectTest<A, B>();
-}
+TEST(ResourceManagerTest, RunGetSimObjectTest) { RunGetSimObjectTest<A, B>(); }
 
 }  // namespace bdm
 

@@ -37,8 +37,8 @@
 #include "backend.h"
 #include "compile_time_list.h"
 #include "diffusion_grid.h"
-#include "simulation.h"
 #include "sim_object/so_uid.h"
+#include "simulation.h"
 #include "tuple_util.h"
 
 namespace bdm {
@@ -197,27 +197,36 @@ class ResourceManager {
   }
 
   template <typename TSo, typename TSimBackend = Backend>
-  auto&& GetSimObject(SoHandle handle, typename std::enable_if<std::is_same<TSimBackend, Scalar>::value>::type* ptr = 0) {
+  auto&& GetSimObject(
+      SoHandle handle,
+      typename std::enable_if<std::is_same<TSimBackend, Scalar>::value>::type*
+          ptr = 0) {
     return (*GetContainer<TSo>())[handle.GetElementIdx()];
   }
 
   template <typename TSo, typename TSimBackend = Backend>
-  auto GetSimObject(SoHandle handle, typename std::enable_if<std::is_same<TSimBackend, Soa>::value>::type* ptr = 0) {
+  auto GetSimObject(SoHandle handle,
+                    typename std::enable_if<
+                        std::is_same<TSimBackend, Soa>::value>::type* ptr = 0) {
     return (*GetContainer<TSo>())[handle.GetElementIdx()];
   }
 
   template <typename TSo, typename TSimBackend = Backend>
-  auto&& GetSimObject(SoUid uid, typename std::enable_if<std::is_same<TSimBackend, Scalar>::value>::type* ptr = 0) {
+  auto&& GetSimObject(
+      SoUid uid,
+      typename std::enable_if<std::is_same<TSimBackend, Scalar>::value>::type*
+          ptr = 0) {
     auto handle = so_storage_location_[uid];
     return (*GetContainer<TSo>())[handle.GetElementIdx()];
   }
 
   template <typename TSo, typename TSimBackend = Backend>
-  auto GetSimObject(SoUid uid, typename std::enable_if<std::is_same<TSimBackend, Soa>::value>::type* ptr = 0) {
+  auto GetSimObject(SoUid uid,
+                    typename std::enable_if<
+                        std::is_same<TSimBackend, Soa>::value>::type* ptr = 0) {
     auto handle = so_storage_location_[uid];
     return (*GetContainer<TSo>())[handle.GetElementIdx()];
   }
-
 
   void AddDiffusionGrid(DiffusionGrid* dgrid) {
     uint64_t substance_id = dgrid->GetSubstanceId();
@@ -370,8 +379,9 @@ class ResourceManager {
   /// Reserves enough memory to hold `capacity` number of simulation objects for
   /// each simulation object type.
   void Reserve(size_t capacity) {
-    ApplyOnAllTypes(
-        [&](auto* container, uint16_t type_idx) { container->reserve(capacity); });
+    ApplyOnAllTypes([&](auto* container, uint16_t type_idx) {
+      container->reserve(capacity);
+    });
   }
 
   /// Reserves enough memory to hold `capacity` number of simulation objects for
@@ -407,7 +417,8 @@ class ResourceManager {
     auto el_idx = container->size() - 1;
     auto&& inserted = (*container)[el_idx];
     inserted.SetElementIdx(el_idx);
-    so_storage_location_[inserted.GetUid()] = SoHandle(GetTypeIndex<TSo>(), el_idx);
+    so_storage_location_[inserted.GetUid()] =
+        SoHandle(GetTypeIndex<TSo>(), el_idx);
   }
 
   /// Removes the simulation object with the given uid.\n
@@ -422,22 +433,21 @@ class ResourceManager {
       auto type_idx = soh.GetTypeIdx();
 
       ::bdm::Apply(&data_, type_idx, [&, this](auto* container) {
-          auto element_idx = soh.GetElementIdx();
-          auto last = container->size() - 1;
-          if(element_idx == last) {
-            container->pop_back();
-          } else {
-            (*container)[element_idx] = (*container)[last];
-            (*container)[element_idx].SetElementIdx(element_idx);
-            container->pop_back();
-            SoUid changed_uid = (*container)[element_idx].GetUid();
-            this->so_storage_location_[changed_uid] = SoHandle(type_idx, element_idx);
-          }
+        auto element_idx = soh.GetElementIdx();
+        auto last = container->size() - 1;
+        if (element_idx == last) {
+          container->pop_back();
+        } else {
+          (*container)[element_idx] = (*container)[last];
+          (*container)[element_idx].SetElementIdx(element_idx);
+          container->pop_back();
+          SoUid changed_uid = (*container)[element_idx].GetUid();
+          this->so_storage_location_[changed_uid] =
+              SoHandle(type_idx, element_idx);
+        }
       });
       so_storage_location_.erase(it);
-
     }
-
   }
 
 #ifdef USE_OPENCL

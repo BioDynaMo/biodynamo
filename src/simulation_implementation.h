@@ -20,7 +20,9 @@
 #include <cmath>
 #include <sstream>
 #include <string>
+#include <vector>
 #include "command_line_options.h"
+#include "execution_context/in_place_exec_ctxt.h"
 #include "grid.h"
 #include "log.h"
 #include "param.h"
@@ -28,7 +30,6 @@
 #include "scheduler.h"
 #include "string_util.h"
 #include "version.h"
-#include "execution_context/in_place_exec_ctxt.h"
 
 namespace bdm {
 

@@ -491,9 +491,11 @@ TEST(MechanicalInteraction, TwoDistinctCylinderEncounter) {
   auto neuron2_id = neuron2.GetUid();
   rm->push_back(neuron2);
 
-  auto ne1 = rm->GetSimObject<NeuronSoma>(neuron1_id).ExtendNewNeurite({0, 0, 1});
+  auto ne1 =
+      rm->GetSimObject<NeuronSoma>(neuron1_id).ExtendNewNeurite({0, 0, 1});
   ne1->SetDiameter(2);
-  auto ne2 = rm->GetSimObject<NeuronSoma>(neuron2_id).ExtendNewNeurite({0, 0, 1});
+  auto ne2 =
+      rm->GetSimObject<NeuronSoma>(neuron2_id).ExtendNewNeurite({0, 0, 1});
   ne2->SetDiameter(2);
 
   Scheduler<> scheduler;
@@ -554,9 +556,11 @@ TEST(MechanicalInteraction, TwoCylinderGrowthObstacle) {
   neuron3.SetDiameter(10);
   rm->push_back(neuron3);
 
-  auto ne1 = rm->GetSimObject<NeuronSoma>(neuron1_id).ExtendNewNeurite({0, 0, 1});
+  auto ne1 =
+      rm->GetSimObject<NeuronSoma>(neuron1_id).ExtendNewNeurite({0, 0, 1});
   ne1->SetDiameter(1);
-  auto ne2 = rm->GetSimObject<NeuronSoma>(neuron2_id).ExtendNewNeurite({0, 0, 1});
+  auto ne2 =
+      rm->GetSimObject<NeuronSoma>(neuron2_id).ExtendNewNeurite({0, 0, 1});
   ne2->SetDiameter(1);
 
   Scheduler<> scheduler;

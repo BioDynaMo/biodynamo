@@ -86,7 +86,7 @@ class Scheduler {
     auto* param = sim->GetParam();
 
     Timing::Time("Set up exec context", [&]() {
-      for(auto* ctxt : sim->GetAllExecCtxts()) {
+      for (auto* ctxt : sim->GetAllExecCtxts()) {
         ctxt->SetupIteration();
       }
     });
@@ -113,7 +113,7 @@ class Scheduler {
     };
 
     // update all sim objects: run all CPU operations
-    rm->ApplyOnAllTypes([&](auto* sim_objects, uint16_t type_idx){
+    rm->ApplyOnAllTypes([&](auto* sim_objects, uint16_t type_idx) {
 #pragma omp parallel for schedule(dynamic, 100)
       for (size_t i = 0; i < sim_objects->size(); i++) {
         auto&& so = (*sim_objects)[i];
@@ -123,13 +123,13 @@ class Scheduler {
     });
 
     // update all sim objects: hardware accelerated operations
-    if(param->run_mechanical_interactions_ && !displacement_.UseCpu()) {
+    if (param->run_mechanical_interactions_ && !displacement_.UseCpu()) {
       Timing::Time("displacement (GPU/FPGA)", displacement_);
     }
 
     // finish updating sim objects
     Timing::Time("Tear down exec context", [&]() {
-      for(auto* ctxt : sim->GetAllExecCtxts()) {
+      for (auto* ctxt : sim->GetAllExecCtxts()) {
         ctxt->TearDownIteration();
       }
     });
@@ -189,7 +189,6 @@ class Scheduler {
     auto* grid = sim->GetGrid();
     auto* rm = sim->GetResourceManager();
     auto* param = sim->GetParam();
-    auto* ctxt = sim->GetExecCtxt();
 
     // commit all changes
     for (auto* ctxt : sim->GetAllExecCtxts()) {

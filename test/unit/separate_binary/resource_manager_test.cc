@@ -102,10 +102,7 @@ TEST(ResourceManagerTest, DiffusionGrid) {
   ASSERT_EQ(2, counter);
 }
 
-
-TEST(ResourceManagerTest, RunGetSimObjectTest) {
-  RunGetSimObjectTest<A, B>();
-}
+TEST(ResourceManagerTest, RunGetSimObjectTest) { RunGetSimObjectTest<A, B>(); }
 
 TEST(SoHandleTest, EqualsOperator) {
   EXPECT_EQ(SoHandle(0, 0), SoHandle(0, 0));

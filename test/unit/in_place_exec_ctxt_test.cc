@@ -17,12 +17,11 @@
 #include "cell.h"
 #include "default_ctparam.h"
 #include "execution_context/in_place_exec_ctxt.h"
+#include "model_initializer.h"
 #include "simulation_implementation.h"
 #include "test_util.h"
-#include "model_initializer.h"
 
 namespace bdm {
-
 
 TEST(InPlaceExecCtxt, RemoveFromSimulation) {
   Simulation<> sim(TEST_NAME);
@@ -124,7 +123,6 @@ TEST(InPlaceExecCtxt, NewAndGetSimObject) {
 
 TEST(InPlaceExecCtxt, Execute) {
   Simulation<> sim(TEST_NAME);
-  auto* rm = sim.GetResourceManager();
   auto* ctxt = sim.GetExecCtxt();
 
   ctxt->DisableNeighborGuard();
@@ -187,19 +185,18 @@ TEST(InPlaceExecCtxt, ExecuteThreadSafety) {
 
     uint64_t nb_counter = 0;
     auto nb_lambda = [&](const auto* neighbor) {
-      auto non_const_nb  = rm->GetSimObject<Cell>(neighbor->GetUid());
+      auto non_const_nb = rm->GetSimObject<Cell>(neighbor->GetUid());
       auto d1 = non_const_nb.GetDiameter();
       non_const_nb.SetDiameter(d1 + 1);
       nb_counter++;
     };
     ctxt->ForEachNeighborWithinRadius(nb_lambda, so, 100);
-    #pragma omp critical
+#pragma omp critical
     num_neighbors[so.GetUid()] = nb_counter;
   };
 
-  rm->ApplyOnAllElementsParallel([&](auto&& so, SoHandle) {
-    ctxt->Execute(so, op);
-  });
+  rm->ApplyOnAllElementsParallel(
+      [&](auto&& so, SoHandle) { ctxt->Execute(so, op); });
 
   rm->ApplyOnAllElements([&](auto&& so, SoHandle) {
     // expected diameter: initial value + num_neighbors + 1

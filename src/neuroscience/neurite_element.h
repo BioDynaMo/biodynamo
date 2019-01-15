@@ -215,8 +215,8 @@ class NeuronNeuriteAdapter {
 BDM_SIM_OBJECT(NeuriteElement, SimulationObject) {
   BDM_SIM_OBJECT_HEADER(
       NeuriteElement, SimulationObject, 1, mass_location_, volume_, diameter_,
-      density_, adherence_, x_axis_, y_axis_, z_axis_, is_axon_,
-      mother_, daughter_left_, daughter_right_, branch_order_,
+      density_, adherence_, x_axis_, y_axis_, z_axis_, is_axon_, mother_,
+      daughter_left_, daughter_right_, branch_order_,
       force_to_transmit_to_proximal_mass_, spring_axis_, actual_length_,
       tension_, spring_constant_, resting_length_);
 
@@ -504,8 +504,8 @@ BDM_SIM_OBJECT(NeuriteElement, SimulationObject) {
                               (tension_[kIdx] + spring_constant_[kIdx]);
       spring_axis_[kIdx] = Math::ScalarMult(factor, spring_axis_[kIdx]);
 
-      mass_location_[kIdx] = Math::Add(
-          mother_[kIdx].OriginOf(Base::GetUid()), spring_axis_[kIdx]);
+      mass_location_[kIdx] =
+          Math::Add(mother_[kIdx].OriginOf(Base::GetUid()), spring_axis_[kIdx]);
       UpdateVolume();  // and update concentration of internal stuff.
     } else if (mother_[kIdx].IsNeuronSoma()) {
       mother_[kIdx].RemoveDaughter(Base::GetSoPtr());
@@ -917,7 +917,8 @@ BDM_SIM_OBJECT(NeuriteElement, SimulationObject) {
       } else if (neighbor->template IsSoType<NeuronSoma>()) {
         // if neighbor is NeuronSoma
         // if it is a direct relative, we don't take it into account
-        const auto* neighbor_rc = neighbor->template ReinterpretCast<NeuronSoma>();
+        const auto* neighbor_rc =
+            neighbor->template ReinterpretCast<NeuronSoma>();
         auto n_soptr = neighbor_rc->GetSoPtr();
         if (this->GetMother().IsNeuronSoma() &&
             this->GetMother().GetNeuronSomaSoPtr() == n_soptr) {
@@ -1516,8 +1517,8 @@ BDM_SIM_OBJECT(NeuriteElement, SimulationObject) {
     // and want to
     // compute restingLength, and not the opposite...)
     // T = k*(A-R)/R --> R = k*A/(T+K)
-    spring_axis_[kIdx] = Math::Subtract(
-        mass_location_[kIdx], mother_[kIdx].OriginOf(Base::GetUid()));
+    spring_axis_[kIdx] = Math::Subtract(mass_location_[kIdx],
+                                        mother_[kIdx].OriginOf(Base::GetUid()));
     actual_length_[kIdx] = Math::Norm(spring_axis_[kIdx]);
     resting_length_[kIdx] = spring_constant_[kIdx] * actual_length_[kIdx] /
                             (tension_[kIdx] + spring_constant_[kIdx]);

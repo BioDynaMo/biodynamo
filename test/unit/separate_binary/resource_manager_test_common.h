@@ -342,13 +342,17 @@ void RunGetSimObjectTest() {
   const double kEpsilon = abs_error<double>::value;
   EXPECT_EQ(0, rm.template GetSimObject<TA>(SoHandle(0, 0)).GetData());
   EXPECT_EQ(1, rm.template GetSimObject<TA>(SoHandle(0, 1)).GetData());
-  EXPECT_NEAR(2, rm.template GetSimObject<TB>(SoHandle(1, 0)).GetData(), kEpsilon);
-  EXPECT_NEAR(3, rm.template GetSimObject<TB>(SoHandle(1, 1)).GetData(), kEpsilon);
+  EXPECT_NEAR(2, rm.template GetSimObject<TB>(SoHandle(1, 0)).GetData(),
+              kEpsilon);
+  EXPECT_NEAR(3, rm.template GetSimObject<TB>(SoHandle(1, 1)).GetData(),
+              kEpsilon);
 
-  EXPECT_EQ(0, rm.template GetSimObject<TA>(current_uid +1).GetData());
+  EXPECT_EQ(0, rm.template GetSimObject<TA>(current_uid + 1).GetData());
   EXPECT_EQ(1, rm.template GetSimObject<TA>(current_uid + 2).GetData());
-  EXPECT_NEAR(2, rm.template GetSimObject<TB>(current_uid + 3).GetData(), kEpsilon);
-  EXPECT_NEAR(3, rm.template GetSimObject<TB>(current_uid + 4).GetData(), kEpsilon);
+  EXPECT_NEAR(2, rm.template GetSimObject<TB>(current_uid + 3).GetData(),
+              kEpsilon);
+  EXPECT_NEAR(3, rm.template GetSimObject<TB>(current_uid + 4).GetData(),
+              kEpsilon);
 }
 
 }  // namespace bdm

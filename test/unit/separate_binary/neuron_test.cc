@@ -103,7 +103,8 @@ TEST(NeuronSomaTest, ExtendNewNeuriteElementSphericalCoordinates) {
   rm->push_back(neuron);
 
   // new neurite
-  auto neurite = rm->GetSimObject<NeuronSoma>(neuron_id).ExtendNewNeurite(10, Math::kPi / 8, Math::kPi / 3);
+  auto neurite = rm->GetSimObject<NeuronSoma>(neuron_id).ExtendNewNeurite(
+      10, Math::kPi / 8, Math::kPi / 3);
   neurite->SetDiameter(2);
 
   ctxt->TearDownIteration();
@@ -153,7 +154,8 @@ TEST(NeuronSomaTest, ExtendNewNeurite) {
   rm->push_back(neuron);
 
   // new neurite
-  auto neurite = rm->GetSimObject<NeuronSoma>(neuron_id).ExtendNewNeurite({0, 0, 1});
+  auto neurite =
+      rm->GetSimObject<NeuronSoma>(neuron_id).ExtendNewNeurite({0, 0, 1});
   neurite->SetDiameter(2);
 
   ctxt->TearDownIteration();
@@ -193,7 +195,8 @@ TEST(NeuronSomaTest, ExtendNeuriteAndElongate) {
   auto neuron_id = neuron.GetUid();
   rm->push_back(neuron);
 
-  auto neurite_element = rm->GetSimObject<NeuronSoma>(neuron_id).ExtendNewNeurite({0, 0, 1});
+  auto neurite_element =
+      rm->GetSimObject<NeuronSoma>(neuron_id).ExtendNewNeurite({0, 0, 1});
   neurite_element->SetDiameter(2);
 
   ctxt->TearDownIteration();
@@ -261,7 +264,8 @@ TEST(NeuriteElementTest, PartialRetraction) {
   auto neuron_id = neuron.GetUid();
   rm->push_back(neuron);
 
-  auto neurite_element = rm->GetSimObject<NeuronSoma>(neuron_id).ExtendNewNeurite({0, 0, 1});
+  auto neurite_element =
+      rm->GetSimObject<NeuronSoma>(neuron_id).ExtendNewNeurite({0, 0, 1});
   neurite_element->SetDiameter(2);
 
   // will create a new neurite segment at iteration 139
@@ -312,7 +316,8 @@ TEST(NeuriteElementTest, TotalRetraction) {
   auto neuron_id = neuron.GetUid();
   rm->push_back(neuron);
 
-  auto neurite_element = rm->GetSimObject<NeuronSoma>(neuron_id).ExtendNewNeurite({0, 0, 1});
+  auto neurite_element =
+      rm->GetSimObject<NeuronSoma>(neuron_id).ExtendNewNeurite({0, 0, 1});
   neurite_element->SetDiameter(2);
 
   // will create a new neurite segment at iteration 139
@@ -349,7 +354,8 @@ TEST(NeuriteElementTest, Branch) {
   auto neuron_id = neuron.GetUid();
   rm->push_back(neuron);
 
-  auto neurite_element = rm->GetSimObject<NeuronSoma>(neuron_id).ExtendNewNeurite({0, 0, 1});
+  auto neurite_element =
+      rm->GetSimObject<NeuronSoma>(neuron_id).ExtendNewNeurite({0, 0, 1});
   neurite_element->SetDiameter(2);
 
   // will create a new neurite segment at iteration 139
@@ -449,7 +455,8 @@ TEST(NeuriteElementTest, RightDaughterRetraction) {
   auto neuron_id = neuron.GetUid();
   rm->push_back(neuron);
 
-  auto neurite_element = rm->GetSimObject<NeuronSoma>(neuron_id).ExtendNewNeurite({0, 0, 1});
+  auto neurite_element =
+      rm->GetSimObject<NeuronSoma>(neuron_id).ExtendNewNeurite({0, 0, 1});
   neurite_element->SetDiameter(2);
 
   // will create a new neurite segment at iteration 139
@@ -522,7 +529,8 @@ TEST(NeuriteElementTest, RightDaughterTotalRetraction) {
   auto neuron_id = neuron.GetUid();
   rm->push_back(neuron);
 
-  auto neurite_element = rm->GetSimObject<NeuronSoma>(neuron_id).ExtendNewNeurite({0, 0, 1});
+  auto neurite_element =
+      rm->GetSimObject<NeuronSoma>(neuron_id).ExtendNewNeurite({0, 0, 1});
   neurite_element->SetDiameter(2);
 
   // will create a new neurite segment at iteration 139
@@ -573,7 +581,8 @@ TEST(NeuriteElementTest, LeftDaughterRetraction) {
   auto neuron_id = neuron.GetUid();
   rm->push_back(neuron);
 
-  auto neurite_element = rm->GetSimObject<NeuronSoma>(neuron_id).ExtendNewNeurite({0, 0, 1});
+  auto neurite_element =
+      rm->GetSimObject<NeuronSoma>(neuron_id).ExtendNewNeurite({0, 0, 1});
   neurite_element->SetDiameter(2);
 
   // will create a new neurite segment at iteration 139
@@ -645,7 +654,8 @@ TEST(NeuriteElementTest, RetractAllDendrites) {
   auto neuron_id = neuron.GetUid();
   rm->push_back(neuron);
 
-  auto neurite_element = rm->GetSimObject<NeuronSoma>(neuron_id).ExtendNewNeurite({1, 0, 0});
+  auto neurite_element =
+      rm->GetSimObject<NeuronSoma>(neuron_id).ExtendNewNeurite({1, 0, 0});
   neurite_element->SetDiameter(2);
 
   // will create a new neurite segment at iteration 139
@@ -698,7 +708,8 @@ TEST(NeuriteElementTest, Bifurcate) {
   auto neuron_id = neuron.GetUid();
   rm->push_back(neuron);
 
-  auto neurite_element =  rm->GetSimObject<NeuronSoma>(neuron_id).ExtendNewNeurite({0, 0, 1});
+  auto neurite_element =
+      rm->GetSimObject<NeuronSoma>(neuron_id).ExtendNewNeurite({0, 0, 1});
   neurite_element->SetDiameter(2);
 
   auto bifurcation = neurite_element->Bifurcate({0, 1, 1}, {1, 1, 0});
@@ -777,9 +788,9 @@ TEST(NeuriteElementTest, Bifurcate) {
 }
 
 TEST(DISABLED_NeuronSomaNeuriteElementTest, Displacement) {
-  Simulation<> simulation(TEST_NAME);
-  auto* rm = simulation.GetResourceManager();
-
+  // Simulation<> simulation(TEST_NAME);
+  // auto* rm = simulation.GetResourceManager();
+  // 
   // auto* neurons = rm->template Get<NeuronSoma>();
   // auto* neurite_segments = rm->template Get<NeuriteElement>();
   //

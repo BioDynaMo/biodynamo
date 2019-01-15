@@ -148,8 +148,7 @@ BDM_SIM_OBJECT(NeuronSoma, Cell) {
   /// Daughter attachment points in local coordinates
   /// Key: neurite segment uid
   /// Value: position
-  vec<std::unordered_map<SoUid, std::array<double, 3>>> daughters_coord_ = {
-      {}};
+  vec<std::unordered_map<SoUid, std::array<double, 3>>> daughters_coord_ = {{}};
 
   /// \brief EventHandler to modify the data members of this soma
   /// after a new neurite extension event.
