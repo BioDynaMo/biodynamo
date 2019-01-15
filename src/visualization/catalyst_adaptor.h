@@ -619,27 +619,9 @@ std::atomic<uint64_t> CatalystAdaptor<T>::counter_;
 template <typename TSimulation = Simulation<>>
 class CatalystAdaptor {
  public:
-  explicit CatalystAdaptor(const std::string& script) {
-    // FIXME
-    // auto* param = TSimulation::GetActive()->GetParam();
-    // if (param->live_visualization_ || param->export_visualization_) {
-    //   Log::Fatal(
-    //       "CatalystAdaptor::Initialize",
-    //       "Simulation was compiled without ParaView support, but you are "
-    //       "trying to use it.");
-    // }
-  }
+  explicit CatalystAdaptor(const std::string& script) {}
 
-  void Visualize(uint64_t, bool) {
-    // FIXME
-    // auto* param = TSimulation::GetActive()->GetParam();
-    // if (param->live_visualization_ || param->export_visualization_) {
-    //   Log::Fatal(
-    //       "CatalystAdaptor::Visualize",
-    //       "Simulation was compiled without ParaView support, but you are "
-    //       "trying to use it.");
-    // }
-  }
+  void Visualize(uint64_t, bool) {}
 
  private:
   friend class CatalystAdaptorTest_GenerateSimulationInfoJson_Test;
@@ -647,48 +629,16 @@ class CatalystAdaptor {
   friend class CatalystAdaptorTest_CheckVisualizationSelection_Test;
   friend class DiffusionTest_ModelInitializer_Test;
 
-  void LiveVisualization(double time, size_t time_step, bool last_time_step) {
-    auto* param = TSimulation::GetActive()->GetParam();
-    if (param->live_visualization_ || param->export_visualization_) {
-      Log::Fatal(
-          "CatalystAdaptor::LiveVisualization",
-          "Simulation was compiled without ParaView support, but you are "
-          "trying to use it.");
-    }
-  }
+  void LiveVisualization(double time, size_t time_step, bool last_time_step) {}
 
-  void ExportVisualization(double step, size_t time_step, bool last_time_step) {
-    auto* param = TSimulation::GetActive()->GetParam();
-    if (param->live_visualization_ || param->export_visualization_) {
-      Log::Fatal(
-          "CatalystAdaptor::ExportVisualization",
-          "Simulation was compiled without ParaView support, but you are "
-          "trying to use it.");
-    }
-  }
+  void ExportVisualization(double step, size_t time_step, bool last_time_step) {}
 
-  void WriteToFile(size_t step) {
-    auto* param = TSimulation::GetActive()->GetParam();
-    if (param->live_visualization_ || param->export_visualization_) {
-      Log::Fatal(
-          "CatalystAdaptor::WriteToFile",
-          "Simulation was compiled without ParaView support, but you are "
-          "trying to use it.");
-    }
-  }
+  void WriteToFile(size_t step) {}
 
   static void GenerateSimulationInfoJson(
-      const std::unordered_map<std::string, Shape>& shapes) {
-    Log::Fatal("CatalystAdaptor::GenerateSimulationInfoJson",
-               "Simulation was compiled without ParaView support, but you are "
-               "trying to use it.");
-  }
+      const std::unordered_map<std::string, Shape>& shapes) {}
 
-  static void GenerateParaviewState() {
-    Log::Fatal("CatalystAdaptor::GenerateParaviewState",
-               "Simulation was compiled without ParaView support, but you are "
-               "trying to use it.");
-  }
+  static void GenerateParaviewState() {}
 };
 
 #endif  // defined(USE_CATALYST) && !defined(__ROOTCLING__)
