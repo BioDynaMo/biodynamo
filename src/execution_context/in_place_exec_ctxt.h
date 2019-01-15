@@ -12,8 +12,8 @@
 //
 // -----------------------------------------------------------------------------
 
-#ifndef EXECUTION_CONTEXT_APPROXIMATE_EXEC_CTXT_H_
-#define EXECUTION_CONTEXT_APPROXIMATE_EXEC_CTXT_H_
+#ifndef EXECUTION_CONTEXT_IN_PLACE_EXEC_CTXT_H_
+#define EXECUTION_CONTEXT_IN_PLACE_EXEC_CTXT_H_
 
 #include <vector>
 #include <memory>
@@ -24,15 +24,14 @@
 
 namespace bdm {
 
-// TODO rename to InPlaceExecCtxt ?
 // TODO documentation + test
 template <typename TCTParam = CompileTimeParam<>>
-class ApproximateExecCtxt {
+class InPlaceExecCtxt {
 public:
   using Backend = typename TCTParam::SimulationBackend;
   using Types = typename TCTParam::SimObjectTypes;
 
-  ApproximateExecCtxt() {
+  InPlaceExecCtxt() {
     // FIXME this doesn't work: must hold all new elements for all sim_objects processed by this thread.
     // reserve enough memory to hold all new objects during one iteration of
     // one sim object. If more objects would be created (using `New`),
@@ -183,4 +182,4 @@ private:
 
 }  // namespace bdm
 
-#endif  // EXECUTION_CONTEXT_APPROXIMATE_EXECUTION_CTXT_H_
+#endif  // EXECUTION_CONTEXT_IN_PLACE_EXEC_CTXT_H_

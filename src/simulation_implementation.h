@@ -28,7 +28,7 @@
 #include "scheduler.h"
 #include "string_util.h"
 #include "version.h"
-#include "execution_context/approximate_exec_ctxt.h"
+#include "execution_context/in_place_exec_ctxt.h"
 
 namespace bdm {
 
@@ -151,12 +151,12 @@ Random* Simulation<T>::GetRandom() {
 }
 
 template <typename T>
-ApproximateExecCtxt<T>* Simulation<T>::GetExecCtxt() {
+InPlaceExecCtxt<T>* Simulation<T>::GetExecCtxt() {
   return exec_ctxt_[omp_get_thread_num()];
 }
 
 template <typename T>
-std::vector<ApproximateExecCtxt<T>*>& Simulation<T>::GetAllExecCtxts() {
+std::vector<InPlaceExecCtxt<T>*>& Simulation<T>::GetAllExecCtxts() {
   return exec_ctxt_;
 }
 
@@ -197,7 +197,7 @@ void Simulation<T>::InitializeMembers() {
   }
   exec_ctxt_.resize(omp_get_max_threads());
   for (uint64_t i = 0; i < exec_ctxt_.size(); i++) {
-    exec_ctxt_[i] = new ApproximateExecCtxt<T>();
+    exec_ctxt_[i] = new InPlaceExecCtxt<T>();
   }
   rm_ = new TResourceManager();
   grid_ = new TGrid();

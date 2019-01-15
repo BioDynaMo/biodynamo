@@ -30,7 +30,7 @@ template <typename>
 class Scheduler;
 struct Param;
 template <typename>
-class ApproximateExecCtxt;
+class InPlaceExecCtxt;
 
 struct Soa;
 template <typename TBackend = Soa>
@@ -93,10 +93,10 @@ struct Simulation {
   Random* GetRandom();
 
   /// Returns a thread local execution context.
-  ApproximateExecCtxt<TCTParam>* GetExecCtxt();
+  InPlaceExecCtxt<TCTParam>* GetExecCtxt();
 
   /// Returns all thread local execution contexts.
-  std::vector<ApproximateExecCtxt<TCTParam>*>& GetAllExecCtxts();
+  std::vector<InPlaceExecCtxt<TCTParam>*>& GetAllExecCtxts();
 
   /// @see `unique_name_`
   const std::string& GetUniqueName() const;
@@ -120,7 +120,7 @@ struct Simulation {
   std::vector<Random*> random_;
 
   /// Execution Context for each thread
-  std::vector<ApproximateExecCtxt<TCTParam>*> exec_ctxt_;  //!
+  std::vector<InPlaceExecCtxt<TCTParam>*> exec_ctxt_;  //!
 
   ResourceManager<TCTParam>* rm_ = nullptr;
   Param_t* param_ = nullptr;

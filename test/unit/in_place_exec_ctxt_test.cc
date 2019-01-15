@@ -16,7 +16,7 @@
 
 #include "cell.h"
 #include "default_ctparam.h"
-#include "execution_context/approximate_exec_ctxt.h"
+#include "execution_context/in_place_exec_ctxt.h"
 #include "simulation_implementation.h"
 #include "test_util.h"
 #include "model_initializer.h"
@@ -24,7 +24,7 @@
 namespace bdm {
 
 
-TEST(ApproximateExecCtxt, RemoveFromSimulation) {
+TEST(InPlaceExecCtxt, RemoveFromSimulation) {
   Simulation<> sim(TEST_NAME);
   auto* rm = sim.GetResourceManager();
   auto* ctxt = sim.GetExecCtxt();
@@ -56,7 +56,7 @@ TEST(ApproximateExecCtxt, RemoveFromSimulation) {
 
 // Remove object that has been created in the same iteration. Thus it has not
 // been added to the ResourceManager yet.
-TEST(ApproximateExecCtxt, RemoveFromSimulationThatDoesNotExistInRm) {
+TEST(InPlaceExecCtxt, RemoveFromSimulationThatDoesNotExistInRm) {
   Simulation<> sim(TEST_NAME);
   auto* rm = sim.GetResourceManager();
   auto* ctxt = sim.GetExecCtxt();
@@ -83,7 +83,7 @@ TEST(ApproximateExecCtxt, RemoveFromSimulationThatDoesNotExistInRm) {
   EXPECT_FALSE(rm->Contains(uid_1));
 }
 
-TEST(ApproximateExecCtxt, NewAndGetSimObject) {
+TEST(InPlaceExecCtxt, NewAndGetSimObject) {
   Simulation<> sim(TEST_NAME);
   auto* rm = sim.GetResourceManager();
   auto* ctxt = sim.GetExecCtxt();
@@ -122,7 +122,7 @@ TEST(ApproximateExecCtxt, NewAndGetSimObject) {
   EXPECT_EQ(789, rm->GetSimObject<Cell>(uid_1).GetDiameter());
 }
 
-TEST(ApproximateExecCtxt, Execute) {
+TEST(InPlaceExecCtxt, Execute) {
   Simulation<> sim(TEST_NAME);
   auto* rm = sim.GetResourceManager();
   auto* ctxt = sim.GetExecCtxt();
@@ -158,7 +158,7 @@ TEST(ApproximateExecCtxt, Execute) {
   EXPECT_TRUE(op2_called);
 }
 
-TEST(ApproximateExecCtxt, ExecuteThreadSafety) {
+TEST(InPlaceExecCtxt, ExecuteThreadSafety) {
   Simulation<> sim(TEST_NAME);
   auto* rm = sim.GetResourceManager();
   auto* ctxt = sim.GetExecCtxt();
