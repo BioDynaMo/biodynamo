@@ -173,7 +173,7 @@ TEST(ApproximateExecCtxt, ExecuteThreadSafety) {
   for (auto* context : sim.GetAllExecCtxts()) {
     context->SetupIteration();
   }
-  sim.GetGrid()->UpdateGrid();
+  sim.GetGrid()->Initialize();
 
   std::unordered_map<SoUid, uint64_t> num_neighbors;
 
