@@ -699,10 +699,8 @@ class Grid {
     /// multiple threads.
     class NeighborMutex {
       public:
-
-
-        NeighborMutex(uint64_t box_idx, FixedSizeVector<uint64_t, 27>& mutex_indices, NeighborMutexBuilder* guard_builder) :
-          box_idx_(box_idx), mutex_indices_(mutex_indices), guard_builder_(guard_builder) {
+        NeighborMutex(uint64_t box_idx, FixedSizeVector<uint64_t, 27>& mutex_indices, NeighborMutexBuilder* mutex_builder) :
+          box_idx_(box_idx), mutex_indices_(mutex_indices), mutex_builder_(mutex_builder) {
           // Deadlocks occur if mutliple threads try to acquire the same locks,
           // but in different order.
           // -> sort to avoid deadlocks - see lock ordering
@@ -711,34 +709,32 @@ class Grid {
 
         void lock() {
           for(auto idx : mutex_indices_) {
-            auto& mutex = guard_builder_->mutexes_[idx].mutex_;
              // acquire lock
             while (mutex.test_and_set(std::memory_order_acquire)) {
                ; // spin
              }
-            // mutex.lock();
           }
         }
 
         void unlock() {
           for(auto idx : mutex_indices_) {
-            auto& mutex = guard_builder_->mutexes_[idx].mutex_;
+            auto& mutex = mutex_builder_->mutexes_[idx].mutex_;
             mutex.clear(std::memory_order_release);
-            // mutex.unlock();
           }
         }
 
       private:
         uint64_t box_idx_;
         FixedSizeVector<uint64_t, 27> mutex_indices_;
-        NeighborMutexBuilder* guard_builder_;
+        NeighborMutexBuilder* mutex_builder_;
     };
 
+    /// Used to use mutexes in vector
+    /// Always creates a new mutex (even for the copy constructor)
     struct MutexWrapper {
       MutexWrapper() {}
       MutexWrapper(const MutexWrapper&) {}
       std::atomic_flag mutex_ = ATOMIC_FLAG_INIT;
-      // std::mutex mutex_;
     };
 
     template <typename TTSimulation = Simulation<>>
@@ -760,6 +756,7 @@ class Grid {
     std::vector<MutexWrapper> mutexes_;
   };
 
+  /// TODO
   void EnableNeighborMutexes() {
     if(nb_mutex_builder_ == nullptr) {
       nb_mutex_builder_ = std::make_unique<NeighborMutexBuilder>();
@@ -802,7 +799,7 @@ class Grid {
   /// Flag to indicate if the grid has been initialized or not
   bool initialized_ = false;
 
-  ///
+  /// TODO
   std::unique_ptr<NeighborMutexBuilder> nb_mutex_builder_ = nullptr;
 
   void CheckGridGrowth() {
