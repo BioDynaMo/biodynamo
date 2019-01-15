@@ -24,7 +24,7 @@ namespace bdm {
 // specific volume, after which it proliferates (i.e. divides).
 // -----------------------------------------------------------------------------
 
-// 1. Define compile time parameter
+// Define compile time parameter
 BDM_CTPARAM() {
   BDM_CTPARAM_HEADER();
 
@@ -33,10 +33,13 @@ BDM_CTPARAM() {
 };
 
 inline int Simulate(int argc, const char** argv) {
-  // 2. Create new simulation
+  // Create new simulation
   Simulation<> simulation(argc, argv);
+  // Since sim_objects in this simulation won't modify neighbors, we can
+  // safely disable neighbor guards to improve performance.
+  sim.GetExecCtxt()->DisableNeighborGuard();
 
-  // 3. Define initial model - in this example: 3D grid of cells
+  // Define initial model - in this example: 3D grid of cells
   size_t cells_per_dim = 128;
   auto construct = [](const std::array<double, 3>& position) {
     Cell cell(position);
@@ -48,7 +51,7 @@ inline int Simulate(int argc, const char** argv) {
   };
   ModelInitializer::Grid3D(cells_per_dim, 20, construct);
 
-  // 4. Run simulation for one timestep
+  // Run simulation for one timestep
   simulation.GetScheduler()->Simulate(1);
 
   std::cout << "Simulation completed successfully!\n";

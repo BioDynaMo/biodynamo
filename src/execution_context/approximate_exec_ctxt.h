@@ -43,8 +43,6 @@ public:
 
   template <typename TSimulation = Simulation<>>
   void SetupIteration() {
-    EnableNeighborGuards(); // FIXME remove
-
     // first iteration might have uncommited changes
     TearDownIteration();
   }
@@ -152,14 +150,12 @@ public:
     remove_.push_back(uid);
   }
 
-  // TODO make opt-out
   /// If a sim objects modifies other simulation objects while it is updated,
-  /// race conditions can occur using this exection context. This function turns
-  /// on the protection mechanism. The protection mechanism is turned off by
-  /// default to avoid unnecessary overhead for simulations that do not require
-  /// this feature.
-  void EnableNeighborGuards() {
-    Simulation<TCTParam>::GetActive()->GetGrid()->EnableNeighborMutexes();
+  /// race conditions can occur using this execution context. This function
+  /// turns the protection mechanism off to improve performance. This is safe
+  /// simulation objects only update themselves.
+  void DisableNeighborGuard() {
+    Simulation<TCTParam>::GetActive()->GetGrid()->DisableNeighborMutexes();
   }
 
 private:

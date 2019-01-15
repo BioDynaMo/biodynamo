@@ -127,6 +127,8 @@ TEST(ApproximateExecCtxt, Execute) {
   auto* rm = sim.GetResourceManager();
   auto* ctxt = sim.GetExecCtxt();
 
+  ctxt->DisableNeighborGuard();
+
   Cell cell_0;
   cell_0.SetDiameter(123);
   auto uid_0 = cell_0.GetUid();

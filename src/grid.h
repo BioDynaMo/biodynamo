@@ -709,6 +709,7 @@ class Grid {
 
         void lock() {
           for(auto idx : mutex_indices_) {
+            auto& mutex = mutex_builder_->mutexes_[idx].mutex_;
              // acquire lock
             while (mutex.test_and_set(std::memory_order_acquire)) {
                ; // spin
@@ -729,7 +730,7 @@ class Grid {
         NeighborMutexBuilder* mutex_builder_;
     };
 
-    /// Used to use mutexes in vector
+    /// Used to store mutexes in a vector.
     /// Always creates a new mutex (even for the copy constructor)
     struct MutexWrapper {
       MutexWrapper() {}
@@ -756,13 +757,15 @@ class Grid {
     std::vector<MutexWrapper> mutexes_;
   };
 
-  /// TODO
-  void EnableNeighborMutexes() {
-    if(nb_mutex_builder_ == nullptr) {
-      nb_mutex_builder_ = std::make_unique<NeighborMutexBuilder>();
-    }
+  /// Disable neighbor mutexes management. `GetNeighborMutexBuilder()` will
+  /// return a nullptr.
+  void DisableNeighborMutexes() {
+    nb_mutex_builder_ = nullptr;
   }
 
+  /// Returns the `NeighborMutexBuilder`. The client use it to create a
+  /// `NeighborMutex`. If neighbor mutexes has been disabled by calling
+  /// `DisableNeighborMutexes`, this function will return a nullptr.
   NeighborMutexBuilder* GetNeighborMutexBuilder() {
     return nb_mutex_builder_.get();
   }
@@ -799,8 +802,9 @@ class Grid {
   /// Flag to indicate if the grid has been initialized or not
   bool initialized_ = false;
 
-  /// TODO
-  std::unique_ptr<NeighborMutexBuilder> nb_mutex_builder_ = nullptr;
+  /// Holds instance of NeighborMutexBuilder if it is enabled.
+  /// If `DisableNeighborMutexes` has been called this member set to nullptr.
+  std::unique_ptr<NeighborMutexBuilder> nb_mutex_builder_ = std::make_unique<NeighborMutexBuilder>();
 
   void CheckGridGrowth() {
     // Determine if the grid dimensions have changed (changed in the sense that
