@@ -24,7 +24,21 @@
 
 namespace bdm {
 
-// TODO documentation + test
+/// This execution context updates simulation objects in place. \n
+/// Let's assume we have two sim_objects `A, B` in our simulation that we want
+/// to update to the next timestep `A', B'`. If we have one thread it will first
+/// update `A` and afterwards `B` and write the updates directly to the same
+/// data structure. Therefore, before we start updating `B` the array looks
+/// like this: `A', B`. `B` already observes the updated `A`. \n
+/// Operations in method `Execute` are executed in order given by the user.
+/// Subsequent operations observe the changes of earlier operations.\n
+/// In-place updates can lead to race conditions if simulation objects not only
+/// modify themselves, but also neighbors. Therefore, a protection mechanism has
+/// been added. If neighbors are not modified, this protection can be turned off
+///  to improve performance using `DisableNeighborGuard()`. By default it is
+/// turned on.\n
+/// New sim objects will only be visible at the next iteration.
+/// Also removal of sim_object happens at the end of each iteration.
 template <typename TCTParam = CompileTimeParam<>>
 class InPlaceExecCtxt {
 public:
@@ -40,12 +54,15 @@ public:
     new_sim_objects_.Reserve(10);
   }
 
+  /// This function is called at the beginning of each iteration.
+  /// This function is not thread-safe.
   template <typename TSimulation = Simulation<>>
   void SetupIteration() {
     // first iteration might have uncommited changes
     TearDownIteration();
   }
 
+  /// This function is called at the end of each iteration.
   /// This function is not thread-safe
   template <typename TSimulation = Simulation<>>
   void TearDownIteration() {
@@ -158,6 +175,8 @@ public:
   }
 
 private:
+  /// Contains unique ids of sim objects that will be removed at the end of each
+  /// iteration.
   std::vector<SoUid> remove_;
 
   /// Use seperate ResourceManager to store new objects, before they are added
