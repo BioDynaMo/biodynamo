@@ -120,7 +120,7 @@ inline int Simulate(int argc, const char** argv) {
   auto* random = simulation.GetRandom();
   // Since sim_objects in this simulation won't modify neighbors, we can
   // safely disable neighbor guards to improve performance.
-  sim.GetExecCtxt()->DisableNeighborGuard();
+  simulation.GetExecCtxt()->DisableNeighborGuard();
 
   size_t nb_of_cells = 2400;  // number of cells in the simulation
   double x_coord, y_coord, z_coord;

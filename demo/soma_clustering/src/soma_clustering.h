@@ -59,7 +59,7 @@ inline int Simulate(int argc, const char** argv) {
   Simulation<> simulation(argc, argv, set_param);
   // Since sim_objects in this simulation won't modify neighbors, we can
   // safely disable neighbor guards to improve performance.
-  sim.GetExecCtxt()->DisableNeighborGuard();
+  simulation.GetExecCtxt()->DisableNeighborGuard();
 
   // Define initial model
   auto* param = simulation.GetParam();
