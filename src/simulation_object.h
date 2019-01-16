@@ -317,7 +317,8 @@ class SimulationObjectExt
   template <typename T, typename U>
   using SimObjectBaseExt = typename SimulationObjectImpl<T, U>::type;
 
-  BDM_SIM_OBJECT_HEADER(SimulationObject, SimObjectBase, 1, biology_modules_);
+  BDM_SIM_OBJECT_HEADER(SimulationObject, SimObjectBase, 1, biology_modules_,
+                        run_bm_loop_idx_);
 
  public:
   SimulationObjectExt() : Base() {}
@@ -420,12 +421,15 @@ class SimulationObjectExt
 
   /// Remove a biology module from this cell
   template <typename TBiologyModule>
-  void RemoveBiologyModule(TBiologyModule *remove_module) {
+  void RemoveBiologyModule(const TBiologyModule *remove_module) {
     for (unsigned int i = 0; i < biology_modules_[kIdx].size(); i++) {
       const TBiologyModule *module =
           get_if<TBiologyModule>(&biology_modules_[kIdx][i]);
       if (module == remove_module) {
         biology_modules_[kIdx].erase(biology_modules_[kIdx].begin() + i);
+        // if remove_module was before or at the current run_bm_loop_idx_[kidx],
+        // correct it by subtracting one.
+        run_bm_loop_idx_[kIdx] -= i > run_bm_loop_idx_[kIdx] ? 0 : 1;
       }
     }
   }
@@ -434,7 +438,10 @@ class SimulationObjectExt
   void RunBiologyModules() {
     RunVisitor<MostDerived<Backend>> visitor(
         static_cast<MostDerived<Backend> *>(this));
-    for (auto &module : biology_modules_[kIdx]) {
+    for (run_bm_loop_idx_[kIdx] = 0;
+         run_bm_loop_idx_[kIdx] < biology_modules_[kIdx].size();
+         ++run_bm_loop_idx_[kIdx]) {
+      auto &module = biology_modules_[kIdx][run_bm_loop_idx_[kIdx]];
       visit(visitor, module);
     }
   }
@@ -478,6 +485,12 @@ class SimulationObjectExt
   vec<std::vector<BiologyModules>> biology_modules_;
 
  private:
+  /// Helper variable used to support removal of biology modules while
+  /// `RunBiologyModules` iterates over them.
+  /// Due to problems with restoring this member for the SOA data layout, it is
+  /// not ignored for ROOT I/O.
+  vec<uint32_t> run_bm_loop_idx_ = {{0}};
+
   /// @brief Function to copy biology modules from one structure to another
   /// @param event event will be passed on to biology module to determine
   ///        whether it should be copied to destination

@@ -225,8 +225,10 @@ TEST(CellTest, RemoveBiologyModule) {
 
   TestCell cell;
 
-  cell.AddBiologyModule(MovementModule({1, 2, 3}));
+  // add RemoveModule as first one! If removal while iterating over it is not
+  // implemented correctly, MovementModule will not be executed.
   cell.AddBiologyModule(RemoveModule());
+  cell.AddBiologyModule(MovementModule({1, 2, 3}));
   cell.AddBiologyModule(GrowthModule());
 
   // RemoveModule should remove itself
@@ -236,11 +238,13 @@ TEST(CellTest, RemoveBiologyModule) {
   ASSERT_EQ(2u, bms.size());
   EXPECT_TRUE(get_if<MovementModule>(&bms[0]) != nullptr);
   EXPECT_TRUE(get_if<GrowthModule>(&bms[1]) != nullptr);
+  // check if MovementModule and GrowthModule have been executed correctly.
+  EXPECT_ARR_NEAR({1, 2, 3}, cell.GetPosition());
+  EXPECT_NEAR(0.5, cell.GetDiameter(), abs_error<double>::value);
 
   cell.AddBiologyModule(RemoveModule());
   ASSERT_EQ(3u, bms.size());
-  RemoveModule* to_be_removed =
-      const_cast<RemoveModule*>(get_if<RemoveModule>(&bms[2]));
+  auto* to_be_removed = get_if<RemoveModule>(&bms[2]);
   cell.RemoveBiologyModule(to_be_removed);
   ASSERT_EQ(2u, bms.size());
 }
