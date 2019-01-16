@@ -41,8 +41,8 @@ class DisplacementOpCpu {
 
     // update search radius at beginning of each iteration
     auto current_iteration = scheduler->GetSimulatedSteps();
-    if (last_iteration != current_iteration) {
-      last_iteration = current_iteration;
+    if (last_iteration_ != current_iteration) {
+      last_iteration_ = current_iteration;
 
       auto* grid = sim->GetGrid();
       auto search_radius = grid->GetLargestObjectSize();
@@ -59,7 +59,7 @@ class DisplacementOpCpu {
 
  private:
   double squared_radius_;
-  uint64_t last_iteration = std::numeric_limits<uint64_t>::max();
+  uint64_t last_iteration_ = std::numeric_limits<uint64_t>::max();
 };
 
 }  // namespace bdm

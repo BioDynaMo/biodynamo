@@ -790,7 +790,7 @@ TEST(NeuriteElementTest, Bifurcate) {
 TEST(DISABLED_NeuronSomaNeuriteElementTest, Displacement) {
   // Simulation<> simulation(TEST_NAME);
   // auto* rm = simulation.GetResourceManager();
-  // 
+  //
   // auto* neurons = rm->template Get<NeuronSoma>();
   // auto* neurite_segments = rm->template Get<NeuriteElement>();
   //

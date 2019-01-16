@@ -385,13 +385,15 @@ class Grid {
       const std::array<double, 3>& pos2) const {
     const double dx = pos2[0] - pos1[0];
     const double dx2 = dx * dx;
-    if (dx2 > squared_radius)
+    if (dx2 > squared_radius) {
       return false;
+    }
 
     const double dy = pos2[1] - pos1[1];
     const double dy2_plus_dx2 = dy * dy + dx2;
-    if (dy2_plus_dx2 > squared_radius)
+    if (dy2_plus_dx2 > squared_radius) {
       return false;
+    }
 
     const double dz = pos2[2] - pos1[2];
     const double distance = dz * dz + dy2_plus_dx2;
@@ -713,7 +715,7 @@ class Grid {
         std::sort(mutex_indices_.begin(), mutex_indices_.end());
       }
 
-      void lock() {
+      void lock() {  // NOLINT
         for (auto idx : mutex_indices_) {
           auto& mutex = mutex_builder_->mutexes_[idx].mutex_;
           // acquire lock (and spin if another thread is holding it)
@@ -722,7 +724,7 @@ class Grid {
         }
       }
 
-      void unlock() {
+      void unlock() {  // NOLINT
         for (auto idx : mutex_indices_) {
           auto& mutex = mutex_builder_->mutexes_[idx].mutex_;
           mutex.clear(std::memory_order_release);

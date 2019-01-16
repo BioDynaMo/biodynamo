@@ -442,9 +442,9 @@ TEST(MechanicalInteraction, BifurcateCylinderRandomGrowth) {
   EXPECT_GT(ne->GetMassLocation()[2], 10);
   EXPECT_GT(ne_axis[2], 0.1);
 
-  auto neList = ne->Bifurcate();
-  auto ne2 = neList[1];
-  ne = neList[0];
+  auto ne_list = ne->Bifurcate();
+  auto ne2 = ne_list[1];
+  ne = ne_list[0];
 
   for (int i = 0; i < 50; i++) {
     direction = {random->Uniform(-1, 1), random->Uniform(-1, 1), 1};
