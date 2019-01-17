@@ -51,4 +51,7 @@ export CXXFLAGS=-I$LLVMDIR/include
 export LDFLAGS=-L$LLVMDIR/lib
 export PATH=$LLVMDIR/bin:$PATH
 
+# OpenMP
+export OMP_PROC_BIND=true
+
 echo "You have successfully sourced BioDynaMo's environment."

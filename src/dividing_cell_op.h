@@ -29,7 +29,7 @@ class DividingCellOp {
   template <typename TSimulation = Simulation<>>
   void operator()() const {
     auto* rm = TSimulation::GetActive()->GetResourceManager();
-    rm->ApplyOnAllTypes([](auto* cells, uint16_t type_idx) {
+    rm->ApplyOnAllTypes([](auto* cells, uint16_t numa_node, uint16_t type_idx) {
 #pragma omp parallel for
       for (uint64_t i = 0; i < cells->size(); i++) {
         auto&& cell = (*cells)[i];

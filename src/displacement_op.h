@@ -40,7 +40,7 @@ class DisplacementOp {
   DisplacementOp() {
     auto* sim = TSimulation::GetActive();
     auto* rm = sim->GetResourceManager();
-    rm->template ApplyOnAllTypes([this](auto* container, uint16_t type_idx) {
+    rm->template ApplyOnAllTypes([this](auto* container, uint16_t numa_node, uint16_t type_idx) {
       using Container = std::remove_pointer_t<decltype(container)>;
       using SimObject = typename Container::value_type;
       if (SimObject::GetShape() != Shape::kSphere) {
@@ -68,14 +68,14 @@ class DisplacementOp {
       if (param->use_opencl_) {
         auto* rm = TSimulation::GetActive()->GetResourceManager();
         rm->ApplyOnAllTypes(
-            [](auto* cells, uint16_t type_idx) { opencl_(cells, type_idx); });
+            [](auto* cells, uint16_t numa_node, uint16_t type_idx) { opencl_(cells, numa_node_, type_idx); });
       }
 #endif
 #ifdef USE_CUDA
       if (!param->use_opencl_) {
         auto* rm = TSimulation::GetActive()->GetResourceManager();
         rm->ApplyOnAllTypes(
-            [](auto* cells, uint16_t type_idx) { cuda_(cells, type_idx); });
+            [](auto* cells, uint16_t numa_node, uint16_t type_idx) { cuda_(cells, numa_node, type_idx); });
       }
 #endif
     } else {

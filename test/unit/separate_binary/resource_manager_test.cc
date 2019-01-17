@@ -70,6 +70,14 @@ TEST(ResourceManagerTest, Clear) {
   RunClearTest<ResourceManager<>, SoaA, SoaB>();
 }
 
+TEST(ResourceManagerTest, SortAndApplyOnAllElementsParallel) {
+  RunSortAndApplyOnAllElementsParallel<A, B>();
+}
+
+TEST(ResourceManagerTest, SortAndApplyOnAllElementsParallelDynamic) {
+  RunSortAndApplyOnAllElementsParallelDynamic<A, B>();
+}
+
 TEST(ResourceManagerTest, DiffusionGrid) {
   ResourceManager<> rm;
 
@@ -104,24 +112,27 @@ TEST(ResourceManagerTest, DiffusionGrid) {
 
 TEST(ResourceManagerTest, RunGetSimObjectTest) { RunGetSimObjectTest<A, B>(); }
 
-TEST(SoHandleTest, EqualsOperator) {
-  EXPECT_EQ(SoHandle(0, 0), SoHandle(0, 0));
-  EXPECT_EQ(SoHandle(1, 0), SoHandle(1, 0));
-  EXPECT_EQ(SoHandle(0, 1), SoHandle(0, 1));
-  EXPECT_EQ(SoHandle(1, 1), SoHandle(1, 1));
+TEST(SoHandleTest, Getters) {
+  SoHandle so_handle(1,2,3);
 
-  EXPECT_FALSE(SoHandle(0, 0) == SoHandle(0, 1));
-  EXPECT_FALSE(SoHandle(0, 0) == SoHandle(1, 0));
-  EXPECT_FALSE(SoHandle(0, 0) == SoHandle(1, 1));
-  EXPECT_FALSE(SoHandle(1, 0) == SoHandle(0, 0));
-  EXPECT_FALSE(SoHandle(1, 0) == SoHandle(0, 1));
-  EXPECT_FALSE(SoHandle(1, 0) == SoHandle(1, 1));
-  EXPECT_FALSE(SoHandle(0, 1) == SoHandle(0, 0));
-  EXPECT_FALSE(SoHandle(0, 1) == SoHandle(1, 0));
-  EXPECT_FALSE(SoHandle(0, 1) == SoHandle(1, 1));
-  EXPECT_FALSE(SoHandle(1, 1) == SoHandle(0, 0));
-  EXPECT_FALSE(SoHandle(1, 1) == SoHandle(1, 0));
-  EXPECT_FALSE(SoHandle(1, 1) == SoHandle(0, 1));
+  EXPECT_EQ(1u, so_handle.GetNumaNode());
+  EXPECT_EQ(2u, so_handle.GetTypeIdx());
+  EXPECT_EQ(3u, so_handle.GetElementIdx());
+}
+
+TEST(SoHandleTest, EqualsOperator) {
+  EXPECT_EQ(SoHandle(0, 0, 0), SoHandle(0, 0, 0));
+  EXPECT_EQ(SoHandle(0, 1, 0), SoHandle(0, 1, 0));
+  EXPECT_EQ(SoHandle(0, 0, 1), SoHandle(0, 0, 1));
+  EXPECT_EQ(SoHandle(0, 1, 1), SoHandle(0, 1, 1));
+  EXPECT_EQ(SoHandle(1, 0, 0), SoHandle(1, 0, 0));
+  EXPECT_EQ(SoHandle(1, 1, 0), SoHandle(1, 1, 0));
+  EXPECT_EQ(SoHandle(1, 0, 1), SoHandle(1, 0, 1));
+  EXPECT_EQ(SoHandle(1, 1, 1), SoHandle(1, 1, 1));
+
+  EXPECT_FALSE(SoHandle(0, 0, 0) == SoHandle(0, 0, 1));
+  EXPECT_FALSE(SoHandle(0, 0, 0) == SoHandle(0, 1, 0));
+  EXPECT_FALSE(SoHandle(0, 0, 0) == SoHandle(1, 0, 0));
 }
 
 TEST_F(IOTest, SoHandle) {

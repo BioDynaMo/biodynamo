@@ -26,7 +26,6 @@
 #include "unit/test_sim_object.h"
 
 namespace bdm {
-namespace so_pointer_aos_test_internal {
 
 // SoPointer tests
 /// This function is before the decleration of `SoPointerTestClass` to test
@@ -66,20 +65,16 @@ BDM_SIM_OBJECT(SoPointerTestClass, TestSimObject) {
   vec<uint64_t> id_;
 };
 
-}  // namespace so_pointer_aos_test_internal
-
 // has to be defined in namespace bdm
 BDM_CTPARAM() {
   BDM_CTPARAM_HEADER();
   using SimulationBackend = Scalar;
   using SimObjectTypes =
-      CTList<so_pointer_aos_test_internal::SoPointerTestClass>;
-  BDM_DEFAULT_CTPARAM_FOR(so_pointer_aos_test_internal::SoPointerTestClass){};
+      CTList<SoPointerTestClass>;
+  BDM_DEFAULT_CTPARAM_FOR(SoPointerTestClass){};
 };
 
-namespace so_pointer_aos_test_internal {
-
-inline void RunIOTest(Simulation<>* sim) {
+inline void IOTestSoPointerRmContainerAos(Simulation<>* sim) {
   auto* rm = sim->GetResourceManager();
   rm->push_back(SoPointerTestClass(123));
   SoPointerTestClass so2(456);
@@ -102,8 +97,6 @@ inline void IOTestSoPointerNullptr() {
 
   EXPECT_TRUE(*restored == nullptr);
 }
-
-}  // namespace so_pointer_aos_test_internal
 
 }  // namespace bdm
 

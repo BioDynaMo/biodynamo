@@ -84,14 +84,20 @@ class SoaSimulationObject {
     return *this;
   }
 
-  SoaSimulationObject &operator=(const SoaSimulationObject &other) {
+  SoaSimulationObject& operator=(const Self<Soa>& other) {
     size_ = other.size_;
+    return *this;
+  }
+
+  SoaSimulationObject& operator=(const Self<SoaRef> &) {
+    // Do not copy size! This is used to assign: soa[idx] = soaref;
     return *this;
   }
 
   Self<Backend> &operator=(
       const ScalarSimulationObject<
           typename TCompileTimeParam::template Self<Scalar>, TDerived> &) {
+    // Do not copy size! This is used to assign: soa[idx] = scalar;
     return *this;
   }
 
@@ -122,6 +128,11 @@ class SoaSimulationObject {
   /// Equivalent to std::vector<> reserve - it increases the capacity
   /// of all data member containers
   void reserve(size_t new_capacity) {}  // NOLINT
+
+  /// Equivalent to std::vector<> resize
+  void resize(size_t new_size) {  // NOLINT
+    size_ = new_size;
+  }
 
   template <typename Function>
   void ForEachDataMember(Function l) {}
@@ -235,7 +246,7 @@ class SimulationObjectExt
   using SimObjectBaseExt = typename SimulationObjectImpl<T, U>::type;
 
   BDM_SIM_OBJECT_HEADER(SimulationObject, SimObjectBase, 1, uid_, box_idx_,
-                        biology_modules_, run_bm_loop_idx_);
+                        biology_modules_, run_bm_loop_idx_, numa_node_);
 
  public:
   SimulationObjectExt() : Base() {
@@ -324,15 +335,21 @@ class SimulationObjectExt
   // used only for cuda and opencl code
   uint32_t *GetBoxIdPtr() { return box_idx_.data(); }
 
-  SoHandle GetSoHandle() const {
-    auto *rm = Simulation_t::GetActive()->GetResourceManager();
-    auto type_idx = rm->template GetTypeIndex<MostDerivedScalar>();
-    return SoHandle(type_idx, Base::GetElementIdx());
-  }
-
   /// Return simulation object pointer
   MostDerivedSoPtr GetSoPtr() const { return MostDerivedSoPtr(uid_[kIdx]); }
 
+  void SetNumaNode(typename SoHandle::NumaNode_t numa_node) {
+    numa_node_[kIdx] = numa_node;
+  }
+
+  template <typename TResourceManager = ResourceManager<>>
+  SoHandle GetSoHandle() const {
+    auto type_idx =
+        TResourceManager::template GetTypeIndex<MostDerivedScalar>();
+    return SoHandle(numa_node_[kIdx], type_idx, Base::GetElementIdx());
+  }
+
+  // ---------------------------------------------------------------------------
   // Biology modules
   using BiologyModules =
       typename TCompileTimeParam::template CTMap<MostDerivedScalar,
@@ -390,6 +407,7 @@ class SimulationObjectExt
 
   /// Return all biology modules
   const auto &GetAllBiologyModules() const { return biology_modules_[kIdx]; }
+  // ---------------------------------------------------------------------------
 
   void RemoveFromSimulation() const {
     Simulation_t::GetActive()->GetExecutionContext()->RemoveFromSimulation(
@@ -426,6 +444,10 @@ class SimulationObjectExt
   /// Due to problems with restoring this member for the SOA data layout, it is
   /// not ignored for ROOT I/O.
   vec<uint32_t> run_bm_loop_idx_ = {{0}};
+
+  // TODO documentation
+  vec<typename SoHandle::NumaNode_t> numa_node_ = {{}};
+
 
   /// @brief Function to copy biology modules from one structure to another
   /// @param event event will be passed on to biology module to determine

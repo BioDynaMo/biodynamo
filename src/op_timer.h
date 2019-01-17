@@ -29,13 +29,13 @@ struct OpTimer {
       : timer_msg_(timer_msg), operation_(op) {}
 
   template <typename Container, typename TSimulation = Simulation<>>
-  void operator()(Container* cells, uint16_t type_idx) {
+  void operator()(Container* cells, uint16_t numa_node, uint16_t type_idx) {
     auto* param = TSimulation::GetActive()->GetParam();
     if (param->statistics_) {
       Timing timer(timer_msg_, &gStatistics);
-      operation_(cells, type_idx);
+      operation_(cells, numa_node, type_idx);
     } else {
-      operation_(cells, type_idx);
+      operation_(cells, numa_node, type_idx);
     }
   }
 

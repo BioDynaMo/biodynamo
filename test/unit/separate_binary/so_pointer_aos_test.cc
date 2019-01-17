@@ -17,15 +17,15 @@
 namespace bdm {
 namespace so_pointer_aos_test_internal {
 
+TEST_F(IOTest, SoPointerRmContainer_Aos) {
+  Simulation<> sim(TEST_NAME);
+  IOTestSoPointerRmContainerAos(&sim);
+}
+
 TEST(SoPointerTest, Basics) {
   Simulation<> simulation(TEST_NAME);
   SoPointerTestClass so(123);
   SoPointerTest<SoPointerTestClass, Scalar>(so);
-}
-
-TEST_F(IOTest, SoPointer) {
-  Simulation<> simulation(TEST_NAME);
-  RunIOTest(&simulation);
 }
 
 TEST_F(IOTest, SoPointerNullptr) {

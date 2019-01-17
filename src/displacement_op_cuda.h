@@ -36,7 +36,7 @@ class DisplacementOpCuda {
 
   template <typename TContainer>
   typename std::enable_if<is_soa_sphere<TContainer>::value>::type operator()(
-      TContainer* cells, uint16_t type_idx) {
+      TContainer* cells, uint16_t numa_node, uint16_t type_idx) {
     auto* sim = TSimulation::GetActive();
     auto* grid = sim->GetGrid();
     auto* param = sim->GetParam();
@@ -124,7 +124,7 @@ class DisplacementOpCuda {
 
   template <typename TContainer>
   typename std::enable_if<!is_soa_sphere<TContainer>::value>::type operator()(
-      TContainer* cells, uint16_t type_idx) {
+      TContainer* cells, uint16_t numa_node, uint16_t type_idx) {
     Fatal("DisplacementOpCuda",
           "You tried to compile GPU-specific function calls for a non-SOA data "
           "structure or non-spherical simulation object.");

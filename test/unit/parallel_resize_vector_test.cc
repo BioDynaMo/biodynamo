@@ -59,4 +59,39 @@ TEST(ParallelResizeVector, Reserve) {
   EXPECT_EQ(123u, v.capacity());
 }
 
+TEST(ParallelResizeVector, CopyCtor) {
+  ParallelResizeVector<int> v;
+  EXPECT_EQ(0u, v.size());
+  EXPECT_EQ(0u, v.capacity());
+
+  v.resize(10, 123);
+
+  auto copy(v);
+
+  EXPECT_EQ(10u, copy.size());
+  EXPECT_EQ(10u, copy.capacity());
+
+  for(auto el : copy) {
+    EXPECT_EQ(123, el);
+  }
+}
+
+TEST(ParallelResizeVector, AssignmentOperator) {
+  ParallelResizeVector<int> v;
+  EXPECT_EQ(0u, v.size());
+  EXPECT_EQ(0u, v.capacity());
+
+  v.resize(10, 123);
+
+  ParallelResizeVector<int> copy;
+  copy = v;
+
+  EXPECT_EQ(10u, copy.size());
+  EXPECT_EQ(10u, copy.capacity());
+
+  for(auto el : copy) {
+    EXPECT_EQ(123, el);
+  }
+}
+
 }  // namespace bdm
