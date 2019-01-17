@@ -117,8 +117,9 @@ class Scheduler {
 #pragma omp parallel for schedule(dynamic, 100)
       for (size_t i = 0; i < sim_objects->size(); i++) {
         auto&& so = (*sim_objects)[i];
-        sim->GetExecCtxt()->Execute(so, bound_space_op, biology_module_op,
-                                    displacement_op, discretization_op);
+        sim->GetExecutionContext()->Execute(so, bound_space_op,
+                                            biology_module_op, displacement_op,
+                                            discretization_op);
       }
     });
 

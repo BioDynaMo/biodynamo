@@ -47,7 +47,7 @@ becomes obsolete. This is now managed by the `ResourceManager`.
 was inconsistent with respect to when updates will take effect. Biology modules
 were updated in place, while results from mechanical interactions where cached
 and applied once all simulation objects have been updated. Now, this behavior is the
-responsibility of the execution context. In case of the `InPlaceExecCtxt` this means
+responsibility of the execution context. In case of the `InPlaceExecutionContext` this means
 that during iteration `t` some cells observe neighbors that have already been updated
 to timestep `t'`.
 
@@ -56,12 +56,12 @@ to timestep `t'`.
 Several API changes were necessary to implement the described functionality.
 A general rule is to use the new execution context to perform actions instead of
 using the `ResourceManager`, or `Grid` directly. The thread local execution context
-can be obtained from the simulation object (e.g. calling `sim->GetExecCtxt()`).
+can be obtained from the simulation object (e.g. calling `sim->GetExecutionContext()`).
 
 Exemplary API changes:
 
   * Method `ResourceManager::New` was removed. During a simulation only use
-    e.g. `InPlaceExecCtxt::New`. During setup of the initial model using
+    e.g. `InPlaceExecutionContext::New`. During setup of the initial model using
     `ResourceManager::push_back` is also fine.
   * Method `ResourceManager::Get` has been changed to return a const pointer.
     Thus `rm->Get<Cell>()->push_back(new_cell)` won't work anymore. However, calling

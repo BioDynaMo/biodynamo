@@ -92,7 +92,7 @@ BDM_SIM_OBJECT(NeuronSoma, Cell) {
   /// \see NewNeuriteExtensionEvent
   NeuriteElementSoPtr ExtendNewNeurite(double diameter, double phi,
                                        double theta) {
-    auto* ctxt = Simulation_t::GetActive()->GetExecCtxt();
+    auto* ctxt = Simulation_t::GetActive()->GetExecutionContext();
     NewNeuriteExtensionEvent event = {diameter, phi, theta};
     auto&& neurite = ctxt->template New<NeuriteElement>(event, ThisMD());
     ThisMD()->EventHandler(event, &neurite);

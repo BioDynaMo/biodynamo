@@ -37,7 +37,7 @@ inline int Simulate(int argc, const char** argv) {
   Simulation<> simulation(argc, argv);
   // Since sim_objects in this simulation won't modify neighbors, we can
   // safely disable neighbor guards to improve performance.
-  simulation.GetExecCtxt()->DisableNeighborGuard();
+  simulation.GetExecutionContext()->DisableNeighborGuard();
 
   // Define initial model - in this example: 3D grid of cells
   size_t cells_per_dim = 128;

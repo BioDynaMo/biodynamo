@@ -40,12 +40,12 @@ namespace bdm {
 /// New sim objects will only be visible at the next iteration. \n
 /// Also removal of a sim object happens at the end of each iteration.
 template <typename TCTParam = CompileTimeParam<>>
-class InPlaceExecCtxt {
+class InPlaceExecutionContext {
  public:
   using Backend = typename TCTParam::SimulationBackend;
   using Types = typename TCTParam::SimObjectTypes;
 
-  InPlaceExecCtxt() {
+  InPlaceExecutionContext() {
     // FIXME this doesn't work: must hold all new elements for all sim_objects
     // processed by this thread.
     // reserve enough memory to hold all new objects during one iteration of

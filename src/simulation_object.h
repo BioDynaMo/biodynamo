@@ -386,7 +386,8 @@ class SimulationObjectExt
   const auto &GetAllBiologyModules() const { return biology_modules_[kIdx]; }
 
   void RemoveFromSimulation() const {
-    Simulation_t::GetActive()->GetExecCtxt()->RemoveFromSimulation(uid_[kIdx]);
+    Simulation_t::GetActive()->GetExecutionContext()->RemoveFromSimulation(
+        uid_[kIdx]);
   }
 
   template <typename TEvent, typename TOther>

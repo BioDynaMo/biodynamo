@@ -23,10 +23,10 @@
 
 namespace bdm {
 
-TEST(InPlaceExecCtxt, RemoveFromSimulation) {
+TEST(InPlaceExecutionContext, RemoveFromSimulation) {
   Simulation<> sim(TEST_NAME);
   auto* rm = sim.GetResourceManager();
-  auto* ctxt = sim.GetExecCtxt();
+  auto* ctxt = sim.GetExecutionContext();
 
   Cell cell_0;
   auto uid_0 = cell_0.GetUid();
@@ -55,10 +55,10 @@ TEST(InPlaceExecCtxt, RemoveFromSimulation) {
 
 // Remove object that has been created in the same iteration. Thus it has not
 // been added to the ResourceManager yet.
-TEST(InPlaceExecCtxt, RemoveFromSimulationThatDoesNotExistInRm) {
+TEST(InPlaceExecutionContext, RemoveFromSimulationThatDoesNotExistInRm) {
   Simulation<> sim(TEST_NAME);
   auto* rm = sim.GetResourceManager();
-  auto* ctxt = sim.GetExecCtxt();
+  auto* ctxt = sim.GetExecutionContext();
 
   Cell cell_0;
   auto uid_0 = cell_0.GetUid();
@@ -82,10 +82,10 @@ TEST(InPlaceExecCtxt, RemoveFromSimulationThatDoesNotExistInRm) {
   EXPECT_FALSE(rm->Contains(uid_1));
 }
 
-TEST(InPlaceExecCtxt, NewAndGetSimObject) {
+TEST(InPlaceExecutionContext, NewAndGetSimObject) {
   Simulation<> sim(TEST_NAME);
   auto* rm = sim.GetResourceManager();
-  auto* ctxt = sim.GetExecCtxt();
+  auto* ctxt = sim.GetExecutionContext();
 
   Cell cell_0;
   cell_0.SetDiameter(123);
@@ -121,9 +121,9 @@ TEST(InPlaceExecCtxt, NewAndGetSimObject) {
   EXPECT_EQ(789, rm->GetSimObject<Cell>(uid_1).GetDiameter());
 }
 
-TEST(InPlaceExecCtxt, Execute) {
+TEST(InPlaceExecutionContext, Execute) {
   Simulation<> sim(TEST_NAME);
-  auto* ctxt = sim.GetExecCtxt();
+  auto* ctxt = sim.GetExecutionContext();
 
   ctxt->DisableNeighborGuard();
 
@@ -156,10 +156,10 @@ TEST(InPlaceExecCtxt, Execute) {
   EXPECT_TRUE(op2_called);
 }
 
-TEST(InPlaceExecCtxt, ExecuteThreadSafety) {
+TEST(InPlaceExecutionContext, ExecuteThreadSafety) {
   Simulation<> sim(TEST_NAME);
   auto* rm = sim.GetResourceManager();
-  auto* ctxt = sim.GetExecCtxt();
+  auto* ctxt = sim.GetExecutionContext();
 
   // create cells
   auto construct = [](const std::array<double, 3>& position) {

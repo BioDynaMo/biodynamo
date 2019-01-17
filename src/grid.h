@@ -430,7 +430,7 @@ class Grid {
   ///             simulation object.
   ///
   /// In simulation code do not use this function directly. Use the same
-  /// function from the exeuction context (e.g. `InPlaceExecCtxt`)
+  /// function from the exeuction context (e.g. `InPlaceExecutionContext`)
   ///
   /// @param[in]  lambda  The operation as a lambda
   /// @param      query   The query object
@@ -694,7 +694,8 @@ class Grid {
 
   // NeighborMutex ---------------------------------------------------------
 
-  /// This class ensures thread-safety for the InPlaceExecCtxt for the case
+  /// This class ensures thread-safety for the InPlaceExecutionContext for the
+  /// case
   /// that a simulation object modifies its neighbors.
   class NeighborMutexBuilder {
    public:

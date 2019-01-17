@@ -25,7 +25,7 @@ namespace bdm {
 TEST(GrowDivideTest, Grow) {
   Simulation<> simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
-  auto* ctxt = simulation.GetExecCtxt();
+  auto* ctxt = simulation.GetExecutionContext();
 
   ctxt->SetupIteration();
 
@@ -44,7 +44,7 @@ TEST(GrowDivideTest, Grow) {
 TEST(GrowDivideTest, Divide) {
   Simulation<> simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
-  auto* ctxt = simulation.GetExecCtxt();
+  auto* ctxt = simulation.GetExecutionContext();
 
   ctxt->SetupIteration();
 

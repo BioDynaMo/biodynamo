@@ -90,7 +90,7 @@ TEST(NeuronSomaTest, Soa) {
 TEST(NeuronSomaTest, ExtendNewNeuriteElementSphericalCoordinates) {
   Simulation<> simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
-  auto* ctxt = simulation.GetExecCtxt();
+  auto* ctxt = simulation.GetExecutionContext();
 
   const double kEpsilon = abs_error<double>::value;
   ctxt->SetupIteration();
@@ -141,7 +141,7 @@ TEST(NeuronSomaTest, ExtendNewNeuriteElementSphericalCoordinates) {
 TEST(NeuronSomaTest, ExtendNewNeurite) {
   Simulation<> simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
-  auto* ctxt = simulation.GetExecCtxt();
+  auto* ctxt = simulation.GetExecutionContext();
 
   const double kEpsilon = abs_error<double>::value;
   ctxt->SetupIteration();
@@ -185,7 +185,7 @@ TEST(NeuronSomaTest, ExtendNewNeurite) {
 TEST(NeuronSomaTest, ExtendNeuriteAndElongate) {
   Simulation<> simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
-  auto* ctxt = simulation.GetExecCtxt();
+  auto* ctxt = simulation.GetExecutionContext();
 
   const double kEpsilon = abs_error<double>::value;
   std::array<double, 3> origin = {0, 0, 0};
@@ -254,7 +254,7 @@ TEST(NeuronSomaTest, ExtendNeuriteAndElongate) {
 TEST(NeuriteElementTest, PartialRetraction) {
   Simulation<> simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
-  auto* ctxt = simulation.GetExecCtxt();
+  auto* ctxt = simulation.GetExecutionContext();
 
   const double kEpsilon = abs_error<double>::value;
   std::array<double, 3> origin = {0, 0, 0};
@@ -307,7 +307,7 @@ TEST(NeuriteElementTest, PartialRetraction) {
 TEST(NeuriteElementTest, TotalRetraction) {
   Simulation<> simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
-  auto* ctxt = simulation.GetExecCtxt();
+  auto* ctxt = simulation.GetExecutionContext();
 
   std::array<double, 3> origin = {0, 0, 0};
 
@@ -344,7 +344,7 @@ TEST(NeuriteElementTest, TotalRetraction) {
 TEST(NeuriteElementTest, Branch) {
   Simulation<> simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
-  auto* ctxt = simulation.GetExecCtxt();
+  auto* ctxt = simulation.GetExecutionContext();
 
   const double kEpsilon = abs_error<double>::value;
   std::array<double, 3> origin = {0, 0, 0};
@@ -445,7 +445,7 @@ TEST(NeuriteElementTest, Branch) {
 TEST(NeuriteElementTest, RightDaughterRetraction) {
   Simulation<> simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
-  auto* ctxt = simulation.GetExecCtxt();
+  auto* ctxt = simulation.GetExecutionContext();
 
   const double kEpsilon = abs_error<double>::value;
   std::array<double, 3> origin = {0, 0, 0};
@@ -519,7 +519,7 @@ TEST(NeuriteElementTest, RightDaughterRetraction) {
 TEST(NeuriteElementTest, RightDaughterTotalRetraction) {
   Simulation<> simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
-  auto* ctxt = simulation.GetExecCtxt();
+  auto* ctxt = simulation.GetExecutionContext();
 
   const double kEpsilon = abs_error<double>::value;
   std::array<double, 3> origin = {0, 0, 0};
@@ -571,7 +571,7 @@ TEST(NeuriteElementTest, RightDaughterTotalRetraction) {
 TEST(NeuriteElementTest, LeftDaughterRetraction) {
   Simulation<> simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
-  auto* ctxt = simulation.GetExecCtxt();
+  auto* ctxt = simulation.GetExecutionContext();
 
   const double kEpsilon = abs_error<double>::value;
   std::array<double, 3> origin = {0, 0, 0};
@@ -645,7 +645,7 @@ TEST(NeuriteElementTest, LeftDaughterRetraction) {
 TEST(NeuriteElementTest, RetractAllDendrites) {
   Simulation<> simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
-  auto* ctxt = simulation.GetExecCtxt();
+  auto* ctxt = simulation.GetExecutionContext();
 
   std::array<double, 3> origin = {0, 0, 0};
 
@@ -698,7 +698,7 @@ TEST(NeuriteElementTest, RetractAllDendrites) {
 TEST(NeuriteElementTest, Bifurcate) {
   Simulation<> simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
-  auto* ctxt = simulation.GetExecCtxt();
+  auto* ctxt = simulation.GetExecutionContext();
 
   const double kEpsilon = abs_error<double>::value;
   std::array<double, 3> origin = {0, 0, 0};

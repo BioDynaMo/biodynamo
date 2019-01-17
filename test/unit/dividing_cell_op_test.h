@@ -28,7 +28,7 @@ template <typename TCell, typename TSimulation = Simulation<>>
 void RunTest() {
   TSimulation simulation("dividing_cell_op_test_RunTest");
   auto* rm = simulation.GetResourceManager();
-  auto* ctxt = simulation.GetExecCtxt();
+  auto* ctxt = simulation.GetExecutionContext();
   ctxt->SetupIteration();
 
   auto* cells = rm->template Get<TCell>();

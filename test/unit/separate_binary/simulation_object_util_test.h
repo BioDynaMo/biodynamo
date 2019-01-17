@@ -65,7 +65,7 @@ BDM_SIM_OBJECT(MyCell, TestSimObject) {
   MyCellExt() : position_{{1, 2, 3}} {}
 
   MostDerivedSoPtr Divide(double volume_ratio, double phi, double theta) {
-    auto* ctxt = Simulation_t::GetActive()->GetExecCtxt();
+    auto* ctxt = Simulation_t::GetActive()->GetExecutionContext();
     auto daughter = ctxt->template New<MostDerivedScalar>().GetSoPtr();
     ThisMD()->DivideImpl(daughter, volume_ratio, phi, theta);
     return daughter;

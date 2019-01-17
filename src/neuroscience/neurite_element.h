@@ -557,7 +557,7 @@ BDM_SIM_OBJECT(NeuriteElement, SimulationObject) {
     // create a new neurite element for side branch
     // we first split this neurite element into two pieces
     // then append a "daughter right" between the two
-    auto* ctxt = Simulation_t::GetActive()->GetExecCtxt();
+    auto* ctxt = Simulation_t::GetActive()->GetExecutionContext();
     NeuriteBranchingEvent event = {0.5, length, new_branch_diameter, direction};
     auto&& proximal = ctxt->template New<MostDerivedScalar>(event, ThisMD(), 0);
     auto&& branch = ctxt->template New<MostDerivedScalar>(event, &proximal, 1);
@@ -624,7 +624,7 @@ BDM_SIM_OBJECT(NeuriteElement, SimulationObject) {
       Fatal("NeuriteElements",
             "Bifurcation only allowed on a terminal neurite element");
     }
-    auto* ctxt = Simulation_t::GetActive()->GetExecCtxt();
+    auto* ctxt = Simulation_t::GetActive()->GetExecutionContext();
     NeuriteBifurcationEvent event = {length, diameter_1, diameter_2,
                                      direction_1, direction_2};
     auto&& new_branch_l =
@@ -958,7 +958,7 @@ BDM_SIM_OBJECT(NeuriteElement, SimulationObject) {
       }
     };
 
-    auto* ctxt = TSimulation::GetActive()->GetExecCtxt();
+    auto* ctxt = TSimulation::GetActive()->GetExecutionContext();
     ctxt->ForEachNeighborWithinRadius(calculate_neighbor_forces, *this,
                                       squared_radius);
 
@@ -1486,7 +1486,7 @@ BDM_SIM_OBJECT(NeuriteElement, SimulationObject) {
   ///
   /// \see SplitNeuriteElementEvent
   MostDerivedSoPtr SplitNeuriteElement(double distal_portion = 0.5) {
-    auto* ctxt = Simulation_t::GetActive()->GetExecCtxt();
+    auto* ctxt = Simulation_t::GetActive()->GetExecutionContext();
     SplitNeuriteElementEvent event = {distal_portion};
     auto&& new_proximal_element =
         ctxt->template New<MostDerivedScalar>(event, ThisMD());
@@ -1541,7 +1541,7 @@ BDM_SIM_OBJECT(NeuriteElement, SimulationObject) {
           "Can't extend a side neurite since daughter_right is not a nullptr!");
     }
 
-    auto* ctxt = Simulation_t::GetActive()->GetExecCtxt();
+    auto* ctxt = Simulation_t::GetActive()->GetExecutionContext();
     SideNeuriteExtensionEvent event = {length, diameter, direction};
     auto&& new_branch = ctxt->template New<MostDerivedScalar>(event, ThisMD());
     ThisMD()->EventHandler(event, &new_branch);

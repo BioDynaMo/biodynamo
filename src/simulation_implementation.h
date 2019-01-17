@@ -152,12 +152,12 @@ Random* Simulation<T>::GetRandom() {
 }
 
 template <typename T>
-InPlaceExecCtxt<T>* Simulation<T>::GetExecCtxt() {
+InPlaceExecutionContext<T>* Simulation<T>::GetExecutionContext() {
   return exec_ctxt_[omp_get_thread_num()];
 }
 
 template <typename T>
-std::vector<InPlaceExecCtxt<T>*>& Simulation<T>::GetAllExecCtxts() {
+std::vector<InPlaceExecutionContext<T>*>& Simulation<T>::GetAllExecCtxts() {
   return exec_ctxt_;
 }
 
@@ -198,7 +198,7 @@ void Simulation<T>::InitializeMembers() {
   }
   exec_ctxt_.resize(omp_get_max_threads());
   for (uint64_t i = 0; i < exec_ctxt_.size(); i++) {
-    exec_ctxt_[i] = new InPlaceExecCtxt<T>();
+    exec_ctxt_[i] = new InPlaceExecutionContext<T>();
   }
   rm_ = new TResourceManager();
   grid_ = new TGrid();

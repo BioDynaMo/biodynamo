@@ -177,7 +177,7 @@ BDM_SIM_OBJECT(Cell, SimulationObject) {
   ///
   /// \see CellDivisionEvent
   MostDerivedSoPtr Divide(double volume_ratio, double phi, double theta) {
-    auto* ctxt = Simulation_t::GetActive()->GetExecCtxt();
+    auto* ctxt = Simulation_t::GetActive()->GetExecutionContext();
     CellDivisionEvent event{volume_ratio, phi, theta};
     auto&& daughter = ctxt->template New<MostDerivedScalar>(event, ThisMD());
     ThisMD()->EventHandler(event, &daughter);
@@ -320,7 +320,7 @@ BDM_SIM_OBJECT(Cell, SimulationObject) {
       translation_force_on_point_mass[2] += neighbor_force[2];
     };
 
-    auto* ctxt = TSimulation::GetActive()->GetExecCtxt();
+    auto* ctxt = TSimulation::GetActive()->GetExecutionContext();
     ctxt->ForEachNeighborWithinRadius(calculate_neighbor_forces, *this,
                                       squared_radius);
 
