@@ -25,11 +25,11 @@
 namespace bdm {
 
 /// This execution context updates simulation objects in place. \n
-/// Let's assume we have two sim_objects `A, B` in our simulation that we want
-/// to update to the next timestep `A', B'`. If we have one thread it will first
+/// Let's assume we have two sim objects `A, B` in our simulation that we want
+/// to update to the next timestep `A*, B*`. If we have one thread it will first
 /// update `A` and afterwards `B` and write the updates directly to the same
 /// data structure. Therefore, before we start updating `B` the array looks
-/// like this: `A', B`. `B` already observes the updated `A`. \n
+/// like this: `A*, B`. `B` already observes the updated `A`. \n
 /// Operations in method `Execute` are executed in order given by the user.
 /// Subsequent operations observe the changes of earlier operations.\n
 /// In-place updates can lead to race conditions if simulation objects not only
@@ -37,8 +37,8 @@ namespace bdm {
 /// been added. If neighbors are not modified, this protection can be turned off
 ///  to improve performance using `DisableNeighborGuard()`. By default it is
 /// turned on.\n
-/// New sim objects will only be visible at the next iteration.
-/// Also removal of sim_object happens at the end of each iteration.
+/// New sim objects will only be visible at the next iteration. \n
+/// Also removal of a sim object happens at the end of each iteration.
 template <typename TCTParam = CompileTimeParam<>>
 class InPlaceExecCtxt {
  public:
@@ -63,8 +63,9 @@ class InPlaceExecCtxt {
     TearDownIteration();
   }
 
-  /// This function is called at the end of each iteration.
-  /// This function is not thread-safe
+  /// This function is called at the end of each iteration. \n
+  /// This function is not thread-safe. \n
+  /// NB: Invalidates references and pointers to simulation objects.
   template <typename TSimulation = Simulation<>>
   void TearDownIteration() {
     // new sim objects
@@ -98,6 +99,7 @@ class InPlaceExecCtxt {
   }
 
   /// Create a new simulation object and return a reference to it.
+  /// NB: A call to `New` might invalidate old references.
   /// @tparam TScalarSo simulation object type with scalar backend
   /// @param args arguments which will be forwarded to the TScalarSo constructor
   /// @remarks Note that this function is not thread safe.
