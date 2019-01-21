@@ -78,6 +78,7 @@ find_package(Numa REQUIRED)
 if (NUMA_FOUND)
    include_directories(${NUMA_INCLUDE_DIR})
    link_directories(${NUMA_LIBRARY_DIR})
+   add_definitions("-DUSE_NUMA")
 endif()
 
 if(paraview)

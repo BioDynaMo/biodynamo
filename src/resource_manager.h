@@ -24,7 +24,6 @@
 #include <utility>
 #include <vector>
 #include <sched.h>
-#include <numa.h>
 #include <omp.h>
 #include <future>
 #include <iomanip>  // TODO remove (used for temporary function)
@@ -49,6 +48,7 @@
 #include "tuple_util.h"
 #include "timing.h" // TODO remove
 #include "type_util.h"
+#include "util/numa.h"
 
 namespace bdm {
 

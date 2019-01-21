@@ -16,9 +16,9 @@
 #define THREAD_INFO_H_
 
 #include <sched.h>
-#include <numa.h>
 #include <omp.h>
 
+#include "util/numa.h"
 #include "log.h"
 
 namespace bdm {
