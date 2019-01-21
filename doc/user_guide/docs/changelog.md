@@ -1,6 +1,6 @@
 # Changelog
 
-## 17.01.2019 [`TODO replace`](https://github.com/BioDynaMo/biodynamo/commit/TODO replace)
+## 17.01.2019 [`1968ec2`](https://github.com/BioDynaMo/biodynamo/commit/1968ec2969b3fa38e6856d96f6e7294c36e71634)
 
 This commit introduces a series of changes to encapsulate different discretization
 strategies. Other modifications have been made along the way to facilitate this
@@ -68,7 +68,7 @@ Exemplary API changes:
     `rm->Get<Cell>()->size()` is still fine.
 
 For the full set of changes that are visible to the user, it is best to have a
-look at the demo folder and the differences of [this commit](https://github.com/BioDynaMo/biodynamo/commit/c6c9de8b7fd4f80ea363c5d628e9a48670b8e777#diff-d61c94874975bac07d55c551632c6e1c).
+look at the demo folder and the differences of [this commit](https://github.com/BioDynaMo/biodynamo/commit/1968ec2969b3fa38e6856d96f6e7294c36e71634).
 
 ## 25.10.2018 [`b197542`](https://github.com/BioDynaMo/biodynamo/commit/b197542ef90864c97af899baa8b1ca6d68c71ef7)
 
