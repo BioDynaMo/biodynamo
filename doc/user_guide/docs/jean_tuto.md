@@ -33,7 +33,6 @@ To do so, we will work only on the `Simulate` function of the tutorial.h file. I
 Simulation<> simulation(argc, argv);
 auto* rm = simulation.GetResourceManager(); // set up resource manager
 
-auto* cells = rm->template Get<Cell>(); // create a structure to contain cells
 ```
 
 Because we want 2400 cells randomly distributed, it is mandatory to have an random number generator to generate x, y and z coordinate of each cell. For that, we will declare three double (x_coord, y_coord and z_coord) and use the included random engine. Still inside the Simulate method, write:
@@ -46,7 +45,7 @@ auto* param = simulation.GetParam(); // set up param
   param->max_bound_ = 100; // cube of 100*100*100
   double x_coord, y_coord, z_coord;
 
-  cells->reserve(nb_of_cells); // allocate the correct number of cell in our cells structure before cell creation
+  rm->Reserve<Cell>(nb_of_cells); // allocate the correct number of cells
 ```
 
 Then, with a simple loop from 0 to the number of cells, we will be able to fill this cells structure with cell elements.
@@ -62,9 +61,8 @@ Then, with a simple loop from 0 to the number of cells, we will be able to fill 
     // set cell parameters
     cell.SetDiameter(7.5);
 
-    cells->push_back(cell); // put the created cell in our cells structure
+    rm->push_back(cell);
   }
-  cells->Commit();  // commit cells
 ```
 
 We now have our structure containing all the 2400 cells! The code in charge of running our modelling is already written and will simulate it for only one step. Lets change this to simulate for 100 steps.
@@ -116,7 +114,7 @@ Of course, we need to create at least one new cell that contains our GrowthModul
   Cell cell ({20, 50, 50});
   cell.SetDiameter(6);
   cell.AddBiologyModule(GrowthModule());
-  cells->push_back(cell);
+  rm->push_back(cell);
 ```
 
 Run running it using `biodynamo run`. This code is now able to create and simulate 2 400 normal cells and 1 cancerous cell that will grow and divide! Complete codes for tutorial.cc and tutorial.h of this chapter are accessible at the end of this tutorial.
@@ -229,11 +227,8 @@ Don't forget to add this new object to your compile time parameters so BioDynaMo
 Each cell (implementing our new object `MyCell`) of the modelling is now able to have a value cell\_colour\_ that we will choose and use to display different colours!  
 In order to create cells with this attribute, we need to replace all Cell object by MyCell during cells creation (inside the `Simulate()` method). For example
 ``` C++
-//  auto* cells = rm->template Get<Cell>(); // previous structure containing Cell objects
-  auto* cells = rm->template Get<MyCell>(); // new structure containing MyCell objects
-[...]
-//     Cell cell({x_coord, y_coord, z_coord}); // creats a cell as a Cell object; so doesn't contain cell_colour_
-    MyCell cell({x_coord, y_coord, z_coord}); // creats a cell as a MyCell object; so contains cell_colour_
+    // Cell cell({x_coord, y_coord, z_coord}); // creates a cell as a Cell object; so doesn't contain cell_colour_
+    MyCell cell({x_coord, y_coord, z_coord}); // creates a cell as a MyCell object; so contains cell_colour_
 ```
 
 Now that we are creating cells implementing MyCell, we can set the cancerous cell cell\_colour\_ value to 8 (so it will have a really distinct colour from non cancerous cells). To do so, simply use the method SetCellColour() we created
@@ -412,11 +407,9 @@ namespace bdm {
     size_t nb_of_cells = 2400;  // number of cells in the simulation
     double x_coord, y_coord, z_coord;
 
-    // create a structure to contain cells
-    auto* cells = rm->template Get<Cell>();
     // allocate the correct number of cell in our cells structure before
     // cell creation
-    cells->reserve(nb_of_cells);
+    rm->template Reserve<MyCell>(nb_of_cells);
 
     for (size_t i = 0; i < nb_of_cells; ++i) {
       // our modelling will be a cell cube of 100*100*100
@@ -430,16 +423,14 @@ namespace bdm {
       // set cell parameters
       cell.SetDiameter(7.5);
 
-      cells->push_back(cell);  // put the created cell in our cells structure
+      rm->push_back(cell);  // add the created cell to the ResourceManager
     }
 
     // create a cancerous cell, containing the BiologyModule GrowthModule
     Cell cell({20, 50, 50});
     cell.SetDiameter(6);
     cell.AddBiologyModule(GrowthModule());
-    cells->push_back(cell);  // put the created cell in our cells structure
-
-    cells->Commit();  // commit cells
+    rm->push_back(cell);  // add the created cell to the ResourceManager
 
     // Run simulation
     std::cout << "simulating" << std::endl;

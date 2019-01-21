@@ -29,6 +29,8 @@ class Grid;
 template <typename>
 class Scheduler;
 struct Param;
+template <typename>
+class InPlaceExecutionContext;
 
 struct Soa;
 template <typename TBackend = Soa>
@@ -90,6 +92,12 @@ struct Simulation {
   /// Returns a thread local random number generator
   Random* GetRandom();
 
+  /// Returns a thread local execution context.
+  InPlaceExecutionContext<TCTParam>* GetExecutionContext();
+
+  /// Returns all thread local execution contexts.
+  std::vector<InPlaceExecutionContext<TCTParam>*>& GetAllExecCtxts();
+
   /// @see `unique_name_`
   const std::string& GetUniqueName() const;
 
@@ -110,6 +118,9 @@ struct Simulation {
 
   /// random number generator for each thread
   std::vector<Random*> random_;
+
+  /// Execution Context for each thread
+  std::vector<InPlaceExecutionContext<TCTParam>*> exec_ctxt_;  //!
 
   ResourceManager<TCTParam>* rm_ = nullptr;
   Param_t* param_ = nullptr;

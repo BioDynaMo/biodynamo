@@ -15,6 +15,7 @@
     <class pattern="std::__1::vector<bdm::*<*>>" />
     <class pattern="std::__1::tuple<bdm::*<*>" />
     <class pattern="bdm::resource_manager_test_internal::*" />
+    <class name="std::unordered_map<unsigned long,bdm::SoHandle>" />
 
   </selection>
   <exclusion>
@@ -42,8 +43,6 @@
     <!-- list of template classes with custom streamers -->
     <class pattern="bdm::Variant*" />
     <class pattern="std::__1::vector<bdm::Variant<*>>" />
-    <class pattern="bdm::SoPointer*" />
-    <class pattern="std::__1::vector<bdm::SoPointer<*>>" />
     <class pattern="std::__1::tuple<*>::_*" />
   </exclusion>
 </lcgdict>

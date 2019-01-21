@@ -71,22 +71,6 @@ BDM_SIM_OBJECT(NeuronSoma, Cell) {
     Base::EventHandler(event, daughter_2);
   }
 
-  /// Update references of simulation objects that changed its memory position.
-  /// @param update_info vector index = type_id, map stores (old_index ->
-  /// new_index)
-  void UpdateReferences(
-      const std::vector<std::unordered_map<uint32_t, uint32_t>>& update_info) {
-    // NeuronSoma only stores NeuriteElements
-    auto* rm = Simulation_t::GetActive()->GetResourceManager();
-    const int neurite_type_idx = rm->template GetTypeIndex<NeuriteElement>();
-    const auto& neurite_updates = update_info[neurite_type_idx];
-    for (auto& daugther : daughters_[kIdx]) {
-      // `this` required, because declaration in dependent base are not found
-      // by unqualified look-up.
-      this->UpdateReference(&daugther, neurite_updates);
-    }
-  }
-
   // ***************************************************************************
   //      METHODS FOR NEURON TREE STRUCTURE *
   // ***************************************************************************
@@ -108,9 +92,9 @@ BDM_SIM_OBJECT(NeuronSoma, Cell) {
   /// \see NewNeuriteExtensionEvent
   NeuriteElementSoPtr ExtendNewNeurite(double diameter, double phi,
                                        double theta) {
-    auto* rm = Simulation_t::GetActive()->GetResourceManager();
+    auto* ctxt = Simulation_t::GetActive()->GetExecutionContext();
     NewNeuriteExtensionEvent event = {diameter, phi, theta};
-    auto&& neurite = rm->template New<NeuriteElement>(event, ThisMD());
+    auto&& neurite = ctxt->template New<NeuriteElement>(event, ThisMD());
     ThisMD()->EventHandler(event, &neurite);
     return neurite.GetSoPtr();
   }
@@ -127,8 +111,8 @@ BDM_SIM_OBJECT(NeuronSoma, Cell) {
   /// attached.
   /// @param daughter_element_idx element_idx of the daughter
   /// @return the coord
-  std::array<double, 3> OriginOf(uint32_t daughter_element_idx) const {
-    std::array<double, 3> xyz = daughters_coord_[kIdx][daughter_element_idx];
+  std::array<double, 3> OriginOf(SoUid daughter_uid) const {
+    std::array<double, 3> xyz = daughters_coord_[kIdx][daughter_uid];
 
     double radius = Base::diameter_[kIdx] * .5;
     xyz = Math::ScalarMult(radius, xyz);
@@ -145,13 +129,13 @@ BDM_SIM_OBJECT(NeuronSoma, Cell) {
 
   void UpdateRelative(const ToSoPtr<NeuriteElement>& old_rel,
                       const ToSoPtr<NeuriteElement>& new_rel) {
-    auto coord = daughters_coord_[kIdx][old_rel->GetElementIdx()];
+    auto coord = daughters_coord_[kIdx][old_rel->GetUid()];
     auto it = std::find(std::begin(daughters_[kIdx]),
                         std::end(daughters_[kIdx]), old_rel);
     assert(it != std::end(daughters_[kIdx]) &&
            "old_element_idx could not be found in daughters_ vector");
     *it = new_rel;
-    daughters_coord_[kIdx][new_rel->GetElementIdx()] = coord;
+    daughters_coord_[kIdx][new_rel->GetUid()] = coord;
   }
 
   const std::vector<ToSoPtr<NeuriteElement>>& GetDaughters() const {
@@ -162,10 +146,9 @@ BDM_SIM_OBJECT(NeuronSoma, Cell) {
   vec<std::vector<ToSoPtr<NeuriteElement>>> daughters_ = {{}};
 
   /// Daughter attachment points in local coordinates
-  /// Key: element index of neurite segement
+  /// Key: neurite segment uid
   /// Value: position
-  vec<std::unordered_map<uint32_t, std::array<double, 3>>> daughters_coord_ = {
-      {}};
+  vec<std::unordered_map<SoUid, std::array<double, 3>>> daughters_coord_ = {{}};
 
   /// \brief EventHandler to modify the data members of this soma
   /// after a new neurite extension event.
@@ -186,8 +169,7 @@ BDM_SIM_OBJECT(NeuronSoma, Cell) {
     double z_coord = std::cos(theta);
 
     daughters_[kIdx].push_back(neurite->GetSoPtr());
-    daughters_coord_[kIdx][neurite->GetElementIdx()] = {x_coord, y_coord,
-                                                        z_coord};
+    daughters_coord_[kIdx][neurite->GetUid()] = {x_coord, y_coord, z_coord};
   }
 };
 

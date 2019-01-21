@@ -98,13 +98,13 @@ class NeuronNeuriteAdapter {
     return neuron_ptr_->GetPosition();
   }
 
-  std::array<double, 3> OriginOf(uint32_t daughter_element_idx) const {
+  std::array<double, 3> OriginOf(SoUid daughter_uid) const {
     if (IsNeuriteElement()) {
-      return neurite_ptr_->OriginOf(daughter_element_idx);
+      return neurite_ptr_->OriginOf(daughter_uid);
     }
     assert(IsNeuronSoma() &&
            "Initialization error: neither neuron nor neurite");
-    return neuron_ptr_->OriginOf(daughter_element_idx);
+    return neuron_ptr_->OriginOf(daughter_uid);
   }
 
   bool IsNeuronSoma() const { return neuron_ptr_ != nullptr; }
@@ -215,8 +215,8 @@ class NeuronNeuriteAdapter {
 BDM_SIM_OBJECT(NeuriteElement, SimulationObject) {
   BDM_SIM_OBJECT_HEADER(
       NeuriteElement, SimulationObject, 1, mass_location_, volume_, diameter_,
-      density_, adherence_, x_axis_, y_axis_, z_axis_, box_idx_, is_axon_,
-      mother_, daughter_left_, daughter_right_, branch_order_,
+      density_, adherence_, x_axis_, y_axis_, z_axis_, is_axon_, mother_,
+      daughter_left_, daughter_right_, branch_order_,
       force_to_transmit_to_proximal_mass_, spring_axis_, actual_length_,
       tension_, spring_constant_, resting_length_);
 
@@ -411,29 +411,6 @@ BDM_SIM_OBJECT(NeuriteElement, SimulationObject) {
     }
   }
 
-  /// Update references of simulation objects that changed its memory position.
-  /// @param update_info vector index = type_id, map stores (old_index ->
-  /// new_index)
-  void UpdateReferences(
-      const std::vector<std::unordered_map<uint32_t, uint32_t>>& update_info) {
-    auto* rm = Simulation_t::GetActive()->GetResourceManager();
-
-    int neurite_type_idx = rm->template GetTypeIndex<MostDerivedScalar>();
-    const auto& neurite_updates = update_info[neurite_type_idx];
-
-    this->UpdateReference(&daughter_right_[kIdx], neurite_updates);
-    this->UpdateReference(&daughter_left_[kIdx], neurite_updates);
-    if (mother_[kIdx].IsNeuriteElement()) {
-      this->UpdateReference(&(mother_[kIdx].GetNeuriteElementSoPtr()),
-                            neurite_updates);
-    } else if (mother_[kIdx].IsNeuronSoma()) {
-      const int neuron_type_idx = rm->template GetTypeIndex<NeuronSoma>();
-      const auto& neuron_updates = update_info[neuron_type_idx];
-      this->UpdateReference(&(mother_[kIdx].GetNeuronSomaSoPtr()),
-                            neuron_updates);
-    }
-  }
-
   void SetDiameter(double diameter) {
     diameter_[kIdx] = diameter;
     UpdateVolume();
@@ -476,15 +453,11 @@ BDM_SIM_OBJECT(NeuriteElement, SimulationObject) {
 
   double GetMass() const { return density_[kIdx] * volume_[kIdx]; }
 
-  uint64_t GetBoxIdx() const { return box_idx_[kIdx]; }
-
-  void SetBoxIdx(uint64_t idx) { box_idx_[kIdx] = idx; }
-
   /// Returns the absolute coordinates of the location where the daughter is
   /// attached.
   /// @param daughter_element_idx element_idx of the daughter
   /// @return the coord
-  std::array<double, 3> OriginOf(uint32_t daughter_element_idx) const {
+  std::array<double, 3> OriginOf(SoUid daughter_uid) const {
     return mass_location_[kIdx];
   }
 
@@ -531,12 +504,12 @@ BDM_SIM_OBJECT(NeuriteElement, SimulationObject) {
                               (tension_[kIdx] + spring_constant_[kIdx]);
       spring_axis_[kIdx] = Math::ScalarMult(factor, spring_axis_[kIdx]);
 
-      mass_location_[kIdx] = Math::Add(
-          mother_[kIdx].OriginOf(Base::GetElementIdx()), spring_axis_[kIdx]);
+      mass_location_[kIdx] =
+          Math::Add(mother_[kIdx].OriginOf(Base::GetUid()), spring_axis_[kIdx]);
       UpdateVolume();  // and update concentration of internal stuff.
     } else if (mother_[kIdx].IsNeuronSoma()) {
-      mother_[kIdx].RemoveDaughter(GetSoPtr());
-      RemoveFromSimulation();
+      mother_[kIdx].RemoveDaughter(Base::GetSoPtr());
+      this->RemoveFromSimulation();
     } else if (mother_[kIdx].IsNeuriteElement() &&
                mother_[kIdx].GetDaughterRight() == nullptr) {
       // if actual_length_ < length and mother is a neurite element with no
@@ -546,8 +519,8 @@ BDM_SIM_OBJECT(NeuriteElement, SimulationObject) {
     } else {
       // if mother is neurite element with other daughter or is not a neurite
       // segment: disappear.
-      mother_[kIdx].RemoveDaughter(GetSoPtr());
-      RemoveFromSimulation();
+      mother_[kIdx].RemoveDaughter(Base::GetSoPtr());
+      this->RemoveFromSimulation();
 
       mother_[kIdx].UpdateDependentPhysicalVariables();
     }
@@ -584,10 +557,10 @@ BDM_SIM_OBJECT(NeuriteElement, SimulationObject) {
     // create a new neurite element for side branch
     // we first split this neurite element into two pieces
     // then append a "daughter right" between the two
-    auto* rm = Simulation_t::GetActive()->GetResourceManager();
+    auto* ctxt = Simulation_t::GetActive()->GetExecutionContext();
     NeuriteBranchingEvent event = {0.5, length, new_branch_diameter, direction};
-    auto&& proximal = rm->template New<MostDerivedScalar>(event, ThisMD(), 0);
-    auto&& branch = rm->template New<MostDerivedScalar>(event, &proximal, 1);
+    auto&& proximal = ctxt->template New<MostDerivedScalar>(event, ThisMD(), 0);
+    auto&& branch = ctxt->template New<MostDerivedScalar>(event, &proximal, 1);
     ThisMD()->EventHandler(event, &proximal, &branch);
     return branch.GetSoPtr();
   }
@@ -651,13 +624,13 @@ BDM_SIM_OBJECT(NeuriteElement, SimulationObject) {
       Fatal("NeuriteElements",
             "Bifurcation only allowed on a terminal neurite element");
     }
-    auto* rm = Simulation_t::GetActive()->GetResourceManager();
+    auto* ctxt = Simulation_t::GetActive()->GetExecutionContext();
     NeuriteBifurcationEvent event = {length, diameter_1, diameter_2,
                                      direction_1, direction_2};
     auto&& new_branch_l =
-        rm->template New<MostDerivedScalar>(event, ThisMD(), 0);
+        ctxt->template New<MostDerivedScalar>(event, ThisMD(), 0);
     auto&& new_branch_r =
-        rm->template New<MostDerivedScalar>(event, ThisMD(), 1);
+        ctxt->template New<MostDerivedScalar>(event, ThisMD(), 1);
     ThisMD()->EventHandler(event, &new_branch_l, &new_branch_r);
     return {new_branch_l.GetSoPtr(), new_branch_r.GetSoPtr()};
   }
@@ -827,7 +800,7 @@ BDM_SIM_OBJECT(NeuriteElement, SimulationObject) {
     // here I have to define the actual length ..........
     // auto& relative_pos = mother_[kIdx].GetPosition();
     auto relative_ml =
-        mother_[kIdx].OriginOf(Base::GetElementIdx());  //  change to auto&&
+        mother_[kIdx].OriginOf(Base::GetUid());  //  change to auto&&
     spring_axis_[kIdx] = Math::Subtract(new_mass_location, relative_ml);
     mass_location_[kIdx] = new_mass_location;
     actual_length_[kIdx] =
@@ -881,9 +854,8 @@ BDM_SIM_OBJECT(NeuriteElement, SimulationObject) {
   // ***************************************************************************
 
   // TODO(neurites) documentation
-  template <typename TGrid>
-  std::array<double, 3> CalculateDisplacement(TGrid * grid,
-                                              double squared_radius) {
+  template <typename TSimulation = Simulation<>>
+  std::array<double, 3> CalculateDisplacement(double squared_radius) {
     std::array<double, 3> force_on_my_point_mass{0, 0, 0};
     std::array<double, 3> force_on_my_mothers_point_mass{0, 0, 0};
 
@@ -901,14 +873,14 @@ BDM_SIM_OBJECT(NeuriteElement, SimulationObject) {
     if (daughter_left_[kIdx] != nullptr) {
       auto force_from_daughter =
           daughter_left_[kIdx]->ForceTransmittedFromDaugtherToMother(
-              GetSoPtr());
+              Base::GetSoPtr());
       force_on_my_point_mass =
           Math::Add(force_on_my_point_mass, force_from_daughter);
     }
     if (daughter_right_[kIdx] != nullptr) {
       auto force_from_daughter =
           daughter_right_[kIdx]->ForceTransmittedFromDaugtherToMother(
-              GetSoPtr());
+              Base::GetSoPtr());
       force_on_my_point_mass =
           Math::Add(force_on_my_point_mass, force_from_daughter);
     }
@@ -925,14 +897,14 @@ BDM_SIM_OBJECT(NeuriteElement, SimulationObject) {
     auto calculate_neighbor_forces = [this, &force_from_neighbors,
                                       &force_on_my_mothers_point_mass,
                                       &h_over_m, &has_neurite_neighbor](
-        auto&& neighbor, SoHandle neighbor_handle) {
+        const auto* neighbor) {
       // TODO(lukas) once we switch to C++17 use if constexpr.
       // As a consequence the reinterpret_cast won't be needed anymore.
       // if neighbor is a NeuriteElement
-      if (neighbor.template IsSoType<MostDerivedScalar>()) {
-        auto&& neighbor_rc =
-            neighbor.template ReinterpretCast<MostDerivedScalar>();
-        auto n_soptr = neighbor_rc.GetSoPtr();
+      if (neighbor->template IsSoType<MostDerivedScalar>()) {
+        const auto* neighbor_rc =
+            neighbor->template ReinterpretCast<MostDerivedScalar>();
+        auto n_soptr = neighbor_rc->GetSoPtr();
         // if it is a direct relative, or sister branch, we don't take it into
         // account
         if (n_soptr == this->GetDaughterLeft() ||
@@ -942,11 +914,12 @@ BDM_SIM_OBJECT(NeuriteElement, SimulationObject) {
             n_soptr->GetMother() == this->GetMother()) {
           return;
         }
-      } else if (neighbor.template IsSoType<NeuronSoma>()) {
+      } else if (neighbor->template IsSoType<NeuronSoma>()) {
         // if neighbor is NeuronSoma
         // if it is a direct relative, we don't take it into account
-        auto&& neighbor_rc = neighbor.template ReinterpretCast<NeuronSoma>();
-        auto n_soptr = neighbor_rc.GetSoPtr();
+        const auto* neighbor_rc =
+            neighbor->template ReinterpretCast<NeuronSoma>();
+        auto n_soptr = neighbor_rc->GetSoPtr();
         if (this->GetMother().IsNeuronSoma() &&
             this->GetMother().GetNeuronSomaSoPtr() == n_soptr) {
           return;
@@ -955,11 +928,11 @@ BDM_SIM_OBJECT(NeuriteElement, SimulationObject) {
 
       DefaultForce force;
       std::array<double, 4> force_from_neighbor =
-          force.GetForce(this, &neighbor);
+          force.GetForce(this, neighbor);
 
       // hack: if the neighbour is a neurite, we need to reduce the force from
       // that neighbour in order to avoid kink behaviour
-      if (neighbor.template IsSoType<MostDerivedScalar>()) {
+      if (neighbor->template IsSoType<MostDerivedScalar>()) {
         force_from_neighbor = Math::ScalarMult(h_over_m, force_from_neighbor);
         has_neurite_neighbor = true;
       }
@@ -985,8 +958,9 @@ BDM_SIM_OBJECT(NeuriteElement, SimulationObject) {
       }
     };
 
-    grid->ForEachNeighborWithinRadius(calculate_neighbor_forces, *this,
-                                      GetSoHandle(), squared_radius);
+    auto* ctxt = TSimulation::GetActive()->GetExecutionContext();
+    ctxt->ForEachNeighborWithinRadius(calculate_neighbor_forces, *this,
+                                      squared_radius);
 
     // hack: if the neighbour is a neurite, and as we reduced the force from
     // that neighbour, we also need to reduce my internal force (from internal
@@ -1306,7 +1280,7 @@ BDM_SIM_OBJECT(NeuriteElement, SimulationObject) {
   /// rL = resting length, aL = actual length. (Note the division by rL.
   /// Otherwise we could have cylinders with big aL and rL = 0).\n
   void UpdateDependentPhysicalVariables() {
-    auto relative_ml = mother_[kIdx].OriginOf(Base::GetElementIdx());
+    auto relative_ml = mother_[kIdx].OriginOf(Base::GetUid());
     spring_axis_[kIdx] = Math::Subtract(mass_location_[kIdx], relative_ml);
     actual_length_[kIdx] =
         std::sqrt(Math::Dot(spring_axis_[kIdx], spring_axis_[kIdx]));
@@ -1412,7 +1386,7 @@ BDM_SIM_OBJECT(NeuriteElement, SimulationObject) {
     resting_length_[kIdx] *= event.distal_portion_;
 
     // family relations
-    mother_[kIdx].UpdateRelative(NeuriteOrNeuron(GetSoPtr()),
+    mother_[kIdx].UpdateRelative(NeuriteOrNeuron(Base::GetSoPtr()),
                                  NeuriteOrNeuron(proximal->GetSoPtr()));
     mother_[kIdx] = proximal->GetSoPtr();
 
@@ -1440,7 +1414,7 @@ BDM_SIM_OBJECT(NeuriteElement, SimulationObject) {
 
     // elongation
     resting_length_[kIdx] *= event.distal_portion_;
-    mother_[kIdx].UpdateRelative(NeuriteOrNeuron(GetSoPtr()),
+    mother_[kIdx].UpdateRelative(NeuriteOrNeuron(Base::GetSoPtr()),
                                  NeuriteOrNeuron(proximal->GetSoPtr()));
     mother_[kIdx] = proximal->GetSoPtr();
 
@@ -1468,8 +1442,6 @@ BDM_SIM_OBJECT(NeuriteElement, SimulationObject) {
   vec<std::array<double, 3>> y_axis_ = {{0.0, 1.0, 0.0}};
   /// Third axis of the local coordinate system.
   vec<std::array<double, 3>> z_axis_ = {{0.0, 0.0, 1.0}};
-  /// Grid box index
-  vec<uint64_t> box_idx_ = {{}};
 
   vec<bool> is_axon_ = {{false}};
 
@@ -1514,10 +1486,10 @@ BDM_SIM_OBJECT(NeuriteElement, SimulationObject) {
   ///
   /// \see SplitNeuriteElementEvent
   MostDerivedSoPtr SplitNeuriteElement(double distal_portion = 0.5) {
-    auto* rm = Simulation_t::GetActive()->GetResourceManager();
+    auto* ctxt = Simulation_t::GetActive()->GetExecutionContext();
     SplitNeuriteElementEvent event = {distal_portion};
     auto&& new_proximal_element =
-        rm->template New<MostDerivedScalar>(event, ThisMD());
+        ctxt->template New<MostDerivedScalar>(event, ThisMD());
     ThisMD()->EventHandler(event, &new_proximal_element);
     return new_proximal_element.GetSoPtr();
   }
@@ -1537,7 +1509,7 @@ BDM_SIM_OBJECT(NeuriteElement, SimulationObject) {
     // Re-organisation of the PhysicalObject tree structure: by-passing
     // proximalCylinder
     proximal_ne->GetMother().UpdateRelative(mother_[kIdx],
-                                            NeuriteOrNeuron(GetSoPtr()));
+                                            NeuriteOrNeuron(Base::GetSoPtr()));
     SetMother(mother_[kIdx].GetMother());
 
     // Keeping the same tension :
@@ -1545,8 +1517,8 @@ BDM_SIM_OBJECT(NeuriteElement, SimulationObject) {
     // and want to
     // compute restingLength, and not the opposite...)
     // T = k*(A-R)/R --> R = k*A/(T+K)
-    spring_axis_[kIdx] = Math::Subtract(
-        mass_location_[kIdx], mother_[kIdx].OriginOf(Base::GetElementIdx()));
+    spring_axis_[kIdx] = Math::Subtract(mass_location_[kIdx],
+                                        mother_[kIdx].OriginOf(Base::GetUid()));
     actual_length_[kIdx] = Math::Norm(spring_axis_[kIdx]);
     resting_length_[kIdx] = spring_constant_[kIdx] * actual_length_[kIdx] /
                             (tension_[kIdx] + spring_constant_[kIdx]);
@@ -1569,9 +1541,9 @@ BDM_SIM_OBJECT(NeuriteElement, SimulationObject) {
           "Can't extend a side neurite since daughter_right is not a nullptr!");
     }
 
-    auto* rm = Simulation_t::GetActive()->GetResourceManager();
+    auto* ctxt = Simulation_t::GetActive()->GetExecutionContext();
     SideNeuriteExtensionEvent event = {length, diameter, direction};
-    auto&& new_branch = rm->template New<MostDerivedScalar>(event, ThisMD());
+    auto&& new_branch = ctxt->template New<MostDerivedScalar>(event, ThisMD());
     ThisMD()->EventHandler(event, &new_branch);
     return new_branch.GetSoPtr();
   }

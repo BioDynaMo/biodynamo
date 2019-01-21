@@ -18,9 +18,7 @@
 #include <chrono>
 #include <string>
 
-#include "biology_module_op.h"
 #include "bound_space_op.h"
-#include "commit_op.h"
 #include "diffusion_op.h"
 #include "displacement_op.h"
 #include "gpu/gpu_helper.h"
@@ -65,7 +63,6 @@ class Scheduler {
     }
 
     Initialize();
-
     for (unsigned step = 0; step < steps; step++) {
       Execute(step == steps - 1);
 
@@ -88,23 +85,57 @@ class Scheduler {
     auto* grid = sim->GetGrid();
     auto* param = sim->GetParam();
 
+    Timing::Time("Set up exec context", [&]() {
+      for (auto* ctxt : sim->GetAllExecCtxts()) {
+        ctxt->SetupIteration();
+      }
+    });
+
     Timing::Time("visualize", [&]() {
       visualization_->Visualize(total_steps_, last_iteration);
     });
     Timing::Time("neighbors", [&]() { grid->UpdateGrid(); });
-    // TODO(ahmad): should we only do it here and not after we run the physics?
-    // We need it here, because we need to update the threshold values before
-    // we update the diffusion grid
-    if (param->bound_space_) {
-      rm->ApplyOnAllTypes(bound_space_);
+
+    // create ops
+    auto bound_space_op = [&](auto&& so) {
+      if (param->bound_space_) {
+        ApplyBoundingBox(&so, param->min_bound_, param->max_bound_);
+      }
+    };
+
+    auto biology_module_op = [&](auto&& so) { so.RunBiologyModules(); };
+    auto discretization_op = [&](auto&& so) { so.RunDiscretization(); };
+
+    auto displacement_op = [&](auto&& so) {
+      if (param->run_mechanical_interactions_ && displacement_.UseCpu()) {
+        displacement_(so);
+      }
+    };
+
+    // update all sim objects: run all CPU operations
+    rm->ApplyOnAllTypes([&](auto* sim_objects, uint16_t type_idx) {
+#pragma omp parallel for schedule(dynamic, 100)
+      for (size_t i = 0; i < sim_objects->size(); i++) {
+        auto&& so = (*sim_objects)[i];
+        sim->GetExecutionContext()->Execute(so, bound_space_op,
+                                            biology_module_op, displacement_op,
+                                            discretization_op);
+      }
+    });
+
+    // update all sim objects: hardware accelerated operations
+    if (param->run_mechanical_interactions_ && !displacement_.UseCpu()) {
+      Timing::Time("displacement (GPU/FPGA)", displacement_);
     }
-    rm->ApplyOnAllTypes(biology_);
-    if (param->run_mechanical_interactions_) {
-      rm->ApplyOnAllTypes(physics_);  // Bounding box applied at the end
-    }
-    rm->ApplyOnAllElementsParallel(
-        [](auto&& sim_object, SoHandle) { sim_object.RunDiscretization(); });
-    CommitChangesAndUpdateReferences();
+
+    // finish updating sim objects
+    Timing::Time("Tear down exec context", [&]() {
+      for (auto* ctxt : sim->GetAllExecCtxts()) {
+        ctxt->TearDownIteration();
+      }
+    });
+
+    // update all substances (DiffusionGrids)
     Timing::Time("diffusion", diffusion_);
   }
 
@@ -115,11 +146,8 @@ class Scheduler {
   CatalystAdaptor<>* visualization_ = nullptr;  //!
   bool is_gpu_environment_initialized_ = false;
 
-  OpTimer<CommitOp> commit_ = OpTimer<CommitOp>("commit");
-  OpTimer<BiologyModuleOp> biology_ = OpTimer<BiologyModuleOp>("biology");
-  OpTimer<DisplacementOp<TSimulation>> physics_ =
-      OpTimer<DisplacementOp<TSimulation>>("physics");
   OpTimer<BoundSpace> bound_space_ = OpTimer<BoundSpace>("bound_space");
+  DisplacementOp<> displacement_;
   DiffusionOp diffusion_;
 
   /// Backup the simulation. Backup interval based on `Param::backup_interval_`
@@ -154,33 +182,19 @@ class Scheduler {
     return false;
   }
 
-  void CommitChangesAndUpdateReferences() {
-    auto* sim = TSimulation::GetActive();
-    auto* rm = sim->GetResourceManager();
-    commit_->Reset();
-    rm->ApplyOnAllTypesParallel(commit_);
-
-    const auto& update_info = commit_->GetUpdateInfo();
-    auto update_references = [&update_info](auto* sim_objects,
-                                            uint16_t type_idx) {
-#pragma omp parallel for
-      for (uint64_t i = 0; i < sim_objects->size(); i++) {
-        (*sim_objects)[i].UpdateReferences(update_info);
-      }
-    };
-    rm->ApplyOnAllTypes(update_references);
-  }
-
   // TODO(lukas, ahmad) After https://trello.com/c/0D6sHCK4 has been resolved
   // think about a better solution, because some operations are executed twice
   // if Simulate is called with one timestep.
   void Initialize() {
-    CommitChangesAndUpdateReferences();
-
     auto* sim = TSimulation::GetActive();
     auto* grid = sim->GetGrid();
     auto* rm = sim->GetResourceManager();
     auto* param = sim->GetParam();
+
+    // commit all changes
+    for (auto* ctxt : sim->GetAllExecCtxts()) {
+      ctxt->TearDownIteration();
+    }
 
     if (!is_gpu_environment_initialized_ && param->use_gpu_) {
       InitializeGPUEnvironment<>();

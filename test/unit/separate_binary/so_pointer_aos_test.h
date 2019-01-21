@@ -31,16 +31,16 @@ namespace so_pointer_aos_test_internal {
 // SoPointer tests
 /// This function is before the decleration of `SoPointerTestClass` to test
 /// if the SoPointer implementation can deal with incomplete types
-template <typename T, typename TBackend>
-void SoPointerTest(T* sim_objects) {
-  using SO = typename T::value_type;
+template <typename TSo, typename TBackend, typename TSimulation = Simulation<>>
+void SoPointerTest(const TSo& so) {
+  TSimulation::GetActive()->GetResourceManager()->push_back(so);
 
-  SoPointer<SO, TBackend> null_so_pointer;
+  SoPointer<TSo, TBackend> null_so_pointer;
   EXPECT_TRUE(null_so_pointer == nullptr);
 
-  SoPointer<SO, TBackend> so_ptr(sim_objects, 0);
+  SoPointer<TSo, TBackend> so_ptr(so.GetUid());
 
-  EXPECT_FALSE(so_ptr == nullptr);
+  EXPECT_TRUE(so_ptr != nullptr);
   EXPECT_EQ(123u, so_ptr->GetId());
 
   so_ptr = nullptr;
@@ -79,34 +79,28 @@ BDM_CTPARAM() {
 
 namespace so_pointer_aos_test_internal {
 
-inline void IOTestSoPointerRmContainerAos(Simulation<>* simulation) {
-  auto* rm = simulation->GetResourceManager();
-  // TODO(lukas) Remove after https://trello.com/c/sKoOTgJM has been resolved
-  rm->Get<SoPointerTestClass>()->reserve(2);
-  auto&& so1 = rm->New<SoPointerTestClass>(123);
-  auto&& so2 = rm->New<SoPointerTestClass>(456);
+inline void RunIOTest(Simulation<>* sim) {
+  auto* rm = sim->GetResourceManager();
+  rm->push_back(SoPointerTestClass(123));
+  SoPointerTestClass so2(456);
+  rm->push_back(so2);
 
-  auto soptr = so1.GetSoPtr();
-  EXPECT_EQ(0u, soptr.GetElementIdx());
-  so2.SetMySoPtr(soptr);
+  SoPointer<SoPointerTestClass, Scalar> soptr(so2.GetUid());
+  SoPointer<SoPointerTestClass, Scalar>* restored;
 
-  SimulationBackup backup(IOTest::kRootFile, "");
-  backup.Backup(1);
+  BackupAndRestore(soptr, &restored);
 
-  // to see if objects are restorec correctly, clear RessourceManager
-  rm->Clear();
+  EXPECT_TRUE(*restored != nullptr);
+  EXPECT_EQ(456u, (*restored)->GetId());
+}
 
-  SimulationBackup restore("", IOTest::kRootFile);
-  restore.Restore();
+inline void IOTestSoPointerNullptr() {
+  SoPointer<SoPointerTestClass, Scalar> null_so_pointer;
+  SoPointer<SoPointerTestClass, Scalar>* restored = nullptr;
 
-  EXPECT_EQ(rm, simulation->GetResourceManager());
+  BackupAndRestore(null_so_pointer, &restored);
 
-  auto* restored_sim_objects = rm->Get<SoPointerTestClass>();
-  EXPECT_EQ(123u, (*restored_sim_objects)[1].GetMySoPtr()->GetId());
-  // change id of first element
-  (*restored_sim_objects)[0].SetId(987);
-  // id should have changed
-  EXPECT_EQ(987u, (*restored_sim_objects)[1].GetMySoPtr()->GetId());
+  EXPECT_TRUE(*restored == nullptr);
 }
 
 }  // namespace so_pointer_aos_test_internal

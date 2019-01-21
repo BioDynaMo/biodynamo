@@ -44,7 +44,7 @@ void RunTest(ExecutionMode mode) {
   // Scheduler::Initialize(), but in this test we call DisplacementOp directly.
   InitializeGPUEnvironment<>();
 
-  auto cells = rm->template Get<Cell>();
+  const auto* cells = rm->template Get<Cell>();
 
   // Cell 1
   Cell cell;
@@ -53,7 +53,7 @@ void RunTest(ExecutionMode mode) {
   cell.SetMass(1.4);
   cell.SetPosition({0, 0, 0});
   cell.SetPosition({0, 0, 0});
-  cells->push_back(cell);
+  rm->push_back(cell);
 
   // Cell 2
   cell.SetAdherence(0.4);
@@ -61,13 +61,13 @@ void RunTest(ExecutionMode mode) {
   cell.SetMass(1.1);
   cell.SetPosition({0, 5, 0});
   cell.SetPosition({0, 5, 0});
-  cells->push_back(cell);
+  rm->push_back(cell);
 
   grid->Initialize();
 
   // execute operation
   DisplacementOp<> op;
-  op(cells, 0);
+  op();
 
   // check results
   // cell 1
@@ -130,7 +130,7 @@ void RunTest2(ExecutionMode mode) {
   // Scheduler::Initialize(), but in this test we call DisplacementOp directly.
   InitializeGPUEnvironment<>();
 
-  auto cells = rm->template Get<Cell>();
+  const auto* cells = rm->template Get<Cell>();
 
   double space = 20;
   for (size_t i = 0; i < 3; i++) {
@@ -140,7 +140,7 @@ void RunTest2(ExecutionMode mode) {
         cell.SetDiameter(30);
         cell.SetAdherence(0.4);
         cell.SetMass(1.0);
-        cells->push_back(cell);
+        rm->push_back(cell);
       }
     }
   }
@@ -150,7 +150,7 @@ void RunTest2(ExecutionMode mode) {
 
   // execute operation
   DisplacementOp<> op;
-  op(cells, 0);
+  op();
 
   // clang-format off
   EXPECT_ARR_NEAR((*cells)[0].GetPosition(), {-0.20160966809506442, -0.20160966809506442, -0.20160966809506442});

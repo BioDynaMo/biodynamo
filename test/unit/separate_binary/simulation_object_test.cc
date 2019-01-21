@@ -23,11 +23,10 @@ TEST(SimulationObjectTest, SoaGetElementIndex) {
   auto* rm = simulation.GetResourceManager();
 
   for (uint64_t i = 0; i < 10; i++) {
-    rm->New<Cell>(1);
+    rm->push_back(Cell(1));
   }
-  rm->Get<Cell>()->Commit();
   EXPECT_EQ(10u, rm->GetNumSimObjects());
-  auto cells = rm->Get<Cell>();
+  const auto* cells = rm->Get<Cell>();
   for (uint64_t i = 0; i < 10; i++) {
     EXPECT_EQ(i, (*cells)[i].GetElementIdx());
   }
@@ -37,22 +36,24 @@ TEST(SimulationObjectTest, Clear) {
   Simulation<> simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
 
+  SoUid remove_uid = 12345;
+
   for (uint64_t i = 0; i < 10; i++) {
-    rm->New<Cell>(1);
+    Cell cell(1);
+    rm->push_back(cell);
+    if (i == 5) {
+      remove_uid = cell.GetUid();
+    }
   }
-  auto* cells = rm->Get<Cell>();
-  cells->Commit();
 
-  EXPECT_EQ(10u, cells->size());
+  EXPECT_EQ(10u, rm->GetNumSimObjects());
 
-  cells->DelayedRemove(5);
+  rm->Remove(remove_uid);
 
-  EXPECT_EQ(10u, cells->size());
-  cells->clear();
+  EXPECT_EQ(9u, rm->GetNumSimObjects());
 
-  // this would segfault if `TransactionalVector::to_be_removed_` will not be
-  // cleared
-  cells->Commit();
+  rm->Clear();
+  EXPECT_EQ(0u, rm->GetNumSimObjects());
 }
 
 TEST(SimulationObjectTest, CopyBiologyModules) {

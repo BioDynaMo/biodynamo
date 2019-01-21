@@ -49,7 +49,7 @@ TEST(ResourceManagerTest, ApplyOnAllTypes) {
   RunApplyOnAllTypesTest<ResourceManager<>, SoaA, SoaB>();
 }
 
-TEST(ResourceManagerTest, IO) { RunIOTest(); }
+TEST(DISABLED_ResourceManagerTest, IO) { RunIOTest(); }
 
 TEST(ResourceManagerTest, GetTypeIndex) {
   RunGetTypeIndexTest<ResourceManager<>, A, B>();
@@ -61,10 +61,17 @@ TEST(ResourceManagerTest, push_back) {
   RunPushBackTest<ResourceManager<>, SoaA, SoaB>();
 }
 
-TEST(ResourceManagerTest, New) {
-  RunNewTest<ResourceManager<>, A, B>();
-  RunNewTest<ResourceManager<>, SoaA, SoaB>();
+TEST(ResourceManagerTest, RemoveAndContains) {
+  RunRemoveAndContainsTest<ResourceManager<>, A, B>();
+  RunRemoveAndContainsTest<ResourceManager<>, SoaA, SoaB>();
 }
+
+TEST(ResourceManagerTest, Clear) {
+  RunClearTest<ResourceManager<>, A, B>();
+  RunClearTest<ResourceManager<>, SoaA, SoaB>();
+}
+
+TEST(ResourceManagerTest, RunGetSimObjectTest) { RunGetSimObjectTest<A, B>(); }
 
 }  // namespace bdm
 

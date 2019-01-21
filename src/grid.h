@@ -24,6 +24,8 @@
 #include <cmath>
 #include <iostream>
 #include <limits>
+#include <memory>
+#include <mutex>
 #include <vector>
 
 #include "constant.h"
@@ -326,6 +328,10 @@ class Grid {
         int max = param->max_bound_;
         threshold_dimensions_ = {min, max};
       }
+
+      if (nb_mutex_builder_ != nullptr) {
+        nb_mutex_builder_->Update();
+      }
     } else {
       // There are no sim objects in this simulation
       auto* param = TSimulation::GetActive()->GetParam();
@@ -379,13 +385,15 @@ class Grid {
       const std::array<double, 3>& pos2) const {
     const double dx = pos2[0] - pos1[0];
     const double dx2 = dx * dx;
-    if (dx2 > squared_radius)
+    if (dx2 > squared_radius) {
       return false;
+    }
 
     const double dy = pos2[1] - pos1[1];
     const double dy2_plus_dx2 = dy * dy + dx2;
-    if (dy2_plus_dx2 > squared_radius)
+    if (dy2_plus_dx2 > squared_radius) {
       return false;
+    }
 
     const double dz = pos2[2] - pos1[2];
     const double distance = dz * dz + dy2_plus_dx2;
@@ -396,14 +404,12 @@ class Grid {
   ///
   /// @param[in]  lambda  The operation as a lambda
   /// @param      query   The query object
-  /// @param      simulation_object_id
   ///
   /// @tparam     Lambda  The type of the lambda operation
   /// @tparam     SO      The type of the simulation object
   ///
   template <typename Lambda, typename SO>
-  void ForEachNeighbor(const Lambda& lambda, const SO& query,
-                       const SoHandle& simulation_object_id) const {
+  void ForEachNeighbor(const Lambda& lambda, const SO& query) const {
     const auto& position = query.GetPosition();
     auto idx = GetBoxIndex(position);
 
@@ -413,7 +419,7 @@ class Grid {
     NeighborIterator ni(neighbor_boxes);
     while (!ni.IsAtEnd()) {
       // Do something with neighbor object
-      if (*ni != simulation_object_id) {
+      if (*ni != query.GetSoHandle()) {
         lambda(*ni);
       }
       ++ni;
@@ -421,11 +427,13 @@ class Grid {
   }
 
   /// @brief      Applies the given lambda to each neighbor or the specified
-  ///             simulation object
+  ///             simulation object.
+  ///
+  /// In simulation code do not use this function directly. Use the same
+  /// function from the exeuction context (e.g. `InPlaceExecutionContext`)
   ///
   /// @param[in]  lambda  The operation as a lambda
   /// @param      query   The query object
-  /// @param      simulation_object_id
   /// @param[in]  squared_radius  The search radius squared
   ///
   /// @tparam     Lambda      The type of the lambda operation
@@ -433,8 +441,8 @@ class Grid {
   ///
   template <typename Lambda, typename SO>
   void ForEachNeighborWithinRadius(const Lambda& lambda, const SO& query,
-                                   const SoHandle& simulation_object_id,
                                    double squared_radius) {
+    auto so_handle = query.GetSoHandle();
     const auto& position = query.GetPosition();
     auto idx = query.GetBoxIdx();
 
@@ -446,12 +454,12 @@ class Grid {
     while (!ni.IsAtEnd()) {
       // Do something with neighbor object
       SoHandle neighbor_handle = *ni;
-      if (neighbor_handle != simulation_object_id) {
+      if (neighbor_handle != so_handle) {
         rm->ApplyOnElement(neighbor_handle, [&](auto&& sim_object) {
           const auto& neighbor_position = sim_object.GetPosition();
           if (this->WithinSquaredEuclideanDistance(squared_radius, position,
                                                    neighbor_position)) {
-            lambda(sim_object, neighbor_handle);
+            lambda(&sim_object);
           }
         });
       }
@@ -470,18 +478,18 @@ class Grid {
   ///
   ///     // using lhs_id and rhs_id to index into an array is thread-safe
   ///     SimulationObjectVector<std::array<double, 3>> total_force;
-  ///     grid.ForEachNeighborPairWithinRadius([&](auto&& lhs, SoHandle lhs_id,
-  ///                                          auto&& rhs, SoHandle rhs_id) {
+  ///     grid.ForEachNeighborPairWithinRadius([&](const auto* lhs, const auto*
+  ///     rhs) {
   ///       auto force = ...;
-  ///       total_force[lhs_id] += force;
-  ///       total_force[rhs_id] -= force;
+  ///       total_force[lhs->GetUid()] += force;
+  ///       total_force[rhs->GetUid()] -= force;
   ///     }, squared_radius);
   ///
   ///     // the following example leads to a race condition
   ///
   ///     int counter = 0;
-  ///     grid.ForEachNeighborPairWithinRadius([&](auto&& lhs, SoHandle lhs_id,
-  ///                                          auto&& rhs, SoHandle rhs_id) {
+  ///     grid.ForEachNeighborPairWithinRadius([&](const auto* lhs, const auto*
+  ///     rhs) {
   ///       counter++;
   ///     }, squared_radius);
   ///     // which can be solved by using std::atomic<int> counter; instead
@@ -609,7 +617,7 @@ class Grid {
     return threshold_dimensions_;
   }
 
-  const std::array<uint32_t, 3>& GetNumBoxes() const { return num_boxes_axis_; }
+  uint64_t GetNumBoxes() const { return boxes_.size(); }
 
   uint32_t GetBoxLength() { return box_length_; }
 
@@ -684,6 +692,90 @@ class Grid {
     (*grid_dimensions)[2] = grid_dimensions_[4];
   }
 
+  // NeighborMutex ---------------------------------------------------------
+
+  /// This class ensures thread-safety for the InPlaceExecutionContext for the
+  /// case
+  /// that a simulation object modifies its neighbors.
+  class NeighborMutexBuilder {
+   public:
+    /// The NeighborMutex class is a synchronization primitive that can be
+    /// used to protect sim_objects data from being simultaneously accessed by
+    /// multiple threads.
+    class NeighborMutex {
+     public:
+      NeighborMutex(uint64_t box_idx,
+                    const FixedSizeVector<uint64_t, 27>& mutex_indices,
+                    NeighborMutexBuilder* mutex_builder)
+          : box_idx_(box_idx),
+            mutex_indices_(mutex_indices),
+            mutex_builder_(mutex_builder) {
+        // Deadlocks occur if mutliple threads try to acquire the same locks,
+        // but in different order.
+        // -> sort to avoid deadlocks - see lock ordering
+        std::sort(mutex_indices_.begin(), mutex_indices_.end());
+      }
+
+      void lock() {  // NOLINT
+        for (auto idx : mutex_indices_) {
+          auto& mutex = mutex_builder_->mutexes_[idx].mutex_;
+          // acquire lock (and spin if another thread is holding it)
+          while (mutex.test_and_set(std::memory_order_acquire)) {
+          }
+        }
+      }
+
+      void unlock() {  // NOLINT
+        for (auto idx : mutex_indices_) {
+          auto& mutex = mutex_builder_->mutexes_[idx].mutex_;
+          mutex.clear(std::memory_order_release);
+        }
+      }
+
+     private:
+      uint64_t box_idx_;
+      FixedSizeVector<uint64_t, 27> mutex_indices_;
+      NeighborMutexBuilder* mutex_builder_;
+    };
+
+    /// Used to store mutexes in a vector.
+    /// Always creates a new mutex (even for the copy constructor)
+    struct MutexWrapper {
+      MutexWrapper() {}
+      MutexWrapper(const MutexWrapper&) {}
+      std::atomic_flag mutex_ = ATOMIC_FLAG_INIT;
+    };
+
+    template <typename TTSimulation = Simulation<>>
+    void Update() {
+      auto* grid = TTSimulation::GetActive()->GetGrid();
+      mutexes_.resize(grid->GetNumBoxes());
+    }
+
+    template <typename TTSimulation = Simulation<>>
+    NeighborMutex GetMutex(uint64_t box_idx) {
+      auto* grid = TTSimulation::GetActive()->GetGrid();
+      FixedSizeVector<uint64_t, 27> box_indices;
+      grid->GetMooreBoxIndices(&box_indices, box_idx);
+      return NeighborMutex(box_idx, box_indices, this);
+    }
+
+   private:
+    /// one mutex for each box in `Grid::boxes_`
+    std::vector<MutexWrapper> mutexes_;
+  };
+
+  /// Disable neighbor mutexes management. `GetNeighborMutexBuilder()` will
+  /// return a nullptr.
+  void DisableNeighborMutexes() { nb_mutex_builder_ = nullptr; }
+
+  /// Returns the `NeighborMutexBuilder`. The client use it to create a
+  /// `NeighborMutex`. If neighbor mutexes has been disabled by calling
+  /// `DisableNeighborMutexes`, this function will return a nullptr.
+  NeighborMutexBuilder* GetNeighborMutexBuilder() {
+    return nb_mutex_builder_.get();
+  }
+
  private:
   /// The vector containing all the boxes in the grid
   /// Using parallel resize vector to enable parallel initialization and thus
@@ -715,6 +807,11 @@ class Grid {
   bool has_grown_ = false;
   /// Flag to indicate if the grid has been initialized or not
   bool initialized_ = false;
+
+  /// Holds instance of NeighborMutexBuilder if it is enabled.
+  /// If `DisableNeighborMutexes` has been called this member set to nullptr.
+  std::unique_ptr<NeighborMutexBuilder> nb_mutex_builder_ =
+      std::make_unique<NeighborMutexBuilder>();
 
   void CheckGridGrowth() {
     // Determine if the grid dimensions have changed (changed in the sense that
@@ -761,7 +858,7 @@ class Grid {
       all_largest_object_size[thread_id] = largest_object_size;
 
       rm->ApplyOnAllTypes([&](auto* sim_objects, uint16_t type_idx) {
-#pragma omp for
+#pragma omp for schedule(dynamic, 100)
         for (size_t i = 0; i < sim_objects->size(); i++) {
           const auto& position = (*sim_objects)[i].GetPosition();
           for (size_t j = 0; j < 3; j++) {
@@ -823,9 +920,11 @@ class Grid {
     grid_dimensions_[5] = ceil(grid_dimensions[5]);
   }
 
-  /// @brief      Gets the Moore (i.e adjacent) boxes of the query box
+  /// @brief      Gets the Moore (i.e adjacent) boxes of the query boxAlso adds
+  /// the
+  ///             query box.
   ///
-  /// @param      neighbor_boxes  The neighbor boxes
+  /// @param[out] neighbor_boxes  The neighbor boxes
   /// @param[in]  box_idx         The query box
   ///
   void GetMooreBoxes(FixedSizeVector<const Box*, 27>* neighbor_boxes,
@@ -884,6 +983,55 @@ class Grid {
           GetBoxPointer(box_idx + num_boxes_xy_ + num_boxes_axis_[0] - 1));
       neighbor_boxes->push_back(
           GetBoxPointer(box_idx + num_boxes_xy_ + num_boxes_axis_[0] + 1));
+    }
+  }
+
+  /// @brief      Gets the box indices of all adjacent boxes. Also adds the
+  ///             query box index.
+  ///
+  /// @param[out] box_indices     Result containing all box indices
+  /// @param[in]  box_idx         The query box
+  ///
+  void GetMooreBoxIndices(FixedSizeVector<uint64_t, 27>* box_indices,
+                          size_t box_idx) const {
+    box_indices->push_back(box_idx);
+
+    // Adjacent 6 (top, down, left, right, front and back)
+    if (adjacency_ >= kLow) {
+      box_indices->push_back(box_idx - num_boxes_xy_);
+      box_indices->push_back(box_idx + num_boxes_xy_);
+      box_indices->push_back(box_idx - num_boxes_axis_[0]);
+      box_indices->push_back(box_idx + num_boxes_axis_[0]);
+      box_indices->push_back(box_idx - 1);
+      box_indices->push_back(box_idx + 1);
+    }
+
+    // Adjacent 12
+    if (adjacency_ >= kMedium) {
+      box_indices->push_back(box_idx - num_boxes_xy_ - num_boxes_axis_[0]);
+      box_indices->push_back(box_idx - num_boxes_xy_ - 1);
+      box_indices->push_back(box_idx - num_boxes_axis_[0] - 1);
+      box_indices->push_back(box_idx + num_boxes_xy_ - num_boxes_axis_[0]);
+      box_indices->push_back(box_idx + num_boxes_xy_ - 1);
+      box_indices->push_back(box_idx + num_boxes_axis_[0] - 1);
+      box_indices->push_back(box_idx - num_boxes_xy_ + num_boxes_axis_[0]);
+      box_indices->push_back(box_idx - num_boxes_xy_ + 1);
+      box_indices->push_back(box_idx - num_boxes_axis_[0] + 1);
+      box_indices->push_back(box_idx + num_boxes_xy_ + num_boxes_axis_[0]);
+      box_indices->push_back(box_idx + num_boxes_xy_ + 1);
+      box_indices->push_back(box_idx + num_boxes_axis_[0] + 1);
+    }
+
+    // Adjacent 8
+    if (adjacency_ >= kHigh) {
+      box_indices->push_back(box_idx - num_boxes_xy_ - num_boxes_axis_[0] - 1);
+      box_indices->push_back(box_idx - num_boxes_xy_ - num_boxes_axis_[0] + 1);
+      box_indices->push_back(box_idx - num_boxes_xy_ + num_boxes_axis_[0] - 1);
+      box_indices->push_back(box_idx - num_boxes_xy_ + num_boxes_axis_[0] + 1);
+      box_indices->push_back(box_idx + num_boxes_xy_ - num_boxes_axis_[0] - 1);
+      box_indices->push_back(box_idx + num_boxes_xy_ - num_boxes_axis_[0] + 1);
+      box_indices->push_back(box_idx + num_boxes_xy_ + num_boxes_axis_[0] - 1);
+      box_indices->push_back(box_idx + num_boxes_xy_ + num_boxes_axis_[0] + 1);
     }
   }
 
@@ -1113,8 +1261,7 @@ class Grid {
               const auto& pos_c = pos_center_box[c];
               if (this->WithinSquaredEuclideanDistance(squared_radius, pos_c,
                                                        pos_n)) {
-                lambda(element_c, soh_center_box[c], element_n,
-                       soh_center_box[n]);
+                lambda(&element_c, &element_n);
               }
             });
           }
@@ -1137,7 +1284,7 @@ class Grid {
               const auto& pos_c = pos_center_box[c];
               if (this->WithinSquaredEuclideanDistance(squared_radius, pos_c,
                                                        pos_n)) {
-                lambda(element_c, soh_center_box[c], element_n, soh_box[n]);
+                lambda(&element_c, &element_n);
               }
             });
           }

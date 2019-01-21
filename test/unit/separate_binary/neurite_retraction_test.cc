@@ -40,12 +40,14 @@ TEST(NeuriteElementBehaviour, StraightxCylinderGrowthRetract) {
   auto* rm = simulation.GetResourceManager();
   auto* scheduler = simulation.GetScheduler();
 
-  auto neuron = rm->New<NeuronSoma>();
+  NeuronSoma neuron;
+  auto neuron_id = neuron.GetUid();
   neuron.SetPosition({0, 0, 0});
   neuron.SetMass(1);
   neuron.SetDiameter(10);
+  rm->push_back(neuron);
 
-  auto ne = neuron.ExtendNewNeurite({1, 0, 0});
+  auto ne = rm->GetSimObject<NeuronSoma>(neuron_id).ExtendNewNeurite({1, 0, 0});
 
   std::array<double, 3> neAxis = ne->GetSpringAxis();
 
@@ -81,24 +83,26 @@ TEST(NeuriteElementBehaviour, BranchingGrowth) {
 
   double branching_factor = 0.005;
 
-  auto neuron = rm->New<NeuronSoma>();
+  NeuronSoma neuron;
+  auto neuron_id = neuron.GetUid();
   neuron.SetPosition({0, 0, 0});
   neuron.SetMass(1);
   neuron.SetDiameter(10);
+  rm->push_back(neuron);
 
-  auto ne = neuron.ExtendNewNeurite({0, 0, 1});
+  auto ne = rm->GetSimObject<NeuronSoma>(neuron_id).ExtendNewNeurite({0, 0, 1});
   ne->SetDiameter(1);
 
   std::array<double, 3> previous_direction;
   std::array<double, 3> direction;
 
   for (int i = 0; i < 200; i++) {
-    auto my_neurites = rm->Get<NeuriteElement>();
+    const auto* my_neurites = rm->Get<NeuriteElement>();
     int num_neurites = my_neurites->size();
 
-    for (int neurite_nb = 0; neurite_nb < num_neurites;
-         neurite_nb++) {  // for each neurite in simulation
-      auto ne = (*my_neurites)[neurite_nb];
+    // for each neurite in simulation
+    for (int neurite_nb = 0; neurite_nb < num_neurites; neurite_nb++) {
+      auto ne = (*my_neurites)[neurite_nb].GetSoPtr();
 
       EXPECT_GT(ne->GetAxis()[2], 0);
 
@@ -125,9 +129,9 @@ TEST(NeuriteElementBehaviour, BranchingGrowth) {
     auto my_neurites = rm->Get<NeuriteElement>();
     int num_neurites = my_neurites->size();
 
-    for (int neurite_nb = 0; neurite_nb < num_neurites;
-         neurite_nb++) {  // for each neurite in simulation
-      auto ne = (*my_neurites)[neurite_nb];
+    // for each neurite in simulation
+    for (int neurite_nb = 0; neurite_nb < num_neurites; neurite_nb++) {
+      auto ne = (*my_neurites)[neurite_nb].GetSoPtr();
       ne->RetractTerminalEnd(50);
     }
     scheduler->Simulate(1);

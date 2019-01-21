@@ -37,7 +37,7 @@ BDM_SIM_OBJECT(A, TestSimObject) {
   AExt() {}  // for ROOT I/O
   explicit AExt(int data) { data_[kIdx] = data; }
 
-  int GetData() { return data_[kIdx]; }
+  int GetData() const { return data_[kIdx]; }
   void SetData(int data) { data_[kIdx] = data; }
 
   vec<int> data_;
@@ -50,7 +50,7 @@ BDM_SIM_OBJECT(B, TestSimObject) {
   BExt() {}  // for ROOT I/O
   explicit BExt(double data) { data_[kIdx] = data; }
 
-  double GetData() { return data_[kIdx]; }
+  double GetData() const { return data_[kIdx]; }
   void SetData(double data) { data_[kIdx] = data; }
 
   vec<double> data_;
@@ -67,21 +67,19 @@ inline void RunGetTest() {
   TRm rm;
 
   // template specifier needed because A is dependant type
-  auto a_vector = rm.template Get<TA>();
-  EXPECT_EQ(0u, a_vector->size());
-  a_vector->push_back(TAScalar(12));
-  a_vector->push_back(TAScalar(34));
+  EXPECT_EQ(0u, rm.template Get<TA>()->size());
+  rm.push_back(TAScalar(12));
+  rm.push_back(TAScalar(34));
+  EXPECT_EQ(2u, rm.template Get<TA>()->size());
   EXPECT_EQ(12, (*rm.template Get<TA>())[0].GetData());
   EXPECT_EQ(34, (*rm.template Get<TA>())[1].GetData());
-  EXPECT_EQ(2u, rm.template Get<TA>()->size());
 
-  auto b_vector = rm.template Get<TB>();
-  EXPECT_EQ(0u, b_vector->size());
-  b_vector->push_back(TBScalar(3.14));
-  b_vector->push_back(TBScalar(6.28));
+  EXPECT_EQ(0u, rm.template Get<TB>()->size());
+  rm.push_back(TBScalar(3.14));
+  rm.push_back(TBScalar(6.28));
+  EXPECT_EQ(2u, rm.template Get<TB>()->size());
   EXPECT_NEAR(3.14, (*rm.template Get<TB>())[0].GetData(), kEpsilon);
   EXPECT_NEAR(6.28, (*rm.template Get<TB>())[1].GetData(), kEpsilon);
-  EXPECT_EQ(2u, rm.template Get<TB>()->size());
 }
 
 template <typename TRm, typename TA, typename TB>
@@ -92,15 +90,13 @@ inline void RunApplyOnElementTest() {
   TRm rm;
   rm.Clear();
 
-  auto a_collection = rm.template Get<TA>();
-  a_collection->push_back(TAScalar(12));
-  a_collection->push_back(TAScalar(34));
+  rm.push_back(TAScalar(12));
+  rm.push_back(TAScalar(34));
   rm.ApplyOnElement(SoHandle(0, 1),
                     [](auto&& element) { EXPECT_EQ(34, element.GetData()); });
 
-  auto b_collection = rm.template Get<TB>();
-  b_collection->push_back(TBScalar(3.14));
-  b_collection->push_back(TBScalar(6.28));
+  rm.push_back(TBScalar(3.14));
+  rm.push_back(TBScalar(6.28));
   rm.ApplyOnElement(SoHandle(1, 0), [&](auto&& element) {
     EXPECT_NEAR(3.14, element.GetData(), kEpsilon);
   });
@@ -113,13 +109,11 @@ void RunApplyOnAllElementsTest() {
   using TBScalar = typename TB::template Self<Scalar>;
   TRm rm;
 
-  auto a_collection = rm.template Get<TA>();
-  a_collection->push_back(TAScalar(12));
-  a_collection->push_back(TAScalar(34));
+  rm.push_back(TAScalar(12));
+  rm.push_back(TAScalar(34));
 
-  auto b_collection = rm.template Get<TB>();
-  b_collection->push_back(TBScalar(3.14));
-  b_collection->push_back(TBScalar(6.28));
+  rm.push_back(TBScalar(3.14));
+  rm.push_back(TBScalar(6.28));
   size_t counter = 0;
   rm.ApplyOnAllElements([&](auto&& element, SoHandle&& handle) {  // NOLINT
     counter++;
@@ -148,14 +142,12 @@ void RunGetNumSimObjects() {
   using TBScalar = typename TB::template Self<Scalar>;
   TRm rm;
 
-  auto a_collection = rm.template Get<TA>();
-  a_collection->push_back(TAScalar(12));
-  a_collection->push_back(TAScalar(34));
-  a_collection->push_back(TAScalar(59));
+  rm.push_back(TAScalar(12));
+  rm.push_back(TAScalar(34));
+  rm.push_back(TAScalar(59));
 
-  auto b_collection = rm.template Get<TB>();
-  b_collection->push_back(TBScalar(3.14));
-  b_collection->push_back(TBScalar(6.28));
+  rm.push_back(TBScalar(3.14));
+  rm.push_back(TBScalar(6.28));
 
   EXPECT_EQ(5u, rm.GetNumSimObjects());
 }
@@ -167,10 +159,9 @@ void RunApplyOnAllElementsParallelTest() {
   using TBScalar = typename TB::template Self<Scalar>;
   TRm rm;
 
-  auto cells = rm.template Get<TB>();
-  cells->push_back(TBScalar(3.14));
-  cells->push_back(TBScalar(6.28));
-  cells->push_back(TBScalar(9.42));
+  rm.push_back(TBScalar(3.14));
+  rm.push_back(TBScalar(6.28));
+  rm.push_back(TBScalar(9.42));
 
   rm.ApplyOnAllElementsParallel([](auto&& element, SoHandle handle) {
     const double kEpsilon = abs_error<double>::value;
@@ -187,18 +178,106 @@ void RunApplyOnAllElementsParallelTest() {
 }
 
 template <typename TRm, typename TA, typename TB>
+void RunRemoveAndContainsTest() {
+  using TAScalar = typename TA::template Self<Scalar>;
+  using TBScalar = typename TB::template Self<Scalar>;
+  TRm rm;
+
+  TAScalar a0(12);
+  auto a0_uid = a0.GetUid();
+  rm.push_back(a0);
+
+  TAScalar a1(34);
+  auto a1_uid = a1.GetUid();
+  rm.push_back(a1);
+
+  TAScalar a2(59);
+  auto a2_uid = a2.GetUid();
+  rm.push_back(a2);
+
+  TBScalar b0(3.14);
+  auto b0_uid = b0.GetUid();
+  rm.push_back(b0);
+
+  TBScalar b1(6.28);
+  auto b1_uid = b1.GetUid();
+  rm.push_back(b1);
+
+  EXPECT_TRUE(rm.Contains(a0_uid));
+  EXPECT_TRUE(rm.Contains(a1_uid));
+  EXPECT_TRUE(rm.Contains(a2_uid));
+  EXPECT_TRUE(rm.Contains(b0_uid));
+  EXPECT_TRUE(rm.Contains(b1_uid));
+
+  rm.Remove(a0_uid);
+  rm.Remove(a1_uid);
+  rm.Remove(a2_uid);
+  rm.Remove(b0_uid);
+  rm.Remove(b1_uid);
+
+  EXPECT_FALSE(rm.Contains(a0_uid));
+  EXPECT_FALSE(rm.Contains(a1_uid));
+  EXPECT_FALSE(rm.Contains(a2_uid));
+  EXPECT_FALSE(rm.Contains(b0_uid));
+  EXPECT_FALSE(rm.Contains(b1_uid));
+
+  EXPECT_EQ(0u, rm.GetNumSimObjects());
+}
+
+template <typename TRm, typename TA, typename TB>
+void RunClearTest() {
+  using TAScalar = typename TA::template Self<Scalar>;
+  using TBScalar = typename TB::template Self<Scalar>;
+  TRm rm;
+
+  TAScalar a0(12);
+  auto a0_uid = a0.GetUid();
+  rm.push_back(a0);
+
+  TAScalar a1(34);
+  auto a1_uid = a1.GetUid();
+  rm.push_back(a1);
+
+  TAScalar a2(59);
+  auto a2_uid = a2.GetUid();
+  rm.push_back(a2);
+
+  TBScalar b0(3.14);
+  auto b0_uid = b0.GetUid();
+  rm.push_back(b0);
+
+  TBScalar b1(6.28);
+  auto b1_uid = b1.GetUid();
+  rm.push_back(b1);
+
+  EXPECT_TRUE(rm.Contains(a0_uid));
+  EXPECT_TRUE(rm.Contains(a1_uid));
+  EXPECT_TRUE(rm.Contains(a2_uid));
+  EXPECT_TRUE(rm.Contains(b0_uid));
+  EXPECT_TRUE(rm.Contains(b1_uid));
+
+  rm.Clear();
+
+  EXPECT_FALSE(rm.Contains(a0_uid));
+  EXPECT_FALSE(rm.Contains(a1_uid));
+  EXPECT_FALSE(rm.Contains(a2_uid));
+  EXPECT_FALSE(rm.Contains(b0_uid));
+  EXPECT_FALSE(rm.Contains(b1_uid));
+
+  EXPECT_EQ(0u, rm.GetNumSimObjects());
+}
+
+template <typename TRm, typename TA, typename TB>
 void RunApplyOnAllTypesTest() {
   const double kEpsilon = abs_error<double>::value;
   using TAScalar = typename TA::template Self<Scalar>;
   using TBScalar = typename TB::template Self<Scalar>;
   TRm rm;
 
-  auto a_collection = rm.template Get<TA>();
-  a_collection->push_back(TAScalar(12));
+  rm.push_back(TAScalar(12));
 
-  auto b_collection = rm.template Get<TB>();
-  b_collection->push_back(TBScalar(3.14));
-  b_collection->push_back(TBScalar(6.28));
+  rm.push_back(TBScalar(3.14));
+  rm.push_back(TBScalar(6.28));
   size_t counter = 0;
   rm.ApplyOnAllTypes([&](auto* container, uint16_t type_idx) {
     counter++;
@@ -240,8 +319,8 @@ void RunPushBackTest() {
 
   rm.push_back(TAScalar(87));
 
-  auto as = rm.template Get<TA>();
-  auto bs = rm.template Get<TB>();
+  const auto* as = rm.template Get<TA>();
+  const auto* bs = rm.template Get<TB>();
 
   EXPECT_EQ((*as)[0].GetData(), 12);
   EXPECT_EQ((*as)[1].GetData(), 34);
@@ -251,43 +330,29 @@ void RunPushBackTest() {
   EXPECT_NEAR((*bs)[1].GetData(), 6.28, kEpsilon);
 }
 
-template <typename TRm, typename TA, typename TB>
-void RunNewTest() {
-  const double kEpsilon = abs_error<double>::value;
+template <typename TA, typename TB, typename TRm = ResourceManager<>>
+void RunGetSimObjectTest() {
   TRm rm;
+  auto current_uid = SoUidGenerator::Get()->NewSoUid();
+  rm.push_back(TA(0));
+  rm.push_back(TA(1));
+  rm.push_back(TB(2));
+  rm.push_back(TB(3));
 
-  auto* as = rm.template Get<TA>();
-  auto* bs = rm.template Get<TB>();
-  // TODO(lukas) Remove reserves after https://trello.com/c/sKoOTgJM has been
-  // resolved
-  as->reserve(5);
-  bs->reserve(5);
+  const double kEpsilon = abs_error<double>::value;
+  EXPECT_EQ(0, rm.template GetSimObject<TA>(SoHandle(0, 0)).GetData());
+  EXPECT_EQ(1, rm.template GetSimObject<TA>(SoHandle(0, 1)).GetData());
+  EXPECT_NEAR(2, rm.template GetSimObject<TB>(SoHandle(1, 0)).GetData(),
+              kEpsilon);
+  EXPECT_NEAR(3, rm.template GetSimObject<TB>(SoHandle(1, 1)).GetData(),
+              kEpsilon);
 
-  auto&& a0 = rm.template New<A>(12);
-  auto&& a1 = rm.template New<A>(34);
-
-  auto&& b0 = rm.template New<B>(3.14);
-  auto&& b1 = rm.template New<B>(6.28);
-
-  auto&& a2 = rm.template New<A>(87);
-
-  EXPECT_EQ(a0.GetData(), 12);
-  EXPECT_EQ(a1.GetData(), 34);
-  EXPECT_EQ(a2.GetData(), 87);
-
-  EXPECT_NEAR(b0.GetData(), 3.14, kEpsilon);
-  EXPECT_NEAR(b1.GetData(), 6.28, kEpsilon);
-
-  EXPECT_EQ((*as)[0].GetData(), 12);
-  EXPECT_EQ((*as)[1].GetData(), 34);
-  EXPECT_EQ((*as)[2].GetData(), 87);
-
-  EXPECT_NEAR((*bs)[0].GetData(), 3.14, kEpsilon);
-  EXPECT_NEAR((*bs)[1].GetData(), 6.28, kEpsilon);
-
-  // modify return value of new
-  a1.SetData(321);
-  EXPECT_EQ((*as)[1].GetData(), 321);
+  EXPECT_EQ(0, rm.template GetSimObject<TA>(current_uid + 1).GetData());
+  EXPECT_EQ(1, rm.template GetSimObject<TA>(current_uid + 2).GetData());
+  EXPECT_NEAR(2, rm.template GetSimObject<TB>(current_uid + 3).GetData(),
+              kEpsilon);
+  EXPECT_NEAR(3, rm.template GetSimObject<TB>(current_uid + 4).GetData(),
+              kEpsilon);
 }
 
 }  // namespace bdm

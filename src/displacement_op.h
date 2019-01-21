@@ -44,9 +44,10 @@ class DisplacementOp {
       using Container = std::remove_pointer_t<decltype(container)>;
       using SimObject = typename Container::value_type;
       if (SimObject::GetShape() != Shape::kSphere) {
-        Log::Warning("DisplacementOp",
-                     "Currently GPU implementation only supports Spheres "
-                     "shapes. Therefore, the CPU implementation will be used.");
+        Log::Warning(
+            "DisplacementOp",
+            "Currently GPU/FPGA implementation only supports spherical "
+            "shapes. Therefore, the CPU implementation will be used.");
         this->force_cpu_implementation_ = true;
       }
     });
@@ -54,23 +55,39 @@ class DisplacementOp {
 
   ~DisplacementOp() {}
 
-  template <typename TContainer>
-  void operator()(TContainer* cells, uint16_t type_idx) {
+  bool UseCpu() const {
+    auto* param = TSimulation::GetActive()->GetParam();
+    return force_cpu_implementation_ ||
+           (!param->use_gpu_ && !param->use_opencl_);
+  }
+
+  void operator()() {
     auto* param = TSimulation::GetActive()->GetParam();
     if (param->use_gpu_ && !force_cpu_implementation_) {
 #ifdef USE_OPENCL
       if (param->use_opencl_) {
-        opencl_(cells, type_idx);
+        auto* rm = TSimulation::GetActive()->GetResourceManager();
+        rm->ApplyOnAllTypes(
+            [](auto* cells, uint16_t type_idx) { opencl_(cells, type_idx); });
       }
 #endif
 #ifdef USE_CUDA
       if (!param->use_opencl_) {
-        cuda_(cells, type_idx);
+        auto* rm = TSimulation::GetActive()->GetResourceManager();
+        rm->ApplyOnAllTypes(
+            [](auto* cells, uint16_t type_idx) { cuda_(cells, type_idx); });
       }
 #endif
     } else {
-      cpu_(cells, type_idx);
+      Log::Fatal("DisplacementOp",
+                 "Currently GPU/FPGA implementation only supports spherical "
+                 "shapes.");
     }
+  }
+
+  template <typename TSimObject>
+  void operator()(TSimObject&& sim_object) {
+    cpu_(sim_object);
   }
 
  private:

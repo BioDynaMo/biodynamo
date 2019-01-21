@@ -30,6 +30,17 @@
 }
 
 {
+   ignore_openmp_possible_lost_warning_1
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:calloc
+   fun:_dl_allocate_tls
+   fun:pthread_create@@GLIBC_*
+   obj:*/libgomp.so*
+   fun:GOMP_parallel
+}
+
+{
    ignore_openmp_possible_lost_warning_icc
    Memcheck:Leak
    match-leak-kinds: possible

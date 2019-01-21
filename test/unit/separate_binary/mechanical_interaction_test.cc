@@ -40,12 +40,14 @@ TEST(MechanicalInteraction, StraightxCylinderGrowth) {
   Simulation<> simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
 
-  auto neuron = rm->New<NeuronSoma>();
+  NeuronSoma neuron;
+  auto nuid = neuron.GetUid();
   neuron.SetPosition({0, 0, 0});
   neuron.SetMass(1);
   neuron.SetDiameter(10);
+  rm->push_back(neuron);
 
-  auto ne = neuron.ExtendNewNeurite({1, 0, 0});
+  auto ne = rm->GetSimObject<NeuronSoma>(nuid).ExtendNewNeurite({1, 0, 0});
   ne->SetDiameter(2);
 
   Scheduler<> scheduler;
@@ -79,12 +81,14 @@ TEST(MechanicalInteraction, StraightxCylinderGrowthNoMechanical) {
   Simulation<> simulation(TEST_NAME, set_param);
   auto* rm = simulation.GetResourceManager();
 
-  auto neuron = rm->New<NeuronSoma>();
+  NeuronSoma neuron;
   neuron.SetPosition({0, 0, 0});
   neuron.SetMass(1);
   neuron.SetDiameter(10);
+  auto neuron_id = neuron.GetUid();
+  rm->push_back(neuron);
 
-  auto ne = neuron.ExtendNewNeurite({1, 0, 0});
+  auto ne = rm->GetSimObject<NeuronSoma>(neuron_id).ExtendNewNeurite({1, 0, 0});
   ne->SetDiameter(2);
 
   Scheduler<> scheduler;
@@ -114,12 +118,14 @@ TEST(MechanicalInteraction, DiagonalxyCylinderGrowth) {
   Simulation<> simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
 
-  auto neuron = rm->New<NeuronSoma>();
+  NeuronSoma neuron;
   neuron.SetPosition({0, 0, 0});
   neuron.SetMass(1);
   neuron.SetDiameter(10);
+  auto neuron_id = neuron.GetUid();
+  rm->push_back(neuron);
 
-  auto ne = neuron.ExtendNewNeurite({1, 1, 0});
+  auto ne = rm->GetSimObject<NeuronSoma>(neuron_id).ExtendNewNeurite({1, 1, 0});
   ne->SetDiameter(2);
 
   Scheduler<> scheduler;
@@ -146,12 +152,14 @@ TEST(MechanicalInteraction, DiagonalxyzCylinderGrowth) {
   Simulation<> simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
 
-  auto neuron = rm->New<NeuronSoma>();
+  NeuronSoma neuron;
   neuron.SetPosition({0, 0, 0});
   neuron.SetMass(1);
   neuron.SetDiameter(10);
+  auto neuron_id = neuron.GetUid();
+  rm->push_back(neuron);
 
-  auto ne = neuron.ExtendNewNeurite({1, 1, 1});
+  auto ne = rm->GetSimObject<NeuronSoma>(neuron_id).ExtendNewNeurite({1, 1, 1});
   ne->SetDiameter(1);
 
   Scheduler<> scheduler;
@@ -179,12 +187,14 @@ TEST(MechanicalInteraction, DiagonalSpecialDirectionCylinderGrowth) {
   Simulation<> simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
 
-  auto neuron = rm->New<NeuronSoma>();
+  NeuronSoma neuron;
   neuron.SetPosition({0, 0, 0});
   neuron.SetMass(1);
   neuron.SetDiameter(10);
+  auto neuron_id = neuron.GetUid();
+  rm->push_back(neuron);
 
-  auto ne = neuron.ExtendNewNeurite({1, 1, 1});
+  auto ne = rm->GetSimObject<NeuronSoma>(neuron_id).ExtendNewNeurite({1, 1, 1});
   ne->SetDiameter(2);
 
   Scheduler<> scheduler;
@@ -215,16 +225,19 @@ TEST(MechanicalInteraction, StraightCylinderGrowthObstacle) {
   Simulation<> simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
 
-  auto neuron = rm->New<NeuronSoma>();
+  NeuronSoma neuron;
+  auto nuid = neuron.GetUid();
   neuron.SetPosition({0, 0, 0});
   neuron.SetDiameter(10);
+  rm->push_back(neuron);
 
-  auto neuron2 = rm->New<NeuronSoma>();
+  NeuronSoma neuron2;
   neuron2.SetPosition({0, 0, 30});
   neuron2.SetMass(1);
   neuron2.SetDiameter(10);
+  rm->push_back(neuron2);
 
-  auto ne = neuron.ExtendNewNeurite({0, 0, 1});
+  auto ne = rm->GetSimObject<NeuronSoma>(nuid).ExtendNewNeurite({0, 0, 1});
   ne->SetDiameter(2);
 
   Scheduler<> scheduler;
@@ -234,6 +247,8 @@ TEST(MechanicalInteraction, StraightCylinderGrowthObstacle) {
   EXPECT_NEAR(ne_axis[0], 0, abs_error<double>::value);
   EXPECT_NEAR(ne_axis[1], 0, abs_error<double>::value);
   EXPECT_NEAR(ne_axis[2], 1, abs_error<double>::value);
+
+  simulation.GetExecutionContext()->SetupIteration();
 
   std::array<double, 3> direction = {0, 0, 1};
   for (int i = 0; i < 100; i++) {
@@ -253,15 +268,18 @@ TEST(MechanicalInteraction, NotStraightCylinderGrowthObstacle) {
   Simulation<> simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
 
-  auto neuron = rm->New<NeuronSoma>();
+  NeuronSoma neuron;
   neuron.SetPosition({0, 0, 0});
   neuron.SetDiameter(10);
+  auto neuron_id = neuron.GetUid();
+  rm->push_back(neuron);
 
-  auto neuron2 = rm->New<NeuronSoma>();
+  NeuronSoma neuron2;
   neuron2.SetPosition({0, 0, 30});
   neuron2.SetDiameter(10);
+  rm->push_back(neuron2);
 
-  auto ne = neuron.ExtendNewNeurite({0, 0, 1});
+  auto ne = rm->GetSimObject<NeuronSoma>(neuron_id).ExtendNewNeurite({0, 0, 1});
 
   Scheduler<> scheduler;
 
@@ -294,12 +312,14 @@ TEST(MechanicalInteraction, BifurcationCylinderGrowth) {
 
   gErrorIgnoreLevel = kWarning;
 
-  auto neuron = rm->New<NeuronSoma>();
+  NeuronSoma neuron;
   neuron.SetPosition({0, 0, 0});
   neuron.SetMass(1);
   neuron.SetDiameter(10);
+  auto neuron_id = neuron.GetUid();
+  rm->push_back(neuron);
 
-  auto ne = neuron.ExtendNewNeurite({0, 0, 1});
+  auto ne = rm->GetSimObject<NeuronSoma>(neuron_id).ExtendNewNeurite({0, 0, 1});
   ne->SetDiameter(2);
 
   Scheduler<> scheduler;
@@ -342,12 +362,14 @@ TEST(MechanicalInteraction, BranchCylinderGrowth) {
   Simulation<> simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
 
-  auto neuron = rm->New<NeuronSoma>();
+  NeuronSoma neuron;
   neuron.SetPosition({0, 0, 0});
   neuron.SetMass(1);
   neuron.SetDiameter(10);
+  auto neuron_id = neuron.GetUid();
+  rm->push_back(neuron);
 
-  auto ne = neuron.ExtendNewNeurite({0, 0, 1});
+  auto ne = rm->GetSimObject<NeuronSoma>(neuron_id).ExtendNewNeurite({0, 0, 1});
   ne->SetDiameter(2);
 
   Scheduler<> scheduler;
@@ -390,12 +412,14 @@ TEST(MechanicalInteraction, BifurcateCylinderRandomGrowth) {
   auto* rm = simulation.GetResourceManager();
   auto* random = simulation.GetRandom();
 
-  auto neuron = rm->New<NeuronSoma>();
+  NeuronSoma neuron;
   neuron.SetPosition({0, 0, 0});
   neuron.SetMass(1);
   neuron.SetDiameter(10);
+  auto neuron_id = neuron.GetUid();
+  rm->push_back(neuron);
 
-  auto ne = neuron.ExtendNewNeurite({0, 0, 1});
+  auto ne = rm->GetSimObject<NeuronSoma>(neuron_id).ExtendNewNeurite({0, 0, 1});
   ne->SetDiameter(2);
 
   Scheduler<> scheduler;
@@ -418,9 +442,9 @@ TEST(MechanicalInteraction, BifurcateCylinderRandomGrowth) {
   EXPECT_GT(ne->GetMassLocation()[2], 10);
   EXPECT_GT(ne_axis[2], 0.1);
 
-  auto neList = ne->Bifurcate();
-  auto ne2 = neList[1];
-  ne = neList[0];
+  auto ne_list = ne->Bifurcate();
+  auto ne2 = ne_list[1];
+  ne = ne_list[0];
 
   for (int i = 0; i < 50; i++) {
     direction = {random->Uniform(-1, 1), random->Uniform(-1, 1), 1};
@@ -433,8 +457,12 @@ TEST(MechanicalInteraction, BifurcateCylinderRandomGrowth) {
 
     ne_axis = ne->GetSpringAxis();
     ne_axis2 = ne2->GetSpringAxis();
+    // cylinders split before being pushed away, so their daughters (two last
+    // cylinders) attach point is pushed away as well while their terminal end
+    // remain approximately at the same position, pulling them into a more
+    // horizontal position
     EXPECT_GT(ne_axis[2], -0.5);
-    EXPECT_GT(ne_axis2[2], 0.1);
+    EXPECT_GT(ne_axis2[2], 0);
   }
 
   EXPECT_GT(ne->GetMassLocation()[2], 15);
@@ -442,27 +470,32 @@ TEST(MechanicalInteraction, BifurcateCylinderRandomGrowth) {
 }
 
 TEST(MechanicalInteraction, TwoDistinctCylinderEncounter) {
-  auto set_param = [](auto* param) {
-    param->neurite_max_length_ = 2;
-  };
+  auto set_param = [](auto* param) { param->neurite_max_length_ = 2; };
 
   Simulation<> simulation(TEST_NAME, set_param);
   auto* rm = simulation.GetResourceManager();
 
   gErrorIgnoreLevel = kWarning;
 
-  auto neuron1 = rm->New<NeuronSoma>();
+  NeuronSoma neuron1;
   neuron1.SetPosition({0, 0, 0});
   neuron1.SetMass(1);
   neuron1.SetDiameter(10);
-  auto neuron2 = rm->New<NeuronSoma>();
+  auto neuron1_id = neuron1.GetUid();
+  rm->push_back(neuron1);
+
+  NeuronSoma neuron2;
   neuron2.SetPosition({20, 0, 0});
   neuron2.SetMass(1);
   neuron2.SetDiameter(10);
+  auto neuron2_id = neuron2.GetUid();
+  rm->push_back(neuron2);
 
-  auto ne1 = neuron1.ExtendNewNeurite({0, 0, 1});
+  auto ne1 =
+      rm->GetSimObject<NeuronSoma>(neuron1_id).ExtendNewNeurite({0, 0, 1});
   ne1->SetDiameter(2);
-  auto ne2 = neuron2.ExtendNewNeurite({0, 0, 1});
+  auto ne2 =
+      rm->GetSimObject<NeuronSoma>(neuron2_id).ExtendNewNeurite({0, 0, 1});
   ne2->SetDiameter(2);
 
   Scheduler<> scheduler;
@@ -506,21 +539,28 @@ TEST(MechanicalInteraction, TwoCylinderGrowthObstacle) {
   Simulation<> simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
 
-  auto neuron1 = rm->New<NeuronSoma>();
+  NeuronSoma neuron1;
   neuron1.SetPosition({0, 0, 0});
   neuron1.SetDiameter(6);
+  auto neuron1_id = neuron1.GetUid();
+  rm->push_back(neuron1);
 
-  auto neuron2 = rm->New<NeuronSoma>();
+  NeuronSoma neuron2;
   neuron2.SetPosition({5.5, 0, 0});
   neuron2.SetDiameter(5);
+  auto neuron2_id = neuron2.GetUid();
+  rm->push_back(neuron2);
 
-  auto neuron3 = rm->New<NeuronSoma>();
+  NeuronSoma neuron3;
   neuron3.SetPosition({6, 0, 16});
   neuron3.SetDiameter(10);
+  rm->push_back(neuron3);
 
-  auto ne1 = neuron1.ExtendNewNeurite({0, 0, 1});
+  auto ne1 =
+      rm->GetSimObject<NeuronSoma>(neuron1_id).ExtendNewNeurite({0, 0, 1});
   ne1->SetDiameter(1);
-  auto ne2 = neuron2.ExtendNewNeurite({0, 0, 1});
+  auto ne2 =
+      rm->GetSimObject<NeuronSoma>(neuron2_id).ExtendNewNeurite({0, 0, 1});
   ne2->SetDiameter(1);
 
   Scheduler<> scheduler;

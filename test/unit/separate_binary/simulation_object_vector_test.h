@@ -74,14 +74,12 @@ inline void RunTest() {
 
   ASSERT_EQ(2u, rm->NumberOfTypes());
 
-  auto as = rm->Get<A>();
-  as->push_back(A(3));
-  as->push_back(A(2));
-  as->push_back(A(1));
+  rm->push_back(A(3));
+  rm->push_back(A(2));
+  rm->push_back(A(1));
 
-  auto bs = rm->Get<B>();
-  bs->push_back(B(8));
-  bs->push_back(B(9));
+  rm->push_back(B(8));
+  rm->push_back(B(9));
 
   SimulationObjectVector<int> vector;
   EXPECT_EQ(2u, vector.size());

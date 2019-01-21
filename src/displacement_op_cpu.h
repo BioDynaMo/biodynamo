@@ -17,6 +17,7 @@
 
 #include <array>
 #include <cmath>
+#include <limits>
 #include <vector>
 
 #include "bound_space_op.h"
@@ -32,40 +33,33 @@ class DisplacementOpCpu {
   DisplacementOpCpu() {}
   ~DisplacementOpCpu() {}
 
-  template <typename TContainer>
-  void operator()(TContainer* sim_objects, uint16_t type_idx) const {
-    std::vector<std::array<double, 3>> sim_object_movements;
-    sim_object_movements.reserve(sim_objects->size());
-
+  template <typename TSimObject>
+  void operator()(TSimObject&& sim_object) {
     auto* sim = TSimulation::GetActive();
-    auto* grid = sim->GetGrid();
+    auto* scheduler = sim->GetScheduler();
+    auto* param = sim->GetParam();
 
-    auto search_radius = grid->GetLargestObjectSize();
-    double squared_radius = search_radius * search_radius;
+    // update search radius at beginning of each iteration
+    auto current_iteration = scheduler->GetSimulatedSteps();
+    if (last_iteration_ != current_iteration) {
+      last_iteration_ = current_iteration;
 
-#pragma omp parallel for shared(grid) firstprivate(squared_radius)
-    for (size_t i = 0; i < sim_objects->size(); i++) {
-      sim_object_movements[i] =
-          (*sim_objects)[i].CalculateDisplacement(grid, squared_radius);
+      auto* grid = sim->GetGrid();
+      auto search_radius = grid->GetLargestObjectSize();
+      squared_radius_ = search_radius * search_radius;
     }
 
-    // Set new positions after all updates have been calculated
-    // otherwise some sim_objects would see neighbors with already updated
-    // positions
-    // which would lead to inconsistencies
-    // FIXME there are still inconsistencies if there are more than one
-    // simulation
-    //  object types!
-    auto* param = sim->GetParam();
-#pragma omp parallel for
-    for (size_t i = 0; i < sim_objects->size(); i++) {
-      auto&& sim_object = (*sim_objects)[i];
-      sim_object.ApplyDisplacement(sim_object_movements[i]);
-      if (param->bound_space_) {
-        ApplyBoundingBox(&sim_object, param->min_bound_, param->max_bound_);
-      }
+    const auto& displacement =
+        sim_object.CalculateDisplacement(squared_radius_);
+    sim_object.ApplyDisplacement(displacement);
+    if (param->bound_space_) {
+      ApplyBoundingBox(&sim_object, param->min_bound_, param->max_bound_);
     }
   }
+
+ private:
+  double squared_radius_;
+  uint64_t last_iteration_ = std::numeric_limits<uint64_t>::max();
 };
 
 }  // namespace bdm

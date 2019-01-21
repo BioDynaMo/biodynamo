@@ -67,7 +67,6 @@ inline void RunTest(bool* result, ExecutionMode mode) {
   auto* rm = simulation.GetResourceManager();
   auto* param = simulation.GetParam();
   rm->Clear();
-  auto cells = rm->template Get<Cell>();
 
 // We need to give every test the same seed for the RNG, because in the cell
 // division, random numbers are used. Within a single executable these numbers
@@ -91,7 +90,7 @@ inline void RunTest(bool* result, ExecutionMode mode) {
       double y_pos = y * 20.0;
       for (size_t z = 0; z < cells_per_dim; z++) {
         auto new_simulation_object = construct({x_pos, y_pos, z * 20.0});
-        cells->push_back(new_simulation_object);
+        rm->push_back(new_simulation_object);
       }
     }
   }
@@ -99,6 +98,8 @@ inline void RunTest(bool* result, ExecutionMode mode) {
   // Run for 10 timesteps. In step 2 a division should take place. In step 3
   // these new cells are instantiated
   simulation.GetScheduler()->Simulate(10);
+
+  const auto* cells = rm->template Get<Cell>();
 
   ExpectArrayNear(
       (*cells)[0].GetPosition(),

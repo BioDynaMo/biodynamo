@@ -37,6 +37,7 @@
 #include "backend.h"
 #include "compile_time_list.h"
 #include "diffusion_grid.h"
+#include "sim_object/so_uid.h"
 #include "simulation.h"
 #include "tuple_util.h"
 
@@ -191,14 +192,40 @@ class ResourceManager {
     return *this;
   }
 
-  /// Return the container of this Type
-  /// @tparam Type atomic type whose container should be returned
-  ///         invariant to the Backend. This means that even if ResourceManager
-  ///         stores e.g. `SoaCell`, Type can be `Cell` and still returns the
-  ///         correct container.
-  template <typename Type>
-  TypeContainer<ToBackend<Type>>* Get() {
-    return &std::get<TypeContainer<ToBackend<Type>>>(data_);
+  SoHandle GetSoHandle(SoUid so_uid) const {
+    return so_storage_location_.at(so_uid);
+  }
+
+  template <typename TSo, typename TSimBackend = Backend>
+  auto&& GetSimObject(
+      SoHandle handle,
+      typename std::enable_if<std::is_same<TSimBackend, Scalar>::value>::type*
+          ptr = 0) {
+    return (*GetContainer<TSo>())[handle.GetElementIdx()];
+  }
+
+  template <typename TSo, typename TSimBackend = Backend>
+  auto GetSimObject(SoHandle handle,
+                    typename std::enable_if<
+                        std::is_same<TSimBackend, Soa>::value>::type* ptr = 0) {
+    return (*GetContainer<TSo>())[handle.GetElementIdx()];
+  }
+
+  template <typename TSo, typename TSimBackend = Backend>
+  auto&& GetSimObject(
+      SoUid uid,
+      typename std::enable_if<std::is_same<TSimBackend, Scalar>::value>::type*
+          ptr = 0) {
+    auto handle = so_storage_location_[uid];
+    return (*GetContainer<TSo>())[handle.GetElementIdx()];
+  }
+
+  template <typename TSo, typename TSimBackend = Backend>
+  auto GetSimObject(SoUid uid,
+                    typename std::enable_if<
+                        std::is_same<TSimBackend, Soa>::value>::type* ptr = 0) {
+    auto handle = so_storage_location_[uid];
+    return (*GetContainer<TSo>())[handle.GetElementIdx()];
   }
 
   void AddDiffusionGrid(DiffusionGrid* dgrid) {
@@ -341,7 +368,7 @@ class ResourceManager {
     // runtime dispatch - TODO(lukas) replace with c++17 std::apply
     for (uint16_t i = 0; i < std::tuple_size<decltype(data_)>::value; i++) {
       ::bdm::Apply(&data_, i, [&](auto* container) {
-#pragma omp parallel for
+#pragma omp parallel for schedule(dynamic, 100)
         for (size_t e = 0; e < container->size(); e++) {
           function((*container)[e], SoHandle(i, e));
         }
@@ -349,15 +376,78 @@ class ResourceManager {
     }
   }
 
-  /// Remove elements from each type
+  /// Reserves enough memory to hold `capacity` number of simulation objects for
+  /// each simulation object type.
+  void Reserve(size_t capacity) {
+    ApplyOnAllTypes([&](auto* container, uint16_t type_idx) {
+      container->reserve(capacity);
+    });
+  }
+
+  /// Reserves enough memory to hold `capacity` number of simulation objects for
+  /// the given simulation object type.
+  template <typename TSo>
+  void Reserve(size_t capacity) {
+    GetContainer<TSo>()->reserve(capacity);
+  }
+
+  /// Returns true if a sim object with the given uid is stored in this
+  /// ResourceManager.
+  bool Contains(SoUid uid) const {
+    return so_storage_location_.find(uid) != so_storage_location_.end();
+  }
+
+  /// Remove all simulation objects
+  /// NB: This method is not thread-safe! This function invalidates
+  /// sim_object references pointing into the ResourceManager. SoPointer are
+  /// not affected.
   void Clear() {
+    so_storage_location_.clear();
     ApplyOnAllTypes(
         [](auto* container, uint16_t type_idx) { container->clear(); });
   }
 
+  /// NB: This method is not thread-safe! This function might invalidate
+  /// sim_object references pointing into the ResourceManager. SoPointer are
+  /// not affected.
   template <typename TSo>
   void push_back(const TSo& so) {  // NOLINT
-    Get<TSo>()->push_back(so);
+    auto* container = GetContainer<TSo>();
+    container->push_back(so);
+    auto el_idx = container->size() - 1;
+    auto&& inserted = (*container)[el_idx];
+    inserted.SetElementIdx(el_idx);
+    so_storage_location_[inserted.GetUid()] =
+        SoHandle(GetTypeIndex<TSo>(), el_idx);
+  }
+
+  /// Removes the simulation object with the given uid.\n
+  /// NB: This method is not thread-safe! This function invalidates
+  /// sim_object references pointing into the ResourceManager. SoPointer are
+  /// not affected.
+  void Remove(SoUid uid) {
+    // remove from map
+    auto it = this->so_storage_location_.find(uid);
+    if (it != this->so_storage_location_.end()) {
+      SoHandle soh = it->second;
+      auto type_idx = soh.GetTypeIdx();
+
+      ::bdm::Apply(&data_, type_idx, [&, this](auto* container) {
+        auto element_idx = soh.GetElementIdx();
+        auto last = container->size() - 1;
+        if (element_idx == last) {
+          container->pop_back();
+        } else {
+          (*container)[element_idx] = (*container)[last];
+          (*container)[element_idx].SetElementIdx(element_idx);
+          container->pop_back();
+          SoUid changed_uid = (*container)[element_idx].GetUid();
+          this->so_storage_location_[changed_uid] =
+              SoHandle(type_idx, element_idx);
+        }
+      });
+      so_storage_location_.erase(it);
+    }
   }
 
 #ifdef USE_OPENCL
@@ -367,34 +457,34 @@ class ResourceManager {
   std::vector<cl::Program>* GetOpenCLProgramList() { return &opencl_programs_; }
 #endif
 
-  /// Create a new simulation object and return a reference to it.
-  /// @tparam TScalarSo simulation object type with scalar backend
-  /// @param args arguments which will be forwarded to the TScalarSo constructor
-  /// @remarks Note that this function is not thread safe.
-  template <typename TScalarSo, typename... Args, typename TBackend = Backend>
-  typename std::enable_if<std::is_same<TBackend, Soa>::value,
-                          typename TScalarSo::template Self<SoaRef>>::type
-  New(Args... args) {
-    auto container = Get<TScalarSo>();
-    auto idx =
-        container->DelayedPushBack(TScalarSo(std::forward<Args>(args)...));
-    return (*container)[idx];
-  }
-
-  template <typename TScalarSo, typename... Args, typename TBackend = Backend>
-  typename std::enable_if<std::is_same<TBackend, Scalar>::value,
-                          TScalarSo&>::type
-  New(Args... args) {
-    auto container = Get<TScalarSo>();
-    auto idx =
-        container->DelayedPushBack(TScalarSo(std::forward<Args>(args)...));
-    return (*container)[idx];
+  /// Return the container of this Type
+  /// @tparam Type atomic type whose container should be returned
+  ///         invariant to the Backend. This means that even if ResourceManager
+  ///         stores e.g. `SoaCell`, Type can be `Cell` and still returns the
+  ///         correct container.
+  template <typename Type>
+  const TypeContainer<ToBackend<Type>>* Get() {
+    return &std::get<TypeContainer<ToBackend<Type>>>(data_);
   }
 
  private:
+  /// Return the container of this Type
+  /// @tparam Type atomic type whose container should be returned
+  ///         invariant to the Backend. This means that even if ResourceManager
+  ///         stores e.g. `SoaCell`, Type can be `Cell` and still returns the
+  ///         correct container.
+  template <typename Type>
+  TypeContainer<ToBackend<Type>>* GetContainer() {
+    return &std::get<TypeContainer<ToBackend<Type>>>(data_);
+  }
+
   /// creates one container for each type in Types.
   /// Container type is determined based on the specified Backend
   typename ConvertToContainerTuple<Backend, Types>::type data_;
+
+  /// Mapping between SoUid and SoHandle (stored location)
+  std::unordered_map<SoUid, SoHandle> so_storage_location_;
+
   std::unordered_map<uint64_t, DiffusionGrid*> diffusion_grids_;
 
 #ifdef USE_OPENCL

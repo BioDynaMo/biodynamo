@@ -28,35 +28,20 @@ BDM_CTPARAM() {
 
 namespace simulation_object_util_test_aos_internal {
 
-TEST(SimulationObjectUtilAosTest, RemoveFromSimulation) {
-  Simulation<> simulation(TEST_NAME);
-  auto* rm = simulation.GetResourceManager();
-
-  auto* cells = rm->Get<Cell>();
-
-  cells->push_back(Cell());
-  EXPECT_EQ(1u, cells->size());
-
-  auto&& to_be_removed = (*cells)[0];
-  to_be_removed.RemoveFromSimulation();
-  cells->Commit();
-  EXPECT_EQ(0u, cells->size());
-}
-
 TEST(SimulationObjectUtilAosTest, GetSoPtr) {
   Simulation<> simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
 
   for (uint64_t i = 0; i < 10; i++) {
-    rm->New<Cell>(1);
+    rm->push_back(Cell(1));
   }
 
-  rm->Get<Cell>()->Commit();
   EXPECT_EQ(10u, rm->GetNumSimObjects());
 
-  auto cells = rm->Get<Cell>();
+  const auto* cells = rm->Get<Cell>();
   for (uint64_t i = 0; i < 10; i++) {
-    EXPECT_EQ(i, (*cells)[i].GetSoPtr().GetElementIdx());
+    SoPointer<Cell, Scalar> expected((*cells)[i].GetUid());
+    EXPECT_EQ(expected, (*cells)[i].GetSoPtr());
   }
 }
 

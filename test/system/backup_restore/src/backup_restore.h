@@ -43,12 +43,11 @@ inline int Simulate(int argc, const char** argv) {
   Simulation<> simulation(argc, argv, set_param);
   auto* rm = simulation.GetResourceManager();
 
-  auto cells = rm->Get<Cell>();
   for (size_t i = 0; i < 10; i++) {
     Cell cell({100.0 * i, 100.0 * i, 100.0 * i});  // no colliding cells
     cell.SetDiameter(i);
     cell.AddBiologyModule(TestBehaviour());
-    cells->push_back(cell);
+    rm->push_back(cell);
   }
 
   auto* scheduler = simulation.GetScheduler();
@@ -63,8 +62,7 @@ inline int Simulate(int argc, const char** argv) {
   scheduler->Simulate(2);
 
   // check result
-  // NB: original cells pointer has been invalidated due to restore
-  cells = rm->Get<Cell>();
+  const auto* cells = rm->Get<Cell>();
   for (size_t i = 0; i < 10; i++) {
     if ((*cells)[i].GetDiameter() != 16 + i) {
       std::cerr << "Test failure: result incorrect" << std::endl;

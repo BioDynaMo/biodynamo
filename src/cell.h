@@ -38,7 +38,7 @@ namespace bdm {
 
 BDM_SIM_OBJECT(Cell, SimulationObject) {
   BDM_SIM_OBJECT_HEADER(Cell, SimulationObject, 1, position_, tractor_force_,
-                        diameter_, volume_, adherence_, density_, box_idx_);
+                        diameter_, volume_, adherence_, density_);
 
  public:
   /// First axis of the local coordinate system.
@@ -123,7 +123,6 @@ BDM_SIM_OBJECT(Cell, SimulationObject) {
 
     daughter->SetAdherence(mother->GetAdherence());
     daughter->SetDensity(mother->GetDensity());
-    daughter->SetBoxIdx(mother->GetBoxIdx());
     // G) TODO(lukas) Copy the intracellular and membrane bound Substances
   }
 
@@ -178,9 +177,9 @@ BDM_SIM_OBJECT(Cell, SimulationObject) {
   ///
   /// \see CellDivisionEvent
   MostDerivedSoPtr Divide(double volume_ratio, double phi, double theta) {
-    auto* rm = Simulation_t::GetActive()->GetResourceManager();
+    auto* ctxt = Simulation_t::GetActive()->GetExecutionContext();
     CellDivisionEvent event{volume_ratio, phi, theta};
-    auto&& daughter = rm->template New<MostDerivedScalar>(event, ThisMD());
+    auto&& daughter = ctxt->template New<MostDerivedScalar>(event, ThisMD());
     ThisMD()->EventHandler(event, &daughter);
     return daughter.GetSoPtr();
   }
@@ -200,7 +199,6 @@ BDM_SIM_OBJECT(Cell, SimulationObject) {
   double* GetDiameterPtr() { return diameter_.data(); }
   double* GetTractorForcePtr() { return tractor_force_.data()->data(); }
   double* GetAdherencePtr() { return adherence_.data(); }
-  uint32_t* GetBoxIdPtr() { return box_idx_.data(); }
 
   void FillMassVector(std::vector<double> * mass) {
     for (size_t i = 0; i < diameter_.size(); i++) {
@@ -266,15 +264,108 @@ BDM_SIM_OBJECT(Cell, SimulationObject) {
     position_[kIdx][2] += delta[2];
   }
 
-  template <typename TGrid>
-  std::array<double, 3> CalculateDisplacement(TGrid * grid,
-                                              double squared_radius);
+  template <typename TSimulation = Simulation<>>
+  std::array<double, 3> CalculateDisplacement(double squared_radius) {
+    // Basically, the idea is to make the sum of all the forces acting
+    // on the Point mass. It is stored in translationForceOnPointMass.
+    // There is also a computation of the torque (only applied
+    // by the daughter neurites), stored in rotationForce.
+
+    // TODO(roman) : There might be a problem, in the sense that the biology
+    // is not applied if the total Force is smaller than adherence.
+    // Once, I should look at this more carefully.
+
+    // If we detect enough forces to make us  move, we will re-schedule us
+    // setOnTheSchedulerListForPhysicalObjects(false);
+
+    // fixme why? copying
+    const auto& tf = GetTractorForce();
+
+    // the 3 types of movement that can occur
+    // bool biological_translation = false;
+    bool physical_translation = false;
+    // bool physical_rotation = false;
+
+    auto* param = Simulation_t::GetActive()->GetParam();
+    double h = param->simulation_time_step_;
+    std::array<double, 3> movement_at_next_step{0, 0, 0};
+
+    // BIOLOGY :
+    // 0) Start with tractor force : What the biology defined as active
+    // movement------------
+    movement_at_next_step[0] += h * tf[0];
+    movement_at_next_step[1] += h * tf[1];
+    movement_at_next_step[2] += h * tf[2];
+
+    // PHYSICS
+    // the physics force to move the point mass
+    std::array<double, 3> translation_force_on_point_mass{0, 0, 0};
+    // the physics force to rotate the cell
+    // std::array<double, 3> rotation_force { 0, 0, 0 };
+
+    // 1) "artificial force" to maintain the sphere in the ecm simulation
+    // boundaries--------
+    // 2) Spring force from my neurites (translation and
+    // rotation)--------------------------
+    // 3) Object avoidance force
+    // -----------------------------------------------------------
+    //  (We check for every neighbor object if they touch us, i.e. push us
+    //  away)
+
+    auto calculate_neighbor_forces = [&, this](const auto* neighbor) {
+      DefaultForce default_force;
+      auto neighbor_force = default_force.GetForce(this, neighbor);
+      translation_force_on_point_mass[0] += neighbor_force[0];
+      translation_force_on_point_mass[1] += neighbor_force[1];
+      translation_force_on_point_mass[2] += neighbor_force[2];
+    };
+
+    auto* ctxt = TSimulation::GetActive()->GetExecutionContext();
+    ctxt->ForEachNeighborWithinRadius(calculate_neighbor_forces, *this,
+                                      squared_radius);
+
+    // 4) PhysicalBonds
+    // How the physics influences the next displacement
+    double norm_of_force = std::sqrt(translation_force_on_point_mass[0] *
+                                         translation_force_on_point_mass[0] +
+                                     translation_force_on_point_mass[1] *
+                                         translation_force_on_point_mass[1] +
+                                     translation_force_on_point_mass[2] *
+                                         translation_force_on_point_mass[2]);
+
+    // is there enough force to :
+    //  - make us biologically move (Tractor) :
+    //  - break adherence and make us translate ?
+    physical_translation = norm_of_force > GetAdherence();
+
+    assert(GetMass() != 0 && "The mass of a cell was found to be zero!");
+    double mh = h / GetMass();
+    // adding the physics translation (scale by weight) if important enough
+    if (physical_translation) {
+      // We scale the move with mass and time step
+      movement_at_next_step[0] += translation_force_on_point_mass[0] * mh;
+      movement_at_next_step[1] += translation_force_on_point_mass[1] * mh;
+      movement_at_next_step[2] += translation_force_on_point_mass[2] * mh;
+
+      // Performing the translation itself :
+
+      // but we want to avoid huge jumps in the simulation, so there are
+      // maximum distances possible
+      auto* param = Simulation_t::GetActive()->GetParam();
+      if (norm_of_force * mh > param->simulation_max_displacement_) {
+        const auto& norm = Math::Normalize(movement_at_next_step);
+        movement_at_next_step[0] =
+            norm[0] * param->simulation_max_displacement_;
+        movement_at_next_step[1] =
+            norm[1] * param->simulation_max_displacement_;
+        movement_at_next_step[2] =
+            norm[2] * param->simulation_max_displacement_;
+      }
+    }
+    return movement_at_next_step;
+  }
 
   void ApplyDisplacement(const std::array<double, 3>& displacement);
-
-  uint32_t GetBoxIdx() const { return box_idx_[kIdx]; }
-
-  void SetBoxIdx(uint32_t idx) { box_idx_[kIdx] = idx; }
 
  protected:
   /// Returns the position in the polar coordinate system (cylindrical or
@@ -291,9 +382,6 @@ BDM_SIM_OBJECT(Cell, SimulationObject) {
   vec<double> volume_;
   vec<double> adherence_;
   vec<double> density_;
-
-  /// Grid box index
-  vec<uint32_t> box_idx_;
 
   /// \brief EventHandler to modify the data members of this cell
   /// after a cell division.
@@ -313,103 +401,6 @@ BDM_SIM_OBJECT(Cell, SimulationObject) {
 BDM_SO_DEFINE(constexpr std::array<double, 3> CellExt)::kXAxis;
 BDM_SO_DEFINE(constexpr std::array<double, 3> CellExt)::kYAxis;
 BDM_SO_DEFINE(constexpr std::array<double, 3> CellExt)::kZAxis;
-
-BDM_SO_DEFINE(template <typename TGrid> inline std::array<double, 3>
-                  CellExt)::CalculateDisplacement(TGrid* grid,
-                                                  double squared_radius) {
-  // Basically, the idea is to make the sum of all the forces acting
-  // on the Point mass. It is stored in translationForceOnPointMass.
-  // There is also a computation of the torque (only applied
-  // by the daughter neurites), stored in rotationForce.
-
-  // TODO(roman) : There might be a problem, in the sense that the biology
-  // is not applied if the total Force is smaller than adherence.
-  // Once, I should look at this more carefully.
-
-  // If we detect enough forces to make us  move, we will re-schedule us
-  // setOnTheSchedulerListForPhysicalObjects(false);
-
-  // fixme why? copying
-  const auto& tf = GetTractorForce();
-
-  // the 3 types of movement that can occur
-  // bool biological_translation = false;
-  bool physical_translation = false;
-  // bool physical_rotation = false;
-
-  auto* param = Simulation_t::GetActive()->GetParam();
-  double h = param->simulation_time_step_;
-  std::array<double, 3> movement_at_next_step{0, 0, 0};
-
-  // BIOLOGY :
-  // 0) Start with tractor force : What the biology defined as active
-  // movement------------
-  movement_at_next_step[0] += h * tf[0];
-  movement_at_next_step[1] += h * tf[1];
-  movement_at_next_step[2] += h * tf[2];
-
-  // PHYSICS
-  // the physics force to move the point mass
-  std::array<double, 3> translation_force_on_point_mass{0, 0, 0};
-  // the physics force to rotate the cell
-  // std::array<double, 3> rotation_force { 0, 0, 0 };
-
-  // 1) "artificial force" to maintain the sphere in the ecm simulation
-  // boundaries--------
-  // 2) Spring force from my neurites (translation and
-  // rotation)--------------------------
-  // 3) Object avoidance force
-  // -----------------------------------------------------------
-  //  (We check for every neighbor object if they touch us, i.e. push us
-  //  away)
-
-  auto calculate_neighbor_forces = [&, this](auto&& neighbor,
-                                             auto&& neighbor_handle) {
-    DefaultForce default_force;
-    auto neighbor_force = default_force.GetForce(this, &neighbor);
-    translation_force_on_point_mass[0] += neighbor_force[0];
-    translation_force_on_point_mass[1] += neighbor_force[1];
-    translation_force_on_point_mass[2] += neighbor_force[2];
-  };
-
-  grid->ForEachNeighborWithinRadius(calculate_neighbor_forces, *this,
-                                    GetSoHandle(), squared_radius);
-
-  // 4) PhysicalBonds
-  // How the physics influences the next displacement
-  double norm_of_force = std::sqrt(
-      translation_force_on_point_mass[0] * translation_force_on_point_mass[0] +
-      translation_force_on_point_mass[1] * translation_force_on_point_mass[1] +
-      translation_force_on_point_mass[2] * translation_force_on_point_mass[2]);
-
-  // is there enough force to :
-  //  - make us biologically move (Tractor) :
-  //  - break adherence and make us translate ?
-  physical_translation = norm_of_force > GetAdherence();
-
-  assert(GetMass() != 0 && "The mass of a cell was found to be zero!");
-  double mh = h / GetMass();
-  // adding the physics translation (scale by weight) if important enough
-  if (physical_translation) {
-    // We scale the move with mass and time step
-    movement_at_next_step[0] += translation_force_on_point_mass[0] * mh;
-    movement_at_next_step[1] += translation_force_on_point_mass[1] * mh;
-    movement_at_next_step[2] += translation_force_on_point_mass[2] * mh;
-
-    // Performing the translation itself :
-
-    // but we want to avoid huge jumps in the simulation, so there are
-    // maximum distances possible
-    auto* param = Simulation_t::GetActive()->GetParam();
-    if (norm_of_force * mh > param->simulation_max_displacement_) {
-      const auto& norm = Math::Normalize(movement_at_next_step);
-      movement_at_next_step[0] = norm[0] * param->simulation_max_displacement_;
-      movement_at_next_step[1] = norm[1] * param->simulation_max_displacement_;
-      movement_at_next_step[2] = norm[2] * param->simulation_max_displacement_;
-    }
-  }
-  return movement_at_next_step;
-}
 
 BDM_SO_DEFINE(inline void CellExt)::ApplyDisplacement(
     const std::array<double, 3>& displacement) {

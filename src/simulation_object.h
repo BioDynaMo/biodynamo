@@ -16,7 +16,6 @@
 #define SIMULATION_OBJECT_H_
 
 #include <algorithm>
-#include <mutex>
 #include <set>
 #include <sstream>
 #include <string>
@@ -30,6 +29,7 @@
 #include "biology_module_util.h"
 #include "event/event.h"
 #include "root_util.h"
+#include "sim_object/so_uid.h"
 #include "simulation_object_util.h"
 #include "type_util.h"
 
@@ -44,7 +44,6 @@ class ScalarSimulationObject;
 /// Contains implementation for SimulationObject that are specific to SOA
 /// backend. The peculiarity of SOA objects is that it is simulation object
 /// and container at the same time.
-/// @see TransactionalVector
 template <typename TCompileTimeParam, typename TDerived>
 class SoaSimulationObject {
  public:
@@ -61,7 +60,7 @@ class SoaSimulationObject {
       SoaSimulationObject<typename TCompileTimeParam::template Self<TBackend>,
                           TDerived>;
 
-  SoaSimulationObject() : to_be_removed_(), total_size_(1), size_(1) {}
+  SoaSimulationObject() : size_(1) {}
 
   /// Detect failing return value optimization (RVO)
   /// Copy-ctor declaration to please compiler, but missing implementation.
@@ -76,19 +75,16 @@ class SoaSimulationObject {
   explicit SoaSimulationObject(const Self<Soa> &other);
 
   template <typename T>
-  SoaSimulationObject(T *other, size_t idx)
-      : kIdx(idx),
-        mutex_(other->mutex_),
-        to_be_removed_(other->to_be_removed_),
-        total_size_(other->total_size_),
-        size_(other->size_) {}
+  SoaSimulationObject(T *other, size_t idx) : kIdx(idx), size_(other->size_) {}
 
   virtual ~SoaSimulationObject() {}
 
   SoaSimulationObject &operator=(SoaSimulationObject &&other) {
-    // mutex_ = std::move(other.mutex_);
-    to_be_removed_ = std::move(other.to_be_removed_);
-    total_size_ = other.total_size_;
+    size_ = other.size_;
+    return *this;
+  }
+
+  SoaSimulationObject &operator=(const SoaSimulationObject &other) {
     size_ = other.size_;
     return *this;
   }
@@ -101,82 +97,26 @@ class SoaSimulationObject {
 
   uint32_t GetElementIdx() const { return kIdx; }
 
+  void SetElementIdx(uint32_t element_idx) {}
+
   /// Returns the vector's size. Uncommited changes are not taken into account
   size_t size() const {  // NOLINT
     return size_;
   }
 
-  /// Returns the number of elements in the container including non commited
-  /// additions
-  size_t TotalSize() const { return total_size_; }
-
-  /// Thread safe version of std::vector::push_back
   template <typename TTBackend>
   void push_back(const MostDerived<TTBackend> &element) {  // NOLINT
-    std::lock_guard<std::recursive_mutex> lock(mutex_);
-    if (total_size_ == size_) {
-      PushBackImpl(element);
-      size_++;
-    } else {
-      throw std::logic_error(
-          "There are uncommited delayed additions to this container");
-    }
+    PushBackImpl(element);
   }
 
-  /// Safe method to remove an element from this vector
-  /// Does not invalidate, iterators, pointers or references.
-  /// Changes do not take effect until they are commited.
-  /// Upon commit removal has constant complexity @see Commit
-  /// @param index remove element at the given index
-  void DelayedRemove(size_t index) {
-    std::lock_guard<std::recursive_mutex> lock(mutex_);
-    to_be_removed_.push_back(index);
+  void pop_back() {  // NOLINT
+    PopBack();
   }
 
   /// Equivalent to std::vector<> clear - it removes all elements from all
   /// data members
   void clear() {  // NOLINT
-    total_size_ = 0;
     size_ = 0;
-    to_be_removed_.clear();
-  }
-
-  /// This method commits changes made by `DelayedPushBack` and `DelayedRemove`.
-  /// CAUTION: \n
-  ///   * Commit invalidates pointers and references returned by
-  ///     `DelayedPushBack`. \n
-  ///   * If memory reallocations are required all pointers or references
-  ///     into this container are invalidated\n
-  /// One removal has constant complexity. If the element which should be
-  /// removed is not the last element it is swapped with the last one.
-  /// (CAUTION: this invalidates pointers and references to the last element)
-  /// In the next step it can be removed in constant time using pop_back. \n
-  std::unordered_map<uint32_t, uint32_t> Commit() {
-    std::lock_guard<std::recursive_mutex> lock(mutex_);
-    std::unordered_map<uint32_t, uint32_t> updated_indices;
-    // commit delayed push backs
-    size_ = total_size_;
-    // commit delayed removes
-    // sort indices in descending order to prevent out of bounds accesses
-    auto descending = [](auto a, auto b) { return a > b; };
-    std::sort(to_be_removed_.begin(), to_be_removed_.end(), descending);
-    for (size_t idx : to_be_removed_) {
-      assert(idx < size_ && "Removed index outside array boundaries");
-      if (idx < size_ - 1) {
-        SwapAndPopBack(idx, size_);
-        updated_indices[size_ - 1] = idx;
-      } else {
-        PopBack();
-      }
-      size_--;
-    }
-    to_be_removed_.clear();
-
-    // use implementation from TransactionalVector to avoid code duplication
-    TransactionalVector<int>::ShortcutUpdatedIndices(&updated_indices);
-
-    total_size_ = size_;
-    return updated_indices;
   }
 
   /// Equivalent to std::vector<> reserve - it increases the capacity
@@ -207,36 +147,16 @@ class SoaSimulationObject {
  protected:
   const size_t kIdx = 0;
 
-  typename type_ternary_operator<is_same<Backend, SoaRef>::value,
-                                 std::recursive_mutex &,
-                                 std::recursive_mutex>::type mutex_;  //!
-
-  /// vector of indices with elements which should be removed
-  /// to_be_removed_ is of type vector<size_t>& if Backend == SoaRef;
-  /// otherwise vector<size_t>
-  typename type_ternary_operator<is_same<Backend, SoaRef>::value,
-                                 std::vector<size_t> &,
-                                 std::vector<size_t>>::type to_be_removed_;
-
   /// Append a scalar element
-  virtual void PushBackImpl(const MostDerived<Scalar> &other) { total_size_++; }
+  virtual void PushBackImpl(const MostDerived<Scalar> &other) { size_++; }
 
   /// Append a soa ref element
-  virtual void PushBackImpl(const MostDerived<SoaRef> &other) { total_size_++; }
-
-  /// Swap element with last element if and remove last element
-  virtual void SwapAndPopBack(size_t index, size_t size) {}
+  virtual void PushBackImpl(const MostDerived<SoaRef> &other) { size_++; }
 
   /// Remove last element
-  virtual void PopBack() {}
+  virtual void PopBack() { size_--; }
 
  private:
-  /// vector of indices with elements which should be removed
-  /// to_be_removed_ is of type vector<size_t>& if Backend == SoaRef;
-  /// otherwise vector<size_t>
-  typename type_ternary_operator<is_same<Backend, SoaRef>::value, size_t &,
-                                 size_t>::type total_size_ = 0;
-
   /// size_ is of type size_t& if Backend == SoaRef; otherwise size_t
   typename type_ternary_operator<is_same<Backend, SoaRef>::value, size_t &,
                                  size_t>::type size_;
@@ -290,9 +210,6 @@ class ScalarSimulationObject {
   /// Append a SoaRef element
   virtual void PushBackImpl(const MostDerived<SoaRef> &other) {}
 
-  /// Swap element with last element if and remove last element
-  virtual void SwapAndPopBack(size_t index, size_t size) {}
-
   /// Remove last element
   virtual void PopBack() {}
 
@@ -317,15 +234,19 @@ class SimulationObjectExt
   template <typename T, typename U>
   using SimObjectBaseExt = typename SimulationObjectImpl<T, U>::type;
 
-  BDM_SIM_OBJECT_HEADER(SimulationObject, SimObjectBase, 1, biology_modules_,
-                        run_bm_loop_idx_);
+  BDM_SIM_OBJECT_HEADER(SimulationObject, SimObjectBase, 1, uid_, box_idx_,
+                        biology_modules_, run_bm_loop_idx_);
 
  public:
-  SimulationObjectExt() : Base() {}
+  SimulationObjectExt() : Base() {
+    uid_[kIdx] = SoUidGenerator::Get()->NewSoUid();
+  }
 
   template <typename TEvent, typename TOther>
   SimulationObjectExt(const TEvent &event, TOther *other,
                       uint64_t new_oid = 0) {
+    uid_[kIdx] = SoUidGenerator::Get()->NewSoUid();
+    box_idx_[kIdx] = other->GetBoxIdx();
     // biology modules
     auto &other_bms = other->biology_modules_[other->kIdx];
     // copy biology_modules_ to me
@@ -368,32 +289,19 @@ class SimulationObjectExt
   /// needed after we swith to C++17
   /// @tparam TSo target simulaton object type with any backend
   template <typename TSo>
+  constexpr const auto *ReinterpretCast() const {
+    using TargetType = typename TSo::template Self<Backend>;
+    return reinterpret_cast<const TargetType *>(this);
+  }
+
+  /// Casts this to a simulation object of type `TSo` with the current `Backend`
+  /// This function is used to simulate if constexpr functionality and won't be
+  /// needed after we swith to C++17
+  /// @tparam TSo target simulaton object type with any backend
+  template <typename TSo>
   constexpr auto &&ReinterpretCast(const TSo *object) {
     using TargetType = typename TSo::template Self<Backend>;
     return reinterpret_cast<TargetType &&>(*this);
-  }
-
-  /// Empty default implementation to update references of simulation objects
-  /// that changed its memory position.
-  /// @param update_info vector index = type_id, map stores (old_index ->
-  /// new_index)
-  void UpdateReferences(
-      const std::vector<std::unordered_map<uint32_t, uint32_t>> &update_info) {}
-
-  /// Implementation to update a single reference if `reference.GetElementIdx()`
-  /// is a key in `updates`.
-  /// @tparam TReference type of the reference. Must have a `GetElementIdx` and
-  ///         `SetElementIdx` method.
-  /// @param reference reference whos `element_idx` will be updated
-  /// @param updates map that contains the update information
-  ///        (old_index -> new_index) for a specific simulation object type
-  template <typename TReference>
-  void UpdateReference(TReference *reference,
-                       const std::unordered_map<uint32_t, uint32_t> &updates) {
-    auto search = updates.find(reference->GetElementIdx());
-    if (search != updates.end()) {
-      reference->SetElementIdx(search->second);
-    }
   }
 
   MostDerived<Backend> *operator->() {
@@ -405,6 +313,25 @@ class SimulationObjectExt
   }
 
   void RunDiscretization() {}
+
+  SoUid GetUid() const { return uid_[kIdx]; }
+
+  uint32_t GetBoxIdx() const { return box_idx_[kIdx]; }
+
+  void SetBoxIdx(uint32_t idx) { box_idx_[kIdx] = idx; }
+
+  // TODO(ahmad) this only works for SOA backend add check for SOA
+  // used only for cuda and opencl code
+  uint32_t *GetBoxIdPtr() { return box_idx_.data(); }
+
+  SoHandle GetSoHandle() const {
+    auto *rm = Simulation_t::GetActive()->GetResourceManager();
+    auto type_idx = rm->template GetTypeIndex<MostDerivedScalar>();
+    return SoHandle(type_idx, Base::GetElementIdx());
+  }
+
+  /// Return simulation object pointer
+  MostDerivedSoPtr GetSoPtr() const { return MostDerivedSoPtr(uid_[kIdx]); }
 
   // Biology modules
   using BiologyModules =
@@ -464,6 +391,11 @@ class SimulationObjectExt
   /// Return all biology modules
   const auto &GetAllBiologyModules() const { return biology_modules_[kIdx]; }
 
+  void RemoveFromSimulation() const {
+    Simulation_t::GetActive()->GetExecutionContext()->RemoveFromSimulation(
+        uid_[kIdx]);
+  }
+
   template <typename TEvent, typename TOther>
   void EventHandler(const TEvent &event, TOther *other) {
     // call event handler for biology modules
@@ -481,6 +413,10 @@ class SimulationObjectExt
   }
 
  protected:
+  /// unique id
+  vec<SoUid> uid_ = {{}};
+  /// Grid box index
+  vec<uint32_t> box_idx_ = {{}};
   /// collection of biology modules which define the internal behavior
   vec<std::vector<BiologyModules>> biology_modules_;
 

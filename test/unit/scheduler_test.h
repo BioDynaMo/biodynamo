@@ -65,7 +65,7 @@ inline void RunRestoreTest() {
     // create backup that will be restored later on
     Cell cell;
     cell.SetDiameter(10);  // important for grid to determine box size
-    rm->Get<Cell>()->push_back(cell);
+    rm->push_back(cell);
     SimulationBackup backup(ROOTFILE, "");
     backup.Backup(149);
     rm->Clear();
@@ -90,7 +90,7 @@ inline void RunRestoreTest() {
   EXPECT_EQ(1u, rm->Get<Cell>()->size());
 
   // add element to see if if restore happens again
-  rm->Get<Cell>()->push_back(Cell());
+  rm->push_back(Cell());
 
   // normal simulation - no restore
   scheduler.Simulate(100);
@@ -113,7 +113,7 @@ inline void RunBackupTest() {
 
   Cell cell;
   cell.SetDiameter(10);  // important for grid to determine box size
-  rm->Get<Cell>()->push_back(cell);
+  rm->push_back(cell);
 
   TestSchedulerBackup scheduler;
 

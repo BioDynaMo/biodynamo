@@ -25,7 +25,6 @@
 #include "io_util.h"
 #include "root_util.h"
 #include "simulation_object.h"
-#include "transactional_vector.h"
 #include "unit/test_sim_object.h"
 
 #define ROOTFILE "bdmFile.root"
@@ -51,7 +50,6 @@ BDM_SIM_OBJECT(ContainerTestClass, TestSimObject) {
 
   const vec<int>& GetVecDm1() const { return dm1_; }
   const vec<double>& GetVecDm2() const { return dm2_; }
-  uint64_t GetTotalSize() const { return Base::TotalSize(); }
 
  private:
   vec<int> dm1_;
@@ -67,8 +65,8 @@ BDM_SIM_OBJECT(MyCell, TestSimObject) {
   MyCellExt() : position_{{1, 2, 3}} {}
 
   MostDerivedSoPtr Divide(double volume_ratio, double phi, double theta) {
-    auto* rm = Simulation_t::GetActive()->GetResourceManager();
-    auto daughter = rm->template New<MostDerivedScalar>().GetSoPtr();
+    auto* ctxt = Simulation_t::GetActive()->GetExecutionContext();
+    auto daughter = ctxt->template New<MostDerivedScalar>().GetSoPtr();
     ThisMD()->DivideImpl(daughter, volume_ratio, phi, theta);
     return daughter;
   }

@@ -20,7 +20,9 @@
 #include <cmath>
 #include <sstream>
 #include <string>
+#include <vector>
 #include "command_line_options.h"
+#include "execution_context/in_place_exec_ctxt.h"
 #include "grid.h"
 #include "log.h"
 #include "param.h"
@@ -113,6 +115,9 @@ Simulation<T>::~Simulation() {
   for (auto* r : random_) {
     delete r;
   }
+  for (auto* ectxt : exec_ctxt_) {
+    delete ectxt;
+  }
   active_ = tmp;
 }
 
@@ -144,6 +149,16 @@ Scheduler<Simulation<T>>* Simulation<T>::GetScheduler() {
 template <typename T>
 Random* Simulation<T>::GetRandom() {
   return random_[omp_get_thread_num()];
+}
+
+template <typename T>
+InPlaceExecutionContext<T>* Simulation<T>::GetExecutionContext() {
+  return exec_ctxt_[omp_get_thread_num()];
+}
+
+template <typename T>
+std::vector<InPlaceExecutionContext<T>*>& Simulation<T>::GetAllExecCtxts() {
+  return exec_ctxt_;
 }
 
 template <typename T>
@@ -180,6 +195,10 @@ void Simulation<T>::InitializeMembers() {
   random_.resize(omp_get_max_threads());
   for (uint64_t i = 0; i < random_.size(); i++) {
     random_[i] = new Random();
+  }
+  exec_ctxt_.resize(omp_get_max_threads());
+  for (uint64_t i = 0; i < exec_ctxt_.size(); i++) {
+    exec_ctxt_[i] = new InPlaceExecutionContext<T>();
   }
   rm_ = new TResourceManager();
   grid_ = new TGrid();

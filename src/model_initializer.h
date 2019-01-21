@@ -51,19 +51,18 @@ struct ModelInitializer {
     // Determine simulation object type which is returned by the cell_builder
     using FunctionReturnType = decltype(cell_builder({0, 0, 0}));
 
-    auto container = rm->template Get<FunctionReturnType>();
-    container->reserve(cells_per_dim * cells_per_dim * cells_per_dim);
+    rm->template Reserve<FunctionReturnType>(cells_per_dim * cells_per_dim *
+                                             cells_per_dim);
     for (size_t x = 0; x < cells_per_dim; x++) {
       auto x_pos = x * space;
       for (size_t y = 0; y < cells_per_dim; y++) {
         auto y_pos = y * space;
         for (size_t z = 0; z < cells_per_dim; z++) {
           auto new_simulation_object = cell_builder({x_pos, y_pos, z * space});
-          container->push_back(new_simulation_object);
+          rm->push_back(new_simulation_object);
         }
       }
     }
-    container->Commit();
   }
 
   /// Creates a 3D grid of simulation objects and adds them to the
@@ -91,19 +90,18 @@ struct ModelInitializer {
     // Determine simulation object type which is returned by the cell_builder
     using FunctionReturnType = decltype(cell_builder({0, 0, 0}));
 
-    auto container = rm->template Get<FunctionReturnType>();
-    container->reserve(cells_per_dim[0] * cells_per_dim[1] * cells_per_dim[2]);
+    rm->template Reserve<FunctionReturnType>(
+        cells_per_dim[0] * cells_per_dim[1] * cells_per_dim[2]);
     for (size_t x = 0; x < cells_per_dim[0]; x++) {
       auto x_pos = x * space;
       for (size_t y = 0; y < cells_per_dim[1]; y++) {
         auto y_pos = y * space;
         for (size_t z = 0; z < cells_per_dim[2]; z++) {
           auto new_simulation_object = cell_builder({x_pos, y_pos, z * space});
-          container->push_back(new_simulation_object);
+          rm->push_back(new_simulation_object);
         }
       }
     }
-    container->Commit();
   }
 
   /// Adds simulation objects to the ResourceManager. Type of the simulation
@@ -122,14 +120,12 @@ struct ModelInitializer {
     // Determine simulation object type which is returned by the cell_builder
     using FunctionReturnType = decltype(cell_builder({0, 0, 0}));
 
-    auto container = rm->template Get<FunctionReturnType>();
-    container->reserve(positions.size());
+    rm->template Reserve<FunctionReturnType>(positions.size());
     for (size_t i = 0; i < positions.size(); i++) {
       auto new_simulation_object =
           cell_builder({positions[i][0], positions[i][1], positions[i][2]});
-      container->push_back(new_simulation_object);
+      rm->push_back(new_simulation_object);
     }
-    container->Commit();
   }
 
   /// Adds simulation objects with random positions to the ResourceManager.
@@ -151,8 +147,7 @@ struct ModelInitializer {
     // Determine simulation object type which is returned by the cell_builder
     using FunctionReturnType = decltype(cell_builder({0, 0, 0}));
 
-    auto container = rm->template Get<FunctionReturnType>();
-    container->reserve(num_cells);
+    rm->template Reserve<FunctionReturnType>(num_cells);
 
     // TODO(ahmad): throughout simulation only one random number generator
     // should be used, so this should go someplace accessible for other
@@ -163,9 +158,8 @@ struct ModelInitializer {
       double y = random->Uniform(min, max);
       double z = random->Uniform(min, max);
       auto new_simulation_object = cell_builder({x, y, z});
-      container->push_back(new_simulation_object);
+      rm->push_back(new_simulation_object);
     }
-    container->Commit();
   }
 
   /// Allows cells to secrete the specified substance. Diffusion throughout the

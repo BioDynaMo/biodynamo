@@ -1,5 +1,75 @@
 # Changelog
 
+## 17.01.2019 [`TODO replace`](https://github.com/BioDynaMo/biodynamo/commit/TODO replace)
+
+This commit introduces a series of changes to encapsulate different discretization
+strategies. Other modifications have been made along the way to facilitate this
+change and solve known issues.
+
+Discretization governs three main questions:
+
+  * When should new simulation objects be visible?
+  * When should simulation objects be removed from the simulation?
+  * If a simulation object is updated, when should the change be visible?
+  * Should operations observe the values from the last iteration or from the
+    previous operation?
+
+Since simulations might have different requirements, this commit introduces
+execution contexts to define and encapsulate this behavior in one place.
+
+**First**, this commit introduces unique ids for simulation objects that stay constant
+during the whole simulation and are not reused if a simulation object is removed
+from the simulation. Among other things, this improves debugging simulations.
+
+**Second**, building upon the introduction of unique ids, manual updates of `SoPointer`
+(references to another simulation object--e.g. `NeuriteElement::daughter_left_`)
+becomes obsolete. This is now managed by the `ResourceManager`.
+
+**Third**, this commit adds an in-place execution context.
+
+  * Simulation objects that are added or removed are visible to the whole simulation
+    after the next timestep.
+  * Operations directly modify simulation objects inside the `ResourceManager`.
+    Thus, the result depends on the order in which sim objects are updated.
+    Operations (biology modules or mechanical interactions) see the updated
+    values from the previous operation.
+
+
+**Forth**, this commit solves two race condition issues:
+
+  * Adding new simulation objects to the `ResourceManager` caused issues if it
+    triggered a growth. References and pointers to simulation objects were
+    invalidated during this operation.
+  * Modifications of neighbors. Two threads could potentially update the same
+    neighbor.
+
+**Fifth**, result from mechanical interactions will change. Up to now the implementation
+was inconsistent with respect to when updates will take effect. Biology modules
+were updated in place, while results from mechanical interactions where cached
+and applied once all simulation objects have been updated. Now, this behavior is the
+responsibility of the execution context. In case of the `InPlaceExecutionContext` this means
+that during iteration `t` some cells observe neighbors that have already been updated
+to timestep `t'`.
+
+**API changes**
+
+Several API changes were necessary to implement the described functionality.
+A general rule is to use the new execution context to perform actions instead of
+using the `ResourceManager`, or `Grid` directly. The thread local execution context
+can be obtained from the simulation object (e.g. calling `sim->GetExecutionContext()`).
+
+Exemplary API changes:
+
+  * Method `ResourceManager::New` was removed. During a simulation only use
+    e.g. `InPlaceExecutionContext::New`. During setup of the initial model using
+    `ResourceManager::push_back` is also fine.
+  * Method `ResourceManager::Get` has been changed to return a const pointer.
+    Thus `rm->Get<Cell>()->push_back(new_cell)` won't work anymore. However, calling
+    `rm->Get<Cell>()->size()` is still fine.
+
+For the full set of changes that are visible to the user, it is best to have a
+look at the demo folder and the differences of [this commit](https://github.com/BioDynaMo/biodynamo/commit/c6c9de8b7fd4f80ea363c5d628e9a48670b8e777#diff-d61c94874975bac07d55c551632c6e1c).
+
 ## 25.10.2018 [`b197542`](https://github.com/BioDynaMo/biodynamo/commit/b197542ef90864c97af899baa8b1ca6d68c71ef7)
 
 Resolve ROOT-9321 by removing TBase template parameter of simulation objects

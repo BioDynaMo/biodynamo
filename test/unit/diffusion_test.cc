@@ -27,21 +27,23 @@
 #include "unit/test_util.h"
 #include "visualization/catalyst_adaptor.h"
 
+#ifdef USE_CATALYST
 #include <vtkImageData.h>
 #include <vtkXMLImageDataReader.h>
+#endif  // USE_CATALYST
 
 #define ROOTFILE "bdmFile.root"
 
 namespace bdm {
 
-template <typename TContainer>
-void CellFactory(TContainer* cells,
-                 const std::vector<std::array<double, 3>>& positions) {
-  cells->reserve(positions.size());
+template <typename TSo, typename TSimulation = Simulation<>>
+void CellFactory(const std::vector<std::array<double, 3>>& positions) {
+  auto* rm = TSimulation::GetActive()->GetResourceManager();
+  rm->template Reserve<TSo>(positions.size());
   for (size_t i = 0; i < positions.size(); i++) {
     Cell cell({positions[i][0], positions[i][1], positions[i][2]});
     cell.SetDiameter(30);
-    cells->push_back(cell);
+    rm->push_back(cell);
   }
 }
 
@@ -49,15 +51,12 @@ void CellFactory(TContainer* cells,
 // neighbor grid dimensions
 TEST(DiffusionTest, GridDimensions) {
   Simulation<> simulation(TEST_NAME);
-  auto* rm = simulation.GetResourceManager();
   auto* grid = simulation.GetGrid();
-
-  auto cells = rm->Get<Cell>();
 
   std::vector<std::array<double, 3>> positions;
   positions.push_back({-10, -10, -10});
   positions.push_back({90, 90, 90});
-  CellFactory(cells, positions);
+  CellFactory<Cell>(positions);
 
   DiffusionGrid* d_grid = new DiffusionGrid(0, "Kalium", 0.4, 0, 1);
 
@@ -80,15 +79,12 @@ TEST(DiffusionTest, GridDimensions) {
 // neighbor grid dimensions (we expect the diffusion grid to stay cube-shaped)
 TEST(DiffusionTest, UpdateGrid) {
   Simulation<> simulation(TEST_NAME);
-  auto* rm = simulation.GetResourceManager();
   auto* grid = simulation.GetGrid();
-
-  auto cells = rm->Get<Cell>();
 
   std::vector<std::array<double, 3>> positions;
   positions.push_back({-10, -10, -10});
   positions.push_back({90, 90, 90});
-  CellFactory(cells, positions);
+  CellFactory<Cell>(positions);
 
   DiffusionGrid* d_grid = new DiffusionGrid(0, "Kalium", 0.4, 0, 6);
 
@@ -98,7 +94,7 @@ TEST(DiffusionTest, UpdateGrid) {
   std::vector<std::array<double, 3>> positions_2;
   positions_2.push_back({-30, -10, -10});
   positions_2.push_back({90, 150, 90});
-  CellFactory(cells, positions_2);
+  CellFactory<Cell>(positions_2);
 
   grid->UpdateGrid();
 
@@ -120,15 +116,12 @@ TEST(DiffusionTest, UpdateGrid) {
 // do not change
 TEST(DiffusionTest, FalseUpdateGrid) {
   Simulation<> simulation(TEST_NAME);
-  auto* rm = simulation.GetResourceManager();
   auto* grid = simulation.GetGrid();
-
-  auto cells = rm->Get<Cell>();
 
   std::vector<std::array<double, 3>> positions;
   positions.push_back({-10, -10, -10});
   positions.push_back({90, 90, 90});
-  CellFactory(cells, positions);
+  CellFactory<Cell>(positions);
 
   DiffusionGrid* d_grid = new DiffusionGrid(0, "Kalium", 0.4, 0);
 
@@ -508,6 +501,8 @@ TEST(DiffusionTest, Convergence) {
   delete d_grid8;
 }
 
+#ifdef USE_CATALYST
+
 TEST(DiffusionTest, ModelInitializer) {
   auto set_param = [](auto* param) {
     Param::VisualizeDiffusion vd;
@@ -567,5 +562,7 @@ TEST(DiffusionTest, ModelInitializer) {
   EXPECT_NEAR(expected, conc->GetTuple(idx)[0], 1e-9);
   remove(filename.c_str());
 }
+
+#endif  // USE_CATALYST
 
 }  // namespace bdm

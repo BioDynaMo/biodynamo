@@ -193,7 +193,7 @@ struct Capsule;
   EVAL(LOOP(BDM_SIM_OBJECT_ASSIGNMENT_OP_BODY_ITERATOR, __VA_ARGS__))
 
 #define BDM_SIM_OBJECT_ASSIGNMENT_OP_BODY_ITERATOR(data_member) \
-  data_member[kIdx] = rhs.data_member[0];
+  data_member[kIdx] = rhs.data_member[rhs.kIdx];
 
 #define BDM_SIM_OBJECT_ASSIGNMENT_OP_MOVE_BODY(...) \
   EVAL(LOOP(BDM_SIM_OBJECT_ASSIGNMENT_OP_MOVE_BODY_ITERATOR, __VA_ARGS__))
@@ -308,28 +308,6 @@ struct Capsule;
       : Base(other, idx),                                                      \
         REMOVE_TRAILING_COMMAS(BDM_SIM_OBJECT_CPY_CTOR_INIT(__VA_ARGS__)) {}   \
                                                                                \
-  template <typename TResourceManager = ResourceManager<>>                     \
-  SoHandle GetSoHandle() const {                                               \
-    auto type_idx =                                                            \
-        TResourceManager::template GetTypeIndex<MostDerivedScalar>();          \
-    return SoHandle(type_idx, Base::GetElementIdx());                          \
-  }                                                                            \
-                                                                               \
-  /** Return simulation object pointer */                                      \
-  /** NB: Cannot be used in a constructor, because `Base::element_idx_` has */ \
-  /** not been set by the ResourceManager yet */                               \
-  MostDerivedSoPtr GetSoPtr() {                                                \
-    auto* rm = Simulation_t::GetActive()->GetResourceManager();                \
-    auto* container = rm->template Get<MostDerivedScalar>();                   \
-    return MostDerivedSoPtr(container, Base::GetElementIdx());                 \
-  }                                                                            \
-                                                                               \
-  void RemoveFromSimulation() {                                                \
-    auto* rm = Simulation_t::GetActive()->GetResourceManager();                \
-    auto container = rm->template Get<MostDerivedScalar>();                    \
-    container->DelayedRemove(Base::GetElementIdx());                           \
-  }                                                                            \
-                                                                               \
   /** Executes the given function for all data members             */          \
   /**  Function could be a lambda in the following form:           */          \
   /**  `[](auto* data_member, const std::string& dm_name) { ... }` */          \
@@ -353,7 +331,6 @@ struct Capsule;
   /** all data members */                                                      \
   template <typename T = Backend>                                              \
   typename enable_if<is_soa<T>::value>::type clear() {                         \
-    std::lock_guard<std::recursive_mutex> lock(Base::mutex_);                  \
     Base::clear();                                                             \
     BDM_SIM_OBJECT_CLEAR_BODY(__VA_ARGS__)                                     \
   }                                                                            \
@@ -363,7 +340,6 @@ struct Capsule;
   template <typename T = Backend>                                              \
   typename enable_if<is_soa<T>::value>::type reserve(                          \
       std::size_t new_capacity) {                                              \
-    std::lock_guard<std::recursive_mutex> lock(Base::mutex_);                  \
     Base::reserve(new_capacity);                                               \
     BDM_SIM_OBJECT_RESERVE_BODY(new_capacity, __VA_ARGS__)                     \
   }                                                                            \
@@ -382,23 +358,19 @@ struct Capsule;
     return *this;                                                              \
   }                                                                            \
                                                                                \
-  Self<Backend>& operator=(Self<Backend>&& rhs) {                              \
+  template <typename T = Backend>                                              \
+  typename enable_if<is_same<T, Soa>::value || is_same<T, Scalar>::value,      \
+                     Self<Backend>&>::type                                     \
+  operator=(Self<Backend>&& rhs) {                                             \
     BDM_SIM_OBJECT_ASSIGNMENT_OP_MOVE_BODY(__VA_ARGS__)                        \
     Base::operator=(std::move(rhs));                                           \
     return *this;                                                              \
   }                                                                            \
                                                                                \
-  /** Safe method to add an element to this vector. */                         \
-  /** Does not invalidate, iterators, pointers or references. */               \
-  /** Changes do not take effect until they are commited.*/                    \
-  /** @param other element that should be added to the vector*/                \
-  /** @return  index of the added element in `data_`. Will be bigger than*/    \
-  /**          `size()` */                                                     \
-  template <typename T = Backend>                                              \
-  uint64_t DelayedPushBack(const Self<Scalar>& other) {                        \
-    std::lock_guard<std::recursive_mutex> lock(Base::mutex_);                  \
-    PushBackImpl(other);                                                       \
-    return Base::TotalSize() - 1;                                              \
+  Self<Backend>& operator=(const Self<Backend>& rhs) {                         \
+    BDM_SIM_OBJECT_ASSIGNMENT_OP_BODY(__VA_ARGS__)                             \
+    Base::operator=(rhs);                                                      \
+    return *this;                                                              \
   }                                                                            \
                                                                                \
  protected:                                                                    \
@@ -414,12 +386,6 @@ struct Capsule;
   void PushBackImpl(const MostDerived<SoaRef>& other) override {               \
     BDM_SIM_OBJECT_PUSH_BACK_BODY(__VA_ARGS__);                                \
     Base::PushBackImpl(other);                                                 \
-  }                                                                            \
-  /** Swap element with last element and remove last element from each */      \
-  /** data member */                                                           \
-  void SwapAndPopBack(size_t index, size_t size) override {                    \
-    BDM_SIM_OBJECT_SWAP_AND_POP_BACK_BODY(__VA_ARGS__);                        \
-    Base::SwapAndPopBack(index, size);                                         \
   }                                                                            \
                                                                                \
   /** Remove last element from each data member */                             \
