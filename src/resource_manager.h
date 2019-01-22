@@ -15,6 +15,7 @@
 #ifndef RESOURCE_MANAGER_H_
 #define RESOURCE_MANAGER_H_
 
+#include <cmath>
 #include <limits>
 #include <memory>
 #include <ostream>
@@ -482,7 +483,7 @@ class ResourceManager {
           auto correction = so_container->size() % threads_in_numa == 0 ? 0 : 1;
           auto chunk = so_container->size() / threads_in_numa + correction;
           auto start = thread_info_.GetNumaThreadId(tid) * chunk ;
-          auto end = std::min(so_container->size(), start + chunk);
+          auto end = std::min(static_cast<uint64_t>(so_container->size()), start + chunk);
 
           // #pragma omp critical
           // {
@@ -563,7 +564,7 @@ class ResourceManager {
             uint64_t old_count = (*(counters[current_nid]))++;
             while(old_count <= max_counters[current_nid]) {
               start = old_count * p_chunk ;
-              end = std::min(so_container->size(), start + p_chunk);
+              end = std::min(static_cast<uint64_t>(so_container->size()), start + p_chunk);
 
               // #pragma omp critical
               // {
@@ -657,7 +658,7 @@ class ResourceManager {
           uint64_t old_count = (*(counters[current_nid]))++;
           while(old_count <= max_counters[current_nid]) {
             start = old_count * p_chunk ;
-            end = std::min(so_container->size(), start + p_chunk);
+            end = std::min(static_cast<uint64_t>(so_container->size()), start + p_chunk);
 
             for(uint64_t i = start; i < end; ++i) {
               function((*so_container)[i], SoHandle(current_nid, t, i));
@@ -683,7 +684,7 @@ class ResourceManager {
               uint64_t old_count = (*(counters[current_nid]))++;
               if (old_count <= max_counters[current_nid]) {
                 start = old_count * p_chunk ;
-                end = std::min(so_container->size(), start + p_chunk);
+                end = std::min(static_cast<uint64_t>(so_container->size()), start + p_chunk);
 
                 for(uint64_t i = start; i < end; ++i) {
                   function((*so_container)[i], SoHandle(current_nid, t, i));
