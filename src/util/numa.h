@@ -32,7 +32,7 @@ inline int numa_move_pages(int pid, unsigned long count, void **pages,
 		const int *nodes, int *status, int flags) { return 0; }
 
 // on linux in <sched.h>, but missing on MacOS
-int sched_getcpu() { return 0; }
+inline int sched_getcpu() { return 0; }
 
 #endif  // USE_NUMA
 

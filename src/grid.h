@@ -26,9 +26,9 @@
 #include <limits>
 #include <memory>
 #include <mutex>
-#ifdef __GNUG__
+#ifdef LINUX
 #include <parallel/algorithm>
-#endif  // __GNUG__
+#endif  // LINUX
 #include <vector>
 
 #include <morton/morton.h>
@@ -425,7 +425,7 @@ class Grid {
         }
       }
     }
-#ifdef __GNUG__
+#ifdef LINUX
     __gnu_parallel::sort(zorder_sorted_boxes_.begin(), zorder_sorted_boxes_.end(), [](const auto& lhs, const auto& rhs) {
       return lhs.first < rhs.first;
     });
@@ -433,7 +433,7 @@ class Grid {
     std::sort(zorder_sorted_boxes_.begin(), zorder_sorted_boxes_.end(), [](const auto& lhs, const auto& rhs) {
       return lhs.first < rhs.first;
     });
-#endif  // __GNUG__
+#endif  // LINUX
   }
 
   /// This method iterates over all elements. Iteration is performed in

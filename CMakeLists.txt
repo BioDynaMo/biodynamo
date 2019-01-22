@@ -30,6 +30,7 @@ set(BDM_CMAKE_DIR cmake)
 
 if(UNIX AND NOT APPLE)
   set(LINUX TRUE)
+  add_definitions("-DLINUX")
 endif()
 
 add_definitions(-DBDM_SRC_DIR=\"${CMAKE_SOURCE_DIR}/src\")  # escaped quotes are mandatory
