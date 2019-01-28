@@ -445,7 +445,8 @@ class SimulationObjectExt
   /// not ignored for ROOT I/O.
   vec<uint32_t> run_bm_loop_idx_ = {{0}};
 
-  // TODO documentation
+  /// This data member holds information on which NUMA node this sim object is
+  /// stored.
   vec<typename SoHandle::NumaNode_t> numa_node_ = {{}};
 
 

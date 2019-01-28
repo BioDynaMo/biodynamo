@@ -16,7 +16,6 @@
 #define PARALLEL_RESIZE_VECTOR_H_
 
 #include <vector>
-#include <iostream>  // FIXME remove
 
 namespace bdm {
 

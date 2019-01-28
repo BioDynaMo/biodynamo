@@ -412,8 +412,8 @@ class Grid {
 
   void UpdateBoxZOrder() {
     // iterate boxes in Z-order / morton order
-    // TODO this is a very quick attempt to test an idea
-    // TODO improve performance of this brute force solution
+    // TODO(lukas) this is a very quick attempt to test an idea
+    // improve performance of this brute force solution
     zorder_sorted_boxes_.resize(boxes_.size());
     #pragma omp parallel for collapse(3)
     for (uint32_t x = 0; x < num_boxes_axis_[0]; x++) {
