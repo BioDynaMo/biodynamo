@@ -69,8 +69,7 @@ BDM_SIM_OBJECT(SoPointerTestClass, TestSimObject) {
 BDM_CTPARAM() {
   BDM_CTPARAM_HEADER();
   using SimulationBackend = Scalar;
-  using SimObjectTypes =
-      CTList<SoPointerTestClass>;
+  using SimObjectTypes = CTList<SoPointerTestClass>;
   BDM_DEFAULT_CTPARAM_FOR(SoPointerTestClass){};
 };
 

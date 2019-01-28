@@ -339,9 +339,7 @@ TEST(GridTest, IterateZOrder) {
 
   std::vector<SoHandle> zorder;
   zorder.reserve(rm->GetNumSimObjects());
-  auto lambda = [&](auto soh) {
-    zorder.push_back(soh);
-  };
+  auto lambda = [&](auto soh) { zorder.push_back(soh); };
   grid->IterateZOrder(lambda);
 
   ASSERT_EQ(27u, zorder.size());

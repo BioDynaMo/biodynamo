@@ -71,7 +71,7 @@ TEST(ParallelResizeVector, CopyCtor) {
   EXPECT_EQ(10u, copy.size());
   EXPECT_EQ(10u, copy.capacity());
 
-  for(auto el : copy) {
+  for (auto el : copy) {
     EXPECT_EQ(123, el);
   }
 }
@@ -89,7 +89,7 @@ TEST(ParallelResizeVector, AssignmentOperator) {
   EXPECT_EQ(10u, copy.size());
   EXPECT_EQ(10u, copy.capacity());
 
-  for(auto el : copy) {
+  for (auto el : copy) {
     EXPECT_EQ(123, el);
   }
 }

@@ -29,6 +29,7 @@
 #ifdef LINUX
 #include <parallel/algorithm>
 #endif  // LINUX
+#include <utility>
 #include <vector>
 
 #include <morton/morton.h>
@@ -321,13 +322,15 @@ class Grid {
       successors_.Reserve();
 
       // Assign simulation objects to boxes
-      rm->ApplyOnAllElementsParallelDynamic(1000, [this](auto&& sim_object, SoHandle id) {  // FIXME move back to parallel
-        const auto& position = sim_object.GetPosition();
-        auto idx = this->GetBoxIndex(position);
-        auto box = this->GetBoxPointer(idx);
-        box->AddObject(id, &successors_);
-        sim_object.SetBoxIdx(idx);
-      });
+      rm->ApplyOnAllElementsParallelDynamic(
+          1000, [this](auto&& sim_object,
+                       SoHandle id) {  // FIXME move back to parallel
+            const auto& position = sim_object.GetPosition();
+            auto idx = this->GetBoxIndex(position);
+            auto box = this->GetBoxPointer(idx);
+            box->AddObject(id, &successors_);
+            sim_object.SetBoxIdx(idx);
+          });
       auto* param = TSimulation::GetActive()->GetParam();
       if (param->bound_space_) {
         int min = param->min_bound_;
@@ -339,7 +342,7 @@ class Grid {
         nb_mutex_builder_->Update();
       }
 
-      if(has_grown_) {
+      if (has_grown_) {
         UpdateBoxZOrder();
       }
     } else {
@@ -415,24 +418,25 @@ class Grid {
     // TODO(lukas) this is a very quick attempt to test an idea
     // improve performance of this brute force solution
     zorder_sorted_boxes_.resize(boxes_.size());
-    #pragma omp parallel for collapse(3)
+#pragma omp parallel for collapse(3)
     for (uint32_t x = 0; x < num_boxes_axis_[0]; x++) {
       for (uint32_t y = 0; y < num_boxes_axis_[1]; y++) {
         for (uint32_t z = 0; z < num_boxes_axis_[2]; z++) {
           auto box_idx = GetBoxIndex(std::array<uint32_t, 3>{x, y, z});
           auto morton = libmorton::morton3D_64_encode(x, y, z);
-          zorder_sorted_boxes_[box_idx] = std::pair<uint32_t, const Box*>{morton, &boxes_[box_idx]};
+          zorder_sorted_boxes_[box_idx] =
+              std::pair<uint32_t, const Box*>{morton, &boxes_[box_idx]};
         }
       }
     }
 #ifdef LINUX
-    __gnu_parallel::sort(zorder_sorted_boxes_.begin(), zorder_sorted_boxes_.end(), [](const auto& lhs, const auto& rhs) {
-      return lhs.first < rhs.first;
-    });
+    __gnu_parallel::sort(
+        zorder_sorted_boxes_.begin(), zorder_sorted_boxes_.end(),
+        [](const auto& lhs, const auto& rhs) { return lhs.first < rhs.first; });
 #else
-    std::sort(zorder_sorted_boxes_.begin(), zorder_sorted_boxes_.end(), [](const auto& lhs, const auto& rhs) {
-      return lhs.first < rhs.first;
-    });
+    std::sort(
+        zorder_sorted_boxes_.begin(), zorder_sorted_boxes_.end(),
+        [](const auto& lhs, const auto& rhs) { return lhs.first < rhs.first; });
 #endif  // LINUX
   }
 
@@ -440,11 +444,11 @@ class Grid {
   /// Z-order of boxes. There is no particular order for elements inside a box.
   template <typename Lambda>
   void IterateZOrder(const Lambda& lambda) const {
-    for(uint64_t i = 0; i < zorder_sorted_boxes_.size(); i++) {
+    for (uint64_t i = 0; i < zorder_sorted_boxes_.size(); i++) {
       auto it = zorder_sorted_boxes_[i].second->begin();
       while (!it.IsAtEnd()) {
-          // Call lambda with SoHandle
-          lambda(*it);
+        // Call lambda with SoHandle
+        lambda(*it);
         ++it;
       }
     }
@@ -895,13 +899,19 @@ class Grid {
     const auto max_threads = omp_get_max_threads();
     // allocate version for each thread - avoid false sharing by padding them
     // assumes 64 byte cache lines (8 * sizeof(double))
-    std::vector<std::array<double, 8>> xmin(max_threads, {{Constant::kInfinity}});
-    std::vector<std::array<double, 8>> ymin(max_threads, {{Constant::kInfinity}});
-    std::vector<std::array<double, 8>> zmin(max_threads, {{Constant::kInfinity}});
+    std::vector<std::array<double, 8>> xmin(max_threads,
+                                            {{Constant::kInfinity}});
+    std::vector<std::array<double, 8>> ymin(max_threads,
+                                            {{Constant::kInfinity}});
+    std::vector<std::array<double, 8>> zmin(max_threads,
+                                            {{Constant::kInfinity}});
 
-    std::vector<std::array<double, 8>> xmax(max_threads, {{-Constant::kInfinity}});
-    std::vector<std::array<double, 8>> ymax(max_threads, {{-Constant::kInfinity}});
-    std::vector<std::array<double, 8>> zmax(max_threads, {{-Constant::kInfinity}});
+    std::vector<std::array<double, 8>> xmax(max_threads,
+                                            {{-Constant::kInfinity}});
+    std::vector<std::array<double, 8>> ymax(max_threads,
+                                            {{-Constant::kInfinity}});
+    std::vector<std::array<double, 8>> zmax(max_threads,
+                                            {{-Constant::kInfinity}});
 
     std::vector<std::array<double, 8>> largest(max_threads, {{0}});
 

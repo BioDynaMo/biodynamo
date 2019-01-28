@@ -29,7 +29,9 @@ inline int numa_num_configured_cpus() { return omp_get_max_threads(); }
 inline int numa_run_on_node(int) { return 0; }
 inline int numa_node_of_cpu(int) { return 0; }
 inline int numa_move_pages(int pid, unsigned long count, void **pages,
-		const int *nodes, int *status, int flags) { return 0; }
+                           const int *nodes, int *status, int flags) {
+  return 0;
+}
 
 // on linux in <sched.h>, but missing on MacOS
 inline int sched_getcpu() { return 0; }

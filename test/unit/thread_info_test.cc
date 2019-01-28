@@ -12,8 +12,8 @@
 //
 // -----------------------------------------------------------------------------
 
-#include <set>
 #include <gtest/gtest.h>
+#include <set>
 
 #include "thread_info.h"
 
@@ -25,9 +25,9 @@ void RunAllChecks(ThreadInfo& ti) {
 
   std::vector<int> threads_per_numa(ti.GetNumaNodes());
   std::vector<std::set<int>> all_numa_thread_ids(ti.GetNumaNodes());
-  #pragma omp parallel
+#pragma omp parallel
   {
-    #pragma omp critical
+#pragma omp critical
     {
       int tid = omp_get_thread_num();
       auto nid = numa_node_of_cpu(sched_getcpu());
@@ -39,7 +39,8 @@ void RunAllChecks(ThreadInfo& ti) {
       EXPECT_LT(numa_thread_id, ti.GetThreadsInNumaNode(nid));
       std::set<int>& numa_thread_ids = all_numa_thread_ids[nid];
       // check if this numa_thread id has not been used before
-      EXPECT_TRUE(numa_thread_ids.find(numa_thread_id) == numa_thread_ids.end());
+      EXPECT_TRUE(numa_thread_ids.find(numa_thread_id) ==
+                  numa_thread_ids.end());
       numa_thread_ids.insert(numa_thread_id);
       threads_per_numa[nid]++;
     }
@@ -62,8 +63,8 @@ TEST(ThreadInfoTest, ThreadCPUBinding) {
   // do some work
   std::vector<int> v;
   v.resize(1e4);
-  #pragma omp parallel for
-  for(uint64_t i = 0; i < v.size(); i++) {
+#pragma omp parallel for
+  for (uint64_t i = 0; i < v.size(); i++) {
     v[i]++;
   }
 

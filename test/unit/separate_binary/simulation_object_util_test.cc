@@ -366,7 +366,8 @@ TEST(SimulationObjectUtilTest, GetSoHandle) {
   auto neuron_id = neuron.GetUid();
   rm->push_back(neuron);
 
-  EXPECT_EQ(SoHandle(0, 0, 0), rm->GetSimObject<Neuron>(neuron_id).GetSoHandle());
+  EXPECT_EQ(SoHandle(0, 0, 0),
+            rm->GetSimObject<Neuron>(neuron_id).GetSoHandle());
 
   auto&& neuron_ref = rm->GetSimObject<Neuron>(neuron_id);
   neuron_ref.SetNumaNode(5);

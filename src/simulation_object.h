@@ -84,12 +84,12 @@ class SoaSimulationObject {
     return *this;
   }
 
-  SoaSimulationObject& operator=(const Self<Soa>& other) {
+  SoaSimulationObject &operator=(const Self<Soa> &other) {
     size_ = other.size_;
     return *this;
   }
 
-  SoaSimulationObject& operator=(const Self<SoaRef> &) {
+  SoaSimulationObject &operator=(const Self<SoaRef> &) {
     // Do not copy size! This is used to assign: soa[idx] = soaref;
     return *this;
   }
@@ -448,7 +448,6 @@ class SimulationObjectExt
   /// This data member holds information on which NUMA node this sim object is
   /// stored.
   vec<typename SoHandle::NumaNode_t> numa_node_ = {{}};
-
 
   /// @brief Function to copy biology modules from one structure to another
   /// @param event event will be passed on to biology module to determine

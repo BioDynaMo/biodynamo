@@ -352,8 +352,7 @@ struct Capsule;
                                                                                \
   /** Equivalent to std::vector<> resize */                                    \
   template <typename T = Backend>                                              \
-  typename enable_if<is_soa<T>::value>::type resize(                           \
-      std::size_t new_size) {                                                  \
+  typename enable_if<is_soa<T>::value>::type resize(std::size_t new_size) {    \
     Base::resize(new_size);                                                    \
     BDM_SIM_OBJECT_RESIZE_BODY(new_size, __VA_ARGS__)                          \
   }                                                                            \

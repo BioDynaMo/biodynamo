@@ -28,8 +28,8 @@
 
 #include "log.h"
 #include "math_util.h"
-#include "param.h"
 #include "parallel_resize_vector.h"
+#include "param.h"
 
 namespace bdm {
 

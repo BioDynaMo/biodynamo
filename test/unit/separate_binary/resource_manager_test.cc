@@ -113,7 +113,7 @@ TEST(ResourceManagerTest, DiffusionGrid) {
 TEST(ResourceManagerTest, RunGetSimObjectTest) { RunGetSimObjectTest<A, B>(); }
 
 TEST(SoHandleTest, Getters) {
-  SoHandle so_handle(1,2,3);
+  SoHandle so_handle(1, 2, 3);
 
   EXPECT_EQ(1u, so_handle.GetNumaNode());
   EXPECT_EQ(2u, so_handle.GetTypeIdx());

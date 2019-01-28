@@ -31,7 +31,8 @@ BDM_SIM_OBJECT(TestSimObject, SimulationObject) {
 
   TestSimObjectExt() {}
 
-  explicit TestSimObjectExt(const std::array<double, 3>& pos) : position_{{pos}} {}
+  explicit TestSimObjectExt(const std::array<double, 3>& pos)
+      : position_{{pos}} {}
 
   template <typename TEvent, typename TOther>
   TestSimObjectExt(const TEvent& event, TOther* other, uint64_t new_oid = 0)
@@ -44,9 +45,7 @@ BDM_SIM_OBJECT(TestSimObject, SimulationObject) {
 
   const std::array<double, 3>& GetPosition() const { return position_[kIdx]; }
 
-  void SetPosition(const std::array<double, 3>& pos) {
-    position_[kIdx] = pos;
-  }
+  void SetPosition(const std::array<double, 3>& pos) { position_[kIdx] = pos; }
 
   void ApplyDisplacement(const std::array<double, 3>&) {}
 

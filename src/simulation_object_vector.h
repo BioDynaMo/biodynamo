@@ -49,15 +49,16 @@ class SimulationObjectVector {
     clear();
     auto* sim = TSimulation::GetActive();
     auto* rm = sim->GetResourceManager();
-    rm->ApplyOnAllTypes([&](auto* sim_objects, uint16_t numa_node, uint16_t type_idx) {
-      data_[numa_node][type_idx].reserve(sim_objects->size());
-      size_[numa_node][type_idx] = sim_objects->size();
-    });
+    rm->ApplyOnAllTypes(
+        [&](auto* sim_objects, uint16_t numa_node, uint16_t type_idx) {
+          data_[numa_node][type_idx].reserve(sim_objects->size());
+          size_[numa_node][type_idx] = sim_objects->size();
+        });
   }
 
   void clear() {  // NOLINT
     for (auto& numa_node_vec : data_) {
-      for(auto& vec : numa_node_vec) {
+      for (auto& vec : numa_node_vec) {
         vec.clear();
       }
     }
@@ -67,14 +68,18 @@ class SimulationObjectVector {
   // size_t size() { return size_.size(); }  // NOLINT
 
   // Returns the number of elements of specified type
-  size_t size(uint16_t numa_node, uint16_t type_idx) { return size_[numa_node][type_idx]; }  // NOLINT
+  size_t size(uint16_t numa_node, uint16_t type_idx) {
+    return size_[numa_node][type_idx];
+  }  // NOLINT
 
   const T& operator[](const SoHandle& handle) const {
-    return data_[handle.GetNumaNode()][handle.GetTypeIdx()][handle.GetElementIdx()];
+    return data_[handle.GetNumaNode()][handle.GetTypeIdx()]
+                [handle.GetElementIdx()];
   }
 
   T& operator[](const SoHandle& handle) {
-    return data_[handle.GetNumaNode()][handle.GetTypeIdx()][handle.GetElementIdx()];
+    return data_[handle.GetNumaNode()][handle.GetTypeIdx()]
+                [handle.GetElementIdx()];
   }
 
  private:

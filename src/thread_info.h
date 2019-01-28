@@ -15,11 +15,12 @@
 #ifndef THREAD_INFO_H_
 #define THREAD_INFO_H_
 
-#include <sched.h>
 #include <omp.h>
+#include <sched.h>
+#include <vector>
 
-#include "util/numa.h"
 #include "log.h"
+#include "util/numa.h"
 
 namespace bdm {
 
@@ -27,10 +28,13 @@ namespace bdm {
 /// node it belongs to.)
 /// NB: Threads **must** be bound to CPUs using `OMP_PROC_BIND=true`.
 class ThreadInfo {
-public:
+ public:
   ThreadInfo() {
     if (omp_get_proc_bind() != 1) {
-      Log::Fatal("ThreadInfo", "The environmental variable OMP_PROC_BIND must be set to true. On Linux run 'export OMP_PROC_BIND=true' prior to running BioDynaMo");
+      Log::Fatal("ThreadInfo",
+                 "The environmental variable OMP_PROC_BIND must be set to "
+                 "true. On Linux run 'export OMP_PROC_BIND=true' prior to "
+                 "running BioDynaMo");
     }
     max_threads_ = omp_get_max_threads();
     numa_nodes_ = numa_num_configured_nodes();
@@ -66,8 +70,8 @@ public:
   /// `numa_run_on_node`, `Renew()` must be called to update the thread
   /// metadata.
   void Renew() {
-    // (openmp thread id -> numa node)
-    #pragma omp parallel
+// (openmp thread id -> numa node)
+#pragma omp parallel
     {
       int tid = omp_get_thread_num();
       thread_numa_mapping_[tid] = numa_node_of_cpu(sched_getcpu());
@@ -77,7 +81,7 @@ public:
     // (omp_thread_id -> thread id in numa)
     for (uint16_t n = 0; n < numa_nodes_; n++) {
       uint64_t cnt = 0;
-      for(uint64_t t = 0; t < thread_numa_mapping_.size(); t++) {
+      for (uint64_t t = 0; t < thread_numa_mapping_.size(); t++) {
         int numa = thread_numa_mapping_[t];
         if (n == numa) {
           numa_thread_id_[t] = cnt;
@@ -88,7 +92,7 @@ public:
     }
   }
 
-private:
+ private:
   /// Maximum number of threads for this simulation.
   uint64_t max_threads_;
   /// Number of NUMA nodes on this machine.
@@ -110,7 +114,6 @@ private:
   /// vector value number of threads
   std::vector<int> threads_in_numa_;
 };
-
 }
 
 #endif  // THREAD_INFO_H_
