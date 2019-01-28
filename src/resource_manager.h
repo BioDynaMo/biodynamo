@@ -483,7 +483,7 @@ class ResourceManager {
           auto correction = so_container->size() % threads_in_numa == 0 ? 0 : 1;
           auto chunk = so_container->size() / threads_in_numa + correction;
           auto start = thread_info_.GetNumaThreadId(tid) * chunk ;
-          auto end = std::min(static_cast<uint64_t>(so_container->size()), start + chunk);
+          auto end = std::min(so_container->size(), start + chunk);
 
           // #pragma omp critical
           // {
