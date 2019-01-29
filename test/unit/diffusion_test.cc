@@ -501,6 +501,51 @@ TEST(DiffusionTest, Convergence) {
   delete d_grid8;
 }
 
+TEST(DiffusionTest, SecretionConcentration) {
+  auto set_param = [&](auto* param) {
+    param->bound_space_ = true;
+    param->min_bound_ = 0;
+    param->max_bound_ = 100;
+    param->leaking_edges_ = true;
+    param->calculate_gradients_ = true;
+  };
+
+  Simulation<> simulation(TEST_NAME, set_param);
+  auto* rm = simulation.GetResourceManager();
+  auto* scheduler = simulation.GetScheduler();
+  auto* param = simulation.GetParam();
+
+  std::array<double, 3> cell_position = {50, 50, 50};
+  Cell cell;
+  cell.SetPosition(cell_position);
+  cell.SetDiameter(10);
+  rm->push_back(cell);
+
+  ModelInitializer::DefineSubstance(0, "substance1", 0.65, 0,
+                                    param->max_bound_ / 2);
+
+  DiffusionGrid* dg = rm->GetDiffusionGrid("substance1");
+
+  // initialize grid diffusion
+  scheduler->Simulate(1);
+
+  for (int i = 0; i < 100; i++) {
+    dg->IncreaseConcentrationBy(cell_position, 1);
+    scheduler->Simulate(1);
+  }
+
+  EXPECT_NEAR(dg->GetConcentration({20, 50, 50}), 0.000297546504698803,
+              abs_error<double>::value);
+  EXPECT_NEAR(dg->GetConcentration({25, 50, 50}), 0.000899639638863217,
+              abs_error<double>::value);
+  EXPECT_NEAR(dg->GetConcentration({30, 50, 50}), 0.00405111093875393,
+              abs_error<double>::value);
+  EXPECT_NEAR(dg->GetConcentration({35, 50, 50}), 0.0101707859583429,
+              abs_error<double>::value);
+  EXPECT_NEAR(dg->GetConcentration({40, 50, 50}), 0.0386124299631847,
+              abs_error<double>::value);
+}
+
 #ifdef USE_CATALYST
 
 TEST(DiffusionTest, ModelInitializer) {
