@@ -327,6 +327,59 @@ TEST(GridTest, NonEmptyBoundedTestThresholdDimensions) {
   EXPECT_EQ(99, max_dimensions[1]);
 }
 
+TEST(GridTest, IterateZOrder) {
+  Simulation<> simulation(TEST_NAME);
+  auto* rm = simulation.GetResourceManager();
+  auto* grid = simulation.GetGrid();
+
+  CellFactory(rm, 3);
+
+  // expecting a 4 * 4 * 4 grid
+  grid->Initialize();
+
+  std::vector<SoHandle> zorder;
+  zorder.reserve(rm->GetNumSimObjects());
+  auto lambda = [&](auto soh) { zorder.push_back(soh); };
+  grid->IterateZOrder(lambda);
+
+  ASSERT_EQ(27u, zorder.size());
+  // boxes separated by comments //
+  EXPECT_EQ(SoHandle(0, 0, 13), zorder[0]);
+  EXPECT_EQ(SoHandle(0, 0, 12), zorder[1]);
+  EXPECT_EQ(SoHandle(0, 0, 10), zorder[2]);
+  EXPECT_EQ(SoHandle(0, 0, 9), zorder[3]);
+  EXPECT_EQ(SoHandle(0, 0, 4), zorder[4]);
+  EXPECT_EQ(SoHandle(0, 0, 3), zorder[5]);
+  EXPECT_EQ(SoHandle(0, 0, 1), zorder[6]);
+  EXPECT_EQ(SoHandle(0, 0, 0), zorder[7]);
+  //
+  EXPECT_EQ(SoHandle(0, 0, 14), zorder[8]);
+  EXPECT_EQ(SoHandle(0, 0, 11), zorder[9]);
+  EXPECT_EQ(SoHandle(0, 0, 5), zorder[10]);
+  EXPECT_EQ(SoHandle(0, 0, 2), zorder[11]);
+  //
+  EXPECT_EQ(SoHandle(0, 0, 16), zorder[12]);
+  EXPECT_EQ(SoHandle(0, 0, 15), zorder[13]);
+  EXPECT_EQ(SoHandle(0, 0, 7), zorder[14]);
+  EXPECT_EQ(SoHandle(0, 0, 6), zorder[15]);
+  //
+  EXPECT_EQ(SoHandle(0, 0, 17), zorder[16]);
+  EXPECT_EQ(SoHandle(0, 0, 8), zorder[17]);
+  //
+  EXPECT_EQ(SoHandle(0, 0, 22), zorder[18]);
+  EXPECT_EQ(SoHandle(0, 0, 21), zorder[19]);
+  EXPECT_EQ(SoHandle(0, 0, 19), zorder[20]);
+  EXPECT_EQ(SoHandle(0, 0, 18), zorder[21]);
+  //
+  EXPECT_EQ(SoHandle(0, 0, 23), zorder[22]);
+  EXPECT_EQ(SoHandle(0, 0, 20), zorder[23]);
+  //
+  EXPECT_EQ(SoHandle(0, 0, 25), zorder[24]);
+  EXPECT_EQ(SoHandle(0, 0, 24), zorder[25]);
+  //
+  EXPECT_EQ(SoHandle(0, 0, 26), zorder[26]);
+}
+
 // TODO(lukas) test with different kind of cells
 
 }  // namespace bdm

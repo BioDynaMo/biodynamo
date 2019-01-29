@@ -43,6 +43,7 @@ else()
 endif()
 
 # -------------------- find packages ------------------------------------------
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "$ENV{BDM_INSTALL_DIR}/biodynamo/cmake/")
 # CMake cannot find LLVM's Clang OpenMP library by default (this makes
 # find_package(OpenMP) fail). Therefore we manually specify the OpenMP flags.
 # Furthermore, rootcling cannot find omp.h by default, so we copy this (with a
@@ -66,6 +67,13 @@ if(cuda)
 endif()
 if(opencl)
   find_package(OpenCL)
+endif()
+
+find_package(Numa REQUIRED)
+if (NUMA_FOUND)
+   include_directories(${NUMA_INCLUDE_DIR})
+   link_directories(${NUMA_LIBRARY_DIR})
+   set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${NUMA_LIBRARIES})
 endif()
 
 if(paraview)

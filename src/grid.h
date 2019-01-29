@@ -26,7 +26,13 @@
 #include <limits>
 #include <memory>
 #include <mutex>
+#ifdef LINUX
+#include <parallel/algorithm>
+#endif  // LINUX
+#include <utility>
 #include <vector>
+
+#include <morton/morton.h>
 
 #include "constant.h"
 #include "fixed_size_vector.h"
@@ -91,7 +97,8 @@ class Grid {
     /// Next element can be found at `successors_[start_]`
     std::atomic<SoHandle> start_;
     /// length of the linked list (i.e. number of simulation objects)
-    std::atomic<uint16_t> length_;
+    /// uint64_t, because sizeof(Box) = 16, for uint16_t and uint64_t
+    std::atomic<uint64_t> length_;
 
     Box() : start_(SoHandle()), length_(0) {}
     /// Copy Constructor required for boxes_.resize()
@@ -315,13 +322,15 @@ class Grid {
       successors_.Reserve();
 
       // Assign simulation objects to boxes
-      rm->ApplyOnAllElementsParallel([this](auto&& sim_object, SoHandle id) {
-        const auto& position = sim_object.GetPosition();
-        auto idx = this->GetBoxIndex(position);
-        auto box = this->GetBoxPointer(idx);
-        box->AddObject(id, &successors_);
-        sim_object.SetBoxIdx(idx);
-      });
+      rm->ApplyOnAllElementsParallelDynamic(
+          1000, [this](auto&& sim_object,
+                       SoHandle id) {  // FIXME move back to parallel
+            const auto& position = sim_object.GetPosition();
+            auto idx = this->GetBoxIndex(position);
+            auto box = this->GetBoxPointer(idx);
+            box->AddObject(id, &successors_);
+            sim_object.SetBoxIdx(idx);
+          });
       auto* param = TSimulation::GetActive()->GetParam();
       if (param->bound_space_) {
         int min = param->min_bound_;
@@ -398,6 +407,48 @@ class Grid {
     const double dz = pos2[2] - pos1[2];
     const double distance = dz * dz + dy2_plus_dx2;
     return distance < squared_radius;
+  }
+
+  void UpdateBoxZOrder() {
+    // iterate boxes in Z-order / morton order
+    // TODO(lukas) this is a very quick attempt to test an idea
+    // improve performance of this brute force solution
+    zorder_sorted_boxes_.resize(boxes_.size());
+#pragma omp parallel for collapse(3)
+    for (uint32_t x = 0; x < num_boxes_axis_[0]; x++) {
+      for (uint32_t y = 0; y < num_boxes_axis_[1]; y++) {
+        for (uint32_t z = 0; z < num_boxes_axis_[2]; z++) {
+          auto box_idx = GetBoxIndex(std::array<uint32_t, 3>{x, y, z});
+          auto morton = libmorton::morton3D_64_encode(x, y, z);
+          zorder_sorted_boxes_[box_idx] =
+              std::pair<uint32_t, const Box*>{morton, &boxes_[box_idx]};
+        }
+      }
+    }
+#ifdef LINUX
+    __gnu_parallel::sort(
+        zorder_sorted_boxes_.begin(), zorder_sorted_boxes_.end(),
+        [](const auto& lhs, const auto& rhs) { return lhs.first < rhs.first; });
+#else
+    std::sort(
+        zorder_sorted_boxes_.begin(), zorder_sorted_boxes_.end(),
+        [](const auto& lhs, const auto& rhs) { return lhs.first < rhs.first; });
+#endif  // LINUX
+  }
+
+  /// This method iterates over all elements. Iteration is performed in
+  /// Z-order of boxes. There is no particular order for elements inside a box.
+  template <typename Lambda>
+  void IterateZOrder(const Lambda& lambda) {
+    UpdateBoxZOrder();
+    for (uint64_t i = 0; i < zorder_sorted_boxes_.size(); i++) {
+      auto it = zorder_sorted_boxes_[i].second->begin();
+      while (!it.IsAtEnd()) {
+        // Call lambda with SoHandle
+        lambda(*it);
+        ++it;
+      }
+    }
   }
 
   /// @brief      Applies the given lambda to each neighbor
@@ -643,8 +694,9 @@ class Grid {
   template <typename TUint32>
   void GetSuccessors(std::vector<TUint32>* successors) {
     uint16_t type = 0;
-    for (size_t i = 0; i < successors_.size(type); i++) {
-      auto sh = SoHandle(type, i);
+    uint16_t numa_node = 0;
+    for (size_t i = 0; i < successors_.size(numa_node, type); i++) {
+      auto sh = SoHandle(numa_node, type, i);
       (*successors)[i] = successors_[sh].GetElementIdx();
     }
   }
@@ -803,10 +855,12 @@ class Grid {
   /// Stores the min / max dimension value that need to be surpassed in order
   /// to trigger a diffusion grid change
   std::array<int32_t, 2> threshold_dimensions_;
-  // Flag to indicate that the grid dimensions have increased
+  /// Flag to indicate that the grid dimensions have increased
   bool has_grown_ = false;
   /// Flag to indicate if the grid has been initialized or not
   bool initialized_ = false;
+  /// stores pairs of <box morton code,  box pointer> sorted by morton code.
+  ParallelResizeVector<std::pair<uint32_t, const Box*>> zorder_sorted_boxes_;
 
   /// Holds instance of NeighborMutexBuilder if it is enabled.
   /// If `DisableNeighborMutexes` has been called this member set to nullptr.
@@ -840,68 +894,88 @@ class Grid {
     auto* rm = TSimulation::GetActive()->GetResourceManager();
 
     const auto max_threads = omp_get_max_threads();
+    // allocate version for each thread - avoid false sharing by padding them
+    // assumes 64 byte cache lines (8 * sizeof(double))
+    std::vector<std::array<double, 8>> xmin(max_threads,
+                                            {{Constant::kInfinity}});
+    std::vector<std::array<double, 8>> ymin(max_threads,
+                                            {{Constant::kInfinity}});
+    std::vector<std::array<double, 8>> zmin(max_threads,
+                                            {{Constant::kInfinity}});
 
-    std::vector<std::array<double, 6>*> all_grid_dimensions(max_threads,
-                                                            nullptr);
-    std::vector<double*> all_largest_object_size(max_threads, nullptr);
+    std::vector<std::array<double, 8>> xmax(max_threads,
+                                            {{-Constant::kInfinity}});
+    std::vector<std::array<double, 8>> ymax(max_threads,
+                                            {{-Constant::kInfinity}});
+    std::vector<std::array<double, 8>> zmax(max_threads,
+                                            {{-Constant::kInfinity}});
 
-#pragma omp parallel
-    {
-      auto thread_id = omp_get_thread_num();
-      auto* grid_dimensions = new std::array<double, 6>;
-      *grid_dimensions = {{Constant::kInfinity, -Constant::kInfinity,
-                           Constant::kInfinity, -Constant::kInfinity,
-                           Constant::kInfinity, -Constant::kInfinity}};
-      double* largest_object_size = new double;
-      *largest_object_size = 0;
-      all_grid_dimensions[thread_id] = grid_dimensions;
-      all_largest_object_size[thread_id] = largest_object_size;
+    std::vector<std::array<double, 8>> largest(max_threads, {{0}});
 
-      rm->ApplyOnAllTypes([&](auto* sim_objects, uint16_t type_idx) {
-#pragma omp for schedule(dynamic, 100)
-        for (size_t i = 0; i < sim_objects->size(); i++) {
-          const auto& position = (*sim_objects)[i].GetPosition();
-          for (size_t j = 0; j < 3; j++) {
-            if (position[j] < (*grid_dimensions)[2 * j]) {
-              (*grid_dimensions)[2 * j] = position[j];
-            }
-            if (position[j] > (*grid_dimensions)[2 * j + 1]) {
-              (*grid_dimensions)[2 * j + 1] = position[j];
-            }
-          }
-          auto diameter = (*sim_objects)[i].GetDiameter();
-          if (diameter > *largest_object_size) {
-            *largest_object_size = diameter;
-          }
-        }
-      });
-
-#pragma omp master
-      {
-        for (int i = 0; i < max_threads; i++) {
-          for (size_t j = 0; j < 3; j++) {
-            if ((*all_grid_dimensions[i])[2 * j] <
-                (*ret_grid_dimensions)[2 * j]) {
-              (*ret_grid_dimensions)[2 * j] = (*all_grid_dimensions[i])[2 * j];
-            }
-            if ((*all_grid_dimensions[i])[2 * j + 1] >
-                (*ret_grid_dimensions)[2 * j + 1]) {
-              (*ret_grid_dimensions)[2 * j + 1] =
-                  (*all_grid_dimensions[i])[2 * j + 1];
-            }
-          }
-          if ((*all_largest_object_size[i]) > largest_object_size_) {
-            largest_object_size_ = *(all_largest_object_size[i]);
-          }
-        }
+    rm->ApplyOnAllElementsParallelDynamic(1000, [&](auto&& so, const SoHandle) {
+      auto tid = omp_get_thread_num();
+      const auto& position = so.GetPosition();
+      // x
+      if (position[0] < xmin[tid][0]) {
+        xmin[tid][0] = position[0];
       }
-    }
+      if (position[0] > xmax[tid][0]) {
+        xmax[tid][0] = position[0];
+      }
+      // y
+      if (position[1] < ymin[tid][0]) {
+        ymin[tid][0] = position[1];
+      }
+      if (position[1] > ymax[tid][0]) {
+        ymax[tid][0] = position[1];
+      }
+      // z
+      if (position[2] < zmin[tid][0]) {
+        zmin[tid][0] = position[2];
+      }
+      if (position[2] > zmax[tid][0]) {
+        zmax[tid][0] = position[2];
+      }
+      // larget object
+      auto diameter = so.GetDiameter();
+      if (diameter > largest[tid][0]) {
+        largest[tid][0] = diameter;
+      }
+    });
 
-    for (auto element : all_grid_dimensions) {
-      delete element;
-    }
-    for (auto element : all_largest_object_size) {
-      delete element;
+    // reduce partial results into global one
+    double& gxmin = (*ret_grid_dimensions)[0];
+    double& gxmax = (*ret_grid_dimensions)[1];
+    double& gymin = (*ret_grid_dimensions)[2];
+    double& gymax = (*ret_grid_dimensions)[3];
+    double& gzmin = (*ret_grid_dimensions)[4];
+    double& gzmax = (*ret_grid_dimensions)[5];
+    for (int tid = 0; tid < max_threads; tid++) {
+      // x
+      if (xmin[tid][0] < gxmin) {
+        gxmin = xmin[tid][0];
+      }
+      if (xmax[tid][0] > gxmax) {
+        gxmax = xmax[tid][0];
+      }
+      // y
+      if (ymin[tid][0] < gymin) {
+        gymin = ymin[tid][0];
+      }
+      if (ymax[tid][0] > gymax) {
+        gymax = ymax[tid][0];
+      }
+      // z
+      if (zmin[tid][0] < gzmin) {
+        gzmin = zmin[tid][0];
+      }
+      if (zmax[tid][0] > gzmax) {
+        gzmax = zmax[tid][0];
+      }
+      // larget object
+      if (largest[tid][0] > largest_object_size_) {
+        largest_object_size_ = largest[tid][0];
+      }
     }
   }
 

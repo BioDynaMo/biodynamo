@@ -113,14 +113,10 @@ class Scheduler {
     };
 
     // update all sim objects: run all CPU operations
-    rm->ApplyOnAllTypes([&](auto* sim_objects, uint16_t type_idx) {
-#pragma omp parallel for schedule(dynamic, 100)
-      for (size_t i = 0; i < sim_objects->size(); i++) {
-        auto&& so = (*sim_objects)[i];
-        sim->GetExecutionContext()->Execute(so, bound_space_op,
-                                            biology_module_op, displacement_op,
-                                            discretization_op);
-      }
+    rm->ApplyOnAllElementsParallelDynamic(1000, [&](auto&& so,
+                                                    const SoHandle&) {
+      sim->GetExecutionContext()->Execute(so, bound_space_op, biology_module_op,
+                                          displacement_op, discretization_op);
     });
 
     // update all sim objects: hardware accelerated operations

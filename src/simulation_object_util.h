@@ -189,6 +189,12 @@ struct Capsule;
 #define BDM_SIM_OBJECT_RESERVE_BODY_ITERATOR(new_cap, data_member) \
   data_member.reserve(new_cap);
 
+#define BDM_SIM_OBJECT_RESIZE_BODY(...) \
+  EVAL(LOOP_2_1(BDM_SIM_OBJECT_RESIZE_BODY_ITERATOR, __VA_ARGS__))
+
+#define BDM_SIM_OBJECT_RESIZE_BODY_ITERATOR(new_cap, data_member) \
+  data_member.resize(new_cap);
+
 #define BDM_SIM_OBJECT_ASSIGNMENT_OP_BODY(...) \
   EVAL(LOOP(BDM_SIM_OBJECT_ASSIGNMENT_OP_BODY_ITERATOR, __VA_ARGS__))
 
@@ -342,6 +348,13 @@ struct Capsule;
       std::size_t new_capacity) {                                              \
     Base::reserve(new_capacity);                                               \
     BDM_SIM_OBJECT_RESERVE_BODY(new_capacity, __VA_ARGS__)                     \
+  }                                                                            \
+                                                                               \
+  /** Equivalent to std::vector<> resize */                                    \
+  template <typename T = Backend>                                              \
+  typename enable_if<is_soa<T>::value>::type resize(std::size_t new_size) {    \
+    Base::resize(new_size);                                                    \
+    BDM_SIM_OBJECT_RESIZE_BODY(new_size, __VA_ARGS__)                          \
   }                                                                            \
                                                                                \
   Self<SoaRef> operator[](size_t idx) { return Self<SoaRef>(this, idx); }      \

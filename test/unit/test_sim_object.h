@@ -20,7 +20,7 @@
 namespace bdm {
 
 BDM_SIM_OBJECT(TestSimObject, SimulationObject) {
-  BDM_SIM_OBJECT_HEADER(TestSimObject, SimulationObject, 1, foo_);
+  BDM_SIM_OBJECT_HEADER(TestSimObject, SimulationObject, 1, position_);
 
  public:
   static std::set<std::string> GetRequiredVisDataMembers() {
@@ -31,6 +31,9 @@ BDM_SIM_OBJECT(TestSimObject, SimulationObject) {
 
   TestSimObjectExt() {}
 
+  explicit TestSimObjectExt(const std::array<double, 3>& pos)
+      : position_{{pos}} {}
+
   template <typename TEvent, typename TOther>
   TestSimObjectExt(const TEvent& event, TOther* other, uint64_t new_oid = 0)
       : Base(event, other, new_oid) {}
@@ -40,9 +43,9 @@ BDM_SIM_OBJECT(TestSimObject, SimulationObject) {
     Base::EventHandler(event, daughter);
   }
 
-  std::array<double, 3> GetPosition() const { return {0, 0, 0}; }
+  const std::array<double, 3>& GetPosition() const { return position_[kIdx]; }
 
-  void SetPosition(const std::array<double, 3>&) {}
+  void SetPosition(const std::array<double, 3>& pos) { position_[kIdx] = pos; }
 
   void ApplyDisplacement(const std::array<double, 3>&) {}
 
@@ -54,7 +57,8 @@ BDM_SIM_OBJECT(TestSimObject, SimulationObject) {
 
   double GetDiameter() const { return 3.14; }
 
-  vec<int> foo_;
+ protected:
+  vec<std::array<double, 3>> position_;
 };
 
 }  // namespace bdm

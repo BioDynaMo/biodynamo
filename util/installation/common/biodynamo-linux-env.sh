@@ -56,6 +56,9 @@ else
   export CXX=g++
 fi
 
+# OpenMP
+export OMP_PROC_BIND=true
+
 # CentOs specifics
 if [ `lsb_release -si` == "CentOS" ]; then
   # python

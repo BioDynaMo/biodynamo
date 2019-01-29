@@ -251,7 +251,7 @@ TEST(SimulationObjectUtilTest, ForEachDataMember) {
     if (dm_name != "neurites_" && dm_name != "position_" &&
         dm_name != "diameter_" && dm_name != "biology_modules_" &&
         dm_name != "uid_" && dm_name != "box_idx_" &&
-        dm_name != "run_bm_loop_idx_" && dm_name != "foo_") {
+        dm_name != "run_bm_loop_idx_" && dm_name != "numa_node_") {
       FAIL() << "Data member " << dm_name << "does not exist" << std::endl;
     }
   };
@@ -355,6 +355,23 @@ TEST(SimulationObjectUtilTest, GetSoPtr) {
     SoPointer<SoaNeuron, Soa> expected((*neurons)[i].GetUid());
     EXPECT_EQ(expected, (*neurons)[i].GetSoPtr());
   }
+}
+
+TEST(SimulationObjectUtilTest, GetSoHandle) {
+  Simulation<> simulation(TEST_NAME);
+  auto* rm = simulation.GetResourceManager();
+
+  Neuron neuron;
+  auto neuron_id = neuron.GetUid();
+  rm->push_back(neuron);
+
+  EXPECT_EQ(SoHandle(0, 0, 0),
+            rm->GetSimObject<Neuron>(neuron_id).GetSoHandle());
+
+  auto&& neuron_ref = rm->GetSimObject<Neuron>(neuron_id);
+  neuron_ref.SetNumaNode(5);
+
+  EXPECT_EQ(SoHandle(5, 0, 0), neuron_ref.GetSoHandle());
 }
 
 TEST(SimulationObjectUtilTest, IsSoType) {

@@ -45,7 +45,7 @@ function InstallPackages {
   INSTALL_PACKAGES="freeglut-devel  git valgrind  \
     python python-pip rh-python36 python-devel  \
     devtoolset-7-gcc* make cmake llvm-toolset-7 llvm-toolset-7-clang-tools-extra  \
-    doxygen graphviz lcov"
+    doxygen graphviz lcov numactl-devel"
 
   EchoInfo "This script uses yum to install centos-release-scl, epel-release, and:"
   for p in $INSTALL_PACKAGES; do

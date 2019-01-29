@@ -364,27 +364,30 @@ class CatalystAdaptor {
     vtk_so_grids_.resize(param->visualize_sim_objects_.size());
     unsigned so_idx = 0;
 
-    rm->ApplyOnAllTypes([&, this](auto* sim_objects, uint16_t type_idx) {
-      auto so_name = sim_objects->GetScalarTypeName();
+    rm->ApplyOnAllTypes(
+        [&, this](auto* sim_objects, uint16_t numa_node, uint16_t type_idx) {
+          auto so_name = sim_objects->GetScalarTypeName();
 
-      if (param->visualize_sim_objects_.find(so_name) !=
-          param->visualize_sim_objects_.end()) {
-        data_description->AddInput(so_name.c_str());
+          if (param->visualize_sim_objects_.find(so_name) !=
+              param->visualize_sim_objects_.end()) {
+            data_description->AddInput(so_name.c_str());
 
-        // If we segfault at here it probably means that there is a problem with
-        // the pipeline (either the C++ pipeline or Python pipeline)
-        // We do not need to RequestDataDescription in Export Mode, because we
-        // do not make use of Catalyst CoProcessing capabilities
-        if (exclusive_export_viz_ ||
-            (g_processor_->RequestDataDescription(
-                data_description.GetPointer())) != 0) {
-          this->BuildCellsVTKStructures(sim_objects, so_idx);
-          data_description->GetInputDescriptionByName(so_name.c_str())
-              ->SetGrid(vtk_so_grids_[so_idx].data);
-        }
-        so_idx++;
-      }
-    });
+            // If we segfault at here it probably means that there is a problem
+            // with
+            // the pipeline (either the C++ pipeline or Python pipeline)
+            // We do not need to RequestDataDescription in Export Mode, because
+            // we
+            // do not make use of Catalyst CoProcessing capabilities
+            if (exclusive_export_viz_ ||
+                (g_processor_->RequestDataDescription(
+                    data_description.GetPointer())) != 0) {
+              this->BuildCellsVTKStructures(sim_objects, so_idx);
+              data_description->GetInputDescriptionByName(so_name.c_str())
+                  ->SetGrid(vtk_so_grids_[so_idx].data);
+            }
+            so_idx++;
+          }
+        });
 
     if (so_idx != param->visualize_sim_objects_.size()) {
       Log::Fatal("Visualize Simulation Objects",
