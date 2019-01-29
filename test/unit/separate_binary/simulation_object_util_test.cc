@@ -248,7 +248,6 @@ TEST(SimulationObjectUtilTest, ForEachDataMember) {
   auto verify = [&](auto* data_member, const std::string& dm_name) {
     ASSERT_EQ(1u, data_member->size());
     counter++;
-    std::cout << dm_name << std::endl;
     if (dm_name != "neurites_" && dm_name != "position_" &&
         dm_name != "diameter_" && dm_name != "biology_modules_" &&
         dm_name != "uid_" && dm_name != "box_idx_" &&
