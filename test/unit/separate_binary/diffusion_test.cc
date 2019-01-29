@@ -49,14 +49,14 @@ TEST(DiffusionTest, SecretionConcentration) {
   ModelInitializer::DefineSubstance(0, "substance1", 0.65, 0,
                                     param->max_bound_ / 2);
 
-  auto& CellPosition = cell->GetPosition();
+  auto& cell_position = cell->GetPosition();
   DiffusionGrid* dg = rm->GetDiffusionGrid("substance1");
 
   // initialize grid diffusion
   scheduler->Simulate(1);
 
   for (int i = 0; i < 100; i++) {
-    dg->IncreaseConcentrationBy(CellPosition, 1);
+    dg->IncreaseConcentrationBy(cell_position, 1);
     scheduler->Simulate(1);
   }
 
