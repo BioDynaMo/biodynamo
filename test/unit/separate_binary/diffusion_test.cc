@@ -17,8 +17,8 @@
 #include "cell.h"
 #include "gtest/gtest.h"
 #include "simulation_implementation.h"
-#include "unit/test_util.h"
 #include "substance_initializers.h"
+#include "unit/test_util.h"
 
 namespace bdm {
 
@@ -30,12 +30,12 @@ BDM_CTPARAM() {
 
 TEST(DiffusionTest, SecretionConcentration) {
   auto set_param = [&](auto* param) {
-  param->bound_space_ = true;
-  param->min_bound_ = 0;
-  param->max_bound_ = 100;
-  param->leaking_edges_ = true;
-  param->calculate_gradients_ = true;
-};
+    param->bound_space_ = true;
+    param->min_bound_ = 0;
+    param->max_bound_ = 100;
+    param->leaking_edges_ = true;
+    param->calculate_gradients_ = true;
+  };
 
   Simulation<> simulation(TEST_NAME, set_param);
   auto* rm = simulation.GetResourceManager();
@@ -60,17 +60,16 @@ TEST(DiffusionTest, SecretionConcentration) {
     scheduler->Simulate(1);
   }
 
-  EXPECT_NEAR(dg->GetConcentration({20, 50, 50}),
-    0.000297546504698803, abs_error<double>::value);
-  EXPECT_NEAR(dg->GetConcentration({25, 50, 50}),
-    0.000899639638863217, abs_error<double>::value);
-  EXPECT_NEAR(dg->GetConcentration({30, 50, 50}),
-    0.00405111093875393, abs_error<double>::value);
-  EXPECT_NEAR(dg->GetConcentration({35, 50, 50}),
-    0.0101707859583429, abs_error<double>::value);
-  EXPECT_NEAR(dg->GetConcentration({40, 50, 50}),
-    0.0386124299631847, abs_error<double>::value);
-
+  EXPECT_NEAR(dg->GetConcentration({20, 50, 50}), 0.000297546504698803,
+              abs_error<double>::value);
+  EXPECT_NEAR(dg->GetConcentration({25, 50, 50}), 0.000899639638863217,
+              abs_error<double>::value);
+  EXPECT_NEAR(dg->GetConcentration({30, 50, 50}), 0.00405111093875393,
+              abs_error<double>::value);
+  EXPECT_NEAR(dg->GetConcentration({35, 50, 50}), 0.0101707859583429,
+              abs_error<double>::value);
+  EXPECT_NEAR(dg->GetConcentration({40, 50, 50}), 0.0386124299631847,
+              abs_error<double>::value);
 }
 
 }  // end namespace bdm
