@@ -341,10 +341,6 @@ class Grid {
       if (nb_mutex_builder_ != nullptr) {
         nb_mutex_builder_->Update();
       }
-
-      if (has_grown_) {
-        UpdateBoxZOrder();
-      }
     } else {
       // There are no sim objects in this simulation
       auto* param = TSimulation::GetActive()->GetParam();
@@ -443,7 +439,8 @@ class Grid {
   /// This method iterates over all elements. Iteration is performed in
   /// Z-order of boxes. There is no particular order for elements inside a box.
   template <typename Lambda>
-  void IterateZOrder(const Lambda& lambda) const {
+  void IterateZOrder(const Lambda& lambda) {
+    UpdateBoxZOrder();
     for (uint64_t i = 0; i < zorder_sorted_boxes_.size(); i++) {
       auto it = zorder_sorted_boxes_[i].second->begin();
       while (!it.IsAtEnd()) {
