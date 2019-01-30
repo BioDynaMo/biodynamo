@@ -16,9 +16,9 @@
 if [[ $# -ne 0 ]]; then
   echo "Wrong number of arguments.
 Description:
-  Run a travis default_build
+  Check code style
 Usage:
-  default-build.sh
+  check-code-style.sh
 No Arguments
 "
   exit 1
@@ -29,10 +29,6 @@ BDM_PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../.."
 set -e -x
 
 echo ${TRAVIS_OS_NAME}
-
-# start x virtual framebuffer for headless environments.
-export DISPLAY=:99.0
-util/xvfb-initd.sh start
 
 # git describe does not work if last commit tag is not checked out
 git fetch --unshallow || true
@@ -45,7 +41,7 @@ python3 --version
 # https://github.com/travis-ci/travis-ci/issues/6069
 git remote set-branches --add origin master
 
-$BDM_PROJECT_DIR/install.sh << EOF
+$BDM_PROJECT_DIR/prerequisites.sh << EOF
 y
 Y
 EOF
@@ -55,14 +51,12 @@ set +e +x
 source ~/.bdm/biodynamo-env.sh
 set -e -x
 
-# output compiler information
-echo ${CXX}
-${CXX} --version || true
-${CXX} -v || true
+# print lines-of-code statistic
+cloc --exclude-dir=build .
 
-cd build
-make check
-
-if [ $TRAVIS_BRANCH = "master" ] && [ $TRAVIS_OS_NAME = "linux" ] && [ $TRAVIS_PULL_REQUEST = "false" ]; then
-  ../util/travis-ci/deploy.sh
-fi
+mkdir build && cd build
+cmake ..
+cmake --build . --target fetch-master
+cmake --build . --target show-format || true
+cmake --build . --target show-tidy || true
+cmake --build . --target check-cpplint || true
