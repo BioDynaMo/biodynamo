@@ -64,7 +64,7 @@ inline int Simulate(int argc, const char** argv) {
     // Create initial model
     auto* rm = sim->GetResourceManager();
     Cell cell(30);
-    cell.AddBiologyModule(Divide());
+    cell.AddBiologyModule(new Divide());
     rm->push_back(cell);
   }
 

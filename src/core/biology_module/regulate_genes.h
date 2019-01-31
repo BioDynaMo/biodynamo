@@ -36,16 +36,23 @@ struct RegulateGenes : public BaseBiologyModule {
 
   explicit RegulateGenes(EventId event) : BaseBiologyModule(event) {}
 
-  /// Default event constructor
-  template <typename TEvent, typename TBm>
-  RegulateGenes(const TEvent& event, TBm* other, uint64_t new_oid = 0) {
-    concentrations_ = other->concentrations_;
-    first_derivatives_ = other->first_derivatives_;
+  /// Create a new instance of this object using the default constructor.
+  BaseBiologyModule* GetInstance() const { return new RegulateGenes(); }
+
+  void EventConstructor(const Event& event, BaseBiologyModule* other, uint64_t new_oid = 0) override {
+    BaseBiologyModule::EventConstructor(event, other, new_oid);
+    if(RegulateGenes* rgbm = dynamic_cast<RegulateGenes*>(other)) {
+      concentrations_ = rgbm->concentrations_;
+      first_derivatives_ = rgbm->first_derivatives_;
+    } else {
+      Log::Fatal("RegulateGenes::EventConstructor", "other was not of type RegulateGenes");
+    }
   }
 
   /// Empty default event handler.
-  template <typename TEvent, typename... TBms>
-  void EventHandler(const TEvent&, TBms*...) {}
+  void EventHandler(const Event &event, BaseBiologyModule *other1, BaseBiologyModule* other2 = nullptr) override {
+    BaseBiologyModule::EventHandler(event, other1, other2);
+  }
 
   /// AddGene adds a new differential equation.
   /// \param first_derivative differential equation in the form:
@@ -68,8 +75,7 @@ struct RegulateGenes : public BaseBiologyModule {
 
   /// Method Run() contains the implementation for Runge-Khutta and Euler
   /// methods for solving ODE.
-  template <typename T, typename TSimulation = Simulation>
-  void Run(T* cell) {
+  void Run(SimObject* sim_object) override {
     auto* sim = Simulation::GetActive();
     auto* param = sim->GetParam();
     auto* scheduler = sim->GetScheduler();

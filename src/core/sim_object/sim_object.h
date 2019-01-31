@@ -145,7 +145,11 @@ class SimObjectExt {
  public:
   SimObjectExt() : Base() { uid_ = SoUidGenerator::Get()->NewSoUid(); }
 
-  virtual ~SimObjectExt() {}
+  virtual ~SimObjectExt() {
+    for(auto* el : biology_modules_) {
+      delete el;
+    }
+  }
 
   /// Create a new instance of this object using the default constructor.
   virtual SimObject* GetInstance() const { return new SimObject(); }
@@ -216,62 +220,50 @@ class SimObjectExt {
 
   // ---------------------------------------------------------------------------
   // Biology modules
-  // using BiologyModules =
-  //     typename TCompileTimeParam::template CTMap<MostDerivedScalar,
-  //                                                0>::BiologyModules::Variant_t;
-  //
-  // /// Add a biology module to this cell
-  // /// @tparam TBiologyModule type of the biology module. Must be in the set of
-  // ///         types specified in `BiologyModules`
-  // template <typename TBiologyModule>
-  // void AddBiologyModule(TBiologyModule &&module) {
-  //   biology_modules_.emplace_back(module);
-  // }
-  //
-  // /// Remove a biology module from this cell
-  // template <typename TBiologyModule>
-  // void RemoveBiologyModule(const TBiologyModule *remove_module) {
-  //   for (unsigned int i = 0; i < biology_modules_.size(); i++) {
-  //     const TBiologyModule *module =
-  //         get_if<TBiologyModule>(&biology_modules_[i]);
-  //     if (module == remove_module) {
-  //       biology_modules_.erase(biology_modules_.begin() + i);
-  //       // if remove_module was before or at the current run_bm_loop_idx_[kidx],
-  //       // correct it by subtracting one.
-  //       run_bm_loop_idx_ -= i > run_bm_loop_idx_ ? 0 : 1;
-  //     }
-  //   }
-  // }
-  //
-  // /// Execute all biology modulesq
-  // void RunBiologyModules() {
-  //   RunVisitor<MostDerived<Backend>> visitor(
-  //       static_cast<MostDerived<Backend> *>(this));
-  //   for (run_bm_loop_idx_ = 0;
-  //        run_bm_loop_idx_ < biology_modules_.size();
-  //        ++run_bm_loop_idx_) {
-  //     auto &module = biology_modules_[run_bm_loop_idx_];
-  //     visit(visitor, module);
-  //   }
-  // }
-  //
-  // /// Get all biology modules of this cell that match the given type.
-  // /// @tparam TBiologyModule  type of the biology module
-  // template <typename TBiologyModule>
-  // std::vector<const TBiologyModule *> GetBiologyModules() const {
-  //   std::vector<const TBiologyModule *> modules;
-  //   for (unsigned int i = 0; i < biology_modules_.size(); i++) {
-  //     const TBiologyModule *module =
-  //         get_if<TBiologyModule>(&biology_modules_[i]);
-  //     if (module != nullptr) {
-  //       modules.push_back(module);
-  //     }
-  //   }
-  //   return modules;
-  // }
-  //
-  // /// Return all biology modules
-  // const auto &GetAllBiologyModules() const { return biology_modules_; }
+  using BiologyModules =
+      typename TCompileTimeParam::template CTMap<MostDerivedScalar,
+                                                 0>::BiologyModules::Variant_t;
+
+  /// Add a biology module to this sim object
+  /// @tparam TBiologyModule type of the biology module. Must be in the set of
+  ///         types specified in `BiologyModules`
+  void AddBiologyModule(BaseBiologyModule* module) {
+    biology_modules_.emplace_back(module);
+  }
+
+  /// Remove a biology module from this sim object
+  void RemoveBiologyModule(const BaseBiologyModule *remove_module) {
+    for (unsigned int i = 0; i < biology_modules_.size(); i++) {
+      if (biology_modules_[i] == remove_module) {
+        biology_modules_.erase(biology_modules_.begin() + i);
+        // if remove_module was before or at the current run_bm_loop_idx_,
+        // correct it by subtracting one.
+        run_bm_loop_idx_ -= i > run_bm_loop_idx_ ? 0 : 1;
+      }
+    }
+  }
+
+  /// Execute all biology modulesq
+  void RunBiologyModules() {
+    for (auto* bm : biology_modules_) {
+      bm->Run(this);
+    }
+  }
+
+  /// Get all biology modules of this cell that match the given type.
+  /// @tparam TBiologyModule  type of the biology module
+  template <typename TBiologyModule>
+  std::vector<const BaseBiologyModule*> GetBiologyModules() const {
+    for (unsigned int i = 0; i < biology_modules_.size(); i++) {
+      if (dynamic_cast<const TBiologyModule*>(biology_modules_[i]) != nullptr) {
+        modules.push_back(biology_modules_[i]);
+      }
+    }
+    return modules;
+  }
+
+  /// Return all biology modules
+  const auto &GetAllBiologyModules() const { return biology_modules_; }
   // ---------------------------------------------------------------------------
 
   void RemoveFromSimulation() const {
@@ -281,23 +273,16 @@ class SimObjectExt {
   virtual void EventConstructor(const Event& event, SimObject* other, uint64_t new_oid = 0) {
     box_idx_ = other->GetBoxIdx();
     // biology modules
-    auto &other_bms = other->biology_modules_;
+    auto* other_bms = &(other->biology_modules_);
     // copy biology_modules_ to me
-    CopyBiologyModules(event, &other_bms, &biology_modules_);
+    CopyBiologyModules(event, other_bms);
   }
 
   virtual void EventHandler(const Event &event, SimObject *other1, SimObject* other2 = nullptr) {
     // call event handler for biology modules
-    if (other2 == nullptr) {
-      auto *other_bms = &(other1->biology_modules_);
-      BiologyModuleEventHandler(event, &biology_modules_, other_bms);
-    } else {
-      // call event handler for biology modules
-      auto *left_bms = &(other1->biology_modules_);
-      auto *right_bms = &(other2->biology_modules_);
-      BiologyModuleEventHandler(event, &(biology_modules_), left_bms,
-                                right_bms);
-    }
+    auto *left_bms = &(other1->biology_modules_);
+    auto *right_bms = &(other2->biology_modules_);
+    BiologyModuleEventHandler(event, left_bms, right_bms);
   }
 
  protected:
@@ -306,7 +291,7 @@ class SimObjectExt {
   /// Grid box index
   uint32_t box_idx_;
   /// collection of biology modules which define the internal behavior
-  // std::vector<BiologyModules> biology_modules_;
+  std::vector<BaseBiologyModules*> biology_modules_;
 
  private:
   /// Helper variable used to support removal of biology modules while
@@ -319,71 +304,55 @@ class SimObjectExt {
   /// stored.
   typename SoHandle::NumaNode_t numa_node_;
 
-  // /// @brief Function to copy biology modules from one structure to another
-  // /// @param event event will be passed on to biology module to determine
-  // ///        whether it should be copied to destination
-  // /// @param src  source vector of biology modules
-  // /// @param dest destination vector of biology modules
-  // /// @tparam TBiologyModules std::vector<Variant<[list of biology modules]>>
-  // template <typename TEvent, typename TSrcBms, typename TDestBms>
-  // void CopyBiologyModules(const TEvent &event, TSrcBms *src, TDestBms *dest) {
-  //   auto copy = [&](auto &bm) {
-  //     if (bm.Copy(event.kEventId)) {
-  //       raw_type<decltype(bm)> new_bm(event, &bm);
-  //       dest->emplace_back(std::move(new_bm));
-  //     }
-  //   };
-  //   for (auto &module : *src) {
-  //     visit(copy, module);
-  //   }
-  // }
-  //
-  // /// @brief Function to invoke the EventHandler of the biology module or remove
-  // ///                  it from `current`.
-  // /// Forwards the event handler call to each biology modules of the triggered
-  // /// simulation object and removes biology modules if they are flagged.
-  // template <typename TEvent, typename TBiologyModules1,
-  //           typename... TBiologyModules>
-  // void BiologyModuleEventHandler(const TEvent &event, TBiologyModules1 *current,
-  //                                TBiologyModules *... bms) {
-  //   // call event handler for biology modules
-  //   uint64_t cnt = 0;
-  //   auto call_bm_event_handler = [&](auto &bm) {
-  //     using BiologyModuleType = raw_type<decltype(bm)>;
-  //
-  //     /// return nullptr of condition is false or pointer to object in variant
-  //     auto extract = [](bool condition, auto *variant) -> BiologyModuleType * {
-  //       if (condition) {
-  //         return get_if<BiologyModuleType>(variant);
-  //       }
-  //       return nullptr;
-  //     };
-  //
-  //     if (!bm.Remove(event.kEventId)) {
-  //       bool copy = bm.Copy(event.kEventId);
-  //       bm.EventHandler(event, extract(copy, &((*bms)[cnt]))...);
-  //       cnt += copy ? 1 : 0;
-  //     }
-  //   };
-  //   for (auto &el : *current) {
-  //     visit(call_bm_event_handler, el);
-  //   }
-  //
-  //   // remove biology modules from current
-  //   bool remove;
-  //   auto remove_from_current = [&](auto &bm) {
-  //     remove = bm.Remove(event.kEventId);
-  //   };
-  //   for (auto it = current->begin(); it != current->end();) {
-  //     remove = false;
-  //     visit(remove_from_current, *it);
-  //     if (remove) {
-  //       it = current->erase(it);
-  //     } else {
-  //       ++it;
-  //     }
-  //   }
-  // }
+  /// @brief Function to copy biology modules from one structure to another
+  /// @param event event will be passed on to biology module to determine
+  ///        whether it should be copied to destination
+  /// @param src  source vector of biology modules
+  /// @param dest destination vector of biology modules
+  /// @tparam TBiologyModules std::vector<Variant<[list of biology modules]>>
+  void CopyBiologyModules(const Event& event, decltype(biology_modules_) *dest) {
+    for (auto* bm : biology_modules_) {
+      if(bm->Copy(event.kEventId)) {
+        auto* new_bm = bm->GetInstance();
+        new_bm->EventConstructor(event, bm);
+        dest->push_back(new_bm);
+      }
+    }
+  }
+
+  /// @brief Function to invoke the EventHandler of the biology module or remove
+  ///                  it from `current`.
+  /// Forwards the event handler call to each biology modules of the triggered
+  /// simulation object and removes biology modules if they are flagged.
+  void BiologyModuleEventHandler(const Event &event, decltype(biology_modules_) *other1,
+                                 decltype(biology_modules_) *other2) {
+    // call event handler for biology modules
+    uint64_t cnt = 0;
+    for(auto* bm : biology_modules_) {
+      bool copy = bm->Copy(event.kEventId);
+      if (!bm->Remove(event.kEventId)) {
+        if(copy) {
+          auto* other1_bm = other1 != nullptr ? (*other1)[cnt] : nullptr;
+          auto* other2_bm = other2 != nullptr ? (*other2)[cnt] : nullptr;
+          bm->EventHandler(event, other1_bm, other2_bm);
+        } else {
+          bm->EventHandler(event, nullptr, nullptr);
+        }
+      }
+      cnt += copy ? 1 : 0;
+    }
+
+    // remove biology modules from current
+    for (auto it = biology_modules_.begin(); it != biology_modules_.end();) {
+      auto* bm = *it;
+      if (bm->Remove(event.kEventId)) {
+        delete *it;
+        it = current->erase(it);
+      } else {
+        ++it;
+      }
+    }
+  }
 };
 
 }  // namespace bdm

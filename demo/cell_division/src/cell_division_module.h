@@ -46,7 +46,7 @@ inline int Simulate(int argc, const char** argv) {
     cell->SetDiameter(30);
     cell->SetAdherence(0.4);
     cell->SetMass(1.0);
-    cell->AddBiologyModule(GrowDivide());
+    cell->AddBiologyModule(new GrowDivide());
     return cell;
   };
   ModelInitializer::Grid3D(cells_per_dim, 20, construct);

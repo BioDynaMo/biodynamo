@@ -80,7 +80,7 @@ inline void RunTest(bool* result, ExecutionMode mode) {
     cell.SetDiameter(30);
     cell.SetAdherence(0.4);
     cell.SetMass(1.0);
-    cell.AddBiologyModule(GrowDivide(30.05, 5000, {gAllEventIds}));
+    cell.AddBiologyModule(new GrowDivide(30.05, 5000, {gAllEventIds}));
     return cell;
   };
 

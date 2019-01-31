@@ -73,8 +73,8 @@ inline int Simulate(int argc, const char** argv) {
     MyCell* cell = new MyCell(position);
     cell->SetDiameter(10);
     cell->SetCellType(1);
-    cell->AddBiologyModule(SubstanceSecretion());
-    cell->AddBiologyModule(Chemotaxis());
+    cell->AddBiologyModule(new SubstanceSecretion());
+    cell->AddBiologyModule(new Chemotaxis());
     return cell;
   };
   ModelInitializer::CreateCellsRandom(param->min_bound_, param->max_bound_,
@@ -85,8 +85,8 @@ inline int Simulate(int argc, const char** argv) {
     MyCell* cell = new MyCell(position);
     cell->SetDiameter(10);
     cell->SetCellType(-1);
-    cell->AddBiologyModule(SubstanceSecretion());
-    cell->AddBiologyModule(Chemotaxis());
+    cell->AddBiologyModule(new SubstanceSecretion());
+    cell->AddBiologyModule(new Chemotaxis());
     return cell;
   };
   ModelInitializer::CreateCellsRandom(param->min_bound_, param->max_bound_,

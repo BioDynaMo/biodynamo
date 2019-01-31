@@ -60,10 +60,10 @@ Next up is creating simulation objects:
     Cell* cell = new Cell(position);
     cell->SetDiameter(30);
     cell->SetMass(1.0);
-    cell->AddBiologyModule(Chemotaxis());
+    cell->AddBiologyModule(new Chemotaxis());
     std::array<double, 3> secretion_position = {{50, 50, 50}};
     if (position == secretion_position) {
-      cell->AddBiologyModule(KaliumSecretion());
+      cell->AddBiologyModule(new KaliumSecretion());
     }
     return cell;
   };
