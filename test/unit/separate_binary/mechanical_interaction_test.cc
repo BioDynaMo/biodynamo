@@ -14,9 +14,7 @@
 
 #include "biodynamo.h"
 #include "core/param/compile_time_param.h"
-#include "core/sim_object/backend.h"
 #include "core/sim_object/cell.h"
-#include "core/simulation_implementation.h"
 #include "gtest/gtest.h"
 #include "neuroscience/compile_time_param.h"
 #include "neuroscience/neurite_element.h"

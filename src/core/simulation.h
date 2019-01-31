@@ -35,9 +35,6 @@ class CatalystAdaptorTest;
 /// ResourceManager, the scheduler, parameters, ... \n
 /// It is possible to create multiple simulations, but only one can be active at
 /// the same time. Creating a new simulation object automatically activates it.
-/// Implementation for `Simulation` can be found in file:
-/// `simulation_implementation.h`. It must be separate to avoid circular
-/// dependencies. It can't be defined in a source file, because it is templated.
 struct Simulation {
   /// This function returns the currently active Simulation simulation.
   static Simulation* GetActive();

@@ -29,13 +29,12 @@
 #include "core/event/event.h"
 #include "core/param/param.h"
 #include "core/shape.h"
-#include "core/sim_object/backend.h"
 #include "core/sim_object/sim_object.h"
 #include "core/util/math.h"
 
 namespace bdm {
 
-BDM_SIM_OBJECT(Cell, SimObject) {
+class Cell : public SimObject {
   BDM_SIM_OBJECT_HEADER(Cell, SimObject, 1, position_, tractor_force_,
                         diameter_, volume_, adherence_, density_);
 
@@ -55,17 +54,17 @@ BDM_SIM_OBJECT(Cell, SimObject) {
 
   static constexpr Shape GetShape() { return Shape::kSphere; }
 
-  CellExt() : density_(1.0) {}
-  explicit CellExt(double diameter) : diameter_(diameter), density_(1.0) {
+  Cell() : density_(1.0) {}
+  explicit Cell(double diameter) : diameter_(diameter), density_(1.0) {
     UpdateVolume();
   }
-  explicit CellExt(const std::array<double, 3>& position)
+  explicit Cell(const std::array<double, 3>& position)
       : position_(position), density_{1.0} {}
 
   /// This constructor is used to create daughter 2 for a cell division event
   /// \see CellDivisionEvent
   template <typename TMother>
-  CellExt(const CellDivisionEvent& event, TMother* mother, uint64_t new_oid = 0)
+  Cell(const CellDivisionEvent& event, TMother* mother, uint64_t new_oid = 0)
       : Base(event, mother, new_oid) {
     auto* daughter = ThisMD();  // FIXME
     // A) Defining some values
@@ -125,7 +124,7 @@ BDM_SIM_OBJECT(Cell, SimObject) {
     // G) TODO(lukas) Copy the intracellular and membrane bound Substances
   }
 
-  virtual ~CellExt() {}
+  virtual ~Cell() {}
 
   /// \brief Divide this cell.
   ///
@@ -133,7 +132,7 @@ BDM_SIM_OBJECT(Cell, SimObject) {
   /// The axis of division is random.
   /// \see CellDivisionEvent
   MostDerivedSoPtr Divide() {
-    auto* random = Simulation_t::GetActive()->GetRandom();
+    auto* random = Simulation::GetActive()->GetRandom();
     return ThisMD()->Divide(random->Uniform(0.9, 1.1));
   }
 
@@ -144,7 +143,7 @@ BDM_SIM_OBJECT(Cell, SimObject) {
   MostDerivedSoPtr Divide(double volume_ratio) {
     // find random point on sphere (based on :
     // http://mathworld.wolfram.com/SpherePointPicking.html)
-    auto* random = Simulation_t::GetActive()->GetRandom();
+    auto* random = Simulation::GetActive()->GetRandom();
     double theta = 2 * Math::kPi * random->Uniform(0, 1);
     double phi = std::acos(2 * random->Uniform(0, 1) - 1);
     return ThisMD()->Divide(volume_ratio, phi, theta);
@@ -155,9 +154,9 @@ BDM_SIM_OBJECT(Cell, SimObject) {
   /// CellDivisionEvent::volume_ratio_ will be between 0.9 and 1.1\n
   /// \see CellDivisionEvent
   MostDerivedSoPtr Divide(const std::array<double, 3>& axis) {
-    auto* random = Simulation_t::GetActive()->GetRandom();
+    auto* random = Simulation::GetActive()->GetRandom();
     auto polarcoord =
-        TransformCoordinatesGlobalToPolar(Math::Add(axis, position_[kIdx]));
+        TransformCoordinatesGlobalToPolar(Math::Add(axis, position_));
     return ThisMD()->Divide(random->Uniform(0.9, 1.1), polarcoord[1],
                             polarcoord[2]);
   }
@@ -168,7 +167,7 @@ BDM_SIM_OBJECT(Cell, SimObject) {
   MostDerivedSoPtr Divide(double volume_ratio,
                           const std::array<double, 3>& axis) {
     auto polarcoord =
-        TransformCoordinatesGlobalToPolar(Math::Add(axis, position_[kIdx]));
+        TransformCoordinatesGlobalToPolar(Math::Add(axis, position_));
     return ThisMD()->Divide(volume_ratio, polarcoord[1], polarcoord[2]);
   }
 
@@ -176,22 +175,22 @@ BDM_SIM_OBJECT(Cell, SimObject) {
   ///
   /// \see CellDivisionEvent
   MostDerivedSoPtr Divide(double volume_ratio, double phi, double theta) {
-    auto* ctxt = Simulation_t::GetActive()->GetExecutionContext();
+    auto* ctxt = Simulation::GetActive()->GetExecutionContext();
     CellDivisionEvent event{volume_ratio, phi, theta};
     auto&& daughter = ctxt->template New<MostDerivedScalar>(event, ThisMD());
     ThisMD()->EventHandler(event, &daughter);
     return daughter.GetSoPtr();
   }
 
-  double GetAdherence() const { return adherence_[kIdx]; }
+  double GetAdherence() const { return adherence_; }
 
-  double GetDiameter() const { return diameter_[kIdx]; }
+  double GetDiameter() const { return diameter_; }
 
-  double GetMass() const { return density_[kIdx] * volume_[kIdx]; }
+  double GetMass() const { return density_ * volume_; }
 
-  double GetDensity() const { return density_[kIdx]; }
+  double GetDensity() const { return density_; }
 
-  const std::array<double, 3>& GetPosition() const { return position_[kIdx]; }
+  const std::array<double, 3>& GetPosition() const { return position_; }
 
   // this only works for SOA backend
   double* GetPositionPtr() { return position_.data()->data(); }
@@ -207,63 +206,62 @@ BDM_SIM_OBJECT(Cell, SimObject) {
   // End TODO
 
   const std::array<double, 3>& GetTractorForce() const {
-    return tractor_force_[kIdx];
+    return tractor_force_;
   }
 
-  double GetVolume() const { return volume_[kIdx]; }
+  double GetVolume() const { return volume_; }
 
-  void SetAdherence(double adherence) { adherence_[kIdx] = adherence; }
+  void SetAdherence(double adherence) { adherence_ = adherence; }
 
   void SetDiameter(double diameter) {
-    diameter_[kIdx] = diameter;
+    diameter_ = diameter;
     UpdateVolume();
   }
 
   void SetVolume(double volume) {
-    volume_[kIdx] = volume;
+    volume_ = volume;
     UpdateDiameter();
   }
 
-  void SetMass(double mass) { density_[kIdx] = mass / volume_[kIdx]; }
+  void SetMass(double mass) { density_ = mass / volume_; }
 
-  void SetDensity(double density) { density_[kIdx] = density; }
+  void SetDensity(double density) { density_ = density; }
 
   void SetPosition(const std::array<double, 3>& position) {
-    position_[kIdx] = position;
+    position_ = position;
   }
 
   void SetTractorForce(const std::array<double, 3>& tractor_force) {
-    tractor_force_[kIdx] = tractor_force;
+    tractor_force_ = tractor_force;
   }
 
   void ChangeVolume(double speed) {
     // scaling for integration step
-    auto* param = Simulation_t::GetActive()->GetParam();
+    auto* param = Simulation::GetActive()->GetParam();
     double delta = speed * param->simulation_time_step_;
-    volume_[kIdx] += delta;
-    if (volume_[kIdx] < 5.2359877E-7) {
-      volume_[kIdx] = 5.2359877E-7;
+    volume_ += delta;
+    if (volume_ < 5.2359877E-7) {
+      volume_ = 5.2359877E-7;
     }
     UpdateDiameter();
   }
 
   void UpdateDiameter() {
     // V = (4/3)*pi*r^3 = (pi/6)*diameter^3
-    diameter_[kIdx] = std::cbrt(volume_[kIdx] * 6 / Math::kPi);
+    diameter_ = std::cbrt(volume_ * 6 / Math::kPi);
   }
 
   void UpdateVolume() {
     // V = (4/3)*pi*r^3 = (pi/6)*diameter^3
-    volume_[kIdx] = Math::kPi / 6 * std::pow(diameter_[kIdx], 3);
+    volume_ = Math::kPi / 6 * std::pow(diameter_, 3);
   }
 
   void UpdatePosition(const std::array<double, 3>& delta) {
-    position_[kIdx][0] += delta[0];
-    position_[kIdx][1] += delta[1];
-    position_[kIdx][2] += delta[2];
+    position_[0] += delta[0];
+    position_[1] += delta[1];
+    position_[2] += delta[2];
   }
 
-  template <typename TSimulation = Simulation>
   std::array<double, 3> CalculateDisplacement(double squared_radius) {
     // Basically, the idea is to make the sum of all the forces acting
     // on the Point mass. It is stored in translationForceOnPointMass.
@@ -285,7 +283,7 @@ BDM_SIM_OBJECT(Cell, SimObject) {
     bool physical_translation = false;
     // bool physical_rotation = false;
 
-    auto* param = Simulation_t::GetActive()->GetParam();
+    auto* param = Simulation::GetActive()->GetParam();
     double h = param->simulation_time_step_;
     std::array<double, 3> movement_at_next_step{0, 0, 0};
 
@@ -350,7 +348,7 @@ BDM_SIM_OBJECT(Cell, SimObject) {
 
       // but we want to avoid huge jumps in the simulation, so there are
       // maximum distances possible
-      auto* param = Simulation_t::GetActive()->GetParam();
+      auto* param = Simulation::GetActive()->GetParam();
       if (norm_of_force * mh > param->simulation_max_displacement_) {
         const auto& norm = Math::Normalize(movement_at_next_step);
         movement_at_next_step[0] =
@@ -375,12 +373,12 @@ BDM_SIM_OBJECT(Cell, SimObject) {
   std::array<double, 3> TransformCoordinatesGlobalToPolar(
       const std::array<double, 3>& coord) const;
 
-  vec<std::array<double, 3>> position_;
-  vec<std::array<double, 3>> tractor_force_;
-  vec<double> diameter_;
-  vec<double> volume_;
-  vec<double> adherence_;
-  vec<double> density_;
+  std::array<double, 3> position_;
+  std::array<double, 3> tractor_force_;
+  double diameter_;
+  double volume_;
+  double adherence_;
+  double density_;
 
   /// \brief EventHandler to modify the data members of this cell
   /// after a cell division.
@@ -397,20 +395,20 @@ BDM_SIM_OBJECT(Cell, SimObject) {
 
 // ----------------------------------------------------------------------------
 // Implementation -------------------------------------------------------------
-BDM_SO_DEFINE(constexpr std::array<double, 3> CellExt)::kXAxis;
-BDM_SO_DEFINE(constexpr std::array<double, 3> CellExt)::kYAxis;
-BDM_SO_DEFINE(constexpr std::array<double, 3> CellExt)::kZAxis;
+constexpr std::array<double, 3> Cell::kXAxis;
+constexpr std::array<double, 3> Cell::kYAxis;
+constexpr std::array<double, 3> Cell::kZAxis;
 
-BDM_SO_DEFINE(inline void CellExt)::ApplyDisplacement(
+inline void Cell)::ApplyDisplacement(
     const std::array<double, 3>& displacement) {
   UpdatePosition(displacement);
   // Reset biological movement to 0.
   SetTractorForce({0, 0, 0});
 }
 
-BDM_SO_DEFINE(inline std::array<double, 3> CellExt)::
+inline std::array<double, 3> Cell::
     TransformCoordinatesGlobalToPolar(const std::array<double, 3>& pos) const {
-  auto vector_to_point = Math::Subtract(pos, position_[kIdx]);
+  auto vector_to_point = Math::Subtract(pos, position_);
   std::array<double, 3> local_cartesian{Math::Dot(kXAxis, vector_to_point),
                                         Math::Dot(kYAxis, vector_to_point),
                                         Math::Dot(kZAxis, vector_to_point)};

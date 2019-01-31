@@ -16,9 +16,7 @@
 #include "core/biology_module/biology_module.h"
 #include "core/param/compile_time_list.h"
 #include "core/resource_manager.h"
-#include "core/sim_object/backend.h"
 #include "core/sim_object/cell.h"
-#include "core/simulation_implementation.h"
 #include "gtest/gtest.h"
 #include "unit/test_util/default_ctparam.h"
 #include "unit/test_util/test_util.h"
@@ -32,7 +30,7 @@ TEST(ModelInitializerTest, Grid3DCube) {
   auto* rm = simulation.GetResourceManager();
 
   ModelInitializer::Grid3D(2, 12, [](const std::array<double, 3>& pos) {
-    Cell cell(pos);
+    Cell* cell = new Cell(pos);
     return cell;
   });
 
@@ -57,7 +55,7 @@ TEST(ModelInitializerTest, Grid3DCuboid) {
 
   ModelInitializer::Grid3D(grid_dimensions, 12,
                            [](const std::array<double, 3>& pos) {
-                             Cell cell(pos);
+                             Cell* cell = new Cell(pos);
                              return cell;
                            });
 
@@ -84,7 +82,7 @@ TEST(ModelInitializerTest, CreateCells) {
 
   ModelInitializer::CreateCells(positions,
                                 [](const std::array<double, 3>& pos) {
-                                  Cell cell(pos);
+                                  Cell* cell = new Cell(pos);
                                   return cell;
                                 });
 
@@ -101,7 +99,7 @@ TEST(ModelInitializerTest, CreateCellsRandom) {
 
   ModelInitializer::CreateCellsRandom(-100, 100, 10,
                                       [](const std::array<double, 3>& pos) {
-                                        Cell cell(pos);
+                                        Cell* cell = new Cell(pos);
                                         return cell;
                                       });
   const auto* cells = rm->Get<Cell>();

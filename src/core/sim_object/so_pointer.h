@@ -20,7 +20,6 @@
 #include <ostream>
 #include <type_traits>
 
-#include "core/sim_object/backend.h"
 #include "core/simulation.h"
 #include "core/simulation_backup.h"
 

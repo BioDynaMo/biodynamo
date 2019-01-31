@@ -81,7 +81,7 @@ BDM_SIM_OBJECT(NeuronSoma, Cell) {
   NeuriteElementSoPtr ExtendNewNeurite(const std::array<double, 3>& direction) {
     auto dir = Math::Add(direction, Base::position_[kIdx]);
     auto angles = Base::TransformCoordinatesGlobalToPolar(dir);
-    auto* param = Simulation_t::GetActive()->GetParam();
+    auto* param = Simulation::GetActive()->GetParam();
     return ExtendNewNeurite(param->neurite_default_diameter_, angles[2],
                             angles[1]);
   }
@@ -91,7 +91,7 @@ BDM_SIM_OBJECT(NeuronSoma, Cell) {
   /// \see NewNeuriteExtensionEvent
   NeuriteElementSoPtr ExtendNewNeurite(double diameter, double phi,
                                        double theta) {
-    auto* ctxt = Simulation_t::GetActive()->GetExecutionContext();
+    auto* ctxt = Simulation::GetActive()->GetExecutionContext();
     NewNeuriteExtensionEvent event = {diameter, phi, theta};
     auto&& neurite = ctxt->template New<NeuriteElement>(event, ThisMD());
     ThisMD()->EventHandler(event, &neurite);

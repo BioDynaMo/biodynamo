@@ -20,7 +20,6 @@
 #include "core/biology_module/biology_module.h"
 #include "core/container/variant.h"
 #include "core/param/compile_time_list.h"
-#include "core/sim_object/backend.h"
 #include "core/sim_object/cell.h"
 
 namespace bdm {

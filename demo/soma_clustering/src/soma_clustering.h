@@ -70,11 +70,11 @@ inline int Simulate(int argc, const char** argv) {
 
   // Construct num_cells/2 cells of type 1
   auto construct_0 = [](const std::array<double, 3>& position) {
-    MyCell cell(position);
-    cell.SetDiameter(10);
-    cell.SetCellType(1);
-    cell.AddBiologyModule(SubstanceSecretion());
-    cell.AddBiologyModule(Chemotaxis());
+    MyCell* cell = new MyCell(position);
+    cell->SetDiameter(10);
+    cell->SetCellType(1);
+    cell->AddBiologyModule(SubstanceSecretion());
+    cell->AddBiologyModule(Chemotaxis());
     return cell;
   };
   ModelInitializer::CreateCellsRandom(param->min_bound_, param->max_bound_,
@@ -82,11 +82,11 @@ inline int Simulate(int argc, const char** argv) {
 
   // Construct num_cells/2 cells of type -1
   auto construct_1 = [](const std::array<double, 3>& position) {
-    MyCell cell(position);
-    cell.SetDiameter(10);
-    cell.SetCellType(-1);
-    cell.AddBiologyModule(SubstanceSecretion());
-    cell.AddBiologyModule(Chemotaxis());
+    MyCell* cell = new MyCell(position);
+    cell->SetDiameter(10);
+    cell->SetCellType(-1);
+    cell->AddBiologyModule(SubstanceSecretion());
+    cell->AddBiologyModule(Chemotaxis());
     return cell;
   };
   ModelInitializer::CreateCellsRandom(param->min_bound_, param->max_bound_,

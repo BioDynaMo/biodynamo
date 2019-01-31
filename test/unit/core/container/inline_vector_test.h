@@ -19,7 +19,6 @@
 #include "gtest/gtest.h"
 
 #include "core/container/inline_vector.h"
-#include "core/sim_object/backend.h"
 #include "core/util/io.h"
 
 #define ROOTFILE "bdmFile.root"

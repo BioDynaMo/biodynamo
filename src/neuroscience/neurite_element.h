@@ -235,7 +235,7 @@ BDM_SIM_OBJECT(NeuriteElement, SimObject) {
   static constexpr Shape GetShape() { return kCylinder; }
 
   NeuriteElementExt() {
-    auto* param = Simulation_t::GetActive()->GetParam();
+    auto* param = Simulation::GetActive()->GetParam();
     tension_[kIdx] = param->neurite_default_tension_;
     diameter_[kIdx] = param->neurite_default_diameter_;
     actual_length_[kIdx] = param->neurite_default_actual_length_;
@@ -253,7 +253,7 @@ BDM_SIM_OBJECT(NeuriteElement, SimObject) {
   NeuriteElementExt(const NewNeuriteExtensionEvent& event, TNeuronSoma* soma,
                     uint64_t new_oid = 0)
       : Base(event, soma, new_oid) {
-    auto* param = Simulation_t::GetActive()->GetParam();
+    auto* param = Simulation::GetActive()->GetParam();
     tension_[kIdx] = param->neurite_default_tension_;
     diameter_[kIdx] = param->neurite_default_diameter_;
     actual_length_[kIdx] = param->neurite_default_actual_length_;
@@ -313,7 +313,7 @@ BDM_SIM_OBJECT(NeuriteElement, SimObject) {
   NeuriteElementExt(const NeuriteBifurcationEvent& event,
                     TNeuriteElement* mother, uint64_t new_oid)
       : Base(event, mother, new_oid) {
-    auto* param = Simulation_t::GetActive()->GetParam();
+    auto* param = Simulation::GetActive()->GetParam();
     tension_[kIdx] = param->neurite_default_tension_;
     diameter_[kIdx] = param->neurite_default_diameter_;
     actual_length_[kIdx] = param->neurite_default_actual_length_;
@@ -487,7 +487,7 @@ BDM_SIM_OBJECT(NeuriteElement, SimObject) {
       return;
     }
     // scaling for integration step
-    auto* param = Simulation_t::GetActive()->GetParam();
+    auto* param = Simulation::GetActive()->GetParam();
     speed *= param->simulation_time_step_;
 
     if (actual_length_[kIdx] > speed + 0.1) {
@@ -556,7 +556,7 @@ BDM_SIM_OBJECT(NeuriteElement, SimObject) {
     // create a new neurite element for side branch
     // we first split this neurite element into two pieces
     // then append a "daughter right" between the two
-    auto* ctxt = Simulation_t::GetActive()->GetExecutionContext();
+    auto* ctxt = Simulation::GetActive()->GetExecutionContext();
     NeuriteBranchingEvent event = {0.5, length, new_branch_diameter, direction};
     auto&& proximal = ctxt->template New<MostDerivedScalar>(event, ThisMD(), 0);
     auto&& branch = ctxt->template New<MostDerivedScalar>(event, &proximal, 1);
@@ -577,7 +577,7 @@ BDM_SIM_OBJECT(NeuriteElement, SimObject) {
   /// Use a random growth direction for the side branch.
   /// \see NeuriteBranchingEvent
   MostDerivedSoPtr Branch(double diameter) {
-    auto* random = Simulation_t::GetActive()->GetRandom();
+    auto* random = Simulation::GetActive()->GetRandom();
     auto rand_noise = random->template UniformArray<3>(-0.1, 0.1);
     auto growth_direction =
         Math::Perp3(Math::Add(GetUnitaryAxisDirectionVector(), rand_noise),
@@ -592,7 +592,7 @@ BDM_SIM_OBJECT(NeuriteElement, SimObject) {
   /// Diameter of new side branch will be equal to this neurites diameter.
   /// \see NeuriteBranchingEvent
   MostDerivedSoPtr Branch() {
-    auto* random = Simulation_t::GetActive()->GetRandom();
+    auto* random = Simulation::GetActive()->GetRandom();
     double branch_diameter = diameter_[kIdx];
     auto rand_noise = random->template UniformArray<3>(-0.1, 0.1);
     auto growth_direction =
@@ -605,7 +605,7 @@ BDM_SIM_OBJECT(NeuriteElement, SimObject) {
   /// neurite element has no daughter and the actual length is bigger than the
   /// minimum required.
   bool BifurcationPermitted() const {
-    auto* param = Simulation_t::GetActive()->GetParam();
+    auto* param = Simulation::GetActive()->GetParam();
     return (daughter_left_[kIdx] == nullptr &&
             actual_length_[kIdx] > param->neurite_minimial_bifurcation_length_);
   }
@@ -623,7 +623,7 @@ BDM_SIM_OBJECT(NeuriteElement, SimObject) {
       Fatal("NeuriteElements",
             "Bifurcation only allowed on a terminal neurite element");
     }
-    auto* ctxt = Simulation_t::GetActive()->GetExecutionContext();
+    auto* ctxt = Simulation::GetActive()->GetExecutionContext();
     NeuriteBifurcationEvent event = {length, diameter_1, diameter_2,
                                      direction_1, direction_2};
     auto&& new_branch_l =
@@ -649,7 +649,7 @@ BDM_SIM_OBJECT(NeuriteElement, SimObject) {
       const std::array<double, 3>& direction_1,
       const std::array<double, 3>& direction_2) {
     // initial default length :
-    auto* param = Simulation_t::GetActive()->GetParam();
+    auto* param = Simulation::GetActive()->GetParam();
     double l = param->neurite_default_actual_length_;
     // diameters :
     double d = diameter_[kIdx];
@@ -661,12 +661,12 @@ BDM_SIM_OBJECT(NeuriteElement, SimObject) {
   /// \see NeuriteBifurcationEvent
   std::array<MostDerivedSoPtr, 2> Bifurcate() {
     // initial default length :
-    auto* param = Simulation_t::GetActive()->GetParam();
+    auto* param = Simulation::GetActive()->GetParam();
     double l = param->neurite_default_actual_length_;
     // diameters :
     double d = diameter_[kIdx];
     // direction : (60 degrees between branches)
-    auto* random = Simulation_t::GetActive()->GetRandom();
+    auto* random = Simulation::GetActive()->GetRandom();
     double random_val = random->Uniform(0, 1);
     auto perp_plane = Math::Perp3(spring_axis_[kIdx], random_val);
     double angle_between_branches = Math::kPi / 3.0;
@@ -750,7 +750,7 @@ BDM_SIM_OBJECT(NeuriteElement, SimObject) {
       return;
     }
 
-    auto* param = Simulation_t::GetActive()->GetParam();
+    auto* param = Simulation::GetActive()->GetParam();
     if (actual_length_[kIdx] > param->neurite_max_length_) {
       if (daughter_left_[kIdx] == nullptr) {  // if terminal branch :
         SplitNeuriteElement(0.1);
@@ -792,7 +792,7 @@ BDM_SIM_OBJECT(NeuriteElement, SimObject) {
     }
 
     // scaling for integration step
-    auto* param = Simulation_t::GetActive()->GetParam();
+    auto* param = Simulation::GetActive()->GetParam();
     double length = speed * param->simulation_time_step_;
     auto displacement = Math::ScalarMult(length, Math::Normalize(direction));
     auto new_mass_location = Math::Add(displacement, mass_location_[kIdx]);
@@ -827,7 +827,7 @@ BDM_SIM_OBJECT(NeuriteElement, SimObject) {
   /// @param speed cubic micron/ h
   void ChangeVolume(double speed) {
     // scaling for integration step
-    auto* param = Simulation_t::GetActive()->GetParam();
+    auto* param = Simulation::GetActive()->GetParam();
     double delta = speed * param->simulation_time_step_;
     volume_[kIdx] += delta;
 
@@ -842,7 +842,7 @@ BDM_SIM_OBJECT(NeuriteElement, SimObject) {
   /// @param speed micron/ h
   void ChangeDiameter(double speed) {
     // scaling for integration step
-    auto* param = Simulation_t::GetActive()->GetParam();
+    auto* param = Simulation::GetActive()->GetParam();
     double delta = speed * param->simulation_time_step_;
     diameter_[kIdx] += delta;
     UpdateVolume();
@@ -886,7 +886,7 @@ BDM_SIM_OBJECT(NeuriteElement, SimObject) {
 
     std::array<double, 3> force_from_neighbors = {0, 0, 0};
 
-    auto* param = Simulation_t::GetActive()->GetParam();
+    auto* param = Simulation::GetActive()->GetParam();
     // this value will be used to reduce force for neurite/neurite interactions
     double h_over_m = 0.01;
 
@@ -1039,7 +1039,7 @@ BDM_SIM_OBJECT(NeuriteElement, SimObject) {
       // If new x_axis_ and old y_axis_ are aligned, we cannot use this scheme;
       // we start by re-defining new perp vectors. Ok, we loose the previous
       // info, but this should almost never happen....
-      auto* random = Simulation_t::GetActive()->GetRandom();
+      auto* random = Simulation::GetActive()->GetRandom();
       z_axis_[kIdx] = Math::Perp3(x_axis_[kIdx], random->Uniform(0, 1));
     } else {
       z_axis_[kIdx] = Math::ScalarMult((1 / norm_of_z), z_axis_[kIdx]);
@@ -1485,7 +1485,7 @@ BDM_SIM_OBJECT(NeuriteElement, SimObject) {
   ///
   /// \see SplitNeuriteElementEvent
   MostDerivedSoPtr SplitNeuriteElement(double distal_portion = 0.5) {
-    auto* ctxt = Simulation_t::GetActive()->GetExecutionContext();
+    auto* ctxt = Simulation::GetActive()->GetExecutionContext();
     SplitNeuriteElementEvent event = {distal_portion};
     auto&& new_proximal_element =
         ctxt->template New<MostDerivedScalar>(event, ThisMD());
@@ -1540,7 +1540,7 @@ BDM_SIM_OBJECT(NeuriteElement, SimObject) {
           "Can't extend a side neurite since daughter_right is not a nullptr!");
     }
 
-    auto* ctxt = Simulation_t::GetActive()->GetExecutionContext();
+    auto* ctxt = Simulation::GetActive()->GetExecutionContext();
     SideNeuriteExtensionEvent event = {length, diameter, direction};
     auto&& new_branch = ctxt->template New<MostDerivedScalar>(event, ThisMD());
     ThisMD()->EventHandler(event, &new_branch);
@@ -1553,7 +1553,7 @@ BDM_SIM_OBJECT(NeuriteElement, SimObject) {
   /// \see SplitNeuriteElementEvent, NeuriteBranchingEvent
   template <typename TEvent, typename TNeuriteElement>
   void InitializeSplitOrBranching(const TEvent& event, TNeuriteElement* other) {
-    auto* param = Simulation_t::GetActive()->GetParam();
+    auto* param = Simulation::GetActive()->GetParam();
     tension_[kIdx] = param->neurite_default_tension_;
     diameter_[kIdx] = param->neurite_default_diameter_;
     actual_length_[kIdx] = param->neurite_default_actual_length_;
@@ -1589,7 +1589,7 @@ BDM_SIM_OBJECT(NeuriteElement, SimObject) {
   template <typename TEvent, typename TNeuriteElement>
   void InitializeSideExtensionOrBranching(const TEvent& event,
                                           TNeuriteElement* mother) {
-    auto* param = Simulation_t::GetActive()->GetParam();
+    auto* param = Simulation::GetActive()->GetParam();
     tension_[kIdx] = param->neurite_default_tension_;
     diameter_[kIdx] = param->neurite_default_diameter_;
     actual_length_[kIdx] = param->neurite_default_actual_length_;

@@ -57,13 +57,13 @@ Next up is creating simulation objects:
 
 ``` C++
   auto construct = [](const std::array<double, 3>& position) {
-    Cell cell(position);
-    cell.SetDiameter(30);
-    cell.SetMass(1.0);
-    cell.AddBiologyModule(Chemotaxis());
+    Cell* cell = new Cell(position);
+    cell->SetDiameter(30);
+    cell->SetMass(1.0);
+    cell->AddBiologyModule(Chemotaxis());
     std::array<double, 3> secretion_position = {{50, 50, 50}};
     if (position == secretion_position) {
-      cell.AddBiologyModule(KaliumSecretion());
+      cell->AddBiologyModule(KaliumSecretion());
     }
     return cell;
   };

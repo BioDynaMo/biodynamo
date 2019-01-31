@@ -13,7 +13,6 @@
 // -----------------------------------------------------------------------------
 
 #include "core/util/math.h"
-#include "core/sim_object/backend.h"
 #include "gtest/gtest.h"
 #include "unit/test_util/test_util.h"
 

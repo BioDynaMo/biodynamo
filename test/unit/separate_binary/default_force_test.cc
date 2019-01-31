@@ -14,13 +14,11 @@
 
 #include "core/default_force.h"
 #include "core/param/compile_time_param.h"
-#include "core/sim_object/backend.h"
 #include "core/sim_object/cell.h"
 #include "gtest/gtest.h"
 #include "unit/test_util/test_util.h"
 
 #include "biodynamo.h"
-#include "core/simulation_implementation.h"
 #include "neuroscience/neuroscience.h"
 
 namespace bdm {

@@ -37,7 +37,6 @@
 #include "core/container/fixed_size_vector.h"
 #include "core/container/inline_vector.h"
 #include "core/container/parallel_resize_vector.h"
-#include "core/container/sim_object_vector.h"
 #include "core/param/param.h"
 #include "core/util/log.h"
 
@@ -94,12 +93,12 @@ class Grid {
   struct Box {
     /// start value of the linked list of simulatio objects inside this box.
     /// Next element can be found at `successors_[start_]`
-    std::atomic<SoHandle> start_;
+    std::atomic<SimObject*> start_;
     /// length of the linked list (i.e. number of simulation objects)
     /// uint64_t, because sizeof(Box) = 16, for uint16_t and uint64_t
     std::atomic<uint64_t> length_;
 
-    Box() : start_(SoHandle()), length_(0) {}
+    Box() : start_(nullptr), length_(0) {}
     /// Copy Constructor required for boxes_.resize()
     /// Since box values will be overwritten afterwards it forwards to the
     /// default ctor
@@ -115,17 +114,17 @@ class Grid {
 
     /// @brief      Adds a simulation object to this box
     ///
-    /// @param[in]  obj_id       The object's identifier
+    /// @param[in]  so       The object's identifier
     /// @param      successors   The successors
     ///
     /// @tparam     TSuccessors  Type of successors
     ///
     template <typename TSimObjectVector>
-    void AddObject(SoHandle obj_id, TSimObjectVector* successors) {
+    void AddObject(SimObject* so, TSimObjectVector* successors) {
       length_++;
-      auto old_start = std::atomic_exchange(&start_, obj_id);
-      if (old_start != SoHandle()) {
-        (*successors)[obj_id] = old_start;
+      auto old_start = std::atomic_exchange(&start_, so);
+      if (old_start != nullptr) {
+        (*successors)[so] = old_start;
       }
     }
 
@@ -146,12 +145,12 @@ class Grid {
         return *this;
       }
 
-      const SoHandle& operator*() const { return current_value_; }
+      const SimObject*& operator*() const { return current_value_; }
 
       /// Pointer to the neighbor grid; for accessing the successor_ list
       Grid<TSimulation>* grid_;
       /// The current simulation object to be considered
-      SoHandle current_value_;
+      SimObject* current_value_;
       /// The remain number of simulation objects to consider
       int countdown_ = 0;
     };
@@ -177,7 +176,7 @@ class Grid {
 
     bool IsAtEnd() const { return is_end_; }
 
-    const SoHandle& operator*() const { return *box_iterator_; }
+    SimObject* operator*() const { return *box_iterator_; }
 
     /// Version where empty neighbor boxes are allowed
     NeighborIterator& operator++() {
@@ -318,16 +317,14 @@ class Grid {
         boxes_.resize(total_num_boxes, Box());
       }
 
-      successors_.Reserve();
+      successors_.reserve(rm->GetNumSimObjects());
 
       // Assign simulation objects to boxes
-      rm->ApplyOnAllElementsParallelDynamic(
-          1000, [this](auto&& sim_object,
-                       SoHandle id) {  // FIXME move back to parallel
+      rm->ApplyOnAllElementsParallelDynamic(1000, [this](SimObject& sim_object) {
             const auto& position = sim_object.GetPosition();
             auto idx = this->GetBoxIndex(position);
             auto box = this->GetBoxPointer(idx);
-            box->AddObject(id, &successors_);
+            box->AddObject(sim_object, &successors_);
             sim_object.SetBoxIdx(idx);
           });
       auto* param = Simulation::GetActive()->GetParam();
@@ -443,7 +440,6 @@ class Grid {
     for (uint64_t i = 0; i < zorder_sorted_boxes_.size(); i++) {
       auto it = zorder_sorted_boxes_[i].second->begin();
       while (!it.IsAtEnd()) {
-        // Call lambda with SoHandle
         lambda(*it);
         ++it;
       }
@@ -469,7 +465,7 @@ class Grid {
     NeighborIterator ni(neighbor_boxes);
     while (!ni.IsAtEnd()) {
       // Do something with neighbor object
-      if (*ni != query.GetSoHandle()) {
+      if (*ni != &query) {
         lambda(*ni);
       }
       ++ni;
@@ -492,7 +488,6 @@ class Grid {
   template <typename Lambda, typename SO>
   void ForEachNeighborWithinRadius(const Lambda& lambda, const SO& query,
                                    double squared_radius) {
-    auto so_handle = query.GetSoHandle();
     const auto& position = query.GetPosition();
     auto idx = query.GetBoxIdx();
 
@@ -500,143 +495,17 @@ class Grid {
     GetMooreBoxes(&neighbor_boxes, idx);
 
     NeighborIterator ni(neighbor_boxes);
-    auto* rm = Simulation::GetActive()->GetResourceManager();
     while (!ni.IsAtEnd()) {
       // Do something with neighbor object
-      SoHandle neighbor_handle = *ni;
-      if (neighbor_handle != so_handle) {
-        rm->ApplyOnElement(neighbor_handle, [&](auto&& sim_object) {
-          const auto& neighbor_position = sim_object.GetPosition();
-          if (this->WithinSquaredEuclideanDistance(squared_radius, position,
-                                                   neighbor_position)) {
-            lambda(&sim_object);
-          }
-        });
-      }
-      ++ni;
-    }
-  }
-
-  /// This function calls the given lambda exactly once for every cell pair
-  /// if the distance is smaller than `(squared_radius) ^ 1/2`
-  ///
-  ///     // usage:
-  ///     grid.ForEachNeighborPairWithinRadius([](auto&& lhs, SoHandle lhs_id,
-  ///                                          auto&& rhs, SoHandle rhs_id) {
-  ///       ...
-  ///     }, squared_radius);
-  ///
-  ///     // using lhs_id and rhs_id to index into an array is thread-safe
-  ///     SimObjectVector<std::array<double, 3>> total_force;
-  ///     grid.ForEachNeighborPairWithinRadius([&](const auto* lhs, const auto*
-  ///     rhs) {
-  ///       auto force = ...;
-  ///       total_force[lhs->GetUid()] += force;
-  ///       total_force[rhs->GetUid()] -= force;
-  ///     }, squared_radius);
-  ///
-  ///     // the following example leads to a race condition
-  ///
-  ///     int counter = 0;
-  ///     grid.ForEachNeighborPairWithinRadius([&](const auto* lhs, const auto*
-  ///     rhs) {
-  ///       counter++;
-  ///     }, squared_radius);
-  ///     // which can be solved by using std::atomic<int> counter; instead
-  template <typename TLambda>
-  void ForEachNeighborPairWithinRadius(const TLambda& lambda,
-                                       double squared_radius) const {
-    uint32_t z_start = 0, y_start = 0;
-    auto* rm = Simulation::GetActive()->GetResourceManager();
-    // use special iteration pattern to avoid race conditions between neighbors
-    // main iteration will be done over rows of boxes. In order to avoid two
-    // threads accessing the same box, one has to use a margin reagion of two
-    // boxes in the y and z dimension.
-    for (uint16_t i = 0; i < 9; i++) {
-      switch (i) {
-        case 0:
-          z_start = 1;
-          y_start = 1;
-          break;
-        case 1:
-          z_start = 1;
-          y_start = 2;
-          break;
-        case 2:
-          z_start = 1;
-          y_start = 3;
-          break;
-        case 3:
-          z_start = 2;
-          y_start = 1;
-          break;
-        case 4:
-          z_start = 2;
-          y_start = 2;
-          break;
-        case 5:
-          z_start = 2;
-          y_start = 3;
-          break;
-        case 6:
-          z_start = 3;
-          y_start = 1;
-          break;
-        case 7:
-          z_start = 3;
-          y_start = 2;
-          break;
-        case 8:
-          z_start = 3;
-          y_start = 3;
-          break;
-      }
-#pragma omp parallel
-      {
-        FixedSizeVector<size_t, 14> box_indices;
-        CircularBuffer<InlineVector<SoHandle, 4>, 14> cached_so_handles;
-        CircularBuffer<InlineVector<std::array<double, 3>, 4>, 14>
-            cached_positions;
-
-#pragma omp for collapse(2) schedule(dynamic, 1) firstprivate(z_start, y_start)
-        for (uint32_t z = z_start; z < num_boxes_axis_[2] - 1; z += 3) {
-          for (uint32_t y = y_start; y < num_boxes_axis_[1] - 1; y += 3) {
-            auto current_box_idx =
-                GetBoxIndex(std::array<uint32_t, 3>{1, y, z});
-
-            box_indices.clear();
-            cached_so_handles.clear();
-            cached_positions.clear();
-
-            // since we want to execute the lambda ONCE for each cell pair,
-            // it is sufficient to process half of the boxes and omit the
-            // opposite box
-            // Order: C BW FNW NW BNW B FN N BN E BE FNE NE BNE
-            GetHalfMooreBoxIndices(&box_indices, current_box_idx);
-            CacheSoHandles(box_indices, &cached_so_handles);
-            CachePositions(cached_so_handles, rm, &cached_positions);
-
-            // first iteration peeled off
-            ForEachNeighborPairWithCenterBox(lambda, rm, cached_so_handles,
-                                             cached_positions, 0,
-                                             squared_radius);
-
-            for (uint32_t x = 2; x < num_boxes_axis_[0] - 1; x++) {
-              // since every thread is iterating over a complete row, we can
-              // save time by updating only new boxes
-              ++box_indices;
-              UpdateSoHandles(box_indices, &cached_so_handles);
-              UpdateCachedPositions(cached_so_handles, rm, &cached_positions);
-              // updating `cached_so_handles` and `cached_positions` will change
-              // the
-              // position of the center box from 0 to 4
-              ForEachNeighborPairWithCenterBox(lambda, rm, cached_so_handles,
-                                               cached_positions, 4,
-                                               squared_radius);
-            }
-          }
+      auto* sim_object = *ni;
+      if (sim_object != &query) {
+        const auto& neighbor_position = sim_object->GetPosition();
+        if (this->WithinSquaredEuclideanDistance(squared_radius, position,
+                                                 neighbor_position)) {
+          lambda(sim_object);
         }
       }
+      ++ni;
     }
   }
 
@@ -683,44 +552,6 @@ class Grid {
   }
 
   bool IsInitialized() { return initialized_; }
-
-  /// @brief      Gets the successor list
-  ///
-  /// @param      successors  The successors
-  ///
-  /// @tparam     TUint32     A uint32 type (could also be cl_uint)
-  ///
-  template <typename TUint32>
-  void GetSuccessors(std::vector<TUint32>* successors) {
-    uint16_t type = 0;
-    uint16_t numa_node = 0;
-    for (size_t i = 0; i < successors_.size(numa_node, type); i++) {
-      auto sh = SoHandle(numa_node, type, i);
-      (*successors)[i] = successors_[sh].GetElementIdx();
-    }
-  }
-
-  /// @brief      Gets information about the grid boxes (i.e. which simulation
-  ///             objects reside in each box, wich can be retrieved in
-  ///             combination with the successor list
-  ///
-  /// @param      starts   The gpu starts
-  /// @param      lengths  The gpu lengths
-  ///
-  /// @tparam     TUint32      A uint32 type (could also be cl_uint)
-  /// @tparam     TUint16      A uint32 type (could also be cl_ushort)
-  ///
-  template <typename TUint32, typename TUint16>
-  void GetBoxInfo(std::vector<TUint32>* starts, std::vector<TUint16>* lengths) {
-    starts->resize(boxes_.size());
-    lengths->resize(boxes_.size());
-    size_t i = 0;
-    for (auto& box : boxes_) {
-      (*starts)[i] = box.start_.load().GetElementIdx();
-      (*lengths)[i] = box.length_;
-      i++;
-    }
-  }
 
   /// @brief      Gets the information about the grid
   ///
@@ -841,9 +672,9 @@ class Grid {
   /// Implements linked list - array index = key, value: next element
   ///
   ///     // Usage
-  ///     SoHandle current_element = ...;
-  ///     SoHandle next_element = successors_[current_element];
-  SimObjectVector<SoHandle, TSimulation> successors_;
+  ///     SimObject* current_element = ...;
+  ///     SimObject* next_element = successors_[current_element];
+  std::unordered_map<SimObject*, SimObject*> successors_;
   /// Determines which boxes to search neighbors in (see enum Adjacency)
   Adjacency adjacency_;
   /// The size of the largest object in the simulation
@@ -905,7 +736,7 @@ class Grid {
 
     std::vector<std::array<double, 8>> largest(max_threads, {{0}});
 
-    rm->ApplyOnAllElementsParallelDynamic(1000, [&](auto&& so, const SoHandle) {
+    rm->ApplyOnAllElementsParallelDynamic(1000, [&](SimObject& so) {
       auto tid = omp_get_thread_num();
       const auto& position = so.GetPosition();
       // x
@@ -1197,167 +1028,6 @@ class Grid {
   size_t GetBoxIndex(const std::array<uint32_t, 3>& box_coord) const {
     return box_coord[2] * num_boxes_xy_ + box_coord[1] * num_boxes_axis_[0] +
            box_coord[0];
-  }
-
-  /// Obtains all simulation object handles in a given box
-  void GetSoHandles(size_t box_idx, InlineVector<SoHandle, 4>* handles) const {
-    auto size = boxes_[box_idx].length_.load(std::memory_order_relaxed);
-    if (size == 0) {
-      return;
-    }
-    auto current = boxes_[box_idx].start_.load(std::memory_order_relaxed);
-    for (size_t i = 0; i < size - 1u; i++) {
-      handles->push_back(current);
-      current = successors_[current];
-    }
-    handles->push_back(current);
-  }
-
-  /// Obtains all simulation object handles for the given box indices and puts
-  /// them in a CircularBuffer.
-  void CacheSoHandles(
-      const FixedSizeVector<size_t, 14>& box_indices,
-      CircularBuffer<InlineVector<SoHandle, 4>, 14>* so_handles) const {
-    for (uint64_t i = 0; i < box_indices.size(); i++) {
-      GetSoHandles(box_indices[i], so_handles->End());
-      so_handles->Increment();
-    }
-  }
-
-  /// Obtains all simulation object positions for the given box indices and puts
-  /// them in a CircularBuffer
-  void CachePositions(
-      const CircularBuffer<InlineVector<SoHandle, 4>, 14>& so_handles,
-      ResourceManager_t* rm,
-      CircularBuffer<InlineVector<std::array<double, 3>, 4>, 14>* pos_cache)
-      const {
-    for (uint64_t i = 0; i < 14; i++) {
-      const auto& current_box_sos = so_handles[i];
-      auto current_pos = pos_cache->End();
-      for (uint64_t j = 0; j < current_box_sos.size(); j++) {
-        rm->ApplyOnElement(current_box_sos[j], [&](auto&& element) {
-          current_pos->push_back(element.GetPosition());
-        });
-      }
-      pos_cache->Increment();
-    }
-  }
-
-  /// Updates the cached simulation object handles exploiting the fact that
-  /// ForEachNeighbor... iterates in rows. Therefore, so_handles from many boxes
-  /// can be reused if the x-axis is incremented.
-  /// \param box_indices box indices are expected to be in the following order
-  ///        `C BW FNW NW BNW B FN N BN E BE FNE NE BNE`
-  /// \param so_handles simulation object handles from the previous iteration
-  ///        input expected to be in either
-  ///        `C BW FNW NW BNW B FN N BN E BE FNE NE BNE` or
-  ///        `BW FNW NW BNW C B FN N BN E BE FNE NE BNE` form. Output will be
-  ///        in `BW FNW NW BNW C B FN N BN E BE FNE NE BNE` form.
-  void UpdateSoHandles(
-      const FixedSizeVector<size_t, 14>& box_indices,
-      CircularBuffer<InlineVector<SoHandle, 4>, 14>* so_handles) const {
-    for (uint64_t i = 9; i < 14; i++) {
-      auto handles = so_handles->End();
-      handles->clear();
-      GetSoHandles(box_indices[i], handles);
-      so_handles->Increment();
-    }
-  }
-
-  /// Updates the cached simulation object positions exploiting the fact that
-  /// ForEachNeighbor... iterates in rows. Therefore, positions from many boxes
-  /// can be reused if the x-axis is incremented.
-  /// \param so_handles simulation object handles are expected to be in the
-  ///        following order `C BW FNW NW BNW B FN N BN E BE FNE NE BNE`
-  /// \param rm The resource manager
-  /// \param positions simulation object positions from the previous iteration
-  ///        input expected to be in either
-  ///        `C BW FNW NW BNW B FN N BN E BE FNE NE BNE` or
-  ///        `BW FNW NW BNW C B FN N BN E BE FNE NE BNE` form. Output will be
-  ///        in `BW FNW NW BNW C B FN N BN E BE FNE NE BNE` form.
-  void UpdateCachedPositions(
-      const CircularBuffer<InlineVector<SoHandle, 4>, 14>& so_handles,
-      ResourceManager_t* rm,
-      CircularBuffer<InlineVector<std::array<double, 3>, 4>, 14>* positions)
-      const {
-    for (uint64_t i = 9; i < 14; i++) {
-      const auto& current_box_sos = so_handles[i];
-      auto current_pos = positions->End();
-      current_pos->clear();
-      for (uint64_t j = 0; j < current_box_sos.size(); j++) {
-        rm->ApplyOnElement(current_box_sos[j], [&](auto&& element) {
-          current_pos->push_back(element.GetPosition());
-        });
-      }
-      positions->Increment();
-    }
-  }
-
-  /// Calls lambda for each cell pair for the specified box
-  ///
-  /// \param lambda function that should be executed for each pair
-  /// \param rm ResourceManager
-  /// \param so_handles cached simulation object handles for the center box and
-  ///                   half of its surrounding boxes
-  /// \param positions cached simulation object positions for the center box and
-  ///                  half of its surrounding boxes
-  /// \param center_box_idx index into `so_handles` and `positions` to
-  ///        determine the center box
-  /// \param squared_radius determines cutoff distance - lambda will only be
-  ///        called if distance between neighbors squared is smaller than
-  ///        squared_radius
-  template <typename TLambda>
-  void ForEachNeighborPairWithCenterBox(
-      const TLambda& lambda, ResourceManager_t* rm,
-      const CircularBuffer<InlineVector<SoHandle, 4>, 14>& so_handles,
-      const CircularBuffer<InlineVector<std::array<double, 3>, 4>, 14>&
-          positions,
-      uint64_t center_box_idx, double squared_radius) const {
-    const auto& soh_center_box = so_handles[center_box_idx];
-    const auto& pos_center_box = positions[center_box_idx];
-    if (soh_center_box.size() == 0) {
-      return;
-    }
-    if (soh_center_box.size() > 1) {
-      // pairs within the center box
-      for (size_t n = 0; n < soh_center_box.size(); n++) {
-        rm->ApplyOnElement(soh_center_box[n], [&, this](auto&& element_n) {
-          const auto& pos_n = pos_center_box[n];
-          for (size_t c = n + 1; c < soh_center_box.size(); c++) {
-            rm->ApplyOnElement(soh_center_box[c], [&, this](auto&& element_c) {
-              const auto& pos_c = pos_center_box[c];
-              if (this->WithinSquaredEuclideanDistance(squared_radius, pos_c,
-                                                       pos_n)) {
-                lambda(&element_c, &element_n);
-              }
-            });
-          }
-        });
-      }
-    }
-
-    // pairs with one cell in the center box and the other in a surrounding one
-    for (size_t i = 0; i < 14; i++) {
-      if (i == center_box_idx) {
-        continue;
-      }
-      const auto& soh_box = so_handles[i];
-      const auto& pos_box = positions[i];
-      for (size_t n = 0; n < soh_box.size(); n++) {
-        rm->ApplyOnElement(soh_box[n], [&, this](auto&& element_n) {
-          const auto& pos_n = pos_box[n];
-          for (size_t c = 0; c < soh_center_box.size(); c++) {
-            rm->ApplyOnElement(soh_center_box[c], [&, this](auto&& element_c) {
-              const auto& pos_c = pos_center_box[c];
-              if (this->WithinSquaredEuclideanDistance(squared_radius, pos_c,
-                                                       pos_n)) {
-                lambda(&element_c, &element_n);
-              }
-            });
-          }
-        });
-      }
-    }
   }
 };
 

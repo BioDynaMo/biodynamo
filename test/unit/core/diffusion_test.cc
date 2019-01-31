@@ -18,7 +18,6 @@
 #include "core/grid.h"
 #include "core/model_initializer.h"
 #include "core/sim_object/cell.h"
-#include "core/simulation_implementation.h"
 #include "core/substance_initializers.h"
 #include "core/util/io.h"
 #include "core/visualization/catalyst_adaptor.h"

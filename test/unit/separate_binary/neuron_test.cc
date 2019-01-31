@@ -17,7 +17,6 @@
 
 #include "core/operation/displacement_op.h"
 #include "core/param/compile_time_param.h"
-#include "core/simulation_implementation.h"
 #include "neuroscience/compile_time_param.h"
 #include "neuroscience/param.h"
 
