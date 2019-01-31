@@ -391,7 +391,7 @@ constexpr std::array<double, 3> Cell::kXAxis;
 constexpr std::array<double, 3> Cell::kYAxis;
 constexpr std::array<double, 3> Cell::kZAxis;
 
-inline void Cell)::ApplyDisplacement(
+inline void Cell::ApplyDisplacement(
     const std::array<double, 3>& displacement) {
   UpdatePosition(displacement);
   // Reset biological movement to 0.
