@@ -151,7 +151,7 @@ inline int Simulate(int argc, const char** argv) {
   cell.SetDiameter(6);
   cell.SetCellColor(8);
   cell.SetCanDivide(true);
-  cell.AddBiologyModule(GrowthModule());
+  cell.AddBiologyModule(new GrowthModule());
   rm->push_back(cell);  // put the created cell in our cells structure
 
   // Run simulation

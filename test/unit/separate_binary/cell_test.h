@@ -169,8 +169,8 @@ inline void RunIOTest() {
   cell.UpdateVolume();
   cell.SetAdherence(1.1);
   cell.SetMass(5);
-  cell.AddBiologyModule(GrowthModule());
-  cell.AddBiologyModule(MovementModule({1, 2, 3}));
+  cell.AddBiologyModule(new GrowthModule());
+  cell.AddBiologyModule(new MovementModule({1, 2, 3}));
   cell.SetBoxIdx(123);
 
   // write to root file

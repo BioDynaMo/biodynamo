@@ -68,7 +68,7 @@ inline int Simulate(int argc, const char** argv) {
     cell->SetDiameter(30);
     cell->SetAdherence(0.4);
     cell->SetMass(1.0);
-    cell->AddBiologyModule(regulate_example);
+    cell->AddBiologyModule(new regulate_example);
     return cell;
   };
   const std::vector<std::array<double, 3>>& positions = {{0, 0, 0}};

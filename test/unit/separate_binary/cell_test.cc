@@ -36,8 +36,8 @@ TEST(CellTest, DivideVolumeRatioPhiTheta) {
   mother.UpdateVolume();
   mother.SetAdherence(1.1);
   mother.SetMass(5);
-  mother.AddBiologyModule(GrowthModule());
-  mother.AddBiologyModule(MovementModule({1, 2, 3}));
+  mother.AddBiologyModule(new GrowthModule());
+  mother.AddBiologyModule(new MovementModule({1, 2, 3}));
   mother.SetBoxIdx(123);
 
   auto daughter = mother.Divide(0.75, 0.12, 0.34);
@@ -166,8 +166,8 @@ TEST(CellTest, BiologyModule) {
   double diameter = cell.GetDiameter();
   auto position = cell.GetPosition();
 
-  cell.AddBiologyModule(MovementModule({1, 2, 3}));
-  cell.AddBiologyModule(GrowthModule());
+  cell.AddBiologyModule(new MovementModule({1, 2, 3}));
+  cell.AddBiologyModule(new GrowthModule());
 
   cell.RunBiologyModules();
 
@@ -182,9 +182,9 @@ TEST(CellTest, GetBiologyModulesTest) {
 
   // create cell and add bioogy modules
   TestCell cell;
-  cell.AddBiologyModule(GrowthModule());
-  cell.AddBiologyModule(GrowthModule());
-  cell.AddBiologyModule(MovementModule({1, 2, 3}));
+  cell.AddBiologyModule(new GrowthModule());
+  cell.AddBiologyModule(new GrowthModule());
+  cell.AddBiologyModule(new MovementModule({1, 2, 3}));
 
   // get all GrowthModules
   auto growth_modules = cell.GetBiologyModules<GrowthModule>();
@@ -201,8 +201,8 @@ TEST(CellTest, BiologyModuleEventHandler) {
 
   TestCell cell;
 
-  cell.AddBiologyModule(MovementModule({1, 2, 3}));
-  cell.AddBiologyModule(GrowthModule());
+  cell.AddBiologyModule(new MovementModule({1, 2, 3}));
+  cell.AddBiologyModule(new GrowthModule());
 
   std::vector<Variant<GrowthModule, MovementModule>> destination;
 
@@ -226,9 +226,9 @@ TEST(CellTest, RemoveBiologyModule) {
 
   // add RemoveModule as first one! If removal while iterating over it is not
   // implemented correctly, MovementModule will not be executed.
-  cell.AddBiologyModule(RemoveModule());
-  cell.AddBiologyModule(MovementModule({1, 2, 3}));
-  cell.AddBiologyModule(GrowthModule());
+  cell.AddBiologyModule(new RemoveModule());
+  cell.AddBiologyModule(new MovementModule({1, 2, 3}));
+  cell.AddBiologyModule(new GrowthModule());
 
   // RemoveModule should remove itself
   cell.RunBiologyModules();
@@ -241,7 +241,7 @@ TEST(CellTest, RemoveBiologyModule) {
   EXPECT_ARR_NEAR({1, 2, 3}, cell.GetPosition());
   EXPECT_NEAR(0.5, cell.GetDiameter(), abs_error<double>::value);
 
-  cell.AddBiologyModule(RemoveModule());
+  cell.AddBiologyModule(new RemoveModule());
   ASSERT_EQ(3u, bms.size());
   auto* to_be_removed = get_if<RemoveModule>(&bms[2]);
   cell.RemoveBiologyModule(to_be_removed);

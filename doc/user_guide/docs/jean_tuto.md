@@ -113,7 +113,7 @@ Of course, we need to create at least one new cell that contains our GrowthModul
 ``` C++
   Cell cell ({20, 50, 50});
   cell.SetDiameter(6);
-  cell.AddBiologyModule(GrowthModule());
+  cell.AddBiologyModule(new GrowthModule());
   rm->push_back(cell);
 ```
 
@@ -429,7 +429,7 @@ namespace bdm {
     // create a cancerous cell, containing the BiologyModule GrowthModule
     Cell cell({20, 50, 50});
     cell.SetDiameter(6);
-    cell.AddBiologyModule(GrowthModule());
+    cell.AddBiologyModule(new GrowthModule());
     rm->push_back(cell);  // add the created cell to the ResourceManager
 
     // Run simulation
