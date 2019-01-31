@@ -33,7 +33,7 @@ TEST(RegulateGenesTest, EulerTest) {
   auto set_param = [](auto* param) {
     param->numerical_ode_solver_ = Param::NumericalODESolver::kEuler;
   };
-  Simulation<> simulation(TEST_NAME, set_param);
+  Simulation simulation(TEST_NAME, set_param);
   auto* scheduler = new TestScheduler();
   simulation.ReplaceScheduler(scheduler);
 
@@ -69,7 +69,7 @@ TEST(RegulateGenesTest, RK4Test) {
     param->numerical_ode_solver_ = Param::NumericalODESolver::kRK4;
     param->simulation_time_step_ = 1;
   };
-  Simulation<> simulation(TEST_NAME, set_param);
+  Simulation simulation(TEST_NAME, set_param);
 
   RegulateGenes regulate_genes;
   regulate_genes.AddGene(

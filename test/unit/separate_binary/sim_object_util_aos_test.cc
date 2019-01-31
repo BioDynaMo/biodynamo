@@ -29,7 +29,7 @@ BDM_CTPARAM() {
 namespace simulation_object_util_test_aos_internal {
 
 TEST(SimObjectUtilAosTest, GetSoPtr) {
-  Simulation<> simulation(TEST_NAME);
+  Simulation simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
 
   for (uint64_t i = 0; i < 10; i++) {

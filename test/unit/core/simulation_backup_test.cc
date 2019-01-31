@@ -66,7 +66,7 @@ TEST(SimulationBackupDeathTest, BackupNoBackupFileSpecified) {
 
 TEST(SimulationBackupTest, Backup) {
   remove(ROOTFILE);
-  Simulation<> simulation(TEST_NAME);
+  Simulation simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
 
   rm->push_back(Cell());
@@ -92,7 +92,7 @@ TEST(SimulationBackupTest, Backup) {
   EXPECT_EQ(26u, wrapper->Get());
 
   // Simulation
-  Simulation<>* restored_simulation = nullptr;
+  Simulation* restored_simulation = nullptr;
   file.Get()->GetObject(SimulationBackup::kSimulationName.c_str(),
                         restored_simulation);
   EXPECT_EQ(1u, restored_simulation->GetResourceManager()->Get<Cell>()->size());
@@ -117,7 +117,7 @@ TEST(SimulationBackupDeathTest, RestoreFileDoesNotExist) {
 
 TEST(SimulationBackupTest, BackupAndRestore) {
   remove(ROOTFILE);
-  Simulation<> simulation(TEST_NAME);
+  Simulation simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
 
   rm->push_back(Cell());

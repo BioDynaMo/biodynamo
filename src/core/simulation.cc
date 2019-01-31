@@ -11,8 +11,6 @@
 // regarding copyright ownership.
 //
 // -----------------------------------------------------------------------------
-#ifndef CORE_SIMULATION_IMPLEMENTATION_H_
-#define CORE_SIMULATION_IMPLEMENTATION_H_
 
 #include <cpptoml/cpptoml.h>
 #include <omp.h>
@@ -37,45 +35,36 @@ namespace bdm {
 /// It must be separate to avoid circular dependencies.
 /// It can't be defined in a source file, because it is templated.
 
-template <typename T>
-std::atomic<uint64_t> Simulation<T>::counter_;
+std::atomic<uint64_t> Simulation::counter_;
 
-template <typename T>
-Simulation<T>* Simulation<T>::active_ = nullptr;
+Simulation* Simulation::active_ = nullptr;
 
-template <typename T>
-Simulation<T>* Simulation<T>::GetActive() {
+Simulation* Simulation::GetActive() {
   return active_;
 }
 
-template <typename T>
-Simulation<T>::Simulation(TRootIOCtor* p) {}
+Simulation::Simulation(TRootIOCtor* p) {}
 
-template <typename T>
-Simulation<T>::Simulation(int argc, const char** argv)
+Simulation::Simulation(int argc, const char** argv)
     : Simulation(argc, argv, [](auto* param) {}) {}
 
-template <typename T>
-Simulation<T>::Simulation(const std::string& simulation_name)
+Simulation::Simulation(const std::string& simulation_name)
     : Simulation(simulation_name, [](auto* param) {}) {}
 
-template <typename T>
 template <typename TSetParamLambda>
-Simulation<T>::Simulation(int argc, const char** argv,
+Simulation::Simulation(int argc, const char** argv,
                           const TSetParamLambda& set_param) {
   Initialize(argc, argv, set_param);
 }
 
-template <typename T>
 template <typename TSetParamLambda>
-Simulation<T>::Simulation(const std::string& simulation_name,
+Simulation::Simulation(const std::string& simulation_name,
                           const TSetParamLambda& set_param) {
   const char* argv[1] = {simulation_name.c_str()};
   Initialize(1, argv, set_param);
 }
 
-template <typename T>
-void Simulation<T>::Restore(Simulation<T>&& restored) {
+void Simulation::Restore(Simulation&& restored) {
   // random_
   if (random_.size() != restored.random_.size()) {
     Log::Warning("Simulation", "The restore file (", param_->restore_file_,
@@ -100,9 +89,8 @@ void Simulation<T>::Restore(Simulation<T>&& restored) {
   InitializeOutputDir();
 }
 
-template <typename T>
-Simulation<T>::~Simulation() {
-  Simulation<>* tmp = nullptr;
+Simulation::~Simulation() {
+  Simulation* tmp = nullptr;
   if (active_ != this) {
     tmp = active_;
   }
@@ -121,65 +109,53 @@ Simulation<T>::~Simulation() {
   active_ = tmp;
 }
 
-template <typename T>
-void Simulation<T>::Activate() {
+void Simulation::Activate() {
   active_ = this;
 }
 
-template <typename T>
-ResourceManager<T>* Simulation<T>::GetResourceManager() {
+ResourceManager* Simulation::GetResourceManager() {
   return rm_;
 }
 
-template <typename T>
-const typename Simulation<T>::Param_t* Simulation<T>::GetParam() const {
+const Param* Simulation::GetParam() const {
   return param_;
 }
 
-template <typename T>
-Grid<Simulation<T>>* Simulation<T>::GetGrid() {
+Grid<Simulation>* Simulation::GetGrid() {
   return grid_;
 }
 
-template <typename T>
-Scheduler<Simulation<T>>* Simulation<T>::GetScheduler() {
+Scheduler<Simulation>* Simulation::GetScheduler() {
   return scheduler_;
 }
 
-template <typename T>
-Random* Simulation<T>::GetRandom() {
+Random* Simulation::GetRandom() {
   return random_[omp_get_thread_num()];
 }
 
-template <typename T>
-InPlaceExecutionContext<T>* Simulation<T>::GetExecutionContext() {
+InPlaceExecutionContext* Simulation::GetExecutionContext() {
   return exec_ctxt_[omp_get_thread_num()];
 }
 
-template <typename T>
-std::vector<InPlaceExecutionContext<T>*>& Simulation<T>::GetAllExecCtxts() {
+std::vector<InPlaceExecutionContext*>& Simulation::GetAllExecCtxts() {
   return exec_ctxt_;
 }
 
-template <typename T>
-const std::string& Simulation<T>::GetUniqueName() const {
+const std::string& Simulation::GetUniqueName() const {
   return unique_name_;
 }
 
-template <typename T>
-const std::string& Simulation<T>::GetOutputDir() const {
+const std::string& Simulation::GetOutputDir() const {
   return output_dir_;
 }
 
-template <typename T>
-void Simulation<T>::ReplaceScheduler(Scheduler<Simulation>* scheduler) {
+void Simulation::ReplaceScheduler(Scheduler<Simulation>* scheduler) {
   delete scheduler_;
   scheduler_ = scheduler;
 }
 
-template <typename T>
 template <typename TSetParamLambda>
-void Simulation<T>::Initialize(int argc, const char** argv,
+void Simulation::Initialize(int argc, const char** argv,
                                const TSetParamLambda& set_param) {
   id_ = counter_++;
   Activate();
@@ -189,27 +165,24 @@ void Simulation<T>::Initialize(int argc, const char** argv,
   InitializeMembers();
 }
 
-template <typename T>
-template <typename TResourceManager, typename TGrid, typename TScheduler>
-void Simulation<T>::InitializeMembers() {
+void Simulation::InitializeMembers() {
   random_.resize(omp_get_max_threads());
   for (uint64_t i = 0; i < random_.size(); i++) {
     random_[i] = new Random();
   }
   exec_ctxt_.resize(omp_get_max_threads());
   for (uint64_t i = 0; i < exec_ctxt_.size(); i++) {
-    exec_ctxt_[i] = new InPlaceExecutionContext<T>();
+    exec_ctxt_[i] = new InPlaceExecutionContext();
   }
-  rm_ = new TResourceManager();
-  grid_ = new TGrid();
-  scheduler_ = new TScheduler();
+  rm_ = new ResourceManager();
+  grid_ = new Grid();
+  scheduler_ = new Scheduler();
 }
 
-template <typename T>
 template <typename TSetParamLambda>
-void Simulation<T>::InitializeRuntimeParams(int argc, const char** argv,
+void Simulation::InitializeRuntimeParams(int argc, const char** argv,
                                             const TSetParamLambda& set_param) {
-  param_ = new Param_t();
+  param_ = new Param();
 
   // Removing this line causes an unexplainable segfault due to setting the
   // gErrorIngoreLevel global parameter of ROOT. We need to log at least one
@@ -246,8 +219,7 @@ void Simulation<T>::InitializeRuntimeParams(int argc, const char** argv,
   set_param(param_);
 }
 
-template <typename T>
-void Simulation<T>::InitializeUniqueName(const std::string& simulation_name) {
+void Simulation::InitializeUniqueName(const std::string& simulation_name) {
   name_ = simulation_name;
   std::stringstream stream;
   stream << name_;
@@ -257,8 +229,7 @@ void Simulation<T>::InitializeUniqueName(const std::string& simulation_name) {
   unique_name_ = stream.str();
 }
 
-template <typename T>
-std::string Simulation<T>::ExtractSimulationName(const char* path) {
+std::string Simulation::ExtractSimulationName(const char* path) {
   std::string s(path);
   auto pos = s.find_last_of("/");
   if (pos == std::string::npos) {
@@ -268,8 +239,7 @@ std::string Simulation<T>::ExtractSimulationName(const char* path) {
   }
 }
 
-template <typename T>
-void Simulation<T>::InitializeOutputDir() {
+void Simulation::InitializeOutputDir() {
   if (unique_name_ == "") {
     output_dir_ = param_->output_dir_;
   } else {
@@ -281,5 +251,3 @@ void Simulation<T>::InitializeOutputDir() {
 }
 
 }  // namespace bdm
-
-#endif  // CORE_SIMULATION_IMPLEMENTATION_H_

@@ -40,7 +40,7 @@ BDM_CTPARAM() {
 
 inline int Simulate(int argc, const char** argv) {
   auto set_param = [](auto* param) { param->backup_interval_ = 1; };
-  Simulation<> simulation(argc, argv, set_param);
+  Simulation simulation(argc, argv, set_param);
   auto* rm = simulation.GetResourceManager();
 
   for (size_t i = 0; i < 10; i++) {

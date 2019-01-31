@@ -33,7 +33,6 @@
 
 namespace bdm {
 
-template <typename TSimulation = Simulation<>>
 class Scheduler {
  public:
   using Clock = std::chrono::high_resolution_clock;

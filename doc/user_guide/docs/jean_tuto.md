@@ -30,7 +30,7 @@ The structure build in the previous chapter only creates a single cell. In this 
 
 To do so, we will work only on the `Simulate` function of the tutorial.h file. Inside the Simulate method, we need to define a resource manager and a structure to contain our cells:
 ``` C++
-Simulation<> simulation(argc, argv);
+Simulation simulation(argc, argv);
 auto* rm = simulation.GetResourceManager(); // set up resource manager
 
 ```
@@ -147,7 +147,7 @@ auto set_param = [](auto* param) {
   param->visualization_export_interval_ = 2; // export visualisation files every 2 steps
   param->visualize_sim_objects_["Cell"] = std::set<std::string>{ "diameter_" }; // add the data member diameter_ to the visualisation objects
 }
-Simulation<> simulation(argc, argv, set_param);
+Simulation simulation(argc, argv, set_param);
 ```
 Once again, it is important to note that if you want to change any visualisation parameter using this second method, you will have to compile again your code. That is not the case using a configuration file. Hence, using the toml file is highly recommended.  
 
@@ -290,7 +290,7 @@ This is of course just an example of what you can do with the threshold filters.
 We now have all we want to visualise our modelling in the best conditions, but this modelling itself is a bit limited. We should add some movements to it as well as a new mechanism to complexify cell division.
 To add cell movement, we will modify the `Run()` method of our biology module `GrowthModule`, and use the function `UpdatePosition()`. To generate the direction's random numbers we will again use the `Uniform()` function which allow us to generate a random number between two specified numbers. First, we need to add `TSimulation` to the template and to define the random engine.  
 ``` C++
-template <typename T, typename TSimulation = Simulation<>>
+template <typename T, typename TSimulation = Simulation>
 void Run(T* cell) {
   auto* random = TSimulation::GetActive()->GetRandom();
 ```
@@ -399,7 +399,7 @@ namespace bdm {
       param->run_mechanical_interactions_ = true;
     };
 
-    Simulation<> simulation(argc, argv, set_param);
+    Simulation simulation(argc, argv, set_param);
     auto* rm = simulation.GetResourceManager(); // set up resource manager
     auto* param = simulation.GetParam(); // set up params
     auto* random = simulation.GetRandom(); // set up the random engine

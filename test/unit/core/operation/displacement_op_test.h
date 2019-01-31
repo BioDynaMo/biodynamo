@@ -24,7 +24,7 @@
 namespace bdm {
 namespace displacement_op_test_internal {
 
-template <typename TCell = Cell, typename TSimulation = Simulation<>>
+template <typename TCell = Cell, typename TSimulation = Simulation>
 void RunTest() {
   TSimulation simulation("displacement_op_test_RunTest");
   auto* rm = simulation.GetResourceManager();

@@ -27,7 +27,7 @@
 
 namespace bdm {
 
-template <typename TSimulation = Simulation<>>
+template <typename TSimulation = Simulation>
 class DisplacementOpCpu {
  public:
   DisplacementOpCpu() {}

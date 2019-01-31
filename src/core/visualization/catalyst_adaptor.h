@@ -84,7 +84,7 @@ struct VtkDiffusionGrid {
 
 /// The class that bridges the simulation code with ParaView.
 /// Requires that simulation objects use the Soa memory layout.
-template <typename TSimulation = Simulation<>>
+template <typename TSimulation = Simulation>
 class CatalystAdaptor {
  public:
   /// Initializes Catalyst with the predefined pipeline and allocates memory
@@ -351,7 +351,7 @@ class CatalystAdaptor {
   ///
   /// @param      data_description  The data description
   ///
-  template <typename TTSimulation = Simulation<>>
+  template <typename TTSimulation = Simulation>
   typename std::enable_if<std::is_same<
       typename TTSimulation::ResourceManager_t::Backend, Soa>::value>::type
   CreateVtkObjects(vtkNew<vtkCPDataDescription>& data_description) {  // NOLINT
@@ -426,7 +426,7 @@ class CatalystAdaptor {
     }
   }
 
-  template <typename TTSimulation = Simulation<>>
+  template <typename TTSimulation = Simulation>
   typename std::enable_if<!std::is_same<
       typename TTSimulation::ResourceManager_t::Backend, Soa>::value>::type
   CreateVtkObjects(vtkNew<vtkCPDataDescription>& data_description) {  // NOLINT
@@ -619,7 +619,7 @@ std::atomic<uint64_t> CatalystAdaptor<T>::counter_;
 #else
 
 /// False front (to ignore Catalyst in gtests)
-template <typename TSimulation = Simulation<>>
+template <typename TSimulation = Simulation>
 class CatalystAdaptor {
  public:
   explicit CatalystAdaptor(const std::string& script) {}

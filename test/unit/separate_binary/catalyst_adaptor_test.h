@@ -62,7 +62,7 @@ class CatalystAdaptorTest : public ::testing::Test {
       "output/MySimulation/MySimulation.pvsm";
 
   virtual void SetUp() {
-    Simulation<>::counter_ = 0;
+    Simulation::counter_ = 0;
     remove(kSimulationInfoJson);
     remove(kParaviewState);
   }

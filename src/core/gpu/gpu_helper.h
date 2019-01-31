@@ -47,7 +47,7 @@ static const char* GetErrorString(cl_int error);
 #endif
 
 #ifdef USE_CUDA
-template <typename TSimulation = Simulation<>>
+template <typename TSimulation = Simulation>
 static void FindGpuDevicesCuda() {
   auto* param = TSimulation::GetActive()->GetParam();
 
@@ -79,7 +79,7 @@ static void FindGpuDevicesCuda() {
 #endif
 
 #ifdef USE_OPENCL
-template <typename TSimulation = Simulation<>>
+template <typename TSimulation = Simulation>
 static void CompileOpenCLKernels() {
   auto* sim = TSimulation::GetActive();
   auto* rm = sim->GetResourceManager();
@@ -126,7 +126,7 @@ static void CompileOpenCLKernels() {
   }
 }
 
-template <typename TSimulation = Simulation<>>
+template <typename TSimulation = Simulation>
 static void FindGpuDevicesOpenCL() {
   try {
     // We keep the context and device list in the resource manager to be
@@ -209,7 +209,7 @@ static void FindGpuDevicesOpenCL() {
 }
 #endif
 
-template <typename TSimulation = Simulation<>>
+template <typename TSimulation = Simulation>
 static void InitializeGPUEnvironment() {
   auto* param = TSimulation::GetActive()->GetParam();
   if (param->use_opencl_) {

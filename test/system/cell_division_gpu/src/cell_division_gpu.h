@@ -63,7 +63,7 @@ inline void RunTest(bool* result, ExecutionMode mode) {
     }
   };
 
-  Simulation<> simulation("cell_division_gpu", set_param);
+  Simulation simulation("cell_division_gpu", set_param);
   auto* rm = simulation.GetResourceManager();
   auto* param = simulation.GetParam();
   rm->Clear();

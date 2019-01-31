@@ -19,7 +19,7 @@ namespace scheduler_test_internal {
 
 TEST(SchedulerTest, NoRestoreFile) {
   auto set_param = [](auto* param) { param->restore_file_ = ""; };
-  Simulation<> simulation(TEST_NAME, set_param);
+  Simulation simulation(TEST_NAME, set_param);
   auto* rm = simulation.GetResourceManager();
 
   remove(ROOTFILE);
@@ -53,7 +53,7 @@ TEST(SchedulerTest, EmptySimulationFromBeginning) {
     param->min_bound_ = -10;
     param->max_bound_ = 10;
   };
-  Simulation<> simulation(TEST_NAME, set_param);
+  Simulation simulation(TEST_NAME, set_param);
 
   simulation.GetScheduler()->Simulate(1);
 
@@ -70,7 +70,7 @@ TEST(SchedulerTest, EmptySimulationAfterFirstIteration) {
     param->min_bound_ = -10;
     param->max_bound_ = 10;
   };
-  Simulation<> simulation(TEST_NAME, set_param);
+  Simulation simulation(TEST_NAME, set_param);
 
   auto* rm = simulation.GetResourceManager();
   auto* grid = simulation.GetGrid();

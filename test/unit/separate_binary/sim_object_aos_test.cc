@@ -27,7 +27,7 @@ BDM_CTPARAM() {
 namespace simulation_object_aos_test_internal {
 
 TEST(SimObjectTest, AosGetElementIndex) {
-  Simulation<> simulation(TEST_NAME);
+  Simulation simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
 
   rm->Clear();

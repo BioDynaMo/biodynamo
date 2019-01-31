@@ -263,7 +263,7 @@ BDM_SIM_OBJECT(Cell, SimObject) {
     position_[kIdx][2] += delta[2];
   }
 
-  template <typename TSimulation = Simulation<>>
+  template <typename TSimulation = Simulation>
   std::array<double, 3> CalculateDisplacement(double squared_radius) {
     // Basically, the idea is to make the sum of all the forces acting
     // on the Point mass. It is stored in translationForceOnPointMass.

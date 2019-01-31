@@ -853,7 +853,7 @@ BDM_SIM_OBJECT(NeuriteElement, SimObject) {
   // ***************************************************************************
 
   // TODO(neurites) documentation
-  template <typename TSimulation = Simulation<>>
+  template <typename TSimulation = Simulation>
   std::array<double, 3> CalculateDisplacement(double squared_radius) {
     std::array<double, 3> force_on_my_point_mass{0, 0, 0};
     std::array<double, 3> force_on_my_mothers_point_mass{0, 0, 0};

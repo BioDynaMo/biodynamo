@@ -76,7 +76,7 @@ TEST(DefaultForce, AllNonOverlappingSphere) {
 /// are at the same position -> should return random force
 TEST(DefaultForce, AllAtSamePositionSphere) {
   // simulation object required for random number generator
-  Simulation<> simulation(TEST_NAME);
+  Simulation simulation(TEST_NAME);
 
   Cell cell({0, 0, 0});
   cell.SetDiameter(8);
@@ -95,9 +95,9 @@ TEST(DefaultForce, AllAtSamePositionSphere) {
 /// Tests the forces that are created between the reference sphere and its
 /// overlapping cylinder
 TEST(DefaultForce, GeneralSphereCylinder) {
-  Simulation<> simulation(TEST_NAME);
+  Simulation simulation(TEST_NAME);
 
-  auto* param = Simulation<>::GetActive()->GetParam();
+  auto* param = Simulation::GetActive()->GetParam();
   std::cout << param->neurite_default_tension_ << std::endl;
   // FIXME
   // NeuriteElement cylinder;
@@ -123,7 +123,7 @@ TEST(DefaultForce, GeneralSphereCylinder) {
 }
 
 TEST(DISABLED_DefaultForce, GeneralCylinder) {
-  Simulation<> simulation(TEST_NAME);
+  Simulation simulation(TEST_NAME);
 
   NeuriteElement cylinder1;
   cylinder1.SetMassLocation({0, 0, 0});
@@ -158,7 +158,7 @@ TEST(DISABLED_DefaultForce, GeneralCylinder) {
 
 TEST(DefaultForce, CylinderIntersectingAxis) {
   // simulation object required for random number generator
-  Simulation<> simulation(TEST_NAME);
+  Simulation simulation(TEST_NAME);
 
   NeuriteElement cylinder1;
   cylinder1.SetMassLocation({0, 0, 0});
@@ -191,7 +191,7 @@ TEST(DefaultForce, CylinderIntersectingAxis) {
 }
 
 TEST(DefaultForce, NotTouchingParallelCylinders) {
-  Simulation<> simulation(TEST_NAME);
+  Simulation simulation(TEST_NAME);
 
   NeuriteElement cylinder1;
   cylinder1.SetMassLocation({0, 0, 0});
@@ -228,7 +228,7 @@ TEST(DefaultForce, NotTouchingParallelCylinders) {
 // sphere-cylinder interaction is done at the center and in the horizontal
 // orientation of the cylinder
 TEST(DefaultForce, SphereSmallCylinderHorizontal) {
-  Simulation<> simulation(TEST_NAME);
+  Simulation simulation(TEST_NAME);
 
   Cell sphere({0, 0, 0});
   sphere.SetDiameter(50);
@@ -256,7 +256,7 @@ TEST(DefaultForce, SphereSmallCylinderHorizontal) {
 // sphere-cylinder interaction is done vertically at the tip of the cylinder
 // (mass location)
 TEST(DefaultForce, SphereSmallCylinderVertical) {
-  Simulation<> simulation(TEST_NAME);
+  Simulation simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
 
   Cell sphere({0, 0, 0});
@@ -284,7 +284,7 @@ TEST(DefaultForce, SphereSmallCylinderVertical) {
 
 // opposit case of Vertical: cylinder is below the cell
 TEST(DefaultForce, SphereSmallCylinderVertical2) {
-  Simulation<> simulation(TEST_NAME);
+  Simulation simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
 
   Cell sphere({0, 0, 0});
@@ -315,7 +315,7 @@ TEST(DefaultForce, SphereSmallCylinderVertical2) {
 // sphere-cylinder interaction is done at the center and in the horizontal
 // orientation of the cylinder
 TEST(DefaultForce, SphereLongCylinderHorizontalCenter) {
-  Simulation<> simulation(TEST_NAME);
+  Simulation simulation(TEST_NAME);
 
   Cell sphere({0, 0, 0});
   sphere.SetDiameter(10);
@@ -346,7 +346,7 @@ TEST(DefaultForce, SphereLongCylinderHorizontalCenter) {
 // sphere-cylinder interaction is done at the proximal end and in the horizontal
 // orientation of the cylinder
 TEST(DefaultForce, SphereLongCylinderHorizontalpP) {
-  Simulation<> simulation(TEST_NAME);
+  Simulation simulation(TEST_NAME);
 
   Cell sphere({0, 0, 0});
   sphere.SetDiameter(10);
@@ -377,7 +377,7 @@ TEST(DefaultForce, SphereLongCylinderHorizontalpP) {
 // sphere-cylinder interaction is done at the distal point and in the horizontal
 // orientation of the cylinder
 TEST(DefaultForce, SphereLongCylinderHorizontalpD) {
-  Simulation<> simulation(TEST_NAME);
+  Simulation simulation(TEST_NAME);
 
   Cell sphere({0, 0, 0});
   sphere.SetDiameter(10);

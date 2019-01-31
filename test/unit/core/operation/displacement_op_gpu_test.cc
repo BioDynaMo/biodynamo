@@ -36,7 +36,7 @@ void RunTest(ExecutionMode mode) {
         param->use_gpu_ = true;
     }
   };
-  Simulation<> simulation("displacement_op_gpu_test_RunTest", set_param);
+  Simulation simulation("displacement_op_gpu_test_RunTest", set_param);
   auto* rm = simulation.GetResourceManager();
   auto* grid = simulation.GetGrid();
 
@@ -122,7 +122,7 @@ void RunTest2(ExecutionMode mode) {
         param->use_gpu_ = true;
     }
   };
-  Simulation<> simulation("DisplacementOpGpuTest_RunTest2", set_param);
+  Simulation simulation("DisplacementOpGpuTest_RunTest2", set_param);
   auto* rm = simulation.GetResourceManager();
   auto* grid = simulation.GetGrid();
 

@@ -34,7 +34,7 @@ BDM_CTPARAM() {
 
 inline int Simulate(int argc, const char** argv) {
   // Create new simulation
-  Simulation<> simulation(argc, argv);
+  Simulation simulation(argc, argv);
   // Since sim_objects in this simulation won't modify neighbors, we can
   // safely disable neighbor guards to improve performance.
   simulation.GetExecutionContext()->DisableNeighborGuard();

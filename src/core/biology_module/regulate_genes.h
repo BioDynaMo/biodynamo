@@ -68,7 +68,7 @@ struct RegulateGenes : public BaseBiologyModule {
 
   /// Method Run() contains the implementation for Runge-Khutta and Euler
   /// methods for solving ODE.
-  template <typename T, typename TSimulation = Simulation<>>
+  template <typename T, typename TSimulation = Simulation>
   void Run(T* cell) {
     auto* sim = TSimulation::GetActive();
     auto* param = sim->GetParam();

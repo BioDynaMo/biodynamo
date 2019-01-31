@@ -58,7 +58,7 @@ class TestSchedulerBackup : public Scheduler<> {
 
 inline void RunRestoreTest() {
   {
-    Simulation<> simulation("SchedulerTest_RunRestoreTest");
+    Simulation simulation("SchedulerTest_RunRestoreTest");
     auto* rm = simulation.GetResourceManager();
     remove(ROOTFILE);
 
@@ -74,7 +74,7 @@ inline void RunRestoreTest() {
 
   // start restore validation
   auto set_param = [](auto* param) { param->restore_file_ = ROOTFILE; };
-  Simulation<> simulation("SchedulerTest_RunRestoreTest", set_param);
+  Simulation simulation("SchedulerTest_RunRestoreTest", set_param);
   auto* rm = simulation.GetResourceManager();
   TestSchedulerRestore scheduler;
   // 149 simulation steps have already been calculated. Therefore, this call
@@ -106,7 +106,7 @@ inline void RunBackupTest() {
     param->backup_interval_ = 1;
   };
 
-  Simulation<> simulation("SchedulerTest_RunBackupTest", set_param);
+  Simulation simulation("SchedulerTest_RunBackupTest", set_param);
   auto* rm = simulation.GetResourceManager();
 
   remove(ROOTFILE);

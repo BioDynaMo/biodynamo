@@ -51,9 +51,9 @@ inline int Simulate(int argc, const char** argv) {
   };
 
   // Create two simulations
-  std::vector<Simulation<>*> simulations;
-  simulations.push_back(new Simulation<>(argc, argv, set_param));
-  simulations.push_back(new Simulation<>(argc, argv, set_param));
+  std::vector<Simulation*> simulations;
+  simulations.push_back(new Simulation(argc, argv, set_param));
+  simulations.push_back(new Simulation(argc, argv, set_param));
 
   // Initialize the model for each simulation
   for (auto* sim : simulations) {

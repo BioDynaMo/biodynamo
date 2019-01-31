@@ -69,7 +69,7 @@ class SimulationTest : public ::testing::Test {
     remove(kConfigFileName);
     remove("restore.root");
     CreateEmptyRestoreFile("restore.root");
-    Simulation<>::counter_ = 0;
+    Simulation::counter_ = 0;
   }
 
   virtual void TearDown() {
@@ -81,10 +81,10 @@ class SimulationTest : public ::testing::Test {
   /// It is needed, because BioDynaMo throws a fatal exception if it is
   /// initialized with a restore file that does not exist.
   void CreateEmptyRestoreFile(const std::string& filename) {
-    Simulation<> sim("CreateEmptyRestoreFile");
+    Simulation sim("CreateEmptyRestoreFile");
     SimulationBackup b(filename, "");
     b.Backup(0);
-    Simulation<>::counter_ = 0;
+    Simulation::counter_ = 0;
   }
 
   void ValidateNonCLIParameter(const Param* param) {
@@ -144,7 +144,7 @@ TEST_F(SimulationTest, InitializeRuntimeParams) {
   config_file.close();
 
   const char* argv[1] = {"./binary_name"};
-  Simulation<> simulation(1, argv);
+  Simulation simulation(1, argv);
   auto* param = simulation.GetParam();
 
   EXPECT_EQ("backup.root", param->backup_file_);
@@ -158,7 +158,7 @@ TEST_F(SimulationTest, InitializeRuntimeParams2) {
   config_file << kConfigContent;
   config_file.close();
 
-  Simulation<> simulation("my-simulation");
+  Simulation simulation("my-simulation");
   auto* param = simulation.GetParam();
 
   EXPECT_EQ("backup.root", param->backup_file_);
@@ -175,7 +175,7 @@ TEST_F(SimulationTest, InitializeRuntimeParamsWithCLIArguments) {
   CreateEmptyRestoreFile("myrestore.root");
   const char* argv[5] = {"./binary_name", "-b", "mybackup.root", "-r",
                          "myrestore.root"};
-  Simulation<> simulation(5, argv);
+  Simulation simulation(5, argv);
   auto* param = simulation.GetParam();
 
   // the following two parameters should contain the values from the command
@@ -190,26 +190,26 @@ TEST_F(SimulationTest, InitializeRuntimeParamsWithCLIArguments) {
 TEST_F(SimulationTest, InitializeRuntimeParamsSimulationName) {
   // same working dir
   const char* argv0[1] = {"./binary_name"};
-  Simulation<> simulation0(1, argv0);
+  Simulation simulation0(1, argv0);
   EXPECT_EQ("binary_name", simulation0.GetUniqueName());
 
   // in PATH
   const char* argv1[1] = {"binary_name"};
-  Simulation<> simulation1(1, argv1);
+  Simulation simulation1(1, argv1);
   EXPECT_EQ("binary_name1", simulation1.GetUniqueName());
 
   // binary dir != working dir
   const char* argv2[1] = {"./build/binary_name"};
-  Simulation<> simulation2(1, argv2);
+  Simulation simulation2(1, argv2);
   EXPECT_EQ("binary_name2", simulation2.GetUniqueName());
 
-  Simulation<> simulation3("binary_name");
+  Simulation simulation3("binary_name");
   EXPECT_EQ("binary_name3", simulation3.GetUniqueName());
 }
 
 TEST_F(SimulationTest, SimulationId_OuputDir) {
-  Simulation<> simulation("my-simulation");
-  Simulation<> simulation1("my-simulation");
+  Simulation simulation("my-simulation");
+  Simulation simulation1("my-simulation");
 
   EXPECT_EQ("my-simulation", simulation.GetUniqueName());
   EXPECT_EQ("output/my-simulation", simulation.GetOutputDir());
@@ -219,7 +219,7 @@ TEST_F(SimulationTest, SimulationId_OuputDir) {
 }
 
 TEST_F(SimulationTest, SimulationId_OuputDir2) {
-  Simulation<> simulation("");
+  Simulation simulation("");
 
   EXPECT_EQ("", simulation.GetUniqueName());
   EXPECT_EQ("output", simulation.GetOutputDir());
@@ -229,7 +229,7 @@ TEST_F(IOTest, Simulation) {
   // change state of each data member in Simulation
 
   auto set_param = [](auto* param) { param->simulation_time_step_ = 3.14; };
-  Simulation<> sim(TEST_NAME, set_param);
+  Simulation sim(TEST_NAME, set_param);
   auto* rm = sim.GetResourceManager();
   auto* param = sim.GetParam();
   rm->push_back(Cell());
@@ -241,7 +241,7 @@ TEST_F(IOTest, Simulation) {
     r->Uniform(12, 34);
   }
 
-  Simulation<>* restored;
+  Simulation* restored;
   BackupAndRestore(sim, &restored);
   EXPECT_EQ(2u, restored->GetResourceManager()->GetNumSimObjects());
 
@@ -285,7 +285,7 @@ TEST_F(SimulationTest, ParamIOTest) {
   config_file << kConfigContent;
   config_file.close();
 
-  Simulation<> simulation(TEST_NAME);
+  Simulation simulation(TEST_NAME);
   auto* param = simulation.GetParam();
 
   CompileTimeParam<>::Param* restored;

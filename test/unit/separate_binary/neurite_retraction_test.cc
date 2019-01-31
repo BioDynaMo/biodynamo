@@ -36,7 +36,7 @@ namespace experimental {
 namespace neuroscience {
 
 TEST(NeuriteElementBehaviour, StraightxCylinderGrowthRetract) {
-  Simulation<> simulation(TEST_NAME);
+  Simulation simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
   auto* scheduler = simulation.GetScheduler();
 
@@ -76,7 +76,7 @@ TEST(NeuriteElementBehaviour, StraightxCylinderGrowthRetract) {
 }
 
 TEST(NeuriteElementBehaviour, BranchingGrowth) {
-  Simulation<> simulation(TEST_NAME);
+  Simulation simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
   auto* scheduler = simulation.GetScheduler();
   auto* random = simulation.GetRandom();

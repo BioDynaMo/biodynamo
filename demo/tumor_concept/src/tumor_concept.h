@@ -68,7 +68,7 @@ struct GrowthModule : public BaseBiologyModule {
 
   /// event handler not needed, because Chemotaxis does not have state.
 
-  template <typename T, typename TSimulation = Simulation<>>
+  template <typename T, typename TSimulation = Simulation>
   void Run(T* cell) {
     if (cell->GetDiameter() < 8) {
       auto* random = TSimulation::GetActive()->GetRandom();
@@ -114,7 +114,7 @@ inline int Simulate(int argc, const char** argv) {
     param->run_mechanical_interactions_ = true;
   };
 
-  Simulation<> simulation(argc, argv, set_param);
+  Simulation simulation(argc, argv, set_param);
   auto* rm = simulation.GetResourceManager();
   auto* param = simulation.GetParam();
   auto* random = simulation.GetRandom();

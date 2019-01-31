@@ -43,7 +43,7 @@ inline int Simulate(int argc, const char** argv) {
     param->max_bound_ = 100;
   };
 
-  Simulation<> simulation(argc, argv, set_param);
+  Simulation simulation(argc, argv, set_param);
   auto* param = simulation.GetParam();
 
   // 3. Define initial model

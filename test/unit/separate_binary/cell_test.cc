@@ -28,7 +28,7 @@ TEST(CellTest, TransformCoordinatesGlobalToPolar) {
 }
 
 TEST(CellTest, DivideVolumeRatioPhiTheta) {
-  Simulation<> simulation(TEST_NAME);
+  Simulation simulation(TEST_NAME);
 
   TestCell mother;
   mother.SetPosition({5, 6, 7});
@@ -93,7 +93,7 @@ TEST(CellTest, DivideVolumeRatioPhiTheta) {
 }
 
 TEST(CellTest, Divide) {
-  Simulation<> simulation(TEST_NAME);
+  Simulation simulation(TEST_NAME);
 
   TestCell cell;
 
@@ -109,7 +109,7 @@ TEST(CellTest, Divide) {
 }
 
 TEST(CellTest, DivideVolumeRatio) {
-  Simulation<> simulation(TEST_NAME);
+  Simulation simulation(TEST_NAME);
 
 #pragma omp parallel
   simulation.GetRandom()->SetSeed(42);
@@ -125,7 +125,7 @@ TEST(CellTest, DivideVolumeRatio) {
 }
 
 TEST(CellTest, DivideAxis) {
-  Simulation<> simulation(TEST_NAME);
+  Simulation simulation(TEST_NAME);
 
 #pragma omp parallel
   simulation.GetRandom()->SetSeed(42);
@@ -143,7 +143,7 @@ TEST(CellTest, DivideAxis) {
 }
 
 TEST(CellTest, DivideVolumeRatioAxis) {
-  Simulation<> simulation(TEST_NAME);
+  Simulation simulation(TEST_NAME);
 
 #pragma omp parallel
   simulation.GetRandom()->SetSeed(42);
@@ -161,7 +161,7 @@ TEST(CellTest, DivideVolumeRatioAxis) {
 }
 
 TEST(CellTest, BiologyModule) {
-  Simulation<> simulation(TEST_NAME);
+  Simulation simulation(TEST_NAME);
 
   TestCell cell;
   double diameter = cell.GetDiameter();
@@ -179,7 +179,7 @@ TEST(CellTest, BiologyModule) {
 }
 
 TEST(CellTest, GetBiologyModulesTest) {
-  Simulation<> simulation(TEST_NAME);
+  Simulation simulation(TEST_NAME);
 
   // create cell and add bioogy modules
   TestCell cell;
@@ -198,7 +198,7 @@ TEST(CellTest, GetBiologyModulesTest) {
 }
 
 TEST(CellTest, BiologyModuleEventHandler) {
-  Simulation<> simulation(TEST_NAME);
+  Simulation simulation(TEST_NAME);
 
   TestCell cell;
 
@@ -221,7 +221,7 @@ TEST(CellTest, BiologyModuleEventHandler) {
 }
 
 TEST(CellTest, RemoveBiologyModule) {
-  Simulation<> simulation(TEST_NAME);
+  Simulation simulation(TEST_NAME);
 
   TestCell cell;
 

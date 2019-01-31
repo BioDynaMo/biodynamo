@@ -43,7 +43,7 @@ struct ModelInitializer {
   ///                            new simulation object. Takes `const
   ///                            std::array<double, 3>&` as input parameter
   ///
-  template <typename Function, typename TSimulation = Simulation<>>
+  template <typename Function, typename TSimulation = Simulation>
   static void Grid3D(size_t cells_per_dim, double space,
                      Function cell_builder) {
     auto* sim = TSimulation::GetActive();
@@ -82,7 +82,7 @@ struct ModelInitializer {
   ///                            new simulation object. Takes `const
   ///                            std::array<double, 3>&` as input parameter
   ///
-  template <typename Function, typename TSimulation = Simulation<>>
+  template <typename Function, typename TSimulation = Simulation>
   static void Grid3D(const std::array<size_t, 3>& cells_per_dim, double space,
                      Function cell_builder) {
     auto* sim = TSimulation::GetActive();
@@ -112,7 +112,7 @@ struct ModelInitializer {
   ///                           new simulation object. Takes `const
   ///                           std::array<double, 3>&` as input parameter
   ///
-  template <typename Function, typename TSimulation = Simulation<>>
+  template <typename Function, typename TSimulation = Simulation>
   static void CreateCells(const std::vector<std::array<double, 3>>& positions,
                           Function cell_builder) {
     auto* sim = TSimulation::GetActive();
@@ -139,7 +139,7 @@ struct ModelInitializer {
   ///                           new simulation object. Takes `const
   ///                           std::array<double, 3>&` as input parameter
   ///
-  template <typename Function, typename TSimulation = Simulation<>>
+  template <typename Function, typename TSimulation = Simulation>
   static void CreateCellsRandom(double min, double max, int num_cells,
                                 Function cell_builder) {
     auto* sim = TSimulation::GetActive();
@@ -171,7 +171,7 @@ struct ModelInitializer {
   /// @param[in]  decay_constant   The decay constant
   /// @param[in]  resolution       The resolution of the diffusion grid
   ///
-  template <typename TSimulation = Simulation<>>
+  template <typename TSimulation = Simulation>
   static void DefineSubstance(size_t substance_id, std::string substance_name,
                               double diffusion_coeff, double decay_constant,
                               int resolution = 10) {
@@ -184,7 +184,7 @@ struct ModelInitializer {
     rm->AddDiffusionGrid(d_grid);
   }
 
-  template <typename TSimulation = Simulation<>, typename F>
+  template <typename TSimulation = Simulation, typename F>
   static void InitializeSubstance(size_t substance_id,
                                   std::string substance_name, F function) {
     auto* sim = TSimulation::GetActive();

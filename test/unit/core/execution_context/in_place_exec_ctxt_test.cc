@@ -24,7 +24,7 @@
 namespace bdm {
 
 TEST(InPlaceExecutionContext, RemoveFromSimulation) {
-  Simulation<> sim(TEST_NAME);
+  Simulation sim(TEST_NAME);
   auto* rm = sim.GetResourceManager();
   auto* ctxt = sim.GetExecutionContext();
 
@@ -56,7 +56,7 @@ TEST(InPlaceExecutionContext, RemoveFromSimulation) {
 // Remove object that has been created in the same iteration. Thus it has not
 // been added to the ResourceManager yet.
 TEST(InPlaceExecutionContext, RemoveFromSimulationThatDoesNotExistInRm) {
-  Simulation<> sim(TEST_NAME);
+  Simulation sim(TEST_NAME);
   auto* rm = sim.GetResourceManager();
   auto* ctxt = sim.GetExecutionContext();
 
@@ -83,7 +83,7 @@ TEST(InPlaceExecutionContext, RemoveFromSimulationThatDoesNotExistInRm) {
 }
 
 TEST(InPlaceExecutionContext, NewAndGetSimObject) {
-  Simulation<> sim(TEST_NAME);
+  Simulation sim(TEST_NAME);
   auto* rm = sim.GetResourceManager();
   auto* ctxt = sim.GetExecutionContext();
 
@@ -122,7 +122,7 @@ TEST(InPlaceExecutionContext, NewAndGetSimObject) {
 }
 
 TEST(InPlaceExecutionContext, Execute) {
-  Simulation<> sim(TEST_NAME);
+  Simulation sim(TEST_NAME);
   auto* ctxt = sim.GetExecutionContext();
 
   ctxt->DisableNeighborGuard();
@@ -157,7 +157,7 @@ TEST(InPlaceExecutionContext, Execute) {
 }
 
 TEST(InPlaceExecutionContext, ExecuteThreadSafety) {
-  Simulation<> sim(TEST_NAME);
+  Simulation sim(TEST_NAME);
   auto* rm = sim.GetResourceManager();
   auto* ctxt = sim.GetExecutionContext();
 

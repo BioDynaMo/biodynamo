@@ -23,7 +23,7 @@ namespace bdm {
 
 /// Two dimensional vector. Holds one element of type `T` for each simulation
 /// object in the simulation.
-template <typename T, typename TSimulation = Simulation<>>
+template <typename T, typename TSimulation = Simulation>
 class SimObjectVector {
  public:
   /// NB: Elements will not be initilized.
