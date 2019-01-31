@@ -17,13 +17,13 @@
 
 #include <gtest/gtest.h>
 
-#include "compile_time_param.h"
-#include "simulation_backup.h"
-#include "simulation_implementation.h"
-#include "simulation_object.h"
-#include "so_pointer.h"
-#include "unit/io_test.h"
-#include "unit/test_sim_object.h"
+#include "core/param/compile_time_param.h"
+#include "core/sim_object/sim_object.h"
+#include "core/sim_object/so_pointer.h"
+#include "core/simulation_backup.h"
+#include "core/simulation_implementation.h"
+#include "unit/test_util/io_test.h"
+#include "unit/test_util/test_sim_object.h"
 
 namespace bdm {
 

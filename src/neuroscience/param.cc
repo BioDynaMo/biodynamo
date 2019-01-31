@@ -13,7 +13,7 @@
 // -----------------------------------------------------------------------------
 
 #include "neuroscience/param.h"
-#include "util/cpptoml.h"
+#include "core/util/cpptoml.h"
 
 namespace bdm {
 namespace experimental {

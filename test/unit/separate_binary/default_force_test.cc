@@ -12,18 +12,16 @@
 //
 // -----------------------------------------------------------------------------
 
-#include "default_force.h"
-#include "backend.h"
-#include "cell.h"
-#include "compile_time_param.h"
+#include "core/default_force.h"
+#include "core/param/compile_time_param.h"
+#include "core/sim_object/backend.h"
+#include "core/sim_object/cell.h"
 #include "gtest/gtest.h"
-#include "neuroscience/compile_time_param.h"
-#include "neuroscience/neurite_element.h"
-#include "unit/test_util.h"
+#include "unit/test_util/test_util.h"
 
 #include "biodynamo.h"
+#include "core/simulation_implementation.h"
 #include "neuroscience/neuroscience.h"
-#include "simulation_implementation.h"
 
 namespace bdm {
 

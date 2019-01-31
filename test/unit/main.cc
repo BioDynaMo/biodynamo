@@ -13,9 +13,9 @@
 // -----------------------------------------------------------------------------
 
 #include <iostream>
-#include "backend.h"
+#include "core/param/param.h"
+#include "core/sim_object/backend.h"
 #include "gtest/gtest.h"
-#include "param.h"
 
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);

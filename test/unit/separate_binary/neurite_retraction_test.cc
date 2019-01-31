@@ -12,16 +12,16 @@
 //
 // -----------------------------------------------------------------------------
 
-#include "backend.h"
 #include "biodynamo.h"
-#include "cell.h"
+#include "core/sim_object/backend.h"
+#include "core/sim_object/cell.h"
+#include "core/simulation_implementation.h"
 #include "gtest/gtest.h"
 #include "neuroscience/compile_time_param.h"
 #include "neuroscience/neurite_element.h"
 #include "neuroscience/neuron_soma.h"
 #include "neuroscience/param.h"
-#include "simulation_implementation.h"
-#include "unit/test_util.h"
+#include "unit/test_util/test_util.h"
 
 namespace bdm {
 

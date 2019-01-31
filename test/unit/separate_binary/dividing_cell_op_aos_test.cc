@@ -12,9 +12,9 @@
 //
 // -----------------------------------------------------------------------------
 
-#include "compile_time_param.h"
-#include "simulation_implementation.h"
-#include "unit/dividing_cell_op_test.h"
+#include "core/param/compile_time_param.h"
+#include "core/simulation_implementation.h"
+#include "unit/core/operation/dividing_cell_op_test.h"
 
 namespace bdm {
 

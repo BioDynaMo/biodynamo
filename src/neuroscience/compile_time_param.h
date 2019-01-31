@@ -15,6 +15,7 @@
 #ifndef NEUROSCIENCE_COMPILE_TIME_PARAM_H_
 #define NEUROSCIENCE_COMPILE_TIME_PARAM_H_
 
+#include "core/param/compile_time_param.h"
 #include "neuroscience/neurite_element.h"
 #include "neuroscience/neuron_soma.h"
 

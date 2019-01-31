@@ -12,10 +12,10 @@
 //
 // -----------------------------------------------------------------------------
 
-#include "compile_time_param.h"
+#include "core/param/compile_time_param.h"
+#include "core/simulation_implementation.h"
 #include "gtest/gtest.h"
-#include "simulation_implementation.h"
-#include "unit/displacement_op_test.h"
+#include "unit/core/operation/displacement_op_test.h"
 
 namespace bdm {
 

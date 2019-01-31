@@ -18,11 +18,10 @@
 #include <algorithm>
 #include <unordered_map>
 #include <vector>
-#include "cell.h"
+#include "core/resource_manager.h"
+#include "core/sim_object/cell.h"
 #include "neuroscience/event/new_neurite_extension_event.h"
 #include "neuroscience/param.h"
-#include "resource_manager.h"
-#include "simulation_object_util.h"
 
 namespace bdm {
 namespace experimental {
@@ -159,7 +158,7 @@ BDM_SIM_OBJECT(NeuronSoma, Cell) {
   /// \see NewNeuriteExtensionEvent
   template <typename TNeurite>
   void EventHandler(const NewNeuriteExtensionEvent& event, TNeurite* neurite) {
-    // forward to SimulationObject::EventHandler
+    // forward to SimObject::EventHandler
     Base::Base::EventHandler(event, neurite);
 
     double theta = event.theta_;

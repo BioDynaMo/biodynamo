@@ -15,13 +15,13 @@
 #include "gtest/gtest.h"
 #include "neuroscience/neuron_soma.h"
 
-#include "compile_time_param.h"
-#include "displacement_op.h"
+#include "core/operation/displacement_op.h"
+#include "core/param/compile_time_param.h"
+#include "core/simulation_implementation.h"
 #include "neuroscience/compile_time_param.h"
 #include "neuroscience/param.h"
-#include "simulation_implementation.h"
 
-#include "unit/test_util.h"
+#include "unit/test_util/test_util.h"
 // FIXME move to neuroscience directory
 
 namespace bdm {

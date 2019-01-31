@@ -12,12 +12,12 @@
 //
 // -----------------------------------------------------------------------------
 
-#include "cell.h"
+#include "core/sim_object/cell.h"
 #include <typeinfo>
+#include "core/simulation_implementation.h"
 #include "gtest/gtest.h"
-#include "simulation_implementation.h"
 #include "unit/separate_binary/cell_test.h"
-#include "unit/test_util.h"
+#include "unit/test_util/test_util.h"
 
 namespace bdm {
 namespace cell_test_internal {

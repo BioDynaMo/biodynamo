@@ -20,19 +20,18 @@
 #include <unordered_map>
 #include <vector>
 
-#include "default_force.h"
-#include "log.h"
-#include "math_util.h"
+#include "core/default_force.h"
+#include "core/shape.h"
+#include "core/sim_object/sim_object.h"
+#include "core/util/log.h"
+#include "core/util/math.h"
+#include "core/util/random.h"
 #include "neuroscience/event/neurite_bifurcation_event.h"
 #include "neuroscience/event/neurite_branching_event.h"
 #include "neuroscience/event/new_neurite_extension_event.h"
 #include "neuroscience/event/side_neurite_extension_event.h"
 #include "neuroscience/event/split_neurite_element_event.h"
 #include "neuroscience/param.h"
-#include "random.h"
-#include "shape.h"
-#include "simulation_object.h"
-#include "simulation_object_util.h"
 
 namespace bdm {
 namespace experimental {
@@ -212,9 +211,9 @@ class NeuronNeuriteAdapter {
 /// All the mass of the neurite element is concentrated at the distal point.
 /// Only the distal end is moved. All the forces that are applied to the
 /// proximal node are transmitted to the mother element
-BDM_SIM_OBJECT(NeuriteElement, SimulationObject) {
+BDM_SIM_OBJECT(NeuriteElement, SimObject) {
   BDM_SIM_OBJECT_HEADER(
-      NeuriteElement, SimulationObject, 1, mass_location_, volume_, diameter_,
+      NeuriteElement, SimObject, 1, mass_location_, volume_, diameter_,
       density_, adherence_, x_axis_, y_axis_, z_axis_, is_axon_, mother_,
       daughter_left_, daughter_right_, branch_order_,
       force_to_transmit_to_proximal_mass_, spring_axis_, actual_length_,

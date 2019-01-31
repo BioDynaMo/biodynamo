@@ -18,7 +18,7 @@
 #include <array>
 
 #include "biodynamo.h"
-#include "math_util.h"
+#include "core/util/math.h"
 
 namespace bdm {
 

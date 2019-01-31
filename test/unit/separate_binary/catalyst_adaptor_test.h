@@ -16,14 +16,14 @@
 #define UNIT_SEPARATE_BINARY_CATALYST_ADAPTOR_TEST_H_
 
 #include <gtest/gtest.h>
-#include "cell.h"
-#include "compile_time_param.h"
-#include "io_util.h"
-#include "model_initializer.h"
-#include "simulation_implementation.h"
-#include "simulation_object_util.h"
-#include "unit/test_util.h"
-#include "visualization/catalyst_adaptor.h"
+#include "core/model_initializer.h"
+#include "core/param/compile_time_param.h"
+#include "core/sim_object/cell.h"
+#include "core/sim_object/sim_object.h"
+#include "core/simulation_implementation.h"
+#include "core/util/io.h"
+#include "core/visualization/catalyst_adaptor.h"
+#include "unit/test_util/test_util.h"
 
 // TODO(lukas) move file to unit/visualization
 

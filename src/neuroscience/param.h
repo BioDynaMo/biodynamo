@@ -20,8 +20,8 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include "core/util/root.h"
 #include "cpptoml/cpptoml.h"
-#include "root_util.h"
 
 namespace bdm {
 namespace experimental {

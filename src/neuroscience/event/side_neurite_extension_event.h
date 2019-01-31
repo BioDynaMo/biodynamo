@@ -15,7 +15,7 @@
 #ifndef NEUROSCIENCE_EVENT_SIDE_NEURITE_EXTENSION_EVENT_H_
 #define NEUROSCIENCE_EVENT_SIDE_NEURITE_EXTENSION_EVENT_H_
 
-#include "event/event.h"
+#include "core/event/event.h"
 
 namespace bdm {
 namespace experimental {

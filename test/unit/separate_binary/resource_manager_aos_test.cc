@@ -14,9 +14,9 @@
 
 // I/O related code must be in header file
 #include "unit/separate_binary/resource_manager_aos_test.h"
-#include "cell.h"
-#include "simulation_implementation.h"
-#include "unit/io_test.h"
+#include "core/sim_object/cell.h"
+#include "core/simulation_implementation.h"
+#include "unit/test_util/io_test.h"
 
 namespace bdm {
 

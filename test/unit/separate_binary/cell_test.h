@@ -17,13 +17,13 @@
 
 #include <vector>
 
-#include "biology_module_util.h"
-#include "cell.h"
-#include "compile_time_param.h"
-#include "event/cell_division_event.h"
+#include "core/biology_module/biology_module.h"
+#include "core/event/cell_division_event.h"
+#include "core/param/compile_time_param.h"
+#include "core/sim_object/cell.h"
+#include "core/util/io.h"
 #include "gtest/gtest.h"
-#include "io_util.h"
-#include "unit/test_util.h"
+#include "unit/test_util/test_util.h"
 
 #define ROOTFILE "bdmFile.root"
 

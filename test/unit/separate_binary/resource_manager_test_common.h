@@ -15,19 +15,18 @@
 #ifndef UNIT_SEPARATE_BINARY_RESOURCE_MANAGER_TEST_COMMON_H_
 #define UNIT_SEPARATE_BINARY_RESOURCE_MANAGER_TEST_COMMON_H_
 
-#include "resource_manager.h"
+#include "core/resource_manager.h"
 
 #include <algorithm>
 #include <vector>
-#include "backend.h"
-#include "compile_time_list.h"
-#include "compile_time_param.h"
-#include "io_util.h"
-#include "simulation_object.h"
-#include "simulation_object_util.h"
-#include "type_util.h"
-#include "unit/test_sim_object.h"
-#include "unit/test_util.h"
+#include "core/param/compile_time_list.h"
+#include "core/param/compile_time_param.h"
+#include "core/sim_object/backend.h"
+#include "core/sim_object/sim_object.h"
+#include "core/util/io.h"
+#include "core/util/type.h"
+#include "unit/test_util/test_sim_object.h"
+#include "unit/test_util/test_util.h"
 
 namespace bdm {
 
