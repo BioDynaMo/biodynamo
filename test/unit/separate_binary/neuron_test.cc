@@ -55,7 +55,7 @@ TEST(neuroscience, ParamParsing) {
   config_file << kConfigContent;
   config_file.close();
 
-  Simulation<> simulation(TEST_NAME);
+  Simulation simulation(TEST_NAME);
   auto* param = simulation.GetParam();
 
   EXPECT_EQ(2.0, param->neurite_default_actual_length_);
@@ -72,7 +72,7 @@ TEST(neuroscience, ParamParsing) {
 }
 
 TEST(NeuronSomaTest, Scalar) {
-  Simulation<> simulation(TEST_NAME);
+  Simulation simulation(TEST_NAME);
   NeuriteElement neurite;
   NeuronSoma neuron;
   typename NeuronSoma::template Self<Scalar> neuron1;
@@ -80,7 +80,7 @@ TEST(NeuronSomaTest, Scalar) {
 }
 
 TEST(NeuronSomaTest, Soa) {
-  Simulation<> simulation(TEST_NAME);
+  Simulation simulation(TEST_NAME);
   SoaNeuronSoma neuron;
   SoaNeuronSoma sneuron;
   typename NeuronSoma::template Self<Soa> soan;
@@ -88,7 +88,7 @@ TEST(NeuronSomaTest, Soa) {
 }
 
 TEST(NeuronSomaTest, ExtendNewNeuriteElementSphericalCoordinates) {
-  Simulation<> simulation(TEST_NAME);
+  Simulation simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
   auto* ctxt = simulation.GetExecutionContext();
 
@@ -139,7 +139,7 @@ TEST(NeuronSomaTest, ExtendNewNeuriteElementSphericalCoordinates) {
 }
 
 TEST(NeuronSomaTest, ExtendNewNeurite) {
-  Simulation<> simulation(TEST_NAME);
+  Simulation simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
   auto* ctxt = simulation.GetExecutionContext();
 
@@ -183,7 +183,7 @@ TEST(NeuronSomaTest, ExtendNewNeurite) {
 }
 
 TEST(NeuronSomaTest, ExtendNeuriteAndElongate) {
-  Simulation<> simulation(TEST_NAME);
+  Simulation simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
   auto* ctxt = simulation.GetExecutionContext();
 
@@ -252,7 +252,7 @@ TEST(NeuronSomaTest, ExtendNeuriteAndElongate) {
 }
 
 TEST(NeuriteElementTest, PartialRetraction) {
-  Simulation<> simulation(TEST_NAME);
+  Simulation simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
   auto* ctxt = simulation.GetExecutionContext();
 
@@ -305,7 +305,7 @@ TEST(NeuriteElementTest, PartialRetraction) {
 }
 
 TEST(NeuriteElementTest, TotalRetraction) {
-  Simulation<> simulation(TEST_NAME);
+  Simulation simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
   auto* ctxt = simulation.GetExecutionContext();
 
@@ -342,7 +342,7 @@ TEST(NeuriteElementTest, TotalRetraction) {
 }
 
 TEST(NeuriteElementTest, Branch) {
-  Simulation<> simulation(TEST_NAME);
+  Simulation simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
   auto* ctxt = simulation.GetExecutionContext();
 
@@ -443,7 +443,7 @@ TEST(NeuriteElementTest, Branch) {
 }
 
 TEST(NeuriteElementTest, RightDaughterRetraction) {
-  Simulation<> simulation(TEST_NAME);
+  Simulation simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
   auto* ctxt = simulation.GetExecutionContext();
 
@@ -517,7 +517,7 @@ TEST(NeuriteElementTest, RightDaughterRetraction) {
 }
 
 TEST(NeuriteElementTest, RightDaughterTotalRetraction) {
-  Simulation<> simulation(TEST_NAME);
+  Simulation simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
   auto* ctxt = simulation.GetExecutionContext();
 
@@ -569,7 +569,7 @@ TEST(NeuriteElementTest, RightDaughterTotalRetraction) {
 }
 
 TEST(NeuriteElementTest, LeftDaughterRetraction) {
-  Simulation<> simulation(TEST_NAME);
+  Simulation simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
   auto* ctxt = simulation.GetExecutionContext();
 
@@ -643,7 +643,7 @@ TEST(NeuriteElementTest, LeftDaughterRetraction) {
 }
 
 TEST(NeuriteElementTest, RetractAllDendrites) {
-  Simulation<> simulation(TEST_NAME);
+  Simulation simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
   auto* ctxt = simulation.GetExecutionContext();
 
@@ -696,7 +696,7 @@ TEST(NeuriteElementTest, RetractAllDendrites) {
 }
 
 TEST(NeuriteElementTest, Bifurcate) {
-  Simulation<> simulation(TEST_NAME);
+  Simulation simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
   auto* ctxt = simulation.GetExecutionContext();
 
@@ -788,7 +788,7 @@ TEST(NeuriteElementTest, Bifurcate) {
 }
 
 TEST(DISABLED_NeuronSomaNeuriteElementTest, Displacement) {
-  // Simulation<> simulation(TEST_NAME);
+  // Simulation simulation(TEST_NAME);
   // auto* rm = simulation.GetResourceManager();
   //
   // auto* neurons = rm->template Get<NeuronSoma>();

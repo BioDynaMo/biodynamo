@@ -24,7 +24,7 @@
 namespace bdm {
 namespace dividing_cell_op_test_internal {
 
-template <typename TCell, typename TSimulation = Simulation<>>
+template <typename TCell, typename TSimulation = Simulation>
 void RunTest() {
   TSimulation simulation("dividing_cell_op_test_RunTest");
   auto* rm = simulation.GetResourceManager();

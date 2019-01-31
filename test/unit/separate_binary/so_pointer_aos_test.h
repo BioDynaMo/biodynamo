@@ -30,7 +30,7 @@ namespace bdm {
 // SoPointer tests
 /// This function is before the decleration of `SoPointerTestClass` to test
 /// if the SoPointer implementation can deal with incomplete types
-template <typename TSo, typename TBackend, typename TSimulation = Simulation<>>
+template <typename TSo, typename TBackend, typename TSimulation = Simulation>
 void SoPointerTest(const TSo& so) {
   TSimulation::GetActive()->GetResourceManager()->push_back(so);
 
@@ -73,7 +73,7 @@ BDM_CTPARAM() {
   BDM_DEFAULT_CTPARAM_FOR(SoPointerTestClass){};
 };
 
-inline void IOTestSoPointerRmContainerAos(Simulation<>* sim) {
+inline void IOTestSoPointerRmContainerAos(Simulation* sim) {
   auto* rm = sim->GetResourceManager();
   rm->push_back(SoPointerTestClass(123));
   SoPointerTestClass so2(456);

@@ -33,7 +33,7 @@ struct Chemotaxis : public BaseBiologyModule {
 
   /// event handler not needed, because Chemotaxis does not have state.
 
-  template <typename T, typename TSimulation = Simulation<>>
+  template <typename T, typename TSimulation = Simulation>
   void Run(T* cell) {
     auto* rm = TSimulation::GetActive()->GetResourceManager();
 
@@ -69,7 +69,7 @@ struct SubstanceSecretion : public BaseBiologyModule {
 
   /// event handler not needed, because Chemotaxis does not have state.
 
-  template <typename T, typename TSimulation = Simulation<>>
+  template <typename T, typename TSimulation = Simulation>
   void Run(T* cell) {
     auto* rm = TSimulation::GetActive()->GetResourceManager();
 

@@ -57,7 +57,7 @@ class InPlaceExecutionContext {
 
   /// This function is called at the beginning of each iteration.
   /// This function is not thread-safe.
-  template <typename TSimulation = Simulation<>>
+  template <typename TSimulation = Simulation>
   void SetupIteration() {
     // first iteration might have uncommited changes
     TearDownIteration();
@@ -66,7 +66,7 @@ class InPlaceExecutionContext {
   /// This function is called at the end of each iteration. \n
   /// This function is not thread-safe. \n
   /// NB: Invalidates references and pointers to simulation objects.
-  template <typename TSimulation = Simulation<>>
+  template <typename TSimulation = Simulation>
   void TearDownIteration() {
     // new sim objects
     auto* rm = TSimulation::GetActive()->GetResourceManager();
@@ -125,7 +125,7 @@ class InPlaceExecutionContext {
 
   /// Forwards the call to `Grid::ForEachNeighborWithinRadius`
   /// Could be used to cache the results.
-  template <typename TLambda, typename TSo, typename TSimulation = Simulation<>>
+  template <typename TLambda, typename TSo, typename TSimulation = Simulation>
   void ForEachNeighborWithinRadius(const TLambda& lambda, const TSo& query,
                                    double squared_radius) {
     auto* grid = TSimulation::GetActive()->GetGrid();
@@ -134,7 +134,7 @@ class InPlaceExecutionContext {
   }
 
   template <typename TSo, typename TSimBackend = Backend,
-            typename TSimulation = Simulation<>>
+            typename TSimulation = Simulation>
   auto&& GetSimObject(
       SoUid uid,
       typename std::enable_if<std::is_same<TSimBackend, Scalar>::value>::type*
@@ -149,7 +149,7 @@ class InPlaceExecutionContext {
   }
 
   template <typename TSo, typename TSimBackend = Backend,
-            typename TSimulation = Simulation<>>
+            typename TSimulation = Simulation>
   auto GetSimObject(SoUid uid,
                     typename std::enable_if<
                         std::is_same<TSimBackend, Soa>::value>::type* ptr = 0) {
@@ -162,7 +162,7 @@ class InPlaceExecutionContext {
   }
 
   template <typename TSo, typename TSimBackend = Backend,
-            typename TSimulation = Simulation<>>
+            typename TSimulation = Simulation>
   const auto&& GetConstSimObject(
       SoUid uid,
       typename std::enable_if<std::is_same<TSimBackend, Scalar>::value>::type*
@@ -171,7 +171,7 @@ class InPlaceExecutionContext {
   }
 
   template <typename TSo, typename TSimBackend = Backend,
-            typename TSimulation = Simulation<>>
+            typename TSimulation = Simulation>
   const auto GetConstSimObject(
       SoUid uid,
       typename std::enable_if<std::is_same<TSimBackend, Soa>::value>::type*
@@ -179,7 +179,7 @@ class InPlaceExecutionContext {
     return GetSimObject<TSo>(uid);
   }
 
-  template <typename TSimulation = Simulation<>>
+  template <typename TSimulation = Simulation>
   void RemoveFromSimulation(SoUid uid) {
     remove_.push_back(uid);
   }

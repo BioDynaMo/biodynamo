@@ -22,7 +22,7 @@ namespace bdm {
 BDM_CTPARAM() { BDM_CTPARAM_HEADER(); };
 
 inline int Simulate(int argc, const char** argv) {
-  Simulation<> simulation(argc, argv);
+  Simulation simulation(argc, argv);
 
   // Define initial model - in this example: single cell at origin
   auto* rm = simulation.GetResourceManager();

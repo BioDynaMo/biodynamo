@@ -42,7 +42,7 @@ class BoundSpace {
   BoundSpace() {}
   ~BoundSpace() {}
 
-  template <typename TContainer, typename TSimulation = Simulation<>>
+  template <typename TContainer, typename TSimulation = Simulation>
   void operator()(TContainer* sim_objects, uint16_t numa_node,
                   uint16_t type_idx) const {
     // set new positions after all updates have been calculated

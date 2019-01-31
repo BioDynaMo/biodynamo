@@ -87,7 +87,7 @@ class CircularBuffer {
 };
 
 /// A class that represents Cartesian 3D grid
-template <typename TSimulation = Simulation<>>
+template <typename TSimulation = Simulation>
 class Grid {
  public:
   /// A single unit cube of the grid
@@ -797,13 +797,13 @@ class Grid {
       std::atomic_flag mutex_ = ATOMIC_FLAG_INIT;
     };
 
-    template <typename TTSimulation = Simulation<>>
+    template <typename TTSimulation = Simulation>
     void Update() {
       auto* grid = TTSimulation::GetActive()->GetGrid();
       mutexes_.resize(grid->GetNumBoxes());
     }
 
-    template <typename TTSimulation = Simulation<>>
+    template <typename TTSimulation = Simulation>
     NeighborMutex GetMutex(uint64_t box_idx) {
       auto* grid = TTSimulation::GetActive()->GetGrid();
       FixedSizeVector<uint64_t, 27> box_indices;

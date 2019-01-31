@@ -30,7 +30,7 @@ TEST_F(CatalystAdaptorTest, GenerateSimulationInfoJson) {
     param->visualize_diffusion_.push_back({"sodium", true, true});
   };
 
-  Simulation<> simulation(kSimulationName, set_param);
+  Simulation simulation(kSimulationName, set_param);
 
   std::unordered_map<std::string, Shape> shapes;
   shapes["cell"] = kSphere;
@@ -79,7 +79,7 @@ TEST_F(CatalystAdaptorTest, GenerateSimulationInfoJson) {
 
 /// Tests if the catalyst state is generated.
 TEST_F(CatalystAdaptorTest, GenerateParaviewState) {
-  Simulation<> simulation("MySimulation");
+  Simulation simulation("MySimulation");
   // before we can call finalize we need to modify the json object
   // we need to remove entries for sim_objects and extracellular_substances
   // because there are no corresponding data files available.
@@ -120,7 +120,7 @@ TEST_F(CatalystAdaptorTest, CheckVisualizationSelection) {
     param->visualize_sim_objects_["Cell"] = {};
   };
 
-  Simulation<> sim(TEST_NAME, set_param);
+  Simulation sim(TEST_NAME, set_param);
   auto* rm = sim.GetResourceManager();
 
   enum Substances { kSubstance0, kSubstance1, kSubstance2 };

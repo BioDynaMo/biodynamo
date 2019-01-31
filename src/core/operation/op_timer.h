@@ -28,7 +28,7 @@ struct OpTimer {
   explicit OpTimer(std::string timer_msg, const TOp& op)
       : timer_msg_(timer_msg), operation_(op) {}
 
-  template <typename Container, typename TSimulation = Simulation<>>
+  template <typename Container, typename TSimulation = Simulation>
   void operator()(Container* cells, uint16_t numa_node, uint16_t type_idx) {
     auto* param = TSimulation::GetActive()->GetParam();
     if (param->statistics_) {

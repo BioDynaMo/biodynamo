@@ -50,7 +50,7 @@ class SimulationBackup {
   SimulationBackup(const std::string& backup_file,
                    const std::string& restore_file);
 
-  template <typename TSimulation = Simulation<>>
+  template <typename TSimulation = Simulation>
   void Backup(size_t completed_simulation_steps) {
     if (!backup_) {
       Log::Fatal("SimulationBackup",
@@ -80,7 +80,7 @@ class SimulationBackup {
     rename(tmp_file.str().c_str(), backup_file_.c_str());
   }
 
-  template <typename TSimulation = Simulation<>>
+  template <typename TSimulation = Simulation>
   void Restore() {
     if (!restore_) {
       Log::Fatal("SimulationBackup",

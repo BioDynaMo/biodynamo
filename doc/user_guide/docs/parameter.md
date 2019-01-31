@@ -57,7 +57,7 @@ The following code snippet shows how to access a runtime parameter in your
 simulation.
 
 ```
-const auto* param = Simulation<>::GetActive()->GetParam();
+const auto* param = Simulation::GetActive()->GetParam();
 std::cout << param->simulation_time_step_ << std::endl;
 ```
 
@@ -117,7 +117,7 @@ auto set_param = [](auto* param) {
   param->run_mechanical_interactions_ = false;
 };
 
-Simulation<> simulation(argc, argv, set_param);
+Simulation simulation(argc, argv, set_param);
 ```
 
 You have to create a lambda and pass it to the constructor of `Simulation`.

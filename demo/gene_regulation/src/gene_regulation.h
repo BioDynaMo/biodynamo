@@ -36,7 +36,7 @@ BDM_CTPARAM() {
 
 inline int Simulate(int argc, const char** argv) {
   // 2. Initialize BioDynaMo
-  Simulation<> simulation(argc, argv);
+  Simulation simulation(argc, argv);
 
   // 3. Initialize RegulateGenes module.
   // To add functions to the module use RegulateGenes::AddGene() function.

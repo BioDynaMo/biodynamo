@@ -189,7 +189,7 @@ class NeuroMLExporter : public Exporter<TContainer> {
   void ExportSummary(std::string filename, uint64_t num_iterations) override {}
 };
 
-template <typename TContainer, typename TSimulation = Simulation<>>
+template <typename TContainer, typename TSimulation = Simulation>
 class ParaviewExporter : public Exporter<TContainer> {
  public:
   void ExportIteration(const TContainer &cells, std::string filename,

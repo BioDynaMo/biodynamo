@@ -65,7 +65,7 @@ class SoPointer {
     return *this;
   }
 
-  template <typename TTBackend = TBackend, typename TSimulation = Simulation<>>
+  template <typename TTBackend = TBackend, typename TSimulation = Simulation>
   typename std::enable_if<std::is_same<TTBackend, Scalar>::value,
                           TSoSimBackend&>::type
   operator->() {
@@ -74,7 +74,7 @@ class SoPointer {
     return ctxt->template GetSimObject<TSoSimBackend>(uid_);
   }
 
-  template <typename TTBackend = TBackend, typename TSimulation = Simulation<>>
+  template <typename TTBackend = TBackend, typename TSimulation = Simulation>
   typename std::enable_if<std::is_same<TTBackend, Scalar>::value,
                           const TSoSimBackend&>::type
   operator->() const {
@@ -83,7 +83,7 @@ class SoPointer {
     return ctxt->template GetConstSimObject<SoSoaRef>(uid_);
   }
 
-  template <typename TTBackend = TBackend, typename TSimulation = Simulation<>>
+  template <typename TTBackend = TBackend, typename TSimulation = Simulation>
   typename std::enable_if<std::is_same<TTBackend, Soa>::value, SoSoaRef>::type
   operator->() {
     assert(*this != nullptr);
@@ -91,7 +91,7 @@ class SoPointer {
     return ctxt->template GetSimObject<SoSoaRef>(uid_);
   }
 
-  template <typename TTBackend = TBackend, typename TSimulation = Simulation<>>
+  template <typename TTBackend = TBackend, typename TSimulation = Simulation>
   typename std::enable_if<std::is_same<TTBackend, Soa>::value,
                           const SoSoaRef>::type
   operator->() const {

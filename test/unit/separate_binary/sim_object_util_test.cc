@@ -208,7 +208,7 @@ TEST(SimObjectUtilTest, Soa_AssignmentOperator) {
 // Tests overloaded Divide function which adds new daughter cell to the
 // container managed by the ResourceManager with default template parameters
 TEST(SimObjectUtilTest, Soa_DivideWithResourceManager) {
-  Simulation<> simulation(TEST_NAME);
+  Simulation simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
 
   Neuron neuron;
@@ -342,7 +342,7 @@ TEST(SimObjectUtilTest, ThisMD) {
 }
 
 TEST(SimObjectUtilTest, GetSoPtr) {
-  Simulation<> simulation(TEST_NAME);
+  Simulation simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
 
   for (uint64_t i = 0; i < 10; i++) {
@@ -358,7 +358,7 @@ TEST(SimObjectUtilTest, GetSoPtr) {
 }
 
 TEST(SimObjectUtilTest, GetSoHandle) {
-  Simulation<> simulation(TEST_NAME);
+  Simulation simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
 
   Neuron neuron;

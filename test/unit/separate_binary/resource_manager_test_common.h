@@ -452,7 +452,7 @@ inline void CheckApplyOnAllElements(TRm* rm, uint64_t num_so_per_type,
   }
 }
 
-template <typename TA, typename TB, typename TSimulation = Simulation<>>
+template <typename TA, typename TB, typename TSimulation = Simulation>
 inline void RunSortAndApplyOnAllElementsParallel(uint64_t num_so_per_type) {
   TSimulation simulation("RunSortAndApplyOnAllElementsParallel");
   auto* rm = simulation.GetResourceManager();
@@ -491,7 +491,7 @@ inline void RunSortAndApplyOnAllElementsParallel(uint64_t num_so_per_type) {
   }
 }
 
-template <typename TA, typename TB, typename TSimulation = Simulation<>>
+template <typename TA, typename TB, typename TSimulation = Simulation>
 inline void RunSortAndApplyOnAllElementsParallel() {
   int num_threads = omp_get_max_threads();
   std::vector<int> num_so_per_type = {std::max(1, num_threads - 1), num_threads,
@@ -590,7 +590,7 @@ inline void CheckApplyOnAllElementsDynamic(TRm* rm, uint64_t num_so_per_type,
   }
 }
 
-template <typename TA, typename TB, typename TSimulation = Simulation<>>
+template <typename TA, typename TB, typename TSimulation = Simulation>
 inline void RunSortAndApplyOnAllElementsParallelDynamic(
     uint64_t num_so_per_type, uint64_t batch_size) {
   TSimulation simulation("RunSortAndApplyOnAllElementsParallel");
@@ -630,7 +630,7 @@ inline void RunSortAndApplyOnAllElementsParallelDynamic(
   }
 }
 
-template <typename TA, typename TB, typename TSimulation = Simulation<>>
+template <typename TA, typename TB, typename TSimulation = Simulation>
 inline void RunSortAndApplyOnAllElementsParallelDynamic() {
   int num_threads = omp_get_max_threads();
   std::vector<int> num_so_per_type = {std::max(1, num_threads - 1), num_threads,

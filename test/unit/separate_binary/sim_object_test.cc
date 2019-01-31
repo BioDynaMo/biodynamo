@@ -19,7 +19,7 @@
 namespace bdm {
 
 TEST(SimObjectTest, SoaGetElementIndex) {
-  Simulation<> simulation(TEST_NAME);
+  Simulation simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
 
   for (uint64_t i = 0; i < 10; i++) {
@@ -33,7 +33,7 @@ TEST(SimObjectTest, SoaGetElementIndex) {
 }
 
 TEST(SimObjectTest, Clear) {
-  Simulation<> simulation(TEST_NAME);
+  Simulation simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
 
   SoUid remove_uid = 12345;

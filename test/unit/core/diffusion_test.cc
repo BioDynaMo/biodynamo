@@ -35,7 +35,7 @@
 
 namespace bdm {
 
-template <typename TSo, typename TSimulation = Simulation<>>
+template <typename TSo, typename TSimulation = Simulation>
 void CellFactory(const std::vector<std::array<double, 3>>& positions) {
   auto* rm = TSimulation::GetActive()->GetResourceManager();
   rm->template Reserve<TSo>(positions.size());
@@ -49,7 +49,7 @@ void CellFactory(const std::vector<std::array<double, 3>>& positions) {
 // Test if the dimensions of the diffusion grid are corresponding to the
 // neighbor grid dimensions
 TEST(DiffusionTest, GridDimensions) {
-  Simulation<> simulation(TEST_NAME);
+  Simulation simulation(TEST_NAME);
   auto* grid = simulation.GetGrid();
 
   std::vector<std::array<double, 3>> positions;
@@ -77,7 +77,7 @@ TEST(DiffusionTest, GridDimensions) {
 // Test if the dimension of the diffusion grid update correctly with the
 // neighbor grid dimensions (we expect the diffusion grid to stay cube-shaped)
 TEST(DiffusionTest, UpdateGrid) {
-  Simulation<> simulation(TEST_NAME);
+  Simulation simulation(TEST_NAME);
   auto* grid = simulation.GetGrid();
 
   std::vector<std::array<double, 3>> positions;
@@ -114,7 +114,7 @@ TEST(DiffusionTest, UpdateGrid) {
 // Test if the diffusion grid does not change if the neighbor grid dimensions
 // do not change
 TEST(DiffusionTest, FalseUpdateGrid) {
-  Simulation<> simulation(TEST_NAME);
+  Simulation simulation(TEST_NAME);
   auto* grid = simulation.GetGrid();
 
   std::vector<std::array<double, 3>> positions;
@@ -154,7 +154,7 @@ TEST(DiffusionTest, FalseUpdateGrid) {
 // Create a 5x5x5 diffusion grid, with a substance being
 // added at center box 2,2,2, causing a symmetrical diffusion
 TEST(DiffusionTest, LeakingEdge) {
-  Simulation<> simulation(TEST_NAME);
+  Simulation simulation(TEST_NAME);
 
   DiffusionGrid* d_grid = new DiffusionGrid(0, "Kalium", 0.4, 0, 5);
 
@@ -510,7 +510,7 @@ TEST(DiffusionTest, ModelInitializer) {
     param->export_visualization_ = true;
     param->visualize_diffusion_.push_back(vd);
   };
-  Simulation<> sim(TEST_NAME, set_param);
+  Simulation sim(TEST_NAME, set_param);
   auto* rm = sim.GetResourceManager();
 
   enum Substances { kSubstance_0, kSubstance_1, kSubstance_2 };

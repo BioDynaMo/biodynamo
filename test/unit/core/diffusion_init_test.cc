@@ -34,7 +34,7 @@ TEST(DiffusionInitTest, GaussianBand) {
     param->min_bound_ = 0;
     param->max_bound_ = 250;
   };
-  Simulation<> simulation(TEST_NAME, set_param);
+  Simulation simulation(TEST_NAME, set_param);
 
   auto* rm = simulation.GetResourceManager();
   auto* param = simulation.GetParam();

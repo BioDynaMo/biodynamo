@@ -40,7 +40,7 @@ BDM_CTPARAM() {
 
 inline int Simulate(int argc, const char** argv) {
   // Initialize BioDynaMo
-  Simulation<> simulation(argc, argv);
+  Simulation simulation(argc, argv);
 
   auto construct = [](const std::array<double, 3>& position) {
     Cell cell(position);

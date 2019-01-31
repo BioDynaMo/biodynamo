@@ -82,7 +82,7 @@ class DefaultForce {
 
  private:
   template <typename TSphereLhs, typename TSphereRhs,
-            typename TSimulation = Simulation<>>
+            typename TSimulation = Simulation>
   void ForceBetweenSpheres(const TSphereLhs* sphere_lhs,
                            const TSphereRhs* sphere_rhs,
                            std::array<double, 3>* result) const {
@@ -320,7 +320,7 @@ class DefaultForce {
     *result = {force[0], force[1], force[2], k};
   }
 
-  template <typename TSimulation = Simulation<>>
+  template <typename TSimulation = Simulation>
   std::array<double, 4> ComputeForceOfASphereOnASphere(
       const std::array<double, 3>& c1, double r1,
       const std::array<double, 3>& c2, double r2) const {

@@ -37,7 +37,7 @@ void CellFactory(TRm* rm, size_t cells_per_dim) {
 }
 
 TEST(GridTest, SetupGrid) {
-  Simulation<> simulation(TEST_NAME);
+  Simulation simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
   auto* grid = simulation.GetGrid();
 
@@ -90,7 +90,7 @@ TEST(GridTest, SetupGrid) {
   EXPECT_EQ(expected_63, neighbors[63]);
 }
 
-void RunUpdateGridTest(Simulation<>* simulation) {
+void RunUpdateGridTest(Simulation* simulation) {
   auto* rm = simulation->GetResourceManager();
   auto* grid = simulation->GetGrid();
 
@@ -145,7 +145,7 @@ void RunUpdateGridTest(Simulation<>* simulation) {
 }
 
 TEST(GridTest, UpdateGrid) {
-  Simulation<> simulation(TEST_NAME);
+  Simulation simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
   auto* grid = simulation.GetGrid();
 
@@ -165,7 +165,7 @@ TEST(GridTest, UpdateGrid) {
 }
 
 TEST(GridTest, NoRaceConditionDuringUpdate) {
-  Simulation<> simulation(TEST_NAME);
+  Simulation simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
   auto* grid = simulation.GetGrid();
 
@@ -190,7 +190,7 @@ TEST(GridTest, NoRaceConditionDuringUpdate) {
 }
 
 TEST(GridTest, GetBoxIndex) {
-  Simulation<> simulation(TEST_NAME);
+  Simulation simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
   auto* grid = simulation.GetGrid();
 
@@ -216,7 +216,7 @@ TEST(GridTest, GetBoxIndex) {
 }
 
 TEST(GridTest, GridDimensions) {
-  Simulation<> simulation(TEST_NAME);
+  Simulation simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
   auto* grid = simulation.GetGrid();
 
@@ -238,7 +238,7 @@ TEST(GridTest, GridDimensions) {
 }
 
 TEST(GridTest, GetBoxCoordinates) {
-  Simulation<> simulation(TEST_NAME);
+  Simulation simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
   auto* grid = simulation.GetGrid();
 
@@ -253,7 +253,7 @@ TEST(GridTest, GetBoxCoordinates) {
 }
 
 void RunNoRaceConditionForEachPairTest() {
-  Simulation<> simulation("GridTest_RunNoRaceConditionForEachPairTest");
+  Simulation simulation("GridTest_RunNoRaceConditionForEachPairTest");
   auto* rm = simulation.GetResourceManager();
   auto* grid = simulation.GetGrid();
 
@@ -314,7 +314,7 @@ TEST(GridTest, NonEmptyBoundedTestThresholdDimensions) {
     param->max_bound_ = 99;
   };
 
-  Simulation<> simulation(TEST_NAME, set_param);
+  Simulation simulation(TEST_NAME, set_param);
   auto* rm = simulation.GetResourceManager();
   auto* grid = simulation.GetGrid();
 
@@ -328,7 +328,7 @@ TEST(GridTest, NonEmptyBoundedTestThresholdDimensions) {
 }
 
 TEST(GridTest, IterateZOrder) {
-  Simulation<> simulation(TEST_NAME);
+  Simulation simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
   auto* grid = simulation.GetGrid();
 

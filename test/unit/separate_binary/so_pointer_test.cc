@@ -20,18 +20,18 @@ namespace bdm {
 namespace so_pointer_test_internal {
 
 TEST(SoPointerTest, Basics) {
-  Simulation<> simulation(TEST_NAME);
+  Simulation simulation(TEST_NAME);
   SoPointerTestClass so(123);
   SoPointerTest<SoPointerTestClass, Soa>(so);
 }
 
 TEST_F(IOTest, SoPointer) {
-  Simulation<> simulation(TEST_NAME);
+  Simulation simulation(TEST_NAME);
   RunIOTest(&simulation);
 }
 
 TEST_F(IOTest, SoPointerNullptr) {
-  Simulation<> simulation(TEST_NAME);
+  Simulation simulation(TEST_NAME);
   IOTestSoPointerNullptr();
 }
 

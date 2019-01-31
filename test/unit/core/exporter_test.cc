@@ -22,7 +22,7 @@
 namespace bdm {
 
 TEST(ExportTest, ExportToFile) {
-  Simulation<> simulation(TEST_NAME);
+  Simulation simulation(TEST_NAME);
 
   // set up cells and their positions
   Cell cell1;

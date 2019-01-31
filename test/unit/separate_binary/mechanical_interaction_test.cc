@@ -37,7 +37,7 @@ namespace experimental {
 namespace neuroscience {
 
 TEST(MechanicalInteraction, StraightxCylinderGrowth) {
-  Simulation<> simulation(TEST_NAME);
+  Simulation simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
 
   NeuronSoma neuron;
@@ -78,7 +78,7 @@ TEST(MechanicalInteraction, StraightxCylinderGrowthNoMechanical) {
     param->neurite_max_length_ = 2;
   };
 
-  Simulation<> simulation(TEST_NAME, set_param);
+  Simulation simulation(TEST_NAME, set_param);
   auto* rm = simulation.GetResourceManager();
 
   NeuronSoma neuron;
@@ -115,7 +115,7 @@ TEST(MechanicalInteraction, StraightxCylinderGrowthNoMechanical) {
 }
 
 TEST(MechanicalInteraction, DiagonalxyCylinderGrowth) {
-  Simulation<> simulation(TEST_NAME);
+  Simulation simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
 
   NeuronSoma neuron;
@@ -149,7 +149,7 @@ TEST(MechanicalInteraction, DiagonalxyCylinderGrowth) {
 }
 
 TEST(MechanicalInteraction, DiagonalxyzCylinderGrowth) {
-  Simulation<> simulation(TEST_NAME);
+  Simulation simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
 
   NeuronSoma neuron;
@@ -184,7 +184,7 @@ TEST(MechanicalInteraction, DiagonalxyzCylinderGrowth) {
 }
 
 TEST(MechanicalInteraction, DiagonalSpecialDirectionCylinderGrowth) {
-  Simulation<> simulation(TEST_NAME);
+  Simulation simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
 
   NeuronSoma neuron;
@@ -222,7 +222,7 @@ TEST(MechanicalInteraction, DiagonalSpecialDirectionCylinderGrowth) {
 // growth force/direction and repulsive force/direction are equal
 // so the dendrite stop growing
 TEST(MechanicalInteraction, StraightCylinderGrowthObstacle) {
-  Simulation<> simulation(TEST_NAME);
+  Simulation simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
 
   NeuronSoma neuron;
@@ -265,7 +265,7 @@ TEST(MechanicalInteraction, StraightCylinderGrowthObstacle) {
 }
 
 TEST(MechanicalInteraction, NotStraightCylinderGrowthObstacle) {
-  Simulation<> simulation(TEST_NAME);
+  Simulation simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
 
   NeuronSoma neuron;
@@ -307,7 +307,7 @@ TEST(MechanicalInteraction, NotStraightCylinderGrowthObstacle) {
 }
 
 TEST(MechanicalInteraction, BifurcationCylinderGrowth) {
-  Simulation<> simulation(TEST_NAME);
+  Simulation simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
 
   gErrorIgnoreLevel = kWarning;
@@ -359,7 +359,7 @@ TEST(MechanicalInteraction, BifurcationCylinderGrowth) {
 }
 
 TEST(MechanicalInteraction, BranchCylinderGrowth) {
-  Simulation<> simulation(TEST_NAME);
+  Simulation simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
 
   NeuronSoma neuron;
@@ -408,7 +408,7 @@ TEST(MechanicalInteraction, BranchCylinderGrowth) {
 
 TEST(MechanicalInteraction, BifurcateCylinderRandomGrowth) {
   auto set_param = [](auto* param) { param->neurite_max_length_ = 2; };
-  Simulation<> simulation(TEST_NAME, set_param);
+  Simulation simulation(TEST_NAME, set_param);
   auto* rm = simulation.GetResourceManager();
   auto* random = simulation.GetRandom();
 
@@ -472,7 +472,7 @@ TEST(MechanicalInteraction, BifurcateCylinderRandomGrowth) {
 TEST(MechanicalInteraction, TwoDistinctCylinderEncounter) {
   auto set_param = [](auto* param) { param->neurite_max_length_ = 2; };
 
-  Simulation<> simulation(TEST_NAME, set_param);
+  Simulation simulation(TEST_NAME, set_param);
   auto* rm = simulation.GetResourceManager();
 
   gErrorIgnoreLevel = kWarning;
@@ -536,7 +536,7 @@ TEST(MechanicalInteraction, TwoDistinctCylinderEncounter) {
 }
 
 TEST(MechanicalInteraction, TwoCylinderGrowthObstacle) {
-  Simulation<> simulation(TEST_NAME);
+  Simulation simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
 
   NeuronSoma neuron1;

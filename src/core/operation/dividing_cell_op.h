@@ -27,7 +27,7 @@ class DividingCellOp {
   DividingCellOp(const DividingCellOp&) = delete;
   DividingCellOp& operator=(const DividingCellOp&) = delete;
 
-  template <typename TSimulation = Simulation<>>
+  template <typename TSimulation = Simulation>
   void operator()() const {
     auto* rm = TSimulation::GetActive()->GetResourceManager();
     rm->ApplyOnAllTypes([](auto* cells, uint16_t numa_node, uint16_t type_idx) {
