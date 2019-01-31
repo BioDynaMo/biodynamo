@@ -37,8 +37,8 @@ class ContainerTestClass : public TestSimObject {
   BDM_SIM_OBJECT_HEADER(ContainerTestClass, TestSimObject, 1, dm1_, dm2_);
 
  public:
-  ContainerTestClassExt() {}
-  ContainerTestClassExt(int i, double d) {
+  ContainerTestClass() {}
+  ContainerTestClass(int i, double d) {
     dm1_ = i;
     dm2_ = d;
   }
@@ -58,9 +58,9 @@ class MyCell : public TestSimObject {
   BDM_SIM_OBJECT_HEADER(MyCell, TestSimObject, 1, diameter_);
 
  public:
-  explicit MyCellExt(const std::array<double, 3>& pos) : Base(pos) {}
+  explicit MyCell(const std::array<double, 3>& pos) : Base(pos) {}
 
-  MyCellExt() : Base({1, 2, 3}) {}
+  MyCell() : Base({1, 2, 3}) {}
 
   MostDerivedSoPtr Divide(double volume_ratio, double phi, double theta) {
     auto* ctxt = Simulation::GetActive()->GetExecutionContext();
@@ -103,10 +103,10 @@ class Neuron : public MyCell {
 
  public:
   template <class... A>
-  explicit NeuronExt(const std::vector<Neurite>& neurites, const A&... a)
+  explicit Neuron(const std::vector<Neurite>& neurites, const A&... a)
       : Base(a...), neurites_{{neurites}} {}
 
-  NeuronExt() = default;
+  Neuron() = default;
 
   void DivideImpl(MostDerivedSoPtr daughter, double volume_ratio, double phi,
                   double theta) {
@@ -131,8 +131,8 @@ class TestObject : public SimObject {
   BDM_SIM_OBJECT_HEADER(TestObject, SimObject, 1, id_);
 
  public:
-  TestObjectExt() {}
-  explicit TestObjectExt(int id) : id_(id) {}
+  TestObject() {}
+  explicit TestObject(int id) : id_(id) {}
   int GetId() const { return id_; }
 
  private:
@@ -143,7 +143,7 @@ class TestThisMD : public SimObject {
   BDM_SIM_OBJECT_HEADER(TestThisMD, SimObject, 0, foo_);
 
  public:
-  TestThisMDExt() {}
+  TestThisMD() {}
 
   int AnotherFunction() { return 123; }
 
@@ -156,7 +156,7 @@ class TestThisMDSubclass : public TestThisMD {
   BDM_SIM_OBJECT_HEADER(TestThisMDSubclass, TestThisMD, 0, foo_);
 
  public:
-  TestThisMDSubclassExt() {}
+  TestThisMDSubclass() {}
 
   int AnotherFunction() { return 321; }
 

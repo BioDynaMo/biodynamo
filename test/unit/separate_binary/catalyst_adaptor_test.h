@@ -32,7 +32,7 @@ class MyCell : public Cell {
   BDM_SIM_OBJECT_HEADER(MyCell, Cell, 1, dummmy_);
 
  public:
-  MyCellExt() {}
+  MyCell() {}
   int dummmy_;
 };
 
@@ -40,7 +40,7 @@ class MyNeuron : public Cell {
   BDM_SIM_OBJECT_HEADER(MyNeuron, Cell, 1, dummmy_);
 
  public:
-  MyNeuronExt() {}
+  MyNeuron() {}
   int dummmy_;
 };
 

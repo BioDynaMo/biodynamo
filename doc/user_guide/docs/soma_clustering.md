@@ -25,8 +25,8 @@ class MyCell : public Cell {
   BDM_SIM_OBJECT_HEADER(MyCell, Cell, 1, cell_type_);
 
  public:
-  MyCellExt() {}
-  MyCellExt(const std::array<double, 3>& position) : Base(position) {}
+  MyCell() {}
+  MyCell(const std::array<double, 3>& position) : Base(position) {}
 
   void SetCellType(int t) { cell_type_ = t; }
   int GetCellType() const { return cell_type_; }

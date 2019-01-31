@@ -103,10 +103,10 @@ class TestCell : public Cell {
   BDM_SIM_OBJECT_HEADER(TestCell, Cell, 1, placeholder_);
 
  public:
-  TestCellExt() {}
+  TestCell() {}
 
   // Ctor for CellDivisionEvent
-  TestCellExt(CellDivisionEvent event, TestCellExt * mother,
+  TestCell(CellDivisionEvent event, TestCellExt * mother,
               uint64_t new_oid = 0)
       : Base(event, mother, new_oid) {
     if (mother->capture_input_parameters_) {

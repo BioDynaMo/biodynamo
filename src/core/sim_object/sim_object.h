@@ -128,7 +128,7 @@ class SimObjectExt {
                         biology_modules_, run_bm_loop_idx_, numa_node_);
 
  public:
-  SimObjectExt() : Base() { uid_ = SoUidGenerator::Get()->NewSoUid(); }
+  SimObject() : Base() { uid_ = SoUidGenerator::Get()->NewSoUid(); }
 
   virtual ~SimObjectExt() {
     for(auto* el : biology_modules_) {
