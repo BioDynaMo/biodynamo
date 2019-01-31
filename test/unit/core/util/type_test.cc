@@ -30,12 +30,6 @@ TEST(TypeTernaryOperatorTest, False) {
   EXPECT_EQ(std::string("d"), typeid(data).name());
 }
 
-TEST(is_soaTest, All) {
-  EXPECT_FALSE(is_soa<Scalar>::value);
-  EXPECT_TRUE(is_soa<Soa>::value);
-  EXPECT_TRUE(is_soa<SoaRef>::value);
-}
-
 TEST(TestRawType, All) {
   {
     bool result = std::is_same<int, raw_type<int*>>::value;

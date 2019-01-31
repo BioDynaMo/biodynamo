@@ -37,22 +37,6 @@ struct type_ternary_operator<false, T, U> {
   typedef U type;  // NOLINT
 };
 
-/// Type trait to determine whether a backend is soa
-template <typename Backend>
-struct is_soa {              // NOLINT
-  static const bool value =  // NOLINT
-      std::is_same<Backend, Soa>::value || std::is_same<Backend, SoaRef>::value;
-};
-
-/// Type trait to determine whether a simulation object is a sphere and has a
-/// SOA backend.
-template <typename TSimObject>
-struct is_soa_sphere {       // NOLINT
-  static const bool value =  // NOLINT
-      TSimObject::value_type::GetShape() == Shape::kSphere &&
-      is_soa<typename TSimObject::Backend>::value;
-};
-
 /// Type trait that converts `T*`, `T&`, `T&&`, `T*&` to `T`
 template <typename T>
 using raw_type = std::remove_pointer_t<std::decay_t<T>>;  // NOLINT
