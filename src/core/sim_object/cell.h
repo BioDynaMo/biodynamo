@@ -61,67 +61,71 @@ class Cell : public SimObject {
   explicit Cell(const std::array<double, 3>& position)
       : position_(position), density_{1.0} {}
 
-  /// This constructor is used to create daughter 2 for a cell division event
-  /// \see CellDivisionEvent
-  template <typename TMother>
-  Cell(const CellDivisionEvent& event, TMother* mother, uint64_t new_oid = 0)
-      : Base(event, mother, new_oid) {
-    auto* daughter = ThisMD();  // FIXME
-    // A) Defining some values
-    // ..................................................................
-    // defining the two radii s.t total volume is conserved
-    // * radius^3 = r1^3 + r2^3 ;
-    // * volume_ratio = r2^3 / r1^3
-    double radius = mother->GetDiameter() * 0.5;
+  // FIXME todo
+  void EventConstructor(const CellDivisionEvent& event, SimObject* mother, uint64_t new_oid = 0) override {
 
-    // define an axis for division (along which the nuclei will move)
-    double x_coord = std::cos(event.theta_) * std::sin(event.phi_);
-    double y_coord = std::sin(event.theta_) * std::sin(event.phi_);
-    double z_coord = std::cos(event.phi_);
-    double total_length_of_displacement = radius / 4.0;
+    Base::EventConstructor(event, mother, new_oid);
 
-    const auto x_axis = mother->kXAxis;
-    const auto y_axis = mother->kYAxis;
-    const auto z_axis = mother->kZAxis;
-    std::array<double, 3> axis_of_division{
-        total_length_of_displacement *
-            (x_coord * x_axis[0] + y_coord * y_axis[0] + z_coord * z_axis[0]),
-        total_length_of_displacement *
-            (x_coord * x_axis[1] + y_coord * y_axis[1] + z_coord * z_axis[1]),
-        total_length_of_displacement *
-            (x_coord * x_axis[2] + y_coord * y_axis[2] + z_coord * z_axis[2])};
+    if(const CellDivisionEvent* cdevent = dynamic_cast<const CellDivisionEvent*>(&event)) {
+      auto* daughter = ThisMD();  // FIXME
+      // A) Defining some values
+      // ..................................................................
+      // defining the two radii s.t total volume is conserved
+      // * radius^3 = r1^3 + r2^3 ;
+      // * volume_ratio = r2^3 / r1^3
+      double radius = mother->GetDiameter() * 0.5;
 
-    // two equations for the center displacement :
-    //  1) d2/d1= v2/v1 = volume_ratio (each sphere is shifted inver.
-    //  proportionally to its volume)
-    //  2) d1 + d2 = TOTAL_LENGTH_OF_DISPLACEMENT
-    double d_2 = total_length_of_displacement / (event.volume_ratio_ + 1);
-    double d_1 = total_length_of_displacement - d_2;
+      // define an axis for division (along which the nuclei will move)
+      double x_coord = std::cos(cdevent->theta_) * std::sin(cdevent->phi_);
+      double y_coord = std::sin(cdevent->theta_) * std::sin(cdevent->phi_);
+      double z_coord = std::cos(cdevent->phi_);
+      double total_length_of_displacement = radius / 4.0;
 
-    double mother_volume = mother->GetVolume();
-    double new_volume = mother_volume / (event.volume_ratio_ + 1);
-    daughter->SetVolume(mother_volume - new_volume);
+      const auto x_axis = mother->kXAxis;
+      const auto y_axis = mother->kYAxis;
+      const auto z_axis = mother->kZAxis;
+      std::array<double, 3> axis_of_division{
+          total_length_of_displacement *
+              (x_coord * x_axis[0] + y_coord * y_axis[0] + z_coord * z_axis[0]),
+          total_length_of_displacement *
+              (x_coord * x_axis[1] + y_coord * y_axis[1] + z_coord * z_axis[1]),
+          total_length_of_displacement *
+              (x_coord * x_axis[2] + y_coord * y_axis[2] + z_coord * z_axis[2])};
 
-    // position
-    auto mother_pos = mother->GetPosition();
-    std::array<double, 3> new_position{
-        mother_pos[0] + d_2 * axis_of_division[0],
-        mother_pos[1] + d_2 * axis_of_division[1],
-        mother_pos[2] + d_2 * axis_of_division[2]};
-    daughter->SetPosition(new_position);
+      // two equations for the center displacement :
+      //  1) d2/d1= v2/v1 = volume_ratio (each sphere is shifted inver.
+      //  proportionally to its volume)
+      //  2) d1 + d2 = TOTAL_LENGTH_OF_DISPLACEMENT
+      double d_2 = total_length_of_displacement / (event.volume_ratio_ + 1);
+      double d_1 = total_length_of_displacement - d_2;
 
-    // E) This sphere becomes the 1st daughter
-    // move these cells on opposite direction
-    mother_pos[0] -= d_1 * axis_of_division[0];
-    mother_pos[1] -= d_1 * axis_of_division[1];
-    mother_pos[2] -= d_1 * axis_of_division[2];
-    // update mother here and not in EventHandler to avoid recomputation
-    mother->SetPosition(mother_pos);
-    mother->SetVolume(new_volume);
+      double mother_volume = mother->GetVolume();
+      double new_volume = mother_volume / (event.volume_ratio_ + 1);
+      daughter->SetVolume(mother_volume - new_volume);
 
-    daughter->SetAdherence(mother->GetAdherence());
-    daughter->SetDensity(mother->GetDensity());
-    // G) TODO(lukas) Copy the intracellular and membrane bound Substances
+      // position
+      auto mother_pos = mother->GetPosition();
+      std::array<double, 3> new_position{
+          mother_pos[0] + d_2 * axis_of_division[0],
+          mother_pos[1] + d_2 * axis_of_division[1],
+          mother_pos[2] + d_2 * axis_of_division[2]};
+      daughter->SetPosition(new_position);
+
+      // E) This sphere becomes the 1st daughter
+      // move these cells on opposite direction
+      mother_pos[0] -= d_1 * axis_of_division[0];
+      mother_pos[1] -= d_1 * axis_of_division[1];
+      mother_pos[2] -= d_1 * axis_of_division[2];
+      // update mother here and not in EventHandler to avoid recomputation
+      mother->SetPosition(mother_pos);
+      mother->SetVolume(new_volume);
+
+      daughter->SetAdherence(mother->GetAdherence());
+      daughter->SetDensity(mother->GetDensity());
+      // G) TODO(lukas) Copy the intracellular and membrane bound Substances
+    } else {
+      Log::Fatal("Cell", "EventConstructor called with invalid event");
+    }
   }
 
   virtual ~Cell() {}
@@ -131,54 +135,56 @@ class Cell : public SimObject {
   /// CellDivisionEvent::volume_ratio_ will be between 0.9 and 1.1\n
   /// The axis of division is random.
   /// \see CellDivisionEvent
-  MostDerivedSoPtr Divide() {
+  virtual SoPointer Divide() {
     auto* random = Simulation::GetActive()->GetRandom();
-    return ThisMD()->Divide(random->Uniform(0.9, 1.1));
+    return Divide(random->Uniform(0.9, 1.1));
   }
 
   /// \brief Divide this cell.
   ///
   /// The axis of division is random.
   /// \see CellDivisionEvent
-  MostDerivedSoPtr Divide(double volume_ratio) {
+  virtual SoPointer Divide(double volume_ratio) {
     // find random point on sphere (based on :
     // http://mathworld.wolfram.com/SpherePointPicking.html)
     auto* random = Simulation::GetActive()->GetRandom();
     double theta = 2 * Math::kPi * random->Uniform(0, 1);
     double phi = std::acos(2 * random->Uniform(0, 1) - 1);
-    return ThisMD()->Divide(volume_ratio, phi, theta);
+    return Divide(volume_ratio, phi, theta);
   }
 
   /// \brief Divide this cell.
   ///
   /// CellDivisionEvent::volume_ratio_ will be between 0.9 and 1.1\n
   /// \see CellDivisionEvent
-  MostDerivedSoPtr Divide(const std::array<double, 3>& axis) {
+  virtual SoPointer Divide(const std::array<double, 3>& axis) {
     auto* random = Simulation::GetActive()->GetRandom();
     auto polarcoord =
         TransformCoordinatesGlobalToPolar(Math::Add(axis, position_));
-    return ThisMD()->Divide(random->Uniform(0.9, 1.1), polarcoord[1],
+    return Divide(random->Uniform(0.9, 1.1), polarcoord[1],
                             polarcoord[2]);
   }
 
   /// \brief Divide this cell.
   ///
   /// \see CellDivisionEvent
-  MostDerivedSoPtr Divide(double volume_ratio,
+  virtual SoPointer Divide(double volume_ratio,
                           const std::array<double, 3>& axis) {
     auto polarcoord =
         TransformCoordinatesGlobalToPolar(Math::Add(axis, position_));
-    return ThisMD()->Divide(volume_ratio, polarcoord[1], polarcoord[2]);
+    return Divide(volume_ratio, polarcoord[1], polarcoord[2]);
   }
 
   /// \brief Divide this cell.
   ///
   /// \see CellDivisionEvent
-  MostDerivedSoPtr Divide(double volume_ratio, double phi, double theta) {
+  virtual SoPointer Divide(double volume_ratio, double phi, double theta) {
     auto* ctxt = Simulation::GetActive()->GetExecutionContext();
     CellDivisionEvent event{volume_ratio, phi, theta};
-    auto&& daughter = ctxt->template New<MostDerivedScalar>(event, ThisMD());
-    ThisMD()->EventHandler(event, &daughter);
+    auto* daughter = GetNewInstance();
+    daughter->EventConstructor(event, this);
+    ctxt->push_back(daughter);
+    EventHandler(event, daughter);
     return daughter.GetSoPtr();
   }
 
@@ -191,19 +197,6 @@ class Cell : public SimObject {
   double GetDensity() const { return density_; }
 
   const std::array<double, 3>& GetPosition() const { return position_; }
-
-  // this only works for SOA backend
-  double* GetPositionPtr() { return position_.data()->data(); }
-  double* GetDiameterPtr() { return diameter_.data(); }
-  double* GetTractorForcePtr() { return tractor_force_.data()->data(); }
-  double* GetAdherencePtr() { return adherence_.data(); }
-
-  void FillMassVector(std::vector<double> * mass) {
-    for (size_t i = 0; i < diameter_.size(); i++) {
-      (*mass)[i] = density_[i] * volume_[i];
-    }
-  }
-  // End TODO
 
   const std::array<double, 3>& GetTractorForce() const {
     return tractor_force_;
@@ -386,10 +379,9 @@ class Cell : public SimObject {
   /// Performs the transition mother to daughter 1
   /// \param event contains parameters for cell division
   /// \param daughter_2 pointer to new cell (=daughter 2)
-  /// \see CellDivisionEvent
-  template <typename TDaughter>
-  void EventHandler(const CellDivisionEvent& event, TDaughter* daughter_2) {
-    Base::EventHandler(event, daughter_2);
+  /// \see Event, CellDivisionEvent
+  void EventHandler(const Event& event, SimObject *other1, SimObject* other2 = nullptr) override {
+    Base::EventHandler(event, other1, other2);
   }
 };
 

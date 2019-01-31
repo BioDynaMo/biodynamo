@@ -39,12 +39,8 @@ namespace bdm {
 /// turned on.\n
 /// New sim objects will only be visible at the next iteration. \n
 /// Also removal of a sim object happens at the end of each iteration.
-template <typename TCTParam = CompileTimeParam<>>
 class InPlaceExecutionContext {
  public:
-  using Backend = typename TCTParam::SimulationBackend;
-  using Types = typename TCTParam::SimObjectTypes;
-
   InPlaceExecutionContext() {
     // FIXME this doesn't work: must hold all new elements for all sim_objects
     // processed by this thread.
@@ -57,7 +53,6 @@ class InPlaceExecutionContext {
 
   /// This function is called at the beginning of each iteration.
   /// This function is not thread-safe.
-  template <typename TSimulation = Simulation>
   void SetupIteration() {
     // first iteration might have uncommited changes
     TearDownIteration();
@@ -66,12 +61,11 @@ class InPlaceExecutionContext {
   /// This function is called at the end of each iteration. \n
   /// This function is not thread-safe. \n
   /// NB: Invalidates references and pointers to simulation objects.
-  template <typename TSimulation = Simulation>
   void TearDownIteration() {
     // new sim objects
     auto* rm = Simulation::GetActive()->GetResourceManager();
     new_sim_objects_.ApplyOnAllElements(
-        [&](auto&& sim_object, SoHandle) { rm->push_back(sim_object); });
+        [&](auto&& sim_object) { rm->push_back(&sim_object); });
     new_sim_objects_.Clear();
 
     // removed sim objects
@@ -85,9 +79,9 @@ class InPlaceExecutionContext {
 
   /// Execute a series of operations on a simulation object in the order given
   /// in the argument
-  template <typename TSo, typename TFirstOp, typename... TOps>
-  void Execute(TSo&& so, TFirstOp first_op, TOps... other_ops) {
-    auto* grid = Simulation<TCTParam>::GetActive()->GetGrid();
+  template <typename TFirstOp, typename... TOps>
+  void Execute(SimObject& so, TFirstOp first_op, TOps... other_ops) {
+    auto* grid = Simulation::GetActive()->GetGrid();
     auto nb_mutex_builder = grid->GetNeighborMutexBuilder();
     if (nb_mutex_builder != nullptr) {
       auto mutex = nb_mutex_builder->GetMutex(so.GetBoxIdx());
@@ -98,88 +92,32 @@ class InPlaceExecutionContext {
     }
   }
 
-  /// Create a new simulation object and return a reference to it.
-  /// NB: A call to `New` might invalidate old references.
-  /// @tparam TScalarSo simulation object type with scalar backend
-  /// @param args arguments which will be forwarded to the TScalarSo constructor
-  /// @remarks Note that this function is not thread safe.
-  template <typename TScalarSo, typename... Args, typename TBackend = Backend>
-  typename std::enable_if<std::is_same<TBackend, Soa>::value,
-                          typename TScalarSo::template Self<SoaRef>>::type
-  New(Args... args) {
-    TScalarSo so(std::forward<Args>(args)...);
-    auto uid = so.GetUid();
-    new_sim_objects_.push_back(so);
-    return new_sim_objects_.template GetSimObject<TScalarSo>(uid);
-  }
-
-  template <typename TScalarSo, typename... Args, typename TBackend = Backend>
-  typename std::enable_if<std::is_same<TBackend, Scalar>::value,
-                          TScalarSo&>::type
-  New(Args... args) {
-    TScalarSo so(std::forward<Args>(args)...);
-    auto uid = so.GetUid();
-    new_sim_objects_.push_back(so);
-    return new_sim_objects_.template GetSimObject<TScalarSo>(uid);
+  void push_back(SimObject* new_so) {
+    new_sim_objects_.push_back(new_so);
   }
 
   /// Forwards the call to `Grid::ForEachNeighborWithinRadius`
   /// Could be used to cache the results.
-  template <typename TLambda, typename TSo, typename TSimulation = Simulation>
-  void ForEachNeighborWithinRadius(const TLambda& lambda, const TSo& query,
+  template <typename TLambda>
+  void ForEachNeighborWithinRadius(const TLambda& lambda, const SimObject& query,
                                    double squared_radius) {
     auto* grid = Simulation::GetActive()->GetGrid();
-    return grid->template ForEachNeighborWithinRadius(lambda, query,
-                                                      squared_radius);
+    return grid->ForEachNeighborWithinRadius(lambda, query, squared_radius);
   }
 
-  template <typename TSo, typename TSimBackend = Backend,
-            typename TSimulation = Simulation>
-  auto&& GetSimObject(
-      SoUid uid,
-      typename std::enable_if<std::is_same<TSimBackend, Scalar>::value>::type*
-          ptr = 0) {
-    // check if the uid corresponds to a new object not yet in the Rm
+  SimObject* GetSimObject(SoUid uid) {
     if (new_sim_objects_.Contains(uid)) {
       return new_sim_objects_.template GetSimObject<TSo>(uid);
     } else {
       auto* rm = Simulation::GetActive()->GetResourceManager();
-      return rm->template GetSimObject<TSo>(uid);
+      return rm->GetSimObject(uid);
     }
   }
 
-  template <typename TSo, typename TSimBackend = Backend,
-            typename TSimulation = Simulation>
-  auto GetSimObject(SoUid uid,
-                    typename std::enable_if<
-                        std::is_same<TSimBackend, Soa>::value>::type* ptr = 0) {
-    if (new_sim_objects_.Contains(uid)) {
-      return new_sim_objects_.template GetSimObject<TSo>(uid);
-    } else {
-      auto* rm = Simulation::GetActive()->GetResourceManager();
-      return rm->template GetSimObject<TSo>(uid);
-    }
+  const SimObject* GetConstSimObject(SoUid uid) {
+    return GetSimObject(uid);
   }
 
-  template <typename TSo, typename TSimBackend = Backend,
-            typename TSimulation = Simulation>
-  const auto&& GetConstSimObject(
-      SoUid uid,
-      typename std::enable_if<std::is_same<TSimBackend, Scalar>::value>::type*
-          ptr = 0) {
-    return GetSimObject<TSo>(uid);
-  }
-
-  template <typename TSo, typename TSimBackend = Backend,
-            typename TSimulation = Simulation>
-  const auto GetConstSimObject(
-      SoUid uid,
-      typename std::enable_if<std::is_same<TSimBackend, Soa>::value>::type*
-          ptr = 0) {
-    return GetSimObject<TSo>(uid);
-  }
-
-  template <typename TSimulation = Simulation>
   void RemoveFromSimulation(SoUid uid) {
     remove_.push_back(uid);
   }
@@ -189,7 +127,7 @@ class InPlaceExecutionContext {
   /// turns the protection mechanism off to improve performance. This is safe
   /// simulation objects only update themselves.
   void DisableNeighborGuard() {
-    Simulation<TCTParam>::GetActive()->GetGrid()->DisableNeighborMutexes();
+    Simulation::GetActive()->GetGrid()->DisableNeighborMutexes();
   }
 
  private:
@@ -200,18 +138,18 @@ class InPlaceExecutionContext {
   /// Use seperate ResourceManager to store new objects, before they are added
   /// to the main ResourceManager. Using a ResourceManager adds
   /// some memory overhead, but avoids code duplication.
-  ResourceManager<TCTParam> new_sim_objects_;
+  ResourceManager new_sim_objects_;
 
   /// Execute a single operation on a simulation object
-  template <typename TSo, typename TFirstOp>
-  void ExecuteInternal(TSo&& so, TFirstOp first_op) {
+  template <typename TFirstOp>
+  void ExecuteInternal(SimObject& so, TFirstOp first_op) {
     first_op(so);
   }
 
   /// Execute a series of operations on a simulation object in the order given
   /// in the argument
-  template <typename TSo, typename TFirstOp, typename... TOps>
-  void ExecuteInternal(TSo&& so, TFirstOp first_op, TOps... other_ops) {
+  template <typename TFirstOp, typename... TOps>
+  void ExecuteInternal(SimObject& so, TFirstOp first_op, TOps... other_ops) {
     first_op(so);
     ExecuteInternal(so, other_ops...);
   }

@@ -36,10 +36,7 @@ namespace bdm {
 ///         certain cases.
 /// NB: ROOT IO only supports `so_container_` that point into the
 /// `ResourceManager`. Separate containers will not be serialized correctly!
-template <typename TSoSimBackend, typename TBackend>
 class SoPointer {
-  using SoSoaRef = typename TSoSimBackend::template Self<SoaRef>;
-
  public:
   explicit SoPointer(SoUid uid) : uid_(uid) {}
 
@@ -64,43 +61,19 @@ class SoPointer {
     return *this;
   }
 
-  template <typename TTBackend = TBackend, typename TSimulation = Simulation>
-  typename std::enable_if<std::is_same<TTBackend, Scalar>::value,
-                          TSoSimBackend&>::type
-  operator->() {
+  SimObject* operator->() {
     assert(*this != nullptr);
     auto* ctxt = Simulation::GetActive()->GetExecutionContext();
-    return ctxt->template GetSimObject<TSoSimBackend>(uid_);
+    return ctxt->GetSimObject(uid_);
   }
 
-  template <typename TTBackend = TBackend, typename TSimulation = Simulation>
-  typename std::enable_if<std::is_same<TTBackend, Scalar>::value,
-                          const TSoSimBackend&>::type
-  operator->() const {
+  const SimObject* operator->() const {
     assert(*this != nullptr);
     auto* ctxt = Simulation::GetActive()->GetExecutionContext();
-    return ctxt->template GetConstSimObject<SoSoaRef>(uid_);
+    return ctxt->GetConstSimObject(uid_);
   }
 
-  template <typename TTBackend = TBackend, typename TSimulation = Simulation>
-  typename std::enable_if<std::is_same<TTBackend, Soa>::value, SoSoaRef>::type
-  operator->() {
-    assert(*this != nullptr);
-    auto* ctxt = Simulation::GetActive()->GetExecutionContext();
-    return ctxt->template GetSimObject<SoSoaRef>(uid_);
-  }
-
-  template <typename TTBackend = TBackend, typename TSimulation = Simulation>
-  typename std::enable_if<std::is_same<TTBackend, Soa>::value,
-                          const SoSoaRef>::type
-  operator->() const {
-    assert(*this != nullptr);
-    auto* ctxt = Simulation::GetActive()->GetExecutionContext();
-    return ctxt->template GetConstSimObject<SoSoaRef>(uid_);
-  }
-
-  friend std::ostream& operator<<(
-      std::ostream& str, const SoPointer<TSoSimBackend, TBackend>& so_ptr) {
+  friend std::ostream& operator<<(std::ostream& str, const SoPointer& so_ptr) {
     str << "{ uid: " << so_ptr.uid_ << "}";
     return str;
   }

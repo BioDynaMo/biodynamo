@@ -92,8 +92,8 @@ class ResourceManager {
     return *this;
   }
 
-  SimObject& GetSimObject(SoUid uid) {
-    *sim_objects_[uid];
+  SimObject* GetSimObject(SoUid uid) {
+    sim_objects_[uid];
   }
 
   void AddDiffusionGrid(DiffusionGrid* dgrid) {
