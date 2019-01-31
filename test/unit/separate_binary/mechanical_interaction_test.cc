@@ -23,14 +23,6 @@
 #include "unit/test_util/test_util.h"
 
 namespace bdm {
-
-BDM_CTPARAM(experimental::neuroscience) {
-  BDM_CTPARAM_HEADER(experimental::neuroscience);
-
-  using SimObjectTypes = CTList<Cell, experimental::neuroscience::NeuronSoma,
-                                experimental::neuroscience::NeuriteElement>;
-};
-
 namespace experimental {
 namespace neuroscience {
 

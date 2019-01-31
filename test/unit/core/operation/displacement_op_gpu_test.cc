@@ -18,7 +18,6 @@
 #include "core/operation/displacement_op.h"
 #include "core/sim_object/cell.h"
 #include "gtest/gtest.h"
-#include "unit/test_util/default_ctparam.h"
 #include "unit/test_util/test_util.h"
 
 namespace bdm {

@@ -32,12 +32,6 @@ struct TestBehaviour : public BaseBiologyModule {
   BDM_CLASS_DEF_NV(TestBehaviour, 1);
 };
 
-BDM_CTPARAM() {
-  BDM_CTPARAM_HEADER();
-
-  BDM_CTPARAM_FOR(bdm, Cell) { using BiologyModules = CTList<TestBehaviour>; };
-};
-
 inline int Simulate(int argc, const char** argv) {
   auto set_param = [](auto* param) { param->backup_interval_ = 1; };
   Simulation simulation(argc, argv, set_param);

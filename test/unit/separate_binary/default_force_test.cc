@@ -25,10 +25,6 @@ namespace bdm {
 
 using experimental::neuroscience::NeuriteElement;
 
-BDM_CTPARAM(experimental::neuroscience) {
-  BDM_CTPARAM_HEADER(experimental::neuroscience);
-};
-
 /// Tests the forces that are created between the reference sphere and its
 /// overlapping neighbors
 /// implementation uses virual bigger radii to have distant interaction

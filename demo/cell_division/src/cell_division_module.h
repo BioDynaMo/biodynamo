@@ -24,14 +24,6 @@ namespace bdm {
 // specific volume, after which it proliferates (i.e. divides).
 // -----------------------------------------------------------------------------
 
-// Define compile time parameter
-BDM_CTPARAM() {
-  BDM_CTPARAM_HEADER();
-
-  // Override default BiologyModules for Cell
-  BDM_CTPARAM_FOR(bdm, Cell) { using BiologyModules = CTList<GrowDivide>; };
-};
-
 inline int Simulate(int argc, const char** argv) {
   // Create new simulation
   Simulation simulation(argc, argv);

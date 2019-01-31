@@ -19,8 +19,6 @@
 
 #include <algorithm>
 #include <vector>
-#include "core/param/compile_time_list.h"
-#include "core/param/compile_time_param.h"
 #include "core/sim_object/sim_object.h"
 #include "core/util/io.h"
 #include "core/util/type.h"

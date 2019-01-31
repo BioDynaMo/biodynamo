@@ -146,17 +146,6 @@ BDM_SIM_OBJECT(TestCell, Cell) {
 
 }  // namespace cell_test_internal
 
-BDM_CTPARAM() {
-  BDM_CTPARAM_HEADER();
-
-  using SimObjectTypes = CTList<cell_test_internal::TestCell>;
-  BDM_DEFAULT_CTPARAM_FOR(cell_test_internal::TestCell) {
-    using BiologyModules = CTList<cell_test_internal::GrowthModule,
-                                  cell_test_internal::MovementModule,
-                                  cell_test_internal::RemoveModule>;
-  };
-};
-
 namespace cell_test_internal {
 
 inline void RunIOTest() {

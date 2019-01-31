@@ -42,13 +42,6 @@ inline void ExpectArrayNear(const std::array<double, 3>& actual,
   }
 }
 
-// 2. Define compile time parameter
-BDM_CTPARAM() {
-  BDM_CTPARAM_HEADER();
-
-  BDM_CTPARAM_FOR(bdm, Cell) { using BiologyModules = CTList<GrowDivide>; };
-};
-
 enum ExecutionMode { kCpu, kCuda, kOpenCl };
 
 inline void RunTest(bool* result, ExecutionMode mode) {

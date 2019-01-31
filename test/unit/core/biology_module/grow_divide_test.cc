@@ -16,7 +16,6 @@
 #include <typeinfo>
 #include "core/resource_manager.h"
 #include "gtest/gtest.h"
-#include "unit/test_util/default_ctparam.h"
 #include "unit/test_util/test_util.h"
 
 namespace bdm {

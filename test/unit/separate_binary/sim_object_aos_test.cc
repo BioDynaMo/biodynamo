@@ -17,12 +17,6 @@
 #include "unit/test_util/test_util.h"
 
 namespace bdm {
-
-BDM_CTPARAM() {
-  BDM_CTPARAM_HEADER();
-  using SimulationBackend = Scalar;
-};
-
 namespace simulation_object_aos_test_internal {
 
 TEST(SimObjectTest, AosGetElementIndex) {

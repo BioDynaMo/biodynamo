@@ -13,7 +13,6 @@
 // -----------------------------------------------------------------------------
 
 #include "unit/core/operation/dividing_cell_op_test.h"
-#include "unit/test_util/default_ctparam.h"
 
 namespace bdm {
 namespace dividing_cell_op_test_internal {

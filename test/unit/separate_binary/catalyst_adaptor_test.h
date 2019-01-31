@@ -44,13 +44,6 @@ BDM_SIM_OBJECT(MyNeuron, Cell) {
   vec<int> dummmy_;
 };
 
-BDM_CTPARAM() {
-  BDM_CTPARAM_HEADER();
-  BDM_DEFAULT_CTPARAM_FOR(MyCell){};
-  BDM_DEFAULT_CTPARAM_FOR(MyNeuron){};
-  using SimObjectTypes = CTList<Cell, MyCell, MyNeuron>;
-};
-
 /// Test fixture for catalyst adaptor test to eliminate side effects
 class CatalystAdaptorTest : public ::testing::Test {
  protected:

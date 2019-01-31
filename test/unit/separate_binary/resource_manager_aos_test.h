@@ -21,14 +21,6 @@
 
 namespace bdm {
 
-BDM_CTPARAM() {
-  BDM_CTPARAM_HEADER();
-  using SimObjectTypes = CTList<A, B>;
-  using SimulationBackend = Scalar;
-  BDM_DEFAULT_CTPARAM_FOR(A){};
-  BDM_DEFAULT_CTPARAM_FOR(B){};
-};
-
 inline void RunIOTest() {
   const double kEpsilon = abs_error<double>::value;
   ResourceManager<> rm;

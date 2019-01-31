@@ -24,14 +24,6 @@
 // FIXME move to neuroscience directory
 
 namespace bdm {
-
-BDM_CTPARAM(experimental::neuroscience) {
-  BDM_CTPARAM_HEADER(experimental::neuroscience);
-
-  using SimObjectTypes = CTList<experimental::neuroscience::NeuronSoma,
-                                experimental::neuroscience::NeuriteElement>;
-};
-
 namespace experimental {
 namespace neuroscience {
 
