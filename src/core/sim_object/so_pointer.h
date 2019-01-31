@@ -70,7 +70,7 @@ class SoPointer {
                           TSoSimBackend&>::type
   operator->() {
     assert(*this != nullptr);
-    auto* ctxt = TSimulation::GetActive()->GetExecutionContext();
+    auto* ctxt = Simulation::GetActive()->GetExecutionContext();
     return ctxt->template GetSimObject<TSoSimBackend>(uid_);
   }
 
@@ -79,7 +79,7 @@ class SoPointer {
                           const TSoSimBackend&>::type
   operator->() const {
     assert(*this != nullptr);
-    auto* ctxt = TSimulation::GetActive()->GetExecutionContext();
+    auto* ctxt = Simulation::GetActive()->GetExecutionContext();
     return ctxt->template GetConstSimObject<SoSoaRef>(uid_);
   }
 
@@ -87,7 +87,7 @@ class SoPointer {
   typename std::enable_if<std::is_same<TTBackend, Soa>::value, SoSoaRef>::type
   operator->() {
     assert(*this != nullptr);
-    auto* ctxt = TSimulation::GetActive()->GetExecutionContext();
+    auto* ctxt = Simulation::GetActive()->GetExecutionContext();
     return ctxt->template GetSimObject<SoSoaRef>(uid_);
   }
 
@@ -96,7 +96,7 @@ class SoPointer {
                           const SoSoaRef>::type
   operator->() const {
     assert(*this != nullptr);
-    auto* ctxt = TSimulation::GetActive()->GetExecutionContext();
+    auto* ctxt = Simulation::GetActive()->GetExecutionContext();
     return ctxt->template GetConstSimObject<SoSoaRef>(uid_);
   }
 

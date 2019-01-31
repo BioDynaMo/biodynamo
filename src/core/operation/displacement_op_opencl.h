@@ -46,7 +46,7 @@ class DisplacementOpOpenCL {
   typename std::enable_if<is_soa_sphere<TContainer>::value>::type operator()(
       TContainer* cells, uint16_t numa_node, uint16_t type_idx) const {
 #ifdef USE_OPENCL
-    auto* sim = TSimulation::GetActive();
+    auto* sim = Simulation::GetActive();
     auto* grid = sim->GetGrid();
     auto* rm = sim->GetResourceManager();
     auto* param = sim->GetParam();

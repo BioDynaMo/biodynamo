@@ -292,7 +292,7 @@ To add cell movement, we will modify the `Run()` method of our biology module `G
 ``` C++
 template <typename T, typename TSimulation = Simulation>
 void Run(T* cell) {
-  auto* random = TSimulation::GetActive()->GetRandom();
+  auto* random = Simulation::GetActive()->GetRandom();
 ```
 
 We choose here to give stochastic movement only to growing cells, so we will write the movement just after the volume change

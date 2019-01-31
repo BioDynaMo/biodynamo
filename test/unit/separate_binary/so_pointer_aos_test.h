@@ -32,7 +32,7 @@ namespace bdm {
 /// if the SoPointer implementation can deal with incomplete types
 template <typename TSo, typename TBackend, typename TSimulation = Simulation>
 void SoPointerTest(const TSo& so) {
-  TSimulation::GetActive()->GetResourceManager()->push_back(so);
+  Simulation::GetActive()->GetResourceManager()->push_back(so);
 
   SoPointer<TSo, TBackend> null_so_pointer;
   EXPECT_TRUE(null_so_pointer == nullptr);

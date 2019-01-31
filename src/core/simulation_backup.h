@@ -65,7 +65,7 @@ class SimulationBackup {
     // Backup
     {
       TFileRaii f(tmp_file.str(), "UPDATE");
-      auto* simulation = TSimulation::GetActive();
+      auto* simulation = Simulation::GetActive();
       f.Get()->WriteObject(simulation, kSimulationName.c_str());
       IntegralTypeWrapper<size_t> wrapper(completed_simulation_steps);
       f.Get()->WriteObject(&wrapper, kSimulationStepName.c_str());
@@ -98,7 +98,7 @@ class SimulationBackup {
     }
     TSimulation* restored_simulation = nullptr;
     file.Get()->GetObject(kSimulationName.c_str(), restored_simulation);
-    TSimulation::GetActive()->Restore(std::move(*restored_simulation));
+    Simulation::GetActive()->Restore(std::move(*restored_simulation));
     Log::Info("Scheduler", "Restored simulation from ", restore_file_);
 
     // call all after restore events

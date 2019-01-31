@@ -25,7 +25,7 @@ namespace bdm {
 // otherwise.
 template <typename TSimulation = Simulation>
 static bool GetCriterion(double spatial_range, int target_n) {
-  auto* sim = TSimulation::GetActive();
+  auto* sim = Simulation::GetActive();
   auto* rm = sim->GetResourceManager();
   auto* param = sim->GetParam();
 

@@ -323,7 +323,7 @@ class ParaviewExporter : public Exporter<TContainer> {
   /// This .pvd can be read by Paraview for visualization.
   void ExportSummary(std::string filename, uint64_t num_iterations) override {
     std::ofstream pvd(filename + ".pvd");
-    auto *param = TSimulation::GetActive()->GetParam();
+    auto *param = Simulation::GetActive()->GetParam();
 
     pvd << "<?xml version=\"1.0\"?>" << std::endl;
     pvd << "<VTKFile type=\"Collection\" version=\"0.1\" "

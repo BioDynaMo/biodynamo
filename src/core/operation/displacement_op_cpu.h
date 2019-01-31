@@ -35,7 +35,7 @@ class DisplacementOpCpu {
 
   template <typename TSimObject>
   void operator()(TSimObject&& sim_object) {
-    auto* sim = TSimulation::GetActive();
+    auto* sim = Simulation::GetActive();
     auto* scheduler = sim->GetScheduler();
     auto* param = sim->GetParam();
 

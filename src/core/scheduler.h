@@ -38,7 +38,7 @@ class Scheduler {
   using Clock = std::chrono::high_resolution_clock;
 
   Scheduler() {
-    auto* param = TSimulation::GetActive()->GetParam();
+    auto* param = Simulation::GetActive()->GetParam();
     backup_ = new SimulationBackup(param->backup_file_, param->restore_file_);
     if (backup_->RestoreEnabled()) {
       restore_point_ = backup_->GetSimulationStepsFromBackup();
@@ -50,7 +50,7 @@ class Scheduler {
   virtual ~Scheduler() {
     delete backup_;
     delete visualization_;
-    auto* param = TSimulation::GetActive()->GetParam();
+    auto* param = Simulation::GetActive()->GetParam();
     if (param->statistics_) {
       std::cout << gStatistics << std::endl;
     }
@@ -79,7 +79,7 @@ class Scheduler {
   /// Executes one step.
   /// This design makes testing more convenient
   virtual void Execute(bool last_iteration) {
-    auto* sim = TSimulation::GetActive();
+    auto* sim = Simulation::GetActive();
     auto* rm = sim->GetResourceManager();
     auto* grid = sim->GetGrid();
     auto* param = sim->GetParam();
@@ -149,7 +149,7 @@ class Scheduler {
   void Backup() {
     using std::chrono::seconds;
     using std::chrono::duration_cast;
-    auto* param = TSimulation::GetActive()->GetParam();
+    auto* param = Simulation::GetActive()->GetParam();
     if (backup_->BackupEnabled() &&
         duration_cast<seconds>(Clock::now() - last_backup_).count() >=
             param->backup_interval_) {
@@ -181,7 +181,7 @@ class Scheduler {
   // think about a better solution, because some operations are executed twice
   // if Simulate is called with one timestep.
   void Initialize() {
-    auto* sim = TSimulation::GetActive();
+    auto* sim = Simulation::GetActive();
     auto* grid = sim->GetGrid();
     auto* rm = sim->GetResourceManager();
     auto* param = sim->GetParam();

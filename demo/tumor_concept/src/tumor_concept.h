@@ -71,7 +71,7 @@ struct GrowthModule : public BaseBiologyModule {
   template <typename T, typename TSimulation = Simulation>
   void Run(T* cell) {
     if (cell->GetDiameter() < 8) {
-      auto* random = TSimulation::GetActive()->GetRandom();
+      auto* random = Simulation::GetActive()->GetRandom();
       cell->ChangeVolume(400);
 
       // create an array of 3 random numbers between -2 and 2
@@ -80,7 +80,7 @@ struct GrowthModule : public BaseBiologyModule {
       // update the cell mass location, ie move the cell
       cell->UpdatePosition(cell_movements);
     } else {  //
-      auto* random = TSimulation::GetActive()->GetRandom();
+      auto* random = Simulation::GetActive()->GetRandom();
 
       if (cell->GetCanDivide() && random->Uniform(0, 1) < 0.8) {
         auto&& daughter = cell->Divide();
