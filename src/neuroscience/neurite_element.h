@@ -234,7 +234,7 @@ class NeuriteElement : public SimObject {
 
   static constexpr Shape GetShape() { return kCylinder; }
 
-  NeuriteElementExt() {
+  NeuriteElement() {
     auto* param = Simulation::GetActive()->GetParam();
     tension_ = param->neurite_default_tension_;
     diameter_ = param->neurite_default_diameter_;
@@ -250,7 +250,7 @@ class NeuriteElement : public SimObject {
   ///
   /// \see NewNeuriteExtensionEvent
   template <typename TNeuronSoma>
-  NeuriteElementExt(const NewNeuriteExtensionEvent& event, TNeuronSoma* soma,
+  NeuriteElement(const NewNeuriteExtensionEvent& event, TNeuronSoma* soma,
                     uint64_t new_oid = 0)
       : Base(event, soma, new_oid) {
     auto* param = Simulation::GetActive()->GetParam();
@@ -310,7 +310,7 @@ class NeuriteElement : public SimObject {
   ///                 (1) should be created.
   /// \see NeuriteBifurcationEvent
   template <typename TNeuriteElement>
-  NeuriteElementExt(const NeuriteBifurcationEvent& event,
+  NeuriteElement(const NeuriteBifurcationEvent& event,
                     TNeuriteElement* mother, uint64_t new_oid)
       : Base(event, mother, new_oid) {
     auto* param = Simulation::GetActive()->GetParam();
@@ -374,7 +374,7 @@ class NeuriteElement : public SimObject {
   ///
   /// \see SideNeuriteExtensionEvent
   template <typename TNeuriteElement>
-  NeuriteElementExt(const SideNeuriteExtensionEvent& event,
+  NeuriteElement(const SideNeuriteExtensionEvent& event,
                     TNeuriteElement* mother, uint64_t new_oid = 0)
       : Base(event, mother, new_oid) {
     InitializeSideExtensionOrBranching(event, mother);
@@ -385,7 +385,7 @@ class NeuriteElement : public SimObject {
   ///
   /// \see SplitNeuriteElementEvent
   template <typename TNeuriteElement>
-  NeuriteElementExt(const SplitNeuriteElementEvent& event,
+  NeuriteElement(const SplitNeuriteElementEvent& event,
                     TNeuriteElement* other, uint64_t new_oid = 0)
       : Base(event, other, new_oid) {
     InitializeSplitOrBranching(event, other);
@@ -400,7 +400,7 @@ class NeuriteElement : public SimObject {
   ///                neurite element should be created.
   /// \see NeuriteBranchingEvent
   template <typename TNeuriteElement>
-  NeuriteElementExt(const NeuriteBranchingEvent& event, TNeuriteElement* other,
+  NeuriteElement(const NeuriteBranchingEvent& event, TNeuriteElement* other,
                     uint64_t new_oid)
       : Base(event, other, new_oid) {
     if (new_oid == 0) {

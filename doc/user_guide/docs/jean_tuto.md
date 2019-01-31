@@ -207,8 +207,8 @@ We will do that directly in our tutorial.h file by writing
     BDM_SIM_OBJECT_HEADER(MyCell, Cell, 1, cell_colour_); // create the header with our new data member
 
     public:
-      MyCellExt() {}
-      MyCellExt(const std::array<double, 3>& position) : Base(position) {} // our creator
+      MyCell() {}
+      MyCell(const std::array<double, 3>& position) : Base(position) {} // our creator
       // getter and setter for our new data member
       void SetCelColour(int cellColour) { cell_colour_ = cellColour; }
       int GetCellColour() { return cell_colour_; }

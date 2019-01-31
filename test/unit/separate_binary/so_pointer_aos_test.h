@@ -50,8 +50,8 @@ class SoPointerTestClass : public TestSimObject {
   BDM_SIM_OBJECT_HEADER(SoPointerTestClass, TestSimObject, 1, my_so_ptr_, id_);
 
  public:
-  SoPointerTestClassExt() {}
-  SoPointerTestClassExt(uint64_t id) { id_ = id; }
+  SoPointerTestClass() {}
+  SoPointerTestClass(uint64_t id) { id_ = id; }
 
   uint64_t GetId() const { return id_; }
   void SetId(uint64_t id) { id_ = id; }

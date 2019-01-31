@@ -26,12 +26,12 @@ class MyCell : public Cell {  // our object extends the Cell object
   BDM_SIM_OBJECT_HEADER(MyCell, Cell, 1, can_divide_, cell_color_);
 
  public:
-  MyCellExt() {}
-  explicit MyCellExt(const std::array<double, 3>& position) : Base(position) {}
+  MyCell() {}
+  explicit MyCell(const std::array<double, 3>& position) : Base(position) {}
 
   /// If MyCell divides, daughter 2 copies the data members from the mother
   template <typename TMother>
-  MyCellExt(const CellDivisionEvent& event, TMother* mother)
+  MyCell(const CellDivisionEvent& event, TMother* mother)
       : Base(event, mother) {
     can_divide_ = mother->can_divide_;
     cell_color_ = mother->cell_color_;

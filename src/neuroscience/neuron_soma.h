@@ -34,9 +34,9 @@ class NeuronSoma : public Cell {
   using NeuriteElement = typename TCompileTimeParam::NeuriteElement;
   using NeuriteElementSoPtr = ToSoPtr<NeuriteElement>;
 
-  NeuronSomaExt() {}
+  NeuronSoma() {}
 
-  explicit NeuronSomaExt(const std::array<double, 3>& position)
+  explicit NeuronSoma(const std::array<double, 3>& position)
       : Base(position) {}
 
   /// \brief This constructor is used to create daughter 2 for a cell division
@@ -47,7 +47,7 @@ class NeuronSoma : public Cell {
   ///
   /// \see CellDivisionEvent
   template <typename TMother>
-  NeuronSomaExt(const CellDivisionEvent& event, TMother* mother,
+  NeuronSoma(const CellDivisionEvent& event, TMother* mother,
                 uint64_t new_oid = 0)
       : Base(event, mother) {
     if (mother->daughters_.size() != 0) {

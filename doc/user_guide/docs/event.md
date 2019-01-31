@@ -71,7 +71,7 @@ ratio defined in `CellDivisionEvent`.
 ```c++
 class MyCell : public Cell {
  public:
-  MyCellExt(const TEvent& event, TOther* other, uint64_t new_oid = 0)
+  MyCell(const TEvent& event, TOther* other, uint64_t new_oid = 0)
        : Base(event, other, new_oid) {
     new_data_member_ = mother->new_data_member_ * event.volume_ratio;
   }

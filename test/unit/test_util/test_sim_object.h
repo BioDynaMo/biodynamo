@@ -31,13 +31,13 @@ class TestSimObject : public SimObject {
 
   static constexpr Shape GetShape() { return Shape::kSphere; }
 
-  TestSimObjectExt() {}
+  TestSimObject() {}
 
-  explicit TestSimObjectExt(const std::array<double, 3>& pos)
+  explicit TestSimObject(const std::array<double, 3>& pos)
       : position_{{pos}} {}
 
   template <typename TEvent, typename TOther>
-  TestSimObjectExt(const TEvent& event, TOther* other, uint64_t new_oid = 0)
+  TestSimObject(const TEvent& event, TOther* other, uint64_t new_oid = 0)
       : Base(event, other, new_oid) {}
 
   template <typename TEvent, typename TDaughter>

@@ -25,12 +25,12 @@ class MyCell : public Cell {
   BDM_SIM_OBJECT_HEADER(MyCell, Cell, 1, cell_type_);
 
  public:
-  MyCellExt() {}
-  explicit MyCellExt(const std::array<double, 3>& position) : Base(position) {}
+  MyCell() {}
+  explicit MyCell(const std::array<double, 3>& position) : Base(position) {}
 
   /// Default event constructor
   template <typename TEvent, typename TOther>
-  MyCellExt(const TEvent& event, TOther* other, uint64_t new_oid = 0)
+  MyCell(const TEvent& event, TOther* other, uint64_t new_oid = 0)
       : Base(event, other, new_oid) {}
 
   /// Default event handler
