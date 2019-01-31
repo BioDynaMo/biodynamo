@@ -21,18 +21,18 @@ We can note the following things from its content:
 In `src/my_cell.h` we can find the following code:
 
 ``` C++
-BDM_SIM_OBJECT(MyCell, Cell) {
+class MyCell : public Cell {
   BDM_SIM_OBJECT_HEADER(MyCell, Cell, 1, cell_type_);
 
  public:
   MyCellExt() {}
   MyCellExt(const std::array<double, 3>& position) : Base(position) {}
 
-  void SetCellType(int t) { cell_type_[kIdx] = t; }
-  int GetCellType() const { return cell_type_[kIdx]; }
+  void SetCellType(int t) { cell_type_ = t; }
+  int GetCellType() const { return cell_type_; }
 
  private:
-  vec<int> cell_type_;
+  int cell_type_;
 ```
 
 We create a new type of cell called "MyCell" that extends the default Cell.

@@ -99,7 +99,7 @@ This change requires a different signature of `BDM_SIM_OBJECT_HEADER`.
 
 In other words, copy the parameters from `BDM_SIM_OBJECT` to the beginning of `BDM_SIM_OBJECT_HEADER`
 ``` c++
-BDM_SIM_OBJECT(Cell, SimulationObject) {
+class Cell : public SimulationObject {
   BDM_SIM_OBJECT_HEADER(Cell, SimulationObject, 1, ...)
 ```
 

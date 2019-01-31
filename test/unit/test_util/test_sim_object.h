@@ -21,7 +21,7 @@
 
 namespace bdm {
 
-BDM_SIM_OBJECT(TestSimObject, SimObject) {
+class TestSimObject : public SimObject {
   BDM_SIM_OBJECT_HEADER(TestSimObject, SimObject, 1, position_);
 
  public:
@@ -45,9 +45,9 @@ BDM_SIM_OBJECT(TestSimObject, SimObject) {
     Base::EventHandler(event, daughter);
   }
 
-  const std::array<double, 3>& GetPosition() const { return position_[kIdx]; }
+  const std::array<double, 3>& GetPosition() const { return position_; }
 
-  void SetPosition(const std::array<double, 3>& pos) { position_[kIdx] = pos; }
+  void SetPosition(const std::array<double, 3>& pos) { position_ = pos; }
 
   void ApplyDisplacement(const std::array<double, 3>&) {}
 
@@ -60,7 +60,7 @@ BDM_SIM_OBJECT(TestSimObject, SimObject) {
   double GetDiameter() const { return 3.14; }
 
  protected:
-  vec<std::array<double, 3>> position_;
+  std::array<double, 3> position_;
 };
 
 }  // namespace bdm

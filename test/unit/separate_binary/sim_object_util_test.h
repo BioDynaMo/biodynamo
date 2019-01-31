@@ -33,28 +33,28 @@
 namespace bdm {
 // namespace simulation_object_util_test_internal {
 
-BDM_SIM_OBJECT(ContainerTestClass, TestSimObject) {
+class ContainerTestClass : public TestSimObject {
   BDM_SIM_OBJECT_HEADER(ContainerTestClass, TestSimObject, 1, dm1_, dm2_);
 
  public:
   ContainerTestClassExt() {}
   ContainerTestClassExt(int i, double d) {
-    dm1_[kIdx] = i;
-    dm2_[kIdx] = d;
+    dm1_ = i;
+    dm2_ = d;
   }
 
-  const int GetDm1() const { return dm1_[kIdx]; }
-  const double GetDm2() const { return dm2_[kIdx]; }
+  const int GetDm1() const { return dm1_; }
+  const double GetDm2() const { return dm2_; }
 
-  const vec<int>& GetVecDm1() const { return dm1_; }
-  const vec<double>& GetVecDm2() const { return dm2_; }
+  const int& GetVecDm1() const { return dm1_; }
+  const double& GetVecDm2() const { return dm2_; }
 
  private:
-  vec<int> dm1_;
-  vec<double> dm2_;
+  int dm1_;
+  double dm2_;
 };
 
-BDM_SIM_OBJECT(MyCell, TestSimObject) {
+class MyCell : public TestSimObject {
   BDM_SIM_OBJECT_HEADER(MyCell, TestSimObject, 1, diameter_);
 
  public:
@@ -72,15 +72,15 @@ BDM_SIM_OBJECT(MyCell, TestSimObject) {
   void DivideImpl(MostDerivedSoPtr daughter, double volume_ratio, double phi,
                   double theta) {
     daughter->SetPosition({5, 4, 3});
-    diameter_[kIdx] = 1.123;
+    diameter_ = 1.123;
   }
 
-  double GetDiameter() const { return diameter_[kIdx]; }
+  double GetDiameter() const { return diameter_; }
 
-  void SetDiameter(double diameter) { diameter_[kIdx] = diameter; }
+  void SetDiameter(double diameter) { diameter_ = diameter; }
 
  protected:
-  vec<double> diameter_ = {6.28};
+  double diameter_ = {6.28};
 };
 
 // -----------------------------------------------------------------------------
@@ -98,7 +98,7 @@ class Neurite {
 };
 
 // add Neurites to BaseCell
-BDM_SIM_OBJECT(Neuron, MyCell) {
+class Neuron : public MyCell {
   BDM_SIM_OBJECT_HEADER(Neuron, MyCell, 1, neurites_);
 
  public:
@@ -110,14 +110,14 @@ BDM_SIM_OBJECT(Neuron, MyCell) {
 
   void DivideImpl(MostDerivedSoPtr daughter, double volume_ratio, double phi,
                   double theta) {
-    daughter->neurites_[daughter->kIdx].push_back(Neurite(987));
+    daughter->neurites_.push_back(Neurite(987));
     Base::DivideImpl(daughter, volume_ratio, phi, theta);
   }
 
-  const std::vector<Neurite>& GetNeurites() const { return neurites_[kIdx]; }
+  const std::vector<Neurite>& GetNeurites() const { return neurites_; }
 
  private:
-  vec<std::vector<Neurite>> neurites_ = {{}};
+  std::vector<Neurite> neurites_;
 
   FRIEND_TEST(SimObjectUtilTest, NewEmptySoa);
   FRIEND_TEST(SimObjectUtilTest, SoaRef);
@@ -127,19 +127,19 @@ BDM_SIM_OBJECT(Neuron, MyCell) {
 
 // -----------------------------------------------------------------------------
 // SOA object for IO test
-BDM_SIM_OBJECT(TestObject, SimObject) {
+class TestObject : public SimObject {
   BDM_SIM_OBJECT_HEADER(TestObject, SimObject, 1, id_);
 
  public:
   TestObjectExt() {}
   explicit TestObjectExt(int id) : id_(id) {}
-  int GetId() const { return id_[kIdx]; }
+  int GetId() const { return id_; }
 
  private:
-  vec<int> id_;
+  int id_;
 };
 
-BDM_SIM_OBJECT(TestThisMD, SimObject) {
+class TestThisMD : public SimObject {
   BDM_SIM_OBJECT_HEADER(TestThisMD, SimObject, 0, foo_);
 
  public:
@@ -149,10 +149,10 @@ BDM_SIM_OBJECT(TestThisMD, SimObject) {
 
   int SomeFunction() { return ThisMD()->AnotherFunction(); }
 
-  vec<int> foo_;
+  int foo_;
 };
 
-BDM_SIM_OBJECT(TestThisMDSubclass, TestThisMD) {
+class TestThisMDSubclass : public TestThisMD {
   BDM_SIM_OBJECT_HEADER(TestThisMDSubclass, TestThisMD, 0, foo_);
 
  public:
@@ -160,7 +160,7 @@ BDM_SIM_OBJECT(TestThisMDSubclass, TestThisMD) {
 
   int AnotherFunction() { return 321; }
 
-  vec<int> foo_;
+  int foo_;
 };
 
 inline void RunSoaIOTest() {

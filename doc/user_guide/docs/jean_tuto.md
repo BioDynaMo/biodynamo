@@ -203,20 +203,20 @@ To do that, we can extend the existing `Cell` class in order to add a new data m
 We will do that directly in our tutorial.h file by writing
 ``` C++
   // Define my custom cell MyCell, which extends Cell by adding extra data members: cell_colour
-  BDM_SIM_OBJECT(MyCell, Cell) { // our object extends the Cell object
+  class MyCell : public Cell { // our object extends the Cell object
     BDM_SIM_OBJECT_HEADER(MyCell, Cell, 1, cell_colour_); // create the header with our new data member
 
     public:
       MyCellExt() {}
       MyCellExt(const std::array<double, 3>& position) : Base(position) {} // our creator
       // getter and setter for our new data member
-      void SetCelColour(int cellColour) { cell_colour_[kIdx] = cellColour; }
-      int GetCellColour() { return cell_colour_[kIdx]; }
+      void SetCelColour(int cellColour) { cell_colour_ = cellColour; }
+      int GetCellColour() { return cell_colour_; }
       int* GetCellColourPtr() { return cell_colour_.data(); }
 
     private:
     // private data can only be accessed by public function and not directly
-      vec<int> cell_colour_; // declare our new data member and define its type
+      int cell_colour_; // declare our new data member and define its type
   };
 ```
 
@@ -321,13 +321,13 @@ BDM_SIM_OBJECT_HEADER(MyCell, Cell, 1, can_divide_, cell_colour_);
 
 and create two methods, `SetCanDivide()` and `GetCanDivide()`.
 ``` C++
-    void SetCanDivide(bool d) { can_divide_[kIdx] = d; }
-    bool GetCanDivide() { return can_divide_[kIdx]; }
+    void SetCanDivide(bool d) { can_divide_ = d; }
+    bool GetCanDivide() { return can_divide_; }
 ```
 
 Then, as for cell\_colour\_, declare this data member as private
 ``` C++
-    vec<bool> can_divide_;
+    bool can_divide_;
 ```
 
 Now that we got a new attribute can\_divide\_, we need to change the `Run()` method to prevent cells that failed the 80% test to divide again.
