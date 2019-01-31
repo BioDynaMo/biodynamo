@@ -66,20 +66,6 @@ BDM_SIM_OBJECT(SoPointerTestClass, TestSimObject) {
   vec<uint64_t> id_;
 };
 
-}  // namespace so_pointer_test_internal
-
-// has to be defined in namespace bdm
-BDM_CTPARAM() {
-  BDM_CTPARAM_HEADER();
-  using SimObjectTypes = CTList<so_pointer_test_internal::SoPointerTestClass>;
-
-  BDM_DEFAULT_CTPARAM_FOR(so_pointer_test_internal::SoPointerTestClass) {
-    using BiologyModules = CTList<NullBiologyModule>;
-  };
-};
-
-namespace so_pointer_test_internal {
-
 inline void RunIOTest(Simulation* sim) {
   auto* rm = sim->GetResourceManager();
   rm->push_back(SoPointerTestClass(123));

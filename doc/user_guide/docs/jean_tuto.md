@@ -98,6 +98,7 @@ We are now able to add any code in the Run() method, that will be executed at ea
 
 After creating our GrowthModule, we need to add this Biology module to the compile time parameter, to tell BioDynaMo to use this new BiologyModule
 ``` C++
+FIXME
 BDM_CTPARAM() {
   BDM_CTPARAM_HEADER();
   using SimObjectTypes = CTList<MyCell>;  // use MyCell object

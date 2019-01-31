@@ -22,7 +22,6 @@
 #include "core/util/io.h"
 #include "core/visualization/catalyst_adaptor.h"
 #include "gtest/gtest.h"
-#include "unit/test_util/default_ctparam.h"
 #include "unit/test_util/test_util.h"
 
 #ifdef USE_CATALYST

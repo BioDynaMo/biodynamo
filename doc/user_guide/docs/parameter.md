@@ -13,6 +13,7 @@ Compile time parameters can be defined for the whole simulation or for a specifi
 simulation object. Below, you can find a short example:
 
 ``` c++
+FIXME
 BDM_CTPARAM(experimental::neuroscience) {
   BDM_CTPARAM_HEADER(experimental::neuroscience);
 

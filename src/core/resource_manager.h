@@ -40,7 +40,6 @@
 #endif
 
 #include "core/diffusion_grid.h"
-#include "core/param/compile_time_list.h"
 #include "core/sim_object/so_uid.h"
 #include "core/simulation.h"
 #include "core/util/numa.h"

@@ -28,16 +28,6 @@ namespace bdm {
 // move according to the extracellular gradient; in this case to the middle.
 // -----------------------------------------------------------------------------
 
-// Define compile time parameter
-BDM_CTPARAM() {
-  BDM_CTPARAM_HEADER();
-
-  // Override default BiologyModules for Cell
-  BDM_CTPARAM_FOR(bdm, Cell) {
-    using BiologyModules = CTList<Chemotaxis, KaliumSecretion>;
-  };
-};
-
 inline int Simulate(int argc, const char** argv) {
   // Initialize BioDynaMo
   Simulation simulation(argc, argv);

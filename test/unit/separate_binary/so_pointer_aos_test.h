@@ -65,14 +65,6 @@ BDM_SIM_OBJECT(SoPointerTestClass, TestSimObject) {
   vec<uint64_t> id_;
 };
 
-// has to be defined in namespace bdm
-BDM_CTPARAM() {
-  BDM_CTPARAM_HEADER();
-  using SimulationBackend = Scalar;
-  using SimObjectTypes = CTList<SoPointerTestClass>;
-  BDM_DEFAULT_CTPARAM_FOR(SoPointerTestClass){};
-};
-
 inline void IOTestSoPointerRmContainerAos(Simulation* sim) {
   auto* rm = sim->GetResourceManager();
   rm->push_back(SoPointerTestClass(123));

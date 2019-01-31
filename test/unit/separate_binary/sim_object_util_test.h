@@ -163,23 +163,6 @@ BDM_SIM_OBJECT(TestThisMDSubclass, TestThisMD) {
   vec<int> foo_;
 };
 
-// }  // namespace simulation_object_util_test_internal
-
-// has to be defined in namespace bdm
-BDM_CTPARAM() {
-  BDM_CTPARAM_HEADER();
-  using SimObjectTypes = CTList<Neuron>;
-
-  BDM_DEFAULT_CTPARAM_FOR(TestObject){};
-  BDM_DEFAULT_CTPARAM_FOR(ContainerTestClass){};
-  BDM_DEFAULT_CTPARAM_FOR(Neuron){};
-  BDM_DEFAULT_CTPARAM_FOR(TestThisMD){};
-  BDM_DEFAULT_CTPARAM_FOR(TestThisMDSubclass){};
-  BDM_DEFAULT_CTPARAM_FOR(MyCell){};
-};
-
-// namespace simulation_object_util_test_internal {
-
 inline void RunSoaIOTest() {
   remove(ROOTFILE);
 

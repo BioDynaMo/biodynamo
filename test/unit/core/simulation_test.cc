@@ -17,7 +17,6 @@
 #include <fstream>
 #include <type_traits>
 
-#include "unit/test_util/default_ctparam.h"
 #include "unit/test_util/io_test.h"
 
 namespace bdm {

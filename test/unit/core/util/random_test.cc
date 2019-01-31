@@ -14,7 +14,6 @@
 
 #include "core/util/random.h"
 #include <gtest/gtest.h>
-#include "unit/test_util/default_ctparam.h"
 #include "unit/test_util/io_test.h"
 
 namespace bdm {

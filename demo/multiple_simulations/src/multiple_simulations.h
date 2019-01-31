@@ -36,13 +36,6 @@ struct Divide : BaseBiologyModule {
   }
 };
 
-BDM_CTPARAM() {
-  BDM_CTPARAM_HEADER();
-
-  // Override default BiologyModules for Cell
-  BDM_CTPARAM_FOR(bdm, Cell) { using BiologyModules = CTList<Divide>; };
-};
-
 inline int Simulate(int argc, const char** argv) {
   auto set_param = [](auto* param) {
     // Turn on export visualization

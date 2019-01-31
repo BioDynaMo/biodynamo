@@ -118,15 +118,6 @@ struct EventHandlerBm {
   BDM_CLASS_DEF_NV(EventHandlerBm, 1);
 };
 
-BDM_CTPARAM() {
-  BDM_CTPARAM_HEADER();
-  using SimObjectTypes = CTList<Cell, TestSimObject>;
-  BDM_DEFAULT_CTPARAM_FOR(TestSimObject) {
-    using BiologyModules =
-        CTList<CopyTestBiologyModule, RemoveTestBiologyModule, EventHandlerBm>;
-  };
-};
-
 }  // namespace bdm
 
 #endif  // UNIT_SEPARATE_BINARY_SIM_OBJECT_TEST_H_

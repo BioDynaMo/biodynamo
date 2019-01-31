@@ -16,12 +16,6 @@
 #include "unit/core/operation/dividing_cell_op_test.h"
 
 namespace bdm {
-
-BDM_CTPARAM() {
-  BDM_CTPARAM_HEADER();
-  using SimulationBackend = Scalar;
-};
-
 namespace dividing_cell_op_test_internal {
 
 TEST(DividingCellOpTest, ComputeAos) { RunTest<Cell>(); }

@@ -17,7 +17,6 @@
 #include "core/execution_context/in_place_exec_ctxt.h"
 #include "core/model_initializer.h"
 #include "core/sim_object/cell.h"
-#include "unit/test_util/default_ctparam.h"
 #include "unit/test_util/test_util.h"
 
 namespace bdm {

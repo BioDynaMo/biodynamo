@@ -19,12 +19,10 @@
 
 #include "core/biology_module/biology_module.h"
 #include "core/container/inline_vector.h"
-#include "core/container/variant.h"
 #include "core/operation/displacement_op.h"
 #include "core/operation/dividing_cell_op.h"
 #include "core/sim_object/cell.h"
 #include "core/util/io.h"
-#include "unit/test_util/default_ctparam.h"
 #include "unit/test_util/test_util.h"
 
 #define ROOTFILE "bdmFile.root"

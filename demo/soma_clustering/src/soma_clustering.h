@@ -36,17 +36,6 @@ namespace bdm {
 // same type.
 // -----------------------------------------------------------------------------
 
-// Define compile time parameter
-BDM_CTPARAM() {
-  BDM_CTPARAM_HEADER();
-  using SimObjectTypes = CTList<MyCell>;
-
-  // Override default BiologyModules for Cell
-  BDM_CTPARAM_FOR(bdm, MyCell) {
-    using BiologyModules = CTList<Chemotaxis, SubstanceSecretion>;
-  };
-};
-
 inline int Simulate(int argc, const char** argv) {
   auto set_param = [](auto* param) {
     // Create an artificial bounds for the simulation space

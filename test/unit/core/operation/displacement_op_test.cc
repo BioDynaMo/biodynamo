@@ -14,20 +14,9 @@
 
 #include "unit/core/operation/displacement_op_test.h"
 #include "gtest/gtest.h"
-#include "unit/test_util/default_ctparam.h"
 
 namespace bdm {
 namespace displacement_op_test_internal {
-
-// template <typename TBackend = Soa>
-// struct SoaCompileTimeParam {
-//   template <typename TTBackend>
-//   using Self = SoaCompileTimeParam<TTBackend>;
-//   using Backend = TBackend;
-//   using SimulationBackend = Soa;
-//   using BiologyModules = CTList<NullBiologyModule>;
-//   using SimObjectTypes = CTList<Cell>;
-// };
 
 TEST(DisplacementOpTest, ComputeSoa) { RunTest(); }
 

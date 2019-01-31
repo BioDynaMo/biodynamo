@@ -19,9 +19,6 @@
 
 namespace bdm {
 
-// Define compile time parameter
-BDM_CTPARAM() { BDM_CTPARAM_HEADER(); };
-
 inline int Simulate(int argc, const char** argv) {
   Simulation simulation(argc, argv);
 

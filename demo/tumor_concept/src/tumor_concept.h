@@ -97,15 +97,6 @@ struct GrowthModule : public BaseBiologyModule {
   BDM_CLASS_DEF_NV(GrowthModule, 1);
 };
 
-// Define compile time parameter
-BDM_CTPARAM() {
-  BDM_CTPARAM_HEADER();
-  using SimObjectTypes = CTList<MyCell>;  // use MyCell object
-
-  // Override default BiologyModules for Cell
-  BDM_CTPARAM_FOR(bdm, MyCell) { using BiologyModules = CTList<GrowthModule>; };
-};
-
 inline int Simulate(int argc, const char** argv) {
   auto set_param = [](auto* param) {
     param->bound_space_ = true;
