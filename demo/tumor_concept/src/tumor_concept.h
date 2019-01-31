@@ -21,7 +21,7 @@ namespace bdm {
 
 // 0. Define my custom cell MyCell, which extends Cell by adding extra data
 // members: cell_color and can_divide
-BDM_SIM_OBJECT(MyCell, Cell) {  // our object extends the Cell object
+class MyCell : public Cell {  // our object extends the Cell object
                                 // create the header with our new data member
   BDM_SIM_OBJECT_HEADER(MyCell, Cell, 1, can_divide_, cell_color_);
 
@@ -33,8 +33,8 @@ BDM_SIM_OBJECT(MyCell, Cell) {  // our object extends the Cell object
   template <typename TMother>
   MyCellExt(const CellDivisionEvent& event, TMother* mother)
       : Base(event, mother) {
-    can_divide_[kIdx] = mother->can_divide_[mother->kIdx];
-    cell_color_[kIdx] = mother->cell_color_[mother->kIdx];
+    can_divide_ = mother->can_divide_;
+    cell_color_ = mother->cell_color_;
   }
 
   /// If a cell divides, daughter keeps the same state from its mother.
@@ -44,17 +44,17 @@ BDM_SIM_OBJECT(MyCell, Cell) {  // our object extends the Cell object
   }
 
   // getter and setter for our new data member
-  void SetCanDivide(bool d) { can_divide_[kIdx] = d; }
-  bool GetCanDivide() const { return can_divide_[kIdx]; }
+  void SetCanDivide(bool d) { can_divide_ = d; }
+  bool GetCanDivide() const { return can_divide_; }
 
-  void SetCellColor(int cell_color) { cell_color_[kIdx] = cell_color; }
-  int GetCellColor() const { return cell_color_[kIdx]; }
+  void SetCellColor(int cell_color) { cell_color_ = cell_color; }
+  int GetCellColor() const { return cell_color_; }
 
  private:
   // declare new data member and define their type
   // private data can only be accessed by public function and not directly
-  vec<bool> can_divide_;
-  vec<int> cell_color_;
+  bool can_divide_;
+  int cell_color_;
 };
 
 // 1. Define growth behaviour

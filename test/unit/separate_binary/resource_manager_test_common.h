@@ -27,30 +27,30 @@
 
 namespace bdm {
 
-BDM_SIM_OBJECT(A, TestSimObject) {
+class A : public TestSimObject {
   BDM_SIM_OBJECT_HEADER(A, TestSimObject, 1, data_);
 
  public:
   AExt() {}  // for ROOT I/O
-  explicit AExt(int data) { data_[kIdx] = data; }
+  explicit AExt(int data) { data_ = data; }
 
-  int GetData() const { return data_[kIdx]; }
-  void SetData(int data) { data_[kIdx] = data; }
+  int GetData() const { return data_; }
+  void SetData(int data) { data_ = data; }
 
-  vec<int> data_;
+  int data_;
 };
 
-BDM_SIM_OBJECT(B, TestSimObject) {
+class B : public TestSimObject {
   BDM_SIM_OBJECT_HEADER(B, TestSimObject, 1, data_);
 
  public:
   BExt() {}  // for ROOT I/O
-  explicit BExt(double data) { data_[kIdx] = data; }
+  explicit BExt(double data) { data_ = data; }
 
-  double GetData() const { return data_[kIdx]; }
-  void SetData(double data) { data_[kIdx] = data; }
+  double GetData() const { return data_; }
+  void SetData(double data) { data_ = data; }
 
-  vec<double> data_;
+  double data_;
 };
 
 /// Create ResourceManager with two types, use Get function to obtain container

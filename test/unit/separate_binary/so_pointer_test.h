@@ -47,23 +47,23 @@ void SoPointerTest(const TSo& so) {
   EXPECT_TRUE(so_ptr == nullptr);
 }
 
-BDM_SIM_OBJECT(SoPointerTestClass, TestSimObject) {
+class SoPointerTestClass : public TestSimObject {
   BDM_SIM_OBJECT_HEADER(SoPointerTestClass, TestSimObject, 1, my_so_ptr_, id_);
 
  public:
   SoPointerTestClassExt() {}
-  SoPointerTestClassExt(uint64_t id) { id_[kIdx] = id; }
+  SoPointerTestClassExt(uint64_t id) { id_ = id; }
 
-  uint64_t GetId() const { return id_[kIdx]; }
-  void SetId(uint64_t id) { id_[kIdx] = id; }
+  uint64_t GetId() const { return id_; }
+  void SetId(uint64_t id) { id_ = id; }
 
-  MostDerivedSoPtr GetMySoPtr() const { return my_so_ptr_[kIdx]; }
-  void SetMySoPtr(MostDerivedSoPtr so_ptr) { my_so_ptr_[kIdx] = so_ptr; }
+  MostDerivedSoPtr GetMySoPtr() const { return my_so_ptr_; }
+  void SetMySoPtr(MostDerivedSoPtr so_ptr) { my_so_ptr_ = so_ptr; }
 
-  vec<MostDerivedSoPtr> my_so_ptr_ = {{}};
+  MostDerivedSoPtr my_so_ptr_;
 
  private:
-  vec<uint64_t> id_;
+  uint64_t id_;
 };
 
 inline void RunIOTest(Simulation* sim) {

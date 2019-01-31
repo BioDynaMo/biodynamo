@@ -28,20 +28,20 @@
 
 namespace bdm {
 
-BDM_SIM_OBJECT(MyCell, Cell) {
+class MyCell : public Cell {
   BDM_SIM_OBJECT_HEADER(MyCell, Cell, 1, dummmy_);
 
  public:
   MyCellExt() {}
-  vec<int> dummmy_;
+  int dummmy_;
 };
 
-BDM_SIM_OBJECT(MyNeuron, Cell) {
+class MyNeuron : public Cell {
   BDM_SIM_OBJECT_HEADER(MyNeuron, Cell, 1, dummmy_);
 
  public:
   MyNeuronExt() {}
-  vec<int> dummmy_;
+  int dummmy_;
 };
 
 /// Test fixture for catalyst adaptor test to eliminate side effects

@@ -40,21 +40,6 @@
 
 namespace bdm {
 
-/// Macro to make the out-of-class definition of functions and members
-/// less verbose. Inserts the required template statements.
-///
-///     // Usage:
-///     BDM(Cell, SimObject) {
-///        BDM_SIM_OBJECT_HEADER(...);
-///      public:
-///       void Foo();
-///       ...
-///     };
-///     BDM_SO_DEFINE(inline void CellExt)::Foo() { ... }
-#define BDM_SO_DEFINE(...)                                 \
-  template <typename TCompileTimeParam, typename TDerived> \
-  __VA_ARGS__<TCompileTimeParam, TDerived>
-
 // -----------------------------------------------------------------------------
 // Helper macros used to generate code for all data members of a class
 

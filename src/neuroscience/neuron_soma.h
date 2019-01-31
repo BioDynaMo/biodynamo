@@ -27,7 +27,7 @@ namespace bdm {
 namespace experimental {
 namespace neuroscience {
 
-BDM_SIM_OBJECT(NeuronSoma, Cell) {
+class NeuronSoma : public Cell {
   BDM_SIM_OBJECT_HEADER(NeuronSoma, Cell, 1, daughters_, daughters_coord_);
 
  public:
@@ -50,7 +50,7 @@ BDM_SIM_OBJECT(NeuronSoma, Cell) {
   NeuronSomaExt(const CellDivisionEvent& event, TMother* mother,
                 uint64_t new_oid = 0)
       : Base(event, mother) {
-    if (mother->daughters_[mother->kIdx].size() != 0) {
+    if (mother->daughters_.size() != 0) {
       Fatal("NeuronSoma",
             "Dividing a neuron soma with attached neurites is not supported "
             "in the default implementation! If you want to change this "
@@ -79,7 +79,7 @@ BDM_SIM_OBJECT(NeuronSoma, Cell) {
   /// Uses default diameter for new neurite
   /// \see NewNeuriteExtensionEvent
   NeuriteElementSoPtr ExtendNewNeurite(const std::array<double, 3>& direction) {
-    auto dir = Math::Add(direction, Base::position_[kIdx]);
+    auto dir = Math::Add(direction, Base::position_);
     auto angles = Base::TransformCoordinatesGlobalToPolar(dir);
     auto* param = Simulation::GetActive()->GetParam();
     return ExtendNewNeurite(param->neurite_default_diameter_, angles[2],
@@ -99,11 +99,11 @@ BDM_SIM_OBJECT(NeuronSoma, Cell) {
   }
 
   void RemoveDaughter(const ToSoPtr<NeuriteElement> daughter) {
-    auto it = std::find(std::begin(daughters_[kIdx]),
-                        std::end(daughters_[kIdx]), daughter);
-    assert(it != std::end(daughters_[kIdx]) &&
-           "The element you wanted to remove is not part of daughters_[kIdx]");
-    daughters_[kIdx].erase(it);
+    auto it = std::find(std::begin(daughters_),
+                        std::end(daughters_), daughter);
+    assert(it != std::end(daughters_) &&
+           "The element you wanted to remove is not part of daughters_");
+    daughters_.erase(it);
   }
 
   /// Returns the absolute coordinates of the location where the daughter is
@@ -111,12 +111,12 @@ BDM_SIM_OBJECT(NeuronSoma, Cell) {
   /// @param daughter_element_idx element_idx of the daughter
   /// @return the coord
   std::array<double, 3> OriginOf(SoUid daughter_uid) const {
-    std::array<double, 3> xyz = daughters_coord_[kIdx][daughter_uid];
+    std::array<double, 3> xyz = daughters_coord_[daughter_uid];
 
-    double radius = Base::diameter_[kIdx] * .5;
+    double radius = Base::diameter_ * .5;
     xyz = Math::ScalarMult(radius, xyz);
 
-    const auto& pos = Base::position_[kIdx];
+    const auto& pos = Base::position_;
 
     return {pos[0] + xyz[0] * Base::kXAxis[0] + xyz[1] * Base::kYAxis[0] +
                 xyz[2] * Base::kZAxis[0],
@@ -128,26 +128,26 @@ BDM_SIM_OBJECT(NeuronSoma, Cell) {
 
   void UpdateRelative(const ToSoPtr<NeuriteElement>& old_rel,
                       const ToSoPtr<NeuriteElement>& new_rel) {
-    auto coord = daughters_coord_[kIdx][old_rel->GetUid()];
-    auto it = std::find(std::begin(daughters_[kIdx]),
-                        std::end(daughters_[kIdx]), old_rel);
-    assert(it != std::end(daughters_[kIdx]) &&
+    auto coord = daughters_coord_[old_rel->GetUid()];
+    auto it = std::find(std::begin(daughters_),
+                        std::end(daughters_), old_rel);
+    assert(it != std::end(daughters_) &&
            "old_element_idx could not be found in daughters_ vector");
     *it = new_rel;
-    daughters_coord_[kIdx][new_rel->GetUid()] = coord;
+    daughters_coord_[new_rel->GetUid()] = coord;
   }
 
   const std::vector<ToSoPtr<NeuriteElement>>& GetDaughters() const {
-    return daughters_[kIdx];
+    return daughters_;
   }
 
  protected:
-  vec<std::vector<ToSoPtr<NeuriteElement>>> daughters_ = {{}};
+  std::vector<ToSoPtr<NeuriteElement>> daughters_;
 
   /// Daughter attachment points in local coordinates
   /// Key: neurite segment uid
   /// Value: position
-  vec<std::unordered_map<SoUid, std::array<double, 3>>> daughters_coord_ = {{}};
+  std::unordered_map<SoUid, std::array<double, 3>> daughters_coord_;
 
   /// \brief EventHandler to modify the data members of this soma
   /// after a new neurite extension event.
@@ -167,8 +167,8 @@ BDM_SIM_OBJECT(NeuronSoma, Cell) {
     double y_coord = std::sin(theta) * std::sin(phi);
     double z_coord = std::cos(theta);
 
-    daughters_[kIdx].push_back(neurite->GetSoPtr());
-    daughters_coord_[kIdx][neurite->GetUid()] = {x_coord, y_coord, z_coord};
+    daughters_.push_back(neurite->GetSoPtr());
+    daughters_coord_[neurite->GetUid()] = {x_coord, y_coord, z_coord};
   }
 };
 

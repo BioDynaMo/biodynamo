@@ -21,7 +21,7 @@ namespace bdm {
 
 // Define my custom cell, which extends Cell by adding an extra
 // data member cell_type.
-BDM_SIM_OBJECT(MyCell, Cell) {
+class MyCell : public Cell {
   BDM_SIM_OBJECT_HEADER(MyCell, Cell, 1, cell_type_);
 
  public:
@@ -39,11 +39,11 @@ BDM_SIM_OBJECT(MyCell, Cell) {
     Base::EventHandler(event, others...);
   }
 
-  void SetCellType(int t) { cell_type_[kIdx] = t; }
-  int GetCellType() const { return cell_type_[kIdx]; }
+  void SetCellType(int t) { cell_type_ = t; }
+  int GetCellType() const { return cell_type_; }
 
  private:
-  vec<int> cell_type_;
+  int cell_type_;
 };
 
 }  // namespace bdm

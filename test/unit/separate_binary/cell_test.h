@@ -99,7 +99,7 @@ struct RemoveModule : public BaseBiologyModule {
 };
 
 /// Class used to get access to protected members
-BDM_SIM_OBJECT(TestCell, Cell) {
+class TestCell : public Cell {
   BDM_SIM_OBJECT_HEADER(TestCell, Cell, 1, placeholder_);
 
  public:
@@ -132,7 +132,7 @@ BDM_SIM_OBJECT(TestCell, Cell) {
   }
 
   const auto& GetAllBiologyModules() const {
-    return Base::biology_modules_[kIdx];
+    return Base::biology_modules_;
   }
 
   bool capture_input_parameters_ = false;
@@ -140,7 +140,7 @@ BDM_SIM_OBJECT(TestCell, Cell) {
   double captured_phi_ = 0.0;
   double captured_theta_ = 0.0;
 
-  vec<bool> placeholder_;  // BDM_SIM_OBJECT_HEADER needs at least one member
+  bool placeholder_;  // BDM_SIM_OBJECT_HEADER needs at least one member
   FRIEND_TEST(CellTest, DivideVolumeRatioPhiTheta);
 };
 
