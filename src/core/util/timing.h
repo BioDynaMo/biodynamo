@@ -41,7 +41,7 @@ class Timing {
 
   template <typename TFunctor, typename TSimulation = Simulation>
   static void Time(const std::string& description, TFunctor&& f) {
-    static bool use_timer_ = TSimulation::GetActive()->GetParam()->statistics_;
+    static bool use_timer_ = Simulation::GetActive()->GetParam()->statistics_;
     if (use_timer_) {
       Timing timing(description, &gStatistics);
       f();

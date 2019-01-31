@@ -69,7 +69,7 @@ class InPlaceExecutionContext {
   template <typename TSimulation = Simulation>
   void TearDownIteration() {
     // new sim objects
-    auto* rm = TSimulation::GetActive()->GetResourceManager();
+    auto* rm = Simulation::GetActive()->GetResourceManager();
     new_sim_objects_.ApplyOnAllElements(
         [&](auto&& sim_object, SoHandle) { rm->push_back(sim_object); });
     new_sim_objects_.Clear();
@@ -128,7 +128,7 @@ class InPlaceExecutionContext {
   template <typename TLambda, typename TSo, typename TSimulation = Simulation>
   void ForEachNeighborWithinRadius(const TLambda& lambda, const TSo& query,
                                    double squared_radius) {
-    auto* grid = TSimulation::GetActive()->GetGrid();
+    auto* grid = Simulation::GetActive()->GetGrid();
     return grid->template ForEachNeighborWithinRadius(lambda, query,
                                                       squared_radius);
   }
@@ -143,7 +143,7 @@ class InPlaceExecutionContext {
     if (new_sim_objects_.Contains(uid)) {
       return new_sim_objects_.template GetSimObject<TSo>(uid);
     } else {
-      auto* rm = TSimulation::GetActive()->GetResourceManager();
+      auto* rm = Simulation::GetActive()->GetResourceManager();
       return rm->template GetSimObject<TSo>(uid);
     }
   }
@@ -156,7 +156,7 @@ class InPlaceExecutionContext {
     if (new_sim_objects_.Contains(uid)) {
       return new_sim_objects_.template GetSimObject<TSo>(uid);
     } else {
-      auto* rm = TSimulation::GetActive()->GetResourceManager();
+      auto* rm = Simulation::GetActive()->GetResourceManager();
       return rm->template GetSimObject<TSo>(uid);
     }
   }

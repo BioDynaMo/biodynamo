@@ -36,7 +36,7 @@ class DiffusionOp {
 
   template <typename TSimulation = Simulation>
   void operator()() {
-    auto* sim = TSimulation::GetActive();
+    auto* sim = Simulation::GetActive();
     auto* rm = sim->GetResourceManager();
     auto* grid = sim->GetGrid();
     auto* param = sim->GetParam();

@@ -35,7 +35,7 @@ struct Chemotaxis : public BaseBiologyModule {
 
   template <typename T, typename TSimulation = Simulation>
   void Run(T* cell) {
-    auto* rm = TSimulation::GetActive()->GetResourceManager();
+    auto* rm = Simulation::GetActive()->GetResourceManager();
 
     DiffusionGrid* dg = nullptr;
     if (cell->GetCellType() == 1) {
@@ -71,7 +71,7 @@ struct SubstanceSecretion : public BaseBiologyModule {
 
   template <typename T, typename TSimulation = Simulation>
   void Run(T* cell) {
-    auto* rm = TSimulation::GetActive()->GetResourceManager();
+    auto* rm = Simulation::GetActive()->GetResourceManager();
 
     DiffusionGrid* dg = nullptr;
     if (cell->GetCellType() == 1) {

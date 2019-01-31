@@ -32,14 +32,14 @@
 namespace bdm {
 namespace scheduler_test_internal {
 
-class TestSchedulerRestore : public Scheduler<> {
+class TestSchedulerRestore : public Scheduler {
  public:
   void Execute(bool last_iteration) override { execute_calls++; }
 
   unsigned execute_calls = 0;
 };
 
-class TestSchedulerBackup : public Scheduler<> {
+class TestSchedulerBackup : public Scheduler {
  public:
   void Execute(bool last_iteration) override {
     // sleep

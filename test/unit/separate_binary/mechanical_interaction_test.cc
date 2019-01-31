@@ -50,7 +50,7 @@ TEST(MechanicalInteraction, StraightxCylinderGrowth) {
   auto ne = rm->GetSimObject<NeuronSoma>(nuid).ExtendNewNeurite({1, 0, 0});
   ne->SetDiameter(2);
 
-  Scheduler<> scheduler;
+  Scheduler scheduler;
 
   std::array<double, 3> ne_axis = ne->GetSpringAxis();
 
@@ -91,7 +91,7 @@ TEST(MechanicalInteraction, StraightxCylinderGrowthNoMechanical) {
   auto ne = rm->GetSimObject<NeuronSoma>(neuron_id).ExtendNewNeurite({1, 0, 0});
   ne->SetDiameter(2);
 
-  Scheduler<> scheduler;
+  Scheduler scheduler;
 
   std::array<double, 3> ne_axis = ne->GetSpringAxis();
 
@@ -128,7 +128,7 @@ TEST(MechanicalInteraction, DiagonalxyCylinderGrowth) {
   auto ne = rm->GetSimObject<NeuronSoma>(neuron_id).ExtendNewNeurite({1, 1, 0});
   ne->SetDiameter(2);
 
-  Scheduler<> scheduler;
+  Scheduler scheduler;
 
   std::array<double, 3> ne_axis = ne->GetSpringAxis();
 
@@ -162,7 +162,7 @@ TEST(MechanicalInteraction, DiagonalxyzCylinderGrowth) {
   auto ne = rm->GetSimObject<NeuronSoma>(neuron_id).ExtendNewNeurite({1, 1, 1});
   ne->SetDiameter(1);
 
-  Scheduler<> scheduler;
+  Scheduler scheduler;
 
   std::array<double, 3> ne_axis = ne->GetSpringAxis();
 
@@ -197,7 +197,7 @@ TEST(MechanicalInteraction, DiagonalSpecialDirectionCylinderGrowth) {
   auto ne = rm->GetSimObject<NeuronSoma>(neuron_id).ExtendNewNeurite({1, 1, 1});
   ne->SetDiameter(2);
 
-  Scheduler<> scheduler;
+  Scheduler scheduler;
 
   std::array<double, 3> ne_axis = ne->GetSpringAxis();
 
@@ -240,7 +240,7 @@ TEST(MechanicalInteraction, StraightCylinderGrowthObstacle) {
   auto ne = rm->GetSimObject<NeuronSoma>(nuid).ExtendNewNeurite({0, 0, 1});
   ne->SetDiameter(2);
 
-  Scheduler<> scheduler;
+  Scheduler scheduler;
 
   std::array<double, 3> ne_axis = ne->GetSpringAxis();
 
@@ -281,7 +281,7 @@ TEST(MechanicalInteraction, NotStraightCylinderGrowthObstacle) {
 
   auto ne = rm->GetSimObject<NeuronSoma>(neuron_id).ExtendNewNeurite({0, 0, 1});
 
-  Scheduler<> scheduler;
+  Scheduler scheduler;
 
   std::array<double, 3> ne_axis = ne->GetSpringAxis();
 
@@ -322,7 +322,7 @@ TEST(MechanicalInteraction, BifurcationCylinderGrowth) {
   auto ne = rm->GetSimObject<NeuronSoma>(neuron_id).ExtendNewNeurite({0, 0, 1});
   ne->SetDiameter(2);
 
-  Scheduler<> scheduler;
+  Scheduler scheduler;
 
   std::array<double, 3> ne_axis = ne->GetSpringAxis();
 
@@ -372,7 +372,7 @@ TEST(MechanicalInteraction, BranchCylinderGrowth) {
   auto ne = rm->GetSimObject<NeuronSoma>(neuron_id).ExtendNewNeurite({0, 0, 1});
   ne->SetDiameter(2);
 
-  Scheduler<> scheduler;
+  Scheduler scheduler;
 
   std::array<double, 3> ne_axis = ne->GetSpringAxis();
 
@@ -422,7 +422,7 @@ TEST(MechanicalInteraction, BifurcateCylinderRandomGrowth) {
   auto ne = rm->GetSimObject<NeuronSoma>(neuron_id).ExtendNewNeurite({0, 0, 1});
   ne->SetDiameter(2);
 
-  Scheduler<> scheduler;
+  Scheduler scheduler;
 
   std::array<double, 3> ne_axis;
   std::array<double, 3> ne_axis2;
@@ -498,7 +498,7 @@ TEST(MechanicalInteraction, TwoDistinctCylinderEncounter) {
       rm->GetSimObject<NeuronSoma>(neuron2_id).ExtendNewNeurite({0, 0, 1});
   ne2->SetDiameter(2);
 
-  Scheduler<> scheduler;
+  Scheduler scheduler;
 
   std::array<double, 3> direction1 = {0.5, 0, 1};
   std::array<double, 3> direction2 = {-0.5, 0, 1};
@@ -563,7 +563,7 @@ TEST(MechanicalInteraction, TwoCylinderGrowthObstacle) {
       rm->GetSimObject<NeuronSoma>(neuron2_id).ExtendNewNeurite({0, 0, 1});
   ne2->SetDiameter(1);
 
-  Scheduler<> scheduler;
+  Scheduler scheduler;
 
   std::array<double, 3> direction1 = {0.5, 0, 1};
   std::array<double, 3> direction2 = {0, 0, 1};

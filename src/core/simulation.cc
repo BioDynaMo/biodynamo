@@ -125,7 +125,7 @@ Grid<Simulation>* Simulation::GetGrid() {
   return grid_;
 }
 
-Scheduler<Simulation>* Simulation::GetScheduler() {
+Scheduler* Simulation::GetScheduler() {
   return scheduler_;
 }
 
@@ -149,7 +149,7 @@ const std::string& Simulation::GetOutputDir() const {
   return output_dir_;
 }
 
-void Simulation::ReplaceScheduler(Scheduler<Simulation>* scheduler) {
+void Simulation::ReplaceScheduler(Scheduler* scheduler) {
   delete scheduler_;
   scheduler_ = scheduler;
 }

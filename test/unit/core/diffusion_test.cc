@@ -37,7 +37,7 @@ namespace bdm {
 
 template <typename TSo, typename TSimulation = Simulation>
 void CellFactory(const std::vector<std::array<double, 3>>& positions) {
-  auto* rm = TSimulation::GetActive()->GetResourceManager();
+  auto* rm = Simulation::GetActive()->GetResourceManager();
   rm->template Reserve<TSo>(positions.size());
   for (size_t i = 0; i < positions.size(); i++) {
     Cell cell({positions[i][0], positions[i][1], positions[i][2]});

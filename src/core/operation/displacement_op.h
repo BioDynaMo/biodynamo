@@ -38,7 +38,7 @@ template <typename TSimulation = Simulation>
 class DisplacementOp {
  public:
   DisplacementOp() {
-    auto* sim = TSimulation::GetActive();
+    auto* sim = Simulation::GetActive();
     auto* rm = sim->GetResourceManager();
     rm->template ApplyOnAllTypes(
         [this](auto* container, uint16_t numa_node, uint16_t type_idx) {
@@ -57,17 +57,17 @@ class DisplacementOp {
   ~DisplacementOp() {}
 
   bool UseCpu() const {
-    auto* param = TSimulation::GetActive()->GetParam();
+    auto* param = Simulation::GetActive()->GetParam();
     return force_cpu_implementation_ ||
            (!param->use_gpu_ && !param->use_opencl_);
   }
 
   void operator()() {
-    auto* param = TSimulation::GetActive()->GetParam();
+    auto* param = Simulation::GetActive()->GetParam();
     if (param->use_gpu_ && !force_cpu_implementation_) {
 #ifdef USE_OPENCL
       if (param->use_opencl_) {
-        auto* rm = TSimulation::GetActive()->GetResourceManager();
+        auto* rm = Simulation::GetActive()->GetResourceManager();
         rm->ApplyOnAllTypes(
             [](auto* cells, uint16_t numa_node, uint16_t type_idx) {
               opencl_(cells, numa_node_, type_idx);
@@ -76,7 +76,7 @@ class DisplacementOp {
 #endif
 #ifdef USE_CUDA
       if (!param->use_opencl_) {
-        auto* rm = TSimulation::GetActive()->GetResourceManager();
+        auto* rm = Simulation::GetActive()->GetResourceManager();
         rm->ApplyOnAllTypes(
             [](auto* cells, uint16_t numa_node, uint16_t type_idx) {
               cuda_(cells, numa_node, type_idx);

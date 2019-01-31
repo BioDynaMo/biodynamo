@@ -319,7 +319,7 @@ BDM_SIM_OBJECT(Cell, SimObject) {
       translation_force_on_point_mass[2] += neighbor_force[2];
     };
 
-    auto* ctxt = TSimulation::GetActive()->GetExecutionContext();
+    auto* ctxt = Simulation::GetActive()->GetExecutionContext();
     ctxt->ForEachNeighborWithinRadius(calculate_neighbor_forces, *this,
                                       squared_radius);
 

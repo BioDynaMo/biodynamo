@@ -49,7 +49,7 @@ class BoundSpace {
     // otherwise some sim_objects would see neighbors with already updated
     // positions
     // which would lead to inconsistencies
-    auto* sim = TSimulation::GetActive();
+    auto* sim = Simulation::GetActive();
     auto* param = sim->GetParam();
 #pragma omp parallel for
     for (size_t i = 0; i < sim_objects->size(); i++) {

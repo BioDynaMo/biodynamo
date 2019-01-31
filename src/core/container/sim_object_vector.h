@@ -28,7 +28,7 @@ class SimObjectVector {
  public:
   /// NB: Elements will not be initilized.
   SimObjectVector() {
-    auto* sim = TSimulation::GetActive();
+    auto* sim = Simulation::GetActive();
     auto* rm = sim->GetResourceManager();
     data_.resize(rm->GetNumNumaNodes());
     size_.resize(rm->GetNumNumaNodes());
@@ -47,7 +47,7 @@ class SimObjectVector {
   /// NB: Elements will not be initilized.
   void Reserve() {
     clear();
-    auto* sim = TSimulation::GetActive();
+    auto* sim = Simulation::GetActive();
     auto* rm = sim->GetResourceManager();
     rm->ApplyOnAllTypes(
         [&](auto* sim_objects, uint16_t numa_node, uint16_t type_idx) {

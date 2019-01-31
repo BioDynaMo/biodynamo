@@ -158,7 +158,7 @@ class Grid {
 
     template <typename TGrid = Grid<TSimulation>>
     Iterator begin() const {  // NOLINT
-      return Iterator(TSimulation::GetActive()->GetGrid(), this);
+      return Iterator(Simulation::GetActive()->GetGrid(), this);
     }
   };
 
@@ -228,7 +228,7 @@ class Grid {
     kHigh    /**< The closest 26  neighboring boxes */
   };
 
-  using ResourceManager_t = typename TSimulation::ResourceManager_t;
+  using ResourceManager_t = typename Simulation::ResourceManager_t;
 
   Grid() {}
 
@@ -262,7 +262,7 @@ class Grid {
 
   /// Updates the grid, as simulation objects may have moved, added or deleted
   void UpdateGrid() {
-    auto* rm = TSimulation::GetActive()->GetResourceManager();
+    auto* rm = Simulation::GetActive()->GetResourceManager();
 
     if (rm->GetNumSimObjects() != 0) {
       ClearGrid();
@@ -330,7 +330,7 @@ class Grid {
             box->AddObject(id, &successors_);
             sim_object.SetBoxIdx(idx);
           });
-      auto* param = TSimulation::GetActive()->GetParam();
+      auto* param = Simulation::GetActive()->GetParam();
       if (param->bound_space_) {
         int min = param->min_bound_;
         int max = param->max_bound_;
@@ -342,7 +342,7 @@ class Grid {
       }
     } else {
       // There are no sim objects in this simulation
-      auto* param = TSimulation::GetActive()->GetParam();
+      auto* param = Simulation::GetActive()->GetParam();
 
       bool uninitialized = boxes_.size() == 0;
       if (uninitialized && param->bound_space_) {
@@ -500,7 +500,7 @@ class Grid {
     GetMooreBoxes(&neighbor_boxes, idx);
 
     NeighborIterator ni(neighbor_boxes);
-    auto* rm = TSimulation::GetActive()->GetResourceManager();
+    auto* rm = Simulation::GetActive()->GetResourceManager();
     while (!ni.IsAtEnd()) {
       // Do something with neighbor object
       SoHandle neighbor_handle = *ni;
@@ -547,7 +547,7 @@ class Grid {
   void ForEachNeighborPairWithinRadius(const TLambda& lambda,
                                        double squared_radius) const {
     uint32_t z_start = 0, y_start = 0;
-    auto* rm = TSimulation::GetActive()->GetResourceManager();
+    auto* rm = Simulation::GetActive()->GetResourceManager();
     // use special iteration pattern to avoid race conditions between neighbors
     // main iteration will be done over rows of boxes. In order to avoid two
     // threads accessing the same box, one has to use a margin reagion of two
@@ -799,13 +799,13 @@ class Grid {
 
     template <typename TTSimulation = Simulation>
     void Update() {
-      auto* grid = TTSimulation::GetActive()->GetGrid();
+      auto* grid = Simulation::GetActive()->GetGrid();
       mutexes_.resize(grid->GetNumBoxes());
     }
 
     template <typename TTSimulation = Simulation>
     NeighborMutex GetMutex(uint64_t box_idx) {
-      auto* grid = TTSimulation::GetActive()->GetGrid();
+      auto* grid = Simulation::GetActive()->GetGrid();
       FixedSizeVector<uint64_t, 27> box_indices;
       grid->GetMooreBoxIndices(&box_indices, box_idx);
       return NeighborMutex(box_idx, box_indices, this);
@@ -890,7 +890,7 @@ class Grid {
   /// Calculates what the grid dimensions need to be in order to contain all the
   /// simulation objects
   void CalculateGridDimensions(std::array<double, 6>* ret_grid_dimensions) {
-    auto* rm = TSimulation::GetActive()->GetResourceManager();
+    auto* rm = Simulation::GetActive()->GetResourceManager();
 
     const auto max_threads = omp_get_max_threads();
     // allocate version for each thread - avoid false sharing by padding them

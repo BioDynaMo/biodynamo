@@ -97,7 +97,7 @@ class CatalystAdaptor {
   }
 
   ~CatalystAdaptor() {
-    auto* param = TSimulation::GetActive()->GetParam();
+    auto* param = Simulation::GetActive()->GetParam();
     counter_--;
 
     if (pipeline_) {
@@ -132,7 +132,7 @@ class CatalystAdaptor {
       initialized_ = true;
     }
 
-    auto* param = TSimulation::GetActive()->GetParam();
+    auto* param = Simulation::GetActive()->GetParam();
     if (param->live_visualization_) {
       double time = param->simulation_time_step_ * total_steps;
       LiveVisualization(time, total_steps, last_iteration);
@@ -170,7 +170,7 @@ class CatalystAdaptor {
   /// Therefore, we defer initialization to the first invocation of
   /// `Visualize`.
   void Initialize() {
-    auto* sim = TSimulation::GetActive();
+    auto* sim = Simulation::GetActive();
     auto* param = sim->GetParam();
 
     exclusive_export_viz_ =
@@ -303,7 +303,7 @@ class CatalystAdaptor {
     sim_objects->ForEachDataMemberIn(required_dm,
                                      AddCellAttributeData(num_cells, vsg.data));
 
-    auto* param = TSimulation::GetActive()->GetParam();
+    auto* param = Simulation::GetActive()->GetParam();
     auto& additional_dm = param->visualize_sim_objects_.at(scalar_name);
     if (!additional_dm.empty()) {
       sim_objects->ForEachDataMemberIn(
@@ -353,10 +353,10 @@ class CatalystAdaptor {
   ///
   template <typename TTSimulation = Simulation>
   typename std::enable_if<std::is_same<
-      typename TTSimulation::ResourceManager_t::Backend, Soa>::value>::type
+      typename Simulation::ResourceManager_t::Backend, Soa>::value>::type
   CreateVtkObjects(vtkNew<vtkCPDataDescription>& data_description) {  // NOLINT
     // Add simulation objects to the visualization if requested
-    auto* sim = TSimulation::GetActive();
+    auto* sim = Simulation::GetActive();
     auto* rm = sim->GetResourceManager();
     auto* param = sim->GetParam();
 
@@ -428,7 +428,7 @@ class CatalystAdaptor {
 
   template <typename TTSimulation = Simulation>
   typename std::enable_if<!std::is_same<
-      typename TTSimulation::ResourceManager_t::Backend, Soa>::value>::type
+      typename Simulation::ResourceManager_t::Backend, Soa>::value>::type
   CreateVtkObjects(vtkNew<vtkCPDataDescription>& data_description) {  // NOLINT
     Fatal("CatalystAdaptor",
           "At the moment, CatalystAdaptor supports only simulation objects "
@@ -482,7 +482,7 @@ class CatalystAdaptor {
       data_description->ForceOutputOn();
     }
 
-    auto* param = TSimulation::GetActive()->GetParam();
+    auto* param = Simulation::GetActive()->GetParam();
     if (step % param->visualization_export_interval_ == 0) {
       WriteToFile(step);
     }
@@ -494,7 +494,7 @@ class CatalystAdaptor {
   /// @param[in]  step  The step
   ///
   void WriteToFile(size_t step) {
-    auto* sim = TSimulation::GetActive();
+    auto* sim = Simulation::GetActive();
     for (auto vtk_so : vtk_so_grids_) {
       vtkNew<vtkXMLPUnstructuredGridWriter> cells_writer;
       auto filename =
@@ -522,7 +522,7 @@ class CatalystAdaptor {
   /// \see GenerateParaviewState
   static void GenerateSimulationInfoJson(
       const std::unordered_map<std::string, Shape>& shapes) {
-    auto* sim = TSimulation::GetActive();
+    auto* sim = Simulation::GetActive();
     auto* param = sim->GetParam();
     // simulation objects
     std::stringstream sim_objects;
@@ -593,7 +593,7 @@ class CatalystAdaptor {
   /// Therefore, the user can load the visualization simply by opening the pvsm
   /// file and does not have to perform a lot of manual steps.
   static void GenerateParaviewState() {
-    auto* sim = TSimulation::GetActive();
+    auto* sim = Simulation::GetActive();
     std::stringstream python_cmd;
     python_cmd << "pvpython "
                << BDM_SRC_DIR "/core/visualization/generate_pv_state.py "

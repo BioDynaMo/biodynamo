@@ -957,7 +957,7 @@ BDM_SIM_OBJECT(NeuriteElement, SimObject) {
       }
     };
 
-    auto* ctxt = TSimulation::GetActive()->GetExecutionContext();
+    auto* ctxt = Simulation::GetActive()->GetExecutionContext();
     ctxt->ForEachNeighborWithinRadius(calculate_neighbor_forces, *this,
                                       squared_radius);
 

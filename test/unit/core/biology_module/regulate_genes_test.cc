@@ -25,7 +25,7 @@ namespace bdm {
 namespace regulate_genes_test_internal {
 
 struct TestCell {};
-struct TestScheduler : public Scheduler<> {
+struct TestScheduler : public Scheduler {
   void SetSimulationSteps(uint64_t total_steps) { total_steps_ = total_steps; }
 };
 

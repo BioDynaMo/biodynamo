@@ -30,7 +30,7 @@ struct OpTimer {
 
   template <typename Container, typename TSimulation = Simulation>
   void operator()(Container* cells, uint16_t numa_node, uint16_t type_idx) {
-    auto* param = TSimulation::GetActive()->GetParam();
+    auto* param = Simulation::GetActive()->GetParam();
     if (param->statistics_) {
       Timing timer(timer_msg_, &gStatistics);
       operation_(cells, numa_node, type_idx);
