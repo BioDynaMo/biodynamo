@@ -32,8 +32,10 @@ namespace bdm {
 /// CellExt::CellExt(const CellDivisionEvent& event, TMother* mother)
 /// and the corresponding event handler
 /// CellExt::EventHandler(const CellDivisionEvent& event, TDaughter* daughter)
-struct CellDivisionEvent {
+struct CellDivisionEvent : public Event {
   static const EventId kEventId;
+
+  virtual ~CellDivisionEvent() {};
 
   /// volume_ratio_ the ratio (Volume daughter 1)/(Volume daughter 2). 1.0 gives
   /// equal cells.

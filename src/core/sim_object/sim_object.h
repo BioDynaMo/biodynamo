@@ -104,6 +104,9 @@ namespace bdm {
                                                                                \
   explicit class_name(TRootIOCtor *io_ctor) {}                            \
   class_name(const class_name &other) = default;                     \
+  \
+  /** Create a new instance of this object using the default constructor. */   \
+  SimObject* GetInstance() const override { return new class_name(); }\
                                                                                \
   /** Executes the given function for all data members             */          \
   /**  Function could be a lambda in the following form:           */          \
@@ -142,17 +145,10 @@ class SimObjectExt {
  public:
   SimObjectExt() : Base() { uid_ = SoUidGenerator::Get()->NewSoUid(); }
 
-  template <typename TEvent, typename TOther>
-  SimObjectExt(const TEvent &event, TOther *other, uint64_t new_oid = 0) {
-    uid_ = SoUidGenerator::Get()->NewSoUid();
-    box_idx_ = other->GetBoxIdx();
-    // biology modules
-    auto &other_bms = other->biology_modules_;
-    // copy biology_modules_ to me
-    CopyBiologyModules(event, &other_bms, &biology_modules_);
-  }
-
   virtual ~SimObjectExt() {}
+
+  /// Create a new instance of this object using the default constructor.
+  virtual SimObject* GetInstance() const { return new SimObject(); }
 
   // /// This function determines if the type of this simulation object is the same
   // /// as `TSo` without taking the backend into account.
@@ -212,7 +208,7 @@ class SimObjectExt {
   void SetBoxIdx(uint32_t idx) { box_idx_ = idx; }
 
   /// Return simulation object pointer
-  MostDerivedSoPtr GetSoPtr() const { return MostDerivedSoPtr(uid_); }
+  SoPointer GetSoPtr() const { return SoPointer(uid_); }
 
   void SetNumaNode(typename SoHandle::NumaNode_t numa_node) {
     numa_node_ = numa_node;
@@ -279,24 +275,29 @@ class SimObjectExt {
   // ---------------------------------------------------------------------------
 
   void RemoveFromSimulation() const {
-    Simulation::GetActive()->GetExecutionContext()->RemoveFromSimulation(
-        uid_);
+    Simulation::GetActive()->GetExecutionContext()->RemoveFromSimulation(uid_);
   }
 
-  template <typename TEvent, typename TOther>
-  void EventHandler(const TEvent &event, TOther *other) {
-    // call event handler for biology modules
-    auto *other_bms = &(other->biology_modules_);
-    BiologyModuleEventHandler(event, &(biology_modules_), other_bms);
+  virtual void EventConstructor(const Event& event, SimObject* other, uint64_t new_oid = 0) {
+    box_idx_ = other->GetBoxIdx();
+    // biology modules
+    auto &other_bms = other->biology_modules_;
+    // copy biology_modules_ to me
+    CopyBiologyModules(event, &other_bms, &biology_modules_);
   }
 
-  template <typename TEvent, typename TLeft, typename TRight>
-  void EventHandler(const TEvent &event, TLeft *left, TRight *right) {
+  virtual void EventHandler(const Event &event, SimObject *other1, SimObject* other2 = nullptr) {
     // call event handler for biology modules
-    auto *left_bms = &(left->biology_modules_[left->kIdx]);
-    auto *right_bms = &(right->biology_modules_[right->kIdx]);
-    BiologyModuleEventHandler(event, &(biology_modules_), left_bms,
-                              right_bms);
+    if (other2 == nullptr) {
+      auto *other_bms = &(other1->biology_modules_);
+      BiologyModuleEventHandler(event, &biology_modules_, other_bms);
+    } else {
+      // call event handler for biology modules
+      auto *left_bms = &(other1->biology_modules_);
+      auto *right_bms = &(other2->biology_modules_);
+      BiologyModuleEventHandler(event, &(biology_modules_), left_bms,
+                                right_bms);
+    }
   }
 
  protected:

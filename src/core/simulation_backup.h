@@ -50,7 +50,6 @@ class SimulationBackup {
   SimulationBackup(const std::string& backup_file,
                    const std::string& restore_file);
 
-  template <typename TSimulation = Simulation>
   void Backup(size_t completed_simulation_steps) {
     if (!backup_) {
       Log::Fatal("SimulationBackup",
@@ -80,7 +79,6 @@ class SimulationBackup {
     rename(tmp_file.str().c_str(), backup_file_.c_str());
   }
 
-  template <typename TSimulation = Simulation>
   void Restore() {
     if (!restore_) {
       Log::Fatal("SimulationBackup",
@@ -96,7 +94,7 @@ class SimulationBackup {
       Log::Warning("SimulationBackup",
                    "Restoring simulation executed on a different system!");
     }
-    TSimulation* restored_simulation = nullptr;
+    Simulation* restored_simulation = nullptr;
     file.Get()->GetObject(kSimulationName.c_str(), restored_simulation);
     Simulation::GetActive()->Restore(std::move(*restored_simulation));
     Log::Info("Scheduler", "Restored simulation from ", restore_file_);
